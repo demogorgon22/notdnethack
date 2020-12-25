@@ -452,7 +452,7 @@ NON_DIGGABLE:(00,00,75,20)
 STAIR:(30,08),down
 STAIR:(40,08),up
 LADDER:place[0],down
-LADDER:(35,10),up
+LADDER:place[1],up
 
 OBJECT:'+',random, random
 OBJECT:'?',random, random
@@ -460,6 +460,8 @@ OBJECT:')',random, random
 OBJECT:')',random, random
 OBJECT:'/',random, random
 OBJECT:'[',random, random
+
+DOOR:locked,(35,11)
 
 MONSTER: 'w', "purple worm", random, hostile
 MONSTER: 'w', "purple worm", random, hostile
@@ -483,6 +485,8 @@ MONSTER: 'e', "beholder", random, hostile
 MONSTER: 'e', "beholder", random, hostile
 MONSTER: 'e', "beholder", random, hostile
 MONSTER: 'e', "beholder", random, hostile
+
+MONSTER: 'e', "Death Eye", (35,10), hostile
 
 OBJECT:random,random,random
 OBJECT:random,random,random
