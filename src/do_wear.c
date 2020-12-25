@@ -4462,6 +4462,97 @@ struct obj *wep;
 	}
 }
 
+static void
+do_orb_attack(magr, atyp, etyp)
+struct monst *magr;
+char atyp;
+char etyp;
+{
+	struct monst *mdef;
+	int clockwisex[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
+	int clockwisey[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
+	int i = rnd(8),j, lim=0;
+	int striking = 0;
+	struct attack symbiote = { atyp, etyp, 4, 2 };
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	
+	//2 pips on a die is +1 on average
+	for(j=8;j>=1;j--){
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]))
+			continue;
+		else mdef = m_u_at(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]);
+		
+		if(!mdef)
+			continue;
+
+		youdef = (mdef == &youmonst);
+		if(!youdef && DEADMONSTER(mdef))
+			continue;
+		
+		if(youagr && (mdef->mpeaceful || !rn2(4)))
+			continue;
+		if(youdef && (magr->mpeaceful || !rn2(4)))
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || !rn2(4)))
+			continue;
+		//Note: the armor avoids touching petrifying things even if you're immune
+		if(touch_petrifies(mdef->data)
+		 || mdef->mtyp == PM_MEDUSA
+		 || mdef->mtyp == PM_PALE_NIGHT
+		) continue;
+		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
+			//More than one limb strikes at the same target.
+			symbiote.damn = rnd(3) + rnd(3);
+			symbiote.damn = min(symbiote.damn, 8-lim);
+			
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			if(!youagr && DEADMONSTER(magr))
+				break; //oops!
+			lim+=symbiote.damn;
+			
+			if(lim >= 8) break;
+			//If few enemies are nearby, it may concentrate extra attacks on them.
+			j = 9;
+			i = rnd(8);
+		}
+	}
+}
+
+static void
+doliving_chaos_orb(magr, wep)
+struct monst *magr;
+struct obj *wep;
+{
+	if(rn2(20))
+		return;
+	if(!adjacent_targets(magr))
+		return;
+	boolean youagr = (magr == &youmonst);
+	if(youagr || canseemon(magr))
+		pline("Ethereal tentacles spew from %s and envelop %s.",The(xname(wep)),youagr?"you":mon_nam(magr));
+	switch(wep->oartifact){
+		case ART_FIRE_CRYSTAL:
+			do_orb_attack(magr,AT_TENT,AD_EFIR);
+			break;
+		case ART_AIR_CRYSTAL:
+			do_orb_attack(magr,AT_TENT,AD_EELC);
+			break;
+		case ART_WATER_CRYSTAL:
+			do_orb_attack(magr,AT_TENT,AD_ECLD);
+			break;
+		case ART_EARTH_CRYSTAL:
+			do_orb_attack(magr,AT_TENT,AD_PHYS);
+			break;
+		case ART_BLACK_CRYSTAL:
+			do_orb_attack(magr,AT_TENT,AD_MAGM);
+			break;
+	}
+
+}
+
 void
 doliving(magr, wep)
 struct monst *magr;
@@ -4475,6 +4566,8 @@ struct obj *wep;
 		doliving_ringed_spear(magr, wep, FALSE);
 	else if(wep->oartifact == ART_RINGED_BRASS_ARMOR)
 		doliving_ringed_armor(magr, wep, FALSE);
+	else if(is_chaos_orb(wep))
+		doliving_chaos_orb(magr, wep);
 	else doliving_single_attack(magr, wep);
 }
 

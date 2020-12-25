@@ -459,10 +459,15 @@ extern struct artifact artilist[];
 							||  u.ualign.type == A_CHAOTIC ) \
 				)\
 			)
+
+#define is_chaos_orb(obj) ((obj)->oartifact == ART_WATER_CRYSTAL || (obj)->oartifact == ART_FIRE_CRYSTAL || (obj)->oartifact == ART_AIR_CRYSTAL || \
+	      (obj)->oartifact == ART_BLACK_CRYSTAL || (obj)->oartifact == ART_EARTH_CRYSTAL)
+
 /* artifact has no specific material or size, eg "silver Grimtooth" */
 #define is_malleable_artifact(a) (is_nameable_artifact((a)) || (a) == &artilist[ART_EXCALIBUR] || (a) == &artilist[ART_DIRGE])
 
-#define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || (obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR)
+#define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || \
+		(obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR)
 
 #define is_mastery_artifact_nameable(a) (\
             /* Mastery artifacts */\

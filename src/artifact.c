@@ -9675,6 +9675,10 @@ dosymbiotic_equip()
 		doliving(&youmonst, uarms);
 	if(uarm && ((check_oprop(uarm, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uarm) ))
 		doliving(&youmonst, uarm);
+	for (obj = invent; obj; obj = obj->nobj){
+		if(is_chaos_orb(obj))
+			doliving(&youmonst,obj);
+	}
 	
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 		if(DEADMONSTER(mtmp))
@@ -9695,6 +9699,11 @@ dosymbiotic_equip()
 		obj = which_armor(mtmp, W_ARM);
 		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
+	
+		for (obj = mtmp->minvent; obj; obj = obj->nobj){
+			if(is_chaos_orb(obj))
+				doliving(mtmp,obj);
+		}
 	}
 }
 

@@ -3235,6 +3235,7 @@ E int NDECL(allow_artwish);
 E boolean NDECL(dowand_refresh);
 E int FDECL(android_braindamage, (int, struct monst *, struct monst *, boolean));
 E boolean FDECL(nearby_targets, (struct monst *));
+E boolean FDECL(adjacent_targets, (struct monst *));
 
 #endif /* !MAKEDEFS_C && !LEV_LEX_C */
 
