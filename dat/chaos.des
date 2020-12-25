@@ -320,16 +320,17 @@ REGION:(00,00,16,20),  lit,"ordinary",unfilled
 REGION:(54,00,73,20),  lit,"ordinary",unfilled
 
 CONTAINER: '(', "chest"  , (16,19)
-OBJECT:'[',"leather helm", contained, uncursed, 0
+OBJECT:'#',"anarchic-armor leather helm", contained, uncursed, +3
 
 CONTAINER: '(', "chest"  , (16,01)
 OBJECT:'!',"healing", contained, uncursed, 0
 
 CONTAINER: '(', "chest"  , (54,01)
-OBJECT:')',"long sword", contained, blessed, -2, "Werebuster"
+OBJECT:')',"long sword", contained, blessed, +5, "Werebuster"
 
 CONTAINER: '(', "chest"  , (54,19)
 OBJECT:')',"runesword", contained, cursed, +3
+OBJECT:'#',"anarchic-weapon runesword",contained,cursed,+3
 
 DOOR:locked,(16,10)
 DOOR:closed,(17,18)
@@ -824,7 +825,7 @@ STAIR:(58,09),up
 STAIR:(58,11),down
 
 CONTAINER: '(', "chest"  , (04,08)
-OBJECT:')',"katana", contained, blessed, +3, "Sasuke's Blade"
+OBJECT:'#',"blessed +3 anarchic-weapon katana named Sasuke's Blade", contained
 
 CONTAINER: '(', "chest"  , (18,18)
 OBJECT:'!',"full healing", contained, blessed, 0
@@ -833,7 +834,7 @@ CONTAINER: '(', "chest"  , (51,03)
 OBJECT:'=',"protection", contained, blessed, +3
 
 CONTAINER: '(', "chest"  , (51,17)
-OBJECT:'[',"cloak of protection", contained, blessed, +3
+OBJECT:'#',"blessed +3 dragonhide cloak of protection", contained
 
 MONSTER:'&',"Kary, the Fiend of Fire", (58, 11)
 
