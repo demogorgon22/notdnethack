@@ -496,6 +496,16 @@ register struct monst *mtmp;
 			place_object(otmp, x, y);
 			}
 		goto default_1;
+		case PM_DEATH_EYE:
+			{
+				otmp = oname(mksobj(EYEBALL, TRUE, FALSE),
+						artiname(ART_EYE_OF_DEATH));
+			
+		    curse(otmp);
+			place_object(otmp, x, y);
+			newsym(x,y);
+			}
+		goto default_1;
 		case PM_SCORPION:
 			if (!rn2(20) && !(
 				(Role_if(PM_RANGER) && In_quest(&u.uz)) ||
@@ -4905,6 +4915,7 @@ boolean was_swallowed;			/* digestion */
 		   || mdat->mtyp == PM_DARUTH_XAXOX
 		   || mdat->mtyp == PM_ORION
 		   || mdat->mtyp == PM_VECNA
+		   || mdat->mtyp == PM_DEATH_EYE
 //		   || mdat->mtyp == PM_UNICORN_OF_AMBER
 		   || mdat->mtyp == PM_NIGHTMARE
 		   || mdat->mtyp == PM_CHROMATIC_DRAGON
