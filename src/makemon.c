@@ -630,6 +630,61 @@ register struct monst *mtmp;
 				set_material_gm(otmp, METAL);
 				(void) mpickobj(mtmp, otmp);
 			}
+			else if(mm == PM_BLACK_KNIGHT){
+				//artifactible to retain a chance of soulmirror
+				otmp = mksobj(PLATE_MAIL, TRUE, TRUE);
+				//cannot be both an artifact and get the oprop
+				if(!otmp->oartifact){
+					if(rn2(2)) add_oprop(otmp,OPROP_ANAR);
+				}
+			    	(void) mpickobj(mtmp, otmp);
+				otmp = mksobj(GAUNTLETS, TRUE, FALSE);
+				set_material_gm(otmp, IRON);
+				fix_object(otmp);
+				//1/4 chance of anarchic
+				if(!rn2(4)) add_oprop(otmp,OPROP_ANAR);
+				(void) mpickobj(mtmp, otmp);
+				
+				otmp = mksobj(ARMORED_BOOTS, TRUE, FALSE);
+				set_material_gm(otmp, IRON);
+				fix_object(otmp);
+				//1/4 chance of anarchic
+				if(!rn2(4)) add_oprop(otmp,OPROP_ANAR);
+				(void) mpickobj(mtmp, otmp);
+
+				otmp = mksobj(HELMET, TRUE, FALSE);
+				set_material_gm(otmp, IRON);
+				fix_object(otmp);
+				//1/4 chance of anarchic
+				if(!rn2(4)) add_oprop(otmp,OPROP_ANAR);
+				(void) mpickobj(mtmp, otmp);
+
+				otmp = mksobj(CLOAK, TRUE, FALSE);
+				//1/4 chance of anarchic
+				if(!rn2(4)) add_oprop(otmp,OPROP_ANAR);
+				(void) mpickobj(mtmp, otmp);
+
+				if(rn2(2))
+					otmp = mksobj(LONG_SWORD, TRUE, TRUE);
+				else
+					otmp = mksobj(RUNESWORD, TRUE, TRUE);
+				if(!rn2(4)) add_oprop(otmp,OPROP_ANARW);
+				else add_oprop(otmp,OPROP_LESSER_ANARW);
+				(void) mpickobj(mtmp,otmp);
+				//give them some gear like before for mplayers
+				int quan;
+				quan = rnd(3);
+				while(quan--)
+				    	(void)mongets(mtmp, rnd_offensive_item(mtmp));
+				quan = rnd(3);
+				while(quan--)
+				    	(void)mongets(mtmp, rnd_defensive_item(mtmp));
+				quan = rnd(3);
+				while(quan--)
+					(void)mongets(mtmp, rnd_misc_item(mtmp));
+					
+
+			}
 			else if(mm == PM_GOAT_SPAWN) {
 				int threshold = rnd(10)+rn2(11);
 				if(mtmp->female && In_lost_cities(&u.uz) && u.uinsight > threshold){
@@ -2346,10 +2401,12 @@ register struct monst *mtmp;
 					(void) mongets(mtmp, LONG_SWORD);
 					(void) mongets(mtmp, LANCE);
 					(void) mongets(mtmp, PLATE_MAIL);
+					(void) mongets(mtmp, find_pcloth());
 				break;
 				case PM_GARLAND:
 					(void) mongets(mtmp, RUNESWORD);
 					(void) mongets(mtmp, PLATE_MAIL);
+					(void) mongets(mtmp, find_pcloth());
 				break;
 				case PM_REBEL_RINGLEADER:
 					otmp = mksobj(LONG_SWORD, TRUE, FALSE);
