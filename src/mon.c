@@ -4606,6 +4606,8 @@ boolean was_swallowed;			/* digestion */
 			else if(mdat->mattk[i].adtyp == AD_PHYS){
 				if(mdat->mtyp == PM_FABERGE_SPHERE) explode(mon->mx, mon->my, AD_PHYS, MON_EXPLODE, tmp, rn2(7), 1);
 				else explode(mon->mx, mon->my, AD_PHYS, MON_EXPLODE, tmp, EXPL_MUDDY, 1);
+			} else if(mdat->mattk[i].adtyp == AD_NUKE){
+				explode(mon->mx, mon->my, AD_NUKE, MON_EXPLODE, tmp, EXPL_MUDDY, 2);
 			} else if(mdat->mattk[i].adtyp == AD_FIRE){
 				//mdat->mtyp == PM_BALROG || mdat->mtyp == PM_MEPHISTOPHELES || mdat->mtyp == PM_FLAMING_SPHERE){
 				explode(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 1);

@@ -222,7 +222,14 @@ boolean yours; /* is it your fault (for killing monsters) */
 	boolean shopdamage = FALSE;
 	boolean generic = FALSE;
 	boolean silent = FALSE, remote = FALSE;
+	boolean dig = FALSE;
 	xchar xi, yi;
+
+	//kludge to allow for nuclear explosions that just dig
+	if(adtyp == AD_NUKE){
+		adtyp = AD_PHYS;
+		dig = TRUE;
+	}
 
 	if (dest > 0) silent = TRUE;	
 	if (dest == 2) remote = TRUE;
@@ -443,6 +450,25 @@ boolean yours; /* is it your fault (for killing monsters) */
 	    if (flags.soundok)
 		You_hear(is_pool(x, y, FALSE) ? "a muffled explosion." : "a blast.");
 	}
+	    if(dig){
+		    for(i = 0; i < area->nlocations; i++) {
+			xi = area->locations[i].x;
+			yi = area->locations[i].y;
+			if(dig){
+				if (levl[xi][yi].typ <= SDOOR) {
+					if (dig_check(((struct monst*)0), FALSE, xi, yi)){
+						levl[xi][yi].typ = ROOM;
+						unblock_point(xi,yi);
+					}
+				}
+			}
+		    }
+		    for(i = 0; i < area->nlocations; i++) {
+			xi = area->locations[i].x;
+			yi = area->locations[i].y;
+			newsym(xi,yi);
+		    }
+	    }
 
 	    if (dam) for(i = 0; i < area->nlocations; i++) {
 		xi = area->locations[i].x;
@@ -454,7 +480,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 		/* DS: Allow monster induced explosions also */
 		//if (type >= 0 || type <= -10) //what was this supposed to correspond to? It isn't listed by buzz() in zap.c
 		(void)zap_over_floor((xchar)xi, (xchar)yi, adtyp, WAND_CLASS, FALSE, &shopdamage);
-
+		
 		mtmp = m_at(xi, yi);
 #ifdef STEED
 		if (!mtmp && xi == u.ux && yi == u.uy)
@@ -504,6 +530,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 			idamnonres += destroy_item(mtmp, WAND_CLASS, (int) adtyp);
 			idamnonres += destroy_item(mtmp, RING_CLASS, (int) adtyp);
 		}
+
 
 		if (area->locations[i].shielded) {
 			golemeffects(mtmp, (int) adtyp, dam + idamres);

@@ -9218,6 +9218,9 @@ int vis;
 			(((int)levl[magr->mux][magr->muy].typ) == WATER ? "empty water" : "thin air")
 			);
 		/* skip most effects. Go to killing magr */
+		if(attk->adtyp == AD_NUKE){
+			explode(x(magr), y(magr), AD_NUKE, MON_EXPLODE, dmg, EXPL_MUDDY, 2);
+		}
 	}
 	else {
 		switch (attk->adtyp)
@@ -9234,6 +9237,16 @@ int vis;
 				explode(x(magr), y(magr), AD_PHYS, MON_EXPLODE, dmg, EXPL_YELLOW, 1);
 			else
 				explode(x(magr), y(magr), AD_ACID, MON_EXPLODE, dmg, EXPL_NOXIOUS, 1);
+			/* players, on the other hand, shouldn't be rehumanized before the explosion (since it will hurt them too) */
+			if (youagr && Upolyd)
+				rehumanize();
+			return (*hp(magr) > 0 ? MM_AGR_STOP : MM_AGR_DIED) | (*hp(mdef) > 0 ? MM_HIT : MM_DEF_DIED);
+		case AD_NUKE:
+			/* mini nukes are extra special */
+			/* they also create real explosions */
+			if(!youagr)
+				mondead(magr);
+			explode(x(magr), y(magr), AD_NUKE, MON_EXPLODE, dmg, EXPL_MUDDY, 2);
 			/* players, on the other hand, shouldn't be rehumanized before the explosion (since it will hurt them too) */
 			if (youagr && Upolyd)
 				rehumanize();
