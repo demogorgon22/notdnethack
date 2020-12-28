@@ -1207,9 +1207,11 @@ int tary;
 			result = xpassivey(magr, mdef, attk, otmp, vis, result, pd, FALSE);
 		}
 
-		/* double check MM_DEF_DIED */
+		/* double check MM_DEF_DIED, MM_AGR_DIED */
 		if (*hp(mdef) < 1)
 			result |= MM_DEF_DIED;
+		if (*hp(magr) < 1)
+			result |= MM_AGR_DIED;
 
 		/* save result to res, allres */
 		res[0] = result;
@@ -3319,7 +3321,9 @@ int flat_acc;
 		(weapon && arti_shining(weapon)) ||
 		(melee && attk->aatyp == AT_TUCH) ||
 		(melee && attk->aatyp == AT_VINE) ||
-		(melee && attk->aatyp == AT_SRPR)) {
+		(melee && attk->aatyp == AT_SRPR) ||
+		(weapon && !valid_weapon(weapon))	/* potions, cream pies, rubber chickens, eggs, etc. */
+		) {
 		if (youdef) {
 			defn_acc += AC_VALUE(base_uac() + u.uspellprot) + 10 - u.uspellprot;
 		}

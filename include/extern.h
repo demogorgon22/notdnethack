@@ -154,6 +154,8 @@ E int FDECL(oresist_disintegration, (struct obj *));
 E int FDECL(wrath_target, (struct obj *, struct monst *));
 E int FDECL(goat_weapon_damage_turn, (struct obj *));
 
+/* ### astar.c ### */
+E boolean FDECL(path_exists, (int, int, int, int, long, int));
 /* ### attrib.c ### */
 
 E boolean FDECL(adjattrib, (int,int,int));
@@ -2202,7 +2204,7 @@ E int FDECL(projectile, (struct monst *, struct obj *, void *, int, int, int, in
 E void FDECL(hitfloor2, (struct monst *, struct obj **, struct obj *, boolean, boolean));
 E boolean FDECL(xbreathey, (struct monst *, struct attack *, int, int));
 E boolean FDECL(xspity, (struct monst *, struct attack *, int, int));
-E boolean FDECL(xfirey, (struct monst *, struct attack *, int, int));
+E boolean FDECL(xfirey, (struct monst *, struct attack *, int, int, int));
 E boolean FDECL(m_online, (struct monst *, struct monst *, int, int, boolean, boolean));
 E boolean FDECL(mdofire, (struct monst *, struct monst *, int, int));
 E boolean FDECL(umetgaze, (struct monst *));
