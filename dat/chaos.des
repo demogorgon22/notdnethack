@@ -1040,7 +1040,8 @@ MAP
 ENDMAP
 #01234567890123456789012345678901234567890123456789012345678901234567890123456
 
-NON_DIGGABLE:(00,00,75,20)
+#more fun if diggable for warmachine
+#NON_DIGGABLE:(00,00,75,20)
 
 STAIR:(16,02),up
 STAIR:(51,02),down
@@ -1049,7 +1050,7 @@ MONSTER:'D',"Tiamat, the Fiend of Wind", (35, 06)
 
 CONTAINER: '(', "chest"  , (60,03)
 OBJECT:')',"tsurugi", contained, blessed, +8, "Masamune"
-MONSTER:'\'',"retriever", (51, 18), asleep, "Warmachine"
+MONSTER:'G',"Warmachine", (51, 18), asleep
 
 MAZE:"chaose",' '
 FLAGS: nommap,hardfloor

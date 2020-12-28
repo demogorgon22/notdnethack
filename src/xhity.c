@@ -9218,9 +9218,6 @@ int vis;
 			(((int)levl[magr->mux][magr->muy].typ) == WATER ? "empty water" : "thin air")
 			);
 		/* skip most effects. Go to killing magr */
-		if(attk->adtyp == AD_NUKE){
-			explode(x(magr), y(magr), AD_NUKE, MON_EXPLODE, dmg, EXPL_MUDDY, 2);
-		}
 	}
 	else {
 		switch (attk->adtyp)
@@ -9539,6 +9536,7 @@ boolean * needs_uncancelled;
 	case AD_BLAS:
 	case AD_BDFN:
 	case AD_SPHR:
+	case AD_WMTG:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, FALSE);
 		break;
@@ -11037,6 +11035,36 @@ int vis;
 			//Breath timer
 			if(dmg > 1)
 				magr->mspec_used = 10 + rn2(20);
+		}
+		break;
+	case AD_WMTG:  // create mini nukes
+		if (magr->mspec_used)
+			return MM_MISS;
+		else {
+			int i = 0;
+			int n;
+			struct monst *mtmp;
+			int maketame = ((magr->mtame || youagr) ? MM_EDOG : 0);
+			if (cansee(magr->mx, magr->my)) You("see missiles fly out of %s's silos.", mon_nam(magr));
+			for(n = dmg; n > 0; n--){
+				mtmp = makemon(&mons[PM_MINI_NUKE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame);
+				if (mtmp) {
+					/* time out */
+					mtmp->mvanishes = mlev(magr) + rnd(mlev(magr));
+					/* can be peaceful */
+					if(magr->mpeaceful)
+						mtmp->mpeaceful = TRUE;
+					/* can be tame */
+					if (maketame) {
+						initedog(mtmp);
+					}
+					/* bonus movement */
+					mtmp->movement = 3*NORMAL_SPEED;
+				}
+			}
+			//Breath timer
+			if(dmg > 1)
+				magr->mspec_used = 1 + rnd(3);
 		}
 		break;
 	default:

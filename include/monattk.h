@@ -190,11 +190,12 @@
 #define AD_SPHR     127 /* Creates spheres */
 #define AD_DARK     128 /* Does extra damage to mortal races */
 #define AD_NUKE     129 /* Physical digging large explosion */
+#define AD_LASR     130 /* Part physical part fire laser ray */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	130
+#define AD_DUNSTAN	131
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3
