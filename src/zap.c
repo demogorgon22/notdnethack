@@ -87,6 +87,7 @@ int adtyp, ztyp;
 		case AD_ACID: return "acid splash";
 		case AD_STAR: return "stream of silver stars";
 		case AD_DISN: return "disintegration ray";
+		case AD_LASR: return "laser beam";
 		default:      impossible("unknown spell damage type in flash_type: %d", adtyp);
 		}
 		break;
@@ -144,7 +145,8 @@ int adtyp;
 		//	return NO_COLOR;
 	case AD_FIRE:
 		return CLR_ORANGE;
-		//	return CLR_BRIGHT_GREEN;
+	case AD_LASR:
+		return CLR_RED;
 	case AD_DRST:
 	case AD_GOLD:
 		return CLR_YELLOW;
@@ -4152,6 +4154,29 @@ struct zapdata * zapdata;
 		}
 		}
 		/* deal no damage */
+		return xdamagey(magr, mdef, &attk, dmg);
+	case AD_LASR:
+		/* check resist / weakness */
+		if (Fire_res(mdef)) {
+			doshieldeff = TRUE;
+			if (youdef)
+				addmsg("You still feel some heat!");
+			dmg = dmg/2;
+		}
+		domsg();
+		golemeffects(mdef, AD_FIRE, svddmg);
+		/* damage inventory */
+		if (!InvFire_res(mdef)) {
+			if (!rn2(3)) (void)destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			if (!rn2(3)) (void)destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+			if (!rn2(5)) (void)destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+		}
+		/* other */
+		if (youdef) {
+			burn_away_slime();
+			melt_frozen_air();
+		}
+		/* deal damage */
 		return xdamagey(magr, mdef, &attk, dmg);
 
 	case AD_DRLI:

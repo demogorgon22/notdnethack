@@ -9233,6 +9233,16 @@ int vis;
 			if (youagr && Upolyd)
 				rehumanize();
 			return (*hp(magr) > 0 ? MM_AGR_STOP : MM_AGR_DIED) | (*hp(mdef) > 0 ? MM_HIT : MM_DEF_DIED);
+		case AD_NUKE:
+			/* mini nukes are extra special */
+			/* they also create real explosions */
+			if(!youagr)
+				mondead(magr);
+			explode(x(magr), y(magr), AD_NUKE, MON_EXPLODE, dmg, EXPL_MUDDY, 2);
+			/* players, on the other hand, shouldn't be rehumanized before the explosion (since it will hurt them too) */
+			if (youagr && Upolyd)
+				rehumanize();
+			return (*hp(magr) > 0 ? MM_AGR_STOP : MM_AGR_DIED) | (*hp(mdef) > 0 ? MM_HIT : MM_DEF_DIED);
 
 			/* special explosions */
 		case AD_BLND:
@@ -9521,6 +9531,7 @@ boolean * needs_uncancelled;
 	case AD_BLAS:
 	case AD_BDFN:
 	case AD_SPHR:
+	case AD_WMTG:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, FALSE);
 		break;
@@ -11019,6 +11030,36 @@ int vis;
 			//Breath timer
 			if(dmg > 1)
 				magr->mspec_used = 10 + rn2(20);
+		}
+		break;
+	case AD_WMTG:  // create mini nukes
+		if (magr->mspec_used)
+			return MM_MISS;
+		else {
+			int i = 0;
+			int n;
+			struct monst *mtmp;
+			int maketame = ((magr->mtame || youagr) ? MM_EDOG : 0);
+			if (cansee(magr->mx, magr->my)) You("see missiles fly out of %s's silos.", mon_nam(magr));
+			for(n = dmg; n > 0; n--){
+				mtmp = makemon(&mons[PM_MINI_NUKE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame);
+				if (mtmp) {
+					/* time out */
+					mtmp->mvanishes = mlev(magr) + rnd(mlev(magr));
+					/* can be peaceful */
+					if(magr->mpeaceful)
+						mtmp->mpeaceful = TRUE;
+					/* can be tame */
+					if (maketame) {
+						initedog(mtmp);
+					}
+					/* bonus movement */
+					mtmp->movement = 3*NORMAL_SPEED;
+				}
+			}
+			//Breath timer
+			if(dmg > 1)
+				magr->mspec_used = 1 + rnd(3);
 		}
 		break;
 	default:

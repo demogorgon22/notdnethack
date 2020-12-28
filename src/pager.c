@@ -1975,6 +1975,8 @@ get_description_of_damage_type(uchar id)
 	case AD_EMSL: return "electric missile";
 	case AD_SMSL: return "physical missile";
 	case AD_WMTG: return "War Machine targeting gaze";
+	case AD_NUKE: return "physical large explosion";
+	case AD_LASR: return "War Machine laser beam";
 	case AD_CLRC: return "random clerical spell";
 	case AD_SPEL: return "random magic spell";
 	case AD_RBRE: return "random breath weapon";

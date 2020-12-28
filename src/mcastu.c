@@ -1913,7 +1913,7 @@ int tary;
 			return MM_MISS;
 		}
 	}
-	else if (mdef && dist2(x(magr), y(magr), tarx, tary) <= 2 && tarx == x(mdef) && tary == y(mdef)) {
+	else if ((mdef && dist2(x(magr), y(magr), tarx, tary) <= 2 && tarx == x(mdef) && tary == y(mdef)) && adtyp != AD_LASR) {
 		rangedspell = FALSE;
 	}
 	else {
@@ -1928,7 +1928,7 @@ int tary;
 
 		/* if there's no target where we're casting, fail */
 		if (!foundem) {
-			if ((youagr || youdef || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS)	{
+			if ((youagr || youdef || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS && magr->mtyp != PM_WARMACHINE){
 				pline("%s cast%s a spell at %s!",
 					youagr ? "You" : canseemon(magr) ? Monnam(magr) : "Something",
 					youagr ? "" : "s",
@@ -1939,7 +1939,7 @@ int tary;
 		}
 		/* otherwise, print a spellcasting message */
 		else {
-			if ((youagr || youdef || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS) {
+			if ((youagr || youdef || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS && magr->mtyp != PM_WARMACHINE) {
 				pline("%s cast%s a spell at %s!",
 					youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
 					youagr ? "" : "s",
@@ -2008,7 +2008,8 @@ int tary;
 				}
 			}
 			return MM_HIT;
-
+		case AD_LASR:
+			return MM_HIT;
 		case AD_ELEC:
 			/* message */
 			if (youdef || canspotmon(mdef)) {

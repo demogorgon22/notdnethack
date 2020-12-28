@@ -74,6 +74,7 @@ E void FDECL(save_artifacts, (int));
 E void FDECL(restore_artifacts, (int));
 E const char *FDECL(artiname, (int));
 E int FDECL(arti_value, (struct obj *));
+E void FDECL(toggle_socketed, (struct obj *, struct obj *, boolean));
 E struct obj *FDECL(mk_artifact, (struct obj *,ALIGNTYP_P));
 E void FDECL(add_oprop, (struct obj *, int));
 E void FDECL(remove_oprop, (struct obj *, int));
@@ -112,6 +113,7 @@ E boolean FDECL(arti_chawis, (struct obj *, boolean));
 E boolean FDECL(arti_blindres, (struct obj *, boolean));
 E boolean FDECL(arti_plussev, (struct obj *));
 E boolean FDECL(arti_plusten, (struct obj *));
+E boolean FDECL(arti_socketed, (struct obj *));
 E boolean FDECL(arti_silvered, (struct obj *));
 E boolean FDECL(arti_reflects, (struct obj *));
 E boolean FDECL(arti_light, (struct obj *));
@@ -3237,6 +3239,7 @@ E int NDECL(allow_artwish);
 E boolean NDECL(dowand_refresh);
 E int FDECL(android_braindamage, (int, struct monst *, struct monst *, boolean));
 E boolean FDECL(nearby_targets, (struct monst *));
+E boolean FDECL(adjacent_targets, (struct monst *));
 
 #endif /* !MAKEDEFS_C && !LEV_LEX_C */
 

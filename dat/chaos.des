@@ -320,16 +320,17 @@ REGION:(00,00,16,20),  lit,"ordinary",unfilled
 REGION:(54,00,73,20),  lit,"ordinary",unfilled
 
 CONTAINER: '(', "chest"  , (16,19)
-OBJECT:'[',"leather helm", contained, uncursed, 0
+OBJECT:'#',"anarchic-armor leather helm", contained, uncursed, +3
 
 CONTAINER: '(', "chest"  , (16,01)
 OBJECT:'!',"healing", contained, uncursed, 0
 
 CONTAINER: '(', "chest"  , (54,01)
-OBJECT:')',"long sword", contained, blessed, -2, "Werebuster"
+OBJECT:')',"long sword", contained, blessed, +5, "Werebuster"
 
 CONTAINER: '(', "chest"  , (54,19)
 OBJECT:')',"runesword", contained, cursed, +3
+OBJECT:'#',"anarchic-weapon runesword",contained,cursed,+3
 
 DOOR:locked,(16,10)
 DOOR:closed,(17,18)
@@ -451,7 +452,7 @@ NON_DIGGABLE:(00,00,75,20)
 STAIR:(30,08),down
 STAIR:(40,08),up
 LADDER:place[0],down
-LADDER:(35,10),up
+LADDER:place[1],up
 
 OBJECT:'+',random, random
 OBJECT:'?',random, random
@@ -459,6 +460,8 @@ OBJECT:')',random, random
 OBJECT:')',random, random
 OBJECT:'/',random, random
 OBJECT:'[',random, random
+
+DOOR:locked,(35,11)
 
 MONSTER: 'w', "purple worm", random, hostile
 MONSTER: 'w', "purple worm", random, hostile
@@ -482,6 +485,8 @@ MONSTER: 'e', "beholder", random, hostile
 MONSTER: 'e', "beholder", random, hostile
 MONSTER: 'e', "beholder", random, hostile
 MONSTER: 'e', "beholder", random, hostile
+
+MONSTER: 'e', "Death Eye", (35,10), hostile
 
 OBJECT:random,random,random
 OBJECT:random,random,random
@@ -661,15 +666,15 @@ DOOR:locked,(35,14)
 DOOR:closed,(35,16)
 DOOR:locked,(54,10)
 
-MONSTER: '@', "knight", (15,9), hostile, "Black Knight"
-OBJECT: '[', "plate mail", (15,9)
-MONSTER: '@', "knight", (15,11), hostile, "Black Knight"
-OBJECT: '[', "plate mail", (15,11)
+MONSTER: '@', "Black Knight", (15,9), hostile
+#OBJECT: '[', "plate mail", (15,9)
+MONSTER: '@', "Black Knight", (15,11), hostile
+#OBJECT: '[', "plate mail", (15,11)
 
-MONSTER: '@', "knight", (55,9), hostile, "Black Knight"
-OBJECT: '[', "plate mail", (55,09)
-MONSTER: '@', "knight", (55,11), hostile, "Black Knight"
-OBJECT: '[', "plate mail", (55,11)
+MONSTER: '@', "Black Knight", (55,9), hostile
+#OBJECT: '[', "plate mail", (55,09)
+MONSTER: '@', "Black Knight", (55,11), hostile
+#OBJECT: '[', "plate mail", (55,11)
 
 MAZE:"chaosfrh",' '
 FLAGS: nommap,hardfloor, shortsighted
@@ -833,7 +838,7 @@ CONTAINER: '(', "chest"  , (51,03)
 OBJECT:'=',"protection", contained, blessed, +3
 
 CONTAINER: '(', "chest"  , (51,17)
-OBJECT:'[',"cloak of protection", contained, blessed, +3
+OBJECT:'#',"blessed +3 dragonhide cloak of protection", contained
 
 MONSTER:'&',"Kary, the Fiend of Fire", (58, 11)
 
@@ -1035,7 +1040,8 @@ MAP
 ENDMAP
 #01234567890123456789012345678901234567890123456789012345678901234567890123456
 
-NON_DIGGABLE:(00,00,75,20)
+#more fun if diggable for warmachine
+#NON_DIGGABLE:(00,00,75,20)
 
 STAIR:(16,02),up
 STAIR:(51,02),down
@@ -1044,7 +1050,7 @@ MONSTER:'D',"Tiamat, the Fiend of Wind", (35, 06)
 
 CONTAINER: '(', "chest"  , (60,03)
 OBJECT:')',"tsurugi", contained, blessed, +8, "Masamune"
-MONSTER:'\'',"retriever", (51, 18), asleep, "Warmachine"
+MONSTER:'G',"Warmachine", (51, 18), asleep
 
 MAZE:"chaose",' '
 FLAGS: nommap,hardfloor

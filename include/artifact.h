@@ -72,6 +72,7 @@
 #define ARTI_SPEAK		0x0100L /* speaks rumours */
 #define ARTI_LUCK		0x0200L /* acts as a luckstone */
 #define ARTI_PLUSTEN	0x0400L /* can be enchanted to plus 10 */
+#define ARTI_SOCKETED	0x0800L /* is socketed and can attach a chaos orb */
 
 //#define SPFX2_NINJA		0x0000008L	/* throws from 1-your skill level ninja stars after each attack */
 //#define SPFX3_CARCAP	0x0000020L	/* increases carrying capacity when carried */
@@ -459,10 +460,15 @@ extern struct artifact artilist[];
 							||  u.ualign.type == A_CHAOTIC ) \
 				)\
 			)
+
+#define is_chaos_orb(obj) ((obj)->oartifact == ART_WATER_CRYSTAL || (obj)->oartifact == ART_FIRE_CRYSTAL || (obj)->oartifact == ART_AIR_CRYSTAL || \
+	      (obj)->oartifact == ART_BLACK_CRYSTAL || (obj)->oartifact == ART_EARTH_CRYSTAL)
+
 /* artifact has no specific material or size, eg "silver Grimtooth" */
 #define is_malleable_artifact(a) (is_nameable_artifact((a)) || (a) == &artilist[ART_EXCALIBUR] || (a) == &artilist[ART_DIRGE])
 
-#define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || (obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR)
+#define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || \
+		(obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR)
 
 #define is_mastery_artifact_nameable(a) (\
             /* Mastery artifacts */\

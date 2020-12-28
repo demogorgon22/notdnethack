@@ -2192,3 +2192,29 @@ struct monst *magr;
 	}
 	return FALSE;
 }
+
+boolean
+adjacent_targets(magr)
+struct monst *magr;
+{
+	struct monst *mon;
+	int x = x(magr),
+		y = y(magr);
+	boolean youagr = (magr == &youmonst);
+	
+	if(!youagr && !magr->mpeaceful)
+		if(distmin(x, y, u.ux, u.uy) <= 1)
+			return TRUE;
+	
+	for(mon = fmon;mon;mon = mon->nmon){
+		if(DEADMONSTER(mon))
+			continue;
+		if(youagr && mon->mpeaceful)
+			continue;
+		if(!youagr && (mon->mpeaceful == magr->mpeaceful))
+			continue;
+		if(distmin(x, y, mon->mx, mon->my) <= 1)
+			return TRUE;
+	}
+	return FALSE;
+}

@@ -256,6 +256,29 @@ nextobuf()
 }
 
 const char *
+socketed_text(otmp)
+struct obj *otmp;
+{
+	if(!otmp->cobj)
+		return "empty socketed ";
+	/*
+	switch(otmp->cobj->oartifact){
+		case ART_BLACK_CRYSTAL:
+			return "black crystal socketed ";
+		case ART_FIRE_CRYSTAL:
+			return "fire crystal socketed ";
+		case ART_WATER_CRYSTAL:
+			return "water crystal socketed ";
+		case ART_AIR_CRYSTAL:
+			return "air crystal socketed ";
+		case ART_EARTH_CRYSTAL:
+			return "earth crystal socketed ";
+	}*/
+
+
+}
+
+const char *
 lightsaber_colorText(otmp)
 struct obj *otmp;
 {
@@ -1211,6 +1234,9 @@ char *buf;
 		if (!objects[obj->otyp].oc_name_known && strncmpi(eos(buf)-7, " bladed", 7))
 			Strcat(buf, " bladed");
 		Strcat(buf, " ");
+	}
+	if(arti_socketed(obj)){
+		Strcat(buf, socketed_text(obj));
 	}
 }
 /* general function to find the best name for the material of an object, regardless of whether or not that will be visible 

@@ -407,6 +407,44 @@ struct obj * otmp;
 	return artival;
 }
 
+
+static int
+get_crystal_oprop(obj)
+struct obj *obj;
+{
+	if(!obj || !is_chaos_orb(obj)){
+		impossible("called get_crystal_oprop without a crystal?");
+		return 0;
+	}
+	switch(obj->oartifact){
+		case ART_BLACK_CRYSTAL:
+			return OPROP_MAGCW;
+		case ART_FIRE_CRYSTAL:
+			return OPROP_FIREW;
+		case ART_WATER_CRYSTAL:
+			return OPROP_WATRW;
+		case ART_AIR_CRYSTAL:
+			return OPROP_ELECW;
+		case ART_EARTH_CRYSTAL:
+			return OPROP_FLAYW;
+	}
+}
+
+
+void
+toggle_socketed(container, crystal, toggle)
+struct obj *container;
+struct obj *crystal;
+boolean toggle;
+{
+	int oprop = get_crystal_oprop(crystal);
+	if(toggle)
+		add_oprop(container,oprop);
+	else
+		remove_oprop(container,oprop);
+
+}
+
 /*
    Make an artifact.  If a specific alignment is specified, then an object of
    the appropriate alignment is created from scratch, or 0 is returned if
@@ -1196,6 +1234,13 @@ arti_plusten(obj)
 struct obj *obj;
 {
     return (obj && obj->oartifact && arti_is_prop(obj, ARTI_PLUSTEN));
+}
+
+boolean
+arti_socketed(obj)
+struct obj *obj;
+{
+    return (obj && obj->oartifact && arti_is_prop(obj, ARTI_SOCKETED));
 }
 
 /* used to check if a monster is getting reflection from this object */
@@ -9702,6 +9747,10 @@ dosymbiotic_equip()
 		doliving(&youmonst, uarms);
 	if(uarm && ((check_oprop(uarm, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uarm) ))
 		doliving(&youmonst, uarm);
+	for (obj = invent; obj; obj = obj->nobj){
+		if(is_chaos_orb(obj))
+			doliving(&youmonst,obj);
+	}
 	
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 		if(DEADMONSTER(mtmp))
@@ -9722,6 +9771,11 @@ dosymbiotic_equip()
 		obj = which_armor(mtmp, W_ARM);
 		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
+	
+		for (obj = mtmp->minvent; obj; obj = obj->nobj){
+			if(is_chaos_orb(obj))
+				doliving(mtmp,obj);
+		}
 	}
 }
 

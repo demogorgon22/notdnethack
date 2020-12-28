@@ -702,6 +702,7 @@ struct obj {
 				|| (otmp)->oartifact == ART_PEACE_KEEPER\
 				|| (otmp)->oartifact == ART_OGRESMASHER\
 				|| (otmp)->oartifact == ART_TROLLSBANE\
+				|| (otmp)->oartifact == ART_SASUKE_S_BLADE\
 				|| (otmp)->oartifact == ART_PEN_OF_THE_VOID)
 				
 /* Eggs and other food */

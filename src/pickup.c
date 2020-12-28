@@ -7,6 +7,7 @@
  */
 
 #include "hack.h"
+#include "artifact.h"
 
 STATIC_DCL void FDECL(simple_look, (struct obj *,BOOLEAN_P));
 #ifndef GOLDOBJ
@@ -40,7 +41,9 @@ STATIC_DCL int FDECL(container_at, (int, int, BOOLEAN_P));
 STATIC_DCL boolean FDECL(able_to_loot, (int, int, boolean));
 STATIC_DCL boolean FDECL(mon_beside, (int, int));
 STATIC_DCL int FDECL(use_lightsaber, (struct obj *));
+STATIC_DCL int FDECL(use_socketed, (struct obj *));
 STATIC_DCL char NDECL(pick_gemstone);
+STATIC_DCL char NDECL(pick_crystal);
 STATIC_DCL char NDECL(pick_bullet);
 STATIC_DCL struct obj * FDECL(pick_creatures_armor, (struct monst *, int *));
 STATIC_DCL struct obj * FDECL(pick_armor_for_creature, (struct monst *));
@@ -1532,7 +1535,7 @@ boolean countem;
 		nobj = cobj->nexthere;
 		if(Is_container(cobj) || 
 			(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA) ||
-			(cobj->otyp == MASS_SHADOW_PISTOL)
+			(cobj->otyp == MASS_SHADOW_PISTOL) || arti_socketed(cobj)
 		) {
 			container_count++;
 			if (!countem) break;
@@ -1593,6 +1596,9 @@ boolean noit;
 {
     if (!cobj) return 0;
 
+    	if(arti_socketed(cobj)){
+		return use_socketed(cobj);
+	}
 	if(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA){
 		You("carefully open %s...",the(xname(cobj)));
 		return use_lightsaber(cobj);
@@ -1730,6 +1736,13 @@ lootcont:
 					You("carefully open %s...", the(xname(cobj)));
 					timepassed |= use_container(cobj, 0);
 					if (multi < 0) return 1;		/* chest trap */
+			    } else if(arti_socketed(cobj)){
+					Sprintf(qbuf, "There is %s here, open it?",an(xname(cobj)));
+					c = ynq(qbuf);
+					if (c == 'q') return (timepassed);
+					if (c == 'n') continue;
+					timepassed |= use_socketed(cobj);
+					if(timepassed) underfoot = TRUE;
 			    } else if(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA){
 					Sprintf(qbuf, "There is %s here, open it?",an(xname(cobj)));
 					c = ynq(qbuf);
@@ -2581,6 +2594,41 @@ boolean past;
 #undef Icebox
 STATIC_OVL
 char
+pick_crystal()
+{
+	winid tmpwin;
+	int n=0, how,count=0;
+	char buf[BUFSZ];
+	struct obj *otmp;
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	
+	Sprintf(buf, "Crystals");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(is_chaos_orb(otmp)){
+			Sprintf1(buf, doname(otmp));
+			any.a_char = otmp->invlet;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				otmp->invlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			count++;
+		}
+	}
+	end_menu(tmpwin, "Choose new socket crystal:");
+
+	how = PICK_ONE;
+	if(count) n = select_menu(tmpwin, how, &selected);
+	else You("don't have any chaos crystals.");
+	destroy_nhwindow(tmpwin);
+	return ( n > 0 ) ? selected[0].item.a_char : 0;
+}
+STATIC_OVL
+char
 pick_gemstone()
 {
 	winid tmpwin;
@@ -2771,6 +2819,40 @@ struct monst *mon;
 	} else pline("Nothing to equip!");
 	destroy_nhwindow(tmpwin);
 	return ( n > 0 ) ? selected[0].item.a_obj : 0;
+}
+
+STATIC_OVL int
+use_socketed(obj)
+register struct obj *obj;
+{
+	struct obj *otmp;
+	char orblet;
+	if(obj->cobj){
+		char qbuf[BUFSZ];
+		Sprintf(qbuf,"Remove %s from %s?", the(xname(obj->cobj)), xname(obj));
+		if(yn(qbuf) == 'y'){
+			current_container = obj;
+			if(obj->cobj->oartifact == obj->oartifact)
+				obj->oartifact = 0;
+			toggle_socketed(obj,obj->cobj,FALSE);
+			out_container(obj->cobj);
+			current_container = 0;
+			return 1;
+		} return 0;
+	}
+	orblet = pick_crystal();
+	
+	for (otmp = invent; otmp; otmp = otmp->nobj) {
+		if(otmp->invlet == orblet) break;
+	}
+	if(otmp){
+		current_container = obj;
+		if(!obj->cobj){
+			in_container(otmp);
+			toggle_socketed(obj,otmp,TRUE);
+		}
+		return 1;
+	} else return 0;
 }
 
 STATIC_OVL int
