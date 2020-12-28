@@ -2951,6 +2951,11 @@ int n;	/* number to try to fire */
 		qvr->cursed = 1;
 		rngmod = 8;
 		break;
+	case AD_ROCK:
+		ammo_type = ROCK;
+		qvr = mksobj(ammo_type, FALSE, FALSE);
+		rngmod = 8;
+		break;
 	case AD_BLDR:
 		ammo_type = BOULDER;
 		qvr = mksobj(ammo_type, FALSE, FALSE);

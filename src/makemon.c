@@ -10637,6 +10637,7 @@ int type;
 		case PM_LIVING_DOLL: return 45+d(5,8);
 		case PM_PARASITIZED_DOLL: return 45+d(20,8);
 		case PM_FORD_GUARDIAN: return 135;//Max HP
+		case PM_MARIONETTE: return 200;
 //		case PM_HEAD_OF_THE_UNKNOWN_GOD: return 65;
 //		case PM_BODY_OF_THE_UNKNOWN_GOD: return 65;
 //		case PM_LEGS_OF_THE_UNKNOWN_GOD: return 65;

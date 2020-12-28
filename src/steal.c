@@ -58,9 +58,11 @@ register struct monst *mtmp;
 	    u.ugold -= (tmp = somegold());
 	    Your("purse feels lighter.");
 	    mtmp->mgold += tmp;
-	if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
-	    mtmp->mavenge = 1;
-	    monflee(mtmp, 0, FALSE, FALSE);
+	if(mtmp->mtyp != PM_FAFNIR){
+		if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+		mtmp->mavenge = 1;
+		monflee(mtmp, 0, FALSE, FALSE);
+	}
 	    flags.botl = 1;
 	}
 }

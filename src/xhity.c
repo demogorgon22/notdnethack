@@ -4502,6 +4502,37 @@ boolean ranged;
 			}
 		}
 		return result;
+	case AD_RNBW:
+		/* make physical attack */
+		alt_attk.adtyp = AD_DISE;
+		result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		/* return early if cannot continue the attack */
+		if (result&(MM_DEF_DIED|MM_DEF_LSVD))
+			return result;
+
+		if (notmcan && (youagr || !magr->mspec_used)) {
+			/* put on cooldown */
+			if (!youagr)
+				magr->mspec_used = magr->mspec_used + (dmg + rn2(6));
+
+			if (youdef) {
+				if (!hallucinogenic(pd)) {
+					boolean chg;
+					chg = make_hallucinated(HHallucination + (long)dmg, FALSE, 0L);
+					//You("%s.", chg ? "are freaked out" : "seem unaffected");
+					You_feel("the rainbow connection!");
+				}
+			}
+			/* monsters get confused by AD_HALU */
+			else {
+				if (vis&VIS_MDEF)
+					pline("%s looks confused.", Monnam(mdef));
+
+				mdef->mconf = 1;
+				mdef->mstrategy &= ~STRAT_WAITFORU;
+			}
+		}
+		return result;
 
 	case AD_SLOW:
 		/* make physical attack */
@@ -6386,7 +6417,7 @@ boolean ranged;
 						Strcpy(buf, Monnam(magr));
 						pline("%s steals some gold from %s.", buf, mon_nam(mdef));
 					}
-					if (!tele_restrict(magr)) {
+					if (!tele_restrict(magr) && magr->mtyp != PM_FAFNIR) {
 						(void)rloc(magr, FALSE);
 						result |= MM_AGR_STOP;
 						if (vis && !canspotmon(magr))
@@ -7278,6 +7309,25 @@ boolean ranged;
 		}
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
+	case AD_YANK:{
+		coord mm;
+		mm.x = magr->mx; mm.y = magr->my;
+		//Only try to drag if they aren't adjacent
+		if(distmin(magr->mx,magr->my,mdef->mx,mdef->my) > 1){
+			if(enexto(&mm, magr->mx, magr->my, mdef->data)){
+				if(youdef){
+					pline("%s's wires yank you towards %s!", Monnam(magr),mhim(magr));
+					teleds(mm.x,mm.y, FALSE);	
+				} else {
+					pline("%s's wires yank %s towards %s!", Monnam(magr), mon_nam(mdef), mhim(magr));
+					rloc_to(mdef,mm.x,mm.y);
+				}
+				return MM_AGR_STOP;
+			}
+		}
+		/* if that failed, make a physical attack instead */
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
 	case AD_TELE:
 		/* hitter tries to teleport without making an attack */
 		if (!youagr) {
@@ -7298,6 +7348,7 @@ boolean ranged;
 		/* if that failed, make a physical attack instead */
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+	}
 
 	case AD_AXUS:
 		/* fancy hitmsg */
@@ -8015,6 +8066,7 @@ boolean ranged;
 	case AD_SURY:
 	case AD_LOAD:
 	case AD_SOLR:
+	case AD_ROCK:
 		/* missiles (completely unused) */
 	case AD_CMSL:
 	case AD_FMSL:
@@ -9515,6 +9567,7 @@ boolean * needs_uncancelled;
 	case AD_SSEX:
 	case AD_SEDU:
 	case AD_VAMP:
+	case AD_DRIN:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, TRUE);
 		break;
@@ -9618,6 +9671,7 @@ int vis;
 	case AD_RETR:
 		adtyp = elementalgazeattacks[rn2(SIZE(elementalgazeattacks))];
 		break;
+	case AD_DRIN:
 	case AD_WISD:
 		if (!youdef)
 			adtyp = AD_CONF;
@@ -10709,6 +10763,42 @@ int vis;
 		}
 		break;
 
+	case AD_DRIN:
+		/* cancels if no damage? */
+		if (!dmg)
+			return MM_MISS;
+		/* non-players should get hit by a basic confusion gaze */
+		/* that swap should have happened already */
+		if (!youdef) {
+			impossible("AD_DRIN gaze not being swapped out vs non-player?");
+			return MM_MISS;
+		}
+		/* put on cooldown */
+		/* In practice, this will be zeroed when a new movement ration is handed out, and acts to make sure this can only be used once per round. */
+		if (!youagr) {
+			if (magr->mspec_used)
+				return MM_MISS;
+			else
+				magr->mspec_used = 4;
+		}
+
+		/* assumes only player defending now */
+		 if (vis&VIS_MAGR){
+			pline("%s gazes sharply at you.",Monnam(magr));
+		 }
+		You_feel("stupid!");
+		if (u.sealsActive&SEAL_HUGINN_MUNINN){
+			unbind(SEAL_HUGINN_MUNINN, TRUE);
+		}
+		else {
+			while (!(ABASE(A_INT) <= ATTRMIN(A_INT)) && dmg > 0) {
+				dmg--;
+				(void)adjattrib(A_INT, -1, TRUE);
+				exercise(A_INT, FALSE);
+			}
+		}
+		break;
+
 	case AD_WISD:
 		/* cancels if no damage? */
 		if (!dmg)
@@ -10729,7 +10819,13 @@ int vis;
 		}
 
 		/* assumes only player defending now */
-		pline("Blasphemous geometries assault your sanity!");
+		if(pa->mtyp == PM_HUGINN){
+			 if (vis&VIS_MAGR){
+				pline("%s gazes sharply at you.",Monnam(magr));
+			 }
+			Your("ability to reason weakens!");
+		}else
+			pline("Blasphemous geometries assault your sanity!");
 		if (u.sealsActive&SEAL_HUGINN_MUNINN){
 			unbind(SEAL_HUGINN_MUNINN, TRUE);
 		}
@@ -10737,14 +10833,16 @@ int vis;
 			while (!(ABASE(A_WIS) <= ATTRMIN(A_WIS)) && dmg > 0) {
 				dmg--;
 				(void)adjattrib(A_WIS, -1, TRUE);
-				change_usanity(-1);
-				forget(10);	/* lose 10% of memory per point lost*/
+				if(pa->mtyp != PM_HUGINN){
+					change_usanity(-1);
+					forget(10);	/* lose 10% of memory per point lost*/
+				}
 				exercise(A_WIS, FALSE);
 				/* Great Cthulhu permanently drains wisdom */
 				if ((pa->mtyp == PM_GREAT_CTHULHU) && (AMAX(A_WIS) > ATTRMIN(A_WIS)))
 					AMAX(A_WIS) -= 1;
 			}
-			if (dmg > 0) {
+			if (dmg > 0 && pa->mtyp != PM_HUGINN) {
 				You("tear at yourself in horror!"); //assume always able to damage self
 				change_usanity(-1*dmg);
 				xdamagey(magr, mdef, attk, dmg*10);

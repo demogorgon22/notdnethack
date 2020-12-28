@@ -1028,6 +1028,12 @@ register struct monst *mtmp;
 				obj = mksobj_at(LEATHER_ARMOR, x, y, TRUE, FALSE);
 			rem_mx(mtmp, MX_ENAM);
 		break;
+	    case PM_MARIONETTE:
+			num = d(2,4);
+			while(num--)
+				obj = mksobj_at(GRAPPLING_HOOK, x, y, TRUE, FALSE);
+			rem_mx(mtmp, MX_ENAM);
+		break;
 	    case PM_GOLD_GOLEM:
 			/* Good luck gives more coins */
 			obj = mkgold((long)(200 - rnl(101)), x, y);
@@ -4616,6 +4622,9 @@ boolean was_swallowed;			/* digestion */
 				else explode(mon->mx, mon->my, AD_PHYS, MON_EXPLODE, tmp, EXPL_MUDDY, 1);
 			} else if(mdat->mattk[i].adtyp == AD_NUKE){
 				explode(mon->mx, mon->my, AD_NUKE, MON_EXPLODE, tmp, EXPL_MUDDY, 2);
+			} else if(mdat->mattk[i].adtyp == AD_JACK){
+				explode(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 5);
+				return TRUE;
 			} else if(mdat->mattk[i].adtyp == AD_FIRE){
 				//mdat->mtyp == PM_BALROG || mdat->mtyp == PM_MEPHISTOPHELES || mdat->mtyp == PM_FLAMING_SPHERE){
 				explode(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 1);
