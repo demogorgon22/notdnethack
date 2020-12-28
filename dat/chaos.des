@@ -829,7 +829,7 @@ STAIR:(58,09),up
 STAIR:(58,11),down
 
 CONTAINER: '(', "chest"  , (04,08)
-OBJECT:'#',"blessed +3 anarchic-weapon katana named Sasuke's Blade", contained
+OBJECT:')',"katana", contained, blessed, +3, "Sasuke's Blade"
 
 CONTAINER: '(', "chest"  , (18,18)
 OBJECT:'!',"full healing", contained, blessed, 0
