@@ -3100,6 +3100,8 @@ winid *datawin;
 	/* Enchantment limit */
 	if (obj && arti_plusten(obj))
 		OBJPUTSTR("Holds enchantments extremely well.");
+	if (obj && arti_socketed(obj))
+		OBJPUTSTR("Can hold a chaos crystal.");
 	if (olet == FOOD_CLASS) {
 		if (otyp == TIN) {
 			if (obj && obj->known)

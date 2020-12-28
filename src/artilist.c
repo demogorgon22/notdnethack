@@ -1279,7 +1279,7 @@ A("Werebuster",						LONG_SWORD,				(const char *)0,
 	ATTK(AD_PHYS, 10, 20), (ARTA_HATES),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, NOFLAG
+	NOINVOKE, (ARTI_SOCKETED)
 	),
 
 A("Sasuke's Blade",						KATANA,				(const char *)0,
@@ -1289,7 +1289,7 @@ A("Sasuke's Blade",						KATANA,				(const char *)0,
 	ATTK(AD_PHYS, 3, 8), (ARTA_HATES|ARTA_CROSSA),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, NOFLAG
+	NOINVOKE, (ARTI_SOCKETED)
 	),
 
 /*Needs encyc entry*/
@@ -1300,7 +1300,7 @@ A("Masamune",						TSURUGI,				(const char *)0,
 	ATTK(AD_PHYS, 3, 8), (ARTA_SILVER|ARTA_HATES|ARTA_CROSSA),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
-	BLESS, NOFLAG
+	BLESS, (ARTI_SOCKETED)
 	),
 
 /*from Final Fantasy*/

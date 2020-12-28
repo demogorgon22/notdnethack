@@ -72,6 +72,7 @@
 #define ARTI_SPEAK		0x0100L /* speaks rumours */
 #define ARTI_LUCK		0x0200L /* acts as a luckstone */
 #define ARTI_PLUSTEN	0x0400L /* can be enchanted to plus 10 */
+#define ARTI_SOCKETED	0x0800L /* is socketed and can attach a chaos orb */
 
 //#define SPFX2_NINJA		0x0000008L	/* throws from 1-your skill level ninja stars after each attack */
 //#define SPFX3_CARCAP	0x0000020L	/* increases carrying capacity when carried */
