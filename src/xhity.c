@@ -4883,8 +4883,60 @@ boolean ranged;
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
-	case AD_WET:
 	case AD_LETHE:
+		/* very asymetric effects */
+		if (youdef) {
+			if(magr->mtyp == PM_OSE) pline("The waters of a drowned city wash over you!");
+			else pline("The waters of the Lethe wash over you!");
+			if (u.sealsActive&SEAL_HUGINN_MUNINN){
+				unbind(SEAL_HUGINN_MUNINN, TRUE);
+			}
+			else {
+				(void)adjattrib(A_INT, -dmg, FALSE);
+				forget(5);
+				water_damage(invent, FALSE, FALSE, TRUE, &youmonst);
+				exercise(A_WIS, FALSE);
+			}
+			if (ABASE(A_INT) <= 3) {
+				int lifesaved = 0;
+				struct obj *wore_amulet = uamul;
+
+				while (1) {
+					/* avoid looping on "die(y/n)?" */
+					if (lifesaved && (discover || wizard)) {
+						if (wore_amulet && !uamul) {
+							/* used up AMULET_OF_LIFE_SAVING; still
+							subject to dying from brainlessness */
+							wore_amulet = 0;
+						}
+						else {
+							/* explicitly chose not to die;
+							arbitrarily boost intelligence */
+							ABASE(A_INT) = ATTRMIN(A_INT) + 2;
+							You_feel("like a scarecrow.");
+							break;
+						}
+					}
+					if (lifesaved)
+						pline("Unfortunately your mind is still gone.");
+					else
+						Your("last thought drifts away.");
+					killer = "memory loss";
+					killer_format = KILLED_BY;
+					done(DIED);
+					lifesaved++;
+					result |= MM_DEF_LSVD;
+				}
+			}
+		}
+		else {
+			if (vis&VIS_MDEF)
+				pline("%s is soaking wet!", Monnam(mdef));
+			water_damage(mdef->minvent, FALSE, FALSE, TRUE, mdef);
+		}
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
+	case AD_WET:
 		/* print hitmessage */
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);

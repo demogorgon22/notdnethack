@@ -9003,6 +9003,7 @@ register int	mmflags;
 		case S_NYMPH:
 			if (rn2(5) && !u.uhave.amulet 
 				&& mndx != PM_NIMUNE && mndx != PM_INTONER && mndx != PM_AGLAOPE 
+				&& mndx != PM_EURYNOME && mndx != PM_ECHIDNA
 				&& !(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))
 			){
 				mtmp->msleeping = 1;
