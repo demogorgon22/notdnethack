@@ -235,6 +235,18 @@
 #define real_spell_adtyp(adtyp) \
 	((adtyp) == AD_SPEL || (adtyp) == AD_CLRC || (adtyp) == AD_PSON)
 
+
+/*
+ *  Special fun bitmasks for Numina attack
+ *  */
+
+#define WH_NONE		0x00000000L
+#define WH_GENO		0x00000001L
+#define WH_OPOLY	0x00000002L
+#define WH_UPOLY	0x00000004L
+#define WH_WISH		0x00000008L
+#define WH_AWISH	0x00000010L
+
 /*
  *  Monster to monster attacks.  When a monster attacks another (mattackm),
  *  any or all of the following can be returned.  See mattackm() for more

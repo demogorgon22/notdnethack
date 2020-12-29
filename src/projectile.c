@@ -2964,6 +2964,11 @@ int n;	/* number to try to fire */
 		qvr = mksobj(ammo_type, FALSE, FALSE);
 		rngmod = 8;
 		break;
+	case AD_CRYS:
+		ammo_type = DILITHIUM_CRYSTAL;
+		qvr = mksobj(ammo_type, FALSE, FALSE);
+		rngmod = 8;
+		break;
 	case AD_BLDR:
 		ammo_type = BOULDER;
 		qvr = mksobj(ammo_type, FALSE, FALSE);

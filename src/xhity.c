@@ -4684,6 +4684,101 @@ boolean ranged;
 				/* not implemented vs monsters */;
 		}
 		return result;
+	case AD_WHIS:
+		if(youdef){
+			pline("Whispers surround you!");
+			long effects = WH_NONE;
+			long rchosen = WH_NONE;
+			struct obj *otmp;
+			if(num_genocides()) effects |= WH_GENO;
+			if(u.uconduct.polypiles) effects |= WH_OPOLY;
+			if(u.uconduct.polyselfs) effects |= WH_UPOLY;
+			if(u.uconduct.wishes) effects |= WH_WISH;
+			if(u.uconduct.wisharti) effects |= WH_AWISH;
+			if(effects == WH_NONE){
+				pline ("But nothing happens!");
+			} else { /*Maybe you should have played better*/
+				rchosen = (1 << rn2(WH_AWISH));
+				while(!(effects&rchosen)){
+					rchosen = (1 << rn2(WH_AWISH));
+				}
+				switch(rchosen){
+					case WH_GENO:
+						pline("They start mocking you!");
+						You("lash out!");
+						struct monst *mtmp;
+					        for (mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+							if(!DEADMONSTER(mtmp) && mtmp->mtame && !rn2(2)){ /*50% chance of untaming each pet*/
+								untame(mtmp, 0);
+								pline("%s strikes back!",Monnam(mtmp));
+							}
+						}	
+					break;
+					case WH_OPOLY:
+						pline("They begin commenting on your inventory.");
+						for(otmp = invent; otmp; otmp=otmp->nobj){
+							if(!(rnl(20)<15)){/*-13 luck, 21% chance to avoid, 0 luck, 75% chance to avoid, 99% chance at like 10 and up*/
+								if(obj_resists(otmp,0,95)) continue;
+								Your("%s shift%s shape!",xname(otmp),otmp->quan>1?"":"s");
+								otmp = poly_obj(otmp, STRANGE_OBJECT);	
+							}
+				        	}
+					break;
+					case WH_UPOLY:
+						if(!Unchanging && uncancelled){
+							pline("They begin speaking alien languages.");
+							polyself(FALSE);
+						}
+					break;
+					case WH_WISH:
+						You("hear the wrath of the envious.");
+						explode(u.ux, u.uy, AD_MAGM, MON_EXPLODE, dmg, EXPL_MAGICAL, 1);
+					break;
+					case WH_AWISH:
+						You("hear chatter of ancient treasures.");
+						for(otmp = invent; otmp; otmp=otmp->nobj){/*disenchant your artis*/
+							if(otmp->oartifact && otmp->spe>-4){
+								Your("%s seems less effective!",xname(otmp));
+								otmp->spe--;
+							}
+				        	}
+					break;
+					default:
+						impossible("Unknown AD_WHIS attack roll?");
+					break;
+
+				}
+			}
+			if(DEADMONSTER(magr))
+				return MM_HIT|MM_AGR_DIED;
+			return MM_HIT;
+		} else {
+			/* make physical attack as monsters cannot possibly understand these whispers*/
+			alt_attk.adtyp = AD_PHYS;
+			return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		}
+		break;
+	case AD_NUDZ:{
+		explode(magr->mx,magr->my,AD_PHYS,MON_EXPLODE,dmg,HI_SILVER,1);
+		if (!youdef && DEADMONSTER(mdef))
+			return (MM_HIT|MM_DEF_DIED);
+		else{
+			if(DEADMONSTER(magr))
+				return MM_HIT|MM_AGR_DIED;
+			return MM_HIT;
+		}
+	}
+	case AD_COSM:{
+		
+		struct monst *mtmp2 = makemon(&mons[PM_AHAZU + rn2(31)], magr->mx, magr->my, MM_ADJACENTOK | MM_NOCOUNTBIRTH);
+		if(mtmp2){
+			pline("Whispering crystals coalesce into the memories of %s!",mon_nam(mtmp2));
+			mtmp2->mvanishes = 10;
+		}
+
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+	}
 
 	case AD_ALIG:
 		if(youdef){
