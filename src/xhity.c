@@ -4685,6 +4685,40 @@ boolean ranged;
 		}
 		return result;
 
+	case AD_ALIG:
+		if(youdef){
+			if(u.ualign.record > 0){
+			       	dmg += d(1,u.ualign.record);/*1dalignment, first hit could be pretty big after that its chill -- is it now? i doubt that*/
+				u.ualign.record -= 10;
+			}
+			if(uarmh && uarmh->otyp == HELM_OF_OPPOSITE_ALIGNMENT) {
+
+			} else {
+				if(uarmh){
+					Helmet_off();
+				}	
+				struct obj *otmp;
+				otmp = mksobj(HELM_OF_OPPOSITE_ALIGNMENT, TRUE, FALSE);		
+				curse(otmp);
+				otmp->spe = -6;
+				pline("%s dons you with a new cap.",Monnam(magr));
+				(void) hold_another_object(otmp, u.uswallow ?
+				   "Fortunately, you're out of reach! %s away." :
+				   "Fortunately, you can't hold anything more! %s away.",
+				   The(aobjnam(otmp,
+						 Weightless || u.uinwater ?
+						   "slip" : "drop")),
+				   (const char *)0);
+				if(carried(otmp)){
+					setworn(otmp,W_ARMH);
+					Helmet_on();
+				}	
+			}
+		}
+		/* make physical attack */
+		alt_attk.adtyp = AD_PHYS;
+		result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		return result;
 	case AD_POLY:
 		/* make physical attack */
 		alt_attk.adtyp = AD_PHYS;
@@ -14684,6 +14718,28 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 							else
 								result |= MM_AGR_DIED;
 						}
+					}
+				}
+				break;
+			case AD_POLY:
+				/* polymorph? */
+				if (!(youagr ? Unchanging : mon_resistance(magr, UNCHANGING))
+					&& !(is_rider(pa) || resists_poly(pa))
+					){
+					/* forced polyself */
+					if (youagr) {
+						Your("DNA has been altered!");
+						polyself(FALSE);
+						result |= MM_AGR_STOP;
+						if (rnd(100) < 15){
+							Your("cellular structure degenerates.");
+							losexp("cellular degeneration", TRUE, TRUE, FALSE);
+						}
+					}
+					/* monsters only polymorph; never system shock or degenerate */
+					else {
+						newcham(magr, NON_PM, FALSE, vis);
+						result |= MM_AGR_STOP;
 					}
 				}
 				break;
