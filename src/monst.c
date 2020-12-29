@@ -7210,7 +7210,7 @@ is a red right hand
 	MA_DEMON /*MA*/,  MV_CATSIGHT|MV_INFRAVISION /*MV*/, HI_ZAP),
     MON("Simurgh", S_BAT,//feathers that can be used to get help or light source
 	LVL(38, 20, -4, 30, 0), (G_NOGEN|G_NOCORPSE|G_UNIQ),
-	A(ATTK(AT_BITE, AD_PHYS, 5, 5), ATTK(AT_CLAW, AD_PHYS, 5, 5),
+	A(ATTK(AT_BITE, AD_PHYS, 5, 5), ATTK(AT_CLAW, AD_SIMURGH, 5, 5),
 	  NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
 	SIZ(WT_LARGE, 400, MS_SONG, MZ_LARGE), MR_STONE|MR_SLEEP, 0,
 	MM_FLY /*MM*/, MT_WANDER|MT_ANIMAL|MT_HERBIVORE|MT_HOSTILE /*MT*/, 0 /*MF*/,

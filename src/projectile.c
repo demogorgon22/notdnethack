@@ -727,6 +727,14 @@ struct obj * thrownobj;			/* Projectile object. Must be free. Will no longer exi
 			youagr);
 		obfree(thrownobj, (struct obj *)0);
 		break;
+	case BOULDER:
+		if(magr && magr->mtyp == PM_YMIR){
+			explode(bhitpos.x, bhitpos.y, AD_DRST, WEAPON_CLASS,
+				d(3, 10), EXPL_NOXIOUS, 1);
+			create_gas_cloud(bhitpos.x, bhitpos.y, 2, d(2,4),youagr);
+		}
+		obfree(thrownobj, (struct obj *)0);
+		break;
 
 	default:
 		obfree(thrownobj, (struct obj *)0);
