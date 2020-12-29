@@ -7312,8 +7312,16 @@ boolean ranged;
 	case AD_YANK:{
 		coord mm;
 		mm.x = magr->mx; mm.y = magr->my;
+		int x,y;
+		if(youdef){
+			x = u.ux;
+			y = u.uy;
+		} else{
+			x = mdef->mx;
+			y = mdef->my;
+		}
 		//Only try to drag if they aren't adjacent
-		if(distmin(magr->mx,magr->my,mdef->mx,mdef->my) > 1){
+		if(distmin(magr->mx,magr->my,x,y) > 1){
 			if(enexto(&mm, magr->mx, magr->my, mdef->data)){
 				if(youdef){
 					pline("%s's wires yank you towards %s!", Monnam(magr),mhim(magr));
@@ -7326,8 +7334,13 @@ boolean ranged;
 			}
 		}
 		/* if that failed, make a physical attack instead */
+		if(youdef){
+			pline("%s's wires rip at your flesh!", Monnam(magr));
+		} else {
+			pline("%s's wires rip at flesh of %s!", Monnam(magr),the(mon_nam(mdef)));
+		}
 		alt_attk.adtyp = AD_PHYS;
-		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 	case AD_TELE:
 		/* hitter tries to teleport without making an attack */
 		if (!youagr) {
@@ -8929,6 +8942,14 @@ int vis;
 			}
 		}
 		/* deal damage (which can be 0 gracefully) */
+		result = xdamagey(magr, mdef, attk, dmg);
+		break;
+	case AD_SHDW:
+		if(youdef){
+			You("are slashed by shadows from the darkness!");
+		} else {
+			pline("%s is slashed by shadows from the darkness!",Monnam(mdef));
+		}
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
 	case AD_ACID:

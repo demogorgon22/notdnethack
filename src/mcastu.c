@@ -522,6 +522,8 @@ unsigned int type;
        case PM_KI_RIN:
            return FIRE_PILLAR;
 
+       case PM_PAIMON:
+           if (rn2(3)) return MAGM_BLAST;
        case PM_ARCH_LICH:
            if (!rn2(6)) return TURN_TO_STONE;
        /* fallthrough */
@@ -1644,8 +1646,9 @@ const char * spellname[] =
 	"TIME_DUPLICATE",
 	"NAIL_TO_THE_SKY",
 	"STERILITY_CURSE"
-	"DISINT_RAY"
+	"DISINT_RAY",
 	//75
+	"MAGM_BLAST"
 };
 
 
@@ -3360,6 +3363,7 @@ int tary;
 // AOE OFFENSE
 //////////////////////////////////////////////////////////////////////////////////////
 	case ACID_BLAST:
+	case MAGM_BLAST:
 	case MON_FIRA:
 	case MON_FIRAGA:
 	case MON_BLIZZARA:
@@ -3395,6 +3399,10 @@ int tary;
 				adtyp = AD_ELEC;
 				color = EXPL_MAGICAL;
 				break;
+			case MAGM_BLAST:
+				adtyp = AD_MAGM;
+				color = EXPL_MAGICAL;
+				break;
 			}
 			/* cap damage to 60 per explosion (30 for triple) */
 			if (dmg > 60)
@@ -3428,7 +3436,6 @@ int tary;
 			dmg = 0;
 		}
 		return MM_HIT | ((mdef && !youdef && DEADMONSTER(mdef)) ? MM_DEF_DIED : 0);
-
 	case PRISMATIC_SPRAY:
 		if (!(tarx || tary)) {
 			impossible("prismatic spray with no target location?");
@@ -4872,6 +4879,7 @@ int spellnum;
 	switch (spellnum)
 	{
 	case ACID_BLAST:
+	case MAGM_BLAST:
 	case MON_FIRA:
 	case MON_FIRAGA:
 	case MON_BLIZZARA:
