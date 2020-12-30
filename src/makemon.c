@@ -3594,7 +3594,7 @@ register struct monst *mtmp;
 				spe2 = 3;
 			    otmp->spe = max(otmp->spe, spe2);
 			    (void) mpickobj(mtmp, otmp);
-			} else {
+			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIARTH){
 				int artnum = rn2(8);
 	
 			    /* create minion stuff; can't use mongets */
@@ -7848,7 +7848,7 @@ register struct	monst	*mtmp;
 		}
 		case PM_BUER:{
 			struct obj *otmp = mksobj(AMULET_OF_LIFE_SAVING, TRUE, FALSE); //super healing thing (ok made amulet of not dying or stat screws and regen)
-			//otmp = oname(otmp, artiname(ART_TALISMAN_OF_BUER));
+			otmp = oname(otmp, artiname(ART_TALISMAN_OF_BUER));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp,otmp);
@@ -7857,7 +7857,8 @@ register struct	monst	*mtmp;
 		}
 		case PM_CHUPOCLOPS:{
 			struct obj *otmp;
-			for(int i = 0;i < 40; i++){
+			int i;
+			for(i = 0;i < 40; i++){
 				otmp = mksobj(EGG, TRUE, FALSE);
 				otmp->corpsenm = PM_GIANT_SPIDER;
 				attach_egg_hatch_timeout(otmp);
@@ -7868,7 +7869,7 @@ register struct	monst	*mtmp;
 		case PM_DANTALION:{
 			struct obj *otmp;
 			otmp = mksobj(TWO_HANDED_SWORD, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_DREAD_OF_DANTALION));
+			otmp = oname(otmp, artiname(ART_DREAD_OF_DANTALION));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			otmp->spe = 3;
@@ -7906,7 +7907,7 @@ register struct	monst	*mtmp;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp, otmp);
 			otmp = mksobj(MASK, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_STONE_MASK));
+			otmp = oname(otmp, artiname(ART_STONE_MASK));
 			otmp->corpsenm = PM_SHIRO;
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
@@ -7926,7 +7927,7 @@ register struct	monst	*mtmp;
 		case PM_EURYNOME:{
 			struct obj *otmp;
 			otmp = mksobj(SPEED_BOOTS, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_EURYNOME_S_DANCING_SHOES));
+			otmp = oname(otmp, artiname(ART_EURYNOME_S_DANCING_SHOES));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp, otmp);
@@ -7936,11 +7937,12 @@ register struct	monst	*mtmp;
 			(void) mongets(mtmp, BOW);
 			m_initthrow(mtmp, ARROW, 12);
 			(void) mongets(mtmp, APPLE);
+			(void) mongets(mtmp, LEO_NEMAEUS_HIDE);
 			break;
 		case PM_FAFNIR:{
 			struct obj *otmp;
 			otmp = mksobj(PICK_AXE, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_RUINOUS_STRIKE));
+			otmp = oname(otmp, artiname(ART_RUINOUS_STRIKE));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp, otmp);
@@ -7952,6 +7954,7 @@ register struct	monst	*mtmp;
 			otmp = mksobj(MORNING_STAR, TRUE, FALSE);
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
+			add_oprop(otmp, OPROP_PSIOW);
 			otmp->spe = 7;
 			(void) mpickobj(mtmp, otmp);
 			break;
@@ -7964,7 +7967,7 @@ register struct	monst	*mtmp;
 			(void) mpickobj(mtmp, otmp);
 			(void) mongets(mtmp, APPLE);
 			otmp = mksobj(CLUB, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_JACK_S_TORCH));
+			otmp = oname(otmp, artiname(ART_JACK_S_TORCH));
 			otmp->blessed = FALSE;
 			otmp->cursed = TRUE;
 			otmp->spe = 1;
@@ -7974,7 +7977,7 @@ register struct	monst	*mtmp;
 		case PM_MARIONETTE:{
 			struct obj *otmp;
 			otmp = mksobj(GRAPPLING_HOOK, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_PUPPET_WIRE));
+			otmp = oname(otmp, artiname(ART_PUPPET_WIRE));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp, otmp);
@@ -7988,7 +7991,7 @@ register struct	monst	*mtmp;
 		case PM_ORTHOS:{
 			struct obj *otmp;
 			otmp = mksobj(CLOAK_OF_DISPLACEMENT, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_FLICKERING_OUTLINE));
+			otmp = oname(otmp, artiname(ART_FLICKERING_OUTLINE));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			otmp->spe = 1;
@@ -7998,6 +8001,7 @@ register struct	monst	*mtmp;
 		case PM_OSE:{
 			struct obj *otmp;
 			otmp = mksobj(TRIDENT, TRUE, FALSE);
+			add_oprop(otmp, OPROP_WATRW);
 			otmp->spe = 9;
 			set_material_gm(otmp, MITHRIL);
 			(void) mpickobj(mtmp, otmp);
@@ -8014,7 +8018,7 @@ register struct	monst	*mtmp;
 			set_material_gm(otmp, GEMSTONE);
 			(void) mpickobj(mtmp, otmp);
 			otmp = mksobj(KHAKKHARA, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_ARCHIVIST));
+			otmp = oname(otmp, artiname(ART_ARCHIVIST));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			otmp->spe = 3;
@@ -8025,7 +8029,7 @@ register struct	monst	*mtmp;
 		case PM_TENEBROUS:{
 			struct obj *otmp;
 			otmp = mksobj(GAUNTLETS_OF_DEXTERITY, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_TOUCH_OF_THE_VOID));
+			otmp = oname(otmp, artiname(ART_TOUCH_OF_THE_VOID));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			otmp->spe = 3;
@@ -8057,12 +8061,12 @@ register struct	monst	*mtmp;
 			otmp->spe = 7;
 			(void) mpickobj(mtmp, otmp);
 			otmp = mksobj(CRYSTAL_PLATE_MAIL, TRUE, FALSE);
-			//otmp = oname(otmp, artiname(ART_PLATES_OF_THE_NEAR_VOID));
+			otmp = oname(otmp, artiname(ART_PLATES_OF_THE_NEAR_VOID));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			otmp->objsize = MZ_GIGANTIC;
 			fix_object(otmp);
-			otmp->spe = 7;
+			otmp->spe = 10;
 			(void) mpickobj(mtmp, otmp);
 			otmp = mksobj(CRYSTAL_SHIELD, TRUE, FALSE);
 			otmp->blessed = FALSE;
