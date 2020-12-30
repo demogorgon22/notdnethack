@@ -33,6 +33,8 @@ int FDECL(doannulmenu, (const char *,struct obj *));
 int FDECL(doselfpoisonmenu, (const char *,struct obj *));
 int FDECL(doartificemenu, (const char *,struct obj *));
 int FDECL(doprismaticmenu, (const char *,struct obj *));
+int FDECL(doillithidmenu, (const char *,struct obj *));
+
 
 static NEARDATA schar delay;		/* moves left for this spell */
 static NEARDATA struct obj *artiptr;/* last/current artifact being used */
@@ -120,6 +122,8 @@ struct obj * otmp;
 	switch (oart) {
 	case ART_SILVER_KEY:
 	case ART_ANNULUS:
+	case ART_ILLITHID_STAFF:
+	case ART_ELDER_CEREBRAL_FLUID:
 	case ART_PEN_OF_THE_VOID:
 		// Outright forbidden
 		return FALSE;
@@ -946,7 +950,7 @@ register boolean mod;
 				artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3 = 0;//turn on which you can reuse the third dance
 				artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3duration = 0;//turn until which the weapon does full damage
 			}
-			if(otmp->oartifact && (get_artifact(otmp)->inv_prop == NECRONOMICON || get_artifact(otmp)->inv_prop == SPIRITNAMES)){
+			if(otmp->oartifact && (get_artifact(otmp)->inv_prop == NECRONOMICON || get_artifact(otmp)->inv_prop == SPIRITNAMES || get_artifact(otmp)->inv_prop == ILLITHID)){
 				otmp->ovar1 = 0;//ovar1 will be used to track special powers, via flags
 				otmp->spestudied = 0;//use to track number of powers discovered
 			} if(otmp->oartifact && get_artifact(otmp)->inv_prop == INFINITESPELLS){
@@ -4903,6 +4907,7 @@ arti_invoke(obj)
 		oart->inv_prop != FIRE_SHIKAI && 
 		oart->inv_prop != SEVENFOLD && 
 		oart->inv_prop != ANNUL && 
+		oart->inv_prop != ILLITHID && 
 		oart->inv_prop != ALTMODE && 
 		oart->inv_prop != LORDLY
 	) {
@@ -4929,6 +4934,7 @@ arti_invoke(obj)
 		oart->inv_prop != ALTMODE &&
 		oart->inv_prop != LORDLY &&
 		oart->inv_prop != ANNUL &&
+		oart->inv_prop != ILLITHID &&
 		oart->inv_prop != VOID_CHIME &&
 		oart->inv_prop != SEVENFOLD
 	)obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
@@ -7557,6 +7563,114 @@ arti_invoke(obj)
             obj->owt = weight(obj);
           } else You_feel("like you should be wearing %s.", The(xname(obj)));
         } break;
+	case ILLITHID:{ /*Don't need to wield to do*/
+		int illithidFunc = doillithidmenu("Select function.", obj);
+		switch(illithidFunc){
+			case 0:
+			break;
+			case COMMAND_CHARGE:{
+				boolean b_effect;
+				b_effect = obj->blessed &&
+					((Role_switch == oart->role || oart->role == NON_PM) && (Race_switch == oart->race || oart->race == NON_PM));
+				recharge(obj, b_effect ? 1 : obj->cursed ? -1 : 0);
+				update_inventory();
+			} break;
+			case COMMAND_TENT:{
+				int summon_loop;
+				struct monst *mtmp2;
+				summon_loop = rn2(4) + 4;
+				pline("Tentacles flow from the %s!", xname(obj));
+				do {
+				  mtmp = makemon(&mons[PM_PURPLE_WORM], u.ux, u.uy, NO_MM_FLAGS);
+				  if ((mtmp2 = tamedog(mtmp, (struct obj *)0)) != 0){
+						mtmp = mtmp2;
+						mtmp->mtame = 30;
+						summon_loop--;
+						mtmp->mvanishes = 100;
+					} else mongone(mtmp);
+				} while (summon_loop);
+			} break;
+			case COMMAND_DETECT:{
+				struct obj *otmp;
+               			otmp = mksobj(POT_MONSTER_DETECTION, TRUE, FALSE);
+         			otmp->blessed = obj->blessed;
+     				otmp->cursed = obj->cursed;
+  			        peffects(otmp);
+         			obfree(otmp,(struct obj *)0);
+			} break;
+			case COMMAND_ENERGY:{
+				int epboost = (u.uenmax + 1 - u.uen) / 2;
+				if(epboost < u.uenmax*.1) epboost = u.uenmax - u.uen;
+				if(epboost > 400) epboost = 400;
+	    			if(epboost) {
+					You_feel("re-energized.");
+					u.uen += epboost;
+					flags.botl = 1;
+	   			 }
+			} break;
+			case COMMAND_CANCEL:{
+				struct monst *mtmp, *mtmp2;
+				boolean notCancelled = TRUE;
+				for (mtmp = fmon; mtmp; mtmp = mtmp2) {
+					mtmp2 = mtmp->nmon;
+					//cancel monster (or try to)
+					if(!mtmp->mpeaceful && !mtmp->mtame){
+						if(!mtmp->mcan) notCancelled = TRUE; 
+		    				(void) cancel_monst(mtmp, obj, TRUE, TRUE, FALSE,0);
+						if(mtmp->mcan && notCancelled && canseemon(mtmp)) 
+							pline("Glittering lights surround %s and are drawn into %s.",mon_nam(mtmp),xname(obj));
+					}
+				}
+			} break;
+			case COMMAND_ELDER:
+				if(Is_astralevel(&u.uz) && a_align(u.ux,u.uy) == A_NEUTRAL && u.uhave.amulet){
+					pline("Ancient knowledge flows from the Elder Cerebral Fluid embedded in the Illithid Staff!");
+					pline("The knowledge begins to form into a dome around the high altar to the void.");
+					pline("Bright lights flash and suddenly the altar expands into a large hole.");
+					pline("You are sucked through!");
+					livelog_write_string("opened the void");
+					//schedule_goto(&nearvoid_level, FALSE, FALSE, 0, (char *)0, (char *)0);	
+				/*} else if(Is_alignvoid(&u.uz) &&  a_align(u.ux,u.uy) == A_NEUTRAL){
+					pline("Ancient knowledge flows from the Elder Cerebral Fluid embedded in the Illithid Staff!");
+					pline("The knowledge begins to form into a dome around the whispering altar to the void.");
+					pline("Bright lights flash and suddenly the altar rebuilds into a staircase.");
+					achieve.did_unknown = 1;
+					sstairs.sx = u.ux;
+					sstairs.sy = u.uy;
+					assign_level(&sstairs.tolev, &sacris_level);
+					levl[u.ux][u.uy].ladder = LA_UP;
+					levl[u.ux][u.uy].typ = STAIRS;*/
+				} else {
+					You("feel knowledge coming over you!");
+					identify_pack(rn2(5));
+				}
+			break;
+			
+		}
+
+		if(illithidFunc > COMMAND_CHARGE) obj->ovar1 = monstermoves + (long)(rnz(50)*(Role_if(PM_PRIEST) ? .8 : 1)); /*half the timeout cause you'll need it*/
+		break;
+	}
+	case RAND_SCROLL:{
+		You("read an incantation from the staff.");/*Feel free to special case by artifact in the future*/
+		struct obj* otmp;
+	      	otmp = mkobj(SCROLL_CLASS,FALSE);
+		while(otmp->otyp == SCR_PUNISHMENT || otmp->otyp == SCR_AMNESIA || otmp->otyp == SCR_CONSECRATION 
+				|| otmp->otyp == SCR_BLANK_PAPER || otmp->otyp == SCR_ANTIMAGIC
+				|| otmp->otyp == SCR_GOLD_SCROLL_OF_LAW
+				|| otmp->otyp == SCR_MAIL)/*Make sure it isnt a scroll that could harsh your mellow*/
+		{
+	      		otmp = mkobj(SCROLL_CLASS,FALSE);
+		}
+		otmp->quan = 20L;
+		if(otmp->otyp == SCR_ENCHANT_ARMOR || otmp->otyp == SCR_ENCHANT_WEAPON || otmp->otyp == SCR_DESTROY_ARMOR){
+			make_confused(HConfusion+1,FALSE);/*Some scrolls won't harsh your mellow if you are confused so let's be*/	
+		}
+		otmp->blessed = obj->blessed;
+		otmp->cursed = obj->cursed;
+		seffects(otmp);
+          	obfree(otmp,(struct obj *)0);
+	} break;
         case SUMMON_VAMP:{
           if(uamul && uamul == obj){
             /* TODO */
@@ -8454,6 +8568,67 @@ struct obj *obj;
 	destroy_nhwindow(tmpwin);
 	return (n > 0) ? selected[0].item.a_int : 0;
 }
+
+int
+doillithidmenu(prompt, obj)
+const char *prompt;
+struct obj *obj;
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Function list:");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	if(obj->ovar1 < monstermoves){	
+		Sprintf(buf, "Detect Monsters");
+		any.a_int = COMMAND_DETECT;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'd', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		Sprintf(buf, "Tentacle Flow");
+		any.a_int = COMMAND_TENT;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			't', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		Sprintf(buf, "Energy Boost");
+		any.a_int = COMMAND_ENERGY;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'e', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		Sprintf(buf, "Psionic Cancellation");
+		any.a_int = COMMAND_CANCEL;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'c', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		if(obj->cobj->oartifact == ART_ELDER_CEREBRAL_FLUID){//check if elder cerebral fluid is in the illithid
+			Sprintf(buf, "Elder Memories");
+			any.a_int = COMMAND_ELDER;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				'E', 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+	}
+	Sprintf(buf, "Recharge");
+	any.a_int = COMMAND_CHARGE;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'r', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	end_menu(tmpwin, prompt);
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	return (n > 0) ? selected[0].item.a_int : 0;
+}
+
+
 
 int
 doannulmenu(prompt, obj)

@@ -1686,6 +1686,10 @@ CHAIN(("hellfire component"),
 	DMG(D(1)), DMG(D(1)),
 	 20,   1, 0, 0, B, METAL, CLR_ORANGE),
 
+CHAIN(("feather"),
+	DMG(D(1)), DMG(D(1)),
+	 20,   1, 0, 0, B, VEGGY, CLR_BRIGHT_GREEN),
+
 #define CHAINCORPSE(names,wt,mat,color,...)\
 	CHAIN(names,{0},{0},20,wt,0,0,0,mat,color,O_MERGE(0),O_SIZE(MZ_HUGE),__VA_ARGS__)
 

@@ -3132,6 +3132,8 @@ const char *oldstr;
 		/* don't singularize these: */
 		if (!BSTRNCMPI(bp, p- 4, "Eyes of the Overworld", 21) ||
 			!BSTRNCMPI(bp, p-11, "Great Claws of Urdlen", 21) || 
+			!BSTRNCMPI(bp, p-11, "Great Claws of Urdlen", 21) || 
+			!BSTRNCMPI(bp, p-6, "Plates of The Near Void", 23) || 
 			!BSTRNCMPI(bp, p-12, "Steel Scales of Kurtulmak", 25))
 			return bp;
 		else {
@@ -4257,6 +4259,7 @@ int wishflags;
 	 && !strstri(bp, "crown of ")
 	 && !strstri(bp, "talisman of ")
 	 && !strstri(bp, "dread of ")
+	 && !strstri(bp, "plates of ")
 	 && !strstri(bp, "set of ")) {
 	    if ((p = strstri(bp, " of ")) != 0
 		&& (mntmp = name_to_mon(p+4)) >= LOW_PM)
@@ -4291,6 +4294,7 @@ int wishflags;
 	if (strncmpi(bp, "eden's scales", 12)) /* not a something bad */
 	if (strncmpi(bp, "eurynome's dancing shoes", 24)) /* not a something bad */
 	if (strncmpi(bp, "jack's torch", 12)) /* not jack*/
+	if (strncmpi(bp, "simurgh's feather", 17)) /* not simurgh*/
 	if (mntmp < LOW_PM && strlen(bp) > 2 &&
 	    (mntmp = name_to_mon(bp)) >= LOW_PM) {
 		int mntmptoo, mntmplen;	/* double check for rank title */

@@ -241,6 +241,12 @@
 #define COMMAND_GREEN           56
 #define COMMAND_YELLOW          57
 
+#define COMMAND_DETECT		58
+#define COMMAND_TENT		59
+#define COMMAND_ENERGY		60
+#define COMMAND_CANCEL		61
+#define COMMAND_ELDER		62
+
 struct artifact {
 	/* Description */
 	int otyp;			/* base artifact type */
@@ -398,6 +404,8 @@ extern struct artifact artilist[];
 #define RINGED_SPEAR    (LAST_PROP+80)
 #define RINGED_ARMOR    (LAST_PROP+81)
 #define BLOODLETTER     (LAST_PROP+82)
+#define RAND_SCROLL     (LAST_PROP+83)
+#define ILLITHID     (LAST_PROP+84)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20
