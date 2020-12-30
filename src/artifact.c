@@ -160,6 +160,7 @@ hack_artifacts()
 	if((Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && !Role_if(PM_EXILE) && !Role_if(PM_CONVICT) && !flags.initgend){
 		alignmnt = A_NEUTRAL; /* Males are neutral */
 	}
+	if(Role_if(PM_ANACHRONOUNBINDER)) alignmnt = A_LAWFUL;
 
 	/* Fix up the alignments of "gift" artifacts */
 	for (art = artilist+1; art->otyp; art++)
@@ -5053,7 +5054,7 @@ arti_invoke(obj)
 		newlev.dlevel = dungeons[i].entry_lev;
 	    else
 		newlev.dlevel = dungeons[i].dunlev_ureached;
-	    if(u.uhave.amulet || In_endgame(&u.uz) || In_endgame(&newlev) ||
+	    if(u.uhave.amulet || In_endgame(&u.uz) || In_endgame(&newlev) ||  In_void(&u.uz) || In_void(&newlev) ||
 	       newlev.dnum == u.uz.dnum) {
 		You_feel("very disoriented for a moment.");
 	    } else {
@@ -6673,6 +6674,10 @@ arti_invoke(obj)
 		   }
 		break;
 		case SPIRITNAMES:{
+		   if(Role_if(PM_ANACHRONOUNBINDER)){
+			You("have no use for such book.");
+			break;
+		   }
 		   if(yn("Open the Book of Lost Names?")=='y'){
 			if(Blind){
 				You_cant("feel any Braille writing.");
@@ -7629,17 +7634,17 @@ arti_invoke(obj)
 					pline("Bright lights flash and suddenly the altar expands into a large hole.");
 					pline("You are sucked through!");
 					livelog_write_string("opened the void");
-					//schedule_goto(&nearvoid_level, FALSE, FALSE, 0, (char *)0, (char *)0);	
-				/*} else if(Is_alignvoid(&u.uz) &&  a_align(u.ux,u.uy) == A_NEUTRAL){
+					schedule_goto(&nearvoid_level, FALSE, FALSE, 0, (char *)0, (char *)0);	
+				} else if(Is_alignvoid(&u.uz) &&  a_align(u.ux,u.uy) == A_NEUTRAL){
 					pline("Ancient knowledge flows from the Elder Cerebral Fluid embedded in the Illithid Staff!");
 					pline("The knowledge begins to form into a dome around the whispering altar to the void.");
 					pline("Bright lights flash and suddenly the altar rebuilds into a staircase.");
-					achieve.did_unknown = 1;
+					//achieve.did_unknown = 1;
 					sstairs.sx = u.ux;
 					sstairs.sy = u.uy;
 					assign_level(&sstairs.tolev, &sacris_level);
 					levl[u.ux][u.uy].ladder = LA_UP;
-					levl[u.ux][u.uy].typ = STAIRS;*/
+					levl[u.ux][u.uy].typ = STAIRS;
 				} else {
 					You("feel knowledge coming over you!");
 					identify_pack(rn2(5));
@@ -9337,11 +9342,19 @@ read_necro(VOID_ARGS)
 				u.wardsknown |= WARD_CTHUGHA|WARD_ITHAQUA|WARD_KARAKAL;
 			break;
 			case SELECT_SPIRITS1:{
+				if(Role_if(PM_ANACHRONOUNBINDER)){
+					You("see something about whispers but it makes no sense.");
+					break;
+				}
 				int i;
 				You("read the first half of the testament of whispers.");
 				for(i=0; i<16; i++) u.sealsKnown |= sealKey[u.sealorder[i]];
 			}break;
 			case SELECT_SPIRITS2:{
+				if(Role_if(PM_ANACHRONOUNBINDER)){
+					You("see something about whispers but it makes no sense.");
+					break;
+				}
 				int i;
 				You("read the second half of the testament of whispers.");
 				for(i=15; i<31; i++) u.sealsKnown |= sealKey[u.sealorder[i]];

@@ -36,6 +36,14 @@ const struct innate {
 		     {  10, &(HSearching), "perceptive", "" },
 		     {	 0, 0, 0, 0 } },
 
+	acu_abil[] = { {   1, &(HFast), "quick", "slow" },
+		     {	1, &(ETelepat), "telepathic", "zoned out" },
+		     {  7, &(HEcholocation), "able to echolocate with psionic pulses","less psionic" },
+		     {	10, &(HFlying), "able to control your altitude with your mind", "less in control of your altitude" },
+		     {  17, &(HTeleport_control), "controlled","uncontrolled" },
+		     {	14, &(EReflecting), "able to repel forces with your mind", "less telekinetic" },
+		     {	 0, 0, 0, 0 } },
+
 	ana_abil[] = { {   7, &(HFast), "quick", "slow" },
 		     {	15, &(HWarning), "precognitive", "" },
 		     {	 0, 0, 0, 0 } },
@@ -758,6 +766,7 @@ int oldlevel, newlevel;
 
 	switch (Role_switch) {
 	case PM_ARCHEOLOGIST:   abil = arc_abil;	break;
+	case PM_ANACHRONOUNBINDER: abil = acu_abil;	break;
 	case PM_ANACHRONONAUT:    abil = ana_abil;	break;
 	case PM_BARBARIAN:      abil = bar_abil;	break;
 #ifdef BARD
