@@ -372,6 +372,39 @@ register struct monst *mtmp;
 		    obj = mksobj_at(SILVER_DRAGON_SCALE_MAIL, x, y, FALSE, FALSE);
 			obj = oname(obj, artiname(ART_DRAGON_PLATE));
 		goto default_1;
+	    case PM_AMON:
+			obj = mksobj_at(FROST_HORN, x, y, TRUE, FALSE);
+			newsym(x, y);
+		goto default_1;
+	    case PM_EDEN:
+			obj = mksobj_at(SILVER_DRAGON_SCALES, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_EDEN_S_SCALES));
+			newsym(x,y);
+		goto default_1;
+	    case PM_HUGINN:
+			obj = mksobj_at(DAGGER, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_THOUGHT));		
+			obj->blessed = FALSE;
+			obj->cursed = FALSE;
+			obj->spe = 0;
+			newsym(x,y);
+		goto default_1;
+	    case PM_MUNINN:
+			obj = mksobj_at(DAGGER, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_MEMORY));		
+			obj->blessed = FALSE;
+			obj->cursed = FALSE;
+			obj->spe = 0;
+			newsym(x,y);
+		goto default_1;
+	    case PM_SIMURGH:
+			obj = mksobj_at(FEATHER, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_SIMURGH_S_FEATHER));		
+			obj->blessed = FALSE;
+			obj->cursed = FALSE;
+			obj->spe = 0;
+			newsym(x,y);
+		goto default_1;
 	    case PM_MANTICORE:
 		if (mtmp->mrevived ? !rn2(6) : TRUE) {
 			obj = mksobj_at(SPIKE, x, y, TRUE, FALSE);
@@ -4953,6 +4986,9 @@ boolean was_swallowed;			/* digestion */
 		   || mdat->mtyp == PM_DARUTH_XAXOX
 		   || mdat->mtyp == PM_ORION
 		   || mdat->mtyp == PM_VECNA
+		   || mdat->mtyp == PM_HUGINN
+		   || mdat->mtyp == PM_MUNINN
+		   || mdat->mtyp == PM_SIMURGH
 		   || mdat->mtyp == PM_DEATH_EYE
 //		   || mdat->mtyp == PM_UNICORN_OF_AMBER
 		   || mdat->mtyp == PM_NIGHTMARE
