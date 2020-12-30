@@ -3904,6 +3904,7 @@ int wishflags;
 			mat = GEMSTONE;
 		} else if ((!strncmpi(bp, "stone ", l=6) || !strncmpi(bp, "ceramic ", l=8))
 			&& strncmpi(bp, "stone to flesh", 14) && strncmpi(bp, "stone dragon shield", 19)
+			&& strncmpi(bp, "stone mask", 10)
 			) {
 			mat = MINERAL;
 		} else if (!strncmpi(bp, "salt ", l=5)) {
@@ -4253,6 +4254,9 @@ int wishflags;
 	 && !strstri(bp, "lump ")
 	 && !strstri(bp, "rod ")
 	 && !strstri(bp, "finger ")
+	 && !strstri(bp, "crown of ")
+	 && !strstri(bp, "talisman of ")
+	 && !strstri(bp, "dread of ")
 	 && !strstri(bp, "set of ")) {
 	    if ((p = strstri(bp, " of ")) != 0
 		&& (mntmp = name_to_mon(p+4)) >= LOW_PM)
@@ -4284,6 +4288,9 @@ int wishflags;
 	if (strncmpi(bp, "frosted lake", 12)) /* not a "frosted lake" */
 	if (strncmpi(bp, "chromatic dragon scales", 23)) /* not a "dragon" */
 	if (strncmpi(bp, "platinum dragon plate", 22)) /* not a "dragon" */
+	if (strncmpi(bp, "eden's scales", 12)) /* not a something bad */
+	if (strncmpi(bp, "eurynome's dancing shoes", 24)) /* not a something bad */
+	if (strncmpi(bp, "jack's torch", 12)) /* not jack*/
 	if (mntmp < LOW_PM && strlen(bp) > 2 &&
 	    (mntmp = name_to_mon(bp)) >= LOW_PM) {
 		int mntmptoo, mntmplen;	/* double check for rank title */

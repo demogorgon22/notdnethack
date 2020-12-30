@@ -3938,6 +3938,7 @@ use_grapple (obj)
 	if (typ == P_NONE || P_SKILL(typ) <= P_BASIC) max_range = 4;
 	else if (P_SKILL(typ) == P_SKILLED) max_range = 5;
 	else max_range = 8;
+	if(obj->oartifact == ART_PUPPET_WIRE) max_range = 8;
 	if (distu(cc.x, cc.y) > max_range) {
 	    pline("Too far!");
 	    return (res);
@@ -3951,7 +3952,8 @@ use_grapple (obj)
 
 	/* What do you want to hit? */
 	tohit = rn2(5);
-	if (typ != P_NONE && P_SKILL(typ) >= P_SKILLED) {
+	if(obj->oartifact == ART_PUPPET_WIRE) tohit = 2;
+	else if (typ != P_NONE && P_SKILL(typ) >= P_SKILLED) {
 	    winid tmpwin = create_nhwindow(NHW_MENU);
 	    anything any;
 	    char buf[BUFSZ];
@@ -3996,7 +3998,7 @@ use_grapple (obj)
 	break;
 	case 2:	/* Monster */
 	    if ((mtmp = m_at(cc.x, cc.y)) == (struct monst *)0) break;
-	    if (verysmall(mtmp->data) && !rn2(4) &&
+	    if ((obj->oartifact == ART_PUPPET_WIRE || (verysmall(mtmp->data) && !rn2(4))) &&
 			enexto(&cc, u.ux, u.uy, (struct permonst *)0)) {
 		You("pull in %s!", mon_nam(mtmp));
 		mtmp->mundetected = 0;

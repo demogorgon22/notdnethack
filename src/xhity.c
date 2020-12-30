@@ -2490,6 +2490,7 @@ int vis;
 
 	if (obj && (
 		(obj->greased || obj->otyp == OILSKIN_CLOAK) ||			/* greased (or oilskin) armor */
+		(obj->oartifact == ART_CROWN_OF_BERITH) ||
 		(attk->adtyp == AD_WRAP && obj->otyp == find_mboots())	/* mud boots vs wrap attacks */
 		)
 		&&
@@ -2503,7 +2504,7 @@ int vis;
 				(youagr ? "" : "s"),
 				(attk->adtyp == AD_WRAP ? " off of" : ", but cannot hold onto"),
 				(youdef ? "your" : s_suffix(mon_nam(mdef))),
-				(obj->greased ? "greased" : "slippery"),
+				(obj->greased ? "greased" : (obj->oartifact == ART_CROWN_OF_BERITH) ? "blood dripping" : "slippery"),
 				((obj->otyp == OILSKIN_CLOAK && !objects[obj->otyp].oc_name_known)
 				? cloak_simple_name(obj) : obj->otyp == find_mboots() ? "mud boots" : xname(obj))
 				);

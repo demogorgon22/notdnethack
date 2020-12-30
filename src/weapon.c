@@ -3130,6 +3130,7 @@ int wep_type;
 			if (uswapwep && uswapwep->owt > maxweight && !(
 				(uwep && (uwep->otyp == STILETTOS)) ||
 				(uswapwep->oartifact == ART_BLADE_DANCER_S_DAGGER) ||
+				(uswapwep->oartifact == ART_MEMORY) ||
 				(uswapwep->oartifact == ART_FRIEDE_S_SCYTHE)
 				))
 			{
@@ -3426,6 +3427,7 @@ int wep_type;
 			if (uswapwep && uswapwep->owt > maxweight && !(
 					(uwep && (uwep->otyp == STILETTOS)) ||
 					(uswapwep->oartifact == ART_BLADE_DANCER_S_DAGGER) ||
+					(uswapwep->oartifact == ART_MEMORY) ||
 					(uswapwep->oartifact == ART_FRIEDE_S_SCYTHE)
 				))
 			{

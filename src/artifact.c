@@ -1782,6 +1782,9 @@ boolean narrow_only;
 		case AD_BLUD:
 			if (!has_blood_mon(mdef))
 				return FALSE;
+		case AD_DRIN:
+			if (mindless_mon(mdef))
+				return FALSE;
 		break;
 		default:
 			impossible("Weird weapon special attack: (%d).", weap->adtyp);
@@ -3697,6 +3700,18 @@ boolean * messaged;
 			*messaged = TRUE;
 			}
 	    if (!rn2(4)) (void) destroy_item(mdef, POTION_CLASS, AD_COLD);
+	}
+	if(attacks(AD_DRIN, otmp)){
+		if (vis&VIS_MAGR)
+			pline_The("%s %s %s %s%c", otmp->oartifact == ART_ILLITHID_STAFF?"tentacled":"sparkling", 
+				otmp->oartifact == ART_ILLITHID_STAFF?"staff":otmp->oartifact == ART_ELDER_CEREBRAL_FLUID?"crystal":"blade",
+				!spec_dbon_applies ? "hits" : otmp->oartifact == ART_ILLITHID_STAFF?"brain sucks":"mentally drains",
+				hittee, !spec_dbon_applies ? '.' : '!');
+		if(spec_dbon_applies && vis&VIS_MAGR && otmp->oartifact != ART_ILLITHID_STAFF)
+			if(cancel_monst(mdef, otmp, youagr, FALSE, FALSE,0)) pline_The("%s %s %s %s%c", "sparkling", otmp->oartifact==ART_ELDER_CEREBRAL_FLUID?"crystal":"blade",
+				"cancels",
+				hittee, '!');
+		*messaged = vis&VIS_MAGR;
 	}
 	if (oartifact == ART_SHADOWLOCK) {
 		if (!Cold_res(mdef)) {

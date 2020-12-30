@@ -7839,7 +7839,7 @@ register struct	monst	*mtmp;
 			(void)mongets(mtmp, PLATE_MAIL);
 			(void)mongets(mtmp, LONG_SWORD);
 			struct obj *otmp = mksobj(HELMET, TRUE, FALSE); //make articrown (ok made crown of antisucc)
-			//otmp = oname(otmp, artiname(ART_CROWN_OF_BERITH));
+			otmp = oname(otmp, artiname(ART_CROWN_OF_BERITH));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp,otmp);
