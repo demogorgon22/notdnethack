@@ -8872,6 +8872,10 @@ register int	mmflags;
 	else if(!mkmon_template && (mtmp->data->geno&G_HELL) == 0 && Is_mephisto_level(&u.uz)){
 		mkmon_template = CRYSTALFIED;
 		unsethouse = TRUE;
+	} 
+	else if (In_void(&u.uz)){
+		mkmon_template = WHISPERING;
+		unsethouse = TRUE;
 	}
 	/* Kamerel tend to be fractured */ 
 	else if(is_kamerel(mtmp->data)){
@@ -11032,6 +11036,8 @@ register struct permonst *ptr;
 	if(!u.uevent.invoked && mndx==PM_UVUUDAUM && !(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))) return TRUE;
 	
 	if(ual == A_VOID) return FALSE;
+
+	if(Role_if(PM_ANACHRONOUNBINDER) && (mndx==PM_MIND_FLAYER || mndx==PM_MASTER_MIND_FLAYER)) return TRUE;
 	
 	//Law quest uniques
 	if (((mndx <= PM_QUINON && mndx >= PM_MONOTON) || mndx == PM_AXUS) && sgn(mal) == sgn(ual)){

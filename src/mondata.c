@@ -270,6 +270,9 @@ int template;
 		/* misc: */
 		ptr->msound = MS_SILENT;
 		break;
+	case WHISPERING:
+		ptr->mflagsa |= (MA_UNLIVING);
+		break;
 	case FRACTURED:
 		/* flags: */
 		ptr->mflagsm |= (MM_BREATHLESS);

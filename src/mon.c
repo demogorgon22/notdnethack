@@ -4959,6 +4959,9 @@ boolean was_swallowed;			/* digestion */
 	if (has_template(mon, SKELIFIED))
 		return FALSE;
 
+	if (has_template(mon, WHISPERING))
+		return FALSE;
+
 	if (has_template(mon, CRYSTALFIED))
 		return TRUE;
 
