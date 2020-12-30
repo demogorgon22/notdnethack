@@ -177,12 +177,13 @@ QUEST_DES = Arch.des Anachrononaut.des Android.des Barb.des Bard.des Binder.des 
             Convict.des Drow.des DrowNoble.des Elf.des Erebor.des GnomeRanger.des	\
             HalfDragonFemaleNoble.des Healer.des Hedrow.des HedrowNoble.des Knight.des \
 			Monk.des Moria.des Noble.des Pirate.des Priest.des Ranger.des Rogue.des	\
-            Samurai.des Tourist.des Valkyrie.des Wizard.des
+            Samurai.des Tourist.des Valkyrie.des Wizard.des Anachronounbinder.des
 
 SPEC_DES = bigroom.des blacktemple.des castle.des chaos.des chaos2.des chaos3.des	\
            endgame.des gehennom.des knox.des labr.des law.des		\
            medusa.des grue.des mines.des neutrality.des oracle.des sokoban.des	\
-           storage.des sunlesssea.des tomb.des tower.des yendor.des
+           storage.des sunlesssea.des tomb.des tower.des yendor.des \
+	   void.des sacristy.des
 
 ALL_TAG = $(QUEST_DES:%.des=dat/%.tag) $(SPEC_DES:%.des=dat/%.tag)
 

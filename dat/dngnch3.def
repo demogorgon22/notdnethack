@@ -32,6 +32,7 @@ BRANCH: 	"The Lost Tomb" @ (5, 25)
 BRANCH:	"The Sunless Sea" @ (5, 25)
 BRANCH: 	"The Temple of Moloch" @ (5, 25)
 
+BRANCH:		"The Void" @ (10, 25) no_down 
 RNDLEVEL:	"chall" "none" @ (-5, 4) 6
 LEVALIGN:	chaotic
 RNDLEVEL:	"castle" "none" @ (-1, 0) 6
@@ -228,6 +229,27 @@ DUNGEON:	"Fort Ludios" "K" (1, 0)
 DESCRIPTION:	mazelike
 ALIGNMENT:	unaligned
 LEVEL:		"knox" "K" @ (-1, 0)
+
+#
+#
+#The void
+#
+#
+DUNGEON:	"The Void" "none" (5, 0)
+ALIGNMENT:	unaligned
+DESCRIPTION:	mazelike
+LEVEL:		"nearvoid"  "none" @ (1, 0)
+LEVEL:		"nrvoid2"    "none" @ (2, 0)
+LEVEL:		"aligvoid"   "none" @ (3, 0)
+LEVEL:		"farvoid"  "none" @ (4, 0)
+LEVEL:		"ilsensin" "none" @ (5, 0)
+BRANCH:		"Sacristy" @ (3, 0) no_down
+
+
+DUNGEON:	"Sacristy" "none" (1, 0)
+ALIGNMENT:	unaligned
+DESCRIPTION:	mazelike
+LEVEL:		"sacris"  "none" @ (1, 0)
 
 ### The Lost Tomb ###
 DUNGEON:        "The Lost Tomb" "L" (1, 0)

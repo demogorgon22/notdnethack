@@ -123,6 +123,17 @@ E struct dgn_topology {		/* special dungeon levels for speed */
     d_level	d_astral_level;
 	/*Vlad's Tower*/
     xchar	d_tower_dnum;
+    /*Void levels*/
+    xchar	d_void_dnum;
+    d_level	d_ilsensin_level;
+    d_level	d_farvoid_level;
+    d_level	d_aligvoid_level;
+    d_level	d_nrvoid2_level;
+    d_level	d_nearvoid_level;
+
+    xchar	d_sacris_dnum;
+    d_level	d_sacris_level;
+
 	/*The Lost Tomb*/
     xchar	d_tomb_dnum;
 	/*The Sunless Sea*/
@@ -219,6 +230,15 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 //define asmodeus_level		(dungeon_topology.d_asmodeus_level)
 #define portal_level		(dungeon_topology.d_portal_level)
 #define sanctum_level		(dungeon_topology.d_sanctum_level)
+/*Void*/
+#define ilsensin_level		(dungeon_topology.d_ilsensin_level)
+#define farvoid_level		(dungeon_topology.d_farvoid_level)
+#define aligvoid_level		(dungeon_topology.d_aligvoid_level)
+#define nrvoid2_level		(dungeon_topology.d_nrvoid2_level)
+#define nearvoid_level		(dungeon_topology.d_nearvoid_level)
+
+#define sacris_level		(dungeon_topology.d_sacris_level)
+
 	/*Planes*/
 #define earth_level		(dungeon_topology.d_earth_level)
 #define water_level		(dungeon_topology.d_water_level)
