@@ -355,6 +355,9 @@ struct monst *mtmp;
 			mtmp->mtyp == PM_BYAKHEE ||
 			(mtmp->mtyp == PM_HUNTING_HORROR && complete == 6) ||
 			mtmp->mtyp == PM_MIND_FLAYER ||
+			mtmp->mtyp == PM_VILLITHID ||
+			mtmp->mtyp == PM_ADVERSARY ||
+			mtmp->mtyp == PM_NEOTHELID ||
 			mtmp->mtyp == PM_PARASITIC_MIND_FLAYER ||
 			mtmp->mtyp == PM_PARASITIZED_ANDROID ||
 			mtmp->mtyp == PM_PARASITIZED_GYNOID ||
