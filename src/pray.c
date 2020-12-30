@@ -60,6 +60,8 @@ const char	*BlackMother = "the Black Mother";
 const char	*Nodens = "Nodens";
 const char	*DreadFracture = "the Dread Fracture";
 const char	*AllInOne = "Yog-Sothoth";
+const char	*AcuL= "Ilsensine the Banished One";
+const char	*AcuLL= "Ilsensine";
 
 static const char *godvoices[] = {
     "booms out",
@@ -1434,7 +1436,7 @@ godvoice(ga_num, words)
     else
 	words = "";
 	
-	if(ga_num == GA_VOID){
+	if(ga_num == GA_VOID || Role_if(PM_ANACHRONOUNBINDER)){
 		You("think you hear a voice in the distance: %s%s%s", quot, words, quot);
 	} else if(ga_num == GA_SILENCE){
 		You_hear("silence.");
@@ -1824,6 +1826,12 @@ dosacrifice()
 		You("do not give offerings to the God of the future.");
 		return 0;
 	}
+
+	if(Role_if(PM_ANACHRONOUNBINDER) && otmp->otyp != AMULET_OF_YENDOR){
+		if(In_quest(&u.uz)) You("wouldn't want to change the future.");
+		else You("cannot feel your true god.");
+		return 0;
+	}
 	
 #define MAXVALUE 24 /* Highest corpse value (besides Wiz) */
 
@@ -1976,12 +1984,36 @@ dosacrifice()
 
     if (otmp->otyp == AMULET_OF_YENDOR) {
 		if (!Is_astralevel(&u.uz)) {
+			/*
+			if(Role_if(PM_ANACHRONOUNBINDER) && In_void(&u.uz)){
+				if(Is_sacris(&u.uz) || Is_ilsensine(&u.uz)){
+					if(uamul == otmp) Amulet_off();
+					u.uevent.ascended = 1;
+					if(carried(otmp)) useup(otmp);
+					else useupf(otmp, 1L);
+					You("offer the Amulet of Yendor to %s...", a_gname());
+					if(Is_sacris(&u.uz)){
+						adjalign(20);
+						pline("Strange sounds echo around you!");
+						pline("What happens next?");
+						done(ESCAPED);
+					} else {
+						adjalign(10);
+						pline("The Void collapses as you and Ilsensine are launched toward the heavens.");
+						pline("The Gate closes behind you, no longer able to hold the spirits of the enslaved.");
+						pline("With the amulet's power Ilsensine is restored to her former glory.");
+						You("are blessed by Ilsensine's flowing tentacles and dubbed Maanzecorian.");
+						pline("As time moves at the blink of an eye you watch the Illithid Empire return to power.");
+						done(ASCENDED);
+					}
+				}
+			}*/
 			if (Hallucination)
 				You_feel("homesick.");
 			else
 				You_feel("an urge to return to the surface.");
 			return 1;
-		} else {
+		} else if(!Role_if(PM_ANACHRONOUNBINDER)){
 			/* The final Test.	Did you win? */
 			if(uamul == otmp) Amulet_off();
 			u.uevent.ascended = 1;
@@ -2050,6 +2082,8 @@ dosacrifice()
 					done(ASCENDED);
 				}
 			}
+		} else {
+			You("do not give the amulet to this %s deity. You must use the Elder Memories invocation on the void altar.",altaralign==A_LAWFUL?"fallen":"false");
 		}
     } /* real Amulet */
 
@@ -2477,6 +2511,11 @@ dopray()
 	if(Role_if(PM_ANACHRONONAUT) && flags.questprogress!=2){
 		pline("There is but one God in the future.");
 		pline("And to It, you do not pray.");
+		return 0;
+	}
+	if(Role_if(PM_ANACHRONOUNBINDER)){
+		if(In_quest(&u.uz)) You("wouldn't want to change the future.");
+		else pline("Ilsensine, the Banished One, cannot hear your prayers.");
 		return 0;
 	}
 	
@@ -2956,12 +2995,19 @@ int ga_num;
      case GA_LAWFUL:
 		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz)){
 			gnam = "";
+		} else if(Role_if(PM_ANACHRONOUNBINDER) && !In_quest(&u.uz)){
+			gnam = AcuL; break;
+		} else if(Role_if(PM_ANACHRONOUNBINDER)){
+			gnam = AcuLL; break;
+    		} else {
+			gnam = urole.lgod; break;
 		}
-		else gnam = urole.lgod; 
 	 break;
      case GA_NEUTRAL:	
 		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz)){
 			gnam = "";
+		} else if(Role_if(PM_ANACHRONOUNBINDER)){
+			gnam = tVoid;
 		}
 		else gnam = urole.ngod; 
 	 break;

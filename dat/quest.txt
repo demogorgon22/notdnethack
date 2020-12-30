@@ -296,6 +296,242 @@ Amulet on that altar to fulfill your destiny.
 
 "Remember, your path now should always be upwards."
 %E
+
+
+#
+#      Anachronounbinder
+#
+%Cc Acu 00001
+Something is wrong. You cannot feel the Elder Brain as you have in the past.
+%E
+%Cp Acu 00002
+You return to %H.
+%E
+%Cp Acu 00003
+You are back at %H.
+
+You have an odd feeling this may be the last time you ever come here.
+%E
+%Cp Acu 00005
+"UNITY WAS NEAR"
+%E
+%Cp Acu 00006
+"WE TRIED"
+%E
+%Cp Acu 00007
+"KILL THE LICH"
+%E
+%Cp Acu 00008
+"ILLITHIDS ARE STRONG"
+%E
+%Cp Acu 00009
+"THE ULITHARID IS MIGHTY"
+%E
+%Cp Acu 00010
+"YOU DID IT"
+%E
+%Cp Acu 00011
+"WE WILL BE SAVED"
+%E
+%Cp Acu 00012
+"DEATH TO VESTIGES"
+%E
+%Cp Acu 00013
+"FEAR NO UNDEAD"
+%E
+%Cp Acu 00014
+"THE ELDER GOD WILL RETURN"
+%E
+%Cc Acu 00015
+I see you made it back. The Elder Brain has been attacked.
+We cannot risk another illithid to %nt and his undead rebels. 
+%d's empire is falling. 
+
+Let me see if you are ready for certain death.
+%E
+%Cp Acu 00016
+"You have returned from farther up the time-stream, I see.
+Let me check if you are strong enough now."
+%E
+%Cp Acu 00017
+"You have traveled quite far up the time-stream now.
+Let me check if you are strong enough now."
+%E
+%Cc Acu 00018
+You have betrayed the Elder Brain. Begone. Only %L is pure.
+%E
+%Cc Acu 00019
+"You are weak. You would die.
+Go now, return to the future, and come back to us from farther up
+the time-stream."
+%E
+%Cc Acu 00020
+"You disrespect %d.
+
+What distinguishes you from %n?   Return
+to the future and rededicate yourself to %d."
+%E
+%Cc Acu 00021
+"Illithocyte, you may now be ready to undertake the final preparations
+for your mission."
+
+"I know not how we are remembered. 
+No gith slave could possibly overpower the forces of %d. 
+The void fills with the spirits of our slave races.
+We will fall to the foolish illithids who betray the Elder Brain
+and attempt to seek their own eternity by meddling with The Gate."
+
+"%nt and his spirits of our slaves have just begun attacks on Elder Brains.
+All our knowledge now belongs to %nt and his abominations. 
+You are ready now to travel to %i and recover %o."
+
+"Should you be successful, you must recover the Amulet of Yendor
+and use it to recover Ilsensine from The Void and close The Gate."
+
+%E
+%Cp Acu 00025
+"Should you fail, the Illithid Empire will be no more."
+%E
+%Cp Acu 00026
+"%n is an alhoon, a dangerous undead illich. He is mindless."
+%E
+%Cp Acu 00027
+"Villithids will suck your mind and your life. Watch out for those abominations."
+%E
+%Cp Acu 00028
+"With the power of %o you can prevent the fall of the greatest empire ever."
+%E
+%Cp Acu 00029
+"%n's abominations include adversaries, illithids whose host controls them."
+%E
+%Cp Acu 00030
+"Beware of neothelids and their many tentacles. They have committed grave sins."
+%E
+%Cp Acu 00031
+"Be sure to take advantage of the items you have taken from spirits."
+%E
+%Cp Acu 00032
+"The Illithid Cavern is full of abominations. May %d guide your steps."
+%E
+%Cp Acu 00033
+"You will need to name a double lightsaber The Illithid Staff one day."
+%E
+%Cp Acu 00034
+"I hope you found luck in the future, for there is surely
+none left in this fading world."
+%E
+%Cc Acu 00035
+You stand before the Illithid Cavern. 
+You hear dripping water echo throughout the cavern.
+A sense of dread hangs over this once great place.
+The knowledge and memories here have deteriorated 
+and this place lays in waste. 
+%E
+%Cp Acu 00036
+Once again, you arrive at the Illithid Cavern.
+%E
+%Cc Acu 00040
+You have reached %i. The air here is heavier.
+You feel closer to the collective suppressed minds of the 
+slaves of the illithid empire. %n will have hell to pay. 
+%E
+%Cp Acu 00041
+You have returned to %i.
+%E
+%Cc Acu 00050
+You will die, %r. %d will never stop the rebellion of civilization.
+%E
+%Cc Acu 00051
+I will bind your spirit when I finish you.
+%E
+%Cp Acu 00052
+You blood will feed my villithids.
+%E
+%Cp Acu 00053
+The knowledge of %o is mine!
+%E
+%Cp Acu 00060
+The Alignment Thing will dismember you!
+%E
+%Cp Acu 00061
+You will never use %o to save %d!
+%E
+%Cp Acu 00062
+I'll bind your spirit to my pet neothelid!
+%E
+%Cp Acu 00063
+Through death I will live forever!
+%E
+%Cp Acu 00064
+The knowledge of %o makes me stronger than you.
+%E
+%Cp Acu 00065
+Defeat is the only end you can meet.
+%E
+%Cp Acu 00066
+Death means nothing to me.
+%E
+%Cp Acu 00067
+I fear no god.
+%E
+%Cp Acu 00068
+You are nothing more than a grunt.
+%E
+%Cp Acu 00069
+How does it feel to be a pawn for %d?
+%E
+%Cc Acu 00070
+The Elder Cerebral Fluid glows briefly. Your mind opens up in new ways to new
+ideas and you understand the universe differently.
+
+You must return to %l, to learn
+the details of the next and final stage of the plan.
+%E
+%Cp Acu 00080
+%n breathes his dying curses. His body blows away into the wind and
+his spirit cannot survive here.
+%E
+%Cc Acu 00081
+%l looks wonderingly at %o.
+
+"Well done, %s.  You have succeed where
+all others have failed, and returned hope to
+our world.
+
+"You must now travel deep into the earth, and
+retrieve the Amulet of Yendor, that was stolen by
+Moloch at the beginning of time.
+
+"With %o inside The Illithid Staff, a double lightsaber you 
+will have to name as a Keeper of The Gate, you must travel to
+the Astral Plane and perform the Elder Memory invocation on
+the altar of the void."
+
+"From there you must travel through The Gate to The Far Void
+and use the Amulet of Yendor to free her from banishment."
+
+"Should you find yourself needing a double lightsaber after getting
+the amulet you can return here."
+%E
+%Cc Acu 00082
+"%o's power can help you in your fight against the spirits of the
+near void. Should you lose it this will all be meaningless."
+%E
+%Cc Acu 00090
+"You must return to the future and finish the plan."
+%E
+%Cc Acu 00091
+"You've done it!  But there is still nothing you can do for us
+here in the past."
+
+"With %o inside The Illithid Staff  you must travel to
+the Astral Plane and perform the Elder Memory invocation on
+the high altar of the void."
+
+"From there you must travel through The Gate to The Far Void
+and use the Amulet of Yendor to free her from banishment."
+%E
+
 #
 #	Anachrononaut
 #
@@ -8445,4 +8681,42 @@ Annulus from wherever it ended up, and use it against
 Ilsensine in the past.
 
 "So, you know.  Good luck."
+%E
+#
+#	Legacy text for Illithanachronounbinders
+#
+%Cc - 00226
+Now, there is a story:
+
+    After the Creation, the cruel god Moloch rebelled
+    against the authority of Marduk the Creator.
+    Moloch stole from Marduk the most powerful of all
+    the artifacts of the gods, the Amulet of Yendor,
+    and he hid it in the dark cavities of Gehennom, the
+    Under World, where he now lurks, and bides his time.
+
+The various gods and heroes of this world struggle 
+mightily to recover the amulet, for the god who reclaims
+the amulet will be granted ascendance over the other 
+gods of the world.
+
+It wasn't always this way. In the days from which you
+traveled there was but one god, Ilsensine. She and her
+illithid empire ruled over all of the known universe.
+
+You, a newly empowered %r, have been heralded
+from birth to travel to the future, now. The mighty
+plan of Ilsensine will be ready then and the slave
+races replenished.
+
+You must travel back on your quest to recover the 
+memories of illithids past and with them inside 
+the mighty Illithid Staff ascend to the Astral Plane with
+the amulet and use the memories to travel to The Void,
+where Ilsensine slumbers.
+
+%d must be recovered and the natural order
+of power brought back to this forsaken universe.
+
+Go bravely for Ilsensine!
 %E

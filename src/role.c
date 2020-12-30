@@ -209,6 +209,32 @@ struct Role roles[] = {
 	{  1, 4,  1, 2,  0, 3 },20,	/* Energy */
 	10, 3,-3, 2, 10, A_WIS, SPE_CURE_SICKNESS,   -14
 },
+{	{"Illithanachronounbinder", 		 0}, {
+	{"Exorcist",        0},
+	{"Unbinder",      0},
+	{"Vestige Vanquisher",      0},
+	{"Spirit Killer",       0},
+	{"Mind Flayer", 0},
+	{"Psionaut", 0},
+	{"Void Voider",       0},
+	{"Telekinetic",     0},
+	{"Keeper of the Gate",    0} },
+	"_Ilsensine", "Resistance", "Thoon",	/* ahahah */
+	"Acu", "The Elder Pool", "The Far Reach",
+	PM_ANACHRONOUNBINDER, NON_PM, PM_BRAIN_GOLEM,
+	PM_ULITHARID, PM_MINDLESS_THRALL, PM_MENZOBERRANZAN,
+	NON_PM, NON_PM, NON_PM, NON_PM,
+	ART_ELDER_CEREBRAL_FLUID,
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL,
+	/* Str Int Wis Dex Con Cha */
+	{  12, 10,  7, 12,  12,  7 },
+	{  24, 20, 15, 20, 24, 15 },
+	/* Init   Lower  Higher */
+	{ 14, 0,  8, 4,  2, 2 },	/* Hit points */
+	{  4, 3,  0, 2,  0, 3 },12,	/* Energy */
+	10, 5, 0, 2, 10, A_INT, SPE_DETECT_MONSTERS,   -9
+},
 {	{"Knight", 0}, {
 	{"Gallant",     0},
 	{"Esquire",     0},
@@ -2796,12 +2822,12 @@ int newgame;
 	    mons[urole.neminum].mflagsg |= MG_NASTY;
 	}
 	
-	if(Role_if(PM_ANACHRONONAUT)){
+	if(Role_if(PM_ANACHRONONAUT) || Role_if(PM_ANACHRONOUNBINDER)){
 		//Drow noble nemesis is regular monster for anachrononauts
 		mons[PM_ELDER_BRAIN].msound = MS_SILENT;
 		mons[PM_ELDER_BRAIN].geno &= ~G_UNIQ;
-		if(flags.questprogress==2) urole.lgod = AnachrononautLgodEnd;
-		else if(flags.questprogress==1) urole.lgod = AnachrononautLgod;
+		if(flags.questprogress==2 && Role_if(PM_ANACHRONONAUT)) urole.lgod = AnachrononautLgodEnd;
+		else if(flags.questprogress==1 && Role_if(PM_ANACHRONONAUT)) urole.lgod = AnachrononautLgod;
 	}
 
 	if(!Role_if(PM_CAVEMAN)){

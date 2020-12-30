@@ -658,6 +658,7 @@ struct you {
 	
 	int sealTimeout[NUMINA-FIRST_SEAL]; //turn on which spirit will be again eligible for binding.
 	
+	long spiritSummons;	
 	int sealCounts;
 	long sealsActive;
 	long sealsUsed;

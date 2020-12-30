@@ -211,7 +211,7 @@ extern struct god_details god_list[MAX_GOD]; //defined in decl.c
 #define GA_FRACTURE	12
 #define GA_SOTHOTH	13
 #define GA_VELKA	14
-#define GA_NUM		15
+#define GA_NUM		16
 
 #define GOAT_EAT_PASSIVE 0
 #define GOAT_EAT_OFFERED 1
