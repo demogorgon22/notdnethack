@@ -213,7 +213,13 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			returning = TRUE;
 			range = range/2 + 1;
 			initrange = initrange/2 + 1;
+		} else if((Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL) && youagr &&  !(
+			(launcher) || /* no returning fired ammo */
+			(thrownobj->oartifact == ART_FLUORITE_OCTAHEDRON && thrownobj->quan > 1)	/* no multithrown fluorite octet for balance reasons */
+		)){
+			returning = TRUE;
 		}
+
 	}
 
 	/* player exercises STR just be throwing heavy things */
@@ -2191,6 +2197,11 @@ dofire()
 
 	if (attacktype(youracedata, AT_SPIT))
 		return dospit();
+
+	if(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_PULSE_LVL){
+		psionic_pulse();
+		return 1;
+	}
 
 	if (attacktype(youracedata, AT_ARRW)) {
 		struct attack * attk = attacktype_fordmg(youracedata, AT_ARRW, AD_ANY);
