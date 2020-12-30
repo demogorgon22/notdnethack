@@ -121,6 +121,8 @@ static int NDECL((*timed_occ_fn));
 #endif /* OVL1 */
 
 STATIC_DCL int NDECL(use_reach_attack);
+STATIC_DCL int NDECL(psionic_craze);
+STATIC_DCL int NDECL(dotelekinesis);
 STATIC_PTR int NDECL(doprev_message);
 STATIC_PTR int NDECL(timed_occupation);
 STATIC_PTR int NDECL(doextcmd);
@@ -580,6 +582,9 @@ boolean you_abilities;
 	if (mon_abilities && uandroid){
 		add_ability('d', "Use Android abilities", MATTK_DROID);
 	}
+	if (mon_abilities && (Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_TELEK_LVL)){
+		add_ability('e', "Use telekinesis", MATTK_TELEK);
+	}
 	if (you_abilities && Race_if(PM_HALF_DRAGON) && Role_if(PM_BARD) && u.ulevel >= 14) {
 		add_ability('E', "Sing an Elemental into being", MATTK_U_ELMENTAL);
 	}
@@ -601,14 +606,20 @@ boolean you_abilities;
 	if (mon_abilities && youracedata->mlet == S_NYMPH){
 		add_ability('I', "Remove an iron ball", MATTK_REMV);
 	}
-	if (mon_abilities && is_mind_flayer(youracedata)){
+	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_ANACHRONOUNBINDER)) ){
 		add_ability('m', "Emit a mind blast", MATTK_MIND);
 	}
 	if (you_abilities && !mon_abilities){
 		add_ability('M', "Use a monstrous ability", MATTK_U_MONST);
 	}
+	if (mon_abilities && (Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_CRAZE_LVL)){
+		add_ability('n', "Psionically torture a monster", MATTK_CRAZE);
+	}
 	if (you_abilities && (u.ufirst_light || u.ufirst_sky || u.ufirst_life || u.ufirst_know)){
 		add_ability('p', "Speak a word of power", MATTK_U_WORD);
+	}
+	if (mon_abilities && (Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_PULSE_LVL)){
+		add_ability('P', "Emit a directional psion pulse", MATTK_PULSE);
 	}
 	if (mon_abilities && (attacktype(youracedata, AT_LNCK) || attacktype(youracedata, AT_LRCH))){
 		add_ability('r', "Make a reach attack", MATTK_REACH);
@@ -803,6 +814,12 @@ boolean you_abilities;
 	break;
 	case MATTK_REACH: return use_reach_attack();
 	break;
+	case MATTK_TELEK: return dotelekinesis();
+	break;
+	case MATTK_CRAZE: return psionic_craze();
+	break;
+	case MATTK_PULSE: return psionic_pulse();
+	break;
 	}
 	return 0;
 }
@@ -843,6 +860,88 @@ domountattk()
 	pline("You can't ride anything!");
 #endif
 }
+
+int
+psionic_pulse(){
+	if(u.uen < 5){
+		You("lack the energy.");
+		return 0;
+	}
+	You("concentrate!");
+	if(!getdir((char *)0)) return 0;
+	struct obj *otmp = mksobj(PSIONIC_PULSE, FALSE, FALSE);
+	otmp->spe = (int)u.ulevel/4;
+	otmp->quan = 1;
+	projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, u.dz, BOLT_LIM, TRUE, FALSE, FALSE);
+	nomul(0, NULL);
+	flags.botl = 1;
+	u.uen -= 5;
+	return 1;
+}
+
+STATIC_OVL int
+dotelekinesis(){
+	if(u.uen < 15){
+		You("lack the energy.");
+		return 0;
+	}
+	coord cc;
+	int cancelled;
+	cc.x = u.ux;
+	cc.y = u.uy;
+	pline("Select an object on the floor to pick up with your mind.");
+	cancelled = getpos(&cc, TRUE, "the desired position");
+	while(cancelled >= 0 && (!OBJ_AT(cc.x,cc.y) || !cansee(cc.x,cc.y))){
+		if(!cansee(cc.x,cc.y)) You("cannot see there to manipulate any object there may be.");
+		 else if(!OBJ_AT(cc.x,cc.y)) pline("There is nothing there for you to pick up!");
+		cancelled = getpos(&cc, TRUE, "the desired position");
+	}
+	if(cancelled < 0) return 0;
+	flags.botl = 1;
+	u.uen -= 15;
+	You("attempt to lift %s from the floor with your mind!",level.objects[cc.x][cc.y]->quan>1?"some items":"an item");
+	pickup_object(level.objects[cc.x][cc.y], level.objects[cc.x][cc.y]->quan, TRUE);
+	return 1;
+
+}
+
+STATIC_OVL int
+psionic_craze(){
+	if(u.uen < 5){
+		You("lack the energy.");
+		return 0;
+	}
+	coord cc;
+	int cancelled;
+	cc.x = u.ux;
+	cc.y = u.uy;
+	pline("Select a monster to send horrid brain waves.");
+	cancelled = getpos(&cc, TRUE, "the desired position");
+	struct monst *mon = m_at(cc.x, cc.y);
+	while(cancelled >= 0 &&(dist2(u.ux,u.uy,cc.x,cc.y) > 55 + u.ulevel || u.ux == cc.x && u.uy == cc.y || (!mon || !sensemon(mon) || mindless_mon(mon)))){
+		if(dist2(u.ux,u.uy,cc.x,cc.y) > 55 + u.ulevel) Your("brain waves cannot reach that far.");
+		else if (mindless_mon(mon)) pline("%s has no brain for you to assault.", Monnam(mon));
+		cancelled = getpos(&cc, TRUE, "the desired position");
+		mon = m_at(cc.x,cc.y);
+	}
+	if(!mon)
+		return 0;
+	if(mon && !DEADMONSTER(mon) && !mindless_mon(mon) && !resist(mon, '\0', 0, TELL)) {
+		/*cost pw*/
+		u.uen -= 5;
+		if(u.ulevel >= mon->m_lev-5){
+			mon->mconf = 1;
+			if(u.ulevel >= mon->m_lev+5){
+				You("drive %s insane with your psionic pulses.", mon_nam(mon));
+				mon->mcrazed = 1;
+			} else You("make %s dizzy with your psionic pulses.", mon_nam(mon));
+		}
+		monflee(mon, d(5,3+(int)u.ulevel/10), FALSE, TRUE);
+	}
+	return 1;
+
+}
+
 
 STATIC_OVL int
 use_reach_attack()

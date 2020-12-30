@@ -376,6 +376,16 @@ struct you {
 #define MATTK_U_STYLE       27
 #define MATTK_U_MONST       28
 #define MATTK_U_ELMENTAL    29
+#define MATTK_TELEK	    30
+#define MATTK_CRAZE	    31
+#define MATTK_PULSE	    32
+
+
+
+#define ACU_RETURN_LVL 20
+#define ACU_TELEK_LVL 15
+#define ACU_CRAZE_LVL 12
+#define ACU_PULSE_LVL 4
 
 	struct attribs	macurr,		/* for monster attribs */
 			mamax;		/* for monster attribs */

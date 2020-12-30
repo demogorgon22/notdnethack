@@ -278,6 +278,11 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 				return MM_MISS;
 			}
 		}
+		if(thrownobj->otyp == PSIONIC_PULSE){
+			pline("The pulse attenuates upwards.");
+			destroy_projectile(magr, thrownobj);
+			return MM_MISS;
+		}
 
 		/* weapon might return to your hand */
 		if (returning && !impaired) {
@@ -321,6 +326,11 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			if (youagr && !Weightless) {
 				pline("The laser beam is absorbed by the %s.", surface(bhitpos.x, bhitpos.y));
 			}
+			return MM_MISS;
+		}
+		if(thrownobj->otyp == PSIONIC_PULSE){
+			pline("The pulse is absorbed by the %s.", surface(bhitpos.x, bhitpos.y));
+			destroy_projectile(magr, thrownobj);
 			return MM_MISS;
 		}
 		/* Projectile hits floor. This calls end_projectile() */
@@ -767,11 +777,17 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 	if (!thrownobj)
 		return;
 
+	if (thrownobj->otyp == PSIONIC_PULSE && youagr && mdef && !DEADMONSTER(mdef)) {
+		pline("%s is thrown backwards by the force of your pulse!",Monnam(mdef));
+		mhurtle(mdef, u.dx, u.dy, (int)u.ulevel/3);
+	}
+
 	/* projectiles that never survive being fired; their special effects are handled in destroy_projectile() */
 	if (fired && (
 		thrownobj->otyp == ROCKET ||
 		thrownobj->otyp == BLASTER_BOLT ||
 		thrownobj->otyp == HEAVY_BLASTER_BOLT ||
+		thrownobj->otyp == PSIONIC_PULSE ||
 		is_bullet(thrownobj)
 		))
 	{
@@ -884,7 +900,7 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 		*thrownobj_p = NULL;
 		return;
 	}
-
+	
 	/* candles are snuffed */
 	(void)snuff_candle(thrownobj);
 
@@ -1090,7 +1106,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		return MM_MISS;
 	}
 	/* the player has a chance to burn some projectiles (not blaster bolts or laser beams) out of the air with a lightsaber */
-	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT)
+	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == PSIONIC_PULSE)
 		&& youdef && uwep && is_lightsaber(uwep) && litsaber(uwep) && (
 			(activeFightingForm(FFORM_SHIEN) && (!uarm || is_light_armor(uarm)) && rnd(3) < FightingFormSkillLevel(FFORM_SHIEN)) ||
 			(activeFightingForm(FFORM_SORESU) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm)) && rnd(3) < FightingFormSkillLevel(FFORM_SORESU))
