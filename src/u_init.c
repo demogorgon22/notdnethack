@@ -1801,6 +1801,7 @@ u_init()
 		knows_object(R_LYEHIAN_FACEPLATE);
 		knows_object(GLOVES);
 		u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = A_LAWFUL;
+		flags.initalign = 0; // 0 == lawful
 		skill_init(Skill_Acu);
 	break;
 	case PM_ANACHRONONAUT:

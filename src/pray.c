@@ -1984,7 +1984,7 @@ dosacrifice()
 
     if (otmp->otyp == AMULET_OF_YENDOR) {
 		if (!Is_astralevel(&u.uz)) {
-			/*
+			
 			if(Role_if(PM_ANACHRONOUNBINDER) && In_void(&u.uz)){
 				if(Is_sacris(&u.uz) || Is_ilsensine(&u.uz)){
 					if(uamul == otmp) Amulet_off();
@@ -2007,7 +2007,7 @@ dosacrifice()
 						done(ASCENDED);
 					}
 				}
-			}*/
+			}
 			if (Hallucination)
 				You_feel("homesick.");
 			else
