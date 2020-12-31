@@ -2084,6 +2084,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 	if (has_template(mtmp, ZOMBIFIED))		Strcat(name, " zombie");
 	else if (has_template(mtmp, SKELIFIED))	Strcat(name, " skeleton");
 	else if (has_template(mtmp, CRYSTALFIED)) Strcat(name, " vitrean");
+	else if (has_template(mtmp, WHISPERING)) Strcat(name, " of whispers");
 	else if (has_template(mtmp, FRACTURED))	Strcat(name, " witness");
 	else if (has_template(mtmp, ILLUMINATED))	Strcat(name, " shining one");
 	else if (has_template(mtmp, VAMPIRIC))	Strcat(name, " vampire");

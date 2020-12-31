@@ -1086,8 +1086,8 @@ encodeachieve(void)
   if(achieve.get_book)           r |= 1L << 3;
   if(achieve.perform_invocation) r |= 1L << 4;
   if(achieve.get_amulet)         r |= 1L << 5;
-  if(In_endgame(&u.uz))          r |= 1L << 6;
-  if(Is_astralevel(&u.uz))       r |= 1L << 7;
+  if(In_endgame(&u.uz) || In_void(&u.uz))          r |= 1L << 6;
+  if(Is_astralevel(&u.uz) || In_void(&u.uz))       r |= 1L << 7;
   if(achieve.ascended)           r |= 1L << 8;
   if(achieve.get_luckstone)      r |= 1L << 9;
   if(achieve.finish_sokoban)     r |= 1L << 10;

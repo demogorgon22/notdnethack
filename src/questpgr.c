@@ -497,6 +497,28 @@ qt_montype()
 				else return &mons[PM_BLACK_FLOWER];
 			break;
 		}
+	} else if(Role_if(PM_ANACHRONOUNBINDER)){
+		switch(rn2(3)){
+			case 0:
+				return &mons[PM_ADVERSARY];
+			break;
+			case 1:
+				if(rn2(4)) return &mons[PM_NEOTHELID];
+				else return mkclass(S_WORM, G_NOHELL|G_HELL);
+			break;
+			case 2:
+				if(rn2(4)) return &mons[PM_VILLITHID];
+				else return mkclass(S_VAMPIRE, G_NOHELL|G_HELL);
+			break;
+			//case 3:
+			//	if(rn2(2)) return &mons[PM_ADVERSARY];
+			//	else return &mons[PM_ILLITHID_LARVA];
+		//	break;
+			default:
+				return &mons[PM_VILLITHID];
+				impossible("No monster?");
+			break;
+		}
 	} else if(Role_if(PM_CAVEMAN)){
 		//Very placeholdery
 		switch(rnd(12)){

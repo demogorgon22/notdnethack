@@ -863,9 +863,9 @@ struct mkroom	*croom;
 	else if (m->id != NON_PM) {
 	    pm = &mons[m->id];
 	    g_mvflags = (unsigned) mvitals[monsndx(pm)].mvflags;
-	    if ((pm->geno & G_UNIQ) && (g_mvflags & G_EXTINCT))
+	    if ((pm->geno & G_UNIQ) && (g_mvflags & G_EXTINCT) && !In_void(&u.uz))
 		goto m_done;
-	    else if (g_mvflags & G_GONE && !In_quest(&u.uz))	/* genocided or extinct */
+	    else if (g_mvflags & G_GONE && !In_quest(&u.uz) && !In_void(&u.uz))	/* genocided or extinct */
 		pm = (struct permonst *) 0;	/* make random monster */
 	} else {
 	    pm = mkclass(class,Inhell ? G_HELL|G_NOGEN : G_NOHELL|G_NOGEN);

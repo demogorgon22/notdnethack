@@ -154,7 +154,7 @@ newman()
 	tmp = u.uhpmax;
 	tmpen = u.uenmax;
 	oldlvl = u.ulevel;
-	u.ulevel = u.ulevel + rn1(5, -2);
+	if(!Role_if(PM_ANACHRONOUNBINDER)) u.ulevel = u.ulevel + rn1(5, -2);
 	if (u.ulevel > 127 || u.ulevel < 1) { /* level went below 0? */
 	    u.ulevel = oldlvl; /* restore old level in case they lifesave */
 	    goto dead;
@@ -1529,12 +1529,14 @@ domindblast()
 		if(mindless_mon(mtmp))
 			continue;
 		u_sen = mon_resistance(mtmp,TELEPAT) && is_blind(mtmp);
-		if (u_sen || (mon_resistance(mtmp,TELEPAT) && rn2(2)) || !rn2(10)) {
+		if (u_sen || (mon_resistance(mtmp,TELEPAT) && rn2(2)) || !rn2(10) || (Role_if(PM_ANACHRONOUNBINDER) && !rn2(10-(int)(u.ulevel/3)))) {
 			You("lock in on %s %s.", s_suffix(mon_nam(mtmp)),
 				u_sen ? "telepathy" :
 				mon_resistance(mtmp,TELEPAT) ? "latent telepathy" :
 				"mind");
-			mtmp->mhp -= rnd(15);
+			int dmg = Role_if(PM_ANACHRONOUNBINDER)?rnd(15)*(int)(u.ulevel/6):rnd(15);
+			dmg = (dmg > 0)?dmg:rnd(15);
+			mtmp->mhp -= dmg;
 			if (mtmp->mhp <= 0)
 				killed(mtmp);
 		}

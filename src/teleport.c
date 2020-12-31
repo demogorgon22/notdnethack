@@ -812,7 +812,7 @@ level_tele()
 	if (iflags.debug_fuzzer)
 		goto random_levtport;
 
-	if ((u.uhave.amulet || In_endgame(&u.uz) || In_sokoban(&u.uz))
+	if ((u.uhave.amulet || In_endgame(&u.uz) || In_sokoban(&u.uz) || In_void(&u.uz))
 #ifdef WIZARD
 						&& !wizard
 #endif

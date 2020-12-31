@@ -339,7 +339,7 @@ boolean lifesave_forced;
 {
 	int i;
 	boolean found = FALSE, gnosis = (spir == u.spirit[GPREM_SPIRIT]);
-	
+	if(forced && Role_if(PM_ANACHRONOUNBINDER)) return;	
 	if(spir==SEAL_JACK && forced && !gnosis && u.ulevel == 1){
 		Your("life is saved!");
 		pline("Unfortunately, your soul is torn to shreds.");
@@ -364,7 +364,7 @@ boolean lifesave_forced;
 		if(spir&SEAL_NUMINA) Your("links with the Numina have %sbroken.",forced?"been ":"");
 	} else for(i=0;i<QUEST_SPIRITS;i++){
 		if((spir >> i) == 1L){
-			Your("link with %s has %sbroken.", sealNames[i],forced?"been ":"");
+			if(!Role_if(PM_ANACHRONOUNBINDER)) Your("link with %s has %sbroken.", sealNames[i],forced?"been ":"");
 			break;
 		}
 	}
@@ -590,7 +590,7 @@ nh_timeout()
 			}
 		}
 	}
-	if(!u.voidChime){
+	if(!u.voidChime && !Role_if(PM_ANACHRONOUNBINDER)){
 		while(u.spirit[0] && u.spiritT[0] < moves) unbind(u.spirit[0],0);
 		if(u.spiritTineB && u.spiritTineTB < moves) unbind(u.spiritTineB,0);
 		if(u.spiritTineA && u.spiritTineTA < moves) unbind(u.spiritTineA,0);
@@ -606,7 +606,7 @@ nh_timeout()
 		//if(u.spirit[OUTER_SPIRIT] && u.spiritT[OUTER_SPIRIT] < moves) 
 			//unbind(u.spirit[OUTER_SPIRIT]); Numina does not time out
 	}
-	if(u.sealsActive || u.specialSealsActive){
+	if((u.sealsActive || u.specialSealsActive) && !Role_if(PM_ANACHRONOUNBINDER)){
 		int remaining;
 		for(i=0;i<OUTER_SPIRIT;i++){
 			remaining = 0;
