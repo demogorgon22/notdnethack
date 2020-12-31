@@ -929,7 +929,7 @@ register boolean mod;
 		if (a->otyp == otmp->otyp && !strcmp(a->name, name)) {
 		    register int m = a - artilist;
 		    otmp->oartifact = (mod ? m : 0);
-		    otmp->age = 0;
+		    if(otmp->oartifact != ART_ILLITHID_STAFF) otmp->age = 0;
 		    if(otmp->otyp == RIN_INCREASE_DAMAGE) otmp->spe = 0;
 		    artinstance[m].exists = mod;
 			// if(otmp->oartifact == ART_DRAGON_PLATE){
