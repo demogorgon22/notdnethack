@@ -3744,6 +3744,7 @@ int tx,ty;
 				if(u.sealCounts < numSlots){
 					pline("\"I am Echidna, %s.\"",echidnaTitles[rn2(SIZE(echidnaTitles))]);
 					if(Role_if(PM_ANACHRONOUNBINDER)){
+						verbalize("You killed my brood. Prepare to die.");
 						summon_spirit(SEAL_ECHIDNA,ECHIDNA,PM_ECHIDNA,tx,ty);
 						return 0;
 					}
@@ -3794,6 +3795,11 @@ int tx,ty;
 					You_hear("bubbling.");
 				}
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("Eden looks unhappy.");
+						summon_spirit(SEAL_EDEN,EDEN,PM_EDEN,tx,ty);
+						return 0;
+					}
 					pline("Radiant light falls upon you,");
 					pline("blinding you to what lies beyond.");
 					bindspirit(ep->ward_id);
@@ -3843,6 +3849,11 @@ int tx,ty;
 				pline("and a figure rises within it.");
 				if(u.sealCounts < numSlots){
 					pline("I am Enki, god of the first city.");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						verbalize("You displease me.");
+						summon_spirit(SEAL_ENKI,ENKI,PM_ENKI,tx,ty);
+						return 0;
+					}
 					pline("Bow to me, and I shall teach the arts of civilization.");
 					bindspirit(ep->ward_id);
 					u.sealTimeout[ENKI-FIRST_SEAL] = moves + bindingPeriod;
@@ -3881,6 +3892,11 @@ int tx,ty;
 				if(!Blind)
 					You("see a figure dancing, far out upon the waters.");
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("She dances up to you and sweeps you up into her dance.");
+						summon_spirit(SEAL_EURYNOME,EURYNOME,PM_EURYNOME,tx,ty);
+						return 0;
+					}
 					if(!Blind){
 						pline("She dances up to you and sweeps you up into her dance.");
 						pline("She is beautiful, like nothing you have ever seen before.");
@@ -3929,6 +3945,11 @@ int tx,ty;
 				pline("She is both young and old at once.");
 				pline("She looks hurt.");
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("But ready to hurt you more.");
+						summon_spirit(SEAL_EVE,EVE,PM_EVE,tx,ty);
+						return 0;
+					}
 					You("help her to her feet.");
 					pline("\"Shall we hunt together?\"");
 					bindspirit(ep->ward_id);
@@ -3974,6 +3995,10 @@ int tx,ty;
 				if(u.sealCounts < numSlots){
 					if(!Blind) pline("The dragon lunges forwards to bite you.");
 					else pline("something bites you!");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_FAFNIR,FAFNIR,PM_FAFNIR,tx,ty);
+						return 0;
+					}
 					Your("left finger stings!");
 					bindspirit(ep->ward_id);
 					u.sealTimeout[FAFNIR-FIRST_SEAL] = moves + bindingPeriod;
@@ -4009,6 +4034,11 @@ int tx,ty;
 			You_hear("flapping wings.");
 			if(!Blind) pline("A pair of ravens land in the seal.");
 			if(u.sealCounts < numSlots){
+				if(Role_if(PM_ANACHRONOUNBINDER)){
+					summon_spirit(SEAL_HUGINN_MUNINN,HUGINN_MUNINN,PM_HUGINN,tx,ty);
+					makemon(&mons[PM_MUNINN], tx, ty, MM_ADJACENTOK);
+					return 0;
+				}
 				if(!Blind) pline("They hop up to your shoulders and begin to croak raucously in your ears.");
 				else pline("A pair of large birds land on you and begin to croak raucously in your ears.");
 				You("try to shoo them away, only to find that they have vanished.");
@@ -4065,6 +4095,10 @@ int tx,ty;
 				pline("But you can't see what it was.");
 				if(u.sealCounts < numSlots){
 					pline("Something jumps on you from behind!");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_IRIS,IRIS,PM_IRIS,tx,ty);
+						return 0;
+					}
 					pline("\"YAY! Lets play together!!\"");
 					bindspirit(ep->ward_id);
 					u.sealTimeout[IRIS-FIRST_SEAL] = moves + bindingPeriod;
@@ -4098,6 +4132,11 @@ int tx,ty;
 			//Spirit requires that his seal be drawn outside of hell and the endgame.
 			if(!In_hell(&u.uz) && !In_endgame(&u.uz)){
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("Jack, bearer of the devil's lantern, shambles over.");
+						summon_spirit(SEAL_JACK,JACK,PM_JACK,tx,ty);
+						return 0;
+					}
 					You("feel something climb onto your back!");
 					pline("\"Will you let me stay with you?\"");
 					bindspirit(ep->ward_id);
@@ -4153,6 +4192,7 @@ int tx,ty;
 					&& !is_animal(&mons[otmp->corpsenm]) 
 					&& !mindless(&mons[otmp->corpsenm]) 
 					&& u.ualign.type != A_VOID
+					&& !Role_if(PM_ANACHRONOUNBINDER)
 				) {
 					/* Human sacrifice on a chaotic or unaligned altar */
 					/* is equivalent to demon summoning */
@@ -4207,6 +4247,11 @@ int tx,ty;
 				if(u.sealCounts < numSlots){
 					if(!Blind) pline("A black-feathered humanoid steps forth.");
 					pline("\"I am Malphas. You feed my flock. One way or the other.\"");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_MALPHAS,MALPHAS,PM_MALPHAS,tx,ty);
+						for(i = 0; i<12; i++) makemon(&mons[PM_CROW], tx, ty, MM_ADJACENTOK);
+						return 0;
+					}
 					bindspirit(ep->ward_id);
 					u.sealTimeout[MALPHAS-FIRST_SEAL] = moves + bindingPeriod;
 				}
@@ -4246,6 +4291,10 @@ int tx,ty;
 					if(!Blind) pline("In fact, there are wires sticking up all around you.");
 					if(!Blind) pline("Shrieks and screams echo down from whence the wires come.");
 					else You_hear("screaming!");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_MARIONETTE,MARIONETTE,PM_MARIONETTE,tx,ty);
+						return 0;
+					}
 					pline("You feel sharp pains in your elbows and knees!");
 					if(!Blind) pline("It seems that you, are but a puppet.");
 					bindspirit(ep->ward_id);
@@ -4281,6 +4330,11 @@ int tx,ty;
 			if(Blind){
 				Your("Hands itch painfully.");
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						You_feel("eyes watching you.");
+						summon_spirit(SEAL_MOTHER,MOTHER,PM_GREAT_MOTHER,tx,ty);
+						return 0;
+					}
 					You("feel eyes open in your hands!");
 					pline("But you still can't see...");
 					pline("...the eyeballs don't belong to you!");
@@ -4323,6 +4377,10 @@ int tx,ty;
 						pline("A dog wanders in to the seal, nose to the ground.");
 						pline("It wanders back and forth, then looks up at you.");
 						pline("It looks up at you with all three heads.");
+					}
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_NABERIUS, NABERIUS,PM_NABERIUS,tx,ty);
+						return 0;
 					}
 					pline("\"Hello, I am Naberius, the councilor.\"");
 					pline("\"I can smell the weaknesses others try to hide.\"");
@@ -4369,6 +4427,11 @@ int tx,ty;
 				pline("The mournful whistle grows louder, as the air around you flows into the pit.");
 				if(!Blind) pline("But that is all that occurs. Darkness. Wind. And a lonely whistle.");
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("Before you stands an ancient darkness.");
+						summon_spirit(SEAL_ORTHOS,ORTHOS,PM_ORTHOS,tx,ty);
+						return 0;
+					}
 					pline("You feel that it will stay with you for a while.");
 					bindspirit(ep->ward_id);
 					u.sealTimeout[ORTHOS-FIRST_SEAL] = moves + bindingPeriod;
@@ -4403,6 +4466,10 @@ int tx,ty;
 					pline("though to be honest %s is about average among %s you have known.",u.osepro,makeplural(u.osegen));
 					if(!rn2(20)) pline("The %s's eyes open, and you have a long negotiation before achieving a good pact.", u.osegen);
 					else pline("You know that this is Ose, despite never having met.");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_OSE,OSE,PM_OSE,tx,ty);
+						return 0;
+					}
 					pline("The seabed rises.");
 					bindspirit(ep->ward_id);
 					levl[tx][ty].typ = ROOM;
@@ -4438,6 +4505,10 @@ int tx,ty;
 					pline("though to be honest %s is about average among %s you have known.",u.osepro,makeplural(u.osegen));
 					if(!rn2(20)) pline("The %s's eyes open, and you have a long negotiation before achieving a good pact.", u.osegen);
 					else pline("You know that this is Ose, despite never having met.");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_OSE,OSE,PM_OSE,tx,ty);
+						return 0;
+					}
 					bindspirit(ep->ward_id);
 					u.sealTimeout[OSE-FIRST_SEAL] = moves + bindingPeriod;
 				}
@@ -4475,6 +4546,10 @@ int tx,ty;
 					levl[tx][ty].doormask &= ~(D_CLOSED|D_LOCKED);
 					levl[tx][ty].doormask |= D_ISOPEN;
 					newsym(tx,ty);
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_OTIAX,OTIAX,PM_OTIAX,tx,ty);
+						return 0;
+					}
 					bindspirit(ep->ward_id);
 					u.sealTimeout[OTIAX-FIRST_SEAL] = moves + bindingPeriod;
 				}
@@ -4521,6 +4596,11 @@ int tx,ty;
 			if( o && tx - u.ux < 0 && ty - u.uy < 0){
 				pline("The pages of %s begin to turn.", xname(o));
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("Paimon, the fell archivist, appears in the seal.");
+						summon_spirit(SEAL_PAIMON,PAIMON,PM_PAIMON,tx,ty);
+						return 0;
+					}
 					if(!Blind){
 						pline("A beautiful woman rides into the seal on a camel.");
 						pline("She scoops up the book and begins pouring through it.");
@@ -4568,6 +4648,11 @@ int tx,ty;
 			if(In_outdoors(&u.uz)){
 				pline("A brilliantly colored bird with iron claws flies high overhead.");
 				if(u.sealCounts < numSlots){
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						pline("It lands before you.");
+						summon_spirit(SEAL_SIMURGH,SIMURGH,PM_SIMURGH,tx,ty);
+						return 0;
+					}
 					pline("It swoops down and lands on your shoulder.");
 					pline("Its radiant rainbow feathers reflect in its eyes,");
 					pline("becoming images of roaring flames and sparkling snow,");
@@ -4616,6 +4701,10 @@ int tx,ty;
 					pline("All who stand in my way shall face the wrath of that");
 					pline("which was wrought in the ancient halls");
 					pline("of the realm now known only for dust.\"");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_TENEBROUS,TENEBROUS,PM_TENEBROUS,tx,ty);
+						return 0;
+					}
 					bindspirit(ep->ward_id);
 					u.sealTimeout[TENEBROUS-FIRST_SEAL] = moves + bindingPeriod;
 				}
@@ -4676,6 +4765,10 @@ int tx,ty;
 				if(u.sealCounts < numSlots){
 					pline("\"I was Ymir, god of poison,");
 					pline("and you are the maggots in my corpse.");
+					if(Role_if(PM_ANACHRONOUNBINDER)){
+						summon_spirit(SEAL_YMIR,YMIR,PM_YMIR,tx,ty);
+						return 0;
+					}
 					pline("But I will make a pact with you,");
 					pline("to throw down the false gods,");
 					pline("that ordered my demise.\"");
