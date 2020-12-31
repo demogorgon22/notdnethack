@@ -4376,7 +4376,7 @@ register struct monst *mtmp;
 		u.uevent.ukilled_illurien = 1;
 		u.ill_cnt = rn1(1000, 250);
 	}
-	if(mtmp->mtyp == PM_ORCUS){
+	if(mtmp->mtyp == PM_ORCUS && !Role_if(PM_ANACHRONOUNBINDER)){
 		struct engr *oep = engr_at(mtmp->mx,mtmp->my);
 		if(!oep){
 			make_engr_at(mtmp->mx, mtmp->my,
@@ -4704,8 +4704,7 @@ boolean was_swallowed;			/* digestion */
 				explode(mon->mx, mon->my, AD_DARK, MON_EXPLODE, tmp, EXPL_MAGICAL, 2);
 			}
 			else if(mdat->mattk[i].adtyp == AD_SPIR){
-				//if(Is_alignvoid(&u.uz)){
-				if(FALSE){
+				if(Is_alignvoid(&u.uz)){
 					pline("The alignment void's balance falls apart and waves rush in!");
 					pline("Eerie winds begin to blow and the temple's trees wither!");
 					for (int x = 0; x < COLNO; x++) {
@@ -5866,7 +5865,7 @@ cleanup:
 		if (p_coaligned(mtmp)) u.ublessed = 0;
 		if (mdat->maligntyp == A_NONE)
 			adjalign((int)(ALIGNLIM / 4));		/* BIG bonus */
-	} else if (mtmp->mtame && !Role_if(PM_EXILE)) {
+	} else if (mtmp->mtame && !Role_if(PM_EXILE) && !Role_if(PM_ANACHRONOUNBINDER)) {
 		adjalign(-15);	/* bad!! */
 		/* your god is mighty displeased... */
 		if (!Hallucination) You_hear("the rumble of distant thunder...");

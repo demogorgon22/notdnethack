@@ -138,6 +138,11 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		*boots = HIGH_BOOTS;
 		*tool = PICK_AXE;
 	break;
+	case PM_ANACHRONOUNBINDER:
+		*weapon = QUARTERSTAFF;
+		*armor = LEATHER_ARMOR;
+		*cloak = CLOAK;
+	break;
 	case PM_ANACHRONONAUT:
 		if(special){
 			if (!rn2(2)) *weapon = LIGHTSABER;

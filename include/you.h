@@ -384,6 +384,7 @@ struct you {
 
 #define ACU_RETURN_LVL 20
 #define ACU_TELEK_LVL 15
+#define ACU_REFL_LVL 14
 #define ACU_CRAZE_LVL 12
 #define ACU_PULSE_LVL 4
 

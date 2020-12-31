@@ -627,7 +627,7 @@ mon_tele:
 			int nlev;
 			d_level flev;
 
-			if (mon_has_amulet(mtmp) || In_endgame(&u.uz)) {
+			if (mon_has_amulet(mtmp) || In_endgame(&u.uz) || In_void(&u.uz)) {
 			    if (vismon)
 				pline("%s seems very disoriented for a moment.",
 					Monnam(mtmp));
@@ -952,7 +952,7 @@ struct monst *mtmp;
 		case 0: case 1:
 			return SCR_TELEPORTATION;
 		case 8: case 10:
-			if (!rn2(3)) return WAN_CREATE_MONSTER;
+			if (!rn2(3) && !In_void(&u.uz)) return WAN_CREATE_MONSTER;
 			/* else FALLTHRU */
 		case 2: return POT_HEALING;
 		case 3: 
@@ -2799,6 +2799,10 @@ const char *fmt, *str;
 	} else if (u.usteed && u.usteed->misc_worn_check & W_SADDLE  && which_armor(u.usteed, W_SADDLE)->oartifact == ART_HELLRIDER_S_SADDLE) {
 		if (fmt && str)
 			pline(fmt, str, "steed's saddle");
+		return TRUE;
+	} else if(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_REFL_LVL){
+		if (fmt && str)
+			pline(fmt, str, "mind waves");
 		return TRUE;
 	} else if (EReflecting) {
 	    /* Catchall */
