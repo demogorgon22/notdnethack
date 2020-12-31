@@ -118,6 +118,18 @@ int x,y;
     level.monsters[x][y] = (struct monst *)0;
 }
 
+static void 
+check_spirit_unbind(mtyp)
+int mtyp;
+{
+	if(mtyp >= PM_AHAZU && mtyp <= PM_YMIR){
+		if(mtyp<PM_MUNINN)
+			unbind(sealKey[(mtyp-PM_AHAZU)],FALSE);
+		else
+			unbind(sealKey[(mtyp-PM_AHAZU)-1],FALSE);
+	}
+}
+
 /* convert the monster index of an undead to its living counterpart */
 int
 undead_to_corpse(mndx)
@@ -4337,12 +4349,7 @@ register struct monst *mtmp;
 	}
 	if(mtmp->iswiz) wizdead();
 	if(mtmp->data->msound == MS_NEMESIS) nemdead();        
-	if(mtmp->mtyp >= PM_AHAZU && mtmp->mtyp <= PM_YMIR){
-		if(mtmp->mtyp<PM_MUNINN)
-			unbind(sealKey[(mtmp->mtyp-PM_AHAZU)],FALSE);
-		else
-			unbind(sealKey[(mtmp->mtyp-PM_AHAZU)-1],FALSE);
-	}
+	check_spirit_unbind(mtmp->mtyp);
 	//Asc items and crucial bookkeeping
 	if(Race_if(PM_DROW) && !Role_if(PM_NOBLEMAN) && mtmp->mtyp == urole.neminum && !flags.made_bell){
 		(void) mksobj_at(BELL_OF_OPENING, mtmp->mx, mtmp->my, TRUE, FALSE);
@@ -5110,6 +5117,7 @@ mongone(mdef)
 register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
+	check_spirit_unbind(mdef->mtyp);
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
@@ -5136,6 +5144,7 @@ monvanished(mdef)
 register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
+	check_spirit_unbind(mdef->mtyp);
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
