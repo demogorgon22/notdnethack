@@ -38,6 +38,7 @@ static const int Soresu_counterattack[] = { 10, 15, 25 };
 struct attack noattack = { 0, 0, 0, 0 };
 struct attack basicattack  = { AT_WEAP, AD_PHYS, 1, 4 };
 struct attack grapple = { AT_HUGS, AD_PHYS, 0, 6 };	/* for grappler's grasp */
+struct attack acu_tent = { AT_TENT, AD_DRIN, 1, 4 };	/* for acu tentacles */
 
 /* getvis()
  * 
@@ -1657,6 +1658,7 @@ int * subout;					/* records what attacks have been subbed out */
 #define SUBOUT_GOATSPWN	0x0100	/* Goat spawn: seduction */
 #define SUBOUT_GRAPPLE	0x0200	/* Grappler's Grasp crushing damage */
 #define SUBOUT_SCORPION	0x0400	/* Scorpion Carapace's sting */
+#define SUBOUT_ACU	0x0800	/* ACU tentacle attack */
 int * tohitmod;					/* some attacks are made with decreased accuracy */
 {
 	struct attack * attk;
@@ -2058,6 +2060,11 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			*attk = *attacktype_fordmg(&mons[PM_SCORPION], AT_STNG, AD_DRST);
 			*subout |= SUBOUT_SCORPION;
 		}
+	}
+	
+	if (youagr && !Upolyd && Role_if(PM_ANACHRONOUNBINDER) && is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_ACU)) {
+		*attk = acu_tent;
+		*subout |= SUBOUT_ACU;
 	}
 
 	/* players can get a whole host of spirit attacks */
