@@ -462,6 +462,7 @@ extern struct artifact artilist[];
 			(a->gflags & ARTG_NAME) != 0\
 			|| (a == &artilist[ART_SNICKERSNEE] && Role_if(PM_TOURIST) && (u.ulevel > 18 || u.uevent.qcompleted) )\
 			|| (a == &artilist[ART_KUSANAGI_NO_TSURUGI] && Role_if(PM_SAMURAI) && u.ulevel >= 22 )\
+			|| (a == &artilist[ART_ILLITHID_STAFF] && Role_if(PM_ANACHRONOUNBINDER) && u.spiritSummons & SEAL_YMIR )\
 			|| (a == &artilist[ART_GRANDMASTER_S_ROBE] && P_SKILL(P_MARTIAL_ARTS) >= P_GRAND_MASTER && u.ulevel >= 30 )\
 			|| (a == &artilist[ART_FIRST_KEY_OF_CHAOS] && \
 							(art_already_exists(ART_THIRD_KEY_OF_CHAOS) \

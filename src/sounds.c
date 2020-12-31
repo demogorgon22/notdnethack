@@ -811,6 +811,22 @@ asGuardian:
 			start_clockwinding(key, mtmp, turns);
 			break;
 		}
+		if(Role_if(PM_ANACHRONOUNBINDER) && mtmp->mpeaceful && u.ulevel == 30 && u.spiritSummons & SEAL_YMIR && !art_already_exists(ART_ILLITHID_STAFF)){
+		    pline("Go bravely with Ilsensine!");
+		    struct obj *saber;
+		    saber = mksobj(DOUBLE_LIGHTSABER, TRUE, FALSE);
+		    saber = oname(saber, artiname(ART_ILLITHID_STAFF));
+		    saber->oerodeproof = TRUE;
+		    saber->blessed = TRUE;
+		    saber->cursed = FALSE;
+		    saber->spe = rn2(5);
+		    pline("%s %s %s to you.", Monnam(mtmp),
+				    "hands", the(xname(saber)));
+		    saber = addinv(saber);	/* into your inventory */
+		    (void) encumber_msg();
+		    break;
+
+	    }
 	    quest_chat(mtmp);
 	    break;
 	case MS_SELL: /* pitch, pay, total */
