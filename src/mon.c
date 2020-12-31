@@ -4337,6 +4337,12 @@ register struct monst *mtmp;
 	}
 	if(mtmp->iswiz) wizdead();
 	if(mtmp->data->msound == MS_NEMESIS) nemdead();        
+	if(mtmp->mtyp >= PM_AHAZU && mtmp->mtyp <= PM_YMIR){
+		if(mtmp->mtyp<PM_MUNINN)
+			unbind(sealKey[(mtmp->mtyp-PM_AHAZU)],FALSE);
+		else
+			unbind(sealKey[(mtmp->mtyp-PM_AHAZU)-1],FALSE);
+	}
 	//Asc items and crucial bookkeeping
 	if(Race_if(PM_DROW) && !Role_if(PM_NOBLEMAN) && mtmp->mtyp == urole.neminum && !flags.made_bell){
 		(void) mksobj_at(BELL_OF_OPENING, mtmp->mx, mtmp->my, TRUE, FALSE);
@@ -4575,7 +4581,7 @@ boolean was_swallowed;			/* digestion */
 	else if (mdat->mtyp == PM_CHAOS && mvitals[PM_CHAOS].died == 1) {
 		if(Hallucination) livelog_write_string("perpetuated an asinine paradigm");
 		else livelog_write_string("destroyed Chaos");
-	} else if(mdat->geno & G_UNIQ && mvitals[monsndx(mdat)].died == 1){
+	} else if(mdat->geno & G_UNIQ && mvitals[monsndx(mdat)].died == 1 && (!rn2(5) || (monsndx(mdat) < PM_AHAZU || monsndx(mdat) > PM_YMIR))){
 		char buf[BUFSZ];
 		buf[0]='\0';
 		if(nonliving(mdat)) Sprintf(buf,"destroyed %s",noit_nohalu_mon_nam(mon));
