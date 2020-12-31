@@ -1750,6 +1750,7 @@ u_init()
 	u.usanity = 100;
 	u.umadness = 0L;
 	u.uinsight = 0;
+	if(Role_if(PM_ANACHRONOUNBINDER)) u.uinsight = 100;
 	u.sowdisc = 0;
 	u.voidChime = 0;
 	adjabil(0,1);

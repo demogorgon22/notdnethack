@@ -1265,6 +1265,8 @@ void
 change_usanity(delta)
 int delta;
 {
+	/* ACU is immune to insanity as their mind is only a piece of a group*/
+	if(Role_if(PM_ANACHRONOUNBINDER)) return;
 	if(discover || wizard)
 		pline("Sanity change: %d + %d", u.usanity, delta);
 	u.usanity += delta;
@@ -1314,6 +1316,8 @@ int delta;
 boolean
 check_insight()
 {
+	/*ACU's full insight doesn't have negative effects*/
+	if(Role_if(PM_ANACHRONOUNBINDER)) return FALSE;
 	int insight;
 	if(u.uinsight > INSIGHT_RATE/20)
 		insight = INSIGHT_RATE/20;
