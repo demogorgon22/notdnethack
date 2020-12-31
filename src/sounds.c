@@ -2852,6 +2852,21 @@ binder_nearvoid_slots()
 	return numSlots;
 }
 
+
+static void 
+summon_spirit(seal, ward, mndx, x, y)
+long seal;
+int ward;
+int mndx;
+int x;
+int y;
+{
+	makemon(&mons[mndx], x, y, MM_ADJACENTOK);
+	u.spiritSummons |= seal;
+	u.sealsKnown &= ~(seal);
+	bindspirit(ward);
+}
+
 int
 dobinding(tx,ty)
 int tx,ty;
@@ -2883,7 +2898,10 @@ int tx,ty;
     }
 	
 	if(m_at(tx,ty) && (ep->ward_id != ANDROMALIUS || m_at(tx,ty)->mtyp != PM_SEWER_RAT)) return 0;
-	
+	if(Role_if(PM_ANACHRONOUNBINDER) && ep->ward_id >= FIRST_SEAL && ep->ward_id <= SEAL_YMIR && (u.spiritSummons & (1 << (ep->ward_id - FIRST_SEAL)))){
+		You("have already released that spirit from the void.");
+		return 0;
+	}	
 	switch(ep->ward_id){
 	case AHAZU:{
 		if(u.sealTimeout[AHAZU-FIRST_SEAL] < moves){
@@ -2891,6 +2909,11 @@ int tx,ty;
 			//Ahazu requires that his seal be drawn in a pit.
 			if(t && t->ttyp == PIT){
 				pline("The walls of the pit are lifted swiftly away, revealing a vast starry expanse beneath the world.");
+				if(Role_if(PM_ANACHRONOUNBINDER)){
+					pline("Ahazu, the seizer, greets you with open mouth.");			
+					summon_spirit(SEAL_AHAZU,AHAZU,PM_AHAZU,tx,ty);
+					return 0;
+				}
 				if(u.sealCounts < numSlots){
 					pline("A voice whispers from below:");
 					pline("\"All shall feed the shattered night.\"");
