@@ -8985,6 +8985,18 @@ register int	mmflags;
 			if(hides_under(ptr) && OBJ_AT(x, y))
 			    mtmp->mundetected = TRUE;
 		break;
+		case S_CENTAUR:
+			if(mndx == PM_MISKA){
+				mtmp->mhpmax = 10*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
+			}
+		break;
+		case S_VORTEX:
+			if(mndx == PM_TENEBROUS){
+				mtmp->mhpmax = 3*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
+			}
+		break;
 		case S_LIGHT:
 		case S_ELEMENTAL:
 			if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT) {
@@ -9071,6 +9083,9 @@ register int	mmflags;
 			} else if(mndx == PM_KUKER){ 
 				mtmp->mhpmax = mtmp->m_lev*8 - 4; //Max HP
 				mtmp->mhp = mtmp->mhpmax;
+			}else if(mndx == PM_COSMOS || mndx == PM_NUDZIARTH){
+				mtmp->mhpmax = 10*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
 			}
 		break;
 	    case S_GIANT:
@@ -9079,6 +9094,10 @@ register int	mmflags;
 					for(num = rn1(3,3); num >= 0; num--) makemon(&mons[PM_DEEPER_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 					for(num = rn1(10,10); num >= 0; num--) makemon(&mons[PM_DEEP_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 				}
+			}
+			if(mndx == PM_YMIR){
+				mtmp->mhpmax = 5*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
 			}
 		break;
 		case S_HUMAN:
@@ -9112,6 +9131,10 @@ register int	mmflags;
 						tmpm = makemon(&mons[PM_BATTLE_BAT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 					}
+				}
+				if(mndx == PM_NUMINA){
+					mtmp->mhpmax = 10*mtmp->mhpmax;
+					mtmp->mhp = mtmp->mhpmax;
 				}
 			}
 		break;
@@ -9494,6 +9517,10 @@ register int	mmflags;
 			}
 			else if(mndx == PM_PALE_NIGHT){
 				mtmp->mvar_paleWarning = 0;
+			}
+			else if(mndx == PM_THE_ALIGNMENT_THING){
+				mtmp->mhpmax = 15*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
 			}
 			if(mndx == PM_INCUBUS){
 				if(Is_grazzt_level(&u.uz)){
