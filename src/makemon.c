@@ -7877,56 +7877,44 @@ xchar x, y;	/* clone's preferred location or 0 (near mon) */
 	m2->mhp = mon->mhp / 2;
 	mon->mhp -= m2->mhp;
 
+	/* place the monster -- we want to do this before any display things happen */
+	place_monster(m2, m2->mx, m2->my);
+
 	/* since shopkeepers and guards will only be cloned if they've been
 	 * polymorphed away from their original forms, the clone doesn't have
 	 * room for the extra information.  we also don't want two shopkeepers
 	 * around for the same shop.
 	 */
-	if (mon->isshk) m2->isshk = FALSE;
-	if (mon->isgd) m2->isgd = FALSE;
-	if (mon->ispriest) m2->ispriest = FALSE;
-	place_monster(m2, m2->mx, m2->my);
+	/* handle all mextra fields */
+	m2->mextra_p = (union mextra *)0;	/* needs its own */
+	/* DO copy these */
+	cpy_mx(mon, m2, MX_EDOG);
+	cpy_mx(mon, m2, MX_EHOR);
+	cpy_mx(mon, m2, MX_EMIN);
+	cpy_mx(mon, m2, MX_ENAM);
+	/* DON'T copy these */
+	m2->isshk = FALSE;		// MX_ESHK
+	m2->ispriest = FALSE;	// MX_EPRI
+	m2->isgd = FALSE;		// MX_EVGD
+
+	/* handle monster lightsources */
 	if (emits_light_mon(m2))
 	    new_light_source(LS_MONSTER, (genericptr_t)m2, emits_light_mon(m2));
-	if (M_HAS_NAME(mon)) {
-		cpy_mx(mon, m2, MX_ENAM);
-	} else if (mon->isshk) {
-	    m2 = christen_monst(m2, shkname(mon));
-	}
 
 	/* not all clones caused by player are tame or peaceful */
 	if (!flags.mon_moving) {
-	    if (mon->mtame)
-		m2->mtame = rn2(max(2 + u.uluck, 2)) ? mon->mtame : 0;
+	    if (mon->mtame) {
+			m2->mtame = rn2(max(2 + u.uluck, 2)) ? mon->mtame : 0;
+			if (!m2->mtame)
+				untame(m2, 1);
+		}
 	    else if (mon->mpeaceful)
-		m2->mpeaceful = rn2(max(2 + u.uluck, 2)) ? 1 : 0;
-	}
-
-	newsym(m2->mx,m2->my);	/* display the new monster */
-	if (m2->mtame) {
-	    struct monst *m3;
-
-	    if (mon->isminion) {
-			cpy_mx(mon, m2, MX_EMIN);
-	    } else {
-			/* because m2 is a copy of mon it is tame but not init'ed.
-			* however, tamedog will not re-tame a tame dog, so m2
-			* must be made non-tame to get initialized properly.
-			*/
-			struct monst * m3;
-			m2->mtame = 0;
-			if ((m3 = tamedog(m2, (struct obj *)0)) != 0) {
-				m2 = m3;
-				cpy_mx(mon, m2, MX_EDOG);
-			}
-	    }
-	}
-	/* horrors should keep their extended structure. */
-	if (is_horror(m2->data)) {
-		cpy_mx(mon, m2, MX_EHOR);
+			m2->mpeaceful = rn2(max(2 + u.uluck, 2)) ? 1 : 0;
 	}
 	set_malign(m2);
 
+	/* display the new monster */
+	newsym(m2->mx,m2->my);
 	return m2;
 }
 
@@ -8033,6 +8021,7 @@ register int	mmflags;
 	boolean randmonst = !ptr;
 	unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
 	boolean unsethouse = FALSE;
+	boolean oneOffTemplate = FALSE;
 	
 	if(Race_if(PM_DROW) && in_mklev && Is_qstart(&u.uz) && 
 		(ptr->mtyp == PM_SPROW || ptr->mtyp == PM_DRIDER || ptr->mtyp == PM_CAVE_LIZARD || ptr->mtyp == PM_LARGE_CAVE_LIZARD)
@@ -8545,7 +8534,7 @@ register int	mmflags;
 		unsethouse = TRUE;
 		m_initlgrp(mtmp, mtmp->mx, mtmp->my);
 	}
-	/* on Echo's level, everything is skeletons??? This seems not right, but it is still a work in progress */
+	/* Echo is always given the skeleton template */
 	else if(mtmp->mtyp == PM_ECHO){
 		mkmon_template = SKELIFIED;
 		unsethouse = TRUE;
@@ -8581,6 +8570,8 @@ register int	mmflags;
 	/* insight check: making yith */
 	else if(randmonst && !mkmon_template && check_insight()){
 		mkmon_template = YITH;
+		//NOT unsethouse, Yith are infiltrators and will appear as singletons inside a larger group.
+		oneOffTemplate = TRUE;
 	}
 	/* most general case at bottom -- creatures randomly being zombified */
 	else if(randmonst && !mkmon_template && can_undead(mtmp->data) && !Is_rogue_level(&u.uz)){
@@ -8601,6 +8592,14 @@ register int	mmflags;
 			m_initgrp(mtmp, mtmp->mx, mtmp->my, groupsz);
 		}
 	}
+	
+	//"Living" creatures generated in heaven or hell are in fact already dead (and should not leave corpses).
+	if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+		&& !is_rider(mtmp->data) 
+		&& !nonliving(mtmp->data)
+	)
+		mtmp->mpetitioner = TRUE;
+	
 	if(mkmon_template){
 		set_template(mtmp, mkmon_template);
 		/* special case: some templates increase the level of the creatures made */
@@ -8621,6 +8620,11 @@ register int	mmflags;
 		/* zombies and other derived undead are much less likely to have their items */
 		if (is_undead(mtmp->data))
 			allow_minvent = rn2(2);
+	}
+	
+	//One-off templates like Yith should be unset immediately after being applied
+	if(oneOffTemplate){
+		mkmon_template = 0;
 	}
 	
 	if(Race_if(PM_DROW) && in_mklev && Is_qstart(&u.uz) && 
@@ -9304,7 +9308,7 @@ register int	mmflags;
 			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 		}
 	}
-	if (mitem && allow_minvent) (void) mongets(mtmp, mitem);
+	if (mitem) (void) mongets(mtmp, mitem);
 	
 	if(in_mklev) {
 		if(((is_ndemon(ptr)) ||

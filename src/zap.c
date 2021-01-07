@@ -1773,6 +1773,8 @@ poly_obj(obj, id)
 
 	/* update the weight */
 	otmp->owt = weight(otmp);
+	/* update the color */
+	set_object_color(otmp);
 
 	/* for now, take off worn items being polymorphed */
 	if (obj_location == OBJ_INVENT) {
@@ -3751,7 +3753,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 					}
 				}
 				/* zap missed */
-				else {
+				else if (cansee(sx, sy)) {
 					miss(fltxt, mdef);
 				}
 

@@ -595,6 +595,10 @@ const char *name;
 		
 		/* body type */
 		if (is_malleable_artifact(&artilist[obj->oartifact])); //keep current/default body type
+		else if (Role_if(PM_PRIEST) && obj->oartifact == ART_MITRE_OF_HOLINESS)
+			obj->bodytypeflag = ((&mons[urace.malenum])->mflagsb&MB_HEADMODIMASK);
+		else if (Pantheon_if(PM_NOBLEMAN) && (obj->oartifact == ART_HELM_OF_THE_DARK_LORD || obj->oartifact == ART_CROWN_OF_THE_SAINT_KING))
+			obj->bodytypeflag = ((&mons[urace.malenum])->mflagsb&MB_HEADMODIMASK);
 		else obj->bodytypeflag = MB_HUMANOID;
 		
 		/* viperwhip heads */
@@ -1311,10 +1315,27 @@ register struct monst *mtmp;
 }
 
 char *
+a_ptrnam(ptr)
+register struct permonst *ptr;
+{
+	return x_ptrnam(ptr, ARTICLE_A, (char *)0, FALSE);
+}
+
+char *
 Amonnam(mtmp)
 register struct monst *mtmp;
 {
 	register char *bp = a_monnam(mtmp);
+
+	*bp = highc(*bp);
+	return(bp);
+}
+
+char *
+Aptrnam(ptr)
+register struct permonst *ptr;
+{
+	register char *bp = a_ptrnam(ptr);
 
 	*bp = highc(*bp);
 	return(bp);

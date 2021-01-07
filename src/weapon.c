@@ -626,9 +626,9 @@ int otyp;
 
 	case SEISMIC_HAMMER:		if (chrgd){ ocd *= 3; } break;
 	case ACID_VENOM:			if (obj&&obj->ovar1){ ocn = 0; flat = obj->ovar1; } else{ add(6); } break;
-	case LIGHTSABER:			spe_mult = 3; ocn += 2; if(obj&&obj->altmode){ plus(3,3); } break;		// external special case: lightsaber forms
-	case BEAMSWORD:				spe_mult = 3; ocn += 2; if(obj&&obj->altmode){ plus(3,3); } break;		// external special case: Atma Weapon, lightsaber forms
-	case DOUBLE_LIGHTSABER:		spe_mult = 3; ocn += 2; if(obj&&obj->altmode){ ocn+=3; } break;			// external special case: lightsaber forms
+	case LIGHTSABER:			spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: lightsaber forms
+	case BEAMSWORD:				spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: Atma Weapon, lightsaber forms
+	case DOUBLE_LIGHTSABER:		spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	}
 #undef plus_base
 #undef plus
@@ -640,15 +640,12 @@ int otyp;
 	if (obj && (otyp == LIGHTSABER || otyp == BEAMSWORD || otyp == DOUBLE_LIGHTSABER) && !litsaber(obj))
 	{
 		spe_mult = 1;
-		if(obj->oartifact == ART_FLUORITE_OCTAHEDRON){
-			ocn = 1;
-			ocd = 8;
-		} else {
-			ocn = 1;
-			ocd = 2;
-		}
+		ocn = 1;
+		ocd = 2;
 		bonn = 0;
 		bond = 0;
+		exploding = FALSE;
+		lucky = FALSE;
 	}
 	/* kamerel vajra */
 	if (obj && otyp == KAMEREL_VAJRA)
@@ -717,6 +714,13 @@ int otyp;
 			ocn = 2;
 		}
 	}
+	/* lightsabers with the Fluorite Octet socketed */
+	if (obj && obj->oartifact == ART_FLUORITE_OCTAHEDRON && litsaber(obj)) {
+		/* Fluorite Octet overrides the number of dice -- only 1 per blade, not 3 */
+		ocn /= 3;
+		/* but keep spe_mult */
+	}
+
 	/* the Tentacle Rod gets no damage from enchantment */
 	if (obj && obj->oartifact == ART_TENTACLE_ROD)
 		spe_mult = 0;
@@ -887,7 +891,10 @@ int spec;
 		}
 		break;
 	case MIRRORBLADE:{
-		struct obj * otmp2 = (youdefend ? uwep : MON_WEP(mon));
+		struct obj *otmp2 = 0;
+		if(mon){
+			otmp2 = (youdefend ? uwep : MON_WEP(mon));
+		}
 		if (otmp2 && otmp2->otyp == MIRRORBLADE)
 		{// clashing mirrorblades are quite deadly
 			// 2 dice, exploding, with a flat explosion bonus of the average of attacker's and defender's weapons
@@ -1112,7 +1119,7 @@ int spec;
 			tmp = 0;
 	}
 	/* Flaying weapons don't damage armored foes */
-	if (check_oprop(otmp, OPROP_FLAYW) && mon && some_armor(mon))
+	if ((check_oprop(otmp, OPROP_FLAYW) || check_oprop(otmp, OPROP_LESSER_FLAYW)) && mon && some_armor(mon))
 		tmp = 1;
 	/* Smaug gets stabbed */
 	if(is_stabbing(otmp) && ptr->mtyp == PM_SMAUG)

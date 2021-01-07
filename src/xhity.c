@@ -2459,7 +2459,7 @@ int vis;
 
 	if (vis == -1)
 		vis = getvis(magr, mdef, 0, 0);
-
+	
 	switch (attk->adtyp) {
 		/* INT attacks always target heads */
 	case AD_DRIN:
@@ -2487,6 +2487,10 @@ int vis;
 		if (!obj) obj = (youdef ? uarm : which_armor(mdef, W_ARM));
 		if (!obj) obj = (youdef ? uarmu : which_armor(mdef, W_ARMU));
 	}
+	
+	//Star spawn bypass most helmets.
+	if(magr && magr->mtyp == PM_STAR_SPAWN && obj && obj->oartifact != ART_APOTHEOSIS_VEIL)
+		return FALSE;
 
 	if (obj && (
 		(obj->greased || obj->otyp == OILSKIN_CLOAK) ||			/* greased (or oilskin) armor */
@@ -3253,6 +3257,10 @@ int flat_acc;
 				}
 			}
 		}
+		/* gnomes are especially accurate, with weapons or ranged or any other "proper" attacks... not a zombie's claw attack. */
+		if (magr && (youagr ? Race_if(PM_GNOME) : is_gnome(pa)))
+			wepn_acc += 2;
+
 		/* skill bonus (player-only; applies without a weapon as well) */
 		if (youagr) {
 			int wtype;
@@ -6788,22 +6796,34 @@ boolean ranged;
 
 		/* protected by helmets */
 		otmp = (youdef ? uarmh : which_armor(mdef, W_ARMH));
-		if (otmp && ((
+		if(pa->mtyp == PM_STAR_SPAWN && otmp && is_hard(otmp) && otmp->oartifact != ART_APOTHEOSIS_VEIL){
+			if (youdef) {
+				pline("%s somehow reaches right past your helmet!", Monnam(magr));
+			}
+			else if (vis) {
+				pline("%s somehow reach right past %s helmet!",
+					(youagr ? "You" : s_suffix(Monnam(magr))),
+					s_suffix(mon_nam(mdef))
+					);
+			}
+		} else if (otmp && is_hard(otmp) && ((
 			otmp->otyp == PLASTEEL_HELM ||
 			otmp->otyp == CRYSTAL_HELM ||
 			otmp->otyp == PONTIFF_S_CROWN
 			) || (
 			rn2(8)
-			))) {
+			))
+		){
 			if (youdef) {
 				/* not body_part(HEAD) */
 				Your("helmet blocks the attack to your head.");
 			}
 			else if (vis) {
-				Strcpy(buf, s_suffix(Monnam(mdef)));
 				pline("%s helmet blocks %s attack to %s head.",
-					buf, s_suffix(mon_nam(magr)),
-					mhis(mdef));
+					s_suffix(Monnam(mdef)),
+					(youagr ? "your" : s_suffix(mon_nam(magr))),
+					mhis(mdef)
+					);
 			}
 			/* don't do any further damage or anything, but do trigger retaliation attacks */
 			return MM_HIT;

@@ -522,10 +522,10 @@ register struct monst *mtmp;
 	    case PM_VAMPIRE:
 	    case PM_VAMPIRE_LORD:
 		/* include mtmp in the mkcorpstat() call */
-		if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+		if(mtmp->mpetitioner 
 			&& !is_rider(mtmp->data) 
 			&& !(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_LIFE && mtmp->mtame)
-		) //u.uevent.invoked || 
+		) 
 			break;
 		num = undead_to_corpse(mndx);
 		obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, TRUE);
@@ -559,7 +559,7 @@ register struct monst *mtmp;
 				mtmp->mintrinsics[(DISPLACED-1)/32] &= ~(1 << (DISPLACED-1)%32);
 			mtmp->mvar_syllable = 0; //Lose the bonus if resurrected
 		}
-		if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+		if(mtmp->mpetitioner 
 			&& !is_rider(mtmp->data) 
 			&& !(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_LIFE && mtmp->mtame)
 		) //u.uevent.invoked || 
@@ -798,7 +798,7 @@ register struct monst *mtmp;
 			} else {
 				obj = mksobj_at(BROKEN_ANDROID, x, y, FALSE, FALSE);
 			}
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 			) //u.uevent.invoked || 
 				break;
@@ -873,7 +873,7 @@ register struct monst *mtmp;
 			} else {
 				obj = mksobj_at(BROKEN_GYNOID, x, y, FALSE, FALSE);
 			}
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 			) //u.uevent.invoked || 
 				break;
@@ -899,7 +899,7 @@ register struct monst *mtmp;
 			} else {
 				obj = mksobj_at(BROKEN_GYNOID, x, y, FALSE, FALSE);
 			}
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 			) //u.uevent.invoked || 
 				break;
@@ -930,7 +930,7 @@ register struct monst *mtmp;
 			} else {
 				obj = mksobj_at(BROKEN_GYNOID, x, y, FALSE, FALSE);
 			}
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 			) //u.uevent.invoked || 
 				break;
@@ -1138,7 +1138,7 @@ register struct monst *mtmp;
 		goto default_1;
 		break;
 	    case PM_EMBRACED_DROWESS:
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 				&& !(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_LIFE && mtmp->mtame)
 			) //u.uevent.invoked || 
@@ -1157,7 +1157,7 @@ register struct monst *mtmp;
 			mongone(mon);
 		break;
 	    case PM_PARASITIZED_EMBRACED_ALIDER:
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 				&& !(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_LIFE && mtmp->mtame)
 			) //u.uevent.invoked || 
@@ -1175,7 +1175,7 @@ register struct monst *mtmp;
 				mkcorpstat(CORPSE, mon, (struct permonst *)0, x, y, FALSE);
 				mongone(mon);
 			}
-			if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+			if(mtmp->mpetitioner 
 				&& !is_rider(mtmp->data) 
 			) //u.uevent.invoked || 
 				break;
@@ -1187,7 +1187,7 @@ register struct monst *mtmp;
 	    default:
 		if (mvitals[mndx].mvflags & G_NOCORPSE)
 		    return (struct obj *)0;
-		if((In_hell(&u.uz) || In_endgame(&u.uz)) 
+		if(mtmp->mpetitioner 
 			&& !is_rider(mtmp->data) 
 			&& !(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_LIFE && mtmp->mtame)
 		) //u.uevent.invoked || 

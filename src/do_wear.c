@@ -1732,11 +1732,11 @@ boolean noisy;
 		} else if (uarm) {
 			if (noisy) already_wearing("some armor");
 			err++;
-		} else if(!Is_dragon_scales(otmp) && (youracedata->msize != otmp->objsize) && !(is_elven_armor(otmp) && abs(otmp->objsize - youracedata->msize) <= 1)){
+		} else if(!arm_size_fits(youracedata,otmp)){
 			if (noisy)
 			pline_The("%s is the wrong size for you.", c_armor);
 			err++;
-		} else if(!Is_dragon_scales(otmp) && !arm_match(youracedata,otmp)){
+		} else if(!arm_match(youracedata,otmp)){
 			if (noisy)
 			pline_The("%s is the wrong shape for your body.", c_armor);
 			err++;
@@ -2584,10 +2584,16 @@ struct monst *magr;
 	/* Having the Deep Sea glyph increase magical DR by 3 */
 	if (active_glyph(DEEP_SEA))
 		bas_udr += 3;
-
+	
+	//Star spawn reach extra-dimensionally past all armor, even bypassing natural armor.
+	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU)){
+		arm_udr = 0;
+		nat_udr = 0;
+	}
+	
 	/* Combine into total */
 	int total_dr = bas_udr;
-	if(arm_udr >= 0 && nat_udr >= 0) {
+	if(arm_udr > 0 && nat_udr > 0) {
 		total_dr += (int)sqrt(nat_udr*nat_udr + arm_udr*arm_udr);
 	}
 	else {
@@ -3929,7 +3935,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if(!invoked){
-		if(rn2(30))
+		if(rn2(20))
 			return;
 		if(!nearby_targets(magr))
 			return;
@@ -4062,7 +4068,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if(!invoked){
-		if(rn2(30))
+		if(rn2(20))
 			return;
 		if(!nearby_targets(magr))
 			return;
@@ -4192,7 +4198,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if(!invoked){
-		if(rn2(30))
+		if(rn2(20))
 			return;
 		if(!nearby_targets(magr))
 			return;
@@ -4387,7 +4393,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if((invoked
-		|| !rn2(30)
+		|| !rn2(20)
 	) && (
 		nearby_targets(magr)
 		|| (magr == &youmonst && (uhp() < uhpmax() || u.uen < u.uenmax))
