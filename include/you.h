@@ -803,7 +803,7 @@ struct you {
 #define uandroid ((Race_if(PM_ANDROID) && !Upolyd) || (Upolyd && (youmonst.data->mtyp == PM_ANDROID || youmonst.data->mtyp == PM_GYNOID || youmonst.data->mtyp == PM_OPERATOR || youmonst.data->mtyp == PM_COMMANDER)))
 #define umechanoid (uclockwork || uandroid)
 //BAB
-#define BASE_ATTACK_BONUS	((Role_if(PM_BARBARIAN) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_ANACHRONONAUT) || \
+#define BASE_ATTACK_BONUS	((Role_if(PM_BARBARIAN) || Role_if(PM_ANACHRONOUNBINDER) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_ANACHRONONAUT) || \
 								Role_if(PM_PIRATE) || Role_if(PM_SAMURAI) || Role_if(PM_VALKYRIE) || (u.sealsActive&SEAL_BERITH) || \
 								(!uwep && (Role_if(PM_MONK) || (u.sealsActive&SEAL_EURYNOME))) || \
 								(uwep && is_lightsaber(uwep) && (Unblind_telepat || (Blind && Blind_telepat)))) ? 1.00 :\

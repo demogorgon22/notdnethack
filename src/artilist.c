@@ -2762,7 +2762,7 @@ A("The Plates of The Near Void",		CRYSTAL_PLATE_MAIL,		(const char *)0,
 	PHASING, (ARTI_PLUSTEN)
 	),
 
-A("The Elder Cerebral Fluid",				DAGGER,		(const char *)0,
+A("The Elder Cerebral Fluid",				DILITHIUM_CRYSTAL,		(const char *)0,
 	9999L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_NOCNT),
 	NO_MONS(),

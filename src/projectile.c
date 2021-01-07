@@ -214,6 +214,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			range = range/2 + 1;
 			initrange = initrange/2 + 1;
 		} else if((Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL) && youagr &&  !(
+			(forcedestroy) ||
 			(launcher) || /* no returning fired ammo */
 			(thrownobj->oartifact == ART_FLUORITE_OCTAHEDRON && thrownobj->quan > 1)	/* no multithrown fluorite octet for balance reasons */
 		)){
@@ -2126,7 +2127,8 @@ dofire()
 			(uwep->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE) && ACURR(A_STR) == STR19(25)) ||
 			(uwep->oartifact == ART_ANNULUS && (uwep->otyp == CHAKRAM || uwep->otyp == LIGHTSABER)) ||
 			(uwep->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && Race_if(PM_DWARF) && ACURR(A_STR) == STR19(25)) ||
-			(!is_blaster(uwep) && uandroid)
+			(!is_blaster(uwep) && uandroid) 
+			//(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL)
 			// (uwep->oartifact == ART_SICKLE_MOON)
 			)) {
 			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE);
