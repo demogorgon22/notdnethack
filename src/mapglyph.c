@@ -214,6 +214,19 @@ unsigned *ospecial;
 						color = offset == S_litroom ? CLR_GRAY : CLR_BLACK;
 					}
 				}
+			} else if (In_void(&u.uz)){
+				if(Is_sacris(&u.uz)){
+					if(offset >= S_vwall && offset <= S_trwall){
+						color = CLR_YELLOW;
+					}
+				} else if(Is_ilsensine(&u.uz)){
+					if(offset >= S_vwall && offset <= S_trwall){
+						color = CLR_WHITE;
+					}
+				}	
+				else if(offset >= S_vwall && offset <= S_trwall){
+					color = CLR_BLACK;
+				}
 			} else if(Is_sunsea(&u.uz)){
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_BROWN;

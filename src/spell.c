@@ -1474,7 +1474,8 @@ dospirit()
 			}
 			return 1;
 		} else {
-			You("don't have any spirits bound.");
+			if(Role_if(PM_ANACHRONOUNBINDER)) pline("No spirits walk the earth currently.");
+			else You("don't have any spirits bound.");
 			return 0;
 		}
 	}

@@ -218,7 +218,8 @@ struct monst {
 #define	DELOUSED		12	/* android flag: parasite is killed, but not host */
 #define	M_BLACK_WEB		13	/* Has a shadow blade attack */
 #define	M_GREAT_WEB		14	/* Has a stronger shadow blade attack */
-#define MAXTEMPLATE	M_GREAT_WEB
+#define	WHISPERING		15	/* Voidified */
+#define MAXTEMPLATE	WHISPERING
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */

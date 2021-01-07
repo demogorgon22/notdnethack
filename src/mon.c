@@ -118,6 +118,18 @@ int x,y;
     level.monsters[x][y] = (struct monst *)0;
 }
 
+static void 
+check_spirit_unbind(mtyp)
+int mtyp;
+{
+	if(mtyp >= PM_AHAZU && mtyp <= PM_YMIR){
+		if(mtyp<PM_MUNINN)
+			unbind(sealKey[(mtyp-PM_AHAZU)],FALSE);
+		else
+			unbind(sealKey[(mtyp-PM_AHAZU)-1],FALSE);
+	}
+}
+
 /* convert the monster index of an undead to its living counterpart */
 int
 undead_to_corpse(mndx)
@@ -371,6 +383,39 @@ register struct monst *mtmp;
 	    case PM_PLATINUM_DRAGON:
 		    obj = mksobj_at(SILVER_DRAGON_SCALE_MAIL, x, y, FALSE, FALSE);
 			obj = oname(obj, artiname(ART_DRAGON_PLATE));
+		goto default_1;
+	    case PM_AMON:
+			obj = mksobj_at(FROST_HORN, x, y, TRUE, FALSE);
+			newsym(x, y);
+		goto default_1;
+	    case PM_EDEN:
+			obj = mksobj_at(SILVER_DRAGON_SCALES, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_EDEN_S_SCALES));
+			newsym(x,y);
+		goto default_1;
+	    case PM_HUGINN:
+			obj = mksobj_at(DAGGER, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_THOUGHT));		
+			obj->blessed = FALSE;
+			obj->cursed = FALSE;
+			obj->spe = 0;
+			newsym(x,y);
+		goto default_1;
+	    case PM_MUNINN:
+			obj = mksobj_at(DAGGER, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_MEMORY));		
+			obj->blessed = FALSE;
+			obj->cursed = FALSE;
+			obj->spe = 0;
+			newsym(x,y);
+		goto default_1;
+	    case PM_SIMURGH:
+			obj = mksobj_at(FEATHER, x, y, FALSE, FALSE);
+			obj = oname(obj, artiname(ART_SIMURGH_S_FEATHER));		
+			obj->blessed = FALSE;
+			obj->cursed = FALSE;
+			obj->spe = 0;
+			newsym(x,y);
 		goto default_1;
 	    case PM_MANTICORE:
 		if (mtmp->mrevived ? !rn2(6) : TRUE) {
@@ -1026,6 +1071,12 @@ register struct monst *mtmp;
 			num = d(2,4);
 			while(num--)
 				obj = mksobj_at(LEATHER_ARMOR, x, y, TRUE, FALSE);
+			rem_mx(mtmp, MX_ENAM);
+		break;
+	    case PM_MARIONETTE:
+			num = d(2,4);
+			while(num--)
+				obj = mksobj_at(GRAPPLING_HOOK, x, y, TRUE, FALSE);
 			rem_mx(mtmp, MX_ENAM);
 		break;
 	    case PM_GOLD_GOLEM:
@@ -4298,6 +4349,7 @@ register struct monst *mtmp;
 	}
 	if(mtmp->iswiz) wizdead();
 	if(mtmp->data->msound == MS_NEMESIS) nemdead();        
+	check_spirit_unbind(mtmp->mtyp);
 	//Asc items and crucial bookkeeping
 	if(Race_if(PM_DROW) && !Role_if(PM_NOBLEMAN) && mtmp->mtyp == urole.neminum && !flags.made_bell){
 		(void) mksobj_at(BELL_OF_OPENING, mtmp->mx, mtmp->my, TRUE, FALSE);
@@ -4337,7 +4389,7 @@ register struct monst *mtmp;
 		u.uevent.ukilled_illurien = 1;
 		u.ill_cnt = rn1(1000, 250);
 	}
-	if(mtmp->mtyp == PM_ORCUS){
+	if(mtmp->mtyp == PM_ORCUS && !Role_if(PM_ANACHRONOUNBINDER)){
 		struct engr *oep = engr_at(mtmp->mx,mtmp->my);
 		if(!oep){
 			make_engr_at(mtmp->mx, mtmp->my,
@@ -4536,7 +4588,7 @@ boolean was_swallowed;			/* digestion */
 	else if (mdat->mtyp == PM_CHAOS && mvitals[PM_CHAOS].died == 1) {
 		if(Hallucination) livelog_write_string("perpetuated an asinine paradigm");
 		else livelog_write_string("destroyed Chaos");
-	} else if(mdat->geno & G_UNIQ && mvitals[monsndx(mdat)].died == 1){
+	} else if(mdat->geno & G_UNIQ && mvitals[monsndx(mdat)].died == 1 && (!rn2(5) || (monsndx(mdat) < PM_AHAZU || monsndx(mdat) > PM_YMIR))){
 		char buf[BUFSZ];
 		buf[0]='\0';
 		if(nonliving(mdat)) Sprintf(buf,"destroyed %s",noit_nohalu_mon_nam(mon));
@@ -4616,6 +4668,9 @@ boolean was_swallowed;			/* digestion */
 				else explode(mon->mx, mon->my, AD_PHYS, MON_EXPLODE, tmp, EXPL_MUDDY, 1);
 			} else if(mdat->mattk[i].adtyp == AD_NUKE){
 				explode(mon->mx, mon->my, AD_NUKE, MON_EXPLODE, tmp, EXPL_MUDDY, 2);
+			} else if(mdat->mattk[i].adtyp == AD_JACK){
+				explode(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 5);
+				return TRUE;
 			} else if(mdat->mattk[i].adtyp == AD_FIRE){
 				//mdat->mtyp == PM_BALROG || mdat->mtyp == PM_MEPHISTOPHELES || mdat->mtyp == PM_FLAMING_SPHERE){
 				explode(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 1);
@@ -4660,6 +4715,24 @@ boolean was_swallowed;			/* digestion */
 			}
 			else if(mdat->mattk[i].adtyp == AD_DARK){
 				explode(mon->mx, mon->my, AD_DARK, MON_EXPLODE, tmp, EXPL_MAGICAL, 2);
+			}
+			else if(mdat->mattk[i].adtyp == AD_SPIR){
+				if(Is_alignvoid(&u.uz)){
+					pline("The alignment void's balance falls apart and waves rush in!");
+					pline("Eerie winds begin to blow and the temple's trees wither!");
+					for (int x = 0; x < COLNO; x++) {
+						for (int y = 0; y < ROWNO; y++) {
+							if(levl[x][y].typ == SDOOR || levl[x][y].typ == DOOR) levl[x][y].typ = MOAT;
+							if(levl[x][y].typ == ICE) levl[x][y].typ = MOAT;/*considering only a partial chance of ice melting or trees dying*/
+							if(levl[x][y].typ == TREE) levl[x][y].typ = DEADTREE;
+						}
+					}
+					doredraw();
+				}
+				pline("%s realign into three figures!",Monnam(mon));
+				makemon(&mons[PM_MISKA], mon->mx, mon->my, MM_ADJACENTOK);
+				makemon(&mons[PM_NUDZIARTH], mon->mx, mon->my, MM_ADJACENTOK);
+				makemon(&mons[PM_COSMOS], mon->mx, mon->my, MM_ADJACENTOK);
 			}
 			else if(mdat->mattk[i].adtyp == AD_FRWK){
 				int x, y, i;
@@ -4898,6 +4971,9 @@ boolean was_swallowed;			/* digestion */
 	if (has_template(mon, SKELIFIED))
 		return FALSE;
 
+	if (has_template(mon, WHISPERING))
+		return FALSE;
+
 	if (has_template(mon, CRYSTALFIED))
 		return TRUE;
 
@@ -4925,6 +5001,9 @@ boolean was_swallowed;			/* digestion */
 		   || mdat->mtyp == PM_DARUTH_XAXOX
 		   || mdat->mtyp == PM_ORION
 		   || mdat->mtyp == PM_VECNA
+		   || mdat->mtyp == PM_HUGINN
+		   || mdat->mtyp == PM_MUNINN
+		   || mdat->mtyp == PM_SIMURGH
 		   || mdat->mtyp == PM_DEATH_EYE
 //		   || mdat->mtyp == PM_UNICORN_OF_AMBER
 		   || mdat->mtyp == PM_NIGHTMARE
@@ -5038,6 +5117,7 @@ mongone(mdef)
 register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
+	check_spirit_unbind(mdef->mtyp);
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
@@ -5064,6 +5144,7 @@ monvanished(mdef)
 register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
+	check_spirit_unbind(mdef->mtyp);
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
@@ -5799,7 +5880,7 @@ cleanup:
 		if (p_coaligned(mtmp)) u.ublessed = 0;
 		if (mdat->maligntyp == A_NONE)
 			adjalign((int)(ALIGNLIM / 4));		/* BIG bonus */
-	} else if (mtmp->mtame && !Role_if(PM_EXILE)) {
+	} else if (mtmp->mtame && !Role_if(PM_EXILE) && !Role_if(PM_ANACHRONOUNBINDER)) {
 		adjalign(-15);	/* bad!! */
 		/* your god is mighty displeased... */
 		if (!Hallucination) You_hear("the rumble of distant thunder...");

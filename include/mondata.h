@@ -146,6 +146,7 @@
 				 (ptr)->mtyp == PM_EARTH_ELEMENTAL || \
 				 (ptr)->mtyp == PM_TERRACOTTA_SOLDIER || \
 				 (ptr)->mtyp == PM_STONE_GOLEM || \
+				 (ptr)->mtyp == PM_SHIRO || \
 				 (ptr)->mtyp == PM_SENTINEL_OF_MITHARDIR || \
 				 (ptr)->mtyp == PM_GARGOYLE || \
 				 (ptr)->mtyp == PM_WINGED_GARGOYLE || \
@@ -575,7 +576,7 @@
 				 (ptr)->mtyp == PM_GIANT_SPIDER || (ptr)->mtyp == PM_PHASE_SPIDER || \
 				 (ptr)->mtyp == PM_MIRKWOOD_SPIDER || (ptr)->mtyp == PM_MIRKWOOD_ELDER || \
 				 (ptr)->mtyp == PM_SPROW || (ptr)->mtyp == PM_DRIDER || (ptr)->mtyp == PM_ALIDER || \
-				 (ptr)->mtyp == PM_EDDERKOP || \
+				 (ptr)->mtyp == PM_EDDERKOP ||  (ptr)->mtyp == PM_MISKA  || (ptr)->mtyp == PM_CHUPOCLOPS || \
 				 (ptr)->mtyp == PM_AVATAR_OF_LOLTH || (ptr)->mtyp == PM_DROW_MUMMY)
 #define is_unicorn(ptr)		((ptr)->mlet == S_UNICORN && likes_gems(ptr))
 #define is_longworm(ptr)	(\
@@ -706,6 +707,10 @@
 
 #define is_mind_flayer(ptr)	((ptr)->mtyp == PM_MIND_FLAYER || \
 				 (ptr)->mtyp == PM_MASTER_MIND_FLAYER || \
+				 (ptr)->mtyp == PM_ADVERSARY || \
+				 (ptr)->mtyp == PM_VILLITHID || \
+				 (ptr)->mtyp == PM_ULITHARID || \
+				 (ptr)->mtyp == PM_MENZOBERRANZAN || \
 				 (ptr)->mtyp == PM_STAR_SPAWN || \
 				 (ptr)->mtyp == PM_PARASITIZED_ANDROID || \
 				 (ptr)->mtyp == PM_PARASITIZED_GYNOID || \

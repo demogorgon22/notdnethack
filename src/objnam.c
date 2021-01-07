@@ -318,6 +318,8 @@ struct obj *otmp;
 		case ART_FLUORITE_OCTAHEDRON: return Hallucination ? hcolor(0) : "burning cobalt";
 		case ART_HEART_OF_AHRIMAN: return Hallucination ? hcolor(0) : "pulsing and shimmering ruby";
 		case ART_GLITTERSTONE: return Hallucination ? hcolor(0) : "glittering gold";
+		case ART_ILLITHID_STAFF: return Hallucination ? hcolor(0) : "tentacled";
+
 		
 		default: return Hallucination ? hcolor(0) : LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorText;
 	}
@@ -3132,6 +3134,8 @@ const char *oldstr;
 		/* don't singularize these: */
 		if (!BSTRNCMPI(bp, p- 4, "Eyes of the Overworld", 21) ||
 			!BSTRNCMPI(bp, p-11, "Great Claws of Urdlen", 21) || 
+			!BSTRNCMPI(bp, p-11, "Great Claws of Urdlen", 21) || 
+			!BSTRNCMPI(bp, p-6, "Plates of The Near Void", 23) || 
 			!BSTRNCMPI(bp, p-12, "Steel Scales of Kurtulmak", 25))
 			return bp;
 		else {
@@ -3904,6 +3908,7 @@ int wishflags;
 			mat = GEMSTONE;
 		} else if ((!strncmpi(bp, "stone ", l=6) || !strncmpi(bp, "ceramic ", l=8))
 			&& strncmpi(bp, "stone to flesh", 14) && strncmpi(bp, "stone dragon shield", 19)
+			&& strncmpi(bp, "stone mask", 10)
 			) {
 			mat = MINERAL;
 		} else if (!strncmpi(bp, "salt ", l=5)) {
@@ -4253,6 +4258,10 @@ int wishflags;
 	 && !strstri(bp, "lump ")
 	 && !strstri(bp, "rod ")
 	 && !strstri(bp, "finger ")
+	 && !strstri(bp, "crown of ")
+	 && !strstri(bp, "talisman of ")
+	 && !strstri(bp, "dread of ")
+	 && !strstri(bp, "plates of ")
 	 && !strstri(bp, "set of ")) {
 	    if ((p = strstri(bp, " of ")) != 0
 		&& (mntmp = name_to_mon(p+4)) >= LOW_PM)
@@ -4284,6 +4293,10 @@ int wishflags;
 	if (strncmpi(bp, "frosted lake", 12)) /* not a "frosted lake" */
 	if (strncmpi(bp, "chromatic dragon scales", 23)) /* not a "dragon" */
 	if (strncmpi(bp, "platinum dragon plate", 22)) /* not a "dragon" */
+	if (strncmpi(bp, "eden's scales", 12)) /* not a something bad */
+	if (strncmpi(bp, "eurynome's dancing shoes", 24)) /* not a something bad */
+	if (strncmpi(bp, "jack's torch", 12)) /* not jack*/
+	if (strncmpi(bp, "simurgh's feather", 17)) /* not simurgh*/
 	if (mntmp < LOW_PM && strlen(bp) > 2 &&
 	    (mntmp = name_to_mon(bp)) >= LOW_PM) {
 		int mntmptoo, mntmplen;	/* double check for rank title */

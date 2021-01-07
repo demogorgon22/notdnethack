@@ -376,6 +376,17 @@ struct you {
 #define MATTK_U_STYLE       27
 #define MATTK_U_MONST       28
 #define MATTK_U_ELMENTAL    29
+#define MATTK_TELEK	    30
+#define MATTK_CRAZE	    31
+#define MATTK_PULSE	    32
+
+
+
+#define ACU_RETURN_LVL 20
+#define ACU_TELEK_LVL 15
+#define ACU_REFL_LVL 14
+#define ACU_CRAZE_LVL 12
+#define ACU_PULSE_LVL 4
 
 	struct attribs	macurr,		/* for monster attribs */
 			mamax;		/* for monster attribs */
@@ -658,6 +669,7 @@ struct you {
 	
 	int sealTimeout[NUMINA-FIRST_SEAL]; //turn on which spirit will be again eligible for binding.
 	
+	long spiritSummons;	
 	int sealCounts;
 	long sealsActive;
 	long sealsUsed;
@@ -791,7 +803,7 @@ struct you {
 #define uandroid ((Race_if(PM_ANDROID) && !Upolyd) || (Upolyd && (youmonst.data->mtyp == PM_ANDROID || youmonst.data->mtyp == PM_GYNOID || youmonst.data->mtyp == PM_OPERATOR || youmonst.data->mtyp == PM_COMMANDER)))
 #define umechanoid (uclockwork || uandroid)
 //BAB
-#define BASE_ATTACK_BONUS	((Role_if(PM_BARBARIAN) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_ANACHRONONAUT) || \
+#define BASE_ATTACK_BONUS	((Role_if(PM_BARBARIAN) || Role_if(PM_ANACHRONOUNBINDER) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_ANACHRONONAUT) || \
 								Role_if(PM_PIRATE) || Role_if(PM_SAMURAI) || Role_if(PM_VALKYRIE) || (u.sealsActive&SEAL_BERITH) || \
 								(!uwep && (Role_if(PM_MONK) || (u.sealsActive&SEAL_EURYNOME))) || \
 								(uwep && is_lightsaber(uwep) && (Unblind_telepat || (Blind && Blind_telepat)))) ? 1.00 :\

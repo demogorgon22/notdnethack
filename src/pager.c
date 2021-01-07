@@ -1988,6 +1988,17 @@ get_description_of_damage_type(uchar id)
 	case AD_SQUE: return "steal Quest Artifact or Amulet";
 	case AD_SPHR: return "create elemental spheres";
 	case AD_DARK: return "dark";
+	case AD_ROCK: return "rocks";
+	case AD_RNBW: return "Iris special attack, hallu + sick";
+	case AD_JACK: return "big firey explosion, always leaves corpse";
+	case AD_YANK: return "yanks you to them";
+	case AD_PAIM: return "exploding magic missile spellbooks";
+	case AD_ALIG: return "alignment blast and opposite alignment";
+	case AD_SPIR: return "releases other alignment spirits";
+	case AD_COSM: return "crystal memories";
+	case AD_CRYS: return "dilithium crystals";
+	case AD_NUDZ: return "mirror blast";
+	case AD_WHIS: return "whispers from the void";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2073,6 +2084,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 	if (has_template(mtmp, ZOMBIFIED))		Strcat(name, " zombie");
 	else if (has_template(mtmp, SKELIFIED))	Strcat(name, " skeleton");
 	else if (has_template(mtmp, CRYSTALFIED)) Strcat(name, " vitrean");
+	else if (has_template(mtmp, WHISPERING)) Strcat(name, " of whispers");
 	else if (has_template(mtmp, FRACTURED))	Strcat(name, " witness");
 	else if (has_template(mtmp, ILLUMINATED))	Strcat(name, " shining one");
 	else if (has_template(mtmp, VAMPIRIC))	Strcat(name, " vampire");

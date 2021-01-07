@@ -214,7 +214,14 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			returning = TRUE;
 			range = range/2 + 1;
 			initrange = initrange/2 + 1;
+		} else if((Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL) && youagr &&  !(
+			(forcedestroy) ||
+			(launcher) || /* no returning fired ammo */
+			(thrownobj->oartifact == ART_FLUORITE_OCTAHEDRON && thrownobj->quan > 1)	/* no multithrown fluorite octet for balance reasons */
+		)){
+			returning = TRUE;
 		}
+
 	}
 
 	/* player exercises STR just be throwing heavy things */
@@ -279,6 +286,11 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 				return MM_MISS;
 			}
 		}
+		if(thrownobj->otyp == PSIONIC_PULSE){
+			pline("The pulse attenuates upwards.");
+			destroy_projectile(magr, thrownobj);
+			return MM_MISS;
+		}
 
 		/* weapon might return to your hand */
 		if (returning && !impaired) {
@@ -322,6 +334,11 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			if (youagr && !Weightless) {
 				pline("The laser beam is absorbed by the %s.", surface(bhitpos.x, bhitpos.y));
 			}
+			return MM_MISS;
+		}
+		if(thrownobj->otyp == PSIONIC_PULSE){
+			pline("The pulse is absorbed by the %s.", surface(bhitpos.x, bhitpos.y));
+			destroy_projectile(magr, thrownobj);
 			return MM_MISS;
 		}
 		/* Projectile hits floor. This calls end_projectile() */
@@ -728,6 +745,14 @@ struct obj * thrownobj;			/* Projectile object. Must be free. Will no longer exi
 			1);
 		obfree(thrownobj, (struct obj *)0);
 		break;
+	case BOULDER:
+		if(magr && magr->mtyp == PM_YMIR){
+			explode(bhitpos.x, bhitpos.y, AD_DRST, WEAPON_CLASS,
+				d(3, 10), EXPL_NOXIOUS, 1);
+			create_gas_cloud(bhitpos.x, bhitpos.y, 2, d(2,4),youagr);
+		}
+		obfree(thrownobj, (struct obj *)0);
+		break;
 
 	default:
 		obfree(thrownobj, (struct obj *)0);
@@ -760,11 +785,17 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 	if (!thrownobj)
 		return;
 
+	if (thrownobj->otyp == PSIONIC_PULSE && youagr && mdef && !DEADMONSTER(mdef)) {
+		pline("%s is thrown backwards by the force of your pulse!",Monnam(mdef));
+		mhurtle(mdef, u.dx, u.dy, (int)u.ulevel/3);
+	}
+
 	/* projectiles that never survive being fired; their special effects are handled in destroy_projectile() */
 	if (fired && (
 		thrownobj->otyp == ROCKET ||
 		thrownobj->otyp == BLASTER_BOLT ||
 		thrownobj->otyp == HEAVY_BLASTER_BOLT ||
+		thrownobj->otyp == PSIONIC_PULSE ||
 		is_bullet(thrownobj)
 		))
 	{
@@ -877,7 +908,7 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 		*thrownobj_p = NULL;
 		return;
 	}
-
+	
 	/* candles are snuffed */
 	(void)snuff_candle(thrownobj);
 
@@ -1083,7 +1114,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		return MM_MISS;
 	}
 	/* the player has a chance to burn some projectiles (not blaster bolts or laser beams) out of the air with a lightsaber */
-	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT)
+	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == PSIONIC_PULSE)
 		&& youdef && uwep && is_lightsaber(uwep) && litsaber(uwep) && (
 			(activeFightingForm(FFORM_SHIEN) && (!uarm || is_light_armor(uarm)) && rnd(3) < FightingFormSkillLevel(FFORM_SHIEN)) ||
 			(activeFightingForm(FFORM_SORESU) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm)) && rnd(3) < FightingFormSkillLevel(FFORM_SORESU))
@@ -2097,7 +2128,8 @@ dofire()
 			(uwep->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE) && ACURR(A_STR) == STR19(25)) ||
 			(uwep->oartifact == ART_ANNULUS && (uwep->otyp == CHAKRAM || uwep->otyp == LIGHTSABER)) ||
 			(uwep->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && Race_if(PM_DWARF) && ACURR(A_STR) == STR19(25)) ||
-			(!is_blaster(uwep) && uandroid)
+			(!is_blaster(uwep) && uandroid) 
+			//(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL)
 			// (uwep->oartifact == ART_SICKLE_MOON)
 			)) {
 			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE);
@@ -2168,6 +2200,11 @@ dofire()
 
 	if (attacktype(youracedata, AT_SPIT))
 		return dospit();
+
+	if(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_PULSE_LVL){
+		psionic_pulse();
+		return 1;
+	}
 
 	if (attacktype(youracedata, AT_ARRW)) {
 		struct attack * attk = attacktype_fordmg(youracedata, AT_ARRW, AD_ANY);
@@ -2950,6 +2987,16 @@ int n;	/* number to try to fire */
 		ammo_type = LOADSTONE;
 		qvr = mksobj(ammo_type, FALSE, FALSE);
 		qvr->cursed = 1;
+		rngmod = 8;
+		break;
+	case AD_ROCK:
+		ammo_type = ROCK;
+		qvr = mksobj(ammo_type, FALSE, FALSE);
+		rngmod = 8;
+		break;
+	case AD_CRYS:
+		ammo_type = DILITHIUM_CRYSTAL;
+		qvr = mksobj(ammo_type, FALSE, FALSE);
 		rngmod = 8;
 		break;
 	case AD_BLDR:

@@ -680,7 +680,7 @@ boolean artif;
 			case EGG:
 				otmp->corpsenm = NON_PM;	/* generic egg */
 
-				if (In_sokoban(&u.uz) || Is_gatetown(&u.uz)) break; /*Some levels shouldn't have mosnters spawning from eggs*/
+				if (In_sokoban(&u.uz) || Is_gatetown(&u.uz) || In_void(&u.uz)) break; /*Some levels shouldn't have mosnters spawning from eggs*/
 
 				if (!rn2(3)) for (tryct = 200; tryct > 0; --tryct) {
 					mndx = can_be_hatched(rndmonnum());

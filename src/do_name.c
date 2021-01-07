@@ -558,6 +558,8 @@ const char *name;
 			obj->corpsenm = PM_DWARF;
 		if (obj->oartifact == ART_MASK_OF_TLALOC)
 			obj->corpsenm = PM_GOD;
+		if (obj->oartifact == ART_STONE_MASK)
+			obj->corpsenm = PM_SHIRO;
 		
 		/* weight */
 		if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD)
@@ -752,6 +754,7 @@ boolean pname;
 		if (has_template(mtmp, ZOMBIFIED)) Strcat(buf, "'s zombie");
 		else if (has_template(mtmp, SKELIFIED)) Strcat(buf, "'s skeleton");
 		else if (has_template(mtmp, CRYSTALFIED)) Strcat(buf, "'s vitrean");
+		else if (has_template(mtmp, WHISPERING)) Strcat(buf, "'s whispers");
 		else if (has_template(mtmp, FRACTURED)) Strcat(buf, ", Witness of the Fracture");
 		else if (has_template(mtmp, ILLUMINATED)) Strcat(buf, "the Illuminated");
 		else if (has_template(mtmp, VAMPIRIC)) Strcat(buf, ", vampire");
@@ -766,6 +769,7 @@ boolean pname;
 		if (has_template(mtmp, ZOMBIFIED)) Strcat(buf, " zombie");
 		else if (has_template(mtmp, SKELIFIED)) Strcat(buf, " skeleton");
 		else if (has_template(mtmp, CRYSTALFIED)) Strcat(buf, " vitrean");
+		else if (has_template(mtmp, WHISPERING)) Strcat(buf, " whispers");
 		else if (has_template(mtmp, FRACTURED)) Strcat(buf, " witness");
 		else if (has_template(mtmp, ILLUMINATED)) Strcat(buf, " shining one");
 		else if (has_template(mtmp, VAMPIRIC)) Strcat(buf, " vampire");

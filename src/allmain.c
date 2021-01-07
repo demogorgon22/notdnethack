@@ -1438,6 +1438,7 @@ karemade:
 				makemon(&mons[PM_ASPECT_OF_THE_SILENCE], 0, 0, NO_MM_FLAGS);
 			}
 		    else if(!(Is_illregrd(&u.uz) && u.ualign.type == A_LAWFUL && !u.uevent.uaxus_foe) && /*Turn off random generation on axus's level if lawful*/
+				!In_void(&u.uz) &&
 				!rn2(u.uevent.udemigod ? 25 :
 				(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz) && !(Is_qstart(&u.uz) && !(quest_status.leader_is_dead))) ? 35 :
 				(In_quest(&u.uz) && Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend && u.uevent.qcompleted && u.ualign.record > 4) ? 210 : /*Drastically reduce spawn rate if the painting is peaceful*/
@@ -2569,6 +2570,8 @@ newgame()
 				com_pager(220);
 				com_pager(221);
 			}
+		} else if(Role_if(PM_ANACHRONOUNBINDER)){
+			com_pager(226);
 		} else if(Race_if(PM_WORM_THAT_WALKS)){
 			if(Role_if(PM_CONVICT)){
 				com_pager(214);
@@ -2713,6 +2716,12 @@ boolean new_game;	/* false => restoring an old game */
 		pline("Use #monster to adjust your clockspeed.");
 		You("do not heal naturally. Use '.' to attempt repairs.");
 	}
+	if(Role_if(PM_ANACHRONOUNBINDER)){
+		pline("Use #monster to use your psychic powers.");
+		pline("Press Ctrl^E or type #seal to engrave a seal of binding.");
+		pline("#chat to a fresh seal to contact the spirit beyond.");
+		pline("You must summon spirits to gain xlvl.");
+	}	
 	if(Race_if(PM_INCANTIFIER)){
 		pline("Incantifiers eat magic, not food, and do not heal naturally.");
 	}

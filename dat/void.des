@@ -1,0 +1,428 @@
+#
+# Big void.des yeah
+# by demo (the cool one not the one(s) that suck if other ones exist)
+# ^ ndnh2 im the new demo now and im the cool one and that other one sucked.
+
+
+
+
+#
+#
+# it's the lethe patch sanctum but flipped, with an extra corridor, and with LAVA
+#
+MAZE: "nearvoid",' '
+FLAGS: hardfloor,noteleport,nommap
+MESSAGE: "Your eyes are blasted with light! The whispers of the spirits once strong must perish."
+GEOMETRY:center,center
+#0         1         2   	   3	     4		   5		 6	       7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0LL---------LLLLLLLLL  -----          ...LL         .........                
+9L.|.......|..LLLLLL...|...|       ...LLL...    ...............     .......  
+8L.+.......+...LLLLL...+...|       .  .LL...   ................H##H...LL.... 
+7L.|.......|..LLLLLLL..|...|       ..         ...   ...........     .......  
+6LL---------..LLLLLLLLL----- -----  . -----  ...      .......                
+5LLLLLLLLLLL..LLLLLLLLLL|    |...|--S-|...|  ..            ++   ........     
+4LLL..............LLLLLL|    |...|....|...|  .. ......     ....... .. ...    
+3--------...........LLLL|    |...|....|...|--++-S-      ..................   
+2|....LL|............LLL|------+---+----+-|......|   .... ... ... .LL. ...LL 
+1|......+..............L|.................+.LLLL.| ...............LLLL.....L 
+0|......+..............L|.................+.LLLL.| ...............LLLL.....L 
+9|....LL|............LLL|-----+--+----+--S|......|   .... ... ... .LL. ...LL 
+8--------...........LLLL|   |..|....|...|.---++-S-      ..................   
+7LLL..............LLLLLL|   |..|....|...|.   .. ......     ....... .. ...    
+6LLLLLLLLLLL..LLLLLLLLLL|   |..|----|...|.   ..            ++   ........     
+5LL---------..LLLLLLLLL---------    -----.   ...      .......                
+4L.|.......|..LLLLLLL..|...|    ...     ..    ...   ...........     .......  
+3L.+.......+...LLLLL...+...|   ..L.. ....      ................H##H...LL.... 
+2L.|.......|..LLLLLL...|...|    ......  . ...   ...............     .......  
+1LL---------LLLLLLLLL  -----            ...L..      .........                
+0LL           LLLLLLLL                    ...                                
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0          1         2   	  3	      4	    5		  6	      7
+
+# Random Places for Cthulhu, the second Alhoon, and the Silver Key
+#RANDOM_PLACES:(04,09),(04,10),(03,02),(03,17),(34,02),(44,17),(16,02),(16,17)
+
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,20)
+# Invisible barrier separating the left & right halves of the level
+NON_PASSWALL:(26,00,27,20)
+
+# Regions
+#
+# Temple interior  
+REGION:(23,00,75,19),unlit,"ordinary"
+
+# Outer landing  
+REGION:(00,00,22,19),lit,"ordinary"
+
+# Outside Chambers
+REGION:(03,01,09,03),unlit,"ordinary"
+REGION:(01,08,06,11),unlit,"ordinary"
+REGION:(03,16,09,18),unlit,"ordinary"
+
+# Main Temple
+ALTAR:(71,09),neutral,altar
+ALTAR:(71,10),neutral,altar
+REGION:(52,05,74,14),unlit,"temple"
+
+# Northern Temple (Inner)
+ALTAR:(72,02),neutral,altar
+REGION:(66,01,74,03),unlit,"temple"
+
+# Northern Temple (Outer)
+ALTAR:(59,02),neutral,altar
+REGION:(49,00,61,04),unlit,"temple"
+
+# Souther Temple (Inner)
+ALTAR:(72,17),neutral,altar
+REGION:(66,16,74,18),unlit,"temple"
+
+# Southern Temple (Outer)
+ALTAR:(59,17),neutral,altar
+REGION:(49,15,61,19),unlit,"temple"
+
+# North Eastern Temple
+ALTAR:(39,01),neutral,altar
+REGION:(36,00,42,02),unlit,"temple"
+
+# South Eastern Tample
+ALTAR:(31,17),neutral,altar
+REGION:(30,16,35,18),unlit,"temple"
+
+# Stairs and Branch
+STAIR:(74,09),down
+#BRANCH:(69,08,74,11),(00,00,00,00)
+TELEPORT_REGION:(01,08,06,11),(0,0,0,0)
+
+# Drawbridges
+DRAWBRIDGE:(22,09),east,closed
+DRAWBRIDGE:(22,10),east,closed
+
+# Doors 68
+DOOR:closed,(07,09)
+DOOR:closed,(07,10)
+DOOR:locked,(10,02)
+DOOR:locked,(02,02)
+DOOR:locked,(10,17)
+DOOR:locked,(02,17)
+DOOR:closed,(22,02)
+DOOR:closed,(22,17)
+DOOR:closed,(39,08)
+DOOR:closed,(34,08)
+DOOR:closed,(30,08)
+DOOR:closed,(37,11)
+DOOR:closed,(32,11)
+DOOR:closed,(29,11)
+DOOR:locked,(40,11)
+DOOR:locked,(35,05)
+DOOR:locked,(41,09)
+DOOR:locked,(41,10)
+DOOR:locked,(59,05)
+DOOR:locked,(58,05)
+DOOR:locked,(59,14)
+DOOR:locked,(58,14)
+DOOR:locked,(45,07)
+DOOR:locked,(44,07)
+DOOR:locked,(45,12)
+DOOR:locked,(44,12)
+DOOR:locked,(47,07)
+DOOR:locked,(47,12)
+
+# Platform Guardians
+MONSTER:'@',"Andromalius",(16,02)
+
+MONSTER:'B',"Andrealphus",(23,17)
+# Landing Guards
+MONSTER:'q',"Amon",(19,08)
+MONSTER:'C',"Berith",(19,11)
+# Northern barracks
+MONSTER:'n',"Echidna",(04,01)
+
+# Southern barracks
+MONSTER:'@',"Shiro",(4,16)
+MONSTER:'D',"Eden",(06,18)
+
+#59,17 southern inner altar
+MONSTER:'&',"Balam",(59,17)
+
+# Traps on the landing
+#TRAP:"board",(65,08)
+#TRAP:"board",(65,11)
+#TRAP:"board",(61,08)
+#TRAP:"board",(61,11)
+#TRAP:"board",(58,08)
+#TRAP:"board",(58,11)
+#TRAP:"board",(63,02)
+#TRAP:"board",(63,17)
+#TRAP:"board",(55,02)
+#TRAP:"board",(55,17)
+
+
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+TRAP:"board",random
+
+
+## Priests, in the chambers before the temple
+MONSTER:'z',"Buer",(40,06)
+MONSTER:'s',"Chupoclops",(28,13)
+#
+## Door bell for the inner temple
+
+#top right altar
+MONSTER:'B',"Simurgh",(59,02)
+
+#back two altars
+MONSTER:'@',"Enki",(71,09)
+MONSTER:'n',"Eurynome",(71,10)
+# Main Temple
+MONSTER:'@',"Dantalion",(33,17)
+MONSTER:'&',"Astaroth",(48,06)
+MONSTER:'&',"Ahazu",(50,13)
+
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+
+
+
+
+#
+# This one is neat i call it DONT DIE (actually i call it near void 2)
+# So like its the ranger locate level that got monkeyed up quite a bit
+#
+MAZE: "nrvoid2",' '
+FLAGS: hardfloor,noteleport,nommap
+GEOMETRY:center,center
+#1234567890123456789012345678901234567890123456789012345678901234567890
+MAP
+..LLLLLLLLLLLL.......LL.........LL.......LLLLLLLLLLLLLL
+.LLLL........ ....... ..LLLLLLL.. ....... ........LLLLL
+LL....LLLLLLLL.......LLLLLLLLLLLLL.......LLLLLLLL....LL
+...LLLL.....LLLLL LLLLLLL.....LLLLLLL LLLLL.....LLLL...
+.LLL. ...... .L.....LL.. ..... ..LL.....L. ..... ..LLL.
+.LL..LL.....L. ..... ..LL.....LL.. ..... .L.....LL..LL.
+.LL.LLLLL LLLLL.....LLLLLLL LLLLLLL.....LLLLL LLLLL.LL.
+.LL.LLL.....LLLLLLLLL.. ....... ..LLLLLLLLL.....LLL.LL.
+.LL.LL...... .........LL.......LL......... ......LL.LL.
+.LL.LLL.....LLLLLLLLLLLL.......LLLLLLLLLLLL.....LLL.LL.
+.LL.LLLLL LLLL......LLLLLLLLLLLLLLL......LLLL LLLLL.LL.
+.LL.LLLLL.... ......LLL         LLL...... ....LLLLL.LL.
+.LL.LLLLLLLLLL...... ...LLLLLLL... ......LLLLLLLLLL.LL.
+.LL..LL.....LLLLL LLLLLLL.....LLLLLLL LLLLL.....LL..LL.
+.LLL.. ..... .L.....LL.. ..... ..LL.....L. ..... ..LLL.
+.LLLLLL.....L. ..... ..LL.....LL.. ..... .L.....LLLLLL.
+.LLLLLLLL LLLLL.....LLLLLLL LLLLLLL.....LLLLL LLLLLLLL.
+...LLL.......LLLLLLLLLLL.......LLLLLLLLLLL.......LLL...
+LL... ....... ..LLLLL.. ....... ..LLLLL. ........ ...LL
+LLLLLL.......LL.......LL.......LL.......LL.......LLLLLL
+ENDMAP
+# Dungeon Description
+#REGION:(00,00,54,19),unlit,"ordinary"
+# Stairs
+STAIR:(00,00),up
+STAIR:(54,19),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,54,19)
+TELEPORT_REGION:(00,00,02,02),(0,0,0,0)
+NON_PASSWALL:(00,00,54,19)
+
+MONSTER:'D',"Fafnir",random
+MONSTER:'B',"Huginn",random
+MONSTER:'B',"Muninn",random
+MONSTER:'h',"Iris",random
+MONSTER:'h',"Malphas",random
+MONSTER:''',"Marionette",random
+MONSTER:'e',"Great Mother",random
+MONSTER:'d',"Naberius",random
+MONSTER:'.',"Orthos",random
+MONSTER:'@',"Ose",random
+MONSTER:'v',"Otiax",random
+MONSTER:'&',"Paimon",random
+MONSTER:'@',"Eve",random
+MONSTER:'v',"Tenebrous",random
+MONSTER:'H',"Ymir",random
+
+
+
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+
+
+#
+# I call it the alignment forest. Real neat coming out of lava into a little lake upon a frozen forest temple
+# This is based on whatever chris based his modified version of the ranger end lvl on
+# This map is pretty neat and it looks good.
+# --Demo
+# this is false, I call it the alignment temple, not forest
+#
+MAZE: "aligvoid", ' '
+FLAGS: hardfloor,noteleport,nommap
+GEOMETRY:center,center
+#0         1         2   	   3	     4	       5		 6	       7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+9LLL}}}}}}}}}}}}}}}}}}}IIIIIIIIIIIIIIIIIIIIIIIIIIIIITTTTTTTTTTTTIIITTTTTTTTTT
+8L.L}}}}}}}}}}}}}}}}}}IIIIIIIIIIIIIIIIIIIIIIIIIIITIIIITTTTTTTTIIIIIIITTTTTTTT
+7LLL}}}}}}}}}}}}}}}}}}IIIIIIIIIIIIIIIIIIIIIIIIIIIIITIIIIIIIIIIIIIIIIIIIIIITTT
+6}}}}}}}}}}}}}}}}}}}}ITTTTTTTTTTTTTTTT+TTTTTTTTTTTTTTTTITTTTTTTTTTTTTTTTIITTT
+5}}}}}}}}}}}}}}}}}}}IIITTTTTTTTTTTTTTTITTTTTIIIIIIIIIITITTTTTTTTIIIIIITTTITTT
+4}}}}}}}}}}}}}}}}}}}}}IITTTTTTTTTTTTTTITTTTTTIIIIIITTIIITIIIIIIIIIIIIITTTITTT
+3}}}}}}}}}}}}}}}}}}}}}}IIITTTTTTTTTTTT+TTTTTTTIIIITTTTIIIITTTTIIIIIIIIIITITTT
+2}}}}}}}}}}}}}}}}}}}}}}}}IITTTTTTT.........TTTTTTTTTTTTIITTTTTTIIIIIITTTTITTT
+1}}}}}}}}}}}}}}}}TTIII}TTT+TTTTTTT.........TTTTTTTTTTTIITTTTTTIIIIITTTTTTITTT
+0}}}}}}}}}}}}}}}}TIIIII+I+IIIIIII+.........+IIIIIIII+ITITTTTTTTTTTTTTTTTTITTT
+9}}}}}}}}}}}}}}}}TTIIITTITTTTTTTTT.........TTTTTTTTTTITITTTTTTTTTTTTTTTTTITTT
+8}}}}}}}}}}}}}}}}}}}}}}TITTTTTTTTT.........TTTI+ITTTTI+IIIIIIIIIIIIIIITTTITTT
+7}}}}}}}}}IIIIIIIII}}}}TITTTIIIITTTTTT+TTTTTTTITIIITTITITTTTTTTTTTTTTIITTITTT
+6}}}}}}}IIIIIIIIIIIITTTTITTIIIIIITTTTTITTTTTTTITTTTTTITITTIIIIIIITTTIITTTITTT
+5}}}}}}IIIIIIIIIIIIIIIIIIIIIIIIIIIIITTITTTTTTTIIIIIIIITITIIIIIIIIIFIITTTTITTT
+4}}}}}}}}}}IIIIIIIIIIITTTTTIIIIIIITTTTITTTTTTTTTTTTTTTTITTIIIIIIITTTTTTTTITTT
+3}}}}}}}}}}}}}}}}}}}}}ITTTTTTTTTTTTTTT+TTTTTTTTTTTTTTTTITTTTTTTTTTTTTTTTIIITT
+2}}}}}}}}}}}}}}}}IIIIIIIIIIIIIIIIITITIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIITT
+1}}}}}}}}}}}}}}}}}}}}}}IIIIIIIIIIIITIIITIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIITTT
+0}}}}}}}}}}}}}}}}}}}}}}}}IIIIIIIIIIITIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIITTTTT
+ENDMAP
+#RANDOM_PLACES:(49,07),(47,15),(57,06),(61,11)
+# Dungeon Description
+REGION:(00,00,75,19),lit,"ordinary"
+# Altar to ???
+BRANCH:(37,10,37,10),(0,0,0,0)
+ALTAR:(37,09),neutral,altar
+# Stairs
+STAIR:(01,01),up
+STAIR:(49,12),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+NON_PASSWALL:(00,00,75,19)
+#TELEPORT_REGION:(73,00,75,03),(0,0,0,0)
+MONSTER:'&',"The Alignment Thing",(37,09)
+#Doors
+DOOR:locked,(37,03)
+DOOR:locked,(37,06)
+DOOR:locked,(32,09)
+DOOR:locked,(24,09)
+DOOR:locked,(22,09)
+DOOR:locked,(25,08)
+DOOR:locked,(37,12)
+DOOR:locked,(37,16)
+DOOR:locked,(42,09)
+DOOR:locked,(51,09)
+DOOR:locked,(46,11)
+DOOR:locked,(53,11)
+
+# Objects
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+
+
+#
+# So this one is neat. Modified random ass level from the law tower that's all flipped around.
+# Blew up initial tower a bit. This level is meant to represent the game itself oh yeah im a super meta artist
+# The player should never be able to see the lava or the secret corridor (oh wait clairvoyance), just like how the game hide stuff
+# I'm kidding it's not art i just added it cause i thought it was funny
+# --Demo
+#
+MAZE: "farvoid",' '
+FLAGS: noteleport,hardfloor,nommap
+GEOMETRY: center, center
+#0         1         2         3         4         5         6         7     
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL------LL
+1|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|####SLL
+2|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|####|LL
+3|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL-----------------------------####---
+4|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL---.........+#############S####|####|
+5|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL--...----------------------|------###|
+6|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL---..---............---LLLLLL|####|####|
+7|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL||...--...----------...||LLLLL---#####---
+8|LLLLLLLLLLLLLL...LLLLLLLLLLLLLLLLL|..---..---........---..|LLLLLLL|#####|LL
+9|LLLLLLLLLLLLL.....LLLLLLLLLLLLLLLL|.--...--...------...--.|LLLLLLL|#####|LL
+0|LLLLLLLLLLLL.......LLLLLLLLLLLLLLL|.|..---..---....---..|.|LLLLLLL-------LL
+1|LLLLLLLLLLLL......................S.|.--...--........--.|.|LLLLLLLLLLLLLLLL
+2|LLLLLLLLLLLL.......LLLLLLLLLLLLLLL|.|.--....-........--.|.|LLLLLLLLLLLLLLLL
+3|LLLLLLLLLLLLL.....LLLLLLLLLLLLLLLL|.|..----.S.....----..|.|LLLLLLLLLLLLLLLL
+4|LLLLLLLLLLLLLL...LLLLLLLLLLLLLLLLL|.--....---...---....--.|LLLLLLLLLLLLLLLL
+5|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|..----...-----...----..|LLLLLLLLLLLLLLLL
+6|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL||....---...|...---....||LLLLLLLLLLLLLLLL
+7|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL---|...---...---...|---LLLLLLLLLLLLLLLLL
+8|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL||....-----....||LLLLLLLLLLLLLLLLLLLL
+9|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL----.......----LLLLLLLLLLLLLLLLLLLLL
+0|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL-------------LLLLLLLLLLLLLLLLLLLLLL
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7     
+STAIR: (67,6), up
+STAIR: (53,11), down
+#LADDER: (27,10), up
+NON_DIGGABLE:(00,00,75,20)
+NON_PASSWALL:(00,00,75,20)
+#TELEPORT_REGION:(00,12,08,20),(14,00,50,20)
+DOOR:locked,(51,04)
+# entire tower in a region, constrains monster migration?
+REGION:(24,00,60,20),unlit,"ordinary",unfilled
+ENGRAVING:(16,11),burn,"-_\  |_|\--|  \|--|_||\ _-  |\-"
+
+MONSTER:'@',"Numina",(49,12)
+
+MAZE: "ilsensin", ' '
+FLAGS: noteleport,hardfloor,nommap
+GEOMETRY: center, center
+MAP
+ ------- 
+ |.|.|.| 
+--.....--
+|..-|-..|
+|-..-...|
+|..-|-..|
+--.....--
+ |.|.|.| 
+ ------- 
+ENDMAP
+STAIR: (05,04), up
+ALTAR:(03,04),law,altar 
+MONSTER:'7',"Ilsensine The Fallen", (02,04), peaceful

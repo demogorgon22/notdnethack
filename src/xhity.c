@@ -38,6 +38,7 @@ static const int Soresu_counterattack[] = { 10, 15, 25 };
 struct attack noattack = { 0, 0, 0, 0 };
 struct attack basicattack  = { AT_WEAP, AD_PHYS, 1, 4 };
 struct attack grapple = { AT_HUGS, AD_PHYS, 0, 6 };	/* for grappler's grasp */
+struct attack acu_tent = { AT_TENT, AD_DRIN, 1, 4 };	/* for acu tentacles */
 
 /* getvis()
  * 
@@ -1657,6 +1658,7 @@ int * subout;					/* records what attacks have been subbed out */
 #define SUBOUT_GOATSPWN	0x0100	/* Goat spawn: seduction */
 #define SUBOUT_GRAPPLE	0x0200	/* Grappler's Grasp crushing damage */
 #define SUBOUT_SCORPION	0x0400	/* Scorpion Carapace's sting */
+#define SUBOUT_ACU	0x0800	/* ACU tentacle attack */
 int * tohitmod;					/* some attacks are made with decreased accuracy */
 {
 	struct attack * attk;
@@ -2058,6 +2060,11 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			*attk = *attacktype_fordmg(&mons[PM_SCORPION], AT_STNG, AD_DRST);
 			*subout |= SUBOUT_SCORPION;
 		}
+	}
+	
+	if (youagr && !Upolyd && Role_if(PM_ANACHRONOUNBINDER) && is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_ACU)) {
+		*attk = acu_tent;
+		*subout |= SUBOUT_ACU;
 	}
 
 	/* players can get a whole host of spirit attacks */
@@ -2494,6 +2501,7 @@ int vis;
 
 	if (obj && (
 		(obj->greased || obj->otyp == OILSKIN_CLOAK) ||			/* greased (or oilskin) armor */
+		(obj->oartifact == ART_CROWN_OF_BERITH) ||
 		(attk->adtyp == AD_WRAP && obj->otyp == find_mboots())	/* mud boots vs wrap attacks */
 		)
 		&&
@@ -2507,7 +2515,7 @@ int vis;
 				(youagr ? "" : "s"),
 				(attk->adtyp == AD_WRAP ? " off of" : ", but cannot hold onto"),
 				(youdef ? "your" : s_suffix(mon_nam(mdef))),
-				(obj->greased ? "greased" : "slippery"),
+				(obj->greased ? "greased" : (obj->oartifact == ART_CROWN_OF_BERITH) ? "blood dripping" : "slippery"),
 				((obj->otyp == OILSKIN_CLOAK && !objects[obj->otyp].oc_name_known)
 				? cloak_simple_name(obj) : obj->otyp == find_mboots() ? "mud boots" : xname(obj))
 				);
@@ -4510,6 +4518,37 @@ boolean ranged;
 			}
 		}
 		return result;
+	case AD_RNBW:
+		/* make physical attack */
+		alt_attk.adtyp = AD_DISE;
+		result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		/* return early if cannot continue the attack */
+		if (result&(MM_DEF_DIED|MM_DEF_LSVD))
+			return result;
+
+		if (notmcan && (youagr || !magr->mspec_used)) {
+			/* put on cooldown */
+			if (!youagr)
+				magr->mspec_used = magr->mspec_used + (dmg + rn2(6));
+
+			if (youdef) {
+				if (!hallucinogenic(pd)) {
+					boolean chg;
+					chg = make_hallucinated(HHallucination + (long)dmg, FALSE, 0L);
+					//You("%s.", chg ? "are freaked out" : "seem unaffected");
+					You_feel("the rainbow connection!");
+				}
+			}
+			/* monsters get confused by AD_HALU */
+			else {
+				if (vis&VIS_MDEF)
+					pline("%s looks confused.", Monnam(mdef));
+
+				mdef->mconf = 1;
+				mdef->mstrategy &= ~STRAT_WAITFORU;
+			}
+		}
+		return result;
 
 	case AD_SLOW:
 		/* make physical attack */
@@ -4661,7 +4700,136 @@ boolean ranged;
 				/* not implemented vs monsters */;
 		}
 		return result;
+	case AD_WHIS:
+		if(youdef){
+			pline("Whispers surround you!");
+			long effects = WH_NONE;
+			long rchosen = WH_NONE;
+			struct obj *otmp;
+			if(num_genocides()) effects |= WH_GENO;
+			if(u.uconduct.polypiles) effects |= WH_OPOLY;
+			if(u.uconduct.polyselfs) effects |= WH_UPOLY;
+			if(u.uconduct.wishes) effects |= WH_WISH;
+			if(u.uconduct.wisharti) effects |= WH_AWISH;
+			if(effects == WH_NONE){
+				pline ("But nothing happens!");
+			} else { /*Maybe you should have played better*/
+				rchosen = (1 << rn2(WH_AWISH));
+				while(!(effects&rchosen)){
+					rchosen = (1 << rn2(WH_AWISH));
+				}
+				switch(rchosen){
+					case WH_GENO:
+						pline("They start mocking you!");
+						You("lash out!");
+						struct monst *mtmp;
+					        for (mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+							if(!DEADMONSTER(mtmp) && mtmp->mtame && !rn2(2)){ /*50% chance of untaming each pet*/
+								untame(mtmp, 0);
+								pline("%s strikes back!",Monnam(mtmp));
+							}
+						}	
+					break;
+					case WH_OPOLY:
+						pline("They begin commenting on your inventory.");
+						for(otmp = invent; otmp; otmp=otmp->nobj){
+							if(!(rnl(20)<15)){/*-13 luck, 21% chance to avoid, 0 luck, 75% chance to avoid, 99% chance at like 10 and up*/
+								if(obj_resists(otmp,0,95)) continue;
+								Your("%s shift%s shape!",xname(otmp),otmp->quan>1?"":"s");
+								otmp = poly_obj(otmp, STRANGE_OBJECT);	
+							}
+				        	}
+					break;
+					case WH_UPOLY:
+						if(!Unchanging && uncancelled){
+							pline("They begin speaking alien languages.");
+							polyself(FALSE);
+						}
+					break;
+					case WH_WISH:
+						You("hear the wrath of the envious.");
+						explode(u.ux, u.uy, AD_MAGM, MON_EXPLODE, dmg, EXPL_MAGICAL, 1);
+					break;
+					case WH_AWISH:
+						You("hear chatter of ancient treasures.");
+						for(otmp = invent; otmp; otmp=otmp->nobj){/*disenchant your artis*/
+							if(otmp->oartifact && otmp->spe>-4){
+								Your("%s seems less effective!",xname(otmp));
+								otmp->spe--;
+							}
+				        	}
+					break;
+					default:
+						impossible("Unknown AD_WHIS attack roll?");
+					break;
 
+				}
+			}
+			if(DEADMONSTER(magr))
+				return MM_HIT|MM_AGR_DIED;
+			return MM_HIT;
+		} else {
+			/* make physical attack as monsters cannot possibly understand these whispers*/
+			alt_attk.adtyp = AD_PHYS;
+			return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		}
+		break;
+	case AD_NUDZ:{
+		explode(magr->mx,magr->my,AD_PHYS,MON_EXPLODE,dmg,HI_SILVER,1);
+		if (!youdef && DEADMONSTER(mdef))
+			return (MM_HIT|MM_DEF_DIED);
+		else{
+			if(DEADMONSTER(magr))
+				return MM_HIT|MM_AGR_DIED;
+			return MM_HIT;
+		}
+	}
+	case AD_COSM:{
+		
+		struct monst *mtmp2 = makemon(&mons[PM_AHAZU + rn2(31)], magr->mx, magr->my, MM_ADJACENTOK | MM_NOCOUNTBIRTH);
+		if(mtmp2){
+			pline("Whispering crystals coalesce into the memories of %s!",mon_nam(mtmp2));
+			mtmp2->mvanishes = 10;
+		}
+
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+	}
+
+	case AD_ALIG:
+		if(youdef){
+			if(u.ualign.record > 0){
+			       	dmg += d(1,u.ualign.record);/*1dalignment, first hit could be pretty big after that its chill -- is it now? i doubt that*/
+				u.ualign.record -= 10;
+			}
+			if(uarmh && uarmh->otyp == HELM_OF_OPPOSITE_ALIGNMENT) {
+
+			} else {
+				if(uarmh){
+					Helmet_off();
+				}	
+				struct obj *otmp;
+				otmp = mksobj(HELM_OF_OPPOSITE_ALIGNMENT, TRUE, FALSE);		
+				curse(otmp);
+				otmp->spe = -6;
+				pline("%s dons you with a new cap.",Monnam(magr));
+				(void) hold_another_object(otmp, u.uswallow ?
+				   "Fortunately, you're out of reach! %s away." :
+				   "Fortunately, you can't hold anything more! %s away.",
+				   The(aobjnam(otmp,
+						 Weightless || u.uinwater ?
+						   "slip" : "drop")),
+				   (const char *)0);
+				if(carried(otmp)){
+					setworn(otmp,W_ARMH);
+					Helmet_on();
+				}	
+			}
+		}
+		/* make physical attack */
+		alt_attk.adtyp = AD_PHYS;
+		result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		return result;
 	case AD_POLY:
 		/* make physical attack */
 		alt_attk.adtyp = AD_PHYS;
@@ -4860,8 +5028,60 @@ boolean ranged;
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
-	case AD_WET:
 	case AD_LETHE:
+		/* very asymetric effects */
+		if (youdef) {
+			if(magr->mtyp == PM_OSE) pline("The waters of a drowned city wash over you!");
+			else pline("The waters of the Lethe wash over you!");
+			if (u.sealsActive&SEAL_HUGINN_MUNINN){
+				unbind(SEAL_HUGINN_MUNINN, TRUE);
+			}
+			else {
+				(void)adjattrib(A_INT, -dmg, FALSE);
+				forget(5);
+				water_damage(invent, FALSE, FALSE, TRUE, &youmonst);
+				exercise(A_WIS, FALSE);
+			}
+			if (ABASE(A_INT) <= 3) {
+				int lifesaved = 0;
+				struct obj *wore_amulet = uamul;
+
+				while (1) {
+					/* avoid looping on "die(y/n)?" */
+					if (lifesaved && (discover || wizard)) {
+						if (wore_amulet && !uamul) {
+							/* used up AMULET_OF_LIFE_SAVING; still
+							subject to dying from brainlessness */
+							wore_amulet = 0;
+						}
+						else {
+							/* explicitly chose not to die;
+							arbitrarily boost intelligence */
+							ABASE(A_INT) = ATTRMIN(A_INT) + 2;
+							You_feel("like a scarecrow.");
+							break;
+						}
+					}
+					if (lifesaved)
+						pline("Unfortunately your mind is still gone.");
+					else
+						Your("last thought drifts away.");
+					killer = "memory loss";
+					killer_format = KILLED_BY;
+					done(DIED);
+					lifesaved++;
+					result |= MM_DEF_LSVD;
+				}
+			}
+		}
+		else {
+			if (vis&VIS_MDEF)
+				pline("%s is soaking wet!", Monnam(mdef));
+			water_damage(mdef->minvent, FALSE, FALSE, TRUE, mdef);
+		}
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
+	case AD_WET:
 		/* print hitmessage */
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);
@@ -6394,7 +6614,7 @@ boolean ranged;
 						Strcpy(buf, Monnam(magr));
 						pline("%s steals some gold from %s.", buf, mon_nam(mdef));
 					}
-					if (!tele_restrict(magr)) {
+					if (!tele_restrict(magr) && magr->mtyp != PM_FAFNIR) {
 						(void)rloc(magr, FALSE);
 						result |= MM_AGR_STOP;
 						if (vis && !canspotmon(magr))
@@ -7298,6 +7518,38 @@ boolean ranged;
 		}
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
+	case AD_YANK:{
+		coord mm;
+		mm.x = magr->mx; mm.y = magr->my;
+		int x,y;
+		if(youdef){
+			x = u.ux;
+			y = u.uy;
+		} else{
+			x = mdef->mx;
+			y = mdef->my;
+		}
+		//Only try to drag if they aren't adjacent
+		if(distmin(magr->mx,magr->my,x,y) > 1){
+			if(enexto(&mm, magr->mx, magr->my, mdef->data)){
+				if(youdef){
+					pline("%s's wires yank you towards %s!", Monnam(magr),mhim(magr));
+					teleds(mm.x,mm.y, FALSE);	
+				} else {
+					pline("%s's wires yank %s towards %s!", Monnam(magr), mon_nam(mdef), mhim(magr));
+					rloc_to(mdef,mm.x,mm.y);
+				}
+				return MM_AGR_STOP;
+			}
+		}
+		/* if that failed, make a physical attack instead */
+		if(youdef){
+			pline("%s's wires rip at your flesh!", Monnam(magr));
+		} else {
+			pline("%s's wires rip at flesh of %s!", Monnam(magr),the(mon_nam(mdef)));
+		}
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 	case AD_TELE:
 		/* hitter tries to teleport without making an attack */
 		if (!youagr) {
@@ -7318,6 +7570,7 @@ boolean ranged;
 		/* if that failed, make a physical attack instead */
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+	}
 
 	case AD_AXUS:
 		/* fancy hitmsg */
@@ -8035,6 +8288,7 @@ boolean ranged;
 	case AD_SURY:
 	case AD_LOAD:
 	case AD_SOLR:
+	case AD_ROCK:
 		/* missiles (completely unused) */
 	case AD_CMSL:
 	case AD_FMSL:
@@ -8899,6 +9153,14 @@ int vis;
 		/* deal damage (which can be 0 gracefully) */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
+	case AD_SHDW:
+		if(youdef){
+			You("are slashed by shadows from the darkness!");
+		} else {
+			pline("%s is slashed by shadows from the darkness!",Monnam(mdef));
+		}
+		result = xdamagey(magr, mdef, attk, dmg);
+		break;
 	case AD_ACID:
 	case AD_EACD:
 		/* apply resistance */
@@ -9535,6 +9797,7 @@ boolean * needs_uncancelled;
 	case AD_SSEX:
 	case AD_SEDU:
 	case AD_VAMP:
+	case AD_DRIN:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, TRUE);
 		break;
@@ -9638,6 +9901,7 @@ int vis;
 	case AD_RETR:
 		adtyp = elementalgazeattacks[rn2(SIZE(elementalgazeattacks))];
 		break;
+	case AD_DRIN:
 	case AD_WISD:
 		if (!youdef)
 			adtyp = AD_CONF;
@@ -10729,6 +10993,42 @@ int vis;
 		}
 		break;
 
+	case AD_DRIN:
+		/* cancels if no damage? */
+		if (!dmg)
+			return MM_MISS;
+		/* non-players should get hit by a basic confusion gaze */
+		/* that swap should have happened already */
+		if (!youdef) {
+			impossible("AD_DRIN gaze not being swapped out vs non-player?");
+			return MM_MISS;
+		}
+		/* put on cooldown */
+		/* In practice, this will be zeroed when a new movement ration is handed out, and acts to make sure this can only be used once per round. */
+		if (!youagr) {
+			if (magr->mspec_used)
+				return MM_MISS;
+			else
+				magr->mspec_used = 4;
+		}
+
+		/* assumes only player defending now */
+		 if (vis&VIS_MAGR){
+			pline("%s gazes sharply at you.",Monnam(magr));
+		 }
+		You_feel("stupid!");
+		if (u.sealsActive&SEAL_HUGINN_MUNINN){
+			unbind(SEAL_HUGINN_MUNINN, TRUE);
+		}
+		else {
+			while (!(ABASE(A_INT) <= ATTRMIN(A_INT)) && dmg > 0) {
+				dmg--;
+				(void)adjattrib(A_INT, -1, TRUE);
+				exercise(A_INT, FALSE);
+			}
+		}
+		break;
+
 	case AD_WISD:
 		/* cancels if no damage? */
 		if (!dmg)
@@ -10749,7 +11049,13 @@ int vis;
 		}
 
 		/* assumes only player defending now */
-		pline("Blasphemous geometries assault your sanity!");
+		if(pa->mtyp == PM_HUGINN){
+			 if (vis&VIS_MAGR){
+				pline("%s gazes sharply at you.",Monnam(magr));
+			 }
+			Your("ability to reason weakens!");
+		}else
+			pline("Blasphemous geometries assault your sanity!");
 		if (u.sealsActive&SEAL_HUGINN_MUNINN){
 			unbind(SEAL_HUGINN_MUNINN, TRUE);
 		}
@@ -10757,14 +11063,16 @@ int vis;
 			while (!(ABASE(A_WIS) <= ATTRMIN(A_WIS)) && dmg > 0) {
 				dmg--;
 				(void)adjattrib(A_WIS, -1, TRUE);
-				change_usanity(-1);
-				forget(10);	/* lose 10% of memory per point lost*/
+				if(pa->mtyp != PM_HUGINN){
+					change_usanity(-1);
+					forget(10);	/* lose 10% of memory per point lost*/
+				}
 				exercise(A_WIS, FALSE);
 				/* Great Cthulhu permanently drains wisdom */
 				if ((pa->mtyp == PM_GREAT_CTHULHU) && (AMAX(A_WIS) > ATTRMIN(A_WIS)))
 					AMAX(A_WIS) -= 1;
 			}
-			if (dmg > 0) {
+			if (dmg > 0 && pa->mtyp != PM_HUGINN) {
 				You("tear at yourself in horror!"); //assume always able to damage self
 				change_usanity(-1*dmg);
 				xdamagey(magr, mdef, attk, dmg*10);
@@ -14530,6 +14838,28 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 							else
 								result |= MM_AGR_DIED;
 						}
+					}
+				}
+				break;
+			case AD_POLY:
+				/* polymorph? */
+				if (!(youagr ? Unchanging : mon_resistance(magr, UNCHANGING))
+					&& !(is_rider(pa) || resists_poly(pa))
+					){
+					/* forced polyself */
+					if (youagr) {
+						Your("DNA has been altered!");
+						polyself(FALSE);
+						result |= MM_AGR_STOP;
+						if (rnd(100) < 15){
+							Your("cellular structure degenerates.");
+							losexp("cellular degeneration", TRUE, TRUE, FALSE);
+						}
+					}
+					/* monsters only polymorph; never system shock or degenerate */
+					else {
+						newcham(magr, NON_PM, FALSE, vis);
+						result |= MM_AGR_STOP;
 					}
 				}
 				break;

@@ -1282,7 +1282,7 @@ int enhanced;
 		    {
 		        /* You choked your pet, you cruel, cruel person! */
 		        You_feel("guilty about losing your pet like this.");
-				u.ugangr[Align2gangr(u.ualign.type)]++;
+				if(!Role_if(PM_ANACHRONOUNBINDER)) u.ugangr[Align2gangr(u.ualign.type)]++;
 				adjalign(-15);
 				u.hod += 5;
 		    }

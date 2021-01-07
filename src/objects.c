@@ -573,6 +573,9 @@ BULLET(("blaster bolt", "ruby bolt", "bolt"),
 BULLET(("heavy blaster bolt", "scarlet bolt", "bolt"),
 	DMG(D(3, 10), F(10)), DMG(D(3, 12), F(12)),
 	0,    MZ_TINY, 0,  1,   0, 0, WP_BLASTER,   E,   METAL, -P_FIREARM, CLR_ORANGE),/*Needs tile*/
+BULLET(("psionic pulse", (char *)0, "pulse"),
+	DMG(D(3, 3), F(4)), DMG(D(3, 3), F(4)),
+	0,    MZ_TINY, 0,  1,   0, 0, WP_GENERIC,   E,   METAL, P_NONE, CLR_BRIGHT_BLUE),/*Needs tile*/
 BULLET(("laser beam", "green bolt", "bolt"),
 	DMG(D(3, 1), F(10)), DMG(D(3, 1), F(10)),
 	0,    MZ_TINY, 0,  1,   0, 0, WP_BLASTER,   E|S, METAL, -P_FIREARM, CLR_BRIGHT_GREEN),/*Needs tile*/
@@ -1685,6 +1688,10 @@ CHAIN(("scrap"),
 CHAIN(("hellfire component"),
 	DMG(D(1)), DMG(D(1)),
 	 20,   1, 0, 0, B, METAL, CLR_ORANGE),
+
+CHAIN(("feather"),
+	DMG(D(1)), DMG(D(1)),
+	 20,   1, 0, 0, B, VEGGY, CLR_BRIGHT_GREEN),
 
 #define CHAINCORPSE(names,wt,mat,color,...)\
 	CHAIN(names,{0},{0},20,wt,0,0,0,mat,color,O_MERGE(0),O_SIZE(MZ_HUGE),__VA_ARGS__)

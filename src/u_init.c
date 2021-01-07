@@ -41,6 +41,26 @@ static struct trobj Archeologist[] = {
 	{ TORCH, 0, TOOL_CLASS, 3, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+
+static struct trobj Anachronounbinder[] = {
+	{ QUARTERSTAFF, 3, WEAPON_CLASS, 1, 0 },
+	{ DAGGER, 0, WEAPON_CLASS, 1, 0 },
+	{ LEATHER_ARMOR, 1, ARMOR_CLASS, 1, 0 },
+	{ LEATHER_HELM, 0, ARMOR_CLASS, 1, 0 },
+	{ GLOVES, 0, ARMOR_CLASS, 1, 0 },
+	{ FOOD_RATION, 0, FOOD_CLASS, 3, 0 },
+	{ R_LYEHIAN_FACEPLATE,0,TOOL_CLASS,1,0},
+	{ 0, 0, 0, 0, 0 }
+};
+static struct trobj AcuBoots[] = {
+	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
+static struct trobj AcuRobe[] = {
+	{ ROBE, 0, ARMOR_CLASS, 1, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
+
 static struct trobj Anachrononaut_Hu[] = {
 	{ FORCE_PIKE,  0, WEAPON_CLASS, 1, 0 },
 	{ ARM_BLASTER, 0, WEAPON_CLASS, 1, 0 },
@@ -823,6 +843,29 @@ static const struct def_skill Skill_A[] = {
     { P_WAND_POWER, P_SKILLED },
     { P_TWO_WEAPON_COMBAT, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+
+static const struct def_skill Skill_Acu[] = {
+    { FFORM_SHII_CHO, P_EXPERT },	
+    { P_DAGGER, P_EXPERT },		{ P_KNIFE,  P_SKILLED }, 
+    { P_SHORT_SWORD, P_SKILLED },{ P_LANCE,  P_BASIC },
+    { P_SABER, P_SKILLED },		{ P_LONG_SWORD,  P_BASIC },
+    { P_CLUB, P_SKILLED },		{ P_QUARTERSTAFF, P_EXPERT },
+	{ P_BROAD_SWORD, P_EXPERT },{ P_HAMMER, P_BASIC },
+//#ifdef FIREARMS
+//    { P_FIREARM, P_SKILLED },
+//#endif
+    { P_DART, P_BASIC },		{ P_PICK_AXE, P_BASIC },
+    { P_WHIP, P_SKILLED },		 { P_BOOMERANG, P_BASIC },
+    { P_ATTACK_SPELL, P_BASIC },	{ P_HEALING_SPELL, P_BASIC },
+    { P_DIVINATION_SPELL, P_SKILLED},	{ P_MATTER_SPELL, P_BASIC},
+#ifdef STEED
+    { P_RIDING, P_BASIC },
+#endif
+    //{ P_TWO_WEAPON_COMBAT, P_EXPERT },
+    { P_BARE_HANDED_COMBAT, P_EXPERT },{ P_TWO_HANDED_SWORD, P_SKILLED },
     { P_NONE, 0 }
 };
 
@@ -1611,20 +1654,25 @@ u_init()
 	/*Randomize spirit order*/{
 		int i,j,tmp;
 		for(i=0;i<31;i++) u.sealorder[i]=i;
-		for(i=0;i<31;i++){
-			j=rn2(31);
-			tmp = u.sealorder[i];
-			u.sealorder[i] = u.sealorder[j];
-			u.sealorder[j] = tmp;
+		if(!Role_if(PM_ANACHRONOUNBINDER)){
+			for(i=0;i<31;i++){
+				j=rn2(31);
+				tmp = u.sealorder[i];
+				u.sealorder[i] = u.sealorder[j];
+				u.sealorder[j] = tmp;
+			}
 		}
 	}
 	if(Role_if(PM_EXILE)){
 		u.sealsKnown = sealKey[u.sealorder[0]] | sealKey[u.sealorder[1]] | sealKey[u.sealorder[2]];
+	}else if(Role_if(PM_ANACHRONOUNBINDER)){
+		u.sealsKnown |= sealKey[u.sealorder[0]] | sealKey[u.sealorder[1]];
 	}
 	else 	u.sealsKnown = 0L;
 	
 	u.specialSealsKnown = 0L;
-	
+
+	u.spiritSummons = 0L;
 	u.sealCounts = 0;
 	u.sealsActive = 0;
 	u.specialSealsActive = 0;
@@ -1732,6 +1780,7 @@ u_init()
 	u.usanity = 100;
 	u.umadness = 0L;
 	u.uinsight = 0;
+	if(Role_if(PM_ANACHRONOUNBINDER)) u.uinsight = 100;
 	u.sowdisc = 0;
 	u.voidChime = 0;
 	adjabil(0,1);
@@ -1770,6 +1819,20 @@ u_init()
 		knows_object(SACK);
 		knows_object(TOUCHSTONE);
 		skill_init(Skill_A);
+	break;
+	case PM_ANACHRONOUNBINDER:
+		ini_inv(Anachronounbinder);
+		if(!slithy(youracedata) && humanoid(youracedata)) ini_inv(AcuBoots);
+		if(!Race_if(PM_DROW) && !Race_if(PM_INCANTIFIER)) ini_inv(AcuRobe);
+		knows_object(KHAKKHARA);
+		knows_object(DOUBLE_LIGHTSABER);
+		knows_object(HIGH_BOOTS);
+		knows_object(SENSOR_PACK);
+		knows_object(R_LYEHIAN_FACEPLATE);
+		knows_object(GLOVES);
+		u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = A_LAWFUL;
+		flags.initalign = 0; // 0 == lawful
+		skill_init(Skill_Acu);
 	break;
 	case PM_ANACHRONONAUT:
 		if(Race_if(PM_MYRKALFR) && !flags.female){
@@ -2269,7 +2332,7 @@ u_init()
 			}
 		} else if(!Role_if(PM_EXILE) && !Role_if(PM_CONVICT)){
 			ini_inv(DrovenCloak);
-			if(!flags.female){
+			if(!flags.female  && !Role_if(PM_ANACHRONOUNBINDER)){
 				u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] =
 					u.ualign.type = A_NEUTRAL; /* Males are neutral */
 				flags.initalign = 1; // 1 == neutral
@@ -2344,7 +2407,7 @@ u_init()
 
 	case PM_GNOME:
 	    /* Gnomes can recognize common dwarvish objects */
-	    if (!Role_if(PM_ARCHEOLOGIST)){
+	    if (!Role_if(PM_ARCHEOLOGIST) && !Role_if(PM_ANACHRONOUNBINDER)){
 			ini_inv(GnomishHat);
 		}
 		skill_add(Skill_G);
@@ -2553,6 +2616,7 @@ int otyp;
 
     switch (Role_switch) {
      case PM_ARCHEOLOGIST:	skills = Skill_A; break;
+     case PM_ANACHRONOUNBINDER: skills = Skill_Acu; break;
      case PM_ANACHRONONAUT:	skills = Skill_Ana; break;
      case PM_BARBARIAN:		skills = Skill_B; break;
 #ifdef BARD

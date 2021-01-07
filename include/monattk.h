@@ -191,11 +191,22 @@
 #define AD_DARK     128 /* Does extra damage to mortal races */
 #define AD_NUKE     129 /* Physical digging large explosion */
 #define AD_LASR     130 /* Part physical part fire laser ray */
+#define AD_ROCK		131 /*Throws a rock, used by Shiro*/
+#define AD_RNBW		132 /*Iris special attack. */
+#define AD_JACK		133 /*Jack hella huge explosion on death*/
+#define AD_YANK		135 /*yank ya to em marionette*/
+#define AD_PAIM		136 /*Paimon exploding book attack*/
+#define AD_ALIG		137 /*A realigning experience*/
+#define AD_SPIR		138 /*Let out the spirits*/
+#define AD_NUDZ		139 /*Mirror blast*/
+#define AD_COSM		140 /*Crystal memories*/
+#define AD_CRYS		141 /*throw crystal*/ 
+#define AD_WHIS		142 /*whisper your darkest fears*/
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	131
+#define AD_DUNSTAN	143
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3
@@ -223,6 +234,18 @@
 
 #define real_spell_adtyp(adtyp) \
 	((adtyp) == AD_SPEL || (adtyp) == AD_CLRC || (adtyp) == AD_PSON)
+
+
+/*
+ *  Special fun bitmasks for Numina attack
+ *  */
+
+#define WH_NONE		0x00000000L
+#define WH_GENO		0x00000001L
+#define WH_OPOLY	0x00000002L
+#define WH_UPOLY	0x00000004L
+#define WH_WISH		0x00000008L
+#define WH_AWISH	0x00000010L
 
 /*
  *  Monster to monster attacks.  When a monster attacks another (mattackm),

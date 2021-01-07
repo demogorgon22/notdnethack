@@ -68,16 +68,12 @@ static const char *random_mesg[] = {
 	"This too shall pass.", /* medieval Persian adage */
 	
 	"Romanes Eunt Domus", /* Life of Brian */
-	
-	"stth was here", /* First ascender */
-	"allihaveismymind followed stth", /* Second ascender */
-	"Khor followed allihaveismymind", /* Third ascender */
-	"ChrisANG followed Khor", /* Fourth ascender */
-	"FIQ followed ChrisANG", /* Fifth ascender */
-	"Tariru followed FIQ", /* Sixth ascender */
-	"VoiceOfReason followed Tariru", /* Seventh ascender */
-	"Catullus followed VoiceOfReason", /* Eighth ascender */
-	"HBane followed Catullus", /* Ninth ascender */
+
+	"porkman was here", /* First ascender */
+	"Demo followed porkman", /* Second ascender */
+	"lapis followed Demo", /* Third ascender */
+	"Tangles followed lapis", /* Fourth ascender */	
+	"amateurhour followed Tangles", /* Fifth ascender */	
 	
 	/* contributed by members of NetHackWiki */
 	"Write down the coordinates, he said.", /* the Submachine series */
@@ -1666,7 +1662,7 @@ register int x,y;
 						pline("There is a seal of %s %s", 
 							sealNames[((int)ep->ward_id)-((int)FIRST_SEAL)],
 							word);
-						if(!Role_if(PM_EXILE) && ep->ward_id < QUEST_SPIRITS){
+						if(!Role_if(PM_ANACHRONOUNBINDER) && !Role_if(PM_EXILE) && ep->ward_id < QUEST_SPIRITS){
 							long wardhere = 1L << (((int)ep->ward_id)-((int)FIRST_SEAL));
 							if( !(u.sealsKnown & wardhere) ){
 								You("have learned a new seal!");

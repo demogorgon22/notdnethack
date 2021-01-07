@@ -355,6 +355,9 @@ struct monst *mtmp;
 			mtmp->mtyp == PM_BYAKHEE ||
 			(mtmp->mtyp == PM_HUNTING_HORROR && complete == 6) ||
 			mtmp->mtyp == PM_MIND_FLAYER ||
+			mtmp->mtyp == PM_VILLITHID ||
+			mtmp->mtyp == PM_ADVERSARY ||
+			mtmp->mtyp == PM_NEOTHELID ||
 			mtmp->mtyp == PM_PARASITIC_MIND_FLAYER ||
 			mtmp->mtyp == PM_PARASITIZED_ANDROID ||
 			mtmp->mtyp == PM_PARASITIZED_GYNOID ||
@@ -1286,18 +1289,46 @@ register struct monst *mtmp;
 			return 1;
 	}
 	
-	if((is_drow(mtmp->data) || mtmp->mtyp == PM_LUGRIBOSSK || mtmp->mtyp == PM_MAANZECORIAN)
+	if((is_drow(mtmp->data) || mtmp->mtyp == PM_LUGRIBOSSK || mtmp->mtyp == PM_MAANZECORIAN || mtmp->mtyp == PM_TENEBROUS)
 		&& (!mtmp->mpeaceful || Darksight)
 		&& (levl[mtmp->mx][mtmp->my].lit == 1 || viz_array[mtmp->my][mtmp->mx]&TEMP_LIT1)
 		&& !mtmp->mcan && mtmp->mspec_used < 4
 		&& !(noactions(mtmp))
 		&& !(mindless_mon(mtmp))
 	){
-		if(cansee(mtmp->mx,mtmp->my)) pline("%s invokes the darkness.",Monnam(mtmp));
+		if(cansee(mtmp->mx,mtmp->my)){
+			if(mtmp->mtyp == PM_TENEBROUS)
+				pline("%s calls upon the wrath of shadow.",Monnam(mtmp));
+			else
+				pline("%s invokes the darkness.",Monnam(mtmp));
+		}
+		if(mtmp->mtyp == PM_TENEBROUS && distu(mtmp->mx,mtmp->my)<=5 && !Darksight){	
+			pline("The darkness hurts!");
+			mdamageu(mtmp,d(8,levl[u.ux][u.uy].lit?4:2));
+		}
 	    do_clear_area(mtmp->mx,mtmp->my, 5, set_lit, (genericptr_t)0);
 		vision_full_recalc = 1;
 	    if(mtmp->mtyp == PM_HEDROW_WARRIOR) mtmp->mspec_used += d(4,4);
 		else mtmp->mspec_used += max(10 - mtmp->m_lev,2);
+	}
+	if((mtmp->mtyp == PM_SIMURGH)
+		&& (!mtmp->mpeaceful)
+		&& (levl[mtmp->mx][mtmp->my].lit == 0 || viz_array[mtmp->my][mtmp->mx]&TEMP_LIT1)
+		&& !mtmp->mcan && mtmp->mspec_used < 4
+		&& !(noactions(mtmp))
+	){
+		if(cansee(mtmp->mx,mtmp->my)) pline("%s glows with radiant light!",Monnam(mtmp));
+		/* this is hillarious. the 4th arg is passed to set_lit as an arg, and all set_lit does is checks if 
+		 * it is or isn't a null ptr, and if it isn't, illuminates, so we get this horrible looking code that
+		 * technically works exactly as it should.
+		 */
+	    do_clear_area(mtmp->mx,mtmp->my, 5, set_lit, (genericptr_t)1);
+		vision_full_recalc = 1;
+		if(cansee(mtmp->mx,mtmp->my) && !resists_blnd(&youmonst)){
+			You("are blinded by %s radiance!", s_suffix(mon_nam(mtmp)));
+			make_blinded((long)d(5,5),FALSE);
+			stop_occupation();
+		}
 	}
 
 	if (mtmp->mtyp == PM_NURSE || mtmp->mtyp == PM_HEALER){

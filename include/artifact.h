@@ -242,6 +242,12 @@
 #define COMMAND_GREEN           56
 #define COMMAND_YELLOW          57
 
+#define COMMAND_DETECT		58
+#define COMMAND_TENT		59
+#define COMMAND_ENERGY		60
+#define COMMAND_CANCEL		61
+#define COMMAND_ELDER		62
+
 struct artifact {
 	/* Description */
 	int otyp;			/* base artifact type */
@@ -399,6 +405,8 @@ extern struct artifact artilist[];
 #define RINGED_SPEAR    (LAST_PROP+80)
 #define RINGED_ARMOR    (LAST_PROP+81)
 #define BLOODLETTER     (LAST_PROP+82)
+#define RAND_SCROLL     (LAST_PROP+83)
+#define ILLITHID     (LAST_PROP+84)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20
@@ -455,6 +463,7 @@ extern struct artifact artilist[];
 			(a->gflags & ARTG_NAME) != 0\
 			|| (a == &artilist[ART_SNICKERSNEE] && Role_if(PM_TOURIST) && (u.ulevel > 18 || u.uevent.qcompleted) )\
 			|| (a == &artilist[ART_KUSANAGI_NO_TSURUGI] && Role_if(PM_SAMURAI) && u.ulevel >= 22 )\
+			|| (a == &artilist[ART_ILLITHID_STAFF] && Role_if(PM_ANACHRONOUNBINDER) && u.spiritSummons & SEAL_YMIR )\
 			|| (a == &artilist[ART_GRANDMASTER_S_ROBE] && P_SKILL(P_MARTIAL_ARTS) >= P_GRAND_MASTER && u.ulevel >= 30 )\
 			|| (a == &artilist[ART_FIRST_KEY_OF_CHAOS] && \
 							(art_already_exists(ART_THIRD_KEY_OF_CHAOS) \

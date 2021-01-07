@@ -5,6 +5,8 @@
 #include "hack.h"
 
 STATIC_DCL void NDECL(binderdown);
+STATIC_DCL void NDECL(acudown);
+STATIC_DCL void NDECL(acuup);
 STATIC_DCL int FDECL(enermod, (int));
 
 static long expUps[] = {
@@ -267,6 +269,7 @@ boolean expdrain; /* attack drains exp as well */
 		else u.uexp = newuexp(1)/2;
 	}
 	if(Role_if(PM_EXILE)) binderdown();
+	if(Role_if(PM_ANACHRONOUNBINDER)) acudown();
 	if (uwep && uwep->oartifact == ART_KUSANAGI_NO_TSURUGI && u.ulevel < 30 && !u.uhave.amulet){
 		char buf[BUFSZ];
 		You("are blasted by %s power!", s_suffix(the(xname(uwep))));
@@ -290,6 +293,38 @@ newexplevel()
 {
 	if (u.ulevel < MAXULEV && u.uexp >= newuexp(u.ulevel))
 	    pluslvl(TRUE);
+}
+
+
+
+/*Give spirits to anachronounbinder*/
+void
+acuup(){
+	if(u.ulevel == ACU_PULSE_LVL){
+		You_feel("psionic!");
+	} else if(u.ulevel == ACU_CRAZE_LVL){
+		You("are now able to craze monsters with your mind!");
+	} else if(u.ulevel == ACU_TELEK_LVL){
+       		You_feel("telekinetic!");
+	} else if(u.ulevel == ACU_RETURN_LVL){
+		You_feel("in control of the forces around you.");
+	}
+	if(!(u.spiritSummons & sealKey[u.sealorder[u.ulevel]]))
+		u.sealsKnown |= sealKey[u.sealorder[u.ulevel]];
+}
+
+void
+acudown(){
+	if(u.ulevel == ACU_PULSE_LVL - 1){
+		You_feel("unpsionic.");
+	} else if(u.ulevel == ACU_CRAZE_LVL - 1){
+		You_feel("less in mental control.");
+	} else if(u.ulevel == ACU_TELEK_LVL - 1){
+		You_feel("unmoving.");
+	} else if(u.ulevel == ACU_RETURN_LVL - 1){
+		You_feel("less in control of the forces around you.");
+	}
+	u.sealsKnown &= ~(sealKey[u.sealorder[u.ulevel+1]]);
 }
 
 /* Grant new spirits to binder */
@@ -378,6 +413,10 @@ void
 pluslvl(incr)
 boolean incr;	/* true iff via incremental experience growth */
 {		/*	(false for potion of gain level)      */
+	if(Role_if(PM_ANACHRONOUNBINDER) && !(u.spiritSummons & sealKey[u.sealorder[u.ulevel]]) && !wizard){
+		if(!incr) You_feel("an experience adjustment.");
+		return;/*keep acus from leveling up til they beat their spirit*/
+	}
 	register int num;
 
 	if (!incr) You_feel("more experienced.");
@@ -414,6 +453,7 @@ boolean incr;	/* true iff via incremental experience growth */
 	    reset_rndmonst(NON_PM);		/* new monster selection */
 	}
 	if(Role_if(PM_EXILE)) binderup();
+	if(Role_if(PM_ANACHRONOUNBINDER)) acuup();
 
 	/* recalculate maximums, which also caps over-max hp/pw */
 	calc_total_maxhp();

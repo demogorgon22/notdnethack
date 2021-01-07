@@ -692,6 +692,16 @@ struct level_map {
 	{ "minend",     &mineend_level },
 	{ "soko1",      &sokoend_level },
 #endif
+	/*Void*/
+	{ "ilsensin",	&ilsensin_level },
+	{ "farvoid",	&farvoid_level },
+	{ "aligvoid",	&aligvoid_level },
+	{ "nrvoid2",	&nrvoid2_level },
+	{ "nearvoid",	&nearvoid_level },
+	
+	/*Sacristy*/
+	{ "sacris",	&sacris_level },
+
 	/*Planes*/
 	{ "air",	&air_level },
 	{ "astral",	&astral_level },
@@ -1338,7 +1348,7 @@ d_level *lev;
 {
     /* can't rise up from inside the top of the Wizard's tower */
     /* KMH -- or in sokoban */
-    if (In_endgame(lev) || In_sokoban(lev) ||
+    if (In_endgame(lev) || In_sokoban(lev) || In_void(lev) ||
 			(Is_wiz1_level(lev) && In_W_tower(x, y, lev)))
 	return FALSE;
     return (boolean)(lev->dlevel > 1 ||

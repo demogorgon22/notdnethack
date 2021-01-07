@@ -22,7 +22,10 @@ STATIC_DCL int FDECL(menu_drop, (int));
 #endif
 #ifdef OVL2
 STATIC_DCL int NDECL(currentlevel_rewrite);
+STATIC_DCL int NDECL(acuOK);
 STATIC_DCL void NDECL(final_level);
+STATIC_DCL boolean NDECL(no_spirits);
+
 /* static boolean FDECL(badspot, (XCHAR_P,XCHAR_P)); */
 #endif
 
@@ -1010,8 +1013,19 @@ doup()
 	if(ledger_no(&u.uz) == 1) {
 		if (iflags.debug_fuzzer)
 			return 0;
-		if (yn("Beware, there will be no return! Still climb?") != 'y')
-			return(0);
+		if(!Role_if(PM_ANACHRONOUNBINDER)){
+			if (yn("Beware, there will be no return! Still climb?") != 'y')
+				return(0);
+		} else {
+			int items = acuOK();
+			if (yn("Beware, there will be no return! Still climb?") != 'y')
+				return(0);
+			else if(u.uhave.amulet && items){
+				You("require the %s.",items == 1?"Illithid Staff":items == 2?"Elder Cerebral Fluid":"Illithid Staff and the Elder Cerebral Fluid");
+				return 0;
+			}
+		}
+
 	}
 	if(!next_to_u()) {
 		You("are held back by your pet!");
@@ -1021,6 +1035,26 @@ doup()
 	prev_level(TRUE);
 	at_ladder = FALSE;
 	return(1);
+}
+
+/*
+* Disclaimer, I do not endorse this code or know if it works and I refuse to read it so we are sticking with it.
+*/
+STATIC_OVL int
+acuOK()
+{
+	struct obj *otmp;
+	int found = 3;
+	for(otmp = invent; otmp; otmp=otmp->nobj){
+		if(otmp->oartifact == ART_ILLITHID_STAFF){
+			if(otmp->cobj->oartifact == ART_ELDER_CEREBRAL_FLUID) found -=2;
+			found -= 1;
+		} else if(otmp->oartifact == ART_ELDER_CEREBRAL_FLUID){
+			found -=2;
+		}
+	}
+	return found;
+
 }
 
 d_level save_dlevel = {0, 0};
@@ -1169,6 +1203,14 @@ int portal;
 	&& !(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend)
 	) {
 		pline("A mysterious force prevents you from descending.");
+		return;
+	}
+
+	if (In_void(&u.uz) && (!no_spirits() || !u.uhave.amulet)) {
+		pline("A mysterious force prevents you from %s.",up?"ascending":"descending");
+		if(!no_spirits()){
+			pline("There is too much life here.");
+		}
 		return;
 	}
 	// if (on_level(&u.uz, &nemesis_level) && !(quest_status.got_quest) && flags.stag) {
@@ -1631,6 +1673,18 @@ misc_levelport:
 #ifdef WHEREIS_FILE
         touch_whereis();
 #endif
+}
+
+STATIC_OVL boolean
+no_spirits()
+{
+	struct monst *mtmp;
+	for (mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+		if(!DEADMONSTER(mtmp) && !(mtmp->mtame)&& !(mtmp->mpeaceful)){
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 STATIC_OVL void

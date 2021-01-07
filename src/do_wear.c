@@ -394,12 +394,14 @@ Helmet_on()
 		break;
 	case HELM_OF_OPPOSITE_ALIGNMENT:
 		if (uarmh->otyp == find_gcirclet()) adj_abon(uarmh, uarmh->spe);
-		if (u.ualign.type == A_NEUTRAL)
-		    u.ualign.type = rn2(2) ? A_CHAOTIC : A_LAWFUL;
-		else if(u.ualign.type == A_VOID){
-		    u.ualign.type = !rn2(3) ? A_NEUTRAL : rn2(2) ? A_CHAOTIC : A_LAWFUL;
-		} else u.ualign.type = -(u.ualign.type);
-		u.ublessed = 0; /* lose your god's protection */
+		if(!Role_if(PM_ANACHRONOUNBINDER)){
+			if (u.ualign.type == A_NEUTRAL)
+			    u.ualign.type = rn2(2) ? A_CHAOTIC : A_LAWFUL;
+			else if(u.ualign.type == A_VOID){
+			    u.ualign.type = !rn2(3) ? A_NEUTRAL : rn2(2) ? A_CHAOTIC : A_LAWFUL;
+			} else u.ualign.type = -(u.ualign.type);
+			u.ublessed = 0; /* lose your god's protection */
+		}
 	     /* makeknown(uarmh->otyp);   -- moved below, after xname() */
 		/*FALLTHRU*/
 	case DUNCE_CAP:
@@ -419,7 +421,11 @@ Helmet_on()
 		  ACURR(A_INT) <= (ABASE(A_INT) + ABON(A_INT) + ATEMP(A_INT)) ?
 			     "like sitting in a corner" : "giddy");
 		} else {
-		    Your("mind oscillates briefly.");
+		    if(Role_if(PM_ANACHRONOUNBINDER)){
+			You_feel("a strange tug at your mind, but your link to the elder brain is stronger.");
+		    } else {
+		    	Your("mind oscillates briefly.");
+		    }
 		    makeknown(HELM_OF_OPPOSITE_ALIGNMENT);
 		}
 		break;
@@ -503,8 +509,10 @@ Helmet_off()
 	    break;
 	case HELM_OF_OPPOSITE_ALIGNMENT:
 		if (uarmh->otyp == find_gcirclet() && !cancelled_don) adj_abon(uarmh, -uarmh->spe);
-	    u.ualign.type = u.ualignbase[A_CURRENT];
-	    u.ublessed = 0; /* lose the other god's protection */
+	    if(!Role_if(PM_ANACHRONOUNBINDER)){
+		    u.ualign.type = u.ualignbase[A_CURRENT];
+		    u.ublessed = 0; /* lose the other god's protection */
+	    }
 	    flags.botl = 1;
 	    break;
 	case HELM_OF_DRAIN_RESISTANCE:

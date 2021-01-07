@@ -3594,7 +3594,7 @@ register struct monst *mtmp;
 				spe2 = 3;
 			    otmp->spe = max(otmp->spe, spe2);
 			    (void) mpickobj(mtmp, otmp);
-			} else {
+			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIARTH){
 				int artnum = rn2(8);
 	
 			    /* create minion stuff; can't use mongets */
@@ -7808,6 +7808,324 @@ register struct	monst	*mtmp;
 		break;
 	}
 
+	/*Non class based spirit invent handling*/
+	/*Note: spirits now get their invent regardless of if they've already been created*/
+	switch(ptr->mtyp){
+		case PM_AHAZU:
+			(void)mongets(mtmp, FOOD_RATION);
+			(void)mongets(mtmp, FOOD_RATION);
+			(void)mongets(mtmp, FOOD_RATION);
+			(void)mongets(mtmp, FOOD_RATION);
+			break;
+		/*Amon handled in mon.c dropping fire horn on death*/
+		case PM_ANDREALPHUS:
+			(void)mongets(mtmp, SENSOR_PACK);
+			(void)mongets(mtmp, CAN_OF_GREASE);
+			break;
+		case PM_ANDROMALIUS:
+			(void)mongets(mtmp, SACK);
+			m_initthrow(mtmp, DAGGER, 12);
+			break;
+		case PM_ASTAROTH:
+			(void)mongets(mtmp, UPGRADE_KIT);
+			(void)mongets(mtmp, UPGRADE_KIT);
+			break;
+		case PM_BALAM:
+			(void)mongets(mtmp, DAGGER);
+			(void)mongets(mtmp, DAGGER);
+			(void)mongets(mtmp, ROBE);
+			break;
+		case PM_BERITH:{
+			(void)mongets(mtmp, PLATE_MAIL);
+			(void)mongets(mtmp, LONG_SWORD);
+			struct obj *otmp = mksobj(HELMET, TRUE, FALSE); //make articrown (ok made crown of antisucc)
+			otmp = oname(otmp, artiname(ART_CROWN_OF_BERITH));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp,otmp);
+			mtmp->mgold = (long) d(level_difficulty(), mtmp->minvent ? 5 : 10);
+			break;
+		}
+		case PM_BUER:{
+			struct obj *otmp = mksobj(AMULET_OF_LIFE_SAVING, TRUE, FALSE); //super healing thing (ok made amulet of not dying or stat screws and regen)
+			otmp = oname(otmp, artiname(ART_TALISMAN_OF_BUER));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp,otmp);
+			(void)mongets(mtmp, AMULET_OF_LIFE_SAVING);
+			break;
+		}
+		case PM_CHUPOCLOPS:{
+			struct obj *otmp;
+			int i;
+			for(i = 0;i < 40; i++){
+				otmp = mksobj(EGG, TRUE, FALSE);
+				otmp->corpsenm = PM_GIANT_SPIDER;
+				attach_egg_hatch_timeout(otmp);
+				(void) mpickobj(mtmp,otmp);
+			}
+			break;
+		}
+		case PM_DANTALION:{
+			struct obj *otmp;
+			otmp = mksobj(TWO_HANDED_SWORD, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_DREAD_OF_DANTALION));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->spe = 3;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(PLATE_MAIL, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->spe = 1;
+			(void) mpickobj(mtmp, otmp);
+			(void) mongets(mtmp, GLOVES);
+			(void) mongets(mtmp, HIGH_BOOTS);
+			(void) mongets(mtmp, HELM_OF_TELEPATHY);
+			break;
+		}
+		case PM_SHIRO: {
+			struct obj *otmp;
+			otmp = mksobj(SPEAR, TRUE, FALSE);
+			set_material_gm(otmp, MINERAL);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(GLOVES, TRUE, FALSE);
+			set_material_gm(otmp, MINERAL);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(ARMORED_BOOTS, TRUE, FALSE);
+			set_material_gm(otmp, MINERAL);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(CHAIN_MAIL, TRUE, FALSE);
+			set_material_gm(otmp, MINERAL);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(MASK, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_STONE_MASK));
+			otmp->corpsenm = PM_SHIRO;
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_ECHIDNA:
+			(void) mongets(mtmp, rnd_misc_item(mtmp));//give her some junk cause why not?
+			(void) mongets(mtmp, rnd_misc_item(mtmp));
+			(void) mongets(mtmp, rnd_misc_item(mtmp));
+			break;
+		/*eden scales drop on death*/
+		case PM_ENKI:
+			(void) mongets(mtmp, CLOAK);
+			(void) mongets(mtmp, SICKLE);
+			break;
+		case PM_EURYNOME:{
+			struct obj *otmp;
+			otmp = mksobj(SPEED_BOOTS, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_EURYNOME_S_DANCING_SHOES));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_EVE:
+			(void) mongets(mtmp, BOW);
+			m_initthrow(mtmp, ARROW, 12);
+			(void) mongets(mtmp, APPLE);
+			(void) mongets(mtmp, LEO_NEMAEUS_HIDE);
+			break;
+		case PM_FAFNIR:{
+			struct obj *otmp;
+			otmp = mksobj(PICK_AXE, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_RUINOUS_STRIKE));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			mtmp->mgold = (long) d(level_difficulty(), mtmp->minvent ? 5 : 10);
+			break;
+		}
+		case PM_IRIS:{
+			struct obj *otmp;
+			otmp = mksobj(MORNING_STAR, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			add_oprop(otmp, OPROP_PSIOW);
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_JACK:{
+			struct obj *otmp;
+			otmp = mksobj(POT_BOOZE, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = TRUE;
+			(void) mpickobj(mtmp, otmp);
+			(void) mongets(mtmp, APPLE);
+			otmp = mksobj(CLUB, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_JACK_S_TORCH));
+			otmp->blessed = FALSE;
+			otmp->cursed = TRUE;
+			otmp->spe = 1;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_MARIONETTE:{
+			struct obj *otmp;
+			otmp = mksobj(GRAPPLING_HOOK, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_PUPPET_WIRE));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			(void) mpickobj(mtmp, otmp);
+			(void) mongets(mtmp, BATTLE_AXE);
+			break;
+		}
+		case PM_NABERIUS:
+			for(int i=0;i<8+rnd(3);i++)	
+				(void) mongets(mtmp, POT_BOOZE);
+			break;
+		case PM_ORTHOS:{
+			struct obj *otmp;
+			otmp = mksobj(CLOAK_OF_DISPLACEMENT, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_FLICKERING_OUTLINE));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->spe = 1;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_OSE:{
+			struct obj *otmp;
+			otmp = mksobj(TRIDENT, TRUE, FALSE);
+			add_oprop(otmp, OPROP_WATRW);
+			otmp->spe = 9;
+			set_material_gm(otmp, MITHRIL);
+			(void) mpickobj(mtmp, otmp);
+			(void) mongets(mtmp, HIGH_ELVEN_GAUNTLETS);
+			(void) mongets(mtmp, HIGH_ELVEN_PLATE);
+			(void) mongets(mtmp, HIGH_ELVEN_HELM);
+			(void) mongets(mtmp, SHIELD_OF_REFLECTION);
+			break;
+		}
+		case PM_PAIMON:{
+			struct obj *otmp;
+			otmp = mksobj(HELM_OF_BRILLIANCE, TRUE, FALSE);
+			otmp->spe = 3;
+			set_material_gm(otmp, GEMSTONE);
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(KHAKKHARA, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_ARCHIVIST));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->spe = 3;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		/*Simurgh feather drops on death*/
+		case PM_TENEBROUS:{
+			struct obj *otmp;
+			otmp = mksobj(GAUNTLETS_OF_DEXTERITY, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_TOUCH_OF_THE_VOID));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->spe = 3;
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_YMIR:{
+			(void)mongets(mtmp, AMULET_OF_REFLECTION);
+			struct obj *otmp;
+			otmp = mksobj(CRYSTAL_GAUNTLETS, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_GIGANTIC;
+			fix_object(otmp);
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(CRYSTAL_HELM, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_GIGANTIC;
+			fix_object(otmp);
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(CRYSTAL_BOOTS, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_GIGANTIC;
+			fix_object(otmp);
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(CRYSTAL_PLATE_MAIL, TRUE, FALSE);
+			otmp = oname(otmp, artiname(ART_PLATES_OF_THE_NEAR_VOID));
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_GIGANTIC;
+			fix_object(otmp);
+			otmp->spe = 10;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(CRYSTAL_SHIELD, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_GIGANTIC;
+			fix_object(otmp);
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(CLOAK_OF_MAGIC_RESISTANCE, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_GIGANTIC;
+			fix_object(otmp);
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);
+			otmp = mksobj(DOUBLE_LIGHTSABER, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->spe = 7;
+			(void) mpickobj(mtmp, otmp);	
+			break;
+		}
+		case PM_MISKA:{
+			struct obj *otmp;
+			otmp = mksobj(SPEAR, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_LARGE;
+			set_material_gm(otmp, SILVER);
+			otmp->spe = 9;
+			fix_object(otmp);
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_COSMOS:{
+			struct obj *otmp;
+			otmp = mksobj(CRYSTAL_SWORD, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_LARGE;
+			otmp->spe = 9;
+			fix_object(otmp);
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+		case PM_NUDZIARTH:{
+			struct obj *otmp;
+			otmp = mksobj(CLUB, TRUE, FALSE);
+			otmp->blessed = FALSE;
+			otmp->cursed = FALSE;
+			otmp->objsize = MZ_LARGE;
+			set_material_gm(otmp, OBSIDIAN_MT);
+			otmp->spe = 9;
+			fix_object(otmp);
+			(void) mpickobj(mtmp, otmp);
+			break;
+		}
+	}
+
 	/* ordinary soldiers rarely have access to magic (or gold :-) */
 	if (ptr->mtyp == PM_SOLDIER && rn2(13)) return;
 
@@ -8543,6 +8861,10 @@ register int	mmflags;
 	else if(!mkmon_template && (mtmp->data->geno&G_HELL) == 0 && Is_mephisto_level(&u.uz)){
 		mkmon_template = CRYSTALFIED;
 		unsethouse = TRUE;
+	} 
+	else if (In_void(&u.uz)){
+		mkmon_template = WHISPERING;
+		unsethouse = TRUE;
 	}
 	/* Kamerel tend to be fractured */ 
 	else if(is_kamerel(mtmp->data)){
@@ -8667,6 +8989,18 @@ register int	mmflags;
 			if(hides_under(ptr) && OBJ_AT(x, y))
 			    mtmp->mundetected = TRUE;
 		break;
+		case S_CENTAUR:
+			if(mndx == PM_MISKA){
+				mtmp->mhpmax = 10*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
+			}
+		break;
+		case S_VORTEX:
+			if(mndx == PM_TENEBROUS){
+				mtmp->mhpmax = 3*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
+			}
+		break;
 		case S_LIGHT:
 		case S_ELEMENTAL:
 			if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT) {
@@ -8753,6 +9087,9 @@ register int	mmflags;
 			} else if(mndx == PM_KUKER){ 
 				mtmp->mhpmax = mtmp->m_lev*8 - 4; //Max HP
 				mtmp->mhp = mtmp->mhpmax;
+			}else if(mndx == PM_COSMOS || mndx == PM_NUDZIARTH){
+				mtmp->mhpmax = 10*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
 			}
 		break;
 	    case S_GIANT:
@@ -8761,6 +9098,10 @@ register int	mmflags;
 					for(num = rn1(3,3); num >= 0; num--) makemon(&mons[PM_DEEPER_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 					for(num = rn1(10,10); num >= 0; num--) makemon(&mons[PM_DEEP_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 				}
+			}
+			if(mndx == PM_YMIR){
+				mtmp->mhpmax = 5*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
 			}
 		break;
 		case S_HUMAN:
@@ -8794,6 +9135,10 @@ register int	mmflags;
 						tmpm = makemon(&mons[PM_BATTLE_BAT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 					}
+				}
+				if(mndx == PM_NUMINA){
+					mtmp->mhpmax = 10*mtmp->mhpmax;
+					mtmp->mhp = mtmp->mhpmax;
 				}
 			}
 		break;
@@ -9007,6 +9352,7 @@ register int	mmflags;
 		case S_NYMPH:
 			if (rn2(5) && !u.uhave.amulet 
 				&& mndx != PM_NIMUNE && mndx != PM_INTONER && mndx != PM_AGLAOPE 
+				&& mndx != PM_EURYNOME && mndx != PM_ECHIDNA
 				&& !(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))
 			){
 				mtmp->msleeping = 1;
@@ -9175,6 +9521,10 @@ register int	mmflags;
 			}
 			else if(mndx == PM_PALE_NIGHT){
 				mtmp->mvar_paleWarning = 0;
+			}
+			else if(mndx == PM_THE_ALIGNMENT_THING){
+				mtmp->mhpmax = 15*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
 			}
 			if(mndx == PM_INCUBUS){
 				if(Is_grazzt_level(&u.uz)){
@@ -10641,6 +10991,7 @@ int type;
 		case PM_LIVING_DOLL: return 45+d(5,8);
 		case PM_PARASITIZED_DOLL: return 45+d(20,8);
 		case PM_FORD_GUARDIAN: return 135;//Max HP
+		case PM_MARIONETTE: return 200;
 //		case PM_HEAD_OF_THE_UNKNOWN_GOD: return 65;
 //		case PM_BODY_OF_THE_UNKNOWN_GOD: return 65;
 //		case PM_LEGS_OF_THE_UNKNOWN_GOD: return 65;
@@ -10716,6 +11067,8 @@ register struct permonst *ptr;
 	if(!u.uevent.invoked && mndx==PM_UVUUDAUM && !(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))) return TRUE;
 	
 	if(ual == A_VOID) return FALSE;
+
+	if(Role_if(PM_ANACHRONOUNBINDER) && (mndx==PM_MIND_FLAYER || mndx==PM_MASTER_MIND_FLAYER)) return TRUE;
 	
 	//Law quest uniques
 	if (((mndx <= PM_QUINON && mndx >= PM_MONOTON) || mndx == PM_AXUS) && sgn(mal) == sgn(ual)){

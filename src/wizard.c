@@ -800,6 +800,7 @@ genericptr_t poolcnt;
 void
 intervene()
 {
+	if(In_void(&u.uz)) return;
 	int which = Is_astralevel(&u.uz) ? rnd(4) : rn2(6);
 	/* cases 0 and 5 don't apply on the Astral level */
 	switch (which) {
@@ -824,6 +825,7 @@ void
 illur_intervene()
 {
 	if(Is_astralevel(&u.uz)) return;
+	if(In_void(&u.uz)) return;
 	switch (rnd(4)) {
 	    case 1:	
 	    case 2:

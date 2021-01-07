@@ -1621,7 +1621,7 @@ domove()
 		     */
 		    if (rn2(4)) {
 			You_feel("guilty about losing your pet like this.");
-			u.ugangr[Align2gangr(u.ualign.type)]++;
+			if(!Role_if(PM_ANACHRONOUNBINDER)) u.ugangr[Align2gangr(u.ualign.type)]++;
 			adjalign(-15);
 		    }
 

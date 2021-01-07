@@ -260,6 +260,7 @@ E int NDECL(wiz_where);
 E int NDECL(wiz_wish);
 # endif /* WIZARD */
 #endif /* USE_TRAMPOLI */
+E int NDECL(psionic_pulse);
 E void NDECL(reset_occupations);
 E void FDECL(set_occupation, (int (*)(void),const char *,int));
 #ifdef REDO
