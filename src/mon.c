@@ -2261,12 +2261,23 @@ movemon()
     for(mtmp = fmon; mtmp; mtmp = nmtmp) {
 	/* check that mtmp wasn't migrated by previous mtmp's actions */
 	if (!(mtmp->mx || mtmp->my)) {
-		/* uh oh -- restart loop at fmon. This will let already-handled very fast
-		 * monsters expend movement points to act out of turn, but will not result in anyone gaining
-		 * or losing turns, or worse, this loop affecting anyone in the migrating_mons chain */
-		mtmp = fmon;
-		if (!mtmp)
-			break;	/* exit current movement loop, there is no one left at all */
+		/* uh oh -- it looks like mtmp is marked as on migrating_mons. Confirm. */
+		struct monst * m2;
+		for (m2 = migrating_mons; m2 && m2 != mtmp; m2 = m2->nmon);
+		if (m2 == mtmp) {
+			/* extra check -- is mtmp also on the fmon chain? If it is, we've got serious trouble */
+			for (m2 = fmon; m2 && m2 != mtmp; m2 = m2->nmon);
+			if (m2 == mtmp)
+				panic("monster on both fmon and migrating_mons");
+			else {
+				/* restart loop at fmon. This will let already-handled very fast
+				 * monsters expend movement points to act out of turn, but will not result in anyone gaining
+				 * or losing turns, or worse, this loop affecting anyone in the migrating_mons chain */
+				mtmp = fmon;
+				if (!mtmp)
+					break;	/* exit current movement loop, there is no one left at all */
+			}
+		}
 	}
 	nmtmp = mtmp->nmon;
 	/* Find a monster that we have not treated yet.	 */
@@ -6737,6 +6748,25 @@ boolean msg;		/* "The oldmon turns into a newmon!" */
 		if(mtmp->mhpmax < 0) mtmp->mhpmax = hpn;	/* overflow */
 		if (!mtmp->mhpmax) mtmp->mhpmax = 1;
 	} //else just take on new form I think....
+
+	if (is_horror(mdat)) {
+		rem_mx(mtmp, MX_EHOR);	// in case it used to be a horror before
+		add_mx(mtmp, MX_EHOR);
+		if (mtyp == PM_NAMELESS_HORROR) {
+			extern char * nameless_horror_name;
+			int plslev = rn2(12);
+			EHOR(mtmp)->basehorrordata = *mdat;
+			nameless_horror_name = EHOR(mtmp)->randname;
+			make_horror(&(EHOR(mtmp)->basehorrordata), 37 + plslev, 15 + plslev);
+			nameless_horror_name = (char *)0;
+			mdat = &(EHOR(mtmp)->basehorrordata);
+			EHOR(mtmp)->currhorrordata = *mdat;
+		}
+		else {
+			EHOR(mtmp)->basehorrordata = *mdat;
+			EHOR(mtmp)->currhorrordata = *mdat;
+		}
+	}
 	/* take on the new form... */
 	set_mon_data(mtmp, mtyp);
 
