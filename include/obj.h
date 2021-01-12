@@ -473,6 +473,9 @@ struct obj {
 			 ))
 #define is_spear(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_SPEAR)
+#define is_tipped_spear(otmp)	(otmp->oclass == WEAPON_CLASS && \
+			 objects[otmp->otyp].oc_skill == P_SPEAR && \
+			otmp->otyp != JAVELIN)
 #define is_farm(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_HARVEST)
 #define is_launcher(otmp)	(otmp->oclass == WEAPON_CLASS && \
