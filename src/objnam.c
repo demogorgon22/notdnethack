@@ -704,7 +704,7 @@ char *buf;
 {
 	if(is_tipped_spear(obj)){
 			if(!obj->cobj){
-				Strcat(buf, "pointless ");
+				Strcat(buf, "tipless ");
 				return;
 			}
 			int point_type = obj->cobj->otyp;

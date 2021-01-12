@@ -43,6 +43,7 @@ STATIC_DCL boolean FDECL(mon_beside, (int, int));
 STATIC_DCL int FDECL(use_lightsaber, (struct obj *));
 STATIC_DCL int FDECL(use_socketed, (struct obj *));
 STATIC_DCL char NDECL(pick_gemstone);
+STATIC_DCL char NDECL(pick_spearhead);
 STATIC_DCL char NDECL(pick_crystal);
 STATIC_DCL char NDECL(pick_bullet);
 STATIC_DCL struct obj * FDECL(pick_creatures_armor, (struct monst *, int *));
@@ -2594,6 +2595,41 @@ boolean past;
 #undef Icebox
 STATIC_OVL
 char
+pick_spearhead()
+{
+	winid tmpwin;
+	int n=0, how,count=0;
+	char buf[BUFSZ];
+	struct obj *otmp;
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	
+	Sprintf(buf, "Spearheads");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oclass == GEM_CLASS && otmp->oknapped == KNAPPED_SPEAR){
+			Sprintf1(buf, doname(otmp));
+			any.a_char = otmp->invlet;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				otmp->invlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			count++;
+		}
+	}
+	end_menu(tmpwin, "Choose new spearhead:");
+
+	how = PICK_ONE;
+	if(count) n = select_menu(tmpwin, how, &selected);
+	else You("don't have any spearheads.");
+	destroy_nhwindow(tmpwin);
+	return ( n > 0 ) ? selected[0].item.a_char : 0;
+}
+STATIC_OVL
+char
 pick_crystal()
 {
 	winid tmpwin;
@@ -2814,6 +2850,46 @@ struct monst *mon;
 	} else pline("Nothing to equip!");
 	destroy_nhwindow(tmpwin);
 	return ( n > 0 ) ? selected[0].item.a_obj : 0;
+}
+
+
+int
+swap_point(obj)
+struct obj *obj;
+{
+	if(obj->oartifact == ART_SCEPTRE_OF_LOLTH){
+		pline("The obsidian point is irremovable from your spear.");
+		return 0;
+	}
+	char spearlet;
+	struct obj *otmp;
+	boolean rewield;
+	spearlet = pick_spearhead();
+	for (otmp = invent; otmp; otmp = otmp->nobj) {
+		if(otmp->invlet == spearlet) break;
+	}
+	if(!otmp) return 0;
+	if(!otmp->oknapped == KNAPPED_SPEAR){
+		pline("The stone must be knapped!");
+		return 0;
+	}
+	//You("attach your %s spearhead to your spear.", xname(otmp));
+	if(uwep == obj){
+		uwepgone();
+		rewield = TRUE;
+	}
+	if(obj->cobj){
+		current_container = obj;
+		out_container(obj->cobj);
+		current_container = 0;
+	}
+	current_container = obj;
+	in_container(otmp);
+	current_container = 0;
+	return 1;
+
+	//if(rewield) ready_weapon(obj);
+
 }
 
 STATIC_OVL int

@@ -11,6 +11,7 @@ static const char tools_too[] = { COIN_CLASS, ALL_CLASSES, TOOL_CLASS, POTION_CL
 				  WEAPON_CLASS, WAND_CLASS, GEM_CLASS, CHAIN_CLASS, 0 };
 static const char apply_armor[] = { ARMOR_CLASS, 0 };
 static const char apply_corpse[] = { FOOD_CLASS, 0 };
+static const char apply_gem[] = { GEM_CLASS, 0 };
 static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 
 #ifdef TOURIST
@@ -1447,6 +1448,7 @@ struct obj *obj;
 		return 0;
 	}
 }
+
 
 int
 do_bloodletter(obj)
@@ -6085,6 +6087,7 @@ doapply()
 	else if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) use_lamp(obj);
 	else if(obj->oartifact == ART_BLOODLETTER && artinstance[obj->oartifact].BLactive >= monstermoves) res = do_bloodletter(obj);
 	else if(obj->oartifact == ART_AEGIS) res = swap_aegis(obj);
+	else if(is_tipped_spear(obj)) res = swap_point(obj);
 	else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
 		return use_rakuyo(obj);
 	} else if(obj->otyp == DOUBLE_FORCE_BLADE || obj->otyp == FORCE_BLADE){
