@@ -1172,7 +1172,7 @@ register const char *let,*word;
 		    ((otmp->oclass == TOOL_CLASS &&
 		      otyp != OIL_LAMP && otyp != MAGIC_LAMP &&
 		      otyp != LANTERN) ||
-		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK)) ||
+		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp)) ||
 			(otmp->oclass == CHAIN_CLASS)))
 		|| (!strncmp(word, "rub on the stone", 16) &&
 		    *let == GEM_CLASS &&	/* using known touchstone */
@@ -1217,7 +1217,7 @@ register const char *let,*word;
 			  otyp != GNOMISH_POINTY_HAT &&
 			  otmp->oartifact != ART_AEGIS
 			  ) || 
-		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp))))
+		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK))))
 		|| (!strcmp(word, "invoke") &&
 		    (!otmp->oartifact && !objects[otyp].oc_unique &&
 		     (otyp != FAKE_AMULET_OF_YENDOR || otmp->known) &&
