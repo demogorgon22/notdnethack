@@ -1833,6 +1833,9 @@ boolean with_price;
 	if (dofull)
 	{
 		switch (obj->oclass) {
+		case GEM_CLASS:
+			if(obj->oknapped & KNAPPED_SPEAR) Sprintf(eos(buf), " spearhead");
+		break;
 		case AMULET_CLASS:
 			if (obj->owornmask & W_AMUL)
 				Strcat(buf, " (being worn)");

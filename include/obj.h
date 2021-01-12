@@ -305,6 +305,11 @@ struct obj {
 #define GIBBOUS_MOON	3
 #define FULL_MOON	 	4
 
+#define oknapped ovar1 /*for now, use ovar1 to store knapped status*/
+
+/*use int for now cause like there's no way there's that much knapping*/
+#define KNAPPED_SPEAR	0x0001
+
 	/* Songs that the Singing Sword has heard */
 	/* Spirits bound into the Pen of the Void */
 	/* The ema of damage taken for gloves of the berserker */

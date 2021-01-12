@@ -1171,7 +1171,7 @@ register const char *let,*word;
 		    ((otmp->oclass == TOOL_CLASS &&
 		      otyp != OIL_LAMP && otyp != MAGIC_LAMP &&
 		      otyp != LANTERN) ||
-		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp)) ||
+		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK)) ||
 			(otmp->oclass == CHAIN_CLASS)))
 		|| (!strncmp(word, "rub on the stone", 16) &&
 		    *let == GEM_CLASS &&	/* using known touchstone */
@@ -2075,6 +2075,9 @@ struct obj *obj;
 	else if (obj->otyp == GRAPPLING_HOOK)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Grapple something with this hook", MENU_UNSELECTED);
+	else if (obj->otyp == ROCK)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Beat something with this rock", MENU_UNSELECTED);
 	else if (obj->otyp == BAG_OF_TRICKS && obj->known)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Reach into this bag", MENU_UNSELECTED);
@@ -4548,6 +4551,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 	    obj->cursed != otmp->cursed || obj->blessed != otmp->blessed ||
 	    obj->no_charge != otmp->no_charge ||
 	    obj->obroken != otmp->obroken ||
+	    (obj->oclass == GEM_CLASS && obj->oknapped != otmp->oknapped) ||
 	    obj->objsize != otmp->objsize ||
 	    obj->otrapped != otmp->otrapped ||
 	    obj->lamplit != otmp->lamplit ||
