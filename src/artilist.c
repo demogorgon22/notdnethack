@@ -1535,13 +1535,23 @@ A("Reaver",							SCIMITAR,				(const char *)0,
 
 /*Needs encyc entry*/
 /* can be read to learn cone of cold */
-A("The Bow of Skadi",				BOW,					(const char *)0,
+A("The Bow of Skadi",				BOW,			"rune-carved %s",
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_VALKYRIE, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	ATTK(AD_COLD, 1, 24), (ARTA_EXPLCOLDX),
 	PROPS(), NOFLAG,
 	PROPS(COLD_RES), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Gungnir",			ATGEIR,						"rune-carved %s",
+	8000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_VALKYRIE, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	NO_MONS(),
+	ATTK(AD_PHYS, 20, 12), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
 	),
 
@@ -2286,7 +2296,7 @@ A("The Mitre of Holiness",			HELM_OF_BRILLIANCE,	(const char *)0,
 	A_LAWFUL, PM_PRIEST, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	MONS(vsMA(MA_UNDEAD)),
 	NO_ATTK(), NOFLAG,
-	PROPS(WARN_OF_MON), NOFLAG,
+	PROPS(WARN_OF_MON, DRAIN_RES), NOFLAG,
 	PROPS(FIRE_RES), NOFLAG,
 	ENERGY_BOOST, (ARTI_PLUSSEV)
 	),

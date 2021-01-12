@@ -2157,7 +2157,7 @@ register struct obj *obj;
 		if(ACURR(A_CON)>ATTRMIN(A_CON)){
 			adjattrib(A_CON, -1, FALSE);
 		}
-		change_usanity(-10);
+		change_usanity(-10, FALSE);
 		//Note: this is always the player's HP, not their polyform HP.
 		u.uhp -= u.uhp/2; //Note: chopped, so 0 to 1/2 max-HP lost.
 	} else {
@@ -3190,7 +3190,7 @@ struct obj *hypo;
 				//Bad drugs: inflict brain damage
 				if(amp->cursed){
 					if(u.usanity > 0)
-						change_usanity(-1);
+						change_usanity(-1, FALSE);
 					if(u.uinsight > 0)
 						change_uinsight(-1);
 					exercise(A_WIS, FALSE);
@@ -3232,7 +3232,7 @@ struct obj *hypo;
 					fall_asleep(-rn1(10, 25 - 12*bcsign(amp)), TRUE);
 				}
 				//Sedative
-				change_usanity(5 + 10*bcsign(amp));
+				change_usanity(5 + 10*bcsign(amp), FALSE);
 			break;
 			case POT_FULL_HEALING:
 				You_feel("completely healed.");
@@ -5417,7 +5417,7 @@ pick_carvee()
 	Sprintf(buf, "Carvable items");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-		if(otmp->oclass == WEAPON_CLASS && otmp->obj_material == WOOD && otmp->otyp != MOON_AXE && otmp->oartifact != ART_BOW_OF_SKADI){
+		if(otmp->oclass == WEAPON_CLASS && otmp->obj_material == WOOD && otmp->otyp != MOON_AXE && otmp->oartifact != ART_BOW_OF_SKADI && otmp->oartifact != ART_GUNGNIR){
 			Sprintf1(buf, doname(otmp));
 			any.a_char = otmp->invlet;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
@@ -6457,7 +6457,7 @@ doapply()
 
 		//Share your insanity
 		if(u.usanity < 100){
-			change_usanity((100 - u.usanity)/2);
+			change_usanity((100 - u.usanity)/2, FALSE);
 		}
 		
 			
@@ -6673,6 +6673,12 @@ unfixable_trouble_count(is_horn)
 	if (Stoned) unfixable_trbl++;
 	if (Golded) unfixable_trbl++;
 	if (Strangled) unfixable_trbl++;
+	if (Panicking) unfixable_trbl++;
+	if (StumbleBlind) unfixable_trbl++;
+	if (StaggerShock) unfixable_trbl++;
+	if (Babble) unfixable_trbl++;
+	if (Screaming) unfixable_trbl++;
+	if (FaintingFits) unfixable_trbl++;
 	if (Wounded_legs
 #ifdef STEED
 		    && !u.usteed

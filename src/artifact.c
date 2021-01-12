@@ -1032,6 +1032,7 @@ unsigned long flag;
 	const struct artifact *arti = get_artifact(otmp);
 	return((boolean)(arti && (arti->gflags & flag)));
 }
+
 boolean
 arti_worn_prop(otmp, flag)
 struct obj *otmp;
@@ -1040,6 +1041,7 @@ unsigned long flag;
 	const struct artifact *arti = get_artifact(otmp);
 	return((boolean)(arti && (arti->wflags & flag)));
 }
+
 boolean
 arti_carry_prop(otmp, flag)
 struct obj *otmp;
@@ -1048,6 +1050,7 @@ unsigned long flag;
 	const struct artifact *arti = get_artifact(otmp);
 	return((boolean)(arti && (arti->cflags & flag)));
 }
+
 boolean
 arti_attack_prop(otmp, flag)
 struct obj *otmp;
@@ -1056,6 +1059,7 @@ unsigned long flag;
 	const struct artifact *arti = get_artifact(otmp);
 	return((boolean)(arti && (arti->aflags & flag)));
 }
+
 boolean
 arti_is_prop(otmp, flag)
 struct obj *otmp;
@@ -2022,16 +2026,20 @@ struct obj *otmp;
 struct monst *mon;
 {
 	register const struct artifact *weap = get_artifact(otmp);
+	int bonus = 0;
 	/* no need for an extra check for `NO_ATTK' because this will
 	   always return 0 for any artifact which has that attribute */
 	if(otmp->oartifact == ART_BLACK_ARROW){
 		return 1000;
 	}
+	if(otmp->oartifact == ART_GUNGNIR){
+		bonus = 50;
+	}
 	
-	if(Role_if(PM_PRIEST)) return weap->accuracy; //priests always get the maximum to-hit bonus.
+	if(Role_if(PM_PRIEST)) return bonus + weap->accuracy; //priests always get the maximum to-hit bonus.
 	
 	if (weap && weap->accuracy && spec_applies(otmp, mon, FALSE))
-	    return rnd((int)weap->accuracy);
+	    return bonus + rnd((int)weap->accuracy);
 	return 0;
 }
 
@@ -9482,7 +9490,7 @@ read_necro(VOID_ARGS)
 		if(chance > 0){
 			change_uinsight(1);
 			if(u.usanity < 100 && rnd(30) < ACURR(A_WIS))
-				change_usanity(1);
+				change_usanity(1, FALSE);
 		}
 #define STUDY_NECRONOMICON(flag, msg, refndmsg) \
 	if(!(artiptr->ovar1 & (flag))){\
@@ -9508,7 +9516,7 @@ read_necro(VOID_ARGS)
 				exercise(A_WIS, FALSE);
 				exercise(A_INT, FALSE);
 				if(rn2(100) < u.usanity)
-					change_usanity(-1);
+					change_usanity(-1, FALSE);
 			break;
 			case 1:
 			STUDY_NECRONOMICON(S_OOZE,
@@ -9713,7 +9721,7 @@ read_lost(VOID_ARGS)
 		if(artiptr->ovar1 & putativeSeal){
 			losexp("getting lost in a book",TRUE,TRUE,TRUE);
 			if(rn2(100) < u.usanity)
-				change_usanity(-1);
+				change_usanity(-1, FALSE);
 		} else {
 			u.sealsKnown |= putativeSeal;
 			artiptr->ovar1 |= putativeSeal;
@@ -9721,7 +9729,7 @@ read_lost(VOID_ARGS)
 			artiptr->spestudied++;
 			change_uinsight(1);
 			if(u.usanity < 100 && rnd(30) < ACURR(A_WIS))
-				change_usanity(1);
+				change_usanity(1, FALSE);
 		}
 	}
 	else{
@@ -10097,9 +10105,9 @@ dogoat_tentacles()
 		losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
 		morehungry(d(4,4));
 		if(u.usanity < 50)
-			change_usanity(-1);
+			change_usanity(-1, FALSE);
 		else
-			change_usanity(-1*d(4,4));
+			change_usanity(-1*d(4,4), FALSE);
 		dogoat();
 	}
 	

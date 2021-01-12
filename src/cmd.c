@@ -1707,7 +1707,7 @@ STATIC_PTR int wiz_setsanity()
 		pline1(Never_mind);
 		return 0;
 	}
-	change_usanity(newval - u.usanity);
+	change_usanity(newval - u.usanity, FALSE);
 	return 0;
 }
 
