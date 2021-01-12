@@ -241,6 +241,35 @@ doread()
 				return 1;
 			}
 		
+		} else if(scroll->oartifact == ART_GUNGNIR){
+			if (Blind) {
+				You_cant("see the spear!");
+				return 0;
+			} else {
+				int i;
+				You("read the secret runes!");
+				for (i = 0; i < MAXSPELL; i++){
+					if (spellid(i) == SPE_IDENTIFY)  {
+						if (spellknow(i) <= 1000) {
+							Your("knowledge of Identify is keener.");
+							spl_book[i].sp_know = 20000;
+							exercise(A_WIS,TRUE);       /* extra study */
+						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
+							You("know Identify quite well already.");
+						}
+						break;
+					} else if (spellid(i) == NO_SPELL)  {
+						spl_book[i].sp_id = SPE_IDENTIFY;
+						spl_book[i].sp_lev = objects[SPE_CONE_OF_COLD].oc_level;
+						spl_book[i].sp_know = 20000;
+						You("learn to cast Identify!");
+						break;
+					}
+				}
+				if (i == MAXSPELL) impossible("Too many spells memorized!");
+				return 1;
+			}
+		
 		} else if(scroll->oartifact == ART_STAFF_OF_NECROMANCY){
 			if (Blind) {
 				You_cant("see the staff!");
@@ -518,6 +547,22 @@ doread()
 		&& scroll->oclass != SPBOOK_CLASS
 	) {
 	    pline(silly_thing_to, "read");
+	    return(0);
+	} else if ((Babble || Strangled || Drowning) 
+		&& (scroll->oclass == SCROLL_CLASS || scroll->oclass == SPBOOK_CLASS || (scroll->oclass == TILE_CLASS && objects[scroll->otyp].oc_magic))
+	){
+		if(Strangled)
+			You_cant("read that aloud, you can't breathe!");
+		else if(Drowning)
+			You_cant("read that aloud, you're drowning!");
+		else if(Babble)
+			You_cant("read that aloud, you're babbling incoherently!");
+		else
+			impossible("You can't read that aloud for some reason?");
+	    return(0);
+		//Note, you CAN scream one syllable
+	} else if (Screaming && (scroll->oclass == SCROLL_CLASS || scroll->oclass == SPBOOK_CLASS)){
+	    You_cant("read that aloud, you're too buisy screaming!");
 	    return(0);
 	} else if (Blind) {
 	    const char *what = 0;
@@ -1381,7 +1426,7 @@ losesaninsight(percent)
 	for (i = 0; i < count; i++) {
 		if(discover || wizard)
 			pline("Forgeting %s", mons[indices[i]].mname);
-		change_usanity(-1*mvitals[indices[i]].san_lost);
+		change_usanity(-1*mvitals[indices[i]].san_lost, FALSE);
 	    mvitals[indices[i]].san_lost = 0;
 		change_uinsight(-1*mvitals[indices[i]].insight_gained);
 	    mvitals[indices[i]].insight_gained = 0;
