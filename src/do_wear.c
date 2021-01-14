@@ -2237,6 +2237,7 @@ int base_uac()
 			if(!uarmc || !uarm) uac -= max( uwep->spe,0);
 			if(!uarmc && !uarm) uac -= max( (uwep->spe+1)/2,0);
 		}
+		if(is_tipped_spear(uwep) && uwep->cobj && uwep->cobj->otyp == JET) uac -= 2 + uwep->spe/2;
 		if(is_lightsaber(uwep) && litsaber(uwep)){
 			if(activeFightingForm(FFORM_SORESU) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))){
 				switch(min(P_SKILL(P_SORESU), P_SKILL(weapon_type(uwep)))){
@@ -2456,6 +2457,7 @@ int base_udr()
 	
 	if(uwep){
 		if(uwep->oartifact == ART_LANCE_OF_LONGINUS) udr += max((uwep->spe)/2,0);
+		if(is_tipped_spear(uwep) && uwep->cobj && uwep->cobj->otyp == JET) udr += 2 + uwep->spe/2;
 	}
 	if (HProtection & INTRINSIC) udr += (u.ublessed)/2;
 	if(u.edenshield > moves) udr += 7;

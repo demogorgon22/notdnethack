@@ -1368,6 +1368,64 @@ register struct obj *otmp;
 	return FALSE;
 }
 
+static
+int
+get_spear_prop(otmp)
+register struct obj *otmp;
+{
+	struct obj *point = otmp->cobj;
+	if(!is_tipped_spear(otmp)) return 0;
+	if(!otmp->cobj) return 0;
+	switch(point->otyp){
+		case MORGANITE:
+			return REGENERATION;
+		case OPAL:
+			return REFLECTING;
+		case CHRYSOBERYL:
+			return SICK_RES;
+		case GARNET:
+			return FIRE_RES;
+		case AMETHYST:
+			return TELEPAT;
+		case BLUE_FLUORITE:
+			return SLEEP_RES;
+		case WHITE_FLUORITE:
+			return ENERGY_REGENERATION;
+		case AGATE:
+			return FREE_ACTION;
+		case JADE:
+			return POISON_RES;
+		default:
+			return 0;
+	}
+}
+void
+set_spear_intrinsic(otmp,on,wp_mask)
+register struct obj *otmp;
+boolean on;
+long wp_mask;
+{
+	struct obj *point = otmp->cobj;
+	//pline("wp_mask is %ld",wp_mask);
+	if(!is_tipped_spear(otmp) || !point) return;
+	if(!(wp_mask & (W_WEP))) return;
+	int prop = get_spear_prop(otmp);
+	switch(point->otyp){
+		case JET:
+			if(on) You("are shrouded in a black mist!");
+			else pline("The black mist around you dissipates.");
+			break;
+		case OPAL:
+			if(on) You("are surrounded by colorful lights.");
+			else pline("The lights around you fade out.");
+			break;
+	}
+	if(prop){
+		if(on) u.uprops[prop].extrinsic |= wp_mask;
+		else u.uprops[prop].extrinsic &= ~wp_mask;
+	}
+}
+
 /*
  * a potential artifact has just been worn/wielded/picked-up or
  * unworn/unwielded/dropped.  Pickup/drop only set/reset the W_ART mask.
@@ -3401,6 +3459,11 @@ int dieroll; /* needed for Magicbane and vorpal blades */
 			if(magr && magr->mhp <= magr->mhpmax*.3)
 				*plusdmgptr += basedmg*.2;
 		}
+	}
+
+	/*Handle spearpoint hits here*/
+	if(is_tipped_spear(otmp)){
+
 	}
 	
 	if(otmp->otyp == CROW_QUILL){
@@ -9799,6 +9862,7 @@ struct obj *obj;
 {
 
 	if (obj && obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovar1&SEAL_JACK) return TRUE;
+	if(obj && is_tipped_spear(obj) && obj->cobj && obj->cobj->otyp == CITRINE) return TRUE;
 
 	return (obj && obj->oartifact && arti_is_prop(obj, ARTI_LIGHT));
 }

@@ -119,6 +119,7 @@ E boolean FDECL(arti_reflects, (struct obj *));
 E int FDECL(artifact_weight, (struct obj *));
 E boolean FDECL(arti_light, (struct obj *));
 E boolean FDECL(restrict_name, (struct obj *,const char *));
+E void FDECL(set_spear_intrinsic, (struct obj *,BOOLEAN_P,long));
 E void FDECL(set_artifact_intrinsic, (struct obj *,BOOLEAN_P,long));
 E int FDECL(touch_artifact, (struct obj *,struct monst *, int));
 E int FDECL(spec_abon, (struct obj *,struct monst *));
