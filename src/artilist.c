@@ -1750,7 +1750,7 @@ A("The Lyre of Orpheus",			MAGIC_HARP,			(const char *)0,
 	),
 #endif
 
-A("The Sceptre of Might",			MACE,				(const char *)0,
+A("The Sceptre of Might",			SPEAR,				(const char *)0,
 	2500L, BONE, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_CAVEMAN, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
