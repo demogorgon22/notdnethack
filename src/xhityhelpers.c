@@ -1331,6 +1331,7 @@ struct obj * obj;
 		(obj->oclass == RING_CLASS && obj->ohaluengr
 		&& (isEngrRing(obj->otyp) || isSignetRing(obj->otyp))
 		&& obj->oward >= LOLTH_SYMBOL && obj->oward <= LOST_HOUSE) ||
+		has_spear_point(obj,SILVER_SLINGSTONE) ||
 		(obj->otyp == SHURIKEN && !flags.mon_moving && uwep && uwep->oartifact == ART_SILVER_STARLIGHT)	// THIS IS BAD AND SHOULD BE DONE DIFFERENTLY
 		)
 		return TRUE;

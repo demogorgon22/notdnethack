@@ -1246,6 +1246,13 @@ domove()
 					teleds(cc.x, cc.y, FALSE);
 				}
 			}
+			if(has_spear_point(uwep, TURQUOISE)){
+				coord cc;
+				if(!u.utrap && tt_findadjacent(&cc, mtmp) && (cc.x != u.ux || cc.y != u.uy)){
+					You("warp to a new location!");
+					teleds(cc.x, cc.y, FALSE);
+				}
+			}
 			return;
 		}
 	    }

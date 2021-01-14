@@ -476,6 +476,7 @@ struct obj {
 #define is_tipped_spear(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_SPEAR && \
 			otmp->otyp != JAVELIN)
+#define has_spear_point(otmp,typ) ((otmp) && is_tipped_spear(otmp) && (otmp)->cobj && (otmp)->cobj->otyp == typ)
 #define is_farm(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_HARVEST)
 #define is_launcher(otmp)	(otmp->oclass == WEAPON_CLASS && \
@@ -544,7 +545,7 @@ struct obj {
 #define dark_weapon(otmp)	 ((otmp)->otyp == GOLD_BLADED_VIBROSWORD || \
 						  (otmp)->otyp == GOLD_BLADED_VIBROZANBATO || \
 						  (otmp)->otyp == GOLD_BLADED_VIBROSPEAR)
-#define spec_prop_otyp(otmp)	((pure_weapon(otmp) || dark_weapon(otmp) || force_weapon(otmp)) || \
+#define spec_prop_otyp(otmp)	((pure_weapon(otmp) || dark_weapon(otmp) || force_weapon(otmp)) || is_tipped_spear(otmp) || \
 						  (otmp)->otyp == SUNROD || \
 						  (otmp)->otyp == TORCH || \
 						  (otmp)->otyp == SHADOWLANDER_S_TORCH || \

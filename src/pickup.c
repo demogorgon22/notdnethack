@@ -2863,7 +2863,7 @@ struct obj *obj;
 	}
 	char spearlet;
 	struct obj *otmp;
-	boolean rewield;
+	boolean should_rewield;
 	spearlet = pick_spearhead();
 	for (otmp = invent; otmp; otmp = otmp->nobj) {
 		if(otmp->invlet == spearlet) break;
@@ -2876,7 +2876,7 @@ struct obj *obj;
 	//You("attach your %s spearhead to your spear.", xname(otmp));
 	if(uwep == obj){
 		uwepgone();
-		rewield = TRUE;
+		should_rewield = TRUE;
 	}
 	if(obj->cobj){
 		current_container = obj;
@@ -2886,6 +2886,7 @@ struct obj *obj;
 	current_container = obj;
 	in_container(otmp);
 	current_container = 0;
+	if(should_rewield) rewield(obj,W_WEP);
 	return 1;
 
 	//if(rewield) ready_weapon(obj);
