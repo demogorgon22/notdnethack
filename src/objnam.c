@@ -262,6 +262,7 @@ struct obj *otmp;
 {
 	if(!otmp->cobj)
 		return "empty socketed ";
+	return "";
 	/*
 	switch(otmp->cobj->oartifact){
 		case ART_BLACK_CRYSTAL:

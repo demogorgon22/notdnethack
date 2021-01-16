@@ -442,6 +442,9 @@ struct obj *obj;
 			return OPROP_ELECW;
 		case ART_EARTH_CRYSTAL:
 			return OPROP_FLAYW;
+		default:
+			impossible("called get_crystal_oprop with an unknown chaos orb?");
+			return 0;
 	}
 }
 
