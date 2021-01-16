@@ -1824,6 +1824,11 @@ dosacrifice()
       toughness.  Human and pet sacrifice, as well as sacrificing unicorns
       of your alignment, is strongly discouraged.
      */
+	if(Role_if(PM_ANACHRONOUNBINDER) && otmp->otyp != AMULET_OF_YENDOR){
+		if(In_quest(&u.uz)) You("wouldn't want to change the future.");
+		else You("cannot feel your true god.");
+		return 0;
+	}
 	
 	if(goat_mouth_at(u.ux, u.uy)){
 		goat_eat(otmp, GOAT_EAT_OFFERED);
@@ -1835,11 +1840,6 @@ dosacrifice()
 		return 0;
 	}
 
-	if(Role_if(PM_ANACHRONOUNBINDER) && otmp->otyp != AMULET_OF_YENDOR){
-		if(In_quest(&u.uz)) You("wouldn't want to change the future.");
-		else You("cannot feel your true god.");
-		return 0;
-	}
 	
 #define MAXVALUE 24 /* Highest corpse value (besides Wiz) */
 
