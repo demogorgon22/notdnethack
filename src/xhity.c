@@ -12942,6 +12942,40 @@ int vis;						/* True if action is at all visible to the player */
 				//destroy_all_magr_weapon = TRUE;
 				real_attack = FALSE;
 				break;
+			case LAVA_BALL:
+				if (Fire_res(mdef)) {
+					if (youdef || canseemon(mdef)) {
+						hittxt = TRUE;
+						if (youagr)
+							Your("lava hits %s harmlessly.",
+							mon_nam(mdef));
+						else {
+							pline("%s %s unaffected.",
+								(youdef ? "You" : Monnam(mdef)),
+								(youdef ? "are" : "is")
+								);
+						}
+					}
+					basedmg = 0;
+				}
+				else {
+					if (youdef || canseemon(mdef)) {
+						hittxt = TRUE;
+						if (youagr)
+							Your("lava burns %s!", mon_nam(mdef));
+						else {
+							pline("The lava burns%s%s!",
+								(youdef ? "" : " "),
+								(youdef ? "" : mon_nam(mdef))
+								);
+						}
+					}
+					basedmg = dmgval(weapon, mdef, 0);
+				}
+				/* projectile should take care of it */
+				//destroy_all_magr_weapon = TRUE;
+				real_attack = FALSE;
+				break;
 
 			case STILETTOS:
 				basedmg = rnd(bigmonst(pd) ? 2 : 6) + weapon->spe + (youagr ? dbon(weapon) : 0);

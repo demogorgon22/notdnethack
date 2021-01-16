@@ -892,6 +892,7 @@ struct obj *obj;
 		case CREAM_PIE:
 		case MELON:
 		case ACID_VENOM:
+		case LAVA_BALL:
 		case BLINDING_VENOM:
 		case BALL_OF_WEBBING:
 			return 1;
@@ -927,6 +928,7 @@ boolean in_view;
 		case CREAM_PIE:
 			if (in_view) pline("What a mess!");
 		break;
+		case LAVA_BALL:
 		case ACID_VENOM:
 		case BLINDING_VENOM:
 			pline("Splash!");

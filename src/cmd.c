@@ -123,6 +123,7 @@ static int NDECL((*timed_occ_fn));
 STATIC_DCL int NDECL(use_reach_attack);
 STATIC_DCL int NDECL(psionic_craze);
 STATIC_DCL int NDECL(dotelekinesis);
+STATIC_DCL int NDECL(lavaify);
 STATIC_PTR int NDECL(doprev_message);
 STATIC_PTR int NDECL(timed_occupation);
 STATIC_PTR int NDECL(doextcmd);
@@ -606,6 +607,12 @@ boolean you_abilities;
 	if (mon_abilities && youracedata->mlet == S_NYMPH){
 		add_ability('I', "Remove an iron ball", MATTK_REMV);
 	}
+	if (mon_abilities && youracedata->mtyp == PM_SALAMANDER &&  levl[u.ux][u.uy].typ != LAVAPOOL){
+		add_ability('L', "Secrete Lava", MATTK_LAVA);
+	}
+	if (mon_abilities && youracedata->mtyp == PM_SALAMANDER  && levl[u.ux][u.uy].typ == LAVAPOOL){
+		add_ability('l', "Splash Lava", MATTK_SPIT);
+	}
 	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_ANACHRONOUNBINDER)) ){
 		add_ability('m', "Emit a mind blast", MATTK_MIND);
 	}
@@ -820,7 +827,35 @@ boolean you_abilities;
 	break;
 	case MATTK_PULSE: return psionic_pulse();
 	break;
+	case MATTK_LAVA: return lavaify();
+	break;
 	}
+	return 0;
+}
+
+STATIC_OVL int
+lavaify(){
+	struct rm *lev = &levl[u.ux][u.uy];
+	if (!(
+		!isok(u.ux,u.uy) || 
+	   /* ALI - artifact doors from slash'em */
+		(IS_DOOR(levl[u.ux][u.uy].typ) && artifact_door(u.ux, u.uy)) ||
+		(IS_ROCK(lev->typ) && lev->typ != SDOOR &&
+		(lev->wall_info & W_NONDIGGABLE) != 0) ||
+		(lev->typ == DRAWBRIDGE_DOWN ||
+		   (is_drawbridge_wall(u.ux, u.uy) >= 0)) ||
+		(lev->typ == DRAWBRIDGE_UP) ||
+		(IS_ALTAR(lev->typ)) ||
+		(Is_waterlevel(&u.uz))
+	)){
+		losehp(u.uhp/2,"overexertion",KILLED_BY);
+		pline("Lava seeps from your pores!");
+		levl[u.ux][u.uy].typ = LAVAPOOL;
+		u.uinwater = 0;
+		unblock_point(u.ux,u.uy);
+		return 1;
+	}
+	You("cannot do that here.");
 	return 0;
 }
 

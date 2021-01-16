@@ -807,6 +807,7 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 	/* projectiles that should always be destroyed, regardless of fired or whether or not they hit a "soft" surface */
 	if (forcedestroy ||
 		thrownobj->otyp == LASER_BEAM ||
+		thrownobj->otyp == LAVA_BALL ||
 		thrownobj->otyp == ACID_VENOM ||
 		thrownobj->otyp == BLINDING_VENOM ||
 		thrownobj->otyp == CREAM_PIE ||
@@ -2198,7 +2199,7 @@ dofire()
 	if (attacktype(youracedata, AT_BREA))
 		return dobreathe(youracedata);
 
-	if (attacktype(youracedata, AT_SPIT))
+	if (attacktype(youracedata, AT_SPIT) || (youracedata->mtyp == PM_SALAMANDER && levl[u.ux][u.uy].typ == LAVAPOOL))
 		return dospit();
 
 	if(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_PULSE_LVL){
@@ -2811,7 +2812,9 @@ int tary;
 	struct obj * otmp;
 	boolean youagr = (magr == &youmonst);
 	struct permonst * pa = youagr ? youracedata : magr->data;
-	int typ = attk->adtyp;
+	int typ;
+      	if(pa->mtyp == PM_SALAMANDER) typ = AD_FIRE; 
+	else typ = attk->adtyp;
 	int dx, dy, dz;
 
 	if (tarx || tary) {
@@ -2852,6 +2855,9 @@ int tary;
 	case AD_DRST:
 		otmp = mksobj(BLINDING_VENOM, TRUE, FALSE);
 		break;
+	case AD_FIRE:
+		otmp = mksobj(LAVA_BALL, TRUE, FALSE);
+		break;
 	default:
 		impossible("bad attack type in xspity (%d)", typ);
 		/* fall through to acid venom */
@@ -2864,7 +2870,8 @@ int tary;
 
 	/* message */
 	if (youagr) {
-		You("spit %s!", typ == AD_WEBS ? "webbing" : "venom");
+		if(typ == AD_FIRE) You("fling lava.");
+		else You("spit %s!", typ == AD_WEBS ? "webbing" : "venom");
 	}
 	else if (canseemon(magr)) {
 		pline("%s spits %s!", Monnam(magr), typ == AD_WEBS ? "webbing" : "venom");
