@@ -3265,6 +3265,8 @@ int flat_acc;
 				}
 			}
 		}
+		if(has_spear_point(weapon,LUCKSTONE))
+			wepn_acc += 7;
 		/* gnomes are especially accurate, with weapons or ranged or any other "proper" attacks... not a zombie's claw attack. */
 		if (magr && (youagr ? Race_if(PM_GNOME) : is_gnome(pa)))
 			wepn_acc += 2;
