@@ -2869,7 +2869,7 @@ struct obj *obj;
 		if(otmp->invlet == spearlet) break;
 	}
 	if(!otmp) return 0;
-	if(!otmp->oknapped == KNAPPED_SPEAR){
+	if(otmp->oknapped != KNAPPED_SPEAR){
 		pline("The stone must be knapped!");
 		return 0;
 	}
