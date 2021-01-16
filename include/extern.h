@@ -119,6 +119,7 @@ E boolean FDECL(arti_reflects, (struct obj *));
 E int FDECL(artifact_weight, (struct obj *));
 E boolean FDECL(arti_light, (struct obj *));
 E boolean FDECL(restrict_name, (struct obj *,const char *));
+E void FDECL(set_spear_intrinsic, (struct obj *,BOOLEAN_P,long));
 E void FDECL(set_artifact_intrinsic, (struct obj *,BOOLEAN_P,long));
 E int FDECL(touch_artifact, (struct obj *,struct monst *, int));
 E int FDECL(spec_abon, (struct obj *,struct monst *));
@@ -2038,6 +2039,7 @@ E void NDECL(getlock);
 
 E void FDECL(observe_quantum_cat, (struct obj *, BOOLEAN_P));
 E void FDECL(open_coffin, (struct obj *, BOOLEAN_P));
+E int FDECL(swap_point, (struct obj *));
 E void FDECL(open_sarcophagus, (struct obj *, BOOLEAN_P));
 E void FDECL(open_crazy_box, (struct obj *, BOOLEAN_P));
 #ifdef GOLDOBJ

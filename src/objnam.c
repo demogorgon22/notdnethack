@@ -698,6 +698,32 @@ char *buf;
 }
 
 static void
+add_point_words(obj, buf)
+struct obj *obj;
+char *buf;
+{
+	if(is_tipped_spear(obj)){
+			if(!obj->cobj){
+				Strcat(buf, "tipless ");
+				return;
+			}
+			int point_type = obj->cobj->otyp;
+			if(point_type == FLINT)
+				return;
+			if(!objects[point_type].oc_name_known){
+				Sprintf(eos(buf), "%s point ", c_obj_colors[objects[point_type].oc_color]);
+			} else if(objects[point_type].oc_material == GLASS){
+				Sprintf(eos(buf), "%s glass point ", c_obj_colors[objects[point_type].oc_color]);
+			} else if (point_type == CHUNK_OF_FOSSIL_DARK){
+				Sprintf(eos(buf), "fossil dark point ");
+			} else {
+				Sprintf(eos(buf), "%s point ",OBJ_NAME(objects[point_type]));
+			}
+	}
+}
+
+
+static void
 add_grease_words(obj, buf)
 struct obj *obj;
 char *buf;
@@ -1564,6 +1590,7 @@ boolean with_price;
 		if (dofull) add_stolen_words(obj, buf);
 		if (dofull) add_buc_words(obj, buf);
 		add_size_words(obj, buf);
+		add_point_words(obj,buf);
 		add_shape_words(obj, buf, dofull);		// Note: more verbose for a number of objects if dofull is true
 		if (dofull) add_erosion_words(obj, buf);
 		if (dofull) add_grease_words(obj, buf);
@@ -1833,6 +1860,9 @@ boolean with_price;
 	if (dofull)
 	{
 		switch (obj->oclass) {
+		case GEM_CLASS:
+			if(obj->oknapped & KNAPPED_SPEAR) Sprintf(eos(buf), " spearhead");
+		break;
 		case AMULET_CLASS:
 			if (obj->owornmask & W_AMUL)
 				Strcat(buf, " (being worn)");

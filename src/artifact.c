@@ -1198,6 +1198,7 @@ struct obj *obj;
 {
     return (obj && (
 		(obj->oartifact && arti_attack_prop(obj, ARTA_SHINING)) ||
+		has_spear_point(obj, OBSIDIAN) ||
 		(is_lightsaber(obj) && litsaber(obj)) ||
 		(check_oprop(obj, OPROP_PHSEW)) ||
 		((obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) && obj->lamplit)
@@ -1366,6 +1367,68 @@ register struct obj *otmp;
 	if ((weap = get_artifact(otmp)) != 0)
 		return((boolean)(weap->adtyp == adtype));
 	return FALSE;
+}
+
+static
+int
+get_spear_prop(otmp)
+register struct obj *otmp;
+{
+	struct obj *point = otmp->cobj;
+	if(!is_tipped_spear(otmp)) return 0;
+	if(!otmp->cobj) return 0;
+	switch(point->otyp){
+		case MORGANITE:
+			return REGENERATION;
+		case OPAL:
+			return REFLECTING;
+		case CHRYSOBERYL:
+			return SICK_RES;
+		case GARNET:
+			return FIRE_RES;
+		case AMETHYST:
+			return TELEPAT;
+		case BLUE_FLUORITE:
+			return HALF_SPDAM;
+		case VIOLET_FLUORITE:
+			return SLEEP_RES;
+		case WHITE_FLUORITE:
+			return ENERGY_REGENERATION;
+		case AGATE:
+			return FREE_ACTION;
+		case JADE:
+			return POISON_RES;
+		case LOADSTONE:
+			return WELDPROOF;
+		default:
+			return 0;
+	}
+}
+void
+set_spear_intrinsic(otmp,on,wp_mask)
+register struct obj *otmp;
+boolean on;
+long wp_mask;
+{
+	struct obj *point = otmp->cobj;
+	//pline("wp_mask is %ld",wp_mask);
+	if(!is_tipped_spear(otmp) || !point) return;
+	if(!(wp_mask & (W_WEP))) return;
+	int prop = get_spear_prop(otmp);
+	switch(point->otyp){
+		case JET:
+			if(on) You("are shrouded in a black mist!");
+			else pline("The black mist around you dissipates.");
+			break;
+		case OPAL:
+			if(on) You("are surrounded by colorful lights.");
+			else pline("The lights around you fade out.");
+			break;
+	}
+	if(prop){
+		if(on) u.uprops[prop].extrinsic |= wp_mask;
+		else u.uprops[prop].extrinsic &= ~wp_mask;
+	}
 }
 
 /*
@@ -3401,6 +3464,125 @@ int dieroll; /* needed for Magicbane and vorpal blades */
 			if(magr && magr->mhp <= magr->mhpmax*.3)
 				*plusdmgptr += basedmg*.2;
 		}
+	}
+
+	/*Handle spearpoint hits here*/
+	if(is_tipped_spear(otmp) && otmp->cobj){
+		if(!rn2(10) && !objects[otmp->cobj->otyp].oc_name_known)
+			objects[otmp->cobj->otyp].oc_name_known = 1;
+		switch(otmp->cobj->otyp){
+			case CITRINE:
+				if (!resists_blnd(mdef)) {
+					if (youdef) {
+						You("are blinded by the flash!");
+						make_blinded((long)d(1, 50), FALSE);
+						if (!Blind) Your1(vision_clears);
+					}
+					else if (!(youagr && u.uswallow && mdef == u.ustuck)) {
+						register unsigned rnd_tmp = rnd(50);
+						mdef->mcansee = 0;
+						if ((mdef->mblinded + rnd_tmp) > 127)
+							mdef->mblinded = 127;
+						else mdef->mblinded += rnd_tmp;
+					}
+				}
+				break;
+			case GARNET:
+				if (!Fire_res(mdef)) {
+					if(youagr) Your("garnet embered spear blazes %s!",mon_nam(mdef));
+					(*truedmgptr) += basedmg;
+				}
+				if (!InvFire_res(mdef)){
+					if (!rn2(3)) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+					if (!rn2(3)) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+					if (!rn2(3)) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+				}
+				break;
+			case DILITHIUM_CRYSTAL:
+				if(youagr) Your("crystal sharp spear plunges deeply into %s!",mon_nam(mdef));
+				(*truedmgptr) += basedmg;
+				break;
+			case AMBER:
+				/* player */
+				if (youdef){
+					if (HFast) {
+						u_slow_down();
+					}
+				}
+				/* monsters */
+				else {
+					unsigned int oldspeed = mdef->mspeed;
+
+					mon_adjust_speed(mdef, -1, (struct obj *)0);
+					mdef->mstrategy &= ~STRAT_WAITFORU;
+					if (mdef->mspeed != oldspeed && canseemon(mdef))
+						pline("%s slows down.", Monnam(mdef));
+				}
+
+				break;
+			case VIOLET_FLUORITE:
+				if(!Sleep_res(mdef) && !cantmove(mdef)) {
+					if (youdef) {
+						fall_asleep(-rnd(10), TRUE);
+						if (Blind) You("are put to sleep!");
+						else You("are put to sleep by %s!", mon_nam(magr));
+					}
+					else {
+						if (sleep_monst(mdef, rnd(10), -1)) {
+							pline("%s falls asleep!",
+								Monnam(mdef));
+							mdef->mstrategy &= ~STRAT_WAITFORU;
+							slept_monst(mdef);
+						}
+					}
+				}
+				break;
+			case BLUE_FLUORITE:
+				if (!Magic_res(mdef)) {
+					*truedmgptr += rnd(8);
+				}
+				if (youdef)
+					drain_en(d(2,4));
+				break;
+			case JADE:
+				if(youdef){
+					create_gas_cloud(u.ux,u.uy, 1, d(2,4),youagr);
+					newsym(u.ux,u.uy);
+				} else {
+					create_gas_cloud(mdef->mx, mdef->my, 1, d(2,4),youagr);
+					newsym(u.ux,u.uy);
+				}
+				if(youagr) pline("Toxic gasses billow from your spear point!");
+				break;
+			case LOADSTONE:
+					*truedmgptr += d(2,4);
+				break;
+			case TOUCHSTONE:{
+				int * study = (youdef ? &(u.ustdy) : &(mdef->mstdy));
+				*study += d(3,5);
+				break;
+			}
+			case CHUNK_OF_FOSSIL_DARK:
+				if(!Drain_res(mdef)){
+					if(youdef){
+						losexp("life force drain",TRUE,FALSE,FALSE);
+					} else {
+						if(mdef->m_lev){
+							mdef->m_lev--;
+							*truedmgptr += basedmg;
+						} else {
+							*truedmgptr += mdef->mhp*3;
+						}
+						if(youagr) pline("%s draws the life from %s!", The(xname(otmp)), mon_nam(mdef));
+					}
+
+				}
+				break;
+			case JASPER:
+				*truedmgptr += rnd(8);
+				break;
+		}
+
 	}
 	
 	if(otmp->otyp == CROW_QUILL){
@@ -9799,6 +9981,7 @@ struct obj *obj;
 {
 
 	if (obj && obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovar1&SEAL_JACK) return TRUE;
+	if(has_spear_point(obj,CITRINE)) return TRUE;
 
 	return (obj && obj->oartifact && arti_is_prop(obj, ARTI_LIGHT));
 }

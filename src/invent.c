@@ -1191,6 +1191,7 @@ register const char *let,*word;
 		      otyp != FRAG_GRENADE &&
 		      otyp != GAS_GRENADE &&
 		      otyp != STICK_OF_DYNAMITE &&
+		      !is_tipped_spear(otmp) && 
 //endif
 		      !is_axe(otmp) && !is_pole(otmp) && 
 			  otyp != BULLWHIP && otyp != VIPERWHIP && otyp != FORCE_WHIP &&
@@ -1217,7 +1218,7 @@ register const char *let,*word;
 			  otyp != GNOMISH_POINTY_HAT &&
 			  otmp->oartifact != ART_AEGIS
 			  ) || 
-		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp))))
+		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK))))
 		|| (!strcmp(word, "invoke") &&
 		    (!otmp->oartifact && !objects[otyp].oc_unique &&
 		     (otyp != FAKE_AMULET_OF_YENDOR || otmp->known) &&
@@ -1232,6 +1233,7 @@ register const char *let,*word;
 		|| (!strcmp(word, "untrap with") &&
 		    ((otmp->oclass == TOOL_CLASS && otyp != CAN_OF_GREASE) ||
 			(otmp->oclass == CHAIN_CLASS)))
+		|| (!strcmp(word, "attach to your spear") && !otmp->oknapped)
 		|| (!strcmp(word, "charge") && !is_chargeable(otmp))
 		|| (!strcmp(word, "upgrade your stove with") &&
 		    (otyp != TINNING_KIT))
@@ -2076,6 +2078,12 @@ struct obj *obj;
 	else if (obj->otyp == GRAPPLING_HOOK)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Grapple something with this hook", MENU_UNSELECTED);
+	else if (obj->otyp == ROCK)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Beat something with this rock", MENU_UNSELECTED);
+	else if (is_tipped_spear(obj))
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Change the point of this spear", MENU_UNSELECTED);
 	else if (obj->otyp == BAG_OF_TRICKS && obj->known)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Reach into this bag", MENU_UNSELECTED);
@@ -4552,6 +4560,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 	    obj->cursed != otmp->cursed || obj->blessed != otmp->blessed ||
 	    obj->no_charge != otmp->no_charge ||
 	    obj->obroken != otmp->obroken ||
+	    (obj->oclass == GEM_CLASS && obj->oknapped != otmp->oknapped) ||
 	    obj->objsize != otmp->objsize ||
 	    obj->otrapped != otmp->otrapped ||
 	    obj->lamplit != otmp->lamplit ||

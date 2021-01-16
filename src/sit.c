@@ -477,6 +477,9 @@ rndcurse()			/* curse a few inventory items at random! */
 	if (uamul && (uamul->otyp == AMULET_VERSUS_CURSES)) {
 	    You(mal_aura, "your amulet");
 		return FALSE;
+	} else if (has_spear_point(uwep,GREEN_FLUORITE)) {
+	    You(mal_aura, "the green fluorite point of your spear");
+		return FALSE;
 	} else if (uwep && (uwep->oartifact == ART_MAGICBANE) && rn2(20)) {
 	    You(mal_aura, "the magic-absorbing blade");
 		return FALSE;
@@ -602,6 +605,10 @@ register struct monst *mtmp;
 	if (MON_WEP(mtmp) &&
 	    (MON_WEP(mtmp)->oartifact == ART_MAGICBANE) && rn2(20)) {
 		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "magic-absorbing blade");
+		return FALSE;
+	}
+	if (has_spear_point(MON_WEP(mtmp),GREEN_FLUORITE)) {
+		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "green fluorite spear point");
 		return FALSE;
 	}
 	if (MON_WEP(mtmp) &&

@@ -1,0 +1,58 @@
+Spear changes
+	Spears now all have changable points that can be changed to other
+	spearheads.
+	Gem spearheads have special effects.
+		Dilithium Crystal
+			Double Damage
+		Turquoise
+			Hitting an enemy warps the player nearby
+		Morganite
+			Regeneration
+		Citrine
+			Bright Light
+			Blinding onhit
+		Amber
+			Slow monster
+		Jet
+			AC and DR Protection - shrouds you in a black mist (more
+			protection based on enchant)
+		Opal
+			Reflection
+		Chrysoberyl
+			Disease resistance
+		Garnet
+			2x Fire dmg
+			Fire resistance
+		Amethyst
+			Telepathy
+		Jasper
+			+d8 dmg
+		Violet Fluorite
+			Sleeping attack
+			Sleep Resistance
+		Blue Fluorite
+			+d8 magic dmg
+			drain pw if hits you
+			half spell damage
+		White Fluorite
+			Energy Regen
+		Green Fluorite
+			Curse Resistance
+		Obsidian
+			Ignores DR
+		Agate
+			Free Action
+		Jade
+			Stinking cloud
+			Poison resistance
+		Luckstone
+			Tohit +7
+		Loadstone
+			+2d4 dmg
+			weldproof
+		Touchstone
+			+3d5 study
+		Fossile dark
+			2x dmg drain xp
+		Silver Slingstone
+			Sears silver haters

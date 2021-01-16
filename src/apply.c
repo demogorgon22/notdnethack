@@ -11,6 +11,7 @@ static const char tools_too[] = { COIN_CLASS, ALL_CLASSES, TOOL_CLASS, POTION_CL
 				  WEAPON_CLASS, WAND_CLASS, GEM_CLASS, CHAIN_CLASS, 0 };
 static const char apply_armor[] = { ARMOR_CLASS, 0 };
 static const char apply_corpse[] = { FOOD_CLASS, 0 };
+static const char apply_gem[] = { GEM_CLASS, 0 };
 static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 
 #ifdef TOURIST
@@ -1448,6 +1449,7 @@ struct obj *obj;
 	}
 }
 
+
 int
 do_bloodletter(obj)
 struct obj *obj;
@@ -2663,8 +2665,8 @@ struct obj *tstone;
     /* when the touchstone is fully known, don't bother listing extra
        junk as likely candidates for rubbing */
     choices = (tstone->otyp == TOUCHSTONE && tstone->dknown &&
-		objects[TOUCHSTONE].oc_name_known) ? justgems : allowall;
-    Sprintf(stonebuf, "rub on the stone%s", plur(tstone->quan));
+		    		objects[TOUCHSTONE].oc_name_known)||tstone->otyp == ROCK ? justgems : allowall;
+    Sprintf(stonebuf, tstone->otyp == ROCK ? "beat with the stone%s":"rub on the stone%s", plur(tstone->quan));
     if ((obj = getobj(choices, stonebuf)) == 0)
 	return;
 #ifndef GOLDOBJ
@@ -2677,7 +2679,7 @@ struct obj *tstone;
 #endif
 
     if (obj == tstone && obj->quan == 1) {
-	You_cant("rub %s on itself.", the(xname(obj)));
+	You_cant("%s %s %s itself.",obj->otyp == ROCK ? "beat":"rub" ,obj->otyp == ROCK ? "with":"on",the(xname(obj)));
 	return;
     }
 
@@ -2712,15 +2714,46 @@ struct obj *tstone;
     switch (obj->oclass) {
     case GEM_CLASS:	/* these have class-specific handling below */
     case RING_CLASS:
-	if (tstone->otyp != TOUCHSTONE) {
+	if (tstone->otyp != TOUCHSTONE  && tstone->otyp != ROCK) {
 	    do_scratch = TRUE;
-	} else if (obj->oclass == GEM_CLASS && (tstone->blessed ||
+	} else if (obj->oclass == GEM_CLASS && obj->otyp == TOUCHSTONE &&(tstone->blessed ||
 		(!tstone->cursed &&
 		    (Role_if(PM_ARCHEOLOGIST) || Race_if(PM_GNOME))))) {
 	    makeknown(TOUCHSTONE);
 	    makeknown(obj->otyp);
 	    prinv((char *)0, obj, 0L);
 	    return;
+	} else if(obj->oclass == GEM_CLASS && tstone->otyp == ROCK){
+		if(obj->otyp == ROCK || objects[obj->otyp].oc_tough || obj->oartifact){
+			pline("It's too hard to break!");
+			return;
+		}
+		if(obj->otyp == LOADSTONE && obj->cursed){
+			Your("rock sticks to the loadstone!");/*How iron-ic*/
+			return;
+		}
+		if(obj->oknapped){
+			pline("%s is already knapped!",The(xname(obj)));
+			return;
+		}
+		if(obj->quan > 1){
+			obj = splitobj(obj,1L);
+		}
+		if(Role_if(PM_CAVEMAN)){// || u.utats & TAT_SPEARHEAD){
+			You("knap the %s into a point!",xname(obj));
+			obj->oknapped = KNAPPED_SPEAR;
+			if(obj->otyp == LOADSTONE) obj->owt /= 10;
+	   		obj_extract_self(obj);	/* free from inv */
+			if(obj->otyp == LOADSTONE) obj->cursed = 0;
+			obj = hold_another_object(obj, "You drop %s!",
+				doname(obj), (const char *)0);
+		} else {
+			You("break the %s into many pieces!",xname(obj));
+	   		obj_extract_self(obj);	/* free from inv */
+			obfree(obj,(struct obj *) 0);
+
+		}
+		return;
 	} else {
 	    /* either a ring or the touchstone was not effective */
 	    if (obj->obj_material == GLASS) {
@@ -6014,7 +6047,7 @@ doapply()
 
 	if(check_capacity((char *)0)) return (0);
 
-	if (carrying(POT_OIL) || uhave_graystone())
+	if (carrying(POT_OIL) || uhave_graystone() || carrying(ROCK))
 		Strcpy(class_list, tools_too);
 	else
 		Strcpy(class_list, tools);
@@ -6054,6 +6087,7 @@ doapply()
 	else if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) use_lamp(obj);
 	else if(obj->oartifact == ART_BLOODLETTER && artinstance[obj->oartifact].BLactive >= monstermoves) res = do_bloodletter(obj);
 	else if(obj->oartifact == ART_AEGIS) res = swap_aegis(obj);
+	else if(is_tipped_spear(obj)) res = swap_point(obj);
 	else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
 		return use_rakuyo(obj);
 	} else if(obj->otyp == DOUBLE_FORCE_BLADE || obj->otyp == FORCE_BLADE){
@@ -6559,6 +6593,7 @@ doapply()
 		if(obj->oartifact == ART_DARKWEAVER_S_CLOAK) res = use_darkweavers_cloak(obj);
 		else res = use_droven_cloak(&obj);
 	break;
+	case ROCK:
 	case FLINT:
 	case LUCKSTONE:
 	case LOADSTONE:

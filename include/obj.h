@@ -305,6 +305,11 @@ struct obj {
 #define GIBBOUS_MOON	3
 #define FULL_MOON	 	4
 
+#define oknapped ovar1 /*for now, use ovar1 to store knapped status*/
+
+/*use int for now cause like there's no way there's that much knapping*/
+#define KNAPPED_SPEAR	0x0001
+
 	/* Songs that the Singing Sword has heard */
 	/* Spirits bound into the Pen of the Void */
 	/* The ema of damage taken for gloves of the berserker */
@@ -468,6 +473,10 @@ struct obj {
 			 ))
 #define is_spear(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_SPEAR)
+#define is_tipped_spear(otmp)	(otmp->oclass == WEAPON_CLASS && \
+			 objects[otmp->otyp].oc_skill == P_SPEAR && \
+			otmp->otyp != JAVELIN)
+#define has_spear_point(otmp,typ) ((otmp) && is_tipped_spear(otmp) && (otmp)->cobj && (otmp)->cobj->otyp == typ)
 #define is_farm(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_HARVEST)
 #define is_launcher(otmp)	(otmp->oclass == WEAPON_CLASS && \
@@ -538,7 +547,7 @@ struct obj {
 #define dark_weapon(otmp)	 ((otmp)->otyp == GOLD_BLADED_VIBROSWORD || \
 						  (otmp)->otyp == GOLD_BLADED_VIBROZANBATO || \
 						  (otmp)->otyp == GOLD_BLADED_VIBROSPEAR)
-#define spec_prop_otyp(otmp)	((pure_weapon(otmp) || dark_weapon(otmp) || force_weapon(otmp)) || \
+#define spec_prop_otyp(otmp)	((pure_weapon(otmp) || dark_weapon(otmp) || force_weapon(otmp)) || is_tipped_spear(otmp) || \
 						  (otmp)->otyp == SUNROD || \
 						  (otmp)->otyp == TORCH || \
 						  (otmp)->otyp == SHADOWLANDER_S_TORCH || \

@@ -612,6 +612,14 @@ boolean artif;
 				add_to_container(otmp, stone);
 				container_weight(otmp);
 			}
+			else if(is_tipped_spear(otmp)){
+				struct obj *stone = mksobj(FLINT, TRUE, FALSE);
+				stone->quan = 1;
+				stone->oknapped = KNAPPED_SPEAR;
+				stone->owt = weight(stone);
+				add_to_container(otmp, stone);
+				container_weight(otmp);
+			}
 			else if (is_blaster(otmp)){ //Rayguns and mass-shadow pistols are also blasters, so this has to go under that case
 				otmp->ovar1 = 80L + rnd(20);
 				if (otmp->otyp == ARM_BLASTER) otmp->altmode = WP_MODE_SINGLE;

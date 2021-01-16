@@ -282,6 +282,8 @@ long mask;
 			    u.uprops[p].blocked &= ~wp->w_mask;
 			if (oobj->oartifact)
 			    set_artifact_intrinsic(oobj, 0, mask);
+			if (is_tipped_spear(oobj) && oobj->cobj)
+			    set_spear_intrinsic(oobj, 0, mask);
 		    }
 		}
 		*(wp->w_obj) = obj;
@@ -307,6 +309,8 @@ long mask;
 			}
 			if (obj->oartifact)
 			    set_artifact_intrinsic(obj, 1, mask);
+			if(is_tipped_spear(obj) && obj->cobj)
+			    set_spear_intrinsic(obj, 1, mask);
 		    }
 		}
 	    }
@@ -349,6 +353,8 @@ register struct obj *obj;
 		obj->owornmask &= ~wp->w_mask;
 		if (obj->oartifact)
 		    set_artifact_intrinsic(obj, 0, wp->w_mask);
+		if(is_tipped_spear(obj) && obj->cobj)
+		    set_spear_intrinsic(obj, 0, wp->w_mask);
 		if ((p = w_blocks(obj,wp->w_mask)) != 0)
 		    u.uprops[p].blocked &= ~wp->w_mask;
 	    }
