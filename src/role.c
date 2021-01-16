@@ -93,7 +93,7 @@ struct Role roles[] = {
 	PM_PELIAS, PM_CHIEFTAIN, PM_THOTH_AMON,
 	PM_OGRE, PM_TROLL, S_OGRE, S_TROLL,
 	ART_HEART_OF_AHRIMAN,
-	MA_HUMAN|MA_ORC|MA_VAMPIRE|MA_DRAGON, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_ORC|MA_VAMPIRE|MA_DRAGON|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  16,  7,  7, 15, 16,  6 },
@@ -119,7 +119,7 @@ struct Role roles[] = {
 	PM_STRANGE_CORPSE, PM_PEASANT, PM_ACERERAK,
 	PM_SKELETON, PM_LICH, S_HUMAN, S_HUMANOID,
 	ART_PEN_OF_THE_VOID,
-	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_CLOCK|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_CLOCK|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  6,  6,  6,  6,  6,  6 },
@@ -145,7 +145,7 @@ struct Role roles[] = {
 	PM_SHAMAN_KARNOV, PM_NEANDERTHAL, PM_CHROMATIC_DRAGON,
 	PM_BUGBEAR, PM_HILL_GIANT, S_HUMANOID, S_GIANT,
 	ART_SCEPTRE_OF_MIGHT,
-	MA_HUMAN|MA_DWARF|MA_GNOME|MA_DRAGON|MA_ANIMAL, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7,  8,  6 },
@@ -173,7 +173,7 @@ struct Role roles[] = {
 	PM_SOLDIER_ANT, PM_MALKUTH_SEPHIRAH, S_RODENT, S_SPIDER,
 	ART_IRON_SPOON_OF_LIBERATION,
 	// ART_IRON_BALL_OF_LIBERATION,
-	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ORC|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ORC|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7, 13,  6 },
@@ -330,7 +330,7 @@ struct Role roles[] = {
 	PM_ARCH_PRIEST, PM_ACOLYTE, PM_LEGION,
 	PM_LEGIONNAIRE, PM_BLACK_PUDDING, S_ZOMBIE, S_PUDDING,
 	ART_MITRE_OF_HOLINESS,
-	MA_HUMAN|MA_ELF|MA_CLOCK|MA_DRAGON|MA_ANIMAL, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_ELF|MA_CLOCK|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7, 10,  7,  7,  7 },
@@ -384,7 +384,7 @@ struct Role roles[] = {
 	PM_MASTER_OF_THIEVES, PM_THUG, PM_MASTER_ASSASSIN,
 	PM_LEPRECHAUN, PM_GUARDIAN_NAGA, S_NYMPH, S_NAGA,
 	ART_MASTER_KEY_OF_THIEVERY,
-	MA_HUMAN|MA_ORC|MA_VAMPIRE|MA_ELF|MA_DRAGON|MA_ANIMAL, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_ORC|MA_VAMPIRE|MA_ELF|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7,  7, 10,  7,  6 },
@@ -410,7 +410,7 @@ struct Role roles[] = {
 	PM_ORION, PM_HUNTER, PM_SCORPIUS,
 	PM_FOREST_CENTAUR, PM_SCORPION, S_CENTAUR, S_SPIDER,
 	ART_LONGBOW_OF_DIANA,
-	MA_HUMAN|MA_ELF|MA_GNOME|MA_ORC|MA_DRAGON|MA_ANIMAL, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_ELF|MA_GNOME|MA_ORC|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  13, 13, 13,  9, 13,  7 },
@@ -541,7 +541,7 @@ struct Role roles[] = {
 	PM_NEFERET_THE_GREEN, PM_APPRENTICE, PM_DARK_ONE,
 	PM_VAMPIRE_BAT, PM_XORN, S_BAT, S_WRAITH,
 	ART_EYE_OF_THE_AETHIOPICA,
-	MA_HUMAN|MA_ELF|MA_GNOME|MA_ORC|MA_VAMPIRE|MA_DRAGON, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_ELF|MA_GNOME|MA_ORC|MA_VAMPIRE|MA_DRAGON|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 10,  7,  7,  7,  7 },
@@ -695,6 +695,10 @@ const char *BinLgod = "Yaldabaoth",
 const char *DwarfLgod = "Mahal",
 		   *DwarfNgod = "Holashner",
 		   *DwarfCgod = "Armok"; /* Dwarven */
+
+const char *SalamanderLgod = "Utu",
+		   *SalamanderNgod = "Kossuth",
+		   *SalamanderCgod = "Garyx"; /* Salamandish */
 
 const char *GnomeLgod = "Kurtulmak",
 		   *GnomeNgod = "Garl Glittergold",
@@ -897,6 +901,19 @@ const struct Race races[] = {
 	{  1, 0,  0, 1,  0, 3 },	/* Hit points */
 	{  1, 0,  1, 0,  1, 0 },	/* Energy */
 	NIGHTVISION2
+},
+{	"salamander", "salamandic", "sala-broship", "Sal",
+	{0, 0},
+	PM_SALAMANDER, NON_PM, PM_HUMAN_MUMMY, PM_ZOMBIE,
+	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL |ROLE_CHAOTIC,
+	MA_REPTILIAN, 0, MA_GNOME|MA_DWARF,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },//add lava swimming and fire attack
+	{ STR19(19),  18, 18, 18, 18, 15 },//and more
+	/* Init   Lower  Higher */
+	{  2, 0,  2, 0,  0, 2 },	/* Hit points */
+	{  1, 0,  1, 0,  1, 0 },	/* Energy */
+	NORMALNIGHTVIS
 },
 {	"vampire", "vampiric", "vampirehood", "Vam",
 	{"vampire", "vampiress"},
@@ -2674,6 +2691,27 @@ int newgame;
 		urole.enemy2num = PM_ORC_SHAMAN;
 		urole.enemy1sym = S_TROLL;
 		urole.enemy2sym = S_ORC;
+	} else if ((Race_if(PM_SALAMANDER) || Pantheon_if(PM_SALAMANDER)) && (Role_if(PM_ROGUE) || Role_if(PM_CONVICT)) ) {
+		flags.racial_pantheon = PM_SALAMANDER;
+		urole.filecode = "Sal";
+		
+		urole.homebase = "the Obsidian Fields";
+		urole.intermed = "the City of Brass";
+		urole.questarti = ART_SMOKING_MIRROR;
+		
+		urole.ldrnum = PM_SALAMANDER_MAGE;
+		urole.guardnum = PM_SALAMANDER_SLAVE;
+		urole.neminum = PM_EFREET_SULTAN;
+		
+		urole.lgod = SalamanderLgod;
+		urole.ngod = SalamanderNgod;
+		urole.cgod = SalamanderCgod;
+		
+		urole.enemy1num = NON_PM;
+		urole.enemy2num = NON_PM;
+		urole.enemy1sym = NON_PM;
+		urole.enemy2sym = NON_PM;
+
 	} else if ((Race_if(PM_GNOME) || Pantheon_if(PM_GNOME)) && (Role_if(PM_RANGER)) ) {
 		flags.racial_pantheon = PM_GNOME;
 		urole.filecode = "Gnr";
