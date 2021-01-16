@@ -2883,6 +2883,8 @@ struct obj *obj;
 		out_container(obj->cobj);
 		current_container = 0;
 	}
+	if(otmp->quan > 1)
+		otmp = splitobj(otmp, 1);
 	current_container = obj;
 	in_container(otmp);
 	current_container = 0;
