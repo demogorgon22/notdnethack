@@ -918,7 +918,7 @@ psionic_craze(){
 	pline("Select a monster to send horrid brain waves.");
 	cancelled = getpos(&cc, TRUE, "the desired position");
 	struct monst *mon = m_at(cc.x, cc.y);
-	while(cancelled >= 0 &&(dist2(u.ux,u.uy,cc.x,cc.y) > 55 + u.ulevel || u.ux == cc.x && u.uy == cc.y || (!mon || !sensemon(mon) || mindless_mon(mon)))){
+	while(cancelled >= 0 &&(dist2(u.ux,u.uy,cc.x,cc.y) > 55 + u.ulevel || (u.ux == cc.x && u.uy == cc.y) || (!mon || !sensemon(mon) || mindless_mon(mon)))){
 		if(dist2(u.ux,u.uy,cc.x,cc.y) > 55 + u.ulevel) Your("brain waves cannot reach that far.");
 		else if (mindless_mon(mon)) pline("%s has no brain for you to assault.", Monnam(mon));
 		cancelled = getpos(&cc, TRUE, "the desired position");
