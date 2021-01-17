@@ -671,6 +671,9 @@
 /*	[note: the light ranges above were reduced to 1 for performance...] */
 #define likes_lava(ptr)		( \
 			(ptr)->mtyp == PM_FIRE_ELEMENTAL || \
+			(ptr)->mtyp == PM_SALAMANDER_SLAVE ||\
+			(ptr)->mtyp == PM_SALAMANDER_PRISONER ||\
+			(ptr)->mtyp == PM_SALAMANDER_MAGE ||\
 			(ptr)->mtyp == PM_SALAMANDER \
 			)
 
