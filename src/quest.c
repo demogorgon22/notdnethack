@@ -348,6 +348,21 @@ chat_with_leader()
 		} else if(Role_if(PM_ANACHRONONAUT)){
 			flags.questprogress = 1;
 			urole.lgod = getAnachrononautLgod();
+		} else if(Pantheon_if(PM_SALAMANDER)){
+			flags.questprogress = 1;
+			struct monst *mtmp;
+			for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(is_efreeti(mtmp->data) && mtmp->mpeaceful){
+					setmangry(mtmp);
+				}
+			}
+			struct obj *obj;
+			obj = mksobj(JADE, TRUE, FALSE);
+			obj->oknapped = KNAPPED_SPEAR;
+			verbalize("May this jewel spearhead help you along your way.");
+			pline("He hands %s to you.", an(xname(obj)));
+			obj = addinv(obj);	/* into your inventory */
+			(void) encumber_msg();
 		} else if(Role_if(PM_CONVICT)){
 			struct obj *obj;
 			obj = mksobj(HEAVY_IRON_BALL, TRUE, FALSE);
