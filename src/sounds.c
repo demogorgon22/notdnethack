@@ -1753,7 +1753,7 @@ asGuardian:
 				pline_msg = "gurgles.";
 			else
 				verbl_msg = "I'm free!";
-		} else if(ptr->mtyp != PM_PRISONER) verbl_msg = "This will teach you not to disturb me!";
+		} else if(ptr->mtyp != PM_PRISONER && ptr->mtyp != PM_SALAMANDER_PRISONER) verbl_msg = "This will teach you not to disturb me!";
 		else verbl_msg = "I'm free!";
 	    break;
 	case MS_BOAST:	/* giants */
