@@ -519,6 +519,30 @@ qt_montype()
 				impossible("No monster?");
 			break;
 		}
+	 } else if(Pantheon_if(PM_SALAMANDER)){
+		if(on_level(&u.uz,&qstart_level) && (flags.questprogress < 1 || u.uevent.qcompleted)) return (struct permonst *)-1;
+		if(on_level(&u.uz,&qstart_level)) return &mons[PM_EFREET_OVERSEER];
+		switch(rn2(3)){
+			case 0:
+				return &mons[PM_EFREET];
+			break;
+			case 1:
+				if(!rn2(3)) return &mons[PM_EFREET_GUARDIAN];
+				else return &mons[PM_SALAMANDER_SLAVE];
+			break;
+			case 2:
+				if(rn2(2)) return &mons[PM_EFREET_MERCHANT];
+				else return &mons[PM_FIRE_ELEMENTAL];
+			break;
+			case 3:
+				if(rn2(3)) return &mons[PM_EFREET_OVERSEER];
+				else return &mons[PM_SALAMANDER_SLAVE];
+			break;
+			default:
+				return &mons[PM_EFREET];
+				impossible("No monster?");
+			break;
+		}
 	} else if(Role_if(PM_CAVEMAN)){
 		//Very placeholdery
 		switch(rnd(12)){
