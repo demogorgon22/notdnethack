@@ -838,6 +838,9 @@ boolean from_invent;
 							newsym(tx,ty);
 						}
 					}
+					if(levl[tx][ty].typ == ICE){
+						melt_ice(tx,ty);
+					}
 				}
 			}
 		break;
