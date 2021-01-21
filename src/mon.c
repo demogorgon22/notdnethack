@@ -3623,6 +3623,14 @@ struct monst * mdef;	/* another monster which is next to it */
 					&&!(is_orc(md) || is_ogre(md) || is_troll(md) || is_undead(md)))
 		return ALLOW_M|ALLOW_TM;
 
+	/* salamanders vs. efreeti */
+	if(is_salamander(ma) && (is_efreeti(md) && !is_undead(ma)) && (flags.questprogress >= 1 || !Pantheon_if(PM_SALAMANDER)))
+		return ALLOW_M|ALLOW_TM;
+	/* and vice versa */
+	if(is_efreeti(md) && (is_salamander(ma)  && !is_undead(md)) && (flags.questprogress >= 1 || !Pantheon_if(PM_SALAMANDER)))
+		return ALLOW_M|ALLOW_TM;
+
+
 	/* elves vs. drow */
 	if(is_elf(ma) && is_drow(md) && mdef->mfaction != EILISTRAEE_SYMBOL)
 		return ALLOW_M|ALLOW_TM;
