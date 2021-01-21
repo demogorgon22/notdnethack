@@ -12971,6 +12971,7 @@ int vis;						/* True if action is at all visible to the player */
 						}
 					}
 					basedmg = dmgval(weapon, mdef, 0);
+					if(youagr) basedmg += basedmg  * (u.ulevel/10);
 				}
 				/* projectile should take care of it */
 				//destroy_all_magr_weapon = TRUE;
