@@ -39,6 +39,7 @@ struct attack noattack = { 0, 0, 0, 0 };
 struct attack basicattack  = { AT_WEAP, AD_PHYS, 1, 4 };
 struct attack grapple = { AT_HUGS, AD_PHYS, 0, 6 };	/* for grappler's grasp */
 struct attack acu_tent = { AT_TENT, AD_DRIN, 1, 4 };	/* for acu tentacles */
+struct attack sala_grab = { AT_HUGS, AD_FIRE, 1, 6 };	/* for sala grab */
 
 /* getvis()
  * 
@@ -1663,6 +1664,7 @@ int * subout;					/* records what attacks have been subbed out */
 #define SUBOUT_GRAPPLE	0x0200	/* Grappler's Grasp crushing damage */
 #define SUBOUT_SCORPION	0x0400	/* Scorpion Carapace's sting */
 #define SUBOUT_ACU	0x0800	/* ACU tentacle attack */
+#define SUBOUT_SALA	0x1000	/* Sala hug attack */
 int * tohitmod;					/* some attacks are made with decreased accuracy */
 {
 	struct attack * attk;
@@ -2070,6 +2072,11 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		*attk = acu_tent;
 		*subout |= SUBOUT_ACU;
 	}
+	
+	if (youagr && !Upolyd && Race_if(PM_SALAMANDER) && is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_SALA)) {
+		*attk = sala_grab;
+		*subout |= SUBOUT_SALA;
+	}
 
 	/* players can get a whole host of spirit attacks */
 	if (youagr && is_null_attk(attk) && !by_the_book) {
@@ -2161,6 +2168,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 #undef SUBOUT_BARB2
 #undef SUBOUT_MAINWEPB
 #undef SUBOUT_XWEP
+#undef SUBOUT_SALA
 
 /* noises()
  * prints noises from mvm combat
