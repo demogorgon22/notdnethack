@@ -5670,6 +5670,12 @@ register struct monst *mtmp;
 		if (mm == PM_SALAMANDER)
 			(void)mongets(mtmp, (rn2(7) ? SPEAR : rn2(3) ?
 					     TRIDENT : STILETTO));
+			if(mm == PM_SALAMANDER_SLAVE || mm == PM_SALAMANDER_PRISONER || mm == PM_SALAMANDER_MAGE){
+				otmp = mksobj(SPEAR, TRUE, FALSE);
+				otmp->obj_material = OBSIDIAN_MT;
+				fix_object(otmp);
+				(void) mpickobj(mtmp, otmp);
+			}
 		break;
 	    case S_DEMON:
 
@@ -5992,6 +5998,42 @@ register struct monst *mtmp;
 				otmp->objsize = MZ_HUGE;
 				otmp->spe = 9;
 				(void) mpickobj(mtmp, otmp);
+			break;
+		    case PM_EFREET:
+				otmp = mksobj(SCIMITAR, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				otmp = mksobj(RING_MAIL, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				(void)mongets(mtmp, SHEMAGH);
+			break;
+		    case PM_EFREET_OVERSEER:
+				otmp = mksobj(BULLWHIP, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				otmp = mksobj(CHAIN_MAIL, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				(void)mongets(mtmp, SHEMAGH);
+			break;
+		    case PM_EFREET_MERCHANT:
+				otmp = mksobj(SCIMITAR, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				otmp = mksobj(SPLINT_MAIL, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				(void)mongets(mtmp, SHEMAGH);
+			break;
+		    case PM_EFREET_GUARDIAN:
+				otmp = mksobj(SCIMITAR, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				otmp = mksobj(PLATE_MAIL, TRUE, FALSE);
+				set_material_gm(otmp, OBSIDIAN_MT);
+				(void) mpickobj(mtmp, otmp);
+				(void)mongets(mtmp, SHEMAGH);
 			break;
 		}
 		/* prevent djinnis and mail daemons from leaving objects when
@@ -7702,6 +7744,16 @@ register struct	monst	*mtmp;
 				otmp->cursed = FALSE;
 				(void) mpickobj(mtmp,otmp);
 
+			break;
+////////////////////////////////////////
+		    case PM_EFREET_SULTAN:
+				otmp = mksobj(SCIMITAR, TRUE, FALSE);
+				set_material_gm(otmp, GOLD);
+				(void) mpickobj(mtmp, otmp);
+				otmp = mksobj(PLATE_MAIL, TRUE, FALSE);
+				set_material_gm(otmp, GOLD);
+				(void) mpickobj(mtmp, otmp);
+				(void)mongets(mtmp, SHEMAGH);
 			break;
 ////////////////////////////////////////
 		    case PM_DURIN_S_BANE:
@@ -11072,6 +11124,8 @@ register struct permonst *ptr;
 	if(ual == A_VOID) return FALSE;
 
 	if(Role_if(PM_ANACHRONOUNBINDER) && (mndx==PM_MIND_FLAYER || mndx==PM_MASTER_MIND_FLAYER)) return TRUE;
+
+	if(Pantheon_if(PM_SALAMANDER) && is_salamander(&mons[mndx])) return TRUE;
 	
 	//Law quest uniques
 	if (((mndx <= PM_QUINON && mndx >= PM_MONOTON) || mndx == PM_AXUS) && sgn(mal) == sgn(ual)){

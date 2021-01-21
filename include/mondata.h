@@ -671,12 +671,19 @@
 /*	[note: the light ranges above were reduced to 1 for performance...] */
 #define likes_lava(ptr)		( \
 			(ptr)->mtyp == PM_FIRE_ELEMENTAL || \
-			(ptr)->mtyp == PM_FIRE_SNAKE ||\
-			(ptr)->mtyp == PM_SALAMANDER_SLAVE ||\
-			(ptr)->mtyp == PM_SALAMANDER_PRISONER ||\
-			(ptr)->mtyp == PM_SALAMANDER_MAGE ||\
-			(ptr)->mtyp == PM_SALAMANDER \
+			is_salamander(ptr) \
 			)
+#define is_salamander(ptr)	((ptr)->mtyp == PM_FIRE_SNAKE || \
+				 (ptr)->mtyp == PM_SALAMANDER_SLAVE ||\
+				 (ptr)->mtyp == PM_SALAMANDER_PRISONER ||\
+				 (ptr)->mtyp == PM_SALAMANDER_MAGE ||\
+				 (ptr)->mtyp == PM_SALAMANDER)
+
+#define is_efreeti(ptr)		((ptr)->mtyp == PM_EFREET || \
+				 (ptr)->mtyp == PM_EFREET_OVERSEER ||\
+				 (ptr)->mtyp == PM_EFREET_GUARDIAN ||\
+				 (ptr)->mtyp == PM_EFREET_MERCHANT ||\
+				 (ptr)->mtyp == PM_EFREET_SULTAN)
 
 #define pm_invisible(ptr) ( \
 			(ptr)->mtyp == PM_STALKER || \
