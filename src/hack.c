@@ -2278,8 +2278,9 @@ dopickup()
 	    }
 	}
 	if (is_lava(u.ux, u.uy)) {
-	    if (Wwalking || mon_resistance(&youmonst,LEVITATION) || is_clinger(youracedata)
-			|| (Flying && !Breathless)) {
+	    if (((Wwalking || (Flying && !Breathless)) && !likes_lava(youracedata)) 
+			    || (mon_resistance(&youmonst,LEVITATION) || is_clinger(youracedata))
+			) {
 		You_cant("reach the bottom to pick things up.");
 		return(0);
 	    } else if (!likes_lava(youracedata)) {
