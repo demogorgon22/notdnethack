@@ -360,7 +360,11 @@ register int x, y, typ;
 			set_trap_ammo(ttmp, otmp);
 			break;
 		case ROCKTRAP:
-			otmp = mksobj(ROCK, TRUE, FALSE);
+			if(In_quest(&u.uz) && Pantheon_if(PM_SALAMANDER)){
+				otmp = mksobj(OBSIDIAN, TRUE, FALSE);
+				otmp->oknapped = KNAPPED_SPEAR;
+			} else
+				otmp = mksobj(ROCK, TRUE, FALSE);
 			otmp->quan = 5 + rnd(10);
 			set_trap_ammo(ttmp, otmp);
 			break;
