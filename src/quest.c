@@ -359,6 +359,7 @@ chat_with_leader()
 			struct obj *obj;
 			obj = mksobj(JADE, TRUE, FALSE);
 			obj->oknapped = KNAPPED_SPEAR;
+			obj->quan = 1L;
 			verbalize("May this jewel spearhead help you along your way.");
 			pline("He hands %s to you.", an(xname(obj)));
 			obj = addinv(obj);	/* into your inventory */
