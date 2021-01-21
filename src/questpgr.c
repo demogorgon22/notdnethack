@@ -520,7 +520,7 @@ qt_montype()
 			break;
 		}
 	 } else if(Pantheon_if(PM_SALAMANDER)){
-		if(on_level(&u.uz,&qstart_level) && (flags.questprogress < 1 || u.uevent.qcompleted)) return (struct permonst *)-1;
+		if(on_level(&u.uz,&qstart_level) && (flags.questprogress < 1 || u.uevent.qcompleted)) return &mons[PM_LONG_WORM_TAIL];
 		if(on_level(&u.uz,&qstart_level)) return &mons[PM_EFREET_OVERSEER];
 		switch(rn2(3)){
 			case 0:

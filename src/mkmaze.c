@@ -658,6 +658,7 @@ fixup_special()
 		}
 	}
 	/* PLAYER QUESTS */
+	/*Salamander*/
 	if(Pantheon_if(PM_SALAMANDER) && In_quest(&u.uz) && Is_nemesis(&u.uz)) {
 		/* using an unfilled morgue for rm id */
 		croom = search_special(MORGUE);
@@ -670,6 +671,25 @@ fixup_special()
 			if(levl[x][y].typ == ROOM) (void) mkgold((long) rn1(100, 300), x, y);
 		    }
 	}
+	if(Pantheon_if(PM_SALAMANDER) && 
+			In_quest(&u.uz) && 
+			(!Is_qlocate(&u.uz) && !Is_qstart(&u.uz) && !Is_nemesis(&u.uz))
+		){
+			int x, y;
+			struct obj* otmp;
+			for(x = 0; x<COLNO; x++){
+				for(y = 0; y<ROWNO; y++){
+					if(levl[x][y].typ == STONE){
+						levl[x][y].typ = LAVAPOOL;
+						if(!rn2(100)){
+							otmp = mksobj_at(GARNET, x, y, TRUE, FALSE);
+							otmp->quan = 1L;
+							otmp->oknapped = KNAPPED_SPEAR;
+						}
+					}
+				}
+			}
+		}
 	/* DWARF KNIGHT QUEST: add stuff to the locate level */
 	if (urole.neminum == PM_BOLG && In_quest(&u.uz) && Is_qlocate(&u.uz)) {
 		int rmn, piled, disty, distx;
