@@ -2918,8 +2918,9 @@ register struct trobj *trop;
 			}
 			if (obj->oclass == WEAPON_CLASS ||
 				obj->oclass == TOOL_CLASS) {
-			    obj->quan = (long) trop->trquan;
-			    trop->trquan = 1;
+				if(objects[obj->otyp].oc_merge)
+				    obj->quan = (long) trop->trquan;
+			        trop->trquan = 1;
 			} else if (obj->oclass == GEM_CLASS &&
 				((is_graystone(obj) && obj->otyp != FLINT) ||
 				  Role_if(PM_EXILE) )) {
