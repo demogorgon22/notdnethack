@@ -2361,7 +2361,7 @@ movemon()
 		is_auton(mtmp->data) && 
 		mtmp->mpeaceful
 	){
-		if(canseemon(mtmp)) pline("%s gets angry...", mon_nam(mtmp));
+		if(canseemon(mtmp)) pline("%s gets angry...", Monnam(mtmp));
 		untame(mtmp, 0);
 	}
 	if(mtmp->mtyp == PM_UVUUDAUM){
@@ -4226,7 +4226,7 @@ struct monst *mtmp;
 		/* perform common lifesaving effects */
 		mtmp->mcanmove = 1;
 		mtmp->mfrozen = 0;
-		if (mtmp->mtame && !mtmp->isminion) {
+		if (get_mx(mtmp, MX_EDOG)) {
 			wary_dog(mtmp, FALSE);
 		}
 		if (mtmp->mhpmax < 10)
@@ -4871,13 +4871,12 @@ boolean was_swallowed;			/* digestion */
 				}
 			}
 			u.uevent.uaxus_foe = 1;//enemy of the modrons
-		  for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
-			mndx = monsndx(mtmp->data);
-			if(mndx <= PM_QUINON && mndx >= PM_MONOTON && mtmp->mpeaceful){
-				if(canseemon(mtmp)) pline("%s gets angry...", mon_nam(mtmp));
-				mtmp->mpeaceful = 0;
+			for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+					if (is_auton(mtmp->data) && mtmp->mpeaceful && mtmp != mon) {
+						if(canseemon(mtmp)) pline("%s gets angry...", Monnam(mtmp));
+						untame(mtmp, 0);
+					}
 			}
-		   }
 //			The dungeon of ill regard, where Axus is found, now spawns only Modrons.  So this is uneeded
 //			for(quincount;quincount<7;quincount++) makemon(&mons[PM_QUINON], mon->mx, mon->my,MM_ADJACENTOK|MM_ANGRY);
 		}
@@ -5702,7 +5701,7 @@ xkilled(mtmp, dest)
 			    */
 
 	/* your pet knows who just killed it...watch out */
-	if (mtmp->mtame && !mtmp->isminion) EDOG(mtmp)->killed_by_u = 1;
+	if (get_mx(mtmp, MX_EDOG)) EDOG(mtmp)->killed_by_u = 1;
 
 	/* dispose of monster and make cadaver */
 	if(stoned) monstone(mtmp);
@@ -6249,6 +6248,7 @@ register struct monst *mtmp;
 	    for (mon = fmon; mon; mon = mon->nmon)
 		if (!DEADMONSTER(mon) && mon->data == q_guardian && mon->mpeaceful) {
 		    mon->mpeaceful = 0;
+			newsym(mon->mx, mon->my);
 		    if (canseemon(mon)) ++got_mad;
 		}
 	    if (got_mad && !Hallucination)

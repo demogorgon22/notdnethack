@@ -507,9 +507,10 @@ register struct monst *mtmp;
 	aligntyp alignment;
 	char info[BUFSZ], monnambuf[BUFSZ];
 
-	if (mtmp->ispriest || mtmp->mtyp == PM_ALIGNED_PRIEST
-				|| mtmp->mtyp == PM_ANGEL)
+	if (get_mx(mtmp, MX_EPRI))
 		alignment = EPRI(mtmp)->shralign;
+	else if (get_mx(mtmp, MX_EMIN))
+		alignment = EMIN(mtmp)->min_align;
 	else
 		alignment = mtmp->data->maligntyp;
 	alignment = (alignment > 0) ? A_LAWFUL :
@@ -521,7 +522,7 @@ register struct monst *mtmp;
 #ifdef WIZARD
 	    if (wizard) {
 		Sprintf(eos(info), " (%d", mtmp->mtame);
-		if (!mtmp->isminion)
+		if (get_mx(mtmp, MX_EDOG))
 		    Sprintf(eos(info), "; hungry %ld; apport %d",
 			EDOG(mtmp)->hungrytime, EDOG(mtmp)->apport);
 		Strcat(info, ")");
@@ -539,6 +540,7 @@ register struct monst *mtmp;
 	if (mtmp->mcan)		  Strcat(info, ", cancelled");
 	if (mtmp->mconf)	  Strcat(info, ", confused");
 	if (mtmp->mcrazed)	  Strcat(info, ", crazed");
+	if (mtmp->mberserk)	  Strcat(info, ", berserk");
 	if (mtmp->mblinded || !mtmp->mcansee)
 				  Strcat(info, ", blind");
 	else if(is_blind(mtmp)) Strcat(info, ", dazzled");

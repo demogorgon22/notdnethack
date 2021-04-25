@@ -3019,14 +3019,14 @@ winid *datawin;
 				/* general mash-em-together poison */
 				else {
 					buf[0] = '\0';
-					if (poisons&OPOISON_BASIC)  {Sprintf(buf, "%sharmful "     , buf);}
-					if (poisons&OPOISON_FILTH)  {Sprintf(buf, "%ssickening "   , buf);}
-					if (poisons&OPOISON_SLEEP)  {Sprintf(buf, "%ssleeping "    , buf);}
-					if (poisons&OPOISON_BLIND)  {Sprintf(buf, "%sblinding "    , buf);}
-					if (poisons&OPOISON_PARAL)  {Sprintf(buf, "%sparalytic "   , buf);}
-					if (poisons&OPOISON_AMNES)  {Sprintf(buf, "%samnesiac "    , buf);}
-					if (poisons&OPOISON_ACID)   {Sprintf(buf, "%sacidic "      , buf);}
-					if (poisons&OPOISON_SILVER) {Sprintf(buf, "%ssilver "      , buf);}
+					if (poisons&OPOISON_BASIC)  {Strcat(buf, "harmful "  );}
+					if (poisons&OPOISON_FILTH)  {Strcat(buf, "sickening ");}
+					if (poisons&OPOISON_SLEEP)  {Strcat(buf, "sleeping " );}
+					if (poisons&OPOISON_BLIND)  {Strcat(buf, "blinding " );}
+					if (poisons&OPOISON_PARAL)  {Strcat(buf, "paralytic ");}
+					if (poisons&OPOISON_AMNES)  {Strcat(buf, "amnesiac " );}
+					if (poisons&OPOISON_ACID)   {Strcat(buf, "acidic "   );}
+					if (poisons&OPOISON_SILVER) {Strcat(buf, "silver "   );}
 					
 					Sprintf(buf2, "Coated with %spoison.", an(buf));
 					OBJPUTSTR(buf2);
@@ -3210,7 +3210,7 @@ winid *datawin;
 		break;
 		case SYLLABLE_OF_POWER__KRAU:
 			OBJPUTSTR("Read to gain temporary and permanent bonuses.");
-			OBJPUTSTR("Temporarily empower damaging magic to 150%% of normal strength.");
+			OBJPUTSTR("Temporarily empower damaging magic to 150\% of normal strength.");
 			OBJPUTSTR("Permanently increases spell damage bonus by 1/3rd point.");
 		break;
 		case SYLLABLE_OF_LIFE__HOON:
@@ -3225,7 +3225,7 @@ winid *datawin;
 		break;
 		case SYLLABLE_OF_THOUGHT__NAEN:
 			OBJPUTSTR("Read to gain temporary and permanent bonuses.");
-			OBJPUTSTR("Temporarily regenerate an additional 10 power per turn and 0%% spell failure.");
+			OBJPUTSTR("Temporarily regenerate an additional 10 power per turn and 0\% spell failure.");
 			OBJPUTSTR("Permanently increase natural power regeneration by 1 point per 90 turns.");
 		break;
 		case SYLLABLE_OF_SPIRIT__VAUL:
@@ -4531,10 +4531,10 @@ mergable(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 	register struct obj *otmp, *obj;
 {
 	if (obj->otyp != otmp->otyp) return FALSE;
-#ifdef GOLDOBJ
+//#ifdef GOLDOBJ
 	/* coins of the same kind will always merge */
 	if (obj->oclass == COIN_CLASS) return TRUE;
-#endif
+//#endif
 	if(!mergable_traits(otmp, obj))
 		return FALSE;
 	
@@ -5233,7 +5233,7 @@ u_healing_penalty()
 		penalty += (4*u_bcu_next_to_skin(1)+1)/2;
 	}
 	if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
-		int delta = 100 - u.usanity;
+		int delta = Insanity;
 		penalty += (u_clothing_discomfort() * delta)/10;
 	}
 	return penalty;
