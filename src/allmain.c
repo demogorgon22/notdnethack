@@ -519,10 +519,16 @@ you_regen_hp()
 		blockRegen = TRUE;
 	}
 
+	// salamander in or above lava 
+	if(likes_lava(youracedata) && levl[u.ux][u.uy].typ == LAVAPOOL){
+		perX += HEALCYCLE;
+	}
+	
 	// regeneration 'trinsic
 	if (Regeneration){
 		perX += HEALCYCLE;
 	}
+	
 	// Corruption thought
 	if(active_glyph(CORRUPTION) && (*hp < (*hpmax)*.3)){
 		perX += HEALCYCLE;

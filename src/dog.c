@@ -76,6 +76,8 @@ pet_type()
 	    return (urole.petnum);
 	else if(Race_if(PM_HALF_DRAGON))
 		return urole.petnum == PM_PONY ? PM_RIDING_PSEUDODRAGON : PM_TINY_PSEUDODRAGON;
+	else if(Race_if(PM_SALAMANDER))
+		return PM_FIRE_SNAKE;
 	else if (Role_if(PM_PIRATE)) {
 		if (preferred_pet == 'B')
 			return (PM_PARROT);

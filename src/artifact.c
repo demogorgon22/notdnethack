@@ -6225,6 +6225,53 @@ arti_invoke(obj)
 				awaken_monsters(ROWNO * COLNO);
 			   }
 	break;
+	case SMOKE_MIRROR:
+		if(has_spear_point(obj,GARNET)){
+			otmp = mksobj(STRANGE_OBJECT,MKOBJ_NOINIT);
+			otmp->oartifact = ART_FIRE_CRYSTAL;
+			otmp->spe = 1;
+			arti_invoke(otmp);
+			obfree(otmp, (struct obj *)0);
+		} else if(has_spear_point(obj,JADE)){
+			otmp = mksobj(STRANGE_OBJECT,MKOBJ_NOINIT);
+			otmp->oartifact = ART_RUINOUS_STRIKE;
+			arti_invoke(otmp);
+			obfree(otmp, (struct obj *)0);
+		} else if(has_spear_point(obj,OBSIDIAN)){
+			if(throweffect()){
+				exercise(A_WIS, TRUE);
+				cc.x=u.dx;cc.y=u.dy;
+				n=3;
+				while(n--) {
+					explode(u.dx, u.dy,
+						AD_PHYS, 0,
+						u.ulevel + 10 + spell_damage_bonus(),
+						EXPL_DARK, 1);
+					u.dx = cc.x+rnd(3)-2; u.dy = cc.y+rnd(3)-2;
+					if (!isok(u.dx,u.dy) || !cansee(u.dx,u.dy) ||
+						IS_STWALL(levl[u.dx][u.dy].typ) || u.uswallow) {
+						/* Spell is reflected back to center */
+							u.dx = cc.x;
+							u.dy = cc.y;
+					}
+				}
+			}
+
+		} else {
+			obj->cursed = 0;
+			obj->blessed = 1;
+			obj->oeroded = 0;
+			obj->oeroded2= 0;
+			obj->oerodeproof = 1;
+			if(obj->spe < 3){
+				obj->spe = 3;
+			}
+
+		}
+
+	break;	
+
+	break;
 	case FALLING_STARS:{
 		int starfall = rnd(u.ulevel/10+1), x, y, n;
 		int tries = 0;

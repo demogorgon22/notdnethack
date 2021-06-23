@@ -408,6 +408,7 @@ extern struct artifact artilist[];
 #define SEVEN_LEAGUE_STEP   (LAST_PROP+83)
 #define RAND_SCROLL     (LAST_PROP+84)
 #define ILLITHID     (LAST_PROP+85)
+#define SMOKE_MIRROR     (LAST_PROP+86)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20

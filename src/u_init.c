@@ -804,6 +804,12 @@ static struct inv_sub { short race_pm, item_otyp, subs_otyp; } inv_subs[] = {
     { PM_INCANTIFIER,	BANANA,						SCR_FOOD_DETECTION    	  },
     { PM_INCANTIFIER,	ORANGE,						SCR_FOOD_DETECTION    	  },
     { PM_INCANTIFIER,	POT_BOOZE,					SCR_FOOD_DETECTION   	  },
+    // Salamander substitutions
+    { PM_SALAMANDER,	ATHAME,			SPEAR	      },
+    { PM_SALAMANDER,	DAGGER,			SPEAR	      },
+    { PM_SALAMANDER,	KNIFE,			SPEAR	      },
+    { PM_SALAMANDER,	SHORT_SWORD,		SPEAR    },
+    { PM_SALAMANDER,	AXE,		SPEAR    },
     // Vampire substitutions
     { PM_VAMPIRE,	ATHAME,				DAGGER    	  },
     { PM_VAMPIRE,	FOOD_RATION,		POT_BLOOD    	  },
@@ -1133,6 +1139,10 @@ static const struct def_skill Skill_HD_Female[] = {
 static const struct def_skill Skill_G[] = {
     { P_PICK_AXE, P_EXPERT }, { P_CROSSBOW, P_EXPERT },
     { P_CLUB, P_EXPERT }, { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Sala[] = {
+    { P_SPEAR, P_EXPERT }, { P_NONE, 0 }
 };
 
 static const struct def_skill Skill_K[] = {
@@ -2484,6 +2494,9 @@ u_init()
 	    knows_object(DWARVISH_MATTOCK);
 	    knows_object(DWARVISH_CLOAK);
     break;
+	case PM_SALAMANDER:
+		skill_add(Skill_Sala);
+    break;
 
 	case PM_ORC:
 	    /* compensate for generally inferior equipment */
@@ -2977,8 +2990,9 @@ register struct trobj *trop;
 			}
 			if (obj->oclass == WEAPON_CLASS ||
 				obj->oclass == TOOL_CLASS) {
-			    obj->quan = (long) trop->trquan;
-			    trop->trquan = 1;
+				if(objects[obj->otyp].oc_merge)
+				    obj->quan = (long) trop->trquan;
+			        trop->trquan = 1;
 			} else if (obj->oclass == GEM_CLASS &&
 				((is_graystone(obj) && obj->otyp != FLINT) ||
 				  Role_if(PM_EXILE) )) {

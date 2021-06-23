@@ -825,6 +825,26 @@ boolean from_invent;
 			break;
 		case BALL_OF_WEBBING:
 			dowebgush(x,y, obj->ovar1 ? obj->ovar1 : 2);
+			break;
+		case LAVA_BALL:
+			for(int tx = x-1; tx <= x+1;tx++){
+				for(int ty = y-1; ty <= y+1; ty++){
+					if(!isok(tx,ty)) continue;
+					//pline("%d",levl[tx][ty].typ);
+					if(closed_door(tx,ty)){
+						struct rm *lev = &levl[tx][ty];
+					        lev->doormask = D_NODOOR;	
+						unblock_point(tx,ty);
+						if(cansee(tx,ty)){
+							pline("The door burns to a crisp due to nearby heat!"); 
+							newsym(tx,ty);
+						}
+					}
+					if(levl[tx][ty].typ == ICE){
+						melt_ice(tx,ty);
+					}
+				}
+			}
 		break;
 	}
 
@@ -894,6 +914,7 @@ struct obj *obj;
 		case CREAM_PIE:
 		case MELON:
 		case ACID_VENOM:
+		case LAVA_BALL:
 		case BLINDING_VENOM:
 		case BALL_OF_WEBBING:
 			return 1;
@@ -929,6 +950,7 @@ boolean in_view;
 		case CREAM_PIE:
 			if (in_view) pline("What a mess!");
 		break;
+		case LAVA_BALL:
 		case ACID_VENOM:
 		case BLINDING_VENOM:
 			pline("Splash!");

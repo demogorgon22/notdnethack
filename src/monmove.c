@@ -720,7 +720,7 @@ boolean digest_meal;
 	if(is_uvuudaum(mon->data)){
 		mon->mhp += 25; //Fast healing
 	} else {
-		if(mon->mhp < mon->mhpmax && mon_resistance(mon,REGENERATION)) mon->mhp++;
+		if((mon->mhp < mon->mhpmax && mon_resistance(mon,REGENERATION)) || (likes_lava(mon->data) && levl[mon->mx][mon->my].typ == LAVAPOOL)) mon->mhp++;
 		if(!nonliving(mon->data)){
 			if (mon->mhp < mon->mhpmax){
 				//recover 1/HEALCYCLEth hp per turn:

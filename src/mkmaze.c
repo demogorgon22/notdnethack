@@ -658,6 +658,38 @@ fixup_special()
 		}
 	}
 	/* PLAYER QUESTS */
+	/*Salamander*/
+	if(Pantheon_if(PM_SALAMANDER) && In_quest(&u.uz) && Is_nemesis(&u.uz)) {
+		/* using an unfilled morgue for rm id */
+		croom = search_special(MORGUE);
+		/* avoid inappropriate morgue-related messages */
+		level.flags.graveyard = level.flags.has_morgue = 0;
+		croom->rtype = OROOM;	/* perhaps it should be set to VAULT? */
+		/* stock the main vault */
+		for(x = croom->lx; x <= croom->hx; x++)
+		    for(y = croom->ly; y <= croom->hy; y++) {
+			if(levl[x][y].typ == ROOM) (void) mkgold((long) rn1(100, 300), x, y);
+		    }
+	}
+	if(Pantheon_if(PM_SALAMANDER) && 
+			In_quest(&u.uz) && 
+			(!Is_qlocate(&u.uz) && !Is_qstart(&u.uz) && !Is_nemesis(&u.uz))
+		){
+			int x, y;
+			struct obj* otmp;
+			for(x = 0; x<COLNO; x++){
+				for(y = 0; y<ROWNO; y++){
+					if(levl[x][y].typ == STONE){
+						levl[x][y].typ = LAVAPOOL;
+						if(!rn2(100)){
+							otmp = mksobj_at(GARNET, x, y, NO_MKOBJ_FLAGS);
+							otmp->quan = 1L;
+							otmp->oknapped = KNAPPED_SPEAR;
+						}
+					}
+				}
+			}
+		}
 	/* DWARF KNIGHT QUEST: add stuff to the locate level */
 	if (urole.neminum == PM_BOLG && In_quest(&u.uz) && Is_qlocate(&u.uz)) {
 		int rmn, piled, disty, distx;

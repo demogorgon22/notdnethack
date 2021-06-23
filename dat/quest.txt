@@ -7468,6 +7468,205 @@ trinket you've got there up to the Astral Plane.  From there, %d will
 show you what to do with it.  Once that's done, we will be invincible!"
 %E
 #
+#	Salamander Rogue/Convict
+#
+%Cc Sal 00001
+You find yourself in the slave camp you escaped from, %H. 
+Cruel memories spin around your head. You must find %l.
+%E
+%Cp Sal 00002
+Once again, you find yourself in the slave camp you escaped from, %H. 
+Cruel memories spin around your head. You must find %l.
+%E
+%Cp Sal 00003
+You are back at %H. Perhaps for the last time.
+%E
+%Cp Sal 00005
+"Curse the wretched efreeti!"
+%E
+%Cp Sal 00006
+"The City of Brass will fall!"
+%E
+%Cp Sal 00007
+"We toil all day and keep nothing for ourselves."
+%E
+%Cp Sal 00008
+"%o is our only hope."
+%E
+%Cp Sal 00009
+"%lC has learned magic from watching the efreeti. 
+I wonder if we could do the same?"
+%E
+%Cp Sal 00010
+"You did it?"
+%E
+%Cp Sal 00011
+"May %d bless us all."
+%E
+%Cp Sal 00012
+"%o will guide us to our freedom!"
+%E
+%Cp Sal 00013
+"%nC is dead?"
+%E
+%Cp Sal 00014
+"What will we do without our efreeti rulers?"
+%E
+%Cc Sal 00015
+%lC stares at you blankly for a moment and then recognizes you.
+"%pC, you have returned? We have been waiting patiently and are ready to 
+strike when you are. Let me make sure you are ready..."
+%E
+%Cp Sal 00016
+%l stares at you blankly for a moment and then recognizes you.
+"%pC, you have returned? We have been waiting patiently and are ready to 
+strike when you are. Let me make sure you are ready..."
+%E
+%Cp Sal 00017
+%l stares at you blankly for a moment and then recognizes you.
+"%pC, you have returned? We have been waiting patiently and are ready to 
+strike when you are. Let me make sure you are ready..."
+%E
+%Cc Sal 00018
+"No %p. You are one of them. You would surely turn us in.
+Begone."
+%E
+%Cc Sal 00019
+"You are not yet ready. Prepare yourself better. %l is a serious adversary. 
+One does not simply walk into %i."
+%E
+%Cc Sal 00020
+"You are not ready. Follow the path of %d more closely."
+%E
+%Cc Sal 00021
+"It is time for the rebellion, %p. You must head through %H to 
+%i and locate the Charcoal Palace. There resides %n who has stolen 
+%o, an artifact of our ancestors that kept them free from efreeti enslavement."
+
+"Salamander brethern, now is the time to overthrow our cruel rulers!"
+%E
+%Cp Sal 00025
+"%iC is the oldest city in all creation."
+%E
+%Cp Sal 00026
+"Efreeti fear no fire but are weak to much else."
+%E
+%Cp Sal 00027
+"Beware the magical spells of our efreeti overlords."
+%E
+%Cp Sal 00028
+"If you can, free any salamander prisoners you see along the way."
+%E
+%Cp Sal 00029
+"Glory will be returned to our primordial race!"
+%E
+%Cp Sal 00030
+"Like a phoenix, we will rise from our fiery lives of death."
+%E
+%Cp Sal 00031
+"Obsidian, as much as it represents our chains, is a good and sharp material."
+%E
+%Cp Sal 00032
+"Lava is a good place for us heat loving salamanders to be."
+%E
+%Cp Sal 00033
+"It is said the nine lords of hell trade with %i."
+%E
+%Cp Sal 00034
+"Efreeti grant wishes for no one but themselves."
+%E
+%Cc Sal 00035
+%iC, a place you had only ever heard stories of before stands before you. 
+You must infiltrate the city and recover %o. 
+You hear the bustling sounds of foreign merchants.
+%E
+%Cp Sal 00036
+You hear the bustling sounds of foreign merchants.
+%E
+%Cc Sal 00040
+The Charcoal Palace, %nC's abide. 
+You feel fear of the likes you haven't felt since you were a 
+young fire snake.
+%E
+%Cp Sal 00041
+You return to the Charcoal Palace.
+%E
+%Cc Sal 00050
+"Get back to %H you good for nothing slave!
+%dC has no love for you!"
+%E
+%Cp Sal 00051
+"Begone slave!"
+%E
+%Cp Sal 00052
+"%lC's little rebellion ends now!"
+%E
+%Cp Sal 00053
+"%oC cannot save you!"
+%E
+%Cp Sal 00060
+"Salamanders have been the slaves of the efreeti since the dawn of time!"
+%E
+%Cp Sal 00061
+"An empire that has slain Kostchtchie can slay a measly %r."
+%E
+%Cp Sal 00062
+"Your kind is cut from a worse cloth than mine."
+%E
+%Cp Sal 00063
+"Go back to %H and pick some qamah."
+%E
+%Cp Sal 00064
+"Gods never die."
+%E
+%Cp Sal 00065
+"Salamanders are the pond scum of lava pools."
+%E
+%Cp Sal 00066
+"%lC and all his rebels will be put to death."
+%E
+%Cp Sal 00067
+"The Lords of the Nine support us.
+You really think you can overthrow that?"
+%E
+%Cp Sal 00068
+"This rebellion means nothing."
+%E
+%Cp Sal 00069
+"Killing me will not end the efreeti rule!"
+%E
+%Cc Sal 00070
+%oC fills you with a burning feeling of primordial power.
+You know that with it an end can be put to the salamander enslavement.
+%E
+%Cc Sal 00080
+%nC bellows
+"No! Death is impossible!"
+As %n blows away into the dust, you realize it is time
+to return to %l with %o.
+
+%E
+%Cc Sal 00081
+"You've done it! This is the biggest step in the rebellion yet!"
+%lC takes %o and with it ends the efreeti overseer invasion.
+"You should hold onto %o, %p. You can do much more for the 
+rebellion with it."
+%E
+%Cc Sal 00082
+"You've done it! This is the biggest step in the rebellion yet!"
+%lC takes %o and with it ends the efreeti overseer invasion.
+"You should hold onto %o, %p. You can do much more for the 
+rebellion with it."
+%E
+%Cc Sal 00090
+"Return to %Z and seek out the Amulet of Yendor so that %d 
+can set us all truly free!"
+%E
+%Cc Sal 00091
+"Head to the Astral Plane with the amulet and offer it to 
+%d so we can be truly free."
+%E
+#
 #	Samurai
 #
 %Cc Sam 00001

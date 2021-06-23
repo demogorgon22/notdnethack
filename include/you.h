@@ -381,6 +381,7 @@ struct you {
 #define MATTK_TELEK	    31
 #define MATTK_CRAZE	    32
 #define MATTK_PULSE	    33
+#define MATTK_LAVA	    34
 
 
 

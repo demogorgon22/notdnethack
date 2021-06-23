@@ -252,6 +252,18 @@ unsigned *ospecial;
 				} else if(offset >= S_litroom && offset <= S_dnladder){
 					color = CLR_YELLOW;
 				}
+			} else if(Pantheon_if(PM_SALAMANDER) && In_quest(&u.uz)){
+				if(offset >= S_litroom && offset <= S_dnladder){
+					color = offset == S_litroom ? CLR_GRAY : CLR_BLACK;
+				}
+				if(offset == S_litsand) color = CLR_WHITE;
+				if(offset == S_drksand) color = CLR_BLACK;
+				if(offset >= S_vwall && offset <= S_trwall){
+					color = CLR_ORANGE;
+				}
+				if(Is_qlocate(&u.uz) && offset >= S_ndoor && offset <= S_hcdoor){
+					color = CLR_GRAY;
+				}
 			} else if(In_moloch_temple(&u.uz)){
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_RED;

@@ -1,0 +1,442 @@
+#	SCCS Id: @(#)Salamander.des	3.15	1997/01/31
+# NetHack may be freely redistributed.  See license for details.
+#
+#	The "start" level for the quest.
+#
+#	Here you meet your (besieged) class leader, the Salamander Mage
+#	and receive your quest assignment.
+#
+#
+#	The "locate" level for the quest.
+#
+#	Bad, bad place.
+#
+#
+MAZE: "Sal-strt",' '
+FLAGS: noteleport,hardfloor
+GEOMETRY:center,center
+MAP
+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+LLLssssssssLLLLLLLLssssLLLLLLLLLLLLLssssssssssssssssssssssLLLLLLLLLsLLLLLLLL
+LLLsLLLLLLLsLLLLLLsLsssLLLLLLLLLLLLLsLLLLLLLLLLLLLLLLLLLLLsLLLLLLLsssLLLLLLL
+LLLsLLLLLLLLsLLLLsLLLLLLLLLLLLLLLLLLsLLLLLLLLLLLLLLLLLLLLLLsLLLLLsLsLLLLLLLL
+LLLsLLLLLLLLLsLLsLLLLLLLLLLLLLLLLLLLsLLLLLLLLLLLLLLLLLLLLLLLsLLLsLLLLLLLLLLL
+LLLsLLLLLLLLLLssLLLLLLLLLLLLLLLL----s-----LLLLLLLLLLLLLLLLLLLsLsLLLLLLLLLLLL
+LLLsLLLsLLLLLLLsLLLLLLLLLLLLLL---LLLLLLLL---LLLLLLLLLLLLLLLLLLsLLLLLLLLLLLLL
+LLLsLLLLLLLLLLLLLsLLLLLLLLLLs--LLLssssssLLL--sLLLLLLLLLLLLLLLLsLLLLLLLLLLLLL
+LLLLsLLLLLLLLLLLLLssssLLLLLs--LLssssssssssLL--sLLLLLLLLLLLLLLLsLLLLLLLLLLLLL
+LLLLsssLLLLLLLLLLsLLLLsssssssLLssssssssssssLLssssssssLLLLLLLLLsLLLLLLLLLLLLL
+LLLsssssLLLLLLLLsLLLLLLLLLLs--LLssssssssssLL--sLLLLLLsLLLLLLLLsLLLLLLLLLLLLL
+LLLLsssLLLLLLLLsLLLLLLLLLLLLs--LLLssssssLLL--sLLLLLLLLsLLLLLLLLsLLLLLLLLLLLL
+LLLLLsLLLLLLLLsLLLLLLLLLLLLLLL---LLLLLLLL---LLLLLLLLLLLsLLLLLLLLsLLLLLLLLLLL
+LsLLLLLLLLLLLLsLLLLLLLLLLLLLLLLL----s-----LLLLLLLLLLLLsLLLLLLLLLLsLLssLLLLLL
+LLLLLLLLLLLLLLLsLLLLLLLLLLLLLLLLLLLLsLLLLLLLLLLLLLLLLsLLLLLLLLLLLLsssssLLLLL
+LLsLLLsLLLLLLLLLsLLLLLLLLLLLLLLLLLLLsLLLLLLLLLsssssssLLLLLLLLLLLLLLssssLLLLL
+LLLLLLsLLLLLLLLLLsssssssssssssssssssssssssssssLLLLLLLLLLLLLLLLLLLLLLssLLLLLL
+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+ENDMAP
+# Dungeon Description
+REGION:(00,00,75,19),lit,"ordinary"
+# Portal arrival point
+BRANCH:(69,17,69,17),(0,0,0,0)
+# Stairs
+STAIR:(05,12),down
+# High Flame Mage
+MONSTER:':',"Salamander Mage",(36,11)
+# The treasure of the High Flame Mage
+CONTAINER:'(',"chest",(37,11)
+OBJECT:'?',"resistance",contained
+OBJECT:'?',"resistance",contained
+OBJECT:'?',"resistance",contained
+
+# guards for the audience chamber
+MONSTER:':',"salamander slave",(34,09)
+MONSTER:':',"salamander slave",(34,10)
+MONSTER:':',"salamander slave",(34,11)
+MONSTER:':',"salamander slave",(34,12)
+MONSTER:':',"salamander slave",(34,13)
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:':',"salamander slave",random
+MONSTER:'&',"efreet overseer",random,peaceful
+MONSTER:'&',"efreet overseer",random,peaceful
+MONSTER:'&',"efreet overseer",random,peaceful
+MONSTER:'&',"efreet overseer",random,peaceful
+MONSTER:'&',"efreet overseer",random,peaceful
+# Non diggable 
+NON_DIGGABLE:(00,00,75,19)
+# Random traps
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+TRAP:"falling rock",random
+
+MAZE: "Sal-loca",' '
+FLAGS: hardfloor
+INIT_MAP: 's' , 'L' , true , true , lit, false
+GEOMETRY:left,center
+#12345678901234567890123456789012345678901
+#0   i    1    i    2    i    3    i    4
+MAP
+---------------------         -------LLLLLL
+-.S..............S..--       --.....--LLLLL
+-.|..............|...--     --.......--LLLL
+---F--F--F--F--F--....--   --.........--LLL
+-......................-----...........--LL
+-.......................................|LL
+-......................-----.....+.....--LL
+------................--...--.........--LLL
+-....+...............--.....--.......--LLLL
+-....|..............--.......--.....--LLsss
+-....|.......{...........{...........|Lssss
+------..............--.......--.....--Lssss
+-....................--.....--.......--LLss
+-.....................--...--.........--LLL
+-......................-----.....+.....--LL
+-..-----+----...........................|LL
+-..|........|..........-----...........--LL
+-..|........|----.....--   --.........--LLL
+-..|........|K..|....--     --.......--LLLL
+-..|........|...S...--       --.....--LLLLL
+---------------------         -------LLLLLL
+ENDMAP
+# Regions
+NON_DIGGABLE:(00,00,41,20)
+REGION:(00,00,41,20),lit,"ordinary"
+REGION:(28,00,38,05),lit,"food shop"
+# Arabian lamp dealer
+REGION:(28,15,38,20),lit,"candle shop"
+REGION: (04,16,11,19),lit,"temple"
+# an azer?
+REGION:(01,08,04,10),lit,"weapon shop"
+#drawbridge
+DRAWBRIDGE:(38,10),west,open
+#dumb doors
+#shop top door
+DOOR:open,(33,06)
+#shop bottom door
+DOOR:open,(33,14)
+#temple door
+DOOR:closed,(08,15)
+#house door
+DOOR:closed,(05,08)
+#TELEPORT_REGION:(00,00,35,17),(00,00,01,01),down
+#TELEPORT_REGION:(14,08,60,10),(24,07,50,11),up
+ALTAR:(07,18),noalign,shrine
+# Stairs
+STAIR:(68,16),up
+STAIR:(01,01),down
+# Non diggable walls
+#NON_DIGGABLE:(00,00,75,19)
+OBJECT: '`', "statue", (13,06), "ice devil", 1
+#victims
+MONSTER:':',"salamander prisoner",(04,01),peaceful
+MONSTER:':',"salamander prisoner",(06,01),peaceful
+MONSTER:':',"salamander prisoner",(08,01),peaceful
+MONSTER:':',"salamander prisoner",(10,01),peaceful
+MONSTER:':',"salamander prisoner",(12,01),peaceful
+MONSTER:':',"salamander prisoner",(14,01),peaceful
+MONSTER:':',"salamander prisoner",(16,01),peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+#some merchants and citizens
+MONSTER:'&',"efreet merchant",random
+MONSTER:'&',"efreet merchant",random
+MONSTER:'&',"efreet merchant",random
+MONSTER:'&',"efreet merchant",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+
+#
+#	The "goal" level for the quest.
+#
+#	Here you meet dr sultan your nemesis monster.  You have to
+#	defeat sultan cool in combat to gain the artifact you have
+#	been assigned to retrieve.
+#
+
+#  That guys house
+MAZE:"Sal-goal",' '
+FLAGS: noteleport
+GEOMETRY: center, center
+#0000000001111111111222222222233333333334444444444555555555566666666667777777
+#1234567890123456789012345678901234567890123456789012345678901234567890123456
+MAP
+sssssssLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLsssssss
+ssssssLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLsssss
+sssLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLss
+sLLLLLLLLLLLLLL-------LLLLL-------LLLLLLL-------LLLLL-------LLLLLLLLLLLLLLL
+LLLLLLLLLLLLLL--.....--LL---.....---LLL---.....---LL--.....--LLLLLLLLLLLLLL
+LLLLLL---LLLLL|.......SL--.........--L--.........--LS.......|LLLLL---LLLLLL
+LLLL---.---LLL--.....--L|...........SLS...........|L--.....--LLL---.---LLLL
+LLL--.....--L-----+-----------+-------------+-----------+-----L--.....--LLL
+L---.......--|..........|.........................|..........|--.......---L
+L|...........+..........+............\............+..........+...........|L
+L---.......--|..........|.........................|..........|--.......---L
+LLL--.....--L-----+------.........................------+-----L--.....--LLL
+LLLL---.---LLL--.....--L-----.................-----L--.....--LLL---.---LLLL
+sLLLLL---LLLLL|.......|LLLLL-----.........-----LLLLL|.......|LLLLL---LLLLLL
+sLLLLLLLLLLLLL--.....--LLLLLLLLL-----------LLLLLLLLL--.....--LLLLLLLLLLLLLL
+ssLLLLLLLLLLLLL-------LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL-------LLLLLLLLLLLLLLs
+sssssLLLLLLLLLLLLLLLLLLLLLLLLLLLLLsssssssLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLssss
+sssssssssLLLLLLLLLLLLLLLLLLLLLsssssssssssssssLLLLLLLLLLLLLLLLLLLLLsssssssss
+sssssssssssLLLLLLLLLLLLLLLLssssssssssssssssssssssLLLLLLLLLLLLLLLsssssssssss
+ENDMAP
+RANDOM_OBJECTS:'*','!','(','['
+RANDOM_PLACES:(07,06),(07,12),(02,09),(72,09),(67,06),(67,12)
+
+TELEPORT_REGION:(34,16,40,17),(01,03,73,15),down
+TELEPORT_REGION:(14,08,60,10),(24,07,50,11),up
+
+REGION:(00,00,74,18),lit,"ordinary"
+NON_DIGGABLE:(00,00,74,18)
+#Epic loot kludge get owned anyone that doesnt not wanna die
+REGION:(25,04,49,06),unlit,"morgue",unfilled
+STAIR:(30,17,44,18),(01,01,73,14),up
+DRAWBRIDGE:(37,15),north,closed
+
+# Secret Back Doors:
+DOOR:locked,(22,05)
+DOOR:locked,(36,06)
+DOOR:locked,(38,06)
+DOOR:locked,(52,05)
+# Interior Doors:
+DOOR:locked,(13,09)
+DOOR:locked,(18,07)
+DOOR:locked,(18,11)
+DOOR:random,(24,09)
+DOOR:closed,(30,07)
+DOOR:closed,(44,07)
+DOOR:random,(50,09)
+DOOR:locked,(56,07)
+DOOR:locked,(56,11)
+DOOR:locked,(61,09)
+# What would a palace be without fountains? Probably not very cool.
+FOUNTAIN:(07,09)
+FOUNTAIN:(67,09)
+# Arti
+OBJECT:')',"spear",(37,09),blessed,0,"Smoking Mirror"
+# Foes
+MONSTER:'&',"Efreet Sultan",(37,09),hostile
+MONSTER:'&',"efreet guardian",(36,09),hostile
+MONSTER:'&',"efreet guardian",(38,09),hostile
+MONSTER:'&',"efreet guardian",(18,09),hostile
+MONSTER:'&',"efreet guardian",(56,09),hostile
+#Random monsters
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+# Rebels
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+MONSTER:':',"salamander slave",random,peaceful
+# The treasures of the City of Brass
+OBJECT:'(',"magic chest",(37,08)
+# Northwest Storeroom
+OBJECT:object[0],random,(15,05)
+OBJECT:object[0],random,(16,04)
+OBJECT:object[0],random,(16,05)
+OBJECT:object[0],random,(16,06)
+OBJECT:object[0],random,(17,04)
+OBJECT:object[0],random,(17,05)
+OBJECT:object[0],random,(17,06)
+OBJECT:object[0],random,(18,04)
+OBJECT:object[0],random,(18,05)
+OBJECT:object[0],random,(18,06)
+OBJECT:object[0],random,(19,04)
+OBJECT:object[0],random,(19,05)
+OBJECT:object[0],random,(19,06)
+OBJECT:object[0],random,(20,04)
+OBJECT:object[0],random,(20,05)
+OBJECT:object[0],random,(20,06)
+OBJECT:object[0],random,(21,05)
+# Northeast Storeroom
+OBJECT:object[1],random,(53,05)
+OBJECT:object[1],random,(54,04)
+OBJECT:object[1],random,(54,05)
+OBJECT:object[1],random,(54,06)
+OBJECT:object[1],random,(55,04)
+OBJECT:object[1],random,(55,05)
+OBJECT:object[1],random,(55,06)
+OBJECT:object[1],random,(56,04)
+OBJECT:object[1],random,(56,05)
+OBJECT:object[1],random,(56,06)
+OBJECT:object[1],random,(57,04)
+OBJECT:object[1],random,(57,05)
+OBJECT:object[1],random,(57,06)
+OBJECT:object[1],random,(58,04)
+OBJECT:object[1],random,(58,05)
+OBJECT:object[1],random,(58,06)
+OBJECT:object[1],random,(59,05)
+# Southwest Storeroom
+OBJECT:object[2],random,(15,13)
+OBJECT:object[2],random,(16,12)
+OBJECT:object[2],random,(16,13)
+OBJECT:object[2],random,(16,14)
+OBJECT:object[2],random,(17,12)
+OBJECT:object[2],random,(17,13)
+OBJECT:object[2],random,(17,14)
+OBJECT:object[2],random,(18,12)
+OBJECT:object[2],random,(18,13)
+OBJECT:object[2],random,(18,14)
+OBJECT:object[2],random,(19,12)
+OBJECT:object[2],random,(19,13)
+OBJECT:object[2],random,(19,14)
+OBJECT:object[2],random,(20,12)
+OBJECT:object[2],random,(20,13)
+OBJECT:object[2],random,(20,14)
+OBJECT:object[2],random,(21,13)
+# Southeast Storeroom
+OBJECT:object[3],random,(53,13)
+OBJECT:object[3],random,(54,12)
+OBJECT:object[3],random,(54,13)
+OBJECT:object[3],random,(54,14)
+OBJECT:object[3],random,(55,12)
+OBJECT:object[3],random,(55,13)
+OBJECT:object[3],random,(55,14)
+OBJECT:object[3],random,(56,12)
+OBJECT:object[3],random,(56,13)
+OBJECT:object[3],random,(56,14)
+OBJECT:object[3],random,(57,12)
+OBJECT:object[3],random,(57,13)
+OBJECT:object[3],random,(57,14)
+OBJECT:object[3],random,(58,12)
+OBJECT:object[3],random,(58,13)
+OBJECT:object[3],random,(58,14)
+OBJECT:object[3],random,(59,13)
+
+# The treasure:
+CONTAINER:'(',"chest",place[0]
+OBJECT:'(',"oil lamp",contained
+OBJECT:'?',"genocide",contained
+OBJECT:'$',"gold piece",contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+OBJECT:'*',random,contained
+# TODO: if .des file format supported it, I'd want these to be rustproof.
+OBJECT:')',"scimitar",contained,random,7
+OBJECT:')',"scimitar",contained,random,7
+OBJECT:'/',random,contained
+OBJECT:'/',random,contained
+OBJECT:'?',random,contained
+OBJECT:'?',random,contained
+OBJECT:'?',random,contained
+OBJECT[50%]:'?',random,contained
+OBJECT[50%]:'?',random,contained
+OBJECT[50%]:'?',random,contained
+OBJECT[50%]:'?',random,contained
+OBJECT[50%]:'?',random,contained
+OBJECT[50%]:'?',random,contained
+OBJECT:random,random,contained
+OBJECT:random,random,contained
+OBJECT:random,random,contained
+# Decoy Treasures:
+OBJECT:'(',"chest",place[1]
+OBJECT:'(',"chest",place[2]
+OBJECT:'(',"chest",place[3]
+OBJECT:'(',"chest",place[4]
+OBJECT:'(',"chest",place[5]
+
+#
+#	The "fill" levels for the quest.
+#
+#	These levels are used to fill out any levels not occupied by specific
+#	levels as defined above. "filla" is the upper filler, between the
+#	start and locate levels, and "fillb" the lower between the locate
+#	and goal levels.
+#
+
+MAZE: "Sal-fila" , 'L'
+INIT_MAP: 's' , 'L' , true , true , lit, false
+NOMAP
+#
+STAIR: random, up
+STAIR: random, down
+#
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+#
+#
+TRAP: "falling rock", random
+TRAP: "falling rock", random
+TRAP: "falling rock", random
+TRAP: "falling rock", random
+TRAP: "falling rock", random
+MAZE: "Sal-filb" , ' '
+INIT_MAP: '.' , ' ' , true , true , lit , true
+NOMAP
+STAIR: random, up
+STAIR: random, down
+#
+#
+FOUNTAIN:random
+FOUNTAIN:random
+FOUNTAIN:random
+ALTAR:random,noalign,altar
+#
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+#
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+
