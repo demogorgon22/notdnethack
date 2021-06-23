@@ -686,6 +686,11 @@ xchar x, y;
 	    case TT_LAVA:
 		pline(pullmsg, "lava");
 		break;
+		case TT_FLESH_HOOK: {
+		    You("rip free of the flesh hook!  Ouch!");
+			losehp(d(13,3), "tearing free from a flesh hook", KILLED_BY);
+		    break;
+		  }
 	    case TT_BEARTRAP: {
 		register long side = rn2(3) ? LEFT_SIDE : RIGHT_SIDE;
 		pline(pullmsg, "bear trap");
@@ -699,11 +704,13 @@ xchar x, y;
 				losehp(2, "leg damage from being pulled out of a bear trap",
 						KILLED_BY);
 				set_wounded_legs(side, rn1(100,50));
-				if(bootdamage > uarmf->spe){
-					claws_destroy_arm(uarmf);
-				}else{
-					for(; bootdamage >= 0; bootdamage--) drain_item(uarmf);
-					Your("boots are damaged!");
+				if(!Preservation){
+					if(bootdamage > uarmf->spe){
+						claws_destroy_arm(uarmf);
+					}else{
+						for(; bootdamage >= 0; bootdamage--) drain_item(uarmf);
+						Your("boots are damaged!");
+					}
 				}
 			}
 			else{

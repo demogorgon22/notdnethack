@@ -17,7 +17,7 @@ static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 #ifdef TOURIST
 STATIC_DCL int FDECL(use_camera, (struct obj *));
 #endif
-STATIC_DCL int FDECL(do_present_ring, (struct obj *));
+STATIC_DCL int FDECL(do_present_item, (struct obj *));
 STATIC_DCL int FDECL(use_towel, (struct obj *));
 STATIC_DCL boolean FDECL(its_dead, (int,int,int *,struct obj*));
 STATIC_DCL int FDECL(use_stethoscope, (struct obj *));
@@ -107,10 +107,11 @@ use_camera(obj)
 #endif
 
 STATIC_OVL int
-do_present_ring(obj)
+do_present_item(obj)
 	struct obj *obj;
 {
 	register struct monst *mtmp, *tm;
+	const char *word = obj->oclass == RING_CLASS ? "ring" : obj->oclass == AMULET_CLASS ? "amulet" : "item";
 
 	if(!getdir((char *)0)) return 0;
 	
@@ -120,15 +121,15 @@ do_present_ring(obj)
 	}
 	
 	if (u.uswallow) {
-		You("display the ring's engraving to %s %s.", s_suffix(mon_nam(u.ustuck)),
+		You("display the %s engraving to %s %s.", s_suffix(word), s_suffix(mon_nam(u.ustuck)),
 		    mbodypart(u.ustuck, STOMACH));
 		pline("Nothing happens.");
 		exercise(A_WIS, FALSE);
 		return 0;
 	} else if (u.dz) {
-		You("display the ring's engraving to the %s.",
+		You("display the %s engraving to the %s.", s_suffix(word),
 			(u.dz > 0) ? surface(u.ux,u.uy) : ceiling(u.ux,u.uy));
-		if(u.dz < 0){
+		if(u.dz < 0 || obj->oartifact){
 			pline("Nothing happens.");
 			exercise(A_WIS, FALSE);
 			return 0;
@@ -138,7 +139,7 @@ do_present_ring(obj)
 			if(u.ualign.type == A_LAWFUL) exercise(A_WIS, FALSE);
 			return 0;
 		}else{
-			You_feel("as though the engraving on the ring could fall right off!");
+			You_feel("as though the engraving on the %s could fall right off!", word);
 			if(yn("Give it a push?") == 'n'){
 				pline("Nothing happens.");
 				return 0;
@@ -155,13 +156,13 @@ do_present_ring(obj)
 					engrHere = engr_at(u.ux,u.uy); /*note: make_engr_at does not return the engraving it made, it returns void instead*/
 				}
 				if(obj->ohaluengr == engrHere->halu_ward && obj->oward == engrHere->ward_id){
-					pline("the engraving tumbles off the ring to join it's fellows.");
+					pline("the engraving tumbles off the %s to join it's fellows.", word);
 					engrHere->complete_wards += engrHere->halu_ward ? 0 : get_num_wards_added(engrHere->ward_id,engrHere->complete_wards);
 					obj->ohaluengr = FALSE;
 					obj->oward = FALSE;
 				}
 				else{
-					pline("the engraving tumbles off the ring%s.", engrHere->ward_id ? "and covers the existing drawing" : "");
+					pline("the engraving tumbles off the %s%s.", word, engrHere->ward_id ? "and covers the existing drawing" : "");
 					engrHere->ward_id = obj->oward;
 					engrHere->halu_ward = obj->ohaluengr;
 					engrHere->complete_wards = engrHere->halu_ward ? 1 : get_num_wards_added(engrHere->ward_id,0);
@@ -177,20 +178,20 @@ do_present_ring(obj)
 		}
 	} else if (!u.dx && !u.dy) {
 		if(!(obj->ohaluengr)){
-			pline("A %s is engraved on the ring.",wardDecode[obj->oward]);
+			pline("A %s is engraved on the %s.", word, wardDecode[obj->oward]);
 			if( !(u.wardsknown & get_wardID(obj->oward)) ){
 				You("have learned a new warding sign!");
 				u.wardsknown |= get_wardID(obj->oward);
 			}
 		}
 		else{
-			pline("There is %s engraved on the ring.",fetchHaluWard((int)obj->oward));
+			pline("There is %s engraved on the %s.", word, fetchHaluWard((int)obj->oward));
 		}
 		return(1);
 	} else if (isok(u.ux+u.dx, u.uy+u.dy) && (mtmp = m_at(u.ux+u.dx, u.uy+u.dy)) != 0) {
-		You("display the ring's engraving to %s.", mon_nam(mtmp));
+		You("display the %s engraving to %s.", s_suffix(word), mon_nam(mtmp));
 		if (obj->cursed && rn2(3)) {
-			pline("But the ring's engraving is fogged over!");
+			pline("But the %s engraving is fogged over!", s_suffix(word));
 			return 1;
 		}
 		if(!(obj->ohaluengr) || obj->oward == CERULEAN_SIGN){
@@ -933,6 +934,7 @@ struct obj *obj;
 		    } else if (roll_madness(MAD_ARGENT_SHEEN)) {
 				You("admire your reflection in the mirror.");
 				nomul(-1*rnd(6), "posing in front of a mirror.");
+				vis = FALSE;
 		    } else if (Hallucination) {
 				You(look_str, hcolor((char *)0));
 				vis = TRUE;
@@ -2035,18 +2037,25 @@ int magic; /* 0=Physical, otherwise skill level */
 			if (uarmf && uarmf->otyp == find_jboots()){
 				int bootdamage = d(1,10);
 				losehp(rnd(10), "jumping out of a bear trap", KILLED_BY);
-				set_wounded_legs(side, rn1(100,50));
-				if(bootdamage > uarmf->spe){
-					claws_destroy_arm(uarmf);
-				}else{
-					for(; bootdamage >= 0; bootdamage--) drain_item(uarmf);
-					Your("boots are damaged!");
+				if(!Preservation){
+					set_wounded_legs(side, rn1(100,50));
+					if(bootdamage > uarmf->spe){
+						claws_destroy_arm(uarmf);
+					}else{
+						for(; bootdamage >= 0; bootdamage--) drain_item(uarmf);
+						Your("boots are damaged!");
+					}
 				}
 			}
 		    else{
 				losehp(d(5,6), "jumping out of a bear trap", KILLED_BY);
 				set_wounded_legs(side, rn1(1000,500));
 			}
+		    break;
+		  }
+		case TT_FLESH_HOOK: {
+		    You("rip yourself free of the flesh hook!  Ouch!");
+			losehp(d(13,3), "tearing free from a flesh hook", KILLED_BY);
 		    break;
 		  }
 		case TT_PIT:
@@ -2106,8 +2115,7 @@ tinnable(corpse)
 struct obj *corpse;
 {
 	if (corpse->otyp != CORPSE) return 0;
-	if (corpse->oeaten) return 0;
-	if (corpse->odrained) return 0;
+	if (corpse->oeaten && !(has_blood(&mons[corpse->corpsenm]) && corpse->odrained && corpse->oeaten == drainlevel(corpse))) return 0;
 	if (!mons[corpse->corpsenm].cnutrit) return 0;
 	return 1;
 }
@@ -2132,7 +2140,7 @@ register struct obj *obj;
 	if(!otyp)
 		return;
 	
-	glyph = mksobj(otyp, FALSE, FALSE);
+	glyph = mksobj(otyp, MKOBJ_NOINIT);
 	
 	if(glyph){
 		remove_thought(otyp_to_thought(otyp));
@@ -2182,7 +2190,7 @@ register struct obj *obj;
 		return;
 	}
 	if (!(corpse = floorfood("tin", 2))) return;
-	if (corpse->otyp == CORPSE && (corpse->oeaten || corpse->odrained)) {
+	if (corpse->otyp == CORPSE && corpse->oeaten && !(has_blood(&mons[corpse->corpsenm]) && corpse->odrained && corpse->oeaten == drainlevel(corpse))) {
 		You("cannot tin %s which is partly eaten.",something);
 		return;
 	}
@@ -2215,12 +2223,12 @@ register struct obj *obj;
 		return;
 	}
 	consume_obj_charge(obj, TRUE);
-	if(has_blood(&mons[corpse->corpsenm])
+	if((has_blood(&mons[corpse->corpsenm]) && !corpse->odrained)
 		|| !(Race_if(PM_VAMPIRE) || Race_if(PM_INCANTIFIER) || 
 			umechanoid)
 		|| yn("This corpse does not have blood. Tin it?") == 'y'
 	){
-		if ((can = mksobj(TIN, FALSE, FALSE)) != 0) {
+		if ((can = mksobj(TIN, MKOBJ_NOINIT)) != 0) {
 			static const char you_buy_it[] = "You tin it, you bought it!";
 
 			can->corpsenm = corpse->corpsenm;
@@ -2229,8 +2237,8 @@ register struct obj *obj;
 			can->owt = weight(can);
 			can->known = 1;
 			can->spe = -1;  /* Mark tinned tins. No spinach allowed... */
-			if(has_blood(&mons[corpse->corpsenm])){
-				if ((bld = mksobj(POT_BLOOD, FALSE, FALSE)) != 0) {
+			if(has_blood(&mons[corpse->corpsenm]) && !corpse->odrained){
+				if ((bld = mksobj(POT_BLOOD, MKOBJ_NOINIT)) != 0) {
 					bld->corpsenm = corpse->corpsenm;
 					bld->cursed = obj->cursed;
 					bld->blessed = obj->blessed;
@@ -2557,7 +2565,7 @@ struct obj **optr;
 		"toss the figurine into the air" :
 		"set the figurine on the ground"));
 	(void) make_familiar(obj, cc.x, cc.y, FALSE);
-	(void) stop_timer(FIG_TRANSFORM, (genericptr_t)obj);
+	(void) stop_timer(FIG_TRANSFORM, obj->timed);
 	useup(obj);
 	*optr = 0;
 }
@@ -2596,15 +2604,13 @@ struct obj *obj;
 			You(need_to_remove_outer_armor, buf, xname(otmp));
 			return;
 		}
-#ifdef TOURIST
-		if ((otmp->owornmask & WORN_SHIRT) && (uarmc || uarm)) {
+		if ((otmp->owornmask & WORN_SHIRT) && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))) {
 			Strcpy(buf, uarmc ? xname(uarmc) : "");
 			if (uarmc && uarm) Strcat(buf, " and ");
 			Strcat(buf, uarm ? xname(uarm) : "");
 			You(need_to_remove_outer_armor, buf, xname(otmp));
 			return;
 		}
-#endif
 		consume_obj_charge(obj, TRUE);
 
 		if (otmp != &zeroobj) {
@@ -3103,6 +3109,7 @@ struct obj *hypo;
 					mtarg->mcrazed = 0;
 					mtarg->mdisrobe = 0;
 					mtarg->mberserk = 0;
+					mtarg->mdoubt = 0;
 				} else {
 					if (canseemon(mtarg))
 						pline("%s looks angry and confused!", Monnam(mtarg));
@@ -3823,7 +3830,7 @@ struct obj *obj;
 			}
 			wakeup(mtmp, TRUE);
 		} else {
-			if (mtmp->m_ap_type &&
+			if ((mtmp->m_ap_type && mtmp->m_ap_type != M_AP_MONSTER) &&
 			!Protection_from_shape_changers && !sensemon(mtmp))
 			stumble_onto_mimic(mtmp);
 			else You("flick your whip towards %s.", mon_nam(mtmp));
@@ -3845,6 +3852,80 @@ struct obj *obj;
 }
 
 
+//Used to coordinate polearm_menu and targeting code
+const int pole_dy[16] = {-2,-2,-2,-1, 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2};
+const int pole_dx[16] = { 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2,-2,-2,-2,-1};
+const char pole_dir[16][4] = {"N","NNE","NE",
+						  "ENE","E","ESE","SE",
+						  "SSE","S","SSW","SW",
+						  "WSW","W","WNW","NW",
+						  "NNW"};
+#define N_POLEDIRS 16
+
+STATIC_OVL int
+polearm_menu(pole)
+struct obj *pole;
+{
+	winid tmpwin;
+	int n = 0, how, i, cx, cy;
+	int typ, max_range;
+	struct monst *mtmp;
+	char buf[BUFSZ];
+	char incntlet;
+	menu_item *selected;
+	anything any;
+
+	/* Calculate range */
+	typ = weapon_type(pole);
+	if (typ == P_NONE || P_SKILL(typ) <= P_BASIC) max_range = 4;
+	else if ( P_SKILL(typ) == P_SKILLED) max_range = 5;
+	else max_range = 8;
+	
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	
+	Sprintf(buf, "Targets");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	
+	incntlet = 'a';
+	for(i=0; i<16; i++){
+		cx = u.ux + pole_dx[i];
+		cy = u.uy + pole_dy[i];
+		if(isok(cx, cy) && (mtmp = m_at(cx, cy)) 
+			&& cansee(cx, cy)
+			&& canseemon(mtmp)
+			&& distu(cx, cy) <= max_range
+			&& !(mtmp->mappearance && mtmp->m_ap_type != M_AP_MONSTER && !sensemon(mtmp))
+			&& !(flags.peacesafe_polearms && mtmp->mpeaceful && !Hallucination)
+			&& !(flags.petsafe_polearms && mtmp->mtame && !Hallucination)
+		){
+			Sprintf(buf, "%s (%s)", Monnam(mtmp), pole_dir[i]);
+			any.a_int = i+1;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet++;
+		}
+		else if(!flags.relative_polearms)
+			incntlet++; /* always increment, so that the same direction is always the same letter*/
+	}
+
+	/* add an option to target manually */
+	Sprintf(buf, "(some location)");
+	any.a_int = N_POLEDIRS+1;
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'z', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+
+	end_menu(tmpwin, "Choose target:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	return ( n > 0 ) ? selected[0].item.a_int : 0;
+}
+
 static const char
 	not_enough_room[] = "There's not enough room here to use that.",
 	where_to_hit[] = "Where do you want to hit?",
@@ -3856,7 +3937,8 @@ STATIC_OVL int
 use_pole (obj)
 	struct obj *obj;
 {
-	int res = 0, typ, max_range = 4, min_range = 4, skillBonus = 0;
+	int res = 0, typ, max_range = 4, min_range = 4;
+	int i;
 	coord cc;
 	struct monst *mtmp;
 
@@ -3873,16 +3955,37 @@ use_pole (obj)
      /* assert(obj == uwep); */
 
 	/* Prompt for a location */
-	pline("%s", where_to_hit);
-	cc.x = u.ux;
-	cc.y = u.uy;
-	if (getpos(&cc, TRUE, "the spot to hit") < 0)
-	    return 0;	/* user pressed ESC */
+	if(flags.standard_polearms){
+		pline("%s", where_to_hit);
+		cc.x = u.ux;
+		cc.y = u.uy;
+		if (getpos(&cc, TRUE, "the spot to hit") < 0)
+			return 0;	/* user pressed ESC */
+	}
+	else {
+		if((i = polearm_menu(uwep))){
+			i--; /*Remove the off-by-one offset used to make all returns from polearm_menu non-zero*/
+			if (i<N_POLEDIRS) {
+				cc.x = u.ux + pole_dx[i];
+				cc.y = u.uy + pole_dy[i];
+			}
+			else {
+				/* use standard targeting; save retval to return */
+				flags.standard_polearms = TRUE;
+				int retval = use_pole(obj);
+				flags.standard_polearms = FALSE;
+				return retval;
+			}
+		}
+		else {
+			return 0;	/* user pressed ESC */
+		}
+	}
 
 	/* Calculate range */
 	typ = uwep_skill_type();
-	if (typ == P_NONE || (P_SKILL(typ)+skillBonus) <= P_BASIC) max_range = 4;
-	else if ( (P_SKILL(typ)+skillBonus) == P_SKILLED) max_range = 5;
+	if (typ == P_NONE || P_SKILL(typ) <= P_BASIC) max_range = 4;
+	else if ( P_SKILL(typ) == P_SKILLED) max_range = 5;
 	else max_range = 8;
 	if (distu(cc.x, cc.y) > max_range) {
 	    pline("Too far!");
@@ -3909,7 +4012,7 @@ use_pole (obj)
 		}
 	} else if(levl[cc.x][cc.y].typ == GRASS){
 		   levl[cc.x][cc.y].typ = SOIL;
-		   if(!rn2(3)) mksobj_at(SHEAF_OF_HAY,cc.x,cc.y,TRUE,FALSE);
+		   if(!rn2(3)) mksobj_at(SHEAF_OF_HAY,cc.x,cc.y,NO_MKOBJ_FLAGS);
 		   You("cut away the grass!");
 		   newsym(cc.x,cc.y);
 	} else {
@@ -4503,7 +4606,7 @@ use_doll(obj)
 					}
 #ifndef GOLDOBJ
 					if (mtmp->mgold){
-						struct obj *mongold = mksobj(GOLD_PIECE, FALSE, FALSE);
+						struct obj *mongold = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
 						mongold->quan = mtmp->mgold;
 						mongold->owt = weight(mongold);
 						mtmp->mgold = 0;
@@ -5098,6 +5201,9 @@ do_break_wand(obj)
 		if(IS_GRAVE(levl[x][y].typ)){
 			digactualhole(x, y, BY_OBJECT, PIT, FALSE, TRUE);
 			dig_up_grave(x,y);
+		} else if(IS_SEAL(levl[x][y].typ)){
+			// digactualhole(x, y, BY_OBJECT, PIT, FALSE, TRUE);
+			break_seal(x,y);
 		} else{
 			digactualhole(x, y, BY_OBJECT,
 					  (rn2(obj->spe) < 3 || !Can_dig_down(&u.uz)) ?
@@ -5574,7 +5680,7 @@ doUseComponents(optr)
 struct obj **optr;
 {
 	struct obj *obj = *optr;
-	struct monst *mm;
+	struct monst *mm = (struct monst *)0;
 	struct permonst *pmm;
 	coord cc;
 
@@ -5887,7 +5993,10 @@ resizeArmor()
 			You("can't figure out how to make it fit.");
 			return FALSE;
 		}
-		otmp->bodytypeflag = (ptr->mflagsb&MB_HUMANOID) ? MB_HUMANOID : (ptr->mflagsb&MB_BODYTYPEMASK);
+		if(otmp->otyp == BODYGLOVE)
+			otmp->bodytypeflag = (ptr->mflagsb&MB_BODYTYPEMASK);
+		else
+			otmp->bodytypeflag = (ptr->mflagsb&MB_HUMANOID) ? MB_HUMANOID : (ptr->mflagsb&MB_BODYTYPEMASK);
 	}
 	else if (is_suit(otmp)){
 		//Check that the monster can actually have armor that fits it.
@@ -6084,6 +6193,9 @@ doapply()
 	if(carrying_applyable_ring()){
 		add_class(class_list, RING_CLASS);
 	}
+	if(carrying_applyable_amulet()){
+		add_class(class_list, AMULET_CLASS);
+	}
 
 
 	obj = getobj(class_list, "use or apply");
@@ -6103,8 +6215,8 @@ doapply()
 	    return do_break_wand(obj);
 	else if (obj->oclass == COIN_CLASS)
 	    return do_flip_coin(obj);
-	else if (obj->oclass == RING_CLASS)
-	    return do_present_ring(obj);
+	else if (obj->oclass == RING_CLASS || obj->oclass == AMULET_CLASS)
+	    return do_present_item(obj);
 	else if(is_knife(obj) && !(obj->oartifact==ART_PEN_OF_THE_VOID && obj->ovar1&SEAL_MARIONETTE)) 
 		return do_carve_obj(obj);
 	
@@ -6353,7 +6465,7 @@ doapply()
 			case SILVER_BULLET:
 			if(otmp->quan >= 10){
 				struct obj *rocket;
-				rocket = mksobj(ROCKET, FALSE, FALSE);
+				rocket = mksobj(ROCKET, MKOBJ_NOINIT);
 				rocket->blessed = otmp->blessed;
 				rocket->cursed = otmp->cursed;
 				rocket->quan = (otmp->quan)/10;
@@ -6379,7 +6491,7 @@ doapply()
 			}break;
 			case ROCKET:{
 				struct obj *bullets;
-				bullets = mksobj(SILVER_BULLET, FALSE, FALSE);
+				bullets = mksobj(SILVER_BULLET, MKOBJ_NOINIT);
 				bullets->blessed = otmp->blessed;
 				bullets->cursed = otmp->cursed;
 				bullets->quan = (otmp->quan)*10;
@@ -6518,18 +6630,20 @@ doapply()
 		if(u.usanity < 100){
 			change_usanity((Insanity)/2, FALSE);
 		}
-		
-			
+
 		if(u.wimage >= 10){
+			struct monst *mtmp;
 			u.wimage = 0;
-			makemon(&mons[PM_WEEPING_ANGEL], u.ux, u.uy, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH);
+			mtmp = makemon(&mons[PM_WEEPING_ANGEL], u.ux, u.uy, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH);
+			if(mtmp && HDoubt)
+				mtmp->mdoubt = TRUE;
 			if(Blind) pline("The effigy grows and turns to stone!");
 			else pline("The effigy becomes a weeping angel!");
 		} else if(u.umorgul){
 			int i = rnd(u.umorgul);
 			struct obj *frags;
 			u.umorgul -= i;
-			frags = mksobj(SHURIKEN, FALSE, FALSE);
+			frags = mksobj(SHURIKEN, MKOBJ_NOINIT);
 			if(frags){
 				frags->quan = i;
 				add_oprop(frags, OPROP_LESSER_MORGW);
@@ -6541,8 +6655,14 @@ doapply()
 				frags = hold_another_object(frags, "You drop %s!",
 							  doname(frags), (const char *)0); /*shouldn't merge, but may drop*/
 			}
-			if(Blind) pline("The effigy bursts into flames!");
-			else pline("The effigy burns with sickly flames!");
+			if(u.umummyrot)
+				pline("The effigy crumbles to dust!");
+			else {
+				if(Blind) pline("The effigy bursts into flames!");
+				else pline("The effigy burns with sickly flames!");
+			}
+		} else if (u.umummyrot){
+				pline("The effigy crumbles to dust!");
 		} else if (u.uhpmod < -18){
 			if(Blind) pline("The effigy drips with a sticky liquid!");
 			else pline("The effigy is scored by wounds!");
@@ -6551,7 +6671,13 @@ doapply()
 			else pline("The effigy burns with sickly flames!");
 		}
 		
+		if(HDoubt){
+			make_doubtful(0L, TRUE);
+		}
+		
 		u.wimage = 0; //Sub-critical images are removed anyway.
+		
+		u.umummyrot = 0;
 		
 		if (u.uhpmod < 0){
 			u.uhpmod /= 2; // we only print a message if it's a lot, but fix regardless
@@ -6855,6 +6981,14 @@ dotrephination_menu()
 	if (u.thoughts&DEEP_SEA){
 		Sprintf(buf, "Extract the pitch-black waters");
 		any.a_int = DEEP_SEA_GLYPH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet++;
+	}
+	if (u.thoughts&TRANSPARENT_SEA){
+		Sprintf(buf, "Extract the perfectly clear sea");
+		any.a_int = HIDDEN_SEA_GLYPH;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
 			incntlet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);

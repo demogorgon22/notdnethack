@@ -273,13 +273,13 @@ register struct monst *mon;
 
 	/* by this point you have discovered mon's identity, blind or not... */
 	if (helpless || rn2(120) > ACURR(A_CHA) + ACURR(A_WIS)) {
-		struct trap *ttmp2 = maketrap(u.ux, u.uy, WEB);
+		struct trap *ttmp2;
 		/* Don't bother with mspec_used here... it didn't get tired! */
 	LolthAttacks:
 		if (Blind) You("suddenly find yourself in the arms of a giant spider!");
 		else pline("She suddenly becomes a giant spider and seizes you with her legs!");
 		//Lolth bad
-		if (ttmp2) {
+		if ((ttmp2 = maketrap(u.ux, u.uy, WEB))) {
 			pline("She wraps you tight in her webs!");
 			dotrap(ttmp2, NOWEBMSG);
 #ifdef STEED
@@ -987,7 +987,7 @@ int dmg;
 				n--;
 				if(!slips_free(mon, &youmonst,  &bodyblow, -1)){
 					You_feel("the tentacles squirm under your underclothes.");
-					if( d(1,100) > 15){
+					if( d(1,100) > 15 && !Preservation){
 						pline("The tentacles begin to tear at your underclothes!");
 						 if(uarmu->spe > 1){
 							for(i=rn2(4); i>=0; i--)
@@ -996,7 +996,7 @@ int dmg;
 						 }
 						 else{
 							tent_destroy_arm(uarmu);
-							if(!uarmu) change_usanity(u_sanity_loss(mon)/2, FALSE); /*Forces a san check*/
+							if(!uarmu) change_usanity(u_sanity_loss_minor(mon)/2, FALSE); /*Forces a san check*/
 						 }
 					}
 					else{
@@ -1006,7 +1006,7 @@ int dmg;
 						(void) Shirt_off();
 						freeinv(otmp);
 						(void) mpickobj(mon,otmp);
-						change_usanity(u_sanity_loss(mon)/2, FALSE); /*Forces a san check*/
+						change_usanity(u_sanity_loss_minor(mon)/2, FALSE); /*Forces a san check*/
 						if(roll_madness(MAD_TALONS)){
 							You("panic after having your underclothes pulled off!");
 							HPanicking += 1+rnd(6);
@@ -1024,7 +1024,7 @@ int dmg;
 			 n--;
 			 if(!slips_free(mon, &youmonst,  &bodyblow, -1)){
 				You_feel("the tentacles squirm under your armor.");
-				if( d(1,100) > 25){
+				if( d(1,100) > 25 && !Preservation){
 					pline("The tentacles begin to tear at your armor!");
 					 if(uarm->spe > 1){
 						for(i=rn2(4); i>=0; i--)
@@ -1033,7 +1033,7 @@ int dmg;
 					 }
 					 else{
 						tent_destroy_arm(uarm);
-						if(!uarm) change_usanity(u_sanity_loss(mon)/2, FALSE); /*Forces a san check*/
+						if(!uarm) change_usanity(u_sanity_loss_minor(mon)/2, FALSE); /*Forces a san check*/
 					 }
 				}
 				else{
@@ -1043,7 +1043,7 @@ int dmg;
 					(void) Armor_gone();
 					freeinv(otmp);
 					(void) mpickobj(mon,otmp);
-					change_usanity(u_sanity_loss(mon)/2, FALSE); /*Forces a san check*/
+					change_usanity(u_sanity_loss_minor(mon)/2, FALSE); /*Forces a san check*/
 					if(roll_madness(MAD_TALONS)){
 						You("panic after having your armor removed!");
 						HPanicking += 1+rnd(6);
@@ -1056,7 +1056,7 @@ int dmg;
 			n--;
 			if(!slips_free(mon, &youmonst,  &bodyblow, -1)){
 				You_feel("the tentacles work their way under your cloak.");
-				if( d(1,100) > 66){
+				if( d(1,100) > 66 && !Preservation){
 					pline("The tentacles begin to tear at the cloak!");
 					 if(uarmc->spe > 1){
 						for(i=rn2(4); i>=0; i--)
@@ -1094,7 +1094,7 @@ int dmg;
 				n--;
 				if(!slips_free(mon, &youmonst,  &legblast, -1)){
 					You_feel("the tentacles squirm into your boots.");
-					if( d(1,100) > 66){
+					if( d(1,100) > 66 && !Preservation){
 						pline("The tentacles begin to tear at your boots!");
 						 if(uarmf->spe > 1){
 							for(i=rn2(4); i>=0; i--)
@@ -1151,7 +1151,7 @@ int dmg;
 				n--;
 				if(!slips_free(mon, &youmonst,  &handshit, -1)){
 					You_feel("the tentacles squirm into your gloves.");
-					if( d(1,40) <= ACURR(A_STR) || uwep){
+					if( (d(1,40) <= ACURR(A_STR) || uwep) && !Preservation){
 						pline("The tentacles begin to tear at your gloves!");
 						 if(uarmg->spe > 1){
 							for(i=rn2(4); i>=0; i--)
@@ -1207,7 +1207,7 @@ int dmg;
 				n--;
 				if(!slips_free(mon, &youmonst,  &headshot, -1)){
 					You_feel("the tentacles squirm under your helmet.");
-					if( d(1,100) > 90){
+					if( d(1,100) > 90 && !Preservation){
 						pline("The tentacles begin to tear at your helmet!");
 						 if(uarmh->spe > 1){
 							for(i=rn2(4); i>=0; i--)
@@ -1216,7 +1216,7 @@ int dmg;
 						 }
 						 else{
 							tent_destroy_arm(uarmh);
-							if(!uarmh) change_usanity(u_sanity_loss(mon)/2, FALSE); /*Forces a san check*/
+							if(!uarmh) change_usanity(u_sanity_loss_minor(mon)/2, FALSE); /*Forces a san check*/
 						 }
 					}
 					else{
@@ -1226,7 +1226,7 @@ int dmg;
 						(void) Helmet_off();
 						freeinv(otmp);
 						(void) mpickobj(mon,otmp);
-						change_usanity(u_sanity_loss(mon)/2, FALSE); /*Forces a san check*/
+						change_usanity(u_sanity_loss_minor(mon)/2, FALSE); /*Forces a san check*/
 						if(roll_madness(MAD_TALONS)){
 							You("panic after having your helmet stolen!");
 							HPanicking += 1+rnd(6);
@@ -1250,7 +1250,7 @@ int dmg;
 				if(Half_physical_damage) u.uenbonus -= (int) max(.1*u.uenmax,5);
 				else u.uenbonus -= (int) max(.2*u.uenmax, 10);
 				calc_total_maxen();
-				change_usanity(u_sanity_loss(mon), FALSE); /*Forces a san check*/
+				change_usanity(u_sanity_loss_minor(mon), FALSE); /*Forces a san check*/
 			break;
 			case 7:
 				if(allreadydone&(0x1<<7)) break;
@@ -1303,7 +1303,7 @@ int dmg;
 					}
 				}
 				losehp(Half_physical_damage ? dmg/2 + 1 : dmg, "head trauma", KILLED_BY);
-				change_usanity(u_sanity_loss(mon), FALSE); /*Forces a san check*/
+				change_usanity(u_sanity_loss_minor(mon), FALSE); /*Forces a san check*/
 				
 			break;
 			case 8:
@@ -1333,7 +1333,7 @@ int dmg;
 					You_feel("a bit fragile, but strangely whole.");
 				}
 				losehp(Half_physical_damage ? dmg/4+1 : dmg/2+1, "drilling tentacles", KILLED_BY);
-				change_usanity(u_sanity_loss(mon), FALSE); /*Forces a san check*/
+				change_usanity(u_sanity_loss_minor(mon), FALSE); /*Forces a san check*/
 			break;
 			case 9:
 				if(allreadydone&(0x1<<9)) break;
@@ -1348,7 +1348,7 @@ int dmg;
 				(void) adjattrib(A_STR, -6, 1);
 				(void) adjattrib(A_CON, -3, 1);
 				You_feel("weak and helpless in their grip!");
-				change_usanity(u_sanity_loss(mon), FALSE); /*Forces a san check*/
+				change_usanity(u_sanity_loss_minor(mon), FALSE); /*Forces a san check*/
 			break;
 			case 10:
 				if(allreadydone&(0x1<<10)) break;
@@ -1511,7 +1511,10 @@ boolean helpless;
 		Sprintf(qbuf,"She tries to rip open your %s!",
 			str);
 		her_strength -= ACURR(A_STR);
-		for(; her_strength >= 0; her_strength--){
+		if(Preservation){
+			pline("But, no harm is done!");
+		} 
+		else for(; her_strength >= 0; her_strength--){
 			if(obj->spe > -1*a_acdr(objects[(obj)->otyp])){
 				damage_item(obj);
 //				Your("%s less effective.", aobjnam(obj, "seem"));
@@ -1643,7 +1646,7 @@ struct monst * mon;
 			undressfunc(uarmh, "helmet", helpless);
 #ifdef TOURIST
 		if (!uarmc && !uarm)
-			undressfunc(uarmu, "shirt", helpless);
+			undressfunc(uarmu, "clothes", helpless);
 #endif
 	}
 
@@ -2024,7 +2027,7 @@ int effect_num;
 			if (!uwep){
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
-				optr = mksobj(BAR, TRUE, FALSE);
+				optr = mksobj(BAR, NO_MKOBJ_FLAGS);
 				curse(optr);
 				optr->spe = -6;
 				verbalize("This will keep you out of trouble.");
@@ -2052,7 +2055,7 @@ int effect_num;
 				verbalize("This should greatly improve your intellect.");
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
-				optr = mksobj(DUNCE_CAP, TRUE, FALSE);
+				optr = mksobj(DUNCE_CAP, NO_MKOBJ_FLAGS);
 				curse(optr);
 				optr->spe = -6;
 				(void)hold_another_object(optr, u.uswallow ?
@@ -2081,7 +2084,7 @@ int effect_num;
 				verbalize("These boots will improve your looks.");
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
-				optr = mksobj(FUMBLE_BOOTS, TRUE, FALSE);
+				optr = mksobj(FUMBLE_BOOTS, NO_MKOBJ_FLAGS);
 				curse(optr);
 				optr->spe = -6;
 				(void)hold_another_object(optr, u.uswallow ?
@@ -2109,7 +2112,7 @@ int effect_num;
 				verbalize("You need to take things more slowly.");
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
-				optr = mksobj(AMULET_OF_RESTFUL_SLEEP, TRUE, FALSE);
+				optr = mksobj(AMULET_OF_RESTFUL_SLEEP, NO_MKOBJ_FLAGS);
 				curse(optr);
 				(void)hold_another_object(optr, u.uswallow ?
 					"Fortunately, you're out of reach! %s away." :
@@ -2333,7 +2336,7 @@ int effect_num;
 		case SEDU_SIXTRUTHS:
 			verbalize("I grant you six truths!");
 			for (tmp = 0; tmp < 6; tmp++) {
-				optr = mksobj(POT_ENLIGHTENMENT, TRUE, FALSE);
+				optr = mksobj(POT_ENLIGHTENMENT, NO_MKOBJ_FLAGS);
 				bless(optr);
 				hold_another_object(optr, u.uswallow ?
 					"Oops!  %s out of your reach!" :
@@ -2353,7 +2356,7 @@ int effect_num;
 		case SEDU_SIXFOLLOWERS:
 			verbalize("I grant you six followers!");
 			for (tmp = 0; tmp < 6; tmp++) {
-				optr = mksobj(FIGURINE, TRUE, FALSE);
+				optr = mksobj(FIGURINE, NO_MKOBJ_FLAGS);
 				bless(optr);
 				hold_another_object(optr, u.uswallow ?
 					"Oops!  %s out of your reach!" :
@@ -2372,7 +2375,7 @@ int effect_num;
 
 		case SEDU_LIFESAVING:
 			verbalize("I grant you life!");
-			optr = mksobj(AMULET_OF_LIFE_SAVING, TRUE, FALSE);
+			optr = mksobj(AMULET_OF_LIFE_SAVING, NO_MKOBJ_FLAGS);
 			bless(optr);
 			(void)hold_another_object(optr, u.uswallow ?
 				"Oops!  %s out of your reach!" :

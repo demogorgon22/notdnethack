@@ -1182,7 +1182,7 @@ unsigned int type;
 				case 8: return DRAIN_LIFE;
 			}
 	   break;
-       case PM_THE_GOOD_NEIGHBOR:
+       case PM_GOOD_NEIGHBOR:
 			switch(rnd(12)){
 				case 1: return PSI_BOLT;
 				case 2: return EVIL_EYE;
@@ -1204,7 +1204,9 @@ unsigned int type;
 				return CURSE_ITEMS;
 				case 2: 
 				//Summon amphibians?
+				return GEYSER;
 				case 3: 
+				//dust to gnats
 				case 4: 
 				return INSECTS;
 				case 5: 
@@ -1343,6 +1345,16 @@ unsigned int type;
 			break;
 			case 4:
 				return PUNISH;
+			break;
+		}
+	break;
+	case PM_ANCIENT_OF_THE_BURNING_WASTES:
+		switch(rn2(2)){
+			case 0:
+				return MON_WARP;
+			break;
+			case 1:
+				return MON_WARP_THROW;
 			break;
 		}
 	break;
@@ -1616,38 +1628,40 @@ const char * spellname[] =
 	"DROP_BOULDER",
 	"EARTHQUAKE",
 	"TURN_TO_STONE",
-	"NIGHTMARE",
+	"SLIMIFY",
 	//50
+	"NIGHTMARE",
 	"FILTH",
 	"CLONE_WIZ",
 	"STRANGLE",
 	"MON_FIRA",
-	"MON_FIRAGA",
 	//55
+	"MON_FIRAGA",
 	"MON_BLIZZARA",
 	"MON_BLIZZAGA",
 	"MON_THUNDARA",
 	"MON_THUNDAGA",
-	"MON_FLARE",
 	//60
+	"MON_FLARE",
 	"MON_WARP",
 	"MON_POISON_GAS",
 	"MON_PROTECTION",
 	"SOLID_FOG",
-	"ACID_BLAST",
 	//65
+	"ACID_BLAST",
 	"PRISMATIC_SPRAY",
 	"SILVER_RAYS",
 	"GOLDEN_WAVE",
 	"VULNERABILITY",
-	"MASS_HASTE",
 	//70
+	"MASS_HASTE",
 	"MON_TIME_STOP",
 	"TIME_DUPLICATE",
 	"NAIL_TO_THE_SKY",
 	"STERILITY_CURSE"
-	"DISINT_RAY",
 	//75
+	"DISINT_RAY"
+	"MON_WARP_THROW",
 	"MAGM_BLAST"
 };
 
@@ -1794,17 +1808,29 @@ int tary;
 			break;
 		}
 	}
+	/*In some cases, monsters have a 0% success rate*/
+	boolean force_fail = FALSE;
 	if (u.uz.dnum == neutral_dnum && u.uz.dlevel <= sum_of_all_level.dlevel){
 		if (u.uz.dlevel == sum_of_all_level.dlevel) chance -= 1;
-		else if (u.uz.dlevel == spire_level.dlevel - 0) chance += 500;
+		else if (u.uz.dlevel == spire_level.dlevel - 0) force_fail = TRUE;
 		else if (u.uz.dlevel == spire_level.dlevel - 1) chance += 10;
 		else if (u.uz.dlevel == spire_level.dlevel - 2) chance += 8;
 		else if (u.uz.dlevel == spire_level.dlevel - 3) chance += 6;
 		else if (u.uz.dlevel == spire_level.dlevel - 4) chance += 4;
 		else if (u.uz.dlevel == spire_level.dlevel - 5) chance += 2;
 	}
+
+	/*This.... may never be reached :( */
+	/* There is code is getattk() that prevents lilitus from attempting to cast vs. invalid targets */
+	if(pa->mtyp == PM_LILITU && attk->adtyp == AD_CLRC){
+		if(youdef && !Doubt)
+			force_fail = TRUE;
+		else if(!youdef && !(mdef && mdef->mdoubt))
+			force_fail = TRUE;
+	}
+
 	/* failure chance determined, check if attack fumbles */
-	if (rn2(mlev(magr) * 2) < chance) {
+	if (force_fail || rn2(mlev(magr) * 2) < chance) {
 		if (youagr) {
 			pline_The("air crackles around you.");
 			u.uen += mlev(magr) / 2;
@@ -1845,9 +1871,10 @@ int tary;
 		/* special case override: the avatar of lolth can ask Lolth to intercede instead of casting a spell */
 		if (youdef && magr->mtyp == PM_AVATAR_OF_LOLTH && !strcmp(urole.cgod, "Lolth") && !is_undirected_spell(spellnum) && !magr->mpeaceful){
 			u.ugangr[Align2gangr(A_CHAOTIC)]++;
-			angrygods(A_CHAOTIC);
+			angrygods(Align2gangr(A_CHAOTIC));
 			result = MM_HIT;
 		}
+		// !!!
 		/* generally: cast the spell */
 		result = cast_spell(magr, mdef, attk, spellnum, tarx, tary);
 	}
@@ -2286,7 +2313,7 @@ int tary;
 	int result = MM_MISS;	/* to store intermediary xhity-esque returns */
 
 	/* common to all summon spells */
-	int summonflags = (NO_MINVENT | MM_NOCOUNTBIRTH |
+	int summonflags = (NO_MINVENT | MM_NOCOUNTBIRTH | MM_ESUM |
 		((youagr || magr->mtame) ? MM_EDOG : 0) |
 		((!youagr && !magr->mpeaceful) ? MM_ANGRY : 0));
 
@@ -2481,7 +2508,7 @@ int tary;
 				if (weap == TRIDENT) weap = JAVELIN;
 			}
 			/* make them */
-			otmp = mksobj(weap, TRUE, FALSE);
+			otmp = mksobj(weap, NO_MKOBJ_FLAGS);
 			otmp->quan = min(dmn, 16);
 			otmp->owt = weight(otmp);
 			otmp->spe = 0;
@@ -3037,6 +3064,23 @@ int tary;
 		}
 		return result;
 
+	case SLIMIFY:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("slimify with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			/* message player */
+			if (youdef && malediction)
+				verbalize(rn2(2) ? "Thou shalt quiver before me!" :
+				"Thy flesh shall be goo!");
+
+			static struct attack slimify = { AT_NONE, AD_SLIM, 0, 0 };
+			result = xmeleehurty(magr, mdef, &slimify, &slimify, (struct obj **)0, FALSE, 0, 0, -1, TRUE);
+		}
+		return result;
+
 	case STRANGLE:
 		/* needs direct target */
 		if (!foundem) {
@@ -3067,7 +3111,7 @@ int tary;
 						verbalize(rn2(2) ? "Thou desirest the amulet? I'll give thee the amulet!" :
 							"Here is the only amulet you'll need!");
 					}
-					otmp = mksobj(AMULET_OF_STRANGULATION, FALSE, FALSE);
+					otmp = mksobj(AMULET_OF_STRANGULATION, MKOBJ_NOINIT);
 					curse(otmp);
 					(void)addinv(otmp);
 					pline("%s appears around your %s!", An(xname(otmp)), body_part(NECK));
@@ -3099,7 +3143,7 @@ int tary;
 				if (youagr || youdef || canseemon(mdef))
 					pline("Silver rays whiz past %s!",
 					mon_nam(mdef));
-				break;
+				return MM_MISS;
 			}
 			if (n == 1)
 				rays = "a ray";
@@ -3130,6 +3174,12 @@ int tary;
 				if (!InvCold_res(mdef)) {
 					destroy_item(mdef, POTION_CLASS, AD_COLD);
 				}
+			}
+			else if (hates_unblessed_mon(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s seared by %s of concordant light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
+				dmg = d(n, 20) + d(n, 8);
 			}
 			else if (hates_unholy_mon(mdef)){
 				if (youagr || youdef || canseemon(mdef))
@@ -3225,6 +3275,12 @@ int tary;
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
 				dmg = d(2, 12) + d(1, 20);
 			}
+			else if (hates_unblessed_mon(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s seared by concordant light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
+				dmg = d(2, 12) + d(1, 8);
+			}
 			else if (hates_unholy_mon(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s seared by unholy light!",
@@ -3285,10 +3341,41 @@ int tary;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case MON_WARP_THROW:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("warp-throw with no mdef?");
+			return MM_MISS;
+		}
+		else
+		{
+			int dx, dy;
+			dmg = 0;
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("Space warps and flings %s away!",
+					youdef ? "you" : mon_nam(mdef));
+			}
+			do{
+				dx = rn2(3) - 1;
+				dy = rn2(3) - 1;
+			} while(
+				!(dx || dy) &&
+				!(dx == x(mdef) - x(magr) && dy == y(mdef) - y(magr))
+			);
+			if(youdef){
+				hurtle(dx, dy, BOLT_LIM, FALSE, FALSE);
+			}
+			else {
+				mhurtle(mdef, dx, dy, BOLT_LIM, TRUE);
+			}
+		}
+		return MM_HIT;
+
 	case MON_WARP:
 		/* needs direct target */
 		if (!foundem) {
-			impossible("warp with no mdef?");
+			impossible("warp-blades with no mdef?");
 			return MM_MISS;
 		}
 		else
@@ -3324,8 +3411,7 @@ int tary;
 				Is_rogue_level(&u.uz) ||
 #endif
 				(In_endgame(&u.uz) && !Is_earthlevel(&u.uz)));
-			otmp = mksobj(iron ? HEAVY_IRON_BALL : BOULDER,
-				FALSE, FALSE);
+			otmp = mksobj(iron ? HEAVY_IRON_BALL : BOULDER, MKOBJ_NOINIT);
 			otmp->quan = 1;
 			otmp->owt = weight(otmp);
 			if (iron) otmp->owt += 160 * rn2(2);
@@ -3790,27 +3876,24 @@ int tary;
 				case 1: sphere = PM_FREEZING_SPHERE; break;
 				case 2: sphere = PM_SHOCKING_SPHERE; break;
 			}
-			boolean created = FALSE;
 			boolean dotame = (youagr || magr->mtame);
 			struct monst *mtmp;
 			/* try to make a sphere */
 			if (!(mvitals[sphere].mvflags & G_GONE && !In_quest(&u.uz))) {
 				if ((mtmp = makemon(&mons[sphere], tarx, tary, MM_ADJACENTOK|summonflags)) != 0) {
 					/* check if we can see it */
-					if (canspotmon(mtmp))
-						created++;
+					if (canspotmon(mtmp)) {
+						pline("%s is created!",
+							Hallucination ? rndmonnam() : Amonnam(mtmp));
+					}
 					/* maybe tame */
 					if (dotame)
 						initedog(mtmp);
-					/* all spheres are very temporary */
-					mtmp->mvanishes = d(dmn, 3);
 					mtmp->msleeping = 0;
 					set_malign(mtmp);
+					/* all spheres are very temporary */
+					mark_mon_as_summoned(mtmp, magr, d(dmn, 3)+1, 0);
 				}
-			}
-			if (created) {
-				pline("%s is created!",
-					Hallucination ? rndmonnam() : Amonnam(mtmp));
 			}
 		}
 		return MM_HIT;
@@ -3853,8 +3936,6 @@ int tary;
 						created = TRUE;
 					if (dotame) {
 						initedog(mtmp);
-						/* your summons are only temporary */
-						mtmp->mvanishes = d(dmn, 6);
 					}
 					mtmp->msleeping = 0;
 					/* arbitrarily strengthen enemies in astral and sanctum */
@@ -3863,6 +3944,7 @@ int tary;
 						mtmp->mhp = (mtmp->mhpmax += rn1((int)mlev(magr), 20));
 					}
 					set_malign(mtmp);
+					mark_mon_as_summoned(mtmp, magr, ESUMMON_PERMANENT, 0);
 				}
 			}
 
@@ -3895,6 +3977,7 @@ int tary;
 		return MM_HIT;
 
 	case RAISE_DEAD:
+		/* creatures raised are not marked as summoned */
 		if (!youdef) {
 			/* only mvu allowed */
 			return cast_spell(magr, mdef, attk, (foundem ? PSI_BOLT : CURE_SELF), tarx, tary);
@@ -3967,6 +4050,7 @@ int tary;
 				else
 					You("sense the arrival of %s.",
 					an(Hallucination ? rndmonnam() : "hostile fiend"));
+				/* summon_minion marks mtmp as summoned */
 			}
 			else
 				return cast_spell(magr, mdef, attk, (foundem ? OPEN_WOUNDS : CURE_SELF), tarx, tary);
@@ -3980,9 +4064,12 @@ int tary;
 			/* only one summon spell per global turn allowed */
 			return cast_spell(magr, mdef, attk, (foundem ? OPEN_WOUNDS : CURE_SELF), tarx, tary);
 		}
-		else if (is_alienist(magr->data)) {
+		else if (is_alienist(magr->data) || has_template(magr, MAD_TEMPLATE)) {
 			/* alienists summon aliens. wowzers. */
 			return cast_spell(magr, mdef, attk, SUMMON_ALIEN, tarx, tary);
+		}
+		else if (has_template(magr, FALLEN_TEMPLATE)) {
+			return cast_spell(magr, mdef, attk, SUMMON_DEVIL, tarx, tary);
 		}
 		else
 		{
@@ -3992,8 +4079,14 @@ int tary;
 				tarx = x(magr);
 				tary = y(magr);
 			}
-			mtmp = mk_roamer(&mons[PM_ANGEL], sgn(magr->data->maligntyp), tarx, tary, FALSE);
+			mtmp = makemon(&mons[PM_ANGEL], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
 			if (mtmp) {
+				add_mx(mtmp, MX_EPRI);
+				add_mx(mtmp, MX_EMIN);
+				mtmp->isminion = TRUE;
+				EMIN(mtmp)->min_align = sgn(magr->data->maligntyp);
+ 				EPRI(mtmp)->shralign = sgn(magr->data->maligntyp);
+
 				u.summonMonster = TRUE;
 				if (canspotmon(mtmp))
 					pline("%s %s!",
@@ -4003,6 +4096,15 @@ int tary;
 				else
 					You("sense the arrival of %s.",
 					an(Hallucination ? rndmonnam() : "hostile angel"));
+				//Despite being a demon lord, Lamashtu is  able to summon angels
+				if(magr->mtyp == PM_LAMASHTU || magr->mfaction == LAMASHTU_FACTION)
+					mtmp->mfaction = LAMASHTU_FACTION;
+				//Note: these cases are not currently used, but handled anyway to be safe
+				if(has_template(magr, MAD_TEMPLATE))
+					set_template(mtmp, MAD_TEMPLATE);
+				else if(has_template(magr, FALLEN_TEMPLATE))
+					set_template(mtmp, FALLEN_TEMPLATE);
+				mark_mon_as_summoned(mtmp, magr, ESUMMON_PERMANENT, 0);
 			}
 			else
 				return cast_spell(magr, mdef, attk, (foundem ? OPEN_WOUNDS : CURE_SELF), tarx, tary);
@@ -4038,7 +4140,7 @@ int tary;
 			}
 
 			do {
-				mtmp = makemon(aliens[rn2(SIZE(aliens))], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH);
+				mtmp = makemon(aliens[rn2(SIZE(aliens))], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
 			} while (!mtmp && tries++ < 10);
 			if (mtmp) {
 				u.summonMonster = TRUE;
@@ -4048,6 +4150,7 @@ int tary;
 				else
 					You("sense the arrival of %s.",
 					an(Hallucination ? rndmonnam() : "alien"));
+				mark_mon_as_summoned(mtmp, magr, ESUMMON_PERMANENT, 0);
 			}
 			else
 				return cast_spell(magr, mdef, attk, (foundem ? OPEN_WOUNDS : CURE_SELF), tarx, tary);
@@ -4084,7 +4187,7 @@ int tary;
 			}
 
 			do {
-				mtmp = makemon(young[rn2(SIZE(young))], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH);
+				mtmp = makemon(young[rn2(SIZE(young))], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
 			} while (!mtmp && tries++ < 10);
 			if (mtmp) {
 				u.summonMonster = TRUE;
@@ -4092,6 +4195,7 @@ int tary;
 					pline("A monster appears in a swirl of mist!");
 				else
 					You("sense the arrival of a monster!");
+				mark_mon_as_summoned(mtmp, magr, ESUMMON_PERMANENT, 0);
 			}
 			else
 				return cast_spell(magr, mdef, attk, (foundem ? OPEN_WOUNDS : CURE_SELF), tarx, tary);
@@ -4114,16 +4218,18 @@ int tary;
 				tary = y(magr);
 			}
 
-			mtmp = makemon(magr->data, tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | NO_MINVENT);
+			mtmp = makemon(magr->data, tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | NO_MINVENT | MM_ESUM);
 			if (mtmp){
 				u.summonMonster = TRUE;
-				mtmp->mvanishes = d(1, 4) + 1;
 				mtmp->mclone = 1;
+				/* does not stick around long */
+				mark_mon_as_summoned(mtmp, magr, d(1, 4) + 1, 0);
 			}
 		}
 		return MM_HIT;
 
 	case CLONE_WIZ:
+		/* creature created is not marked as a vanishing summon */
 		if (!youdef) {
 			/* only mvu allowed */
 			return cast_spell(magr, mdef, attk, (foundem ? PSI_BOLT : CURE_SELF), tarx, tary);
@@ -4863,10 +4969,12 @@ int spellnum;
 	case PLAGUE:
 	case FILTH:
 	case TURN_TO_STONE:
+	case SLIMIFY:
 	case STRANGLE:
 	case SILVER_RAYS:
 	case GOLDEN_WAVE:
 	case MON_WARP:
+	case MON_WARP_THROW:
 	case DROP_BOULDER:
 	case DISINT_RAY:
 		return TRUE;
@@ -5194,9 +5302,12 @@ int tary;
 		return TRUE;
 	}
 
-	/* don't summon anything if caster is peaceful */
-	if (is_summon_spell(spellnum)
-		&& (!youagr && !magr->mtame && magr->mpeaceful))
+	/* don't summon if... */
+	if (is_summon_spell(spellnum) && (
+		(!youagr && !magr->mtame && magr->mpeaceful) || 		/* caster is peaceful */
+		(!youagr && magr->summonpwr >= magr->data->mlevel) || 	/* already summoned lots of things */
+		(u.summonMonster)										/* something's been summoned this turn already */
+		))
 		return TRUE;
 
 	/* only cast earthquake on found target, too annoying when spammed */

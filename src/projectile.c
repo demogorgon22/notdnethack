@@ -642,7 +642,7 @@ int dy;							/* */
 			room->doormask = D_NODOOR;
 		}
 		/* create rocks */
-		otmp = mksobj_at(ROCK, newx, newy, TRUE, FALSE);
+		otmp = mksobj_at(ROCK, newx, newy, NO_MKOBJ_FLAGS);
 		otmp->quan = 20L + rnd(20);
 		otmp->owt = weight(otmp);
 		/* update vision */
@@ -669,7 +669,7 @@ int dy;							/* */
 		/* create opening */
 		room->typ = CORR;
 		/* create rocks */
-		otmp = mksobj_at(ROCK, newx, newy, TRUE, FALSE);
+		otmp = mksobj_at(ROCK, newx, newy, NO_MKOBJ_FLAGS);
 		otmp->quan = 20L + rnd(20);
 		otmp->owt = weight(otmp);
 		/* update vision */
@@ -690,7 +690,7 @@ int dy;							/* */
 		room->typ = CORR;
 		/* create iron bars */
 		for (numbars = d(2, 4) - 1; numbars > 0; numbars--){
-			otmp = mksobj_at(BAR, newx, newy, FALSE, FALSE);
+			otmp = mksobj_at(BAR, newx, newy, MKOBJ_NOINIT);
 			set_material_gm(otmp, IRON);
 			otmp->spe = 0;
 			otmp->cursed = otmp->blessed = FALSE;
@@ -787,7 +787,7 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 
 	if (thrownobj->otyp == PSIONIC_PULSE && youagr && mdef && !DEADMONSTER(mdef)) {
 		pline("%s is thrown backwards by the force of your pulse!",Monnam(mdef));
-		mhurtle(mdef, u.dx, u.dy, (int)u.ulevel/3);
+		mhurtle(mdef, u.dx, u.dy, (int)u.ulevel/3, FALSE);
 	}
 
 	/* projectiles that never survive being fired; their special effects are handled in destroy_projectile() */
@@ -862,6 +862,9 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 			}
 			/* else go through the rest of the function */
 		}
+		/* It may not be. Possibly as a result of the xhity rework? */
+		if(thrownobj->where != OBJ_FREE)
+			return;
 	}
 
 	/* fragile objects shatter */
@@ -1190,7 +1193,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 	}
 
 	/* you throwing to a pet */
-	if (youagr && mdef->mtame && !forcedestroy) {
+	if (youagr && mdef->mtame && !forcedestroy && thrownobj != uball) {
 		if (mdef->mcanmove &&
 			(!is_animal(mdef->data)) &&
 			(!mindless_mon(mdef) || (mdef->mtyp == PM_CROW_WINGED_HALF_DRAGON && thrownobj->oartifact == ART_YORSHKA_S_SPEAR)) &&
@@ -1420,7 +1423,7 @@ struct monst * mon;
 				){
 				obfree(obj, (struct obj *)0);
 				*obj_p = NULL;
-				obj = mksobj(ELVEN_BOW, TRUE, FALSE);
+				obj = mksobj(ELVEN_BOW, NO_MKOBJ_FLAGS);
 				obj = oname(obj, artiname(ART_BELTHRONDING));
 				obj->oerodeproof = TRUE;
 				obj->blessed = TRUE;
@@ -1448,7 +1451,7 @@ struct monst * mon;
 				){
 				obfree(obj, (struct obj *)0);
 				*obj_p = NULL;
-				obj = mksobj(DROVEN_CROSSBOW, TRUE, FALSE);
+				obj = mksobj(DROVEN_CROSSBOW, NO_MKOBJ_FLAGS);
 				obj = oname(obj, artiname(ART_WRATHFUL_SPIDER));
 				obj->oerodeproof = TRUE;
 				obj->blessed = TRUE;
@@ -1466,7 +1469,7 @@ struct monst * mon;
 				){
 				obfree(obj, (struct obj *)0);
 				*obj_p = NULL;
-				obj = mksobj(SABER, TRUE, FALSE);
+				obj = mksobj(SABER, NO_MKOBJ_FLAGS);
 				obj = oname(obj, artiname(ART_CRESCENT_BLADE));
 				obj->oerodeproof = TRUE;
 				obj->blessed = TRUE;
@@ -1484,7 +1487,7 @@ struct monst * mon;
 				){
 				obfree(obj, (struct obj *)0);
 				*obj_p = NULL;
-				obj = mksobj(DROVEN_CHAIN_MAIL, TRUE, FALSE);
+				obj = mksobj(DROVEN_CHAIN_MAIL, NO_MKOBJ_FLAGS);
 				obj = oname(obj, artiname(ART_SPIDERSILK));
 				obj->oerodeproof = TRUE;
 				obj->blessed = TRUE;
@@ -1502,7 +1505,7 @@ struct monst * mon;
 				){
 				obfree(obj, (struct obj *)0);
 				*obj_p = NULL;
-				obj = mksobj(FAUCHARD, TRUE, FALSE);
+				obj = mksobj(FAUCHARD, NO_MKOBJ_FLAGS);
 				obj = oname(obj, artiname(ART_WEBWEAVER_S_CROOK));
 				obj->oerodeproof = TRUE;
 				obj->blessed = TRUE;
@@ -1533,6 +1536,9 @@ struct monst * mon;
 			if (!next2u) sho_obj_return(obj, u.ux, u.uy);
 			obj = addinv(obj);	/* back into your inventory */
 			(void)encumber_msg();
+			if(Role_if(PM_MADMAN) && mon->mtyp == PM_CASSILDA_THE_IRON_MAIDEN){
+				monvanished(mon);
+			}
 		}
 	}
 	else {
@@ -2076,7 +2082,7 @@ dofire()
 					struct obj * ammo = (struct obj *)0;
 
 					/* do we have enough charge to fire? */
-					if (!launcher->ovar1) {
+					if (!launcher->ovar1 || (launcher->otyp == MASS_SHADOW_PISTOL && !launcher->cobj)) {
 						if (launcher->otyp == RAYGUN) You("push the firing stud, but nothing happens.");
 						else pline("Nothing happens when you pull the trigger.");
 						/* nothing else happens */
@@ -2182,7 +2188,7 @@ dofire()
 
 		/* Rogue Gear Spirits' auto-generated ammo -- mainhand only */
 		if (uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep))) && uwep->oartifact == ART_ROGUE_GEAR_SPIRITS){
-			struct obj *bolt = mksobj(CROSSBOW_BOLT, FALSE, FALSE);
+			struct obj *bolt = mksobj(CROSSBOW_BOLT, MKOBJ_NOINIT);
 			bolt->spe = min(0, uwep->spe);
 			bolt->blessed = uwep->blessed;
 			bolt->cursed = uwep->cursed;
@@ -2195,7 +2201,9 @@ dofire()
 		}
 	}/* !notake */
 
-	if (attacktype(youracedata, AT_BREA))
+	if (attacktype(youracedata, AT_BREA)
+		|| attacktype(youracedata, AT_BRSH)
+	)
 		return dobreathe(youracedata);
 
 	if (attacktype(youracedata, AT_SPIT))
@@ -2307,25 +2315,25 @@ struct obj * blaster;
 
 	switch (blaster->otyp) {
 	case CUTTING_LASER:
-		ammo = mksobj(LASER_BEAM, FALSE, FALSE);
+		ammo = mksobj(LASER_BEAM, MKOBJ_NOINIT);
 		break;
 	case HAND_BLASTER:
-		ammo = mksobj(BLASTER_BOLT, FALSE, FALSE);
+		ammo = mksobj(BLASTER_BOLT, MKOBJ_NOINIT);
 		break;
 	case ARM_BLASTER:
-		ammo = mksobj(HEAVY_BLASTER_BOLT, FALSE, FALSE);
+		ammo = mksobj(HEAVY_BLASTER_BOLT, MKOBJ_NOINIT);
 		break;
 	case MASS_SHADOW_PISTOL:
 		if (blaster->cobj) {
-			ammo = mksobj(blaster->cobj->otyp, FALSE, FALSE);
+			ammo = mksobj(blaster->cobj->otyp, MKOBJ_NOINIT);
 			ammo->oartifact = blaster->cobj->oartifact;
 		}
 		else
-			ammo = mksobj(ROCK, FALSE, FALSE);
+			ammo = mksobj(ROCK, MKOBJ_NOINIT);	/* should not happen */
 		break;
 	case RAYGUN:
 		/* create fake ammo in order to calculate multishot correctly */
-		ammo = mksobj(LASER_BEAM, FALSE, FALSE);
+		ammo = mksobj(LASER_BEAM, MKOBJ_NOINIT);
 		break;
 	default:
 		impossible("Unhandled blaster %d!", blaster->otyp);
@@ -2672,6 +2680,60 @@ boolean stoponhit;
 	return TRUE;
 }
 
+/* 
+ * m_insplash()
+ * 
+ * returns TRUE if magr can catch (tarx,tary) in a splash
+ * 
+ * if called with SAFE, tries not to hit friendlies
+ */
+boolean
+m_insplash(magr, mdef, tarx, tary, safe)
+struct monst * magr;
+struct monst * mdef;
+int tarx;
+int tary;
+boolean safe;
+{
+	boolean youagr = (magr == &youmonst);
+	struct permonst * pa = youagr ? youracedata : magr->data;
+	int dx = sgn(tarx - x(magr));
+	int dy = sgn(tary - y(magr));
+
+	/* First -- target must be within 2 squares of magr */
+	if (distmin(x(magr), y(magr), tarx, tary) > 2)
+		return FALSE;
+
+	/* Second -- the points cannot be identical */
+	if (!dx && !dy)
+		return FALSE;
+
+	/* Third -- clear path; can cheat by using couldsee() if player is target or targeter */
+	if ((youagr || (tarx == u.ux && tary == u.uy)) &&
+		(!couldsee(x(magr), y(magr))))
+		return FALSE;
+	else if (!(clear_path(x(magr), y(magr), tarx, tary)))
+		return FALSE;
+	
+	if(safe){
+		int i, j;
+		int x = x(magr)+dx;
+		int y = y(magr)+dy;
+		struct monst *targ;
+		for (i = -1; i <= 1; i++)
+		for (j = -1; j <= 1; j++)
+		if (isok(x + i, y + j) && ((!i && dx) || (!j && dy) || ((!dx || i == dx) & (!dy || j == dy))) && ((ZAP_POS(levl[x][y].typ) || distmin(x - dx, y - dy, x + i, y + j) == 1) || ZAP_POS(levl[x - dx + i][y - dy + j].typ))){ // it looks strange, but it works
+			targ = m_at(x + i,y + j);
+			if(targ && magr->mpeaceful == targ->mpeaceful)
+				return FALSE;
+			if(magr->mpeaceful && u.ux == x + i && u.uy == y + j)
+				return FALSE;
+		}
+	}
+	/* made it through, we're good to go */
+	return TRUE;
+}
+
 /*
  * xbreathey() 
  * 
@@ -2694,6 +2756,7 @@ int tary;
 	static const int platinum_dragon_breaths[] = { AD_FIRE, AD_DISN, AD_SLEE, AD_ELEC };
 	static const int random_breaths[] = { AD_MAGM, AD_FIRE, AD_COLD, AD_SLEE, AD_DISN, AD_ELEC, AD_DRST, AD_ACID };
 	int dx, dy, dz;
+	int range;
 
 	if (tarx || tary) {
 		dx = sgn(tarx - x(magr));
@@ -2771,12 +2834,29 @@ int tary;
 	/* set dragonbreath if applicable*/
 	if ((is_true_dragon(pa) || (youagr && Race_if(PM_HALF_DRAGON) && u.ulevel >= 14)) && typ != AD_DISN)
 		zapdata.unreflectable = ZAP_REFL_ADVANCED;
-	
+
+	/* modify type and set range */
+	if (attk->aatyp == AT_BRSH){
+		zapdata.unreflectable = ZAP_REFL_NEVER;
+		zapdata.splashing = TRUE;
+		zapdata.affects_floor = FALSE;
+		zapdata.no_bounce = TRUE;
+		zapdata.directly_hits = FALSE;
+		range = 1;
+	}
+	/* default range */
+	else 
+		range = rn1(7, 7);
+
+	/* green dragon breath leaves clouds */
+	if ((is_true_dragon(pa) || (youagr && Race_if(PM_HALF_DRAGON) && u.ulevel >= 14)) && typ == AD_DRST)
+		zapdata.leaves_clouds = TRUE;
+
 	/* set damage */
 	zapdata.damn = attk->damn + min(MAX_BONUS_DICE, (mlev(magr) / 3));
 	zapdata.damd = (attk->damd ? attk->damd : 6) * mult;
 
-	zap(magr, x(magr), y(magr), dx, dy, rn1(7, 7), &zapdata);
+	zap(magr, x(magr), y(magr), dx, dy, range, &zapdata);
 
 	/* breath runs out sometimes. */ 
 	if (!youagr) {
@@ -2844,17 +2924,17 @@ int tary;
 	case AD_WEBS:
 		if (!youagr)
 			magr->mspec_used = d(2, 6);
-		otmp = mksobj(BALL_OF_WEBBING, TRUE, FALSE);
+		otmp = mksobj(BALL_OF_WEBBING, NO_MKOBJ_FLAGS);
 		break;
 	case AD_BLND:
 	case AD_DRST:
-		otmp = mksobj(BLINDING_VENOM, TRUE, FALSE);
+		otmp = mksobj(BLINDING_VENOM, NO_MKOBJ_FLAGS);
 		break;
 	default:
 		impossible("bad attack type in xspity (%d)", typ);
 		/* fall through to acid venom */
 	case AD_ACID:
-		otmp = mksobj(ACID_VENOM, TRUE, FALSE);
+		otmp = mksobj(ACID_VENOM, NO_MKOBJ_FLAGS);
 		if (attk->damn && attk->damd)
 			otmp->ovar1 = d(attk->damn, attk->damd);
 		break;
@@ -2926,7 +3006,7 @@ int n;	/* number to try to fire */
 		/* special: do not fire at warded squares */
 		if (!youagr && onscary(tarx, tary, magr)) return FALSE; //Warded; did not fire
 		ammo_type = SPIKE;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		set_material_gm(qvr, SHADOWSTEEL);
 		qvr->quan = 1;
 		qvr->spe = 8;
@@ -2937,7 +3017,7 @@ int n;	/* number to try to fire */
 		break;
 	case AD_PEST:
 		ammo_type = ARROW;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		qvr->quan = 1;
 		qvr->spe = d(7, 8) + 1; //same as touch
 		qvr->opoisoned = OPOISON_FILTH;
@@ -2946,14 +3026,14 @@ int n;	/* number to try to fire */
 		break;
 	case AD_PLYS:
 		ammo_type = SPIKE;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		set_material_gm(qvr, BONE);
 		qvr->quan = 1;
 		qvr->opoisoned = (OPOISON_PARAL);
 		break;
 	case AD_SOLR:
 		ammo_type = SILVER_ARROW;
-		qvr = mksobj(ammo_type, TRUE, FALSE);
+		qvr = mksobj(ammo_type, NO_MKOBJ_FLAGS);
 		qvr->blessed = 1;
 		qvr->quan = 1;
 		qvr->spe = 7;
@@ -2963,7 +3043,7 @@ int n;	/* number to try to fire */
 		break;
 	case AD_SURY:
 		ammo_type = SILVER_ARROW;
-		qvr = mksobj(ammo_type, TRUE, FALSE);
+		qvr = mksobj(ammo_type, NO_MKOBJ_FLAGS);
 		// qvr->oartifact = ART_ARROW_OF_SLAYING;
 		qvr->blessed = 1;
 		qvr->quan = 1;
@@ -2977,33 +3057,33 @@ int n;	/* number to try to fire */
 		break;
 	case AD_BALL:
 		ammo_type = HEAVY_IRON_BALL;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		break;
 	case AD_LOAD:
 		ammo_type = LOADSTONE;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		qvr->cursed = 1;
 		rngmod = 8;
 		break;
 	case AD_ROCK:
 		ammo_type = ROCK;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		break;
 	case AD_CRYS:
 		ammo_type = DILITHIUM_CRYSTAL;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		break;
 	case AD_BLDR:
 		ammo_type = BOULDER;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		break;
 	case AD_VBLD:
 		ammo_type = HEAVY_IRON_BALL;
-		qvr = mksobj(ammo_type, FALSE, FALSE);
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		volley = TRUE;
 		break;

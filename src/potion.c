@@ -106,6 +106,28 @@ boolean talk;
 }
 
 void
+make_doubtful(xtime,talk)
+long xtime;
+boolean talk;
+{
+	long old = HDoubt;
+
+	if (!xtime && old) {
+		if (talk)
+		    You("%s.",
+			Hallucination ? "less wobbly" : "have resolved your crisis of faith");
+	}
+	if (xtime && !old) {
+		if (talk) {
+			You("suddenly suffer a crisis of faith!");
+		}
+	}
+	if ((!xtime && old) || (xtime && !old)) flags.botl = TRUE;
+
+	set_itimeout(&HDoubt, xtime);
+}
+
+void
 make_sick(xtime, cause, talk, type)
 long xtime;
 const char *cause;	/* sickness cause */
@@ -484,6 +506,10 @@ peffects(otmp)
 			else
 				You_feel("the chill of death fade away.");
 		}
+		if(otmp->blessed && u.umummyrot){
+			u.umummyrot = 0;
+			You("stop shedding dust.");
+		}
 		if(!otmp->cursed){
 			//Restore sanity if blessed or uncursed
 			if(otmp->blessed)
@@ -559,6 +585,9 @@ peffects(otmp)
 		    newuhs(FALSE);
 		} else
 		    exercise(A_WIS, FALSE);
+		
+		//All amnesia causes you to (silently) forget your crisis of faith
+		make_doubtful(0L, FALSE);
 		break;
 	case POT_WATER:
 		if(uclockwork){
@@ -737,7 +766,7 @@ peffects(otmp)
 		break;
 	case SPE_INVISIBILITY:
 		/* spell cannot penetrate mummy wrapping */
-		if (BInvis && uarmc->otyp == MUMMY_WRAPPING) {
+		if (BInvis && is_mummy_wrap(uarmc)) {
 			You_feel("rather itchy under your %s.", xname(uarmc));
 			break;
 		}
@@ -998,7 +1027,7 @@ peffects(otmp)
 		break;
 	case POT_HEALING:
 		You_feel("better.");
-        enhanced = uarm && uarm->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
+        enhanced = uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
 		healup(d((enhanced ? 2 : 1) * (6 + 2 * bcsign(otmp)), 4),
 		       ((enhanced ? 2 : 1) * (!otmp->cursed ? 1 : 0)), !!otmp->blessed, !otmp->cursed);
 		exercise(A_CON, TRUE);
@@ -1006,7 +1035,7 @@ peffects(otmp)
 	case POT_EXTRA_HEALING:
 as_extra_healing:
 		You_feel("much better.");
-        enhanced = uarm && uarm->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
+        enhanced = uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
 		healup(d((enhanced ? 2 : 1) * (6 + 2 * bcsign(otmp)), 8),
 		       (enhanced ? 2 : 1) * (otmp->blessed ? 5 : !otmp->cursed ? 2 : 0),
 		       !otmp->cursed, TRUE);
@@ -1016,7 +1045,7 @@ as_extra_healing:
 		break;
 	case POT_FULL_HEALING:
 		You_feel("completely healed.");
-        enhanced = uarm && uarm->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
+        enhanced = uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
 		healup(enhanced ? 800 : 400, (enhanced ? 2 : 1) * (4+4*bcsign(otmp)), !otmp->cursed, TRUE);
 		/* Restore one lost level if blessed */
 		if (otmp->blessed && u.ulevel < u.ulevelmax) {
@@ -1033,13 +1062,17 @@ as_extra_healing:
 			else
 				You_feel("the chill of death fade away.");
 		}
+		if(otmp->blessed && u.umummyrot){
+			u.umummyrot = 0;
+			You("stop shedding dust.");
+		}
 		(void) make_hallucinated(0L,TRUE,0L);
 		exercise(A_STR, TRUE);
 		exercise(A_CON, TRUE);
 		break;
 	case POT_GOAT_S_MILK:
 		You_feel("completely healed.");
-        enhanced = uarm && uarm->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
+        enhanced = uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
 		if(otmp->cursed){
 			pline("Yecch! That was vile!");
 			losehp(40, "spoiled milk", KILLED_BY);
@@ -1058,10 +1091,14 @@ as_extra_healing:
 				pluslvl(FALSE);
 			}
 		}
-		/* Dissolve one morgul blade shard if blessed*/
+		/* Dissolve all morgul blade shards */
 		if(u.umorgul>0){
 			u.umorgul = 0;
 			You_feel("the chill of death fade away.");
+		}
+		if(otmp->blessed && u.umummyrot){
+			u.umummyrot = 0;
+			You("stop shedding dust.");
 		}
 		for (int i = 0; i < A_MAX; i++) {
 			lim = AMAX(i);
@@ -1079,6 +1116,7 @@ as_extra_healing:
 		//Makes you crazy
 		change_usanity(-1*rnd(20), FALSE);
 		u.umadness |= MAD_GOAT_RIDDEN;
+		lift_veil();
 		break;
 	case POT_SPACE_MEAD:
 		unkn++;
@@ -3252,7 +3290,7 @@ dodip()
 		    if(!objects[old_otyp].oc_uname &&
 			!objects[old_otyp].oc_name_known && old_dknown) {
 			struct obj * fakeobj;
-			fakeobj = mksobj(old_otyp, FALSE, FALSE);
+			fakeobj = mksobj(old_otyp, MKOBJ_NOINIT);
 			fakeobj->dknown = 1;
 			docall(fakeobj);
 			delobj(fakeobj);

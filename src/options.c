@@ -214,6 +214,10 @@ static struct Bool_Opt
 #endif
 	{"perm_invent", &flags.perm_invent, FALSE, SET_IN_GAME},
        {"pickup_thrown", &iflags.pickup_thrown, FALSE, SET_IN_GAME},
+	{"polearm_old_style", &flags.standard_polearms, FALSE, SET_IN_GAME},
+	{"polearm_peace_safe", &flags.peacesafe_polearms, TRUE, SET_IN_GAME},
+	{"polearm_pet_safe", &flags.petsafe_polearms, TRUE, SET_IN_GAME},
+	{"polearm_sequential_letters", &flags.relative_polearms, FALSE, SET_IN_GAME},
 	{"popup_dialog",  &iflags.wc_popup_dialog, FALSE, SET_IN_GAME},	/*WC*/
 	{"prayconfirm", &flags.prayconfirm, TRUE, SET_IN_GAME},
 	{"preload_tiles", &iflags.wc_preload_tiles, TRUE, DISP_IN_GAME},	/*WC*/
@@ -487,7 +491,7 @@ extern char ttycolors[CLR_MAX];	  /* in sys/msdos/video.c */
 static char def_inv_order[MAXOCLASSES] = {
 	COIN_CLASS, AMULET_CLASS, WEAPON_CLASS, ARMOR_CLASS, FOOD_CLASS,
 	SCROLL_CLASS, TILE_CLASS, SPBOOK_CLASS, POTION_CLASS, RING_CLASS, WAND_CLASS,
-	TOOL_CLASS, GEM_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, 0,/* BED_CLASS,*/
+	TOOL_CLASS, GEM_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, BED_CLASS, SCOIN_CLASS, 0,
 };
 
 /*

@@ -61,6 +61,8 @@ char killer_buf[BUFSZ] = DUMMY;
 
 long killer_flags = 0L;
 
+boolean saving_game = FALSE; /*The game is currently saving, so don't update the windowport inventory sidebar*/
+
 const char *nomovemsg = 0;
 const char nul[40] = DUMMY;			/* contains zeros */
 NEARDATA char plname[PL_NSIZ] = DUMMY;		/* player name */
@@ -342,6 +344,7 @@ NEARDATA char spidername[PL_PSIZ] = DUMMY;
 NEARDATA char lizardname[PL_PSIZ] = DUMMY;
 NEARDATA char dragonname[PL_PSIZ] = DUMMY;
 NEARDATA char horsename[PL_PSIZ] = DUMMY;
+NEARDATA char whisperername[PL_PSIZ] = DUMMY;
 #ifdef CONVICT
 NEARDATA char ratname[PL_PSIZ] = DUMMY;
 #endif /* CONVICT */
@@ -421,6 +424,7 @@ const struct material materials[] = {
 	{LEATHER,		HI_LEATHER,		 15,/*old:   9*/		  5, 		3	},
 	{WOOD,			HI_WOOD,		 30,/*old:   5*/		  8, 		4	},
 	{BONE,			CLR_WHITE,		 25,/*old:  17*/		 20,		4	},
+	{CHITIN,		CLR_GREEN,		 25,/*old:  17*/		 20,		4	},
 	{SHELL_MAT,		CLR_WHITE,		 25,/*old:  27*/		 30,		5	},
 	{DRAGON_HIDE,	CLR_WHITE,		 35,/*old:  34*/		200,		8	},	/*note: color variable */
 	{IRON,			HI_METAL,		 80,/*old:  79*/		 10,		5	},

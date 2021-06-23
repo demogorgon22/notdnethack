@@ -74,24 +74,14 @@ enum {
 
 #define OPROP_LISTSIZE	((MAX_OPROP-1)/32 + 1)
 
-/* #define obj obj_nh */ /* uncomment for SCO UNIX, which has a conflicting
-			  * typedef for "obj" in <sys/types.h> */
-
-union vptrs {
-	    struct obj *v_nexthere;	/* floor location lists */
-	    struct obj *v_ocontainer;	/* point back to container */
-	    struct monst *v_ocarry;	/* point back to carrying monst */
-		struct trap *v_otrap;	/* point back to trap */
-};
-
 struct obj {
 	struct obj *nobj;
-	union vptrs v;
-#define nexthere	v.v_nexthere
-#define ocontainer	v.v_ocontainer
-#define ocarry		v.v_ocarry
-#define otrap		v.v_otrap
-
+	union {	/* for use with obj->where */
+		struct obj * nexthere;		/* OBJ_FLOOR: next object on this level's xy-coord */
+		struct obj * ocontainer;	/* OBJ_CONTAINED: container this obj is in */
+		struct monst * ocarry;		/* OBJ_MINVENT: monster carrying this obj */
+		struct trap * otrap;		/* OBJ_INTRAP: trap containing this obj */
+	};
 	struct obj *cobj;	/* contents list for containers */
 	unsigned o_id;
 	xchar ox,oy;
@@ -133,7 +123,6 @@ struct obj {
 #define OBJ_MAGIC_CHEST	8		/* object in shared magic chest */
 #define OBJ_INTRAP 9    /* object is trap ammo */
 #define NOBJ_STATES	10
-	xchar timed;		/* # of fuses (timers) attached to this obj */
 
 	Bitfield(cursed,1);
 	Bitfield(blessed,1);
@@ -153,6 +142,8 @@ struct obj {
 #define odiluted oeroded	/* diluted potions */
 #define norevive oeroded2
 	Bitfield(oerodeproof,1); /* erodeproof weapon/armor */
+	Bitfield(olarva,2);	/* object has been partially brought to life */
+	Bitfield(odead_larva,2);	/* object was partially brought to life, but died again */
 	Bitfield(olocked,1);	/* object is locked */
 #define oarmed olocked
 #define odrained olocked	/* drained corpse */
@@ -172,11 +163,11 @@ struct obj {
 	Bitfield(greased,1);	/* covered with grease */
 
 	Bitfield(in_use,1);	/* for magic items before useup items */
+	/* 0 free bits */
 	Bitfield(bypass,1);	/* mark this as an object to be skipped by bhito() */
 	Bitfield(lifted,1); /* dipped in potion of levitation */
 	Bitfield(lightened,1);/* dipped in potion of enlightenment */
 	Bitfield(shopOwned,1);	/* owned by a shopkeeper */
-	/* 0 free bits */
 	Bitfield(ostolen,1); 	/* was removed from a shop without being sold */
     Bitfield(was_thrown,1); /* for pickup_thrown */
 	Bitfield(fromsink,1);
@@ -186,17 +177,20 @@ struct obj {
 	Bitfield(obj_material,5); /*Max 31*/
 	//See objclass for values
 	Bitfield(nomerge,1);	/* temporarily block from merging */
-	/* 19 free bits in this field, I think -CM */
+	/* 15 free bits in this field, I think -CM */
 	
 	int obj_color;
-	long bodytypeflag;	/* MB tag(s) this item goes with. */
-#define wrathdata	bodytypeflag	/* MA flags this item is currently wrathful against. */
-	int	corpsenm;	/* type of corpse is mons[corpsenm] */
-					/* Class of mask */
-#define leashmon	corpsenm	/* gets m_id of attached pet */
-#define spestudied	corpsenm	/* # of times a spellbook has been studied */
-//define fromsink  corpsenm	/* a potion from a sink */
-#define opoisonchrgs corpsenm	/* number of poison doses left */
+	union {
+		long bodytypeflag;	/* MB tag(s) this item goes with. Overloaded with wrathdata */
+		long wrathdata;		/* MA flags this item is currently wrathful against. Overloaded with bodytypeflag; */
+	};
+	union {
+		int	corpsenm;		/* various:       type of corpse is mons[corpsenm] */
+		unsigned leashmon;	/* leash:         m_id of attached pet */
+		int spestudied;		/* spellbooks:    of times a spellbook has been studied */
+		int opoisonchrgs;	/* rings/weapons: number of poison doses left */
+	};
+	
 #ifdef RECORD_ACHIEVE
 #define record_achieve_special corpsenm
 #endif
@@ -351,6 +345,8 @@ struct obj {
 
 	struct ls_t * light;
 
+	struct timer * timed;
+
 	union oextra * oextra_p;
 };
 
@@ -461,11 +457,16 @@ struct obj {
 #define is_rakuyo(otmp)	(otmp->otyp == RAKUYO || \
 			 otmp->otyp == RAKUYO_SABER || \
 			 otmp->otyp == RAKUYO_DAGGER)
+#define is_insight_weapon(otmp) (check_oprop(otmp, OPROP_CCLAW) || \
+			 is_rakuyo(otmp) || \
+			 otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD || \
+			 otmp->otyp == BESTIAL_CLAW)
 #define is_pole(otmp)	((otmp->oclass == WEAPON_CLASS || \
 			otmp->oclass == TOOL_CLASS) && \
 			 (objects[otmp->otyp].oc_skill == P_POLEARMS || \
 			  objects[otmp->otyp].oc_skill == P_LANCE || \
 			  otmp->otyp==AKLYS || \
+			  (check_oprop(otmp, OPROP_CCLAW) && u.uinsight >= 15) || \
 			  otmp->oartifact==ART_SOL_VALTIVA || \
 			  otmp->oartifact==ART_SHADOWLOCK || \
 			  otmp->oartifact==ART_DEATH_SPEAR_OF_KEPTOLO || \
@@ -493,7 +494,7 @@ struct obj {
 			  (\
 			   (ltmp->otyp == BFG) ||\
 			   (ltmp->oartifact == ART_PEN_OF_THE_VOID && ltmp->ovar1&SEAL_EVE) ||\
-			   (ltmp->otyp == MASS_SHADOW_PISTOL && (otmp->otyp == ltmp->cobj->otyp)) ||\
+			   (ltmp->otyp == MASS_SHADOW_PISTOL && ltmp->cobj && (otmp->otyp == ltmp->cobj->otyp)) ||\
 			   (ltmp->otyp == ATLATL && is_spear(otmp)) ||\
 			   (\
 			    (otmp->objsize == (ltmp)->objsize || objects[(ltmp)->otyp].oc_skill == P_SLING) &&\
@@ -515,6 +516,8 @@ struct obj {
 							 (o)->otyp == LIVING_MASK || (o)->otyp == MASK || (o)->otyp == R_LYEHIAN_FACEPLATE)
 #define is_instrument(o)	((o)->otyp >= FLUTE && \
 			 (o)->otyp <= DRUM_OF_EARTHQUAKE)
+#define is_mummy_wrap(o)	((o)->otyp == MUMMY_WRAPPING || \
+			 (o)->otyp == PRAYER_WARDED_WRAPPING)
 #define is_lightsaber(otmp) ((otmp)->otyp == LIGHTSABER || \
 							 (otmp)->otyp == KAMEREL_VAJRA || \
 							 (otmp)->otyp == BEAMSWORD || \
@@ -607,6 +610,12 @@ struct obj {
 	arti_threeHead((otmp)) ? 2 : \
 	arti_tentRod((otmp)) ? 6 : \
 	0)
+/* like multistriking, but all ends always roll attacks. multi_ended() is 0-based so that only actual multi_ended weapons return multi_ended!=0 */
+#define multi_ended(otmp)	(!(otmp) ? 0 : \
+	(otmp)->otyp == DOUBLE_SWORD ? 1 : \
+	0)
+/*  */
+#define is_multi_hit(otmp)	(multistriking(otmp) || multi_ended(otmp))
 /* if weapon should use unarmed skill */
 #define martial_aid(otmp)	((is_lightsaber((otmp)) && !litsaber((otmp)) && (otmp)->otyp != KAMEREL_VAJRA) || \
 							(valid_weapon((otmp)) && objects[(otmp)->otyp].oc_skill == P_BARE_HANDED_COMBAT))
@@ -725,7 +734,7 @@ struct obj {
 /* Eggs and other food */
 #define MAX_EGG_HATCH_TIME 200	/* longest an egg can remain unhatched */
 #define stale_egg(egg)	((monstermoves - (egg)->age) > (2*MAX_EGG_HATCH_TIME))
-#define ofood(o) ((o)->otyp == CORPSE || (o)->otyp == EGG || (o)->otyp == TIN)
+#define ofood(o) ((o)->otyp == CORPSE || (o)->otyp == EGG || (o)->otyp == TIN || (o)->otyp == POT_BLOOD)
 #define polyfodder(obj) (ofood(obj) && \
 			 pm_to_cham((obj)->corpsenm) != CHAM_ORDINARY)
 #define mlevelgain(obj) (ofood(obj) && (obj)->corpsenm == PM_WRAITH)
@@ -738,6 +747,7 @@ struct obj {
 #define Has_contents(o) (/* (Is_container(o) || (o)->otyp == STATUE) && */ \
 			 (o)->cobj != (struct obj *)0)
 #define Is_container(o) ((o)->otyp >= BOX && (o)->otyp <= BAG_OF_TRICKS/*DISTRESSED_PRINCESS*/)
+#define Is_real_container(o) ((o)->otyp >= BOX && (o)->otyp < BAG_OF_TRICKS)
 #define Is_box(otmp)	(otmp->otyp == BOX || otmp->otyp == CHEST || otmp->otyp == MAGIC_CHEST)
 #define Is_mbag(otmp)	(otmp->otyp == BAG_OF_HOLDING || \
 			 otmp->otyp == BAG_OF_TRICKS)
@@ -781,8 +791,11 @@ struct obj {
 		(mtyp) == PM_WHITE_DRAGON || \
 		(mtyp) == PM_YELLOW_DRAGON || \
 		(mtyp) == PM_GREEN_DRAGON \
-		))\
-	)
+	)) || \
+	((obj)->oartifact == ART_STEEL_SCALES_OF_KURTULMAK && (\
+		(mtyp) == PM_GRAY_DRAGON || \
+		(mtyp) == PM_RED_DRAGON \
+	)))
 
 /* Elven gear */
 #define is_elven_weapon(otmp)	((otmp)->otyp == ELVEN_ARROW\
@@ -895,6 +908,10 @@ struct obj {
 /* misc */
 #define is_boulder(otmp)		((otmp)->otyp == BOULDER || (otmp)->otyp == MASSIVE_STONE_CRATE || ((otmp)->otyp == STATUE && opaque(&mons[(otmp)->corpsenm])))
 
+#define is_dress(onum)		(onum == NOBLE_S_DRESS || onum == GENTLEWOMAN_S_DRESS || onum == PLAIN_DRESS || onum == VICTORIAN_UNDERWEAR)
+
+#define arm_blocks_upper_body(onum)		(objects[onum].oc_dir&UPPER_TORSO_DR)
+
 /* helpers, simple enough to be macros */
 #define is_plural(o)	((o)->quan > 1 || \
 			 (o)->oartifact == ART_EYES_OF_THE_OVERWORLD)
@@ -903,5 +920,12 @@ struct obj {
 #define CONTAINED_TOO	0x1
 #define BURIED_TOO	0x2
 #define INTRAP_TOO	0x4
+
+#define higher_depth(armdepth, depth)	(armdepth == depth || (\
+		(depth&(W_ARMC|W_GLYPH)) ? FALSE :\
+		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
+		(depth&(W_ARMH|W_ARMG|W_ARMF|W_ARM|W_RINGL|W_RINGR|W_TOOL)) ? (armdepth != W_ARMU) :\
+		(depth&(W_ARMU|W_SKIN)) ? TRUE :\
+		FALSE))
 
 #endif /* OBJ_H */

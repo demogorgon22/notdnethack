@@ -201,7 +201,7 @@ A("Carnwennan",			DAGGER,							(const char *)0,
 A("Slave to Armok",		DWARVISH_MATTOCK,				(const char *)0,
 	2500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, NON_PM, PM_DWARF, TIER_F, (ARTG_NAME),
-	MONS(vsMT(MT_PEACEFUL), vsMG(MG_LORD), vsMA(MA_ELF | MA_ORC)),
+	MONS(vsMT(MT_PEACEFUL), vsMG(MG_LORD|MG_PRINCE), vsMA(MA_ELF | MA_ORC)),
 	ATTK(AD_PHYS, 5, 0), (ARTA_HATES),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
@@ -697,7 +697,7 @@ A("Tobiume",			LONG_SWORD,						"three-branched %s",
 	8000L, METAL, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, NON_PM, TIER_C, (ARTG_GIFT | ARTG_INHER),
 	NO_MONS(),
-	ATTK(AD_FIRE, 1, 1), (ARTA_DISARM|ARTA_EXPLFIREX|ARTA_KNOCKBACKX),
+	ATTK(AD_FIRE, 1, 1), (ARTA_DISARM),
 	PROPS(FIRE_RES), NOFLAG,
 	PROPS(), NOFLAG,
 	FIRE_SHIKAI, NOFLAG
@@ -1023,7 +1023,7 @@ A("Soulmirror",						PLATE_MAIL,			(const char *)0,
 
 /* wearer gets a 1d4 poison sting */
 A("The Scorpion Carapace",			SCALE_MAIL,			(const char *)0,
-	3000L, BONE, MZ_DEFAULT, WT_DEFAULT,
+	3000L, CHITIN, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, NON_PM, TIER_D, NOFLAG,
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
@@ -1084,6 +1084,17 @@ A("Whisperfeet",					SPEED_BOOTS,		(const char *)0,
 	PROPS(STEALTH), NOFLAG,
 	PROPS(), NOFLAG,
 	INVIS, (ARTI_PLUSSEV)
+	),
+
+/*Needs encyc entry*/
+A("Seven League Boots",				JUMPING_BOOTS,		(const char *)0,
+	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NONE, NON_PM, NON_PM, TIER_C, NOFLAG,
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(FAST), NOFLAG,
+	PROPS(), NOFLAG,
+	SEVEN_LEAGUE_STEP, (ARTI_PLUSSEV)
 	),
 
 /*Needs encyc entry*/
@@ -1453,7 +1464,7 @@ A("The Sansara Mirror",				MIRRORBLADE,			(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
-A("The Prayer-warded Wrappings of Nitocris",		MUMMY_WRAPPING,			(const char *)0,
+A("The Spell-warded Wrappings of Nitocris",		MUMMY_WRAPPING,			(const char *)0,
 	5000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, NON_PM, NON_PM, TIER_D, (ARTG_NOGEN|ARTG_NOWISH),
 	NO_MONS(),
@@ -1863,7 +1874,7 @@ A("Spidersilk",						DROVEN_CHAIN_MAIL,	(const char *)0,
 
 /* needs encyc entry */
 A("The Webweaver's Crook",			FAUCHARD,			(const char *)0,
-	5000L, BONE, MZ_DEFAULT, WT_DEFAULT,
+	5000L, CHITIN, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, NON_PM, PM_DROW, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 0), (ARTA_POIS),
@@ -2014,6 +2025,16 @@ A("The Eyes of the Overworld",		LENSES,				(const char *)0,
 	ENLIGHTENING, NOFLAG
 	),
 
+A("The Star of Hypernotus",		AMULET_VERSUS_CURSES,	"blue-green star-shaped stone",
+	2500L, GEMSTONE, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_MADMAN, NON_PM, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(CLEAR_THOUGHTS, BLOCK_CONFUSION), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
 /*Needs encyc entry*/
 /* Also has holy and unholy properties */
 A("Avenger",						LONG_SWORD,			"winged long sword",
@@ -2157,7 +2178,7 @@ A("The Death-Spear of Keptolo",		DROVEN_SPEAR,		(const char *)0,
 	4000L, SILVER, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, PM_NOBLEMAN, PM_DROW, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
 	NO_MONS(),
-	ATTK(AD_PHYS, 10, 12), (ARTA_SILVER),
+	ATTK(AD_PHYS, 10, 12), NOFLAG,
 	PROPS(ANTIMAGIC), NOFLAG,
 	PROPS(), NOFLAG,
 	DEATH_TCH, (ARTI_ENGRAVE)
@@ -2281,6 +2302,7 @@ A("Velka's Rapier",		RAPIER,					(const char *)0,
 
 /*Needs encyc entry*/
 /* Doubles dragon attributes when carried */
+/* TODO: Invoke to change element? */
 A("The Dragon's Heart-Stone",		FLINT,				(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, PM_NOBLEMAN, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH),
@@ -2450,7 +2472,7 @@ A("The Master Key of Thievery",		SKELETON_KEY,		(const char *)0,
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
 	PROPS(), NOFLAG,
-	PROPS(HALF_PHDAM, TELEPORT_CONTROL), NOFLAG,
+	PROPS(HALF_PHDAM, TELEPORT_CONTROL, WARNING), NOFLAG,
 	UNTRAP, (ARTI_SPEAK)
 	),
 
@@ -2986,7 +3008,7 @@ A("The Three-Headed Flail",			FLAIL,				"three-headed %s",
 	),
 
 /*Needs encyc entry */
-A("Heartcleaver",					HALBERD,			(const char *)0,
+A("Heartcleaver",					POLEAXE,			(const char *)0,
 	6660L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, NON_PM, TIER_C, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_NOCNT),
 	NO_MONS(),

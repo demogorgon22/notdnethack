@@ -48,8 +48,9 @@ const char def_oc_syms[MAXOCLASSES] = {
 /*15*/	BALL_SYM,
 	CHAIN_SYM,
 	VENOM_SYM,
-	TILE_SYM
-	/*BED_SYM*/
+	TILE_SYM,
+	BED_SYM,
+	SCOIN_SYM
 };
 
 const char invisexplain[] = "remembered, unseen, creature";
@@ -74,7 +75,9 @@ const char * const objexplain[] = {	/* these match def_oc_syms, above */
 /*15*/	"iron ball",
 	"iron chain",
 	"splash of venom",
-	"tile shard or slab"
+	"broken tile or slab",
+	"bed",
+	"strange coin"
 };
 
 /* Object class names.  Used in object_detect(). */
@@ -97,7 +100,9 @@ const char * const oclass_names[] = {
 /*15*/	"iron balls",
 	"chains",
 	"venoms",
-	"tiles"
+	"tiles",
+	"beds",
+	"strange coins"
 };
 
 /* Default monster class symbols.  See monsym.h. */
@@ -249,6 +254,7 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'>', "ladder down",	C(CLR_BROWN)},	/* dnladder */
 	{'_', "altar",		C(CLR_GRAY)},	/* altar */
 	{'|', "grave",      C(CLR_GRAY)},   /* grave */
+	{'+', "hellish seal",      C(CLR_BRIGHT_MAGENTA)},   /* seal */
 	{'\\', "opulent throne",C(HI_GOLD)},	/* throne */
 #ifdef SINKS
 	{'#', "sink",		C(CLR_WHITE)},	/* sink */
@@ -300,6 +306,7 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'^', "essence trap",	C(CLR_GREEN)},	/* "trap" */
 	{'^', "mummy trap",	C(CLR_YELLOW)},	/* trap */
 	{'^', "switch",	C(CLR_MAGENTA)},	/* "trap" */
+	{'^', "flesh hook",	C(CLR_GREEN)},	/* trap */
 	{'|', "wall",		C(CLR_GRAY)},	/* vbeam */
 	{'-', "wall",		C(CLR_GRAY)},	/* hbeam */
 	{'\\',"wall",		C(CLR_GRAY)},	/* lslant */
@@ -379,6 +386,7 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_dnladder),
 	g_FILLER(S_altar),
 	g_FILLER(S_grave),
+	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 /*30*/	0xf4,	/* S_fountain:	meta-t, integral top half */
@@ -426,6 +434,7 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_essence_trap),
 	g_FILLER(S_mummy_trap),
 	g_FILLER(S_switch),
+	g_FILLER(S_flesh_hook),
 	0xb3,	/* S_vbeam:	meta-3, vertical rule */
 	0xc4,	/* S_hbeam:	meta-D, horizontal rule */
 	g_FILLER(S_lslant),
@@ -493,6 +502,7 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	0xfa,	/* S_dnladder:	meta-z, less-than-or-equals */
 	g_FILLER(S_altar),	/* 0xc3, \E)3: meta-C, dagger */
 	g_FILLER(S_grave),
+	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 /*30*/	g_FILLER(S_fountain),	/* 0xdb, \E)3: meta-[, integral top half */
@@ -502,8 +512,8 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	0xfe,	/* S_drkgrass:	meta-~, centered dot */
 	0xfe,	/* S_litsoil:	meta-~, centered dot */
 	0xfe,	/* S_drksoil:	meta-~, centered dot */
-	0xf7,	/* S_litsand:	meta-~, approx. equals */
-	0xf7,	/* S_drksand:	meta-~, approx. equals */
+	g_FILLER(S_litsand),
+	g_FILLER(S_drksand),
 	0xe0,	/* S_lava:	meta-\, diamond */
 	0xfe,	/* S_vodbridge:	meta-~, centered dot */
 	0xfe,	/* S_hodbridge:	meta-~, centered dot */
@@ -540,6 +550,7 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	g_FILLER(S_essence_trap),
 	g_FILLER(S_mummy_trap),
 	g_FILLER(S_switch),
+	g_FILLER(S_flesh_hook),
 	0xf8,	/* S_vbeam:	meta-x, vertical rule */
 	0xf1,	/* S_hbeam:	meta-q, horizontal rule */
 	g_FILLER(S_lslant),
@@ -605,6 +616,7 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_dnladder),
 	g_FILLER(S_altar),
 	0xef,	/* S_grave:	same as open door */
+	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 /*30*/	g_FILLER(S_fountain),
@@ -652,6 +664,7 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_essence_trap),
 	g_FILLER(S_mummy_trap),
 	g_FILLER(S_switch),
+	g_FILLER(S_flesh_hook),
 	g_FILLER(S_vbeam),
 	g_FILLER(S_hbeam),
 	g_FILLER(S_lslant),
@@ -719,6 +732,7 @@ static glyph_t utf8_graphics[MAXPCHARS] = {
 	0x2265,	/* S_dnladder:	GREATER-THAN OR EQUAL TO */
 	0x03A9,	/* S_altar:	GREEK CAPITAL LETTER OMEGA */
 	0x2020,	/* S_grave:	DAGGER */
+	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 	0x00b6,	/* S_fountain:	PILCROW SIGN */
@@ -766,6 +780,7 @@ static glyph_t utf8_graphics[MAXPCHARS] = {
 	g_FILLER(S_essence_trap),
 	g_FILLER(S_mummy_trap),
 	g_FILLER(S_switch),
+	g_FILLER(S_flesh_hook),
 	0x2502,	/* S_vbeam:	BOX DRAWINGS LIGHT VERTICAL */
 	0x2500,	/* S_hbeam:	BOX DRAWINGS LIGHT HORIZONTAL */
 	g_FILLER(S_lslant),
@@ -978,8 +993,9 @@ static const glyph_t r_oc_syms[MAXOCLASSES] = {
 /*15*/	BALL_SYM,
 	CHAIN_SYM,
 	VENOM_SYM,
-	TILE_SYM
-/*	BED_SYM*/
+	TILE_SYM,
+	BED_SYM,
+	SCOIN_SYM
 };
 
 # ifdef ASCIIGRAPH
@@ -1023,8 +1039,9 @@ static const uchar IBM_r_oc_syms[MAXOCLASSES] = {	/* a la EPYX Rogue */
 /*15*/	BALL_SYM,
 	CHAIN_SYM,
 	VENOM_SYM,
-	TILE_SYM
-	/*BED_SYM*/
+	TILE_SYM,
+	BED_SYM,
+	SCOIN_SYM
 };
 # endif /* ASCIIGRAPH */
 
@@ -1123,6 +1140,7 @@ boolean is_rlevel;
 	    showsyms[S_essence_trap] = 0x04;
 	    showsyms[S_mummy_trap] = 0x04;
 	    showsyms[S_switch] = 0x04;
+	    showsyms[S_flesh_hook] = 0x04;
 #endif
 		monsyms[S_GHOST] = showsyms[S_litroom];
 	}

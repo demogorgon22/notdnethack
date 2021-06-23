@@ -23,42 +23,47 @@
 #define MS_BURBLE	14	/* burbles (jabberwock) */
 #define MS_JUBJUB	15	/* jubjub bird's fear inducing call */
 #define MS_ANIMAL	15	/* up to here are animal noises */ //note: checks are <=, so this should be == the last animal sound
-#define MS_SHRIEK	16	/* wakes up others */
-#define MS_SHOG		17	/* wakes up others, shoggoth style */
-#define MS_BONES	18	/* rattles bones (skeleton) */
-#define MS_LAUGH	19	/* grins, smiles, giggles, and laughs */
-#define MS_MUMBLE	20	/* says something or other */
-#define MS_IMITATE	21	/* imitates others (leocrotta) */
+#define MS_HOWL		16	/* wakes up others */
+#define MS_SHRIEK	17	/* wakes up others, calls monsters */
+#define MS_SHOG		18	/* wakes up others, shoggoth style */
+#define MS_BONES	19	/* rattles bones (skeleton) */
+#define MS_LAUGH	20	/* grins, smiles, giggles, and laughs */
+#define MS_MUMBLE	21	/* says something or other */
+#define MS_IMITATE	22	/* imitates others (leocrotta) */
 #define MS_ORC		MS_GRUNT	/* intelligent brutes */
-#define MS_HUMANOID	22	/* generic traveling companion */
-#define MS_ARREST	23	/* "Stop in the name of the law!" (was Keystones) */
-#define MS_SOLDIER	24	/* army and watchmen expressions */
-#define MS_GUARD	25	/* "Please drop that gold and follow me." */
-#define MS_DJINNI	26	/* "Thank you for freeing me!" */
-#define MS_NURSE	27	/* "Take off your shirt, please." */
-#define MS_SEDUCE	28	/* "Hello, sailor." (Nymphs) */
-#define MS_VAMPIRE	29	/* vampiric seduction, Vlad's exclamations */
-#define MS_BRIBE	30	/* asks for money, or berates you */
-#define MS_CUSS		31	/* berates (demons) or intimidates (Wiz) */
-#define MS_RIDER	32	/* astral level special monsters */
-#define MS_LEADER	33	/* your class leader */
-#define MS_NEMESIS	34	/* your nemesis */
-#define MS_GUARDIAN	35	/* your leader's guards */
-#define MS_SELL		36	/* demand payment, complain about shoplifters */
-#define MS_ORACLE	37	/* do a consultation */
-#define MS_PRIEST	38	/* ask for contribution; do cleansing */
-#define MS_SPELL	39	/* spellcaster not matching any of the above */
-#define MS_WERE		40	/* lycanthrope in human form */
-#define MS_BOAST	41	/* giants */
-#define MS_DREAD	42	/* song of the dread seraphim */
-#define MS_OONA		43	/* song of Oona */
-#define MS_SONG		44	/* other singers */
-#define MS_INTONE	45	/* regular songs plus black flower's songs */
-#define MS_FLOWER	46	/* black flower's songs */
-#define MS_TRUMPET	47	/* Archon's trumpet */
-#define MS_UNCURSE	48	/* Curse merchant */
-#define MS_STATS	49	/* Sells stat points */
-#define MS_GLYPHS	50	/* Exchanges glyphs for artifacts */
+#define MS_HUMANOID	23	/* generic traveling companion */
+#define MS_ARREST	24	/* "Stop in the name of the law!" (was Keystones) */
+#define MS_SOLDIER	25	/* army and watchmen expressions */
+#define MS_GUARD	26	/* "Please drop that gold and follow me." */
+#define MS_DJINNI	27	/* "Thank you for freeing me!" */
+#define MS_NURSE	28	/* "Take off your shirt, please." */
+#define MS_SEDUCE	29	/* "Hello, sailor." (Nymphs) */
+#define MS_VAMPIRE	30	/* vampiric seduction, Vlad's exclamations */
+#define MS_BRIBE	31	/* asks for money, or berates you */
+#define MS_CUSS		32	/* berates (demons) or intimidates (Wiz) */
+#define MS_RIDER	33	/* astral level special monsters */
+#define MS_LEADER	34	/* your class leader */
+#define MS_NEMESIS	35	/* your nemesis */
+#define MS_GUARDIAN	36	/* your leader's guards */
+#define MS_SELL		37	/* demand payment, complain about shoplifters */
+#define MS_ORACLE	38	/* do a consultation */
+#define MS_PRIEST	39	/* ask for contribution; do cleansing */
+#define MS_SPELL	40	/* spellcaster not matching any of the above */
+#define MS_WERE		41	/* lycanthrope in human form */
+#define MS_BOAST	42	/* giants */
+#define MS_DREAD	43	/* song of the dread seraphim */
+#define MS_OONA		44	/* song of Oona */
+#define MS_SONG		45	/* other singers */
+#define MS_INTONE	46	/* regular songs plus black flower's songs */
+#define MS_FLOWER	47	/* black flower's songs */
+#define MS_TRUMPET	48	/* Archon's trumpet */
+#define MS_UNCURSE	49	/* Curse merchant */
+#define MS_STATS	50	/* Sells stat points */
+#define MS_GLYPHS	51	/* Exchanges glyphs for artifacts */
+#define MS_SECRETS	52	/* Tells secrets */
+#define MS_SCREAM	53	/* Screams in madness */
+#define MS_HARROW	54	/* Summon wraiths */
+#define MS_APOC		55	/* Dire Revelations */
 
 
 #define MR_FIRE			0x0001	/* 1 resists fire */
@@ -166,7 +171,8 @@
 #define MB_NOFEET		0x00400000L	/* no feet to wear boots */
 #define MB_HAS_FEET		0x00800000L	/* does have humanoid feet, even though it has a non-humanoid body plan */
 #define MB_CAN_AMULET	0x01000000L	/* can wear an amulet even if it has no head */
-#define MB_INDIGESTIBLE	0x02000000L	/* can wear an amulet even if it has no head */
+#define MB_INDIGESTIBLE	0x02000000L	/* immune to purple worms */
+#define MB_INSUBSTANTIAL	0x04000000L	/* Weapons pass through the monster */
 
 #define MB_SNAKELEG	(MB_HUMANOID|MB_SLITHY)
 #define MB_CENTAUR	(MB_HUMANOID|MB_ANIMAL)
@@ -231,6 +237,7 @@
 #define MG_INSIGHT		0x08000000L /* Seeing the monster grants insight */
 #define MG_RIDER_HP		0x10000000L /* Has 10d8 HP */
 #define MG_FUTURE_WISH	0x20000000L /* Wishable by tourists only */
+#define MG_HATESUNBLESSED	0x40000000L /* Monster hates neutral holiness objects */
 
 //Monster rAce
 #define MA_UNDEAD		0x00000001L	/* is walking dead */
@@ -356,7 +363,8 @@
 #define MAKE_WEB               SUMMON_SPHERE+1
 #define DROP_BOULDER           MAKE_WEB+1
 #define EARTHQUAKE             DROP_BOULDER+1
-#define TURN_TO_STONE          EARTHQUAKE+1
+#define SLIMIFY                EARTHQUAKE+1
+#define TURN_TO_STONE          SLIMIFY+1
        /* unique monster spells */
 #define NIGHTMARE              TURN_TO_STONE+1
 //50
@@ -390,9 +398,11 @@
 #define STERILITY_CURSE        NAIL_TO_THE_SKY+1
 #define DISINT_RAY             STERILITY_CURSE+1
 //75
-#define MAGM_BLAST             DISINT_RAY+1
+#define MON_WARP_THROW         DISINT_RAY+1
+#define MAGM_BLAST             MON_WARP_THROW+1
 
 #define MON_LASTSPELL          MAGM_BLAST
+
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

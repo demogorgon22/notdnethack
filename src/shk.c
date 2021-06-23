@@ -63,7 +63,7 @@ STATIC_DCL void FDECL(add_to_billobjs, (struct obj *));
 STATIC_DCL void FDECL(bill_box_content, (struct obj *, BOOLEAN_P, BOOLEAN_P,
 				     struct monst *));
 #ifdef OVL1
-static boolean FDECL(rob_shop, (struct monst *));
+static boolean FDECL(rob_shop, (struct monst *, struct obj *));
 #endif
 
 #ifdef OTHER_SERVICES
@@ -534,7 +534,7 @@ boolean newlev;
 	    return;
 	}
 
-	if (rob_shop(shkp)) {
+	if (rob_shop(shkp, (struct obj *)0)) {
 		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz) && Is_qstart(&u.uz)){
 			verbalize("Help me, Ilsensine!");
 			makemon(&mons[PM_WARRIOR_CHANGED], shkp->mx, shkp->my, MM_ADJACENTOK);
@@ -554,13 +554,13 @@ boolean newlev;
 
 /* robbery from outside the shop via telekinesis or grappling hook */
 void
-remote_burglary(x, y)
-xchar x, y;
+remote_burglary(otmp)
+struct obj * otmp;
 {
 	struct monst *shkp;
 	struct eshk *eshkp;
 
-	shkp = shop_keeper(*in_rooms(x, y, SHOPBASE));
+	shkp = shop_keeper(*in_rooms(otmp->ox, otmp->oy, SHOPBASE));
 	if (!shkp || !inhishop(shkp))
 	    return;	/* shk died, teleported, changed levels... */
 
@@ -568,7 +568,7 @@ xchar x, y;
 	if (!eshkp->billct && !eshkp->debit)	/* bill is settled */
 	    return;
 
-	if (rob_shop(shkp)) {
+	if (rob_shop(shkp, otmp)) {
 		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz) && Is_qstart(&u.uz)){
 			verbalize("Help me, Ilsensine!");
 			makemon(&mons[PM_WARRIOR_CHANGED], shkp->mx, shkp->my, MM_ADJACENTOK);
@@ -590,8 +590,9 @@ xchar x, y;
 /* shop merchandise has been taken; pay for it with any credit available;  
    return false if the debt is fully covered by credit, true otherwise */
 static boolean
-rob_shop(shkp)
+rob_shop(shkp, otmp)
 struct monst *shkp;
+struct obj * otmp;	/* optional: item not in your inventory that is being stolen */
 {
 	struct eshk *eshkp;
 	long total;
@@ -605,10 +606,12 @@ struct monst *shkp;
 		 eshkp->credit, currency(eshkp->credit));
 	    total = 0L;		/* credit gets cleared by setpaid() */
 		for(curobj = invent; curobj; curobj = curobj->nobj) setallpaid(curobj);
+		if(otmp) {setallpaid(otmp); clear_unpaid(otmp);}
 	} else {
 	    You("escaped the shop without paying!");
 	    total -= eshkp->credit;
 		for(curobj = invent; curobj; curobj = curobj->nobj) setallstolen(curobj);
+		if(otmp) {setallstolen(otmp); clear_unpaid(otmp);}
 	}
 	setpaid(shkp);
 	if (!total) return FALSE;
@@ -688,7 +691,7 @@ register char *enterstring;
 	}
 #ifdef CONVICT
 	/* Visible striped prison shirt */
-	if ((uarmu && (uarmu->otyp == STRIPED_SHIRT)) && !uarm && !uarmc && strcmp(shkname(shkp), "Izchak") != 0) {
+	if ((uarmu && (uarmu->otyp == STRIPED_SHIRT)) && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc && strcmp(shkname(shkp), "Izchak") != 0) {
 	    eshkp->pbanned = TRUE;
 	}
 #endif /* CONVICT */
@@ -2453,7 +2456,8 @@ register struct monst *shkp;	/* if angry, impose a surcharge */
 		    tmp += tmp / 3L;
 	}
 	if ((Role_if(PM_TOURIST) && u.ulevel < (MAXULEV/2))
-	    || (uarmu && !uarm && !uarmc))	/* touristy shirt visible */
+	    || (uarm && uarm->otyp == HAWAIIAN_SHORTS && !uarmc)	/* touristy pants visible */
+	    || (uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc))	/* touristy shirt visible */
 		tmp += tmp / 3L;
 	else
 	if (uarmh && uarmh->otyp == DUNCE_CAP)
@@ -2578,7 +2582,8 @@ register struct monst *shkp;
 	obj->sknown = TRUE;
 	
 	if ((Role_if(PM_TOURIST) && u.ulevel < (MAXULEV/2))
-	    || (uarmu && uarmu->otyp == HAWAIIAN_SHIRT && !uarm && !uarmc))	/* touristy shirt visible */
+	    || (uarm && uarm->otyp == HAWAIIAN_SHORTS && !uarmc)	/* touristy pants visible */
+	    || (uarmu && uarmu->otyp == HAWAIIAN_SHIRT && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc))	/* touristy shirt visible */
 		tmp /= 3L;
 	else
 	if (uarmh && uarmh->otyp == DUNCE_CAP)
@@ -2677,7 +2682,7 @@ add_to_billobjs(obj)
     if (obj->where != OBJ_FREE)
 	panic("add_to_billobjs: obj not free");
     if (obj->timed)
-	obj_stop_timers(obj);
+	stop_all_timers(obj->timed);
 
     obj->nobj = billobjs;
     billobjs = obj;
@@ -3696,8 +3701,7 @@ boolean catchup;	/* restoring a level */
 		    return(0);
 	    if (ttmp->ttyp == LANDMINE || ttmp->ttyp == BEAR_TRAP) {
 		/* convert to an object */
-		otmp = mksobj((ttmp->ttyp == LANDMINE) ? LAND_MINE :
-				BEARTRAP, TRUE, FALSE);
+		otmp = mksobj((ttmp->ttyp == LANDMINE) ? LAND_MINE : BEARTRAP, NO_MKOBJ_FLAGS);
 		otmp->quan= 1;
 		otmp->owt = weight(otmp);
 		(void) mpickobj(shkp, otmp);
@@ -5533,6 +5537,9 @@ shk_charge(slang, shkp)
 		} else if (ESHK(shkp)->services & SHK_SPECIAL_B) {
 			pline ("I only perform complete charging.");
 			type = 'p';
+		} else { /* currently impossible case */
+			pline ("Sorry about that, it seems I can't do any charging.");
+			return;
 		}
  	}
 	else
@@ -5774,14 +5781,14 @@ dahlverNarVis()
 	if(Upolyd){
 		if(u.mh == u.mhmax) return FALSE;
 		else if(u.mh >= .75*u.mhmax) return (uarmg != 0);
-		else if(u.mh >= .50*u.mhmax) return (uarmg && (uarmc || uarm));
-		else if(u.mh >= .25*u.mhmax) return (uarmg && (uarmc || uarm) && uarmh);
+		else if(u.mh >= .50*u.mhmax) return (uarmg && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))));
+		else if(u.mh >= .25*u.mhmax) return (uarmg && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))) && uarmh);
 		else return TRUE;
 	} else {
 		if(u.uhp == u.uhpmax) return FALSE;
 		else if(u.uhp >= .75*u.uhpmax) return (uarmg != 0);
-		else if(u.uhp >= .50*u.uhpmax) return (uarmg && (uarmc || uarm));
-		else if(u.uhp >= .25*u.uhpmax) return (uarmg && (uarmc || uarm) && uarmh);
+		else if(u.uhp >= .50*u.uhpmax) return (uarmg && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))));
+		else if(u.uhp >= .25*u.uhpmax) return (uarmg && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))) && uarmh);
 		else return TRUE;
 	}
 }
@@ -5797,34 +5804,34 @@ struct monst *mon;
 		// if(u.sealsActive&SEAL_ANDREALPHUS);
 		// if(u.sealsActive&SEAL_ANDROMALIUS);
 		if(u.sealsActive&SEAL_ASTAROTH && !Invis && !(ublindf && ublindf->otyp != LENSES && ublindf->otyp != SUNGLASSES && ublindf->otyp != LIVING_MASK)) count++;
-		if(u.sealsActive&SEAL_BALAM && !Invis && !(uarmc || uarm)) count++;
-		if(u.sealsActive&SEAL_BERITH && !Invis && (u.usteed || !(uarm && is_metallic(uarm) && uarmg && uarmf && uarmh))) count++;
+		if(u.sealsActive&SEAL_BALAM && !Invis && !(uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))) count++;
+		if(u.sealsActive&SEAL_BERITH && !Invis && (u.usteed || !((uarm && arm_blocks_upper_body(uarm->otyp)) && is_metallic(uarm) && uarmg && uarmf && uarmh))) count++;
 		if(u.sealsActive&SEAL_BUER && !Invis && !uarmf) count++;
 		// if(u.sealsActive&SEAL_CHUPOCLOPS);
-		if(u.sealsActive&SEAL_DANTALION && !NoBInvis && !(uarmc || (uarm && uarm->otyp != CRYSTAL_PLATE_MAIL) || uarmu)) count++;
+		if(u.sealsActive&SEAL_DANTALION && !NoBInvis && !(uarmc || ((uarm && arm_blocks_upper_body(uarm->otyp)) && is_opaque(uarm)) || uarmu)) count++;
 		// if(u.sealsActive&SEAL_SHIRO);
-		if(u.sealsActive&SEAL_ECHIDNA && !Invis && !(uarmf && (uarmc || uarm))) count++;
+		if(u.sealsActive&SEAL_ECHIDNA && !Invis && !(uarmf && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))))) count++;
 		if(u.sealsActive&SEAL_EDEN && !NoBInvis && verysmall(youracedata) && !uarmh) count++;
-		if(u.sealsActive&SEAL_ENKI && !Invis && !(uarm || uarmc)) count++;
+		if(u.sealsActive&SEAL_ENKI && !Invis && !((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc)) count++;
 		if(u.sealsActive&SEAL_EURYNOME && !Invis && levl[u.ux][u.uy].lit != 0) count++;
-		if(u.sealsActive&SEAL_EVE && !NoBInvis && !(uarmf && (uarm || uarmc))) count++;
+		if(u.sealsActive&SEAL_EVE && !NoBInvis && !(uarmf && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))) count++;
 		// if(u.sealsActive&SEAL_FAFNIR);
 		// if(u.sealsActive&SEAL_HUGINN_MUNINN);
-		if(u.sealsActive&SEAL_IRIS && !NoBInvis && !(((uarm || uarmc) && moves > u.irisAttack+5) || (uarmc && moves > u.irisAttack+1))) count++;
+		if(u.sealsActive&SEAL_IRIS && !NoBInvis && !((((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc) && moves > u.irisAttack+5) || (uarmc && moves > u.irisAttack+1))) count++;
 		if(u.sealsActive&SEAL_JACK && !NoBInvis && !uarmc) count++;
 		// if(u.sealsActive&SEAL_MALPHAS);
-		if(u.sealsActive&SEAL_MARIONETTE && !NoBInvis && !(uarm && is_metallic(uarm))) count++;
-		if(u.sealsActive&SEAL_MOTHER && !NoBInvis && !uarmg && !(uarmc && uarmc->otyp == MUMMY_WRAPPING)) count++;
+		if(u.sealsActive&SEAL_MARIONETTE && !NoBInvis && !((uarm && arm_blocks_upper_body(uarm->otyp)) && is_metallic(uarm))) count++;
+		if(u.sealsActive&SEAL_MOTHER && !NoBInvis && !uarmg && !(uarmc && is_mummy_wrap(uarmc))) count++;
 		// if(u.sealsActive&SEAL_NABERIUS);
-		if(u.sealsActive&SEAL_ORTHOS && !NoBInvis && !(!uarmc || uarmc->otyp == MUMMY_WRAPPING)) count++;
+		if(u.sealsActive&SEAL_ORTHOS && !NoBInvis && !(!uarmc || is_mummy_wrap(uarmc))) count++;
 		if(u.sealsActive&SEAL_OSE && !Blind && !BClairvoyant && !(uarmh && is_metallic(uarmh) && uarmh->otyp != HELM_OF_TELEPATHY)) count++;
 		if(u.sealsActive&SEAL_OTIAX && !Invis && !(moves > u.otiaxAttack+5)) count++;
 		if(u.sealsActive&SEAL_PAIMON && !Invis && !uarmh) count++;
 		if(u.sealsActive&SEAL_SIMURGH && !Invis && !(uarmg && uarmh)) count++;
 		if(u.sealsActive&SEAL_TENEBROUS && !Invis && !(levl[u.ux][u.uy].lit == 0 && !(viz_array[u.uy][u.ux]&TEMP_LIT1 && !(viz_array[u.uy][u.ux]&TEMP_DRK3)))) count++;
-		if(u.sealsActive&SEAL_YMIR && !Invis && ((moves>5000 && !(uarm || uarmc)) || (moves>10000 && !(uarmc)) || 
-												 (moves>20000 && !(uarmc && uarmg && uarmf)) || (moves>50000 && !(uarmc && uarmg && uarmf && uarm && uarmh)) || 
-												 (moves>100000 && !(uarmc && uarmg && uarmf && uarm && uarmh && ublindf && (ublindf->otyp==MASK || ublindf->otyp == R_LYEHIAN_FACEPLATE)))
+		if(u.sealsActive&SEAL_YMIR && !Invis && ((moves>5000 && !((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc)) || (moves>10000 && !(uarmc)) || 
+												 (moves>20000 && !(uarmc && uarmg && uarmf)) || (moves>50000 && !(uarmc && uarmg && uarmf && (uarm && arm_blocks_upper_body(uarm->otyp)) && uarmh)) || 
+												 (moves>100000 && !(uarmc && uarmg && uarmf && (uarm && arm_blocks_upper_body(uarm->otyp)) && uarmh && ublindf && (ublindf->otyp==MASK || ublindf->otyp == R_LYEHIAN_FACEPLATE)))
 												)) count++;
 		if(u.specialSealsActive&SEAL_DAHLVER_NAR && !NoBInvis && dahlverNarVis()) count++;
 		if(u.specialSealsActive&SEAL_ACERERAK && !NoBInvis && !(ublindf && ublindf->otyp != LENSES && ublindf->otyp != LIVING_MASK)) count++;
@@ -5857,32 +5864,32 @@ struct monst *mon;
 		  )
 		) count++; 
 		// if(u.sealsActive&SEAL_ASTAROTH && !Invis && !(ublindf && ublindf->otyp != LENSES && ublindf->otyp != SUNGLASSES && ublindf->otyp != LIVING_MASK)) count++;
-		if(u.sealsActive&SEAL_BALAM && !Invis && (uarmc || uarm) && !(uarmg && uarmf)) count++;
-		// if(u.sealsActive&SEAL_BERITH && !Invis && (u.usteed || !(uarm && is_metallic(uarm) && uarmg && uarmf && uarmh))) count++;
+		if(u.sealsActive&SEAL_BALAM && !Invis && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))) && !(uarmg && uarmf)) count++;
+		// if(u.sealsActive&SEAL_BERITH && !Invis && (u.usteed || !((uarm && arm_blocks_upper_body(uarm->otyp)) && is_metallic(uarm) && uarmg && uarmf && uarmh))) count++;
 		// if(u.sealsActive&SEAL_BUER && !Invis && !uarmf) count++;
 		if(u.sealsActive&SEAL_CHUPOCLOPS && !NoBInvis && !(ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE))) count++;
-		// if(u.sealsActive&SEAL_DANTALION && !NoBInvis && !(uarmc || (uarm && uarm != CRYSTAL_PLATE_MAIL))) count++;
+		// if(u.sealsActive&SEAL_DANTALION && !NoBInvis && !(uarmc || ((uarm && arm_blocks_upper_body(uarm->otyp)) && is_opaque(uarm)))) count++;
 		// if(u.sealsActive&SEAL_SHIRO);
-		// if(u.sealsActive&SEAL_ECHIDNA && !Invis && !(uarmf && (uarmc || uarm))) count++;
+		// if(u.sealsActive&SEAL_ECHIDNA && !Invis && !(uarmf && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))))) count++;
 		if(u.sealsActive&SEAL_EDEN && !NoBInvis && !verysmall(youracedata) && !bigmonst(youracedata) && !uarmh) count++;
-		// if(u.sealsActive&SEAL_ENKI && !Invis && !(uarm || uarmc)) count++;
+		// if(u.sealsActive&SEAL_ENKI && !Invis && !((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc)) count++;
 		if(u.sealsActive&SEAL_EURYNOME && !Invis && levl[u.ux][u.uy].lit == 0 && viz_array[u.uy][u.ux]&TEMP_LIT1 && !(viz_array[u.uy][u.ux]&TEMP_DRK3)) count++;
-		// if(u.sealsActive&SEAL_EVE && !NoBInvis && !(uarmf && (uarm || uarmc))) count++;
+		// if(u.sealsActive&SEAL_EVE && !NoBInvis && !(uarmf && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))) count++;
 		if(u.sealsActive&SEAL_FAFNIR && !NoBInvis && !(uright || uarmg)) count++;
 		if(u.sealsActive&SEAL_HUGINN_MUNINN && !NoBInvis && !uarmh) count++;
-		// if(u.sealsActive&SEAL_IRIS && !NoBInvis && !(((uarm || uarmc) && moves > u.irisAttack+5) || (uarmc && moves > u.irisAttack+1))) count++;
+		// if(u.sealsActive&SEAL_IRIS && !NoBInvis && !((((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc) && moves > u.irisAttack+5) || (uarmc && moves > u.irisAttack+1))) count++;
 		// if(u.sealsActive&SEAL_JACK && !NoBInvis && !uarmc) count++;
 		if(u.sealsActive&SEAL_MALPHAS && !NoBInvis && !(ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE))) count++;
-		// if(u.sealsActive&SEAL_MARIONETTE && !NoBInvis && !(uarm && is_metallic(uarm))) count++;
+		// if(u.sealsActive&SEAL_MARIONETTE && !NoBInvis && !((uarm && arm_blocks_upper_body(uarm->otyp)) && is_metallic(uarm))) count++;
 		// if(u.sealsActive&SEAL_MOTHER && !uarmg) count++;
 		if(u.sealsActive&SEAL_NABERIUS && !NoBInvis && !(ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE))) count++;
-		// if(u.sealsActive&SEAL_ORTHOS && !NoBInvis && !(!uarmc || uarmc->otyp == MUMMY_WRAPPING)) count++;
+		// if(u.sealsActive&SEAL_ORTHOS && !NoBInvis && !(!uarmc || is_mummy_wrap(uarmc))) count++;
 		// if(u.sealsActive&SEAL_OSE && !BClairvoyant && !(uarmh && is_metallic(uarmh) && uarmh->otyp != HELM_OF_TELEPATHY)) count++;
 		// if(u.sealsActive&SEAL_OTIAX && !Invis && !(moves > u.otiaxAttack+5)) count++;
 		// if(u.sealsActive&SEAL_PAIMON && !Invis && !uarmh) count++;
 		if(u.sealsActive&SEAL_SIMURGH && !Invis && uarmc && uarmh && !uarmg) count++;
 		// if(u.sealsActive&SEAL_TENEBROUS && !Invis && !(levl[u.ux][u.uy].lit == 0 && !(viz_array[u.uy][u.ux]&TEMP_LIT1 && !(viz_array[u.uy][u.ux]&TEMP_DRK3)))) count++;
-		// if(u.sealsActive&SEAL_YMIR && !Invis && ((moves>5000 && !(uarm || uarmc)) || (moves>10000 && !(uarmc)) || (moves>20000 && !(uarmc && uarmg)))) count++;
+		// if(u.sealsActive&SEAL_YMIR && !Invis && ((moves>5000 && !((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc)) || (moves>10000 && !(uarmc)) || (moves>20000 && !(uarmc && uarmg)))) count++;
 		// if(u.specialSealsActive&SEAL_DAHLVER_NAR && !NoBInvis && dahlverNarVis()) count++;
 		// if(u.specialSealsActive&SEAL_ACERERAK && !NoBInvis && !ublindf) count++;
 		if(u.specialSealsActive&SEAL_COUNCIL && !(Blind || (ublindf && !(ublindf->otyp == LENSES || ublindf->otyp == LIVING_MASK)))) count++;

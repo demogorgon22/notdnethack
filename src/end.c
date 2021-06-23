@@ -467,6 +467,8 @@ register struct monst *mtmp;
 			u.ugrave_arise = PM_SKELETON;
 		else if (mtmp->data->mlet == S_ZOMBIE || has_template(mtmp, ZOMBIFIED))
 			u.ugrave_arise = PM_ZOMBIE;
+		else if (mtmp->mtyp == PM_ANCIENT_OF_CORRUPTION || has_template(mtmp, SLIME_REMNANT))
+			u.ugrave_arise = PM_ANCIENT_OF_CORRUPTION;
 		else if (mtmp->mtyp == PM_BAALPHEGOR || has_template(mtmp, CRYSTALFIED))
 			u.ugrave_arise = PM_BAALPHEGOR;
 	} else if(uandroid){
@@ -513,7 +515,7 @@ panic VA_DECL(const char *, str)
 	VA_INIT(str, char *);
 	/*The actual panic code is too prone to shredding games*/
 	/* Just print out the error message and abort.*/
-	raw_print("\r\nIt seems the game has suffered a fatal panic attack.");
+	raw_print("\nIt seems the game has suffered a fatal panic attack.");
 	raw_printf("Report the following error to the developer: %s", str);
 	{
 	    char buf[BUFSZ];
@@ -829,7 +831,7 @@ int how;
 	            if (!rn2(10)) {
 	                struct obj *potion = mksobj((u.ulycn > LOW_PM && !rn2(3))
 	                                            ? POT_WATER : POT_RESTORE_ABILITY,
-	                                            TRUE, FALSE);
+	                                            NO_MKOBJ_FLAGS);
 	
 	                bless(potion);
 	                (void) peffects(potion); /* always -1 for restore ability */
@@ -1335,7 +1337,7 @@ die:
 
 		    if (count == 0L) continue;
 		    if (objects[typ].oc_class != GEM_CLASS || typ <= LAST_GEM) {
-			otmp = mksobj(typ, FALSE, FALSE);
+			otmp = mksobj(typ, MKOBJ_NOINIT);
 			makeknown(otmp->otyp);
 			otmp->known = 1;	/* for fake amulets */
 			otmp->dknown = 1;	/* seen it (blindness fix) */

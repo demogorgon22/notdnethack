@@ -185,7 +185,7 @@ static struct trobj Anachrononaut_Elf[] = {
 static struct trobj Anachrononaut_Fem_Clk[] = {
 	{ WHITE_VIBROSWORD, 0, WEAPON_CLASS, 1, 0 },
 	{ BATTLE_AXE, 0, WEAPON_CLASS, 1, 0 },
-	{ BLACK_DRESS, 0, ARMOR_CLASS, 1, 0 },
+	{ PLAIN_DRESS, 0, ARMOR_CLASS, 1, 0 },
 	{ LONG_GLOVES, 0, ARMOR_CLASS, 1, 0 },
 	{ HEELED_BOOTS, 0, ARMOR_CLASS, 1, 0 },
 	{ ANDROID_VISOR, 0, ARMOR_CLASS, 1, 0 },
@@ -251,7 +251,7 @@ static struct trobj Binder_Hedrow[] = {
 };
 static struct trobj Binder_Drow[] = {
 	{ DROVEN_DAGGER, 0, WEAPON_CLASS, 1, 0 },
-	{ BLACK_DRESS, 0, ARMOR_CLASS, 1, 0 },
+	{ PLAIN_DRESS, 0, ARMOR_CLASS, 1, 0 },
 	{ DROVEN_CLOAK, 0, ARMOR_CLASS, 1, 0 },
 	{ CRAM_RATION, 0, FOOD_CLASS, 1, 0 },
 	{ SLIME_MOLD, UNDEF_SPE, FOOD_CLASS, 4, 0 },
@@ -370,6 +370,12 @@ static struct trobj Monk[] = {
 	 * invented by George Jung in Los Angeles, California, USA in 1916.
 	 */
 	{ FORTUNE_COOKIE, 0, FOOD_CLASS, 3, UNDEF_BLESS },
+	{ 0, 0, 0, 0, 0 }
+};
+static struct trobj Madman[] = {
+	{ STRAITJACKET, 0, ARMOR_CLASS, 1, 0 },
+	{ BLINDFOLD, 0, TOOL_CLASS, 1, 0 },
+	{ POT_BOOZE, 0, POTION_CLASS, 2, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Noble[] = {
@@ -536,7 +542,7 @@ static struct trobj Tourist[] = {
 	{ POT_EXTRA_HEALING, 0, POTION_CLASS, 2, UNDEF_BLESS },
 	{ SCR_MAGIC_MAPPING, 0, SCROLL_CLASS, 4, UNDEF_BLESS },
 	{ HAWAIIAN_SHIRT, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
-/*	{ HAWAIIAN_SHORTS, 0, ARMOR_CLASS, 1, UNDEF_BLESS },*/
+	{ HAWAIIAN_SHORTS, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ LOW_BOOTS, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ SUNGLASSES, UNDEF_SPE, TOOL_CLASS, 1, 0 },
 	{ EXPENSIVE_CAMERA, UNDEF_SPE, TOOL_CLASS, 1, 0 },
@@ -1041,6 +1047,24 @@ static const struct def_skill Skill_Con[] = {
     { P_NONE, 0 }
 };
 #endif  /* CONVICT */
+static const struct def_skill Skill_Mad[] = {
+    { P_DAGGER, P_SKILLED },		{ P_KNIFE,  P_EXPERT },
+    { P_AXE, P_EXPERT },			{ P_MORNING_STAR, P_SKILLED },
+    { P_CLUB, P_EXPERT },		    { P_MACE, P_BASIC },
+    { P_DART, P_SKILLED },		    { P_FLAIL, P_BASIC },
+    { P_SHORT_SWORD, P_BASIC },		{ P_TRIDENT, P_SKILLED },
+	{ P_HARVEST, P_SKILLED },		{ P_WHIP, P_SKILLED },
+    { P_ATTACK_SPELL, P_BASIC },	{ P_ESCAPE_SPELL, P_SKILLED },
+    { P_HEALING_SPELL, P_SKILLED }, { P_DIVINATION_SPELL, P_EXPERT },
+	{ P_ENCHANTMENT_SPELL, P_EXPERT },
+    { P_CLERIC_SPELL, P_EXPERT },
+    { P_MATTER_SPELL, P_BASIC },
+    { P_WAND_POWER, P_SKILLED },
+    { P_TWO_WEAPON_COMBAT, P_SKILLED },
+    { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_BEAST_MASTERY, P_EXPERT },
+    { P_NONE, 0 }
+};
 
 static const struct def_skill Skill_H[] = {
     { P_DAGGER, P_SKILLED },		{ P_KNIFE, P_EXPERT },
@@ -1440,7 +1464,7 @@ static const struct def_skill Skill_V[] = {
     { P_DIVINATION_SPELL, P_SKILLED },
     { P_WAND_POWER, P_BASIC },
 #ifdef STEED
-    { P_RIDING, P_SKILLED },
+    { P_RIDING, P_EXPERT },
 #endif
 #ifdef BARD
     { P_MUSICALIZE, P_SKILLED },
@@ -1600,6 +1624,7 @@ u_init()
 	u.uevent.udemigod = 0;		/* not a demi-god yet... */
 	u.udg_cnt = 0;
 	u.ill_cnt = 0;
+	u.yel_cnt = 0;
 	/*Ensure that the HP and energy fields are zeroed out*/
 	u.uhp = u.uhpmax = u.uhprolled = u.uhpmultiplier = u.uhpbonus = u.uhpmod = 0;
 	u.uen = u.uenmax = u.uenrolled = u.uenmultiplier = u.uenbonus = 0;
@@ -1781,6 +1806,7 @@ u_init()
 	u.umadness = 0L;
 	u.uinsight = 0;
 	if(Role_if(PM_ANACHRONOUNBINDER)) u.uinsight = 100;
+	u.veil = TRUE;
 	u.sowdisc = 0;
 	u.voidChime = 0;
 	adjabil(0,1);
@@ -1835,6 +1861,7 @@ u_init()
 		skill_init(Skill_Acu);
 	break;
 	case PM_ANACHRONONAUT:
+		u.veil = FALSE;
 		if(Race_if(PM_MYRKALFR) && !flags.female){
 			ini_inv(Anachrononaut_Dro);
 		} else if(Race_if(PM_MYRKALFR) && flags.female){
@@ -1962,6 +1989,7 @@ u_init()
 	break;
 #endif
 	case PM_EXILE:
+		u.veil = FALSE;
 		if(Race_if(PM_VAMPIRE)){
 			if(flags.female){
 				Binder_Vam[BIN_NOB_SHIRT].trotyp = VICTORIAN_UNDERWEAR;
@@ -2030,6 +2058,44 @@ u_init()
         urace.lovemask = 0; /* Convicts are pariahs of their race */
         break;
 #endif	/* CONVICT */
+	case PM_MADMAN:
+		u.veil = FALSE;
+		u.umaniac = TRUE;
+        ini_inv(Madman);
+        knows_object(SKELETON_KEY);
+        knows_object(POT_BOOZE);
+        knows_object(POT_SLEEPING);
+        knows_object(POT_RESTORE_ABILITY);
+        knows_object(POT_CONFUSION);
+        knows_object(POT_PARALYSIS);
+        knows_object(POT_HALLUCINATION);
+        knows_object(POT_SEE_INVISIBLE);
+        knows_object(POT_ENLIGHTENMENT);
+        knows_object(POT_ACID);
+        knows_object(POT_AMNESIA);
+        knows_object(POT_POLYMORPH);
+        knows_object(SCR_REMOVE_CURSE);
+        knows_object(SCR_CONFUSE_MONSTER);
+        knows_object(SCR_DESTROY_ARMOR);
+        knows_object(SCR_AMNESIA);
+        knows_object(SPE_REMOVE_CURSE);
+        knows_object(SPE_POLYMORPH);
+        knows_object(WAN_ENLIGHTENMENT);
+        knows_object(WAN_POLYMORPH);
+        knows_object(WAN_PROBING);
+        skill_init(Skill_Mad);
+		u.ualign.sins += 13; /* You have sinned */
+		/* gods slightly torqued */
+		u.ugangr[GA_LAWFUL] = 1;
+		u.ugangr[GA_NEUTRAL] = 1;
+		u.ugangr[GA_CHAOTIC] = 1;
+		u.usanity = 75; /* Your sanity is not so hot */
+		u.umadness |= MAD_DELUSIONS; /* Your sanity is not so hot */
+		u.udrunken = 30; /* Your sanity is not so hot (and you may have once been more powerful) */
+
+        urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
+        urace.lovemask = 0; /* Madmen are pariahs of their race */
+        break;
 	case PM_HEALER:
 #ifndef GOLDOBJ
 		u.ugold = u.ugold0 = rn1(1000, 1001);
@@ -2123,7 +2189,7 @@ u_init()
 		ini_inv(Pirate);
 		if(Race_if(PM_DROW)){
 			struct obj *otmp;
-			otmp = mksobj(CROSSBOW_BOLT, TRUE, FALSE);
+			otmp = mksobj(CROSSBOW_BOLT, NO_MKOBJ_FLAGS);
 			otmp->quan = rn1(12, 16);
 			otmp->spe = otmp->cursed = otmp->blessed = 0;
 			otmp->known = otmp->dknown = otmp->bknown = otmp->rknown = otmp->sknown = 1;
@@ -2330,7 +2396,7 @@ u_init()
 					u.ualign.type = A_NEUTRAL; /* Males are neutral */
 				flags.initalign = 1; // 1 == neutral
 			}
-		} else if(!Role_if(PM_EXILE) && !Role_if(PM_CONVICT)){
+		} else if(!Role_if(PM_EXILE) && !Role_if(PM_CONVICT) && !Role_if(PM_MADMAN)){
 			ini_inv(DrovenCloak);
 			if(!flags.female  && !Role_if(PM_ANACHRONOUNBINDER)){
 				u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] =
@@ -2356,7 +2422,7 @@ u_init()
 	    knows_object(find_signet_ring());
 		
 		if(Role_if(PM_ANACHRONONAUT)) u.uhouse = LAST_BASTION_SYMBOL;
-		else u.uhouse = !(Role_if(PM_EXILE) || (Role_if(PM_NOBLEMAN) && !flags.initgend) || Role_if(PM_CONVICT) || Role_if(PM_PIRATE)) ?
+		else u.uhouse = !(Role_if(PM_EXILE) || (Role_if(PM_NOBLEMAN) && !flags.initgend) || Role_if(PM_CONVICT) || Role_if(PM_MADMAN) || Role_if(PM_PIRATE)) ?
 				rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE :
 				rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
 		u.start_house = u.uhouse;
@@ -2425,6 +2491,7 @@ u_init()
 #ifdef CONVICT
          && !Role_if(PM_CONVICT)
 #endif /* CONVICT */
+          && !Role_if(PM_MADMAN)
 		) ini_inv(Xtra_food);
 	    /* Orcs can recognize all orcish objects */
 	    knows_object(ORCISH_SHORT_SWORD);
@@ -2561,40 +2628,42 @@ u_init()
 	}
 
 	dungeon_topology.eprecursor_typ = rnd(8);
-	if(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend){
-		if (rn2(2)) {
-			flags.HDbreath = AD_MAGM;
-			HAntimagic |= (FROMRACE|FROMOUTSIDE);
+	if(Race_if(PM_HALF_DRAGON)){
+		if(Role_if(PM_NOBLEMAN) && flags.initgend){
+			if (rn2(2)) {
+				flags.HDbreath = AD_MAGM;
+				HAntimagic |= (FROMRACE|FROMOUTSIDE);
+			}
+			else {
+				flags.HDbreath = AD_COLD;
+				HCold_resistance |= (FROMRACE|FROMOUTSIDE);
+			}
+		} else switch(rnd(6)){
+			case 1:
+				flags.HDbreath = AD_COLD;
+				HCold_resistance |= (FROMRACE|FROMOUTSIDE);
+			break;
+			case 2:
+				flags.HDbreath = AD_FIRE;
+				HFire_resistance |= (FROMRACE|FROMOUTSIDE);
+			break;
+			case 3:
+				flags.HDbreath = AD_SLEE;
+				HSleep_resistance |= (FROMRACE|FROMOUTSIDE);
+			break;
+			case 4:
+				flags.HDbreath = AD_ELEC;
+				HShock_resistance |= (FROMRACE|FROMOUTSIDE);
+			break;
+			case 5:
+				flags.HDbreath = AD_DRST;
+				HPoison_resistance |= (FROMRACE|FROMOUTSIDE);
+			break;
+			case 6:
+				flags.HDbreath = AD_ACID;
+				HAcid_resistance |= (FROMRACE|FROMOUTSIDE);
+			break;
 		}
-		else {
-			flags.HDbreath = AD_COLD;
-			HCold_resistance |= (FROMRACE|FROMOUTSIDE);
-		}
-	} else switch(rnd(6)){
-		case 1:
-			flags.HDbreath = AD_COLD;
-			HCold_resistance |= (FROMRACE|FROMOUTSIDE);
-		break;
-		case 2:
-			flags.HDbreath = AD_FIRE;
-			HFire_resistance |= (FROMRACE|FROMOUTSIDE);
-		break;
-		case 3:
-			flags.HDbreath = AD_SLEE;
-			HSleep_resistance |= (FROMRACE|FROMOUTSIDE);
-		break;
-		case 4:
-			flags.HDbreath = AD_ELEC;
-			HShock_resistance |= (FROMRACE|FROMOUTSIDE);
-		break;
-		case 5:
-			flags.HDbreath = AD_DRST;
-			HPoison_resistance |= (FROMRACE|FROMOUTSIDE);
-		break;
-		case 6:
-			flags.HDbreath = AD_ACID;
-			HAcid_resistance |= (FROMRACE|FROMOUTSIDE);
-		break;
 	}
 	/* Fix up the alignment quest nemesi */
 	mons[PM_OONA].mcolor = (u.oonaenergy == AD_FIRE) ? CLR_RED 
@@ -2630,6 +2699,7 @@ int otyp;
      case PM_HEALER:		skills = Skill_H; break;
      case PM_KNIGHT:		skills = Skill_K; break;
      case PM_MONK:		skills = Skill_Mon; break;
+     case PM_MADMAN:		skills = Skill_Mad; break;
 	 case PM_PIRATE:		skills = Skill_Pir; break;
      case PM_PRIEST:		skills = Skill_P; break;
      case PM_RANGER:		skills = Skill_Ran; break;
@@ -2669,7 +2739,7 @@ register struct trobj *trop;
 				    break;
 				}
 			}
-			obj = mksobj(otyp, TRUE, FALSE);
+			obj = mksobj(otyp, NO_MKOBJ_FLAGS);
 			set_material_gm(obj, objects[otyp].oc_material);
 
 			if(obj->otyp == POT_BLOOD) 
@@ -2692,7 +2762,7 @@ register struct trobj *trop;
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
 			}
-			if(obj->otyp == BLACK_DRESS && Role_if(PM_ANACHRONONAUT) && Race_if(PM_ANDROID)){
+			if(obj->otyp == PLAIN_DRESS && Role_if(PM_ANACHRONONAUT) && Race_if(PM_ANDROID)){
 				set_material_gm(obj, LEATHER);
 			}
 			if(obj->otyp == BATTLE_AXE && Role_if(PM_ANACHRONONAUT) && Race_if(PM_ANDROID)){
@@ -2739,7 +2809,7 @@ register struct trobj *trop;
 		 * one will immediately read it and use the iron ball as a
 		 * weapon.)
 		 */
-			if((Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && trop->trclass == RING_CLASS) obj = mksobj(find_signet_ring(),TRUE,FALSE);
+			if((Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && trop->trclass == RING_CLASS) obj = mksobj(find_signet_ring(), NO_MKOBJ_FLAGS);
 			else obj = mkobj(trop->trclass, FALSE);
 			otyp = obj->otyp;
 			set_material_gm(obj, objects[otyp].oc_material);
@@ -2852,7 +2922,9 @@ register struct trobj *trop;
 				} else if(Race_if(PM_DROW)){
 					obj->dknown = obj->rknown = obj->sknown = 1;
 					if(flags.female){
-						if(obj->otyp == BLACK_DRESS) obj->ostolen = TRUE;
+						if(obj->otyp == PLAIN_DRESS){
+							obj->ostolen = TRUE;
+						}
 					}
 					if(obj->oclass == FOOD_CLASS){
 						obj->ostolen = TRUE;
@@ -2917,6 +2989,9 @@ register struct trobj *trop;
                 obj->cursed = TRUE;
             }
 #endif /* CONVICT */
+            if (obj->otyp == STRAITJACKET ) {
+                obj->cursed = TRUE;
+            }
 			if (obj->otyp == TINNING_KIT) {
 				obj->spe = rn1(50, 50);	/* more charges than standard generation */
 			}
@@ -3034,7 +3109,7 @@ scatter_weapons(){
 	struct obj *obj;
 	struct monst *mtmp;
 	if(flags.initgend){
-		// obj = mksobj(GOLD_BLADED_VIBROSWORD, TRUE, FALSE);
+		// obj = mksobj(GOLD_BLADED_VIBROSWORD, NO_MKOBJ_FLAGS);
 		// add_to_migration(obj);
 		// obj->ox = stronghold_level.dnum;
 		// obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
@@ -3048,7 +3123,7 @@ scatter_weapons(){
 		if(nlev >= 8){
 			//Landed in poly-trap-land, and found a random CoMR on the ground nearby
 			// Every time! What A Coincidence!
-			mongets(mtmp, CLOAK_OF_MAGIC_RESISTANCE);
+			mongets(mtmp, CLOAK_OF_MAGIC_RESISTANCE, NO_MKOBJ_FLAGS);
 			m_dowear(mtmp, TRUE);
 		}
 		// pline("going to %d",nlev);
@@ -3056,7 +3131,7 @@ scatter_weapons(){
 		migrate_to_level(mtmp, ledger_no(&flev), MIGR_RANDOM,
 			(coord *)0);
 	} else {
-		// obj = mksobj(WHITE_VIBROSWORD, TRUE, FALSE);
+		// obj = mksobj(WHITE_VIBROSWORD, NO_MKOBJ_FLAGS);
 		// add_to_migration(obj);
 		// obj->ox = stronghold_level.dnum;
 		// obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
@@ -3071,42 +3146,42 @@ scatter_weapons(){
 		if(nlev >= 8){
 			//Landed in poly-trap-land, and found a random CoMR on the ground nearby
 			// Every time! What A Coincidence!
-			mongets(mtmp, CLOAK_OF_MAGIC_RESISTANCE);
+			mongets(mtmp, CLOAK_OF_MAGIC_RESISTANCE, NO_MKOBJ_FLAGS);
 		}
 		get_level(&flev, nlev);
 		migrate_to_level(mtmp, ledger_no(&flev), MIGR_RANDOM,
 			(coord *)0);
 	}
 	
-	obj = mksobj(WHITE_VIBROSPEAR, TRUE, FALSE);
+	obj = mksobj(WHITE_VIBROSPEAR, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_to_migration(obj);
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(WHITE_VIBROZANBATO, TRUE, FALSE);
+	obj = mksobj(WHITE_VIBROZANBATO, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_to_migration(obj);
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(GOLD_BLADED_VIBROSPEAR, TRUE, FALSE);
+	obj = mksobj(GOLD_BLADED_VIBROSPEAR, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_to_migration(obj);
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(GOLD_BLADED_VIBROZANBATO, TRUE, FALSE);
+	obj = mksobj(GOLD_BLADED_VIBROZANBATO, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_to_migration(obj);
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(TWO_HANDED_SWORD, TRUE, FALSE);
+	obj = mksobj(TWO_HANDED_SWORD, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	obj->oeroded = 1;
@@ -3116,7 +3191,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(SHORT_SWORD, TRUE, FALSE);
+	obj = mksobj(SHORT_SWORD, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	obj->objsize = MZ_LARGE;
@@ -3126,7 +3201,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(TWO_HANDED_SWORD, TRUE, FALSE);
+	obj = mksobj(TWO_HANDED_SWORD, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	obj->objsize = MZ_LARGE;
@@ -3136,7 +3211,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(SPEAR, TRUE, FALSE);
+	obj = mksobj(SPEAR, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	obj->objsize = MZ_LARGE;
@@ -3145,36 +3220,36 @@ scatter_weapons(){
 	add_to_migration(obj);
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
-	
-	obj = mksobj(RED_EYED_VIBROSWORD, TRUE, FALSE);
+
+	obj = mksobj(RED_EYED_VIBROSWORD, NO_MKOBJ_FLAGS);
+	fully_identify_obj(obj);
+	obj->spe = abs(obj->spe);
+	add_to_migration(obj);
+	obj->ox = stronghold_level.dnum;
+	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
+
+	obj = mksobj(FORCE_PIKE, NO_MKOBJ_FLAGS);
+	fully_identify_obj(obj);
+	obj->spe = abs(obj->spe);
+	add_to_migration(obj);
+	obj->ox = stronghold_level.dnum;
+	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
+
+	obj = mksobj(DOUBLE_FORCE_BLADE, NO_MKOBJ_FLAGS);
+	fully_identify_obj(obj);
+	obj->spe = abs(obj->spe);
+	add_to_migration(obj);
+	obj->ox = stronghold_level.dnum;
+	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
+
+	obj = mksobj(FORCE_SWORD, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_to_migration(obj);
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(FORCE_PIKE, TRUE, FALSE);
-	fully_identify_obj(obj);
-	obj->spe = abs(obj->spe);
-	add_to_migration(obj);
-	obj->ox = stronghold_level.dnum;
-	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
-	
-	obj = mksobj(DOUBLE_FORCE_BLADE, TRUE, FALSE);
-	fully_identify_obj(obj);
-	obj->spe = abs(obj->spe);
-	add_to_migration(obj);
-	obj->ox = stronghold_level.dnum;
-	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
-	
-	obj = mksobj(FORCE_SWORD, TRUE, FALSE);
-	fully_identify_obj(obj);
-	obj->spe = abs(obj->spe);
-	add_to_migration(obj);
-	obj->ox = stronghold_level.dnum;
-	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
-	
-	obj = mksobj(TWO_HANDED_SWORD, TRUE, FALSE);
+	obj = mksobj(TWO_HANDED_SWORD, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	obj->objsize = MZ_LARGE;
@@ -3185,7 +3260,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(SPEAR, TRUE, FALSE);
+	obj = mksobj(SPEAR, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	set_material_gm(obj, METAL);
@@ -3195,7 +3270,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(LONG_SWORD, TRUE, FALSE);
+	obj = mksobj(LONG_SWORD, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	set_material_gm(obj, METAL);
@@ -3204,7 +3279,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(SABER, TRUE, FALSE);
+	obj = mksobj(SABER, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	set_material_gm(obj, METAL);
@@ -3213,7 +3288,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(KATANA, TRUE, FALSE);
+	obj = mksobj(KATANA, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	set_material_gm(obj, METAL);
@@ -3223,7 +3298,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(RAPIER, TRUE, FALSE);
+	obj = mksobj(RAPIER, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_oprop(obj, OPROP_FLAYW);
@@ -3231,7 +3306,7 @@ scatter_weapons(){
 	obj->ox = stronghold_level.dnum;
 	obj->oy = rnd(stronghold_level.dlevel-1)+1; //2->castle
 	
-	obj = mksobj(GLAIVE, TRUE, FALSE);
+	obj = mksobj(GLAIVE, NO_MKOBJ_FLAGS);
 	fully_identify_obj(obj);
 	obj->spe = abs(obj->spe);
 	add_oprop(obj, OPROP_FLAYW);

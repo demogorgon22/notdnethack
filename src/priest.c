@@ -237,7 +237,7 @@ int sanctum;   /* is it the seat of the high priest? */
 		if(In_mordor_depths(&u.uz)){
 			priest->ispriest = 1;
 			priest->msleeping = 0;
-		    (void) mpickobj(priest, mksobj(SPE_FIREBALL, FALSE, FALSE));
+		    (void) mpickobj(priest, mksobj(SPE_FIREBALL, MKOBJ_NOINIT));
 		} else if(Is_bridge_temple(&u.uz)){
 			priest->ispriest = 1;
 			priest->msleeping = 0;
@@ -253,7 +253,7 @@ int sanctum;   /* is it the seat of the high priest? */
 		/* now his/her goodies... */
 		if(sanctum && EPRI(priest)->shralign == A_NONE &&
 		     on_level(&sanctum_level, &u.uz)) {
-			(void) mongets(priest, AMULET_OF_YENDOR);
+			(void) mongets(priest, AMULET_OF_YENDOR, NO_MKOBJ_FLAGS);
 		}
 		/* 2 to 4 spellbooks */
 		for (cnt = rn1(3,2); cnt > 0; --cnt) {
@@ -558,6 +558,11 @@ void
 priest_talk(priest)
 register struct monst *priest;
 {
+	if (!get_mx(priest, MX_EPRI)) {
+		verbalize("Would thou likest to repent?");
+		return;
+	}
+
 	boolean coaligned = p_coaligned(priest);
 	boolean strayed = (u.ualign.record < 0);
 	char class_list[MAXOCLASSES+2];

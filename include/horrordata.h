@@ -45,6 +45,7 @@ static int randRangedAttackTypes[] =
 						AT_SPIT, AT_SPIT,
 						AT_ARRW, AT_ARRW,
 						AT_BEAM, AT_BEAM,
+						AT_BRSH, AT_BRSH,
 						/* 1x */
 						AT_WDGZ
 					};
@@ -185,6 +186,21 @@ static int randBreathDamageTypes[] =
 						AD_ELEC,
 						AD_ACID,
 						AD_DISN
+					};
+
+static int randSplashDamageTypes[] =
+					{
+						AD_FIRE,
+						AD_EFIR,
+						AD_ACID,
+						AD_EACD,
+						AD_SLIM,
+						// AD_BLND,
+						AD_DRST,
+						AD_DARK,
+						AD_PHYS,
+						AD_DISE,
+						AD_WET
 					};
 
 static int randBeamDamageTypes[] =

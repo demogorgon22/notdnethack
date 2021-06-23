@@ -49,6 +49,7 @@ extern int NDECL(dowipe); /**/
 extern int NDECL(do_mname); /**/
 extern int NDECL(ddocall); /**/
 extern void FDECL(do_oname, (struct obj *));
+extern void NDECL(do_floorname); /**/
 extern int NDECL(dotakeoff); /**/
 extern int NDECL(doremring); /**/
 extern int NDECL(dowear); /**/
@@ -564,7 +565,8 @@ boolean you_abilities;
 			add_ability('a', "Use your armor's breath weapon", MATTK_DSCALE);
 		}
 	}
-	if (mon_abilities && is_were(youracedata)){
+	if (mon_abilities && (is_were(youracedata) || gates_in_help(youracedata))){
+		/* shared letter; assumes a polyform will only be one or the other */
 		add_ability('A', "Summon aid", MATTK_SUMM);
 	}
 	if (mon_abilities && (can_breathe(youmonst.data) || Race_if(PM_HALF_DRAGON))){
@@ -572,9 +574,6 @@ boolean you_abilities;
 	}
 	if (mon_abilities && (Upolyd && can_breathe(youmonst.data) && Race_if(PM_HALF_DRAGON))){
 		add_ability('B', "Use your halfdragon breath weapon", MATTK_HBREATH);
-	}
-	if (mon_abilities && youracedata->mtyp == PM_TOVE){
-		add_ability('B', "Bore a hole", MATTK_HOLE);
 	}
 	if (mon_abilities && uclockwork){
 		add_ability('c', "Adjust your clockspeed", MATTK_CLOCK);
@@ -600,13 +599,16 @@ boolean you_abilities;
 	if (mon_abilities && is_hider(youracedata)){
 		add_ability('h', "Hide", MATTK_HIDE);
 	}
+	if (mon_abilities && youracedata->mtyp == PM_TOVE){
+		add_ability('H', "Bore a hole", MATTK_HOLE);
+	}
 	if (mon_abilities && is_drow(youracedata)){
 		add_ability('i', "Invoke the darkness", MATTK_DARK);
 	}
 	if (mon_abilities && youracedata->mlet == S_NYMPH){
 		add_ability('I', "Remove an iron ball", MATTK_REMV);
 	}
-	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_ANACHRONOUNBINDER)) ){
+	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_MADMAN) || Role_if(PM_ANACHRONOUNBINDER))){
 		add_ability('m', "Emit a mind blast", MATTK_MIND);
 	}
 	if (you_abilities && !mon_abilities){
@@ -651,6 +653,9 @@ boolean you_abilities;
 	if (mon_abilities && webmaker(youracedata)){
 		add_ability('w', "Spin a web", MATTK_WEBS);
 	}
+	if (Role_if(PM_MADMAN) && u.whisperturn < moves){
+		add_ability('W', "Call your whisperer", MATTK_WHISPER);
+	}
 	if (you_abilities && spellid(0) != NO_SPELL) {
 		add_ability('z', "Cast spells", MATTK_U_SPELLS);
 	}
@@ -693,6 +698,7 @@ boolean you_abilities;
 	case MATTK_U_STYLE: return dofightingform();
 	case MATTK_U_MONST: return domonability();
 	case MATTK_U_ELMENTAL: return doelementalbreath();
+	case MATTK_WHISPER: return domakewhisperer();
 
 	/* Monster (or monster-like) abilities */
 	case MATTK_BREATH: return dobreathe(youmonst.data);
@@ -715,7 +721,7 @@ boolean you_abilities;
 	case MATTK_REMV: return doremove();
 	case MATTK_GAZE: return dogaze();
 	case MATTK_TNKR: return dotinker();
-	case MATTK_SUMM: return dosummon();
+	case MATTK_SUMM: return (is_were(youracedata) ? dosummon() : dodemonpet());
 	case MATTK_VAMP: return dovampminion();
 	case MATTK_WEBS: return dospinweb();
 	case MATTK_HIDE: return dohide();
@@ -778,6 +784,7 @@ boolean you_abilities;
 			   (is_drawbridge_wall(u.ux, u.uy) >= 0)) ||
 			(boulder_at(u.ux, u.uy)) ||
 			(IS_GRAVE(lev->typ)) ||
+			(IS_SEAL(lev->typ)) ||
 			(lev->typ == DRAWBRIDGE_UP) ||
 			(IS_THRONE(lev->typ)) ||
 			(IS_ALTAR(lev->typ)) ||
@@ -869,7 +876,7 @@ psionic_pulse(){
 	}
 	You("concentrate!");
 	if(!getdir((char *)0)) return 0;
-	struct obj *otmp = mksobj(PSIONIC_PULSE, FALSE, FALSE);
+	struct obj *otmp = mksobj(PSIONIC_PULSE, MKOBJ_NOINIT);
 	otmp->spe = (int)u.ulevel/4;
 	otmp->quan = 1;
 	projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, u.dz, BOLT_LIM, TRUE, FALSE, FALSE);
@@ -1357,10 +1364,15 @@ wiz_makemap(VOID_ARGS)
 	rm_mapseen(ledger_no(&u.uz));
 
 	for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+	    int ndx = monsndx(mtmp->data);
 	    if (mtmp->isgd) {
 		mtmp->isgd = 0;
 		mongone(mtmp);
 	    }
+            if (mtmp->data->geno & G_UNIQ)
+                mvitals[ndx].mvflags &= ~(G_EXTINCT);
+            if (mvitals[ndx].born)
+                mvitals[ndx].born--;
 	    if (DEADMONSTER(mtmp))
 		continue;
 	    if (mtmp->isshk)
@@ -1992,6 +2004,9 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	if (active_glyph(DEEP_SEA)){
 		enl_msg("The pitch-black waters ", "reduce", "reduced", " physical damage by 3");
 	}
+	if (active_glyph(TRANSPARENT_SEA)){
+		enl_msg("The perfectly clear sea ", "speed", "sped", " sanity recovery");
+	}
 	if (active_glyph(COMMUNION)){
 		enl_msg("The strange minister's prayer ", "increases", "increased", " your carry capacity by 25%");
 	}
@@ -2028,7 +2043,13 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	you_have(buf);
 	Sprintf(buf, "%d insight points", u.uinsight);
 	you_have(buf);
+	if (u.utaneggs > 0) {
+		Sprintf(buf, "%d parasite eggs", u.utaneggs);
+		you_have(buf);
+	}
 	
+	if(Doubt)
+		enl_msg("You ", "can't", "couldn't", " pray or use clerical magic");
 	/*** Madnesses ***/
 	if(u.usanity < 100 && !ClearThoughts){
 		if (u.umadness&MAD_DELUSIONS){
@@ -2110,6 +2131,12 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 		if (u.umadness&MAD_DREAMS){
 			enl_msg("Sometimes, you ", "pass out", "passed out", " and dream of strange cities, suffering damage, stunning, and reduced sanity");
 		}
+		if (u.umadness&MAD_NON_EUCLID){
+			enl_msg("Sometimes, monsters ", "strike", "struck", " at you from strange angles");
+		}
+		if (u.umadness&MAD_SPIRAL){
+			enl_msg("Your madness ", "is", "was", " spiraling out of control");
+		}
 		if (u.umadness&MAD_HELMINTHOPHOBIA){
 			enl_msg("Sometimes, you ", "will fail", "failed", " to attack worms and tentacled monsters");
 			enl_msg("You ", "take", "took", " increased damage from worms and tentacles");
@@ -2120,6 +2147,35 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 				enl_msg("You ", "feel ", "felt ", buf);
 			}
 		}
+		if (u.umadness&MAD_THOUSAND_MASKS){
+			enl_msg("The God of the Thousand Masks ", "stalks", "stalked", " your every step");
+		}
+		if (u.umadness&MAD_FORMICATION){
+			enl_msg("You ", "are", "were", " distracted by invisible insects, lowering your skills and increasing spell failure");
+		}
+		if (u.umadness&MAD_HOST){
+			enl_msg("You ", "are", "were", " nausiated by the thing inside you, which sometimes makes you vomit");
+		}
+		if (u.umadness&MAD_SCIAPHILIA){
+			enl_msg("You ", "wish", "wished", " to stand in partially illuminated areas, suffering reduced accuracy and sometimes failing to cast spells if not");
+		}
+		if (u.umadness&MAD_FORGETFUL){
+			enl_msg("Your mind ", "is", "was", " disolving");
+		}
+		if (u.umadness&MAD_TOO_BIG){
+			enl_msg("", "It's", "It was", " too big");
+		}
+		if (u.umadness&MAD_APOSTASY){
+			enl_msg("You sometimes ", "doubt", "doubted", " the gods, blocking casting and offending them");
+		}
+		if (u.umadness&MAD_ROTTING){
+			enl_msg("Your body ", "is", "was", " rotting from within");
+		}
+	}
+	
+	if(u.utaneggs){
+		Sprintf(buf, " lumps under your %s.", body_part(BODY_SKIN));
+		enl_msg("There ", "are", "were", buf);
 	}
 	
 	/*** More Troubles ***/
@@ -2185,6 +2241,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 		}
 	}
 	if (u.umorgul) enl_msg("You ", "feel", "felt", " deathly cold");
+	if (u.umummyrot) enl_msg("You ", "are", "were", " gradually rotting to dust");
 
 	/*** Vision and senses ***/
 	if (See_invisible(u.ux,u.uy)) enl_msg(You_, "see", "saw", " invisible");
@@ -2755,6 +2812,8 @@ int final;
 		dump("  ", "The deep blue waters protected you from poison");
 	if (active_glyph(DEEP_SEA))
 		dump("  ", "The pitch-black waters reduced physical damage");
+	if (active_glyph(TRANSPARENT_SEA))
+		dump("  ", "The perfectly clear sea sped sanity recovery");
 	if (active_glyph(COMMUNION))
 		dump("  ", "The strange minister lifted your burdens");
 	if (active_glyph(CORRUPTION))
@@ -2793,6 +2852,8 @@ int final;
 	else if(u.uinsight > 1)
 		dump("  ", "You occasionally saw things you wished you hadn't");
 	
+	if(Doubt)
+		dump("  ", "You were having a crisis of faith");
 	/*** Madnesses ***/
 	if(u.usanity < 100 && !ClearThoughts){
 		if (u.umadness&MAD_DELUSIONS){
@@ -2864,6 +2925,12 @@ int final;
 		if (u.umadness&MAD_DREAMS){
 			dump("  ", "You dreamt of strange cities");
 		}
+		if (u.umadness&MAD_NON_EUCLID){
+			dump("  ", "Monsters struck at you from strange angles");
+		}
+		if (u.umadness&MAD_SPIRAL){
+			dump("  ", "Your madness spiraled out of control");
+		}
 		if (u.umadness&MAD_HELMINTHOPHOBIA){
 			dump("  ", "You had an irrational fear of squirming things");
 		}
@@ -2872,6 +2939,30 @@ int final;
 				Sprintf(buf, "You felt your %s seethe below your %s", body_part(BLOOD), body_part(BODY_SKIN));
 				dump("  ", buf);
 			}
+		}
+		if (u.umadness&MAD_THOUSAND_MASKS){
+			dump("  ", "The God of the Thousand Masks stalks you still");
+		}
+		if (u.umadness&MAD_FORMICATION){
+			dump("  ", "You were constantly distracted by the feeling of crawling insects");
+		}
+		if (u.umadness&MAD_HOST){
+			dump("  ", "You were nausiated by the thing inside you");
+		}
+		if (u.umadness&MAD_SCIAPHILIA){
+			dump("  ", "You were fascinated by the dancing flames");
+		}
+		if (u.umadness&MAD_FORGETFUL){
+			dump("  ", "Your mind has disolved");
+		}
+		if (u.umadness&MAD_TOO_BIG){
+			dump("  ", "Your mind was crowded out by the memory of its size");
+		}
+		if (u.umadness&MAD_APOSTASY){
+			dump("  ", "You sometimes doubted the gods");
+		}
+		if (u.umadness&MAD_ROTTING){
+			dump("  ", "Your body was consumed by The Rotting");
 		}
 	}
 	/*** More Troubles ***/
@@ -3224,10 +3315,11 @@ resistances_enlightenment()
 	if (active_glyph(DISSIPATING_BULWARK)) putstr(en_win, 0, "You remember a flashing storm over pure lake-water.");
 	if (active_glyph(SMOLDERING_BULWARK)) putstr(en_win, 0, "You remember embers drowning in still waters.");
 	if (active_glyph(FROSTED_BULWARK)) putstr(en_win, 0, "You remember snowflakes on the surface of a lake.");
-	if (active_glyph(BLOOD_RAPTURE)) putstr(en_win, 0, "You see rainbows in a mists of blood.");
+	if (active_glyph(BLOOD_RAPTURE)) putstr(en_win, 0, "You see rainbows in mists of blood.");
 	if (active_glyph(CLAWMARK)) putstr(en_win, 0, "Every surface you have ever seen was scored by claws.");
 	if (active_glyph(CLEAR_DEEPS)) putstr(en_win, 0, "Your thoughts drift through blue water.");
 	if (active_glyph(DEEP_SEA)) putstr(en_win, 0, "Your fears drown in pitch-black water.");
+	if (active_glyph(TRANSPARENT_SEA)) putstr(en_win, 0, "Your mind is bulwarked by the clear deep sea.");
 	if (active_glyph(COMMUNION)) putstr(en_win, 0, "A strange minister preaches continuously in your childhood home.");
 	if (active_glyph(CORRUPTION)) putstr(en_win, 0, "It weeps tears of blood.");
 	if (active_glyph(EYE_THOUGHT)) putstr(en_win, 0, "Eyes writhe inside your head.");
@@ -3258,6 +3350,8 @@ resistances_enlightenment()
 	else if(u.uinsight > 1)
 		putstr(en_win, 0, "You occasionally see things you wish you hadn't.");
 	
+	if(Doubt)
+		putstr(en_win, 0, "You are having a crisis of faith.");
 	/*** Madnesses ***/
 	if(u.usanity < 100 && !ClearThoughts){
 		char messaged = 0;
@@ -3350,6 +3444,14 @@ resistances_enlightenment()
 			putstr(en_win, 0, "You dream of strange cities.");
 			messaged++;
 		}
+		if (u.umadness&MAD_NON_EUCLID){
+			putstr(en_win, 0, "Sometimes, monsters strike at you from strange angles.");
+			messaged++;
+		}
+		if (u.umadness&MAD_SPIRAL){
+			putstr(en_win, 0, "Your madness is spiraling out of control.");
+			messaged++;
+		}
 		if (u.umadness&MAD_HELMINTHOPHOBIA){
 			putstr(en_win, 0, "You have an irrational fear of squirming things.");
 			messaged++;
@@ -3360,6 +3462,30 @@ resistances_enlightenment()
 				putstr(en_win, 0, buf);
 				messaged++;
 			}
+		}
+		if (u.umadness&MAD_THOUSAND_MASKS){
+			putstr(en_win, 0, "The God of the Thousand Masks stalks your every step.");
+		}
+		if (u.umadness&MAD_FORMICATION){
+			putstr(en_win, 0, "You are distracted by the feeling of insects crawling over your body.");
+		}
+		if (u.umadness&MAD_HOST){
+			putstr(en_win, 0, "You are nausiated by the thing inside you.");
+		}
+		if (u.umadness&MAD_SCIAPHILIA){
+			putstr(en_win, 0, "You are fascinated by the dancing shadows.");
+		}
+		if (u.umadness&MAD_FORGETFUL){
+			putstr(en_win, 0, "Your mind is disolving.");
+		}
+		if (u.umadness&MAD_TOO_BIG){
+			putstr(en_win, 0, "It's too BIG!");
+		}
+		if (u.umadness&MAD_APOSTASY){
+			putstr(en_win, 0, "You sometimes doubt the gods.");
+		}
+		if (u.umadness&MAD_ROTTING){
+			putstr(en_win, 0, "Your body is rotting from within.");
 		}
 		if(messaged){
 			//Clockworks specifically can't get drunk (androids can)
@@ -3390,6 +3516,10 @@ resistances_enlightenment()
 		}
 	}
 	/*** More Troubles ***/
+	if(u.utaneggs){
+		Sprintf(buf, "There are lumps under your %s.", body_part(BODY_SKIN));
+		putstr(en_win, 0, buf);
+	}
 	if(u_healing_penalty()) putstr(en_win, 0, "You feel itchy.");
 	if (Wounded_legs
 #ifdef STEED
@@ -3409,6 +3539,10 @@ resistances_enlightenment()
 	}
 	if (u.umorgul){
 		Sprintf(buf, "You feel deathly cold");
+		putstr(en_win, 0, buf);
+	}
+	if (u.umummyrot){
+		Sprintf(buf, "You are gradually rotting to dust");
 		putstr(en_win, 0, buf);
 	}
 	
@@ -3603,13 +3737,13 @@ udr_enlightenment()
 		Sprintf(mbuf, "You have no head; shots hit upper body");
 		putstr(en_win, 0, mbuf);
 	} else {
-		dr = slot_udr(HEAD_DR, (struct monst *)0);
+		dr = slot_udr(HEAD_DR, (struct monst *)0, 0);
 	Sprintf(mbuf, "Head Armor:       %s%d", (dr>11) ? "11-" : "", dr);
 		putstr(en_win, 0, mbuf);
 	}
-	dr = slot_udr(UPPER_TORSO_DR, (struct monst *)0);
+	dr = slot_udr(UPPER_TORSO_DR, (struct monst *)0, 0);
 	Sprintf(mbuf, "Upper Body Armor: %s%d", (dr>11) ? "11-" : "", dr);
-	dr = slot_udr(LOWER_TORSO_DR, (struct monst *)0);
+	dr = slot_udr(LOWER_TORSO_DR, (struct monst *)0, 0);
 	putstr(en_win, 0, mbuf);
 	Sprintf(mbuf, "Lower Body Armor: %s%d", (dr>11) ? "11-" : "", dr);
 	putstr(en_win, 0, mbuf);
@@ -3617,7 +3751,7 @@ udr_enlightenment()
 		Sprintf(mbuf, "You have no hands; shots hit upper body");
 		putstr(en_win, 0, mbuf);
 	} else {
-		dr = slot_udr(ARM_DR, (struct monst *)0);
+		dr = slot_udr(ARM_DR, (struct monst *)0, 0);
 	Sprintf(mbuf, "Hand Armor:       %s%d", (dr>11) ? "11-" : "", dr);
 		putstr(en_win, 0, mbuf);
 	}
@@ -3625,7 +3759,7 @@ udr_enlightenment()
 		Sprintf(mbuf, "You have no feet; shots hit lower body");
 		putstr(en_win, 0, mbuf);
 	} else {
-		dr = slot_udr(LEG_DR, (struct monst *)0);
+		dr = slot_udr(LEG_DR, (struct monst *)0, 0);
 	Sprintf(mbuf, "Foot Armor:       %s%d", (dr>11) ? "11-" : "", dr);
 		putstr(en_win, 0, mbuf);
 	}
@@ -3799,7 +3933,7 @@ signs_enlightenment()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_BALAM && !Invis){
-		if(uarmc || uarm)
+		if(uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))
 			putstr(en_win, 0, "Freezing water leaks from a gash in you neck, but is hidden by your clothes.");
 		else
 			putstr(en_win, 0, "Freezing water leaks from a deep gash in you neck.");
@@ -3830,7 +3964,7 @@ signs_enlightenment()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_DANTALION && !NoBInvis){
-		if(!(uarmc || ((uarm && uarm->otyp != CRYSTAL_PLATE_MAIL) || uarmu))){
+		if(!(uarmc || ((uarm && !is_opaque(uarm)) || uarmu))){
 			switch(u.ulevel/10+1){
 				case 1:
 				putstr(en_win, 0, "There is an extra face growing on your chest.");
@@ -3856,7 +3990,7 @@ signs_enlightenment()
 	}
 	// if(u.sealsActive&SEAL_SHIRO);
 	if(u.sealsActive&SEAL_ECHIDNA && !Invis){
-		if(!(uarmf && (uarmc || uarm)))
+		if(!(uarmf && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))))
 			putstr(en_win, 0, "Your hips give rise to twin serpent's tails instead of legs.");
 		else
 			putstr(en_win, 0, "Your serpentine legs are disguised by your clothes.");
@@ -3867,7 +4001,7 @@ signs_enlightenment()
 		message = TRUE;
 	} 
 	if(u.sealsActive&SEAL_ENKI && !Invis){
-		if(!(uarm || uarmc))
+		if(!((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
 			putstr(en_win, 0, "Water runs off your body in steady rivulets.");
 		else
 			putstr(en_win, 0, "Your body's runoff is caught by your clothes.");
@@ -3883,7 +4017,7 @@ signs_enlightenment()
 		}
 	}
 	if(u.sealsActive&SEAL_EVE && !NoBInvis){
-		if(!uarm && !uarmc){
+		if(!(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc){
 			putstr(en_win, 0, "There is a blood-caked wound on your stomach.");
 			message = TRUE;
 		}
@@ -3909,7 +4043,7 @@ signs_enlightenment()
 		} else if(!uarmc && moves <= u.irisAttack+5){
 			putstr(en_win, 0, "There are iridescent tentacles wrapped around your forearms.");
 			message = TRUE;
-		} else if(!uarm && !uarmc){
+		} else if(!(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc){
 			putstr(en_win, 0, "There are iridescent veins just under the skin of your forearms.");
 			message = TRUE;
 		}
@@ -3923,7 +4057,7 @@ signs_enlightenment()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_MARIONETTE && !NoBInvis){
-		if(!(uarm && is_metallic(uarm)))
+		if(!((uarm && arm_blocks_upper_body(uarm->otyp)) && is_metallic(uarm)))
 			putstr(en_win, 0, "Metal wires protrude from your elbows, knees, and back.");
 		else
 			putstr(en_win, 0, "The metal wires protruding from your body have merged with your armor.");
@@ -3941,7 +4075,7 @@ signs_enlightenment()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_ORTHOS && !NoBInvis){
-		if(uarmc && uarmc->otyp != MUMMY_WRAPPING){
+		if(uarmc && is_mummy_wrap(uarmc)){
 			putstr(en_win, 0, "Your cloak blows in a nonexistent wind.");
 			message = TRUE;
 		}
@@ -3973,7 +4107,7 @@ signs_enlightenment()
 	}
 	if(u.sealsActive&SEAL_YMIR && !Invis){
 		if(moves>5000 && moves <= 10000){
-			if(!(uarm || uarmc))
+			if(!((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
 				putstr(en_win, 0, "Your skin color is a bit off.");
 			else
 				putstr(en_win, 0, "Your skin is hidden under your clothes.");
@@ -3991,13 +4125,13 @@ signs_enlightenment()
 				putstr(en_win, 0, "Your rotting is hidden under your clothes.");
 			message = TRUE;
 		} else if(moves>50000 && moves <= 100000){
-			if(!(uarmc && uarmg && uarmf && uarm && uarmh))
+			if(!(uarmc && uarmg && uarmf && (uarm && arm_blocks_upper_body(uarm->otyp)) && uarmh))
 				putstr(en_win, 0, "Your rotted body bristles with fungal sporangia and burrowing vermin.");
 			else
 				putstr(en_win, 0, "Your rotted form is hidden under your clothes.");
 			message = TRUE;
 		} else if(moves>100000){
-			if(!(uarmc && uarmg && uarmf && uarm && uarmh && ublindf && ublindf->otyp==MASK))
+			if(!(uarmc && uarmg && uarmf && (uarm && arm_blocks_upper_body(uarm->otyp)) && uarmh && ublindf && ublindf->otyp==MASK))
 				putstr(en_win, 0, "Your putrid body is a riot of fungal forms and saprophagous insects.");
 			else
 				putstr(en_win, 0, "Your putrid form is hidden under your clothes.");
@@ -4346,7 +4480,7 @@ signs_mirror()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_BALAM && !Invis){
-		if(uarmc || uarm)
+		if(uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))
 			putstr(en_win, 0, "Freezing water leaks from a gash in your neck, but is hidden by your clothes.");
 		else
 			putstr(en_win, 0, "Freezing water leaks from a deep gash in your neck.");
@@ -4357,7 +4491,7 @@ signs_mirror()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_BERITH && !Invis){
-		if(!(uarm && is_metallic(uarm) && uarmg && uarmf && uarmh))
+		if(!(uarm && arm_blocks_upper_body(uarm->otyp) && is_metallic(uarm) && uarmg && uarmf && uarmh))
 			putstr(en_win, 0, "You are drenched in gore.");
 		else
 			putstr(en_win, 0, "Your armor is faced with crimson enamel.");
@@ -4377,7 +4511,7 @@ signs_mirror()
 		}
 	}
 	if(u.sealsActive&SEAL_DANTALION && !NoBInvis){
-		if(!(uarmc || ((uarm && uarm->otyp != CRYSTAL_PLATE_MAIL) || uarmu))){
+		if(!(uarmc || ((uarm && !is_opaque(uarm)) || uarmu))){
 			switch(u.ulevel/10+1){
 				case 1:
 				putstr(en_win, 0, "There is an extra face growing on your chest.");
@@ -4403,7 +4537,7 @@ signs_mirror()
 	}
 	// if(u.sealsActive&SEAL_SHIRO);
 	if(u.sealsActive&SEAL_ECHIDNA && !Invis){
-		if(!(uarmf && (uarmc || uarm)))
+		if(!(uarmf && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))))
 			putstr(en_win, 0, "Your hips give rise to twin serpent's tails instead of legs.");
 		else
 			putstr(en_win, 0, "Your serpentine legs are disguised by your clothes.");
@@ -4414,14 +4548,14 @@ signs_mirror()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_ENKI && !Invis){
-		if(!(uarm || uarmc))
+		if(!((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
 			putstr(en_win, 0, "Water runs off your body in steady rivulets.");
 		else
 			putstr(en_win, 0, "Your body's runoff is caught by your clothes.");
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_EVE && !NoBInvis){
-		if(!uarm && !uarmc){
+		if(!(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc){
 			putstr(en_win, 0, "There is a blood-caked wound on your stomach.");
 			message = TRUE;
 		}
@@ -4449,7 +4583,7 @@ signs_mirror()
 		} else if(!uarmc && moves <= u.irisAttack+5){
 			putstr(en_win, 0, "There are iridescent tentacles wrapped around your forearms.");
 			message = TRUE;
-		} else if(!uarm && !uarmc){
+		} else if(!(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc){
 			putstr(en_win, 0, "There are iridescent veins just under the skin of your forearms.");
 			message = TRUE;
 		}
@@ -4469,14 +4603,14 @@ signs_mirror()
 		}
 	}
 	if(u.sealsActive&SEAL_MARIONETTE && !NoBInvis){
-		if(!(uarm && is_metallic(uarm)))
+		if(!((uarm && arm_blocks_upper_body(uarm->otyp))&& is_metallic(uarm)))
 			putstr(en_win, 0, "Metal wires protrude from your elbows, knees, and back.");
 		else
 			putstr(en_win, 0, "The metal wires protruding from your body have merged with your armor.");
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_MOTHER && !NoBInvis){
-		if(!uarmg && !(uarmc && uarmc->otyp == MUMMY_WRAPPING))
+		if(!uarmg && !(uarmc && is_mummy_wrap(uarmc)))
 			putstr(en_win, 0, "The eyes on your fingers and palms stare back at you.");
 		else
 			putstr(en_win, 0, "The eyes on your fingers and palms are covered up.");
@@ -4489,7 +4623,7 @@ signs_mirror()
 		}
 	}
 	if(u.sealsActive&SEAL_ORTHOS && !NoBInvis){
-		if(uarmc && uarmc->otyp != MUMMY_WRAPPING){
+		if(uarmc && !is_mummy_wrap(uarmc)){
 			putstr(en_win, 0, "Your cloak blows in a nonexistent wind.");
 			message = TRUE;
 		}
@@ -4530,7 +4664,7 @@ signs_mirror()
 	}
 	if(u.sealsActive&SEAL_YMIR && !Invis){
 		if(moves>5000 && moves <= 10000){
-			if(!(uarm || uarmc))
+			if(!((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
 				putstr(en_win, 0, "Your skin color is a bit off.");
 			else
 				putstr(en_win, 0, "Your skin is hidden under your clothes.");
@@ -4548,13 +4682,13 @@ signs_mirror()
 				putstr(en_win, 0, "Your rot is hidden under your clothes.");
 			message = TRUE;
 		} else if(moves>50000 && moves <= 100000){
-			if(!(uarmc && uarmg && uarmf && uarm && uarmh))
+			if(!(uarmc && uarmg && uarmf && (uarm && arm_blocks_upper_body(uarm->otyp)) && uarmh))
 				putstr(en_win, 0, "Your rotted body bristles with fungal sporangia and burrowing vermin.");
 			else
 				putstr(en_win, 0, "Your rotted form is hidden under your clothes.");
 			message = TRUE;
 		} else if(moves>100000){
-			if(!(uarmc && uarmg && uarmf && uarm && uarmh && ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE)))
+			if(!(uarmc && uarmg && uarmf && (uarm && arm_blocks_upper_body(uarm->otyp)) && uarmh && ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE)))
 				putstr(en_win, 0, "Your putrid body is a riot of fungal forms and saprophagous insects.");
 			else
 				putstr(en_win, 0, "Your putrid form is hidden under your clothes.");
@@ -4825,6 +4959,9 @@ int typ;
       any.a_int = 4;
       add_menu(win, NO_GLYPH, &any, 'd', 0, ATR_NONE, "View discoveries", MENU_UNSELECTED);
 
+      any.a_int = 5;
+      add_menu(win, NO_GLYPH, &any, 'f', 0, ATR_NONE, "Call an item on the floor a certain type", MENU_UNSELECTED);
+
       any.a_int = 0;
       add_menu(win, NO_GLYPH, &any, 0, 0, ATR_NONE, "", MENU_UNSELECTED);
 
@@ -4864,6 +5001,7 @@ int typ;
 	}
 	break;
     case 3: dodiscovered(); break;
+    case 4: do_floorname(); break;
     }
     return 0;
 }
@@ -5023,6 +5161,55 @@ int final;
 	    Sprintf(buf, "magically identified %ld item%s",
 		    u.uconduct.IDs, plur(u.uconduct.IDs));
 	    you_have_X(buf);
+	}
+	if(is_june()){
+#define	CHECK_ACHIEVE(aflag, string) \
+	if(achieve.trophies&aflag){\
+		putstr(en_win, 0, string);\
+	}
+		putstr(en_win, 0, "");
+		putstr(en_win, 0, "Junethack challenges:");
+		putstr(en_win, 0, "");
+	CHECK_ACHIEVE(ARC_QUEST,"Walking international incident: completed archeologist quest")
+	CHECK_ACHIEVE(CAV_QUEST,"Serpent slayer: completed caveman quest")
+	CHECK_ACHIEVE(CON_QUEST,"Sentence commuted: completed convict quest")
+	CHECK_ACHIEVE(KNI_QUEST,"Into the crystal cave: completed knight quest")
+	CHECK_ACHIEVE(ANA_QUEST,"Back from the future: completed anachrononaut quest")
+	CHECK_ACHIEVE(AND_QUEST,"Glory to mankind: completed android quest")
+	CHECK_ACHIEVE(BIN_QUEST,"33 spirits: completed binder quest")
+	CHECK_ACHIEVE(PIR_QUEST,"Not so inconceivable: completed pirate quest")
+	CHECK_ACHIEVE(BRD_QUEST,"Not so spoony: completed bard quest")
+	CHECK_ACHIEVE(NOB_QUEST,"Rebellion crushed: completed base noble quest")
+	CHECK_ACHIEVE(MAD_QUEST,"Oh good. I'm not crazy: completed madman quest")
+	CHECK_ACHIEVE(HDR_NOB_QUEST,"Family drama: completed hedrow noble quest")
+	CHECK_ACHIEVE(HDR_SHR_QUEST,"On agency: completed hedrow shared quest")
+	CHECK_ACHIEVE(DRO_NOB_QUEST,"Foreshadowing: completed drow noble quest")
+	CHECK_ACHIEVE(DRO_SHR_QUEST,"Old friends: completed drow shared quest")
+	CHECK_ACHIEVE(DWA_NOB_QUEST,"Durin's Bane's Bane: completed dwarf noble quest")
+	CHECK_ACHIEVE(DWA_KNI_QUEST,"Battle of (5-4) armies: completed dwarf knight quest")
+	CHECK_ACHIEVE(GNO_RAN_QUEST,"Strongest of all time: completed gnome ranger quest")
+	CHECK_ACHIEVE(ELF_SHR_QUEST,"Driven out: completed elf shared quest")
+	CHECK_ACHIEVE(LAW_QUEST,"Ripple-resistant tower: completed law quest")
+	CHECK_ACHIEVE(NEU_QUEST,"Key to the (corpse) city: completed neutral quest")
+	CHECK_ACHIEVE(CHA_QUEST,"Asinine paradigm: completed chaos temple quest")
+	CHECK_ACHIEVE(MITH_QUEST,"Chasing after the wind: completed mithardir quest")
+	CHECK_ACHIEVE(MORD_QUEST,"Fossil of the First Age: completed mordor quest")
+	CHECK_ACHIEVE(SECOND_THOUGHTS,"Had second thoughts after a drow quest")
+	CHECK_ACHIEVE(LAMASHTU_KILL,"Does this count as a paradox?: killed Lamashtu")
+	CHECK_ACHIEVE(BAALPHEGOR_KILL,"A universe without motion: killed Baalphegor")
+	CHECK_ACHIEVE(ANGEL_VAULT,"Opened an angelic hell-vault")
+	CHECK_ACHIEVE(ANCIENT_VAULT,"Opened an ancient hell-vault")
+	CHECK_ACHIEVE(TANNINIM_VAULT,"Opened a tanninim hell-vault")
+	CHECK_ACHIEVE(UNKNOWN_WISH,"Earned a wish from an unknown god")
+	CHECK_ACHIEVE(CASTLE_WISH,"Completed the castle")
+	CHECK_ACHIEVE(ILLUMIAN,"Became illuminated")
+	CHECK_ACHIEVE(RESCUE,"Lead an exodus")
+	CHECK_ACHIEVE(FULL_LOADOUT,"Super Fighting Robot: fully upgraded a clockwork automata")
+	CHECK_ACHIEVE(NIGHTMAREHUNTER,"Hunter of Nightmares")
+	CHECK_ACHIEVE(QUITE_MAD,"Quite Mad: Suffered six madnesses")
+	CHECK_ACHIEVE(TOTAL_DRUNK,"Booze Hound")
+		
+#undef	CHECK_ACHIEVE
 	}
 	/* Pop up the window and wait for a key */
 	display_nhwindow(en_win, TRUE);

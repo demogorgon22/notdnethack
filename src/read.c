@@ -51,6 +51,8 @@ doread()
 	Strcpy(class_list, readable);
 	if(carrying_applyable_ring())
 		add_class(class_list, RING_CLASS);
+	if(carrying_applyable_amulet())
+		add_class(class_list, AMULET_CLASS);
 	if(carrying(LIGHTSABER) || carrying(CANDLE_OF_INVOCATION))
 		add_class(class_list, TOOL_CLASS);
 	if(carrying_readable_weapon())
@@ -64,6 +66,7 @@ doread()
 	if((scroll->oartifact 
 			&& !(scroll->oclass == SCROLL_CLASS)
 			&& !(scroll->oclass == SPBOOK_CLASS)
+			&& !(scroll->oclass == AMULET_CLASS)
 			&& !arti_mandala(scroll)
 			&& scroll->oartifact != ART_ROD_OF_THE_ELVISH_LORDS
 		) || scroll->otyp==LIGHTSABER
@@ -131,7 +134,7 @@ doread()
 					static const char *numbers[]={
 						"no", "a single", "two","three","four","five","six","seven"
 					};
-					pline("Around the pommel, there is a crownlike decoration, with %s raised segment%s.",
+					pline("There is a crownlike decoration with %s raised segment%s around the pommel.",
 						numbers[artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPflights], artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPflights!=1 ? "s" : "");
 				}
 				return(1);
@@ -260,7 +263,7 @@ doread()
 						break;
 					} else if (spellid(i) == NO_SPELL)  {
 						spl_book[i].sp_id = SPE_IDENTIFY;
-						spl_book[i].sp_lev = objects[SPE_CONE_OF_COLD].oc_level;
+						spl_book[i].sp_lev = objects[SPE_IDENTIFY].oc_level;
 						spl_book[i].sp_know = 20000;
 						You("learn to cast Identify!");
 						break;
@@ -357,6 +360,19 @@ doread()
 		}
 		else{
 			pline("There is %s engraved on the ring.",fetchHaluWard((int)scroll->oward));
+		}
+		return(1);
+	}
+	else if(scroll->oclass == AMULET_CLASS && scroll->oward){
+		if(!(scroll->ohaluengr)){
+			pline("A %s is engraved on the amulet.",wardDecode[scroll->oward]);
+			if( !(u.wardsknown & get_wardID(scroll->oward)) ){
+				You("have learned a new warding sign!");
+				u.wardsknown |= get_wardID(scroll->oward);
+			}
+		}
+		else{
+			pline("There is %s engraved on the amulet.",fetchHaluWard((int)scroll->oward));
 		}
 		return(1);
 	}
@@ -499,8 +515,8 @@ doread()
 	    char buf[BUFSZ];
 	    int erosion;
 		if(arti_mandala(scroll)){
-			if(uarmu && uarmu == scroll && uarm){
-				if( uarm->obj_material == GLASS){
+			if(uarmu && uarmu == scroll && uarm && arm_blocks_upper_body(uarm->otyp)){
+				if( !is_opaque(uarm)){
 					You("look at your shirt through your glass armor.");
 				}
 				else{
@@ -519,8 +535,8 @@ doread()
 				You_cant("feel any Braille writing.");
 				return 0;
 			}
-			if(uarmu && uarmu == scroll && uarm){
-				if( uarm->obj_material == GLASS){
+			if(uarmu && uarmu == scroll && uarm && arm_blocks_upper_body(uarm->otyp)){
+				if(!is_opaque(uarm)){
 					You("look at your shirt through your glass armor.");
 				}
 				else{
@@ -562,7 +578,7 @@ doread()
 	    return(0);
 		//Note, you CAN scream one syllable
 	} else if (Screaming && (scroll->oclass == SCROLL_CLASS || scroll->oclass == SPBOOK_CLASS)){
-	    You_cant("read that aloud, you're too buisy screaming!");
+	    You_cant("read that aloud, you're too busy screaming!");
 	    return(0);
 	} else if (Blind) {
 	    const char *what = 0;
@@ -1431,7 +1447,7 @@ losesaninsight(percent)
 		change_uinsight(-1*mvitals[indices[i]].insight_gained);
 	    mvitals[indices[i]].insight_gained = 0;
 	    mvitals[indices[i]].vis_insight = FALSE;
-	    mvitals[indices[i]].onekill = FALSE;
+	    mvitals[indices[i]].insightkill = FALSE;
 	}
 }
 
@@ -1462,7 +1478,12 @@ int howmuch;
 
 	forget_map(howmuch);
 	forget_traps();
-
+	
+	//Silently reduce the doubt timer (itimeout_incr handles negative timeouts)
+	if(HDoubt){
+		make_doubtful(itimeout_incr(HDoubt, -1*howmuch), FALSE);
+	}
+	
 	/* 1 in 3 chance of forgetting some levels */
 	if (howmuch && !rn2(3)) forget_levels(howmuch);
 
@@ -1894,6 +1915,10 @@ struct obj	*sobj;
 #endif
 		}
 		if(Punished && !confused) unpunish();
+		if(u.umummyrot && !confused){
+			u.umummyrot = 0;
+			You("stop shedding dust.");
+		}
 		update_inventory();
 		break;
 	    }
@@ -2200,8 +2225,7 @@ struct obj	*sobj;
 			    register struct monst *mtmp;
 
 	    	    	    /* Make the object(s) */
-	    	    	    otmp2 = mksobj(confused ? ROCK : BOULDER,
-	    	    	    		FALSE, FALSE);
+	    	    	    otmp2 = mksobj(confused ? ROCK : BOULDER, MKOBJ_NOINIT);
 	    	    	    if (!otmp2) continue;  /* Shouldn't happen */
 	    	    	    otmp2->quan = confused ? rn1(5,2) : 1;
 	    	    	    otmp2->owt = weight(otmp2);
@@ -2255,8 +2279,7 @@ struct obj	*sobj;
 		    struct obj *otmp2;
 
 		    /* Okay, _you_ write this without repeating the code */
-		    otmp2 = mksobj(confused ? ROCK : BOULDER,
-				FALSE, FALSE);
+		    otmp2 = mksobj(confused ? ROCK : BOULDER, MKOBJ_NOINIT);
 		    if (!otmp2) break;
 		    otmp2->quan = confused ? rn1(5,2) : 1;
 		    otmp2->owt = weight(otmp2);
@@ -2735,7 +2758,7 @@ int x, y;
 genericptr_t val;
 {
 	if (val) {
-		struct obj *ispe = mksobj(SPE_LIGHT, TRUE, FALSE);
+		struct obj *ispe = mksobj(SPE_LIGHT, NO_MKOBJ_FLAGS);
 		bhitpile(ispe, bhito, x, y);
 	}
 	else {
@@ -3309,6 +3332,15 @@ int gen_restrict;
 			else if (!strncmpi(bufp, "crystalfied ", l = 12)) {
 				undeadtype = CRYSTALFIED;
 			}
+			else if (!strncmpi(bufp, "slimy ", l = 6)) {
+				undeadtype = SLIME_REMNANT;
+			}
+			else if (!strncmpi(bufp, "fulvous ", l = 8)) {
+				undeadtype = YELLOW_TEMPLATE;
+			}
+			else if (!strncmpi(bufp, "mad_angel ", l = 10)) {
+				undeadtype = MAD_TEMPLATE;
+			}
 			else if (!strncmpi(bufp, "fractured ", l = 10)) {
 				undeadtype = FRACTURED;
 			}
@@ -3347,6 +3379,12 @@ int gen_restrict;
 				undeadtype = SKELIFIED;
 			else if (!strncmpi(p, "vitrean",	7))
 				undeadtype = CRYSTALFIED;
+			else if (!strncmpi(p, "remnant",	7))
+				undeadtype = SLIME_REMNANT;
+			else if (!strncmpi(p, "fulvous",	7))
+				undeadtype = YELLOW_TEMPLATE;
+			else if (!strncmpi(p, "mad_angel",	9))
+				undeadtype = MAD_TEMPLATE;
 			else if (!strncmpi(p, "witness",	7))
 				undeadtype = FRACTURED;
 			else if (!strncmpi(p, "one", 3) && ((q = rindex(bufp, ' ')) != 0))
@@ -3375,6 +3413,8 @@ int gen_restrict;
 				undeadtype = CRANIUM_RAT;
 			else if (!strncmpi(p, "mistweaver", 10))
 				undeadtype = MISTWEAVER;
+			else if (!strncmpi(p, "worldshaper", 11))
+				undeadtype = WORLD_SHAPER;
 			else
 			{
 				/* no suffix was used, undo the split made to search for suffixes */
@@ -3398,7 +3438,6 @@ int gen_restrict;
 			/* either keep what was set above, or nothing */
 			break;
 		}
-
 		/* possibly allow the derivation of monster to be specified */
 		if (specify_derivation != -1)
 		{

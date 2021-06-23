@@ -35,6 +35,7 @@ int atype;
 	case AD_ACID: return "acid";
 	case AD_DRLI: return "dark energy";
 	case AD_GOLD: return "gold";
+	case AD_BLUD: return "spray of blood";
 	default:
 		impossible("unaccounted-for breath type in breathwep: %d", atype);
 		return "404 BREATH NOT FOUND";
@@ -55,7 +56,7 @@ struct obj *obj;
 	} else {
 		obj_extract_self(obj);
 		possibly_unwield(mon, FALSE);
-		if (obj->timed) obj_stop_timers(obj);
+		if (obj->timed) stop_all_timers(obj->timed);
 		if (obj->owornmask) {
 		    mon->misc_worn_check &= ~obj->owornmask;
 		    update_mon_intrinsics(mon, obj, FALSE, FALSE);
@@ -106,6 +107,7 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 		(attacktype(magr->data, AT_WEAP) && mrwep) ||
 		(attacktype(magr->data, AT_DEVA) && mrwep) ||
 		(attacktype(magr->data, AT_BREA) && !magr->mcan) ||
+		(attacktype(magr->data, AT_BRSH) && !magr->mcan) ||
 		(attacktype(magr->data, AT_MAGC) && !magr->mcan) ||
 		(attacktype(magr->data, AT_MMGC) && !magr->mcan) ||
 		(attacktype(magr->data, AT_GAZE) && !magr->mcan) ||
@@ -149,7 +151,7 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 			mdef = mdef->nmon;
 
 		/* validate */
-		if (!mdef)
+		if (!mdef || (mdef != &youmonst && DEADMONSTER(mdef)))
 			continue;
 
 		/* get location of next target */
@@ -178,6 +180,10 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 		if (distmin(magr->mx, magr->my, tarx, tary) < 2)
 			continue;
 
+		/* don't make ranged attacks beyond max-range */
+		if (distmin(magr->mx, magr->my, tarx, tary) > BOLT_LIM)
+			continue;
+
 		/* horrible kludge: Oona doesn't target those resistant to her at range */
 		if (magr->mtyp == PM_OONA && (mdef == &youmonst ? Oona_resistance : resists_oona(mdef)))
 			continue;
@@ -193,6 +199,11 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 				(attacktype(magr->data, AT_BREA) && !magr->mcan) ||
 				(attacktype(magr->data, AT_MAGC) && !magr->mcan && !real_spell_adtyp((attacktype_fordmg(magr->data, AT_MAGC, AD_ANY))->adtyp)) ||
 				(attacktype(magr->data, AT_MMGC) && !magr->mcan && !real_spell_adtyp((attacktype_fordmg(magr->data, AT_MMGC, AD_ANY))->adtyp))
+			))
+			||
+			/* attacks that splash */
+			(m_insplash(magr, mdef, tarx, tary, dogbesafe) && (
+				(attacktype(magr->data, AT_BRSH) && !magr->mcan)
 			))
 			||
 			/* attacks that are on a line that DO stop on hit */
@@ -420,7 +431,7 @@ int whodidit;	/* 1==hero, 0=other, -1==just check whether it'll pass thru */
 	case WAND_CLASS:
 	case BALL_CLASS:
 	case CHAIN_CLASS:
-/*	case BED_CLASS:*/
+	case BED_CLASS:
 		hits = TRUE;
 		break;
 	default:

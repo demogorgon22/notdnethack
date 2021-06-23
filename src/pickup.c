@@ -1086,7 +1086,8 @@ int *wt_before, *wt_after;
     *wt_before = iw;
     *wt_after  = wt;
 
-    if (wt < 0)
+    /* special case the iron ball here, it actually improves carrycap */
+    if (wt < 0 || obj->oartifact == ART_IRON_BALL_OF_LEVITATION)
 	return count;
 
     /* see how many we can lift */
@@ -1241,7 +1242,8 @@ boolean telekinesis;
 	if (prev_encumbr < flags.pickup_burden)
 		prev_encumbr = flags.pickup_burden;
 	next_encumbr = calc_capacity(new_wt - old_wt);
-	if (next_encumbr > prev_encumbr) {
+	/* Special case iron ball because in principle one can always pick it up */
+	if (next_encumbr > prev_encumbr && obj->oartifact != ART_IRON_BALL_OF_LEVITATION) {
 	    if (telekinesis) {
 		result = 0;	/* don't lift */
 	    } else {
@@ -1470,8 +1472,9 @@ struct obj *otmp;
 		}
 	    Strcpy(u.ushops, saveushops);
 	    /* if you're outside the shop, make shk notice */
-	    if (!index(u.ushops, *fakeshop))
-		remote_burglary(otmp->ox, otmp->oy);
+	    if (!index(u.ushops, *fakeshop)) {
+			remote_burglary(otmp);
+		}
 	}
 	if (otmp->no_charge)	/* only applies to objects outside invent */
 	    otmp->no_charge = 0;
@@ -1989,6 +1992,7 @@ dopetequip()
 		}
 		if(!freehand()){
 			You("have no free %s to dress %s with!", body_part(HAND), mon_nam(mtmp));
+		    return (0);
 		}
 		if(otmp->oclass == AMULET_CLASS){
 			flag = W_AMUL;
@@ -2008,6 +2012,13 @@ dopetequip()
 			flag = W_ARM;
 		} else {
 			pline("Error: Unknown monster armor type!?");
+			return 0;
+		}
+		if(mtmp->mtyp == PM_HARROWER_OF_ZARIEL
+		 && ((flag == W_ARM && arm_blocks_upper_body(otmp->otyp))
+			|| flag == W_ARMU
+		)){
+			You_cant("fit %s on over the thicket of spears stuck through %s chest.", the(xname(otmp)), mhis(mtmp));
 			return 0;
 		}
 		if(otmp->unpaid)  addtobill(otmp, FALSE, FALSE, FALSE);
@@ -2205,12 +2216,13 @@ register struct obj *obj;
 		obj->age = monstermoves - obj->age; /* actual age */
 		/* stop any corpse timeouts when frozen */
 		if (obj->otyp == CORPSE && obj->timed) {
-			long rot_alarm = stop_timer(ROT_CORPSE, (genericptr_t)obj);
-			(void) stop_timer(MOLDY_CORPSE, (genericptr_t)obj);
-			(void) stop_timer(SLIMY_CORPSE, (genericptr_t)obj);
-			(void) stop_timer(ZOMBIE_CORPSE, (genericptr_t)obj);
-			(void) stop_timer(SHADY_CORPSE, (genericptr_t)obj);
-			(void) stop_timer(REVIVE_MON, (genericptr_t)obj);
+			long rot_alarm = stop_timer(ROT_CORPSE, obj->timed);
+			(void) stop_timer(MOLDY_CORPSE, obj->timed);
+			(void) stop_timer(SLIMY_CORPSE, obj->timed);
+			(void) stop_timer(ZOMBIE_CORPSE, obj->timed);
+			(void) stop_timer(SHADY_CORPSE, obj->timed);
+			(void) stop_timer(YELLOW_CORPSE, obj->timed);
+			(void) stop_timer(REVIVE_MON, obj->timed);
 			/* mark a non-reviving corpse as such */
 			if (rot_alarm) obj->norevive = 1;
 		}
@@ -2718,6 +2730,9 @@ pick_bullet()
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	for(otmp = invent; otmp; otmp = otmp->nobj){
 		if((otmp->otyp >= MAGICITE_CRYSTAL && otmp->otyp <= ROCK) || (otmp->otyp >= BULLET && otmp->otyp <= GAS_GRENADE)){
+			if (is_grenade(otmp) && otmp->oarmed)
+				continue;
+
 			Sprintf1(buf, doname(otmp));
 			any.a_char = otmp->invlet;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
@@ -3038,6 +3053,8 @@ register int held;
 	    open_crazy_box(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
 	    used = 1;
 		return used;
+	}else if(obj->spe == 8){
+		// Nothing. Fulvous desk spawns monsters.
 	}
 	/* Count the number of contained objects. Sometimes toss objects if a cursed magic bag. */
 	if (cobj_is_magic_chest(obj))

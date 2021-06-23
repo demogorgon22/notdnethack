@@ -71,6 +71,29 @@ struct objclass {
 #define CLOAK_DR       (UPPER_TORSO_DR|LOWER_TORSO_DR|LEG_DR)
 #define ALL_DR         (UPPER_TORSO_DR|LOWER_TORSO_DR|HEAD_DR|LEG_DR|ARM_DR)
 
+#define default_DR_slot(mask) (mask == W_ARM ? TORSO_DR :\
+							   mask == W_ARMC ? CLOAK_DR :\
+							   mask == W_ARMS ? ARM_DR :\
+							   mask == W_ARMH ? HEAD_DR :\
+							   mask == W_ARMG ? ARM_DR :\
+							   mask == W_ARMF ? LEG_DR :\
+							   mask == W_WEP ? ARM_DR :\
+							   mask == W_QUIVER ? UPPER_TORSO_DR :\
+							   mask == W_SWAPWEP ? ARM_DR :\
+							   mask == W_ART ? 0 :\
+							   mask == W_ARTI ? 0 :\
+							   mask == W_AMUL ? UPPER_TORSO_DR :\
+							   mask == W_RINGL ? ARM_DR :\
+							   mask == W_RINGR ? ARM_DR :\
+							   mask == W_TOOL ? HEAD_DR :\
+							   mask == W_SADDLE ? LOWER_TORSO_DR :\
+							   mask == W_BALL ? 0 :\
+							   mask == W_CHAIN ? LEG_DR :\
+							   mask == W_SPIRIT ? 0 :\
+							   mask == W_GLYPH ? HEAD_DR :\
+							   mask == W_SKIN ? ALL_DR :\
+							   UPPER_TORSO_DR)
+
 	/*Bitfield(oc_subtyp,3);*/	/* Now too big for a bitfield... see below */
 
 	Bitfield(oc_material,5); //31 max
@@ -83,22 +106,23 @@ struct objclass {
 #define LEATHER		7
 #define WOOD		8
 #define BONE		9
-#define SHELL_MAT	10
-#define DRAGON_HIDE	11	/* not leather! */
-#define IRON		12	/* Fe - includes steel */
-#define METAL		13	/* Sn, &c. */
-#define COPPER		14	/* Cu - includes brass and bronze*/
-#define SILVER		15	/* Ag */
-#define GOLD		16	/* Au */
-#define PLATINUM	17	/* Pt */
-#define MITHRIL		18
-#define PLASTIC		19
-#define GLASS		20
-#define GEMSTONE	21
-#define MINERAL		22
-#define OBSIDIAN_MT	23
-#define SALT		24
-#define SHADOWSTEEL	25
+#define CHITIN		10
+#define SHELL_MAT	11
+#define DRAGON_HIDE	12	/* not leather! */
+#define IRON		13	/* Fe - includes steel */
+#define METAL		14	/* Sn, &c. */
+#define COPPER		15	/* Cu - includes brass and bronze*/
+#define SILVER		16	/* Ag */
+#define GOLD		17	/* Au */
+#define PLATINUM	18	/* Pt */
+#define MITHRIL		19
+#define PLASTIC		20
+#define GLASS		21
+#define GEMSTONE	22
+#define MINERAL		23
+#define OBSIDIAN_MT	24
+#define SALT		25
+#define SHADOWSTEEL	26
  //Note: 31 max, coordinate with obj.h
 	Bitfield(oc_showmat,4);
 #define UNIDED	1	/* always show material when base object type is unknown */
@@ -106,7 +130,7 @@ struct objclass {
 #define NUNIDED 4	/* never show material when base object type is unknown */
 #define NIDED	8	/* never show material when base object type is known */
 
-#define is_organic(otmp)	((otmp)->obj_material <= WOOD)
+#define is_organic(otmp)	((otmp)->obj_material <= CHITIN)
 #define is_metallic(otmp)	((otmp)->obj_material >= IRON && \
 				 (otmp)->obj_material <= MITHRIL)
 #define is_hard(otmp)	((otmp)->obj_material >= WOOD)
@@ -221,8 +245,9 @@ extern NEARDATA struct colorTextClr LightsaberColor[];
 #define CHAIN_CLASS	16
 #define VENOM_CLASS	17
 #define TILE_CLASS	18
-/*define BED_CLASS	19*/
-#define MAXOCLASSES	19
+#define BED_CLASS	19
+#define SCOIN_CLASS	20
+#define MAXOCLASSES	21
 
 #define ALLOW_COUNT	(MAXOCLASSES+1) /* Can be used in the object class */
 #define ALL_CLASSES	(MAXOCLASSES+2) /* input to getobj().		   */
@@ -256,7 +281,8 @@ extern uchar oc_syms[MAXOCLASSES];		/* current class symbols */
 #define CHAIN_SYM	'_'
 #define VENOM_SYM	'.'
 #define TILE_SYM	'-'
-#define BED_SYM		'#'
+#define BED_SYM		'\\'
+#define SCOIN_SYM	'|'
 
 struct fruit {
 	char fname[PL_FSIZ];

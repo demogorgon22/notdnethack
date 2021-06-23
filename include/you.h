@@ -296,6 +296,7 @@ struct you {
 #define TT_WEB		2
 #define TT_LAVA		3
 #define TT_INFLOOR	4
+#define TT_FLESH_HOOK	5
 	char	urooms[5];	/* rooms (roomno + 3) occupied now */
 	char	urooms0[5];	/* ditto, for previous position */
 	char	uentered[5];	/* rooms (roomno + 3) entered this turn */
@@ -376,9 +377,10 @@ struct you {
 #define MATTK_U_STYLE       27
 #define MATTK_U_MONST       28
 #define MATTK_U_ELMENTAL    29
-#define MATTK_TELEK	    30
-#define MATTK_CRAZE	    31
-#define MATTK_PULSE	    32
+#define MATTK_WHISPER    	30
+#define MATTK_TELEK	    31
+#define MATTK_CRAZE	    32
+#define MATTK_PULSE	    33
 
 
 
@@ -444,15 +446,24 @@ struct you {
 	Bitfield(shambin,2);		/* Whether the shambling horror has normal innards, undifferentiated innards, or solid/nonexistent innards */
 	Bitfield(stumbin,2);		/* Whether the stumbling horror has normal innards, undifferentiated innards, or solid/nonexistent innards */
 	Bitfield(wandein,2);		/* Whether the wandering horror has normal innards, undifferentiated innards, or solid/nonexistent innards */
-	Bitfield(umartial,1);		/* blessed food detection; sense unsafe food */
+	Bitfield(umartial,1);		/* Do you know kung fu? */
+	Bitfield(umaniac,1);		/* Swings wildly */
 	Bitfield(phasengn,1);		/* clockwork phase engine */
-	/* 24 free bits */
+	Bitfield(umummyrot,1);		/* you have mummy rot */
+	Bitfield(veil,1);			/* you have not peaked behind the veil */
+#define lift_veil() if(u.veil){\
+				u.veil = FALSE;\
+				change_uinsight(1);\
+			}
+	Bitfield(render_thought,1);	/* you got a thought from a veil-render */
+	/* 20 free bits */
 	
 	int oonaenergy;				/* Record the energy type used by Oona in your game. (Worm that Walks switches?) */
 	int brand_otyp;				/* Record the otyp of Fire and Frost Brand in this game */
 	char ring_wishes;			/* Record the how many wishes were/should be in the castle ring */
 	unsigned udg_cnt;		/* timer for wizard intervention WRONG?:how long you have been demigod */
 	unsigned ill_cnt;		/* timer for illurien intervention */
+	unsigned yel_cnt;		/* timer for stranger intervention */
 	struct u_event	uevent;		/* certain events have happened */
 	struct u_have	uhave;		/* you're carrying special objects */
 	struct u_conduct uconduct;	/* KMH, conduct */
@@ -501,6 +512,7 @@ struct you {
 	long lastprayed;
 	long lastslept;
 	long nextsleep;
+	long whisperturn;
 	int regen_blocked;
 	uchar lastprayresult, reconciled;
 #define	PRAY_NONE	0
@@ -551,14 +563,25 @@ struct you {
 #define	MAD_COLD_NIGHT		0x0000000000020000L
 #define	MAD_OVERLORD		0x0000000000040000L
 #define	MAD_DREAMS			0x0000000000080000L
-#define	MAD_HELMINTHOPHOBIA	0x0000000000100000L
-#define	MAD_GOAT_RIDDEN		0x0000000000200000L
-#define	MAD_FRENZY			0x0000000000400000L
+#define	MAD_NON_EUCLID		0x0000000000100000L
+#define	MAD_SPIRAL			0x0000000000200000L
+#define	MAD_HELMINTHOPHOBIA	0x0000000000400000L
+#define	MAD_GOAT_RIDDEN		0x0000000000800000L
+#define	MAD_FRENZY			0x0000000001000000L
+#define	MAD_THOUSAND_MASKS	0x0000000002000000L
+#define	MAD_FORMICATION		0x0000000004000000L
+#define	MAD_HOST			0x0000000008000000L
+#define	MAD_SCIAPHILIA		0x0000000010000000L
+#define	MAD_FORGETFUL		0x0000000020000000L
+#define	MAD_TOO_BIG			0x0000000040000000L
+#define	MAD_APOSTASY		0x0000000080000000L
+#define	MAD_ROTTING			0x0000000100000000L
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
+	int 	utaneggs;	/* tannin eggs */
 	int uinvault;
 	struct monst *ustuck;
 	boolean petattacked;
@@ -810,7 +833,7 @@ struct you {
 							 (Role_if(PM_ARCHEOLOGIST) || Role_if(PM_EXILE) || Role_if(PM_CAVEMAN) || Role_if(PM_MONK) || \
 								Role_if(PM_NOBLEMAN) || Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || \
 								(u.sealsActive&SEAL_ENKI) || (Blind_telepat && uwep && is_lightsaber(uwep))) ? 0.75 :\
-							 (Role_if(PM_BARD) || Role_if(PM_HEALER) || Role_if(PM_TOURIST) || Role_if(PM_WIZARD)) ? 0.50:\
+							 (Role_if(PM_BARD) || Role_if(PM_HEALER) || Role_if(PM_TOURIST) || Role_if(PM_WIZARD) || Role_if(PM_MADMAN)) ? 0.50:\
 							  .5) /* Failsafe */
 
 extern long sealKey[34]; /*Defined in u_init.c*/

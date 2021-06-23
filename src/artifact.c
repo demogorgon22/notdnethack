@@ -24,6 +24,7 @@ STATIC_DCL void FDECL(awaken_monsters,(int));
 
 STATIC_DCL void FDECL(do_item_blast, (int));
 STATIC_DCL void FDECL(nitocris_sarcophagous, (struct obj *));
+STATIC_DCL void FDECL(fulvous_desk, (struct obj *));
 
 int FDECL(donecromenu, (const char *,struct obj *));
 int FDECL(dopetmenu, (const char *,struct obj *));
@@ -41,17 +42,17 @@ static NEARDATA struct obj *artiptr;/* last/current artifact being used */
 static NEARDATA int necro_effect;	/* necro effect picked */
 static NEARDATA int lostname;	/* spirit # picked */
 
-static NEARDATA	int oozes[12] = {0, PM_ACID_BLOB, PM_QUIVERING_BLOB, 
+static NEARDATA	int oozes[] = {PM_ACID_BLOB, PM_QUIVERING_BLOB, 
 					  PM_GELATINOUS_CUBE, PM_DARKNESS_GIVEN_HUNGER, PM_GRAY_OOZE, 
 					  PM_BROWN_PUDDING, PM_BLACK_PUDDING, PM_GREEN_SLIME,
 					  PM_AOA, PM_BROWN_MOLD, PM_RED_MOLD};
 
-static NEARDATA	int devils[13] = {0, PM_IMP, PM_LEMURE, 
+static NEARDATA	int devils[] = {PM_IMP, PM_LEMURE, 
 					  PM_LEGION_DEVIL_GRUNT, PM_LEGION_DEVIL_SOLDIER, PM_LEGION_DEVIL_SERGEANT, 
 					  PM_HORNED_DEVIL, PM_BARBED_DEVIL, PM_BONE_DEVIL,
 					  PM_ICE_DEVIL, PM_PIT_FIEND, PM_ANCIENT_OF_ICE, PM_ANCIENT_OF_DEATH};
 
-static NEARDATA	int demons[16] = {0, PM_QUASIT, PM_MANES, PM_QUASIT,
+static NEARDATA	int demons[] = {PM_QUASIT, PM_MANES, PM_QUASIT,
 					  PM_MANES, PM_QUASIT, PM_MANES, 
 					  PM_SUCCUBUS, PM_INCUBUS, PM_VROCK, 
 					  PM_HEZROU, PM_NALFESHNEE, PM_MARILITH,
@@ -506,7 +507,7 @@ aligntyp alignment;	/* target alignment, or A_NONE */
 							!rn2(2) ? SHORT_SWORD :
 									  ATHAME;
 			}
-			otmp = mksobj(otyp, TRUE, FALSE);
+			otmp = mksobj(otyp, NO_MKOBJ_FLAGS);
 		}
 		/* christen the artifact */
 	    otmp = oname(otmp, a->name);
@@ -760,9 +761,10 @@ struct obj *
 mk_special(otmp)
 struct obj *otmp;	/* existing object */
 {
-	int prop = rnd(13);
+	int prop;
 	
 	if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)){
+		prop = rnd(13);
 		switch(prop)
 		{
 		case 1:
@@ -803,6 +805,42 @@ struct obj *otmp;	/* existing object */
 		break;
 		case 13:
 			add_oprop(otmp, OPROP_PSIOW);
+		break;
+		}
+	}
+	else if(otmp->oclass == ARMOR_CLASS){
+		prop = rnd(10);
+		switch(prop)
+		{
+		case 1:
+			add_oprop(otmp, OPROP_FIRE);
+		break;
+		case 2:
+			add_oprop(otmp, OPROP_COLD);
+		break;
+		case 3:
+			add_oprop(otmp, OPROP_ELEC);
+		break;
+		case 4:
+			add_oprop(otmp, OPROP_ACID);
+		break;
+		case 5:
+			add_oprop(otmp, OPROP_MAGC);
+		break;
+		case 6:
+			add_oprop(otmp, OPROP_ANAR);
+		break;
+		case 7:
+			add_oprop(otmp, OPROP_CONC);
+		break;
+		case 8:
+			add_oprop(otmp, OPROP_AXIO);
+		break;
+		case 9:
+			add_oprop(otmp, OPROP_HOLY);
+		break;
+		case 10:
+			add_oprop(otmp, OPROP_UNHY);
 		break;
 		}
 	}
@@ -944,25 +982,22 @@ register boolean mod;
 		    otmp->oartifact = (mod ? m : 0);
 		    if(otmp->oartifact != ART_ILLITHID_STAFF) otmp->age = 0;
 		    if(otmp->otyp == RIN_INCREASE_DAMAGE) otmp->spe = 0;
-		    artinstance[m].exists = mod;
-			// if(otmp->oartifact == ART_DRAGON_PLATE){
-				// otmp->owt = (int)(otmp->owt * 1.5); //450
-			// }
-			// if(otmp->oartifact == ART_EARTH_CRYSTAL){
-				// otmp->owt = (int)(otmp->owt * 2); //300
-			// }
-			if(otmp->oartifact == ART_ROD_OF_SEVEN_PARTS){
-				artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPkills = 7;//number of hits untill you gain a +
-				artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPflights = 0;//number of flights remaining
-			}
-			if(otmp->oartifact == ART_TENSA_ZANGETSU){
-				artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe = u.ulevel;//turns for which you can use Zangetsu safely
-			}
-			if(otmp->oartifact == ART_SODE_NO_SHIRAYUKI){
-				artinstance[ART_SODE_NO_SHIRAYUKI].SnSd1 = 0;//turn on which you can reuse the first dance
-				artinstance[ART_SODE_NO_SHIRAYUKI].SnSd2 = 0;//turn on which you can reuse the second dance
-				artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3 = 0;//turn on which you can reuse the third dance
-				artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3duration = 0;//turn until which the weapon does full damage
+			/* for "summoned" temporary artifacts, artinstance things are skipped, such as declaring the artifact extant */
+			if (!get_ox(otmp, OX_ESUM)) {
+				artinstance[m].exists = mod;
+				if(otmp->oartifact == ART_ROD_OF_SEVEN_PARTS){
+					artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPkills = 7;//number of hits untill you gain a +
+					artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPflights = 0;//number of flights remaining
+				}
+				if(otmp->oartifact == ART_TENSA_ZANGETSU){
+					artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe = u.ulevel;//turns for which you can use Zangetsu safely
+				}
+				if(otmp->oartifact == ART_SODE_NO_SHIRAYUKI){
+					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd1 = 0;//turn on which you can reuse the first dance
+					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd2 = 0;//turn on which you can reuse the second dance
+					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3 = 0;//turn on which you can reuse the third dance
+					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3duration = 0;//turn until which the weapon does full damage
+				}
 			}
 			if(otmp->oartifact && (get_artifact(otmp)->inv_prop == NECRONOMICON || get_artifact(otmp)->inv_prop == SPIRITNAMES || get_artifact(otmp)->inv_prop == ILLITHID)){
 				otmp->ovar1 = 0;//ovar1 will be used to track special powers, via flags
@@ -2086,9 +2121,10 @@ int oartifact;
 
 /* special attack bonus */
 int
-spec_abon(otmp, mon)
+spec_abon(otmp, mon, youagr)
 struct obj *otmp;
 struct monst *mon;
+boolean youagr;
 {
 	register const struct artifact *weap = get_artifact(otmp);
 	int bonus = 0;
@@ -2100,12 +2136,15 @@ struct monst *mon;
 	if(otmp->oartifact == ART_GUNGNIR){
 		bonus = 50;
 	}
+	if(youagr && Role_if(PM_BARD)) //legend lore
+		bonus += 5;
 	
-	if(Role_if(PM_PRIEST)) return bonus + weap->accuracy; //priests always get the maximum to-hit bonus.
+	if(youagr && Role_if(PM_PRIEST)) return bonus + weap->accuracy; //priests always get the maximum to-hit bonus.
 	
 	if (weap && weap->accuracy && spec_applies(otmp, mon, FALSE))
 	    return bonus + rnd((int)weap->accuracy);
-	return 0;
+	
+	return bonus;
 }
 
 int
@@ -2602,8 +2641,8 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 			make_stunned((HStun + 3), FALSE);
 		} else {
 			if(vis) pline("%s is thrown backwards by the gusting winds!",Monnam(mdef));
-			if(bigmonst(mdef->data)) mhurtle(mdef, u.dx, u.dy, 1);
-			else mhurtle(mdef, u.dx, u.dy, 10);
+			if(mdef->data->msize >= MZ_HUGE) mhurtle(mdef, u.dx, u.dy, 1, TRUE);
+			else mhurtle(mdef, u.dx, u.dy, 10, FALSE);
 			if(mdef->mhp <= 0 || migrating_mons == mdef) return vis;//Monster was killed as part of movement OR fell to new level and we should stop.
 		}
 		and = TRUE;
@@ -2619,7 +2658,7 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 		if(youattack){
 			if(dieroll == 1){
 				struct obj *otmp2;
-				long unwornmask;
+				long unwornmask = 0L;
 
 				/* Don't steal worn items, and downweight wielded items */
 				if((otmp2 = mdef->minvent) != 0) {
@@ -2719,7 +2758,7 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 	} // nvPh - !cancelled
 	if (pen->ovar1&SEAL_SHIRO){
 		struct obj *otmp;
-		otmp = mksobj((mvitals[PM_ACERERAK].died > 0) ? BOULDER : ROCK, FALSE, FALSE);
+		otmp = mksobj((mvitals[PM_ACERERAK].died > 0) ? BOULDER : ROCK, MKOBJ_NOINIT);
 		projectile(magr, otmp, (void *)0, HMON_FIRED, mdef->mx, mdef->my, 0, 0, 0, 0, TRUE, FALSE, FALSE);
 		if(mdef->mhp <= 0) return vis;//Monster was killed by throw and we should stop.
 	} // nvPh potential - invisible?
@@ -3045,7 +3084,8 @@ char *type;			/* blade, staff, etc */
 		    *dmgptr = 0;    /* rehumanized, so no more damage */
 		if (u.uenmax > 0) {
 		    You("lose magical energy!");
-		    u.uenmax--;
+		    u.uenbonus--;
+			calc_total_maxen();
 		    if (u.uen > 0) u.uen--;
 		    flags.botl = 1;
 		}
@@ -3054,8 +3094,9 @@ char *type;			/* blade, staff, etc */
 		    mdef->mhp = 1;	/* cancelled clay golems will die */
 		if (youattack && (attacktype(mdef->data, AT_MAGC) || attacktype(mdef->data, AT_MMGC))) {
 		    You("absorb magical energy!");
-		    u.uenmax++;
+		    u.uenbonus++;
 		    u.uen++;
+			calc_total_maxen();
 		    flags.botl = 1;
 		}
 	    }
@@ -3168,7 +3209,7 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_LESSER_COLDW))
 			*truedmgptr += d(2, 6);
 	}
-	{
+	if(check_oprop(otmp, OPROP_WATRW) || check_oprop(otmp, OPROP_LESSER_WATRW)){
 		struct obj *cloak = which_armor(mdef, W_ARMC);
 		struct obj *armor = which_armor(mdef, W_ARM);
 		struct obj *shield = which_armor(mdef, W_ARMS);
@@ -3325,6 +3366,12 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_UNHYW))
 			*truedmgptr += basedmg;
 		if(check_oprop(otmp, OPROP_LESSER_UNHYW))
+			*truedmgptr += d(2, 6);
+	}
+	if((youdef ? (hates_unblessed(youracedata)) : (hates_unblessed_mon(mdef))) && !otmp->cursed && !otmp->blessed){
+		if(check_oprop(otmp, OPROP_CONCW))
+			*truedmgptr += basedmg;
+		if(check_oprop(otmp, OPROP_LESSER_CONCW))
 			*truedmgptr += d(2, 6);
 	}
 	return ((*truedmgptr != original_truedmgptr) || (*plusdmgptr != original_plusdmgptr));
@@ -3662,7 +3709,7 @@ boolean * messaged;
 	/* knockback effect */
 	if (((arti_attack_prop(otmp, ARTA_KNOCKBACK) && !rn2(4)) || arti_attack_prop(otmp, ARTA_KNOCKBACKX)) && !(
 		/* exclusions below */
-		(oartifact == ART_TOBIUME && (*hp(mdef) > currdmg + 6)) /* Tobiume only does the knockback if mdef is nearly dead */
+		(oartifact == ART_TOBIUME) /* Tobiume only does the knockback if mdef is nearly dead */
 		))
 	{
 		/* determine if we do the full hurtle, or just stun */
@@ -3694,7 +3741,7 @@ boolean * messaged;
 				hurtle(dx, dy, hurtledistance, FALSE, TRUE);
 			}
 			else {
-				mhurtle(mdef, dx, dy, hurtledistance);
+				mhurtle(mdef, dx, dy, hurtledistance, FALSE);
 			}
 		}
 		else {
@@ -3716,7 +3763,7 @@ boolean * messaged;
 	/* fire explosions */
 	if (((arti_attack_prop(otmp, ARTA_EXPLFIRE) && !rn2(4)) || arti_attack_prop(otmp, ARTA_EXPLFIREX)) && !(
 		/* exclusion */
-		(oartifact == ART_TOBIUME && (*hp(mdef) > currdmg + 6))
+		(oartifact == ART_TOBIUME)
 		))
 	{
 		explode(x(mdef), y(mdef),
@@ -4509,7 +4556,7 @@ boolean * messaged;
 	 * Not you, though. You just die. It's simpler that way. */
 	if (oartifact == ART_PLAGUE && artinstance[ART_PLAGUE].PlagueDoOnHit && (*hp(mdef) <= currdmg + 100) && !youdef) {
 		artinstance[ART_PLAGUE].PlagueDoOnHit = FALSE;
-		int mx, my;
+		int mx = x(mdef), my = y(mdef);
 		if (vis&VIS_MAGR && vis&VIS_MDEF) {
 			pline_The("tainted %s strikes true!", xname(msgr));
 		}
@@ -4524,8 +4571,6 @@ boolean * messaged;
 		/* we want to avoid catching mdef in this explosion -- kludge time */
 		/* note: long worms still get caught in the explosion, because of course they do, so don't kludge at all to be on the safe side */
 		if (!is_longworm(mdef->data)) {
-			mx = x(mdef);
-			my = y(mdef);
 			level.monsters[mx][my] = (struct monst *)0;
 		}
 
@@ -4676,6 +4721,8 @@ boolean * messaged;
 			case VORPAL_BISECT:
 			case VORPAL_PIERCE:
 				armor = youdef ? uarm  : which_armor(mdef, W_ARM);
+				if(armor && (armor && arm_blocks_upper_body(armor->otyp)))
+					armor = 0;
 				break;
 			case VORPAL_SMASH:
 				armor = youdef ? uarms : which_armor(mdef, W_ARMS);
@@ -4926,17 +4973,20 @@ boolean * messaged;
 		struct obj *obj = some_armor(mdef);
 		int i;
 		if (obj){
-			pline("%s slices %s armor!",
-				The(xname(msgr)),
-				(youdef ? "your" : s_suffix(mon_nam(mdef)))
-				);
+			if (vis) {
+				pline("%s slices %s armor!",
+					The(xname(msgr)),
+					(youdef ? "your" : s_suffix(mon_nam(mdef)))
+					);
+				*messaged = TRUE;
+			}
 			if (check_oprop(otmp, OPROP_FLAYW)) i = rnd(4);
 			else if (otmp->oartifact == ART_THORNS) i = rnd(3);
 			else i = 1;
 			for (; i>0; i--){
 				if (obj->spe > -1 * objects[(obj)->otyp].a_ac){
 					damage_item(obj);
-					if (!i) {
+					if (!i && vis) {
 						pline("%s %s less effective.",
 							(youdef ? "Your" : s_suffix(Monnam(mdef))),
 							aobjnam(obj, "seem")
@@ -4955,9 +5005,9 @@ boolean * messaged;
 			static long lastscreamed = 0;
 			static struct monst *lastmon = 0;
 
-			if (youdef ? (ulastscreamed < monstermoves) : (lastscreamed < monstermoves || lastmon != mdef))
-			{
-				if (youdef) {
+			//Big picture note: monsters can be stunlocked this way, you can't since it uses Screaming statues
+			if (youdef) {
+				if(ulastscreamed < monstermoves){
 					ulastscreamed = monstermoves;
 					if (!is_silent(pd)){
 						You("%s from the pain!", humanoid_torso(pd) ? "scream" : "shriek");
@@ -4966,7 +5016,13 @@ boolean * messaged;
 						You("writhe in pain!");
 					}
 				}
-				else {
+				if (check_oprop(otmp, OPROP_FLAYW))
+					HScreaming += 2;
+				else
+					HScreaming += 1;
+			}
+			else {
+				if(lastscreamed < monstermoves || lastmon != mdef){
 					lastscreamed = monstermoves;
 					lastmon = mdef;
 					if (!is_silent_mon(mdef)){
@@ -5417,8 +5473,8 @@ arti_invoke(obj)
 	break;
 	case CREATE_AMMO: {
 	    struct obj *otmp;
-		if(obj->oartifact == ART_LONGBOW_OF_DIANA) otmp = mksobj(ARROW, TRUE, FALSE);
-		else if(obj->oartifact == ART_FUMA_ITTO_NO_KEN) otmp = mksobj(SHURIKEN, TRUE, FALSE);
+		if(obj->oartifact == ART_LONGBOW_OF_DIANA) otmp = mksobj(ARROW, NO_MKOBJ_FLAGS);
+		else if(obj->oartifact == ART_FUMA_ITTO_NO_KEN) otmp = mksobj(SHURIKEN, NO_MKOBJ_FLAGS);
 		else if(obj->oartifact == ART_SILVER_STARLIGHT){
 			if(cansee(u.ux, u.uy)) pline("Silver starlight shines upon your blade!");
 			obj->cursed = 0;
@@ -5427,12 +5483,12 @@ arti_invoke(obj)
 			obj->oeroded2= 0;
 			obj->oerodeproof = 1;
 			if(obj->spe < 3) obj->spe = 3;
-			otmp = mksobj(SHURIKEN, TRUE, FALSE);
-		} else if(obj->oartifact == ART_YOICHI_NO_YUMI) otmp = mksobj(YA, TRUE, FALSE);
-		else if(obj->oartifact == ART_WRATHFUL_SPIDER) otmp = mksobj(DROVEN_BOLT, TRUE, FALSE);
-		else if(obj->oartifact == ART_LIECLEAVER) otmp = mksobj(DROVEN_BOLT, TRUE, FALSE);
-		else if(obj->oartifact == ART_BELTHRONDING) otmp = mksobj(ELVEN_ARROW, TRUE, FALSE);
-		else otmp = mksobj(ROCK, TRUE, FALSE);
+			otmp = mksobj(SHURIKEN, NO_MKOBJ_FLAGS);
+		} else if(obj->oartifact == ART_YOICHI_NO_YUMI) otmp = mksobj(YA, NO_MKOBJ_FLAGS);
+		else if(obj->oartifact == ART_WRATHFUL_SPIDER) otmp = mksobj(DROVEN_BOLT, NO_MKOBJ_FLAGS);
+		else if(obj->oartifact == ART_LIECLEAVER) otmp = mksobj(DROVEN_BOLT, NO_MKOBJ_FLAGS);
+		else if(obj->oartifact == ART_BELTHRONDING) otmp = mksobj(ELVEN_ARROW, NO_MKOBJ_FLAGS);
+		else otmp = mksobj(ROCK, NO_MKOBJ_FLAGS);
 
 	    if (!otmp) goto nothing_special;
 	    otmp->blessed = obj->blessed;
@@ -5535,7 +5591,7 @@ arti_invoke(obj)
 			}
 			else if(u.dx || u.dy) {
 				pline("Death Reborn Revolution!");
-				pseudo = mksobj(SPE_MAGIC_MISSILE, FALSE, FALSE);
+				pseudo = mksobj(SPE_MAGIC_MISSILE, MKOBJ_NOINIT);
 				pseudo->blessed = pseudo->cursed = 0;
 				pseudo->quan = 20L;			/* do not let useup get it */
 				weffects(pseudo);
@@ -5607,7 +5663,7 @@ arti_invoke(obj)
 			}
 			else if(u.dx || u.dy) {
 				pline("Dead Scream.");
-				pseudo = mksobj(SPE_MAGIC_MISSILE, FALSE, FALSE);
+				pseudo = mksobj(SPE_MAGIC_MISSILE, MKOBJ_NOINIT);
 				pseudo->blessed = pseudo->cursed = 0;
 				pseudo->quan = 20L;			/* do not let useup get it */
 				weffects(pseudo);
@@ -5733,7 +5789,7 @@ arti_invoke(obj)
 				bhitpos.x = u.ux;
 				bhitpos.y = u.uy;
 				pline("Getsuga Tensho!");
-				pseudo = mksobj(SPE_FORCE_BOLT, FALSE, FALSE);
+				pseudo = mksobj(SPE_FORCE_BOLT, MKOBJ_NOINIT);
 				pseudo->blessed = pseudo->cursed = 0;
 				pseudo->quan = 20L;
 				while(range-- > 0) {
@@ -5885,7 +5941,7 @@ arti_invoke(obj)
 				coord cc;
 
 				energy = toosoon ? 25 : 15;
-				pseudo = mksobj(SPE_FIREBALL, FALSE, FALSE);
+				pseudo = mksobj(SPE_FIREBALL, MKOBJ_NOINIT);
 				pseudo->blessed = pseudo->cursed = 0;
 				pseudo->quan = 20L;			/* do not let useup get it */
 				role_skill = max(P_SKILL(uwep_skill_type()), P_SKILL(spell_skilltype(pseudo->otyp)) );
@@ -6060,7 +6116,7 @@ arti_invoke(obj)
 			for(i = 12; i > 0; i--){
 				int xadj=0;
 				int yadj=0;
-				otmp = mksobj(HEAVY_IRON_BALL, TRUE, FALSE);
+				otmp = mksobj(HEAVY_IRON_BALL, NO_MKOBJ_FLAGS);
 			    otmp->blessed = 0;
 			    otmp->cursed = 0;
 				if(u.dy == 0) yadj = d(1,3)-2;
@@ -6372,7 +6428,7 @@ arti_invoke(obj)
 						strcmp(buf, "Fiat!") == 0 ){//Fiat:  Let it be.  Creates food.  One charge.
 				if( (obj->spe > -7)){
 					exercise(A_WIS, TRUE);
-					otmp = mksobj(FOOD_RATION, TRUE, FALSE);
+					otmp = mksobj(FOOD_RATION, NO_MKOBJ_FLAGS);
 					hold_another_object(otmp, "Suddenly %s out.",
 				       aobjnam(otmp, "fall"), (const char *)0);
 					obj->spe--; // lose charge
@@ -6385,7 +6441,7 @@ arti_invoke(obj)
 				if( (obj->spe > -7) ){
 					exercise(A_WIS, TRUE);
 					exercise(A_WIS, TRUE);
-					pseudo = mksobj(SPE_LIGHT, FALSE, FALSE);
+					pseudo = mksobj(SPE_LIGHT, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->quan = 20L;			/* do not let useup get it */
 					litroom(TRUE,pseudo);
@@ -6399,13 +6455,13 @@ arti_invoke(obj)
 						strcmp(buf, "Ecce!") == 0 ){//Ecce:  See.  Casts detect monsters and detect unseen.  Two charges.
 				if( (obj->spe > -6) ){
 					exercise(A_WIS, TRUE);
-					pseudo = mksobj(SPE_DETECT_MONSTERS, FALSE, FALSE);
+					pseudo = mksobj(SPE_DETECT_MONSTERS, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->blessed = TRUE;
 					pseudo->quan = 20L;			/* do not let useup get it */
 					(void) peffects(pseudo);
 					obfree(pseudo, (struct obj *)0);	/* now, get rid of it */
-					pseudo = mksobj(SPE_DETECT_UNSEEN, FALSE, FALSE);
+					pseudo = mksobj(SPE_DETECT_UNSEEN, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->blessed = TRUE;
 					pseudo->quan = 20L;			/* do not let useup get it */
@@ -6433,7 +6489,7 @@ arti_invoke(obj)
 			}
 			else if(strcmp(buf, "Rex") == 0){//Rex:  King.  Grants Levitation.  Three charges.
 				if( (artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPflights > 0) ){
-					pseudo = mksobj(SPE_LEVITATION, FALSE, FALSE);
+					pseudo = mksobj(SPE_LEVITATION, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->blessed = TRUE;
 					pseudo->quan = 23L;			/* do not let useup get it */
@@ -6446,7 +6502,7 @@ arti_invoke(obj)
 				else if( (obj->spe > -5) ){
 					exercise(A_WIS, TRUE);
 					exercise(A_DEX, TRUE);
-					pseudo = mksobj(SPE_LEVITATION, FALSE, FALSE);
+					pseudo = mksobj(SPE_LEVITATION, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->blessed = TRUE;
 					pseudo->quan = 23L;			/* do not let useup get it */
@@ -6493,13 +6549,13 @@ arti_invoke(obj)
 						strcmp(buf, "Fiat Justitia!") == 0 ){//Fiat Justitia:  Let justice be done.  Slows, fears and damages target.  Two charges.
 				if( (obj->spe > 1) ){
 					exercise(A_WIS, TRUE);
-					pseudo = mksobj(SPE_SLOW_MONSTER, FALSE, FALSE);
+					pseudo = mksobj(SPE_SLOW_MONSTER, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->quan = 20L;			/* do not let useup get it */
-					pseudo2 = mksobj(SPE_FORCE_BOLT, FALSE, FALSE);
+					pseudo2 = mksobj(SPE_FORCE_BOLT, MKOBJ_NOINIT);
 					pseudo2->blessed = pseudo2->cursed = 0;
 					pseudo2->quan = 20L;			/* do not let useup get it */
-					pseudo3 = mksobj(SPE_CAUSE_FEAR, FALSE, FALSE);
+					pseudo3 = mksobj(SPE_CAUSE_FEAR, MKOBJ_NOINIT);
 					pseudo3->blessed = pseudo3->cursed = 0;
 					pseudo3->quan = 20L;			/* do not let useup get it */
 					if(u.ulevel > 13) pseudo3->blessed = TRUE;
@@ -6533,7 +6589,7 @@ arti_invoke(obj)
 						strcmp(buf, "Lex Rex!") == 0 ){//Lex Rex:  Law is King.  Heals aflictions, removes curses.  Three charges.
 				if( (obj->spe > 2) ){
 					exercise(A_WIS, TRUE);
-					pseudo = mksobj(SPE_REMOVE_CURSE, FALSE, FALSE);
+					pseudo = mksobj(SPE_REMOVE_CURSE, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->quan = 20L;			/* do not let useup get it */
 					if(u.ulevel > 13) pseudo->blessed = TRUE;
@@ -6557,7 +6613,7 @@ arti_invoke(obj)
 						strcmp(buf, "Ecce!  Lex Rex.") == 0 ||
 						strcmp(buf, "Ecce!  Lex Rex!") == 0){//Ecce!  Lex Rex:  See!  Law is King.  Charms monsters.  Five charges.
 				if( (obj->spe > 4) ){
-					pseudo = mksobj(SPE_CHARM_MONSTER, FALSE, FALSE);
+					pseudo = mksobj(SPE_CHARM_MONSTER, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->quan = 20L;			/* do not let useup get it */
 					if(u.ulevel > 13) pseudo->blessed = TRUE;
@@ -6615,7 +6671,7 @@ arti_invoke(obj)
 							mtmp->mhp =  mtmp->mhpmax;
 						}
 					}
-					pseudo = mksobj(SPE_CHARM_MONSTER, FALSE, FALSE);
+					pseudo = mksobj(SPE_CHARM_MONSTER, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					pseudo->quan = 20L;			/* do not let useup get it */
 					if(u.ulevel > 13) pseudo->blessed = TRUE;
@@ -6772,7 +6828,7 @@ arti_invoke(obj)
 					case 0:
 					break;
 					case SELECT_WHISTLE:
-					otmp = mksobj(MAGIC_WHISTLE, TRUE, FALSE);
+					otmp = mksobj(MAGIC_WHISTLE, NO_MKOBJ_FLAGS);
 					otmp->blessed = obj->blessed;
 					otmp->cursed = obj->cursed;
 					otmp->bknown = obj->bknown;
@@ -6780,7 +6836,7 @@ arti_invoke(obj)
 				       aobjnam(otmp, "fall"), (const char *)0);
 					break;
 					case SELECT_LEASH:
-					otmp = mksobj(LEASH, TRUE, FALSE);
+					otmp = mksobj(LEASH, NO_MKOBJ_FLAGS);
 					otmp->blessed = obj->blessed;
 					otmp->cursed = obj->cursed;
 					otmp->bknown = obj->bknown;
@@ -6788,7 +6844,7 @@ arti_invoke(obj)
 				       aobjnam(otmp, "fall"), (const char *)0);
 					break;
 					case SELECT_SADDLE:
-					otmp = mksobj(SADDLE, TRUE, FALSE);
+					otmp = mksobj(SADDLE, NO_MKOBJ_FLAGS);
 					otmp->blessed = obj->blessed;
 					otmp->cursed = obj->cursed;
 					otmp->bknown = obj->bknown;
@@ -6796,7 +6852,7 @@ arti_invoke(obj)
 				       aobjnam(otmp, "fall"), (const char *)0);
 					break;
 					case SELECT_TRIPE:
-					otmp = mksobj(TRIPE_RATION, TRUE, FALSE);
+					otmp = mksobj(TRIPE_RATION, NO_MKOBJ_FLAGS);
 					otmp->blessed = obj->blessed;
 					otmp->cursed = obj->cursed;
 					otmp->bknown = obj->bknown;
@@ -6804,7 +6860,7 @@ arti_invoke(obj)
 				       aobjnam(otmp, "fall"), (const char *)0);
 					break;
 					case SELECT_APPLE:
-					otmp = mksobj(APPLE, TRUE, FALSE);
+					otmp = mksobj(APPLE, NO_MKOBJ_FLAGS);
 					otmp->blessed = obj->blessed;
 					otmp->cursed = obj->cursed;
 					otmp->bknown = obj->bknown;
@@ -6812,7 +6868,7 @@ arti_invoke(obj)
 				       aobjnam(otmp, "fall"), (const char *)0);
 					break;
 					case SELECT_BANANA:
-					otmp = mksobj(BANANA, TRUE, FALSE);
+					otmp = mksobj(BANANA, NO_MKOBJ_FLAGS);
 					otmp->blessed = obj->blessed;
 					otmp->cursed = obj->cursed;
 					otmp->bknown = obj->bknown;
@@ -7267,7 +7323,7 @@ arti_invoke(obj)
 						}
 					break;
 					case COMMAND_AMMO:
-						otmp = mksobj(JAVELIN, TRUE, FALSE);
+						otmp = mksobj(JAVELIN, NO_MKOBJ_FLAGS);
 						if (!otmp) break;
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
@@ -7394,7 +7450,7 @@ arti_invoke(obj)
 						/* charged BofO */
 					}break;
 					case COMMAND_BULLETS:{
-						otmp = mksobj(SILVER_BULLET, TRUE, FALSE);
+						otmp = mksobj(SILVER_BULLET, NO_MKOBJ_FLAGS);
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
 						otmp->bknown = obj->bknown;
@@ -7411,7 +7467,7 @@ arti_invoke(obj)
 							aobjnam(otmp, "fall"), (const char *)0);
 					}break;
 					case COMMAND_ROCKETS:{
-						otmp = mksobj(ROCKET, TRUE, FALSE);
+						otmp = mksobj(ROCKET, NO_MKOBJ_FLAGS);
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
 						otmp->bknown = obj->bknown;
@@ -7430,7 +7486,7 @@ arti_invoke(obj)
 							annulusFunc = 0;
 							break;
 						}
-						otmp = mksobj(RAYGUN, TRUE, FALSE);
+						otmp = mksobj(RAYGUN, NO_MKOBJ_FLAGS);
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
 						otmp->bknown = obj->bknown;
@@ -7645,7 +7701,7 @@ arti_invoke(obj)
         case BURN_WARD: {
           if(uarms && uarms == obj){
             struct obj *scroll;
-            scroll = mksobj(SCR_WARDING, TRUE, FALSE);
+            scroll = mksobj(SCR_WARDING, NO_MKOBJ_FLAGS);
             scroll->blessed = obj->blessed;
             scroll->cursed = obj->cursed;
             seffects(scroll);
@@ -7658,7 +7714,7 @@ arti_invoke(obj)
               if(!getdir((char *)0))
                 break;
               struct obj *wand;
-              wand = mksobj(WAN_UNDEAD_TURNING, TRUE, FALSE);
+              wand = mksobj(WAN_UNDEAD_TURNING, NO_MKOBJ_FLAGS);
               wand->blessed = obj->blessed;
               wand->cursed = obj->cursed;
               wand->ovar1 = 1;
@@ -7684,7 +7740,7 @@ arti_invoke(obj)
               break;
           }
           struct obj *wand;
-          wand = mksobj(WAN_FIRE, TRUE, FALSE);
+          wand = mksobj(WAN_FIRE, NO_MKOBJ_FLAGS);
           wand->blessed = obj->blessed;
           wand->cursed= obj->cursed;
           wand->ovar1 = 1;
@@ -7734,20 +7790,20 @@ arti_invoke(obj)
             struct obj *otmp;
             switch(rn2(5)){
               case 0:
-                otmp = mksobj(TIN, TRUE, FALSE);
+                otmp = mksobj(TIN, NO_MKOBJ_FLAGS);
                 otmp->corpsenm = PM_LICHEN;
                 break;
               case 1:
-                otmp = mksobj(POT_BOOZE, TRUE, FALSE);
+                otmp = mksobj(POT_BOOZE, NO_MKOBJ_FLAGS);
                 break;
               case 2:
-                otmp = mksobj(SCR_MAGIC_MAPPING, TRUE, FALSE);
+                otmp = mksobj(SCR_MAGIC_MAPPING, NO_MKOBJ_FLAGS);
                 break;
               case 3:
-                otmp = mksobj(OILSKIN_CLOAK, TRUE, FALSE);
+                otmp = mksobj(OILSKIN_CLOAK, NO_MKOBJ_FLAGS);
                 break;
               case 4:
-                otmp = mksobj(CRYSTAL_HELM, TRUE, FALSE);
+                otmp = mksobj(CRYSTAL_HELM, NO_MKOBJ_FLAGS);
                 break;
             }
             otmp->blessed = obj->blessed;
@@ -7763,22 +7819,24 @@ arti_invoke(obj)
         } break;
         case ARTIFICE:{
           int artificeFunc = doartificemenu("Improve weapon or armor:", obj);
-          struct obj *scroll;
+          struct obj *scroll = (struct obj *)0;
           switch(artificeFunc){
               case 0:
                 break;
               case COMMAND_IMPROVE_WEP:
-                scroll = mksobj(SCR_ENCHANT_WEAPON, TRUE, FALSE);
+                scroll = mksobj(SCR_ENCHANT_WEAPON, NO_MKOBJ_FLAGS);
                 break;
               case COMMAND_IMPROVE_ARM:
-                scroll = mksobj(SCR_ENCHANT_ARMOR, TRUE, FALSE);
+                scroll = mksobj(SCR_ENCHANT_ARMOR, NO_MKOBJ_FLAGS);
                 break;
           }
-          scroll->blessed = obj->blessed;
-          scroll->cursed = obj->cursed;
-		  scroll->quan = 20;				/* do not let useup get it */
-          seffects(scroll);
-          obfree(scroll,(struct obj *)0);	/* now, get rid of it */
+		  if (scroll) {
+			scroll->blessed = obj->blessed;
+			scroll->cursed = obj->cursed;
+			scroll->quan = 20;				/* do not let useup get it */
+			seffects(scroll);
+			obfree(scroll,(struct obj *)0);	/* now, get rid of it */
+		  }
         } break;
         case SUMMON_PET:{
           /* TODO */
@@ -7899,13 +7957,13 @@ arti_invoke(obj)
 						mtmp = mtmp2;
 						mtmp->mtame = 30;
 						summon_loop--;
-						mtmp->mvanishes = 100;
+						mark_mon_as_summoned(mtmp, &youmonst, 100, 0);
 					} else mongone(mtmp);
 				} while (summon_loop);
 			} break;
 			case COMMAND_DETECT:{
 				struct obj *otmp;
-               			otmp = mksobj(POT_MONSTER_DETECTION, TRUE, FALSE);
+               			otmp = mksobj(POT_MONSTER_DETECTION, MKOBJ_NOINIT);
          			otmp->blessed = obj->blessed;
      				otmp->cursed = obj->cursed;
   			        peffects(otmp);
@@ -8005,23 +8063,23 @@ arti_invoke(obj)
 			pline("Creatures from the grave surround you!");
 			do {
 			  switch (rn2(6)+1) {
-			case 1: mtmp = makemon(mkclass(S_VAMPIRE,0), u.ux, u.uy, NO_MM_FLAGS);
+			case 1: mtmp = makemon(mkclass(S_VAMPIRE,0), u.ux, u.uy, MM_ESUM);
 			   break;
 			case 2:
-			case 3: mtmp = makemon(mkclass(S_ZOMBIE,0), u.ux, u.uy, NO_MM_FLAGS);
+			case 3: mtmp = makemon(mkclass(S_ZOMBIE,0), u.ux, u.uy, MM_ESUM);
 			   break;
-			case 4: mtmp = makemon(mkclass(S_MUMMY,0), u.ux, u.uy, NO_MM_FLAGS);
+			case 4: mtmp = makemon(mkclass(S_MUMMY,0), u.ux, u.uy, MM_ESUM);
 			   break;
-			case 5: mtmp = makemon(mkclass(S_GHOST,0), u.ux, u.uy, NO_MM_FLAGS);
+			case 5: mtmp = makemon(mkclass(S_GHOST,0), u.ux, u.uy, MM_ESUM);
 			   break;
-				   default: mtmp = makemon(mkclass(S_WRAITH,0), u.ux, u.uy, NO_MM_FLAGS);
+				   default: mtmp = makemon(mkclass(S_WRAITH,0), u.ux, u.uy, MM_ESUM);
 			   break;
 			  }
 			  if ((mtmp2 = tamedog(mtmp, (struct obj *)0)) != 0){
 					mtmp = mtmp2;
 					mtmp->mtame = 30;
 					summon_loop--;
-					mtmp->mvanishes = 100;
+					mark_mon_as_summoned(mtmp, &youmonst, 100, 0);
 				} else mongone(mtmp);
 			} while (summon_loop);
 			/* Tsk,tsk.. */
@@ -8192,7 +8250,7 @@ arti_invoke(obj)
 		break;
 		case INVOKE_DARK:{
           struct obj *wand;
-		  wand = mksobj(WAN_DARKNESS, FALSE, FALSE);
+		  wand = mksobj(WAN_DARKNESS, MKOBJ_NOINIT);
           wand->spe = 1;
           wand->blessed = 1;
           wand->ovar1 = 1;
@@ -8232,8 +8290,12 @@ arti_invoke(obj)
 			} else {
 				do_bloodletter(obj);
 			}
-			
+
 		break;
+		case SEVEN_LEAGUE_STEP:
+			You("click your heels together and take a step... ");
+			jump(15);
+			break;
 		default: pline("Program in dissorder.  Artifact invoke property not recognized");
 		break;
 	} //end of first case:  Artifact Specials!!!!
@@ -9419,6 +9481,7 @@ read_necro(VOID_ARGS)
 		delay = 0;
 	}
 	if(necro_effect < SELECTED_SPELL){/* summoning spell*/
+		boolean summon_failed = TRUE;
 		switch(necro_effect){
 			case 0:
 				Hallucination ? 
@@ -9429,18 +9492,19 @@ read_necro(VOID_ARGS)
 				pm = &mons[PM_BYAKHEE];
 				if(u.uen >= 20){
 					losepw(20);
+					summon_failed = FALSE;
 					for(i=max(1, d(1,20) - 16); i > 0; i--){
-						mtmp = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK);
-						mtmp->mvanishes = 100;
+						mtmp = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 						if(mtmp){
 							initedog(mtmp);
 							mtmp->m_lev += d(1,15) - 5;
-							if(u.ulevel < mtmp->m_lev && !rn2(10)){
+							if (rn2((youmonst.summonpwr + mtmp->m_lev) / (u.ulevel + 10) + 1)) {
 								untame(mtmp, 0);
 								mtmp->mtraitor = 1;
 							}
 							mtmp->mhpmax = (mtmp->m_lev * 8) - 4;
 							mtmp->mhp =  mtmp->mhpmax;
+							mark_mon_as_summoned(mtmp, mtmp->mtame ? &youmonst : (struct monst *)0, 100, 0);
 						}
 					}
 				}
@@ -9450,39 +9514,46 @@ read_necro(VOID_ARGS)
 				for(i=d(1,4); i > 0; i--){
 					if(u.uen >= 10){
 						losepw(10);
-						mtmp = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK);
+						summon_failed = FALSE;
+						mtmp = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 						if(mtmp){
 							initedog(mtmp);
 							EDOG(mtmp)->loyal = 1;
+							mark_mon_as_summoned(mtmp, &youmonst, ESUMMON_PERMANENT, 0);
 						}
 					}
 				}
 			break;
 			case SELECT_SHOGGOTH:
 				if(u.uen > 30){
+					losepw(30);
+					summon_failed = FALSE;
 					pm = &mons[PM_SHOGGOTH];
-					mtmp = makemon(pm, u.ux+d(1,5)-3, u.uy+d(1,5)-3, MM_ADJACENTOK);
+					mtmp = makemon(pm, u.ux+d(1,5)-3, u.uy+d(1,5)-3, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 					if(mtmp){
 						mtmp->mcrazed = 1;
 						mtmp->msleeping = 1;
+						mark_mon_as_summoned(mtmp, (struct monst *)0, ESUMMON_PERMANENT, 0);
 					}
 				}
 			break;
 			case SELECT_OOZE:
 				if(u.uen >= 20){
 					losepw(20);
+					summon_failed = FALSE;
 					for(i=max(1, d(1,10) - 2); i > 0; i--){
-						mtmp = makemon(&mons[oozes[d(1,11)]], u.ux+d(1,5)-3, u.uy+d(1,5)-3, MM_EDOG|MM_ADJACENTOK);
+						mtmp = makemon(&mons[oozes[rn2(11)]], u.ux+d(1,5)-3, u.uy+d(1,5)-3, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 						if(mtmp){
 							initedog(mtmp);
 							mtmp->m_lev += d(1,(3 * mtmp->m_lev)/2);
 							mtmp->mhpmax = mtmp->mhp = mtmp->m_lev*8 - rnd(7);
-							if(u.ulevel < mtmp->m_lev && !rn2(10)){
+							if (rn2((youmonst.summonpwr + mtmp->m_lev) / (u.ulevel + 10) + 1)) {
 								untame(mtmp, 0);
 								mtmp->mtraitor = 1;
 							}
 							mtmp->mhpmax = (mtmp->m_lev * 8) - 4;
 							mtmp->mhp =  mtmp->mhpmax;
+							mark_mon_as_summoned(mtmp, mtmp->mtame ? &youmonst : (struct monst *)0, ESUMMON_PERMANENT, 0);
 						}
 					}
 				}
@@ -9490,34 +9561,41 @@ read_necro(VOID_ARGS)
 			case SELECT_DEVIL:
 				if(u.uen >= 60){
 					losepw(60);
-					mtmp = makemon(&mons[devils[d(1,13)]], u.ux, u.uy, MM_EDOG|MM_ADJACENTOK);
+					summon_failed = FALSE;
+					mtmp = makemon(&mons[devils[rn2(12)]], u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 					if(mtmp){
 						initedog(mtmp);
 						mtmp->m_lev += d(1,(3 * mtmp->m_lev)/2);
 						if(!rn2(9)) mtmp->m_lev += d(1,(3 * mtmp->m_lev)/2);
 						mtmp->mhpmax = mtmp->mhp = mtmp->m_lev*8 - rnd(7);
-						if(u.ulevel < mtmp->m_lev && !rn2(20)){
+						if (rn2((youmonst.summonpwr + mtmp->m_lev) / (u.ulevel + 10) + 1)) {
 							untame(mtmp, 0);
 							mtmp->mtraitor = 1;
 						}
+						mark_mon_as_summoned(mtmp, mtmp->mtame ? &youmonst : (struct monst *)0, ESUMMON_PERMANENT, 0);
 					}
 				}
 			break;
 			case SELECT_DEMON:
 				if(u.uen >= 45){
 					losepw(45);
-					mtmp = makemon(&mons[demons[d(1,15)]], u.ux, u.uy, MM_EDOG|MM_ADJACENTOK);
+					summon_failed = FALSE;
+					mtmp = makemon(&mons[demons[rn2(15)]], u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 					if(mtmp){
 						initedog(mtmp);
 						if(!rn2(6)) mtmp->m_lev += d(1,(3 * mtmp->m_lev)/2);
 						mtmp->mhpmax = mtmp->mhp = mtmp->m_lev*8 - rnd(7);
-						if((u.ulevel < mtmp->m_lev || rn2(2)) && !rn2(10)){
+						if (rn2((youmonst.summonpwr + mtmp->m_lev) / (u.ulevel + 10) + 1) || !rn2(10)) {
 							untame(mtmp, 0);
 							mtmp->mtraitor = 1;
 						}
+						mark_mon_as_summoned(mtmp, mtmp->mtame ? &youmonst : (struct monst *)0, ESUMMON_PERMANENT, 0);
 					}
 				}
 			break;
+		}
+		if (summon_failed && necro_effect) {
+			pline("You lack the necessary power for the summoning.");
 		}
 	}
 	else if(necro_effect < SELECTED_SPECIAL){ /* spellbook-like */
@@ -9688,6 +9766,7 @@ read_necro(VOID_ARGS)
 			}
 		}
 		if(chance > 0){
+			u.veil = FALSE;
 			change_uinsight(1);
 			if(u.usanity < 100 && rnd(30) < ACURR(A_WIS))
 				change_usanity(1, FALSE);
@@ -9729,7 +9808,7 @@ read_necro(VOID_ARGS)
 				"find another way to summon shoggoths.");
 			break;
 			case 3:
-			STUDY_NECRONOMICON(S_SHOGGOTH,
+			STUDY_NECRONOMICON(S_NIGHTGAUNT,
 				"learn to invoke the servetors of Nodens.",
 				"find another invocation to Nodens.");
 			break;
@@ -9927,6 +10006,7 @@ read_lost(VOID_ARGS)
 			artiptr->ovar1 |= putativeSeal;
 			You("learn the name \"%s\" while studying the book.",sealNames[i]);
 			artiptr->spestudied++;
+			u.veil = FALSE;
 			change_uinsight(1);
 			if(u.usanity < 100 && rnd(30) < ACURR(A_WIS))
 				change_usanity(1, FALSE);
@@ -10297,18 +10377,20 @@ dosymbiotic_equip()
 }
 
 void
-dogoat_tentacles()
+do_passive_attacks()
 {
 	struct monst *mtmp;
 	struct obj *armor;
 	if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
-		pline("Lashing tentacles erupt from your brain!");
-		losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
-		morehungry(d(4,4));
-		if(u.usanity < 50)
-			change_usanity(-1, FALSE);
-		else
-			change_usanity(-1*d(4,4), FALSE);
+		if(!ClearThoughts){
+			pline("Lashing tentacles erupt from your brain!");
+			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
+			morehungry(d(4,4));
+			if(u.usanity < 50)
+				change_usanity(-1, FALSE);
+			else
+				change_usanity(-1*d(4,4), FALSE);
+		}
 		dogoat();
 	}
 	
@@ -10321,6 +10403,9 @@ dogoat_tentacles()
 			continue;
 		if(is_goat_tentacle_mon(mtmp) && !mtmp->mappearance && !mtmp->msleeping && mtmp->mcanmove && !(mtmp->mstrategy & STRAT_WAITMASK))
 			dogoat_mon(mtmp);
+		if(mtmp->mtyp == PM_NACHASH_TANNIN){
+			donachash(mtmp);
+		}
 	}
 }
 
@@ -10444,8 +10529,12 @@ living_items()
 				pline("%s its finger.", Tobjnam(obj, "tap"));
 		}
 		//Nitocris's coffin causes Egyptian spawns
-		else if(Is_container(obj) && obj->spe == 5){
+		else if(Is_real_container(obj) && obj->spe == 5){
 			nitocris_sarcophagous(obj);
+		}
+		//Fulvous desk spawns phantoms
+		else if(Is_real_container(obj) && obj->spe == 8){
+			fulvous_desk(obj);
 		}
 	}
 }
@@ -10467,6 +10556,49 @@ struct obj *obj;
 			if(mtmp){
 				mtmp->mpeaceful = 0;
 				set_malign(mtmp);
+			}
+		}
+	}
+}
+
+static int fulvousspawns[] = {PM_GHOST, PM_GHOST, PM_GHOST, PM_GHOST, 
+							  PM_WRAITH, PM_WRAITH, PM_WRAITH, 
+							  PM_SHADE};
+STATIC_OVL void
+fulvous_desk(obj)
+struct obj *obj;
+{
+	struct permonst *pm;
+	struct monst *mtmp;
+	xchar xlocale, ylocale;
+	if(get_obj_location(obj, &xlocale, &ylocale, 0)){
+		if(!rn2(210)){
+			struct permonst *pm;
+			pm = &mons[fulvousspawns[rn2(SIZE(fulvousspawns))]];
+			mtmp = makemon(pm, xlocale, ylocale, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_NONAME);
+			if(!obj->cobj){
+				struct obj *sobj;
+				sobj = mksobj(SCR_BLANK_PAPER, NO_MKOBJ_FLAGS);
+				if(sobj){
+					sobj->obj_color = CLR_YELLOW;
+					add_to_container(obj, sobj);
+				}
+			}
+			if(mtmp){
+				mtmp->mpeaceful = 0;
+				set_malign(mtmp);
+				switch(rn2(4)){
+					case 0:
+					case 1:
+						set_template(mtmp, YELLOW_TEMPLATE);
+					break;
+					case 2:
+						set_template(mtmp, DREAM_LEECH);
+					break;
+					case 3:
+						set_template(mtmp, VAMPIRIC);
+					break;
+				}
 			}
 		}
 	}
@@ -10599,7 +10731,7 @@ struct monst *mon;
 		)
 			return 1;
 	} else {
-		if(has_template(mon, ZOMBIFIED)){
+		if(has_template(mon, ZOMBIFIED) || has_template(mon, YELLOW_TEMPLATE)){
 			if((otmp->wrathdata >> 2) == PM_ZOMBIE)
 				return 1;
 		} else if(has_template(mon, SKELIFIED)){

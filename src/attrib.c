@@ -70,7 +70,6 @@ const struct innate {
 		     {  20, &(HSearching), "perceptive", "unaware" },
 		     {	 0, 0, 0, 0 } },
 #endif	/* CONVICT */
-
 	hea_abil[] = { {	 1, &(HPoison_resistance), "", "" },
 		     {	 1, &(HSick_resistance), "", "" },
 		     {	15, &(HWarning), "sensitive", "" },
@@ -98,6 +97,12 @@ const struct innate {
 		     {  29, &(HAntimagic), "skeptical","credulous" },
 		     {  30, &(HDrain_resistance), "above earthly concerns","not so above it all" },
 		     {   0, 0, 0, 0 } },
+
+	mad_abil[] = { {  1, &(HTelepat), "", "" },
+			 {  7, &(HSearching), "perceptive", "unaware" },
+		     {	15, &(HWarning), "sensitive", "" },
+		     {	30, &(HClairvoyant), "clairvoyant", "" },
+		     {	 0, 0, 0, 0 } },
 
 	elnob_abil[] = { {	 7, &(HFast), "quick", "slow" },
 			{	15, &(HWarning), "sensitive", "" },
@@ -236,6 +241,18 @@ adjattrib(ndx, incr, msgflg)
 				killer_format = KILLED_BY;
 				killer = "a shard of a morgul-blade";
 				done(DIED);
+				u.ugrave_arise = temparise;
+			} else if(u.umummyrot
+				&& (ndx == A_CHA || ndx == A_CON)
+				&& ABASE(A_CON) <= ATTRMIN(A_CON)
+				&& ABASE(A_CHA) <= ATTRMIN(A_CHA)
+			){
+				int temparise = u.ugrave_arise;
+				You("crack appart and turn to dust!");
+				u.ugrave_arise = 0;
+				killer_format = KILLED_BY;
+				killer = "mummy rot";
+				done(DISINTEGRATED);
 				u.ugrave_arise = temparise;
 			} else {
 				if (msgflg == 0 && flags.verbose)
@@ -565,7 +582,8 @@ exerchk()
 			break;
 		    case A_CON: You((mod_val >0) ?
 				    "must be leading a healthy life-style." :
-					u.umorgul ? "have the chill of death about you."
+					u.umummyrot ? "are gradually rotting to dust!"
+					: u.umorgul ? "have the chill of death about you."
 				    : "haven't been watching your health.");
 				if(mod_val < 0)	AMAX(i) += mod_val; /* permanent drain */
 			break;
@@ -583,7 +601,8 @@ exerchk()
 			break;
 		    case A_CHA: You((mod_val >0) ?
 				    "must have been very charming lately." :
-					u.umorgul ? "have the chill of death about you."
+					u.umummyrot ? "are gradually rotting to dust!"
+					: u.umorgul ? "have the chill of death about you."
 				    : "haven't been watching your behavior.");
 				if(mod_val < 0)	AMAX(i) += mod_val; /* permanent drain */
 			break;
@@ -777,6 +796,7 @@ int oldlevel, newlevel;
 #ifdef CONVICT
 	case PM_CONVICT:        abil = con_abil;	break;
 #endif	/* CONVICT */
+	case PM_MADMAN:        abil = mad_abil;	break;
 	case PM_HEALER:         abil = hea_abil;	break;
 	case PM_KNIGHT:         abil = kni_abil;	break;
 	case PM_MONK:           abil = mon_abil;	break;
@@ -1166,6 +1186,10 @@ int x;
 	if (x == A_STR && override_str)
 		return override_str;
 
+	if (x == A_CHA && tmp < 18 && youracedata && (youracedata->mlet == S_NYMPH ||
+		u.umonnum==PM_SUCCUBUS || u.umonnum == PM_INCUBUS))
+		tmp = 18;
+		
 	if(u.ufirst_light)
 		tmp++;
 	if(u.ufirst_sky)
@@ -1182,26 +1206,22 @@ int x;
 		tmp += uwep->spe;
 	}
 
-	if(x == A_WIS && uarm && arti_chawis(uarm, FALSE) && uarmc){
+	if(x == A_WIS && (uarm && arm_blocks_upper_body(uarm->otyp)) && arti_chawis(uarm, FALSE) && uarmc){
 		tmp += uarm->spe;
 	}
-#ifdef TOURIST
-	if(x == A_WIS && uarmu && arti_chawis(uarmu, FALSE) && (uarmc || uarm)){
+	if(x == A_WIS && uarmu && arti_chawis(uarmu, FALSE) && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))){
 		tmp += uarmu->spe;
 	}
-#endif	/*TOURIST*/
 
 	if(x == A_CHA && uarmc && arti_chawis(uarmc, FALSE)){
 		tmp += uarmc->spe;
 	}
-	if(x == A_CHA && uarm && arti_chawis(uarm, FALSE) && !uarmc){
+	if(x == A_CHA && (uarm && arm_blocks_upper_body(uarm->otyp)) && arti_chawis(uarm, FALSE) && !uarmc){
 		tmp += uarm->spe;
 	}
-#ifdef TOURIST
-	if(x == A_CHA && uarmu && arti_chawis(uarmu, FALSE) && !uarmc && !uarm){
+	if(x == A_CHA && uarmu && arti_chawis(uarmu, FALSE) && !uarmc && !(uarm && arm_blocks_upper_body(uarm->otyp))){
 		tmp += uarmu->spe;
 	}
-#endif	/*TOURIST*/
 
 	if (x == A_STR) {
 		if(Race_if(PM_ORC)){
@@ -1233,6 +1253,8 @@ int x;
 			tmp += u.ulevel/3;
 		}
 	} else if (x == A_DEX) {
+		if(mad_turn(MAD_HOST))
+			return 3;
 		if (
 			(uarmg && uarmg->oartifact == ART_GODHANDS)
 		) return(25);
@@ -1243,9 +1265,9 @@ int x;
 			tmp += u.ulevel/3;
 		}
 	} else if (x == A_CHA) {
-		if (tmp < 18 && youracedata && (youracedata->mlet == S_NYMPH ||
-		    u.umonnum==PM_SUCCUBUS || u.umonnum == PM_INCUBUS))
-		    return 18;
+		if(u.umadness&MAD_ROTTING && !ClearThoughts){
+			tmp -= (Insanity)/5;
+		}
 	} else if (x == A_INT || x == A_WIS) {
 		/* yes, this may raise int/wis if player is sufficiently
 		 * stupid.  there are lower levels of cognition than "dunce".
@@ -1295,28 +1317,46 @@ boolean check;
 	){
 		switch(rn2(6)){
 			case 0:
-				You("panic in your insanity!");
-				HPanicking = 1+rnd((u.usanity+1)/10)+rnd((u.usanity+1)/10);
+				if(ClearThoughts)
+					You_feel("a little panicky.");
+				else
+					You("panic in your insanity!");
+				HPanicking = 1+rnd((Insanity)/10+1)+rnd((Insanity)/10+1);
 			break;
 			case 1:
-				You("stumble blindly in your insanity!");
-				HStumbleBlind = 1+rnd((u.usanity+1)/10)+rnd((u.usanity+1)/10);
+				if(ClearThoughts)
+					You_feel("a little off balance.");
+				else
+					You("stumble blindly in your insanity!");
+				HStumbleBlind = 1+rnd((Insanity)/10+1)+rnd((Insanity)/10+1);
 			break;
 			case 2:
-				You("stagger in shock!");
-				HStaggerShock = 1+rnd((u.usanity+1)/10)+rnd((u.usanity+1)/10);
+				if(ClearThoughts)
+					You_feel("a little shocked.");
+				else
+					You("stagger in shock!");
+				HStaggerShock = 1+rnd((Insanity)/10+1)+rnd((Insanity)/10+1);
 			break;
 			case 3:
-				You("begin babbling incoherently!");
-				HBabble = 1+rnd((u.usanity+1)/10)+rnd((u.usanity+1)/10);
+				if(ClearThoughts)
+					You_feel("a little incoherent.");
+				else
+					You("begin babbling incoherently!");
+				HBabble = 1+rnd((Insanity)/10+1)+rnd((Insanity)/10+1);
 			break;
 			case 4:
-				You("begin screaming in terror and madness!");
-				HScreaming = 1+rnd((u.usanity+1)/10)+rnd((u.usanity+1)/10);
+				if(ClearThoughts)
+					You_feel("a little frightened.");
+				else
+					You("begin screaming in terror and madness!");
+				HScreaming = 1+rnd((Insanity)/10+1)+rnd((Insanity)/10+1);
 			break;
 			case 5:
-				You(Hallucination ? "have a case of the vapors!" : "feel faint!");
-				HFaintingFits = 1+rnd((u.usanity+1)/10)+rnd((u.usanity+1)/10);
+				if(ClearThoughts)
+					You_feel("a little faint.");
+				else
+					You(Hallucination ? "have a case of the vapors!" : "feel faint!");
+				HFaintingFits = 1+rnd((Insanity)/10+1)+rnd((Insanity)/10+1);
 			break;
 		}
 	}
@@ -1326,6 +1366,8 @@ void
 change_uinsight(delta)
 int delta;
 {
+	if(u.veil)
+		return;
 	if(discover || wizard)
 		pline("Insight change: %d + %d", u.uinsight, delta);
 	u.uinsight += delta;
@@ -1363,7 +1405,7 @@ roll_madness(madness)
 long int madness;
 {
 	int sanlevel;
-	if(ClearThoughts)
+	if(ClearThoughts && madness != MAD_GOAT_RIDDEN)
 		return 0;
 	
 	if(!(u.umadness&madness))
@@ -1382,6 +1424,43 @@ long int madness;
 {
 	int sanlevel;
 	unsigned long hashed = hash((unsigned long) (moves + nonce + hash((unsigned long)madness))); //Offset the different madnesses before hashing
+	if(ClearThoughts)
+		return 0;
+	
+	if(!(u.umadness&madness))
+		return 0;
+	
+	sanlevel = max_ints(1,(int)(((float)hashed/ULONG_MAX) * ((float)hash(hashed)/ULONG_MAX) * 100));
+	
+	if(u.usanity < sanlevel)
+		return 1;
+	return 0;
+}
+
+int
+flat_mad_turn(madness)
+long int madness;
+{
+	int sanlevel;
+	unsigned long hashed = hash((unsigned long) (moves + nonce + hash((unsigned long)madness))); //Offset the different madnesses before hashing
+	if(ClearThoughts)
+		return 0;
+	
+	if(!(u.umadness&madness))
+		return 0;
+	
+	if(u.usanity <= hashed%100)
+		return 1;
+	return 0;
+}
+
+int
+mad_monster_turn(mon, madness)
+struct monst *mon;
+long int madness;
+{
+	int sanlevel;
+	unsigned long hashed = hash((unsigned long) (moves + nonce + hash((unsigned long)madness + mon->m_id))); //Offset the different madnesses before hashing
 	if(ClearThoughts)
 		return 0;
 	
@@ -1438,6 +1517,24 @@ struct monst *mon;
 	switch(mm){
 		case PM_WALKING_DELIRIUM:
 			u.umadness |= MAD_DELUSIONS;
+		break;
+		case PM_AKKABISH_TANNIN:
+			u.umadness |= MAD_FORMICATION;
+		break;
+		case PM_SHALOSH_TANNAH:
+			u.umadness |= MAD_HOST;
+		break;
+		case PM_NACHASH_TANNIN:
+			u.umadness |= MAD_SCIAPHILIA;
+		break;
+		case PM_KHAAMNUN_TANNIN:
+			u.umadness |= MAD_FORGETFUL;
+		break;
+		case PM_RAGLAYIM_TANNIN:
+			u.umadness |= MAD_TOO_BIG;
+		break;
+		case PM_SARTAN_TANNIN:
+			u.umadness |= MAD_ROTTING;
 		break;
 		case PM_ALDINACH:
 			u.umadness |= MAD_REAL_DELUSIONS;
@@ -1635,5 +1732,39 @@ uhpmax()
     return (Upolyd ? u.mhmax : u.uhpmax);
 }
 
+void
+check_brainlessness()
+{
+	if (ABASE(A_INT) <= 3) {
+		int lifesaved = 0;
+		struct obj *wore_amulet = uamul;
 
+		while (1) {
+			/* avoid looping on "die(y/n)?" */
+			if (lifesaved && (discover || wizard)) {
+				if (wore_amulet && !uamul) {
+					/* used up AMULET_OF_LIFE_SAVING; still
+					subject to dying from brainlessness */
+					wore_amulet = 0;
+				}
+				else {
+					/* explicitly chose not to die;
+					arbitrarily boost intelligence */
+					ABASE(A_INT) = ATTRMIN(A_INT) + 2;
+					You_feel("like a scarecrow.");
+					/* break deathloop */
+					break;
+				}
+			}
+			if (lifesaved)
+				pline("Unfortunately your brain is still gone.");
+			else
+				Your("last thought fades away.");
+			killer = "brainlessness";
+			killer_format = KILLED_BY;
+			done(DIED);
+			lifesaved++;
+		}
+	}
+}
 /*attrib.c*/

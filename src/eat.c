@@ -61,7 +61,7 @@ STATIC_OVL NEARDATA const char comestibles[] = { FOOD_CLASS, 0 };
 STATIC_OVL NEARDATA const char allobj[] = {
 	COIN_CLASS, WEAPON_CLASS, ARMOR_CLASS, POTION_CLASS, SCROLL_CLASS, TILE_CLASS,
 	WAND_CLASS, RING_CLASS, AMULET_CLASS, FOOD_CLASS, TOOL_CLASS,
-	GEM_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, SPBOOK_CLASS, TILE_CLASS, /*BED_CLASS,*/ 0 };
+	GEM_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, SPBOOK_CLASS, BED_CLASS, SCOIN_CLASS, 0 };
 
 STATIC_OVL boolean force_save_hs = FALSE;
 
@@ -153,7 +153,7 @@ struct obj *obj;
 	}
 	
 	if(etype == HELLFIRE_FURNACE && !(obj->oartifact)){
-		if(obj->obj_material >= WAX && obj->obj_material <= BONE 
+		if(obj->obj_material >= WAX && obj->obj_material <= CHITIN 
 #ifdef MAIL
 			&& obj->otyp != SCR_MAIL
 #endif
@@ -210,7 +210,7 @@ register struct obj *obj;
 	if (metallivorous(youracedata) && is_metallic(obj) &&
 	    (youracedata->mtyp != PM_RUST_MONSTER || is_rustprone(obj)))
 		return TRUE;
-	if (u.umonnum == PM_GELATINOUS_CUBE && is_organic(obj) &&
+	if ((u.umonnum == PM_GELATINOUS_CUBE || u.umonnum == PM_ANCIENT_OF_CORRUPTION) && is_organic(obj) &&
 		/* [g.cubes can eat containers and retain all contents
 		    as engulfed items, but poly'd player can't do that] */
 	    !Has_contents(obj))
@@ -507,11 +507,11 @@ register struct obj *otmp;
 			You("find that this military ration has a meat serving.");
 			if(yn("Eat the meat?") == 'n'){
 				You("discard the meat.");
-			    otmp->oeaten = objects[otmp->otyp].oc_nutrition / 4;
+			    otmp->oeaten = obj_nutrition(otmp) / 4;
 			}
 			else{
 				You("eat the meat.");
-			    otmp->oeaten = objects[otmp->otyp].oc_nutrition;
+			    otmp->oeaten = obj_nutrition(otmp);
 			    u.uconduct.unvegan++;
 			    violated_vegetarian();
 			}
@@ -527,17 +527,15 @@ register struct obj *otmp;
 				 || otmp->unpaid)) {
 					/* create a dummy duplicate to put on bill */
 					verbalize("Hey, that was really rare!");
-					pseudo = mksobj(POT_GAIN_LEVEL, FALSE, FALSE);
+					pseudo = mksobj(POT_GAIN_LEVEL, MKOBJ_NOINIT);
 					pseudo->blessed = pseudo->cursed = 0;
 					bill_dummy_object(pseudo);
 					obfree(pseudo, (struct obj *)0);	/* now, get rid of it */
 				}
 			}
-			else otmp->oeaten = objects[otmp->otyp].oc_nutrition;
+			else otmp->oeaten = obj_nutrition(otmp);
 		}
-	    else otmp->oeaten = (otmp->otyp == CORPSE ?
-				mons[otmp->corpsenm].cnutrit :
-				objects[otmp->otyp].oc_nutrition);
+	    else otmp->oeaten = obj_nutrition(otmp);
 	}
 
 	if (carried(otmp)) {
@@ -565,7 +563,7 @@ food_disappears(obj)
 register struct obj *obj;
 {
 	if (obj == victual.piece) victual.piece = (struct obj *)0;
-	if (obj->timed) obj_stop_timers(obj);
+	if (obj->timed) stop_all_timers(obj->timed);
 }
 
 /* renaming an object usually results in it having a different address;
@@ -737,10 +735,7 @@ BOOLEAN_P bld, nobadeffects;
 		break;
 	    case PM_GREEN_SLIME:
 	    case PM_FLUX_SLIME:
-		if (!nobadeffects && !Slimed && !Unchanging 
-			&& !GoodHealth && !flaming(youracedata) 
-			&& youracedata->mtyp != PM_GREEN_SLIME
-		) {
+		if (!nobadeffects && !Slime_res(&youmonst)) {
 		    You("don't feel very well.");
 		    Slimed = 10L;
 		    flags.botl = 1;
@@ -808,10 +803,7 @@ struct monst *mon;
 
 	case PM_GREEN_SLIME:
 	case PM_FLUX_SLIME:
-	    if (!Unchanging && !GoodHealth &&
-				youracedata->mtyp != PM_FIRE_VORTEX &&
-			    youracedata->mtyp != PM_FIRE_ELEMENTAL &&
-			    youracedata->mtyp != PM_GREEN_SLIME) {
+	    if (!Slime_res(&youmonst)) {
 		You("don't feel very well.");
 		Slimed = 10L;
 	    }
@@ -1125,7 +1117,8 @@ BOOLEAN_P tin, nobadeffects, drained;
 			else u.uen += amnt;
 			flags.botl = 1;
 			if (u.uen > u.uenmax){
-				u.uenmax++;
+				u.uenbonus++;
+				calc_total_maxen();
 				u.uen = u.uenmax;
 			}
 			if (old_uen != u.uen){
@@ -1333,6 +1326,7 @@ BOOLEAN_P tin, nobadeffects, drained;
 		    polyself(FALSE);
 		}
 		break;
+	    case PM_FUNGAL_BRAIN:
 	    case PM_MIND_FLAYER:
 	    case PM_MASTER_MIND_FLAYER:
 		if(!drained || !rn2(5)) {
@@ -2382,10 +2376,10 @@ register struct obj *otmp;
 	if(u.sealsActive&SEAL_ENKI && u.uhp < u.uhpmax && otmp->otyp >= CREAM_PIE && otmp->otyp <= TIN){
 		pline("The fruits of civilization give you strength!");
 		if(!Upolyd){
-			u.uhp += objects[otmp->otyp].oc_nutrition;
+			u.uhp += obj_nutrition(otmp);
 			if (u.uhp > u.uhpmax) u.uhp = u.uhpmax;
 		} else {
-			u.mh += objects[otmp->otyp].oc_nutrition;
+			u.mh += obj_nutrition(otmp);
 			if (u.mh > u.mhmax) u.mh = u.mhmax;
 		}
 	}
@@ -2576,8 +2570,7 @@ struct obj *otmp;
 				!poly_when_stoned(youracedata)));
 
 		if (mtyp == PM_GREEN_SLIME || mtyp == PM_FLUX_SLIME)
-		    stoneorslime = (!Unchanging && !flaming(youracedata) &&
-			youracedata->mtyp != PM_GREEN_SLIME);
+		    stoneorslime = !Slime_res(&youmonst);
 
 		if (cadaver && mtyp != PM_LIZARD && mtyp != PM_SMALL_CAVE_LIZARD && mtyp != PM_CAVE_LIZARD 
 		&& mtyp != PM_LARGE_CAVE_LIZARD && mtyp != PM_LICHEN && mtyp != PM_BEHOLDER ) {
@@ -2655,7 +2648,7 @@ struct obj *otmp;
 	 */
 	 
 	if (!u.uconduct.unvegan && !(Race_if(PM_INCANTIFIER) || magivorous(youracedata)) &&
-	    ((material == LEATHER || material == BONE ||
+	    ((material == LEATHER || material == BONE || material == CHITIN ||
 	      material == EYEBALL || material == SEVERED_HAND ||
 	      material == DRAGON_HIDE || material == WAX) ||
 	     (cadaver && !vegan(&mons[mtyp])))) {
@@ -2665,7 +2658,7 @@ struct obj *otmp;
 		else return 2;
 	}
 	if (!u.uconduct.unvegetarian && !(Race_if(PM_INCANTIFIER) || magivorous(youracedata)) &&
-	    ((material == LEATHER || material == BONE ||
+	    ((material == LEATHER || material == BONE || material == CHITIN ||
 	      material == EYEBALL || material == SEVERED_HAND ||
 	      material == DRAGON_HIDE) ||
 	     (cadaver && !vegetarian(&mons[mtyp])))) {
@@ -3093,7 +3086,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 			switch(otmp->oclass){
 				case WEAPON_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3102,7 +3095,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case RING_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3111,7 +3104,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case AMULET_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3120,7 +3113,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case ARMOR_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3129,7 +3122,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case TOOL_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3138,7 +3131,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case SCROLL_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3147,7 +3140,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case SPBOOK_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3156,7 +3149,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case WAND_CLASS:
 					u.uconduct.food++;
-					u.ustove += objects[otmp->otyp].oc_nutrition;
+					u.ustove += obj_nutrition(otmp);
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3168,7 +3161,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 						u.uconduct.food++;
 						if (!vegan(&mons[otmp->corpsenm])) u.uconduct.unvegan++;
 						if (!vegetarian(&mons[otmp->corpsenm])) violated_vegetarian();
-						u.ustove += otmp->oeaten ? otmp->oeaten : mons[otmp->corpsenm].cnutrit;
+						u.ustove += otmp->oeaten ? otmp->oeaten : obj_nutrition(otmp);
 						if (otmp == uwep && otmp->quan == 1L) uwepgone();
 						if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 						if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3176,7 +3169,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 						else useupf(otmp, 1L);
 					} else {
 						u.uconduct.food++;
-						u.ustove += objects[otmp->otyp].oc_nutrition;
+						u.ustove += obj_nutrition(otmp);
 						if (otmp == uwep && otmp->quan == 1L) uwepgone();
 						if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 						if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3211,7 +3204,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 			switch(otmp->oclass){
 				case WEAPON_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3220,7 +3213,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case RING_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3229,7 +3222,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case AMULET_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3238,7 +3231,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case ARMOR_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3247,7 +3240,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case TOOL_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3256,7 +3249,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case SCROLL_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3265,7 +3258,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case SPBOOK_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3274,7 +3267,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case WAND_CLASS:
 					u.uconduct.food++;
-					u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+					u.ustove += obj_nutrition(otmp)/10+1;
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3286,7 +3279,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 						u.uconduct.food++;
 						if (!vegan(&mons[otmp->corpsenm])) u.uconduct.unvegan++;
 						if (!vegetarian(&mons[otmp->corpsenm])) violated_vegetarian();
-						u.ustove += otmp->oeaten ? ((otmp->oeaten)/10+1) : ((mons[otmp->corpsenm].cnutrit)/10+1);
+						u.ustove += otmp->oeaten ? ((otmp->oeaten)/10+1) : (obj_nutrition(otmp)/10+1);
 						if (otmp == uwep && otmp->quan == 1L) uwepgone();
 						if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 						if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3294,7 +3287,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 						else useupf(otmp, 1L);
 					} else {
 						u.uconduct.food++;
-						u.ustove += (objects[otmp->otyp].oc_nutrition)/10+1;
+						u.ustove += obj_nutrition(otmp)/10+1;
 						if (otmp == uwep && otmp->quan == 1L) uwepgone();
 						if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 						if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3329,8 +3322,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 			switch(otmp->oclass){
 				case WEAPON_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3339,8 +3332,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case RING_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3349,8 +3342,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case AMULET_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3359,8 +3352,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case ARMOR_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3369,8 +3362,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case TOOL_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3379,8 +3372,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case SCROLL_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3389,8 +3382,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case SPBOOK_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3399,8 +3392,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				break;
 				case WAND_CLASS:
 					u.uconduct.food++;
-					if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-					else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+					if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+					else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 					if (otmp == uwep && otmp->quan == 1L) uwepgone();
 					if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 					if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3412,8 +3405,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 						u.uconduct.food++;
 						if (!vegan(&mons[otmp->corpsenm])) u.uconduct.unvegan++;
 						if (!vegetarian(&mons[otmp->corpsenm])) violated_vegetarian();
-						if(Upolyd) u.mh += otmp->oeaten ? ((otmp->oeaten)/10+1) : ((mons[otmp->corpsenm].cnutrit)/10+1);
-						else u.uhp += otmp->oeaten ? ((otmp->oeaten)/10+1) : ((mons[otmp->corpsenm].cnutrit)/10+1);
+						if(Upolyd) u.mh += otmp->oeaten ? ((otmp->oeaten)/10+1) : (obj_nutrition(otmp)/10+1);
+						else u.uhp += otmp->oeaten ? ((otmp->oeaten)/10+1) : (obj_nutrition(otmp)/10+1);
 						if(Upolyd) u.mh = min(u.mhmax, u.mh);
 						else u.uhp = min(u.uhpmax, u.uhp);
 						if (otmp == uwep && otmp->quan == 1L) uwepgone();
@@ -3423,8 +3416,8 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 						else useupf(otmp, 1L);
 					} else {
 						u.uconduct.food++;
-						if(Upolyd) u.mh = min(u.mhmax, u.mh+objects[otmp->otyp].oc_nutrition);
-						else u.uhp = min(u.uhpmax, u.uhp+objects[otmp->otyp].oc_nutrition);
+						if(Upolyd) u.mh = min(u.mhmax, u.mh+obj_nutrition(otmp));
+						else u.uhp = min(u.uhpmax, u.uhp+obj_nutrition(otmp));
 						if (otmp == uwep && otmp->quan == 1L) uwepgone();
 						if (otmp == uquiver && otmp->quan == 1L) uqwepgone();
 						if (otmp == uswapwep && otmp->quan == 1L) uswapwepgone();
@@ -3459,17 +3452,18 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		/* Note: gold weighs 1 pt. for each 1000 pieces (see */
 		/* pickup.c) so gold and non-gold is consistent. */
 	    if (otmp->oclass == COIN_CLASS)
-		basenutrit = ((otmp->quan > ((long)u.uhungermax)*100L) ? u.uhungermax
-			: (int)(otmp->quan/100L));
+			basenutrit = ((otmp->quan > ((long)u.uhungermax)*100L) ? u.uhungermax : (int)(otmp->quan/100L));
 	    else if(otmp->oclass == BALL_CLASS || (otmp->oclass == CHAIN_CLASS && weight(otmp) > objects[otmp->otyp].oc_nutrition))
-		basenutrit = weight(otmp);
-	    /* oc_nutrition is usually weight anyway */
-	    else basenutrit = objects[otmp->otyp].oc_nutrition;
-	    victual.nmod = basenutrit;
+			basenutrit = weight(otmp);
+			/* oc_nutrition is usually weight anyway */
+	    else 
+			basenutrit = obj_nutrition(otmp);
+	    
+		victual.nmod = basenutrit;
 	    victual.eating = TRUE; /* needed for lesshungry() */
 
 	    material = otmp->obj_material;
-	    if (material == LEATHER || material == BONE || material == DRAGON_HIDE) {
+	    if (material == LEATHER || material == BONE || material == CHITIN || material == DRAGON_HIDE) {
 			u.uconduct.unvegan++;
 			violated_vegetarian();
 	    } else {
@@ -3662,7 +3656,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	    /* if not used up, eatcorpse sets up reqtime and may modify
 	     * oeaten */
 	} else {
-	    /* No checks for WAX, LEATHER, BONE, DRAGON_HIDE.  These are
+	    /* No checks for WAX, LEATHER, BONE, DRAGON_HIDE, etc.  These are
 	     * all handled in the != FOOD_CLASS case, above */
 	    switch (otmp->obj_material) {
 	    case FLESH:
@@ -3712,8 +3706,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	}
 
 	/* re-calc the nutrition */
-	if (otmp->otyp == CORPSE) basenutrit = mons[otmp->corpsenm].cnutrit;
-	else basenutrit = objects[otmp->otyp].oc_nutrition;
+	basenutrit = obj_nutrition(otmp);
 	nutrit = otmp->oeaten;
 	if (otmp->otyp == CORPSE && otmp->odrained) {
 	    nutrit -= drainlevel(otmp);
@@ -3794,6 +3787,10 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	//Elder vampires can go for longer without blood
 	if(is_vampire(youracedata))
 		hungermod *= (maybe_polyd(youmonst.data->mlevel, u.ulevel)/10 + 1);
+	
+	//Incantifiers get reduced hunger
+	if(Race_if(PM_INCANTIFIER))
+		hungermod *= 10;
 	
 	if ((!inediate(youracedata) || Race_if(PM_INCANTIFIER))
 		&& !(moves % hungermod)
@@ -4448,7 +4445,7 @@ floorfood(verb,corpsecheck)	/* get food from floor or pack */
 		if ((c = yn_function(qbuf, ynqchars, 'n')) == 'y') {
 		    u.utrap = u.utraptype = 0;
 		    deltrap(ttmp);
-		    return mksobj(BEARTRAP, TRUE, FALSE);
+		    return mksobj(BEARTRAP, NO_MKOBJ_FLAGS);
 		} else if (c == 'q') {
 		    return (struct obj *)0;
 		}
@@ -4517,9 +4514,8 @@ register struct obj *obj;
 {
 	long uneaten_amt, full_amount;
 
+	full_amount = (long)obj_nutrition(obj);
 	uneaten_amt = (long)obj->oeaten;
-	full_amount = (obj->otyp == CORPSE) ? (long)mons[obj->corpsenm].cnutrit
-					: (long)objects[obj->otyp].oc_nutrition;
 	if (uneaten_amt > full_amount) {
 	    impossible(
 	  "partly eaten food (%ld) more nutritious than untouched food (%ld)",
@@ -4531,12 +4527,49 @@ register struct obj *obj;
 	return (base < 1) ? 1 : base;
 }
 
+int
+obj_nutrition(struct obj *otmp)
+{
+    int nut = (otmp->otyp == CORPSE) ? mons[otmp->corpsenm].cnutrit : (int) objects[otmp->otyp].oc_nutrition;
+
+    if (otmp->otyp == LEMBAS_WAFER) {
+        if (maybe_polyd(is_elf(youmonst.data), Race_if(PM_ELF)))
+            nut += nut / 4; /* 800 -> 1000 */
+        else if (maybe_polyd(is_orc(youmonst.data), Race_if(PM_ORC)))
+            nut -= nut / 4; /* 800 -> 600 */
+        /* prevent polymorph making a partly eaten wafer
+           become more nutritious than an untouched one */
+        if (otmp->oeaten >= nut)
+            otmp->oeaten = (otmp->oeaten < objects[LEMBAS_WAFER].oc_nutrition)
+                              ? (nut - 1) : nut;
+    } else if (otmp->otyp == CRAM_RATION) {
+        if (maybe_polyd(is_dwarf(youmonst.data), Race_if(PM_DWARF)))
+            nut += nut / 6; /* 600 -> 700 */
+    }
+    return nut;
+}
 /* reduce obj's oeaten field, making sure it never hits or passes 0 */
 void
 consume_oeaten(obj, amt)
 struct obj *obj;
 int amt;
 {
+	
+	if (!obj_nutrition(obj)) {
+		char itembuf[40];
+		int otyp = obj->otyp;
+
+		if (otyp == CORPSE || otyp == EGG || otyp == TIN) {
+			Strcpy(itembuf, (otyp == CORPSE) ? "corpse"
+								: (otyp == EGG) ? "egg"
+								: (otyp == TIN) ? "tin" : "other?");
+			Sprintf(eos(itembuf), " [%d]", obj->corpsenm);
+		} else {
+			Sprintf(itembuf, "%d", otyp);
+		}
+		impossible("oeaten: attempting to set 0 nutrition food (%s) partially eaten", itembuf);
+		return;
+	}
     /*
      * This is a hack to try to squelch several long standing mystery
      * food bugs.  A better solution would be to rewrite the entire
@@ -4550,7 +4583,8 @@ int amt;
      * independently keeps track of whether there is any food left.
      * The oeaten field can reach exactly zero on the last turn, and
      * the object isn't removed from inventory until the next turn
-     * when the "you finish eating" message gets delivered, so the
+ 
+    * when the "you finish eating" message gets delivered, so the
      * food would be restored to the status of untouched during that
      * interval.  This resulted in unexpected encumbrance messages
      * at the end of a meal (if near enough to a threshold) and would
@@ -4575,9 +4609,9 @@ int amt;
     }
 
     if (obj->oeaten == 0) {
-	if (obj == victual.piece)	/* always true unless wishing... */
-	    victual.reqtime = victual.usedtime;	/* no bites left */
-	obj->oeaten = 1;	/* smallest possible positive value */
+		if (obj == victual.piece)	/* always true unless wishing... */
+			victual.reqtime = victual.usedtime;	/* no bites left */
+		obj->oeaten = 1;	/* smallest possible positive value */
     }
 }
 

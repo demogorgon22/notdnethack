@@ -11,7 +11,7 @@
 #define pm_resistance(ptr,typ)	(((ptr)->mresists & (typ)) != 0)
 #define mon_intrinsic(mon,typ)	(((mon)->mintrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_extrinsic(mon,typ)	(((mon)->mextrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
-#define mon_resistance(mon,typ)	(mon_intrinsic(mon,typ) || mon_extrinsic(mon,typ) || (typ == SWIMMING && Is_waterlevel(&u.uz)))
+#define mon_resistance(mon,typ)	(mon_intrinsic(mon,typ) || mon_extrinsic(mon,typ) || (typ == SWIMMING && Is_waterlevel(&u.uz)) || (typ == TELEPORT && mad_monster_turn(mon, MAD_NON_EUCLID)) || (typ == TELEPORT_CONTROL && mad_monster_turn(mon, MAD_NON_EUCLID)))
 
 #define species_resists_fire(mon)	(((mon)->data->mresists & MR_FIRE) != 0)
 #define species_resists_cold(mon)	(((mon)->data->mresists & MR_COLD) != 0)
@@ -41,7 +41,10 @@
 #define is_blind(mon)		(!((mon)->mcansee) || (darksight((mon)->data) && !(\
 													(!levl[(mon)->mx][(mon)->my].lit && !(viz_array[(mon)->my][(mon)->mx]&TEMP_LIT1 && !(viz_array[(mon)->my][(mon)->mx]&TEMP_DRK1)))\
 													|| (levl[(mon)->mx][(mon)->my].lit &&  (viz_array[(mon)->my][(mon)->mx]&TEMP_DRK1 && !(viz_array[(mon)->my][(mon)->mx]&TEMP_LIT1))))))
-#define is_deaf(mon)		(!((mon)->mcanhear) || (mon)->mtyp == PM_ALABASTER_ELF || (mon)->mtyp == PM_ALABASTER_ELF_ELDER)
+#define is_deaf(mon)		(!((mon)->mcanhear) ||\
+							  (mon)->mtyp == PM_NUPPERIBO ||\
+							  (mon)->mtyp == PM_ALABASTER_ELF ||\
+							  (mon)->mtyp == PM_ALABASTER_ELF_ELDER)
 
 #define has_template(mon, id)	((mon)->mtemplate == (id))
 #define templated(mon)			((mon)->mtemplate != 0)
@@ -89,7 +92,7 @@
 #define species_passes_walls(ptr)	(((ptr)->mflagsm & MM_WALLWALK) != 0L)
 #define amorphous(ptr)			(((ptr)->mflagsm & MM_AMORPHOUS) != 0L)
 #define noncorporeal(ptr)		((ptr)->mlet == S_GHOST || (ptr)->mlet == S_SHADE)
-#define insubstantial(ptr)		((ptr)->mlet == S_SHADE || (ptr)->mtyp == PM_SHARAB_KAMEREL)
+#define insubstantial(ptr)		(((ptr)->mflagsb & MB_INSUBSTANTIAL) != 0L)
 #define tunnels(ptr)			(((ptr)->mflagsm & MM_TUNNEL) != 0L)
 #define needspick(ptr)			(((ptr)->mflagsm & MM_NEEDPICK) != 0L)
 #define is_underswimmer(ptr)	((ptr)->mlet == S_EEL || (ptr)->mtyp == PM_CRYSTAL_OOZE)
@@ -122,6 +125,15 @@
 #define flaming(ptr)		((ptr)->mtyp == PM_FIRE_VORTEX || \
 				 (ptr)->mtyp == PM_FLAMING_SPHERE || \
 				 (ptr)->mtyp == PM_FIRE_ELEMENTAL || \
+				 (ptr)->mtyp == PM_FIRE_STORM || \
+				 (ptr)->mtyp == PM_FLAMING_ORB || \
+				 (ptr)->mtyp == PM_HELLFIRE_COLOSSUS || \
+				 (ptr)->mtyp == PM_HELLFIRE_ORB || \
+				 (ptr)->mtyp == PM_DANCING_FLAME || \
+				 (ptr)->mtyp == PM_BALL_OF_GOSSAMER_SUNLIGHT || \
+				 (ptr)->mtyp == PM_ANCIENT_OF_THE_BURNING_WASTES || \
+				 (ptr)->mtyp == PM_FIERNA || \
+				 (ptr)->mtyp == PM_MOLEK || \
 				 (ptr)->mtyp == PM_SALAMANDER)
 #define is_gold(ptr)	((ptr)->mtyp == PM_GOLD_GOLEM || \
 				 (ptr)->mtyp == PM_GOLDEN_HEART || \
@@ -246,7 +258,7 @@
 
 #define noanatomy(ptr)			(noncorporeal(ptr) || amorphous(ptr) || naoid(ptr))
 
-#define noboots(ptr)			((slithy(ptr) && !humanoid_feet(ptr)) || nolimbs(ptr) || nofeet(ptr))
+#define noboots(ptr)			((slithy(ptr) || nolimbs(ptr) || nofeet(ptr)) && !humanoid_feet(ptr))
 
 #define is_animal(ptr)		(((ptr)->mflagst & MT_ANIMAL) != 0L)
 #define is_plant(ptr)		(((ptr)->mflagsa & MA_PLANT) != 0L)
@@ -409,6 +421,18 @@
 #define is_domestic(ptr)	(((ptr)->mflagst & MT_DOMESTIC) != 0L)
 #define is_fey(ptr)			(((ptr)->mflagsa & MA_FEY) != 0L)
 #define is_demon(ptr)		(((ptr)->mflagsa & MA_DEMON) != 0L)
+#define is_law_demon(ptr)	(((ptr)->mflagsa & MA_DEMON) != 0L && is_lawful(ptr))
+#define is_ancient(ptr)		(((ptr)->mtyp >=  PM_ANCIENT_OF_BLESSINGS\
+							&& (ptr)->mtyp <= PM_ANCIENT_OF_DEATH) \
+							|| (ptr)->mtyp == PM_BAALPHEGOR \
+							)
+#define is_tannin(ptr)		(((ptr)->mtyp >= PM_AKKABISH_TANNIN \
+							  && (ptr)->mtyp <= PM_TERAPHIM_TANNAH \
+							 ) \
+							|| (ptr)->mtyp == PM_PALE_NIGHT \
+							|| (ptr)->mtyp == PM_DAGON \
+							|| (ptr)->mtyp == PM_OBOX_OB \
+							)
 #define is_primordial(ptr)	(((ptr)->mflagsa & MA_PRIMORDIAL) != 0L)
 #define is_keter(ptr)		((ptr)->mlet == S_KETER)
 #define is_angel(ptr)		((((ptr)->mflagsa & MA_MINION) != 0L) && ((ptr)->mlet == S_LAW_ANGEL || (ptr)->mlet == S_NEU_ANGEL || (ptr)->mlet == S_CHA_ANGEL))
@@ -511,6 +535,22 @@
 									|| (ptr)->mtyp == PM_FIRE_STORM \
 									|| (ptr)->mtyp == PM_MOUTH_OF_THE_GOAT \
 								  )
+
+#define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
+								&& (ptr)->mtyp != PM_OONA \
+								&& (ptr)->mtyp != PM_BALROG \
+								&& (ptr)->mtyp != PM_DURIN_S_BANE \
+								&& (ptr)->mtyp != PM_SUCCUBUS \
+								&& (ptr)->mtyp != PM_INCUBUS \
+								)
+
+#define template_blocks_gate(magr)	(has_template(magr, ZOMBIFIED)\
+									|| has_template(magr, SKELIFIED)\
+									|| has_template(magr, CRYSTALFIED)\
+									|| has_template(magr, TOMB_HERD)\
+									|| has_template(magr, SLIME_REMNANT)\
+								)
+
 #define always_hostile(ptr)	(((ptr)->mflagst & MT_HOSTILE) != 0L)
 #define always_hostile_mon(mon)	(always_hostile((mon)->data))
 #define always_peaceful(ptr)	(((ptr)->mflagst & MT_PEACEFUL) != 0L)
@@ -543,10 +583,12 @@
 #define helm_match(ptr,obj)	(((ptr->mflagsb&MB_HEADMODIMASK) == (obj->bodytypeflag&MB_HEADMODIMASK)))
 /*Note: No-modifier helms are "normal"*/
 
-#define hates_holy_mon(mon)	(is_demon((mon)->data) || is_undead(mon->data) || (((mon)->data->mflagsg&MG_HATESHOLY) != 0))
+#define hates_holy_mon(mon)	((mon) == &youmonst ? hates_holy(youracedata) : hates_holy((mon)->data))
 #define hates_holy(ptr)		(is_demon(ptr) || is_undead(ptr) || (((ptr)->mflagsg&MG_HATESHOLY) != 0))
 #define hates_unholy(ptr)	((ptr->mflagsg&MG_HATESUNHOLY) != 0)
-#define hates_unholy_mon(mon)	(hates_unholy((mon)->data))
+#define hates_unholy_mon(mon)	((mon) == &youmonst ? hates_unblessed(youracedata) : hates_unholy((mon)->data))
+#define hates_unblessed(ptr)	((ptr->mflagsg&MG_HATESUNBLESSED) != 0)
+#define hates_unblessed_mon(mon)	((mon) == &youmonst ? hates_unblessed(youracedata) : hates_unblessed((mon)->data))
 #define hates_silver(ptr)	((ptr->mflagsg&MG_HATESSILVER) != 0)
 #define hates_iron(ptr)		((ptr->mflagsg&MG_HATESIRON) != 0)
 
@@ -644,6 +686,7 @@
 				  (ptr)->mtyp == PM_HOOLOOVOO || \
 				  (ptr)->mtyp == PM_LIGHTNING_PARAELEMENTAL || \
 				  (ptr)->mtyp == PM_FALLEN_ANGEL || \
+				  (ptr)->mtyp == PM_ANCIENT_OF_THOUGHT || \
 				  (ptr)->mtyp == PM_DARK_WORM || \
 				  (ptr)->mtyp == PM_FIRE_VORTEX) ? 1 : \
 				 ((ptr)->mtyp == PM_FIRE_ELEMENTAL ||\
@@ -653,6 +696,7 @@
 				  (ptr)->mtyp == PM_COTERIE_OF_MOTES ||\
 				  (ptr)->mtyp == PM_BALL_OF_RADIANCE) ? 2 : \
 				 ((ptr)->mtyp == PM_THRONE_ARCHON ||\
+				  (ptr)->mtyp == PM_BEAUTEOUS_ONE ||\
 				 (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE) ? 3 : \
 				 ((ptr)->mtyp == PM_BLESSED) ? 4 : \
 				 ((ptr)->mtyp == PM_LIGHT_ARCHON|| \
@@ -700,9 +744,14 @@
 								 (ptr)->mtyp == PM_DARUTH_XAXOX ||\
 								 (ptr)->mtyp == PM_EMBRACED_DROWESS\
 								)
-#define has_mind_blast(ptr)	(is_mind_flayer(ptr) || \
-				 (ptr)->mtyp == PM_BRAIN_GOLEM || \
-				 (ptr)->mtyp == PM_SEMBLANCE \
+#define has_mind_blast_mon(mon)	(has_mind_blast((mon)->data) \
+				 || has_template(mon, DREAM_LEECH) \
+				)
+#define has_mind_blast(ptr)	(is_mind_flayer(ptr) \
+				 || (ptr)->mtyp == PM_BRAIN_GOLEM \
+				 || (ptr)->mtyp == PM_SEMBLANCE \
+				 || (ptr)->mtyp == PM_FUNGAL_BRAIN \
+				 || (ptr)->mtyp == PM_LADY_CONSTANCE \
 				)
 
 #define is_mind_flayer(ptr)	((ptr)->mtyp == PM_MIND_FLAYER || \
@@ -828,14 +877,24 @@
 #define likes_swamp(ptr)	((ptr)->mlet == S_PUDDING || \
 				 (ptr)->mlet == S_FUNGUS || \
 				 (ptr)->mtyp == PM_OCHRE_JELLY)
+#define stationary_mon(mon)		(stationary((mon)->data) || \
+	((mon) != &youmonst ? (which_armor((mon), W_ARMF) && which_armor((mon), W_ARMF)->otyp == SHACKLES && which_armor((mon), W_ARMF)->cursed) :\
+	(uarmf && uarmf->otyp == SHACKLES && uarmf->cursed)))
 #define stationary(ptr)		((ptr)->mflagsm & MM_STATIONARY)
 #define sessile(ptr)		((ptr)->mmove == 0)
+
+#define straitjacketed_mon(mon) (which_armor(mon, W_ARM) && which_armor(mon, W_ARM)->otyp == STRAITJACKET && which_armor(mon, W_ARM)->cursed)
+#define shackled_arms_mon(mon) (which_armor(mon, W_ARMG) && which_armor(mon, W_ARMG)->otyp == SHACKLES && which_armor(mon, W_ARMG)->cursed)
 
 /* Used for conduct with corpses, tins, and digestion attacks */
 /* G_NOCORPSE monsters might still be swallowed as a purple worm */
 /* Maybe someday this could be in mflags... */
-#define vegan(ptr)		(((ptr)->mlet == S_BLOB && \
-							(ptr)->mtyp != PM_BLOB_OF_PRESERVED_ORGANS) || \
+/** Shogooths are vegan :-/ **/
+#define vegan(ptr)		(((ptr)->mlet == S_BLOB \
+							&& (ptr)->mtyp != PM_BLOB_OF_PRESERVED_ORGANS\
+							&& (ptr)->mtyp != PM_BLOOD_BLOATER\
+							&& (ptr)->mtyp != PM_COILING_BRAWN\
+						 ) || \
 				 (ptr)->mlet == S_JELLY ||            \
 				((ptr)->mlet == S_FUNGUS && 		  \
 					!is_migo(ptr)) ||				  \

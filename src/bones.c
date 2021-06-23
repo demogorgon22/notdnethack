@@ -62,6 +62,11 @@ boolean restore;
 	struct obj *otmp;
 
 	for (otmp = ochain; otmp; otmp = otmp->nobj) {
+		if (!restore) {
+			while (otmp && get_ox(otmp, OX_ESUM)) otmp = otmp->nobj;
+			if (!otmp) break;
+		}
+
 		if (otmp->cobj)
 		    resetobjs(otmp->cobj,restore);
 
@@ -76,12 +81,22 @@ boolean restore;
 		) {
 			otmp->oartifact = 0;
 			rem_ox(otmp, OX_ENAM);
-		} else if (otmp->oartifact && restore)
+		} else if (otmp->oartifact && restore) {
 			artifact_exists(otmp,ONAME(otmp),TRUE);
+			/* otmp was gifted to the deceased adventurer, not you who just found it */
+			otmp->gifted = 0;
+		}
 		if (restore) {
-			/* rings and wands' material should always match their description */
-			if (otmp->oclass == RING_CLASS || otmp->oclass == WAND_CLASS)
+			/* rings and wands' material and color should always match their description */
+			if (otmp->oclass == RING_CLASS || otmp->oclass == WAND_CLASS){
 				set_material_gm(otmp, objects[otmp->otyp].oc_material);
+				set_object_color(otmp);
+			}
+			
+			/* books' color should always match their description */
+			if(otmp->oclass == SPBOOK_CLASS){
+				set_object_color(otmp);
+			}
 		}
 		if (!restore) {
 			/* do not zero out o_ids for ghost levels anymore */
@@ -230,64 +245,67 @@ int y;
 		/* it's not necessary to properly remove the thoughts; the player is dead */
 		if(u.thoughts & ANTI_CLOCKWISE_METAMORPHOSIS){
 			u.thoughts &= ~ANTI_CLOCKWISE_METAMORPHOSIS;
-			otmp = mksobj(ANTI_CLOCKWISE_METAMORPHOSIS_G, FALSE, FALSE);
+			otmp = mksobj(ANTI_CLOCKWISE_METAMORPHOSIS_G, MKOBJ_NOINIT);
 		} else if(u.thoughts & CLOCKWISE_METAMORPHOSIS){
 			u.thoughts &= ~CLOCKWISE_METAMORPHOSIS;
-			otmp = mksobj(CLOCKWISE_METAMORPHOSIS_GLYPH, FALSE, FALSE);
+			otmp = mksobj(CLOCKWISE_METAMORPHOSIS_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & ARCANE_BULWARK){
 			u.thoughts &= ~ARCANE_BULWARK;
-			otmp = mksobj(SPARKLING_LAKE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(SPARKLING_LAKE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & DISSIPATING_BULWARK){
 			u.thoughts &= ~DISSIPATING_BULWARK;
-			otmp = mksobj(FADING_LAKE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(FADING_LAKE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & SMOLDERING_BULWARK){
 			u.thoughts &= ~SMOLDERING_BULWARK;
-			otmp = mksobj(SMOKING_LAKE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(SMOKING_LAKE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & FROSTED_BULWARK){
 			u.thoughts &= ~FROSTED_BULWARK;
-			otmp = mksobj(FROSTED_LAKE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(FROSTED_LAKE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & BLOOD_RAPTURE){
 			u.thoughts &= ~BLOOD_RAPTURE;
-			otmp = mksobj(RAPTUROUS_EYE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(RAPTUROUS_EYE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & CLAWMARK){
 			u.thoughts &= ~CLAWMARK;
-			otmp = mksobj(CLAWMARK_GLYPH, FALSE, FALSE);
+			otmp = mksobj(CLAWMARK_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & CLEAR_DEEPS){
 			u.thoughts &= ~CLEAR_DEEPS;
-			otmp = mksobj(CLEAR_SEA_GLYPH, FALSE, FALSE);
+			otmp = mksobj(CLEAR_SEA_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & DEEP_SEA){
 			u.thoughts &= ~DEEP_SEA;
-			otmp = mksobj(DEEP_SEA_GLYPH, FALSE, FALSE);
+			otmp = mksobj(DEEP_SEA_GLYPH, MKOBJ_NOINIT);
+		} else if(u.thoughts & TRANSPARENT_SEA){
+			u.thoughts &= ~TRANSPARENT_SEA;
+			otmp = mksobj(HIDDEN_SEA_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & COMMUNION){
 			u.thoughts &= ~COMMUNION;
-			otmp = mksobj(COMMUNION_GLYPH, FALSE, FALSE);
+			otmp = mksobj(COMMUNION_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & CORRUPTION){
 			u.thoughts &= ~CORRUPTION;
-			otmp = mksobj(CORRUPTION_GLYPH, FALSE, FALSE);
+			otmp = mksobj(CORRUPTION_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & EYE_THOUGHT){
 			u.thoughts &= ~EYE_THOUGHT;
-			otmp = mksobj(EYE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(EYE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & FORMLESS_VOICE){
 			u.thoughts &= ~FORMLESS_VOICE;
-			otmp = mksobj(FORMLESS_VOICE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(FORMLESS_VOICE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & GUIDANCE){
 			u.thoughts &= ~GUIDANCE;
-			otmp = mksobj(GUIDANCE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(GUIDANCE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & IMPURITY){
 			u.thoughts &= ~IMPURITY;
-			otmp = mksobj(IMPURITY_GLYPH, FALSE, FALSE);
+			otmp = mksobj(IMPURITY_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & MOON){
 			u.thoughts &= ~MOON;
-			otmp = mksobj(MOON_GLYPH, FALSE, FALSE);
+			otmp = mksobj(MOON_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & WRITHE){
 			u.thoughts &= ~WRITHE;
-			otmp = mksobj(WRITHE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(WRITHE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & RADIANCE){
 			u.thoughts &= ~RADIANCE;
-			otmp = mksobj(RADIANCE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(RADIANCE_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & BEASTS_EMBRACE){
 			u.thoughts &= ~BEASTS_EMBRACE;
-			otmp = mksobj(BEAST_S_EMBRACE_GLYPH, FALSE, FALSE);
+			otmp = mksobj(BEAST_S_EMBRACE_GLYPH, MKOBJ_NOINIT);
 		} else {
 			pline("Can't find glyph!");
 		}
@@ -407,7 +425,8 @@ struct obj *corpse;
 			(mptr->mtyp == PM_WEEPING_ANGEL && angelnum > 0) || 
 			(is_drow(mptr) && mtmp->mfaction == LOST_HOUSE) ||
 			(is_dprince(mptr) && !Inhell) || 
-			(is_dlord(mptr) && !Inhell)
+			(is_dlord(mptr) && !Inhell) ||
+			(get_mx(mtmp, MX_ESUM))
 		) mongone(mtmp);
 		if(mptr->mtyp == PM_WEEPING_ANGEL) angelnum++;
 	}
@@ -502,6 +521,13 @@ struct obj *corpse;
 			in_mklev = FALSE;
 			if(mtmp)
 				set_template(mtmp, CRYSTALFIED);
+		} else if(u.ugrave_arise == PM_ANCIENT_OF_CORRUPTION){
+			u.ugrave_arise = (u.mfemale && urace.femalenum != NON_PM) ? urace.femalenum : urace.malenum;
+			in_mklev = TRUE;
+			mtmp = makemon(&mons[u.ugrave_arise], x, y, NO_MM_FLAGS);
+			in_mklev = FALSE;
+			if(mtmp)
+				set_template(mtmp, SLIME_REMNANT);
 		} else if(u.ugrave_arise == PM_VAMPIRE){
 			u.ugrave_arise = (u.mfemale && urole.femalenum != NON_PM) ? urole.femalenum : urole.malenum;
 			in_mklev = TRUE;
@@ -525,6 +551,7 @@ struct obj *corpse;
 			has_template(mtmp, ZOMBIFIED) ? " zombie" :
 			has_template(mtmp, SKELIFIED) ? " skeleton" :
 			has_template(mtmp, CRYSTALFIED) ? " vitrean" :
+			has_template(mtmp, SLIME_REMNANT) ? " slimy remnant" :
 			""
 			);
 		display_nhwindow(WIN_MESSAGE, FALSE);
@@ -542,7 +569,7 @@ struct obj *corpse;
 		resetobjs(mtmp->minvent,FALSE);
 		/* do not zero out m_ids for bones levels any more */
 		mtmp->mlstmv = 0L;
-		if(mtmp->mtame) mtmp->mtame = mtmp->mpeaceful = 0;
+		if(mtmp->mtame) untame(mtmp, 0);
 	}
 	for(ttmp = ftrap; ttmp; ttmp = ttmp->ntrap) {
 		ttmp->madeby_u = 0;

@@ -7,6 +7,7 @@
 #include "artifact.h"
 
 extern boolean notonhead;
+extern struct attack noattack;
 
 #ifdef OVL0
 
@@ -649,6 +650,9 @@ boolean digest_meal;
 		beat = entangle_beatitude(mon, -1);
 		if(hates_unholy_mon(mon) && beat)
 			mon->mhp -= beat == 2 ? d(2,9) : rnd(9);
+		beat = entangle_beatitude(mon, 0);
+		if(hates_unblessed_mon(mon) && beat)
+			mon->mhp -= beat == 2 ? d(2,8) : rnd(8);
 		beat = entangle_beatitude(mon, 1);
 		if(hates_holy_mon(mon) && beat)
 			mon->mhp -= beat == 2 ? rnd(20) : rnd(4);
@@ -866,7 +870,9 @@ int *inrange, *nearby, *scared;
 			       (!mtmp->mpeaceful &&
 				    in_your_sanctuary(mtmp, 0, 0))));
 	
-	if(*scared && mtmp->mvanishes > 0) mtmp->mvanishes = mtmp->mvanishes/2 + 1;
+	if(*scared && get_mx(mtmp, MX_ESUM)) {
+		abjure_summon(mtmp, timer_duration_remaining(get_timer(mtmp->timed, DESUMMON_MON))/2);
+	}
 	
 	if(mtmp->mtyp == PM_DAUGHTER_OF_BEDLAM && !rn2(20)) *scared = TRUE;
 	else if(*nearby && !mtmp->mflee && fleetflee(mtmp->data) && (mtmp->data->mmove > youracedata->mmove || noattacks(mtmp->data))) *scared = TRUE;
@@ -959,7 +965,7 @@ register struct monst *mtmp;
 			}
 		}
 	}
-	if (mtmp->mstrategy & STRAT_ARRIVE) {
+	if (mtmp->mstrategy & STRAT_ARRIVE){
 	    int res = m_arrival(mtmp);
 	    if (res >= 0) return res;
 	}
@@ -1029,6 +1035,7 @@ register struct monst *mtmp;
 	/* berserk monsters calm down with small probability */
 	if (mtmp->mberserk && !rn2(50)) mtmp->mberserk = 0;
 	if (mtmp->mdisrobe && !rn2(50)) mtmp->mdisrobe = 0;
+	if (mtmp->mdoubt && !rn2(300)) mtmp->mdoubt = 0;
 
 	if (mtmp->mcrazed){
 		if(!rn2(4)){
@@ -1075,9 +1082,14 @@ register struct monst *mtmp;
 	if (mtmp->mstun && !rn2(10)) mtmp->mstun = 0;
 
 	/* some monsters teleport */
-	if (mon_resistance(mtmp,TELEPORT) && (mtmp->mflee || !rn2(5)) && !rn2(40) && !mtmp->iswiz &&
-	    !(noactions(mtmp)) &&
-	    !level.flags.noteleport) {
+	if (mon_resistance(mtmp,TELEPORT)
+		&& (mtmp->mflee || !rn2(5))
+		&& (!mtmp->mpeaceful || mtmp->mtame)
+		&& !rn2(40)
+		&& !mtmp->iswiz
+		&& !(noactions(mtmp))
+		&& !level.flags.noteleport
+	) {
 		(void) rloc(mtmp, FALSE);
 		return(0);
 	}
@@ -1100,23 +1112,23 @@ register struct monst *mtmp;
 				mtmp = makemon(&mons[type], ox, oy, NO_MINVENT);
 				if(mtmp){
 					struct obj *otmp;
-					otmp = mksobj(LONG_SWORD, FALSE, FALSE);
+					otmp = mksobj(LONG_SWORD, MKOBJ_NOINIT);
 					set_material_gm(otmp, DRAGON_HIDE);
 					otmp->objsize = mtmp->data->msize;
 					add_oprop(otmp, OPROP_ACIDW);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(PLATE_MAIL, TRUE, FALSE);
+					otmp = mksobj(PLATE_MAIL, NO_MKOBJ_FLAGS);
 					set_material_gm(otmp, SHELL_MAT);
 					otmp->objsize = mtmp->data->msize;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(GAUNTLETS, TRUE, FALSE);
+					otmp = mksobj(GAUNTLETS, NO_MKOBJ_FLAGS);
 					set_material_gm(otmp, SHELL_MAT);
 					otmp->objsize = mtmp->data->msize;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(ARMORED_BOOTS, TRUE, FALSE);
+					otmp = mksobj(ARMORED_BOOTS, NO_MKOBJ_FLAGS);
 					set_material_gm(otmp, SHELL_MAT);
 					otmp->objsize = mtmp->data->msize;
 					fix_object(otmp);
@@ -1148,23 +1160,23 @@ register struct monst *mtmp;
 				else return 0;
 				if(mtmp){
 					struct obj *otmp;
-					otmp = mksobj(LONG_SWORD, FALSE, FALSE);
+					otmp = mksobj(LONG_SWORD, MKOBJ_NOINIT);
 					set_material_gm(otmp, DRAGON_HIDE);
 					otmp->objsize = mons[type].msize;
 					add_oprop(otmp, OPROP_ACIDW);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(PLATE_MAIL, TRUE, FALSE);
+					otmp = mksobj(PLATE_MAIL, NO_MKOBJ_FLAGS);
 					set_material_gm(otmp, SHELL_MAT);
 					otmp->objsize = mons[type].msize;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(GAUNTLETS, TRUE, FALSE);
+					otmp = mksobj(GAUNTLETS, NO_MKOBJ_FLAGS);
 					set_material_gm(otmp, SHELL_MAT);
 					otmp->objsize = mons[type].msize;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(ARMORED_BOOTS, TRUE, FALSE);
+					otmp = mksobj(ARMORED_BOOTS, NO_MKOBJ_FLAGS);
 					set_material_gm(otmp, SHELL_MAT);
 					otmp->objsize = mons[type].msize;
 					fix_object(otmp);
@@ -1174,6 +1186,34 @@ register struct monst *mtmp;
 			return 0;
 		}
 	}
+	if(mtmp->mtyp == PM_SHALOSH_TANNAH && !rn2(9)){
+		struct monst *tmpm;
+		int i = rnd(3);
+		if(canseemon(mtmp))
+			pline(i > 1 ? "A pustule bursts in a spray of acid and strange larvae tumble out!" : "A pustule bursts in a spray of acid and a strange larva tumbles out!");
+		explode(mtmp->mx, mtmp->my, AD_ACID, MON_EXPLODE, d(6,6), EXPL_NOXIOUS, i/3+1);
+		for(; i > 0; i--){
+			tmpm = makemon(&mons[PM_STRANGE_LARVA], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
+			if(tmpm){
+				switch(rn2(4)){
+					case 0:
+					tmpm->mvar_tanninType = PM_VROCK;
+					break;
+					case 1:
+					tmpm->mvar_tanninType = PM_HEZROU;
+					break;
+					case 2:
+					tmpm->mvar_tanninType = PM_NALFESHNEE;
+					break;
+					case 3:
+					tmpm->mvar_tanninType = PM_MARILITH;
+					tmpm->female = 1;
+					break;
+				}
+			}
+		}
+	}
+	
 	
 	if(mdat->mtyp == PM_OONA && !mtmp->mspec_used){
 		nearby = FALSE;
@@ -1192,20 +1232,24 @@ register struct monst *mtmp;
 
 	if (is_commander(mdat) && mfind_target(mtmp, FALSE))
 		m_command(mtmp);
-	
-	if ((mdat->msound == MS_SHRIEK && !um_dist(mtmp->mx, mtmp->my, 1)) || 
-		(mdat->msound == MS_SHOG && !rn2(8)) ||
-		(mdat->msound == MS_JUBJUB && !rn2(10) && (!um_dist(mtmp->mx, mtmp->my, 3) || !rn2(10))) ||
-		(mdat->msound == MS_TRUMPET && !rn2(10) && !um_dist(mtmp->mx, mtmp->my, 3)) ||
-		(mdat->msound == MS_DREAD && !rn2(4)) ||
-		(mdat->msound == MS_OONA && (nearby || !rn2(6))) ||
-		(mdat->msound == MS_SONG && !rn2(6)) ||
-		(mdat->mtyp == PM_RHYMER && !mtmp->mspec_used && !rn2(6)) ||
-		(mdat->msound == MS_INTONE && !rn2(6)) ||
-		(mdat->msound == MS_FLOWER && !rn2(6)) ||
-		(mdat->mtyp == PM_LAMASHTU && !rn2(7))
+
+	if (((mdat->msound == MS_SHRIEK || mdat->msound == MS_HOWL) && !um_dist(mtmp->mx, mtmp->my, 1))
+		|| (mdat->msound == MS_SHOG && !rn2(8))
+		|| (mdat->msound == MS_JUBJUB && !rn2(10) && (!um_dist(mtmp->mx, mtmp->my, 3) || !rn2(10)))
+		|| (mdat->msound == MS_TRUMPET && !rn2(10) && !um_dist(mtmp->mx, mtmp->my, 3))
+		|| (mdat->msound == MS_DREAD && !rn2(4))
+		|| (mdat->msound == MS_OONA && (nearby || !rn2(6)))
+		|| (mdat->msound == MS_SONG && !rn2(6))
+		|| (mdat->mtyp == PM_RHYMER && !mtmp->mspec_used && !rn2(6))
+		|| (mdat->msound == MS_INTONE && !rn2(6))
+		|| (mdat->msound == MS_FLOWER && !rn2(6))
+		|| (mdat->msound == MS_SECRETS && !mtmp->mspec_used && u.uencouraged < Insanity/5+1)
+		|| (mdat->msound == MS_SCREAM && !rn2(7))
+		|| (mdat->msound == MS_HOWL && !rn2(7))
+		|| (mdat->msound == MS_HARROW && !mtmp->mspec_used)
+		|| (mdat->msound == MS_APOC && !mtmp->mspec_used)
 	) m_respond(mtmp);
-	
+
 	if(!mtmp->mblinded) for (gazemon = fmon; gazemon; gazemon = nxtmon){
 		nxtmon = gazemon->nmon;
 		if(DEADMONSTER(gazemon))
@@ -1273,10 +1317,10 @@ register struct monst *mtmp;
 		&& !(mtmp->mpeaceful && !mtmp->mtame) /*Don't telespam the player if peaceful*/
 	) (void) tactics(mtmp);
 	
-	// if(mdat->mtyp == PM_GREAT_CTHULHU && !rn2(20)){
-		// (void) tactics(mtmp);
-		// return 0;
-	// }
+	if(mdat->mtyp == PM_GREAT_CTHULHU && !rn2(20)){
+		if(tactics(mtmp))
+			return 0;
+	}
 	
 	/* check distance and scariness of attacks */
 	distfleeck(mtmp,&inrange,&nearby,&scared);
@@ -1348,7 +1392,7 @@ register struct monst *mtmp;
 					continue;
 				if(patient == &youmonst){
 					//Note: body armor blocks healing, healing is also reduced by the rolled DR
-					if(!mtmp->mpeaceful || nonliving(youracedata) || uarm)
+					if(!mtmp->mpeaceful || nonliving(youracedata) || (uarm && arm_blocks_upper_body(uarm->otyp)))
 						continue;
 					if((Upolyd && u.mh < u.mhmax) || (!Upolyd && u.uhp < u.uhpmax)){
 						nurse_heal(mtmp, patient, TRUE);
@@ -1357,7 +1401,7 @@ register struct monst *mtmp;
 				}
 				else {
 					//Note: body armor blocks healing, healing is also reduced by the rolled DR
-					if(nonliving(patient->data) || patient->mpeaceful != mtmp->mpeaceful || which_armor(patient, W_ARM))
+					if(nonliving(patient->data) || patient->mpeaceful != mtmp->mpeaceful || (which_armor(patient, W_ARM) && arm_blocks_upper_body(which_armor(patient, W_ARM)->otyp)))
 						continue;
 					if(patient->mhp < patient->mhpmax){
 						nurse_heal(mtmp, patient, canseemon(mtmp) || canseemon(patient));
@@ -1457,7 +1501,7 @@ register struct monst *mtmp;
 				sprcnt++;
 		if(sprcnt < 3){
 			if(canspotmon(mtmp)) pline("%s pulls a spear out of its rotting mass.",Monnam(mtmp));
-			(void) mongets(mtmp, SPEAR);
+			(void) mongets(mtmp, SPEAR, NO_MKOBJ_FLAGS);
 			init_mon_wield_item(mtmp);
 			return 0;
 		}
@@ -1586,8 +1630,11 @@ register struct monst *mtmp;
 			else
 				digactualhole(mtmp->mx, mtmp->my, mtmp, HOLE, FALSE, TRUE);
 		}
+		if(DEADMONSTER(mtmp)) //Oops!
+			return 1;
+		else return 0;
 	}
-	if (has_mind_blast(mdat) && !u.uinvulnerable && !rn2(mdat->mtyp == PM_ELDER_BRAIN ? 10 : 20)) {
+	if (has_mind_blast_mon(mtmp) && !u.uinvulnerable && !rn2(mdat->mtyp == PM_ELDER_BRAIN ? 10 : 20)) {
 		boolean reducedFlayerMessages = (((Role_if(PM_NOBLEMAN) && Race_if(PM_DROW) && flags.initgend) || Role_if(PM_ANACHRONONAUT)) && In_quest(&u.uz));
 		struct monst *m2, *nmon = (struct monst *)0;
 		
@@ -1603,8 +1650,10 @@ register struct monst *mtmp;
 		} else {
 			register boolean m_sen = tp_sensemon(mtmp);
 			
-			if(mdat->mtyp == PM_ELDER_BRAIN) quest_chat(mtmp);
-			
+			if(mdat->mtyp == PM_ELDER_BRAIN){
+				lift_veil();
+				quest_chat(mtmp);
+			}
 			if (m_sen || (Blind_telepat && rn2(2)) || !rn2(10)) {
 				int dmg;
 				pline("It locks on to your %s!",
@@ -1636,6 +1685,11 @@ register struct monst *mtmp;
 						}
 					}
 				}
+				if(has_template(mtmp, DREAM_LEECH)){
+					if (!Sleep_resistance){
+						fall_asleep(-100*dmg, TRUE);
+					}
+				}
 			}
 		}
 		for(m2=fmon; m2; m2 = nmon) {
@@ -1644,8 +1698,11 @@ register struct monst *mtmp;
 			if (m2->mpeaceful == mtmp->mpeaceful) continue;
 			if (mindless_mon(m2)) continue;
 			if (m2 == mtmp) continue;
-			if ((mon_resistance(m2,TELEPAT) &&
-			    (rn2(2) || m2->mblinded)) || !rn2(10)) {
+			if (species_is_telepathic(m2->data) ||
+				(mon_resistance(m2,TELEPAT) &&
+				(rn2(2) || m2->mblinded)) || 
+				!rn2(10)
+			) {
 				if (cansee(m2->mx, m2->my))
 				    pline("It locks on to %s.", mon_nam(m2));
 				if(mdat->mtyp == PM_GREAT_CTHULHU) m2->mconf=TRUE;
@@ -1662,6 +1719,11 @@ register struct monst *mtmp;
 				    monkilled(m2, "", AD_DRIN);
 				else
 				    m2->msleeping = 0;
+				if(has_template(mtmp, DREAM_LEECH)){
+					if (!resists_sleep(m2)){
+						m2->msleeping = 1;
+					}
+				}
 			}
 		}
 	}
@@ -1711,23 +1773,29 @@ register struct monst *mtmp;
 		   or similar spells by the time you reach it */
 		if (dist2(mtmp->mx, mtmp->my, u.ux, u.uy) <= 49 && !mtmp->mspec_used) {
 		    struct attack *a;
-
-		    for (a = &mdat->mattk[0]; a < &mdat->mattk[NATTK]; a++) {
-			if ((a->aatyp == AT_MAGC || a->aatyp == AT_MMGC) && (a->adtyp == AD_SPEL || a->adtyp == AD_CLRC)) {
-			    if (mtmp->mux==u.ux && mtmp->muy==u.uy && couldsee(mtmp->mx, mtmp->my) && !mtmp->mpeaceful && 
-					dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= BOLT_LIM*BOLT_LIM
-				){
-					if (xcasty(mtmp, &youmonst, a, mtmp->mux, mtmp->muy)){
-						tmp = 3;
-						// if(mdat->mtyp != PM_DEMOGORGON) break;
-					}
-			    } else {
-					if (xcasty(mtmp, (struct monst *)0, a, 0, 0)){
-						tmp = 3;
-						// if(mdat->mtyp != PM_DEMOGORGON) break;
+			int index = 0, subout = 0, tohitmod = 0;
+			int prev[4] = {0};
+			struct attack prev_attk = noattack;
+			
+			while(TRUE){
+				a = getattk(mtmp, &youmonst, prev, &index, &prev_attk, FALSE, &subout, &tohitmod);
+				if(a->aatyp == 0 && a->adtyp == 0 && a->damn == 0 && a->damd == 0)
+					break;
+				if ((a->aatyp == AT_MAGC || a->aatyp == AT_MMGC) && (a->adtyp == AD_SPEL || a->adtyp == AD_CLRC)) {
+					if (mtmp->mux==u.ux && mtmp->muy==u.uy && couldsee(mtmp->mx, mtmp->my) && !mtmp->mpeaceful && 
+						dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= BOLT_LIM*BOLT_LIM
+					){
+						if (xcasty(mtmp, &youmonst, a, mtmp->mux, mtmp->muy)){
+							tmp = 3;
+							// if(mdat->mtyp != PM_DEMOGORGON) break;
+						}
+					} else {
+						if (xcasty(mtmp, (struct monst *)0, a, 0, 0)){
+							tmp = 3;
+							// if(mdat->mtyp != PM_DEMOGORGON) break;
+						}
 					}
 				}
-			}
 		    }
 		}
 
@@ -1840,7 +1908,7 @@ register int after;
 	int  omx = mtmp->mx, omy = mtmp->my;
 	struct obj *mw_tmp;
 
-	if (stationary(mtmp->data) || sessile(mtmp->data)) return(0);
+	if (stationary_mon(mtmp) || sessile(mtmp->data)) return(0);
 	if(mtmp->mtrapped) {
 	    int i = mintrap(mtmp);
 	    if(i >= 2) { newsym(mtmp->mx,mtmp->my); return(2); }/* it died */
@@ -1872,7 +1940,7 @@ register int after;
 	if (!Is_rogue_level(&u.uz))
 #endif
 	    can_tunnel = tunnels(ptr);
-	can_open = !(nohands(ptr) || verysmall(ptr));
+	can_open = !(nohands(ptr) || verysmall(ptr) || straitjacketed_mon(mtmp));
 	can_unlock = ((can_open && (m_carrying(mtmp, SKELETON_KEY)||m_carrying(mtmp, UNIVERSAL_KEY))) ||
 		      mtmp->iswiz || is_rider(ptr) || ptr->mtyp==PM_DREAD_SERAPH);
 	doorbuster = is_giant(ptr);
@@ -2090,7 +2158,7 @@ not_special:
 					otmp->oclass == GEM_CLASS && otmp->obj_material != MINERAL)) ||
 				(conceals && (
 					!cansee(otmp->ox, otmp->oy))) ||
-				(ptr->mtyp == PM_GELATINOUS_CUBE && (
+				((ptr->mtyp == PM_GELATINOUS_CUBE || ptr->mtyp == PM_ANCIENT_OF_CORRUPTION) && (
 					!index(indigestion, otmp->oclass) && !(otmp->otyp == CORPSE && touch_petrifies(&mons[otmp->corpsenm]))))
 				)
 				&&
@@ -2145,6 +2213,9 @@ not_special:
 	if (can_tunnel && needspick(ptr) &&
 	    ((!mtmp->mpeaceful || Conflict || mtmp->mberserk) && !no_upos(mtmp) && 
 	     dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= 8))
+	    can_tunnel = FALSE;
+	/* can't tunnel if stuck in a straitjacket */
+	if (can_tunnel && needspick(ptr) && straitjacketed_mon(mtmp))
 	    can_tunnel = FALSE;
 
 	nix = omx;
@@ -2249,7 +2320,7 @@ not_special:
 					for(i = -1; i < 2; i++) for(j = -1; j < 2; j++){
 						if(isok(mtmp->mx+i, mtmp->my+j) && IS_WALL(levl[mtmp->mx+i][mtmp->my+j].typ)){
 							if(count-- == 0){
-								breacher = mksobj(STICK_OF_DYNAMITE, FALSE, FALSE);
+								breacher = mksobj(STICK_OF_DYNAMITE, MKOBJ_NOINIT);
 								breacher->quan = 1L;
 								breacher->cursed = 0;
 								breacher->blessed = 0;
@@ -2546,7 +2617,9 @@ postmov:
 				  makeplural(locomotion(mtmp, "pass")),
 				  mon_resistance(mtmp,PASSES_WALLS) ? "through" : "between");
 		}
-
+		if (mtmp->mtemplate == WORLD_SHAPER) {
+			mworldshape(mtmp, omx, omy);
+		}
 		/* possibly dig */
 		if (can_tunnel && mdig_tunnel(mtmp))
 			return(2);  /* mon died (position already updated) */
@@ -2590,8 +2663,12 @@ postmov:
 		if(g_at(mtmp->mx,mtmp->my) && likegold) mpickgold(mtmp);
 
 		/* Maybe a cube ate just about anything */
-		if (ptr->mtyp == PM_GELATINOUS_CUBE) {
+		if (ptr->mtyp == PM_GELATINOUS_CUBE || ptr->mtyp == PM_ANCIENT_OF_CORRUPTION) {
 		    if (meatobj(mtmp) == 2) return 2;	/* it died */
+		}
+		
+		if(ptr->mtyp == PM_NACHASH_TANNIN){
+			mvanishobj(mtmp, mtmp->mx, mtmp->my);
 		}
 
 		if(!*in_rooms(mtmp->mx, mtmp->my, SHOPBASE) || !rn2(25)) {
@@ -2651,7 +2728,7 @@ boolean heard;		/* print You_hear() message? */
 	levl[x][y].typ = (Is_special(&u.uz) || *in_rooms(x, y, 0)) ? ROOM : CORR;
 
 	for (numbars = d(2, 4) - 1; numbars > 0; numbars--){
-		obj = mksobj_at(BAR, x, y, FALSE, FALSE);
+		obj = mksobj_at(BAR, x, y, MKOBJ_NOINIT);
 		set_material_gm(obj, Is_illregrd(&u.uz) ? METAL : IRON);
 		obj->spe = 0;
 		obj->cursed = obj->blessed = FALSE;

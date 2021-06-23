@@ -246,6 +246,7 @@ int monkey_business; /* true iff an animal is doing the thievery */
 	boolean charms = (is_neuter(mtmp->data) || flags.female == mtmp->female);
 	if(mtmp->mtyp == PM_ALRUNES) charms = !charms;
 	else if(mtmp->mtyp == PM_FIERNA) charms = TRUE;
+	else if(mtmp->mtyp == PM_BEAUTEOUS_ONE) charms = FALSE;
 
 	if (objnambuf) *objnambuf = '\0';
 	/* the following is true if successful on first of two attacks. */
@@ -310,7 +311,7 @@ nothing_to_steal:
 	else if(otmp == uarm && uarmc) otmp = uarmc;
 #ifdef TOURIST
 	else if(otmp == uarmu && uarmc) otmp = uarmc;
-	else if(otmp == uarmu && uarm) otmp = uarm;
+	else if(otmp == uarmu && uarm && arm_blocks_upper_body(uarm->otyp)) otmp = uarm;
 #endif
 gotobj:
 	if(otmp->o_id == stealoid) return(0);

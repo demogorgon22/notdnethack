@@ -171,7 +171,7 @@ struct permonst *mdat;
 
 	/* return if we've grown too big (nothing is valid) */
 	if (range > ROWNO && range > COLNO){
-		if(good_ptr == good) goto full;
+		if(good_ptr != good) goto full;
 		else return FALSE;
 	}
     } while (good_ptr < &good[TARGET_GOOD-1]);
@@ -180,6 +180,56 @@ full:
     i = rn2((int)(good_ptr - good));
     cc->x = good[i].x;
     cc->y = good[i].y;
+	if(!isok(cc->x, cc->y)){
+		impossible("eofflin() attempting to return invalid coordinates as valid");
+		return FALSE;
+	}
+    return TRUE;
+}
+
+boolean
+eofflin_close(cc, xx, yy, mdat)
+coord *cc;
+register xchar xx, yy;
+struct permonst *mdat;
+{
+#define COORD_SIZE	8
+    coord good[COORD_SIZE], *good_ptr;
+    int x, y, i;
+    int xmin, xmax, ymin, ymax;
+    struct monst fakemon = {0};	/* dummy monster */
+    int knix[COORD_SIZE] = {2,  2,  1, -1, -2, -2,  1, -1};
+    int kniy[COORD_SIZE] = {1, -1,  2,  2,  1, -1, -2, -2};
+
+    if (!mdat) {
+#ifdef DEBUG
+	pline("enexto() called with mdat==0");
+#endif
+	/* default to player's original monster type */
+	mdat = &mons[u.umonster];
+    }
+    set_mon_data_core(&fakemon, mdat);	/* set up for goodpos */
+    good_ptr = good;
+	
+	for(i = 0; i < COORD_SIZE; i++){
+		x = u.ux + knix[i];
+		y = u.uy + kniy[i];
+		if(goodpos(x, y, &fakemon, 0)){
+			good_ptr->x = x;
+			good_ptr->y = y;
+			good_ptr++;
+		}
+	}
+	//No good spots
+	if(!(good_ptr - good))
+		return FALSE;
+    i = rn2((int)(good_ptr - good));
+    cc->x = good[i].x;
+    cc->y = good[i].y;
+	if(!isok(cc->x, cc->y)){
+		impossible("eofflin_close() attempting to return invalid coordinates as valid");
+		return FALSE;
+	}
     return TRUE;
 }
 
@@ -322,6 +372,10 @@ full:
     i = rn2((int)(good_ptr - good));
     cc->x = good[i].x;
     cc->y = good[i].y;
+	if(!isok(cc->x, cc->y)){
+		impossible("enexto() attempting to return invalid coordinates as valid");
+		return FALSE;
+	}
     return TRUE;
 }
 
@@ -863,8 +917,7 @@ level_tele()
 				    "Destination is earth level");
 				if (!u.uhave.amulet) {
 					struct obj *obj;
-					obj = mksobj(AMULET_OF_YENDOR,
-							TRUE, FALSE);
+					obj = mksobj(AMULET_OF_YENDOR, NO_MKOBJ_FLAGS);
 					if (obj) {
 						obj = addinv(obj);
 						Strcat(buf, " with the amulet");
@@ -951,7 +1004,8 @@ level_tele()
 				}
 			}
 #ifdef WIZARD
-			if (wizard) rangeRestricted = FALSE;
+			if (rangeRestricted && wizard && yn("Respect range restrictions?") == 'n')
+				rangeRestricted = FALSE;
 #endif
 			if (rangeRestricted) {
 				if(urlev <= 0){ /*Level 0 is skipped*/

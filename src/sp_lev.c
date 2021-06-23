@@ -140,6 +140,7 @@ rndtrap()
 	     case MUMMY_TRAP:		/* no random generation */
 	     case SWITCH_TRAP:		/* no random generation */
 	     case VIVI_TRAP:		/* scripted only, no random generation */
+	     case FLESH_HOOK:		/* monster attack, no random generation */
 	     case MAGIC_PORTAL:	rtrap = NO_TRAP;
 				break;
 	     case TRAPDOOR:	if (!Can_dig_down(&u.uz)) rtrap = NO_TRAP;
@@ -820,11 +821,13 @@ noncoalignment(alignment)
 aligntyp alignment;
 {
 	int k;
-
+	
 	k = rn2(2);
+	if(alignment == A_VOID)
+		return(rn2(3) - 1); /* -1 to 1 */
 	if (!alignment)
 		return(k ? -1 : 1);
-	return(k ? -alignment : 0);
+	return(k ? sgn(-alignment) : 0); /* |alignment| might not be 1, so use sign(-alignment) */
 }
 
 STATIC_OVL void
@@ -851,12 +854,18 @@ struct mkroom	*croom;
 
 	if (class == MAXMCLASSES)
 	    panic("create_monster: unknown monster class '%c'", m->class);
-	amask = (m->align == AM_SPLEV_CO) ?
-			Align2amask(u.ualignbase[A_ORIGINAL]) :
-		(m->align == AM_SPLEV_NONCO) ?
-			Align2amask(noncoalignment(u.ualignbase[A_ORIGINAL])) :
-		(m->align <= -11) ? induced_align(80) :
-		(m->align < 0 ? ralign[-m->align-1] : m->align);
+
+	if(m->align == AM_SPLEV_CO)
+		amask = Align2amask(u.ualignbase[A_ORIGINAL]);
+	else if(m->align == AM_SPLEV_NONCO){
+		int tmp = noncoalignment(u.ualignbase[A_ORIGINAL]);
+		amask = Align2amask(tmp);
+	}
+	else if(m->align <= -11) 
+		amask = induced_align(80);
+	else if(m->align < 0)
+		amask = ralign[-m->align-1];
+	else amask = m->align;
 
 	if (!class)
 	    pm = (struct permonst *) 0;
@@ -997,6 +1006,7 @@ struct mkroom	*croom;
     char c;
     boolean named;	/* has a name been supplied in level description? */
 	boolean parsed = o->class=='#';
+	int mkobjflags = NO_MKOBJ_FLAGS;
     if (rn2(100) < o->chance) {
 	named = o->name.str ? TRUE : FALSE;
 
@@ -1027,10 +1037,12 @@ struct mkroom	*croom;
 		else
 			c = 0;
 
+		if (!named)
+			mkobjflags |= MKOBJ_ARTIF;
 		if (!c)
-			otmp = mkobj_at(RANDOM_CLASS, x, y, !named);
+			otmp = mkobj_at(RANDOM_CLASS, x, y, mkobjflags);
 		else if (o->id != -1)
-			otmp = mksobj_at(o->id, x, y, TRUE, !named);
+			otmp = mksobj_at(o->id, x, y, mkobjflags);
 		else {
 			/*
 			* The special levels are compiled with the default "text" object
@@ -1069,10 +1081,205 @@ struct mkroom	*croom;
 	if(otmp->otyp == CORPSE && otmp->corpsenm == PM_CROW_WINGED_HALF_DRAGON){
 		otmp->oeroded = 1;
 		if (otmp->timed) {
-			(void) stop_timer(ROT_CORPSE, (genericptr_t)otmp);
+			(void) stop_timer(ROT_CORPSE, otmp->timed);
 			start_corpse_timeout(otmp);
 		}
 	}
+	int skeleton_types[] = {PM_HUMAN, PM_ELF, PM_DROW, PM_DWARF, PM_GNOME, PM_ORC, 
+		PM_HALF_DRAGON, PM_YUKI_ONNA, PM_DEMINYMPH};
+	if((otmp->otyp == BEDROLL || otmp->otyp == GURNEY) && otmp->spe == 1 && otmp->where == OBJ_FLOOR){
+		int asylum_types[] = {PM_NOBLEMAN, PM_NOBLEWOMAN, PM_HUMAN, PM_ELF_LORD,
+			PM_ELF_LADY, PM_ELF, PM_DROW_MATRON, PM_HEDROW_BLADEMASTER, PM_DROW, PM_DWARF_LORD,
+			PM_DWARF_CLERIC, PM_DWARF, PM_GNOME_LORD, PM_GNOME_LADY, PM_GNOME, PM_ORC_SHAMAN,
+			PM_ORC, PM_VAMPIRE, PM_VAMPIRE, PM_HALF_DRAGON, PM_HALF_DRAGON,
+			PM_YUKI_ONNA, PM_DEMINYMPH, PM_CONTAMINATED_PATIENT, PM_CONTAMINATED_PATIENT, PM_CONTAMINATED_PATIENT};
+		struct monst *mon;
+		struct obj *tmpo;
+
+		if(otmp->otyp == GURNEY){
+			switch(rn2(4)){
+				case 0:
+					mon = makemon(&mons[PM_COILING_BRAWN], otmp->ox, otmp->oy, NO_MINVENT);
+				break;
+				case 1:
+					mon = makemon(&mons[PM_FUNGAL_BRAIN], otmp->ox, otmp->oy, NO_MINVENT);
+				break;
+				case 2:
+					mon = makemon(&mons[asylum_types[rn2(SIZE(asylum_types))]], otmp->ox, otmp->oy, NO_MM_FLAGS);
+					if(mon){
+						set_template(mon, YELLOW_TEMPLATE);
+					}
+				break;
+				case 3:
+					mon = makemon(&mons[skeleton_types[rn2(SIZE(skeleton_types))]], otmp->ox, otmp->oy, NO_MM_FLAGS);
+					if(mon){
+						set_template(mon, SKELIFIED);
+					}
+				break;
+			}
+		}
+		else {
+			mon = makemon(&mons[asylum_types[rn2(SIZE(asylum_types))]], otmp->ox, otmp->oy, NO_MINVENT);
+			if(mon){
+				mon->mcrazed = 1;
+				mon->msleeping = 1;
+				tmpo = mongets(mon, STRAITJACKET, NO_MKOBJ_FLAGS);
+				if(tmpo){
+					curse(tmpo);
+					m_dowear(mon, TRUE);
+				}
+			}
+		}
+		otmp->spe = 0;
+	}
+	if(otmp->otyp == GURNEY && otmp->spe == 2 && otmp->where == OBJ_FLOOR){
+		int surgery_types[] = {PM_NOBLEMAN, PM_NOBLEWOMAN, PM_ELF_LORD,
+			PM_ELF_LADY, PM_DROW_MATRON, PM_DWARF_LORD,
+			PM_DWARF_CLERIC, PM_ORC_SHAMAN,
+			PM_VAMPIRE, PM_VAMPIRE, PM_HALF_DRAGON, PM_HALF_DRAGON,
+			PM_YUKI_ONNA, PM_DEMINYMPH, 
+			PM_PRIESTESS, 
+			PM_COILING_BRAWN, PM_FUNGAL_BRAIN
+			};
+		struct monst *mon;
+		struct obj *tmpo;
+
+		if(rn2(10)){
+			mon = makemon(&mons[surgery_types[rn2(SIZE(surgery_types))]], otmp->ox, otmp->oy, NO_MINVENT|MM_NOCOUNTBIRTH);
+			if(mon) switch(mon->mtyp){
+				case PM_PRIESTESS:
+				case PM_DEMINYMPH:
+				case PM_YUKI_ONNA:
+					if(mon->mtyp != PM_PRIESTESS)
+						goto default_case;
+					set_template(mon, MISTWEAVER);
+					(void)mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+					mon->entangled = SHACKLES;
+					makemon(&mons[PM_HEALER], otmp->ox, otmp->oy, MM_ADJACENTOK);
+					makemon(&mons[PM_NURSE], otmp->ox, otmp->oy, MM_ADJACENTOK);
+					makemon(&mons[PM_NURSE], otmp->ox, otmp->oy, MM_ADJACENTOK);
+				break;
+				case PM_COILING_BRAWN:
+					mon->msleeping = 1;
+				break;
+				case PM_FUNGAL_BRAIN:
+					//Nothing
+				break;
+default_case:
+				default:
+					switch(rn2(5)){
+						case 0:
+							set_template(mon, YELLOW_TEMPLATE);
+							mon->msleeping = 1;
+						break;
+						case 2:
+							set_template(mon, DREAM_LEECH);
+							mon->msleeping = 1;
+						break;
+						case 3:
+							set_template(mon, DREAM_LEECH);
+							mon->msleeping = 1;
+						break;
+						default:
+							(void)mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+							mon->entangled = SHACKLES;
+							if(!rn2(10)){
+								struct monst *mtmp;
+								struct obj *meqp;
+								int lilitu_items[] = {POT_BOOZE, POT_ENLIGHTENMENT, WAN_ENLIGHTENMENT};
+								mon->mdoubt = TRUE;
+								mtmp = makemon(&mons[PM_LILITU], otmp->ox, otmp->oy, MM_ADJACENTOK);
+								if(mtmp){
+									set_template(mtmp, YELLOW_TEMPLATE);
+									mongets(mtmp, lilitu_items[rn2(SIZE(lilitu_items))], NO_MKOBJ_FLAGS);
+									
+									meqp = mongets(mtmp, KHAKKHARA, MKOBJ_NOINIT);
+									add_oprop(meqp, OPROP_PSIOW);
+									set_material_gm(meqp, GOLD);
+									curse(meqp);
+									meqp->spe = 5;
+									meqp = mongets(mtmp, CLOAK_OF_PROTECTION, MKOBJ_NOINIT);
+									meqp->obj_color = CLR_YELLOW;
+									meqp->spe = 5;
+									curse(meqp);
+									meqp = mongets(mtmp, PLAIN_DRESS, MKOBJ_NOINIT);
+									set_material_gm(meqp, CLOTH);
+									meqp->obj_color = CLR_YELLOW;
+									meqp->spe = 5;
+									curse(meqp);
+									meqp = mongets(mtmp, GLOVES, MKOBJ_NOINIT);
+									set_material_gm(meqp, CLOTH);
+									meqp->obj_color = CLR_YELLOW;
+									meqp->spe = 5;
+									curse(meqp);
+									meqp = mongets(mtmp, HIGH_BOOTS, MKOBJ_NOINIT);
+									set_material_gm(meqp, CLOTH);
+									meqp->obj_color = CLR_YELLOW;
+									meqp->spe = 5;
+									curse(meqp);
+									meqp = mongets(mtmp, SHEMAGH, MKOBJ_NOINIT);
+									set_material_gm(meqp, CLOTH);
+									meqp->obj_color = CLR_YELLOW;
+									meqp->spe = 5;
+									curse(meqp);
+									
+									m_dowear(mtmp, TRUE);
+								}
+							}
+							else if(!rn2(4)){
+								struct monst *mtmp;
+								struct obj *meqp;
+								int bedlam_items[] = {POT_SLEEPING, POT_CONFUSION, POT_PARALYSIS, 
+													  POT_HALLUCINATION, POT_SEE_INVISIBLE, POT_ACID, POT_AMNESIA,
+													  POT_POLYMORPH, SCR_CONFUSE_MONSTER, SCR_DESTROY_ARMOR, SCR_AMNESIA,
+													  WAN_POLYMORPH, SPE_POLYMORPH};
+								mon->mcrazed = TRUE;
+								for(int i = 3; i > 0; i--){
+									mtmp = makemon(&mons[PM_DAUGHTER_OF_BEDLAM], otmp->ox, otmp->oy, MM_ADJACENTOK);
+									if(mtmp){
+										set_template(mtmp, YELLOW_TEMPLATE);
+										mongets(mtmp, bedlam_items[rn2(SIZE(bedlam_items))], NO_MKOBJ_FLAGS);
+										meqp = mongets(mtmp, rn2(2) ? HEALER_UNIFORM : STRAITJACKET, NO_MKOBJ_FLAGS);
+										meqp->spe = 5;
+										uncurse(meqp);
+										unbless(meqp);
+										meqp->obj_color = CLR_YELLOW;
+										m_dowear(mtmp, TRUE);
+									}
+								}
+							} else {
+								struct monst *mtmp;
+								int healer_items[] = {POT_SLEEPING, POT_CONFUSION, POT_PARALYSIS, 
+													  POT_HALLUCINATION, POT_SEE_INVISIBLE, POT_ACID, POT_AMNESIA,
+													  POT_RESTORE_ABILITY, SCR_CONFUSE_MONSTER, SCR_DESTROY_ARMOR, SCR_AMNESIA,
+													  WAN_PROBING, SPE_REMOVE_CURSE};
+								int nurse_items[] = {POT_SLEEPING, POT_PARALYSIS, POT_AMNESIA,
+													  SCR_DESTROY_ARMOR, SCR_AMNESIA};
+								mtmp = makemon(&mons[PM_HEALER], otmp->ox, otmp->oy, MM_ADJACENTOK);
+								if(mtmp) mongets(mtmp, healer_items[rn2(SIZE(healer_items))], NO_MKOBJ_FLAGS);
+								mtmp = makemon(&mons[PM_NURSE], otmp->ox, otmp->oy, MM_ADJACENTOK);
+								if(mtmp) mongets(mtmp, nurse_items[rn2(SIZE(nurse_items))], NO_MKOBJ_FLAGS);
+								mtmp = makemon(&mons[PM_NURSE], otmp->ox, otmp->oy, MM_ADJACENTOK);
+								if(mtmp) mongets(mtmp, nurse_items[rn2(SIZE(nurse_items))], NO_MKOBJ_FLAGS);
+							}
+						break;
+					}
+				break;
+			}
+		}
+		else {
+			mon = makemon(&mons[skeleton_types[rn2(SIZE(skeleton_types))]], otmp->ox, otmp->oy, NO_MINVENT|MM_NOCOUNTBIRTH);
+			if(mon){
+				set_template(mon, SKELIFIED);
+				(void)mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+				mon->entangled = SHACKLES;
+				mon->mcrazed = 1;
+				mon->msleeping = 1;
+			}
+		}
+		otmp->spe = 0;
+	}
+
 	if(otmp->otyp == STATUE && (otmp->spe&STATUE_FACELESS) && In_mithardir_quest(&u.uz)){
 		int statuetypes[] = {PM_ELVENKING, PM_ELVENKING, PM_ELVENQUEEN, PM_ELVENQUEEN,
 			PM_ELF_LORD, PM_ELF_LORD, PM_ELF_LADY, PM_ELF_LADY, PM_DOPPELGANGER, PM_DOPPELGANGER,
@@ -1314,12 +1521,18 @@ create_altar(a, croom)
 	 * values to avoid conflicting with the rest of the encoding,
 	 * shared by many other parts of the special level code.
 	 */
-	amask = (a->align == AM_SPLEV_CO) ?
-			Align2amask(u.ualignbase[A_ORIGINAL]) :
-		(a->align == AM_SPLEV_NONCO) ?
-			Align2amask(noncoalignment(u.ualignbase[A_ORIGINAL])) :
-		(a->align == -11) ? induced_align(80) :
-		(a->align < 0 ? ralign[-a->align-1] : a->align);
+
+	if(a->align == AM_SPLEV_CO)
+		amask = Align2amask(u.ualignbase[A_ORIGINAL]);
+	else if(a->align == AM_SPLEV_NONCO){
+		int tmp = noncoalignment(u.ualignbase[A_ORIGINAL]);
+		amask = Align2amask(tmp);
+	}
+	else if(a->align == -11)
+		amask = induced_align(80);
+	else if(a->align < 0)
+		amask = ralign[-a->align-1];
+	else amask = a->align;
 
 	levl[x][y].typ = ALTAR;
 	levl[x][y].altarmask = amask;
@@ -1511,7 +1724,7 @@ schar ftyp, btyp;
 		if(ftyp != CORR || rn2(100)) {
 			crm->typ = ftyp;
 			if(nxcor && !rn2(50))
-				(void) mksobj_at(BOULDER, xx, yy, TRUE, FALSE);
+				(void) mksobj_at(BOULDER, xx, yy, NO_MKOBJ_FLAGS);
 		} else {
 			crm->typ = SCORR;
 		}
@@ -2870,7 +3083,7 @@ dlb *fd;
 	    dir = walklist[nwalk].dir;
 
 		/* adding rooms may have placed a room overtop of the wallwalk start */
-		if (levl[x][y].roomno - ROOMOFFSET > level.flags.sp_lev_nroom)
+		if (levl[x][y].roomno - ROOMOFFSET >= level.flags.sp_lev_nroom)
 			maze_remove_room(levl[x][y].roomno - ROOMOFFSET);
 
 	    /* don't use move() - it doesn't use W_NORTH, etc. */
@@ -2952,7 +3165,7 @@ dlb *fd;
 	    }
 	    for(x = rnd((int) (12 * mapfact) / 100); x; x--) {
 		    maze1xy(&mm, DRY);
-		    (void) mksobj_at(BOULDER, mm.x, mm.y, TRUE, FALSE);
+		    (void) mksobj_at(BOULDER, mm.x, mm.y, NO_MKOBJ_FLAGS);
 	    }
 		if(Inhell){
 			for (x = rn2(2); x; x--) {

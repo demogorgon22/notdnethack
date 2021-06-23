@@ -264,7 +264,7 @@ strategy(mtmp)
 {
 	long strat, dstrat;
 
-	if (!is_covetous(mtmp->data) ||
+	if (!(is_covetous(mtmp->data) || mtmp->mtyp == PM_GREAT_CTHULHU) ||
 		/* perhaps a shopkeeper has been polymorphed into a master
 		   lich; we don't want it teleporting to the stairs to heal
 		   because that will leave its shop untended */
@@ -288,7 +288,15 @@ strategy(mtmp)
 	    case 3:	dstrat = STRAT_NONE;
 			break;
 	}
-
+	
+	//I don't think the MT_ matters (other than it can't be 0), but the bell is thematic for Cthulhu anyway
+	if(mtmp->mtyp == PM_GREAT_CTHULHU){
+		if(rn2(4) && rn2(mtmp->mhpmax) < mtmp->mhp)
+			return STRAT(STRAT_PLAYER, u.ux, u.uy, MT_WANTSBELL);
+		else
+			return dstrat;
+	}
+	
 	if(flags.made_amulet)
 	    if((strat = target_on(MT_WANTSAMUL, mtmp)) != STRAT_NONE)
 			return(strat);
@@ -328,6 +336,15 @@ tactics(mtmp)
 
 	switch (strat) {
 	    case STRAT_HEAL:	/* hide and recover */
+		if(mtmp->mtyp == PM_GREAT_CTHULHU){
+			if(canseemon(mtmp))
+				pline("Noxious gasses swirl around %s!", mon_nam(mtmp));
+			create_gas_cloud(mtmp->mx, mtmp->my, 2, 30, FALSE);
+			mtmp->mhp = mtmp->mhpmax;
+			mtmp->mflee = 0;
+			mtmp->mfleetim = 0;
+			return 1;
+		}
 		/* if wounded, hole up on or near the stairs (to block them) */
 		/* unless, of course, there are no stairs (e.g. endlevel) */
 		mtmp->mavenge = 1; /* covetous monsters attack while fleeing */
@@ -361,6 +378,17 @@ tactics(mtmp)
 		/* fall through :-) */
 
 	    case STRAT_NONE:	/* harrass */
+		if(mtmp->mtyp == PM_GREAT_CTHULHU){
+			struct monst *spawn;
+			if(!Blind)
+				pline("Noxious gasses swirl around you!");
+			create_gas_cloud(u.ux, u.uy, 2, 30, FALSE);
+			spawn = makemon(&mons[PM_STAR_SPAWN], u.ux, u.uy, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
+			if(spawn){
+				mark_mon_as_summoned(spawn, mtmp, ESUMMON_PERMANENT, 0);
+			}
+			return 0;
+		}
 		if (!rn2((!mtmp->mflee || mtmp->mtyp == PM_BANDERSNATCH) ? 5 : 33)){
 			if(mtmp->mtyp == PM_AGLAOPE){
 				coord cc;
@@ -378,6 +406,12 @@ tactics(mtmp)
 				&& !mtmp->mcan && !mtmp->mspec_used
 			){
 				monline(mtmp);
+				if(!mon_can_see_you(mtmp) || !couldsee(mtmp->mx, mtmp->my)) mnexto(mtmp);
+			} else if(attacktype_fordmg(mtmp->data, AT_LRCH, AD_ANY)
+				|| attacktype_fordmg(mtmp->data, AT_LNCK, AD_ANY)
+				|| attacktype_fordmg(mtmp->data, AT_BRSH, AD_ANY)
+			){
+				mofflin_close(mtmp);
 				if(!mon_can_see_you(mtmp) || !couldsee(mtmp->mx, mtmp->my)) mnexto(mtmp);
 			} else if((attacktype_fordmg(mtmp->data, AT_MMGC, AD_ANY) ||
 				attacktype_fordmg(mtmp->data, AT_MAGC, AD_ANY) )
@@ -413,9 +447,18 @@ tactics(mtmp)
 					return(0);
 				}
 			} else if(mtmp->mtyp == PM_GREAT_CTHULHU){
-				pline("%s steps through strange angles.",Monnam(mtmp));
+				boolean saw = FALSE;
+				if(sensemon(mtmp) || canseemon(mtmp)){
+					pline("%s steps through strange angles.",Monnam(mtmp));
+					u.umadness |= MAD_NON_EUCLID;
+					saw = TRUE;
+				}
 				mofflin(mtmp);
-				return(0);
+				if(!saw && (sensemon(mtmp) || canseemon(mtmp))){
+					pline("%s steps through strange angles.",Monnam(mtmp));
+					u.umadness |= MAD_NON_EUCLID;
+				}
+				return 1;
 			}
 			if((attacktype_fordmg(mtmp->data, AT_BREA, AD_ANY) ||
 				attacktype_fordmg(mtmp->data, AT_SPIT, AD_ANY) ||
@@ -425,6 +468,12 @@ tactics(mtmp)
 			){
 				monline(mtmp);
 				if(!mon_can_see_you(mtmp)) mnexto(mtmp);
+			} else if(attacktype_fordmg(mtmp->data, AT_LRCH, AD_ANY)
+				|| attacktype_fordmg(mtmp->data, AT_LNCK, AD_ANY)
+				|| attacktype_fordmg(mtmp->data, AT_BRSH, AD_ANY)
+			){
+				mofflin_close(mtmp);
+				if(!mon_can_see_you(mtmp) || !couldsee(mtmp->mx, mtmp->my)) mnexto(mtmp);
 			} else if((attacktype_fordmg(mtmp->data, AT_MMGC, AD_ANY) ||
 				attacktype_fordmg(mtmp->data, AT_MAGC, AD_ANY) )
 				&& !mtmp->mcan && !mtmp->mspec_used
@@ -496,8 +545,7 @@ clonewiz()
 				u.ux, u.uy, NO_MM_FLAGS)) != 0) {
 	    mtmp2->msleeping = mtmp2->mtame = mtmp2->mpeaceful = 0;
 	    if (!u.uhave.amulet && rn2(2)) {  /* give clone a fake */
-		(void) add_to_minv(mtmp2, mksobj(FAKE_AMULET_OF_YENDOR,
-					TRUE, FALSE));
+		(void) add_to_minv(mtmp2, mksobj(FAKE_AMULET_OF_YENDOR, NO_MKOBJ_FLAGS));
 	    }
 	    mtmp2->m_ap_type = M_AP_MONSTER;
 	    mtmp2->mappearance = wizapp[rn2(SIZE(wizapp))];
@@ -509,7 +557,7 @@ clonewiz()
 int
 pick_nasty()
 {
-	int tries;
+	int tries = 0;
 	int mndx;
 	do{
 		mndx = nasties[rn2(SIZE(nasties))];
@@ -520,20 +568,21 @@ pick_nasty()
 }
 
 /* create some nasty monsters, aligned or neutral with the caster */
-/* a null caster defaults to a chaotic caster (e.g. the wizard) */
+/* a null caster is assumed to be Wizard intervention */
 int
 nasty(mcast)
 	struct monst *mcast;
 {
-    register struct monst	*mtmp;
-    register int	i, j, tmp;
+    register struct monst *mtmp;
+    register int i, j, tmp;
     int castalign = (mcast ? mcast->data->maligntyp : -1);
     coord bypos;
     int count=0;
 
     if(!rn2(10) && Inhell) {
-	msummon((struct monst *) 0);	/* summons like WoY */
-	count++;
+		/* creatures made this way are full monsters gated in, not summons tied to mcast */
+		msummon(mcast, &mons[PM_WIZARD_OF_YENDOR]);	/* summons like WoY */
+		count++;
     } else {
 	tmp = (u.ulevel > 3) ? u.ulevel/3 : 1; /* just in case -- rph */
 	/* if we don't have a casting monster, the nasties appear around you */
@@ -561,21 +610,81 @@ nasty(mcast)
 				|| (!rn2(4) && abs(sgn(mons[makeindex].maligntyp) - sgn(castalign)) == 1)
 			){
 				if ((mtmp = makemon(&mons[makeindex],
-							bypos.x, bypos.y, NO_MM_FLAGS)) != 0);
+							bypos.x, bypos.y, MM_ESUM)) != 0);
 				else /* makemon failed for some reason */
 					mtmp = makemon((struct permonst *)0,
-							bypos.x, bypos.y, NO_MM_FLAGS);
+							bypos.x, bypos.y, MM_ESUM);
 				if(!mtmp) /* makemon still failed, abort */
 					return count;
 				mtmp->msleeping = 0;
 				untame(mtmp, 0);
 				set_malign(mtmp);
+				mark_mon_as_summoned(mtmp, mcast, ESUMMON_PERMANENT, 0);
 				count++;
 				break;
 			}
 	    }
     }
     return count;
+}
+
+/* create some yellow sign monsters */
+void
+yellow_nasty()
+{
+    register struct monst *mtmp;
+    register int i, j, tmp, makeindex, maketemplate;
+    coord bypos;
+	tmp = (u.ulevel > 3) ? u.ulevel/3 : 1; /* just in case -- rph */
+	for(i = rnd(tmp); i > 0; --i){
+		switch(rn2(6)){
+			case 0:
+				makeindex = PM_BYAKHEE;
+				maketemplate = 0;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 1:
+				makeindex = PM_COILING_BRAWN;
+				maketemplate = 0;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 2:
+				makeindex = PM_FUNGAL_BRAIN;
+				maketemplate = 0;
+				bypos.x = 0;
+				bypos.y = 0;
+			break;
+			case 3:
+				makeindex = PM_HUMAN;
+				maketemplate = SKELIFIED;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 4:
+				makeindex = PM_HUMAN;
+				maketemplate = DREAM_LEECH;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 5:
+				makeindex = rn2(2) ? PM_MADMAN : PM_MADWOMAN;
+				maketemplate = YELLOW_TEMPLATE;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+		}
+		if ((mtmp = makemon(&mons[makeindex],
+					bypos.x, bypos.y, 0)) != 0);
+		else /* makemon failed for some reason */
+			continue;
+		if(maketemplate)
+			set_template(mtmp, maketemplate);
+		mtmp->msleeping = 0;
+		untame(mtmp, 0);
+		set_malign(mtmp);
+	}
 }
 
 /*	Let's resurrect the wizard, for some unexpected fun.	*/
@@ -633,10 +742,8 @@ illur_resurrect()
 {
 	struct monst *mtmp, **mmtmp;
 	long elapsed;
-	const char *verb;
 
-	/* look for a migrating Wizard */
-	verb = "elude";
+	/* look for a migrating Illurien */
 	mmtmp = &migrating_mons;
 	while ((mtmp = *mmtmp) != 0) {
 		if (mtmp->mtyp==PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES) {
@@ -667,6 +774,28 @@ illur_resurrect()
 		verbalize("You thought to steal memories from ME, she of the Myriad Glimpses!?");
 	}
 
+}
+
+void
+yello_resurrect()
+{
+	struct monst *mtmp;
+	long elapsed;
+
+	/* look for a migrating Stranger */
+	mtmp = migrating_mons;
+	while (mtmp) {
+		if (mtmp->mtyp==PM_STRANGER)
+			return; /*It's currently making its way over*/
+		mtmp = mtmp->nmon;
+	}
+	
+	if(!mtmp) mtmp = makemon(&mons[PM_STRANGER], 0, 0, MM_NOWAIT|MM_NOCOUNTBIRTH);
+	
+	if (mtmp) {
+		mtmp->msleeping = mtmp->mtame = mtmp->mpeaceful = 0;
+		set_malign(mtmp);
+	}
 }
 
 void
@@ -836,6 +965,26 @@ illur_intervene()
 		break;
 	    case 4:
 			illur_resurrect();
+		break;
+	}
+}
+
+void
+yello_intervene()
+{
+	if(Is_astralevel(&u.uz)) return;
+	switch (rnd(4)) {
+	    case 1:	
+			You_feel("vaguely nervous.");
+		break;
+	    case 2:
+			yellow_nasty();
+		break;
+	    case 3:
+			aggravate();
+		break;
+	    case 4:
+			yello_resurrect();
 		break;
 	}
 }

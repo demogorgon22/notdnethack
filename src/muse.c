@@ -426,7 +426,7 @@ struct monst *mtmp;
 	/* kludge to cut down on trap destruction (particularly portals) */
 	t = t_at(x,y);
 	if (t && (t->ttyp == PIT || t->ttyp == SPIKED_PIT ||
-		  t->ttyp == WEB || t->ttyp == BEAR_TRAP))
+		  t->ttyp == WEB || t->ttyp == BEAR_TRAP || t->ttyp == FLESH_HOOK))
 		t = 0;		/* ok for monster to dig here */
 
 #define nomore(x) if(m.has_defense==x) continue;
@@ -1210,7 +1210,7 @@ register struct obj *otmp;
 	boolean reveal_invis = FALSE;
 	if (mtmp != &youmonst) {
 		mtmp->msleeping = 0;
-		if (mtmp->m_ap_type) seemimic(mtmp);
+		if (mtmp->m_ap_type) see_passive_mimic(mtmp);
 	}
 	switch(otmp->otyp) {
 	case WAN_STRIKING:
@@ -1251,7 +1251,7 @@ register struct obj *otmp;
 			    if (cansee(mtmp->mx, mtmp->my))
 				pline("%s resists the magic!", Monnam(mtmp));
 			    mtmp->msleeping = 0;
-			    if(mtmp->m_ap_type) seemimic(mtmp);
+			    if(mtmp->m_ap_type) see_passive_mimic(mtmp);
 			} else if (!tele_restrict(mtmp))
 			    (void) rloc(mtmp, FALSE);
 		}
@@ -1502,8 +1502,7 @@ struct monst *mtmp;
 			    register struct monst *mtmp2;
 
 	    	    	    /* Make the object(s) */
-	    	    	    otmp2 = mksobj(confused ? ROCK : BOULDER,
-	    	    	    		FALSE, FALSE);
+	    	    	    otmp2 = mksobj(confused ? ROCK : BOULDER, MKOBJ_NOINIT);
 	    	    	    if (!otmp2) continue;  /* Shouldn't happen */
 	    	    	    otmp2->quan = confused ? rn1(5,2) : 1;
 	    	    	    otmp2->owt = weight(otmp2);
@@ -1563,8 +1562,7 @@ struct monst *mtmp;
 		    struct obj *otmp2;
 
 		    /* Okay, _you_ write this without repeating the code */
-		    otmp2 = mksobj(confused ? ROCK : BOULDER,
-				FALSE, FALSE);
+		    otmp2 = mksobj(confused ? ROCK : BOULDER, MKOBJ_NOINIT);
 		    if (!otmp2) goto xxx_noobj;  /* Shouldn't happen */
 		    otmp2->quan = confused ? rn1(5,2) : 1;
 		    otmp2->owt = weight(otmp2);
@@ -1942,12 +1940,12 @@ struct monst *mtmp;
 		if(!nomouth && obj->otyp == POT_GAIN_ABILITY && (!obj->cursed ||
 			    (!mtmp->isgd && !mtmp->isshk && !mtmp->ispriest))) {
 			m.misc = obj;
-			m.has_misc = MUSE_POT_GAIN_ABILITY;
+			m.has_misc = MUSE_POT_GAIN_ENERGY;
 		}
 		nomore(MUSE_POT_GAIN_ABILITY);
 		if(!nomouth && (mtmp->mcan || (mtmp->mhp <= .5*(mtmp->mhpmax) && mtmp->mspec_used > 2)) && obj->otyp == POT_GAIN_ENERGY) {
 			m.misc = obj;
-			m.has_misc = MUSE_POT_GAIN_ENERGY;
+			m.has_misc = MUSE_POT_GAIN_ABILITY;
 		}
 		nomore(MUSE_BULLWHIP);
 		if((obj->otyp == BULLWHIP || obj->otyp == VIPERWHIP || obj->otyp == FORCE_WHIP) 
@@ -2211,11 +2209,11 @@ skipmsg:
 	case MUSE_POT_GAIN_ENERGY:
 		mquaffmsg(mtmp, otmp);
 		if(!otmp->cursed){
-			if (vismon) pline("%s looks lackluster.", Monnam(mtmp));
+			if (vismon) pline("%s looks full of energy.", Monnam(mtmp));
 			mtmp->mspec_used = 0;
 			mtmp->mcan = 0;
 		} else {
-			if (vismon) pline("%s looks full of energy.", Monnam(mtmp));
+			if (vismon) pline("%s looks lackluster.", Monnam(mtmp));
 			mtmp->mcan = 1;
 		}
 		if (oseen) makeknown(POT_GAIN_ENERGY);
@@ -2239,6 +2237,7 @@ museamnesia:
 			mtmp->mcrazed = 0;
 			mtmp->mberserk = 0;
 			mtmp->mdisrobe = 0;
+			mtmp->mdoubt = 0;
 		} else {
 			if (vismon) pline("%s looks angry and confused!", Monnam(mtmp));
 			untame(mtmp, 0);
@@ -2332,6 +2331,10 @@ museamnesia:
 				where_to = 2;
 		    } else if (where_to == 3 && hates_unholy_mon(mtmp) && is_unholy(obj)) {
 				/* this monster won't want to catch a cursed
+				   weapon; drop it at hero's feet instead */
+				where_to = 2;
+		    } else if (where_to == 3 && hates_unblessed_mon(mtmp) && !is_unholy(obj) && !obj->blessed) {
+				/* this monster won't want to catch an uncursed
 				   weapon; drop it at hero's feet instead */
 				where_to = 2;
 		    } else if (where_to == 3 && hates_holy_mon(mtmp) && obj->blessed) {

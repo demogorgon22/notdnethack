@@ -51,7 +51,10 @@ register struct monst *mtmp;
 STATIC_OVL int
 pet_type()
 {
-	if(Race_if(PM_DROW)){
+	if(Role_if(PM_MADMAN)){
+		return PM_SECRET_WHISPERER;
+	}
+	else if(Race_if(PM_DROW)){
 		if(Role_if(PM_NOBLEMAN)){
 			if(flags.initgend) return (PM_GIANT_SPIDER);
 			else return (PM_SMALL_CAVE_LIZARD);
@@ -202,6 +205,8 @@ makedog()
 		petname = parrotname;
 	else if (pettype == PM_MONKEY)
 		petname = monkeyname;
+	else if (pettype == PM_SECRET_WHISPERER)
+		petname = whisperername;
 	else if(is_spider(&mons[pettype]))
 		petname = spidername;
 	else if(is_dragon(&mons[pettype]))
@@ -235,9 +240,20 @@ makedog()
 	    if(Role_if(PM_CONVICT)) petname = "Nicodemus"; /* Rats of NIMH */
     }
 #endif /* CONVICT */
-	mtmp = makemon(&mons[pettype], u.ux, u.uy, MM_EDOG);
+	mtmp = makemon(&mons[pettype], u.ux, u.uy, pettype == PM_SECRET_WHISPERER ? MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM : MM_ADJACENTOK|MM_EDOG);
 
 	if(!mtmp) return((struct monst *) 0); /* pets were genocided */
+	
+	if(pettype == PM_SECRET_WHISPERER){
+		mark_mon_as_summoned(mtmp, &youmonst, ACURR(A_CHA) + 1, 0);
+		for(int i = min(45, (u.uinsight - mtmp->m_lev)); i > 0; i--){
+			grow_up(mtmp, (struct monst *) 0);
+			//Technically might grow into a genocided form.
+			if(DEADMONSTER(mtmp))
+				return((struct monst *) 0);
+		}
+		mtmp->mspec_used = 0;
+	}
 	
 	if(mtmp->m_lev < mtmp->data->mlevel) mtmp->m_lev = mtmp->data->mlevel;
 	
@@ -247,7 +263,7 @@ makedog()
 #ifdef STEED
 	/* Horses already wear a saddle */
 	if ((pettype == PM_PONY || pettype == PM_GIANT_SPIDER || pettype == PM_SMALL_CAVE_LIZARD || pettype == PM_RIDING_PSEUDODRAGON)
-		&& !!(otmp = mksobj(SADDLE, TRUE, FALSE))
+		&& !!(otmp = mksobj(SADDLE, 0))
 	) {
 	    if (mpickobj(mtmp, otmp))
 		panic("merged saddle?");
@@ -347,7 +363,10 @@ losedogs()
 
 	for(mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
 		mtmp2 = mtmp->nmon;
-		if (mtmp->mux == u.uz.dnum && mtmp->muy == u.uz.dlevel && mtmp->m_insight_level <= u.uinsight) {
+		if (mtmp->mux == u.uz.dnum && mtmp->muy == u.uz.dlevel 
+			&& mtmp->m_insight_level <= u.uinsight
+		    && !(mtmp->mtyp == PM_WALKING_DELIRIUM && ClearThoughts)
+		) {
 		    if(mtmp == migrating_mons)
 			migrating_mons = mtmp->nmon;
 		    else
@@ -717,6 +736,7 @@ boolean pets_only;	/* true for ascension or final escape */
 							// (u.sealsActive&SEAL_MALPHAS && mtmp->mtyp == PM_CROW) || //Allow distant crows to get left behind.
 							(distmin(mtmp->mx, mtmp->my, u.ux, u.uy) <= pet_dist)
 							)
+							&& !(get_mx(mtmp, MX_ESUM) && !mtmp->mextra_p->esum_p->sticky)	// cannot be a summon marked as not-a-follower
 			) ||
 #ifdef STEED
 			(mtmp == u.usteed) ||
@@ -787,7 +807,6 @@ boolean pets_only;	/* true for ascension or final escape */
 				picked_container(obj);	/* does the right thing */
 				obj->no_charge = 0;
 			}
-
 			relmon(mtmp);
 			newsym(mtmp->mx,mtmp->my);
 			mtmp->mx = mtmp->my = 0; /* avoid mnexto()/MON_AT() problem */
@@ -795,6 +814,8 @@ boolean pets_only;	/* true for ascension or final escape */
 			mtmp->mlstmv = monstermoves;
 			mtmp->nmon = mydogs;
 			mydogs = mtmp;
+			summoner_gone(mtmp, TRUE);	/* has to be after being added to mydogs */
+
 			if(mtmp->mtyp == PM_SURYA_DEVA){
 				struct monst *blade;
 				for(blade = fmon; blade; blade = blade->nmon) if(blade->mtyp == PM_DANCING_BLADE && mtmp->m_id == blade->mvar_suryaID) break;
@@ -822,6 +843,7 @@ boolean pets_only;	/* true for ascension or final escape */
 			mtmp->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES || 
 			mtmp->mtyp == PM_CENTER_OF_ALL || 
 			mtmp->mtyp == PM_HUNGRY_DEAD ||
+			mtmp->mtyp == PM_STRANGER ||
 			mtmp->mtame
 		) {
 			if (mtmp->mleashed) {
@@ -839,6 +861,8 @@ boolean pets_only;	/* true for ascension or final escape */
 					 MIGR_EXACT_XY, (coord *)0);
 	    }
 	}
+	/* any of your summons that *weren't* kept now disappear */
+	summoner_gone(&youmonst, FALSE);
 }
 
 #endif /* OVL2 */
@@ -879,6 +903,16 @@ migrate_to_level(mtmp, tolev, xyloc, cc)
 		if (!mtmp->mtame) untame(mtmp, 1);
 		m_unleash(mtmp, TRUE);
 	}
+
+	/* summons don't persist away from their summoner, or if they're flagged to not be able to follow */
+	/* although your summons can travel between levels with you, they cannot do so independently of you */
+	if (get_mx(mtmp, MX_ESUM) && (!mtmp->mextra_p->esum_p->sticky || mtmp->mextra_p->esum_p->summoner)) {
+		monvanished(mtmp);
+		return;	/* return early -- mtmp is gone. */
+	}
+	/* likewise, a summoner leaving affects its summons */
+	summoner_gone(mtmp, TRUE);
+
 	relmon(mtmp);
 	mtmp->nmon = migrating_mons;
 	migrating_mons = mtmp;
@@ -1058,20 +1092,26 @@ rock:
 	default:
 	    if (obj->otyp == AMULET_OF_STRANGULATION ||
 			obj->otyp == RIN_SLOW_DIGESTION)
-		return TABU;
+			return TABU;
 	    if (hates_silver(mon->data) &&
 		obj->obj_material == SILVER)
-		return(TABU);
+			return(TABU);
 	    if (hates_iron(mon->data) &&
 		obj->obj_material == IRON)
-		return(TABU);
+			return(TABU);
 	    if (hates_unholy_mon(mon) &&
 		is_unholy(obj))
-		return(TABU);
+			return(TABU);
+	    if (hates_unblessed_mon(mon) &&
+		(is_unholy(obj) || obj->blessed))
+			return(TABU);
+		if (is_vampire(mon->data) &&
+		obj->otyp == POT_BLOOD && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
+			return DOGFOOD;
 	    if (herbi && !carni && (obj->otyp == SHEAF_OF_HAY || obj->otyp == SEDGE_HAT))
-		return CADAVER;
-	    if (mon->mtyp == PM_GELATINOUS_CUBE && is_organic(obj))
-		return(ACCFOOD);
+			return CADAVER;
+	    if ((mon->mtyp == PM_GELATINOUS_CUBE || mon->mtyp == PM_ANCIENT_OF_CORRUPTION) && is_organic(obj))
+			return(ACCFOOD);
 	    if (metallivorous(mon->data) && is_metallic(obj) && (is_rustprone(obj) || mon->mtyp != PM_RUST_MONSTER)) {
 		/* Non-rustproofed ferrous based metals are preferred. */
 		return((is_rustprone(obj) && !obj->oerodeproof) ? DOGFOOD :
@@ -1098,7 +1138,7 @@ int numdogs;
 	struct monst *curmon = 0, *weakdog = 0;
 	for(curmon = fmon; curmon; curmon = curmon->nmon){
 			if(curmon->mtame && !(EDOG(curmon)->friend) && !(EDOG(curmon)->loyal) && !is_suicidal(curmon->data)
-				&& !curmon->mspiritual && curmon->mvanishes < 0
+				&& !curmon->mspiritual && !(get_timer(curmon->timed, DESUMMON_MON) && !(get_mx(curmon, MX_ESUM) && curmon->mextra_p->esum_p->permanent))
 			){
 				numdogs++;
 				if(!weakdog) weakdog = curmon;
@@ -1123,7 +1163,7 @@ vanish_dogs()
 		weakdog = (struct monst *)0;
 		numdogs = 0;
 		for(curmon = fmon; curmon; curmon = curmon->nmon){
-			if(curmon->mspiritual && curmon->mvanishes < 0){
+			if(curmon->mspiritual && !get_timer(curmon->timed, DESUMMON_MON)){ /* assumes no pets that are both spiritual and permanently summoned */
 				numdogs++;
 				if(!weakdog) weakdog = curmon;
 				if(weakdog->m_lev > curmon->m_lev) weakdog = curmon;
@@ -1132,7 +1172,7 @@ vanish_dogs()
 				else if(weakdog->mtame > curmon->mtame) weakdog = curmon;
 			}
 		}
-		if(weakdog && numdogs > dog_limit() ) weakdog->mvanishes = 5;
+		if(weakdog && numdogs > dog_limit()) start_timer(5L, TIMER_MONSTER, DESUMMON_MON, (genericptr_t)weakdog);
 	} while(weakdog && numdogs > dog_limit());
 }
 

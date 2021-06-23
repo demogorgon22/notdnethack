@@ -111,11 +111,12 @@ register struct obj *obj;
 #endif
 				&& !melee_polearms(youracedata)
 				&& obj->otyp != AKLYS
+				&& !check_oprop(obj, OPROP_CCLAW)
 				&& !is_vibropike(obj)
-				&& obj->otyp != NAGINATA
 				&& obj->oartifact != ART_WEBWEAVER_S_CROOK
 				&& obj->oartifact != ART_SILENCE_GLAIVE
 				&& obj->oartifact != ART_HEARTCLEAVER
+				&& obj->oartifact != ART_GREEN_DRAGON_CRESCENT_BLAD
 				&& obj->oartifact != ART_CRUCIFIX_OF_THE_MAD_KING
 				&& obj->oartifact != ART_SOL_VALTIVA
 				&& obj->oartifact != ART_SHADOWLOCK
@@ -547,7 +548,7 @@ test_twoweapon()
 	else if ((!uwep || !uswapwep) && !(
 		/* exceptions: */
 			/* martial arts training let you use unarmed with either hand, and to supplement weapons */
-			(u.umartial) ||
+			(u.umartial || u.umaniac) ||
 			/* having the black web bound lets you use your shadowblades with either hand, and to supplement weapons */
 			(u.specialSealsActive&SEAL_BLACK_WEB) ||
 			/* wielding a bestial claw lets you replace offhand unarmed with an AT_CLAW attack */
@@ -565,8 +566,8 @@ test_twoweapon()
 	/* not twohanded */
 	else if ((
 		/* twohanded (can be paired with punches) */
-		(uwep && bimanual(uwep,youracedata) && !(u.umartial && !uswapwep)) || 
-		(uswapwep && bimanual(uswapwep,youracedata) && !(u.umartial && !uwep))
+		(uwep && bimanual(uwep,youracedata) && !((u.umartial || u.umaniac) && !uswapwep)) || 
+		(uswapwep && bimanual(uswapwep,youracedata) && !((u.umartial || u.umaniac) && !uwep))
 		) &&
 		/* Exception: Friede's Scythe can be offhanded with the (twohanded) Profaned Greatscythe or Lifehunt Scythe. */
 		!(uwep && uswapwep &&

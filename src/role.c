@@ -287,6 +287,34 @@ struct Role roles[] = {
 	{  2, 2,  0, 2,  0, 2 },10,	/* Energy */
 	10, 8,-2, 2, 20, A_WIS, SPE_RESTORE_ABILITY, -24
 },
+{	{"Madman", "Madwoman"}, {
+	{"Ward",     0},
+	{"Escapee",   0},
+	{"Drifter",0},
+	{"Derelict",0},
+	{"Raver",    0},
+	{"Lunatic",   0},
+	{"Maniac",     0},
+	{"Augur",    0},
+	{"Seer",  0} },
+	"Lobon", "Tamash", "Zo-Kalar",	/* Dreamlands */
+	"Mad", "Archer Asylum", "the ground floor",
+	PM_MADMAN, PM_MADWOMAN, NON_PM,
+	PM_CASSILDA_THE_IRON_MAIDEN, PM_PATIENT, PM_DOCTOR_ARCHER,
+	PM_ENORMOUS_RAT, PM_CONTAMINATED_PATIENT, S_RODENT, S_BAT,
+	ART_STAR_OF_HYPERNOTUS,
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ORC|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_FEY, ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	/* Str Int Wis Dex Con Cha */
+	{   7, 10, 3, 10,  7, 10 },
+	{  10, 10, 3, 20, 20, 30 },
+	/* Init   Lower  Higher */
+	{ 12, 0,  0, 8,  0, 1 },	/* Hit points */
+	{  4, 3,  0, 1,  2, 4 },14,	/* Energy */
+	10, 8,-2, 2, 20, A_CHA, SPE_CONFUSE_MONSTER, -24
+},
+	// "The Silver Fire", "_The Fury", "The Shadow",	/* Sorta-eberron */
+	// "_The Inheritor", "_The Dawnflower", "_The Everbloom",	/* Sorta-glorion */
 {	{"Nobleman", "Noblewoman"}, {
 	{"Pargar",       0},
 	{"Cneaz",	     0},
@@ -814,8 +842,8 @@ const struct Race races[] = {
 	{    3,     3,  3,  3,  3,  3 },
 	{   18,    20, 18, 20, 16, 20 },
 	/* Init   Lower  Higher */
-	{  2, 0,  3, 0,  1, 0 },	/* Hit points */
-	{  2, 0,  3, 0,  3, 0 },	/* Energy */
+	{  8, 0,  3, 0,  1, 0 },	/* Hit points */
+	{  8, 0,  3, 0,  3, 0 },	/* Energy */
 	NO_NIGHTVISION
 },
 {	"elf", "elven", "elvenkind", "Elf",
@@ -827,8 +855,8 @@ const struct Race races[] = {
 	{    3,     3,  3,  3,  3,  3 },
 	{   18,    20, 20, 20, 16, 18 },
 	/* Init   Lower  Higher */
-	{  2, 0,  3, 0,  1, 0 },	/* Hit points */
-	{  2, 0,  3, 0,  3, 0 },	/* Energy */
+	{   7, 0,  3, 0,  1, 0 },	/* Hit points */
+	{   7, 0,  3, 0,  3, 0 },	/* Energy */
 	NIGHTVISION3
 },
 {	"gnome", "gnomish", "gnomehood", "Gno",
@@ -2366,11 +2394,11 @@ int newgame;
 	urace = races[flags.initrace];
 	if(Role_if(PM_ANACHRONONAUT)){
 		if(Race_if(PM_DROW))
-		urace = myrkalfr;
+			urace = myrkalfr;
 		if(Race_if(PM_CLOCKWORK_AUTOMATON)){
-			urace = android;
 			urole.filecode = "And";
-			if (newgame) {
+			urace = android;
+			if(newgame){
 				quest_status.got_quest = TRUE;
 				quest_status.leader_is_dead = TRUE;
 				flags.questprogress = 1;
@@ -3000,6 +3028,8 @@ give_quest_trophy()
 		achieve.trophies |= BRD_QUEST;
 	else if(urole.neminum == PM_GREAT_HIGH_SHAMAN_OF_KURTULMAK)
 		achieve.trophies |= GNO_RAN_QUEST;
+	else if(urole.neminum == PM_DOCTOR_ARCHER)
+		achieve.trophies |= MAD_QUEST;
 	
 	if(quest_status.second_thoughts)
 		achieve.trophies |= SECOND_THOUGHTS;
@@ -3038,6 +3068,94 @@ give_ascension_trophy()
 	check_loadout_trophy();
 	check_madman_trophy();
 	check_drunkard_trophy();
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_lamashtu_trophy()
+{
+	achieve.trophies |= LAMASHTU_KILL;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_baalphegor_trophy()
+{
+	achieve.trophies |= BAALPHEGOR_KILL;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_angel_vault_trophy()
+{
+	achieve.trophies |= ANGEL_VAULT;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_ancient_vault_trophy()
+{
+	achieve.trophies |= ANCIENT_VAULT;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_tannin_vault_trophy()
+{
+	achieve.trophies |= TANNINIM_VAULT;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_hell_vault_trophy(hv_id)
+int hv_id;
+{
+	switch(hv_id){
+		case VN_AKKABISH:
+		case VN_SHALOSH:
+		case VN_NACHASH:
+		case VN_KHAAMNUN:
+		case VN_RAGLAYIM:
+		case VN_TERAPHIM:
+		case VN_SARTAN:
+			give_tannin_vault_trophy();
+		break;
+		case VN_A_O_BLESSINGS:
+		case VN_A_O_VITALITY:
+		case VN_A_O_CORRUPTION:
+		case VN_A_O_BURNING_WASTES:
+		case VN_A_O_THOUGHT:
+		case VN_A_O_DEATH:
+			give_ancient_vault_trophy();
+		break;
+		case VN_APOCALYPSE:
+		case VN_HARROWER:
+		case VN_MAD_ANGEL:
+			give_angel_vault_trophy();
+		break;
+	}
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_castle_trophy()
+{
+	achieve.trophies |= CASTLE_WISH;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_ugwish_trophy()
+{
+	achieve.trophies |= UNKNOWN_WISH;
 }
 #endif
 

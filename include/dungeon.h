@@ -169,7 +169,11 @@ typedef struct branch {
 #define Is_bridge_temple(x)		(on_level(x,&bridge_temple))
 #define Is_sumall(x)		(on_level(x,&sum_of_all_level))
 #define Is_rlyeh(x)			(on_level(x, &rlyeh_level))
-
+#define In_nkai(x)	(on_level(x, &nkai_a_level) ||\
+						 on_level(x, &nkai_b_level) ||\
+						 on_level(x, &nkai_c_level) ||\
+						 on_level(x, &nkai_z_level)\
+						)
 #define Is_valley(x)		(on_level(x, &valley_level))
 
 #define Is_hell1(x)			(on_level(x, &hell1_level))
@@ -210,6 +214,10 @@ typedef struct branch {
 #define Is_stronghold(x)	(on_level(x, &stronghold_level))
 #define Is_bigroom(x)		(on_level(x, &bigroom_level))
 #define Is_qstart(x)		(on_level(x, &qstart_level))
+#define Is_qhome(x)				((Role_if(PM_NOBLEMAN) && Race_if(PM_HALF_DRAGON) && flags.initgend) ?\
+							(In_quest(&u.uz) && qstart_level.dlevel == (u.uz.dlevel-1)) :\
+							Role_if(PM_MADMAN) ? (In_quest(&u.uz) && qlocate_level.dlevel == (u.uz.dlevel+1)) :\
+							Is_qstart(x))
 #define Is_qlocate(x)		(on_level(x, &qlocate_level))
 #define Is_nemesis(x)		(on_level(x, &nemesis_level))
 #define Is_knox(x)		(on_level(x, &knox_level))
@@ -217,7 +225,8 @@ typedef struct branch {
 #define Is_mineend_level(x)     (on_level(x, &mineend_level))
 #define Is_sokoend_level(x)     (on_level(x, &sokoend_level))
 #define Is_qtown(x)		((Role_if(PM_NOBLEMAN) && Race_if(PM_HALF_DRAGON) && flags.initgend) ?\
-							(qstart_level.dlevel == (u.uz.dlevel-1)) : Is_qstart(x))
+							(In_quest(&u.uz) && qstart_level.dlevel == (u.uz.dlevel-1)) :\
+							Role_if(PM_MADMAN) ? TRUE : Is_qstart(x))
 
 #define In_sokoban(x)	((x)->dnum == sokoban_dnum)
 #define In_tower(x)		((x)->dnum == tower_dnum)

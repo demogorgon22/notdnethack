@@ -430,6 +430,9 @@ register int otyp;
 	case RING_CLASS:
 		Strcpy(buf, "ring");
 		break;
+	case BED_CLASS:
+		Strcpy(buf, "bed");
+		break;
 	case AMULET_CLASS:
 		if(nn)
 			Strcpy(buf,actualn);
@@ -734,6 +737,28 @@ char *buf;
 }
 
 static void
+add_movement_words(obj, buf)
+struct obj *obj;
+char *buf;
+{
+	if (obj->olarva && !is_hard(obj)){
+		if(!obj->owornmask || obj->where != OBJ_INVENT)
+			Strcat(buf, "writhing ");
+	}
+}
+
+static void
+add_biting_words(obj, buf)
+struct obj *obj;
+char *buf;
+{
+	if (obj->olarva && !is_hard(obj)){
+		if(obj->owornmask && obj->where == OBJ_INVENT)
+			Strcat(buf, "gnawing ");
+	}
+}
+
+static void
 add_shape_words(obj, buf, dofull)
 struct obj *obj;
 char *buf;
@@ -789,6 +814,13 @@ boolean dofull;
 				Strcat(buf, "partly used ");
 		}
 		break;
+	case AMULET_CLASS:
+		if (dofull)
+		{
+			if (obj->oward)
+				Strcat(buf, "engraved ");
+		}
+		break;
 	case RING_CLASS:
 		if (dofull)
 		{
@@ -834,7 +866,7 @@ char *buf;
 	/* food uses oeroded to determine if it is rotten -- do not show this */
 	if (obj->oclass == FOOD_CLASS)
 		return;
-	
+
 	if (obj->oeroded && !iscrys) {
 		switch (obj->oeroded) {
 		case 2:	Strcat(buf, "very "); break;
@@ -855,18 +887,33 @@ char *buf;
 			"rotted ");
 	}
 	if (obj->oeroded3) {
-		switch (obj->oeroded3) {
+		if(is_hard(obj)){
+			switch (obj->oeroded3) {
+				case 1:	Strcat(buf, "cracked "); break;
+				case 2:	Strcat(buf, "chipped "); break;
+				case 3:	Strcat(buf, "fragmentary "); break;
+			}
+		} else {
+			switch (obj->oeroded3) {
+				case 2:	Strcat(buf, "very "); break;
+				case 3:	Strcat(buf, "thoroughly "); break;
+			}
+			Strcat(buf, "tattered ");
+		}
+	}
+	if (obj->olarva && is_hard(obj)) {
+		switch (obj->oeroded2) {
 		case 2:	Strcat(buf, "very "); break;
 		case 3:	Strcat(buf, "thoroughly "); break;
 		}
-		Strcat(buf, "tattered ");
+		Strcat(buf, "larvae-riddled ");
 	}
-	if (obj->ovar1 && obj->otyp == MASK) {
-		switch (obj->ovar1) {
-		case 1:	Strcat(buf, "cracked "); break;
-		case 2:	Strcat(buf, "chipped "); break;
-		case 3:	Strcat(buf, "fragmentary "); break;
+	if (obj->odead_larva) {
+		switch (obj->oeroded2) {
+		case 2:	Strcat(buf, "very "); break;
+		case 3:	Strcat(buf, "thoroughly "); break;
 		}
+		Strcat(buf, "husk-riddled ");
 	}
 	if (obj->rknown && obj->oerodeproof)
 		Strcat(buf,
@@ -1335,12 +1382,10 @@ boolean adjective;
 			return OBJ_DESCR(objects[obj->otyp]);
 		else
 			return (adjective ? "wooden" : "wood");
+	case CHITIN:
+		return "chitin";
 	case BONE:
-		/* special case */
-		if (obj->oartifact == ART_WEBWEAVER_S_CROOK || obj->oartifact == ART_SCORPION_CARAPACE)
-			return "chitin";
-		else
-			return "bone";
+		return "bone";
 	case SHELL_MAT:
 		return "shell";
 	case DRAGON_HIDE:
@@ -1535,8 +1580,11 @@ char *buf;
 
 /* Supposedly, the order of adjectives in English is: determiner, opinion, size, shape, age, colour, origin, material, purpose, noun
  * We will transfer that over to dNethack as:
- * quantity, stolen, BUC, size, shape, erosion, grease, enchantment, properties, poison, colour, material, object
+ * quantity, stolen, BUC, size, moving, shape, erosion, grease, enchantment, properties, poison, colour, material, object
  * "a stolen uncursed small three-headed rusted rustproof greased +2 flaming poisoned iron viperwhip"
+ * "a uncursed large writhing burnt greased +2 leather cloak"
+ * "a uncursed large burnt greased +2 gnawing leather cloak"
+ * "a blessed large three-headed rotted larvae-riddled +2 flaming wooden viperwhip"
  * "a cursed -1 lightning bladed kamerel vajra"
  */
 char *
@@ -1592,6 +1640,7 @@ boolean with_price;
 		if (dofull) add_buc_words(obj, buf);
 		add_size_words(obj, buf);
 		add_point_words(obj,buf);
+		add_movement_words(obj, buf);
 		add_shape_words(obj, buf, dofull);		// Note: more verbose for a number of objects if dofull is true
 		if (dofull) add_erosion_words(obj, buf);
 		if (dofull) add_grease_words(obj, buf);
@@ -1601,6 +1650,7 @@ boolean with_price;
 		add_poison_words(obj, buf);
 		add_insight_words(obj, buf);
 		add_colours_words(obj, buf);
+		add_biting_words(obj, buf);
 		add_material_words(obj, buf);
 		if (dofull) add_type_words(obj, buf);
 	}
@@ -1717,6 +1767,7 @@ boolean with_price;
 			/* prefixes */
 			if (typ == LENSES ||
 				typ == SUNGLASSES ||
+				typ == HAWAIIAN_SHORTS ||
 				is_boots(obj) ||
 				is_gloves(obj)
 				) {
@@ -2825,13 +2876,13 @@ struct obj *obj;
 }
 
 static const char *wrp[] = {
-	"wand", "ring", "potion", "scroll", "shard", "gem", "amulet",
+	"wand", "ring", "potion", "scroll", "shard", "wage", "strange coin", "gem", "amulet",
 	"spellbook", "spell book",
 	/* for non-specific wishes */
 	"weapon", "armor", "armour", "tool", "food", "comestible",
 };
 static const char wrpsym[] = {
-	WAND_CLASS, RING_CLASS, POTION_CLASS, SCROLL_CLASS, TILE_CLASS, GEM_CLASS,
+	WAND_CLASS, RING_CLASS, POTION_CLASS, SCROLL_CLASS, TILE_CLASS, SCOIN_CLASS, SCOIN_CLASS, GEM_CLASS,
 	AMULET_CLASS, SPBOOK_CLASS, SPBOOK_CLASS,
 	WEAPON_CLASS, ARMOR_CLASS, ARMOR_CLASS, TOOL_CLASS, FOOD_CLASS,
 	FOOD_CLASS
@@ -2942,6 +2993,16 @@ const char *oldstr;
 
 	/* Keter (plural of sephirah is sephiroth) */
 	if (len >= 8 && !strcmp(spot-7, "sephirah")) {
+		Strcpy(spot-1, "oth");
+		goto bottom;
+	}
+	/* Hebrew (plural of tannin is tanninim */
+	if (len >= 6 && !strcmp(spot-5, "tannin")) {
+		Strcpy(spot, "nim");
+		goto bottom;
+	}
+	/* Hebrew (maybe-plural of tannah, which is maybe the feminine form of tan (NOT tannin)) */
+	if (len >= 6 && !strcmp(spot-5, "tannah")) {
 		Strcpy(spot-1, "oth");
 		goto bottom;
 	}
@@ -3486,8 +3547,8 @@ struct alt_spellings {
 	{ "helm of drain resistance", HELM_OF_DRAIN_RESISTANCE },
 	{ "diadem of drain resistance", HELM_OF_DRAIN_RESISTANCE },
 	{ "mirror shield", SHIELD_OF_REFLECTION },
-	{ "black dress", BLACK_DRESS },
-	{ "dress", BLACK_DRESS },
+	{ "black dress", PLAIN_DRESS },
+	{ "dress", PLAIN_DRESS },
 	{ "noble's dress", NOBLE_S_DRESS },
 	{ "armored dress", NOBLE_S_DRESS },
 	{ "armored black dress", NOBLE_S_DRESS },
@@ -4337,11 +4398,19 @@ int wishflags;
 	if (strncmpi(bp, "sparkling lake", 14)) /* not a "sparkling lake" */
 	if (strncmpi(bp, "frosted lake", 12)) /* not a "frosted lake" */
 	if (strncmpi(bp, "chromatic dragon scales", 23)) /* not a "dragon" */
-	if (strncmpi(bp, "platinum dragon plate", 22)) /* not a "dragon" */
 	if (strncmpi(bp, "eden's scales", 12)) /* not a something bad */
 	if (strncmpi(bp, "eurynome's dancing shoes", 24)) /* not a something bad */
 	if (strncmpi(bp, "jack's torch", 12)) /* not jack*/
 	if (strncmpi(bp, "simurgh's feather", 17)) /* not simurgh*/
+	if (strncmpi(bp, "platinum dragon plate", 21)) /* not a "dragon" */
+	if (strncmpi(bp, "thief doll", 10)) /* not the "thief" player monster */
+	if (strncmpi(bp, "bard doll", 9)) /* not the "bard" player monster */
+	if (strncmpi(bp, "priest doll", 11)) /* not the "priest" monster */
+	if (strncmpi(bp, "healer doll", 11)) /* not the "healer" player monster */
+	if (strncmpi(bp, "nurse doll", 10)) /* not the "nurse" monster */
+	if (strncmpi(bp, "heretic doll", 12)) /* not the "heretic" player monster */
+	if (strncmpi(bp, "archaeologist doll", 18)) /* not the "archaeologist" player monster */
+	if (strncmpi(bp, "high priest doll", 16)) /* not the "high priest" monster */
 	if (mntmp < LOW_PM && strlen(bp) > 2 &&
 	    (mntmp = name_to_mon(bp)) >= LOW_PM) {
 		int mntmptoo, mntmplen;	/* double check for rank title */
@@ -4433,7 +4502,7 @@ int wishflags;
 		*wishreturn = WISH_SUCCESS;
 		return (&zeroobj);
 #else
-                otmp = mksobj(GOLD_PIECE, FALSE, FALSE);
+                otmp = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
 		otmp->quan = cnt;
                 otmp->owt = weight(otmp);
 		flags.botl=1;
@@ -4455,6 +4524,8 @@ int wishflags;
 	if(strncmpi(bp, "enchant ", 8) &&
 	   strncmpi(bp, "destroy ", 8) &&
 	   strncmpi(bp, "food detection", 14) &&
+	   strncmpi(bp, "wage of", 7) &&
+	   strncmpi(bp, "wages of", 8) &&
 	   strncmpi(bp, "ring mail", 9) &&
 	   strncmpi(bp, "ringed brass armor", 18) &&
 	   strncmpi(bp, "studded leather arm", 19) &&
@@ -4817,6 +4888,20 @@ srch:
 			return &zeroobj;
 		}
 # endif
+		if(!BSTRCMP(bp, p-12, "hellish seal")) {
+			levl[u.ux][u.uy].typ = HELLISH_SEAL;
+			if(VN_MAX > VAULT_LIMIT){
+				impossible("Vault exceeded [safe fallback triggered]");
+				levl[u.ux][u.uy].vaulttype = rnd(31);
+			} else {
+				levl[u.ux][u.uy].vaulttype = rnd(VN_MAX-1);
+			}
+			// level.flags.nseals++;
+			pline("A seal.");
+			newsym(u.ux, u.uy);
+			*wishreturn = WISH_SUCCESS;
+			return &zeroobj;
+		}
 		if(!BSTRCMP(bp, p-4, "pool")) {
 			levl[u.ux][u.uy].typ = POOL;
 			del_engr_ward_at(u.ux, u.uy);
@@ -4992,7 +5077,7 @@ typfnd:
 	}
 	
 	if(typ) {
-		otmp = mksobj(typ, TRUE, FALSE);
+		otmp = mksobj(typ, NO_MKOBJ_FLAGS);
 	} else {
 		otmp = mkobj(oclass, FALSE);
 		if (otmp) typ = otmp->otyp;
@@ -5082,7 +5167,7 @@ typfnd:
 				   !(mvitals[mntmp].mvflags & G_NOCORPSE)) {
 			    /* beware of random troll or lizard corpse,
 			       or of ordinary one being forced to such */
-			    if (otmp->timed) obj_stop_timers(otmp);
+			    if (otmp->timed) stop_all_timers(otmp->timed);
 			    if (mons[mntmp].msound == MS_GUARDIAN)
 			    	otmp->corpsenm = genus(mntmp,1);
 			    else
@@ -5263,10 +5348,8 @@ typfnd:
 		    otmp->oeroded = eroded;
 	    if (eroded2 && (is_corrodeable(otmp) || is_rottable(otmp)))
 		    otmp->oeroded2 = eroded2;
-	    if (eroded3 && otmp->otyp == DROVEN_CLOAK)
+	    if (eroded3)
 		    otmp->oeroded3 = eroded3;
-		if (eroded3 && otmp->otyp == MASK)
-			otmp->ovar1 = eroded3;
 
 	    /* set erodeproof */
 	    if (erodeproof && !eroded && !eroded2)
@@ -5412,23 +5495,37 @@ typfnd:
 	}
 	
 	if (halfeaten && otmp->oclass == FOOD_CLASS) {
-		if (otmp->otyp == CORPSE)
-			otmp->oeaten = mons[otmp->corpsenm].cnutrit;
-		else otmp->oeaten = objects[otmp->otyp].oc_nutrition;
+		int nut = obj_nutrition(otmp);
 		/* (do this adjustment before setting up object's weight) */
-		consume_oeaten(otmp, 1);
+		if (nut > 1){
+			otmp->oeaten = nut;
+			consume_oeaten(otmp, 1);
+		}
 	}
 	if (isdrained && otmp->otyp == CORPSE) {
-		int amt;
+		int amt = obj_nutrition(otmp);
 		otmp->odrained = 1;
-		amt = mons[otmp->corpsenm].cnutrit - drainlevel(otmp);
-		if (halfdrained) {
-		    amt /= 2;
-		    if (amt == 0)
-			amt++;
+
+		if (amt < 1){
+			/* do nothing, since that could give us funky oeaten values */
+		} else if (halfdrained) {
+			otmp->oeaten = amt;
+
+			amt -= drainlevel(otmp);
+			amt /= 2;
+			if (amt < 1) amt = 1;
+
+			/* (do this adjustment before setting up object's weight) */
+			consume_oeaten(otmp, -amt);
+		} else {
+			otmp->oeaten = amt;
+
+			amt -= drainlevel(otmp);
+			if (amt < 1) amt = 1;
+
+			/* (do this adjustment before setting up object's weight) */
+			consume_oeaten(otmp, -amt);
 		}
-		/* (do this adjustment before setting up object's weight) */
-		consume_oeaten(otmp, -amt);
 	}
 	otmp->owt = weight(otmp);
 	if (very && otmp->otyp == HEAVY_IRON_BALL) otmp->owt += 160;
@@ -5477,6 +5574,7 @@ struct obj *cloak;
 	switch (cloak->otyp) {
 	case ROBE:
 	    return "robe";
+	case PRAYER_WARDED_WRAPPING:
 	case MUMMY_WRAPPING:
 	    return "wrapping";
 	case ALCHEMY_SMOCK:

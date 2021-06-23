@@ -206,7 +206,7 @@ int depth;
 	move(&x,&y,dir);
 	if(!maze_inbounds(x, y))
 		return(FALSE);
-	if((depth < 3) && (levl[x][y].roomno - ROOMOFFSET > level.flags.sp_lev_nroom))	/* if we're early, we can bust through randomly-placed rooms */
+	if((depth < 3) && (levl[x][y].roomno - ROOMOFFSET >= level.flags.sp_lev_nroom))	/* if we're early, we can bust through randomly-placed rooms */
 		return(TRUE);
 	if(levl[x][y].typ != 0)
 		return(FALSE);
@@ -678,17 +678,17 @@ fixup_special()
 				if (y < croom->ly + disty * 1 / 3 && x > croom->lx + distx * 1 / 5 && x < croom->lx + distx * 4 / 5) piled++;
 				if (y < croom->ly + disty * 2 / 3 && x > croom->lx + distx * 2 / 5 && x < croom->lx + distx * 3 / 5) piled++;
 				for (; piled > 0; piled--){
-					if (rn2(2)) mkobj_at(WEAPON_CLASS, x, y, FALSE);
-					if (rn2(2)) mkobj_at(ARMOR_CLASS, x, y, FALSE);
-					if (rn2(6)) mkobj_at(RING_CLASS, x, y, FALSE);
-					if (!rn2(3))mkobj_at(TOOL_CLASS, x, y, FALSE);
-					if (rn2(6)) mkobj_at(SCROLL_CLASS, x, y, FALSE);
-					if (!rn2(4))mkobj_at(GEM_CLASS, x, y, FALSE);
-					if (!rn2(3))mkobj_at(GEM_CLASS, x, y, FALSE);
-					if (!rn2(2))mkobj_at(GEM_CLASS, x, y, FALSE);
-					if (!rn2(4))mksobj_at(SILVER_SLINGSTONE, x, y, TRUE, FALSE);
-					if (rn2(3)) mkobj_at(GEM_CLASS, x, y, FALSE);
-					if (rn2(4)) mkobj_at(GEM_CLASS, x, y, FALSE);
+					if (rn2(2)) mkobj_at(WEAPON_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (rn2(2)) mkobj_at(ARMOR_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (rn2(6)) mkobj_at(RING_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (!rn2(3))mkobj_at(TOOL_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (rn2(6)) mkobj_at(SCROLL_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (!rn2(4))mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (!rn2(3))mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (!rn2(2))mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (!rn2(4))mksobj_at(SILVER_SLINGSTONE, x, y, NO_MKOBJ_FLAGS);
+					if (rn2(3)) mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (rn2(4)) mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
 				}
 				(void)mkgold((long)rn1(1000, 100), x, y);
 			}
@@ -715,8 +715,8 @@ fixup_special()
 	if (Role_if(PM_RANGER) && Race_if(PM_GNOME) && on_level(&u.uz, &minetown_level)){
 		int x, y, good = FALSE;
 		while (!good){
-			x = rn2(COLNO) + 1;
-			y = rn2(ROWNO);
+			x = rn2(COLNO-4)+3;
+			y = rn2(ROWNO-2)+1;
 			if (isok(x, y) && levl[x][y].typ == ROOM && !costly_spot(x, y))
 				good = TRUE;
 			else continue;
@@ -738,7 +738,7 @@ fixup_special()
 			for(x = 0; x<COLNO; x++){
 				for(y = 0; y<ROWNO; y++){
 					if(isok(x,y) && levl[x][y].typ == ALTAR){
-						mksobj_at(CANDLE_OF_INVOCATION, x, y, FALSE, FALSE);
+						mksobj_at(CANDLE_OF_INVOCATION, x, y, MKOBJ_NOINIT);
 					}
 				}
 			}
@@ -1108,7 +1108,7 @@ int careful;
 				}
 				else
 				{// will only make paths into rooms that were randomly placed prior to mazewalking
-					if (levl[dx2][dy2].roomno - ROOMOFFSET > level.flags.sp_lev_nroom)
+					if (levl[dx2][dy2].roomno - ROOMOFFSET >= level.flags.sp_lev_nroom)
 						dirok[idx++] = dir;
 				}
 				idx2++;
@@ -1304,7 +1304,7 @@ create_maze()
 	maze_remove_deadends(ROOM, FALSE);
 
 	/* put a boulder at the maze center */
-	(void)mksobj_at(BOULDER, (int)mm.x, (int)mm.y, TRUE, FALSE);
+	(void)mksobj_at(BOULDER, (int)mm.x, (int)mm.y, NO_MKOBJ_FLAGS);
 
 	wallification(2, 2, x_maze_max, y_maze_max);
 
@@ -1473,11 +1473,11 @@ register const char *s;
 
 	for(x = rn1(8,11); x; x--) {
 		mazexy(&mm);
-		(void) mkobj_at(rn2(2) ? GEM_CLASS : 0, mm.x, mm.y, TRUE);
+		(void) mkobj_at(rn2(2) ? GEM_CLASS : 0, mm.x, mm.y, MKOBJ_ARTIF);
 	}
 	for(x = rn1(10,2); x; x--) {
 		mazexy(&mm);
-		(void) mksobj_at(BOULDER, mm.x, mm.y, TRUE, FALSE);
+		(void) mksobj_at(BOULDER, mm.x, mm.y, NO_MKOBJ_FLAGS);
 	}
 	for (x = rn2(3); x; x--) {
 		mazexy(&mm);
@@ -1539,7 +1539,7 @@ int x,y,depth;
 			levl[x][y].typ = ROOM;
 #endif
 			move(&x, &y, dir);
-			if (levl[x][y].roomno - ROOMOFFSET > level.flags.sp_lev_nroom)
+			if (levl[x][y].roomno - ROOMOFFSET >= level.flags.sp_lev_nroom)
 				maze_remove_room(levl[x][y].roomno - ROOMOFFSET);
 			pos++;
 			if (pos > CELLS)
@@ -1576,7 +1576,7 @@ int x,y,depth;
 		if(!q) return;
 		dir = dirs[rn2(q)];
 		move(&x,&y,dir);
-		if (levl[x][y].roomno - ROOMOFFSET > level.flags.sp_lev_nroom)
+		if (levl[x][y].roomno - ROOMOFFSET >= level.flags.sp_lev_nroom)
 			maze_remove_room(levl[x][y].roomno - ROOMOFFSET);
 #ifndef WALLIFIED_MAZE
 		levl[x][y].typ = CORR;
@@ -2352,8 +2352,8 @@ fill_dungeon_of_ill_regard(){
 					i++;\
 					j++;\
 				} else {\
-					x = COLNO;\
-					y = ROWNO;\
+					x = COLNO/2;\
+					y = ROWNO/2;\
 					break;\
 				}\
 			}

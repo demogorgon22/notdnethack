@@ -34,11 +34,14 @@ register boolean clumsy;
 {
 	int mdx, mdy;
 	struct permonst *mdat = mon->data;
-	int kick_skill = (martial() ? P_MARTIAL_ARTS : P_NONE);
+	/*Note: currently these are actually the same skill, but....*/
+	int kick_skill = (martial() ? P_MARTIAL_ARTS : P_BARE_HANDED_COMBAT);
 	boolean trapkilled = FALSE;
 	int result;
 
-	if(mon->m_ap_type) seemimic(mon);
+	if(mon->m_ap_type) {
+		if(mon->m_ap_type == M_AP_MONSTER) seemimic_ambush(mon); else seemimic(mon);
+	}
 	check_caitiff(mon);
 
 	result = xmeleehity(&youmonst, mon, &basickick, (struct obj **)0, -1, 1000, FALSE);
@@ -66,9 +69,6 @@ register boolean clumsy;
 				}
 			}
 		}
-		/* may bring up a dialog, so put this after all messages */
-		if (kick_skill != P_NONE)	/* exercise proficiency */
-			use_skill(kick_skill, 1);
 	}
 }
 
@@ -533,6 +533,13 @@ char *buf;
 int
 dokick()
 {
+	return dokick_core(0,0);
+}
+
+int
+dokick_core(dx,dy)
+int dx, dy;
+{
 	int x, y;
 	int avrg_attrib;
 	register struct monst *mtmp;
@@ -547,11 +554,13 @@ dokick()
 		no_kick = TRUE;
 #ifdef STEED
 	} else if (u.usteed) {
-		if (yn_function("Kick your steed?", ynchars, 'y') == 'y') {
+		if (!dx && !dy && yn_function("Kick your steed?", ynchars, 'y') == 'y') {
 		    You("kick %s.", mon_nam(u.usteed));
 		    kick_steed();
 		    return 1;
 		} else {
+			if(dx || dy)
+				You("can't kick while riding!");
 		    return 0;
 		}
 #endif
@@ -605,11 +614,15 @@ dokick()
 		return 0;
 	}
 
-	if(!getdir((char *)0)) return(0);
-	if(!u.dx && !u.dy) return(0);
+	if(!dx && !dy && !getdir((char *)0)) return(0);
+	if(!dx && !dy){
+		dx = u.dx;
+		dy = u.dy;
+	}
+	if(!dx && !dy) return(0);
 
-	x = u.ux + u.dx;
-	y = u.uy + u.dy;
+	x = u.ux + dx;
+	y = u.uy + dy;
 
 	/* KMH -- Kicking boots always succeed */
 	if (uarmf && uarmf->otyp == KICKING_BOOTS)
@@ -632,8 +645,8 @@ dokick()
 	if (Levitation) {
 		int xx, yy;
 
-		xx = u.ux - u.dx;
-		yy = u.uy - u.dy;
+		xx = u.ux - dx;
+		yy = u.uy - dy;
 		/* doors can be opened while levitating, so they must be
 		 * reachable for bracing purposes
 		 * Possible extension: allow bracing against stuff on the side?
@@ -689,7 +702,7 @@ dokick()
 		    range = (3*(int)mdat->cwt) / range;
 
 		    if(range < 1) range = 1;
-		    hurtle(-u.dx, -u.dy, range, TRUE, TRUE);
+		    hurtle(-dx, -dy, range, TRUE, TRUE);
 		}
 		wake_nearby();
 		return(1);
@@ -712,7 +725,7 @@ dokick()
 		if(kick_object(x, y)) {
 		    if(Weightless){
 				wake_nearby();
-				hurtle(-u.dx, -u.dy, 1, TRUE, TRUE); /* assume it's light */
+				hurtle(-dx, -dy, 1, TRUE, TRUE); /* assume it's light */
 			}
 		    return(1);
 		}
@@ -785,8 +798,7 @@ dokick()
 			i = Luck + 1;
 			if(i > 6) i = 6;
 			while(i--)
-			    (void) mksobj_at(rnd_class(DILITHIUM_CRYSTAL,
-					LUCKSTONE-1), x, y, FALSE, TRUE);
+			    (void) mksobj_at(rnd_class(DILITHIUM_CRYSTAL,LUCKSTONE-1), x, y, MKOBJ_NOINIT|MKOBJ_ARTIF);
 			if (Blind)
 			    You("kick %s loose!", something);
 			else {
@@ -875,7 +887,7 @@ dokick()
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
-					    treefruit = mksobj(frtype, TRUE, FALSE);
+					    treefruit = mksobj(frtype, NO_MKOBJ_FLAGS);
 					    treefruit->quan = nfruit-nfall;
 						treefruit->spe = frtspe;
 					    pline("%ld %s got caught in the branches.",
@@ -929,7 +941,7 @@ dokick()
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
-					    treefruit = mksobj(frtype, TRUE, FALSE);
+					    treefruit = mksobj(frtype, NO_MKOBJ_FLAGS);
 					    treefruit->quan = nfruit-nfall;
 						treefruit->spe = frtspe;
 					    pline("%ld %s got caught in the branches.",
@@ -1017,7 +1029,7 @@ dokick()
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
-					    treefruit = mksobj(frtype, TRUE, FALSE);
+					    treefruit = mksobj(frtype, NO_MKOBJ_FLAGS);
 					    treefruit->quan = nfruit-nfall;
 					    pline("%ld %s got caught in the branches.",
 						nfruit-nfall, xname(treefruit));
@@ -1072,7 +1084,7 @@ dokick()
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
-					    treefruit = mksobj(frtype, TRUE, FALSE);
+					    treefruit = mksobj(frtype, NO_MKOBJ_FLAGS);
 					    treefruit->quan = nfruit-nfall;
 					    pline("%ld %s got caught in the branches.",
 						nfruit-nfall, xname(treefruit));
@@ -1123,7 +1135,7 @@ dokick()
 				maploc->typ = ROOM;
 				maploc->looted = 0; /* don't leave loose ends.. */
 				for(numsticks = d(1,4); numsticks > 0; numsticks--){
-					staff = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, x, y, FALSE, FALSE);
+					staff = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, x, y, MKOBJ_NOINIT);
 					staff->spe = 0;
 					staff->oeroded2 = 1;
 					staff->blessed = FALSE;
@@ -1194,7 +1206,7 @@ dokick()
 			if(!(maploc->looted & S_LRING)) { /* once per sink */
 			    if (!Blind)
 				You("see a ring shining in its midst.");
-			    (void) mkobj_at(RING_CLASS, x, y, TRUE);
+			    (void) mkobj_at(RING_CLASS, x, y, MKOBJ_ARTIF);
 			    newsym(x, y);
 			    exercise(A_DEX, TRUE);
 			    exercise(A_WIS, TRUE);	/* a discovery! */
@@ -1228,7 +1240,7 @@ ouch:
 			KILLED_BY);
 		    if(Weightless || Levitation){
 				wake_nearby();
-				hurtle(-u.dx, -u.dy, rn1(2,4), TRUE, TRUE); /* assume it's heavy */
+				hurtle(-dx, -dy, rn1(2,4), TRUE, TRUE); /* assume it's heavy */
 			}
 		    return(1);
 		}
@@ -1249,7 +1261,7 @@ dumb:
 			set_wounded_legs(RIGHT_SIDE, 5 + rnd(5));
 		}
 		if ((Weightless || Levitation) && rn2(2)) {
-		    hurtle(-u.dx, -u.dy, 1, TRUE, TRUE);
+		    hurtle(-dx, -dy, 1, TRUE, TRUE);
 		}
 		return 1;
 	}

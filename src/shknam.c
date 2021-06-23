@@ -431,9 +431,10 @@ const int fancy_clothes[] = {
 	FEDORA,
 	STILETTOS,
 	HAWAIIAN_SHIRT,
+	HAWAIIAN_SHORTS,
 	T_SHIRT,
 	VICTORIAN_UNDERWEAR,
-	BLACK_DRESS
+	PLAIN_DRESS
 };
 
 #if 0
@@ -480,10 +481,10 @@ int sx, sy;
 	else {
 		atype = get_shop_item(shp - shtypes);
 		if (atype < 0){
-			curobj = mksobj_at(-atype, sx, sy, TRUE, TRUE);
+			curobj = mksobj_at(-atype, sx, sy, MKOBJ_ARTIF);
 		}
 		else {
-			curobj = mkobj_at(atype, sx, sy, TRUE);
+			curobj = mkobj_at(atype, sx, sy, MKOBJ_ARTIF);
 		}
 
 		if (curobj){
@@ -501,7 +502,7 @@ int sx, sy;
 			if (shp->shoptype == CERAMICSHOP) {
 				if (curobj->oclass == ARMOR_CLASS && !curobj->oartifact) {
 					/* we actually want to completely replace that object. */
-					struct obj * newobj = mksobj_at(valavi_armors[rn2(SIZE(valavi_armors))], sx, sy, TRUE, TRUE);
+					struct obj * newobj = mksobj_at(valavi_armors[rn2(SIZE(valavi_armors))], sx, sy, MKOBJ_ARTIF);
 					newobj->shopOwned = TRUE;
 					if (newobj) {
 						if (is_metallic(newobj) && !newobj->oartifact)
@@ -530,7 +531,7 @@ int sx, sy;
 			if (shp->shoptype == SEAGARDEN) {
 				if (curobj->oclass == ARMOR_CLASS && !curobj->oartifact) {
 					/* we actually want to completely replace that object. */
-					struct obj * newobj = mksobj_at(garden_armors[rn2(SIZE(garden_armors))], sx, sy, TRUE, TRUE);
+					struct obj * newobj = mksobj_at(garden_armors[rn2(SIZE(garden_armors))], sx, sy, MKOBJ_ARTIF);
 					if (newobj) {
 						newobj->shopOwned = TRUE;
 						if (is_metallic(newobj) && !newobj->oartifact)
@@ -544,10 +545,11 @@ int sx, sy;
 				}
 				else if (curobj->oclass == WEAPON_CLASS && !curobj->oartifact){
 					/* we actually want to completely replace that object. */
-					struct obj * newobj = mksobj_at(garden_weapons[rn2(SIZE(garden_weapons))], sx, sy, TRUE, TRUE);
+					struct obj * newobj = mksobj_at(garden_weapons[rn2(SIZE(garden_weapons))], sx, sy, MKOBJ_ARTIF);
 					if (newobj) {
 						newobj->shopOwned = TRUE;
-						set_material_gm(newobj, SHELL_MAT);
+						if (!newobj->oartifact)
+							set_material_gm(newobj, SHELL_MAT);
 						newobj->opoisoned = rn2(3) ? OPOISON_BASIC : OPOISON_ACID;
 
 						/* replace curobj with newobj */
@@ -579,7 +581,7 @@ int sx, sy;
 			if (shp->shoptype == SANDWALKER) {
 				if (curobj->oclass == ARMOR_CLASS && !curobj->oartifact) {
 					/* we actually want to completely replace that object. */
-					struct obj * newobj = mksobj_at(sand_armors[rn2(SIZE(sand_armors))], sx, sy, TRUE, TRUE);
+					struct obj * newobj = mksobj_at(sand_armors[rn2(SIZE(sand_armors))], sx, sy, MKOBJ_ARTIF);
 					if (newobj) {
 						newobj->shopOwned = TRUE;
 						/* replace curobj with newobj */
@@ -590,7 +592,7 @@ int sx, sy;
 				}
 				else if (curobj->oclass == WEAPON_CLASS && !curobj->oartifact){
 					/* we actually want to completely replace that object. */
-					struct obj * newobj = mksobj_at(sand_weapons[rn2(SIZE(sand_weapons))], sx, sy, TRUE, TRUE);
+					struct obj * newobj = mksobj_at(sand_weapons[rn2(SIZE(sand_weapons))], sx, sy, MKOBJ_ARTIF);
 					if (newobj) {
 						newobj->shopOwned = TRUE;
 						if(!newobj->oartifact && newobj->otyp != CRYSTAL_SWORD)
@@ -611,7 +613,7 @@ int sx, sy;
 			if (shp->shoptype == NAIADSHOP) {
 				if (curobj->oclass == ARMOR_CLASS && !curobj->oartifact) {
 					/* we actually want to completely replace that object. */
-					struct obj * newobj = mksobj_at(fancy_clothes[rn2(SIZE(fancy_clothes))], sx, sy, TRUE, TRUE);
+					struct obj * newobj = mksobj_at(fancy_clothes[rn2(SIZE(fancy_clothes))], sx, sy, MKOBJ_ARTIF);
 					if (newobj) {
 						newobj->shopOwned = TRUE;
 						/* replace curobj with newobj */
@@ -792,7 +794,7 @@ struct mkroom	*sroom;
 	mkmonmoney(shk, 1000L + 30L*(long)rnd(100));	/* initial capital */
 #endif
 	if (shp->shknms == shkrings)
-	    (void) mongets(shk, TOUCHSTONE);
+	    (void) mongets(shk, TOUCHSTONE, NO_MKOBJ_FLAGS);
 	nameshk(shk, shp->shknms);
 	
 	//Note: these two don't have a shopkeeper struct

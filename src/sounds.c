@@ -25,6 +25,12 @@
 #define		NURSE_FIX_STERILE		7
 #define		NURSE_BRAIN_SURGERY		8
 
+#define		RENDER_FIX_MORGUL		1
+#define		RENDER_FIX_SICKNESS		2
+#define		RENDER_FIX_SLIME		3
+#define		RENDER_BRAIN_SURGERY	4
+#define		RENDER_THOUGHT			5
+
 //Match order of constants
 const int nurseprices[] = {
 	0,	 //0 (invalid)
@@ -45,8 +51,10 @@ int FDECL(dobinding,(int, int));
 int * FDECL(spirit_skills, (int));
 static int NDECL(doblessmenu);
 static int NDECL(donursemenu);
+static int NDECL(dorendermenu);
 static int FDECL(dodollmenu, (struct monst *));
 static boolean FDECL(nurse_services,(struct monst *));
+static boolean FDECL(render_services,(struct monst *));
 static boolean FDECL(buy_dolls,(struct monst *));
 
 static const char tools[] = { TOOL_CLASS, 0 };
@@ -539,6 +547,7 @@ register struct monst *mtmp;
 	) {
 	case MS_MEW:
 	case MS_HISS:
+	case MS_APOC:
 	    ret = "hiss";
 	    break;
 	case MS_BARK:
@@ -814,7 +823,7 @@ asGuardian:
 		if(Role_if(PM_ANACHRONOUNBINDER) && mtmp->mpeaceful && u.ulevel == 30 && u.spiritSummons & SEAL_YMIR && !art_already_exists(ART_ILLITHID_STAFF)){
 		    pline("Go bravely with Ilsensine!");
 		    struct obj *saber;
-		    saber = mksobj(DOUBLE_LIGHTSABER, TRUE, FALSE);
+		    saber = mksobj(DOUBLE_LIGHTSABER, NO_MKOBJ_FLAGS);
 		    saber = oname(saber, artiname(ART_ILLITHID_STAFF));
 		    saber->oerodeproof = TRUE;
 		    saber->blessed = TRUE;
@@ -998,14 +1007,14 @@ asGuardian:
 			pline("%s screams high and shrill.", Monnam(mtmp));
 			mtmp->mspec_used = 10;
 			for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
-				if(tmpm != mtmp && !DEADMONSTER(tmpm)){
+				if(tmpm != mtmp && !DEADMONSTER(tmpm) && distmin(tmpm->mx, tmpm->my, mtmp->mx, mtmp->my) <= BOLT_LIM){
 					if(tmpm->mtame && tmpm->mtame<20) tmpm->mtame++;
 					if(d(1,tmpm->mhp) < mtmp->mhpmax){
 						tmpm->mflee = 1;
 					}
 				}
 			}
-			if(!mtmp->mpeaceful)
+			if(!mtmp->mpeaceful && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) <= BOLT_LIM)
 				make_stunned(HStun + mtmp->mhp/10, TRUE);
 		}
 	}break;
@@ -1034,10 +1043,27 @@ asGuardian:
 			}
 		}
 	}break;
+	case MS_HARROW:{
+		int i;
+		struct monst *tmpm;
+		if(!(mtmp->mspec_used || mtmp->mcan) && !mtmp->mpeaceful){
+			pline("%s screams.", Monnam(mtmp));
+			mtmp->mspec_used = 7;
+			for(i = d(2,3); i; i--){
+				tmpm = makemon(&mons[rn2(2) ? PM_ZARIELITE_ZEALOT : PM_ZARIELITE_HERETIC], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
+				if(tmpm){
+					mark_mon_as_summoned(tmpm, mtmp, 21, 0);
+				}
+			}
+			if(uwep && uwep->oartifact == ART_SINGING_SWORD){
+				uwep->ovar1 |= OHEARD_RALLY;
+			}
+		}
+	}break;
 	case MS_DREAD:{
 		struct monst *tmpm;
 		int ix, iy;
-		if(mtmp->mvar_dreadPrayer >= moves && (
+		if(mtmp->mvar_dreadPrayer >= moves && !mtmp->mdoubt && (
 			mtmp->mhp < mtmp->mhpmax/4 || mtmp->mcrazed
 		)){
 			mtmp->mvar_dreadPrayer = moves + rnz(350);
@@ -1107,7 +1133,7 @@ asGuardian:
 				}break;
 				case 2:{
 				// pline("unturn dead\n");
-				struct obj *ispe = mksobj(SPE_TURN_UNDEAD,TRUE,FALSE);
+				struct obj *ispe = mksobj(SPE_TURN_UNDEAD, MKOBJ_NOINIT);
 				for(ix = 0; ix < COLNO; ix++){
 					for(iy = 0; iy < ROWNO; iy++){
 						bhitpile(ispe, bhito, ix, iy);
@@ -1152,7 +1178,7 @@ asGuardian:
 				break;
 				case 5:{
 				// pline("locking\n");
-				struct obj *ispe = mksobj(SPE_WIZARD_LOCK,TRUE,FALSE);
+				struct obj *ispe = mksobj(SPE_WIZARD_LOCK, MKOBJ_NOINIT);
 				struct trap *ttmp;
 				struct rm *door;
 				boolean res = TRUE, vis;
@@ -1259,7 +1285,7 @@ asGuardian:
 				map_invisible(mtmp->mx, mtmp->my);
 			switch(rnd(4)){
 				case 1:
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s screams melodiously.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s screams melodiously.", Monnam(mtmp));
 					else pline("%s sings the song of broken eyes.", Monnam(mtmp));
 					
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
@@ -1279,7 +1305,7 @@ asGuardian:
 					}
 				break;
 				case 2:
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s sings a resonant note.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s sings a resonant note.", Monnam(mtmp));
 					else pline("%s sings a harmless song of ruin.", Monnam(mtmp));
 					ix = rn2(COLNO);
 					iy = rn2(ROWNO);
@@ -1298,14 +1324,14 @@ asGuardian:
 					doredraw();
 				break;
 				case 3:{
-					struct obj *ispe = mksobj(SPE_TURN_UNDEAD,TRUE,FALSE);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s wails deafeningly.", Monnam(mtmp));
+					struct obj *ispe = mksobj(SPE_TURN_UNDEAD, MKOBJ_NOINIT);
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s wails deafeningly.", Monnam(mtmp));
 					else pline("%s sings the song of the day of repentance.", Monnam(mtmp));
 					//Rapture invisible creatures
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm) && mtmp->mrevived){
-							if(mtmp->minvis && tmpm->perminvis && !(tmpm->mvanishes)){
-								tmpm->mvanishes = 5;
+							if(mtmp->minvis && tmpm->perminvis && !get_timer(mtmp->timed, DESUMMON_MON)){
+								start_timer(5L, TIMER_MONSTER, DESUMMON_MON, (genericptr_t)tmpm);
 							}
 						}
 					}
@@ -1333,13 +1359,18 @@ asGuardian:
 					}
 				}break;
 				case 4:
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s screams furiously.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s screams furiously.", Monnam(mtmp));
 					else pline("%s sings the song of bloodied prayers.", Monnam(mtmp));
 					
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm) && mtmp->mpeaceful == tmpm->mpeaceful){
 							if(tmpm->mhp < tmpm->mhpmax){
-								for(i = (tmpm->mhpmax - tmpm->mhp); i > 0; i--) grow_up(tmpm, tmpm);
+								for(i = (tmpm->mhpmax - tmpm->mhp); i > 0; i--){
+									grow_up(tmpm, tmpm);
+									//Grow up may have killed mtmp
+									if(DEADMONSTER(mtmp))
+										break;
+								}
 							}
 						}
 					}
@@ -1363,7 +1394,7 @@ asGuardian:
 					if(!inrange) break;
 					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5)
 						map_invisible(mtmp->mx, mtmp->my);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s screeches discordantly.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s screeches discordantly.", Monnam(mtmp));
 					else pline("%s sings a song of courage.", Monnam(mtmp));
 					if(mtmp->mtyp != PM_INTONER) mtmp->mspec_used = rn1(10,10);
 
@@ -1417,7 +1448,7 @@ asGuardian:
 					if(!inrange) break;
 					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5)
 						map_invisible(mtmp->mx, mtmp->my);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s whistles shrilly.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s whistles shrilly.", Monnam(mtmp));
 					else pline("%s sings a song of good health.", Monnam(mtmp));
 					if(mtmp->mtyp != PM_INTONER) mtmp->mspec_used = rn1(10,10);
 
@@ -1475,7 +1506,7 @@ asGuardian:
 					if(!inrange) break;
 					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5 && !u.uinvulnerable)
 						map_invisible(mtmp->mx, mtmp->my);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity) pline("%s laughs frantically.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s laughs frantically.", Monnam(mtmp));
 					else pline("%s sings a song of haste.", Monnam(mtmp));
 					if(mtmp->mtyp != PM_INTONER) mtmp->mspec_used = rn1(10,10);
 					
@@ -1698,18 +1729,94 @@ asGuardian:
 			}
 		} else goto humanoid_sound;
 	}break;
+	case MS_APOC:
+		if(chatting){
+			if(!mtmp->mpeaceful) pline_msg = "hisses!";
+			else {
+				pline_msg = "does not respond.";
+				return 0;	/* no sound */
+			}
+			break;
+		}
+		else {
+			struct monst *tmpm, *nmon;
+			int atknum = rnd(4);
+			int i, mnum;
+			mtmp->mspec_used = 66;
+			if(canspotmon(mtmp)){
+				pline("%s snake head hisses a prophecy!", s_suffix(Monnam(mtmp)));
+			}
+			switch(atknum){
+				/*Slashing darkness*/
+				case 1:
+					mnum = PM_INVIDIAK;
+					pline("The darkness shifts and forms into blades!");
+				break;
+				/*Falling stars*/
+				case 2:
+					mnum = PM_MOTE_OF_LIGHT;
+					pline("Stars fall from the sky!");
+				break;
+				/*Scream*/
+				case 3:
+					mnum = PM_WALKING_DELIRIUM;
+					pline("The world trembles and crawls!");
+				break;
+				/*Earthquake*/
+				case 4:
+					mnum = PM_EARTH_ELEMENTAL;
+					pline("The entire world is shaking around you!");
+				break;
+			}
+			for(i = Insanity/3; i > 0; i--){
+				tmpm = makemon(&mons[mnum], 0, 0, MM_NOCOUNTBIRTH|MM_ESUM);
+				if(tmpm){
+					mark_mon_as_summoned(tmpm, mtmp, 66, 0);
+					if(mnum == PM_MOTE_OF_LIGHT)
+						set_template(tmpm, FALLEN_TEMPLATE);
+					tmpm->m_lev = 15;
+					tmpm->mhpmax = max(4, 8*tmpm->m_lev);
+					tmpm->mhp = tmpm->mhpmax;
+				}
+			}
+		}
+	break;
+	case MS_HOWL:{
+		struct monst *tmpm;
+	    pline_msg = "howls.";
+		(void) makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
+		for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
+			if(tmpm->mtame > 10){
+				tmpm->mtame -= 10;
+				tmpm->mflee = 1;
+			} else untame(mtmp, 1);
+		}
+	    aggravate();
+	}break;
+	case MS_SCREAM:{
+		struct monst *tmpm;
+		if(distmin(u.ux, u.uy, mtmp->mx, mtmp->my) <= BOLT_LIM)
+			pline("%s screams in madness and fear!", Monnam(mtmp));
+		for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
+			if(tmpm != mtmp && !DEADMONSTER(tmpm) && tmpm->mpeaceful != mtmp->mpeaceful && distmin(tmpm->mx, tmpm->my, mtmp->mx, mtmp->my) <= BOLT_LIM){
+				if(!resist(tmpm, 0, 0, FALSE)){
+					tmpm->mflee = 1;
+					if(canseemon(tmpm))
+						pline("%s staggers!", Monnam(tmpm));
+					if(tmpm->mhp < mtmp->mhpmax && !resist(tmpm, 0, 0, FALSE)){
+						tmpm->mcrazed = 1;
+					}
+				}
+			}
+		}
+		if(!mtmp->mpeaceful && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) <= BOLT_LIM){
+			change_usanity(u_sanity_loss_minor(mtmp), TRUE);
+		}
+	    aggravate();
+	}break;
 	case MS_SHRIEK:
 	    pline_msg = "shrieks.";
 	    aggravate();
-		if(mtmp->mtyp == PM_LAMASHTU){
-			struct monst *tmpm;
-			for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
-				if(tmpm->mtame > 10){
-					tmpm->mtame -= 10;
-					tmpm->mflee = 1;
-				} else untame(mtmp, 1);
-			}
-		}
 	break;
 	case MS_SHOG:
 		if(couldsee(mtmp->mx,mtmp->my)){
@@ -1718,6 +1825,35 @@ asGuardian:
 			You_hear("distant piping sounds.");
 		}
 		aggravate();
+	break;
+	case MS_SECRETS:
+		if(chatting){
+			if(mtmp->mtame && mtmp->mtyp == PM_VEIL_RENDER
+			 && (
+				u.umorgul > 0
+				|| Sick
+				|| Slimed
+				|| u.thoughts
+				|| (count_glyphs() < 3 && !u.render_thought)
+			 )
+			){
+				if(render_services(mtmp))
+					break;
+			}
+			else if(mtmp->mspec_used){
+				pline_msg = "whispers.";
+				break;
+			}
+		}
+		else {
+			if(mtmp->mtame){
+				pline("%s whispers dire secrets, filling you with zeal.", Monnam(mtmp));
+				u.uencouraged = min_ints(Insanity/5+1, u.uencouraged+rnd(Insanity/5+1));
+			} else if(!mtmp->mpeaceful){
+				aggravate();
+			}
+			mtmp->mspec_used = 5;
+		}
 	break;
 	case MS_IMITATE:
 	    pline_msg = "imitates you.";
@@ -1806,10 +1942,11 @@ humanoid_sound:
 		}
 
 	    if (!mtmp->mpeaceful) {
-		if (In_endgame(&u.uz) && is_mplayer(ptr)) {
-		    mplayer_talk(mtmp);
-		    break;
-		} else return 0;	/* no sound */
+			if (In_endgame(&u.uz) && is_mplayer(ptr)) {
+				mplayer_talk(mtmp);
+				break;
+			}
+			else return 0;	/* no sound */
 	    }
 		
 	    if (mtmp->mflee)
@@ -1862,7 +1999,7 @@ humanoid_sound:
 				break;
 			}
 			// start_clockwinding(key, mtmp, turns);
-			comp = mksobj(CLOCKWORK_COMPONENT, TRUE, FALSE);
+			comp = mksobj(CLOCKWORK_COMPONENT, NO_MKOBJ_FLAGS);
 			comp->blessed = FALSE;
 			comp->cursed = FALSE;
 			comp->quan = howmany;
@@ -1881,7 +2018,7 @@ humanoid_sound:
 				break;
 			}
 			// start_clockwinding(key, mtmp, turns);
-			comp = mksobj(SUBETHAIC_COMPONENT, TRUE, FALSE);
+			comp = mksobj(SUBETHAIC_COMPONENT, NO_MKOBJ_FLAGS);
 			comp->blessed = FALSE;
 			comp->cursed = FALSE;
 			comp->quan = howmany;
@@ -1913,6 +2050,9 @@ humanoid_sound:
 		    verbl_msg = "Aloha.";
 		    break;
 #endif
+		case PM_LADY_CONSTANCE:
+		    verbl_msg = "There's a strange woman in the observation ward. She's asking for you....";
+		    break;
 		default:
 			if(Role_if(PM_RANGER) && Race_if(PM_GNOME) &&
 				mtmp->mtyp == PM_ARCADIAN_AVENGER && 
@@ -2425,9 +2565,15 @@ int dz;
 		return(0);
     }
     else if (Screaming) {
-		You_cant("communicate.  You're too buisy screaming!");
+		You_cant("communicate.  You're too busy screaming!");
 		return(0);
     }
+	
+	if(mad_turn(MAD_TOO_BIG)){
+		pline("It's too big!");
+		return 0;
+	}
+	
     if (u.uswallow) {
 		pline("They won't hear you out there.");
 		return(0);
@@ -2537,6 +2683,7 @@ int dz;
 				mongone(mtmp);
 				if(u.regifted == 5){
 					u.uevent.uunknowngod = 1;
+					give_ugwish_trophy();
 					You_feel("worthy.");
 					if (Role_if(PM_EXILE))
 					{
@@ -2572,7 +2719,7 @@ int dz;
 
 				optr = uwep;
 				uwepgone();
-				if(optr->gifted != GA_NONE && !Role_if(PM_EXILE)){
+				if(optr->gifted != GA_NONE && optr->gifted != GA_VOID){
 					gods_angry(optr->gifted);
 					gods_upset(optr->gifted);
 				}
@@ -2652,7 +2799,7 @@ int dz;
 					money2none(cost);
 #endif
 					bless(uwep);
-					if(uwep->spe < 3)
+					if((uwep->oclass == WEAPON_CLASS || is_weptool(uwep)) && uwep->spe < 3)
 						uwep->spe++;
 				break;
 				case UNSTERILIZE:
@@ -3003,7 +3150,7 @@ int tx,ty;
 //					struct monst *priest = findpriest(roomno);
 					//invoking Amon inside a temple angers the resident deity
 					altar_wrath(tx, ty);
-					angrygods(a_align(tx,ty));
+					angrygods(Align2gangr(a_align(tx,ty)));
 				}
 				if(!Role_if(PM_ANACHRONOUNBINDER)) u.sealTimeout[AMON-FIRST_SEAL] = moves + bindingPeriod; // invoking amon on a level with an altar still triggers the binding period.
 			}
@@ -3127,21 +3274,21 @@ int tx,ty;
 					/*make object here*/
 					switch(i3){
 						case 0:
-							otmp = mksobj(SACK, TRUE, FALSE);
+							otmp = mksobj(SACK, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 1:
-							otmp = mksobj(UNIVERSAL_KEY, TRUE, FALSE);
+							otmp = mksobj(UNIVERSAL_KEY, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 2:
-							otmp = mksobj(find_gold_ring(), TRUE, FALSE);
+							otmp = mksobj(find_gold_ring(), NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = TRUE;
 							hold_another_object(otmp, "You drop %s!",
@@ -3155,14 +3302,14 @@ int tx,ty;
 								doname(otmp), (const char *)0);
 						break;
 						case 4:
-							otmp = mksobj(DAGGER, TRUE, FALSE);
+							otmp = mksobj(DAGGER, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 5:
-							otmp = mksobj(APPLE, TRUE, FALSE);
+							otmp = mksobj(APPLE, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
@@ -3176,21 +3323,21 @@ int tx,ty;
 								doname(otmp), (const char *)0);
 						break;
 						case 7:
-							otmp = mksobj(WHISTLE, TRUE, FALSE);
+							otmp = mksobj(WHISTLE, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 8:
-							otmp = mksobj(MIRROR, TRUE, FALSE);
+							otmp = mksobj(MIRROR, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 9:
-							otmp = mksobj(EGG, TRUE, FALSE);
+							otmp = mksobj(EGG, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
@@ -3204,14 +3351,14 @@ int tx,ty;
 								doname(otmp), (const char *)0);
 						break;
 						case 11:
-							otmp = mksobj(CORPSE, TRUE, FALSE);
+							otmp = mksobj(CORPSE, NO_MKOBJ_FLAGS);
 							otmp->corpsenm = PM_CAVE_SPIDER;
 							otmp->owt = weight(otmp);
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 12:
-							otmp = mksobj(CORPSE, TRUE, FALSE);
+							otmp = mksobj(CORPSE, NO_MKOBJ_FLAGS);
 							otmp->corpsenm = urace.malenum;
 							otmp->oeaten = mons[otmp->corpsenm].cnutrit;
 							consume_oeaten(otmp, 1);
@@ -3220,7 +3367,7 @@ int tx,ty;
 								doname(otmp), (const char *)0);
 						break;
 						case 13:
-							otmp = mksobj(CORPSE, TRUE, FALSE);
+							otmp = mksobj(CORPSE, NO_MKOBJ_FLAGS);
 							otmp->corpsenm = androCorpses[rn2(SIZE(androCorpses))];
 							otmp->oeaten = mons[otmp->corpsenm].cnutrit;
 							consume_oeaten(otmp, 1);
@@ -3236,14 +3383,14 @@ int tx,ty;
 								doname(otmp), (const char *)0);
 						break;
 						case 15:
-							otmp = mksobj(BELL, TRUE, FALSE);
+							otmp = mksobj(BELL, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
 								doname(otmp), (const char *)0);
 						break;
 						case 16:
-							otmp = mksobj(LOCK_PICK, TRUE, FALSE);
+							otmp = mksobj(LOCK_PICK, NO_MKOBJ_FLAGS);
 							otmp->blessed = FALSE;
 							otmp->cursed = FALSE;
 							hold_another_object(otmp, "You drop %s!",
@@ -4219,7 +4366,7 @@ int tx,ty;
 						adjalign(-5);
 						u.ugangr[Align2gangr(u.ualign.type)] += 3;
 						if (!Inhell) {
-							angrygods(u.ualign.type);
+							angrygods(Align2gangr(u.ualign.type));
 							change_luck(-5);
 						}
 					}
@@ -5209,12 +5356,15 @@ int floorID;
 	case BLACK_WEB:
 		break;
 	case NUMINA:
+		propchain[i++] = BLOCK_CONFUSION;
 		propchain[i++] = DETECT_MONSTERS;
 		propchain[i++] = OMNISENSE;
 		break;
 	}
 	/* add termintor */
 	propchain[i] = NO_PROP;
+	if(i > MAXSPIRITPROPS)
+		impossible("Overfloaw in spirit propery chain.");
 	return propchain;
 }
 
@@ -5485,6 +5635,7 @@ int floorID;
 		break;
 	}
 
+	lift_veil();
 	vision_full_recalc = 1; //many spirits change what is visible.
 	doredraw();
 	return;
@@ -5616,6 +5767,14 @@ int
 P_MAX_SKILL(p_skill)
 int p_skill;
 {
+	return P_MAX_SKILL_CORE(p_skill, TRUE);
+}
+
+int
+P_MAX_SKILL_CORE(p_skill, inc_penalties)
+int p_skill;
+boolean inc_penalties;
+{
 	int maxskill = OLD_P_MAX_SKILL(p_skill);
 	if(p_skill == P_BARE_HANDED_COMBAT){
 		if((u.sealsActive&SEAL_EURYNOME) && (u.sealsActive&SEAL_BUER)) maxskill = max(P_GRAND_MASTER,maxskill);
@@ -5638,6 +5797,11 @@ int p_skill;
 			maxskill = min(P_EXPERT, P_SKILL(weapon_type(uswapwep)));
 	}
 	
+	if(inc_penalties && u.umadness&MAD_FORMICATION && !ClearThoughts && maxskill > P_UNSKILLED){
+		int delta = (Insanity)/20;
+		maxskill = max(maxskill - delta, P_UNSKILLED);
+	}
+	
 	return maxskill;
 }
 
@@ -5645,11 +5809,19 @@ int
 P_SKILL(p_skill)
 int p_skill;
 {
+	return P_SKILL_CORE(p_skill, TRUE);
+}
+
+int
+P_SKILL_CORE(p_skill, inc_penalties)
+int p_skill;
+boolean inc_penalties;
+{
 	int curskill = OLD_P_SKILL(p_skill),
 		maxskill = P_MAX_SKILL(p_skill);
 	
 	/* Fine motor control drops to 0 while panicking */
-	if(p_skill == P_WAND_POWER && Panicking){
+	if(inc_penalties && p_skill == P_WAND_POWER && Panicking){
 		return 0;
 	}
 	
@@ -5688,10 +5860,17 @@ int p_skill;
 	}
 	
 	if(u.sealsActive&SEAL_NABERIUS && (curskill<P_BASIC || maxskill<P_BASIC)){
-		return P_BASIC;
+		curskill = P_BASIC;
 	}
 	
-	return min(curskill, maxskill);
+	if(inc_penalties && u.umadness&MAD_FORMICATION && !ClearThoughts && curskill > P_UNSKILLED){
+		int delta = (Insanity)/20;
+		curskill = max(curskill - delta, P_UNSKILLED);
+	}
+	
+	curskill = min(curskill, maxskill);
+	
+	return curskill;
 }
 
 int
@@ -6093,7 +6272,7 @@ struct monst *nurse;
 			int i = u.umorgul;
 			struct obj *frags;
 			u.umorgul = 0;
-			frags = mksobj(SHURIKEN, FALSE, FALSE);
+			frags = mksobj(SHURIKEN, MKOBJ_NOINIT);
 			pline("%s performs surgery, removing %d metallic shard%s from your body.", Monnam(nurse), i, (i>1) ? "s" : "");
 			if(frags){
 				frags->quan = i;
@@ -6124,7 +6303,7 @@ struct monst *nurse;
 			if(!otyp)
 				break;
 			
-			glyph = mksobj(otyp, FALSE, FALSE);
+			glyph = mksobj(otyp, MKOBJ_NOINIT);
 			
 			if(glyph){
 				remove_thought(otyp_to_thought(otyp));
@@ -6167,6 +6346,161 @@ struct monst *nurse;
 	if(!nurse->mtame)
 		(void) money2mon(nurse, nurseprices[service]*count/10);
 #endif
+	return TRUE;
+}
+
+int
+dorendermenu()
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Ask for aid?");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	
+	incntlet = 'a';
+
+	if(u.umorgul > 0){
+		Sprintf(buf, "Extract morgul shards");
+		any.a_int = RENDER_FIX_MORGUL;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
+	if(Sick){
+		Sprintf(buf, "Extract pathogen");
+		any.a_int = RENDER_FIX_SICKNESS;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
+	if(Slimed){
+		Sprintf(buf, "Remove slimy green growths");
+		any.a_int = RENDER_FIX_SLIME;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
+	if(u.thoughts){
+		Sprintf(buf, "Extract thought");
+		any.a_int = RENDER_BRAIN_SURGERY;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
+	if(count_glyphs() < 3 && !u.render_thought){
+		Sprintf(buf, "Learn thought");
+		any.a_int = RENDER_THOUGHT;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
+	
+	end_menu(tmpwin, "");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	return (n > 0) ? (int)selected[0].item.a_int : 0;
+}
+
+boolean
+render_services(render)
+struct monst *render;
+{
+	int service, gold, count = 1, cost;
+		
+	service = dorendermenu();
+	if(!service)
+		return FALSE;
+	
+	switch(service){
+		case RENDER_FIX_MORGUL:{
+			int i = u.umorgul;
+			struct obj *frags;
+			u.umorgul = 0;
+			frags = mksobj(SHURIKEN, MKOBJ_NOINIT);
+			pline("%s reaches into your body, removing %d metallic shard%s.", Monnam(render), i, (i>1) ? "s" : "");
+			change_usanity(-10, TRUE);
+			if(frags){
+				frags->quan = i;
+				add_oprop(frags, OPROP_LESSER_MORGW);
+				set_material_gm(frags, METAL);
+				curse(frags);
+				fix_object(frags);
+				frags = hold_another_object(frags, "You drop %s!",
+							  doname(frags), (const char *)0); /*shouldn't merge, but may drop*/
+			}
+		}break;
+		case RENDER_FIX_SICKNESS:
+			pline("%s reaches into your body, removing some sort of slime!", Monnam(render));
+			healup(0, 0, TRUE, FALSE);
+		break;
+		case RENDER_FIX_SLIME:
+			pline("%s picks off the slimy growths.", Monnam(render));
+			Slimed = 0L;
+		break;
+		case RENDER_BRAIN_SURGERY:{
+			int otyp;
+			struct obj *glyph;
+			otyp = dotrephination_menu();
+			if(!otyp)
+				break;
+			
+			glyph = mksobj(otyp, MKOBJ_NOINIT);
+			
+			if(glyph){
+				remove_thought(otyp_to_thought(otyp));
+				if(Race_if(PM_ANDROID)){
+					set_material_gm(glyph, PLASTIC);
+					fix_object(glyph);
+				}
+				if(Race_if(PM_CLOCKWORK_AUTOMATON)){
+					set_material_gm(glyph, COPPER);
+					fix_object(glyph);
+				}
+				if(Race_if(PM_WORM_THAT_WALKS)){
+					set_material_gm(glyph, SHELL_MAT);
+					fix_object(glyph);
+				}
+				hold_another_object(glyph, "You drop %s!", doname(glyph), (const char *)0);
+				if(ACURR(A_WIS)>ATTRMIN(A_WIS)){
+					adjattrib(A_WIS, -1, FALSE);
+				}
+				if(ACURR(A_INT)>ATTRMIN(A_INT)){
+					adjattrib(A_INT, -1, FALSE);
+				}
+				if(ACURR(A_CON)>ATTRMIN(A_CON)){
+					adjattrib(A_CON, -1, FALSE);
+				}
+				change_usanity(-10, TRUE);
+				//Note: this is always the player's HP, not their polyform HP.
+				u.uhp -= u.uhp/2; //Note: chopped, so 0 to 1/2 max-HP lost.
+			} else {
+				impossible("Shard creation failed during render brain surgery??");
+			}
+		}break;
+		case RENDER_THOUGHT:
+			if(!dofreethought())
+				return FALSE;
+			else {
+				u.render_thought = TRUE;
+			}
+		break;
+	}
 	return TRUE;
 }
 
@@ -6264,7 +6598,7 @@ struct monst *dollmaker;
 			return FALSE;
 	}
 	
-	doll = mksobj(dollnum,FALSE,FALSE);
+	doll = mksobj(dollnum, MKOBJ_NOINIT);
 	if(!doll){
 		impossible("doll creation failed?");
 		return FALSE;

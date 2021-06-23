@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #endif
 
+extern boolean saving_game;
+
 #ifdef MFLOPPY
 long bytes_counted;
 static int count_only;
@@ -129,6 +131,9 @@ dosave0()
 
 	if (!SAVEF[0])
 		return 0;
+	
+	saving_game = TRUE; /*Some deeply buryied code calls curses redraw stuff that will crash.*/
+	
 	fq_save = fqname(SAVEF, SAVEPREFIX, 1);	/* level files take 0 */
 
 #if defined(UNIX) || defined(VMS)
@@ -139,7 +144,10 @@ dosave0()
 #endif
 
 #if defined(MICRO) && defined(MFLOPPY)
-	if (!saveDiskPrompt(0)) return 0;
+	if (!saveDiskPrompt(0)){
+		saving_game = FALSE;
+		return 0;
+	}
 #endif
 
 	HUP if (iflags.window_inited) {
@@ -151,6 +159,7 @@ dosave0()
 		There("seems to be an old save file.");
 		if (yn("Overwrite the old file?") == 'n') {
 		    compress(fq_save);
+			saving_game = FALSE;
 		    return 0;
 		}
 	    }
@@ -162,6 +171,7 @@ dosave0()
 	if(fd < 0) {
 		HUP pline("Cannot open save file.");
 		(void) delete_savefile();	/* ab@unido */
+		saving_game = FALSE;
 		return(0);
 	}
 
@@ -208,6 +218,7 @@ dosave0()
 		flushout();
 		(void) close(fd);
 		(void) delete_savefile();
+		saving_game = FALSE;
 		return 0;
 	    }
 
@@ -263,6 +274,7 @@ dosave0()
 		    (void) delete_savefile();
 		    HUP killer = whynot;
 		    HUP done(TRICKED);
+			saving_game = FALSE;
 		    return(0);
 		}
 		minit();	/* ZEROCOMP */
@@ -283,6 +295,7 @@ dosave0()
         delete_whereis();
 #endif
 	compress(fq_save);
+	saving_game = FALSE;
 	return(1);
 }
 
@@ -305,15 +318,13 @@ register int fd, mode;
 	flags.end_around = has_loaded_bones;
 	bwrite(fd, (genericptr_t) &flags, sizeof(struct flag));
 	bwrite(fd, (genericptr_t) &u, sizeof(struct you));
+	bwrite(fd, (genericptr_t) &youmonst, sizeof(struct monst));
 	bwrite(fd, (genericptr_t) &god_list, sizeof(struct god_details)*MAX_GOD);
 	
 	/* save random monsters*/
 	bwrite(fd, (genericptr_t) &mons[PM_SHAMBLING_HORROR], sizeof(struct permonst));
 	bwrite(fd, (genericptr_t) &mons[PM_STUMBLING_HORROR], sizeof(struct permonst));
 	bwrite(fd, (genericptr_t) &mons[PM_WANDERING_HORROR], sizeof(struct permonst));
-
-	/* must come before migrating_objs and migrating_mons are freed */
-	save_timers(fd, mode, RANGE_GLOBAL);
 
 	if (CHAIN_IN_MON) {
 		uchain->nobj = bc_objs;
@@ -580,9 +591,6 @@ int mode;
 
 	/* from here on out, saving also involves allocated memory cleanup */
  skip_lots:
-	/* must be saved before mons, objs, and buried objs */
-	save_timers(fd, mode, RANGE_LEVEL);
-
 	savemonchn(fd, fmon, mode);
 	save_worm(fd, mode);	/* save worm information */
 	savetrapchn(fd, ftrap, mode);
@@ -905,20 +913,19 @@ register struct obj *otmp;
 //				bwrite(fd, (genericptr_t) otmp->mp->mskaexe, sizeof(struct attribs));
 //				bwrite(fd, (genericptr_t) otmp->mp->mskamask, sizeof(struct attribs));
 			}
-			if (otmp->oextra_p) {
-				save_oextra(otmp, fd, mode);
-			}
-			if (otmp->light) {
-				save_lightsource(otmp->light, fd, mode);
-			}
 	    }
+		if (otmp->oextra_p)
+			save_oextra(otmp, fd, mode);
+		if (otmp->light)
+			save_lightsource(otmp->light, fd, mode);
+		if (otmp->timed)
+			save_timers(otmp->timed, fd, mode);
 	    if (Has_contents(otmp))
 		saveobjchn(fd,otmp->cobj,mode);
 	    if (release_data(mode)) {
 		if (otmp->oclass == FOOD_CLASS) food_disappears(otmp);
 		if (otmp->oclass == SPBOOK_CLASS) book_disappears(otmp);
 		otmp->where = OBJ_FREE;	/* set to free so dealloc will work */
-		otmp->timed = 0;	/* not timed any more */
 		otmp->lamplit = 0;	/* caller handled lights */
 		dealloc_obj(otmp);
 	    }
@@ -946,12 +953,13 @@ register struct monst *mtmp;
 	    if (perform_bwrite(mode)) {
 		bwrite(fd, (genericptr_t) &zero, sizeof(int));
 		bwrite(fd, (genericptr_t) mtmp, sizeof(struct monst));
+	    }
 		if(mtmp->mextra_p)
 			save_mextra(mtmp, fd, mode);
-	    }
-		if (mtmp->light) {
+		if (mtmp->light)
 			save_lightsource(mtmp->light, fd, mode);
-		}
+		if (mtmp->timed)
+			save_timers(mtmp->timed, fd, mode);
 	    if (mtmp->minvent)
 		saveobjchn(fd,mtmp->minvent,mode);
 	    if (release_data(mode))
@@ -1095,7 +1103,6 @@ freedynamicdata()
 # define free_oracles()	save_oracles(0, FREE_SAVE)
 # define free_waterlevel() save_waterlevel(0, FREE_SAVE)
 # define free_worm()	 save_worm(0, FREE_SAVE)
-# define free_timers(R)	 save_timers(0, FREE_SAVE, R)
 # define free_engravings() save_engravings(0, FREE_SAVE)
 # define freedamage()	 savedamage(0, FREE_SAVE)
 # define free_animals()	 mon_animal_list(FALSE)
@@ -1104,7 +1111,6 @@ freedynamicdata()
 	dmonsfree();		/* release dead monsters */
 
 	/* level-specific data */
-	free_timers(RANGE_LEVEL);
 	freemonchn(fmon);
 	free_worm();		/* release worm segment information */
 	freetrapchn(ftrap);
@@ -1115,7 +1121,6 @@ freedynamicdata()
 	freedamage();
 
 	/* game-state data */
-	free_timers(RANGE_GLOBAL);
 	freeobjchn(invent);
 	for(i=0;i<10;i++) freeobjchn(magic_chest_objs[i]);
 	freeobjchn(migrating_objs);

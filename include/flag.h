@@ -78,6 +78,10 @@ struct flag {
 	boolean  sortpack;	/* sorted inventory */
 	boolean  soundok;	/* ok to tell about sounds heard */
 	boolean  sparkle;	/* show "resisting" special FX (Scott Bigham) */
+	boolean  standard_polearms;	/* use the old polearm targeting system */
+	boolean  petsafe_polearms;	/* don't suggest pets as polearm targets */
+	boolean  peacesafe_polearms;	/* don't suggest peacefuls as polearm targets */
+	boolean  relative_polearms;	/* letter targets starting with a, not based on location. */
 	boolean  standout;	/* use standout for --More-- */
 	boolean  suppress_hurtness;	/* hides "uninjured" "bloody" "damaged" monster prefixes */
 	boolean  time;		/* display elapsed 'time' */
@@ -133,9 +137,10 @@ struct flag {
 	boolean slime_level;		/* the current level has a slime-spreading monster */
 	boolean walky_level;		/* the current level has a undead-raising monster */
 	boolean shade_level;		/* the current level has a shade-casting monster */
-	
+	boolean yello_level;		/* the current level has the attention of the King in Yellow */
+
 	boolean goldka_level;		/* the current level has a gold kamerel golem on it */
-	
+
 	boolean silence_level;		/* the current level has an avatar of The Silence on it */
 	boolean made_first;			/* the first word slab has been created */
 	boolean made_divide;		/* the dividing word slab has been created */
@@ -143,7 +148,7 @@ struct flag {
 	boolean made_know;			/* the word of knowledge slab has been created */
 
 	boolean disp_inv;			/* currently displaying inventory, use separate obuf list */
-	
+
 	/* KMH, role patch -- Variables used during startup.
 	 *
 	 * If the user wishes to select a role, race, gender, and/or alignment

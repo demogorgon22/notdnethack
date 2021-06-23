@@ -245,6 +245,7 @@ Cloak_on()
 		adj_abon(uarmc, uarmc->spe);
 		break;
 	case MUMMY_WRAPPING:
+	case PRAYER_WARDED_WRAPPING:
 		/* Note: it's already being worn, so we have to cheat here. */
 		if ((HInvis || EInvis || pm_invisible(youracedata)) && !Blind) {
 		    newsym(u.ux,u.uy);
@@ -316,6 +317,7 @@ Cloak_off()
 	case SMOKY_VIOLET_FACELESS_ROBE:
 		break;
 	case MUMMY_WRAPPING:
+	case PRAYER_WARDED_WRAPPING:
 		if (Invis && !Blind) {
 		    newsym(u.ux,u.uy);
 		    You("can %s.",
@@ -716,7 +718,7 @@ Shirt_on()
 		ABON(A_CHA) += 2*(1 + uarmu->spe);
 		flags.botl = 1;
 	}
-	else if(uarmu->otyp == BLACK_DRESS) {
+	else if(uarmu->otyp == PLAIN_DRESS) {
 		pline("%s complements your figure nicely.", The(xname(uarmu)));
 		ABON(A_CHA) += 1 + uarmu->spe;
 		flags.botl = 1;
@@ -747,7 +749,7 @@ Shirt_off()
 		ABON(A_CHA) -= 2*(1 + uarmu->spe);
 		flags.botl = 1;
 	}
-	else if(uarmu->otyp == BLACK_DRESS) {
+	else if(uarmu->otyp == PLAIN_DRESS) {
 		ABON(A_CHA) -= (1 + uarmu->spe);
 		flags.botl = 1;
 	}
@@ -764,7 +766,7 @@ Shirt_off()
 int
 Armor_on()
 {
-	if(uarm->otyp == NOBLE_S_DRESS || uarm->otyp == BLACK_DRESS) {
+	if(uarm->otyp == NOBLE_S_DRESS || uarm->otyp == PLAIN_DRESS) {
 		pline("%s complements your figure nicely.", The(xname(uarm)));
 		ABON(A_CHA) += 1 + uarm->spe;
 		flags.botl = 1;
@@ -802,7 +804,7 @@ Armor_off()
 	if(!uarm) {
 		impossible("Armor_off called with no uarm");
 	}
-	else if((uarm->otyp == NOBLE_S_DRESS || uarm->otyp == BLACK_DRESS) && !cancelled_don) {
+	else if((uarm->otyp == NOBLE_S_DRESS || uarm->otyp == PLAIN_DRESS) && !cancelled_don) {
 		ABON(A_CHA) -= (1 + uarm->spe);
 		flags.botl = 1;
 	}
@@ -1351,14 +1353,14 @@ dotakeoff()
 	if (uarmc) {
 		armorpieces++;
 		otmp = uarmc;
-	} else if (uarm) {
+	}
+	if (uarm && !(uarmc && arm_blocks_upper_body(uarm->otyp))) {
 		armorpieces++;
 		otmp = uarm;
-#ifdef TOURIST
-	} else if (uarmu) {
+	}
+	if (uarmu && !uarmc && !(uarm && arm_blocks_upper_body(uarm->otyp))) {
 		armorpieces++;
 		otmp = uarmu;
-#endif
 	}
 	if (!armorpieces) {
 	     /* assert( GRAY_DRAGON_SCALES > YELLOW_DRAGON_SCALE_MAIL ); */
@@ -1388,11 +1390,9 @@ dotakeoff()
 	}
 	/* note: the `uskin' case shouldn't be able to happen here; dragons
 	   can't wear any armor so will end up with `armorpieces == 0' above */
-	if (otmp == uskin || ((otmp == uarm) && uarmc)
-#ifdef TOURIST
-			  || ((otmp == uarmu) && (uarmc || uarm))
-#endif
-		) {
+	if (otmp == uskin || ((otmp == uarm) && (uarmc && arm_blocks_upper_body(uarm->otyp)))
+	  || ((otmp == uarmu) && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))))
+	){
 	    You_cant("take that off.");
 	    return 0;
 	}
@@ -1413,6 +1413,11 @@ doremring()
 	register struct obj *otmp = 0;
 	int Accessories = 0;
 
+	if(!freehand()){
+		You("have no free %s to remove accessories with!", body_part(HAND));
+		return(0);
+	}
+
 #define MOREACC(x) if (x) { Accessories++; otmp = x; }
 	MOREACC(uleft);
 	MOREACC(uright);
@@ -1421,10 +1426,7 @@ doremring()
 
 	if(!Accessories) {
 		pline("Not wearing any accessories.%s", (iflags.cmdassist &&
-			    (uarm || uarmc ||
-#ifdef TOURIST
-			     uarmu ||
-#endif
+			    (uarm || uarmc || uarmu ||
 			     uarms || uarmh || uarmg || uarmf)) ?
 		      "  Use 'T' command to take off armor." : "");
 		return(0);
@@ -1706,7 +1708,7 @@ boolean noisy;
 		} else
 			*mask = W_ARMG;
 	} else if (is_shirt(otmp)) {
-		if (uarm || uarmc || uarmu) {
+		if ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc || uarmu) {
 			if (uarmu) {
 			if (noisy) already_wearing(an(c_shirt));
 			} else {
@@ -1735,7 +1737,7 @@ boolean noisy;
 		} else
 			*mask = W_ARMC;
     } else if (is_suit(otmp)) {
-		if (uarmc) {
+		if (uarmc && arm_blocks_upper_body(otmp->otyp)) {
 			if (noisy) You("cannot wear armor over a %s.", cloak_simple_name(uarmc));
 			err++;
 		} else if (uarm) {
@@ -1847,6 +1849,11 @@ doputon()
 {
 	register struct obj *otmp;
 	long mask = 0L;
+
+	if(!freehand()){
+		You("have no free %s to put on accessories with!", body_part(HAND));
+		return(0);
+	}
 
 	if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ublindf) {
 		Your("%s%s are full, and you're already wearing an amulet and %s.",
@@ -1999,6 +2006,7 @@ struct obj * otmp;
 	if(otmp->oeroded > greatest) greatest = (int) otmp->oeroded;
 	if(otmp->oeroded2 > greatest) greatest = (int) otmp->oeroded2;
 	if(otmp->oeroded3 > greatest) greatest = (int) otmp->oeroded3;
+	if(otmp->odead_larva > greatest) greatest = (int) otmp->odead_larva;
 	
 	return greatest;
 }
@@ -2211,7 +2219,8 @@ int agrmoral;
 
 #ifdef OVL0
 
-int base_uac()
+int
+base_uac()
 {
 	int dexbonus = 0;
 	int uac = 10-mons[u.umonnum].nac;
@@ -2301,7 +2310,7 @@ int base_uac()
 	)
 		uac -= 8;
 	if(u.specialSealsActive&SEAL_UNKNOWN_GOD && uwep && uwep->oartifact == ART_PEN_OF_THE_VOID) uac -= 2*uwep->spe;
-	if(multi < 0 || mad_turn(MAD_SUICIDAL)){
+	if(multi < 0 || mad_turn(MAD_SUICIDAL) || u.ustuck){
 		dexbonus = -5;
 	} else {
 		dexbonus += (int)( (ACURR(A_DEX)-11)/2 ); /*ranges from -5 to +7 (1 to 25) */
@@ -2322,7 +2331,7 @@ int base_uac()
 		if(Race_if(PM_ORC)){
 			dexbonus += (u.ulevel+1)/3;
 		}
-		if(Role_if(PM_MONK) && !uarm){
+		if(Role_if(PM_MONK) && !(uarm && arm_blocks_upper_body(uarm->otyp))){
 			if(dexbonus < 0) dexbonus = (int)(dexbonus / 2);
 			dexbonus += max((int)( (ACURR(A_WIS)-1)/2 - 5 ),0) + (int)(u.ulevel/6 + 1);
 			if(Confusion && u.udrunken>u.ulevel) dexbonus += u.udrunken/9+1;
@@ -2374,13 +2383,13 @@ find_ac()
 	if (uarmu)	uac -= arm_ac_bonus(uarmu);
 	
 	if(uwep){
-		if((is_rapier(uwep) && !arti_shining(uwep))
-				) uac -= max(
-					min(
-					(ACURR(A_DEX)-13)/4,
-					P_SKILL(weapon_type(uwep))-1
-					)
-				,0);
+		if((is_rapier(uwep) && !arti_shining(uwep)))
+			uac -= max(
+				min(
+				(ACURR(A_DEX)-13)/4,
+				P_SKILL(weapon_type(uwep))-1
+				)
+			,0);
 		if(uwep->oartifact == ART_TOBIUME || uwep->oartifact == ART_MASAMUNE)
 			uac -= max(uwep->spe,0);
 		if(uwep->otyp == NAGINATA && !uarms){
@@ -2482,10 +2491,10 @@ find_dr()
 	int udr = 0, i;
 	
 	for(i = 0; i < 5; i++)
-		udr += slot_udr(1<<i,0);
-	udr += slot_udr(UPPER_TORSO_DR,0);
-	udr += slot_udr(LOWER_TORSO_DR,0);
-	udr += max(slot_udr(UPPER_TORSO_DR,0), slot_udr(ARM_DR,0))*2;
+		udr += slot_udr(1<<i,0, 0);
+	udr += slot_udr(UPPER_TORSO_DR,0, 0);
+	udr += slot_udr(LOWER_TORSO_DR,0, 0);
+	udr += max(slot_udr(UPPER_TORSO_DR,0, 0), slot_udr(ARM_DR,0, 0))*2;
 	udr /= 9;
 	if (udr > 127) udr = 127;	/* u.uac is an schar */
 	if(udr != u.udr){
@@ -2503,9 +2512,10 @@ find_dr()
  * Includes effectiveness vs magr (optional)
  */
 int
-slot_udr(slot, magr)
+slot_udr(slot, magr, depth)
 int slot;
 struct monst *magr;
+int depth;
 {
 	/* DR addition: bas + sqrt(nat^2 + arm^2) */
 	int bas_udr; /* base DR:    magical-ish   */
@@ -2546,10 +2556,12 @@ struct monst *magr;
 		slot = UPPER_TORSO_DR;
 
 	/* DR of worn armor */
-	struct obj * uarmor[] = { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu };
+	struct obj * uarmor[] = ARMOR_SLOTS;
 	int i;
 	for (i = 0; i < SIZE(uarmor); i++) {
 		if (uarmor[i] && (objects[uarmor[i]->otyp].oc_dir & slot)) {
+			if(depth && higher_depth(uarmor[i]->owornmask, depth))
+				continue;
 			arm_udr += arm_dr_bonus(uarmor[i]);
 			if (magr) arm_udr += properties_dr(uarmor[i], agralign, agrmoral);
 		}
@@ -2597,9 +2609,12 @@ struct monst *magr;
 		bas_udr += 3;
 	
 	//Star spawn reach extra-dimensionally past all armor, even bypassing natural armor.
-	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU)){
+	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU || mad_monster_turn(magr, MAD_NON_EUCLID))){
 		arm_udr = 0;
-		nat_udr = 0;
+		if(undiffed_innards(youracedata))
+			nat_udr /= 2;
+		else if(!no_innards(youracedata) && !removed_innards(youracedata))
+			nat_udr = 0;
 	}
 	
 	/* Combine into total */
@@ -2622,10 +2637,18 @@ int
 roll_udr(magr)
 struct monst *magr;
 {
-	int slot;
+	return roll_udr_detail(magr, 0, 0);
+}
+
+int
+roll_udr_detail(magr, slot, depth)
+struct monst *magr;
+int slot;
+int depth;
+{
 	int udr;
 	int cap = 10;
-	switch(rn2(9)){
+	if(!slot) switch(rn2(9)){
 		case 0:
 		case 1:
 			slot = UPPER_TORSO_DR;
@@ -2645,12 +2668,12 @@ struct monst *magr;
 		break;
 		case 7:
 		case 8:
-			if(slot_udr(UPPER_TORSO_DR, magr) > slot_udr(ARM_DR, magr))
+			if(slot_udr(UPPER_TORSO_DR, magr, 0) > slot_udr(ARM_DR, magr, 0))
 				slot = UPPER_TORSO_DR;
 			else slot = ARM_DR;
 		break;
 	}
-	udr = slot_udr(slot, magr);
+	udr = slot_udr(slot, magr, depth);
 	if(active_glyph(DEEP_SEA))
 		cap += 3;
 	//diminishing returns after 10 points of DR.
@@ -2775,8 +2798,12 @@ struct monst *victim;
 	register struct obj *otmph, *otmp;
 
 	otmph = (victim == &youmonst) ? uarmc : which_armor(victim, W_ARMC);
-	if (!otmph)
+	if (!otmph){
 	    otmph = (victim == &youmonst) ? uarm : which_armor(victim, W_ARM);
+		//This causes all kinds of things to randomly fail, including enchant armor :(
+		// if(otmph && !arm_blocks_upper_body(otmph->otyp) && rn2(2))
+			// otmph = 0;
+	}
 #ifdef TOURIST
 	if (!otmph)
 	    otmph = (victim == &youmonst) ? uarmu : which_armor(victim, W_ARMU);
@@ -2898,30 +2925,26 @@ register struct obj *otmp;
 	    }
 	}
 	/* special suit and shirt checks */
-	if (otmp == uarm
-#ifdef TOURIST
-			|| otmp == uarmu
-#endif
-		) {
+	if (otmp == uarm || otmp == uarmu) {
 	    why = 0;	/* the item which prevents disrobing */
-	    if (uarmc && uarmc->cursed && !Weldproof) {
-		Sprintf(buf, "remove your %s", cloak_simple_name(uarmc));
-		why = uarmc;
-#ifdef TOURIST
-	    } else if (otmp == uarmu && uarm && uarm->cursed && !Weldproof) {
-		Sprintf(buf, "remove your %s", c_suit);
-		why = uarm;
-#endif
+	    if (uarmc && uarmc->cursed && !Weldproof &&
+			!(otmp == uarm && arm_blocks_upper_body(uarm->otyp))
+		) {
+			Sprintf(buf, "remove your %s", cloak_simple_name(uarmc));
+			why = uarmc;
+	    } else if (otmp == uarmu && uarm && arm_blocks_upper_body(uarm->otyp) && uarm->cursed && !Weldproof) {
+			Sprintf(buf, "remove your %s", c_suit);
+			why = uarm;
 	    } else if (welded(uwep) && bimanual(uwep,youracedata)) {
-		Sprintf(buf, "release your %s",
-			is_sword(uwep) ? c_sword :
-			(uwep->otyp == BATTLE_AXE) ? c_axe : c_weapon);
-		why = uwep;
+			Sprintf(buf, "release your %s",
+				is_sword(uwep) ? c_sword :
+				(uwep->otyp == BATTLE_AXE) ? c_axe : c_weapon);
+			why = uwep;
 	    }
 	    if (why) {
-		You("cannot %s to take off %s.", buf, the(xname(otmp)));
-		why->bknown = TRUE;
-		return 0;
+			You("cannot %s to take off %s.", buf, the(xname(otmp)));
+			why->bknown = TRUE;
+			return 0;
 	    }
 	}
 	/* basic curse check */
@@ -3195,7 +3218,10 @@ register struct obj *atmp;
 	register struct obj *otmp;
 #define DESTROY_ARM(o) ((otmp = (o)) != 0 && \
 			(!atmp || atmp == otmp))
-
+	
+	if(Preservation)
+		return 0;
+	
 	if (DESTROY_ARM(uarmc)) {
 		if((!obj_resists(otmp, 0, 100))){
 			if (donning(otmp)) cancel_don();
@@ -3361,6 +3387,9 @@ register struct obj *atmp;
 			(!atmp || atmp == otmp) && \
 			(!obj_resists(otmp, 0, 90)))
 
+	if(Preservation)
+		return 0;
+	
 	if (DESTROY_ARM(uarmc)) {
 		if (donning(otmp)) cancel_don();
 		Your("%s is torn to shreds!",
@@ -3600,6 +3629,9 @@ register struct obj *atmp;
 			(!atmp || atmp == otmp) && \
 			(!obj_resists(otmp, 0, 90)))
 
+	if(Preservation)
+		return 0;
+	
 	if (DESTROY_ARM(uarmc)) {
 		if (donning(otmp)) cancel_don();
 		pline("The tentacles tear your cloak to shreds!");
@@ -3706,7 +3738,7 @@ register schar delta;
 		}
 	}
 	if(uarm && uarm == otmp){
-		if(otmp->otyp == BLACK_DRESS){
+		if(otmp->otyp == PLAIN_DRESS){
 			if (delta) {
 				ABON(A_CHA) += (delta);
 				flags.botl = 1;
@@ -3726,7 +3758,7 @@ register schar delta;
 		}
 	}
 	if(uarmu && uarmu == otmp){
-		if(otmp->otyp == BLACK_DRESS){
+		if(otmp->otyp == PLAIN_DRESS){
 			if (delta) {
 				ABON(A_CHA) += (delta);
 				flags.botl = 1;
@@ -3796,6 +3828,12 @@ struct obj *armor;
 			continue;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || !rn2(4)))
 			continue;
+
+		if(!youdef && (mdef->entangled == SHACKLES
+			|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+		))
+			continue;
+
 		//Note: the armor avoids touching petrifying things even if you're immune
 		if(touch_petrifies(mdef->data)
 		 || mdef->mtyp == PM_MEDUSA
@@ -3850,6 +3888,11 @@ struct obj *wep;
 		if(!youagr && !youdef && (mdef->mpeaceful == magr->mpeaceful))
 			continue;
 		
+		if(!youdef && (mdef->entangled == SHACKLES
+			|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+		))
+			continue;
+
 		mdef->movement -= 12;
 	}
 	if(youagr)
@@ -3890,6 +3933,12 @@ struct obj *wep;
 			continue;
 		if(!youagr && !youdef && (mdef->mpeaceful == magr->mpeaceful))
 			continue;
+
+		if(!youdef && (mdef->entangled == SHACKLES
+			|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+		))
+			continue;
+
 		//Note: petrifying targets are safe, it's a weapon attack
 		if(mdef->mtyp == PM_PALE_NIGHT) continue;
 		
@@ -3956,6 +4005,14 @@ struct obj *wep;
 				gooddir = FALSE;
 				break; //break out of inner loop now, we found a bad target.
 			}
+
+			if(!youdef && (mdef->entangled == SHACKLES
+				|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+			)){
+				gooddir = FALSE;
+				break; //break out of inner loop now, we found a bad target.
+			}
+
 			//else found a good target over here, and haven't hit a bad one (yet)
 			gooddir = TRUE;
 		}
@@ -4047,7 +4104,12 @@ struct obj *wep;
 			continue;
 		if(!youagr && !youdef && (mdef->mpeaceful == magr->mpeaceful))
 			continue;
-		
+
+		if(!youdef && (mdef->entangled == SHACKLES
+			|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+		))
+			continue;
+
 		if(youdef){
 			mdef->movement -= 12;
 			if(!bigmonst(youracedata)){
@@ -4059,7 +4121,7 @@ struct obj *wep;
 			if(bigmonst(mdef->data)){
 				mdef->movement -= 12;
 			} else {
-				mhurtle(mdef, clockwisex[(i+j)%8], clockwisey[(i+j)%8], 1);
+				mhurtle(mdef, clockwisex[(i+j)%8], clockwisey[(i+j)%8], 1, FALSE);
 				//Note: mdef may be gone now due to traps
 			}
 		}
@@ -4101,10 +4163,10 @@ struct obj *wep;
 	else if(canseemon(magr))
 		pline("The Mad King curses %s!", mon_nam(magr));
 	
-	mtmp = makemon(&mons[PM_VEXING_ORB], x(magr), y(magr), MM_ADJACENTOK|maketame);
+	mtmp = makemon(&mons[PM_VEXING_ORB], x(magr), y(magr), MM_ADJACENTOK|maketame|MM_ESUM);
 	if (mtmp) {
-		/* time out */
-		mtmp->mvanishes = 4 + rn2(4);
+		/* time out, but not tied to magr -- the object summoned them */
+		mark_mon_as_summoned(mtmp, (struct monst *)0, 4 + rn2(4), 0);
 		/* can be peaceful */
 		if(magr->mpeaceful)
 			mtmp->mpeaceful = TRUE;
@@ -4229,10 +4291,10 @@ struct obj *wep;
 	}
 	
 	for(; i > 0; i--){
-		mtmp = makemon(&mons[mid], x(magr), y(magr), MM_ADJACENTOK|maketame);
+		mtmp = makemon(&mons[mid], x(magr), y(magr), MM_ADJACENTOK|maketame|MM_ESUM);
 		if (mtmp) {
-			/* time out */
-			mtmp->mvanishes = 4 + rn2(4);
+			/* time out, but not tied to magr -- the object summoned them */
+			mark_mon_as_summoned(mtmp, (struct monst *)0, 4 + rn2(4), 0);
 			mtmp->mspec_used = 0;
 			/* can be peaceful */
 			if(magr->mpeaceful)
@@ -4335,6 +4397,12 @@ char etyp;
 			continue;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || !rn2(4)))
 			continue;
+
+		if(!youdef && (mdef->entangled == SHACKLES
+			|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+		))
+			continue;
+
 		//Note: the armor avoids touching petrifying things even if you're immune
 		if(touch_petrifies(mdef->data)
 		 || mdef->mtyp == PM_MEDUSA
@@ -4424,10 +4492,10 @@ struct obj *wep;
 	}
 	
 	for(; i > 0; i--){
-		mtmp = makemon(&mons[mid], x(magr), y(magr), MM_ADJACENTOK|maketame);
+		mtmp = makemon(&mons[mid], x(magr), y(magr), MM_ADJACENTOK|maketame|MM_ESUM);
 		if (mtmp) {
-			/* time out */
-			mtmp->mvanishes = 4 + rn2(4);
+			/* time out, but not tied to magr -- the object summoned them */
+			mark_mon_as_summoned(mtmp, (struct monst *)0, 4 + rn2(4), 0);
 			mtmp->mspec_used = 0;
 			/* can be peaceful */
 			if(magr->mpeaceful)
@@ -4489,27 +4557,33 @@ struct obj *wep;
 	struct attack symbiote = { AT_WEAP, AD_PHYS, 4, 4 };
 	boolean youagr = (magr == &youmonst);
 	boolean youdef;
-	
+
 	for(j=8;j>=1;j--){
 		if(youagr && u.ustuck && u.uswallow)
 			mdef = u.ustuck;
 		else if(!isok(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]))
 			continue;
 		else mdef = m_u_at(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]);
-		
+
 		if(!mdef)
 			continue;
-		
+
 		youdef = (mdef == &youmonst);
 		if(!youdef && DEADMONSTER(mdef))
 			continue;
-		
+
 		if(youagr && (mdef->mpeaceful || !rn2(4)))
 			continue;
 		if(youdef && (magr->mpeaceful || !rn2(4)))
 			continue;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || !rn2(4)))
 			continue;
+
+		if(!youdef && (mdef->entangled == SHACKLES
+			|| (mdef->mtrapped && t_at(mdef->mx, mdef->my) && t_at(mdef->mx, mdef->my)->ttyp == VIVI_TRAP)
+		))
+			continue;
+
 		//Note: petrifying targets are safe, it's a weapon attack
 		if(mdef->mtyp == PM_PALE_NIGHT) continue;
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){

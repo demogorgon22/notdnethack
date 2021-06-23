@@ -1205,7 +1205,7 @@ domove()
 	     * different message and makes the player remember the monster.		     */
 	    if(flags.nopick &&
 		  (canspotmon(mtmp) || glyph_is_invisible(levl[x][y].glyph))){
-			if(mtmp->m_ap_type && !Protection_from_shape_changers
+			if((mtmp->m_ap_type && mtmp->m_ap_type != M_AP_MONSTER) && !Protection_from_shape_changers
 								&& !sensemon(mtmp))
 				stumble_onto_mimic(mtmp);
 			else if (mtmp->mpeaceful && !Hallucination)
@@ -1456,7 +1456,7 @@ domove()
 				u.utrap = 0;
 				pline("The energy blade burns through %s!", the(xname(trap->ammo)));
 				if(is_lightsaber(uwep) && uwep->oartifact != ART_INFINITY_S_MIRRORED_ARC && uwep->otyp != KAMEREL_VAJRA) uwep->age -= 100;
-				if(trap->ttyp == BEAR_TRAP){
+				if(trap->ttyp == BEAR_TRAP || trap->ttyp == FLESH_HOOK){
 					deltrap(trap);
 					newsym(u.ux,u.uy);
 				}
@@ -3045,11 +3045,15 @@ boolean endnow;
 			}
 		}
 
-		/* migratingmons handling */
-		if (!curobj && !did_migratingmons) {
-			/* predecrement curwhere so that we run OBJ_MIGRATING again, but this time not the migrating mons */
-			did_migratingmons = TRUE;
-			curwhere--;
+		/* for the "where"s that can have many chains, we need to stay in that state until all their chains are exhausted */
+		if (!curobj && (
+			(curwhere == OBJ_MINVENT && allow_minvent && curmonst) ||
+			(curwhere == OBJ_MIGRATING && allow_minvent && allow_migrating && curmonst && !did_migratingmons) ||
+			(curwhere == OBJ_MIGRATING && allow_migrating && !curmonst && !did_migratingmons && (did_migratingmons=TRUE)) ||	/* set did_migratingmons to then do migrating objs */
+			(curwhere == OBJ_MAGIC_CHEST && allow_magic && (magic_chest_index < 10)) ||
+			(curwhere == OBJ_INTRAP && allow_intrap && curtrap)
+			)) {
+			curwhere--;	/* predecrement curwhere to stay in current state */
 		}
 
 	} while (!curobj && curwhere++ < NOBJ_STATES);

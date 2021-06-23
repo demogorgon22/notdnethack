@@ -39,7 +39,15 @@ register struct obj *otmp;
     register struct obj *best = (struct obj *)0;
 
     if (otmp->oclass != ARMOR_CLASS) return FALSE;
-    
+
+	//Special case: can't wear most torso armor
+	if (mtmp->mtyp == PM_HARROWER_OF_ZARIEL
+	 && ((is_suit(otmp) && arm_blocks_upper_body(otmp->otyp))
+		|| is_shirt(otmp)
+	)){
+		return FALSE;
+	}
+		
     if (is_suit(otmp) && (!arm_match(mtmp->data, otmp) || !arm_size_fits(mtmp->data, otmp)))
 		return FALSE;
     
@@ -115,7 +123,7 @@ boolean check_if_better;
 	    /* food */
             ((dogfood(mtmp, otmp) < APPORT) ||
 	    /* collect artifacts and oprop items */
-		 (otmp->oartifact || !check_oprop(otmp, OPROP_NONE)) ||
+		 (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) ||
 	    /* chains for some */
 		 ((mtmp->mtyp == PM_CATHEZAR) && otmp->otyp == CHAIN) ||
 	    /* better weapons */
@@ -157,8 +165,7 @@ boolean check_if_better;
 	     otmp->otyp == FIRE_HORN ||
 	     otmp->otyp == UNICORN_HORN));
 
-    if (can_use)
-    {
+    if (can_use){
         /* arbitrary - greedy monsters keep any item you can use */
         if (likes_gold(mtmp->data)) return TRUE;
 		
@@ -166,18 +173,15 @@ boolean check_if_better;
 		if(mindless_mon(mtmp))
 			return TRUE;
 
-        if (otmp->oclass == ARMOR_CLASS)
-	{
-	    return !check_if_better || !is_better_armor(&youmonst, otmp);
-	}
-	else if (otmp->oclass == WAND_CLASS &&
-	         otmp->spe <= 0)
+        if (otmp->oclass == ARMOR_CLASS){
+			return !check_if_better || !is_better_armor(&youmonst, otmp);
+		}
+		else if (otmp->oclass == WAND_CLASS && otmp->spe <= 0)
             return FALSE;  /* used charges or was cancelled? */
-	else
-	{
-		/*Hold all useful items.  The player can take with #loot if needed*/
-		return TRUE;
-	}
+		else {
+			/*Hold all useful items.  The player can take with #loot if needed*/
+			return TRUE;
+		}
     }
 
     return FALSE;
@@ -237,7 +241,7 @@ register struct monst *mon;
 	return (struct obj *)0;
 }
 
-static NEARDATA const char nofetch[] = { BALL_CLASS, CHAIN_CLASS, ROCK_CLASS, /*BED_CLASS,*/ 0 };
+static NEARDATA const char nofetch[] = { BALL_CLASS, CHAIN_CLASS, ROCK_CLASS, BED_CLASS, 0 };
 
 #endif /* OVL0 */
 
@@ -296,6 +300,10 @@ struct obj *obj;
 	    if (mtmp->meating < 0) mtmp->meating = 1;
 	    nutrit = (int)(obj->quan/20);
 	    if (nutrit < 0) nutrit = 0;
+	} else if (obj->otyp == POT_BLOOD) {
+		/* 1/5th multiplier applied in dog_eat */
+		nutrit = ((obj->odiluted ? 1 : 2) *
+					(obj->blessed ? mons[(obj)->corpsenm].cnutrit*3/2 : mons[(obj)->corpsenm].cnutrit ));
 	} else {
 	    /* Unusual pet such as gelatinous cube eating odd stuff.
 	     * meating made consistent with wild monsters in mon.c.
@@ -320,7 +328,7 @@ boolean devour;
 	boolean poly = FALSE, grow = FALSE, heal = FALSE;
 	int nutrit;
 	boolean vampiric = is_vampire(mtmp->data);
-	boolean eatonlyone = (obj->oclass == FOOD_CLASS || obj->oclass == CHAIN_CLASS);
+	boolean eatonlyone = (obj->oclass == FOOD_CLASS || obj->oclass == CHAIN_CLASS || obj->oclass == POTION_CLASS);
 
 #ifdef PET_SATIATION
 	// boolean can_choke = (edog->hungrytime >= monstermoves + DOG_SATIATED && !vampiric);
@@ -370,7 +378,7 @@ boolean devour;
 	   sight locations should not. */
 	if (cansee(x, y) || cansee(mtmp->mx, mtmp->my))
 	    pline("%s %s %s.", mon_visible(mtmp) ? noit_Monnam(mtmp) : "It",
-		  vampiric ? "drains" : devour ? "devours" : "eats",
+		  obj->oclass == POTION_CLASS ? "drinks" : vampiric ? "drains" : devour ? "devours" : "eats",
 		  eatonlyone ? singular(obj, doname) : doname(obj));
 	/* It's a reward if it's DOGFOOD and the player dropped/threw it. */
 	/* We know the player had it if invlet is set -dlc */
@@ -389,7 +397,7 @@ boolean devour;
 		pline("%s spits %s out in disgust!",
 		      Monnam(mtmp), distant_name(obj,doname));
 	    }
-	} else if (vampiric) {
+	} else if (vampiric && !(obj->otyp == POT_BLOOD)) {
 		/* Split Object */
 		if (obj->quan > 1L) {
 		    if(!carried(obj)) {
@@ -838,6 +846,12 @@ boolean ranged;
 	
 	if(mtmp2->mtyp == PM_MANDRAKE)
 		return FALSE;
+
+	if(has_template(mtmp2, SLIME_REMNANT) && mtmp->mpeaceful == mtmp2->mpeaceful)
+		return FALSE;
+
+	if(mtmp2->mtyp == PM_BEAUTEOUS_ONE && mtmp->mpeaceful == mtmp2->mpeaceful)
+		return FALSE;
 	
     return !((!ranged &&
 #ifdef BARD
@@ -885,6 +899,8 @@ register struct monst *mtmp;
 	    pline("You feel uneasy about %s.", y_monnam(mtmp));
 	untame(mtmp, 0);
 	mtmp->mtraitor = TRUE;
+	if (get_mx(mtmp, MX_ESUM))
+		mtmp->mextra_p->esum_p->summoner = (struct monst *)0;
 
 	/* Do we need to call newsym() here? */
 	newsym(mtmp->mx, mtmp->my);

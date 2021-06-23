@@ -339,7 +339,7 @@ struct toptenentry *tt;
   (void)fprintf(rfile, SEP "dnetachieve=0x%lx", dnethachievements);
   }
   {
-	  char achieveXbuff[25*37] = {0};//The longest trophy name is 23 characters, +2 for the separator and null, times 37 trophies.
+	  char achieveXbuff[25*ACHIEVE_NUMBER] = {0};//The longest trophy name is 23 characters, +2 for the separator and null, times however many trophies.
 	  writeachieveX(achieveXbuff);
   (void)fprintf(rfile, SEP "achieveX=%s", achieveXbuff);
   }
@@ -1108,7 +1108,7 @@ void
 writeachieveX(achieveXbuff)
 char *achieveXbuff;
 {
-	//achieveXbuff is 25*37 chars long, if you add more achievements increase the multiplier. 25 is > than the average length of a trophy name, but keep an eye on that too.
+	//achieveXbuff is 25*ACHIEVE_NUMBER chars long. 25 is > than the average length of a trophy name, but keep an eye on that too.
 	char seperator[2] = "";
 	CHECK_ACHIEVE(ARC_QUEST,"archeologist_quest")
 	CHECK_ACHIEVE(CAV_QUEST,"caveman_quest")
@@ -1122,6 +1122,7 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(PIR_QUEST,"pirate_quest")
 	CHECK_ACHIEVE(BRD_QUEST,"bard_quest")
 	CHECK_ACHIEVE(NOB_QUEST,"base_noble_quest")
+	CHECK_ACHIEVE(MAD_QUEST,"madman_quest")
 	CHECK_ACHIEVE(HDR_NOB_QUEST,"hedrow_noble_quest")
 	CHECK_ACHIEVE(HDR_SHR_QUEST,"hedrow_shared_quest")
 	CHECK_ACHIEVE(DRO_NOB_QUEST,"drow_noble_quest")
@@ -1140,6 +1141,13 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(MITH_QUEST,"mithardir_quest")
 	CHECK_ACHIEVE(MORD_QUEST,"mordor_quest")
 	CHECK_ACHIEVE(SECOND_THOUGHTS,"second_thoughts")
+	CHECK_ACHIEVE(LAMASHTU_KILL,"lamashtu_kill")
+	CHECK_ACHIEVE(BAALPHEGOR_KILL,"baalphegor_kill")
+	CHECK_ACHIEVE(ANGEL_VAULT,"angel_hell_vault")
+	CHECK_ACHIEVE(ANCIENT_VAULT,"ancient_hell_vault")
+	CHECK_ACHIEVE(TANNINIM_VAULT,"tanninim_hell_vault")
+	CHECK_ACHIEVE(UNKNOWN_WISH,"unknown_god_wish")
+	CHECK_ACHIEVE(CASTLE_WISH,"castle_wish")
 	CHECK_ACHIEVE(ILLUMIAN,"illuminated")
 	CHECK_ACHIEVE(RESCUE,"exodus")
 	CHECK_ACHIEVE(FULL_LOADOUT,"fully_upgraded")
@@ -1367,7 +1375,7 @@ pickentry:
 		otmp = (struct obj *) 0;
 	} else {
 		/* reset timer in case corpse started out as lizard or troll */
-		if (otmp->otyp == CORPSE) obj_stop_timers(otmp);
+		if (otmp->otyp == CORPSE) stop_all_timers(otmp->timed);
 		otmp->corpsenm = classmon(tt->plrole, (tt->plgend[0] == 'F'));
 		otmp->owt = weight(otmp);
 		otmp = oname(otmp, tt->name);

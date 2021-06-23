@@ -112,9 +112,26 @@ dosit()
 	    register struct obj *obj;
 
 	    obj = level.objects[u.ux][u.uy];
-	    You("sit on %s.", the(xname(obj)));
-	    if (!(Is_box(obj) || obj->obj_material == CLOTH))
-		pline("It's not very comfortable...");
+	    if (obj->otyp == WRITING_DESK){
+			You("sit on the desk chair.");
+			pline("It's reasonably comfortable.");
+		}
+	    else if (obj->otyp == BED){
+			You("sit on the bed.");
+			pline("It's comfortable, but you're not tired.");
+		}
+	    else if (obj->otyp == BEDROLL){
+			You("sit on the bedroll.");
+			if(!obj->nexthere)
+				pline("It's reasonably comfortable, but you're not tired.");
+			else 
+				pline("It's not very comfortable...");
+		}
+	    else {
+			You("sit on %s.", the(xname(obj)));
+			if (!(Is_box(obj) || obj->obj_material == CLOTH))
+				pline("It's not very comfortable...");
+		}
 
 	} else if(Underwater || Is_waterlevel(&u.uz)) {
 	    if (Is_waterlevel(&u.uz))
@@ -142,6 +159,10 @@ dosit()
 	} else if(IS_GRAVE(typ)) {
 
 	    You(sit_message, defsyms[S_grave].explanation);
+
+	} else if(IS_SEAL(typ)) {
+
+	    You(sit_message, defsyms[S_seal].explanation);
 
 	} else if(typ == STAIRS) {
 
@@ -414,6 +435,7 @@ dosit()
 			if (Is_stronghold(&u.uz) && !u.uevent.utook_castle)
 			{
 				u.uevent.utook_castle = 1;
+				give_castle_trophy();
 				You_feel("worthy.");
 				return 1;
 			}
@@ -444,7 +466,7 @@ dosit()
 			return 0;
 		}
 
-		uegg = mksobj(EGG, FALSE, FALSE);
+		uegg = mksobj(EGG, MKOBJ_NOINIT);
 		uegg->spe = 1;
 		uegg->quan = 1;
 		uegg->owt = weight(uegg);
@@ -471,49 +493,11 @@ rndcurse()			/* curse a few inventory items at random! */
 	int	nobj = 0;
 	int	cnt, onum;
 	struct	obj	*otmp;
-	static const char mal_aura[] = "feel a malignant aura surround %s.";
 	boolean did_curse = FALSE;
-
-	if (uamul && (uamul->otyp == AMULET_VERSUS_CURSES)) {
-	    You(mal_aura, "your amulet");
+	static const char mal_aura[] = "feel a malignant aura surround %s.";
+	
+	if(Curse_res(&youmonst, TRUE))
 		return FALSE;
-	} else if (has_spear_point(uwep,GREEN_FLUORITE)) {
-	    You(mal_aura, "the green fluorite point of your spear");
-		return FALSE;
-	} else if (uwep && (uwep->oartifact == ART_MAGICBANE) && rn2(20)) {
-	    You(mal_aura, "the magic-absorbing blade");
-		return FALSE;
-	} else if (uwep && (uwep->oartifact == ART_STAFF_OF_NECROMANCY) && rn2(20)) {
-	    You(mal_aura, "the skeletal staff");
-		return FALSE;
-	} else if (uwep && (uwep->oartifact == ART_TECPATL_OF_HUHETOTL) && rn2(20)) {
-	    You(mal_aura, "the bloodstained dagger");
-		return FALSE;
-	} else if(uwep && (uwep->oartifact == ART_TENTACLE_ROD) && rn2(20)){
-	    You(mal_aura, "the languid tentacles");
-		return FALSE;
-	}
-	for(otmp = invent; otmp; otmp=otmp->nobj){
-		if(otmp->oartifact == ART_HELPING_HAND && rn2(20)){
-			You_feel("as if you need some help.");
-			You_feel("something lend you some help!");
-			return FALSE;
-		}
-	}
-	if(u.ukinghill && rn2(20)){
-	    You(mal_aura, "the cursed treasure chest");
-		otmp = 0;
-		for(otmp = invent; otmp; otmp=otmp->nobj)
-			if(otmp->oartifact == ART_TREASURY_OF_PROTEUS)
-				break;
-		if(!otmp) pline("Treasury not actually in inventory??");
-		else if(otmp->blessed)
-			unbless(otmp);
-		else
-			curse(otmp);
-	    update_inventory();		
-		return FALSE;
-	}
 
 	if(Antimagic) {
 	    shieldeff(u.ux, u.uy);
@@ -588,63 +572,12 @@ register struct monst *mtmp;
 	int	cnt, onum;
 	struct	obj	*otmp;
 	static const char mal_aura[] = "feel a malignant aura surround %s.";
-	static const char mons_item_mal_aura[] = "feel a malignant aura surround %s %s.";
 
 	boolean resists = resist(mtmp, 0, 0, FALSE);
 	boolean visible = canseemon(mtmp);
-
-	if(has_template(mtmp, ILLUMINATED)){
-	    if(visible) You("feel a malignant aura burn away in the Light.");
-	    return FALSE;
-	}
 	
-	if (which_armor(mtmp, W_AMUL) && (which_armor(mtmp, W_AMUL)->otyp == AMULET_VERSUS_CURSES)) {
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "amulet");
+	if(Curse_res(mtmp, TRUE))
 		return FALSE;
-	}
-	if (MON_WEP(mtmp) &&
-	    (MON_WEP(mtmp)->oartifact == ART_MAGICBANE) && rn2(20)) {
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "magic-absorbing blade");
-		return FALSE;
-	}
-	if (has_spear_point(MON_WEP(mtmp),GREEN_FLUORITE)) {
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "green fluorite spear point");
-		return FALSE;
-	}
-	if (MON_WEP(mtmp) &&
-	    (MON_WEP(mtmp)->oartifact == ART_STAFF_OF_NECROMANCY) && rn2(20)) {
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "skeletal staff");
-		return FALSE;
-	}
-	if (MON_WEP(mtmp) &&
-		(MON_WEP(mtmp)->oartifact == ART_TECPATL_OF_HUHETOTL) && rn2(20)) {
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "bloodstained dagger");
-		return FALSE;
-	}
-	if (MON_WEP(mtmp) &&
-	    (MON_WEP(mtmp)->oartifact == ART_TENTACLE_ROD) && rn2(20)) {
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "languid tentacles");
-		return FALSE;
-	}
-	for(otmp = mtmp->minvent; otmp; otmp=otmp->nobj)
-		if(otmp->oartifact == ART_TREASURY_OF_PROTEUS)
-			break;
-	if(otmp && rn2(20)){
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "cursed treasure chest");
-		if(otmp->blessed)
-			unbless(otmp);
-		else
-			curse(otmp);
-		return FALSE;
-	}
-	for(otmp = mtmp->minvent; otmp; otmp=otmp->nobj)
-		if(otmp->oartifact == ART_HELPING_HAND)
-			break;
-	if(otmp && rn2(20)){
-		if (visible) You(mons_item_mal_aura, s_suffix(mon_nam(mtmp)), "helpful hand");
-		return FALSE;
-	}
-
 
 	if(resists) {
 	    shieldeff(mtmp->mx, mtmp->my);
@@ -684,7 +617,7 @@ register struct monst *mtmp;
 		else
 			curse(otmp);
 	    }
-	    update_inventory();
+	    update_inventory(); //Is this needed??? Maybe catches cursed saddles?
 		return TRUE;
 	}
 	return FALSE;

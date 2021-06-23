@@ -745,16 +745,15 @@ int trap_type;
 		    dosdoor(xx, yy, aroom, rn2(5) ? SDOOR : DOOR);
 		else {
 		    if (!level.flags.noteleport)
-			(void) mksobj_at(SCR_TELEPORTATION,
-					 xx, yy+dy, TRUE, FALSE);
-		    if (!rn2(3)) (void) mkobj_at(0, xx, yy+dy, TRUE);
+			(void) mksobj_at(SCR_TELEPORTATION, xx, yy+dy, NO_MKOBJ_FLAGS);
+		    if (!rn2(3)) (void) mkobj_at(0, xx, yy+dy, MKOBJ_ARTIF);
 		}
 	    }
 			if(In_mithardir_catacombs(&u.uz)){
 				if(!rn2(2))
 					makemon(&mons[PM_ALABASTER_MUMMY], xx, yy+dy,NO_MM_FLAGS);
 				else
-					mkobj_at(TILE_CLASS, xx, yy+dy, TRUE);
+					mkobj_at(TILE_CLASS, xx, yy+dy, MKOBJ_ARTIF);
 			}
 	    return;
 	}
@@ -831,6 +830,7 @@ random_special_room()
 			add_rspec_room(STATUEGRDN	,  2, TRUE);
 			add_rspec_room(TEMPLE		,  5, !level.flags.has_temple);
 			add_rspec_room(SHOPBASE		,  1, !rn2(3));
+			add_rspec_room(HELL_VAULT	,100, !level.flags.has_vault);
 			add_rspec_room(0			, 50, TRUE);
 		}
 	}
@@ -856,10 +856,10 @@ random_special_room()
 	}
 	/* -------- DEFAULT -------- */
 	else
-	{	
+	{
 		if (level.flags.is_maze_lev){
 			/* MAZE */
-			add_rspec_room(COURT		, 15, udepth >  4);
+			add_rspec_room(COURT		, 15, udepth >  4 && !Is_stronghold(&u.uz));
 			add_rspec_room(COCKNEST		,  9, udepth > 16 && mnotgone(PM_COCKATRICE));
 			add_rspec_room(POOLROOM		, 30, udepth > 15);
 			add_rspec_room(BARRACKS		, 18, udepth > 14 && mnotgone(PM_SOLDIER));
@@ -1039,7 +1039,13 @@ makelevel()
 				Sprintf(fillname, "%s-home", urole.filecode);
 				// pline("%s",fillname);
 				makemaz(fillname);
-			} else {
+			}
+			else if(Role_if(PM_MADMAN) && qstart_level.dnum == u.uz.dnum && qlocate_level.dlevel == (u.uz.dlevel+1)){
+				Sprintf(fillname, "%s-home", urole.filecode);
+				// pline("%s",fillname);
+				makemaz(fillname);
+			}
+			else {
 			    Sprintf(fillname, "%s-loca", urole.filecode);
 			    loc_lev = find_level(fillname);
 	
@@ -1121,11 +1127,9 @@ makelevel()
 				tmonst = makemon(rn2(2) ? &mons[PM_ALABASTER_MUMMY] : 0, x,y,NO_MM_FLAGS);
 			}
 			if(!rn2(nroom * 5 / 2))
-				(void) mksobj_at((rn2(3)) ? BOX : CHEST,
-						 somex(croom), somey(croom), TRUE, FALSE);
+				(void) mksobj_at((rn2(3)) ? BOX : CHEST, somex(croom), somey(croom), NO_MKOBJ_FLAGS);
 			if(!rn2(9))
-				(void) mkobj_at(TILE_CLASS,
-						 somex(croom), somey(croom), TRUE);
+				(void) mkobj_at(TILE_CLASS, somex(croom), somey(croom), MKOBJ_ARTIF);
 		}
 		goto mithardir_end;
 	}
@@ -1290,8 +1294,7 @@ skip0:
 		 *  when few rooms; chance for 3 or more is neglible.
 		 */
 		if(!rn2(nroom * 5 / 2))
-		    (void) mksobj_at((rn2(3)) ? BOX : CHEST,
-				     somex(croom), somey(croom), TRUE, FALSE);
+		    (void) mksobj_at((rn2(3)) ? BOX : CHEST, somex(croom), somey(croom), NO_MKOBJ_FLAGS);
 
 		/* maybe make some graffiti */
 		if(!rn2(27 + 3 * abs(depth(&u.uz)))) {
@@ -1311,14 +1314,14 @@ skip0:
 	skip_nonrogue:
 #endif
 		if(!rn2(3)) {
-		    (void) mkobj_at(0, somex(croom), somey(croom), TRUE);
+		    (void) mkobj_at(0, somex(croom), somey(croom), MKOBJ_ARTIF);
 		    tryct = 0;
 		    while(!rn2(5)) {
 			if(++tryct > 100) {
 			    impossible("tryct overflow4");
 			    break;
 			}
-			(void) mkobj_at(0, somex(croom), somey(croom), TRUE);
+			(void) mkobj_at(0, somex(croom), somey(croom), MKOBJ_ARTIF);
 		    }
 		}
 	}
@@ -1365,7 +1368,7 @@ mineralize()
 	    for (y = 1; y < (ROWNO - 1); y++)
 		if ((levl[x][y].typ == POOL && !rn2(10)) ||
 			(levl[x][y].typ == MOAT && !rn2(30)))
-		    (void) mksobj_at(KELP_FROND, x, y, TRUE, FALSE);
+		    (void) mksobj_at(KELP_FROND, x, y, NO_MKOBJ_FLAGS);
 
 	/* determine if it is even allowed;
 	   almost all special levels are excluded */
@@ -1413,7 +1416,7 @@ mineralize()
 		  levl[x+1][y].typ   == STONE && levl[x-1][y].typ   == STONE &&
 		  levl[x+1][y+1].typ == STONE && levl[x-1][y+1].typ == STONE) {
 		if (rn2(1000) < goldprob) {
-		    if ((otmp = mksobj(GOLD_PIECE, FALSE, FALSE)) != 0) {
+		    if ((otmp = mksobj(GOLD_PIECE, MKOBJ_NOINIT)) != 0) {
 			otmp->ox = x,  otmp->oy = y;
 			otmp->quan = 1L + rnd(goldprob * 3);
 			u.spawnedGold += otmp->quan;
@@ -1435,7 +1438,7 @@ mineralize()
 		    }
 		}
 		if (rn2(1000) < silverprob) {
-			if ((otmp = mksobj(SILVER_SLINGSTONE, FALSE, FALSE)) != 0) {
+			if ((otmp = mksobj(SILVER_SLINGSTONE, MKOBJ_NOINIT)) != 0) {
 				otmp->quan = 1L + rn2(dunlev(&u.uz));
 				otmp->owt = weight(otmp);
 				otmp->ox = x,  otmp->oy = y;
@@ -1444,7 +1447,7 @@ mineralize()
 		    }
 		}
 		if (depth(&u.uz) > 14 && rn2(1000) < darkprob) {
-			if ((otmp = mksobj(CHUNK_OF_FOSSIL_DARK, FALSE, FALSE)) != 0) {
+			if ((otmp = mksobj(CHUNK_OF_FOSSIL_DARK, MKOBJ_NOINIT)) != 0) {
 				otmp->quan = 1L;
 				otmp->owt = weight(otmp);
 				otmp->ox = x,  otmp->oy = y;
@@ -1453,7 +1456,7 @@ mineralize()
 		    }
 		}
 		if (depth(&u.uz) > 14 && rn2(1000) < fossilprob) {
-			if ((otmp = mksobj(FOSSIL, TRUE, FALSE)) != 0) {
+			if ((otmp = mksobj(FOSSIL, 0)) != 0) {
 				otmp->quan = 1L;
 				otmp->owt = weight(otmp);
 				otmp->ox = x,  otmp->oy = y;
@@ -1700,7 +1703,7 @@ xchar x, y;	/* location */
 		//The branch level has an artifact instead of a portal
 		if(dest->dnum == quest_dnum){
 			struct obj *obj;
-			obj = mksobj_at(SCR_BLANK_PAPER, x, y, FALSE, FALSE);
+			obj = mksobj_at(SCR_BLANK_PAPER, x, y, MKOBJ_NOINIT);
 			if(obj) obj = oname(obj, artiname(ART_PAINTING_FRAGMENT));
 			return;
 		}
@@ -1831,6 +1834,7 @@ coord *tm;
 		switch (kind) {
 		    case VIVI_TRAP:
 		    case SWITCH_TRAP:
+		    case FLESH_HOOK:
 			kind = NO_TRAP; break;
 			case MUMMY_TRAP:
 			if (!(Is_qlocate(&u.uz) && Role_if(PM_ARCHEOLOGIST))) kind = NO_TRAP; 
@@ -2036,10 +2040,46 @@ struct mkroom *croom;
 			add_to_buried(otmp);
 		}
 		/* Leave a bell, in case we accidentally buried someone alive */
-		if (tmp) (void)mksobj_at(BELL, m.x, m.y, TRUE, FALSE);
+		if (tmp) (void)mksobj_at(BELL, m.x, m.y, NO_MKOBJ_FLAGS);
 		break;
 	}
 	return TRUE;
+}
+
+/* make a statue that identifies the boss inside a hellvault */
+void
+mkHVstatue(x, y, hv_id)
+int x, y, hv_id;
+{
+	int mid;
+	struct obj* obj;
+	switch(hv_id){
+		case VN_AKKABISH:
+		case VN_SHALOSH:
+		case VN_NACHASH:
+		case VN_KHAAMNUN:
+		case VN_RAGLAYIM:
+		case VN_TERAPHIM:
+		case VN_SARTAN:
+			mid = PM_STRANGE_LARVA;
+		break;
+		case VN_A_O_BLESSINGS:
+		case VN_A_O_VITALITY:
+		case VN_A_O_CORRUPTION:
+		case VN_A_O_BURNING_WASTES:
+		case VN_A_O_THOUGHT:
+		case VN_A_O_DEATH:
+			mid = PM_ANCIENT_NUPPERIBO;
+		break;
+		case VN_APOCALYPSE:
+		case VN_HARROWER:
+		case VN_MAD_ANGEL:
+			mid = PM_ANGEL;
+		break;
+	}
+	obj = mksobj_at(STATUE, x, y, NO_MKOBJ_FLAGS);
+	obj->corpsenm = mid;
+	fix_object(obj);
 }
 
 /* maze levels have slightly different constraints from normal levels */

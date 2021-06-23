@@ -303,6 +303,7 @@ chat_with_leader()
 
 	    finish_quest(otmp);
 
+
 /*	Rule 4: You haven't got the artifact yet.	*/
 	} else if(Qstat(got_quest)) {
 	    qt_pager(rn1(10, QT_ENCOURAGE + (flags.stag ? QT_TURNEDSTAG : 0)));
@@ -317,7 +318,7 @@ chat_with_leader()
 	   else qt_pager(QT_OTHERLEADER + (flags.stag ? QT_TURNEDSTAG : 0));
 	  /* the quest leader might have passed through the portal into
 	     the regular dungeon; none of the remaining make sense there */
-	  if (!on_level(&u.uz, &qstart_level) && !(Race_if(PM_DROW) && (Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || Role_if(PM_WIZARD)))) return;
+	  if (!In_quest(&u.uz)) return;
 
 	  if(not_capable() && !flags.stag) {
 	    qt_pager(QT_BADLEVEL + (flags.stag ? QT_TURNEDSTAG : 0));
@@ -350,7 +351,7 @@ chat_with_leader()
 			urole.lgod = getAnachrononautLgod();
 		} else if(Role_if(PM_CONVICT)){
 			struct obj *obj;
-			obj = mksobj(HEAVY_IRON_BALL, TRUE, FALSE);
+			obj = mksobj(HEAVY_IRON_BALL, NO_MKOBJ_FLAGS);
 			obj = oname(obj, artiname(ART_IRON_BALL_OF_LEVITATION));
 			obj->oerodeproof = TRUE;
 			obj->blessed = TRUE;
@@ -395,6 +396,7 @@ leader_speaks(mtmp)
 			Qstat(pissed_off) = FALSE;
 		}
 	}
+
 	/* the quest leader might have passed through the portal into the
 	   regular dungeon; if so, mustn't perform "backwards expulsion" */
 	/* Some leaders (Eclavdra, currently) can attack the player under certain conditions */
@@ -404,6 +406,10 @@ leader_speaks(mtmp)
 	  qt_pager(QT_LASTLEADER + (flags.stag ? QT_TURNEDSTAG : 0));
 	  expulsion(TRUE);
 	} else chat_with_leader();
+
+	if(u.uevent.qcompleted && Role_if(PM_MADMAN) && mtmp->mtyp == PM_CASSILDA_THE_IRON_MAIDEN){
+		monvanished(mtmp);
+	}
 }
 
 STATIC_OVL void
@@ -527,6 +533,9 @@ quest_chat(mtmp)
 {
     if (mtmp->m_id == Qstat(leader_m_id)) {
 		chat_with_leader();
+		if(u.uevent.qcompleted && Role_if(PM_MADMAN) && mtmp->mtyp == PM_CASSILDA_THE_IRON_MAIDEN){
+			monvanished(mtmp);
+		}
 		return;
     }
 	
@@ -599,6 +608,7 @@ turn_stag()
 		else {
 			pline("The black web enfolds you.");
 			u.uhouse = EDDER_SYMBOL;
+			lift_veil();
 		}
 		if (uarmh && uarmh->otyp == HELM_OF_OPPOSITE_ALIGNMENT)
 		u.ualignbase[A_CURRENT] = A_LAWFUL;
@@ -749,7 +759,7 @@ turn_stag()
 	/*Give you an appropriate signet ring*/
 	{
 		struct obj *otmp;
-		otmp = mksobj(find_signet_ring(), TRUE, FALSE);
+		otmp = mksobj(find_signet_ring(), NO_MKOBJ_FLAGS);
 		otmp->ohaluengr = TRUE;
 		otmp->oward = flags.initgend ? EILISTRAEE_SYMBOL : EDDER_SYMBOL;
 		pline("\"Take this, to identify you as one of ours!  You should take off any armor with another faction's crest, though.\"");

@@ -17,7 +17,8 @@ static NEARDATA int RoSbook;		/* Read spell or Study Wards?" */
 #define MAINTAINED_SPELL_PW_MULTIPLIER 3
 #define MAINTAINED_SPELL_HUNGER_MULTIPLIER 1
 #define incrnknow(spell)        spl_book[spell].sp_know = KEEN
-#define ndecrnknow(spell, knw)        spl_book[spell].sp_know = max(0, spl_book[spell].sp_know - (KEEN*knw)/100)
+#define ndecrnknow(spell, knw)        spl_book[spell].sp_know = max(0, spl_book[spell].sp_know - knw)
+#define percdecrnknow(spell, knw)        spl_book[spell].sp_know = max(0, spl_book[spell].sp_know - (KEEN*knw)/100)
 
 #define spellev(spell)		spl_book[spell].sp_lev
 #define spellname(spell)	OBJ_NAME(objects[spellid(spell)])
@@ -39,6 +40,7 @@ STATIC_DCL boolean FDECL(spiritLets, (char *, int));
 STATIC_DCL int FDECL(dospiritmenu, (int, int *, int));
 STATIC_DCL boolean FDECL(dospellmenu, (int,int *));
 STATIC_DCL void FDECL(describe_spell, (int));
+STATIC_DCL int NDECL(base_casting_stat);
 STATIC_DCL int FDECL(percent_success, (int));
 STATIC_DCL int NDECL(throwspell);
 STATIC_DCL void NDECL(cast_protection);
@@ -480,7 +482,7 @@ learn()
 				break;
 				case 5:{
 					struct obj *otmp;
-					otmp = mksobj(rnd(4) ? ELVEN_DAGGER : DAGGER, TRUE, FALSE);
+					otmp = mksobj(rnd(4) ? ELVEN_DAGGER : DAGGER, NO_MKOBJ_FLAGS);
 					otmp->spe = d(1,4)+1;
 					otmp->quan += d(2,3);
 					if(otmp->otyp == DAGGER) set_material_gm(otmp, SILVER);
@@ -1040,15 +1042,20 @@ void
 age_spells()
 {
 	int i;
+	int timeout = 1;
 	/*
 	 * The time relative to the hero (a pass through move
 	 * loop) causes all spell knowledge to be decremented.
 	 * The hero's speed, rest status, conscious status etc.
 	 * does not alter the loss of memory.
 	 */
+	if(roll_madness(MAD_FORGETFUL))
+		timeout += (Insanity);
+		
 	for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++)
-	    if (spellknow(i))
-		decrnknow(i);
+	    if (spellknow(i)){
+			ndecrnknow(i, timeout);
+		}
 	return;
 }
 
@@ -1467,6 +1474,11 @@ int
 dospirit()
 {
 	int power_no;
+	
+	if(mad_turn(MAD_TOO_BIG)){
+		pline("It's too big!");
+		return 0;
+	}
 	
 	if(!u.sealsActive && !u.specialSealsActive){
 		if(Role_if(PM_EXILE) && u.ulevel > 1 && u.spiritPColdowns[PWR_GNOSIS_PREMONITION] < monstermoves){
@@ -1920,7 +1932,7 @@ purifying_blast()
 		if (resists_elec(mon) || resists_disint(mon))
 			shieldeff(mon->mx, mon->my);
 		else {
-			mhurtle(mon, u.dx, u.dy, 25);
+			mhurtle(mon, u.dx, u.dy, 25, TRUE);
 			dmg = d(10, dsize);
 			mon->mhp -= dmg;
 			setmangry(mon);
@@ -2021,7 +2033,7 @@ spiriteffects(power, atme)
 					pline("There is no target there.");
 					break;
 				}
-				if(mon->uhurtm && (mon->data->geno&G_GENO || mon->mhp < .1*mon->mhpmax) && !is_rider(mon->data)){
+				if(mon->uhurtm && (mon->data->geno&G_GENO || mon->mhp < .1*mon->mhpmax) && !(is_rider(mon->data) || mon->data->msound == MS_NEMESIS)){
 #define MAXVALUE 24
 					extern const int monstr[];
 					int value = min(monstr[monsndx(mon->data)] + 1,MAXVALUE);
@@ -2211,7 +2223,7 @@ spiriteffects(power, atme)
 					if(rn2(5)) i++;
 					continue;
 				}
-				otmp = mksobj(SHURIKEN, FALSE, FALSE);
+				otmp = mksobj(SHURIKEN, MKOBJ_NOINIT);
 			    otmp->blessed = 0;
 			    otmp->cursed = 0;
 				projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux+xadj, u.uy+yadj, u.dx, u.dy, 0, rn1(5,5), TRUE, FALSE, FALSE);
@@ -2523,7 +2535,7 @@ spiriteffects(power, atme)
 			if (getdir((char *)0) || !(u.dx || u.dy)){
 				struct obj *otmp;
 				You("throw a ball of webbing.");
-				otmp = mksobj(BALL_OF_WEBBING, TRUE, FALSE);
+				otmp = mksobj(BALL_OF_WEBBING, NO_MKOBJ_FLAGS);
 				otmp->blessed = 0;
 				otmp->cursed = 0;
 				otmp->spe = 1; /* to indicate it's yours */
@@ -2571,7 +2583,7 @@ spiriteffects(power, atme)
 				struct obj *otmp;
 				You("ask the earth to open.");
 				digfarhole(TRUE, u.ux+u.dx, u.uy+u.dy);
-				otmp = mksobj(BOULDER, FALSE, FALSE);
+				otmp = mksobj(BOULDER, MKOBJ_NOINIT);
 				projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 1, FALSE, FALSE, FALSE);
 				nomul(0, NULL);
 			} else break;
@@ -2579,7 +2591,7 @@ spiriteffects(power, atme)
 		case PWR_ECHIDNA_S_VENOM:{
 			struct obj *otmp;
 			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
-			otmp = mksobj(ACID_VENOM, TRUE, FALSE);
+			otmp = mksobj(ACID_VENOM, NO_MKOBJ_FLAGS);
 			otmp->spe = 1; /* to indicate it's yours */
 			otmp->ovar1 = d(5,dsize); /* save the damge this should do */
 			You("spit venom.");
@@ -2736,10 +2748,10 @@ spiriteffects(power, atme)
 			for(i=dsize; i > 0; i--){
 				do pm = &mons[rn2(PM_LONG_WORM_TAIL)];
 				while( (pm->geno & (G_UNIQ|G_NOGEN)) || pm->mlevel >= u.ulevel+5);
-				mon = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|NO_MINVENT);
+				mon = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
 				if(mon){
 					initedog(mon);
-					mon->mvanishes = 5;
+					mark_mon_as_summoned(mon, &youmonst, 5, 0);
 				}
 			}
 		}break;
@@ -2749,52 +2761,52 @@ spiriteffects(power, atme)
 			if(uwep){
 				switch(uwep->otyp){
 					case BOW:
-						otmp = mksobj(ARROW, TRUE, FALSE);
+						otmp = mksobj(ARROW, NO_MKOBJ_FLAGS);
 						otmp->objsize = uwep->objsize;
 					break;
 					case ELVEN_BOW:
-						otmp = mksobj(ELVEN_ARROW, TRUE, FALSE);
+						otmp = mksobj(ELVEN_ARROW, NO_MKOBJ_FLAGS);
 						otmp->objsize = uwep->objsize;
 					break;
 					case ORCISH_BOW:
-						otmp = mksobj(ORCISH_ARROW, TRUE, FALSE);
+						otmp = mksobj(ORCISH_ARROW, NO_MKOBJ_FLAGS);
 						otmp->objsize = uwep->objsize;
 					break;
 					case YUMI:
-						otmp = mksobj(YA, TRUE, FALSE);
+						otmp = mksobj(YA, NO_MKOBJ_FLAGS);
 						otmp->objsize = uwep->objsize;
 					break;
 					case SLING:
-						otmp = mksobj(FLINT, TRUE, FALSE);
+						otmp = mksobj(FLINT, NO_MKOBJ_FLAGS);
 					break;
 					case CROSSBOW:
-						otmp = mksobj(CROSSBOW_BOLT, TRUE, FALSE);
+						otmp = mksobj(CROSSBOW_BOLT, NO_MKOBJ_FLAGS);
 						otmp->objsize = uwep->objsize;
 					break;
 					case DROVEN_CROSSBOW:
-						otmp = mksobj(DROVEN_BOLT, TRUE, FALSE);
+						otmp = mksobj(DROVEN_BOLT, NO_MKOBJ_FLAGS);
 						otmp->objsize = uwep->objsize;
 					break;
 					default:
 						if(!rn2(3)){
-							otmp = mksobj(FLINT, TRUE, FALSE);
+							otmp = mksobj(FLINT, NO_MKOBJ_FLAGS);
 						} else if(!rn2(2)){
-							otmp = mksobj(ARROW, TRUE, FALSE);
+							otmp = mksobj(ARROW, NO_MKOBJ_FLAGS);
 							otmp->objsize = uwep->objsize;
 						} else {
-							otmp = mksobj(CROSSBOW_BOLT, TRUE, FALSE);
+							otmp = mksobj(CROSSBOW_BOLT, NO_MKOBJ_FLAGS);
 							otmp->objsize = uwep->objsize;
 						}
 					break;
 				}
 			} else{
 				if(!rn2(3)){
-					otmp = mksobj(FLINT, TRUE, FALSE);
+					otmp = mksobj(FLINT, NO_MKOBJ_FLAGS);
 				} else if(!rn2(2)){
-					otmp = mksobj(ARROW, TRUE, FALSE);
+					otmp = mksobj(ARROW, NO_MKOBJ_FLAGS);
 					otmp->objsize = youracedata->msize;
 				} else {
-					otmp = mksobj(CROSSBOW_BOLT, TRUE, FALSE);
+					otmp = mksobj(CROSSBOW_BOLT, NO_MKOBJ_FLAGS);
 					otmp->objsize = youracedata->msize;
 				}
 			}
@@ -2999,7 +3011,7 @@ spiriteffects(power, atme)
 				mon->mhpmax = (mon->m_lev * 8) - 4;
 				mon->mhp =  mon->mhpmax;
 				for(curmon = fmon; curmon; curmon = curmon->nmon){
-					if(curmon->mspiritual && curmon->mvanishes < 0){
+					if(curmon->mspiritual && !get_timer(curmon->timed, DESUMMON_MON)){
 						numdogs++;
 						if(!weakdog) weakdog = curmon;
 						if(weakdog->m_lev > curmon->m_lev) weakdog = curmon;
@@ -3008,7 +3020,7 @@ spiriteffects(power, atme)
 						else if(weakdog->mtame > curmon->mtame) weakdog = curmon;
 					}
 				}
-				if(weakdog && numdogs > dog_limit()) mon->mvanishes = 5;
+				if(weakdog && numdogs > dog_limit()) start_timer(5L, TIMER_MONSTER, DESUMMON_MON, (genericptr_t)mon);
 				mon->mspiritual = TRUE;
 			}
 		}break;
@@ -3092,6 +3104,11 @@ spiriteffects(power, atme)
 						case TT_LAVA:
 						pline(pullmsg, "lava");
 						break;
+						case TT_FLESH_HOOK: {
+							You("rip free of the flesh hook!  Ouch!");
+							losehp(d(13,3), "tearing free from a flesh hook", KILLED_BY);
+							break;
+						  }
 						case TT_BEARTRAP: {
 						register long side = rn2(3) ? LEFT_SIDE : RIGHT_SIDE;
 						pline(pullmsg, "bear trap");
@@ -3105,11 +3122,13 @@ spiriteffects(power, atme)
 								losehp(2, "leg damage from being pulled out of a bear trap",
 										KILLED_BY);
 								set_wounded_legs(side, rn1(100,50));
-								if(bootdamage > uarmf->spe){
-									claws_destroy_arm(uarmf);
-								}else{
-									for(; bootdamage >= 0; bootdamage--) drain_item(uarmf);
-									Your("boots are damaged!");
+								if(!Preservation){
+									if(bootdamage > uarmf->spe){
+										claws_destroy_arm(uarmf);
+									}else{
+										for(; bootdamage >= 0; bootdamage--) drain_item(uarmf);
+										Your("boots are damaged!");
+									}
 								}
 							}
 							else{
@@ -3139,7 +3158,7 @@ spiriteffects(power, atme)
 		case PWR_DISGUSTED_GAZE:{
 			struct monst *mon;
 			struct obj *obj;
-			if((!uarmg || !is_opaque(uarmg)) && !(uarmc && uarmc->otyp == MUMMY_WRAPPING)){
+			if((!uarmg || !is_opaque(uarmg)) && !(uarmc && is_mummy_wrap(uarmc))){
 				if(throwgaze()){
 					if((mon = m_at(u.dx,u.dy)) && canseemon(mon)){
 						Your("arms swing up and your hands jerk open in a single, spasmodic motion.");
@@ -3253,7 +3272,7 @@ spiriteffects(power, atme)
 					i++;
 					mon = m_at(sx, sy);
 					if(mon){
-						mhurtle(mon, u.dx, u.dy, range+i);
+						mhurtle(mon, u.dx, u.dy, range+i, TRUE);
 						mon->mhp -= d(5,dsize);
 						setmangry(mon);
 						if (mon->mhp <= 0){
@@ -3268,7 +3287,7 @@ spiriteffects(power, atme)
 						if(isok(sx+1,sy)){
 							mon = m_at(sx+1, sy);
 							if(mon){
-								mhurtle(mon, u.dx, u.dy, range+i);
+								mhurtle(mon, u.dx, u.dy, range+i, FALSE);
 								mon->mhp -= d(rnd(5),dsize);
 								if (mon->mhp <= 0){
 									mon->mhp = 0;
@@ -3282,7 +3301,7 @@ spiriteffects(power, atme)
 						if(isok(sx-1,sy)){
 							mon = m_at(sx-1, sy);
 							if(mon){
-								mhurtle(mon, u.dx, u.dy, range+i);
+								mhurtle(mon, u.dx, u.dy, range+i, FALSE);
 								mon->mhp -= d(rnd(5),dsize);
 								if (mon->mhp <= 0){
 									mon->mhp = 0;
@@ -3297,7 +3316,7 @@ spiriteffects(power, atme)
 						if(isok(sx,sy+1)){
 							mon = m_at(sx, sy+1);
 							if(mon){
-								mhurtle(mon, u.dx, u.dy, range+i);
+								mhurtle(mon, u.dx, u.dy, range+i, FALSE);
 								mon->mhp -= d(rnd(5),dsize);
 								if (mon->mhp <= 0){
 									mon->mhp = 0;
@@ -3311,7 +3330,7 @@ spiriteffects(power, atme)
 						if(isok(sx,sy-1)){
 							mon = m_at(sx, sy-1);
 							if(mon){
-								mhurtle(mon, u.dx, u.dy, range+i);
+								mhurtle(mon, u.dx, u.dy, range+i, FALSE);
 								mon->mhp -= d(rnd(5),dsize);
 								if (mon->mhp <= 0){
 									mon->mhp = 0;
@@ -3326,7 +3345,7 @@ spiriteffects(power, atme)
 						if(isok(sx,sy-u.dy)){
 							mon = m_at(sx, sy-u.dy);
 							if(mon){
-								mhurtle(mon, u.dx, u.dy, range+i);
+								mhurtle(mon, u.dx, u.dy, range+i, FALSE);
 								mon->mhp -= d(rnd(5),dsize);
 								if (mon->mhp <= 0){
 									mon->mhp = 0;
@@ -3340,7 +3359,7 @@ spiriteffects(power, atme)
 						if(isok(sx-u.dx,sy)){
 							mon = m_at(sx-u.dx, sy);
 							if(mon){
-								mhurtle(mon, u.dx, u.dy, range+i);
+								mhurtle(mon, u.dx, u.dy, range+i, FALSE);
 								mon->mhp -= d(rnd(5),dsize);
 								if (mon->mhp <= 0){
 									mon->mhp = 0;
@@ -3480,7 +3499,7 @@ spiriteffects(power, atme)
 				struct monst *mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(t && (t->ttyp == PIT || t->ttyp == SPIKED_PIT)){
 					pline("Water rains down from above and fills the pit.");
-					mksobj_at(KELP_FROND,u.ux,u.uy,FALSE,FALSE);
+					mksobj_at(KELP_FROND,u.ux,u.uy,MKOBJ_NOINIT);
 					deltrap(t);
 					levl[u.ux+u.dx][u.uy+u.dy].typ = POOL;
 					newsym(u.ux+u.dx, u.uy+u.dy);
@@ -3726,9 +3745,9 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			struct permonst *pm;
 			pm = choose_crystal_summon();
-			if(pm && (mon = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|NO_MINVENT))){
+			if(pm && (mon = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM))){
 				initedog(mon);
-				mon->mvanishes = 10+u.ulevel/2;
+				mark_mon_as_summoned(mon, &youmonst, 10+u.ulevel/2, 0);
 			} else return 0;
 		}break;
 		case PWR_PSEUDONATURAL_SURGE:
@@ -3911,7 +3930,7 @@ spiriteffects(power, atme)
 				} else break;
 			}
 			if(!mon) return 0;
-			qvr = mksobj(SPIKE, TRUE, FALSE);
+			qvr = mksobj(SPIKE, NO_MKOBJ_FLAGS);
 			qvr->blessed = 0;
 			qvr->cursed = 0;
 			qvr->quan = 1;
@@ -4194,6 +4213,8 @@ int x, y;
 		)
 			dmod++;
 		mon->mhp -= d(nd, 3*dmod);
+		if (mon->mtyp == PM_GREMLIN)
+			mon->mhp -= mon->mhp;
 		pline("%s is seared by the Light.", Monnam(mon));
 	}
 	if (mon && mon->mhp <= 0){
@@ -4262,14 +4283,14 @@ int spell;
 						if (mon->mhp <= 0){
 							mon->mhp = 0;
 							xkilled(mon, 1);
-						} else mhurtle(mon, -1*u.dy, u.dx, 33);
+						} else mhurtle(mon, -1*u.dy, u.dx, 33, TRUE);
 					} else {
 						pline("%s is thrown to the side.", Monnam(mon));
 						mon->mhp -= d(nd,3);
 						if (mon->mhp <= 0){
 							mon->mhp = 0;
 							xkilled(mon, 1);
-						} else mhurtle(mon, u.dy, -1*u.dx, 33);
+						} else mhurtle(mon, u.dy, -1*u.dx, 33, TRUE);
 					}
 				}
 				//Update
@@ -4443,7 +4464,7 @@ spelleffects(int spell, boolean atme, int spelltyp)
 			change_usanity(-rnd(spellev(spell)), FALSE);
 		}
 		/* pseudo is a temporary "false" object containing the spell stats */
-		pseudo = mksobj(spellid(spell), FALSE, FALSE);
+		pseudo = mksobj(spellid(spell), MKOBJ_NOINIT);
 		pseudo->blessed = pseudo->cursed = 0;
 		pseudo->quan = 20L;			/* do not let useup get it */
 		
@@ -4452,7 +4473,7 @@ spelleffects(int spell, boolean atme, int spelltyp)
 		}
 		
 	} else {
-		pseudo = mksobj(spelltyp, FALSE, FALSE);
+		pseudo = mksobj(spelltyp, MKOBJ_NOINIT);
 		pseudo->blessed = pseudo->cursed = 0;
 		pseudo->quan = 20L;			/* do not let useup get it */
 		
@@ -4757,7 +4778,7 @@ losespells(howmuch)
 	int  n;
 
 	for (n = 0; n < MAXSPELL && spellid(n) != NO_SPELL; n++){
-		ndecrnknow(n, howmuch);
+		percdecrnknow(n, howmuch);
 	}
 }
 
@@ -4999,8 +5020,23 @@ int *spell_no;
 		else
 			Sprintf(buf, "Name\tLevel\tCategory\tFail\tMemory");
 		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
-		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
-
+		// if(splaction == SPELLMENU_CAST && mad_turn(MAD_SCIAPHILIA) && ()(dimness(u.ux, u.uy) != 3 && dimness(u.ux, u.uy) > 0) || (!levl[u.ux][u.uy].lit && dimness(u.ux, u.uy) == 0)){
+			// Sprintf(buf, "You long for the flickering shadows!");
+			// add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		// }
+		if(splaction == SPELLMENU_CAST && mad_turn(MAD_TOO_BIG)){
+			Sprintf(buf, "It's too big!");
+			add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		}
+		else if(splaction == SPELLMENU_CAST && Doubt && base_casting_stat() == A_WIS){
+			Sprintf(buf, "You're suffering a crisis of faith!");
+			add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		}
+		else if(splaction == SPELLMENU_CAST && base_casting_stat() == A_WIS && flat_mad_turn(MAD_APOSTASY)){
+			Sprintf(buf, "You can't bring yourself to use your magic.");
+			add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		}
+		else for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
 			if (can_maintain_spell(spellid(i))){
 				maintainable += 1;
 			}
@@ -5133,7 +5169,7 @@ int *spell_no;
 		} // menu item was selected
 		/* else end menu, nothing was selected */
 		break;
-	}while (TRUE);
+	} while (TRUE);
 	return FALSE;
 }
 
@@ -5155,7 +5191,7 @@ int spellID;
 	char desc3[80] = " ";
 	char desc4[80] = " ";
 
-		pseudo = mksobj(spellid(spellID), FALSE, FALSE);
+		pseudo = mksobj(spellid(spellID), MKOBJ_NOINIT);
 		pseudo->blessed = pseudo->cursed = 0;
 		sprintf(name,  " %s", spellname(spellID));
 		name[1] = name[1] - 32;
@@ -5521,6 +5557,37 @@ int val;
 }
 
 STATIC_OVL int
+base_casting_stat()
+{
+	int stat;
+	if(uwep && uwep->oartifact == ART_RITUAL_RINGED_SPEAR){
+		stat = A_WIS;
+	} else if(uwep && uwep->oartifact == ART_VELKA_S_RAPIER){
+		stat = A_INT;
+	} else if(u.specialSealsActive&SEAL_NUMINA && abs(u.wisSpirits - u.intSpirits) <= 1){
+		if(ACURR(A_WIS) > ACURR(A_INT))
+			stat = A_WIS;
+		else stat = A_INT;
+	} else if(u.wisSpirits > u.intSpirits){
+		stat = A_WIS;
+	} else if(u.wisSpirits < u.intSpirits){
+		stat = A_INT;
+	} else if(u.wisSpirits || u.intSpirits){
+		if(ACURR(A_WIS) > ACURR(A_INT))
+			stat = A_WIS;
+		else stat = A_INT;
+	} else {
+		if(Race_if(PM_INCANTIFIER)) stat = A_INT;
+		else if(Role_if(PM_EXILE)){
+			if(ACURR(A_WIS) > ACURR(A_INT))
+				stat = A_INT;
+			else stat = A_WIS;
+		} else stat = urole.spelstat;
+	}
+	return stat;
+}
+
+STATIC_OVL int
 percent_success(spell)
 int spell;
 {
@@ -5537,25 +5604,16 @@ int spell;
 
 	splcaster = urole.spelbase;
 	special = urole.spelheal;
-	if(uwep && uwep->oartifact == ART_RITUAL_RINGED_SPEAR){
-		statused = ACURR(A_WIS);
-	} else if(uwep && uwep->oartifact == ART_VELKA_S_RAPIER){
-		statused = ACURR(A_INT);
-	} else if(u.specialSealsActive&SEAL_NUMINA){
-		if(abs(u.wisSpirits - u.intSpirits) <= 1) statused = max(ACURR(A_WIS), ACURR(A_INT));
-	} else if(u.wisSpirits > u.intSpirits){
-		statused = ACURR(A_WIS);
-	} else if(u.wisSpirits < u.intSpirits){
-		statused = ACURR(A_INT);
-	} else if(u.wisSpirits || u.intSpirits){
-		statused = max(ACURR(A_WIS), ACURR(A_INT));
-	} else {
-		if(Race_if(PM_INCANTIFIER)) statused = ACURR(A_INT);
-		else if(Role_if(PM_EXILE)) statused = min(ACURR(A_WIS), ACURR(A_INT));
-		else if(Role_if(PM_BARD) && spell_skilltype(spellid(spell)) == P_ENCHANTMENT_SPELL)
-			statused = ACURR(A_CHA);
-		else statused = ACURR(urole.spelstat);
-	}
+	statused = ACURR(base_casting_stat());
+	if(Role_if(PM_BARD) && spell_skilltype(spellid(spell)) == P_ENCHANTMENT_SPELL)
+		statused = ACURR(A_CHA);
+
+	if((Doubt || flat_mad_turn(MAD_APOSTASY))
+		&& (base_casting_stat() == A_WIS || spell_skilltype(spellid(spell)) == P_HEALING_SPELL || spell_skilltype(spellid(spell)) == P_CLERIC_SPELL)
+	)
+		return 0;
+	if(mad_turn(MAD_TOO_BIG))
+		return 0;
 
 	/* some artifacts pracically cast the spells on their own */
 	if ((uarmh && uarmh->oartifact == ART_STORMHELM && spellid(spell) == SPE_LIGHTNING_STORM) ||
@@ -5672,7 +5730,7 @@ int spell;
 		}
 	}
 
-	if (uarm){
+	if (uarm && arm_blocks_upper_body(uarm->otyp)){
 		if (is_metallic(uarm) || uarm->oartifact == ART_DRAGON_PLATE)
 			splcaster += urole.spelarmr;
 
@@ -5786,18 +5844,26 @@ int spell;
 	 */
 	chance = chance * (20-splcaster) / 15 - splcaster;
 	
-	if(u.umadness&MAD_RAGE && !ClearThoughts){
+	//Many madnesses affect spell casting chances
+	if(u.umadness){
 		int delta = Insanity;
-		chance -= delta;
-	}
-	if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
-		int delta = Insanity;
-		int discomfort = u_clothing_discomfort();
-		if (discomfort) {
-			chance -= (discomfort * delta)/10;
-		} else {
-			if (!uwep && !uarms) {
-				chance += delta/10;
+		if(u.umadness&MAD_RAGE && !ClearThoughts){
+			chance -= delta;
+		}
+		if(u.umadness&MAD_FORMICATION && !ClearThoughts){
+			chance -= delta/2;
+		}
+		if(u.umadness&MAD_SCIAPHILIA && !ClearThoughts && ((dimness(u.ux, u.uy) != 3 && dimness(u.ux, u.uy) > 0) || (!levl[u.ux][u.uy].lit && dimness(u.ux, u.uy) == 0))){
+			chance -= delta;
+		}
+		if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
+			int discomfort = u_clothing_discomfort();
+			if (discomfort) {
+				chance -= (discomfort * delta)/10;
+			} else {
+				if (!uwep && !uarms) {
+					chance += delta/10;
+				}
 			}
 		}
 	}
@@ -6146,14 +6212,12 @@ doreinforce_binding()
 	menu_item *selected;
 	anything any;
 
-	if (!(u.sealsActive || u.specialSealsActive)) {
-		pline("You have no spirits bound.");
-		return 0;
-	}
-
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
 	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Choose binding to refresh:");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	
 	for(i=0;i<QUEST_SPIRIT && u.spirit[i];i++){
 		j = decode_sealID(u.spirit[i]) - FIRST_SEAL;
@@ -6184,17 +6248,9 @@ doreinforce_binding()
 			MENU_UNSELECTED);
 		incntlet++;
 	}
-	end_menu(tmpwin, "Choose binding to refresh:");
 
-	/* check that we have at least one spirit that can be refreshed */
-	if (incntlet != 'a') {
-		how = PICK_ONE;
-		n = select_menu(tmpwin, how, &selected);
-	}
-	else {
-		pline("You have no spirits whose bindings can be reinforced.");
-		n = 0;
-	}
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
 	
 	if(n > 0){

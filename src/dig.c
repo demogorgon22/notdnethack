@@ -434,7 +434,7 @@ dig()
 					) (void) rnd_treefruit_at(dpx, dpy);
 				}
 				for(numsticks = d(2,4)-1; numsticks > 0; numsticks--){
-					staff = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, dpx, dpy, FALSE, FALSE);
+					staff = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, dpx, dpy, MKOBJ_NOINIT);
 					set_material_gm(staff, WOOD);
 					staff->spe = 0;
 					staff->cursed = staff->blessed = FALSE;
@@ -450,14 +450,14 @@ dig()
 				struct obj *otmp;
 				if(!is_lightsaber(digitem)){
 					if(!Is_belial_level(&u.uz) && !rn2(20)){
-						otmp = mksobj_at(BOULDER, dpx, dpy, FALSE, FALSE);
+						otmp = mksobj_at(BOULDER, dpx, dpy, MKOBJ_NOINIT);
 						otmp->owt = weight(otmp);
 					} else {
 						if(Is_belial_level(&u.uz)){
-							otmp = mksobj_at(DROVEN_DAGGER, dpx, dpy, FALSE, FALSE);
+							otmp = mksobj_at(DROVEN_DAGGER, dpx, dpy, MKOBJ_NOINIT);
 							set_material_gm(otmp, OBSIDIAN_MT);
 						} else {
-							otmp = mksobj_at(ROCK, dpx, dpy, FALSE, FALSE);
+							otmp = mksobj_at(ROCK, dpx, dpy, MKOBJ_NOINIT);
 						}
 						set_obj_quan(otmp, rn1(20, 20));
 					}
@@ -486,10 +486,10 @@ dig()
 			}
 			if(!is_lightsaber(digitem)){
 				if(Is_belial_level(&u.uz)){
-					otmp = mksobj_at(DROVEN_DAGGER, dpx, dpy, FALSE, FALSE);
+					otmp = mksobj_at(DROVEN_DAGGER, dpx, dpy, MKOBJ_NOINIT);
 					set_material_gm(otmp, OBSIDIAN_MT);
 				} else {
-					otmp = mksobj_at(ROCK, dpx, dpy, FALSE, FALSE);
+					otmp = mksobj_at(ROCK, dpx, dpy, MKOBJ_NOINIT);
 				}
 				set_obj_quan(otmp, rn1(20, 20));
 			}
@@ -1013,9 +1013,13 @@ boolean pit_only;
 		delobj(boulder_here);
 		return TRUE;
 
-	} else if (IS_GRAVE(lev->typ)) {        
+	} else if (IS_GRAVE(lev->typ)) {
 	    digactualhole(u.ux, u.uy, BY_YOU, PIT, FALSE, TRUE);
 	    dig_up_grave(u.ux, u.uy);
+	    return TRUE;
+	} else if (IS_SEAL(lev->typ)) {
+	    // digactualhole(u.ux, u.uy, BY_YOU, PIT, FALSE, TRUE);
+	    break_seal(u.ux, u.uy);
 	    return TRUE;
 	} else if (lev->typ == DRAWBRIDGE_UP) {
 		/* must be floor or ice, other cases handled above */
@@ -1163,6 +1167,10 @@ boolean pit_only;
 	    openactualdoor(u.ux, u.uy, BY_YOU, PIT);
 	    dig_up_grave(u.ux, u.uy);
 	    return TRUE;
+	} else if (IS_SEAL(lev->typ)) {
+	    // openactualdoor(u.ux, u.uy, BY_YOU, PIT);
+	    break_seal(u.ux, u.uy);
+	    return TRUE;
 	} else if (IS_DOOR(lev->typ)) {
 		if(lev->doormask == D_NODOOR){
 			goto goodspot;
@@ -1302,6 +1310,10 @@ int x,y;
 	    openactualdoor(x, y, BY_YOU, PIT);
 	    dig_up_grave(x, y);
 	    return TRUE;
+	} else if (IS_SEAL(lev->typ)) {
+	    // openactualdoor(x, y, BY_YOU, PIT);
+	    break_seal(x,y);
+	    return TRUE;
 	} else if (IS_DOOR(lev->typ)) {
 		if(lev->doormask == D_NODOOR){
 			goto badspot;
@@ -1347,7 +1359,7 @@ fakerocktrap()
 	int dmg = d(2,6); /* should be std ROCK dmg? */
 	struct obj *otmp;
 
-	otmp = mksobj_at(ROCK, u.ux, u.uy, TRUE, FALSE);
+	otmp = mksobj_at(ROCK, u.ux, u.uy, NO_MKOBJ_FLAGS);
 	set_obj_quan(otmp, 1);
 
 	pline("A trap door in %s opens and %s falls on your %s!",
@@ -1405,6 +1417,9 @@ openrocktrap()
 		}
 
 	} else if (IS_GRAVE(lev->typ)) {
+		fakerocktrap();
+	    return TRUE;
+	} else if (IS_SEAL(lev->typ)) {
 		fakerocktrap();
 	    return TRUE;
 	} else if (IS_DOOR(lev->typ)) {
@@ -1523,6 +1538,208 @@ int x, y;
 	del_engr_ward_at(x, y);
 	newsym(x,y);
 	return;
+}
+
+STATIC_OVL void
+hell_vault_items(x,y,type)
+int x, y, type;
+{
+    struct obj *container;
+	container = mksobj_at(CHEST, x, y, MKOBJ_NOINIT);
+	set_material_gm(container, METAL);
+	container->olocked = TRUE;
+	container->otrapped = TRUE;
+	for(int i = d(9,4); i > 0; i--)
+		mkhellvaultitem(container);
+	bury_an_obj(container);
+}
+
+void
+break_seal(x,y)
+int x, y;
+{
+	int i, j;
+    struct trap *ttmp;
+    struct obj *otmp;
+    struct monst *mon;
+    register struct rm *lev;
+	int mid;
+	if(cansee(x, y)){
+		pline("The hellish seal shatters and dissolves into magenta fog!");
+	}
+    pline_The("floor shakes violently under you!");
+	if(distmin(u.ux, u.uy, x, y) <= 2){
+		pline_The("walls around you begin to bend and crumble!");
+	}
+	for(i=-2; i < 3; i++){
+		for(j=-2; j < 3; j++){
+			if(!isok(x+i,y+j))
+				continue;
+			//Skip the center point
+			if(i || j){
+				ttmp = t_at(x+i,y+j);
+				lev = &levl[x+i][y+j];
+				//Clear traps
+				if(ttmp && ttmp->ttyp != MAGIC_PORTAL){
+					deltrap(ttmp);
+				}
+				//Clear boulders
+				while ((otmp = boulder_at(x+i, y+j)) != 0)
+					fracture_rock(otmp);
+
+				if(!IS_FEATURE(lev->typ)){
+					/* fake out saved state */
+					lev->seenv = 0;
+					lev->doormask = 0;
+					lev->lit = TRUE;
+					lev->horizontal = FALSE;
+					lev->typ = ROOM;
+					unblock_point(x+i,y+j);	/* make sure vision knows this location is open */
+				}
+
+				newsym(x+i,y+j);
+			}
+		}
+	}
+
+	//Decode the vault monster's ID
+	switch(levl[x][y].vaulttype){
+		case VN_AKKABISH:
+			mid = PM_AKKABISH_TANNIN;
+		break;
+		case VN_SHALOSH:
+			mid = PM_SHALOSH_TANNAH;
+		break;
+		case VN_NACHASH:
+			mid = PM_NACHASH_TANNIN;
+		break;
+		case VN_KHAAMNUN:
+			mid = PM_KHAAMNUN_TANNIN;
+		break;
+		case VN_RAGLAYIM:
+			mid = PM_RAGLAYIM_TANNIN;
+		break;
+		case VN_TERAPHIM:
+			mid = PM_TERAPHIM_TANNAH;
+		break;
+		case VN_SARTAN:
+			mid = PM_SARTAN_TANNIN;
+		break;
+		case VN_A_O_BLESSINGS:
+			mid = PM_ANCIENT_OF_BLESSINGS;
+		break;
+		case VN_A_O_VITALITY:
+			mid = PM_ANCIENT_OF_VITALITY;
+		break;
+		case VN_A_O_CORRUPTION:
+			mid = PM_ANCIENT_OF_CORRUPTION;
+		break;
+		case VN_A_O_BURNING_WASTES:
+			mid = PM_ANCIENT_OF_THE_BURNING_WASTES;
+		break;
+		case VN_A_O_THOUGHT:
+			mid = PM_ANCIENT_OF_THOUGHT;
+		break;
+		case VN_A_O_DEATH:
+			mid = PM_ANCIENT_OF_DEATH;
+		break;
+		case VN_APOCALYPSE:
+			mid = PM_APOCALYPSE_ANGEL;
+		break;
+		case VN_HARROWER:
+			mid = PM_HARROWER_OF_ZARIEL;
+		break;
+		case VN_MAD_ANGEL:
+			switch(rn2(6)){
+				case 0:
+					mid = PM_THRONE_ARCHON;
+				break;
+				case 1:
+					mid = PM_LIGHT_ARCHON;
+				break;
+				case 2:
+					mid = PM_SURYA_DEVA;
+				break;
+				case 3:
+					mid = PM_MAHADEVA;
+				break;
+				//Note: regardless of which one is the "common" variety each has a 50/50 chance of being in the vault
+				case 4:
+					if(dungeon_topology.eprecursor_typ == PRE_DRACAE){
+						mid = rn2(2) ? PM_DRACAE_ELADRIN : PM_TULANI_ELADRIN;
+					} else
+						mid = PM_TULANI_ELADRIN;
+				break;
+				case 5:
+					if(dungeon_topology.eprecursor_typ == PRE_DRACAE){
+						mid = rn2(2) ? PM_DRACAE_ELADRIN : PM_GAE_ELADRIN;
+					} else
+						mid = PM_GAE_ELADRIN;
+				break;
+			}
+		break;
+		default:
+			impossible("Unhandled vault number %d.", levl[x][y].vaulttype);
+			mid = PM_LAMB;
+		break;
+	}
+	
+	mon = makemon(&mons[mid], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+	
+	if(mon){
+		give_hell_vault_trophy(levl[x][y].vaulttype);
+		if(levl[x][y].vaulttype == VN_MAD_ANGEL){
+			set_template(mon, MAD_TEMPLATE);
+			mon->m_lev += (mon->data->mlevel)/2;
+		}
+		mon->mhpmax = max(4, 8*mon->m_lev);
+		mon->mhp = mon->mhpmax;
+		if(mid == PM_TULANI_ELADRIN || mid == PM_GAE_ELADRIN){
+			if(dungeon_topology.eprecursor_typ == PRE_POLYP && rn2(2))
+				mon->ispolyp = TRUE;
+		}
+		mon->mspec_used = 0;
+		if(is_ancient(mon)) mon->mvar_ancient_breath_cooldown = 1L; //Don't breathe at the end of this turn.
+		switch(levl[x][y].vaulttype){
+			case VN_AKKABISH:
+			case VN_SARTAN:
+			case VN_RAGLAYIM:
+				/* stay adjacent */
+				break;
+
+			case VN_TERAPHIM:
+			case VN_MAD_ANGEL:
+				mofflin_close(mon);
+				break;
+
+			case VN_NACHASH:
+			case VN_KHAAMNUN:
+			case VN_A_O_BLESSINGS:
+			case VN_A_O_VITALITY:
+			case VN_A_O_CORRUPTION:
+			case VN_A_O_BURNING_WASTES:
+			case VN_A_O_THOUGHT:
+			case VN_A_O_DEATH:
+			case VN_HARROWER:
+			case VN_SHALOSH:
+			default:
+				mofflin(mon);
+				break;
+			case VN_APOCALYPSE:
+				rloc(mon, TRUE);
+				break;
+		}
+		if(canseemon(mon)){
+			pline("%s appears from the magenta fog!", Monnam(mon));
+		}
+	}
+
+	hell_vault_items(x,y,levl[x][y].vaulttype);
+	levl[x][y].seenv = 0;
+	levl[x][y].lit = TRUE;
+	levl[x][y].horizontal = FALSE;
+	levl[x][y].vaulttype = 0;
+	levl[x][y].typ = ROOM;
 }
 
 int
@@ -1889,30 +2106,30 @@ register struct monst *mtmp;
 			}
 		}
 		if(Is_belial_level(&u.uz)){
-			otmp = mksobj_at(DROVEN_DAGGER, mtmp->mx, mtmp->my, FALSE, FALSE);
+			otmp = mksobj_at(DROVEN_DAGGER, mtmp->mx, mtmp->my, MKOBJ_NOINIT);
 			set_material_gm(otmp, OBSIDIAN_MT);
 		} else {
-			otmp = mksobj_at(ROCK, mtmp->mx, mtmp->my, FALSE, FALSE);
+			otmp = mksobj_at(ROCK, mtmp->mx, mtmp->my, MKOBJ_NOINIT);
 		}
 		set_obj_quan(otmp, rn1(20, 20));
 	} else if (IS_TREE(here->typ)) {
 		int numsticks;
 	    here->typ = ROOM;
 		for(numsticks = d(2,4)-1; numsticks > 0; numsticks--){
-			otmp = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, mtmp->mx, mtmp->my, FALSE, FALSE);
+			otmp = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, mtmp->mx, mtmp->my, MKOBJ_NOINIT);
 			set_material_gm(otmp, WOOD);
 			otmp->spe = 0;
 			otmp->cursed = otmp->blessed = FALSE;
 		}
 	} else {
 	    here->typ = CORR;
-	    if (!Is_belial_level(&u.uz) && !rn2(20)) mksobj_at(BOULDER, mtmp->mx, mtmp->my, TRUE, FALSE);
+	    if (!Is_belial_level(&u.uz) && !rn2(20)) mksobj_at(BOULDER, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
 		else {
 			if(Is_belial_level(&u.uz)){
-				otmp = mksobj_at(DROVEN_DAGGER, mtmp->mx, mtmp->my, FALSE, FALSE);
+				otmp = mksobj_at(DROVEN_DAGGER, mtmp->mx, mtmp->my, MKOBJ_NOINIT);
 				set_material_gm(otmp, OBSIDIAN_MT);
 			} else {
-				otmp = mksobj_at(ROCK, mtmp->mx, mtmp->my, FALSE, FALSE);
+				otmp = mksobj_at(ROCK, mtmp->mx, mtmp->my, MKOBJ_NOINIT);
 			}
 			set_obj_quan(otmp, rn1(20, 20));
 		}
@@ -1922,6 +2139,26 @@ register struct monst *mtmp;
 	    unblock_point(mtmp->mx, mtmp->my);	/* vision */
 
 	return FALSE;
+}
+
+/* fill in corridors around previous position, create corridors out of rock around current position */
+void
+mworldshape(mtmp, oldx, oldy)
+struct monst * mtmp;
+int oldx;
+int oldy;
+{
+	int tx, ty;
+	/* fill in around prev position */
+	for (tx = max(0, oldx-1); tx <= min(COLNO, oldx+1); tx++)
+	for (ty = max(0, oldy-1); ty <= min(ROWNO, oldy+1); ty++)
+		if (levl[tx][ty].typ == CORR)
+			levl[tx][ty].typ = STONE;
+	/* dig out around new position */
+	for (tx = max(0, mtmp->mx-1); tx <= min(COLNO, mtmp->mx+1); tx++)
+	for (ty = max(0, mtmp->my-1); ty <= min(ROWNO, mtmp->my+1); ty++)
+		if (levl[tx][ty].typ == STONE && may_dig(tx, ty))
+			levl[tx][ty].typ = CORR;
 }
 
 #endif /* OVL0 */
@@ -1974,7 +2211,7 @@ register int zx, zy, digdepth;
 		    pline("It falls on your %s!", body_part(HEAD));
 		    losehp(rnd((uarmh && is_hard(uarmh)) ? 2 : 6),
 			   "falling rock", KILLED_BY_AN);
-		    otmp = mksobj_at(ROCK, u.ux, u.uy, FALSE, FALSE);
+		    otmp = mksobj_at(ROCK, u.ux, u.uy, MKOBJ_NOINIT);
 		    if (otmp) {
 			(void)xname(otmp);	/* set dknown, maybe bknown */
 			stackobj(otmp);
@@ -2183,7 +2420,7 @@ int x, y;
 		if (otmp->ox == x && otmp->oy == y) {
 		    obj_extract_self(otmp);
 		    if (otmp->timed)
-			(void) stop_timer(ROT_ORGANIC, (genericptr_t)otmp);
+			(void) stop_timer(ROT_ORGANIC, otmp->timed);
 		    place_object(otmp, x, y);
 		    stackobj(otmp);
 		}
@@ -2233,7 +2470,7 @@ long timeout;	/* unused */
 		}
 		if(cansee(obj->ox, obj->oy))
 			pline_The("%s boils to black mist!", surface(obj->ox, obj->oy));
-		makemon(&mons[PM_MOUTH_OF_THE_GOAT], obj->ox, obj->oy, NO_MM_FLAGS);
+		makemon(&mons[PM_MOUTH_OF_THE_GOAT], obj->ox, obj->oy, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
 	}
 	obj_extract_self(obj);
 	obfree(obj, (struct obj *) 0);
@@ -2347,9 +2584,13 @@ int y;
 		delobj(boulder_here);
 		return TRUE;
 
-	} else if (IS_GRAVE(lev->typ)) {        
+	} else if (IS_GRAVE(lev->typ)) {
 	    digactualhole(x, y, BY_YOU, PIT, FALSE, TRUE);
 	    dig_up_grave(x,y);
+	    return TRUE;
+	} else if (IS_SEAL(lev->typ)) {
+	    // digactualhole(x, y, BY_YOU, PIT, FALSE, TRUE);
+	    break_seal(x,y);
 	    return TRUE;
 	} else if (lev->typ == DRAWBRIDGE_UP) {
 		/* must be floor or ice, other cases handled above */

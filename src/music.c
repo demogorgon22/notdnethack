@@ -527,7 +527,11 @@ struct obj *instr;
 				 "passtune", MENU_UNSELECTED);
 		}
 	}
-	for (a = SNG_FIRST; a <= SNG_LAST; a++) {
+	if(mad_turn(MAD_TOO_BIG)){
+		Sprintf(buf, "It's too big!");
+		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	}
+	else for (a = SNG_FIRST; a <= SNG_LAST; a++) {
 		/* For a song to be available in the menu:
 		   - Need a suitable instrument (the Lyre of Orpheus can play any song)
 		   - Must know the related spell (Bards already know all songs)
@@ -1085,6 +1089,7 @@ int distance;
 					mtmp->mblinded = 0;
 				}
 				mtmp->mberserk = 0;
+				mtmp->mdoubt = 0;
 				if(mtmp->mhp < mtmp->mhpmax && mtmp->mhp < mtmp->m_lev) mtmp->mhp = min(mtmp->m_lev,mtmp->mhpmax);
 			case P_BASIC:
 				if(!mtmp->mcanmove && mtmp->mfrozen){
@@ -1527,6 +1532,11 @@ struct monst *mon;
 			if (cansee(x,y))
 				pline_The("headstone topples into a chasm.");
 			goto do_pit;
+		  case HELLISH_SEAL :
+			if (cansee(x,y))
+				pline_The("seal is broken by a chasm!");
+			break_seal(x, y);
+			break;
 		  case TREE:
 			if (cansee(x,y))
 				pline_The("tree topples into a chasm.");

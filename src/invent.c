@@ -197,7 +197,7 @@ struct obj **potmp, **pobj;
 
 		/* really should merge the timeouts */
 		if (obj->lamplit) obj_merge_light_sources(obj, otmp);
-		if (obj->timed) obj_stop_timers(obj);	/* follows lights */
+		if (obj->timed) stop_all_timers(obj->timed);	/* follows lights */
 
 		/* fixup for `#adjust' merging wielded darts, daggers, &c */
 		if (obj->owornmask && carried(otmp)) {
@@ -608,7 +608,7 @@ struct obj *obj;
 		set_moreluck();
 		flags.botl = 1;
 	} else if (obj->otyp == FIGURINE && obj->timed) {
-		(void) stop_timer(FIG_TRANSFORM, (genericptr_t) obj);
+		(void) stop_timer(FIG_TRANSFORM, obj->timed);
 	}
 }
 
@@ -816,6 +816,17 @@ carrying_applyable_ring()
 }
 
 char
+carrying_applyable_amulet()
+{
+	register struct obj *otmp;
+
+	for(otmp = invent; otmp; otmp = otmp->nobj)
+		if(otmp->oclass == AMULET_CLASS && otmp->oward)
+			return TRUE;
+	return FALSE;
+}
+
+char
 carrying_readable_weapon()
 {
 	register struct obj *otmp;
@@ -938,7 +949,7 @@ register long q;
 {
 	register struct obj *otmp;
 
-	otmp = mksobj(GOLD_PIECE, FALSE, FALSE);
+	otmp = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
 	u.ugold -= q;
 	otmp->quan = q;
 	otmp->owt = weight(otmp);
@@ -1109,9 +1120,9 @@ register const char *let,*word;
 		/* ugly check: remove inappropriate things */
 		if ((taking_off(word) &&
 		    (!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL))
-		     || (otmp==uarm && uarmc)
+		     || (otmp==uarm && uarmc && arm_blocks_upper_body(uarm->otyp))
 #ifdef TOURIST
-		     || (otmp==uarmu && (uarm || uarmc))
+		     || (otmp==uarmu && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
 #endif
 		    ))
 		|| (putting_on(word) &&
@@ -2738,7 +2749,7 @@ winid *datawin;
 					case ART_STING:						Strcat(buf, "orcs and spiders.");							break;
 					case ART_GRIMTOOTH:					Strcat(buf, "humans, elves, dwarves, and angels.");			break;
 					case ART_CARNWENNAN:				Strcat(buf, "fey and magic-item users.");					break;
-					case ART_SLAVE_TO_ARMOK:			Strcat(buf, "lords, elves, orcs, and the innocent.");		break;
+					case ART_SLAVE_TO_ARMOK:			Strcat(buf, "nobility, elves, orcs, and the innocent.");	break;
 					case ART_CLAIDEAMH:					Strcat(buf, "those bound by iron and ancient laws.");		break;
 					case ART_DRAGONLANCE:				Strcat(buf, "dragons.");									break;
 					case ART_NODENSFORK:				Strcat(buf, "the eldritch, the telepathic, the deep.");		break;
@@ -3042,6 +3053,8 @@ winid *datawin;
 			if (Role_if(PM_CAVEMAN))
 				size_penalty = max(0, size_penalty - 1);
 			if (u.sealsActive&SEAL_YMIR)
+				size_penalty = max(0, size_penalty - 1);
+			if (check_oprop(obj, OPROP_CCLAW))
 				size_penalty = max(0, size_penalty - 1);
 			
 			if(size_penalty < 0) size_penalty = 0;
@@ -3521,7 +3534,7 @@ winid *datawin;
 	if (oartifact == ART_GODHANDS)		OBJPUTSTR("Greatly increases DEX.");
 	if (oartifact == ART_PREMIUM_HEART)		OBJPUTSTR("Increases DEX.");
 	if (otyp == KICKING_BOOTS)					OBJPUTSTR("Improves kicking.");
-	if (otyp == MUMMY_WRAPPING)				OBJPUTSTR("Prevents invisibility.");
+	if (otyp == MUMMY_WRAPPING || otyp == PRAYER_WARDED_WRAPPING)	OBJPUTSTR("Prevents invisibility.");
 	if (otyp == RIN_GAIN_STRENGTH)				OBJPUTSTR("Increases STR by its enchantment.");
 	if (otyp == GAUNTLETS_OF_DEXTERITY)		OBJPUTSTR("Increases DEX by its enchantment.");
 	if (otyp == RIN_GAIN_CONSTITUTION)			OBJPUTSTR("Increases CON by its enchantment.");
@@ -3529,6 +3542,7 @@ winid *datawin;
 	if (otyp == RIN_INCREASE_DAMAGE)			OBJPUTSTR("Increases your weapon damage.");
 	if (otyp == RIN_INCREASE_ACCURACY)			OBJPUTSTR("Increases your to-hit modifier.");
 	if (otyp == AMULET_VERSUS_CURSES ||
+		otyp == PRAYER_WARDED_WRAPPING ||
 		oartifact == ART_HELPING_HAND ||
 		oartifact == ART_STAFF_OF_NECROMANCY ||
 		oartifact == ART_TREASURY_OF_PROTEUS ||
@@ -3739,7 +3753,7 @@ long* out_cnt;
 	struct obj **oarray;
 	int i, j;
 #endif
-	char ilet, ret;
+	char ilet, ret = '\0';
 	char *invlet = flags.inv_order;
 	int n, classcount;
 	winid win;				/* windows being used */
@@ -3804,7 +3818,6 @@ long* out_cnt;
 	    /* when only one item of interest, use pline instead of menus;
 	       we actually use a fake message-line menu in order to allow
 	       the user to perform selection at the --More-- prompt for tty */
-	    ret = '\0';
 	    for (otmp = invent; otmp; otmp = otmp->nobj) {
 		if (otmp->invlet == lets[0]) {
 #ifdef DUMP_LOG
@@ -4344,6 +4357,8 @@ char *buf;
 	    cmap = S_vcdbridge;			/* "raised drawbridge" */
 	else if (IS_GRAVE(ltyp))
 	    cmap = S_grave;				/* "grave" */
+	else if (IS_SEAL(ltyp))
+	    cmap = S_seal;				/* "seal" */
 	else if (ltyp == TREE)
 	    cmap = S_tree;				/* "tree" */
 	else if (ltyp == IRONBARS)
@@ -4570,6 +4585,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 	    obj->greased != otmp->greased ||
 	    obj->oeroded != otmp->oeroded ||
 	    obj->oeroded2 != otmp->oeroded2 ||
+	    obj->oeroded3 != otmp->oeroded3 ||
 	    obj->obj_material != otmp->obj_material ||
 	    obj->bypass != otmp->bypass)
 	    return(FALSE);
@@ -4626,8 +4642,8 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 		return FALSE;
 
 	/* for the moment, any additional information is incompatible */
-	if (get_ox(obj, OX_EMON) || get_ox(obj, OX_EMID) ||
-		get_ox(otmp, OX_EMON) || get_ox(otmp, OX_EMID)) return FALSE;
+	if (get_ox(obj,  OX_EMON) || get_ox(obj,  OX_EMID) || get_ox(obj,  OX_ESUM) ||
+		get_ox(otmp, OX_EMON) || get_ox(otmp, OX_EMID) || get_ox(otmp, OX_ESUM)) return FALSE;
 
 	if(obj->oartifact != otmp->oartifact) return FALSE;
 	
@@ -4819,20 +4835,20 @@ STATIC_VAR NEARDATA const char *names[] = { 0,
 	"Illegal objects", "Weapons", "Armor", "Rings", "Amulets",
 	"Tools", "Comestibles", "Potions", "Scrolls", "Spellbooks",
 	"Wands", "Coins", "Gems", "Boulders/Statues", "Iron balls",
-	"Scrap", "Venoms", "Tiles"/*, Beds*/
+	"Scrap", "Venoms", "Tiles", "Beds", "Strange coins"
 };
 
 STATIC_VAR NEARDATA const char *bogusclasses[] = {
 	"Illegal objects", "Weapons", "Armor", "Rings", "Amulets",
 	"Tools", "Comestibles", "Potions", "Scrolls", "Spellbooks",
 	"Wands", "Coins", "Gems", "Boulders/Statues", "Iron balls",
-	"Scrap", "Venoms","Tiles",/*, Beds*/
+	"Scrap", "Venoms","Tiles", "Beds", "Strange coins",
 	"Filler","Useless objects", "Artifacts", "Ascension kit items",
 	"Staves", "Songs", "Drinks", "Grimoires", "Gears", "Cogs",
 	"Marmosets", "Bugs", "Easter Eggs", "Tiny Monuments","Consumables",
 	"Junk", "FOOs", "BARs", "Spoilers", "YANIs", "Splatbooks", 
 	"Chains", "Paperwork", "Pop-culture references", "Dross",
-	"Pokemon","Forgotten escape items",
+	"Pokemon","Forgotten escape items","Useless flavor items",
 	"SCPs"
 };
 
@@ -5229,6 +5245,9 @@ u_healing_penalty()
 	if(hates_unholy(youracedata)){
 		penalty += (9*u_bcu_next_to_skin(-1)+1)/2;
 	}
+	if(hates_unblessed(youracedata)){
+		penalty += (8*u_bcu_next_to_skin(0)+1)/2;
+	}
 	if(is_demon(youracedata) || is_undead(youracedata)){
 		penalty += (4*u_bcu_next_to_skin(1)+1)/2;
 	}
@@ -5262,7 +5281,7 @@ u_clothing_discomfort()
 	}
 	if(uarmu){
 		count++;
-		if(uarmu->otyp == BLACK_DRESS)
+		if(uarmu->otyp == PLAIN_DRESS)
 			count++;
 		else if(uarmu->otyp == BODYGLOVE || uarmu->otyp == VICTORIAN_UNDERWEAR)
 			count += 2;
@@ -5393,11 +5412,11 @@ struct monst *mon;
 {
 	if(mon == &youmonst){
 		if(uarmc) return uarmc;
-		if(uarm) return uarm;
+		if(uarm && !(!arm_blocks_upper_body(uarm->otyp) && uarmu && rn2(2))) return uarm;
 		if(uarmu) return uarmu;
 	} else {
 		if(which_armor(mon, W_ARMC)) return which_armor(mon, W_ARMC);
-		if(which_armor(mon, W_ARM)) return which_armor(mon, W_ARM);
+		if(which_armor(mon, W_ARM) && !(!arm_blocks_upper_body(which_armor(mon, W_ARM)->otyp) && which_armor(mon, W_ARMU) && rn2(2))) return which_armor(mon, W_ARM);
 		if(which_armor(mon, W_ARMU)) return which_armor(mon, W_ARMU);
 	}
 	return (struct obj *) 0;

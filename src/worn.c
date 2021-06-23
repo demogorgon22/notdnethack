@@ -38,7 +38,7 @@ const struct worn {
 
 /* This only allows for one blocking item per property */
 #define w_blocks(o,m) \
-		((o->otyp == MUMMY_WRAPPING && ((m) & W_ARMC)) ? INVIS : \
+		((is_mummy_wrap(o) && ((m) & W_ARMC)) ? INVIS : \
 		 (o->otyp == CORNUTHAUM && ((m) & W_ARMH) && \
 			!(Role_if(PM_WIZARD) || Race_if(PM_INCANTIFIER))) ? CLAIRVOYANT : 0)
 		/* note: monsters don't have clairvoyance, so your role
@@ -757,6 +757,8 @@ struct monst *mon;
 	else {
 		struct obj * armor = which_armor(mon, W_ARM);
 		register int mondodgeac = mon->data->dac;
+		if(u.ustuck == mon)
+			mondodgeac = -5;
 		if ((mondodgeac < 0)						/* penalties have full effect */
 			|| (!armor)								/* no armor = max mobility */
 			|| (armor && is_light_armor(armor))		/* light armor is also fine  */
@@ -921,6 +923,8 @@ struct monst *mon;
 	else {
 		struct obj * armor = which_armor(mon, W_ARM);
 		register int mondodgeac = mon->data->dac;
+		if(u.ustuck == mon)
+			mondodgeac = -5;
 		if ((mondodgeac < 0)						/* penalties have full effect */
 			|| (!armor)								/* no armor = max mobility */
 			|| (armor && is_light_armor(armor))		/* light armor is also fine  */
@@ -1018,10 +1022,19 @@ roll_mdr(mon, magr)
 struct monst *mon;
 struct monst *magr;
 {
+	return roll_mdr_detail(mon, magr, 0, 0);
+}
+
+int
+roll_mdr_detail(mon, magr, slot, depth)
+struct monst *mon;
+struct monst *magr;
+int slot;
+int depth;
+{
 	int base, nat_dr, armac;
-	int slot;
 	
-	switch(rn2(7)){
+	if(!slot) switch(rn2(7)){
 		case 0:
 		case 1:
 			slot = UPPER_TORSO_DR;
@@ -1041,12 +1054,15 @@ struct monst *magr;
 		break;
 	}
 	
-	mon_slot_dr(mon, magr, slot, &base, &armac, &nat_dr);
+	mon_slot_dr(mon, magr, slot, &base, &armac, &nat_dr, depth);
 
 	//Star spawn reach extra-dimensionally past all armor, even bypassing natural armor.
-	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU)){
+	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU || mad_monster_turn(magr, MAD_NON_EUCLID))){
 		armac = 0;
-		nat_dr = 0;
+		if(undiffed_innards(mon->data))
+			nat_dr /= 2;
+		else if(!no_innards(mon->data) && !removed_innards(mon->data))
+			nat_dr = 0;
 	}
 	
 	if(armac > 11) armac = rnd(armac-10) + 10; /* high armor dr values act like player ac values */
@@ -1069,13 +1085,14 @@ struct monst *magr;
  * Includes effectiveness vs magr (optional)
  */
 void
-mon_slot_dr(mon, magr, slot, base_dr_out, armor_dr_out, natural_dr_out)
+mon_slot_dr(mon, magr, slot, base_dr_out, armor_dr_out, natural_dr_out, depth)
 struct monst *mon;
 struct monst *magr;
 int slot;
 int *base_dr_out;
 int *armor_dr_out;
 int *natural_dr_out;
+int depth;
 {
 	/* DR addition: bas + sqrt(nat^2 + arm^2) (not done in this function) */
 	int bas_mdr; /* base DR:    magical-ish   */
@@ -1125,6 +1142,8 @@ int *natural_dr_out;
 	for (i = 0; i < SIZE(marmor); i++) {
 		curarm = which_armor(mon, marmor[i]);
 		if (curarm && ((objects[curarm->otyp].oc_dir & slot) || (!objects[curarm->otyp].oc_dir && (slot&adfalt[i])))) {
+			if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+				continue;
 			arm_mdr += arm_dr_bonus(curarm);
 			if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
 		}
@@ -1140,7 +1159,7 @@ int *natural_dr_out;
 	}
 	/* Hod Sephirah OVERRIDE other arm_mdr sources with the player's total DR (regardless of who's attacking them) */
 	if (mon->mtyp == PM_HOD_SEPHIRAH) {
-		arm_mdr = slot_udr(slot, magr);
+		arm_mdr = slot_udr(slot, magr, 0);
 	}
 	/* Natural DR */
 	switch (slot)
@@ -1199,7 +1218,7 @@ struct monst *mon;
 			break;
 		}
 		
-		mon_slot_dr(mon, (struct monst *) 0, slot, &base, &armac, &nat_dr);
+		mon_slot_dr(mon, (struct monst *) 0, slot, &base, &armac, &nat_dr, 0);
 
 		if(armac > 11) armac = (armac-10)/2 + 10; /* high armor dr values act like player ac values */
 		
@@ -1327,6 +1346,13 @@ boolean racialexception;
 	best = old;
 
 	for(obj = mon->minvent; obj; obj = obj->nobj) {
+		//Special case: can't wear most torso armor
+		if (mon->mtyp == PM_HARROWER_OF_ZARIEL
+		 && ((is_suit(obj) && arm_blocks_upper_body(obj->otyp))
+			|| is_shirt(obj)
+		)){
+			continue;
+		}
 	    switch(flag) {
 		case W_AMUL:
 		    if (obj->oclass != AMULET_CLASS ||
@@ -1742,6 +1768,7 @@ struct obj *obj;
 			return 5;
 		break;
 	case MUMMY_WRAPPING:
+	case PRAYER_WARDED_WRAPPING:
 		if (mon->data->mlet == S_MUMMY)
 			return 30;
 		else if (mon->mtame && mon->minvis && !See_invisible_old)
@@ -1913,7 +1940,7 @@ long timeout;
 			return;
 		}else{
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 			} else {
 				obj_extract_self(obj);
@@ -1927,7 +1954,7 @@ long timeout;
 		/* if dark, continue timer and possibly restore durability */
 		if ((dimness(x, y) > 0)
 			/* only some traps are visible to light */
-			|| !(obj->otrap->ttyp == BEAR_TRAP)
+			|| !(obj->otrap->ttyp == BEAR_TRAP || obj->otrap->ttyp == FLESH_HOOK)
 			){
 			if (obj->oeroded && obj->oerodeproof) obj->oeroded--;
 			start_timer(1, TIMER_OBJECT,
@@ -2006,7 +2033,7 @@ long timeout;
 			stop_occupation();
 			if(flags.run) nomul(0, NULL);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 			} else {
 				useupall(obj);
@@ -2016,7 +2043,7 @@ long timeout;
 			stop_occupation();
 			if(flags.run) nomul(0, NULL);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 			} else {
 				useupall(obj);
@@ -2026,7 +2053,7 @@ long timeout;
 			stop_occupation();
 			if(flags.run) nomul(0, NULL);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 			} else {
 				useupall(obj);
@@ -2037,7 +2064,7 @@ long timeout;
 			if(obj->otyp == NOBLE_S_DRESS){
 				pline("The armored plates on your dress turn to dust and blow away.");
 				remove_worn_item(obj, TRUE);
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 				if(!uarmu){
 					setworn(obj, W_ARMU);
@@ -2051,7 +2078,7 @@ long timeout;
 			stop_occupation();
 			if(flags.run) nomul(0, NULL);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 			} else {
 				useupall(obj);
@@ -2092,7 +2119,7 @@ long timeout;
 			setmnotwielded(mtmp,obj);
 			MON_NOWEP(mtmp);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 				place_object(obj, mtmp->mx, mtmp->my);
 				/* call stackobj() if we ever drop anything that can merge */
@@ -2106,7 +2133,7 @@ long timeout;
 			setmnotwielded(mtmp,obj);
 			MON_NOSWEP(mtmp);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 				place_object(obj, mtmp->mx, mtmp->my);
 				/* call stackobj() if we ever drop anything that can merge */
@@ -2122,7 +2149,7 @@ long timeout;
 			obj->owornmask = 0L;
 			update_mon_intrinsics(mtmp, obj, FALSE, FALSE);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 				place_object(obj, mtmp->mx, mtmp->my);
 				/* call stackobj() if we ever drop anything that can merge */
@@ -2135,7 +2162,7 @@ long timeout;
 			mtmp = obj->ocarry;
 			obj_extract_self(obj);
 			if(obj->otyp == NOBLE_S_DRESS){
-				obj = poly_obj(obj, BLACK_DRESS);
+				obj = poly_obj(obj, PLAIN_DRESS);
 				obj->oeroded = 0;
 				place_object(obj, mtmp->mx, mtmp->my);
 				/* call stackobj() if we ever drop anything that can merge */

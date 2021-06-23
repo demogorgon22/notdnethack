@@ -307,6 +307,9 @@ WEAPON(("dwarvish short sword", "broad short sword"),
 WEAPON(("mirrorblade", "polished short sword"),
 	DMG(D(6)), DMG(D(8)),
 	1, 0,  MZ_SMALL,  0, 40,100,  0, P,   P_SHORT_SWORD, SILVER, FALSE, HI_SILVER),
+WEAPON(("khopesh", "sickle-sword"),
+	DMG(D(8)), DMG(D(6)),
+	1, 0,  MZ_SMALL,  0, 30, 10,  0, S,   P_SHORT_SWORD, COPPER, FALSE, HI_COPPER),
 
 WEAPON(("scimitar", "curved sword"),
 	DMG(D(8)), DMG(D(8)),
@@ -431,8 +434,11 @@ WEAPON(("droven lance", "lance"), /*Needs encyc entry*//*Needs tile*/
 /* axe-type */
 WEAPON(("halberd", "angled poleaxe"),
 	DMG(D(10)), DMG(D(2, 6)),
-	0, 0,   MZ_HUGE,  8, 75, 10, 0, P|S, P_POLEARMS, IRON, FALSE, HI_METAL),
-WEAPON(("bardiche", "long poleaxe"),
+	0, 0,   MZ_HUGE,  6, 75, 10, 0, P|S, P_POLEARMS, IRON, FALSE, HI_METAL),
+WEAPON(("poleaxe", "curved poleaxe"),
+	DMG(D(10)), DMG(D(2, 6)),
+	0, 0,   MZ_HUGE,  2, 75, 10, 0, P|S|B, P_POLEARMS, IRON, FALSE, HI_METAL),
+WEAPON(("bardiche", "long-bladed poleaxe"),
 	DMG(D(2, 4)), DMG(D(3, 4)),
 	0, 0,   MZ_HUGE,  4, 80,  7, 0, S,   P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("voulge", "pole cleaver"),
@@ -488,10 +494,13 @@ WEAPON(("macuahuitl", "obsidian-edged club"),
 	0, 0, MZ_MEDIUM,  0, 40, 10,  0, B|S, P_CLUB, WOOD, FALSE, HI_WOOD),
 WEAPON(("quarterstaff", "staff"),
 	DMG(D(6)), DMG(D(6)),
-	0, 0,   MZ_HUGE, 10, 40,  5,  0, B,   P_QUARTERSTAFF, WOOD, FALSE, HI_WOOD),
+	0, 0,   MZ_HUGE,  9, 40,  5,  0, B,   P_QUARTERSTAFF, WOOD, FALSE, HI_WOOD),
 WEAPON(("khakkhara", "monk's staff"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(6)), DMG(D(4)),
 	0, 0,   MZ_HUGE,  2,120, 50,  0, B|P, P_QUARTERSTAFF, SILVER, IDED, HI_SILVER),
+WEAPON(("double sword"),
+	DMG(D(8)), DMG(D(12)),
+	1, 0,   MZ_HUGE,  1, 80, 30,  0, S|P, P_QUARTERSTAFF, IRON, FALSE, HI_METAL),
 WEAPON(("kamerel vajra", "short mace"), /*Needs encyc entry*/
 	DMG(D(6)), DMG(D(6)),	/* very different dice for different litness states */
 	0, 0, MZ_MEDIUM,  0, 10,800,  1, S|E, P_MACE, GOLD, UNIDED, HI_GOLD),
@@ -669,7 +678,7 @@ HELM(("crystal helm", "fish bowl"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0,   0, 2,150, 300, 9, 1, 0, GLASS, HI_GLASS, O_MATSPEC(UNIDED)),
 HELM(("pontiff's crown", "filigreed faceless helm"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0,   0, 2, 90, 300, 8, 3, 0, GOLD, HI_GOLD, O_MATSPEC(IDED)),
-HELM(("shemagh", "white headscarf", "headscarf"), /*Needs encyc entry*//*Needs tile*/
+HELM(("shemagh", "headscarf"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0,	0, 0, 5,   5, 10, 0, 0, CLOTH, CLR_WHITE, O_MATSPEC(UNIDED)),
 
 /* With shuffled appearances... */
@@ -734,7 +743,7 @@ SUIT(("droven plate mail", "crested black plate", "crested plate mail"), /*Needs
 	0, 0,   MZ_HUGE, ARMSZ_MEDIUM, 0,   0,  5,  85, 2000,  3, 7, 3, SHADOWSTEEL, CLR_BLACK),
 SUIT(("elven toga"), /*Needs encyc entry*//*Needs tile*/
 	1, 0,  MZ_LARGE,  ARMSZ_LIGHT, 0,	0,  5,   5,  100, 10, 1, 2, CLOTH, CLR_GREEN),
-SUIT(("noble's dress", "armored black dress", "armored dress"), /*Needs encyc entry*/
+SUIT(("noble's dress", "armored dress"), /*Needs encyc entry*/
 	0, 0,  MZ_LARGE, ARMSZ_MEDIUM, 0,   0,  5,  40, 2000,  6, 4, 3, SHADOWSTEEL, CLR_BLACK),
 SUIT(("consort's suit", "loud foppish suit", "clothes"), /*Needs encyc entry*//*Needs tile*/
 	0, 0, MZ_MEDIUM,  ARMSZ_HEAVY, 0,   0,  5,  10, 1000, 10, 1, 1, CLOTH, CLR_BRIGHT_MAGENTA),
@@ -792,8 +801,8 @@ SUIT(("living armor", "giant sea anemone"),
 SUIT(("jacket"),
 	1, 0, MZ_MEDIUM,  ARMSZ_LIGHT, 0,  12,  0,	20,   10, 10, 1, 0, LEATHER, HI_LEATHER, O_MATSPEC(IDED|UNIDED)),
 SUIT(("straitjacket", "long-sleeved jacket"), /*Needs encyc entry*//*Needs tile*/
-	0, 0, MZ_MEDIUM,  ARMSZ_HEAVY, 0,   0,  0,  15,   10, 10, 1, 2, CLOTH, CLR_WHITE),
-SUIT(("healer uniform","clean white clothes", "clean clothes"), /*Needs encyc entry*//*Needs tile*/
+	0, 0, MZ_MEDIUM,  ARMSZ_HEAVY, 0,   0,  0,  15,   10, 10, 1, 2, CLOTH, CLR_WHITE, O_DRSLOT(UPPER_TORSO_DR|ARM_DR)),
+SUIT(("healer uniform","clean clothes"), /*Needs encyc entry*//*Needs tile*/
 	0, 0, MZ_MEDIUM, ARMSZ_MEDIUM,SICK_RES,0,0, 30,   10, 10, 1, 2, CLOTH, CLR_WHITE),
 SUIT(("jumpsuit", "silvery clothes", "clothes"),/*Needs encyc entry*//*Needs tile*/
 	0, 0,  MZ_LARGE, ARMSZ_MEDIUM, REFLECTING,0,5,5,1000, 10, 1, 3, PLASTIC, HI_SILVER, O_DRSLOT(ALL_DR)),
@@ -802,17 +811,21 @@ SUIT(("jumpsuit", "silvery clothes", "clothes"),/*Needs encyc entry*//*Needs til
 /*ARMOR(("Hawaiian shorts", "flowery shorts and lei"),
 	1, 0, 0, 0,	 0, 0,	 5,   3, 10, 0, ARM_SUIT, CLOTH, CLR_MAGENTA),
 */
+SUIT(("Hawaiian shorts", "flowery short pants", "short pants"), /*Needs encyc entry*//*Needs tile*/
+	0, 0, MZ_SMALL,  ARMSZ_LIGHT, 0,   0,  0,  15,   10, 10, 0, 0, CLOTH, CLR_ORANGE, O_DRSLOT(LOWER_TORSO_DR)),
 SHIRT(("Hawaiian shirt", "flowery shirt", "shirt"),
 	0, 0, MZ_MEDIUM, 0,	 10, 0,	 5,   3, 10, 0, 0, CLOTH, CLR_MAGENTA),
 SHIRT(("T-shirt"), /*Needs encyc entry*/
 	1, 0, MZ_MEDIUM, 0,	 5, 0,	 5,   2, 10, 0, 0, CLOTH, CLR_WHITE),
 SHIRT(("ichcahuipilli", "thick undershirt"), /*Needs encyc entry*/
 	1, 0, MZ_MEDIUM, 0,	 0, 3,	10,   2, 10, 0, 0, CLOTH, CLR_WHITE),
+SUIT(("waistcloth"), /*Needs encyc entry*//*Needs tile*/
+	0, 0, MZ_SMALL,  ARMSZ_LIGHT, 0,   0,  0,  15,   10, 10, 0, 0, CLOTH, CLR_WHITE, O_DRSLOT(LOWER_TORSO_DR)),
 # ifdef CONVICT
 SHIRT(("striped shirt", (char *)0, "shirt"), /*Needs encyc entry*/
 	1, 0, MZ_MEDIUM, 0,	 0, 0,	 5,   2, 10, 0, 0, CLOTH, CLR_GRAY),
 # endif /* CONVICT */
-SHIRT(("black dress", (char *)0, "dress"), /*Needs encyc entry*/
+SHIRT(("plain dress", "dress"), /*Needs encyc entry*/
 	1, 0, MZ_MEDIUM, 0,	 0, 5,   5, 500, 10, 0, 2, CLOTH, CLR_BLACK, O_DRSLOT(TORSO_DR)),
 #endif
 /*Ruffled shirts are little different from other shirts*/
@@ -820,7 +833,7 @@ SHIRT(("ruffled shirt"), /*Needs encyc entry*/
 	1, 0, MZ_MEDIUM, 0,	 0, 0,	 5,   2, 10, 0, 0, CLOTH, CLR_WHITE),
 /* victorian underwear, on the other hand, inflicts a penalty to AC but grants MC 3 */
 /* needs special case to be 'bulky' */
-SHIRT(("victorian underwear", "white dress", "dress"),
+SHIRT(("victorian underwear", "frilly dress"),
 	0, 0, MZ_MEDIUM, 0,	 0, 5,   5,  10, 10, 2, 3, CLOTH, CLR_WHITE,  O_DRSLOT(TORSO_DR)),
 SHIRT(("bodyglove", "tight black clothes", "tight clothes"), /*Needs encyc entry*//*Needs tile*/
 	0, 0, MZ_HUGE, SICK_RES,0,5, 5,1000, 10, 0, 3, PLASTIC, CLR_BLACK, O_DRSLOT(ALL_DR)),
@@ -828,6 +841,8 @@ SHIRT(("bodyglove", "tight black clothes", "tight clothes"), /*Needs encyc entry
 /*  'cope' is not a spelling mistake... leave it be */
 CLOAK(("mummy wrapping"),
 		1, 0,	0,	    0, 0,  3,  2, 10, 0, 1, CLOTH, CLR_GRAY),
+CLOAK(("prayer-warded wrapping"),
+		1, 0,	0,	    0, 0,  3, 100, 10, 0, 1, CLOTH, CLR_GRAY),
 CLOAK(("elven cloak", "faded pall"),
 		0, 1,	STEALTH,    7, 0, 10, 60,  9, 0, 3, CLOTH, CLR_BLACK),
 CLOAK(("droven cloak", "cobwebbed cloak"), /*Needs encyc entry*/
@@ -851,7 +866,9 @@ CLOAK(("alchemy smock", "apron"),
 CLOAK(("Leo Nemaeus hide", "lion skin"),
 		0, 1,	HALF_PHDAM,	    0, 10, 60, 1200, 10, 5, 0, DRAGON_HIDE, HI_GOLD),
 CLOAK(("cloak"),
-		1, 0,	0,	    8, 0, 15, 40, 10, 2, 1, LEATHER, CLR_BROWN, O_MATSPEC(IDED|UNIDED)),
+		1, 0,			 0,	    8, 0, 15, 40, 10, 2, 1, LEATHER, CLR_BROWN, O_MATSPEC(IDED|UNIDED)),
+CLOAK(("studded leather cloak"),
+		1, 0,			 0,	    0, 0, 45, 80,  9, 2, 3, LEATHER, HI_COPPER),
 /* With shuffled appearances... */
 CLOAK(("cloak of protection", "tattered cape"),
 		0, 1,	PROTECTION, 9, 0, 10, 50,  9, 1, 3, CLOTH, HI_CLOTH),
@@ -1069,6 +1086,7 @@ CONTAINER(("massive stone crate"),
 CONTAINER(("chest"),           1,   MZ_HUGE, 0, 0,  30, 600,  16, WOOD, HI_WOOD),
 CONTAINER(("magic chest", "big chest with 10 keyholes"),
 										0,MZ_GIGANTIC,1, 0,  15,1001,7000, METAL, CLR_BRIGHT_MAGENTA),/*Needs tile*/
+CONTAINER(("writing desk"),    1,   MZ_HUGE, 0, 0,   0, 600,  16, WOOD, HI_WOOD),
 CONTAINER(("ice box"),         1,   MZ_HUGE, 0, 0,   5, 250,  42, PLASTIC, CLR_WHITE),
 CONTAINER(("sack", "bag"),                0, MZ_MEDIUM, 0, 0,  20,  15,   2, CLOTH, HI_CLOTH),
 CONTAINER(("oilskin sack", "bag"),        0, MZ_MEDIUM, 0, 0,  20,  15, 100, CLOTH, HI_CLOTH),
@@ -1181,6 +1199,9 @@ TOOL(("magic marker"), 1,   MZ_TINY, 0, 1, 1,  15,  2,  50, PLASTIC, CLR_RED),
 /* traps */
 TOOL(("land mine",(char *)0),     1,  MZ_LARGE, 0, 0, 0,   0,300, 180, IRON, CLR_RED),
 TOOL(("beartrap"),     1,  MZ_LARGE, 0, 0, 0,   0,100,  60, IRON, HI_METAL),
+WEPTOOL(("hook"),
+	DMG(D(6)), DMG(D(6)),
+	1,  MZ_LARGE, 0, 0, 0, 80,  50,  0, P,   P_PICK_AXE, CHITIN, CLR_GREEN, O_MATSPEC(IDED|UNIDED)),
 /* instruments */
 /* some code in invent.c and obj.h requires wooden flute .. drum of earthquake to be
    consecutive, with the wooden flute first and drum of earthquake last */
@@ -1430,6 +1451,7 @@ POTION(("blood", "blood-red"),            0, 0,          18, 50,  CLR_RED, O_USK
 	BONE_TILE(("clawmark glyph",  "set of many vertical lines"),   0),				// CLAWMARK
 	BONE_TILE(("clear sea glyph",  "set of coalescing vertical lines"),   0),		// CLEAR_DEEPS
 	BONE_TILE(("deep sea glyph",  "set of coalescing vertical marks"),   0),			// DEEP_SEA
+	BONE_TILE(("hidden sea glyph",  "set of coalescing vertical scratches"),   0),		// TRANSPARENT_SEA
 	BONE_TILE(("communion glyph",  "weeping-eyed leaf"),   0),				// COMMUNION
 	BONE_TILE(("corruption glyph",  "bleeding caduceus"),   0),				// CORRUPTION
 	BONE_TILE(("eye glyph",  "pentagonal eye"),   0),							// EYE_THOUGHT
@@ -1565,6 +1587,19 @@ WAND(((char *)0,        "jeweled"),        0, 150, 1, 0,         IRON,        HI
 	COIN(("gold piece"),      1000, GOLD,1),
 #undef COIN
 
+/* soul coins */
+#define SCOIN(names, prob, worth, clr,...) OBJECT( \
+		names, BITS(0,1,0,0,0,0,0,0,MZ_TINY,0,0,0,P_NONE, IRON,0), 0, \
+		SCOIN_CLASS, prob, 0, 1, worth, {0}, {0}, 0, 0, 0, 0, clr, __VA_ARGS__)
+	SCOIN(("wage of sloth", "black-eyed coin", "strange coin"),		270, 99, CLR_BLACK),
+	SCOIN(("wage of lust", "blue-eyed coin", "strange coin"),		243, 99, CLR_BRIGHT_BLUE),
+	SCOIN(("wage of gluttony", "orange-eyed coin", "strange coin"),	223, 99, CLR_ORANGE),
+	SCOIN(("wage of greed", "gold-eyed coin", "strange coin"),		142, 99, HI_GOLD),
+	SCOIN(("wage of wrath", "red-eyed coin", "strange coin"),		61,  99, CLR_RED),
+	SCOIN(("wage of envy", "green-eyed coin", "strange coin"),		41,  99, CLR_BRIGHT_GREEN),
+	SCOIN(("wage of pride", "purple-eyed coin", "strange coin"),	20,  99, CLR_MAGENTA),
+#undef SCOIN
+
 /* gems ... - includes stones and rocks but not boulders */
 #define GEM(names,prob,wt,gval,nutr,mohs,glass,color,...) OBJECT( \
 	    DEF_BLINDNAME(names, "gem"), \
@@ -1651,14 +1686,13 @@ OBJECT(("statue"), BITS(1,0,0,1,0,0,0,0,    MZ_HUGE,0,0,0,P_NONE,MINERAL,0), 0,
 		ROCK_CLASS,   800, 0, 2500,  0, DMG(D(20)), DMG(D(20)), 2, 0, 2, 2500, CLR_WHITE),
 OBJECT(("fossil"), BITS(1,0,0,0,0,0,0,0,    MZ_HUGE,0,0,0,P_NONE,MINERAL,0), 0,
 		ROCK_CLASS,   100, 0, 2500,  0, DMG(D(20)), DMG(D(20)), 0, 0, 0, 2500, CLR_BROWN),
-/*
-OBJECT(("bed",(char *)0), BITS(1,0,0,0,0,0,0,0,1,0,0,P_NONE,WOOD,0), 0,
-		BED_CLASS,   900, 0, 2000,  1000, 20, 20, 0, 0, 0, 2000, HI_WOOD),
-OBJECT(("knapsack",(char *)0), BITS(1,0,0,0,0,0,0,0,1,0,0,P_NONE,PLASTIC,0), 0,
-		BED_CLASS,   100, 0, 60,  100, 20, 20, 0, 0, 0, 2000, CLR_GREEN),
-OBJECT(("gurney",(char *)0), BITS(1,0,0,0,0,0,0,0,1,0,0,P_NONE,METAL,0), 0,
-		BED_CLASS,     0, 0, 60,  100, 20, 20, 0, 0, 0, 2000, CLR_WHITE),
-*/
+OBJECT(("bed"), BITS(1,0,0,0,0,0,0,0,MZ_LARGE,1,0,0,P_NONE,WOOD,0), 0,
+		BED_CLASS,   900, 0, 2000,  1000, DMG(D(20)), DMG(D(20)), 0, 0, 0, 2000, HI_WOOD),
+OBJECT(("bedroll"), BITS(1,0,0,0,0,0,0,0,MZ_SMALL,1,0,0,P_NONE,CLOTH,0), 0,
+		BED_CLASS,   100, 0, 60,  100, DMG(D(2)), DMG(D(2)), 0, 0, 0, 2000, CLR_GREEN),
+OBJECT(("gurney"), BITS(1,0,0,0,0,0,0,0,MZ_MEDIUM,1,0,0,P_NONE,METAL,0), 0,
+		BED_CLASS,     0, 0, 60,  100, DMG(D(4)), DMG(D(4)), 0, 0, 0, 2000, CLR_WHITE),
+
 #ifdef CONVICT
 OBJECT(("heavy iron ball"), BITS(1,0,0,0,0,0,0,0,MZ_LARGE,0,0,WHACK,P_FLAIL,IRON,0), 0,
 #else
@@ -1701,7 +1735,7 @@ CHAIN(("feather"),
 
 CHAINCORPSE(("broken android"), 3000, METAL, CLR_WHITE), /*Needs encyc entry*//*Needs tile*/
 CHAINCORPSE(("broken gynoid"),  3000, METAL, CLR_WHITE), /*Needs encyc entry*//*Needs tile*/
-CHAINCORPSE(("lifeless doll"),   750, PLASTIC, CLR_BRIGHT_MAGENTA), /*Needs encyc entry*//*Needs tile*/
+CHAINCORPSE(("lifeless doll"),   750, WOOD, CLR_BRIGHT_MAGENTA), /*Needs encyc entry*//*Needs tile*/
 
 #undef CHAINCORPSE
 

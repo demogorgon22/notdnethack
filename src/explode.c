@@ -166,6 +166,40 @@ int radius;
 }
 
 void
+explode_yours(x, y, adtyp, olet, dam, color, radius, yours)
+int x, y;
+int adtyp; /* the same as in zap.c */
+int olet;
+int dam;
+int color;
+int radius;
+boolean yours; /* is it your fault (for killing monsters) */
+{
+	ExplodeRegion *area;
+	area = create_explode_region();
+	if (radius == 0)
+	{
+		if (isok(x, y))
+			add_location_to_explode_region(x, y, area);
+	}
+	else if (radius == 1)
+	{	// can use simple method of creating explosions
+		int i, j;
+		for (i = -1; i <= 1; i++)
+		for (j = -1; j <= 1; j++)
+			if (isok(x + i, y + j))
+				add_location_to_explode_region(x + i, y + j, area);
+	}
+	else
+	{	// use circles
+		do_clear_area(x, y, radius, add_location_to_explode_region, (genericptr_t)(area));
+	}
+
+	do_explode(x, y, area, adtyp, olet, dam, color, 0, yours);
+	free_explode_region(area);
+}
+
+void
 splash(x, y, dx, dy, adtyp, olet, dam, color)
 int x, y, dx, dy;
 int adtyp;
@@ -214,7 +248,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 	int i, k, damu = dam;
 	boolean starting = 1, silver = FALSE;
 	boolean visible, any_shield;
-	int uhurt = 0; /* 0=unhurt, 1=items damaged, 2=you and items damaged */
+	int uhurt = 0; /* 0=unhurt, 1=items damaged, 2=you and items damaged, 3=half elemental damage */
 	const char *str;
 	int idamres, idamnonres;
 	struct monst *mtmp;
@@ -254,6 +288,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 	else switch (adtyp) {
 		case AD_MAGM: str = "magical blast";
 			break;
+		case AD_EFIR:
 		case AD_FIRE: str = (olet != BURNING_OIL ? olet != SCROLL_CLASS ? "fireball" : "tower of flame" : "burning oil");
 			break;
 		case AD_COLD: str = "ball of cold";
@@ -266,7 +301,10 @@ boolean yours; /* is it your fault (for killing monsters) */
 			break;
 		case AD_DRST: str = "poison gas cloud";
 			break;
+		case AD_EACD:
 		case AD_ACID: str = "splash of acid";
+			break;
+		case AD_SLIM: str = "spout of acidic slime";
 			break;
 		case AD_PHYS: str = (olet != TOOL_CLASS ? olet != WEAPON_CLASS ? "blast" : "flying shards of obsidian" : "flying shards of mirror");
 			break;
@@ -274,7 +312,9 @@ boolean yours; /* is it your fault (for killing monsters) */
 			break;
 		case AD_DARK: str = "blast of darkness";
 			break;
-		case AD_BLUD: str = "splash of tainted blood";
+		case AD_BLUD: str = "spray of tainted blood";
+			break;
+		case AD_WET: str = "wall of water";
 			break;
 		default:
 			impossible("unaccounted-for explosion damage type in do_explode: %d", adtyp);
@@ -294,9 +334,11 @@ boolean yours; /* is it your fault (for killing monsters) */
 			case AD_MAGM:
 				explmask = !!Antimagic;
 				break;
+			case AD_EFIR:
 			case AD_FIRE:
 				explmask = !!Fire_resistance;
 				break;
+			case AD_ECLD:
 			case AD_COLD:
 				explmask = !!Cold_resistance;
 				roll_frigophobia();
@@ -307,14 +349,19 @@ boolean yours; /* is it your fault (for killing monsters) */
 			case AD_DEAD:
 				explmask = !!(resists_death(&youmonst) || u.sealsActive&SEAL_OSE);
 				break;
+			case AD_EELC:
 			case AD_ELEC:
 				explmask = !!Shock_resistance;
 				break;
 			case AD_DRST:
 				explmask = !!Poison_resistance;
 				break;
+			case AD_EACD:
 			case AD_ACID:
 				explmask = !!Acid_resistance;
+				break;
+			case AD_SLIM:
+				explmask = (Acid_resistance || Slime_res(&youmonst));
 				break;
 			case AD_DISE: /*assumes only swamp ferns have disease explosions*/
 				explmask = !!Sick_resistance;
@@ -324,7 +371,9 @@ boolean yours; /* is it your fault (for killing monsters) */
 				explmask = !!Dark_immune;
 				break;
 			case AD_BLUD:
-				explmask = !has_blood(youracedata);
+				// explmask = !has_blood(youracedata);
+				break;
+			case AD_WET:
 				break;
 			default:
 				impossible("explosion type %d?", adtyp);
@@ -350,9 +399,11 @@ boolean yours; /* is it your fault (for killing monsters) */
 			case AD_MAGM:
 				explmask |= resists_magm(mtmp);
 				break;
+			case AD_EFIR:
 			case AD_FIRE:
 				explmask |= resists_fire(mtmp);
 				break;
+			case AD_ECLD:
 			case AD_COLD:
 				explmask |= resists_cold(mtmp);
 				break;
@@ -362,14 +413,19 @@ boolean yours; /* is it your fault (for killing monsters) */
 			case AD_DEAD:
 				explmask |= resists_death(mtmp);
 				break;
+			case AD_EELC:
 			case AD_ELEC:
 				explmask |= resists_elec(mtmp);
 				break;
 			case AD_DRST:
 				explmask |= resists_poison(mtmp);
 				break;
+			case AD_EACD:
 			case AD_ACID:
 				explmask |= resists_acid(mtmp);
+				break;
+			case AD_SLIM:
+				explmask |= resists_acid(mtmp) || Slime_res(mtmp);
 				break;
 			case AD_DISE:
 				explmask |= resists_sickness(mtmp);
@@ -378,7 +434,9 @@ boolean yours; /* is it your fault (for killing monsters) */
 				explmask |= dark_immune(mtmp);
 				break;
 			case AD_BLUD:
-				explmask |= has_blood_mon(mtmp);
+				// explmask |= has_blood_mon(mtmp);
+				break;
+			case AD_WET:
 				break;
 			default:
 				impossible("explosion type %d?", adtyp);
@@ -492,34 +550,46 @@ boolean yours; /* is it your fault (for killing monsters) */
 			if (is_animal(u.ustuck->data)) {
 				if (!silent) pline("%s gets %s!",
 				      Monnam(u.ustuck),
+				      (adtyp == AD_EFIR) ? "heartburn" :
 				      (adtyp == AD_FIRE) ? "heartburn" :
+				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "irradiated by pure energy" :
+				      (adtyp == AD_EELC) ? "shocked" :
 				      (adtyp == AD_ELEC) ? "shocked" :
 				      (adtyp == AD_DRST) ? "poisoned" :
 				      (adtyp == AD_DISE) ? "high-yield food poisoning" :
+				      (adtyp == AD_EACD) ? "an upset stomach" :
 				      (adtyp == AD_ACID) ? "an upset stomach" :
+				      (adtyp == AD_SLIM) ? "a little green" :
+				      (adtyp == AD_WET) ? "bloated" :
 				      (adtyp == AD_PHYS) ? ((olet == TOOL_CLASS) ?
 				       "perforated" : "a bloated stomach") :
 				       "fried");
 			} else {
 				if (!silent) pline("%s gets slightly %s!",
 				      Monnam(u.ustuck),
+				      (adtyp == AD_EFIR) ? "toasted" :
 				      (adtyp == AD_FIRE) ? "toasted" :
+				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "overwhelmed by pure energy" :
+				      (adtyp == AD_EELC) ? "shocked" :
 				      (adtyp == AD_ELEC) ? "shocked" :
 				      (adtyp == AD_DRST) ? "intoxicated" :
 				      (adtyp == AD_DISE) ? "quesy" :
+				      (adtyp == AD_EACD) ? "burned" :
 				      (adtyp == AD_ACID) ? "burned" :
+				      (adtyp == AD_SLIM) ? "green" :
+				      (adtyp == AD_WET) ? "bloated" :
 				      (adtyp == AD_PHYS) ? ((olet == TOOL_CLASS) ?
 				       "perforated" : "blasted open") :
 				       "fried");
 			}
 		} else if (!silent && cansee(xi, yi)) {
-		    if(mtmp->m_ap_type) seemimic(mtmp);
+		    if(mtmp->m_ap_type) see_passive_mimic(mtmp);
 		    pline("%s is caught in the %s!", Monnam(mtmp), str);
 		}
 
@@ -534,8 +604,14 @@ boolean yours; /* is it your fault (for killing monsters) */
 
 		if (area->locations[i].shielded) {
 			golemeffects(mtmp, (int) adtyp, dam + idamres);
+		} 
+		//Golem effects handled for elemental damage effects, now either proceed to damage or do damage from items.
+		if(area->locations[i].shielded && adtyp != AD_EFIR
+		 && adtyp != AD_ECLD && adtyp != AD_EELC && adtyp != AD_EACD
+		){
 			mtmp->mhp -= idamnonres;
-		} else {
+		}
+		else {
 		/* call resist with 0 and do damage manually so 1) we can
 		 * get out the message before doing the damage, and 2) we can
 		 * call mondied, not killed, if it's not your blast
@@ -547,6 +623,9 @@ boolean yours; /* is it your fault (for killing monsters) */
 				pline("%s resists the %s!", Monnam(mtmp), str);
 			    mdam = dam/2;
 			}
+			//Elemental damage types continue through.
+			if(area->locations[i].shielded)
+				mdam /= 2;
 			if(yours && mtmp->female && humanoid_torso(mtmp->data) && roll_madness(MAD_SANCTITY)){
 			    mdam /= 4;
 			}
@@ -575,7 +654,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 				pline("The %s sear %s!", str, mon_nam(mtmp));
 				mdam += rnd(20);
 			}
-			//Bugs? youmonst-as-mtmp can show up here?
+
 			if (resists_cold(mtmp) && adtyp == AD_FIRE)
 				mdam *= 2;
 			else if (resists_fire(mtmp) && adtyp == AD_COLD)
@@ -584,9 +663,29 @@ boolean yours; /* is it your fault (for killing monsters) */
 				mdam *= 2;
 			else if (has_blood_mon(mtmp) && adtyp == AD_BLUD)
 				mdam += mlev(mtmp);
-
-			mtmp->mhp -= mdam;
-			mtmp->mhp -= (idamres + idamnonres);
+			
+			if(adtyp == AD_WET){
+				water_damage(mtmp->minvent, FALSE, FALSE, FALSE, mtmp);
+			}
+			else if (adtyp == AD_BLUD){
+				water_damage(mtmp->minvent, FALSE, FALSE, WD_BLOOD, mtmp);
+				mtmp->mcrazed = TRUE;
+				mtmp->mberserk = TRUE;
+				mtmp->mconf = TRUE;
+			}
+			
+			if(adtyp == AD_SLIM && !Slime_res(mtmp) &&
+				(!resists_acid(mtmp) ? (mtmp->mhp <= mdam*2) : (mtmp->mhp <= mdam))
+			){
+				(void)newcham(mtmp, PM_GREEN_SLIME, FALSE, canseemon(mtmp));
+				mtmp->mstrategy &= ~STRAT_WAITFORU;
+			} else {
+				mtmp->mhp -= mdam;
+				//Elemental damage types make it down here.
+				if(!area->locations[i].shielded)
+					mtmp->mhp -= idamres;
+				mtmp->mhp -= idamnonres;
+			}
 		}
 		if (mtmp->mhp <= 0) {
 			/* KMH -- Don't blame the player for pets killing gas spores */
@@ -606,6 +705,14 @@ boolean yours; /* is it your fault (for killing monsters) */
 			/* gas spores */
 				flags.verbose && olet != SCROLL_CLASS)
 			You("are caught in the %s!", str);
+
+		if(uhurt == 1 && 
+			(adtyp == AD_EFIR || adtyp == AD_ECLD || adtyp == AD_EELC || adtyp == AD_EACD)
+		){
+			damu /= 2;
+			uhurt = 3;
+		}
+
 		if(hates_silver(youracedata) && silver){
 			You("are seared by the %s!", str);
 			damu += rnd(20);
@@ -615,7 +722,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 			damu += u.ulevel;
 		}
 		/* do property damage first, in case we end up leaving bones */
-		if (adtyp == AD_FIRE){
+		if (adtyp == AD_FIRE || adtyp == AD_EFIR){
 			burn_away_slime();
 			melt_frozen_air();
 		}
@@ -636,9 +743,22 @@ boolean yours; /* is it your fault (for killing monsters) */
 			destroy_item(&youmonst, WAND_CLASS, (int) adtyp);
 		}
 
+		if(adtyp == AD_WET){
+			water_damage(invent, FALSE, FALSE, FALSE, mtmp);
+		}
+		else if (adtyp == AD_BLUD){
+			water_damage(invent, FALSE, FALSE, WD_BLOOD, mtmp);
+			u.umadness |= MAD_APOSTASY;
+			change_usanity(-rnd(6), FALSE);
+		}
 		ugolemeffects((int) adtyp, damu);
 
-		if (uhurt == 2) {
+		if (uhurt == 2 || uhurt == 3) {
+			if(adtyp == AD_SLIM && !Slime_res(&youmonst)){
+				You("don't feel very well.");
+				Slimed = 10L;
+				flags.botl = 1;
+			}
 		    if (Upolyd)
 		    	u.mh  -= damu;
 		    else
@@ -1147,6 +1267,40 @@ boolean yours;
 
 #endif /* FIREARMS */
 
+int
+adtyp_expl_color(adtyp)
+int adtyp;
+{
+	switch(adtyp){
+		case AD_PHYS:
+			return EXPL_MUDDY;
+		case AD_EFIR:
+		case AD_FIRE:
+			return EXPL_FIERY;
+		case AD_ECLD:
+		case AD_COLD:
+			return EXPL_FROSTY;
+		case AD_EELC:
+		case AD_ELEC:
+			return EXPL_MAGICAL;
+		case AD_DISE:
+		case AD_DRST:
+			return EXPL_MAGENTA;
+		case AD_ACID:
+		case AD_EACD:
+		case AD_SLIM:
+			return EXPL_NOXIOUS;
+		case AD_DARK:
+			return EXPL_DARK;
+		case AD_WET:
+			return EXPL_WET;
+		case AD_BLUD:
+			return EXPL_RED;
+		default:
+			impossible("unhandled explosion color for attack damage type %d", adtyp);
+			return EXPL_MAGICAL;
+	}
+}
 #endif /* OVL1 */
 
 /*explode.c*/

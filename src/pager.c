@@ -7,9 +7,6 @@
 
 #include "hack.h"
 #include "dlb.h"
-#ifdef BARD
-
-#endif
 
 STATIC_DCL boolean FDECL(is_swallow_sym, (int));
 STATIC_DCL int FDECL(append_str, (char *, const char *));
@@ -38,6 +35,8 @@ extern void NDECL(port_help);
 #endif
 
 extern const int monstr[];
+extern struct attack noattack;
+
 
 /* Returns "true" for characters that could represent a monster's stomach. */
 STATIC_OVL boolean
@@ -108,6 +107,40 @@ static const char * const bodyStr[] = {
 	" snake-backed animal",
 	" centauroid"
 };
+
+
+/* extracted from lookat(); also used by do_floorname() */
+boolean
+object_from_map(glyph, x, y, obj_p)
+    int glyph, x, y;
+    struct obj **obj_p;
+{
+    boolean fakeobj = FALSE;
+    struct obj *otmp = vobj_at(x,y);
+
+    if (!otmp || otmp->otyp != glyph_to_obj(glyph)) {
+	if (glyph_to_obj(glyph) != STRANGE_OBJECT) {
+	    otmp = mksobj(glyph_to_obj(glyph), MKOBJ_NOINIT);
+	    if (!otmp)
+		return FALSE;
+	    fakeobj = TRUE;
+	    if (otmp->oclass == COIN_CLASS)
+		otmp->quan = 2L; /* to force pluralization */
+	    else if (otmp->otyp == SLIME_MOLD)
+		otmp->spe = current_fruit;	/* give the fruit a type */
+	}
+    }
+
+    /* if located at adajcent spot, mark it as having been seen up close */
+    if (otmp && distu(x, y) <= 2 && !Blind && !Hallucination)
+        otmp->dknown = 1;
+
+    *obj_p = otmp;
+
+    return fakeobj;
+}
+
+
 /*
  * Return the name of the glyph found at (x,y).
  * If not hallucinating and the glyph is a monster, also monster data.
@@ -184,7 +217,7 @@ lookat(x, y, buf, monbuf, shapebuff)
 	bhitpos.x = x;
 	bhitpos.y = y;
 	mtmp = m_at(x,y);
-	do_halu = Hallucination || Delusion(mtmp);
+	do_halu = Hallucination;
 	if (mtmp != (struct monst *) 0) {
 	    char *name, monnambuf[BUFSZ];
 	    boolean accurate = !do_halu;
@@ -221,7 +254,7 @@ lookat(x, y, buf, monbuf, shapebuff)
 		int tt = t ? t->ttyp : NO_TRAP;
 
 		/* newsym lets you know of the trap, so mention it here */
-		if (tt == BEAR_TRAP || tt == PIT ||
+		if (tt == BEAR_TRAP || tt == FLESH_HOOK || tt == PIT ||
 			tt == SPIKED_PIT || tt == WEB)
 		    Sprintf(eos(buf), ", trapped in %s",
 			    an(defsyms[trap_to_defsym(tt)].explanation));
@@ -407,21 +440,16 @@ lookat(x, y, buf, monbuf, shapebuff)
 	}
     }
     else if (glyph_is_object(glyph)) {
-	struct obj *otmp = vobj_at(x,y);
+	struct obj *otmp = 0;
+	boolean fakeobj = object_from_map(glyph, x, y, &otmp);
 
-	if (!otmp || otmp->otyp != glyph_to_obj(glyph)) {
-	    if (glyph_to_obj(glyph) != STRANGE_OBJECT) {
-		otmp = mksobj(glyph_to_obj(glyph), FALSE, FALSE);
-		if (otmp->oclass == COIN_CLASS)
-		    otmp->quan = 2L; /* to force pluralization */
-		else if (otmp->otyp == SLIME_MOLD)
-		    otmp->spe = current_fruit;	/* give the fruit a type */
-		Strcpy(buf, distant_name(otmp, xname));
-		dealloc_obj(otmp);
-	    }
-	} else
-	    Strcpy(buf, distant_name(otmp, xname));
-
+	if (otmp) {
+	    Strcpy(buf, (otmp->otyp != STRANGE_OBJECT)
+		    ? distant_name(otmp, xname)
+		    : obj_descr[STRANGE_OBJECT].oc_name);
+	    if (fakeobj)
+		dealloc_obj(otmp), otmp = 0;
+        }
 	if (levl[x][y].typ == STONE || levl[x][y].typ == SCORR)
 	    Strcat(buf, " embedded in stone");
 	else if (IS_WALL(levl[x][y].typ) || levl[x][y].typ == SDOOR)
@@ -431,7 +459,7 @@ lookat(x, y, buf, monbuf, shapebuff)
 	else if (is_pool(x,y, FALSE))
 	    Strcat(buf, " in water");
 	else if (is_lava(x,y))
-	    Strcat(buf, " in molten lava");	/* [can this ever happen?] */
+	    Strcat(buf, " in molten lava");     /* [can this ever happen?] */
     } else if (glyph_is_trap(glyph)) {
 	int tnum = what_trap(glyph_to_trap(glyph));
 	Strcpy(buf, defsyms[trap_to_defsym(tnum)].explanation);
@@ -1060,6 +1088,7 @@ do_look(quick)
     boolean force_defsyms;	/* force using glyphs from defsyms[].sym */
     boolean need_to_look;	/* need to get explan. from glyph */
     boolean hit_trap;		/* true if found trap explanation */
+    boolean hit_cloud;		/* true if found cloud explanation */
     int skipped_venom;		/* non-zero if we ignored "splash of venom" */
 	int hallu_obj;		/* non-zero if found hallucinable object */
     static const char *mon_interior = "the interior of a monster";
@@ -1233,7 +1262,7 @@ do_look(quick)
 #define is_cmap_drawbridge(i) ((i) >= S_vodbridge && (i) <= S_hcdbridge)
 
 	/* Now check for graphics symbols */
-	for (hit_trap = FALSE, i = 0; i < MAXPCHARS; i++) {
+	for (hit_trap = FALSE, hit_cloud = FALSE, i = 0; i < MAXPCHARS; i++) {
 	    x_str = defsyms[i].explanation;
 	    if (sym == (force_defsyms ? defsyms[i].sym : (from_screen ? showsyms[i] : defsyms[i].sym)) && *x_str) {
 		/* avoid "an air", "a water", or "a floor of a room" */
@@ -1248,6 +1277,9 @@ do_look(quick)
 			hit_trap = TRUE;
 		    } else if (level.flags.lethe && !strcmp(x_str, "water")) { //Lethe patch
 			Sprintf(out_str, "%c       sparkling water", (uchar)sym); //Lethe patch
+		    } else if (strstr(x_str, "cloud") != NULL) { //Don't print a bunch of cloud messages
+				Sprintf(out_str, "%c       cloud", (uchar)sym);
+				hit_cloud = TRUE;
 		    } else {
 			Sprintf(out_str, "%c       %s", (uchar)sym,
 				article == 2 ? the(x_str) :
@@ -1255,10 +1287,16 @@ do_look(quick)
 		    }
 		    firstmatch = x_str;
 		    found++;
-		} else if (!u.uswallow && !(hit_trap && is_cmap_trap(i)) &&
-			   !(found >= 3 && is_cmap_drawbridge(i))) {
+		} else if (!u.uswallow && !(hit_trap && is_cmap_trap(i)) && 
+				!(hit_cloud && (strstr(x_str, "cloud") != NULL)) &&
+			   !(found >= 3 && is_cmap_drawbridge(i))
+		) {
 		    if (level.flags.lethe && !strcmp(x_str, "water")) //lethe
-			found += append_str(out_str, "sparkling water"); //lethe
+				found += append_str(out_str, "sparkling water"); //lethe
+		    else if (strstr(x_str, "cloud") != NULL){ //cloudspam
+				found += append_str(out_str, "cloud"); //cloudspam
+				hit_cloud = TRUE;
+			}
 		    else //lethe
 		    	found += append_str(out_str,
 					article == 2 ? the(x_str) :
@@ -1523,6 +1561,7 @@ get_weakness_description_of_monster_type(struct monst * mtmp, char * description
 
 	many = append(temp_buf, hates_holy_mon(mtmp)	, "holy"		, many);
 	many = append(temp_buf, hates_unholy_mon(mtmp)	, "unholy"		, many);
+	many = append(temp_buf, hates_unblessed_mon(mtmp), "uncursed"	, many);
 	many = append(temp_buf, hates_silver(ptr)		, "silver"		, many);
 	many = append(temp_buf, hates_iron(ptr)			, "iron"		, many);
 
@@ -1582,7 +1621,7 @@ get_mm_description_of_monster_type(struct monst * mtmp, char * description)
 	many = append(description, species_teleports(ptr), "teleports"			, many);
 	many = append(description, species_controls_teleports(ptr)	, "controls teleports"	, many);
 	many = append(description, mteleport(ptr)			, "teleports often"		, many);
-	many = append(description, stationary(ptr)			, "stationary"			, many);
+	many = append(description, stationary_mon(mtmp)			, "stationary"			, many);
 	many = append(description, (many==0)				, "moves normally"		, many);
 	strcat(description, ". ");
 	return description;
@@ -1784,7 +1823,7 @@ get_speed_description_of_monster_type(struct monst * mtmp, char * description)
 		sprintf(description, "Immobile (%d). ", speed);
 	}
 
-	if (stationary(mtmp->data)) sprintf(description, "Can't move around. Speed %d. ", speed);
+	if (stationary_mon(mtmp)) sprintf(description, "Can't move around. Speed %d. ", speed);
 
 	return description;
 }
@@ -1805,6 +1844,7 @@ get_description_of_attack_type(uchar id)
 	case AT_SPIT: return "spit";
 	case AT_ENGL: return "engulf";
 	case AT_BREA: return "breath";
+	case AT_BRSH: return "splashing breath";
 	case AT_EXPL: return "explosion";
 	case AT_BOOM: return "on death";
 	case AT_GAZE: return "targeted gaze";
@@ -1954,7 +1994,7 @@ get_description_of_damage_type(uchar id)
 	case AD_ECLD: return "elemental cold";
 	case AD_EACD: return "elemental acid";
 	case AD_CNFT: return "conflict-inducing touch";
-	case AD_BLUD: return "Sword of Blood";
+	case AD_BLUD: return "blood";
 	case AD_SURY: return "Arrows of Slaying";
 	case AD_NPDC: return "drains constitution";
 	case AD_GLSS: return "silver mirror shards";
@@ -1999,6 +2039,19 @@ get_description_of_damage_type(uchar id)
 	case AD_CRYS: return "dilithium crystals";
 	case AD_NUDZ: return "mirror blast";
 	case AD_WHIS: return "whispers from the void";
+	case AD_LRVA: return "implant larva";
+	case AD_HOOK: return "flesh hook";
+	case AD_MDWP: return "mindwipe";
+	case AD_SSTN: return "slow stoning";
+	case AD_NPDS: return "non-poison-based drain strength";
+	case AD_NPDD: return "non-poison-based drain dexterity";
+	case AD_NPDR: return "non-poison-based drain charisma";
+	case AD_NPDA: return "non-poison-based all attribute drain";
+	case AD_DOBT: return "agnosis infliction";
+	case AD_APCS: return "revelatory whispers";
+	case AD_PULL: return "pull closer";
+	case AD_PAIN: return "poison (STR) and crippling pain";
+	case AD_MROT: return "inflict curses";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2079,17 +2132,29 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 	struct permonst * ptr = mtmp->data;
 	int monsternumber = monsndx(ptr);
 
+	/* monsters pretending to be other monsters won't be given away by the pokedex */
+	struct monst fakemon;
+	if (mtmp->m_ap_type == M_AP_MONSTER) {
+		fakemon = *mtmp;
+		monsternumber = fakemon.mtyp = mtmp->mappearance;
+		ptr = fakemon.data = &mons[monsternumber];
+		mtmp = &fakemon;
+	}
+
 	char name[BUFSZ] = "";
 	Strcat(name, ptr->mname);
-	if (has_template(mtmp, ZOMBIFIED))		Strcat(name, " zombie");
-	else if (has_template(mtmp, SKELIFIED))	Strcat(name, " skeleton");
-	else if (has_template(mtmp, CRYSTALFIED)) Strcat(name, " vitrean");
-	else if (has_template(mtmp, WHISPERING)) Strcat(name, " of whispers");
-	else if (has_template(mtmp, FRACTURED))	Strcat(name, " witness");
-	else if (has_template(mtmp, ILLUMINATED))	Strcat(name, " shining one");
-	else if (has_template(mtmp, VAMPIRIC))	Strcat(name, " vampire");
-	else if (has_template(mtmp, PSEUDONATURAL))	Strcat(name, " pseudonatural");
-	else if (has_template(mtmp, TOMB_HERD))	Strcat(name, " tomb herd");
+	if (type_is_pname(ptr)){
+		if (has_template(mtmp, MISTWEAVER)){
+			if (mtmp->female) Strcat(name, ", Daughter of the Black Goat");
+			else Strcat(name, ", Child of the Black Goat");
+		}
+	}
+	else {
+		if (has_template(mtmp, MISTWEAVER)){
+			if (mtmp->female) Strcat(name, " dark daughter");
+			else Strcat(name, " dark child");
+		}
+	}
 
 	temp_buf[0] = '\0';
 	if (iflags.pokedex) {
@@ -2166,8 +2231,8 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 			strcat(description, "Attacks:");
 			strcat(description, "\n");
 			struct attack * attk;
-			struct attack prev_attk;
-			int res[3];
+			struct attack prev_attk = noattack;
+			int res[4];
 			int indexnum = 0;
 			int tohitmod = 0;
 			int subout = 0;
@@ -2175,6 +2240,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 			res[0] = MM_MISS;
 			res[1] = MM_MISS;
 			res[2] = MM_MISS;
+			res[3] = MM_MISS;
 			do {
 				/* get next attack */
 				attk = getattk(mtmp, (struct monst *)0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod);

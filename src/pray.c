@@ -120,16 +120,17 @@ static int p_type; /* (-1)-3: (-1)=really naughty, 3=really good */
  * order to have the values be meaningful.
  */
 
-#define TROUBLE_STONED			17
-#define TROUBLE_FROZEN_AIR		16
-#define TROUBLE_SLIMED			15
-#define TROUBLE_STRANGLED		14
-#define TROUBLE_LAVA			13
-#define TROUBLE_SICK			12
-#define TROUBLE_STARVING		11
-#define TROUBLE_HIT			 	10
-#define TROUBLE_WIMAGE		 	9
-#define TROUBLE_MORGUL		 	8
+#define TROUBLE_STONED			18
+#define TROUBLE_FROZEN_AIR		17
+#define TROUBLE_SLIMED			16
+#define TROUBLE_STRANGLED		15
+#define TROUBLE_LAVA			14
+#define TROUBLE_SICK			13
+#define TROUBLE_STARVING		12
+#define TROUBLE_HIT			 	11
+#define TROUBLE_WIMAGE		 	10
+#define TROUBLE_MORGUL		 	9
+#define TROUBLE_MROT		 	8
 #define TROUBLE_HPMOD		 	7
 #define TROUBLE_LYCANTHROPE		 6
 #define TROUBLE_COLLAPSING		 5
@@ -204,6 +205,7 @@ in_trouble()
 		(u.uhp <= 5 || u.uhp*2 <= u.uhpmax)) return TROUBLE_HIT;
 	if(u.wimage >= 10 && on_altar()) return(TROUBLE_WIMAGE);
 	if(u.umorgul && on_altar()) return(TROUBLE_MORGUL);
+	if(u.umummyrot && on_altar()) return(TROUBLE_MROT);
 	if(u.uhpmod < -18 && on_altar()) return(TROUBLE_HPMOD);
 	if(u.ulycn >= LOW_PM) return(TROUBLE_LYCANTHROPE);
 	if(near_capacity() >= EXT_ENCUMBER && AMAX(A_STR)-ABASE(A_STR) > 3)
@@ -226,6 +228,8 @@ in_trouble()
 	       make sure it's a case that we know how to handle;
 	       otherwise "fix all troubles" would get stuck in a loop */
 	    if (welded(uwep)) return TROUBLE_UNUSEABLE_HANDS;
+	    if (Straitjacketed)
+			return TROUBLE_UNUSEABLE_HANDS;
 	    if (Upolyd && nohands(youracedata) && (!Unchanging ||
 		    ((otmp = unchanger()) != 0 && otmp->cursed)))
 		return TROUBLE_UNUSEABLE_HANDS;
@@ -443,7 +447,7 @@ register int trouble;
 		    }
 		    goto decurse;
 	    case TROUBLE_UNUSEABLE_HANDS:
-			if(uarm && uarm->otyp == STRAITJACKET && uarm->cursed){
+			if(Straitjacketed){
 				otmp = uarm;
 				goto decurse;
 			}
@@ -474,6 +478,10 @@ register int trouble;
 			pline("The chill of death fades away.");
 			//Destroy the blades.
 		    u.umorgul = 0;
+		    break;
+	    case TROUBLE_MROT:
+			pline("You stop shedding dust.");
+		    u.umummyrot = 0;
 		    break;
 	    case TROUBLE_HPMOD:
 			You_feel("restored to health.");
@@ -648,7 +656,7 @@ int ga_num;
 	    		!(EDisint_resistance & W_ARM) && !uarmc)
 		(void) destroy_arm(uarm);
 #ifdef TOURIST
-	    if (uarmu && !uarm && !uarmc) (void) destroy_arm(uarmu);
+	    if (uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc) (void) destroy_arm(uarmu);
 #endif
 	    if (!Disint_resistance)
 		fry_by_god(ga_num);
@@ -1581,9 +1589,14 @@ boolean silently;
 		}
 		else if(Blind || (!carried(otmp) && !cansee(x,y)))
 		You_hear("crunching noises.");
-		else if(!carried(otmp) && cansee(x,y))
+		else if(!carried(otmp) && cansee(x,y)){
 			pline("A mouth forms from the mist and eats %s!", an(singular(otmp, xname)));
-		else pline("A mouth forms from the mist and eats your sacrifice!");
+			lift_veil();
+		}
+		else {
+			pline("A mouth forms from the mist and eats your sacrifice!");
+			lift_veil();
+		}
 	}
     if (carried(otmp)){
 		if(u.sealsActive&SEAL_BALAM){
@@ -2432,7 +2445,7 @@ dosacrifice()
 				u.umartial = TRUE;
 			} else if(otmp->oartifact == ART_RHONGOMYNIAD){
 				unrestrict_weapon_skill(P_RIDING);
-				mksobj_at(SADDLE, u.ux, u.uy, FALSE, FALSE);
+				mksobj_at(SADDLE, u.ux, u.uy, MKOBJ_NOINIT);
 				u.umartial = TRUE;
 			} else if(otmp->oartifact == ART_GOLDEN_SWORD_OF_Y_HA_TALLA){
 				unrestrict_weapon_skill(P_WHIP);
@@ -2524,6 +2537,16 @@ dopray()
 	if(Role_if(PM_ANACHRONOUNBINDER)){
 		if(In_quest(&u.uz)) You("wouldn't want to change the future.");
 		else pline("Ilsensine, the Banished One, cannot hear your prayers.");
+		return 0;
+	}
+	
+	if(flat_mad_turn(MAD_APOSTASY)){
+		pline("You can't bring yourself to pray.");
+		return 0;
+	}
+	
+	if(Doubt){
+		pline("You're suffering a crisis of faith.");
 		return 0;
 	}
 	
@@ -2971,10 +2994,10 @@ int ga_num;
 		gnam = Silence;
 	 break;
      case GA_CHAOS_FF:
-		if(In_FF_quest(&u.uz)){
-			if(on_level(&chaose_level,&u.uz)) gnam = DeepChaos;
-			else gnam = Chaos;
-		}
+		if(In_FF_quest(&u.uz) && on_level(&chaose_level,&u.uz))
+			gnam = DeepChaos;
+		else
+			gnam = Chaos;
 	 break;
      case GA_DEMIURGE:
 		gnam = Demiurge;
@@ -3365,8 +3388,9 @@ aligntyp alignment;
 			case 5: // bless/curse an item
 #define wrongbuc(obj) ((hates_unholy(youracedata) && hates_holy(youracedata)) ? \
 						(obj->blessed || obj->cursed) : \
+						(hates_unblessed(youracedata) ? (obj->blessed || obj->cursed) : \
 						(hates_unholy(youracedata) ? !obj->blessed : \
-						(hates_holy(youracedata) ? !obj->cursed : !obj->blessed)))
+						(hates_holy(youracedata) ? !obj->cursed : !obj->blessed))))
 
 				/* weapon takes precedence if it interferes with taking off a ring or shield */				
 				if (uwep && wrongbuc(uwep)) otmp = uwep;
@@ -3467,7 +3491,7 @@ STATIC_OVL void
 goat_gives_benefit()
 {
 	struct obj *optr;
-	if (rnl((30 + u.ulevel)*10) < 10) god_gives_pet(align_gname_full(A_NONE),A_NONE);
+	if (rnl((30 + u.ulevel)*10) < 10) god_gives_pet(ga_gname_full(GA_MOTHER),A_NONE);
 	else switch(rnd(7)){
 		case 1:
 			if (Hallucination)
@@ -3501,7 +3525,7 @@ goat_gives_benefit()
 		case 5:
 		case 6:
 		case 7:
-			optr = mksobj(POT_GOAT_S_MILK, FALSE, FALSE);
+			optr = mksobj(POT_GOAT_S_MILK, MKOBJ_NOINIT);
 			optr->quan = rnd(8);
 			optr->owt = weight(optr);
 			dropy(optr);
@@ -3677,8 +3701,8 @@ int eatflag;
 		//Character needs a holy symbol
 		if(!has_object_type(invent, HOLY_SYMBOL_OF_THE_BLACK_MOTHE)){
 			struct obj *otmp;
-			if(!rn2(10+u.ugifts)){
-				otmp = mksobj(HOLY_SYMBOL_OF_THE_BLACK_MOTHE, FALSE, FALSE);
+			if(u.uevent.shubbie_atten ? !rn2(10+u.ugifts) : !rn2(4)){
+				otmp = mksobj(HOLY_SYMBOL_OF_THE_BLACK_MOTHE, MKOBJ_NOINIT);
 				dropy(otmp);
 				at_your_feet("An object");
 				//event: only increment this once.
@@ -3694,12 +3718,13 @@ int eatflag;
 	    /* The player can gain an artifact */
 	    /* The chance goes down as the number of artifacts goes up */
 		/* Priests now only count gifts in this calculation, found artifacts are excluded */
+		/* deliberately can affect artifact weapons */
 		struct obj *otmp = (struct obj *)0;
-		if (uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep) || uwep->oartifact) && !check_oprop(uwep, OPROP_ACIDW) && !check_oprop(uwep, OPROP_GOATW))
+		if (uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep)) && !check_oprop(uwep, OPROP_ACIDW) && !check_oprop(uwep, OPROP_GOATW))
 			otmp = uwep;
-		else if (uarmg && !uwep && u.umartial && !check_oprop(uarmg, OPROP_ACIDW) && !check_oprop(uwep, OPROP_GOATW))
+		else if (uarmg && !uwep && u.umartial && !check_oprop(uarmg, OPROP_ACIDW) && !check_oprop(uarmg, OPROP_GOATW))
 			otmp = uarmg;
-		else if (uarmf && !uarmg && !uwep && u.umartial && !check_oprop(uarmf, OPROP_ACIDW) && !check_oprop(uwep, OPROP_GOATW))
+		else if (uarmf && !uarmg && !uwep && u.umartial && !check_oprop(uarmf, OPROP_ACIDW) && !check_oprop(uarmf, OPROP_GOATW))
 			otmp = uarmf;
 			
 	    if(u.ulevel > 2 && u.uluck >= 0 && (!flags.made_know || otmp) && maybe_god_gives_gift()){
@@ -3716,7 +3741,7 @@ int eatflag;
 				u.uartisval += TIER_S;
 			}
 			else if(!flags.made_know){
-				otmp = mksobj(WORD_OF_KNOWLEDGE, FALSE, FALSE);
+				otmp = mksobj(WORD_OF_KNOWLEDGE, MKOBJ_NOINIT);
 				dropy(otmp);
 				at_your_feet("An object");
 				u.ugifts++;
@@ -3744,7 +3769,7 @@ int eatflag;
 		u.reconciled = REC_REC;
 	} else { //Off floor
 		if(isok(x,y) && rnl((30 + u.ulevel)*10) < 10){
-			mksobj_at(POT_GOAT_S_MILK, x, y, FALSE, FALSE);
+			mksobj_at(POT_GOAT_S_MILK, x, y, MKOBJ_NOINIT);
 		}
 	}
     }

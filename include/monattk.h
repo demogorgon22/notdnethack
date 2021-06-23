@@ -20,30 +20,31 @@
 #define AT_SPIT		10	/* spits substance - ranged */
 #define AT_ENGL		11	/* engulf (swallow or by a cloud) */
 #define AT_BREA		12	/* breath - ranged */
-#define AT_EXPL		13	/* explodes - proximity */
-#define AT_BOOM		14	/* explodes when killed */
-#define AT_GAZE		15	/* gaze - ranged, active, like pyrolisk */
-#define AT_TENT		16	/* tentacles */
-#define AT_ARRW		17	/* fire silver arrows from internal reservour.  Other ammo created as needed. */
-#define AT_WHIP		18	/* Whips you */
-#define AT_LRCH		19	/* Reach attack */
-#define AT_HODS		20  /* Hod Sephirah's mirror attack */
-#define AT_LNCK		21  /* Bite attack with reach */
-#define AT_MMGC		22	/* uses magic spell(s), but don't allow player spellcasting (Monster-only MaGiC) */
-#define AT_ILUR		23	/* Two stage swallow attack, currently belongs to Illurien only */
-#define AT_HITS		24	/* Automatic hit, no contact */
-#define AT_WISP		25	/* Attack with wisps of mist, no contact */
-#define AT_TNKR		26	/* Tinker attacks */
-#define AT_SRPR		27	/* Phased non-contact attack, "spiritual rapier" */
-#define AT_BEAM		28	/* non-contact ranged beam attack */
-#define AT_DEVA		29	/* million-arm weapon attack */
-#define AT_5SQR		30	/* five square reach touch */
-#define AT_5SBT		31	/* five square reach bite */
-#define AT_WDGZ		32	/* wide gaze - passive, like medusa */
-#define AT_REND		33	/* hits if the previous two attacks hit, otherwise does nothing */
-#define AT_VINE		34	/* Lashing vines */
-#define AT_BKGT		35	/* Black-goat, resolves as a bite, kick, butt, tuch, or gaze */
-#define AT_BKG2		36	/* Black-goat 2, resolves as a butt, tentacle suck, or gaze */
+#define AT_BRSH		13	/* breath - close-ranged splash */
+#define AT_EXPL		14	/* explodes - proximity */
+#define AT_BOOM		15	/* explodes when killed */
+#define AT_GAZE		16	/* gaze - ranged, active, like pyrolisk */
+#define AT_TENT		17	/* tentacles */
+#define AT_ARRW		18	/* fire silver arrows from internal reservour.  Other ammo created as needed. */
+#define AT_WHIP		19	/* Whips you */
+#define AT_LRCH		20	/* Reach attack */
+#define AT_HODS		21  /* Hod Sephirah's mirror attack */
+#define AT_LNCK		22  /* Bite attack with reach */
+#define AT_MMGC		23	/* uses magic spell(s), but don't allow player spellcasting (Monster-only MaGiC) */
+#define AT_ILUR		24 	/* Two stage swallow attack, currently belongs to Illurien only */
+#define AT_HITS		25	/* Automatic hit, no contact */
+#define AT_WISP		26	/* Attack with wisps of mist, no contact */
+#define AT_TNKR		27	/* Tinker attacks */
+#define AT_SRPR		28	/* Phased non-contact attack, "spiritual rapier" */
+#define AT_BEAM		29	/* non-contact ranged beam attack */
+#define AT_DEVA		30	/* million-arm weapon attack */
+#define AT_5SQR		31	/* five square reach touch */
+#define AT_5SBT		32	/* five square reach bite */
+#define AT_WDGZ		33	/* wide gaze - passive, like medusa */
+#define AT_REND		34	/* hits if the previous two attacks hit, otherwise does nothing */
+#define AT_VINE		35	/* Lashing vines */
+#define AT_BKGT		36	/* Black-goat, resolves as a bite, kick, butt, tuch, or gaze */
+#define AT_BKG2		37	/* Black-goat 2, resolves as a butt, tentacle suck, or gaze */
 
 #define AT_WEAP		252	/* uses weapon */
 #define AT_XWEP		253	/* uses offhanded weapon */
@@ -133,7 +134,7 @@
 #define AD_MIST		70 /* Mi-go mist projector.  Works with AT_GAZE */
 #define AD_TELE		71 /* Monster teleports away.  Use for hit and run attacks */
 #define AD_POLY		72	/* Monster alters your DNA (was for the now-defunct genetic enginier Q) */
-#define AD_PSON		73 /* DEFERED psionic attacks.  uses some from cleric and wiz */
+#define AD_PSON		73 /* "Psionic" magic attacks.  uses some from cleric and wiz */
 #define AD_GROW		74 /* Monster causes a child to grow up upon death.  'ton special */
 #define AD_SOUL		75 /* Monster causes like monsters to power up upon death.  Deep One special */
 #define AD_TENT		76	/* extended tentacle invasion (elder priest) */
@@ -189,24 +190,37 @@
 #define AD_BDFN     126 /* Blood Frenzy */
 #define AD_SPHR     127 /* Creates spheres */
 #define AD_DARK     128 /* Does extra damage to mortal races */
-#define AD_NUKE     129 /* Physical digging large explosion */
-#define AD_LASR     130 /* Part physical part fire laser ray */
-#define AD_ROCK		131 /*Throws a rock, used by Shiro*/
-#define AD_RNBW		132 /*Iris special attack. */
-#define AD_JACK		133 /*Jack hella huge explosion on death*/
-#define AD_YANK		135 /*yank ya to em marionette*/
-#define AD_PAIM		136 /*Paimon exploding book attack*/
-#define AD_ALIG		137 /*A realigning experience*/
-#define AD_SPIR		138 /*Let out the spirits*/
-#define AD_NUDZ		139 /*Mirror blast*/
-#define AD_COSM		140 /*Crystal memories*/
-#define AD_CRYS		141 /*throw crystal*/ 
-#define AD_WHIS		142 /*whisper your darkest fears*/
+#define AD_LRVA     129 /* Implants eggs (tannin special attack) */
+#define AD_NPDS     133 /* Non-poison-based drain strength */
+#define AD_NPDD     134 /* Non-poison-based drain dexterity */
+#define AD_NPDR     135 /* Non-poison-based drain charisma */
+#define AD_NPDA     136 /* Non-poison-based drain all */
+#define AD_HOOK     130 /* Flesh hooks (imobalize target) */
+#define AD_MDWP     131 /* Mindwipe (amnesia-based leveldrain) */
+#define AD_SSTN     132 /* Slow stoning */
+#define AD_DOBT     137 /* Inflict doubt */
+#define AD_APCS     138 /* Revelatory whispers */
+#define AD_PULL     139 /* Pull target closer */
+#define AD_PAIN     140 /* Crippling pain */
+#define AD_MROT     141 /* Mummy rot/other curses */
+#define AD_NUKE     142 /* Physical digging large explosion */
+#define AD_LASR     143 /* Part physical part fire laser ray */
+#define AD_ROCK		144 /*Throws a rock, used by Shiro*/
+#define AD_RNBW		145 /*Iris special attack. */
+#define AD_JACK		146 /*Jack hella huge explosion on death*/
+#define AD_YANK		147 /*yank ya to em marionette*/
+#define AD_PAIM		148 /*Paimon exploding book attack*/
+#define AD_ALIG		149 /*A realigning experience*/
+#define AD_SPIR		150 /*Let out the spirits*/
+#define AD_NUDZ		151 /*Mirror blast*/
+#define AD_COSM		152 /*Crystal memories*/
+#define AD_CRYS		153 /*throw crystal*/ 
+#define AD_WHIS		154 /*whisper your darkest fears*/
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	143
+#define AD_DUNSTAN	155
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

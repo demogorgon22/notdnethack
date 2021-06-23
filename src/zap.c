@@ -72,6 +72,7 @@ int adtyp, ztyp;
 		case AD_DEAD: return "death ray";
 		case AD_ELEC: return "lightning bolt";
 		default:      impossible("unknown wand damage type in flash_type: %d", adtyp);
+			return "NaN ray";
 		}
 		break;
 	case ZAP_SPELL:
@@ -89,6 +90,7 @@ int adtyp, ztyp;
 		case AD_DISN: return "disintegration ray";
 		case AD_LASR: return "laser beam";
 		default:      impossible("unknown spell damage type in flash_type: %d", adtyp);
+			return "cube of questions";
 		}
 		break;
 
@@ -105,7 +107,15 @@ int adtyp, ztyp;
 		case AD_ACID: return "blast of acid";
 		case AD_DRLI: return "blast of dark energy";
 		case AD_GOLD: return "blast of golden shards";
+		// These are provided to deal with spray breaths, and aren't handled for direct hits.
+		case AD_BLUD: return "spray of blood";
+		case AD_SLIM: return "spout of acidic slime";
+		case AD_WET: return "blast of water";
+		case AD_DARK: return "blast of darkness";
+		case AD_PHYS: return "blast";
+		case AD_DISE: return "blast of spores";
 		default:      impossible("unknown breath damage type in flash_type: %d", adtyp);
+			return "blast of static";
 		}
 	case ZAP_RAYGUN:
 		switch (adtyp)
@@ -117,6 +127,7 @@ int adtyp, ztyp;
 		case AD_DEAD: return "death ray";
 		case AD_DISN: return "disintegration ray";
 		default:      impossible("unknown raygun damage type in flash_type: %d", adtyp);
+			return "barrage of lost packets";
 		}
 	default:
 		impossible("unknown ztyp in flash_type: %d", ztyp);
@@ -133,13 +144,19 @@ int adtyp;
 	{
 	case AD_DEAD:
 	case AD_DISN:
+	case AD_DARK:
 		return CLR_BLACK;
-		//	return CLR_RED;
+	case AD_BLUD:
+		return CLR_RED;
+	case AD_SLIM:
 	case AD_ACID:
 		return CLR_GREEN;
-		//	return CLR_BROWN;
-		//	return CLR_BLUE;
-		//	return CLR_MAGENTA;
+	case AD_PHYS:
+		return CLR_BROWN;
+	case AD_WET:
+		return CLR_BLUE;
+	case AD_DISE:
+		return CLR_MAGENTA;
 		//	return CLR_CYAN;
 		//	return CLR_GRAY;
 		//	return NO_COLOR;
@@ -161,7 +178,6 @@ int adtyp;
 		return CLR_WHITE;
 	case AD_DRLI:
 		return CLR_MAGENTA;
-		//	return CLR_BLACK;
 	default:
 		impossible("unaccounted-for zap type in zap_glyph_color: %d", adtyp);
 		return CLR_WHITE;
@@ -1421,6 +1437,8 @@ create_polymon(obj, okind)
 	    pm_index = PM_ROPE_GOLEM;
 	    material = "cloth ";
 	    break;
+	case SHELL_MAT:
+	case CHITIN:
 	case BONE:
 	    pm_index = PM_SKELETON;     /* nearest thing to "bone golem" */
 	    material = "bony ";
@@ -1524,9 +1542,9 @@ poly_obj(obj, id)
 	    change_luck(-1);	/* Sokoban guilt, boulders only */
 	if (id == STRANGE_OBJECT) { /* preserve symbol */
 		if(obj->otyp == SPE_BLANK_PAPER || obj->otyp == SCR_BLANK_PAPER || obj->otyp == SCR_AMNESIA){
-			otmp = mksobj(rn2(2) ? SPE_BLANK_PAPER : SCR_BLANK_PAPER, FALSE, FALSE);
+			otmp = mksobj(rn2(2) ? SPE_BLANK_PAPER : SCR_BLANK_PAPER, MKOBJ_NOINIT);
 		} else if(obj->otyp == POT_BLOOD){
-			otmp = mksobj(POT_BLOOD, FALSE, FALSE);
+			otmp = mksobj(POT_BLOOD, MKOBJ_NOINIT);
 		} else if(obj->otyp == POT_WATER || obj->otyp == POT_AMNESIA){
 			if(obj->otyp == POT_AMNESIA){
 				obj->otyp = POT_WATER;
@@ -1545,7 +1563,7 @@ poly_obj(obj, id)
 			return obj;
 		} else if(obj->otyp == HYPOSPRAY_AMPULE){
 			int pick;
-			otmp = mksobj(HYPOSPRAY_AMPULE, FALSE, FALSE);
+			otmp = mksobj(HYPOSPRAY_AMPULE, MKOBJ_NOINIT);
 			do{
 				switch(rn2(14)){
 					case 0:
@@ -1607,7 +1625,7 @@ poly_obj(obj, id)
 		}
 	} else {
 	    /* literally replace obj with this new thing */
-	    otmp = mksobj(id, FALSE, FALSE);
+	    otmp = mksobj(id, MKOBJ_NOINIT);
 	/* Actually more things use corpsenm but they polymorph differently */
 #define USES_CORPSENM(typ) ((typ)==CORPSE || (typ)==STATUE || (typ)==FIGURINE)
 	    if (USES_CORPSENM(obj->otyp) && USES_CORPSENM(id))
@@ -1715,46 +1733,47 @@ poly_obj(obj, id)
 
 	case TOOL_CLASS:
 		if (otmp->otyp == CANDLE_OF_INVOCATION) {
-		otmp->otyp = WAX_CANDLE;
-		otmp->age = 400L;
+			otmp->otyp = WAX_CANDLE;
+			otmp->age = 400L;
 		}
 	    else if (otmp->otyp == MAGIC_LAMP) {
-		otmp->otyp = OIL_LAMP;
-		otmp->age = 1500L;	/* "best" oil lamp possible */
+			otmp->otyp = OIL_LAMP;
+			otmp->age = 1500L;	/* "best" oil lamp possible */
 	    } else if (otmp->otyp == MAGIC_MARKER) {
-		otmp->recharged = 1;	/* degraded quality */
+			otmp->recharged = 1;	/* degraded quality */
 	    }
 	    /* don't care about the recharge count of other tools */
 	    break;
 
 	case WAND_CLASS:
 	    while (otmp->otyp == WAN_WISHING || otmp->otyp == WAN_POLYMORPH)
-		otmp->otyp = rnd_class(WAN_LIGHT, WAN_LIGHTNING);
+			otmp->otyp = rnd_class(WAN_LIGHT, WAN_LIGHTNING);
 	    /* altering the object tends to degrade its quality
 	       (analogous to spellbook `read count' handling) */
 	    if ((int)otmp->recharged < rn2(7))	/* recharge_limit */
-		otmp->recharged++;
+			otmp->recharged++;
 	    break;
 
 	case POTION_CLASS:
 	    while (otmp->otyp == POT_POLYMORPH)
-		otmp->otyp = rnd_class(POT_GAIN_ABILITY, POT_WATER);
+			otmp->otyp = rnd_class(POT_GAIN_ABILITY, POT_WATER);
 	    break;
 
 	case SPBOOK_CLASS:
 	    while (otmp->otyp == SPE_POLYMORPH)
-		otmp->otyp = rnd_class(SPE_DIG, SPE_BLANK_PAPER);
+			otmp->otyp = rnd_class(SPE_DIG, SPE_BLANK_PAPER);
 	    /* reduce spellbook abuse */
 		if(otmp->spestudied > MAX_SPELL_STUDY){
 			otmp->otyp = SPE_BLANK_PAPER;
 			otmp->obj_color = objects[SPE_BLANK_PAPER].oc_color;
 		}
-	    else otmp->spestudied = obj->spestudied + 1;
+	    else
+			otmp->spestudied = obj->spestudied + 1;
 	    break;
 
 	case RING_CLASS:
 		while (otmp->otyp == RIN_WISHES)
-		otmp->otyp = rnd_class(RIN_WISHES, RIN_PROTECTION_FROM_SHAPE_CHAN);
+			otmp->otyp = rnd_class(RIN_WISHES, RIN_PROTECTION_FROM_SHAPE_CHAN);
 		break;
 
 	case GEM_CLASS:
@@ -1768,7 +1787,7 @@ poly_obj(obj, id)
 
 	/* add focusing gems to lightsabers */
 	if (is_lightsaber(otmp)) {
-		struct obj *gem = mksobj(rn2(6) ? BLUE_FLUORITE : GREEN_FLUORITE, TRUE, FALSE);
+		struct obj *gem = mksobj(rn2(6) ? BLUE_FLUORITE : GREEN_FLUORITE, NO_MKOBJ_FLAGS);
 		gem->quan = 1;
 		gem->owt = weight(gem);
 		add_to_container(otmp, gem);
@@ -2100,8 +2119,8 @@ struct obj *obj, *otmp;
 				obj = poly_obj(obj, MEATBALL);
 			    	goto smell;
 			    }
-			    if (!animate_statue(obj, oox, ooy,
-						ANIMATE_SPELL, (int *)0)) {
+				struct monst * mtmp;
+			    if (!(mtmp = animate_statue(obj, oox, ooy, ANIMATE_SPELL, (int *)0))) {
 				struct obj *item;
 makecorpse:			if (mons[obj->corpsenm].geno &
 							(G_NOCORPSE|G_UNIQ)) {
@@ -2119,6 +2138,13 @@ makecorpse:			if (mons[obj->corpsenm].geno &
 				obj = poly_obj(obj, CORPSE);
 				break;
 			    }
+				else {
+					/* creature was created */
+					if (get_mx(mtmp, MX_ESUM)) {
+						/* vanish it */
+						monvanished(mtmp);
+					}
+				}
 			} else if (obj->otyp == FOSSIL) {
 				int corpsetype = obj->corpsenm;
 			    xchar oox, ooy;
@@ -2534,7 +2560,7 @@ boolean ordinary;
 		     */
 		    int msg = !Invis && !Blind && !BInvis;
 
-		    if (BInvis && uarmc->otyp == MUMMY_WRAPPING) {
+		    if (BInvis && (is_mummy_wrap(uarmc))){
 			/* A mummy wrapping absorbs it and protects you */
 		        You_feel("rather itchy under your %s.", xname(uarmc));
 		        break;
@@ -2641,7 +2667,7 @@ boolean ordinary;
 		    break;
 		case SPE_HEALING:
 		case SPE_EXTRA_HEALING:
-		    healup(d((uarm && uarm->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H) ?
+		    healup(d((uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H) ?
                   12 : 6, obj->otyp == SPE_EXTRA_HEALING ? 8 : 4),
 			   0, FALSE, (obj->otyp == SPE_EXTRA_HEALING));
 		    You_feel("%sbetter.",
@@ -2948,7 +2974,7 @@ struct obj *obj;	/* wand or spell */
 		      ceiling(x, y), body_part(HEAD));
 		losehp(rnd((uarmh && is_hard(uarmh)) ? 2 : 6),
 		       "falling rock", KILLED_BY_AN);
-		if ((otmp = mksobj_at(ROCK, x, y, FALSE, FALSE)) != 0) {
+		if ((otmp = mksobj_at(ROCK, x, y, MKOBJ_NOINIT)) != 0) {
 		    (void)xname(otmp);	/* set dknown, maybe bknown */
 		    stackobj(otmp);
 		}
@@ -3774,6 +3800,18 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 
 			}/*if mdef*/
 
+			/* some zaps leave clouds behind */
+			if (zapdata->leaves_clouds) {
+				switch(zapdata->adtyp)
+				{
+				case AD_DRST:
+					create_gas_cloud(sx, sy, 1, 8, youagr);
+					break;
+				default:
+					impossible("Unhandled gascloud-leaving zap adtyp %d", zapdata->adtyp);
+				}
+			}
+
 			/* trees are killed by death rays */
 			if (lev->typ == TREE && zapdata->adtyp == AD_DEAD && (range >= 0)) {
 				lev->typ = DEADTREE;
@@ -3795,7 +3833,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 			/* disintegrate terrain */
 			/* maybe move this to dig.c? it's very very similar to zap_dig. */
 			if (zapdata->adtyp == AD_DISN) {
-				boolean shopdoor, shopwall;
+				boolean shopdoor = FALSE, shopwall = FALSE;
 				if (!isok(sx, sy)) {
 					if (isok(sx-dx, sy-dy) && cansee(sx-dx, sy-dy))
 						pline("The wall glows then fades.");
@@ -3921,12 +3959,12 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 	tmp_at(DISP_END, 0);
 
 	/* some zaps have effects at their end */
-	/* TODO: get colours from zapdata */
+	/* TODO: record colours in zapdata? Color currently standardized on AD_type */
 	if (zapdata->explosive) {
-		explode(sx, sy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), EXPL_FIERY, 1 + !!(youagr &&Double_spell_size));
+		explode(sx, sy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp), 1 + !!(youagr &&Double_spell_size));
 	}
 	if (zapdata->splashing) {
-		splash(sx, sy, dx, dy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), EXPL_NOXIOUS);
+		splash(sx, sy, dx, dy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp));
 	}
 
 	/* calculate shop damage */
@@ -4484,7 +4522,7 @@ struct obj *otmp;	/* source of flash */
 		/* at this point, reveal them */
 		mtmp->mundetected = 0;
 		if (mtmp->m_ap_type)
-			seemimic(mtmp);
+			see_passive_mimic(mtmp);
 		newsym(mtmp->mx, mtmp->my);
 		if (mtmp->mtyp == PM_GREMLIN) {
 		    /* Rule #1: Keep them out of the light. */
@@ -4645,7 +4683,7 @@ int type;
 {
 	struct obj *otmp;
 	if(type == AD_STON){
-		otmp = mksobj(STATUE, FALSE, FALSE);
+		otmp = mksobj(STATUE, MKOBJ_NOINIT);
 		otmp->corpsenm = mon->mtyp==PM_PARASITIZED_COMMANDER ? PM_PARASITIC_MASTER_MIND_FLAYER : PM_PARASITIC_MIND_FLAYER;
 		fix_object(otmp);
 		mpickobj(mon, otmp);
@@ -4659,7 +4697,7 @@ int type;
 		update_mon_intrinsics(mon, otmp, TRUE, TRUE);
 	}
 	else if(type != AD_DGST){
-		otmp = mksobj_at(CORPSE, mon->mx, mon->my, FALSE, FALSE);
+		otmp = mksobj_at(CORPSE, mon->mx, mon->my, MKOBJ_NOINIT);
 		otmp->corpsenm = mon->mtyp==PM_PARASITIZED_COMMANDER ? PM_PARASITIC_MASTER_MIND_FLAYER : PM_PARASITIC_MIND_FLAYER;
 		fix_object(otmp);
 	}
@@ -4687,7 +4725,7 @@ int type;
 		mon->m_lev = 3;
 		mon->mhpmax = 20+rn2(4);
 		mon->mhp = min(mon->mhp, mon->mhpmax);
-		otmp = mksobj(SHACKLES, FALSE, FALSE);
+		otmp = mksobj(SHACKLES, MKOBJ_NOINIT);
 		set_material_gm(otmp, IRON);
 		add_oprop(otmp, OPROP_ELECW);
 		otmp->oeroded = 1;
@@ -4982,6 +5020,9 @@ boolean *shopdamage;
 		    You("%s of smoke.",
 			!Blind ? "see a puff" : "smell a whiff");
 		}
+	if(OBJ_AT(x, y) && adtyp == AD_WET && !is_lava(x,y))
+		water_damage(level.objects[x][y], FALSE, FALSE, FALSE, 0);
+
 	if ((mon = m_at(x,y)) != 0) {
 		wakeup(mon, FALSE);
 		if(mon->m_ap_type) seemimic(mon);

@@ -73,7 +73,7 @@ struct monst {
 	int mspec_used;		/* monster's special ability attack timeout */
 	int mstdy;		/* to record extra damage to be delt due to having been studied */
 	int ustdym;		/* to record extra damage to be delt by you due to having been studied by you*/
-	int m_san_level;/* to record sanity level at which this monster will be obscured */
+	int m_san_level;/* DEPRECATED: to record sanity level at which this monster will be obscured */
 	int m_insight_level;/* to record insight level at which this monster will be reveled */
 	
 	short mstr, mdex, mcon, mint, mwis, mcha; /* Monster ability scores */
@@ -155,6 +155,9 @@ struct monst {
 	Bitfield(mdisrobe,1);/* disrobing */ /*90*/
 	Bitfield(mgoatmarked,1);/* will be eaten by the goat if you kill it this turn */ /*91*/
 	Bitfield(mpetitioner,1);/* already dead (shouldn't leave a corpse) */ /*92*/
+	Bitfield(mdoubt,1);/* clerical spellcasting blocked */ /*93*/
+	
+	int mtaneggs;	/* tannin eggs */
 	long mwait;/* if tame, won't follow between levels (turn last ordered to wait on) */
 	int encouraged;	/* affected by Encourage song */
 #define BASE_DOG_ENCOURAGED_MAX		7
@@ -200,7 +203,7 @@ struct monst {
 #define	FACTION_PADDING	1000	/* padding for Drow factions -- first one is 8 */
 #define	INCUBUS_FACTION	FACTION_PADDING+1	/* male foocubus */
 #define	SUCCUBUS_FACTION	FACTION_PADDING+2	/* female foocubus */
-//define	LAMASHTU_FACTION	FACTION_PADDING+3	/* Lamashtu's faction */
+#define	LAMASHTU_FACTION	FACTION_PADDING+3	/* Lamashtu's angels */
 
 /* template applied to monster to create a new-ish monster */
 	int mtemplate;
@@ -218,14 +221,20 @@ struct monst {
 #define	DELOUSED		12	/* android flag: parasite is killed, but not host */
 #define	M_BLACK_WEB		13	/* Has a shadow blade attack */
 #define	M_GREAT_WEB		14	/* Has a stronger shadow blade attack */
-#define	WHISPERING		15	/* Voidified */
+#define	SLIME_REMNANT	15	/* slimey, like an ancient of corruption */
+#define	YELLOW_TEMPLATE	16	/* causes sleep and damages sanity (unimplemented) */
+#define	DREAM_LEECH		17	/* sucks mental atributes */
+#define	MAD_TEMPLATE	18	/* mad angel template */
+#define	FALLEN_TEMPLATE	19	/* fallen angel template */
+#define WORLD_SHAPER	20	/* plane-of-earth nastify */
+#define	WHISPERING		21	/* Voidified */
 #define MAXTEMPLATE	WHISPERING
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */
 //define	HALF_DRAGON	FACTION_PADDING+3	/* half-dragon ??? */
 
-	int mvanishes;
+	int summonpwr;	/* cumulative HD of summoned creatures */
 	//hatching situation
 	//AT_LAYEGG, PM_HATCHLING_NAME, x, d
 	//timetohatch
@@ -264,10 +273,14 @@ struct monst {
 #define	DOLLMAKER_CLEAR_THOUGHT	0x10000L
 #define	DOLLMAKER_MIND_BLASTS	0x20000L
 #define	MAX_DOLL_MASK	DOLLMAKER_MIND_BLASTS
+#define	mvar_tanninType	mvar1
+#define	mvar_ancient_breath_cooldown	mvar1
 	long mvar2;
 	long mvar3;
 
 	struct ls_t * light;
+
+	struct timer * timed;
 
 	union mextra * mextra_p;
 };

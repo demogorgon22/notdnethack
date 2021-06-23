@@ -156,6 +156,7 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 	xchar	d_neutral_dnum;
 	xchar	d_rlyeh_dnum;
     d_level	d_gatetown_level, d_spire_level, d_sum_of_all_level, d_lethe_headwaters, d_bridge_temple, d_lethe_temples, d_rlyeh_level;
+    d_level	d_nkai_a, d_nkai_b, d_nkai_c, d_nkai_z;
 	/*Chaos Quest*/
 	xchar	d_chaos_dvariant;
 	xchar	d_chaos_dnum;
@@ -273,6 +274,10 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 #define lethe_headwaters		(dungeon_topology.d_lethe_headwaters)
 #define bridge_temple		(dungeon_topology.d_bridge_temple)
 #define lethe_temples		(dungeon_topology.d_lethe_temples)
+#define nkai_a_level		(dungeon_topology.d_nkai_a)
+#define nkai_b_level		(dungeon_topology.d_nkai_b)
+#define nkai_c_level		(dungeon_topology.d_nkai_c)
+#define nkai_z_level		(dungeon_topology.d_nkai_z)
 #define rlyeh_level		(dungeon_topology.d_rlyeh_level)
 	/*Chaos Quest*/
 #define chaos_dvariant		(dungeon_topology.d_chaos_dvariant)
@@ -432,6 +437,7 @@ E NEARDATA char spidername[];
 E NEARDATA char dragonname[];
 E NEARDATA char parrotname[];
 E NEARDATA char monkeyname[];
+E NEARDATA char whisperername[];
 #ifdef CONVICT
 E NEARDATA char ratname[];
 #endif /* CONVICT */
@@ -521,6 +527,10 @@ E NEARDATA struct obj *invent,
 	*uskin, *uamul, *uleft, *uright, *ublindf,
 	*uwep, *uswapwep, *uquiver;
 
+/* Needs to update, so it's redefined each time whenever it's used */
+#define ARMOR_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu }
+#define WORN_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu, uamul, uleft, uright, ublindf, uwep, uswapwep, uquiver }
+
 E NEARDATA struct obj *urope;		/* defined only when entangled */
 E NEARDATA struct obj *uchain;		/* defined only when punished */
 E NEARDATA struct obj *uball;
@@ -552,7 +562,7 @@ E NEARDATA struct mvitals {
 	int	insight_gained;
 	Bitfield(seen,1);
 	Bitfield(vis_insight,1);
-	Bitfield(onekill,1);
+	Bitfield(insightkill,1);
 } mvitals[NUMMONS];
 
 E NEARDATA struct c_color_names {
@@ -747,6 +757,15 @@ struct u_achieve {
 #define	SPEED_PHASE		0x1L << 34
 #define	QUITE_MAD		0x1L << 35
 #define	TOTAL_DRUNK		0x1L << 36
+#define	MAD_QUEST		0x1L << 37
+#define	LAMASHTU_KILL	0x1L << 38
+#define	BAALPHEGOR_KILL	0x1L << 39
+#define	ANGEL_VAULT		0x1L << 40
+#define	ANCIENT_VAULT	0x1L << 41
+#define	TANNINIM_VAULT	0x1L << 42
+#define	CASTLE_WISH		0x1L << 43
+#define	UNKNOWN_WISH	0x1L << 44
+#define ACHIEVE_NUMBER	45
 };
 
 E struct u_achieve achieve;

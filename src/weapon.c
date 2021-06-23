@@ -9,7 +9,7 @@
  */
 #include "hack.h"
 #include "artifact.h"
-#include "hack.h"
+#include "xhity.h"
 
 #ifdef DUMP_LOG
 STATIC_DCL int FDECL(enhance_skill, (boolean));
@@ -167,13 +167,15 @@ static NEARDATA const char kebabable[] = {
  *	of "otmp" against the monster.
  */
 int
-hitval(otmp, mon)
+hitval(otmp, mon, magr)
 struct obj *otmp;
 struct monst *mon;
+struct monst *magr;
 {
 	int	tmp = 0;
 	struct permonst *ptr = mon->data;
 	boolean Is_weapon = (otmp->oclass == WEAPON_CLASS || is_weptool(otmp));
+	boolean youagr = (magr == &youmonst);
 	
 	if(mon == &youmonst)
 		ptr = youracedata;
@@ -234,9 +236,17 @@ struct monst *mon;
 
 	/* Check specially named weapon "to hit" bonuses */
 	if (otmp->oartifact){
-		tmp += spec_abon(otmp, mon);
-		if(Role_if(PM_BARD)) //legend lore
-			tmp += 5;
+		tmp += spec_abon(otmp, mon, youagr);
+	}
+
+	if (is_insight_weapon(otmp)){
+		if(youagr && Role_if(PM_MADMAN)){
+			if(u.uinsight)
+				tmp += rnd(min(u.uinsight, mlev(magr)));
+		}
+		else if(magr && monsndx(magr->data) == PM_MADMAN){
+			tmp += rnd(mlev(magr));
+		}
 	}
 
 	return tmp;
@@ -988,6 +998,16 @@ int spec;
 		if (otmp->ovar1)
 			otmp->ovar1--;
 		break;
+	case QUARTERSTAFF:
+		if(otmp == uwep && martial_bonus() && otmp->otyp == QUARTERSTAFF && P_SKILL(P_QUARTERSTAFF) >= P_EXPERT && P_SKILL(P_BARE_HANDED_COMBAT) >= P_EXPERT){
+			// doubled
+			wdice.oc_damn *= 2;
+			wdice.oc_damd *= 2;
+			wdice.bon_damn *= 2;
+			wdice.bon_damd *= 2;
+			spe_mult *= 2;
+		}
+		break;
 	}
 
 	switch (otmp->oartifact)
@@ -1196,7 +1216,8 @@ int spot;
 			/* never a hated weapon */
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data)   || otmp->obj_material != IRON) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp))
+			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp)) &&
+			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
 		){
 			if (!obest ||
 				(dmgval(otmp, 0 /*zeromonst*/, 0) > dmgval(obest, 0 /*zeromonst*/,0))
@@ -1267,7 +1288,8 @@ static NEARDATA const int rwep[] =
 };
 
 static NEARDATA const int pwep[] =
-{	HALBERD, /*1d10/2d6*/
+{	POLEAXE, /*1d10/2d6*/
+	HALBERD, /*1d10/2d6*/
 	DROVEN_LANCE, /*1d10/1d10*/
 	BARDICHE, /*2d4/3d4*/ 
 	BILL_GUISARME, /*2d4/1d10*/
@@ -1310,7 +1332,8 @@ struct obj *otmp;
     if (((strongmonst(mtmp->data) && (mtmp->misc_worn_check & W_ARMS) == 0) || !bimanual(otmp,mtmp->data)) && 
 		(mtmp->misc_worn_check & W_ARMG || otmp->obj_material != SILVER || !hates_silver(mtmp->data)) &&
 		(mtmp->misc_worn_check & W_ARMG || otmp->obj_material != IRON	|| !hates_iron(mtmp->data)) &&
-		(mtmp->misc_worn_check & W_ARMG || is_unholy(otmp)				|| !hates_unholy_mon(mtmp))
+		(mtmp->misc_worn_check & W_ARMG || !is_unholy(otmp)				|| !hates_unholy_mon(mtmp)) &&
+		(mtmp->misc_worn_check & W_ARMG || (is_unholy(otmp) || otmp->blessed) || !hates_unblessed_mon(mtmp))
 	){
         for (i = 0; i < SIZE(pwep); i++)
         {
@@ -1471,7 +1494,7 @@ register struct monst *mtmp;
 					return(otmp);
 			} else for(otmp=mtmp->minvent; otmp; otmp=otmp->nobj) {
 				if (otmp->otyp == LOADSTONE && !otmp->cursed)
-				return otmp;
+					return otmp;
 			}
 	    }
 	}
@@ -1503,6 +1526,7 @@ static const NEARDATA short hwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
+	  DOUBLE_SWORD,/*2d8/2d12*/
 	  CRYSTAL_SWORD/*2d8/2d12*/,
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
@@ -1519,6 +1543,7 @@ static const NEARDATA short hwep[] = {
 	  KATANA/*1d10/1d12*/,
 	  HIGH_ELVEN_WARSWORD/*1d10/1d10*/,
 	  CRYSKNIFE/*1d10/1d10*/, 
+	  BESTIAL_CLAW/*1d10/1d8*/, 
 	  VIPERWHIP/*2d4/2d3/poison*/,
 	  DROVEN_SHORT_SWORD/*1d9/1d9*/, 
 	  DWARVISH_SPEAR/*1d9/1d9*/, 
@@ -1536,6 +1561,7 @@ static const NEARDATA short hwep[] = {
 	  NAGINATA/*1d6+1/2d4*/, 
 	  SCIMITAR/*1d8/1d8*/,
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
+	  KHOPESH,/*1d8/1d6*/
 	  DROVEN_DAGGER/*1d8/1d6*/, 
 	  MACE/*1d6+1/1d6*/, 
 	  ELVEN_SHORT_SWORD/*1d7/1d7*/, 
@@ -1593,6 +1619,7 @@ static const NEARDATA short hpwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
+	  DOUBLE_SWORD,/*2d8/2d12*/
 	  CRYSTAL_SWORD/*2d8/2d12*/,
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
@@ -1606,11 +1633,13 @@ static const NEARDATA short hpwep[] = {
 	  DWARVISH_MATTOCK/*1d12/1d8*/, 
 	  RAKUYO/*1d8+1d4/1d8+1d3*/, 
 	  ELVEN_BROADSWORD/*1d6+1d4/1d6+2*/, 
+	  POLEAXE, /*1d10/2d6*/
 	  HALBERD, /*1d10/2d6*/
 	  KATANA/*1d10/1d12*/,
 	  DROVEN_LANCE, /*1d10/1d10*/
 	  HIGH_ELVEN_WARSWORD/*1d10/1d10*/,
 	  CRYSKNIFE/*1d10/1d10*/, 
+	  BESTIAL_CLAW/*1d10/1d8*/, 
 	  VIPERWHIP/*2d4/2d3/poison*/,
 	  BARDICHE, /*2d4/3d4*/ 
 	  DROVEN_SHORT_SWORD/*1d9/1d9*/, 
@@ -1636,6 +1665,7 @@ static const NEARDATA short hpwep[] = {
 	  ELVEN_LANCE, /*1d8/1d8*/
 	  SCIMITAR/*1d8/1d8*/,
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
+	  KHOPESH,/*1d8/1d6*/
 	  BEC_DE_CORBIN, /*1d8/1d6*/
 	  DROVEN_DAGGER/*1d8/1d6*/, 
 	  MACE/*1d6+1/1d6*/, 
@@ -1693,7 +1723,7 @@ struct obj *otmp;
     
         if (wep->oartifact) return FALSE;
 		
-        if (!check_oprop(wep, OPROP_NONE)) return FALSE;
+        if (!check_oprop(wep, OPROP_NONE) || (is_rakuyo(wep) && u.uinsight >= 20)) return FALSE;
 
         if (is_giant(mtmp->data) &&  wep->otyp == CLUB) return FALSE;
         if (is_giant(mtmp->data) && otmp->otyp == CLUB) return TRUE;
@@ -1731,7 +1761,7 @@ register struct monst *mtmp;
 
 	/* if using an artifact or oprop weapon keep using it. */
 	otmp = MON_WEP(mtmp);
-	if(otmp && (otmp->oartifact || !check_oprop(otmp, OPROP_NONE)))
+	if(otmp && (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)))
 		return otmp;
 	
 	/* prefer artifacts to everything else */
@@ -1741,7 +1771,7 @@ register struct monst *mtmp;
 			|| otmp->otyp == CHAIN || otmp->otyp == HEAVY_IRON_BALL
 			) &&
 			/* an artifact or other special weapon*/
-			(otmp->oartifact || !check_oprop(otmp, OPROP_NONE)) &&
+			(otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) &&
 			/* never uncharged lightsabers */
             (!is_lightsaber(otmp) || otmp->age
 			 || otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC
@@ -1756,7 +1786,8 @@ register struct monst *mtmp;
 			/* never a hated weapon */
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || otmp->obj_material != IRON) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp))
+			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp)) &&
+			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
 			) return otmp;
 	}
 
@@ -1794,7 +1825,7 @@ register struct monst *mtmp;
 	
 	/* if using an artifact or oprop weapon keep using it. */
 	otmp = MON_SWEP(mtmp);
-	if(otmp && (otmp->oartifact || !check_oprop(otmp, OPROP_NONE)))
+	if(otmp && (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)))
 		return otmp;
 	
 	/* prefer artifacts to everything else */
@@ -1806,7 +1837,7 @@ register struct monst *mtmp;
 			/* not already weided in main hand */
 			(otmp != MON_WEP(mtmp)) &&
 			/* an artifact or other special weapon*/
-			(otmp->oartifact || !check_oprop(otmp, OPROP_NONE)) &&
+			(otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) &&
 			/* never uncharged lightsabers */
             (!is_lightsaber(otmp) || otmp->age
 			 || otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC
@@ -1821,10 +1852,11 @@ register struct monst *mtmp;
 			/* never a hated weapon */
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || otmp->obj_material != IRON) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp))
+			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp)) &&
+			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
 			) return otmp;
 	}
-	
+
 	if(is_giant(mtmp->data))	/* giants just love to use clubs */
 		Oselect(CLUB, W_SWAPWEP);
 
@@ -2601,15 +2633,19 @@ int skill;
 boolean speedy;
 {
     return !P_RESTRICTED(skill)
-	    && P_SKILL(skill) < P_MAX_SKILL(skill) && (
+	    && P_SKILL_CORE(skill, FALSE) < P_MAX_SKILL_CORE(skill, FALSE)
+		&& (
 #ifdef WIZARD
-	    (wizard && speedy) ||
+			(wizard && speedy) ||
 #endif
-	    (P_ADVANCE(skill) >=
-		(unsigned) practice_needed_to_advance(OLD_P_SKILL(skill))
-		&& practice_needed_to_advance(OLD_P_SKILL(skill)) > 0
-	    && u.skills_advanced < P_SKILL_LIMIT
-	    && u.weapon_slots >= slots_required(skill)));
+			(
+				P_ADVANCE(skill) >=
+				(unsigned) practice_needed_to_advance(OLD_P_SKILL(skill))
+				&& practice_needed_to_advance(OLD_P_SKILL(skill)) > 0
+				&& u.skills_advanced < P_SKILL_LIMIT
+				&& u.weapon_slots >= slots_required(skill)
+			)
+		);
 }
 
 /* return true if this skill could be advanced if more slots were available */
@@ -2618,11 +2654,11 @@ could_advance(skill)
 int skill;
 {
     return !P_RESTRICTED(skill)
-	    && P_SKILL(skill) < P_MAX_SKILL(skill) && (
-	    (P_ADVANCE(skill) >=
+	    && P_SKILL(skill) < P_MAX_SKILL(skill) && 
+	    P_ADVANCE(skill) >=
 		(unsigned) practice_needed_to_advance(OLD_P_SKILL(skill))
 		&& practice_needed_to_advance(OLD_P_SKILL(skill)) > 0
-	    && u.skills_advanced < P_SKILL_LIMIT));
+	    && u.skills_advanced < P_SKILL_LIMIT;
 }
 
 /* return true if this skill has reached its maximum and there's been enough
@@ -2808,7 +2844,7 @@ int enhance_skill(boolean want_dump)
 		(void) skill_level_name(i, sklnambuf);
 		(void) max_skill_level_name(i, maxsklnambuf);
 #ifdef WIZARD
-		if (wizard) {
+		if (wizard && speedy) {
 		    if (!iflags.menu_tab_sep)
 			Sprintf(buf, " %s%-*s %-12s %5d(%4d)",
 			    prefix, longest, P_NAME(i), sklnambuf,

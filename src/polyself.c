@@ -230,7 +230,7 @@ dead: /* we come directly here if their experience level went to 0 or less */
 
 void
 polyself(forcecontrol)
-boolean forcecontrol;     
+boolean forcecontrol;
 {
 	char buf[BUFSZ];
 	int old_light, new_light;
@@ -264,6 +264,11 @@ boolean forcecontrol;
 			mntmp = name_to_mon(buf);
 			if (mntmp < LOW_PM)
 				pline("I've never heard of such monsters.");
+			else if (mntmp == (flags.female ? urace.femalenum : urace.malenum)) {
+				/* newman() */
+				newman();
+				goto made_change;
+			}
 			/* Note:  humans are illegal as monsters, but an
 			 * illegal monster forces newman(), which is what we
 			 * want if they specified a human.... */
@@ -594,7 +599,7 @@ int	mntmp;
 		pline(use_thec,monsterc,"gaze at monsters");
 	    if (is_hider(youmonst.data))
 		pline(use_thec,monsterc,"hide");
-	    if (is_were(youmonst.data))
+	    if (is_were(youmonst.data) || gates_in_help(youmonst.data))
 		pline(use_thec,monsterc,"summon help");
 	    if (webmaker(youmonst.data))
 		pline(use_thec,monsterc,"spin a web");
@@ -602,7 +607,7 @@ int	mntmp;
 		pline(use_thec,monsterc,"multiply in a fountain");
 	    if (is_unicorn(youmonst.data) || youmonst.data->mtyp == PM_KI_RIN)
 		pline(use_thec,monsterc,"use your horn");
-	    if (is_mind_flayer(youmonst.data))
+	    if (is_mind_flayer(youmonst.data) || Role_if(PM_MADMAN))
 		pline(use_thec,monsterc,"emit a mental blast");
 	    if (youmonst.data->msound == MS_SHRIEK || youmonst.data->msound == MS_SHOG) /* worthless, actually */
 		pline(use_thec,monsterc,"shriek");
@@ -639,11 +644,11 @@ int	mntmp;
 		unpunish();
 	    }
 	}
-	if (u.utrap && (u.utraptype == TT_WEB || u.utraptype == TT_BEARTRAP) &&
+	if (u.utrap && (u.utraptype == TT_WEB || u.utraptype == TT_BEARTRAP || u.utraptype == TT_FLESH_HOOK) &&
 		(amorphous(youmonst.data) || is_whirly(youmonst.data) || unsolid(youmonst.data) ||
 		  (youmonst.data->msize <= MZ_SMALL && u.utraptype == TT_BEARTRAP))) {
 	    You("are no longer stuck in the %s.",
-		    u.utraptype == TT_WEB ? "web" : "bear trap");
+		    u.utraptype == TT_WEB ? "web" : u.utraptype == TT_FLESH_HOOK ? "flesh hook" : "bear trap");
 	    /* probably should burn webs too if PM_FIRE_ELEMENTAL */
 	    u.utrap = 0;
 	}
@@ -838,6 +843,7 @@ struct permonst *mdat;
 	{
 		struct attack * aptr;
 		aptr = attacktype_fordmg(mdat, AT_BREA, AD_ANY);
+		if (!aptr) aptr = attacktype_fordmg(mdat, AT_BRSH, AD_ANY);
 		if (!aptr && Race_if(PM_HALF_DRAGON)) aptr = attacktype_fordmg(&mons[PM_HALF_DRAGON], AT_BREA, AD_ANY);
 
 		if (!aptr) {
@@ -877,6 +883,52 @@ struct permonst *mdat;
 
 	/* use xbreathey to do the attack */
 	return xbreathey(&youmonst, &mattk, 0, 0);
+}
+
+int
+domakewhisperer()
+{
+	const char *petname;
+	struct monst *mtmp;
+	int duration;
+	if (u.uen < (10+min(u.uinsight, 45))) {
+	    You("concentrate but lack the energy to maintain doing so.");
+	    return(0);
+	}
+	
+	duration = ACURR(A_CHA) + 1;
+	
+	if(u.uinsight >= 20)
+		duration = 2*ACURR(A_CHA);
+	
+	u.whisperturn = moves+duration+14;
+	losepw(10+min(u.uinsight, 45));
+	flags.botl = 1;
+	
+	// makedog();
+	mtmp = makemon(&mons[PM_SECRET_WHISPERER], u.ux, u.uy, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
+
+	if(!mtmp) return 0; /* pets were genocided */
+
+	mark_mon_as_summoned(mtmp, &youmonst, duration, 0);
+	for(int i = min(45, (u.uinsight - mtmp->m_lev)); i > 0; i--){
+		grow_up(mtmp, (struct monst *) 0);
+		//Technically might grow into a genocided form.
+		if(DEADMONSTER(mtmp))
+			return 0;
+	}
+	mtmp->mspec_used = 0;
+
+	if(mtmp->m_lev) mtmp->mhpmax = 8*(mtmp->m_lev-1)+rnd(8);
+	mtmp->mhp = mtmp->mhpmax;
+
+	petname = whisperername;
+	if (*petname)
+		mtmp = christen_monst(mtmp, petname);
+	
+	initedog(mtmp);
+	EDOG(mtmp)->loyal = TRUE;
+	return 1;
 }
 
 int
@@ -1043,6 +1095,7 @@ dospinweb()
 		case ARROW_TRAP:
 		case DART_TRAP:
 		case BEAR_TRAP:
+		case FLESH_HOOK:
 		case ROCKTRAP:
 		case FIRE_TRAP:
 		case LANDMINE:
@@ -1092,6 +1145,42 @@ dosummon()
 	return(1);
 }
 
+int
+dodemonpet()
+{
+	int i;
+	struct permonst *pm;
+	struct monst *dtmp;
+
+	if (u.uen < 10) {
+		You("lack the energy to call for help!");
+		return(0);
+	}
+	else if (youmonst.summonpwr >= youmonst.data->mlevel) {
+		You("don't have the authority to call for any more help!");
+		return(0);
+	}
+	losepw(10);
+	flags.botl = 1;
+
+	i = (!is_demon(youracedata) || !rn2(6)) 
+	     ? ndemon(u.ualign.type) : NON_PM;
+	pm = i != NON_PM ? &mons[i] : youracedata;
+	if(pm->mtyp == PM_ANCIENT_OF_ICE || pm->mtyp == PM_ANCIENT_OF_DEATH) {
+	    pm = rn2(4) ? &mons[PM_METAMORPHOSED_NUPPERIBO] : &mons[PM_ANCIENT_NUPPERIBO];
+	}
+	if ((dtmp = makemon(pm, u.ux, u.uy, MM_ESUM)) != 0) {
+		pline("Some hell-p has arrived!");
+	    (void)tamedog(dtmp, (struct obj *)0);
+		mark_mon_as_summoned(dtmp, &youmonst, 250, 0);
+		exercise(A_WIS, TRUE);
+	}
+	else {
+		pline("No help arrived.");
+	}
+	return(1);
+}
+
 static NEARDATA const char food_types[] = { FOOD_CLASS, 0 };
 
 int
@@ -1131,14 +1220,16 @@ dovampminion()
 		pline("You can't create a minion of that type of monster!");
 		return(0);
 	} else {
-		struct monst *mtmp = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK);
-		mtmp = tamedog(mtmp, (struct obj *) 0);
-		set_template(mtmp, VAMPIRIC);
-
-		if (onfloor) useupf(corpse, 1);
-		else useup(corpse);
-		losexp("donating blood", TRUE, TRUE, FALSE);
-	}	
+		struct monst * mtmp = revive(corpse, FALSE);
+		if (mtmp) {
+			tamedog_core(mtmp, (struct obj *)0, TRUE);
+			set_template(mtmp, VAMPIRIC);
+			losexp("donating blood", TRUE, TRUE, FALSE);
+		}
+		else {
+			pline1(nothing_happens);
+		}
+	}
 	
 	return(1);
 }
@@ -1412,11 +1503,11 @@ dogaze()
 					mndx = PM_FOG_CLOUD;
 				}
 				for(i=0;i<n;i++){
-					mtmp3 = makemon(&mons[mndx], u.ux, u.uy, MM_ADJACENTOK|MM_ADJACENTSTRICT);
+					mtmp3 = makemon(&mons[mndx], u.ux, u.uy, MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_ESUM);
 				 	if (mtmp3 && (mtmp2 = tamedog(mtmp3, (struct obj *)0)) != 0){
 						mtmp3 = mtmp2;
 						mtmp3->mtame = 30;
-						mtmp3->mvanishes = 10;
+						mark_mon_as_summoned(mtmp3, &youmonst, 10, 0);
 					} else mongone(mtmp3);
 				}
 			 }
@@ -1504,6 +1595,7 @@ int
 domindblast()
 {
 	struct monst *mtmp, *nmon;
+	int dice = 1, mfdmg;
 
 	if (u.uen < 10) {
 	    You("concentrate but lack the energy to maintain doing so.");
@@ -1511,6 +1603,9 @@ domindblast()
 	}
 	losepw(10);
 	flags.botl = 1;
+
+	if(Role_if(PM_MADMAN))
+		dice += u.ulevel/14;
 
 	You("concentrate.");
 	pline("A wave of psychic energy pours out.");
@@ -1520,23 +1615,35 @@ domindblast()
 		nmon = mtmp->nmon;
 		if (DEADMONSTER(mtmp))
 			continue;
-		if (distu(mtmp->mx, mtmp->my) > BOLT_LIM * BOLT_LIM)
-			continue;
+		// if (distu(mtmp->mx, mtmp->my) > BOLT_LIM * BOLT_LIM)
+			// continue;
 		if(mtmp->mpeaceful)
 			continue;
 		if(mindless_mon(mtmp))
 			continue;
-		u_sen = mon_resistance(mtmp,TELEPAT) && is_blind(mtmp);
+		u_sen = (mon_resistance(mtmp,TELEPAT) && is_blind(mtmp)) || rlyehiansight(mtmp->data);
 		if (u_sen || (mon_resistance(mtmp,TELEPAT) && rn2(2)) || !rn2(10) || (Role_if(PM_ANACHRONOUNBINDER) && !rn2(10-(int)(u.ulevel/3)))) {
 			You("lock in on %s %s.", s_suffix(mon_nam(mtmp)),
 				u_sen ? "telepathy" :
 				mon_resistance(mtmp,TELEPAT) ? "latent telepathy" :
 				"mind");
-			int dmg = Role_if(PM_ANACHRONOUNBINDER)?rnd(15)*(int)(u.ulevel/6):rnd(15);
-			dmg = (dmg > 0)?dmg:rnd(15);
-			mtmp->mhp -= dmg;
+			mfdmg = Role_if(PM_ANACHRONOUNBINDER)?d(dice,15)*(int)(u.ulevel/6):d(dice,15);
+			mfdmg = (mfdmg > 0)?mfdmg:d(dice,15);
+			mtmp->mhp -= mfdmg;
+			mtmp->mstrategy &= ~STRAT_WAITFORU;
 			if (mtmp->mhp <= 0)
 				killed(mtmp);
+			else {
+				
+				if(dice >= 3){
+					mtmp->mstdy = max(mfdmg, mtmp->mstdy);
+					mtmp->encouraged = min(-1*mfdmg, mtmp->encouraged);
+				}
+				if(dice >= 5){
+					mtmp->mstun = 1;
+					mtmp->mconf = 1;
+				}
+			}
 		}
 	}
 	return 1;
@@ -1559,7 +1666,7 @@ domindblast_strong()
 			continue;
 		if(mindless_mon(mtmp))
 			continue;
-		u_sen = mon_resistance(mtmp,TELEPAT) && is_blind(mtmp);
+		u_sen = (mon_resistance(mtmp,TELEPAT) && is_blind(mtmp)) || rlyehiansight(mtmp->data);
 		if (u_sen || (mon_resistance(mtmp,TELEPAT) && rn2(2)) || !rn2(10)) {
 			You("lock in on %s %s.", s_suffix(mon_nam(mtmp)),
 				u_sen ? "telepathy" :
@@ -2067,9 +2174,11 @@ int damtype, dam;
 	if (u.umonnum != PM_FLESH_GOLEM && u.umonnum != PM_IRON_GOLEM && u.umonnum != PM_CHAIN_GOLEM && u.umonnum != PM_ARGENTUM_GOLEM)
 		return;
 	switch (damtype) {
+		case AD_EELC:
 		case AD_ELEC: if (u.umonnum == PM_FLESH_GOLEM)
 				heal = dam / 6; /* Approx 1 per die */
 			break;
+		case AD_EFIR:
 		case AD_FIRE: if (u.umonnum == PM_IRON_GOLEM || u.umonnum == PM_CHAIN_GOLEM || u.umonnum == PM_ARGENTUM_GOLEM)
 				heal = dam;
 			break;

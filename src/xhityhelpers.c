@@ -199,7 +199,7 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 		return ATTACKCHECK_NONE;
 	}
 
-	if (mdef->m_ap_type && !Protection_from_shape_changers &&
+	if ((mdef->m_ap_type && mdef->m_ap_type != M_AP_MONSTER) && !Protection_from_shape_changers &&
 		!sensemon(mdef) &&
 		!glyph_is_warning(glyph_at(u.ux + u.dx, u.uy + u.dy))) {
 		/* If a hidden mimic was in a square where a player remembers
@@ -398,6 +398,9 @@ struct monst *mtmp;
 	if(!u.ustuck && !mtmp->mflee && dmgtype(mtmp->data,AD_STCK))
 	    u.ustuck = mtmp;
 
+	/* clear mimicking before generating message to get an accurate a_monnam() */
+	seemimic(mtmp);
+
 	if (Blind) {
 	    if (!Blind_telepat)
 		what = generic;		/* with default fmt */
@@ -423,7 +426,7 @@ struct monst *mtmp;
 	}
 	if (what) pline(fmt, what);
 
-	wakeup(mtmp, TRUE);	/* clears mimicking */
+	wakeup(mtmp, TRUE);
 }
 
 
@@ -471,32 +474,6 @@ struct monst *mtmp;
           adjalign(1);
         }
 	}
-}
-
-/*
- * Send in a demon pet for the hero.  Exercise wisdom.
- *
- * This function used to be inline to damageum(), but the Metrowerks compiler
- * (DR4 and DR4.5) screws up with an internal error 5 "Expression Too Complex."
- * Pulling it out makes it work.
- */
-extern void
-demonpet()
-{
-	int i;
-	struct permonst *pm;
-	struct monst *dtmp;
-
-	pline("Some hell-p has arrived!");
-	i = (!is_demon(youracedata) || !rn2(6)) 
-	     ? ndemon(u.ualign.type) : NON_PM;
-	pm = i != NON_PM ? &mons[i] : youracedata;
-	if(pm->mtyp == PM_ANCIENT_OF_ICE || pm->mtyp == PM_ANCIENT_OF_DEATH) {
-	    pm = rn2(4) ? &mons[PM_METAMORPHOSED_NUPPERIBO] : &mons[PM_ANCIENT_NUPPERIBO];
-	}
-	if ((dtmp = makemon(pm, u.ux, u.uy, NO_MM_FLAGS)) != 0)
-	    (void)tamedog(dtmp, (struct obj *)0);
-	exercise(A_WIS, TRUE);
 }
 
 /*
@@ -968,12 +945,10 @@ int attk;
 		 * means it wasn't a target and though it didn't rust
 		 * something else did.
 		 */
-		if (uarm)
+		if (uarm && (arm_blocks_upper_body(uarm->otyp) || rn2(2)))
 		    (void)rust_dmg(uarm, xname(uarm), hurt, TRUE, &youmonst);
-#ifdef TOURIST
 		else if (uarmu)
 		    (void)rust_dmg(uarmu, xname(uarmu), hurt, TRUE, &youmonst);
-#endif
 		break;
 	    case 2:
 		if (!uarms || !rust_dmg(uarms, xname(uarms), hurt, FALSE, &youmonst))
@@ -1081,6 +1056,7 @@ int aatyp;
 	case AT_GAZE:
 	case AT_WDGZ:
 	case AT_BREA:
+	case AT_BRSH:
 	case AT_MAGC:
 	case AT_MMGC:
 	case AT_BEAM:
@@ -1256,11 +1232,7 @@ struct permonst * pd;
 	/* consuming the defender is fatal */
 	if ((is_deadly(pd) || 
 		((pd->mtyp == PM_GREEN_SLIME || pd->mtyp == PM_FLUX_SLIME) &&
-			!(Change_res(magr)
-			|| pa->mtyp == PM_GREEN_SLIME
-			|| pa->mtyp == PM_FLUX_SLIME
-			|| is_rider(pa)
-			|| resists_poly(pa)))
+			!(Slime_res(magr)))
 		) && (
 		((attk->aatyp == AT_BITE || attk->aatyp == AT_LNCK || attk->aatyp == AT_5SBT) && is_vampire(pa)) ||
 		(attk->aatyp == AT_ENGL && attk->adtyp == AD_DGST)
@@ -1475,8 +1447,9 @@ struct obj * otmp;
 		{	ndice = 3; diesize = 4; }
 		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
 		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
-		else if (otmp->otyp == KHAKKHARA)
-			ndice = rnd(3);
+
+		if (otmp->otyp == KHAKKHARA)
+			ndice *= rnd(3);
 		/* gold has a particular affinity to blessings and curses */
 		if (otmp->obj_material == GOLD &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
@@ -1487,11 +1460,44 @@ struct obj * otmp;
 			dmg += vd(ndice, diesize);
 	}
 
+	if (hates_unblessed_mon(mdef) &&
+		!(is_unholy(otmp) || otmp->blessed)
+	) {
+		/* default: 1d8 */
+		ndice = 1;
+		diesize = 8;
+		/* special cases */
+		if (otmp->oartifact == ART_GODHANDS)
+			dmg += 8;
+		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
+			diesize = 20;
+		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
+			diesize = 20;
+		else if (otmp->oartifact == ART_STAFF_OF_TWELVE_MIRRORS)
+			ndice = 2;
+		else if (otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC)
+			{ ndice = otmp->altmode ? 2 : 1; diesize = 20; }
+		else if (otmp->oartifact == ART_SANSARA_MIRROR)
+			dmg += 8;
+		else if (otmp->oartifact == ART_MIRRORBRIGHT)
+			diesize = 24;
+		else if (otmp->oartifact == ART_MIRROR_BRAND)
+			ndice = 2;
+		else if (otmp->oartifact == ART_GRAYSWANDIR)
+			ndice = 3;
+		
+		if (otmp->otyp == KHAKKHARA)
+			ndice *= rnd(3);
+		/* calculate */
+		if (ndice)
+			dmg += vd(ndice, diesize);
+	}
+
 	/* the Rod of Seven Parts gets a bonus vs holy and unholy when uncursed */
 	if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS
 		&& !otmp->blessed && !otmp->cursed
 		&& (hates_holy_mon(mdef) || hates_unholy_mon(mdef))
-		){
+	){
 		dmg += vd(1, 10);
 	}
 
@@ -1611,6 +1617,14 @@ struct obj * weapon;
 			(otmp && is_unholy(otmp)) ||
 			(youagr && slot == W_ARMG && uright && is_unholy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_unholy(uleft))
+			))
+			return 1;
+
+		if (hates_unblessed_mon(mdef) && (
+			(magr && is_unblessed_mon(magr)) ||
+			(otmp && !(is_unholy(otmp) || otmp->blessed)) ||
+			(youagr && slot == W_ARMG && uright && (is_unholy(uright) || uright->blessed)) ||
+			(youagr && slot == W_ARMG && uleft && (is_unholy(uleft) || uleft->blessed))
 			))
 			return 1;
 
@@ -1933,6 +1947,7 @@ boolean vis;
 				if(mdef->mcrazed && rnd(20) < dmg){
 					mdef->mcrazed = 0;
 					mdef->mberserk = 0;
+					mdef->mdoubt = 0;
 				}
 			}
 			extra_damage = d(dmg, 6);
@@ -2215,6 +2230,29 @@ struct monst *magr;
 		if(!youagr && (mon->mpeaceful == magr->mpeaceful))
 			continue;
 		if(distmin(x, y, mon->mx, mon->my) <= 1)
+			return TRUE;
+	}
+	return FALSE;
+}
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+boolean
+wearing_dragon_armor(mtmp, dragontype)
+struct monst * mtmp;
+int dragontype;
+{
+	struct obj * otmp;
+	
+	/* body armor */
+	otmp = (mtmp==&youmonst) ? uarm : which_armor(mtmp, W_ARM);
+	if (otmp && Is_dragon_armor(otmp)) {
+		if (Dragon_armor_matches_mtyp(otmp, dragontype))
+			return TRUE;
+	}
+	/* shield */
+	otmp = (mtmp==&youmonst) ? uarms : which_armor(mtmp, W_ARMS);
+	if (otmp && Is_dragon_armor(otmp)) {
+		if (Dragon_armor_matches_mtyp(otmp, dragontype))
 			return TRUE;
 	}
 	return FALSE;

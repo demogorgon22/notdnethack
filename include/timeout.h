@@ -9,10 +9,8 @@
 typedef void FDECL((*timeout_proc), (genericptr_t, long));
 
 /* kind of timer */
-#define TIMER_LEVEL	0	/* event specific to level */
-#define TIMER_GLOBAL	1	/* event follows current play */
-#define TIMER_OBJECT	2	/* event follows a object */
-#define TIMER_MONSTER	3	/* event follows a monster */
+#define TIMER_OBJECT	1	/* event follows a object */
+#define TIMER_MONSTER	2	/* event follows a monster */
 
 /* save/restore timer ranges */
 #define RANGE_LEVEL  0		/* save/restore timers staying on level */
@@ -25,6 +23,7 @@ typedef void FDECL((*timeout_proc), (genericptr_t, long));
 #define	GROW_SLIME		3
 #define	REVIVE_ZOMBIE	4
 #define	REVIVE_SHADE	5
+#define	REVIVE_YELLOW	6
 /*
  * Timeout functions.  Add a define here, then put it in the table
  * in timeout.c.  "One more level of indirection will fix everything."
@@ -40,19 +39,23 @@ typedef void FDECL((*timeout_proc), (genericptr_t, long));
 #define SLIMY_CORPSE	8
 #define ZOMBIE_CORPSE	9
 #define SHADY_CORPSE	10
-#define BOMB_BLOW	11
-#define RETURN_AMMO	12
-#define NUM_TIME_FUNCS	13
+#define YELLOW_CORPSE	11
+#define BOMB_BLOW	12
+#define RETURN_AMMO	13
+#define DESUMMON_MON 14
+#define DESUMMON_OBJ 15
+#define LARVAE_DIE 16
+#define NUM_TIME_FUNCS	17
 
 /* used in timeout.c */
-typedef struct fe {
-    struct fe *next;		/* next item in chain */
+typedef struct timer {
+    struct timer *next;		/* next item in PROCESSING chain */
+    struct timer *tnxt;     /* next item in LOCAL chain */
     long timeout;		/* when we time out */
     unsigned long tid;		/* timer ID */
     short kind;			/* kind of use */
     short func_index;		/* what to call when we time out */
     genericptr_t arg;		/* pointer to timeout argument */
-    Bitfield (needs_fixup,1);	/* does arg need to be patched? */
 } timer_element;
 
 #endif /* TIMEOUT_H */

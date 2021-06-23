@@ -408,6 +408,96 @@ do_mname()
 	return(0);
 }
 
+static NEARDATA const char callable[] = {
+	SCROLL_CLASS, TILE_CLASS, POTION_CLASS, WAND_CLASS, RING_CLASS, AMULET_CLASS,
+	GEM_CLASS, SPBOOK_CLASS, ARMOR_CLASS, TOOL_CLASS, 0 };
+
+boolean
+objtyp_is_callable(i)
+int i;
+{
+    return (boolean) (objects[i].oc_uname
+                      || (OBJ_DESCR(objects[i])
+                          && index(callable, objects[i].oc_class)));
+}
+
+void do_floorname() {
+    coord cc;
+    int glyph;
+    char buf[BUFSZ];
+    struct obj *obj = 0;
+    boolean fakeobj = FALSE, use_plural;
+
+    cc.x = u.ux, cc.y = u.uy;
+    /* "dot for under/over you" only makes sense when the cursor hasn't
+       been moved off the hero's '@' yet, but there's no way to adjust
+       the help text once getpos() has started */
+    Sprintf(buf, "object on map (or '.' for one %s you)",
+            (u.uundetected && hides_under(youmonst.data)) ? "over" : "under");
+    if (getpos(&cc, FALSE, buf) < 0 || cc.x <= 0)
+        return;
+    if (cc.x == u.ux && cc.y == u.uy) {
+        obj = vobj_at(u.ux, u.uy);
+    } else {
+        glyph = glyph_at(cc.x, cc.y);
+        if (glyph_is_object(glyph))
+            fakeobj = object_from_map(glyph, cc.x, cc.y, &obj);
+        /* else 'obj' stays null */
+    }
+    if (!obj) {
+        /* "under you" is safe here since there's no object to hide under */
+        pline("There doesn't seem to be any object %s.",
+              (cc.x == u.ux && cc.y == u.uy) ? "under you" : "there");
+        return;
+    }
+    /* note well: 'obj' might be an instance of STRANGE_OBJECT if target
+       is a mimic; passing that to xname (directly or via simpleonames)
+       would yield "glorkum" so we need to handle it explicitly; it will
+       always fail the Hallucination test and pass the !callable test,
+       resulting in the "can't be assigned a type name" message */
+    use_plural = (obj->quan > 1L);
+    Strcpy(buf, (obj->otyp != STRANGE_OBJECT)
+                 ? use_plural ? makeplural(simple_typename(obj->otyp)) : simple_typename(obj->otyp)
+                 : obj_descr[STRANGE_OBJECT].oc_name);
+    if (Hallucination) {
+        const char *unames[6];
+
+        /* straight role name */
+        unames[0] = ((Upolyd ? u.mfemale : flags.female) && urole.name.f)
+                     ? urole.name.f
+                     : urole.name.m;
+        /* random rank title for hero's role
+
+           note: the 30 is hardcoded in xlev_to_rank, so should be
+           hardcoded here too */
+        unames[1] = rank_of(rn2(30) + 1,
+                            Role_switch, flags.female);
+        /* random fake monster */
+        unames[2] = rndmonnam();
+        /* increased chance for fake monster */
+        unames[3] = unames[2];
+        /* traditional */
+        unames[4] = roguename();
+        /* silly */
+        unames[5] = "Wibbly Wobbly";
+        pline("%s %s to call you \"%s.\"",
+              The(buf), use_plural ? "decide" : "decides",
+              unames[rn2(SIZE(unames))]);
+    } else if (!objtyp_is_callable(obj->otyp)) {
+        pline("%s %s can't be assigned a type name.",
+              use_plural ? "Those" : "That", buf);
+    } else if (!obj->dknown) {
+        You("don't know %s %s well enough to name %s.",
+            use_plural ? "those" : "that", distant_name(obj, xname), use_plural ? "them" : "it");
+    } else {
+        docall(obj);
+    }
+    if (fakeobj) {
+        obj->where = OBJ_FREE; /* object_from_map() sets it to OBJ_FLOOR */
+        dealloc_obj(obj);
+    }
+}
+
 /*
  * This routine changes the address of obj. Be careful not to call it
  * when there might be pointers around in unknown places. For now: only
@@ -468,7 +558,7 @@ const char *name;
 	 * it (e.g. Excalibur from prayer). In this case the object
 	 * will retain its current name. */
 	
-	if (obj->oartifact || (lth && art_already_exists_byname(obj->otyp, name)))
+	if (obj->oartifact || (!get_ox(obj, OX_ESUM) && lth && art_already_exists_byname(obj->otyp, name)))
 		return obj;
 	
     if(!strcmp((&artilist[ART_SCALPEL_OF_LIFE_AND_DEATH])->name,name) &&
@@ -595,6 +685,12 @@ const char *name;
 		if(tmp)
 			set_material_gm(obj, tmp);
 		
+		if(obj->oartifact == ART_STAR_OF_HYPERNOTUS){
+			obj->ovar1 = STAR_SAPPHIRE;
+			obj->obj_color = CLR_BRIGHT_GREEN;
+			obj->oward = ELDER_SIGN;
+		}
+		
 		/* body type */
 		if (is_malleable_artifact(&artilist[obj->oartifact])); //keep current/default body type
 		else if (Role_if(PM_PRIEST) && obj->oartifact == ART_MITRE_OF_HOLINESS)
@@ -606,7 +702,7 @@ const char *name;
 		/* viperwhip heads */
 		if (obj->oartifact == ART_SCOURGE_OF_LOLTH)
 			obj->ovar1 = 8;
-		
+
 		fix_object(obj);
 
 	    /* can't dual-wield with artifact as secondary weapon */
@@ -633,9 +729,6 @@ const char *name;
 	return obj;
 }
 
-static NEARDATA const char callable[] = {
-	SCROLL_CLASS, TILE_CLASS, POTION_CLASS, WAND_CLASS, RING_CLASS, AMULET_CLASS,
-	GEM_CLASS, SPBOOK_CLASS, ARMOR_CLASS, TOOL_CLASS, 0 };
 
 int
 ddocall()
@@ -751,31 +844,13 @@ char * buf;
 boolean pname;
 {
 	if (pname){
-		if (has_template(mtmp, ZOMBIFIED)) Strcat(buf, "'s zombie");
-		else if (has_template(mtmp, SKELIFIED)) Strcat(buf, "'s skeleton");
-		else if (has_template(mtmp, CRYSTALFIED)) Strcat(buf, "'s vitrean");
-		else if (has_template(mtmp, WHISPERING)) Strcat(buf, "'s whispers");
-		else if (has_template(mtmp, FRACTURED)) Strcat(buf, ", Witness of the Fracture");
-		else if (has_template(mtmp, ILLUMINATED)) Strcat(buf, "the Illuminated");
-		else if (has_template(mtmp, VAMPIRIC)) Strcat(buf, ", vampire");
-		else if (has_template(mtmp, PSEUDONATURAL)) Strcat(buf, "the Pseudonatural");
-		else if (has_template(mtmp, TOMB_HERD)) Strcat(buf, " of the Herd");
-		else if (has_template(mtmp, MISTWEAVER)){
+		if (has_template(mtmp, MISTWEAVER)){
 			if (mtmp->female) Strcat(buf, ", Daughter of the Black Goat");
 			else Strcat(buf, ", Child of the Black Goat");
 		}
 	}
 	else {
-		if (has_template(mtmp, ZOMBIFIED)) Strcat(buf, " zombie");
-		else if (has_template(mtmp, SKELIFIED)) Strcat(buf, " skeleton");
-		else if (has_template(mtmp, CRYSTALFIED)) Strcat(buf, " vitrean");
-		else if (has_template(mtmp, WHISPERING)) Strcat(buf, " whispers");
-		else if (has_template(mtmp, FRACTURED)) Strcat(buf, " witness");
-		else if (has_template(mtmp, ILLUMINATED)) Strcat(buf, " shining one");
-		else if (has_template(mtmp, VAMPIRIC)) Strcat(buf, " vampire");
-		else if (has_template(mtmp, PSEUDONATURAL)) Strcat(buf, " pseudonatural");
-		else if (has_template(mtmp, TOMB_HERD)) Strcat(buf, " herd");
-		else if (has_template(mtmp, MISTWEAVER)){
+		if (has_template(mtmp, MISTWEAVER)){
 			if (mtmp->female) Strcat(buf, " dark daughter");
 			else Strcat(buf, " dark child");
 		}
@@ -845,6 +920,8 @@ boolean called;
 	static char buffers[XMONNAM_BUFFERS][BUFSZ];
 #endif
 	struct permonst *mdat = mtmp->data;
+	const char * appearname = mdat->mname;
+	int appeartype = mdat->mtyp;
 	boolean do_hallu, do_invis, do_it, do_saddle;
 	boolean name_at_start, has_adjectives;
 	char *bp;
@@ -860,7 +937,7 @@ boolean called;
 	if (article == ARTICLE_YOUR && !mtmp->mtame)
 	    article = ARTICLE_THE;
 
-	do_hallu = (Hallucination || Delusion(mtmp)) && !(suppress & SUPPRESS_HALLUCINATION);
+	do_hallu = (Hallucination) && !(suppress & SUPPRESS_HALLUCINATION);
 	do_invis = mtmp->minvis && !(suppress & SUPPRESS_INVISIBLE);
 	do_it = !canspotmon(mtmp) && 
 	    article != ARTICLE_YOUR &&
@@ -898,6 +975,13 @@ boolean called;
 	    return strcpy(buf, name);
 	}
 
+	/* monsters appearing as other monsters */
+	if ((mtmp->m_ap_type == M_AP_MONSTER) && !(suppress & SUPPRESS_HALLUCINATION)) {
+		appeartype = mtmp->mappearance;
+		appearname = mons[appeartype].mname;
+		mdat = &mons[appeartype];
+	}
+
 	/* Shopkeepers: use shopkeeper name.  For normal shopkeepers, just
 	 * "Asidonhopo"; for unusual ones, "Asidonhopo the invisible
 	 * shopkeeper" or "Asidonhopo the blue dragon".  If hallucinating,
@@ -913,11 +997,11 @@ boolean called;
 		return buf;
 	    }
 	    Strcat(buf, shkname(mtmp));
-	    if (mdat->mtyp == PM_SHOPKEEPER && !do_invis)
+	    if (appeartype == PM_SHOPKEEPER && !do_invis)
 		return buf;
 	    Strcat(buf, " the ");
 	    if (do_invis) Strcat(buf, "invisible ");
-		if (mtmp->mflee && mtmp->mtyp == PM_BANDERSNATCH){
+		if (mtmp->mflee && appeartype == PM_BANDERSNATCH){
 			Strcat(buf, "frumious ");
 			name_at_start = FALSE;
 		}
@@ -941,7 +1025,7 @@ boolean called;
 			Sprintf(eos(buf), "%sed ", OBJ_DESCR(objects[mtmp->mvar_syllable]));
 			name_at_start = FALSE;
 		}
-	    Strcat(buf, mdat->mname);
+	    Strcat(buf, appearname);
 		append_template_desc(mtmp, buf, TRUE);
 	    return buf;
 	}
@@ -949,6 +1033,8 @@ boolean called;
 	/* Put the adjectives in the buffer */
 	if (adjective)
 	    Strcat(strcat(buf, adjective), " ");
+	if (get_mx(mtmp, MX_ESUM))
+		Strcat(buf, "summoned ");
 	if (do_invis)
 	    Strcat(buf, "invisible ");
 #ifdef STEED
@@ -969,17 +1055,17 @@ boolean called;
 	} else if (M_HAS_NAME(mtmp)) {
 	    char *name = MNAME(mtmp);
 
-	    if (mdat->mtyp == PM_GHOST) {
+	    if (appeartype == PM_GHOST) {
 			Sprintf(eos(buf), "%s ghost", s_suffix(name));
 			name_at_start = TRUE;
-	    } else if (mdat->mtyp == PM_SHADE) {
+	    } else if (appeartype == PM_SHADE) {
 			Sprintf(eos(buf), "%s shade", s_suffix(name));
 			name_at_start = TRUE;
-	    } else if (mdat->mtyp == PM_BROKEN_SHADOW) {
+	    } else if (appeartype == PM_BROKEN_SHADOW) {
 			Sprintf(eos(buf), "%s broken shadow", s_suffix(name));
 			name_at_start = TRUE;
 	    } else if (called) {
-			if (mtmp->mflee && mtmp->mtyp == PM_BANDERSNATCH){
+			if (mtmp->mflee && appeartype == PM_BANDERSNATCH){
 				Sprintf(eos(buf), "frumious ");
 				name_at_start = FALSE;
 			}
@@ -1003,7 +1089,7 @@ boolean called;
 				name_at_start = FALSE;
 			}
 			
-			Sprintf(eos(buf), "%s", mdat->mname);
+			Sprintf(eos(buf), "%s", appearname);
 			append_template_desc(mtmp, buf, type_is_pname(mdat));
 			Sprintf(eos(buf), " called %s", name);
 			
@@ -1034,7 +1120,7 @@ boolean called;
 	    name_at_start = FALSE;
 	} else {
 	    name_at_start = (boolean)type_is_pname(mdat);
-		if (mtmp->mflee && mtmp->mtyp == PM_BANDERSNATCH){
+		if (mtmp->mflee && appeartype == PM_BANDERSNATCH){
 			Strcat(buf, "frumious ");
 			name_at_start = FALSE;
 		}
@@ -1058,16 +1144,16 @@ boolean called;
 			Sprintf(eos(buf), "%sed ", OBJ_DESCR(objects[mtmp->mvar_syllable]));
 			name_at_start = FALSE;
 		}
-	    Strcat(buf, mdat->mname);
+	    Strcat(buf, appearname);
 		append_template_desc(mtmp, buf, type_is_pname(mdat));
 	}
 
 	if (name_at_start && (article == ARTICLE_YOUR || !has_adjectives)) {
-	    if (mdat->mtyp == PM_WIZARD_OF_YENDOR)
+	    if (appeartype == PM_WIZARD_OF_YENDOR)
 		article = ARTICLE_THE;
 	    else
 		article = ARTICLE_NONE;
-	} else if ((mdat->geno & G_UNIQ) && article == ARTICLE_A && mdat->mtyp != PM_GOD) {
+	} else if ((mdat->geno & G_UNIQ) && article == ARTICLE_A && appeartype != PM_GOD) {
 	    article = ARTICLE_THE;
 	}
 
@@ -1356,7 +1442,7 @@ char *outbuf;
     /* high priest(ess)'s identity is concealed on the Astral Plane,
        unless you're adjacent (overridden for hallucination which does
        its own obfuscation) */
-    if ( (mon->mtyp == PM_HIGH_PRIEST || mon->mtyp == PM_ELDER_PRIEST) && !(Hallucination || Delusion(mon)) &&
+    if ( (mon->mtyp == PM_HIGH_PRIEST || mon->mtyp == PM_ELDER_PRIEST) && !(Hallucination) &&
 	    Is_astralevel(&u.uz) && distu(mon->mx, mon->my) > 2) {
 	Strcpy(outbuf, article == ARTICLE_THE ? "the " : "");
 	Strcat(outbuf, mon->female ? "high priestess" : "high priest");
