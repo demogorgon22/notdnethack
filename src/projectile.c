@@ -2218,6 +2218,7 @@ dofire()
 		struct attack attk;
 		struct attack *mattk = &attk;
 		if (getdir((char *)0)) {
+			if(u.dz) return 0;
 			mattk->damn = 1;
 			mattk->damd = 2 + uarm->spe/2;
 			mattk->adtyp = AD_BOLT;
