@@ -820,6 +820,9 @@ Armor_off()
 		ABON(A_CHA) -= 2*(1+uarm->spe);
 		flags.botl = 1;
 	}
+	else if(uarm->otyp == POWER_ARMOR && uarm->lamplit){
+		lightsaber_deactivate(uarm,TRUE);
+	}
     setworn((struct obj *)0, W_ARM);
 	if(checkweight) inv_weight();
     cancelled_don = FALSE;
@@ -2066,7 +2069,8 @@ struct obj * otmp;
 
 		def += (otmp->spe * spemult + 0) / 2;
 	}
-
+	if(otmp->otyp == POWER_ARMOR && otmp->lamplit && !otmp->obroken)
+		def += 8;
 	// artifact bonus def
 	switch (otmp->oartifact)
 	{
@@ -2148,6 +2152,8 @@ struct obj * otmp;
 
 		def += sgn(otmp->spe)*(abs(otmp->spe) * spemult + 1) / 2;
 	}
+	if(otmp->otyp == POWER_ARMOR && otmp->lamplit && !otmp->obroken)
+		def += 8;
 
 	// artifact bonus def
 	switch (otmp->oartifact)

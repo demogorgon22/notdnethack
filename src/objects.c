@@ -764,6 +764,8 @@ SUIT(("harmonium plate", "red-lacquered bladed armor", "bladed armor"),
 	0, 0,   MZ_HUGE,  ARMSZ_HEAVY, 0,   0,  5, 225,    1,  4, 6, 3, METAL, CLR_RED),
 SUIT(("harmonium scale mail", "red-lacquered spiked scale mail", "spiked scale mail"),
 	0, 0,  MZ_LARGE, ARMSZ_MEDIUM, 0,   0,  5, 125,    1,  8, 3, 1, METAL, CLR_RED),
+SUIT(("power armor", "strange metal armor", "armored suit"), /*Needs encyc entry*//*Needs tile*/
+	0, 0,   MZ_HUGE, ARMSZ_HEAVY, 0,   0,  3, 500,  5000,  7, 3, 3, METAL, CLR_MAGENTA),
 SUIT(("plasteel armor", "hard white armor", "armor"), /*Needs encyc entry*//*Needs tile*/
 	0, 0,   MZ_HUGE, ARMSZ_MEDIUM, 0,   0,  5, 100,  500,  7, 3, 3, PLASTIC, CLR_WHITE),
 // ARMOR(("force armor", "gemstone-adorned clothing"),	/* out of date structure -- rewrite if adding */

@@ -1226,6 +1226,7 @@ register const char *let,*word;
 		     (otmp->oclass == ARMOR_CLASS &&
 		      otyp != DWARVISH_HELM &&
 		      otyp != DROVEN_CLOAK &&
+		      otyp != POWER_ARMOR &&
 			  otyp != GNOMISH_POINTY_HAT &&
 			  otmp->oartifact != ART_AEGIS
 			  ) || 

@@ -1186,6 +1186,10 @@ int mkflags;
 				otmp->age = (long)rn1(900, 900);//Last longer than dwarvish helms, since the radius is smaller
 				otmp->lamplit = 0;
 			}
+			if(otmp->otyp == POWER_ARMOR){
+				otmp->age = (long) rn1(5000,7500);
+				otmp->lamplit = 0;
+			}
 			if (otmp->otyp == DROVEN_PLATE_MAIL || otmp->otyp == DROVEN_CHAIN_MAIL || otmp->otyp == CONSORT_S_SUIT){
 				otmp->ohaluengr = TRUE;
 				if (Race_if(PM_DROW) && Is_qstart(&u.uz)) otmp->oward = u.start_house;

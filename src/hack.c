@@ -322,6 +322,7 @@ moverock()
 		!u.usteed &&
 #endif	    
 		(((!invent || inv_weight() <= -850) &&
+		(!(uarm && uarm->otyp == POWER_ARMOR)) && 
 		 (!u.dx || !u.dy || (IS_ROCK(levl[u.ux][sy].typ)
 				     && IS_ROCK(levl[sx][u.uy].typ))))
 		|| verysmall(youracedata))) {
@@ -717,6 +718,11 @@ int mode;
 	if (bigmonst(youracedata) && !(u.sealsActive&SEAL_ANDREALPHUS) && !amorphous(youracedata)) {
 	    if (mode == DO_MOVE)
 		Your("body is too large to fit through.");
+	    return FALSE;
+	}
+	if(uarm && uarm->otyp == POWER_ARMOR){
+	    if (mode == DO_MOVE)
+		Your("power armor is too bulky to fit through.");
 	    return FALSE;
 	}
 	if (invent && (inv_weight() + weight_cap() > 600) && !(u.sealsActive&SEAL_ANDREALPHUS)
@@ -2782,6 +2788,8 @@ inv_weight()
 
 		if(otmp->oartifact == ART_IRON_BALL_OF_LEVITATION)
 			wt -= 2*otmp->owt;
+		if(uarm && uarm == otmp && otmp->otyp == POWER_ARMOR && otmp->lamplit)
+			wt -= otmp->owt + 100;
 		
 		if(u.uleadamulet && (otmp->otyp == AMULET_OF_YENDOR || otmp->otyp == FAKE_AMULET_OF_YENDOR))
 			wt += 24*otmp->owt; /* Same as loadstone by default. Only affects fake amulets in open inventory */

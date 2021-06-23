@@ -2772,6 +2772,9 @@ register struct trobj *trop;
 			if(obj->otyp == SLIME_MOLD && Race_if(PM_DROW)){
 				obj->spe = fruitadd("mushroom cake");
 			}
+			if(obj->otyp == POWER_ARMOR){
+				obj->obroken = 1;
+			}
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
 			}

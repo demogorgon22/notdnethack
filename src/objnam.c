@@ -2074,8 +2074,15 @@ weapon:
 			if (obj->owornmask & W_ARMOR)
 				Strcat(buf, (obj == uskin) ? " (embedded in your skin)" :
 				" (being worn)");
-			if (obj->lamplit)
-				Strcat(buf, " (lit)");
+			if(obj->otyp == POWER_ARMOR){
+				if(obj->lamplit)
+					Strcat(buf, " (on)");
+				else
+					Strcat(buf, " (off)");
+			} else {
+				if(obj->lamplit)
+					Strcat(buf, " (lit)");
+			}
 			if (obj->oartifact == ART_CHROMATIC_DRAGON_SCALES){
 				if (Is_dragon_mail(obj)) Sprintf(eos(buf), " (mail)");
 				if (Is_dragon_scales(obj)) Sprintf(eos(buf), " (scales)");
@@ -4532,6 +4539,7 @@ int wishflags;
 	   strncmpi(bp, "leather arm", 11) &&
 	   strncmpi(bp, "living arm", 10) &&
 	   strncmpi(bp, "barnacle arm", 12) &&
+	   strncmpi(bp, "power arm", 9) &&
 	   strncmpi(bp, "tooled horn", 11) &&
 	   strncmpi(bp, "food ration", 11) &&
 	   strncmpi(bp, "meat ring", 9) && 

@@ -1229,6 +1229,7 @@ int x;
 			if(tmp > 18) tmp = STR19(tmp);
 		}
 		if ((uarmg && uarmg->otyp == GAUNTLETS_OF_POWER) || 
+			(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit) ||
 			(uwep && uwep->oartifact == ART_SCEPTRE_OF_MIGHT) || 
 			(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && uwep->ovar1&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0) ||
 			(uwep && uwep->oartifact == ART_STORMBRINGER) ||

@@ -2214,6 +2214,9 @@ dofire()
 		psionic_pulse();
 		return 1;
 	}
+	if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit){
+		return 1;
+	}
 
 	if (attacktype(youracedata, AT_ARRW)) {
 		struct attack * attk = attacktype_fordmg(youracedata, AT_ARRW, AD_ANY);

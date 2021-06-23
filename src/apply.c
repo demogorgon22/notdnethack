@@ -1624,7 +1624,7 @@ struct obj *obj;
 		You("can't find an %s switch", litsaber(obj) ? "off" : "on");
 		return;
 	}
-	if(Underwater && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD) {
+	if(Underwater && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD && obj->otyp != POWER_ARMOR) {
 		pline("This is not a diving lamp.");
 		return;
 	}
@@ -1644,6 +1644,9 @@ struct obj *obj;
 		    }
 		    lightsaber_deactivate(obj, TRUE);
 		    return;
+		} else if(obj->otyp == POWER_ARMOR){
+			lightsaber_deactivate(obj,TRUE);
+			return;
 		} else
 		    You("snuff out %s.", yname(obj));
 		end_burn(obj, TRUE);
@@ -1656,7 +1659,8 @@ struct obj *obj;
 		) {
 		if (obj->otyp == LANTERN || 
 			obj->otyp == DWARVISH_HELM || 
-			is_lightsaber(obj)
+			is_lightsaber(obj) ||
+			obj->otyp == POWER_ARMOR
 		)
 			Your("%s has run out of power.", xname(obj));
 		else pline("This %s has no %s.", xname(obj), obj->otyp != GNOMISH_POINTY_HAT ? "oil" : "wax");
@@ -1680,7 +1684,7 @@ struct obj *obj;
 			obj->cursed = FALSE;
 		}
 	}
-	if (obj->cursed && (!rn2(2) || obj->otyp == CANDLE_OF_INVOCATION) && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD) {
+	if (obj->cursed && (!rn2(2) || obj->otyp == CANDLE_OF_INVOCATION) && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD && obj->otyp != POWER_ARMOR) {
 		pline("%s for a moment, then %s.",
 		      Tobjnam(obj, "flicker"), otense(obj, "die"));
 	} else {
@@ -1693,6 +1697,8 @@ struct obj *obj;
 		    You("ignite %s.", yname(obj));
 			obj->lamplit = 0;
 		    unweapon = FALSE;
+		} else if (obj->otyp == POWER_ARMOR){
+		    Your("%s powers on.",xname(obj));
 		} else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) {
 			int biman;
 			obj->lamplit = 1; //Check if the HMS will be two handed
@@ -6188,7 +6194,7 @@ doapply()
 	if (carrying(CREAM_PIE) || carrying(EUCALYPTUS_LEAF))
 		add_class(class_list, FOOD_CLASS);
 	if (carrying(DWARVISH_HELM) || carrying(GNOMISH_POINTY_HAT) 
-		|| carrying(DROVEN_CLOAK) || carrying_art(ART_AEGIS))
+		|| carrying(DROVEN_CLOAK) || carrying(POWER_ARMOR) || carrying_art(ART_AEGIS))
 		add_class(class_list, ARMOR_CLASS);
 	if(carrying_applyable_ring()){
 		add_class(class_list, RING_CLASS);
@@ -6546,6 +6552,11 @@ doapply()
  * From an idea posted to RGRN by "Dr Darth"
  * Code by Malcom Ryan
  */
+	case POWER_ARMOR:
+		if(!(uarm && uarm == obj)){
+			You("must be wearing your power armor to turn it on.");
+			break;
+		}
 	case DWARVISH_HELM: 
 	case OIL_LAMP:
 	case MAGIC_LAMP:
