@@ -1713,7 +1713,7 @@ A("Smoking Mirror",					SPEAR,		(const char *)0,
 	ATTK(AD_FIRE,5,0), NOFLAG,
 	PROPS(REFLECTING), NOFLAG,
 	PROPS(FIRE_RES), NOFLAG,
-	SMOKE_CLOUD, NOFLAG
+	SMOKE_MIRROR, NOFLAG
 	),
 
 /*From archeologist patch*/

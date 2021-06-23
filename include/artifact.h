@@ -407,6 +407,7 @@ extern struct artifact artilist[];
 #define BLOODLETTER     (LAST_PROP+82)
 #define RAND_SCROLL     (LAST_PROP+83)
 #define ILLITHID     (LAST_PROP+84)
+#define SMOKE_MIRROR     (LAST_PROP+85)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20
