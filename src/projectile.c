@@ -2215,7 +2215,20 @@ dofire()
 		return 1;
 	}
 	if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit){
-		return 1;
+		struct attack attk;
+		struct attack *mattk = &attk;
+		if (getdir((char *)0)) {
+			mattk->damn = 1;
+			mattk->damd = 2 + uarm->spe/2;
+			mattk->adtyp = AD_BOLT;
+			int count = d(mattk->damn, mattk->damd);
+			if(count < 1) count = 1;
+			uarm->age -= 20 * count;
+			result |= xfirey(&youmonst, mattk, 0, 0, count);
+			if(result)
+				return 1;
+			return 0;
+		}
 	}
 
 	if (attacktype(youracedata, AT_ARRW)) {
@@ -3085,6 +3098,11 @@ int n;	/* number to try to fire */
 		ammo_type = DILITHIUM_CRYSTAL;
 		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
+		break;
+	case AD_BOLT:
+		ammo_type = BLASTER_BOLT;
+		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
+		rngmod = 2;
 		break;
 	case AD_BLDR:
 		ammo_type = BOULDER;

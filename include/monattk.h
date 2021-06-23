@@ -216,6 +216,7 @@
 #define AD_COSM		152 /*Crystal memories*/
 #define AD_CRYS		153 /*throw crystal*/ 
 #define AD_WHIS		154 /*whisper your darkest fears*/
+#define AD_BOLT		155 /*Blaster bolt fire*/
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
