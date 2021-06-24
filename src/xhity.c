@@ -13790,6 +13790,8 @@ int vis;						/* True if action is at all visible to the player */
 		}
 		if (gloves && gloves->oartifact == ART_GREAT_CLAWS_OF_URDLEN)
 			unarmedMult += 2;
+		if(gloves && gloves->otyp == KNUCKLE_DUSTERS)
+			unarmedMult = 3;
 
 		/* base unarmed dice */
 		if (youagr && martial_bonus())
@@ -13833,6 +13835,8 @@ int vis;						/* True if action is at all visible to the player */
 		/* fighting gloves give bonus damage */
 		if (gloves && gloves->otyp == find_tgloves())
 			basedmg += ((youagr && martial_bonus()) ? 3 : 1);
+		if(gloves && gloves->otyp == KNUCKLE_DUSTERS)
+			basedmg += d(5,4);
 
 		
 		if (gloves) {
@@ -14301,7 +14305,7 @@ int vis;						/* True if action is at all visible to the player */
 				//Digging claws, or heart-shaped bit
 				attackmask |= PIERCE;
 			}
-			if (otmp && (otmp->oartifact == ART_GREAT_CLAWS_OF_URDLEN || otmp->oartifact == ART_CLAWS_OF_THE_REVENANCER)){
+			if (otmp && (otmp->oartifact == ART_GREAT_CLAWS_OF_URDLEN || otmp->oartifact == ART_CLAWS_OF_THE_REVENANCER || otmp->otyp == KNUCKLE_DUSTERS)){
 				attackmask |= SLASH;
 			}
 

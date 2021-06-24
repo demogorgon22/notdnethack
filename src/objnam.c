@@ -3316,6 +3316,7 @@ const char *oldstr;
 			   !BSTRCMPI(bp, p-7, "sandals") ||
 			   !BSTRCMPI(bp, p-9, "gauntlets") ||
 			   !BSTRCMPI(bp, p-5, "bands") ||
+			   !BSTRCMPI(bp, p-15, "knuckle dusters") ||
 			   !BSTRCMPI(bp, p-8, "shackles") ||
 			   !BSTRCMPI(bp, p-6, "tricks") ||
 			   !BSTRCMPI(bp, p-9, "paralysis") ||
@@ -5063,6 +5064,8 @@ typfnd:
 		typ == PLASTEEL_ARMOR ||
 		typ == JUMPSUIT ||
 		typ == BODYGLOVE ||
+		typ == POWER_ARMOR ||
+		typ == KNUCKLE_DUSTERS ||
 		typ == PLASTEEL_GAUNTLETS ||
 		typ == PLASTEEL_BOOTS ||
 		(typ >= SENSOR_PACK && typ <= HYPOSPRAY_AMPULE) ||

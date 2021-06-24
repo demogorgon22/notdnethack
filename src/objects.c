@@ -932,6 +932,8 @@ GLOVES(("crystal gauntlets", "gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0,	   0, 2, 20, 400, 9, 0, 0, GLASS, HI_GLASS, O_MATSPEC(UNIDED)),
 GLOVES(("gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		1, 0,  0,	   4, 2, 25, 10, 8, 2, 0, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED)),
+GLOVES(("knuckle dusters","spikey rings"), /*Needs encyc entry*//*Needs tile*/
+		1, 0,  0,	   0, 2, 10, 250, 8, 2, 0, IRON, HI_METAL),
 GLOVES(("archaic gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		1, 0,  0,	   0, 2, 25, 10, 8, 2, 0, COPPER, HI_COPPER),
 GLOVES(("long gloves"),

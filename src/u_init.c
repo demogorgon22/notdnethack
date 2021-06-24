@@ -1937,6 +1937,8 @@ u_init()
 		knows_object(LIGHTSABER);
 		knows_object(BEAMSWORD);
 		knows_object(DOUBLE_LIGHTSABER);
+		knows_object(POWER_ARMOR);
+		knows_object(KNUCKLE_DUSTERS);
 		if(Race_if(PM_DWARF)){
 			u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = A_CHAOTIC;
 			flags.initalign = 2; // 2 == chaotic
