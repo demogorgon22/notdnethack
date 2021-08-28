@@ -1215,6 +1215,7 @@ WEPTOOL(("hook"),
  */
 TOOL(("whistle", "whistle"),         0,   MZ_TINY, 0, 0, 0, 60,  3, 10, METAL,   HI_METAL,   O_MATSPEC(IDED )),
 TOOL(("magic whistle", "whistle"),   0,   MZ_TINY, 0, 1, 0, 30,  3, 10, METAL,   HI_METAL,   O_MATSPEC(NIDED)),
+TOOL(("potion vaporizer", "strange pipe"),   0,   MZ_TINY, 0, 1, 1, 0,  1, 100, METAL,   HI_METAL,   O_MATSPEC(NIDED)),
 /* "If tin whistles are made out of tin, what do they make foghorns out of?" */		   
 TOOL(("flute", "flute"),             0,  MZ_SMALL, 0, 0, 0,  4,  5, 12, WOOD,    HI_WOOD,    O_MATSPEC(IDED )),
 TOOL(("magic flute", "flute"),       0,  MZ_SMALL, 0, 1, 1,  2,  5, 36, WOOD,    HI_WOOD,    O_MATSPEC(NIDED)),

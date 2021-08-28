@@ -112,6 +112,7 @@ static struct trobj Anachrononaut_Gno[] = {
 	{ KNUCKLE_DUSTERS, 0, ARMOR_CLASS, 1, 0 },
 	{ LOW_BOOTS, 0, ARMOR_CLASS, 1, 0 },
 	{ POWER_PACK, 0, TOOL_CLASS, 5, 0 },
+	{ POTION_VAPORIZER, UNDEF_SPE, TOOL_CLASS, 1, 0 },
 	{ UNDEF_TYP, UNDEF_SPE, POTION_CLASS, 3, 0 },
 	{ 0, 0, 0, 0, 0 }
 };

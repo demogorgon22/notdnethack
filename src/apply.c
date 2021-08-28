@@ -36,6 +36,7 @@ STATIC_DCL void FDECL(use_trephination_kit, (struct obj *));
 STATIC_DCL void FDECL(use_tinning_kit, (struct obj *));
 STATIC_DCL void FDECL(use_figurine, (struct obj **));
 STATIC_DCL void FDECL(use_grease, (struct obj *));
+STATIC_DCL void FDECL(vape, (struct obj *));
 STATIC_DCL void FDECL(use_trap, (struct obj *));
 STATIC_DCL void FDECL(use_stone, (struct obj *));
 STATIC_DCL int FDECL(use_sensor, (struct obj *));
@@ -2574,6 +2575,33 @@ struct obj **optr;
 	(void) stop_timer(FIG_TRANSFORM, obj->timed);
 	useup(obj);
 	*optr = 0;
+}
+
+STATIC_OVL void
+vape(obj)
+struct obj *obj;
+{
+	struct obj *otmp;
+	if(breathless(youracedata)){
+		You("don't have a proper respiratory system!");
+		return;
+	}
+	if(obj->spe < 1){
+		pline("The %s is out of juice!",xname(obj));
+		return;
+	}
+	You("%s the %s.",Hallucination?"smack":"inhale from",xname(obj));
+	otmp = mksobj(obj->ovar1,MKOBJ_NOINIT);
+	otmp->cursed = obj->cursed;
+	otmp->blessed = obj->blessed;
+	potionbreathe(otmp);
+	if(obj->ovar1 == POT_WATER || obj->ovar1 == POT_OIL || obj->ovar1 == POT_FRUIT_JUICE){
+		You("rip a fat cloud.");
+		makemon(&mons[PM_FOG_CLOUD], u.ux, u.uy, MM_ADJACENTOK);	
+	}
+	obfree(otmp, (struct obj*)0);
+	obj->known = 1;
+	obj->spe--;
 }
 
 static NEARDATA const char lubricables[] = { ALL_CLASSES, ALLOW_NONE, 0 };
@@ -6293,6 +6321,9 @@ doapply()
 		break;
 	case CAN_OF_GREASE:
 		use_grease(obj);
+		break;
+	case POTION_VAPORIZER:
+		vape(obj);
 		break;
 	case LOCK_PICK:
 #ifdef TOURIST

@@ -959,6 +959,16 @@ int mkflags;
 			case DRUM_OF_EARTHQUAKE:
 				otmp->spe = rn1(5, 4);
 				break;
+			case POTION_VAPORIZER:{
+				struct obj* otmp2;
+				otmp2 = mkobj(POTION_CLASS,FALSE);
+				if(otmp2){
+					otmp->spe = rn1(5,4);
+					otmp->ovar1 = otmp2->otyp;
+					obfree(otmp2, (struct obj *)0);
+				}
+				break;
+			}
 			case MASK:
 				if (rn2(4)){
 					int tryct2 = 0;

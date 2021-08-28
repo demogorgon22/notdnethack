@@ -1767,6 +1767,10 @@ boolean with_price;
 		}
 		else {
 			/* prefixes */
+			if(obj->otyp == POTION_VAPORIZER && obj->ovar1 && obj->known){
+				Strcat(buf,obj_descr[objects[obj->ovar1].oc_name_idx].oc_name);
+				Strcat(buf," flavored ");
+			}	
 			if (typ == LENSES ||
 				typ == SUNGLASSES ||
 				typ == HAWAIIAN_SHORTS ||
@@ -4537,6 +4541,7 @@ int wishflags;
 	   strncmpi(bp, "wage of", 7) &&
 	   strncmpi(bp, "wages of", 8) &&
 	   strncmpi(bp, "ring mail", 9) &&
+	   strncmpi(bp, "potion vaporizer", 16) &&
 	   strncmpi(bp, "ringed brass armor", 18) &&
 	   strncmpi(bp, "studded leather arm", 19) &&
 	   strncmpi(bp, "leather arm", 11) &&
