@@ -105,6 +105,16 @@ static struct trobj Anachrononaut_Dw[] = {
 	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+static struct trobj Anachrononaut_Gno[] = {
+	{ POWER_ARMOR, 0, ARMOR_CLASS, 1, 0 },
+	{ BODYGLOVE, 0, ARMOR_CLASS, 1, 0 },
+	{ HELMET, 0, ARMOR_CLASS, 1, 0 },
+	{ KNUCKLE_DUSTERS, 0, ARMOR_CLASS, 1, 0 },
+	{ LOW_BOOTS, 0, ARMOR_CLASS, 1, 0 },
+	{ POWER_PACK, 0, TOOL_CLASS, 5, 0 },
+	{ UNDEF_TYP, UNDEF_SPE, POTION_CLASS, 3, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Anachrononaut_Inc[] = {
 	{ LIGHTSABER,  3, WEAPON_CLASS, 1, 0 },
 	{ ELVEN_TOGA, 1, ARMOR_CLASS, 1, 0 },
@@ -1882,6 +1892,7 @@ u_init()
 		else if(Race_if(PM_VAMPIRE)) ini_inv(Anachrononaut_Vam);
 		else if(Race_if(PM_DWARF)) ini_inv(Anachrononaut_Dw);
 		else if(Race_if(PM_HALF_DRAGON)) ini_inv(Anachrononaut_Hlf);
+		else if(Race_if(PM_GNOME)) ini_inv(Anachrononaut_Gno);
 		else if(Race_if(PM_ANDROID)){
 			if(!flags.female) ini_inv(Anachrononaut_Mal_Clk);
 			else ini_inv(Anachrononaut_Fem_Clk);
@@ -2485,7 +2496,7 @@ u_init()
 
 	case PM_GNOME:
 	    /* Gnomes can recognize common dwarvish objects */
-	    if (!Role_if(PM_ARCHEOLOGIST) && !Role_if(PM_ANACHRONOUNBINDER)){
+	    if (!Role_if(PM_ARCHEOLOGIST) && !Role_if(PM_ANACHRONOUNBINDER) && !Role_if(PM_ANACHRONONAUT)){
 			ini_inv(GnomishHat);
 		}
 		skill_add(Skill_G);
@@ -2775,6 +2786,7 @@ register struct trobj *trop;
 				obj->spe = fruitadd("mushroom cake");
 			}
 			if(obj->otyp == POWER_ARMOR){
+				begin_burn(obj);
 				obj->obroken = 1;
 			}
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
