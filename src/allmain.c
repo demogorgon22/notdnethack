@@ -1813,6 +1813,7 @@ karemade:
 			)) moveamt = 12;
 			else moveamt = youmonst.data->mmove;
 			if(uarmf && uarmf->otyp == STILETTOS && !Flying && !Levitation) moveamt = (moveamt*5)/6;
+			if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit) moveamt += 4;
 			
 			if(u.sealsActive&SEAL_EURYNOME && IS_PUDDLE_OR_POOL(levl[u.ux][u.uy].typ)){
 				if (Very_fast) {	/* speed boots or potion */

@@ -959,6 +959,16 @@ int mkflags;
 			case DRUM_OF_EARTHQUAKE:
 				otmp->spe = rn1(5, 4);
 				break;
+			case POTION_VAPORIZER:{
+				struct obj* otmp2;
+				otmp2 = mkobj(POTION_CLASS,FALSE);
+				if(otmp2){
+					otmp->spe = rn1(5,4);
+					otmp->ovar1 = otmp2->otyp;
+					obfree(otmp2, (struct obj *)0);
+				}
+				break;
+			}
 			case MASK:
 				if (rn2(4)){
 					int tryct2 = 0;
@@ -1184,6 +1194,10 @@ int mkflags;
 			/* CM: gnomish hats have candles */
 			if (otmp->otyp == GNOMISH_POINTY_HAT) {
 				otmp->age = (long)rn1(900, 900);//Last longer than dwarvish helms, since the radius is smaller
+				otmp->lamplit = 0;
+			}
+			if(otmp->otyp == POWER_ARMOR){
+				otmp->age = (long) rn1(5000,7500);
 				otmp->lamplit = 0;
 			}
 			if (otmp->otyp == DROVEN_PLATE_MAIL || otmp->otyp == DROVEN_CHAIN_MAIL || otmp->otyp == CONSORT_S_SUIT){

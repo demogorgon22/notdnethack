@@ -572,6 +572,7 @@ Gloves_on()
 	case CRYSTAL_GAUNTLETS:
 	case PLASTEEL_GAUNTLETS:
 	case ORIHALCYON_GAUNTLETS:
+	case KNUCKLE_DUSTERS:
 		break;
 	case GAUNTLETS_OF_FUMBLING:
 		if (!oldprop && !(HFumbling & ~TIMEOUT))
@@ -607,6 +608,7 @@ Gloves_off()
 	case CRYSTAL_GAUNTLETS:
 	case PLASTEEL_GAUNTLETS:
 	case ORIHALCYON_GAUNTLETS:
+	case KNUCKLE_DUSTERS:
 	    break;
 	case GAUNTLETS_OF_FUMBLING:
 	    if (!oldprop && !(HFumbling & ~TIMEOUT))
@@ -819,6 +821,9 @@ Armor_off()
 	else if((uarm->otyp == GENTLEWOMAN_S_DRESS || uarm->otyp == GENTLEMAN_S_SUIT) && !cancelled_don){
 		ABON(A_CHA) -= 2*(1+uarm->spe);
 		flags.botl = 1;
+	}
+	else if(uarm->otyp == POWER_ARMOR && uarm->lamplit){
+		lightsaber_deactivate(uarm,TRUE);
 	}
     setworn((struct obj *)0, W_ARM);
 	if(checkweight) inv_weight();
@@ -2066,7 +2071,8 @@ struct obj * otmp;
 
 		def += (otmp->spe * spemult + 0) / 2;
 	}
-
+	if(otmp->otyp == POWER_ARMOR && otmp->lamplit && !otmp->obroken)
+		def += 8;
 	// artifact bonus def
 	switch (otmp->oartifact)
 	{
@@ -2148,6 +2154,8 @@ struct obj * otmp;
 
 		def += sgn(otmp->spe)*(abs(otmp->spe) * spemult + 1) / 2;
 	}
+	if(otmp->otyp == POWER_ARMOR && otmp->lamplit && !otmp->obroken)
+		def += 8;
 
 	// artifact bonus def
 	switch (otmp->oartifact)

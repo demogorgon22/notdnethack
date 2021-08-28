@@ -36,6 +36,7 @@ STATIC_DCL void FDECL(use_trephination_kit, (struct obj *));
 STATIC_DCL void FDECL(use_tinning_kit, (struct obj *));
 STATIC_DCL void FDECL(use_figurine, (struct obj **));
 STATIC_DCL void FDECL(use_grease, (struct obj *));
+STATIC_DCL void FDECL(vape, (struct obj *));
 STATIC_DCL void FDECL(use_trap, (struct obj *));
 STATIC_DCL void FDECL(use_stone, (struct obj *));
 STATIC_DCL int FDECL(use_sensor, (struct obj *));
@@ -1624,7 +1625,7 @@ struct obj *obj;
 		You("can't find an %s switch", litsaber(obj) ? "off" : "on");
 		return;
 	}
-	if(Underwater && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD) {
+	if(Underwater && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD && obj->otyp != POWER_ARMOR) {
 		pline("This is not a diving lamp.");
 		return;
 	}
@@ -1644,6 +1645,9 @@ struct obj *obj;
 		    }
 		    lightsaber_deactivate(obj, TRUE);
 		    return;
+		} else if(obj->otyp == POWER_ARMOR){
+			lightsaber_deactivate(obj,TRUE);
+			return;
 		} else
 		    You("snuff out %s.", yname(obj));
 		end_burn(obj, TRUE);
@@ -1656,7 +1660,8 @@ struct obj *obj;
 		) {
 		if (obj->otyp == LANTERN || 
 			obj->otyp == DWARVISH_HELM || 
-			is_lightsaber(obj)
+			is_lightsaber(obj) ||
+			obj->otyp == POWER_ARMOR
 		)
 			Your("%s has run out of power.", xname(obj));
 		else pline("This %s has no %s.", xname(obj), obj->otyp != GNOMISH_POINTY_HAT ? "oil" : "wax");
@@ -1680,7 +1685,7 @@ struct obj *obj;
 			obj->cursed = FALSE;
 		}
 	}
-	if (obj->cursed && (!rn2(2) || obj->otyp == CANDLE_OF_INVOCATION) && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD) {
+	if (obj->cursed && (!rn2(2) || obj->otyp == CANDLE_OF_INVOCATION) && obj->oartifact != ART_HOLY_MOONLIGHT_SWORD && obj->otyp != POWER_ARMOR) {
 		pline("%s for a moment, then %s.",
 		      Tobjnam(obj, "flicker"), otense(obj, "die"));
 	} else {
@@ -1693,6 +1698,8 @@ struct obj *obj;
 		    You("ignite %s.", yname(obj));
 			obj->lamplit = 0;
 		    unweapon = FALSE;
+		} else if (obj->otyp == POWER_ARMOR){
+		    Your("%s powers on.",xname(obj));
 		} else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) {
 			int biman;
 			obj->lamplit = 1; //Check if the HMS will be two handed
@@ -2568,6 +2575,33 @@ struct obj **optr;
 	(void) stop_timer(FIG_TRANSFORM, obj->timed);
 	useup(obj);
 	*optr = 0;
+}
+
+STATIC_OVL void
+vape(obj)
+struct obj *obj;
+{
+	struct obj *otmp;
+	if(breathless(youracedata)){
+		You("don't have a proper respiratory system!");
+		return;
+	}
+	if(obj->spe < 1){
+		pline("The %s is out of juice!",xname(obj));
+		return;
+	}
+	You("%s the %s.",Hallucination?"smack":"inhale from",xname(obj));
+	otmp = mksobj(obj->ovar1,MKOBJ_NOINIT);
+	otmp->cursed = obj->cursed;
+	otmp->blessed = obj->blessed;
+	potionbreathe(otmp);
+	if(obj->ovar1 == POT_WATER || obj->ovar1 == POT_OIL || obj->ovar1 == POT_FRUIT_JUICE){
+		You("rip a fat cloud.");
+		makemon(&mons[PM_FOG_CLOUD], u.ux, u.uy, MM_ADJACENTOK);	
+	}
+	obfree(otmp, (struct obj*)0);
+	obj->known = 1;
+	obj->spe--;
 }
 
 static NEARDATA const char lubricables[] = { ALL_CLASSES, ALLOW_NONE, 0 };
@@ -6021,6 +6055,10 @@ resizeArmor()
 	fix_object(otmp);
 	
 	You("resize the armor to fit.");
+	if(otmp->obroken && otmp->otyp == POWER_ARMOR){
+		pline("Your power armor starts working!");
+		otmp->obroken = 0;
+	}	
 	pline("The kit is used up.");
 	return(1);
 }
@@ -6188,7 +6226,7 @@ doapply()
 	if (carrying(CREAM_PIE) || carrying(EUCALYPTUS_LEAF))
 		add_class(class_list, FOOD_CLASS);
 	if (carrying(DWARVISH_HELM) || carrying(GNOMISH_POINTY_HAT) 
-		|| carrying(DROVEN_CLOAK) || carrying_art(ART_AEGIS))
+		|| carrying(DROVEN_CLOAK) || carrying(POWER_ARMOR) || carrying_art(ART_AEGIS))
 		add_class(class_list, ARMOR_CLASS);
 	if(carrying_applyable_ring()){
 		add_class(class_list, RING_CLASS);
@@ -6283,6 +6321,9 @@ doapply()
 		break;
 	case CAN_OF_GREASE:
 		use_grease(obj);
+		break;
+	case POTION_VAPORIZER:
+		vape(obj);
 		break;
 	case LOCK_PICK:
 #ifdef TOURIST
@@ -6550,6 +6591,13 @@ doapply()
 	case OIL_LAMP:
 	case MAGIC_LAMP:
 	case LANTERN:
+		use_lamp(obj);
+	break;
+	case POWER_ARMOR:
+		if(!(uarm && uarm == obj)){
+			You("must be wearing your power armor to turn it on.");
+			break;
+		}
 		use_lamp(obj);
 	break;
 	case POT_OIL:

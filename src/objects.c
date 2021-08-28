@@ -764,6 +764,8 @@ SUIT(("harmonium plate", "red-lacquered bladed armor", "bladed armor"),
 	0, 0,   MZ_HUGE,  ARMSZ_HEAVY, 0,   0,  5, 225,    1,  4, 6, 3, METAL, CLR_RED),
 SUIT(("harmonium scale mail", "red-lacquered spiked scale mail", "spiked scale mail"),
 	0, 0,  MZ_LARGE, ARMSZ_MEDIUM, 0,   0,  5, 125,    1,  8, 3, 1, METAL, CLR_RED),
+SUIT(("power armor", "strange metal armor", "armored suit"), /*Needs encyc entry*//*Needs tile*/
+	0, 0,   MZ_HUGE, ARMSZ_HEAVY, 0,   0,  3, 500,  5000,  7, 3, 3, METAL, CLR_MAGENTA),
 SUIT(("plasteel armor", "hard white armor", "armor"), /*Needs encyc entry*//*Needs tile*/
 	0, 0,   MZ_HUGE, ARMSZ_MEDIUM, 0,   0,  5, 100,  500,  7, 3, 3, PLASTIC, CLR_WHITE),
 // ARMOR(("force armor", "gemstone-adorned clothing"),	/* out of date structure -- rewrite if adding */
@@ -930,6 +932,8 @@ GLOVES(("crystal gauntlets", "gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0,	   0, 2, 20, 400, 9, 0, 0, GLASS, HI_GLASS, O_MATSPEC(UNIDED)),
 GLOVES(("gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		1, 0,  0,	   4, 2, 25, 10, 8, 2, 0, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED)),
+GLOVES(("knuckle dusters","spikey rings"), /*Needs encyc entry*//*Needs tile*/
+		1, 0,  0,	   0, 2, 10, 250, 8, 2, 0, IRON, HI_METAL),
 GLOVES(("archaic gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		1, 0,  0,	   0, 2, 25, 10, 8, 2, 0, COPPER, HI_COPPER),
 GLOVES(("long gloves"),
@@ -1211,6 +1215,7 @@ WEPTOOL(("hook"),
  */
 TOOL(("whistle", "whistle"),         0,   MZ_TINY, 0, 0, 0, 60,  3, 10, METAL,   HI_METAL,   O_MATSPEC(IDED )),
 TOOL(("magic whistle", "whistle"),   0,   MZ_TINY, 0, 1, 0, 30,  3, 10, METAL,   HI_METAL,   O_MATSPEC(NIDED)),
+TOOL(("potion vaporizer", "strange pipe"),   0,   MZ_TINY, 0, 1, 1, 0,  1, 100, METAL,   HI_METAL,   O_MATSPEC(NIDED)),
 /* "If tin whistles are made out of tin, what do they make foghorns out of?" */		   
 TOOL(("flute", "flute"),             0,  MZ_SMALL, 0, 0, 0,  4,  5, 12, WOOD,    HI_WOOD,    O_MATSPEC(IDED )),
 TOOL(("magic flute", "flute"),       0,  MZ_SMALL, 0, 1, 1,  2,  5, 36, WOOD,    HI_WOOD,    O_MATSPEC(NIDED)),

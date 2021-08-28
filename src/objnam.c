@@ -861,11 +861,13 @@ struct obj *obj;
 char *buf;
 {
 	boolean iscrys = (obj->otyp == CRYSKNIFE);
+	if(obj->otyp == POWER_ARMOR && obj->obroken) Strcat(buf, "time fluxed ");	
 	if (!is_damageable(obj) && obj->otyp != MASK && !iscrys && !(obj->oclass == POTION_CLASS && obj->odiluted)) return;
 
 	/* food uses oeroded to determine if it is rotten -- do not show this */
 	if (obj->oclass == FOOD_CLASS)
 		return;
+	
 
 	if (obj->oeroded && !iscrys) {
 		switch (obj->oeroded) {
@@ -1765,6 +1767,10 @@ boolean with_price;
 		}
 		else {
 			/* prefixes */
+			if(obj->otyp == POTION_VAPORIZER && obj->ovar1 && obj->known){
+				Strcat(buf,obj_descr[objects[obj->ovar1].oc_name_idx].oc_name);
+				Strcat(buf," flavored ");
+			}	
 			if (typ == LENSES ||
 				typ == SUNGLASSES ||
 				typ == HAWAIIAN_SHORTS ||
@@ -2074,8 +2080,15 @@ weapon:
 			if (obj->owornmask & W_ARMOR)
 				Strcat(buf, (obj == uskin) ? " (embedded in your skin)" :
 				" (being worn)");
-			if (obj->lamplit)
-				Strcat(buf, " (lit)");
+			if(obj->otyp == POWER_ARMOR){
+				if(obj->lamplit)
+					Strcat(buf, " (on)");
+				else
+					Strcat(buf, " (off)");
+			} else {
+				if(obj->lamplit)
+					Strcat(buf, " (lit)");
+			}
 			if (obj->oartifact == ART_CHROMATIC_DRAGON_SCALES){
 				if (Is_dragon_mail(obj)) Sprintf(eos(buf), " (mail)");
 				if (Is_dragon_scales(obj)) Sprintf(eos(buf), " (scales)");
@@ -3309,6 +3322,7 @@ const char *oldstr;
 			   !BSTRCMPI(bp, p-7, "sandals") ||
 			   !BSTRCMPI(bp, p-9, "gauntlets") ||
 			   !BSTRCMPI(bp, p-5, "bands") ||
+			   !BSTRCMPI(bp, p-15, "knuckle dusters") ||
 			   !BSTRCMPI(bp, p-8, "shackles") ||
 			   !BSTRCMPI(bp, p-6, "tricks") ||
 			   !BSTRCMPI(bp, p-9, "paralysis") ||
@@ -4527,11 +4541,13 @@ int wishflags;
 	   strncmpi(bp, "wage of", 7) &&
 	   strncmpi(bp, "wages of", 8) &&
 	   strncmpi(bp, "ring mail", 9) &&
+	   strncmpi(bp, "potion vaporizer", 16) &&
 	   strncmpi(bp, "ringed brass armor", 18) &&
 	   strncmpi(bp, "studded leather arm", 19) &&
 	   strncmpi(bp, "leather arm", 11) &&
 	   strncmpi(bp, "living arm", 10) &&
 	   strncmpi(bp, "barnacle arm", 12) &&
+	   strncmpi(bp, "power arm", 9) &&
 	   strncmpi(bp, "tooled horn", 11) &&
 	   strncmpi(bp, "food ration", 11) &&
 	   strncmpi(bp, "meat ring", 9) && 
@@ -5055,6 +5071,8 @@ typfnd:
 		typ == PLASTEEL_ARMOR ||
 		typ == JUMPSUIT ||
 		typ == BODYGLOVE ||
+		typ == POWER_ARMOR ||
+		typ == KNUCKLE_DUSTERS ||
 		typ == PLASTEEL_GAUNTLETS ||
 		typ == PLASTEEL_BOOTS ||
 		(typ >= SENSOR_PACK && typ <= HYPOSPRAY_AMPULE) ||

@@ -911,6 +911,7 @@ struct obj *obj;
 			(obj->known || objects[obj->otyp].oc_uname) && obj->otyp != RIN_WISHES);
 	if (is_lightsaber(obj) && obj->oartifact != ART_INFINITY_S_MIRRORED_ARC && obj->otyp != KAMEREL_VAJRA)
 	    return TRUE;
+	if(obj->otyp == POWER_ARMOR) return TRUE;
 //#ifdef FIREARMS
 	if (is_blaster(obj) && (obj->recharged < 4 || (obj->otyp != HAND_BLASTER && obj->otyp != ARM_BLASTER)))
 	    return TRUE;
@@ -1029,7 +1030,7 @@ int curse_bless;
 	    }
 
 	} else if (obj->oclass == TOOL_CLASS || is_blaster(obj)
-		   || obj->otyp == DWARVISH_HELM || is_vibroweapon(obj)) {
+		   || obj->otyp == DWARVISH_HELM || is_vibroweapon(obj) || obj->otyp == POWER_ARMOR) {
 	    int rechrg = (int)obj->recharged;
 
 	    if (objects[obj->otyp].oc_charged) {
@@ -1165,6 +1166,7 @@ int curse_bless;
 	    case LIGHTSABER:
 	    case BEAMSWORD:
 	    case DOUBLE_LIGHTSABER:
+	    case POWER_ARMOR:
 		if (is_cursed) {
 		    if (obj->lamplit) {
 			end_burn(obj, TRUE);
@@ -1174,11 +1176,11 @@ int curse_bless;
 		    } else
 			obj->age = 0;
 		} else if (is_blessed) {
-		    obj->age = 150000;
+		    obj->age = (obj->otyp == POWER_ARMOR)?7500:150000;
 		    p_glow2(obj, NH_BLUE);
 		} else {
-		    obj->age += 75000;
-		    if (obj->age > 150000) obj->age = 150000;
+		    obj->age += (obj->otyp == POWER_ARMOR)?5000:75000;
+		    if (obj->age > ((obj->otyp == POWER_ARMOR)?7500:150000)) obj->age = (obj->otyp == POWER_ARMOR)?7500:150000;
 		    p_glow1(obj);
 		}
 		break;
