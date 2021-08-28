@@ -6027,6 +6027,10 @@ resizeArmor()
 	fix_object(otmp);
 	
 	You("resize the armor to fit.");
+	if(otmp->obroken && otmp->otyp == POWER_ARMOR){
+		pline("Your power armor starts working!");
+		otmp->obroken = 0;
+	}	
 	pline("The kit is used up.");
 	return(1);
 }

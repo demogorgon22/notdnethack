@@ -861,11 +861,13 @@ struct obj *obj;
 char *buf;
 {
 	boolean iscrys = (obj->otyp == CRYSKNIFE);
+	if(obj->otyp == POWER_ARMOR && obj->obroken) Strcat(buf, "time fluxed ");	
 	if (!is_damageable(obj) && obj->otyp != MASK && !iscrys && !(obj->oclass == POTION_CLASS && obj->odiluted)) return;
 
 	/* food uses oeroded to determine if it is rotten -- do not show this */
 	if (obj->oclass == FOOD_CLASS)
 		return;
+	
 
 	if (obj->oeroded && !iscrys) {
 		switch (obj->oeroded) {
