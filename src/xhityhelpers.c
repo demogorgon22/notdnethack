@@ -378,7 +378,7 @@ struct monst * mon;
 	}
 
 	if ((mon->data->mlet == S_WORM
-		|| attacktype(mon->data, AT_TENT)
+		|| mon_attacktype(mon, AT_TENT)
 		) && roll_madness(MAD_HELMINTHOPHOBIA)){
 		pline("You're afraid to go near that wormy thing!");
 		return TRUE;
@@ -823,15 +823,21 @@ struct attack *mattk;
 		it's better than "sting" when not a stinging attack... */
 		return (!mwep || !mwep->opoisoned) ? "attack" : "weapon";
 	}
-	else if(mattk->aatyp == AT_SRPR){
+	else if(spirit_rapier_at(mattk->aatyp)){
 		if (mattk->adtyp == AD_SHDW){
-		return "shadow blade";
-	}
-	else if (mattk->adtyp == AD_STAR){
-		return "starlight rapier";
-	}
+			return "shadow blade";
+		}
+		else if (mattk->adtyp == AD_STAR){
+			return "starlight rapier";
+		}
+		else if (mattk->adtyp == AD_MOON){
+			return "moonlight rapier";
+		}
 		else if (mattk->adtyp == AD_BLUD){
 			return "blade of rotted blood";
+		}
+		else if (mattk->adtyp == AD_WET){
+			return "water-jet blade";
 		}
 		else {
 			return "blade";
@@ -911,8 +917,9 @@ struct monst *mon;
  * Monster damages player's armor
  */
 void
-hurtarmor(attk)
+hurtarmor(attk, candestroy)
 int attk;
+boolean candestroy;
 {
 	int	hurt;
 
@@ -932,12 +939,12 @@ int attk;
 	while (1) {
 	    switch(rn2(5)) {
 	    case 0:
-		if (!uarmh || !rust_dmg(uarmh, xname(uarmh), hurt, FALSE, &youmonst))
+		if (!uarmh || !rust_dmg(uarmh, xname(uarmh), hurt, FALSE, &youmonst, candestroy))
 			continue;
 		break;
 	    case 1:
 		if (uarmc) {
-		    (void)rust_dmg(uarmc, xname(uarmc), hurt, TRUE, &youmonst);
+		    (void)rust_dmg(uarmc, xname(uarmc), hurt, TRUE, &youmonst, candestroy);
 		    break;
 		}
 		/* Note the difference between break and continue;
@@ -946,20 +953,20 @@ int attk;
 		 * something else did.
 		 */
 		if (uarm && (arm_blocks_upper_body(uarm->otyp) || rn2(2)))
-		    (void)rust_dmg(uarm, xname(uarm), hurt, TRUE, &youmonst);
+		    (void)rust_dmg(uarm, xname(uarm), hurt, TRUE, &youmonst, candestroy);
 		else if (uarmu)
-		    (void)rust_dmg(uarmu, xname(uarmu), hurt, TRUE, &youmonst);
+		    (void)rust_dmg(uarmu, xname(uarmu), hurt, TRUE, &youmonst, candestroy);
 		break;
 	    case 2:
-		if (!uarms || !rust_dmg(uarms, xname(uarms), hurt, FALSE, &youmonst))
+		if (!uarms || !rust_dmg(uarms, xname(uarms), hurt, FALSE, &youmonst, candestroy))
 		    continue;
 		break;
 	    case 3:
-		if (!uarmg || !rust_dmg(uarmg, xname(uarmg), hurt, FALSE, &youmonst))
+		if (!uarmg || !rust_dmg(uarmg, xname(uarmg), hurt, FALSE, &youmonst, candestroy))
 		    continue;
 		break;
 	    case 4:
-		if (!uarmf || !rust_dmg(uarmf, xname(uarmf), hurt, FALSE, &youmonst))
+		if (!uarmf || !rust_dmg(uarmf, xname(uarmf), hurt, FALSE, &youmonst, candestroy))
 		    continue;
 		break;
 	    }
@@ -973,9 +980,10 @@ int attk;
  * Something (you/monster) daamges a monster's armor
  */
 void
-hurtmarmor(mdef, attk)
+hurtmarmor(mdef, attk, candestroy)
 struct monst *mdef;
 int attk;
+boolean candestroy;
 {
 	int	hurt;
 	struct obj *target;
@@ -996,37 +1004,37 @@ int attk;
 		switch (rn2(5)) {
 		case 0:
 			target = which_armor(mdef, W_ARMH);
-			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef))
+			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef, candestroy))
 				continue;
 			break;
 		case 1:
 			target = which_armor(mdef, W_ARMC);
 			if (target) {
-				(void)rust_dmg(target, xname(target), hurt, TRUE, mdef);
+				(void)rust_dmg(target, xname(target), hurt, TRUE, mdef, candestroy);
 				break;
 			}
 			if ((target = which_armor(mdef, W_ARM)) != (struct obj *)0) {
-				(void)rust_dmg(target, xname(target), hurt, TRUE, mdef);
+				(void)rust_dmg(target, xname(target), hurt, TRUE, mdef, candestroy);
 #ifdef TOURIST
 			}
 			else if ((target = which_armor(mdef, W_ARMU)) != (struct obj *)0) {
-				(void)rust_dmg(target, xname(target), hurt, TRUE, mdef);
+				(void)rust_dmg(target, xname(target), hurt, TRUE, mdef, candestroy);
 #endif
 			}
 			break;
 		case 2:
 			target = which_armor(mdef, W_ARMS);
-			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef))
+			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef, candestroy))
 				continue;
 			break;
 		case 3:
 			target = which_armor(mdef, W_ARMG);
-			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef))
+			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef, candestroy))
 				continue;
 			break;
 		case 4:
 			target = which_armor(mdef, W_ARMF);
-			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef))
+			if (!target || !rust_dmg(target, xname(target), hurt, FALSE, mdef, candestroy))
 				continue;
 			break;
 		}
@@ -1061,6 +1069,10 @@ int aatyp;
 	case AT_MMGC:
 	case AT_BEAM:
 	case AT_SRPR:
+	case AT_XSPR:
+	case AT_MSPR:
+	case AT_DSPR:
+	case AT_ESPR:
 	case AT_WISP:
 	case AT_REND:		/* If the previous attacks were OK, this one is too */
 		w_mask = ~0L;		/* special case; no defense needed */
@@ -1188,10 +1200,11 @@ struct obj * weapon;
 		))
 		/* not a damage type that doesn't actually contact */
 		&& !(
-		attk->adtyp == AD_SHDW ||
-		attk->adtyp == AD_BLUD ||
-		attk->adtyp == AD_MERC ||
-		attk->adtyp == AD_STAR
+		attk->adtyp == AD_SHDW
+		|| attk->adtyp == AD_BLUD
+		|| attk->adtyp == AD_MERC
+		|| attk->adtyp == AD_STAR
+		|| attk->adtyp == AD_MOON
 		)
 		)
 		return TRUE;	// will touch
@@ -1261,6 +1274,7 @@ beastmastery()
 	case P_BASIC:        bm = 2; break;
 	case P_SKILLED:      bm = 5; break;
 	case P_EXPERT:       bm = 10; break;
+	default: impossible(">Expert beast mastery unhandled"); bm = 10; break;
 	}
 	if ((uwep && uwep->oartifact == ART_CLARENT) || (uswapwep && uswapwep->oartifact == ART_CLARENT))
 		bm *= 2;
@@ -1276,6 +1290,7 @@ mountedCombat()
 	case P_BASIC:        bm = 2; break;
 	case P_SKILLED:      bm = 5; break;
 	case P_EXPERT:       bm = 10; break;
+	default: impossible(">Expert riding unhandled"); bm = 10; break;
 	}
 	return bm;
 }
@@ -1360,6 +1375,7 @@ struct obj * otmp;
 #define vd(n, x)	(vulnerable ? (n*x) : d(n, x))
 	int diesize;
 	int ndice;
+	int khakharadice = rnd(3);
 
 	int dmg = 0;
 
@@ -1377,19 +1393,34 @@ struct obj * otmp;
 		else if (otmp->oartifact == ART_SILVER_STARLIGHT)
 			ndice = 2;
 		else if(otmp->otyp == KHAKKHARA)
-			ndice = rnd(3);
+			ndice = khakharadice;
 		/* calculate */
 		dmg += vd(ndice, diesize);
 	}
+
+	if (hates_unholy_mon(mdef) &&
+		otmp->obj_material == GREEN_STEEL &&
+		!(is_lightsaber(otmp) && litsaber(otmp))) {
+		/* default: 2d9 */
+		ndice = 2;
+		diesize = 9;
+		/* special cases */
+		if (otmp->otyp == KHAKKHARA)
+			ndice *= khakharadice;
+		/* calculate */
+		if (ndice)
+			dmg += vd(ndice, diesize);
+	}
+	
 	if (hates_iron(pd) &&
-		otmp->obj_material == IRON &&
+		is_iron_obj(otmp) &&
 		!(is_lightsaber(otmp) && litsaber(otmp))) {
 		/* default: 1d(XL) */
 		ndice = 1;
 		diesize = max(1, mlev(mdef));
 		/* special cases */
 		if (otmp->otyp == KHAKKHARA)
-			ndice = rnd(3);
+			ndice = khakharadice;
 		/* calculate */
 		dmg += vd(ndice, diesize);
 	}
@@ -1416,7 +1447,7 @@ struct obj * otmp;
 		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
 			diesize = 20;
 		else if (otmp->otyp == KHAKKHARA)
-			ndice = rnd(3);
+			ndice = khakharadice;
 		/* gold has a particular affinity to blessings and curses */
 		if (otmp->obj_material == GOLD &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
@@ -1449,7 +1480,42 @@ struct obj * otmp;
 		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
 
 		if (otmp->otyp == KHAKKHARA)
-			ndice *= rnd(3);
+			ndice *= khakharadice;
+		/* gold has a particular affinity to blessings and curses */
+		if (otmp->obj_material == GOLD &&
+			!(is_lightsaber(otmp) && litsaber(otmp))) {
+			ndice *= 2;
+		}
+		/* calculate */
+		if (ndice)
+			dmg += vd(ndice, diesize);
+	}
+
+	if (hates_unholy_mon(mdef) &&
+		is_unholy(otmp)) {
+		/* default: 1d9 */
+		ndice = 1;
+		diesize = 9;
+		/* special cases */
+		if (otmp->oartifact == ART_STORMBRINGER)
+			ndice = 4; //Extra unholy (4d9 vs excal's 3d7)
+		else if (otmp->oartifact == ART_GODHANDS)
+			dmg += 9;
+		else if (otmp->oartifact == ART_DIRGE)
+			dmg += 6;
+		else if (otmp->oartifact == ART_LANCE_OF_LONGINUS)
+			ndice = 3;
+		else if (otmp->oartifact == ART_SCEPTRE_OF_THE_FROZEN_FLOO)
+		{	ndice = 0; dmg += 8; } // add directly; no dice rolled
+		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
+			diesize = 20;
+		else if (otmp->oartifact == ART_AMHIMITL)
+		{	ndice = 3; diesize = 4; }
+		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
+		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
+
+		if (otmp->otyp == KHAKKHARA)
+			ndice *= khakharadice;
 		/* gold has a particular affinity to blessings and curses */
 		if (otmp->obj_material == GOLD &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
@@ -1487,7 +1553,7 @@ struct obj * otmp;
 			ndice = 3;
 		
 		if (otmp->otyp == KHAKKHARA)
-			ndice *= rnd(3);
+			ndice *= khakharadice;
 		/* calculate */
 		if (ndice)
 			dmg += vd(ndice, diesize);
@@ -1576,7 +1642,7 @@ struct obj * weapon;
 			return 2;
 
 		if ((hates_silver(pd) && !(youdef && u.sealsActive&SEAL_EDEN)) && (
-			(attk && attk->adtyp == AD_STAR)
+			(attk && (attk->adtyp == AD_STAR || attk->adtyp == AD_MOON))
 			))
 			return 2;
 
@@ -1597,9 +1663,9 @@ struct obj * weapon;
 		if (hates_iron(pd) && (
 			(attk && attk->adtyp == AD_SIMURGH) ||
 			(magr && is_iron_mon(magr)) ||
-			(otmp && otmp->obj_material == IRON) ||
-			(youagr && slot == W_ARMG && uright && uright->obj_material == IRON) ||
-			(youagr && slot == W_ARMG && uleft && uleft->obj_material == IRON)
+			(otmp && is_iron_obj(otmp)) ||
+			(youagr && slot == W_ARMG && uright && is_iron_obj(uright)) ||
+			(youagr && slot == W_ARMG && uleft && is_iron_obj(uleft))
 			))
 			return 1;
 
@@ -1614,6 +1680,7 @@ struct obj * weapon;
 
 		if (hates_unholy_mon(mdef) && (
 			(magr && is_unholy_mon(magr)) ||
+			(otmp && otmp->obj_material == GREEN_STEEL) ||
 			(otmp && is_unholy(otmp)) ||
 			(youagr && slot == W_ARMG && uright && is_unholy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_unholy(uleft))

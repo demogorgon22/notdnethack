@@ -297,7 +297,7 @@ struct Role roles[] = {
 	{"Maniac",     0},
 	{"Augur",    0},
 	{"Seer",  0} },
-	"Lobon", "Tamash", "Zo-Kalar",	/* Dreamlands */
+	"Zo-Kalar", "Tamash", "Lobon",	/* Dreamlands */
 	"Mad", "Archer Asylum", "the ground floor",
 	PM_MADMAN, PM_MADWOMAN, NON_PM,
 	PM_CASSILDA_THE_IRON_MAIDEN, PM_PATIENT, PM_DOCTOR_ARCHER,
@@ -1218,6 +1218,11 @@ god_minions(gptr)
 			if(galign == A_LAWFUL) return LShanLaiChing;
 			if(galign == A_NEUTRAL) return NSungTzu;
 			return CHuanTi;
+		break;
+		case PM_MADMAN:
+			if(galign == A_LAWFUL) return Langels;
+			if(galign == A_NEUTRAL) return NElemen;
+			return Cangels;
 		break;
 		case PM_NOBLEMAN:
 			if(galign == A_LAWFUL) return Langels;
@@ -3060,6 +3065,8 @@ give_quest_trophy()
 		achieve.trophies |= DRO_NOB_QUEST;
 	else if(urole.neminum == PM_A_SALOM)
 		achieve.trophies |= HDR_NOB_QUEST;
+	else if(urole.neminum == PM_BASTARD_OF_THE_BOREAL_VALLEY)
+		achieve.trophies |= FEM_DRA_NOB_QUEST;
 	else if(urole.neminum == PM_BLACKBEARD_S_GHOST)
 		achieve.trophies |= PIR_QUEST;
 	else if(urole.neminum == PM_AGLAOPE)
@@ -3151,6 +3158,22 @@ give_tannin_vault_trophy()
 
 #ifdef RECORD_ACHIEVE
 void
+give_devil_vault_trophy()
+{
+	achieve.trophies |= DEVIL_VAULT;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_demon_vault_trophy()
+{
+	achieve.trophies |= DEMON_VAULT;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
 give_hell_vault_trophy(hv_id)
 int hv_id;
 {
@@ -3176,6 +3199,10 @@ int hv_id;
 		case VN_HARROWER:
 		case VN_MAD_ANGEL:
 			give_angel_vault_trophy();
+		case VN_N_PIT_FIEND:
+			give_devil_vault_trophy();
+		case VN_SHAYATEEN:
+			give_demon_vault_trophy();
 		break;
 	}
 }

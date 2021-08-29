@@ -145,6 +145,10 @@ int otyp;
 				if (check_oprop(obj, OPROP_DISN))
 					got_prop = TRUE;
 				break;
+			case LIFESAVED:
+				if (check_oprop(obj, OPROP_LIFE))
+					got_prop = TRUE;
+				break;
 			}
 		}
 		// from object type that doesn't fit into objclass
@@ -838,7 +842,10 @@ struct monst *mon;
 		}
 	}
 	if(armac > 11) armac = rnd(armac-10) + 10; /* high armor ac values act like player ac values */
-
+	
+	if (wizard && ublindf && (ublindf->otyp == LENSES || ublindf->otyp == ANDROID_VISOR))
+		pline("base: %d, armac: %d", base, armac);
+	
 	base -= armac;
 	/* since arm_ac_bonus is positive, subtracting it increases AC */
 	return base;
@@ -1115,10 +1122,10 @@ int depth;
 			else if(hates_unholy(youracedata))
 				agrmoral = 1;
 		} else {
-		if(hates_holy_mon(magr))
-			agrmoral = -1;
+			if(hates_holy_mon(magr))
+				agrmoral = -1;
 			else if(hates_unholy_mon(magr))
-			agrmoral = 1;
+				agrmoral = 1;
 		}
 	}
 	
@@ -1141,7 +1148,7 @@ int depth;
 	struct obj * curarm;
 	for (i = 0; i < SIZE(marmor); i++) {
 		curarm = which_armor(mon, marmor[i]);
-		if (curarm && ((objects[curarm->otyp].oc_dir & slot) || (!objects[curarm->otyp].oc_dir && (slot&adfalt[i])))) {
+		if (curarm && ((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i])))) {
 			if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
 				continue;
 			arm_mdr += arm_dr_bonus(curarm);
@@ -1317,6 +1324,7 @@ boolean creation;
 	m_dowear_type(mon, W_ARMG, creation, FALSE);
 	m_dowear_type(mon, W_ARMF, creation, FALSE);
 	m_dowear_type(mon, W_ARM, creation, FALSE);
+	m_dowear_type(mon, W_TOOL, creation, FALSE);
 }
 
 STATIC_OVL void
@@ -1375,7 +1383,7 @@ boolean racialexception;
 				break;
 		    if (!is_helmet(obj) || ((!helm_match(mon->data,obj) || !has_head_mon(mon) || obj->objsize != mon->data->msize) && !is_flimsy(obj))) continue;
 		    /* (flimsy exception matches polyself handling) */
-		    if (has_horns(mon->data) && !is_flimsy(obj)) continue;
+		    if (has_horns(mon->data) && obj->otyp != find_gcirclet() && !is_flimsy(obj)) continue;
 		    break;
 		case W_ARMS:
 		    if (cantwield(mon->data) || !is_shield(obj)) continue;
@@ -1395,6 +1403,10 @@ boolean racialexception;
 				break;
 		    if (!is_suit(obj) || !arm_match(mon->data, obj) || !arm_size_fits(mon->data, obj))
 				continue;
+		    break;
+		case W_TOOL:
+		    if(!is_worn_tool(obj)) continue;
+		    if(!can_wear_blindf(mon->data) || (is_opaque_worn_tool(obj) && !(obj->otyp == R_LYEHIAN_FACEPLATE && is_mind_flayer(mon->data))) ) continue;
 		    break;
 	    }
 	    if (obj->owornmask) continue;
@@ -1463,10 +1475,11 @@ struct monst *mon;
 	int m_delay = 0;
 	int unseen = !canseemon(mon);
 	int tarx, tary;
+	int tries = 10;
 	
 	if (mon->mfrozen) return FALSE;
 	
-	switch(rnd(7)){
+	do switch(rnd(7)){
 		case 1:
 			flag = W_ARM;
 		break;
@@ -1488,10 +1501,8 @@ struct monst *mon;
 		case 7:
 			flag = W_AMUL;
 		break;
-	}
-	
-	old = which_armor(mon, flag);
-	
+	} while(tries-- && !(old = which_armor(mon, flag)));
+
 	if(!old) return FALSE;
 	
 	if ((flag == W_ARM
@@ -1687,7 +1698,7 @@ boolean polyspot;
 	}
 	if ((otmp = which_armor(mon, W_ARMH)) != 0 &&
 		/* flimsy test for horns matches polyself handling */
-		(!is_flimsy(otmp) || is_whirly(mon->data) || noncorporeal(mon->data))
+		(!(is_flimsy(otmp) || otmp->otyp == find_gcirclet()) || is_whirly(mon->data) || noncorporeal(mon->data))
 	) {
 		if(!has_head_mon(mon) || mon->data->msize != otmp->objsize || !helm_match(mon->data,otmp) || has_horns(mon->data)
 			 || is_whirly(mon->data) || noncorporeal(mon->data)
@@ -1766,6 +1777,16 @@ struct obj *obj;
 	case ALCHEMY_SMOCK:
 		if (!species_resists_acid(mon) || !species_resists_poison(mon))
 			return 5;
+		break;
+	case LIVING_MASK:
+		return 3;
+		break;
+	case SUNGLASSES:
+		return 2;
+		break;
+	case ANDROID_VISOR:
+		if(is_android(mon)) return 4;
+		return 1;
 		break;
 	case MUMMY_WRAPPING:
 	case PRAYER_WARDED_WRAPPING:
@@ -2186,6 +2207,7 @@ def_beastmastery()
 		case P_BASIC:        bm =  2; break;
 		case P_SKILLED:      bm =  5; break;
 		case P_EXPERT:       bm = 10; break;
+		default: impossible(">Expert beast mastery unhandled"); bm = 10; break;
 	}
 	if((uwep && uwep->oartifact == ART_CLARENT) || (uswapwep && uswapwep->oartifact == ART_CLARENT))
 		bm *= 2;
@@ -2202,6 +2224,7 @@ def_mountedCombat()
 		case P_BASIC:        bm =  2; break;
 		case P_SKILLED:      bm =  5; break;
 		case P_EXPERT:       bm = 10; break;
+		default: impossible(">Expert riding unhandled"); bm = 10; break;
 	}
 	return bm;
 }

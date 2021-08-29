@@ -519,7 +519,7 @@ register struct monst *mtmp;
 
 	info[0] = 0;
 	//This comes up often enough for debug that it's worth it.
-	if (mtmp->female) Strcat(info, ", female");
+	if (mtmp->female && !is_neuter(mtmp->data)) Strcat(info, ", female");
 	if (mtmp->mtame) {	  Strcat(info, ", tame");
 #ifdef WIZARD
 	    if (wizard) {
@@ -535,7 +535,7 @@ register struct monst *mtmp;
 		if(mtmp->mtyp == PM_UVUUDAUM) Strcat(info, ", in contemplative meditation");
 		else Strcat(info, ", peaceful");
 	}
-	else if (mtmp->mtyp==PM_DREAD_SERAPH && mtmp->mvar2)  Strcat(info, ", in prayer");
+	else if (mtmp->mtyp==PM_DREAD_SERAPH && mtmp->mvar_dreadPrayer_progress)  Strcat(info, ", in prayer");
 	else if (mtmp->mtraitor)  Strcat(info, ", traitor");
 	else if (mtmp->mferal)  Strcat(info, ", feral");
 	if (mtmp->meating)	  Strcat(info, ", eating");
@@ -616,6 +616,7 @@ ustatusline()
 	if (Stoned)		Strcat(info, ", solidifying");
 	if (Golded)		Strcat(info, ", aurelifying");
 	if (Slimed)		Strcat(info, ", becoming slimy");
+	if (BloodDrown)		Strcat(info, ", drowning");
 	if (FrozenAir)		Strcat(info, ", can't breath");
 	if (Strangled)		Strcat(info, ", being strangled");
 	if (Vomiting)		Strcat(info, ", nauseated"); /* !"nauseous" */

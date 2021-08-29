@@ -40,10 +40,10 @@ STATIC_DCL boolean FDECL(spiritLets, (char *, int));
 STATIC_DCL int FDECL(dospiritmenu, (int, int *, int));
 STATIC_DCL boolean FDECL(dospellmenu, (int,int *));
 STATIC_DCL void FDECL(describe_spell, (int));
-STATIC_DCL int NDECL(base_casting_stat);
 STATIC_DCL int FDECL(percent_success, (int));
 STATIC_DCL int NDECL(throwspell);
 STATIC_DCL void NDECL(cast_protection);
+STATIC_DCL void NDECL(cast_abjuration);
 STATIC_DCL boolean FDECL(sightwedge, (int,int, int,int, int,int));
 STATIC_DCL void FDECL(spell_backfire, (int));
 STATIC_DCL int FDECL(spellhunger, (int));
@@ -398,7 +398,7 @@ raise_dead:
 	/* last place some monsters around you */
 	mm.x = u.ux;
 	mm.y = u.uy;
-	mkundead(&mm, TRUE, NO_MINVENT);
+	mkundead(&mm, TRUE, NO_MINVENT, 0);
     } else if(book2->blessed) {
 	for(mtmp = fmon; mtmp; mtmp = mtmp2) {
 	    mtmp2 = mtmp->nmon;		/* tamedog() changes chain */
@@ -830,6 +830,20 @@ struct obj *spellbook;
 	return(1);
 }
 
+/* from an SPE_ID get the index of spl_book that casts that spell */
+int
+spellid_to_spellno(spell)
+int spell;
+{
+	int i;
+	for (i = 0; i < MAXSPELL; i++) {
+		if (spellid(i) == spell)
+			return i;
+	}
+	impossible("%s not in spl_book", OBJ_NAME(objects[spell]));
+	return 0;
+}
+
 boolean
 spell_maintained(spell)
 int spell;
@@ -944,7 +958,6 @@ int spell;
 	case SPE_INVISIBILITY:
 	case SPE_DETECT_UNSEEN:
 	case SPE_PROTECTION:
-	case SPE_ANTIMAGIC_SHIELD:
 		return TRUE;
 	}
 	return FALSE;
@@ -1004,12 +1017,6 @@ int spell;
 			cast = TRUE;
 		}
         break;
-	case SPE_ANTIMAGIC_SHIELD:
-		if ((HNullmagic&TIMEOUT) < 10) {
-			incr_itimeout(&HNullmagic, 100);
-			cast = TRUE;
-		}
-		break;
     default:
         impossible("player maintaining an unmaintainable spell? (%d)", spell);
         spell_unmaintain(spell);
@@ -1713,6 +1720,34 @@ cast_protection()
 	}
 }
 
+/* Attempts to abjure all adjacent summoned creatures 
+ * Monsters may roll to resist.
+ * If they fail, they are immediately dispelled.
+ * If they suceeed, non-permanent summons' durations are halved.
+ */
+STATIC_OVL void
+cast_abjuration()
+{
+	struct monst * mtmp;
+	int i, x, y;
+	boolean resisted;
+	int dur;
+
+	for (i=0; i<8; i++) {
+		x = u.ux + xdir[i];
+		y = u.uy + ydir[i];
+		if ((mtmp = m_at(x, y)) && get_mx(mtmp, MX_ESUM)) {
+			resisted = resist(mtmp, SPBOOK_CLASS, 0, TRUE);
+			dur = timer_duration_remaining(get_timer(mtmp->timed, DESUMMON_MON));
+			if (!resisted)
+				mtmp->mextra_p->esum_p->permanent = 0;
+			else
+				dur /= 2;
+			abjure_summon(mtmp, dur);
+		}
+	}
+}
+
 /* attempting to cast a forgotten spell will cause disorientation */
 STATIC_OVL void
 spell_backfire(spell)
@@ -2234,7 +2269,7 @@ spiriteffects(power, atme)
 		break;
 		case PWR_ICY_GLARE:{
 			int range = (u.ulevel/2+1),dmg;
-			struct monst *mprime, *mon, *nxtmon;
+			struct monst *mprime = (struct monst *)0, *mon, *nxtmon;
 			xchar sx, sy;
 			boolean gx=FALSE, gy=FALSE;
 			sx = u.ux;
@@ -2330,7 +2365,8 @@ spiriteffects(power, atme)
 					return 0;
 				}
 				struct attack basictouch = { AT_TUCH, AD_PHYS, 0, 0 };
-				if (tohitval(&youmonst, mon, &basictouch, (struct obj *)0, (void *)0, HMON_WHACK, 0) <= rnd(20)){
+				int dieroll = rnd(20);
+				if (tohitval(&youmonst, mon, &basictouch, (struct obj *)0, (void *)0, HMON_WHACK, 0, (int *) 0) <= dieroll && dieroll != 1){
 					You("miss.");
 					break;
 				}
@@ -2516,7 +2552,7 @@ spiriteffects(power, atme)
 						mon->permspeed = 0;
 						if(mon->mspeed == MSLOW) mon->mspeed = 0;
 					}
-					mon->mcan = 0;
+					set_mcan(mon, FALSE);
 					mon->mcrazed = 0; 
 					mon->mdisrobe = 0; 
 					mon->mcansee = 1;
@@ -2678,7 +2714,8 @@ spiriteffects(power, atme)
 					struct obj* boots;
 					boots = which_armor(mon, W_ARMF);
 					struct attack basichit = { AT_CLAW, AD_PHYS, 0, 0 };
-					if (tohitval(&youmonst, mon, &basichit, (struct obj *)0, (void *)0, HMON_WHACK, 0) <= rnd(20)){
+					int dieroll = rnd(20);
+					if (tohitval(&youmonst, mon, &basichit, (struct obj *)0, (void *)0, HMON_WHACK, 0, (int *) 0) <= dieroll && dieroll != 1){
 						if(boots && boots->otyp == WATER_WALKING_BOOTS){
 							pline("A sudden geyser from the abzu washes under %s's feet!", mon_nam(mon));
 							if(canseemon(mon)) makeknown(boots->otyp);
@@ -2708,7 +2745,7 @@ spiriteffects(power, atme)
 							water_damage(mon->minvent, FALSE, FALSE, FALSE, mon);
 						}
 					}
-					if(flaming(mon->data) || mon->mtyp == PM_EARTH_ELEMENTAL || mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_CHAIN_GOLEM) dmg *= 2;
+					if(flaming(mon->data) || mon->mtyp == PM_EARTH_ELEMENTAL || is_iron(mon)) dmg *= 2;
 					if(mon->mtyp == PM_GREMLIN && rn2(3)){
 						(void)split_mon(mon, (struct monst *)0);
 					}
@@ -3426,7 +3463,8 @@ spiriteffects(power, atme)
 					((uarmg && arti_shining(uarmg)) || u.sealsActive&SEAL_CHUPOCLOPS) ? AT_TUCH : AT_CLAW,
 					AD_PHYS, 0, 0 };
 				
-				if (tohitval(&youmonst, mon, &basicattack, (struct obj *)0, (void *)0, HMON_WHACK, 0) <= rnd(20)){
+				int dieroll = rnd(20);
+				if (tohitval(&youmonst, mon, &basicattack, (struct obj *)0, (void *)0, HMON_WHACK, 0, (int *) 0) <= dieroll && dieroll != 1){
 					You("miss.");
 					break;
 				} else if(unsolid(mon->data)){
@@ -3582,7 +3620,8 @@ spiriteffects(power, atme)
 				return 0;
 			}
 			struct attack basictouch = { AT_TUCH, AD_PHYS, 0, 0 };
-			if (tohitval(&youmonst, mon, &basictouch, (struct obj *)0, (void *)0, HMON_WHACK, 0) <= rnd(20)){
+			int dieroll = rnd(20);
+			if (tohitval(&youmonst, mon, &basictouch, (struct obj *)0, (void *)0, HMON_WHACK, 0, (int *) 0) <= dieroll && dieroll != 1){
 				You("miss.");
 				break;
 			}
@@ -4634,7 +4673,6 @@ dothrowspell:
 	case SPE_MAGIC_MAPPING:
 	case SPE_CREATE_MONSTER:
 	case SPE_IDENTIFY:
-	case SPE_ANTIMAGIC_SHIELD:
 		(void) seffects(pseudo);
 		break;
 
@@ -4663,7 +4701,10 @@ dothrowspell:
 		healup(0, 0, TRUE, FALSE);
 		break;
 	case SPE_CREATE_FAMILIAR:
-		(void) make_familiar((struct obj *)0, u.ux, u.uy, FALSE);
+		if(DimensionalLock)
+			pline("Nothing happens.");
+		else
+			(void) make_familiar((struct obj *)0, u.ux, u.uy, FALSE);
 		break;
 	case SPE_CLAIRVOYANCE:
 		if (!BClairvoyant) {
@@ -4686,6 +4727,9 @@ dothrowspell:
 	case SPE_JUMPING:
 		if (!jump(max(role_skill,1)))
 			pline1(nothing_happens);
+		break;
+	case SPE_ABJURATION:
+		cast_abjuration();
 		break;
 	default:
 		impossible("Unknown spell %d attempted.", spell);
@@ -4985,7 +5029,7 @@ int respect_timeout;
 
 STATIC_OVL boolean
 dospellmenu(splaction, spell_no)
-int splaction;	/* SPELLMENU_CAST, SPELLMENU_VIEW, SPELLMENU_DESCRIBE, SPELLMENU_MAINTAIN, SPELLMENU_PICK, or spl_book[] index */
+int splaction;	/* SPELLMENU_CAST, SPELLMENU_VIEW, SPELLMENU_DESCRIBE, SPELLMENU_MAINTAIN, SPELLMENU_PICK, SPELLMENU_QUIVER, or spl_book[] index */
 int *spell_no;
 {
 	winid tmpwin;
@@ -5044,7 +5088,9 @@ int *spell_no;
 				if (splaction == SPELLMENU_MAINTAIN)
 					continue;
 			}
-			Sprintf(buf2, "%s%s", spellname(i), spell_maintained(spellid(i)) ? " [M]" : "");
+			Strcpy(buf2, spellname(i));
+			if (spell_maintained(spellid(i))) Strcat(buf2, " [M]");
+			if (spellid(i) == u.quivered_spell) Strcat(buf2, " [Q]");
 			Sprintf(buf, iflags.menu_tab_sep ?
 				"%s\t%-d%s\t%s\t%-d%%\t%-d%%\t" : "%-20s  %2d%s   %-12s %3d%%     %3d%%",
 				buf2, spellev(i),
@@ -5084,11 +5130,27 @@ int *spell_no;
 				MENU_UNSELECTED);
 		}
 		if (splaction != SPELLMENU_VIEW && splaction != SPELLMENU_PICK && splaction < 0 && spellid(1) != NO_SPELL){
-			// Describe a spell
+			// Rearrange your spellbook
 			Sprintf(buf, "Rearrange spells instead");
 			any.a_int = SPELLMENU_VIEW;
 			add_menu(tmpwin, NO_GLYPH, &any,
 				'+', 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		if (splaction != SPELLMENU_QUIVER && splaction != SPELLMENU_PICK && splaction < 0){
+			// Quiver a spell
+			Sprintf(buf, "Quiver a spell instead");
+			any.a_int = SPELLMENU_QUIVER;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				'@', 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		if (splaction == SPELLMENU_QUIVER && u.quivered_spell != NO_SPELL) {
+			// Unquiver your currently-quivered spell
+			Sprintf(buf, "Unquiver %s", OBJ_NAME(objects[u.quivered_spell]));
+			any.a_int = SPELLMENU_QUIVER;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				'@', 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
 		}
 		switch (splaction)
@@ -5108,6 +5170,9 @@ int *spell_no;
 		case SPELLMENU_DESCRIBE:
 			Sprintf(buf, "Choose which spell to describe");
 			break;
+		case SPELLMENU_QUIVER:
+			Sprintf(buf, "Choose which spell to quiver");
+			break;
 		default:
 			Sprintf(buf, "Reordering spells; swap '%c' with", spellet(splaction));
 			break;
@@ -5121,8 +5186,11 @@ int *spell_no;
 		if (n > 0){
 			int s_no = selected[0].item.a_int - 1;
 
-			if (selected[0].item.a_int < 0){
-				return dospellmenu(selected[0].item.a_int, spell_no);
+			if (selected[0].item.a_int < 0
+				&& !(selected[0].item.a_int == splaction && splaction == SPELLMENU_QUIVER)	// special case to unquiver current spell
+			){
+				splaction = selected[0].item.a_int;
+				continue;
 			}
 			else if (!(splaction == SPELLMENU_VIEW && spellid(1) == NO_SPELL)) {
 				/* we aren't attempting to rearrange spells with only 1 spell known */
@@ -5154,7 +5222,12 @@ int *spell_no;
 				case SPELLMENU_DESCRIBE:
 					describe_spell(s_no);
 					continue;
-
+				case SPELLMENU_QUIVER:
+					if (s_no >= 0)
+						u.quivered_spell = spellid(s_no);
+					else
+						u.quivered_spell = NO_SPELL;
+					return FALSE;
 				default:
 					{
 					struct spell spl_tmp;
@@ -5470,11 +5543,11 @@ int spellID;
 			strcat(desc3, "");
 			strcat(desc4, "");
 			break;
-		case SPE_ANTIMAGIC_SHIELD:
-			strcat(desc1, "Temporarily protects you from magic.");
-			strcat(desc2, "While active, you cannot cast any spell but this.");
-			strcat(desc3, "Recasting increases the duration of the effect.");
-			strcat(desc4, "Can be maintained.");
+		case SPE_ABJURATION:
+			strcat(desc1, "Attempts to dispel adjacent summoned creatures.");
+			strcat(desc2, "Monsters may resist.");
+			strcat(desc3, "");
+			strcat(desc4, "");
 			break;
 		case SPE_PROTECTION:
 			strcat(desc1, "Temporarily improves your AC. AC from this spell is better than normal.");
@@ -5556,7 +5629,7 @@ int val;
     return rt;
 }
 
-STATIC_OVL int
+int
 base_casting_stat()
 {
 	int stat;
@@ -5598,7 +5671,10 @@ int spell;
 	int difficulty;
 	int skill;
 	
-	if(Nullmagic && spellid(spell)!=SPE_ANTIMAGIC_SHIELD) return 0;
+	if(Deadmagic && base_casting_stat() == A_INT) return 0;
+	if(Catapsi && base_casting_stat() == A_CHA) return 0;
+	if(Misotheism && base_casting_stat() == A_WIS) return 0;
+	if(Nullmagic) return 0;
 	
 	/* Calculate intrinsic ability (splcaster) */
 
@@ -5891,7 +5967,15 @@ int spell;
 		chance = 100;
 	
 	//
-	if(Babble || Screaming || Strangled || FrozenAir || Drowning){
+	if(Babble || Screaming || Strangled || FrozenAir || BloodDrown || Drowning){
+		chance = 0;
+	}
+	// these effects totally block the spell-choosing menu, but need to be handled here too for quivered spells
+	else if ((mad_turn(MAD_TOO_BIG)) ||
+		(Doubt && base_casting_stat() == A_WIS) ||
+//		(mad_turn(MAD_SCIAPHILIA) && ()(dimness(u.ux, u.uy) != 3 && dimness(u.ux, u.uy) > 0) || (!levl[u.ux][u.uy].lit && dimness(u.ux, u.uy) == 0)) ||
+		(base_casting_stat() == A_WIS && flat_mad_turn(MAD_APOSTASY))
+		){
 		chance = 0;
 	}
 	else if(u.uz.dnum == neutral_dnum && u.uz.dlevel <= sum_of_all_level.dlevel){

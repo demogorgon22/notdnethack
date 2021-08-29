@@ -168,11 +168,13 @@ static const struct icp droven_materials[] = {
 
 /* for objects of orcish make */
 static const struct icp orcish_materials[] = {
-	{550, 0 }, /* use base material */
+	{549, 0 }, /* use base material */
 	{250, IRON },
-	{180, BONE },
+	{160, BONE },
+	{ 20, LEAD },
 	{ 15, GOLD },
-	{  5, OBSIDIAN_MT }
+	{  5, OBSIDIAN_MT },
+	{  1, GREEN_STEEL }
 };
 
 /* Reflectable items - for the shield of reflection; anything that can hold a
@@ -514,10 +516,13 @@ register struct obj *otmp;
 	    subfrombill(otmp, shop_keeper(*u.ushops));
 	dummy = newobj(0);
 	*dummy = *otmp;
+	dummy->oextra_p = NULL;
+	dummy->light = NULL;
+	dummy->timed = NULL;
+	dummy->mp = NULL;
 	dummy->where = OBJ_FREE;
 	dummy->o_id = flags.ident++;
 	if (!dummy->o_id) dummy->o_id = flags.ident++;	/* ident overflowed */
-	dummy->timed = 0;
 	register int ox_id;
 	for (ox_id=0; ox_id<NUM_OX; ox_id++)
 		cpy_ox(otmp, dummy, ox_id);
@@ -806,6 +811,7 @@ int mkflags;
 			case DOUBLE_LIGHTSABER:
 			case LIGHTSABER:
 			case BEAMSWORD:
+			case ROD_OF_FORCE:
 				otmp->altmode = FALSE;
 				otmp->lamplit = 0;
 				otmp->age = (long)rn1(50000, 100000);
@@ -852,6 +858,13 @@ int mkflags;
 			case TREPHINATION_KIT:
 			case CRYSTAL_BALL:	otmp->spe = rnd(5);
 				blessorcurse(otmp, 2);
+				break;
+			case PRESERVATIVE_ENGINE:
+				otmp->spe = rn1(4,4);
+				otmp->altmode = ENG_MODE_PYS;
+				break;
+			case ARMOR_SALVE:
+				otmp->spe = rn1(3,3);
 				break;
 			case POWER_PACK:
 				otmp->quan = rnd(5) + 5;
@@ -998,6 +1011,18 @@ int mkflags;
 			else	blessorcurse(otmp, 10);
 		case VENOM_CLASS:
 		case CHAIN_CLASS:
+			switch(otmp->otyp){
+				case BROKEN_ANDROID:
+					otmp->corpsenm = PM_ANDROID;
+				break;
+				case BROKEN_GYNOID:
+					otmp->corpsenm = rn2(20) ? PM_GYNOID : PM_OPERATOR;
+				break;
+				case LIFELESS_DOLL:
+					otmp->corpsenm = PM_LIVING_DOLL;
+				break;
+			}
+			break;
 		case BALL_CLASS:
 			break;
 		case POTION_CLASS:

@@ -323,6 +323,9 @@ struct you {
 	int uhouse; /* drow house info */
 	int start_house; /* starting drow house info */
 	struct prop uprops[LAST_PROP+1];
+	int rift_count;
+	int vortex_count;
+	int miso_count;
 	
 	unsigned umconf;
 	char usick_cause[PL_PSIZ+20]; /* sizeof "unicorn horn named "+1 */
@@ -500,6 +503,7 @@ struct you {
 	uchar	sowdisc;		/* sowing discord (spirit special attack) */
 	unsigned long long int spells_maintained;
 	int maintained_en_debt;
+	int quivered_spell;
 	int	uhp, uhpmax, uhprolled, uhpmultiplier, uhpbonus, uhpmod;
 	int	uen, uenmax, uenrolled, uenmultiplier, uenbonus;			/* magical energy - M. Stephenson */
 	/*"Real" numbers for a WtWalk's non-mask-based HP*/

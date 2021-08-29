@@ -1063,18 +1063,18 @@ asGuardian:
 	case MS_DREAD:{
 		struct monst *tmpm;
 		int ix, iy;
-		if(mtmp->mvar_dreadPrayer >= moves && !mtmp->mdoubt && (
+		if(mtmp->mvar_dreadPrayer_cooldown >= moves && !mtmp->mdoubt && (
 			mtmp->mhp < mtmp->mhpmax/4 || mtmp->mcrazed
 		)){
-			mtmp->mvar_dreadPrayer = moves + rnz(350);
-			mtmp->mvar2 = moves + 5;
+			mtmp->mvar_dreadPrayer_cooldown = moves + rnz(350);
+			mtmp->mvar_dreadPrayer_progress = moves + 5;
 		}
-		if(mtmp->mvar2){
-			if(mtmp->mvar2 < moves){
-				mtmp->mvar2 = 0;
+		if(mtmp->mvar_dreadPrayer_progress){
+			if(mtmp->mvar_dreadPrayer_progress < moves){
+				mtmp->mvar_dreadPrayer_progress = 0;
 				mtmp->mhp = mtmp->mhpmax;
 				mtmp->mspec_used = 0;
-				mtmp->mcan = 0;
+				set_mcan(mtmp, FALSE);
 				mtmp->mflee = 0; mtmp->mfleetim = 0;
 				mtmp->mcrazed = 0; mtmp->mberserk = 0; mtmp->mdisrobe = 0;
 				mtmp->mcansee = 1; mtmp->mblinded = 0;
@@ -1456,7 +1456,7 @@ asGuardian:
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
 							if(!mindless_mon(tmpm)){
 								if ( mtmp->mpeaceful == tmpm->mpeaceful && distmin(mtmp->mx,mtmp->my,tmpm->mx,tmpm->my) < 5) {
-									tmpm->mcan = 0;
+									set_mcan(tmpm, FALSE);
 									tmpm->mspec_used = 0;
 									if(!tmpm->mnotlaugh && tmpm->mlaughing){
 										tmpm->mnotlaugh = 1;
@@ -1786,10 +1786,11 @@ asGuardian:
 	    pline_msg = "howls.";
 		(void) makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
 		for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
-			if(tmpm->mtame > 10){
-				tmpm->mtame -= 10;
-				tmpm->mflee = 1;
-			} else untame(mtmp, 1);
+			if(tmpm->mtame && rn2(tmpm->mtame + 1)){
+				tmpm->mtame--;
+				if (!tmpm->mtame)
+					untame(tmpm, 1);
+			}
 		}
 	    aggravate();
 	}break;
@@ -1799,11 +1800,11 @@ asGuardian:
 			pline("%s screams in madness and fear!", Monnam(mtmp));
 		for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 			if(tmpm != mtmp && !DEADMONSTER(tmpm) && tmpm->mpeaceful != mtmp->mpeaceful && distmin(tmpm->mx, tmpm->my, mtmp->mx, mtmp->my) <= BOLT_LIM){
-				if(!resist(tmpm, 0, 0, FALSE)){
+				if(!resist(tmpm, TOOL_CLASS, 0, FALSE)){
 					tmpm->mflee = 1;
 					if(canseemon(tmpm))
 						pline("%s staggers!", Monnam(tmpm));
-					if(tmpm->mhp < mtmp->mhpmax && !resist(tmpm, 0, 0, FALSE)){
+					if(tmpm->mhp < mtmp->mhpmax && !resist(tmpm, TOOL_CLASS, 0, FALSE)){
 						tmpm->mcrazed = 1;
 					}
 				}
@@ -2629,6 +2630,7 @@ int dz;
     }
 
     tx = u.ux+u.dx; ty = u.uy+u.dy;
+	if (!isok(tx, ty)) return 0;
     mtmp = m_at(tx, ty);
 	
 	if(In_quest(&u.uz) && urole.neminum == PM_DURIN_S_BANE && artifact_door(tx, ty)){
@@ -2886,14 +2888,27 @@ int dz;
 	Your("speech is unintelligible underwater.");
 	return(0);
     }
-    /* sleeping monsters won't talk, except priests (who wake up) */
-    if ((!mtmp->mcanmove || mtmp->msleeping) && !mtmp->ispriest) {
+
+    /* paralized monsters won't talk, except priests (who wake up) */
+    if (!mtmp->mcanmove && !mtmp->ispriest) {
 		/* If it is unseen, the player can't tell the difference between
 		   not noticing him and just not existing, so skip the message. */
 		if (canspotmon(mtmp))
 			pline("%s seems not to notice you.", Monnam(mtmp));
 		return(0);
     }
+    /* sleeping monsters won't talk unless they wake up, except priests (who wake up) */
+	if (mtmp->msleeping){
+		if(mtmp->ispriest || !rn2(2)) {
+			pline("%s wakes from %s slumber.", Monnam(mtmp), mhis(mtmp));
+			mtmp->msleeping = 0;
+		}
+		else {
+			pline("%s stirs in %s slumber, but doesn't wake up.", Monnam(mtmp), mhis(mtmp));
+			return 1;
+		}
+	}
+
 
     /* if this monster is waiting for something, prod it into action */
     mtmp->mstrategy &= ~STRAT_WAITMASK;
@@ -3150,7 +3165,7 @@ int tx,ty;
 //					struct monst *priest = findpriest(roomno);
 					//invoking Amon inside a temple angers the resident deity
 					altar_wrath(tx, ty);
-					angrygods(Align2gangr(a_align(tx,ty)));
+					angrygods(AltarAlign2gangr(a_align(tx,ty)));
 				}
 				if(!Role_if(PM_ANACHRONOUNBINDER)) u.sealTimeout[AMON-FIRST_SEAL] = moves + bindingPeriod; // invoking amon on a level with an altar still triggers the binding period.
 			}
@@ -4483,7 +4498,7 @@ int tx,ty;
 	case MOTHER:{
 		if(u.sealTimeout[MOTHER-FIRST_SEAL] < moves){
 			//Spirit requires that her seal addressed while blind.
-			if(Blind){
+			if(Blind || LightBlind){
 				Your("Hands itch painfully.");
 				if(u.sealCounts < numSlots){
 					if(Role_if(PM_ANACHRONOUNBINDER)){
@@ -5093,7 +5108,7 @@ int tx,ty;
 	case NUDZIRATH:{
 		struct obj *otmp;
 		if(u.sealTimeout[NUDZIRATH-FIRST_SEAL] < moves){
-			if(Role_if(PM_EXILE)){
+			if(Role_if(PM_EXILE) || (u.specialSealsKnown&SEAL_NUDZIRATH)){
 				for(otmp = level.objects[tx][ty]; otmp; otmp = otmp->nexthere) {
 					if(!otmp->oartifact){
 						if(otmp->otyp == MIRROR){
@@ -5401,6 +5416,7 @@ int floorID;
 		skillchain[i++] = P_SABER;
 		skillchain[i++] = P_LANCE;
 		skillchain[i++] = P_RIDING;
+		skillchain[i++] = P_SHIELD;
 		break;
 	case BUER:
 		skillchain[i++] = P_HEALING_SPELL;

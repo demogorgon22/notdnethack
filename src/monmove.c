@@ -170,6 +170,7 @@ struct monst *mtmp;
 			 || (wardAt == HEXAGRAM && scaryHex(num_wards_at(x,y), mtmp))
 			 || (wardAt == HAMSA && scaryHam(num_wards_at(x,y), mtmp))
 			 || (wardAt == ELDER_SIGN && scarySign(num_wards_at(x,y), mtmp))
+			 || (sobj_at(DIMENSIONAL_LOCK, x, y) && scarySign(1, mtmp))
 			 || (wardAt == ELDER_ELEMENTAL_EYE && scaryEye(num_wards_at(x,y), mtmp))
 			 || (wardAt == SIGN_OF_THE_SCION_QUEEN && scaryQueen(num_wards_at(x,y), mtmp))
 			 || (wardAt == CARTOUCHE_OF_THE_CAT_LORD && scaryCat(num_wards_at(x,y), mtmp))
@@ -645,8 +646,10 @@ boolean digest_meal;
 		mon->mhp -= rnd(6);
 		if(hates_silver(mon->data) && entangle_material(mon, SILVER))
 			mon->mhp -= rnd(20);
-		if(hates_iron(mon->data) && entangle_material(mon, IRON))
+		if(hates_iron(mon->data) && (entangle_material(mon, IRON) || entangle_material(mon, GREEN_STEEL)))
 			mon->mhp -= rnd(mon->m_lev);
+		if(hates_unholy_mon(mon) && entangle_material(mon, GREEN_STEEL))
+			mon->mhp -= d(2,9);
 		beat = entangle_beatitude(mon, -1);
 		if(hates_unholy_mon(mon) && beat)
 			mon->mhp -= beat == 2 ? d(2,9) : rnd(9);
@@ -687,6 +690,19 @@ boolean digest_meal;
 		if (mon->mspec_used) mon->mspec_used--;
 		if (digest_meal) {
 			if (mon->meating) mon->meating--;
+		}
+		return;
+	}
+	if(!DEADMONSTER(mon) && mon->mbdrown > 0){
+		mon->mbdrown--;
+		water_damage(mon->minvent, FALSE, FALSE, WD_BLOOD, mon);
+		mon->mhp -= 99;
+		if(mon->mhp <= 0){
+			pline("%s drowns in blood!", Monnam(mon));
+			mondied(mon);
+		}
+		else if(!resist(mon, RING_CLASS, 0, NOTELL)){
+			mon->mberserk = 1;
 		}
 		return;
 	}
@@ -1035,6 +1051,7 @@ register struct monst *mtmp;
 	/* berserk monsters calm down with small probability */
 	if (mtmp->mberserk && !rn2(50)) mtmp->mberserk = 0;
 	if (mtmp->mdisrobe && !rn2(50)) mtmp->mdisrobe = 0;
+	if (mtmp->menvy && !rn2(999)) mtmp->menvy = 0;
 	if (mtmp->mdoubt && !rn2(300)) mtmp->mdoubt = 0;
 
 	if (mtmp->mcrazed){
@@ -1090,8 +1107,8 @@ register struct monst *mtmp;
 		&& !(noactions(mtmp))
 		&& !level.flags.noteleport
 	) {
-		(void) rloc(mtmp, FALSE);
-		return(0);
+		if (rloc(mtmp, TRUE))
+			return(0);
 	}
 	
 	if(mtmp->mtyp == PM_DRACAE_ELADRIN){
@@ -1100,15 +1117,15 @@ register struct monst *mtmp;
 			if(ptr)
 				mtmp->mvar_dracaePreg = monsndx(ptr);
 		}
-		else if(mtmp->mvar2 < 6){
-			mtmp->mvar2 += rnd(3);
+		else if(mtmp->mvar_dracaePregTimer < 6){
+			mtmp->mvar_dracaePregTimer += rnd(3);
 		} else if(!mtmp->mpeaceful){
 			int ox = mtmp->mx, oy = mtmp->my;
-			rloc(mtmp, FALSE);
+			rloc(mtmp, TRUE);
 			if(mtmp->mx != ox || mtmp->my != oy){
 				int type = mtmp->mvar_dracaePreg;
 				mtmp->mvar_dracaePreg = 0;
-				mtmp->mvar2 = 0;
+				mtmp->mvar_dracaePregTimer = 0;
 				mtmp = makemon(&mons[type], ox, oy, NO_MINVENT);
 				if(mtmp){
 					struct obj *otmp;
@@ -1145,15 +1162,15 @@ register struct monst *mtmp;
 			if(ptr)
 				mtmp->mvar_dracaePreg = monsndx(ptr);
 		}
-		else if(mtmp->mvar2 < 6){
-			mtmp->mvar2 += rnd(3);
+		else if(mtmp->mvar_dracaePregTimer < 6){
+			mtmp->mvar_dracaePregTimer += rnd(3);
 		} else if(!mtmp->mpeaceful){
 			int i;
 			int ox = mtmp->mx, oy = mtmp->my;
 			int type = mtmp->mvar_dracaePreg;
 			int etyp = counter_were(type);
 			mtmp->mvar_dracaePreg = 0;
-			mtmp->mvar2 = 0;
+			mtmp->mvar_dracaePregTimer = 0;
 			for(i = rnd(4); i; i--){
 				if(etyp)
 					mtmp = makemon(&mons[etyp], ox, oy, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT);
@@ -1520,7 +1537,7 @@ register struct monst *mtmp;
 
 			if (is_demon(youracedata)) {
 			  /* "Good hunting, brother" */
-			    if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+			    if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 			} else {
 			    mtmp->minvis = mtmp->perminvis = 0;
 			    /* Why?  For the same reason in real demon talk */
@@ -1620,7 +1637,7 @@ register struct monst *mtmp;
 						  typ == LAVAPOOL ? "lava" : "water");
 				if (!Levitation && !Flying && mtmp->mx==u.ux && mtmp->my==u.uy) {
 					if (typ == LAVAPOOL)
-					(void) lava_effects();
+					(void) lava_effects(TRUE);
 					else if (!Wwalking)
 					(void) drown();
 				}
@@ -1634,10 +1651,10 @@ register struct monst *mtmp;
 			return 1;
 		else return 0;
 	}
-	if (has_mind_blast_mon(mtmp) && !u.uinvulnerable && !rn2(mdat->mtyp == PM_ELDER_BRAIN ? 10 : 20)) {
+	if (has_mind_blast_mon(mtmp) && !u.uinvulnerable && !rn2(mdat->mtyp == PM_ELDER_BRAIN ? 10 : 20) && !Catapsi) {
 		boolean reducedFlayerMessages = (((Role_if(PM_NOBLEMAN) && Race_if(PM_DROW) && flags.initgend) || Role_if(PM_ANACHRONONAUT)) && In_quest(&u.uz));
 		struct monst *m2, *nmon = (struct monst *)0;
-		
+
 		if (canseemon(mtmp))
 			pline("%s concentrates.", Monnam(mtmp));
 		// if (distu(mtmp->mx, mtmp->my) > BOLT_LIM * BOLT_LIM) {
@@ -1690,6 +1707,7 @@ register struct monst *mtmp;
 						fall_asleep(-100*dmg, TRUE);
 					}
 				}
+				nomul(0, NULL);
 			}
 		}
 		for(m2=fmon; m2; m2 = nmon) {
@@ -1722,29 +1740,32 @@ register struct monst *mtmp;
 				if(has_template(mtmp, DREAM_LEECH)){
 					if (!resists_sleep(m2)){
 						m2->msleeping = 1;
+						slept_monst(m2);
 					}
 				}
 			}
 		}
 	}
 
-	/* Look for other monsters to fight (at a distance) */
-	struct monst *mtmp2 = mfind_target(mtmp, FALSE);
-	if (mtmp2 && 
-	    (mtmp2 != &youmonst || 
-			dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) > 2) &&
-		(mtmp2 != mtmp)
-	){
-	    int res;
-		mon_ranged_gazeonly = 1;//State variable
-		res = (mtmp2 == &youmonst) ? mattacku(mtmp)
-		                        : mattackm(mtmp, mtmp2);
+	if(!mtarget_adjacent(mtmp)){ /* don't fight at range if there's a melee target */
+		/* Look for other monsters to fight (at a distance) */
+		struct monst *mtmp2 = mfind_target(mtmp, FALSE);
+		if (mtmp2 && 
+			(mtmp2 != &youmonst || 
+				dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) > 2) &&
+			(mtmp2 != mtmp)
+		){
+			int res;
+			mon_ranged_gazeonly = 1;//State variable
+			res = (mtmp2 == &youmonst) ? mattacku(mtmp)
+									: mattackm(mtmp, mtmp2);
 
-		if (res & MM_AGR_DIED)
-			return 1; /* Oops. */
+			if (res & MM_AGR_DIED)
+				return 1; /* Oops. */
 
-		if(!(mon_ranged_gazeonly) && (res & MM_HIT))
-			return 0; /* that was our move for the round */
+			if(!(mon_ranged_gazeonly) && (res & MM_HIT))
+				return 0; /* that was our move for the round */
+		}
 	}
 
 /*	Now the actual movement phase	*/
@@ -1854,7 +1875,7 @@ register struct monst *mtmp;
 	if (inrange && mtmp->data->msound == MS_CUSS && !mtmp->mpeaceful &&
 		couldsee(mtmp->mx, mtmp->my) && ((!mtmp->minvis && !rn2(5)) || 
 										mtmp->mtyp == PM_SIR_GARLAND || mtmp->mtyp == PM_GARLAND ||
-										(mtmp->mtyp == PM_CHAOS && (mtmp->mvar2 < 5 || !rn2(5)) )|| 
+										(mtmp->mtyp == PM_CHAOS && (mtmp->mvar_conversationTracker < 5 || !rn2(5)) )|| 
 										mtmp->mtyp == PM_APOLLYON
 	) )
 	    cuss(mtmp);
@@ -2013,10 +2034,14 @@ register int after;
 	if((mteleport(ptr)) && !rn2(5) && !mtmp->mcan &&
 	   !tele_restrict(mtmp) && !(noactions(mtmp))
 	) {
-	    if(mtmp->mhp < 7 || mtmp->mpeaceful || rn2(2))
-		(void) rloc(mtmp, FALSE);
+	    if(mtmp->mhp < 7 || mtmp->mpeaceful || rn2(2)) {
+			if (!rloc(mtmp, TRUE)) {
+				/* rloc failed, probably due to a full level; don't set mmoved=1 so can still attack later */
+				goto postmov;	
+			}
+		}
 	    else
-		mnexto(mtmp);
+			mnexto(mtmp);
 	    mmoved = 1;
 	    goto postmov;
 	}
@@ -2026,7 +2051,7 @@ not_special:
 	omy = mtmp->my;
 	gx = mtmp->mux;
 	gy = mtmp->muy;
-	appr = (mtmp->mflee && mtmp->mtyp != PM_BANDERSNATCH) ? -1 : 1;
+	appr = ((mtmp->mflee && mtmp->mtyp != PM_BANDERSNATCH) || mtmp->mtyp == PM_WATERSPOUT) ? -1 : 1;
 	if (mtmp->mconf || (u.uswallow && mtmp == u.ustuck))
 		appr = 0;
 	else {
@@ -2085,16 +2110,18 @@ not_special:
 			register int pctload = (curr_mon_load(mtmp) * 100) /
 				max_mon_load(mtmp);
 			
-			/* look for gold or jewels nearby */
-			likegold = (likes_gold(ptr) && pctload < 95);
-			likegems = (likes_gems(ptr) && pctload < 85);
-			uses_items = (!mindless_mon(mtmp) && !is_animal(ptr)
-				&& pctload < 75);
-			likeobjs = (likes_objs(ptr) && pctload < 75);
-			likemagic = (likes_magic(ptr) && pctload < 85);
-			likerock = (throws_rocks(ptr) && pctload < 50 && !In_sokoban(&u.uz));
-			conceals = hides_under(ptr);
-			setlikes = TRUE;
+			if(!mtmp->menvy){
+				/* look for gold or jewels nearby */
+				likegold = (likes_gold(ptr) && pctload < 95);
+				likegems = (likes_gems(ptr) && pctload < 85);
+				uses_items = (!mindless_mon(mtmp) && !is_animal(ptr)
+					&& pctload < 75);
+				likeobjs = (!mtmp->mdisrobe && likes_objs(ptr) && pctload < 75);
+				likemagic = (likes_magic(ptr) && pctload < 85);
+				likerock = (throws_rocks(ptr) && pctload < 50 && !In_sokoban(&u.uz));
+				conceals = hides_under(ptr);
+				setlikes = TRUE;
+			}
 	    }
 	}
 
@@ -2511,8 +2538,8 @@ not_special:
 	} else {
 	    if(is_unicorn(ptr) && rn2(2) && !tele_restrict(mtmp) && !noactions(mtmp))
 		{
-			(void) rloc(mtmp, FALSE);
-			return(1);
+			if(rloc(mtmp, TRUE))
+				return(1);
 	    }
 	    if(mtmp->wormno) worm_nomove(mtmp);
 	}
@@ -2648,7 +2675,7 @@ postmov:
 		    likegems = (likes_gems(ptr) && pctload < 85);
 		    uses_items = (!mindless_mon(mtmp) && !is_animal(ptr)
 				  && pctload < 75);
-		    likeobjs = (likes_objs(ptr) && pctload < 75);
+		    likeobjs = (!mtmp->mdisrobe && likes_objs(ptr) && pctload < 75);
 		    likemagic = (likes_magic(ptr) && pctload < 85);
 		    likerock = (throws_rocks(ptr) && pctload < 50 &&
 				!In_sokoban(&u.uz));

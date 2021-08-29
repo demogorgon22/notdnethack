@@ -9,7 +9,6 @@
 
 /*	These routines provide basic data for any type of monster. */
 STATIC_DCL void FDECL(set_template_data, (struct permonst *, struct permonst *, int));
-STATIC_DCL struct permonst * FDECL(permonst_of, (int, int));
 
 char * nameless_horror_name;
 
@@ -27,6 +26,37 @@ id_permonst()
 	for (i = 0; i < NUMMONS; i++)
 		mons[i].mtyp = i;
 	return;
+}
+
+/*
+ * Some monster intrinsics go away if the monster is cancelled
+ * (and return if uncancelled) so mcan must be set via this
+ * wrapper.
+ */
+
+void
+set_mcan(mon, state)
+struct monst *mon;
+boolean state;
+{
+	boolean weap_attack, xwep_attack;
+	mon->mcan = state;
+	set_mon_data_core(mon, mon->data);
+	weap_attack = mon_attacktype(mon, AT_WEAP);
+	xwep_attack = mon_attacktype(mon, AT_XWEP);
+	if(weap_attack && !MON_WEP(mon)){
+		mon->weapon_check = NEED_WEAPON;
+	}
+	else if(!weap_attack && MON_WEP(mon)){
+		setmnotwielded(mon, MON_WEP(mon));
+	}
+	
+	if(xwep_attack && !MON_SWEP(mon)){
+		mon->weapon_check = NEED_WEAPON;
+	}
+	else if(!xwep_attack && MON_SWEP(mon)){
+		setmnotwielded(mon, MON_SWEP(mon));
+	}
 }
 
 /* 
@@ -144,18 +174,23 @@ struct permonst * ptr;
 	if ((ptr_condition))	{ mon->mintrinsics[((intrinsic)-1)/32] |=  (1L<<((intrinsic)-1)%32); } \
 	else					{ mon->mintrinsics[((intrinsic)-1)/32] &= ~(1L<<((intrinsic)-1)%32); }
 
+#define set_mintrinsic_cancelable(ptr_condition, intrinsic) \
+	if ((ptr_condition) && !mon->mcan)	{ mon->mintrinsics[((intrinsic)-1)/32] |=  (1L<<((intrinsic)-1)%32); } \
+	else								{ mon->mintrinsics[((intrinsic)-1)/32] &= ~(1L<<((intrinsic)-1)%32); }
+
 	/* other intrinsics */
-	set_mintrinsic(species_flies(mon->data), FLYING);
-	set_mintrinsic(species_floats(mon->data), LEVITATION);
 	set_mintrinsic(species_swims(mon->data), SWIMMING);
-	set_mintrinsic(species_displaces(mon->data), DISPLACED);
-	set_mintrinsic(species_passes_walls(mon->data), PASSES_WALLS);
-	set_mintrinsic(species_regenerates(mon->data), REGENERATION);
-	set_mintrinsic(species_perceives(mon->data), SEE_INVIS);
-	set_mintrinsic(species_teleports(mon->data), TELEPORT);
-	set_mintrinsic(species_controls_teleports(mon->data), TELEPORT_CONTROL);
-	set_mintrinsic(species_is_telepathic(mon->data), TELEPAT);
+	set_mintrinsic((species_flies(mon->data) && (!mon->mcan || has_wings(mon->data))), FLYING);
+	set_mintrinsic_cancelable(species_floats(mon->data), LEVITATION);
+	set_mintrinsic_cancelable(species_displaces(mon->data), DISPLACED);
+	set_mintrinsic_cancelable(species_passes_walls(mon->data), PASSES_WALLS);
+	set_mintrinsic_cancelable(species_regenerates(mon->data), REGENERATION);
+	set_mintrinsic_cancelable(species_perceives(mon->data), SEE_INVIS);
+	set_mintrinsic_cancelable(species_teleports(mon->data), TELEPORT);
+	set_mintrinsic_cancelable(species_controls_teleports(mon->data), TELEPORT_CONTROL);
+	set_mintrinsic_cancelable(species_is_telepathic(mon->data), TELEPAT);
 #undef set_mintrinsic
+#undef set_mintrinsic_cancelable
 	for(i = 0; i < MPROP_SIZE; i++){
 		mon->mintrinsics[i] |= mon->acquired_trinsics[i];
 	}
@@ -268,7 +303,7 @@ int template;
 	case CRYSTALFIED:
 		/* flags: */
 		ptr->geno |= (G_NOCORPSE);
-		ptr->mflagsm |= (MM_BREATHLESS);
+		ptr->mflagsm |= (MM_BREATHLESS|MM_WEBRIP);
 		ptr->mflagst |= (MT_MINDLESS | MT_HOSTILE | MT_STALK);
 		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
 		ptr->mflagsg |= (MG_RPIERCE | MG_RSLASH);
@@ -481,7 +516,7 @@ int template;
 			attk->aatyp == AT_ARRW ||
 			attk->aatyp == AT_MMGC ||
 			attk->aatyp == AT_TNKR ||
-			attk->aatyp == AT_SRPR ||
+			spirit_rapier_at(attk->aatyp) ||
 			attk->aatyp == AT_BEAM ||
 			attk->aatyp == AT_MAGC ||
 			(attk->aatyp == AT_TENT && template == SKELIFIED) ||
@@ -698,7 +733,7 @@ int template;
 			))
 		{
 			maybe_insert();
-			attk->aatyp = AT_SRPR;
+			attk->aatyp = !attacktype(ptr, AT_WEAP) ? AT_SRPR : !attacktype(ptr, AT_XWEP) ? AT_XSPR : AT_ESPR;
 			attk->adtyp = AD_SHDW;
 			attk->damn = 4;
 			attk->damd = 8;
@@ -1077,14 +1112,34 @@ int level_bonus;
 			horrorattacks++;
 
 			/* possibly make more identical attacks */
-			while (!rn2(3) && horrorattacks<6) {
+			while (!rn2(3) && horrorattacks<6 && attkptr->aatyp != AT_DEVA && attkptr->aatyp != AT_DSPR) {
 				attkptr = &horror->mattk[horrorattacks];
 				*attkptr = *(attkptr - 1);
 
-				if (attkptr->aatyp == AT_WEAP)
+				if (rn2(3) && attkptr->aatyp == AT_WEAP)
 					attkptr->aatyp = AT_XWEP;
-				else if (attkptr->aatyp == AT_XWEP)
+				else if (rn2(3) && attkptr->aatyp == AT_XWEP)
 					attkptr->aatyp = AT_MARI;
+				
+				/*Magic blade attacks may transition to normal weapon attacks*/
+				if (rn2(3) && attkptr->aatyp == AT_SRPR){
+					if(rn2(10)){
+						attkptr->aatyp = AT_XSPR;
+					}
+					else {
+						attkptr->aatyp = AT_XWEP;
+						attkptr->adtyp = get_random_of(randWeaponDamageTypes);
+					}
+				}
+				else if (rn2(3) && attkptr->aatyp == AT_XSPR){
+					if(rn2(10)){
+						attkptr->aatyp = AT_MSPR;
+					}
+					else {
+						attkptr->aatyp = AT_MARI;
+						attkptr->adtyp = get_random_of(randWeaponDamageTypes);
+					}
+				}
 
 				horrorattacks++;
 			}
@@ -1405,6 +1460,35 @@ struct permonst *ptr;
 int atyp;
 {
     return attacktype_fordmg(ptr, atyp, AD_ANY) ? TRUE : FALSE;
+}
+
+boolean
+mon_attacktype(mon, atyp)
+struct monst *mon;
+int atyp;
+{
+	struct attack *attk;
+	struct attack prev_attk = {0};
+	int	indexnum = 0,	/* loop counter */
+		subout = 0,	/* remembers what attack substitutions have been made for [mon]'s attack chain */
+		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
+		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
+
+	/* zero out res[] */
+	res[0] = MM_MISS;
+	res[1] = MM_MISS;
+	res[2] = MM_MISS;
+	res[3] = MM_MISS;
+	
+	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod);
+		!is_null_attk(attk);
+		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod)
+	){
+		if(attk->aatyp == atyp)
+			return TRUE;
+	}
+
+    return FALSE;
 }
 
 boolean
@@ -2014,6 +2098,7 @@ const char *in_str;
 #endif
 		{ "olog hai",		PM_OLOG_HAI },
 		{ "arch lich",		PM_ARCH_LICH },
+		{ "green steel golem",		PM_GREEN_STEEL_GOLEM },
 		/* spacing */
 		{ "mindflayer",		PM_MIND_FLAYER },
 		{ "master mindflayer",	PM_MASTER_MIND_FLAYER },
@@ -2415,7 +2500,8 @@ struct permonst *ptr;
 		tmp2 = ptr->mattk[i].aatyp;
 		n += (tmp2 > 0);
 		n += (tmp2 == AT_MAGC || tmp2 == AT_MMGC ||
-			tmp2 == AT_TUCH || tmp2 == AT_SRPR || tmp2 == AT_TNKR);
+			tmp2 == AT_TUCH || tmp2 == AT_TNKR ||
+			spirit_rapier_at(tmp2));
 		n += (tmp2 == AT_WEAP && (ptr->mflagsb & MB_STRONG));
 	}
 
@@ -2425,7 +2511,8 @@ struct permonst *ptr;
 		tmp2 = ptr->mattk[i].adtyp;
 		if ((tmp2 == AD_DRLI) || (tmp2 == AD_STON) || (tmp2 == AD_DRST)
 			|| (tmp2 == AD_DRDX) || (tmp2 == AD_DRCO) || (tmp2 == AD_WERE)
-			|| (tmp2 == AD_SHDW) || (tmp2 == AD_STAR) || (tmp2 == AD_BLUD))
+			|| (tmp2 == AD_SHDW) || (tmp2 == AD_STAR) || (tmp2 == AD_BLUD)
+			|| (tmp2 == AD_MOON))
 			n += 2;
 		else if (strcmp(ptr->mname, "grid bug")) n += (tmp2 != AD_PHYS);
 		n += ((int)(ptr->mattk[i].damd * ptr->mattk[i].damn) > 23);
@@ -2452,6 +2539,76 @@ struct permonst *ptr;
 	else tmp += (n / 3 + 1);
 
 	return((tmp >= 0) ? tmp : 0);
+}
+
+/*Gets a fake strength score for a monster.
+ * Used for carry cap.
+ */
+long
+mon_str(mon)
+struct monst *mon;
+{
+	struct obj *gloves = which_armor(mon, W_ARMG);
+	struct obj *weap = MON_WEP(mon);
+	struct obj *xweap = MON_SWEP(mon);
+	
+	if(gloves && gloves->otyp == GAUNTLETS_OF_POWER)
+		return 25L;
+	//else
+	if(weap){
+		if(weap->oartifact == ART_SCEPTRE_OF_MIGHT
+		|| (weap->oartifact == ART_PEN_OF_THE_VOID && weap->ovar1&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0)
+		|| weap->oartifact == ART_STORMBRINGER
+		|| weap->oartifact == ART_OGRESMASHER
+		)
+		return 25L;
+	}
+	//else
+	if(xweap){
+		if(xweap->oartifact == ART_OGRESMASHER)
+			return 25L;
+	}
+	//else
+	if(strongmonst(mon->data))
+		return 18L;
+	//else
+	return 11L;
+}
+
+/*Gets a fake constitution score for a monster.
+ * Used for carry cap.
+ */
+long
+mon_con(mon)
+struct monst *mon;
+{
+	struct obj *gloves = which_armor(mon, W_ARMG);
+	struct obj *weap = MON_WEP(mon);
+	struct obj *xweap = MON_SWEP(mon);
+	
+	if(gloves && gloves->oartifact == ART_GREAT_CLAWS_OF_URDLEN)
+		return 25L;
+	//else
+	if(weap){
+		if(weap->oartifact == ART_OGRESMASHER || weap->oartifact == ART_STORMBRINGER)
+			return 25L;
+	}
+	//else
+	if(xweap){
+		if(xweap->oartifact == ART_OGRESMASHER)
+			return 25L;
+	}
+	//else
+	int norm_max_hp = mon->data->mlevel*8;
+	long mcon;
+	if(!norm_max_hp)
+		norm_max_hp = 4;
+	mcon = (18L*mon->mhpmax)/(norm_max_hp);
+	if(mcon > 18L)
+		mcon = 18L;
+	if(mcon < 3L)
+		mcon = 3L;
+	return mcon;
 }
 
 #endif /* OVLB */

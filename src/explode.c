@@ -669,9 +669,11 @@ boolean yours; /* is it your fault (for killing monsters) */
 			}
 			else if (adtyp == AD_BLUD){
 				water_damage(mtmp->minvent, FALSE, FALSE, WD_BLOOD, mtmp);
-				mtmp->mcrazed = TRUE;
-				mtmp->mberserk = TRUE;
-				mtmp->mconf = TRUE;
+				if(!yours){
+					mtmp->mcrazed = TRUE;
+					mtmp->mberserk = TRUE;
+					mtmp->mconf = TRUE;
+				}
 			}
 			
 			if(adtyp == AD_SLIM && !Slime_res(mtmp) &&
@@ -734,7 +736,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 		    damu = (damu+1) / 2;
 			if (u.uvaul_duration) damu = (damu + 1) / 2;
 		}
-		if (adtyp == AD_FIRE) (void) burnarmor(&youmonst);
+		if (adtyp == AD_FIRE) (void) burnarmor(&youmonst, FALSE);
 		if(uhurt == 2){
 			destroy_item(&youmonst, SCROLL_CLASS, (int) adtyp);
 			destroy_item(&youmonst, SPBOOK_CLASS, (int) adtyp);
@@ -748,8 +750,10 @@ boolean yours; /* is it your fault (for killing monsters) */
 		}
 		else if (adtyp == AD_BLUD){
 			water_damage(invent, FALSE, FALSE, WD_BLOOD, mtmp);
-			u.umadness |= MAD_APOSTASY;
-			change_usanity(-rnd(6), FALSE);
+			if(!yours){
+				u.umadness |= MAD_APOSTASY;
+				change_usanity(-rnd(6), FALSE);
+			}
 		}
 		ugolemeffects((int) adtyp, damu);
 
@@ -833,11 +837,13 @@ struct scatter_chain {
 
 /* returns number of scattered objects */
 long
-scatter(sx,sy,blastforce,scflags, obj)
+scatter(sx,sy,blastforce,scflags, obj, loss, shkp)
 int sx,sy;				/* location of objects to scatter */
 int blastforce;				/* force behind the scattering	*/
 unsigned int scflags;
 struct obj *obj;			/* only scatter this obj        */
+long *loss;				/* report $ value of damage caused here if non-null */
+struct monst *shkp;		/* shopkeepr that owns the object (may be null) */
 {
 	register struct obj *otmp;
 	register int tmp;
@@ -869,7 +875,12 @@ struct obj *obj;			/* only scatter this obj        */
 			&& rn2(10)) {
 		if (otmp->otyp == BOULDER) {
 		    pline("%s apart.", Tobjnam(otmp, "break"));
-		    fracture_rock(otmp);
+			if(shkp){
+				int loss_cost = stolen_value(otmp, otmp->ox, otmp->oy, (boolean)shkp->mpeaceful, TRUE);
+				if(loss)
+					*loss += loss_cost;
+			}
+		    break_boulder(otmp);
 		    place_object(otmp, sx, sy);
 		    if ((otmp = boulder_at(sx, sy)) != 0) {
 			/* another boulder here, restack it to the top */
@@ -891,8 +902,22 @@ struct obj *obj;			/* only scatter this obj        */
 	    } else if ((scflags & MAY_DESTROY) && (!rn2(10)
 			|| otmp->obj_material == GLASS
 			|| otmp->obj_material == OBSIDIAN_MT
-			|| otmp->otyp == EGG)) {
-		if (breaks(otmp, (xchar)sx, (xchar)sy)) used_up = TRUE;
+			|| otmp->otyp == EGG
+			|| otmp == uchain)
+		){
+			if (breaktest(otmp)){
+				if(shkp){
+					int loss_cost = stolen_value(otmp, sx, sy, (boolean)shkp->mpeaceful, TRUE);
+					if(loss)
+						*loss += loss_cost;
+				}
+				breakobj(otmp, sx, sy, FALSE, FALSE);
+				used_up = TRUE;
+			}
+			else if (otmp == uchain) {
+				unpunish();
+				used_up = TRUE;
+			}
 	    }
 
 	    if (!used_up) {
@@ -908,6 +933,7 @@ struct obj *obj;			/* only scatter this obj        */
 		tmp = blastforce - (otmp->owt/40);
 		if (tmp < 1) tmp = 1;
 		stmp->range = rnd(tmp); /* anywhere up to that determ. by wt */
+		if (otmp == uchain || otmp == uball) stmp->range = 0;
 		if (farthest < stmp->range) farthest = stmp->range;
 		stmp->stopped = FALSE;
 		if (!schain)
@@ -936,13 +962,17 @@ struct obj *obj;			/* only scatter this obj        */
 			} else if ((mtmp = m_at(bhitpos.x, bhitpos.y)) != 0) {
 				if (scflags & MAY_HITMON) {
 					struct obj ** s_p = &(stmp->obj);
+					int loss_cost = 0;
 				    stmp->range--;
 					int dieroll = rnd(20);
-					if (tohitval((struct monst *)0, mtmp, (struct attack *)0, stmp->obj, (void *)0, HMON_FIRED, 0) >= dieroll)
+					if (tohitval((struct monst *)0, mtmp, (struct attack *)0, stmp->obj, (void *)0, HMON_FIRED, 0, (int *) 0) > dieroll || dieroll == 1) {
+						if (shkp) loss_cost = stolen_value(stmp->obj, sx, sy, TRUE, TRUE);
 						(void)hmon_with_unowned_obj(mtmp, s_p, dieroll);
+					}
 					else
 						miss(xname(stmp->obj), mtmp);
 					if (!(*s_p)) {
+						*loss += loss_cost;
 						stmp->obj = (struct obj *)0;
 						stmp->stopped = TRUE;
 				    }
@@ -950,13 +980,16 @@ struct obj *obj;			/* only scatter this obj        */
 			} else if (bhitpos.x==u.ux && bhitpos.y==u.uy) {
 				if (scflags & MAY_HITYOU) {
 				    if (multi) nomul(0, NULL);
+					struct obj ** s_p = &(stmp->obj);
+					int loss_cost = 0;
 					int hitu, hitvalu;
 					int dieroll;
-					hitvalu = tohitval((struct monst *)0, &youmonst, (struct attack *)0, stmp->obj, (void *)0, HMON_FIRED, 8);
-					if (hitvalu > (dieroll = rnd(20))) {
+					hitvalu = tohitval((struct monst *)0, &youmonst, (struct attack *)0, stmp->obj, (void *)0, HMON_FIRED, 8, (int *) 0);
+					if (hitvalu > (dieroll = rnd(20)) || dieroll == 1) {
+						if (shkp) loss_cost = stolen_value(stmp->obj, sx, sy, TRUE, TRUE);
 						killer = "flying object";
 						killer_format = KILLED_BY_AN;
-						(void)hmon_with_unowned_obj(&youmonst, &(stmp->obj), dieroll);
+						(void)hmon_with_unowned_obj(&youmonst, s_p, dieroll);
 						stmp->range -= 3;
 						stop_occupation();
 					}
@@ -964,6 +997,11 @@ struct obj *obj;			/* only scatter this obj        */
 						if (Blind || !flags.verbose) pline("It misses.");
 						else You("are almost hit by %s.", the(xname(stmp->obj)));
 					}
+					if (!(*s_p)) {
+						*loss += loss_cost;
+						stmp->obj = (struct obj *)0;
+						stmp->stopped = TRUE;
+				    }
 				}
 			} else {
 				if (scflags & VIS_EFFECTS) {

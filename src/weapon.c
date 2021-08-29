@@ -46,6 +46,7 @@ STATIC_DCL int FDECL(enhance_skill, (boolean));
 #define PN_NIMAN				(-25)
 #define PN_JUYO					(-26)
 #define PN_WAND_DAMAGE			(-27)
+#define PN_SHIELD				(-28)
 
 #define holy_damage(mon)	((mon == &youmonst) ? \
 							hates_holy(youracedata) :\
@@ -81,7 +82,7 @@ STATIC_VAR NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
 #ifdef BARD
 	PN_MUSICALIZE,
 #endif
-	PN_BARE_HANDED,   PN_TWO_WEAPONS,
+	PN_BARE_HANDED,   PN_TWO_WEAPONS, PN_SHIELD,
 	PN_BEAST_MASTERY,
 	PN_SHII_CHO, PN_MAKASHI, PN_SORESU, PN_ATARU,
 	PN_DJEM_SO, PN_SHIEN, PN_NIMAN, PN_JUYO,
@@ -122,6 +123,7 @@ STATIC_VAR NEARDATA const char * const odd_skill_names[] = {
     "form VI: Niman",
     "form VII: Juyo",
     "wand damage",
+    "shield",
 };
 /* indexed vis `is_martial() */
 STATIC_VAR NEARDATA const char * const barehands_or_martial[] = {
@@ -249,6 +251,14 @@ struct monst *magr;
 		}
 	}
 
+	if (otmp->oartifact == ART_LASH_OF_THE_COLD_WASTE){
+		if(youagr && u.uinsight){
+			tmp += rnd(min(u.uinsight, mlev(magr)));
+		} else if(magr && yields_insight(magr->data)) {
+			tmp += rnd(mlev(magr));
+		}
+	}
+
 	return tmp;
 }
 
@@ -268,11 +278,7 @@ int oartifact;
 		oartifact = obj->oartifact;
 	}
 
-	int attackmask = objects[otyp].oc_dir;
-
-	/* oc_dir is reused for wands (directionality) and spellbooks (school) -- these are all blunt weapons */
-	if (objects[otyp].oc_class == WAND_CLASS || objects[otyp].oc_class == SPBOOK_CLASS)
-		return WHACK;
+	int attackmask = objects[otyp].oc_dtyp;
 
 	/* catch special cases */
 	if (   oartifact == ART_YORSHKA_S_SPEAR
@@ -417,6 +423,14 @@ int otyp;
 					if (is_bludgeon(obj))
 						dmod += mod;
 					break;
+				/* lead is heavy but bad at cutting (gold and silver should be too, but magic, basically)
+				 */
+				case LEAD:
+					if (is_bludgeon(obj))
+						dmod += mod;
+					if (is_slashing(obj) || is_stabbing(obj))
+						dmod -= mod;
+					break;
 				/* glass and obsidian have sharp edges and points 
 				 * shadowsteel ??? but gameplay-wise, droven weapons
 				 *   made out of this troublesome-to-maintain material
@@ -425,6 +439,7 @@ int otyp;
 				case GLASS:
 				case OBSIDIAN_MT:
 				case SHADOWSTEEL:
+				case GREEN_STEEL:
 					if (is_slashing(obj) || is_stabbing(obj))
 						dmod += mod;
 					break;
@@ -640,6 +655,7 @@ int otyp;
 	case LIGHTSABER:			spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: lightsaber forms
 	case BEAMSWORD:				spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: Atma Weapon, lightsaber forms
 	case DOUBLE_LIGHTSABER:		spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
+	case ROD_OF_FORCE:			spe_mult *= 2; ocn *= 2; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	}
 #undef plus_base
 #undef plus
@@ -648,7 +664,7 @@ int otyp;
 #undef chrgd
 	/* more special cases that wouldn't really fit into the switch above */
 	/* override for lightsaber dice if the lightsaber is turned off */
-	if (obj && (otyp == LIGHTSABER || otyp == BEAMSWORD || otyp == DOUBLE_LIGHTSABER) && !litsaber(obj))
+	if (obj && (otyp == LIGHTSABER || otyp == BEAMSWORD || otyp == DOUBLE_LIGHTSABER || otyp == ROD_OF_FORCE) && !litsaber(obj))
 	{
 		spe_mult = 1;
 		ocn = 1;
@@ -685,20 +701,7 @@ int otyp;
 	/* Infinity's Mirrored Arc */
 	if (obj && obj->oartifact == ART_INFINITY_S_MIRRORED_ARC)
 	{
-		xchar x, y;
-		ocn = 0;
-		get_obj_location(obj, &x, &y, 0);
-		if (levl[x][y].lit &&
-			!(viz_array[y][x] & TEMP_DRK3 &&
-			!(viz_array[y][x] & TEMP_LIT1)))
-		{
-			ocn += 2;
-		}
-		if (viz_array[y][x] & TEMP_LIT1 &&
-			!(viz_array[y][x] & TEMP_DRK3))
-		{
-			ocn += 1;
-		}
+		ocn = infinity_s_mirrored_arc_litness(obj);
 
 		if (obj->altmode)
 			ocn *= 2;
@@ -949,8 +952,9 @@ int spec;
 	case LIGHTSABER:
 	case BEAMSWORD:
 	case DOUBLE_LIGHTSABER:
+	case ROD_OF_FORCE:
 		// drain charge on lightsabers
-		if (!((otmp->oartifact == ART_ATMA_WEAPON && otmp == uwep && !Drain_resistance) ||
+		if (litsaber(otmp) && !((otmp->oartifact == ART_ATMA_WEAPON && otmp == uwep && !Drain_resistance) ||
 			otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC))
 		{
 			otmp->age -= 100;
@@ -1055,7 +1059,7 @@ int spec;
 
 	/* lightsaber forms */
 	if (is_lightsaber(otmp) && (otmp == uwep || (u.twoweap && otmp == uswapwep))){
-		if (activeFightingForm(FFORM_MAKASHI) && otmp == uwep && !u.twoweap && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))){
+		if (activeFightingForm(FFORM_MAKASHI) && otmp == uwep && !u.twoweap){
 			switch (min(P_SKILL(P_MAKASHI), P_SKILL(weapon_type(otmp)))){
 			case P_BASIC:
 				if (mon->ustdym<5) mon->ustdym += 1;
@@ -1068,7 +1072,7 @@ int spec;
 				break;
 			}
 		}
-		else if (activeFightingForm(FFORM_ATARU) && u.lastmoved + 1 >= monstermoves && (!uarm || is_light_armor(uarm))){
+		else if (activeFightingForm(FFORM_ATARU) && u.lastmoved + 1 >= monstermoves){
 			switch (min(P_SKILL(P_ATARU), P_SKILL(weapon_type(otmp)))){
 			case P_BASIC:
 				tmp += d(2, wdice.oc_damd);
@@ -1090,7 +1094,7 @@ int spec;
 				break;
 			}
 		}
-		else if (activeFightingForm(FFORM_DJEM_SO) && mon->mattackedu && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))){
+		else if (activeFightingForm(FFORM_DJEM_SO) && mon->mattackedu){
 			int sbon = ACURR(A_STR);
 			if (sbon >= STR19(19)) sbon -= 100; //remove percentile adjustment
 			else if (sbon > 18) sbon = 18; //remove percentile adjustment
@@ -1108,7 +1112,7 @@ int spec;
 				break;
 			}
 		}
-		else if (activeFightingForm(FFORM_NIMAN) && u.lastcast >= monstermoves && (!uarm || !is_metallic(uarm))){
+		else if (activeFightingForm(FFORM_NIMAN) && u.lastcast >= monstermoves){
 			switch (min(P_SKILL(P_NIMAN), P_SKILL(weapon_type(otmp)))){
 			case P_BASIC:
 				tmp -= 2;
@@ -1289,7 +1293,11 @@ static NEARDATA const int rwep[] =
 };
 
 static NEARDATA const int pwep[] =
-{	POLEAXE, /*1d10/2d6*/
+{	
+	FORCE_PIKE,/*3d6+6/3d8+8*/
+	GOLD_BLADED_VIBROSPEAR,/*2d6+3/2d8+3*/
+	WHITE_VIBROSPEAR,/*2d6+3/2d8+3*/
+	POLEAXE, /*1d10/2d6*/
 	HALBERD, /*1d10/2d6*/
 	DROVEN_LANCE, /*1d10/1d10*/
 	BARDICHE, /*2d4/3d4*/ 
@@ -1328,6 +1336,9 @@ struct obj *otmp;
         if (throws_rocks(mtmp->data) && is_boulder(otmp)) return TRUE;
 		
 		if(wep->otyp == otmp->otyp) return dmgval(otmp, 0 /*zeromonst*/, 0) > dmgval(wep, 0 /*zeromonst*/, 0);
+		
+		if(wep->otyp == ARM_BLASTER) return FALSE;
+		if(wep->otyp == HAND_BLASTER) return (otmp->otyp == ARM_BLASTER && otmp->ovar1 > 0);
     }
     
     if (((strongmonst(mtmp->data) && (mtmp->misc_worn_check & W_ARMS) == 0) || !bimanual(otmp,mtmp->data)) && 
@@ -1527,8 +1538,9 @@ static const NEARDATA short hwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
-	  DOUBLE_SWORD,/*2d8/2d12*/
+	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
+	  DOUBLE_SWORD,/*2d8/2d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
 	  TSURUGI/*1d16/1d8+2d6*/, 
@@ -1620,8 +1632,9 @@ static const NEARDATA short hpwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
-	  DOUBLE_SWORD,/*2d8/2d12*/
+	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
+	  DOUBLE_SWORD,/*2d8/2d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
 	  TSURUGI/*1d16/1d8+2d6*/, 
@@ -1756,8 +1769,8 @@ register struct monst *mtmp;
 	boolean wearing_shield = (mtmp->misc_worn_check & W_ARMS) != 0;
 
 	/* needs to be capable of wielding a weapon in the mainhand */
-	if (!attacktype(mtmp->data, AT_WEAP) &&
-		!attacktype(mtmp->data, AT_DEVA))
+	if (!mon_attacktype(mtmp, AT_WEAP) &&
+		!mon_attacktype(mtmp, AT_DEVA))
 		return (struct obj *)0;
 
 	/* if using an artifact or oprop weapon keep using it. */
@@ -1821,7 +1834,7 @@ register struct monst *mtmp;
 	boolean wearing_shield = (mtmp->misc_worn_check & W_ARMS) != 0;
 
 	/* needs to be capable of wielding a weapon in the offhand */
-	if (!attacktype(mtmp->data, AT_XWEP))
+	if (!mon_attacktype(mtmp, AT_XWEP))
 		return (struct obj *)0;
 	
 	/* if using an artifact or oprop weapon keep using it. */
@@ -1852,8 +1865,8 @@ register struct monst *mtmp;
 			(!bimanual(otmp, mtmp->data)) &&
 			/* never a hated weapon */
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || otmp->obj_material != IRON) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp)) &&
+			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || !is_iron_obj(otmp)) &&
+			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !(is_unholy(otmp) && otmp->obj_material == GREEN_STEEL)) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
 			) return otmp;
 	}
@@ -1937,12 +1950,12 @@ boolean polyspot;
 	}
 
 	/* we don't want weapons if we can't wield any at all */
-	if (!is_armed(mon->data))
+	if (!is_armed_mon(mon))
 		mon->weapon_check = NO_WEAPON_WANTED;
 
 	/* monster can no longer wield any mainhand weapons */
-	if (!attacktype(mon->data, AT_WEAP) &&
-		!attacktype(mon->data, AT_DEVA)) {
+	if (!mon_attacktype(mon, AT_WEAP) &&
+		!mon_attacktype(mon, AT_DEVA)) {
 		if (mw_tmp) {
 			setmnotwielded(mon, mw_tmp);
 			MON_NOWEP(mon);
@@ -1963,7 +1976,7 @@ boolean polyspot;
 		}
 	}
 	/* monster can no longer twoweapon */
-	if (!could_twoweap(mon->data))
+	if (!could_twoweap_mon(mon))
 	{
 		if (msw_tmp) {
 			setmnotwielded(mon, msw_tmp);
@@ -2120,7 +2133,7 @@ register struct monst *mon;
 	/* possibly wield an off-hand weapon */
 	if (old_weapon_check == NEED_HTH_WEAPON || old_weapon_check == NEED_RANGED_WEAPON)
 	{
-		if (could_twoweap(mon->data) && !which_armor(mon, W_ARMS) && !bimanual(MON_WEP(mon), mon->data))
+		if (could_twoweap_mon(mon) && !which_armor(mon, W_ARMS) && !bimanual(MON_WEP(mon), mon->data))
 		{
 			sobj = select_shwep(mon);
 			/* quick-and-dirty select_srwep() for blasters and guns */
@@ -2257,9 +2270,9 @@ register struct monst *mon;
 	struct obj *msw_tmp = MON_SWEP(mon);
 	int toreturn = 0;
 	
-	if (!attacktype(mon->data, AT_WEAP) &&
-		!attacktype(mon->data, AT_DEVA) &&
-		!attacktype(mon->data, AT_XWEP)) return;
+	if (!mon_attacktype(mon, AT_WEAP) &&
+		!mon_attacktype(mon, AT_DEVA) &&
+		!mon_attacktype(mon, AT_XWEP)) return;
 
 	if(needspick(mon->data)){
 		obj = m_carrying(mon, DWARVISH_MATTOCK);
@@ -2286,7 +2299,7 @@ register struct monst *mon;
 		    mon_ignite_lightsaber(obj, mon);
 		toreturn = 1;
 	}
-	if (could_twoweap(mon->data) && !which_armor(mon, W_ARMS) && !bimanual(obj, mon->data))
+	if (could_twoweap_mon(mon) && !which_armor(mon, W_ARMS) && !bimanual(obj, mon->data))
 	{
 		sobj = select_shwep(mon);
 		if (sobj && sobj != &zeroobj) {
@@ -2497,9 +2510,9 @@ struct obj *otmp;
 			if (bimanual(otmp, youracedata) ||
 				(otmp->oartifact == ART_PEN_OF_THE_VOID && otmp->ovar1&SEAL_MARIONETTE && mvitals[PM_ACERERAK].died > 0))
 				bonus *= 2;
-			else if (otmp->otyp == FORCE_SWORD)
+			else if (otmp->otyp == FORCE_SWORD || otmp->otyp == ROD_OF_FORCE)
 				bonus *= 2;
-			else if (otmp->otyp == KATANA)
+			else if (otmp->otyp == KATANA || otmp->otyp == LONG_SWORD)
 				bonus *= 1.5;
 			else if (is_vibrosword(otmp))
 				bonus *= 1.5;
@@ -2734,7 +2747,7 @@ int enhance_skill(boolean want_dump)
     boolean speedy = FALSE;
 #ifdef DUMP_LOG
     char buf2[BUFSZ];
-    boolean logged;
+    boolean logged = FALSE;
 #endif
 
 #ifdef WIZARD
@@ -3032,27 +3045,29 @@ struct obj *obj;
 	    obj->oclass != GEM_CLASS)
 		/* Not a weapon, weapon-tool, or ammo */
 		return (P_NONE);
+
+#define CHECK_ALTERNATE_SKILL(alt_skill) \
+			if(P_SKILL(objects[obj->otyp].oc_skill) > P_SKILL(alt_skill))\
+				type = objects[obj->otyp].oc_skill;\
+			else if(P_MAX_SKILL(objects[obj->otyp].oc_skill) >= P_MAX_SKILL(alt_skill))\
+				type = objects[obj->otyp].oc_skill;\
+			else type = alt_skill;
+
 	if(obj){
 		if(obj->oartifact == ART_SUNSWORD){
-			if(P_SKILL(P_LONG_SWORD) > P_SKILL(P_SHORT_SWORD))
-				type = P_LONG_SWORD;
-			else if(P_MAX_SKILL(P_LONG_SWORD) > P_MAX_SKILL(P_SHORT_SWORD))
-				type = P_LONG_SWORD;
-			else type = P_SHORT_SWORD;
+			CHECK_ALTERNATE_SKILL(P_SHORT_SWORD)
 		}
 		else if(obj->oartifact == ART_YORSHKA_S_SPEAR){
-			if(P_SKILL(P_HAMMER) > P_SKILL(P_SPEAR))
-				type = P_HAMMER;
-			else if(P_MAX_SKILL(P_HAMMER) > P_MAX_SKILL(P_SPEAR))
-				type = P_HAMMER;
-			else type = P_SPEAR;
+			CHECK_ALTERNATE_SKILL(P_HAMMER)
 		}
 		else if(obj->otyp == DOUBLE_LIGHTSABER && !obj->altmode){
-			if(P_SKILL(P_TWO_HANDED_SWORD) > P_SKILL(P_QUARTERSTAFF))
-				type = P_TWO_HANDED_SWORD;
-			else if(P_MAX_SKILL(P_TWO_HANDED_SWORD) > P_MAX_SKILL(P_QUARTERSTAFF))
-				type = P_TWO_HANDED_SWORD;
-			else type = P_QUARTERSTAFF;
+			CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
+		}
+		else if(obj->otyp == ROD_OF_FORCE){
+			CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
+		}
+		else if(obj->otyp == KHOPESH){
+			CHECK_ALTERNATE_SKILL(P_AXE)
 		}
 		else if(obj->oartifact == ART_TORCH_OF_ORIGINS){
 			type = P_CLUB;
@@ -3221,7 +3236,7 @@ int wep_type;
 	//Do to-hit bonuses for lightsaber forms here.  May do other fighting styles at some point.
 	if(weapon && is_lightsaber(weapon) && litsaber(weapon) && uwep == weapon){
 		validateLightsaberForm();
-		if(activeFightingForm(FFORM_MAKASHI) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))){
+		if(activeFightingForm(FFORM_MAKASHI)){
 			if(wep_type != P_SABER){
 				if(makashiwarn) pline("Your %s seem%s very unwieldy.",xname(uwep),uwep->quan == 1 ? "s" : "");
 				makashiwarn = FALSE;
@@ -3239,70 +3254,64 @@ int wep_type;
 			}
 		}
 		if(activeFightingForm(FFORM_MAKASHI)){
-			if(!uarm || is_light_armor(uarm) || is_medium_armor(uarm)){
-				int sx, sy, mcount = -1;
-				for(sx = u.ux-1; sx<=u.ux+1; sx++){
-					for(sy = u.uy-1; sy<=u.uy+1; sy++){
-						if(isok(sx,sy) && m_at(sx,sy)) mcount++;
-					}
+			int sx, sy, mcount = -1;
+			for(sx = u.ux-1; sx<=u.ux+1; sx++){
+				for(sy = u.uy-1; sy<=u.uy+1; sy++){
+					if(isok(sx,sy) && m_at(sx,sy)) mcount++;
 				}
-				switch(min(P_SKILL(P_MAKASHI), P_SKILL(wep_type))){
-					case P_BASIC:
-						if(wep_type == P_SABER) bonus += ((ACURR(A_DEX)+3)/3 - 4);
-						if(mcount) bonus -= (mcount-1) * 5;
-					break;
-					case P_SKILLED:
-						if(wep_type == P_SABER) bonus += (2*(ACURR(A_DEX)+3)/3 - 4);
-						if(mcount) bonus -= (mcount-1) * 2;
-					break;
-					case P_EXPERT:
-						if(wep_type == P_SABER) bonus += ACURR(A_DEX) - 1;
-						if(mcount) bonus -= (mcount-1);
-					break;
-				}
+			}
+			switch(min(P_SKILL(P_MAKASHI), P_SKILL(wep_type))){
+				case P_BASIC:
+					if(wep_type == P_SABER) bonus += ((ACURR(A_DEX)+3)/3 - 4);
+					if(mcount) bonus -= (mcount-1) * 5;
+				break;
+				case P_SKILLED:
+					if(wep_type == P_SABER) bonus += (2*(ACURR(A_DEX)+3)/3 - 4);
+					if(mcount) bonus -= (mcount-1) * 2;
+				break;
+				case P_EXPERT:
+					if(wep_type == P_SABER) bonus += ACURR(A_DEX) - 1;
+					if(mcount) bonus -= (mcount-1);
+				break;
 			}
 		}
 		if(activeFightingForm(FFORM_SORESU)){
-			if(!uarm || is_light_armor(uarm) || is_medium_armor(uarm)){
-				if(flags.mon_moving){
-					switch(min(P_SKILL(P_SORESU), P_SKILL(wep_type))){
-						case P_BASIC:
-							bonus += 1;
-						break;
-						case P_SKILLED:
-							bonus += 2;
-						break;
-						case P_EXPERT:
-							bonus += 5;
-						break;
-					}
-				} else {
-					switch(min(P_SKILL(P_SORESU), P_SKILL(wep_type))){
-						case P_BASIC:
-							bonus -= 10;
-						break;
-						case P_SKILLED:
-							bonus -= 5;
-						break;
-						case P_EXPERT:
-							bonus -= 2;
-						break;
-					}
+			if(flags.mon_moving){
+				switch(min(P_SKILL(P_SORESU), P_SKILL(wep_type))){
+					case P_BASIC:
+						bonus += 1;
+					break;
+					case P_SKILLED:
+						bonus += 2;
+					break;
+					case P_EXPERT:
+						bonus += 5;
+					break;
+				}
+			} else {
+				switch(min(P_SKILL(P_SORESU), P_SKILL(wep_type))){
+					case P_BASIC:
+						bonus -= 10;
+					break;
+					case P_SKILLED:
+						bonus -= 5;
+					break;
+					case P_EXPERT:
+						bonus -= 2;
+					break;
 				}
 			}
 		}
 		if(activeFightingForm(FFORM_ATARU)){
-			if(!uarm || is_light_armor(uarm)){
-				switch(min(P_SKILL(P_ATARU), P_SKILL(wep_type))){
-					case P_BASIC:
-						bonus -= 2;
-					break;
-					case P_SKILLED:
-						bonus -= 1;
-					break;
-					case P_EXPERT:
-					break;
-				}
+			switch(min(P_SKILL(P_ATARU), P_SKILL(wep_type))){
+				case P_BASIC:
+					bonus -= 2;
+				break;
+				case P_SKILLED:
+					bonus -= 1;
+				break;
+				case P_EXPERT:
+				break;
 			}
 		}
 		if(activeFightingForm(FFORM_DJEM_SO)){
@@ -3568,6 +3577,27 @@ int wep_type;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
 	return bonus;
+}
+
+int
+shield_skill(shield)
+struct obj *shield;
+{
+	if(weight(shield) > (int)objects[BUCKLER].oc_weight){
+		switch(P_SKILL(P_SHIELD)){
+			case P_BASIC:	return 1;
+			case P_SKILLED:	return 2;
+			case P_EXPERT:	return 5;
+			default: return 0;
+		}
+	}
+	else {
+		switch(P_SKILL(P_SHIELD)){
+			case P_SKILLED:	return 1;
+			case P_EXPERT:	return 2;
+			default: return 0;
+		}
+	}
 }
 
 /*

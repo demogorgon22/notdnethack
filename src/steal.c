@@ -50,7 +50,7 @@ register struct monst *mtmp;
 	    pline("%s quickly snatches some gold from between your %s!",
 		    Monnam(mtmp), makeplural(body_part(FOOT)));
 	    if(!u.ugold || !rn2(5)) {
-		if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+		if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 		/* do not set mtmp->mavenge here; gold on the floor is fair game */
 		monflee(mtmp, 0, FALSE, FALSE);
 	    }
@@ -59,7 +59,7 @@ register struct monst *mtmp;
 	    Your("purse feels lighter.");
 	    mtmp->mgold += tmp;
 	if(mtmp->mtyp != PM_FAFNIR){
-		if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+		if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 		mtmp->mavenge = 1;
 		monflee(mtmp, 0, FALSE, FALSE);
 	}
@@ -121,7 +121,7 @@ register struct monst *mtmp;
 	    pline("%s quickly snatches some gold from between your %s!",
 		    Monnam(mtmp), makeplural(body_part(FOOT)));
 	    if(!ygold || !rn2(5)) {
-		if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+		if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 		monflee(mtmp, 0, FALSE, FALSE);
 	    }
 	} else if(ygold) {
@@ -132,7 +132,7 @@ register struct monst *mtmp;
             freeinv(ygold);
             add_to_minv(mtmp, ygold);
 	    Your("purse feels lighter.");
-	    if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+	    if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 	    monflee(mtmp, 0, FALSE, FALSE);
 	    flags.botl = 1;
 	}
@@ -164,7 +164,7 @@ stealarm(VOID_ARGS)
 			/* Implies seduction, "you gladly hand over ..."
 			   so we don't set mavenge bit here. */
 			monflee(mtmp, 0, FALSE, FALSE);
-			if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+			if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 			if(roll_madness(MAD_TALONS)){
 				You("panic after having your property stolen!!");
 				nomul(-1*rnd(6),"panic");
@@ -477,7 +477,7 @@ register struct obj *otmp;
 		carry_obj_effects(otmp);
 
 		/* extinguish burning objects -- it isn't strictly necessary to end_burn anymore, though */
-		if (attacktype(mtmp->data, AT_ENGL)) {
+		if (mon_attacktype(mtmp, AT_ENGL)) {
 			/* burning objects should go out; */
 			if (obj_is_burning(otmp) && u.uswallow && mtmp == u.ustuck) {
 				if (!Blind)
@@ -536,7 +536,7 @@ struct monst *mtmp;
 	(void) mpickobj(mtmp,otmp);	/* may merge and free otmp */
 	pline("%s stole %s!", Monnam(mtmp), doname(otmp));
 	if (mon_resistance(mtmp,TELEPORT) && !tele_restrict(mtmp))
-	    (void) rloc(mtmp, FALSE);
+	    (void) rloc(mtmp, TRUE);
     }
 }
 
@@ -580,7 +580,7 @@ struct monst *mtmp;
 	(void) mpickobj(mtmp,otmp);	/* may merge and free otmp */
 	pline("%s stole %s!", Monnam(mtmp), doname(otmp));
 	if (mon_resistance(mtmp,TELEPORT) && !tele_restrict(mtmp))
-	    (void) rloc(mtmp, FALSE);
+	    (void) rloc(mtmp, TRUE);
     }
 }
 
@@ -682,6 +682,38 @@ boolean is_pet;		/* If true, pet should keep wielded/worn items */
 		register long g = mtmp->mgold;
 		(void) mkgold_core(g, omx, omy, FALSE);
 		if (is_pet && cansee(omx, omy) && flags.verbose)
+			pline("%s drops %ld gold piece%s.", Monnam(mtmp),
+				g, plur(g));
+		mtmp->mgold = 0L;
+	}
+#endif
+	
+	if (show & cansee(omx, omy))
+		newsym(omx, omy);
+}
+
+/* release the objects the creature is carrying */
+void
+relobj_envy(mtmp,show)
+register struct monst *mtmp;
+register int show;
+{
+	register struct obj *otmp;
+	register int omx = mtmp->mx, omy = mtmp->my;
+
+	//THIS IS VERY EFFICIENT!!1!
+	//(It starts over from the beginning of the inventory every time it drops an object)
+	//(Because it's a linked list and it starts dropping from the head, it's still O(n))
+	while((otmp = drop_envy(mtmp))){
+		obj_extract_self(otmp);
+		mdrop_obj(mtmp, otmp, flags.verbose);
+	}
+
+#ifndef GOLDOBJ
+	if (mtmp->mgold) {
+		register long g = mtmp->mgold;
+		(void) mkgold_core(g, omx, omy, FALSE);
+		if (cansee(omx, omy) && flags.verbose)
 			pline("%s drops %ld gold piece%s.", Monnam(mtmp),
 				g, plur(g));
 		mtmp->mgold = 0L;

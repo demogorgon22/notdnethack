@@ -863,6 +863,7 @@ static const struct def_skill Skill_A[] = {
 #ifdef STEED
     { P_RIDING, P_BASIC },
 #endif
+    { P_SHIELD, P_BASIC },
     { P_WAND_POWER, P_SKILLED },
     { P_TWO_WEAPON_COMBAT, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
@@ -902,7 +903,7 @@ static const struct def_skill Skill_Ana[] = {
     { P_FIREARM, P_EXPERT },
 //#endif
     { P_DART, P_EXPERT },		{ P_CROSSBOW, P_SKILLED },
-    { P_WHIP, P_SKILLED },		 { P_BOOMERANG, P_SKILLED },
+    { P_WHIP, P_SKILLED },		 { P_BOOMERANG, P_EXPERT },
     { P_ATTACK_SPELL, P_SKILLED },	{ P_HEALING_SPELL, P_SKILLED },
     { P_DIVINATION_SPELL, P_SKILLED},	{ P_MATTER_SPELL, P_SKILLED},
 	{ P_ENCHANTMENT_SPELL, P_BASIC },
@@ -1043,8 +1044,9 @@ static const struct def_skill Skill_C[] = {
     { P_HAMMER, P_SKILLED },	{ P_QUARTERSTAFF, P_EXPERT },
     { P_POLEARMS, P_SKILLED },	{ P_SPEAR, P_EXPERT },
     { P_TRIDENT, P_SKILLED },	{ P_BOW, P_SKILLED },
-	{ P_SLING, P_EXPERT },    	{ P_ATTACK_SPELL, P_BASIC },
-	{ P_MATTER_SPELL, P_SKILLED },    { P_BOOMERANG, P_EXPERT },
+	{ P_SLING, P_EXPERT },    	{ P_SHIELD, P_EXPERT },
+	{ P_ATTACK_SPELL, P_BASIC },{ P_MATTER_SPELL, P_SKILLED },    
+	{ P_BOOMERANG, P_EXPERT },
 	{ P_UNICORN_HORN, P_BASIC },{ P_BARE_HANDED_COMBAT, P_MASTER },
     { P_NONE, 0 }
 };
@@ -1167,7 +1169,8 @@ static const struct def_skill Skill_K[] = {
     { P_HAMMER, P_BASIC },		{ P_POLEARMS, P_EXPERT },
     { P_SPEAR, P_SKILLED },    { P_TRIDENT, P_BASIC },
     { P_LANCE, P_EXPERT },		{ P_BOW, P_BASIC },	
-    { P_CROSSBOW, P_SKILLED },	{ P_ATTACK_SPELL, P_SKILLED },
+    { P_CROSSBOW, P_SKILLED },	{ P_SHIELD, P_EXPERT },
+	{ P_ATTACK_SPELL, P_SKILLED },
     { P_HEALING_SPELL, P_SKILLED },	{ P_CLERIC_SPELL, P_SKILLED },
 #ifdef STEED
     { P_RIDING, P_EXPERT },
@@ -1203,7 +1206,8 @@ static const struct def_skill Skill_Nob[] = {
     { P_POLEARMS, P_BASIC },
     { P_SPEAR, P_EXPERT },		{ P_TRIDENT, P_BASIC },
     { P_LANCE, P_SKILLED },		{ P_BOW, P_SKILLED },
-    { P_CROSSBOW, P_BASIC },	{ P_ATTACK_SPELL, P_SKILLED },
+    { P_CROSSBOW, P_BASIC },	{ P_SHIELD, P_SKILLED },
+	{ P_ATTACK_SPELL, P_SKILLED },
     { P_HEALING_SPELL, P_SKILLED },	{ P_ESCAPE_SPELL, P_SKILLED },
     { P_ENCHANTMENT_SPELL, P_SKILLED },
 #ifdef STEED
@@ -1225,7 +1229,8 @@ static const struct def_skill Skill_HD_Female_Nob[] = {
     { P_POLEARMS, P_BASIC },	{ P_HARVEST, P_EXPERT },
     { P_SPEAR, P_EXPERT },		{ P_TRIDENT, P_BASIC },
     { P_LANCE, P_SKILLED },		{ P_BOW, P_SKILLED },
-    { P_CROSSBOW, P_BASIC },	{ P_ATTACK_SPELL, P_SKILLED },
+    { P_CROSSBOW, P_BASIC },	{ P_SHIELD, P_SKILLED },
+	{ P_ATTACK_SPELL, P_SKILLED },
     { P_HEALING_SPELL, P_SKILLED },	{ P_ESCAPE_SPELL, P_SKILLED },
     { P_ENCHANTMENT_SPELL, P_SKILLED },	{ P_BARE_HANDED_COMBAT, P_SKILLED },
     { P_BEAST_MASTERY, P_EXPERT }, { P_TWO_WEAPON_COMBAT, P_EXPERT },
@@ -1243,7 +1248,8 @@ static const struct def_skill Skill_ENob[] = {
     { P_POLEARMS, P_BASIC },
     { P_SPEAR, P_EXPERT },	    { P_TRIDENT, P_BASIC },	
     { P_LANCE, P_SKILLED },		{ P_BOW, P_SKILLED },
-    { P_CROSSBOW, P_BASIC },	{ P_ATTACK_SPELL, P_SKILLED },
+    { P_CROSSBOW, P_BASIC },	{ P_SHIELD, P_SKILLED },
+	{ P_ATTACK_SPELL, P_SKILLED },
     { P_HEALING_SPELL, P_SKILLED }, { P_ESCAPE_SPELL, P_SKILLED },
     { P_ENCHANTMENT_SPELL, P_SKILLED },
 #ifdef STEED
@@ -1287,6 +1293,7 @@ static const struct def_skill Skill_DwaNob[] = {
     { P_HARVEST, P_SKILLED },
     { P_QUARTERSTAFF, P_BASIC },	{ P_SPEAR, P_EXPERT },
     { P_TRIDENT, P_EXPERT },		{ P_BOW, P_SKILLED },
+	{ P_SHIELD, P_BASIC },
 #ifdef STEED
     { P_RIDING, P_BASIC },
 #endif
@@ -1306,6 +1313,7 @@ static const struct def_skill Skill_P[] = {
     { P_SLING, P_BASIC },		{ P_CROSSBOW, P_BASIC },
     { P_DART, P_BASIC },		{ P_SHURIKEN, P_BASIC },
     { P_BOOMERANG, P_BASIC },		{ P_UNICORN_HORN, P_SKILLED },
+	{ P_SHIELD, P_BASIC },
     { P_HEALING_SPELL, P_EXPERT },	{ P_DIVINATION_SPELL, P_EXPERT },
     { P_CLERIC_SPELL, P_EXPERT },
     { P_BARE_HANDED_COMBAT, P_BASIC },
@@ -1448,6 +1456,7 @@ static const struct def_skill Skill_T[] = {
     { P_SPEAR, P_BASIC },
     { P_TRIDENT, P_BASIC },		{ P_LANCE, P_BASIC },
     { P_BOW, P_BASIC },			{ P_SLING, P_BASIC },
+	{ P_SHIELD, P_BASIC },
 //#ifdef FIREARMS
     { P_FIREARM, P_BASIC },
 //#endif
@@ -1481,6 +1490,7 @@ static const struct def_skill Skill_V[] = {
     { P_SPEAR, P_EXPERT },
     { P_TRIDENT, P_BASIC },			{ P_LANCE, P_SKILLED },
     { P_SLING, P_BASIC },			{ P_BOW, P_EXPERT },
+	{ P_SHIELD, P_SKILLED },
     { P_ATTACK_SPELL, P_EXPERT },	{ P_ESCAPE_SPELL, P_BASIC },
     { P_DIVINATION_SPELL, P_SKILLED },
     { P_WAND_POWER, P_BASIC },
@@ -1615,6 +1625,7 @@ u_init()
 	u.wardsknown = 0;
 	u.spells_maintained = 0;
 	u.maintained_en_debt = 0;
+	u.quivered_spell = 0;
 	//u.wardsknown = ~0; //~0 should be all 1s, and is therefore debug mode.
 
 #if 0	/* documentation of more zero values as desirable */
@@ -2646,12 +2657,35 @@ u_init()
 	u.oonaenergy = !rn2(3) ? AD_FIRE : rn2(2) ? AD_COLD : AD_ELEC;
 	u.ring_wishes = -1;
 	dungeon_topology.alt_tower = !rn2(8);
-	dungeon_topology.alt_tulani = !rn2(3);
+	int common_caste = 0;
+	switch(rn2(6)){
+		case 0:
+		case 1:
+			dungeon_topology.alt_tulani = TULANI_CASTE;
+			// No change
+		break;
+		case 2:
+			dungeon_topology.alt_tulani = GAE_CASTE;
+			common_caste = PM_GAE_ELADRIN;
+		break;
+		case 3:
+			dungeon_topology.alt_tulani = BRIGHID_CASTE;
+			common_caste = PM_BRIGHID_ELADRIN;
+		break;
+		case 4:
+			dungeon_topology.alt_tulani = UISCERRE_CASTE;
+			common_caste = PM_UISCERRE_ELADRIN;
+		break;
+		case 5:
+			dungeon_topology.alt_tulani = CAILLEA_CASTE;
+			common_caste = PM_CAILLEA_ELADRIN;
+		break;
+	}
 	
-	if(dungeon_topology.alt_tulani){
+	if(common_caste){
 		unsigned short genotmp = mons[PM_TULANI_ELADRIN].geno;
-		mons[PM_TULANI_ELADRIN].geno = mons[PM_GAE_ELADRIN].geno;
-		mons[PM_GAE_ELADRIN].geno = genotmp;
+		mons[PM_TULANI_ELADRIN].geno = mons[common_caste].geno;
+		mons[common_caste].geno = genotmp;
 	}
 
 	dungeon_topology.eprecursor_typ = rnd(8);
@@ -2886,7 +2920,7 @@ register struct trobj *trop;
 				    (objects[otyp].oc_level > 3 ||
 				    restricted_spell_discipline(otyp)))
 				|| (hates_silver(youracedata) && obj->obj_material == SILVER)
-				|| (hates_iron(youracedata) && obj->obj_material == IRON)
+				|| (hates_iron(youracedata) && is_iron_obj(obj))
 							) {
 				dealloc_obj(obj);
 				obj = mkobj(trop->trclass, FALSE);
@@ -2985,8 +3019,8 @@ register struct trobj *trop;
 			}else{
 				obj->dknown = obj->bknown = obj->rknown = obj->sknown = 1;
 				if (objects[otyp].oc_uses_known) obj->known = 1;
-				if(Role_if(PM_PIRATE) && obj->obj_material == IRON) obj->oerodeproof = 1;
-				if(Role_if(PM_SAMURAI) && obj->oclass == ARMOR_CLASS && obj->obj_material == IRON) obj->oerodeproof = 1;
+				if(Role_if(PM_PIRATE) && is_iron_obj(obj)) obj->oerodeproof = 1;
+				if(Role_if(PM_SAMURAI) && obj->oclass == ARMOR_CLASS && is_iron_obj(obj)) obj->oerodeproof = 1;
 				if(Role_if(PM_SAMURAI) && obj->otyp == MASK){
 					if(hates_iron(youracedata)){
 						set_material_gm(obj, Race_if(PM_DROW) ? OBSIDIAN_MT : MITHRIL);
@@ -3050,7 +3084,7 @@ register struct trobj *trop;
 				&& (obj->oclass == ARMOR_CLASS || obj->oclass == WEAPON_CLASS)
 				&& !is_ammo(obj)
 			){
-				if(obj->obj_material == IRON){
+				if(is_iron_obj(obj)){
 					set_material_gm(obj, Race_if(PM_DROW) ? OBSIDIAN_MT : MITHRIL);
 				}
 			}

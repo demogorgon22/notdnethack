@@ -219,7 +219,7 @@ struct monst * mon;
 		return 0;
 
 	/* teleport */
-	if (!tele_restrict(mon)) (void) rloc(mon, FALSE);
+	if (!tele_restrict(mon)) (void) rloc(mon, TRUE);
 
 	return 1;
 }
@@ -1001,7 +1001,7 @@ struct monst * mon;
 			break;
 	}
 	
-	if (!tele_restrict(mon)) (void) rloc(mon, FALSE);
+	if (!tele_restrict(mon)) (void) rloc(mon, TRUE);
 	return 1;
 }
 
@@ -1380,7 +1380,7 @@ boolean badeffect;
 			if (!badeffect)
 				mon->mspec_used = rnd(100);
 			if (!rn2(25))
-				mon->mcan = 1;
+				set_mcan(mon, TRUE);
 			break;
 	}
 	return;

@@ -861,6 +861,10 @@ Amulet_on()
 		    Slimed = 0;
 		    flags.botl = 1;
 		}
+		if (Upolyd && uskin && uskin->oartifact == ART_MIRRORED_MASK) {
+			You("shudder!");
+			rehumanize();
+		}
 		break;
 	case AMULET_OF_CHANGE:
 	    {
@@ -914,9 +918,14 @@ Amulet_off()
 	case AMULET_OF_DRAIN_RESISTANCE:
 	case AMULET_OF_REFLECTION:
 	case AMULET_OF_CHANGE:
-	case AMULET_OF_UNCHANGING:
 	case FAKE_AMULET_OF_YENDOR:
 		break;
+	case AMULET_OF_UNCHANGING:
+		setworn((struct obj *)0, W_AMUL);
+		if (!Unchanging && ublindf && ublindf->otyp == MASK && ublindf->oartifact == ART_MIRRORED_MASK && ublindf->corpsenm != NON_PM) {
+			activate_mirrored_mask(ublindf);
+		}
+		return;
 	case AMULET_OF_MAGICAL_BREATHING:
 		if (Underwater) {
 		    /* HMagical_breathing must be set off
@@ -1225,6 +1234,9 @@ register struct obj *otmp;
 	    vision_full_recalc = 1;	/* recalc vision limits */
 	    flags.botl = 1;
 	}
+	if (!Unchanging && otmp->otyp == MASK && otmp->oartifact == ART_MIRRORED_MASK && otmp->corpsenm != NON_PM) {
+		activate_mirrored_mask(otmp);
+	}
 }
 
 void
@@ -1369,7 +1381,7 @@ dotakeoff()
 	}
 	if (!armorpieces) {
 	     /* assert( GRAY_DRAGON_SCALES > YELLOW_DRAGON_SCALE_MAIL ); */
-		if (uskin)
+		if (uskin && uskin->oclass == ARMOR_CLASS)
 		    pline_The("%s merged with your skin!",
 				uskin->otyp == LEO_NEMAEUS_HIDE ? 
 				"lion skin is" : 
@@ -1621,7 +1633,7 @@ boolean noisy;
 		if (uarmh) {
 			if (noisy) already_wearing(an(c_helmet));
 			err++;
-		} else if (!is_flimsy(otmp)) {
+		} else if (!is_flimsy(otmp) && otmp->otyp != find_gcirclet()){
 			/* (flimsy exception matches polyself handling), you can even just set a hat on top of your body (no head requried)*/
 			if(!has_head_mon(&youmonst)){
 				if (noisy)
@@ -2042,6 +2054,9 @@ struct obj * otmp;
 
 	int def = objects[otmp->otyp].a_ac;
 	
+	// visored helm's bonus IS affected by mat and erosion
+	if (otmp->otyp == find_vhelm()) def += 1;
+	
 	// add material bonus
 	def += material_def_bonus(otmp, def);
 
@@ -2053,6 +2068,8 @@ struct obj * otmp;
 		def += 2;
 	// combat boots
 	if (otmp->otyp == find_cboots()) def += 1;
+	// circlet
+	if (otmp->otyp == find_gcirclet()) def /= 2;
 
 	// add enchantment
 	if (otmp->spe)
@@ -2085,6 +2102,9 @@ struct obj * otmp;
 	case ART_WEB_OF_THE_CHOSEN:
 	case ART_CLOAK_OF_THE_CONSORT:
 		def *= 2;
+		break;
+	case ART_DRAGON_PLATE:
+		def += 2;
 		break;
 	case ART_ARMOR_OF_EREBOR:
 		def += 5;
@@ -2119,6 +2139,9 @@ struct obj * otmp;
 	if(is_shield(otmp))
 		return 0;
 
+	// visored helm's bonus IS affected by mat and erosion
+	if (otmp->otyp == find_vhelm()) def += 1;
+	
 	// add material bonus
 	def += material_def_bonus(otmp, def);
 
@@ -2131,9 +2154,7 @@ struct obj * otmp;
 	// padded gloves
 	if (otmp->otyp == find_pgloves()) def += 1;
 	// gold circlet
-	if (otmp->otyp == find_gcirclet()) def -= 1;
-	// visored helm
-	if (otmp->otyp == find_vhelm()) def += 1;
+	if (otmp->otyp == find_gcirclet()) def /= 2;
 	// combat boots
 	if (otmp->otyp == find_cboots()) def += 1;
 
@@ -2169,6 +2190,9 @@ struct obj * otmp;
 	case ART_WEB_OF_THE_CHOSEN:
 	case ART_CLOAK_OF_THE_CONSORT:
 		def *= 2;
+		break;
+	case ART_DRAGON_PLATE:
+		def += 2;
 		break;
 	case ART_ARMOR_OF_EREBOR:
 		def += 5;
@@ -2257,7 +2281,7 @@ base_uac()
 		}
 		if(has_spear_point(uwep,JET)) uac -= 2 + uwep->spe/2;
 		if(is_lightsaber(uwep) && litsaber(uwep)){
-			if(activeFightingForm(FFORM_SORESU) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))){
+			if(activeFightingForm(FFORM_SORESU)){
 				switch(min(P_SKILL(P_SORESU), P_SKILL(weapon_type(uwep)))){
 					case P_BASIC:
 						uac -=   max(0, (ACURR(A_DEX)+ACURR(A_INT) - 20)/5);
@@ -2269,7 +2293,7 @@ base_uac()
 						uac -= max(0, (ACURR(A_DEX)+ACURR(A_INT) - 20)/2);
 					break;
 				}
-			} else if(activeFightingForm(FFORM_ATARU) && (!uarm || is_light_armor(uarm))){
+			} else if(activeFightingForm(FFORM_ATARU)){
 				switch(min(P_SKILL(P_ATARU), P_SKILL(weapon_type(uwep)))){
 					case P_BASIC:
 						uac += 20;
@@ -2281,7 +2305,7 @@ base_uac()
 						uac += 5;
 					break;
 				}
-			} else if(activeFightingForm(FFORM_MAKASHI) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))){
+			} else if(activeFightingForm(FFORM_MAKASHI)){
 				int sx, sy, mcount = 0;
 				for(sx = u.ux-1; sx<=u.ux+1; sx++){
 					for(sy = u.uy-1; sy<=u.uy+1; sy++){
@@ -2385,7 +2409,9 @@ find_ac()
 	if (uarmh)	uac -= arm_ac_bonus(uarmh);
 	if (uarmf)	uac -= arm_ac_bonus(uarmf);
 	if(uarms){
-		uac -= max(0, arm_ac_bonus(uarms) + (uarms->objsize - youracedata->msize));
+		uac -= max(0, arm_ac_bonus(uarms) + (uarms->objsize - youracedata->msize)) + shield_skill(uarms);
+		if(uwep && (objects[uwep->otyp].oc_skill == P_SPEAR || objects[uwep->otyp].oc_skill == P_POLEARMS || objects[uwep->otyp].oc_skill == P_LANCE))
+			uac -= 2;
 	}
 	if (uarmg)	uac -= arm_ac_bonus(uarmg);
 	if (uarmu)	uac -= arm_ac_bonus(uarmu);
@@ -2567,7 +2593,7 @@ int depth;
 	struct obj * uarmor[] = ARMOR_SLOTS;
 	int i;
 	for (i = 0; i < SIZE(uarmor); i++) {
-		if (uarmor[i] && (objects[uarmor[i]->otyp].oc_dir & slot)) {
+		if (uarmor[i] && (objects[uarmor[i]->otyp].oc_dtyp & slot)) {
 			if(depth && higher_depth(uarmor[i]->owornmask, depth))
 				continue;
 			arm_udr += arm_dr_bonus(uarmor[i]);
@@ -2601,7 +2627,7 @@ int depth;
 	}
 	/* Vaul is not randomized, and contributes to magical DR */
 	if (u.uvaul) {
-		int offset;
+		int offset = 0;
 		switch (slot)
 		{
 		case UPPER_TORSO_DR: offset = 3; break;
@@ -3827,7 +3853,7 @@ struct obj *armor;
 			continue;
 
 		youdef = (mdef == &youmonst);
-		if(!youdef && DEADMONSTER(mdef))
+		if(DEADMONSTER(mdef))
 			continue;
 		
 		if(youagr && (mdef->mpeaceful || !rn2(4)))
@@ -3849,7 +3875,7 @@ struct obj *armor;
 		) continue;
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
 			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
-			if(!youagr && DEADMONSTER(magr))
+			if(DEADMONSTER(magr))
 				break; //oops!
 			if(youagr) morehungry(1);
 			lim++;
@@ -3886,7 +3912,7 @@ struct obj *wep;
 			continue;
 		
 		youdef = (mdef == &youmonst);
-		if(!youdef && DEADMONSTER(mdef))
+		if(DEADMONSTER(mdef))
 			continue;
 		
 		if(youagr && mdef->mpeaceful)
@@ -3904,8 +3930,8 @@ struct obj *wep;
 		mdef->movement -= 12;
 	}
 	if(youagr)
-		u.ustdy -= 10;
-	else magr->mstdy -= 10;
+		u.ustdy -= 10 + shield_skill(wep) + wep->spe;
+	else magr->mstdy -= 10 + wep->spe;
 }
 
 static void
@@ -3921,6 +3947,13 @@ struct obj *wep;
 	boolean youagr = (magr == &youmonst);
 	boolean youdef;
 	
+	if(youagr)
+		symbiote.damd += shield_skill(wep);
+	
+	symbiote.damd += wep->spe;
+	
+	symbiote.damd = max(symbiote.damd, 1);
+	
 	for(j=8;j>=1;j--){
 		if(youagr && u.ustuck && u.uswallow)
 			mdef = u.ustuck;
@@ -3932,7 +3965,7 @@ struct obj *wep;
 			continue;
 		
 		youdef = (mdef == &youmonst);
-		if(!youdef && DEADMONSTER(mdef))
+		if(DEADMONSTER(mdef))
 			continue;
 		
 		if(youagr && mdef->mpeaceful)
@@ -3960,7 +3993,7 @@ struct obj *wep;
 		
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
 			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE);
-			if(!youagr && DEADMONSTER(magr))
+			if(DEADMONSTER(magr))
 				break; //oops!
 			//limit of one attack for weapons
 			break;
@@ -3993,14 +4026,18 @@ struct obj *wep;
 			if(!isok(curx, cury))
 				continue;
 			else mdef = m_u_at(curx, cury);
-			
-			if(!mdef)
+
+			if(!mdef){
+				if(!ZAP_POS(levl[curx][cury].typ))
+					break; //Can no longer zap through here
+				//else
 				continue;
-			
+			}
+
 			youdef = (mdef == &youmonst);
-			if(!youdef && DEADMONSTER(mdef))
+			if(DEADMONSTER(mdef))
 				continue;
-			
+
 			if(youagr && mdef->mpeaceful){
 				gooddir = FALSE;
 				break; //break out of inner loop now, we found a bad target.
@@ -4023,6 +4060,9 @@ struct obj *wep;
 
 			//else found a good target over here, and haven't hit a bad one (yet)
 			gooddir = TRUE;
+
+			if(!ZAP_POS(levl[curx][cury].typ))
+				break; //Can no longer zap through here
 		}
 		//found good direction, break out of outer loop
 		if(gooddir)
@@ -4040,7 +4080,7 @@ struct obj *wep;
 	/* dragonbreath */
 	zapdata.unreflectable = ZAP_REFL_ADVANCED;
 	/* set damage */
-	zapdata.damn = 10;
+	zapdata.damn = 10 + shield_skill(wep);
 	zapdata.damd = 10;
 	zapdata.no_bounce = TRUE;
 
@@ -4054,7 +4094,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if(!invoked){
-		if(rn2(20))
+		if(rn2(5))
 			return;
 		if(!nearby_targets(magr))
 			return;
@@ -4093,7 +4133,7 @@ struct obj *wep;
 	
 	if(youagr && u.ustuck && u.uswallow){
 		mdef = u.ustuck;
-		mdef->movement -= 12;
+		mdef->movement -= 12 + wep->spe;
 	} else for(j=8;j>=1;j--){
 		if(!isok(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]))
 			continue;
@@ -4103,7 +4143,7 @@ struct obj *wep;
 			continue;
 		
 		youdef = (mdef == &youmonst);
-		if(!youdef && DEADMONSTER(mdef))
+		if(DEADMONSTER(mdef))
 			continue;
 		
 		if(youagr && mdef->mpeaceful)
@@ -4119,7 +4159,7 @@ struct obj *wep;
 			continue;
 
 		if(youdef){
-			mdef->movement -= 12;
+			mdef->movement -= 12 + wep->spe;
 			if(!bigmonst(youracedata)){
 				hurtle(clockwisex[(i+j)%8], clockwisey[(i+j)%8], 1, TRUE, FALSE);
 			}
@@ -4127,7 +4167,7 @@ struct obj *wep;
 			// if (!resist(mdef, WEAPON_CLASS, 0, NOTELL))
 				// monflee(mdef, 3, FALSE, FALSE);
 			if(bigmonst(mdef->data)){
-				mdef->movement -= 12;
+				mdef->movement -= 12 + wep->spe;
 			} else {
 				mhurtle(mdef, clockwisex[(i+j)%8], clockwisey[(i+j)%8], 1, FALSE);
 				//Note: mdef may be gone now due to traps
@@ -4149,11 +4189,11 @@ struct obj *wep;
 		pline("The Mad King blesses %s!", mon_nam(magr));
 	
 	if(youagr){
-		u.ustdy -= 8;
-		u.uencouraged += 8;
+		u.ustdy -= 8 + wep->spe + weapon_dam_bonus(wep, weapon_type(wep));
+		u.uencouraged += 8 + wep->spe + weapon_dam_bonus(wep, weapon_type(wep));
 	} else {
-		magr->mstdy -= 8;
-		magr->encouraged += 8;
+		magr->mstdy -= 8 + wep->spe + weapon_dam_bonus(wep, weapon_type(wep));
+		magr->encouraged += 8 + wep->spe + weapon_dam_bonus(wep, weapon_type(wep));
 	}
 }
 
@@ -4192,7 +4232,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if(!invoked){
-		if(rn2(20))
+		if(rn2(5))
 			return;
 		if(!nearby_targets(magr))
 			return;
@@ -4322,7 +4362,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if(!invoked){
-		if(rn2(20))
+		if(rn2(5))
 			return;
 		if(!nearby_targets(magr))
 			return;
@@ -4356,11 +4396,11 @@ struct obj *wep;
 		return;
 	
 	if(rn2(2)){
-		if(youagr || canseemon(magr))
+		if((youagr || canseemon(magr)) && artinstance[wep->oartifact].RRSember < moves)
 			pline("The ringed armor's black tentacles awaken and begin to dance like fire!");
 		artinstance[wep->oartifact].RRSember = moves + 4 + rn2(4) + rn2(4);
 	} else {
-		if(youagr || canseemon(magr))
+		if((youagr || canseemon(magr)) && artinstance[wep->oartifact].RRSlunar < moves)
 			pline("The ringed armor's tattered skirt transforms into gleaming royal blue serpents!");
 		artinstance[wep->oartifact].RRSlunar = moves + 4 + rn2(4) + rn2(4);
 	}
@@ -4396,7 +4436,7 @@ char etyp;
 			continue;
 
 		youdef = (mdef == &youmonst);
-		if(!youdef && DEADMONSTER(mdef))
+		if(DEADMONSTER(mdef))
 			continue;
 		
 		if(youagr && (mdef->mpeaceful || !rn2(4)))
@@ -4422,7 +4462,7 @@ char etyp;
 			symbiote.damn = min(symbiote.damn, 8-lim);
 			
 			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
-			if(!youagr && DEADMONSTER(magr))
+			if(DEADMONSTER(magr))
 				break; //oops!
 			lim+=symbiote.damn;
 			
@@ -4470,7 +4510,7 @@ struct obj *wep;
 				if(canseemon(magr))
 					pline("The depths of the dark gleam, nurturing %s spirit!", s_suffix(mon_nam(magr)));
 				magr->mspec_used = 0;
-				magr->mcan = 0;
+				set_mcan(magr, FALSE);
 			}
 		}
 	}
@@ -4523,7 +4563,7 @@ struct obj *wep;
 boolean invoked;
 {
 	if((invoked
-		|| !rn2(20)
+		|| !rn2(5)
 	) && (
 		nearby_targets(magr)
 		|| (magr == &youmonst && (uhp() < uhpmax() || u.uen < u.uenmax))
@@ -4553,6 +4593,74 @@ boolean invoked;
 		dobrass_attack(magr, wep, AT_BITE, AD_MAGM);
 }
 
+void
+doliving_healing_armor(magr, wep, invoked)
+struct monst *magr;
+struct obj *wep;
+boolean invoked;
+{
+	boolean proc = FALSE;
+	boolean youagr = magr == &youmonst;
+	if(*hp(magr) >= *hpmax(magr) && !(youagr && (Sick || Slimed)))
+		return;
+	if(youagr && (Sick || Slimed)){
+		proc = !rn2(20);
+	}
+	else if(*hp(magr) < *hpmax(magr)/2){
+		if(nearby_targets(magr))
+			proc = !rn2(45);
+		else proc = !rn2(90);
+	}
+	else if(nearby_targets(magr)){
+		proc = !rn2(90);
+	}
+	else {
+		proc = !rn2(180);
+	}
+	
+	if(invoked || proc){
+		int healamt = max_ints((*hpmax(magr) - *hp(magr) + 1) / 2, d(5,8));
+		if(youagr){
+			healup(healamt, 0, TRUE, TRUE);
+			if(Slimed){
+				You_feel("less slimy!");
+				Slimed = 0L;
+			}
+		}
+		else {
+			*hp(magr) = min_ints(*hp(magr) + healamt, *hpmax(magr));
+			magr->mcansee = 1;
+			magr->mblinded = 0;
+		}
+		
+	}
+}
+
+void
+doliving_armor_salve(mon, salve)
+struct monst *mon;
+struct obj *salve;
+{
+	boolean proc = FALSE;
+	boolean yours = (mon == &youmonst);
+
+	if(rn2(180))
+		return;
+
+	if(u.uinsight >= 18 && salve->spe < 6){
+		salve->spe++;
+	}
+	else if(u.uinsight >= 66 && salve->spe >= 6){
+		for(struct obj *otmp = yours ? invent : mon->minvent; otmp; otmp = otmp->nobj){
+			if(salve_target(otmp) && rn2(2)){
+				if(yours) pline("%s crawls across %s.", Yname2(salve), yname(otmp));
+				salve_effect(otmp);
+				return;
+			}
+		}
+	}
+}
+
 static void
 doliving_single_attack(magr, wep)
 struct monst *magr;
@@ -4577,7 +4685,7 @@ struct obj *wep;
 			continue;
 
 		youdef = (mdef == &youmonst);
-		if(!youdef && DEADMONSTER(mdef))
+		if(DEADMONSTER(mdef))
 			continue;
 
 		if(youagr && (mdef->mpeaceful || !rn2(4)))
@@ -4596,7 +4704,7 @@ struct obj *wep;
 		if(mdef->mtyp == PM_PALE_NIGHT) continue;
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
 			xmeleehity(magr, mdef, &symbiote, &wep, -1, 0, FALSE);
-			if(!youagr && DEADMONSTER(magr))
+			if(DEADMONSTER(magr))
 				break; //oops!
 			//limit of one attack for weapons
 			break;

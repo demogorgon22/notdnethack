@@ -142,9 +142,9 @@ dosit()
  in_water:
 	    You("sit in the water.");
 	    if (!rn2(10) && uarm)
-		(void) rust_dmg(uarm, "armor", 1, TRUE, &youmonst);
+		(void) rust_dmg(uarm, "armor", 1, TRUE, &youmonst, FALSE);
 	    if (!rn2(10) && uarmf && uarmf->otyp != WATER_WALKING_BOOTS)
-		(void) rust_dmg(uarm, "armor", 1, TRUE, &youmonst);
+		(void) rust_dmg(uarm, "armor", 1, TRUE, &youmonst, FALSE);
 #ifdef SINKS
 	} else if(IS_SINK(typ)) {
 
@@ -226,7 +226,7 @@ dosit()
 					struct monst *mtmp;
 					struct monst *mtmp2 = (struct monst*)0;
 					struct monst *mtmp3 = (struct monst*)0;
-					if (!(mtmp = makemon(&mons[PM_DJINNI], u.ux, u.uy, NO_MM_FLAGS))){
+					if (DimensionalLock || !(mtmp = makemon(&mons[PM_DJINNI], u.ux, u.uy, NO_MM_FLAGS))){
 						pline("Nothing appears to your summon!");
 						break;
 					}
@@ -317,7 +317,7 @@ dosit()
 				take_gold();
 				break;
 				case 6:
-				if(u.uluck + rn2(5) < 0) {
+				if(u.uluck + rn2(5) < 0 || DimensionalLock) {
 					You_feel("your luck is changing.");
 					change_luck(1);
 				}

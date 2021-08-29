@@ -29,7 +29,7 @@
 #define HFire_resistance	u.uprops[FIRE_RES].intrinsic
 #define EFire_resistance	u.uprops[FIRE_RES].extrinsic
 #define Fire_resistance		(HFire_resistance || EFire_resistance || \
-				 species_resists_fire(&youmonst) || \
+				 (species_resists_fire(&youmonst) && !(Race_if(PM_ANDROID) && !Upolyd)) || \
 				 ward_at(u.ux,u.uy) == SIGIL_OF_CTHUGHA )
 #define InvFire_resistance	(EFire_resistance || Preservation || ward_at(u.ux,u.uy) == SIGIL_OF_CTHUGHA)
 
@@ -53,7 +53,7 @@
 #define HShock_resistance	u.uprops[SHOCK_RES].intrinsic
 #define EShock_resistance	u.uprops[SHOCK_RES].extrinsic
 #define Shock_resistance	(HShock_resistance || EShock_resistance || \
-				 species_resists_elec(&youmonst) || \
+				 (species_resists_elec(&youmonst) && !(Race_if(PM_ANDROID) && !Upolyd)) || \
 				 ward_at(u.ux,u.uy) == TRACERY_OF_KARAKAL )
 #define InvShock_resistance	(EShock_resistance || Preservation || ward_at(u.ux,u.uy) == TRACERY_OF_KARAKAL || (HShock_resistance&FROMRACE && Race_if(PM_ANDROID)))
 
@@ -145,6 +145,14 @@
 #define EClearThoughts		u.uprops[CLEAR_THOUGHTS].extrinsic
 #define ClearThoughts		(HClearThoughts || EClearThoughts)
 
+#define HBlowingWinds		u.uprops[BLOWING_WINDS].intrinsic
+#define EBlowingWinds		u.uprops[BLOWING_WINDS].extrinsic
+#define BlowingWinds		(HBlowingWinds || EBlowingWinds)
+
+#define HTimeStop		u.uprops[TIME_STOP].intrinsic
+#define ETimeStop		u.uprops[TIME_STOP].extrinsic
+#define TimeStop		(HTimeStop || ETimeStop)
+
 /* Intrinsics only */
 #define Invulnerable		u.uprops[INVULNERABLE].intrinsic    /* [Tom] */
 
@@ -157,6 +165,8 @@
 /* Pseudo-property */
 #define Punished		(uball)
 #define	Insanity	(100 - u.usanity)
+
+#define save_vs_sanloss()	((uwep && uwep->oartifact == ART_NODENSFORK) || (rnd(30) < ACURR(A_WIS)))
 
 #define Mortal_race	(!nonliving(youracedata) && !is_minion(youracedata) && !is_demon(youracedata) && !is_primordial(youracedata))
 #define Dark_immune	(is_unalive(youracedata) || is_primordial(youracedata))
@@ -181,7 +191,7 @@
 #define HBlind_res		u.uprops[BLIND_RES].intrinsic
 #define EBlind_res		u.uprops[BLIND_RES].extrinsic
 #define Blind_res		(HBlind_res || EBlind_res)
-#define Blindfolded		((ublindf && ublindf->otyp != LENSES && ublindf->otyp != SUNGLASSES && ublindf->otyp != MASK && ublindf->otyp != ANDROID_VISOR && ublindf->otyp != LIVING_MASK) ||\
+#define Blindfolded		((ublindf && is_opaque_worn_tool(ublindf)) ||\
 						(uarmh && uarmh->otyp == PLASTEEL_HELM && uarmh->obj_material != objects[uarmh->otyp].oc_material && is_opaque(uarmh)) ||\
 						(uarmh && uarmh->otyp == CRYSTAL_HELM && is_opaque(uarmh)))
 		/* ...means blind because of a cover */
@@ -204,6 +214,13 @@
 #define Glib			u.uprops[GLIB].intrinsic
 #define Slimed			u.uprops[SLIMED].intrinsic	/* [Tom] */
 #define FrozenAir		u.uprops[FROZEN_AIR].intrinsic
+#define BloodDrown		u.uprops[BLOOD_DROWN].intrinsic
+#define Deadmagic		u.uprops[DEADMAGIC].intrinsic
+#define Catapsi			u.uprops[CATAPSI].intrinsic
+#define Misotheism		u.uprops[MISOTHEISM].intrinsic
+#define DarksightOnly	u.uprops[DARKVISION_ONLY].intrinsic
+#define Shattering		u.uprops[SHATTERING].intrinsic
+#define DimensionalLock	u.uprops[DIMENSION_LOCK].intrinsic
 
 /* Hallucination is solely a timeout; its resistance is extrinsic */
 #define HHallucination		u.uprops[HALLUC].intrinsic
@@ -260,18 +277,18 @@
 /*** Vision and senses ***/
 #define HNormalvision		u.uprops[NORMALVISION].intrinsic
 #define ENormalvision		u.uprops[NORMALVISION].extrinsic
-#define Normalvision		(HNormalvision || ENormalvision || \
-				 normalvision(youracedata))
+#define Normalvision		((HNormalvision || ENormalvision || \
+				 normalvision(youracedata)) && !DarksightOnly)
 
 #define HLowlightsight		u.uprops[LOWLIGHTSIGHT].intrinsic
 #define ELowlightsight		u.uprops[LOWLIGHTSIGHT].extrinsic
-#define Lowlightsight		(HLowlightsight || ELowlightsight || \
-				 lowlightsight2(youracedata))
+#define Lowlightsight		((HLowlightsight || ELowlightsight || \
+				 lowlightsight2(youracedata)) && !DarksightOnly)
 
 #define HElfsight		u.uprops[ELFSIGHT].intrinsic
 #define EElfsight		u.uprops[ELFSIGHT].extrinsic
-#define Elfsight		(HElfsight || EElfsight || \
-				 lowlightsight3(youracedata))
+#define Elfsight		((HElfsight || EElfsight || \
+				 lowlightsight3(youracedata)) && !DarksightOnly)
 
 #define HDarksight		u.uprops[DARKSIGHT].intrinsic
 #define EDarksight		u.uprops[DARKSIGHT].extrinsic
@@ -280,13 +297,13 @@
 
 #define HCatsight		u.uprops[CATSIGHT].intrinsic
 #define ECatsight		u.uprops[CATSIGHT].extrinsic
-#define Catsight		(HCatsight || ECatsight || \
-				 catsight(youracedata))
+#define Catsight		((HCatsight || ECatsight || \
+				 catsight(youracedata)) && !DarksightOnly)
 
 #define HExtramission		u.uprops[EXTRAMISSION].intrinsic
 #define EExtramission		u.uprops[EXTRAMISSION].extrinsic
-#define Extramission		(HExtramission || EExtramission || \
-				 extramission(youracedata))
+#define Extramission		((HExtramission || EExtramission || \
+				 extramission(youracedata)) && !DarksightOnly)
 
 #define HXray_vision	u.uprops[XRAY_VISION].intrinsic
 #define EXray_vision	u.uprops[XRAY_VISION].extrinsic
@@ -305,18 +322,18 @@
 
 #define HInfravision		u.uprops[INFRAVISION].intrinsic
 #define EInfravision		u.uprops[INFRAVISION].extrinsic
-#define Infravision		(HInfravision || EInfravision || \
-				  infravision(youracedata))
+#define Infravision		((HInfravision || EInfravision || \
+				  infravision(youracedata)) && !DarksightOnly)
 
 #define HBloodsense		u.uprops[BLOODSENSE].intrinsic
 #define EBloodsense		u.uprops[BLOODSENSE].extrinsic
-#define Bloodsense		(HBloodsense || EBloodsense || \
-				  bloodsense(youracedata))
+#define Bloodsense		((HBloodsense || EBloodsense || \
+				  bloodsense(youracedata)) && !DarksightOnly)
 
 #define HLifesense		u.uprops[LIFESENSE].intrinsic
 #define ELifesense		u.uprops[LIFESENSE].extrinsic
-#define Lifesense		(HLifesense || ELifesense || \
-				  lifesense(youracedata))
+#define Lifesense		((HLifesense || ELifesense || \
+				  lifesense(youracedata)) && !DarksightOnly)
 
 #define HSenseall		u.uprops[SENSEALL].intrinsic
 #define ESenseall		u.uprops[SENSEALL].extrinsic
@@ -379,8 +396,7 @@
 #define NoBInvis		(HInvis || EInvis || Underwater || \
 						 pm_invisible(youracedata) || \
 						 (ward_at(u.ux,u.uy) == HAMSA \
-							&& num_wards_at(u.ux, u.uy) == 6 ) || \
-						  (flags.run != 0 && uwep && uwep->oartifact == ART_TOBIUME))
+							&& num_wards_at(u.ux, u.uy) == 6 ))
 #define Invis			(((HInvis || EInvis || \
 						 pm_invisible(youracedata) || \
 						 (ward_at(u.ux,u.uy) == HAMSA \
@@ -398,8 +414,7 @@
 #define HStealth		u.uprops[STEALTH].intrinsic
 #define EStealth		u.uprops[STEALTH].extrinsic
 #define BStealth		(u.uprops[STEALTH].blocked || (uwep && uwep->otyp == KHAKKHARA))
-#define Stealth			((HStealth || EStealth || Underwater || \
-						 (flags.run != 0 && uwep && uwep->oartifact == ART_TOBIUME)) && !BStealth)
+#define Stealth			((HStealth || EStealth || Underwater) && !BStealth)
 
 #define HAggravate_monster	u.uprops[AGGRAVATE_MONSTER].intrinsic
 #define EAggravate_monster	u.uprops[AGGRAVATE_MONSTER].extrinsic
@@ -568,7 +583,7 @@
 
 #define EReflecting		u.uprops[REFLECTING].extrinsic
 #define Reflecting		(EReflecting || \
-						 (uwep && is_lightsaber(uwep) && uwep->lamplit && ((activeFightingForm(FFORM_SORESU) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm))) || (activeFightingForm(FFORM_SHIEN) && (!uarm || is_light_armor(uarm))))) || \
+						 (uwep && is_lightsaber(uwep) && uwep->lamplit && (activeFightingForm(FFORM_SORESU) || activeFightingForm(FFORM_SHIEN))) || \
 						 (u.usteed && u.usteed->misc_worn_check & W_SADDLE \
 						 && which_armor(u.usteed, W_SADDLE)->oartifact == ART_HELLRIDER_S_SADDLE) || \
 						species_reflects(&youmonst))
@@ -579,7 +594,8 @@
 
 #define Fixed_abil		(u.uprops[FIXED_ABIL].extrinsic)	/* KMH */
 
-#define Lifesaved		(u.uprops[LIFESAVED].extrinsic || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0)) /*Note: the rings only give life saving when charged, so it can't be a normal property*/
+#define ELifesaved		u.uprops[LIFESAVED].extrinsic
+#define Lifesaved		(ELifesaved || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0)) /*Note: the rings only give life saving when charged, so it can't be a normal property*/
 
 #define Necrospellboost	(u.uprops[NECROSPELLS].extrinsic)
 

@@ -28,6 +28,10 @@ enum {
 	OPROP_UNHY,
 	OPROP_REFL,
 	OPROP_DISN,
+	OPROP_BCRS,
+	OPROP_HEAL,
+	OPROP_LIFE,
+	OPROP_GRES,
 	OPROP_FLAYW,
 	OPROP_LESSER_FLAYW,
 	OPROP_PHSEW,
@@ -59,6 +63,7 @@ enum {
 	OPROP_DEEPW,
 	OPROP_PSIOW,
 	OPROP_LESSER_PSIOW,
+	OPROP_DRANW,
 	OPROP_VORPW,
 	OPROP_MORGW,
 	OPROP_LESSER_MORGW,
@@ -69,6 +74,7 @@ enum {
 	OPROP_PSECW,
 	OPROP_GOATW,
 	OPROP_OCLTW,
+	OPROP_RETRW,
 	MAX_OPROP
 };
 
@@ -110,6 +116,10 @@ struct obj {
 #define WP_MODE_AUTO	0	/* Max firing speed */
 #define WP_MODE_BURST	1	/* 1/3 of max rate */
 #define WP_MODE_SINGLE 	2	/* Single shot */
+				/* ENG_MODEs track how reactive a preservation engine is */
+#define ENG_MODE_OFF	0	/* Engine is off */
+#define ENG_MODE_PYS	1	/* Engine reacts to vorpal and shredding only */
+#define ENG_MODE_ENR	2	/* Engine reacts to energy damage (fire/elec/cold/acid) too */
 
 	xchar where;		/* where the object thinks it is */
 #define OBJ_FREE	0		/* object not attached to anything */
@@ -138,9 +148,9 @@ struct obj {
 	Bitfield(oeroded2,2);	/* corroded/rotted/fractured weapon/armor */
 	Bitfield(oeroded3,2);	/* tatteredness */
 #define MAX_ERODE 3
-#define orotten oeroded		/* rotten food */
-#define odiluted oeroded	/* diluted potions */
-#define norevive oeroded2
+	Bitfield(orotten,1);	/* rotten food */
+	Bitfield(odiluted,1);	/* diluted potions */
+	Bitfield(norevive,1);	/* don't revive */
 	Bitfield(oerodeproof,1); /* erodeproof weapon/armor */
 	Bitfield(olarva,2);	/* object has been partially brought to life */
 	Bitfield(odead_larva,2);	/* object was partially brought to life, but died again */
@@ -156,6 +166,7 @@ struct obj {
 
 	Bitfield(recharged,3);	/* number of times it's been recharged */
 #define ostriking recharged	/* extra whip heads striking (imposes cap of +7) */
+	/* 0 free bits */
 	Bitfield(lamplit,1);	/* a light-source -- can be lit */
 #ifdef INVISIBLE_OBJECTS
 	Bitfield(oinvis,1);	/* invisible */
@@ -163,7 +174,6 @@ struct obj {
 	Bitfield(greased,1);	/* covered with grease */
 
 	Bitfield(in_use,1);	/* for magic items before useup items */
-	/* 0 free bits */
 	Bitfield(bypass,1);	/* mark this as an object to be skipped by bhito() */
 	Bitfield(lifted,1); /* dipped in potion of levitation */
 	Bitfield(lightened,1);/* dipped in potion of enlightenment */
@@ -177,7 +187,7 @@ struct obj {
 	Bitfield(obj_material,5); /*Max 31*/
 	//See objclass for values
 	Bitfield(nomerge,1);	/* temporarily block from merging */
-	/* 15 free bits in this field, I think -CM */
+	/* 12 free bits in this field, I think -CM */
 	
 	int obj_color;
 	union {
@@ -514,12 +524,14 @@ struct obj {
 #define is_worn_tool(o)	((o)->otyp == BLINDFOLD || (o)->otyp == ANDROID_VISOR || \
 							 (o)->otyp == TOWEL || (o)->otyp == LENSES || (o)->otyp == SUNGLASSES || \
 							 (o)->otyp == LIVING_MASK || (o)->otyp == MASK || (o)->otyp == R_LYEHIAN_FACEPLATE)
+#define is_opaque_worn_tool(o)	((o)->otyp == BLINDFOLD || (o)->otyp == TOWEL || (o)->otyp == R_LYEHIAN_FACEPLATE)
 #define is_instrument(o)	((o)->otyp >= FLUTE && \
 			 (o)->otyp <= DRUM_OF_EARTHQUAKE)
 #define is_mummy_wrap(o)	((o)->otyp == MUMMY_WRAPPING || \
 			 (o)->otyp == PRAYER_WARDED_WRAPPING)
 #define is_lightsaber(otmp) ((otmp)->otyp == LIGHTSABER || \
 							 (otmp)->otyp == KAMEREL_VAJRA || \
+							 (otmp)->otyp == ROD_OF_FORCE || \
 							 (otmp)->otyp == BEAMSWORD || \
 							 (otmp)->otyp == DOUBLE_LIGHTSABER)
 #define valid_focus_gem(otmp) ((otmp)->oclass == GEM_CLASS && ((otmp)->otyp < LUCKSTONE || (otmp)->otyp == CHUNK_OF_FOSSIL_DARK))
@@ -575,22 +587,22 @@ struct obj {
 			!is_launcher(otmp) &&\
 			!is_lightsaber(otmp) &&\
 			!is_unpoisonable_firearm_ammo(otmp) &&\
-			objects[otmp->otyp].oc_dir &&\
-			objects[otmp->otyp].oc_dir != WHACK)\
+			objects[otmp->otyp].oc_dtyp &&\
+			objects[otmp->otyp].oc_dtyp != WHACK)\
 			|| otmp->otyp == BEARTRAP)
 #define uslinging()	(uwep && objects[uwep->otyp].oc_skill == P_SLING)
 #define is_bludgeon(otmp)	(otmp->oclass == SPBOOK_CLASS || \
 			otmp->oclass == WAND_CLASS || \
-			(objects[otmp->otyp].oc_dir & WHACK)) //Whack == 1
+			(objects[otmp->otyp].oc_dtyp & WHACK)) //Whack == 1
 #define is_stabbing(otmp)	(otmp->oclass != SPBOOK_CLASS && \
 			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dir & PIERCE)) //Pierce == 2
+			(objects[otmp->otyp].oc_dtyp & PIERCE)) //Pierce == 2
 #define is_slashing(otmp)	(otmp->oclass != SPBOOK_CLASS && \
 			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dir & SLASH)) //Slash == 4
+			(objects[otmp->otyp].oc_dtyp & SLASH)) //Slash == 4
 #define is_blasting(otmp)	(otmp->oclass != SPBOOK_CLASS && \
 			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dir & EXPLOSION))
+			(objects[otmp->otyp].oc_dtyp & EXPLOSION))
 //#ifdef FIREARMS
 #define is_blaster(otmp) \
 			((otmp)->oclass == WEAPON_CLASS && \
@@ -623,12 +635,13 @@ struct obj {
 #define valid_weapon(otmp)		((otmp)->oclass == WEAPON_CLASS || \
 	is_weptool((otmp)) || \
 	(otmp)->otyp == BOULDER || \
+	(otmp)->otyp == MASS_OF_STUFF || \
 	(otmp)->otyp == HEAVY_IRON_BALL || \
 	(otmp)->otyp == CHAIN || \
 	(otmp)->oclass == GEM_CLASS)
 #define throwing_weapon(otmp)	(is_missile((otmp)) || is_spear((otmp)) || \
 	(is_blade((otmp)) && !is_sword((otmp)) && \
-	(objects[(otmp)->otyp].oc_dir & PIERCE)) || \
+	(objects[(otmp)->otyp].oc_dtyp & PIERCE)) || \
 	(otmp)->otyp == WAR_HAMMER || (otmp)->otyp == AKLYS || \
 	(otmp)->oartifact == ART_SICKLE_MOON || \
 	(otmp)->oartifact == ART_HOUCHOU)
@@ -703,6 +716,7 @@ struct obj {
 				|| ((otmp)->oartifact == ART_FRIEDE_S_SCYTHE && uwep && uwep->oartifact==ART_PROFANED_GREATSCYTHE)\
 				|| ((otmp)->oartifact == ART_FRIEDE_S_SCYTHE && uwep && uwep->oartifact==ART_LIFEHUNT_SCYTHE)\
 				|| ((otmp)->oartifact == ART_MEMORY && uwep && uwep->oartifact==ART_THOUGHT)\
+				|| ((otmp)->oartifact == ART_FLUORITE_OCTAHEDRON && uwep && uwep->oartifact==ART_FLUORITE_OCTAHEDRON)\
 				|| ((otmp)->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE))\
 				|| ((otmp)->oartifact == ART_CLEAVER && Role_if(PM_BARBARIAN))\
 				|| ((otmp)->oartifact == ART_ATLANTEAN_ROYAL_SWORD && Role_if(PM_BARBARIAN))\
@@ -858,6 +872,7 @@ struct obj {
 				|| (otmp)->otyp == LIGHTSABER\
 				|| (otmp)->otyp == BEAMSWORD\
 				|| (otmp)->otyp == DOUBLE_LIGHTSABER\
+				|| (otmp)->otyp == ROD_OF_FORCE\
 				|| (otmp)->otyp == GNOMISH_POINTY_HAT\
 				|| (otmp)->otyp == CANDELABRUM_OF_INVOCATION\
 				|| (otmp)->otyp == TALLOW_CANDLE\
@@ -880,7 +895,9 @@ struct obj {
 #define is_graystone(obj)	((obj)->otyp == LUCKSTONE || \
 				 (obj)->otyp == LOADSTONE || \
 				 (obj)->otyp == FLINT     || \
-				 (obj)->otyp == TOUCHSTONE)
+				 (obj)->otyp == TOUCHSTONE || \
+				 (obj)->otyp == VITAL_SOULSTONE || \
+				 (obj)->otyp == SPIRITUAL_SOULSTONE)
 
 /* spirit related */
 #define is_berithable(otmp)	(otmp->otyp == SADDLE\
@@ -906,15 +923,22 @@ struct obj {
 							 (otmp)->obj_material == IRON)
 
 /* misc */
-#define is_boulder(otmp)		((otmp)->otyp == BOULDER || (otmp)->otyp == MASSIVE_STONE_CRATE || ((otmp)->otyp == STATUE && opaque(&mons[(otmp)->corpsenm])))
+#define is_boulder(otmp)		((otmp)->otyp == BOULDER || (otmp)->otyp == MASSIVE_STONE_CRATE || (otmp)->otyp == MASS_OF_STUFF || ((otmp)->otyp == STATUE && opaque(&mons[(otmp)->corpsenm])))
 
 #define is_dress(onum)		(onum == NOBLE_S_DRESS || onum == GENTLEWOMAN_S_DRESS || onum == PLAIN_DRESS || onum == VICTORIAN_UNDERWEAR)
 
-#define arm_blocks_upper_body(onum)		(objects[onum].oc_dir&UPPER_TORSO_DR)
+#define arm_blocks_upper_body(onum)		(objects[onum].oc_dtyp&UPPER_TORSO_DR)
 
 /* helpers, simple enough to be macros */
 #define is_plural(o)	((o)->quan > 1 || \
 			 (o)->oartifact == ART_EYES_OF_THE_OVERWORLD)
+
+#define salve_target(otmp)	(\
+			((otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && otmp->spe < 0)\
+			|| otmp->oeroded > 0\
+			|| otmp->oeroded2 > 0\
+			|| otmp->oeroded3 > 0\
+			)
 
 /* Flags for get_obj_location(). */
 #define CONTAINED_TOO	0x1

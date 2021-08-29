@@ -256,6 +256,12 @@ const char *goal;
 						(IS_DOOR(levl[tx][ty].typ) || /* monsters mimicking a door */
 							glyph_to_cmap(k) == S_drkroom ||
 							glyph_to_cmap(k) == S_litroom ||
+							glyph_to_cmap(k) == S_drkgrass ||
+							glyph_to_cmap(k) == S_litgrass ||
+							glyph_to_cmap(k) == S_drksoil ||
+							glyph_to_cmap(k) == S_litsoil ||
+							glyph_to_cmap(k) == S_drksand ||
+							glyph_to_cmap(k) == S_litsand ||
 							glyph_to_cmap(k) == S_brightrm ||
 							glyph_to_cmap(k) == S_corr ||
 							glyph_to_cmap(k) == S_litcorr)) {
@@ -401,7 +407,7 @@ do_mname()
 	/* strip leading and trailing spaces; unnames monster if all spaces */
 	(void)mungspaces(buf);
 
-	if (mtmp->data->geno & G_UNIQ)
+	if (mtmp->data->geno & G_UNIQ && !mtmp->mtame)
 	    pline("%s doesn't like being called names!", Monnam(mtmp));
 	else
 	    (void) christen_monst(mtmp, buf);
@@ -650,6 +656,8 @@ const char *name;
 			obj->corpsenm = PM_GOD;
 		if (obj->oartifact == ART_STONE_MASK)
 			obj->corpsenm = PM_SHIRO;
+		if (obj->oartifact == ART_MIRRORED_MASK)
+			obj->corpsenm = NON_PM;
 		
 		/* weight */
 		if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD)
@@ -1107,8 +1115,14 @@ boolean called;
 			article = ARTICLE_NONE;
 			name_at_start = TRUE;
 	    } else {
-			Strcat(buf, name);
 			name_at_start = TRUE;
+			if (maybe_append_injury_desc(mtmp, buf))
+				name_at_start = FALSE;
+			if(mtmp->entangled == SHACKLES){
+				Strcat(buf, "shackled ");
+				name_at_start = FALSE;
+			}
+			Strcat(buf, name);
 	    }
 	} else if (is_mplayer(mdat) && !In_endgame(&u.uz)) {
 	    char pbuf[BUFSZ];

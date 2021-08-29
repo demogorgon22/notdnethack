@@ -405,7 +405,6 @@ xchar x, y;
 
 	/* Mjollnir is magically too heavy to kick */
 	if(kickobj->oartifact == ART_MJOLLNIR || 
-		kickobj->oartifact == ART_SICKLE_MOON || 
 		kickobj->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS ||
 		(kickobj->otyp == MAGIC_CHEST && kickobj->obolted)) range = 1;
 
@@ -833,7 +832,7 @@ int dx, dy;
 		    if(!rn2(3)) goto ouch;
 		    /* make metal boots rust */
 		    if(uarmf && rn2(3))
-			if (!rust_dmg(uarmf, "metal boots", 1, FALSE, &youmonst)) {
+			if (!rust_dmg(uarmf, "metal boots", 1, FALSE, &youmonst, FALSE)) {
 				Your("boots get wet.");
 				/* could cause short-lived fumbling here */
 			}
@@ -883,7 +882,7 @@ int dx, dy;
 					    pline("Some %s fall from the tree!", xname(treefruit));
 					else
 					    pline("%s falls from the tree!", An(xname(treefruit)));
-					nfall = scatter(x,y,2,MAY_HIT,treefruit);
+					nfall = scatter(x,y,2,MAY_HIT,treefruit, (long *)0, (struct monst *)0);
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
@@ -937,7 +936,7 @@ int dx, dy;
 					    pline("Some %s fall from the tree!", xname(treefruit));
 					else
 					    pline("%s falls from the tree!", An(xname(treefruit)));
-					nfall = scatter(x,y,2,MAY_HIT,treefruit);
+					nfall = scatter(x,y,2,MAY_HIT,treefruit, (long *)0, (struct monst *)0);
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
@@ -1025,7 +1024,7 @@ int dx, dy;
 					    pline("Some %s fall from the tree!", xname(treefruit));
 					else
 					    pline("%s falls from the tree!", An(xname(treefruit)));
-					nfall = scatter(x,y,2,MAY_HIT,treefruit);
+					nfall = scatter(x,y,2,MAY_HIT,treefruit, (long *)0, (struct monst *)0);
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
@@ -1080,7 +1079,7 @@ int dx, dy;
 					    pline("Some %s fall from the tree!", xname(treefruit));
 					else
 					    pline("%s falls from the tree!", An(xname(treefruit)));
-					nfall = scatter(x,y,2,MAY_HIT,treefruit);
+					nfall = scatter(x,y,2,MAY_HIT,treefruit, (long *)0, (struct monst *)0);
 					if (nfall != nfruit) {
 					    /* scatter left some in the tree, but treefruit
 					     * may not refer to the correct object */
@@ -1653,7 +1652,7 @@ obj_delivery()
 	    if (nx > 0) {
 		place_object(otmp, nx, ny);
 		stackobj(otmp);
-		(void)scatter(nx, ny, rnd(2), 0, otmp);
+		(void)scatter(nx, ny, rnd(2), 0, otmp, (long *)0, (struct monst *)0);
 	    } else {		/* random location */
 		/* set dummy coordinates because there's no
 		   current position for rloco() to update */

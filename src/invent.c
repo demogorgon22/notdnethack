@@ -510,9 +510,12 @@ void
 useupall(obj)
 struct obj *obj;
 {
+	boolean gloves = !!(obj->owornmask&W_ARMG);
 	setnotworn(obj);
 	freeinv(obj);
 	obfree(obj, (struct obj *)0);	/* deletes contents also */
+	if(gloves)
+		selftouch("With your hand-protection gone, you");
 }
 
 void
@@ -826,6 +829,21 @@ carrying_applyable_amulet()
 	return FALSE;
 }
 
+/* note: does not include gray stones */
+char
+carrying_applyable_gem()
+{
+	register struct obj *otmp;
+
+	for(otmp = invent; otmp; otmp = otmp->nobj)
+		if(otmp->otyp == ANTIMAGIC_RIFT
+		|| otmp->otyp == CATAPSI_VORTEX
+		|| (Role_if(PM_ANACHRONONAUT) && !otmp->oartifact && otmp->otyp == DILITHIUM_CRYSTAL)
+		)
+			return TRUE;
+	return FALSE;
+}
+
 char
 carrying_readable_weapon()
 {
@@ -843,6 +861,21 @@ carrying_readable_weapon()
 				otmp->oartifact == ART_PEN_OF_THE_VOID ||
 				otmp->oartifact == ART_STAFF_OF_NECROMANCY
 			))
+		)
+			return TRUE;
+	return FALSE;
+}
+
+char
+carrying_readable_tool()
+{
+	register struct obj *otmp;
+
+	for(otmp = invent; otmp; otmp = otmp->nobj)
+		if(otmp->otyp == CANDLE_OF_INVOCATION
+			|| otmp->otyp == LIGHTSABER
+			|| otmp->otyp == MISOTHEISTIC_PYRAMID
+			|| otmp->otyp == MISOTHEISTIC_FRAGMENT
 		)
 			return TRUE;
 	return FALSE;
@@ -1050,6 +1083,7 @@ register const char *let,*word;
 	boolean allownone = FALSE;
 	boolean useboulder = FALSE;
 	boolean usethrowing = FALSE;
+	boolean usemirror = FALSE;
 	xchar foox = 0;
 	long cnt;
 	boolean prezero = FALSE;
@@ -1093,6 +1127,9 @@ register const char *let,*word;
 	if(*let == WEAPON_CLASS && !strcmp(word, "throw"))
 	    usethrowing = TRUE;
 
+	if(*let == WEAPON_CLASS && u.specialSealsActive&SEAL_NUDZIRATH)
+	    usemirror = TRUE;
+
 	if(allownone) *bp++ = '-';
 #ifndef GOLDOBJ
 	if(allowgold) *bp++ = def_oc_syms[COIN_CLASS];
@@ -1113,6 +1150,7 @@ register const char *let,*word;
 #endif
 		|| (useboulder && is_boulder(otmp))
 		|| (usethrowing && (otmp->otyp == ROPE_OF_ENTANGLING || otmp->otyp == IRON_BANDS || otmp->otyp == RAZOR_WIRE))
+		|| (usemirror && otmp->otyp == MIRROR)
 		) {
 		register int otyp = otmp->otyp;
 		bp[foo++] = otmp->invlet;
@@ -1154,11 +1192,17 @@ register const char *let,*word;
 			(otmp->oclass == CHAIN_CLASS && otmp->otyp != CHAIN)))
 		|| (!strcmp(word, "resize") && !(otmp->oclass == ARMOR_CLASS || otmp->otyp == LENSES || otmp->otyp == SUNGLASSES))
 		|| (!strcmp(word, "eat") && !is_edible(otmp))
+		|| (!strcmp(word, "zap") &&
+		    (otmp->oclass == TOOL_CLASS && otmp->otyp != ROD_OF_FORCE))
 		|| (!strcmp(word, "inject") && !(otmp->otyp == HYPOSPRAY_AMPULE && otmp->spe > 0))
 		|| (!strcmp(word, "give the tear to") &&
 			!(otmp->otyp == BROKEN_ANDROID && otmp->ovar1 == 0) &&
 			!(otmp->otyp == BROKEN_GYNOID && otmp->ovar1 == 0) &&
 			!(otmp->otyp == LIFELESS_DOLL && otmp->ovar1 == 0)
+		)
+		|| (!strcmp(word, "install dilithim in") &&
+			!(otmp->otyp == BROKEN_ANDROID) &&
+			!(otmp->otyp == BROKEN_GYNOID)
 		)
 		|| (!strcmp(word, "wind with") && ((otmp->oclass == TOOL_CLASS &&
 		     otyp != SKELETON_KEY) ||
@@ -1171,6 +1215,7 @@ register const char *let,*word;
 		|| (!strcmp(word, "write with") &&
 		    ((otmp->oclass == TOOL_CLASS &&
 		     otyp != MAGIC_MARKER && otyp != TOWEL 
+		     && otyp != ROD_OF_FORCE
 			 && otyp != LIGHTSABER && otyp != BEAMSWORD && otyp != DOUBLE_LIGHTSABER && otyp != KAMEREL_VAJRA 
 			 && !arti_is_prop(otmp, ARTI_ENGRAVE)) ||
 			(otmp->oclass == CHAIN_CLASS)))
@@ -1188,6 +1233,9 @@ register const char *let,*word;
 		|| (!strncmp(word, "rub on the stone", 16) &&
 		    *let == GEM_CLASS &&	/* using known touchstone */
 		    otmp->dknown && objects[otyp].oc_name_known)
+		|| (!strncmp(word, "replace with", 12) &&
+		    otmp->otyp != HELLFIRE_COMPONENT)
+		|| (!strncmp(word, "salve", 5) && !salve_target(otmp))
 		|| ((!strcmp(word, "use or apply") ||
 			!strcmp(word, "untrap with")) &&
 		     /* Picks, axes, pole-weapons, bullwhips */
@@ -1209,10 +1257,13 @@ register const char *let,*word;
 			  !is_knife(otmp) && otmp->oartifact != ART_SILVER_STARLIGHT &&
 			  otmp->oartifact != ART_HOLY_MOONLIGHT_SWORD &&
 			  otmp->otyp != RAKUYO && otmp->otyp != RAKUYO_SABER && 
-			  otmp->otyp != DOUBLE_FORCE_BLADE && otmp->otyp != FORCE_BLADE
+			  otmp->otyp != DOUBLE_FORCE_BLADE && otmp->otyp != FORCE_BLADE &&
+			  otmp->otyp != MASS_SHADOW_PISTOL
 			 ) ||
 			 (otmp->oclass == CHAIN_CLASS && 
-				(otyp == CHAIN || otyp == SHEAF_OF_HAY)
+				!(otyp == CLOCKWORK_COMPONENT || otyp == SUBETHAIC_COMPONENT 
+				  || otyp == HELLFIRE_COMPONENT || otyp == SCRAP 
+				  || otyp == LIFELESS_DOLL) /* Note: Joke */
 			 ) ||
 		     (otmp->oclass == POTION_CLASS &&
 		     /* only applicable potion is oil, and it will only
@@ -1230,7 +1281,11 @@ register const char *let,*word;
 			  otyp != GNOMISH_POINTY_HAT &&
 			  otmp->oartifact != ART_AEGIS
 			  ) || 
-		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK))))
+		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK)
+				&& otyp != CATAPSI_VORTEX && otyp != ANTIMAGIC_RIFT
+				&& otyp != VITAL_SOULSTONE && otyp != SPIRITUAL_SOULSTONE
+				&& !(otyp == DILITHIUM_CRYSTAL && Role_if(PM_ANACHRONONAUT) && !otmp->oartifact)
+			 )))
 		|| (!strcmp(word, "invoke") &&
 		    (!otmp->oartifact && !objects[otyp].oc_unique &&
 		     (otyp != FAKE_AMULET_OF_YENDOR || otmp->known) &&
@@ -2236,6 +2291,21 @@ struct obj *obj;
 	else if (is_lightsaber(obj) && obj->oartifact != ART_INFINITY_S_MIRRORED_ARC && obj->otyp != KAMEREL_VAJRA)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Ignite or deactivate this lightsaber", MENU_UNSELECTED);
+	else if (obj->oclass == SCOIN_CLASS)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Crush this soul coin", MENU_UNSELECTED);
+	else if ((obj->otyp == VITAL_SOULSTONE || obj->otyp == SPIRITUAL_SOULSTONE) && objects[obj->otyp].oc_name_known)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Crush this soulstone", MENU_UNSELECTED);
+	else if (obj->otyp == DIMENSIONAL_LOCK)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Activate this lock", MENU_UNSELECTED);
+	else if (obj->otyp == ANTIMAGIC_RIFT || obj->otyp == CATAPSI_VORTEX)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Crush this flawed gem", MENU_UNSELECTED);
+	else if (obj->otyp == MISOTHEISTIC_PYRAMID || obj->otyp == MISOTHEISTIC_FRAGMENT)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Shatter this pyramid", MENU_UNSELECTED);
 	/* d: drop item, works on everything */
 	any.a_void = (genericptr_t)dodrop;
 	add_menu(win, NO_GLYPH, &any, 'd', 0, ATR_NONE,
@@ -2992,11 +3062,11 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(pure_weapon(obj) && obj->spe >= 6){
-				Sprintf(buf2, "Deals an 20%% damage to all targets when the wielder is at full health.");
+				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at full health.");
 				OBJPUTSTR(buf2);
 			}
 			if(dark_weapon(obj) && obj->spe >= 6){
-				Sprintf(buf2, "Deals an 20%% damage to all targets when the wielder is at 30%% health or lower.");
+				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at 30%% health or lower.");
 				OBJPUTSTR(buf2);
 			}
 		}
@@ -3313,7 +3383,16 @@ winid *datawin;
 		}
 	}
 	if (olet == GEM_CLASS) {
-		if (oc.oc_material == MINERAL) {
+		if (otyp == ANTIMAGIC_RIFT || otyp == CATAPSI_VORTEX) {
+			Sprintf(buf, "Apply to crush the gem and unleash the contained %s.", otyp == ANTIMAGIC_RIFT ? "rift" : "vortex");
+			OBJPUTSTR(buf);
+		}
+		else if (otyp == VITAL_SOULSTONE || otyp == SPIRITUAL_SOULSTONE) {
+			Sprintf(buf, "Passively increases %s regeneration while carried.", otyp == VITAL_SOULSTONE ? "health" : "magic");
+			OBJPUTSTR(buf);
+			OBJPUTSTR("Apply to crush the stone and expend the trapped soul.");
+		}
+		else if (oc.oc_material == MINERAL) {
 			OBJPUTSTR("Type of stone.");
 		}
 		else if (oc.oc_material == GLASS) {
@@ -3321,6 +3400,38 @@ winid *datawin;
 		}
 		else {
 			OBJPUTSTR("Precious gem.");
+		}
+	}
+	if (olet == SCOIN_CLASS) {
+		switch(otyp) {
+		case WAGE_OF_PRIDE:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's weighty ego.");
+			OBJPUTSTR("Weakens a thinking creature, and causes an Angel to fall from grace.");
+			break;
+		case WAGE_OF_ENVY:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's material jealousy.");
+			OBJPUTSTR("Makes a thinking creature discard all its things in desire of others'.");
+			break;
+		case WAGE_OF_LUST:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's aimless bluster.");
+			OBJPUTSTR("Creates a hurricane of wind around you.");
+			break;
+		case WAGE_OF_WRATH:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's spilled blood.");
+			OBJPUTSTR("Fills the lungs of a creature with enraging blood.");
+			break;
+		case WAGE_OF_GLUTTONY:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's endless hunger.");
+			OBJPUTSTR("Causes an ediate creature to starve.");
+			break;
+		case WAGE_OF_GREED:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's hoarded things.");
+			OBJPUTSTR("Creates a mass of random objects to throw at a location.");
+			break;
+		case WAGE_OF_SLOTH:
+			OBJPUTSTR("Apply to crush the coin and harness the trapped soul's wasted time.");
+			OBJPUTSTR("Gives you a brief period of accelerated time.");
+			break;
 		}
 	}
 	if (olet == TOOL_CLASS && !(olet == TOOL_CLASS && oc.oc_skill)) {
@@ -3393,11 +3504,17 @@ winid *datawin;
 		case BULLET_FABBER:
 			subclass = "future-tech tool";
 			break;
+		case DIMENSIONAL_LOCK:
+			subclass = "";
+			OBJPUTSTR("Can be applied to temporarily prevent summoning.");
+			break;
 		}
-		Sprintf(buf, "%s%s.", (oc.oc_charged ? "chargeable " : ""), subclass);
-		/* capitalize first letter of buf */
-		buf[0] -= ('a' - 'A');
-		OBJPUTSTR(buf);
+		if (subclass[0] != '\0') {
+			Sprintf(buf, "%s%s.", (oc.oc_charged ? "chargeable " : ""), subclass);
+			/* capitalize first letter of buf */
+			buf[0] -= ('a' - 'A');
+			OBJPUTSTR(buf);
+		}
 	}
 
 	/* cost, wt should go next */
@@ -5242,9 +5359,11 @@ u_healing_penalty()
 	}
 	if(hates_iron(youracedata)){
 		penalty += (u.ulevel * u_material_next_to_skin(IRON)+1)/2;
+		penalty += (u.ulevel * u_material_next_to_skin(GREEN_STEEL)+1)/2;
 	}
 	if(hates_unholy(youracedata)){
 		penalty += (9*u_bcu_next_to_skin(-1)+1)/2;
+		penalty += 9*u_material_next_to_skin(GREEN_STEEL);
 	}
 	if(hates_unblessed(youracedata)){
 		penalty += (8*u_bcu_next_to_skin(0)+1)/2;

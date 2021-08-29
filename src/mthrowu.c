@@ -26,13 +26,21 @@ int atype;
 	switch (atype)
 	{
 	case AD_MAGM: return "fragments";
-	case AD_FIRE: return "fire";
-	case AD_COLD: return "frost";
+	case AD_FIRE: 
+	case AD_EFIR: 
+		return "fire";
+	case AD_COLD: 
+	case AD_ECLD: 
+		return "frost";
 	case AD_SLEE: return "sleep gas";
 	case AD_DISN: return "a disintegration blast";
-	case AD_ELEC: return "lightning";
+	case AD_ELEC: 
+	case AD_EELC: 
+		return "lightning";
 	case AD_DRST: return "poison gas";
-	case AD_ACID: return "acid";
+	case AD_ACID: 
+	case AD_EACD: 
+		return "acid";
 	case AD_DRLI: return "dark energy";
 	case AD_GOLD: return "gold";
 	case AD_BLUD: return "spray of blood";
@@ -54,6 +62,7 @@ struct obj *obj;
 		obj->quan--;
 		obj->owt = weight(obj);
 	} else {
+		boolean gloves = !!(obj->owornmask&W_ARMG);
 		obj_extract_self(obj);
 		possibly_unwield(mon, FALSE);
 		if (obj->timed) stop_all_timers(obj->timed);
@@ -62,11 +71,46 @@ struct obj *obj;
 		    update_mon_intrinsics(mon, obj, FALSE, FALSE);
 		}
 		obfree(obj, (struct obj*) 0);
+		if(gloves)
+			mselftouch(mon, "No longer wearing hand-protection, ", !flags.mon_moving);
 	}
 }
 
 #endif /* OVLB */
 #ifdef OVL1
+
+boolean
+mtarget_adjacent(magr)
+struct monst *magr;
+{
+	int i,j, ix, jy;
+	int x = magr->mx, y = magr->my;
+	struct monst *mtmp;
+	
+	for(i = -1; i < 2; i++){
+		for(j = -1; j < 2; j++){
+			if(!i && !j)
+				continue;
+			ix = x + i;
+			jy = y + j;
+			if(!isok(ix,jy))
+				continue;
+			if(!(mtmp = m_u_at(ix, jy)))
+				continue;
+			if(mtmp == &youmonst){
+				if(mtmp->mpeaceful)
+					continue;
+				else return TRUE;
+			}
+			if(!mm_aggression(magr, mtmp))
+				continue;
+			if(magr->mtame && !acceptable_pet_target(magr, mtmp, FALSE))
+				continue;
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
 
 extern int monstr[];
 
@@ -104,22 +148,23 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 	/* Check that magr can make any ranged attacks at all */
 	if (!force_linedup &&
 		!(
-		(attacktype(magr->data, AT_WEAP) && mrwep) ||
-		(attacktype(magr->data, AT_DEVA) && mrwep) ||
-		(attacktype(magr->data, AT_BREA) && !magr->mcan) ||
-		(attacktype(magr->data, AT_BRSH) && !magr->mcan) ||
-		(attacktype(magr->data, AT_MAGC) && !magr->mcan) ||
-		(attacktype(magr->data, AT_MMGC) && !magr->mcan) ||
-		(attacktype(magr->data, AT_GAZE) && !magr->mcan) ||
-		(attacktype(magr->data, AT_SPIT)) ||
-		(attacktype(magr->data, AT_ARRW)) ||
-		(attacktype(magr->data, AT_TNKR)) ||
-		(attacktype(magr->data, AT_BEAM)) ||
-		(attacktype(magr->data, AT_LRCH)) ||
-		(attacktype(magr->data, AT_LNCK)) ||
-		(attacktype(magr->data, AT_5SQR)) ||
-		(attacktype(magr->data, AT_5SBT)) ||
-		(is_commander(magr->data))
+		(mon_attacktype(magr, AT_WEAP) && mrwep) ||
+		(mon_attacktype(magr, AT_DEVA) && mrwep) ||
+		(mon_attacktype(magr, AT_BREA) && !magr->mcan) ||
+		(mon_attacktype(magr, AT_BRSH) && !magr->mcan) ||
+		(mon_attacktype(magr, AT_MAGC) && !magr->mcan) ||
+		(mon_attacktype(magr, AT_MMGC) && !magr->mcan) ||
+		(mon_attacktype(magr, AT_GAZE) && !magr->mcan) ||
+		(mon_attacktype(magr, AT_SPIT)) ||
+		(mon_attacktype(magr, AT_ARRW)) ||
+		(mon_attacktype(magr, AT_TNKR)) ||
+		(mon_attacktype(magr, AT_BEAM)) ||
+		(mon_attacktype(magr, AT_LRCH)) ||
+		(mon_attacktype(magr, AT_LNCK)) ||
+		(mon_attacktype(magr, AT_5SQR)) ||
+		(mon_attacktype(magr, AT_5SBT)) ||
+		(is_commander(magr->data)) ||
+		(find_offensive(magr))
 		))
 		return (struct monst *)0;
 
@@ -169,11 +214,12 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 		}
 
 		/* is mdef an acceptable target? */
-		if (!clear_path(magr->mx, magr->my, tarx, tary))
+		if (mdef != &youmonst && !(mm_aggression(magr, mdef) & ALLOW_M) && !conflicted)
 			continue;
 		if (dogbesafe && (mdef == &youmonst))
 			continue;
-		if (mdef != &youmonst && !(mm_aggression(magr, mdef) & ALLOW_M) && !conflicted)
+		/* Note: clear_path is somewhat costly */
+		if (!clear_path(magr->mx, magr->my, tarx, tary))
 			continue;
 
 		/* don't make ranged attacks at melee distance */
@@ -196,54 +242,55 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 
 			/* attacks that are on a line that do NOT stop on hit */
 			(m_online(magr, mdef, tarx, tary, dogbesafe, FALSE) && (
-				(attacktype(magr->data, AT_BREA) && !magr->mcan) ||
-				(attacktype(magr->data, AT_MAGC) && !magr->mcan && !real_spell_adtyp((attacktype_fordmg(magr->data, AT_MAGC, AD_ANY))->adtyp)) ||
-				(attacktype(magr->data, AT_MMGC) && !magr->mcan && !real_spell_adtyp((attacktype_fordmg(magr->data, AT_MMGC, AD_ANY))->adtyp))
+				(mon_attacktype(magr, AT_BREA) && !magr->mcan) ||
+				(mon_attacktype(magr, AT_MAGC) && !magr->mcan && !real_spell_adtyp((attacktype_fordmg(magr->data, AT_MAGC, AD_ANY))->adtyp)) ||
+				(mon_attacktype(magr, AT_MMGC) && !magr->mcan && !real_spell_adtyp((attacktype_fordmg(magr->data, AT_MMGC, AD_ANY))->adtyp))
 			))
 			||
 			/* attacks that splash */
 			(m_insplash(magr, mdef, tarx, tary, dogbesafe) && (
-				(attacktype(magr->data, AT_BRSH) && !magr->mcan)
+				(mon_attacktype(magr, AT_BRSH) && !magr->mcan)
 			))
 			||
 			/* attacks that are on a line that DO stop on hit */
 			(m_online(magr, mdef, tarx, tary, dogbesafe, TRUE) && (
-				(attacktype(magr->data, AT_SPIT)) ||
-				(attacktype(magr->data, AT_ARRW)) ||
-				(attacktype(magr->data, AT_WEAP) && mrwep && !is_pole(mrwep)) ||
-				(attacktype(magr->data, AT_DEVA) && mrwep && !is_pole(mrwep))
+				(mon_attacktype(magr, AT_SPIT)) ||
+				(mon_attacktype(magr, AT_ARRW)) ||
+				(mon_attacktype(magr, AT_WEAP) && mrwep && !is_pole(mrwep)) ||
+				(mon_attacktype(magr, AT_DEVA) && mrwep && !is_pole(mrwep)) ||
+				(find_offensive(magr))
 			))
 			||
 			/* attacks that are on a line that are ALWAYS SAFE */
 			(m_online(magr, mdef, tarx, tary, FALSE, FALSE) && (
-				(attacktype(magr->data, AT_TNKR)) ||
-				(attacktype(magr->data, AT_BEAM))
+				(mon_attacktype(magr, AT_TNKR)) ||
+				(mon_attacktype(magr, AT_BEAM))
 			))
 			||
 			/* attacks in polearm range */
 			(dist2(magr->mx, magr->my, tarx, tary) <= m_pole_range(magr) && (
-				(attacktype(magr->data, AT_WEAP) && mrwep && is_pole(mrwep)) ||
-				(attacktype(magr->data, AT_DEVA) && mrwep && is_pole(mrwep))
+				(mon_attacktype(magr, AT_WEAP) && mrwep && is_pole(mrwep)) ||
+				(mon_attacktype(magr, AT_DEVA) && mrwep && is_pole(mrwep))
 			))
 			||
 			/* attacks in a square range of 2 */
 			(distmin(magr->mx, magr->my, tarx, tary) <= 2 && (
-				(attacktype(magr->data, AT_LRCH)) ||
-				(attacktype(magr->data, AT_LNCK))
+				(mon_attacktype(magr, AT_LRCH)) ||
+				(mon_attacktype(magr, AT_LNCK))
 			))
 			||
 			/* attacks in a square range of 5 */
 			(distmin(magr->mx, magr->my, tarx, tary) <= 5 && (
-				(attacktype(magr->data, AT_5SQR)) ||
-				(attacktype(magr->data, AT_5SBT))
+				(mon_attacktype(magr, AT_5SQR)) ||
+				(mon_attacktype(magr, AT_5SBT))
 			))
 			||
 			/* attacks in a square range of 8 */
 			(distmin(magr->mx, magr->my, tarx, tary) <= 8 && (
 				(is_commander(magr->data) && !rn2(4)) ||	/* !rn2(4) -> reduce command frequency */
-				(attacktype(magr->data, AT_GAZE) && !magr->mcan) ||
-				(attacktype(magr->data, AT_MAGC) && !magr->mcan && real_spell_adtyp((attacktype_fordmg(magr->data, AT_MAGC, AD_ANY))->adtyp)) ||
-				(attacktype(magr->data, AT_MMGC) && !magr->mcan && real_spell_adtyp((attacktype_fordmg(magr->data, AT_MMGC, AD_ANY))->adtyp))
+				(mon_attacktype(magr, AT_GAZE) && !magr->mcan) ||
+				(mon_attacktype(magr, AT_MAGC) && !magr->mcan && real_spell_adtyp((attacktype_fordmg(magr->data, AT_MAGC, AD_ANY))->adtyp)) ||
+				(mon_attacktype(magr, AT_MMGC) && !magr->mcan && real_spell_adtyp((attacktype_fordmg(magr->data, AT_MMGC, AD_ANY))->adtyp))
 			))
 			))
 		{
@@ -275,7 +322,7 @@ int force_linedup;	/* if TRUE, we have some offensive item ready that will work 
 
 	/* set tbx, tby */
 	/* caller has to know to reject tbx==0, tby==0 if called with force_linedup */
-	if (!linedup(tarx, tary, magr->mx, magr->my)) {
+	if (best_target && !linedup(tarx, tary, magr->mx, magr->my)) {
 		tbx = tby = 0;
 	}
 

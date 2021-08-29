@@ -49,7 +49,7 @@ static NEARDATA const int nasties[] = {
 	PM_GREEN_DRAGON, PM_YELLOW_DRAGON, PM_ORANGE_DRAGON, PM_CAPTAIN,
 	PM_ANCIENT_NAGA, PM_GUARDIAN_NAGA, PM_GOLDEN_NAGA, PM_SERPENT_NECKED_LIONESS, 
 	PM_EDDERKOP, PM_LEGION_DEVIL_SERGEANT, PM_LEGION_DEVIL_CAPTAIN, PM_HELLFIRE_COLOSSUS, 
-	PM_MAID, PM_HELLCAT
+	PM_GREEN_STEEL_GOLEM, PM_MAID, PM_HELLCAT
 	};
 
 static NEARDATA const unsigned wizapp[] = {
@@ -354,7 +354,7 @@ tactics(mtmp)
 			if(flags.stag && In_quest(&u.uz)){
 				if (In_W_tower(mtmp->mx, mtmp->my, &u.uz) ||
 					(mtmp->iswiz && !xdnstair && !mon_has_amulet(mtmp))) {
-					if (!rn2(3 + mtmp->mhp/10)) (void) rloc(mtmp, FALSE);
+					if (!rn2(3 + mtmp->mhp/10)) (void) rloc(mtmp, TRUE);
 				} else if (xdnstair &&
 					 (mtmp->mx != xdnstair || mtmp->my != ydnstair)) {
 					(void) mnearto(mtmp, xdnstair, ydnstair, TRUE);
@@ -362,7 +362,7 @@ tactics(mtmp)
 			} else {
 				if (In_W_tower(mtmp->mx, mtmp->my, &u.uz) ||
 					(mtmp->iswiz && !xupstair && !mon_has_amulet(mtmp))) {
-					if (!rn2(3 + mtmp->mhp/10)) (void) rloc(mtmp, FALSE);
+					if (!rn2(3 + mtmp->mhp/10)) (void) rloc(mtmp, TRUE);
 				} else if (xupstair &&
 					 (mtmp->mx != xupstair || mtmp->my != yupstair)) {
 					(void) mnearto(mtmp, xupstair, yupstair, TRUE);
@@ -379,13 +379,15 @@ tactics(mtmp)
 
 	    case STRAT_NONE:	/* harrass */
 		if(mtmp->mtyp == PM_GREAT_CTHULHU){
-			struct monst *spawn;
-			if(!Blind)
-				pline("Noxious gasses swirl around you!");
-			create_gas_cloud(u.ux, u.uy, 2, 30, FALSE);
-			spawn = makemon(&mons[PM_STAR_SPAWN], u.ux, u.uy, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
-			if(spawn){
-				mark_mon_as_summoned(spawn, mtmp, ESUMMON_PERMANENT, 0);
+			if(!DimensionalLock){
+				struct monst *spawn;
+				if(!Blind)
+					pline("Noxious gasses swirl around you!");
+				create_gas_cloud(u.ux, u.uy, 2, 30, FALSE);
+				spawn = makemon(&mons[PM_STAR_SPAWN], u.ux, u.uy, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM);
+				if(spawn){
+					mark_mon_as_summoned(spawn, mtmp, ESUMMON_PERMANENT, 0);
+				}
 			}
 			return 0;
 		}
@@ -447,6 +449,8 @@ tactics(mtmp)
 					return(0);
 				}
 			} else if(mtmp->mtyp == PM_GREAT_CTHULHU){
+				if(DimensionalLock) /* Block Cthulhu's relocation */
+					return 0;
 				boolean saw = FALSE;
 				if(sensemon(mtmp) || canseemon(mtmp)){
 					pline("%s steps through strange angles.",Monnam(mtmp));
@@ -1162,9 +1166,9 @@ register struct monst	*mtmp;
 			  random_malediction[rn2(SIZE(random_malediction))],
 			  random_insult[rn2(SIZE(random_insult))]);
 	} else if(mtmp->mtyp == PM_CHAOS){
-		if(mtmp->mvar3<5){
-			verbalize("%s", random_chaosism[mtmp->mvar3+5]);
-			mtmp->mvar3++;
+		if(mtmp->mvar_conversationTracker<5){
+			verbalize("%s", random_chaosism[mtmp->mvar_conversationTracker+5]);
+			mtmp->mvar_conversationTracker++;
 		}
 		else verbalize("%s", random_chaosism[rn2(5)]);
 	} else if(mtmp->mtyp == PM_GARLAND){
@@ -1239,7 +1243,7 @@ aglaopesong(mtmp)
 					if(tmpm != mtmp && !DEADMONSTER(tmpm)){
 						if(!mindless_mon(tmpm)){
 							if ( mtmp->mpeaceful == tmpm->mpeaceful ) {
-								tmpm->mcan = 0;
+								set_mcan(tmpm, FALSE);
 								tmpm->mspec_used = 0;
 								if(!tmpm->mnotlaugh && tmpm->mlaughing){
 									tmpm->mnotlaugh = 1;

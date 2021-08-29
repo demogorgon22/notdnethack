@@ -476,6 +476,13 @@ register int roomno;
 				set_mon_data(priest, PM_DARKNESS_GIVEN_HUNGER);
 				priest->mpeaceful = 0;
 				set_malign(priest);
+			} else if(In_moloch_temple(&u.uz)) {
+				if(priest->mpeaceful) {
+					msg1 = "Infidel, you have entered Moloch's hidden temple!";
+					msg2 = "Be gone!";
+					priest->mpeaceful = 0;
+					set_malign(priest);
+				} else msg1 = "You desecrate this place by your presence!";
 			} else if(Is_astralevel(&u.uz) && Role_if(PM_ANACHRONONAUT) && EPRI(priest)->shralign == A_LAWFUL) {
 				if(priest->mpeaceful) {
 					priest->mpeaceful = 0;
@@ -625,10 +632,13 @@ register struct monst *priest;
 		verbalize("I do not offer blessings to your kind.");
 		return;
 	}
+	if(Misotheism){
+		pline("%s looks extremely confused, and does not reply.", Monnam(priest));
+		return;
+	}
 	
 	/* KMH, conduct */
 	u.uconduct.gnostic++;
-	
 
 	if(priest->mflee || (!priest->ispriest && coaligned && strayed)) {
 	    pline("%s doesn't want anything to do with you!",

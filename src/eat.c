@@ -1171,28 +1171,13 @@ BOOLEAN_P tin, nobadeffects, drained;
 	    case PM_DEEP_DRAGON:
 			if(!drained || !rn2(5)) pluslvl(FALSE);
 		break;
-	    case PM_HUMAN_WERERAT:
-			if(!nobadeffects){
-				catch_lycanthropy = TRUE;
-				u.ulycn = PM_WERERAT;
-			}
-		break;
+		case PM_HUMAN_WERERAT:
 	    case PM_HUMAN_WEREJACKAL:
+		case PM_HUMAN_WEREWOLF:
+		case PM_ANUBITE:
 			if(!nobadeffects){
 				catch_lycanthropy = TRUE;
-				u.ulycn = PM_WEREJACKAL;
-			}
-		break;
-	    case PM_HUMAN_WEREWOLF:
-			if(!nobadeffects){
-				catch_lycanthropy = TRUE;
-				u.ulycn = PM_WEREWOLF;
-			}
-		break;
-	    case PM_ANUBITE:
-			if(!nobadeffects){
-				catch_lycanthropy = TRUE;
-				u.ulycn = PM_WEREJACKAL;
+				u.ulycn = transmitted_were(pm);
 			}
 		break;
 	    case PM_NURSE:
@@ -2360,7 +2345,7 @@ eatspecial() /* called after eating non-food */
 static const char *foodwords[] = {
 	"meal", "liquid", "wax", "food", "meat",
 	"paper", "cloth", "leather", "wood", "bone", "scale",
-	"metal", "metal", "metal", "silver", "gold", "platinum", "mithril",
+	"metal", "metal", "metal", "metal", "silver", "gold", "platinum", "lead", "mithril",
 	"plastic", "glass", "rich food", "stone", "obsidian", "shadow"
 };
 

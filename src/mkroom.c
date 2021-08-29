@@ -340,6 +340,70 @@ mkmivault()
 	}
 }
 
+int misc_hell_vault[] = {
+				VITAL_SOULSTONE, SPIRITUAL_SOULSTONE,
+				VITAL_SOULSTONE, SPIRITUAL_SOULSTONE,
+				ANTIMAGIC_RIFT, CATAPSI_VORTEX,
+				MISOTHEISTIC_PYRAMID, DIMENSIONAL_LOCK
+			};
+int misc_devil_vault[] = {
+				VITAL_SOULSTONE, SPIRITUAL_SOULSTONE,
+				VITAL_SOULSTONE, SPIRITUAL_SOULSTONE,
+				ANTIMAGIC_RIFT, CATAPSI_VORTEX,
+				MISOTHEISTIC_PYRAMID, DIMENSIONAL_LOCK, 
+				PRESERVATIVE_ENGINE
+			};
+int misc_demon_vault[] = {
+				VITAL_SOULSTONE, SPIRITUAL_SOULSTONE,
+				VITAL_SOULSTONE, SPIRITUAL_SOULSTONE,
+				ANTIMAGIC_RIFT, CATAPSI_VORTEX,
+				MISOTHEISTIC_PYRAMID, DIMENSIONAL_LOCK, 
+				ARMOR_SALVE
+			};
+int misc_tan_vault[] = {
+				ANTIMAGIC_RIFT, CATAPSI_VORTEX,
+				MISOTHEISTIC_PYRAMID, DIMENSIONAL_LOCK,
+				ARMOR_SALVE
+			};
+int misc_anc_vault[] = {
+				ANTIMAGIC_RIFT, CATAPSI_VORTEX,
+				MISOTHEISTIC_PYRAMID, DIMENSIONAL_LOCK
+			};
+
+int
+get_vault_misc(otmp, vn)
+struct obj *otmp;	/* existing object */
+int vn;
+{
+	int type;
+#define ROLL_ARRAY(arrayname) arrayname[rn2(SIZE(arrayname))];
+	if(vn < VN_A_O_BLESSINGS){
+		// Tannin
+		type = ROLL_ARRAY(misc_tan_vault);
+	}
+	else if(vn < VN_APOCALYPSE){
+		// Ancient
+		type = ROLL_ARRAY(misc_anc_vault);
+	}
+	else if(vn < VN_N_PIT_FIEND){
+		// Angel
+		type = ROLL_ARRAY(misc_hell_vault);
+	}
+	else if(vn < VN_SHAYATEEN){
+		// Devil
+		type = ROLL_ARRAY(misc_devil_vault);
+	}
+	else if(vn < VN_MAX){
+		// Demon
+		type = ROLL_ARRAY(misc_demon_vault);
+	}
+	else {
+		impossible("Vault number %d out-of-ramge in get_misc", vn);
+		type = ROLL_ARRAY(misc_hell_vault);
+	}
+	return type;
+}
+
 void
 mkmivaultitem(container)
     struct obj *container;
@@ -367,9 +431,87 @@ mkmivaultitem(container)
 	}
 }
 
-void
-mkhellvaultitem(container)
-    struct obj *container;
+struct obj *
+mklolthvaultitem()
+{
+	struct obj *otmp;
+	int try_limit = 1000;
+	int type;
+	boolean sobj = FALSE;
+
+	const int lolth_armor[] = {HELMET, ARCHAIC_HELM, HIGH_ELVEN_HELM, DROVEN_HELM, CRYSTAL_HELM, HELM_OF_BRILLIANCE, 
+							   PLATE_MAIL, ARCHAIC_PLATE_MAIL, HIGH_ELVEN_PLATE, DROVEN_PLATE_MAIL, CRYSTAL_PLATE_MAIL,
+							   ELVEN_TOGA, NOBLE_S_DRESS,
+							   PLAIN_DRESS,
+							   ELVEN_CLOAK, DROVEN_CLOAK,
+							   ELVEN_SHIELD, CRYSTAL_SHIELD, SHIELD_OF_REFLECTION,
+							   GAUNTLETS, ARCHAIC_GAUNTLETS, HIGH_ELVEN_GAUNTLETS, CRYSTAL_GAUNTLETS, GAUNTLETS_OF_POWER,
+							   ARMORED_BOOTS, ARCHAIC_BOOTS, HIGH_BOOTS, HEELED_BOOTS, CRYSTAL_BOOTS, 
+							   FLYING_BOOTS, ELVEN_BOOTS, KICKING_BOOTS
+							  };
+	const int lolth_weapons[] = {
+								DROVEN_BOLT, CHAKRAM,
+								ELVEN_SPEAR, DROVEN_SPEAR, 
+								ELVEN_DAGGER, DROVEN_DAGGER, STILETTO, 
+								ELVEN_SICKLE,
+								MOON_AXE,
+								ELVEN_SHORT_SWORD, DROVEN_SHORT_SWORD,
+								SCIMITAR, HIGH_ELVEN_WARSWORD, RAPIER, SABER,
+								ELVEN_BROADSWORD, CRYSTAL_SWORD,
+								DROVEN_GREATSWORD, 
+								ELVEN_LANCE, DROVEN_LANCE,
+								DROVEN_CROSSBOW,
+								KHAKKHARA
+								};
+	otmp = (struct obj *)0;
+	if(!rn2(3)) {
+		type = lolth_armor[rn2(SIZE(lolth_armor))];
+		sobj = TRUE;
+	}
+	else if(rn2(2)) {
+		type = lolth_weapons[rn2(SIZE(lolth_weapons))];
+		sobj = TRUE;
+	}
+	else if(rn2(2))
+		type = SCOIN_CLASS;
+	else if(rn2(2)){
+		type = misc_hell_vault[rn2(SIZE(misc_hell_vault))];
+		otmp = mksobj(type, NO_MKOBJ_FLAGS);
+		return otmp;
+	}
+	else
+		type = RANDOM_CLASS;
+	do {
+		if(otmp) delobj(otmp);
+		otmp = sobj ? mksobj(type, MKOBJ_ARTIF) : mkobj(type, TRUE);
+		if(!rn2(10) || ((objects[otmp->otyp].oc_magic || otmp->oartifact) && !rn2(3))){
+			otmp = mk_special(otmp);
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(3,3), otmp->spe);
+		}
+		else if(!rn2(4) || ((objects[otmp->otyp].oc_magic || otmp->oartifact) && !rn2(2))){
+			otmp = mk_lolth_vault_special(otmp);
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(3,3), otmp->spe);
+		}
+		else if(!rn2(4) || otmp->oartifact){
+			otmp = mk_minor_special(otmp);
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(1,7), otmp->spe);
+		}
+		else {
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(2,3), otmp->spe);
+		}
+	} while (--try_limit > 0 &&
+	  !(objects[otmp->otyp].oc_magic || otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || Is_container(otmp)));
+
+	return otmp;
+}
+
+struct obj *
+mkhellvaultitem(vn)
+int vn;
 {
 	struct obj *otmp;
 	int try_limit = 1000;
@@ -379,33 +521,60 @@ mkhellvaultitem(container)
 		type = ARMOR_CLASS;
 	else if(rn2(2))
 		type = WEAPON_CLASS;
+	else if(!rn2(3))
+		type = SCOIN_CLASS;
+	else if(rn2(2)){
+		type = misc_hell_vault[rn2(SIZE(misc_hell_vault))];
+		otmp = mksobj(type, NO_MKOBJ_FLAGS);
+		if(otmp)
+			return otmp;
+		impossible("special %d obj failed??", type);
+		type = RANDOM_CLASS;
+	}
 	else
 		type = RANDOM_CLASS;
 	do {
-		if(otmp && !Is_container(otmp)) delobj(otmp);
+		if(otmp) delobj(otmp);
 		otmp = mkobj(type, TRUE);
-		if(Is_container(otmp)){
-			place_object(otmp, container->ox, container->oy);
-			bury_an_obj(otmp);
-		} else {
-			if(!rn2(10) || (otmp->oartifact && !rn2(3))){
-				otmp = mk_special(otmp);
-				if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
-					otmp->spe = max_ints(d(3,3), otmp->spe);
-			}
-			else if(!rn2(4) || otmp->oartifact){
-				otmp = mk_minor_special(otmp);
-				if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
-					otmp->spe = max_ints(d(1,7), otmp->spe);
-			}
-			else {
-				if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
-					otmp->spe = max_ints(d(2,3), otmp->spe);
-			}
+		if(!rn2(10) || ((objects[otmp->otyp].oc_magic || otmp->oartifact) && !rn2(3))){
+			otmp = mk_special(otmp);
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(3,3), otmp->spe);
+		}
+		else if(!rn2(4) || ((objects[otmp->otyp].oc_magic || otmp->oartifact) && !rn2(2))){
+			otmp = mk_vault_special(otmp, vn);
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(3,3), otmp->spe);
+		}
+		else if(!rn2(4) || otmp->oartifact){
+			otmp = mk_minor_special(otmp);
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(1,7), otmp->spe);
+		}
+		else {
+			if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)
+				otmp->spe = max_ints(d(2,3), otmp->spe);
 		}
 	} while (--try_limit > 0 &&
-	  !(objects[otmp->otyp].oc_magic || otmp->oartifact || !check_oprop(otmp, OPROP_NONE)));
-	if(!Is_container(otmp)) add_to_container(container, otmp);
+	  !(objects[otmp->otyp].oc_magic || otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || Is_container(otmp)));
+
+	return otmp;
+}
+
+void
+mkhellvaultitem_cnt(container, vn, bury)
+struct obj *container;
+int vn;
+boolean bury;
+{
+	struct obj *otmp;
+	
+	otmp = mkhellvaultitem(vn);
+	if(Is_container(otmp)){
+		place_object(otmp, container->ox, container->oy);
+		if(bury) bury_an_obj(otmp);
+	}
+	else add_to_container(container, otmp);
 }
 
 STATIC_OVL
@@ -1459,46 +1628,33 @@ mkkamereltowers()
 			tries = 0;
 			otmp = 0;
 			while(!otmp){
-				if(!rn2(3)){
-					otmp = mksobj(DOUBLE_LIGHTSABER, MKOBJ_NOINIT);
-					otmp = oname(otmp, artiname(ART_INFINITY_S_MIRRORED_ARC));
-					if(otmp->oartifact){
+				switch(rn2(4)) {
+				case 0:
+					otmp = oname(mksobj(DOUBLE_LIGHTSABER, MKOBJ_NOINIT), artiname(ART_INFINITY_S_MIRRORED_ARC));
+					break;
+				case 1:
+					otmp = oname(mksobj(MIRRORBLADE, MKOBJ_NOINIT), artiname(ART_SANSARA_MIRROR));
+					break;
+				case 2:
+					otmp = oname(mksobj(KHAKKHARA, MKOBJ_NOINIT), artiname(ART_STAFF_OF_TWELVE_MIRRORS));
+					break;
+				case 3:
+					otmp = oname(mksobj(MASK, MKOBJ_NOINIT), artiname(ART_MIRRORED_MASK));
+					break;
+				}
+				if (otmp->oartifact) {
+					otmp->cursed = 0;
+					otmp->blessed = 0;
+					if (otmp->oclass == WEAPON_CLASS || is_weptool(otmp))
 						otmp->spe = 1;
-						otmp->cursed = 0;
-						otmp->blessed = 0;
+					if (is_lightsaber(otmp))
 						otmp->age = 0;
-						place_object(otmp, x, y);
-					} else {
-						obfree(otmp, (struct obj *)0);
-						otmp = 0;
-						continue;
-					}
-				} else if(rn2(2)){
-					otmp = mksobj(MIRRORBLADE, MKOBJ_NOINIT);
-					otmp = oname(otmp, artiname(ART_SANSARA_MIRROR));
-					if(otmp->oartifact || tries++ > 10){
-						otmp->spe = 1;
-						otmp->cursed = 0;
-						otmp->blessed = 0;
-						place_object(otmp, x, y);
-					} else {
-						obfree(otmp, (struct obj *)0);
-						otmp = 0;
-						continue;
-					}
-				} else {
-					otmp = mksobj(KHAKKHARA, MKOBJ_NOINIT);
-					otmp = oname(otmp, artiname(ART_STAFF_OF_TWELVE_MIRRORS));
-					if(otmp->oartifact || tries++ > 10){
-						otmp->spe = 1;
-						otmp->cursed = 0;
-						otmp->blessed = 0;
-						place_object(otmp, x, y);
-					} else {
-						obfree(otmp, (struct obj *)0);
-						otmp = 0;
-						continue;
-					}
+					place_object(otmp, x, y);
+				}
+				else {
+					obfree(otmp, (struct obj *)0);
+					otmp = 0;
+					continue;
 				}
 			}
 			//record central tower location
@@ -1573,46 +1729,33 @@ mkkamereltowers()
 			tries = 0;
 			otmp = 0;
 			while(!otmp){
-				if(!rn2(3)){
-					otmp = mksobj(DOUBLE_LIGHTSABER, MKOBJ_NOINIT);
-					otmp = oname(otmp, artiname(ART_INFINITY_S_MIRRORED_ARC));
-					if(otmp->oartifact){
+				switch(rn2(4)) {
+				case 0:
+					otmp = oname(mksobj(DOUBLE_LIGHTSABER, MKOBJ_NOINIT), artiname(ART_INFINITY_S_MIRRORED_ARC));
+					break;
+				case 1:
+					otmp = oname(mksobj(MIRRORBLADE, MKOBJ_NOINIT), artiname(ART_SANSARA_MIRROR));
+					break;
+				case 2:
+					otmp = oname(mksobj(KHAKKHARA, MKOBJ_NOINIT), artiname(ART_STAFF_OF_TWELVE_MIRRORS));
+					break;
+				case 3:
+					otmp = oname(mksobj(MASK, MKOBJ_NOINIT), artiname(ART_MIRRORED_MASK));
+					break;
+				}
+				if (otmp->oartifact) {
+					otmp->cursed = 0;
+					otmp->blessed = 0;
+					if (otmp->oclass == WEAPON_CLASS || is_weptool(otmp))
 						otmp->spe = 1;
-						otmp->cursed = 0;
-						otmp->blessed = 0;
+					if (is_lightsaber(otmp))
 						otmp->age = 0;
-						place_object(otmp, x, y);
-					} else {
-						obfree(otmp, (struct obj *)0);
-						otmp = 0;
-						continue;
-					}
-				} else if(rn2(2)){
-					otmp = mksobj(MIRRORBLADE, MKOBJ_NOINIT);
-					otmp = oname(otmp, artiname(ART_SANSARA_MIRROR));
-					if(otmp->oartifact || tries++ > 10){
-						otmp->spe = 1;
-						otmp->cursed = 0;
-						otmp->blessed = 0;
-						place_object(otmp, x, y);
-					} else {
-						obfree(otmp, (struct obj *)0);
-						otmp = 0;
-						continue;
-					}
-				} else {
-					otmp = mksobj(KHAKKHARA, MKOBJ_NOINIT);
-					otmp = oname(otmp, artiname(ART_STAFF_OF_TWELVE_MIRRORS));
-					if(otmp->oartifact || tries++ > 10){
-						otmp->spe = 1;
-						otmp->cursed = 0;
-						otmp->blessed = 0;
-						place_object(otmp, x, y);
-					} else {
-						obfree(otmp, (struct obj *)0);
-						otmp = 0;
-						continue;
-					}
+					place_object(otmp, x, y);
+				}
+				else {
+					obfree(otmp, (struct obj *)0);
+					otmp = 0;
+					continue;
 				}
 			}
 			//record central tower location
@@ -3566,8 +3709,11 @@ mkinvertzigg()
 				add_to_container(chest, otmp);
 			}
 			/*Chance for beads of force*/
-			/*Chance for rod of force*/
-			/*Chance for wand of striking*/
+			/*Rod of force*/
+			if ((otmp = mksobj(ROD_OF_FORCE, 0)) != 0) {
+				add_to_container(chest, otmp);
+			}
+			/*wand of striking*/
 			if ((otmp = mksobj(WAN_STRIKING, 0)) != 0) {
 				add_to_container(chest, otmp);
 			}
@@ -3582,6 +3728,31 @@ mkinvertzigg()
 		} else {
 			levl[x+size/2][y+size/2].typ = ALTAR;
 			levl[x+size/2][y+size/2].altarmask = Align2amask( A_NONE );
+			if ((otmp = mksobj_at(MISOTHEISTIC_FRAGMENT, x+size/2, y+size/2, MKOBJ_NOINIT)) != 0) {
+				otmp->quan = rnd(3);
+				otmp->owt = weight(otmp);
+			}
+			if(!rn2(4) && (otmp = mksobj_at(ANTIMAGIC_RIFT, x+size/2, y+size/2, MKOBJ_NOINIT)) != 0){
+				otmp->quan = rnd(3);
+				otmp->owt = weight(otmp);
+			}
+			else if(!rn2(3) && (otmp = mksobj_at(CATAPSI_VORTEX, x+size/2, y+size/2, MKOBJ_NOINIT)) != 0){
+				otmp->quan = rnd(3);
+				otmp->owt = weight(otmp);
+			}
+			else if(!rn2(2)){
+				int black_gems[] = {BLACK_OPAL, JET, OBSIDIAN};
+				for(int i = rn2(SIZE(black_gems)); i >= 0; i--){
+					if ((otmp = mksobj_at(black_gems[i], x+size/2, y+size/2, MKOBJ_NOINIT)) != 0) {
+						otmp->quan = rnd(3);
+						otmp->owt = weight(otmp);
+					}
+				}
+			}
+			else if ((otmp = mksobj_at(WORTHLESS_PIECE_OF_BLACK_GLASS, x+size/2, y+size/2, MKOBJ_NOINIT)) != 0) {
+				otmp->quan = d(3,3);
+				otmp->owt = weight(otmp);
+			}
 		}
 		if(!toostrong(PM_SHATTERED_ZIGGURAT_WIZARD, (level_difficulty() + u.ulevel) / 2 + 5)){
 			makemon(&mons[PM_SHATTERED_ZIGGURAT_WIZARD], x+size/2, y+size/2, MM_ADJACENTOK);
@@ -4800,14 +4971,16 @@ struct mkroom *sroom;
 
 /* make a swarm of undead around mm */
 void
-mkundead(mm, revive_corpses, mm_flags)
+mkundead(mm, revive_corpses, mm_flags, mfaction)
 coord *mm;
 boolean revive_corpses;
 int mm_flags;
+long mfaction;
 {
 	int cnt = (level_difficulty() + 1)/10 + rnd(5);
 	struct permonst *mdat;
 	struct obj *otmp;
+	struct monst *mon = (struct monst *)0;
 	coord cc;
 
 	while (cnt--) {
@@ -4815,8 +4988,11 @@ int mm_flags;
 	    if (enexto(&cc, mm->x, mm->y, mdat) &&
 		    (!revive_corpses ||
 		     !(otmp = sobj_at(CORPSE, cc.x, cc.y)) ||
-		     !revive(otmp,FALSE)))
-		(void) makemon(mdat, cc.x, cc.y, mm_flags);
+		     !(mon = revive(otmp,FALSE)))
+		)
+			mon = makemon(mdat, cc.x, cc.y, mm_flags);
+		if(mon)
+			mon->mfaction = mfaction;
 	}
 	level.flags.graveyard = TRUE;	/* reduced chance for undead corpse */
 }
@@ -5382,7 +5558,7 @@ register int edge; /* Allows room walls to intrude slightly into river. */
 	
 	if (typ!=TREE || (!edge && rn2(6))){
 		if(m_at(x, y))
-			rloc(m_at(x, y), FALSE);
+			rloc(m_at(x, y), TRUE);
 		levl[x][y].typ = MOAT;
 	}
 	// else if ((typ == SCORR || typ == CORR || IS_DOOR(typ)
@@ -5678,9 +5854,9 @@ mkhellvaultroom()
 	/* Put a hellish seal at m.x, m.y */
 	levl[x][y].typ = HELLISH_SEAL;
 	/*Pick monster*/
-	if(VN_MAX > VAULT_LIMIT){
+	if(VN_MAX >= VAULT_LIMIT){
 		impossible("Vault exceeded [safe fallback triggered]");
-		levl[x][y].vaulttype = rnd(31);
+		levl[x][y].vaulttype = rnd(VAULT_LIMIT-1);
 	} else {
 		levl[x][y].vaulttype = rnd(VN_MAX-1);
 	}

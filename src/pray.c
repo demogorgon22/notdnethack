@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "xhity.h"
 
 #include "artifact.h"
 
@@ -21,7 +22,7 @@ STATIC_DCL void FDECL(eat_offering,(struct obj *, boolean));
 STATIC_DCL boolean FDECL(water_prayer,(BOOLEAN_P));
 STATIC_DCL boolean FDECL(blocked_boulder,(int,int));
 static void NDECL(lawful_god_gives_angel);
-static void FDECL(god_gives_pet,(const char *,ALIGNTYP_P));
+static void FDECL(god_gives_pet,(const char *,ALIGNTYP_P,int));
 static void FDECL(god_gives_benefit,(ALIGNTYP_P));
 
 /* simplify a few tests */
@@ -120,7 +121,8 @@ static int p_type; /* (-1)-3: (-1)=really naughty, 3=really good */
  * order to have the values be meaningful.
  */
 
-#define TROUBLE_STONED			18
+#define TROUBLE_STONED			19
+#define TROUBLE_BLOOD_DROWN		18
 #define TROUBLE_FROZEN_AIR		17
 #define TROUBLE_SLIMED			16
 #define TROUBLE_STRANGLED		15
@@ -195,6 +197,7 @@ in_trouble()
 	 */
 	if(Stoned) return(TROUBLE_STONED);
 	if(Golded) return(TROUBLE_STONED);
+	if(BloodDrown) return(TROUBLE_BLOOD_DROWN);
 	if(FrozenAir) return(TROUBLE_FROZEN_AIR);
 	if(Slimed) return(TROUBLE_SLIMED);
 	if(Strangled) return(TROUBLE_STRANGLED);
@@ -355,6 +358,12 @@ register int trouble;
 	    case TROUBLE_SLIMED:
 		    pline_The("slime disappears.");
 		    Slimed = 0;
+		    flags.botl = 1;
+		    delayed_killer = 0;
+		    break;
+	    case TROUBLE_BLOOD_DROWN:
+		    pline_The("blood vanishes from your lungs.");
+		    BloodDrown = 0;
 		    flags.botl = 1;
 		    delayed_killer = 0;
 		    break;
@@ -1165,7 +1174,7 @@ pray_goat()
 					if (!Blind) Your1(vision_clears);
 				}
 			}
-			if (!InvAcid_resistance) {
+			if (!UseInvAcid_res(&youmonst)) {
 				destroy_item(&youmonst, POTION_CLASS, AD_FIRE);
 			}
 			erode_obj(uwep, TRUE, FALSE);
@@ -1714,9 +1723,10 @@ register struct obj *otmp;
 }
 
 void
-god_gives_pet(gptr, alignment)
+god_gives_pet(gptr, alignment, ga_num)
 const char *gptr;
 aligntyp alignment;
+int ga_num;
 {
 /*
     register struct monst *mtmp2;
@@ -1764,7 +1774,7 @@ aligntyp alignment;
     if (mtyp == NON_PM) {
 		mon = (struct monst *)0;
     }
-	else mon = make_pet_minion(mtyp,alignment);
+	else mon = make_pet_minion(mtyp,alignment,ga_num);
 	
     if (mon) {
 	switch ((int)alignment) {
@@ -1797,15 +1807,17 @@ lawful_god_gives_angel()
     int mtyp;
     int mon;
 
-    // mtyp = lawful_minion(u.ulevel);
-    // mon = make_pet_minion(mtyp,A_LAWFUL);
-    // pline("%s", Blind ? "You feel the presence of goodness." :
-	 // "There is a puff of white fog!");
-    // if (u.uhp > (u.uhpmax / 10)) godvoice(Align2gangr(u.ualign.type), "My minion shall serve thee!");
-    // else godvoice(Align2gangr(u.ualign.type), "My minion shall save thee!");
-	god_gives_pet(align_gname_full(A_LAWFUL),A_LAWFUL);
+	god_gives_pet(align_gname_full(A_LAWFUL),A_LAWFUL, Align2gangr(A_LAWFUL));
 }
 
+int
+get_ga_mfaction(ga_num)
+int ga_num;
+{
+	if(ga_num == GA_MOTHER)
+		return GOATMOM_FACTION;
+	else return -1;
+}
 
 int
 dosacrifice()
@@ -1854,6 +1866,13 @@ dosacrifice()
 	}
 
 	
+	if(Misotheism && !(otmp->otyp == AMULET_OF_YENDOR && Is_astralevel(&u.uz))){
+		if (otmp->otyp == CORPSE)
+			feel_cockatrice(otmp, TRUE);
+		pline1(nothing_happens);
+		return 1;
+	}
+
 #define MAXVALUE 24 /* Highest corpse value (besides Wiz) */
 
     if (otmp->otyp == CORPSE) {
@@ -2060,7 +2079,7 @@ dosacrifice()
 					give_ascension_trophy();
 #endif
 					pline("An invisible choir sings, and you are bathed in radiance...");
-					godvoice(Align2gangr(altaralign), "Congratulations, mortal!");
+					godvoice(AltarAlign2gangr(altaralign), "Congratulations, mortal!");
 					display_nhwindow(WIN_MESSAGE, FALSE);
 					verbalize("In return for thy service, I grant thee the gift of Immortality!");
 					You("ascend to the status of Demigod%s...",
@@ -2144,11 +2163,11 @@ dosacrifice()
 	 */
 	You_feel("the air around you grow charged...");
 	pline("Suddenly, you realize that %s has noticed you...", a_gname());
-		godvoice(Align2gangr(altaralign), "So, mortal!  You dare desecrate my High Temple!");
+		godvoice(AltarAlign2gangr(altaralign), "So, mortal!  You dare desecrate my High Temple!");
 	/* Throw everything we have at the player */
-	god_zaps_you(Align2gangr(altaralign));
+	god_zaps_you(AltarAlign2gangr(altaralign));
     } else if (value < 0) { /* I don't think the gods are gonna like this... */
-		gods_upset(Align2gangr(altaralign));
+		gods_upset(AltarAlign2gangr(altaralign));
     } else {
 	int saved_anger = u.ugangr[Align2gangr(u.ualign.type)];
 	int saved_cnt = u.ublesscnt;
@@ -2164,7 +2183,7 @@ dosacrifice()
 		    You("have a strong feeling that %s is angry...", u_gname());
 			if(otmp->otyp == CORPSE && is_rider(&mons[otmp->corpsenm])){
 				pline("A pulse of darkness radiates from your sacrifice!");
-				angrygods(Align2gangr(altaralign));
+				angrygods(AltarAlign2gangr(altaralign));
 				return 1;
 			}
 			consume_offering(otmp);
@@ -2258,7 +2277,7 @@ dosacrifice()
 				u.lastprayresult = PRAY_ANGER;
 				u.reconciled = REC_NONE;
 				pline("%s rejects your sacrifice!", a_gname());
-				godvoice(Align2gangr(altaralign), "Suffer, infidel!");
+				godvoice(AltarAlign2gangr(altaralign), "Suffer, infidel!");
 				change_luck(-5);
 				(void) adjattrib(A_WIS, -2, TRUE);
 				if (!Inhell) angrygods(Align2gangr(u.ualign.type));
@@ -2268,7 +2287,7 @@ dosacrifice()
 	    } else {
 		if(otmp->otyp == CORPSE && is_rider(&mons[otmp->corpsenm])){
 			pline("A pulse of darkness radiates from your sacrifice!");
-			angrygods(Align2gangr(altaralign));
+			angrygods(AltarAlign2gangr(altaralign));
 			return 1;
 		}
 		consume_offering(otmp);
@@ -2347,7 +2366,7 @@ dosacrifice()
 
 	if(otmp->otyp == CORPSE && is_rider(&mons[otmp->corpsenm])){
 		pline("A pulse of darkness radiates from your sacrifice!");
-		angrygods(Align2gangr(altaralign));
+		angrygods(AltarAlign2gangr(altaralign));
 		return 1;
 	}
 	consume_offering(otmp);
@@ -2452,6 +2471,10 @@ dosacrifice()
 			} else if(otmp->oartifact == ART_HELLRIDER_S_SADDLE){
 				unrestrict_weapon_skill(P_RIDING);
 			}
+			
+			if(is_shield(otmp)){
+				unrestrict_weapon_skill(P_SHIELD);
+			}
 			return(1);
 		}
 	    } else if (rnl((30 + u.ulevel)*10) < 10) {
@@ -2496,6 +2519,12 @@ boolean praying;	/* false means no messages should be given */
 
     if (praying)
 	You("begin praying to %s.", align_gname(p_aligntyp));
+	
+	// Dungeon currently cut off from the divine
+	if(praying && Misotheism){
+		p_type = 1;	
+		return TRUE;
+	}
 
     if (u.ualign.type && u.ualign.type == -p_aligntyp)
 	alignment = -u.ualign.record;		/* Opposite alignment altar */
@@ -2626,7 +2655,7 @@ prayer_done()		/* M. Stephenson (1.0.3b) */
 	if(on_altar()){
 		(void) water_prayer(FALSE);
 		change_luck(-3);
-		gods_upset(Align2gangr(alignment));
+		gods_upset(AltarAlign2gangr(alignment));
 	}
 	return(1);
     }
@@ -2690,6 +2719,11 @@ doturn()
 		You("don't know how to turn undead!");
 		return(0);
 	}
+	if(Misotheism){
+		pline("Nothing happens!");
+		return 0;
+	}
+
 	if(!Race_if(PM_VAMPIRE)) u.uconduct.gnostic++;
 
 	if(!Race_if(PM_VAMPIRE) && u.uen >= 30 && yn("Use abbreviated liturgy?") == 'y'){
@@ -3106,7 +3140,7 @@ register int x, y;
     aligntyp altaralign = a_align(x,y);
 
     if(!strcmp(align_gname(altaralign), u_gname())) {
-		godvoice(Align2gangr(altaralign), "How darest thou desecrate my altar!");
+		godvoice(AltarAlign2gangr(altaralign), "How darest thou desecrate my altar!");
 	(void) adjattrib(A_WIS, -1, FALSE);
     } else {
 	pline("A voice (could it be %s?) whispers:",
@@ -3179,7 +3213,7 @@ aligntyp alignment;
 	const char *what = (const char *)0;
 	int i, ii, lim, timeout;
 	
-	if (rnl((30 + u.ulevel)*10) < 10) god_gives_pet(align_gname_full(alignment),alignment);
+	if (rnl((30 + u.ulevel)*10) < 10) god_gives_pet(align_gname_full(alignment),alignment,Align2gangr(alignment));
 	else {
 		switch (rn2(6)) {
 			case 0: // randomly increment an ability score
@@ -3491,7 +3525,7 @@ STATIC_OVL void
 goat_gives_benefit()
 {
 	struct obj *optr;
-	if (rnl((30 + u.ulevel)*10) < 10) god_gives_pet(ga_gname_full(GA_MOTHER),A_NONE);
+	if (rnl((30 + u.ulevel)*10) < 10) god_gives_pet(ga_gname_full(GA_MOTHER),A_NONE,GA_MOTHER);
 	else switch(rnd(7)){
 		case 1:
 			if (Hallucination)

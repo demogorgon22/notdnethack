@@ -140,7 +140,7 @@ STATIC_PTR int NDECL(wiz_mk_mapglyphdump);
 STATIC_PTR int NDECL(wiz_wish);
 STATIC_PTR int NDECL(wiz_identify);
 STATIC_PTR int NDECL(wiz_map);
-STATIC_PTR int NDECL(wiz_makemap);
+//STATIC_PTR int NDECL(wiz_makemap);
 STATIC_PTR int NDECL(wiz_genesis);
 STATIC_PTR int NDECL(wiz_where);
 STATIC_PTR int NDECL(wiz_detect);
@@ -558,6 +558,8 @@ boolean you_abilities;
 			case AD_DRST: mtyp = PM_GREEN_DRAGON;  break;
 			case AD_SLEE: mtyp = PM_ORANGE_DRAGON; break;
 			case AD_ACID: mtyp = PM_YELLOW_DRAGON; break;
+			case AD_MAGM: mtyp = PM_GRAY_DRAGON;   break;
+			default: impossible("unhandled HD type %d", flags.HDbreath); mtyp = PM_RED_DRAGON; break;
 			}
 			/* note: when shield and armor match despite color differences, it is the shield's color that is used */
 			armormatch = Dragon_shield_to_pm(uarms) == &mons[mtyp];
@@ -615,7 +617,7 @@ boolean you_abilities;
 	if (mon_abilities && youracedata->mtyp == PM_SALAMANDER &&  levl[u.ux][u.uy].typ != LAVAPOOL){
 		add_ability('L', "Secrete Lava", MATTK_LAVA);
 	}
-	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_MADMAN) || Role_if(PM_ANACHRONOUNBINDER))){
+	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_MADMAN) || Role_if(PM_ANACHRONOUNBINDER)) && !Catapsi){
 		add_ability('m', "Emit a mind blast", MATTK_MIND);
 	}
 	if (you_abilities && !mon_abilities){
@@ -660,7 +662,7 @@ boolean you_abilities;
 	if (mon_abilities && webmaker(youracedata)){
 		add_ability('w', "Spin a web", MATTK_WEBS);
 	}
-	if (Role_if(PM_MADMAN) && u.whisperturn < moves){
+	if (Role_if(PM_MADMAN) && u.whisperturn < moves && !Catapsi && !DimensionalLock){
 		add_ability('W', "Call your whisperer", MATTK_WHISPER);
 	}
 	if (you_abilities && spellid(0) != NO_SPELL) {
@@ -810,7 +812,7 @@ boolean you_abilities;
 						  typ == LAVAPOOL ? "lava" : "water");
 				if (!Levitation && !Flying) {
 					if (typ == LAVAPOOL)
-					(void) lava_effects();
+					(void) lava_effects(TRUE);
 					else if (!Wwalking)
 					(void) drown();
 				}
@@ -1067,165 +1069,27 @@ dofightingform()
 	
 	Sprintf(buf,	"Known Forms");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
-	if(P_SKILL(P_SHII_CHO) >= P_BASIC){
-		if(activeFightingForm(FFORM_SHII_CHO)) {
-			Sprintf(buf,	"Shii-Cho (active)");
-		} else {
-			Sprintf(buf,	"Shii-Cho");
+
+	int i;
+	for (i = FFORM_SHII_CHO; i <= LAST_FFORM; i++) {
+		if (P_SKILL(getFightingFormSkill(i)) >= P_BASIC) {
+			boolean active = selectedFightingForm(i);
+			boolean blocked = blockedFightingForm(i);
+
+			Strcpy(buf, nameOfFightingForm(i));
+			if (active && blocked)
+				Strcat(buf, " (selected; blocked by armor)");
+			else if (active)
+				Strcat(buf, " (active)");
+			else if (blocked)
+				Strcat(buf, " (blocked by armor)");		
+
+			any.a_int = i;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 		}
-		any.a_int = FFORM_SHII_CHO;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_MAKASHI) >= P_BASIC){
-		if(activeFightingForm(FFORM_MAKASHI)) {
-			if(uarm && !(is_light_armor(uarm) || is_medium_armor(uarm))){
-				Sprintf(buf,	"Makashi (selected; blocked by armor)");
-			} else {
-				Sprintf(buf,	"Makashi (active)");
-			}
-		} else {
-			if(uarm && !(is_light_armor(uarm) || is_medium_armor(uarm))){
-				Sprintf(buf,	"Makashi (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Makashi");
-			}
-		}
-		any.a_int = FFORM_MAKASHI;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_SORESU) >= P_BASIC){
-		if(activeFightingForm(FFORM_SORESU)) {
-			if(uarm && !(is_light_armor(uarm) || is_medium_armor(uarm))){
-				Sprintf(buf,	"Soresu (selected; blocked by armor)");
-			} else {
-				Sprintf(buf,	"Soresu (active)");
-			}
-		} else {
-			if(uarm && !(is_light_armor(uarm) || is_medium_armor(uarm))){
-				Sprintf(buf,	"Soresu (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Soresu");
-			}
-		}
-		any.a_int = FFORM_SORESU;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_ATARU) >= P_BASIC){
-		if(activeFightingForm(FFORM_ATARU)) {
-			if(uarm && !(is_light_armor(uarm))){
-				Sprintf(buf,	"Ataru (selected; blocked by armor)");
-			} else {
-				Sprintf(buf,	"Ataru (active)");
-			}
-		} else {
-			if(uarm && !(is_light_armor(uarm))){
-				Sprintf(buf,	"Ataru (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Ataru");
-			}
-		}
-		any.a_int = FFORM_ATARU;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_SHIEN) >= P_BASIC){
-		if(activeFightingForm(FFORM_SHIEN)) {
-			if(uarm && !(is_light_armor(uarm))){
-				Sprintf(buf,	"Shien (selected; blocked by armor)");
-			} else {
-				Sprintf(buf,	"Shien (active)");
-			}
-		} else {
-			if(uarm && !(is_light_armor(uarm))){
-				Sprintf(buf,	"Shien (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Shien");
-			}
-		}
-		any.a_int = FFORM_SHIEN;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_DJEM_SO) >= P_BASIC){
-		if(activeFightingForm(FFORM_DJEM_SO)) {
-			if(uarm && !(is_light_armor(uarm) || is_medium_armor(uarm))){
-				Sprintf(buf,	"Djem So (selected; blocked by armor)");
-			} else {
-				Sprintf(buf,	"Djem So (active)");
-			}
-		} else {
-			if(uarm && !(is_light_armor(uarm) || is_medium_armor(uarm))){
-				Sprintf(buf,	"Djem So (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Djem So");
-			}
-		}
-		any.a_int = FFORM_DJEM_SO;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_NIMAN) >= P_BASIC){
-		if(activeFightingForm(FFORM_NIMAN)) {
-			if(uarm && (is_metallic(uarm))){
-				Sprintf(buf,	"Niman (selected; blocked by armor)");
-			} else {
-				int nskill = P_SKILL(P_NIMAN);
-				if(u.lastcast >= monstermoves && nskill >= P_BASIC){
-					Sprintf(buf,	"Niman (active; +%dd%ld)", 
-						nskill == P_BASIC ? 3 : 
-						nskill == P_SKILLED ? 6 : 
-						nskill == P_EXPERT ? 9 : 0, 
-						u.lastcast-monstermoves+1);
-				} else
-					Sprintf(buf,	"Niman (active)");
-			}
-		} else {
-			if(uarm && (is_metallic(uarm))){
-				Sprintf(buf,	"Niman (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Niman");
-			}
-		}
-		any.a_int = FFORM_NIMAN;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	}
-	if(P_SKILL(P_JUYO) >= P_BASIC){
-		if(activeFightingForm(FFORM_JUYO)) {
-			if(uarm && !(is_light_armor(uarm))){
-				Sprintf(buf,	"Juyo (selected; blocked by armor)");
-			} else {
-				Sprintf(buf,	"Juyo (active)");
-			}
-		} else {
-			if(uarm && !(is_light_armor(uarm))){
-				Sprintf(buf,	"Juyo (blocked by armor)");
-			} else {
-				Sprintf(buf,	"Juyo");
-			}
-		}
-		any.a_int = FFORM_JUYO;	/* must be non-zero */
-		add_menu(tmpwin, NO_GLYPH, &any,
-			incntlet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	}
 	end_menu(tmpwin,	"Choose fighting style:");
 
@@ -1233,7 +1097,7 @@ dofightingform()
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
 	
-	if(n <= 0 || activeFightingForm(selected[0].item.a_int)){
+	if(n <= 0 || selectedFightingForm(selected[0].item.a_int)){
 		return 0;
 	} else {
 		setFightingForm(selected[0].item.a_int);
@@ -1390,7 +1254,7 @@ wiz_identify()
 
 
 /* #wizmakemap - discard current dungeon level and replace with a new one */
-STATIC_PTR int
+int
 wiz_makemap(VOID_ARGS)
 {
     if (wizard) {
@@ -1447,7 +1311,7 @@ wiz_makemap(VOID_ARGS)
         vision_full_recalc = 1;
         cls();
 
-	rnd(2) ? u_on_upstairs() : u_on_dnstairs();
+	rn2(2) ? u_on_upstairs() : u_on_dnstairs();
         losedogs();
         initrack();
         if (Punished) {
@@ -1992,6 +1856,9 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	if (Drain_resistance) you_are("level-drain resistant");
 	if (Antimagic) you_are("magic-protected");
 	if (Nullmagic) you_are("shrouded in anti-magic");
+	if (Deadmagic) you_are("in a dead-magic zone");
+	if (Catapsi) you_are("in a psionic storm");
+	if (Misotheism) you_are("in a divine-exclusion zone");
 	if (Waterproof) you_are("waterproof");
 	if (Stone_resistance)
 		you_are("petrification resistant");
@@ -1999,6 +1866,8 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	if (Shock_resistance) you_are("shock resistant");
 	if (Sick_resistance) you_are("immune to sickness");
 	if (Sleep_resistance) you_are("sleep resistant");
+	if (Half_physical_damage) you_are("resistant to physical damage");
+	if (Half_spell_damage) you_are("resistant to magical damage");
 	if (u.uedibility || u.sealsActive&SEAL_BUER) you_can("recognize detrimental food");
 	// if ( (ublindf && ublindf->otyp == R_LYEHIAN_FACEPLATE && !ublindf->cursed) || 
 		 // (uarmc && uarmc->otyp == OILSKIN_CLOAK && !uarmc->cursed) ||
@@ -2088,7 +1957,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	/*** Madnesses ***/
 	if(u.usanity < 100 && !ClearThoughts){
 		if (u.umadness&MAD_DELUSIONS){
-			you_have("a tendency to hallucinate, obscuring some monsters true forms");
+			you_have("a tendency to hallucinate, obscuring some monsters' true forms");
 		}
 		if(u.usanity < 80 && u.umadness&MAD_REAL_DELUSIONS){
 			enl_msg("Some monsters ", "will change", "changed", " forms randomly");
@@ -2104,7 +1973,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 			enl_msg("You ", "will periodically suffer", "periodically suffered", " hallucinations, confusion, stunning, damage, and ability score drain");
 		}
 		if (u.umadness&MAD_FRIGOPHOBIA){
-			enl_msg("Sometimes, you ", "will panic and lose turns", "panicked and lost turns", " after taking cold damage or moving over ice");
+			enl_msg("Sometimes, you ", "will panic", "panicked", " after taking cold damage or moving over ice");
 		}
 		if (u.umadness&MAD_CANNIBALISM){
 			enl_msg("Sometimes, you ", "will vomit", "vomited", " after eating vegetarian or vegan food");
@@ -2114,7 +1983,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 			you_have("reduced AC, reduced spell success, and increased damage");
 		}
 		if (u.umadness&MAD_ARGENT_SHEEN){
-			enl_msg("Sometimes, monsters ", "will panic and lose turns", "panicked and lost turns", " will gain reflection for a turn");
+			enl_msg("Sometimes, monsters ", "will panic", "panicked", " will gain reflection for a turn");
 			enl_msg("Sometimes, monsters ", "will take", "took", " reduced damage from your magic");
 			enl_msg("Sometimes, you ", "will stop", "stopped", " to admire yourself in mirrors, losing turns");
 			enl_msg("You ", "take", "took", " increased damage from male humanoids and centaurs");
@@ -2128,7 +1997,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 		}
 		if (u.umadness&MAD_OPHIDIOPHOBIA){
 			enl_msg("Sometimes, you ", "will fail", "failed", " to attack serpentine monsters");
-			enl_msg("Sometimes, you ", "will panic and lose turns", "panicked and lost turns", " after being poisoned");
+			enl_msg("Sometimes, you ", "will panic", "panicked", " after being poisoned");
 			enl_msg("You ", "take", "took", " increased damage from serpentine monsters");
 		}
 		if (u.umadness&MAD_ARACHNOPHOBIA){
@@ -2146,7 +2015,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 			enl_msg("Sometimes, aquatic monsters ", "will take", "took", " reduced damage from your magic");
 			enl_msg("Sometimes, you ", "will fail", "failed", " to attack aquatic monsters");
 			enl_msg("You ", "take", "took", " increased damage from aquatic monsters");
-			enl_msg("Sometimes, you ", "will panic and lose turns", "panicked and lost turns", " after being attacked by aquatic monsters");
+			enl_msg("Sometimes, you ", "will panic", "panicked", " after being attacked by aquatic monsters");
 		}
 		if (u.umadness&MAD_PARANOIA){
 			//Severe because it triggers much more frequently than other madnesses
@@ -2154,7 +2023,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 			you_have("a hard time discerning the location of unseen monsters");
 		}
 		if (u.umadness&MAD_TALONS){
-			enl_msg("Sometimes, you ", "will panic and lose turns", "panicked and lost turns", " losing or releasing an item");
+			enl_msg("Sometimes, you ", "will panic", "panicked", " after losing or releasing an item");
 		}
 		if (u.umadness&MAD_COLD_NIGHT){
 			enl_msg("Sometimes, you ", "slip", "slipped", " nonexistent ice");
@@ -2235,6 +2104,7 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	if (Golded) you_are("turning to gold");
 	if (Slimed) you_are("turning into slime");
 	if (FrozenAir) you_are("suffocating in the cold night");
+	if (BloodDrown) you_are("drowning in blood");
 	if (Strangled) you_are((u.uburied) ? "buried" : "being strangled");
 	if (Glib) {
 		Sprintf(buf, "slippery %s", makeplural(body_part(FINGER)));
@@ -2437,8 +2307,8 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 	if (Reflecting) you_have("reflection");
 	if (Reflecting && (
 			(uwep && is_lightsaber(uwep) && litsaber(uwep) && 
-				((activeFightingForm(FFORM_SHIEN) && (!uarm || is_light_armor(uarm))) || 
-				 (activeFightingForm(FFORM_SORESU) && (!uarm || is_light_armor(uarm) || is_medium_armor(uarm)))
+				((activeFightingForm(FFORM_SHIEN)) || 
+				 (activeFightingForm(FFORM_SORESU))
 				)
 			) ||
 			(uarm && (uarm->otyp == SILVER_DRAGON_SCALE_MAIL || uarm->otyp == SILVER_DRAGON_SCALES || uarm->otyp == SILVER_DRAGON_SCALE_SHIELD)) ||
@@ -2813,6 +2683,9 @@ int final;
 	if (Drain_resistance) dump(youwere, "level-drain resistant");
 	if (Antimagic) dump(youwere, "magic-protected");
 	if (Nullmagic) dump(youwere, "shrouded in anti-magic");
+	if (Deadmagic) dump(youwere, "in a dead-magic zone");
+	if (Catapsi) dump(youwere, "in a psionic storm");
+	if (Misotheism) dump(youwere, "in a divine-exclusion");
 	if (Waterproof) dump(youwere, "waterproof");
 	if (Stone_resistance)
 		dump(youwere, "petrification resistant");
@@ -2876,14 +2749,16 @@ int final;
 	else if(u.usanity < 25)
 		dump("  ", "You frequently struggled with insanity");
 	else if(u.usanity < 50)
-		dump("  ", "You sometimes struggled with insanity");
+		dump("  ", "You periodically struggled with insanity");
+	else if(u.usanity < 75)
+		dump("  ", "You occasionally struggled with insanity");
 	else if(u.usanity < 100)
 		dump("  ", "You were a little touched in the head");
 	
 	if(u.uinsight > 40)
 		dump("  ", "You frequently saw things you wished you hadn't");
 	else if(u.uinsight > 20)
-		dump("  ", "You often saw things you wished you hadn't");
+		dump("  ", "You periodically saw things you wished you hadn't");
 	else if(u.uinsight > 1)
 		dump("  ", "You occasionally saw things you wished you hadn't");
 	
@@ -3015,6 +2890,7 @@ int final;
 	if (Stoned) dump(youwere, "turning to stone");
 	if (Golded) dump(youwere, "turning to gold");
 	if (Slimed) dump(youwere, "turning into slime");
+	if (BloodDrown) dump(youwere, "drowning in blood");
 	if (FrozenAir) dump(youwere, "suffocating in the cold night");
 	if (Strangled)
 		dump(youwere, (u.uburied) ? "buried" : "being strangled");
@@ -3279,7 +3155,10 @@ resistances_enlightenment()
 	en_win = create_nhwindow(NHW_MENU);
 	putstr(en_win, 0, "Current Status:");
 	putstr(en_win, 0, "");
-
+	
+	if(check_partial_action())
+		putstr(en_win, 0, "You have used your partial action this round.");
+	
 	if (uclockwork){
 		if(u.ucspeed==HIGH_CLOCKSPEED) putstr(en_win, 0, "Your clock is set to high speed.");
 		if(u.ucspeed==NORM_CLOCKSPEED) putstr(en_win, 0, "Your clock is set to normal speed.");
@@ -3319,7 +3198,31 @@ resistances_enlightenment()
 			putstr(en_win, 0, "Your equipment protects you from the water around you.");
 	}
 	
-	if(Nullmagic){
+	if(Deadmagic && base_casting_stat() == A_INT){
+		int i;
+		update_alternate_spells();
+		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
+			putstr(en_win, 0, "Magic is damaged.");
+			break;
+		}
+	}
+	else if(Catapsi && base_casting_stat() == A_CHA){
+		int i;
+		update_alternate_spells();
+		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
+			putstr(en_win, 0, "Your mind is full of static.");
+			break;
+		}
+	}
+	else if(Misotheism && base_casting_stat() == A_WIS){
+		int i;
+		update_alternate_spells();
+		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
+			putstr(en_win, 0, "Your mind is full of static.");
+			break;
+		}
+	}
+	else if(Nullmagic){
 		int i;
 		update_alternate_spells();
 		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
@@ -3355,7 +3258,11 @@ resistances_enlightenment()
 	if (active_glyph(CLEAR_DEEPS)) putstr(en_win, 0, "Your thoughts drift through blue water.");
 	if (active_glyph(DEEP_SEA)) putstr(en_win, 0, "Your fears drown in pitch-black water.");
 	if (active_glyph(TRANSPARENT_SEA)) putstr(en_win, 0, "Your mind is bulwarked by the clear deep sea.");
-	if (active_glyph(COMMUNION)) putstr(en_win, 0, "A strange minister preaches continuously in your childhood home.");
+	if (active_glyph(COMMUNION)) {
+		Race_if(PM_ANDROID) ? putstr(en_win, 0, "A strange minister preaches continuously in the city where you were built and tested.") :
+		Race_if(PM_CLOCKWORK_AUTOMATON) ? putstr(en_win, 0, "A strange minister preaches continuously in your maker's workshop.") :
+		putstr(en_win, 0, "A strange minister preaches continuously in your childhood home.");
+	}
 	if (active_glyph(CORRUPTION)) putstr(en_win, 0, "It weeps tears of blood.");
 	if (active_glyph(EYE_THOUGHT)) putstr(en_win, 0, "Eyes writhe inside your head.");
 	if (active_glyph(FORMLESS_VOICE)) putstr(en_win, 0, "A great voice speaks to you.");
@@ -3374,14 +3281,16 @@ resistances_enlightenment()
 	else if(u.usanity < 25)
 		putstr(en_win, 0, "You frequently struggle with insanity.");
 	else if(u.usanity < 50)
-		putstr(en_win, 0, "You sometimes struggle with insanity.");
+		putstr(en_win, 0, "You periodically struggle with insanity.");
+	else if(u.usanity < 75)
+		putstr(en_win, 0, "You occasionally struggle with insanity.");
 	else if(u.usanity < 100)
 		putstr(en_win, 0, "You are a little touched in the head.");
 	
 	if(u.uinsight > 40)
 		putstr(en_win, 0, "You frequently see things you wish you hadn't.");
 	else if(u.uinsight > 20)
-		putstr(en_win, 0, "You often see things you wish you hadn't.");
+		putstr(en_win, 0, "You periodically see things you wish you hadn't.");
 	else if(u.uinsight > 1)
 		putstr(en_win, 0, "You occasionally see things you wish you hadn't.");
 	
@@ -5548,6 +5457,7 @@ struct ext_func_tab extcmdlist[] = {
 	{(char *)0, (char *)0, donull, TRUE}, /* #levelport */
 	{(char *)0, (char *)0, donull, TRUE}, /* #wish */
 	{(char *)0, (char *)0, donull, TRUE}, /* #where */
+	{(char *)0, (char *)0, donull, TRUE}, /* #tests */
 #endif
 	{(char *)0, (char *)0, donull, TRUE}	/* sentinel */
 };
@@ -5589,6 +5499,7 @@ static struct ext_func_tab debug_extcmdlist[] = {
 	{"levelport", "to trans-level teleport", wiz_level_tele, IFBURIED},
 	{"wish", "make wish", wiz_wish, IFBURIED, AUTOCOMPLETE},
 	{"where", "tell locations of special levels", dooverview_or_wiz_where, IFBURIED},
+	{"tests", "pull up a menu of regression tests", wiz_testmenu, IFBURIED, AUTOCOMPLETE},
 	{(char *)0, (char *)0, donull, IFBURIED}
 };
 

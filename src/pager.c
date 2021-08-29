@@ -242,7 +242,7 @@ lookat(x, y, buf, monbuf, shapebuff)
 #endif
 		    (mtmp->mpeaceful && accurate) ? (mtmp->mtyp==PM_UVUUDAUM) ? "meditating " : "peaceful " : "",
 		    name);
-	    if (mtmp->mtyp==PM_DREAD_SERAPH && mtmp->mvar2)
+	    if (mtmp->mtyp==PM_DREAD_SERAPH && mtmp->mvar_dreadPrayer_progress)
 		Strcat(buf, "praying ");
 		
 	    if (u.ustuck == mtmp)
@@ -810,6 +810,8 @@ static const char * const bogusobjects[] = {
        "tuxedo",
        "breath mint",
        "potion of antacid",
+       "potion of wokitoff", /* stjepan sejic */
+       "potion of hull feeling",
        "traffic cone",
        "chainsaw",
 //	   "pair of high-heeled stilettos",    /* the *other* stiletto */
@@ -1169,7 +1171,7 @@ do_look(quick)
 		sym = showsyms[trap_to_defsym(glyph_to_trap(glyph))];
 	    } else if (glyph_is_object(glyph)) {
 		sym = oc_syms[(int)objects[glyph_to_obj(glyph)].oc_class];
-		if (sym == '`' && iflags.bouldersym && (int)glyph_to_obj(glyph) == BOULDER)
+		if (sym == '`' && iflags.bouldersym && ((int)glyph_to_obj(glyph) == BOULDER || (int)glyph_to_obj(glyph) == MASS_OF_STUFF))
 			sym = iflags.bouldersym;
 	    } else if (glyph_is_monster(glyph)) {
 		/* takes care of pets, detected, ridden, and regular mons */
@@ -1620,6 +1622,7 @@ get_mm_description_of_monster_type(struct monst * mtmp, char * description)
 	many = append(description, amorphous(ptr)			, "squeezes in gaps"	, many);
 	many = append(description, tunnels(ptr)				, "tunnels"				, many);
 	many = append(description, needspick(ptr)			, "digs"				, many);
+	many = append(description, species_tears_webs(ptr)	, "rips webs"			, many);
 	many = append(description, species_teleports(ptr), "teleports"			, many);
 	many = append(description, species_controls_teleports(ptr)	, "controls teleports"	, many);
 	many = append(description, mteleport(ptr)			, "teleports often"		, many);
@@ -1864,6 +1867,10 @@ get_description_of_attack_type(uchar id)
 	case AT_WISP: return "mist wisps";
 	case AT_TNKR: return "tinker";
 	case AT_SRPR: return "spiritual blade";
+	case AT_XSPR: return "offhand spiritual blade";
+	case AT_MSPR: return "extra-hand spiritual blade";
+	case AT_DSPR: return "million-arm spiritual blade";
+	case AT_ESPR: return "floating spiritual blade";
 	case AT_BEAM: return "ranged beam";
 	case AT_DEVA: return "million-arm weapon";
 	case AT_5SQR: return "long reach touch";
@@ -1954,7 +1961,7 @@ get_description_of_damage_type(uchar id)
 	case AD_MIST: return "migo mist projector";
 	case AD_TELE: return "monster teleports away";
 	case AD_POLY: return "polymorphs you";
-	case AD_PSON: return "psionic powers";
+	case AD_PSON: return "psionic";
 	case AD_GROW: return "grows brethren on death";
 	case AD_SOUL: return "strengthens brethren on death";
 	case AD_TENT: return "deadly tentacles (LarienTelrunya's bane)";
@@ -2054,6 +2061,9 @@ get_description_of_damage_type(uchar id)
 	case AD_PULL: return "pull closer";
 	case AD_PAIN: return "poison (STR) and crippling pain";
 	case AD_MROT: return "inflict curses";
+	case AD_LAVA: return "crushing lava";
+	case AD_PYCL: return "pyroclastic";
+	case AD_MOON: return "silver moonlight";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2340,16 +2350,19 @@ char *cbuf;
 		if(ep) *ep = 0;
 		if (ctrl && buf[2] == '\t'){
 			buf = bufr + 1;
-			(void) strncpy(buf, "^?      ", 8);
+			(void) strcpy(buf, "^?      ");
+			eos(buf)[0] = ' ';	/* overwrite the '\0', we want the rest of the string */
 			buf[1] = ctrl;
 		} else if (meta && buf[3] == '\t'){
 			buf = bufr + 2;
-			(void) strncpy(buf, "M-?     ", 8);
+			(void) strcpy(buf, "M-?     ");
+			eos(buf)[0] = ' ';	/* overwrite the '\0', we want the rest of the string */
 			buf[2] = meta;
 		} else if(buf[1] == '\t'){
 			buf = bufr;
 			buf[0] = q;
-			(void) strncpy(buf+1, "       ", 7);
+			(void) strcpy(buf+1, "       ");
+			eos(buf)[0] = ' ';	/* overwrite the '\0', we want the rest of the string */
 		}
 		(void) dlb_fclose(fp);
 		Strcpy(cbuf, buf);

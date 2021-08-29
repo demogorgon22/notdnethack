@@ -178,7 +178,7 @@ boolean quietly;
 	newsym(mtmp->mx, mtmp->my);
 
 	/* must wield weapon immediately since pets will otherwise drop it */
-	if (mtmp->mtame && attacktype(mtmp->data, AT_WEAP)) {
+	if (mtmp->mtame && mon_attacktype(mtmp, AT_WEAP)) {
 		mtmp->weapon_check = NEED_HTH_WEAPON;
 		(void) mon_wield_item(mtmp);
 	}
@@ -571,8 +571,8 @@ long nmv;		/* number of moves */
 	/* reduce tameness for every 150 moves you are separated */
 	if (get_mx(mtmp, MX_EDOG) && !(EDOG(mtmp)->loyal)
 	 && !(
-		In_quest(&u.uz) && 
-		((Is_qtown(&u.uz) && !flags.stag) || 
+	  In_quest(&u.uz) 
+	  && ((Is_qtown(&u.uz) && !flags.stag) || 
 		 (Is_nemesis(&u.uz) && flags.stag)) &&
 	 !(Race_if(PM_DROW) && Role_if(PM_NOBLEMAN) && !flags.initgend) &&
 	 !(Role_if(PM_ANACHRONONAUT) && quest_status.leader_is_dead) &&
@@ -706,7 +706,7 @@ boolean pets_only;	/* true for ascension or final escape */
 		/* monster won't follow if it hasn't noticed you yet */
 		&& !(mtmp->mstrategy & STRAT_WAITFORU)) {
 			stay_behind = FALSE;
-			if (mtmp->mtame && mtmp->mwait && (mtmp->mwait+100 > monstermoves)) {
+			if (mtmp->mtame && mtmp->mwait && u.usteed != mtmp && (mtmp->mwait+100 > monstermoves)) {
 				if (canseemon(mtmp))
 					pline("%s obediently waits for you to return.", Monnam(mtmp));
 				stay_behind = TRUE;
@@ -1014,7 +1014,7 @@ rock:
 		    return (is_undead(mon->data) ? TABU :
 			    ((herbi || starving) ? ACCFOOD : MANFOOD));
 		case TIN:
-		    return (metallivorous(mon->data) ? ACCFOOD : MANFOOD);
+		    return (metallivorous(mon->data) ? ACCFOOD : TABU);
 		case APPLE:
 		case CARROT:
 		    return (herbi ? DOGFOOD : starving ? ACCFOOD : MANFOOD);
@@ -1048,10 +1048,13 @@ rock:
 		obj->obj_material == SILVER)
 			return(TABU);
 	    if (hates_iron(mon->data) &&
-		obj->obj_material == IRON)
+		is_iron_obj(obj))
 			return(TABU);
 	    if (hates_unholy_mon(mon) &&
 		is_unholy(obj))
+			return(TABU);
+	    if (hates_unholy_mon(mon) &&
+		obj->obj_material == GREEN_STEEL)
 			return(TABU);
 	    if (hates_unblessed_mon(mon) &&
 		(is_unholy(obj) || obj->blessed))
@@ -1327,7 +1330,7 @@ int enhanced;
 	}
 
 	newsym(mtmp->mx, mtmp->my);
-	if (attacktype(mtmp->data, AT_WEAP)) {
+	if (mon_attacktype(mtmp, AT_WEAP)) {
 		mtmp->weapon_check = NEED_HTH_WEAPON;
 		(void) mon_wield_item(mtmp);
 	}
@@ -1351,13 +1354,14 @@ boolean be_peaceful;
 }
 
 struct monst *
-make_pet_minion(mtyp,alignment)
+make_pet_minion(mtyp,alignment,ga_num)
 int mtyp;
 aligntyp alignment;
+int ga_num;
 {
     register struct monst *mon;
     register struct monst *mtmp2;
-	mon = makemon(&mons[mtyp], u.ux, u.uy, NO_MM_FLAGS);
+	mon = makemon_full(&mons[mtyp], u.ux, u.uy, NO_MM_FLAGS, -1, get_ga_mfaction(ga_num));
     if (!mon) return 0;
     /* now tame that puppy... */
 	add_mx(mon, MX_EDOG);

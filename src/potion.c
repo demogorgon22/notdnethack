@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "xhity.h"
 
 #ifdef OVLB
 boolean notonhead = FALSE;
@@ -38,9 +39,9 @@ long val;
 long
 itimeout_incr(old, incr)
 long old;
-int incr;
+long incr;
 {
-    return itimeout((old & TIMEOUT) + (long)incr);
+    return itimeout((old & TIMEOUT) + incr);
 }
 
 /* set the timeout field of intrinsic `which' */
@@ -56,7 +57,7 @@ long *which, val;
 void
 incr_itimeout(which, incr)
 long *which;
-int incr;
+long incr;
 {
     set_itimeout(which, itimeout_incr(*which, incr));
 }
@@ -586,7 +587,9 @@ peffects(otmp)
 		} else
 		    exercise(A_WIS, FALSE);
 		
-		//All amnesia causes you to (silently) forget your crisis of faith
+		//All amnesia causes you to forget your crisis of faith
+		if(Doubt)
+			You("forget your doubts.");
 		make_doubtful(0L, FALSE);
 		break;
 	case POT_WATER:
@@ -1629,10 +1632,10 @@ boolean your_fault;
 		    angermon = FALSE;
 		    (void)split_mon(mon, (struct monst *)0);
 		} else if(mon->mtyp == PM_FLAMING_SPHERE ||
-			mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_CHAIN_GOLEM) {
+			is_iron(mon)) {
 		    if (canseemon(mon))
 			pline("%s %s.", Monnam(mon),
-				(mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_CHAIN_GOLEM) ?
+				is_iron(mon) ?
 				"rusts" : "flickers");
 		    mon->mhp -= d(1,6);
 		    if (mon->mhp < 1) {
@@ -1661,10 +1664,10 @@ boolean your_fault;
 		    angermon = FALSE;
 		    (void)split_mon(mon, (struct monst *)0);
 		} else if(mon->mtyp == PM_FLAMING_SPHERE ||
-			mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_CHAIN_GOLEM) {
+			is_iron(mon)) {
 		    if (canseemon(mon))
 			pline("%s %s.", Monnam(mon),
-				(mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_CHAIN_GOLEM) ?
+				is_iron(mon) ?
 				"rusts" : "flickers");
 		    mon->mhp -= d(1,6);
 		    if (mon->mhp < 1) {
@@ -1684,9 +1687,10 @@ boolean your_fault;
 		    break;
 		case PM_FLAMING_SPHERE:
 		case PM_IRON_GOLEM:
+		case PM_GREEN_STEEL_GOLEM:
 		case PM_CHAIN_GOLEM:
 		    if (canseemon(mon)) pline("%s %s.", Monnam(mon),
-			    (monsndx(mon->data) == PM_IRON_GOLEM || monsndx(mon->data) == PM_CHAIN_GOLEM) ?
+			    is_iron(mon) ?
 			    "rusts" : "flickers");
 		    mon->mhp -= d(1,6);
 		    if (mon->mhp < 1)
@@ -2001,7 +2005,7 @@ register struct obj *obj;
 		else if(u.umonnum == PM_FLAMING_SPHERE) {
 		    You("flicker!");
 		    losehp(d(1,6),"potion of amnesia", KILLED_BY_AN);
-		} else if(u.umonnum == PM_IRON_GOLEM || u.umonnum == PM_CHAIN_GOLEM) {
+		} else if(is_iron(youracedata)) {
 		    You("rust!");
 		    losehp(d(1,6),"potion of amnesia", KILLED_BY_AN);
 		}
@@ -3197,7 +3201,7 @@ dodip()
 		if(!Shock_resistance){
 			losehp(d(3,6) + 3*obj->spe, "discharging sunrod", KILLED_BY_AN);
 		}
-		if(!InvShock_resistance){
+		if(!UseInvShock_res(&youmonst)){
 			if (!rn2(3)) destroy_item(&youmonst, WAND_CLASS, AD_ELEC);
 			if (!rn2(3)) destroy_item(&youmonst, RING_CLASS, AD_ELEC);
 		}

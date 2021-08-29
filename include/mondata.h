@@ -11,7 +11,7 @@
 #define pm_resistance(ptr,typ)	(((ptr)->mresists & (typ)) != 0)
 #define mon_intrinsic(mon,typ)	(((mon)->mintrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_extrinsic(mon,typ)	(((mon)->mextrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
-#define mon_resistance(mon,typ)	(mon_intrinsic(mon,typ) || mon_extrinsic(mon,typ) || (typ == SWIMMING && Is_waterlevel(&u.uz)) || (typ == TELEPORT && mad_monster_turn(mon, MAD_NON_EUCLID)) || (typ == TELEPORT_CONTROL && mad_monster_turn(mon, MAD_NON_EUCLID)))
+#define mon_resistance(mon,typ)	(mon_intrinsic(mon,typ) || mon_extrinsic(mon,typ) || (typ == SWIMMING && Is_waterlevel(&u.uz)) || (typ == TELEPORT && mad_monster_turn(mon, MAD_NON_EUCLID) && !(mon)->mpeaceful) || (typ == TELEPORT_CONTROL && mad_monster_turn(mon, MAD_NON_EUCLID)))
 
 #define species_resists_fire(mon)	(((mon)->data->mresists & MR_FIRE) != 0)
 #define species_resists_cold(mon)	(((mon)->data->mresists & MR_COLD) != 0)
@@ -81,6 +81,7 @@
 #define species_displaces(ptr)	(((ptr)->mflagsg & MG_DISPLACEMENT) != 0L)
 #define species_floats(ptr)		(((ptr)->mflagsm & MM_FLOAT) != 0L)
 #define species_swims(ptr)		(((ptr)->mflagsm & MM_SWIM) != 0L)
+#define species_tears_webs(ptr)		(((ptr)->mflagsm & MM_WEBRIP) != 0L)
 #define is_suicidal(ptr)		(is_fern_spore(ptr) || \
 					(ptr)->mtyp == PM_FREEZING_SPHERE || \
 					(ptr)->mtyp == PM_FLAMING_SPHERE || \
@@ -144,6 +145,7 @@
 				 (ptr)->mtyp == PM_RADIANT_PYRAMID)
 #define is_iron(ptr)	((ptr)->mtyp == PM_IRON_PIERCER || \
 				 (ptr)->mtyp == PM_IRON_GOLEM || \
+				 (ptr)->mtyp == PM_GREEN_STEEL_GOLEM || \
 				 (ptr)->mtyp == PM_CHAIN_GOLEM || \
 				 (ptr)->mtyp == PM_SCRAP_TITAN || \
 				 (ptr)->mtyp == PM_HELLFIRE_COLOSSUS || \
@@ -241,7 +243,7 @@
 #define intelligent_mon(mon)	(!mindless_mon(mon) && !is_animal((mon)->data))
 #define murderable_mon(mon)	((mon) && ((intelligent_mon(mon) && always_peaceful((mon)->data) && !always_hostile_mon(mon)) || (mon)->isshk || (mon)->isgd || (mon)->ispriest))
 
-#define mortal_race(mon)	(intelligent_mon(mon) && !nonliving((mon)->data) && !is_minion((mon)->data) && !is_demon((mon)->data) && !is_primordial((mon)->data))
+#define mortal_race(mon)	(intelligent_mon(mon) && !nonliving((mon)->data) && !is_minion((mon)->data) && !is_demon((mon)->data) && !is_primordial((mon)->data) && !is_great_old_one((mon)->data))
 #define dark_immune(mon)	(is_unalive((mon)->data) || is_primordial((mon)->data))
 
 #define slithy(ptr)			((ptr)->mflagsb & MB_SLITHY)
@@ -260,6 +262,8 @@
 
 #define noboots(ptr)			((slithy(ptr) || nolimbs(ptr) || nofeet(ptr)) && !humanoid_feet(ptr))
 
+#define has_wings(ptr)			(((ptr)->mflagsb & MB_WINGS) != 0)
+
 #define is_animal(ptr)		(((ptr)->mflagst & MT_ANIMAL) != 0L)
 #define is_plant(ptr)		(((ptr)->mflagsa & MA_PLANT) != 0L)
 #define is_insectoid(ptr)		(((ptr)->mflagsa & MA_INSECTOID) != 0L)
@@ -274,6 +278,7 @@
 #define species_controls_teleports(ptr)	(((ptr)->mflagsm & MM_TPORT_CNTRL) != 0L)
 #define species_is_telepathic(ptr)		(((ptr)->mflagsv & MV_TELEPATHIC) != 0L)
 #define is_armed(ptr)		(attacktype(ptr, AT_WEAP) || attacktype(ptr, AT_XWEP) || attacktype(ptr, AT_MARI) || attacktype(ptr, AT_DEVA))
+#define is_armed_mon(mon)	(mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA))
 #define crpsdanger(ptr)		(acidic(ptr) || poisonous(ptr) ||\
 							 freezing(ptr) || burning(ptr))
 #define hideablewidegaze(ptr)	((ptr)->mtyp == PM_MEDUSA || \
@@ -304,8 +309,8 @@
 #define is_undead(ptr)		(((ptr)->mflagsa & MA_UNDEAD) != 0L)
 #define	can_undead(ptr)	(!nonliving(ptr) && !is_minion(ptr) && ((ptr)->mlet != S_PUDDING) &&\
 								((ptr)->mlet != S_JELLY) && ((ptr)->mlet != S_BLOB) && !is_elemental(ptr) &&\
-								!is_plant(ptr) && !is_demon(ptr) && !is_primordial(ptr) && !(mvitals[monsndx(ptr)].mvflags&G_NOCORPSE))
-#define is_weldproof(ptr)		(is_undead(ptr) || is_demon(ptr) || is_were(ptr))
+								!is_plant(ptr) && !is_demon(ptr) && !is_great_old_one(ptr) && !is_primordial(ptr) && !(mvitals[monsndx(ptr)].mvflags&G_NOCORPSE))
+#define is_weldproof(ptr)		(is_undead(ptr) || is_demon(ptr) || is_were(ptr) || is_great_old_one(ptr))
 #define is_weldproof_mon(mon)		(is_weldproof((mon)->data))
 #define is_were(ptr)		(((ptr)->mflagsa & MA_WERE) != 0L)
 #define is_heladrin(ptr)		(\
@@ -317,6 +322,9 @@
 							 (ptr)->mtyp == PM_GHAELE_ELADRIN || \
 							 (ptr)->mtyp == PM_TULANI_ELADRIN || \
 							 (ptr)->mtyp == PM_GAE_ELADRIN || \
+							 (ptr)->mtyp == PM_BRIGHID_ELADRIN || \
+							 (ptr)->mtyp == PM_UISCERRE_ELADRIN || \
+							 (ptr)->mtyp == PM_CAILLEA_ELADRIN || \
 							 (ptr)->mtyp == PM_DRACAE_ELADRIN || \
 							 (ptr)->mtyp == PM_ALRUNES ||\
 							 (ptr)->mtyp == PM_GWYNHARWYF ||\
@@ -335,6 +343,9 @@
 							 (ptr)->mtyp == PM_LUMINOUS_CLOUD || \
 							 (ptr)->mtyp == PM_BALL_OF_RADIANCE || \
 							 (ptr)->mtyp == PM_WARDEN_TREE || \
+							 (ptr)->mtyp == PM_PYROCLASTIC_VORTEX || \
+							 (ptr)->mtyp == PM_WATERSPOUT || \
+							 (ptr)->mtyp == PM_MOONSHADOW || \
 							 (ptr)->mtyp == PM_MOTHERING_MASS || \
 							 (ptr)->mtyp == PM_HATEFUL_WHISPERS ||\
 							 (ptr)->mtyp == PM_FURIOUS_WHIRLWIND ||\
@@ -434,9 +445,20 @@
 							|| (ptr)->mtyp == PM_OBOX_OB \
 							)
 #define is_primordial(ptr)	(((ptr)->mflagsa & MA_PRIMORDIAL) != 0L)
+#define is_great_old_one(ptr)	(((ptr)->mflagsa & MA_G_O_O) != 0L)
 #define is_keter(ptr)		((ptr)->mlet == S_KETER)
 #define is_angel(ptr)		((((ptr)->mflagsa & MA_MINION) != 0L) && ((ptr)->mlet == S_LAW_ANGEL || (ptr)->mlet == S_NEU_ANGEL || (ptr)->mlet == S_CHA_ANGEL))
+#define fallen(mx) 			(has_template(mx, MAD_TEMPLATE) || has_template(mx, FALLEN_TEMPLATE) || mx->mfaction == LAMASHTU_FACTION)
+#define normalAngel(mx) 	((is_angel(mx->data) && !fallen(mx)) || (is_undead(mx->data) && mx->mfaction == HOLYDEAD_FACTION))
+#define fallenAngel(mx) 	(is_angel(mx->data) && fallen(mx))
 #define is_eladrin(ptr)		(is_heladrin(ptr) || is_eeladrin(ptr))
+#define is_high_caste_eladrin(ptr)		(\
+							 (ptr)->mtyp == PM_TULANI_ELADRIN || \
+							 (ptr)->mtyp == PM_GAE_ELADRIN || \
+							 (ptr)->mtyp == PM_BRIGHID_ELADRIN || \
+							 (ptr)->mtyp == PM_UISCERRE_ELADRIN || \
+							 (ptr)->mtyp == PM_CAILLEA_ELADRIN \
+							)
 #define is_archon(ptr)		((ptr)->mlet == S_LAW_ANGEL &&\
 							 !((ptr)->mtyp == PM_COUATL ||\
 							   (ptr)->mtyp == PM_ALEAX ||\
@@ -564,6 +586,7 @@
 
 #define cantwield(ptr)		(nohands(ptr))
 #define could_twoweap(ptr)	attacktype(ptr, AT_XWEP)
+#define could_twoweap_mon(mon)	mon_attacktype(mon, AT_XWEP)
 // define cantweararm(ptr)	(breakarm(ptr) || sliparm(ptr))
 #define arm_size_fits(ptr,obj)	(Is_dragon_scales(obj) || \
 								 obj->objsize == (ptr)->msize || \
@@ -575,6 +598,7 @@
 		((ptr->mflagsb&MB_BODYTYPEMASK) == (obj->bodytypeflag&MB_BODYTYPEMASK)))
 #define can_wear_gloves(ptr)	(!nohands(ptr))
 #define can_wear_amulet(ptr)	(has_head(ptr) || (ptr->mflagsb&MB_CAN_AMULET))
+#define can_wear_blindf(ptr)	(has_head(ptr))
 #define can_wear_boots(ptr)	((humanoid(ptr) || humanoid_feet(ptr)) && !nofeet(ptr) && !nolimbs(ptr))
 #define shirt_match(ptr,obj)	((obj->otyp != BODYGLOVE && upper_body_match(ptr,obj)) || \
 								full_body_match(ptr,obj))
@@ -608,11 +632,12 @@
 				 (((ptr)->mflagsg & (MG_LORD|MG_PRINCE)) == 0L))
 #define is_dlord(ptr)		(is_demon(ptr) && is_lord(ptr))
 #define is_dprince(ptr)		(is_demon(ptr) && is_prince(ptr))
+#define is_dnoble(ptr)		(is_demon(ptr) && (is_lord(pa) || is_prince(pa)))
 #define is_minion(ptr)		((ptr)->mflagsa & MA_MINION)
 #define likes_gold(ptr)		(((ptr)->mflagst & MT_GREEDY) != 0L)
 #define likes_gems(ptr)		(((ptr)->mflagst & MT_JEWELS) != 0L)
 #define likes_objs(ptr)		(((ptr)->mflagst & MT_COLLECT) != 0L || \
-				 is_armed(ptr))
+				 (is_armed(ptr) && !mindless(ptr)))
 #define likes_magic(ptr)	(((ptr)->mflagst & MT_MAGIC) != 0L)
 #define webmaker(ptr)		((ptr)->mtyp == PM_CAVE_SPIDER || \
 				 (ptr)->mtyp == PM_GIANT_SPIDER || (ptr)->mtyp == PM_PHASE_SPIDER || \
@@ -853,6 +878,7 @@
 								 // (ptr)->mtyp == PM_STONE_GOLEM ||\
 								 // (ptr)->mtyp == PM_GLASS_GOLEM ||\
 								 // (ptr)->mtyp == PM_IRON_GOLEM ||\
+								 // (ptr)->mtyp == PM_GREEN_STEEL_GOLEM ||\
 								 // (ptr)->mtyp == PM_ARGENTUM_GOLEM ||\
 								 // (ptr)->mtyp == PM_RETRIEVER ||\
 								 // (ptr)->mtyp == PM_LIVING_DOLL ||\

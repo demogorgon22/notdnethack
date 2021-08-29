@@ -45,6 +45,10 @@
 #define AT_VINE		35	/* Lashing vines */
 #define AT_BKGT		36	/* Black-goat, resolves as a bite, kick, butt, tuch, or gaze */
 #define AT_BKG2		37	/* Black-goat 2, resolves as a butt, tentacle suck, or gaze */
+#define AT_XSPR		38	/* Phased non-contact attack, "spiritual rapier" (xweapon offhand version) */
+#define AT_MSPR		39	/* Phased non-contact attack, "spiritual rapier" (marilith offhand version) */
+#define AT_DSPR		40	/* Phased non-contact attack, "spiritual rapier" (million-arm mainhand version) */
+#define AT_ESPR		41	/* Phased non-contact attack, "spiritual rapier" (non-hand floating version) */
 
 #define AT_WEAP		252	/* uses weapon */
 #define AT_XWEP		253	/* uses offhanded weapon */
@@ -59,6 +63,13 @@
 	(aatyp) == AT_HODS \
 	)
 
+#define spirit_rapier_at(aatyp) (\
+	(aatyp) == AT_SRPR || \
+	(aatyp) == AT_XSPR || \
+	(aatyp) == AT_MSPR || \
+	(aatyp) == AT_DSPR || \
+	(aatyp) == AT_ESPR \
+	)
 /*	Add new damage types below.
  *
  *	Note that 1-10 correspond to the types of attack used in buzz().
@@ -169,7 +180,7 @@
 #define AD_SHDW		105 /* Black Web shadow weapons */
 #define AD_STTP		106 /* Steal by Teleportation: Teleports your gear away */
 #define AD_HDRG		107 /* Half-dragon breath weapon */
-#define AD_STAR		108 /* Tulani silver starlight rapier */
+#define AD_STAR		108 /* Silver starlight rapier */
 #define AD_EELC		109	/* Elemental electric */
 #define AD_EFIR		110	/* Elemental fire */
 #define AD_EDRC		111	/* Elemental poison (con) */
@@ -217,11 +228,14 @@
 #define AD_CRYS		153 /*throw crystal*/ 
 #define AD_WHIS		154 /*whisper your darkest fears*/
 #define AD_BOLT		155 /*Blaster bolt fire*/
+#define AD_LAVA     156 /* Lava effects while stuck */
+#define AD_PYCL     157 /* Fire, poison, phys, or blindness effects */
+#define AD_MOON     158 /* Silver moonlight rapier, depends on phase of moon */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	155
+#define AD_DUNSTAN	159
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

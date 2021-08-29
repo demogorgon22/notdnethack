@@ -99,6 +99,7 @@
 #define MM_FLOAT		0x00002000L	/* Monster floats instead of truely flying (modifier) */
 #define MM_NOTONL		0x00004000L	/* Tries to avoid being on same line as player */
 #define MM_FLEETFLEE	0x00008000L	/* Flees if adjacent if it thinks it can outrun you */
+#define MM_WEBRIP		0x00010000L	/* Tears through webs instead of getting stuck */
 
 //Monster Thoughts and behavior
 #define MT_WANTSAMUL	0x00000001L	/* would like to steal the amulet */
@@ -267,6 +268,7 @@
 #define MA_MINION		0x01000000L	/* is a minion of a deity */
 #define MA_PRIMORDIAL	0x02000000L	/* is an ancient race */
 #define MA_ET			0x04000000L	/* is an alien race */
+#define MA_G_O_O		0x08000000L	/* is a Great Old One */
 
 #define MZ_TINY		0		/* < 2' */
 #define MZ_SMALL	1		/* 2-4' */
@@ -400,9 +402,9 @@
 //75
 #define MON_WARP_THROW         DISINT_RAY+1
 #define MAGM_BLAST             MON_WARP_THROW+1
+#define SUMMON_TANNIN          MAGM_BLAST+1
 
-#define MON_LASTSPELL          MAGM_BLAST
-
+#define MON_LASTSPELL          SUMMON_TANNIN
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

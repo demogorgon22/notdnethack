@@ -24,10 +24,11 @@ STATIC_DCL int NDECL(dig);
 #define DIGTYP_STATUE     2
 #define DIGTYP_BOULDER    3
 #define DIGTYP_CRATE      4
-#define DIGTYP_DOOR       5
-#define DIGTYP_TREE       6
-#define DIGTYP_BARS       7
-#define DIGTYP_BRIDGE     8
+#define DIGTYP_MS_O_STF   5
+#define DIGTYP_DOOR       6
+#define DIGTYP_TREE       7
+#define DIGTYP_BARS       8
+#define DIGTYP_BRIDGE     9
 
 
 STATIC_OVL boolean
@@ -146,6 +147,7 @@ xchar x, y;
 	return ((ispick||is_saber||is_seismic) && sobj_at(STATUE, x, y) ? DIGTYP_STATUE :
 		(ispick||is_saber||is_seismic) && sobj_at(BOULDER, x, y) ? DIGTYP_BOULDER :
 		(ispick||is_saber||is_seismic) && sobj_at(MASSIVE_STONE_CRATE, x, y) ? DIGTYP_CRATE :
+		(ispick||is_saber||is_seismic) && sobj_at(MASS_OF_STUFF, x, y) ? DIGTYP_MS_O_STF :
 		(closed_door(x, y) ||
 			levl[x][y].typ == SDOOR) ? DIGTYP_DOOR :
 		IS_TREES(levl[x][y].typ) ?
@@ -376,17 +378,27 @@ dig()
 		} else if ((obj = sobj_at(BOULDER, dpx, dpy)) != 0) {
 			struct obj *bobj;
 
-			fracture_rock(obj);
+			break_boulder(obj);
 			if ((bobj = boulder_at(dpx, dpy)) != 0) {
 			    /* another boulder here, restack it to the top */
 			    obj_extract_self(bobj);
 			    place_object(bobj, dpx, dpy);
 			}
 			digtxt = "The boulder falls apart.";
+		} else if ((obj = sobj_at(MASS_OF_STUFF, dpx, dpy)) != 0) {
+			struct obj *bobj;
+
+			break_boulder(obj);
+			if ((bobj = boulder_at(dpx, dpy)) != 0) {
+			    /* another boulder here, restack it to the top */
+			    obj_extract_self(bobj);
+			    place_object(bobj, dpx, dpy);
+			}
+			digtxt = "The mass of stuff comes unstuck.";
 		} else if ((obj = sobj_at(MASSIVE_STONE_CRATE, dpx, dpy)) != 0) {
 			struct obj *bobj;
 
-			break_crate(obj);
+			break_boulder(obj);
 			if ((bobj = boulder_at(dpx, dpy)) != 0) {
 			    /* another boulder here, restack it to the top */
 			    obj_extract_self(bobj);
@@ -547,8 +559,8 @@ cleanup:
 		digging.level.dlevel = -1;
 		return(0);
 	} else {		/* not enough effort has been spent yet */
-		static const char *const d_target[9] = {
-			"", "rock", "statue", "boulder", "crate", "door", "tree", "bars", "chains"
+		static const char *const d_target[10] = {
+			"", "rock", "statue", "boulder", "crate", "mass", "door", "tree", "bars", "chains"
 		};
 		int dig_target = dig_typ(digitem, dpx, dpy);
 		
@@ -563,7 +575,7 @@ cleanup:
 		} else if (!IS_ROCK(lev->typ) && dig_target == DIGTYP_ROCK)
 		    return(0); /* statue or boulder got taken */
 		if(!did_dig_msg) {
-		    if (is_lightsaber(digitem)) You("burn steadily through %s.",
+		    if (is_lightsaber(digitem)) You("burn steadily through the %s.",
 			d_target[dig_target]);
 		    else
 		    You("hit the %s with all your might.",
@@ -1048,7 +1060,7 @@ boolean pit_only;
 		      typ == LAVAPOOL ? "lava" : "water");
 		if (!Levitation && !Flying) {
 		    if (typ == LAVAPOOL)
-			(void) lava_effects();
+			(void) lava_effects(TRUE);
 		    else if (!Wwalking)
 			(void) drown();
 		}
@@ -1218,7 +1230,7 @@ boolean pit_only;
 		      typ == LAVAPOOL ? "lava" : "water");
 		if (!Levitation && !Flying) {
 		    if (typ == LAVAPOOL)
-			(void) lava_effects();
+			(void) lava_effects(TRUE);
 		    else if (!Wwalking)
 			(void) drown();
 		}
@@ -1540,7 +1552,7 @@ int x, y;
 	return;
 }
 
-STATIC_OVL void
+void
 hell_vault_items(x,y,type)
 int x, y, type;
 {
@@ -1550,8 +1562,35 @@ int x, y, type;
 	container->olocked = TRUE;
 	container->otrapped = TRUE;
 	for(int i = d(9,4); i > 0; i--)
-		mkhellvaultitem(container);
+		mkhellvaultitem_cnt(container, type, TRUE);
 	bury_an_obj(container);
+}
+
+void
+levi_spawn_items(x,y, levi)
+int x, y;
+struct monst *levi;
+{
+    struct obj *container;
+	struct obj *otmp;
+	container = mksobj(CHEST, MKOBJ_NOINIT);
+	set_material_gm(container, levi->mtyp == PM_LEVIATHAN ? BONE : METAL);
+	container->olocked = TRUE;
+	container->otrapped = TRUE;
+	for(int i = 5; i > 0; i--){
+		otmp = mkobj(levi->mtyp == PM_LEVIATHAN ? WAGE_OF_GLUTTONY : WAGE_OF_ENVY, MKOBJ_NOINIT);
+		add_to_container(container, otmp);
+	}
+	for(int i = 3; i > 0; i--){
+		otmp = mkobj(levi->mtyp == PM_LEVIATHAN ? WAGE_OF_ENVY : WAGE_OF_LUST, MKOBJ_NOINIT);
+		add_to_container(container, otmp);
+	}
+	otmp = mkobj(WAGE_OF_PRIDE, MKOBJ_NOINIT);
+	add_to_container(container, otmp);
+	for(int i = 3*9; i > 0; i--)
+		mkhellvaultitem_cnt(container, VN_N_PIT_FIEND, FALSE);
+	if(levi->mtyp == PM_LEVIATHAN) mpickobj(levi, container);
+	else place_object(container, x, y);
 }
 
 void
@@ -1563,7 +1602,7 @@ int x, y;
     struct obj *otmp;
     struct monst *mon;
     register struct rm *lev;
-	int mid;
+	int mid = PM_LAMB;
 	if(cansee(x, y)){
 		pline("The hellish seal shatters and dissolves into magenta fog!");
 	}
@@ -1585,7 +1624,7 @@ int x, y;
 				}
 				//Clear boulders
 				while ((otmp = boulder_at(x+i, y+j)) != 0)
-					fracture_rock(otmp);
+					break_boulder(otmp);
 
 				if(!IS_FEATURE(lev->typ)){
 					/* fake out saved state */
@@ -1663,20 +1702,26 @@ int x, y;
 				case 3:
 					mid = PM_MAHADEVA;
 				break;
-				//Note: regardless of which one is the "common" variety each has a 50/50 chance of being in the vault
+				//Note: regardless of which one is the "common" variety each has a chance of being in the vault
 				case 4:
-					if(dungeon_topology.eprecursor_typ == PRE_DRACAE){
-						mid = rn2(2) ? PM_DRACAE_ELADRIN : PM_TULANI_ELADRIN;
+					if(dungeon_topology.eprecursor_typ == PRE_DRACAE && rn2(2)){
+						mid = PM_DRACAE_ELADRIN;
 					} else
-						mid = PM_TULANI_ELADRIN;
+						mid = rn2(2) ? PM_GAE_ELADRIN : PM_TULANI_ELADRIN;
 				break;
 				case 5:
-					if(dungeon_topology.eprecursor_typ == PRE_DRACAE){
-						mid = rn2(2) ? PM_DRACAE_ELADRIN : PM_GAE_ELADRIN;
-					} else
-						mid = PM_GAE_ELADRIN;
+					if(dungeon_topology.eprecursor_typ == PRE_DRACAE && rn2(2)){
+						mid = PM_DRACAE_ELADRIN;
+					} else 
+						mid = !rn2(3) ? PM_BRIGHID_ELADRIN : rn2(2) ? PM_UISCERRE_ELADRIN : PM_CAILLEA_ELADRIN;
 				break;
 			}
+		break;
+		case VN_N_PIT_FIEND:
+			mid = PM_NESSIAN_PIT_FIEND;
+		break;
+		case VN_SHAYATEEN:
+			mid = PM_SHAYATEEN;
 		break;
 		default:
 			impossible("Unhandled vault number %d.", levl[x][y].vaulttype);
@@ -1684,7 +1729,69 @@ int x, y;
 		break;
 	}
 	
-	mon = makemon(&mons[mid], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+	if(mid == PM_ANCIENT_OF_DEATH){
+		mon = makemon(&mons[mid], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|NO_MINVENT);
+		if(mon){
+			otmp = mksobj(SCYTHE, MKOBJ_NOINIT);
+			set_material_gm(otmp, GREEN_STEEL);
+			add_oprop(otmp, OPROP_UNHYW);
+			add_oprop(otmp, OPROP_DRANW);
+			add_oprop(otmp, OPROP_VORPW);
+			set_obj_size(otmp, MZ_LARGE);
+			otmp->spe = 8;
+			curse(otmp);
+			
+			(void) mpickobj(mon, otmp);
+			m_dowear(mon, TRUE);
+			init_mon_wield_item(mon);
+		}
+	}
+	else if(mid == PM_NESSIAN_PIT_FIEND){
+		mon = makemon(&mons[mid], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|NO_MINVENT);
+#define NPF_ARMOR(typ) 	otmp = mongets(mon, typ, MKOBJ_NOINIT);\
+			add_oprop(otmp, OPROP_UNHY);\
+			add_oprop(otmp, OPROP_AXIO);\
+			set_material_gm(otmp, GREEN_STEEL);\
+			otmp->spe = 9;\
+			curse(otmp);
+		if(mon){
+			NPF_ARMOR(SPEED_BOOTS)
+			(void)mongets(mon, CLOAK_OF_MAGIC_RESISTANCE, MKOBJ_NOINIT);
+			NPF_ARMOR(PLATE_MAIL)
+			NPF_ARMOR(GAUNTLETS_OF_POWER)
+			NPF_ARMOR(HELMET)
+			otmp = mongets(mon, MACE, MKOBJ_NOINIT);
+			add_oprop(otmp, OPROP_UNHYW);
+			add_oprop(otmp, OPROP_AXIOW);
+			set_material_gm(otmp, GREEN_STEEL);
+			otmp->spe = 9;
+			curse(otmp);
+			m_dowear(mon, TRUE);
+			init_mon_wield_item(mon);
+		}
+#undef NPF_ARMOR
+	}
+	else if(mid == PM_SHAYATEEN){
+		mon = makemon(&mons[mid], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|NO_MINVENT);
+#define SHAY_WEAPON(typ) 	otmp = mongets(mon, typ, MKOBJ_NOINIT);\
+			add_oprop(otmp, OPROP_UNHYW);\
+			add_oprop(otmp, OPROP_ANARW);\
+			add_oprop(otmp, !rn2(4) ? OPROP_DRANW : !rn2(3) ? OPROP_ACIDW : !rn2(2) ? OPROP_FIREW : OPROP_COLDW);\
+			otmp->spe = 6;\
+			curse(otmp);
+		if(mon){
+			SHAY_WEAPON(BATTLE_AXE)
+			SHAY_WEAPON(BATTLE_AXE)
+			SHAY_WEAPON(BATTLE_AXE)
+			SHAY_WEAPON(BATTLE_AXE)
+			m_dowear(mon, TRUE);
+			init_mon_wield_item(mon);
+		}
+#undef NPF_ARMOR
+	}
+	else {
+		mon = makemon(&mons[mid], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+	}
 	
 	if(mon){
 		give_hell_vault_trophy(levl[x][y].vaulttype);
@@ -1704,6 +1811,8 @@ int x, y;
 			case VN_AKKABISH:
 			case VN_SARTAN:
 			case VN_RAGLAYIM:
+			case VN_SHAYATEEN:
+			case VN_N_PIT_FIEND:
 				/* stay adjacent */
 				break;
 
@@ -1892,11 +2001,13 @@ struct obj *obj;
 			    You("need an axe to cut down a tree.");
 			else if (IS_ROCK(lev->typ))
 			    You("need a pick to dig rock.");
-			else if (!ispick && (sobj_at(STATUE, rx, ry) ||
-					     sobj_at(BOULDER, rx, ry))) {
+			else if (!ispick && (sobj_at(STATUE, rx, ry)
+					     || sobj_at(BOULDER, rx, ry)
+					     || sobj_at(MASS_OF_STUFF, rx, ry)
+			)) {
 			    boolean vibrate = !rn2(3);
 			    pline("Sparks fly as you whack the %s.%s",
-				sobj_at(STATUE, rx, ry) ? "statue" : "boulder",
+				sobj_at(STATUE, rx, ry) ? "statue" : sobj_at(MASS_OF_STUFF, rx, ry) ? "mass of stuff" : "boulder",
 				vibrate ? " The axe-handle vibrates violently!" : "");
 			    if (vibrate) losehp(2, "axing a hard object", KILLED_BY);
 			}
@@ -1904,12 +2015,13 @@ struct obj *obj;
 			    You("swing your %s through thin air.",
 				aobjnam(obj, (char *)0));
 		} else {
-			static const char * const d_action[9][4] = {
+			static const char * const d_action[10][4] = {
 			    {"swinging",			"slicing the air",			"swinging",					"swinging"},
 			    {"digging",				"cutting through the wall",	"cutting",					"digging"},
 			    {"chipping the statue",	"cutting the statue",		"chipping the statue",		"smashing the statue"},
 			    {"hitting the boulder",	"cutting through the boulder","hitting the boulder",	"smashing the boulder"},
 			    {"chipping the crate",	"cutting through the crate","chipping the crate",		"smashing the crate"},
+			    {"chipping the mass",	"cutting through the mass", "chipping the mass",			"smashing the mass"},
 			    {"hitting the door",	"burning through the door",	"chopping at the door",		"smashing the door"},
 			    {"hitting the tree",	"razing the tree",			"cutting down the tree",	"smashing the tree"},
 			    {"hitting the bars",	"cutting through the bars",	"chopping the bars",		"smashing the bars"},
@@ -2150,13 +2262,13 @@ int oldy;
 {
 	int tx, ty;
 	/* fill in around prev position */
-	for (tx = max(0, oldx-1); tx <= min(COLNO, oldx+1); tx++)
-	for (ty = max(0, oldy-1); ty <= min(ROWNO, oldy+1); ty++)
+	for (tx = max(0, oldx-1); tx < min(COLNO, oldx+1); tx++)
+	for (ty = max(0, oldy-1); ty < min(ROWNO, oldy+1); ty++)
 		if (levl[tx][ty].typ == CORR)
 			levl[tx][ty].typ = STONE;
 	/* dig out around new position */
-	for (tx = max(0, mtmp->mx-1); tx <= min(COLNO, mtmp->mx+1); tx++)
-	for (ty = max(0, mtmp->my-1); ty <= min(ROWNO, mtmp->my+1); ty++)
+	for (tx = max(0, mtmp->mx-1); tx < min(COLNO, mtmp->mx+1); tx++)
+	for (ty = max(0, mtmp->my-1); ty < min(ROWNO, mtmp->my+1); ty++)
 		if (levl[tx][ty].typ == STONE && may_dig(tx, ty))
 			levl[tx][ty].typ = CORR;
 }
@@ -2511,8 +2623,12 @@ long timeout;	/* unused */
 	    }
 	} else if (obj->where == OBJ_MINVENT && obj->owornmask) {
 	    if (obj == MON_WEP(obj->ocarry)) {
-		setmnotwielded(obj->ocarry,obj);
-		MON_NOWEP(obj->ocarry);
+			setmnotwielded(obj->ocarry,obj);
+			MON_NOWEP(obj->ocarry);
+	    }
+		if (obj == MON_SWEP(obj->ocarry)) {
+			setmnotwielded(obj->ocarry,obj);
+			MON_NOSWEP(obj->ocarry);
 	    }
 	}
 	// rot_organic(arg, timeout); //This is not for corpses, it is for buried containers.
@@ -2620,7 +2736,7 @@ int y;
 			      typ == LAVAPOOL ? "lava" : "water");
 		if (!Levitation && !Flying && x==u.ux && y==u.uy) {
 		    if (typ == LAVAPOOL)
-			(void) lava_effects();
+			(void) lava_effects(TRUE);
 		    else if (!Wwalking)
 			(void) drown();
 		}

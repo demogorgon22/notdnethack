@@ -73,6 +73,7 @@ register struct obj *otmp;
     
     if (is_helmet(otmp) &&
         !is_flimsy(otmp) &&
+        otmp->otyp != find_gcirclet() &&
 	num_horns(mtmp->data) > 0)
 	return FALSE;
 
@@ -124,17 +125,20 @@ boolean check_if_better;
             ((dogfood(mtmp, otmp) < APPORT) ||
 	    /* collect artifacts and oprop items */
 		 (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) ||
+	    /* slotless non-artifact items */
+		 ((otmp->otyp == ARMOR_SALVE && u.uinsight >= 66) || otmp->otyp == PRESERVATIVE_ENGINE) ||
 	    /* chains for some */
 		 ((mtmp->mtyp == PM_CATHEZAR) && otmp->otyp == CHAIN) ||
 	    /* better weapons */
-	     (is_armed(mtmp->data) &&
+	     (is_armed_mon(mtmp) &&
 	      (otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && 
 		   (!check_if_better ||
 		    mtmp->mtyp == PM_MARILITH ||
 		    would_prefer_hwep(mtmp, otmp) ||
 		    would_prefer_rwep(mtmp, otmp))) ||
 	    /* useful masks */
-	     (otmp->otyp == MASK && mtmp->mtyp == PM_LILLEND) ||
+	     (otmp->otyp == MASK && otmp->corpsenm != NON_PM && mtmp->mtyp == PM_LILLEND) ||
+	     (is_worn_tool(otmp) && can_wear_blindf(mtmp->data)) ||
 	    /* better armor */
 	     (otmp->oclass == ARMOR_CLASS &&
 	      (!check_if_better || is_better_armor(mtmp, otmp))) ||
@@ -193,19 +197,19 @@ register struct monst *mon;
 {
 	register struct obj *obj;
 	struct obj *wep  = MON_WEP(mon),
-                   *hwep = attacktype(mon->data, AT_WEAP)
+                   *hwep = mon_attacktype(mon, AT_WEAP)
 		           ? select_hwep(mon) : (struct obj *)0,
-		   *proj = attacktype(mon->data, AT_WEAP)
+		   *proj = mon_attacktype(mon, AT_WEAP)
 		           ? select_rwep(mon) : (struct obj *)0,
 		   *rwep;
 	boolean item1 = FALSE, item2 = FALSE;
 	boolean intelligent = TRUE;
-	boolean marilith = attacktype(mon->data, AT_MARI);
+	boolean marilith = mon_attacktype(mon, AT_MARI);
 
 	if(on_level(&valley_level, &u.uz))
 		return (struct obj *)0; //The Dead hold on to their possessions (prevents the "drop whole inventory" bug
 	
-	rwep = attacktype(mon->data, AT_WEAP) ? propellor : &zeroobj;
+	rwep = mon_attacktype(mon, AT_WEAP) ? propellor : &zeroobj;
 
 	if (is_animal(mon->data) || mindless_mon(mon)) {
 		intelligent = FALSE;
@@ -223,7 +227,7 @@ register struct monst *mon;
 			item2 = TRUE;
 			continue;
 		}
-		if(marilith && (obj->oclass == WEAPON_CLASS || is_weptool(obj))){
+		if(marilith && (obj->oclass == WEAPON_CLASS || is_weptool(obj)) && objects[obj->otyp].oc_skill > 0){
 			continue; //Keep all weapons
 		}
 		if (!obj->owornmask && obj != wep &&
@@ -238,6 +242,25 @@ register struct monst *mon;
 		    && !could_use_item(mon, obj, TRUE))))
 		    return obj;
 	}
+	return (struct obj *)0;
+}
+
+struct obj *
+drop_envy(mon)
+register struct monst *mon;
+{
+	register struct obj *obj;
+	if(MON_WEP(mon))
+		return MON_WEP(mon);
+
+	if(MON_SWEP(mon))
+		return MON_SWEP(mon);
+
+	for(obj = mon->minvent; obj; obj = obj->nobj) {
+		if(!obj->owornmask)
+		    return obj;
+	}
+
 	return (struct obj *)0;
 }
 
@@ -628,7 +651,7 @@ int udist;
 					obj_extract_self(obj);
 					newsym(omx,omy);
 					(void) mpickobj(mtmp,obj);
-					if (attacktype(mtmp->data, AT_WEAP) &&
+					if (mon_attacktype(mtmp, AT_WEAP) &&
 						mtmp->weapon_check == NEED_WEAPON) {
 					mtmp->weapon_check = NEED_HTH_WEAPON;
 					(void) mon_wield_item(mtmp);
@@ -859,7 +882,7 @@ boolean ranged;
 #else
                 (int)mtmp2->m_lev >= (int)mtmp->m_lev+2 &&
 #endif
-		!(attacktype(mtmp->data, AT_EXPL) || extra_nasty(mtmp->data))) ||
+		!(mon_attacktype(mtmp, AT_EXPL) || extra_nasty(mtmp->data))) ||
 		(!ranged &&
 		 mtmp2->mtyp == PM_FLOATING_EYE && rn2(10) &&
 		 !is_blind(mtmp) && haseyes(mtmp->data) && !is_blind(mtmp2)
@@ -1051,25 +1074,26 @@ register int after;	/* this is extra fast monster movement */
 	    if (ret == 1) return 2; /* died */
 	    if (ret == 2) return 1; /* did something */
 	}
-	else
-	if (mtmp->mlstmv != monstermoves)
+	else if (mtmp->mlstmv != monstermoves) /* ?? only do a ranged attack once per turn? */
 	{
-		/* Look for monsters to fight (at a distance) */
-		struct monst *mtmp2 = mfind_target(mtmp, FALSE);
-		if (mtmp2 && (mtmp2 != mtmp)
-			&& (mtmp2 != &youmonst)
-			&& acceptable_pet_target(mtmp, mtmp2, TRUE))
-		{
-			int res;
-			mon_ranged_gazeonly = 1;//State variable
-			res = (mtmp2 == &youmonst) ? mattacku(mtmp)
-				: mattackm(mtmp, mtmp2);
+		if(!mtarget_adjacent(mtmp)){ /* don't fight at range if there's a melee target */
+			/* Look for monsters to fight (at a distance) */
+			struct monst *mtmp2 = mfind_target(mtmp, FALSE);
+			if (mtmp2 && (mtmp2 != mtmp)
+				&& (mtmp2 != &youmonst)
+				&& acceptable_pet_target(mtmp, mtmp2, TRUE))
+			{
+				int res;
+				mon_ranged_gazeonly = 1;//State variable
+				res = (mtmp2 == &youmonst) ? mattacku(mtmp)
+					: mattackm(mtmp, mtmp2);
 
-			if (res & MM_AGR_DIED)
-				return 2; /* Oops, died */
+				if (res & MM_AGR_DIED)
+					return 2; /* Oops, died */
 
-			if (!(mon_ranged_gazeonly) && (res & MM_HIT))
-				return 1; /* that was our move for the round */
+				if (!(mon_ranged_gazeonly) && (res & MM_HIT))
+					return 1; /* that was our move for the round */
+			}
 		}
 	}
 

@@ -63,7 +63,7 @@ register struct monst *mon;
 	    }
 	} else if (!rn2(30) || (is_were(mon->data) && Protection_from_shape_changers) 
 		|| (is_yochlol(mon->data) && !Protection_from_shape_changers)
-		|| (is_eeladrin(mon->data) && mon->mhp >= mon->mhpmax)
+		|| (is_eeladrin(mon->data) && mon->mhp >= mon->mhpmax && !Protection_from_shape_changers)
 	) {
 		if(mon->mtyp == PM_BALL_OF_LIGHT){
 			mon->mflee = 0;
@@ -106,6 +106,12 @@ int pm;
 		case PM_BALL_OF_RADIANCE: return(PM_TULANI_ELADRIN);
 		case PM_GAE_ELADRIN:	  return(PM_WARDEN_TREE);
 		case PM_WARDEN_TREE:	  return(PM_GAE_ELADRIN);
+		case PM_BRIGHID_ELADRIN:  return(PM_PYROCLASTIC_VORTEX);
+		case PM_PYROCLASTIC_VORTEX: return(PM_BRIGHID_ELADRIN);
+		case PM_UISCERRE_ELADRIN: return(PM_WATERSPOUT);
+		case PM_WATERSPOUT:       return(PM_UISCERRE_ELADRIN);
+		case PM_CAILLEA_ELADRIN:  return(PM_MOONSHADOW);
+		case PM_MOONSHADOW:       return(PM_CAILLEA_ELADRIN);
 		case PM_DRACAE_ELADRIN:	  return(PM_MOTHERING_MASS);
 		case PM_MOTHERING_MASS:	  return(PM_DRACAE_ELADRIN);
 		case PM_GWYNHARWYF:		  return(PM_FURIOUS_WHIRLWIND);
@@ -157,6 +163,28 @@ int pm;
 	}
 }
 
+int
+transmitted_were(mtyp)
+int mtyp;
+{
+	switch(mtyp)
+	{
+	case PM_WEREJACKAL:
+	case PM_HUMAN_WEREJACKAL:
+	case PM_ANUBAN_JACKAL:
+	case PM_ANUBITE:
+		return PM_WEREJACKAL;
+	case PM_WEREWOLF:
+	case PM_HUMAN_WEREWOLF:
+		return PM_WEREWOLF;
+	case PM_WERERAT:
+	case PM_HUMAN_WERERAT:
+		return PM_WERERAT;
+	}
+	impossible("Unhandled were-foo transmission %d", mtyp);
+	return mtyp;
+}
+
 void
 new_were(mon)
 struct monst *mon;
@@ -170,8 +198,16 @@ struct monst *mon;
 	    impossible("unknown lycanthrope %s.", mon->data->mname);
 	    return;
 	}
-
+	
 	if(is_heladrin(mon->data) && mon->mtrapped && t_at(mon->mx, mon->my) && t_at(mon->mx, mon->my)->ttyp == VIVI_TRAP)
+		return;
+	
+	if(mon == u.ustuck && u.uswallow)
+		expels(mon, mon->data, TRUE);
+	else if(u.ustuck == mon)
+		u.ustuck = 0;
+	
+	if(DEADMONSTER(mon) || MIGRATINGMONSTER(mon))
 		return;
 	
 	if(canseemon(mon) && !Hallucination) {
@@ -210,18 +246,14 @@ struct monst *mon;
 				update_mon_intrinsics(mon, otmp, FALSE, FALSE);
 			otmp->owornmask = 0L;
 			if (otmp == mw_tmp){
-				if (!attacktype(mon->data, AT_WEAP)) {
-					setmnotwielded(mon, mw_tmp);
-					MON_NOWEP(mon);
-					mon->weapon_check = NO_WEAPON_WANTED;
-				}
+				setmnotwielded(mon, mw_tmp);
+				MON_NOWEP(mon);
+				mon->weapon_check = NO_WEAPON_WANTED;
 			}
 			if (otmp == msw_tmp){
-				if (!attacktype(mon->data, AT_XWEP)) {
-					setmnotwielded(mon, msw_tmp);
-					MON_NOSWEP(mon);
-					mon->weapon_check = NO_WEAPON_WANTED;
-				}
+				setmnotwielded(mon, msw_tmp);
+				MON_NOSWEP(mon);
+				mon->weapon_check = NO_WEAPON_WANTED;
 			}
 		}
 		if(mon->mtyp == PM_ANCIENT_TEMPEST){
@@ -236,6 +268,8 @@ struct monst *mon;
 					new_light_source(LS_MONSTER, (genericptr_t)ltnt, emits_light_mon(ltnt));
 			}
 		}
+		m_dowear(mon, TRUE);
+		init_mon_wield_item(mon);
 	} else if(is_heladrin(mon->data)){
 		m_dowear(mon, TRUE);
 		init_mon_wield_item(mon);

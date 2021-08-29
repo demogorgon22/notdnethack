@@ -97,7 +97,13 @@ const struct propname {
     { FIXED_ABIL, "fixed abilites" },
     { LIFESAVED, "life will be saved" },
 	{ NULLMAGIC, "magic nullification" },
+	{ DEADMAGIC, "dead magic zone" },
+	{ CATAPSI, "psionic vortex" },
+	{ MISOTHEISM, "divine-exclusion zone" },
     { WATERPROOF, "waterproofing" },
+    { SHATTERING, "fracturing" },
+    { DARKVISION_ONLY, "darksight-override" },
+    { DIMENSION_LOCK, "dimensional lock" },
     {  0, 0 },
 };
 
@@ -545,7 +551,7 @@ nh_timeout()
 	if(Golded) golded_dialogue();
 	if(Slimed) slime_dialogue();
 	if(Vomiting) vomiting_dialogue();
-	if(Strangled && !Breathless) choke_dialogue();
+	if((Strangled || FrozenAir || BloodDrown) && !Breathless) choke_dialogue();
 	if(u.mtimedone && !--u.mtimedone) {
 		if (Unchanging)
 			u.mtimedone = rnd(100*youmonst.data->mlevel + 1);
@@ -647,13 +653,18 @@ nh_timeout()
 			}
 		}
 	}
-	if(Strangled || FrozenAir){
+	if(Strangled || FrozenAir || BloodDrown){
+		if(BloodDrown){
+			pline("Your lungs are full of blood!");
+			water_damage(invent, FALSE, FALSE, WD_BLOOD, &youmonst);
+		}
 		if(Breathless);//Do nothing
 		else if(u.divetimer > 1) u.divetimer--;
 		else {
 			killer_format = KILLED_BY;
 			killer = ((HStrangled & TIMEOUT) && delayed_killer) ? delayed_killer
 				: (u.uburied || FrozenAir) ? "suffocation"
+				: BloodDrown ? "drowning in blood"
 				: "strangulation";
 			done(((HStrangled & TIMEOUT) && delayed_killer) ? CHOKING : DIED);
 		}
@@ -666,7 +677,7 @@ nh_timeout()
 		else if(u.divetimer > (ACURR(A_CON))/3) u.divetimer--;
 	}
 	
-	if((Babble || Screaming) && !Strangled && !FrozenAir && u.divetimer > 1)
+	if((Babble || Screaming) && !Strangled && !FrozenAir && !BloodDrown && u.divetimer > 1)
 		u.divetimer--;
 
 	if(u.divetimer<=0){
@@ -890,6 +901,12 @@ nh_timeout()
 			if (Fumbling)
 			    HFumbling += rnd(20);
 			break;
+		case INFRAVISION:
+		case BLOODSENSE:
+		case LIFESENSE:
+		case SENSEALL:
+		case OMNISENSE:
+		case EARTHSENSE:
 		case DETECT_MONSTERS:
 			see_monsters();
 			break;
@@ -930,6 +947,17 @@ nh_timeout()
 			else
 				pline("Your vision recedes.");
 			vision_full_recalc = 1;
+		break;
+		case NORMALVISION:
+		case LOWLIGHTSIGHT:
+		case ELFSIGHT:
+		case DARKSIGHT:
+		case CATSIGHT:
+		case EXTRAMISSION:
+		case ECHOLOCATION:
+		case DARKVISION_ONLY:
+			vision_full_recalc = 1;
+			see_monsters();
 		break;
 		}
 		}
@@ -1016,6 +1044,10 @@ long timeout;
 			if (bomb == MON_WEP(mtmp)) {
 			    bomb->owornmask &= ~W_WEP;
 			    MON_NOWEP(mtmp);
+			}
+			if (bomb == MON_SWEP(mtmp)) {
+			    bomb->owornmask &= ~W_SWAPWEP;
+			    MON_NOSWEP(mtmp);
 			}
 			if (!silent) {
 			    if (canseemon(mtmp))
@@ -2015,9 +2047,10 @@ long timeout;
 	    case POWER_ARMOR:
 	    case LIGHTSABER: 
 	    case BEAMSWORD:
+	    case ROD_OF_FORCE:
 	        /* Callback is checked every 1 turns - 
 	        	lightsaber automatically deactivates if not wielded */
-	        if ((obj->cursed && !rn2(250)) ||
+	        if ((obj->cursed && obj->otyp != ROD_OF_FORCE && !rn2(250)) ||
 	            (obj->where == OBJ_FLOOR) || 
 		    (obj->where == OBJ_MINVENT && 
 				((!MON_WEP(obj->ocarry) || MON_WEP(obj->ocarry) != obj)
@@ -2141,6 +2174,9 @@ struct obj * obj;
 			radius = 0; // jet is "mirrored", black opal is "smoke"
 		else radius = 1;
 		break;
+	case ROD_OF_FORCE:
+			radius = 0;
+		break;
 	default:
 		/* [ALI] Support artifact light sources */
 		if (artifact_light(obj) || arti_light(obj)) {
@@ -2164,6 +2200,7 @@ struct obj * obj;
 	case DOUBLE_LIGHTSABER:
 	case LIGHTSABER:
 	case BEAMSWORD:
+	case ROD_OF_FORCE:
 		turns = 1;
 		break;
 
@@ -2240,6 +2277,7 @@ struct obj * obj;
 		(obj->otyp == LIGHTSABER) ||
 		(obj->otyp == BEAMSWORD) ||
 		(obj->otyp == POWER_ARMOR) ||
+		(obj->otyp == ROD_OF_FORCE) ||
 		(obj->otyp == POT_OIL) ||
 		(obj->otyp == STICK_OF_DYNAMITE) ||
 		(obj->otyp == GNOMISH_POINTY_HAT) ||
@@ -2320,6 +2358,7 @@ begin_burn(obj)
 		obj->lamplit = TRUE;
 	/* lightsaber charge and Atma Weapon special */
 	if (obj->otyp == DOUBLE_LIGHTSABER ||
+		obj->otyp == ROD_OF_FORCE ||
 		obj->otyp == LIGHTSABER ||
 		obj->otyp == BEAMSWORD
 		) {
@@ -2479,6 +2518,10 @@ genericptr_t arg;
 long timeout;
 {
 	struct monst * mon = (struct monst *)arg;
+	if (DEADMONSTER(mon)) {
+		/* already dead, necessary cleanup will be done by cleanup_msummon() */
+		return;
+	}
 	if(get_mx(mon, MX_ESUM) && mon->mextra_p->esum_p->permanent) {
 		start_timer(9999, TIMER_MONSTER, DESUMMON_MON, arg);
 		return;
@@ -3061,7 +3104,8 @@ int amt;
 	if (!esum) return;
 	if (esum->permanent) return;
 	if (!(tm = get_timer(mon->timed, DESUMMON_MON))) return;
-	adjust_timer_duration(tm, -min(amt, monstermoves - tm->timeout - 1));
+	adjust_timer_duration(tm, -min(amt, tm->timeout - monstermoves));
+	run_timers();
 }
 /* when a summoner dies or changes levels, all of its summons disappear */
 void

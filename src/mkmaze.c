@@ -352,7 +352,7 @@ static const int angelnums[] = {PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_AR
 						  PM_LILLEND,
 						  PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN, PM_TULANI_ELADRIN, 
 						  PM_DAUGHTER_OF_BEDLAM, PM_MARILITH,
-						  PM_ERINYS, PM_FALLEN_ANGEL, PM_ANCIENT_OF_ICE, PM_ANCIENT_OF_DEATH
+						  PM_ERINYS, PM_FALLEN_ANGEL, PM_ANCIENT_OF_BLESSINGS, PM_ANCIENT_OF_ICE, PM_ANCIENT_OF_DEATH
 						 };
 
 /* this is special stuff that the level compiler cannot (yet) handle */
@@ -520,7 +520,7 @@ fixup_special()
 				for (y = 0; y<ROWNO; y++){
 					levl[x][y].lit = TRUE;
 					if (m_at(x, y) && !ACCESSIBLE(levl[x][y].typ))
-						rloc(m_at(x, y), FALSE);
+						rloc(m_at(x, y), TRUE);
 					if(OBJ_AT(x, y) && !ACCESSIBLE(levl[x][y].typ))
 						rlocos_at(x, y);
 					if(In_mithardir_desert(&u.uz) && IS_WALL(levl[x][y].typ)){
@@ -600,7 +600,7 @@ fixup_special()
 			for (x = 2; x <= x_maze_max; x++)
 			for (y = 2; y <= y_maze_max; y++){
 				if (m_at(x, y) && !ACCESSIBLE(levl[x][y].typ))
-					rloc(m_at(x, y), FALSE);
+					rloc(m_at(x, y), TRUE);
 			}
 		}
 		if (Is_sumall(&u.uz)){
@@ -608,7 +608,7 @@ fixup_special()
 			for (y = 2; y <= y_maze_max; y++){
 				if (levl[x][y].typ == STONE) levl[x][y].typ = HWALL;
 				if (levl[x][y].typ == ROOM) levl[x][y].lit = TRUE;
-				if (!ZAP_POS(levl[x][y].typ) && m_at(x, y)) rloc(m_at(x, y), FALSE);
+				if (!ZAP_POS(levl[x][y].typ) && m_at(x, y)) rloc(m_at(x, y), TRUE);
 			}
 			wallification(1, 1, COLNO - 1, ROWNO - 1);
 		}
@@ -643,7 +643,7 @@ fixup_special()
 					angel = makemon(&mons[angelnums[rn2(SIZE(angelnums))]], x, y, MM_EDOG | MM_ADJACENTOK | NO_MINVENT | MM_NOCOUNTBIRTH);
 					if (angel){
 						initedog(angel);
-						angel->m_lev = min(30, 3 * (int)(angel->data->mlevel / 2));
+						angel->m_lev = min(30, 3 * (int)(angel->data->mlevel / 2)+1);
 						angel->mhpmax = (angel->m_lev * 8) - 4;
 						angel->mhp = angel->mhpmax;
 						angel->female = TRUE;

@@ -100,6 +100,7 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 #define BAPHOMET_LEVEL	4
 #define NIGHT_LEVEL		5
 #define NIGHT_RES		3
+#define KOSTCH_LEVEL	6
 	d_level	d_abys2_level;
 	int		abys2_variant;
 #define ORCUS_LEVEL		1
@@ -189,7 +190,12 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 		d_tower1, d_tower2, d_tower3, d_tower4, d_tower5,
 		d_tower6, d_tower7, d_tower8, d_tower9, d_towertop;
 	char alt_tower;
-	char alt_tulani;
+	char alt_tulani; /*Note: TULANI_CAST == FALSE, i.e. no changes needed. */
+#define TULANI_CASTE	0
+#define GAE_CASTE		1
+#define BRIGHID_CASTE	2
+#define UISCERRE_CASTE	3
+#define CAILLEA_CASTE	4
 	int eprecursor_typ;
 #define	PRE_DRACAE	1
 #define	PRE_POLYP	2
@@ -765,7 +771,10 @@ struct u_achieve {
 #define	TANNINIM_VAULT	0x1L << 42
 #define	CASTLE_WISH		0x1L << 43
 #define	UNKNOWN_WISH	0x1L << 44
-#define ACHIEVE_NUMBER	45
+#define	FEM_DRA_NOB_QUEST	0x1L << 45
+#define	DEVIL_VAULT	0x1L << 46
+#define	DEMON_VAULT	0x1L << 47
+#define ACHIEVE_NUMBER	47
 };
 
 E struct u_achieve achieve;
@@ -809,6 +818,8 @@ E glyph_t permonst_unicode_codepoint[NUMMONS];
 
 
 E boolean curses_stupid_hack;
+
+#define LIGHTSABER_MAX_CHARGE 150000
 
 #undef E
 

@@ -191,8 +191,13 @@ moverock()
 			  (ttmp->ttyp == TRAPDOOR) ? "trap door" : "hole",
 			  surface(rx, ry));
 		    deltrap(ttmp);
+			if(otmp->otyp == MASS_OF_STUFF){
+				place_object(otmp, rx, ry);
+				separate_mass_of_stuff(otmp, FALSE);
+				otmp = (struct obj *) 0;
+			}
 			bury_objs(rx, ry); //Crate handling: Bury everything here (inc boulder item) then free the boulder after
-			if(otmp->otyp == MASSIVE_STONE_CRATE){
+			if(otmp && otmp->otyp == MASSIVE_STONE_CRATE){
 				struct obj *item;
 				if(Blind) pline("Click!");
 				else pline("The crate pops open as it lands.");
@@ -202,7 +207,7 @@ moverock()
 					place_object(item, rx, ry);
 				}
 			}
-		    delobj(otmp);
+		    if(otmp) delobj(otmp);
 		    if (cansee(rx,ry)) newsym(rx,ry);
 		    continue;
 		case LEVEL_TELEP:
@@ -294,7 +299,7 @@ moverock()
 		if(u.sealsActive&SEAL_MARIONETTE){
 			if (yn("Your fingers stretch and grow like roots. Fracture the boulder?") != 'y') return (-1);
 			Your("fingers dig into %s like roots!", the(xname(otmp)));
-			fracture_rock(otmp);
+			break_boulder(otmp);
 			break;
 		} else if (throws_rocks(youracedata) || (u.sealsActive&SEAL_YMIR)) {
 #ifdef STEED
@@ -1245,7 +1250,7 @@ domove()
 		/* try to attack; note that it might evade */
 		/* also, we don't attack tame when _safepet_ */
 		else if (attack2(mtmp)){
-			if(uwep && is_lightsaber(uwep) && litsaber(uwep) && activeFightingForm(FFORM_ATARU) && (!uarm || is_light_armor(uarm))){
+			if(uwep && is_lightsaber(uwep) && litsaber(uwep) && activeFightingForm(FFORM_ATARU)){
 				coord cc;
 				if(!u.utrap && tt_findadjacent(&cc, mtmp) && (cc.x != u.ux || cc.y != u.uy)){
 					You("somersault to a new location!");
@@ -1812,7 +1817,7 @@ stillinwater:;
 		} else
 #endif
 		if (is_lava(u.ux, u.uy)) {
-		    if (lava_effects()) return;
+		    if (lava_effects(TRUE)) return;
 		} else if (!Wwalking && drown())
 		    return;
 	    } else if (IS_PUDDLE(levl[u.ux][u.uy].typ) && !Wwalking) {
@@ -1823,9 +1828,10 @@ stillinwater:;
 
 		if(u.umonnum == PM_GREMLIN)
 		    (void)split_mon(&youmonst, (struct monst *)0);
-		else if ((u.umonnum == PM_IRON_GOLEM || u.umonnum == PM_CHAIN_GOLEM) &&
+		else if (is_iron(youracedata) &&
 			/* mud boots keep the feet dry */
-			(!uarmf || strncmp(OBJ_DESCR(objects[uarmf->otyp]), "mud ", 4))) {
+			(!uarmf || strncmp(OBJ_DESCR(objects[uarmf->otyp]), "mud ", 4))
+		) {
 		    int dam = rnd(6);
 		    Your("%s rust!", makeplural(body_part(FOOT)));
 		    if (u.mhmax > dam) u.mhmax -= dam;
@@ -1840,7 +1846,7 @@ stillinwater:;
 #ifdef STEED
 		if (!u.usteed)
 #endif
-			(void)rust_dmg(uarmf, "boots", 1, TRUE, &youmonst);
+			(void)rust_dmg(uarmf, "boots", 1, TRUE, &youmonst, FALSE);
 	    }
 		if (uarmf && uarmf->oartifact == ART_FROST_TREADS
 			&& is_pool(u.ux, u.uy, TRUE) && !is_3dwater(u.ux, u.uy) && !Is_waterlevel(&u.uz)) {
@@ -1916,7 +1922,7 @@ stillinwater:;
 					Amonnam(mtmp));
 			break;
 		}
-		if (attacktype(mtmp->data, AT_ENGL)) {
+		if (mon_attacktype(mtmp, AT_ENGL)) {
 			/* engulf the player */
 			(void)xengulfhity(mtmp, &youmonst, attacktype_fordmg(mtmp->data, AT_ENGL, AD_ANY), 6);	/* vis == VIS_MDEF|VIS_NONE */
 		}
@@ -2661,32 +2667,24 @@ weight_cap()
 	
 	struct permonst *mdat = youracedata;
 	
-	struct obj *gloves = uarmg;
 	struct obj *cloak = uarmc;
 	struct obj *bodyarmor = uarm;
 	struct obj *underarmor = uarmu;
 	struct obj *boots = uarmf;
 	
-#ifdef STEED
 	/*If mounted your steed is doing the carrying, use its data instead*/
 	if(u.usteed && u.usteed->data){
+		long mstr = mon_str(u.usteed);
+		long mcon = mon_con(u.usteed);
 		// carrcap = 25L*(acurrstr((int)(u.usteed->mstr)) + u.usteed->mcon) + 50L;
-		gloves = which_armor(u.usteed, W_ARMG);
 		cloak = which_armor(u.usteed, W_ARMC);
 		bodyarmor = which_armor(u.usteed, W_ARM);
 		underarmor = which_armor(u.usteed, W_ARMU);
 		boots = which_armor(u.usteed, W_ARMF);
 		
-		if(gloves && gloves->otyp == GAUNTLETS_OF_POWER){
-			carrcap = 25L*(25L + 11L) + 50L;
-		} else if(strongmonst(u.usteed->data)){
-			carrcap = 25L*(18L + 11L) + 50L;
-		} else {
-			carrcap = 25L*(11L + 11L) + 50L;
-		}
+		carrcap = 25L*(mstr + mcon) + 50L;
 		mdat = u.usteed->data;
 	}
-#endif
 	if (!mdat->cwt)
 		maxcap = (maxcap * (long)mdat->msize) / MZ_HUMAN;
 	else if (!strongmonst(mdat)
@@ -2710,7 +2708,7 @@ weight_cap()
 
 	if (Levitation || Weightless)    /* pugh@cornell */
 		carrcap = maxcap;
-	else {
+	if(!Weightless) {
 		if (carrcap > maxcap)
 			carrcap = maxcap;
 
@@ -2723,7 +2721,10 @@ weight_cap()
 		}
 		if (carrcap < 0) carrcap = 0;
 	}
-
+	if(u.usteed && P_SKILL(P_RIDING) > P_UNSKILLED){
+		carrcap += 100 * (P_SKILL(P_RIDING) - P_UNSKILLED);
+	}
+	
 	carrcap += u.ucarinc;
 	if(u.sealsActive&SEAL_FAFNIR) carrcap *= 1+((double) u.ulevel)/100;
 	if(active_glyph(COMMUNION)) carrcap *= 1.25;
@@ -2743,13 +2744,11 @@ weight_cap()
 		else if(!cloak->cursed) carrcap *= 1.25;
 		else carrcap *= .75;
 	}
-#ifdef TOURIST
 	if(arti_lighten(underarmor, FALSE)){
 		if(underarmor->blessed) carrcap *= 1.5;
 		else if(!underarmor->cursed) carrcap *= 1.25;
 		else carrcap *= .75;
 	}
-#endif	/* TOURIST */
 
 	if (carrcap < 1) carrcap = 1;
 	

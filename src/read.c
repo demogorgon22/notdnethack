@@ -53,7 +53,7 @@ doread()
 		add_class(class_list, RING_CLASS);
 	if(carrying_applyable_amulet())
 		add_class(class_list, AMULET_CLASS);
-	if(carrying(LIGHTSABER) || carrying(CANDLE_OF_INVOCATION))
+	if(carrying_readable_tool())
 		add_class(class_list, TOOL_CLASS);
 	if(carrying_readable_weapon())
 		add_class(class_list, WEAPON_CLASS);
@@ -340,6 +340,39 @@ doread()
 			return 0;
 		} else {
 			pline("The candle is carved with many pictographs, including %s.", fetchHaluWard(FIRST_PLANE_SYMBOL+rn2(LAST_PLANE_SYMBOL-FIRST_PLANE_SYMBOL+1)));
+		}
+		return(1);
+	} else if(scroll->otyp == MISOTHEISTIC_PYRAMID){
+		if (Blind) {
+			pline("The density of the pyramid increases towards the tip, painfully so, enabling it to stand tip-downwards.");
+			pline("There are engravings on the square 'roof' of the pyramid, but you can't see them.");
+			return 0;
+		} else {
+			pline("The density of the pyramid increases towards the tip, painfully so, enabling it to stand tip-downwards.");
+			if(Role_if(PM_EXILE) || Role_if(PM_WIZARD) || u.specialSealsKnown&SEAL_NUDZIRATH)
+				pline("The square 'roof' of the pyramid is engraved with curses to the bringers of light.");
+			else
+				pline("There are engravings on the square 'roof' of the pyramid, but you can't read them.");
+			pline("A seam runs around the edges of the roof.");
+		}
+		return(1);
+	} else if(scroll->otyp == MISOTHEISTIC_FRAGMENT){
+		if (Blind) {
+			pline("Some mysterious force holds these mirrored fragments together in a rough aproximation of a pyramid.");
+			You_cant("see the fragments!");
+			return 0;
+		} else {
+			pline("Some mysterious force holds these mirrored fragments together in a rough aproximation of a pyramid.");
+			You("are not reflected in the shards.");
+			You("have the unnerving feeling that there is something inside the pyramid, barely hidden from view.");
+			/*Note: this is intended to work for any PC, not just Binders */
+			if(!(u.specialSealsKnown&SEAL_NUDZIRATH)){
+				pline("The shattered fragments form part of a seal.");
+				pline("In fact, you realize that all cracked and broken mirrors everywhere together are working towards writing this seal.");
+				pline("With that realization comes knowledge of the seal's final form!");
+				u.specialSealsKnown |= SEAL_NUDZIRATH;
+			}
+
 		}
 		return(1);
 	} else if(scroll->oclass == WEAPON_CLASS && (scroll)->obj_material == WOOD && scroll->oward != 0){
@@ -1167,6 +1200,7 @@ int curse_bless;
 	    case BEAMSWORD:
 	    case DOUBLE_LIGHTSABER:
 	    case POWER_ARMOR:
+	    case ROD_OF_FORCE:
 		if (is_cursed) {
 		    if (obj->lamplit) {
 			end_burn(obj, TRUE);
@@ -1212,6 +1246,34 @@ int curse_bless;
 		    if (obj->spe < 5) {
 			obj->spe++;
 			p_glow1(obj);
+		    } else pline1(nothing_happens);
+		}
+		break;
+	    case PRESERVATIVE_ENGINE:
+		if (is_cursed){
+		    obj->spe = 8;
+		    p_glow2(obj, NH_RED);
+		}
+		else if (is_blessed) {
+			stripspe(obj);
+		} else {
+		    if (obj->spe < 8) {
+				obj->spe++;
+				p_glow1(obj);
+		    } else pline1(nothing_happens);
+		}
+		break;
+	    case ARMOR_SALVE:
+		if (is_cursed){
+		    obj->spe = 6;
+		    p_glow2(obj, NH_RED);
+		}
+		else if (is_blessed) {
+			stripspe(obj);
+		} else {
+		    if (obj->spe < 6) {
+				obj->spe++;
+				p_glow1(obj);
 		    } else pline1(nothing_happens);
 		}
 		break;
@@ -1926,13 +1988,19 @@ struct obj	*sobj;
 	    }
 	case SCR_CREATE_MONSTER:
 	case SPE_CREATE_MONSTER:
-	    if (create_critters(1 + ((confused || sobj->cursed) ? 12 : 0) +
-				((sobj->blessed || rn2(73)) ? 0 : rnd(4)),
-			confused ? &mons[PM_ACID_BLOB] : (struct permonst *)0))
-		known = TRUE;
-	    /* no need to flush monsters; we ask for identification only if the
-	     * monsters are not visible
-	     */
+		if(!DimensionalLock){
+			if (create_critters(1 + ((confused || sobj->cursed) ? 12 : 0) +
+					((sobj->blessed || rn2(73)) ? 0 : rnd(4)),
+				confused ? &mons[PM_ACID_BLOB] : (struct permonst *)0)
+			)
+				known = TRUE;
+			/* no need to flush monsters; we ask for identification only if the
+			 * monsters are not visible
+			 */
+		}
+		else {
+			pline1(nothing_happens);
+		}
 	    break;
 	case SCR_ENCHANT_WEAPON:
 		if(uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep))
@@ -2465,9 +2533,8 @@ struct obj	*sobj;
 		(void) create_gas_cloud(cc.x, cc.y, 3+bcsign(sobj), 8+4*bcsign(sobj), TRUE);
 		break;
 	}
-	case SPE_ANTIMAGIC_SHIELD:
 	case SCR_ANTIMAGIC:{
-		int amt = (sobj->otyp == SPE_ANTIMAGIC_SHIELD) ? 50 : 400;
+		int amt = 400;
 		if(confused && sobj->cursed){
 			//Confused
 			pline("Shimmering sparks shoot into your body!");
@@ -3303,7 +3370,7 @@ int gen_restrict;
 	tries = 0;
 	do {
 	    which = urole.malenum;	/* an arbitrary index into mons[] */
-	    maketame = makeloyal = makepeaceful = makehostile = FALSE;
+	    maketame = makeloyal = makepeaceful = makehostile = makesummoned = FALSE;
 	    getlin("Create what kind of monster? [type the name or symbol]",
 		   buf);
 	    bufp = mungspaces(buf);
@@ -3529,10 +3596,7 @@ createmon:
 			if (makesummoned)
 				mm_flags |= MM_ESUM;
 
-			if (undeadtype)
-				mtmp = makeundead(whichpm, u.ux, u.uy, mm_flags, undeadtype);
-			else
-				mtmp = makemon(whichpm, u.ux, u.uy, mm_flags);
+			mtmp = makemon_full(whichpm, u.ux, u.uy, mm_flags, undeadtype ? undeadtype : -1, -1);
 
 			if (mtmp) {
 				if (maketame){

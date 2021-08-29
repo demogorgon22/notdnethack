@@ -242,7 +242,7 @@ boolean forcecontrol;
 	boolean leonine = (uarmc && uarmc->otyp == LEO_NEMAEUS_HIDE);
 	boolean iswere = (u.ulycn >= LOW_PM || is_were(youmonst.data));
 	boolean isvamp = (is_vampire(youracedata));
-	boolean hasmask = (ublindf && ublindf->otyp==MASK && polyok(&mons[ublindf->corpsenm]));
+	boolean hasmask = (ublindf && ublindf->otyp==MASK && ublindf->corpsenm != NON_PM && polyok(&mons[ublindf->corpsenm]));
 	boolean was_floating = (Levitation || Flying);
 	boolean allow_selfrace_poly = (wizard || (u.specialSealsActive&SEAL_ALIGNMENT_THING));
 	boolean allow_nopoly_poly = FALSE;
@@ -419,14 +419,19 @@ int	mntmp;
 	}
 	if (dochange) {
 		flags.female = !flags.female;
-		You("%s %s%s!",
-		    (u.umonnum != mntmp) ? "turn into a" : "feel like a new",
+		You("%s%s %s%s!",
+		    (u.umonnum != mntmp) ? "turn into" : "feel like a new",
+			(!type_is_pname(&mons[mntmp])) ? " a" : "",
 		    (is_male(&mons[mntmp]) || is_female(&mons[mntmp])) ? "" :
 			flags.female ? "female " : "male ",
 		    mons[mntmp].mname);
 	} else {
-		if (u.umonnum != mntmp)
-			You("turn into %s!", an(mons[mntmp].mname));
+		if (u.umonnum != mntmp) {
+			if (type_is_pname(&mons[mntmp]))
+				You("turn into %s!", mons[mntmp].mname);
+			else
+				You("turn into %s!", an(mons[mntmp].mname));
+		}
 		else
 			You_feel("like a new %s!", mons[mntmp].mname);
 	}
@@ -719,7 +724,7 @@ break_armor()
 		}
     }
 	if ((otmp = uarmh) != 0){
-		if((!is_flimsy(otmp) && (otmp->objsize != youracedata->msize || has_horns(youracedata) || !has_head_mon(&youmonst) || !helm_match(youracedata,otmp)))
+		if((!is_flimsy(otmp) && otmp->otyp != find_gcirclet() && (otmp->objsize != youracedata->msize || has_horns(youracedata) || !has_head_mon(&youmonst) || !helm_match(youracedata,otmp)))
 			|| is_whirly(youracedata) || noncorporeal(youracedata)
 		) {
 			if (donning(otmp)) cancel_don();
@@ -1166,7 +1171,10 @@ dodemonpet()
 	i = (!is_demon(youracedata) || !rn2(6)) 
 	     ? ndemon(u.ualign.type) : NON_PM;
 	pm = i != NON_PM ? &mons[i] : youracedata;
-	if(pm->mtyp == PM_ANCIENT_OF_ICE || pm->mtyp == PM_ANCIENT_OF_DEATH) {
+	if(pm->geno&G_UNIQ) {
+		pm = &mons[ndemon(A_NONE)];
+	}
+	if(is_ancient(pm)) {
 	    pm = rn2(4) ? &mons[PM_METAMORPHOSED_NUPPERIBO] : &mons[PM_ANCIENT_NUPPERIBO];
 	}
 	if ((dtmp = makemon(pm, u.ux, u.uy, MM_ESUM)) != 0) {
@@ -1964,23 +1972,36 @@ skinback(silently)
 boolean silently;
 {
 	if (uskin) {
-		struct obj *skin = (struct obj *)0;
-		if (!silently) Your("skin returns to its original form.");
-		if(uskin->otyp == LEO_NEMAEUS_HIDE){
-			uarmc = uskin;
-			/* undo save/restore hack */
-			uskin->owornmask &= ~W_SKIN;
-			uskin = (struct obj *)0;
-			/* undo save/restore hack */
-			uarmc->owornmask &= ~W_SKIN;
-		} else {
-			uarm = uskin;
-			/* undo save/restore hack */
-			uskin->owornmask &= ~W_SKIN;
-			uskin = (struct obj *)0;
-			/* undo save/restore hack */
-			uarm->owornmask &= ~W_SKIN;
+		struct obj * otmp = (struct obj *)0;
+		struct obj ** otmp_p;
+		const char * msg = "Your skin returns to its original form.";
+		if(uskin->otyp == MASK) {
+			otmp_p = &ublindf;
+			msg = "Your mask unmelds from your face.";
+			if (uskin->oartifact == ART_MIRRORED_MASK) {
+				uskin->corpsenm = NON_PM;
+				uskin->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			}
 		}
+		else if(uskin->otyp == LEO_NEMAEUS_HIDE){
+			otmp_p = &uarmc;
+		} else {
+			otmp_p = &uarm;
+		}
+		if (!silently) pline1(msg);
+		if ((otmp = *otmp_p) != (struct obj *)0) {
+			if (donning(otmp)) cancel_don();
+			if (otmp == ublindf) Blindf_off(ublindf);
+			if (otmp == uarmc) Cloak_off();
+			if (otmp == uarm) Armor_off();
+		}
+
+		*otmp_p = uskin;
+		/* undo save/restore hack */
+		uskin->owornmask &= ~W_SKIN;
+		uskin = (struct obj *)0;
+		/* undo save/restore hack */
+		(*otmp_p)->owornmask &= ~W_SKIN;
 	}
 }
 
@@ -2171,7 +2192,7 @@ int damtype, dam;
 	 * have a monster-specific slow/haste so there is no way to
 	 * restore the old velocity once they are back to human.
 	 */
-	if (u.umonnum != PM_FLESH_GOLEM && u.umonnum != PM_IRON_GOLEM && u.umonnum != PM_CHAIN_GOLEM && u.umonnum != PM_ARGENTUM_GOLEM)
+	if (u.umonnum != PM_FLESH_GOLEM && u.umonnum != PM_IRON_GOLEM && u.umonnum != PM_GREEN_STEEL_GOLEM && u.umonnum != PM_CHAIN_GOLEM && u.umonnum != PM_ARGENTUM_GOLEM)
 		return;
 	switch (damtype) {
 		case AD_EELC:
@@ -2179,7 +2200,7 @@ int damtype, dam;
 				heal = dam / 6; /* Approx 1 per die */
 			break;
 		case AD_EFIR:
-		case AD_FIRE: if (u.umonnum == PM_IRON_GOLEM || u.umonnum == PM_CHAIN_GOLEM || u.umonnum == PM_ARGENTUM_GOLEM)
+		case AD_FIRE: if (u.umonnum == PM_IRON_GOLEM || u.umonnum == PM_GREEN_STEEL_GOLEM || u.umonnum == PM_CHAIN_GOLEM || u.umonnum == PM_ARGENTUM_GOLEM)
 				heal = dam;
 			break;
 	}

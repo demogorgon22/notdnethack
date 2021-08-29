@@ -23,6 +23,8 @@ struct permonst * ptr;	/* summon as though you were <X> */
 		pline("%s looks puzzled for a moment.",Monnam(mon));
 		return;
 	}
+	if (DimensionalLock)
+		return;
 
 	if (mon && !ptr) {
 		ptr = mon->data;
@@ -97,9 +99,12 @@ struct permonst * ptr;	/* summon as though you were <X> */
 	}
 	
 	while (cnt > 0) {
-		int mmflags = MM_ESUM | ((mons[dtype].geno & G_UNIQ) ? NO_MM_FLAGS : MM_NOCOUNTBIRTH);
+		int mmflags = ((mons[dtype].geno & G_UNIQ) ? NO_MM_FLAGS : MM_ESUM|MM_NOCOUNTBIRTH);
 		mtmp = makemon(&mons[dtype], u.ux, u.uy, mmflags);
 	    if (mtmp) {
+		    	if (mmflags&MM_ESUM)
+				mark_mon_as_summoned(mtmp, mon, ESUMMON_PERMANENT, 0);
+			
 			if (dtype == PM_ANGEL) {
 				/* alignment should match the summoner */
 				add_mx(mtmp, MX_EPRI);
@@ -138,8 +143,6 @@ struct permonst * ptr;	/* summon as though you were <X> */
 			if(has_template(mon, DREAM_LEECH)){
 				set_template(mtmp, DREAM_LEECH);
 			}
-			if (!(mons[dtype].geno & G_UNIQ))	/* uniques summoned in this way stick around */
-				mark_mon_as_summoned(mtmp, mon, ESUMMON_PERMANENT, 0);
 	    }
 	    cnt--;
 	}
@@ -323,7 +326,7 @@ register struct monst *mtmp;
 	if (youracedata->mlet == S_DEMON) {	/* Won't blackmail their own. */
 	    pline("%s says, \"Good hunting, %s.\"",
 		  Amonnam(mtmp), flags.female ? "Sister" : "Brother");
-	    if (!tele_restrict(mtmp)) (void) rloc(mtmp, FALSE);
+	    if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 	    return(1);
 	}
 #ifndef GOLDOBJ

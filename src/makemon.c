@@ -18,20 +18,21 @@ struct monst zeromonst;
 		  (mptr->mtyp == urole.ldrnum || mptr->msound == MS_NEMESIS))
 
 #ifdef OVL0
+STATIC_DCL int FDECL(makemon_set_template, (struct permonst **, int, boolean));
+STATIC_DCL int FDECL(makemon_get_faction, (struct permonst *, int));
 STATIC_DCL boolean FDECL(uncommon, (int));
 STATIC_DCL int FDECL(align_shift, (struct permonst *));
 #endif /* OVL0 */
 STATIC_DCL struct permonst * NDECL(roguemonst);
 STATIC_DCL boolean FDECL(wrong_elem_type, (struct permonst *));
 STATIC_DCL void FDECL(m_initthrow,(struct monst *, int, int, int));
-STATIC_DCL void FDECL(m_initweap,(struct monst *, int));
+STATIC_DCL void FDECL(m_initweap,(struct monst *, int, int));
 #ifdef OVL1
-STATIC_DCL void FDECL(m_initinv,(struct monst *, int));
+STATIC_DCL void FDECL(m_initinv,(struct monst *, int, int));
 #endif /* OVL1 */
 
 extern const int monstr[];
 int curhouse = 0;
-int mkmon_template = 0;
 int zombiepm = -1;
 int skeletpm = -1;
 
@@ -153,7 +154,12 @@ register int x, y, n;
 				return;
 		}
 		if (enexto(&mm, mm.x, mm.y, mtmp->data)) {
-		    mon = makemon(mtmp->data, mm.x, mm.y, NO_MM_FLAGS);
+			/* exception to making monsters like the original: Yith are infiltrators, so only the original is Yith. */
+			if (mtmp->mtemplate != YITH)
+		    	mon = makemon_full(mtmp->data, mm.x, mm.y, MM_NOGROUP, mtmp->mtemplate, mtmp->mfaction);
+			else
+				mon = makemon_full(mtmp->data, mm.x, mm.y, MM_NOGROUP, 0, -1);
+
 		    if (mon) {
 			    mon->mpeaceful = FALSE;
 			    mon->mavenge = 0;
@@ -210,9 +216,10 @@ static NEARDATA int angelweps[] = {
 };
 
 STATIC_OVL void
-m_initweap(mtmp, mkobjflags)
+m_initweap(mtmp, mkobjflags, faction)
 register struct monst *mtmp;
 int mkobjflags;
+int faction;
 {
 	register struct permonst *ptr = mtmp->data;
 	register int mm = monsndx(ptr);
@@ -294,6 +301,23 @@ int mkobjflags;
 			case 3:
 				mongets(mtmp,BEC_DE_CORBIN, mkobjflags);
 				mongets(mtmp,WAR_HAMMER, mkobjflags);
+			break;
+		}
+		return;
+	}
+	if(mm==PM_GREEN_STEEL_GOLEM){
+		switch(rnd(3)){
+			case 1:
+				mongets(mtmp,HALBERD, mkobjflags);
+				mongets(mtmp,WAR_HAMMER, mkobjflags);
+			break;
+			case 2:
+				mongets(mtmp,LUCERN_HAMMER, mkobjflags);
+				mongets(mtmp,BATTLE_AXE, mkobjflags);
+			break;
+			case 3:
+				mongets(mtmp,POLEAXE, mkobjflags);
+				mongets(mtmp,LONG_SWORD, mkobjflags);
 			break;
 		}
 		return;
@@ -673,7 +697,7 @@ int mkobjflags;
 			}
 			else if(mm == PM_GOAT_SPAWN) {
 				int threshold = rnd(10)+rn2(11);
-				if(mtmp->female && In_lost_cities(&u.uz) && u.uinsight > threshold){
+				if(mtmp->female && (In_lost_cities(&u.uz) || faction == GOATMOM_FACTION) && u.uinsight > threshold){
 					set_template(mtmp, MISTWEAVER);
 					mtmp->m_insight_level = threshold;
 				}
@@ -1670,6 +1694,7 @@ int mkobjflags;
 					(void)mongets(mtmp, ORIHALCYON_GAUNTLETS, mkobjflags);
 					(void)mongets(mtmp, ELVEN_BOOTS, mkobjflags);
 				} else if(mm == PM_MYRKALFAR_MATRON){
+					struct obj *gem;
 					give_mintrinsic(mtmp, TELEPAT);
 					otmp = mksobj(ARM_BLASTER, mkobjflags);
 					otmp->spe = 4;
@@ -1680,9 +1705,12 @@ int mkobjflags;
 					otmp = mksobj(LIGHTSABER, mkobjflags);
 					otmp->spe = 3;
 					otmp->ovar1 = !rn2(4) ? 38L : !rn2(3) ? 18L : rn2(2) ? 10L : 26L;
-					otmp->cobj->otyp = !rn2(4) ? MORGANITE : !rn2(3) ? RUBY : rn2(2) ? GARNET : JASPER;
 					otmp->blessed = TRUE;
 					otmp->cursed = FALSE;
+					gem = otmp->cobj;
+					obj_extract_self(gem);
+					gem = poly_obj(gem,!rn2(4) ? MORGANITE : !rn2(3) ? RUBY : rn2(2) ? GARNET : JASPER);
+					add_to_container(otmp, gem);
 					(void) mpickobj(mtmp, otmp);
 					
 					otmp = mksobj(find_signet_ring(), mkobjflags);
@@ -1697,6 +1725,7 @@ int mkobjflags;
 					(void) mpickobj(mtmp, otmp);
 					(void)mongets(mtmp, ELVEN_BOOTS, mkobjflags);
 				} else if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz) && mm == PM_ELVENKING){ /* Give the elvenking in the quest a special setup */
+					struct obj *gem;
 					mtmp->m_lev += 7;
 					mtmp->mhpmax = mtmp->mhp = d((int)mtmp->m_lev, 8);
 					
@@ -1704,9 +1733,12 @@ int mkobjflags;
 					otmp = mksobj(LIGHTSABER, mkobjflags);
 					otmp->spe = 3;
 					otmp->ovar1 = !rn2(4) ? 2L : !rn2(3) ? 9L : rn2(2) ? 21L : 22L;
-					otmp->cobj->otyp = !rn2(3) ? EMERALD : rn2(2) ? GREEN_FLUORITE : JADE;
 					otmp->blessed = TRUE;
 					otmp->cursed = FALSE;
+					gem = otmp->cobj;
+					obj_extract_self(gem);
+					gem = poly_obj(gem,!rn2(3) ? EMERALD : rn2(2) ? GREEN_FLUORITE : JADE);
+					add_to_container(otmp, gem);
 					(void) mpickobj(mtmp, otmp);
 					
 					otmp = mksobj(HAND_BLASTER, mkobjflags);
@@ -1795,7 +1827,8 @@ int mkobjflags;
 					familliar->mpeaceful = mtmp->mpeaceful;
 				}
 				otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp)
+					otmp->obj_color = CLR_BLACK;
 				mongets(mtmp, PLAIN_DRESS, mkobjflags);
 				mongets(mtmp, WITCH_HAT, mkobjflags);
 				mongets(mtmp, KNIFE, mkobjflags);
@@ -1810,12 +1843,12 @@ int mkobjflags;
 					familliar->mpeaceful = mtmp->mpeaceful;
 				}
 				otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				mongets(mtmp, PLAIN_DRESS, mkobjflags);
 				otmp = mongets(mtmp, CLOAK, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				otmp = mongets(mtmp, GLOVES, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				mongets(mtmp, WITCH_HAT, mkobjflags);
 				mongets(mtmp, rn2(10) ? STILETTO : ATHAME, mkobjflags);
 			} else if(ptr->mtyp == PM_COVEN_LEADER){
@@ -1829,14 +1862,14 @@ int mkobjflags;
 					familliar->mpeaceful = mtmp->mpeaceful;
 				}
 				otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				mongets(mtmp, PLAIN_DRESS, mkobjflags);
 				otmp = mongets(mtmp, LEATHER_ARMOR, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				otmp = mongets(mtmp, CLOAK, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				otmp = mongets(mtmp, GLOVES, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				mongets(mtmp, WITCH_HAT, mkobjflags);
 				mongets(mtmp, QUARTERSTAFF, mkobjflags);
 			} else if(mm >= PM_STUDENT && mm <= PM_APPRENTICE){
@@ -1949,15 +1982,18 @@ int mkobjflags;
 					(void) mongets(mtmp, CLOAK, mkobjflags);
 				} else if (mm == PM_LADY_CONSTANCE){
 					otmp = mongets(mtmp, STILETTO, mkobjflags|MKOBJ_NOINIT);
-					otmp->spe = 7;
-					set_material_gm(otmp, MINERAL);
-					add_oprop(otmp, OPROP_LESSER_WATRW);
-					add_oprop(otmp, OPROP_PSIOW);
+					if(otmp){
+						otmp->spe = 7;
+						set_material_gm(otmp, MINERAL);
+						add_oprop(otmp, OPROP_LESSER_WATRW);
+						add_oprop(otmp, OPROP_PSIOW);
+					}
 					otmp = mongets(mtmp, GENTLEMAN_S_SUIT, mkobjflags|MKOBJ_NOINIT);
-					otmp->spe = 3;
+					if(otmp) otmp->spe = 3;
 					otmp = mongets(mtmp, RUFFLED_SHIRT, mkobjflags|MKOBJ_NOINIT);
-					otmp->spe = 3;
+					if(otmp) otmp->spe = 3;
 					otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags|MKOBJ_NOINIT);
+					if(otmp) otmp->spe = 3;
 				} else if (mm == PM_PATIENT){
 					otmp = mongets(mtmp, STRAITJACKET, mkobjflags);
 					if(otmp) curse(otmp);
@@ -2065,10 +2101,14 @@ int mkobjflags;
 					(void)mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 					(void)mongets(mtmp, HIGH_BOOTS, mkobjflags);
 				} else if (mm == PM_APPRENTICE){
-					otmp = mksobj(rnd_attack_wand(mtmp), mkobjflags);
-					otmp->blessed = FALSE;
-					otmp->cursed = FALSE;
-					(void) mpickobj(mtmp, otmp);
+					//Note: may be 0 if zombie
+					int itm = rnd_attack_wand(mtmp);
+					if(itm){
+						otmp = mksobj(itm, mkobjflags);
+						otmp->blessed = FALSE;
+						otmp->cursed = FALSE;
+						(void) mpickobj(mtmp, otmp);
+					}
 					(void)mongets(mtmp, CLOAK, mkobjflags);
 					(void)mongets(mtmp, LOW_BOOTS, mkobjflags);
 				}
@@ -2519,11 +2559,11 @@ int mkobjflags;
 				otmp->spe = 5;
 				(void) mpickobj(mtmp,otmp);
 				otmp = mongets(mtmp, HEALER_UNIFORM, mkobjflags);
-				otmp->obj_color = CLR_YELLOW;
+				if(otmp) otmp->obj_color = CLR_YELLOW;
 				otmp = mongets(mtmp, CLOAK_OF_MAGIC_RESISTANCE, mkobjflags);
-				otmp->obj_color = CLR_YELLOW;
+				if(otmp) otmp->obj_color = CLR_YELLOW;
 				otmp = mongets(mtmp, LOW_BOOTS, mkobjflags);
-				otmp->obj_color = CLR_YELLOW;
+				if(otmp) otmp->obj_color = CLR_YELLOW;
 			} else if (mm == PM_ASHIKAGA_TAKAUJI) {
 					otmp = mksobj(HELMET, mkobjflags|MKOBJ_NOINIT);
 					otmp->spe = 4;
@@ -2646,10 +2686,10 @@ int mkobjflags;
 				case PM_NURSE:
 					if(Role_if(PM_MADMAN) && In_quest(&u.uz)){
 						otmp = mongets(mtmp, SCALPEL, mkobjflags);
-						otmp->opoisoned = OPOISON_FILTH;
+						if(otmp) otmp->opoisoned = OPOISON_FILTH;
 
 						otmp = mongets(mtmp, HEALER_UNIFORM, mkobjflags);
-						otmp->obj_color = CLR_YELLOW;
+						if(otmp) otmp->obj_color = CLR_YELLOW;
 					}
 					else {
 						(void) mongets(mtmp, SCALPEL, mkobjflags);
@@ -2723,15 +2763,14 @@ int mkobjflags;
 				else otmp = mksobj(rn2(3) ? AXE : rn2(3) ? SICKLE : SCYTHE, mkobjflags);
 			    otmp->cursed = 0;
 			    otmp->blessed = 0;
-			    otmp->spe = -1;
-				set_material_gm(otmp, METAL);
+				set_material_gm(otmp, LEAD);
 				fix_object(otmp);
 			    (void) mpickobj(mtmp, otmp);
 				if(otmp->otyp == MACE && !rn2(3)){
 					otmp = mksobj(KITE_SHIELD, mkobjflags);
 					otmp->cursed = 0;
 					otmp->blessed = 0;
-					set_material_gm(otmp, METAL);
+					set_material_gm(otmp, LEAD);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 				}
@@ -2921,7 +2960,7 @@ int mkobjflags;
 			}
 			if(ptr->mtyp == PM_AMM_KAMEREL){
 				if(rn2(10)){//Physical fighter, no magic
-					mtmp->mcan = 1;
+					set_mcan(mtmp, TRUE);
 					if(rn2(10)){//Warrior
 						mongets(mtmp, MIRRORBLADE, mkobjflags);
 						otmp = mksobj(ROUNDSHIELD, mkobjflags);
@@ -3569,17 +3608,62 @@ int mkobjflags;
 				set_material_gm(otmp, COPPER);
 			    (void) mpickobj(mtmp, otmp);
 			} else if(ptr->mtyp == PM_TULANI_ELADRIN){
+#define HOLY_TULANI_ARMOR(item) otmp = mongets(mtmp, item, mkobjflags);\
+			if(otmp){\
+				set_material_gm(otmp, mat);\
+				if(stone) otmp->ovar1 = stone;\
+				add_oprop(otmp, OPROP_HOLY);\
+				if(is_gloves(otmp) || is_boots(otmp))\
+					add_oprop(otmp, OPROP_HOLYW);\
+				bless(otmp);\
+			}
+
+				int mat = 0;
+				int stone = 0;
+				switch(rn2(20)){
+				case 0:
+				mat = !rn2(5) ? GEMSTONE : !rn2(4) ? OBSIDIAN_MT : GLASS;
+				if(mat == GEMSTONE)
+					stone = !rn2(4) ? DIAMOND : !rn2(3) ? STAR_SAPPHIRE : OPAL;
+				HOLY_TULANI_ARMOR(CRYSTAL_BOOTS)
+				(void)mongets(mtmp, ELVEN_CLOAK, mkobjflags);
+				HOLY_TULANI_ARMOR(CRYSTAL_PLATE_MAIL)
+				HOLY_TULANI_ARMOR(CRYSTAL_GAUNTLETS)
+				HOLY_TULANI_ARMOR(HELMET)
+#undef HOLY_TULANI_ARMOR
+				break;
+				case 1:
+					if(!mat) mat = MITHRIL;
+				case 2:
+					if(!mat) mat = COPPER;
+				case 3:
+					if(!mat) mat = SILVER;
+				case 4:
+					if(!mat) mat = GLASS;
+				(void) mongets(mtmp, ELVEN_BOOTS, mkobjflags);
+				(void) mongets(mtmp, ELVEN_CLOAK, mkobjflags);
+				otmp = mongets(mtmp, HIGH_ELVEN_PLATE, mkobjflags);
+				if(otmp) set_material_gm(otmp, mat);
+				otmp = mongets(mtmp, HIGH_ELVEN_GAUNTLETS, mkobjflags);
+				if(otmp) set_material_gm(otmp, mat);
+				otmp = mongets(mtmp, HIGH_ELVEN_HELM, mkobjflags);
+				if(otmp) set_material_gm(otmp, mat);
+				break;
+				default:
 				(void)mongets(mtmp, CRYSTAL_PLATE_MAIL, mkobjflags);
 				(void)mongets(mtmp, ELVEN_CLOAK, mkobjflags);
 				(void)mongets(mtmp, CRYSTAL_BOOTS, mkobjflags);
 				(void)mongets(mtmp, CRYSTAL_GAUNTLETS, mkobjflags);
 				(void)mongets(mtmp, CRYSTAL_HELM, mkobjflags);
+				break;
+				}
 			} else if(ptr->mtyp == PM_GAE_ELADRIN){
+				int gemstone = rn2(3) ? EMERALD : !rn2(4) ? RUBY : !rn2(3) ? JACINTH : rn2(2) ? TOPAZ : DIAMOND;
 				switch(rnd(6)){
 					case 1:
 					otmp = mksobj(CRYSTAL_PLATE_MAIL, mkobjflags);
 					set_material_gm(otmp, GEMSTONE);
-					otmp->ovar1 = EMERALD;
+					otmp->ovar1 = gemstone;
 					fix_object(otmp);
 					bless(otmp);
 					(void) mpickobj(mtmp, otmp);
@@ -3590,14 +3674,14 @@ int mkobjflags;
 					(void) mpickobj(mtmp, otmp);
 					otmp = mksobj(CRYSTAL_GAUNTLETS, mkobjflags);
 					set_material_gm(otmp, GEMSTONE);
-					otmp->ovar1 = EMERALD;
+					otmp->ovar1 = gemstone;
 					fix_object(otmp);
 					bless(otmp);
 					(void) mpickobj(mtmp, otmp);
 					otmp = mksobj(rn2(4) ? ARCHAIC_HELM : find_gcirclet(), mkobjflags);
-					if(rn2(2)){
+					if(gemstone == EMERALD && rn2(2)){
 						set_material_gm(otmp, GEMSTONE);
-						otmp->ovar1 = EMERALD;
+						otmp->ovar1 = gemstone;
 					} else {
 						set_material_gm(otmp, GOLD);
 					}
@@ -3606,13 +3690,13 @@ int mkobjflags;
 					(void) mpickobj(mtmp, otmp);
 					otmp = mksobj(CRYSTAL_SWORD, mkobjflags);
 					set_material_gm(otmp, GEMSTONE);
-					otmp->ovar1 = EMERALD;
+					otmp->ovar1 = gemstone;
 					fix_object(otmp);
 					bless(otmp);
 					(void) mpickobj(mtmp, otmp);
 					otmp = mksobj(SICKLE, mkobjflags);
 					set_material_gm(otmp, GEMSTONE);
-					otmp->ovar1 = EMERALD;
+					otmp->ovar1 = gemstone;
 					fix_object(otmp);
 					bless(otmp);
 					(void) mpickobj(mtmp, otmp);
@@ -3638,7 +3722,7 @@ int mkobjflags;
 					add_oprop(otmp, OPROP_MAGC);
 					add_oprop(otmp, OPROP_REFL);
 					set_material_gm(otmp, GEMSTONE);
-					otmp->ovar1 = EMERALD;
+					otmp->ovar1 = gemstone;
 					fix_object(otmp);
 					bless(otmp);
 					(void) mpickobj(mtmp, otmp);
@@ -3665,6 +3749,98 @@ int mkobjflags;
 					break;
 					case 6:
 					break;
+				}
+			} else if(ptr->mtyp == PM_BRIGHID_ELADRIN){
+				otmp = mongets(mtmp, CRYSTAL_SWORD, mkobjflags);
+				if(otmp){
+					add_oprop(otmp, OPROP_LESSER_FIREW);
+					set_material_gm(otmp, OBSIDIAN_MT);
+					otmp->oerodeproof = TRUE;
+				}
+				int armors[] = {CRYSTAL_SHIELD, CRYSTAL_PLATE_MAIL, CRYSTAL_GAUNTLETS, CRYSTAL_BOOTS};
+				for(int i = 0; i < SIZE(armors); i++){
+					otmp = mongets(mtmp, armors[i], mkobjflags);
+					if(otmp){
+						set_material_gm(otmp, OBSIDIAN_MT);
+						otmp->oerodeproof = TRUE;
+					}
+				}
+			} else if(ptr->mtyp == PM_CAILLEA_ELADRIN){
+#define CAILLEA_ARMOR(item) otmp = mongets(mtmp, item, mkobjflags);\
+				if(otmp){\
+					otmp->obj_color = CLR_BLACK;\
+					add_oprop(otmp, OPROP_COLD);\
+					add_oprop(otmp, OPROP_LESSER_COLDW);\
+				}
+				
+				CAILLEA_ARMOR(HIGH_BOOTS)
+				if(mtmp->female){
+					CAILLEA_ARMOR(PLAIN_DRESS)
+					CAILLEA_ARMOR(LONG_GLOVES)
+				}
+				else {
+					CAILLEA_ARMOR(JACKET)
+					CAILLEA_ARMOR(GLOVES)
+				}
+#undef CAILLEA_ARMOR
+				int pom = phase_of_the_moon();
+				if(pom == 4){
+					otmp = mongets(mtmp, MOON_AXE, mkobjflags);
+					if(otmp){
+						otmp->objsize = MZ_SMALL;
+						fix_object(otmp);
+					}
+					otmp = mongets(mtmp, MOON_AXE, mkobjflags);
+					if(otmp){
+						otmp->objsize = MZ_SMALL;
+						fix_object(otmp);
+					}
+				}
+				else if(pom == 1 || pom == 7){
+					int typ = rn2(4) ? SICKLE : KHOPESH;
+					otmp = mongets(mtmp, typ, mkobjflags);
+					if(otmp) set_material_gm(otmp, SILVER);
+					otmp = mongets(mtmp, typ, mkobjflags);
+					if(otmp) set_material_gm(otmp, SILVER);
+				}
+				else if(pom == 2 || pom == 6) {
+					otmp = mongets(mtmp, AXE, mkobjflags);
+					if(otmp) set_material_gm(otmp, SILVER);
+					otmp = mongets(mtmp, AXE, mkobjflags);
+					if(otmp) set_material_gm(otmp, SILVER);
+				}
+				else if(pom == 3 || pom == 5) {
+					otmp = mongets(mtmp, MOON_AXE, mkobjflags);
+					if(otmp){
+						otmp->objsize = MZ_SMALL;
+						fix_object(otmp);
+					}
+					otmp = mongets(mtmp, MOON_AXE, mkobjflags);
+					if(otmp){
+						otmp->objsize = MZ_SMALL;
+						fix_object(otmp);
+					}
+				}
+				else { //new moon
+					int moontype = rnd(4);
+					for(int i = 2; i > 0; i--){
+						otmp = mongets(mtmp, MOON_AXE, mkobjflags);
+						if(otmp){
+							switch(moontype){
+								default:
+								break;
+								case 1:
+									set_material_gm(otmp, GOLD);
+								break;
+								case 2:
+									set_material_gm(otmp, OBSIDIAN_MT);
+									otmp->ovar1 = FULL_MOON;
+								break;
+							}
+							otmp->objsize = MZ_SMALL;
+							fix_object(otmp);
+						}
+					}
 				}
 			} else if(ptr->mtyp == PM_POLYPOID_BEING){
 				int masktypes[] = {PM_ELVENKING, PM_ELVENQUEEN, PM_ALABASTER_ELF_ELDER, PM_GROVE_GUARDIAN, 
@@ -3742,27 +3918,92 @@ int mkobjflags;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 			} else if(ptr->mtyp == PM_LILLEND){
-				(void)mongets(mtmp, MASK, mkobjflags);
-				(void)mongets(mtmp, MASK, mkobjflags);
-				(void)mongets(mtmp, MASK, mkobjflags);
-				(void)mongets(mtmp, MASK, mkobjflags);
-				(void)mongets(mtmp, MASK, mkobjflags);
-				(void)mongets(mtmp, MASK, mkobjflags);
-				
-				otmp = mksobj(ELVEN_BOW, mkobjflags|MKOBJ_NOINIT);
-			    bless(otmp);
-			    otmp->oerodeproof = TRUE;
-				spe2 = 3;
-			    otmp->spe = max(otmp->spe, spe2);
-			    (void) mpickobj(mtmp, otmp);
-					m_initthrow(mtmp, ELVEN_ARROW, 12+rnd(30), mkobjflags);
-				(void)mongets(mtmp, HARP, mkobjflags);
-				otmp = mksobj(LONG_SWORD, mkobjflags|MKOBJ_NOINIT);
-			    bless(otmp);
-			    otmp->oerodeproof = TRUE;
-				spe2 = 3;
-			    otmp->spe = max(otmp->spe, spe2);
-			    (void) mpickobj(mtmp, otmp);
+				static char lama_count = 0;
+				if(Is_lamashtu_level(&u.uz) && lama_count < 2){
+					otmp = mongets(mtmp, MASK, mkobjflags);
+					if(otmp) otmp->corpsenm = lama_count == 0 ? PM_DEMOGORGON : PM_DAGON; //PM_OBOX_OB
+					otmp = mongets(mtmp, MASK, mkobjflags);
+					if(otmp) otmp->corpsenm = lama_count == 0 ? PM_NESSIAN_PIT_FIEND : PM_KHAAMNUN_TANNIN; //Occularus
+					otmp = mongets(mtmp, MASK, mkobjflags);
+					if(otmp) otmp->corpsenm = lama_count == 0 ? PM_SHAYATEEN : PM_RAGLAYIM_TANNIN;  //PM_AKKABISH_TANNIN
+					otmp = mongets(mtmp, MASK, mkobjflags);
+					if(otmp) otmp->corpsenm = PM_LETHE_ELEMENTAL;
+					otmp = mongets(mtmp, MASK, mkobjflags);
+					if(otmp) otmp->corpsenm = PM_SHOGGOTH;
+					otmp = mongets(mtmp, MASK, mkobjflags);
+					if(otmp) otmp->corpsenm = lama_count == 0 ? PM_DEATH_KNIGHT : PM_SARTAN_TANNIN;
+
+					//WEAPON
+					if(lama_count == 0){
+						otmp = mongets(mtmp, SCYTHE, mkobjflags);
+						if(otmp){
+							set_material_gm(otmp, DRAGON_HIDE);
+							add_oprop(otmp, OPROP_FLAYW);
+							add_oprop(otmp, OPROP_VORPW);
+						}
+					}
+					else if(lama_count == 1){
+						otmp = mongets(mtmp, BULLWHIP, mkobjflags);
+						if(otmp){
+							set_material_gm(otmp, SHELL_MAT);
+							add_oprop(otmp, OPROP_FLAYW);
+						}
+						otmp = mongets(mtmp, BULLWHIP, mkobjflags);
+						if(otmp){
+							set_material_gm(otmp, SHELL_MAT);
+							add_oprop(otmp, OPROP_FLAYW);
+						}
+					}
+					
+					otmp = mongets(mtmp, HELMET, mkobjflags);
+					if(otmp){
+						set_material_gm(otmp, SILVER);
+						add_oprop(otmp, OPROP_LIFE);
+						add_oprop(otmp, OPROP_HOLY);
+					}
+					otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
+					if(otmp){
+						set_material_gm(otmp, SILVER);
+						add_oprop(otmp, OPROP_REFL);
+						add_oprop(otmp, OPROP_LIFE);
+						add_oprop(otmp, OPROP_HOLY);
+					}
+					otmp = mongets(mtmp, GAUNTLETS_OF_POWER, mkobjflags);
+					if(otmp){
+						set_material_gm(otmp, SILVER);
+						add_oprop(otmp, OPROP_HOLY);
+						add_oprop(otmp, OPROP_HOLYW);
+					}
+					otmp = mongets(mtmp, CLOAK_OF_PROTECTION, mkobjflags);
+					if(otmp){
+						add_oprop(otmp, OPROP_WOOL);
+						otmp->obj_color = CLR_WHITE;
+					}
+					
+					lama_count++;
+				}
+				else {
+					(void)mongets(mtmp, MASK, mkobjflags);
+					(void)mongets(mtmp, MASK, mkobjflags);
+					(void)mongets(mtmp, MASK, mkobjflags);
+					(void)mongets(mtmp, MASK, mkobjflags);
+					(void)mongets(mtmp, MASK, mkobjflags);
+					(void)mongets(mtmp, MASK, mkobjflags);
+					otmp = mksobj(ELVEN_BOW, mkobjflags|MKOBJ_NOINIT);
+					bless(otmp);
+					otmp->oerodeproof = TRUE;
+					spe2 = 3;
+					otmp->spe = max(otmp->spe, spe2);
+					(void) mpickobj(mtmp, otmp);
+						m_initthrow(mtmp, ELVEN_ARROW, 12+rnd(30), mkobjflags);
+					(void)mongets(mtmp, HARP, mkobjflags);
+					otmp = mksobj(LONG_SWORD, mkobjflags|MKOBJ_NOINIT);
+					bless(otmp);
+					otmp->oerodeproof = TRUE;
+					spe2 = 3;
+					otmp->spe = max(otmp->spe, spe2);
+					(void) mpickobj(mtmp, otmp);
+				}
 			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIARTH){
 				int artnum = rn2(8);
 	
@@ -4182,12 +4423,16 @@ int mkobjflags;
 				(void) mpickobj(mtmp, otmp);
 			}
 		} else if(mm == PM_CLAIRVOYANT_CHANGED) {
+			struct obj *gem;
 			otmp = mksobj(LIGHTSABER, mkobjflags);
 			set_material_gm(otmp, BONE);
 			fix_object(otmp);
 			otmp->spe = 4;
 			otmp->ovar1 = 39L;
-			otmp->cobj->otyp = STAR_SAPPHIRE;
+			gem = otmp->cobj;
+			obj_extract_self(gem);
+			gem = poly_obj(gem,STAR_SAPPHIRE);
+			add_to_container(otmp, gem);
 			add_oprop(otmp, OPROP_PSIOW);
 			add_oprop(otmp, OPROP_LESSER_MAGCW);
 			otmp->blessed = TRUE;
@@ -4195,7 +4440,7 @@ int mkobjflags;
 			(void) mpickobj(mtmp, otmp);
 		} else if(mm == PM_SMALL_GOAT_SPAWN) {
 			int threshold = rnd(10)+rn2(11);
-			if(mtmp->female && In_lost_cities(&u.uz) && u.uinsight > threshold){
+			if(mtmp->female && (In_lost_cities(&u.uz) || faction == GOATMOM_FACTION) && u.uinsight > threshold){
 				set_template(mtmp, MISTWEAVER);
 				mtmp->m_insight_level = threshold;
 			}
@@ -4425,11 +4670,15 @@ int mkobjflags;
 			(void) mongets(mtmp, rnd_attack_potion(mtmp), mkobjflags);
 			(void) mongets(mtmp, rnd_attack_potion(mtmp), mkobjflags);
 			if(mm == PM_DEEPER_ONE){
-				otmp = mksobj(rnd_attack_wand(mtmp), mkobjflags);
-				otmp->spe = 1;
-				otmp->blessed = FALSE;
-				otmp->cursed = FALSE;
-				(void) mpickobj(mtmp, otmp);
+				//Note: may be 0 if zombie
+				int itm = rnd_attack_wand(mtmp);
+				if(itm){
+					otmp = mksobj(itm, mkobjflags);
+					otmp->spe = 1;
+					otmp->blessed = FALSE;
+					otmp->cursed = FALSE;
+					(void) mpickobj(mtmp, otmp);
+				}
 			}
 		 }
 		}else if((mm == PM_MIND_FLAYER || mm == PM_MASTER_MIND_FLAYER)){
@@ -4500,15 +4749,19 @@ int mkobjflags;
 				if(mm == PM_MASTER_MIND_FLAYER || !rn2(3)) mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
 			} else if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz)){
 				if(mm == PM_MASTER_MIND_FLAYER){
+					struct obj *gem;
 					mtmp->m_lev += 6;
 					mtmp->mhpmax = mtmp->m_lev*8-1;
 					mtmp->mhp = mtmp->mhpmax;
 					otmp = mksobj(DOUBLE_LIGHTSABER, mkobjflags);
 					otmp->oerodeproof = 1;
 					otmp->spe = 4;
-					otmp->cobj->otyp = !rn2(3) ? RUBY : rn2(2) ? GREEN_FLUORITE : JADE+3/*Red glass*/;
 					otmp->blessed = TRUE;
 					otmp->cursed = FALSE;
+					gem = otmp->cobj;
+					obj_extract_self(gem);
+					gem = poly_obj(gem,!rn2(3) ? RUBY : rn2(2) ? GREEN_FLUORITE : WORTHLESS_PIECE_OF_RED_GLASS);
+					add_to_container(otmp, gem);
 					(void) mpickobj(mtmp, otmp);
 					
 					otmp = mksobj(ROBE, mkobjflags);
@@ -4527,6 +4780,7 @@ int mkobjflags;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 				} else {
+					struct obj *gem;
 					mtmp->m_lev += 2;
 					mtmp->mhpmax = mtmp->m_lev*8-1;
 					mtmp->mhp = mtmp->mhpmax;
@@ -4534,9 +4788,12 @@ int mkobjflags;
 					otmp->oerodeproof = 1;
 					otmp->spe = 1;
 					otmp->ovar1 = !rn2(4) ? 6L : !rn2(3) ? 10L : rn2(2) ? 35L : 37L;
-					otmp->cobj->otyp = !rn2(3) ? RUBY : rn2(2) ? GREEN_FLUORITE : JADE+3/*Red glass*/;
 					otmp->blessed = TRUE;
 					otmp->cursed = FALSE;
+					gem = otmp->cobj;
+					obj_extract_self(gem);
+					gem = poly_obj(gem,!rn2(3) ? RUBY : rn2(2) ? GREEN_FLUORITE : WORTHLESS_PIECE_OF_RED_GLASS);
+					add_to_container(otmp, gem);
 					(void) mpickobj(mtmp, otmp);
 					
 					otmp = mksobj(ROBE, mkobjflags);
@@ -4593,6 +4850,9 @@ int mkobjflags;
 				(void)mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
 				(void)mongets(mtmp, ARCHAIC_BOOTS, mkobjflags);
 			}
+		} else if (ptr->mtyp == PM_ELOCATOR) {
+		    otmp = mongets(mtmp, rn2(11) ? ROBE : CLOAK_OF_MAGIC_RESISTANCE, mkobjflags);
+			if(otmp) otmp->obj_color = CLR_ORANGE;
 		} else if (is_dwarf(ptr)) { //slightly rearanged code so more dwarves get helms -D_E
 			if(In_mordor_quest(&u.uz) 
 				&& !In_mordor_forest(&u.uz)
@@ -4972,7 +5232,7 @@ int mkobjflags;
 				fix_object(otmp);
 				(void) mpickobj(mtmp, otmp);
 			} else if(ptr->mtyp == PM_DEMINYMPH){
-				if(In_lost_cities(&u.uz)){
+				if(In_lost_cities(&u.uz) || faction == GOATMOM_FACTION){
 					//Cultist of the Black Goat
 					otmp = mksobj(VIPERWHIP, mkobjflags|MKOBJ_NOINIT);
 					otmp->spe = 3;
@@ -5362,7 +5622,7 @@ int mkobjflags;
 				}
 			} else {//not shopkeepers, deminymphs, or intoners
 				int threshold = rnd(10)+rn2(11);
-				if(mtmp->female && In_lost_cities(&u.uz) && u.uinsight > threshold){
+				if(mtmp->female && (In_lost_cities(&u.uz) || faction == GOATMOM_FACTION) && u.uinsight > threshold){
 					set_template(mtmp, MISTWEAVER);
 					mtmp->m_insight_level = threshold;
 				}
@@ -5448,7 +5708,7 @@ int mkobjflags;
 		}
 		if(ptr->mtyp == PM_FOREST_CENTAUR || ptr->mtyp == PM_PLAINS_CENTAUR || ptr->mtyp == PM_PLAINS_CENTAUR){
 			int threshold = rnd(10)+rn2(11);
-			if(mtmp->female && In_lost_cities(&u.uz) && u.uinsight > threshold){
+			if(mtmp->female && (In_lost_cities(&u.uz) || faction == GOATMOM_FACTION) && u.uinsight > threshold){
 				set_template(mtmp, MISTWEAVER);
 				mtmp->m_insight_level = threshold;
 			}
@@ -5485,6 +5745,75 @@ int mkobjflags;
 			fix_object(otmp);
 			(void) mpickobj(mtmp, otmp);
 		}
+		break;
+	    case S_VAMPIRE:
+			switch(ptr->mtyp){
+				case PM_VAMPIRE:
+					(void) mongets(mtmp, rn2(20) ? SPEAR : LONG_SWORD, mkobjflags);
+					(void) mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+					(void) mongets(mtmp, GLOVES, mkobjflags);
+					(void) mongets(mtmp, LOW_BOOTS, mkobjflags);
+				break;
+				case PM_VAMPIRE_LORD:
+					if(mtmp->female){
+						(void) mongets(mtmp, rn2(2) ? STILETTO : RAPIER, mkobjflags);
+						(void) mongets(mtmp, GENTLEWOMAN_S_DRESS, mkobjflags);
+						if(!rn2(20)) mongets(mtmp, VICTORIAN_UNDERWEAR, mkobjflags);
+						if(!rn2(100)) mongets(mtmp, find_opera_cloak(), mkobjflags);
+						(void) mongets(mtmp, GLOVES, mkobjflags);
+						(void) mongets(mtmp, rn2(2) ? STILETTOS : LOW_BOOTS, mkobjflags);
+					}
+					else {
+						/* Knight */
+						if(!rn2(4)){
+							(void) mongets(mtmp, LONG_SWORD, mkobjflags);
+							(void) mongets(mtmp, PLATE_MAIL, mkobjflags);
+							if(!rn2(20)) mongets(mtmp, RUFFLED_SHIRT, mkobjflags);
+							if(!rn2(20)) mongets(mtmp, find_opera_cloak(), mkobjflags);
+							(void) mongets(mtmp, rn2(2) ? GAUNTLETS : GLOVES, mkobjflags);
+							(void) mongets(mtmp, rn2(2) ? ARMORED_BOOTS : HIGH_BOOTS, mkobjflags);
+						}
+						/* Noble */
+						else {
+							(void) mongets(mtmp, rn2(2) ? LONG_SWORD : RAPIER, mkobjflags);
+							(void) mongets(mtmp, GENTLEMAN_S_SUIT, mkobjflags);
+							if(!rn2(20)) mongets(mtmp, RUFFLED_SHIRT, mkobjflags);
+							if(!rn2(20)) mongets(mtmp, find_opera_cloak(), mkobjflags);
+							(void) mongets(mtmp, GLOVES, mkobjflags);
+							(void) mongets(mtmp, rn2(2) ? HIGH_BOOTS : LOW_BOOTS, mkobjflags);
+						}
+					}
+				break;
+				case PM_MINA_HARKER:
+					(void) mongets(mtmp, STILETTO, mkobjflags);
+					(void) mongets(mtmp, BOW, mkobjflags);
+					m_initthrow(mtmp, ARROW, 20, mkobjflags);
+					(void) mongets(mtmp, GENTLEWOMAN_S_DRESS, mkobjflags);
+					(void) mongets(mtmp, VICTORIAN_UNDERWEAR, mkobjflags);
+					(void) mongets(mtmp, STILETTOS, mkobjflags);
+				break;
+				case PM_ILONA_SZILAGY:
+					(void) mongets(mtmp, LONG_SWORD, mkobjflags);
+					(void) mongets(mtmp, GENTLEWOMAN_S_DRESS, mkobjflags);
+					(void) mongets(mtmp, LOW_BOOTS, mkobjflags);
+				break;
+				case PM_CARMILLA:
+					(void) mongets(mtmp, RAPIER, mkobjflags);
+					(void) mongets(mtmp, BOW, mkobjflags);
+					m_initthrow(mtmp, ARROW, 20, mkobjflags);
+					(void) mongets(mtmp, VICTORIAN_UNDERWEAR, mkobjflags);
+				break;
+				case PM_VLAD_THE_IMPALER:
+					(void) mongets(mtmp, LONG_SWORD, mkobjflags);
+					(void) mongets(mtmp, KITE_SHIELD, mkobjflags);
+					(void) mongets(mtmp, HELMET, mkobjflags);
+					if(!rn2(8)) mongets(mtmp, find_opera_cloak(), mkobjflags);
+					(void) mongets(mtmp, PLATE_MAIL, mkobjflags);
+					(void) mongets(mtmp, RUFFLED_SHIRT, mkobjflags);
+					(void) mongets(mtmp, GAUNTLETS, mkobjflags);
+					(void) mongets(mtmp, ARMORED_BOOTS, mkobjflags);
+				break;
+			}
 		break;
 	    case S_WRAITH:
 		if(mm == PM_NAZGUL){
@@ -5531,65 +5860,93 @@ int mkobjflags;
 			(void) mpickobj(mtmp, otmp);
 		} else if(mm == PM_ZARIELITE_ZEALOT) {
 			otmp = mongets(mtmp, SPEAR, mkobjflags);
-			set_material_gm(otmp, SILVER);
-			add_oprop(otmp, OPROP_LESSER_HOLYW);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				set_material_gm(otmp, SILVER);
+				add_oprop(otmp, OPROP_LESSER_HOLYW);
+				otmp->spe = 7;
+				bless(otmp);
+			}
 			otmp = mongets(mtmp, TOWER_SHIELD, mkobjflags);
-			set_material_gm(otmp, WOOD);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				set_material_gm(otmp, WOOD);
+				otmp->spe = 7;
+				bless(otmp);
+			}
 
 			otmp = mongets(mtmp, HELMET, mkobjflags);
-			set_material_gm(otmp, COPPER);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				set_material_gm(otmp, COPPER);
+				otmp->spe = 7;
+				bless(otmp);
+			}
 			otmp = mongets(mtmp, SCALE_MAIL, mkobjflags);
-			set_material_gm(otmp, COPPER);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				set_material_gm(otmp, COPPER);
+				otmp->spe = 7;
+				bless(otmp);
+			}
 			otmp = mongets(mtmp, STUDDED_LEATHER_CLOAK, mkobjflags);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				otmp->spe = 7;
+				bless(otmp);
+			}
 			otmp = mongets(mtmp, GLOVES, mkobjflags);
-			set_material_gm(otmp, LEATHER);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				set_material_gm(otmp, LEATHER);
+				otmp->spe = 7;
+				bless(otmp);
+			}
 			otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
-			set_material_gm(otmp, LEATHER);
-			otmp->spe = 7;
-			bless(otmp);
+			if(otmp){
+				set_material_gm(otmp, LEATHER);
+				otmp->spe = 7;
+				bless(otmp);
+			}
 		} else if(mm == PM_ZARIELITE_HERETIC) {
 			otmp = mongets(mtmp, SPEAR, mkobjflags);
-			set_material_gm(otmp, IRON);
-			add_oprop(otmp, OPROP_LESSER_UNHYW);
-			otmp->obj_color = CLR_BLACK;
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				set_material_gm(otmp, IRON);
+				add_oprop(otmp, OPROP_LESSER_UNHYW);
+				otmp->obj_color = CLR_BLACK;
+				otmp->spe = 7;
+				curse(otmp);
+			}
 			otmp = mongets(mtmp, TOWER_SHIELD, mkobjflags);
-			set_material_gm(otmp, WOOD);
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				set_material_gm(otmp, WOOD);
+				otmp->spe = 7;
+				curse(otmp);
+			}
 
 			otmp = mongets(mtmp, HELMET, mkobjflags);
-			set_material_gm(otmp, COPPER);
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				set_material_gm(otmp, COPPER);
+				otmp->spe = 7;
+				curse(otmp);
+			}
 			otmp = mongets(mtmp, SCALE_MAIL, mkobjflags);
-			set_material_gm(otmp, COPPER);
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				set_material_gm(otmp, COPPER);
+				otmp->spe = 7;
+				curse(otmp);
+			}
 			otmp = mongets(mtmp, STUDDED_LEATHER_CLOAK, mkobjflags);
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				otmp->spe = 7;
+				curse(otmp);
+			}
 			otmp = mongets(mtmp, GLOVES, mkobjflags);
-			set_material_gm(otmp, LEATHER);
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				set_material_gm(otmp, LEATHER);
+				otmp->spe = 7;
+				curse(otmp);
+			}
 			otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
-			set_material_gm(otmp, LEATHER);
-			otmp->spe = 7;
-			curse(otmp);
+			if(otmp){
+				set_material_gm(otmp, LEATHER);
+				otmp->spe = 7;
+				curse(otmp);
+			}
 		}
 		break;
 	    case S_ZOMBIE:
@@ -6052,7 +6409,7 @@ int mkobjflags;
 				else (void)mongets(mtmp, GLAIVE, mkobjflags);
 			break;
 			case PM_LILITU:
-				if(In_lost_cities(&u.uz)){
+				if(In_lost_cities(&u.uz) || faction == GOATMOM_FACTION){
 					//Cultist of the Black Goat
 					otmp = mksobj(VIPERWHIP, mkobjflags|MKOBJ_NOINIT);
 					otmp->spe = 6;
@@ -6127,18 +6484,24 @@ int mkobjflags;
 						case 0:
 						case 1:
 							otmp = mongets(mtmp, rn2(7) ? ROBE : rn2(3) ? CLOAK_OF_PROTECTION : CLOAK_OF_MAGIC_RESISTANCE, mkobjflags|MKOBJ_NOINIT);
-							curse(otmp);
-							otmp->spe = 4;
-							if(kit == 3){
-								otmp = mongets(mtmp, SEDGE_HAT, mkobjflags|MKOBJ_NOINIT);
+							if(otmp){
 								curse(otmp);
 								otmp->spe = 4;
+							}
+							if(kit == 3){
+								otmp = mongets(mtmp, SEDGE_HAT, mkobjflags|MKOBJ_NOINIT);
+								if(otmp){
+									curse(otmp);
+									otmp->spe = 4;
+								}
 							}
 						break;
 						case 2:
 							otmp = mongets(mtmp, HEALER_UNIFORM, mkobjflags|MKOBJ_NOINIT);
-							curse(otmp);
-							otmp->spe = 4;
+							if(otmp){
+								curse(otmp);
+								otmp->spe = 4;
+							}
 							// if(rn2(2)){
 								// mongets(mtmp, POT_EXTRA_HEALING, mkobjflags);
 								// mongets(mtmp, POT_EXTRA_HEALING, mkobjflags);
@@ -6148,24 +6511,34 @@ int mkobjflags;
 						break;
 						case 3:
 							otmp = mongets(mtmp, ROBE, mkobjflags|MKOBJ_NOINIT);
-							otmp->obj_color = CLR_ORANGE;
-							curse(otmp);
-							otmp->spe = 4;
+							if(otmp){
+								otmp->obj_color = CLR_ORANGE;
+								curse(otmp);
+								otmp->spe = 4;
+							}
 							otmp = mongets(mtmp, SEDGE_HAT, mkobjflags|MKOBJ_NOINIT);
-							curse(otmp);
-							otmp->spe = 4;
+							if(otmp){
+								curse(otmp);
+								otmp->spe = 4;
+							}
 						break;
 						case 4:
 							otmp = mongets(mtmp, CLOAK, mkobjflags|MKOBJ_NOINIT);
-							otmp->obj_color = CLR_BLACK;
-							curse(otmp);
-							otmp->spe = 4;
+							if(otmp){
+								otmp->obj_color = CLR_BLACK;
+								curse(otmp);
+								otmp->spe = 4;
+							}
 							otmp = mongets(mtmp, PLAIN_DRESS, mkobjflags|MKOBJ_NOINIT);
-							curse(otmp);
-							otmp->spe = 4;
+							if(otmp){
+								curse(otmp);
+								otmp->spe = 4;
+							}
 							otmp = mongets(mtmp, WITCH_HAT, mkobjflags|MKOBJ_NOINIT);
-							curse(otmp);
-							otmp->spe = 4;
+							if(otmp){
+								curse(otmp);
+								otmp->spe = 4;
+							}
 						break;
 						case 5:
 							otmp = mksobj(MASK, mkobjflags);
@@ -6200,10 +6573,26 @@ int mkobjflags;
 		    case PM_MARILITH:{
 				if(Inhell){
 					chance = rnd(10);
-					if(chance >= 9) mongets(mtmp, PLATE_MAIL, mkobjflags);
-					else if(chance >= 6) mongets(mtmp, CHAIN_MAIL, mkobjflags);
-					else if(chance >= 3) mongets(mtmp, STUDDED_LEATHER_ARMOR, mkobjflags);
-					else mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+					if(chance >= 9){
+						mongets(mtmp, PLATE_MAIL, mkobjflags);
+						mongets(mtmp, rn2(20) ? GAUNTLETS : GAUNTLETS_OF_POWER, mkobjflags);
+						mongets(mtmp, HELMET, mkobjflags);
+					}
+					else if(chance >= 6){
+						mongets(mtmp, CHAIN_MAIL, mkobjflags);
+						mongets(mtmp, GAUNTLETS, mkobjflags);
+						mongets(mtmp, HELMET, mkobjflags);
+					}
+					else if(chance >= 3){
+						mongets(mtmp, STUDDED_LEATHER_ARMOR, mkobjflags);
+						mongets(mtmp, GLOVES, mkobjflags);
+						mongets(mtmp, LEATHER_HELM, mkobjflags);
+					}
+					else {
+						mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+						mongets(mtmp, GLOVES, mkobjflags);
+						mongets(mtmp, LEATHER_HELM, mkobjflags);
+					}
 					switch(rn2(3)){
 						case 0:
 							mongets(mtmp, TRIDENT, mkobjflags);
@@ -6270,6 +6659,25 @@ int mkobjflags;
 						break;
 						
 					}
+				}
+				else if(In_mordor_quest(&u.uz) 
+					&& !In_mordor_forest(&u.uz)
+					&& !Is_ford_level(&u.uz)
+					&& !In_mordor_fields(&u.uz)
+					&& in_mklev
+				){
+					mongets(mtmp, PLAIN_DRESS, mkobjflags);
+					otmp = mongets(mtmp, SCALE_MAIL, mkobjflags);
+					if(otmp) set_material_gm(otmp, GOLD);
+					otmp = mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
+					if(otmp) set_material_gm(otmp, GOLD);
+					
+					mongets(mtmp, STILETTO, mkobjflags);
+					mongets(mtmp, SHORT_SWORD, mkobjflags);
+					mongets(mtmp, ELVEN_SHORT_SWORD, mkobjflags);
+					mongets(mtmp, DWARVISH_SHORT_SWORD, mkobjflags);
+					mongets(mtmp, KHOPESH, mkobjflags);
+					mongets(mtmp, RAPIER, mkobjflags);
 				}
 			}break;
 		    case PM_PIT_FIEND:
@@ -6455,6 +6863,16 @@ int mkobjflags;
 				(void) mpickobj(mtmp, otmp);
 				(void)mongets(mtmp, SHEMAGH, mkobjflags);
 			break;
+		    case PM_SHAYATEEN:
+				otmp = mongets(mtmp, BATTLE_AXE, mkobjflags);
+				if(otmp) otmp->spe = 6;
+				otmp = mongets(mtmp, BATTLE_AXE, mkobjflags);
+				if(otmp) otmp->spe = 6;
+				otmp = mongets(mtmp, BATTLE_AXE, mkobjflags);
+				if(otmp) otmp->spe = 6;
+				otmp = mongets(mtmp, BATTLE_AXE, mkobjflags);
+				if(otmp) otmp->spe = 6;
+			break;
 		}
 		/* prevent djinnis and mail daemons from leaving objects when
 		 * they vanish
@@ -6528,9 +6946,10 @@ long amount;
 #endif
 
 STATIC_OVL void
-m_initinv(mtmp, mkobjflags)
+m_initinv(mtmp, mkobjflags, faction)
 register struct	monst	*mtmp;
 int mkobjflags;
+int faction;
 {
 	register int cnt;
 	int chance;
@@ -6628,7 +7047,7 @@ int mkobjflags;
 #endif /* CONVICT */
 			ptr->mtyp != PM_WATCHMAN &&
 			ptr->mtyp != PM_WATCH_CAPTAIN) {
-			if(!(level.flags.has_barracks || In_law(&u.uz) || in_mklev || mkmon_template)){
+			if(!(level.flags.has_barracks || In_law(&u.uz) || in_mklev || is_undead(ptr))){
 				if (!rn2(3)) (void) mongets(mtmp, K_RATION, mkobjflags);
 				if (!rn2(2)) (void) mongets(mtmp, C_RATION, mkobjflags);
 			}
@@ -7189,16 +7608,22 @@ int mkobjflags;
 				
 				(void) mongets(mtmp, rnd_attack_potion(mtmp), mkobjflags);
 				(void) mongets(mtmp, rnd_attack_potion(mtmp), mkobjflags);
+				//Note: may be 0 if zombie
+				int itm = rnd_utility_potion(mtmp);
+				if(itm){
+					otmp = mksobj(itm, mkobjflags);
+					otmp->blessed = FALSE;
+					otmp->cursed = FALSE;
+					(void) mpickobj(mtmp, otmp);
+				}
 				
-				otmp = mksobj(rnd_utility_potion(mtmp), mkobjflags);
-				otmp->blessed = FALSE;
-				otmp->cursed = FALSE;
-				(void) mpickobj(mtmp, otmp);
-				
-				otmp = mksobj(rnd_utility_potion(mtmp), mkobjflags);
-				otmp->blessed = FALSE;
-				otmp->cursed = FALSE;
-				(void) mpickobj(mtmp, otmp);
+				itm = rnd_utility_potion(mtmp);
+				if(itm){
+					otmp = mksobj(rnd_utility_potion(mtmp), mkobjflags);
+					otmp->blessed = FALSE;
+					otmp->cursed = FALSE;
+					(void) mpickobj(mtmp, otmp);
+				}
 			} else if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz)){
 				otmp = mksobj(QUARTERSTAFF, mkobjflags);
 				otmp->spe = 9;
@@ -7290,28 +7715,35 @@ int mkobjflags;
 				}
 		 }
 		} else if(monsndx(ptr) == PM_TWITCHING_FOUR_ARMED_CHANGED) {
+			struct obj *gem;
 			otmp = mksobj(LIGHTSABER, mkobjflags);
 			otmp->spe = 3;
 			set_material_gm(otmp, BONE);
 			otmp->ovar1 = !rn2(4) ? 38L : !rn2(3) ? 18L : rn2(2) ? 10L : 26L;
-			otmp->cobj->otyp = !rn2(4) ? MORGANITE : !rn2(3) ? RUBY : rn2(2) ? GARNET : JASPER;
 			otmp->blessed = TRUE;
 			otmp->cursed = FALSE;
 			fix_object(otmp);
+			gem = otmp->cobj;
+			obj_extract_self(gem);
+			gem = poly_obj(gem,!rn2(4) ? MORGANITE : !rn2(3) ? RUBY : rn2(2) ? GARNET : JASPER);
+			add_to_container(otmp, gem);
 			(void) mpickobj(mtmp, otmp);
 			
 			otmp = mksobj(LIGHTSABER, mkobjflags);
 			otmp->spe = 3;
 			set_material_gm(otmp, BONE);
 			otmp->ovar1 = !rn2(4) ? 2L : !rn2(3) ? 9L : rn2(2) ? 21L : 22L;
-			otmp->cobj->otyp = !rn2(3) ? EMERALD : rn2(2) ? GREEN_FLUORITE : JADE;
 			otmp->blessed = TRUE;
 			otmp->cursed = FALSE;
 			fix_object(otmp);
+			gem = otmp->cobj;
+			obj_extract_self(gem);
+			gem = poly_obj(gem,!rn2(3) ? EMERALD : rn2(2) ? GREEN_FLUORITE : JADE);
+			add_to_container(otmp, gem);
 			(void) mpickobj(mtmp, otmp);
 		} else if(ptr->mtyp == PM_GIANT_GOAT_SPAWN) {
 			int threshold = rnd(10)+rn2(11);
-			if(mtmp->female && In_lost_cities(&u.uz) && u.uinsight > threshold){
+			if(mtmp->female && (In_lost_cities(&u.uz) || faction == GOATMOM_FACTION) && u.uinsight > threshold){
 				set_template(mtmp, MISTWEAVER);
 				mtmp->m_insight_level = threshold;
 			}
@@ -7510,20 +7942,22 @@ int mkobjflags;
 			if(rn2(10)){
 				mongets(mtmp, SPEAR, mkobjflags);
 				otmp = mongets(mtmp, TOWER_SHIELD, mkobjflags);
-				set_material_gm(otmp, WOOD);
+				if(otmp) set_material_gm(otmp, WOOD);
 			}
 			else {
 				mongets(mtmp, KHOPESH, mkobjflags);
 				otmp = mongets(mtmp, TOWER_SHIELD, mkobjflags);
-				set_material_gm(otmp, WOOD);
+				if(otmp) set_material_gm(otmp, WOOD);
 			}
 			mongets(mtmp, WAISTCLOTH, mkobjflags);
 		} else if(ptr->mtyp == PM_PRIEST_MUMMY){
-			otmp = mongets(mtmp, CLOAK, mkobjflags);
-			set_material_gm(otmp, LEATHER);
+			otmp = mongets(mtmp, !rn2(20) ? LEO_NEMAEUS_HIDE : CLOAK, mkobjflags);
+			if(otmp) set_material_gm(otmp, LEATHER);
 			otmp = mongets(mtmp, WAISTCLOTH, mkobjflags);
-			set_material_gm(otmp, CLOTH);
-			otmp->obj_color = CLR_WHITE;
+			if(otmp){
+				set_material_gm(otmp, CLOTH);
+				otmp->obj_color = CLR_WHITE;
+			}
 		} else if(ptr->mtyp == PM_PHARAOH){
 			otmp = mksobj(FLAIL, mkobjflags);
 			if (otmp->spe < 2) otmp->spe = rnd(3);
@@ -7725,14 +8159,24 @@ int mkobjflags;
 				(void) mpickobj(mtmp, otmp);
 
 				otmp = mongets(mtmp, SHACKLES, MKOBJ_NOINIT);
-				mtmp->misc_worn_check |= W_ARMG;
-				otmp->owornmask |= W_ARMG;
-				curse(otmp);
+				if(otmp){
+					mtmp->misc_worn_check |= W_ARMG;
+					otmp->owornmask |= W_ARMG;
+					curse(otmp);
+					update_mon_intrinsics(mtmp, otmp, TRUE, TRUE);
+				}
 				otmp = mongets(mtmp, SHACKLES, MKOBJ_NOINIT);
-				mtmp->misc_worn_check |= W_ARMF;
-				otmp->owornmask |= W_ARMF;
-				curse(otmp);
-				update_mon_intrinsics(mtmp, otmp, TRUE, TRUE);
+				if(otmp){
+					mtmp->misc_worn_check |= W_ARMF;
+					otmp->owornmask |= W_ARMF;
+					curse(otmp);
+					update_mon_intrinsics(mtmp, otmp, TRUE, TRUE);
+				}
+			} else if(ptr->mtyp == PM_UISCERRE_ELADRIN){
+					otmp = mongets(mtmp, BANDED_MAIL, mkobjflags);
+					if(otmp) set_material_gm(otmp, COPPER);
+					otmp = mongets(mtmp, HELMET, mkobjflags);
+					if(otmp) set_material_gm(otmp, COPPER);
 			}
 		break;
 	    case S_DEMON:
@@ -7937,10 +8381,12 @@ int mkobjflags;
 				
 				// (void) mongets(mtmp, POT_FULL_HEALING, mkobjflags);
 				otmp = mongets(mtmp, GAUNTLETS_OF_POWER, mkobjflags);
-				set_material_gm(otmp, COPPER);
+				if(otmp) set_material_gm(otmp, COPPER);
 				otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
-				set_material_gm(otmp, COPPER);
-				otmp->spe = 9;
+				if(otmp){
+					set_material_gm(otmp, COPPER);
+					otmp->spe = 9;
+				}
 
 				otmp = mksobj(TWO_HANDED_SWORD, mkobjflags|MKOBJ_NOINIT);
 				otmp = oname(otmp, artiname(ART_GENOCIDE));
@@ -8203,11 +8649,11 @@ int mkobjflags;
 //				(void)mongets(mtmp, WAN_COLD, mkobjflags);
 //				(void)mongets(mtmp, WAN_FIRE, mkobjflags);
 				otmp = mongets(mtmp, ROBE, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				otmp = mongets(mtmp, GENTLEMAN_S_SUIT, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				otmp = mongets(mtmp, SPEED_BOOTS, mkobjflags);
-				otmp->obj_color = CLR_BLACK;
+				if(otmp) otmp->obj_color = CLR_BLACK;
 				(void)mongets(mtmp, SCR_CHARGING, mkobjflags);
 				// (void) mongets(mtmp, POT_FULL_HEALING, mkobjflags);
 				// (void) mongets(mtmp, POT_FULL_HEALING, mkobjflags);
@@ -8291,7 +8737,6 @@ int mkobjflags;
 			break;
 ////////////////////////////////////////
 			case PM_CHAOS:
-				mtmp->mvar2 = 0;
 				{
 				struct	monst *mlocal;
 				/* create special stuff; can't use mongets */
@@ -8347,18 +8792,22 @@ int mkobjflags;
 			}
 		break;
 	    case S_VAMPIRE:
-		switch(rn2(6)) {
-			case 1:
-			(void)mongets(mtmp, POT_BLOOD, mkobjflags);
-			case 2:
-			(void)mongets(mtmp, POT_BLOOD, mkobjflags);
-			case 3:
-			(void)mongets(mtmp, POT_BLOOD, mkobjflags);
-			case 4:
-			(void)mongets(mtmp, POT_BLOOD, mkobjflags);
-			default:
-			break;
-		}
+			if(ptr->mtyp == PM_PARAI){
+				mongets(mtmp, PLAIN_DRESS, mkobjflags);
+			}
+			else switch(rn2(6)) {
+				case 1:
+				(void)mongets(mtmp, POT_BLOOD, mkobjflags);
+				case 2:
+				(void)mongets(mtmp, POT_BLOOD, mkobjflags);
+				case 3:
+				(void)mongets(mtmp, POT_BLOOD, mkobjflags);
+				case 4:
+				(void)mongets(mtmp, POT_BLOOD, mkobjflags);
+				default:
+				break;
+			}
+		break;
 		case S_EYE:
 			if(ptr->mtyp == PM_AXUS){
 				struct obj *otmp = mksobj(SKELETON_KEY, mkobjflags);
@@ -8920,55 +9369,268 @@ boolean ghostly;
 	return result;
 }
 
-struct monst *
-makeundead(ptr, x, y, mmflags, undeadtype)
-register struct permonst *ptr;
-register int	x, y;
-register int	mmflags;
-register int	undeadtype;
+/* 
+ * For a given ptr, attempt to give it a template and/or faction.
+ * If template/faction are not -1, use given. If they are -1, determine appropriate.
+ * 
+ * Returns template applied.
+ */
+int
+makemon_set_template(ptrptr, template, randmonst)
+struct permonst ** ptrptr;	/* standard ptr, but one layer referenced so that we can change what ptr is for the caller */
+int template;
+boolean randmonst;
 {
-	struct monst *mtmp = 0;
-	mkmon_template = undeadtype;
-	mtmp = makemon(ptr, x, y, mmflags);
-	mkmon_template = 0;
-	return mtmp;
+	struct permonst * ptr = *ptrptr;
+	int mkmon_template = 0;
+
+	if (template != -1) {
+		mkmon_template = template;
+	}
+	else {
+		/* most general case is at the end of the if-else chain */
+		/* `zombiepm` or `skeletpm` are set to deliberately make a certain pm into zombies/skeletons */
+		if (zombiepm >=0 && ptr->mtyp == zombiepm) {
+			mkmon_template = ZOMBIFIED;
+		}
+		else if (skeletpm >=0 && ptr->mtyp == skeletpm) {
+			mkmon_template = SKELIFIED;
+		}
+		/* in the Elf quest against the Necromancer, the "PM_ELF" enemies are meant to be groups of elf zombies. */
+		else if(In_quest(&u.uz) && urole.neminum == PM_NECROMANCER && ptr->mtyp == PM_ELF){
+			mkmon_template = ZOMBIFIED;
+		}
+		/* Echo is always given the skeleton template */
+		else if(ptr->mtyp == PM_ECHO){
+			mkmon_template = SKELIFIED;
+		}
+		/* in Cania, creatures that aren't native to Gehennom are vitrified */ 
+		else if((ptr->geno&G_HELL) == 0 && Is_mephisto_level(&u.uz)){
+			mkmon_template = CRYSTALFIED;
+		}
+		/*In the void they are whispering*/
+		else if (In_void(&u.uz)){
+			mkmon_template = WHISPERING;
+		}
+		/* Kamerel tend to be fractured */ 
+		else if(is_kamerel(ptr)){
+			if(level.flags.has_kamerel_towers && (ptr->mtyp != PM_ARA_KAMEREL || rn2(2))){
+				mkmon_template = FRACTURED;
+			} else if(!level.flags.has_minor_spire && ptr->mtyp != PM_ARA_KAMEREL
+				&& (ptr->mtyp != PM_HUDOR_KAMEREL || rn2(2))
+				&& (ptr->mtyp != PM_SHARAB_KAMEREL || !rn2(4))
+			){
+				mkmon_template = FRACTURED;
+			}
+		}
+		/* on the Plane of Earth, Mahadevae are Worldshapers, capable of travelling through the rock */
+		else if(Is_earthlevel(&u.uz) && ptr->mtyp == PM_MAHADEVA) {
+			mkmon_template = WORLD_SHAPER;
+		}
+		/* insight check: making pseudonatural creatures out of anything reasonable */
+		else if(randmonst && can_undead(ptr) && check_insight()){
+			mkmon_template = PSEUDONATURAL;
+		}
+		/* insight check: adding brains to rats */
+		else if(randmonst && is_rat(ptr) && check_insight()){
+			mkmon_template = CRANIUM_RAT;
+		}
+		/* insight check: making yith */
+		else if(randmonst && check_insight()){
+			mkmon_template = YITH;
+		}
+		/* most general case at bottom -- creatures randomly being zombified */
+		else if(randmonst && can_undead(ptr) && !Is_rogue_level(&u.uz)){
+			if(In_mines(&u.uz)){
+				if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && rn2(10) <= 5){
+					mkmon_template = ZOMBIFIED;
+				} else if(!rn2(10)){
+					mkmon_template = ZOMBIFIED;
+				}
+			} else if(!rn2(100)){
+				mkmon_template = ZOMBIFIED;
+			}
+		}
+		else
+			mkmon_template = 0;
+	}
+
+	/* Apply template to the dereferenced ptrptr */
+	if (mkmon_template) {
+		*ptrptr = permonst_of(ptr->mtyp, mkmon_template);
+	}
+
+	return mkmon_template;
 }
+
 /*
- * called with [x,y] = coordinates;
- *	[0,0] means anyplace
- *	[u.ux,u.uy] means: near player (if !in_mklev)
+ * Factions do not affect monster data, so just selects a faction for the ptr.
  *
- *	In case we make a monster group, only return the one at [x,y].
+ * Returns faction chosen.
+ */
+int
+makemon_get_faction(ptr, faction)
+struct permonst * ptr;
+int faction;
+{
+	int out_faction;
+
+	if (faction != -1)
+		return faction;
+
+	if(is_drow(ptr)){
+		if(curhouse) {
+			out_faction = curhouse;
+		} else if((ptr->mtyp == urole.ldrnum && ptr->mtyp != PM_ECLAVDRA) || 
+			(ptr->mtyp == urole.guardnum && ptr->mtyp != PM_DROW_MATRON_MOTHER && ptr->mtyp != PM_HEDROW_MASTER_WIZARD)
+		){
+			if(Race_if(PM_DROW) && !Role_if(PM_EXILE)) out_faction = u.start_house;
+			else out_faction = LOLTH_SYMBOL;
+		} else if(Is_lolth_level(&u.uz)){
+			out_faction = LOLTH_SYMBOL;
+		} else if(ptr->mtyp == PM_MINDLESS_THRALL || ptr->mtyp == PM_A_GONE || ptr->mtyp == PM_PEASANT){
+			out_faction = PEN_A_SYMBOL;
+		} else if(ptr->mtyp == PM_DOKKALFAR_ETERNAL_MATRIARCH){
+			out_faction = LOST_HOUSE;
+		} else if(ptr->mtyp == PM_ECLAVDRA || ptr->mtyp == PM_AVATAR_OF_LOLTH || is_yochlol(ptr)){
+			out_faction = LOLTH_SYMBOL;
+		} else if(ptr->mtyp == PM_DROW_MATRON_MOTHER){
+			if(Race_if(PM_DROW) && !Role_if(PM_EXILE)) out_faction = (Role_if(PM_NOBLEMAN) && !flags.initgend) ? (((u.start_house-FIRST_FALLEN_HOUSE+1)%(LAST_HOUSE-FIRST_HOUSE+1))+FIRST_HOUSE) : LOLTH_SYMBOL;
+			else out_faction = LOLTH_SYMBOL;
+		} else if(ptr->mtyp == PM_SEYLL_AUZKOVYN || ptr->mtyp == PM_STJARNA_ALFR){
+			out_faction = EILISTRAEE_SYMBOL;
+		} else if(ptr->mtyp == PM_PRIESTESS_OF_GHAUNADAUR){
+			out_faction = GHAUNADAUR_SYMBOL;
+		} else if(ptr->mtyp == PM_DARUTH_XAXOX || ptr->mtyp == PM_DROW_ALIENIST){
+			out_faction = XAXOX;
+		} else if(ptr->mtyp == PM_EMBRACED_DROWESS || (ptr->mtyp == PM_DROW_MUMMY && In_quest(&u.uz) && !flags.initgend)){
+			out_faction = EDDER_SYMBOL;
+		} else if(ptr->mtyp == PM_A_SALOM){
+			out_faction = VER_TAS_SYMBOL;
+		} else if(ptr->mtyp == PM_GROMPH){
+			out_faction = SORCERE;
+		} else if(ptr->mtyp == PM_DANTRAG){
+			out_faction = MAGTHERE;
+		} else if(ptr->mtyp == PM_HEDROW_BLADEMASTER){
+			out_faction = MAGTHERE;
+		} else if(ptr->mtyp == PM_HEDROW_MASTER_WIZARD){
+			out_faction = SORCERE;
+		} else if(ptr->mlet != S_HUMAN && !((ptr->mtyp == PM_SPROW || ptr->mtyp == PM_DRIDER) && in_mklev && In_quest(&u.uz) && Is_qstart(&u.uz))){
+			if(ptr->mtyp == PM_DROW_MUMMY){
+				if(!(rn2(10))){
+					if(!rn2(6)) out_faction = LOLTH_SYMBOL;
+					else if(rn2(5) < 2) out_faction = EILISTRAEE_SYMBOL;
+					else out_faction = KIARANSALEE_SYMBOL;
+				} else if(!(rn2(4))) out_faction = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
+				else out_faction = rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
+			}
+			else if(ptr->mtyp == PM_HEDROW_ZOMBIE){
+				if(!rn2(6)) out_faction = SORCERE;
+				else if(!rn2(5)) out_faction = MAGTHERE;
+				else if(!(rn2(4))) out_faction = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
+				else out_faction = rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
+			}
+			else out_faction = rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
+		} else if(In_quest(&u.uz)){
+			if(Race_if(PM_DROW) && Role_if(PM_EXILE)){
+				out_faction = PEN_A_SYMBOL;
+			} else if(Role_if(PM_ANACHRONONAUT)){
+				out_faction = LAST_BASTION_SYMBOL;
+			} else if((Race_if(PM_DROW)) && (in_mklev || flags.stag || rn2(3))){
+				if(Is_qstart(&u.uz)) out_faction = u.start_house;
+				else if(Role_if(PM_NOBLEMAN)){
+					if(flags.initgend) out_faction = u.start_house;
+					else out_faction = (((u.start_house - FIRST_FALLEN_HOUSE)+FIRST_HOUSE)%(LAST_HOUSE-FIRST_HOUSE))+FIRST_HOUSE;
+				} else if((&u.uz)->dlevel <= qlocate_level.dlevel){
+					out_faction = rn2(2) ? u.start_house : flags.initgend ? EILISTRAEE_SYMBOL : EDDER_SYMBOL;
+				} else {
+					out_faction = flags.initgend ? EILISTRAEE_SYMBOL : EDDER_SYMBOL;
+				}
+			} else out_faction = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
+		} else {
+			out_faction = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
+		}
+	}
+	return out_faction;
+}
+
+/*
+ * Shorter function call with "use defaults" filled in for makemon_full()'s template and faction parameters.
  */
 struct monst *
 makemon(ptr, x, y, mmflags)
-register struct permonst *ptr;
+struct permonst *ptr;
 register int	x, y;
 register int	mmflags;
 {
-	register struct monst *mtmp, *tmpm;
-	int mndx, mcham, ct, mitem, num;
-	boolean anymon = (!ptr);
+	return makemon_full(ptr, x, y, mmflags, -1, -1);	/* -1 meaning "default" */
+}
+
+/*
+ * Determines monster type (if null),
+ *   location (if [0,0]),    (0,0 means random, u.ux,u.uy means near player if !in_mklev)
+ *   template (if -1),       (-1 means default for mon+locale, 0 means no template and no random chance at one)
+ *   and faction (if -1),    (-1 means default for mon+locale, 0 means no template and no random chance at one)
+ */
+struct monst *
+makemon_full(ptr, x, y, mmflags, template, faction)
+struct permonst *ptr;
+register int	x, y;
+register int	mmflags;
+int template;
+int faction;
+{
+	int out_template = template;
+	int out_faction = faction;
+	boolean randmonst = !ptr;
 	boolean givenpos = (x != 0 || y != 0);
 	boolean byyou = (x == u.ux && y == u.uy);
-	boolean allow_minvent = ((mmflags & NO_MINVENT) == 0);
-	boolean countbirth = ((mmflags & MM_NOCOUNTBIRTH) == 0 && !In_quest(&u.uz));
-	boolean randmonst = !ptr;
 	unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
-	boolean unsethouse = FALSE;
-	boolean oneOffTemplate = FALSE;
-	int mkobjflags = NO_MKOBJ_FLAGS | ((mmflags & MM_ESUM) ? MKOBJ_SUMMON : 0);
 
-	/* if monster is destined to be a summon or pet, it shouldn't get a group */
-	if (mmflags & (MM_EDOG|MM_ESUM))
-		mmflags |= MM_NOGROUP;
+	/* if a monster is being randomly chosen, use its bigger spawning group */
+	if (!ptr && !(mmflags & MM_NOGROUP))
+		mmflags |= MM_BIGGROUP;
 
-	/* replace desfile Tulani with Gae, and vice versa
-	 * assumes G_NOGEN is used to track which variant you have that game */
-	if (ptr && ptr->mtyp == PM_TULANI_ELADRIN && in_mklev && (mons[PM_TULANI_ELADRIN].geno & G_NOGEN))
-		ptr = &mons[PM_GAE_ELADRIN];
-	else if (ptr && ptr->mtyp == PM_GAE_ELADRIN && in_mklev && (mons[PM_GAE_ELADRIN].geno & G_NOGEN))
-		ptr = &mons[PM_TULANI_ELADRIN];
+	/* handle subs for high-caste tulani  */
+	if(ptr && is_high_caste_eladrin(ptr) && in_mklev){
+		if(Is_lamashtu_level(&u.uz)){
+			if(ptr->mtyp != PM_TULANI_ELADRIN && ptr->mtyp != PM_GAE_ELADRIN){
+				switch(dungeon_topology.alt_tulani){
+					case TULANI_CASTE:
+					case GAE_CASTE:
+						ptr = &mons[!rn2(3) ? PM_BRIGHID_ELADRIN : rn2(2) ? PM_UISCERRE_ELADRIN : PM_CAILLEA_ELADRIN];
+					break;
+					case BRIGHID_CASTE:
+						ptr = &mons[PM_BRIGHID_ELADRIN];
+					break;
+					case UISCERRE_CASTE:
+						ptr = &mons[PM_UISCERRE_ELADRIN];
+					break;
+					case CAILLEA_CASTE:
+						ptr = &mons[PM_CAILLEA_ELADRIN];
+					break;
+				}
+			}
+		} else {
+			switch(dungeon_topology.alt_tulani){
+				case TULANI_CASTE:
+					ptr = &mons[PM_TULANI_ELADRIN];
+				break;
+				case GAE_CASTE:
+					ptr = &mons[PM_GAE_ELADRIN];
+				break;
+				case BRIGHID_CASTE:
+					ptr = &mons[PM_BRIGHID_ELADRIN];
+				break;
+				case UISCERRE_CASTE:
+					ptr = &mons[PM_UISCERRE_ELADRIN];
+				break;
+				case CAILLEA_CASTE:
+					ptr = &mons[PM_CAILLEA_ELADRIN];
+				break;
+			}
+		}
+	}
 
 	/* if caller both a random creature and a random location, try both at once first */
 	if(!ptr && x == 0 && y == 0){
@@ -8984,6 +9646,7 @@ register int	mmflags;
 	#endif
 				return((struct monst *) 0);	/* no more monsters! */
 			}
+			out_template = makemon_set_template(&ptr, template, randmonst);
 			set_mon_data_core(&fakemon, ptr); /* set up for goodpos */
 			gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
 		} while((!goodpos(x, y, &fakemon, gpflags) 
@@ -9004,7 +9667,7 @@ register int	mmflags;
 	if(x == 0 && y == 0) {
 		int tryct = 0;	/* careful with bigrooms */
 		struct monst fakemon = {0};
-		
+		if(ptr) out_template = makemon_set_template(&ptr, template, randmonst);
 		if(ptr) set_mon_data_core(&fakemon, ptr); /* set up for goodpos */
 		do {
 			x = rn1(COLNO-3,2);
@@ -9023,7 +9686,7 @@ register int	mmflags;
 		}
 	} else if (byyou && !in_mklev) {
 		coord bypos;
-
+		if(ptr) out_template = makemon_set_template(&ptr, template, randmonst);
 		if(enexto_core(&bypos, u.ux, u.uy, ptr, gpflags)) {
 			x = bypos.x;
 			y = bypos.y;
@@ -9037,6 +9700,7 @@ register int	mmflags;
 	} else if (givenpos && ptr) {
 		/* need to check that the given position is safe */
 		struct monst fakemon = { 0 };
+		out_template = makemon_set_template(&ptr, template, randmonst);
 		set_mon_data_core(&fakemon, ptr); /* set up for goodpos */
 		if (!goodpos(x, y, &fakemon, gpflags)){
 			if ((mmflags & MM_ADJACENTOK) != 0) {
@@ -9078,15 +9742,16 @@ register int	mmflags;
 	}
 	
 	if(ptr){
-		mndx = monsndx(ptr);
 		/* if you are to make a specific monster and it has
 		   already been genocided, return */
-		if (mvitals[mndx].mvflags & G_GENOD && !In_quest(&u.uz)) return((struct monst *) 0);
+		if (mvitals[ptr->mtyp].mvflags & G_GENOD && !In_quest(&u.uz)) return((struct monst *) 0);
 #if defined(WIZARD) && defined(DEBUG)
-		if (wizard && (mvitals[mndx].mvflags & G_EXTINCT && !In_quest(&u.uz)))
+		if (wizard && (mvitals[ptr->mtyp].mvflags & G_EXTINCT && !countbirth))
 		    pline("Explicitly creating extinct monster %s.",
-			mons[mndx].mname);
+			mons[ptr->mtyp].mname);
 #endif
+		/* set template if it wasn't already set */
+		out_template = makemon_set_template(&ptr, out_template, randmonst);
 	} else {
 		/* make a random (common) monster that can survive here.
 		 * (the special levels ask for random monsters at specific
@@ -9102,14 +9767,48 @@ register int	mmflags;
 #endif
 			    return((struct monst *) 0);	/* no more monsters! */
 			}
+			out_template = makemon_set_template(&ptr, template, randmonst);
 			set_mon_data_core(&fakemon, ptr); /* set up for goodpos */
 		} while(!goodpos(x, y, &fakemon, gpflags) && tryct++ < 150);
 		if(tryct >= 150){
 			return((struct monst *) 0);	/* no more monsters! */
 		}
-		
-		mndx = monsndx(ptr);
 	}
+
+	/* determine faction -- since this does not affect ptr (and therefore location),
+	 * it can just be done at the very end */
+	out_faction = makemon_get_faction(ptr, faction);
+
+	return makemon_core(ptr, x, y, mmflags, out_template, out_faction);
+}
+
+/* 
+ * Called with known ptr, [x,y] coord, template, and faction.
+ *
+ * In case we make a monster group, only return the one at [x,y].
+ */
+struct monst *
+makemon_core(ptr, x, y, mmflags, template, faction)
+struct permonst *ptr;
+register int	x, y;
+register int	mmflags;
+int template;
+int faction;
+{
+	register struct monst *mtmp, *tmpm;
+	int mndx = ptr->mtyp;
+	int mcham, ct, mitem, num;
+	boolean allow_minvent = ((mmflags & NO_MINVENT) == 0);
+	boolean countbirth = ((mmflags & MM_NOCOUNTBIRTH) == 0 && !In_quest(&u.uz));
+	boolean randmonst = !ptr;
+	boolean unsethouse = FALSE;
+	int mkobjflags = NO_MKOBJ_FLAGS | ((mmflags & MM_ESUM) ? MKOBJ_SUMMON : 0);
+
+	/* if monster is destined to be a summon or pet, it shouldn't get a group */
+	if (mmflags & (MM_EDOG|MM_ESUM))
+		mmflags |= MM_NOGROUP;
+
+
 	if(allow_minvent) allow_minvent = !(mons[mndx].maligntyp < 0 && Is_illregrd(&u.uz) && in_mklev);
 	(void) propagate(mndx, countbirth, FALSE);
 	mtmp = malloc(sizeof(struct monst));
@@ -9344,172 +10043,6 @@ register int	mmflags;
 
 	mtmp->mspec_used = 3;
 	mtmp->encouraged = 0;
-	/* Ok, here's the deal: I'm using a global to coordinate the house emblems on the drow's armor. 
-	   It needs to be set up here so that everyone created as part of the group gets the same emblem, 
-	   and then unset after this creature's armor is created. */
-	if(is_drow(ptr)){
-		/* these only set FACTION */
-		if(!curhouse){
-			if((ptr->mtyp == urole.ldrnum && ptr->mtyp != PM_ECLAVDRA) || 
-				(ptr->mtyp == urole.guardnum && ptr->mtyp != PM_DROW_MATRON_MOTHER && ptr->mtyp != PM_HEDROW_MASTER_WIZARD)
-			){
-				if(Race_if(PM_DROW) && !Role_if(PM_EXILE)) curhouse = u.start_house;
-				else curhouse = LOLTH_SYMBOL;
-			} else if(Is_lolth_level(&u.uz)){
-				curhouse = LOLTH_SYMBOL;
-			} else if(ptr->mtyp == PM_MINDLESS_THRALL || ptr->mtyp == PM_A_GONE || ptr->mtyp == PM_PEASANT){
-				curhouse = PEN_A_SYMBOL;
-			} else if(ptr->mtyp == PM_DOKKALFAR_ETERNAL_MATRIARCH){
-				curhouse = LOST_HOUSE;
-			} else if(ptr->mtyp == PM_ECLAVDRA || ptr->mtyp == PM_AVATAR_OF_LOLTH || is_yochlol(ptr)){
-				curhouse = LOLTH_SYMBOL;
-			} else if(ptr->mtyp == PM_DROW_MATRON_MOTHER){
-				if(Race_if(PM_DROW) && !Role_if(PM_EXILE)) curhouse = (Role_if(PM_NOBLEMAN) && !flags.initgend) ? (((u.start_house-FIRST_FALLEN_HOUSE+1)%(LAST_HOUSE-FIRST_HOUSE+1))+FIRST_HOUSE) : LOLTH_SYMBOL;
-				else curhouse = LOLTH_SYMBOL;
-			} else if(ptr->mtyp == PM_SEYLL_AUZKOVYN || ptr->mtyp == PM_STJARNA_ALFR){
-				curhouse = EILISTRAEE_SYMBOL;
-			} else if(ptr->mtyp == PM_PRIESTESS_OF_GHAUNADAUR){
-				curhouse = GHAUNADAUR_SYMBOL;
-			} else if(ptr->mtyp == PM_DARUTH_XAXOX || ptr->mtyp == PM_DROW_ALIENIST){
-				curhouse = XAXOX;
-			} else if(ptr->mtyp == PM_EMBRACED_DROWESS || (ptr->mtyp == PM_DROW_MUMMY && In_quest(&u.uz) && !flags.initgend)){
-				curhouse = EDDER_SYMBOL;
-			} else if(ptr->mtyp == PM_A_SALOM){
-				curhouse = VER_TAS_SYMBOL;
-			} else if(ptr->mtyp == PM_GROMPH){
-				curhouse = SORCERE;
-			} else if(ptr->mtyp == PM_DANTRAG){
-				curhouse = MAGTHERE;
-			} else if(ptr->mtyp == PM_HEDROW_BLADEMASTER){
-				curhouse = MAGTHERE;
-			} else if(ptr->mtyp == PM_HEDROW_MASTER_WIZARD){
-				curhouse = SORCERE;
-			} else if(ptr->mlet != S_HUMAN && !((ptr->mtyp == PM_SPROW || ptr->mtyp == PM_DRIDER) && in_mklev && In_quest(&u.uz) && Is_qstart(&u.uz))){
-				if(ptr->mtyp == PM_DROW_MUMMY){
-					if(!(rn2(10))){
-						if(!rn2(6)) curhouse = LOLTH_SYMBOL;
-						else if(rn2(5) < 2) curhouse = EILISTRAEE_SYMBOL;
-						else curhouse = KIARANSALEE_SYMBOL;
-					} else if(!(rn2(4))) curhouse = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
-					else curhouse = rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
-				}
-				else if(ptr->mtyp == PM_HEDROW_ZOMBIE){
-					if(!rn2(6)) curhouse = SORCERE;
-					else if(!rn2(5)) curhouse = MAGTHERE;
-					else if(!(rn2(4))) curhouse = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
-					else curhouse = rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
-				}
-				else curhouse = rn2(LAST_FALLEN_HOUSE+1-FIRST_FALLEN_HOUSE)+FIRST_FALLEN_HOUSE;
-			} else if(In_quest(&u.uz)){
-				if(Race_if(PM_DROW) && Role_if(PM_EXILE)){
-					curhouse = PEN_A_SYMBOL;
-				} else if(Role_if(PM_ANACHRONONAUT)){
-					curhouse = LAST_BASTION_SYMBOL;
-				} else if((Race_if(PM_DROW)) && (in_mklev || flags.stag || rn2(3))){
-					if(Is_qstart(&u.uz)) curhouse = u.start_house;
-					else if(Role_if(PM_NOBLEMAN)){
-						if(flags.initgend) curhouse = u.start_house;
-						else curhouse = (((u.start_house - FIRST_FALLEN_HOUSE)+FIRST_HOUSE)%(LAST_HOUSE-FIRST_HOUSE))+FIRST_HOUSE;
-					} else if((&u.uz)->dlevel <= qlocate_level.dlevel){
-						curhouse = rn2(2) ? u.start_house : flags.initgend ? EILISTRAEE_SYMBOL : EDDER_SYMBOL;
-					} else {
-						curhouse = flags.initgend ? EILISTRAEE_SYMBOL : EDDER_SYMBOL;
-					}
-				} else curhouse = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
-			} else {
-				curhouse = rn2(LAST_HOUSE+1-FIRST_HOUSE)+FIRST_HOUSE;
-			}
-			unsethouse = TRUE;
-		}
-		set_faction(mtmp, curhouse);
-	}
-
-	/* now to set TEMPLATE */
-	/* most general case is at the end of the if-else chain */
-	/* `zombiepm` or `skeletpm` are set to deliberately make a certain pm into zombies/skeletons */
-	if (!mkmon_template && (zombiepm >=0 && mtmp->mtyp == zombiepm)) {
-		mkmon_template = ZOMBIFIED;
-		unsethouse = TRUE;
-		zombiepm = -1;
-	}
-	else if (!mkmon_template && (skeletpm >=0 && mtmp->mtyp == skeletpm)) {
-		mkmon_template = SKELIFIED;
-		unsethouse = TRUE;
-		skeletpm = -1;
-	}
-	/* in the Elf quest against the Necromancer, the "PM_ELF" enemies are meant to be groups of elf zombies. */
-	else if(In_quest(&u.uz) && urole.neminum == PM_NECROMANCER && mtmp->mtyp == PM_ELF){
-		mkmon_template = ZOMBIFIED;
-		unsethouse = TRUE;
-		m_initlgrp(mtmp, mtmp->mx, mtmp->my);
-	}
-	/* Echo is always given the skeleton template */
-	else if(mtmp->mtyp == PM_ECHO){
-		mkmon_template = SKELIFIED;
-		unsethouse = TRUE;
-	}
-	/* in Cania, creatures that aren't native to Gehennom are vitrified */ 
-	else if(!mkmon_template && (mtmp->data->geno&G_HELL) == 0 && Is_mephisto_level(&u.uz)){
-		mkmon_template = CRYSTALFIED;
-		unsethouse = TRUE;
-	} 
-	else if (In_void(&u.uz)){
-		mkmon_template = WHISPERING;
-		unsethouse = TRUE;
-	}
-	/* Kamerel tend to be fractured */ 
-	else if(is_kamerel(mtmp->data)){
-		if(level.flags.has_kamerel_towers && (mtmp->mtyp != PM_ARA_KAMEREL || rn2(2))){
-			mkmon_template = FRACTURED;
-			unsethouse = TRUE;
-		} else if(!level.flags.has_minor_spire && mtmp->mtyp != PM_ARA_KAMEREL
-			&& (mtmp->mtyp != PM_HUDOR_KAMEREL || rn2(2))
-			&& (mtmp->mtyp != PM_SHARAB_KAMEREL || !rn2(4))
-		){
-			mkmon_template = FRACTURED;
-			unsethouse = TRUE;
-		}
-	}
-	/* on the Plane of Earth, Mahadevae are Worldshapers, capable of travelling through the rock */
-	else if(!mkmon_template && Is_earthlevel(&u.uz) && mtmp->mtyp == PM_MAHADEVA) {
-		mkmon_template = WORLD_SHAPER;
-		unsethouse = TRUE;
-	}
-	/* insight check: making pseudonatural creatures out of anything reasonable */
-	else if(randmonst && !mkmon_template && can_undead(mtmp->data) && check_insight()){
-		mkmon_template = PSEUDONATURAL;
-		unsethouse = TRUE;
-	}
-	/* insight check: adding brains to rats */
-	else if(randmonst && !mkmon_template && is_rat(mtmp->data) && check_insight()){
-		mkmon_template = CRANIUM_RAT;
-		unsethouse = TRUE;
-	}
-	/* insight check: making yith */
-	else if(randmonst && !mkmon_template && check_insight()){
-		mkmon_template = YITH;
-		//NOT unsethouse, Yith are infiltrators and will appear as singletons inside a larger group.
-		oneOffTemplate = TRUE;
-	}
-	/* most general case at bottom -- creatures randomly being zombified */
-	else if(randmonst && !mkmon_template && can_undead(mtmp->data) && !Is_rogue_level(&u.uz)){
-		int groupsz = max(2, min(12, 3*level_difficulty()/(monstr[mtmp->mtyp]+2)));
-		if(In_mines(&u.uz)){
-			if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && rn2(10) <= 5){
-				mkmon_template = ZOMBIFIED;
-				unsethouse = TRUE;
-				m_initgrp(mtmp, mtmp->mx, mtmp->my, groupsz);
-			} else if(!rn2(10)){
-				mkmon_template = ZOMBIFIED;
-				unsethouse = TRUE;
-				m_initgrp(mtmp, mtmp->mx, mtmp->my, groupsz);
-			}
-		} else if(!rn2(100)){
-			mkmon_template = ZOMBIFIED;
-			unsethouse = TRUE;
-			m_initgrp(mtmp, mtmp->mx, mtmp->my, groupsz);
-		}
-	}
 	
 	//"Living" creatures generated in heaven or hell are in fact already dead (and should not leave corpses).
 	if((In_hell(&u.uz) || In_endgame(&u.uz)) 
@@ -9518,14 +10051,27 @@ register int	mmflags;
 	)
 		mtmp->mpetitioner = TRUE;
 	
-	if(mkmon_template){
+	/* apply chosen factions and templates */
+	if (faction != 0) {
+		set_faction(mtmp, faction);
+
+		/* Ok, here's the deal: I'm using a global to coordinate the house of a group of drow. 
+		 * Although armor can be done by accessing mfaction on mtmp, peacemindedness only gets a ptr,
+		 * and we need to coordinate drow that are showing up in Aurumach Rilmani throne rooms.
+		 */
+		if (is_drow(mtmp->data) && !curhouse) {
+			set_curhouse(faction);
+			unsethouse = TRUE;
+		}
+	}
+	if (template != 0){
 		/* apply template */
-		set_template(mtmp, mkmon_template);
+		set_template(mtmp, template);
 		/* update ptr to mtmp's new data */
 		ptr = mtmp->data;
 		/* special case: some templates increase the level of the creatures made */
 		int plslvl = 0;
-		switch (mkmon_template) {
+		switch (template) {
 		case FRACTURED:
 			plslvl = 4; break;
 		case YITH:
@@ -9544,8 +10090,8 @@ register int	mmflags;
 	}
 	
 	//One-off templates like Yith should be unset immediately after being applied
-	if(oneOffTemplate){
-		mkmon_template = 0;
+	if(template == YITH){
+		template = 0;
 	}
 	
 	if(Race_if(PM_DROW) && in_mklev && Is_qstart(&u.uz) && 
@@ -9611,38 +10157,38 @@ register int	mmflags;
 			if(!(mmflags & MM_NOGROUP)){
 			if (mndx == PM_QUINON){
 				mtmp->movement = d(1,6);
-				if(anymon){
-					makemon(&mons[PM_TRITON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
-					for(num = rnd(6); num >= 0; num--) makemon(&mons[PM_DUTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
-					tmpm = makemon(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				if(mmflags & MM_BIGGROUP){
+					makemon_full(&mons[PM_TRITON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
+					for(num = rnd(6); num >= 0; num--) makemon_full(&mons[PM_DUTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
+					tmpm = makemon_full(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 					if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 				}
-				makemon(&mons[PM_QUATON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				makemon_full(&mons[PM_QUATON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 			} else if (mndx == PM_QUATON){
 				mtmp->movement = d(1,7);
-				if(anymon){
-					for(num = rn1(6,5); num >= 0; num--) makemon(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				if(mmflags & MM_BIGGROUP){
+					for(num = rn1(6,5); num >= 0; num--) makemon_full(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 				}
-				makemon(&mons[PM_TRITON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				makemon_full(&mons[PM_TRITON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 			} else if (mndx == PM_TRITON){
 				mtmp->movement = d(1,8);
-				if(anymon){
-					tmpm = makemon(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				if(mmflags & MM_BIGGROUP){
+					tmpm = makemon_full(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 					if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 				}
-				makemon(&mons[PM_DUTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				makemon_full(&mons[PM_DUTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 			} else if (mndx == PM_DUTON){
 				mtmp->movement = d(1,9);
-				if(anymon && rn2(2)){
-					tmpm = makemon(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				if((mmflags & MM_BIGGROUP) && rn2(2)){
+					tmpm = makemon_full(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 					if(tmpm) m_initsgrp(tmpm, mtmp->mx, mtmp->my);
 				}
-				else makemon(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				else makemon_full(&mons[PM_MONOTON], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 			} else if (mndx == PM_MONOTON){
 				mtmp->movement = d(1,10);
 			} else if (mndx == PM_BEHOLDER){
-				if(anymon){
-					tmpm = makemon(&mons[PM_GAS_SPORE], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				if(mmflags & MM_BIGGROUP){
+					tmpm = makemon_full(&mons[PM_GAS_SPORE], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 					if(tmpm) m_initsgrp(tmpm, mtmp->mx, mtmp->my);
 				}
 			}
@@ -9654,13 +10200,13 @@ register int	mmflags;
 */		break;
 		case S_IMP:
 			if(!(mmflags & MM_NOGROUP)){
-			if (anymon && mndx == PM_LEGION_DEVIL_SERGEANT){
-				for(num = 10; num > 0; num--) makemon(&mons[PM_LEGION_DEVIL_GRUNT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-				for(num = 3; num > 0; num--) makemon(&mons[PM_LEGION_DEVIL_SOLDIER], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			} else if (anymon && mndx == PM_LEGION_DEVIL_CAPTAIN){
-				for(num = 20; num > 0; num--) makemon(&mons[PM_LEGION_DEVIL_GRUNT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-				for(num = 8; num > 0; num--) makemon(&mons[PM_LEGION_DEVIL_SOLDIER], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-				for(num = 2; num > 0; num--) makemon(&mons[PM_LEGION_DEVIL_SERGEANT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_LEGION_DEVIL_SERGEANT){
+				for(num = 10; num > 0; num--) makemon_full(&mons[PM_LEGION_DEVIL_GRUNT], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+				for(num = 3; num > 0; num--) makemon_full(&mons[PM_LEGION_DEVIL_SOLDIER], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			} else if ((mmflags & MM_BIGGROUP) && mndx == PM_LEGION_DEVIL_CAPTAIN){
+				for(num = 20; num > 0; num--) makemon_full(&mons[PM_LEGION_DEVIL_GRUNT], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+				for(num = 8; num > 0; num--) makemon_full(&mons[PM_LEGION_DEVIL_SOLDIER], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+				for(num = 2; num > 0; num--) makemon_full(&mons[PM_LEGION_DEVIL_SERGEANT], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
 			}
 		break;
@@ -9671,13 +10217,13 @@ register int	mmflags;
 				mtmp->mvar1 = 0;
 				mtmp->mvar2 = 0;
 				mtmp->mvar3 = 0;
-				if (anymon){
+				if (mmflags & MM_BIGGROUP){
 					if(u.uevent.invoked) m_initlgrp(mtmp, 0, 0);
 					else mtmp->mvar3 = 1; //Set to 1 to initiallize
 				}
 			} else if(mtmp->mtyp == PM_ARCADIAN_AVENGER){
-				if(anymon){
-					tmpm = makemon(&mons[PM_ARCADIAN_AVENGER], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+				if(mmflags & MM_BIGGROUP){
+					tmpm = makemon_full(&mons[PM_ARCADIAN_AVENGER], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH, template, faction);
 					if(tmpm) m_initsgrp(tmpm, mtmp->mx, mtmp->my);
 				}
 			} else if(mndx == PM_KETO || mndx == PM_DRACAE_ELADRIN){ 
@@ -9704,13 +10250,16 @@ register int	mmflags;
 
 			if(in_mklev && is_angel(mtmp->data) && Is_lamashtu_level(&u.uz)){
 				mtmp->mfaction = LAMASHTU_FACTION;
+				if(is_eladrin(mtmp->data)){
+					set_template(mtmp, ILLUMINATED);
+				}
 			}
 		break;
 	    case S_GIANT:
 			if(!(mmflags & MM_NOGROUP)){
-				if (anymon && mndx == PM_DEEPEST_ONE){
-					for(num = rn1(3,3); num >= 0; num--) makemon(&mons[PM_DEEPER_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-					for(num = rn1(10,10); num >= 0; num--) makemon(&mons[PM_DEEP_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+				if ((mmflags & MM_BIGGROUP) && mndx == PM_DEEPEST_ONE){
+					for(num = rn1(3,3); num >= 0; num--) makemon_full(&mons[PM_DEEPER_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+					for(num = rn1(10,10); num >= 0; num--) makemon_full(&mons[PM_DEEP_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 				}
 			}
 			if(mndx == PM_YMIR){
@@ -9720,29 +10269,31 @@ register int	mmflags;
 		break;
 		case S_HUMAN:
 			if(!(mmflags & MM_NOGROUP)){
-				if(anymon){
+				if(mmflags & MM_BIGGROUP){
 					if (mndx == PM_DROW_MATRON){
-						tmpm = makemon(&mons[PM_HEDROW_WARRIOR], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						tmpm = makemon_full(&mons[PM_HEDROW_WARRIOR], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 					} else if (mndx == PM_DOKKALFAR_ETERNAL_MATRIARCH){
-						tmpm = makemon(&mons[PM_DROW_MATRON], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						tmpm = makemon_full(&mons[PM_DROW_MATRON], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initsgrp(tmpm, mtmp->mx, mtmp->my);
-						tmpm = makemon(&mons[PM_HEDROW_WARRIOR], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						tmpm = makemon_full(&mons[PM_HEDROW_WARRIOR], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
-						tmpm = makemon(&mons[PM_DROW_MUMMY], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						tmpm = makemon_full(&mons[PM_DROW_MUMMY], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
-						tmpm = makemon(&mons[PM_HEDROW_ZOMBIE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						tmpm = makemon_full(&mons[PM_HEDROW_ZOMBIE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 					} else if (mndx == PM_ELVENKING || mndx == PM_ELVENQUEEN){
-						for(num = rnd(2); num >= 0; num--) makemon(&mons[rn2(2) ? PM_ELF_LORD : PM_ELF_LADY], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-						for(num = rn1(6,3); num >= 0; num--) makemon(&mons[PM_GREY_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						for(num = rnd(2); num >= 0; num--) makemon_full(&mons[rn2(2) ? PM_ELF_LORD : PM_ELF_LADY], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						for(num = rn1(6,3); num >= 0; num--) makemon_full(&mons[PM_GREY_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 					} else if (mndx == PM_ALABASTER_ELF_ELDER){
 						if(rn2(2)){
-							tmpm = makemon(&mons[PM_ALABASTER_ELF_ELDER], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+							tmpm = makemon_full(&mons[PM_ALABASTER_ELF_ELDER], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 							if(tmpm) m_initsgrp(tmpm, mtmp->mx, mtmp->my);
 						}
-						tmpm = makemon(&mons[PM_ALABASTER_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+						tmpm = makemon_full(&mons[PM_ALABASTER_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
+					} else if (mndx == PM_ELF && In_quest(&u.uz) && urole.neminum == PM_NECROMANCER) {
+						m_initlgrp(mtmp, mtmp->mx, mtmp->my);
 					}
 				}
 				if(mndx == PM_NUMINA){
@@ -9753,19 +10304,19 @@ register int	mmflags;
 		break;
 		case S_HUMANOID:
 			if(!(mmflags & MM_NOGROUP)){
-			if(anymon){
+			if(mmflags & MM_BIGGROUP){
 				if (mndx == PM_DEEPER_ONE){
-					for(num = rn1(10,3); num >= 0; num--) makemon(&mons[PM_DEEP_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+					for(num = rn1(10,3); num >= 0; num--) makemon_full(&mons[PM_DEEP_ONE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 				}
 			}
 			}
 		break;
 		case S_FUNGUS:
 			if(!(mmflags & MM_NOGROUP)){
-			if (anymon && mndx == PM_MIGO_QUEEN){
-				for(num = rn2(2)+1; num >= 0; num--) makemon(&mons[PM_MIGO_PHILOSOPHER], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-				for(num = rn2(3)+3; num >= 0; num--) makemon(&mons[PM_MIGO_SOLDIER], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-				for(num = rn2(5)+5; num >= 0; num--) makemon(&mons[PM_MIGO_WORKER], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_MIGO_QUEEN){
+				for(num = rn2(2)+1; num >= 0; num--) makemon_full(&mons[PM_MIGO_PHILOSOPHER], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+				for(num = rn2(3)+3; num >= 0; num--) makemon_full(&mons[PM_MIGO_SOLDIER], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+				for(num = rn2(5)+5; num >= 0; num--) makemon_full(&mons[PM_MIGO_WORKER], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 
 			}
 			}
@@ -9852,9 +10403,9 @@ register int	mmflags;
 		case S_TRAPPER:
 			if(!(mmflags & MM_NOGROUP)){
 				if(mndx==PM_METROID_QUEEN) 
-					if(anymon) for(num = 6; num >= 0; num--) makemon(&mons[PM_METROID], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-					// if(anymon) for(num = 6; num >= 0; num--) makemon(&mons[PM_BABY_METROID], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-					// else for(num = 6; num >= 0; num--) makemon(&mons[PM_METROID], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+					if(mmflags & MM_BIGGROUP) for(num = 6; num >= 0; num--) makemon_full(&mons[PM_METROID], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+					// if(mmflags & MM_BIGGROUP) for(num = 6; num >= 0; num--) makemon_full(&mons[PM_BABY_METROID], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+					// else for(num = 6; num >= 0; num--) makemon_full(&mons[PM_METROID], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
 		break;
 //		case S_VAMPIRE:
@@ -9927,23 +10478,23 @@ register int	mmflags;
 				mtmp->mhp = mtmp->mhpmax;
 			}
 			if(!(mmflags & MM_NOGROUP)){
-			if (anymon && mndx == PM_ORC_CAPTAIN){
-				for(num = rn1(10,3); num >= 0; num--) makemon(rn2(3) ? &mons[PM_HILL_ORC] : &mons[PM_MORDOR_ORC], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_ORC_CAPTAIN){
+				for(num = rn1(10,3); num >= 0; num--) makemon_full(rn2(3) ? &mons[PM_HILL_ORC] : &mons[PM_MORDOR_ORC], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
-			if (anymon && mndx == PM_URUK_CAPTAIN){
-				for(num = rn1(10,3); num >= 0; num--) makemon(&mons[PM_URUK_HAI], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_URUK_CAPTAIN){
+				for(num = rn1(10,3); num >= 0; num--) makemon_full(&mons[PM_URUK_HAI], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
-			if (anymon && mndx == PM_ORC_SHAMAN){
-				for(num = rnd(3); num >= 0; num--) makemon(&mons[PM_HILL_ORC], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_ORC_SHAMAN){
+				for(num = rnd(3); num >= 0; num--) makemon_full(&mons[PM_HILL_ORC], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
-			if (anymon && mndx == PM_MORDOR_MARSHAL){
-				for(num = rn1(10,3); num >= 0; num--) makemon(rn2(3) ? &mons[PM_MORDOR_ORC] : &mons[PM_MORDOR_ORC_ELITE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_MORDOR_MARSHAL){
+				for(num = rn1(10,3); num >= 0; num--) makemon_full(rn2(3) ? &mons[PM_MORDOR_ORC] : &mons[PM_MORDOR_ORC_ELITE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
-			if (anymon && mndx == PM_MORDOR_SHAMAN){
-				for(num = rnd(3); num >= 0; num--) makemon(&mons[PM_MORDOR_ORC_ELITE], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_MORDOR_SHAMAN){
+				for(num = rnd(3); num >= 0; num--) makemon_full(&mons[PM_MORDOR_ORC_ELITE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
-			if (anymon && mndx == PM_ORC_OF_THE_AGES_OF_STARS){
-				for(num = rn1(10,3); num >= 0; num--) makemon(&mons[PM_ANGBAND_ORC], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if ((mmflags & MM_BIGGROUP) && mndx == PM_ORC_OF_THE_AGES_OF_STARS){
+				for(num = rn1(10,3); num >= 0; num--) makemon_full(&mons[PM_ANGBAND_ORC], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 			}
 			}
 		break;
@@ -9975,8 +10526,15 @@ register int	mmflags;
 				} else {
 					obfree(otmp, (struct obj *) 0);
 				}
-				pline("A terrible silence falls!");
-				com_pager(202);
+				if (in_mklev) {
+					pline("A terrible silence reigns!");
+					com_pager(202);
+					mtmp->msleeping = 1;
+				}
+				else {
+					pline("A terrible silence falls!");
+					com_pager(203);
+				}
 				nomul(0, NULL);
 			}
 		break;
@@ -9984,21 +10542,21 @@ register int	mmflags;
 			if (Inhell && is_bat(ptr))
 			    mon_adjust_speed(mtmp, 2, (struct obj *)0);
 
-			if (mndx == PM_CHIROPTERAN && anymon && !(mmflags & MM_NOGROUP)) {
-				tmpm = makemon(&mons[PM_WARBAT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			if (mndx == PM_CHIROPTERAN && (mmflags & MM_BIGGROUP) && !(mmflags & MM_NOGROUP)) {
+				tmpm = makemon_full(&mons[PM_WARBAT], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 				if(tmpm && !rn2(3)) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
-				tmpm = makemon(&mons[PM_BATTLE_BAT], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+				tmpm = makemon_full(&mons[PM_BATTLE_BAT], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 				if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
 			}
 		break;
 		case S_GOLEM:
 			if(mndx == PM_GROVE_GUARDIAN){
 				if(!(mmflags & MM_NOGROUP)){
-					if (anymon){
-						if(!rn2(10)) makemon(&mons[rn2(2) ? PM_ELVENKING : PM_ELVENQUEEN], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-						if(rn2(4)) makemon(&mons[rn2(2) ? PM_ELF_LORD : PM_ELF_LADY], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-						for(num = rn2(5); num >= 0; num--) makemon(&mons[PM_GREY_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-						for(num = d(2,4); num >= 0; num--) makemon(&mons[PM_WOODLAND_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+					if (mmflags & MM_BIGGROUP){
+						if(!rn2(10)) makemon_full(&mons[rn2(2) ? PM_ELVENKING : PM_ELVENQUEEN], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						if(rn2(4)) makemon_full(&mons[rn2(2) ? PM_ELF_LORD : PM_ELF_LADY], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						for(num = rn2(5); num >= 0; num--) makemon_full(&mons[PM_GREY_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						for(num = d(2,4); num >= 0; num--) makemon_full(&mons[PM_WOODLAND_ELF], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 					}
 				}
 			}
@@ -10149,6 +10707,11 @@ register int	mmflags;
 //			pline("%d\n",mtmp->mhpmax);
 		break;
 	}
+	if (mtmp->mtemplate == ZOMBIFIED && (mmflags & MM_BIGGROUP)) {
+		/* zombies get a group, with size dependent on how nasty the monster is for the current floor */
+		int groupsz = max(2, min(12, 3*level_difficulty()/(monstr[ptr->mtyp]+2)));
+		m_initgrp(mtmp, mtmp->mx, mtmp->my, groupsz);
+	}
 	if ((ct = emits_light_mon(mtmp)) > 0)
 		new_light_source(LS_MONSTER, (genericptr_t)mtmp, ct);
 	mitem = 0;	/* extra inventory item for this monster */
@@ -10182,22 +10745,22 @@ register int	mmflags;
 		mitem = BELL_OF_OPENING;
 	} else if (mndx == PM_DEATH) {
 		if(Role_if(PM_EXILE)){
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 		}
 	} else if (mndx == PM_FAMINE) {
 		if(Role_if(PM_EXILE)){
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 		}
 	} else if (mndx == PM_PESTILENCE) {
 		mitem = POT_SICKNESS;
 		if(Role_if(PM_EXILE)){
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
-			makemon(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+			makemon_full(&mons[PM_BINAH_SEPHIRAH], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 		}
 	}
 	if (mitem) (void) mongets(mtmp, mitem, mkobjflags);
@@ -10209,10 +10772,8 @@ register int	mmflags;
 		    (mndx == PM_GIANT_EEL)) && !u.uhave.amulet && rn2(5))
 			mtmp->msleeping = TRUE;
 	} else {
-		if(byyou) {
-			newsym(mtmp->mx,mtmp->my);
-			set_apparxy(mtmp);
-		}
+		newsym(mtmp->mx,mtmp->my);
+		set_apparxy(mtmp);
 	}
 	if((is_dprince(ptr) || is_dlord(ptr)) && ptr->msound == MS_BRIBE) {
 	    mtmp->mpeaceful = mtmp->minvis = mtmp->perminvis = 1;
@@ -10254,7 +10815,7 @@ register int	mmflags;
 	if(u.uevent.uaxus_foe && (mndx <= PM_QUINON && mndx >= PM_MONOTON)){
 		mtmp->mpeaceful = mtmp->mtame = FALSE;
 	}
-	if(anymon) {
+	if(mmflags & MM_BIGGROUP) {
 	    if ((ptr->geno & G_SGROUP) && rn2(2)) {
 			m_initsgrp(mtmp, mtmp->mx, mtmp->my);
 	    } else if (ptr->geno & G_LGROUP) {
@@ -10268,9 +10829,9 @@ register int	mmflags;
 	}
 	
 	if (allow_minvent) {
-	    if(is_armed(ptr))
-			m_initweap(mtmp, mkobjflags);	/* equip with weapons / armor */
-	    m_initinv(mtmp, mkobjflags);  /* add on a few special items incl. more armor */
+	    if(is_armed_mon(mtmp))
+			m_initweap(mtmp, mkobjflags, faction);	/* equip with weapons / armor */
+	    m_initinv(mtmp, mkobjflags, faction);  /* add on a few special items incl. more armor */
 	    m_dowear(mtmp, TRUE);
 		init_mon_wield_item(mtmp);
 	} else {
@@ -10279,20 +10840,16 @@ register int	mmflags;
 	    mtmp->minvent = (struct obj *)0;    /* caller expects this */
 	}
 	/* set weaponcheck for weapon-toting monsters */
-	if (is_armed(ptr))
+	if (is_armed_mon(mtmp))
 		mtmp->weapon_check = NEED_WEAPON;
-	if(zombiepm >= 0){
-		//wasn't used
-		zombiepm = -1;
-	}
-	if(skeletpm >= 0){
-		//wasn't used
-		skeletpm = -1;
-	}
+
+	/* finished with these globals */
+	zombiepm = -1;
+	skeletpm = -1;
+
 	if(unsethouse){
-		/*At this point, we have FINALLY created the inventory for the initial creature and all its associates, so the globals should be unset now.*/
+		/*At this point, we have FINALLY created the inventory for the initial creature and all its associates, so the global should be unset now.*/
 		curhouse = 0;
-		mkmon_template = 0;
 	}
 	if ((ptr->mflagst & MT_WAITMASK) && !(mmflags & MM_NOWAIT) && !u.uevent.invoked) {
 		if (ptr->mflagst & MT_WAITFORU)
@@ -10491,7 +11048,7 @@ rndmonst()
 	    return &mons[PM_CENTER_OF_ALL]; /*center of all may be created at any time */
 	}
 
-	if (u.uz.dnum == quest_dnum && !mkmon_template && (ptr = qt_montype()) != 0){
+	if (u.uz.dnum == quest_dnum && (ptr = qt_montype()) != 0){
 		if(ptr->mtyp == PM_LONG_WORM_TAIL) return (struct permonst *) 0;
 	    else if(Role_if(PM_ANACHRONONAUT) || rn2(7)) return ptr;
 		//else continue to random generation
@@ -11171,31 +11728,41 @@ struct monst *mtmp;
 					otmp = mongets(mtmp, FAUCHARD, MKOBJ_NOINIT);
 				break;
 			}
-			otmp->opoisoned = OPOISON_ACID;
-			set_material_gm(otmp, CHITIN);
-			fix_object(otmp);
-			otmp->spe = 3;
+			if(otmp){
+				otmp->opoisoned = OPOISON_ACID;
+				set_material_gm(otmp, CHITIN);
+				fix_object(otmp);
+				otmp->spe = 3;
+			}
 			
 			otmp = mongets(mtmp, PLATE_MAIL, MKOBJ_NOINIT);
-			set_material_gm(otmp, CHITIN);
-			fix_object(otmp);
-			otmp->spe = 3;
+			if(otmp){
+				set_material_gm(otmp, CHITIN);
+				fix_object(otmp);
+				otmp->spe = 3;
+			}
 		break;
 		case PM_MARILITH:
 			otmp = mongets(mtmp, PLATE_MAIL, MKOBJ_NOINIT);
-			set_material_gm(otmp, CHITIN);
-			fix_object(otmp);
-			otmp->spe = 3;
+			if(otmp){
+				set_material_gm(otmp, CHITIN);
+				fix_object(otmp);
+				otmp->spe = 3;
+			}
 			
 			otmp = mongets(mtmp, HELMET, MKOBJ_NOINIT);
-			set_material_gm(otmp, CHITIN);
-			fix_object(otmp);
-			otmp->spe = 3;
+			if(otmp){
+				set_material_gm(otmp, CHITIN);
+				fix_object(otmp);
+				otmp->spe = 3;
+			}
 			
 			otmp = mongets(mtmp, GAUNTLETS, MKOBJ_NOINIT);
-			set_material_gm(otmp, CHITIN);
-			fix_object(otmp);
-			otmp->spe = 3;
+			if(otmp){
+				set_material_gm(otmp, CHITIN);
+				fix_object(otmp);
+				otmp->spe = 3;
+			}
 			
 			for(int i = 0; i < 6; i++){
 				otmp = mksobj(BESTIAL_CLAW, MKOBJ_NOINIT);
@@ -11444,7 +12011,7 @@ int mkobjflags;
 	register struct obj *otmp;
 	int spe;
 
-	if (mkmon_template && has_template(mtmp, mkmon_template) && rn2(2))
+	if ((mtmp->mtemplate == ZOMBIFIED || mtmp->mtemplate == SKELIFIED) && rn2(2))
 		return (struct obj *)0;
 	if (!otyp)
 		return (struct obj *)0;
@@ -11457,7 +12024,7 @@ int mkobjflags;
 		if (otmp->otyp == BULLWHIP && is_drow(mtmp->data) && mtmp->female)
 			set_material_gm(otmp, SILVER);
 		if (otmp->oclass == ARMOR_CLASS && !Is_dragon_scales(otmp)){
-			if (is_suit(otmp)) otmp->bodytypeflag = (mtmp->data->mflagsb&MB_BODYTYPEMASK);
+			if (is_suit(otmp) || otmp->otyp == BODYGLOVE) otmp->bodytypeflag = (mtmp->data->mflagsb&MB_BODYTYPEMASK);
 			else if (is_helmet(otmp)) otmp->bodytypeflag = (mtmp->data->mflagsb&MB_HEADMODIMASK);
 			else if (is_shirt(otmp)) otmp->bodytypeflag = (mtmp->data->mflagsb&MB_HUMANOID) ? MB_HUMANOID : (mtmp->data->mflagsb&MB_BODYTYPEMASK);
 		}
@@ -11478,6 +12045,9 @@ int mkobjflags;
 				}
 				else if (mtmp->mtyp == PM_IRON_GOLEM){
 					set_material_gm(otmp, IRON);
+				}
+				else if (mtmp->mtyp == PM_GREEN_STEEL_GOLEM){
+					set_material_gm(otmp, GREEN_STEEL);
 				}
 				else if (mtmp->mtyp == PM_ARGENTUM_GOLEM){
 					set_material_gm(otmp, SILVER);
@@ -11619,6 +12189,7 @@ int type;
 		case PM_IRON_GOLEM: return 80;
 		case PM_SEMBLANCE: return 80;
 		case PM_ARSENAL: return 88;
+		case PM_GREEN_STEEL_GOLEM: return 99;
 		case PM_RETRIEVER: return 120;
 		case PM_LIVING_DOLL: return 45+d(5,8);
 		case PM_PARASITIZED_DOLL: return 45+d(20,8);
