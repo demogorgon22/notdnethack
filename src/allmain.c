@@ -730,6 +730,12 @@ you_regen_hp()
 		perX += HEALCYCLE;
 	}
 	
+	// mystic healing form
+	if(u.umystic & CHI_HEALING && u.uen > 0 && *hp < *hpmax){	
+		perX += HEALCYCLE;
+		losepw(1);
+	}
+	
 	// Corruption thought
 	if(active_glyph(CORRUPTION) && (*hp < (*hpmax)*.3)){
 		perX += HEALCYCLE;
