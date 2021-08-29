@@ -1264,6 +1264,15 @@ domove()
 					teleds(cc.x, cc.y, FALSE);
 				}
 			}
+			if(!(mtmp->mpeaceful) && (!uwep || (!uswapwep && u.twoweap)) && u.umystic & FLICKER_PUNCH && u.uen >= 1){
+				coord cc;
+				if(!u.utrap && tt_findadjacent(&cc, mtmp) && (cc.x != u.ux || cc.y != u.uy)){
+					losepw(1);
+					You("warp to a new location!");
+					teleds(cc.x, cc.y, FALSE);
+				}
+
+			}
 			return;
 		}
 	    }
