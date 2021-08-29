@@ -133,6 +133,7 @@ STATIC_PTR int NDECL(domonability);
 STATIC_PTR int FDECL(ability_menu, (boolean, boolean));
 STATIC_PTR int NDECL(domountattk);
 STATIC_PTR int NDECL(dofightingform);
+STATIC_PTR int NDECL(doMysticForm);
 STATIC_PTR int NDECL(dooverview_or_wiz_where);
 STATIC_PTR int NDECL(doclearinvissyms);
 # ifdef WIZARD
@@ -1044,6 +1045,117 @@ use_reach_attack()
 }
 
 int
+doMysticForm()
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	Sprintf(buf,	"Known Forms");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	if(u.ulevel >= SURGE_PUNCH_LVL || u.umystic & SURGE_PUNCH){
+		if(u.umystic & SURGE_PUNCH) {
+			Sprintf(buf,	"Surge Punch (active)");
+		} else {
+			Sprintf(buf,	"Surge Punch");
+		}
+		any.a_int = SURGE_PUNCH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	if(u.ulevel >= ABSORPTIVE_PUNCH_LVL || u.umystic & ABSORPTIVE_PUNCH){
+		if(u.umystic & ABSORPTIVE_PUNCH) {
+			Sprintf(buf,	"Absorptive Strike (active)");
+		} else {
+			Sprintf(buf,	"Absorptive Strike");
+		}
+		any.a_int = ABSORPTIVE_PUNCH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	if(u.ulevel >= FORCE_PUNCH_LVL || u.umystic & FORCE_PUNCH){
+		if(u.umystic & FORCE_PUNCH) {
+			Sprintf(buf,	"Force Punch (active)");
+		} else {
+			Sprintf(buf,	"Force Punch");
+		}
+		any.a_int = FORCE_PUNCH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	if(u.ulevel >= CHI_HEALING_LVL || u.umystic & CHI_HEALING){
+		if(u.umystic & CHI_HEALING) {
+			Sprintf(buf,	"Chi Healing (active)");
+		} else {
+			Sprintf(buf,	"Chi Healing");
+		}
+		any.a_int = CHI_HEALING;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	if(u.ulevel >= FLICKER_PUNCH_LVL || u.umystic & FLICKER_PUNCH){
+		if(u.umystic & FLICKER_PUNCH) {
+			Sprintf(buf,	"Flicker Punch (active)");
+		} else {
+			Sprintf(buf,	"Flicker Punch");
+		}
+		any.a_int = FLICKER_PUNCH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	if(u.ulevel >= SPIRIT_PUNCH_LVL || u.umystic & SPIRIT_PUNCH){
+		if(u.umystic & SPIRIT_PUNCH) {
+			Sprintf(buf,	"Spirit Punch (active)");
+		} else {
+			Sprintf(buf,	"Spirit Punch");
+		}
+		any.a_int = SPIRIT_PUNCH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+
+	}
+	end_menu(tmpwin,	"Choose fighting style:");
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+		
+	if(n <= 0){
+		return 0;
+	} else {
+		if(u.umystic & selected[0].item.a_int) 
+			u.umystic &= ~(selected[0].item.a_int);
+		else 
+			u.umystic |= selected[0].item.a_int;
+		if(selected[0].item.a_int == ABSORPTIVE_PUNCH){
+			if(u.umystic & ABSORPTIVE_PUNCH)
+				u.umystic = ABSORPTIVE_PUNCH;
+		} else if(u.umystic & ABSORPTIVE_PUNCH){
+			u.umystic &= ~ABSORPTIVE_PUNCH;
+		}
+		
+		return 0;
+	}
+
+}
+
+int
 dofightingform()
 {
 	winid tmpwin;
@@ -1052,6 +1164,15 @@ dofightingform()
 	char incntlet = 'a';
 	menu_item *selected;
 	anything any;
+	
+	//If monk is wielding a saber in offhand or onhand, saber styles take precedent (blah, ima could be annoying)
+	if(Role_if(PM_MONK) && !((uwep && is_lightsaber(uwep)) || (u.twoweap && uswapwep && is_lightsaber(uswapwep)))){
+		if(uwep || (u.twoweap && uswapwep)){
+			pline("You must not be wielding any weapons to use mystic combat.");
+			return 0;
+		}
+		return doMysticForm();
+	}
 	
 	if(!(uwep && is_lightsaber(uwep))){
 		pline("You don't know any special fighting styles for use in this situation.");

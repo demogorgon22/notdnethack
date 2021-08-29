@@ -609,6 +609,22 @@ struct you {
 	
 	int role_variant;	/*Records what variant of your role you are.*/
 
+	int umystic;	/*Monk mystic attacks active*/
+#define SURGE_PUNCH		0x0001
+#define FORCE_PUNCH		0x0002
+#define CHI_HEALING		0x0004
+#define SPIRIT_PUNCH		0x0008
+#define FLICKER_PUNCH		0x0010
+#define ABSORPTIVE_PUNCH	0x0020
+#define ENERGY_FORM		0x0040
+
+#define SURGE_PUNCH_LVL		0
+#define FORCE_PUNCH_LVL		4
+#define CHI_HEALING_LVL		6
+#define SPIRIT_PUNCH_LVL	10
+#define FLICKER_PUNCH_LVL	8
+#define ABSORPTIVE_PUNCH_LVL	2
+
 	long	wardsknown;	/* known wards */
 #define	WARD_ELBERETH		0x0000001L
 #define WARD_HEPTAGRAM		0x0000002L

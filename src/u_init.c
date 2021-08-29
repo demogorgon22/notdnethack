@@ -1610,6 +1610,8 @@ u_init()
 	(void) memset((genericptr_t)&u, 0, sizeof(u));
 	u.ustuck = (struct monst *)0;
 
+	u.umystic = 0;
+
 	u.summonMonster = FALSE;
 	u.uleadamulet = FALSE;
 	artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe = 1;
