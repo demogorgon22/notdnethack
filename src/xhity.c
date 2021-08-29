@@ -14542,6 +14542,31 @@ int vis;						/* True if action is at all visible to the player */
 				bonsdmg += d(1, mlev(magr)/2+1);
 			}
 		}
+		/* monk mystic style forms */
+		if(youagr && !youdef && unarmed_punch){
+			if(u.umystic & ABSORPTIVE_PUNCH){
+				basedmg/=2;
+				u.uen += basedmg;
+				if(u.uen > u.uenmax) u.uen = u.uenmax;
+				flags.botl = 1;
+			}
+			if(u.umystic & SURGE_PUNCH && u.uen >= 3){
+				losepw(3);
+				bonsdmg += rnd(5) + 3;
+				Your("hands surge!");
+			}
+			if(u.umystic & FORCE_PUNCH && u.uen >= 3 && !rn2(2)){
+				losepw(3);
+				bonsdmg += rnd(5) + 3;
+				pline("%s is thrown backwards by the force of your blow!",Monnam(mdef));
+				mhurtle(mdef, u.dx, u.dy, BOLT_LIM, FALSE);
+			}
+			if(u.umystic & FORCE_PUNCH && u.uen >= 8){
+				losepw(8);
+				explode(x(mdef), y(mdef), AD_MAGM, MON_EXPLODE, d(3,6), EXPL_MAGICAL, 1);
+			}
+
+		}
 	}
 
 	/* Sum reduceable damage */
