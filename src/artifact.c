@@ -1484,7 +1484,7 @@ register boolean mod;
 
 	if (otmp && *name)
 	    for (a = artilist+1; a->otyp; a++)
-		if (a->otyp == otmp->otyp && !strcmp(a->name, name)) {
+		if ((a->otyp == otmp->otyp || (is_malleable_artifact(a) && artitypematch(a, otmp))) && !strcmp(a->name, name)) {
 		    register int m = a - artilist;
 		    otmp->oartifact = (mod ? m : 0);
 		    if(otmp->oartifact != ART_ILLITHID_STAFF) otmp->age = 0;

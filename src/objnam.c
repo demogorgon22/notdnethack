@@ -850,12 +850,15 @@ char *buf;
 {
 	boolean iscrys = (obj->otyp == CRYSKNIFE);
 	if(obj->otyp == POWER_ARMOR && obj->obroken) Strcat(buf, "time fluxed ");	
-	if (!is_damageable(obj) && obj->otyp != MASK && !iscrys && !(obj->oclass == POTION_CLASS && obj->odiluted)) return;
+	if (!is_damageable(obj) && obj->otyp != MASK && !iscrys) return;
 
 	/* food uses oeroded to determine if it is rotten -- do not show this */
 	if (obj->oclass == FOOD_CLASS)
 		return;
 	
+
+	if (obj->oclass == POTION_CLASS && obj->odiluted)
+		Strcat(buf, "diluted ");
 
 	if (obj->oeroded && !iscrys) {
 		switch (obj->oeroded) {
@@ -863,7 +866,6 @@ char *buf;
 		case 3:	Strcat(buf, "thoroughly "); break;
 		}
 		Strcat(buf, 
-			obj->oclass == POTION_CLASS ? "diluted " :
 			is_rustprone(obj) ? "rusty " :
 			is_evaporable(obj) ? "tenuous " :
 			is_flammable(obj) ? "burnt " : "eroded ");
@@ -4445,6 +4447,15 @@ int wishflags;
 	} else if (!strncmpi(bp, "sets of ",8) && strncmpi(bp, "sets of crow talons", 19)) {
 		bp += 8;
 	}
+
+	/* change to singular if necessary */
+	if (*bp) {
+		char *sng = makesingular(bp);
+		if (strcmp(bp, sng)) {
+			if (cnt == 1) cnt = 2;
+			Strcpy(bp, sng);
+		}
+	}
 	
 	/*
 	 * Find corpse type using "of" (figurine of an orc, tin of orc meat)
@@ -4534,15 +4545,6 @@ int wishflags;
 		    /* no referent; they don't really mean a monster type */
 		    bp = obp;
 		    mntmp = NON_PM;
-		}
-	}
-
-	/* first change to singular if necessary */
-	if (*bp) {
-		char *sng = makesingular(bp);
-		if (strcmp(bp, sng)) {
-			if (cnt == 1) cnt = 2;
-			Strcpy(bp, sng);
 		}
 	}
 	

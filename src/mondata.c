@@ -42,8 +42,8 @@ boolean state;
 	boolean weap_attack, xwep_attack;
 	mon->mcan = state;
 	set_mon_data_core(mon, mon->data);
-	weap_attack = mon_attacktype(mon, AT_WEAP);
-	xwep_attack = mon_attacktype(mon, AT_XWEP);
+	weap_attack = !!mon_attacktype(mon, AT_WEAP);
+	xwep_attack = !!mon_attacktype(mon, AT_XWEP);
 	if(weap_attack && !MON_WEP(mon)){
 		mon->weapon_check = NEED_WEAPON;
 	}
@@ -1462,7 +1462,7 @@ int atyp;
     return attacktype_fordmg(ptr, atyp, AD_ANY) ? TRUE : FALSE;
 }
 
-boolean
+struct attack *
 mon_attacktype(mon, atyp)
 struct monst *mon;
 int atyp;
@@ -1485,10 +1485,10 @@ int atyp;
 		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod)
 	){
 		if(attk->aatyp == atyp)
-			return TRUE;
+			return attk;
 	}
 
-    return FALSE;
+    return (struct attack *)0;
 }
 
 boolean
