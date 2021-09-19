@@ -2329,6 +2329,7 @@ base_uac()
 	if(uleft && uleft->otyp == RIN_PROTECTION) uac -= uleft->spe;
 	if(uright && uright->otyp == RIN_PROTECTION) uac -= uright->spe;
 	if (HProtection & INTRINSIC) uac -= (u.ublessed+1)/2;
+	if(Race_if(PM_ETHEREALOID)) uac -= u.ulevel;	
 	uac -= u.uacinc;
 	uac -= u.spiritAC;
 	if(u.uuur_duration)

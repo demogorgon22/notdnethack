@@ -479,7 +479,9 @@ give_up:	/* Quit */
 			if (ok_race(flags.initrole, i, flags.initgend,
 							flags.initalign)) {
 			    any.a_int = i+1;	/* must be non-zero */
-			    add_menu(win, NO_GLYPH, &any, races[i].noun[0],
+			    char selector = races[i].noun[0];
+			    if(!strcmp(races[i].noun,"etherealoid")) selector = 'E';
+			    add_menu(win, NO_GLYPH, &any, selector,
 				0, ATR_NONE, races[i].noun, MENU_UNSELECTED);
 			}
 		    any.a_int = pick_race(flags.initrole, flags.initgend,

@@ -5545,8 +5545,13 @@ cleanup:
 	}
 	/* give experience points */
 	tmp = experience(mtmp, (int)mvitals[mndx].died + 1);
-	more_experienced(tmp, 0);
-	newexplevel();		/* will decide if you go up */
+	if(!Race_if(PM_ETHEREALOID) || rn2(2)){
+		more_experienced(tmp, 0);
+		newexplevel();		/* will decide if you go up */
+	} else {
+		healup(max(tmp/8,5),0,FALSE,FALSE);
+		if(sensemon(mtmp) || canseemon(mtmp)) You("absorb some of %s!",mon_nam(mtmp));
+	}	
 	if(!u.veil && !mvitals[mndx].insightkill){
 		mvitals[mndx].insightkill = TRUE;
 		if(yields_insight(mtmp->data)){

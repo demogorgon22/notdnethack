@@ -153,6 +153,12 @@ const struct innate {
 	elf_abil[] = { {	4, &(HSleep_resistance), "awake", "tired" },
 		     {	 0, 0, 0, 0 } },
 
+	eth_abil[] = { {	1, &(HUnchanging), "", "" },
+		     {	 1, &(HStone_resistance), "", "" },
+		     {	 1, &(HDisint_resistance), "", "" },
+		     {	 7, &(HDisplaced), "wispier", "more concentrated" },
+		     {	 0, 0, 0, 0 } },
+
 	orc_abil[] = { {	1, &(HPoison_resistance), "", "" },
 		     {  15, &(HAntimagic), "magic resistant","magic-sensitive" },
 		     {	 0, 0, 0, 0 } },
@@ -873,6 +879,7 @@ int oldlevel, newlevel;
 
 	switch (Race_switch) {
 	case PM_ELF:            rabil = elf_abil;	break;
+	case PM_ETHEREALOID:            rabil = eth_abil;	break;
 	case PM_DROW:           rabil = elf_abil;	break;
 	case PM_MYRKALFR:       rabil = elf_abil;	break;
 	case PM_ORC:            rabil = orc_abil;	break;

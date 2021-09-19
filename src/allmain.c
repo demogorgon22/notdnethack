@@ -672,6 +672,10 @@ you_regen_hp()
 		/* you also do not lose health (e.g. from being a fish out of water) */
 		return;
 	}
+	//Etherealoids do not regen this way
+	if(Race_if(PM_ETHEREALOID)){
+		return;
+	}
 
 	// Sanity check
 	if (Upolyd && (*hp < 1))

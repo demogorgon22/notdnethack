@@ -2805,6 +2805,12 @@ register struct trobj *trop;
 			obj = mksobj(otyp, NO_MKOBJ_FLAGS);
 			set_material_gm(obj, objects[otyp].oc_material);
 
+			//no armor for etherealoids
+			if(Race_if(PM_ETHEREALOID) && objects[otyp].oc_class == ARMOR_CLASS){
+				trop++;
+				continue;	
+			}	
+
 			if(obj->otyp == POT_BLOOD) 
 				obj->corpsenm = PM_HUMAN;
 			if(obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS)

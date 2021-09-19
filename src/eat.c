@@ -2688,6 +2688,11 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	char c;
 	
 	boolean dont_start = FALSE;
+
+	if(Race_if(PM_ETHEREALOID)){
+			pline("As an etherealoid, you are incapable of eating.");
+			return 0;
+	}	
 	
 	if(uandroid && !Race_if(PM_INCANTIFIER)){
 		pline("Though you may look human, you run on magical energy, not food.");
