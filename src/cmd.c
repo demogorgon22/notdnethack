@@ -2470,6 +2470,18 @@ int final;	/* 0 => still in progress; 1 => over, survived; 2 => dead */
 
 	/*** Miscellany ***/
 	if (Spellboost) you_have("augmented spellcasting");
+	char tats[240];
+	int i = 0;
+	int count = 0;
+	Sprintf(tats,"tattoos: ");
+	for(i = 0; i < NUM_TATS;i++){
+		if(u.utats & (1 << i)){
+			if(count > 0) Strcat(tats, ", ");
+			Strcat(tats,tat_to_name((1<<i)));	
+			count++;
+		}
+	}
+	if(count > 0) you_have(tats);
 	if (Luck) {
 	    ltmp = abs((int)Luck);
 	    Sprintf(buf, "%s%slucky",

@@ -55,7 +55,6 @@ static int NDECL(dorendermenu);
 static int FDECL(dodollmenu, (struct monst *));
 static int FDECL(dotatmenu, (const char *));
 static boolean FDECL(smith_offer_price, (long charge, struct monst *));
-static const char *FDECL(tat_to_name, (int));
 static boolean FDECL(nurse_services,(struct monst *));
 static boolean FDECL(render_services,(struct monst *));
 static boolean FDECL(buy_dolls,(struct monst *));
@@ -881,7 +880,7 @@ boolean chatting;
 				if (smith_offer_price(charge, mtmp) == FALSE) break;
 				u.utats |= selection;
 				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
-				You_feel("the flow of tour energy increase.");
+				You_feel("the flow of your energy increase.");
 				break;
 			case TAT_CROESUS:
 				charge = (int) 30000 * discount;

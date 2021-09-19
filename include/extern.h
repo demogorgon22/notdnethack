@@ -2617,6 +2617,7 @@ E void NDECL(attrcurse);
 
 E void NDECL(dosounds);
 E const char *FDECL(growl_sound, (struct monst *));
+E const char *FDECL(tat_to_name, (int));
 E void FDECL(growl, (struct monst *));
 E void FDECL(yelp, (struct monst *));
 E void FDECL(whimper, (struct monst *));
