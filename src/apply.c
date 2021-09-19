@@ -2766,7 +2766,7 @@ struct obj *tstone;
     case RING_CLASS:
 	if (tstone->otyp != TOUCHSTONE  && tstone->otyp != ROCK) {
 	    do_scratch = TRUE;
-	} else if (obj->oclass == GEM_CLASS && obj->otyp == TOUCHSTONE &&(tstone->blessed ||
+	} else if (obj->oclass == GEM_CLASS && tstone->otyp == TOUCHSTONE &&(tstone->blessed ||
 		(!tstone->cursed &&
 		    (Role_if(PM_ARCHEOLOGIST) || Race_if(PM_GNOME))))) {
 	    makeknown(TOUCHSTONE);
