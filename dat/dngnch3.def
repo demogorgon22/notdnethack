@@ -158,6 +158,7 @@ LEVEL:		"out4" "D" @ (5,0)
 LEVEL:		"spire" "E" @ (6,0)
 LEVEL:		"sumall" "none" @ (7,0)
 BRANCH:		"The Dispensary" @ (2, 4)
+BRANCH:		"The Spire" @ (6, 0) up
 BRANCH:		"The Lost Cities" @ (-1, 0)
 
 
@@ -281,6 +282,27 @@ DUNGEON:        "The Dispensary" "none" (1, 0)
 ALIGNMENT:      neutral
 DESCRIPTION:    mazelike
 LEVEL:          "lbyrnth" "none" @ (1, 0)
+
+
+##
+DUNGEON:        "The Spire" "none" (14, 0)
+ALIGNMENT:      neutral
+DESCRIPTION:    mazelike
+ENTRY:		-1
+LEVEL:          "sigil" "none" @ (1, 0)
+LEVEL:          "stairs2" "none" @ (2, 0)
+LEVEL:          "stairs1" "none" @ (3, 0)
+LEVEL:          "stairs2" "none" @ (4, 0)
+LEVEL:          "stairs1" "none" @ (5, 0)
+LEVEL:          "stairs2" "none" @ (6, 0)
+LEVEL:          "stairs1" "none" @ (7, 0)
+LEVEL:          "stairs2" "none" @ (8, 0)
+LEVEL:          "stairs1" "none" @ (9, 0)
+LEVEL:          "stairs2" "none" @ (10, 0)
+LEVEL:          "stairs1" "none" @ (11, 0)
+LEVEL:          "stairs2" "none" @ (12, 0)
+LEVEL:          "stairs1" "none" @ (13, 0)
+LEVEL:          "stairs3" "none" @ (14, 0)
 
 
 #

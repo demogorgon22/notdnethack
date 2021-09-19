@@ -869,6 +869,8 @@ register struct mkroom *sroom;
 	    if((Pantheon_if(PM_SALAMANDER) && In_quest(&u.uz) && Is_qlocate(&u.uz)) 
 			    && levl[sx][sy].typ != ROOM)
 		continue;
+	    if(Is_sigil(&u.uz) && levl[sx][sy].typ != ROOM)
+		    continue;
 	    mkshobj_at(shp, sx, sy);
 	}
 

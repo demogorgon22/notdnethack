@@ -366,8 +366,8 @@ unsigned *ospecial;
 						}
 					}
 				}
-			} else if(In_neu(&u.uz)){
-				if(u.uz.dnum == neutral_dnum && u.uz.dlevel <= sum_of_all_level.dlevel){
+			} else if(In_neu(&u.uz) || In_spire(&u.uz)){
+				if((u.uz.dnum == neutral_dnum && u.uz.dlevel <= sum_of_all_level.dlevel) || In_spire(&u.uz)){
 					if(offset >= S_vwall && offset <= S_trwall){
 						color = CLR_BROWN;
 					}

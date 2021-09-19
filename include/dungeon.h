@@ -176,6 +176,9 @@ typedef struct branch {
 						 on_level(x, &nkai_c_level) ||\
 						 on_level(x, &nkai_z_level)\
 						)
+#define Is_sigil(x)			(on_level(x, &sigil_level))
+#define In_spire(x)	((x)->dnum == spire_dnum)
+
 #define Is_valley(x)		(on_level(x, &valley_level))
 
 #define Is_hell1(x)			(on_level(x, &hell1_level))

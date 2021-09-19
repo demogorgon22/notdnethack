@@ -686,6 +686,7 @@ struct level_map {
 	{ "brine",	&abyss3_level },
 	
 	{ "sanctum",	&sanctum_level },
+	{ "sigil",	&sigil_level },
 	{ "nowhere",	&nowhere_level },
 
 	{ "minetn",     &minetown_level },
@@ -1027,6 +1028,7 @@ init_dungeons()		/* initialize the "dungeon" structs */
 	quest_dnum = dname_to_dnum("The Quest");
 	neutral_dnum = dname_to_dnum("Neutral Quest");
 	rlyeh_dnum = dname_to_dnum("The Lost Cities");
+	spire_dnum = dname_to_dnum("The Spire");
 	chaos_dnum = dname_to_dnum("Chaos Quest");
 	law_dnum = dname_to_dnum("Law Quest");
 	sokoban_dnum = dname_to_dnum("Sokoban");

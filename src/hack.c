@@ -7,6 +7,7 @@
 #ifdef OVL1
 #endif /*OVL1*/
 STATIC_DCL int NDECL(moverock);
+STATIC_DCL void NDECL(sigilfloat);
 STATIC_DCL int FDECL(still_chewing,(XCHAR_P,XCHAR_P));
 STATIC_DCL int FDECL(invocation_distmin,(int, int));
 #ifdef SINKS
@@ -1876,6 +1877,8 @@ stillinwater:;
 		if (pick) (void) pickup(1);
 		if (trap && !pit)
 			dotrap(trap, 0);	/* fall into arrow trap, etc. */
+		else
+			sigilfloat();	
 	}
 	if((mtmp = m_at(u.ux, u.uy)) && !u.uswallow) {
 		mtmp->mundetected = mtmp->msleeping = 0;
@@ -1939,6 +1942,21 @@ stillinwater:;
 			mnexto(mtmp); /* have to move the monster */
 		}
 	}
+}
+
+void sigilfloat()
+{
+	if(!Is_sigil(&u.uz)) return;
+	if(levl[u.ux][u.uy].typ != AIR) return;
+	if(Flying || Levitation) return;
+	if(u.uhave.amulet){
+		pline("The amulet holds you above the ground below.");
+		return;
+	}
+	schedule_goto(&spire_level, FALSE, FALSE, 0,
+		      "You fall from the spire! A mysterious force pads your landing.",
+		      (char *)0);
+
 }
 
 STATIC_OVL boolean
