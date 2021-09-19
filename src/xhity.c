@@ -10333,6 +10333,9 @@ boolean verbose;
 		} else if(uwep && (uwep->oartifact == ART_TENTACLE_ROD) && rn2(20)){
 			if(verbose) You(mal_aura, "the languid tentacles");
 			return TRUE;
+		} else if(u.utats & TAT_WILLOW && !rn2(20)){
+			if(verbose) You(mal_aura, "your weeping willow tattoo");
+			return TRUE;
 		}
 		for(otmp = invent; otmp; otmp=otmp->nobj){
 			if(otmp->oartifact == ART_HELPING_HAND && rn2(20)){

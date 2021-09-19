@@ -2800,13 +2800,14 @@ inv_weight()
 	wt = (otmp && otmp->oclass == COIN_CLASS) ? 0 :
 		(int)((u.ugold + 50L) / 100L);
 #endif
+	if(u.utats & TAT_CROESUS) wt = 0;
 	while (otmp) {
 		//Correct artifact weights before adding them.  Because that code isn't being run.
 		if(otmp->oartifact) otmp->owt = weight(otmp);
 #ifndef GOLDOBJ
 		if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #else
-		if (otmp->oclass == COIN_CLASS)
+		if (otmp->oclass == COIN_CLASS && !(u.utats&TAT_CROESUS))
 			wt += (int)(((long)otmp->quan + 50L) / 100L);
 		else if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #endif

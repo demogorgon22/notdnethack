@@ -490,6 +490,7 @@ you_calc_movement()
 	else moveamt = youmonst.data->mmove;
 	if(uarmf && uarmf->otyp == STILETTOS && !Flying && !Levitation) moveamt = (moveamt*5)/6;
 	if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit) moveamt += 4;
+	if(u.utats & TAT_HOURGLASS) moveamt++;
 	
 	if(u.sealsActive&SEAL_EURYNOME && IS_PUDDLE_OR_POOL(levl[u.ux][u.uy].typ)){
 		if (Very_fast) {	/* speed boots or potion */
@@ -967,6 +968,7 @@ you_regen_pw()
 
 	// Carried spiritual soulstones
 	perX += stone_energy();
+	if(u.utats & TAT_FOUNTAIN) perX += 3;
 	
 	// external power regeneration
 	if (Energy_regeneration ||										// energy regeneration 'trinsic

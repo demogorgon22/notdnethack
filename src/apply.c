@@ -2789,7 +2789,7 @@ struct obj *tstone;
 		if(obj->quan > 1){
 			obj = splitobj(obj,1L);
 		}
-		if(Role_if(PM_CAVEMAN)){// || u.utats & TAT_SPEARHEAD){
+		if(Role_if(PM_CAVEMAN) || u.utats & TAT_SPEARHEAD){
 			You("knap the %s into a point!",xname(obj));
 			obj->oknapped = KNAPPED_SPEAR;
 			if(obj->otyp == LOADSTONE) obj->owt /= 10;

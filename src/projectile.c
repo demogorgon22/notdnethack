@@ -1751,6 +1751,7 @@ int shotlimit;
 			launcher->oartifact == ART_BELTHRONDING))
 			multishot++;
 
+		if(u.utats & TAT_KESTREL && !rn2(20)) multishot++;	
 		/* Heavy machine gun gets a large skill-based RoF bonus */
 		if (launcher && launcher->otyp == HEAVY_MACHINE_GUN)
 			multishot *= 2;

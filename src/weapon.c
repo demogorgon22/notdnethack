@@ -389,6 +389,8 @@ int otyp;
 			dmod += 2;
 		else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit)
 			dmod += 2;
+		if(obj->where == OBJ_INVENT && is_slashing(obj) && u.utats & TAT_FALCHION)
+			ocd++;
 
 		/* material-based dmod modifiers */
 		if (obj->obj_material != objects[obj->otyp].oc_material && !(is_lightsaber(obj) && litsaber(obj)))

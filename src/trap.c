@@ -244,6 +244,7 @@ struct monst *victim;
 		pline("%s's %s %s", Monnam(victim), aobjnam(otmp,"are"), txt);
 	}
 	if (!rn2(otmp->blessed ? 4 : 2)) {
+	    if(victim == &youmonst && u.utats & TAT_HAMMER && rn2(2)) return;
 	    otmp->greased = 0;
 	    if (carried(otmp)) {
 		pline_The("grease on %s dissolves.",the(xname(otmp)));
