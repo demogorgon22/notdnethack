@@ -2846,6 +2846,7 @@ E struct monst *FDECL(activate_statue_trap,
 			(struct trap *,XCHAR_P,XCHAR_P,BOOLEAN_P));
 E void FDECL(dotrap, (struct trap *, unsigned));
 E void FDECL(seetrap, (struct trap *));
+E boolean FDECL(spire_fall_mon, (struct monst *));
 E int FDECL(mintrap, (struct monst *));
 E void FDECL(reward_untrap, (struct trap *, struct monst *));
 E void FDECL(rloc_trap, (struct trap *));

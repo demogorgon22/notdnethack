@@ -3136,6 +3136,16 @@ int faction;
 				fix_object(otmp);
 				(void) mpickobj(mtmp, otmp);
 			}
+			if(ptr->mtyp == PM_FELL){
+				(void) mongets(mtmp, WAR_HAMMER, mkobjflags);
+				(void) mongets(mtmp, CHAIN_MAIL, mkobjflags);
+				(void) mongets(mtmp, HELMET, mkobjflags);
+				(void) mongets(mtmp, GLOVES, mkobjflags);
+				(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
+				(void) mongets(mtmp, CLOAK, mkobjflags);
+				(void) mongets(mtmp, SCRAP, mkobjflags);
+				(void) mongets(mtmp, POTION_VAPORIZER, mkobjflags);
+			}
 		break;}
 	    case S_LAW_ANGEL:
 	    case S_NEU_ANGEL:

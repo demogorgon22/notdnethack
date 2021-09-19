@@ -466,6 +466,10 @@ char *buf;
 	else if (In_neu(&u.uz)){
 		if(In_depths(&u.uz)) Sprintf(buf, "Depths %d ", dunlev(&u.uz)+dungeons[neutral_dnum].num_dunlevs-1);
 		else Sprintf(buf, "Outlands %d ", dunlev(&u.uz));
+	} else if(In_spire(&u.uz)){
+		if(Is_sigil(&u.uz)) Sprintf(buf, "Sigil ");
+		else Sprintf(buf, "Endless Spire ");
+		
 	} else if (In_cha(&u.uz)){
 		if(In_FF_quest(&u.uz)){
 			if(dungeons[chaos_dnum].entry_lev == u.uz.dlevel) Sprintf(buf, "Ruined Temple ");

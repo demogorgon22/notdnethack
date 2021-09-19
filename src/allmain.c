@@ -2259,6 +2259,22 @@ karemade:
 				dodestruction();
 			if(Mindblasting)
 				domindblast_strong();
+			/* Sigil item gravity */
+			if(Is_sigil(&u.uz)){
+				struct obj *obj, *nobj;
+				for (obj = fobj; obj; obj = obj->nobj) {
+					if(levl[obj->ox][obj->oy].typ == AIR){
+						if(obj->otyp == AMULET_OF_YENDOR) continue;
+						if(cansee(obj->ox,obj->oy)) pline("%s falls from the spire.",The(xname(obj)));
+						obj_extract_self(obj);
+						add_to_migration(obj);
+						newsym(obj->ox,obj->oy);
+						obj->ox = spire_level.dnum;
+						obj->oy = spire_level.dlevel;
+						obj->owornmask = (long)MIGR_RANDOM;
+					}
+				}
+			}
 			/* Clouds on Lolth's level deal damage */
 			if(Is_lolth_level(&u.uz) && levl[u.ux][u.uy].typ == CLOUD){
 				if (!(nonliving(youracedata) || Breathless)){

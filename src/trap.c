@@ -2040,6 +2040,19 @@ schar dx,dy;
 #endif /* OVL3 */
 #ifdef OVL1
 
+boolean 
+spire_fall_mon(mtmp)
+register struct monst *mtmp;
+{
+	if(Is_sigil(&u.uz) && levl[mtmp->mx][mtmp->my].typ == AIR && (!mon_resistance(mtmp, FLYING) && !mon_resistance(mtmp, LEVITATION))){
+		if(canseemon(mtmp)) pline("%s falls from the spire!",Monnam(mtmp));
+		migrate_to_level(mtmp, ledger_no(&spire_level),
+				      MIGR_RANDOM, (coord *)0);	
+		return TRUE;
+	}
+	return FALSE;
+}
+
 int
 mintrap(mtmp)
 struct monst *mtmp;

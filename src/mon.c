@@ -1628,6 +1628,7 @@ mcalcdistress()
 	if (mtmp->data->mmove == 0) {
 	    if (vision_full_recalc) vision_recalc(0);
 	    if (minliquid(mtmp)) continue;
+	    if (spire_fall_mon(mtmp)) continue;
 	}
 
 	if(mtmp->mtyp == PM_HEZROU && !(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
@@ -1947,6 +1948,7 @@ movemon()
 	}
 
 	if (minliquid(mtmp)) continue;
+	if (spire_fall_mon(mtmp)) continue;
 
 	/* continue if the monster died fighting */
 	if (!mtmp->iswiz && !is_blind(mtmp)) {
