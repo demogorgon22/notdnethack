@@ -2828,6 +2828,9 @@ register struct trobj *trop;
 			if(obj->otyp == SLIME_MOLD && Race_if(PM_DROW)){
 				obj->spe = fruitadd("mushroom cake");
 			}
+			if(is_spear(obj) && Role_if(PM_CAVEMAN)){
+				set_material_gm(obj, WOOD);
+			}
 			if(obj->otyp == POWER_ARMOR){
 				begin_burn(obj);
 				obj->obroken = 1;
