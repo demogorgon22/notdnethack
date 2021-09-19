@@ -9454,7 +9454,11 @@ boolean randmonst;
 			mkmon_template = YITH;
 		}
 		/* most general case at bottom -- creatures randomly being zombified */
+		#ifdef REINCARNATION
 		else if(randmonst && can_undead(ptr) && !Is_rogue_level(&u.uz)){
+		#else
+		else if(randmonst && can_undead(ptr)){
+		#endif
 			if(In_mines(&u.uz)){
 				if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && rn2(10) <= 5){
 					mkmon_template = ZOMBIFIED;
@@ -11300,8 +11304,10 @@ rndmonst()
 			}
 		}
 	}
+	#ifdef REINCARNATION
 	if(Is_rogue_level(&u.uz))
 		return roguemonst();
+	#endif
 
 	if (rndmonst_state.choice_count < 0) {	/* need to recalculate */
 	    int zlevel, minmlev, maxmlev;

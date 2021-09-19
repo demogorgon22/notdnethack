@@ -3266,7 +3266,11 @@ struct monst * mdef;	/* another monster which is next to it */
 		return ALLOW_M|ALLOW_TM;
 
 	/* undead vs civs */
+	#ifdef REINCARNATION
 	if(!(In_quest(&u.uz) || u.uz.dnum == temple_dnum || u.uz.dnum == tower_dnum || In_cha(&u.uz) || Is_stronghold(&u.uz) || Is_rogue_level(&u.uz) || Inhell || Is_astralevel(&u.uz))){
+	#else
+	if(!(In_quest(&u.uz) || u.uz.dnum == temple_dnum || u.uz.dnum == tower_dnum || In_cha(&u.uz) || Is_stronghold(&u.uz) || Inhell || Is_astralevel(&u.uz))){
+	#endif
 		if(mm_undead(magr) && 
 			(!is_witch_mon(mdef) && !always_hostile_mon(mdef) && !mm_undead(mdef) && !(is_animal(md) && !is_domestic(md)) && !mindless_mon(mdef))
 		)
