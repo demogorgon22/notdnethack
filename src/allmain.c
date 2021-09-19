@@ -3186,6 +3186,15 @@ boolean new_game;	/* false => restoring an old game */
 		pline("Use #monster to adjust your clockspeed.");
 		You("do not heal naturally. Use '.' to attempt repairs.");
 	}
+	if(Race_if(PM_SALAMANDER)){
+		pline("Use #monster to secrete and throw lava.");
+	} 
+	if(Role_if(PM_MONK) || Role_if(PM_BARBARIAN)){
+		pline("Use #style to change your combat style.");
+	}	
+	if(Race_if(PM_ETHEREALOID)){
+		pline("Use #monster to phase in and out.");
+	}
 	if(Role_if(PM_ANACHRONOUNBINDER)){
 		pline("Use #monster to use your psychic powers.");
 		pline("Press Ctrl^E or type #seal to engrave a seal of binding.");
@@ -3194,6 +3203,9 @@ boolean new_game;	/* false => restoring an old game */
 	}	
 	if(Race_if(PM_INCANTIFIER)){
 		pline("Incantifiers eat magic, not food, and do not heal naturally.");
+	}
+	if (Role_if(PM_ANACHRONONAUT) && Race_if(PM_GNOME)){
+		pline("Use f to fire from your power suit.");	
 	}
 	}
 }
