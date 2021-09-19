@@ -53,6 +53,9 @@ static int NDECL(doblessmenu);
 static int NDECL(donursemenu);
 static int NDECL(dorendermenu);
 static int FDECL(dodollmenu, (struct monst *));
+static int FDECL(dotatmenu, (const char *));
+static boolean FDECL(smith_offer_price, (long charge, struct monst *));
+static const char *FDECL(tat_to_name, (int));
 static boolean FDECL(nurse_services,(struct monst *));
 static boolean FDECL(render_services,(struct monst *));
 static boolean FDECL(buy_dolls,(struct monst *));
@@ -704,6 +707,49 @@ register struct monst *mtmp;
     }
 }
 
+static boolean
+smith_offer_price(charge, shkp)
+	long charge;
+	struct monst *shkp;
+{
+	char sbuf[BUFSZ];
+
+	/* Ask y/n if player wants to pay */
+        Sprintf(sbuf, "It'll cost you %ld zorkmid%s.  Interested?",
+		charge, plur(charge));
+
+	if ( yn(sbuf) != 'y' ) {
+		verbalize("Alright then.");
+		return(FALSE);
+	}
+
+	/* Player _wants_ to pay, but can he? */
+	/* WAC -- Check the credit:  but don't use check_credit
+	 * since we don't want to charge him for part of it if he can't pay for all 
+	 * of it 
+	 */
+#ifndef GOLDOBJ
+	if (charge > (u.ugold)) {
+#else
+	if (charge > (money_cnt(invent))) {  
+#endif
+		verbalize("You can't quite afford that.");
+		return(FALSE);
+	}
+
+	/* Charge the customer */
+
+#ifndef GOLDOBJ
+	u.ugold -= charge;
+	shkp->mgold += charge;
+#else
+	money2mon(shkp, charge);
+#endif
+	bot();
+
+	return(TRUE);
+}
+
 int
 domonnoise(mtmp, chatting)
 struct monst *mtmp;
@@ -789,6 +835,94 @@ boolean chatting;
 		(mtmp->mtyp == PM_RHYMER && !mtmp->mspec_used) ? MS_SONG : 
 		ptr->msound
 	) {
+	case MS_TATTOO:{
+		if(!mtmp->mpeaceful){
+			verbalize("I'm gonna tat my fists on your face!");
+			break;
+		}
+		double discount = countCloseSigns(mtmp) ?0.5:1;
+		if(discount < 1)
+			verbalize("Dope body mods!");
+		int selection = dotatmenu("Trying to get a sick tat?");
+		long charge;
+		int original_tats = u.utats;
+		switch(selection){
+			case TAT_HOURGLASS:
+				charge = (int) 5000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("like time is moving a little slower.");
+				break;
+			case TAT_FALCHION:
+				charge = (int) 4000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				u.udaminc++;
+				You_feel("more ready for battle.");
+				break;
+			case TAT_KESTREL:
+				charge = (int) 5000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("more ready to hunt.");
+				break;
+			case TAT_BULWARK:
+				charge = (int) 2500 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("safer.");
+				break;
+			case TAT_FOUNTAIN:
+				charge = (int) 4000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("the flow of tour energy increase.");
+				break;
+			case TAT_CROESUS:
+				charge = (int) 50000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("your coin purse's weight vanish.");
+				break;
+			case TAT_UNKNOWN:
+				charge = (int) 10000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				u.uprops[POLYMORPH].intrinsic |= FROMOUTSIDE;
+				Your("shape feels less certain.");
+				break;
+			case TAT_WILLOW:
+				charge = (int) 6000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("like you have a little helper.");
+				break;
+			case TAT_HAMMER:
+				charge = (int) 6000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("greasy.");
+				break;
+			case TAT_SPEARHEAD:
+				charge = (int) 15000 * discount;
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				u.utats |= selection;
+				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
+				You_feel("like breaking rocks.");
+				break;
+		}
+		//if(original_tats != u.utats) achieve.inked_up = 1;
+		break;
+	}
 	case MS_ORACLE:
 	    return doconsult(mtmp);
 	case MS_PRIEST: /*Most (all?) things with this will have ispriest set*/
@@ -2276,6 +2410,132 @@ humanoid_sound:
     if (pline_msg) pline("%s %s", Monnam(mtmp), pline_msg);
     else if (verbl_msg) verbalize1(verbl_msg);
     return(1);
+}
+
+#define is_croesus_valid uarm && uarm->obj_material == GOLD && uarmh && uarmh->obj_material == GOLD && \
+		uarmf && uarmf->obj_material == GOLD && uarmg && uarmg->obj_material == GOLD
+
+int
+dotatmenu(prompt)
+const char *prompt;
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	char *name;
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Tattoos: ");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	if(!(u.utats & TAT_HOURGLASS) && (Role_if(PM_ANACHRONONAUT) || Role_if(PM_ANACHRONOUNBINDER))){
+		Sprintf(buf, tat_to_name(TAT_HOURGLASS));
+		any.a_int = TAT_HOURGLASS;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'g', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_FALCHION) && (uwep && is_slashing(uwep))){
+		Sprintf(buf, tat_to_name(TAT_FALCHION));
+		any.a_int = TAT_FALCHION;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'f', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_KESTREL) && ((uwep && objects[uwep->otyp].oc_skill == P_BOW) || Role_if(PM_RANGER))){
+		Sprintf(buf, tat_to_name(TAT_KESTREL));
+		any.a_int = TAT_KESTREL;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'k', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_BULWARK)){
+		Sprintf(buf, tat_to_name(TAT_BULWARK));
+		any.a_int = TAT_BULWARK;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'b', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_FOUNTAIN)){
+		Sprintf(buf, tat_to_name(TAT_FOUNTAIN));
+		any.a_int = TAT_FOUNTAIN;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'o', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_CROESUS) && is_croesus_valid){
+		Sprintf(buf, tat_to_name(TAT_CROESUS));
+		any.a_int = TAT_CROESUS;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'c', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_UNKNOWN) && u.regifted == 5){
+		Sprintf(buf, tat_to_name(TAT_UNKNOWN));
+		any.a_int = TAT_UNKNOWN;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			's', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	/*if(!(u.utats & TAT_WILLOW) && u.ubranch == BLACK_FOREST){
+		Sprintf(buf, tat_to_name(TAT_WILLOW));
+		any.a_int = TAT_WILLOW;	
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'w', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}*/
+	if(!(u.utats & TAT_HAMMER) && u.sealsActive & SEAL_ASTAROTH){
+		Sprintf(buf, tat_to_name(TAT_HAMMER));
+		any.a_int = TAT_HAMMER;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'h', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(!(u.utats & TAT_SPEARHEAD) && (Race_if(PM_SALAMANDER) && !Role_if(PM_CAVEMAN))){
+		Sprintf(buf, tat_to_name(TAT_SPEARHEAD));
+		any.a_int = TAT_SPEARHEAD;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'p', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	end_menu(tmpwin, prompt);
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	return (n > 0) ? selected[0].item.a_int : 0;
+}
+
+const char *
+tat_to_name(int tat){
+	switch(tat){
+		case TAT_HOURGLASS:
+			return "Cracked Hourglass";
+		case TAT_FALCHION:
+			return "Falchion";
+		case TAT_KESTREL:
+			return "Kestrel";
+		case TAT_BULWARK:
+			return "Bulwark";
+		case TAT_FOUNTAIN:
+			return "Fountain";
+		case TAT_CROESUS:
+			return "Croesus Family Crest";
+		case TAT_UNKNOWN:
+			return "Blasphemous Shapes";
+		case TAT_WILLOW:
+			return "Weeping Willow";
+		case TAT_HAMMER:
+			return "Bronze Hammer";
+		case TAT_SPEARHEAD:
+			return "Spearhead";
+		default:
+			impossible("tat_to_name: unknown tat?");
+			return "Unknown Tat?";
+	}
 }
 
 static const short command_chain[][2] = {

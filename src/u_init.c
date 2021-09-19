@@ -1611,6 +1611,7 @@ u_init()
 	u.ustuck = (struct monst *)0;
 
 	u.umystic = 0;
+	u.utats = 0;
 
 	u.summonMonster = FALSE;
 	u.uleadamulet = FALSE;

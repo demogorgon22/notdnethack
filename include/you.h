@@ -556,6 +556,18 @@ struct you {
 	int 	uencouraged;/* to record the buff from tame encouragement songs */
 	int		uentangled; /* to record the otyp of an item entangling you */
 	long int spawnedGold; /* to record total amount of gold spawned in a game */
+		int	utats; /*Used to store Fell's tattoo information*/
+#define TAT_HOURGLASS	0x0001
+#define TAT_FALCHION	0x0002
+#define TAT_KESTREL	0x0004
+#define TAT_BULWARK	0x0008
+#define TAT_FOUNTAIN	0x0010
+#define TAT_CROESUS	0x0020
+#define TAT_UNKNOWN	0x0040
+#define TAT_WILLOW	0x0080
+#define TAT_HAMMER	0x0100
+#define TAT_SPEARHEAD	0x0200
+#define NUM_TATS	10
 	int 	usanity;	/* to record level of sanity */
 	unsigned long long int 	umadness;	/* to afflictions */
 #define	MAD_DELUSIONS		0x0000000000000001L
