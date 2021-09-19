@@ -5190,7 +5190,7 @@ boolean ranged;
 						 Weightless || u.uinwater ?
 						   "slip" : "drop")),
 				   (const char *)0);
-				if(carried(otmp)){
+				if(carried(otmp) && !(noncorporeal(youracedata) || is_whirly(youracedata)) ){
 					setworn(otmp,W_ARMH);
 					Helmet_on();
 				}	
