@@ -135,6 +135,9 @@ E struct dgn_topology {		/* special dungeon levels for speed */
     xchar	d_sacris_dnum;
     d_level	d_sacris_level;
 
+    xchar	d_nowhere_dnum;
+    d_level	d_nowhere_level;
+
 	/*The Lost Tomb*/
     xchar	d_tomb_dnum;
 	/*The Sunless Sea*/
@@ -245,6 +248,8 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 #define nearvoid_level		(dungeon_topology.d_nearvoid_level)
 
 #define sacris_level		(dungeon_topology.d_sacris_level)
+
+#define nowhere_level		(dungeon_topology.d_nowhere_level)
 
 	/*Planes*/
 #define earth_level		(dungeon_topology.d_earth_level)

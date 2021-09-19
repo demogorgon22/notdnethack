@@ -112,6 +112,8 @@ typedef struct branch {
 
 #define Is_sacris(x)	(on_level(x,&sacris_level))
 
+#define Is_nowhere(x)	(on_level(x,&nowhere_level))
+
 #define Is_astralevel(x)	(on_level(x, &astral_level))
 #define Is_earthlevel(x)	(on_level(x, &earth_level))
 #define Is_waterlevel(x)	(on_level(x, &water_level))

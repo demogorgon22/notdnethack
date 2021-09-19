@@ -9585,6 +9585,7 @@ int faction;
 	boolean givenpos = (x != 0 || y != 0);
 	boolean byyou = (x == u.ux && y == u.uy);
 	unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
+	if(Is_nowhere(&u.uz)) return (struct monst*) 0;	
 
 	/* if a monster is being randomly chosen, use its bigger spawning group */
 	if (!ptr && !(mmflags & MM_NOGROUP))

@@ -609,6 +609,9 @@ boolean you_abilities;
 	if (mon_abilities && is_drow(youracedata)){
 		add_ability('i', "Invoke the darkness", MATTK_DARK);
 	}
+	if (mon_abilities && Race_if(PM_ETHEREALOID) && Is_nowhere(&u.uz)){
+		add_ability('i', "Phase in", MATTK_PHASE_IN);
+	}
 	if (mon_abilities && youracedata->mlet == S_NYMPH){
 		add_ability('I', "Remove an iron ball", MATTK_REMV);
 	}
@@ -626,6 +629,9 @@ boolean you_abilities;
 	}
 	if (mon_abilities && (Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_CRAZE_LVL)){
 		add_ability('n', "Psionically torture a monster", MATTK_CRAZE);
+	}
+	if (mon_abilities && Race_if(PM_ETHEREALOID) && !Is_nowhere(&u.uz)){
+		add_ability('o', "Phase out", MATTK_PHASE_OUT);
 	}
 	if (you_abilities && (u.ufirst_light || u.ufirst_sky || u.ufirst_life || u.ufirst_know)){
 		add_ability('p', "Speak a word of power", MATTK_U_WORD);
@@ -838,6 +844,26 @@ boolean you_abilities;
 	case MATTK_PULSE: return psionic_pulse();
 	break;
 	case MATTK_LAVA: return lavaify();
+	break;
+	case MATTK_PHASE_OUT:
+		if(In_endgame(&u.uz) || In_void(&u.uz) ||  u.uhave.amulet){
+			pline("A mysterious force prevents you from phasing out.");
+			return 0;
+		}
+		You("phase out of reality.");
+		flags.phasing = FALSE;
+		u.old_lev.uz = u.uz;
+		u.old_lev.ux = u.ux;
+		u.old_lev.uy = u.uy;
+		goto_level(&nowhere_level, FALSE, FALSE, FALSE);	
+		return 1;
+	break;
+	case MATTK_PHASE_IN:
+		You("phase back into reality.");
+		flags.phasing = TRUE;
+		goto_level(&u.old_lev.uz, FALSE, FALSE, FALSE);	
+		flags.phasing = FALSE;
+		return 0;
 	break;
 	}
 	return 0;

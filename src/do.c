@@ -1161,6 +1161,7 @@ int portal;
 	struct monst *mtmp;
 	struct obj *obj;
 	char whynot[BUFSZ];
+	if(Is_nowhere(&u.uz) && !flags.phasing) return;
 
 	if (dunlev(newlevel) > dunlevs_in_dungeon(newlevel))
 		newlevel->dlevel = dunlevs_in_dungeon(newlevel);
@@ -1265,7 +1266,7 @@ int portal;
 		if(obj->otyp == MIRROR)
 			u.uz.flags.mirror = 1;
 	}
-	keepdogs(FALSE);
+	if(!Is_nowhere(newlevel)) keepdogs(FALSE);
 	u.ux = u.uy = 0;			/* comes after keepdogs() */
 	
 	if (u.uswallow)				/* idem */
@@ -1798,6 +1799,7 @@ int portal_flag;
 const char *pre_msg, *post_msg;
 {
 	int typmask = 0100;		/* non-zero triggers `deferred_goto' */
+	if(Is_nowhere(&u.uz) && !flags.phasing) return;
 
 	/* destination flags (`goto_level' args) */
 	if (at_stairs)	 typmask |= 0x1;

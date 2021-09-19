@@ -324,6 +324,10 @@ d_level *lev;
     case LR_UPTELE:
     case LR_DOWNTELE:
 	/* "something" means the player in this case */
+	if(flags.phasing){
+		x = u.old_lev.ux;
+		y = u.old_lev.uy;
+	}
 	if(MON_AT(x, y)) {
 	    /* move the monster if no choice, or just try again */
 	    if(oneshot) (void) rloc(m_at(x,y), FALSE);

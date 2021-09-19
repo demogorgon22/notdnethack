@@ -53,6 +53,7 @@ struct flag {
 	boolean  makelev_closerooms;	/* allow rooms to be placed very close to each other, causing overlaps and merges*/
 	boolean  mon_moving;	/* monsters' turn to move */
 	boolean  drgn_brth;		/* for use with breath weapons, indicates that a dragon is breathing */
+	boolean  phasing; /* Etherealoid phasing in or out*/
 	boolean  move;
 	boolean  mv;
 	boolean  bypasses;	/* bypass flag is set on at least one fobj */

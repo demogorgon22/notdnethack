@@ -686,6 +686,7 @@ struct level_map {
 	{ "brine",	&abyss3_level },
 	
 	{ "sanctum",	&sanctum_level },
+	{ "nowhere",	&nowhere_level },
 
 	{ "minetn",     &minetown_level },
 #ifdef RECORD_ACHIEVE

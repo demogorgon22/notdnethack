@@ -1710,7 +1710,7 @@ xchar x, y;	/* location */
 	}
 
 	if (br->type == BR_PORTAL) {
-	    mkportal(x, y, dest->dnum, dest->dlevel);
+	    if(!(Is_nowhere(&u.uz))) mkportal(x, y, dest->dnum, dest->dlevel);
 	} else if (make_stairs && !Is_nearvoid(&u.uz)) {
 	    sstairs.sx = x;
 	    sstairs.sy = y;
