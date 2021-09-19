@@ -456,6 +456,8 @@ char *buf;
 	else if (In_tower(&u.uz)) {
 		if(dunlev(&u.uz) == 4) Sprintf(buf, "Ravine ");
 		else Sprintf(buf, "Tower %d ", 5 - dunlev(&u.uz));
+	} else if(Is_nowhere(&u.uz)) {
+		Sprintf(buf,"Nowhere ");
 	} else if (In_void(&u.uz)){
 		Sprintf(buf,
 		 	Is_nearvoid(&u.uz)?"The Gate ":Is_nearvoid2(&u.uz)?"The Near Void ":Is_alignvoid(&u.uz)?"The Alignment Void ":Is_farvoid(&u.uz)?"The Far Void ":Is_ilsensine(&u.uz)?"The Lost Void ":"??? ");

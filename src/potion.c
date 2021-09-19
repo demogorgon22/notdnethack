@@ -180,6 +180,7 @@ make_vomiting(xtime, talk)
 long xtime;
 boolean talk;
 {
+	if(Race_if(PM_ETHEREALOID)) return;
 	long old = Vomiting;
 
 	if(!xtime && old)

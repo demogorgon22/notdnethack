@@ -3781,6 +3781,7 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	int hungermod = 1;
 	if (u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20) return;	/* you don't feel hungrier */
 	if(inediate(youracedata) && !uclockwork && !Race_if(PM_INCANTIFIER)) return;
+	if (Race_if(PM_ETHEREALOID)) return;
 	
 	if(u.usleep) hungermod *= 10; /* slow metabolic rate while asleep */
 	/* Convicts can last twice as long at hungry and below */
@@ -3896,6 +3897,7 @@ void
 lesshungry(num)	/* called after eating (and after drinking fruit juice) */
 register int num;
 {
+	if(Race_if(PM_ETHEREALOID)) return;
 	/* See comments in newuhs() for discussion on force_save_hs */
 	boolean iseating = (occupation == eatfood) || force_save_hs;
  	//debugpline("lesshungry(%d)", num);

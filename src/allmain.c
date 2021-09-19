@@ -904,6 +904,8 @@ you_regen_pw()
 {
 	int wtcap = near_capacity();
 	int perX = 0;
+	//pw regen blocked in nowhere
+	if(Is_nowhere(&u.uz)) return;
 
 	// natural power regeneration
 	if (wtcap < MOD_ENCUMBER &&		// not overly encumbered
@@ -2320,10 +2322,11 @@ karemade:
 		    run_maintained_spells();
 			
 			move_gliders();
-
-		    if (u.ublesscnt)  u.ublesscnt--;
-		    if (u.ugoatblesscnt && u.uevent.shubbie_atten && !u.ugangr[GA_MOTHER])
-				u.ugoatblesscnt--;
+		    if(!Is_nowhere(&u.uz)){
+			    if (u.ublesscnt)  u.ublesscnt--;
+			    if (u.ugoatblesscnt && u.uevent.shubbie_atten && !u.ugangr[GA_MOTHER])
+					u.ugoatblesscnt--;
+		    }
 		    if(flags.time && !flags.run)
 			flags.botl = 1;
 			

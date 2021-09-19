@@ -5967,6 +5967,7 @@ arti_invoke(obj)
 	    /* use index+1 (cant use 0) as identifier */
 	    for (i = num_ok_dungeons = 0; i < n_dgns; i++) {
 		if (!dungeons[i].dunlev_ureached) continue;
+		if(!strcmp(dungeons[i].dname,"Nowhere")) continue;
 		any.a_int = i+1;
 		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE,
 			 dungeons[i].dname, MENU_UNSELECTED);
