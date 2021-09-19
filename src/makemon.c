@@ -974,6 +974,11 @@ int faction;
 				set_material_gm(otmp, GOLD);
 				fix_object(otmp);
 				(void) mpickobj(mtmp,otmp);
+			} else if(ptr->mtyp == PM_LADY_OF_PAIN){
+				otmp = mksobj(SKELETON_KEY, mkobjflags);
+				otmp = oname(otmp, artiname(ART_CAGE_KEY));
+				(void) mpickobj(mtmp,otmp);
+				
 			} else if(is_mercenary(ptr)) {
 				int w1 = 0, w2 = 0;
 				switch (mm) {

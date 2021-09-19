@@ -89,6 +89,9 @@ unsigned gpflags;
 	    }
 	    if (mon_resistance(mtmp,PASSES_WALLS) && may_passwall(x,y)) return TRUE;
 	}
+	if(Is_sigil(&u.uz) && levl[x][y].typ == AIR){
+	    return FALSE;
+	}
 	if (!ACCESSIBLE(levl[x][y].typ)) {
 		if (!(is_pool(x,y, FALSE) && ignorewater)) return FALSE;
 	}
@@ -873,6 +876,12 @@ level_tele()
 							) {
 	    You_feel("very disoriented for a moment.");
 	    return;
+	}
+	if(In_spire(&u.uz) && !Is_sigil(&u.uz)){
+		//All roads lead to rome
+		You_feel("reoriented.");
+	    	schedule_goto(&sigil_level, FALSE, FALSE, 0, (char *)0, (char *)0);
+		return;
 	}
 	if ((Teleport_control && !Stunned)
 #ifdef WIZARD

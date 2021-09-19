@@ -1507,6 +1507,16 @@ A("The Silver Key",					UNIVERSAL_KEY,			"strangely figured %s",
 	CREATE_PORTAL, NOFLAG
 	),
 
+A("The Cage Key",					SKELETON_KEY,			(const char *)0,
+	5000L, BONE, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(TELEPORT_CONTROL), NOFLAG,
+	CREATE_PORTAL, NOFLAG
+	),
+
 /*//////////Artifact Books///////////*/
 #define ARTIFACT_BOOK(name, invoke)												\
 A((name),							SPE_SECRETS,			(const char *)0,	\

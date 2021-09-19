@@ -46,7 +46,7 @@ MONSTER:'@',"peasant",random,peaceful
 MONSTER:'@',"peasant",random,peaceful
 MONSTER:'@',"peasant",random,peaceful
 MONSTER:'@',"peasant",random,peaceful
-#MONSTER:'@',"Lady of Pain",random,peaceful
+MONSTER:'@',"Lady of Pain",random,peaceful
 #MONSTER:'@',"Fell",random,peaceful
 REGION:(49,18,53,19),lit,"book shop"
 
