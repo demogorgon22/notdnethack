@@ -2433,52 +2433,45 @@ const char *prompt;
 	Sprintf(buf, "Tattoos: ");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	if(!(u.utats & TAT_HOURGLASS) && (Role_if(PM_ANACHRONONAUT) || Role_if(PM_ANACHRONOUNBINDER))){
-		Sprintf(buf, tat_to_name(TAT_HOURGLASS));
 		any.a_int = TAT_HOURGLASS;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'g', 0, ATR_NONE, buf,
+			'g', 0, ATR_NONE, tat_to_name(TAT_HOURGLASS),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_FALCHION) && (uwep && is_slashing(uwep))){
-		Sprintf(buf, tat_to_name(TAT_FALCHION));
 		any.a_int = TAT_FALCHION;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'f', 0, ATR_NONE, buf,
+			'f', 0, ATR_NONE, tat_to_name(TAT_FALCHION),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_KESTREL) && ((uwep && objects[uwep->otyp].oc_skill == P_BOW) || Role_if(PM_RANGER))){
-		Sprintf(buf, tat_to_name(TAT_KESTREL));
 		any.a_int = TAT_KESTREL;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'k', 0, ATR_NONE, buf,
+			'k', 0, ATR_NONE, tat_to_name(TAT_KESTREL),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_BULWARK)){
-		Sprintf(buf, tat_to_name(TAT_BULWARK));
 		any.a_int = TAT_BULWARK;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'b', 0, ATR_NONE, buf,
+			'b', 0, ATR_NONE, tat_to_name(TAT_BULWARK),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_FOUNTAIN)){
-		Sprintf(buf, tat_to_name(TAT_FOUNTAIN));
 		any.a_int = TAT_FOUNTAIN;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'o', 0, ATR_NONE, buf,
+			'o', 0, ATR_NONE, tat_to_name(TAT_FOUNTAIN),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_CROESUS) && is_croesus_valid){
-		Sprintf(buf, tat_to_name(TAT_CROESUS));
 		any.a_int = TAT_CROESUS;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'c', 0, ATR_NONE, buf,
+			'c', 0, ATR_NONE, tat_to_name(TAT_CROESUS),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_UNKNOWN) && u.regifted == 5){
-		Sprintf(buf, tat_to_name(TAT_UNKNOWN));
 		any.a_int = TAT_UNKNOWN;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			's', 0, ATR_NONE, buf,
+			's', 0, ATR_NONE, tat_to_name(TAT_UNKNOWN),
 			MENU_UNSELECTED);
 	}
 	/*if(!(u.utats & TAT_WILLOW) && u.ubranch == BLACK_FOREST){
@@ -2489,17 +2482,15 @@ const char *prompt;
 			MENU_UNSELECTED);
 	}*/
 	if(!(u.utats & TAT_HAMMER) && u.sealsActive & SEAL_ASTAROTH){
-		Sprintf(buf, tat_to_name(TAT_HAMMER));
 		any.a_int = TAT_HAMMER;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'h', 0, ATR_NONE, buf,
+			'h', 0, ATR_NONE, tat_to_name(TAT_HAMMER),
 			MENU_UNSELECTED);
 	}
 	if(!(u.utats & TAT_SPEARHEAD) && (Race_if(PM_SALAMANDER) && !Role_if(PM_CAVEMAN))){
-		Sprintf(buf, tat_to_name(TAT_SPEARHEAD));
 		any.a_int = TAT_SPEARHEAD;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'p', 0, ATR_NONE, buf,
+			'p', 0, ATR_NONE, tat_to_name(TAT_SPEARHEAD),
 			MENU_UNSELECTED);
 	}
 	end_menu(tmpwin, prompt);
