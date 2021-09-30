@@ -413,7 +413,8 @@ int tary;
 
 	/*	Special demon/minion handling code */
 	/* mvu only; we don't want it mvm and player's is handled as an ability */
-	if (youdef && !magr->cham && gates_in_help(pa) && !template_blocks_gate(magr) && !ranged && (magr->summonpwr < magr->data->mlevel)) {
+	if (youdef && !magr->cham && gates_in_help(pa) && !template_blocks_gate(magr)
+		&& !ranged && !wildmiss && (magr->summonpwr < magr->data->mlevel)) {
 		 if (!magr->mcan && !rn2(13)) {
 			 msummon(magr, (struct permonst *)0);
 		 }
@@ -2928,6 +2929,7 @@ int dmg;				/* damage to deal */
 		}
 
 		if (*hp(mdef) < 1) {
+			int nocorpse = (attk && (attk->adtyp == AD_DGST || attk->adtyp == AD_DISN)) ? 0x2 : 0;
 			/* killed a pet by accident */
 			if (mdef->mtame && !cansee(mdef->mx, mdef->my)) {
 				You_feel("embarrassed for a moment.");
@@ -2938,11 +2940,11 @@ int dmg;				/* damage to deal */
 				/* non-verbose */
 				if (!flags.verbose) {
 					You("destroy it!");
-					if (dmg) xkilled(mdef, 0);
+					if (dmg) xkilled(mdef, 0|nocorpse);
 				}
 				/* verbose */
 				else {
-					if (dmg) killed(mdef);
+					if (dmg) xkilled(mdef, 1|nocorpse);
 				}
 			}
 			if (*hp(mdef) > 0)
@@ -5943,6 +5945,7 @@ boolean ranged;
 
 				/* used only in drain-all: change what ptmp is */
 				ptmp = (ptmp+1)%A_MAX;
+				count++;
 			}while(attk->adtyp == AD_NPDA && count < A_MAX);
 		}
 		/* make physical attack without hitmsg */
