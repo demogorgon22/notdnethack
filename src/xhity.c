@@ -12389,7 +12389,7 @@ int vis;
 			int maketame = ((magr->mtame || youagr) ? MM_EDOG : 0);
 			if (cansee(magr->mx, magr->my)) You("see missiles fly out of %s's silos.", mon_nam(magr));
 			for(n = dmg; n > 0; n--){
-				mtmp = makemon(&mons[PM_MINI_NUKE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame);
+				mtmp = makemon(&mons[PM_MINI_NUKE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame|MM_ESUM);
 				if (mtmp) {
 					/* time out */
 					mark_mon_as_summoned(mtmp, magr,mlev(magr) + rnd(mlev(magr)) , 0);

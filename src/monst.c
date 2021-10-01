@@ -8985,7 +8985,7 @@ is a red right hand
     
     MON("Black Knight", S_HUMAN,//12
 	LVL(10, 12, 1, -3), G_NOGEN,
-	DEF(NAT_AC(10-90)),
+	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 6), ATTK(AT_XWEP, AD_PHYS, 1, 6),
 	  NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
 	SIZ(WT_HUMAN, 400, MS_HUMANOID, MZ_HUMAN), 0, 0,

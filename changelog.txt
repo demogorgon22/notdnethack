@@ -264,5 +264,39 @@ Dungeon Changes
 					teaches flintknapping
 					avaialble only for non caveman salamanders
 					$10000
+	Chaos 1 changes
+		Upgrade several of the fixed loot items
+			The leather helm on the first level is now anarachic
+			The copr on kary's level is now dragonhide if possible
+			Werebuster now generates +5
+			The runesword on the first level is now anarchic
+		Chaos crystals now have passive tentacle attacks acting like living armor doing their damage type
+		Add death eye boss to chaos catacombs
+			Pretty mean and has death gaze
+			Drops an artifact "The eye of death"
+				Grants slotless stone res, free action, and half spell damage
+				Invoke for beholder eye invoke effect
+		Black knights are replaced with monsters instead of player monsters
+			Have a chance to generate with anarchic on some of their gear
+			Fixed difficulty instead of variable like player monsters
+		Warmachine replaced with a proper boss
+			Can summon mini nukes and fire lasers
+			Is really dangerous and also covetous for some reason
+		Sasuke's blade is now a real artifact and gets +d8 dmg against cross aligned
+		Give masamune +d8 dmg against cross aligned
+		Add artifact socketing
+			Masamune, Sasuke's blade, and werebuster are all socketed artifacts
+			A single chaos crystal can be socketed into the pommel of the blade
+			The artifact will confer the carry properties of the crystal but will not perform living attacks
+			The weight of the crystal is not included in the weight of the artifact	
+			Socketing a crystal adds an oprop to the artifact
+				Fire Crystal - Flaming, 2x fire damage
+				Water Crystal - Misty, 2x water damage 
+				Ait Crystal - Shocking, 2x lightning damage
+				Earth Crystal - Flaying
+				Black Crystal - Sparkling, 2x magic damage
+		
+		
+		
 General changes
 	Red dragon scale based armor now grants flying.
