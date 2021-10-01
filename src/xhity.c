@@ -14565,11 +14565,11 @@ int vis;						/* True if action is at all visible to the player */
 			}
 			if(u.umystic & FORCE_PUNCH && u.uen >= 3 && !rn2(2)){
 				losepw(3);
-				bonsdmg += rnd(5) + 3;
+				bonsdmg += rnd(5);
 				pline("%s is thrown backwards by the force of your blow!",Monnam(mdef));
 				mhurtle(mdef, u.dx, u.dy, BOLT_LIM, FALSE);
 			}
-			if(u.umystic & FORCE_PUNCH && u.uen >= 8){
+			if(u.umystic & SPIRIT_PUNCH && u.uen >= 8){
 				losepw(8);
 				explode(x(mdef), y(mdef), AD_MAGM, MON_EXPLODE, d(3,6), EXPL_MAGICAL, 1);
 			}

@@ -32,6 +32,108 @@ Added acu (Illithanachronounbinder) role
 	While summoned spirit is alive you have its active and passive powers.
 		Using an effigy removes the effect of this.
 	Can only have one spirit monster summoned alive at a time usually.
+Salamander race
+	Can secrete a pool of lava at the cost of halving hp
+	Can fling balls of lava that do extra dmg based on xp lvl from pools
+		of lava
+	Slithy (can go slink through iron bars)
+	Can walk through and play in (and store things in) lava
+	Can reach expert in spear
+	Requires special snakeleg body armour
+	Cannot wear boots or even kick things
+	Unlock a salamander attack routine at lvl 10
+	Spear multishot bonus
+	Cannot eat monsters that are too close to amphibians without
+		cannibalism penalty
+	Lava balls burn down any door within heat range of impact
+	Monsters that likes_lava (including you as a salamander)
+		regenerate hungerlessly while in lava
+Salamander Convict and Rogue quest
+	New Pantheon - 
+		Lawful - Utu, some fallen sun disk diety
+		Neutral - Kossuth, technically not a diety but an old elemental
+		Chaotic - Garyx, actualy a fire dragon god but whatever
+	Quest leader - Salamander Mage
+		Salamander who has learned the way of magic from stealthily
+		studying his efreet overlords for years. Respected by
+		underling slaves and wants to rebel and lead his own opressive
+		colony.
+	Quest nemesis - Efreet Sultan
+		Bad dangerous efreet turbolord, spews fire, very bad.
+	Quest friendly - Salamander Slave
+		Weaker salamander that are oppressed by efreet overlords
+	Salamander slaves vs efreet
+	Levels are some sort of lava planes into like some sort of aladin like
+		castle
+	Fire elementals
+		Slaves of the Efreet
+	Efreet
+		Evil djinni that cast some fire based and other spells and
+			wield scimitars and they are mean.
+	Efreet Overseer
+		Eviler djinni that cast some fire based and other spells and
+			wield scimitars and they are meaner.
+	Efreet Merchant
+		More dangerous but no whip and less fiery than overseer
+	Efreet Guardian
+		A slammer and a half of an efreet. Beware.
+	Various fire plane enemies
+	Journey to the Charcoal palace
+		Epic loot
+Etherealoid race
+	True neutral
+	Is large
+	Phases through walls
+	Resists Disintegration
+	Resists Stoning
+	Has unchanging
+	Passive hp regeneration is blocked
+	Unbreathing
+	Unliving
+	Does not hunger
+	Cannot eat
+	Cannot see normally
+	Cannot wear armor
+	Flys
+	Receives displacement at xlvl 7
+	Gains +1 ac per experience level
+	Has xray vision radius = 3 + xplvl/7 floored
+	Has an addtional 1d6 shadow engulf attack
+	Can #monster to phase out/phase in
+		phasing out freezes you for 2 turns and takes you to "the nowhere"
+		effectively a special level with undiggable stone all over
+		monsters cannot spawn or go here
+		the terrain cannot be changed
+		amulet or planes block access
+		Cannot teleport or warp out of the nowhere, must phase back in
+		to leave
+		Pw and god prayer timeout do not heal in the nowhere
+	XP lvl is effectively gained at half the rate
+	50% of the time killing a monster will heal you for a 1/8 of the xp it
+	would have provided, or 5 hp if that is larger
+Monk changes
+	Can set attack styles with #style
+		Surge punch 
+			3 pw to do 3 + d(5) damage per barehanded hit
+		Force punch
+			3 pw to do a big pushback 50% of hits
+			Also does d(5) damage bonus
+			Unlock level 4
+		Spirit punch
+			3x3 magic explosion 6d3 with punch, centered on
+			target, 8 pw
+			Unlock level 10
+		Flicker punch
+			1 pw
+			Unlock level 8
+			Works like ataru somersaults but flavored as warping
+			instead
+		Absortive strikes
+			Halved dmg but regains dmg as pw, this can't be on with other modes
+			Unlock level 2
+		Chi Healing
+			Drains 1 pw per turn to heal 1 hp
+			Unlock level 6
 Spear changes
 	Spears now all have changable points that can be changed to other
 	spearheads.
