@@ -217,5 +217,52 @@ Anachrononaut changes
 		until repaired with an upgrade kit resized to fit you or
 		another monster.
 		Starts with a potion vaporizer and some potions.
+Dungeon Changes
+	Neutral Quest changes
+		Branch to spire from the spire in the outlands.
+		At the top is the sigil with stores and the lady of pain who
+		carries the Cage key.
+			At the sigil is also Fell, the tattoo master who sells
+			tats.
+				hourglass
+					increases speed by 1
+					available for ana's and acu 
+					$3000
+				falchion
+					just gives +1 base dice to slashing weapons
+					available for those who wield a slashing weapon
+					$2000
+				kestrel 
+					1/20 of the time another random multishot with any item
+					available for those wielding a bow or rangers
+					$3000
+				bulwark
+					+1 ac
+					for anyone
+					$1500
+				fountain 
+					1/30 pw regen boost
+					for anyone
+					 $2000
+				Croesus family crest
+					gold in open inventory weighs nothing.
+					available for someone wearing all gold chest,gloves,boot,helm 
+					$30000
+				Blasphemous shapes
+					grants intrinsic polymorphitis
+					must have u.regifted be 5, 
+					$8000
+				Willow
+					small curse resistance chance (1/20),
+					available if you chose the forest adventure branch
+					$4000
+				Hammer
+					grease is half as likely of wearing off
+					available if you have astaroth bound
+					$4000
+				Spearhead
+					teaches flintknapping
+					avaialble only for non caveman salamanders
+					$10000
 General changes
 	Red dragon scale based armor now grants flying.
