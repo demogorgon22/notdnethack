@@ -207,10 +207,11 @@ int shots, shotlimit;
 		} else {
 			obj->ovar1 -= cost;
 			struct zapdata zapdata = { 0 };
-			basiczap(&zapdata, AD_FIRE, ZAP_FLAMETHROWER, shots+1);
+			basiczap(&zapdata, AD_FIRE, ZAP_FLAMETHROWER, 6+shots);
 			zapdata.splashing = TRUE;
 			zapdata.unreflectable = ZAP_REFL_NEVER;
 			zapdata.no_bounce = TRUE;
+			zapdata.affects_floor = FALSE;
 			zapdata.directly_hits = FALSE;
 			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
 			return 1;
@@ -220,10 +221,11 @@ int shots, shotlimit;
 	obj->ovar1 -= cost;
 
 	struct zapdata zapdata = { 0 };
-	basiczap(&zapdata, AD_FIRE, ZAP_FLAMETHROWER, shots+1);
+	basiczap(&zapdata, AD_FIRE, ZAP_FLAMETHROWER, 6+shots);
 	zapdata.splashing = TRUE;
 	zapdata.unreflectable = ZAP_REFL_NEVER;
 	zapdata.no_bounce = TRUE;
+	zapdata.affects_floor = FALSE;
 	zapdata.directly_hits = FALSE;
 	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
 	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 3, &zapdata);
