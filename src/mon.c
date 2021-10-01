@@ -4468,7 +4468,7 @@ boolean was_swallowed;			/* digestion */
 				}
 				pline("%s realign into three figures!",Monnam(mon));
 				makemon(&mons[PM_MISKA], mon->mx, mon->my, MM_ADJACENTOK);
-				makemon(&mons[PM_NUDZIARTH], mon->mx, mon->my, MM_ADJACENTOK);
+				makemon(&mons[PM_NUDZIRATH], mon->mx, mon->my, MM_ADJACENTOK);
 				makemon(&mons[PM_COSMOS], mon->mx, mon->my, MM_ADJACENTOK);
 			} else {
 				explode(mon->mx, mon->my, 

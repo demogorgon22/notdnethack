@@ -366,7 +366,7 @@ doread()
 			You("are not reflected in the shards.");
 			You("have the unnerving feeling that there is something inside the pyramid, barely hidden from view.");
 			/*Note: this is intended to work for any PC, not just Binders */
-			if(!(u.specialSealsKnown&SEAL_NUDZIRATH)){
+			if(!(u.specialSealsKnown&SEAL_NUDZIRATH) && !Role_if(PM_ANACHRONOUNBINDER)){
 				pline("The shattered fragments form part of a seal.");
 				pline("In fact, you realize that all cracked and broken mirrors everywhere together are working towards writing this seal.");
 				pline("With that realization comes knowledge of the seal's final form!");

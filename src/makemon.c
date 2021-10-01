@@ -4019,7 +4019,7 @@ int faction;
 					otmp->spe = max(otmp->spe, spe2);
 					(void) mpickobj(mtmp, otmp);
 				}
-			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIARTH){
+			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIRATH){
 				int artnum = rn2(8);
 	
 			    /* create minion stuff; can't use mongets */
@@ -9147,7 +9147,7 @@ int faction;
 			(void) mpickobj(mtmp, otmp);
 			break;
 		}
-		case PM_NUDZIARTH:{
+		case PM_NUDZIRATH:{
 			struct obj *otmp;
 			otmp = mksobj(CLUB, mkobjflags);
 			otmp->blessed = FALSE;
@@ -10254,7 +10254,7 @@ int faction;
 			} else if(mndx == PM_KUKER){ 
 				mtmp->mhpmax = mtmp->m_lev*8 - 4; //Max HP
 				mtmp->mhp = mtmp->mhpmax;
-			}else if(mndx == PM_COSMOS || mndx == PM_NUDZIARTH){
+			}else if(mndx == PM_COSMOS || mndx == PM_NUDZIRATH){
 				mtmp->mhpmax = 10*mtmp->mhpmax;
 				mtmp->mhp = mtmp->mhpmax;
 			}
