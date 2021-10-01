@@ -1,0 +1,94 @@
+Added acu (Illithanachronounbinder) role
+	Unlocks at levels
+		1
+			tentacle attack
+			mind blast
+			extrinsic telepathy
+		4
+			psionic pulse ability
+		7
+			echolocation
+		10
+			flying
+		12
+			psionic craze ability
+		14
+			reflection
+		15
+			telekinesis ability
+		17
+			teleport control
+		20
+			all thrown items return
+	Cannot reach next level until spirit of your level is summoned
+	God is fallen and cannot pray or sacrifice
+	Has extra levels after Astral Plane and must rescue god
+	Full spirit spoiler coming when someone writes one
+		Please, someone, write one maybe?
+			Include like artifacts they have too, yeah
+	Lots of new artifacts added dropped by spirits
+	Summoning rituals are the same as binder however Dantalion can be
+		summoned anywhere and Chupoclops only needs a poison corpse
+	While summoned spirit is alive you have its active and passive powers.
+		Using an effigy removes the effect of this.
+	Can only have one spirit monster summoned alive at a time usually.
+Spear changes
+	Spears now all have changable points that can be changed to other
+	spearheads.
+	Gem spearheads have special effects.
+		Dilithium Crystal
+			Double Damage
+		Turquoise
+			Hitting an enemy warps the player nearby
+		Morganite
+			Regeneration
+		Citrine
+			Bright Light
+			Blinding onhit
+		Amber
+			Slow monster
+		Jet
+			AC and DR Protection - shrouds you in a black mist (more
+			protection based on enchant)
+		Opal
+			Reflection
+		Chrysoberyl
+			Disease resistance
+		Garnet
+			2x Fire dmg
+			Fire resistance
+		Amethyst
+			Telepathy
+		Jasper
+			+d8 dmg
+		Violet Fluorite
+			Sleeping attack
+			Sleep Resistance
+		Blue Fluorite
+			+d8 magic dmg
+			drain pw if hits you
+			half spell damage
+		White Fluorite
+			Energy Regen
+		Green Fluorite
+			Curse Resistance
+		Obsidian
+			Ignores DR
+		Agate
+			Free Action
+		Jade
+			Stinking cloud
+			Poison resistance
+		Luckstone
+			Tohit +7
+		Loadstone
+			+2d4 dmg
+			weldproof
+		Touchstone
+			+3d5 study
+		Fossile dark
+			2x dmg drain xp
+		Silver Slingstone
+			Sears silver haters
+General changes
+	Red dragon scale based armor now grants flying.
