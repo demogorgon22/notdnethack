@@ -6,7 +6,8 @@ Additonally, there are some new ideas.
 - [ ] Potion vapor improvements and a likely heavily modified version of the alchemy gnome patch
 - [x] A modified version of the caveman 
 - [x] Sigil + Fell + spire + key split maybe?
-- [ ] Village level + mildly changed adventure branches
+- [ ] Village level
+- [ ] Adventure branches
 - [x] Etherealoid race, potentially slightly nerfed
 - [ ] Symbiote race, likely better implemented?
 - [ ] Cowboy role, complete with a six shooter, lasso, some weird quest, and spurred boots -- not so sure what I was on about with this one. probably no
@@ -14,11 +15,11 @@ Additonally, there are some new ideas.
 - [x] Monk styles, potentially cheaper pw cost
 - [ ] Barb Styles, potentially split these off to a new role if chris finds a better way to make barb less OP and more interesting?
 - [ ] Pirate king's crown replacing reaver as well as infinite weight treasury of proteus
-- [ ] Ana salamander + flamethrower
+- [x] Ana salamander + flamethrower
 - [ ] Ana nightvision goggles giving extramission
 - [ ] Ana hlf force armor
 - [x] Ana clkwk loyal to dnh 1 implementation including power armor
-- [ ] Armorsmith patch
+- [x] Armorsmith patch
 - [ ] Do something about sokoban that isn't lokoban -- esolang level (rl time/brain cycles-> game prize)
 - [x] Give red dragon scale stuff flying 
 - [ ] Special vibe square level
