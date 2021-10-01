@@ -12,6 +12,7 @@ struct zapdata {
 #define ZAP_SPELL	2
 #define ZAP_BREATH	3
 #define ZAP_RAYGUN	4
+#define ZAP_FLAMETHROWER	5
 	int damn;				/* number of dice */
 	int damd;				/* size of dice */
 	int flat;				/* alternative to damn and damd -- flat damage to deal */

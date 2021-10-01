@@ -1179,6 +1179,7 @@ int curse_bless;
 	    case FORCE_SWORD:
 	    case FORCE_WHIP:
 	    case SEISMIC_HAMMER:
+	    case FLAMETHROWER:
 			if(is_blessed) obj->ovar1 = 100L;
 			else if(is_cursed) obj->ovar1 = 10L;
 			else obj->ovar1 = 80L + rn2(20);

@@ -2121,6 +2121,15 @@ dofire()
 							obfree(ammo, 0);
 							ammo = (struct obj *)0;
 							break;
+						case FLAMETHROWER:
+							/* create fake ammo in order to calculate multishot correctly */
+							ammo = blaster_ammo(launcher);
+							if (getdir((char *)0))
+								result += zap_flamethrower(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);
+							/* destroy ammo and don't go through uthrow */
+							obfree(ammo, 0);
+							ammo = (struct obj *)0;
+							break;
 						default:
 							impossible("Unhandled blaster %d!", launcher->otyp);
 							break;
@@ -2367,6 +2376,7 @@ struct obj * blaster;
 			ammo = mksobj(ROCK, MKOBJ_NOINIT);	/* should not happen */
 		break;
 	case RAYGUN:
+	case FLAMETHROWER:
 		/* create fake ammo in order to calculate multishot correctly */
 		ammo = mksobj(LASER_BEAM, MKOBJ_NOINIT);
 		break;
@@ -3341,6 +3351,7 @@ int tary;
 						/* no special changes required */
 						break;
 					case RAYGUN:
+					case FLAMETHROWER:
 						// TODO: monster raygun function
 						//if (!getdir((char *)0))
 						//	result |= zap_raygun(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);

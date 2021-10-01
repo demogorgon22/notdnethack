@@ -181,6 +181,57 @@ int shots, shotlimit;
 	return 1;
 }
 
+int
+zap_flamethrower(obj, shots, shotlimit)
+struct obj *obj;
+int shots, shotlimit;
+{
+	int cost = 1;
+	
+	if(obj->ovar1 < cost){
+		shots = 0;
+	}
+	
+	if(shots <= 0){
+		You("pull the trigger, but nothing happens.");
+		return 1;
+	}
+	
+	if(!u.dx && !u.dy){
+		if(u.dz > 0){
+			obj->ovar1 -= cost;
+			if(!Blind)
+				pline("The bugs on the %s burn to a crisp!", surface(u.ux, u.uy));
+			else You("smell burnt bugs.");
+			return 1;
+		} else {
+			obj->ovar1 -= cost;
+			struct zapdata zapdata = { 0 };
+			basiczap(&zapdata, AD_FIRE, ZAP_FLAMETHROWER, shots+1);
+			zapdata.splashing = TRUE;
+			zapdata.unreflectable = ZAP_REFL_NEVER;
+			zapdata.no_bounce = TRUE;
+			zapdata.directly_hits = FALSE;
+			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
+			return 1;
+		}
+	}
+	
+	obj->ovar1 -= cost;
+
+	struct zapdata zapdata = { 0 };
+	basiczap(&zapdata, AD_FIRE, ZAP_FLAMETHROWER, shots+1);
+	zapdata.splashing = TRUE;
+	zapdata.unreflectable = ZAP_REFL_NEVER;
+	zapdata.no_bounce = TRUE;
+	zapdata.directly_hits = FALSE;
+	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
+	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 3, &zapdata);
+	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 5, &zapdata);
+
+	return 1;
+}
+
 /* KMH -- Automatically fill quiver */
 /* Suggested by Jeffrey Bay <jbay@convex.hp.com> */
 void

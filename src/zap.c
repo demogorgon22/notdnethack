@@ -137,6 +137,12 @@ int adtyp, ztyp;
 		default:      impossible("unknown raygun damage type in flash_type: %d", adtyp);
 			return "barrage of lost packets";
 		}
+	case ZAP_FLAMETHROWER:
+		switch(adtyp){
+			case AD_FIRE: return "stream of burning oil";
+			default:      impossible("unknown flamethrower damage type in flash_type: %d", adtyp);
+			return "stream of bad gas prices";
+		}
 	default:
 		impossible("unknown ztyp in flash_type: %d", ztyp);
 	}
