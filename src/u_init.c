@@ -117,6 +117,22 @@ static struct trobj Anachrononaut_Gno[] = {
 	{ UNDEF_TYP, UNDEF_SPE, POTION_CLASS, 3, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+static struct trobj Anachrononaut_Sal[] = {
+	{ FLAMETHROWER,  2, WEAPON_CLASS, 1, 0 },
+	{ GRENADE_LAUNCHER, 5, WEAPON_CLASS, 1, 0 },
+	{ FRAG_GRENADE, 2, WEAPON_CLASS, 50, 0 },
+	{ GAS_GRENADE, 2, WEAPON_CLASS, 10, 0 },
+	{ CUTTING_LASER,  0, WEAPON_CLASS, 1, 0 },
+	{ JACKET, 5, ARMOR_CLASS, 1, 0 },
+	{ BODYGLOVE, 0, ARMOR_CLASS, 1, 0 },
+	{ FLACK_HELMET, 0, ARMOR_CLASS, 1, 0 },
+	{ GAUNTLETS_OF_DEXTERITY, 1, ARMOR_CLASS, 1, 0 },
+	{ CLOAK_OF_DISPLACEMENT, 0, ARMOR_CLASS, 1, 0 },
+	{ BULLET_FABBER, 0, TOOL_CLASS, 1, 0 },
+	{ POWER_PACK, 0, TOOL_CLASS, 10, 0 },
+	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Anachrononaut_Inc[] = {
 	{ LIGHTSABER,  3, WEAPON_CLASS, 1, 0 },
 	{ ELVEN_TOGA, 1, ARMOR_CLASS, 1, 0 },
@@ -1909,6 +1925,7 @@ u_init()
 		else if(Race_if(PM_DWARF)) ini_inv(Anachrononaut_Dw);
 		else if(Race_if(PM_HALF_DRAGON)) ini_inv(Anachrononaut_Hlf);
 		else if(Race_if(PM_GNOME)) ini_inv(Anachrononaut_Gno);
+		else if(Race_if(PM_SALAMANDER)) ini_inv(Anachrononaut_Sal);
 		else if(Race_if(PM_ANDROID)){
 			if(!flags.female) ini_inv(Anachrononaut_Mal_Clk);
 			else ini_inv(Anachrononaut_Fem_Clk);
@@ -2836,6 +2853,12 @@ register struct trobj *trop;
 			if(obj->otyp == POWER_ARMOR){
 				begin_burn(obj);
 				obj->obroken = 1;
+			}
+			if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_SALAMANDER) && obj->oclass == ARMOR_CLASS){ 
+			    	if((objects[obj->otyp].oc_material == LEATHER || objects[obj->otyp].oc_material == CLOTH))
+					set_material_gm(obj, DRAGON_HIDE);
+				obj->oerodeproof = 1;
+				obj->rknown = 1;
 			}
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
