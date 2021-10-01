@@ -20,7 +20,7 @@ Additonally, there are some new ideas.
 - [x] Ana clkwk loyal to dnh 1 implementation including power armor
 - [ ] Armorsmith patch
 - [ ] Do something about sokoban that isn't lokoban -- esolang level (rl time/brain cycles-> game prize)
-- [ ] Give red dragon scale stuff flying 
+- [x] Give red dragon scale stuff flying 
 - [ ] Special vibe square level
 - [ ] Formian race
 - [ ] Ent race

@@ -101,6 +101,7 @@ int otyp;
 	const static int YELLOW_RES[] = { STONE_RES, 0 };
 	const static int GREEN_RES[] = { SICK_RES, 0 };
 	const static int BLUE_RES[] = { FAST, 0 };
+	const static int RED_RES[] = { FLYING, 0 };
 	const static int BLACK_RES[] = { DRAIN_RES, 0 };
 	const static int WHITE_RES[] = { MAGICAL_BREATHING, SWIMMING, WATERPROOF, 0 };
 	const static int GRAY_RES[] = { HALF_SPDAM, 0 };
@@ -183,6 +184,11 @@ int otyp;
 			case BLUE_DRAGON_SCALE_MAIL:
 			case BLUE_DRAGON_SCALE_SHIELD:
 				bonus_prop_list = (BLUE_RES);
+				break;
+			case RED_DRAGON_SCALES:
+			case RED_DRAGON_SCALE_MAIL:
+			case RED_DRAGON_SCALE_SHIELD:
+				bonus_prop_list = (RED_RES);
 				break;
 			case BLACK_DRAGON_SCALES:
 			case BLACK_DRAGON_SCALE_MAIL:
