@@ -10133,8 +10133,8 @@ int faction;
 		mtmp->mhpmax = 10*mtmp->mhpmax;
 		mtmp->mhp = mtmp->mhpmax;
 	} else if(mndx == PM_WARMACHINE){
-		mtmp->mhpmax = 3*mtmp->mhpmax;
-		mtmp->mhp = mtmp->mhpmax;
+		//mtmp->mhpmax = 3*mtmp->mhpmax;
+		//mtmp->mhp = mtmp->mhpmax;
 	}
 	
 	switch(ptr->mlet) {

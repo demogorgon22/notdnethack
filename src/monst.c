@@ -3712,7 +3712,7 @@ then fill new spaces with our spawn!
 	MB_HUMANOID|MB_INDIGESTIBLE /*MB*/, MG_VBLUNT /*MG*/,
 	MA_CLOCK|MA_UNLIVING /*MA*/,  MV_NORMAL /*MV*/, HI_COPPER),
     MON("Warmachine", S_GNOME,// /*Needs encyc entry*//*Needs tile*/
-	LVL(20, 13, 0, -10), (G_NOCORPSE|G_NOGEN|G_UNIQ),
+	LVL(20, 6, 0, -10), (G_NOCORPSE|G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(10+9), NAT_DR(9)),
 	A(ATTK(AT_MAGC, AD_LASR, 4, 5),ATTK(AT_GAZE, AD_WMTG, 2, 2),
 	  NO_ATTK, NO_ATTK,
