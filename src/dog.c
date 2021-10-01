@@ -54,6 +54,8 @@ pet_type()
 	if(Role_if(PM_MADMAN)){
 		return PM_SECRET_WHISPERER;
 	}
+	if(Role_if(PM_ANACHRONOUNBINDER))
+	    return (urole.petnum);
 	else if(Race_if(PM_DROW)){
 		if(Role_if(PM_NOBLEMAN)){
 			if(flags.initgend) return (PM_GIANT_SPIDER);
