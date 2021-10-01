@@ -134,6 +134,11 @@ Monk changes
 		Chi Healing
 			Drains 1 pw per turn to heal 1 hp
 			Unlock level 6
+Caveman changes
+	Start with spear instead of club
+	Can apply rocks to knap soft stones into spear points 
+		which can be attached to their spear.
+	Sceptre of Might is now a bone spear
 Spear changes
 	Spears now all have changable points that can be changed to other
 	spearheads.
@@ -192,5 +197,25 @@ Spear changes
 			2x dmg drain xp
 		Silver Slingstone
 			Sears silver haters
+Anachrononaut changes
+	Ana quest 
+		Now a random power armor on ground zero, good luck.
+	Power armor - 
+		When on +4 movement points, 25 str, -19 ac, carries its
+		own weight and +100 carry cap. 
+		When off -6 ac, weighs 500.
+		Can fire 1d(2+spe/2) blaster bolts from it.
+		Is made of metal so hinders spellcasting.
+		Cannot squeeze around boulders or do tight corners while worn.
+		Must be charged, wearing it while on and firing lower charge.
+	Gnome ana -
+		Starts with silver armor/weapons and is made of silver.
+		Silver knuckle dusters, allow you to attack barehanded as a
+		half dragon as well as doing +5d4 dmg.
+		Power armor and some lame armor
+		Power armor starts time fluxed, doesn't give extra AC when on
+		until repaired with an upgrade kit resized to fit you or
+		another monster.
+		Starts with a potion vaporizer and some potions.
 General changes
 	Red dragon scale based armor now grants flying.
