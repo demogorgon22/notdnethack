@@ -850,7 +850,8 @@ boolean you_abilities;
 			pline("A mysterious force prevents you from phasing out.");
 			return 0;
 		}
-		You("phase out of reality.");
+		You("begin phasing out of reality.");
+		nomul(-2,"phasing out");
 		flags.phasing = FALSE;
 		u.old_lev.uz = u.uz;
 		u.old_lev.ux = u.ux;
