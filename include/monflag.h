@@ -65,6 +65,7 @@
 #define MS_HARROW	54	/* Summon wraiths */
 #define MS_APOC		55	/* Dire Revelations */
 #define MS_TATTOO	56	/* Tattoos service */
+#define MS_SMITH	57	/* Armorsmith service */
 
 
 #define MR_FIRE			0x0001	/* 1 resists fire */

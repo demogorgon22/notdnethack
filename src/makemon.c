@@ -7089,6 +7089,13 @@ int faction;
 				case 4: (void) mongets(mtmp, POT_HEALING, mkobjflags);
 				case 5: (void) mongets(mtmp, POT_EXTRA_HEALING, mkobjflags);
 		    }
+		} else if (ptr->mtyp == PM_ARMORSMITH) {
+			(void) mongets(mtmp, WAR_HAMMER,mkobjflags);
+			(void) mongets(mtmp, CHAIN_MAIL,mkobjflags);
+			(void) mongets(mtmp, HELMET,mkobjflags);
+			(void) mongets(mtmp, GLOVES,mkobjflags);
+			(void) mongets(mtmp, HIGH_BOOTS,mkobjflags);
+			(void) mongets(mtmp, CLOAK,mkobjflags); 
 		} else if (ptr->msound == MS_PRIEST ||
 			quest_mon_represents_role(ptr,PM_PRIEST)
 		) {

@@ -217,6 +217,23 @@ Anachrononaut changes
 		until repaired with an upgrade kit resized to fit you or
 		another monster.
 		Starts with a potion vaporizer and some potions.
+Added armorsmiths
+		Armorsmiths are meant to address the weird gap caused by
+		upgrade kits for strangely sized races
+		Maybe you'll find one in an adventure town
+		Charge a price to provide various services
+		Armor repair
+			Remove damage from armor
+		Shrink armor
+			Lowers the size of an armor piece by 1 level
+		Grow armor
+			Increases the size of an armor piece by 1 level
+			Requires an armor piece of the same type to be
+			combined
+		Change Shape
+			Change the shape (barded/segmented/centaur) of a piece
+			of armor
+			Requires a corpse or figurine reference item if not using your shape
 Dungeon Changes
 	Neutral Quest changes
 		Branch to spire from the spire in the outlands.
@@ -295,8 +312,5 @@ Dungeon Changes
 				Ait Crystal - Shocking, 2x lightning damage
 				Earth Crystal - Flaying
 				Black Crystal - Sparkling, 2x magic damage
-		
-		
-		
 General changes
 	Red dragon scale based armor now grants flying.
