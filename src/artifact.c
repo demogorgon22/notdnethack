@@ -1602,6 +1602,10 @@ struct obj *otmp;
 unsigned long flag;
 {
 	const struct artifact *arti = get_artifact(otmp);
+	if(arti_socketed(otmp) && otmp->cobj){
+		struct artifact *arti_orb = get_artifact(otmp->cobj);
+		return((boolean)((arti && (arti->cflags & flag)) || (arti_orb &&(arti_orb->cflags & flag))));
+	}
 	return((boolean)(arti && (arti->cflags & flag)));
 }
 
@@ -2009,6 +2013,10 @@ long wp_mask;
 	
 	/* get the property list (either for the slot or for slotless) */
 	get_art_property_list(tmp_property_list, oartifact, wp_mask == W_ART);
+	if(arti_socketed(otmp) && otmp->cobj && otmp->cobj->oartifact){
+		get_art_property_list(tmp_property_list, otmp->cobj->oartifact, TRUE);
+		
+	}
 	/* copy it to this local array */
 	for (i = 0; tmp_property_list[i]; i++)
 		this_art_property_list[i] = tmp_property_list[i];	// set indices

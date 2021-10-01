@@ -3545,6 +3545,9 @@ winid *datawin;
 	get_art_property_list(properties_art, oartifact, FALSE);
 	int properties_art_carried[LAST_PROP];
 	get_art_property_list(properties_art_carried, oartifact, TRUE);
+	if(obj && arti_socketed(obj) && obj->cobj && obj->cobj->oartifact)
+		get_art_property_list(properties_art_carried, obj->cobj->oartifact, TRUE);
+		
 
 	for (i = 0; propertynames[i].prop_name; i++) {
 		boolean got_prop = FALSE, while_carried = FALSE;
