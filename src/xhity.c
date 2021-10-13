@@ -14550,6 +14550,9 @@ int vis;						/* True if action is at all visible to the player */
 				bonsdmg += d(1, mlev(magr)/2+1);
 			}
 		}
+		/*Blind players attacking lokoban pinata with a bashing weapon one shot it*/
+		if(youagr && Blind && weapon && valid_weapon_attack && (attack_mask(weapon, 0, 0) & WHACK) && mdef && monsndx(mdef->data) == PM_LOKOBAN_PINATA)
+			bonsdmg += mdef->mhp*4;
 		/* monk mystic style forms */
 		if(youagr && !youdef && unarmed_punch){
 			if(u.umystic & ABSORPTIVE_PUNCH){
