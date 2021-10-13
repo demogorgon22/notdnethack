@@ -414,7 +414,7 @@ int tary;
 	/*	Special demon/minion handling code */
 	/* mvu only; we don't want it mvm and player's is handled as an ability */
 	if (youdef && !magr->cham && gates_in_help(pa) && !template_blocks_gate(magr)
-		&& !ranged && !wildmiss && (magr->summonpwr < magr->data->mlevel)) {
+		&& !ranged && !missedyou && (magr->summonpwr < magr->data->mlevel)) {
 		 if (!magr->mcan && !rn2(13)) {
 			 msummon(magr, (struct permonst *)0);
 		 }
@@ -5524,9 +5524,12 @@ boolean ranged;
 			else {
 				/* print message, maybe */
 				if (vis) {
-					pline("%s %s was poisoned!",
+					const char * s = mpoisons_subj(magr, attk);
+					pline("%s %s %s poisoned!",
 						(youagr ? "Your" : s_suffix(Monnam(magr))),
-						mpoisons_subj(magr, attk));
+						s,
+						vtense(s, "were")
+						);
 				}
 				/* resistance */
 				if (Poison_res(mdef)) {
@@ -15659,6 +15662,7 @@ int vis;						/* True if action is at all visible to the player */
 	if ((pd->mtyp == PM_BLACK_PUDDING || pd->mtyp == PM_BROWN_PUDDING || pd->mtyp == PM_DARKNESS_GIVEN_HUNGER)
 		&& weapon && (valid_weapon_attack || invalid_weapon_attack)
 		&& is_iron_obj(weapon)
+		&& !litsaber(weapon)
 		&& melee && (youdef || !mdef->mcan)) {
 		if (youdef) {
 			if (totldmg > 1)
