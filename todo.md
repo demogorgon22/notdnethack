@@ -3,7 +3,8 @@ Additonally, there are some new ideas.
 - [x] Chaos 1 improvements including mini loot being buffed and add another MAJOR resist
 - [x] Full Illithanachronounbinder patch, potentially with some changes but mostly true to the source.
 - [x] A very different version of the caveman flint knapping/spearhead point patch
-- [ ] Potion vapor improvements and a likely heavily modified version of the alchemy gnome patch
+- [x] Potion vapor improvements
+- [ ]a likely heavily modified version of the alchemy gnome patch
 - [x] A modified version of the caveman 
 - [x] Sigil + Fell + spire + key split maybe?
 - [ ] Village level
