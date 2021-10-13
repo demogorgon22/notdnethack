@@ -231,11 +231,12 @@
 #define AD_LAVA     156 /* Lava effects while stuck */
 #define AD_PYCL     157 /* Fire, poison, phys, or blindness effects */
 #define AD_MOON     158 /* Silver moonlight rapier, depends on phase of moon */
+#define AD_LOKO		159 /*Lokoban prize loot*/
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	159
+#define AD_DUNSTAN	160
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

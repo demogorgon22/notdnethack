@@ -325,13 +325,7 @@ struct obj *obj;
 	if(obj->otyp == LUCKSTONE && obj->record_achieve_special) {
 			achieve.get_luckstone = 1;
 			obj->record_achieve_special = 0;
-	} else if((obj->otyp == AMULET_OF_REFLECTION ||
-			   obj->otyp == BAG_OF_HOLDING) &&
-			  obj->record_achieve_special) {
-			achieve.finish_sokoban = 1;
-			obj->record_achieve_special = 0;
-			livelog_write_string("completed Sokoban");
-	}
+	} 
 	if(obj->otyp == CLOAK_OF_MAGIC_RESISTANCE && obj->record_achieve_special){
 		obj->record_achieve_special = 0;
 		give_law_trophy();

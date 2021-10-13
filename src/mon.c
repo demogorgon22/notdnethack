@@ -4453,6 +4453,39 @@ boolean was_swallowed;			/* digestion */
 			} else if(mdat->mattk[i].adtyp == AD_JACK){
 				explode(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 5);
 				return TRUE;
+			} else if(mdat->mattk[i].adtyp == AD_LOKO){
+				int i;
+				struct obj *otmp;
+				#define scatter_item(otmp) (scatter(mon->mx,mon->my,4,VIS_EFFECTS,otmp, (long *)0, (struct monst *)0));	
+				for(i = 0; i < 3; i++){
+					otmp = mkobj(WAND_CLASS,FALSE);
+					scatter_item(otmp);
+					otmp = mkobj(RING_CLASS,FALSE);
+					scatter_item(otmp);
+				}
+				for(i = 0; i < 30; i++){
+					otmp = mkobj(FOOD_CLASS,FALSE);
+					scatter_item(otmp);
+				}
+				boolean canBoH = TRUE;
+				boolean canAoR = TRUE;
+				if(carrying(BAG_OF_HOLDING)) canBoH = FALSE;
+				if(Reflecting) canAoR = FALSE;
+				if(canBoH && canAoR){
+					otmp = mksobj(rn2(2)?BAG_OF_HOLDING:AMULET_OF_REFLECTION, NO_MKOBJ_FLAGS); 
+				} else if(canBoH){
+					otmp = mksobj(BAG_OF_HOLDING, NO_MKOBJ_FLAGS); 
+				} else if(canAoR){
+					otmp = mksobj(AMULET_OF_REFLECTION, NO_MKOBJ_FLAGS); 
+				} else {
+					otmp = mkgold(d(5,100)+1500, mon->mx, mon->my);
+				}
+				scatter_item(otmp);
+				otmp = mkgold(d(5,100), mon->mx, mon->my);
+				scatter_item(otmp);
+				#undef scatter_item
+				achieve.finish_sokoban = 1;
+				pline("The pinata explodes, scattering goodies everywhere!");
 			} else if(mdat->mattk[i].adtyp == AD_SPIR){
 				if(Is_alignvoid(&u.uz)){
 					pline("The alignment void's balance falls apart and waves rush in!");

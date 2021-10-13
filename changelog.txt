@@ -241,6 +241,18 @@ Added armorsmiths
 			of armor
 			Requires a corpse or figurine reference item if not using your shape
 Dungeon Changes
+	Replace sokoban with lokobanv2
+		Single soko level with a few crates, no pits, and a lokoban pinata
+		Lokoban pinata 
+			doesn't move, no attacks
+			on death, scatters
+				3 wands and rings
+				30 random food items
+				500 gold
+				either a bag of holding, amulet of reflection, or more gold
+					depends on what you already have
+			has like 1.4-1.5k hp
+			can be instakilled if you play the pinata game properly
 	Neutral Quest changes
 		Branch to spire from the spire in the outlands.
 		At the top is the sigil with stores and the lady of pain who

@@ -1418,11 +1418,7 @@ default_case:
 	 * the player obtained the prize. */
 	if(otmp->otyp == LUCKSTONE && Is_mineend_level(&u.uz)) {
 			otmp->record_achieve_special = 1;
-	} else if((otmp->otyp == AMULET_OF_REFLECTION ||
-			   otmp->otyp == BAG_OF_HOLDING) && 
-			  Is_sokoend_level(&u.uz)) {
-			otmp->record_achieve_special = 1;
-	}
+	} 
 	if(otmp->otyp == CLOAK_OF_MAGIC_RESISTANCE
 		&& Is_arcadiadonjon(&u.uz)
 	){

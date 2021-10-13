@@ -1031,7 +1031,7 @@ init_dungeons()		/* initialize the "dungeon" structs */
 	spire_dnum = dname_to_dnum("The Spire");
 	chaos_dnum = dname_to_dnum("Chaos Quest");
 	law_dnum = dname_to_dnum("Law Quest");
-	sokoban_dnum = dname_to_dnum("Sokoban");
+	sokoban_dnum = dname_to_dnum("Lokoban");
 	mines_dnum = dname_to_dnum("The Gnomish Mines");
 	tower_dnum = dname_to_dnum("Vlad's Tower");
 	tomb_dnum = dname_to_dnum("The Lost Tomb");
