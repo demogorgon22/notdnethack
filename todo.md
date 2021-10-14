@@ -4,11 +4,12 @@ Additonally, there are some new ideas.
 - [x] Full Illithanachronounbinder patch, potentially with some changes but mostly true to the source.
 - [x] A very different version of the caveman flint knapping/spearhead point patch
 - [x] Potion vapor improvements
-- [ ]a likely heavily modified version of the alchemy gnome patch
+- [ ] a likely heavily modified version of the alchemy gnome patch
 - [x] A modified version of the caveman 
 - [x] Sigil + Fell + spire + key split maybe?
 - [ ] Village level
 - [ ] Adventure branches
+- [ ] "Collapsed mineshaft" branch from vlad's top level that is just mines end
 - [x] Etherealoid race, potentially slightly nerfed
 - [ ] Symbiote race, likely better implemented?
 - [ ] Cowboy role, complete with a six shooter, lasso, some weird quest, and spurred boots -- not so sure what I was on about with this one. probably no
