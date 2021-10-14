@@ -2014,11 +2014,11 @@ A("Aryfaern Kerym",					RUNESWORD,			(const char *)0,
 
 /* needs encyc entry */
 /* Elf crowning gift, Chaotic */
-A("Aryvelahr Kerym",				LONG_SWORD,		(const char *)0,
-	8000L, SILVER, MZ_DEFAULT, WT_DEFAULT,
+A("Aryvelahr Kerym",				CRYSTAL_SWORD,		(const char *)0,
+	8000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, PM_ELF, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
 	NO_MONS(),
-	ATTK(AD_PHYS, 5, 0), NOFLAG,
+	ATTK(AD_PHYS, 5, 0), (ARTA_SILVER),
 	PROPS(REFLECTING, DRAIN_RES), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, (ARTI_LIGHT)
