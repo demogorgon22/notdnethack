@@ -1872,7 +1872,7 @@ int tary;
 	/* print spell-cast message */
 	if (spellnum) {
 		if ((youagr || (youdef && !is_undirected_spell(spellnum) && cansee(tarx, tary)) || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS) {
-			if (is_undirected_spell(spellnum) || notarget)
+			if (is_undirected_spell(spellnum) || notarget || (!foundem && distmin(x(mdef), y(mdef), tarx, tary) > 2))
 				buf[0] = '\0';
 			else
 			{
@@ -1973,7 +1973,7 @@ int tary;
 			return MM_MISS;
 		}
 	}
-	else if ((mdef && dist2(x(magr), y(magr), tarx, tary) <= 2 && tarx == x(mdef) && tary == y(mdef)) && adtyp != AD_LASR) {
+	else if (foundem && dist2(x(magr), y(magr), tarx, tary) <= 2 && adtyp != AD_LASR) {
 		rangedspell = FALSE;
 	}
 	else {
@@ -2243,7 +2243,7 @@ int tary;
 			basiczap(&zapdata, adtyp, ZAP_SPELL, dmn);
 
 			/* message */
-			if (youdef) {
+			if (youdef && foundem) {
 				/* message */
 				if (canseemon(magr)) {
 					pline("%s zaps you with a %s!", Monnam(magr),
@@ -2256,7 +2256,7 @@ int tary;
 			}
 			else {
 				if (youagr || canseemon(magr)) {
-					if (mdef) {
+					if (mdef && foundem) {
 						pline("%s %s %s with a %s!",
 							(youagr ? "You" : Monnam(magr)),
 							(youagr ? "zap" : "zaps"),
