@@ -1837,7 +1837,7 @@ dosacrifice()
 		You("worry that you have not yet completed your mission.");
 	}
 	
-    if (In_endgame(&u.uz)) {
+    if (In_endgame(&u.uz) || In_void(&u.uz)) {
 	if (!(otmp = getobj(sacrifice_types, "sacrifice"))) return 0;
     } else {
 	if (!(otmp = floorfood("sacrifice", 1))) return 0;
@@ -2065,6 +2065,9 @@ dosacrifice()
 						pline("As time moves at the blink of an eye you watch the Illithid Empire return to power.");
 						done(ASCENDED);
 					}
+				} else {
+					You_feel("an urge to find your true god.");
+					return 1;
 				}
 			}
 			if (Hallucination)
