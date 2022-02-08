@@ -1258,17 +1258,15 @@ dofightingform()
 	menu_item *selected;
 	anything any;
 
-	if(Role_if(PM_MONK) && !((uwep && is_lightsaber(uwep)) || (u.twoweap && uswapwep && is_lightsaber(uswapwep)))){
-		return doMabilForm();
-	}	
-	
 	//If monk is wielding a saber in offhand or onhand, saber styles take precedent (blah, ima could be annoying)
 	if(Role_if(PM_MONK) && !((uwep && is_lightsaber(uwep)) || (u.twoweap && uswapwep && is_lightsaber(uswapwep)))){
 		if(uwep || (u.twoweap && uswapwep)){
 			pline("You must not be wielding any weapons to use mystic combat.");
 			return 0;
 		}
-		return doMysticForm();
+		doMabilForm();
+		doMysticForm();
+		return 0;
 	}
 	
 	if(!(uwep && is_lightsaber(uwep))){
