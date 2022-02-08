@@ -685,10 +685,67 @@ yellow_nasty()
 			continue;
 		if(maketemplate)
 			set_template(mtmp, maketemplate);
+		if(mtmp->m_lev < 15){
+			mtmp->m_lev = 15;
+			mtmp->mhpmax = d(15,8);
+			mtmp->mhp = mtmp->mhpmax;
+		}
 		mtmp->msleeping = 0;
 		untame(mtmp, 0);
+		mtmp->mfaction = YELLOW_FACTION;
 		set_malign(mtmp);
 	}
+}
+
+/* create some yellow sign monsters */
+void
+yellow_dead()
+{
+    register struct monst *mtmp;
+    register int makeindex, maketemplate;
+	int zombiepms[] ={PM_HUMAN, PM_ELF, PM_DROW, PM_DWARF, PM_HOBBIT, PM_HALF_DRAGON, PM_CHIROPTERAN, PM_KOBOLD, PM_GNOME, PM_ORC, PM_ETTIN, PM_GIANT};
+    coord bypos;
+	switch(rn2(6)){
+		case 0:
+			makeindex = PM_COILING_BRAWN;
+			maketemplate = 0;
+			bypos.x = u.ux;
+			bypos.y = u.uy;
+		break;
+		case 1:
+			makeindex = PM_FUNGAL_BRAIN;
+			maketemplate = 0;
+			bypos.x = 0;
+			bypos.y = 0;
+		break;
+		case 2:
+			makeindex = PM_HUMAN;
+			maketemplate = DREAM_LEECH;
+			bypos.x = u.ux;
+			bypos.y = u.uy;
+		break;
+		default:
+			makeindex = zombiepms[rn2(SIZE(zombiepms))];
+			maketemplate = YELLOW_TEMPLATE;
+			bypos.x = u.ux;
+			bypos.y = u.uy;
+		break;
+	}
+	mtmp = makemon(&mons[makeindex], bypos.x, bypos.y, 0);
+	/* makemon failed for some reason */
+	if(!mtmp)
+		return;
+	if(maketemplate)
+		set_template(mtmp, maketemplate);
+	if(mtmp->m_lev < 15){
+		mtmp->m_lev = 15;
+		mtmp->mhpmax = d(15,8);
+		mtmp->mhp = mtmp->mhpmax;
+	}
+	mtmp->msleeping = 0;
+	mtmp->mpeaceful = 0;
+	mtmp->mfaction = YELLOW_FACTION;
+	set_malign(mtmp);
 }
 
 /*	Let's resurrect the wizard, for some unexpected fun.	*/
@@ -832,7 +889,7 @@ coa_arrive()
 	
 	if(!mtmp && mvitals[PM_CENTER_OF_ALL].born == 0) mtmp = makemon(&mons[PM_CENTER_OF_ALL], 0, 0, MM_NOWAIT);
 	
-	if (mtmp) {
+	if (mtmp && (In_endgame(&u.uz) || u.uinsight > 8)) {
 		mtmp->msleeping = mtmp->mtame = mtmp->mpeaceful = 0;
 		set_malign(mtmp);
 	}
@@ -1180,7 +1237,7 @@ register struct monst	*mtmp;
 	} else if(is_angel(mtmp->data) && !(is_lminion(mtmp) && rn2(10))){
 		int t = rn2(SIZE(random_angeldiction));
 		if(t == 0) //Contains %s for god
-			verbalize(random_angeldiction[t], align_gname(u.ualign.type));
+			verbalize(random_angeldiction[t], godname(u.ualign.god));
 		else if(t == 1) //Contains %s for cleansed/purged
 			verbalize(random_angeldiction[t], 
 				(sgn(u.ualign.type) == sgn(mtmp->data->maligntyp) &&  u.ualign.type != A_VOID) ? 

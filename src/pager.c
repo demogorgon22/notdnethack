@@ -470,8 +470,7 @@ lookat(x, y, buf, monbuf, shapebuff)
     } else switch(glyph_to_cmap(glyph)) {
     case S_altar:
 	if(!In_endgame(&u.uz))
-	    Sprintf(buf, "%s altar",
-		align_str(Amask2align(levl[x][y].altarmask & ~AM_SHRINE)));
+	    Sprintf(buf, "%s altar", align_str(a_align(x, y)));
 	else Sprintf(buf, "aligned altar");
 	break;
     case S_ndoor:
@@ -1095,6 +1094,8 @@ do_look(quick)
     boolean hit_cloud;		/* true if found cloud explanation */
     int skipped_venom;		/* non-zero if we ignored "splash of venom" */
 	int hallu_obj;		/* non-zero if found hallucinable object */
+	short otyp = STRANGE_OBJECT;	/* to pass to artifact_name */
+	int oartifact;					/* to pass to artifact_name */
     static const char *mon_interior = "the interior of a monster";
 
     force_defsyms = FALSE;
@@ -1137,8 +1138,13 @@ do_look(quick)
 				temp_print = strtok(NULL, "\n");
 			}
 		}
+		// check if they specified an artifact
+		else if ((x_str = artifact_name(out_str, &otyp, &oartifact))) {
+			putstr(datawin, 0, x_str);
+			describe_item(NULL, otyp, oartifact, &datawin);
+		}
 		// check encyclopedia
-	    if(checkfile(out_str, pm, mntmp==NON_PM, TRUE, &datawin) || mntmp != NON_PM)
+	    if(checkfile(out_str, pm, (mntmp==NON_PM && otyp==STRANGE_OBJECT), TRUE, &datawin) || mntmp != NON_PM || otyp != STRANGE_OBJECT)
 			display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
 	    return 0;
@@ -1535,7 +1541,7 @@ get_generation_description_of_monster_type(struct monst * mtmp, char * temp_buf)
 	many = append(temp_buf, (ptr->geno & G_LGROUP), " in large groups", many);
 	if ((ptr->geno & G_NOGEN) == 0) {
 		char frequency[BUFSZ] = "";
-		sprintf(frequency, ", with frequency %d.", (ptr->geno & G_FREQ));
+		sprintf(frequency, ", with frequency %ld.", (ptr->geno & G_FREQ));
 		strcat(temp_buf, frequency);
 	}
 	else {
@@ -1862,8 +1868,11 @@ get_description_of_attack_type(uchar id)
 	case AT_NONE: return "passive";
 	case AT_CLAW: return "claw";
 	case AT_BITE: return "bite";
+	case AT_OBIT: return "bite";
+	case AT_WBIT: return "bite";
 	case AT_KICK: return "kick";
 	case AT_BUTT: return "head butt";
+	case AT_TAIL: return "tail slap";
 	case AT_TUCH: return "touch";
 	case AT_STNG: return "sting";
 	case AT_HUGS: return "crushing bearhug";
@@ -2086,6 +2095,8 @@ get_description_of_damage_type(uchar id)
 	case AD_LAVA: return "crushing lava";
 	case AD_PYCL: return "pyroclastic";
 	case AD_MOON: return "silver moonlight";
+	case AD_HOLY: return "holy energy";
+	case AD_UNHY: return "unholy energy";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";

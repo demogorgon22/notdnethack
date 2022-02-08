@@ -615,12 +615,12 @@ boolean taken;
 	    c = ask ? yn_function("Do you want to see your attributes?",
 				  ynqchars, defquery) : defquery;
 	    if (c == 'y')
-		enlightenment(how >= PANICKED ? 1 : 2); /* final */
+		show_enlightenment(how >= PANICKED ? 1 : 2, FALSE); /* final */
 	    if (c == 'q') done_stopprint++;
 	}
 #ifdef DUMP_LOG
 	if (dump_fp) {
-	  dump_enlightenment((int) (how >= PANICKED ? 1 : 2));
+	  show_enlightenment((int) (how >= PANICKED ? 1 : 2), TRUE);
 	  dump_spells();
 	}
 #endif
@@ -646,12 +646,12 @@ boolean taken;
 	    c = ask ? yn_function("Do you want to see your conduct?",
 				  ynqchars, defquery) : defquery;
 	    if (c == 'y')
-		show_conduct(how >= PANICKED ? 1 : 2);
+		show_conduct(how >= PANICKED ? 1 : 2, FALSE);
 	    if (c == 'q') done_stopprint++;
 	}
 #ifdef DUMP_LOG
 	if (dump_fp) {
-	    dump_conduct(how >= PANICKED ? 1 : 2);
+	    show_conduct(how >= PANICKED ? 1 : 2, TRUE);
 	    dump_weapon_skill();
 	}
 #endif
@@ -1124,7 +1124,7 @@ die:
 	    else if (how == GLASSED)
 		u.ugrave_arise = (NON_PM - 4);	/* statue instead of corpse */
 	    else if (u.ugrave_arise == NON_PM &&
-		     !(mvitals[u.umonnum].mvflags & G_NOCORPSE)) {
+		     !(mvitals[u.umonnum].mvflags & G_NOCORPSE && !uandroid)) {
 		int mtyp = u.umonnum;
 
 		if (!Upolyd) {
@@ -1328,7 +1328,7 @@ die:
 	    /* count the points for artifacts */
 	    artifact_score(invent, TRUE, endwin);
 
-	    keepdogs(TRUE);
+	    keepdogs(TRUE, 0, 0);
 	    viz_array[0][0] |= IN_SIGHT; /* need visibility for naming */
 	    mtmp = mydogs;
 	    Strcpy(pbuf, "You");

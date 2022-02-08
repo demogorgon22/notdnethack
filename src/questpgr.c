@@ -284,17 +284,17 @@ char c;
 			break;
 	    case 'g':	str = guardname();
 			break;
-	    case 'G':	str = align_gtitle(u.ualignbase[A_ORIGINAL]);
+	    case 'G':	str = gtitle(u.ugodbase[UGOD_ORIGINAL]);
 			break;
 	    case 'h':	str = (flags.female) ?  urace.individual.f : urace.individual.m;
 			break;
 	    case 'H':	str = homebase();
 			break;
-	    case 'a':	str = align_str(u.ualignbase[A_ORIGINAL]);
+	    case 'a':	str = align_str(galign(u.ugodbase[UGOD_ORIGINAL]));
 			break;
 	    case 'A':	str = align_str(u.ualign.type);
 			break;
-	    case 'd':	str = align_gname(u.ualignbase[A_ORIGINAL]);
+	    case 'd':	str = align_gname(galign(u.ugodbase[UGOD_ORIGINAL]));
 			break;
 	    case 'D':	str = align_gname(A_LAWFUL);
 			break;
@@ -478,8 +478,9 @@ qt_montype()
 				else return &mons[PM_DOPPELGANGER];
 			break;
 			case 4:
-				if(rn2(3)) return mkclass(S_VAMPIRE, G_NOHELL|G_HELL);
-				else if(rn2(3)) return mkclass(S_WRAITH, G_NOHELL|G_HELL);
+				if(rn2(2)) return mkclass(S_VAMPIRE, G_NOHELL|G_HELL);
+				else if(rn2(2)) return mkclass(S_ZOMBIE, G_NOHELL|G_HELL);
+				else if(rn2(2)) return mkclass(S_WRAITH, G_NOHELL|G_HELL);
 				else if(rn2(3)) return mkclass(S_LICH, G_NOHELL|G_HELL);
 				else if(Is_qstart(&u.uz) || rn2(3)) return &mons[PM_DARKNESS_GIVEN_HUNGER];
 				else return &mons[PM_DREAD_SERAPH];
@@ -487,7 +488,7 @@ qt_montype()
 			case 5:
 				if(rn2(2)) return &mons[PM_DEEP_ONE];
 				else if(rn2(2)) return &mons[PM_DEEPER_ONE];
-				else if(rn2(2)) return &mons[PM_MIND_FLAYER];
+				else if(rn2(4)) return &mons[PM_DEEP_DWELLER];
 				else return &mons[PM_DEEPEST_ONE];
 			break;
 			case 6:

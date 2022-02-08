@@ -170,7 +170,7 @@ const char *verb;
 		    if (mtmp) {
 			if (!mon_resistance(mtmp,PASSES_WALLS) &&
 				!throws_rocks(mtmp->data)) {
-				if (hmon_general(&youmonst, mtmp, (struct attack *)0, (struct attack *)0, &obj, (struct obj *)0, HMON_FIRED, 0, 0, TRUE, rnd(20), FALSE, -1) != MM_DEF_DIED
+				if (hmon_general(&youmonst, mtmp, (struct attack *)0, (struct attack *)0, &obj, (struct obj *)0, HMON_PROJECTILE|HMON_FIRED, 0, 0, TRUE, rnd(20), FALSE, -1) != MM_DEF_DIED
 					&& !is_whirly(mtmp->data))
 				return FALSE;	/* still alive */
 			}
@@ -383,8 +383,9 @@ register struct obj *obj;
 					goto giveback;
 				}
 			}
+			You("wish you hadn't done that.");
 		}
-		You("wish you hadn't done that.");
+		else You("kinda wish you hadn't done that.");
 		break;
 	    case RIN_SEARCHING:
 		You("thought your %s got lost in the sink, but there it is!",
@@ -1266,7 +1267,7 @@ int portal;
 		if(obj->otyp == MIRROR)
 			u.uz.flags.mirror = 1;
 	}
-	if(!Is_nowhere(newlevel)) keepdogs(FALSE);
+	if(!Is_nowhere(newlevel)) keepdogs(FALSE, newlevel, portal);
 	u.ux = u.uy = 0;			/* comes after keepdogs() */
 	
 	if (u.uswallow)				/* idem */
@@ -1869,7 +1870,12 @@ int different;
     cname = eos(strcpy(cname_buf, "bite-covered "));
     Strcpy(cname, corpse_xname(corpse, TRUE));
     mcarry = (where == OBJ_MINVENT) ? corpse->ocarry : 0;
-
+	int ox, oy;
+	if(where == OBJ_FLOOR){
+		ox = corpse->ox;
+		oy = corpse->oy;
+	}
+	
     if (where == OBJ_CONTAINED) {
     	struct monst *mtmp2 = (struct monst *)0;
 		container = corpse->ocontainer;
@@ -1898,6 +1904,8 @@ int different;
 	if(different==REVIVE_YELLOW){
 		set_template(mtmp, YELLOW_TEMPLATE);
 		mtmp->zombify = 0;
+		mtmp->mfaction = YELLOW_FACTION;
+		mtmp->mcrazed = 0;
 		if(mtmp->mpeaceful && !mtmp->mtame){
 			mtmp->mpeaceful = 0;
 		}
@@ -1947,6 +1955,19 @@ int different;
 			else
 				pline("%s rises from the dead!", chewed ?
 					Adjmonnam(mtmp, "bite-covered") : Monnam(mtmp));
+			if(level.objects[ox][oy] && !mtmp->menvy){
+				struct obj *cur;
+				struct obj *nobj;
+				for(cur = level.objects[ox][oy]; cur; cur = nobj){
+					nobj = cur->nexthere;
+					if(likes_obj(mtmp, cur) || can_equip(mtmp, cur)){
+						obj_extract_self(cur);
+						mpickobj(mtmp, cur);
+					}
+				}
+				m_dowear(mtmp, TRUE);
+				init_mon_wield_item(mtmp);
+			}
 		}
 		break;
 
@@ -2398,6 +2419,7 @@ int
 donull()
 {
 	static long lastreped = -13;//hacky way to tell if the player has recently tried repairing themselves
+	u.unull = TRUE;
 	if(uclockwork){
 		if(!Upolyd && u.uhp<u.uhpmax){
 			if(lastreped < monstermoves-13) You("attempt to make repairs.");
@@ -2463,7 +2485,12 @@ donull()
 			}
 		} else if(u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) unbind(SEAL_EURYNOME,TRUE);
 	} else {
-		if(u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) unbind(SEAL_EURYNOME,TRUE);
+		if(Role_if(PM_MONK)){
+			if(lastreped < monstermoves-13) You("meditate.");
+			lastreped = monstermoves;
+		}
+		else if(u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) unbind(SEAL_EURYNOME,TRUE);
+		
 		if(Upolyd && u.uhp<u.uhpmax){
 			if(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_HEALING){
 				u.mh++;

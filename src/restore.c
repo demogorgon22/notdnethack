@@ -434,7 +434,6 @@ unsigned int *stuckid, *steedid;	/* STEED */
 	mread(fd, (genericptr_t) &youmonst, sizeof(struct monst));
 	if (youmonst.light)
 		rest_lightsource(LS_MONSTER, &youmonst, youmonst.light, fd, FALSE);
-	mread(fd, (genericptr_t) &god_list, sizeof(struct god_details)*MAX_GOD);
 	init_uasmon();
 #ifdef CLIPPING
 	cliparound(u.ux, u.uy);
@@ -502,6 +501,8 @@ unsigned int *stuckid, *steedid;	/* STEED */
 	}
 
 	/* this stuff comes after potential aborted restore attempts */
+	restore_gods(fd);
+	restore_artifacts(fd);
 	invent = restobjchn(fd, FALSE, FALSE);
 	bc_obj = restobjchn(fd, FALSE, FALSE);
 	while (bc_obj) {
@@ -551,7 +552,6 @@ unsigned int *stuckid, *steedid;	/* STEED */
 	ffruit = loadfruitchn(fd);
 
 	restnames(fd);
-	restore_artifacts(fd);
 	restore_waterlevel(fd);
 #ifdef RECORD_ACHIEVE
 	mread(fd, (genericptr_t) &achieve, sizeof achieve);
@@ -933,6 +933,8 @@ boolean ghostly;
 	mread(fd, (genericptr_t)&dndest, sizeof(dest_area));
 	mread(fd, (genericptr_t)&level.flags, sizeof(level.flags));
 	mread(fd, (genericptr_t)doors, sizeof(doors));
+	mread(fd, (genericptr_t)&altarindex, sizeof(int));
+	mread(fd, (genericptr_t)altars, sizeof(altars));
 	rest_rooms(fd);		/* No joke :-) */
 	if (nroom)
 	    doorindex = rooms[nroom - 1].fdoor + rooms[nroom - 1].doorct;

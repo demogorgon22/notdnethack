@@ -838,7 +838,7 @@ struct mkroom	*croom;
     struct monst *mtmp;
     schar x, y;
     char class;
-    aligntyp amask;
+    aligntyp alignment;
     coord cc;
     struct permonst *pm;
     unsigned g_mvflags;
@@ -856,16 +856,16 @@ struct mkroom	*croom;
 	    panic("create_monster: unknown monster class '%c'", m->class);
 
 	if(m->align == AM_SPLEV_CO)
-		amask = Align2amask(u.ualignbase[A_ORIGINAL]);
+		alignment = galign(u.ugodbase[UGOD_ORIGINAL]);
 	else if(m->align == AM_SPLEV_NONCO){
-		int tmp = noncoalignment(u.ualignbase[A_ORIGINAL]);
-		amask = Align2amask(tmp);
+		alignment = noncoalignment(galign(u.ugodbase[UGOD_ORIGINAL]));
 	}
 	else if(m->align <= -11) 
-		amask = induced_align(80);
+		alignment = induced_align(80);
 	else if(m->align < 0)
-		amask = ralign[-m->align-1];
-	else amask = m->align;
+		alignment = Amask2align(ralign[-m->align-1]);
+	else
+		alignment = Amask2align(m->align);
 
 	if (!class)
 	    pm = (struct permonst *) 0;
@@ -881,9 +881,14 @@ struct mkroom	*croom;
 	    /* if we can't get a specific monster type (pm == 0) then the
 	       class has been genocided, so settle for a random monster */
 	}
+	/* reduce quantity of peacefuls in the Mines */
 	if (In_mines(&u.uz) && pm && your_race(pm) &&
 			(Race_if(PM_DWARF) || Race_if(PM_GNOME)) && rn2(3))
 	    pm = (struct permonst *) 0;
+	/* replace priests with angels on Binder's Astral */
+	if (Role_if(PM_EXILE) && on_level(&u.uz, &astral_level) && m->id == PM_ALIGNED_PRIEST) {
+		pm = &mons[PM_ANGEL];
+	}
 
 	x = m->x;
 	y = m->y;
@@ -902,7 +907,7 @@ struct mkroom	*croom;
 	    x = cc.x,  y = cc.y;
 
 	if(m->align != -12)
-	    mtmp = mk_roamer(pm, Amask2align(amask), x, y, m->peaceful);
+	    mtmp = mk_roamer(pm, alignment, x, y, m->peaceful);
 	else if(PM_ARCHEOLOGIST <= m->id && m->id <= PM_WIZARD)
 	         mtmp = mk_mplayer(pm, x, y, FALSE);
 	else mtmp = makemon(pm, x, y, NO_MM_FLAGS);
@@ -972,6 +977,8 @@ struct mkroom	*croom;
 		mtmp->mpeaceful = m->peaceful;
 		/* changed mpeaceful again; have to reset malign */
 		set_malign(mtmp);
+		if(mtmp->mpeaceful && Infuture && !Race_if(PM_ANDROID))
+			set_faction(mtmp, QUEST_FACTION);
 	    }
 	    if (m->asleep >= 0) {
 #ifdef UNIXPC
@@ -1081,7 +1088,7 @@ struct mkroom	*croom;
 	if(otmp->otyp == CORPSE && otmp->corpsenm == PM_CROW_WINGED_HALF_DRAGON){
 		otmp->oeroded = 1;
 		if (otmp->timed) {
-			(void) stop_timer(ROT_CORPSE, otmp->timed);
+			stop_corpse_timers(otmp);
 			start_corpse_timeout(otmp);
 		}
 	}
@@ -1117,6 +1124,7 @@ struct mkroom	*croom;
 					}
 				break;
 			}
+			mon->mfaction = YELLOW_FACTION;
 		}
 		else {
 			mon = makemon(&mons[asylum_types[rn2(SIZE(asylum_types))]], otmp->ox, otmp->oy, NO_MINVENT);
@@ -1145,14 +1153,18 @@ struct mkroom	*croom;
 		struct obj *tmpo;
 
 		if(rn2(10)){
+			int insight;
 			mon = makemon(&mons[surgery_types[rn2(SIZE(surgery_types))]], otmp->ox, otmp->oy, NO_MINVENT|MM_NOCOUNTBIRTH);
 			if(mon) switch(mon->mtyp){
 				case PM_PRIESTESS:
 				case PM_DEMINYMPH:
 				case PM_YUKI_ONNA:
-					if(mon->mtyp != PM_PRIESTESS)
+					insight = rn2(20);
+					if(mon->mtyp != PM_PRIESTESS && rn2(20) > u.uinsight)
 						goto default_case;
 					set_template(mon, MISTWEAVER);
+					mon->mfaction = GOATMOM_FACTION;
+					mon->m_insight_level = min(insight, u.uinsight);
 					(void)mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
 					mon->entangled = SHACKLES;
 					makemon(&mons[PM_HEALER], otmp->ox, otmp->oy, MM_ADJACENTOK);
@@ -1170,14 +1182,17 @@ default_case:
 					switch(rn2(5)){
 						case 0:
 							set_template(mon, YELLOW_TEMPLATE);
+							mon->mfaction = YELLOW_FACTION;
 							mon->msleeping = 1;
 						break;
 						case 2:
 							set_template(mon, DREAM_LEECH);
+							mon->mfaction = YELLOW_FACTION;
 							mon->msleeping = 1;
 						break;
 						case 3:
 							set_template(mon, DREAM_LEECH);
+							mon->mfaction = YELLOW_FACTION;
 							mon->msleeping = 1;
 						break;
 						default:
@@ -1191,6 +1206,7 @@ default_case:
 								mtmp = makemon(&mons[PM_LILITU], otmp->ox, otmp->oy, MM_ADJACENTOK);
 								if(mtmp){
 									set_template(mtmp, YELLOW_TEMPLATE);
+									mtmp->mfaction = YELLOW_FACTION;
 									mongets(mtmp, lilitu_items[rn2(SIZE(lilitu_items))], NO_MKOBJ_FLAGS);
 									
 									meqp = mongets(mtmp, KHAKKHARA, MKOBJ_NOINIT);
@@ -1238,6 +1254,7 @@ default_case:
 									mtmp = makemon(&mons[PM_DAUGHTER_OF_BEDLAM], otmp->ox, otmp->oy, MM_ADJACENTOK);
 									if(mtmp){
 										set_template(mtmp, YELLOW_TEMPLATE);
+										mtmp->mfaction = YELLOW_FACTION;
 										mongets(mtmp, bedlam_items[rn2(SIZE(bedlam_items))], NO_MKOBJ_FLAGS);
 										meqp = mongets(mtmp, rn2(2) ? HEALER_UNIFORM : STRAITJACKET, NO_MKOBJ_FLAGS);
 										meqp->spe = 5;
@@ -1256,11 +1273,20 @@ default_case:
 								int nurse_items[] = {POT_SLEEPING, POT_PARALYSIS, POT_AMNESIA,
 													  SCR_DESTROY_ARMOR, SCR_AMNESIA};
 								mtmp = makemon(&mons[PM_HEALER], otmp->ox, otmp->oy, MM_ADJACENTOK);
-								if(mtmp) mongets(mtmp, healer_items[rn2(SIZE(healer_items))], NO_MKOBJ_FLAGS);
+								if(mtmp){
+									mongets(mtmp, healer_items[rn2(SIZE(healer_items))], NO_MKOBJ_FLAGS);
+									mtmp->mfaction = YELLOW_FACTION;
+								}
 								mtmp = makemon(&mons[PM_NURSE], otmp->ox, otmp->oy, MM_ADJACENTOK);
-								if(mtmp) mongets(mtmp, nurse_items[rn2(SIZE(nurse_items))], NO_MKOBJ_FLAGS);
+								if(mtmp){
+									mongets(mtmp, nurse_items[rn2(SIZE(nurse_items))], NO_MKOBJ_FLAGS);
+									mtmp->mfaction = YELLOW_FACTION;
+								}
 								mtmp = makemon(&mons[PM_NURSE], otmp->ox, otmp->oy, MM_ADJACENTOK);
-								if(mtmp) mongets(mtmp, nurse_items[rn2(SIZE(nurse_items))], NO_MKOBJ_FLAGS);
+								if(mtmp){
+									mongets(mtmp, nurse_items[rn2(SIZE(nurse_items))], NO_MKOBJ_FLAGS);
+									mtmp->mfaction = YELLOW_FACTION;
+								}
 							}
 						break;
 					}
@@ -1278,6 +1304,287 @@ default_case:
 			}
 		}
 		otmp->spe = 0;
+	}
+	// Madman's old stuff to reclaim
+	if(Is_container(otmp) && otmp->spe == 7){
+		struct obj *stuff;
+		stuff = mksartifact(ART_RITE_OF_DETESTATION);
+		add_to_container(otmp, stuff);
+#define default_add(type) stuff = mksobj(type, MKOBJ_NOINIT);\
+					add_to_container(otmp, stuff);
+#define default_add_2(type) stuff = mksobj(type, MKOBJ_NOINIT);\
+					stuff->spe = 2;\
+					add_to_container(otmp, stuff);
+		switch(urace.malenum){
+			default:
+			case PM_HUMAN:
+			case PM_VAMPIRE:
+			case PM_INCANTIFIER:
+			case PM_GNOME:
+				if(flags.initgend){
+					default_add(STILETTOS);
+					default_add(VICTORIAN_UNDERWEAR);
+					default_add(GLOVES);
+					
+					default_add_2(GENTLEWOMAN_S_DRESS);
+					if(Race_if(PM_INCANTIFIER)){
+						stuff = mksobj(ROBE, MKOBJ_NOINIT);
+						set_material_gm(stuff, CLOTH);
+						stuff->obj_color = CLR_GRAY;
+						stuff->spe = 2;
+						add_to_container(otmp, stuff);
+					}
+					else if(Race_if(PM_VAMPIRE)){
+						default_add_2(find_opera_cloak());
+					}
+					default_add_2(KNIFE);
+				}
+				else {
+					default_add(HIGH_BOOTS);
+					default_add(RUFFLED_SHIRT);
+					default_add(GLOVES);
+					default_add_2(GENTLEMAN_S_SUIT);
+					default_add_2(RAPIER);
+
+					if(Race_if(PM_INCANTIFIER)){
+						stuff = mksobj(ROBE, MKOBJ_NOINIT);
+						set_material_gm(stuff, CLOTH);
+						stuff->obj_color = CLR_GRAY;
+						add_to_container(otmp, stuff);
+					}
+					else if(Race_if(PM_VAMPIRE)){
+						default_add(find_opera_cloak());
+					}
+					else {
+						stuff = mksobj(CLOAK, MKOBJ_NOINIT);
+						set_material_gm(stuff, CLOTH);
+						stuff->obj_color = CLR_BLACK;
+						add_to_container(otmp, stuff);
+					}
+				}
+				if(urace.malenum == PM_GNOME){
+					default_add_2(GNOMISH_POINTY_HAT);
+					default_add_2(AKLYS);
+				}
+			break;
+			case PM_HALF_DRAGON:
+				if(flags.initgend){
+					//Zerth
+					int merctypes[] = {BROADSWORD, LONG_SWORD, TWO_HANDED_SWORD, KATANA, TSURUGI, SPEAR, TRIDENT, MACE, MORNING_STAR };
+					int gauntlettypes[] = {GAUNTLETS_OF_POWER, GAUNTLETS, GAUNTLETS_OF_DEXTERITY, ORIHALCYON_GAUNTLETS };
+					int boottypes[] = {ARMORED_BOOTS, HIGH_BOOTS, SPEED_BOOTS, WATER_WALKING_BOOTS, JUMPING_BOOTS, KICKING_BOOTS, FLYING_BOOTS };
+					int index;
+					index = rn2(SIZE(merctypes));
+					stuff = mksobj(merctypes[index], MKOBJ_NOINIT);
+					set_material_gm(stuff, MERCURIAL);
+					add_to_container(otmp, stuff);
+					//Spiked gauntlets
+					stuff = mksobj(gauntlettypes[rn2(SIZE(gauntlettypes))], MKOBJ_NOINIT);
+					if(index < SPEAR){
+						add_oprop(stuff, OPROP_SPIKED);
+						stuff->spe = 2;
+					}
+					else {
+						add_oprop(stuff, OPROP_BLADED);
+						stuff->spe = 2;
+					}
+					add_to_container(otmp, stuff);
+					default_add_2(RED_DRAGON_SCALE_MAIL);
+					//Spiked boots
+					stuff = mksobj(boottypes[rn2(SIZE(boottypes))], MKOBJ_NOINIT);
+					add_oprop(stuff, OPROP_SPIKED);
+					stuff->spe = 2;
+					add_to_container(otmp, stuff);
+				}
+				else {
+					//Knight
+					stuff = mksobj(TWO_HANDED_SWORD, mkobjflags);
+					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_PSIOW);
+					add_oprop(stuff, OPROP_VORPW);
+					add_oprop(stuff, OPROP_GSSDW);
+					stuff->spe = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(find_gcirclet(), mkobjflags);
+					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_BLAST);
+					stuff->spe = 2;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(ARCHAIC_PLATE_MAIL, mkobjflags);
+					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_BRIL);
+					stuff->spe = 2;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(ARCHAIC_GAUNTLETS, mkobjflags);
+					set_material_gm(stuff, SILVER);
+					stuff->spe = 2;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(ARCHAIC_BOOTS, mkobjflags);
+					set_material_gm(stuff, SILVER);
+					stuff->spe = 2;
+					add_to_container(otmp, stuff);
+				}
+			break;
+			case PM_DWARF:
+				default_add(HIGH_BOOTS);
+				stuff = mksobj(RUFFLED_SHIRT, MKOBJ_NOINIT);
+				stuff->obj_color = CLR_BLACK;
+				add_to_container(otmp, stuff);
+				default_add(GLOVES);
+
+				stuff = mksobj(CHAIN_MAIL, MKOBJ_NOINIT);
+				stuff->spe = 2;
+				set_material_gm(stuff, SILVER);
+				add_to_container(otmp, stuff);
+
+				stuff = mksobj(DWARVISH_CLOAK, MKOBJ_NOINIT);
+				stuff->obj_color = CLR_BLACK;
+				add_to_container(otmp, stuff);
+
+				default_add_2(BATTLE_AXE);
+			break;
+			case PM_DROW:
+				default_add(find_signet_ring());
+				if(flags.initgend){
+					default_add(STILETTOS);
+					default_add_2(VICTORIAN_UNDERWEAR);
+					default_add(GLOVES);
+
+					stuff = mksobj(NOBLE_S_DRESS, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_REFL);
+					add_to_container(otmp, stuff);
+
+					default_add_2(DROVEN_DAGGER);
+				}
+				else {
+					default_add(HIGH_BOOTS);
+					default_add(RUFFLED_SHIRT);
+					default_add(GLOVES);
+					default_add_2(GENTLEMAN_S_SUIT);
+					default_add_2(DROVEN_SHORT_SWORD);
+
+					stuff = mksobj(DROVEN_GREATSWORD, MKOBJ_NOINIT);
+					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_ASECW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(CLOAK, MKOBJ_NOINIT);
+					set_material_gm(stuff, CLOTH);
+					stuff->obj_color = CLR_BLACK;
+					add_to_container(otmp, stuff);
+				}
+			break;
+			case PM_ELF:
+				default_add(ELVEN_BOOTS);
+				if(flags.initgend){
+					stuff = mksobj(PLAIN_DRESS, MKOBJ_NOINIT);
+					stuff->obj_color = rn2(2) ? CLR_YELLOW : CLR_BRIGHT_GREEN;
+					add_to_container(otmp, stuff);
+				}
+				else {
+					stuff = mksobj(RUFFLED_SHIRT, MKOBJ_NOINIT);
+					stuff->obj_color = rn2(2) ? CLR_BROWN : CLR_GREEN;
+					add_to_container(otmp, stuff);
+				}
+				default_add(GLOVES);
+				default_add_2(ELVEN_MITHRIL_COAT);
+				default_add(ROBE);
+				default_add(HIGH_ELVEN_HELM);
+
+				default_add_2(ELVEN_BOW);
+				stuff = mksobj(ELVEN_ARROW, MKOBJ_NOINIT);
+				stuff->spe = 2;
+				stuff->quan = 30L;
+				fix_object(stuff);
+				add_to_container(otmp, stuff);
+
+				stuff = mksobj(HIGH_ELVEN_WARSWORD, MKOBJ_NOINIT);
+				set_material_gm(stuff, WOOD);
+				add_to_container(otmp, stuff);
+			break;
+			case PM_ORC:
+					default_add(LOW_BOOTS);
+					default_add(ORCISH_HELM);
+
+					stuff = mksobj(ORCISH_RING_MAIL, MKOBJ_NOINIT);
+					set_material_gm(stuff, GOLD);
+					stuff->spe = 2;
+					add_to_container(otmp, stuff);
+
+					default_add_2(TWO_HANDED_SWORD);
+			break;
+			case PM_YUKI_ONNA:
+				stuff = mksobj(SHOES, MKOBJ_NOINIT);
+				set_material_gm(stuff, WOOD);
+				add_to_container(otmp, stuff);
+
+				stuff = mksobj(WAKIZASHI, MKOBJ_NOINIT);
+				set_material_gm(stuff, MITHRIL);
+				add_oprop(stuff, OPROP_RAKUW);
+				stuff->spe = 2;
+				add_to_container(otmp, stuff);
+
+				stuff = mksobj(KATANA, MKOBJ_NOINIT);
+				set_material_gm(stuff, SILVER);
+				add_oprop(stuff, OPROP_RAKUW);
+				stuff->spe = 2;
+				add_to_container(otmp, stuff);
+
+				default_add(YUMI);
+				stuff = mksobj(YA, MKOBJ_NOINIT);
+				stuff->quan = 30L;
+				fix_object(stuff);
+				add_to_container(otmp, stuff);
+				
+				stuff = mksobj(ROBE, MKOBJ_NOINIT);
+				stuff->obj_color = CLR_BRIGHT_BLUE;
+				stuff->spe = 2;
+				add_to_container(otmp, stuff);
+
+				stuff = mksobj(SEDGE_HAT, MKOBJ_NOINIT);
+				stuff->obj_color = CLR_ORANGE;
+				add_to_container(otmp, stuff);
+			break;
+		}
+		if(urace.malenum == PM_GNOME || urace.malenum == PM_ELF){
+			int stars[] = {PM_YELLOW_LIGHT, PM_YELLOW_LIGHT, PM_BLACK_LIGHT, PM_MOTE_OF_LIGHT, PM_TINY_BEING_OF_LIGHT};
+			default_add_2(ISAMUSEI);
+
+			stuff = mksobj(POT_STARLIGHT, MKOBJ_NOINIT);
+			stuff->quan = d(3,3);
+			fix_object(stuff);
+			add_to_container(otmp, stuff);
+
+			stuff = mksobj(ROCK, MKOBJ_NOINIT);
+			stuff->quan = d(3,3);
+			set_material_gm(stuff, IRON);
+			fix_object(stuff);
+			add_to_container(otmp, stuff);
+
+			stuff = mksobj(ROCK, MKOBJ_NOINIT);
+			set_material_gm(stuff, IRON);
+			add_oprop(stuff, OPROP_COLDW);
+			add_to_container(otmp, stuff);
+
+			for(int i = d(3,3); i > 0; i--){
+				stuff = mksobj(FIGURINE, MKOBJ_NOINIT);
+				stuff->corpsenm = ROLL_FROM(stars);
+				fix_object(stuff);
+				add_to_container(otmp, stuff);
+			}
+
+			stuff = mksobj(FIGURINE, MKOBJ_NOINIT);
+			stuff->corpsenm = PM_BALL_OF_RADIANCE;
+			fix_object(stuff);
+			stuff->spe = FIGURINE_LOYAL|FIGURINE_PSEUDO;
+			add_to_container(otmp, stuff);
+		}
 	}
 
 	if(otmp->otyp == STATUE && (otmp->spe&STATUE_FACELESS) && In_mithardir_quest(&u.uz)){
@@ -1308,7 +1615,7 @@ default_case:
 	}
 	
 	/* Note: fixes the output of the previous code-block, too */
-	if(otmp->spe&STATUE_EPRE){
+	if(otmp->otyp == STATUE && otmp->spe&STATUE_EPRE){
 		if(dungeon_topology.eprecursor_typ == PRE_DRACAE){
 			otmp->corpsenm = PM_DRACAE_ELADRIN;
 		} else {
@@ -1317,7 +1624,7 @@ default_case:
 		fix_object(otmp);
 	}
 	/* Note: fixes the output of the previous two code-blocks, too */
-	if(otmp->corpsenm == PM_TULANI_ELADRIN && dungeon_topology.alt_tulani){
+	if(otmp->otyp == STATUE && otmp->corpsenm == PM_TULANI_ELADRIN && dungeon_topology.alt_tulani){
 		switch(dungeon_topology.alt_tulani){
 			case GAE_CASTE:
 				otmp->corpsenm = PM_GAE_ELADRIN;
@@ -1497,7 +1804,7 @@ create_altar(a, croom)
 	struct mkroom	*croom;
 {
 	schar		sproom,x,y;
-	aligntyp	amask;
+	aligntyp	alignment;
 	boolean		croom_is_temple = TRUE;
 	int oldtyp; 
 
@@ -1532,19 +1839,16 @@ create_altar(a, croom)
 	 */
 
 	if(a->align == AM_SPLEV_CO)
-		amask = Align2amask(u.ualignbase[A_ORIGINAL]);
+		alignment = galign(u.ugodbase[UGOD_ORIGINAL]);
 	else if(a->align == AM_SPLEV_NONCO){
-		int tmp = noncoalignment(u.ualignbase[A_ORIGINAL]);
-		amask = Align2amask(tmp);
+		alignment = noncoalignment(galign(u.ugodbase[UGOD_ORIGINAL]));
 	}
 	else if(a->align == -11)
-		amask = induced_align(80);
+		alignment = induced_align(80);
 	else if(a->align < 0)
-		amask = ralign[-a->align-1];
-	else amask = a->align;
-
-	levl[x][y].typ = ALTAR;
-	levl[x][y].altarmask = amask;
+		alignment = Amask2align(ralign[-a->align-1]);
+	else
+		alignment = Amask2align(a->align);
 
 	if (a->shrine < 0) a->shrine = rn2(2);	/* handle random case */
 
@@ -1553,11 +1857,15 @@ create_altar(a, croom)
 	else if (oldtyp == SINK)
 	    level.flags.nsinks--;
 
-	if (!croom_is_temple || !a->shrine) return;
+	if (a->shrine && !a->god) {
+		/* shrines should be to a god, pick most appropriate god. */
+		a->god = align_to_god(alignment);
+	}
 
-	if (a->shrine) {	/* Is it a shrine  or sanctum? */
+	add_altar(x, y, alignment, a->shrine, a->god);
+
+	if (a->shrine && croom_is_temple) {	/* Is it a shrine  or sanctum? */
 	    priestini(&u.uz, croom, x, y, (a->shrine > 1));
-	    levl[x][y].altarmask |= AM_SHRINE;
 	    level.flags.has_temple = TRUE;
 	}
 }

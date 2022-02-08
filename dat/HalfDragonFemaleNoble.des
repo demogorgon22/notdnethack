@@ -5,7 +5,7 @@
 #
 #	The "start" level for the quest.
 #
-#	Here you meet your (besieged) class leader, the Old Gypsy woman
+#	Here you meet your (besieged) class leader, the old fortune teller
 #	and receive your quest assignment.
 #
 MAZE: "Hdf-strt" , 'T'
@@ -234,7 +234,7 @@ STAIR:(75,10),down
 
 # Church
 REGION:(18,01,24,07),lit,"temple"
-ALTAR:(21,02),chaos,altar
+ALTAR:(21,02),noalign,altar,"_Velka, Goddess of Sin"
 REGION:(10,01,18,04),lit,"morgue"
 
 # Doors

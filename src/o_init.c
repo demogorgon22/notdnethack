@@ -249,6 +249,33 @@ shuffle_all()
 	shuffle(SPEED_BOOTS, FLYING_BOOTS, FALSE);
 }
 
+/* called on init and restore
+ * modify some objects
+ */
+void
+hack_objects()
+{
+	/* Fix up the crown */
+	switch (find_gcirclet())
+	{
+	case HELMET:
+		obj_descr[HELMET].oc_name = "circlet";
+		break;
+	case HELM_OF_BRILLIANCE:
+		obj_descr[HELM_OF_BRILLIANCE].oc_name = "crown of cognizance";
+		break;
+	case HELM_OF_OPPOSITE_ALIGNMENT:
+		obj_descr[HELM_OF_OPPOSITE_ALIGNMENT].oc_name = "tiara of treachery";
+		break;
+	case HELM_OF_TELEPATHY:
+		obj_descr[HELM_OF_TELEPATHY].oc_name = "tiara of telepathy";
+		break;
+	case HELM_OF_DRAIN_RESISTANCE:
+		obj_descr[HELM_OF_DRAIN_RESISTANCE].oc_name = "diadem of drain resistance";
+		break;
+	}
+}
+
 /* finds the object index for an item whose description matches str (first) or any of strs[],
  * within the given bounds of the objects array 
  * Caller is responsible for storing returned otyp.
@@ -1143,6 +1170,7 @@ register int fd;
 #ifdef USE_TILES
 	shuffle_tiles();
 #endif
+	hack_objects();
 }
 
 void
@@ -1274,6 +1302,27 @@ dodiscovered()				/* free after Robert Viduya */
 }
 
 void
+set_isamusei_color(obj)
+struct obj *obj;
+{
+	if(u.uinsight >= 70){
+		obj->obj_color = CLR_MAGENTA;
+	} else if(u.uinsight >= 57){
+		obj->obj_color = CLR_BRIGHT_MAGENTA;
+	} else if(u.uinsight >= 45){
+		obj->obj_color = CLR_BRIGHT_BLUE;
+	} else if(u.uinsight >= 33){
+		obj->obj_color = CLR_BRIGHT_CYAN;
+	} else if(u.uinsight >= 22){
+		obj->obj_color = CLR_BRIGHT_GREEN;
+	} else if(u.uinsight >= 10){
+		obj->obj_color = CLR_YELLOW;
+	} else {
+		obj->obj_color = CLR_ORANGE;
+	}
+}
+
+void
 set_object_color(otmp)
 struct obj *otmp;
 {
@@ -1295,6 +1344,13 @@ struct obj *otmp;
 	}
 	/* color-changing artifacts override this */
 	
+	/* these change color in a not-terribly-well-handled way */
+	if (otmp->otyp == ISAMUSEI)
+	{
+		set_isamusei_color(otmp);
+		return;
+	}
+
 	/* gold pieces are gold */
 	if (otmp->otyp == GOLD_PIECE){
 		otmp->obj_color = HI_GOLD;

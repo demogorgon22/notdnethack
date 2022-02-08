@@ -53,25 +53,25 @@
 #define is_molochan(ptr)	((ptr)->maligntyp == A_NONE)
 #define is_voidalign(ptr)	((ptr)->maligntyp == A_VOID)
 #define is_lawful(ptr)		((ptr)->maligntyp > A_NEUTRAL && !is_molochan(ptr) && !is_voidalign(ptr))
+#define is_lawful_mon(mon) (HAS_EPRI(mon) ? EPRI(mon)->shralign == A_LAWFUL :\
+				  HAS_EMIN(mon) ? EMIN(mon)->min_align == A_LAWFUL :\
+				  is_lawful((mon)->data))
 #define is_neutral(ptr)		((ptr)->maligntyp == A_NEUTRAL)
+#define is_neutral_mon(mon) (HAS_EPRI(mon) ? EPRI(mon)->shralign == A_NEUTRAL :\
+				  HAS_EMIN(mon) ? EMIN(mon)->min_align == A_NEUTRAL :\
+				  is_neutral((mon)->data))
 #define is_chaotic(ptr)		((ptr)->maligntyp < A_NEUTRAL && !is_molochan(ptr) && !is_voidalign(ptr))
+#define is_chaotic_mon(mon) (HAS_EPRI(mon) ? EPRI(mon)->shralign == A_CHAOTIC :\
+				  HAS_EMIN(mon) ? EMIN(mon)->min_align == A_CHAOTIC :\
+				  is_chaotic((mon)->data))
 
 #define is_alabaster_mummy(ptr)	((ptr)->mtyp == PM_ALABASTER_MUMMY)
 
-#define is_lminion(mon)		(is_minion((mon)->data) && \
-				 (mon)->data->maligntyp > A_NEUTRAL && \
-				 ((mon)->mtyp != PM_ANGEL || \
-				  (HAS_EPRI(mon) && EPRI(mon)->shralign > 0)))
+#define is_lminion(mon)		(is_minion((mon)->data) && is_lawful_mon(mon))
 
-#define is_nminion(mon)		(is_minion((mon)->data) && \
-				 (mon)->data->maligntyp == A_NEUTRAL && \
-				 ((mon)->mtyp != PM_ANGEL || \
-				  (HAS_EPRI(mon) && EPRI(mon)->shralign == 0)))
+#define is_nminion(mon)		(is_minion((mon)->data) && is_neutral_mon(mon))
 
-#define is_cminion(mon)		(is_minion((mon)->data) && \
-				 (mon)->data->maligntyp < A_NEUTRAL && \
-				 ((mon)->mtyp != PM_ANGEL || \
-				 (HAS_EPRI(mon) && EPRI(mon)->shralign < 0)))
+#define is_cminion(mon)		(is_minion((mon)->data) && is_chaotic_mon(mon))
 
 #define notonline(ptr)			(((ptr)->mflagsm & MM_NOTONL) != 0L)
 #define fleetflee(ptr)			(((ptr)->mflagsm & MM_FLEETFLEE) != 0L)
@@ -103,6 +103,7 @@
 #define is_commander(ptr)		(((ptr)->mflagsg & MG_COMMANDER) != 0L)
 /*#define haseyes(ptr)			(((ptr)->mflagsb & MB_NOEYES) == 0L) when did this get duplicated???*/
 #define haseyes(ptr)			(((ptr)->mflagsb & MB_NOEYES) == 0L)
+#define nomouth(mtyp)			(mtyp==PM_NIGHTGAUNT || mtyp==PM_STRANGER)
 #define goodsmeller(ptr)		(((ptr)->mflagsv & MV_SCENT) != 0L)
 #define is_tracker(ptr)			(((ptr)->mflagsg & MG_TRACKER) != 0L)
 #define eyecount(ptr)			(!haseyes(ptr) ? 0 : \
@@ -173,7 +174,10 @@
 				 (ptr)->mtyp == PM_AOA || \
 				 (ptr)->mtyp == PM_AOA_DROPLET)
 #define is_watery(ptr)	((ptr)->mtyp == PM_WATER_ELEMENTAL \
+				 || (ptr)->mtyp == PM_FORD_ELEMENTAL \
 				 || (ptr)->mtyp == PM_WATER_DOLPHIN \
+				 || (ptr)->mtyp == PM_WATERSPOUT \
+				 || (ptr)->mtyp == PM_UISCERRE_ELADRIN \
 				 || (ptr)->mtyp == PM_FOG_CLOUD \
 				 || (ptr)->mtyp == PM_STEAM_VORTEX \
 				 || (ptr)->mtyp == PM_ANCIENT_TEMPEST \
@@ -364,6 +368,7 @@
 #define is_boreal_dragoon(ptr)		(attacktype_fordmg(ptr, AT_WEAP, AD_HDRG) || attacktype_fordmg(ptr, AT_XWEP, AD_HDRG))
 #define is_elf(ptr)			(((ptr)->mflagsa & MA_ELF) != 0L && !is_drow(ptr))
 #define is_drow(ptr)		(((ptr)->mflagsa & MA_DROW) != 0L)
+#define is_myrkalfr(ptr)	((ptr)->mtyp == PM_MYRKALFAR_WARRIOR || (ptr)->mtyp == PM_MYRKALFAR_MATRON || (ptr)->mtyp == PM_MYRKALFR || (ptr)->mtyp == PM_ALIDER)
 #define is_dwarf(ptr)		(((ptr)->mflagsa & MA_DWARF) != 0L)
 #define is_gnome(ptr)		(((ptr)->mflagsa & MA_GNOME) != 0L)
 #define is_gizmo(ptr)		((ptr)->mlet == S_GNOME && is_clockwork(ptr))
@@ -409,8 +414,10 @@
 				 (ptr)->mtyp == PM_RODENT_OF_UNUSUAL_SIZE)
 #define is_dragon(ptr)		(((ptr)->mflagsa & MA_DRAGON) != 0L)
 #define is_true_dragon(ptr)		((monsndx(ptr) >= PM_BABY_GRAY_DRAGON && monsndx(ptr) <= PM_DEEP_DRAGON) || \
-								(ptr)->mtyp == PM_PLATINUM_DRAGON || (ptr)->mtyp == PM_CHROMATIC_DRAGON || \
-								(ptr)->mtyp == PM_EDEN || (ptr)->mtyp == PM_FAFNIR)
+								(ptr)->mtyp == PM_EDEN || (ptr)->mtyp == PM_FAFNIR || \
+								(ptr)->mtyp == PM_PLATINUM_DRAGON || (ptr)->mtyp == PM_CHROMATIC_DRAGON)
+#define is_true_adult_dragon(ptr)		((monsndx(ptr) >= PM_GRAY_DRAGON && monsndx(ptr) <= PM_DEEP_DRAGON) || \
+								(ptr)->mtyp == PM_PLATINUM_DRAGON || (ptr)->mtyp == PM_CHROMATIC_DRAGON || (ptr)->mtyp == PM_IXOTH || (ptr)->mtyp == PM_SMAUG)
 #define is_pseudodragon(ptr)	(monsndx(ptr) >= PM_TINY_PSEUDODRAGON && monsndx(ptr) <= PM_GIGANTIC_PSEUDODRAGON)
 #define is_bird(ptr)		(((ptr)->mflagsa & MA_AVIAN) != 0L)
 #define is_giant(ptr)		(((ptr)->mflagsa & MA_GIANT) != 0L)
@@ -447,6 +454,7 @@
 							)
 #define is_primordial(ptr)	(((ptr)->mflagsa & MA_PRIMORDIAL) != 0L)
 #define is_great_old_one(ptr)	(((ptr)->mflagsa & MA_G_O_O) != 0L)
+#define is_alien(ptr)	(((ptr)->mflagsa & MA_ET) != 0L)
 #define is_keter(ptr)		((ptr)->mlet == S_KETER)
 #define is_angel(ptr)		((((ptr)->mflagsa & MA_MINION) != 0L) && ((ptr)->mlet == S_LAW_ANGEL || (ptr)->mlet == S_NEU_ANGEL || (ptr)->mlet == S_CHA_ANGEL))
 #define fallen(mx) 			(has_template(mx, MAD_TEMPLATE) || has_template(mx, FALLEN_TEMPLATE) || mx->mfaction == LAMASHTU_FACTION)
@@ -528,23 +536,17 @@
 									|| (ptr)->mtyp == PM_FIRE_STORM \
 									|| (ptr)->mtyp == PM_MOUTH_OF_THE_GOAT)
 #define	is_goat_tentacle_mon(mon)	(is_goat_tentacle_mtyp((mon)->data) || has_template(mon, MISTWEAVER))
-#define goat_monster(ptr) (\
+#define	is_snake_bite_mtyp(ptr)	((ptr)->mtyp == PM_MEDUSA \
+									|| (ptr)->mtyp == PM_ANCIENT_NAGA)
+#define	is_snake_bite_mon(mon)	(is_snake_bite_mtyp((mon)->data))
+#define	is_tailslap_mtyp(ptr)	(is_true_adult_dragon(ptr))
+#define	is_tailslap_mon(mon)	(is_tailslap_mtyp((mon)->data))
+
+#define goat_monster(ptr) (In_lost_cities(&u.uz) ? lost_cities_goat_monster(ptr) : always_goat_monster(ptr))
+#define always_goat_monster(ptr) (\
 									   (ptr)->mtyp == PM_SMALL_GOAT_SPAWN \
 									|| (ptr)->mtyp == PM_GOAT_SPAWN \
 									|| (ptr)->mtyp == PM_GIANT_GOAT_SPAWN \
-									|| (ptr)->mtyp == PM_PLAINS_CENTAUR \
-									|| (ptr)->mtyp == PM_FOREST_CENTAUR \
-									|| (ptr)->mtyp == PM_MOUNTAIN_CENTAUR \
-									|| (ptr)->mtyp == PM_QUICKLING \
-									|| (ptr)->mtyp == PM_NAIAD \
-									|| (ptr)->mtyp == PM_DRYAD \
-									|| (ptr)->mtyp == PM_OREAD \
-									|| (ptr)->mtyp == PM_YUKI_ONNA \
-									|| (ptr)->mtyp == PM_DEMINYMPH \
-									|| (ptr)->mtyp == PM_WHITE_UNICORN \
-									|| (ptr)->mtyp == PM_GRAY_UNICORN \
-									|| (ptr)->mtyp == PM_BLACK_UNICORN \
-									|| (ptr)->mtyp == PM_NIGHTMARE \
 									|| (ptr)->mtyp == PM_MIGO_WORKER \
 									|| (ptr)->mtyp == PM_MIGO_SOLDIER \
 									|| (ptr)->mtyp == PM_MIGO_PHILOSOPHER \
@@ -558,6 +560,36 @@
 									|| (ptr)->mtyp == PM_FIRE_STORM \
 									|| (ptr)->mtyp == PM_MOUTH_OF_THE_GOAT \
 								  )
+
+#define lost_cities_goat_monster(ptr) (\
+									   always_goat_monster(ptr) \
+									|| (ptr)->mtyp == PM_PLAINS_CENTAUR \
+									|| (ptr)->mtyp == PM_FOREST_CENTAUR \
+									|| (ptr)->mtyp == PM_MOUNTAIN_CENTAUR \
+									|| (ptr)->mtyp == PM_QUICKLING \
+									|| (ptr)->mtyp == PM_NAIAD \
+									|| (ptr)->mtyp == PM_DRYAD \
+									|| (ptr)->mtyp == PM_OREAD \
+									|| (ptr)->mtyp == PM_YUKI_ONNA \
+									|| (ptr)->mtyp == PM_DEMINYMPH \
+									|| (ptr)->mtyp == PM_WHITE_UNICORN \
+									|| (ptr)->mtyp == PM_GRAY_UNICORN \
+									|| (ptr)->mtyp == PM_BLACK_UNICORN \
+									|| (ptr)->mtyp == PM_NIGHTMARE \
+								  )
+
+#define always_yellow_monster(ptr) (\
+									   (ptr)->mtyp == PM_BYAKHEE \
+									|| (ptr)->mtyp == PM_COILING_BRAWN \
+									|| (ptr)->mtyp == PM_FUNGAL_BRAIN \
+									|| (ptr)->mtyp == PM_STRANGER \
+								  )
+
+#define yellow_monster(mon) (\
+							   always_yellow_monster(mon->data) \
+							|| has_template(mon, YELLOW_TEMPLATE) \
+							|| has_template(mon, DREAM_LEECH) \
+							)
 
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
 								&& (ptr)->mtyp != PM_OONA \
@@ -616,6 +648,14 @@
 #define hates_unblessed_mon(mon)	((mon) == &youmonst ? hates_unblessed(youracedata) : hates_unblessed((mon)->data))
 #define hates_silver(ptr)	((ptr->mflagsg&MG_HATESSILVER) != 0)
 #define hates_iron(ptr)		((ptr->mflagsg&MG_HATESIRON) != 0)
+#define hates_lawful(ptr)		(is_chaotic(ptr) || (ptr)->mtyp == PM_UVUUDAUM)
+#define hates_lawful_mon(mon)	((mon) == &youmonst ? u.ualign.type == A_CHAOTIC : (HAS_EPRI(mon) ? EPRI(mon)->shralign == A_CHAOTIC :\
+				  HAS_EMIN(mon) ? EMIN(mon)->min_align == A_CHAOTIC :\
+				  hates_lawful((mon)->data)))
+#define hates_chaos(ptr)		(is_lawful(ptr) || (ptr)->mtyp == PM_UVUUDAUM)
+#define hates_chaos_mon(mon)	((mon) == &youmonst ? u.ualign.type == A_LAWFUL : (HAS_EPRI(mon) ? EPRI(mon)->shralign == A_LAWFUL :\
+				  HAS_EMIN(mon) ? EMIN(mon)->min_align == A_LAWFUL :\
+				  hates_chaos((mon)->data)))
 
 #define melee_polearms(ptr)	((ptr)->mtyp == PM_VROCK ||\
 							 (ptr)->mtyp == PM_MEPHISTOPHELES ||\
@@ -658,6 +698,8 @@
 #define wants_qart(ptr)	((ptr->mflagst & MT_WANTSARTI))
 #define wants_amul(ptr)	((ptr->mflagst & MT_COVETOUS))
 #define is_covetous(ptr)	((ptr->mflagst & MT_COVETOUS))
+
+#define quest_faction(mon)	((mon)->mfaction == QUEST_FACTION || (Race_if(PM_DROW) && (mon)->mfaction == u.uhouse))
 
 #define normalvision(ptr)	((ptr->mflagsv & MV_NORMAL))
 #define darksight(ptr)		((ptr->mflagsv & MV_DARKSIGHT))
@@ -781,14 +823,27 @@
 								 (ptr)->mtyp == PM_DARUTH_XAXOX ||\
 								 (ptr)->mtyp == PM_EMBRACED_DROWESS\
 								)
-#define has_mind_blast_mon(mon)	(has_mind_blast((mon)->data) \
+#define has_mind_blast_mon(mon)	((has_mind_blast((mon)->data) \
 				 || has_template(mon, DREAM_LEECH) \
+				) && !((mon)->mtyp == PM_MAD_SEER && (mon)->mspec_used)\
+				  && ((mon)->mnotlaugh)\
+				  && !((mon)->mcan)\
 				)
 #define has_mind_blast(ptr)	(is_mind_flayer(ptr) \
 				 || (ptr)->mtyp == PM_BRAIN_GOLEM \
 				 || (ptr)->mtyp == PM_SEMBLANCE \
 				 || (ptr)->mtyp == PM_FUNGAL_BRAIN \
 				 || (ptr)->mtyp == PM_LADY_CONSTANCE \
+				 || (ptr)->mtyp == PM_MADMAN \
+				 || (ptr)->mtyp == PM_MADWOMAN \
+				 || (ptr)->mtyp == PM_MAD_SEER \
+				 || (ptr)->mtyp == PM_CLAIRVOYANT_CHANGED \
+				)
+
+#define insightful(ptr)	(yields_insight(ptr) \
+				 || is_great_old_one(ptr) \
+				 || is_primordial(ptr) \
+				 || has_mind_blast(ptr) \
 				)
 
 #define is_mind_flayer(ptr)	((ptr)->mtyp == PM_MIND_FLAYER || \
@@ -837,6 +892,17 @@
 				 (ptr)->mtyp == PM_COMMANDER || \
 				 (ptr)->mtyp == PM_LIVING_DOLL \
 				)
+
+#define stuck_in_time(mtmp) 		(mtmp->mtyp != PM_EDDERKOP\
+		&& mtmp->mtyp != PM_EMBRACED_DROWESS\
+		&& mtmp->mtyp != PM_PARASITIZED_EMBRACED_ALIDER\
+		&& !is_mind_flayer(mtmp)\
+		&& !has_template(mtmp, M_BLACK_WEB)\
+		&& !has_template(mtmp, M_GREAT_WEB)\
+		&& !has_template(mtmp, PSEUDONATURAL)\
+		&& !has_template(mtmp, FRACTURED)\
+		&& !is_naturally_unalive(mtmp->data)\
+		)
 
 #define nonliving(ptr)	(is_unalive(ptr) || is_undead(ptr) || \
 				 (ptr)->mtyp == PM_MANES \
@@ -1004,5 +1070,11 @@
 				      (obj)->otyp == SHEAF_OF_HAY) && \
 				      is_domestic(ptr))
 #endif
+
+#define can_see_hurtnss_of_mon(mon) \
+	((u.sealsActive&SEAL_MOTHER && !is_undead((mon)->data)) || \
+	(Role_if(PM_HEALER) && (!nonliving((mon)->data) || has_blood_mon(mon))) || \
+	(ublindf && ublindf->otyp == ANDROID_VISOR))
+
 
 #endif /* MONDATA_H */

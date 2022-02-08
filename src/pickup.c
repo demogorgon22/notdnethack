@@ -1538,8 +1538,9 @@ boolean countem;
 	for(cobj = level.objects[x][y]; cobj; cobj = nobj) {
 		nobj = cobj->nexthere;
 		if(Is_container(cobj) || 
-			(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA) ||
-			(cobj->otyp == MASS_SHADOW_PISTOL) || arti_socketed(cobj)
+			is_gemable_lightsaber(cobj) ||
+			cobj->otyp == MASS_SHADOW_PISTOL || 
+			arti_socketed(cobj)
 		) {
 			container_count++;
 			if (!countem) break;
@@ -1603,7 +1604,7 @@ boolean noit;
     	if(arti_socketed(cobj)){
 		return use_socketed(cobj);
 	}
-	if(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA){
+	if(is_gemable_lightsaber(cobj)){
 		You("carefully open %s...",the(xname(cobj)));
 		return use_lightsaber(cobj);
 	} else if(cobj->otyp == MASS_SHADOW_PISTOL){
@@ -1664,7 +1665,7 @@ lootcont:
 		if (!able_to_loot(cc.x, cc.y, TRUE)) return 0;
 
 		for (cobj = level.objects[cc.x][cc.y]; cobj; cobj = cobj->nexthere) {
-			if (Is_container(cobj) || cobj->otyp == MASS_SHADOW_PISTOL || (is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA)) num_cont++;
+			if (Is_container(cobj) || cobj->otyp == MASS_SHADOW_PISTOL || is_gemable_lightsaber(cobj)) num_cont++;
 		}
 
 		if (num_cont > 1) {
@@ -1684,7 +1685,7 @@ lootcont:
 			for (cobj = level.objects[cc.x][cc.y]; cobj; cobj = cobj->nexthere) {
 			if (Is_container(cobj) || 
 				cobj->otyp == MASS_SHADOW_PISTOL ||
-				(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA)
+				is_gemable_lightsaber(cobj)
 			) {
 				any.a_obj = cobj;
 				add_menu(win, NO_GLYPH, &any, 0, 0, ATR_NONE, doname(cobj),
@@ -1747,7 +1748,7 @@ lootcont:
 					if (c == 'n') continue;
 					timepassed |= use_socketed(cobj);
 					if(timepassed) underfoot = TRUE;
-			    } else if(is_lightsaber(cobj) && cobj->oartifact != ART_ANNULUS && cobj->oartifact != ART_INFINITY_S_MIRRORED_ARC && cobj->otyp != KAMEREL_VAJRA){
+			    } else if(is_gemable_lightsaber(cobj)){
 					Sprintf(qbuf, "There is %s here, open it?",an(xname(cobj)));
 					c = ynq(qbuf);
 					if (c == 'q') return (timepassed);
@@ -1898,7 +1899,9 @@ boolean *prev_loot;
     /* 3.3.1 introduced the ability to remove saddle from a steed             */
     /* 	*passed_info is set to TRUE if a loot query was given.               */
     /*	*prev_loot is set to TRUE if something was actually acquired in here. */
-	if(mtmp && mtmp != u.usteed && mtmp->mtame){
+	if(mtmp && mtmp != u.usteed 
+		&& (mtmp->mtame || (urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && (quest_faction(mtmp) || mtmp->data->msound == MS_GUARDIAN)))
+	){
 	if((otmp = pick_creatures_armor(mtmp, passed_info))){
 	long unwornmask;
 		if (nolimbs(youracedata)) {
@@ -1974,26 +1977,37 @@ dopetequip()
 	
 	mtmp = m_at(cc.x, cc.y);
 	
-	if(mtmp && 
-#ifdef STEED
-		mtmp != u.usteed && 
-#endif	/* STEED */
-		mtmp->mtame
+	if(!mtmp || !canspotmon(mtmp)){
+		You_cant("find anyone to equip!");
+		return 0;
+	}
+	if(!mtmp->mtame
+		&& !(urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && (quest_faction(mtmp) || mtmp->data->msound == MS_GUARDIAN))
 	){
+		pline("%s doesn't trust you enough for that!", Monnam(mtmp));
+		return 0;
+	}
+
+#ifdef STEED
+	if(mtmp == u.usteed){
+		You_cant("change the equipment of something you're riding!");
+		return 0;
+	}
+#endif	/* STEED */
+	if (nolimbs(youracedata)) {
+		You_cant("do that without limbs."); /* not body_part(HAND) */
+		return (0);
+	}
+	if(!freehand()){
+		You("have no free %s to dress %s with!", body_part(HAND), mon_nam(mtmp));
+		return (0);
+	}
 	unseen = !canseemon(mtmp);
 
 	/* Get a copy of monster's name before altering its visibility */
 	Strcpy(nambuf, See_invisible(mtmp->mx,mtmp->my) ? Monnam(mtmp) : mon_nam(mtmp));
 	
 	if((otmp = pick_armor_for_creature(mtmp))){
-		if (nolimbs(youracedata)) {
-		    You_cant("do that without limbs."); /* not body_part(HAND) */
-		    return (0);
-		}
-		if(!freehand()){
-			You("have no free %s to dress %s with!", body_part(HAND), mon_nam(mtmp));
-		    return (0);
-		}
 		if(otmp->oclass == AMULET_CLASS){
 			flag = W_AMUL;
 		} else if(is_shirt(otmp)){
@@ -2024,6 +2038,7 @@ dopetequip()
 			return 0;
 		}
 		if(otmp->unpaid)  addtobill(otmp, FALSE, FALSE, FALSE);
+		You("equip %s with %s.", mon_nam(mtmp), the(xname(otmp)));
 		freeinv(otmp);
 		mpickobj(mtmp, otmp);
 		mtmp->misc_worn_check |= flag;
@@ -2043,7 +2058,6 @@ dopetequip()
 	} else {
 		return (0);
 	}
-    }
     return timepassed;
 }
 
@@ -2219,12 +2233,7 @@ register struct obj *obj;
 		/* stop any corpse timeouts when frozen */
 		if (obj->otyp == CORPSE && obj->timed) {
 			long rot_alarm = stop_timer(ROT_CORPSE, obj->timed);
-			(void) stop_timer(MOLDY_CORPSE, obj->timed);
-			(void) stop_timer(SLIMY_CORPSE, obj->timed);
-			(void) stop_timer(ZOMBIE_CORPSE, obj->timed);
-			(void) stop_timer(SHADY_CORPSE, obj->timed);
-			(void) stop_timer(YELLOW_CORPSE, obj->timed);
-			(void) stop_timer(REVIVE_MON, obj->timed);
+			stop_corpse_timers(obj);
 			/* mark a non-reviving corpse as such */
 			if (rot_alarm) obj->norevive = 1;
 		}
@@ -2604,6 +2613,139 @@ boolean past;
 	}
     box->owt = weight(box);
     return;
+}
+
+boolean
+open_madstuff_box(box, past)
+struct obj *box;
+boolean past;
+{
+	You_feel("memories weakly stirring.");
+	struct obj *otmp;
+	for(otmp = box->cobj; otmp; otmp = otmp->nobj)
+		knows_object(otmp->otyp);
+	switch(urace.malenum){
+		default:
+		case PM_HALF_DRAGON:
+			if(flags.initgend){
+				//Read through and find mercurial weapon, grant expert skill
+				for(otmp = box->cobj; otmp; otmp = otmp->nobj){
+					if(otmp->obj_material == MERCURIAL){
+						expert_weapon_skill(objects[otmp->otyp].oc_skill);
+					}
+				}
+				expert_weapon_skill(P_ATTACK_SPELL);
+				u.umartial = TRUE;
+				gm_weapon_skill(P_BARE_HANDED_COMBAT);
+			}
+			else {
+				expert_weapon_skill(P_TWO_HANDED_SWORD);
+				expert_weapon_skill(P_ATTACK_SPELL);
+				skilled_weapon_skill(P_BEAST_MASTERY);
+			}
+		break;
+		case PM_HUMAN:
+		case PM_VAMPIRE:
+		case PM_INCANTIFIER:
+		case PM_GNOME:
+			if(flags.initgend){
+				expert_weapon_skill(P_BEAST_MASTERY);
+			}
+			else {
+				expert_weapon_skill(P_SABER);
+			}
+			if(Race_if(PM_GNOME)){
+				knows_object(GNOMISH_POINTY_HAT);
+				knows_object(AKLYS);
+				knows_object(DWARVISH_HELM);
+				knows_object(DWARVISH_MATTOCK);
+				knows_object(DWARVISH_CLOAK);
+			}
+		break;
+		case PM_DWARF:
+			expert_weapon_skill(P_PICK_AXE);
+			expert_weapon_skill(P_SHIELD);
+			knows_object(DWARVISH_SPEAR);
+			knows_object(DWARVISH_SHORT_SWORD);
+			knows_object(DWARVISH_MATTOCK);
+			knows_object(DWARVISH_HELM);
+			knows_object(DWARVISH_MITHRIL_COAT);
+			knows_object(DWARVISH_CLOAK);
+			knows_object(DWARVISH_ROUNDSHIELD);
+		break;
+		case PM_ELF:
+			expert_weapon_skill(P_BOW);
+			expert_weapon_skill(P_SCIMITAR);
+			skilled_weapon_skill(P_BROAD_SWORD);
+			knows_object(ELVEN_SHORT_SWORD);
+			knows_object(ELVEN_ARROW);
+			knows_object(ELVEN_BOW);
+			knows_object(ELVEN_SPEAR);
+			knows_object(ELVEN_DAGGER);
+			knows_object(ELVEN_BROADSWORD);
+			knows_object(ELVEN_MACE);
+			knows_object(ELVEN_LANCE);
+			knows_object(ELVEN_MITHRIL_COAT);
+			knows_object(ELVEN_HELM);
+			knows_object(ELVEN_SHIELD);
+			knows_object(ELVEN_BOOTS);
+			knows_object(ELVEN_CLOAK);
+		break;
+		case PM_DROW:
+			if(flags.initgend){
+				expert_weapon_skill(P_SABER);
+				expert_weapon_skill(P_WHIP);
+				skilled_weapon_skill(P_BEAST_MASTERY);
+			}
+			else {
+				expert_weapon_skill(P_SABER);
+				expert_weapon_skill(P_MORNING_STAR);
+				expert_weapon_skill(P_TWO_HANDED_SWORD);
+			}
+			knows_object(DROVEN_SHORT_SWORD);
+			knows_object(DROVEN_BOLT);
+			knows_object(DROVEN_CROSSBOW);
+			knows_object(DROVEN_DAGGER);
+			knows_object(DROVEN_GREATSWORD);
+			knows_object(DROVEN_LANCE);
+			knows_object(DROVEN_SPEAR);
+			knows_object(DROVEN_CHAIN_MAIL);
+			knows_object(DROVEN_PLATE_MAIL);
+			knows_object(NOBLE_S_DRESS);
+			knows_object(CONSORT_S_SUIT);
+			knows_object(DROVEN_CLOAK);
+			knows_object(find_signet_ring());
+		break;
+		case PM_ORC:
+			expert_weapon_skill(P_SCIMITAR);
+			skilled_weapon_skill(P_TWO_HANDED_SWORD);
+			skilled_weapon_skill(P_RIDING);
+			knows_object(ORCISH_SHORT_SWORD);
+			knows_object(ORCISH_ARROW);
+			knows_object(ORCISH_BOW);
+			knows_object(ORCISH_SPEAR);
+			knows_object(ORCISH_DAGGER);
+			knows_object(ORCISH_CHAIN_MAIL);
+			knows_object(ORCISH_RING_MAIL);
+			knows_object(ORCISH_HELM);
+			knows_object(ORCISH_SHIELD);
+			knows_object(URUK_HAI_SHIELD);
+			knows_object(ORCISH_CLOAK);
+		break;
+		case PM_YUKI_ONNA:
+			expert_weapon_skill(P_LONG_SWORD);
+			expert_weapon_skill(P_SHORT_SWORD);
+			expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+		break;
+	}
+	if(u.uinsight >= 10){
+		open_crazy_box(box, past);
+		box->spe = 0;
+		return TRUE;
+	}
+	box->spe = 0;
+    return FALSE;
+	
 }
 
 #undef Icebox
@@ -3059,6 +3201,13 @@ register int held;
 	    open_crazy_box(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
 	    used = 1;
 		return used;
+	}else if(obj->spe == 7){
+		// Madman reclaims their stuff. Contents handled by the level loader.
+		//FALSE: the box was not destroyed. Use present tense.
+	    if(open_madstuff_box(obj, FALSE)){
+			used = 1;
+			return used;
+		}
 	}else if(obj->spe == 8){
 		// Nothing. Fulvous desk spawns monsters.
 	}

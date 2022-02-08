@@ -279,6 +279,10 @@ int oartifact;
 	}
 
 	int attackmask = objects[otyp].oc_dtyp;
+	if (oartifact == ART_IBITE_ARM){
+		//No claws! Just a flabby hand.
+		attackmask = WHACK;
+	}
 
 	/* catch special cases */
 	if (   oartifact == ART_YORSHKA_S_SPEAR
@@ -289,12 +293,17 @@ int oartifact;
 		attackmask |= WHACK;
 	}
 	if (   oartifact == ART_ROGUE_GEAR_SPIRITS
+		|| oartifact == ART_DURIN_S_AXE
 		|| (obj && otyp == KAMEREL_VAJRA && !litsaber(obj))
+		|| (obj && check_oprop(obj, OPROP_SPIKED) && !litsaber(obj))
+		|| (obj && !litsaber(obj) && is_kinstealing_merc(obj))
 		){
 		attackmask |= PIERCE;
 	}
 	if (   oartifact == ART_LIECLEAVER
 		|| oartifact == ART_INFINITY_S_MIRRORED_ARC
+		|| (obj && check_oprop(obj, OPROP_BLADED) && !litsaber(obj))
+		|| (obj && !litsaber(obj) && is_streaming_merc(obj))
 		){
 		attackmask |= SLASH;
 	}
@@ -371,16 +380,33 @@ int otyp;
 		return 0;
 	}
 
-	/* grab dice from the objclass definition */
-	*wdice = (large ? objects[otyp].oc_wldam : objects[otyp].oc_wsdam);
-	int ocn =           (wdice->oc_damn);
-	int ocd =           (wdice->oc_damd);
-	int bonn =          (wdice->bon_damn);
-	int bond =          (wdice->bon_damd);
-	int flat =          (wdice->flat);
-	boolean lucky =     (wdice->lucky);
-	boolean exploding = (wdice->exploding);
-	int explode_amt =   (wdice->explode_amt);
+	int ocn;
+	int ocd;
+	int bonn;
+	int bond;
+	int flat;
+	boolean lucky;
+	boolean exploding;
+	int explode_amt;
+	if (obj && (!valid_weapon(obj) || is_launcher(obj))){
+		struct weapon_dice nulldice = {0};
+		*wdice = nulldice;
+		ocn = wdice->oc_damn = 1;
+		ocd = wdice->oc_damd = 2;
+		bonn = bond = flat = lucky = exploding = explode_amt = 0;
+	}
+	else {
+		/* grab dice from the objclass definition */
+		*wdice = (large ? objects[otyp].oc_wldam : objects[otyp].oc_wsdam);
+		ocn =           (wdice->oc_damn);
+		ocd =           (wdice->oc_damd);
+		bonn =          (wdice->bon_damn);
+		bond =          (wdice->bon_damd);
+		flat =          (wdice->flat);
+		lucky =     	(wdice->lucky);
+		exploding = 	(wdice->exploding);
+		explode_amt =   (wdice->explode_amt);
+	}
 
 	/* set dmod, if possible*/
 	if (obj){
@@ -392,64 +418,155 @@ int otyp;
 		if(obj->where == OBJ_INVENT && is_slashing(obj) && u.utats & TAT_FALCHION)
 			ocd++;
 
-		/* material-based dmod modifiers */
-		if (obj->obj_material != objects[obj->otyp].oc_material && !(is_lightsaber(obj) && litsaber(obj)))
+		if (obj->oartifact == ART_LIECLEAVER) {
+			ocn = 1;
+			ocd = 12;
+			bonn = 1;
+			bond = 10;
+		}
+		else if (obj->oartifact == ART_WAND_OF_ORCUS) {
+			ocn = 1;
+			ocd = 4;
+			spe_mult = 0;	/* it's a wand */
+		}
+		else if (obj->oartifact == ART_ROGUE_GEAR_SPIRITS) {
+			ocn = 1;
+			ocd = (large ? 2 : 4);
+		}
+		else if (otyp == MOON_AXE)
 		{
-			/* if something is made of an especially effective material 
-			 * and it normally isn't, it gets a dmod bonus 
+			/*
+			ECLIPSE_MOON	0  -  2d4 v small, 2d12 v large
+			CRESCENT_MOON	1  -  2d6
+			HALF_MOON		2  -  2d8
+			GIBBOUS_MOON	3  - 2d10
+			FULL_MOON	 	4  - 2d12 
 			 */
-			int mat;	/* material being contemplated */
-			int mod;	/* mat modifier sign: -1 for base, +1 for current*/
-			for (mod = -1; mod<2; mod+=2){
-				if (mod == -1)
-					mat = objects[obj->otyp].oc_material;
-				else
-					mat = obj->obj_material;
-				switch (mat)
-				{
-				/* flimsy weapons are bad damage */
-				case LIQUID:
-				case WAX:
-				case VEGGY:
-				case FLESH:
-				case PAPER:
-				case CLOTH:
-				case LEATHER:
-					dmod -= mod;
-					break;
-				/* gold and platinum are heavy
-				 * ...regardless that the elven mace is wooden, 
-				 *   and is _better_ than a standard iron mace */
-				case GOLD:
-				case PLATINUM:
-					if (is_bludgeon(obj))
-						dmod += mod;
-					break;
-				/* lead is heavy but bad at cutting (gold and silver should be too, but magic, basically)
+			ocn = 2;
+			ocd = max(4 + 2 * obj->ovar1 + 2 * dmod, 2);	// die size is based on axe's phase of moon (0 <= ovar1 <= 4)
+			if (!large && obj->ovar1 == ECLIPSE_MOON)		// eclipse moon axe is surprisingly effective against small creatures (2d12)
+				ocd = max(12 + 2 * dmod, 2);
+		}
+
+		if (otyp == HEAVY_IRON_BALL) {
+			int wt = (int)objects[HEAVY_IRON_BALL].oc_weight;
+
+			if ((int)obj->owt > wt) {
+				wt = ((int)obj->owt - wt) / 160;
+				ocd += 4 * wt;
+				if (ocd > 25) ocd = 25;	/* objects[].oc_wldam */
+			}
+		}
+		if (check_oprop(obj, OPROP_BLADED))
+			ocd = max(ocd, 2*(objects[obj->otyp].oc_size + 1));
+		if (check_oprop(obj, OPROP_SPIKED))
+			ocd = max(ocd, (objects[obj->otyp].oc_size + 2));
+		/* material-based dmod modifiers */
+		if(!(is_lightsaber(obj) && litsaber(obj))){
+			if(obj->obj_material == MERCURIAL){
+				if(obj->where == OBJ_MINVENT || obj->where == OBJ_INVENT){
+					int level = obj->where == OBJ_INVENT ? u.ulevel : obj->ocarry->m_lev;
+					if(is_kinstealing_merc(obj)) {
+						if(level < 3){
+							dmod -= 1;
+							ocd--;
+						}
+						else if(level < 10){
+							dmod -= 1;
+							flat += ocn;
+						}
+						else if(level < 18){
+							dmod -= 1;
+							ocd--;
+							ocn*=2;
+						}
+						else {
+							dmod -= 1;
+							ocd--;
+							ocn*=3;
+						}
+					}
+					//Chained and streaming
+					else {
+						if(level < 3){
+							dmod -= 2;
+						}
+						else if(level < 10){
+							dmod -= 1;
+						}
+						else if(level >= 18){
+							dmod += 3;
+							flat += ocn;
+						}
+					}
+				}
+				//Not carried, very weak
+				else {
+					dmod = 0;
+					ocd = 2;
+					ocn = 1;
+					bonn = 0;
+					bond = 0;
+					flat = 0;
+				}
+			}
+			if (obj->obj_material != objects[obj->otyp].oc_material){
+				/* if something is made of an especially effective material 
+				 * and it normally isn't, it gets a dmod bonus 
 				 */
-				case LEAD:
-					if (is_bludgeon(obj))
-						dmod += mod;
-					if (is_slashing(obj) || is_stabbing(obj))
+				int mat;	/* material being contemplated */
+				int mod;	/* mat modifier sign: -1 for base, +1 for current*/
+				for (mod = -1; mod<2; mod+=2){
+					if (mod == -1)
+						mat = objects[obj->otyp].oc_material;
+					else
+						mat = obj->obj_material;
+					switch (mat)
+					{
+					/* flimsy weapons are bad damage */
+					case LIQUID:
+					case WAX:
+					case VEGGY:
+					case FLESH:
+					case PAPER:
+					case CLOTH:
+					case LEATHER:
 						dmod -= mod;
-					break;
-				/* glass and obsidian have sharp edges and points 
-				 * shadowsteel ??? but gameplay-wise, droven weapons
-				 *   made out of this troublesome-to-maintain material
-				 *   shouldn't be weaker than their obsidian counterparts
-				 */
-				case GLASS:
-				case OBSIDIAN_MT:
-				case SHADOWSTEEL:
-				case GREEN_STEEL:
-					if (is_slashing(obj) || is_stabbing(obj))
-						dmod += mod;
-					break;
-				/* dragon teeth are good at piercing */
-				case DRAGON_HIDE:
-					if (is_stabbing(obj))
-						dmod += mod;
-					break;
+						break;
+					/* gold and platinum are heavy
+					 * ...regardless that the elven mace is wooden, 
+					 *   and is _better_ than a standard iron mace */
+					case GOLD:
+					case PLATINUM:
+						if (is_bludgeon(obj))
+							dmod += mod;
+						break;
+					/* lead is heavy but bad at cutting (gold and silver should be too, but magic, basically)
+					 */
+					case LEAD:
+						if (is_bludgeon(obj))
+							dmod += mod;
+						if (is_slashing(obj) || is_stabbing(obj))
+							dmod -= mod;
+						break;
+					/* glass and obsidian have sharp edges and points 
+					 * shadowsteel ??? but gameplay-wise, droven weapons
+					 *   made out of this troublesome-to-maintain material
+					 *   shouldn't be weaker than their obsidian counterparts
+					 */
+					case GLASS:
+					case OBSIDIAN_MT:
+					case SHADOWSTEEL:
+					case GREEN_STEEL:
+						if (is_slashing(obj) || is_stabbing(obj))
+							dmod += mod;
+						break;
+					/* dragon teeth are good at piercing */
+					case DRAGON_HIDE:
+						if (is_stabbing(obj))
+							dmod += mod;
+						break;
+					}
 				}
 			}
 		}
@@ -478,7 +595,7 @@ int otyp;
 			|| obj->oartifact == ART_SNICKERSNEE
 			|| obj->oartifact == ART_DURIN_S_AXE)
 		{
-			ocn = 2;						// roll two oc dice
+			ocn += 1;						// roll two oc dice
 		}
 		else if (obj->oartifact == ART_FLUORITE_OCTAHEDRON)
 		{
@@ -540,44 +657,6 @@ int otyp;
 			ocd = 2;
 			bonn = 2;
 			bond = 4;
-		}
-		else if (obj->oartifact == ART_LIECLEAVER) {
-			ocn = 1;
-			ocd = 10;
-			bonn = 1;
-			bond = 12;
-		}
-		else if (obj->oartifact == ART_WAND_OF_ORCUS) {
-			ocn = 1;
-			ocd = 4;
-			spe_mult = 0;	/* it's a wand */
-		}
-		else if (obj->oartifact == ART_ROGUE_GEAR_SPIRITS) {
-			ocn = 1;
-			ocd = (large ? 2 : 4);
-		}
-		else if (otyp == MOON_AXE)
-		{
-			/*
-			ECLIPSE_MOON	0  -  2d4 v small, 2d12 v large
-			CRESCENT_MOON	1  -  2d6
-			HALF_MOON		2  -  2d8
-			GIBBOUS_MOON	3  - 2d10
-			FULL_MOON	 	4  - 2d12 
-			 */
-			ocn = 2;
-			ocd = max(4 + 2 * obj->ovar1 + 2 * dmod, 2);	// die size is based on axe's phase of moon (0 <= ovar1 <= 4)
-			if (!large && obj->ovar1 == ECLIPSE_MOON)		// eclipse moon axe is surprisingly effective against small creatures (2d12)
-				ocd = max(12 + 2 * dmod, 2);
-		}
-		else if (otyp == HEAVY_IRON_BALL) {
-			int wt = (int)objects[HEAVY_IRON_BALL].oc_weight;
-
-			if ((int)obj->owt > wt) {
-				wt = ((int)obj->owt - wt) / 160;
-				ocd += 4 * wt;
-				if (ocd > 25) ocd = 25;	/* objects[].oc_wldam */
-			}
 		}
 	}
 
@@ -658,6 +737,26 @@ int otyp;
 	case BEAMSWORD:				spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: Atma Weapon, lightsaber forms
 	case DOUBLE_LIGHTSABER:		spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	case ROD_OF_FORCE:			spe_mult *= 2; ocn *= 2; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
+	case DISKOS:
+								if(u.uinsight >= 40){
+									ocn+=3;
+									flat+=ocd;
+								} else if(u.uinsight >= 35){
+									ocn+=2;
+									flat+=ocd;
+								} else if(u.uinsight >= 30){
+									ocn+=2;
+									flat+=3*ocd/4;
+								} else if(u.uinsight >= 25){
+									ocn++;
+									flat+=3*ocd/4;
+								} else if(u.uinsight >= 10){
+									ocn++;
+									flat+=ocd/2;
+								} else if(u.uinsight >= 5){
+									flat+=ocd/2;
+								}
+	break;
 	}
 #undef plus_base
 #undef plus
@@ -1005,16 +1104,6 @@ int spec;
 		if (otmp->ovar1)
 			otmp->ovar1--;
 		break;
-	case QUARTERSTAFF:
-		if(otmp == uwep && martial_bonus() && otmp->otyp == QUARTERSTAFF && P_SKILL(P_QUARTERSTAFF) >= P_EXPERT && P_SKILL(P_BARE_HANDED_COMBAT) >= P_EXPERT){
-			// doubled
-			wdice.oc_damn *= 2;
-			wdice.oc_damd *= 2;
-			wdice.bon_damn *= 2;
-			wdice.bon_damd *= 2;
-			spe_mult *= 2;
-		}
-		break;
 	}
 
 	switch (otmp->oartifact)
@@ -1215,6 +1304,7 @@ int spot;
 				( (otmp->owt <= (30 + (mtmp->m_lev/5)*5)) 
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CATHEZAR) 
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_FIERNA)
+				|| (otmp->otyp == HEAVY_IRON_BALL && mtmp->mtyp == PM_WARDEN_ARIANNA)
 				|| (mtmp->mtyp == PM_BASTARD_OF_THE_BOREAL_VALLEY)
 				|| (mtmp->mtyp == PM_LUNGORTHIN)
 				|| (mtmp->mtyp == PM_CORVIAN_KNIGHT)
@@ -1284,8 +1374,10 @@ static NEARDATA const int rwep[] =
 	ORCISH_SPEAR/*1d5/1d10*/,
 	CROSSBOW_BOLT/*1d4+1/1d6+1*/, 
 	ORCISH_ARROW/*1d5/1d8*/, 
+	// ELVEN_SICKLE/*1d6/1d3*/,
 	ELVEN_DAGGER/*1d5/1d3*/, 
 	DAGGER/*1d4/1d3*/,
+	// SICKLE/*1d4/1d1*/,
 	ORCISH_DAGGER/*1d3/1d5*/, 
 	ROCK/*1d3/1d3*/, 
 	DART/*1d3/1d2*/,
@@ -1552,6 +1644,7 @@ static const NEARDATA short hwep[] = {
 	  TWO_HANDED_SWORD/*1d12/3d6*/, 
 	  DROVEN_SPEAR/*1d12/1d12*/,
 	  UNICORN_HORN/*1d12/1d12*/,
+	  ISAMUSEI/*1d12/1d8*/, 
 	  DWARVISH_MATTOCK/*1d12/1d8*/, 
 	  RAKUYO/*1d8+1d4/1d8+1d3*/, 
 	  ELVEN_BROADSWORD/*1d6+1d4/1d6+2*/, 
@@ -1576,12 +1669,14 @@ static const NEARDATA short hwep[] = {
 	  NAGINATA/*1d6+1/2d4*/, 
 	  SCIMITAR/*1d8/1d8*/,
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
+	  WAKIZASHI/*1d8/1d6*/,
 	  KHOPESH,/*1d8/1d6*/
 	  DROVEN_DAGGER/*1d8/1d6*/, 
 	  MACE/*1d6+1/1d6*/, 
 	  ELVEN_SHORT_SWORD/*1d7/1d7*/, 
 	  ELVEN_MACE/*1d7/1d7*/, 
 	  ELVEN_SPEAR/*1d7/1d7*/, 
+	  DISKOS/*1d6/1d8*/,
 	  SPEAR/*1d6/1d8*/,
 	  SHORT_SWORD/*1d6/1d8*/,
 	  RAPIER/*1d6/1d4*/, 
@@ -1594,7 +1689,9 @@ static const NEARDATA short hwep[] = {
 	  JAVELIN/*1d6/1d6*/, 
 	  CHAIN/*1d6/1d6*/, 
 	  WAR_HAMMER/*1d4+1/1d4*/, 
+	  KATAR/*1d6/1d4*/, 
 	  AKLYS/*1d6/1d3*/, 
+	  NUNCHAKU/*1d4+1/1d3*/, 
 	  SUNROD/*1d6/1d3*/, 
 	  SHADOWLANDER_S_TORCH/*1d6/1d3*/, 
 	  TORCH/*1d6/1d3*/, 
@@ -1646,6 +1743,7 @@ static const NEARDATA short hpwep[] = {
 	  TWO_HANDED_SWORD/*1d12/3d6*/, 
 	  DROVEN_SPEAR/*1d12/1d12*/,
 	  UNICORN_HORN/*1d12/1d12*/,
+	  ISAMUSEI/*1d12/1d8*/, 
 	  DWARVISH_MATTOCK/*1d12/1d8*/, 
 	  RAKUYO/*1d8+1d4/1d8+1d3*/, 
 	  ELVEN_BROADSWORD/*1d6+1d4/1d6+2*/, 
@@ -1681,6 +1779,7 @@ static const NEARDATA short hpwep[] = {
 	  ELVEN_LANCE, /*1d8/1d8*/
 	  SCIMITAR/*1d8/1d8*/,
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
+	  WAKIZASHI/*1d8/1d6*/,
 	  KHOPESH,/*1d8/1d6*/
 	  BEC_DE_CORBIN, /*1d8/1d6*/
 	  DROVEN_DAGGER/*1d8/1d6*/, 
@@ -1689,6 +1788,7 @@ static const NEARDATA short hpwep[] = {
 	  ELVEN_SHORT_SWORD/*1d7/1d7*/, 
 	  ELVEN_MACE/*1d7/1d7*/, 
 	  ELVEN_SPEAR/*1d7/1d7*/, 
+	  DISKOS/*1d6/1d8*/,
 	  FAUCHARD, /*1d6/1d8*/
 	  LANCE, /*1d6/1d8*/
 	  SPEAR/*1d6/1d8*/,
@@ -1704,7 +1804,9 @@ static const NEARDATA short hpwep[] = {
 	  JAVELIN/*1d6/1d6*/, 
 	  CHAIN/*1d6/1d6*/, 
 	  WAR_HAMMER/*1d4+1/1d4*/, 
+	  KATAR/*1d6/1d4*/, 
 	  AKLYS/*1d6/1d3*/, 
+	  NUNCHAKU/*1d4+1/1d3*/, 
 	  SUNROD/*1d6/1d3*/, 
 	  SHADOWLANDER_S_TORCH/*1d6/1d3*/, 
 	  TORCH/*1d6/1d3*/, 
@@ -1739,7 +1841,7 @@ struct obj *otmp;
     
         if (wep->oartifact) return FALSE;
 		
-        if (!check_oprop(wep, OPROP_NONE) || (is_rakuyo(wep) && u.uinsight >= 20)) return FALSE;
+        if (!check_oprop(wep, OPROP_NONE) || (rakuyo_prop(wep) && u.uinsight >= 20)) return FALSE;
 
         if (is_giant(mtmp->data) &&  wep->otyp == CLUB) return FALSE;
         if (is_giant(mtmp->data) && otmp->otyp == CLUB) return TRUE;
@@ -1777,7 +1879,12 @@ register struct monst *mtmp;
 
 	/* if using an artifact or oprop weapon keep using it. */
 	otmp = MON_WEP(mtmp);
-	if(otmp && (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)))
+	if(otmp && (otmp->oartifact
+			|| !check_oprop(otmp, OPROP_NONE)
+			|| (rakuyo_prop(otmp) && u.uinsight >= 20) //Note: Rakuyo-ness is accidently caught by OPROP_
+			|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
+			|| (otmp->otyp == DISKOS && u.uinsight >= 10)
+	))
 		return otmp;
 	
 	/* prefer artifacts to everything else */
@@ -1787,7 +1894,12 @@ register struct monst *mtmp;
 			|| otmp->otyp == CHAIN || otmp->otyp == HEAVY_IRON_BALL
 			) &&
 			/* an artifact or other special weapon*/
-			(otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) &&
+			(otmp->oartifact
+				|| !check_oprop(otmp, OPROP_NONE)
+				|| (rakuyo_prop(otmp) && u.uinsight >= 20)
+				|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
+				|| (otmp->otyp == DISKOS && u.uinsight >= 10)
+			) &&
 			/* never uncharged lightsabers */
             (!is_lightsaber(otmp) || otmp->age
 			 || otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC
@@ -1841,7 +1953,12 @@ register struct monst *mtmp;
 	
 	/* if using an artifact or oprop weapon keep using it. */
 	otmp = MON_SWEP(mtmp);
-	if(otmp && (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)))
+	if(otmp && (otmp->oartifact
+		|| !check_oprop(otmp, OPROP_NONE)
+		|| (rakuyo_prop(otmp) && u.uinsight >= 20)
+		|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
+		|| (otmp->otyp == DISKOS && u.uinsight >= 10)
+	))
 		return otmp;
 	
 	/* prefer artifacts to everything else */
@@ -1853,7 +1970,12 @@ register struct monst *mtmp;
 			/* not already weided in main hand */
 			(otmp != MON_WEP(mtmp)) &&
 			/* an artifact or other special weapon*/
-			(otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) &&
+			(otmp->oartifact
+				|| !check_oprop(otmp, OPROP_NONE)
+				|| (rakuyo_prop(otmp) && u.uinsight >= 20)
+				|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
+				|| (otmp->otyp == DISKOS && u.uinsight >= 10)
+			) &&
 			/* never uncharged lightsabers */
             (!is_lightsaber(otmp) || otmp->age
 			 || otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC
@@ -2414,6 +2536,10 @@ struct obj *otmp;
 		) bonus *= 2;
 		else if(otmp->otyp == FORCE_SWORD && !arms && !mswp)
 			bonus *= 2;
+		else if(otmp->otyp == DISKOS && !arms && !mswp)
+			bonus *= 2;
+		else if(otmp->otyp == ISAMUSEI && !arms && !mswp)
+			bonus *= 1.5;
 		else if(otmp->otyp == KATANA && !arms && !mswp)
 			bonus *= 1.5;
 		else if(is_vibrosword(otmp) && !arms && !mswp)
@@ -2496,9 +2622,9 @@ struct obj *otmp;
 	if (str < 6) bonus = -6+str;
 	else if (str < 16) bonus = 0;
 	else if (str < 18) bonus = 1;
-	else if (str == 18) bonus = 2;		/* up to 18 */
-	else if (str <= STR18(75)) bonus = 3;		/* up to 18/75 */
-	else if (str <= STR18(90)) bonus = 4;		/* up to 18/90 */
+	else if (str < STR18(25)) bonus = 2;		/* up to 18/25 */
+	else if (str < STR18(50)) bonus = 3;		/* up to 18/50 */
+	else if (str < STR18(75)) bonus = 4;		/* up to 18/75 */
 	else if (str < STR18(100)) bonus = 5;		/* up to 18/99 */
 	else if (str < STR19(22)) bonus = 6;
 	else if (str < STR19(25)) bonus = 7;
@@ -2512,7 +2638,7 @@ struct obj *otmp;
 			if (bimanual(otmp, youracedata) ||
 				(otmp->oartifact == ART_PEN_OF_THE_VOID && otmp->ovar1&SEAL_MARIONETTE && mvitals[PM_ACERERAK].died > 0))
 				bonus *= 2;
-			else if (otmp->otyp == FORCE_SWORD || otmp->otyp == ROD_OF_FORCE)
+			else if (otmp->otyp == FORCE_SWORD || otmp->otyp == ROD_OF_FORCE || weapon_type(otmp) == P_QUARTERSTAFF)
 				bonus *= 2;
 			else if (otmp->otyp == KATANA || otmp->otyp == LONG_SWORD)
 				bonus *= 1.5;
@@ -2563,6 +2689,11 @@ struct obj *otmp;
 			bonus /= 2;
 			if(ACURR(A_WIS) == 25) bonus += 8;
 			else bonus += (ACURR(A_WIS)-10)/2;
+		}
+		if(otmp->oartifact == ART_IBITE_ARM && u.umaniac){
+			//Combine mechanics: Gets a bonus from your bare-handed stuff.
+			if(weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT) > 0)
+				bonus += rnd(ACURR(A_CHA)/5 + weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT)*2);
 		}
 	}
 	
@@ -2954,6 +3085,21 @@ int skill;
 }
 
 /*
+ * Change from restricted to unrestricted, allowing P_SKILLED as max.  This
+ * function may be called with with P_NONE.  Used in pray.c.
+ */
+void
+skilled_weapon_skill(skill)
+int skill;
+{
+    if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < P_SKILLED) {
+		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
+		OLD_P_MAX_SKILL(skill) = P_SKILLED;
+		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
+    }
+}
+
+/*
  * Change from restricted to unrestricted, allowing P_GRAND_MASTER as max.  This
  * function may be called with with P_NONE.  Used in pray.c.
  */
@@ -3048,40 +3194,48 @@ struct obj *obj;
 		/* Not a weapon, weapon-tool, or ammo */
 		return (P_NONE);
 
-#define CHECK_ALTERNATE_SKILL(alt_skill) \
-			if(P_SKILL(objects[obj->otyp].oc_skill) > P_SKILL(alt_skill))\
-				type = objects[obj->otyp].oc_skill;\
-			else if(P_MAX_SKILL(objects[obj->otyp].oc_skill) >= P_MAX_SKILL(alt_skill))\
-				type = objects[obj->otyp].oc_skill;\
-			else type = alt_skill;
+#define CHECK_ALTERNATE_SKILL(alt_skill) {\
+	if(P_SKILL(type) > P_SKILL(alt_skill));\
+	else if(P_MAX_SKILL(type) >= P_MAX_SKILL(alt_skill));\
+	else type = alt_skill;\
+}
+	type = objects[obj->otyp].oc_skill;
+	
+	if(obj->oartifact == ART_SUNSWORD){
+		CHECK_ALTERNATE_SKILL(P_SHORT_SWORD)
+	}
+	else if(obj->oartifact == ART_YORSHKA_S_SPEAR){
+		CHECK_ALTERNATE_SKILL(P_HAMMER)
+	}
+	else if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD){
+		CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
+	}
+	else if(obj->oartifact == ART_TORCH_OF_ORIGINS){
+		type = P_CLUB;
+	}
+	else if(obj->oartifact == ART_SINGING_SWORD){
+		type = P_MUSICALIZE;
+	}
 
-	if(obj){
-		if(obj->oartifact == ART_SUNSWORD){
-			CHECK_ALTERNATE_SKILL(P_SHORT_SWORD)
-		}
-		else if(obj->oartifact == ART_YORSHKA_S_SPEAR){
-			CHECK_ALTERNATE_SKILL(P_HAMMER)
-		}
-		else if(obj->otyp == DOUBLE_LIGHTSABER && !obj->altmode){
+	if(obj->otyp == DOUBLE_LIGHTSABER){
+		if(!obj->altmode)
 			CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
-		}
-		else if(obj->otyp == ROD_OF_FORCE && !uarms && !u.twoweap){
+	}
+	else if(obj->otyp == ROD_OF_FORCE){
+		if(!uarms && !u.twoweap)
 			CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
-		}
-		else if(obj->otyp == KHOPESH){
-			CHECK_ALTERNATE_SKILL(P_AXE)
-		}
-		else if(obj->oartifact == ART_TORCH_OF_ORIGINS){
-			type = P_CLUB;
-		}
-		else if(obj->oartifact == ART_SINGING_SWORD){
-			type = P_MUSICALIZE;
-		}
-		else if(obj->otyp >= LUCKSTONE && obj->otyp <= ROCK && obj->ovar1){
-			type = (int)obj->ovar1;
-		}
-		else type = objects[obj->otyp].oc_skill;
-	} else type = objects[obj->otyp].oc_skill;
+	}
+	else if(obj->otyp == KHOPESH){
+		CHECK_ALTERNATE_SKILL(P_AXE)
+	}
+	else if(obj->otyp == DISKOS){
+		if(!uarms && !u.twoweap)
+			CHECK_ALTERNATE_SKILL(P_POLEARMS)
+	}
+	else if(obj->otyp >= LUCKSTONE && obj->otyp <= ROCK && obj->ovar1){
+		type = (int)obj->ovar1;
+	}
+
 	return ((type < 0) ? -type : type);
 }
 
@@ -3386,6 +3540,19 @@ int wep_type;
 		}
 	}
 	
+	if(weapon && weapon->otyp == SCALPEL && Role_if(PM_HEALER) && weapon == uwep && !u.twoweap){
+		/* weapon skills and misc skills */
+		switch (P_SKILL(P_HEALING_SPELL)) {
+			default: impossible("scalpel handeling weapon_hit_bonus: bad skill %d", skill);
+				/* fall through */
+			case P_ISRESTRICTED:
+			case P_UNSKILLED:
+			case P_BASIC:        bonus += 0; break;
+			case P_SKILLED:      bonus += 2; break;
+			case P_EXPERT:       bonus += 5; break;
+		}
+	}
+
 	if(wep_type == P_AXE && Race_if(PM_DWARF) && ublindf && ublindf->oartifact == ART_WAR_MASK_OF_DURIN) bonus += 5;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
@@ -3576,6 +3743,19 @@ int wep_type;
 		// }
 	}
 	
+	if(weapon && weapon->otyp == SCALPEL && Role_if(PM_HEALER) && weapon == uwep && !u.twoweap){
+		/* weapon skills and misc skills */
+		switch (P_SKILL(P_HEALING_SPELL)) {
+			default: impossible("scalpel handeling weapon_dam_bonus: bad skill %d", skill);
+				/* fall through */
+			case P_ISRESTRICTED:
+			case P_UNSKILLED:
+			case P_BASIC:        bonus += 0; break;
+			case P_SKILLED:      bonus += 2; break;
+			case P_EXPERT:       bonus += 5; break;
+		}
+	}
+	
 	if(wep_type == P_AXE && Race_if(PM_DWARF) && ublindf && ublindf->oartifact == ART_WAR_MASK_OF_DURIN) bonus += 5;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
@@ -3672,7 +3852,6 @@ const struct def_skill *class_skill;
 		OLD_P_SKILL(P_ATTACK_SPELL) = P_BASIC;
 		OLD_P_SKILL(P_ENCHANTMENT_SPELL) = P_BASIC;
 	}
-#ifdef BARD
 	if (Role_if(PM_BARD)) {
 	  OLD_P_SKILL(P_MUSICALIZE) = P_BASIC;
 	  OLD_P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
@@ -3680,9 +3859,11 @@ const struct def_skill *class_skill;
 	  OLD_P_SKILL(P_DART) = P_BASIC;
 	  OLD_P_SKILL(P_DAGGER) = P_BASIC;
 	}
-#endif
 	if (u.specialSealsActive&SEAL_BLACK_WEB) {
 	  OLD_P_SKILL(P_CROSSBOW) = P_BASIC;
+	}
+	if (Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)) {
+	  OLD_P_SKILL(P_AXE) = P_BASIC;
 	}
 
 	/* walk through array to set skill maximums */

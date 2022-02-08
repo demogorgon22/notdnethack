@@ -42,8 +42,8 @@ boolean state;
 	boolean weap_attack, xwep_attack;
 	mon->mcan = state;
 	set_mon_data_core(mon, mon->data);
-	weap_attack = !!mon_attacktype(mon, AT_WEAP);
-	xwep_attack = !!mon_attacktype(mon, AT_XWEP);
+	weap_attack = mon_attacktype(mon, AT_WEAP);
+	xwep_attack = mon_attacktype(mon, AT_XWEP);
 	if(weap_attack && !MON_WEP(mon)){
 		mon->weapon_check = NEED_WEAPON;
 	}
@@ -376,6 +376,7 @@ int template;
 	case CRANIUM_RAT:
 		/* defense: */
 		ptr->dac += 4;
+		ptr->hdr = 0; //Exposed brain
 		break;
 	case MISTWEAVER:
 		/* flags */
@@ -385,13 +386,43 @@ int template;
 		ptr->mflagst |= (MT_CARNIVORE);
 		ptr->mflagsv |= (MV_ECHOLOCATE|MV_SCENT);
 		ptr->mflagsa |= (MA_ANIMAL|MA_PLANT|MA_PRIMORDIAL);
+#define AVG_DR(typ) if(ptr->typ < 5) ptr->typ = (ptr->typ + 5)/2;
+#define AVG_AC(typ) if(ptr->typ < 16) ptr->typ = (ptr->typ + 16)/2;
+		AVG_AC(nac)
+		AVG_DR(bdr)
+		AVG_DR(ldr)
+		AVG_DR(gdr)
+		AVG_DR(fdr)
+		if(ptr->mtyp == PM_PRIESTESS){
+			AVG_AC(dac)
+			AVG_AC(pac)
+			ptr->spe_bdr += 4;
+			ptr->spe_gdr += 2;
+			ptr->spe_ldr += 2;
+		}
 		break;
 	case DELOUSED:
 		/* flags */
 		ptr->mflagsa &= ~(MA_PRIMORDIAL);
 		break;
 	case M_BLACK_WEB:
-		/* attacks only */
+		/* flags: */
+		ptr->mflagsm |= (MM_BREATHLESS);
+		ptr->mflagst |= (MT_MINDLESS | MT_HOSTILE | MT_STALK | MT_TRAITOR);
+		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
+		ptr->mflagsg |= (MG_RPIERCE | MG_RBLUNT | MG_NOSPELLCOOLDOWN);
+		ptr->mflagsg &= ~(MG_RSLASH | MG_INFRAVISIBLE);
+		ptr->mflagsa |= (MA_UNDEAD);
+		/* defense: */
+		ptr->pac = max(ptr->pac, 8);
+		ptr->dac += -2;	/* penalty to dodge AC */
+		/* resists: */
+		ptr->mresists |= (MR_COLD | MR_SLEEP | MR_POISON);
+		/* misc: */
+		ptr->msound = MS_SILENT;
+		/* speed: 0.50x, min 6 */
+		if (ptr->mmove > 6)
+			ptr->mmove = max(6, ptr->mmove / 2);
 		break;
 	case M_GREAT_WEB:
 		/* attacks only */
@@ -448,6 +479,7 @@ int template;
 		ptr->spe_hdr += 6;
 		ptr->mflagst |= (MT_HOSTILE | MT_STALK);
 		ptr->mflagsa |= (MA_UNDEAD);
+		ptr->mflagsv |= (MV_TELEPATHIC);
 		// ptr->mcolor = CLR_YELLOW;
 		break;
 	case MAD_TEMPLATE:
@@ -536,8 +568,11 @@ int template;
 			(
 			attk->aatyp == AT_CLAW ||
 			attk->aatyp == AT_BITE ||
+			attk->aatyp == AT_OBIT ||
+			attk->aatyp == AT_WBIT ||
 			attk->aatyp == AT_KICK ||
 			attk->aatyp == AT_BUTT ||
+			attk->aatyp == AT_TAIL ||
 			attk->aatyp == AT_ARRW ||
 			attk->aatyp == AT_LRCH ||
 			attk->aatyp == AT_HODS ||
@@ -735,7 +770,7 @@ int template;
 			maybe_insert();
 			attk->aatyp = !attacktype(ptr, AT_WEAP) ? AT_SRPR : !attacktype(ptr, AT_XWEP) ? AT_XSPR : AT_ESPR;
 			attk->adtyp = AD_SHDW;
-			attk->damn = 4;
+			attk->damn = 2; //4-6 with undead bonus.
 			attk->damd = 8;
 			special = TRUE;
 		}
@@ -1462,13 +1497,30 @@ int atyp;
     return attacktype_fordmg(ptr, atyp, AD_ANY) ? TRUE : FALSE;
 }
 
-struct attack *
+//Does monster have an attack of type atyp? Use get_attacktype to avoid duplicating code.
+
+boolean
 mon_attacktype(mon, atyp)
 struct monst *mon;
 int atyp;
 {
-	struct attack *attk;
 	struct attack prev_attk = {0};
+
+	if(mon_get_attacktype(mon, atyp, &prev_attk))
+		return TRUE;
+
+    return FALSE;
+}
+
+//Get a pointer to mon's first attack of type atyp. prev_attk must point to the attack buffer the attack's data should end up in.
+
+struct attack *
+mon_get_attacktype(mon, atyp, prev_attk)
+struct monst *mon;
+int atyp;
+struct attack *prev_attk;
+{
+	struct attack *attk;
 	int	indexnum = 0,	/* loop counter */
 		subout = 0,	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
@@ -1480,9 +1532,9 @@ int atyp;
 	res[2] = MM_MISS;
 	res[3] = MM_MISS;
 	
-	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod);
+	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, prev_attk, TRUE, &subout, &tohitmod);
 		!is_null_attk(attk);
-		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod)
+		attk = getattk(mon, (struct monst *) 0, res, &indexnum, prev_attk, TRUE, &subout, &tohitmod)
 	){
 		if(attk->aatyp == atyp)
 			return attk;
@@ -1822,7 +1874,7 @@ struct obj *obj;		/* aatyp == AT_WEAP, AT_SPIT */
 	    o = (mdef == &youmonst) ? invent : mdef->minvent;
 	    for ( ; o; o = o->nobj){
 			if ((o->owornmask & W_ARMH) &&
-				(o->otyp == find_vhelm() || o->otyp == CRYSTAL_HELM || o->otyp == PLASTEEL_HELM || o->otyp == PONTIFF_S_CROWN)
+				(o->otyp == find_vhelm() || o->otyp == CRYSTAL_HELM || o->otyp == PLASTEEL_HELM || o->otyp == PONTIFF_S_CROWN || o->otyp == FACELESS_HELM)
 			) return FALSE;
 			if ((o->owornmask & W_ARMC) &&
 				(o->otyp == WHITE_FACELESS_ROBE
@@ -2512,7 +2564,8 @@ struct permonst *ptr;
 		if ((tmp2 == AD_DRLI) || (tmp2 == AD_STON) || (tmp2 == AD_DRST)
 			|| (tmp2 == AD_DRDX) || (tmp2 == AD_DRCO) || (tmp2 == AD_WERE)
 			|| (tmp2 == AD_SHDW) || (tmp2 == AD_STAR) || (tmp2 == AD_BLUD)
-			|| (tmp2 == AD_MOON))
+			|| (tmp2 == AD_MOON) || (tmp2 == AD_HOLY) || (tmp2 == AD_UNHY)
+		)
 			n += 2;
 		else if (strcmp(ptr->mname, "grid bug")) n += (tmp2 != AD_PHYS);
 		n += ((int)(ptr->mattk[i].damd * ptr->mattk[i].damn) > 23);
@@ -2609,6 +2662,33 @@ struct monst *mon;
 	if(mcon < 3L)
 		mcon = 3L;
 	return mcon;
+}
+
+boolean
+hiddenwidegaze(magr)
+struct monst *magr;
+{
+	struct obj *cloak = which_armor(magr, W_ARMC);
+	if(magr->mtyp == PM_MEDUSA){
+		//Face
+		struct obj *helm = which_armor(magr, W_ARMH);
+		if((helm && is_opaque(helm) && FacelessHelm(helm))
+			|| (cloak && is_opaque(cloak) && FacelessCloak(cloak))
+		)
+			return TRUE;
+	}
+	else {
+		//Body shape
+		struct obj *armor = which_armor(magr, W_ARM);
+		struct obj *under = which_armor(magr, W_ARMU);
+		int mcan = 0;
+		if(cloak) mcan = objects[cloak->otyp].a_can;
+		if(armor) mcan = max(mcan, objects[armor->otyp].a_can);
+		if(under) mcan = max(mcan, objects[under->otyp].a_can);
+		if(rn2(3) < mcan)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 #endif /* OVLB */

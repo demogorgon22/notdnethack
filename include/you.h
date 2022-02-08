@@ -7,6 +7,7 @@
 
 #include "attrib.h"
 #include "monst.h"
+#include "cults.h"
 #ifndef PROP_H
 #include "prop.h"		/* (needed here for util/makedefs.c) */
 #endif
@@ -37,33 +38,37 @@ struct u_have {
 };
 
 struct u_event {
-	Bitfield(minor_oracle,1);	/* received at least 1 cheap oracle */
-	Bitfield(major_oracle,1);	/*  "  expensive oracle */
-	Bitfield(qcalled,1);		/* called by Quest leader to do task */
-	Bitfield(qexpelled,1);		/* expelled from the Quest dungeon */
-	Bitfield(qcompleted,1);		/* successfully completed Quest task */
-	Bitfield(uheard_tune,2);	/* 1=know about, 2=heard passtune */
-	Bitfield(uopened_dbridge,1);	/* opened the drawbridge */
-	Bitfield(uread_necronomicon,1);		/* have read the necronomicon */
-	Bitfield(knoweddergud,1);		/* know the identity of the black-web god */
+	Bitfield(minor_oracle,1);		/*1 received at least 1 cheap oracle */
+	Bitfield(major_oracle,1);		/*2  "  expensive oracle */
+	Bitfield(qcalled,1);			/*3 called by Quest leader to do task */
+	Bitfield(qexpelled,1);			/*4 expelled from the Quest dungeon */
+	Bitfield(qcompleted,1);			/*5 successfully completed Quest task */
+	Bitfield(uheard_tune,2);		/*7 1=know about, 2=heard passtune */
+	Bitfield(uopened_dbridge,1);	/*8 opened the drawbridge */
+	Bitfield(uread_necronomicon,1);	/*9 have read the necronomicon */
+	Bitfield(knoweddergud,1);		/*10 know the identity of the black-web god */
 
-	Bitfield(found_square,1);		/* found the vibrating square */
-	Bitfield(invoked,1);		/* invoked Gate to the Sanctum level */
-	Bitfield(gehennom_entered,1);	/* entered Gehennom via Valley */
-	Bitfield(uhand_of_elbereth,6);	/* became Hand of Elbereth */
-	Bitfield(udemigod,1);		/* killed the wiz */
-	Bitfield(ukilled_apollyon,1);		/* killed the angel of the pit.  Lucifer should spawn on Astral */
-	Bitfield(ukilled_illurien,1);		/* Harassment */
-	Bitfield(ukilled_dagon,1);		/* Returns */
-	Bitfield(ukilled_hydra,1);		/* Returns */
-	Bitfield(shubbie_atten,1);		/* Got Shubbie's attention */
-	Bitfield(sum_entered,1);		/* entered Sum-of-All */
-	Bitfield(uaxus_foe,1);		/* enemy of the modrons */
-	Bitfield(utook_castle, 2);	/* sat on the castle throne, used artifact wish */
-	Bitfield(uunknowngod, 2);	/* given five artifacts to the priests of the unknown god, used artifact wish */
+	Bitfield(found_square,1);		/*11 found the vibrating square */
+	Bitfield(invoked,1);			/*12 invoked Gate to the Sanctum level */
+	Bitfield(gehennom_entered,1);	/*13 entered Gehennom via Valley */
+#define CROWNING_BITS	7
+#define MAX_CROWNING	pow(2,CROWNING_BITS)-1
+	Bitfield(uhand_of_elbereth,CROWNING_BITS);	/*19 became Hand of Elbereth */
+	Bitfield(udemigod,1);			/*21 killed the wiz */
+	Bitfield(ukilled_apollyon,1);	/*22 killed the angel of the pit.  Lucifer should spawn on Astral */
+	Bitfield(ukilled_illurien,1);	/*23 Harassment */
+	Bitfield(ukilled_dagon,1);		/*24 Returns */
+	Bitfield(ukilled_hydra,1);		/*25 Returns */
+	Bitfield(sum_entered,1);		/*26 entered Sum-of-All */
+	Bitfield(uaxus_foe,1);			/*27 enemy of the modrons */
+	Bitfield(utook_castle, 2);		/*29 sat on the castle throne, used artifact wish */
+	Bitfield(uunknowngod, 2);		/*31 given five artifacts to the priests of the unknown god, used artifact wish */
 #define ARTWISH_EARNED	1
 #define ARTWISH_SPENT	2
-	Bitfield(ascended,1);		/* has offered the Amulet */
+	Bitfield(ascended,1);			/*32 has offered the Amulet */
+	Bitfield(knoxmade,1);			/*33 Portal to Ludios has been made in the main dungeon, teleport ok */
+	
+	Bitfield(padding,10);			/*43 reseve another bitfield in event. */
 };
 
 /* KMH, conduct --
@@ -95,7 +100,7 @@ struct Role {
 	/*** Strings that name various things ***/
 	struct RoleName name;	/* the role's name (from u_init.c) */
 	struct RoleName rank[9]; /* names for experience levels (from botl.c) */
-	const char *lgod, *ngod, *cgod; /* god names (from pray.c) */
+	int lgod, ngod, cgod;	/* god numbers (from gnames.h) */
 	const char *filecode;	/* abbreviation for use in file names */
 	const char *homebase;	/* quest leader's location (from questpgr.c) */
 	const char *intermed;	/* quest intermediate goal (from questpgr.c) */
@@ -182,7 +187,6 @@ struct mask_properties {
 	schar mskluck;
 	int mskhp,mskhpmax;
 	int msken,mskenmax;
-	int mskgangr[GA_NUM];
 	long mskexp, mskrexp;
 	int	mskweapon_slots;		/* unused skill slots */
 	int	mskskills_advanced;		/* # of advances made so far */
@@ -244,6 +248,7 @@ extern struct Race urace;
 #define Race_if(X)	(urace.malenum == (X))
 #define Race_switch	(urace.malenum)
 #define youracedata	(maybe_polyd(youmonst.data, &mons[urace.malenum]))
+#define Humanoid_half_dragon(role)	(Role_if(PM_MADMAN) || (Role_if(PM_NOBLEMAN) && flags.initgend))
 
 /*** Unified structure specifying gender information ***/
 struct Gender {
@@ -291,6 +296,9 @@ struct you {
 	d_level utolev;		/* level monster teleported you to, or uz */
 	uchar utotype;		/* bitmask of goto_level() flags for utolev */
 	boolean umoved;		/* changed map location (post-move) */
+	boolean uattked;		/* attacked a target (post-move) */
+	boolean unull;		/* passed a turn (post-move) */
+	coord prev_dir;		/* previous dirction pressed (for monk moves) */
 	int last_str_turn;	/* 0: none, 1: half turn, 2: full turn */
 				/* +: turn right, -: turn left */
 	int ulevel, ulevel_real;		/* 1 to MAXULEV */
@@ -470,7 +478,18 @@ struct you {
 				change_uinsight(1);\
 			}
 	Bitfield(render_thought,1);	/* you got a thought from a veil-render */
-	/* 20 free bits */
+	Bitfield(detestation_ritual,7);	/* progress in detestation ritual */
+#define NO_RITUAL 0
+#define RITUAL_STARTED	0x01
+#define RITUAL_CHAOS	0x02
+#define RITUAL_NEUTRAL	0x04
+#define RITUAL_LAW		0x08
+#define RITUAL_HI_CHAOS	0x10
+#define RITUAL_HI_NEUTRAL	0x20
+#define RITUAL_HI_LAW	0x40
+#define RITUAL_DONE		(RITUAL_CHAOS|RITUAL_NEUTRAL|RITUAL_LAW)
+#define HI_RITUAL_DONE	(RITUAL_HI_CHAOS|RITUAL_HI_NEUTRAL|RITUAL_HI_LAW)
+	/* 13 free bits */
 	
 	int oonaenergy;				/* Record the energy type used by Oona in your game. (Worm that Walks switches?) */
 	int brand_otyp;				/* Record the otyp of Fire and Frost Brand in this game */
@@ -489,10 +508,10 @@ struct you {
 			atime;		/* used for loss/gain countdown */
 	long exerchkturn;	/* Stat Excercise: What turn is the next exerchk? */		
 	align	ualign;			/* character alignment */
-#define CONVERT		2
-#define A_ORIGINAL	1
-#define A_CURRENT	0
-	aligntyp ualignbase[CONVERT];	/* for ualign conversion record */
+#define UGOD_CONVERT	2
+#define UGOD_ORIGINAL	1
+#define UGOD_CURRENT	0
+	int ugodbase[UGOD_CONVERT];
 	schar uluck, moreluck;		/* luck and luck bonus */
 	int luckturn;
 #define Luck	(u.uluck + u.moreluck)
@@ -519,11 +538,20 @@ struct you {
 	/*"Real" numbers for a WtWalk's non-mask-based HP*/
 	int uhp_real, uhpmax_real, uhprolled_real, uhpbonus_real, uhpmod_real;
 	int uen_real, uenmax_real, uenrolled_real, uenbonus_real;
-	int ugangr[GA_NUM];			/* if the gods are angry at you */
 	int ugifts;			/* number of artifacts bestowed */
 	int uartisval;		/* approximate strength of artifacts and gifts bestowed and wished for */
 	int ublessed, ublesscnt;	/* blessing/duration from #pray */
-	int ugoatblesscnt;
+	long usaccredit;		/* credit towards next gift */
+	int ucultblesscnt[MAX_CULTS];
+#define ugoatblesscnt ucultblesscnt[GOAT_CULT]
+	boolean cult_atten[MAX_CULTS];
+#define shubbie_atten		cult_atten[GOAT_CULT]
+#define silver_atten		cult_atten[FLAME_CULT]
+#define yog_sothoth_atten	cult_atten[SOTH_CULT]
+#define good_neighbor_atten	cult_atten[RAT_CULT]
+	long ucultcredit[MAX_CULTS];
+	d_level silver_flame_z; 
+	xchar s_f_x, s_f_y; 
 	long lastprayed;
 	long lastslept;
 	long nextsleep;
@@ -537,6 +565,7 @@ struct you {
 #define	PRAY_ANGER	4
 #define	PRAY_CONV	5
 #define PRAY_INPROG	6
+#define PRAY_IGNORED	7
 
 #define	REC_NONE	0
 #define	REC_REC		1
@@ -606,6 +635,7 @@ struct you {
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)
+#define COA_PROB	 (max(1, 5000*pow(.95,u.uinsight)))
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
 	int 	utaneggs;	/* tannin eggs */
@@ -631,7 +661,7 @@ struct you {
 	
 	int role_variant;	/*Records what variant of your role you are.*/
 
-	int umystic;	/*Monk mystic attacks active*/
+	int umabil;	/*Monk mystic attacks active*/
 #define SURGE_PUNCH		0x0001
 #define FORCE_PUNCH		0x0002
 #define CHI_HEALING		0x0004
@@ -646,6 +676,15 @@ struct you {
 #define SPIRIT_PUNCH_LVL	10
 #define FLICKER_PUNCH_LVL	8
 #define ABSORPTIVE_PUNCH_LVL	2
+	int umystic;	/*Monk mystic attacks active*/	
+#define monk_style_active(style) (u.umystic & (1 << (style-1)))
+#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
+
+#define DIVE_KICK 1
+#define AURA_BOLT 2
+#define BIRD_KICK 3
+#define METODRIVE 4
+#define PUMMEL    5
 
 	long	wardsknown;	/* known wards */
 #define	WARD_ELBERETH		0x0000001L
@@ -730,6 +769,7 @@ struct you {
 #define SEAL_ALIGNMENT_THING		0x00000100L
 #define SEAL_UNKNOWN_GOD			0x00000200L
 #define SEAL_BLACK_WEB				0x00000400L
+#define SEAL_YOG_SOTHOTH			0x00000800L
 #define SEAL_NUMINA					0x40000000L
 //	long	numina;	//numina does not expire, and can be immediatly re-bound once 30th level is achived if the pact is broken.
 	
@@ -834,7 +874,7 @@ struct you {
 #define	PWR_CLAIRVOYANCE			70
 #define	PWR_FIND_PATH				71
 #define	PWR_GNOSIS_PREMONITION		72
-#define	NUMBER_POWERS				73
+#define	NUMBER_POWERS				80
 
 	int spiritPOrder[52]; //# of letters in alphabet, capital and lowercase
 //	char spiritPLetters[NUMBER_POWERS];
@@ -864,6 +904,7 @@ struct you {
 	boolean ufirst_know;
 	long ufirst_know_timeout;
 	long thoughts;
+#define MAX_GLYPHS ((Role_if(PM_MADMAN) && u.uevent.qcompleted && (u.uinsight >= 20 || u.render_thought)) ? 4 : 3)
 };	/* end of `struct you' */
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))
 #define uandroid ((Race_if(PM_ANDROID) && !Upolyd) || (Upolyd && (youmonst.data->mtyp == PM_ANDROID || youmonst.data->mtyp == PM_GYNOID || youmonst.data->mtyp == PM_OPERATOR || youmonst.data->mtyp == PM_COMMANDER)))
@@ -878,6 +919,7 @@ struct you {
 								(u.sealsActive&SEAL_ENKI) || (Blind_telepat && uwep && is_lightsaber(uwep))) ? 0.75 :\
 							 (Role_if(PM_BARD) || Role_if(PM_HEALER) || Role_if(PM_TOURIST) || Role_if(PM_WIZARD) || Role_if(PM_MADMAN)) ? 0.50:\
 							  .5) /* Failsafe */
+
 
 extern long sealKey[34]; /*Defined in u_init.c*/
 extern boolean forcesight; /*Defined in u_init.c*/

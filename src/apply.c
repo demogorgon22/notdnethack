@@ -3121,7 +3121,7 @@ struct obj *hypo;
 				mon_adjust_speed(mtarg, 1, amp);
 			break;
 			case POT_GAIN_ENERGY:
-				if(!amp->cursed){
+				if(amp->cursed){
 					if (canseemon(mtarg))
 						pline("%s looks lackluster.", Monnam(mtarg));
 					set_mcan(mtarg, TRUE);
@@ -3873,11 +3873,11 @@ struct obj *obj;
 				   so proficient at catching weapons */
 				int hitu, hitvalu;
 				int dieroll;
-				hitvalu = tohitval((struct monst *)0, &youmonst, (struct attack *)0, otmp, (void *)0, HMON_MISTHROWN, 8, (int *) 0);
+				hitvalu = tohitval((struct monst *)0, &youmonst, (struct attack *)0, otmp, (void *)0, HMON_PROJECTILE, 8, (int *) 0);
 				if(hitvalu > (dieroll = rnd(20)) || dieroll == 1) {
 					boolean wepgone = FALSE;
 					pline_The("%s hits you as you try to snatch it!" the(onambuf));
-					hmon_general((struct monst *)0, &youmonst, (struct attack *)0, &otmp, (void *)0, HMON_MISTHROWN,
+					hmon_general((struct monst *)0, &youmonst, (struct attack *)0, &otmp, (void *)0, HMON_PROJECTILE,
 						0, 0, FALSE, dieroll, FALSE, -1);
 				}
 				else {
@@ -3983,8 +3983,8 @@ struct obj *pole;
 		cx = u.ux + pole_dx[i];
 		cy = u.uy + pole_dy[i];
 		if(isok(cx, cy) && (mtmp = m_at(cx, cy)) 
-			&& cansee(cx, cy)
 			&& canseemon(mtmp)
+			&& couldsee(cx, cy)
 			&& distu(cx, cy) <= max_range
 			&& !(mtmp->mappearance && mtmp->m_ap_type != M_AP_MONSTER && !sensemon(mtmp))
 			&& !(flags.peacesafe_polearms && mtmp->mpeaceful && !Hallucination)
@@ -4022,15 +4022,16 @@ static const char
 	cant_see_spot[] = "won't hit anything if you can't see that spot.",
 	cant_reach[] = "can't reach that spot from here.";
 
-/* Distance attacks by pole-weapons */
 STATIC_OVL int
-use_pole (obj)
-	struct obj *obj;
+pick_polearm_target(obj,outptr,ccp)
+struct obj *obj;
+struct monst **outptr;
+coord *ccp;
 {
 	int res = 0, typ, max_range = 4, min_range = 4;
 	int i;
-	coord cc;
-	struct monst *mtmp;
+	struct monst *mtmp = (struct monst *) 0;
+	*outptr = (struct monst *) 0;
 
 
 	/* Are you allowed to use the pole? */
@@ -4047,28 +4048,28 @@ use_pole (obj)
 	/* Prompt for a location */
 	if(flags.standard_polearms){
 		pline("%s", where_to_hit);
-		cc.x = u.ux;
-		cc.y = u.uy;
-		if (getpos(&cc, TRUE, "the spot to hit") < 0)
-			return 0;	/* user pressed ESC */
+		ccp->x = u.ux;
+		ccp->y = u.uy;
+		if (getpos(ccp, TRUE, "the spot to hit") < 0)
+			return res;	/* user pressed ESC */
 	}
 	else {
 		if((i = polearm_menu(uwep))){
 			i--; /*Remove the off-by-one offset used to make all returns from polearm_menu non-zero*/
 			if (i<N_POLEDIRS) {
-				cc.x = u.ux + pole_dx[i];
-				cc.y = u.uy + pole_dy[i];
+				ccp->x = u.ux + pole_dx[i];
+				ccp->y = u.uy + pole_dy[i];
 			}
 			else {
 				/* use standard targeting; save retval to return */
 				flags.standard_polearms = TRUE;
-				int retval = use_pole(obj);
+				int retval = pick_polearm_target(obj,outptr,ccp);
 				flags.standard_polearms = FALSE;
 				return retval;
 			}
 		}
 		else {
-			return 0;	/* user pressed ESC */
+			return res;	/* user pressed ESC */
 		}
 	}
 
@@ -4077,24 +4078,41 @@ use_pole (obj)
 	if (typ == P_NONE || P_SKILL(typ) <= P_BASIC) max_range = 4;
 	else if ( P_SKILL(typ) == P_SKILLED) max_range = 5;
 	else max_range = 8;
-	if (distu(cc.x, cc.y) > max_range) {
+	mtmp = m_at(ccp->x, ccp->y);
+	if (distu(ccp->x, ccp->y) > max_range) {
 	    pline("Too far!");
 	    return (res);
-	} else if (distu(cc.x, cc.y) < min_range) {
+	} else if (distu(ccp->x, ccp->y) < min_range) {
 	    pline("Too close!");
 	    return (res);
-	} else if (!cansee(cc.x, cc.y) &&
-		   ((mtmp = m_at(cc.x, cc.y)) == (struct monst *)0 ||
+	} else if (!cansee(ccp->x, ccp->y) &&
+		   (mtmp == (struct monst *)0 ||
 		    !canseemon(mtmp))) {
 	    You(cant_see_spot);
 	    return (res);
-	} else if (!couldsee(cc.x, cc.y)) { /* Eyes of the Overworld */
+	} else if (!couldsee(ccp->x, ccp->y)) { /* Eyes of the Overworld */
 	    You(cant_reach);
 	    return res;
 	}
 
+	*outptr = mtmp;
+	return 1;
+}
+
+/* Distance attacks by pole-weapons */
+STATIC_OVL int
+use_pole(obj)
+	struct obj *obj;
+{
+	coord cc = {0};
+	struct monst *mtmp;
+	
+	int res = pick_polearm_target(obj, &mtmp, &cc);
+	if(!mtmp)
+		return res;
+
 	/* Attack the monster there */
-	if ((mtmp = m_at(cc.x, cc.y)) != (struct monst *)0) {
+	if (mtmp) {
 	    bhitpos = cc;
 	    check_caitiff(mtmp);
 		if (u_pole_pound(mtmp)) {
@@ -4281,7 +4299,7 @@ use_crook (obj)
 	struct obj *obj;
 {
 	int res = 0, typ, max_range = 4, tohit;
-	coord cc;
+	coord cc = {0};
 	struct monst *mtmp;
 	struct obj *otmp;
 
@@ -4295,27 +4313,6 @@ use_crook (obj)
 	    else res = 1;
 	}
      /* assert(obj == uwep); */
-
-	/* Prompt for a location */
-	pline("%s", where_to_hit);
-	cc.x = u.ux;
-	cc.y = u.uy;
-	if (getpos(&cc, TRUE, "the spot to hook") < 0)
-	    return 0;	/* user pressed ESC */
-
-	/* Calculate range */
-	typ = uwep_skill_type();
-	max_range = 8;
-	if (distu(cc.x, cc.y) > max_range) {
-	    pline("Too far!");
-	    return (res);
-	} else if (!cansee(cc.x, cc.y)) {
-	    You(cant_see_spot);
-	    return (res);
-	} else if (!couldsee(cc.x, cc.y)) { /* Eyes of the Overworld */
-	    You(cant_reach);
-	    return res;
-	}
 
 	/* What do you want to hit? */
 	{
@@ -4347,20 +4344,20 @@ use_crook (obj)
 	    destroy_nhwindow(tmpwin);
 	}
 
+	typ = uwep_skill_type();
+	
 	/* What did you hit? */
 	switch (tohit) {
 	case 0:	/* Trap */
 	    /* FIXME -- untrap needs to deal with non-adjacent traps */
 	    break;
 	case 1:	/*Hit Monster */
-	    if ((mtmp = m_at(cc.x, cc.y)) == (struct monst *)0) break;
-		else {
-			u_pole_pound(mtmp);
-		}
-		return (1);
+		return use_pole(obj);
 	break;
 	case 2:	/*Hook Monster */
-	    if ((mtmp = m_at(cc.x, cc.y)) == (struct monst *)0) break;
+		res = pick_polearm_target(obj, &mtmp, &cc);
+		if(!mtmp)
+			return res;
 		if(mtmp->mpeaceful){
 			if (!bigmonst(mtmp->data) &&
 				enexto(&cc, u.ux, u.uy, (struct permonst *)0)
@@ -4496,8 +4493,8 @@ int x, y;
 	if(Misotheism < TIMEOUT_INF){
 		long increment = (long)(33 * pow(1.1,u.miso_count));
 		if(!Inhell && !Misotheism && u.ualign.type != A_VOID){
-			u.ugangr[Align2gangr(u.ualign.type)]++;
-			gods_angry(Align2gangr(u.ualign.type));
+			godlist[u.ualign.god].anger++;
+			gods_angry(u.ualign.god);
 		}
 		// Need to be careful with counts, since exponential math means that we can easily start overflowing stuff.
 		if(increment < TIMEOUT){
@@ -4562,6 +4559,7 @@ struct obj *obj;
 		pline("The cerulean tree flashes and disapears.");
 	pline("The disk crumbles to dust!");
 	incr_itimeout(&DimensionalLock, 100L);
+	expel_summons();
 	useup(obj);
 	return 1;
 }
@@ -4893,12 +4891,12 @@ use_doll(obj)
 			}
 		break;
 		case DOLL_OF_MOLLIFICATION:
-			if(u.ugangr[Align2gangr(u.ualign.type)]) {
+			if(godlist[u.ualign.god].anger) {
 				if(!Blind)
 					pline("The %s says a prayer.", OBJ_DESCR(objects[obj->otyp]));
 				pline("%s seems %s.", u_gname(),
 				  Hallucination ? "groovy" : "mollified");
-				u.ugangr[Align2gangr(u.ualign.type)] = 0;
+				godlist[u.ualign.god].anger = 0;
 				if ((int)u.uluck < 0) u.uluck = 0;
 				u.reconciled = REC_MOL;
 				res = 1;
@@ -5362,7 +5360,7 @@ do_break_wand(obj)
     case WAN_TELEPORTATION:
 		/* WAC make tele trap if you broke a wand of teleport */
 		/* But make sure the spot is valid! */
-	    if ((obj->spe > 2) && rn2(obj->spe - 2) && !level.flags.noteleport &&
+	    if ((obj->spe > 2) && rn2(obj->spe - 2) && !notel_level() &&
 		    !u.uswallow && !On_stairs(u.ux, u.uy) && (!IS_FURNITURE(levl[u.ux][u.uy].typ) &&
 		    !IS_ROCK(levl[u.ux][u.uy].typ) &&
 		    !closed_door(u.ux, u.uy) && !t_at(u.ux, u.uy))) {
@@ -5599,9 +5597,9 @@ struct obj * obj;
 			/* Points for trying */
 			u.ualign.sins = max(u.ualign.sins-1, 0);
 			adjalign(7);
-			if(u.ugangr[Align2gangr(u.ualign.type)]) {
-				u.ugangr[Align2gangr(u.ualign.type)]--;
-				if (u.ugangr[Align2gangr(u.ualign.type)]) {
+			if(godlist[u.ualign.god].anger) {
+				godlist[u.ualign.god].anger--;
+				if (godlist[u.ualign.god].anger) {
 					pline("%s seems %s.", u_gname(),
 					Hallucination ? "groovy" : "slightly mollified");
 					if ((int)u.uluck < 0) change_luck(1);
@@ -5617,8 +5615,8 @@ struct obj * obj;
 			/* Freed someone who wasn't supposed to be there! */
 			u.ualign.sins = max(u.ualign.sins-7, 0);
 			u.ualign.record = ALIGNLIM;
-			if(u.ugangr[Align2gangr(u.ualign.type)]) {
-				u.ugangr[Align2gangr(u.ualign.type)] = 0;
+			if(godlist[u.ualign.god].anger) {
+				godlist[u.ualign.god].anger = 0;
 				pline("%s seems %s.", u_gname(), Hallucination ?
 				"cosmic (not a new fact)" : "mollified");
 				if ((int)u.uluck < 0) u.uluck = 0;
@@ -5640,7 +5638,7 @@ struct obj * obj;
 		if(!rn2(100)){
 			You("feel the soul scream as it sinks towards Gehennom under the weight of the curse!");
 			/* Just sent someone back who shouldn't be there :( */
-			gods_upset(Align2gangr(u.ualign.type));
+			gods_upset(u.ualign.god);
 		}
 	}
 }
@@ -5650,7 +5648,7 @@ do_soul_coin(obj)
 struct obj *obj;
 {
 	char coinbuff[50] = {0};
-	struct monst *mtmp;
+	struct monst *mtmp = (struct monst *)0;
 	struct obj *otmp;
 	int x, y;
 	int tmp;
@@ -5677,8 +5675,8 @@ struct obj *obj;
 		if(getpos(&cc, TRUE, "the target") < 0) return 0;
 		x = cc.x;
 		y = cc.y;
-		if(distmin(u.ux, u.uy, x, y) > BOLT_LIM){
-			pline("Too far!");
+		if(distmin(u.ux, u.uy, x, y) > BOLT_LIM || !clear_path(u.ux, u.uy, x, y)){
+			pline("It can't reach there!");
 			return 0;
 		}
 
@@ -5708,7 +5706,7 @@ struct obj *obj;
 	if (!obj->blessed) {
 		switch(obj->otyp){
 			case WAGE_OF_SLOTH:
-				tmp = obj->cursed ? 9 : 4;
+				tmp = obj->cursed ? 4 : 2;
 				You("blur with stolen time!");
 				HTimeStop += (long)tmp;
 				for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
@@ -5769,7 +5767,7 @@ struct obj *obj;
 
 				/* Note, blessed was handled above. */
 				if(obj->cursed){
-					projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, (x-u.ux), (y-u.uy), 0, 1, FALSE, FALSE, FALSE);
+					projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, (x-u.ux), (y-u.uy), 0, 1, FALSE, FALSE, FALSE);
 				}
 				else if(mtmp){
 					int dmg;
@@ -5928,6 +5926,10 @@ struct obj *obj;
 				}
 			break;
 		}
+		/* if you targeted a monster, it gets angry, even if it was unaffected */
+		if (mtmp) {
+			wakeup(mtmp, TRUE);
+		}
 	}
 	/* handle B/U/C effect of wages */
 	soul_crush_consequence(obj);
@@ -5996,7 +5998,7 @@ struct obj *otmp;
 			otmp->oeroded3--;
 			return;
 		}
-		else if((otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && otmp->spe <= speLevel){
+		else if(is_enchantable(otmp) && otmp->spe <= speLevel){
 			otmp->spe = min(3, otmp->spe+2);
 			return;
 		}
@@ -6126,7 +6128,7 @@ int adtyp;
 	boolean vis = youdef;
 	for(engine = youdef ? invent : mdef->minvent; engine; engine = engine->nobj)
 		if(engine->otyp == PRESERVATIVE_ENGINE && engine->spe > 0 && engine->altmode != ENG_MODE_OFF){
-			if(adtyp == AD_VORP || adtyp == AD_SHRD || engine->altmode == ENG_MODE_ENR){
+			if(adtyp == AD_VORP || adtyp == AD_SHRD || adtyp == AD_TENT || engine->altmode == ENG_MODE_ENR){
 				if(vis) pline("%s infernal engine whirrs.", youdef ? "Your" : s_suffix(Monnam(mdef)));
 				engine->spe--;
 				return TRUE;
@@ -6367,7 +6369,8 @@ pick_carvee()
 	Sprintf(buf, "Carvable items");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-		if(otmp->oclass == WEAPON_CLASS && otmp->obj_material == WOOD && otmp->otyp != MOON_AXE && otmp->oartifact != ART_BOW_OF_SKADI && otmp->oartifact != ART_GUNGNIR){
+		if(otmp->oclass == WEAPON_CLASS && otmp->obj_material == WOOD && otmp->otyp != MOON_AXE
+				&& otmp->oartifact != ART_BOW_OF_SKADI && otmp->oartifact != ART_GUNGNIR && otmp->oartifact != ART_STAFF_OF_AESCULAPIUS){
 			Sprintf1(buf, doname(otmp));
 			any.a_char = otmp->invlet;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
@@ -7044,7 +7047,7 @@ doapply()
 		return do_carve_obj(obj);
 	
 	if(obj->oartifact == ART_SILVER_STARLIGHT) res = do_play_instrument(obj);
-	else if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) use_lamp(obj);
+	else if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && !u.veil) use_lamp(obj);
 	else if(obj->oartifact == ART_BLOODLETTER && artinstance[obj->oartifact].BLactive >= monstermoves) res = do_bloodletter(obj);
 	else if(obj->oartifact == ART_AEGIS) res = swap_aegis(obj);
 	else if(is_tipped_spear(obj)) res = swap_point(obj);
@@ -7944,6 +7947,15 @@ dotrephination_menu()
 	
 	if (u.thoughts&BEASTS_EMBRACE){
 		Sprintf(buf, "Extract the bestial figure");
+		any.a_int = BEAST_S_EMBRACE_GLYPH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet++;
+	}
+	
+	if (u.thoughts&SIGHT){
+		Sprintf(buf, "Extract the recursive eye");
 		any.a_int = BEAST_S_EMBRACE_GLYPH;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
 			incntlet, 0, ATR_NONE, buf,

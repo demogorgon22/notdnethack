@@ -129,6 +129,32 @@ boolean talk;
 }
 
 void
+make_invulnerable(xtime,talk)
+long xtime;
+boolean talk;
+{
+	long old = HStun;
+
+	if (!xtime && old) {
+		if (talk){
+			if(!Blind)
+				pline("The shimmering light fades.");
+			else You_feel("exposed to harm once more.");
+		}
+	}
+	if (xtime && !old) {
+		if (talk) {
+			if(!Blind)
+				pline("Faint shimmering light surrounds you.");
+			else You_feel("shielded from harm.");
+		}
+	}
+	if ((!xtime && old) || (xtime && !old)) flags.botl = TRUE;
+
+	set_itimeout(&HSanctuary, xtime);
+}
+
+void
 make_sick(xtime, cause, talk, type)
 long xtime;
 const char *cause;	/* sickness cause */
@@ -365,15 +391,12 @@ dodrink()
 		return 0;
 	}
 	
-	if (uarmh && (uarmh->otyp == PLASTEEL_HELM || uarmh->otyp == CRYSTAL_HELM || uarmh->otyp == PONTIFF_S_CROWN)){
+	if (uarmh && FacelessHelm(uarmh)){
 		pline("The %s covers your whole face.", xname(uarmh));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return 0;
 	}
-	if (uarmc && (uarmc->otyp == WHITE_FACELESS_ROBE
-		|| uarmc->otyp == BLACK_FACELESS_ROBE
-		|| uarmc->otyp == SMOKY_VIOLET_FACELESS_ROBE)
-	){
+	if (uarmc && FacelessCloak(uarmc)){
 		pline("The %s covers your whole face.", xname(uarmc));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return 0;
@@ -764,7 +787,7 @@ peffects(otmp)
 			}
 			You_feel("self-knowledgeable...");
 			display_nhwindow(WIN_MESSAGE, FALSE);
-			enlightenment(0);
+			doenlightenment();
 			pline_The("feeling subsides.");
 			exercise(A_WIS, TRUE);
 		}
@@ -2829,22 +2852,28 @@ dodip()
 		obj->blessed = obj->cursed = obj->bknown = 0;
 		if (Blind || Hallucination) obj->dknown = 0;
 
-		if (obj->otyp == POT_STARLIGHT)
-			end_burn(obj, FALSE);
 
 		if ((mixture = mixtype(obj, potion)) != 0) {
+			if (obj->otyp == POT_STARLIGHT)
+				end_burn(obj, FALSE);
 			obj->otyp = mixture;
 		} else {
 		    switch (obj->odiluted ? 1 : rnd(8)) {
 			case 1:
+				if (obj->otyp == POT_STARLIGHT)
+					end_burn(obj, FALSE);
 				obj->otyp = POT_WATER;
 				break;
 			case 2:
 			case 3:
+				if (obj->otyp == POT_STARLIGHT)
+					end_burn(obj, FALSE);
 				obj->otyp = POT_SICKNESS;
 				break;
 			case 4:
 				{
+				  if (obj->otyp == POT_STARLIGHT)
+				  	end_burn(obj, FALSE);
 				  struct obj *otmp;
 				  otmp = mkobj(POTION_CLASS,FALSE);
 				  obj->otyp = otmp->otyp;
@@ -3025,6 +3054,24 @@ dodip()
 			}
 			obj->opoisoned = OPOISON_SILVER;
 			goto poof;
+	    } else if(potion->otyp == POT_HALLUCINATION && (!(obj->opoisoned & OPOISON_HALLU) || obj->otyp == VIPERWHIP)) {
+			char buf[BUFSZ];
+			if (potion->quan > 1L)
+				Sprintf(buf, "One of %s", the(xname(potion)));
+			else
+				Strcpy(buf, The(xname(potion)));
+			obj->opoisoned = 0;
+			if(obj->otyp != VIPERWHIP) obj->opoisoned = 0;
+			if(obj->otyp == VIPERWHIP) pline("%s is drawn up into %s.",
+				  buf, the(xname(obj)));
+			else pline("%s forms a hallucinogenic coating on %s.",
+				  buf, the(xname(obj)));
+			if(obj->otyp == VIPERWHIP){
+				if(obj->opoisonchrgs && obj->opoisoned == OPOISON_HALLU) obj->opoisonchrgs += 2;
+				else obj->opoisonchrgs = 1;
+			}
+			obj->opoisoned = OPOISON_HALLU;
+			goto poof;
 	    } else if(obj->opoisoned &&
 			  (potion->otyp == POT_HEALING ||
 			   potion->otyp == POT_EXTRA_HEALING ||
@@ -3080,6 +3127,18 @@ dodip()
 			pline("%s is drawn up into %s.",
 				  buf, the(xname(obj)));
 			obj->opoisoned = OPOISON_PARAL;
+			obj->opoisonchrgs = 30;
+			goto poof;
+	    } else if(potion->otyp == POT_HALLUCINATION && (!obj->opoisoned || obj->opoisoned & OPOISON_HALLU)) {
+			char buf[BUFSZ];
+			if (potion->quan > 1L)
+				Sprintf(buf, "One of %s", the(xname(potion)));
+			else
+				Strcpy(buf, The(xname(potion)));
+			obj->opoisoned = 0;
+			pline("%s is drawn up into %s.",
+				  buf, the(xname(obj)));
+			obj->opoisoned = OPOISON_HALLU;
 			obj->opoisonchrgs = 30;
 			goto poof;
 	    } else if((potion->otyp == POT_ACID ||

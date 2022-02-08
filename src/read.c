@@ -174,6 +174,28 @@ doread()
 				pline("\"Take me up\"");
 			}
 			return(1);
+		} else if(scroll->oartifact == ART_HOLY_MOONLIGHT_SWORD && scroll->lamplit){
+			/* Note: you can see the blade even when blid */
+			if(u.uinsight < 2) {
+				pline("The glowing cyan blade is decorated with faint curves.");
+			}
+			else if(u.uinsight < 5) {
+				You("faintly see strange arches inside the cyan blade.");
+			}
+			else if(u.uinsight < 10){
+				You("can barely see faint bright stars behind the arches inside the cyan blade.");
+			}
+			else if(u.uinsight < 20){
+				pline("The blade is the deep black of the night sky. You don't know why you ever thought it was cyan.");
+			}
+			else if(u.uinsight < 40){
+				pline("The distant stars wink and dance among the arches within the black night sky.");
+			}
+			else {
+				pline("Tiny spirits of light dance in and out of the blade's sky and the black night of your %s.", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				maybe_give_thought(GUIDANCE);
+			}
+			return(1);
 		} else if(scroll->oartifact == ART_ITLACHIAYAQUE){
 			if (Blind) {
 				You_cant("see the mirror!");
@@ -296,6 +318,34 @@ doread()
 						spl_book[i].sp_lev = objects[SPE_DRAIN_LIFE].oc_level;
 						spl_book[i].sp_know = 20000;
 						You("learn to cast Drain Life!");
+						break;
+					}
+				}
+				if (i == MAXSPELL) impossible("Too many spells memorized!");
+				return 1;
+			}
+		} else if(scroll->oartifact == ART_STAFF_OF_AESCULAPIUS){
+			if (Blind) {
+				You_cant("see the staff!");
+				return 0;
+			} else {
+				int i;
+				You("read the traceries of healing magics inscribed on the staff.");
+				for (i = 0; i < MAXSPELL; i++)  {
+					if (spellid(i) == SPE_MASS_HEALING)  {
+						if (spellknow(i) <= 1000) {
+							Your("knowledge of Mass Healing is keener.");
+							spl_book[i].sp_know = 20000;
+							exercise(A_WIS,TRUE);       /* extra study */
+						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
+							You("know Mass Healing quite well already.");
+						}
+						break;
+					} else if (spellid(i) == NO_SPELL)  {
+						spl_book[i].sp_id = SPE_MASS_HEALING;
+						spl_book[i].sp_lev = objects[SPE_MASS_HEALING].oc_level;
+						spl_book[i].sp_know = 20000;
+						You("learn to cast Mass Healing!");
 						break;
 					}
 				}
@@ -791,7 +841,7 @@ struct obj *scroll;
 		thought = otyp_to_thought(scroll->otyp);
 
 		/* maybe_give_thought checks requirements, returns FALSE if it didn't work */
-		if (!maybe_give_thought(thought))	
+		if (!maybe_give_thought(thought))
 		{
 			pline("Nothing happens.");
 			return 0;
@@ -1436,7 +1486,10 @@ forget_traps()
 
 	/* forget all traps (except the one the hero is in :-) */
 	for (trap = ftrap; trap; trap = trap->ntrap)
-	    if ((trap->tx != u.ux || trap->ty != u.uy) && (trap->ttyp != HOLE))
+	    if ((trap->tx != u.ux || trap->ty != u.uy)
+			&& (trap->ttyp != HOLE)
+			&& !(trap->ttyp == MAGIC_PORTAL && visible_portals(&u.uz))
+		)
 		trap->tseen = 0;
 }
 
@@ -1903,6 +1956,8 @@ struct obj	*sobj;
 	case SCR_BLANK_PAPER:
 		if(sobj->oartifact == ART_PAINTING_FRAGMENT){
 			You("can't make out any detail. There seems to have been a lot of white paint involved, though.");
+		} else if(sobj->oartifact == ART_RITE_OF_DETESTATION){
+			doparticularinvoke(sobj);
 		} else {
 			if (Blind)
 			You("don't remember there being any magic words on this scroll.");
@@ -2077,6 +2132,8 @@ struct obj	*sobj;
 						mtmp->mtame += ACURR(A_CHA)*10;
 						if(mtmp->mpeacetime) mtmp->mpeacetime += ACURR(A_CHA);
 					} else if(mtmp->mpeacetime) mtmp->mpeacetime += ACURR(A_CHA);
+					if(mtmp->mtame && mtmp->mtame < ACURR(A_CHA))
+						mtmp->mtame = ACURR(A_CHA);
 				}
 			}
 		}
@@ -2649,12 +2706,20 @@ struct obj	*sobj;
 	if (confused) {
 		/* consecrates your weapon */
 		/* NOT valid_weapon(), which also allows non-enchantable things that are effective to hit with */
-		if (uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep))) {
-			bless(uwep);
-			if (!check_oprop(uwep, OPROP_HOLYW))
-				add_oprop(uwep, OPROP_LESSER_HOLYW);
-			if(uwep->spe < 3)
-				uwep->spe = 3;
+		if (uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep) || is_gloves(uwep))) {
+			if (sobj->cursed){
+				curse(uwep);
+				if (!check_oprop(uwep, OPROP_UNHYW))
+					add_oprop(uwep, OPROP_LESSER_UNHYW);
+				if(uwep->spe < 3)
+					uwep->spe = 3;
+			} else { // blessed/uncursed
+				bless(uwep);
+				if (!check_oprop(uwep, OPROP_HOLYW))
+					add_oprop(uwep, OPROP_LESSER_HOLYW);
+				if(uwep->spe < 3)
+					uwep->spe = 3;
+			} 
 		}
 		else {
 			goto returnscroll;
@@ -2684,8 +2749,7 @@ struct obj	*sobj;
 			levl[u.ux][u.uy].typ == SOIL ||
 			levl[u.ux][u.uy].typ == SAND)
 		{
-			levl[u.ux][u.uy].typ = ALTAR;
-			levl[u.ux][u.uy].altarmask = Align2amask( whichgod );
+			add_altar(u.ux, u.uy, whichgod, FALSE, GOD_NONE);
 			pline("%s altar appears in front of you!", An(align_str(whichgod)));
 			newsym(u.ux, u.uy);
 		}

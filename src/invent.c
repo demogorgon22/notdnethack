@@ -37,7 +37,6 @@ STATIC_DCL char FDECL(obj_to_let,(struct obj *));
 STATIC_PTR int FDECL(u_material_next_to_skin,(int));
 STATIC_PTR int FDECL(u_bcu_next_to_skin,(int));
 STATIC_DCL int FDECL(itemactions,(struct obj *));
-STATIC_DCL void FDECL(describe_item, (struct obj *, int, int, winid *));
 
 #ifdef OVLB
 
@@ -851,8 +850,10 @@ carrying_readable_weapon()
 				otmp->oartifact == ART_ITLACHIAYAQUE || 
 				otmp->oartifact == ART_ROD_OF_SEVEN_PARTS ||
 				otmp->oartifact == ART_BOW_OF_SKADI ||
+				otmp->oartifact == ART_STAFF_OF_AESCULAPIUS ||
 				otmp->oartifact == ART_GUNGNIR ||
 				otmp->oartifact == ART_PEN_OF_THE_VOID ||
+				otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD ||
 				otmp->oartifact == ART_STAFF_OF_NECROMANCY
 			))
 		)
@@ -1249,7 +1250,7 @@ register const char *let,*word;
 		      !is_axe(otmp) && !is_pole(otmp) && 
 			  otyp != BULLWHIP && otyp != VIPERWHIP && otyp != FORCE_WHIP &&
 			  !is_knife(otmp) && otmp->oartifact != ART_SILVER_STARLIGHT &&
-			  otmp->oartifact != ART_HOLY_MOONLIGHT_SWORD &&
+			  !(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && !u.veil) &&
 			  otmp->otyp != RAKUYO && otmp->otyp != RAKUYO_SABER && 
 			  otmp->otyp != DOUBLE_FORCE_BLADE && otmp->otyp != FORCE_BLADE &&
 			  otmp->otyp != MASS_SHADOW_PISTOL
@@ -2381,6 +2382,12 @@ struct obj *obj;
 	else if (obj->oartifact == ART_STAFF_OF_NECROMANCY)
 				add_menu(win, NO_GLYPH, &any, 'r', 0, ATR_NONE,
 				"Study the forbidden secrets of necromancy", MENU_UNSELECTED);
+	else if (obj->oartifact == ART_STAFF_OF_AESCULAPIUS)
+				add_menu(win, NO_GLYPH, &any, 'r', 0, ATR_NONE,
+				"Study the grand magic of healing", MENU_UNSELECTED);
+	else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit)
+				add_menu(win, NO_GLYPH, &any, 'r', 0, ATR_NONE,
+				"Study the curious depths of this sword", MENU_UNSELECTED);
 	else if (obj->oartifact == ART_PEN_OF_THE_VOID)
 				add_menu(win, NO_GLYPH, &any, 'r', 0, ATR_NONE,
 				(mvitals[PM_ACERERAK].died > 0) ? "Inspect the twin blades" : "Inspect the blade", MENU_UNSELECTED);
@@ -2575,8 +2582,8 @@ winid *datawin;
 		return;
 	}
 
-	/* hide artifact properties if we haven't discovered the artifact yet */
-	if (undiscovered_artifact(oartifact))
+	/* hide artifact properties if we haven't discovered the artifact yet, and we aren't speaking in hypotheticals */
+	if (obj && undiscovered_artifact(oartifact))
 		oartifact = 0;
 
 	/* type name */
@@ -2585,7 +2592,11 @@ winid *datawin;
 		OBJPUTSTR(buf);
 	}
 	else {
-		Sprintf(buf, "(%s)", obj_typename(otyp));
+		/* assume we are asking about a "cloak of magic resistance", not a "piece of cloth" */
+		boolean savestate = objects[otyp].oc_name_known;
+		objects[otyp].oc_name_known = TRUE;
+		Sprintf(buf, "(%s)", artiadjusted_objnam(simple_typename(otyp), oartifact));
+		objects[otyp].oc_name_known = savestate;
 		OBJPUTSTR(buf);
 	}
 
@@ -2620,7 +2631,7 @@ winid *datawin;
 					);
 			}
 			else {
-				Sprintf(buf, "%s-handed %s%s%s",
+				Sprintf(buf, "%s-handed %s%s%s.",
 					(oc.oc_bimanual ? "Two" : "Single"),
 					(otyp_is_blaster || otyp_is_launcher) ? "" : buf2,
 					(otyp_is_launcher ? "launcher" : "weapon"),
@@ -2636,7 +2647,7 @@ winid *datawin;
 		/* special cases */
 		if (oartifact == ART_PEN_OF_THE_VOID && obj && (obj->ovar1 & SEAL_EVE))
 			Strcpy(eos(buf)-1, ", and launcher.");
-		if (oartifact == ART_LIECLEAVER || oartifact == ART_ROGUE_GEAR_SPIRITS)
+		if (oartifact == ART_LIECLEAVER || oartifact == ART_ROGUE_GEAR_SPIRITS || oartifact == ART_WAND_OF_ORCUS)
 			Sprintf(eos(buf)-1, ", and %smelee weapon.", buf2);
 		OBJPUTSTR(buf);
 
@@ -2652,6 +2663,9 @@ winid *datawin;
 					case ART_ROGUE_GEAR_SPIRITS:
 						Strcpy(buf2, " at range, and your pickaxe skill in melee.");
 						break;
+					case ART_WAND_OF_ORCUS:
+						Strcpy(buf2, " at range, and your mace skill in melee.");
+						break;
 					case ART_PEN_OF_THE_VOID:
 						if(obj->ovar1 & SEAL_EVE) {
 							Strcpy(buf2, " in melee, and your ammo's skill at range.");
@@ -2664,7 +2678,7 @@ winid *datawin;
 				}
 				Strcat(buf, buf2);
 			} else {
-				Sprintf(buf, "Uses the %s skill.", P_NAME(oc.oc_skill));
+				Sprintf(buf, "Uses the %s skill.", P_NAME(abs(oc.oc_skill)));
 			}
 			OBJPUTSTR(buf);
 		}
@@ -2674,6 +2688,7 @@ winid *datawin;
 		/* the melee-weapon artifact launchers need obj to exist because dmgval_core needs obj to find artifact. */
 		if ((!otyp_is_launcher && !otyp_is_blaster) || (
 			(obj && oartifact == ART_LIECLEAVER) ||
+			(obj && oartifact == ART_WAND_OF_ORCUS) ||
 			(obj && oartifact == ART_ROGUE_GEAR_SPIRITS)
 			))
 		{
@@ -2739,13 +2754,13 @@ winid *datawin;
 				if (oart->damage > 1)
 				{
 					Sprintf(buf, "Deals %dd%d bonus ",
-						((is_lightsaber(obj) && litsaber(obj)) ? 3 : 1) * (double_bonus_damage_artifact(oartifact) ? 2 : 1),
+						((obj && is_lightsaber(obj) && litsaber(obj)) ? 3 : 1) * (double_bonus_damage_artifact(oartifact) ? 2 : 1),
 						oart->damage);
 				}
 				else
 				{
 					Sprintf(buf, "Deals %d bonus ",
-						((is_lightsaber(obj) && litsaber(obj)) ? 3 : 1) * (double_bonus_damage_artifact(oartifact) ? 2 : 1));
+						((obj && is_lightsaber(obj) && litsaber(obj)) ? 3 : 1) * (double_bonus_damage_artifact(oartifact) ? 2 : 1));
 				}
 			}
 			else
@@ -2999,19 +3014,58 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			/* other stuff
-			 * commented out because artifacts don't get any behaviours more interesting
-			 * than bonus damage (such as Vorpal Blade being vorpal)
 			 */
-//			buf[0] = '\0';
-//			ADDCLASSPROP((check_oprop(obj, OPROP_DEEPW && obj->spe < 8), "telepathically lashes out");
-//			ADDCLASSPROP((check_oprop(obj, OPROP_VORPW), "beheads creatures");
-//			ADDCLASSPROP((check_oprop(obj, OPROP_MORGW), "inflicts unhealing wounds while cursed");
-//			ADDCLASSPROP((check_oprop(obj, OPROP_FLAYW), "destroys armor");
-//			if (buf[0] != '\0')
-//			{
-//				Sprintf(buf2, "It %s.", buf);
-//				OBJPUTSTR(buf2);
-//			}
+			buf[0] = '\0';
+			ADDCLASSPROP((check_oprop(obj, OPROP_DEEPW) && obj->spe < 8), "telepathically lashes out");
+			ADDCLASSPROP((check_oprop(obj, OPROP_VORPW)), "is vorpal");
+			ADDCLASSPROP((check_oprop(obj, OPROP_MORGW)), "inflicts unhealing wounds while cursed");
+			ADDCLASSPROP((check_oprop(obj, OPROP_FLAYW)), "destroys armor");
+			ADDCLASSPROP((check_oprop(obj, OPROP_RETRW)), "returns when thrown");
+			if (buf[0] != '\0')
+			{
+				buf[0] = buf[0] + 'A' - 'a';
+				Sprintf(buf2, "%s.", buf);
+				OBJPUTSTR(buf2);
+			}
+		}
+		/* other artifact weapon effects */
+		if (oartifact) {
+			register const struct artifact *oart = &artilist[oartifact];
+			buf[0] = '\0';
+			//ADDCLASSPROP((oart->aflags&ARTA_DEXPL), "weapon dice explode");
+			ADDCLASSPROP((oart->aflags&ARTA_DLUCK), "luck-biased");
+			ADDCLASSPROP((oart->aflags&ARTA_POIS), "always poisoned");
+			ADDCLASSPROP((oart->aflags&ARTA_SILVER), "silvered");
+			ADDCLASSPROP((oart->aflags&ARTA_VORPAL), "vorpal");
+			ADDCLASSPROP((oart->aflags&ARTA_CANCEL), "canceling");
+			ADDCLASSPROP((oart->aflags&ARTA_MAGIC), "magic-flourishing");
+			ADDCLASSPROP((oart->aflags&ARTA_DRAIN), "draining");
+			//ADDCLASSPROP((oart->aflags&ARTA_BRIGHT), " /* turns gremlins to dust and trolls to stone */");
+			ADDCLASSPROP((oart->aflags&ARTA_BLIND), "blinding");
+			ADDCLASSPROP((oart->aflags&ARTA_SHINING), "armor-phasing");
+			ADDCLASSPROP((oart->aflags&ARTA_SHATTER), "shattering");
+			ADDCLASSPROP((oart->aflags&ARTA_DISARM), "disarming");
+			ADDCLASSPROP((oart->aflags&ARTA_STEAL), "theiving");
+			ADDCLASSPROP((oart->aflags&(ARTA_EXPLFIRE|ARTA_EXPLFIREX)), " fire exploding");
+			ADDCLASSPROP((oart->aflags&(ARTA_EXPLCOLD|ARTA_EXPLCOLDX)), " cold exploding");
+			ADDCLASSPROP((oart->aflags&(ARTA_EXPLELEC|ARTA_EXPLELECX)), " shock exploding");
+			ADDCLASSPROP((oart->aflags&(ARTA_KNOCKBACK|ARTA_KNOCKBACKX)), "kinetic");
+			if (buf[0] != '\0')
+			{
+				Sprintf(buf2, "Attacks are %s.", buf);
+				OBJPUTSTR(buf2);
+			}
+			/* other stuff
+			 */
+			buf[0] = '\0';
+			ADDCLASSPROP((oart->aflags&ARTA_RETURNING), "returns when thrown");
+			ADDCLASSPROP((oart->aflags&ARTA_HASTE), "hastens the wielder's attacks");
+			if (buf[0] != '\0')
+			{
+				buf[0] = buf[0] + 'A' - 'a';
+				Sprintf(buf2, "%s.", buf);
+				OBJPUTSTR(buf2);
+			}
 		}
 		/* other weapon special effects */
 		if(obj){
@@ -3055,7 +3109,7 @@ winid *datawin;
 				Sprintf(buf2, "Deals an extra 1d4 vs small or 1d3 vs large and double enchantment damage if wielded without an off-hand weapon, at the cost of an extra 1/4 move.");
 				OBJPUTSTR(buf2);
 			}
-			if(fast_weapon(obj) && obj->spe >= 2){
+			if(fast_weapon(obj)){
 				Sprintf(buf2, "Is 1/6th faster to swing than other weapons.");
 				OBJPUTSTR(buf2);
 			}
@@ -3096,6 +3150,9 @@ winid *datawin;
 				else if (poisons == OPOISON_SILVER) {
 					OBJPUTSTR("Coated with silver.");
 				}
+				else if (poisons == OPOISON_HALLU) {
+					OBJPUTSTR("Coated with hallucinogen.");
+				}
 				/* general mash-em-together poison */
 				else {
 					buf[0] = '\0';
@@ -3107,6 +3164,7 @@ winid *datawin;
 					if (poisons&OPOISON_AMNES)  {Strcat(buf, "amnesiac " );}
 					if (poisons&OPOISON_ACID)   {Strcat(buf, "acidic "   );}
 					if (poisons&OPOISON_SILVER) {Strcat(buf, "silver "   );}
+					if (poisons&OPOISON_HALLU) {Strcat(buf, "hallucinogenic "   );}
 					
 					Sprintf(buf2, "Coated with %spoison.", an(buf));
 					OBJPUTSTR(buf2);
@@ -3693,6 +3751,7 @@ winid *datawin;
 	else if (otyp == PLASTEEL_HELM ||
 		otyp == CRYSTAL_HELM ||
 		otyp == PONTIFF_S_CROWN ||
+		otyp == FACELESS_HELM ||
 		otyp == WHITE_FACELESS_ROBE ||
 		otyp == BLACK_FACELESS_ROBE ||
 		otyp == SMOKY_VIOLET_FACELESS_ROBE)		OBJPUTSTR("Covers the face entirely.");
@@ -4457,8 +4516,13 @@ char *buf;
 	    cmap = S_sink;				/* "sink" */
 #endif
 	else if (IS_ALTAR(ltyp)) {
-	    Sprintf(altbuf, "altar to %s (%s)", a_gname(),
-		    align_str(Amask2align(lev->altarmask & ~AM_SHRINE)));
+		if(a_gnum(x,y) != GOD_NONE) {
+			Sprintf(altbuf, "altar to %s (%s)", a_gname(),
+				align_str(a_align(x,y)));
+		}
+		else {
+			Sprintf(altbuf, "%s altar", align_str(a_align(x,y)));
+		}
 	    dfeature = altbuf;
 	} else if ((x == xupstair && y == yupstair) ||
 		 (x == sstairs.sx && y == sstairs.sy && sstairs.up))
@@ -5388,7 +5452,7 @@ u_clothing_discomfort()
 		count++;
 		if(uarmh->otyp ==  find_vhelm())
 			count++;
-		if(uarmh->otyp == PLASTEEL_HELM || uarmh->otyp == CRYSTAL_HELM || uarmh->otyp == PONTIFF_S_CROWN)
+		if(FacelessHelm(uarmh))
 			count+=2;
 	}
 	if(uarm){

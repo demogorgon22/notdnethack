@@ -54,6 +54,8 @@
 #define ARTA_EXPLCOLDX	0x01000000L /* cold explosion; 100% chance*/
 #define ARTA_EXPLELECX	0x02000000L /* elec explosion; 100% chance*/
 #define ARTA_KNOCKBACKX	0x04000000L /* knockback; 100% chance*/
+#define ARTA_RETURNING  0x08000000L /* returns to the hand when thrown */
+#define ARTA_SONICX		0x10000000L /* thunderblasts */
 
 #define ARTP_SEEK		0x0001L /* helps you search, ie, adds enhancement bonus to attempts -- only coded for mainhand weapons */
 #define ARTP_NOCALL		0x0002L /* prevents demons from being gated in */
@@ -305,6 +307,7 @@ struct artinstance{
 #define BLactive avar1
 #define PlagueDuration avar1
 #define IMAlitness avar1
+#define LeagueMod avar1
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2
@@ -320,8 +323,8 @@ struct artinstance{
 #define get_artifact(o) \
 		(((o)&&(o)->oartifact) ? &artilist[(o)->oartifact] : 0)
 
-extern struct artinstance artinstance[];
-extern struct artifact artilist[];
+extern struct artinstance * artinstance;
+extern struct artifact * artilist;
 
 /* invoked properties with special powers */
 #define TAMING		(LAST_PROP+1)
@@ -411,6 +414,9 @@ extern struct artifact artilist[];
 #define ILLITHID     (LAST_PROP+85)
 #define SMOKE_MIRROR     (LAST_PROP+86)
 #define CAPTURE_REFLECTION  (LAST_PROP+87)
+#define DETESTATION  	(LAST_PROP+88)
+#define INVULNERABILITY	(LAST_PROP+89)
+#define IBITE_ARM		(LAST_PROP+90)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20
@@ -481,8 +487,7 @@ extern struct artifact artilist[];
 /* artifact has no specific material or size, eg "silver Grimtooth" */
 #define is_malleable_artifact(a) (is_nameable_artifact((a)) || (a) == &artilist[ART_EXCALIBUR] || (a) == &artilist[ART_GUNGNIR] || (a) == &artilist[ART_DIRGE])
 
-#define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || \
-		(obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR)
+#define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || (obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR || (obj)->oartifact == ART_IBITE_ARM || (arti_is_prop(obj, ARTI_BLOODTHRST) && roll_generic_flat_madness()))
 
 #define is_mastery_artifact_nameable(a) (\
             /* Mastery artifacts */\
@@ -629,6 +634,7 @@ extern struct artifact artilist[];
 
 #define double_bonus_damage_artifact(m) (\
 	(m) == ART_LIMITED_MOON ||\
+	(m) == ART_SICKLE_OF_THUNDERBLASTS ||\
 	(m) == ART_STAFF_OF_TWELVE_MIRRORS ||\
 	(m) == ART_POSEIDON_S_TRIDENT\
 	)

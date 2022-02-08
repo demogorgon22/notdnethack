@@ -47,8 +47,9 @@ boolean
 maybe_give_thought(thought)
 long int thought;
 {
-	if ((count_glyphs() >= 3) ||
+	if ((count_glyphs() >= MAX_GLYPHS) ||
 		(u.thoughts & thought) ||
+		(u.veil) ||
 		(u.uinsight < glyph_insight(thought)) ||
 		(u.usanity > glyph_sanity(thought))
 		)
@@ -121,6 +122,8 @@ long int thought;
 {
 	if (!(u.thoughts&thought))
 		return FALSE;
+	if (u.veil)
+		return FALSE;
 	if (u.uinsight >= glyph_insight(thought) && u.usanity <= glyph_sanity(thought))
 		return TRUE;
 	return FALSE;
@@ -133,6 +136,8 @@ int oldinsight;
 int oldsanity;
 {
 	if (!(u.thoughts&thought))
+		return FALSE;
+	if (u.veil)
 		return FALSE;
 	if (oldinsight >= glyph_insight(thought) && oldsanity <= glyph_sanity(thought))
 		return TRUE;
@@ -380,6 +385,15 @@ dofreethought_menu()
 	if (!(u.thoughts&BEASTS_EMBRACE)){
 		Sprintf(buf, "More powerful beast claws");
 		any.a_int = BEASTS_EMBRACE;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet++;
+	}
+	
+	if (!(u.thoughts&SIGHT)){
+		Sprintf(buf, "Greater accuracy");
+		any.a_int = SIGHT;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
 			incntlet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);

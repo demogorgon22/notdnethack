@@ -529,7 +529,7 @@ register struct obj *obj;
 	(void)mungspaces(buf);
 
 	/* relax restrictions over proper capitalization for artifacts */
-	if ((aname = artifact_name(buf, &objtyp)) != 0 && objtyp == obj->otyp)
+	if ((aname = artifact_name(buf, &objtyp, NULL)) != 0 && objtyp == obj->otyp)
 		Strcpy(buf, aname);
 
 	if (obj->oartifact) {
@@ -667,6 +667,10 @@ const char *name;
 		if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD)
 			obj->owt = 150;
 		
+		/* property */
+		if (obj->oartifact == ART_IBITE_ARM)
+			add_oprop(obj, OPROP_CCLAW);
+		
 		/* size */
 		if (obj->oartifact && artilist[obj->oartifact].size != MZ_DEFAULT)
 			obj->objsize = artilist[obj->oartifact].size;
@@ -701,6 +705,12 @@ const char *name;
 			obj->ovar1 = STAR_SAPPHIRE;
 			obj->obj_color = CLR_BRIGHT_GREEN;
 			obj->oward = ELDER_SIGN;
+		}
+		else if(obj->oartifact == ART_IBITE_ARM){
+			obj->obj_color = CLR_BRIGHT_GREEN;
+		}
+		else if(obj->oartifact == ART_IDOL_OF_BOKRUG__THE_WATER_){
+			obj->obj_color = CLR_GREEN;
 		}
 		
 		/* body type */
@@ -870,20 +880,37 @@ boolean pname;
 	return;
 }
 
+const char *
+injury_desc_word(mtmp)
+struct monst * mtmp;
+{
+	if (mtmp->mhp >= mtmp->mhpmax)
+		return (has_blood_mon(mtmp)) ? "uninjured" : "undamaged";
+	else if (mtmp->mhp >= .9*mtmp->mhpmax)
+		return "scuffed";
+	else if (mtmp->mhp >= .5*mtmp->mhpmax)
+		return (has_blood_mon(mtmp)) ? "bruised" : "dented";
+	else if (mtmp->mhp >= .25*mtmp->mhpmax)
+		return (has_blood_mon(mtmp)) ? "bloodied" : "damaged";
+	else if (mtmp->mhp >= .1*mtmp->mhpmax)
+		return (has_blood_mon(mtmp)) ? "badly bloodied" : "badly damaged";
+	else if (mtmp->mhp > 0)
+		return (has_blood_mon(mtmp)) ? "mortally injured" : "critically damaged";
+	
+	/* deadmonster */
+	return "";
+}
+
 boolean
 maybe_append_injury_desc(mtmp, buf)
 struct monst * mtmp;
 char * buf;
 {
-	if (((u.sealsActive&SEAL_MOTHER && !is_undead(mtmp->data)) || (Role_if(PM_HEALER) && (!nonliving(mtmp->data) || has_blood_mon(mtmp))) || (ublindf && ublindf->otyp == ANDROID_VISOR))
-		&& !flags.suppress_hurtness){
-		if (mtmp->mhp >= mtmp->mhpmax) (has_blood_mon(mtmp)) ? Strcat(buf, "uninjured ") : Strcat(buf, "undamaged ");
-		else if (mtmp->mhp >= .9*mtmp->mhpmax) Strcat(buf, "scuffed ");
-		else if (mtmp->mhp >= .5*mtmp->mhpmax) (has_blood_mon(mtmp)) ? Strcat(buf, "bruised ") : Strcat(buf, "dented ");
-		else if (mtmp->mhp >= .25*mtmp->mhpmax) (has_blood_mon(mtmp)) ? Strcat(buf, "bloodied ") : Strcat(buf, "damaged ");
-		else if (mtmp->mhp >= .1*mtmp->mhpmax) (has_blood_mon(mtmp)) ? Strcat(buf, "badly bloodied ") : Strcat(buf, "badly damaged ");
-		else if (mtmp->mhp > 0) (has_blood_mon(mtmp)) ? Strcat(buf, "mortally injured ") : Strcat(buf, "critically damaged ");
-		else return FALSE;	/* dead monster */
+	if (DEADMONSTER(mtmp))
+		return FALSE;
+	if (can_see_hurtnss_of_mon(mtmp) && !flags.suppress_hurtness){
+		Strcat(buf, injury_desc_word(mtmp));
+		Strcat(buf, " ");
 		return TRUE;
 	}
 	return FALSE;

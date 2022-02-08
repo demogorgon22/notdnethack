@@ -249,6 +249,7 @@ typedef struct branch {
 	       				on_level(x,&ilsensin_level) || \
 					on_level(x,&sacris_level))
 #define Inhell			In_hell(&u.uz)	/* now gehennom */
+#define Infuture		(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))
 #define In_endgame(x)		((x)->dnum == astral_level.dnum)
 
 #define within_bounded_area(X,Y,LX,LY,HX,HY) \
@@ -305,18 +306,19 @@ struct linfo {
  */
 
 /* Because clearly Nethack needs more ways to specify alignment */
-#define Amask2msa(x) ((x) == AM_LAWFUL ? MSA_LAWFUL : \
-					  (x) == AM_NEUTRAL ? MSA_NEUTRAL : \
-					  (x) == AM_CHAOTIC ? MSA_CHAOTIC : \
-					  (x) == AM_NONE ? MSA_UNALI : \
-					  (x) == AM_VOID ? MSA_VOID : \
+#define Align2msa(x) ((x) == A_LAWFUL ? MSA_LAWFUL : \
+					  (x) == A_NEUTRAL ? MSA_NEUTRAL : \
+					  (x) == A_CHAOTIC ? MSA_CHAOTIC : \
+					  (x) == A_NONE ? MSA_UNALI : \
+					  (x) == A_VOID ? MSA_VOID : \
 					  MSA_MULTI)
-#define Msa2amask(x) ((x) == MSA_LAWFUL ? AM_LAWFUL : \
-					  (x) == MSA_NEUTRAL ? AM_NEUTRAL : \
-					  (x) == MSA_CHAOTIC ? AM_CHAOTIC : \
-					  (x) == MSA_UNALI ? AM_NONE : \
-					  (x) == MSA_VOID ? AM_VOID : \
-					  MSA_MULTI)
+#define Msa2align(x) ((x) == MSA_LAWFUL ? A_LAWFUL : \
+					  (x) == MSA_NEUTRAL ? A_NEUTRAL : \
+					  (x) == MSA_CHAOTIC ? A_CHAOTIC : \
+					  (x) == MSA_UNALI ? A_NONE : \
+					  (x) == MSA_VOID ? A_VOID : \
+					  A_NONE) /* A_NONE is technically bad and overlaps with MSA_UNALI */
+
 #define MSA_MULTI	0  /* multiple alignments */
 #define MSA_LAWFUL  1
 #define MSA_NEUTRAL 2

@@ -1876,7 +1876,7 @@ eatcorpse(otmp)		/* called when a corpse is selected as food */
 		boolean cannibal = maybe_cannibal(mtyp, FALSE);
 	    if (u.umonnum == PM_GHOUL) {
 	    	pline("Yum - that %s was well aged%s!",
-		      mons[mtyp].mlet == S_PLANT ? "vegetation" :
+		      (mons[mtyp].mlet == S_PLANT || mtyp == PM_WOOD_TROLL) ? "vegetation" :
 		      mons[mtyp].mlet == S_FUNGUS ? "fungoid vegetation" :
 		      !vegetarian(&mons[mtyp]) ? "meat" : "protoplasm",
 		      cannibal ? ", cannibal" : "");
@@ -1886,6 +1886,7 @@ eatcorpse(otmp)		/* called when a corpse is selected as food */
 			cannibal ? ", cannibal" : "");
 		} else {
 		pline("Ulch - that %s was tainted%s!",
+		      (mons[mtyp].mlet == S_PLANT || mtyp == PM_WOOD_TROLL) ? "vegetation" :
 		      mons[mtyp].mlet == S_FUNGUS ? "fungoid vegetation" :
 		      !vegetarian(&mons[mtyp]) ? "meat" : "protoplasm",
 		      cannibal ? ", cannibal" : "");
@@ -2717,16 +2718,12 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		return 0;
 	}
 
-	if (uarmh && (uarmh->otyp == PLASTEEL_HELM || uarmh->otyp == CRYSTAL_HELM || uarmh->otyp == PONTIFF_S_CROWN)){
+	if (uarmh && FacelessHelm(uarmh)){
 		pline("The %s covers your whole face.", xname(uarmh));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return 0;
 	}
-	if (uarmc
-	&& (uarmc->otyp == WHITE_FACELESS_ROBE
-		|| uarmc->otyp == BLACK_FACELESS_ROBE
-		|| uarmc->otyp == SMOKY_VIOLET_FACELESS_ROBE
-	)){
+	if (uarmc && FacelessCloak(uarmc)){
 		pline("The %s covers your whole face.", xname(uarmc));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return 0;
@@ -3521,6 +3518,10 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				make_blinded(rn1(200, 250 - 125 * bcsign(otmp)),
 						 (boolean)!Blind);
 			}
+			if(otmp->opoisoned & OPOISON_HALLU){
+				pline ("Oh wow!  Great stuff!");
+				make_hallucinated(HHallucination + 200,FALSE,0L);
+			}
 			if(otmp->opoisoned & OPOISON_PARAL){
 				if (Free_action)
 					You("stiffen momentarily.");
@@ -3779,20 +3780,34 @@ void
 gethungry()	/* as time goes by - called by moveloop() and domove() */
 {
 	int hungermod = 1;
-	if (u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20) return;	/* you don't feel hungrier */
-	if(inediate(youracedata) && !uclockwork && !Race_if(PM_INCANTIFIER)) return;
+	if (Invulnerable) return;	/* you don't feel hungrier */
 	if (Race_if(PM_ETHEREALOID)) return;
+	if(inediate(youracedata) && !uclockwork && !Race_if(PM_INCANTIFIER)){
+		//Gradually return to normal if you departed from normal as a result of polymorph.
+		if(u.uhunger < u.uhungermax*.45)
+			u.uhunger++;
+		else if(u.uhunger > u.uhungermax*.45)
+			u.uhunger--;
+		newuhs(TRUE);
+		return;
+	}
 	
 	if(u.usleep) hungermod *= 10; /* slow metabolic rate while asleep */
-	/* Convicts can last twice as long at hungry and below */
+	/* Monks and Convicts can last twice as long at hungry and below. Convicts last 5x as long at weak or lower. */
 	if(Role_if(PM_CONVICT)){
 		if(u.uhs == HUNGRY) hungermod *= 2;
 		else if(u.uhs > HUNGRY) hungermod *=5;	/* WEAK or hungrier */
 	}
+	if(Role_if(PM_MONK)){
+		if(u.uhs >= HUNGRY) hungermod *= 2; /* HUNGRY or hungrier */
+	}
+	if(Role_if(PM_MONK) && u.unull){
+		hungermod *= 2;
+	}
 	
 	//Elder vampires can go for longer without blood
 	if(is_vampire(youracedata))
-		hungermod *= (maybe_polyd(youmonst.data->mlevel, u.ulevel)/10 + 1);
+		hungermod *= (maybe_polyd(youmonst.data->mlevel, u.ulevel)/14 + 1);
 	
 	//Incantifiers get reduced hunger
 	if(Race_if(PM_INCANTIFIER))

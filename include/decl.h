@@ -427,6 +427,7 @@ E const char disclosure_options[];
 
 E NEARDATA int smeq[];
 E NEARDATA int doorindex;
+E NEARDATA int altarindex;
 E NEARDATA char *save_cm;
 #define KILLED_BY_AN	 0
 #define KILLED_BY	 1
@@ -559,7 +560,11 @@ E NEARDATA anything zeroany;   /* init'd and defined in decl.c */
 #include "you.h"
 E NEARDATA struct you u;
 
+#include "gods.h"
+E NEARDATA struct god * godlist;
+
 #include "onames.h"
+#include "gnames.h"
 #ifndef PM_H		/* (pm.h has already been included via youprop.h) */
 #include "pm.h"
 #endif
@@ -574,7 +579,7 @@ E NEARDATA struct permonst upermonst;	/* init'd in decl.c,
 E NEARDATA struct mvitals {
 	uchar	born;
 	uchar	died;
-	uchar	mvflags;
+	long long mvflags;
 	int	san_lost;
 	int	insight_gained;
 	Bitfield(seen,1);
@@ -820,6 +825,8 @@ E struct _plinemsg *pline_msg;
 #define MSGTYP_NOREP   1
 #define MSGTYP_NOSHOW  2
 #define MSGTYP_STOP    3
+
+#define ROLL_FROM(array)	array[rn2(SIZE(array))]
 
 
 /* FIXME: These should be integrated into objclass and permonst structs,

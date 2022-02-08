@@ -281,10 +281,13 @@ WEAPON(("elven sickle", "runed sickle"), /* Vs plants: +6 to hit and double dama
 
 WEAPON(("axe"),
 	DMG(D(6)), DMG(D(4)),
-	1, 0, MZ_MEDIUM, 20, 60,  8,  0, S,   P_AXE, IRON, FALSE, HI_METAL),
+	1, 0, MZ_MEDIUM, 17, 60,  8,  0, S,   P_AXE, IRON, FALSE, HI_METAL),
+WEAPON(("diskos", "circular-sawbladed axe"),
+	DMG(D(6)), DMG(D(8)),
+	0, 0,   MZ_MEDIUM, 5,120, 500,  0, S,   P_AXE, METAL, FALSE, HI_METAL),
 WEAPON(("battle-axe", "double-bitted axe"),/* was "double-headed" ? */
 	DMG(D(8), D(4)), DMG(D(6), D(2,4)),
-	0, 0,   MZ_HUGE, 16,120, 40,  0, S,   P_AXE, IRON, FALSE, HI_METAL),
+	0, 0,   MZ_HUGE, 14,120, 40,  0, S,   P_AXE, IRON, FALSE, HI_METAL),
 WEAPON(("moon axe", "two-handed axe"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(6)), DMG(D(6)),	/* die size modified by phase of moon */
 	0, 0,   MZ_HUGE, 12,160, 40,  0, S,   P_AXE, SILVER, UNIDED, HI_SILVER),
@@ -307,10 +310,13 @@ WEAPON(("dwarvish short sword", "broad short sword"),
 	0, 0,  MZ_SMALL,  2, 35, 10,  0, P|S, P_SHORT_SWORD, IRON, FALSE, HI_METAL),
 WEAPON(("mirrorblade", "polished short sword"),
 	DMG(D(6)), DMG(D(8)),
-	1, 0,  MZ_SMALL,  0, 40,100,  0, P,   P_SHORT_SWORD, SILVER, FALSE, HI_SILVER),
+	0, 0,  MZ_SMALL,  0, 40,100,  0, P,   P_SHORT_SWORD, SILVER, FALSE, HI_SILVER),
 WEAPON(("khopesh", "sickle-sword"),
 	DMG(D(8)), DMG(D(6)),
-	1, 0,  MZ_SMALL,  0, 30, 10,  0, S,   P_SHORT_SWORD, COPPER, FALSE, HI_COPPER),
+	0, 0,  MZ_SMALL,  0, 30, 10,  0, S,   P_SHORT_SWORD, COPPER, FALSE, HI_COPPER),
+WEAPON(("wakizashi", "samurai short sword"),
+	DMG(D(8)), DMG(D(6)),
+	0, 0,  MZ_SMALL,  0, 30, 40,  1, P|S,   P_SHORT_SWORD, IRON, FALSE, HI_METAL),
 
 WEAPON(("scimitar", "curved sword"),
 	DMG(D(8)), DMG(D(8)),
@@ -320,7 +326,7 @@ WEAPON(("high-elven warsword", "runed curved sword"),
 	0, 0, MZ_MEDIUM,  1, 20,150,  2, S,   P_SCIMITAR, MITHRIL, UNIDED, HI_MITHRIL),
 WEAPON(("rapier"),
 	DMG(D(6)), DMG(D(4)),
-	1, 0, MZ_MEDIUM,  6, 28, 20,  2, P,   P_SABER, METAL, FALSE, HI_METAL),
+	1, 0, MZ_MEDIUM,  5, 28, 20,  2, P,   P_SABER, METAL, FALSE, HI_METAL),
 WEAPON(("saber"),
 	DMG(D(8)), DMG(D(8)),
 	1, 0, MZ_MEDIUM,  6, 34, 75,  0, S,   P_SABER, SILVER, IDED|UNIDED, HI_SILVER),
@@ -336,6 +342,9 @@ WEAPON(("rakuyo-saber", "latch-pommeled saber"),
 WEAPON(("rakuyo-dagger", "latch-pommeled dagger"),
 	DMG(D(4)), DMG(D(3)),
 	0, 0,  MZ_SMALL,  0, 10,100,  2, P|S, P_DAGGER, METAL, FALSE, HI_METAL),
+WEAPON(("isamusei", "oddly-luminous sword", "razor-thin sword"),
+	DMG(D(12)), DMG(D(8)),
+	0, 0, MZ_MEDIUM,  1, 100,500,  2, S|B, P_BROAD_SWORD, METAL, FALSE, CLR_ORANGE),
 WEAPON(("broadsword"),
 	DMG(D(2, 4)), DMG(D(6), F(1)),
 	1, 0,  MZ_LARGE,  8, 70, 10,  0, S,   P_BROAD_SWORD, IRON, FALSE, HI_METAL),
@@ -400,7 +409,7 @@ WEAPON(("force whip", "segmented whip"),
 /* polearms */
 /* spear-type */
 WEAPON(("partisan", "vulgar polearm"),
-	DMG(D(6)), DMG(D(6), F(1)),
+	DMG(D(8)), DMG(D(8), F(1)),
 	0, 0,   MZ_HUGE,  5, 80, 10,  0, P,   P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("ranseur", "hilted polearm"),
 	DMG(D(2, 4)), DMG(D(2, 4)),
@@ -409,10 +418,10 @@ WEAPON(("spetum", "forked polearm"),
 	DMG(D(6), F(1)), DMG(D(2, 6)),
 	0, 0,   MZ_HUGE,  5, 50,  5,  0, P,   P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("glaive", "single-edged polearm"),
-	DMG(D(6)), DMG(D(10)),
+	DMG(D(6), F(1)), DMG(D(10), F(1)),
 	0, 0,   MZ_HUGE,  7, 75,  6,  0, S,   P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("naginata", "samurai-sword polearm"),
-	DMG(D(8)), DMG(D(10)),
+	DMG(D(8), F(1)), DMG(D(10), F(1)),
 	0, 0,   MZ_HUGE,  1, 75, 90,  1, S,   P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("lance"),
 	DMG(D(6)), DMG(D(8)),
@@ -430,17 +439,17 @@ WEAPON(("elven lance", "runed lance"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(8)), DMG(D(8)),
 	0, 0,  MZ_LARGE,  0, 60, 10,  2, P,   P_LANCE, WOOD, FALSE, HI_WOOD),
 WEAPON(("droven lance", "lance"), /*Needs encyc entry*//*Needs tile*/
-	DMG(D(10)), DMG(D(10)),
+	DMG(D(12)), DMG(D(12)),
 	0, 0,   MZ_HUGE,  0, 60, 10,  2, P,   P_LANCE, OBSIDIAN_MT, UNIDED, CLR_BLACK),
 /* axe-type */
 WEAPON(("halberd", "angled poleaxe"),
-	DMG(D(10)), DMG(D(2, 6)),
+	DMG(D(12)), DMG(D(2, 8)),
 	0, 0,   MZ_HUGE,  6, 75, 10, 0, P|S, P_POLEARMS, IRON, FALSE, HI_METAL),
-WEAPON(("poleaxe", "curved poleaxe"),
+WEAPON(("poleaxe", "straight-bladed poleaxe"),
 	DMG(D(10)), DMG(D(2, 6)),
 	0, 0,   MZ_HUGE,  2, 75, 10, 0, P|S|B, P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("bardiche", "long-bladed poleaxe"),
-	DMG(D(2, 4)), DMG(D(3, 4)),
+	DMG(D(2, 6)), DMG(D(3, 6)),
 	0, 0,   MZ_HUGE,  4, 80,  7, 0, S,   P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("voulge", "pole cleaver"),
 	DMG(D(2, 4)), DMG(D(2, 4)),
@@ -461,10 +470,10 @@ WEAPON(("bill-guisarme", "hooked polearm"),
 	0, 0,   MZ_HUGE,  3, 80,  7,  0, P|S, P_POLEARMS, IRON, FALSE, HI_METAL),
 /* other */
 WEAPON(("lucern hammer", "pronged polearm"),
-	DMG(D(2, 4)), DMG(D(6)),
+	DMG(D(2, 8)), DMG(D(8)),
 	0, 0,   MZ_HUGE,  4, 85,  7,  0, B|P, P_POLEARMS, IRON, FALSE, HI_METAL),
 WEAPON(("bec de corbin", "beaked polearm"),
-	DMG(D(8)), DMG(D(6)),
+	DMG(D(8), F(2)), DMG(D(12), F(2)),
 	0, 0,   MZ_HUGE,  3, 75,  8,  0, B|P, P_POLEARMS, IRON, FALSE, HI_METAL),
 
 WEAPON(("scythe"), 
@@ -473,32 +482,35 @@ WEAPON(("scythe"),
 
 /* bludgeons */
 WEAPON(("mace"),
-	DMG(D(6), F(1)), DMG(D(6)),
+	DMG(D(10), F(1)), DMG(D(10)),
 	1, 0, MZ_MEDIUM, 40, 30,  5,  0, B,   P_MACE, IRON, FALSE, HI_METAL),
 WEAPON(("elven mace", "runed mace"), /*Needs encyc entry*/
-	DMG(D(7), F(1)), DMG(D(7)),
+	DMG(D(7), F(3)), DMG(D(7)),
 	0, 0, MZ_MEDIUM,  0, 10,  5,  2, B,   P_MACE, WOOD, FALSE, HI_WOOD),
 WEAPON(("morning star"),
-	DMG(D(2, 4)), DMG(D(6), F(1)),
+	DMG(D(2, 6)), DMG(D(8), F(1)),
 	1, 0, MZ_MEDIUM, 12, 80, 10,  0, B|P, P_MORNING_STAR, IRON, FALSE, HI_METAL),
 WEAPON(("war hammer"),
-	DMG(D(4), F(1)), DMG(D(4)),
+	DMG(D(8), F(1)), DMG(D(8)),
 	1, 0, MZ_MEDIUM, 15, 50,  5,  0, B,   P_HAMMER, IRON, FALSE, HI_METAL),
 WEAPON(("club"),
 	DMG(D(6)), DMG(D(3)),
-	1, 0, MZ_MEDIUM, 11, 10,  3,  0, B,   P_CLUB, WOOD, FALSE, HI_WOOD),
+	1, 0, MZ_MEDIUM, 10, 10,  3,  0, B,   P_CLUB, WOOD, FALSE, HI_WOOD),
 WEAPON(("clawed hand"),
 	DMG(D(12)), DMG(D(6)),
 	1, 0, MZ_MEDIUM,  0, 10, 300, 0, P|S, P_CLUB, BONE, FALSE, CLR_GRAY),
 WEAPON(("macuahuitl", "obsidian-edged club"),
 	DMG(D(8)), DMG(D(6)),
 	0, 0, MZ_MEDIUM,  0, 40, 10,  0, B|S, P_CLUB, WOOD, FALSE, HI_WOOD),
+WEAPON(("breaking wheel", "wagon wheel"),
+	DMG(D(6)), DMG(D(3)),
+	0, 0, MZ_HUGE,  1, 150,  500,  0, B,   P_NONE, WOOD, FALSE, HI_WOOD),
 WEAPON(("quarterstaff", "staff"),
 	DMG(D(6)), DMG(D(6)),
 	0, 0,   MZ_HUGE,  9, 40,  5,  0, B,   P_QUARTERSTAFF, WOOD, FALSE, HI_WOOD),
 WEAPON(("khakkhara", "monk's staff"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(6)), DMG(D(4)),
-	0, 0,   MZ_HUGE,  2,120, 50,  0, B|P, P_QUARTERSTAFF, SILVER, IDED, HI_SILVER),
+	0, 0,   MZ_HUGE,  2, 80, 50,  0, B|P, P_QUARTERSTAFF, SILVER, IDED, HI_SILVER),
 WEAPON(("double sword"),
 	DMG(D(8)), DMG(D(12)),
 	1, 0,   MZ_HUGE,  1, 80, 30,  0, S|P, P_QUARTERSTAFF, IRON, FALSE, HI_METAL),
@@ -514,7 +526,10 @@ WEAPON(("aklys", "thonged club"),
 	0, 0, MZ_MEDIUM,  8, 15,  4,  0, B,   P_CLUB, IRON, FALSE, HI_METAL),
 WEAPON(("flail"),
 	DMG(D(6), F(1)), DMG(D(2, 4)),
-	1, 0, MZ_MEDIUM, 35, 15,  4,  0, B,   P_FLAIL, IRON, FALSE, HI_METAL),
+	1, 0, MZ_MEDIUM, 25, 15,  4,  0, B,   P_FLAIL, IRON, FALSE, HI_METAL),
+WEAPON(("nunchaku", "set of rope-sticks"),
+	DMG(D(4), F(1)), DMG(D(3)),
+	0, 0, MZ_MEDIUM,  5,  7,  4,  0, B,   P_FLAIL, WOOD, FALSE, HI_WOOD),
 /* misc */
 WEAPON(("bullwhip"),
 	DMG(D(2)), DMG(D(1)),
@@ -526,24 +541,27 @@ WEAPON(("viperwhip"),
 WEAPON(("bestial claw"),
 	DMG(D(10)), DMG(D(8)),
 	1, 0, MZ_MEDIUM,  0, 10,100,  0, S|P, P_BARE_HANDED_COMBAT, BONE, FALSE, CLR_WHITE),
+WEAPON(("katar"),
+	DMG(D(6)), DMG(D(4)),
+	1, 0, MZ_SMALL,  5,  5,   4,  0, S|P, P_BARE_HANDED_COMBAT, IRON, FALSE, HI_METAL),
 
 
 
 /* Firearms */
 //ifdef FIREARMS
  /*Needs encyc entry*/
-GUN(("flintlock", "broken hand-crossbow"),            0,   MZ_LARGE, 0,  10,   50,  8, -2,  0, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("flintlock", "broken hand-crossbow"),            0,   MZ_LARGE, 0,  10,   50,  8, -2, -2, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
 
-GUN(("pistol", "broken hand-crossbow"),               0,   MZ_SMALL, 0,  12,  100, 15,  1,  0, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("submachine gun", "strange broken crossbow"),    0,   MZ_SMALL, 0,  25,  250, 10,  3, -1, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("pistol", "broken hand-crossbow"),               0,   MZ_SMALL, 0,  12,  100, 15,  1,  2, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("submachine gun", "strange broken crossbow"),    0,   MZ_SMALL, 0,  25,  250, 10,  3,  0, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
 GUN(("heavy machine gun", "strange broken crossbow"), 0,    MZ_HUGE, 0, 100, 2000, 20,  8, -4, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("rifle", "broken crossbow"),                     0,    MZ_HUGE, 0,  30,  150, 22, -1,  1, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("assault rifle", "broken crossbow"),             0,  MZ_MEDIUM, 0,  40, 1000, 20,  5, -2, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("sniper rifle", "broken crossbow"),              0,    MZ_HUGE, 0,  50, 4000, 25, -3,  0, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("shotgun", "broken crossbow"),                   0,  MZ_MEDIUM, 0,  35,  200,  3, -1,  3,  WP_SHELL, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("auto shotgun", "strange broken crossbow"),      0,    MZ_HUGE, 0,  60, 1500,  3,  2,  0,  WP_SHELL, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("rifle", "broken crossbow"),                     0,    MZ_HUGE, 0,  30,  150, 22, -1,  6, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("assault rifle", "broken crossbow"),             0,  MZ_MEDIUM, 0,  40, 1000, 20,  5,  2, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("sniper rifle", "broken crossbow"),              0,    MZ_HUGE, 0,  50, 4000, 25, -3,  4, WP_BULLET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("shotgun", "broken crossbow"),                   0,  MZ_MEDIUM, 0,  35,  200,  3, -1, 20,  WP_SHELL, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("auto shotgun", "strange broken crossbow"),      0,    MZ_HUGE, 0,  60, 1500,  3,  2, 10,  WP_SHELL, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
 GUN(("rocket launcher", "metal tube"),                0,    MZ_HUGE, 0, 100, 3500, 20, -5, -4, WP_ROCKET, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
-GUN(("grenade launcher", "strange broken crossbow"),  0,   MZ_LARGE, 0,  55, 1500,  6, -3, -3,WP_GRENADE, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
+GUN(("grenade launcher", "strange broken crossbow"),  0,   MZ_LARGE, 0,  55, 1500,  6, -3,  0,WP_GRENADE, IRON, P_FIREARM, HI_METAL), /*Needs tile*/
 
 GUN(("BFG", "ovoid device"),                          0,    MZ_HUGE, 0, 100, 3000,100,  3,  0,WP_ROCKET|WP_GRENADE|WP_BULLET|WP_SHELL|WP_ROCKET,
                                                                                                 SILVER, P_FIREARM, HI_SILVER), /*Needs tile*/
@@ -682,6 +700,8 @@ HELM(("pontiff's crown", "filigreed faceless helm"), /*Needs encyc entry*//*Need
 		0, 0,  0,   0, 2, 90, 300, 8, 5, 0, GOLD, HI_GOLD, O_MATSPEC(IDED)),
 HELM(("shemagh", "headscarf"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0,	0, 0, 5,   5, 10, 0, 0, CLOTH, CLR_WHITE, O_MATSPEC(UNIDED)),
+HELM(("faceless helm"), /*Needs encyc entry*//*Needs tile*/
+		1, 0,  0,   0, 2, 90, 300, 8, 5, 0, BONE, CLR_GRAY, O_MATSPEC(IDED)),
 
 /* With shuffled appearances... */
 HELM(("helmet", "plumed helmet"), /* circlet */
@@ -807,9 +827,9 @@ SUIT(("jacket"),
 SUIT(("straitjacket", "long-sleeved jacket"), /*Needs encyc entry*//*Needs tile*/
 	0, 0, MZ_MEDIUM,  ARMSZ_HEAVY, 0,   0,  0,  15,   10, 10, 1, 2, CLOTH, CLR_WHITE, O_DRSLOT(UPPER_TORSO_DR|ARM_DR)),
 SUIT(("healer uniform","clean clothes"), /*Needs encyc entry*//*Needs tile*/
-	0, 0, MZ_MEDIUM, ARMSZ_MEDIUM,SICK_RES,0,0, 30,   10, 10, 1, 2, CLOTH, CLR_WHITE),
+	0, 0, MZ_MEDIUM, ARMSZ_LIGHT,SICK_RES,0,0, 30,   10, 10, 1, 2, CLOTH, CLR_WHITE),
 SUIT(("jumpsuit", "silvery clothes", "clothes"),/*Needs encyc entry*//*Needs tile*/
-	0, 0,  MZ_LARGE, ARMSZ_MEDIUM, REFLECTING,0,5,5,1000, 10, 1, 3, PLASTIC, HI_SILVER, O_DRSLOT(ALL_DR)),
+	0, 0,  MZ_LARGE, ARMSZ_LIGHT, REFLECTING,0,5,5,1000, 10, 1, 3, PLASTIC, HI_SILVER, O_DRSLOT(ALL_DR)),
 #ifdef TOURIST
 /* shirts */
 /*ARMOR(("Hawaiian shorts", "flowery shorts and lei"),
@@ -839,7 +859,7 @@ SHIRT(("ruffled shirt"), /*Needs encyc entry*/
 /* needs special case to be 'bulky' */
 SHIRT(("victorian underwear", "frilly dress"),
 	0, 0, MZ_MEDIUM, 0,	 0, 5,   5,  10, 10, 2, 3, CLOTH, CLR_WHITE,  O_DRSLOT(TORSO_DR)),
-SHIRT(("bodyglove", "tight black clothes", "tight clothes"), /*Needs encyc entry*//*Needs tile*/
+SHIRT(("bodyglove", "tight clothes"), /*Needs encyc entry*//*Needs tile*/
 	0, 0, MZ_HUGE, SICK_RES,0,5, 5,1000, 10, 0, 3, PLASTIC, CLR_BLACK, O_DRSLOT(ALL_DR)),
 /* cloaks */
 /*  'cope' is not a spelling mistake... leave it be */
@@ -1482,6 +1502,7 @@ POTION(("blood", "blood-red"),            0, 0,          18, 50,  CLR_RED, O_USK
 	BONE_TILE(("writhe glyph",  "writhing vesica piscis"),   0),				// WRITHE
 	BONE_TILE(("radiance glyph",  "eyed triangle"),   0),						// RADIANCE
 	BONE_TILE(("beast's embrace glyph",  "curling beast's claw"),   0),		// BEASTS_EMBRACE
+	BONE_TILE(("orrery glyph",  "set of nested dotted circles"),   0),		// SIGHT
 #undef BONE_TILE
 #define METALIC_SLAB(names, clr,...) OBJECT( \
 		DEF_BLINDNAME(names, "slab"), BITS(0,0,0,0,1,0,1,1,MZ_HUGE,0,0,0,0,P_NONE,METAL, IDED|UNIDED), 0, \
@@ -1532,6 +1553,7 @@ SPELL(("haste self",      "purple"),      P_ESCAPE_SPELL,			33, 3, 1, NODIR,    
 SPELL(("detect unseen",   "violet"),      P_DIVINATION_SPELL,  	20, 3, 1, NODIR,     CLR_MAGENTA),
 SPELL(("levitation",      "tan"),         P_ESCAPE_SPELL,			20, 4, 1, NODIR,     CLR_BROWN),
 SPELL(("extra healing",   "plaid"),       P_HEALING_SPELL,		27, 3, 1, IMMEDIATE, CLR_GREEN),
+SPELL(("mass healing",    "spiralbound"), P_HEALING_SPELL,		 0, 6, 1, NODIR, CLR_GREEN),
 SPELL(("restore ability", "light brown"), P_HEALING_SPELL,		25, 4, 1, NODIR,     CLR_BROWN),
 SPELL(("invisibility",    "dark brown"),  P_ESCAPE_SPELL,			25, 4, 1, NODIR,     CLR_BROWN),
 SPELL(("detect treasure", "gray"),        P_DIVINATION_SPELL,  	20, 4, 1, NODIR,     CLR_GRAY),

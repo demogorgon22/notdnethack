@@ -157,6 +157,31 @@ struct monst {
 	Bitfield(mpetitioner,1);/* already dead (shouldn't leave a corpse) */ /*92*/
 	Bitfield(mdoubt,1);/* clerical spellcasting blocked */ /*93*/
 	Bitfield(menvy,1);/* wants only others stuff */ /*94*/
+	/*Monster madnesses*/
+	Bitfield(msanctity,1);/* can't attack women */ /*95*/
+	Bitfield(mgluttony,1);/* eats food */ /*96*/
+	Bitfield(mfrigophobia,1);/* won't cross water */ /*97*/
+	Bitfield(mcannibal,1);/* attacks same race, eats corpses */ /*98*/
+	Bitfield(mrage,1);/* berserk plus moral */ /*99*/
+	Bitfield(margent,1);/* can't attack men, distracted by mirrors */ /*100*/
+	Bitfield(msuicide,1);/* doesn't defend self */ /*101*/
+	Bitfield(mnudist,1);/* takes off clothing */ /*102*/
+	Bitfield(mophidio,1);/* attacked by snakes */ /*103*/
+	Bitfield(marachno,1);/* attacked by spiders, can't attack women */ /*104*/
+	Bitfield(mthalasso,1);/* attacked by seamonsters */ /*105*/
+	Bitfield(mhelmintho,1);/* attacked by wormy things */ /*106*/
+	Bitfield(mparanoid,1);/* attacks the wrong squares */ /*108*/
+	Bitfield(mtalons,1);/* won't use items */ /*107*/
+	Bitfield(mdreams,1);/* blasted by cthulhu while asleep */ /*108*/
+	Bitfield(mscaiaphilia,1);/* won't move into the light */ /*109*/
+	Bitfield(mforgetful,1);/* can't use wizard spellcasting */ /*110*/
+	Bitfield(mtoobig,1);/* elevated spell failure */ /*111*/
+	Bitfield(mrotting,1);/* spreads poison clouds */ /*112*/
+	
+	Bitfield(deadmonster,1); /* is DEADMONSTER */ /*113*/
+	Bitfield(mnoise,1); /* is DEADMONSTER */ /*114*/
+	
+	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */
 	char mtaneggs;	/* tannin eggs */
@@ -165,7 +190,8 @@ struct monst {
 #define BASE_DOG_ENCOURAGED_MAX		7
 	
 	int entangled;/* The monster is entangled, and in what? */
-#define noactions(mon)	((mon)->entangled || ((mon)->mtrapped && t_at((mon)->mx, (mon)->my) && t_at((mon)->mx, (mon)->my)->ttyp == VIVI_TRAP))
+#define imprisoned(mon)	((mon)->entangled == SHACKLES || ((mon)->mtrapped && t_at((mon)->mx, (mon)->my) && t_at((mon)->mx, (mon)->my)->ttyp == VIVI_TRAP))
+#define noactions(mon)	((mon)->entangled || imprisoned(mon))
 #define helpless(mon) (mon->msleeping || !(mon->mcanmove) || !(mon->mnotlaugh) || noactions(mon))	
 	long mstrategy;		/* for monsters with mflag3: current strategy */
 #define STRAT_ARRIVE	0x40000000L	/* just arrived on current level */
@@ -209,22 +235,26 @@ struct monst {
 #define	HOLYDEAD_FACTION	FACTION_PADDING+4	/* Angel-aligned undead */
 #define	YENDORIAN_FACTION	FACTION_PADDING+5	/* The Yendorian army */
 #define	GOATMOM_FACTION		FACTION_PADDING+6	/* Shubbie's faction */
+#define	QUEST_FACTION		FACTION_PADDING+7	/* The Quest Leader's faction */
+#define	ILSENSINE_FACTION	FACTION_PADDING+8	/* Ilsensine's faction, not allied with the Yendorian faction despite filling the same role */
+#define	SEROPAENES_FACTION	FACTION_PADDING+9	/* Binder quest faction, not allied with the Yendorian faction despite filling the same role */
+#define	YELLOW_FACTION	    FACTION_PADDING+10	/* Hastur faction, not the same as the Yendorian faction, despite filling the same role in the Madman quest */
 
 /* template applied to monster to create a new-ish monster */
 	int mtemplate;
-#define	ZOMBIFIED		1	/* zombie 'faction' */
-#define	SKELIFIED		2	/* skeleton 'faction' */
-#define	CRYSTALFIED		3	/* crystal dead 'faction' */
-#define	FRACTURED		4	/* witness of the fracture 'faction' */
-#define	VAMPIRIC		5	/* vampirified 'faction' */
-#define	ILLUMINATED		6	/* illuminated 'faction' */
-#define	PSEUDONATURAL	7	/* tentacled */
+#define	ZOMBIFIED		1	/* zombies */
+#define	SKELIFIED		2	/* skeletons */
+#define	CRYSTALFIED		3	/* crystal dead */
+#define	FRACTURED		4	/* witness of the fracture */
+#define	VAMPIRIC		5	/* vampirified monster */
+#define	ILLUMINATED		6	/* illuminated monster */
+#define	PSEUDONATURAL	7	/* far-realms-touched monster */
 #define	TOMB_HERD		8	/* possessed statue */
 #define	YITH			9	/* possessed by the great race of yith */
 #define	CRANIUM_RAT		10	/* psychic rat */
 #define	MISTWEAVER		11	/* daughters of shubie */
 #define	DELOUSED		12	/* android flag: parasite is killed, but not host */
-#define	M_BLACK_WEB		13	/* Has a shadow blade attack */
+#define	M_BLACK_WEB		13	/* Zombie with a shadow blade attack */
 #define	M_GREAT_WEB		14	/* Has a stronger shadow blade attack */
 #define	SLIME_REMNANT	15	/* slimey, like an ancient of corruption */
 #define	YELLOW_TEMPLATE	16	/* causes sleep and damages sanity (unimplemented) */
@@ -287,6 +317,8 @@ struct monst {
 #define	mvar_attack_pm	mvar2
 	long mvar3;
 #define	mvar_conversationTracker	mvar3
+#define	mvar_lifesigns	mvar3
+#define has_lifesigns(mon)	(mon->mtyp != PM_CHAOS && mon->mvar_lifesigns)
 
 	struct ls_t * light;
 
@@ -296,17 +328,13 @@ struct monst {
 };
 
 /*
- * Note that mextra[] may correspond to any of a number of structures, which
- * are indicated by some of the other fields.
+ * Out-of-date mextra information that hasn't been properly deprecated yet.
  *	isgd	 ->	struct egd
  *	ispriest ->	struct epri
  *	isshk	 ->	struct eshk
  *	isminion ->	struct emin
- *			(struct epri for roaming priests and angels, which is
- *			 compatible with emin for polymorph purposes)
  *	mtame	 ->	struct edog
- *			(struct epri for guardian angels, which do not eat
- *			 or do other doggy things)
+ * OLD:
  * Since at most one structure can be indicated in this manner, it is not
  * possible to tame any creatures using the other structures (the only
  * exception being the guardian angels which are tame on creation).
@@ -323,7 +351,7 @@ struct monst {
 #define MON_SWEP(mon)	((mon)->msw)
 #define MON_NOSWEP(mon)	((mon)->msw = (struct obj *)0)
 
-#define DEADMONSTER(mon)	((mon) != &youmonst && (mon)->mhp < 1)
+#define DEADMONSTER(mon)	((mon) != &youmonst && (mon)->deadmonster)
 #define MIGRATINGMONSTER(mon)	((mon) != &youmonst && !(mon)->mx && !(mon)->my)
 
 #endif /* MONST_H */

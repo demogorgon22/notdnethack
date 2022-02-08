@@ -271,7 +271,7 @@ struct monst *mtmp;
 	/* since unicorn horns don't get used up, the monster would look
 	 * silly trying to use the same cursed horn round after round
 	 */
-	if (mtmp->mconf || mtmp->mstun || !mtmp->mcansee) {
+	if (mtmp->mconf || mtmp->mstun || !mtmp->mcansee || !mtmp->mcanhear) {
 	    if (!(is_unicorn(mtmp->data) || mtmp->mtyp == PM_KI_RIN) && !nohands(mtmp->data)) {
 			for(obj = mtmp->minvent; obj; obj = obj->nobj)
 				if (obj->otyp == UNICORN_HORN && !obj->cursed)
@@ -459,7 +459,7 @@ struct monst *mtmp;
 		     * mean if the monster leaves the level, they'll know
 		     * about teleport traps.
 		     */
-		    if (!level.flags.noteleport ||
+		    if (!notel_level() ||
 			!(mtmp->mtrapseen & (1 << (TELEP_TRAP-1)))) {
 			m.defensive = obj;
 			m.has_defense = (mon_has_amulet(mtmp))
@@ -474,7 +474,7 @@ struct monst *mtmp;
 		       (!(mtmp->isshk && inhishop(mtmp))
 			    && !mtmp->isgd && !mtmp->ispriest))) {
 		    /* see WAN_TELEPORTATION case above */
-		    if (!level.flags.noteleport ||
+		    if (!notel_level() ||
 			!(mtmp->mtrapseen & (1 << (TELEP_TRAP-1)))) {
 			m.defensive = obj;
 			m.has_defense = MUSE_SCR_TELEPORTATION;
@@ -536,6 +536,7 @@ struct monst *mtmp;
 	struct obj *otmp = m.defensive;
 	boolean vis, vismon, oseen;
 	const char *mcsa = "%s can see again.";
+	const char *mcha = "%s can hear again.";
 
 	if ((i = precheck(mtmp, otmp)) != 0) return i;
 	vis = cansee(mtmp->mx, mtmp->my);
@@ -560,6 +561,10 @@ struct monst *mtmp;
 		    mtmp->mcansee = 1;
 		    mtmp->mblinded = 0;
 		    if (vismon) pline(mcsa, Monnam(mtmp));
+		} else if (!mtmp->mcanhear) {
+		    mtmp->mcanhear = 1;
+		    mtmp->mdeafened = 0;
+		    if (vismon) pline(mcha, Monnam(mtmp));
 		} else if (mtmp->mconf || mtmp->mstun) {
 		    mtmp->mconf = mtmp->mstun = 0;
 		    if (vismon)
@@ -585,7 +590,7 @@ mon_tele:
 		    if (vismon && how)		/* mentions 'teleport' */
 			makeknown(how);
 		    /* monster learns that teleportation isn't useful here */
-		    if (level.flags.noteleport)
+		    if (notel_level())
 			mtmp->mtrapseen |= (1 << (TELEP_TRAP-1));
 		    return 2;
 		}
@@ -609,7 +614,7 @@ mon_tele:
 		m_using = TRUE;
 		mbhit(mtmp,rn1(8,6),mbhitm,bhito,otmp);
 		/* monster learns that teleportation isn't useful here */
-		if (level.flags.noteleport)
+		if (notel_level())
 		    mtmp->mtrapseen |= (1 << (TELEP_TRAP-1));
 		m_using = FALSE;
 		return 2;
@@ -871,6 +876,11 @@ mon_tele:
 			mtmp->mblinded = 0;
 			if (vismon) pline(mcsa, Monnam(mtmp));
 		}
+		if (!otmp->cursed && !mtmp->mcanhear) {
+			mtmp->mcanhear = 1;
+			mtmp->mdeafened = 0;
+			if (vismon) pline(mcha, Monnam(mtmp));
+		}
 		if (vismon) pline("%s looks better.", Monnam(mtmp));
 		if (oseen) makeknown(POT_HEALING);
 		if (!otmp->oartifact)
@@ -887,6 +897,11 @@ mon_tele:
 			mtmp->mblinded = 0;
 			if (vismon) pline(mcsa, Monnam(mtmp));
 		}
+		if (!mtmp->mcanhear) {
+			mtmp->mcanhear = 1;
+			mtmp->mdeafened = 0;
+			if (vismon) pline(mcha, Monnam(mtmp));
+		}
 		if (vismon) pline("%s looks much better.", Monnam(mtmp));
 		if (oseen) makeknown(POT_EXTRA_HEALING);
 		if (!otmp->oartifact)
@@ -901,6 +916,11 @@ mon_tele:
 			mtmp->mcansee = 1;
 			mtmp->mblinded = 0;
 			if (vismon) pline(mcsa, Monnam(mtmp));
+		}
+		if (!mtmp->mcanhear) {
+			mtmp->mcanhear = 1;
+			mtmp->mdeafened = 0;
+			if (vismon) pline(mcha, Monnam(mtmp));
 		}
 		if (vismon) pline("%s looks completely healed.", Monnam(mtmp));
 		if (oseen) makeknown(otmp->otyp);
@@ -953,7 +973,7 @@ struct monst *mtmp;
 	switch (rn2(8 + (difficulty > 3) + (difficulty > 6) +
 				(difficulty > 8))) {
 		case 6: case 9:
-			if (level.flags.noteleport && ++trycnt < 2)
+			if (notel_level() && ++trycnt < 2)
 			    goto try_again;
 			if (!rn2(3)) return WAN_TELEPORTATION;
 			/* else FALLTHRU */
@@ -1688,7 +1708,7 @@ struct monst *mtmp;
 						singular(otmp, doname));
 		}
 		
-		projectile(mtmp, otmp, (void *)0, HMON_FIRED, mtmp->mx, mtmp->my, sgn(tbx), sgn(tby), 0, distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy), FALSE, FALSE, FALSE);
+		projectile(mtmp, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, mtmp->mx, mtmp->my, sgn(tbx), sgn(tby), 0, distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy), FALSE, FALSE, FALSE);
 
 		if(u.ux != mtmp->mux || u.uy != mtmp->muy){
 			mtmp->mux = mtmp->muy = 0;
@@ -1894,12 +1914,10 @@ struct monst *mtmp;
 	int xx, yy;
 	boolean immobile = (mdat->mmove == 0);
 	boolean stuck = (mtmp == u.ustuck);
-	boolean nomouth = mdat->mtyp==PM_NIGHTGAUNT || ((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) &&
-			(((which_armor(mtmp, W_ARMH))->otyp) == PLASTEEL_HELM || ((which_armor(mtmp, W_ARMH))->otyp) == CRYSTAL_HELM || ((which_armor(mtmp, W_ARMH))->otyp) == PONTIFF_S_CROWN))
-			 || ((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC)
-				&& (((which_armor(mtmp, W_ARMC))->otyp) == WHITE_FACELESS_ROBE
-					|| ((which_armor(mtmp, W_ARMC))->otyp) == BLACK_FACELESS_ROBE
-					|| ((which_armor(mtmp, W_ARMC))->otyp) == SMOKY_VIOLET_FACELESS_ROBE));
+	boolean nomouth = nomouth(mtmp->mtyp)
+			|| ((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) && FacelessHelm(which_armor(mtmp, W_ARMH)))
+			|| ((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC)
+				&& FacelessCloak(which_armor(mtmp, W_ARMC)));
 
 	m.misc = (struct obj *)0;
 	m.has_misc = 0;
@@ -1966,13 +1984,13 @@ struct monst *mtmp;
 			m.has_misc = MUSE_MASK;
 		}
 		nomore(MUSE_POT_GAIN_ENERGY);
-		if(!nomouth && obj->otyp == POT_GAIN_ABILITY && (!obj->cursed ||
+		if(!nomouth && obj->otyp == POT_GAIN_ENERGY && (!obj->cursed ||
 			    (!mtmp->isgd && !mtmp->isshk && !mtmp->ispriest))) {
 			m.misc = obj;
 			m.has_misc = MUSE_POT_GAIN_ENERGY;
 		}
 		nomore(MUSE_POT_GAIN_ABILITY);
-		if(!nomouth && (mtmp->mcan || (mtmp->mhp <= .5*(mtmp->mhpmax) && mtmp->mspec_used > 2)) && obj->otyp == POT_GAIN_ENERGY) {
+		if(!nomouth && (mtmp->mcan || (mtmp->mhp <= .5*(mtmp->mhpmax) && mtmp->mspec_used > 2)) && obj->otyp == POT_GAIN_ABILITY) {
 			m.misc = obj;
 			m.has_misc = MUSE_POT_GAIN_ABILITY;
 		}
@@ -2160,7 +2178,7 @@ skipmsg:
 					if(mtmp->mcha > 3) mtmp->mcha--;
 				break;
 			}
-			if (vismon) pline("%s seems more experienced.", Monnam(mtmp));
+			if (vismon) pline("%s seems weaker.", Monnam(mtmp));
 			if (oseen) makeknown(POT_GAIN_ABILITY);
 		} else if(otmp->blessed){
 			if(mtmp->mstr < 25) mtmp->mstr++;
@@ -2169,6 +2187,8 @@ skipmsg:
 			if(mtmp->mint < 25) mtmp->mint++;
 			if(mtmp->mwis < 25) mtmp->mwis++;
 			if(mtmp->mcha < 25) mtmp->mcha++;
+			if (vismon) pline("%s seems enhanced.", Monnam(mtmp));
+			if (oseen) makeknown(POT_GAIN_ABILITY);
 		} else {
 			switch(rnd(6)){
 				case 1:
@@ -2190,6 +2210,8 @@ skipmsg:
 					if(mtmp->mcha < 25) mtmp->mcha++;
 				break;
 			}
+			if (vismon) pline("%s seems enhanced.", Monnam(mtmp));
+			if (oseen) makeknown(POT_GAIN_ABILITY);
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
@@ -2532,6 +2554,81 @@ struct monst *mtmp;
 }
 
 boolean
+can_equip(mon, obj)
+struct monst *mon;
+struct obj *obj;
+{
+	if(mon->mtyp == PM_CATHEZAR && obj->otyp == CHAIN)
+		return TRUE;
+	if(obj->oclass == WEAPON_CLASS || is_weptool(obj))
+		return mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA);
+	if(obj->oclass == AMULET_CLASS)
+		return can_wear_amulet(mon->data) && (obj->otyp == AMULET_OF_LIFE_SAVING || obj->otyp == AMULET_OF_REFLECTION);
+	else if(is_shirt(obj))
+		return  obj->objsize == mon->data->msize && shirt_match(mon->data,obj);
+	else if(is_cloak(obj))
+		return abs(obj->objsize - mon->data->msize) <= 1;
+	else if(is_helmet(obj))
+		return ((!has_horns(mon->data) || obj->otyp == find_gcirclet()) && helm_match(mon->data,obj) && has_head_mon(mon) && obj->objsize == mon->data->msize) || is_flimsy(obj);
+	else if(is_shield(obj))
+		return !cantwield(mon->data);
+	else if(is_gloves(obj))
+		return obj->objsize == mon->data->msize && can_wear_gloves(mon->data);
+	else if(is_boots(obj))
+		return obj->objsize == mon->data->msize && can_wear_boots(mon->data);
+	else if(is_suit(obj))
+		return arm_match(mon->data, obj) && arm_size_fits(mon->data, obj);
+	return FALSE;
+}
+
+boolean
+likes_obj(mon, obj)
+struct monst *mon;
+struct obj *obj;
+{
+	struct permonst *ptr = mon->data;
+	switch(obj->oclass){
+		case WEAPON_CLASS:
+			return likes_objs(ptr);
+		case ARMOR_CLASS:
+			return !mon->mdisrobe && likes_objs(ptr);
+		case RING_CLASS:
+			return likes_magic(ptr);
+		case AMULET_CLASS:
+			return likes_magic(ptr);
+		case TOOL_CLASS:
+			return is_weptool(obj) && likes_objs(ptr);
+		case FOOD_CLASS:
+			return obj->otyp != CORPSE && obj->otyp != MASSIVE_CHUNK_OF_MEAT && likes_objs(ptr);
+		case POTION_CLASS:
+			return likes_magic(ptr);
+		case SCROLL_CLASS:
+			return likes_magic(ptr);
+		case SPBOOK_CLASS:
+			return likes_magic(ptr);
+		case WAND_CLASS:
+			return likes_magic(ptr);
+		case COIN_CLASS:
+			return likes_gold(ptr);
+		case GEM_CLASS:
+			return likes_objs(ptr) || likes_gems(ptr);
+		case ROCK_CLASS:
+			return throws_rocks(ptr) && !In_sokoban(&u.uz);
+		case BALL_CLASS:
+			return likes_objs(ptr);
+		case CHAIN_CLASS:
+			return FALSE;
+		case TILE_CLASS:
+			return likes_magic(ptr);
+		case BED_CLASS:
+			return is_mercenary(ptr) && obj->otyp == BEDROLL;
+		case SCOIN_CLASS:
+			return likes_gold(ptr) || likes_magic(ptr);
+	}
+	return FALSE;
+}
+
+boolean
 searches_for_item(mon, obj)
 struct monst *mon;
 struct obj *obj;
@@ -2766,7 +2863,7 @@ const char *str;
 }
 
 boolean
-ureflects (fmt, str)
+ureflects(fmt, str)
 const char *fmt, *str;
 {
 	/* Check from outermost to innermost objects */
@@ -2823,6 +2920,11 @@ const char *fmt, *str;
 	} else if (EReflecting & W_ARMF) {
 	    if (fmt && str)
 	    	pline(fmt, str, "boots");
+	    return TRUE;
+	} else if (EReflecting & W_TOOL) {
+		//May need to be adjusted for flavor if more reflecting blindfold slot items get added.
+	    if (fmt && str)
+	    	pline(fmt, str, "mask");
 	    return TRUE;
 	} else if (youracedata->mtyp == PM_SILVER_DRAGON) {
 	    if (fmt && str)

@@ -400,6 +400,8 @@ register int x, y, typ;
 	    case PIT:
 	    case SPIKED_PIT:
 	    case TRAPDOOR:
+		{
+		struct monst *mtmp = m_at(x,y);
 		lev = &levl[x][y];
 		if (*in_rooms(x, y, SHOPBASE) &&
 			((typ == HOLE || typ == TRAPDOOR) ||
@@ -407,7 +409,7 @@ register int x, y, typ;
 		    add_damage(x, y,		/* schedule repair */
 			       ((IS_DOOR(lev->typ) || IS_WALL(lev->typ))
 				&& !flags.mon_moving) ? 200L : 0L);
-		lev->doormask = 0;	/* subsumes altarmask, icedpool... */
+		lev->doormask = 0;	/* subsumes altar_num, icedpool... */
 		if (IS_ROOM(lev->typ) 
 			&& lev->typ != SAND
 			&& lev->typ != SOIL
@@ -425,18 +427,16 @@ register int x, y, typ;
 		else if (IS_WALL(lev->typ) || lev->typ == SDOOR)
 		    lev->typ = level.flags.is_maze_lev ? ROOM :
 			       level.flags.is_cavernous_lev ? CORR : DOOR;
+		
+		if(!does_block(x,y,lev) && (!mtmp || !opaque(mtmp->data)))
+			unblock_point(x,y);
 
 		unearth_objs(x, y);
-		break;
+		}break;
 	}
 	if (ttmp->ttyp == HOLE) ttmp->tseen = 1;  /* You can't hide a hole */
-	else if (ttmp->ttyp == MAGIC_PORTAL && (
-		In_neu(&u.uz) 
-		|| In_mordor_forest(&u.uz)
-		|| Is_ford_level(&u.uz)
-		|| In_mordor_fields(&u.uz)
-		|| In_mordor_buildings(&u.uz)
-	)) ttmp->tseen = 1;  /* Just make portals known */
+	else if (ttmp->ttyp == MAGIC_PORTAL && visible_portals(&u.uz))
+		ttmp->tseen = 1;  /* Just make portals known */
 	else ttmp->tseen = 0;
 	ttmp->once = 0;
 	ttmp->madeby_u = 0;
@@ -842,7 +842,7 @@ unsigned trflags;
 		seetrap(trap);
 		pline("%s shoots out at you!", An(xname(otmp)));
 
-		projectile((struct monst *)0, otmp, trap, HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE);
+		projectile((struct monst *)0, otmp, trap, HMON_PROJECTILE|HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE);
 		break;
 
 	    case ROCKTRAP:
@@ -864,7 +864,7 @@ unsigned trflags;
 			the(ceiling(u.ux, u.uy)),
 			an(xname(otmp))
 			);
-		projectile((struct monst *)0, otmp, trap, HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE);
+		projectile((struct monst *)0, otmp, trap, HMON_PROJECTILE|HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE);
 		break;
 
 	    case SQKY_BOARD:	    /* stepped on a squeaky board */
@@ -1788,9 +1788,9 @@ int style;
 			}
 			/* boulder may hit creature */
 			int dieroll = rnd(20);
-			if (tohitval((struct monst *)0, mtmp, (struct attack *)0, singleobj, trap, HMON_FIRED|HMON_TRAP, 0, (int *) 0) > dieroll || dieroll == 1) {
+			if (tohitval((struct monst *)0, mtmp, (struct attack *)0, singleobj, trap, HMON_PROJECTILE|HMON_FIRED|HMON_TRAP, 0, (int *) 0) > dieroll || dieroll == 1) {
 				struct obj ** sobj_p = &singleobj;
-				hmon_with_trap(mtmp, sobj_p, trap, HMON_FIRED, dieroll);
+				hmon_with_trap(mtmp, sobj_p, trap, HMON_PROJECTILE|HMON_FIRED, dieroll);
 				if(!(*sobj_p)) used_up = TRUE;
 			}
 			else if (cansee(bhitpos.x, bhitpos.y))
@@ -1800,14 +1800,14 @@ int style;
 		}
 		else if (bhitpos.x == u.ux && bhitpos.y == u.uy) {
 			if (multi) nomul(0, NULL);
-			if (!u.uinvulnerable){
+			if (!Invulnerable){
 				/* boulder may hit you */
 				int dieroll = rnd(20);
-				if (tohitval((struct monst *)0, &youmonst, (struct attack *)0, singleobj, trap, HMON_FIRED|HMON_TRAP, 0, (int *) 0) > dieroll || dieroll == 1) {
+				if (tohitval((struct monst *)0, &youmonst, (struct attack *)0, singleobj, trap, HMON_PROJECTILE|HMON_FIRED|HMON_TRAP, 0, (int *) 0) > dieroll || dieroll == 1) {
 					killer = "rolling boulder trap";
 					killer_format = KILLED_BY_AN;
 					struct obj ** sobj_p = &singleobj;
-					hmon_with_trap(&youmonst, sobj_p, trap, HMON_FIRED, dieroll);
+					hmon_with_trap(&youmonst, sobj_p, trap, HMON_PROJECTILE|HMON_FIRED, dieroll);
 					if(!(*sobj_p)) used_up = TRUE;
 				}
 				else if (!Blind)
@@ -2157,7 +2157,7 @@ struct monst *mtmp;
 			extract_nobj(otmp, &trap->ammo);
 			if (in_sight)
 				seetrap(trap);
-			if (projectile((struct monst *)0, otmp, trap, HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE)&MM_DEF_DIED)
+			if (projectile((struct monst *)0, otmp, trap, HMON_PROJECTILE|HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE)&MM_DEF_DIED)
 				trapkilled = TRUE;
 			break;
 		case ROCKTRAP:
@@ -2175,7 +2175,7 @@ struct monst *mtmp;
 			extract_nobj(otmp, &trap->ammo);
 			if (in_sight) seetrap(trap);
 
-			if (projectile((struct monst *)0, otmp, trap, HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE)&MM_DEF_DIED)
+			if (projectile((struct monst *)0, otmp, trap, HMON_PROJECTILE|HMON_FIRED|HMON_TRAP, trap->tx, trap->ty, 0, 0, 0, 0, FALSE, FALSE, FALSE)&MM_DEF_DIED)
 			    trapkilled = TRUE;
 			break;
 
@@ -3430,6 +3430,8 @@ struct monst *owner;
 			} else
 			/* Potions turn to water or amnesia... */
 			if (is_lethe) {
+				if (obj->otyp == POT_STARLIGHT)
+					end_burn(obj, FALSE);
 			    if (obj->otyp == POT_WATER)
 					obj->otyp = POT_AMNESIA;
 			    else if (obj->otyp != POT_AMNESIA) {
@@ -3440,6 +3442,8 @@ struct monst *owner;
 			} else if (blood) {
 			    if (obj->otyp != POT_BLOOD){
 					if(obj->odiluted){
+						if (obj->otyp == POT_STARLIGHT)
+							end_burn(obj, FALSE);
 						obj->otyp = POT_BLOOD;
 						obj->corpsenm = PM_HUMAN;
 						obj->odiluted = 0;
@@ -3449,6 +3453,8 @@ struct monst *owner;
 				}
 				else obj->odiluted = 0;
 			} else if (obj->odiluted || obj->otyp == POT_AMNESIA) {
+				if (obj->otyp == POT_STARLIGHT)
+					end_burn(obj, FALSE);
 				obj->otyp = POT_WATER;
 				obj->blessed = obj->cursed = 0;
 				obj->odiluted = 0;
@@ -3700,7 +3706,7 @@ drown()
 	if ((Teleportation || mon_resistance(&youmonst,TELEPORT)) &&
 		    !u.usleep && (Teleport_control || rn2(3) < Luck+2)) {
 		You("attempt a teleport spell.");	/* utcsri!carroll */
-		if (!level.flags.noteleport) {
+		if (!notel_level()) {
 			(void) dotele();
 			if(!is_pool(u.ux,u.uy, FALSE))
 				return(TRUE);

@@ -354,7 +354,8 @@ static boolean was_waterlevel; /* ugh... this shouldn't be needed */
 static const int angelnums[] = {PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_ARCHON, PM_TRUMPET_ARCHON, PM_WARDEN_ARCHON, PM_THRONE_ARCHON, PM_LIGHT_ARCHON, 
 						  PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, PM_GRAHA_DEVA, PM_SURYA_DEVA, PM_MAHADEVA, 
 						  PM_LILLEND,
-						  PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN, PM_TULANI_ELADRIN, 
+						  PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN, 
+							PM_TULANI_ELADRIN, PM_GAE_ELADRIN, PM_BRIGHID_ELADRIN, PM_CAILLEA_ELADRIN, 
 						  PM_DAUGHTER_OF_BEDLAM, PM_MARILITH,
 						  PM_ERINYS, PM_FALLEN_ANGEL, PM_ANCIENT_OF_BLESSINGS, PM_ANCIENT_OF_ICE, PM_ANCIENT_OF_DEATH
 						 };
@@ -608,13 +609,17 @@ fixup_special()
 			}
 		}
 		if (Is_sumall(&u.uz)){
-			for (x = 2; x <= x_maze_max; x++)
-			for (y = 2; y <= y_maze_max; y++){
+			place_sum_all_features();
+			for (x = 1; x <= COLNO - 1; x++)
+			for (y = 1; y <= ROWNO - 1; y++){
 				if (levl[x][y].typ == STONE) levl[x][y].typ = HWALL;
-				if (levl[x][y].typ == ROOM) levl[x][y].lit = TRUE;
 				if (!ZAP_POS(levl[x][y].typ) && m_at(x, y)) rloc(m_at(x, y), TRUE);
 			}
 			wallification(1, 1, COLNO - 1, ROWNO - 1);
+			for (x = 1; x <= COLNO - 1; x++)
+			for (y = 1; y <= ROWNO - 1; y++){
+				if (levl[x][y].typ != STONE) levl[x][y].lit = TRUE;
+			}
 		}
 	}
 	/* DEMON LAIRS */
@@ -647,7 +652,7 @@ fixup_special()
 					angel = makemon(&mons[angelnums[rn2(SIZE(angelnums))]], x, y, MM_EDOG | MM_ADJACENTOK | NO_MINVENT | MM_NOCOUNTBIRTH);
 					if (angel){
 						initedog(angel);
-						angel->m_lev = min(30, 3 * (int)(angel->data->mlevel / 2)+1);
+						angel->m_lev = is_eladrin(angel->data) ? 30 : min(30, 3 * (int)(angel->data->mlevel / 2)+1);
 						angel->mhpmax = (angel->m_lev * 8) - 4;
 						angel->mhp = angel->mhpmax;
 						angel->female = TRUE;
@@ -1409,6 +1414,25 @@ register const char *s;
 	if(Is_hell1(&u.uz) && !Role_if(PM_CAVEMAN) && dungeon_topology.hell1_variant == BAEL_LEVEL && rn2(2)){
 			Strcpy(protofile, "hell-a");
 	}
+	/* quick hack for Binders entering Astral -- change the gods out before loading the level, so that
+	 * the altars are all generated to the correct gods */
+	if (Role_if(PM_EXILE) && on_level(&u.uz, &astral_level)) {
+		/* the Deities on Astral are those that stand at the Gate, not the creational ones governing the Dungeon */
+		urole.lgod = GOD_PISTIS_SOPHIA;
+		urole.ngod = GOD_THE_VOID;
+		urole.cgod = GOD_YALDABAOTH;
+	}
+	/* similarly, swap out the regular pantheon god for your aligned god at this point */
+	if (u.ugodbase[UGOD_CURRENT] != urole.lgod &&
+		u.ugodbase[UGOD_CURRENT] != urole.ngod &&
+		u.ugodbase[UGOD_CURRENT] != urole.cgod ) {
+		switch(galign(u.ugodbase[UGOD_CURRENT])) {
+			case A_LAWFUL:  urole.lgod = u.ugodbase[UGOD_CURRENT]; break;
+			case A_NEUTRAL: urole.ngod = u.ugodbase[UGOD_CURRENT]; break;
+			case A_CHAOTIC: urole.cgod = u.ugodbase[UGOD_CURRENT]; break;
+		}
+	}
+
 #ifdef WIZARD
 	/* SPLEVTYPE format is "level-choice,level-choice"... */
 	if (wizard && *protofile && sp && sp->rndlevs) {

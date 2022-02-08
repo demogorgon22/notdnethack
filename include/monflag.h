@@ -283,16 +283,20 @@
 #define MZ_GIGANTIC	7		/* off the scale */
 
 /* for mons[].geno (constant during game) */
-#define G_UNIQ		0x2000		/* generated only once */
-#define G_PLANES	0x1000		/* generated only in planes */
-#define G_NOHELL	0x0800		/* not generated in "hell" */
-#define G_HELL		0x0400		/* generated only in "hell" */
-#define G_NOGEN		0x0200		/* generated only specially */
-#define G_SGROUP	0x0080		/* appear in small groups normally */
-#define G_LGROUP	0x0040		/* appear in large groups normally */
-#define G_GENO		0x0020		/* can be genocided */
-#define G_NOCORPSE	0x0010		/* no corpse left ever */
-#define G_FREQ		0x0007		/* creation frequency mask */
+#define G_NON_GEN_CORPSE	(G_SPCORPSE|G_NOCORPSE)		/* nongenerated corpse */
+#define G_SPCORPSE	0x00010000		/* Corpse is special, and should be non-wishable */
+#define G_INST20	0x00008000		/* generates only if you have 20 insight */
+#define G_INST10	0x00004000		/* generates only if you have 10 insight */
+#define G_UNIQ		0x00002000		/* generated only once */
+#define G_PLANES	0x00001000		/* generated only in planes */
+#define G_NOHELL	0x00000800		/* not generated in "hell" */
+#define G_HELL		0x00000400		/* generated only in "hell" */
+#define G_NOGEN		0x00000200		/* generated only specially */
+#define G_SGROUP	0x00000080		/* appear in small groups normally */
+#define G_LGROUP	0x00000040		/* appear in large groups normally */
+#define G_GENO		0x00000020		/* can be genocided */
+#define G_NOCORPSE	0x00000010		/* no corpse left ever */
+#define G_FREQ		0x00000007		/* creation frequency mask */
 
 /* for mvitals[].mvflags (variant during game), along with G_NOCORPSE */
 #define G_KNOWN		0x0004		/* have been encountered */
@@ -372,43 +376,49 @@
 #define SLIMIFY                EARTHQUAKE+1
 #define TURN_TO_STONE          SLIMIFY+1
        /* unique monster spells */
-#define NIGHTMARE              TURN_TO_STONE+1
 //50
+#define NIGHTMARE              TURN_TO_STONE+1
 #define FILTH                  NIGHTMARE+1
 #define CLONE_WIZ              FILTH+1
 #define STRANGLE               CLONE_WIZ+1
 #define MON_FIRA               STRANGLE+1
-#define MON_FIRAGA             MON_FIRA+1
 //55
+#define MON_FIRAGA             MON_FIRA+1
 #define MON_BLIZZARA           MON_FIRAGA+1
 #define MON_BLIZZAGA           MON_BLIZZARA+1
 #define MON_THUNDARA           MON_BLIZZAGA+1
 #define MON_THUNDAGA           MON_THUNDARA+1
-#define MON_FLARE              MON_THUNDAGA+1
 //60
+#define MON_FLARE              MON_THUNDAGA+1
 #define MON_WARP               MON_FLARE+1
 #define MON_POISON_GAS         MON_WARP+1
 #define MON_PROTECTION         MON_POISON_GAS+1
 #define SOLID_FOG      	       MON_PROTECTION+1
-#define ACID_BLAST       	   SOLID_FOG+1
 //65
+#define ACID_BLAST       	   SOLID_FOG+1
 #define PRISMATIC_SPRAY        ACID_BLAST+1
 #define SILVER_RAYS            PRISMATIC_SPRAY+1
 #define GOLDEN_WAVE            SILVER_RAYS+1
 #define VULNERABILITY          GOLDEN_WAVE+1
-#define MASS_HASTE             VULNERABILITY+1
 //70
+#define MASS_HASTE             VULNERABILITY+1
 #define MON_TIME_STOP          MASS_HASTE+1
 #define TIME_DUPLICATE         MON_TIME_STOP+1
 #define NAIL_TO_THE_SKY        TIME_DUPLICATE+1
 #define STERILITY_CURSE        NAIL_TO_THE_SKY+1
-#define DISINT_RAY             STERILITY_CURSE+1
 //75
+#define DISINT_RAY             STERILITY_CURSE+1
 #define MON_WARP_THROW         DISINT_RAY+1
 #define MAGM_BLAST             MON_WARP_THROW+1
 #define SUMMON_TANNIN          MAGM_BLAST+1
+#define DISINTEGRATION         SUMMON_TANNIN+1
+//80
+#define TREMOR                 DISINTEGRATION+1
+#define INCARCERATE            TREMOR+1
+#define MUMMY_CURSE            INCARCERATE+1
+#define YELLOW_DEAD            MUMMY_CURSE+1
 
-#define MON_LASTSPELL          SUMMON_TANNIN
+#define MON_LASTSPELL          YELLOW_DEAD
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

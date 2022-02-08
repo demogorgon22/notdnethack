@@ -67,10 +67,10 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 	bhitpos.x = initx;
 	bhitpos.y = inity;
 
-	boolean misthrown = (hmoncode & HMON_MISTHROWN);
 	boolean fired = (hmoncode & HMON_FIRED);
-	boolean thrown = (misthrown || fired);
+	boolean thrown = (hmoncode & HMON_PROJECTILE);
 	boolean trapped = (hmoncode & HMON_TRAP);
+	boolean kicked = (hmoncode & HMON_KICKED);
 
 	struct obj * launcher = (struct obj *)(fired ? vpointer : 0);
 	struct trap * trap = (struct trap *)(trapped ? vpointer : 0);
@@ -195,15 +195,16 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 	if(magr && !(hmoncode & HMON_KICKED)){
 		if ((thrownobj->oartifact == ART_MJOLLNIR && (youagr ? (Role_if(PM_VALKYRIE)) : magr ? (magr->mtyp == PM_VALKYRIE) : FALSE)) ||
 			(thrownobj->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && (youagr ? (Race_if(PM_DWARF)) : magr ? (is_dwarf(magr->data)) : FALSE)) ||
-			thrownobj->oartifact == ART_SICKLE_MOON ||
-			thrownobj->oartifact == ART_ANNULUS ||
-			thrownobj->oartifact == ART_KHAKKHARA_OF_THE_MONKEY ||
-			thrownobj->oartifact == ART_DART_OF_THE_ASSASSIN ||
-			thrownobj->oartifact == ART_WINDRIDER ||
-			check_oprop(thrownobj, OPROP_RETRW) ||
-			thrownobj->oartifact == ART_AMHIMITL
+			arti_returning(thrownobj) ||
+			check_oprop(thrownobj, OPROP_RETRW)
 		) {
 			returning = TRUE;
+			if(uandroid && youagr && impaired){
+				/*Use intrinsic, error proof throwing ability*/
+				range = range/2 + 1;
+				initrange = initrange/2 + 1;
+				impaired = FALSE; //always catch
+			}
 		}
 		else if(uandroid && youagr && !(
 			(launcher) || /* no returning fired ammo */
@@ -293,10 +294,11 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 
 		/* weapon might return to your hand */
 		if (returning && !impaired) {
+			const char * location = (old_wep_mask&W_WEP) ? body_part(HAND) : (old_wep_mask&W_QUIVER) ? "quiver" : "pack";
 			if (!In_outdoors(&u.uz))
-				pline("%s the %s and returns to your hand!", Tobjnam(thrownobj, "hit"), ceiling(bhitpos.x, bhitpos.y));
+				pline("%s the %s and returns to your %s!", Tobjnam(thrownobj, "hit"), ceiling(bhitpos.x, bhitpos.y), location);
 			else 
-				pline("%s to your hand!", Tobjnam(thrownobj, "return"));
+				pline("%s to your %s!", Tobjnam(thrownobj, "return"), location);
 			return_thrownobj(magr, thrownobj);
 			return MM_MISS;
 		}
@@ -349,18 +351,20 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 	tmp_at(DISP_FLASH, obj_to_glyph(thrownobj));
 
 	/* initialize boomerang thrown direction */
-	if (is_boomerang(thrownobj) && !(hmoncode & (HMON_MISTHROWN|HMON_KICKED))) {
+	if (is_boomerang(thrownobj) && !kicked && magr) {
 		for (boomerang_init = 0; boomerang_init < 8; boomerang_init++)
 		if (xdir[boomerang_init] == dx && ydir[boomerang_init] == dy)
 			break;
 	}
 
+	
 	/* move the projectile loop */
 	/* always ends via break */
+	boolean firstmove = TRUE;	/* some behaviour is different on first pass */
 	while (TRUE)
 	{
 		/* boomerangs: change dx/dy to make signature circle */
-		if (is_boomerang(thrownobj) && !(hmoncode & (HMON_MISTHROWN|HMON_KICKED))) {
+		if (is_boomerang(thrownobj) && !kicked && magr) {
 			/* assumes boomerangs always start with 10 range */
 			/* don't worry about the math; it works */
 			dx = xdir[((10-range) - (10-range+4)/5 + boomerang_init) % 8];
@@ -388,8 +392,8 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			break;
 		}
 
-		/* projectile is on a creature */
-		if ((range != initrange || initrange == 0) &&
+		/* projectile is on a creature (except for the first time its moved, unless it's a 0-range projectile) */
+		if ((!firstmove || initrange == 0) &&
 			(mdef = creature_at(bhitpos.x, bhitpos.y)))
 		{
 			/* dart/arrow traps hit your steed some of the time */
@@ -407,9 +411,17 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			/* stop on hit? */
 			if (!thrownobj)
 				break;	/* projectile was destroyed */
+			else if (result & MM_REFLECT) {
+				/* projectile was reflected */
+				/* go directly to next movement of projectile */
+				goto move_projectile;
+			}
 			else if (is_boulder(thrownobj)) {
 				if (result)
 					range /= 2;	/* continue with less range on hit; keep going on miss */
+			}
+			else if (fired && launcher && launcher->oartifact == ART_UNSTOPPABLE) {
+				range -= 1;	/* bolt pierces, but goes slightly less far */
 			}
 			else if (
 				thrownobj->otyp == BLASTER_BOLT ||
@@ -491,6 +503,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			}
 		}
 
+move_projectile:
 		/* no projectile -- something destroyed it */
 		if (!thrownobj)
 		{
@@ -505,6 +518,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		}
 		else {
 			/* otherwise move the projectile */
+			firstmove = FALSE;
 			range--;
 			bhitpos.x += dx;
 			bhitpos.y += dy;
@@ -528,9 +542,10 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		{
 			/* attempt to catch it */
 			if (!impaired) {
+				const char * location = (old_wep_mask&W_WEP) ? body_part(HAND) : (old_wep_mask&W_QUIVER) ? "quiver" : "pack";
 				/* success */
 				if (youagr) {
-					pline("%s to your hand!", Tobjnam(thrownobj, "return"));
+					pline("%s to your %s!", Tobjnam(thrownobj, "return"), location);
 				}
 				return_thrownobj(magr, thrownobj);
 			}
@@ -550,7 +565,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 							Tobjnam(thrownobj, Blind ? "hit" : "fly"),
 							body_part(ARM));
 						/* object now hits you -- ouch! */
-						(void)hmon_general(magr, magr, (struct attack *)0, (struct attack *)0, thrownobj_p, (void *)0, HMON_FIRED, 0, 0, TRUE, 0, FALSE, -1);
+						(void)hmon_general(magr, magr, (struct attack *)0, (struct attack *)0, thrownobj_p, (void *)0, HMON_PROJECTILE|HMON_FIRED, 0, 0, TRUE, 0, FALSE, -1);
 					}
 					/* end copy */
 				}
@@ -1025,7 +1040,6 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 	struct permonst * pd = youdef ? youracedata : mdef->data;
 	struct obj * thrownobj = (thrownobj_p) ? (*thrownobj_p) : (struct obj *)0;
 
-	boolean misfired = (hmoncode & HMON_MISTHROWN);
 	boolean fired = (hmoncode & HMON_FIRED);
 	boolean trapped = (hmoncode & HMON_TRAP);
 
@@ -1088,8 +1102,12 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		/* return to sender */
 		*pdx *= -1;
 		*pdy *= -1;
-		*prange = *prange2;
-		return MM_MISS;
+		/* spends some range */
+		if (range2 > range) {
+			*prange = *prange2;
+			*prange2 -= range2 - range;
+		}
+		return MM_REFLECT;
 	}
 	/* blaster bolts and laser beams are reflected by regular reflection */
 	else if ((thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT)
@@ -1108,7 +1126,6 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		if (youdef && shienuse && (u.dx || u.dy)) {
 			*pdx = u.dx;
 			*pdy = u.dy;
-			*prange = *prange2;
 		}
 		else if (youdef || !has_template(mdef, FRACTURED)){
 			*pdx *= -1;
@@ -1119,7 +1136,12 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 			*pdx = xdir[i];
 			*pdy = ydir[i];
 		}
-		return MM_MISS;
+		/* spends some range */
+		if (range2 > range) {
+			*prange = *prange2;
+			*prange2 -= range2 - range;
+		}
+		return MM_REFLECT;
 	}
 	/* the player has a chance to burn some projectiles (not blaster bolts or laser beams) out of the air with a lightsaber */
 	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == PSIONIC_PULSE)
@@ -1286,28 +1308,35 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		if (!thrownobj) {
 			/*hmon destroyed it, we're already done*/;
 		}
-		else 
+		/* special-case for Center of All -- sometimes its projectiles get added to your inventory */
+		else if (*hp(mdef)>0 && youdef && magr && magr->mtyp == PM_CENTER_OF_ALL && thrownobj->otyp == LOADSTONE && !rn2(3))
+		{
+			pickup_object(thrownobj, 1, TRUE);
+			*thrownobj_p = NULL;
+			result |= MM_HIT;
+		}
 		/* projectiles other than magic stones
 		 * sometimes disappear when thrown
 		 * WAC - Spoon always disappears after doing damage
 		 */
-		if ((objects[thrownobj->otyp].oc_skill < P_NONE &&
+		else if ((objects[thrownobj->otyp].oc_skill < P_NONE &&
 			objects[thrownobj->otyp].oc_skill > -P_BOOMERANG &&
 			thrownobj->oclass != GEM_CLASS &&
 			!objects[thrownobj->otyp].oc_magic) ||
 			(thrownobj->oartifact == ART_HOUCHOU)
 			) {
+			/* mulch code */
 			/* we were breaking 2/3 of everything unconditionally.
 			 * we still don't want anything to survive unconditionally,
 			 * but we need ammo to stay around longer on average.
 			 */
 			boolean broken = FALSE;
-			if (thrownobj->oartifact && thrownobj->oartifact != ART_HOUCHOU){
+			if ((thrownobj->oartifact || (!check_oprop(thrownobj, OPROP_NONE) && !forcedestroy)) && thrownobj->oartifact != ART_HOUCHOU){
 				broken = FALSE;
 			}
 			else if (forcedestroy ||
 				(launcher && fired && (launcher->oartifact == ART_HELLFIRE || launcher->oartifact == ART_BOW_OF_SKADI)) ||
-				(fired && thrownobj->oartifact == ART_HOUCHOU) ||
+				(thrownobj->oartifact == ART_HOUCHOU) ||
 				(fired && thrownobj->otyp == BULLET) || 
 				(fired && thrownobj->otyp == SILVER_BULLET) || 
 				(fired && thrownobj->otyp == SHOTGUN_SHELL) || 
@@ -1327,17 +1356,6 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 				if (thrownobj->blessed && rnl(100) < 25)
 					broken = FALSE;
 			}
-			/* some projectiles should instead be transfered to the defender's inventory... if they lived */
-			if (*hp(mdef)>0) {
-				if (youdef && thrownobj->otyp == LOADSTONE && !rn2(3))
-				{
-					broken = FALSE;
-					pickup_object(thrownobj, 1, TRUE);
-					*thrownobj_p = NULL;
-					result |= MM_HIT;
-				}
-			}
-
 			if (broken) {
 				if (*u.ushops) {
 					check_shop_obj(thrownobj, bhitpos.x, bhitpos.y, TRUE);
@@ -1687,7 +1705,7 @@ struct obj *obj;
 			Doname2(obj), buf, body_part(HEAD));
 
 		/* object now hits you */
-		projectile((struct monst *)0, obj, (void *)0, HMON_MISTHROWN, u.ux, u.uy, 0, 0, 0, 0, FALSE, FALSE, FALSE);
+		projectile((struct monst *)0, obj, (void *)0, HMON_PROJECTILE, u.ux, u.uy, 0, 0, 0, 0, FALSE, FALSE, FALSE);
 		return;
 	}
 }
@@ -1726,7 +1744,7 @@ int shotlimit;
 		(skill == P_DART) ||
 		(skill == P_SHURIKEN) ||
 		(skill == P_BOOMERANG) ||
-		(ammo->oartifact == ART_SICKLE_MOON) || 
+		(ammo->otyp == SICKLE) ||
 		(ammo->oartifact == ART_AMHIMITL)
 		) {
 		/* Skill based bonus */
@@ -1776,6 +1794,9 @@ int shotlimit;
 			if (skill == P_DAGGER) multishot -= 3;	/* very bad at throwing daggers */
 		default:
 			break;	/* No bonus */
+		}
+		if(youagr && Role_if(PM_MADMAN) && Race_if(PM_YUKI_ONNA)){
+			if (ammo->otyp == YA && launcher && launcher->otyp == YUMI) multishot++;
 		}
 		/* Race-based RoF bonus */
 		if ((youagr ? Race_if(PM_ELF) : is_elf(magr->data)) && (
@@ -1850,12 +1871,8 @@ int shotlimit;
 
 	/* For most things, limit multishot to ammo supply */
 	if ((long)multishot > ammo->quan && !(
-		ammo->oartifact == ART_WINDRIDER ||
 		check_oprop(ammo, OPROP_RETRW) ||
-		ammo->oartifact == ART_SICKLE_MOON ||
-		ammo->oartifact == ART_ANNULUS ||
-		ammo->oartifact == ART_AMHIMITL ||
-		ammo->oartifact == ART_DART_OF_THE_ASSASSIN ||
+		(arti_returning(ammo) && objects[ammo->otyp].oc_merge) ||
 		(launcher && is_blaster(launcher))
 		))
 		multishot = (int)ammo->quan;
@@ -2527,7 +2544,7 @@ boolean forcedestroy;
 		int dx = u.dx, dy = u.dy, dz = u.dz;
 		boolean impaired = misthrow(&youmonst, ammo, launcher, m_shot.s, &dx, &dy, &dz);
 		/* note: we actually don't care if the projectile hit anything */
-		(void)projectile(&youmonst, ammo, launcher, (m_shot.s || !is_ammo(ammo) || ammo->oclass==GEM_CLASS) ? HMON_FIRED : HMON_MISTHROWN,
+		(void)projectile(&youmonst, ammo, launcher, HMON_PROJECTILE|(m_shot.s ? HMON_PROJECTILE|HMON_FIRED : 0),
 			u.ux, u.uy, dx, dy, dz, range, forcedestroy, TRUE, impaired);
 		if (Weightless || Levitation)
 			hurtle(-u.dx, -u.dy, hurtle_dist, TRUE, TRUE);
@@ -2802,6 +2819,7 @@ int tary;
 	static const int random_breaths[] = { AD_MAGM, AD_FIRE, AD_COLD, AD_SLEE, AD_DISN, AD_ELEC, AD_DRST, AD_ACID };
 	int dx, dy, dz;
 	int range;
+	boolean jacket = youagr ? Straitjacketed : straitjacketed_mon(magr);
 
 	if (tarx || tary) {
 		dx = sgn(tarx - x(magr));
@@ -2817,15 +2835,6 @@ int tary;
 		return FALSE;
 	}
 
-	/* Random breath attacks */
-	if (typ == AD_RBRE){
-		if (pa->mtyp == PM_CHROMATIC_DRAGON)
-			typ = chromatic_dragon_breaths[rn2(SIZE(chromatic_dragon_breaths))];
-		else if (pa->mtyp == PM_PLATINUM_DRAGON)
-			typ = platinum_dragon_breaths[rn2(SIZE(platinum_dragon_breaths))];
-		else 
-			typ = random_breaths[rn2(SIZE(random_breaths))];
-	}
 	/* Halfdragon breath attack */
 	if (typ == AD_HDRG) {
 		if (youagr && Race_if(PM_HALF_DRAGON))
@@ -2839,6 +2848,15 @@ int tary;
 			mult = 4;	/* increased duration */
 	}
 
+	/* Random breath attacks */
+	if (typ == AD_RBRE){
+		if (pa->mtyp == PM_CHROMATIC_DRAGON)
+			typ = chromatic_dragon_breaths[rn2(SIZE(chromatic_dragon_breaths))];
+		else if (pa->mtyp == PM_PLATINUM_DRAGON)
+			typ = platinum_dragon_breaths[rn2(SIZE(platinum_dragon_breaths))];
+		else 
+			typ = random_breaths[rn2(SIZE(random_breaths))];
+	}
 	/* if cancelled, (or the player is strangled) can't use breath attack */
 	if (youagr ? Strangled : magr->mcan) {
 		if (youagr) {
@@ -2863,7 +2881,7 @@ int tary;
 		losepw(15);
 		flags.botl = 1;
 	}
-
+	
 	/* message */
 	if (youagr || canseemon(magr)) {
 		char * bofp = flash_type(typ, ZAP_BREATH);
@@ -2872,7 +2890,13 @@ int tary;
 		/* some breaths sound better as "a noun of x" */
 		if (typ == AD_DISN || typ == AD_BLUD)
 			p = NULL;
-
+		
+		if(jacket){
+			if(youagr)
+				Your("straitjacket prevents you from taking a deep breath!");
+			else
+				pline("%s seems to be having trouble breathing.", Monnam(magr));
+		}
 		pline("%s breathe%s %s!",
 			youagr ? "You" : Monnam(magr),
 			youagr ? "" : "s",
@@ -2898,7 +2922,7 @@ int tary;
 	}
 	/* default range */
 	else 
-		range = rn1(7, 7);
+		range = jacket ? rn1(3, 3) : rn1(7, 7);
 
 	/* green dragon breath leaves clouds */
 	if ((is_true_dragon(pa) || (youagr && Race_if(PM_HALF_DRAGON) && u.ulevel >= 14)) && typ == AD_DRST)
@@ -2907,6 +2931,11 @@ int tary;
 	/* set damage */
 	zapdata.damn = attk->damn + min(MAX_BONUS_DICE, (mlev(magr) / 3));
 	zapdata.damd = (attk->damd ? attk->damd : 6) * mult;
+	
+	if(jacket){
+		zapdata.damn = zapdata.damn/2+1;
+		zapdata.damd = zapdata.damd/2+1;
+	}
 
 	zap(magr, x(magr), y(magr), dx, dy, range, &zapdata);
 
@@ -3010,7 +3039,7 @@ int tary;
 	if (youagr)
 		otmp->spe = 1;
 	/* shoot otmp */
-	projectile(magr, otmp, (void *)0, HMON_FIRED,
+	projectile(magr, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED,
 		x(magr), y(magr), dx, dy, dz,
 		BOLT_LIM, TRUE, youagr, FALSE);
 
@@ -3227,7 +3256,7 @@ int n;	/* number to try to fire */
 				sy = y(magr);
 			}
 		}
-		projectile(magr, qvr, (void *)0, HMON_FIRED,
+		projectile(magr, qvr, (void *)0, HMON_PROJECTILE|HMON_FIRED,
 			sx, sy, dx, dy, dz,
 			BOLT_LIM+rngmod, !from_pack, youagr, FALSE);
 
@@ -3446,7 +3475,7 @@ boolean forcedestroy;
 		int dx = odx, dy = ody, dz = 0;
 		boolean impaired = misthrow(magr, ammo, launcher, m_shot.s, &dx, &dy, &dz);
 		/* note: we actually don't care if the projectile hit anything */
-		result = projectile(magr, ammo, launcher, (m_shot.s || !is_ammo(ammo) || ammo->oclass == GEM_CLASS) ? HMON_FIRED : HMON_MISTHROWN,
+		result = projectile(magr, ammo, launcher, HMON_PROJECTILE|(m_shot.s ? HMON_PROJECTILE|HMON_FIRED : 0),
 			x(magr), y(magr), dx, dy, dz, range, forcedestroy, FALSE, impaired);
 		/* monsters don't hurtle like the player does at the moment */
 	}

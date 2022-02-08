@@ -321,10 +321,7 @@ struct obj *box;
 			 * from usual meaning for objects stored in ice boxes. -KAA
 			 */
 			otmp->age = 0L;
-			if (otmp->timed) {
-				(void) stop_timer(ROT_CORPSE, otmp->timed);
-				(void) stop_timer(REVIVE_MON, otmp->timed);
-			}
+			stop_corpse_timers(otmp);
 	    } else if(box->otyp == MASSIVE_STONE_CRATE){
 			if (!(otmp = mkobj(FOOD_CLASS, TRUE))) continue;
 	    } else if(box->otyp == WRITING_DESK){
@@ -566,7 +563,7 @@ int mkflags;
 	otmp->oward = 0;
 	for(int i = 0; i < OPROP_LISTSIZE; i++)
 		otmp->oproperties[i] = 0;
-	otmp->gifted = GA_NONE;
+	otmp->gifted = GOD_NONE;
 	otmp->lifted = 0;
 	otmp->shopOwned = 0;
 	otmp->sknown = 0;
@@ -628,6 +625,8 @@ int mkflags;
 				|| otmp->otyp == GOLD_BLADED_VIBROZANBATO
 				)
 				add_oprop(otmp, OPROP_UNHYW);
+			if (is_rakuyo(otmp))
+				add_oprop(otmp, OPROP_RAKUW);
 
 			if (is_vibroweapon(otmp)){
 				otmp->ovar1 = 80L + rnd(20);
@@ -709,7 +708,7 @@ int mkflags;
 				/* possibly overridden by mkcorpstat() */
 				tryct = 50;
 				do otmp->corpsenm = undead_to_corpse(rndmonnum());
-				while ((mvitals[otmp->corpsenm].mvflags & G_NOCORPSE) && (--tryct > 0));
+				while ((mvitals[otmp->corpsenm].mvflags & G_NON_GEN_CORPSE) && (--tryct > 0));
 				if (tryct == 0) {
 					/* perhaps rndmonnum() only wants to make G_NOCORPSE monsters on
 					   this level; let's create an adventurer's corpse instead, then */
@@ -741,7 +740,7 @@ int mkflags;
 				else for (tryct = 200; tryct > 0; --tryct) {
 					mndx = undead_to_corpse(rndmonnum());
 					if (mons[mndx].cnutrit &&
-						!(mvitals[mndx].mvflags & G_NOCORPSE)) {
+						!(mvitals[mndx].mvflags & G_NON_GEN_CORPSE)) {
 						otmp->corpsenm = mndx;
 						break;
 					}
@@ -999,6 +998,10 @@ int mkflags;
 				}
 				doMaskStats(otmp);
 				break;
+			case DOLL_S_TEAR:
+				otmp->ovar1 = init_doll_sales();
+				otmp->spe = rnd(20);
+				break;
 			}
 			break;
 		case AMULET_CLASS:
@@ -1022,6 +1025,17 @@ int mkflags;
 					otmp->corpsenm = PM_LIVING_DOLL;
 				break;
 			}
+			if(otmp->otyp == BROKEN_ANDROID || otmp->otyp == BROKEN_GYNOID || otmp->otyp == LIFELESS_DOLL){
+				struct monst * mon;
+				struct obj * otmp2;
+				mon = makemon(&mons[otmp->corpsenm], 0, 0, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH);
+				if(mon){
+					otmp2 = save_mtraits(otmp, mon);
+					mongone(mon);
+					if(otmp2)
+						otmp = otmp2;
+				}
+			}
 			break;
 		case BALL_CLASS:
 			break;
@@ -1031,7 +1045,7 @@ int mkflags;
 				for (tryct = 200; tryct > 0; --tryct) {
 					mndx = undead_to_corpse(rndmonnum());
 					if (mons[mndx].cnutrit &&
-						!(mvitals[mndx].mvflags & G_NOCORPSE)
+						!(mvitals[mndx].mvflags & G_NON_GEN_CORPSE)
 						&& has_blood(&mons[mndx])) {
 						otmp->corpsenm = mndx;
 						break;
@@ -1425,8 +1439,6 @@ doMaskStats(mask)
 //		mask->mp->mskhpmax = mask->mp->mskhp;
 //		mask->mp->msken = 
 //		mask->mp->mskenmax = mask->mp->msken;
-		for(int i = 0; i < GA_NUM; i++)
-			mask->mp->mskgangr[i] = 0;
 //		mask->mp->mskexp = 
 		mask->mp->mskrexp = mask->mp->msklevel-1;
 		mask->mp->mskweapon_slots = 0;
@@ -2031,6 +2043,35 @@ struct obj* obj;
 	return;
 }
 
+/* attempts to randomly give obj a rare material */
+void
+rand_interesting_obj_material(obj)
+struct obj * obj;
+{
+	const struct icp* random_mat_list;
+	int tries = 0;
+	int original_mat;
+
+	init_obj_material(obj);
+	original_mat = obj->obj_material;
+
+	/* randomized materials */
+	do {
+		random_mat_list = material_list(obj);
+		if (random_mat_list) {
+			int i = rnd(1000);
+			while (i > 0) {
+				if (i <= random_mat_list->iprob)
+					break;
+				i -= random_mat_list->iprob;
+				random_mat_list++;
+			}
+			if (random_mat_list->iclass) /* a 0 indicates to use default material */
+				set_material_gm(obj, random_mat_list->iclass);
+		}
+	} while (obj->obj_material == original_mat && ++tries<40);
+}
+
 /* "Game Master"-facing set material function.
  *  Should do the absolute minimum to make sure that obj is not in an inconsistent state after mat is set.
  *  In particular, it should never change the base object type.
@@ -2353,8 +2394,9 @@ register struct obj *obj;
 			else wt = wt*difsize*difsize;
 		} else {
 			difsize = abs(difsize)+1;
-			if(obj->oclass == ARMOR_CLASS || obj->oclass == WEAPON_CLASS) wt = wt/(difsize) + 1;
-			else wt = wt/(difsize*difsize) + 1;
+			if(obj->oclass == ARMOR_CLASS || obj->oclass == WEAPON_CLASS) wt = wt/(difsize);
+			else wt = wt/(difsize*difsize);
+			if (wt < 1) wt = 1;
 		}
 	}
 	
@@ -3279,7 +3321,8 @@ add_to_migration(obj)
 {
     if (obj->where != OBJ_FREE)
 	panic("add_to_migration: obj not free");
-
+	
+	pause_timers(obj->timed);
     obj->where = OBJ_MIGRATING;
     obj->nobj = migrating_objs;
     migrating_objs = obj;

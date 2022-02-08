@@ -22,6 +22,7 @@ char * FDECL(xname2, (struct obj *,BOOLEAN_P));
 boolean FDECL(an_bool, (const char *));
 #endif
 
+#define useJNames (Role_if(PM_SAMURAI) || (Role_if(PM_MADMAN) && Race_if(PM_YUKI_ONNA)))
 struct Jitem {
 	int item;
 	const char *name;
@@ -95,9 +96,15 @@ NEARDATA struct colorTextClr LightsaberColor[] = {
 	{"",CLR_RED},						/*loadstone*/
 	{"",CLR_RED},						/*touchstone*/
 	{"",CLR_RED},						/*flint*/
+	{"",CLR_RED},						/*vital soulstone*/
+	{"",CLR_RED},						/*spiritual soulstone*/
 	{"",CLR_RED},						/*mithril*/
 	{"black",CLR_BLACK},				/*fossil dark*/
-	{"",CLR_RED}						/*silver slingstone*/
+	{"",CLR_WHITE},						/*salt*/
+	{"",CLR_RED},						/*silver slingstone*/
+	{"",CLR_RED},						/*rock*/
+	{"",CLR_BLACK},						/*antimagic rift*/
+	{"",CLR_GRAY}						/*catapsi vortex*/
 };
 
 STATIC_OVL char *SaberHilts[] = {
@@ -152,7 +159,6 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ DAGGER, "kunai" },
 	{ DART, "bo-shuriken" },
 	{ DWARVISH_MATTOCK, "dwarvish zaghnal" },
-	{ FLAIL, "nunchaku" },
 	{ FOOD_RATION, "gunyoki" },
 	{ SEDGE_HAT, "sugegasa" },
 	{ WAR_HAT, "jingasa" },
@@ -169,7 +175,6 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ PLATE_MAIL, "o-yoroi" },
 	{ POT_BOOZE, "sake" },
 	{ QUARTERSTAFF, "bo" },
-	{ SHORT_SWORD, "wakizashi" },
 	{ SHURIKEN, "hira-shuriken" },
 	{ SPEAR, "yari" },
 	{ SPLINT_MAIL, "dou-maru" },
@@ -186,7 +191,6 @@ STATIC_OVL struct Jitem Japanese_items[] = {
 	{ PLATE_MAIL, "tanko" },
 	{ DAGGER, "kunai" },
 	{ DART, "bo-shuriken" },
-	{ FLAIL, "nunchaku" },
 	{ FOOD_RATION, "gunyoki" },
 	{ SEDGE_HAT, "sugegasa" },
 	{ WAR_HAT, "jingasa" },
@@ -198,7 +202,6 @@ STATIC_OVL struct Jitem Japanese_items[] = {
 	{ LOCK_PICK, "osaku" },
 	{ POT_BOOZE, "sake" },
 	{ QUARTERSTAFF, "bo staff" },
-	{ SHORT_SWORD, "wakizashi" },
 	{ SHURIKEN, "hira-shuriken" },
 	{ SPLINT_MAIL, "dou-maru" },
 	{ HARP, "koto" },
@@ -393,12 +396,13 @@ register int otyp;
 	register const char *un = ocl->oc_uname;
 	register int nn = ocl->oc_name_known;
 
-	if (Role_if(PM_SAMURAI) && iflags.role_obj_names && Alternate_item_name(otyp,Japanese_items))
+	if (useJNames && iflags.role_obj_names && Alternate_item_name(otyp,Japanese_items))
 		actualn = Alternate_item_name(otyp,Japanese_items);
-	if (Role_if(PM_SAMURAI) && iflags.obscure_role_obj_names && Alternate_item_name(otyp,ObscureJapanese_items))
+	if (useJNames && iflags.obscure_role_obj_names && Alternate_item_name(otyp,ObscureJapanese_items))
 		actualn = Alternate_item_name(otyp,ObscureJapanese_items);
 	if (Role_if(PM_PIRATE) && iflags.role_obj_names && Alternate_item_name(otyp,Pirate_items))
 		actualn = Alternate_item_name(otyp,Pirate_items);
+
 	switch(ocl->oc_class) {
 	case COIN_CLASS:
 		Strcpy(buf, "coin");
@@ -521,6 +525,30 @@ int otyp;
     if ((pp = strstri(bufp, " (")) != 0)
 	*pp = '\0';		/* strip the appended description */
     return bufp;
+}
+
+/* applies unided artifact descriptors for oartifact to a string
+ */
+char *
+artiadjusted_objnam(buf, oartifact)
+char * buf;
+int oartifact;
+{
+	if (!oartifact)
+		return buf;
+
+	struct artifact * oart = &artilist[oartifact];
+	if (oart->desc) {
+		if (strstri(oart->desc, "%s")) {
+			char * buf2 = nextobuf();
+			Sprintf(buf2, oart->desc, buf);
+			Strcpy(buf, buf2);
+		}
+		else {
+			Strcat(buf, oart->desc);
+		}
+	}
+	return buf;
 }
 
 boolean
@@ -948,8 +976,8 @@ boolean dofull;
 			u.uinsight < 10 ? Strcat(buf, "self-poisoning ") : Strcat(buf, "poison-secreting ");
 		if (check_oprop(obj, OPROP_GRES) && (obj->known || u.uinsight >= 10) && !(obj->greased))
 			u.uinsight < 10 ? Strcat(buf, "self-greasing ") : Strcat(buf, "grease-secreting ");
-		if (check_oprop(obj, OPROP_HEAL) && (obj->known || u.uinsight >= 10))
-			u.uinsight < 10 ? Strcat(buf, "healing ") : Strcat(buf, "angel-haunted ");
+		if (check_oprop(obj, OPROP_HEAL) && (obj->known || u.uinsight >= 21))
+			u.uinsight < 21 ? Strcat(buf, "healing ") : check_oprop(obj, OPROP_UNHY) ? Strcat(buf, "angel-imprisoning ") : Strcat(buf, "angel-haunted ");
 		if (check_oprop(obj, OPROP_RETRW) && (obj->known || u.uinsight >= 10))
 			u.uinsight < 10 ? Strcat(buf, "returning ") : Strcat(buf, "loyal ");
 		
@@ -1084,6 +1112,14 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40)
 			Strcat(buf, "living ");
 		
+		if (check_oprop(obj, OPROP_BRIL) && !obj->known)
+			Strcat(buf, "ornate ");
+		
+		if (check_oprop(obj, OPROP_BLADED))
+			Strcat(buf, "bladed ");
+		if (check_oprop(obj, OPROP_SPIKED))
+			Strcat(buf, "spiked ");
+
 		/* note: "holy" and "unholy" properties are shown in the BUC part of the name, as they replace "blessed" and "cursed". */
 		
 		/* note: except "Holy Avenger" and "Unholy Avenger" */
@@ -1288,6 +1324,7 @@ char *buf;
 		if (obj->opoisoned & OPOISON_AMNES) Strcat(buf, "lethe-rusted ");
 		if (obj->opoisoned & OPOISON_ACID)  Strcat(buf, "acid-coated ");
 		if (obj->opoisoned & OPOISON_SILVER)  Strcat(buf, "silvered ");
+		if (obj->opoisoned & OPOISON_HALLU)  Strcat(buf, "ergot-coated ");
 		if (obj->otyp == VIPERWHIP && obj->opoisonchrgs) Sprintf(eos(buf), "(%d coatings) ", (int)(obj->opoisonchrgs + 1));
 	}
 }
@@ -1297,17 +1334,35 @@ add_insight_words(obj, buf)
 struct obj *obj;
 char *buf;
 {
+	if (rakuyo_prop(obj)){
+		if(u.uinsight >= 40)
+			Strcat(buf, "burning ");
+		if(u.uinsight >= 20)
+			Strcat(buf, "blood-drenched ");
+	}
+	if (obj->otyp == ISAMUSEI){
+		if(u.uinsight >= 45)
+			Strcat(buf, "circular ");
+		else if(u.uinsight >= 22)
+			Strcat(buf, "twisting ");
+	}
 	if (obj->otyp == CLUB && check_oprop(obj, OPROP_CCLAW)){
 		if(u.uinsight >= 30)
 			Strcat(buf, "thrashing ");
 		else if(u.uinsight >= 15)
 			Strcat(buf, "severed ");
 	}
-	if (is_rakuyo(obj)){
-		if(u.uinsight >= 40)
-			Strcat(buf, "burning ");
-		if(u.uinsight >= 20)
-			Strcat(buf, "blood-drenched ");
+	if (obj->otyp == DISKOS){
+		if(u.uinsight >= 15){
+			if(obj->where == OBJ_INVENT)
+				Strcat(buf, u.ualign.record < -3 ? "shadow-wrapped " : u.ualign.record > 3 ? "light-wrapped " : "energy-wrapped ");
+			else if(obj->where == OBJ_MINVENT)
+				Strcat(buf, obj->ocarry->mtyp == PM_UVUUDAUM ? "rainbow-wrapped " : hates_holy_mon(obj->ocarry) ? "shadow-wrapped " : hates_unholy_mon(obj->ocarry) ? "light-wrapped " : "energy-wrapped ");
+			else
+				Strcat(buf, "energy-wrapped ");
+		}
+		else if(u.uinsight >= 5)
+			Strcat(buf, "spinning ");
 	}
 }
 
@@ -1529,6 +1584,10 @@ boolean adjective;
 		return "salt";
 	case SHADOWSTEEL:
 		return (adjective ? "shadowsteel" : "corporeal darkness");
+	case MERCURIAL:
+		if(obj->where == OBJ_MINVENT || obj->where == OBJ_INVENT)
+			return (adjective ? (is_streaming_merc(obj) ? "streaming" : is_kinstealing_merc(obj) ? "kinstealing" : "chained") : "chaos stuff");
+		return (adjective ? "melting" : "chaos stuff");
 	default:
 		return (adjective ? "mysterious" : "an enigma in solid form");
 	}
@@ -1550,6 +1609,9 @@ char *buf;
 		/*Known artifact is made from the artifact's expected material */
 		if(artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material)
 			return;
+	} else if(obj->oartifact == ART_IBITE_ARM && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
+		//Ibite arm descriptor includes "flabby," which is both a material and an appearance :-/
+		return;
 	} else {
 		/*Special case: circlets should always show their material, but oc_showmat is tied to otyp, not appearance */
 		if (obj->otyp == find_gcirclet())
@@ -1638,9 +1700,9 @@ boolean with_price;
 	if (obj && obj->oartifact) oart = &artilist[(obj)->oartifact];
 
 	buf = nextobuf() + PREFIX;	/* leave room for "17 -3 " */
-	if (Role_if(PM_SAMURAI) && iflags.role_obj_names && Alternate_item_name(typ, Japanese_items))
+	if (useJNames && iflags.role_obj_names && Alternate_item_name(typ, Japanese_items))
 		actualn = Alternate_item_name(typ, Japanese_items);
-	if (Role_if(PM_SAMURAI) && iflags.obscure_role_obj_names && Alternate_item_name(typ, ObscureJapanese_items))
+	if (useJNames && iflags.obscure_role_obj_names && Alternate_item_name(typ, ObscureJapanese_items))
 		actualn = Alternate_item_name(typ, ObscureJapanese_items);
 	if (Role_if(PM_PIRATE) && iflags.role_obj_names && Alternate_item_name(typ, Pirate_items))
 		actualn = Alternate_item_name(typ, Pirate_items);
@@ -1871,8 +1933,12 @@ boolean with_price;
 						Strcat(buf, "gloves");
 					else if (is_cloak(obj))
 						Strcat(buf, "cloak");
-					else if (is_helmet(obj))
-						Strcat(buf, "helmet");
+					else if (is_helmet(obj)){
+						if(obj->otyp == find_gcirclet())
+							Strcat(buf, "band");
+						else
+							Strcat(buf, "helmet");
+					}
 					else if (is_shield(obj))
 						Strcat(buf, "shield");
 					else if (obj->oclass == ARMOR_CLASS)
@@ -1923,6 +1989,19 @@ boolean with_price;
 #endif
 		if (obj->quan != 1L) Strcpy(buf, makeplural(buf));
 	}//endif !obj_is_pname(obj)
+	
+	if(check_oprop(obj, OPROP_BLAST) && obj->known){
+		if(strstr(buf, " of "))
+			Strcat(buf, " and blasting");
+		else
+			Strcat(buf, " of blasting");
+	}
+	if(check_oprop(obj, OPROP_BRIL) && obj->known){
+		if(strstr(buf, " of "))
+			Strcat(buf, " and brilliance");
+		else
+			Strcat(buf, " of brilliance");
+	}
 	
 	if (!(obj->oartifact && undiscovered_artifact(obj->oartifact) && oart->desc)
 		|| (iflags.force_artifact_names && !getting_obj_base_desc && obj->oartifact != ART_FLUORITE_OCTAHEDRON)) {
@@ -2213,7 +2292,8 @@ weapon:
 					if (obj->opoisoned & OPOISON_PARAL) Strcat(buf, ", venom injecting");
 					if (obj->opoisoned & OPOISON_AMNES) Strcat(buf, ", lethe injecting");
 					if (obj->opoisoned & OPOISON_ACID) Strcat(buf, ", acid injecting");
-					if (obj->opoisoned & OPOISON_SILVER) Strcat(buf, ", silvered ");
+					if (obj->opoisoned & OPOISON_SILVER) Strcat(buf, ", star-water injecting ");
+					if (obj->opoisoned & OPOISON_HALLU) Strcat(buf, ", ergot injecting ");
 				}
 				Strcat(buf, ")");
 			}
@@ -2225,7 +2305,8 @@ weapon:
 				if (obj->opoisoned & OPOISON_PARAL) Strcat(buf, " (venom injecting)");
 				if (obj->opoisoned & OPOISON_AMNES) Strcat(buf, " (lethe injecting)");
 				if (obj->opoisoned & OPOISON_ACID)  Strcat(buf, " (acid injecting)");
-				if (obj->opoisoned & OPOISON_SILVER)  Strcat(buf, " (silvered)");
+				if (obj->opoisoned & OPOISON_SILVER)  Strcat(buf, " (star-water injecting)");
+				if (obj->opoisoned & OPOISON_HALLU)  Strcat(buf, " (ergot injecting)");
 			}
 			break;
 		case FOOD_CLASS:
@@ -2633,7 +2714,7 @@ const char *str;
 
 			// This will catch all artifacts listed in artilist.h whose coded names begin with "The "
 			int i;
-			for (i = 1; i < NROFARTIFACTS && !insert_the; i++)
+			for (i = 1; i < n_artifacts() && !insert_the; i++)
 			{
 				if (!strncmp(artilist[i].name, "The ", 4) &&
 					((l = strlen(str)) >= strlen(artilist[i].name) - 4) &&
@@ -3389,12 +3470,16 @@ const char *oldstr;
 			   !BSTRCMPI(bp, p-11, "Seven Parts") || /* spear */
 			   !BSTRCMPI(bp, p-10, "Lost Names") || /* book */
 			   !BSTRCMPI(bp, p-15, "Infinite Spells") || /* book */
-			   !BSTRCMPI(bp, p-6, "talons") || /* book */
+			   !BSTRCMPI(bp, p-6, "talons") || /* set of knives */
+			   !BSTRCMPI(bp, p-6, "Thorns") || /* artifact */
+			   !BSTRCMPI(bp, p-9, "Soul Lens") || /* artifact */
+			   !BSTRCMPI(bp, p-19, "Seal of the Spirits") || /* artifact */
 			   !BSTRCMPI(bp, p-10, "eucalyptus") ||
 #ifdef WIZARD
 			   !BSTRCMPI(bp, p-9, "iron bars") ||
 #endif
 			   !BSTRCMPI(bp, p-5, "aklys") ||
+			   !BSTRCMPI(bp, p-6, "diskos") ||
 			   !BSTRCMPI(bp, p-13, "rotated cross") ||
 			   !BSTRCMPI(bp, p-8, "caduceus") ||
 			   !BSTRCMPI(bp, p-14, "vertical lines") ||
@@ -3560,7 +3645,6 @@ struct alt_spellings {
 	{ "kunai", DAGGER },
 	{ "bo-shuriken", DART },
 	{ "dwarvish zaghnal", DWARVISH_MATTOCK },
-	{ "nunchaku", FLAIL },
 	{ "gunyoki", FOOD_RATION },
 	{ "kote of fumbling", GAUNTLETS_OF_FUMBLING },
 	{ "kote of power", GAUNTLETS_OF_POWER },
@@ -3577,7 +3661,6 @@ struct alt_spellings {
 	{ "o-yoroi", PLATE_MAIL },
 	{ "sake", POT_BOOZE },
 	{ "bo", QUARTERSTAFF },
-	{ "wakizashi", SHORT_SWORD },
 	{ "hira-shuriken", SHURIKEN },
 	{ "yari", SPEAR },
 	{ "dou-maru", SPLINT_MAIL },
@@ -3892,6 +3975,8 @@ int wishflags;
 			ispoisoned=OPOISON_ACID;
 		} else if(!strncmpi(bp, "silvered ",l=9)) {
 			ispoisoned=OPOISON_SILVER;
+		} else if(!strncmpi(bp, "ergot-coated ",l=13)) {
+			ispoisoned=OPOISON_SILVER;
 		} else if(!strncmpi(bp, "greased ",l=8)) {
 			isgreased=1;
 		} else if (!strncmpi(bp, "very ", l=5)) {
@@ -4101,6 +4186,8 @@ int wishflags;
 			mat = OBSIDIAN_MT;
 		} else if (!strncmpi(bp, "shadowsteel ", l=12)) {
 			mat = SHADOWSTEEL;
+		} else if (!strncmpi(bp, "mercurial ", l=10)) {
+			mat = MERCURIAL;
 		} else if (!strncmpi(bp, "woolen ", l=7) || !strncmpi(bp, "wool-lined ", l=11)) {
 			add_oprop_list(oprop_list, OPROP_WOOL);
 
@@ -4285,6 +4372,16 @@ int wishflags;
 			&& strncmpi(bp, "living mask", 11) && strncmpi(bp, "living arm", 10)
 		) {
 			add_oprop_list(oprop_list, OPROP_LIVEW);
+
+		} else if (!strncmpi(bp, "spiked ", l=7)) {
+			add_oprop_list(oprop_list, OPROP_SPIKED);
+		} else if (!strncmpi(bp, "bladed ", l=7)) {
+			add_oprop_list(oprop_list, OPROP_BLADED);
+
+		} else if (!strncmpi(bp, "blasting ", l=9)) {
+			add_oprop_list(oprop_list, OPROP_BLAST);
+		} else if (!strncmpi(bp, "ornate ", l=7)) {
+			add_oprop_list(oprop_list, OPROP_BRIL);
 
 		} else if (!strncmpi(bp, "magicite ", l=9)) {
 			mat = GEMSTONE; gemtype = MAGICITE_CRYSTAL;
@@ -4474,6 +4571,7 @@ int wishflags;
 	if (strncmpi(bp, "Hand of Vecna", 13))
 	if (strncmpi(bp, "Sword of Erathaol", 17))
 	if (strncmpi(bp, "Wand of Orcus", 13))
+	if (strncmpi(bp, "Spear of Peace", 14))
 	if (strncmpi(bp, "Rod of Lordly Might", 19))
 	if (strncmpi(bp, "Dread of Dantalion", 18))
 	if (strncmpi(bp, "Crown of Berith", 15))
@@ -4534,6 +4632,7 @@ int wishflags;
 	if (strncmpi(bp, "heretic doll", 12)) /* not the "heretic" player monster */
 	if (strncmpi(bp, "archaeologist doll", 18)) /* not the "archaeologist" player monster */
 	if (strncmpi(bp, "high priest doll", 16)) /* not the "high priest" monster */
+	if (strncmpi(bp, "spear of peace", 14)) /* not the "Peace" monster */
 	if (mntmp < LOW_PM && strlen(bp) > 2 &&
 	    (mntmp = name_to_mon(bp)) >= LOW_PM) {
 		int mntmptoo, mntmplen;	/* double check for rank title */
@@ -4946,7 +5045,7 @@ srch:
 	    short objtyp;
 
 	    /* Perhaps it's an artifact specified by name, not type */
-	    name = artifact_name(actualn, &objtyp);
+	    name = artifact_name(actualn, &objtyp, NULL);
 	    if(name) {
 			isartifact = TRUE;
 			typ = objtyp;
@@ -5071,7 +5170,6 @@ srch:
 		if(!BSTRCMP(bp, p-5, "altar")) {
 		    aligntyp al;
 
-		    levl[u.ux][u.uy].typ = ALTAR;
 		    if(!strncmpi(bp, "chaotic ", 8))
 			al = A_CHAOTIC;
 		    else if(!strncmpi(bp, "neutral ", 8))
@@ -5088,7 +5186,7 @@ srch:
 			al = A_VOID;
 		    else /* -1 - A_CHAOTIC, 0 - A_NEUTRAL, 1 - A_LAWFUL */
 			al = (!rn2(6)) ? A_NONE : rn2((int)A_LAWFUL+2) - 1;
-		    levl[u.ux][u.uy].altarmask = Align2amask( al );
+			add_altar(u.ux, u.uy, al, FALSE, GOD_NONE);
 		    pline("%s altar.", An(align_str(al)));
 		    newsym(u.ux, u.uy);
 			*wishreturn = WISH_SUCCESS;
@@ -5271,7 +5369,7 @@ typfnd:
 			if (dead_species(mntmp, FALSE)) {
 			    otmp->corpsenm = NON_PM;	/* it's empty */
 			} else if (!(mons[mntmp].geno & G_UNIQ) &&
-				   !(mvitals[mntmp].mvflags & G_NOCORPSE) &&
+				   !(mvitals[mntmp].mvflags & G_NON_GEN_CORPSE) &&
 				   mons[mntmp].cnutrit != 0 &&
 				   !(typ==POT_BLOOD && !has_blood(&mons[mntmp]))) {
 			    otmp->corpsenm = mntmp;
@@ -5281,8 +5379,9 @@ typfnd:
 		    otmp->corpsenm = mntmp;
 		break;
 		case CORPSE:
-			if (!(mons[mntmp].geno & G_UNIQ) &&
-				   !(mvitals[mntmp].mvflags & G_NOCORPSE)) {
+			if (!(mons[mntmp].geno & G_UNIQ)
+				&& !(mvitals[mntmp].mvflags & G_NON_GEN_CORPSE)
+			){
 			    /* beware of random troll or lizard corpse,
 			       or of ordinary one being forced to such */
 			    if (otmp->timed) stop_all_timers(otmp->timed);
@@ -5520,7 +5619,7 @@ typfnd:
 		short objtyp;
 
 		/* an artifact name might need capitalization fixing */
-		aname = artifact_name(name, &objtyp);
+		aname = artifact_name(name, &objtyp, NULL);
 
 		if (aname) {
 			/* attempt to create an artifact with the modified name */
@@ -5597,10 +5696,12 @@ typfnd:
 	/* attach creature of the item's permonst type */
 	if(ispetrified && wizwish && otmp->corpsenm != NON_PM){
 		struct monst * mon;
-		struct obj * otmp2;
+		struct obj * otmp2 = 0;
 		mon = makemon(&mons[otmp->corpsenm], 0, 0, NO_MINVENT);
-		otmp2 = save_mtraits(otmp, mon);
-		mongone(mon);
+		if(mon){
+			otmp2 = save_mtraits(otmp, mon);
+			mongone(mon);
+		}
 		if (otmp2){
 			otmp = otmp2;
 		}

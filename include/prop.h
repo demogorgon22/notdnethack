@@ -73,8 +73,8 @@
 #define HALF_PHDAM					1 + HALF_SPDAM
 #define ADORNED						1 + HALF_PHDAM
 #define REGENERATION				1 + ADORNED
-#define INVULNERABLE				1 + REGENERATION
-#define FREE_ACTION					1 + INVULNERABLE
+#define SANCTUARY					1 + REGENERATION
+#define FREE_ACTION					1 + SANCTUARY
 #define SWIMMING					1 + FREE_ACTION
 #define SLIMED						1 + SWIMMING
 #define FIXED_ABIL					1 + SLIMED
@@ -128,7 +128,8 @@
 #define DARKVISION_ONLY				1 + MISOTHEISM
 #define SHATTERING					1 + DARKVISION_ONLY
 #define DIMENSION_LOCK				1 + SHATTERING
-#define LAST_PROP					(DIMENSION_LOCK)
+#define WALKING_NIGHTMARE			1 + DIMENSION_LOCK
+#define LAST_PROP					(WALKING_NIGHTMARE)
 
 #define MPROP_SIZE					(LAST_PROP/32 + 1)
 
@@ -166,6 +167,7 @@ struct prop {
 #	define W_SPIRIT		0x00800000L	/* Bound spirit */
 #	define W_GLYPH		0x01000000L	/* Active thought-glyph */
 #	define W_SKIN		I_SPECIAL	/* merged into skin */
+#	define W_WORN	     (W_ARMOR | W_AMUL | W_RING | W_TOOL)
 
 	/*** Property is blocked by an object ***/
 	long blocked;					/* Same assignments as extrinsic */

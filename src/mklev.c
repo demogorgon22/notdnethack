@@ -327,7 +327,7 @@ boolean nxcor;
 			return;
 
 		// add the door
-		if (okdoor(xx, yy) || !nxcor)
+		if (okdoor(xx, yy))
 		{
 			dodoor(xx, yy, croom);
 			add_door(xx, yy, troom);
@@ -342,7 +342,7 @@ boolean nxcor;
 	if (IS_WALL(levl[xx + dx][yy + dy].typ) || IS_ROOM(levl[xx + dx][yy + dy].typ))	// prevent trying to open corridors into adjacent rooms
 		return;
 
-	if (okdoor(xx,yy) || !nxcor)
+	if (okdoor(xx,yy))
 	    dodoor(xx,yy,croom);
 
 	org.x  = xx+dx; org.y  = yy+dy;
@@ -353,7 +353,7 @@ boolean nxcor;
 	    return;
 
 	/* we succeeded in digging the corridor */
-	if (okdoor(tt.x, tt.y) || !nxcor)
+	if (okdoor(tt.x, tt.y))
 	    dodoor(tt.x, tt.y, troom);
 
 	if(smeq[a] < smeq[b])
@@ -669,6 +669,30 @@ register int type;
 	}
 
 	add_door(x,y,aroom);
+}
+
+void
+add_altar(x, y, alignment, shrine, godnum)
+int x, y;
+aligntyp alignment;
+boolean shrine;
+int godnum;
+{
+	if (altarindex == ALTARMAX) {
+		impossible("Max altar reached!");
+	    return;
+	}
+
+	levl[x][y].typ = ALTAR;
+	levl[x][y].altar_num = altarindex;
+
+	altars[altarindex].x = x;
+	altars[altarindex].y = y;
+	altars[altarindex].align = alignment;
+	altars[altarindex].shrine = shrine;
+	altars[altarindex].god = godnum;
+
+	altarindex++;
 }
 
 STATIC_OVL boolean
@@ -987,6 +1011,7 @@ clear_level_structures()
 	nsubroom = 0;
 	subrooms[0].hx = -1;
 	doorindex = 0;
+	altarindex = 0;
 	init_rect();
 	init_vault();
 	xdnstair = ydnstair = xupstair = yupstair = 0;
@@ -1989,11 +2014,9 @@ struct mkroom *croom;
 		if (croom && croom->rtype != OROOM && croom->rtype != JOINEDROOM)
 			return FALSE;
 		/* Put an altar at m.x, m.y */
-		levl[m.x][m.y].typ = ALTAR;
-
 		/* -1 - A_CHAOTIC, 0 - A_NEUTRAL, 1 - A_LAWFUL */
 		tmp = (Inhell ? A_NONE : rn2(3)-1);
-		levl[m.x][m.y].altarmask = Align2amask(tmp);
+		add_altar(m.x, m.y, tmp, FALSE, GOD_NONE);
 		break;
 	case PUDDLE:
 		tmp = 0;	// number of puddles made
@@ -2261,6 +2284,7 @@ xchar x, y;
 	/* Adjust source to be current level and re-insert branch. */
 	*source = u.uz;
 	insert_branch(br, TRUE);
+	u.uevent.knoxmade = TRUE;
 
 #ifdef DEBUG
 	pline("Made knox portal.");

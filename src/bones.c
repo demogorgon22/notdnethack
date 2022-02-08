@@ -72,6 +72,11 @@ boolean restore;
 
 		if (restore && get_ox(otmp, OX_ENAM))
 			sanitize_name(ONAME(otmp));
+
+		if (!restore && otmp->oartifact > NROFARTIFACTS) {
+			/* randarts get cleared in bonesfiles */
+			otmp->oartifact = 0;
+		}
 		
 		if (((otmp->otyp != CORPSE || otmp->corpsenm < SPECIAL_PM)
 			&& otmp->otyp != STATUE)
@@ -306,6 +311,9 @@ int y;
 		} else if(u.thoughts & BEASTS_EMBRACE){
 			u.thoughts &= ~BEASTS_EMBRACE;
 			otmp = mksobj(BEAST_S_EMBRACE_GLYPH, MKOBJ_NOINIT);
+		} else if(u.thoughts & SIGHT){
+			u.thoughts &= ~SIGHT;
+			otmp = mksobj(ORRERY_GLYPH, MKOBJ_NOINIT);
 		} else {
 			pline("Can't find glyph!");
 		}

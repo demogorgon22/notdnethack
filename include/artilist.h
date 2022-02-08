@@ -1,6 +1,10 @@
-/*	SCCS Id: @(#)artilist.c 3.4	2003/02/12	*/
+/*	SCCS Id: @(#)artilist.h 3.4	2003/02/12	*/
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
+
+#ifndef ARTILIST_H
+#define ARTILIST_H
+
 #include "macromagic.h"
 /* we need to set these *before* makedefs.c or else it won't be getting the right number of arguments */
 #define PROPS(...) {FIRST_EIGHT(dummy, ##__VA_ARGS__, 0,0,0,0,0,0,0,0)}
@@ -45,8 +49,8 @@ static const char *artifact_names[] = {
 	 wpr, wfl, \
 	 cpr, cfl, \
 	 inv, ifl }
-
-NEARDATA struct artifact artilist[] = {
+//struct artifact * artilist;
+NEARDATA const struct artifact base_artilist[] = {
 #endif	/* MAKEDEFS_C */
 
 /* Artifact cost rationale:
@@ -178,7 +182,7 @@ A("Sting",				ELVEN_DAGGER,					(const char *)0,
 A("Grimtooth",			ORCISH_DAGGER,					(const char *)0,
 	300L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, PM_ORC, TIER_D, (ARTG_NAME),
-	MONS(vsMA(MA_ELF | MA_HUMAN | MA_DWARF | MA_MINION)),
+	MONS(vsMA(MA_ELF | MA_HUMAN | MA_DWARF)),
 	ATTK(AD_PHYS, 5, 0), (ARTA_HATES),
 	PROPS(), NOFLAG,
 	PROPS(WARN_OF_MON), NOFLAG,
@@ -555,7 +559,7 @@ A("Frost Brand",		LONG_SWORD,						"ice-runed %s",
 	ATTK(AD_COLD, 1, 0), NOFLAG,
 	PROPS(COLD_RES), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, NOFLAG
+	NOINVOKE, (ARTI_PLUSSEV)
 	),
 A("Fire Brand",			LONG_SWORD,						"ember-runed %s",
 	3000L, OBSIDIAN_MT, MZ_DEFAULT, WT_DEFAULT,
@@ -564,7 +568,7 @@ A("Fire Brand",			LONG_SWORD,						"ember-runed %s",
 	ATTK(AD_FIRE, 1, 0), NOFLAG,
 	PROPS(FIRE_RES), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, NOFLAG
+	NOINVOKE, (ARTI_PLUSSEV)
 	),
 
 A("The Green Dragon Crescent Blade",		NAGINATA,	(const char *)0,
@@ -614,7 +618,7 @@ A("Windrider",			BOOMERANG,						"winged %s",
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, NON_PM, TIER_C, NOFLAG,
 	NO_MONS(),
-	ATTK(AD_PHYS, 1, 0), NOFLAG,
+	ATTK(AD_PHYS, 1, 0), ARTA_RETURNING,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
@@ -916,6 +920,17 @@ A("Callandor",			CRYSTAL_SWORD,					(const char *)0,
 	),
 
 /*Needs encyc entry*/
+A("The Unstoppable",	CROSSBOW,						(const char *)0,
+	3000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, NON_PM, NON_PM, TIER_B, (ARTG_GIFT),
+	NO_MONS(),
+	ATTK(AD_PHYS, 12, 8), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+/*Needs encyc entry*/
 A("Yoichi no yumi",		YUMI,							(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, NON_PM, NON_PM, TIER_B, (ARTG_GIFT),
@@ -1057,10 +1072,10 @@ A("Aegis",							ROUNDSHIELD,		"gorgon-emblemed %s",
 A("The Shield of the All-Seeing",	ORCISH_SHIELD,		(const char *)0,
 	3000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, PM_ORC, TIER_D, NOFLAG,
-	MONS(vsMA(MA_ELF)),
+	MONS(vsMA(MA_ELF | MA_MINION)),
 	NO_ATTK(), NOFLAG,
-	PROPS(SEARCHING, WARN_OF_MON, FIRE_RES, SEE_INVIS), (ARTP_SEEK),
-	PROPS(), NOFLAG,
+	PROPS(SEARCHING, FIRE_RES, SEE_INVIS), (ARTP_SEEK),
+	PROPS(WARN_OF_MON), NOFLAG,
 	ALLSIGHT, (ARTI_PLUSSEV)	/* needs message for invoke */
 	),
 
@@ -1249,7 +1264,7 @@ A("The Wallet of Perseus",			BAG_OF_HOLDING,			(const char *)0,
 /*//////////Law Quest Artifacts//////////*/
 
 A("The Rod of Seven Parts",			SPEAR,					(const char *)0,
-	7777L, METAL, MZ_DEFAULT, WT_DEFAULT,
+	7777L, PLATINUM, MZ_DEFAULT, 25 /*wt spear*/,
 	A_LAWFUL, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_INHER),
 	NO_MONS(),
 	ATTK(AD_PHYS, 7, 20), (ARTA_HATES|ARTA_CROSSA),
@@ -1458,7 +1473,7 @@ A("The Mirrored Mask",				MASK,					(const char *)0,
 	A_NEUTRAL, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH),
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
-	PROPS(), NOFLAG,
+	PROPS(REFLECTING, HALF_SPDAM), NOFLAG,
 	PROPS(), NOFLAG,
 	CAPTURE_REFLECTION, NOFLAG
 	),
@@ -1666,6 +1681,46 @@ A("Poseidon's Trident",				TRIDENT,				(const char *)0,
 	WATER, NOFLAG
 	),
 
+A("The Sickle of Thunderblasts",				SICKLE,				(const char *)0,
+	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_MADMAN, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 1, 0), ARTA_SONICX|ARTA_RETURNING,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("The War-helm of the Dreaming",		FACELESS_HELM,		"bird-like bone faceless helm",
+	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_MADMAN, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(MAGICAL_BREATHING, WALKING_NIGHTMARE), NOFLAG,
+	PROPS(), NOFLAG,
+	ENERGY_BOOST, NOFLAG
+	),
+
+A("The Spear of Peace",				SPEAR,				(const char *)0,
+	1500L, WOOD, MZ_DEFAULT, WT_DEFAULT,
+	A_CHAOTIC, PM_MADMAN, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(CLEAR_THOUGHTS, BLOCK_CONFUSION, HALLUC_RES, HALF_PHDAM, HALF_SPDAM), NOFLAG,
+	PROPS(), NOFLAG,
+	INVULNERABILITY, NOFLAG
+	),
+
+A("The Ibite arm",				CLUB,				"flabby green arm",
+	4500L, FLESH, MZ_GIGANTIC, WT_DEFAULT,
+	A_NONE, PM_MADMAN, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_FXALGN),
+	NO_MONS(),
+	ATTK(AD_ACID, 20, 0), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	IBITE_ARM, NOFLAG
+	),
+
 A("The Eye of the Oracle",			EYEBALL,				(const char *)0,
 	500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
@@ -1711,7 +1766,7 @@ A("Amhimitl",						JAVELIN,				(const char *)0,
 	3000L, BONE, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, PM_ARCHEOLOGIST, NON_PM, TIER_D, (ARTG_NOGEN|ARTG_NOWISH|ARTG_FXALGN),
 	NO_MONS(),
-	ATTK(AD_FIRE, 5, 8), NOFLAG,
+	ATTK(AD_FIRE, 5, 8), ARTA_RETURNING,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
@@ -1763,7 +1818,7 @@ A("The Annulus",					CHAKRAM,			"intricately-featured %s",
 	3000L, SILVER, MZ_DEFAULT, WT_SPECIAL,
 	A_CHAOTIC, PM_ANACHRONONAUT, NON_PM, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
-	ATTK(AD_PHYS, 5, 1), NOFLAG,	/*Actually Phys(5,0) if not a lightsaber*/
+	ATTK(AD_PHYS, 5, 1), ARTA_RETURNING,	/*Actually Phys(5,0) if not a lightsaber*/
 	PROPS(), NOFLAG,
 	PROPS(ANTIMAGIC, HALF_SPDAM), NOFLAG,
 	ANNUL, NOFLAG
@@ -1980,7 +2035,7 @@ A("Sickle Moon",					ELVEN_SICKLE,				(const char *)0,
 	4000L, SILVER, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, NON_PM, NON_PM, TIER_B, (ARTG_NOWISH|ARTG_FXALGN),	/* may randomly generate */
 	NO_MONS(),
-	ATTK(AD_PHYS, 1, 0), NOFLAG,
+	ATTK(AD_PHYS, 1, 0), ARTA_RETURNING,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
@@ -2053,6 +2108,26 @@ A("The Eyes of the Overworld",		LENSES,				(const char *)0,
 	PROPS(BLIND_RES, XRAY_VISION), (ARTP_FORCESIGHT),
 	PROPS(ANTIMAGIC), NOFLAG,
 	ENLIGHTENING, NOFLAG
+	),
+
+A("Rite of Detestation",		SCR_BLANK_PAPER,	"water-damaged scroll",
+	2500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NONE, PM_MADMAN, NON_PM, TIER_F, (ARTG_NOGEN|ARTG_NOWISH),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	DETESTATION, NOFLAG
+	),
+
+A("Idol of Bokrug, the water-lizard",		STATUE,	"sea-green stone likeness of a water-lizard",
+	2500L, MINERAL, MZ_DEFAULT, WT_DEFAULT,
+	A_NONE, PM_MADMAN, NON_PM, TIER_F, (ARTG_NOGEN|ARTG_NOWISH),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
 	),
 
 A("The Star of Hypernotus",		AMULET_VERSUS_CURSES,	"blue-green star-shaped stone",
@@ -3365,7 +3440,7 @@ A("The Khakkhara of the Monkey",		KHAKKHARA,		(const char *)0,
 	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, PM_MONK, NON_PM, NO_TIER, (ARTG_NOGEN|ARTG_NOWISH),
 	NO_MONS(),
-	NO_ATTK(), NOFLAG,
+	NO_ATTK(), ARTA_RETURNING,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
@@ -3434,7 +3509,7 @@ A("The Dart of the Assassin",			DART,			(const char *)0,
 	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, PM_ROGUE, NON_PM, NO_TIER, (ARTG_NOGEN|ARTG_NOWISH),
 	NO_MONS(),
-	NO_ATTK(), NOFLAG,
+	NO_ATTK(), ARTA_RETURNING,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	SELF_POISON, NOFLAG
@@ -3705,7 +3780,6 @@ A((const char *)0,					STRANGE_OBJECT,		(const char *)0,
 
 #undef	A
 
-#ifndef MAKEDEFS_C
-#endif
+#endif /*ARTILIST_H*/
 
-/*artilist.c*/
+/*artilist.h*/

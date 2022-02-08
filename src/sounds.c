@@ -190,6 +190,19 @@ static const char *embracedAlider[] = {
 	"Why?"
 };
 
+static const char *freedAlider[] = {
+	"We fought valiently, but we were overrun by the forces of Ilsensine.",
+	"I have seen the flowers at the end of time.",
+	"Ilsensine controls the future, the whole universe is her body.",
+	"The Hero must have failed. We must use the Annulus against Ilsensine.",
+	"We must seek hope in the past. There is none left in the fading corpse of the future.",
+	"Ilsensine must be excised from the past.",
+	"Even the gods could not defeat Ilsensine. They failed and were consumed.",
+	"...I still hear the screams.",
+	"...Mother, Father, will I see you again?",
+	"Divine Mother, I am coming."
+};
+
 static const char *agonePrisoner[] = {
 	"Who am I?",
 	"Where am I?",
@@ -761,6 +774,7 @@ boolean chatting;
 			*verbl_msg = 0;	/* verbalize() */
 	struct permonst *ptr = mtmp->data;
 	char verbuf[BUFSZ];
+	char msgbuff[BUFSZ];
 	char class_list[MAXOCLASSES+2];
 
 	if(mtmp && noactions(mtmp)){
@@ -805,6 +819,7 @@ boolean chatting;
 	if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 2 && ptr->msound != MS_SONG && 
 		ptr->msound != MS_INTONE && ptr->msound != MS_FLOWER && ptr->msound != MS_OONA
 	) map_invisible(mtmp->mx, mtmp->my);
+	mtmp->mnoise = TRUE;
 	
 	if(mtmp->ispriest){
 		priest_talk(mtmp);
@@ -835,6 +850,7 @@ boolean chatting;
 		mtmp->ispriest ? MS_PRIEST : 
 		mtmp->isshk ? MS_SELL : 
 		(mtmp->mtyp == PM_RHYMER && !mtmp->mspec_used) ? MS_SONG : 
+		mtmp->mfaction == QUEST_FACTION ? MS_GUARDIAN : 
 		ptr->msound
 	) {
 	case MS_TATTOO:{
@@ -1589,16 +1605,21 @@ asGuardian:
 				case 2:
 					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s sings a resonant note.", Monnam(mtmp));
 					else pline("%s sings a harmless song of ruin.", Monnam(mtmp));
-					ix = rn2(COLNO);
-					iy = rn2(ROWNO);
+					int trycount;
 					for(i = rnd(5); i > 0; i--){
-						if(isok(ix,iy) && !(ix == u.ux && iy == u.uy)){
-							ttmp = t_at(ix, iy);
-							if(levl[ix][iy].typ <= SCORR || levl[ix][iy].typ == CORR || levl[ix][iy].typ == ROOM){
-								levl[ix][iy].typ = CORR;
-								if(!does_block(ix,iy,&levl[ix][iy])) unblock_point(ix,iy);	/* vision:  can see through */
-								if(ttmp) delfloortrap(ttmp);
-								levl[ix][iy].typ = CORR;
+						trycount = 500;
+						while(trycount-- > 0){
+							ix = rn2(COLNO);
+							iy = rn2(ROWNO);
+							if(isok(ix,iy) && !(ix == u.ux && iy == u.uy)){
+								ttmp = t_at(ix, iy);
+								if((levl[ix][iy].typ <= SCORR || levl[ix][iy].typ == CORR || levl[ix][iy].typ == ROOM) && levl[ix][iy].typ != STONE){
+									levl[ix][iy].typ = CORR;
+									if(!does_block(ix,iy,&levl[ix][iy])) unblock_point(ix,iy);	/* vision:  can see through */
+									if(ttmp) delfloortrap(ttmp);
+									levl[ix][iy].typ = CORR;
+									trycount = 0;
+								}
 							}
 						}
 					}
@@ -1661,7 +1682,7 @@ asGuardian:
 		} else if(!(mtmp->mspec_used) || mtmp->mtyp == PM_INTONER){
 			switch(rnd(3)){
 				case 1:
-					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !u.uinvulnerable){
+					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !Invulnerable){
 						inrange=TRUE;
 					} else for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
@@ -1702,7 +1723,7 @@ asGuardian:
 							}
 						}
 					}
-					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !u.uinvulnerable){
+					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !Invulnerable){
 						if(u.uencouraged < BASE_DOG_ENCOURAGED_MAX) 
 							u.uencouraged = min_ints(BASE_DOG_ENCOURAGED_MAX, u.uencouraged + rnd(mtmp->m_lev/3+1));
 						You_feel("%s!", u.uencouraged >= BASE_DOG_ENCOURAGED_MAX ? "berserk" : "wild");
@@ -1712,7 +1733,7 @@ asGuardian:
 					}
 				break;
 				case 2:
-					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !u.uinvulnerable){
+					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !Invulnerable){
 						inrange=TRUE;
 					} else for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
@@ -1764,7 +1785,7 @@ asGuardian:
 							}
 						}
 					}
-					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !u.uinvulnerable){
+					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !Invulnerable){
 						healup(u.ulevel, 0, FALSE, FALSE);
 						use_unicorn_horn((struct obj *)0);
 					}
@@ -1773,7 +1794,7 @@ asGuardian:
 					}
 				break;
 				case 3:
-					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && u.uhp < u.uhpmax && !u.uinvulnerable){
+					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && u.uhp < u.uhpmax && !Invulnerable){
 						inrange=TRUE;
 					} else for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
@@ -1786,7 +1807,7 @@ asGuardian:
 					}
 					
 					if(!inrange) break;
-					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5 && !u.uinvulnerable)
+					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5 && !Invulnerable)
 						map_invisible(mtmp->mx, mtmp->my);
 					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s laughs frantically.", Monnam(mtmp));
 					else pline("%s sings a song of haste.", Monnam(mtmp));
@@ -1804,7 +1825,7 @@ asGuardian:
 							}
 						}
 					}
-					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !u.uinvulnerable){
+					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !Invulnerable){
 						pline("That puts a spring in your step.");
 						youmonst.movement += 12;
 						if(Wounded_legs)
@@ -1829,7 +1850,7 @@ asGuardian:
 		if(!(mtmp->mspec_used)){
 			switch(rnd(3)){
 				case 1:
-					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !u.uinvulnerable){
+					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !Invulnerable){
 						inrange=TRUE;
 					} else for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
@@ -1891,7 +1912,7 @@ asGuardian:
 							}
 						}
 					}
-					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !u.uinvulnerable){
+					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !Invulnerable){
 						dmg = 0;
 						switch(u.oonaenergy){
 							case AD_FIRE:
@@ -1915,7 +1936,7 @@ asGuardian:
 					}
 				break;
 				case 2:
-					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !u.uinvulnerable){
+					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !Invulnerable){
 						inrange=TRUE;
 					} else for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
@@ -1955,7 +1976,7 @@ asGuardian:
 							}
 						}
 					}
-					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !u.uinvulnerable){
+					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !Invulnerable){
 						if(u.uencouraged > -1*BASE_DOG_ENCOURAGED_MAX) 
 							u.uencouraged = max_ints(-1*BASE_DOG_ENCOURAGED_MAX, u.uencouraged - rnd(mtmp->m_lev/3+1));
 						You_feel("%s!", u.uencouraged <= -1*BASE_DOG_ENCOURAGED_MAX ? "inconsolable" : "depressed");
@@ -1965,7 +1986,7 @@ asGuardian:
 					}
 				break;
 				case 3:
-					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !u.uinvulnerable){
+					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !Invulnerable){
 						inrange=TRUE;
 					} else for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
@@ -1995,7 +2016,7 @@ asGuardian:
 							}
 						}
 					}
-					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !u.uinvulnerable){
+					if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 4 && !Invulnerable){
 						pline("Your body feels leaden!");
 						youmonst.movement -= 12;
 						if ((HFast & TIMEOUT_INF)) {
@@ -2117,7 +2138,7 @@ asGuardian:
 				|| Sick
 				|| Slimed
 				|| u.thoughts
-				|| (count_glyphs() < 3 && !u.render_thought)
+				|| (count_glyphs() < MAX_GLYPHS && !u.render_thought)
 			 )
 			){
 				if(render_services(mtmp))
@@ -2132,6 +2153,8 @@ asGuardian:
 			if(mtmp->mtame){
 				pline("%s whispers dire secrets, filling you with zeal.", Monnam(mtmp));
 				u.uencouraged = min_ints(Insanity/5+1, u.uencouraged+rnd(Insanity/5+1));
+				exercise(A_INT, TRUE);
+				exercise(A_WIS, TRUE);
 			} else if(!mtmp->mpeaceful){
 				aggravate();
 			}
@@ -2162,6 +2185,8 @@ asGuardian:
 			verbl_msg = woePrisoners[rn2(SIZE(woePrisoners))];
 		} else if (ptr->mtyp == PM_EMBRACED_DROWESS) {
 			verbl_msg = embracedPrisoners[rn2(SIZE(embracedPrisoners))];
+		} else if (ptr->mtyp == PM_PARASITIZED_EMBRACED_ALIDER) {
+			verbl_msg = embracedAlider[rn2(SIZE(embracedAlider))];
 	    } else if(ptr->mtyp == PM_A_GONE) verbl_msg = agonePrisoner[rn2(SIZE(agonePrisoner))];
 	    else if(ptr->mtyp == PM_MINDLESS_THRALL) verbl_msg = thrallPrisoners[rn2(SIZE(thrallPrisoners))];
 	    else if(ptr->mtyp == PM_PARASITIZED_ANDROID || ptr->mtyp == PM_PARASITIZED_GYNOID) verbl_msg = parasitizedDroid[rn2(SIZE(parasitizedDroid))];
@@ -2192,34 +2217,7 @@ asGuardian:
 	    /* else FALLTHRU */
 	case MS_HUMANOID:
 humanoid_sound:
-		if(Role_if(PM_NOBLEMAN) && 
-			(mtmp->mtyp == PM_KNIGHT 
-				|| mtmp->mtyp == PM_MAID) && 
-			mtmp->mpeaceful
-		) goto asGuardian; /* Jump up to a different case in this switch statment */
-		else if(Role_if(PM_KNIGHT) && 
-			mtmp->mtyp == PM_KNIGHT && 
-			mtmp->mpeaceful
-		) goto asGuardian; /* Jump up to a different case in this switch statment */
-		else if(Role_if(PM_ANACHRONONAUT) && !Race_if(PM_ANDROID) &&
-			(mtmp->mtyp == PM_MYRKALFAR_WARRIOR 
-				|| mtmp->mtyp == PM_MYRKALFAR_MATRON 
-				|| mtmp->mtyp == PM_ALIDER) && 
-			mtmp->mpeaceful
-		) goto asGuardian; /* Jump up to a different case in this switch statment */
-		else if(Race_if(PM_DROW) && 
-			is_drow(mtmp->data) && 
-			mtmp->mfaction == u.uhouse &&
-			mtmp->mpeaceful
-		) goto asGuardian; /* Jump up to a different case in this switch statment */
-		else if(Role_if(PM_EXILE) && 
-			mtmp->mtyp == PM_PEASANT && 
-			mtmp->mpeaceful
-		) goto asGuardian; /* Jump up to a different case in this switch statment */
-		else if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && (mtmp->mtyp == PM_GNOME || mtmp->mtyp == PM_GNOME_LORD || mtmp->mtyp == PM_GNOME_KING
-			|| mtmp->mtyp == PM_TINKER_GNOME || mtmp->mtyp == PM_GNOMISH_WIZARD) && mtmp->mpeaceful
-		) goto asGuardian; /* Jump up to a different case in this switch statment */
-		else if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && mtmp->mtyp == PM_RUGGO_THE_GNOME_HIGH_KING){
+		if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && mtmp->mtyp == PM_RUGGO_THE_GNOME_HIGH_KING){
 			verbl_msg = "Ah, comrade!  It is good you are here.  I've hidden the angel behind my throne.";
 			break;
 		}
@@ -2309,44 +2307,105 @@ humanoid_sound:
 				doname(comp), (const char *)0);
 			break;
 		}
-	    else if (is_elf(ptr))
-		pline_msg = "curses orcs.";
-	    else if (is_drow(ptr))
-		pline_msg = "curses the pale surface freaks.";
-	    else if (is_dwarf(ptr))
-		pline_msg = "talks about mining.";
-	    else if (likes_magic(ptr))
-		pline_msg = "talks about spellcraft.";
-	    else if (ptr->mlet == S_CENTAUR)
-		pline_msg = "discusses hunting.";
-	    else switch (monsndx(ptr)) {
-		case PM_HOBBIT:
-		    pline_msg = (mtmp->mhpmax - mtmp->mhp >= 10) ?
-				"complains about unpleasant dungeon conditions."
-				: "asks you about the One Ring.";
-		    break;
-		case PM_ARCHEOLOGIST:
-    pline_msg = "describes a recent article in \"Spelunker Today\" magazine.";
-		    break;
-#ifdef TOURIST
-		case PM_TOURIST:
-		    verbl_msg = "Aloha.";
-		    break;
-#endif
-		case PM_LADY_CONSTANCE:
-		    verbl_msg = "There's a strange woman in the observation ward. She's asking for you....";
-		    break;
-		default:
-			if(Role_if(PM_RANGER) && Race_if(PM_GNOME) &&
-				mtmp->mtyp == PM_ARCADIAN_AVENGER && 
-				mtmp->m_id == quest_status.leader_m_id
-			) goto asGuardian; /* Jump up to a different case in this switch statment */
-			
-			if((Role_if(PM_NOBLEMAN) || Role_if(PM_KNIGHT)) && In_quest(&u.uz)){
-				if(Race_if(PM_DWARF)) pline_msg = "talks about fishing.";
-				else pline_msg = "talks about farming.";
-			} else pline_msg = "discusses dungeon exploration.";
-		    break;
+	    else{
+			const char *talkabt = "talks about %s.";
+			const char *discuss = "discusses %s.";
+			switch (monsndx(ptr)) {
+				case PM_VALAVI:
+					Sprintf(msgbuff, talkabt, rn2(2) ? "herding" : rn2(2) ? "carpentry" : rn2(10) ? "pottery" : "delicious sawdust recipes");
+					pline_msg = msgbuff;
+				break;
+				case PM_DRACAE_ELADRIN:
+				case PM_MOTHERING_MASS:
+					Sprintf(msgbuff, talkabt, rn2(10) ? "babies" : "stars distant and strange");
+					pline_msg = msgbuff;
+				break;
+				case PM_HOBBIT:
+					pline_msg = (mtmp->mhpmax - mtmp->mhp >= 10) ?
+						"complains about unpleasant dungeon conditions."
+						: "asks you about the One Ring.";
+				break;
+				case PM_DWARF:
+				case PM_DWARF_LORD:
+					Sprintf(msgbuff, talkabt, !rn2(4) ? "mining" : !rn2(3) ? "prospecting" : rn2(2) ? "metalwork" : "beer");
+					pline_msg = msgbuff;
+				break;
+				case PM_YURIAN:
+					Sprintf(msgbuff, talkabt, "sea gardening");
+					pline_msg = msgbuff;
+				break;
+				case PM_COURE_ELADRIN:
+					Sprintf(msgbuff, talkabt, !rn2(4) ? "flowers" : !rn2(3) ? "green grass" : rn2(2) ? "whimsical things" : "the colors of the stars");
+					pline_msg = msgbuff;
+				break;
+				case PM_NOVIERE_ELADRIN:
+					Sprintf(msgbuff, talkabt, !rn2(3) ? "sudden storms" : !rn2(2) ? "whirlpools" : rn2(10) ? "starlight on the water" : "the secret and forgotten depths");
+					pline_msg = msgbuff;
+				break;
+				case PM_BRALANI_ELADRIN:
+					Sprintf(msgbuff, talkabt, !rn2(4) ? "sudden storms" : !rn2(3) ? "wandering on the gasping dust" : rn2(2) ? "desert flowers" : rn2(10) ? "the stars over the desert sands" : "secret and forgotten ruins");
+					pline_msg = msgbuff;
+				break;
+				case PM_FIRRE_ELADRIN:
+					Sprintf(msgbuff, talkabt, !rn2(4) ? "campfire stories" : !rn2(3) ? "fire and light" : !rn2(2) ? "pyromantic augury" : rn2(10) ? "the stars through the flames" : "secret and forgotten stories");
+					pline_msg = msgbuff;
+				break;
+				case PM_GAE_ELADRIN:
+					Sprintf(msgbuff, talkabt, !rn2(4) ? "birth and death" : !rn2(3) ? "the changing seasons of life" : rn2(10) ? (!rn2(4) ? "the stars beyond the rains of spring" : !rn2(3) ? "the stars above the green summer canopy" : !rn2(4) ? "stars among the autumn leaves" : "stars seen past the barren branches") : "secret rebirths");
+					pline_msg = msgbuff;
+				break;
+				case PM_FORMIAN_CRUSHER:
+				case PM_FORMIAN_TASKMASTER:
+					pline_msg = "chitters.";
+				break;
+				case PM_ARCHEOLOGIST:
+					pline_msg = "describes a recent article in \"Spelunker Today\" magazine.";
+				break;
+				case PM_TOURIST:
+					verbl_msg = "Aloha.";
+				break;
+				case PM_LADY_CONSTANCE:
+					if(!u.uevent.qcompleted)
+						verbl_msg = "There's a strange woman in the observation ward. She's asking for you....";
+					else {
+						if(!rn2(2)){
+							Sprintf(msgbuff, discuss, !rn2(5) ? "Fiore's dagger techniques" : !rn2(4) ? "mentalism" : !rn2(3) ? "theosophy" : rn2(2) ? "the occult" : "your recent dreams");
+						}
+						else {
+							Sprintf(msgbuff, talkabt, !rn2(5) ? "ley lines" : !rn2(4) ? "tectonophysics" : !rn2(3) ? "special relativity" : !rn2(2) ? "archaeology" : rn2(5) ? "the collective unconscious" : rn2(10) ? "her recurring dreams" : "her darkest nightmares");
+						}
+						pline_msg = msgbuff;
+					}
+				break;
+				case PM_ALIDER:
+					if(Race_if(PM_ANDROID))
+						verbl_msg = freedAlider[rn2(SIZE(freedAlider))];
+				break;
+				default:
+					if(Role_if(PM_RANGER) && Race_if(PM_GNOME) &&
+						mtmp->mtyp == PM_ARCADIAN_AVENGER && 
+						mtmp->m_id == quest_status.leader_m_id
+					) goto asGuardian; /* Jump up to a different case in this switch statment */
+					
+					if((Role_if(PM_NOBLEMAN) || Role_if(PM_KNIGHT)) && In_quest(&u.uz)){
+						if(Race_if(PM_DWARF)) pline_msg = "talks about fishing.";
+						else pline_msg = "talks about farming.";
+					}
+					else if (is_elf(ptr))
+					pline_msg = "curses orcs.";
+					else if (is_drow(ptr))
+					pline_msg = "curses the pale surface freaks.";
+					else if (is_dwarf(ptr))
+					pline_msg = "talks about mining.";
+					else if (likes_magic(ptr))
+					pline_msg = "talks about spellcraft.";
+					else if (ptr->mlet == S_CENTAUR)
+					pline_msg = "discusses hunting.";
+					else {
+						pline_msg = "discusses dungeon exploration.";
+					}
+				break;
+			}
 	    }
 	    break;
 	case MS_SEDUCE:
@@ -3118,7 +3177,7 @@ int dz;
 				do_earthquake(u.ux, u.uy, 10, 2, FALSE, (struct monst *)0);
 				optr = uwep;
 				uwepgone();
-				if(optr->gifted != GA_NONE && optr->gifted != GA_VOID){
+				if(optr->gifted != GOD_NONE && optr->gifted != GOD_THE_VOID){
 					gods_angry(optr->gifted);
 					gods_upset(optr->gifted);
 				}
@@ -3142,7 +3201,7 @@ int dz;
 	
 	if(mtmp && mtmp->data->msound == MS_GLYPHS){
 		if(uwep && offerable_artifact(uwep)
-			&& count_glyphs() < 3 && !(u.thoughts & mtyp_to_thought(mtmp->mtyp))
+			&& count_glyphs() < MAX_GLYPHS && !(u.thoughts & mtyp_to_thought(mtmp->mtyp))
 		){
 			struct obj *optr;
 			if(canspotmon(mtmp)){
@@ -3163,7 +3222,7 @@ int dz;
 
 				optr = uwep;
 				uwepgone();
-				if(optr->gifted != GA_NONE && optr->gifted != GA_VOID){
+				if(optr->gifted != GOD_NONE && optr->gifted != GOD_THE_VOID){
 					gods_angry(optr->gifted);
 					gods_upset(optr->gifted);
 				}
@@ -3339,6 +3398,13 @@ int dz;
 			pline("%s seems not to notice you.", Monnam(mtmp));
 		return(0);
     }
+    if (is_deaf(mtmp) && !mtmp->mcansee) {
+		/* If it is unseen, the player can't tell the difference between
+		   not noticing him and just not existing, so skip the message. */
+		if (canspotmon(mtmp))
+			pline("%s seems not to notice you.", Monnam(mtmp));
+		return(0);
+    }
     /* sleeping monsters won't talk unless they wake up, except priests (who wake up) */
 	if (mtmp->msleeping){
 		if(mtmp->ispriest || !rn2(2)) {
@@ -3380,12 +3446,19 @@ int dz;
 		mtmp->mhp = mtmp->mhpmax;
 		return 1;
 	}
+	if(mtmp->mtyp == PM_LADY_CONSTANCE && !mtmp->mtame && mtmp->mpeaceful && Role_if(PM_MADMAN) && u.uevent.qcompleted){
+		verbalize("Let's get out of here!");
+		mtmp->mpeaceful = 1;
+		mtmp = tamedog(mtmp, (struct obj *)0);
+		if(mtmp && mtmp->mtame)
+			EDOG(mtmp)->loyal = TRUE;
+		return 1;
+	}
     /* That is IT. EVERYBODY OUT. You are DEAD SERIOUS. */
     if (mtmp->mtyp == PM_URANIUM_IMP) {
 		monflee(mtmp, rn1(20,10), TRUE, FALSE);
     }
-	
-#ifdef CONVICT
+
     if (Role_if(PM_CONVICT) && is_rat(mtmp->data) && !mtmp->mpeaceful &&
      !mtmp->mtame) {
         You("attempt to soothe the %s with chittering sounds.",
@@ -3403,7 +3476,7 @@ int dz;
         }
         return 0;
     }
-#endif /* CONVICT */
+
     return domonnoise(mtmp, TRUE);
 }
 
@@ -3607,7 +3680,7 @@ int tx,ty;
 //					struct monst *priest = findpriest(roomno);
 					//invoking Amon inside a temple angers the resident deity
 					altar_wrath(tx, ty);
-					angrygods(AltarAlign2gangr(a_align(tx,ty)));
+					angrygods(god_at_altar(tx, ty));
 				}
 				if(!Role_if(PM_ANACHRONOUNBINDER)) u.sealTimeout[AMON-FIRST_SEAL] = moves + bindingPeriod; // invoking amon on a level with an altar still triggers the binding period.
 			}
@@ -4821,9 +4894,9 @@ int tx,ty;
 						(void) adjattrib(A_WIS, -1, TRUE);
 						exercise(A_WIS, FALSE);
 						adjalign(-5);
-						u.ugangr[Align2gangr(u.ualign.type)] += 3;
+						godlist[u.ualign.god].anger += 3;
 						if (!Inhell) {
-							angrygods(Align2gangr(u.ualign.type));
+							angrygods(u.ualign.god);
 							change_luck(-5);
 						}
 					}
@@ -6538,7 +6611,7 @@ doblessmenu()
 			MENU_UNSELECTED);
 	}
 	incntlet++; //Advance anyway
-	if(uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep)) && !check_oprop(uwep, OPROP_HOLYW)){
+	if(uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep) || is_gloves(uwep)) && !check_oprop(uwep, OPROP_HOLYW)){
 		Sprintf(buf, "Sanctify your weapon");
 		any.a_int = SANCTIFY_WEP;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
@@ -6857,7 +6930,9 @@ dorendermenu()
 			MENU_UNSELECTED);
 	}
 	incntlet++; //Advance anyway
-	if(count_glyphs() < 3 && !u.render_thought){
+	//Pick out parasitic eggs
+	
+	if(count_glyphs() < MAX_GLYPHS && !u.render_thought){
 		Sprintf(buf, "Learn thought");
 		any.a_int = RENDER_THOUGHT;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,

@@ -233,7 +233,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		*tool = POT_EXTRA_HEALING;
 	break;
 	case PM_INCANTIFIER:
-		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz)){
+		if(Infuture){
 			*weapon = rn2(2) ? DOUBLE_LIGHTSABER : LIGHTSABER;
 			*rweapon = HAND_BLASTER;
 			*armor = !rn2(3) ? JUMPSUIT : 
@@ -353,7 +353,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 	break;
 	case PM_SAMURAI:
 		*weapon = KATANA;
-		*secweapon = SHORT_SWORD;
+		*secweapon = WAKIZASHI;
 		*rweapon = YUMI;
 		*rwammo = YA;
 		*helm = HELMET;
@@ -427,6 +427,11 @@ register boolean special;
 	register struct monst *mtmp;
 	char nam[PL_NSIZ];
 
+	//if ptr is null don't make a monster
+	if(!ptr)
+		return((struct monst *)0);
+
+
 	if(!is_mplayer(ptr))
 		return((struct monst *)0);
 
@@ -441,6 +446,12 @@ register boolean special;
 		int weapon, secweapon, rweapon, rwammo, armor, shirt, cloak, helm, boots, gloves, shield, tool;
 		
 		init_mplayer_gear(ptr, special, &weapon, &secweapon, &rweapon, &rwammo, &armor, &shirt, &cloak, &helm, &boots, &gloves, &shield, &tool);
+		
+		if(mtmp && ptr->mtyp == PM_INCANTIFIER && Infuture){
+			give_mintrinsic(mtmp, TELEPAT);
+			give_mintrinsic(mtmp, REGENERATION);
+			give_mintrinsic(mtmp, POISON_RES);
+		}
 		
 		if(special){
 			static int sweptyp[] = {

@@ -1256,6 +1256,7 @@ domove()
 		/* try to attack; note that it might evade */
 		/* also, we don't attack tame when _safepet_ */
 		else if (attack2(mtmp)){
+			u.uattked = TRUE;
 			if(uwep && is_lightsaber(uwep) && litsaber(uwep) && activeFightingForm(FFORM_ATARU)){
 				coord cc;
 				if(!u.utrap && tt_findadjacent(&cc, mtmp) && (cc.x != u.ux || cc.y != u.uy)){
@@ -1270,7 +1271,7 @@ domove()
 					teleds(cc.x, cc.y, FALSE);
 				}
 			}
-			if(!(mtmp->mpeaceful) && (!uwep || (!uswapwep && u.twoweap)) && u.umystic & FLICKER_PUNCH && u.uen >= 1){
+			if(!(mtmp->mpeaceful) && (!uwep || (!uswapwep && u.twoweap)) && u.umabil & FLICKER_PUNCH && u.uen >= 1){
 				coord cc;
 				if(!u.utrap && tt_findadjacent(&cc, mtmp) && (cc.x != u.ux || cc.y != u.uy)){
 					losepw(1);
@@ -1295,6 +1296,33 @@ domove()
 		    expl ? "explode at" : "attack",
 		    !Underwater ? "thin air" :
 		    is_pool(x,y, FALSE) ? "empty water" : buf);
+		{
+			struct attack attkbuff = {0};
+			struct attack *attk;
+			int i = 0;
+			int result = 0;
+			struct obj *otmp;
+			attk = mon_get_attacktype(&youmonst, AT_WEAP, &attkbuff);
+			otmp = uwep;
+			do{
+				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && otmp->otyp == CLUB && check_oprop(otmp, OPROP_CCLAW)){
+					result |= hit_with_cclaw(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
+					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
+					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
+				}
+				
+				attk = mon_get_attacktype(&youmonst, AT_XWEP, &attkbuff);
+				otmp = uswapwep;
+				i++;
+			} while(i < 2);
+		}
 		// unmap_object(x, y); /* known empty -- remove 'I' if present */
 		if (glyph_is_invisible(levl[x][y].glyph)) {
 			unmap_object(x, y);
@@ -1654,7 +1682,7 @@ domove()
 		     */
 		    if (rn2(4)) {
 			You_feel("guilty about losing your pet like this.");
-			if(!Role_if(PM_ANACHRONOUNBINDER)) u.ugangr[Align2gangr(u.ualign.type)]++;
+			if(!Role_if(PM_ANACHRONOUNBINDER)) godlist[u.ualign.god].anger++;
 			adjalign(-15);
 		    }
 
@@ -2129,8 +2157,13 @@ register boolean newlev;
 	    return;		/* no entrance messages necessary */
 
 	/* Did we just enter a shop? */
-	if (*u.ushops_entered)
-	    u_entered_shop(u.ushops_entered);
+	if (*u.ushops_entered) {
+		int i = 0;
+		while(u.ushops_entered[i]) {
+	    	u_entered_shop(&u.ushops_entered[i]);
+			i++;
+		}
+	}
 
 	for (ptr = &u.uentered[0]; *ptr; ptr++) {
 	    register int roomno = *ptr - ROOMOFFSET, rt = rooms[roomno].rtype;
@@ -2976,13 +3009,17 @@ boolean endnow;
 		return (struct obj *)0;
 	}
 
-	if (start && in_progress) {
-		impossible("all_items() called with start=TRUE while in progress!");
+	if (start == in_progress) {
+		if (start)
+			impossible("all_items() called with start=TRUE while in progress!");
+		else
+			impossible("all_items() called with start=FALSE while not started!");
 		return (struct obj *)0;
 	}
 
 	if (start) {
 		/* fresh start */
+		in_progress = TRUE;
 		curwhere = OBJ_FREE;
 		prevobj = (struct obj *)0;
 		curobj = (struct obj *)0;

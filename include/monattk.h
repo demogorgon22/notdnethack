@@ -49,6 +49,9 @@
 #define AT_MSPR		39	/* Phased non-contact attack, "spiritual rapier" (marilith offhand version) */
 #define AT_DSPR		40	/* Phased non-contact attack, "spiritual rapier" (million-arm mainhand version) */
 #define AT_ESPR		41	/* Phased non-contact attack, "spiritual rapier" (non-hand floating version) */
+#define AT_OBIT		42	/* "Other" bite. Medusa's hair, an ancient naga's canopy, and the ring armor's skirt */
+#define AT_WBIT		43	/* Wolf-head bite */
+#define AT_TAIL		44	/* Tail-slap */
 
 #define AT_WEAP		252	/* uses weapon */
 #define AT_XWEP		253	/* uses offhanded weapon */
@@ -232,11 +235,13 @@
 #define AD_PYCL     157 /* Fire, poison, phys, or blindness effects */
 #define AD_MOON     158 /* Silver moonlight rapier, depends on phase of moon */
 #define AD_LOKO		159 /*Lokoban prize loot*/
+#define AD_HOLY     160 /* Holy energy (MM-stype damage not resisted by MR and doubled against holy-haters)  */
+#define AD_UNHY     161 /* Unholy energy (MM-stype damage not resisted by MR and doubled against unholy-haters) */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	160
+#define AD_DUNSTAN	162
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3
@@ -288,5 +293,6 @@
 #define MM_AGR_DIED	0x04	/* aggressor died */
 #define MM_AGR_STOP 0x08	/* aggressor stopped attacking for some reason other than being fully dead */
 #define MM_DEF_LSVD 0x10	/* defender died and was lifesaved */
+#define MM_REFLECT	0x20	/* for projectiles: projectile was reflected. */
 
 #endif /* MONATTK_H */

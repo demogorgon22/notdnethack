@@ -129,8 +129,8 @@ OBJECT[50%]: '0', "heavy iron ball", random
 # Non diggable walls
 NON_DIGGABLE:(25,00,43,18)
 
-MAZE: "Mad-home",'T'
-FLAGS: hardfloor
+MAZE: "Mad-home",' '
+FLAGS:noteleport,hardfloor
 #INIT_MAP: ' ' , ' ' , false , true , lit , false
 MESSAGE:"You've reached the main observation level."
 GEOMETRY:center,center
@@ -164,6 +164,9 @@ ENDMAP
 # Stairs
 STAIR:(29,04),down
 STAIR:(39,14),up
+
+# Non diggable walls
+NON_DIGGABLE:(00,00,74,19)
 
 # Cassilda (real quest leader)
 MONSTER:'@',"Cassilda the Iron Maiden",(34,09)
@@ -344,7 +347,7 @@ LADDER:(48,09),up
 # Non diggable walls
 NON_DIGGABLE:(00,00,74,19)
 
-OBJECT:'`',"boulder",(15,16)
+OBJECT:'`',"boulder",(15,16) [skipcheck]
 
 #Shared offices
 OBJECT:'(',"writing desk",(31,01)
@@ -404,7 +407,39 @@ DOOR:closed,(43,02)
 #
 
 MAZE:"Mad-goal",' '
-FLAGS:hardfloor
+FLAGS:noteleport,hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7    7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0               CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC                     
+1               CAAAAAAAAAAAAAAAA-----AAAAAAAAAAAAAAAAAC                     
+2               CAAAAAAAAAAA------...------AAAAAAAAAAAAC                     
+3               CAAAAAAAAAAA|####+...+####|AAAAAAAAAAAAC                     
+4               CAAAAAAAAAAA|#|---...---|#|AAAAAAAAAAAAC                     
+5               CAAAAAAAAAAA|#|AA-----AA|#|AAAAAFFFFFAAC                     
+6               CAAAAAAAAA|--S-|AAAAAAA|-S--|AAFF...FFAC                     
+7               CAAAAAAAA-|....|-AAAAA-|....|-FF.....FFC                     
+8               CAAAAAAAA|......|AAAAA|......|F.......FC                     
+9               CAAAAAAAAF......|AAAAA|......S........FC                     
+0               CAAAAAAAA|......|AAAAA|......|F.......FC                     
+1               CAAAAAAAA-|....|-AAAAA-|....|-FF.....FFC                     
+2               CAAAAAAAAA|--S-|AAAAAAA|-S--|AAFF...FFAC                     
+3               CAAAAAAAAAAA|#|AA-----AA|#|AAAAAFFFFFAAC                     
+4               CAAAAAAAAAAA|#|---...---|#|AAAAAAAAAAAAC                     
+5               CAAAAAAAAAAA|####+...+####|AAAAAAAAAAAAC                     
+6               CAAAAAAAAAAA------...------AAAAAAAAAAAAC                     
+7               CAAAAAAAAAAAAAAAA-----AAAAAAAAAAAAAAAAAC                     
+8               CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC                     
+9                                                                            
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#          1         2         3         4         5         6         7    7
+RANDOM_PLACES:(34,03),(34,15)
+# 7 == your stuff
+OBJECT:'(',"box",place[0],uncursed,7
+OBJECT:'(',"box",place[1]
+
 GEOMETRY:center,center
 #          1         2         3         4         5         6         7    7
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -477,7 +512,7 @@ OBJECT[50%]:'(',"box",(33,02)
 OBJECT[50%]:'(',"box",(34,02)
 OBJECT[50%]:'(',"box",(35,02)
 OBJECT[50%]:'(',"box",(33,03)
-OBJECT[50%]:'(',"box",(34,03)
+
 OBJECT[50%]:'(',"box",(35,03)
 OBJECT[50%]:'(',"box",(33,04)
 OBJECT[50%]:'(',"box",(34,04)
@@ -487,7 +522,7 @@ OBJECT[50%]:'(',"box",(33,14)
 OBJECT[50%]:'(',"box",(34,14)
 OBJECT[50%]:'(',"box",(35,14)
 OBJECT[50%]:'(',"box",(33,15)
-OBJECT[50%]:'(',"box",(34,15)
+
 OBJECT[50%]:'(',"box",(35,15)
 OBJECT[50%]:'(',"box",(33,16)
 OBJECT[50%]:'(',"box",(34,16)
@@ -511,7 +546,7 @@ MONSTER:'@',"Doctor Archer",(49,09),hostile
 #
 
 MAZE:"Mad-fila",' '
-FLAGS:hardfloor
+FLAGS:noteleport,hardfloor
 
 GEOMETRY:center,center
 #          1         2         3         4         5         6         7    7
@@ -628,7 +663,7 @@ DOOR:closed,(28,15)
 DOOR:closed,(37,17)
 
 MAZE:"Mad-filb",' '
-FLAGS:hardfloor
+FLAGS:noteleport,hardfloor
 #INIT_MAP: ' ' , ' ', false, false, unlit, false
 
 GEOMETRY:center,center

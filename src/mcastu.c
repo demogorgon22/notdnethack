@@ -8,7 +8,7 @@
 extern void you_aggravate(struct monst *);
 
 STATIC_DCL int FDECL(choose_magic_spell, (int,int,boolean));
-STATIC_DCL int FDECL(choose_clerical_spell, (int,int,boolean));
+STATIC_DCL int FDECL(choose_clerical_spell, (int,int,boolean,boolean));
 STATIC_DCL int FDECL(choose_psionic_spell, (int,int,boolean));
 STATIC_DCL int FDECL(elemspell, (struct monst *, struct monst *, struct attack *, int, int));
 STATIC_DCL boolean FDECL(is_undirected_spell,(int));
@@ -259,93 +259,58 @@ boolean hostile;
 
 /* default spell selection for priests/monks */
 STATIC_OVL int
-choose_clerical_spell(spellnum,mid,hostile)
+choose_clerical_spell(spellnum,mid,hostile,quake)
 int spellnum;
 int mid;
 boolean hostile;
+boolean quake;
 {
-	/* Alternative spell lists: since the alternative lists contain spells that aren't
-		yet implemented for m vs m combat, non-hostile monsters always use the vanilla 
-		list. Alternate list slection is based on the monster's ID number, which is
+	/* Alternative spell lists:
+		Alternate list slection is based on the monster's ID number, which is
 		annotated as staying constant. Priests are divided up into constructive and
 		destructive casters (constructives favor heal self, destructives favor 
-		inflict wounds). Their spell list is divided into blocks. The order that
+		inflict wounds, constructives summon angels, destructives summon devils). 
+		Their spell list is divided into blocks. The order that
 		they recieve spells from each block is radomized based on their monster
 		ID.
 	*/
-	if(!hostile){
-     switch (spellnum % 18) {
-     case 17:
-       return PUNISH;
-     case 16:
-       return SUMMON_ANGEL;
-     case 14:
-       return PLAGUE;
-    case 13:
-       return ACID_RAIN;
-    case 12:
-	return GEYSER;
-    case 11:
-	return FIRE_PILLAR;
-    case 9:
-	return LIGHTNING;
-    case 8:
-       return DRAIN_LIFE;
-    case 7:
-       return CURSE_ITEMS;
-    case 6:
-       return INSECTS;
-    case 4:
-	return BLIND_YOU;
-    case 3:
-	return PARALYZE;
-    case 2:
-	return CONFUSE_YOU;
-    case 1:
-	return OPEN_WOUNDS;
-    case 0:
-    default:/*5,10,15,18+*/
-	return CURE_SELF;
-    }
-	}else{
-		 spellnum = spellnum % 18;
-		//case "17"
-		if(spellnum == ((mid/100+3)%4)+14) return PUNISH;
-		//case "16"
-		//case "15"
-		//Cure/Inflict
-		if(spellnum == ((mid/100+2)%4)+14) return (mid % 2) ? SUMMON_ANGEL : SUMMON_DEVIL;
-		//case "14"
-		if(spellnum == ((mid/100+0)%4)+14) return PLAGUE;
-		//case "13"
-		if(spellnum == ((mid+4)%5)+9) return EARTHQUAKE;
-		//case "12"
-		if(spellnum == ((mid+3)%5)+9) return ( (mid/11) % 2) ? GEYSER : ACID_RAIN;
-		//case "11"
-		if(spellnum == ((mid+2)%5)+9) return ( (mid/13) % 2) ? FIRE_PILLAR : ICE_STORM;
-		//case "10"
-		//Cure/Inflict
-		//case "9"
-		if(spellnum == ((mid+0)%5)+9) return LIGHTNING;
-		//case "8"
-		if(spellnum == ((mid/10+3)%4)+5) return DRAIN_LIFE;
-		//case "7"
-		if(spellnum == ((mid/10+2)%4)+5) return ( (mid/3) % 2) ? CURSE_ITEMS : EVIL_EYE;
-		//case "6"
-		if(spellnum == ((mid/10+1)%4)+5) return INSECTS;
-		//case "5"
-		//Cure/Inflict
-		//case "4"
-		if(spellnum == ((mid+2)%3)+2) return BLIND_YOU;
-		//case "3"
-		if(spellnum == ((mid+1)%3)+2) return PARALYZE;
-		//case "2"
-		if(spellnum == ((mid+0)%3)+2) return CONFUSE_YOU;
-		//case "1"
-		if(spellnum == ((mid+1)%2)+0) return ( (mid+1) % 2) ? CURE_SELF : OPEN_WOUNDS;
-		//case "0", "5", "10", "15", "18+"
-		return (mid % 2) ? CURE_SELF : OPEN_WOUNDS;
-	}
+	 spellnum = spellnum % 18;
+	//case "17"
+	if(spellnum == ((mid/100+3)%4)+14) return PUNISH;
+	//case "16"
+	if(spellnum == ((mid/100+2)%4)+14) return (mid % 2) ? SUMMON_ANGEL : SUMMON_DEVIL;
+	//case "15"
+	//Cure/Inflict
+	//case "14"
+	if(spellnum == ((mid/100+0)%4)+14) return PLAGUE;
+	//case "13"
+	if(spellnum == ((mid+4)%5)+9) return quake ? EARTHQUAKE : TREMOR;
+	//case "12"
+	if(spellnum == ((mid+3)%5)+9) return ( (mid/11) % 2) ? GEYSER : ACID_RAIN;
+	//case "11"
+	if(spellnum == ((mid+2)%5)+9) return ( (mid/13) % 2) ? FIRE_PILLAR : ICE_STORM;
+	//case "10"
+	//Cure/Inflict
+	//case "9"
+	if(spellnum == ((mid+0)%5)+9) return LIGHTNING;
+	//case "8"
+	if(spellnum == ((mid/10+3)%4)+5) return DRAIN_LIFE;
+	//case "7"
+	if(spellnum == ((mid/10+2)%4)+5) return ( (mid/3) % 2) ? CURSE_ITEMS : EVIL_EYE;
+	//case "6"
+	if(spellnum == ((mid/10+1)%4)+5) return INSECTS;
+	//case "5"
+	//Cure/Inflict
+	//case "4"
+	if(spellnum == ((mid+2)%3)+2) return BLIND_YOU;
+	//case "3"
+	if(spellnum == ((mid+1)%3)+2) return PARALYZE;
+	//case "2"
+	if(spellnum == ((mid+0)%3)+2) return CONFUSE_YOU;
+	//case "1"
+	if(spellnum == ((mid+1)%2)+0) return ( (mid+1) % 2) ? CURE_SELF : OPEN_WOUNDS;
+	//case "0", "5", "10", "15", "18+"
+	return (mid % 2) ? CURE_SELF : OPEN_WOUNDS;
 }
 
 /* default spell selection for psychic-flavored casters */
@@ -391,6 +356,9 @@ choose_magic_special(mtmp, type)
 struct monst *mtmp;
 unsigned int type;
 {
+	int clrc_spell_power = mtmp->m_id == 0 ? (rn2(u.ulevel) * 18 / 30) : rn2(mtmp->m_lev);
+	int wzrd_spell_power = mtmp->m_id == 0 ? (rn2(u.ulevel) * 24 / 30) : rn2(mtmp->m_lev);
+	boolean quake = FALSE;
 	//50% favored spells
     if (rn2(2)) {
        switch(monsndx(mtmp->data)) {
@@ -573,6 +541,78 @@ unsigned int type;
 	case PM_HOUND_OF_TINDALOS:
 		return OPEN_WOUNDS;
 	break;
+	case PM_PRIEST_OF_IB:
+		switch (rnd((phase_of_the_moon() == 3 || phase_of_the_moon() == 5) ? 7 : 6)) {
+			//Uses fire when the moon is gibbous
+			case 7:
+			return FIRE_PILLAR;
+			break;
+			default://5, 6
+			return PSI_BOLT;
+			break;
+			case 4:
+			return OPEN_WOUNDS;
+			break;
+			case 3:
+			return GEYSER;
+			break;
+			case 2:
+			return ACID_RAIN;
+			break;
+			case 1:
+			return PLAGUE;
+			break;
+		}
+	break;
+	case PM_PRIEST:
+	case PM_PRIESTESS:
+	case PM_ALIGNED_PRIEST:
+	case PM_HIGH_PRIEST:
+	case PM_ARCH_PRIEST:
+	case PM_ABBOT:
+		quake = TRUE; //Casts earthquake instead of tremor
+	break;
+	case PM_STRANGER:
+		switch (clrc_spell_power % 18) {
+			case 17:
+				return INCARCERATE;
+			case 16:
+				return SUMMON_ALIEN;
+			// case 15:
+				//Cure
+			case 14:
+				return PLAGUE;
+			case 13:
+				return EARTHQUAKE;
+			case 12:
+				return rn2(2) ? GEYSER : ACID_RAIN;
+			case 11:
+				return rn2(2) ? FIRE_PILLAR : ICE_STORM;
+			// case 10:
+				//Cure
+			case 9:
+				return LIGHTNING;
+			case 8:
+				return DRAIN_LIFE;
+			case 7:
+				return MUMMY_CURSE;
+			case 6:
+				return YELLOW_DEAD;
+			// case 5:
+				//Cure
+			case 4:
+				return NIGHTMARE;
+			case 3:
+				return VULNERABILITY;
+			case 2:
+				return STUN_YOU;
+			case 1:
+				return OPEN_WOUNDS;
+			//case "0", "5", "10", "15"
+			default:
+				return CURE_SELF;
+		}
+	break;
 	case PM_DWARF_CLERIC:
 	case PM_DWARF_QUEEN:
 		switch (rnd(4)) {
@@ -725,7 +765,7 @@ unsigned int type;
 		}
 	break;
 	case PM_HALF_STONE_DRAGON:
-		switch (rn2(mtmp->m_lev)) {
+		switch (clrc_spell_power) {
 			default:/* 10 -> 29*/
 				return LIGHTNING;
 			case 9:
@@ -789,7 +829,7 @@ unsigned int type;
 			return LIGHTNING;
 			break;
 			case 1:
-			return DISINT_RAY;
+			return DISINTEGRATION;
 			break;
 		}
 	break;
@@ -811,7 +851,7 @@ unsigned int type;
 			return LIGHTNING;
 			break;
 			case 1:
-			return DISINT_RAY;
+			return DISINTEGRATION;
 			break;
 		}
 	break;
@@ -1577,10 +1617,10 @@ unsigned int type;
 	break;
 	}
     if (type == AD_CLRC)
-        return choose_clerical_spell(mtmp->m_id == 0 ? (rn2(u.ulevel) * 18 / 30) : rn2(mtmp->m_lev),mtmp->m_id,!(mtmp->mpeaceful));
+        return choose_clerical_spell(clrc_spell_power, mtmp->m_id,!(mtmp->mpeaceful), quake);
     else if (type == AD_PSON)
-        return choose_psionic_spell(mtmp->m_id == 0 ? (rn2(u.ulevel) * 18 / 30) : rn2(mtmp->m_lev),mtmp->m_id,!(mtmp->mpeaceful));
-    return choose_magic_spell(mtmp->m_id == 0 ? (rn2(u.ulevel) * 24 / 30) : rn2(mtmp->m_lev),mtmp->m_id,!(mtmp->mpeaceful));
+        return choose_psionic_spell(clrc_spell_power, mtmp->m_id,!(mtmp->mpeaceful));
+    return choose_magic_spell(wzrd_spell_power,mtmp->m_id,!(mtmp->mpeaceful));
 }
 
 
@@ -1681,6 +1721,12 @@ const char * spellname[] =
 	"MON_WARP_THROW",
 	"MAGM_BLAST"
 	"SUMMON_TANNIN",
+	"DISINTEGRATION",
+	"TREMOR",
+	//80
+	"INCARCERATE",
+	"MUMMY_CURSE",
+	"YELLOW_DEAD",
 };
 
 
@@ -1763,7 +1809,7 @@ int tary;
 		(magr->mcan) ||
 		(magr->mspec_used && !nospellcooldowns_mon(magr)) ||
 		(mlev(magr) == 0) ||
-		(youdef && (u.uinvulnerable || (u.spiritPColdowns[PWR_PHASE_STEP] >= moves + 20))) ||
+		(youdef && Invulnerable) ||
 		(needs_familiar(magr))
 		)) {
 		cursetxt(magr, mdef, is_undirected_spell(spellnum));
@@ -1780,15 +1826,17 @@ int tary;
 			magr->mspec_used = 60;
 			for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 				if(!DEADMONSTER(mtmp) && (mtmp != magr) && (mtmp->mpeaceful == magr->mpeaceful)
-					&& (mtmp->mtyp == PM_MYRKALFAR_WARRIOR || mtmp->mtyp == PM_MYRKALFAR_MATRON 
+					&& (mtmp->mtyp == PM_MYRKALFR || mtmp->mtyp == PM_MYRKALFAR_WARRIOR || mtmp->mtyp == PM_MYRKALFAR_MATRON 
 						|| (is_drow(mtmp->data) && mtmp->mtame && magr->mtame))
 				) magr->mspec_used /= 2;
 			}
 			if(magr->mtame)
 				magr->mspec_used /= 2;
 		}
-		else magr->mspec_used = 10 - magr->m_lev;
-		if (magr->mspec_used < 2) magr->mspec_used = 2;
+		else {
+			magr->mspec_used = 10 - magr->m_lev;
+			if (magr->mspec_used < 2) magr->mspec_used = 2;
+		}
 	}
 	/* cost pw for players */
 	if (youagr) {
@@ -1845,6 +1893,8 @@ int tary;
 		else if (u.uz.dlevel == spire_level.dlevel - 4) chance += 4;
 		else if (u.uz.dlevel == spire_level.dlevel - 5) chance += 2;
 	}
+	if(level.flags.has_minor_spire)
+		chance += 2;
 
 	/*This.... may never be reached :( */
 	/* There is code is getattk() that prevents lilitus from attempting to cast vs. invalid targets */
@@ -1891,13 +1941,21 @@ int tary;
 				buf);
 		}
 	}
-
+	
+	if(youdef && ublindf && ublindf->oartifact == ART_MIRRORED_MASK && rn2(2)){
+		Your("mask shifts and reflects the spell!");
+		youdef = FALSE;
+		mdef = magr;
+		tarx = mdef->mx;
+		tary = mdef->my;
+	}
+	
 	/* do spell */
 	if (spellnum) {
 		/* special case override: the avatar of lolth can ask Lolth to intercede instead of casting a spell */
-		if (youdef && magr->mtyp == PM_AVATAR_OF_LOLTH && !strcmp(urole.cgod, "Lolth") && !is_undirected_spell(spellnum) && !magr->mpeaceful){
-			u.ugangr[Align2gangr(A_CHAOTIC)]++;
-			angrygods(Align2gangr(A_CHAOTIC));
+		if (youdef && magr->mtyp == PM_AVATAR_OF_LOLTH && (urole.cgod == GOD_LOLTH) && !is_undirected_spell(spellnum) && !magr->mpeaceful){
+			godlist[GOD_LOLTH].anger++;
+			angrygods(GOD_LOLTH);
 			result = MM_HIT;
 		}
 		// !!!
@@ -2167,6 +2225,30 @@ int tary;
 			}
 			return xdamagey(magr, mdef, attk, dmg);
 
+		case AD_HOLY:
+			/* message */
+			if (youdef || canspotmon(mdef)) {
+				pline("%s %s hit by a shower of holy missiles!",
+					youdef ? "You" : Monnam(mdef),
+					youdef ? "are" : "is"
+					);
+			}
+			if(hates_holy_mon(mdef))
+				dmg *= 2;
+			return xdamagey(magr, mdef, attk, dmg);
+
+		case AD_UNHY:
+			/* message */
+			if (youdef || canspotmon(mdef)) {
+				pline("%s %s hit by a shower of unholy missiles!",
+					youdef ? "You" : Monnam(mdef),
+					youdef ? "are" : "is"
+					);
+			}
+			if(hates_unholy_mon(mdef))
+				dmg *= 2;
+			return xdamagey(magr, mdef, attk, dmg);
+
 		case AD_STAR:
 			/* message */
 			if (youdef || canspotmon(mdef)) {
@@ -2277,6 +2359,10 @@ int tary;
 			if (adtyp == AD_STAR) {
 				zapdata.unreflectable = ZAP_REFL_NEVER;
 				zapdata.damd = 8;
+			}
+			if (adtyp == AD_HOLY || adtyp == AD_UNHY) {
+				zapdata.affects_floor = FALSE;
+				zapdata.phase_armor = TRUE;
 			}
 			if (adtyp == AD_DISN) {
 				zapdata.unreflectable = ZAP_REFL_NEVER;
@@ -2547,11 +2633,33 @@ int tary;
 			m_shot.s = TRUE;
 			m_shot.o = otmp->otyp;
 			for (m_shot.i = 1; m_shot.i <= m_shot.n; m_shot.i++) {
-				(void)projectile(magr, otmp, (void *)0, HMON_FIRED, x(mdef), y(mdef), 0, 0, 0, 0, FALSE, FALSE, FALSE);
+				(void)projectile(magr, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, x(mdef), y(mdef), 0, 0, 0, 0, FALSE, FALSE, FALSE);
 			}
 		}
 		return MM_HIT;
 
+	case DISINTEGRATION:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("disintegration with no mdef?");
+			return MM_MISS;
+		}
+		if(magr){
+			if(youdef || cansee(mdef->mx, mdef->my))
+				pline("A disintegration beam shines down on %s from above!",
+					youdef ? "you" : mon_nam(mdef));
+			struct attack disintegrate = {AT_BEAM, AD_DISN, magr->mtyp == PM_PARASITIZED_EMBRACED_ALIDER ? 4 : 3, 1};
+			//xmeleehurty(magr, mdef, attk, originalattk, weapon, dohitmsg, flatdmg, dieroll, vis, ranged)
+			(void)xmeleehurty(magr, mdef, &disintegrate, &disintegrate, (struct obj **)0, FALSE, -1, rn1(18, 2), canseemon(mdef), TRUE);
+		}
+		else {
+			return cast_spell(magr, mdef, attk, PSI_BOLT, tarx, tary);
+		}
+		if(youdef)
+			stop_occupation();
+		return MM_HIT;
+
+		break;
 	case LIGHTNING:
 		/* needs direct target */
 		if (!foundem) {
@@ -2939,6 +3047,10 @@ int tary;
 				}
 			}
 			else if (!Sick_res(mdef)) {
+				/* message */
+				if (youagr || youdef || canseemon(mdef)) {
+					pline("%s is afflicted with disease!", Monnam(mdef));
+				}
 				/* 1/10 chance of instakill */
 				if (!rn2(10)){
 					if (youagr) killed(mdef);
@@ -2946,10 +3058,9 @@ int tary;
 					/* instakill */
 					return ((*hp(mdef) > 0 ? MM_DEF_LSVD : MM_DEF_DIED) | MM_HIT);
 				}
-				else {
-					dmg = rnd(12);
-				}
+				//else damage
 			}
+			else return MM_MISS;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
@@ -3173,7 +3284,7 @@ int tary;
 			if (!n){
 				if (youagr || youdef || canseemon(mdef))
 					pline("Silver rays whiz past %s!",
-					mon_nam(mdef));
+					youdef ? "you" : mon_nam(mdef));
 				return MM_MISS;
 			}
 			if (n == 1)
@@ -3645,6 +3756,24 @@ int tary;
 		}
 		return MM_HIT;
 
+	case TREMOR:
+		if (!(tarx || tary)) {
+			impossible("tremor spell with no target location?");
+			return MM_MISS;
+		}
+		else {
+			/* message */
+			pline_The("%s tremors!",
+				In_endgame(&u.uz) ? "plane" : "dungeon");
+
+			do_earthquake(tarx, tary, 0, min((mlev(magr) - 1) / 6 + 1, 8), FALSE, magr);
+
+			aggravate(); /* wake up without scaring */
+			if(couldsee(tarx, tary))
+				stop_occupation();	/* even if you weren't targeted, you certainly noticed! */
+		}
+		return MM_HIT;
+
 //////////////////////////////////////////////////////////////////////////////////////
 // HEALING / BUFFING
 //////////////////////////////////////////////////////////////////////////////////////
@@ -4015,10 +4144,30 @@ int tary;
 		}
 		return MM_HIT;
 
+	case YELLOW_DEAD:
+		/* creatures raised are not marked as summoned */
+		if (!youdef) {
+			/* only mvu allowed */
+			return cast_spell(magr, mdef, attk, (foundem ? OPEN_WOUNDS : CURE_SELF), tarx, tary);
+		}
+		else if(rn2(2))
+			yellow_nasty();
+		else
+		{
+			coord mm;
+			if (canseemon(magr))
+				pline("%s raised the dead!", Monnam(magr));
+			mm.x = x(magr);
+			mm.y = y(magr);
+			mk_yellow_undead(&mm, TRUE, NO_MINVENT, YELLOW_FACTION);
+			stop_occupation();
+		}
+		return MM_HIT;
+
 	case SUMMON_MONS:
 		if(DimensionalLock)
 			return MM_MISS;
-		else if (!youdef || u.summonMonster || (Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))) {
+		else if (!youdef || u.summonMonster || Infuture) {
 			/* only mvu allowed */
 			/* only one summon spell per global turn allowed */
 			/* disallowed in Anachrononaut quest */
@@ -4139,11 +4288,24 @@ int tary;
 			}
 			mtmp = makemon(&mons[PM_ANGEL], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
 			if (mtmp) {
-				add_mx(mtmp, MX_EPRI);
 				add_mx(mtmp, MX_EMIN);
+				int gnum;
+				aligntyp alignment;
+				if (get_mx(magr, MX_EMIN)) {
+					alignment = EMIN(magr)->min_align;
+					gnum = EMIN(magr)->godnum;
+				}
+				else if (get_mx(magr, MX_EPRI)) {
+					alignment = EPRI(magr)->shralign;
+					gnum = EPRI(magr)->godnum;
+				}
+				else {
+					alignment = sgn(magr->data->maligntyp);
+					gnum = align_to_god(alignment);
+				}
 				mtmp->isminion = TRUE;
-				EMIN(mtmp)->min_align = sgn(magr->data->maligntyp);
- 				EPRI(mtmp)->shralign = sgn(magr->data->maligntyp);
+				EMIN(mtmp)->min_align = alignment;
+				EMIN(mtmp)->godnum = gnum;
 
 				u.summonMonster = TRUE;
 				if (canspotmon(mtmp))
@@ -4156,7 +4318,7 @@ int tary;
 					an(Hallucination ? rndmonnam() : "hostile angel"));
 				//Despite being a demon lord, Lamashtu is  able to summon angels
 				if(magr->mtyp == PM_LAMASHTU || magr->mfaction == LAMASHTU_FACTION)
-					mtmp->mfaction = LAMASHTU_FACTION;
+					set_faction(mtmp, LAMASHTU_FACTION);
 				//Note: these cases are not currently used, but handled anyway to be safe
 				if(has_template(magr, MAD_TEMPLATE))
 					set_template(mtmp, MAD_TEMPLATE);
@@ -4883,6 +5045,13 @@ int tary;
 		}
 		return MM_HIT;
 
+	case MUMMY_CURSE:
+		if (!mdef) {
+			impossible("mummy curse with no target?");
+			return MM_MISS;
+		}
+		return mummy_curses_x(magr, mdef);
+
 	case NAIL_TO_THE_SKY:
 		if (!youdef) {
 			/* only makes sense vs player */
@@ -4933,8 +5102,7 @@ int tary;
 			/* only makes sense vs player */
 			return cast_spell(magr, mdef, attk, PSI_BOLT, tarx, tary);
 		}
-		else
-		{
+		else {
 			if (u.ualign.record <= 1 || !rn2(min(u.ualign.record, 20))){
 				if (!Punished) {
 					punish((struct obj *)0);
@@ -4950,6 +5118,83 @@ int tary;
 			stop_occupation();
 		}
 		return MM_HIT;
+
+	case INCARCERATE:{
+		struct obj *otmp = 0;
+		if (!youdef) {
+			/* only makes sense vs player */
+			return cast_spell(magr, mdef, attk, OPEN_WOUNDS, tarx, tary);
+		}
+		else {
+			switch(rn2(3)){
+				case 0:
+				case 1:
+					otmp = uarmc;
+					if(!otmp)
+						otmp = uarm;
+
+					if(!otmp){
+						if(humanoid_torso(youracedata)){
+							otmp = mksobj(STRAITJACKET, MKOBJ_NOINIT);
+							otmp->obj_color = CLR_YELLOW;
+							otmp->objsize = youracedata->msize;
+							pickup_object(otmp, 1, TRUE);
+							curse(otmp);
+							setworn(otmp, W_ARM);
+							Armor_on();
+							// Did something
+							break;
+						}
+						// Didn't do anything, keep going
+					}
+					else if(otmp->otyp == STRAITJACKET && !otmp->cursed){
+						curse(otmp);
+						// Did something
+						break;
+					}
+					
+					if(!otmp || otmp->otyp == STRAITJACKET){
+						otmp = some_armor(&youmonst);
+					}
+					
+					if(otmp && otmp->otyp != STRAITJACKET){
+						if(otmp->obj_color == CLR_YELLOW){
+							teleport_steal_arm(magr, otmp);
+						}
+						else if(is_metallic(otmp)){
+							if(!obj_resists(otmp, 55, 95)){
+								if(!Blind)
+									Your("%s turns golden!", xname(otmp));
+								set_material(otmp, GOLD);
+							}
+						}
+						else {
+							if(!obj_resists(otmp, 55, 95)){
+								if(!Blind)
+									Your("%s abruptly turns yellow!", xname(otmp));
+								otmp->obj_color = CLR_YELLOW;
+							}
+						}
+						// Did something
+						break;
+					}
+				//If we didn't break before now, nothing was done. Fall through.
+				case 2:
+					if (!Punished) {
+						punish((struct obj *)0);
+						if (is_prince(magr->data)) uball->owt += 160;
+					}
+					else {
+						Your("iron ball gets heavier!");
+						if (is_prince(magr->data)) uball->owt += 240;
+						else uball->owt += 160;
+					}
+					stop_occupation();
+				break;
+			}
+		}
+		return MM_HIT;
+	}
 
 	case DARKNESS:
 		if (!youdef) {
@@ -5023,6 +5268,7 @@ int spellnum;
 	case SLEEP:
 	case DRAIN_LIFE:
 	case ARROW_RAIN:
+	case DISINTEGRATION:
 	case LIGHTNING:
 	case FIRE_PILLAR:
 	case GEYSER:
@@ -5068,6 +5314,7 @@ int spellnum;
 	case MON_POISON_GAS:
 	case SOLID_FOG:
 	case EARTHQUAKE:
+	case TREMOR:
 	/* also directed attack spells */
 	case MAGIC_MISSILE:
 	case CONE_OF_COLD:
@@ -5154,9 +5401,11 @@ int spellnum;
 	case VULNERABILITY:
 	case EVIL_EYE:
 	case CURSE_ITEMS:
+	case MUMMY_CURSE:
 	case NAIL_TO_THE_SKY:
 	case STERILITY_CURSE:
 	case PUNISH:
+	case INCARCERATE:
 	case DARKNESS:
 	case MAKE_WEB:
 		return TRUE;
@@ -5216,7 +5465,7 @@ int tary;
 	if (!youagr
 		&& is_drow(magr->data)
 		&& (is_directed_attack_spell(spellnum) || is_debuff_spell(spellnum))	/* only affects directed and debuff spells */
-		&& !(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))) /* does not work in Ana quest */
+		&& !Infuture) /* does not work in Ana quest */
 	{
 		if ((sengr_at("Elbereth", tarx, tary) && !Race_if(PM_DROW))
 			|| (sengr_at("Lolth", tarx, tary) && Race_if(PM_DROW) && (mlev(magr) < u.ulevel || u.ualign.record-- > 0)))
@@ -5226,7 +5475,7 @@ int tary;
 	}
 
 	/* Don't cast summon spells (with some exceptions) in the Anachrononaut quest */
-	if ((Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz)) && is_summon_spell(spellnum) && !(
+	if (Infuture && is_summon_spell(spellnum) && !(
 		(spellnum == SUMMON_SPHERE) ||
 		(spellnum == TIME_DUPLICATE) ||
 		(spellnum == CLONE_WIZ)
@@ -5249,7 +5498,8 @@ int tary;
 		return TRUE;
 
 	/* earthquake should not be cast in the endgame (even for the plane of earth?) */
-	if (spellnum == EARTHQUAKE && In_endgame(&u.uz))
+	///The wizard can't even cast this anyway :(
+	if ((spellnum == EARTHQUAKE || spellnum == TREMOR) && In_endgame(&u.uz))
 		return TRUE;
 
 	/* don't do strangulation if there's no room in player's inventory */
@@ -5384,7 +5634,7 @@ int tary;
 		spellnum == SUMMON_SPHERE || spellnum == DARKNESS ||
 		spellnum == PUNISH || spellnum == INSECTS ||
 		spellnum == SUMMON_ANGEL || spellnum == DROP_BOULDER ||
-		spellnum == DISINT_RAY
+		spellnum == DISINT_RAY || spellnum == DISINTEGRATION
 		))
 		return TRUE;
 

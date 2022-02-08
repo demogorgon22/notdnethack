@@ -134,8 +134,8 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 /* types of calls to hmon */
 #define HMON_WHACK		0x01	/* regular melee attack */
 #define HMON_THRUST		0x02	/* polearm thrust */
-#define HMON_MISTHROWN	0x04	/* improper[ly launched] projectile, should NOT use weapon dice */
-#define HMON_FIRED		0x08	/* projectile that should use damage dice */
+#define HMON_PROJECTILE	0x04	/* projectile, general */
+#define HMON_FIRED		0x08	/* projectile had a proper launcher (or simulation thereof), for projectiles that care */
 #define HMON_TRAP		0x10	/* trap-owned attack, either projectile or melee depending on ttyp */
 #define HMON_KICKED		0x20	/* object is a kicked projectile */
 
@@ -384,7 +384,18 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 
 #define rn1(x,y)	(rn2(x)+(y))
 
-#define a_align(x,y)	((aligntyp)Amask2align(levl[x][y].altarmask & AM_MASK))
+/* Only use these on an altar */
+#define a_align(x,y)	(altars[levl[x][y].altar_num].align)
+#define a_gnum(x,y)		(altars[levl[x][y].altar_num].god)
+#define a_shrine(x,y)	(altars[levl[x][y].altar_num].shrine)
+
+#define ugod_is_angry() (u.ualign.record < 0)
+#define on_altar()	(IS_ALTAR(levl[u.ux][u.uy].typ) || goat_mouth_at(u.ux, u.uy) || bokrug_idol_at(u.ux, u.uy))
+#define on_shrine()	(IS_ALTAR(levl[u.ux][u.uy].typ) && altars[levl[u.ux][u.uy].altar_num].shrine)
+
+/*  */
+
+#define notel_level() (level.flags.noteleport && !(In_quest(&u.uz) && quest_status.killed_nemesis))
 
 /* negative armor class is randomly weakened to prevent invulnerability */
 #define ROLL_NEG10(AC)	(-rnd(-(AC+10)) - 10)

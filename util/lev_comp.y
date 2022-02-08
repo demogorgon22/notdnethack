@@ -47,6 +47,7 @@ extern int FDECL(get_room_type, (char *));
 extern int FDECL(get_trap_type, (char *));
 extern int FDECL(get_monster_id, (char *,CHAR_P));
 extern int FDECL(get_object_id, (char *,CHAR_P));
+extern int FDECL(get_god_id, (char *));
 extern boolean FDECL(check_monster_char, (CHAR_P));
 extern boolean FDECL(check_object_char, (CHAR_P));
 extern char FDECL(what_map_char, (CHAR_P));
@@ -154,6 +155,7 @@ extern const char *fname;
 %token	<i> SUBROOM_ID NAME_ID FLAGS_ID FLAG_TYPE MON_ATTITUDE MON_ALERTNESS
 %token	<i> MON_APPEARANCE
 %token	<i> CONTAINED
+%token	<i> SANITYFLAG
 %token	<i> ',' ':' '(' ')' '[' ']'
 %token	<map> STRING MAP_ID
 %type	<i> h_justif v_justif trap_name room_type door_state light_state
@@ -832,7 +834,34 @@ map_detail	: monster_detail
 		| passwall_detail
 		;
 
-monster_detail	: MONSTER_ID chance ':' monster_c ',' m_name ',' coordinate
+monster_detail	: MONSTER_ID chance ':' monster_c ',' m_name ',' coordinate '[' SANITYFLAG ']'
+		  {
+			tmpmonst[nmons] = New(monster);
+			tmpmonst[nmons]->x = current_coord.x;
+			tmpmonst[nmons]->y = current_coord.y;
+			tmpmonst[nmons]->class = $<i>4;
+			tmpmonst[nmons]->peaceful = -1; /* no override */
+			tmpmonst[nmons]->asleep = -1;
+			tmpmonst[nmons]->align = - MAX_REGISTERS - 2;
+			tmpmonst[nmons]->name.str = 0;
+			tmpmonst[nmons]->appear = 0;
+			tmpmonst[nmons]->appear_as.str = 0;
+			tmpmonst[nmons]->chance = $2;
+			tmpmonst[nmons]->id = NON_PM;
+			if ($10)
+			    check_coord(current_coord.x, current_coord.y,
+					"Monster");
+			if ($6) {
+			    int token = get_monster_id($6, (char) $<i>4);
+			    if (token == ERR)
+				yywarning(
+			      "Invalid monster name!  Making random monster.");
+			    else
+				tmpmonst[nmons]->id = token;
+			    Free($6);
+			}
+		  }
+	       |  MONSTER_ID chance ':' monster_c ',' m_name ',' coordinate
 		  {
 			tmpmonst[nmons] = New(monster);
 			tmpmonst[nmons]->x = current_coord.x;
@@ -945,7 +974,16 @@ object_desc	: chance ':' object_c ',' o_name
 		  }
 		;
 
-object_where	: coordinate
+object_where	: coordinate '[' SANITYFLAG ']'
+		  {
+			tmpobj[nobj]->containment = 0;
+			tmpobj[nobj]->x = current_coord.x;
+			tmpobj[nobj]->y = current_coord.y;
+			if ($3)
+			    check_coord(current_coord.x, current_coord.y,
+					"Object");
+		  }
+		| coordinate
 		  {
 			tmpobj[nobj]->containment = 0;
 			tmpobj[nobj]->x = current_coord.x;
@@ -1465,16 +1503,25 @@ altar_detail	: ALTAR_ID ':' coordinate ',' alignment ',' altar_type
 			tmpaltar[naltar]->y = current_coord.y;
 			tmpaltar[naltar]->align = $<i>5;
 			tmpaltar[naltar]->shrine = $<i>7;
+			tmpaltar[naltar]->god = 0;
 			if (!in_room)
 			    check_coord(current_coord.x, current_coord.y,
 					"Altar");
-			naltar++;
-			if (naltar >= MAX_OF_TYPE) {
+		  }
+		  altar_god_infos
+		  {
+			if (++naltar >= MAX_OF_TYPE) {
 				yyerror("Too many altars in room or mazepart!");
 				naltar--;
 			}
 		  }
 		;
+
+altar_god_infos : /* nothing */
+		 | ',' string
+		  {
+			tmpaltar[naltar]->god = get_god_id($2);
+		  }
 
 gold_detail	: GOLD_ID ':' amount ',' coordinate
 		  {
@@ -1493,7 +1540,25 @@ gold_detail	: GOLD_ID ':' amount ',' coordinate
 		  }
 		;
 
-engraving_detail: ENGRAVING_ID ':' coordinate ',' engraving_type ',' string
+engraving_detail: ENGRAVING_ID ':' coordinate '[' SANITYFLAG ']' ',' engraving_type ',' string
+		  {
+			tmpengraving[nengraving] = New(engraving);
+			tmpengraving[nengraving]->x = current_coord.x;
+			tmpengraving[nengraving]->y = current_coord.y;
+			tmpengraving[nengraving]->engr.str = $10;
+			tmpengraving[nengraving]->etype = $<i>8;
+			if ($5) {
+				printf("%s %d \n", "value of skip was ", $5);
+			    check_coord(current_coord.x, current_coord.y,
+					"Engraving");
+					}
+			nengraving++;
+			if (nengraving >= MAX_OF_TYPE) {
+			    yyerror("Too many engravings in room or mazepart!");
+			    nengraving--;
+			}
+		  }
+		| ENGRAVING_ID ':' coordinate ',' engraving_type ',' string
 		  {
 			tmpengraving[nengraving] = New(engraving);
 			tmpengraving[nengraving]->x = current_coord.x;

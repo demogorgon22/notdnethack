@@ -49,6 +49,7 @@ struct q_score	quest_status = DUMMY;
 
 NEARDATA int smeq[MAXNROFROOMS+1] = DUMMY;
 NEARDATA int doorindex = 0;
+NEARDATA int altarindex = 0;
 
 NEARDATA char *save_cm = 0;
 NEARDATA int killer_format = 0;
@@ -155,6 +156,7 @@ NEARDATA boolean in_steed_dismounting = FALSE;
 
 NEARDATA coord bhitpos = DUMMY;
 NEARDATA struct door doors[DOORMAX] = {DUMMY};
+NEARDATA struct altar altars[ALTARMAX] = {DUMMY};
 
 NEARDATA struct mkroom rooms[(MAXNROFROOMS+1)*2] = {DUMMY};
 NEARDATA struct mkroom* subrooms = &rooms[MAXNROFROOMS+1];
@@ -212,102 +214,6 @@ const int zapcolors[NUM_ZAP] = {
 	CLR_WHITE
 };
 #endif /* text color */
-
-struct god_details god_list[MAX_GOD] = {
-	GOD(A_NONE, 0, ""),
-	PANTHEON_DEFAULT("Quetzalcoatl", "Camaxtli", "Huhetotl"),
-	PANTHEON_DEFAULT("Mitra", "Crom", "Set"),
-	
-	GOD(A_LAWFUL,	NEUTRAL_HOLINESS, 	"Anu"),
-	GOD(A_NEUTRAL,	HOLY_HOLINESS, 		"_Ishtar"),
-	GOD(A_CHAOTIC,	NEUTRAL_HOLINESS, 	"Anshar"),
-	
-	GOD(A_LAWFUL,	HOLY_HOLINESS, "Ilmater"),
-	GOD(A_NEUTRAL,	NEUTRAL_HOLINESS, "Grumbar"),
-	GOD(A_CHAOTIC,	HOLY_HOLINESS, "_Tymora"),
-	
-	GOD(A_LAWFUL,	HOLY_HOLINESS, "_Athena"),
-	GOD(A_NEUTRAL,	HOLY_HOLINESS, "Hermes"),
-	GOD(A_CHAOTIC,	NEUTRAL_HOLINESS, "Poseidon"),
-	
-	PANTHEON_HOLY("Lugh", "_Brigit", "Manannan Mac Lir"),
-//"Shan Lai Ching", "Chih Sung-tzu", "Huan Ti", /* Chinese */
-	PANTHEON_HOLY("Shan Lai Ching", "Chih Sung-tzu", "Huan Ti"),
-//"God the Father", "_Mother Earth", "the Satan", /* Romanian, sorta */
-	PANTHEON_DEFAULT("God the Father", "_Mother Earth", "the Satan"),
-//"the Lord", "_the deep blue sea", "the Devil",	/* Christian, sorta */
-	PANTHEON_DEFAULT("the Lord", "_the deep blue sea", "the Devil"),
-//"Issek", "Mog", "Kos", /* Nehwon */
-	GOD(A_LAWFUL,	HOLY_HOLINESS, "Issek of the Jug"),
-	GOD(A_NEUTRAL,	NEUTRAL_HOLINESS, "Mog"),
-	GOD(A_CHAOTIC,	NEUTRAL_HOLINESS, "Kos"),
-//"Apollo", "_Latona", "_Diana", /* Roman */
-	PANTHEON_HOLY("Apollo", "_Latona", "_Diana"),
-//"_Amaterasu Omikami", "Raijin", "Susanowo", /* Japanese */
-	PANTHEON_HOLY("_Amaterasu Omikami", "Raijin", "Susanowo"),
-//"Blind Io", "_The Lady", "Offler", /* Discworld */
-	PANTHEON_HOLY("Blind Io", "_The Lady", "Offler"),
-//"Apollon", "Pan", "Dionysus", /* Thracian? */
-	PANTHEON_HOLY("Apollon", "Pan", "Dionysus"),
-//"Tyr", "Odin", "Loki", /* Norse */
-	PANTHEON_DEFAULT("Tyr", "Odin", "Loki"),
-//"Ptah", "Thoth", "Anhur", /* Egyptian */
-	PANTHEON_DEFAULT("Ptah", "Thoth", "Anhur"),
-	PANTHEON_HOLY("Orome", "_Yavanna", "Tulkas"),
-	PANTHEON_HOLY("_Varda Elentari", "_Vaire", "_Nessa"),
-	PANTHEON_HOLY("Manwe Sulimo", "Mandos", "Lorien"),
-//Future
-	GOD(A_LAWFUL,	UNHOLY_HOLINESS, "_Ilsensine"),
-//Hedrow shared
-	GOD(A_LAWFUL,	UNHOLY_HOLINESS, "Eddergud"),
-	GOD(A_NEUTRAL,	UNHOLY_HOLINESS, "Vhaeraun"),
-	GOD(A_CHAOTIC,	UNHOLY_HOLINESS, "_Lolth"),
-//Hedrow noble
-	GOD(A_LAWFUL,	UNHOLY_HOLINESS, "_Ver'tas"),
-	GOD(A_NEUTRAL,	HOLY_HOLINESS,   "_Pen'a"),
-	GOD(A_NEUTRAL,	UNHOLY_HOLINESS, "Keptolo"),
-	GOD(A_CHAOTIC,	UNHOLY_HOLINESS, "Ghaunadaur"),
-//Drow shared
-	GOD(A_LAWFUL,	HOLY_HOLINESS,   "_Eilistraee"),
-	GOD(A_NEUTRAL,	UNHOLY_HOLINESS, "_Kiaransali"),
-	//Lolth again
-//Drow noble
-	//Ver'tas, Kiaransali, and Lolth again
-//Binder
-	GOD(A_LAWFUL,	HOLY_HOLINESS,   "Yaldabaoth"),
-	GOD(A_VOID,		NEUTRAL_HOLINESS,"the void"),
-	GOD(A_CHAOTIC,	HOLY_HOLINESS,   "_Pistis Sophia"),
-//Dwarf
-	GOD(A_LAWFUL,	HOLY_HOLINESS, "Mahal"),
-	GOD(A_NEUTRAL,	UNHOLY_HOLINESS, "Holashner"),
-	GOD(A_CHAOTIC,	UNHOLY_HOLINESS, "Armok"),
-//Gnome
-	GOD(A_LAWFUL,	UNHOLY_HOLINESS, "Kurtulmak"),
-	GOD(A_NEUTRAL,	HOLY_HOLINESS, "Garl Glittergold"),
-	GOD(A_CHAOTIC,	UNHOLY_HOLINESS, "Urdlen"),
-//Half dragon noble
-	GOD(A_LAWFUL,	HOLY_HOLINESS, "Gwyn, Lord of Sunlight"),
-	GOD(A_NEUTRAL,	HOLY_HOLINESS, "_Gwynevere, Princess of Sunlight"),
-	GOD(A_CHAOTIC,	NEUTRAL_HOLINESS, "Dark Sun Gwyndolin"),
-	GOD(A_NONE,		NEUTRAL_HOLINESS,  "Velka, Goddess of Sin"),
-//Orc noble
-	PANTHEON_UNHOLY("Ilneval", "_Luthic", "Gruumsh"),
-//Orc noble, elf
-	PANTHEON_HOLY("_Vandria", "Corellon", "_Sehanine"),
-//Orc noble, human
-	PANTHEON_DEFAULT("Saint Cuthbert", "Helm", "_Mask"),
-//Chaos quest
-	GOD(A_NONE,	UNHOLY_HOLINESS, "The Silence"),
-	GOD(A_NONE,	UNHOLY_HOLINESS, "Chaos"),
-//Unaligned
-	GOD(A_NONE,	UNHOLY_HOLINESS,  "Moloch"),
-	GOD(A_NONE,	NEUTRAL_HOLINESS, "an alien god"),
-	GOD(A_NONE,	NEUTRAL_HOLINESS, "_the Black Mother"),
-	GOD(A_NONE,	NEUTRAL_HOLINESS, "Nodens"),
-	GOD(A_NONE,	NEUTRAL_HOLINESS, "_Bast"),
-	GOD(A_NONE,	UNHOLY_HOLINESS,  "the Dread Fracture"),
-	GOD(A_NONE,	NEUTRAL_HOLINESS, "Yog-Sothoth")
-};
 
 const int shield_static[SHIELD_COUNT] = {
     S_ss1, S_ss2, S_ss3, S_ss2, S_ss1, S_ss2, S_ss4,	/* 7 per row */
@@ -413,36 +319,37 @@ struct c_common_strings c_common_strings = {
  * Instead, use arbitrary units.
  */
 const struct material materials[] = {
-/*   id             color       density                    cost   defense  */
-	{0,				CLR_BLACK,		  5,/*old:   5*/		  0,		0	},
-	{LIQUID,		HI_ORGANIC,		 10,/*old:  10*/		  1, 		1	},
-	{WAX,			CLR_WHITE,		 15,/*old:   9*/		  1, 		1	},
-	{VEGGY,			HI_ORGANIC,		 10,/*old:   3*/		  1, 		1	},
-	{FLESH,			CLR_RED,		 10,/*old:  11*/		  3, 		3	},
-	{PAPER,			CLR_WHITE,		 10,/*old:  12*/		  2, 		1	},
-	{CLOTH,			HI_CLOTH,		 10,/*old:  15*/		  3, 		2	},
-	{LEATHER,		HI_LEATHER,		 15,/*old:   9*/		  5, 		3	},
-	{WOOD,			HI_WOOD,		 30,/*old:   5*/		  8, 		4	},
-	{BONE,			CLR_WHITE,		 25,/*old:  17*/		 20,		4	},
-	{CHITIN,		CLR_GREEN,		 25,/*old:  17*/		 20,		4	},
-	{SHELL_MAT,		CLR_WHITE,		 25,/*old:  27*/		 30,		5	},
-	{DRAGON_HIDE,	CLR_WHITE,		 35,/*old:  34*/		200,		8	},	/*note: color variable */
-	{IRON,			HI_METAL,		 80,/*old:  79*/		 10,		5	},
-	{GREEN_STEEL,	CLR_BRIGHT_GREEN,70,/*old:  77*/		100,		6	},
-	{METAL,			HI_METAL,		 70,/*old:  77*/		 10,		5	},
-	{COPPER,		HI_COPPER,		 80,/*old:  89*/		 10,		5	},
-	{SILVER,		HI_SILVER,		 90,/*old: 105*/		 30,		5	},
-	{GOLD,			HI_GOLD,		120,/*old: 193*/		 60,		3	},
-	{PLATINUM,		CLR_WHITE,		120,/*old: 214*/		 80,		4	},
-	{LEAD,			CLR_BLACK,		120,/*old: NA */		  5,		3	},
-	{MITHRIL,		HI_MITHRIL,		 40,/*old:  27*/		 50,		6	},
-	{PLASTIC,		CLR_WHITE,		 20,/*old:  13*/		 10,		3	},
-	{GLASS,			HI_GLASS,		 60,/*old:  24*/		 20,		5	},
-	{GEMSTONE,		CLR_RED,		 55,/*old:  36*/		100,		7	},	/*note: color and cost variable */
-	{MINERAL,		CLR_GRAY,		 50,/*old:  27*/		 15,		6	},
-	{OBSIDIAN_MT,	CLR_BLACK,		 60,/*old:  26*/		 20,		4	},
-	{SALT,			CLR_WHITE,		 60,/*old:  21*/		  5,		2	},
-	{SHADOWSTEEL,	CLR_BLACK,		 30,/*old:  27*/		 50,		6	}
+/*   id                color       density                    cost   defense_mult,   DR_flat,   AC_flat  */
+	{0,				CLR_BLACK,		  5,/*old:   5*/		  0,		0,				0,			0	},
+	{LIQUID,		HI_ORGANIC,		 10,/*old:  10*/		  1, 		1,				0,			0	},
+	{WAX,			CLR_WHITE,		 15,/*old:   9*/		  1, 		1,				0,			0	},
+	{VEGGY,			HI_ORGANIC,		 10,/*old:   3*/		  1, 		1,				0,			0	},
+	{FLESH,			CLR_RED,		 10,/*old:  11*/		  3, 		3,				1,			0	},
+	{PAPER,			CLR_WHITE,		 10,/*old:  12*/		  2, 		1,				0,			0	},
+	{CLOTH,			HI_CLOTH,		 10,/*old:  15*/		  3, 		2,				0,			0	},
+	{LEATHER,		HI_LEATHER,		 15,/*old:   9*/		  5, 		3,				1,			0	},
+	{WOOD,			HI_WOOD,		 30,/*old:   5*/		  8, 		4,				2,			2	},
+	{BONE,			CLR_WHITE,		 25,/*old:  17*/		 20,		4,				2,			2	},
+	{CHITIN,		CLR_GREEN,		 25,/*old:  17*/		 20,		4,				2,			2	},
+	{SHELL_MAT,		CLR_WHITE,		 25,/*old:  27*/		 30,		5,				2,			3	},
+	{DRAGON_HIDE,	CLR_WHITE,		 35,/*old:  34*/		200,		8,				5,			5	},	/*note: color variable */
+	{IRON,			HI_METAL,		 80,/*old:  79*/		 10,		5,				4,			4	},
+	{GREEN_STEEL,	CLR_BRIGHT_GREEN,70,/*old:  77*/		100,		6,				4,			5	},
+	{METAL,			HI_METAL,		 70,/*old:  77*/		 10,		5,				4,			4	},
+	{COPPER,		HI_COPPER,		 80,/*old:  89*/		 10,		5,				3,			3	},
+	{SILVER,		HI_SILVER,		 90,/*old: 105*/		 30,		5,				3,			3	},
+	{GOLD,			HI_GOLD,		120,/*old: 193*/		 60,		3,				3,			3	},
+	{PLATINUM,		CLR_WHITE,		120,/*old: 214*/		 80,		4,				3,			3	},
+	{LEAD,			CLR_BLACK,		120,/*old: NA */		  5,		3,				3,			3	},
+	{MITHRIL,		HI_MITHRIL,		 40,/*old:  27*/		 50,		6,				4,			5	},
+	{PLASTIC,		CLR_WHITE,		 20,/*old:  13*/		 10,		3,				2,			2	},
+	{GLASS,			HI_GLASS,		 60,/*old:  24*/		 20,		5,				4,			4	},
+	{GEMSTONE,		CLR_RED,		 55,/*old:  36*/		100,		7,				4,			5	},	/*note: color and cost variable */
+	{MINERAL,		CLR_GRAY,		 50,/*old:  27*/		 15,		6,				3,			4	},
+	{OBSIDIAN_MT,	CLR_BLACK,		 60,/*old:  26*/		 20,		4,				2,			3	},
+	{SALT,			CLR_WHITE,		 60,/*old:  21*/		 15,		4,				2,			3	},
+	{SHADOWSTEEL,	CLR_BLACK,		 30,/*old:  27*/		 50,		6,				4,			5	},
+	{MERCURIAL,		HI_SILVER,		100,/*old: 135*/		150,		5,				4,			4	}
 };
 
 /* Vision */
@@ -488,6 +395,10 @@ glyph_t permonst_unicode_codepoint[NUMMONS] = DUMMY;
    ...but the message window isn't up yet.
  */
 boolean curses_stupid_hack = 1;
+
+/* Some arrays to help walk in a circle */
+const int clockwisex[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
+const int clockwisey[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
 
 /* dummy routine used to force linkage */
 void

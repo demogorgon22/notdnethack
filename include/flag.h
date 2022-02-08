@@ -52,6 +52,7 @@ struct flag {
 	boolean  made_amulet;
 	boolean  makelev_closerooms;	/* allow rooms to be placed very close to each other, causing overlaps and merges*/
 	boolean  mon_moving;	/* monsters' turn to move */
+	boolean  run_timers;	/* run timers as soon as possible (probably to desummon items) */
 	boolean  drgn_brth;		/* for use with breath weapons, indicates that a dragon is breathing */
 	boolean  phasing; /* Etherealoid phasing in or out*/
 	boolean  move;
@@ -419,6 +420,7 @@ struct instance_flags {
 	int  travelplus;/* how far travel command should attempt to path through the unknown */
 	int	 runmode;	/* update screen display during run moves */
 	int delay_length;	/* length of delay for delay_output */
+	int wizlevelport;	/* options for ^V in wizmode */
 #ifdef AUTOPICKUP_EXCEPTIONS
 	struct autopickup_exception *autopickup_exceptions[2];
 #define AP_LEAVE 0
@@ -465,4 +467,9 @@ extern NEARDATA struct instance_flags iflags;
 #define RUN_STEP	2	/* update display every single step */
 #define RUN_CRAWL	3	/* walk w/ extra delay after each update */
 
+/* wizlevelport options */
+#define WIZLVLPORT_TRADITIONAL		0	/* Select levels directly */
+#define WIZLVLPORT_TWOMENU			1	/* Select a branch, then a level in that branch */
+#define WIZLVLPORT_BRANCHES_FIRST	2	/* With TWOMENU, don't show levels in each branch during 1st selection */
+#define WIZLVLPORT_SELECTED_DUNGEON	4	/* With TWOMENU, only show the levels of the selected branch during 2nd selection */
 #endif /* FLAG_H */

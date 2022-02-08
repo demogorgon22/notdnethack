@@ -124,7 +124,12 @@ boolean check_if_better;
 	    /* food */
             ((dogfood(mtmp, otmp) < APPORT) ||
 	    /* collect artifacts and oprop items */
-		 (otmp->oartifact || !check_oprop(otmp, OPROP_NONE) || (is_rakuyo(otmp) && u.uinsight >= 20)) ||
+		 (otmp->oartifact
+			|| !check_oprop(otmp, OPROP_NONE)
+			|| (rakuyo_prop(otmp) && u.uinsight >= 20)
+			|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
+			|| (otmp->otyp == DISKOS && u.uinsight >= 10)
+		 ) ||
 	    /* slotless non-artifact items */
 		 ((otmp->otyp == ARMOR_SALVE && u.uinsight >= 66) || otmp->otyp == PRESERVATIVE_ENGINE) ||
 	    /* chains for some */
@@ -204,7 +209,7 @@ register struct monst *mon;
 		   *rwep;
 	boolean item1 = FALSE, item2 = FALSE;
 	boolean intelligent = TRUE;
-	boolean marilith = !!mon_attacktype(mon, AT_MARI);
+	boolean marilith = mon_attacktype(mon, AT_MARI);
 
 	if(on_level(&valley_level, &u.uz))
 		return (struct obj *)0; //The Dead hold on to their possessions (prevents the "drop whole inventory" bug
@@ -854,11 +859,12 @@ boolean ranged;
 {
 	if(mtmp2->moccupation) return FALSE;
 	
-	if(mtmp2->entangled == SHACKLES) return FALSE;
-	if(mtmp2->mtrapped && t_at(mtmp2->mx, mtmp2->my) && t_at(mtmp2->mx, mtmp2->my)->ttyp == VIVI_TRAP)
-		return FALSE;
+	if(imprisoned(mtmp2)) return FALSE;
 	
 	if(mtmp->mtame && mtmp2->mpeaceful && !u.uevent.uaxus_foe && mtmp2->mtyp == PM_AXUS)
+		return FALSE;
+	
+	if(mtmp->mtame && mtmp2->mpeaceful && is_metroid(mtmp2->data) && is_metroid(mtmp2->data))
 		return FALSE;
 	
 	if(mtmp->mhp < 100 && attacktype_fordmg(mtmp2->data, AT_BOOM, AD_MAND))
@@ -1006,13 +1012,10 @@ register int after;	/* this is extra fast monster movement */
 	/* lose tameness if under effects of taming song */
 	if (has_edog && EDOG(mtmp)->friend && mtmp->mtame) {
 		mtmp->mtame -= (always_hostile_mon(mtmp) ? 2 : 1);
+		if (wizard) pline("[%s friend for %d(%d)]", Monnam(mtmp), mtmp->mtame, EDOG(mtmp)->waspeaceful);
 		if (mtmp->mtame <= 0) {
-			mtmp->mtame = 0;
-			EDOG(mtmp)->friend = 0;
-			mtmp->mpeaceful = EDOG(mtmp)->waspeaceful;
+			untame(mtmp, EDOG(mtmp)->waspeaceful);
 		}
-		if (wizard)
-			pline("[%s friend for %d(%d)]", Monnam(mtmp), mtmp->mtame, EDOG(mtmp)->waspeaceful);
 	}
 #endif
 
@@ -1193,11 +1196,9 @@ register int after;	/* this is extra fast monster movement */
 			     && EDOG(mtmp)->hungrytime < monstermoves + DOG_SATIATED
 #endif /* PET_SATIATION */
 				 && !((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) && 
-					(((which_armor(mtmp, W_ARMH))->otyp) == PLASTEEL_HELM || ((which_armor(mtmp, W_ARMH))->otyp) == CRYSTAL_HELM || ((which_armor(mtmp, W_ARMH))->otyp) == PONTIFF_S_CROWN) &&
-					(which_armor(mtmp, W_ARMH))->cursed)
+					   FacelessHelm(which_armor(mtmp, W_ARMH)) && (which_armor(mtmp, W_ARMH))->cursed)
 				 && !((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC) && 
-					(((which_armor(mtmp, W_ARMC))->otyp) == WHITE_FACELESS_ROBE || ((which_armor(mtmp, W_ARMC))->otyp) == BLACK_FACELESS_ROBE || ((which_armor(mtmp, W_ARMC))->otyp) == SMOKY_VIOLET_FACELESS_ROBE) &&
-					(which_armor(mtmp, W_ARMC))->cursed)
+					   FacelessCloak(which_armor(mtmp, W_ARMC)) && (which_armor(mtmp, W_ARMC))->cursed)
 			     ) {
 			/* Note: our dog likes the food so much that he
 			 * might eat it even when it conceals a cursed object */

@@ -296,11 +296,8 @@ boolean domsg;
     if (song_being_played() == SNG_NONE) return 0;
 	
 	//Ill-regard specimens are unconscious
-	if(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP){
-		return 0;
-	}
 	// So are prisoners
-	if(mtmp->entangled == SHACKLES) {
+	if(imprisoned(mtmp)){
 		return 0;
 	}
 	
@@ -644,8 +641,7 @@ struct obj * instr;
 			if (showmsg) msg = "%s seems to briefly swing with your music.";
 		}
 		// angels like the sound of harps
-		if ((mtmp->mtyp == PM_ANGEL) && (mtmp->malign >= A_COALIGNED)
-		    && (instr_otyp == HARP))
+		if ((mtmp->mtyp == PM_ANGEL) && (instr_otyp == HARP))
 			dlev -= dlev0/5;
 		// snakes (and nagas) also like music from flutes
 		if (((mtmp->data->mlet == S_SNAKE) || (mtmp->data->mlet == S_NAGA))
@@ -1149,7 +1145,7 @@ int distance;
 					mtmp->mstun = 1;
 					mtmp->mconf = 1;
 					mtmp->mcanhear = 0;
-					mtmp->mdeafened = distance/3 - distm;
+					mtmp->mdeafened = min(125, distance/3 - distm);
 				}
 			} else {
 				if (distm < distance/3 &&
@@ -1190,7 +1186,7 @@ int distance;
 					mtmp->mstun = 1;
 					mtmp->mconf = 1;
 					mtmp->mcanhear = 0;
-					mtmp->mdeafened = distance/3 - distm;
+					mtmp->mdeafened = min(125, distance/3 - distm);
 				}
 			}
 		}

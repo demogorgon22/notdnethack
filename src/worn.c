@@ -101,8 +101,8 @@ int otyp;
 	const static int YELLOW_RES[] = { STONE_RES, 0 };
 	const static int GREEN_RES[] = { SICK_RES, 0 };
 	const static int BLUE_RES[] = { FAST, 0 };
-	const static int RED_RES[] = { FLYING, 0 };
 	const static int BLACK_RES[] = { DRAIN_RES, 0 };
+	const static int RED_RES[] = { FLYING, 0 };
 	const static int WHITE_RES[] = { MAGICAL_BREATHING, SWIMMING, WATERPROOF, 0 };
 	const static int GRAY_RES[] = { HALF_SPDAM, 0 };
 	const static int SHIM_RES[] = { SEE_INVIS, 0 };
@@ -730,6 +730,7 @@ base_mac(mon)
 struct monst *mon;
 {
 	int base = 10, armac = 0;
+	struct obj *monwep;
 	
 	base -= mon->data->nac;
 	if(!mon->mcan)
@@ -760,6 +761,53 @@ struct monst *mon;
 			base -= rnd(def_beastmastery()); // the duster doubles for tame animals
 		
 		if(u.usteed && mon==u.usteed) base -= rnd(def_mountedCombat());
+	}
+
+	monwep = MON_WEP(mon);
+	if(monwep){
+		if(monwep->oartifact == ART_LANCE_OF_LONGINUS) base -= max((monwep->spe+1)/2,0);
+		else if(monwep->oartifact == ART_TENSA_ZANGETSU){
+			base -= max( (monwep->spe+1)/2,0);
+			if(!uarmc || !uarm) base -= max( monwep->spe,0);
+			if(!uarmc && !uarm) base -= max( (monwep->spe+1)/2,0);
+		}
+		else if(monwep->oartifact == ART_LASH_OF_THE_COLD_WASTE){
+			if(u.uinsight >= 20)
+				base -= 10;
+			else if(u.uinsight > 10)
+				base -= u.uinsight - 10;
+		}
+		if(monwep->obj_material == MERCURIAL){
+			int level = monwep->ocarry->m_lev;
+			//Streaming
+			if(mon_merc_streaming(monwep)){
+				if(level < 3);
+				else if(level < 10)
+					base -= 1;
+				else if(level < 18)
+					base -= 2;
+				else
+					base -= 3;
+			}
+			//Kinstealing
+			else if(mon_merc_kinstealing(monwep)){
+				if(level < 10);
+				else if(level < 18)
+					base -= 1;
+				else
+					base -= 2;
+			}
+			//Chained
+			else {
+				if(level < 3);
+				else if(level < 10)
+					base -= 1;
+				else if(level < 18)
+					base -= 4;
+				else
+					base -= 6;
+			}
+		}
 	}
 
 	if (helpless(mon))
@@ -1070,7 +1118,7 @@ int depth;
 	mon_slot_dr(mon, magr, slot, &base, &armac, &nat_dr, depth);
 
 	//Star spawn reach extra-dimensionally past all armor, even bypassing natural armor.
-	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU || mad_monster_turn(magr, MAD_NON_EUCLID))){
+	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU || (magr->mtyp == PM_LADY_CONSTANCE && !rn2(2)) || mad_monster_turn(magr, MAD_NON_EUCLID))){
 		armac = 0;
 		if(undiffed_innards(mon->data))
 			nat_dr /= 2;
@@ -1153,21 +1201,38 @@ int depth;
 	int i;
 	struct obj * curarm;
 	for (i = 0; i < SIZE(marmor); i++) {
-		curarm = which_armor(mon, marmor[i]);
-		if (curarm && ((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i])))) {
-			if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
-				continue;
-			arm_mdr += arm_dr_bonus(curarm);
-			if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
+		if((curarm = which_armor(mon, marmor[i]))){
+			if(curarm->oclass == ARMOR_CLASS){
+				if (curarm && ((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i])))) {
+					if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+						continue;
+					arm_mdr += arm_dr_bonus(curarm);
+					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
+				}
+			}
+			else if(!depth){
+				if (slot&adfalt[i]){
+					arm_mdr += arm_dr_bonus(curarm);
+					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
+				}
+			}
 		}
 	}
 	/* Tensa Zangetsu adds to worn armor */
-	if (MON_WEP(mon) && MON_WEP(mon)->oartifact == ART_TENSA_ZANGETSU) {
-		if (!which_armor(mon, W_ARMC) && (slot & CLOAK_DR)) {
-			arm_mdr += max(1 + (MON_WEP(mon)->spe + 1) / 2, 0);
+	if(MON_WEP(mon)){
+		if (MON_WEP(mon)->oartifact == ART_TENSA_ZANGETSU) {
+			if (!which_armor(mon, W_ARMC) && (slot & CLOAK_DR)) {
+				arm_mdr += max(1 + (MON_WEP(mon)->spe + 1) / 2, 0);
+			}
+			if (!which_armor(mon, W_ARM) && (slot & TORSO_DR)) {
+				arm_mdr += max(1 + (MON_WEP(mon)->spe + 1) / 2, 0);
+			}
 		}
-		if (!which_armor(mon, W_ARM) && (slot & TORSO_DR)) {
-			arm_mdr += max(1 + (MON_WEP(mon)->spe + 1) / 2, 0);
+		else if(MON_WEP(mon)->oartifact == ART_LASH_OF_THE_COLD_WASTE){
+			if(u.uinsight >= 40)
+				bas_mdr += 5;
+			else if(u.uinsight > 20)
+				bas_mdr += (u.uinsight - 20)/4;
 		}
 	}
 	/* Hod Sephirah OVERRIDE other arm_mdr sources with the player's total DR (regardless of who's attacking them) */
@@ -1255,12 +1320,13 @@ struct monst * mon;
 	/* only looks at a monster's base stats with minimal adjustment (and no worn armor) */
 	/* used for pokedex entry */
 	int dr = 0;
+	int denom = 4;
 
 #define m_bdr mon->data->bdr + mon->data->spe_bdr
 #define m_ldr mon->data->ldr + mon->data->spe_ldr
-#define m_hdr mon->data->hdr + mon->data->spe_hdr
-#define m_fdr mon->data->fdr + mon->data->spe_fdr
-#define m_gdr mon->data->gdr + mon->data->spe_gdr
+#define m_hdr (denom++, mon->data->hdr + mon->data->spe_hdr)
+#define m_fdr (denom++, mon->data->fdr + mon->data->spe_fdr)
+#define m_gdr (denom++, mon->data->gdr + mon->data->spe_gdr)
 
 	dr += m_bdr*2;
 	dr += m_ldr*2;
@@ -1280,7 +1346,7 @@ struct monst * mon;
 #undef m_fdr
 #undef m_gdr
 
-	return (dr / 7);
+	return (dr / denom);
 }
 
 /* weapons are handled separately; rings and eyewear aren't used by monsters */

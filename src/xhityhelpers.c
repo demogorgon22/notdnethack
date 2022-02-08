@@ -46,7 +46,7 @@ boolean active;
 
 	/* cases where the agressor cannot make any attacks at all */
 	/* player is invincible*/
-	if (youdef && (u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves + 20)) {
+	if (youdef && Invulnerable) {
 		/* monsters won't attack you */
 		if (active) {
 			/* only print messages if they were actively attacking you */
@@ -107,7 +107,7 @@ boolean active;
 			u.ustuck->muy = u.uy;
 		}
 		/* if you're invulnerable, you're fine though */
-		if (u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves + 20)
+		if (Invulnerable)
 			return FALSE; /* stomachs can't hurt you! */
 	}
 	/* While swallowed OR stuck, you can't attack other monsters */
@@ -247,15 +247,6 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 
 	/* generally, don't attack peaceful monsters */
 	if (mdef->mpeaceful && !Confusion && !Hallucination && !Stunned) {
-		/* Intelligent chaotic weapons (Stormbringer) want blood */
-		/* NOTE:  now generalized to a flag, also, more lawful weapons than chaotic weps have it now :) */
-		if (wep && arti_is_prop(wep, ARTI_BLOODTHRST)) {
-			/* Don't show Stormbringer's message if attack is intended. */
-			if (iflags.attack_mode != ATTACK_MODE_FIGHT_ALL)
-				return ATTACKCHECK_BLDTHRST;
-			else
-				return ATTACKCHECK_ATTACK;
-		}
 		if (canspotmon(mdef)) {
 			if (iflags.attack_mode == ATTACK_MODE_CHAT
 				|| iflags.attack_mode == ATTACK_MODE_PACIFIST) {
@@ -301,9 +292,6 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 		/* Being not in full control of yourself causes you to attack */
 		if (Confusion || Hallucination || Stunned)
 			return ATTACKCHECK_ATTACK;
-		/* Some weapons just want blood */
-		if (wep && arti_is_prop(wep, ARTI_BLOODTHRST))
-			return ATTACKCHECK_BLDTHRST;
 		/* Otherwise, be a pacifist. */
 		You("stop for %s.", mon_nam(mdef));
 		flags.move = 0;
@@ -506,19 +494,20 @@ struct attack *mattk;
 	    /* find armor, and move it to end of inventory in the process */
 	    minvent_ptr = &mdef->minvent;
 	    while ((otmp = *minvent_ptr) != 0)
-		if (otmp->owornmask & W_ARM) {
-		    if (stealoid) panic("steal_it: multiple worn suits");
-		    *minvent_ptr = otmp->nobj;	/* take armor out of minvent */
-		    stealoid = otmp;
-		    stealoid->nobj = (struct obj *)0;
-		} else {
-		    minvent_ptr = &otmp->nobj;
-		}
+			if (otmp->owornmask & (W_ARM|W_ARMU)){
+				if (stealoid) /*Steal suit or undershirt*/
+					continue;
+				*minvent_ptr = otmp->nobj;	/* take armor out of minvent */
+				stealoid = otmp;
+				stealoid->nobj = (struct obj *)0;
+			} else {
+				minvent_ptr = &otmp->nobj;
+			}
 	    *minvent_ptr = stealoid;	/* put armor back into minvent */
 	}
 
 	if (stealoid) {		/* we will be taking everything */
-	    if (gender(mdef) == (int) u.mfemale &&
+	    if (gender(mdef) == (int) (Upolyd ? u.mfemale : flags.female) &&
 			youracedata->mlet == S_NYMPH)
 		You("charm %s.  She gladly hands over her possessions.",
 		    mon_nam(mdef));
@@ -839,6 +828,12 @@ struct attack *mattk;
 		else if (mattk->adtyp == AD_WET){
 			return "water-jet blade";
 		}
+		else if (mattk->adtyp == AD_HOLY){
+			return "holy light-beam";
+		}
+		else if (mattk->adtyp == AD_UNHY){
+			return "unholy light-blade";
+		}
 		else {
 			return "blade";
 		}
@@ -858,7 +853,7 @@ struct attack *mattk;
 			(mattk->aatyp == AT_CLAW) ? "claws" :
 			(mattk->aatyp == AT_TENT) ? "tentacles" :
 			(mattk->aatyp == AT_ENGL) ? "vapor" :
-			(mattk->aatyp == AT_BITE || mattk->aatyp == AT_LNCK || mattk->aatyp == AT_5SBT) ? "bite" :
+			(mattk->aatyp == AT_BITE || mattk->aatyp == AT_OBIT || mattk->aatyp == AT_WBIT || mattk->aatyp == AT_LNCK || mattk->aatyp == AT_5SBT) ? "bite" :
 			(mattk->aatyp == AT_NONE) ? "attack" :
 			"sting";
 	}
@@ -1096,7 +1091,12 @@ int aatyp;
 	case AT_HUGS:
 		w_mask = (W_ARMC | W_ARMG); /* attacker needs both to be protected */
 		break;
+	case AT_TAIL:
+		w_mask = W_ARM;
+		break;
 	case AT_BITE:
+	case AT_OBIT:
+	case AT_WBIT:
 	case AT_LNCK:
 	case AT_5SBT:
 	case AT_STNG:
@@ -1205,6 +1205,8 @@ struct obj * weapon;
 		|| attk->adtyp == AD_MERC
 		|| attk->adtyp == AD_STAR
 		|| attk->adtyp == AD_MOON
+		|| attk->adtyp == AD_HOLY
+		|| attk->adtyp == AD_UNHY
 		)
 		)
 		return TRUE;	// will touch
@@ -1247,7 +1249,7 @@ struct permonst * pd;
 		((pd->mtyp == PM_GREEN_SLIME || pd->mtyp == PM_FLUX_SLIME) &&
 			!(Slime_res(magr)))
 		) && (
-		((attk->aatyp == AT_BITE || attk->aatyp == AT_LNCK || attk->aatyp == AT_5SBT) && is_vampire(pa)) ||
+		((attk->aatyp == AT_BITE || attk->aatyp == AT_OBIT || attk->aatyp == AT_WBIT || attk->aatyp == AT_LNCK || attk->aatyp == AT_5SBT) && is_vampire(pa)) ||
 		(attk->aatyp == AT_ENGL && attk->adtyp == AD_DGST)
 		))
 		return FALSE;	// don't attack
@@ -1402,6 +1404,7 @@ struct obj * otmp;
 		otmp->obj_material == GREEN_STEEL &&
 		!(is_lightsaber(otmp) && litsaber(otmp))) {
 		/* default: 2d9 */
+		/* Note: stacks with curse damage to 3d9 total (pre modifiers). */
 		ndice = 2;
 		diesize = 9;
 		/* special cases */
@@ -1446,6 +1449,8 @@ struct obj * otmp;
 			ndice = 3;
 		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
 			diesize = 20;
+		else if (otmp->oartifact == ART_SPEAR_OF_PEACE)
+			diesize = 20;
 		else if (otmp->otyp == KHAKKHARA)
 			ndice = khakharadice;
 		/* gold has a particular affinity to blessings and curses */
@@ -1473,6 +1478,8 @@ struct obj * otmp;
 		else if (otmp->oartifact == ART_SCEPTRE_OF_THE_FROZEN_FLOO)
 		{	ndice = 0; dmg += 8; } // add directly; no dice rolled
 		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
+			diesize = 20;
+		else if (otmp->oartifact == ART_SPEAR_OF_PEACE)
 			diesize = 20;
 		else if (otmp->oartifact == ART_AMHIMITL)
 		{	ndice = 3; diesize = 4; }
@@ -1502,8 +1509,6 @@ struct obj * otmp;
 			dmg += 8;
 		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
 			diesize = 20;
-		else if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
-			diesize = 20;
 		else if (otmp->oartifact == ART_STAFF_OF_TWELVE_MIRRORS)
 			ndice = 2;
 		else if (otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC)
@@ -1517,6 +1522,53 @@ struct obj * otmp;
 		else if (otmp->oartifact == ART_GRAYSWANDIR)
 			ndice = 3;
 		
+		if (otmp->otyp == KHAKKHARA)
+			ndice *= khakharadice;
+		/* calculate */
+		if (ndice)
+			dmg += vd(ndice, diesize);
+	}
+
+	if (hates_lawful_mon(mdef) &&
+		otmp->obj_material == PLATINUM &&
+		!(is_lightsaber(otmp) && litsaber(otmp))
+	) {
+		/* default: 1d5 */
+		ndice = 1;
+		diesize = 5;
+		/* spiritual beings are hurt more */
+		if(is_minion(mdef->data) || is_demon(mdef->data))
+			diesize *= 2;
+		/* strongly chaotic beings are hurt more */
+		if(mdef->mtyp == PM_ANGEL || mdef->data->maligntyp <= -10)
+			diesize *= 2;
+
+		/* special cases */
+		
+		if (otmp->otyp == KHAKKHARA)
+			ndice *= khakharadice;
+		/* calculate */
+		if (ndice)
+			dmg += vd(ndice, diesize);
+	}
+
+	if (hates_chaos_mon(mdef) &&
+		u.ualign.type != A_LAWFUL && u.ualign.type != A_NEUTRAL && /* Note: allows chaos, void, and none */
+		otmp->obj_material == MERCURIAL &&
+		!(is_lightsaber(otmp) && litsaber(otmp))
+	) {
+		ndice = 1;
+		diesize = mdef->data->maligntyp;
+#define MIN_OF(x,y) x = min(x,y)		
+		MIN_OF(diesize, u.ulevel);
+		MIN_OF(diesize, u.ualign.record);
+		MIN_OF(diesize, ACURR(A_INT));
+		MIN_OF(diesize, ACURR(A_WIS));
+		MIN_OF(diesize, ACURR(A_CHA));
+#undef MIN_OF
+		
+		diesize = max(1,diesize);
+		/* special cases */
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* calculate */
@@ -1606,6 +1658,10 @@ struct obj * weapon;
 		if (otmp && arti_shining(otmp))
 			return 2;
 
+		/* Ghost that thinks it's alive and solid */
+		if (magr->mtyp == PM_BEING_OF_IB || magr->mtyp == PM_PRIEST_OF_IB)
+			return 2;
+
 		if ((hates_silver(pd) && !(youdef && u.sealsActive&SEAL_EDEN)) && (
 			(attk && (attk->adtyp == AD_STAR || attk->adtyp == AD_MOON))
 			))
@@ -1665,6 +1721,9 @@ struct obj * weapon;
 	/* weapon */
 	else {
 		if (arti_shining(weapon))	/* why is this used for more things than artifacts? >_> */
+			return 2;
+
+		if (weapon->oartifact == ART_IBITE_ARM)	/* Ghost touch, not actually phasing */
 			return 2;
 
 		if (hatesobjdmg(mdef, weapon))
@@ -2369,4 +2428,265 @@ int dragontype;
 			return TRUE;
 	}
 	return FALSE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
+///////////////////////////////////////////////////////////////////////////////
+int
+hit_with_cclaw(magr, otmp, tarx, tary, tohitmod, attk)
+struct monst * magr;
+struct obj * otmp;
+int tarx;
+int tary;
+int tohitmod;
+struct attack * attk;
+{
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	otmp->otyp = CLAWED_HAND;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	int dx = sgn(tarx - x(magr));
+	int dy = sgn(tary - y(magr));
+	int nx, ny;
+	int result = 0;
+	if(!(isok(tarx - dx, tary - dy) &&
+		x(magr) == tarx - dx &&
+		y(magr) == tary - dy)
+	)
+		return result;
+
+	if (isok(tarx + dx, tary + dy)){
+		struct monst *mdef2 = !youagr ? m_u_at(tarx + dx, tary + dy) : 
+								u.uswallow ? u.ustuck : 
+								(dx || dy) ? m_at(tarx + dx, tary + dy) : 
+								(struct monst *)0;
+		if (mdef2 
+			&& (!DEADMONSTER(mdef2))
+			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+				(youagr && !mdef2->mpeaceful))
+		){ //Can hit a worm multiple times
+			int vis2 = VIS_NONE;
+			if(youagr || canseemon(magr))
+				vis2 |= VIS_MAGR;
+			if(mdef2 == &youmonst || canseemon(mdef2))
+				vis2 |= VIS_MDEF;
+			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		}
+	}
+	if(u.uinsight >= 30){
+		//45 degree rotation
+		nx = sgn(dx+dy);
+		ny = sgn(dy-dx);
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+		//-45 degree rotation
+		nx = sgn(dx-dy);
+		ny = sgn(dx+dy);
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+	}
+	otmp->otyp = CLUB;
+	return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
+///////////////////////////////////////////////////////////////////////////////
+int
+hit_with_iwarp(magr, otmp, tarx, tary, tohitmod, attk)
+struct monst * magr;
+struct obj * otmp;
+int tarx;
+int tary;
+int tohitmod;
+struct attack * attk;
+{
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	int dx = sgn(tarx - x(magr));
+	int dy = sgn(tary - y(magr));
+	int nx, ny;
+	int result = 0;
+	if(!(isok(tarx - dx, tary - dy) &&
+		x(magr) == tarx - dx &&
+		y(magr) == tary - dy)
+	)
+		return result;
+
+	if (isok(tarx - 2*dx, tary - 2*dy)){
+		struct monst *mdef2 = !youagr ? m_u_at(tarx - 2*dx, tary - 2*dy) : 
+								u.uswallow ? u.ustuck : 
+								(dx || dy) ? m_at(tarx - 2*dx, tary - 2*dy) : 
+								(struct monst *)0;
+		if (mdef2 
+			&& (!DEADMONSTER(mdef2))
+			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+				(youagr && !mdef2->mpeaceful))
+		){ //Can hit a worm multiple times
+			int vis2 = VIS_NONE;
+			if(youagr || canseemon(magr))
+				vis2 |= VIS_MAGR;
+			if(mdef2 == &youmonst || canseemon(mdef2))
+				vis2 |= VIS_MDEF;
+			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		}
+	}
+	if(u.uinsight >= 45){
+		//90 degree rotation
+		nx = -dy;
+		ny = dx;
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+		//-90 degree rotation
+		nx = dy;
+		ny = -dx;
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+	}
+	return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
+///////////////////////////////////////////////////////////////////////////////
+int
+hit_with_rblood(magr, otmp, tarx, tary, tohitmod, attk)
+struct monst * magr;
+struct obj * otmp;
+int tarx;
+int tary;
+int tohitmod;
+struct attack * attk;
+{
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	int dx = sgn(tarx - x(magr));
+	int dy = sgn(tary - y(magr));
+	struct attack blood = {AT_ESPR, AD_BLUD, 1, 12+otmp->spe*2};
+	int result = 0;
+	if(!(isok(tarx - dx, tary - dy) &&
+		x(magr) == tarx - dx &&
+		y(magr) == tary - dy)
+	)
+		return result;
+
+	if (isok(tarx + dx, tary + dy)){
+		struct monst *mdef2 = !youagr ? m_u_at(tarx + dx, tary + dy) : 
+								u.uswallow ? u.ustuck : 
+								(dx || dy) ? m_at(tarx + dx, tary + dy) : 
+								(struct monst *)0;
+		if (mdef2 
+			&& (!DEADMONSTER(mdef2))
+			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+				(youagr && !mdef2->mpeaceful))
+		) { //Can hit a worm multiple times
+			int vis2 = VIS_NONE;
+			if(youagr || canseemon(magr))
+				vis2 |= VIS_MAGR;
+			if(mdef2 == &youmonst || canseemon(mdef2))
+				vis2 |= VIS_MDEF;
+			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
+			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE);
+			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		}
+		if(u.uinsight >= 40){
+			explode(tarx + dx, tary + dy, AD_FIRE, -1, d(6,6), EXPL_FIERY, 1);
+		}
+	}
+	return result;
 }

@@ -535,7 +535,7 @@ boolean newlev;
 	}
 
 	if (rob_shop(shkp, (struct obj *)0)) {
-		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz) && Is_qstart(&u.uz)){
+		if(Infuture && Is_qstart(&u.uz)){
 			verbalize("Help me, Ilsensine!");
 			makemon(&mons[PM_WARRIOR_CHANGED], shkp->mx, shkp->my, MM_ADJACENTOK);
 			makemon(&mons[PM_MASTER_MIND_FLAYER], shkp->mx, shkp->my, MM_ADJACENTOK);
@@ -569,7 +569,7 @@ struct obj * otmp;
 	    return;
 
 	if (rob_shop(shkp, otmp)) {
-		if(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz) && Is_qstart(&u.uz)){
+		if(Infuture && Is_qstart(&u.uz)){
 			verbalize("Help me, Ilsensine!");
 			makemon(&mons[PM_WARRIOR_CHANGED], shkp->mx, shkp->my, MM_ADJACENTOK);
 			makemon(&mons[PM_MASTER_MIND_FLAYER], shkp->mx, shkp->my, MM_ADJACENTOK);
@@ -4718,6 +4718,28 @@ register xchar x, y;
 #ifdef OVL2
 
 char *
+shk_mons(buf, obj, mtmp)
+char *buf;
+struct obj *obj;
+struct monst * mtmp;
+{
+	if (!shk_owns(buf, obj) && !mon_owns(buf, obj))
+	    Strcpy(buf, carried(obj) ? "their" : "the");
+	return buf;
+}
+
+char *
+Shk_Mons(buf, obj, mtmp)
+char *buf;
+struct obj *obj;
+struct monst * mtmp;
+{
+	(void) shk_mons(buf, obj, mtmp);
+	*buf = highc(*buf);
+	return buf;
+}
+
+char *
 shk_your(buf, obj)
 char *buf;
 struct obj *obj;
@@ -5883,7 +5905,7 @@ struct monst *mon;
 		if(u.sealsActive&SEAL_ANDROMALIUS && !NoBInvis 
 		  && !((levl[u.ux][u.uy].lit == 0 && (dimness(u.ux, u.uy) <= 0)) //dark square
 			 || (ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE)) //face-covering mask
-			 || (uarmh && (uarmh->otyp==PLASTEEL_HELM || uarmh->otyp==PONTIFF_S_CROWN)) //face-covering helm
+			 || (uarmh && (uarmh->otyp==PLASTEEL_HELM || uarmh->otyp==PONTIFF_S_CROWN || uarmh->otyp==FACELESS_HELM)) //OPAQUE face-covering helm (visored should also work)
 			 || (uarmc && (uarmc->otyp==WHITE_FACELESS_ROBE || uarmc->otyp==BLACK_FACELESS_ROBE || uarmc->otyp==SMOKY_VIOLET_FACELESS_ROBE))//face-covering robe
 		  )
 		) count++; 

@@ -29,7 +29,7 @@ const struct propname {
     int prop_num;
     const char *prop_name;
 } propertynames[] = {
-    { INVULNERABLE, "invulnerable" },
+    { SANCTUARY, "sactuary" },
     { STONED, "petrifying" },
     { FROZEN_AIR, "frozen air" },
     { SLIMED, "becoming slime" },
@@ -533,7 +533,7 @@ nh_timeout()
 			}
 	    }
 
-	    if (u.uhave.amulet || u.ugangr[Align2gangr(u.ualign.type)]) timeout = timeout / 2;
+	    if (u.uhave.amulet || godlist[u.ualign.god].anger) timeout = timeout / 2;
 
 	    if (moves >= u.luckturn + timeout) {
 			if(u.uluck > baseluck)
@@ -546,7 +546,15 @@ nh_timeout()
 #ifdef CONVICT
     if(Phasing) phasing_dialogue();
 #endif /* CONVICT */
-	if(u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20) return; /* things past this point could kill you */
+	if(u.uprops[SANCTUARY].intrinsic&TIMEOUT){
+		u.uprops[SANCTUARY].intrinsic--;
+		if(!u.uprops[SANCTUARY].intrinsic){
+			if(!Blind)
+				pline("The shimmering light fades.");
+			else You_feel("exposed to harm once more.");
+		}
+	}
+	if(Invulnerable) return; /* things past this point could kill you */
 	if(Stoned) stoned_dialogue();
 	if(Golded) golded_dialogue();
 	if(Slimed) slime_dialogue();
@@ -699,6 +707,8 @@ nh_timeout()
 #endif
 
 	for(upp = u.uprops; upp < u.uprops+SIZE(u.uprops); upp++){
+		if(upp - u.uprops == SANCTUARY)
+			continue; /*Already decremented above. This should be redundant as properties don't time out while invulnerable */
 		if((youracedata->mtyp == PM_SHOGGOTH || youracedata->mtyp == PM_PRIEST_OF_GHAUNADAUR) && upp - u.uprops == BLINDED
 			&&  upp->intrinsic & TIMEOUT
 		){
@@ -2501,7 +2511,7 @@ do_storms()
     if(levl[u.ux][u.uy].typ == CLOUD) {
 	/* inside a cloud during a thunder storm is deafening */
 	pline("Kaboom!!!  Boom!!  Boom!!");
-	if(!(u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20)) {
+	if(!Invulnerable) {
 	    stop_occupation();
 	    nomul(-3, "hiding from thunderstorm");
 	}
@@ -2865,7 +2875,6 @@ timer_element * tm;
 			return;
 		}
 	}
-	impossible("couldn't find tm in processing chain");
 	return;
 }
 
@@ -2900,7 +2909,7 @@ void
 run_timers()
 {
     timer_element *curr;
-
+	flags.run_timers = FALSE;
     /*
      * Always use the first element.  Elements may be added or deleted at
      * any time.  The list is ordered, we are done when the first element
@@ -2991,6 +3000,28 @@ timer_element * tm;
 		next_timer = curr->tnxt;
 		(void) stop_timer(curr->func_index, curr);
 	}
+}
+
+/* temporarily pause processing of all timers on chain until it they are resumed */
+void
+pause_timers(tm)
+timer_element * tm;
+{
+	timer_element *curr;
+	for (curr = tm; curr; curr = tm->tnxt)
+		rem_procchain_tm(curr);
+}
+
+/* resume processing of all timers on chain */
+void
+resume_timers(tm)
+timer_element * tm;
+{
+	timer_element *curr;
+	for (curr = tm; curr; curr = tm->tnxt)
+		add_procchain_tm(curr);
+	/* catch up with lost time */
+	run_timers();
 }
 
 void
@@ -3114,7 +3145,6 @@ struct monst * mon;
 boolean travelling;	/* if true, don't vanish summoned items in its inventory */
 {
 	if (!mon) return;
-	boolean done_any = FALSE;
 	timer_element * tm;
 	struct esum * esum;
 	for (tm = timer_base; tm; tm = tm->next) {
@@ -3150,14 +3180,33 @@ boolean travelling;	/* if true, don't vanish summoned items in its inventory */
 			}
 
 			adjust_timer_duration(tm, min(0, monstermoves - tm->timeout));
-			done_any = TRUE;
+			flags.run_timers = TRUE;
 
 			/* remove "permanent" flag from esum so it will despawn */
 			esum->permanent = 0;
+			/* remove pointer to summoner, who is gone (and may be freed soon) */
+			/* adjusting summonpwr of summoner is moot */
+			esum->summoner = (struct monst *)0;
 		}
 	}
-	if (done_any)
-		run_timers();
+}
+
+/*
+ * stops all corpse-related timers on otmp
+ */
+void
+stop_corpse_timers(otmp)
+struct obj * otmp;
+{
+	if(!otmp->timed)
+		return;
+	(void) stop_timer(ROT_CORPSE, otmp->timed);
+	(void) stop_timer(MOLDY_CORPSE, otmp->timed);
+	(void) stop_timer(REVIVE_MON, otmp->timed);
+	(void) stop_timer(SLIMY_CORPSE, otmp->timed);
+	(void) stop_timer(ZOMBIE_CORPSE, otmp->timed);
+	(void) stop_timer(SHADY_CORPSE, otmp->timed);
+	(void) stop_timer(YELLOW_CORPSE, otmp->timed);
 }
 
 #endif /* OVL0 */

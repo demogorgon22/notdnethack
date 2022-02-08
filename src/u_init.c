@@ -15,7 +15,6 @@ struct trobj {
 };
 
 STATIC_DCL void FDECL(ini_inv, (struct trobj *));
-STATIC_DCL void FDECL(knows_object,(int));
 STATIC_DCL void FDECL(knows_class,(CHAR_P));
 STATIC_DCL boolean FDECL(restricted_spell_discipline, (int));
 
@@ -90,8 +89,8 @@ static struct trobj Anachrononaut_Hlf[] = {
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Anachrononaut_Dw[] = {
-	{ HEAVY_MACHINE_GUN, 5, WEAPON_CLASS, 1, 0 },
-	{ PISTOL, 1, WEAPON_CLASS, 1, 0 },
+	{ HEAVY_MACHINE_GUN, 3, WEAPON_CLASS, 1, 0 },
+	{ RIFLE, 3, WEAPON_CLASS, 1, 0 },
 	{ SEISMIC_HAMMER, 0, WEAPON_CLASS, 1, 0 },
 	{ STICK_OF_DYNAMITE, 0, TOOL_CLASS, 15, 0 },
 	{ HIGH_ELVEN_PLATE, 1, ARMOR_CLASS, 1, 0 },
@@ -551,7 +550,7 @@ static struct trobj Samurai[] = {
 #define S_WEAPON	0
 	{ KATANA, 0, WEAPON_CLASS, 1, UNDEF_BLESS },
 #define S_SECOND	1
-	{ SHORT_SWORD, 0, WEAPON_CLASS, 1, UNDEF_BLESS }, /* wakizashi */
+	{ WAKIZASHI, 0, WEAPON_CLASS, 1, UNDEF_BLESS },
 #define S_ARROWS	3
 	{ YUMI, 0, WEAPON_CLASS, 1, UNDEF_BLESS },
 	{ YA, 0, WEAPON_CLASS, 25, UNDEF_BLESS }, /* variable quan */
@@ -933,6 +932,28 @@ static const struct def_skill Skill_Ana[] = {
     { P_NONE, 0 }
 };
 
+static const struct def_skill Skill_Dwa_Ana[] = {
+    { P_AXE, P_EXPERT },
+    { P_SHORT_SWORD, P_EXPERT },{ P_LANCE,  P_EXPERT },
+    { P_SABER, P_EXPERT },		{ P_LONG_SWORD,  P_BASIC },
+    { P_CLUB, P_SKILLED },		{ P_QUARTERSTAFF, P_EXPERT },
+	{ P_BROAD_SWORD, P_EXPERT },{ P_HAMMER, P_BASIC },
+//#ifdef FIREARMS
+    { P_FIREARM, P_EXPERT },
+//#endif
+    { P_DART, P_EXPERT },		{ P_CROSSBOW, P_SKILLED },
+    { P_WHIP, P_SKILLED },		 { P_BOOMERANG, P_EXPERT },
+    { P_ATTACK_SPELL, P_SKILLED },	{ P_HEALING_SPELL, P_SKILLED },
+    { P_DIVINATION_SPELL, P_SKILLED},	{ P_MATTER_SPELL, P_SKILLED},
+	{ P_ENCHANTMENT_SPELL, P_BASIC },
+#ifdef STEED
+    { P_RIDING, P_BASIC },
+#endif
+    { P_TWO_WEAPON_COMBAT, P_EXPERT },
+    { P_BARE_HANDED_COMBAT, P_BASIC },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_Droid_Ana[] = {
     { P_SHORT_SWORD, P_EXPERT },{ P_LANCE,  P_EXPERT },
 	{ P_POLEARMS, P_EXPERT },    { P_SABER, P_EXPERT },
@@ -1069,7 +1090,6 @@ static const struct def_skill Skill_C[] = {
     { P_NONE, 0 }
 };
 
-#ifdef CONVICT
 static const struct def_skill Skill_Con[] = {
     { P_DAGGER, P_SKILLED },		{ P_KNIFE,  P_EXPERT },
     { P_HAMMER, P_SKILLED },		{ P_PICK_AXE, P_EXPERT },
@@ -1081,25 +1101,6 @@ static const struct def_skill Skill_Con[] = {
     { P_TWO_WEAPON_COMBAT, P_SKILLED },
     { P_BARE_HANDED_COMBAT, P_SKILLED },
     { P_BEAST_MASTERY, P_BASIC },
-    { P_NONE, 0 }
-};
-#endif  /* CONVICT */
-static const struct def_skill Skill_Mad[] = {
-    { P_DAGGER, P_SKILLED },		{ P_KNIFE,  P_EXPERT },
-    { P_AXE, P_EXPERT },			{ P_MORNING_STAR, P_SKILLED },
-    { P_CLUB, P_EXPERT },		    { P_MACE, P_BASIC },
-    { P_DART, P_SKILLED },		    { P_FLAIL, P_BASIC },
-    { P_SHORT_SWORD, P_BASIC },		{ P_TRIDENT, P_SKILLED },
-	{ P_HARVEST, P_SKILLED },		{ P_WHIP, P_SKILLED },
-    { P_ATTACK_SPELL, P_BASIC },	{ P_ESCAPE_SPELL, P_SKILLED },
-    { P_HEALING_SPELL, P_SKILLED }, { P_DIVINATION_SPELL, P_EXPERT },
-	{ P_ENCHANTMENT_SPELL, P_EXPERT },
-    { P_CLERIC_SPELL, P_EXPERT },
-    { P_MATTER_SPELL, P_BASIC },
-    { P_WAND_POWER, P_SKILLED },
-    { P_TWO_WEAPON_COMBAT, P_SKILLED },
-    { P_BARE_HANDED_COMBAT, P_EXPERT },
-    { P_BEAST_MASTERY, P_EXPERT },
     { P_NONE, 0 }
 };
 
@@ -1126,12 +1127,12 @@ static const struct def_skill Skill_I[] = {
     { P_MATTER_SPELL, P_EXPERT },
     { P_NONE, 0 }
 };
-#ifdef BARD
+
 static const struct def_skill Skill_Elf_Music[] = {
     { P_MUSICALIZE, P_EXPERT },
     { P_NONE, 0 }
 };
-#endif
+
 static const struct def_skill Skill_Elf_Ana[] = {
     { P_ENCHANTMENT_SPELL, P_EXPERT },
     { P_MARTIAL_ARTS, P_GRAND_MASTER },
@@ -1207,9 +1208,29 @@ static const struct def_skill Skill_Mon[] = {
     { P_ENCHANTMENT_SPELL, P_BASIC },{ P_CLERIC_SPELL, P_SKILLED }, 
     { P_ESCAPE_SPELL, P_BASIC },	{ P_MATTER_SPELL, P_BASIC },
     { P_MARTIAL_ARTS, P_GRAND_MASTER },	{ P_TWO_WEAPON_COMBAT, P_GRAND_MASTER },
+	{ P_BOOMERANG, P_SKILLED },
 #ifdef BARD
     { P_MUSICALIZE, P_BASIC },
 #endif
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Mad[] = {
+    { P_DAGGER, P_SKILLED },		{ P_KNIFE,  P_EXPERT },
+    { P_AXE, P_EXPERT },			{ P_MORNING_STAR, P_SKILLED },
+    { P_CLUB, P_EXPERT },		    { P_MACE, P_BASIC },
+    { P_DART, P_BASIC },		    { P_FLAIL, P_BASIC },
+    { P_SHORT_SWORD, P_BASIC },		{ P_TRIDENT, P_SKILLED },
+	{ P_HARVEST, P_SKILLED },		{ P_WHIP, P_SKILLED },
+    { P_ATTACK_SPELL, P_BASIC },	{ P_ESCAPE_SPELL, P_SKILLED },
+    { P_HEALING_SPELL, P_SKILLED }, { P_DIVINATION_SPELL, P_EXPERT },
+	{ P_ENCHANTMENT_SPELL, P_EXPERT },
+    { P_CLERIC_SPELL, P_EXPERT },
+    { P_MATTER_SPELL, P_BASIC },
+    { P_WAND_POWER, P_SKILLED },
+    { P_TWO_WEAPON_COMBAT, P_SKILLED },
+    { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_BEAST_MASTERY, P_BASIC },
     { P_NONE, 0 }
 };
 
@@ -1547,7 +1568,7 @@ static const struct def_skill Skill_W[] = {
 static const char *oseVowels[] = {"a","e","i","o","u","ae","oe","oo","y"};
 static const char *oseConsonants[] = {"b","c","d","f","g","h","j","k","l","m","n","p","q","r","s","t","v","w","x","y","z","ch","ll","sh","th"};
 
-STATIC_OVL void
+void
 knows_object(obj)
 register int obj;
 {
@@ -1628,8 +1649,9 @@ u_init()
 	(void) memset((genericptr_t)&u, 0, sizeof(u));
 	u.ustuck = (struct monst *)0;
 
-	u.umystic = 0;
+	u.umabil = 0;
 	u.utats = 0;
+	u.umystic = ~0; //By default, all monk style attacks are active
 
 	u.summonMonster = FALSE;
 	u.uleadamulet = FALSE;
@@ -1660,9 +1682,6 @@ u_init()
 	uswapwep = uquiver = 0;
 	u.twoweap = 0;
 	u.ublessed = 0;				/* not worthy yet */
-	for(i=0;i<SIZE(u.ugangr);i++){
-		u.ugangr[i] = 0;				/* gods not angry */
-	}
 	u.ugifts   = 0;				/* no divine gifts bestowed */
 	u.uartisval = 0;			/* no artifacts directly acquired */
 	u.ucarinc = 0;
@@ -1871,7 +1890,8 @@ u_init()
 	for (i = 0; i <= MAXSPELL; i++) spl_book[i].sp_id = NO_SPELL;
 	u.ublesscnt = 300;			/* no prayers just yet */
 	u.ugoatblesscnt = 300;			/* goat counter also starts high */
-	u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = aligns[flags.initalign].value;
+	u.ualign.type = aligns[flags.initalign].value;
+	u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 	u.ulycn = NON_PM;
 
 #if defined(BSD) && !defined(POSIX_TYPES)
@@ -1909,7 +1929,8 @@ u_init()
 		knows_object(SENSOR_PACK);
 		knows_object(R_LYEHIAN_FACEPLATE);
 		knows_object(GLOVES);
-		u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = A_LAWFUL;
+		u.ualign.type = A_LAWFUL;
+		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 		flags.initalign = 0; // 0 == lawful
 		skill_init(Skill_Acu);
 	break;
@@ -1985,16 +2006,23 @@ u_init()
 		knows_object(POWER_ARMOR);
 		knows_object(KNUCKLE_DUSTERS);
 		if(Race_if(PM_DWARF)){
-			u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = A_CHAOTIC;
+			u.ualign.type = A_CHAOTIC;
+			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 			flags.initalign = 2; // 2 == chaotic
 		}
 		if(Race_if(PM_ANDROID)){
 			skill_init(Skill_Droid_Ana);
 			u.umartial = TRUE;
+		} else if(Race_if(PM_DWARF)){
+			skill_init(Skill_Dwa_Ana);
+			skill_add(Skill_All_Ana);
 		} else {
 			skill_init(Skill_Ana);
 			skill_add(Skill_All_Ana);
 		}
+		/* lawful god is actually Ilsensine */
+		urole.lgod = GOD_ILSENSINE;
+		
 	break;
 	case PM_BARBARIAN:
 		u.role_variant = TWO_HANDED_SWORD;
@@ -2023,7 +2051,8 @@ u_init()
 			ini_inv(BlackTorches);
 		}
 		if(Race_if(PM_CLOCKWORK_AUTOMATON)){
-			u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] = u.ualign.type = A_LAWFUL;
+			u.ualign.type = A_LAWFUL;
+			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 			flags.initalign = 0; // 0 == lawful
 		}
 		/* This depends on the order in objects.c */
@@ -2083,8 +2112,9 @@ u_init()
 			knows_object(SPE_HEALING);
 			knows_object(SPE_FORCE_BOLT);
 		}
-    	u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] =
-			u.ualign.type = A_VOID; /* Override racial alignment */
+		/* Override racial alignment */
+		u.ualign.type = A_VOID;
+		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = GOD_THE_VOID;
 		flags.initalign = 4; // 4 == VOID
 		u.hod += 10;  /*One transgression is all it takes*/
 		u.gevurah += 5; /*One resurection or two rehumanizations is all it takes*/
@@ -2108,8 +2138,9 @@ u_init()
 			u.uen = 600;
 		}
 		else u.uhunger = 200;
-    	u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] =
-			u.ualign.type = A_CHAOTIC; /* Override racial alignment */
+    	/* Override racial alignment */
+		u.ualign.type = A_CHAOTIC;
+		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 		flags.initalign = 2; // 2 == chaotic
         urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
         urace.lovemask = 0; /* Convicts are pariahs of their race */
@@ -2143,9 +2174,9 @@ u_init()
         skill_init(Skill_Mad);
 		u.ualign.sins += 13; /* You have sinned */
 		/* gods slightly torqued */
-		u.ugangr[GA_LAWFUL] = 1;
-		u.ugangr[GA_NEUTRAL] = 1;
-		u.ugangr[GA_CHAOTIC] = 1;
+		godlist[urole.lgod].anger = 1;
+		godlist[urole.ngod].anger = 1;
+		godlist[urole.cgod].anger = 1;
 		u.usanity = 75; /* Your sanity is not so hot */
 		u.umadness |= MAD_DELUSIONS; /* Your sanity is not so hot */
 		u.udrunken = 30; /* Your sanity is not so hot (and you may have once been more powerful) */
@@ -2417,19 +2448,21 @@ u_init()
 			skill_add(Skill_Elf_Ana);
 		}
 	    /* Elves can recognize all elvish objects */
-	    knows_object(ELVEN_SHORT_SWORD);
-	    knows_object(ELVEN_ARROW);
-	    knows_object(ELVEN_BOW);
-	    knows_object(ELVEN_SPEAR);
-	    knows_object(ELVEN_DAGGER);
-	    knows_object(ELVEN_BROADSWORD);
-	    knows_object(ELVEN_MACE);
-	    knows_object(ELVEN_LANCE);
-	    knows_object(ELVEN_MITHRIL_COAT);
-	    knows_object(ELVEN_HELM);
-	    knows_object(ELVEN_SHIELD);
-	    knows_object(ELVEN_BOOTS);
-	    knows_object(ELVEN_CLOAK);
+		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
+			knows_object(ELVEN_SHORT_SWORD);
+			knows_object(ELVEN_ARROW);
+			knows_object(ELVEN_BOW);
+			knows_object(ELVEN_SPEAR);
+			knows_object(ELVEN_DAGGER);
+			knows_object(ELVEN_BROADSWORD);
+			knows_object(ELVEN_MACE);
+			knows_object(ELVEN_LANCE);
+			knows_object(ELVEN_MITHRIL_COAT);
+			knows_object(ELVEN_HELM);
+			knows_object(ELVEN_SHIELD);
+			knows_object(ELVEN_BOOTS);
+			knows_object(ELVEN_CLOAK);
+		}
 	break;
 
 	case PM_MYRKALFR:
@@ -2441,7 +2474,7 @@ u_init()
 		 * class equipment
 	     */
 		ini_inv(SleepPotions);
-	    if (!Role_if(PM_PIRATE) && !Role_if(PM_WIZARD)) {
+	    if (!Role_if(PM_PIRATE) && !Role_if(PM_WIZARD) && !Role_if(PM_MADMAN)) {
 			ini_inv(RandRing);
 	    }
 		/*Drow can put a lot of practice into using their rings*/
@@ -2449,34 +2482,38 @@ u_init()
 		
 		if(Role_if(PM_NOBLEMAN)){
 			if(!flags.female){
-				u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] =
-					u.ualign.type = A_NEUTRAL; /* Males are neutral */
+				/* Males are neutral */
+				u.ualign.type = A_NEUTRAL;
+				u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 				flags.initalign = 1; // 1 == neutral
 			}
 		} else if(!Role_if(PM_EXILE) && !Role_if(PM_CONVICT) && !Role_if(PM_MADMAN)){
 			ini_inv(DrovenCloak);
-			if(!flags.female  && !Role_if(PM_ANACHRONOUNBINDER)){
-				u.ualignbase[A_CURRENT] = u.ualignbase[A_ORIGINAL] =
-					u.ualign.type = A_NEUTRAL; /* Males are neutral */
+			if(!flags.female && !Role_if(PM_ANACHRONOUNBINDER)){
+				/* Males are neutral */
+				u.ualign.type = A_NEUTRAL;
+				u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 				flags.initalign = 1; // 1 == neutral
 			}
 		} else if(Role_if(PM_ANACHRONONAUT)){
 			u.umartial = TRUE;
 		}
 	    /* Drow can recognize all droven objects */
-	    knows_object(DROVEN_SHORT_SWORD);
-	    knows_object(DROVEN_BOLT);
-	    knows_object(DROVEN_CROSSBOW);
-	    knows_object(DROVEN_DAGGER);
-	    knows_object(DROVEN_GREATSWORD);
-	    knows_object(DROVEN_LANCE);
-	    knows_object(DROVEN_SPEAR);
-	    knows_object(DROVEN_CHAIN_MAIL);
-	    knows_object(DROVEN_PLATE_MAIL);
-	    knows_object(NOBLE_S_DRESS);
-	    knows_object(CONSORT_S_SUIT);
-	    knows_object(DROVEN_CLOAK);
-	    knows_object(find_signet_ring());
+		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
+			knows_object(DROVEN_SHORT_SWORD);
+			knows_object(DROVEN_BOLT);
+			knows_object(DROVEN_CROSSBOW);
+			knows_object(DROVEN_DAGGER);
+			knows_object(DROVEN_GREATSWORD);
+			knows_object(DROVEN_LANCE);
+			knows_object(DROVEN_SPEAR);
+			knows_object(DROVEN_CHAIN_MAIL);
+			knows_object(DROVEN_PLATE_MAIL);
+			knows_object(NOBLE_S_DRESS);
+			knows_object(CONSORT_S_SUIT);
+			knows_object(DROVEN_CLOAK);
+			knows_object(find_signet_ring());
+		}
 		
 		if(Role_if(PM_ANACHRONONAUT)) u.uhouse = LAST_BASTION_SYMBOL;
 		else u.uhouse = !(Role_if(PM_EXILE) || (Role_if(PM_NOBLEMAN) && !flags.initgend) || Role_if(PM_CONVICT) || Role_if(PM_MADMAN) || Role_if(PM_PIRATE)) ?
@@ -2512,13 +2549,15 @@ u_init()
 	case PM_DWARF:{
 		struct obj* otmp;
 	    /* Dwarves can recognize all dwarvish objects */
-	    knows_object(DWARVISH_SPEAR);
-	    knows_object(DWARVISH_SHORT_SWORD);
-	    knows_object(DWARVISH_MATTOCK);
-	    knows_object(DWARVISH_HELM);
-	    knows_object(DWARVISH_MITHRIL_COAT);
-	    knows_object(DWARVISH_CLOAK);
-	    knows_object(DWARVISH_ROUNDSHIELD);
+		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
+			knows_object(DWARVISH_SPEAR);
+			knows_object(DWARVISH_SHORT_SWORD);
+			knows_object(DWARVISH_MATTOCK);
+			knows_object(DWARVISH_HELM);
+			knows_object(DWARVISH_MITHRIL_COAT);
+			knows_object(DWARVISH_CLOAK);
+			knows_object(DWARVISH_ROUNDSHIELD);
+		}
 		/* Dwarves know all carved wards */
 		u.wardsknown |= WARD_TOUSTEFNA;
 		u.wardsknown |= WARD_DREPRUN;
@@ -2535,11 +2574,13 @@ u_init()
 		}
 		skill_add(Skill_G);
 		ini_inv(TallowCandles);
-		knows_object(GNOMISH_POINTY_HAT);
-	    knows_object(AKLYS);
-	    knows_object(DWARVISH_HELM);
-	    knows_object(DWARVISH_MATTOCK);
-	    knows_object(DWARVISH_CLOAK);
+		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
+			knows_object(GNOMISH_POINTY_HAT);
+			knows_object(AKLYS);
+			knows_object(DWARVISH_HELM);
+			knows_object(DWARVISH_MATTOCK);
+			knows_object(DWARVISH_CLOAK);
+		}
     break;
 	case PM_SALAMANDER:
 		skill_add(Skill_Sala);
@@ -2554,17 +2595,19 @@ u_init()
           && !Role_if(PM_MADMAN)
 		) ini_inv(Xtra_food);
 	    /* Orcs can recognize all orcish objects */
-	    knows_object(ORCISH_SHORT_SWORD);
-	    knows_object(ORCISH_ARROW);
-	    knows_object(ORCISH_BOW);
-	    knows_object(ORCISH_SPEAR);
-	    knows_object(ORCISH_DAGGER);
-	    knows_object(ORCISH_CHAIN_MAIL);
-	    knows_object(ORCISH_RING_MAIL);
-	    knows_object(ORCISH_HELM);
-	    knows_object(ORCISH_SHIELD);
-	    knows_object(URUK_HAI_SHIELD);
-	    knows_object(ORCISH_CLOAK);
+		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
+			knows_object(ORCISH_SHORT_SWORD);
+			knows_object(ORCISH_ARROW);
+			knows_object(ORCISH_BOW);
+			knows_object(ORCISH_SPEAR);
+			knows_object(ORCISH_DAGGER);
+			knows_object(ORCISH_CHAIN_MAIL);
+			knows_object(ORCISH_RING_MAIL);
+			knows_object(ORCISH_HELM);
+			knows_object(ORCISH_SHIELD);
+			knows_object(URUK_HAI_SHIELD);
+			knows_object(ORCISH_CLOAK);
+		}
 		if(Role_if(PM_BARD)){
 			skill_add(Skill_Orc_Brd);
 			ini_inv(Orc_Brd_equip);
@@ -2574,6 +2617,10 @@ u_init()
 		if(Role_if(PM_BARD)){
 			u.umartial = TRUE;
 			u.uenbonus += 30;
+			calc_total_maxen();
+			u.uen = u.uenmax;
+		} else if(Role_if(PM_MADMAN)) {
+			u.uenbonus += 10 - u.uenmax;
 			calc_total_maxen();
 			u.uen = u.uenmax;
 		} else if(u.uenmax < 15) {
@@ -2721,6 +2768,14 @@ u_init()
 				flags.HDbreath = AD_COLD;
 				HCold_resistance |= (FROMRACE|FROMOUTSIDE);
 			}
+		} else if(Role_if(PM_MADMAN)){
+			if(flags.initgend){
+				flags.HDbreath = AD_RBRE;
+			}
+			else {
+				flags.HDbreath = AD_FIRE;
+				HFire_resistance |= (FROMRACE|FROMOUTSIDE);
+			}
 		} else switch(rnd(6)){
 			case 1:
 				flags.HDbreath = AD_COLD;
@@ -2864,6 +2919,10 @@ register struct trobj *trop;
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
 			}
+			if(obj->otyp == RIFLE && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
+				set_material_gm(obj, MITHRIL);
+				add_oprop(obj, OPROP_BLADED);
+			}
 			if(obj->otyp == PLAIN_DRESS && Role_if(PM_ANACHRONONAUT) && Race_if(PM_ANDROID)){
 				set_material_gm(obj, LEATHER);
 			}
@@ -2878,9 +2937,6 @@ register struct trobj *trop;
 			}
 			if(obj->otyp == GAUNTLETS && Race_if(PM_CHIROPTERAN)){
 				set_material_gm(obj, LEATHER);
-			}
-			if(obj->otyp == PISTOL && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
-				set_material_gm(obj, MITHRIL);
 			}
 			if(obj->otyp == SEISMIC_HAMMER && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
@@ -3095,6 +3151,9 @@ register struct trobj *trop;
             if (obj->otyp == STRAITJACKET ) {
                 obj->cursed = TRUE;
             }
+            if (obj->otyp == AMULET_OF_NULLIFY_MAGIC && Role_if(PM_MADMAN) ) {
+                obj->cursed = TRUE;
+            }
 			if (obj->otyp == TINNING_KIT) {
 				obj->spe = rn1(50, 50);	/* more charges than standard generation */
 			}
@@ -3144,7 +3203,7 @@ register struct trobj *trop;
 		if (otyp == OIL_LAMP)
 			discover_object(POT_OIL, TRUE, FALSE);
 
-		if(obj->otyp == AMULET_OF_NULLIFY_MAGIC && Role_if(PM_ANACHRONONAUT) && !uamul){
+		if(obj->otyp == AMULET_OF_NULLIFY_MAGIC && (Role_if(PM_ANACHRONONAUT) || Role_if(PM_MADMAN)) && !uamul){
 			setworn(obj, W_AMUL);
 		}
 		

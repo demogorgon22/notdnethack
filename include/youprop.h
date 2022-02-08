@@ -155,9 +155,6 @@
 #define ETimeStop		u.uprops[TIME_STOP].extrinsic
 #define TimeStop		(HTimeStop || ETimeStop)
 
-/* Intrinsics only */
-#define Invulnerable		u.uprops[INVULNERABLE].intrinsic    /* [Tom] */
-
 #define RapidHealing		u.uprops[RAPID_HEALING].intrinsic
 
 /* Extrinsics only */
@@ -166,7 +163,10 @@
 /*** Troubles ***/
 /* Pseudo-property */
 #define Punished		(uball)
-#define	Insanity	(100 - u.usanity)
+#define	Insanity	 (100 - u.usanity)
+#define	FacelessHelm(obj) ((obj)->otyp == PLASTEEL_HELM || (obj)->otyp == CRYSTAL_HELM || (obj)->otyp == PONTIFF_S_CROWN || (obj)->otyp == FACELESS_HELM)
+#define	FacelessCloak(obj) ((obj)->otyp == WHITE_FACELESS_ROBE || (obj)->otyp == BLACK_FACELESS_ROBE || (obj)->otyp == SMOKY_VIOLET_FACELESS_ROBE)
+#define	Faceless(obj) (FacelessHelm(obj) || FacelessCloak(obj))
 
 #define save_vs_sanloss()	((uwep && uwep->oartifact == ART_NODENSFORK) || (rnd(30) < ACURR(A_WIS)))
 
@@ -500,7 +500,17 @@
 #define Amphibious		(HMagical_breathing || EMagical_breathing || \
 				 (Swimming && u.divetimer > 0 && u.usubwater) || \
 				 amphibious(youracedata))
+
+#define HNightmare	u.uprops[WALKING_NIGHTMARE].intrinsic
+#define ENightmare	u.uprops[WALKING_NIGHTMARE].extrinsic
+#define Nightmare		(HNightmare || ENightmare)
+
+#define HSanctuary	u.uprops[SANCTUARY].intrinsic
+#define ESanctuary	u.uprops[SANCTUARY].extrinsic
+#define Sactuary	(HSanctuary || ESanctuary)
 	/* Get wet, may go under surface */
+
+#define	Invulnerable	(Sactuary || u.uinvulnerable || u.spiritPColdowns[PWR_PHASE_STEP] >= moves + 20)
 
 #define Breathless		(HMagical_breathing || EMagical_breathing || \
 				 breathless(youracedata))

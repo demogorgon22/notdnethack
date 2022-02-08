@@ -44,6 +44,7 @@ STATIC_DCL int FDECL(percent_success, (int));
 STATIC_DCL int NDECL(throwspell);
 STATIC_DCL void NDECL(cast_protection);
 STATIC_DCL void NDECL(cast_abjuration);
+STATIC_DCL void FDECL(cast_mass_healing, (struct obj *));
 STATIC_DCL boolean FDECL(sightwedge, (int,int, int,int, int,int));
 STATIC_DCL void FDECL(spell_backfire, (int));
 STATIC_DCL int FDECL(spellhunger, (int));
@@ -1081,6 +1082,7 @@ int menutype;
 	if (spellid(0) == NO_SPELL && !((uarmh && uarmh->oartifact == ART_STORMHELM)  
 		|| (uwep && uwep->oartifact == ART_DEATH_SPEAR_OF_KEPTOLO) 
 		|| (uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM)
+		|| (uarmh && check_oprop(uarmh, OPROP_BLAST))
 	)){
 	    You("don't know any spells right now.");
 	    return FALSE;
@@ -1420,17 +1422,33 @@ update_alternate_spells()
 	int i;
 
 	// for artifacts
-	if (uarmh && uarmh->oartifact == ART_STORMHELM){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_LIGHTNING_STORM) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
+	if (uarmh){
+		if(uarmh->oartifact == ART_STORMHELM){
+			for (i = 0; i < MAXSPELL; i++) {
+				if (spellid(i) == SPE_LIGHTNING_STORM) {
+					if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+					break;
+				}
+				if (spellid(i) == NO_SPELL)  {
+					spl_book[i].sp_id = SPE_LIGHTNING_STORM;
+					spl_book[i].sp_lev = objects[SPE_LIGHTNING_STORM].oc_level;
+					spl_book[i].sp_know = 1;
+					break;
+				}
 			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_LIGHTNING_STORM;
-				spl_book[i].sp_lev = objects[SPE_LIGHTNING_STORM].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
+		}
+		if(check_oprop(uarmh, OPROP_BLAST)){
+			for (i = 0; i < MAXSPELL; i++) {
+				if (spellid(i) == SPE_FIREBALL) {
+					if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+					break;
+				}
+				if (spellid(i) == NO_SPELL)  {
+					spl_book[i].sp_id = SPE_FIREBALL;
+					spl_book[i].sp_lev = objects[SPE_FIREBALL].oc_level;
+					spl_book[i].sp_know = 1;
+					break;
+				}
 			}
 		}
 	}
@@ -1541,6 +1559,8 @@ int atype;
 	case AD_DEAD:
 	case AD_DRLI:
 	case AD_STAR:
+	case AD_HOLY:
+	case AD_UNHY:
 		return P_ATTACK_SPELL;
 	case AD_DRST:
 	case AD_ACID:
@@ -1746,6 +1766,46 @@ cast_abjuration()
 			abjure_summon(mtmp, dur);
 		}
 	}
+}
+
+
+/* Banish all summoned creatures 
+ */
+void
+expel_summons()
+{
+	struct monst *mtmp, *nmon;
+	int dur;
+
+	for (mtmp=fmon; mtmp; mtmp = nmon) {
+		nmon = mtmp->nmon;
+		if (get_mx(mtmp, MX_ESUM)) {
+			dur = timer_duration_remaining(get_timer(mtmp->timed, DESUMMON_MON));
+			mtmp->mextra_p->esum_p->permanent = 0;
+			abjure_summon(mtmp, dur);
+		}
+	}
+}
+
+
+STATIC_OVL void
+cast_extra_healing_at(x, y, arg)
+int x, y;
+genericptr_t arg;
+{
+	struct monst * mtmp = m_u_at(x, y);
+	if (mtmp == &youmonst)
+		zapyourself((struct obj *)arg, TRUE);
+	else if (mtmp && mtmp->mtame)
+		bhitm(mtmp, (struct obj *)arg);
+}
+
+STATIC_OVL void
+cast_mass_healing(otmp)
+struct obj * otmp;
+{
+	int radius = 2 + P_SKILL(P_HEALING_SPELL) + Spellboost;
+	do_clear_area(u.ux, u.uy, radius, cast_extra_healing_at, (genericptr_t)otmp);
 }
 
 /* attempting to cast a forgotten spell will cause disorientation */
@@ -2075,9 +2135,9 @@ spiriteffects(power, atme)
 					Your("shadow flows under %s, swallowing %s up!",mon_nam(mon),mhim(mon));
 					cprefx(monsndx(mon->data), TRUE, TRUE);
 					cpostfx(monsndx(mon->data), FALSE, TRUE, FALSE);
-					if(u.ugangr[Align2gangr(u.ualign.type)]) {
-						u.ugangr[Align2gangr(u.ualign.type)] -= ((value * (u.ualign.type == A_CHAOTIC ? 2 : 3)) / MAXVALUE);
-						if(u.ugangr[Align2gangr(u.ualign.type)] < 0) u.ugangr[Align2gangr(u.ualign.type)] = 0;
+					if(godlist[u.ualign.god].anger) {
+						godlist[u.ualign.god].anger -= ((value * (u.ualign.type == A_CHAOTIC ? 2 : 3)) / MAXVALUE);
+						if(godlist[u.ualign.god].anger < 0) godlist[u.ualign.god].anger = 0;
 					} else if(u.ualign.record < 0) {
 						if(value > MAXVALUE) value = MAXVALUE;
 						if(value > -u.ualign.record) value = -u.ualign.record;
@@ -2261,7 +2321,7 @@ spiriteffects(power, atme)
 				otmp = mksobj(SHURIKEN, MKOBJ_NOINIT);
 			    otmp->blessed = 0;
 			    otmp->cursed = 0;
-				projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux+xadj, u.uy+yadj, u.dx, u.dy, 0, rn1(5,5), TRUE, FALSE, FALSE);
+				projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux+xadj, u.uy+yadj, u.dx, u.dy, 0, rn1(5,5), TRUE, FALSE, FALSE);
 				nomul(0, NULL);
 			}
 			losehp(dsize, "little shards of metal ripping out of your body", KILLED_BY);
@@ -2576,7 +2636,7 @@ spiriteffects(power, atme)
 				otmp->cursed = 0;
 				otmp->spe = 1; /* to indicate it's yours */
 				otmp->ovar1 = 1 + u.ulevel/10;
-				projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, rn1(5,5), TRUE, TRUE, FALSE);
+				projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, rn1(5,5), TRUE, TRUE, FALSE);
 				nomul(0, NULL);
 			} else return 0;
 		break;
@@ -2620,7 +2680,7 @@ spiriteffects(power, atme)
 				You("ask the earth to open.");
 				digfarhole(TRUE, u.ux+u.dx, u.uy+u.dy);
 				otmp = mksobj(BOULDER, MKOBJ_NOINIT);
-				projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 1, FALSE, FALSE, FALSE);
+				projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 1, FALSE, FALSE, FALSE);
 				nomul(0, NULL);
 			} else break;
 		}break;
@@ -2631,7 +2691,7 @@ spiriteffects(power, atme)
 			otmp->spe = 1; /* to indicate it's yours */
 			otmp->ovar1 = d(5,dsize); /* save the damge this should do */
 			You("spit venom.");
-			projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 10, TRUE, FALSE, FALSE);
+			projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 10, TRUE, FALSE, FALSE);
 		}break;
 		case PWR_SUCKLE_MONSTER:{
 			struct monst *mon;
@@ -3601,7 +3661,7 @@ spiriteffects(power, atme)
 		case PWR_ENLIGHTENMENT:
 			You_feel("self-knowledgeable...");
 			display_nhwindow(WIN_MESSAGE, FALSE);
-			enlightenment(0);
+			doenlightenment();
 			pline_The("feeling subsides.");
 		break;
 		case PWR_DAMNING_DARKNESS:
@@ -3977,7 +4037,7 @@ spiriteffects(power, atme)
 			set_material_gm(qvr, SHADOWSTEEL);
 			qvr->opoisoned = (OPOISON_BASIC|OPOISON_BLIND);
 			add_oprop(qvr, OPROP_PHSEW);
-			projectile(&youmonst, qvr, (void *)0, HMON_FIRED, mon->mx, mon->my, 0, 0, 0, 0, TRUE, FALSE, FALSE);
+			projectile(&youmonst, qvr, (void *)0, HMON_PROJECTILE|HMON_FIRED, mon->mx, mon->my, 0, 0, 0, 0, TRUE, FALSE, FALSE);
 			if(!DEADMONSTER(mon) && mon_can_see_you(mon)) // and mon_can_see_you(mon)?
 				setmangry(mon);
 			ttmp2 = maketrap(mon->mx, mon->my, WEB);
@@ -4417,6 +4477,7 @@ int
 spelleffects(int spell, boolean atme, int spelltyp)
 {
 	int energy, damage, chance, n, intell;
+	int casting_stat = base_casting_stat();
 	int skill, role_skill;
 	boolean confused = (Confusion != 0);
 	struct obj *pseudo;
@@ -4438,29 +4499,86 @@ spelleffects(int spell, boolean atme, int spelltyp)
 			return(0);
 		} else if (
 			!(spellid(spell) == SPE_LIGHTNING_STORM && uarmh && uarmh->oartifact == ART_STORMHELM) &&
+			!(spellid(spell) == SPE_FIREBALL && uarmh && check_oprop(uarmh, OPROP_BLAST)) &&
 			!((spellid(spell) == SPE_FORCE_BOLT || spellid(spell) == SPE_MAGIC_MISSILE) && 
 				uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM)
 		) {
 			if(spellknow(spell) <= 200) { /* 1% */
 				You("strain to recall the spell.");
-			} else if (spellknow(spell) <= 1000 && 
-				!(spellid(spell) == SPE_LIGHTNING_STORM || !uarmh || uarmh->oartifact != ART_STORMHELM)
-			) { /* 5% */
+			} else if (spellknow(spell) <= 1000) { /* 5% */
 				Your("knowledge of this spell is growing faint.");
 			}
 		}
 		energy = (spellev(spell) * 5);    /* 5 <= energy <= 35 */
+		
+		if(uwep && uwep->obj_material == MERCURIAL){
+			int level = u.ulevel;
+			int spellev = spellev(spell);
+			//Streaming
+			if(you_merc_streaming(uwep)){
+				if(level < 3);
+				else if(level < 10){
+					if(spellev == 1)
+						energy *= .8;
+				}
+				else if(level < 18){
+					if(spellev == 1)
+						energy *= .5;
+					else if(spellev == 2)
+						energy *= .8;
+				}
+				else{
+					if(spellev == 1)
+						energy *= .5;
+					else if(spellev == 2)
+						energy *= .5;
+					else if(spellev == 3)
+						energy *= .8;
+				}
+			}
+			else if(you_merc_kinstealing(uwep)){
+				if(level < 3);
+				else if(level < 18){
+					if(spellev == 1)
+						energy *= .8;
+				}
+				else{
+					if(spellev == 1)
+						energy *= .5;
+				}
+			}
+			//Chained
+			else {
+				if(level < 3);
+				else if(level < 10){
+					if(spellev == 1)
+						energy *= .8;
+				}
+				else if(level < 18){
+					if(spellev == 1)
+						energy *= .8;
+					else if(spellev == 2)
+						energy *= .8;
+				}
+				else{
+					if(spellev == 1)
+						energy *= .5;
+					else if(spellev == 2)
+						energy *= .5;
+				}
+			}
+		}
 
 		if (!Race_if(PM_INCANTIFIER) && u.uhunger <= 10 && spellid(spell) != SPE_DETECT_FOOD) {
 			You("are too hungry to cast that spell.");
 			return(0);
-		} else if (ACURR(A_STR) < 4)  {
+		} else if (ACURR(A_STR) < 4 && casting_stat != A_CHA)  {
 			You("lack the strength to cast spells.");
 			return(0);
 		} else if(check_capacity(
 			"Your concentration falters while carrying so much stuff.")) {
 			return (1);
-		} else if (!freehand()) {
+		} else if (!freehand() && casting_stat != A_CHA) {
 			Your("arms are not free to cast!");
 			return (0);
 		}
@@ -4731,6 +4849,9 @@ dothrowspell:
 		break;
 	case SPE_ABJURATION:
 		cast_abjuration();
+		break;
+	case SPE_MASS_HEALING:
+		cast_mass_healing(pseudo);
 		break;
 	default:
 		impossible("Unknown spell %d attempted.", spell);
@@ -5424,6 +5545,12 @@ int spellID;
 			strcat(desc3, "Blinded creatures hit by the ray can see again.");
 			strcat(desc4, "");
 			break;
+		case SPE_MASS_HEALING:
+			strcat(desc1, "Undirected healing magic that affects you and nearby pets.");
+			strcat(desc2, "Creatures affected are healed for a moderate amount.");
+			strcat(desc3, "Blinded creatures affected can see again.");
+			strcat(desc4, "");
+			break;
 		case SPE_DRAIN_LIFE:
 			strcat(desc1, "Creates a directed ray of draining magic.");
 			strcat(desc2, "Creatures affected by the ray lose a level and max health.");
@@ -5638,6 +5765,8 @@ base_casting_stat()
 		stat = A_WIS;
 	} else if(uwep && uwep->oartifact == ART_VELKA_S_RAPIER){
 		stat = A_INT;
+	} else if(u.sealsActive&SEAL_OSE){
+			stat = A_CHA;
 	} else if(u.specialSealsActive&SEAL_NUMINA && abs(u.wisSpirits - u.intSpirits) <= 1){
 		if(ACURR(A_WIS) > ACURR(A_INT))
 			stat = A_WIS;
@@ -5668,25 +5797,26 @@ int spell;
 	/* Intrinsic and learned ability are combined to calculate
 	 * the probability of player's success at cast a given spell.
 	 */
-	int chance, splcaster, special, statused;
+	int chance, splcaster, special, statused, casting_stat = base_casting_stat();
 	int difficulty;
 	int skill;
 	
-	if(Deadmagic && base_casting_stat() == A_INT) return 0;
-	if(Catapsi && base_casting_stat() == A_CHA) return 0;
-	if(Misotheism && base_casting_stat() == A_WIS) return 0;
+	if(Deadmagic && casting_stat == A_INT) return 0;
+	if(Catapsi && casting_stat == A_CHA) return 0;
+	if(Misotheism && casting_stat == A_WIS) return 0;
 	if(Nullmagic) return 0;
+	if(casting_stat != A_CHA && !freehand()) return 0;
 	
 	/* Calculate intrinsic ability (splcaster) */
 
 	splcaster = urole.spelbase;
 	special = urole.spelheal;
-	statused = ACURR(base_casting_stat());
+	statused = ACURR(casting_stat);
 	if(Role_if(PM_BARD) && spell_skilltype(spellid(spell)) == P_ENCHANTMENT_SPELL)
 		statused = ACURR(A_CHA);
 
 	if((Doubt || flat_mad_turn(MAD_APOSTASY))
-		&& (base_casting_stat() == A_WIS || spell_skilltype(spellid(spell)) == P_HEALING_SPELL || spell_skilltype(spellid(spell)) == P_CLERIC_SPELL)
+		&& (casting_stat == A_WIS || spell_skilltype(spellid(spell)) == P_HEALING_SPELL || spell_skilltype(spellid(spell)) == P_CLERIC_SPELL)
 	)
 		return 0;
 	if(mad_turn(MAD_TOO_BIG))
@@ -5694,12 +5824,20 @@ int spell;
 
 	/* some artifacts pracically cast the spells on their own */
 	if ((uarmh && uarmh->oartifact == ART_STORMHELM && spellid(spell) == SPE_LIGHTNING_STORM) ||
+		(uarmh && check_oprop(uarmh, OPROP_BLAST) && (spellid(spell) == SPE_FIREBALL || spellid(spell) == SPE_FIRE_STORM)) ||
 		(uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM && (
 		(spellid(spell) == SPE_FORCE_BOLT || spellid(spell) == SPE_MAGIC_MISSILE)))
 		) {
 		splcaster -= 200;
 	}
-	
+
+	if (uarmh){
+		if(uarmh->oartifact == ART_MITRE_OF_HOLINESS 
+		&& (Role_if(PM_PRIEST) || spell_skilltype(spellid(spell)) == P_CLERIC_SPELL)
+		)
+			splcaster -= urole.spelarmr;
+	}
+
 	if(uwep){
 		int cast_bon;
 		// powerful channeling artifacts
@@ -5708,11 +5846,15 @@ int spell;
 			|| uwep->oartifact == ART_INFINITY_S_MIRRORED_ARC
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
+			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
 		) splcaster -= urole.spelarmr;
+
+		if(uwep->obj_material == MERCURIAL)
+			splcaster -= 20;
 		
 		if (uwep->oartifact == ART_DEATH_SPEAR_OF_KEPTOLO
 			&& spell_skilltype(spellid(spell)) == P_ATTACK_SPELL
-			&& Race_if(PM_DROW) && strcmp(urole.ngod,"_Keptolo") 
+			&& Race_if(PM_DROW) && urole.ngod == GOD_KEPTOLO 
 			&& u.ualign.type == A_NEUTRAL && u.ualign.record >= 20
 		) {	// Bonus to attack spells, including granted drain life
 			splcaster -= urole.spelarmr;
@@ -5807,12 +5949,29 @@ int spell;
 		}
 	}
 
-	if (uarm && arm_blocks_upper_body(uarm->otyp)){
-		if (is_metallic(uarm) || uarm->oartifact == ART_DRAGON_PLATE)
-			splcaster += urole.spelarmr;
+	if (uarm){
+		if(arm_blocks_upper_body(uarm->otyp)){
+			if ((is_metallic(uarm) || uarm->oartifact == ART_DRAGON_PLATE) && !check_oprop(uarm, OPROP_BRIL))
+				splcaster += casting_stat == A_CHA ? uarmgbon : urole.spelarmr;
+		}
+		else {
+			if ((is_metallic(uarm) || uarm->oartifact == ART_DRAGON_PLATE) && !check_oprop(uarm, OPROP_BRIL))
+				splcaster += uarmfbon;
+		}
 
 		if (uarm->otyp == DROVEN_CHAIN_MAIL)
 			splcaster -= urole.spelarmr;
+	}
+	
+	if (uarmu){
+		if(arm_blocks_upper_body(uarmu->otyp)){
+			if (is_metallic(uarmu) && !check_oprop(uarmu, OPROP_BRIL))
+				splcaster += casting_stat == A_CHA ? uarmgbon : urole.spelarmr;
+		}
+		else {
+			if (is_metallic(uarmu) && !check_oprop(uarmu, OPROP_BRIL))
+				splcaster += uarmfbon;
+		}
 	}
 	
 	if (uarmc){
@@ -5825,26 +5984,34 @@ int spell;
 		if (uarmc->otyp == ROBE)
 			splcaster -= (urole.spelarmr
 			* ((uarmc->oartifact) ? 2 : 1)
-			/ ((uarm && (is_metallic(uarm) || uarm->oartifact == ART_DRAGON_PLATE)) ? 2 : 1));
+			/ ((uarm && (is_metallic(uarm) || uarm->oartifact == ART_DRAGON_PLATE) && !check_oprop(uarm, OPROP_BRIL)) ? 2 : 1));
+		if (is_metallic(uarmc) && !check_oprop(uarmc, OPROP_BRIL))
+			splcaster += uarmfbon;
 	}
 
-	if (uarmh) {
-		if (is_metallic(uarmh) && uarmh->otyp != HELM_OF_BRILLIANCE)
-			splcaster += uarmhbon;
+	if (uarmh && !Role_if(PM_MONK)) {
+		//Something up with madmen and this, it doesn't affect much.
+		if (is_metallic(uarmh) && uarmh->otyp != HELM_OF_BRILLIANCE && !check_oprop(uarmh, OPROP_BRIL))
+			splcaster += casting_stat == A_CHA ? urole.spelarmr : uarmhbon;
 	}
 
 	if (uarmg) {
-		if (is_metallic(uarmg))
-			splcaster += uarmgbon;
+		if(Role_if(PM_MONK)){
+			if(is_hard(uarmg))
+				splcaster += uarmgbon;
+		}
+		else if (is_metallic(uarmg) && !check_oprop(uarmg, OPROP_BRIL)){
+			splcaster += casting_stat == A_CHA ? uarmfbon : uarmgbon;
+		}
 	}
 
-	if (uarmf) {
-		if (is_metallic(uarmf))
+	if (uarmf && !Role_if(PM_MONK)) {
+		if (is_metallic(uarmf) && !check_oprop(uarmf, OPROP_BRIL))
 			splcaster += uarmfbon;
 	}
 
 	if (uarms) {
-		splcaster += urole.spelshld;
+		splcaster += casting_stat == A_CHA ? 0 : urole.spelshld;
 	}
 
 	if(u.sealsActive&SEAL_PAIMON) splcaster -= urole.spelarmr;
@@ -5905,7 +6072,7 @@ int spell;
 	 * to cast a spell.  The penalty is not quite so bad for the
 	 * player's role-specific spell.
 	 */
-	if (uarms && (is_metallic(uarms) || weight(uarms) > (int) objects[BUCKLER].oc_weight)) {
+	if (uarms && casting_stat != A_CHA && (is_metallic(uarms) || weight(uarms) > (int) objects[BUCKLER].oc_weight)) {
 		if (spellid(spell) == urole.spelspec) {
 			chance /= 2;
 		} else {
@@ -5968,14 +6135,14 @@ int spell;
 		chance = 100;
 	
 	//
-	if(Babble || Screaming || Strangled || FrozenAir || BloodDrown || Drowning){
+	if(casting_stat != A_CHA && (Babble || Screaming || Strangled || FrozenAir || BloodDrown || Drowning)){
 		chance = 0;
 	}
 	// these effects totally block the spell-choosing menu, but need to be handled here too for quivered spells
 	else if ((mad_turn(MAD_TOO_BIG)) ||
-		(Doubt && base_casting_stat() == A_WIS) ||
+		(Doubt && casting_stat == A_WIS) ||
 //		(mad_turn(MAD_SCIAPHILIA) && ()(dimness(u.ux, u.uy) != 3 && dimness(u.ux, u.uy) > 0) || (!levl[u.ux][u.uy].lit && dimness(u.ux, u.uy) == 0)) ||
-		(base_casting_stat() == A_WIS && flat_mad_turn(MAD_APOSTASY))
+		(casting_stat == A_WIS && flat_mad_turn(MAD_APOSTASY))
 		){
 		chance = 0;
 	}
@@ -6244,8 +6411,8 @@ dodestruction()
 {
 	struct monst *mon, *nmon;
 	int tmp, weptmp, tchtmp;
-	int clockwisex[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
-	int clockwisey[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
 	int i = rnd(8),j, lim=0;
 	struct attack destruction = { AT_NONE, AD_FIRE, 6, 6 };
 	if(!rn2(3))
@@ -6297,12 +6464,17 @@ doreinforce_binding()
 	menu_item *selected;
 	anything any;
 
+	/* validate that you have at least one binding to refresh */
+	if (!((u.spirit[QUEST_SPIRIT] && u.spiritT[QUEST_SPIRIT] > 0)
+		||(u.spirit[ALIGN_SPIRIT] && u.spiritT[ALIGN_SPIRIT] > 0)
+		|| u.sealCounts)) {
+		pline1(nothing_happens);
+		return FALSE;
+	}
+
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
 	any.a_void = 0;		/* zero out all bits */
-
-	Sprintf(buf, "Choose binding to refresh:");
-	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	
 	for(i=0;i<QUEST_SPIRIT && u.spirit[i];i++){
 		j = decode_sealID(u.spirit[i]) - FIRST_SEAL;
@@ -6314,7 +6486,7 @@ doreinforce_binding()
 		incntlet++;
 	}
 	i = QUEST_SPIRIT;
-	if(u.spirit[i]){
+	if(u.spirit[i] && u.spiritT[i] > 0){
 		j = decode_sealID(u.spirit[i]) - FIRST_SEAL;
 		Sprintf(buf, "%s, %ld", sealNames[j], u.spiritT[i] - monstermoves);
 		any.a_int = i+1;	/* must be non-zero */
@@ -6324,7 +6496,7 @@ doreinforce_binding()
 		incntlet++;
 	}
 	i = ALIGN_SPIRIT;
-	if(u.spirit[i]){
+	if(u.spirit[i] && u.spiritT[i] > 0){
 		j = decode_sealID(u.spirit[i]) - FIRST_SEAL;
 		Sprintf(buf, "%s, %ld", sealNames[j], u.spiritT[i] - monstermoves);
 		any.a_int = i+1;	/* must be non-zero */
@@ -6333,6 +6505,7 @@ doreinforce_binding()
 			MENU_UNSELECTED);
 		incntlet++;
 	}
+	end_menu(tmpwin, "Choose binding to refresh:");
 
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
