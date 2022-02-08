@@ -1861,6 +1861,13 @@ create_altar(a, croom)
 		/* shrines should be to a god, pick most appropriate god. */
 		a->god = align_to_god(alignment);
 	}
+	if(Role_if(PM_ANACHRONOUNBINDER) && Is_astralevel(&u.uz) && alignment == A_LAWFUL){
+		a->god = GOD_THE_VOID;
+		alignment = A_VOID;
+	}
+	if(In_void(&u.uz) && a->god == GOD_THE_VOID){
+		alignment = A_VOID;
+	}
 
 	add_altar(x, y, alignment, a->shrine, a->god);
 

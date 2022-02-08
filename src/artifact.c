@@ -9105,14 +9105,14 @@ arti_invoke(obj)
 				}
 			} break;
 			case COMMAND_ELDER:
-				if(Is_astralevel(&u.uz) && a_align(u.ux,u.uy) == A_NEUTRAL && u.uhave.amulet){
+				if(Is_astralevel(&u.uz) && a_align(u.ux,u.uy) == A_VOID && u.uhave.amulet){
 					pline("Ancient knowledge flows from the Elder Cerebral Fluid embedded in the Illithid Staff!");
 					pline("The knowledge begins to form into a dome around the high altar to the void.");
 					pline("Bright lights flash and suddenly the altar expands into a large hole.");
 					pline("You are sucked through!");
 					livelog_write_string("opened the void");
 					schedule_goto(&nearvoid_level, FALSE, FALSE, 0, (char *)0, (char *)0);	
-				} else if(Is_alignvoid(&u.uz) &&  a_align(u.ux,u.uy) == A_NEUTRAL){
+				} else if(Is_alignvoid(&u.uz) &&  a_align(u.ux,u.uy) == A_VOID){
 					pline("Ancient knowledge flows from the Elder Cerebral Fluid embedded in the Illithid Staff!");
 					pline("The knowledge begins to form into a dome around the whispering altar to the void.");
 					pline("Bright lights flash and suddenly the altar rebuilds into a staircase.");
