@@ -64,32 +64,32 @@ REGION:(01,08,06,11),unlit,"ordinary"
 REGION:(03,16,09,18),unlit,"ordinary"
 
 # Main Temple
-ALTAR:(71,09),neutral,altar
-ALTAR:(71,10),neutral,altar
+ALTAR:(71,09),neutral,altar,"the void"
+ALTAR:(71,10),neutral,altar,"the void"
 REGION:(52,05,74,14),unlit,"temple"
 
 # Northern Temple (Inner)
-ALTAR:(72,02),neutral,altar
+ALTAR:(72,02),neutral,altar,"the void"
 REGION:(66,01,74,03),unlit,"temple"
 
 # Northern Temple (Outer)
-ALTAR:(59,02),neutral,altar
+ALTAR:(59,02),neutral,altar,"the void"
 REGION:(49,00,61,04),unlit,"temple"
 
 # Souther Temple (Inner)
-ALTAR:(72,17),neutral,altar
+ALTAR:(72,17),neutral,altar,"the void"
 REGION:(66,16,74,18),unlit,"temple"
 
 # Southern Temple (Outer)
-ALTAR:(59,17),neutral,altar
+ALTAR:(59,17),neutral,altar,"the void"
 REGION:(49,15,61,19),unlit,"temple"
 
 # North Eastern Temple
-ALTAR:(39,01),neutral,altar
+ALTAR:(39,01),neutral,altar,"the void"
 REGION:(36,00,42,02),unlit,"temple"
 
 # South Eastern Tample
-ALTAR:(31,17),neutral,altar
+ALTAR:(31,17),neutral,altar,"the void"
 REGION:(30,16,35,18),unlit,"temple"
 
 # Stairs and Branch
@@ -320,7 +320,7 @@ ENDMAP
 REGION:(00,00,75,19),lit,"ordinary"
 # Altar to ???
 BRANCH:(37,10,37,10),(0,0,0,0)
-ALTAR:(37,09),neutral,altar
+ALTAR:(37,09),neutral,altar,"the void"
 # Stairs
 STAIR:(01,01),up
 STAIR:(49,12),down
@@ -424,5 +424,5 @@ MAP
  ------- 
 ENDMAP
 STAIR: (05,04), up
-ALTAR:(03,04),law,altar 
+ALTAR:(03,04),law,altar,"_Ilsensine"
 MONSTER:'7',"Ilsensine The Fallen", (02,04), peaceful
