@@ -319,7 +319,7 @@ struct obj {
 	|| (otmp)->otyp == DOUBLE_LIGHTSABER \
 	|| (otmp)->otyp == HYPOSPRAY_AMPULE \
 	|| (otmp)->oclass == RING_CLASS \
-	|| (otmp)->oclass == POTION_VAPORIZER \
+	|| (otmp)->otyp == POTION_VAPORIZER \
 	|| (otmp)->otyp == DOLL_S_TEAR \
 	)
 #define ECLIPSE_MOON	0
