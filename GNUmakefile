@@ -200,7 +200,8 @@ SPEC_DES = bigroom.des blacktemple.des castle.des chaos.des chaos2.des chaos3.de
            endgame.des gehennom.des knox.des labr.des law.des		\
            medusa.des grue.des mines.des neutrality.des oracle.des sokoban.des	\
            storage.des sunlesssea.des tomb.des tower.des yendor.des \
-	   void.des sacristy.des nowhere.des spire.des village.des
+	   void.des sacristy.des nowhere.des spire.des village.des \
+	   icecave.des blackforest.des dismalswamp.des archipelago.des
 
 ALL_TAG = $(QUEST_DES:%.des=dat/%.tag) $(SPEC_DES:%.des=dat/%.tag)
 

@@ -231,6 +231,11 @@ typedef struct branch {
 #define Is_qlocate(x)		(on_level(x, &qlocate_level))
 #define Is_nemesis(x)		(on_level(x, &nemesis_level))
 #define Is_knox(x)		(on_level(x, &knox_level))
+#define Is_leveetwn_level(x)     (on_level(x, &leveetwn_level))
+#define Is_arcboss_level(x)     (on_level(x, &arcboss_level))
+#define Is_advtown_level(x)     (on_level(x, &leveetwn_level) || on_level(x, &minetown_level) || \
+				on_level(x, &icetown_level) || on_level(x, &dsbog_level) || \
+				on_level(x, &bftemple_level))
 #define Is_minetown_level(x)     (on_level(x, &minetown_level))
 #define Is_mineend_level(x)     (on_level(x, &mineend_level))
 #define Is_sokoend_level(x)     (on_level(x, &sokoend_level))
@@ -239,6 +244,12 @@ typedef struct branch {
 							Role_if(PM_MADMAN) ? TRUE : Is_qstart(x))
 
 #define In_sokoban(x)	((x)->dnum == sokoban_dnum)
+#define In_icecaves(x)	((x)->dnum == ice_dnum)
+#define In_blackforest(x)	((x)->dnum == blackforest_dnum)
+#define In_dismalswamp(x)	((x)->dnum == dismalswamp_dnum)
+#define In_archipelago(x)	((x)->dnum == archipelago_dnum)
+#define In_adventure_branch(x)	(In_icecaves(x) || In_dismalswamp(x) || In_blackforest(x) || \
+					In_mines(x) || In_archipelago(x))
 #define In_tower(x)		((x)->dnum == tower_dnum)
 #define In_sea(x)		((x)->dnum == sea_dnum)
 #define Is_sunsea(x)	(In_sea(x) && dungeon_topology.sea_variant == SUNLESS_SEA_LEVEL)

@@ -1,0 +1,163 @@
+
+#
+
+#	The "fill" level for the ice caves.
+#
+#	This level is used to fill out any levels not occupied by
+#	specific levels as defined below.
+#
+MAZE: "icefill" , ' '
+INIT_MAP: 'I' , ' ' , true , true , random , true
+NOMAP
+#
+STAIR: random, up
+STAIR: random, down
+#
+OBJECT: '*', random, random
+OBJECT: '*', random, random
+OBJECT: '*', random, random
+OBJECT: '!', random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+#
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+
+#
+#Ice cave frozen settlement
+# Stolen from adeon's sheol patch
+#
+MAZE: "icetwn", ' '
+GEOMETRY:center,center
+MAP
+      --------------------------------------------------------
+      |..................-----------   -----------...........|              
+      |.......-.....-....|.........-----.........|.....-.....|              
+      |......| |...| |...+.........|.K.|.........+....| |....|              
+      |-----..-.....-....-----------...-----------.....-.....|-----------   
+      |....|.............+.......................+...........+..........|   
+      |....+.............+.......................+...........|---------.|   
+      |-----..-.....-...------------...------------....-.....|        |.|   
+      |......| |...| |..|          |...|          |...| |....|---     |.|   
+      |.......-.....-...---------- |...| ----------....-....---P|     |.|   
+      |..................--IIIIII---------IIIIIIIP--.......--PPP|     |.|   
+      --------------------III---IIIIIIIIIII---IIIPP---...---PPPP|     |.|   
+     --PPPIIIIIIIIIIIIIIIIIII| |.---...---.| |IIIIPPP-----PPPPPP|     |.|   
+    --PPPPPIIIIIIIIIIIIIIII..---.| |...| |.---...IIPPPPPPIIIPIII|     |.|   
+   --PPPPPIIIIIIIIIIIIIIIII......---.{.---........IIPPPIII.III..|  ----+----
+  --PPPPPPIIIIIIIIIIIIIIII.........................IIIII...TFFFT|  |..III..|
+ -------------IIIIIIIIIII............{.....................F...F|  |.......|
+             -------IIIII..................................F...F|  |.......|
+                   ---IIII.....----.....--------IIII.......F...F|  |.......|
+                     -----------  ---.---      ----IIIII...TFFFT|  |.......|
+                                    ---           ----III.......|  ---------
+ENDMAP
+REGION:(00,00,74,20),lit,"ordinary"
+STAIR: (37,18),up
+STAIR: (71,18),down
+
+# Front doors
+#DOOR:closed,(36,9)
+#DOOR:locked,(37,9)
+#DOOR:locked,(38,9)
+
+# Left side
+DOOR:open,(25,3)
+DOOR:open,(25,5)
+DOOR:closed,(25,6)
+DOOR:closed,(11,6)
+
+# Right side
+DOOR:open,(49,3)
+DOOR:open,(49,5)
+DOOR:closed,(49,6)
+
+MONSTER: '@', "armorsmith", (50,5), peaceful
+
+# Secret passageway door
+DOOR:closed,(61,5)
+DOOR:closed,(71,14)
+
+ALTAR:(61,17),random,altar
+MONSTER: '&', "ice devil", (61,17), hostile
+MONSTER: '&', "ice devil", (61,18), hostile
+
+REGION:(26,2,34,3),lit,"shop"
+REGION:(40,2,48,3),lit,"tool shop"
+REGION:(7,5,10,6),lit,"potion shop"
+
+DRAWBRIDGE:(37,11),north,open
+# monsters
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+
+
+MAZE: "iceboss", ' '
+GEOMETRY:center,center
+MAP
+                                                                            
+                          IIIIIIIIIIIIIIIIIIIII                             
+                         IIIIIIIIIIIIIIIIIIIIIII                            
+                        IIIIIIIIIIIIIIIIIIIIIIIII                           
+                       IIIIIIIIIIIIIIIIIIIIIIIIIII                          
+                      IIIIIIIIIIIIIIIIIIIIIIIIIIIII                         
+                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                        
+                    IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                       
+                   IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                      
+                  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                     
+                 .IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.                    
+                  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                     
+                   IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                      
+                    IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                       
+                     IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII                        
+                      IIIIIIIIIIIIIIIIIIIIIIIIIIIII                         
+                       IIIIIIIIIIIIIIIIIIIIIIIIIII                          
+                        IIIIIIIIIIIIIIIIIIIIIIIII                           
+                         IIIIIIIIIIIIIIIIIIIIIII                            
+                                                                            
+ENDMAP
+# Dungeon Description
+REGION:(00,00,75,19),lit,"ordinary"
+# Stairs
+STAIR:random,up
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+# Objects
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+# monsters.
+MONSTER:'F',"shrieker",(26,13)
+MONSTER:'F',"shrieker",(25,8)
+MONSTER:'F',"shrieker",(45,11)
+MONSTER:'Y',"Abominable Snowman",(23,10)
+WALLIFY

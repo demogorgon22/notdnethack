@@ -1,0 +1,134 @@
+
+#
+
+#	The "fill" level for the archipelago.
+#
+#	This level is used to fill out any levels not occupied by
+#	specific levels as defined below.
+#
+MAZE: "arcfill" , ' '
+INIT_MAP: 's' , '}' , true , false , lit , false
+NOMAP
+#
+STAIR: random, up
+STAIR: random, down
+#
+OBJECT: '*', random, random
+OBJECT: '*', random, random
+OBJECT: '*', random, random
+OBJECT: '!', random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+OBJECT: random, random, random
+#
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+#
+
+
+# Ice cave frozen settlement
+#
+MAZE: "leveetwn", '}'
+GEOMETRY:center,center
+MAP
+PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.
+P-------------------------------P}
+P|.......|.......|.......|...|.|P}
+P|.......|.......|.......|...|.|P}
+P|.......|.......|.......|...|.|P}
+P|-+-----------+---+-------+--.|P}
+P|.............................|P}
+P|.....{.............----------|P}
+P|...................|.........|P}
+P|..........{........+.........|P}
+P|...................|.........|P}
+P-------------------------------P}
+PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP}
+ENDMAP
+
+STAIR:(02,10),up
+STAIR:(30,02),down
+
+REGION:(00,00,32,12),lit,"ordinary"
+MONSTER: '@', "watch captain", (03,09), peaceful
+MONSTER: '@', "armorsmith", (07,10), peaceful
+TRAP:"teleport",(33,00)
+
+OBJECT:'%',"gillyweed",random
+OBJECT:'%',"gillyweed",random
+OBJECT:'%',"gillyweed",random
+OBJECT:'%',"gillyweed",random
+
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+# The shops
+REGION:(02,02,08,04),lit,"potion shop"
+DOOR:closed,(03,05)
+REGION:(10,02,16,04),lit,"shop"
+DOOR:closed,(15,05)
+#REGION:(57,13,60,15),lit,"tool shop"
+#DOOR:closed,(56,14)
+REGION:(18,02,24,04),lit,"tool shop"
+DOOR:closed,(19,05)
+#DOOR:closed,(07,11)
+REGION:(26,02,28,04),lit,"weapon shop"
+DOOR:closed,(27,05)
+DOOR:closed,(21,09)
+ALTAR:(26,09),random,shrine
+# Gnome homes
+# Temple
+
+MAZE: "arcboss", ' '
+GEOMETRY:center,center
+MAP
+0--------------------------------------
+1|             --------------         |
+2|             |WWW.........|         |
+3|       -------WWW.WWWWWWW.-----     |
+4|       |WWW.......WWWWWWW.WWWW|     |
+5|    ----WWW.WWWWWWWW......WWWW------|
+6|    |WWWWWW.W-------S-WWWWWWWWWW|..||
+7|  ---WWWWWW.W|.......|WWWWWWWWWW--S-|
+8|  |.........W|WWWWWW.|WWWWW........||
+9|  |.WWWWWWWWW|WWWWWW.|WWWWW.WWWW----|
+0|  |.WWWWWWWWW|WWWWWW.|WWWWW.WWWW|   |
+1|  |......WWWW---------WWWWW.WWWW|   |
+2|  ---WWW.WWWWWWWWWWWWWWWWWW.WWWW|   |
+3|    |WWW....W...WW....WWWWW.WWWW|   |
+4|    ----WWW.W.W.WW.WW.WWWWW.W----   |
+5|       |WWW...W.WW.WW.WW....W|      |
+6|       -------W.WW.WW.WW.-----      |
+7|             |W....WW....|          |
+8|             -------------          |
+9|                                    |
+0--------------------------------------
+ENDMAP
+# Dungeon Description
+# Stairs
+STAIR:(34,06),up
+# Non diggable walls
+NON_DIGGABLE:(00,00,36,19)
+# Objects
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+# monsters.
+MONSTER:'h',"Archipelago Ancient",(18,08),hostile
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+MONSTER: random, random, random
+WALLIFY

@@ -18,6 +18,10 @@ DUNGEON:	"The Dungeons of Doom" "D" (25, 5)
 ALIGNMENT:	unaligned
 BRANCH:		"The Gnomish Mines" @ (4, 0) portal
 RNDLEVEL:	"villag" "O" @ (4, 0) 4
+BRANCH:		"The Ice Caves" @ (4, 0) portal
+BRANCH:		"The Dismal Swamp" @ (4, 0) portal
+BRANCH:		"The Black Forest" @ (4, 0) portal
+BRANCH:		"The Archipelago" @ (4, 0) portal
 %REINCARNATION LEVEL:		"rogue" "R" @ (15, 4)
 BRANCH:		"Nowhere" @ (4, 0) portal
 LEVEL:		"oracle" "O" @ (5, 5)
@@ -120,6 +124,49 @@ RNDLEVEL:	"minetn" "T" @ (4, 1) 7
 LEVELDESC:	town
 RNDLEVEL:	"minend" "E" @ (-1, 0) 4
 ENTRY:          2
+
+#
+#	The ice caves
+#
+DUNGEON:	"The Ice Caves" "I" (9,1)
+ALIGNMENT:	lawful
+DESCRIPTION:	mazelike
+LEVEL:	"icetwn" "T" @ (4, 0)
+LEVELDESC:	town
+LEVEL:	"iceboss" "B" @ (-1, 0) 
+ENTRY:		2
+
+#
+#	The black forest
+#
+DUNGEON:	"The Black Forest" "B" (9, 1)
+ALIGNMENT:	chaotic
+DESCRIPTION:	mazelike
+LEVEL:	"bftemple" "T" @ (4, 0) 
+LEVELDESC:	town
+LEVEL:	"bfboss" "B" @ (-1, 0) 
+ENTRY:		2
+
+#
+#	The dismal swamp 
+#
+DUNGEON:	"The Dismal Swamp" "S" (9, 1)
+ALIGNMENT:	chaotic
+DESCRIPTION:	mazelike
+LEVEL:	"dsbog" "T" @ (4, 0) 
+LEVELDESC:	town
+LEVEL:	"dsboss" "B" @ (-1, 0) 
+ENTRY:		2
+#
+#	The archipelago
+#
+DUNGEON:	"The Archipelago" "A" (9, 1)
+ALIGNMENT:	neutral
+DESCRIPTION:	mazelike
+LEVEL:	"leveetwn" "T" @ (4, 0) 
+LEVELDESC:	town
+LEVEL:	"arcboss" "B" @ (-1, 0) 
+ENTRY:		2
 
 # Law Quest
 

@@ -1159,26 +1159,25 @@ boolean chatting;
 			landings[CAVE_VILLAGE][1] = 11;
 			switch(selection){
 				case ICE_CAVES:
-					//dnum = ice_dnum;
+					dnum = ice_dnum;
 				break;
 				case BLACK_FOREST:
-					//dnum = blackforest_dnum;
+					dnum = blackforest_dnum;
 				break;
 				case GNOMISH_MINES:
-					//dnum = mines_dnum;
+					dnum = mines_dnum;
 				break;
 				case DISMAL_SWAMP:
-					//dnum = dismalswamp_dnum;
+					dnum = dismalswamp_dnum;
 				break;
 				case ARCHIPELAGO:
-					//dnum = archipelago_dnum;
+					dnum = archipelago_dnum;
 				break;
 				default:
-					//dnum = ice_dnum;
+					dnum = ice_dnum;
 					impossible("Improper branch selected?");
 				break;
 			}
-			dnum = mines_dnum;
 			verbalize("I must leave now!");
 			portal = mkportal(landings[dungeon_topology.village_variant][0], landings[dungeon_topology.village_variant][1], dnum, 2);
 			if(portal) portal->tseen = 1;
