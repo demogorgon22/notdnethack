@@ -268,6 +268,17 @@ unsigned *ospecial;
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_GREEN;
 				}
+			} else if(In_icecaves(&u.uz)){
+				if(offset >= S_vwall && offset <= S_trwall){
+					color = CLR_WHITE;
+				}
+			} else if(In_dismalswamp(&u.uz)){
+				if (offset == S_pool || offset == S_water)
+					/*no fleecy colors here!*/
+					if((y%4 == 0 && x%4 == 0) || 
+						(y%4 == 0 && x%3 ==0) ||
+						(y%3 == 0 && x%4 ==0)) 
+						color = CLR_GREEN;
 			} else if(In_moloch_temple(&u.uz)){
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_RED;

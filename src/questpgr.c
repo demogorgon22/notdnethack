@@ -681,6 +681,86 @@ qt_montype()
 }
 
 struct permonst *
+archipelago_montype()
+{
+	int chance = rn2(100);
+	if(chance < 10){
+		if(Is_arcboss_level(&u.uz)) return &mons[PM_JELLYFISH];
+		return &mons[PM_PARROT];
+	}
+	if(chance < 30){
+		if(Is_arcboss_level(&u.uz)) return &mons[PM_JELLYFISH];
+		return &mons[PM_MONKEY];
+	}
+	if(chance < 40)
+		return &mons[PM_WATER_MOCCASIN];
+	if(chance < 60)
+		return &mons[PM_JELLYFISH];
+	if(chance < 90)
+		return mkclass(S_LIZARD, G_NOHELL);
+	if(chance < 100)
+		return mkclass(S_SNAKE, G_NOHELL);
+
+}
+struct permonst *
+dismalswamp_montype()
+{
+	int chance = rn2(100);
+	if(chance < 40)
+		return mkclass(S_KOBOLD, G_NOHELL);
+	if(chance < 60)
+		return mkclass(S_SNAKE, G_NOHELL);
+	if(chance < 70)
+		return &mons[PM_LEPRECHAUN];
+	if(chance < 80)
+		return mkclass(S_BAT, G_NOHELL);
+	if(chance < 90)
+		return mkclass(S_RODENT, G_NOHELL);
+	if(chance < 100)
+		return mkclass(S_DOG, G_NOHELL);
+
+}
+struct permonst *
+blackforest_montype()
+{
+	int chance = rn2(100);
+	if(chance < 10)
+		return &mons[PM_COYOTE];
+	if(chance < 30)
+		return &mons[PM_BUGBEAR];
+	if(chance < 50)
+		return &mons[PM_RAZORVINE];
+	if(chance < 60)
+		return &mons[PM_GIANT_BAT];
+	if(chance < 80)
+		return &mons[PM_WEEPING_WILLOW];
+	if(chance < 90)
+		return &mons[PM_WEREJACKAL];
+	if(chance < 100)
+		return &mons[PM_BLACK_UNICORN];
+
+}
+struct permonst *
+icecaves_montype()
+{
+	int chance = rn2(100);
+	if(chance < 10)
+		return &mons[PM_CHILL_BUG];
+	if(chance < 30)
+		return &mons[PM_WHITE_NAGA_HATCHLING];
+	if(chance < 45)
+		return &mons[PM_BABY_WHITE_DRAGON];
+	if(chance < 60)
+		return &mons[PM_BLUE_JELLY];
+	if(chance < 80)
+		return &mons[PM_BROWN_MOLD];
+	if(chance < 90)
+		return &mons[PM_ICE_VORTEX];
+	if(chance < 100)
+		return &mons[PM_WHITE_NAGA];
+}
+
+struct permonst *
 chaos_montype()
 {
 	if(on_level(&chaosf_level,&u.uz)){

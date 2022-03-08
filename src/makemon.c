@@ -12668,6 +12668,18 @@ rndmonst()
 	    else if(Role_if(PM_ANACHRONONAUT) || rn2(7)) return ptr;
 		//else continue to random generation
 	}
+	else if (In_icecaves(&u.uz)){
+		if(rn2(4)) return icecaves_montype();
+	}
+	else if (In_blackforest(&u.uz)){
+		if(rn2(4)) return blackforest_montype();
+	}
+	else if (In_dismalswamp(&u.uz)){
+		if(rn2(4)) return dismalswamp_montype();
+	}
+	else if (In_archipelago(&u.uz)){
+		if(rn2(4)) return archipelago_montype();
+	}
 	else if (In_neu(&u.uz) && 
 		(
 			Is_rlyeh(&u.uz) ||  Is_sumall(&u.uz) || Is_gatetown(&u.uz) || 
