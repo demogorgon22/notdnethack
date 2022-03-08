@@ -1503,6 +1503,10 @@ d_level *lev;
 		} else if (In_mordor_quest(lev)) {
 			return (In_mordor_forest(lev) || In_mordor_fields(lev));
 		}
+	} else if(In_blackforest(lev)){
+		return TRUE;
+	} else if(In_dismalswamp(lev)){
+		return TRUE;
 	}
 	return FALSE;
 }
@@ -1531,6 +1535,8 @@ d_level *lev;
 	else if(In_outlands(lev)){
 		return lev->dlevel >= sum_of_all_level.dlevel;
 	}
+	else if(Is_village_level(lev) && dungeon_topology.village_variant == CAVE_VILLAGE) return TRUE;
+	else if(In_icecaves(lev)) return TRUE;
 	else if(In_lost_cities(lev)) return TRUE;
 	return FALSE;
 }

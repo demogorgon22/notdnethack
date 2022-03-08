@@ -2515,6 +2515,15 @@ register struct obj *otmp;
 			make_confused(HConfusion + d(10, 20),FALSE);
 		}
 		break;
+	    case GILLYWEED:{
+		long timeLength = 200 + rnd(50);
+		if( !(HSwimming) || !(HMagical_breathing)) {
+			You_feel("gills develop on your neck.");
+		}	
+		give_intrinsic(MAGICAL_BREATHING, timeLength);
+		give_intrinsic(SWIMMING, timeLength);
+		break;
+	    }
 	    case EGG:
 		if (otmp->corpsenm != NON_PM && touch_petrifies(&mons[otmp->corpsenm])) {
 		    if (!Stone_resistance &&

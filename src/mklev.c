@@ -1393,7 +1393,7 @@ mineralize()
 	    for (y = 1; y < (ROWNO - 1); y++)
 		if ((levl[x][y].typ == POOL && !rn2(10)) ||
 			(levl[x][y].typ == MOAT && !rn2(30)))
-		    (void) mksobj_at(KELP_FROND, x, y, NO_MKOBJ_FLAGS);
+		    (void) mksobj_at(In_archipelago(&u.uz)?GILLYWEED:KELP_FROND, x, y, NO_MKOBJ_FLAGS);
 
 	/* determine if it is even allowed;
 	   almost all special levels are excluded */

@@ -809,6 +809,13 @@ struct mkroom	*sroom;
 		newcham(shk, PM_PLUMACH_RILMANI, FALSE, FALSE);
 	else if (ESHK(shk)->shoptype == SEAFOOD)
 		newcham(shk, PM_DEEP_ONE, FALSE, FALSE);
+	else if(In_blackforest(&u.uz)){
+		newcham(shk,PM_VAMPIRE_LORD,FALSE,FALSE);
+	}
+	else if(In_icecaves(&u.uz)){
+		if(!rn2(2)) newcham(shk,PM_FROST_GIANT,FALSE,FALSE);
+		else newcham(shk,PM_ICE_TROLL,FALSE,FALSE);
+	}
 	
 	return(sh);
 }

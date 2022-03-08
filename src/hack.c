@@ -1087,7 +1087,7 @@ domove()
 			if ((uarmf && (uarmf->otyp == find_skates() || uarmf->oartifact == ART_FROST_TREADS))
 			    || resists_cold(&youmonst)
 			    || mon_resistance(&youmonst,LEVITATION) || is_clinger(youracedata)
-			    || is_whirly(youracedata))
+			    || is_whirly(youracedata) || In_icecaves(&u.uz))
 			on_ice = FALSE;
 		    else if (!rn2(Cold_resistance ? 3 : 2)) {
 			HFumbling &= ~TIMEOUT;

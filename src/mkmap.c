@@ -81,7 +81,22 @@ pass_one(bg_typ, fg_typ)
 		    if(get_map(i+dirs[dr*2], j+dirs[(dr*2)+1], bg_typ)
 								== fg_typ)
 			count++;
+		if(In_archipelago(&u.uz)){
 
+		switch(count) {
+		  case 0 : /* death */
+		  case 1 :
+		  case 2:
+			  levl[i][j].typ = bg_typ;
+			  break;
+		  case 5:
+			  levl[i][j].typ = fg_typ;
+			  break;
+		  default:
+			  break;
+		  }
+		}
+		else {
 		switch(count) {
 		  case 0 : /* death */
 		  case 1 :
@@ -97,6 +112,7 @@ pass_one(bg_typ, fg_typ)
 		  default:
 			  break;
 		  }
+		}
 	    }
 }
 
@@ -256,7 +272,7 @@ wallify_map()
 	    if(levl[x][y].typ == STONE) {
 		for(yy = y - 1; yy <= y+1; yy++)
 		    for(xx = x - 1; xx <= x+1; xx++)
-			if(isok(xx,yy) && levl[xx][yy].typ == ROOM) {
+			if(isok(xx,yy) && (levl[xx][yy].typ == ROOM || (In_icecaves(&u.uz) && levl[xx][yy].typ == ICE))) {
 			    if(yy != y)	levl[x][y].typ = HWALL;
 			    else	levl[x][y].typ = VWALL;
 			}

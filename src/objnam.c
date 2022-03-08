@@ -847,6 +847,8 @@ boolean dofull;
 	case FOOD_CLASS:
 		if (dofull)
 		{
+			if(obj->otyp == CORPSE && obj->corpsenm == PM_MINER)
+				Strcat(buf, "frozen ");
 			if (obj->otyp == CORPSE && obj->odrained) {
 #ifdef WIZARD
 				if (wizard && obj->oeaten < drainlevel(obj))

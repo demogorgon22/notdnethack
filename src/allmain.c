@@ -1568,6 +1568,42 @@ moveloop()
 					useup(otmp);
 				unbind(SEAL_SHIRO,TRUE);
 			}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+			if(Is_leveetwn_level(&u.uz)){
+				for(int x = 0; x<COLNO; x++){
+					for(int y = 0; y<ROWNO; y++){
+						if(levl[x][y].typ == POOL){
+							for(int i = -1; i <= 1;i++){
+								for(int j = -1; j <= 1; j++){
+									if(x+i < 0 || y+j < 0) continue;
+									if(levl[x+i][y+j].typ == ROOM || IS_DOOR(levl[x+i][y+j].typ)){
+										if(IS_DOOR(levl[x+i][y+j].typ) && levl[x+i][y+j].doormask&D_CLOSED ) continue;
+										levl[x+i][y+j].typ = CLOUD;
+									}
+
+								}
+							}
+						}
+					}
+				}
+				for(int x = 0; x<COLNO; x++){
+					for(int y = 0; y<ROWNO; y++){
+						if(levl[x][y].typ == CLOUD){
+							levl[x][y].typ = POOL;
+							newsym(x,y);
+						}
+					}
+				}
+			}
+			if(In_dismalswamp(&u.uz) && !rn2(50)){
+				int x = rn2(COLNO);
+				int y = rn2(ROWNO);
+				if(levl[x][y].typ == POOL || levl[x][y].typ == TREE){
+					if(cansee(x,y)) pline("You see swamp gas rise from the marshy fen.");
+					(void) create_gas_cloud(x, y, 2,4, FALSE);
+				}
+			}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 			//These artifacts may need to respond to what monsters have done.
 			///If the player no longer meets the kusanagi's requirements (ie, they lost the amulet)

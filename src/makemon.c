@@ -5660,6 +5660,16 @@ boolean goodequip;
 			if (!rn2(4)) m_initthrow(mtmp, DART, 12, mkobjflags);
 			else if(!rn2(3)) (void)mongets(mtmp, SHORT_SWORD, mkobjflags);
 			else if(!rn2(2)) (void)mongets(mtmp, CLUB, mkobjflags);
+			if(In_dismalswamp(&u.uz)){
+				(void)mongets(mtmp,ORCISH_HELM, mkobjflags);
+				(void)mongets(mtmp,ORCISH_CLOAK, mkobjflags);
+				if(ptr->mtyp == PM_KOBOLD_LORD)
+					(void)mongets(mtmp,ORCISH_RING_MAIL, mkobjflags);
+				if(ptr->mtyp == PM_ROCK_KOBOLD)
+					(void)mongets(mtmp,ORCISH_CHAIN_MAIL, mkobjflags);
+				if(ptr->mtyp == PM_SWAMP_KOBOLD)
+					(void)mongets(mtmp,ORCISH_SHIELD, mkobjflags);
+			}
 		}
 		break;
 	    case S_NYMPH:
@@ -11674,6 +11684,10 @@ int faction;
 				mtmp->mhpmax = 3*mtmp->mhpmax;
 				mtmp->mhp = mtmp->mhpmax;
 			}
+			if(In_icecaves(&u.uz) && mndx == PM_ICE_VORTEX){
+				mtmp->mhp = d(2,5);
+				mtmp->mhpmax = mtmp->mhp;
+			}
 		break;
 		case S_LIGHT:
 		case S_ELEMENTAL:
@@ -11848,6 +11862,7 @@ int faction;
 						mtmp2 = makemon_full(&mons[urace.malenum], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(mtmp2){
 							mtmp2->mpeaceful = 1;
+							rloc(mtmp2,FALSE);
 						}
 					}
 				}
@@ -12188,6 +12203,10 @@ int faction;
 			}
 			else if(mndx == PM_PLATINUM_DRAGON){
 				mtmp->mhpmax = 3*mtmp->mhpmax;
+				mtmp->mhp = mtmp->mhpmax;
+			}
+			else if(mndx == PM_BABY_WHITE_DRAGON && In_icecaves(&u.uz)){
+				mtmp->mhpmax = mtmp->mhpmax/3;
 				mtmp->mhp = mtmp->mhpmax;
 			}
 		break;

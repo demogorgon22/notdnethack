@@ -10,6 +10,7 @@
 
 STATIC_DCL void NDECL(stoned_dialogue);
 STATIC_DCL void NDECL(golded_dialogue);
+STATIC_DCL void NDECL(gillyweed_dialogue);
 #ifdef CONVICT
 STATIC_DCL void NDECL(phasing_dialogue);
 #endif /* CONVICT */
@@ -154,6 +155,18 @@ golded_dialogue()
 	if (i == 3L && !Free_action)
 		nomul(-3, "turning to gold");
 	exercise(A_DEX, FALSE);
+}
+
+STATIC_OVL void
+gillyweed_dialogue()
+{
+    if (HMagical_breathing == 15) {
+        Your("gills are beginning to disappear.");
+        stop_occupation();
+    } else if (HMagical_breathing == 1) {
+        Your("gills are gone.");
+        stop_occupation();
+    }
 }
 
 #ifdef CONVICT
@@ -543,6 +556,7 @@ nh_timeout()
 			u.luckturn = moves;
 	    }
 	}
+    if(HMagical_breathing) gillyweed_dialogue();
 #ifdef CONVICT
     if(Phasing) phasing_dialogue();
 #endif /* CONVICT */
