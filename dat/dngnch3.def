@@ -25,6 +25,7 @@ BRANCH:		"The Archipelago" @ (4, 0) portal
 %REINCARNATION LEVEL:		"rogue" "R" @ (15, 4)
 BRANCH:		"Nowhere" @ (4, 0) portal
 LEVEL:		"oracle" "O" @ (5, 5)
+CHAINBRANCH:	"Vlad's Tower" "oracle" + (0,0) no_up up
 LEVALIGN:	neutral
 CHAINBRANCH:	"Lokoban" "oracle" + (1, 0) up
 CHAINLEVEL:	"qstlb" "none" "oracle" + (6, 2)
@@ -119,7 +120,6 @@ LEVEL:          "nowhere" "none" @ (1, 0)
 DUNGEON:	"The Gnomish Mines" "M" (9, 1)
 ALIGNMENT:	lawful
 DESCRIPTION:	mazelike
-BRANCH:		"Vlad's Tower" @ (1, 0) up
 RNDLEVEL:	"minetn" "T" @ (4, 1) 7
 LEVELDESC:	town
 RNDLEVEL:	"minend" "E" @ (-1, 0) 4

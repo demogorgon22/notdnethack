@@ -1701,7 +1701,7 @@ xchar x, y;	/* location */
 	 * a special level is loaded that specifies an SSTAIR location
 	 * as a favored spot for a branch.
 	 */
-	if (!br || made_branch) return;
+	if (!br || (made_branch && !In_adventure_branch(&u.uz))) return;
 	
 	if (!x) {	/* find random coordinates for branch */
 	    br_room = find_branch_room(&m);
@@ -1737,7 +1737,7 @@ xchar x, y;	/* location */
 
 	if (br->type == BR_PORTAL) {
 	    if(!(Is_nowhere(&u.uz)) && dest->dnum != dungeon_topology.d_nowhere_level.dnum) mkportal(x, y, dest->dnum, dest->dlevel);
-	} else if (make_stairs && !Is_nearvoid(&u.uz)) {
+	} else if ((make_stairs || In_adventure_branch(&u.uz)) && !Is_nearvoid(&u.uz)) {
 	    sstairs.sx = x;
 	    sstairs.sy = y;
 	    sstairs.up = (char) on_level(&br->end1, &u.uz) ?
