@@ -218,7 +218,7 @@ Anachrononaut changes
 		another monster.
 		Starts with a potion vaporizer and some potions.
 	New salamander ana race, demolition expert.
-		Grenade launcher and nades
+		Vibrospear
 		Fireproof armor, some dragonhide
 		Flamethrower
 			Sprays burning oil splashes doing (6+multishot bonus)d6
