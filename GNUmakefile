@@ -2,7 +2,7 @@ GAMEDIR = dnethackdir
 
 # gprof flags
 # CFLAGS = -pg
-CFLAGS = -g
+CFLAGS = -g3
 
 # gprof flags
 # LDFLAGS += -pg -Wno-knr-promoted-parameter

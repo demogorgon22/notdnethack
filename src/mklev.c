@@ -1044,6 +1044,18 @@ makelevel()
 	    } else if (In_mines(&u.uz)) {
 		    makemaz("minefill");
 		    return;
+	    } else if (In_icecaves(&u.uz)) {
+		    makemaz("icefill");
+		    return;
+	    } else if (In_blackforest(&u.uz)) {
+		    makemaz("bffill");
+		    return;
+	    } else if (In_dismalswamp(&u.uz)) {
+		    makemaz("dsfill");
+		    return;
+	    } else if (In_archipelago(&u.uz)) {
+		    makemaz("arcfill");
+		    return;
 	    } else if (In_quest(&u.uz)) {
 		    char	fillname[9];
 		    s_level	*loc_lev;
@@ -1650,6 +1662,7 @@ find_branch_room(mp)
 		&& levl[mp->x][mp->y].typ != ROOM
 		&& levl[mp->x][mp->y].typ != GRASS
 		&& levl[mp->x][mp->y].typ != SOIL
+		&& levl[mp->x][mp->y].typ != ICE
 		&& levl[mp->x][mp->y].typ != SAND
 		&& levl[mp->x][mp->y].typ != PUDDLE) ||
 		tryct++ > 1000);

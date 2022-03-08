@@ -690,6 +690,19 @@ struct level_map {
 	{ "sigil",	&sigil_level },
 	{ "nowhere",	&nowhere_level },
 
+	{ "icetwn",	&icetown_level },
+	{ "iceboss",	&iceboss_level },
+	
+	{ "bftemple",	&bftemple_level },
+	{ "bfboss",	&bfboss_level },
+	
+	{ "dsbog",	&dsbog_level },
+	{ "dsboss",	&dsboss_level },
+
+	{ "leveetwn",	&leveetwn_level },
+	{ "arcboss",	&arcboss_level },
+
+
 	{ "minetn",     &minetown_level },
 #ifdef RECORD_ACHIEVE
 	{ "minend",     &mineend_level },

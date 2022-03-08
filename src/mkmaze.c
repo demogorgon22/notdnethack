@@ -723,6 +723,194 @@ fixup_special()
 				}
 			}
 		}
+		if(In_icecaves(&u.uz)){
+			for(x = 0; x<COLNO; x++){
+				for(y = 0; y<ROWNO; y++){
+					if(levl[x][y].typ == ICE){
+						if(!rn2(20)) levl[x][y].typ = ROOM;
+						if(!rn2(500)){
+							mksobj_at(PICK_AXE, x, y, NO_MKOBJ_FLAGS);
+							mksobj_at(HELMET, x, y, NO_MKOBJ_FLAGS);
+							if(!rn2(2)) mksobj_at(LEATHER_ARMOR, x, y, NO_MKOBJ_FLAGS);
+							else mksobj_at(STUDDED_LEATHER_ARMOR, x, y, NO_MKOBJ_FLAGS);
+							if(!rn2(4)) mksobj_at(HIGH_BOOTS, x, y, NO_MKOBJ_FLAGS);
+							else mksobj_at(LOW_BOOTS, x, y, NO_MKOBJ_FLAGS);
+							(void) mkcorpstat(CORPSE, (struct monst *) 0, 
+								&mons[PM_MINER], x, y, TRUE);
+						}
+					}
+				}
+			}
+		}
+		if(In_blackforest(&u.uz)){
+			for(x = 0; x<COLNO; x++){
+				for(y = 0; y<ROWNO; y++){
+					if(levl[x][y].typ == TREE){
+						if(!rn2(2)) levl[x][y].typ = DEADTREE;
+					}
+					if(levl[x][y].typ == SOIL){
+						if(!rn2(10)) levl[x][y].typ = CLOUD;
+						if(!rn2(500)){
+							switch(rn2(6)){
+								case 0:
+									mksobj_at(SICKLE, x, y, NO_MKOBJ_FLAGS);
+								break;
+								case 1:
+									mksobj_at(SCYTHE, x, y, NO_MKOBJ_FLAGS);
+								break;
+								case 2:
+									mksobj_at(KNIFE, x, y, NO_MKOBJ_FLAGS);
+								break;
+								case 3:
+									mksobj_at(CLUB, x, y, NO_MKOBJ_FLAGS);
+								break;
+								case 4:
+									mksobj_at(AXE, x, y, NO_MKOBJ_FLAGS);
+								break;
+								case 5:
+									mksobj_at(VOULGE, x, y, NO_MKOBJ_FLAGS);
+								break;
+							}
+							mksobj_at(CLOAK, x, y, NO_MKOBJ_FLAGS);
+							mksobj_at(GLOVES, x, y, NO_MKOBJ_FLAGS);
+							(void) mkcorpstat(CORPSE, (struct monst *) 0, 
+								&mons[PM_PEASANT], x, y, TRUE);
+						}
+					}
+				}
+			}
+		}
+		if(In_dismalswamp(&u.uz)){
+			for(x = 0; x<COLNO; x++){
+				for(y = 0; y<ROWNO; y++){
+					if(levl[x][y].typ == TREE){
+						if(rn2(5)) levl[x][y].typ = POOL;
+					}
+					if(levl[x][y].typ == SOIL){
+						if(!rn2(2)) levl[x][y].typ = GRASS;
+					}
+				}
+			}
+		}
+		if(In_archipelago(&u.uz)){
+			for(x = 0; x<COLNO; x++){
+				for(y = 0; y<ROWNO; y++){
+					if(t_at(x,y)) (void) mksobj_at(GILLYWEED, x, y, NO_MKOBJ_FLAGS);
+					if(levl[x][y].typ == MOAT){
+						if(!rn2(200)){
+							if(Is_leveetwn_level(&u.uz)){
+								levl[x][y].typ = ROOM;
+							} else {
+								struct obj *box;
+								struct obj *otmp;
+								box = mksobj_at(CHEST, x, y, NO_MKOBJ_FLAGS);
+								if(!rn2(5)){
+									set_material_gm(box, GOLD);
+								}
+								switch(rnd(5)){
+									case 1:
+										otmp = mksobj(HELMET,NO_MKOBJ_FLAGS);
+									break;
+									case 2:
+										otmp = mksobj(GAUNTLETS,NO_MKOBJ_FLAGS);
+									break;
+									case 3:
+										otmp = mksobj(rn2(4)?CHAIN_MAIL:PLATE_MAIL,NO_MKOBJ_FLAGS);
+									break;
+									case 4:
+										otmp = mksobj(rn2(3)?BUCKLER:KITE_SHIELD,NO_MKOBJ_FLAGS);
+									break;
+									case 5:
+										otmp = mksobj(rn2(3)?LOW_BOOTS:HIGH_BOOTS,NO_MKOBJ_FLAGS);
+									break;
+									default:
+										otmp = mksobj(rn2(3)?LOW_BOOTS:HIGH_BOOTS,NO_MKOBJ_FLAGS);
+									break;
+								}
+								add_to_container(box,otmp);
+								
+							}
+						}
+					}
+					if(levl[x][y].typ == SAND && !t_at(x,y)  && !OBJ_AT(x,y)  && !rn2(10) && !Is_leveetwn_level(&u.uz) && !Is_arcboss_level(&u.uz)){
+						levl[x][y].typ = TREE;
+					}
+				}
+			}
+		}
+		if(In_adventure_branch(&u.uz) && dunlev(&u.uz) == 1){
+			branch *br = dungeon_branch("Vlad's Tower");
+			br->end1 = u.uz;
+			place_branch(br,0,0);
+			
+		}
+		if(In_tower(&u.uz) && dunlev(&u.uz) == 4 && u.ubranch){
+			if(u.ubranch == ICE_CAVES){
+				for(x = 21; x<COLNO; x++){
+					for(y = 0; y<ROWNO; y++){
+						if(levl[x][y].typ == ROOM){
+							if(rn2(80)) levl[x][y].typ = ICE;
+						}
+						if(levl[x][y].typ == TREE){
+							levl[x][y].typ = VWALL;
+						}
+					}
+				}
+
+			}
+			if(u.ubranch == BLACK_FOREST){
+				for(x = 21; x<COLNO; x++){
+					for(y = 0; y<ROWNO; y++){
+						if(levl[x][y].typ == POOL){
+							levl[x][y].typ = TREE;
+						}
+						if(levl[x][y].typ == TREE){
+							if(!rn2(2)) levl[x][y].typ = DEADTREE;
+						}
+						if(levl[x][y].typ == ROOM){
+							if(!rn2(10)) levl[x][y].typ = CLOUD;
+							else levl[x][y].typ = SOIL;
+						}
+					}
+				}
+
+			}
+			if(u.ubranch == DISMAL_SWAMP){
+				for(x = 21; x<COLNO; x++){
+					for(y = 0; y<ROWNO; y++){
+						if(levl[x][y].typ == STONE){
+							levl[x][y].typ = TREE;
+						}
+						if(levl[x][y].typ == TREE){
+							if(rn2(5)) levl[x][y].typ = POOL;
+						}
+						if(levl[x][y].typ == ROOM){
+							if(!rn2(2)) levl[x][y].typ = GRASS;
+							else levl[x][y].typ = SOIL;
+						}
+					}
+				}
+
+			}
+			if(u.ubranch == ARCHIPELAGO){
+				for(x = 21; x<COLNO; x++){
+					for(y = 0; y<ROWNO; y++){
+						if(levl[x][y].typ == ROOM && rn2(5) && !m_at(x,y)){
+							levl[x][y].typ = MOAT;
+						} else if(levl[x][y].typ == ROOM){
+							levl[x][y].typ = SAND;
+						}
+						if(levl[x][y].typ == CORR){
+							levl[x][y].typ = MOAT;
+						}
+						if(levl[x][y].typ == TREE){
+							levl[x][y].typ = SAND;
+						}
+					}
+				}
+
+			}
+		}
 	/* DWARF KNIGHT QUEST: add stuff to the locate level */
 	if (urole.neminum == PM_BOLG && In_quest(&u.uz) && Is_qlocate(&u.uz)) {
 		int rmn, piled, disty, distx;

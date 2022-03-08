@@ -1347,6 +1347,7 @@ FOOD(("severed hand"),            0,   MZ_TINY,  1,  0, 0, FLESH,  40, CLR_BROWN
 
 /* fruits & veggies */
 FOOD(("kelp frond"),              0,  MZ_SMALL,  1,  1, 0, VEGGY,  30, CLR_GREEN),
+FOOD(("gillyweed"),              0,  MZ_SMALL,  1,  1, 0, VEGGY,  30, CLR_GREEN),
 FOOD(("eucalyptus leaf"),         3,   MZ_TINY,  1,  1, 0, VEGGY,  30, CLR_GREEN),
 /*Forbidden by Eve starts here:*/
 FOOD(("apple"),                  15,   MZ_TINY,  1,  2, 0, VEGGY,  50, CLR_RED),
