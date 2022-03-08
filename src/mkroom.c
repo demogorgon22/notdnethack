@@ -25,6 +25,7 @@ STATIC_DCL boolean FDECL(isbig, (struct mkroom *));
 STATIC_DCL int FDECL(int_sqrt, (int));
 STATIC_DCL boolean FDECL(issemispacious, (struct mkroom *));
 STATIC_DCL void NDECL(mkshop), FDECL(mkzoo,(int)), NDECL(mkswamp);
+STATIC_DCL struct monst *FDECL(prisoner,(int, int, int));
 STATIC_DCL void NDECL(mktemple);
 STATIC_DCL void NDECL(mkkamereltowers);
 STATIC_DCL void NDECL(mkminorspire);
@@ -54,6 +55,8 @@ STATIC_DCL void NDECL(mkvaultlolth);
 STATIC_DCL void NDECL(mklolthgnoll);
 STATIC_DCL void NDECL(mklolthgarden);
 STATIC_DCL void NDECL(mklolthtroll);
+STATIC_DCL void NDECL(mklolthtemple);
+STATIC_DCL void NDECL(mklolthcell);
 STATIC_DCL void NDECL(mklolthdown);
 STATIC_DCL void NDECL(mklolthup);
 STATIC_DCL void NDECL(mksgarden);
@@ -188,7 +191,7 @@ mklolthsepulcher()
 		y = rn2(ROWNO-7)+3;
 		tries++;
 		okspot = TRUE;
-		for(i=-2;i<3;i++) for(j=-2;j<3;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=-2;i<3;i++) for(j=-2;j<3;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=-1;i<2;i++) for(j=-1;j<2;j++) levl[x+i][y+j].typ = STONE;
@@ -593,7 +596,7 @@ mkmivaultlolth()
 		y = rn2(ROWNO-4)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<4;i++) for(j=0;j<4;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<4;i++) for(j=0;j<4;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<4;i++) for(j=0;j<4;j++) levl[x+i][y+j].typ = CORR;
@@ -710,7 +713,7 @@ mkvaultlolth()
 		y = rn2(ROWNO-4)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<4;i++) for(j=0;j<4;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<4;i++) for(j=0;j<4;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<4;i++) for(j=0;j<4;j++) levl[x+i][y+j].typ = CORR;
@@ -747,6 +750,12 @@ mkvaultlolth()
 					if(!rn2(3)) makemon(&mons[PM_HEDROW_ZOMBIE], x+rnd(2), y+rnd(2), 0);
 				break;
 			}
+			if(!rn2(8)){
+				//Note: lack of adjacent flag means that some of these may not spawn (this is on purpose)
+				makemon(&mons[PM_ALABASTER_MUMMY], x+rnd(2), y+rnd(2), 0);
+				if(rn2(4)) makemon(&mons[PM_HEDROW_ZOMBIE], x+rnd(2), y+rnd(2), 0);
+				if(!rn2(3)) makemon(&mons[PM_HEDROW_ZOMBIE], x+rnd(2), y+rnd(2), 0);
+			}
 		}
 	}
 }
@@ -765,7 +774,7 @@ mklolthgnoll()
 		y = rn2(ROWNO-10)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<10;i++) for(j=0;j<10;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<10;i++) for(j=0;j<10;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<10;i++) for(j=0;j<10;j++){
@@ -908,11 +917,11 @@ mklolthgarden()
 		y = rn2(ROWNO-height)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<width;i++) for(j=0;j<height;j++){
-				levl[x+i][y+j].typ = CORR;
+				levl[x+i][y+j].typ = ROOM;
 			}
 			levl[x+(width-1)][y+(height-1)].typ = BRCORNER;
 			levl[x][y+(height-1)].typ = BLCORNER;
@@ -1038,7 +1047,7 @@ mklolthtroll()
 		y = rn2(ROWNO-height)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<width;i++) for(j=0;j<height;j++){
@@ -1145,6 +1154,220 @@ mklolthtroll()
 
 STATIC_OVL
 void
+mklolthtemple()
+{
+	int x,y,tries=0, width= 7, height=7;
+	int i,j, rmtypb = nroom+ROOMOFFSET, trycount, madedoor;
+	struct obj *otmp;
+	struct monst *mon;
+	boolean good=FALSE,okspot;
+	while(!good && tries < 50){
+		x = rn2(COLNO-width)+1;
+		y = rn2(ROWNO-height)+1;
+		tries++;
+		okspot = TRUE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
+		if(okspot){
+			good = TRUE;
+			levl[x+(width-1)][y+(height-1)].typ = BRCORNER;
+			levl[x][y+(height-1)].typ = BLCORNER;
+			for(i=1;i<(width-1);i++) levl[x+i][y+(height-1)].typ = HWALL;
+			for(i=1;i<(width-1);i++) levl[x+i][y].typ = HWALL;
+			for(i=1;i<(height-1);i++) levl[x+(width-1)][y+i].typ = VWALL;
+			for(i=1;i<(height-1);i++) levl[x][y+i].typ = VWALL;
+			levl[x+(width-1)][y].typ = TRCORNER;
+			levl[x][y].typ = TLCORNER;
+			for(i=1;i<width-1;i++) for(j=1;j<height-1;j++){
+				levl[x+i][y+j].typ = CORR;
+				levl[x+i][y+j].roomno = rmtypb;
+			}
+			for(i=2;i<width-2;i++) for(j=2;j<height-2;j++){
+				levl[x+i][y+j].typ = ROOM;
+				levl[x+i][y+j].roomno = rmtypb;
+			}
+			rooms[nroom].lx = x + 1;
+			rooms[nroom].hx = x + width - 2;
+			rooms[nroom].ly = y + 1;
+			rooms[nroom].hy = y + height - 2;
+			rooms[nroom].rtype = TEMPLE;
+			rooms[nroom].doorct = 0;
+			rooms[nroom].fdoor = 0;
+			rooms[nroom].nsubrooms = 0;
+			rooms[nroom].irregular = FALSE;
+			rooms[nroom].solidwall = 0;
+			
+			coord shrine_spot = {x+width/2, y+height/2};
+			add_altar(shrine_spot.x, shrine_spot.y, u.ualign.type, TRUE, u.ualign.god);
+			priestini(&u.uz, &rooms[nroom], shrine_spot.x, shrine_spot.y, FALSE);
+			level.flags.has_temple = 1;
+			
+			nroom++;
+			
+			madedoor = 0;
+			trycount = 0;
+			while(madedoor < 2 && trycount<50){
+				i = rnd(width-2);
+				if(isok(x+i,y-1) && levl[x+i][y-1].typ == ROOM){
+					madedoor++;
+					levl[x+i][y].typ = DOOR;
+					levl[x+i][y].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+				}
+				trycount++;
+			}
+			if(madedoor == 0){
+				for(i = 1; i <= (width-2) && madedoor < 2; i++){
+					if(isok(x+i,y-1) && levl[x+i][y-1].typ == ROOM){
+						madedoor++;
+						levl[x+i][y].typ = DOOR;
+						levl[x+i][y].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+					}
+				}
+			}
+			
+			madedoor = 0;
+			trycount = 0;
+			while(madedoor < 2 && trycount<50){
+				i = rnd(width-2);
+				if(isok(x+i,y+height) && levl[x+i][y+height].typ == ROOM){
+					madedoor++;
+					levl[x+i][y+height-1].typ = DOOR;
+					levl[x+i][y+height-1].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+				}
+				trycount++;
+			}
+			if(madedoor == 0){
+				for(i = 1; i <= (width-2) && madedoor < 2; i++){
+					if(isok(x+i,y+height) && levl[x+i][y+height].typ == ROOM){
+						madedoor++;
+						levl[x+i][y+height-1].typ = DOOR;
+						levl[x+i][y+height-1].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+					}
+				}
+			}
+			
+			madedoor = 0;
+			trycount = 0;
+			while(madedoor < 2 && trycount<50){
+				i = rnd(height-2);
+				if(isok(x-1,y+i) && levl[x-1][y+i].typ == ROOM){
+					madedoor++;
+					levl[x][y+i].typ = DOOR;
+					levl[x][y+i].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+				}
+				trycount++;
+			}
+			if(madedoor == 0){
+				for(i = 1; i <= (height-2) && madedoor < 2; i++){
+					if(isok(x+i,y-1) && levl[x+i][y-1].typ == ROOM){
+						madedoor++;
+						levl[x+i][y].typ = DOOR;
+						levl[x+i][y].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+					}
+				}
+			}
+			
+			madedoor = 0;
+			trycount = 0;
+			while(madedoor < 2 && trycount<50){
+				i = rnd(height-2);
+				if(isok(x+width,y+i) && levl[x+width][y+i].typ == ROOM){
+					madedoor++;
+					levl[x+width-1][y+i].typ = DOOR;
+					levl[x+width-1][y+i].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+				}
+				trycount++;
+			}
+			if(madedoor == 0){
+				for(i = 1; i <= (height-2) && madedoor < 2; i++){
+					if(isok(x+width,y+i) && levl[x+width][y+i].typ == ROOM){
+						madedoor++;
+						levl[x+width-1][y+i].typ = DOOR;
+						levl[x+width-1][y+i].doormask = rn2(3) ? D_CLOSED : D_LOCKED;
+					}
+				}
+			}
+		}
+	}
+}
+
+STATIC_OVL
+void
+mklolthcell()
+{
+	int x,y,tries=0, width= 3, height=3;
+	int i,j, rmtypb = nroom+ROOMOFFSET, trycount, madedoor;
+	struct obj *obj;
+	struct monst *mon, *warden = 0;
+	boolean good=FALSE,okspot;
+	int mtyp;
+	if(!rn2(4)){
+		width = height = 4;
+	}
+	while(!good && tries < 50){
+		x = rn2(COLNO-width)+1;
+		y = rn2(ROWNO-height)+1;
+		tries++;
+		okspot = TRUE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
+		if(okspot){
+			good = TRUE;
+			for(i=0;i<width;i++) for(j=0;j<height;j++){
+				levl[x+i][y+j].typ = STONE;
+			}
+			warden = makemon(&mons[PM_STINKING_CLOUD], x, y, MM_NOCOUNTBIRTH|MM_ADJACENTOK);
+			if(warden){
+				warden->mhpmax = 8*warden->m_lev;
+				warden->mhpmax += rn2(8);
+				warden->mhp = warden->mhpmax;
+			}
+			for(i=0;i<width;i++) for(j=0;j<height;j++){
+				levl[x+i][y+j].typ = CORR;
+			}
+			levl[x+(width-1)][y+(height-1)].typ = BRCORNER;
+			levl[x][y+(height-1)].typ = BLCORNER;
+			for(i=1;i<(width-1);i++) levl[x+i][y+(height-1)].typ = IRONBARS;
+			for(i=1;i<(width-1);i++) levl[x+i][y].typ = IRONBARS;
+			for(i=1;i<(height-1);i++) levl[x+(width-1)][y+i].typ = IRONBARS;
+			for(i=1;i<(height-1);i++) levl[x][y+i].typ = IRONBARS;
+			levl[x+(width-1)][y].typ = TRCORNER;
+			levl[x][y].typ = TLCORNER;
+			for(i=1;i<width-1;i++){
+				for(j=1;j<height-1;j++){
+					mon = prisoner(PM_AVATAR_OF_LOLTH, i+x, j+y);
+					if(mon){
+						mon->mpetitioner = FALSE; //Not actually dead yet.
+						if(warden){
+							for(obj = mon->minvent; obj; obj = mon->minvent){
+								//The wardens are pinatas so give them an extra HP per item they hold.
+								warden->mhpmax++;
+								warden->mhp++;
+								warden->m_lev = warden->mhpmax/8;
+								mon->misc_worn_check &= ~obj->owornmask;
+								update_mon_intrinsics(mon, obj, FALSE, FALSE);
+								if (obj->owornmask & W_WEP){
+									setmnotwielded(mon,obj);
+									MON_NOWEP(mon);
+								}
+								if (obj->owornmask & W_SWAPWEP){
+									setmnotwielded(mon,obj);
+									MON_NOSWEP(mon);
+								}
+								obj->owornmask = 0L;
+								obj_extract_self(obj);
+								mpickobj(warden, obj);
+							}
+						}
+						(void)mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+						mon->entangled = SHACKLES;
+					}
+				}
+			}
+		}
+	}
+}
+
+STATIC_OVL
+void
 mklolthtreasure()
 {
 	int x,y,tries=0, width= 5, height=5;
@@ -1157,7 +1380,7 @@ mklolthtreasure()
 		y = rn2(ROWNO-height)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<width;i++) for(j=0;j<height;j++){
@@ -1297,7 +1520,7 @@ mklolthup()
 		y = rn2(ROWNO-height)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<width;i++) for(j=0;j<height;j++){
@@ -1424,7 +1647,7 @@ mklolthdown()
 		y = rn2(ROWNO-height)+1;
 		tries++;
 		okspot = TRUE;
-		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD)) okspot = FALSE;
+		for(i=0;i<width;i++) for(j=0;j<height;j++) if(!isok(x+i,y+j) || !(levl[x+i][y+j].typ == ROOM || levl[x+i][y+j].typ == CLOUD) || m_at(x+i, y+j)) okspot = FALSE;
 		if(okspot){
 			good = TRUE;
 			for(i=0;i<width;i++) for(j=0;j<height;j++){
@@ -4817,8 +5040,13 @@ place_lolth_vaults()
 	}
 	//4 drow clerics and 1 drow wizard Trapped chest, 4 full healing potions, gold and gems
 	mklolthtreasure();
-	//Co-alligned temple.  Priest transforms and becomes hostile if adjacent.
-	//prison
+	//Co-alligned temple.  Priest transforms and becomes hostile if entered.
+	if(!rn2(3)){
+		mklolthtemple();
+	}
+	//prison 0 - 6 prisons. Prisoners can be rescued for pets.
+	num = rn2(3) + rn2(3) + rn2(3);
+	for(i = 0; i < num; i++) mklolthcell();
 	//sepulcher
 	if(!rn2(4)){
 		mklolthsepulcher();
@@ -5265,6 +5493,266 @@ int type;
 	}
 }
 
+STATIC_OVL boolean
+cell_spot(sx, sy)
+int sx,sy;
+{
+	int i,j;
+	for(i=sx-1;i<sx+2;i++)
+		for(j=sy-1;j<sy+2;j++){
+			if(!isok(i,j) || !(IS_ROCK(levl[i][j].typ) || IS_WALL(levl[i][j].typ))){
+				return FALSE;
+			}
+		}
+	return TRUE;
+}
+
+STATIC_OVL struct monst *
+prisoner(kingtype, sx, sy)
+int kingtype;
+int sx,sy;
+{
+	int mtyp = NON_PM;
+	struct monst *mon;
+	boolean polyps = FALSE;
+	switch(kingtype){
+		case PM_KOBOLD_LORD:{
+			int prisoners[] = {PM_GNOME, PM_GNOME, PM_GNOME, PM_GNOME, PM_GNOME_LORD, PM_GNOME_LADY, PM_TINKER_GNOME, PM_GNOMISH_WIZARD,
+									PM_WOODLAND_ELF, PM_DWARF, PM_HOBBIT
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_ORC_CAPTAIN:{
+			int prisoners[] = {PM_GNOME, PM_GNOME, PM_GNOME, PM_GNOME, PM_GNOME_LORD, PM_GNOME_LADY, PM_TINKER_GNOME, PM_GNOMISH_WIZARD,
+									PM_GREEN_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY,
+									PM_NURSE, PM_MAID, PM_WATCHMAN, PM_WATCHMAN, PM_WATCHMAN,
+									PM_HEDROW_WARRIOR, PM_HEDROW_WARRIOR, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_MATRON,
+									PM_HOBBIT, PM_HOBBIT, PM_HOBBIT, PM_HOBBIT,
+									PM_DWARF, PM_DWARF, PM_DWARF_CLERIC, PM_DWARF_LORD,
+									PM_DEMINYMPH
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_URUK_CAPTAIN:{
+			int prisoners[] = {PM_GNOME, PM_GNOME, PM_GNOME, PM_GNOME, PM_GNOME_LORD, PM_GNOME_LADY, PM_TINKER_GNOME, PM_GNOMISH_WIZARD,
+									PM_GREEN_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY,
+									PM_NURSE, PM_MAID, PM_WATCHMAN, PM_WATCHMAN, PM_WATCH_CAPTAIN,
+									PM_NOBLEMAN, PM_NOBLEWOMAN, PM_RANGER, PM_RANGER, PM_ROGUE, PM_WIZARD, PM_KNIGHT, PM_KNIGHT,
+									PM_HOBBIT, PM_HOBBIT, PM_HOBBIT, PM_HOBBIT,
+									PM_DWARF, PM_DWARF, PM_DWARF_CLERIC, PM_DWARF_LORD,
+									PM_DRYAD, PM_NAIAD, PM_OREAD, PM_DEMINYMPH
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_ORC_OF_THE_AGES_OF_STARS:{
+			int prisoners[] = {
+									PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+									PM_WATCH_CAPTAIN, PM_WATCH_CAPTAIN,
+									PM_HEDROW_BLADEMASTER, PM_DROW_CAPTAIN, PM_DROW_MATRON, PM_UNEARTHLY_DROW,
+									PM_DWARF_CLERIC, PM_DWARF_LORD, PM_DWARF_QUEEN, PM_DWARF_KING,
+									PM_NOBLEMAN, PM_NOBLEWOMAN, PM_RANGER, PM_RANGER, PM_ROGUE, PM_WIZARD, PM_KNIGHT, PM_KNIGHT, PM_VALKYRIE,
+									PM_DEMINYMPH,
+									PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_ARCHON, PM_TRUMPET_ARCHON,
+									PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, PM_GRAHA_DEVA,
+									PM_LILLEND,
+									PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN, PM_TULANI_ELADRIN
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_TITAN:{
+			int prisoners[] = {
+									PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_ARCHON, PM_TRUMPET_ARCHON, PM_WARDEN_ARCHON, PM_THRONE_ARCHON,
+									PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, PM_GRAHA_DEVA, PM_SURYA_DEVA,
+									PM_LILLEND,
+									PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN, PM_DRACAE_ELADRIN,
+									PM_INCUBUS, PM_ERINYS, PM_LILITU, PM_DAUGHTER_OF_BEDLAM, PM_UNEARTHLY_DROW, PM_MARILITH, PM_PIT_FIEND, PM_FALLEN_ANGEL
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_DEEPEST_ONE:{
+			int prisoners[] = {
+									PM_HOBBIT, PM_HOBBIT,
+									PM_NURSE, PM_MAID, PM_WATCHMAN, PM_WATCHMAN, PM_WATCH_CAPTAIN, PM_WATCH_CAPTAIN,
+									PM_ARCHEOLOGIST, PM_ARCHEOLOGIST, PM_BARBARIAN, PM_BARBARIAN, PM_BARD, PM_BARD, PM_HEALER, PM_HEALER,
+									PM_MONK, PM_MONK, PM_MADMAN, PM_MADMAN, PM_MADWOMAN, PM_MADWOMAN, PM_PRIEST, PM_PRIESTESS, PM_PIRATE, PM_PIRATE,
+									PM_NOBLEMAN, PM_NOBLEWOMAN, PM_RANGER, PM_RANGER, PM_ROGUE, PM_ROGUE, PM_WIZARD, PM_WIZARD, PM_KNIGHT, PM_KNIGHT,
+									PM_VALKYRIE, PM_VALKYRIE, PM_SAMURAI, PM_SAMURAI, PM_TOURIST, PM_TOURIST,
+									PM_DEMINYMPH
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_OGRE_KING:{
+			int prisoners[] = {
+									PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+									PM_WATCH_CAPTAIN, PM_WATCH_CAPTAIN,
+									PM_HEDROW_BLADEMASTER, PM_DROW_CAPTAIN, PM_DROW_MATRON, PM_UNEARTHLY_DROW,
+									PM_DWARF_CLERIC, PM_DWARF_LORD, PM_DWARF_QUEEN, PM_DWARF_KING,
+									PM_NOBLEMAN, PM_NOBLEWOMAN, PM_RANGER, PM_RANGER, PM_ROGUE, PM_WIZARD, PM_KNIGHT, PM_KNIGHT, PM_VALKYRIE,
+									PM_DEMINYMPH,
+									PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_ARCHON,
+									PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA,
+									PM_LILLEND,
+									PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_VAMPIRE_LORD:{
+			int prisoners[] = {
+									PM_WOODLAND_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_ELF_LADY,
+									PM_NURSE, PM_MAID, PM_WATCHMAN, PM_WATCHMAN, PM_WATCH_CAPTAIN, PM_WATCH_CAPTAIN,
+									PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_MATRON, PM_SPROW, PM_DRIDER,
+									PM_HOBBIT, PM_HOBBIT,
+									PM_ARCHEOLOGIST, PM_BARBARIAN, PM_BARD, PM_HEALER,
+									PM_MONK, PM_MADWOMAN, PM_PRIESTESS, PM_PIRATE,
+									PM_NOBLEWOMAN, PM_RANGER, PM_ROGUE, PM_WIZARD, PM_KNIGHT,
+									PM_VALKYRIE, PM_SAMURAI, PM_TOURIST,
+									PM_DWARF, PM_DWARF, PM_DWARF_CLERIC,
+									PM_DEMINYMPH
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_DROW_MATRON:{
+			int prisoners[] = {
+									PM_GREEN_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY,
+									PM_GREEN_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY,
+									PM_NURSE, PM_MAID, PM_WATCHMAN, PM_WATCHMAN, PM_WATCH_CAPTAIN,
+									PM_HEDROW_WARRIOR, PM_HEDROW_WARRIOR, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_MATRON,
+									PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR, PM_STJARNA_ALFR, PM_STJARNA_ALFR,
+									PM_HOBBIT, PM_HOBBIT, PM_HOBBIT, PM_HOBBIT,
+									PM_DWARF, PM_DWARF, PM_DWARF_CLERIC, PM_DWARF_LORD,
+									PM_DWARF, PM_DWARF, PM_DWARF_CLERIC, PM_DWARF_LORD,
+									PM_HILL_ORC, PM_ORC_SHAMAN, PM_ORC_CAPTAIN, PM_ANGBAND_ORC,
+									PM_DEMINYMPH
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_EMBRACED_DROWESS:{
+			int prisoners[] = {
+									PM_GREEN_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY,
+									PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_MATRON,
+									PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_MATRON,
+									PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR, PM_STJARNA_ALFR,
+									PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR, PM_STJARNA_ALFR,
+									PM_DWARF, PM_DWARF, PM_DWARF_CLERIC, PM_DWARF_LORD,
+									PM_UNEARTHLY_DROW, PM_UNEARTHLY_DROW, PM_LILITU, PM_MARILITH,
+									PM_DEMINYMPH
+								};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+		case PM_AVATAR_OF_LOLTH:{
+			int prisoners[] = {
+				PM_WOODLAND_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELVENKING,
+				PM_WOODLAND_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_GREY_ELF, PM_ELF_LADY, PM_ELVENQUEEN,
+				PM_ALABASTER_ELF, PM_ALABASTER_ELF, PM_ALABASTER_ELF_ELDER,
+				PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_HEDROW_BLADEMASTER, PM_DROW_CAPTAIN, PM_DROW_MATRON,
+				PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_HEDROW_BLADEMASTER, PM_DROW_CAPTAIN, PM_DROW_MATRON,
+				PM_SPROW, PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR, PM_STJARNA_ALFR, PM_STJARNA_ALFR,
+				PM_SPROW, PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR, PM_STJARNA_ALFR, PM_STJARNA_ALFR,
+				PM_HILL_ORC, PM_ORC_SHAMAN, PM_ORC_CAPTAIN, PM_ANGBAND_ORC,
+				PM_DRYAD, PM_NAIAD, PM_OREAD, PM_SWAMP_NYMPH, PM_YUKI_ONNA, PM_THRIAE, PM_SELKIE, PM_OCEANID, PM_DEMINYMPH,
+				PM_YURIAN, PM_FORMIAN_TASKMASTER,
+				PM_YURIAN, PM_FORMIAN_TASKMASTER,
+				PM_ICE_DEVIL, PM_NALFESHNEE, PM_MARILITH, PM_PIT_FIEND, PM_FALLEN_ANGEL,
+				PM_ELOCATOR,
+				PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_ARCHON, PM_TRUMPET_ARCHON, PM_WARDEN_ARCHON, PM_THRONE_ARCHON,
+				PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, PM_GRAHA_DEVA, PM_SURYA_DEVA,
+				PM_LILLEND, PM_ANGEL, PM_ALEAX,
+				PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN, PM_GHAELE_ELADRIN, 
+				PM_TULANI_ELADRIN, PM_GAE_ELADRIN, PM_BRIGHID_ELADRIN, PM_UISCERRE_ELADRIN, PM_CAILLEA_ELADRIN, PM_KUKER
+			};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
+	}
+	if(mtyp == PM_DRACAE_ELADRIN){
+		if(dungeon_topology.eprecursor_typ != PRE_DRACAE){
+			mtyp = PM_TULANI_ELADRIN;
+		}
+		if(dungeon_topology.eprecursor_typ == PRE_POLYP){
+			polyps = TRUE;
+		}
+	}
+	if(mtyp == PM_TULANI_ELADRIN && kingtype != PM_AVATAR_OF_LOLTH){
+		switch(dungeon_topology.alt_tulani){
+			case GAE_CASTE:
+				mtyp = PM_GAE_ELADRIN;
+			break;
+			case BRIGHID_CASTE:
+				mtyp = PM_BRIGHID_ELADRIN;
+			break;
+			case UISCERRE_CASTE:
+				mtyp = PM_UISCERRE_ELADRIN;
+			break;
+			case CAILLEA_CASTE:
+				mtyp = PM_CAILLEA_ELADRIN;
+			break;
+		}
+	}
+	if(mtyp != NON_PM){
+		int equipLevel = ((kingtype == PM_TITAN || kingtype == PM_EMBRACED_DROWESS || kingtype == PM_AVATAR_OF_LOLTH || kingtype == PM_DEEPEST_ONE || kingtype == PM_ORC_OF_THE_AGES_OF_STARS) ? MM_GOODEQUIP : 0);
+		mon = makemon(&mons[mtyp], sx, sy, NO_MM_FLAGS|equipLevel);
+		if(mon){
+			if(mon->mtyp == PM_SURYA_DEVA){
+				struct monst *blade;
+				for(blade = fmon; blade; blade = blade->nmon) if(blade->mtyp == PM_DANCING_BLADE && mon->m_id == blade->mvar_suryaID){
+					mongone(blade);
+					break;
+				}
+			}
+			if(kingtype == PM_VAMPIRE_LORD){
+				mon->female = TRUE;
+				set_template(mon, VAMPIRIC);
+			}
+			if(polyps){
+				mon->ispolyp = TRUE;
+				mongets(mon, MASK, NO_MKOBJ_FLAGS);
+				mongets(mon, MASK, NO_MKOBJ_FLAGS);
+				mongets(mon, MASK, NO_MKOBJ_FLAGS);
+				mongets(mon, MASK, NO_MKOBJ_FLAGS);
+				mongets(mon, MASK, NO_MKOBJ_FLAGS);
+			}
+		}
+		return mon;
+	}
+	else return 0;
+}
+
+STATIC_OVL void
+mkcell(sx, sy, chest, kingtype, dx, dy)
+int sx,sy;
+struct obj *chest;
+int kingtype;
+int dx,dy;
+{
+	struct monst *mon;
+	struct obj *obj;
+	if(!kingtype || kingtype == PM_ELVENKING || kingtype == PM_ELVENQUEEN || kingtype == PM_DWARF_KING || kingtype == PM_DWARF_QUEEN || kingtype == PM_GNOME_KING || kingtype == PM_GNOME_QUEEN)
+		return; //No cells for now
+	levl[sx][sy].typ = CORR;
+	unblock_point(sx,sy);
+	levl[sx-dx][sy-dy].typ = IRONBARS;
+	unblock_point(sx,sy);
+	mon = prisoner(kingtype, sx, sy);
+	if(mon){
+		for(obj = mon->minvent; obj; obj = mon->minvent){
+			mon->misc_worn_check &= ~obj->owornmask;
+			update_mon_intrinsics(mon, obj, FALSE, FALSE);
+			if (obj->owornmask & W_WEP){
+				setmnotwielded(mon,obj);
+				MON_NOWEP(mon);
+			}
+			if (obj->owornmask & W_SWAPWEP){
+				setmnotwielded(mon,obj);
+				MON_NOSWEP(mon);
+			}
+			obj->owornmask = 0L;
+			obj_extract_self(obj);
+			add_to_container(chest, obj);
+		}
+		(void)mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+		mon->entangled = SHACKLES;
+	}
+}
+
 void
 fill_zoo(sroom)
 struct mkroom *sroom;
@@ -5459,6 +5947,9 @@ struct mkroom *sroom;
 			if (type==COURT && mon->mpeaceful) {
 				mon->mpeaceful = 0;
 				set_malign(mon);
+				if(ctype == PM_EMBRACED_DROWESS && (mon->mtyp == PM_DROW_CAPTAIN || mon->mtyp == PM_DROW_MATRON)){
+					set_template(mon, M_BLACK_WEB);
+				}
 			}
 		}
 		}
@@ -5651,6 +6142,39 @@ struct mkroom *sroom;
 		  add_to_container(chest, gold);
 		  chest->owt = weight(chest);
 		  level.flags.has_court = 1;
+
+		  sy = sroom->ly -2;
+		  for(sx = sroom->lx+1; sx <= sroom->hx-1; sx++){
+			if(!isok(sx, sy))
+				break;//Won't get any less off the map.
+			if(cell_spot(sx, sy) && rn2(4)){
+				mkcell(sx,sy,chest,ctype,0,-1);
+			}
+		  }
+		  sy = sroom->hy +2;
+		  for(sx = sroom->lx+1; sx <= sroom->hx-1; sx++){
+			if(!isok(sx, sy))
+				break;//Won't get any less off the map.
+			if(cell_spot(sx, sy) && rn2(4)){
+				mkcell(sx,sy,chest,ctype,0,+1);
+			}
+		  }
+		  sx = sroom->lx -2;
+		  for(sy = sroom->ly+1; sy <= sroom->hy-1; sy++) {
+			if(!isok(sx, sy))
+				break;//Won't get any less off the map.
+			if(cell_spot(sx, sy) && rn2(4)){
+				mkcell(sx,sy,chest,ctype,-1,0);
+			}
+		  }
+		  sx = sroom->hx +2;
+		  for(sy = sroom->ly+1; sy <= sroom->hy-1; sy++) {
+			if(!isok(sx, sy))
+				break;//Won't get any less off the map.
+			if(cell_spot(sx, sy) && rn2(4)){
+				mkcell(sx,sy,chest,ctype,+1,0);
+			}
+		  }
 		  break;
 		}
 	      case BARRACKS:
@@ -7155,6 +7679,10 @@ courtmon(kingnum)
 				return &mons[PM_HEDROW_WIZARD];
 			else if(i>30)
 				return &mons[PM_HEDROW_WARRIOR];
+			else if(i> 20)
+				return &mons[PM_DROW_MATRON];
+			else if(i> 10)
+				return &mons[PM_DROW_CAPTAIN];
 			else if(i> 0)
 				return &mons[PM_DROW_MUMMY];
 		break;

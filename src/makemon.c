@@ -27,10 +27,10 @@ STATIC_DCL int FDECL(align_shift, (struct permonst *));
 #endif /* OVL0 */
 STATIC_DCL struct permonst * NDECL(roguemonst);
 STATIC_DCL boolean FDECL(wrong_elem_type, (struct permonst *));
-STATIC_DCL void FDECL(m_initweap,(struct monst *, int, int));
+STATIC_DCL void FDECL(m_initweap,(struct monst *, int, int, boolean));
 STATIC_DCL int FDECL(permonst_max_lev,(struct permonst *));
 #ifdef OVL1
-STATIC_DCL void FDECL(m_initinv,(struct monst *, int, int));
+STATIC_DCL void FDECL(m_initinv,(struct monst *, int, int, boolean));
 #endif /* OVL1 */
 
 extern const int monstr[];
@@ -218,10 +218,11 @@ static NEARDATA int angelweps[] = {
 };
 
 STATIC_OVL void
-m_initweap(mtmp, mkobjflags, faction)
+m_initweap(mtmp, mkobjflags, faction, goodequip)
 register struct monst *mtmp;
 int mkobjflags;
 int faction;
+boolean goodequip;
 {
 	register struct permonst *ptr = mtmp->data;
 	register int mm = monsndx(ptr);
@@ -484,7 +485,7 @@ int faction;
 				}
 			break;
 			case PM_IMP:
-				if(Inhell){
+				if(Inhell || goodequip){
 					chance = rn2(4);
 					if(chance == 4){
 						(void)mongets(mtmp, KNIFE, mkobjflags);
@@ -1912,13 +1913,13 @@ int faction;
 					}
 					else {
 						if (rn2(2))
-						(void) mongets(mtmp, rn2(2) ? ELVEN_MITHRIL_COAT : ELVEN_CLOAK, mkobjflags);
-						if (rn2(2)) (void)mongets(mtmp, (mm == PM_ELVENKING || mm == PM_ELF_LORD || mm == PM_ELVENQUEEN || mm == PM_ELF_LADY) ? HIGH_ELVEN_HELM : ELVEN_HELM, mkobjflags);
-						if (!rn2(4)) (void)mongets(mtmp, ELVEN_BOOTS, mkobjflags);
-						if (rn2(2)) (void)mongets(mtmp, ELVEN_DAGGER, mkobjflags);
+						(void) mongets(mtmp, (goodequip || rn2(2)) ? ELVEN_MITHRIL_COAT : ELVEN_CLOAK, mkobjflags);
+						if (goodequip || rn2(2)) (void)mongets(mtmp, (mm == PM_ELVENKING || mm == PM_ELF_LORD || mm == PM_ELVENQUEEN || mm == PM_ELF_LADY) ? HIGH_ELVEN_HELM : ELVEN_HELM, mkobjflags);
+						if (goodequip || !rn2(4)) (void)mongets(mtmp, ELVEN_BOOTS, mkobjflags);
+						if (goodequip || rn2(2)) (void)mongets(mtmp, ELVEN_DAGGER, mkobjflags);
 						if ((mm == PM_ELVENKING || mm == PM_ELF_LORD || mm == PM_ELVENQUEEN || mm == PM_ELF_LADY) ? TRUE : !rn2(10))
 							(void)mongets(mtmp, (rn2(2) ? FLUTE : HARP), mkobjflags);
-						if (rnd(100) < mtmp->m_lev)
+						if (goodequip || rnd(100) < mtmp->m_lev)
 							(void)mongets(mtmp, POT_STARLIGHT, mkobjflags);
 							
 						if(In_quest(&u.uz) && Role_if(PM_KNIGHT)){
@@ -1930,7 +1931,7 @@ int faction;
 						case 0:
 							if (!rn2(4)) (void)mongets(mtmp, ELVEN_SHIELD, mkobjflags);
 							else if (could_twoweap(ptr)) (void)mongets(mtmp, ELVEN_DAGGER, mkobjflags);
-							if (rn2(3)) (void)mongets(mtmp, ELVEN_SHORT_SWORD, mkobjflags);
+							if (goodequip || rn2(3)) (void)mongets(mtmp, ELVEN_SHORT_SWORD, mkobjflags);
 							(void)mongets(mtmp, ELVEN_BOW, mkobjflags);
 							m_initthrow(mtmp, ELVEN_ARROW, 12, mkobjflags);
 							break;
@@ -1940,7 +1941,7 @@ int faction;
 							else if (could_twoweap(ptr)) (void)mongets(mtmp, ELVEN_SHORT_SWORD, mkobjflags);
 							break;
 						case 2:
-							if (rn2(2)) {
+							if (goodequip || rn2(2)) {
 							(void)mongets(mtmp, ELVEN_SPEAR, mkobjflags);
 							(void)mongets(mtmp, ELVEN_SHIELD, mkobjflags);
 							}
@@ -3462,35 +3463,35 @@ int faction;
 			} else if(ptr->mtyp == PM_SWORD_ARCHON){
 					//Nothing
 			} else if(ptr->mtyp == PM_SHIELD_ARCHON){
-				(void) mongets(mtmp, SCALE_MAIL, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, SCALE_MAIL, mkobjflags);
 
-				(void) mongets(mtmp, HELMET, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, HELMET, mkobjflags);
 
-				(void) mongets(mtmp, GAUNTLETS, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, GAUNTLETS, mkobjflags);
 
-				otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
 				if(otmp) set_material_gm(otmp, IRON);
 
-				(void) mongets(mtmp, LANCE, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, LANCE, mkobjflags);
 
-				(void) mongets(mtmp, WAR_HAMMER, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, WAR_HAMMER, mkobjflags);
 
-				(void) mongets(mtmp, KITE_SHIELD, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, KITE_SHIELD, mkobjflags);
 				if(otmp){
 					otmp->objsize = MZ_LARGE;
 					otmp->spe = max(otmp->spe, 3);
 					fix_object(otmp);
 				}
 			} else if(ptr->mtyp == PM_TRUMPET_ARCHON){
-				otmp = mongets(mtmp, CLOAK, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, CLOAK, mkobjflags);
 				if(otmp) otmp->spe = max(otmp->spe, 3);
 
-				(void) mongets(mtmp, GLOVES, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, GLOVES, mkobjflags);
 
-				otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
 				if(otmp) set_material_gm(otmp, SILVER);
 
-				otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags);
 				if(otmp){
 					otmp->spe = max(otmp->spe, 3);
 					set_material_gm(otmp, SILVER);
@@ -3499,7 +3500,7 @@ int faction;
 				int artnum = rn2(8);
 	
 			    /* create minion stuff; can't use mongets */
-			    otmp = mksobj(angelwepsbase[artnum], mkobjflags|MKOBJ_NOINIT);
+			    otmp = mksobj(angelwepsbase[artnum], mkobjflags);
 	
 			    /* make it special */
 				otmp = oname(otmp, artiname(angelweps[artnum]));
@@ -3514,26 +3515,26 @@ int faction;
 					else {
 						add_oprop(otmp, OPROP_AXIOW);
 					}
-					if(In_endgame(&u.uz)){
+					if(In_endgame(&u.uz) || goodequip){
 						add_oprop(otmp, rn2(7) ? OPROP_FIREW : OPROP_ELECW);
 					}
 				}
 				fix_object(otmp);
 			    (void) mpickobj(mtmp, otmp);
 
-			    (void) mongets(mtmp, SHIELD_OF_REFLECTION, mkobjflags|MKOBJ_NOINIT);
+			    (void) mongets(mtmp, SHIELD_OF_REFLECTION, mkobjflags);
 
-				(void) mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags);
 
-				otmp = mongets(mtmp, find_gcirclet(), mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, find_gcirclet(), mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					set_material_gm(otmp, COPPER);
 				}
 
-				(void) mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
 
-				(void) mongets(mtmp, ARCHAIC_BOOTS, mkobjflags|MKOBJ_NOINIT);
+				(void) mongets(mtmp, ARCHAIC_BOOTS, mkobjflags);
 			} else if(ptr->mtyp == PM_LIGHT_ARCHON){
 				int artnum = rn2(8);
 	
@@ -3550,24 +3551,24 @@ int faction;
 			    (void) mpickobj(mtmp, otmp);
 	
 				if(artnum < ANGELTWOHANDERCUT){
-					otmp = mongets(mtmp, SHIELD_OF_REFLECTION, mkobjflags|MKOBJ_NOINIT);
+					otmp = mongets(mtmp, SHIELD_OF_REFLECTION, mkobjflags);
 					if(otmp) set_material_gm(otmp, GLASS);
 				} else {
-					otmp = mongets(mtmp, AMULET_OF_REFLECTION, mkobjflags|MKOBJ_NOINIT);
+					otmp = mongets(mtmp, AMULET_OF_REFLECTION, mkobjflags);
 					if(otmp) set_material_gm(otmp, GLASS);
 				}
 				
-				otmp = mongets(mtmp, HELM_OF_BRILLIANCE, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, HELM_OF_BRILLIANCE, mkobjflags);
 				if(otmp) set_material_gm(otmp, GLASS);
 				
-				otmp = mongets(mtmp, PLATE_MAIL, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
 				if(otmp) set_material_gm(otmp, GLASS);
 			} else if(ptr->mtyp == PM_MONADIC_DEVA){
-				otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags);
 				if(otmp){
 					spe2 = rn2(4);
 					otmp->spe = max(otmp->spe, spe2);
-					if(In_endgame(&u.uz) || !rn2(20)){
+					if(In_endgame(&u.uz) || goodequip || !rn2(20)){
 						add_oprop(otmp, OPROP_FIREW);
 					}
 					else if(!rn2(4)){
@@ -3575,40 +3576,40 @@ int faction;
 					}
 				}
 			} else if(ptr->mtyp == PM_MOVANIC_DEVA){
-				otmp = mongets(mtmp, MORNING_STAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, MORNING_STAR, mkobjflags);
 				if(otmp){
 					spe2 = rn2(4);
 					otmp->spe = max(otmp->spe, spe2);
 				}
 
-				(void)mongets(mtmp, BUCKLER, mkobjflags|MKOBJ_NOINIT);
+				(void)mongets(mtmp, BUCKLER, mkobjflags);
 
 				(void)mongets(mtmp, ROBE, mkobjflags);
 			} else if(ptr->mtyp == PM_ASTRAL_DEVA){
-				otmp = mongets(mtmp, MACE, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, MACE, mkobjflags);
 				if(otmp){
 					otmp->spe = 7;
 
-					otmp = mongets(mtmp, CHAIN_MAIL, mkobjflags|MKOBJ_NOINIT);
+					otmp = mongets(mtmp, CHAIN_MAIL, mkobjflags);
 					otmp->spe = 7;
 				}
 			} else if(ptr->mtyp == PM_GRAHA_DEVA){
-				otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags);
 				if(otmp){
 					set_material_gm(otmp, COPPER);
 					otmp->spe = 9;
 				}
 
-			    otmp = mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					otmp->spe = 7;
 				}
 
-			    otmp = mongets(mtmp, ARCHAIC_BOOTS, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, ARCHAIC_BOOTS, mkobjflags);
 			    if(otmp) otmp->oerodeproof = TRUE;
 
-			    otmp = mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
 			    if(otmp) otmp->oerodeproof = TRUE;
 			} else if(ptr->mtyp == PM_SURYA_DEVA){
 				struct monst *dancer;
@@ -3623,46 +3624,46 @@ int faction;
 						mark_mon_as_summoned(dancer, mtmp, ESUMMON_PERMANENT, 0);
 				}
 
-			    otmp = mongets(mtmp, PLATE_MAIL, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
 				if(otmp){
 					set_material_gm(otmp, GOLD);
 					otmp->spe = 7;
 				}
 
-			    otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
 			    if(otmp) set_material_gm(otmp, GOLD);
 
-			    otmp = mongets(mtmp, GAUNTLETS_OF_POWER, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, GAUNTLETS_OF_POWER, mkobjflags);
 			    if(otmp) set_material_gm(otmp, GOLD);
 
-			    otmp = mongets(mtmp, AMULET_OF_REFLECTION, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, AMULET_OF_REFLECTION, mkobjflags);
 			    if(otmp) set_material_gm(otmp, GOLD);
 			} else if(ptr->mtyp == PM_MAHADEVA){
-				otmp = mongets(mtmp, SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, SCIMITAR, mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					otmp->spe = 9;
 				}
 
-				otmp = mongets(mtmp, SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, SCIMITAR, mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					otmp->spe = 9;
 				}
 
-				otmp = mongets(mtmp, SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, SCIMITAR, mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					otmp->spe = 9;
 				}
 
-				otmp = mongets(mtmp, SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mongets(mtmp, SCIMITAR, mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					otmp->spe = 9;
 				}
 
-			    otmp = mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags|MKOBJ_NOINIT);
+			    otmp = mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags);
 				if(otmp){
 					otmp->oerodeproof = TRUE;
 					otmp->spe = 9;
@@ -3739,7 +3740,7 @@ int faction;
 
 				int mat = 0;
 				int stone = 0;
-				switch((In_endgame(&u.uz) && !rn2(4)) ? 0 : rn2(20)){
+				switch(((In_endgame(&u.uz) || goodequip) && !rn2(4)) ? 0 : rn2(20)){
 				case 0:
 				mat = !rn2(5) ? GEMSTONE : !rn2(4) ? OBSIDIAN_MT : GLASS;
 				if(mat == GEMSTONE)
@@ -4015,7 +4016,7 @@ int faction;
 							add_oprop(otmp, OPROP_OONA_COLDW);
 						break;
 					}
-					set_material_gm(otmp, METAL);
+					set_material_gm(otmp, PLATINUM);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 					otmp = mksobj(LONG_SWORD, mkobjflags|MKOBJ_NOINIT);
@@ -4033,7 +4034,7 @@ int faction;
 							add_oprop(otmp, OPROP_OONA_FIREW);
 						break;
 					}
-					set_material_gm(otmp, METAL);
+					set_material_gm(otmp, PLATINUM);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 			} else if(ptr->mtyp == PM_LILLEND){
@@ -4101,7 +4102,7 @@ int faction;
 					
 					lama_count++;
 				}
-				else if(In_endgame(&u.uz)){
+				else if((In_endgame(&u.uz) || goodequip)){
 					const int generic_nasties[] = {
 						PM_BLACK_DRAGON, PM_COCKATRICE, PM_STORM_GIANT,
 						PM_MINOTAUR, PM_UMBER_HULK, PM_MASTER_MIND_FLAYER,
@@ -4265,7 +4266,7 @@ int faction;
 				int artnum = rn2(8);
 	
 			    /* create minion stuff; can't use mongets */
-			    otmp = mksobj(angelwepsbase[artnum], mkobjflags|MKOBJ_NOINIT);
+			    otmp = mksobj(angelwepsbase[artnum], mkobjflags);
 	
 			    /* maybe make it special */
 			    if (!rn2(20) || is_lord(ptr))
@@ -4286,7 +4287,7 @@ int faction;
 					set_material_gm(otmp, SILVER);
 					(void) mpickobj(mtmp, otmp);
 				} else if(is_lord(ptr) || !rn2(20)){
-					otmp = mksobj(AMULET_OF_REFLECTION, mkobjflags|MKOBJ_NOINIT);
+					otmp = mksobj(AMULET_OF_REFLECTION, mkobjflags);
 					otmp->cursed = FALSE;
 					otmp->oerodeproof = TRUE;
 					set_material_gm(otmp, SILVER);
@@ -4295,7 +4296,7 @@ int faction;
 					(void) mpickobj(mtmp, otmp);
 				}
 				//Generic angel armor
-				if(Inhell || In_endgame(&u.uz)){
+				if(Inhell || In_endgame(&u.uz) || goodequip){
 					if(rn2(3)){
 						otmp = mongets(mtmp, rn2(2) ? PLATE_MAIL : rn2(2) ? SCALE_MAIL : BANDED_MAIL, mkobjflags);
 						if(otmp) set_material_gm(otmp, SILVER);
@@ -4320,7 +4321,7 @@ int faction;
 						if(otmp) set_material_gm(otmp, CLOTH);
 					}
 					else {
-						otmp = mongets(mtmp, rn2(3) ? ROBE : WAISTCLOTH, mkobjflags|MKOBJ_NOINIT);
+						otmp = mongets(mtmp, rn2(3) ? ROBE : WAISTCLOTH, mkobjflags);
 						if(otmp){
 							set_material_gm(otmp, CLOTH);
 							otmp->oerodeproof = TRUE;
@@ -4330,7 +4331,7 @@ int faction;
 					}
 				}
 				else {
-					otmp = mongets(mtmp, rn2(3) ? ROBE : WAISTCLOTH, mkobjflags|MKOBJ_NOINIT);
+					otmp = mongets(mtmp, rn2(3) ? ROBE : WAISTCLOTH, mkobjflags);
 					if(otmp) set_material_gm(otmp, CLOTH);
 				}
 			}
@@ -5435,8 +5436,8 @@ int faction;
 					else (void)mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 				}
 			} else {
-				if (rn2(7)) (void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
-				if (rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
+				if (goodequip || rn2(7)) (void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
+				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
 				if (!rn2(4)) {
 					(void)mongets(mtmp, DWARVISH_SHORT_SWORD, mkobjflags);
 				} else {
@@ -5467,7 +5468,7 @@ int faction;
 					/* CM: Dwarves OUTSIDE the mines have booze. */
 					mongets(mtmp, POT_BOOZE, mkobjflags);
 				}
-				if (!rn2(3)){
+				if (goodequip || !rn2(3)){
 					if(is_prince(ptr) || (is_lord(ptr) && !rn2(3))) (void)mongets(mtmp, DWARVISH_MITHRIL_COAT, mkobjflags);
 					else (void)mongets(mtmp, CHAIN_MAIL, mkobjflags);
 				}
@@ -5484,7 +5485,7 @@ int faction;
 			}
 		break;
 	    case S_ORC:
-		if(rn2(2)) (void)mongets(mtmp, ORCISH_HELM, mkobjflags);
+		if(goodequip || rn2(2)) (void)mongets(mtmp, ORCISH_HELM, mkobjflags);
 		switch (mm) {
 		    case PM_ORC_OF_THE_AGES_OF_STARS:
 				otmp = mongets(mtmp, HIGH_ELVEN_WARSWORD, mkobjflags);
@@ -5555,12 +5556,12 @@ int faction;
 				}
 				//else fall through
 		    case PM_MORDOR_ORC:
-			if(!rn2(3)) (void)mongets(mtmp, SCIMITAR, mkobjflags);
+			if(goodequip || !rn2(3)) (void)mongets(mtmp, SCIMITAR, mkobjflags);
 			if(!rn2(3)) (void)mongets(mtmp, ORCISH_SHIELD, mkobjflags);
 			else if (could_twoweap(ptr))
 						(void)mongets(mtmp, SCIMITAR, mkobjflags);
-			if(!rn2(3)) (void)mongets(mtmp, KNIFE, mkobjflags);
-			if(!rn2(3)) (void)mongets(mtmp, ORCISH_CHAIN_MAIL, mkobjflags);
+			if(goodequip || !rn2(3)) (void)mongets(mtmp, KNIFE, mkobjflags);
+			if(goodequip || !rn2(3)) (void)mongets(mtmp, ORCISH_CHAIN_MAIL, mkobjflags);
 //ifdef BARD
 			if (mm == PM_ORC_CAPTAIN ? !rn2(10) : !rn2(50)){
 			    (void)mongets(mtmp, DRUM, mkobjflags);
@@ -5573,9 +5574,9 @@ int faction;
 			break;
 		    case PM_URUK_CAPTAIN:
 		    case PM_URUK_HAI:
-			if(!rn2(3)) (void)mongets(mtmp, ORCISH_CLOAK, mkobjflags);
-			if(!rn2(3)) (void)mongets(mtmp, ORCISH_SHORT_SWORD, mkobjflags);
-			if(!rn2(3)) (void)mongets(mtmp, SHOES, mkobjflags);
+			if(goodequip || !rn2(3)) (void)mongets(mtmp, ORCISH_CLOAK, mkobjflags);
+			if(goodequip || !rn2(3)) (void)mongets(mtmp, ORCISH_SHORT_SWORD, mkobjflags);
+			if(goodequip || !rn2(3)) (void)mongets(mtmp, SHOES, mkobjflags);
 			if(!rn2(3)) (void)mongets(mtmp, URUK_HAI_SHIELD, mkobjflags);
 			else if (could_twoweap(ptr))
 						(void)mongets(mtmp, ORCISH_SHORT_SWORD, mkobjflags);
@@ -5585,7 +5586,7 @@ int faction;
 				(void)mongets(mtmp, CROSSBOW, mkobjflags);
 				m_initthrow(mtmp, CROSSBOW_BOLT, 12, mkobjflags);
 			} else {
-				if(!rn2(3)) {
+				if(goodequip || !rn2(3)) {
 					(void)mongets(mtmp, CROSSBOW, mkobjflags);
 					m_initthrow(mtmp, CROSSBOW_BOLT, 12, mkobjflags);
 				}
@@ -7531,7 +7532,7 @@ int faction;
 			break;
 		    case PM_HORNED_DEVIL:
 				(void)mongets(mtmp, rn2(4) ? TRIDENT : BULLWHIP, mkobjflags);
-				if(Inhell){
+				if(Inhell || goodequip){
 					mongets(mtmp, SPLINT_MAIL, mkobjflags);
 					mongets(mtmp, GAUNTLETS, mkobjflags);
 					mongets(mtmp, ARMORED_BOOTS, mkobjflags);
@@ -7551,7 +7552,7 @@ int faction;
 					mtmp->mhp = mtmp->mhpmax;
 					return;
 				}
-				if(!Inhell) chance = 3; //Leather armor
+				if(!Inhell && !goodequip) chance = 3; //Leather armor
 				else chance = rnd(10);
 				if(chance >= 9){
 					mongets(mtmp, HELMET, mkobjflags);
@@ -7595,7 +7596,7 @@ int faction;
 			}break;
 		    case PM_BARBED_DEVIL:
 				(void)mongets(mtmp, SHORT_SWORD, mkobjflags);
-				if(Inhell){
+				if(Inhell || goodequip){
 					mongets(mtmp, SPEAR, mkobjflags);
 					mongets(mtmp, SPEAR, mkobjflags);
 					mongets(mtmp, HELMET, mkobjflags);
@@ -7606,7 +7607,7 @@ int faction;
 				}
 			break;
 		    case PM_VROCK:
-					if (!rn2(2) || Inhell) switch (rn2(12)) {
+					if (!rn2(2) || Inhell || goodequip) switch (rn2(12)) {
 						case 0: (void)mongets(mtmp, RANSEUR, mkobjflags); break;
 						case 1: (void)mongets(mtmp, PARTISAN, mkobjflags); break;
 						case 2: (void)mongets(mtmp, GLAIVE, mkobjflags); break;
@@ -7620,13 +7621,13 @@ int faction;
 						case 10: (void)mongets(mtmp, LUCERN_HAMMER, mkobjflags); break;
 						case 11: (void)mongets(mtmp, BEC_DE_CORBIN, mkobjflags); break;
 					}
-					if(Inhell){
+					if(Inhell || goodequip){
 						(void)mongets(mtmp, PLATE_MAIL, mkobjflags);
 					}
 			break;
 		    case PM_BONE_DEVIL:
 				(void)mongets(mtmp, rn2(4) ? TRIDENT : WAR_HAMMER, mkobjflags);
-				if(Inhell){
+				if(Inhell || goodequip){
 					otmp = mongets(mtmp, HELMET, mkobjflags);
 					if(otmp) set_material_gm(otmp, BONE);
 					otmp = mongets(mtmp, ROUNDSHIELD, mkobjflags);
@@ -7679,7 +7680,7 @@ int faction;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 				}
-				else if(Inhell){
+				else if(Inhell || goodequip){
 					int kit = rn2(6);
 					switch(kit){
 						case 0:
@@ -7811,7 +7812,7 @@ int faction;
 				(void) mpickobj(mtmp, otmp);
 			break;
 		    case PM_MARILITH:{
-				if(Inhell){
+				if(Inhell || goodequip){
 					chance = rnd(10);
 					if(chance >= 9){
 						mongets(mtmp, PLATE_MAIL, mkobjflags);
@@ -7929,7 +7930,7 @@ int faction;
 		    case PM_FALLEN_ANGEL:
 				otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
 				//Note: the kits assume that the sword is otmp
-				if(Inhell){
+				if(Inhell || goodequip){
 					chance = rnd(6);
 					if(chance == 6){
 						//Set sword to silver
@@ -8186,10 +8187,11 @@ long amount;
 #endif
 
 STATIC_OVL void
-m_initinv(mtmp, mkobjflags, faction)
+m_initinv(mtmp, mkobjflags, faction, goodequip)
 register struct	monst	*mtmp;
 int mkobjflags;
 int faction;
+boolean goodequip;
 {
 	register int cnt;
 	int chance;
@@ -10839,7 +10841,7 @@ boolean ghostly;
 {
 	boolean result;
 	uchar lim = mbirth_limit(mndx);
-	boolean gone = (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)); /* genocided or extinct */
+	boolean gone = (mvitals[mndx].mvflags & (tally ? G_GENOD : G_GONE)) && !In_quest(&u.uz); /* genocided or extinct */
 
 	result = (((int) mvitals[mndx].born < lim) && !gone) ? TRUE : FALSE;
 
@@ -11342,9 +11344,10 @@ int faction;
 	int mcham, ct, mitem, num;
 	boolean allow_minvent = ((mmflags & NO_MINVENT) == 0);
 	boolean countbirth = ((mmflags & MM_NOCOUNTBIRTH) == 0 && !In_quest(&u.uz));
+	boolean goodequip = ((mmflags & MM_GOODEQUIP) != 0);
 	boolean randmonst = !ptr;
 	boolean unsethouse = FALSE;
-	int mkobjflags = NO_MKOBJ_FLAGS | ((mmflags & MM_ESUM) ? MKOBJ_SUMMON : 0);
+	int mkobjflags = NO_MKOBJ_FLAGS | ((mmflags & MM_ESUM) ? MKOBJ_SUMMON : 0) | (goodequip ? MKOBJ_GOODEQUIP : 0);
 
 	/* if monster is destined to be a summon or pet, it shouldn't get a group */
 	if (mmflags & (MM_EDOG|MM_ESUM))
@@ -12410,8 +12413,8 @@ int faction;
 	
 	if (allow_minvent) {
 	    if(is_armed_mon(mtmp))
-			m_initweap(mtmp, mkobjflags, faction);	/* equip with weapons / armor */
-	    m_initinv(mtmp, mkobjflags, faction);  /* add on a few special items incl. more armor */
+			m_initweap(mtmp, mkobjflags, faction, goodequip);	/* equip with weapons / armor */
+	    m_initinv(mtmp, mkobjflags, faction, goodequip);  /* add on a few special items incl. more armor */
 	    m_dowear(mtmp, TRUE);
 		init_mon_wield_item(mtmp);
 	} else {
@@ -12511,9 +12514,11 @@ int mndx;
 	if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) return TRUE;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
 	if (Inhell)
-		return(mons[mndx].maligntyp > A_NEUTRAL);
-	else
+		return((mons[mndx].geno & G_PLANES) != 0);
+	else if (In_endgame(&u.uz))
 		return((mons[mndx].geno & G_HELL) != 0);
+	else
+		return((mons[mndx].geno & (G_HELL|G_PLANES)) != 0);
 }
 
 /*
@@ -12626,7 +12631,7 @@ rndmonst()
 	
 	/*If Center of All hasn't been made yet, he may appear during level gen.
 	  During normal play, he may also arvive on level from elsewhere. */
-	if(in_mklev && !(mvitals[PM_CENTER_OF_ALL].mvflags & G_EXTINCT) && !rn2(COA_PROB)){
+	if(in_mklev && mvitals[PM_CENTER_OF_ALL].born == 0 && !rn2(COA_PROB)){
 	    return &mons[PM_CENTER_OF_ALL]; /*center of all may be created at any time */
 	}
 
@@ -13743,7 +13748,7 @@ int mkobjflags;
 			otmp->blessed = TRUE;
 			if (otmp->spe < 0) otmp->spe *= -1;
 			otmp->oerodeproof = TRUE;
-			if(In_endgame(&u.uz)){
+			if(In_endgame(&u.uz) || (mkobjflags&MKOBJ_GOODEQUIP)){
 				if(otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)){
 					int min = 3;
 					if(Is_astralevel(&u.uz)){

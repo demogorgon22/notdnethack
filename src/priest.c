@@ -460,6 +460,35 @@ register int roomno;
 					priest->mpeaceful = 0;
 					set_malign(priest);
 				} else msg1 = "You desecrate this place by your presence!";
+			} else if(Is_lolth_level(&u.uz) && !(EPRI(priest) && EPRI(priest)->godnum == GOD_LOLTH)) {
+				struct monst *mtmp;
+				msg1 = "Pilgrim, you enter a sacred place.";
+				msg2 = "...You will die in sight of your worthless \"god\"!";
+				priest->mpeaceful = 0;
+				set_mon_data(priest, PM_LILITU);
+				priest->m_lev = 18;
+				priest->mhp = 8*17 + rn2(8);
+				mongets(priest, CRYSTAL_BOOTS, NO_MKOBJ_FLAGS);
+				mongets(priest, CRYSTAL_PLATE_MAIL, NO_MKOBJ_FLAGS);
+				mongets(priest, CRYSTAL_GAUNTLETS, NO_MKOBJ_FLAGS);
+				mongets(priest, CRYSTAL_HELM, NO_MKOBJ_FLAGS);
+				mongets(priest, CRYSTAL_SWORD, NO_MKOBJ_FLAGS);
+				mongets(priest, CRYSTAL_SWORD, NO_MKOBJ_FLAGS);
+				newsym(priest->mx, priest->my);
+				set_malign(priest);
+				priest->mspec_used = 0;
+				mtmp = makemon(&mons[PM_LILITU], priest->mx, priest->my, MM_ADJACENTOK);
+				if(mtmp) mtmp->mspec_used = 0;
+				mtmp = makemon(&mons[PM_LILITU], priest->mx, priest->my, MM_ADJACENTOK);
+				if(mtmp) mtmp->mspec_used = 0;
+				mtmp = makemon(&mons[PM_INCUBUS], priest->mx, priest->my, MM_ADJACENTOK);
+				if(mtmp) mtmp->mspec_used = 0;
+				mtmp = makemon(&mons[PM_SUCCUBUS], priest->mx, priest->my, MM_ADJACENTOK);
+				if(mtmp) mtmp->mspec_used = 0;
+				mtmp = makemon(&mons[PM_UNEARTHLY_DROW], priest->mx, priest->my, MM_ADJACENTOK);
+				if(mtmp) mtmp->mspec_used = 0;
+				mtmp = makemon(&mons[PM_YOCHLOL], priest->mx, priest->my, MM_ADJACENTOK);
+				if(mtmp) mtmp->mspec_used = 0;
 			} else if(In_quest(&u.uz) && Role_if(PM_EXILE) && u.uz.dlevel == nemesis_level.dlevel) {
 				if(priest->mpeaceful) {
 					msg1 = "Your existence is blasphemy!";
@@ -516,7 +545,19 @@ register int roomno;
 				if(msg1) verbalize1(msg1);
 				if(msg2) verbalize1(msg2);
 			}
-			if(!sanctum) {
+			if(Is_lolth_level(&u.uz) && !(EPRI(priest) && EPRI(priest)->godnum == GOD_LOLTH)){
+				pline("Rivers of blood pour from the altar!");
+				if(!Is_astralevel(&u.uz)) {
+					int gx = EPRI(priest)->shrpos.x;
+					int gy = EPRI(priest)->shrpos.y;
+					a_align(gx, gy) = A_CHAOTIC;
+					a_gnum(gx, gy) = GOD_LOLTH;
+				}
+				make_doubtful(888L, TRUE);
+				EPRI(priest)->godnum = GOD_LOLTH;
+				EPRI(priest)->shralign = A_CHAOTIC;
+			}
+			else if(!sanctum) {
 				/* !tended -> !shrined */
 				if (!shrined || !p_coaligned(priest) ||
 					u.ualign.record <= ALGN_SINNED)

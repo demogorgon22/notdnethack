@@ -1006,6 +1006,15 @@ int tary;
 				}
 				break;
 			case AT_ARRW:
+				if(adtyp == AD_PLYS){
+					if(magr->mspec_used)
+						break;
+					else {
+						// Breath timer
+						magr->mspec_used = 10 + rn2(20);
+					}
+				}
+					
 				if ((adtyp != AD_SHDW || ranged)) {	// can be used in melee range, except for shadow
 					/* fire d(n,d) projectiles */
 					result |= xfirey(magr, attk, tarx, tary, d(attk->damn, attk->damd));
@@ -3183,7 +3192,7 @@ int *shield_margin;
 			base_acc = mlev(magr);
 		}
 		else {
-			base_acc = mlev(magr) * (youagr ? BASE_ATTACK_BONUS : thrown ? 0.67 : 1.0);
+			base_acc = mlev(magr) * (youagr ? BASE_ATTACK_BONUS(weapon) : thrown ? 0.67 : 1.0);
 		}
 		if(youagr){
 			static long warnpanic = 0;
@@ -3560,13 +3569,28 @@ int *shield_margin;
 		/* monk accuracy bonus/penalty (player-only) (melee) */
 		if (youagr && melee && Role_if(PM_MONK) && !Upolyd) {
 			static boolean armmessage = TRUE;
-			if (uarm) {
-				if (armmessage) Your("armor is rather cumbersome...");
-				armmessage = FALSE;
+			static boolean urmmessage = TRUE;
+			boolean resunderwear = uarmu && uarmu->otyp == VICTORIAN_UNDERWEAR;
+			boolean resarmor = uarm && uarm->otyp != WAISTCLOTH && uarm->otyp != HAWAIIAN_SHORTS;
+			if (resarmor || resunderwear) {
+				if(resarmor && resunderwear && armmessage && urmmessage){
+				if (armmessage) Your("armor and underwear are rather cumbersome...");
+					armmessage = FALSE;
+					urmmessage = FALSE;
+				}
+				if (resarmor && armmessage){
+					Your("armor is rather cumbersome...");
+					armmessage = FALSE;
+				}
+				else if (resunderwear && urmmessage){
+					Your("underwear is rather restrictive...");
+					urmmessage = FALSE;
+				}
 				wepn_acc -= 20; /*flat -20 for monks in armor*/
 			}
 			else {
 				if (!armmessage) armmessage = TRUE;
+				if (!urmmessage) urmmessage = TRUE;
 				if (!uwep && !uarms) {
 					wepn_acc += (u.ulevel / 3) + 2;
 				}
@@ -10304,19 +10328,21 @@ boolean verbose;
 		 } else if (uwep && has_spear_point(uwep,GREEN_FLUORITE)) {
             		if(verbose) You(mal_aura, "the green fluorite point of your spear");
                 	return TRUE;
-		} else if (uarmc && (uarmc->otyp == PRAYER_WARDED_WRAPPING)) {
+		} else if (uarmc && (uarmc->otyp == PRAYER_WARDED_WRAPPING || uarmc->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)) {
 			if(verbose) You(mal_aura, "your wrappings");
 			return TRUE;
-		} else if (uwep && (uwep->oartifact == ART_MAGICBANE) && rn2(20)) {
+		} else if (uwep && (uwep->oartifact == ART_MAGICBANE)) {
 			if(verbose) You(mal_aura, "the magic-absorbing blade");
 			return TRUE;
-		} else if (uwep && (uwep->oartifact == ART_STAFF_OF_NECROMANCY) && rn2(20)) {
+		} else if (uwep && (uwep->oartifact == ART_STAFF_OF_NECROMANCY)) {
 			if(verbose) You(mal_aura, "the skeletal staff");
 			return TRUE;
-		} else if (uwep && (uwep->oartifact == ART_TECPATL_OF_HUHETOTL) && rn2(20)) {
+		} else if (uwep && (uwep->oartifact == ART_TECPATL_OF_HUHETOTL)) {
 			if(verbose) You(mal_aura, "the bloodstained dagger");
 			return TRUE;
-		} else if(uwep && (uwep->oartifact == ART_TENTACLE_ROD) && rn2(20)){
+		} else if((uwep && (uwep->oartifact == ART_TENTACLE_ROD))
+			|| (uswapwep && (uswapwep->oartifact == ART_TENTACLE_ROD))
+		){
 			if(verbose) You(mal_aura, "the languid tentacles");
 			return TRUE;
 		} else if(u.utats & TAT_WILLOW && !rn2(20)){
@@ -10324,7 +10350,7 @@ boolean verbose;
 			return TRUE;
 		}
 		for(otmp = invent; otmp; otmp=otmp->nobj){
-			if(otmp->oartifact == ART_HELPING_HAND && rn2(20)){
+			if(otmp->oartifact == ART_HELPING_HAND && (otmp->owornmask || rn2(20))){
 				if(verbose){
 					You_feel("as if you need some help.");
 					You_feel("something lend you some help!");
@@ -10336,19 +10362,23 @@ boolean verbose;
 				return TRUE;
 			}
 		}
-		if(u.ukinghill && rn2(20)){
-			if(verbose) You(mal_aura, "the cursed treasure chest");
+		if(u.ukinghill){
 			otmp = 0;
 			for(otmp = invent; otmp; otmp=otmp->nobj)
 				if(otmp->oartifact == ART_TREASURY_OF_PROTEUS)
 					break;
-			if(!otmp) impossible("Treasury not actually in inventory??");
-			else if(otmp->blessed)
-				unbless(otmp);
-			else
-				curse(otmp);
-			update_inventory();		
-			return TRUE;
+			if(!otmp){
+				impossible("Treasury not actually in inventory??");
+			}
+			else if(otmp->owornmask || !otmp->cursed || rn2(20)){
+				if(verbose) You(mal_aura, "the cursed treasure chest");
+				else if(otmp->blessed)
+					unbless(otmp);
+				else
+					curse(otmp);
+				update_inventory();	
+				return TRUE;
+			}
 		}
 	}
 	else {
@@ -10363,12 +10393,12 @@ boolean verbose;
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "amulet");
 			return TRUE;
 		}
-		if (which_armor(mon, W_ARMC) && (which_armor(mon, W_ARMC)->otyp == PRAYER_WARDED_WRAPPING)) {
+		if (which_armor(mon, W_ARMC) && (which_armor(mon, W_ARMC)->otyp == PRAYER_WARDED_WRAPPING || which_armor(mon, W_ARMC)->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)) {
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "wrappings");
 			return TRUE;
 		}
 		if (MON_WEP(mon) &&
-			(MON_WEP(mon)->oartifact == ART_MAGICBANE) && rn2(20)) {
+			(MON_WEP(mon)->oartifact == ART_MAGICBANE)) {
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "magic-absorbing blade");
 			return TRUE;
 		}
@@ -10377,24 +10407,25 @@ boolean verbose;
                 	return TRUE;
         	}
 		if (MON_WEP(mon) &&
-			(MON_WEP(mon)->oartifact == ART_STAFF_OF_NECROMANCY) && rn2(20)) {
+			(MON_WEP(mon)->oartifact == ART_STAFF_OF_NECROMANCY)) {
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "skeletal staff");
 			return TRUE;
 		}
 		if (MON_WEP(mon) &&
-			(MON_WEP(mon)->oartifact == ART_TECPATL_OF_HUHETOTL) && rn2(20)) {
+			(MON_WEP(mon)->oartifact == ART_TECPATL_OF_HUHETOTL)) {
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "bloodstained dagger");
 			return TRUE;
 		}
-		if (MON_WEP(mon) &&
-			(MON_WEP(mon)->oartifact == ART_TENTACLE_ROD) && rn2(20)) {
+		if ((MON_WEP(mon) && (MON_WEP(mon)->oartifact == ART_TENTACLE_ROD))
+			|| (MON_SWEP(mon) && (MON_SWEP(mon)->oartifact == ART_TENTACLE_ROD))
+		) {
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "languid tentacles");
 			return TRUE;
 		}
 		for(otmp = mon->minvent; otmp; otmp=otmp->nobj)
 			if(otmp->oartifact == ART_TREASURY_OF_PROTEUS)
 				break;
-		if(otmp && rn2(20)){
+		if(otmp && (otmp->owornmask || !otmp->cursed || rn2(20))){
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "cursed treasure chest");
 			if(otmp->blessed)
 				unbless(otmp);
@@ -10403,7 +10434,7 @@ boolean verbose;
 			return TRUE;
 		}
 		for(otmp = mon->minvent; otmp; otmp=otmp->nobj){
-			if(otmp->oartifact == ART_HELPING_HAND && rn2(20)){
+			if(otmp->oartifact == ART_HELPING_HAND && (otmp->owornmask || rn2(20))){
 				if (visible && verbose)
 					You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "helpful hand");
 				return TRUE;
@@ -13960,6 +13991,7 @@ int vis;						/* True if action is at all visible to the player */
 						}
 						if (weapon->timed) stop_all_timers(weapon->timed);
 						weapon = poly_obj(weapon, ROCK);
+						*weapon_p = weapon;
 						weapon->oartifact = 0;
 						weapon->spe = 0;
 						weapon->known = weapon->dknown = weapon->bknown = 0;
@@ -16939,7 +16971,7 @@ struct attack * passive;	/* specific passive attack being used */
 
 		struct permonst * pd = ((mdef == &youmonst) ? youracedata : mdef->data);
 		passive = &noattack;
-		for (i = 0;; i++) {
+		for (i = 0; i < NATTK; i++) {
 			if (pd->mattk[i].aatyp == AT_NONE &&
 				!is_null_attk(&(pd->mattk[i]))) {
 				passive = &pd->mattk[i];
@@ -17701,7 +17733,7 @@ monk_moves()
 			}
 		}
 		else {
-			if(!EWounded_legs && (mdef = adjacent_monk_target(uarmf))){
+			if(!EWounded_legs && (mdef = adjacent_monk_target(uarmf)) && near_capacity() <= SLT_ENCUMBER){
 				pline("Dive kick!");
 				dive_kick_monster(mdef);
 				DID_MOVE
@@ -17721,7 +17753,7 @@ monk_moves()
 		}
 		break;
 		case BIRD_KICK:
-		if(!EWounded_legs && circle_monk_target(uarmf)){
+		if(!EWounded_legs && circle_monk_target(uarmf) && near_capacity() <= SLT_ENCUMBER){
 			if(Race_if(PM_CHIROPTERAN)){
 				pline("Wing storm!");
 				wing_storm_monsters();

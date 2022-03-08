@@ -8,7 +8,7 @@ STATIC_DCL int FDECL(projectile_attack, (struct monst *, struct monst *, struct 
 STATIC_DCL void FDECL(quest_art_swap, (struct obj **, struct monst *));
 STATIC_DCL void FDECL(sho_obj_return, (struct obj *, int, int));
 STATIC_DCL void FDECL(return_thrownobj, (struct monst *, struct obj *));
-STATIC_DCL void FDECL(toss_up2, (struct obj *));
+STATIC_DCL void FDECL(toss_up, (struct obj *, boolean));
 STATIC_DCL int FDECL(calc_multishot, (struct monst *, struct obj *, struct obj *, int));
 STATIC_DCL int FDECL(calc_range, (struct monst *, struct obj *, struct obj *, int *));
 STATIC_DCL boolean FDECL(uthrow, (struct obj *, struct obj *, int, boolean));
@@ -102,8 +102,8 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		}
 
 		/* Fluorite Octahedron has obj->quan >1 possible */
-		if (m_shot.o && (m_shot.o == ammo->otyp) && (ammo->oartifact == ART_FLUORITE_OCTAHEDRON) && !m_shot.s) {
-			n_to_throw = m_shot.n;
+		if (m_shot.i && (m_shot.o == ammo->otyp) && (ammo->oartifact == ART_FLUORITE_OCTAHEDRON) && !m_shot.s) {
+			n_to_throw = ammo->where != OBJ_FREE ? m_shot.n : ammo->quan;
 			m_shot.n = 1;
 		}
 
@@ -305,7 +305,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 
 		/* otherwise do the standard (player-only) toss upwards */
 		if (!(Weightless || Underwater || Is_waterlevel(&u.uz))) {
-			toss_up2(thrownobj);
+			toss_up(thrownobj, forcedestroy);
 			return MM_MISS;
 		}
 		end_projectile(magr, mdef, thrownobj_p, launcher, fired, forcedestroy);
@@ -1315,26 +1315,24 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 			*thrownobj_p = NULL;
 			result |= MM_HIT;
 		}
-		/* projectiles other than magic stones
-		 * sometimes disappear when thrown
-		 * WAC - Spoon always disappears after doing damage
-		 */
-		else if ((objects[thrownobj->otyp].oc_skill < P_NONE &&
-			objects[thrownobj->otyp].oc_skill > -P_BOOMERANG &&
-			thrownobj->oclass != GEM_CLASS &&
-			!objects[thrownobj->otyp].oc_magic) ||
-			(thrownobj->oartifact == ART_HOUCHOU)
-			) {
-			/* mulch code */
-			/* we were breaking 2/3 of everything unconditionally.
-			 * we still don't want anything to survive unconditionally,
-			 * but we need ammo to stay around longer on average.
+		/* general case */
+		else {
+			/* projectiles other than magic stones
+			 * sometimes disappear when thrown
+			 * WAC - Spoon always disappears after doing damage
 			 */
 			boolean broken = FALSE;
-			if ((thrownobj->oartifact || (!check_oprop(thrownobj, OPROP_NONE) && !forcedestroy)) && thrownobj->oartifact != ART_HOUCHOU){
+
+			/* forcedestroy -- caller says to destroy the projectile */
+			if (forcedestroy) {
+				broken = TRUE;
+			}
+			/* artifacts and oproped items survive */
+			else if ((thrownobj->oartifact || !check_oprop(thrownobj, OPROP_NONE)) && thrownobj->oartifact != ART_HOUCHOU) {
 				broken = FALSE;
 			}
-			else if (forcedestroy ||
+			/* specific item types that always break, or are forced to break by being artifactness */
+			else if (
 				(launcher && fired && (launcher->oartifact == ART_HELLFIRE || launcher->oartifact == ART_BOW_OF_SKADI)) ||
 				(thrownobj->oartifact == ART_HOUCHOU) ||
 				(fired && thrownobj->otyp == BULLET) || 
@@ -1344,10 +1342,22 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 				(fired && thrownobj->otyp == BLASTER_BOLT) ||
 				(fired && thrownobj->otyp == HEAVY_BLASTER_BOLT) ||
 				(fired && thrownobj->otyp == FRAG_GRENADE) || 
-				(fired && thrownobj->otyp == GAS_GRENADE)) {
+				(fired && thrownobj->otyp == GAS_GRENADE))
+				{
 				broken = TRUE;
 			}
-			else {
+			/* general item mulching */
+			else if ((objects[thrownobj->otyp].oc_skill < P_NONE &&
+				objects[thrownobj->otyp].oc_skill > -P_BOOMERANG &&
+				thrownobj->oclass != GEM_CLASS &&
+				thrownobj->otyp != SHURIKEN &&
+				!objects[thrownobj->otyp].oc_magic)
+			) {
+				/* mulch code */
+				/* we were breaking 2/3 of everything unconditionally.
+				* we still don't want anything to survive unconditionally,
+				* but we need ammo to stay around longer on average.
+				*/
 				int break_chance = 3 + greatest_erosion(thrownobj) - thrownobj->spe;
 				if (break_chance > 1)
 					broken = rn2(break_chance);
@@ -1356,6 +1366,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 				if (thrownobj->blessed && rnl(100) < 25)
 					broken = FALSE;
 			}
+			/* handle breakage */
 			if (broken) {
 				if (*u.ushops) {
 					check_shop_obj(thrownobj, bhitpos.x, bhitpos.y, TRUE);
@@ -1368,13 +1379,11 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 				if (*hp(mdef) <= 0)
 					result |= MM_DEF_DIED;
 			}
+			else {
+				/* possibly damage the projectile -- at this point it is surviving */
+				passive_obj2(magr, mdef, thrownobj, (struct attack *)0, (struct attack *)0);
+			}
 		}
-		else
-		{
-			/* possibly damage the projectile -- at this point it is surviving */
-			passive_obj2(magr, mdef, thrownobj, (struct attack *)0, (struct attack *)0);
-		}
-
 		return result;
 	}
 	else
@@ -1673,8 +1682,9 @@ struct obj * thrownobj;
  * Hero tosses an object upwards with appropriate consequences.
  */
 STATIC_OVL void
-toss_up2(obj)
+toss_up(obj, forcedestroy)
 struct obj *obj;
+boolean forcedestroy;
 {
 	char buf[BUFSZ];
 	/* note: obj->quan == 1 */
@@ -1705,7 +1715,7 @@ struct obj *obj;
 			Doname2(obj), buf, body_part(HEAD));
 
 		/* object now hits you */
-		projectile((struct monst *)0, obj, (void *)0, HMON_PROJECTILE, u.ux, u.uy, 0, 0, 0, 0, FALSE, FALSE, FALSE);
+		projectile((struct monst *)0, obj, (void *)0, HMON_PROJECTILE, u.ux, u.uy, 0, 0, 0, 0, forcedestroy, FALSE, FALSE);
 		return;
 	}
 }
@@ -2038,10 +2048,10 @@ dothrow()
 
 	/* try to find a wielded launcher */
 	if (ammo != uwep && ammo != uswapwep &&
-		ammo_and_launcher(ammo, uwep))
+		ammo_and_launcher(ammo, uwep) && !is_blaster(uwep))
 		launcher = uwep;
 	else if (ammo != uwep && ammo != uswapwep &&
-		ammo_and_launcher(ammo, uswapwep) && u.twoweap)
+		ammo_and_launcher(ammo, uswapwep) && u.twoweap && !is_blaster(uswapwep))
 		launcher = uswapwep;
 	else
 		launcher = (struct obj *)0;
@@ -2425,6 +2435,7 @@ boolean forcedestroy;
 {
 	int multishot;
 	int hurtle_dist = 0;
+	int otyp = 0;
 	/* ask "in what direction?" */
 	/* needs different code depending on if GOLDOBJ is enabled */
 
@@ -2505,7 +2516,8 @@ boolean forcedestroy;
 	
 	if (!shotlimit && ammo->oartifact == ART_FLUORITE_OCTAHEDRON)
 		shotlimit = m_shot.n;
-	
+
+	otyp = ammo->otyp;
 	/* give a message if shooting more than one, or if player attempted to specify a count */
 	if (ammo->oartifact == ART_FLUORITE_OCTAHEDRON){
 		if (!m_shot.s){
@@ -2559,7 +2571,11 @@ boolean forcedestroy;
 		You("panic after throwing your property!");
 		nomul(-1 * rnd(6), "panic");
 	}
-	return 1;	/* this took time */
+
+	if(otyp == SHURIKEN && Role_if(PM_MONK))
+		return partial_action();	/* this might have taken time */
+	else
+		return 1;	/* this took time */
 }
 
 /* misthrow()

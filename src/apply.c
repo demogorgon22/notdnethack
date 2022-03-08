@@ -1934,6 +1934,12 @@ int
 dojump()
 {
 	/* Physical jump */
+	if(!Upolyd && Role_if(PM_MONK) && uwep && (uwep->otyp == QUARTERSTAFF || uwep->otyp == KHAKKHARA) && P_SKILL(P_QUARTERSTAFF) && P_SKILL(P_MARTIAL_ARTS)){
+		int dist = min(P_SKILL(P_QUARTERSTAFF), P_SKILL(P_MARTIAL_ARTS));
+		if(dist >= P_EXPERT)
+			dist = P_SKILL(P_MARTIAL_ARTS);
+		return jump(dist);
+	}
 	return jump(0);
 }
 
@@ -3711,11 +3717,11 @@ struct obj *obj;
 	}
     mtmp = m_at(rx, ry);
 
-    /* fake some proficiency checks */
-    proficient = 0;
+    /* proficiency check */
+    proficient = P_SKILL(P_WHIP)-P_UNSKILLED;
     if (Role_if(PM_ARCHEOLOGIST)) ++proficient;
     if (ACURR(A_DEX) < 6) proficient--;
-    else if (ACURR(A_DEX) >= 14) proficient += (ACURR(A_DEX) - 14);
+    else if (ACURR(A_DEX) >= 14) proficient += (ACURR(A_DEX) - 11)/3;
     if (Fumbling) --proficient;
     if (proficient > 3) proficient = 3;
     if (proficient < 0) proficient = 0;
@@ -3936,6 +3942,169 @@ struct obj *obj;
 
     } else {
 	pline("%s", msg_snap);
+
+    }
+    return 1;
+}
+
+
+int
+use_nunchucks(obj)
+struct obj *obj;
+{
+    char buf[BUFSZ];
+    struct monst *mtmp;
+    struct obj *otmp;
+    int rx, ry, proficient, res = 0;
+    const char *msg_slipsfree = "The nunchaku slip free.";
+    const char *msg_snap = "Swish!";
+
+    if (obj != uwep) {
+		if (!wield_tool(obj, "nunchaku")) return 0;
+		else res = Role_if(PM_MONK) ? partial_action() : 1;
+    }
+
+	if (!getdir((char *)0)) return res;
+
+	if (Stunned || (Confusion && !rn2(5))) confdir();
+	rx = u.ux + u.dx;
+	ry = u.uy + u.dy;
+	if (!isok(rx,ry)) {
+		pline("%s",msg_snap);
+		return 1;
+	}
+    mtmp = m_at(rx, ry);
+
+    /* proficiency check */
+    proficient = 0;
+	if(u.umartial){
+		proficient = min(P_SKILL(P_FLAIL)-P_UNSKILLED, P_SKILL(P_MARTIAL_ARTS)-P_BASIC);
+	}
+    if (Role_if(PM_MONK)) ++proficient;
+    if (ACURR(A_DEX) < 6) proficient--;
+    else if (ACURR(A_DEX) >= 14) proficient += (ACURR(A_DEX) - 11)/3;
+    if (Fumbling) --proficient;
+    if (proficient > 3) proficient = 3;
+    if (proficient < 0) proficient = 0;
+
+    if (u.uswallow && attack2(u.ustuck)) {
+	There("is not enough room to swing your nunchaku.");
+
+    } else if (Underwater) {
+	There("is too much resistance to swing your nunchaku.");
+
+    } else if (u.dz < 0) {
+		if(!Levitation && !Flying)
+			You("glare impotently at the bugs on the %s.",ceiling(u.ux,u.uy));
+		else 
+			You("smash a bug on the %s.",ceiling(u.ux,u.uy));
+
+    } else if ((!u.dx && !u.dy) || (u.dz > 0)) {
+		int dam;
+		dam = rnd(4) + dbon(obj) + obj->spe;
+		if (dam <= 0) dam = 1;
+		You("hit your %s with your nunchaku.", body_part((u.dz > 0) ? FOOT : HAND));
+		Sprintf(buf, "killed %sself with %s whip", uhim(), uhis());
+		losehp(dam, buf, NO_KILLER_PREFIX);
+		flags.botl = 1;
+		return 1;
+
+    } else if ((Fumbling || Glib) && !rn2(5)) {
+		pline_The("nunchaku slips out of your %s.", body_part(HAND));
+		dropx(obj);
+
+    } else if (mtmp) {
+		if (!canspotmon(mtmp) &&
+			!glyph_is_invisible(levl[rx][ry].glyph)) {
+		   pline("A monster is there that you couldn't see.");
+		   map_invisible(rx, ry);
+		}
+		otmp = rn2(3) ? MON_WEP(mtmp) : MON_SWEP(mtmp);	/* can be null */
+		if (otmp) {
+			char onambuf[BUFSZ];
+			const char *mon_hand;
+			boolean gotit = proficient && (!Fumbling || !rn2(10));
+
+			Strcpy(onambuf, cxname(otmp));
+			if (gotit) {
+				mon_hand = mbodypart(mtmp, HAND);
+				if (bimanual(otmp,mtmp->data)) mon_hand = makeplural(mon_hand);
+			} else
+			mon_hand = 0;	/* lint suppression */
+
+			You("wrap your nunchaku-chain around %s %s.",
+			s_suffix(mon_nam(mtmp)), onambuf);
+			if (gotit && otmp->cursed && !is_weldproof_mon(mtmp)) {
+				pline("%s welded to %s %s%c",
+					  (otmp->quan == 1L) ? "It is" : "They are",
+					  mhis(mtmp), mon_hand,
+					  !otmp->bknown ? '!' : '.');
+				otmp->bknown = 1;
+				gotit = FALSE;	/* can't pull it free */
+			}
+			if (gotit) {
+				obj_extract_self(otmp);
+				possibly_unwield(mtmp, FALSE);
+				setmnotwielded(mtmp,otmp);
+
+				switch (rn2(proficient + 1)) {
+					case 2:
+						/* to floor near you */
+						You("yank %s %s to the %s!", s_suffix(mon_nam(mtmp)),
+						onambuf, surface(u.ux, u.uy));
+						place_object(otmp, u.ux, u.uy);
+						stackobj(otmp);
+						break;
+					case 3:
+						/* right to you */
+						/* right into your inventory */
+						You("snatch %s %s!", s_suffix(mon_nam(mtmp)), onambuf);
+						if (otmp->otyp == CORPSE &&
+							touch_petrifies(&mons[otmp->corpsenm]) &&
+							!uarmg && !Stone_resistance &&
+							!(poly_when_stoned(youracedata) &&
+							polymon(PM_STONE_GOLEM))
+						){
+							char kbuf[BUFSZ];
+
+							Sprintf(kbuf, "%s corpse",
+								an(mons[otmp->corpsenm].mname));
+							pline("Snatching %s is a fatal mistake.", kbuf);
+							instapetrify(kbuf);
+						}
+						otmp = hold_another_object(otmp, "You drop %s!",
+									   doname(otmp), (const char *)0);
+					break;
+				default:
+					/* to floor beneath mon */
+					You("yank %s from %s %s!", the(onambuf),
+					s_suffix(mon_nam(mtmp)), mon_hand);
+					obj_no_longer_held(otmp);
+					place_object(otmp, mtmp->mx, mtmp->my);
+					stackobj(otmp);
+					break;
+				}
+			} else {
+				pline("%s", msg_slipsfree);
+			}
+			wakeup(mtmp, TRUE);
+		} else {
+			if ((mtmp->m_ap_type && mtmp->m_ap_type != M_AP_MONSTER) &&
+			!Protection_from_shape_changers && !sensemon(mtmp))
+			stumble_onto_mimic(mtmp);
+			else You("swing your nunchaku toward %s.", mon_nam(mtmp));
+			if (proficient) {
+				if (attack2(mtmp)) return 1;
+				else pline("%s", msg_snap);
+			}
+		}
+
+    } else if (Weightless || Is_waterlevel(&u.uz)) {
+	    /* it must be air -- water checked above */
+	    You("swing your nunchaku through thin air.");
+
+    } else {
+		pline("%s", msg_snap);
 
     }
     return 1;
@@ -7089,6 +7258,9 @@ doapply()
 	case BULLWHIP:
 		res = use_whip(obj);
 		break;
+	case NUNCHAKU:
+		res = use_nunchucks(obj);
+		break;
 	case GRAPPLING_HOOK:
 		res = use_grapple(obj);
 		break;
@@ -7982,7 +8154,7 @@ partial_action()
 	return res;
 }
 
-//Returns 0 if this is the first time its called this round, 1 otherwise.
+//Returns returns 1 if the partial_action() has been used this round.
 int
 check_partial_action()
 {

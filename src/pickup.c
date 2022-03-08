@@ -2632,6 +2632,7 @@ boolean past;
 				for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 					if(otmp->obj_material == MERCURIAL){
 						expert_weapon_skill(objects[otmp->otyp].oc_skill);
+						free_skill_up(objects[otmp->otyp].oc_skill);
 					}
 				}
 				expert_weapon_skill(P_ATTACK_SPELL);
@@ -2640,6 +2641,7 @@ boolean past;
 			}
 			else {
 				expert_weapon_skill(P_TWO_HANDED_SWORD);
+				free_skill_up(P_TWO_HANDED_SWORD);
 				expert_weapon_skill(P_ATTACK_SPELL);
 				skilled_weapon_skill(P_BEAST_MASTERY);
 			}
@@ -2649,10 +2651,13 @@ boolean past;
 		case PM_INCANTIFIER:
 		case PM_GNOME:
 			if(flags.initgend){
-				expert_weapon_skill(P_BEAST_MASTERY);
+				expert_weapon_skill(P_DAGGER);
+				free_skill_up(P_DAGGER);
+				skilled_weapon_skill(P_TWO_WEAPON_COMBAT);
 			}
 			else {
 				expert_weapon_skill(P_SABER);
+				free_skill_up(P_SABER);
 			}
 			if(Race_if(PM_GNOME)){
 				knows_object(GNOMISH_POINTY_HAT);
@@ -2665,6 +2670,7 @@ boolean past;
 		case PM_DWARF:
 			expert_weapon_skill(P_PICK_AXE);
 			expert_weapon_skill(P_SHIELD);
+			free_skill_up(P_SHIELD);
 			knows_object(DWARVISH_SPEAR);
 			knows_object(DWARVISH_SHORT_SWORD);
 			knows_object(DWARVISH_MATTOCK);
@@ -2675,7 +2681,9 @@ boolean past;
 		break;
 		case PM_ELF:
 			expert_weapon_skill(P_BOW);
+			free_skill_up(P_BOW);
 			expert_weapon_skill(P_SCIMITAR);
+			free_skill_up(P_SCIMITAR);
 			skilled_weapon_skill(P_BROAD_SWORD);
 			knows_object(ELVEN_SHORT_SWORD);
 			knows_object(ELVEN_ARROW);
@@ -2695,11 +2703,13 @@ boolean past;
 			if(flags.initgend){
 				expert_weapon_skill(P_SABER);
 				expert_weapon_skill(P_WHIP);
+				free_skill_up(P_WHIP);
 				skilled_weapon_skill(P_BEAST_MASTERY);
 			}
 			else {
 				expert_weapon_skill(P_SABER);
 				expert_weapon_skill(P_MORNING_STAR);
+				free_skill_up(P_MORNING_STAR);
 				expert_weapon_skill(P_TWO_HANDED_SWORD);
 			}
 			knows_object(DROVEN_SHORT_SWORD);
@@ -2720,6 +2730,7 @@ boolean past;
 			expert_weapon_skill(P_SCIMITAR);
 			skilled_weapon_skill(P_TWO_HANDED_SWORD);
 			skilled_weapon_skill(P_RIDING);
+			free_skill_up(P_RIDING);
 			knows_object(ORCISH_SHORT_SWORD);
 			knows_object(ORCISH_ARROW);
 			knows_object(ORCISH_BOW);
@@ -2734,7 +2745,9 @@ boolean past;
 		break;
 		case PM_YUKI_ONNA:
 			expert_weapon_skill(P_LONG_SWORD);
+			free_skill_up(P_LONG_SWORD);
 			expert_weapon_skill(P_SHORT_SWORD);
+			free_skill_up(P_SHORT_SWORD);
 			expert_weapon_skill(P_TWO_WEAPON_COMBAT);
 		break;
 	}

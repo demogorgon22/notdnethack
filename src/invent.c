@@ -1249,6 +1249,7 @@ register const char *let,*word;
 //endif
 		      !is_axe(otmp) && !is_pole(otmp) && 
 			  otyp != BULLWHIP && otyp != VIPERWHIP && otyp != FORCE_WHIP &&
+			  otyp != NUNCHAKU && 
 			  !is_knife(otmp) && otmp->oartifact != ART_SILVER_STARLIGHT &&
 			  !(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && !u.veil) &&
 			  otmp->otyp != RAKUYO && otmp->otyp != RAKUYO_SABER && 
@@ -5436,6 +5437,16 @@ u_healing_penalty()
 	}
 	if(is_demon(youracedata) || is_undead(youracedata)){
 		penalty += (4*u_bcu_next_to_skin(1)+1)/2;
+	}
+	if(u.ualign.type == A_CHAOTIC){
+		int plat_penalty = 5 * u_material_next_to_skin(PLATINUM);
+		if(is_minion(youracedata) || is_demon(youracedata))
+			plat_penalty *= 2;
+		/* strongly chaotic beings are hurt more */
+		if(u.ualign.record >= 100)
+			plat_penalty *= 2;
+
+		penalty += plat_penalty/2;
 	}
 	if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
 		int delta = Insanity;

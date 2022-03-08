@@ -4250,7 +4250,7 @@ struct monst *mon;
 	xlocale = mon->mtrack[1].x;
 	ylocale = mon->mtrack[1].y;
 	if(xyloc == MIGR_EXACT_XY){
-		if(u.ux == xlocale && u.uy == ylocale && !mon->mpeaceful){
+		if(u.ux == xlocale && u.uy == ylocale && !mon->mpeaceful && !(uarmc && uarmc->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)){
 			You_feel("someone walking on your grave!");
 			change_luck(-13);
 		} else if(!mon->mpeaceful && !rn2(140)){
@@ -4389,6 +4389,10 @@ static int pharaohspawns[] = {PM_COBRA, PM_COBRA, PM_COBRA, PM_SERPENT_NECKED_LI
 							  PM_COBRA, PM_COBRA, PM_COBRA, PM_SERPENT_NECKED_LIONESS, PM_HUNTING_HORROR,
 							  PM_HUMAN_MUMMY, PM_HUMAN_MUMMY, PM_HUMAN_MUMMY, PM_GIANT_MUMMY, PM_PHARAOH,
 							  PM_ENERGY_VORTEX, PM_ENERGY_VORTEX, PM_ENERGY_VORTEX, PM_LIGHTNING_PARAELEMENTAL, PM_BLUE_DRAGON};
+
+static int toughpharaohspawns[] = {PM_COBRA, PM_SERPENT_NECKED_LIONESS, PM_HUNTING_HORROR,
+							  PM_GIANT_MUMMY, PM_PHARAOH,
+							  PM_LIGHTNING_PARAELEMENTAL, PM_BLUE_DRAGON};
 
 
 STATIC_OVL
@@ -4552,9 +4556,9 @@ struct monst *mon;
 				mtmp->mhp = mtmp->mhpmax;
 				if(canseemon(mon) && canseemon(mtmp))
 					pline("Dark waters rise at %s command and seal %s's wounds!", s_suffix(mon_nam(mon)), mon_nam(mtmp));
-				else if(canseemon(mtmp))
-					pline("Dark waters rise at %s command.", s_suffix(mon_nam(mon)));
 				else if(canseemon(mon))
+					pline("Dark waters rise at %s command.", s_suffix(mon_nam(mon)));
+				else if(canseemon(mtmp))
 					pline("Dark waters seal %s's wounds!", mon_nam(mtmp));
 			} else {
 				mtmp->mhp = min(mtmp->mhp+9, mtmp->mhpmax);
@@ -4597,6 +4601,8 @@ struct monst *mon;
 		}
 	}
 	if(obj && !rn2(2)){
+		if(canseemon(mon))
+			pline("%s gestures upwards.", s_suffix(Monnam(mon)));
 		if(get_obj_location(obj, &xlocale, &ylocale, 0)){
 			if(cansee(xlocale, ylocale)) pline("Dark waters swallow Nitocris!");
 			mtmp = revive(obj, FALSE);
@@ -4604,6 +4610,26 @@ struct monst *mon;
 				rloc(mtmp, TRUE);
 		}
 		return;//No further action.
+	}
+	if(!rn2(7)){
+		struct permonst *pm;
+		pm = &mons[toughpharaohspawns[rn2(SIZE(toughpharaohspawns))]];
+		mtmp = makemon(pm, mon->mx, mon->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+		if(mtmp){
+			mtmp->mpeaceful = 0;
+			set_malign(mtmp);
+			if(canseemon(mtmp) || canseemon(mon)){
+				if(canseemon(mtmp) && canseemon(mon)){
+					pline("%s beckons and %s rises from the black flowing water at %s feet!", Monnam(mon), a_monnam(mtmp), mhis(mon));
+				}
+				else if(canseemon(mon)){
+					pline("%s beckons and the black waters flow in response!", Monnam(mon));
+				}
+				else if(canseemon(mtmp)){
+					pline("%s rises from the black flowing water!", Amonnam(mtmp));
+				}
+			}
+		}
 	}
 }
 

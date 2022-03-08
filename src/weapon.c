@@ -314,6 +314,7 @@ int oartifact;
 		|| (oartifact == ART_BLOODLETTER && artinstance[oartifact].BLactive >= moves)
 		|| oartifact == ART_FIRE_BRAND
 		|| oartifact == ART_FROST_BRAND
+		|| oartifact == ART_ARYFAERN_KERYM
 		){
 		attackmask |= EXPLOSION;
 	}
@@ -2662,14 +2663,14 @@ struct obj *otmp;
 			if(is_rakuyo(otmp))
 				bonus *= 2;
 		}
-		
+
 		if(otmp->oartifact == ART_YORSHKA_S_SPEAR){
 			if(ACURR(A_WIS) == 25) bonus += 8;
 			else bonus += (ACURR(A_WIS)-10)/2;
 			if(ACURR(A_DEX) == 25) bonus += 8;
 			else bonus += (ACURR(A_DEX)-10)/2;
 		}
-		
+
 		if(otmp->oartifact == ART_FRIEDE_S_SCYTHE){
 			bonus /= 2; /*Half strength bonus/penalty*/
 			
@@ -2679,7 +2680,7 @@ struct obj *otmp;
 			if(ACURR(A_INT) == 25) bonus += 8;
 			else bonus += (ACURR(A_INT)-10)/2;
 		}
-		
+
 		if(otmp->oartifact == ART_VELKA_S_RAPIER){
 			bonus /= 2;
 			if(ACURR(A_INT) == 25) bonus += 8;
@@ -3070,6 +3071,40 @@ int skill;
 }
 
 /*
+ * Change from restricted to unrestricted, allowing new_cap as max.  This
+ * function may be called with with P_NONE.
+ */
+void
+set_weapon_skill(skill, new_cap)
+int skill;
+int new_cap;
+{
+    if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < new_cap) {
+		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
+		OLD_P_MAX_SKILL(skill) = new_cap;
+		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
+    }
+}
+
+/*
+ * Change from restricted to unrestricted, then increments the skill cap if less than new_cap.  This
+ * function may be called with with P_NONE.
+ */
+void
+increment_weapon_skill_up_to_cap(skill, new_cap)
+int skill;
+int new_cap;
+{
+    if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < new_cap) {
+		if(P_RESTRICTED(skill))
+			unrestrict_weapon_skill(skill);
+		else OLD_P_MAX_SKILL(skill)++;
+		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
+		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
+    }
+}
+
+/*
  * Change from restricted to unrestricted, allowing P_EXPERT as max.  This
  * function may be called with with P_NONE.  Used in pray.c.
  */
@@ -3077,11 +3112,7 @@ void
 expert_weapon_skill(skill)
 int skill;
 {
-    if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < P_EXPERT) {
-		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
-		OLD_P_MAX_SKILL(skill) = P_EXPERT;
-		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
-    }
+	set_weapon_skill(skill, P_EXPERT);
 }
 
 /*
@@ -3092,11 +3123,7 @@ void
 skilled_weapon_skill(skill)
 int skill;
 {
-    if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < P_SKILLED) {
-		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
-		OLD_P_MAX_SKILL(skill) = P_SKILLED;
-		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
-    }
+	set_weapon_skill(skill, P_SKILLED);
 }
 
 /*
@@ -3107,11 +3134,17 @@ void
 gm_weapon_skill(skill)
 int skill;
 {
-    if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < P_EXPERT) {
-		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
-		OLD_P_MAX_SKILL(skill) = P_GRAND_MASTER;
+	set_weapon_skill(skill, P_GRAND_MASTER);
+}
+
+void
+free_skill_up(skill)
+int skill;
+{
+	if(OLD_P_SKILL(skill) < OLD_P_MAX_SKILL(skill)){
+		OLD_P_SKILL(skill)++;
 		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
-    }
+	}
 }
 
 #endif /* OVL1 */
@@ -3784,10 +3817,7 @@ struct obj *shield;
 }
 
 /*
- * Initialize weapon skill array for the game.  Start by setting all
- * skills to restricted, then set the skill for every weapon the
- * hero is holding, finally reading the given array that sets
- * maximums.
+ * Add the listed skills to the player's skill list.
  */
 void
 skill_add(class_skill)
@@ -3822,6 +3852,50 @@ const struct def_skill *class_skill;
 	    }
 	}
 }
+
+/*
+ * Read the given array and increment the max skill level of each listed
+ * skill iff its maximum is bellow the given level.
+ */
+void
+skill_up(class_skill)
+const struct def_skill *class_skill;
+{
+	int skmax, skill;
+	/* walk through array to set skill maximums */
+	for (; class_skill->skill != P_NONE; class_skill++) {
+	    skmax = class_skill->skmax;
+	    skill = class_skill->skill;
+
+		increment_weapon_skill_up_to_cap(skill, skmax);
+	}
+
+	/* High potential fighters already know how to use their hands. */
+	if (OLD_P_MAX_SKILL(P_BARE_HANDED_COMBAT) > P_EXPERT)
+	    OLD_P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
+
+	/*
+	 * Make sure we haven't missed setting the max on a skill
+	 * & set advance
+	 */
+	for (skill = 0; skill < P_NUM_SKILLS; skill++) {
+	    if (!OLD_P_RESTRICTED(skill)) {
+			if (OLD_P_MAX_SKILL(skill) < OLD_P_SKILL(skill)) {
+				impossible("skill_init: curr > max: %s", P_NAME(skill));
+				OLD_P_MAX_SKILL(skill) = OLD_P_SKILL(skill);
+			}
+			P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
+	    }
+	}
+}
+
+/*
+ * Initialize weapon skill array for the game.  Start by setting all
+ * skills to restricted, then set the skill for every weapon the
+ * hero is holding, finally reading the given array that sets
+ * maximums.
+ */
+
 void
 skill_init(class_skill)
 const struct def_skill *class_skill;

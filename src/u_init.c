@@ -1128,6 +1128,16 @@ static const struct def_skill Skill_I[] = {
     { P_NONE, 0 }
 };
 
+static const struct def_skill Skill_Y[] = {
+    { P_ENCHANTMENT_SPELL, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_G_Spe[] = {
+    { P_ESCAPE_SPELL, P_EXPERT },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_Elf_Music[] = {
     { P_MUSICALIZE, P_EXPERT },
     { P_NONE, 0 }
@@ -2412,7 +2422,7 @@ u_init()
     break;
 
 	case PM_INCANTIFIER:
-		skill_add(Skill_I);
+		skill_up(Skill_I);
 	    if (!Role_if(PM_WIZARD)) ini_inv(ForceBook);
 		else ini_inv(ExtraBook);
 	    if (!Role_if(PM_HEALER) && (!Role_if(PM_MONK) || Monk[M_BOOK].trotyp != SPE_HEALING)) ini_inv(HealingBook);
@@ -2573,6 +2583,7 @@ u_init()
 			ini_inv(GnomishHat);
 		}
 		skill_add(Skill_G);
+		skill_up(Skill_G_Spe);
 		ini_inv(TallowCandles);
 		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
 			knows_object(GNOMISH_POINTY_HAT);
@@ -2639,7 +2650,11 @@ u_init()
 		u.ualign.sins += 5;
 	    change_luck(-1);
 	    break;
-	default:	/* impossible */
+	case PM_YUKI_ONNA:
+	    knows_object(POT_OBJECT_DETECTION);
+		skill_up(Skill_Y);
+	    break;
+	default:
 		break;
 	}
 

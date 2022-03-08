@@ -1436,6 +1436,8 @@ struct obj * otmp;
 		if (otmp->oartifact == ART_EXCALIBUR ||
 			otmp->oartifact == ART_LANCE_OF_LONGINUS)
 			dmg += vd(3, 7);
+		else if (otmp->oartifact == ART_ARCOR_KERYM)
+			dmg += vd(2, 10); // Crackling holy energy
 		else if (otmp->oartifact == ART_GODHANDS)
 			dmg += 7;
 		else if (otmp->oartifact == ART_JINJA_NAGINATA)
@@ -1540,7 +1542,7 @@ struct obj * otmp;
 		if(is_minion(mdef->data) || is_demon(mdef->data))
 			diesize *= 2;
 		/* strongly chaotic beings are hurt more */
-		if(mdef->mtyp == PM_ANGEL || mdef->data->maligntyp <= -10)
+		if(youdef ? u.ualign.record >= 100 : ( mdef->mtyp == PM_ANGEL || mdef->data->maligntyp <= -10))
 			diesize *= 2;
 
 		/* special cases */

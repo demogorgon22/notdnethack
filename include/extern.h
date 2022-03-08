@@ -57,6 +57,7 @@ E boolean FDECL(tinnable, (struct obj *));
 E void NDECL(reset_trapset);
 E void FDECL(fig_transform, (genericptr_t, long));
 E int FDECL(use_whip, (struct obj *));
+E int FDECL(use_nunchucks, (struct obj *));
 E int FDECL(use_force_sword, (struct obj *));
 E int FDECL(do_bloodletter, (struct obj *));
 E void FDECL(pyramid_effects, (struct obj *, int, int));
@@ -511,7 +512,8 @@ E struct obj *FDECL(oname, (struct obj *,const char *));
 E int NDECL(ddocall);
 E void FDECL(docall, (struct obj *));
 E const char *NDECL(rndghostname);
-E void FDECL(append_template_desc, (struct monst *, char *, boolean));
+E void FDECL(append_template_desc, (struct monst *, char *, boolean, boolean));
+E void FDECL(adjust_permonst_template_desc, (struct permonst *, char *, int));
 E const char *FDECL(injury_desc_word, (struct monst *));
 E char *FDECL(x_monnam, (struct monst *,int,const char *,int,BOOLEAN_P));
 E char *FDECL(l_monnam, (struct monst *));
@@ -834,6 +836,8 @@ E void FDECL(done_in_by, (struct monst *));
 #endif /* !MAKEDEFS_C && !LEV_LEX_C */
 E void VDECL(panic, (const char *,...)) PRINTF_F(1,2);
 #if !defined(MAKEDEFS_C) && !defined(LEV_LEX_C)
+E const char* NDECL(get_alignment_code);
+E const char* NDECL(get_alignment_adj);
 E void FDECL(done, (int));
 E void FDECL(container_contents, (struct obj *,BOOLEAN_P,BOOLEAN_P));
 #ifdef DUMP_LOG
@@ -3131,14 +3135,15 @@ E int NDECL(abon);
 E int FDECL(dbon, (struct obj *));
 E int FDECL(m_dbon, (struct monst *, struct obj *));
 E int NDECL(enhance_weapon_skill);
-E void FDECL(expert_weapon_skill, (int));
-E void FDECL(skilled_weapon_skill, (int));
 E int FDECL(skill_dam_bonus, (int));
 E void FDECL(gm_weapon_skill, (int));
+E void FDECL(free_skill_up, (int));
 #ifdef DUMP_LOG
 E void NDECL(dump_weapon_skill);
 #endif
 E void FDECL(unrestrict_weapon_skill, (int));
+E void FDECL(expert_weapon_skill, (int));
+E void FDECL(skilled_weapon_skill, (int));
 E void FDECL(use_skill, (int,int));
 E void FDECL(add_weapon_skill, (int));
 E void FDECL(lose_weapon_skill, (int));
@@ -3149,6 +3154,7 @@ E int FDECL(weapon_dam_bonus, (struct obj *, int));
 E int FDECL(shield_skill, (struct obj *));
 E void FDECL(skill_init, (const struct def_skill *));
 E void FDECL(skill_add, (const struct def_skill *));
+E void FDECL(skill_up, (const struct def_skill *));
 E const char * FDECL(P_NAME, (int));
 E int NDECL(aeshbon);
 
@@ -3250,6 +3256,7 @@ E int FDECL(full_mac, (struct monst *));
 E int FDECL(full_marmorac, (struct monst *));
 E int FDECL(base_nat_mdr, (struct monst *));
 E int FDECL(base_mdr, (struct monst *));
+E int FDECL(avg_spell_mdr, (struct monst *));
 E int FDECL(roll_mdr, (struct monst *, struct monst *));
 E int FDECL(roll_mdr_detail, (struct monst *, struct monst *, int, int));
 E void FDECL(mon_slot_dr, (struct monst *, struct monst *, int, int *, int *, int *, int));
