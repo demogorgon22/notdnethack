@@ -661,6 +661,7 @@ struct level_map {
 	/*Dungeons of Doom*/
 	{ "castle",	&stronghold_level },
 	{ "oracle",	&oracle_level },
+	{ "villag",	&village_level },
 	{ "bigroom",	&bigroom_level },
 #ifdef REINCARNATION
 	{ "rogue",	&rogue_level },

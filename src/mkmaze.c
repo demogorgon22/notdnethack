@@ -360,6 +360,30 @@ static const int angelnums[] = {PM_JUSTICE_ARCHON, PM_SWORD_ARCHON, PM_SHIELD_AR
 						  PM_ERINYS, PM_FALLEN_ANGEL, PM_ANCIENT_OF_BLESSINGS, PM_ANCIENT_OF_ICE, PM_ANCIENT_OF_DEATH
 						 };
 
+int 
+init_village(rndlevs)
+int rndlevs;
+{
+	if(Race_if(PM_ELF))
+		return FOREST_VILLAGE;
+	int levvar;
+	boolean levelBad = TRUE;
+	while(levelBad){
+		levvar = rnd(rndlevs);
+		levelBad = FALSE;
+		if(levvar == GRASS_VILLAGE && (Race_if(PM_DROW) || Race_if(PM_VAMPIRE) || Race_if(PM_ORC)))
+			levelBad = TRUE;
+		if(levvar == LAKE_VILLAGE && (Race_if(PM_DROW) || Race_if(PM_VAMPIRE) || Race_if(PM_ORC) || Race_if(PM_SALAMANDER)))
+			levelBad = TRUE;
+		if(levvar == FOREST_VILLAGE && (Race_if(PM_DROW) || Race_if(PM_SALAMANDER) || Race_if(PM_CLOCKWORK_AUTOMATON)))
+			levelBad = TRUE;
+		if(levvar == CAVE_VILLAGE && !(Race_if(PM_DROW) || Race_if(PM_GNOME) || Race_if(PM_CHIROPTERAN) || Race_if(PM_ORC) || Race_if(PM_VAMPIRE)))
+			levelBad = TRUE;
+	}
+	return levvar;
+
+}
+
 /* this is special stuff that the level compiler cannot (yet) handle */
 STATIC_OVL void
 fixup_special()
@@ -1364,6 +1388,7 @@ register const char *s;
 	if(*s) {
 	    if(sp && sp->rndlevs){
 			levvar = rnd((int) sp->rndlevs);
+			if(Is_village_level(&u.uz)) levvar = init_village((int) sp->rndlevs);
 			Sprintf(protofile, "%s-%d", s, levvar);
 		}
 	    else Strcpy(protofile, s);
@@ -1400,6 +1425,8 @@ register const char *s;
 		dungeon_topology.brine_variant = levvar;
 	} else if(In_sea(&u.uz)){
 		dungeon_topology.sea_variant = levvar;
+	} else if(Is_village_level(&u.uz)){
+		dungeon_topology.village_variant = levvar;
 	}
 	
 	if(dungeon_topology.alt_tower){
@@ -1791,18 +1818,18 @@ bound_digging()
 	    }
 }
 
-void
+struct trap *
 mkportal(x, y, todnum, todlevel)
 register xchar x, y;
 register int todnum, todlevel;
 {
 	/* a portal "trap" must be matched by a */
 	/* portal in the destination dungeon/dlevel */
-	register struct trap *ttmp = maketrap(x, y, MAGIC_PORTAL);
+	struct trap *ttmp = maketrap(x, y, MAGIC_PORTAL);
 
 	if (!ttmp) {
 		impossible("portal on top of portal??");
-		return;
+		return (struct trap*) 0;
 	}
 #ifdef DEBUG
 	pline("mkportal: at (%d,%d), to %s, level %d",
@@ -1810,7 +1837,7 @@ register int todnum, todlevel;
 #endif
 	ttmp->dst.dnum = todnum;
 	ttmp->dst.dlevel = todlevel;
-	return;
+	return ttmp;
 }
 
 /*

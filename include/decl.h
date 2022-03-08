@@ -50,6 +50,12 @@ E NEARDATA int in_doagain;
 
 E struct dgn_topology {		/* special dungeon levels for speed */
 	/*Dungeons of Doom*/
+    d_level	d_village_level;	
+ 	int village_variant;
+#define GRASS_VILLAGE 1
+#define LAKE_VILLAGE 2
+#define FOREST_VILLAGE 3
+#define CAVE_VILLAGE 4
     d_level	d_oracle_level;
     d_level	d_bigroom_level;	/* unused */
     d_level	d_bigroomb_level;	/* unused */
@@ -216,6 +222,7 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 } dungeon_topology;
 /* macros for accesing the dungeon levels by their old names */
 	/*Dungeons of Doom*/
+#define village_level		(dungeon_topology.d_village_level)
 #define oracle_level		(dungeon_topology.d_oracle_level)
 #define bigroom_level		(dungeon_topology.d_bigroom_level)
 #ifdef REINCARNATION

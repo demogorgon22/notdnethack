@@ -264,6 +264,10 @@ unsigned *ospecial;
 				if(Is_qlocate(&u.uz) && offset >= S_ndoor && offset <= S_hcdoor){
 					color = CLR_GRAY;
 				}
+			} else if(Is_forest_village(&u.uz)){
+				if(offset >= S_vwall && offset <= S_trwall){
+					color = CLR_GREEN;
+				}
 			} else if(In_moloch_temple(&u.uz)){
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_RED;

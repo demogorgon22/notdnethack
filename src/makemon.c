@@ -11842,6 +11842,15 @@ int faction;
 					mtmp->mhpmax = 10*mtmp->mhpmax;
 					mtmp->mhp = mtmp->mhpmax;
 				}
+				if(mndx == PM_TRAVELLING_WIZARD){	
+					struct monst *mtmp2 = 0;
+					for(num = 0; num < 8+rnd(4); num++){
+						mtmp2 = makemon_full(&mons[urace.malenum], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						if(mtmp2){
+							mtmp2->mpeaceful = 1;
+						}
+					}
+				}
 			}
 		break;
 		case S_HUMANOID:

@@ -1665,6 +1665,7 @@ u_init()
 	u.ucspeed = NORM_CLOCKSPEED;
 	u.voidChime = 0;
 	u.regifted = 0;
+	u.ubranch = 0;
 	u.keter = 0;
 	u.chokhmah = 0;
 	u.binah = 0;

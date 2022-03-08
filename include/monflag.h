@@ -66,6 +66,7 @@
 #define MS_APOC		55	/* Dire Revelations */
 #define MS_TATTOO	56	/* Tattoos service */
 #define MS_SMITH	57	/* Armorsmith service */
+#define MS_PORTAL	58	/* Offer portal options */
 
 
 #define MR_FIRE			0x0001	/* 1 resists fire */

@@ -125,6 +125,10 @@ typedef struct branch {
 #define Is_grue_level(x)	(on_level(x, &challenge_level) && dungeon_topology.challenge_variant >= GRUE_LEVEL1 && dungeon_topology.challenge_variant <= GRUE_LEVEL2)
 
 #define Is_oracle_level(x)	(on_level(x, &oracle_level))
+#define Is_village_level(x)	(on_level(x, &village_level))
+#define Is_grass_village(x)	(Is_village_level(x) && dungeon_topology.village_variant == GRASS_VILLAGE)
+#define Is_lake_village(x)	(Is_village_level(x) && dungeon_topology.village_variant == LAKE_VILLAGE)
+#define Is_forest_village(x)	(Is_village_level(x) && dungeon_topology.village_variant == FOREST_VILLAGE)
 
 //Law quest
 #define Is_path(x)		(on_level(x, &path1_level) || on_level(x, &path2_level) || on_level(x, &path3_level))

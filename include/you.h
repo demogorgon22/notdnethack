@@ -582,6 +582,12 @@ struct you {
 	long 	last_used_move;		/* Partial action: last used turn */
 	int		last_used_movement;	/* Partial action: last used turn segment */
 	int 	ustdy;		/* to record extra damage to be dealt due to having been studied */
+	uchar	ubranch;	/* record which branch the village wizard opened up for you*/
+#define ICE_CAVES	1
+#define BLACK_FOREST	2
+#define GNOMISH_MINES	3
+#define DISMAL_SWAMP	4
+#define ARCHIPELAGO	5
 	int 	uencouraged;/* to record the buff from tame encouragement songs */
 	int		uentangled; /* to record the otyp of an item entangling you */
 	long int spawnedGold; /* to record total amount of gold spawned in a game */

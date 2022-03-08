@@ -54,6 +54,7 @@ static int NDECL(donursemenu);
 static int NDECL(dorendermenu);
 static int FDECL(dodollmenu, (struct monst *));
 static int FDECL(dotatmenu, (const char *));
+static int FDECL(doportalmenu, (const char *));
 static int FDECL(dosmithmenu, (const char *));
 static boolean FDECL(smith_offer_price, (long charge, struct monst *));
 static boolean FDECL(nurse_services,(struct monst *));
@@ -721,6 +722,38 @@ register struct monst *mtmp;
 	verbalize("I'm hungry.");
     }
 }
+static const char *branch_info[] ={
+	/* Ice Caves*/
+	"Miners are known to freeze to death in The Ice Caves.",
+	"There is a frozen settlement a ways into The Ice Caves.",
+	"It is said a great beast lives at the bottom of The Ice Caves.",
+	"The Ice Caves are full of dangerous cold based monsters.",
+	"The ice in The Ice Caves has unusual traction.",
+	/* black forest*/
+	"The Black Forest is inhabited by many plants and beasts.",
+	"Peasants tend to wander into The Black Forest and meet their demise.",
+	"There is said to be a strange shrine in the heart of The Black Forest.",
+	"The Black Forest is dark, as well as foggy.",
+	"A legendary poplar tree lives deep in The Black Forest",
+	/*Gnomish Mines*/
+	"The Gnomish Mines are full of gnomes and dwarves.",
+	"A town is established deep in the Gnomish Mines",
+	"It is said there is a luckstone at the bottom of the Gnomish Mines.",
+	"The inhabitants of the Gnomish Mines are well armed and armored.",
+	"The town in the Gnomish Mines is full of shopkeepers.",
+	/* Dismal Swamp*/
+	"The Dismal Swamp is full of water, trees, and grass.",
+	"It is rumored there is a kobold fortress deep in The Dismal Swamp.",
+	"There is a temple deep in The Dismal Swamp.",
+	"The beasts of The Dismal Swamp include armored kobolds.",
+	"The kobolds of The Dismal Swamp are said to have hoarded treasure.",
+	/* Archipelago*/
+	"The Archipelago is full of a magical plant.",
+	"There is said to be a leveetown in The Archipelago.",
+	"A strange beast lurks far into The Archipelago, deep under the sea.",
+	"The Archipelago's waters contain lost treasure.",
+	"Sailors have drowned in The Archipelago."
+};
 
 static boolean
 smith_offer_price(charge, shkp)
@@ -844,6 +877,15 @@ boolean chatting;
 			}
 		}
 	}
+	if(Is_village_level(&u.uz) && Race_if(monsndx(ptr))){
+		if(u.ubranch){
+			verbalize("%s",branch_info[rn2(5) + ((u.ubranch-1)*5)]);
+		} else {
+			if(rn2(4)) verbalize("%s",branch_info[rn2(SIZE(branch_info))]);
+			else verbalize("You should talk to the Travelling Wizard.");
+		}
+		return 1;
+	}	
 	switch (
 		is_silent_mon(mtmp) ? MS_SILENT : 
 		(is_dollable(mtmp->data) && mtmp->m_insight_level) ? MS_STATS : 
@@ -1086,6 +1128,66 @@ boolean chatting;
 		//if(made_purchase) achieve.used_smith = 1;
 		break;
 	}
+	case MS_PORTAL:{
+			if(!Is_village_level(&u.uz) || u.ubranch){
+				pline("%s mumbles about the village.",Monnam(mtmp));
+				return 1;
+			}
+			/*some flavor text bullshit*/
+			int selection;
+			//We need to handle this better incase the rnager skips and goes to qstlb first
+			if(Role_if(PM_RANGER) && Race_if(PM_GNOME)){
+				selection = GNOMISH_MINES;
+			}
+			else{
+				verbalize("Could you tell me which way the Amulet of Yendor is?");
+				selection = doportalmenu("Have a portal opened to where?");
+			}
+			if(!selection) return 1;
+			u.ubranch = selection;
+			int landings[5][2];
+			int dnum;
+			struct trap *portal;
+			// x,y coords of portal landing based on different maps
+			landings[GRASS_VILLAGE][0] = 35;
+			landings[GRASS_VILLAGE][1] = 11;
+			landings[LAKE_VILLAGE][0] = 29;
+			landings[LAKE_VILLAGE][1] = 20;
+			landings[FOREST_VILLAGE][0] = 40;
+			landings[FOREST_VILLAGE][1] = 11;
+			landings[CAVE_VILLAGE][0] = 40;
+			landings[CAVE_VILLAGE][1] = 11;
+			switch(selection){
+				case ICE_CAVES:
+					//dnum = ice_dnum;
+				break;
+				case BLACK_FOREST:
+					//dnum = blackforest_dnum;
+				break;
+				case GNOMISH_MINES:
+					//dnum = mines_dnum;
+				break;
+				case DISMAL_SWAMP:
+					//dnum = dismalswamp_dnum;
+				break;
+				case ARCHIPELAGO:
+					//dnum = archipelago_dnum;
+				break;
+				default:
+					//dnum = ice_dnum;
+					impossible("Improper branch selected?");
+				break;
+			}
+			dnum = mines_dnum;
+			verbalize("I must leave now!");
+			portal = mkportal(landings[dungeon_topology.village_variant][0], landings[dungeon_topology.village_variant][1], dnum, 2);
+			if(portal) portal->tseen = 1;
+			mongone(mtmp);
+			You_hear("a woosh!");
+			return 1;
+
+		}
+		break;
 	
 	case MS_ORACLE:
 	    return doconsult(mtmp);
@@ -2617,6 +2719,54 @@ humanoid_sound:
     if (pline_msg) pline("%s %s", Monnam(mtmp), pline_msg);
     else if (verbl_msg) verbalize1(verbl_msg);
     return(1);
+}
+
+int
+doportalmenu(prompt)
+const char *prompt;
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Locations: ");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	Sprintf(buf, "The Ice Caves");
+	any.a_int = ICE_CAVES;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'i', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	Sprintf(buf, "The Black Forest");
+	any.a_int = BLACK_FOREST;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'f', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	Sprintf(buf, "The Gnomish Mines");
+	any.a_int = GNOMISH_MINES;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'm', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	Sprintf(buf, "The Dismal Swamp");
+	any.a_int = DISMAL_SWAMP;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		's', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	Sprintf(buf, "The Archipelago");
+	any.a_int = ARCHIPELAGO;	
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'a', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	end_menu(tmpwin, prompt);
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	return (n > 0) ? selected[0].item.a_int : 0;
 }
 
 #define is_croesus_valid uarm && uarm->obj_material == GOLD && uarmh && uarmh->obj_material == GOLD && \
