@@ -1,0 +1,228 @@
+#village.des
+#Travelling maps
+
+#
+#Grass Plain village
+#This map is a fun map here yeah with some farmer peasanty guys and they have a cool scythe somewhere 
+#- Demo
+#
+MAZE:"villag-1",' '
+GEOMETRY:center,center
+MAP
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG----GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG|..|GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGG-----GGGGG|..|GGGGGGG-----GGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGG|...|GGGGG--+-GGGGGGG|...|GGGGGGG----GGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGG|...+........GGGGGGGG|...|.......+..|GGGGGGGGGGGGGGGGGG
+GGGGGGGGGG-----GGGGG|...|GGGG.......GGGGG|...|.GGGGG.|..|GGGGGGGGGGGGGGGGGG
+GGGGGGGGGG|...|GGGGG-----GGGG.......GGGGG--+--.GGGGG.----GGGGGGGGGGGGGGGGGG
+GGGGGGGGGG|...|GGGGGGGGGGGGGG...{..............GGGGG.GGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGG|...+..........GGGG.......GGGGGGGGGGGGGGGG.G---------GGGGGGGGGGGG
+GGGGGGGGGG-----GGGGGGGG.............GGGGGGGGGGGGGGGG..+.......|GGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGG--+-GGGGGGGGGG.GGGG---------GGGGG|.......|GGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGG|..|GGGGGGGGGG.....+.......|GGGGG---------GGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGG|..|GGGGGGGGGGGGGGG|.......|GGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGG----GGGGGGGGGGGGGGG---------GGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+ENDMAP
+RANDOM_PLACES: (12,08), (22,06), (22,13), (45,13), (31,02), (58,11)
+# Dungeon Description
+REGION:(00,00,74,17),lit,"ordinary"
+# Stairs
+STAIR:levregion(02,01,05,20),(12,12,13,13),up
+STAIR:levregion(72,01,05,20),(0,0,0,0),down
+# Doors
+DOOR:open,(14,09)
+DOOR:open,(24,05)
+DOOR:open,(23,11)
+DOOR:open,(32,04)
+DOOR:open,(40,12)
+DOOR:open,(43,07)
+DOOR:open,(53,05)
+DOOR:open,(54,10)
+# Objects
+# House loot
+# A candle, a tin whistle, a cram ration, a potion, a scroll
+OBJECT: '(', "wax candle", place[0]
+OBJECT: '(', "tin whistle", place[1]
+OBJECT: '%', "cram ration", place[2]
+OBJECT: '!', random, place[3]
+OBJECT: '?', random, place[4]
+OBJECT: ')',"scythe",place[5],uncursed,+3
+OBJECT:random,random,random
+OBJECT:random,random,random
+# Monsters.
+MONSTER:'@',"Travelling Wizard",(54,06)
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+
+
+#
+#Fishing lake map
+#
+MAZE: "villag-2",' '
+GEOMETRY: center, center
+MAP
+GGGGGGGGGGGG------GGGGGGGGGGGG}}}}}}}}}}}}}}}}}}}}}GGGGGGGGGGGGTGGGGGGGGGGG
+GGG-----GGGG|....|GGGGGGGGG}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGTGGGGGGGTGTGGGT
+GGG|...|GGGG|....|GGG----G}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGGTGGGGGGGGGGG
+GGG|...|GGGG|....|GGG|..|G}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGTGGGGGGGGTGGGTGT
+GGG|...|GGGG|....|GGG|..+.}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}------GGTGGGGGGGGG
+GGG---+-GGGG--+---GGG----..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}.+....|GGGGGGGGGTGG
+GGGGGG.GGGGGGG.GGGGGGGGGG..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}.|....|GGGTGGTGGGGG
+GGGGGG.GGGGGGG.GGGGGGGGGG..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}.|....|GGGGGGGGGGGT
+GGGGGG....................}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}|....|GGGTGGTGGTGG
+GGGGG---+--GGGGGGGGGGGGGG.}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}------GGGGGGGGGGGG
+GGGGG|....|GGGGG------GGG..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGGGGTGGGGGTGGGG
+GGGGG|....|GGGGG|....|GGG..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGTGGGGGGGGGGGGGGTG
+GGGGG|....|GGGGG|....+....}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGTGGGGGTGTGGGGGG
+GGGGG------GGGGG------GGG.}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGTGGGGGGGTGGGT
+GGGGGGGGGGGGGGGGGGGGGGGGG.}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGTGGGGGGGGTGGGGGG
+GGGGGGGGGGGGGGG------GGGG..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGGGGGGTGGGGGTGG
+GGGGGGGGGGGGGGG|....|GGGG..}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGTGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG|....+......}}}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGGGTGGGTGGTGGGT
+GGGGGGGGGGGGGGG------GGGGGGG}}}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGTGGGGGTGGGTGGGG
+GGGGGGGGGGGGGGGGGGGGGGGGGGGGG}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGGGGGGGGGGGGGGGGG
+ENDMAP
+RANDOM_PLACES: (06,03), (16,02), (22,04), (06,12), (19,12), (18,16)
+REGION:(01,01,73,18),lit,"ordinary"
+TELEPORT_REGION:levregion(01,00,10,20),(1,1,61,15),down
+TELEPORT_REGION:levregion(01,00,10,20),(1,1,61,15),up
+# Stairs
+STAIR:levregion(02,01,05,20),(12,12,13,13),up
+STAIR:levregion(02,01,05,20),(0,0,0,0),down
+# Doors
+DOOR:open,(06,05)
+DOOR:open,(14,05)
+DOOR:open,(24,04)
+DOOR:open,(08,09)
+DOOR:open,(21,12)
+DOOR:open,(20,17)
+DOOR:open,(57,05)
+# Objects
+# House loot
+# A candle, a lock pick, a sea ration, a potion, an armour, lost treasure
+OBJECT: '(', "wax candle", place[0]
+OBJECT: '(', "lock pick", place[1]
+OBJECT: '%', "C-ration", place[2]
+OBJECT: '!', random, place[3]
+OBJECT: '[', random, place[4]
+OBJECT: '(',"grappling hook",place[5],uncursed,+3
+CONTAINER:'(',"chest",(60,07),uncursed,0,"Handle with care!"
+OBJECT: '[', "crystal gauntlets", contained
+OBJECT:random,random,random
+OBJECT:random,random,random
+#way back
+TRAP:"teleport",(70,16)
+# Monsters.
+MONSTER:'@',"Travelling Wizard",(22,03)
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+
+#Forest village
+MAZE:"villag-3",' '
+INIT_MAP: '.' , 'T', false, true, lit, true
+GEOMETRY:center,center
+MAP
+...............................
+................----......----.
+................|..|......+..|.
+.....------.....|..|.-----|..|.
+.---+|....|.....--+-.|...|----.
+.|...|....+..........|...|.....
+.|...|....|....{.....|...|.....
+.|...|-----..........--+--.....
+.|...|.........................
+.--------+-..--+---+------.....
+..|.......|..|...|.......|.....
+..|.......|..|...|.......|.....
+..---------..-------------.....
+...............................
+ENDMAP
+RANDOM_PLACES: (02,08), (07,04), (03,10), (15,11), (24,11), (22,06)
+REGION:(00,00,30,12),lit,"ordinary"
+# Stairs
+STAIR:levregion(01,01,09,20),(12,12,13,13),up
+STAIR:levregion(72,01,05,20),(0,0,0,0),down
+# Doors
+DOOR:open,(04,04)
+DOOR:open,(10,05)
+DOOR:open,(09,09)
+DOOR:open,(15,09)
+DOOR:open,(19,09)
+DOOR:open,(18,04)
+DOOR:open,(23,07)
+DOOR:open,(26,02)
+# Objects
+# A candle, a cursed bell, a wafer, a snack, a scroll, an armour, an axe
+OBJECT: '(', "wax candle", place[0]
+OBJECT: '(', "bell", place[1],cursed,+0
+OBJECT: '%', "lembas wafer", place[2]
+OBJECT: '%', random, place[3]
+OBJECT: '?', random, place[4]
+OBJECT: ')',"axe",place[5],uncursed,+3
+OBJECT:random,random,random
+OBJECT:random,random,random
+# Monsters.
+MONSTER:'@',"Travelling Wizard",(28,03)
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+
+# Cave village
+MAZE:"villag-4",' '
+INIT_MAP: '.' , ' ', false, true, unlit, false
+GEOMETRY:center,center
+MAP
+...............................
+................----......----.
+................|..|......+..|.
+.....------.....|..|.-----|..|.
+.---+|....|.....--+-.|...|----.
+.|...|....+..........|...|.....
+.|...|....|....{.....|...|.....
+.|...|-----..........--+--.....
+.|...|.........................
+.--------+-..--+---+------.....
+..|.......|..|...|.......|.....
+..|.......|..|...|.......|.....
+..---------..-------------.....
+...............................
+ENDMAP
+# Stairs
+STAIR:levregion(01,01,09,20),(12,12,13,13),up
+STAIR:levregion(72,01,05,20),(0,0,0,0),down
+# Doors
+DOOR:open,(04,04)
+DOOR:open,(10,05)
+DOOR:open,(09,09)
+DOOR:open,(15,09)
+DOOR:open,(19,09)
+DOOR:open,(18,04)
+DOOR:open,(23,07)
+DOOR:open,(26,02)
+# Objects
+# A candle, a cursed bell, a wafer, a snack, a scroll, an armour, an axe
+OBJECT: '(', "tallow candle", place[0]
+OBJECT: ')', "droven dagger", place[1]
+OBJECT: '%', "slime mold", place[2]
+OBJECT: '?', random, place[3]
+OBJECT: '!', random, place[4]
+OBJECT: ')',"droven lance",place[5],uncursed,+3
+OBJECT:random,random,random
+OBJECT:random,random,random
+# Monsters.
+MONSTER:'@',"Travelling Wizard",(28,03)
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+
