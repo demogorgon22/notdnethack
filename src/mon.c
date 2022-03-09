@@ -390,6 +390,11 @@ register struct monst *mtmp;
 		    obj = mksobj_at(SILVER_DRAGON_SCALE_MAIL, x, y, MKOBJ_NOINIT);
 			obj = oname(obj, artiname(ART_DRAGON_PLATE));
 		goto default_1;
+	    case PM_THRASHING_TULIP_POPLAR:
+			obj = mksobj_at(QUARTERSTAFF, x, y, MKOBJ_NOINIT);
+			obj = oname(obj, artiname(ART_POPLAR_PUNISHER));
+			newsym(x,y);
+		goto default_1;
 	    case PM_AMON:
 			obj = mksobj_at(FROST_HORN, x, y, NO_MKOBJ_FLAGS);
 			newsym(x, y);

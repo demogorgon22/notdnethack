@@ -4809,6 +4809,10 @@ boolean goodequip;
 			(void)mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 			if(!rn2(2))(void)mongets(mtmp, GLOVES, mkobjflags);
 			if(!rn2(4))(void)mongets(mtmp, CLOAK, mkobjflags);
+		} else if (mm == PM_ARCHIPELAGO_ANCIENT){
+			otmp = mksobj(EMERALD, mkobjflags|MKOBJ_NOINIT);
+			otmp = oname(otmp, artiname(ART_GILLYSTONE));
+			(void) mpickobj(mtmp, otmp);
 		} else if(mm == PM_DEEP_ONE || mm == PM_DEEPER_ONE) {
 		 if(Infuture){
 			if(mm == PM_DEEP_ONE){
@@ -5656,6 +5660,12 @@ boolean goodequip;
 			(void)mongets(mtmp, BUCKLER, mkobjflags);
 			m_initthrow(mtmp, CROSSBOW_BOLT, 36, mkobjflags);
 			m_initthrow(mtmp, DART, 36, mkobjflags);
+		} else if(ptr->mtyp == PM_KROO_THE_KOBOLD_KING){
+			otmp = mksobj(RIN_POISON_RESISTANCE, mkobjflags|MKOBJ_NOINIT);
+			otmp = oname(otmp, artiname(ART_KROO_S_RING));
+			(void) mpickobj(mtmp, otmp);
+			(void)mongets(mtmp, SHORT_SWORD, mkobjflags);
+			(void)mongets(mtmp, SHORT_SWORD, mkobjflags);
 		} else {
 			if (!rn2(4)) m_initthrow(mtmp, DART, 12, mkobjflags);
 			else if(!rn2(3)) (void)mongets(mtmp, SHORT_SWORD, mkobjflags);
@@ -9433,6 +9443,11 @@ boolean goodequip;
 	    case S_YETI:
 			if(ptr->mtyp == PM_GUG){
 				mongets(mtmp, CLUB, mkobjflags);
+			}
+			if(ptr->mtyp == PM_ABOMINABLE_SNOWMAN){
+				otmp = mksobj(CLOAK_OF_DISPLACEMENT, mkobjflags|MKOBJ_NOINIT);
+				otmp = oname(otmp, artiname(ART_ABOMINABLE_VEIL));		
+				(void) mpickobj(mtmp, otmp);
 			}
 		break;
 	    case S_MUMMY:
