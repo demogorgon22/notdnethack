@@ -700,6 +700,7 @@ archipelago_montype()
 		return mkclass(S_LIZARD, G_NOHELL);
 	if(chance < 100)
 		return mkclass(S_SNAKE, G_NOHELL);
+	return (struct permonst *) 0;
 
 }
 struct permonst *
@@ -718,6 +719,7 @@ dismalswamp_montype()
 		return mkclass(S_RODENT, G_NOHELL);
 	if(chance < 100)
 		return mkclass(S_DOG, G_NOHELL);
+	return (struct permonst *) 0;
 
 }
 struct permonst *
@@ -738,6 +740,8 @@ blackforest_montype()
 		return &mons[PM_WEREJACKAL];
 	if(chance < 100)
 		return &mons[PM_BLACK_UNICORN];
+	return (struct permonst *) 0;
+
 
 }
 struct permonst *
@@ -758,6 +762,7 @@ icecaves_montype()
 		return &mons[PM_ICE_VORTEX];
 	if(chance < 100)
 		return &mons[PM_WHITE_NAGA];
+	return (struct permonst *) 0;
 }
 
 struct permonst *

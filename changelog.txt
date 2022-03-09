@@ -241,6 +241,28 @@ Added armorsmiths
 			of armor
 			Requires a corpse or figurine reference item if not using your shape
 Dungeon Changes
+	Added adventure branches and the village
+		Dlvl4 is now a village of friendlies of your race
+			4 different variants that race helps select
+		Talk to the travelling wizard to open a portal to a branch
+		Five branches with unique prizes and enemies
+			Ice Caves
+				Fight the abominable snowman for the
+				abominable veil
+					cold res cloak of discplacement
+			Black Forest
+				Fight the tulip poplar for the poplar punisher
+					+2d6 dmg quarterstaff
+			Gnomish Mines
+			Dismal Swamp
+				Fight Kroo the Kobold King and his court
+					very fast speed ring of poison
+					resistance
+			Archipelago
+				Fight the ancient something and his tentacles
+					emerald with slotless magical
+					breathing and swimming
+		Go play and find out!
 	Replace sokoban with lokobanv2
 		Single soko level with a few crates, no pits, and a lokoban pinata
 		Lokoban pinata 

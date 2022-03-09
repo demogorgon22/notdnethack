@@ -636,6 +636,7 @@ extern struct artifact * artilist;
 	(m) == ART_LIMITED_MOON ||\
 	(m) == ART_SICKLE_OF_THUNDERBLASTS ||\
 	(m) == ART_STAFF_OF_TWELVE_MIRRORS ||\
+	(m) == ART_POPLAR_PUNISHER ||\
 	(m) == ART_POSEIDON_S_TRIDENT\
 	)
 
