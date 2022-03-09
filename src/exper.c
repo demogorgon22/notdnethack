@@ -64,7 +64,7 @@ experience(mtmp, nk)	/* return # of exp points for mtmp after nk killed */
 	register struct permonst *ptr = mtmp->data;
 	int	i, tmp, tmp2;
 	
-	if(mtmp->mtyp == PM_DANCING_BLADE || mtmp->mtyp == PM_LONG_SINUOUS_TENTACLE || mtmp->mtyp == PM_SWARM_OF_SNAKING_TENTACLES || mtmp->mtyp == PM_WIDE_CLUBBED_TENTACLE) return 0;
+	if(mtmp->mtyp == PM_DANCING_BLADE || mtmp->mtyp == PM_LONG_SINUOUS_TENTACLE || mtmp->mtyp == PM_SWARM_OF_SNAKING_TENTACLES || mtmp->mtyp == PM_WIDE_CLUBBED_TENTACLE || mtmp->mtyp == PM_DEEP_SEA_TENTACLE) return 0;
 	
 /*	Dungeon fern spores give no experience */
 	if(is_fern_spore(mtmp->data)) return 0;

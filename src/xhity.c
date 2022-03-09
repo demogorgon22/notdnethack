@@ -12372,6 +12372,9 @@ int vis;
 			 else if (pa->mtyp == PM_KETO){
 				 if (tmon->mtyp == PM_WIDE_CLUBBED_TENTACLE) ltnt++;
 			 }
+			 else if (pa->mtyp == PM_ARCHIPELAGO_ANCIENT){
+				 if (tmon->mtyp == PM_DEEP_SEA_TENTACLE) ltnt++;
+			 }
 		 }
 		 if (pa->mtyp == PM_WATCHER_IN_THE_WATER){
 			 if (stnt<6){
@@ -12384,6 +12387,11 @@ int vis;
 		 else if (pa->mtyp == PM_KETO){
 			 if (ltnt<2){
 				 makemon(&mons[PM_WIDE_CLUBBED_TENTACLE], magr->mx, magr->my, MM_ADJACENTOK | MM_ADJACENTSTRICT | MM_NOCOUNTBIRTH);
+			 }
+		 }
+		 else if (pa->mtyp == PM_ARCHIPELAGO_ANCIENT){
+			 if (ltnt<2){
+				 makemon(&mons[PM_DEEP_SEA_TENTACLE], magr->mx, magr->my, MM_ADJACENTOK | MM_ADJACENTSTRICT | MM_NOCOUNTBIRTH);
 			 }
 		 }
 	}break;

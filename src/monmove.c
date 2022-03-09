@@ -2044,7 +2044,7 @@ register struct monst *mtmp;
 			if(mtmp->wormno && (!mtmp->mpeaceful || Conflict || mtmp->mberserk)) wormhitu(mtmp);
 			if(!nearby &&
 			  (ranged_attk(mdat) || find_offensive(mtmp))){
-				if(mdat->mtyp == PM_GREAT_CTHULHU || mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO || mdat->mtyp == PM_ARCADIAN_AVENGER){
+				if(mdat->mtyp == PM_GREAT_CTHULHU || mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO || mdat->mtyp == PM_ARCHIPELAGO_ANCIENT || mdat->mtyp == PM_ARCADIAN_AVENGER){
 					break;
 			    } else return(0);
 			    // return(0);

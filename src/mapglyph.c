@@ -279,6 +279,8 @@ unsigned *ospecial;
 						(y%4 == 0 && x%3 ==0) ||
 						(y%3 == 0 && x%4 ==0)) 
 						color = CLR_GREEN;
+			} else if(In_blackforest(&u.uz)){
+				if(offset == S_deadtree) color = CLR_BLACK;
 			} else if(In_moloch_temple(&u.uz)){
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_RED;

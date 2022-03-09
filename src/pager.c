@@ -2070,7 +2070,7 @@ get_description_of_damage_type(uchar id)
 	case AD_DARK: return "dark";
 	case AD_ROCK: return "rocks";
 	case AD_RNBW: return "Iris special attack, hallu + sick";
-	case AD_JACK: return "big firey explosion, always leaves corpse";
+	case AD_JACK: return "big fiery explosion, always leaves corpse";
 	case AD_YANK: return "yanks you to them";
 	case AD_PAIM: return "exploding magic missile spellbooks";
 	case AD_ALIG: return "alignment blast and opposite alignment";

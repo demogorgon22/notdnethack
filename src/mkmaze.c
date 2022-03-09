@@ -1912,6 +1912,8 @@ mazexy(cc)	/* find random point in generated corridors,
 #else
 			    CORR
 #endif
+			|| levl[cc->x][cc->y].typ == SAND
+		 	|| levl[cc->x][cc->y].typ == SOIL
 			   ) return;
 		    }
 		panic("mazexy: can't find a place!");

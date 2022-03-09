@@ -2430,6 +2430,17 @@ mon_can_see_mon(looker, lookie)
 		//may still be able to feel target adjacent
 	}
 	
+	if(looker->mtyp == PM_DEEP_SEA_TENTACLE){
+		struct monst *aa; //archipelago ancient
+		for(aa = fmon; aa; aa = aa->nmon) if(aa->mtyp == PM_ARCHIPELAGO_ANCIENT) break;
+		if(aa){
+			looker->mux = aa->mux;
+			looker->muy = aa->muy;
+			if(mon_can_see_mon(aa, lookie)) return TRUE;
+		}
+		//may still be able to feel target adjacent
+	}
+	
 	if(looker->mtyp == PM_DANCING_BLADE){
 		struct monst *surya;
 		for(surya = fmon; surya; surya = surya->nmon) if(surya->m_id == looker->mvar_suryaID) break;
@@ -2573,6 +2584,13 @@ struct monst *looker;
 		struct monst *keto;
 		for(keto = fmon; keto; keto = keto->nmon) if(keto->mtyp == PM_KETO) break;
 		if(keto && mon_can_see_you(keto)) return TRUE;
+		//may still be able to feel target adjacent
+	}
+	
+	if(looker->mtyp == PM_DEEP_SEA_TENTACLE){
+		struct monst *aa;
+		for(aa = fmon; aa; aa = aa->nmon) if(aa->mtyp == PM_ARCHIPELAGO_ANCIENT) break;
+		if(aa && mon_can_see_you(aa)) return TRUE;
 		//may still be able to feel target adjacent
 	}
 	
@@ -2779,6 +2797,10 @@ mfndpos(mon, poss, info, flag)
 		for(witw = fmon; witw; witw = witw->nmon) if(witw->mtyp == PM_KETO) break;
 	}
 	
+	if(mdat->mtyp == PM_DEEP_SEA_TENTACLE){
+		for(witw = fmon; witw; witw = witw->nmon) if(witw->mtyp == PM_ARCHIPELAGO_ANCIENT) break;
+	}
+	
 	if(mdat->mtyp == PM_DANCING_BLADE){
 		for(madjacent = fmon; madjacent; madjacent = madjacent->nmon)
 			if(madjacent->mtyp == PM_SURYA_DEVA && madjacent->m_id == mon->mvar_suryaID)
@@ -2867,7 +2889,7 @@ nexttry:
 			) continue;
 		if((mdat->mtyp == PM_GRUE) && isdark(mon->mx, mon->my) && !isdark(nx, ny))
 				continue;
-		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO) && 
+		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO || mdat->mtyp == PM_ARCHIPELAGO_ANCIENT) && 
 			!no_upos(mon) && 
 			distmin(nx, ny, mon->mux, mon->muy) <= 3 && 
 			dist2(nx, ny, mon->mux, mon->muy) <= dist2(mon->mx, mon->my, mon->mux, mon->muy)) continue;
@@ -4254,11 +4276,11 @@ register struct monst *mtmp;
 		}
 	}
 	//Remove linked tentacles
-	if(mtmp->mtyp == PM_WATCHER_IN_THE_WATER || mtmp->mtyp == PM_KETO){
+	if(mtmp->mtyp == PM_WATCHER_IN_THE_WATER || mtmp->mtyp == PM_KETO || mtmp->mtyp == PM_ARCHIPELAGO_ANCIENT){
 		struct monst *mon, *mtmp2;
 		for (mon = fmon; mon; mon = mtmp2){
 			mtmp2 = mon->nmon;
-			if(mon->mtyp == PM_SWARM_OF_SNAKING_TENTACLES || mon->mtyp == PM_LONG_SINUOUS_TENTACLE || mon->mtyp == PM_WIDE_CLUBBED_TENTACLE){
+			if(mon->mtyp == PM_SWARM_OF_SNAKING_TENTACLES || mon->mtyp == PM_LONG_SINUOUS_TENTACLE || mon->mtyp == PM_WIDE_CLUBBED_TENTACLE || mon->mtyp == PM_DEEP_SEA_TENTACLE){
 				if (DEADMONSTER(mon)) continue;
 				mon->mhp = -10;
 				monkilled(mon,"",AD_DRLI);
