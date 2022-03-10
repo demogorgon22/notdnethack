@@ -47,7 +47,7 @@ DOOR:open,(54,10)
 # House loot
 # A candle, a tin whistle, a cram ration, a potion, a scroll
 OBJECT: '(', "wax candle", place[0]
-OBJECT: '(', "tin whistle", place[1]
+OBJECT: '(', "whistle", place[1]
 OBJECT: '%', "cram ration", place[2]
 OBJECT: '!', random, place[3]
 OBJECT: '?', random, place[4]
