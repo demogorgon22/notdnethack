@@ -979,7 +979,7 @@ boolean chatting;
 				You_feel("like breaking rocks.");
 				break;
 		}
-		//if(original_tats != u.utats) achieve.inked_up = 1;
+		if(original_tats != u.utats) achieve.inked_up = 1;
 		break;
 	}
 	case MS_SMITH:{

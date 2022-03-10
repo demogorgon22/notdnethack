@@ -786,6 +786,18 @@ struct u_achieve {
 		Bitfield(killed_asmodeus,1);		/* Bragging rights */
 		Bitfield(killed_demogorgon,1);		/* Bragging rights */
 		unsigned long long	trophies;	/* Flags for Junethack trophies */
+	Bitfield(get_kroo,1);        /* ring of kroo get*/
+        Bitfield(get_gilly,1);        /* gillystone get*/
+        Bitfield(get_abominable,1);        /* abominable cloak get*/
+        Bitfield(get_poplar,1);        /* poplar punisher get*/
+        Bitfield(did_unknown,1);        /* ?????????????????*/
+        Bitfield(killed_illurien,1);        /* illurien down */
+        Bitfield(get_ckey,1);        /* Cage key get */
+        Bitfield(max_punch,1);        /* Mystic punched to the max */
+        Bitfield(used_smith,1);        /* Used a blacksmith's service */
+        Bitfield(garnet_spear,1);        /* Used a garnet tip spear*/
+        Bitfield(inked_up,1);        /* Fell tat */
+        Bitfield(new_races,1);        /* Ascended a new race */
 #define	ARC_QUEST		0x1L << 0
 #define	CAV_QUEST		0x1L << 1
 #define	CON_QUEST		0x1L << 2
@@ -834,7 +846,7 @@ struct u_achieve {
 #define	FEM_DRA_NOB_QUEST	0x1L << 45
 #define	DEVIL_VAULT	0x1L << 46
 #define	DEMON_VAULT	0x1L << 47
-#define ACHIEVE_NUMBER	47
+#define ACHIEVE_NUMBER	59
 };
 
 E struct u_achieve achieve;

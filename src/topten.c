@@ -1097,11 +1097,13 @@ encodeachieve(void)
 }
 #endif
 
+
 #ifdef RECORD_ACHIEVE
 #define	CHECK_ACHIEVE(aflag, string) \
 	if(achieve.trophies&aflag){\
 		Sprintf(eos(achieveXbuff), "%s%s", seperator, string);\
 		seperator[0] = ',';\
+		achievesWritten++;\
 	}
 
 void
@@ -1110,6 +1112,7 @@ char *achieveXbuff;
 {
 	//achieveXbuff is 25*ACHIEVE_NUMBER chars long. 25 is > than the average length of a trophy name, but keep an eye on that too.
 	char seperator[2] = "";
+	int achievesWritten = 0;
 	CHECK_ACHIEVE(ARC_QUEST,"archeologist_quest")
 	CHECK_ACHIEVE(CAV_QUEST,"caveman_quest")
 	CHECK_ACHIEVE(CON_QUEST,"convict_quest")
@@ -1158,6 +1161,19 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(SPEED_PHASE,"two_keys")
 	CHECK_ACHIEVE(QUITE_MAD,"quite_mad")
 	CHECK_ACHIEVE(TOTAL_DRUNK,"booze_hound")
+	if(achievesWritten == 1) Sprintf(eos(achieveXbuff), ",");
+	if(achieve.get_kroo)   Sprintf(eos(achieveXbuff), "%s,", "get_kroo");
+	if(achieve.get_poplar)   Sprintf(eos(achieveXbuff), "%s,", "get_poplar");
+	if(achieve.get_abominable)   Sprintf(eos(achieveXbuff), "%s,", "get_abominable");
+	if(achieve.get_gilly)   Sprintf(eos(achieveXbuff), "%s,", "get_gilly");
+	if(achieve.did_unknown)   Sprintf(eos(achieveXbuff), "%s,", "did_unknown");
+	if(achieve.killed_illurien)   Sprintf(eos(achieveXbuff), "%s,", "killed_illurien");
+	if(achieve.get_skey && achieve.get_ckey)   Sprintf(eos(achieveXbuff), "%s,", "pain_duo");
+	if(achieve.used_smith) Sprintf(eos(achieveXbuff), "%s,", "used_smith");
+	if(achieve.max_punch) Sprintf(eos(achieveXbuff), "%s,", "max_punch");
+	if(achieve.garnet_spear) Sprintf(eos(achieveXbuff), "%s,", "garnet_spear");
+	if(achieve.inked_up) Sprintf(eos(achieveXbuff), "%s,", "inked_up");
+	if(achieve.new_races) Sprintf(eos(achieveXbuff), "%s,", "new_races");
 }
 #undef CHECK_ACHIEVE
 #endif

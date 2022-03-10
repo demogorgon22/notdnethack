@@ -304,6 +304,8 @@ struct obj *obj;
 //ifdef RECORD_ACHIEVE Record_achieve now mission-critical for Binder, so....
 		} else if(obj->oartifact == ART_SILVER_KEY){
 			achieve.get_skey = TRUE;
+		} else if(obj->oartifact == ART_CAGE_KEY){
+			achieve.get_ckey = TRUE;
 		} else if(obj->oartifact >= ART_FIRST_KEY_OF_LAW && obj->oartifact <= ART_THIRD_KEY_OF_NEUTRALITY){
 			achieve.get_keys |= (1 << (obj->oartifact - ART_FIRST_KEY_OF_LAW));
 //endif
@@ -321,10 +323,30 @@ struct obj *obj;
 	}
 
 #ifdef RECORD_ACHIEVE
-	if(obj->otyp == LUCKSTONE && obj->record_achieve_special) {
-			achieve.get_luckstone = 1;
+	if((obj->otyp == LUCKSTONE && obj->record_achieve_special) ||
+			obj->oartifact == ART_GILLYSTONE ||
+			obj->oartifact == ART_POPLAR_PUNISHER ||
+			obj->oartifact == ART_ABOMINABLE_VEIL ||
+			obj->oartifact == ART_KROO_S_RING) {
+			switch(obj->oartifact){
+			case ART_GILLYSTONE: 
+				achieve.get_gilly = 1;
+				break;
+			case ART_POPLAR_PUNISHER: 
+				achieve.get_poplar = 1;
+				break;
+			case ART_ABOMINABLE_VEIL: 
+				achieve.get_abominable = 1;
+				break;
+			case ART_KROO_S_RING: 
+				achieve.get_kroo = 1;
+				break;
+			default:
+				achieve.get_luckstone = 1;
+				break;
+			}
 			obj->record_achieve_special = 0;
-	} 
+	}
 	if(obj->otyp == CLOAK_OF_MAGIC_RESISTANCE && obj->record_achieve_special){
 		obj->record_achieve_special = 0;
 		give_law_trophy();

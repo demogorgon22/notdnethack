@@ -4393,6 +4393,7 @@ int dieroll; /* needed for Magicbane and vorpal blades */
 					if (!rn2(3)) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 					if (!rn2(3)) destroy_item(mdef, POTION_CLASS, AD_FIRE);
 				}
+				achieve.garnet_spear = 1;
 				break;
 			case DILITHIUM_CRYSTAL:
 				if(youagr) Your("crystal sharp spear plunges deeply into %s!",mon_nam(mdef));
@@ -9136,7 +9137,7 @@ arti_invoke(obj)
 					pline("Ancient knowledge flows from the Elder Cerebral Fluid embedded in the Illithid Staff!");
 					pline("The knowledge begins to form into a dome around the whispering altar to the void.");
 					pline("Bright lights flash and suddenly the altar rebuilds into a staircase.");
-					//achieve.did_unknown = 1;
+					achieve.did_unknown = 1;
 					sstairs.sx = u.ux;
 					sstairs.sy = u.uy;
 					assign_level(&sstairs.tolev, &sacris_level);

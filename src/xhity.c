@@ -14658,6 +14658,7 @@ int vis;						/* True if action is at all visible to the player */
 			bonsdmg += mdef->mhp*4;
 		/* monk mystic style forms */
 		if(youagr && !youdef && unarmed_punch){
+			if((u.umabil & (FORCE_PUNCH | SURGE_PUNCH | SPIRIT_PUNCH | FLICKER_PUNCH)) && u.uen >= 15) achieve.max_punch = 1;
 			if(u.umabil & ABSORPTIVE_PUNCH){
 				basedmg/=2;
 				u.uen += basedmg;

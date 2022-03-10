@@ -4315,6 +4315,9 @@ register struct monst *mtmp;
 	else if(mtmp->mtyp == PM_DEMOGORGON){
 		achieve.killed_demogorgon = 1;
 	}
+	else if(mtmp->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES){
+		achieve.killed_illurien = 1;
+	}
 	else if(mtmp->mtyp == PM_LAMASHTU){
 		give_lamashtu_trophy();
 	}
