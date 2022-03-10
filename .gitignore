@@ -1,6 +1,6 @@
 local.mk
 
-src/dnethack
+src/notdnethack
 util/recover
 util/makedefs
 util/dlb
@@ -44,5 +44,5 @@ dat/dngnch3.pdf
 dat/*.lev
 
 .DS_STORE
-dnethackdir
+notdnethackdir
 mat

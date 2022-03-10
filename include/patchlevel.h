@@ -3,7 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 /* NetHack 3.4.3, dNethack version 3.15.1 */
-#define VERSION_MAJOR	3
+#define VERSION_MAJOR	2022
 /* Started at 3.4.3, for the nethack version. Incremented straight 
    to 3.6 with the advent of the Noble role, counting the initial
    release as 3.5 (with Pirate already in, I think?).
@@ -15,7 +15,7 @@
    Incremented to 3.11 with the introduction Anachrononauts.
    Incremented to 3.12 with the introduction Magic chests, scrolls of antimagic, resistance, and consecration, YARevison to chaos quest, beter resistance-from-diet, and lightsaber forms.
 */
-#define VERSION_MINOR	21
+#define VERSION_MINOR	3
 /*
  * PATCHLEVEL is updated for each release.
  *
@@ -48,7 +48,7 @@
  * 3.21.1: Place chests of hell vault loot in demon lord lairs, implement special hell vault loot (wages, magic blockers, stones, equipment protectors, also rods of force in neutral), minor madness reform and sanity regeneration, resolve AC bugs (+add shield skill), misc bug fixes.
  * 3.21.2: Monk moves, Improve Madman late game: Bokrug "cult," crowning for law and neutral, allow rakuyo and claw swings at empty squares, one-and-done the Stranger, dragon and medusa passive attacks, pets stop fighting when at 1/2 HP, Madman "starting" kits, Mercurial and Platinum weapons, quest factions, Ana quest home level tweaks, misc bug fixes.
  */
-#define PATCHLEVEL	2
+#define PATCHLEVEL	10
 /*
  * Incrementing EDITLEVEL can be used to force invalidation of old bones
  * and save files.
@@ -56,7 +56,7 @@
 #define EDITLEVEL	0
 
 #define COPYRIGHT_BANNER_A \
-"dNethack, Copyright 2012-2014"
+"notdNetHack, Copyright 2017-2022"
 
 #define COPYRIGHT_BANNER_B \
 "    Based on NetHack, Copyright 1985-2003 by Stichting Mathematisch"

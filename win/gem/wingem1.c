@@ -42,7 +42,7 @@ typedef signed char	xchar;
 #undef NDECL
 #undef FDECL
 
-static char nullstr[]="",  md[]="dNethack", strCancel[]="Cancel", strOk[]="Ok", strText[]="Text";
+static char nullstr[]="",  md[]="notdNethack", strCancel[]="Cancel", strOk[]="Ok", strText[]="Text";
 
 extern winid WIN_MESSAGE, WIN_MAP, WIN_STATUS, WIN_INVEN;
 
