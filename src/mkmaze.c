@@ -848,8 +848,9 @@ fixup_special()
 			if(u.ubranch == ICE_CAVES){
 				for(x = 21; x<COLNO; x++){
 					for(y = 0; y<ROWNO; y++){
-						if(levl[x][y].typ == ROOM){
+						if(levl[x][y].typ == GRASS){
 							if(rn2(80)) levl[x][y].typ = ICE;
+							else levl[x][y].typ = ROOM;
 						}
 						if(levl[x][y].typ == TREE){
 							levl[x][y].typ = VWALL;
@@ -867,7 +868,7 @@ fixup_special()
 						if(levl[x][y].typ == TREE){
 							if(!rn2(2)) levl[x][y].typ = DEADTREE;
 						}
-						if(levl[x][y].typ == ROOM){
+						if(levl[x][y].typ == GRASS){
 							if(!rn2(10)) levl[x][y].typ = CLOUD;
 							else levl[x][y].typ = SOIL;
 						}
@@ -884,7 +885,7 @@ fixup_special()
 						if(levl[x][y].typ == TREE){
 							if(rn2(5)) levl[x][y].typ = POOL;
 						}
-						if(levl[x][y].typ == ROOM){
+						if(levl[x][y].typ == GRASS){
 							if(!rn2(2)) levl[x][y].typ = GRASS;
 							else levl[x][y].typ = SOIL;
 						}
@@ -895,9 +896,9 @@ fixup_special()
 			if(u.ubranch == ARCHIPELAGO){
 				for(x = 21; x<COLNO; x++){
 					for(y = 0; y<ROWNO; y++){
-						if(levl[x][y].typ == ROOM && rn2(5) && !m_at(x,y)){
+						if(levl[x][y].typ == GRASS && rn2(5) && !m_at(x,y)){
 							levl[x][y].typ = MOAT;
-						} else if(levl[x][y].typ == ROOM){
+						} else if(levl[x][y].typ == GRASS){
 							levl[x][y].typ = SAND;
 						}
 						if(levl[x][y].typ == CORR){
