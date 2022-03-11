@@ -2623,8 +2623,9 @@ int tary;
 			else if (!rn2(3)) weap = JAVELIN;
 			else if (!rn2(3)) weap = AXE;
 			else {
-				weap = rnd_class(ARROW, WORM_TOOTH - 1);
-				if (weap == TRIDENT) weap = JAVELIN;
+				//weap = rnd_class(ARROW, WORM_TOOTH - 1);
+				//if (weap == TRIDENT) weap = JAVELIN;
+				weap = SPIKE;
 			}
 			/* make them */
 			otmp = mksobj(weap, NO_MKOBJ_FLAGS);
