@@ -5293,7 +5293,7 @@ struct obj *obj;
 		impossible("object other than candle of invocation passed to use_candle_of_invocation");
 		return FALSE;
 	}
-	if (!obj->lamplit || DimensionalLock) {
+	if (!obj->lamplit || DimensionalLock || Is_nowhere(&u.uz)) {
 		pline1(nothing_happens);
 		return FALSE;
 	}
