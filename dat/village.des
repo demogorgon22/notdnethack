@@ -149,7 +149,7 @@ ENDMAP
 RANDOM_PLACES: (02,08), (07,04), (03,10), (15,11), (24,11), (22,06)
 REGION:(00,00,30,12),lit,"ordinary"
 # Stairs
-STAIR:levregion(01,01,09,20),(12,12,13,13),up
+STAIR:levregion(01,01,12,20),(12,12,13,13),up
 STAIR:levregion(72,01,05,20),(0,0,0,0),down
 # Doors
 DOOR:open,(04,04)
@@ -199,7 +199,7 @@ MAP
 ENDMAP
 RANDOM_PLACES: (02,08), (07,04), (03,10), (15,11), (24,11), (22,06)
 # Stairs
-STAIR:levregion(01,01,09,20),(12,12,13,13),up
+STAIR:levregion(01,01,12,20),(12,12,13,13),up
 STAIR:levregion(72,01,05,20),(0,0,0,0),down
 # Doors
 DOOR:open,(04,04)
