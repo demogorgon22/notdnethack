@@ -901,6 +901,7 @@ static const struct def_skill Skill_Acu[] = {
 #ifdef STEED
     { P_RIDING, P_BASIC },
 #endif
+    { P_SPEAR, P_BASIC },
     //{ P_TWO_WEAPON_COMBAT, P_EXPERT },
     { P_BARE_HANDED_COMBAT, P_EXPERT },{ P_TWO_HANDED_SWORD, P_SKILLED },
     { P_NONE, 0 }
@@ -949,6 +950,29 @@ static const struct def_skill Skill_Dwa_Ana[] = {
     { P_BARE_HANDED_COMBAT, P_BASIC },
     { P_NONE, 0 }
 };
+
+static const struct def_skill Skill_Gno_Ana[] = {
+    { P_DAGGER, P_SKILLED },		{ P_KNIFE,  P_SKILLED },
+    { P_SHORT_SWORD, P_EXPERT },{ P_LANCE,  P_EXPERT },
+    { P_SABER, P_EXPERT },		{ P_LONG_SWORD,  P_BASIC },
+    { P_CLUB, P_SKILLED },		{ P_QUARTERSTAFF, P_EXPERT },
+	{ P_BROAD_SWORD, P_EXPERT },{ P_HAMMER, P_BASIC },
+//#ifdef FIREARMS
+    { P_FIREARM, P_EXPERT },
+//#endif
+    { P_DART, P_EXPERT },		{ P_CROSSBOW, P_SKILLED },
+    { P_WHIP, P_SKILLED },		 { P_BOOMERANG, P_EXPERT },
+    { P_ATTACK_SPELL, P_SKILLED },	{ P_HEALING_SPELL, P_SKILLED },
+    { P_DIVINATION_SPELL, P_SKILLED},	{ P_MATTER_SPELL, P_SKILLED},
+	{ P_ENCHANTMENT_SPELL, P_BASIC },
+#ifdef STEED
+    { P_RIDING, P_BASIC },
+#endif
+    { P_TWO_WEAPON_COMBAT, P_EXPERT },
+    { P_BARE_HANDED_COMBAT, P_GRAND_MASTER },
+    { P_NONE, 0 }
+};
+
 
 static const struct def_skill Skill_Droid_Ana[] = {
     { P_SHORT_SWORD, P_EXPERT },{ P_LANCE,  P_EXPERT },
@@ -2022,6 +2046,9 @@ u_init()
 			u.umartial = TRUE;
 		} else if(Race_if(PM_DWARF)){
 			skill_init(Skill_Dwa_Ana);
+			skill_add(Skill_All_Ana);
+		} else if(Race_if(PM_GNOME)){
+			skill_init(Skill_Gno_Ana);
 			skill_add(Skill_All_Ana);
 		} else {
 			skill_init(Skill_Ana);
