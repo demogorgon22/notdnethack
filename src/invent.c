@@ -1207,7 +1207,7 @@ register const char *let,*word;
 		|| (!strcmp(word, "wield") &&
 		    ((otmp->oclass == TOOL_CLASS && !is_weptool(otmp)) ||
 			(otmp->oclass == CHAIN_CLASS && otmp->otyp != CHAIN)))
-		|| (!strcmp(word, "resize") && !(otmp->oclass == ARMOR_CLASS || otmp->otyp == LENSES || otmp->otyp == SUNGLASSES))
+		|| (!strcmp(word, "resize") && !(otmp->oclass == ARMOR_CLASS || otmp->oclass == TOOL_CLASS))
 		|| (!strcmp(word, "eat") && !is_edible(otmp))
 		|| (!strcmp(word, "zap") &&
 		    (otmp->oclass == TOOL_CLASS && otmp->otyp != ROD_OF_FORCE))

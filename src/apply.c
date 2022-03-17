@@ -6922,14 +6922,15 @@ upgradeMenu()
 }
 
 STATIC_OVL int
-resizeArmor()
+resizeArmor(kit)
+struct obj *kit;
 {
 	struct obj *otmp;
 	struct permonst *ptr;
 	struct monst *mtmp;
 	int rx, ry;
 	
-    if (!getdir("Resize armor to fit what creature? (in what direction)")) {
+    if (!getdir("Resize armor or tool to fit what creature? (in what direction)")) {
 		/* decided not to */
 		return 0;
 	}
@@ -6956,6 +6957,10 @@ resizeArmor()
 	NEARDATA const char clothes[] = { ARMOR_CLASS, TOOL_CLASS, 0 };
 	otmp = getobj(clothes, "resize");
 	if (!otmp) return(0);
+	if(otmp == kit){
+		You("cannot resize an upgrade kit with itself!");
+		return 0;
+	}
 	
 	// check that the armor is not currently being worn
 	if (otmp->owornmask){
@@ -7002,7 +7007,7 @@ resizeArmor()
 	
 	fix_object(otmp);
 	
-	You("resize the armor to fit.");
+	You("resize the %s to fit.", otmp->oclass == TOOL_CLASS?"tool":"armor");
 	if(otmp->obroken && otmp->otyp == POWER_ARMOR){
 		pline("Your power armor starts working!");
 		otmp->obroken = 0;
@@ -7149,8 +7154,8 @@ struct obj **optr;
 				break;
 			}
 		}
-	if (yn("Resize a piece of armor?") == 'y'){
-		if (resizeArmor()){
+	if (yn("Resize a piece of armor or tool?") == 'y'){
+		if (resizeArmor(obj)){
 			useup(obj);
 			*optr = 0;
 			return 1;

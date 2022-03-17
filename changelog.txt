@@ -354,3 +354,4 @@ Dungeon Changes
 				Black Crystal - Sparkling, 2x magic damage
 General changes
 	Red dragon scale based armor now grants flying.
+	Upgrade kits now work on tools.
