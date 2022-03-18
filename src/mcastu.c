@@ -2618,14 +2618,14 @@ int tary;
 			/* get weapon type to rain */
 			if (rn2(3)) weap = ARROW;
 			else if (!rn2(3)) weap = DAGGER;
-			else if (!rn2(3)) weap = SPEAR;
+			else if (!rn2(3)) weap = SPIKE;
 			else if (!rn2(3)) weap = KNIFE;
 			else if (!rn2(3)) weap = JAVELIN;
 			else if (!rn2(3)) weap = AXE;
 			else {
 				//weap = rnd_class(ARROW, WORM_TOOTH - 1);
 				//if (weap == TRIDENT) weap = JAVELIN;
-				weap = SPIKE;
+				weap = SHURIKEN;
 			}
 			/* make them */
 			otmp = mksobj(weap, NO_MKOBJ_FLAGS);
