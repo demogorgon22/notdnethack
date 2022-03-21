@@ -3589,8 +3589,8 @@ m_detach(mtmp, mptr)
 struct monst *mtmp;
 struct permonst *mptr;	/* reflects mtmp->data _prior_ to mtmp's death */
 {
-	if(mtmp->deadmonster) {
-		impossible("attempting to detach deadmonster %s", m_monnam(mtmp));
+	if(mtmp->deadmonster & DEADMONSTER_PURGE) {
+		impossible("attempting to detach already-marked deadmonster %s", m_monnam(mtmp));
 		return;
 	}
 	if (mtmp->mleashed) m_unleash(mtmp, FALSE);
@@ -3609,7 +3609,7 @@ struct permonst *mptr;	/* reflects mtmp->data _prior_ to mtmp's death */
 	if(mtmp->isshk) shkgone(mtmp);
 	if(mtmp->wormno) wormgone(mtmp);
 
-	mtmp->deadmonster = 1;
+	mtmp->deadmonster |= DEADMONSTER_PURGE;
 	iflags.purge_monsters++;
 }
 
@@ -4065,6 +4065,8 @@ register struct monst *mtmp;
 	}
 	lifesaved_monster(mtmp);
 	if (mtmp->mhp > 0) return;
+	/* we did not lifesave */
+	mtmp->deadmonster |= DEADMONSTER_DEAD;
 	//Special messages (Nyarlathotep)
 	if(canseemon(mtmp) && (mtmp->mtyp == PM_GOOD_NEIGHBOR || mtmp->mtyp == PM_HMNYW_PHARAOH)){
 		int nyar_form = rn2(SIZE(nyar_description));
@@ -4972,6 +4974,8 @@ register struct monst *mdef;
 {
 	mondead(mdef);
 	if (mdef->mhp > 0) return;	/* lifesaved */
+	/* we did not lifesave */
+	mdef->deadmonster |= DEADMONSTER_DEAD;
 
 	if (corpse_chance(mdef, (struct monst *)0, FALSE) &&
 	    (accessible(mdef->mx, mdef->my) || is_pool(mdef->mx, mdef->my, FALSE)))
@@ -4985,6 +4989,7 @@ register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
 	check_spirit_unbind(mdef->mtyp);
+	mdef->deadmonster |= DEADMONSTER_DEAD;
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
@@ -5012,6 +5017,7 @@ register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
 	check_spirit_unbind(mdef->mtyp);
+	mdef->deadmonster |= DEADMONSTER_DEAD;
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
@@ -5056,6 +5062,8 @@ register struct monst *mdef;
 	 */
 	lifesaved_monster(mdef);
 	if (mdef->mhp > 0) return;
+	/* we did not lifesave */
+	mdef->deadmonster |= DEADMONSTER_DEAD;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -5150,6 +5158,8 @@ register struct monst *mdef;
 	 */
 	lifesaved_monster(mdef);
 	if (mdef->mhp > 0) return;
+	/* we did not lifesave */
+	mdef->deadmonster |= DEADMONSTER_DEAD;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -5284,6 +5294,8 @@ register struct monst *mdef;
 	 */
 	lifesaved_monster(mdef);
 	if (mdef->mhp > 0) return;
+	/* we did not lifesave */
+	mdef->deadmonster |= DEADMONSTER_DEAD;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -5590,6 +5602,8 @@ xkilled(mtmp, dest)
 		if (!cansee(x,y)) pline("Maybe not...");
 		return;
 	}
+	/* we did not lifesave */
+	mtmp->deadmonster |= DEADMONSTER_DEAD;
 
 	mdat = mtmp->data; /* note: mondead can change mtmp->data */
 	mndx = monsndx(mdat);

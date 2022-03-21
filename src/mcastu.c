@@ -4349,6 +4349,8 @@ int tary;
 			struct monst *mtmp;
 			int tries = 0;
 			static struct permonst *aliens[] = {
+				&mons[PM_SHOGGOTH],
+				&mons[PM_HOUND_OF_TINDALOS],
 				&mons[PM_HOOLOOVOO],
 				&mons[PM_SHAMBLING_HORROR],
 				&mons[PM_STUMBLING_HORROR],
@@ -4358,6 +4360,8 @@ int tary;
 				&mons[PM_AOA],
 				&mons[PM_HUNTING_HORROR],
 				&mons[PM_BYAKHEE],
+				&mons[PM_BEBELITH],
+				&mons[PM_WEEPING_ANGEL],
 				&mons[PM_UVUUDAUM] };
 
 			/* maybe summon nearby the caster, instead of at a target */
