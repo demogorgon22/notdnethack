@@ -2185,6 +2185,7 @@ dofire()
 		if ((uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep)))) && (
 			(uwep->oartifact == ART_KHAKKHARA_OF_THE_MONKEY) ||
 			check_oprop(uwep, OPROP_RETRW) ||
+			(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL) || 
 			(uwep->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE) && ACURR(A_STR) == STR19(25)) ||
 			(uwep->oartifact == ART_ANNULUS && (uwep->otyp == CHAKRAM || uwep->otyp == LIGHTSABER)) ||
 			(uwep->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && Race_if(PM_DWARF) && ACURR(A_STR) == STR19(25)) ||
@@ -2264,8 +2265,7 @@ dofire()
 		return dospit();
 
 	if(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_PULSE_LVL){
-		psionic_pulse();
-		return 1;
+		return psionic_pulse();
 	}
 	if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit){
 		struct attack attk;
