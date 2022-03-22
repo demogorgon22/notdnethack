@@ -3039,7 +3039,7 @@ struct obj *obj;
 	}
 	char spearlet;
 	struct obj *otmp;
-	boolean should_rewield;
+	boolean should_rewield = FALSE;
 	spearlet = pick_spearhead();
 	for (otmp = invent; otmp; otmp = otmp->nobj) {
 		if(otmp->invlet == spearlet) break;

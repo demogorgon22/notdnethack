@@ -1068,6 +1068,7 @@ boolean chatting;
 				break;
 			case 4: // reshape armor
 				if ( !(obj = getobj(armors, "have reshaped"))) break;
+				bodytype = obj->bodytypeflag;
 				if(obj->owornmask){
 					verbalize("I can't work on armor you are wearing!");
 					break;
