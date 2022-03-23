@@ -1910,6 +1910,7 @@ u_init()
 	u.uinsight = 0;
 	if(Role_if(PM_ANACHRONOUNBINDER)) u.uinsight = 100;
 	u.veil = TRUE;
+	if(Role_if(PM_ANACHRONOUNBINDER)) u.veil = FALSE;
 	u.sowdisc = 0;
 	u.voidChime = 0;
 	adjabil(0,1);
