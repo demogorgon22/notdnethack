@@ -9121,7 +9121,7 @@ boolean ranged;
 	default:
 		impossible("Bad attack type (%d)!", attk->adtyp);
 	}
-	impossible("Reached end of xmeleehurty -- report this to Nero on ##nethack-variants.");
+	impossible("Reached end of xmeleehurty -- report this to Demo on ##nethack-variants.");
 	return MM_MISS;
 }
 
