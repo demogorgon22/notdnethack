@@ -1908,7 +1908,6 @@ u_init()
 	u.usanity = 100;
 	u.umadness = 0L;
 	u.uinsight = 0;
-	if(Role_if(PM_ANACHRONOUNBINDER)) u.uinsight = 100;
 	u.veil = TRUE;
 	u.sowdisc = 0;
 	u.voidChime = 0;
@@ -1963,6 +1962,8 @@ u_init()
 		u.ualign.type = A_LAWFUL;
 		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 		flags.initalign = 0; // 0 == lawful
+		u.uinsight = 100;
+		u.veil = FALSE;
 		skill_init(Skill_Acu);
 	break;
 	case PM_ANACHRONONAUT:
