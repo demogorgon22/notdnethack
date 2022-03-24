@@ -5174,7 +5174,7 @@ struct obj *wep;
 		return;
 	boolean youagr = (magr == &youmonst);
 	if(youagr || canseemon(magr))
-		pline("Ethereal tentacles spew from %s and envelop %s.",The(xname(wep)),youagr?"you":mon_nam(magr));
+		pline("Ethereal tentacles spew from %s and envelop %s.",the(xname(wep)),youagr?"you":mon_nam(magr));
 	switch(wep->oartifact){
 		case ART_FIRE_CRYSTAL:
 			do_orb_attack(magr,AT_TENT,AD_EFIR);
