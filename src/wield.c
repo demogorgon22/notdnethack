@@ -645,7 +645,7 @@ dotwoweapon()
 		You("begin two-weapon combat.");
 		u.twoweap = 1;
 		update_inventory();
-		return (rnd(20) > ACURR(A_DEX));
+		return 0;
 	}
 	return (0);
 }
