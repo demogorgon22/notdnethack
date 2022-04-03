@@ -4390,7 +4390,7 @@ boolean ranged;
 						/* assumes the player was polyed and not in natural form */
 						You("burn up!");
 						rehumanize();
-						break;
+						return (MM_HIT | MM_DEF_LSVD);
 					}
 					else {
 						if (vis)
@@ -17714,6 +17714,7 @@ struct monst *mdef;
 
 #define DID_MOVE 			u.uen -= 8;\
 			nomul(0, NULL);\
+			u.uattked = TRUE;\
 			return TRUE;
 
 /* monk_moves()

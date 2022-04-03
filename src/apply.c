@@ -1677,10 +1677,7 @@ struct obj *obj;
 		else pline("This %s has no %s.", xname(obj), obj->otyp != GNOMISH_POINTY_HAT ? "oil" : "wax");
 		return;
 	}
-	if (is_lightsaber(obj) && !obj->cobj && !(
-		obj->oartifact == ART_INFINITY_S_MIRRORED_ARC ||
-		obj->oartifact == ART_ANNULUS
-		)) {
+	if (is_gemable_lightsaber(obj) && !obj->cobj) {
 		pline1(nothing_happens);
 		return;
 	}

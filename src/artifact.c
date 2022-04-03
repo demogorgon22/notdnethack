@@ -11568,7 +11568,7 @@ arti_poly_contents(obj)
 			if (obj_shudders(otmp)) {
 				dobj = otmp;
 			}
-			else otmp = poly_obj(otmp, STRANGE_OBJECT);
+			else otmp = randpoly_obj(otmp);
 		}
 	}
 	if (dobj) {

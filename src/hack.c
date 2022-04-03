@@ -551,7 +551,6 @@ register xchar x,y;
 {
     return (boolean)!((levl[x][y].wall_info & W_NONDIGGABLE)
 		&&((IS_STWALL(levl[x][y].typ) ||
-			IS_TREE(levl[x][y].typ) || 
 			IS_TREES(levl[x][y].typ)
 		)));
 }
@@ -562,7 +561,7 @@ register xchar x,y;
 {
    return (boolean)!((levl[x][y].wall_info & W_NONPASSWALL)
 		&&((IS_STWALL(levl[x][y].typ) ||
-			IS_TREE(levl[x][y].typ)
+			IS_TREES(levl[x][y].typ)
 		)));
 }
 

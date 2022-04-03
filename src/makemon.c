@@ -4815,7 +4815,7 @@ boolean goodequip;
 			(void) mpickobj(mtmp, otmp);
 		} else if(mm == PM_DEEP_ONE || mm == PM_DEEPER_ONE) {
 		 if(Infuture){
-			if(mm == PM_DEEP_ONE){
+			if(mm == PM_DEEPER_ONE){
 				switch (rn2(3)) {
 					case 0:
 						(void)mongets(mtmp, LEATHER_ARMOR, mkobjflags);
@@ -5162,7 +5162,7 @@ boolean goodequip;
 				}
 			}
 		 }
-		}else if((mm == PM_MIND_FLAYER || mm == PM_MASTER_MIND_FLAYER)){
+		} else if((mm == PM_MIND_FLAYER || mm == PM_MASTER_MIND_FLAYER)){
 			if(on_level(&rlyeh_level,&u.uz)){
 				otmp = mksobj(BULLWHIP, mkobjflags);
 				otmp->oerodeproof = 1;
@@ -8958,6 +8958,7 @@ boolean goodequip;
 			} else if(Infuture){
 				otmp = mksobj(QUARTERSTAFF, mkobjflags);
 				otmp->spe = 9;
+				add_oprop(otmp, OPROP_PSIOW);
 				add_oprop(otmp, OPROP_PHSEW);
 				add_oprop(otmp, OPROP_WATRW);
 				otmp->objsize = MZ_GIGANTIC;
