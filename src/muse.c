@@ -2826,6 +2826,7 @@ const char *str;
 		{
 			switch (monsndx(mon->data))
 			{
+			case PM_EDEN:
 			case PM_SILVER_DRAGON:
 			case PM_PLATINUM_DRAGON:
 				pline(str, s_suffix(mon_nam(mon)), "scales");
