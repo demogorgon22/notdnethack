@@ -14759,6 +14759,8 @@ int vis;						/* True if action is at all visible to the player */
 			if (otmp && (otmp->oartifact == ART_GREAT_CLAWS_OF_URDLEN || otmp->oartifact == ART_CLAWS_OF_THE_REVENANCER || otmp->otyp == KNUCKLE_DUSTERS || check_oprop(otmp, OPROP_BLADED))){
 				attackmask |= SLASH;
 			}
+			if(youagr && Race_if(PM_ETHEREALOID))
+				attackmask |= EXPLOSION;
 
 			if (/* claw attacks are slashing (even while wearing gloves?) */
 				(attk && attk->aatyp == AT_CLAW) ||

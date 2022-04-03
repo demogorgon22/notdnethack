@@ -87,12 +87,12 @@ Etherealoid race
 	Resists Disintegration
 	Resists Stoning
 	Has unchanging
+	Unarmed attacks count as energy damage
 	Passive hp regeneration is blocked
 	Unbreathing
 	Unliving
 	Does not hunger
 	Cannot eat
-	Cannot see normally
 	Cannot wear armor
 	Flys
 	Receives displacement at xlvl 7
