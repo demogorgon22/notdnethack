@@ -76,6 +76,9 @@ static const char *random_mesg[] = {
 	"amateurhour followed Tangles", /* Fifth ascender */	
 	"malor followed amateurhour", /* Sixth ascender */	
 	"carlarc followed malor", /* Seventh ascender */	
+	"wintergalaxy88 followed carlarc", /* Eigth ascender */	
+	"mobileuser followed wintergalaxy88", /* Ninth ascender */	
+	/*fin*/
 	
 	/* contributed by members of NetHackWiki */
 	"Write down the coordinates, he said.", /* the Submachine series */
