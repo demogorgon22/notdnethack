@@ -53,11 +53,23 @@ OBJECT:'?',"antimagic",contained
 OBJECT:'?',"antimagic",contained
 # +4 containers are secretly coffins.
 OBJECT:'(',"box",(03,09), cursed, +4
+OBJECT:'(',"tallow candle",(03,09)
+OBJECT:'(',"tallow candle",(03,09)
 OBJECT:'(',"box",(07,09), cursed, +4
+OBJECT:'(',"tallow candle",(07,09)
+OBJECT:'(',"tallow candle",(07,09)
 OBJECT:'(',"box",(11,09), cursed, +4
+OBJECT:'(',"tallow candle",(11,09)
+OBJECT:'(',"tallow candle",(11,09)
 OBJECT:'(',"box",(03,01), cursed, +4
+OBJECT:'(',"tallow candle",(03,01)
+OBJECT:'(',"tallow candle",(03,01)
 OBJECT:'(',"box",(07,01), cursed, +4
+OBJECT:'(',"tallow candle",(07,01)
+OBJECT:'(',"tallow candle",(07,01)
 OBJECT:'(',"box",(11,01), cursed, +4
+OBJECT:'(',"tallow candle",(11,01)
+OBJECT:'(',"tallow candle",(11,01)
 # We have to protect the tower against outside attacks
 NON_DIGGABLE:(00,00,14,10)
 
