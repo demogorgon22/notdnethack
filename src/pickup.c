@@ -2070,6 +2070,7 @@ mbag_explodes(obj, depthin)
     struct obj *obj;
     int depthin;
 {
+	return FALSE;
     /* these won't cause an explosion when they're empty */
     if ((obj->otyp == WAN_CANCELLATION || obj->otyp == BAG_OF_TRICKS) &&
 	    obj->spe <= 0)
@@ -2112,11 +2113,11 @@ register struct obj *obj;
 	} else if (obj == current_container) {
 		pline("That would be an interesting topological exercise.");
 		return 0;
-	} else if ((Is_mbag(obj) || obj->otyp == WAN_CANCELLATION)
+	/*} else if ((Is_mbag(obj) || obj->otyp == WAN_CANCELLATION)
 		&& objects[obj->otyp].oc_name_known && obj->dknown && current_container->otyp == BAG_OF_HOLDING
 	) {
 		pline("That combination is a little too explosive.");
-		return 0;
+		return 0;*/
 	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL)) {
 		Norep("You cannot %s %s you are wearing.",
 			Icebox ? "refrigerate" : "stash", something);
@@ -2196,7 +2197,7 @@ register struct obj *obj;
 	}
 
 	/* boxes, boulders, and big statues can't fit into any container */
-	if (obj->otyp == ICE_BOX || Is_box(obj) || is_boulder(obj) ||
+	if (obj->otyp == ICE_BOX || Is_box(obj) || is_boulder(obj) || obj->otyp == BAG_OF_HOLDING ||
 		(obj->otyp == STATUE && bigmonst(&mons[obj->corpsenm]))) {
 		/*
 		 *  xname() uses a static result array.  Save obj's name
