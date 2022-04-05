@@ -1908,6 +1908,10 @@ dorub()
 	/* now uwep is obj */
 	if (uwep->otyp == MAGIC_LAMP) {
 	    if (uwep->spe > 0 && !rn2(3)) {
+	    	if(Is_nowhere(&u.uz)){
+			You("hear something in there but it won't come out.");
+			return 1;
+		}
 		check_unpaid_usage(uwep, TRUE);		/* unusual item use */
 		djinni_from_bottle(uwep);
 		makeknown(MAGIC_LAMP);
