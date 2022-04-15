@@ -2055,9 +2055,9 @@ karemade:
 			)){
 				makemon(&mons[PM_ASPECT_OF_THE_SILENCE], 0, 0, NO_MM_FLAGS);
 			}
-			else if(!Infuture && !mvitals[PM_CENTER_OF_ALL].died && !Is_nowhere(&u.uz) && !rn2(COA_PROB)){
+			/*else if(!Infuture && !mvitals[PM_CENTER_OF_ALL].died && !Is_nowhere(&u.uz) && !rn2(COA_PROB)){
 				coa_arrive();
-			}
+			}*/
 		    else if(!(Is_illregrd(&u.uz) && u.ualign.type == A_LAWFUL && !u.uevent.uaxus_foe) && /*Turn off random generation on axus's level if lawful*/
 				!In_void(&u.uz) &&
 				!rn2(u.uevent.udemigod ? 25 :
