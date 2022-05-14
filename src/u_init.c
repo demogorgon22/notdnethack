@@ -834,6 +834,8 @@ static struct inv_sub { short race_pm, item_otyp, subs_otyp; } inv_subs[] = {
     { PM_SALAMANDER,	KNIFE,			SPEAR	      },
     { PM_SALAMANDER,	SHORT_SWORD,		SPEAR    },
     { PM_SALAMANDER,	AXE,		SPEAR    },
+    { PM_SALAMANDER,	HIGH_BOOTS,		CRAM_RATION    },
+    { PM_SALAMANDER,	LOW_BOOTS,		CRAM_RATION    },
     // Vampire substitutions
     { PM_VAMPIRE,	ATHAME,				DAGGER    	  },
     { PM_VAMPIRE,	FOOD_RATION,		POT_BLOOD    	  },
@@ -2937,7 +2939,7 @@ register struct trobj *trop;
 			if(obj->oclass == ARMOR_CLASS){
 				if(is_suit(obj)) obj->bodytypeflag = (youracedata->mflagsb&MB_BODYTYPEMASK);
 				else if(is_helmet(obj)) obj->bodytypeflag = (youracedata->mflagsb&MB_HEADMODIMASK);
-				else if(is_shirt(obj)) obj->bodytypeflag = (youracedata->mflagsb&MB_HUMANOID) ? MB_HUMANOID : (youracedata->mflagsb&MB_BODYTYPEMASK);
+				else if(is_shirt(obj)) obj->bodytypeflag = (youracedata->mflagsb&MB_HUMANOID && !Race_if(PM_SALAMANDER)) ? MB_HUMANOID : (youracedata->mflagsb&MB_BODYTYPEMASK);
 			}
 			if(obj->otyp == BULLWHIP && Race_if(PM_DROW) && flags.initgend){
 				obj->otyp = VIPERWHIP;
