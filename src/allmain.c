@@ -1797,16 +1797,22 @@ moveloop()
 								pline("%s screams and writhes. You hear %s bones splintering!", Monnam(mtmp), mhis(mtmp));
 							else You_hear("screaming.");
 							set_mon_data(mtmp, PM_COILING_BRAWN);
+							possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
+							mon_break_armor(mtmp, FALSE);
 						break;
 						case 4:
 							if(canseemon(mtmp))
 								pline("%s head splits open in a profusion of fungal growthes!", s_suffix(Monnam(mtmp)));
 							set_mon_data(mtmp, PM_FUNGAL_BRAIN);
+							possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
+							mon_break_armor(mtmp, FALSE);
 						break;
 						case 5:
 							if(canseemon(mtmp))
 								pline("%s skin peels open!", Monnam(mtmp));
 							set_mon_data(mtmp, PM_BYAKHEE);
+							possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
+							mon_break_armor(mtmp, FALSE);
 						break;
 					}
 				}
@@ -4921,7 +4927,12 @@ struct monst *magr;
 	
 	pa = youagr ? youracedata : magr->data;
 		
-	if(pa->mtyp == PM_SWIRLING_MIST){
+	if(pa->mtyp == PM_MOTHERING_MASS){
+		symbiote.aatyp = AT_TENT;
+		symbiote.adtyp = AD_PHYS;
+		symbiote.damn = 2;
+		symbiote.damd = 6;
+	} else if(pa->mtyp == PM_SWIRLING_MIST){
 		symbiote.aatyp = AT_BKGT;
 		symbiote.adtyp = AD_WET;
 		symbiote.damn = 3;

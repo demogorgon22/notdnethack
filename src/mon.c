@@ -2748,7 +2748,7 @@ struct obj *otmp;
 	if (mtmp == u.usteed) return (FALSE);
 #endif
 	if (mtmp->isshk) return(TRUE); /* no limit */
-	if ((mtmp->mpeaceful && mtmp->mtyp != PM_MAID) && !mtmp->mtame) return(FALSE);
+	if ((mtmp->mpeaceful && mtmp->mtyp != PM_MAID && !(Infuture && mtmp->mfaction == QUEST_FACTION)) && !mtmp->mtame) return(FALSE);
 	/* otherwise players might find themselves obligated to violate
 	 * their alignment if the monster takes something they need
 	 * 
@@ -3842,6 +3842,8 @@ struct monst *mtmp;
 						verbalize("**ALAAAAAAAAAAAAAAAAA:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...**");
 					}
 					set_mon_data(mtmp, PM_COILING_BRAWN);
+					possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
+					mon_break_armor(mtmp, FALSE);
 				break;
 				case 1:{
 					struct obj *helm, *robe;
@@ -3868,6 +3870,8 @@ struct monst *mtmp;
 						pline("%s head splits open in a profusion of fungal growthes!", s_suffix(Monnam(mtmp)));
 					else You_hear("a wet crack.");
 					set_mon_data(mtmp, PM_FUNGAL_BRAIN);
+					possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
+					mon_break_armor(mtmp, FALSE);
 				break;
 				case 3:
 					if(canseemon(mtmp)){
@@ -5578,7 +5582,7 @@ xkilled(mtmp, dest)
 	}
 
 	// You killed a mummy and suffer from its curse.
-	if(attacktype_fordmg(mtmp->data, AT_NONE, AD_MROT)){
+	if(!mtmp->mcan && attacktype_fordmg(mtmp->data, AT_NONE, AD_MROT)){
 		mummy_curses_x(mtmp, &youmonst);
 	}
 	

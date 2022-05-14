@@ -71,7 +71,7 @@ static struct trobj Anachrononaut_Hu[] = {
 	{ PLASTEEL_BOOTS, 0, ARMOR_CLASS, 1, 0 },
 	{ CLOAK_OF_MAGIC_RESISTANCE, 0, ARMOR_CLASS, 1, 0 },
 	{ POWER_PACK, 0, TOOL_CLASS, 5, 0 },
-	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
+	{ PROTEIN_PILL, 0, FOOD_CLASS, 6, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Anachrononaut_Hlf[] = {
@@ -85,7 +85,7 @@ static struct trobj Anachrononaut_Hlf[] = {
 	{ BULLET_FABBER, 0, TOOL_CLASS, 1, 0 },
 	{ CUTTING_LASER,  0, WEAPON_CLASS, 1, 0 },
 	{ POWER_PACK, 0, TOOL_CLASS, 5, 0 },
-	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
+	{ PROTEIN_PILL, 0, FOOD_CLASS, 6, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Anachrononaut_Dw[] = {
@@ -101,7 +101,7 @@ static struct trobj Anachrononaut_Dw[] = {
 	{ AMULET_OF_NULLIFY_MAGIC, 0, AMULET_CLASS, 1, 0 },
 	{ BULLET, 3, WEAPON_CLASS, 100, 0 },
 	{ BULLET_FABBER, 0, TOOL_CLASS, 1, 0 },
-	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
+	{ PROTEIN_PILL, 0, FOOD_CLASS, 6, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Anachrononaut_Gno[] = {
@@ -166,7 +166,7 @@ static struct trobj Anachrononaut_ShDro[] = {
 	{ GAUNTLETS_OF_DEXTERITY, 1, ARMOR_CLASS, 1, 0 },
 	{ ELVEN_BOOTS, 1, ARMOR_CLASS, 1, 0 },
 	{ POWER_PACK, 0, TOOL_CLASS,  5, 0 },
-	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
+	{ PROTEIN_PILL, 0, FOOD_CLASS, 6, 0 },
 	{ SPE_FORCE_BOLT, 0, SPBOOK_CLASS, 1, 0 },
 	{ SPE_SLOW_MONSTER, 0, SPBOOK_CLASS, 1, 0 },
 	{ SPE_PROTECTION, 0, SPBOOK_CLASS, 1, 0 },
@@ -186,7 +186,7 @@ static struct trobj Anachrononaut_Dro[] = {
 	{ BULLET, 0, WEAPON_CLASS, 60, 0 },
 	{ SILVER_BULLET, 0, WEAPON_CLASS, 30, 0 },
 	{ BULLET_FABBER, UNDEF_SPE, TOOL_CLASS, 1, 0 },
-	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
+	{ PROTEIN_PILL, 0, FOOD_CLASS, 6, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Anachrononaut_Elf[] = {
