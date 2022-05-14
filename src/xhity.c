@@ -5130,7 +5130,7 @@ boolean ranged;
 	}
 	case AD_COSM:{
 		
-		struct monst *mtmp2 = makemon(&mons[PM_AHAZU + rn2(31)], magr->mx, magr->my, MM_ADJACENTOK | MM_NOCOUNTBIRTH);
+		struct monst *mtmp2 = makemon(&mons[PM_AHAZU + rn2(31)], magr->mx, magr->my, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
 		if(mtmp2){
 			pline("Whispering crystals coalesce into the memories of %s!",mon_nam(mtmp2));
 			mark_mon_as_summoned(mtmp2, magr, 10, 0);
