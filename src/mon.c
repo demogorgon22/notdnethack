@@ -4598,6 +4598,10 @@ boolean was_swallowed;			/* digestion */
 					scatter_item(otmp);
 					otmp = mkobj(RING_CLASS,FALSE);
 					scatter_item(otmp);
+					otmp = mkobj(CANDY_BAR,NO_MKOBJ_FLAGS);
+					scatter_item(otmp);
+					otmp = mkobj(POT_BOOZE,NO_MKOBJ_FLAGS);
+					scatter_item(otmp);
 				}
 				for(i = 0; i < 30; i++){
 					otmp = mkobj(FOOD_CLASS,FALSE);
