@@ -1161,7 +1161,7 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(SPEED_PHASE,"two_keys")
 	CHECK_ACHIEVE(QUITE_MAD,"quite_mad")
 	CHECK_ACHIEVE(TOTAL_DRUNK,"booze_hound")
-	if(achievesWritten == 1) Sprintf(eos(achieveXbuff), ",");
+	if(achievesWritten > 0) Sprintf(eos(achieveXbuff), ",");
 	if(achieve.get_kroo)   Sprintf(eos(achieveXbuff), "%s,", "get_kroo");
 	if(achieve.get_poplar)   Sprintf(eos(achieveXbuff), "%s,", "get_poplar");
 	if(achieve.get_abominable)   Sprintf(eos(achieveXbuff), "%s,", "get_abominable");
