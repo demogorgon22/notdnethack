@@ -611,7 +611,7 @@ you_calc_movement()
 			}
 		}
 	}
-	else if(!TimeStop && artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe < u.ulevel && !(moves%10)) artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe++;
+	else if(!TimeStop && !Is_nowhere(&u.uz) && artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe < u.ulevel && !(moves%10)) artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe++;
 	
 	if (u.usleep && u.usleep < monstermoves && roll_madness(MAD_FORMICATION)) {
 		multi = -1;
