@@ -7,8 +7,8 @@ Additonally, there are some new ideas.
 - [ ] a likely heavily modified version of the alchemy gnome patch
 - [x] A modified version of the caveman 
 - [x] Sigil + Fell + spire + key split maybe?
-- [ ] Village level
-- [ ] Adventure branches
+- [x] Village level
+- [x] Adventure branches
 - [ ] "Collapsed mineshaft" branch from vlad's top level that is just mines end
 - [x] Etherealoid race, potentially slightly nerfed
 - [ ] Symbiote race, likely better implemented?
@@ -27,7 +27,7 @@ Additonally, there are some new ideas.
 - [ ] Special vibe square level
 - [ ] Formian race
 - [ ] Ent race
-- [ ] Reimplement achievements and decide what they should be
+- [x] Reimplement achievements and decide what they should be
 - [ ] New tats, insight bosses, chaos quests, drow house for drows
 
 
@@ -40,4 +40,10 @@ Stuff that isn't coming back
 - Automatic law soldiers likely not returning, or if they do, in a more interesting way
 - Portal skip for outlands
 
+More stuff plz give
+- [ ] Eth Madman
+- [ ] Sal Madman
+- [ ] Ana Eth 
+- [ ] Sigil upgrade (replace peasants with dabus, make fell fallen, dabus speak, etc)
+- [ ] Adventure branch rebalance
 
