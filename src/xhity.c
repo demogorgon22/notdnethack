@@ -146,7 +146,10 @@ struct monst * mdef;
 	}
 	//If the player can't attack and is wearing a straitjacket, redirect to the kick function
 	if(Straitjacketed && !at_least_one_attack(&youmonst)){
-		dokick_core(u.dx, u.dy);
+		if(slithy(youracedata))
+			dotailkick(u.dx, u.dy);
+		else 
+			dokick_core(u.dx, u.dy);
 		//Dokick can't move you
 		return TRUE;
 	}

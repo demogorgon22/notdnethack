@@ -23,6 +23,7 @@ STATIC_DCL void FDECL(drop_to, (coord *,SCHAR_P));
 static NEARDATA struct obj *kickobj;
 
 static struct attack basickick = { AT_KICK, AD_PHYS, 0, 0 };
+static struct attack basictail = { AT_TAIL, AD_PHYS, 1, 3 };
 
 //definition of an extern in you.h
 boolean onlykicks = FALSE;
@@ -700,6 +701,36 @@ char *buf;
 	else if (maploc->typ == IRONBARS) what = "an iron bar";
 	else what = "something weird";
 	return strcat(strcpy(buf, "kicking "), what);
+}
+
+int
+dotailkick(dx,dy)
+int dx, dy;
+{
+	int x = u.ux + dx;
+	int y = u.uy + dy;
+	if(!isok(x,y) || !MON_AT(x, y)) return 0;
+	struct monst *mon;
+	struct permonst *mdat;
+
+	mon = m_at(x, y);
+	mdat = mon->data;
+	if (!mon->mpeaceful || !canspotmon(mon))
+	    flags.forcefight = TRUE; /* attack even if invisible */
+	int mdx, mdy;
+	/*Note: currently these are actually the same skill, but....*/
+	int result;
+
+	if(mon->m_ap_type) {
+		if(mon->m_ap_type == M_AP_MONSTER) seemimic_ambush(mon); else seemimic(mon);
+	}
+	check_caitiff(mon);
+	You("swing your tail at %s.", the(mon_nam(mon)));
+	result = xmeleehity(&youmonst, mon, &basictail, (struct obj **)0, -1, 1000, FALSE);
+	result = xpassivey(&youmonst, mon, &basictail, (struct obj *)0, -1, result, mdat, TRUE);
+	flags.forcefight = FALSE;
+	return 1;
+
 }
 
 int

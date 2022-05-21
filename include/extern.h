@@ -668,6 +668,7 @@ E void NDECL(bird_kick_monsters);
 E void NDECL(wing_storm_monsters);
 E boolean FDECL(ghitm, (struct monst *,struct obj *));
 E void FDECL(container_impact_dmg, (struct obj *));
+E int FDECL(dotailkick, (int, int));
 E int NDECL(dokick);
 E int FDECL(dokick_core, (int, int));
 E boolean FDECL(ship_object, (struct obj *,XCHAR_P,XCHAR_P,BOOLEAN_P));

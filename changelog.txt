@@ -197,6 +197,17 @@ Spear changes
 			2x dmg drain xp
 		Silver Slingstone
 			Sears silver haters
+Madman changes
+	Salamander Madman
+		Early game can slap with tail instead of kicking while straitjacketed
+			Will have to use lava to burn down doors
+		Mad stuff box has
+			+3 mercurial rakuyo spear
+			+3 mercurial small flaming trident
+			+3 spiked red dsm
+			Expert spear skill
+			Expert trident skill
+			Spearhead Tattoo
 Anachrononaut changes
 	Ana quest 
 		Now a random power armor on ground zero, good luck.

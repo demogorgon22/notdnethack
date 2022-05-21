@@ -2647,6 +2647,11 @@ boolean past;
 				skilled_weapon_skill(P_BEAST_MASTERY);
 			}
 		break;
+		case PM_SALAMANDER:
+				expert_weapon_skill(P_SPEAR);
+				expert_weapon_skill(P_TRIDENT);
+				u.utats |= TAT_SPEARHEAD;
+		break;
 		case PM_HUMAN:
 		case PM_VAMPIRE:
 		case PM_INCANTIFIER:

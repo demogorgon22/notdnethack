@@ -2621,7 +2621,7 @@ u_init()
 		}
     break;
 	case PM_SALAMANDER:
-		skill_add(Skill_Sala);
+		if(!Role_if(PM_MADMAN)) skill_add(Skill_Sala);
     break;
 
 	case PM_ORC:

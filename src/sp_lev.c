@@ -1435,6 +1435,29 @@ default_case:
 					set_material_gm(stuff, SILVER);
 				}
 			break;
+			case PM_SALAMANDER:
+					stuff = mksobj(SPEAR, mkobjflags);
+					size_items_to_pc(stuff);
+					set_material_gm(stuff, MERCURIAL);
+					add_oprop(stuff, OPROP_RAKUW);
+					stuff->spe = 3;
+					stuff->cursed = FALSE;
+					add_to_container(otmp, stuff);
+					stuff = mksobj(TRIDENT, mkobjflags);
+					set_material_gm(stuff, MERCURIAL);
+					set_obj_size(stuff,MZ_SMALL);
+					add_oprop(stuff, OPROP_FIREW);
+					stuff->spe = 3;
+					stuff->cursed = FALSE;
+					add_to_container(otmp, stuff);
+					stuff = mksobj(RED_DRAGON_SCALE_MAIL, mkobjflags);
+					size_items_to_pc(stuff);
+					add_oprop(stuff, OPROP_SPIKED);
+					stuff->spe = 3;
+					stuff->cursed = FALSE;
+					add_to_container(otmp, stuff);
+
+			break;
 			case PM_DWARF:
 				default_add(HIGH_BOOTS);
 
