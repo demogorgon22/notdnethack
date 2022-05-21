@@ -41,9 +41,9 @@ Stuff that isn't coming back
 - Portal skip for outlands
 
 More stuff plz give
-- [ ] Eth Madman
+- [ ] Eth Madman (figment of own imagination (how))
 - [ ] Sal Madman
-- [ ] Ana Eth 
+- [ ] Ana Eth (ethergaunt)
 - [ ] Sigil upgrade (replace peasants with dabus, make fell fallen, dabus speak, etc)
 - [ ] Adventure branch rebalance
 
