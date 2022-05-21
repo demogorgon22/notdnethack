@@ -202,6 +202,18 @@ boolean quietly;
 }
 
 struct monst *
+make_mad_eth(){
+	struct monst *mtmp;
+	mtmp = makemon(&mons[PM_ETHEREALOID], u.ux, u.uy, MM_ADJACENTOK|MM_EDOG);
+	if(!mtmp) return (struct monst *) 0;
+	mtmp = christen_monst(mtmp, plname);
+	return mtmp;
+	
+	
+}
+
+
+struct monst *
 makedog()
 {
 	register struct monst *mtmp;
@@ -211,6 +223,7 @@ makedog()
 	const char *petname;
 	int   pettype;
 	static int petname_used = 0;
+	if(Role_if(PM_MADMAN) && Race_if(PM_ETHEREALOID)) return make_mad_eth();
 
 	if (preferred_pet == 'n' || Role_if(PM_ANACHRONONAUT)) return((struct monst *) 0);
 
