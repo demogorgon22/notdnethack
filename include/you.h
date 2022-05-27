@@ -233,6 +233,8 @@ struct Race {
 #define NIGHTVISION2	2
 #define NIGHTVISION3	3
 
+	int spelspec;		/* spell (SPE_) the species excels at */
+	int spelsbon;		/* penalty (-bonus) for that spell */
 	/*** Properties in variable-length arrays ***/
 	/* intrinsics (see attrib.c) */
 
@@ -638,10 +640,11 @@ struct you {
 #define	MAD_TOO_BIG			0x0000000040000000L
 #define	MAD_APOSTASY		0x0000000080000000L
 #define	MAD_ROTTING			0x0000000100000000L
+#define	LAST_MADNESS		MAD_ROTTING
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)
-#define COA_PROB	 (max(1, 5000*pow(.95,(Role_if(PM_ANACHRONOUNBINDER)?max(0,u.uinsight-100):u.uinsight))))
+#define COA_PROB	 (max(1, 10000*pow(.95,(Role_if(PM_ANACHRONOUNBINDER)?max(0,u.uinsight-100):u.uinsight))))
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
 	int 	utaneggs;	/* tannin eggs */
@@ -693,30 +696,31 @@ struct you {
 #define PUMMEL    5
 
 	long	wardsknown;	/* known wards */
-#define	WARD_ELBERETH		0x0000001L
-#define WARD_HEPTAGRAM		0x0000002L
-#define WARD_GORGONEION		0x0000004L
-#define WARD_ACHERON		0x0000008L
-#define WARD_PENTAGRAM		0x0000010L
-#define WARD_HEXAGRAM		0x0000020L
-#define WARD_HAMSA			0x0000040L
-#define WARD_ELDER_SIGN		0x0000080L
-#define WARD_EYE			0x0000100L
-#define WARD_QUEEN			0x0000200L
-#define WARD_CAT_LORD		0x0000400L
-#define WARD_GARUDA			0x0000800L
-#define WARD_CTHUGHA		0x0001000L
-#define WARD_ITHAQUA		0x0002000L
-#define WARD_KARAKAL		0x0004000L
-#define WARD_YELLOW			0x0008000L
-#define WARD_TRANSIT		0x0010000L
-#define WARD_STABILIZE		0x0020000L
-#define WARD_TOUSTEFNA		0x0040000L
-#define WARD_DREPRUN		0x0080000L
-#define WARD_OTTASTAFUR		0x0100000L
-#define WARD_KAUPALOKI		0x0200000L
-#define WARD_VEIOISTAFUR	0x0400000L
-#define WARD_THJOFASTAFUR	0x0800000L
+#define	WARD_ELBERETH		(0x1L<<0)
+#define WARD_HEPTAGRAM		(0x1L<<1)
+#define WARD_GORGONEION		(0x1L<<2)
+#define WARD_ACHERON		(0x1L<<3)
+#define WARD_PENTAGRAM		(0x1L<<4)
+#define WARD_HEXAGRAM		(0x1L<<5)
+#define WARD_HAMSA			(0x1L<<6)
+#define WARD_ELDER_SIGN		(0x1L<<7)
+#define WARD_EYE			(0x1L<<8)
+#define WARD_QUEEN			(0x1L<<9)
+#define WARD_CAT_LORD		(0x1L<<10)
+#define WARD_GARUDA			(0x1L<<11)
+#define WARD_CTHUGHA		(0x1L<<12)
+#define WARD_ITHAQUA		(0x1L<<13)
+#define WARD_KARAKAL		(0x1L<<14)
+#define WARD_YELLOW			(0x1L<<15)
+#define WARD_TRANSIT		(0x1L<<16)
+#define WARD_STABILIZE		(0x1L<<17)
+#define WARD_TOUSTEFNA		(0x1L<<18)
+#define WARD_DREPRUN		(0x1L<<19)
+#define WARD_OTTASTAFUR		(0x1L<<20)
+#define WARD_KAUPALOKI		(0x1L<<21)
+#define WARD_VEIOISTAFUR	(0x1L<<22)
+#define WARD_THJOFASTAFUR	(0x1L<<23)
+#define NUM_WARDS	23
 
 	
 	int sealorder[31];

@@ -45,6 +45,7 @@
 													|| (levl[(mon)->mx][(mon)->my].lit &&  (viz_array[(mon)->my][(mon)->mx]&TEMP_DRK1 && !(viz_array[(mon)->my][(mon)->mx]&TEMP_LIT1))))))
 #define is_deaf(mon)		(!((mon)->mcanhear) ||\
 							  (mon)->mtyp == PM_NUPPERIBO ||\
+							  (mon)->mtyp == PM_APHANACTONAN_ASSESSOR ||\
 							  (mon)->mtyp == PM_ALABASTER_ELF ||\
 							  (mon)->mtyp == PM_ALABASTER_ELF_ELDER)
 
@@ -112,7 +113,7 @@
 				 ((ptr)->mtyp == PM_CYCLOPS || \
 				  (ptr)->mtyp == PM_MONOTON || \
 				  (ptr)->mtyp == PM_FLOATING_EYE) ? 1 : 2)
-#define sensitive_ears(ptr)		(((ptr)->mflagsv & MV_ECHOLOCATE) != 0L)
+#define sensitive_ears(ptr)		(((ptr)->mflagsv & MV_ECHOLOCATE) != 0L || (ptr)->mtyp == PM_APHANACTONAN_AUDIENT)
 #define nohands(ptr)		(((ptr)->mflagsb & (MB_NOHANDS|MB_NOLIMBS)) != 0L)
 #define nolimbs(ptr)		(((ptr)->mflagsb & MB_NOLIMBS) == MB_NOLIMBS)
 #define nofeet(ptr)			((ptr)->mflagsb & MB_NOFEET)
@@ -415,10 +416,10 @@
 				 (ptr)->mtyp == PM_ENORMOUS_RAT || \
 				 (ptr)->mtyp == PM_RODENT_OF_UNUSUAL_SIZE)
 #define is_dragon(ptr)		(((ptr)->mflagsa & MA_DRAGON) != 0L)
-#define is_true_dragon(ptr)		((monsndx(ptr) >= PM_BABY_GRAY_DRAGON && monsndx(ptr) <= PM_DEEP_DRAGON) || \
+#define is_true_dragon(ptr)		((monsndx(ptr) >= PM_BABY_GRAY_DRAGON && monsndx(ptr) <= PM_YELLOW_DRAGON) || \
 								(ptr)->mtyp == PM_EDEN || (ptr)->mtyp == PM_FAFNIR || \
 								(ptr)->mtyp == PM_PLATINUM_DRAGON || (ptr)->mtyp == PM_CHROMATIC_DRAGON)
-#define is_true_adult_dragon(ptr)		((monsndx(ptr) >= PM_GRAY_DRAGON && monsndx(ptr) <= PM_DEEP_DRAGON) || \
+#define is_true_adult_dragon(ptr)		((monsndx(ptr) >= PM_GRAY_DRAGON && monsndx(ptr) <= PM_YELLOW_DRAGON) || \
 								(ptr)->mtyp == PM_PLATINUM_DRAGON || (ptr)->mtyp == PM_CHROMATIC_DRAGON || (ptr)->mtyp == PM_IXOTH || (ptr)->mtyp == PM_SMAUG)
 #define is_pseudodragon(ptr)	(monsndx(ptr) >= PM_TINY_PSEUDODRAGON && monsndx(ptr) <= PM_GIGANTIC_PSEUDODRAGON)
 #define is_bird(ptr)		(((ptr)->mflagsa & MA_AVIAN) != 0L)
@@ -619,6 +620,7 @@
 #define can_breathe(ptr)	attacktype(ptr, AT_BREA)
 #define taxes_sanity(ptr)	(((ptr)->mflagsg & MG_SANLOSS) != 0L)
 #define yields_insight(ptr)	(((ptr)->mflagsg & MG_INSIGHT) != 0L)
+#define banish_kill(mtyp)	(mtyp == PM_SECRET_WHISPERER || mtyp == PM_TRUTH_SEER || mtyp == PM_DREAM_EATER || mtyp == PM_VEIL_RENDER)
 
 #define cantwield(ptr)		(nohands(ptr))
 #define could_twoweap(ptr)	attacktype(ptr, AT_XWEP)

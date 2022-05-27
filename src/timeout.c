@@ -2176,6 +2176,9 @@ struct obj * obj;
 	case WAX_CANDLE:
 		radius = candle_light_range(obj);
 		break;
+	case MAGIC_TORCH:
+		radius = 4;
+		break;
 	case SUNROD:
 	case TORCH:
 	case SHADOWLANDER_S_TORCH:
@@ -2298,7 +2301,7 @@ lightsource_timed(obj)
 struct obj * obj;
 {
 	return (obj && (
-		(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) ||	/* ??? */
+		(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) ||	/* ??? Chris: The timer's used to extinquish it when it's dropped. */
 		(obj->otyp == DOUBLE_LIGHTSABER) ||
 		(obj->otyp == LIGHTSABER) ||
 		(obj->otyp == BEAMSWORD) ||
@@ -2363,6 +2366,7 @@ begin_burn(obj)
 	if (obj->age == 0 && 
 		obj->otyp != MAGIC_LAMP && 
 		obj->otyp != CANDLE_OF_INVOCATION &&
+		obj->otyp != MAGIC_TORCH &&
 		obj->otyp != POT_STARLIGHT && 
 		obj->otyp != CHUNK_OF_FOSSIL_DARK && 
 		!artifact_light(obj) && 
@@ -2379,6 +2383,7 @@ begin_burn(obj)
 	/* some things need to set lamplit on their own here */
 	if (obj->otyp == MAGIC_LAMP ||
 		obj->otyp == CANDLE_OF_INVOCATION ||
+		obj->otyp == MAGIC_TORCH ||
 		artifact_light(obj) ||
 		obj_eternal_light(obj))
 		obj->lamplit = TRUE;
@@ -2442,6 +2447,7 @@ end_burn(obj, timer_attached)
 
 	if (obj->otyp == MAGIC_LAMP 
 		|| obj->otyp == CANDLE_OF_INVOCATION
+		|| obj->otyp == MAGIC_TORCH
 		|| obj->otyp == POT_STARLIGHT
 		|| obj->otyp == CHUNK_OF_FOSSIL_DARK
 		|| artifact_light(obj)

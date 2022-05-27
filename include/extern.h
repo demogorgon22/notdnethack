@@ -140,6 +140,7 @@ E int FDECL(touch_artifact, (struct obj *,struct monst *, int));
 E int FDECL(spec_abon, (struct obj *,struct monst *, boolean));
 E boolean FDECL(spec_dbon, (struct obj *,struct monst *,int,int*,int*));
 E boolean FDECL(oproperty_dbon, (struct obj *, struct monst *, int, int*, int*));
+E void FDECL(mercy_blade_conflict, (struct monst *, struct monst *, int, boolean));
 E int FDECL(spec_applies, (struct obj *,struct monst *, boolean));
 E void FDECL(discover_artifact, (int));
 E void FDECL(undiscover_artifact, (int));
@@ -203,8 +204,8 @@ E double FDECL(conplus, (int));
 E void FDECL(change_usanity, (int, boolean));
 E void FDECL(change_uinsight, (int));
 E boolean NDECL(check_insight);
-E int NDECL(roll_generic_madness);
-E int NDECL(roll_generic_flat_madness);
+E int FDECL(roll_generic_madness, (int));
+E int FDECL(roll_generic_flat_madness, (int));
 E int FDECL(roll_madness, (long int));
 E int FDECL(mad_turn, (long int));
 E int FDECL(flat_mad_turn, (long int));
@@ -212,6 +213,7 @@ E int FDECL(mad_monster_turn, (struct monst *, long int));
 E void NDECL(roll_av_frigophobia);
 E void NDECL(roll_frigophobia);
 E void FDECL(give_madness, (struct monst *));
+E void FDECL(you_inflict_madness, (struct monst *));
 E void NDECL(calc_total_maxhp);
 E void NDECL(calc_total_maxen);
 E schar FDECL(acurr, (int));
@@ -2526,6 +2528,7 @@ E void NDECL(check_loadout_trophy);
 E void NDECL(give_nightmare_hunter_trophy);
 E void NDECL(check_madman_trophy);
 E void NDECL(check_drunkard_trophy);
+E void NDECL(give_bokrug_trophy);
 #endif
 
 /* ### rumors.c ### */
@@ -2942,6 +2945,7 @@ E int NDECL(uescape_entanglement);
 
 E void NDECL(u_init);
 E void FDECL(knows_object,(int) );
+E void FDECL(know_random_obj,(int));
 E void NDECL(scatter_weapons);
 
 /* ### unixmain.c ### */
@@ -3277,6 +3281,7 @@ E void FDECL(bypass_obj, (struct obj *));
 E void NDECL(clear_bypasses);
 E int FDECL(magic_negation, (struct monst *));
 E void FDECL(light_damage, (genericptr_t, long));
+E int NDECL(heal_mlevel_bonus);
 
 /* ### write.c ### */
 

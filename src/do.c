@@ -51,7 +51,7 @@ dodrop()
 
 	if(result && roll_madness(MAD_TALONS)){
 		You("panic after giving up a belonging!");
-		nomul(-1*rnd(6),"panic");
+		HPanicking += 1+rnd(6);
 	}
 	
 	return result;
@@ -752,7 +752,7 @@ doddrop()
 
 	if(result && roll_madness(MAD_TALONS)){
 		You("panic after giving up your property!");
-		nomul(-1*rnd(6),"panic");
+		HPanicking += 1+rnd(6);
 	}
 	return result;
 }

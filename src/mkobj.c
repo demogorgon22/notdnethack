@@ -719,7 +719,11 @@ int mkflags;
 			case EGG:
 				otmp->corpsenm = NON_PM;	/* generic egg */
 
-				if (In_sokoban(&u.uz) || Is_gatetown(&u.uz) || In_void(&u.uz)) break; /*Some levels shouldn't have mosnters spawning from eggs*/
+				if (In_sokoban(&u.uz)
+					|| Is_gatetown(&u.uz)
+					|| Infuture
+					|| In_void(&u.uz)
+				) break; /*Some levels shouldn't have mosnters spawning from eggs*/
 
 				if (!rn2(3)) for (tryct = 200; tryct > 0; --tryct) {
 					mndx = can_be_hatched(rndmonnum());
@@ -798,6 +802,10 @@ int mkflags;
 				otmp->age = (long)rn1(500, 1000);
 				otmp->lamplit = 0;
 				blessorcurse(otmp, 5);
+				break;
+			case MAGIC_TORCH:
+				otmp->spe = 0;
+				otmp->lamplit = 0;
 				break;
 			case CANDLE_OF_INVOCATION:
 			case MAGIC_LAMP:	otmp->spe = 1;
@@ -1819,6 +1827,7 @@ struct obj* obj;
 	 * work properly. */
 	case BULLWHIP:
 	case TORCH:
+	case MAGIC_TORCH:
 	case SHADOWLANDER_S_TORCH:
 	case SUNROD:
 	case WORM_TOOTH:

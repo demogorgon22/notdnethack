@@ -237,11 +237,12 @@
 #define AD_LOKO		159 /*Lokoban prize loot*/
 #define AD_HOLY     160 /* Holy energy (MM-stype damage not resisted by MR and doubled against holy-haters)  */
 #define AD_UNHY     161 /* Unholy energy (MM-stype damage not resisted by MR and doubled against unholy-haters) */
+#define AD_PERH     162 /* "Per-Hit-Die damage (x damage per HD of the defender, be careful with damage die size!) */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	162
+#define AD_DUNSTAN	163
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

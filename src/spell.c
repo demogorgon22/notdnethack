@@ -11,20 +11,10 @@ static NEARDATA schar delay;		/* moves left for this spell */
 static NEARDATA struct obj *book;	/* last/current book being xscribed */
 static NEARDATA int RoSbook;		/* Read spell or Study Wards?" */
 
-#define KEEN 20000
 #define READ_SPELL 1
 #define STUDY_WARD 2
 #define MAINTAINED_SPELL_PW_MULTIPLIER 3
 #define MAINTAINED_SPELL_HUNGER_MULTIPLIER 1
-#define incrnknow(spell)        spl_book[spell].sp_know = KEEN
-#define ndecrnknow(spell, knw)        spl_book[spell].sp_know = max(0, spl_book[spell].sp_know - knw)
-#define percdecrnknow(spell, knw)        spl_book[spell].sp_know = max(0, spl_book[spell].sp_know - (KEEN*knw)/100)
-
-#define spellev(spell)		spl_book[spell].sp_lev
-#define spellname(spell)	OBJ_NAME(objects[spellid(spell)])
-#define spellet(spell)	\
-	((char)((spell < 26) ? ('a' + spell) : ('A' + spell - 26)))
-
 STATIC_PTR int NDECL(purifying_blast);
 STATIC_PTR int NDECL(stargate);
 STATIC_PTR struct permonst * NDECL(choose_crystal_summon);
@@ -2038,7 +2028,9 @@ purifying_blast()
 		}
 	}
 	/* then shoot a fireball */
-	basiczap(&zapdata, AD_FIRE, ZAP_SPELL, d(10, dsize));
+	basiczap(&zapdata, AD_FIRE, ZAP_SPELL, 0);
+	zapdata.damn = 10;
+	zapdata.damd = dsize;
 	zapdata.explosive = 1; zapdata.directly_hits = 0; zapdata.affects_floor = 0; zapdata.single_target = 1; zapdata.no_hit_wall = 1;
 	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 25, &zapdata);
 
@@ -2159,7 +2151,10 @@ spiriteffects(power, atme)
 		case PWR_FIRE_BREATH:{
 			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
 			struct zapdata zapdata = { 0 };
-			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, rn1(7, 7), basiczap(&zapdata, AD_FIRE, ZAP_BREATH, d(5, dsize)));
+			basiczap(&zapdata, AD_FIRE, ZAP_BREATH, 0);
+			zapdata.damn = 5;
+			zapdata.damd = dsize;
+			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, rn1(7, 7), &zapdata);
 		}break;
 		case PWR_TRANSDIMENSIONAL_RAY:{
 			int dmg;
@@ -6014,6 +6009,9 @@ int spell;
 
 	if(spellid(spell) == urole.spelspec)
 		splcaster += urole.spelsbon;
+
+	if(spellid(spell) == urace.spelspec)
+		splcaster += urace.spelsbon;
 
 	/* `healing spell' bonus */
 	if(emergency_spell(spell)){

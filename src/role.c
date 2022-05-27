@@ -728,7 +728,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  0, 2,  1, 0 },	/* Hit points */
 	{  1, 0,  2, 0,  2, 0 },		/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_ABJURATION, -20
 },
 {	"clockwork automaton", "automatic", "clockwork-kind", "Clk",
 	{0, 0},
@@ -741,7 +742,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  3, 0,  3, 0,  3, 0 },	/* Hit points */
 	{  3, 0,  3, 0,  3, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_WIZARD_LOCK, -1000
 },
 {	"Chiropteran", "Chiropteric", "Chiropteran-hood", "Bat",
 	{0, 0},
@@ -754,7 +756,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  5, 0,  1, 3,  1, 2 },	/* Hit points */
 	{  0, 0,  0, 0,  0, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_MAGIC_MAPPING, -15
 },
 {	"dwarf", "dwarven", "dwarvenkind", "Dwa",
 	{0, 0},
@@ -767,7 +770,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  4, 0,  0, 3,  2, 0 },	/* Hit points */
 	{  0, 0,  0, 0,  0, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_DIG, -15
 },
 {	"Drow", "droven", "drovenkind", "Dro",
 	{"hedrow", "drow"},
@@ -780,7 +784,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  8, 0,  3, 0,  1, 0 },	/* Hit points */
 	{  8, 0,  3, 0,  3, 0 },	/* Energy */
-	NO_NIGHTVISION
+	NO_NIGHTVISION,
+	SPE_SLEEP, -5
 },
 {	"elf", "elven", "elvenkind", "Elf",
 	{"elf", "elf-maid"},
@@ -793,7 +798,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{   7, 0,  3, 0,  1, 0 },	/* Hit points */
 	{   7, 0,  3, 0,  3, 0 },	/* Energy */
-	NIGHTVISION3
+	NIGHTVISION3,
+	SPE_REMOVE_CURSE, -10
 },
 {	"etherealoid", "etherealoidic", "etherealoid-kind", "Eth",
 	{0,0},
@@ -819,7 +825,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  1, 0,  0, 1,  0, 0 },	/* Hit points */
 	{ 12, 0,  4, 0,  2, 2 },	/* Energy */
-	NIGHTVISION2
+	NIGHTVISION2,
+	SPE_INVISIBILITY, -10
 },
 {	"Half-dragon", "Half-dragon", "Half-dragonhood", "Hlf",
 	{0, 0},
@@ -832,7 +839,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  4, 0,  0, 4,  2, 0 },	/* Hit points */
 	{  4, 0,  0, 4,  2, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_DETECT_TREASURE, -10
 },
 {	"incantifier", "incantifier", "wanterkind", "Inc",
 	{0, 0},
@@ -847,6 +855,7 @@ const struct Race races[] = {
 	{  2, 0,  0, 2,  0, 1 },	/* Hit points */
 	{  0, 0,  100, 0, 100, 0 },		/* Energy */
 	NORMALNIGHTVIS
+	//Note: Bonus to all spells.
 },
 {	"Inheritor", "human", "humanity", "Inh",
 	{"man", "woman"},
@@ -860,7 +869,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  0, 2,  1, 0 },	/* Hit points */
 	{  1, 0,  2, 0,  2, 0 },		/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_ABJURATION, -20
 },
 {	"orc", "orcish", "orcdom", "Orc",
 	{0, 0},
@@ -873,7 +883,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  1, 0,  0, 1,  0, 3 },	/* Hit points */
 	{  1, 0,  1, 0,  1, 0 },	/* Energy */
-	NIGHTVISION2
+	NIGHTVISION2,
+	SPE_CANCELLATION, -15
 },
 {	"salamander", "salamandic", "sala-broship", "Sal",
 	{0, 0},
@@ -899,7 +910,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  3, 0,  0, 3,  2, 0 },	/* Hit points */
 	{  3, 0,  4, 0,  4, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_DRAIN_LIFE, -5
 },
 {	"yuki-onna", "yuki-onnic", "feyhood", "Swn",
 	{0, 0},
@@ -912,7 +924,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  1, 0,  0, 1 },	/* Hit points */
 	{  2, 0,  3, 0,  3, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_CHARM_MONSTER, -15
 },
 /* Array terminator */
 { 0, 0, 0, 0, 0 }};
@@ -2793,6 +2806,14 @@ check_drunkard_trophy()
 {
 	if(u.udrunken >= 90)
 		achieve.trophies |= TOTAL_DRUNK;
+}
+#endif
+
+#ifdef RECORD_ACHIEVE
+void
+give_bokrug_trophy()
+{
+	achieve.trophies |= BOKRUG_QUEST;
 }
 #endif
 

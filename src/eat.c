@@ -279,7 +279,7 @@ satiate_uhunger()
 		u.uen = min(u.uen+400, u.uenmax*.55);
 		newuhs(TRUE);
 	} else {
-		if(u.uhunger > min(u.uhunger+400, u.uhungermax*.55))
+		if(u.uhunger > u.uhungermax*.55)
 			return FALSE;
 		u.uhunger = u.uhungermax*.55;
 		u.uhs = NOT_HUNGRY;
@@ -2052,7 +2052,7 @@ struct obj *otmp;
 		     * alternative form's food! 
 		     */
 		    pline("That tripe ration was surprisingly good!");
-		else if (maybe_polyd(is_orc(youmonst.data), Race_if(PM_ORC)))
+		else if (maybe_polyd(is_orc(youmonst.data), Race_if(PM_ORC)) || Race_if(PM_HALF_DRAGON))
 		    pline(Hallucination ? "Tastes great! Less filling!" :
 			  "Mmm, tripe... not bad!");
 		else {

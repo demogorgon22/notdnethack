@@ -924,7 +924,11 @@ void
 Amulet_off()
 {
     takeoff_mask &= ~W_AMUL;
-
+	
+	if(!uamul){
+		impossible("Amulet_off() was called, but no amulet is worn.");
+		return;
+	}
     switch(uamul->otyp) {
 	case AMULET_OF_ESP:
 		/* need to update ability before calling see_monsters() */
@@ -5084,9 +5088,9 @@ struct obj *wep;
 			continue;
 		
 		if(arti_is_prop(wep, ARTI_BLOODTHRST)){
-			if(	(youagr && (mdef->mpeaceful && !roll_generic_madness()))
-				|| (youdef && (magr->mpeaceful && !roll_generic_madness()))
-				|| (!youagr && !youdef && (magr->mpeaceful != mdef->mpeaceful))
+			if(	(youagr && (mdef->mpeaceful && !roll_generic_madness(TRUE)))
+				|| (youdef && (magr->mpeaceful && !roll_generic_madness(TRUE)))
+				|| (!youagr && !youdef && (magr->mpeaceful == mdef->mpeaceful))
 			)
 				continue;
 			if(!rn2(4))

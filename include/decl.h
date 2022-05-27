@@ -846,7 +846,8 @@ struct u_achieve {
 #define	FEM_DRA_NOB_QUEST	0x1L << 45
 #define	DEVIL_VAULT	0x1L << 46
 #define	DEMON_VAULT	0x1L << 47
-#define ACHIEVE_NUMBER	59
+#define	BOKRUG_QUEST	0x1L << 48
+#define ACHIEVE_NUMBER	60
 };
 
 E struct u_achieve achieve;

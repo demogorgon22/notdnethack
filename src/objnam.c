@@ -868,7 +868,12 @@ boolean dofull;
 				Strcat(buf, "stale ");
 #endif
 		}
-
+		break;
+	case TILE_CLASS:
+			if ((obj->otyp == APHANACTONAN_RECORD || obj->otyp == APHANACTONAN_ARCHIVE) && !objects[obj->otyp].oc_name_known){
+				Strcat(buf, "inscribed ");
+			}
+		break;
 	}
 
 }
@@ -1366,6 +1371,15 @@ char *buf;
 		else if(u.uinsight >= 5)
 			Strcat(buf, "spinning ");
 	}
+	if (is_mercy_blade(obj)){
+		//Note: Brain fluid
+		if(u.uinsight >= 50)
+			Strcat(buf, "sticky ");
+		if(u.uinsight >= 25)
+			Strcat(buf, "sidereal ");
+		else if(!u.veil)
+			Strcat(buf, "twinkling ");
+	}
 }
 
 static void
@@ -1456,11 +1470,13 @@ boolean adjective;
 	case CHITIN:
 		return "chitin";
 	case BONE:
-		return "bone";
+		return obj->otyp == MAGIC_TORCH ? "ivory" : "bone";
 	case SHELL_MAT:
 		return "shell";
 	case DRAGON_HIDE:
-		/* for some reason, this is dragonhide? */
+		/* for some reason, this is dragonhide?
+		  * Chris: I used "dragonhide" here to mean "generic special leather"
+		 */
 		if (obj->otyp == LEO_NEMAEUS_HIDE)
 			return "lionhide";
 		if (obj->oartifact == ART_XIUHCOATL)
@@ -1510,7 +1526,9 @@ boolean adjective;
 	case SILVER:
 		return "silver";
 	case GOLD:
-		return (adjective ? "golden" : "gold");
+		if(obj->otyp == APHANACTONAN_RECORD || obj->otyp == APHANACTONAN_ARCHIVE)
+			return (adjective ? "golden-red" : "red gold");
+		else return (adjective ? "golden" : "gold");
 	case PLATINUM:
 		return "platinum";
 	case LEAD:
@@ -1582,7 +1600,7 @@ boolean adjective;
 		break;
 	case OBSIDIAN_MT:
 		return "obsidian";
-		case SALT:
+	case SALT:
 		return "salt";
 	case SHADOWSTEEL:
 		return (adjective ? "shadowsteel" : "corporeal darkness");
@@ -1613,6 +1631,9 @@ char *buf;
 			return;
 	} else if(obj->oartifact == ART_IBITE_ARM && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
 		//Ibite arm descriptor includes "flabby," which is both a material and an appearance :-/
+		return;
+	} else if(obj->oartifact == ART_STAR_OF_HYPERNOTUS && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
+		//Star of Hypernotus plays "fast and loose" with the material - and the material affects the final word rather than being a prefix
 		return;
 	} else {
 		/*Special case: circlets should always show their material, but oc_showmat is tied to otyp, not appearance */
@@ -1755,7 +1776,8 @@ boolean with_price;
 		if (strstri(oart->desc, "%s")) {
 			getting_obj_base_desc = TRUE;
 			char * buf2 = nextobuf();
-			Sprintf(buf2, oart->desc, xname(obj));
+			if (obj->oartifact == ART_STAR_OF_HYPERNOTUS) Sprintf(buf2, oart->desc, (objects[obj->ovar1].oc_name_known) ? OBJ_NAME(objects[obj->ovar1]) : "stone");
+			else Sprintf(buf2, oart->desc, xname(obj));
 			Strcat(buf, buf2);
 			getting_obj_base_desc = FALSE;
 		}
@@ -1772,7 +1794,7 @@ boolean with_price;
 		static const char standardized[] = { RING_CLASS, AMULET_CLASS, POTION_CLASS, SCROLL_CLASS,
 									SPBOOK_CLASS, WAND_CLASS, GEM_CLASS, TILE_CLASS, 0 };
 
-		if (index(standardized, (char)obj->oclass)) {
+		if (index(standardized, (char)obj->oclass) && obj->otyp != APHANACTONAN_RECORD && obj->otyp != APHANACTONAN_ARCHIVE) {
 			if (!bn)
 				impossible("otyp %d doesn't have a when-blind name, and is assumed to!", typ);
 			if (!obj->dknown) {
@@ -2170,6 +2192,7 @@ weapon:
 			}
 			else if (obj->otyp == SHADOWLANDER_S_TORCH
 				|| obj->otyp == TORCH || obj->otyp == SUNROD
+				|| obj->otyp == MAGIC_TORCH
 				) {
 				if (obj->lamplit)
 					Strcat(buf, " (lit)");
@@ -2248,6 +2271,7 @@ weapon:
 			else if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
 				|| obj->otyp == LANTERN || Is_candle(obj) || obj->otyp == SHADOWLANDER_S_TORCH
 				|| obj->otyp == TORCH || obj->otyp == SUNROD
+				|| obj->otyp == MAGIC_TORCH
 				) {
 				if (obj->lamplit)
 					Strcat(buf, " (lit)");
@@ -4319,7 +4343,7 @@ int wishflags;
 		} else if (!strncmpi(bp, "rustling ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_LESSER_PSIOW);
 
-		} else if ((!strncmpi(bp, "deep ", l=5) && strncmpi(bp, "deep sea", 8)) || !strncmpi(bp, "mumbling ", l=9)) {
+		} else if ((!strncmpi(bp, "deep ", l=5) && strncmpi(bp, "deep sea", 8) && strncmpi(bp, "deep dragon", 11)) || !strncmpi(bp, "mumbling ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_DEEPW);
 
 		} else if (!strncmpi(bp, "sizzling ", l=9)) {

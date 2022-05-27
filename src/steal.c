@@ -167,7 +167,7 @@ stealarm(VOID_ARGS)
 			if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 			if(roll_madness(MAD_TALONS)){
 				You("panic after having your property stolen!!");
-				nomul(-1*rnd(6),"panic");
+				HPanicking += 1+rnd(6);
 			}
 		        break;
 		    }
@@ -447,7 +447,7 @@ gotobj:
 	}
 	if(roll_madness(MAD_TALONS)){
 		You("panic after having your property stolen!");
-		nomul(-1*rnd(6),"panic");
+		HPanicking += 1+rnd(6);
 	}
 	//mtmp died, probably from taking a petrifying corpse
 	return((mtmp->mhp <= 0) ? -1 : (multi < 0) ? 0 : 1);
