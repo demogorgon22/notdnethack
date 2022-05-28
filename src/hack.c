@@ -1303,6 +1303,10 @@ domove()
 			int result = 0;
 			struct obj *otmp;
 			attk = mon_get_attacktype(&youmonst, AT_WEAP, &attkbuff);
+			if(!attk){
+				impossible("Cclaw attack attempt failed to find AT_WEAP attack on player attack chain.");
+				return;
+			}
 			otmp = uwep;
 			do{
 				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */

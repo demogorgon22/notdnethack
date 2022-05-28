@@ -971,8 +971,16 @@ register struct mkroom *sroom;
 
 	if (!mtmp)
 		return(FALSE);
-	else
-		return((boolean)(inhishop(mtmp)));
+	struct monst *curmon = fmon;
+	for(; curmon; curmon = curmon->nmon)
+		if(curmon == mtmp)
+			break;
+	if(!curmon){
+		impossible("Bad resident pointer found on tended shop room call, zeroing it out.");
+		sroom->resident = mtmp = (struct monst *)0;
+		return FALSE;
+	}
+	return((boolean)(inhishop(mtmp)));
 }
 
 STATIC_OVL struct bill_x *

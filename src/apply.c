@@ -4573,7 +4573,10 @@ use_crook (obj)
 	    end_menu(tmpwin, "Aim for what?");
 	    if (select_menu(tmpwin, PICK_ONE, &selected) > 0)
 			tohit = selected[0].item.a_int - 1;
-		else return 0;
+		else {
+	    		destroy_nhwindow(tmpwin);
+			return 0;
+		}
 	    free((genericptr_t)selected);
 	    destroy_nhwindow(tmpwin);
 	}
