@@ -363,6 +363,10 @@ Dungeon Changes
 				Ait Crystal - Shocking, 2x lightning damage
 				Earth Crystal - Flaying
 				Black Crystal - Sparkling, 2x magic damage
+	Add Nenya to Grue level elvenking item pile
+		Waterproof + water walking when worn
+		Detect orcs when carried
+		Random silver ring base item
 General changes
 	Red dragon scale based armor now grants flying.
 	Upgrade kits now work on tools.

@@ -3729,15 +3729,13 @@ A("Narya",								RIN_TELEPORT_CONTROL,	/* gold */			(const char *)0,
 	FIRE_BLAST, NOFLAG
 	),
 
-/* TODO water walking */
-/* TODO protect inventory from water damage */
 /* TODO name by appearance */
 A("Nenya",								RIN_TELEPORTATION,	/* silver */			(const char *)0,
 	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, PM_ELF, NO_TIER, (ARTG_NOGEN|ARTG_NOWISH),
 	MONS(vsMA(MA_ORC)),
 	NO_ATTK(), NOFLAG,
-	PROPS(), NOFLAG,
+	PROPS(WATERPROOF,WWALKING), NOFLAG,
 	PROPS(WARN_OF_MON), NOFLAG,
 	NOINVOKE, NOFLAG
 	),
