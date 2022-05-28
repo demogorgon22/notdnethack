@@ -1303,14 +1303,14 @@ domove()
 			int result = 0;
 			struct obj *otmp;
 			attk = mon_get_attacktype(&youmonst, AT_WEAP, &attkbuff);
-			if(!attk){
-				impossible("Cclaw attack attempt failed to find AT_WEAP attack on player attack chain.");
-				return;
-			}
 			otmp = uwep;
 			do{
 				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && otmp->otyp == CLUB && check_oprop(otmp, OPROP_CCLAW)){
+					if(!attk){
+						impossible("Cclaw attack attempt failed to find AT_WEAP attack on player attack chain.");
+						return;
+					}
 					result |= hit_with_cclaw(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
