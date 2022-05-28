@@ -4759,14 +4759,12 @@ int x, y;
 			if(!Shattering)
 				You_hear("a great fracturing sound!");
 			if(!Blind && cansee(x, y)){
-				if(!(u.specialSealsKnown&SEAL_NUDZIRATH)){
+				if(!(u.specialSealsKnown&SEAL_NUDZIRATH) && !Role_if(PM_ANACHRONOUNBINDER)){
 					/*Note: this is intended to work for any PC, not just Binders */
-					if(!(u.specialSealsKnown&SEAL_NUDZIRATH)){
-						pline("The shattered fragments form part of a seal.");
-						pline("In fact, you realize that all cracked and broken mirrors everywhere together are working towards writing this seal.");
-						pline("With that realization comes knowledge of the seal's final form!");
-						u.specialSealsKnown |= SEAL_NUDZIRATH;
-					}
+					pline("The shattered fragments form part of a seal.");
+					pline("In fact, you realize that all cracked and broken mirrors everywhere together are working towards writing this seal.");
+					pline("With that realization comes knowledge of the seal's final form!");
+					u.specialSealsKnown |= SEAL_NUDZIRATH;
 				}
 			}
 			incr_itimeout(&Shattering, increment);
