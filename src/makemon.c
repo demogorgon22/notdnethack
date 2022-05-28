@@ -5411,6 +5411,11 @@ boolean goodequip;
 				(void) mongets(mtmp, rnd_attack_potion(mtmp), mkobjflags);
 				
 				if(mm == PM_MASTER_MIND_FLAYER || !rn2(3)) mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
+				
+				if(mm == PM_MASTER_MIND_FLAYER && !rn2(20))
+					 mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
+				if(mm == PM_MIND_FLAYER && !rn2(60))
+					 mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 			} else if(Infuture){
 				if(mm == PM_MASTER_MIND_FLAYER){
 					struct obj *gem;
@@ -5466,6 +5471,8 @@ boolean goodequip;
 					(void) mpickobj(mtmp, otmp);
 					
 					mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
+					if(!rn2(3))
+						mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 				} else {
 					struct obj *gem;
 					give_mintrinsic(mtmp, POISON_RES);
@@ -5495,6 +5502,8 @@ boolean goodequip;
 					otmp->blessed = FALSE;
 					otmp->cursed = TRUE;
 					(void) mpickobj(mtmp, otmp);
+					if(!rn2(30))
+						mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 				}
 			} else {
 				mongets(mtmp, QUARTERSTAFF, mkobjflags);
@@ -5504,6 +5513,8 @@ boolean goodequip;
 				mongets(mtmp, LEATHER_HELM, mkobjflags);
 				if(mm == PM_MASTER_MIND_FLAYER && !rn2(3)) mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
 				else if(mm == PM_MIND_FLAYER && !rn2(20)) mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
+				if(mm == PM_MASTER_MIND_FLAYER && !rn2(90)) mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
+				else if(mm == PM_MIND_FLAYER && !rn2(120)) mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 			}
 		} else if(mm == PM_GITHYANKI_PIRATE){
 			if(!rn2(40)){
@@ -11388,6 +11399,8 @@ struct monst * mon;
 	
 	if(Infuture && !peaceful)
 		out_faction = ILSENSINE_FACTION;
+	else if(is_mind_flayer(mon->data))
+		out_faction = ILSENSINE_FACTION;
 	else if(In_quest(&u.uz) && Role_if(PM_EXILE) && !peaceful)
 		out_faction = SEROPAENES_FACTION;
 	else if((In_quest(&u.uz) && Role_if(PM_MADMAN) && !peaceful)
@@ -11688,6 +11701,7 @@ int faction;
 		add_mx(mtmp, MX_ESUM);
 		mtmp->mextra_p->esum_p->summoner = (struct monst *)0;
 		mtmp->mextra_p->esum_p->sm_id = 0;
+		mtmp->mextra_p->esum_p->sm_o_id = 0;
 		mtmp->mextra_p->esum_p->summonstr = 0;
 		mtmp->mextra_p->esum_p->staleptr = 0;
 		mtmp->mextra_p->esum_p->permanent = 1;

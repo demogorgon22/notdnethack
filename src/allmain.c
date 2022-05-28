@@ -1685,6 +1685,9 @@ moveloop()
 				/* Loyal monsters slowly recover tameness */
 				if(mtmp->mtame && mtmp->mtame < 5 && get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->loyal && (!moves%100))
 					mtmp->mtame++;
+				/* Dominated monsters stay tame */
+				if(mtmp->mtame && get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->dominated)
+					mtmp->mtame = 100;
 				/*Tannin eggs may hatch, monster may die*/
 				if(mtmp->mtaneggs){
 					for(int i = mtmp->mtaneggs; i > 0; i--) if(!rn2(6)){
@@ -4142,10 +4145,10 @@ cthulhu_mind_blast()
 	int nd = 1;
 	if(on_level(&rlyeh_level,&u.uz))
 		nd = 5;
-	if (Unblind_telepat || (Blind_telepat && rn2(2)) || !rn2(10)) {
+	if (Unblind_telepat || (Blind_telepat && Blind) || (Blind_telepat && rn2(2)) || !rn2(10)) {
 		int dmg;
 		pline("It locks on to your %s!",
-			Unblind_telepat ? "telepathy" :
+			(Unblind_telepat || (Blind_telepat && Blind)) ? "telepathy" :
 			Blind_telepat ? "latent telepathy" : "mind");
 		dmg = d(nd,15);
 		if(Half_spell_damage) dmg = (dmg+1) / 2;
