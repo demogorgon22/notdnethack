@@ -2381,7 +2381,10 @@ karemade:
 			/* Unseen monsters may take action */
 			for(mtmp = migrating_mons; mtmp; mtmp = nxtmon){
 				nxtmon = mtmp->nmon;
-				unseen_actions(mtmp); //May cause mtmp to be removed from the migrating chain
+				if(mtmp->mux == u.uz.dnum && mtmp->muy == u.uz.dlevel && mtmp->marriving)
+					mon_arrive_on_level(mtmp);
+				else
+					unseen_actions(mtmp); //May cause mtmp to be removed from the migrating chain
 			}
 			
 			/* Item attacks */
@@ -4730,7 +4733,7 @@ struct monst *mon;
 				for(mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
 					mtmp2 = mtmp->nmon;
 					if (mtmp == mon) {
-						if(mtmp == migrating_mons)
+						if(!mtmp0)
 							migrating_mons = mtmp->nmon;
 						else
 							mtmp0->nmon = mtmp->nmon;
@@ -4765,7 +4768,7 @@ goat_sacrifice(mon)
 struct monst *mon;
 {
 	struct obj *otmp, *otmp2;
-	register struct monst *mtmp, *mtmp0 = 0, *mtmp2;
+	struct monst *mtmp, *mtmp0 = 0, *mtmp2;
 	xchar xlocale, ylocale, xyloc;
 	xyloc	= mon->mtrack[0].x;
 	xlocale = mon->mtrack[1].x;
@@ -4862,7 +4865,7 @@ palid_stranger(mon)
 struct monst *mon;
 {
 	struct obj *otmp, *otmp2;
-	register struct monst *mtmp, *mtmp0 = 0, *mtmp2;
+	struct monst *mtmp, *mtmp0 = 0, *mtmp2;
 	xchar xlocale, ylocale, xyloc;
 	xyloc	= mon->mtrack[0].x;
 	xlocale = mon->mtrack[1].x;
@@ -4891,7 +4894,7 @@ struct monst *mon;
 				mtmp2 = mtmp->nmon;
 				if (mtmp == mon) {
 					mtmp->mtrack[0].x = MIGR_RANDOM;
-					if(mtmp == migrating_mons)
+					if(!mtmp0)
 						migrating_mons = mtmp->nmon;
 					else
 						mtmp0->nmon = mtmp->nmon;

@@ -2813,7 +2813,7 @@ coord *cc;
 
 	mtmp = montraits(obj, cc);
 	if(mtmp){
-		obj->age = monstermoves + 100L + rn2(100L);
+		obj->age = monstermoves + 1000L + rn2(1000L);
 		/* if skull has been named, give same name to the monster */
 		if (get_ox(obj, OX_ENAM))
 			mtmp = christen_monst(mtmp, ONAME(obj));
@@ -2823,6 +2823,21 @@ coord *cc;
 		for(oinv = obj->cobj; oinv; oinv = oinv->nobj){
 			otmp = duplicate_obj(oinv);
 			obj_extract_self(otmp);
+			if(otmp->oclass == SCROLL_CLASS){
+				otmp = poly_obj(otmp, SCR_BLANK_PAPER);
+			}
+			if(otmp->oclass == SPBOOK_CLASS){
+				otmp = poly_obj(otmp, SPE_BLANK_PAPER);
+			}
+			if(!is_ammo(otmp)){
+				if(otmp->quan > 3)
+					otmp->quan = rnd(3);
+				fix_object(otmp);
+			}
+			if(otmp->otyp == MAGIC_MARKER){
+				otmp->recharged = max(1, otmp->recharged);
+				otmp->spe = 0;
+			}
 			mpickobj(mtmp,otmp);
 		}
 		m_dowear(mtmp, TRUE);
@@ -2831,7 +2846,7 @@ coord *cc;
 			mtmp = tamedog_core(mtmp, (struct obj *)0, TRUE);
 			if(mtmp && EDOG(mtmp)){
 				EDOG(mtmp)->dominated = TRUE;
-				EDOG(mtmp)->hungrytime = monstermoves + 3000;
+				EDOG(mtmp)->hungrytime = monstermoves + 4500;
 			}
 		}
 		else {
