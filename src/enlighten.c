@@ -2808,6 +2808,17 @@ boolean dumping;
 	CHECK_ACHIEVE(QUITE_MAD,"Quite Mad: Suffered six madnesses")
 	CHECK_ACHIEVE(TOTAL_DRUNK,"Booze Hound")
 	CHECK_ACHIEVE(BOKRUG_QUEST,"Detestable gods: Completed Bokrug's ascension ritual")
+	if(achieve.get_kroo)   put_enl("Kroo's Bling (Acquire the dismal swamp completion prize)");
+	if(achieve.get_poplar) put_enl("Punishing Poplars (Acquire the black forest completion prize)");
+	if(achieve.get_abominable) put_enl("Snowplow (Acquire the ice caves completion prize)Snowplow (Acquire the ice caves completion prize)");
+	if(achieve.get_gilly) put_enl("Gillywhatnow (Acquire the archipelago completion prize)");
+	if(achieve.did_unknown) put_enl("An Unknown Ritual (Perform the ritual of an unknown god)");
+	if(achieve.killed_illurien) put_enl("Angry Librarian (Kill Illurien of the Myriad Glimpses)");
+	if(achieve.get_skey && achieve.get_ckey)   put_enl("Duo of Pain (Acquire both the silver key and the cage key)");
+	if(achieve.used_smith) put_enl("If The Shoe Fits... (Pay for an armorsmith service)");
+	if(achieve.max_punch) put_enl("Not Pulling Punches (Land a punch with all 4 offensive mystic powers active)");
+	if(achieve.garnet_spear) put_enl("Garnet Rod (Land a hit with a garnet tipped spear)");
+	if(achieve.inked_up) put_enl("Inked Up (Get a tattoo in The Sigil from Fell)");
 		
 #undef	CHECK_ACHIEVE
 	}
