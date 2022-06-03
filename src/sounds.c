@@ -1126,7 +1126,7 @@ boolean chatting;
 			default:
 			break;
 		}
-		//if(made_purchase) achieve.used_smith = 1;
+		if(made_purchase) achieve.used_smith = 1;
 		break;
 	}
 	case MS_PORTAL:{
