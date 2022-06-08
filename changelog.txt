@@ -94,6 +94,7 @@ Etherealoid race
 	Does not hunger
 	Cannot eat
 	Cannot wear armor
+		Can hold a shield
 	Flys
 	Receives displacement at xlvl 7
 	Gains +1 ac per experience level

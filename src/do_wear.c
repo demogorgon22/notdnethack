@@ -1646,7 +1646,7 @@ boolean noisy;
 		return 0;
     }
 	
-	if(is_whirly(youracedata) || noncorporeal(youracedata)){
+	if((is_whirly(youracedata) || noncorporeal(youracedata)) && !(!cantwield(youracedata) && is_shield(otmp))){
 		if(noisy) Your("body can't support clothing.");
 		return 0;
 	}
