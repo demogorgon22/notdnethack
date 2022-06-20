@@ -411,7 +411,7 @@ register struct monst *mtmp;
 			obj = oname(obj, artiname(ART_THOUGHT));		
 			obj->blessed = FALSE;
 			obj->cursed = FALSE;
-			obj->spe = 0;
+			obj->spe = 7;
 			newsym(x,y);
 		goto default_1;
 	    case PM_MUNINN:
@@ -419,7 +419,7 @@ register struct monst *mtmp;
 			obj = oname(obj, artiname(ART_MEMORY));		
 			obj->blessed = FALSE;
 			obj->cursed = FALSE;
-			obj->spe = 0;
+			obj->spe = 7;
 			newsym(x,y);
 		goto default_1;
 	    case PM_SIMURGH:
