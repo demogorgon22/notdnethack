@@ -249,7 +249,7 @@ typedef struct branch {
 #define In_dismalswamp(x)	((x)->dnum == dismalswamp_dnum)
 #define In_archipelago(x)	((x)->dnum == archipelago_dnum)
 #define In_adventure_branch(x)	(In_icecaves(x) || In_dismalswamp(x) || In_blackforest(x) || \
-					In_mines(x) || In_archipelago(x))
+					(In_mines(x) && !Is_mineend_level(x)) || In_archipelago(x))
 #define In_tower(x)		((x)->dnum == tower_dnum)
 #define In_sea(x)		((x)->dnum == sea_dnum)
 #define Is_sunsea(x)	(In_sea(x) && dungeon_topology.sea_variant == SUNLESS_SEA_LEVEL)

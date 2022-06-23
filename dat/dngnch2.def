@@ -26,6 +26,7 @@ BRANCH:		"The Archipelago" @ (4, 0) portal
 BRANCH:		"Nowhere" @ (4, 0) portal
 LEVEL:		"oracle" "O" @ (5, 5)
 CHAINBRANCH:	"Vlad's Tower" "oracle" + (0,0) no_up up
+CHAINBRANCH:	"The Collapsed Mineshaft" "oracle" + (0,0)
 LEVALIGN:	neutral
 CHAINBRANCH:	"Lokoban" "oracle" + (1, 0) up
 CHAINLEVEL:	"qstlb" "none" "oracle" + (6, 2)
@@ -115,6 +116,11 @@ DESCRIPTION:    mazelike
 LEVEL:          "nowhere" "none" @ (1, 0)
 
 
+DUNGEON:	"The Collapsed Mineshaft" "Z" (1, 0)
+ALIGNMENT:	lawful
+DESCRIPTION:	mazelike
+RNDLEVEL:		"minend"  "none" @ (1, 0) 4
+
 #
 #	The Mines of the Gnomes of Zurich.
 #
@@ -123,7 +129,7 @@ ALIGNMENT:	lawful
 DESCRIPTION:	mazelike
 RNDLEVEL:	"minetn" "T" @ (4, 1) 7
 LEVELDESC:	town
-RNDLEVEL:	"minend" "E" @ (-1, 0) 4
+LEVEL:	"mineking" "E" @ (-1, 0)
 ENTRY:          2
 
 #

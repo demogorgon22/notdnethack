@@ -1464,7 +1464,7 @@ boolean
 In_mines_quest(lev)	/* are you in the mines, or a quest dungeon 'located' in the mines? */
 d_level *lev;
 {
-	return((boolean)(lev->dnum == mines_dnum || (Role_if(PM_RANGER) && Race_if(PM_GNOME) && lev->dnum == quest_dnum)));
+	return((boolean)(lev->dnum == mines_dnum || (Role_if(PM_RANGER) && Race_if(PM_GNOME) && lev->dnum == quest_dnum) || Is_mineend_level(&u.uz)));
 }
 
 #endif /* OVL0 */
@@ -1545,7 +1545,7 @@ boolean
 In_mines(lev)	/* are you in the mines dungeon? */
 d_level	*lev;
 {
-	return((boolean)(lev->dnum == mines_dnum));
+	return((boolean)(lev->dnum == mines_dnum || Is_mineend_level(&u.uz)));
 }
 
 boolean
