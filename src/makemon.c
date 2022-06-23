@@ -4551,6 +4551,17 @@ boolean goodequip;
 					(void) mongets(mtmp, AKLYS, mkobjflags);
 				break;
 			}
+			if(mm == PM_RAGGO_THE_GNOME_KING){
+				(void) mongets(mtmp, SHORT_SWORD, mkobjflags);
+				(void) mongets(mtmp, find_gcirclet(), mkobjflags);
+				otmp = mksobj(ROCK, mkobjflags|MKOBJ_NOINIT);
+				otmp = oname(otmp, artiname(ART_RAGGO_S_ROCK));
+				(void) mpickobj(mtmp, otmp);
+
+				//Raggo is Ruggo's crazy brother
+				mtmp->mcrazed = TRUE;
+		
+			}
 		} else {
 			if(mm == PM_CLOCKWORK_AUTOMATON){
 				(void) mongets(mtmp, ARCHAIC_HELM, mkobjflags);
