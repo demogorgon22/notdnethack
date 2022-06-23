@@ -266,6 +266,8 @@ Dungeon Changes
 				Fight the tulip poplar for the poplar punisher
 					+2d6 dmg quarterstaff
 			Gnomish Mines
+				Fight Raggo the Gnome King, Ruggo's crazed brother 
+				for his lucky pet rock
 			Dismal Swamp
 				Fight Kroo the Kobold King and his court
 					very fast speed ring of poison
@@ -275,6 +277,7 @@ Dungeon Changes
 					emerald with slotless magical
 					breathing and swimming
 		Go play and find out!
+	Collapsed mineshaft branch added, random mines end level accessible from oracle level
 	Replace sokoban with lokobanv2
 		Single soko level with a few crates, no pits, and a lokoban pinata
 		Lokoban pinata 

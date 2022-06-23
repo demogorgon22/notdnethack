@@ -1164,6 +1164,7 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(BOKRUG_QUEST,"bokrug_ascension")
 	if(achievesWritten > 0) Sprintf(eos(achieveXbuff), ",");
 	if(achieve.get_kroo)   Sprintf(eos(achieveXbuff), "%s,", "get_kroo");
+	if(achieve.get_raggo)   Sprintf(eos(achieveXbuff), "%s,", "get_raggo");
 	if(achieve.get_poplar)   Sprintf(eos(achieveXbuff), "%s,", "get_poplar");
 	if(achieve.get_abominable)   Sprintf(eos(achieveXbuff), "%s,", "get_abominable");
 	if(achieve.get_gilly)   Sprintf(eos(achieveXbuff), "%s,", "get_gilly");

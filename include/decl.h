@@ -787,6 +787,7 @@ struct u_achieve {
 		Bitfield(killed_demogorgon,1);		/* Bragging rights */
 		unsigned long long	trophies;	/* Flags for Junethack trophies */
 	Bitfield(get_kroo,1);        /* ring of kroo get*/
+	Bitfield(get_raggo,1);        /* raggo's rock get*/
         Bitfield(get_gilly,1);        /* gillystone get*/
         Bitfield(get_abominable,1);        /* abominable cloak get*/
         Bitfield(get_poplar,1);        /* poplar punisher get*/

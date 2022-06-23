@@ -2809,6 +2809,7 @@ boolean dumping;
 	CHECK_ACHIEVE(TOTAL_DRUNK,"Booze Hound")
 	CHECK_ACHIEVE(BOKRUG_QUEST,"Detestable gods: Completed Bokrug's ascension ritual")
 	if(achieve.get_kroo)   put_enl("Kroo's Bling (Acquire the dismal swamp completion prize)");
+	if(achieve.get_raggo)   put_enl("Pet Rock (Acquire the gnomish mines completion prize)");
 	if(achieve.get_poplar) put_enl("Punishing Poplars (Acquire the black forest completion prize)");
 	if(achieve.get_abominable) put_enl("Snowplow (Acquire the ice caves completion prize)Snowplow (Acquire the ice caves completion prize)");
 	if(achieve.get_gilly) put_enl("Gillywhatnow (Acquire the archipelago completion prize)");

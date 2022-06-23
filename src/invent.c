@@ -327,6 +327,7 @@ struct obj *obj;
 			obj->oartifact == ART_GILLYSTONE ||
 			obj->oartifact == ART_POPLAR_PUNISHER ||
 			obj->oartifact == ART_ABOMINABLE_VEIL ||
+			obj->oartifact == ART_RAGGO_S_ROCK ||
 			obj->oartifact == ART_KROO_S_RING) {
 			switch(obj->oartifact){
 			case ART_GILLYSTONE: 
@@ -340,6 +341,9 @@ struct obj *obj;
 				break;
 			case ART_KROO_S_RING: 
 				achieve.get_kroo = 1;
+				break;
+			case ART_RAGGO_S_ROCK: 
+				achieve.get_raggo = 1;
 				break;
 			default:
 				achieve.get_luckstone = 1;
