@@ -283,7 +283,7 @@ struct toptenentry *tt;
 
   /* Log all of the data found in the regular logfile */
   (void)fprintf(rfile,
-                "version=NDNH-%d.%d.%d"
+                "version=DNH-%d.%d.%d"
                 SEP "points=%ld"
                 SEP "deathdnum=%d"
                 SEP "deathlev=%d"
