@@ -2935,6 +2935,7 @@ register struct trobj *trop;
 
 			//no armor for etherealoids
 			if(Race_if(PM_ETHEREALOID) && objects[otyp].oc_class == ARMOR_CLASS && !is_shield(obj)){
+				obfree(obj, (struct obj*) 0);
 				trop++;
 				continue;	
 			}	
