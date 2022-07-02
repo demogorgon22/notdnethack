@@ -1831,8 +1831,9 @@ int shotlimit;
 		multishot += u.ulevel / 10 + 1;
 	}
 	else {
-		/* normal behaviour: randomize multishot */
-		multishot = rnd(multishot);
+		if (!launcher || !( launcher->oartifact == ART_LONGBOW_OF_DIANA || launcher->oartifact == ART_BELTHRONDING))
+			/* normal behaviour: randomize multishot */
+			multishot = rnd(multishot);
 	}
 
 	/* The Sansara Mirror doubles your multishooting ability,
