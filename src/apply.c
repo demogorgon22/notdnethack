@@ -513,7 +513,6 @@ struct obj* tobj;
 		return TRUE;
 	}
 
-
 	return FALSE;
 }
 
@@ -10268,10 +10267,10 @@ doapply()
 	case CREDIT_CARD:
 #endif
 	case SKELETON_KEY:
-		res = pick_lock(&obj);
+		res = pick_lock(obj,0,0,NULL);
 		break;
 	case UNIVERSAL_KEY:
-		res =  pick_lock(&obj);
+		res =  pick_lock(obj,0,0,NULL);
 		break;
 	case PICK_AXE:
 	case DWARVISH_MATTOCK:
