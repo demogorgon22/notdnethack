@@ -252,6 +252,9 @@ Added armorsmiths
 			Change the shape (barded/segmented/centaur) of a piece
 			of armor
 			Requires a corpse or figurine reference item if not using your shape
+		Scales to Shield
+			Turns dragon scales into the equivalent shield without requiring
+			wearing it. -- useful for eths
 Dungeon Changes
 	Added adventure branches and the village
 		Dlvl4 is now a village of friendlies of your race

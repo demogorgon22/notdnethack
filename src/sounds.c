@@ -1123,6 +1123,28 @@ boolean chatting;
 				verbalize("Reshaped!");
 				made_purchase = TRUE;
 				break;
+			case 5://scales to shield
+				if ( !(obj = getobj(armors, "have turned into a shield"))) break;
+				if(obj->owornmask){
+					verbalize("I can't work on armor you are wearing!");
+					break;
+				}
+				if (!(obj->otyp >= GRAY_DRAGON_SCALES &&
+				obj->otyp <= YELLOW_DRAGON_SCALES)) {
+					verbalize("Sorry, it needs to be dragon scales.");
+					break;
+				}
+				charge = 240 * (seenSeals + 1);
+				if (smith_offer_price(charge, mtmp) == FALSE) break;
+				if(!Blind) {
+					Your("%s merges and hardens!", xname(obj));
+				}
+				obj->otyp = GRAY_DRAGON_SCALE_SHIELD +
+					obj->otyp - GRAY_DRAGON_SCALES;
+				obj->objsize = MZ_HUMAN;
+				obj->known = 1;
+				made_purchase = TRUE;
+				break;
 			default:
 			break;
 		}
@@ -2921,6 +2943,11 @@ const char *prompt;
 	any.a_int = 4;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
 		'e', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	Sprintf(buf, "Scales to Shield");
+	any.a_int = 5;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'd', 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
 	end_menu(tmpwin, prompt);
 	how = PICK_ONE;
