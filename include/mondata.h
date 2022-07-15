@@ -70,6 +70,13 @@
 
 #define is_alabaster_mummy(ptr)	((ptr)->mtyp == PM_ALABASTER_MUMMY)
 
+#define is_ent(ptr) ((ptr)->mtyp == PM_ENT)
+
+#define is_ancient_body_ent(ptr, species) (is_ent(ptr) && (species == ENT_ASH || species == ENT_BLUEGUM || species == ENT_ELM  \
+		|| species == ENT_LOCUST || species == ENT_METHUSELAH || species == ENT_REDWOOD)) 
+
+#define is_spry_ent(ptr, species) (is_ent(ptr) && (species == ENT_CYPRESS || species == ENT_FIR || species == ENT_POPLAR || species == ENT_SPRUCE || species == ENT_DOGWOOD || species == ENT_ELM))
+
 #define is_lminion(mon)		(is_minion((mon)->data) && is_lawful_mon(mon))
 
 #define is_nminion(mon)		(is_minion((mon)->data) && is_neutral_mon(mon))

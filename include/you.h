@@ -339,6 +339,32 @@ struct you {
 	boolean ukinghill; /* records if you are carying the pirate treasure (and are therefor king of the hill) */
 	int protean; /* counter for the auto-polypiling power of the pirate treasure*/
 	int uhouse; /* drow house info */
+	int ent_species; /*species of ent tree*/
+#define ENT_ASH 0
+#define ENT_BEECH 1
+#define ENT_BIRCH 2
+#define ENT_BLUEGUM 3
+#define ENT_CEDAR 4
+#define ENT_CHESTNUT 5
+#define ENT_CYPRESS 6
+#define ENT_DOGWOOD 7
+#define ENT_ELDER 8
+#define ENT_ELM 9
+#define ENT_FIR 10
+#define ENT_GINGKO 11
+#define ENT_LARCH 12
+#define ENT_LOCUST 13
+#define ENT_MAGNOLIA 14
+#define ENT_MAPLE 15
+#define ENT_MIMOSA 16
+#define ENT_METHUSELAH 17
+#define ENT_OAK 18
+#define ENT_POPLAR 19
+#define ENT_REDWOOD 20
+#define ENT_SPRUCE 21
+#define ENT_WILLOW 22
+#define ENT_YEW 23
+#define ENT_MAX_SPECIES ENT_YEW
 	int start_house; /* starting drow house info */
 	struct prop uprops[LAST_PROP+1];
 	int rift_count;

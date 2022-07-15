@@ -1669,6 +1669,12 @@ int count;
 }
 #endif
 
+static void
+set_ent_species(){
+	int type = rn2(ENT_MAX_SPECIES);
+	u.ent_species = type;
+}
+
 
 void
 u_init()
@@ -2855,6 +2861,9 @@ u_init()
 				HAcid_resistance |= (FROMRACE|FROMOUTSIDE);
 			break;
 		}
+	}
+	if(Race_if(PM_ENT)){
+		set_ent_species();
 	}
 	/* Fix up the alignment quest nemesi */
 	mons[PM_OONA].mcolor = (u.oonaenergy == AD_FIRE) ? CLR_RED 

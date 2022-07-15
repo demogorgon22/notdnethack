@@ -730,6 +730,8 @@ init_attr(np)
 			AMAX(A_DEX) = ABASE(A_DEX);
 			AMAX(A_STR) = ABASE(A_STR);
 		}
+	} else if(Race_if(PM_ENT)){
+		ABASE(A_STR) = STR19(19);
 	}
 }
 
