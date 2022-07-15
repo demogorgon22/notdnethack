@@ -77,6 +77,25 @@
 #define is_ancient_body_ent(ptr, species) (is_ent(ptr) && (species == ENT_ASH || species == ENT_BLUEGUM || species == ENT_ELM  \
 		|| species == ENT_LOCUST || species == ENT_METHUSELAH || species == ENT_REDWOOD)) 
 
+#define is_ancient_knowledge_ent(ptr, species) (is_ent(ptr) && (species == ENT_ELDER || species == ENT_OAK || species == ENT_WILLOW \
+		|| species == ENT_YEW))
+
+#define is_beautiful_scent_ent(ptr, species) (is_ent(ptr) && (species == ENT_CHESTNUT || species == ENT_DOGWOOD || species == ENT_MAGNOLIA \
+		|| species == ENT_POPLAR))
+
+#define is_coniferous_ent(ptr, species) (is_ent(ptr) && (species == ENT_CEDAR || species == ENT_CYPRESS || species == ENT_FIR \
+		|| species == ENT_METHUSELAH || species == ENT_REDWOOD || species == ENT_YEW))
+
+#define is_decidious_ent(ptr, species) (is_ent(ptr) && (species == ENT_ASH || species == ENT_BEECH || species == ENT_BIRCH \
+		|| species == ENT_BLUEGUM || species == ENT_CHESTNUT || species == ENT_DOGWOOD || species == ENT_ELDER \
+		|| species == ENT_ELM || species == ENT_GINKGO || species == ENT_LARCH || species == ENT_LOCUST \
+		|| species == ENT_MAGNOLIA || species == ENT_MAPLE || species == ENT_MIMOSA || species == ENT_OAK \
+		|| species == ENT_POPLAR || species == ENT_WILLOW))
+
+#define is_fast_healing_ent(ptr, species) (is_ent(ptr) && (species == ENT_ASH || species == ENT_BEECH || species == ENT_BIRCH \
+		|| species == ENT_CEDAR || species == ENT_ELDER || species == ENT_ELM || species == ENT_FIR || species == ENT_LARCH \
+		|| species == ENT_GINKGO || species == ENT_MAPLE || species == ENT_OAK || species == ENT_YEW))
+
 #define is_powerful_build_ent(ptr, species) (is_ent(ptr) && (species == ENT_BLUEGUM || species == ENT_CHESTNUT || species == ENT_GINGKO \
 		|| species == ENT_LOCUST || species == ENT_MAGNOLIA || species == ENT_OAK || species == ENT_REDWOOD))
 

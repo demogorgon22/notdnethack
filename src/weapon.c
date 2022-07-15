@@ -2509,6 +2509,9 @@ abon()		/* attack bonus for strength & dexterity */
 	else if (str < STR18(100)) sbon = 2;
 	else sbon = 3;
 
+	if(is_ancient_knowledge_ent(youracedata, u.ent_species))
+		str += ACURR(A_WIS)/4;
+
 	if (dex < 4) return(sbon-3);
 	else if (dex < 6) return(sbon-2);
 	else if (dex < 8) return(sbon-1);
@@ -2648,6 +2651,8 @@ struct obj *otmp;
 	else /*  str ==25*/bonus = 8;
 
 	if(is_ent_species(youracedata, ENT_LOCUST)) bonus += 2;
+	if(is_ancient_knowledge_ent(youracedata, u.ent_species))
+		bonus += ACURR(A_WIS)/4;
 	
 	if(u.umadness&MAD_RAGE && !ClearThoughts){
 		bonus += (Insanity)/10;
