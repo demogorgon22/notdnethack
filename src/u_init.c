@@ -1677,7 +1677,7 @@ set_ent_species(){
 		case ENT_DOGWOOD:
 			HFast |= FROMRACE;
 		break;
-		case ENT_GINGKO:
+		case ENT_GINKGO:
 			HPoison_resistance |= FROMRACE;
 		break;
 		case ENT_METHUSELAH:
@@ -1687,6 +1687,8 @@ set_ent_species(){
 			HWeldproof |= FROMRACE;
 		break;
 	}
+	if(is_coniferous_ent(youracedata, u.ent_species))
+		HCold_resistance |= FROMRACE;
 }
 
 

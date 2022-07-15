@@ -1679,6 +1679,9 @@ int howmuch;
 	}
 	if (Punished) u.bc_felt = 0;	/* forget felt ball&chain */
 
+	if(is_decidious_ent(youracedata, u.ent_species))
+		howmuch /= 2;
+
 	forget_map(howmuch);
 	forget_traps();
 	

@@ -351,7 +351,7 @@ struct you {
 #define ENT_ELDER 8
 #define ENT_ELM 9
 #define ENT_FIR 10
-#define ENT_GINGKO 11
+#define ENT_GINKGO 11
 #define ENT_LARCH 12
 #define ENT_LOCUST 13
 #define ENT_MAGNOLIA 14

@@ -1639,7 +1639,7 @@ int species;
 			return "elm";
 		case ENT_FIR:
 			return "fir";
-		case ENT_GINGKO:
+		case ENT_GINKGO:
 			return "gingko";
 		case ENT_LARCH:
 			return "larch";

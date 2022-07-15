@@ -15058,6 +15058,11 @@ int vis;						/* True if action is at all visible to the player */
 			}
 		}
 	}
+	/**/
+	if(youagr && !youdef && !thrown && is_beautiful_scent_ent(youracedata, u.ent_species) && !breathless_mon(mdef) && !rn2(5)){
+		pline("A sweet scent washes over %s.", mon_nam(mdef)); 
+		mdef->encouraged = max(-u.ulevel, mdef->encouraged - rnd(1+ u.ulevel/7));
+	}
 	/* jousting -- message, break lance */
 	if (jousting) {
 		/* message */

@@ -861,6 +861,9 @@ you_regen_hp()
 		// Healer role bonus
 		if (Role_if(PM_HEALER) && !Upolyd)
 			reglevel += 10;
+		// fast healing ent bonus applies after all others
+		if(is_fast_healing_ent(youracedata, u.ent_species))
+			reglevel *= 2;
 		
 		// penalty for being itchy
 		reglevel -= u_healing_penalty();

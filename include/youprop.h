@@ -40,7 +40,7 @@
 #define NCold_resistance		(species_resists_cold(&youmonst) || \
 				 ward_at(u.ux,u.uy) == BRAND_OF_ITHAQUA)
 #define Cold_resistance		(HCold_resistance || ECold_resistance || NCold_resistance)
-#define InvCold_resistance	(ECold_resistance || Preservation || ward_at(u.ux,u.uy) == BRAND_OF_ITHAQUA)
+#define InvCold_resistance	(ECold_resistance || Preservation || ward_at(u.ux,u.uy) == BRAND_OF_ITHAQUA || (HCold_resistance&FROMRACE && is_coniferous_ent(youracedata, u.ent_species)))
 
 #define HSleep_resistance	u.uprops[SLEEP_RES].intrinsic
 #define ESleep_resistance	u.uprops[SLEEP_RES].extrinsic

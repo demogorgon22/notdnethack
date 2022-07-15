@@ -96,7 +96,7 @@
 		|| species == ENT_CEDAR || species == ENT_ELDER || species == ENT_ELM || species == ENT_FIR || species == ENT_LARCH \
 		|| species == ENT_GINKGO || species == ENT_MAPLE || species == ENT_OAK || species == ENT_YEW))
 
-#define is_powerful_build_ent(ptr, species) (is_ent(ptr) && (species == ENT_BLUEGUM || species == ENT_CHESTNUT || species == ENT_GINGKO \
+#define is_powerful_build_ent(ptr, species) (is_ent(ptr) && (species == ENT_BLUEGUM || species == ENT_CHESTNUT || species == ENT_GINKGO \
 		|| species == ENT_LOCUST || species == ENT_MAGNOLIA || species == ENT_OAK || species == ENT_REDWOOD))
 
 #define is_spry_ent(ptr, species) (is_ent(ptr) && (species == ENT_CYPRESS || species == ENT_FIR || species == ENT_POPLAR || species == ENT_SPRUCE || species == ENT_DOGWOOD || species == ENT_ELM))
