@@ -3505,10 +3505,8 @@ int *shield_margin;
 			if (!thrown){
 				int size_penalty = weapon->objsize - pa->msize;
 				if (youagr){
-					if (Role_if(PM_CAVEMAN))
-						size_penalty = max(0, size_penalty-1);
-					if (u.sealsActive&SEAL_YMIR)
-						size_penalty = max(0, size_penalty-1);
+					int wielder_bonus = wielder_size_bonus(youracedata);
+					size_penalty = max(0, size_penalty - wielder_bonus);
 					if (check_oprop(weapon, OPROP_CCLAW))
 						size_penalty = max(0, size_penalty-1);
 				}

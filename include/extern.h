@@ -3206,6 +3206,7 @@ E void FDECL(erode_obj, (struct obj *,BOOLEAN_P,BOOLEAN_P));
 E int FDECL(chwepon, (struct obj *,int));
 E int FDECL(welded, (struct obj *));
 E void FDECL(weldmsg, (struct obj *));
+E int FDECL(wielder_size_bonus, (struct permonst *));
 E boolean FDECL(bimanual, (struct obj *, struct permonst *));
 
 /* ### windows.c ### */
