@@ -3417,6 +3417,7 @@ int *shield_margin;
 					break;
 				case ARCHAIC_GAUNTLETS:
 				case PLASTEEL_GAUNTLETS:
+				case KNUCKLE_DUSTERS:
 					rang_acc -= 1;
 					break;
 				case LONG_GLOVES:
