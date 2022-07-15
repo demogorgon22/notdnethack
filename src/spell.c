@@ -6004,7 +6004,7 @@ int spell;
 
 	if(u.sealsActive&SEAL_PAIMON) splcaster -= urole.spelarmr;
 	
-	if(Race_if(PM_INCANTIFIER))
+	if(Race_if(PM_INCANTIFIER) || (is_ent_species(youracedata, ENT_ELDER)))
 		splcaster += max(-3*urole.spelarmr,urole.spelsbon);
 
 	if(spellid(spell) == urole.spelspec)

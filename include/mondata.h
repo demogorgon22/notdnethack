@@ -72,6 +72,8 @@
 
 #define is_ent(ptr) ((ptr)->mtyp == PM_ENT)
 
+#define is_ent_species(ptr, species) (is_ent(ptr) && u.ent_species == species)
+
 #define is_ancient_body_ent(ptr, species) (is_ent(ptr) && (species == ENT_ASH || species == ENT_BLUEGUM || species == ENT_ELM  \
 		|| species == ENT_LOCUST || species == ENT_METHUSELAH || species == ENT_REDWOOD)) 
 

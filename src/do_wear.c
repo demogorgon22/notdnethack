@@ -2605,6 +2605,7 @@ int base_udr()
 	if((uright && uright->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN) || (uleft && uleft->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN)){
 		udr += 3;
 	}
+	if(is_ent_species(youracedata, ENT_MIMOSA)) udr++;
 	
 	if(uwep){
 		if(uwep->oartifact == ART_LANCE_OF_LONGINUS) udr += max((uwep->spe)/2,0);

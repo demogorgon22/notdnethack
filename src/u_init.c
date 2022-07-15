@@ -1673,6 +1673,20 @@ static void
 set_ent_species(){
 	int type = rn2(ENT_MAX_SPECIES);
 	u.ent_species = type;
+	switch(type){
+		case ENT_DOGWOOD:
+			HFast |= FROMRACE;
+		break;
+		case ENT_GINGKO:
+			HPoison_resistance |= FROMRACE;
+		break;
+		case ENT_METHUSELAH:
+			HSpellboost |= FROMRACE;
+		break;
+		case ENT_WILLOW:
+			HWeldproof |= FROMRACE;
+		break;
+	}
 }
 
 
