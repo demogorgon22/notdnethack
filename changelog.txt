@@ -138,7 +138,7 @@ Ent race
 			Cedar, Cypress, Fir, Methuselah, Redwood, Yew
 		Deciduous 
 			Strong willed and patient from time spent in forest, receives amnesia forgetness at half of the rate and take sanity damage at half rate.
-			Ash, Beech, Birch, Bluegum, Chestnut, Dogwood, Elder, Elm, Ginkgo, Larch, Locust, Magnolia, Maple, Mimosa, Oak, Poplar, Tulip Poplar, Willow
+			Ash, Beech, Birch, Bluegum, Chestnut, Dogwood, Elder, Elm, Ginkgo, Larch, Locust, Magnolia, Maple, Mimosa, Oak, Poplar, Willow
 		Powerful Build
 			Effectively one size larger for attacks, like ymir and caveman
 			Blue Gum, Chestnut, Ginkgo, Locust, Magnolia, Oak, Redwood
