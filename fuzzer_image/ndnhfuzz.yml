@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ndnhfuzz
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: 10
+  selector:
+    matchLabels:
+      app: ndnhfuzz
+  template:
+    metadata:
+      labels:
+        app: ndnhfuzz
+    spec:
+      volumes:
+        - name: nfs-volume
+          nfs:
+            server: k3smaster
+            path: /data/cores
+      containers:
+        - name: ndnhfuzz
+          image: ghcr.io/demogorgon22/ndnhfuzz:master
+          tty: true
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "1.1"
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+            capabilities:
+              add:
+                - ALL
+          volumeMounts:
+            - name: nfs-volume
+              mountPath: /cores
