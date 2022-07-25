@@ -2766,6 +2766,7 @@ int vis;
 		}
 		/* remove grease (50% odds) */
 		if (obj->greased && !rn2(2)) {
+			if(youdef && (u.utats & TAT_HAMMER) && rn2(2)) return TRUE;
 			if (vis&VIS_MDEF) {
 				pline_The("grease wears off.");
 			}
