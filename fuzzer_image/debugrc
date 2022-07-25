@@ -1,0 +1,36 @@
+OPTIONS=number_pad:0
+OPTIONS=time
+OPTIONS=lit_corridor
+OPTIONS=statuscolors
+OPTIONS=!autopickup
+OPTIONS=!legacy
+OPTIONS=use_darkgray
+
+OPTIONS=role:random,race:random,gender:random,align:random
+
+## HP
+STATUSCOLOR=hp%100=green,hp%66=yellow,hp%50=orange
+STATUSCOLOR=hp%33=red&bold,hp%15:red&inverse,hp%0:red&inverse&blink
+## Pw
+#STATUSCOLOR=pw%100=green,pw%66=yellow,pw%50:orange,pw%33=red&bold
+## HP & Pw also support exact numbers, for example:
+#STATUSCOLOR=hp.1:red&inverse,hp<8:red,hp>50:grey
+## Carry
+#STATUSCOLOR=burdened:yellow,stressed:orange,strained:red&bold
+#STATUSCOLOR=overtaxed:red&inverse,overloaded:red&inverse&blink
+## Hunger
+#STATUSCOLOR=satiated:yellow,hungry:orange,weak:red&bold
+#STATUSCOLOR=fainting:red&inverse,fainted:red&inverse&blink
+## Mental
+#STATUSCOLOR=hallu:yellow,conf:orange,stun:red&bold
+## Health
+#STATUSCOLOR=ill:red&inverse,foodpois:red&inverse,slime:red&inverse
+#
+#
+## Colored menus. Regular expressions allowed.
+OPTIONS=menucolors
+MENUCOLOR=" blessed "=green
+MENUCOLOR=" holy "=green
+MENUCOLOR=" cursed "=red
+MENUCOLOR=" unholy "=red
+MENUCOLOR=" cursed .* (being worn)"=orange&underline
