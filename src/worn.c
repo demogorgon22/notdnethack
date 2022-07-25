@@ -1930,6 +1930,7 @@ struct monst *mon;
 	int cpro = 0;
 	
 	if(u.sealsActive&SEAL_PAIMON && mon == &youmonst) return 3;
+	if(is_ent_species(youracedata, ENT_YEW)) return 3;
 
 	armor = (mon == &youmonst) ? uarm : which_armor(mon, W_ARM);
 	if (armor && armpro < objects[armor->otyp].a_can)

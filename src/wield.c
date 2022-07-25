@@ -934,6 +934,30 @@ register struct obj *obj;
 	obj->owornmask = savewornmask;
 }
 
+
+int wielder_size_bonus(ptr)
+struct permonst * ptr;
+{	
+	int wielder_bonus = 0;
+	if(ptr == youracedata){
+		if (Role_if(PM_CAVEMAN))
+			wielder_bonus++;
+		if (u.sealsActive&SEAL_YMIR)
+			wielder_bonus++;
+		if(is_ent(ptr)){
+			if(u.ent_species == ENT_BLUEGUM)
+				wielder_bonus++;
+			if(u.ent_species == ENT_DOGWOOD)
+				wielder_bonus--;
+			if(u.ent_species == ENT_REDWOOD)
+				wielder_bonus += 2;
+			if(is_powerful_build_ent(ptr, u.ent_species))
+				wielder_bonus++;
+		}
+	}
+	return wielder_bonus;
+}
+
 boolean
 bimanual(otmp, ptr)
 struct obj * otmp;
@@ -951,13 +975,8 @@ struct permonst * ptr;
 		return FALSE;
 	/* get wielder's size -- optional, will assume medium (human) */
 	wielder_size = (ptr ? ptr->msize : MZ_MEDIUM);
-	
-	if (ptr == youracedata){
-		if (Role_if(PM_CAVEMAN))
-			wielder_size += 1;
-		if (u.sealsActive&SEAL_YMIR)
-			wielder_size += 1;
-	}
+
+	wielder_size += wielder_size_bonus(ptr);	
 
 	/* Some creatures are specifically always able to wield any weapon in one hand */
 	if (ptr && (

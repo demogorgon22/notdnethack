@@ -166,7 +166,7 @@ minimal_enlightenment()
 	menu_item *selected;
 	anything any;
 	int genidx, n;
-	char buf[BUFSZ], buf2[BUFSZ];
+	char buf[BUFSZ], buf2[BUFSZ], racebuf[BUFSZ];
 	static const char untabbed_fmtstr[] = "%-15s: %-12s";
 	static const char untabbed_deity_fmtstr[] = "%-17s%s";
 	static const char tabbed_fmtstr[] = "%s:\t%-12s";
@@ -178,15 +178,21 @@ minimal_enlightenment()
 	deity_fmtstr = iflags.menu_tab_sep ?
 			tabbed_deity_fmtstr : untabbed_deity_fmtstr; 
 	any.a_void = 0;
-	buf[0] = buf2[0] = '\0';
+	buf[0] = buf2[0] = racebuf[0] = '\0';
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, iflags.menu_headings, "Starting", FALSE);
 
+	if(is_ent(youracedata)){
+		Sprintf(racebuf, "%s %s", get_ent_species(u.ent_species), urace.noun);
+	} else {
+		Sprintf(racebuf, "%s", urace.noun);
+	}
+
 	/* Starting name, race, role, gender */
 	Sprintf(buf, fmtstr, "name", plname);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE, buf, FALSE);
-	Sprintf(buf, fmtstr, "race", urace.noun);
+	Sprintf(buf, fmtstr, "race", racebuf);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE, buf, FALSE);
 	Sprintf(buf, fmtstr, "role",
 		(flags.initgend && urole.name.f) ? urole.name.f : urole.name.m);
@@ -198,10 +204,17 @@ minimal_enlightenment()
 	Sprintf(buf, fmtstr, "alignment", align_str(galign(u.ugodbase[UGOD_ORIGINAL])));
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE, buf, FALSE);
 
+	if(is_ent(youracedata)){
+		racebuf[0] = '\0';
+		Sprintf(racebuf, "%s %s", get_ent_species(u.ent_species), Upolyd ? youmonst.data->mname : urace.noun);
+	} else {
+		Sprintf(racebuf, "%s",Upolyd ? youmonst.data->mname : urace.noun);
+	}
+
 	/* Current name, race, role, gender */
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE, "", FALSE);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, iflags.menu_headings, "Current", FALSE);
-	Sprintf(buf, fmtstr, "race", Upolyd ? youmonst.data->mname : urace.noun);
+	Sprintf(buf, fmtstr, "race", racebuf);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE, buf, FALSE);
 	if (Upolyd) {
 	    Sprintf(buf, fmtstr, "role (base)",

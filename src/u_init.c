@@ -1669,6 +1669,28 @@ int count;
 }
 #endif
 
+static void
+set_ent_species(){
+	int type = rn2(ENT_MAX_SPECIES);
+	u.ent_species = type;
+	switch(type){
+		case ENT_DOGWOOD:
+			HFast |= FROMRACE;
+		break;
+		case ENT_GINKGO:
+			HPoison_resistance |= FROMRACE;
+		break;
+		case ENT_METHUSELAH:
+			HSpellboost |= FROMRACE;
+		break;
+		case ENT_WILLOW:
+			HWeldproof |= FROMRACE;
+		break;
+	}
+	if(is_coniferous_ent(youracedata, u.ent_species))
+		HCold_resistance |= FROMRACE;
+}
+
 
 void
 u_init()
@@ -2855,6 +2877,9 @@ u_init()
 				HAcid_resistance |= (FROMRACE|FROMOUTSIDE);
 			break;
 		}
+	}
+	if(Race_if(PM_ENT)){
+		set_ent_species();
 	}
 	/* Fix up the alignment quest nemesi */
 	mons[PM_OONA].mcolor = (u.oonaenergy == AD_FIRE) ? CLR_RED 

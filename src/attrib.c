@@ -730,6 +730,8 @@ init_attr(np)
 			AMAX(A_DEX) = ABASE(A_DEX);
 			AMAX(A_STR) = ABASE(A_STR);
 		}
+	} else if(Race_if(PM_ENT)){
+		ABASE(A_STR) = STR19(19);
 	}
 }
 
@@ -1347,6 +1349,7 @@ boolean check;
 	if(Role_if(PM_ANACHRONOUNBINDER)) return;
 	int starting_sanity = u.usanity;
 	int starting_insanity = Insanity;
+	if(delta < 0 && is_decidious_ent(youracedata, u.ent_species)) delta /= 2; 
 	if(discover || wizard)
 		pline("Sanity change: %d + %d", u.usanity, delta);
 	u.usanity += delta;

@@ -2675,7 +2675,7 @@ winid *datawin;
 			if (oc.oc_skill > 0) {
 				if (obj) {
 					Sprintf(buf, "%s-handed %s%s%s.", 
-						((obj ? bimanual(obj, youmonst.data) : oc.oc_bimanual) ? "Two" : "One"),
+						((obj ? bimanual(obj, youracedata) : oc.oc_bimanual) ? "Two" : "One"),
 						(otyp_is_blaster || otyp_is_launcher) ? "" : buf2,
 						(otyp_is_blaster ? "blaster" : otyp_is_launcher ? "launcher" : "weapon"),
 						((obj && is_weptool(obj)) && !otyp_is_launcher ? "-tool" : "")
@@ -3234,10 +3234,8 @@ winid *datawin;
 		int hitbon = oc.oc_hitbon;
 		if (obj){
 			int size_penalty = obj->objsize - youracedata->msize;
-			if (Role_if(PM_CAVEMAN))
-				size_penalty = max(0, size_penalty - 1);
-			if (u.sealsActive&SEAL_YMIR)
-				size_penalty = max(0, size_penalty - 1);
+			int wielder_bonus = wielder_size_bonus(youracedata);
+			size_penalty = max(0, size_penalty - wielder_bonus);
 			if (check_oprop(obj, OPROP_CCLAW))
 				size_penalty = max(0, size_penalty - 1);
 			

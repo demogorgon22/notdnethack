@@ -515,6 +515,14 @@ you_calc_movement()
 		|| Race_if(PM_ORC)
 		|| (Race_if(PM_HALF_DRAGON) && Humanoid_half_dragon(urole.malenum))
 	)) moveamt = 12;
+	if(is_ent(youracedata)){
+		if(is_spry_ent(youracedata, u.ent_species))
+			moveamt = 12;
+		else if(u.ent_species == ENT_REDWOOD)
+			moveamt = 8;
+		else
+			moveamt = 10;
+	}
 	else moveamt = youmonst.data->mmove;
 	if(uarmf && uarmf->otyp == STILETTOS && !Flying && !Levitation) moveamt = (moveamt*5)/6;
 	if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit) moveamt += 4;
@@ -853,6 +861,9 @@ you_regen_hp()
 		// Healer role bonus
 		if (Role_if(PM_HEALER) && !Upolyd)
 			reglevel += 10;
+		// fast healing ent bonus applies after all others
+		if(is_fast_healing_ent(youracedata, u.ent_species))
+			reglevel *= 2;
 		
 		// penalty for being itchy
 		reglevel -= u_healing_penalty();
@@ -3306,6 +3317,7 @@ welcome(new_game)
 boolean new_game;	/* false => restoring an old game */
 {
     char buf[BUFSZ];
+    char racebuf[BUFSZ];
     boolean currentgend = Upolyd ? u.mfemale : flags.female;
 
     /*
@@ -3317,6 +3329,7 @@ boolean new_game;	/* false => restoring an old game */
      * restores it's only shown if different from its original value.
      */
     *buf = '\0';
+    *racebuf = '\0';
     if (new_game || galign(u.ugodbase[UGOD_ORIGINAL]) != galign(u.ugodbase[UGOD_CURRENT]))
 	Sprintf(eos(buf), " %s", align_str(galign(u.ugodbase[UGOD_ORIGINAL])));
     if (!urole.name.f &&
@@ -3324,9 +3337,15 @@ boolean new_game;	/* false => restoring an old game */
 	     currentgend != flags.initgend))
 	Sprintf(eos(buf), " %s", genders[currentgend].adj);
 
+    if(Race_if(PM_ENT)){
+	Sprintf(eos(racebuf), "%s %s", get_ent_species(u.ent_species), urace.adj);
+    } else {
+	Sprintf(eos(racebuf), "%s", urace.adj);
+    }
+
     pline(new_game ? "%s %s, welcome to notdNetHack!  You are a%s %s %s."
 		   : "%s %s, the%s %s %s, welcome back to notdNetHack!",
-	  Hello((struct monst *) 0), plname, buf, urace.adj,
+	  Hello((struct monst *) 0), plname, buf, racebuf,
 	  (currentgend && urole.name.f) ? urole.name.f : urole.name.m);
 	if(iflags.dnethack_start_text){
 	pline("Press Ctrl^W or type #ward to engrave a warding sign.");
