@@ -286,6 +286,13 @@ Anachrononaut changes
 		Flamethrower
 			Sprays burning oil splashes doing (6+multishot bonus)d6
 			Uses a charge system and uses 1 charge per use
+	Eth ana - 
+		Etherblade
+			Polearm type weapon, can be used in melee
+			3d6 vs small and large
+			Can be charged and fired with F to shoot a 3d6 blast of darkness
+		+5 ring of protection
+		Can get expert in polearms and darts
 Added armorsmiths
 		Armorsmiths are meant to address the weird gap caused by
 		upgrade kits for strangely sized races

@@ -128,6 +128,13 @@ static struct trobj Anachrononaut_Sal[] = {
 	{ PROTEIN_PILL, 0, FOOD_CLASS, 10, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+static struct trobj Anachrononaut_Eth[] = {
+	{ ETHERBLADE,  3, WEAPON_CLASS, 1, 0 },
+	{ RIN_PROTECTION,  5, RING_CLASS, 1, 0 },
+	{ POWER_PACK, 0, TOOL_CLASS, 10, 0 },
+	{ MASK, 0, TOOL_CLASS, 1, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Anachrononaut_Inc[] = {
 	{ LIGHTSABER,  3, WEAPON_CLASS, 1, 0 },
 	{ ELVEN_TOGA, 1, ARMOR_CLASS, 1, 0 },
@@ -1021,6 +1028,11 @@ static const struct def_skill Skill_Droid_Ana[] = {
     // { FFORM_NIMAN, P_BASIC },			{ FFORM_JUYO,  P_EXPERT },
     // { P_NONE, 0 }
 // };
+
+static const struct def_skill Skill_Eth_Ana[] = {
+    { P_POLEARMS, P_EXPERT }, { P_DART, P_EXPERT },
+    { P_NONE, 0 }
+};
 
 static const struct def_skill Skill_All_Ana[] = {
     { P_SHII_CHO, P_EXPERT },		{ P_MAKASHI,  P_EXPERT },
@@ -2006,6 +2018,7 @@ u_init()
 		else if(Race_if(PM_HALF_DRAGON)) ini_inv(Anachrononaut_Hlf);
 		else if(Race_if(PM_GNOME)) ini_inv(Anachrononaut_Gno);
 		else if(Race_if(PM_SALAMANDER)) ini_inv(Anachrononaut_Sal);
+		else if(Race_if(PM_ETHEREALOID)) ini_inv(Anachrononaut_Eth);
 		else if(Race_if(PM_ANDROID)){
 			if(!flags.female) ini_inv(Anachrononaut_Mal_Clk);
 			else ini_inv(Anachrononaut_Fem_Clk);
@@ -2081,6 +2094,8 @@ u_init()
 			skill_init(Skill_Ana);
 			skill_add(Skill_All_Ana);
 		}
+		if(Race_if(PM_ETHEREALOID))
+			skill_add(Skill_Eth_Ana);
 		/* lawful god is actually Ilsensine */
 		urole.lgod = GOD_ILSENSINE;
 		
@@ -2995,6 +3010,8 @@ register struct trobj *trop;
 				obj->oerodeproof = 1;
 				obj->rknown = 1;
 			}
+			if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_ETHEREALOID) && obj->otyp == MASK)
+				obj->corpsenm = PM_ETHEREALOID;
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
 			}
@@ -3292,6 +3309,10 @@ register struct trobj *trop;
 		
 		if(obj->otyp == ANDROID_VISOR && !ublindf){
 			setworn(obj, W_TOOL);
+		}
+		
+		if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_ETHEREALOID) && obj->otyp == RIN_PROTECTION && !uleft){
+			setworn(obj, W_RINGL);
 		}
 		
 		if(obj->oclass == ARMOR_CLASS){
