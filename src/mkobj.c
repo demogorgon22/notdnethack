@@ -685,7 +685,7 @@ int mkflags;
 			if (is_rakuyo(otmp))
 				add_oprop(otmp, OPROP_RAKUW);
 
-			if (is_vibroweapon(otmp)){
+			if (is_vibroweapon(otmp) || otmp->otyp == ETHERBLADE){
 				otmp->ovar1 = 80L + rnd(20);
 			}
 			else if (otmp->otyp == RAYGUN){

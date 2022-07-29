@@ -72,6 +72,7 @@ int adtyp, ztyp;
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "death ray";
 		case AD_ELEC: return "lightning bolt";
+		case AD_DARK: return "bolt of darkness";
 		default:      impossible("unknown wand damage type in flash_type: %d", adtyp);
 			return "NaN ray";
 		}

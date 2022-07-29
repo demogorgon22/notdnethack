@@ -438,6 +438,9 @@ WEAPON(("lance"),
 WEAPON(("force pike", "long gray spear", "long spear"),/*Needs tile*/
 	DMG(D(6)), DMG(D(8)),
 	0, 0,  MZ_LARGE,  0, 30,1000, 2, P|S, P_LANCE, PLASTIC, FALSE, CLR_GRAY, O_MAGIC(1)),
+WEAPON(("etherblade", "barrel tipped glaive", "tipped glaive"),/*Needs tile*/
+	DMG(D(3,6)), DMG(D(3,6)),
+	0, 0,  MZ_HUGE,  0, 50,1000, 2, S, P_POLEARMS, METAL, FALSE, CLR_BLACK, O_MAGIC(1)),
 WEAPON(("white vibrospear", "long white spear", "long spear"),/*Needs tile*/
 	DMG(D(6)), DMG(D(8)),
 	0, 0,  MZ_LARGE,  0, 30,1000, 2, P|S, P_LANCE, PLASTIC, FALSE, CLR_WHITE, O_MAGIC(1)),

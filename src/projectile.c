@@ -2196,7 +2196,21 @@ dofire()
 			)) {
 			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE);
 		}
-
+		/* Etherblade blast -- mainhand only */
+		if(uwep && uwep->otyp == ETHERBLADE && uwep->ovar1){
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return 0;
+			You("fire your etherblade!");
+			uwep->ovar1--;
+			struct zapdata zapdata = { 0 };
+			basiczap(&zapdata, AD_DARK, ZAP_WAND, 3);
+			zapdata.explosive = TRUE;
+			zapdata.unreflectable = ZAP_REFL_NEVER;
+			zapdata.no_bounce = TRUE;
+			zapdata.affects_floor = FALSE;
+			zapdata.directly_hits = FALSE;
+			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 5, &zapdata);
+			return 1;
+		}
 		/* Holy Moonlight Sword's magic blast -- mainhand only */
 		if (uwep && uwep->oartifact == ART_HOLY_MOONLIGHT_SWORD && uwep->lamplit && u.uen >= 25){
 			int dmg = d(2, 12) + 2 * uwep->spe;

@@ -1392,6 +1392,7 @@ static NEARDATA const int pwep[] =
 	FORCE_PIKE,/*3d6+6/3d8+8*/
 	GOLD_BLADED_VIBROSPEAR,/*2d6+3/2d8+3*/
 	WHITE_VIBROSPEAR,/*2d6+3/2d8+3*/
+	ETHERBLADE,/*3d6*/
 	POLEAXE, /*1d10/2d6*/
 	HALBERD, /*1d10/2d6*/
 	DROVEN_LANCE, /*1d10/1d10*/
@@ -1630,6 +1631,7 @@ static const NEARDATA short hwep[] = {
 	  GOLD_BLADED_VIBROSPEAR,/*2d6+3/2d8+3*/
 	  WHITE_VIBROSPEAR,/*2d6+3/2d8+3*/
 	  LIGHTSABER/*3d8*/,
+	  ETHERBLADE,/*3d6*/
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
@@ -1733,6 +1735,7 @@ static const NEARDATA short hpwep[] = {
 	  GOLD_BLADED_VIBROSPEAR,/*2d6+3/2d8+3*/
 	  WHITE_VIBROSPEAR,/*2d6+3/2d8+3*/
 	  LIGHTSABER/*3d8*/,
+	  ETHERBLADE,/*3d6*/
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/

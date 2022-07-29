@@ -3166,6 +3166,10 @@ winid *datawin;
 				Sprintf(buf2, "Deals an extra 1d4 vs small or 1d3 vs large and double enchantment damage if wielded without an off-hand weapon, at the cost of an extra 1/4 move.");
 				OBJPUTSTR(buf2);
 			}
+			if(obj->otyp == ETHERBLADE){
+				Sprintf(buf2, "Can be fired to shoot a 3d6 damage darkness explosion.");
+				OBJPUTSTR(buf2);
+			}
 			if(fast_weapon(obj)){
 				Sprintf(buf2, "Is 1/6th faster to swing than other weapons.");
 				OBJPUTSTR(buf2);

@@ -1083,7 +1083,7 @@ struct obj *obj;
 //#ifdef FIREARMS
 	if (is_blaster(obj) && (obj->recharged < 4 || (obj->otyp != HAND_BLASTER && obj->otyp != ARM_BLASTER)))
 	    return TRUE;
-	if (is_vibroweapon(obj) || obj->otyp == SEISMIC_HAMMER)
+	if (is_vibroweapon(obj) || obj->otyp == SEISMIC_HAMMER || obj->otyp == ETHERBLADE)
 	    return TRUE;
 //#endif
 	if (is_weptool(obj))	/* specific check before general tools */
@@ -1197,7 +1197,7 @@ int curse_bless;
 			   ever created the above will need to be revised  */
 	    }
 
-	} else if (obj->oclass == TOOL_CLASS || is_blaster(obj)
+	} else if (obj->oclass == TOOL_CLASS || is_blaster(obj) || obj->otyp == ETHERBLADE
 		   || obj->otyp == DWARVISH_HELM || is_vibroweapon(obj) || obj->otyp == POWER_ARMOR) {
 	    int rechrg = (int)obj->recharged;
 
@@ -1310,6 +1310,7 @@ int curse_bless;
 	    case GOLD_BLADED_VIBROSPEAR:
 	    case FORCE_PIKE:
 	    case FORCE_BLADE:
+	    case ETHERBLADE:
 	    case DOUBLE_FORCE_BLADE:
 	    case FORCE_SWORD:
 	    case FORCE_WHIP:

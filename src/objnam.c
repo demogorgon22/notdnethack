@@ -2058,7 +2058,7 @@ boolean with_price;
 			break;
 		case WEAPON_CLASS:
 weapon:
-			if ((is_blaster(obj) || is_vibroweapon(obj) || typ == SEISMIC_HAMMER) && (obj->known || uandroid)) {
+			if ((is_blaster(obj) || is_vibroweapon(obj) || typ == ETHERBLADE || typ == SEISMIC_HAMMER) && (obj->known || uandroid)) {
 				Sprintf(eos(buf), " (%d:%d)", (int)obj->recharged, (int)obj->ovar1);
 			}
 			if (obj->known && obj->oartifact &&
@@ -5301,6 +5301,7 @@ typfnd:
 		typ == RED_EYED_VIBROSWORD ||
 		typ == SEISMIC_HAMMER ||
 		typ == FORCE_PIKE ||
+		typ == ETHERBLADE ||
 		typ == DOUBLE_FORCE_BLADE ||
 		typ == FORCE_BLADE ||
 		typ == FORCE_SWORD ||

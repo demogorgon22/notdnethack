@@ -320,6 +320,7 @@ struct obj {
 	|| (otmp)->otyp == HYPOSPRAY_AMPULE \
 	|| (otmp)->oclass == RING_CLASS \
 	|| (otmp)->otyp == POTION_VAPORIZER \
+	|| (otmp)->otyp == ETHERBLADE \
 	|| (otmp)->otyp == DOLL_S_TEAR \
 	)
 #define ECLIPSE_MOON	0
@@ -535,6 +536,7 @@ struct obj {
 #define is_bad_melee_pole(otmp) (!(otmp->otyp == POLEAXE ||\
 									otmp->otyp == DISKOS ||\
 									is_vibropike(otmp) ||\
+									otmp->otyp == ETHERBLADE || \
 									otmp->oartifact == ART_WEBWEAVER_S_CROOK ||\
 									otmp->oartifact == ART_SILENCE_GLAIVE ||\
 									otmp->oartifact == ART_HEARTCLEAVER ||\
