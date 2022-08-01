@@ -889,7 +889,7 @@ struct obj *scroll;
 							}
 						break;
 						case 2:
-							if(!Role_if(PM_EXILE)){
+							if(!Role_if(PM_EXILE) && !Role_if(PM_ANACHRONOUNBINDER)){
 								if(!seals){
 									You("see circular seals!");
 									seals = TRUE;
