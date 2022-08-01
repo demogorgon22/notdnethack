@@ -2871,6 +2871,7 @@ winid *datawin;
 					case AD_STON: Strcat(buf, "petrifying damage."); break;
 					case AD_DARK: Strcat(buf, "dark damage."); break;
 					case AD_BLUD: Strcat(buf, "blood damage."); break;
+					case AD_DRIN: Strcat(buf, "brain damage."); break;
 						break;
 					}
 				}
