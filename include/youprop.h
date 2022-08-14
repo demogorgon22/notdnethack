@@ -22,6 +22,7 @@
 
 #define maybe_polyd(if_so,if_not)	(Upolyd ? (if_so) : (if_not))
 
+#define uring_art(art_num)	((uright && uright->oartifact == art_num) || (uleft && uleft->oartifact == art_num))
 
 /*** Resistances to troubles ***/
 #define Oona_resistance	((u.oonaenergy == AD_FIRE ? Fire_resistance : u.oonaenergy == AD_COLD ? Cold_resistance : u.oonaenergy == AD_ELEC ? Shock_resistance : FALSE))
@@ -163,12 +164,16 @@
 /*** Troubles ***/
 /* Pseudo-property */
 #define Punished		(uball)
+
 #define	Insanity	 (100 - u.usanity)
+#define NightmareAware_Sanity ((Nightmare && ClearThoughts) ? (u.usanity + 4*Insanity/5) : u.usanity)
+#define NightmareAware_Insanity ((Nightmare && ClearThoughts) ? (Insanity/5) : Insanity)
+
 #define	FacelessHelm(obj) ((obj)->otyp == PLASTEEL_HELM || (obj)->otyp == CRYSTAL_HELM || (obj)->otyp == PONTIFF_S_CROWN || (obj)->otyp == FACELESS_HELM)
 #define	FacelessCloak(obj) ((obj)->otyp == WHITE_FACELESS_ROBE || (obj)->otyp == BLACK_FACELESS_ROBE || (obj)->otyp == SMOKY_VIOLET_FACELESS_ROBE)
 #define	Faceless(obj) (FacelessHelm(obj) || FacelessCloak(obj))
 
-#define save_vs_sanloss()	((uwep && uwep->oartifact == ART_NODENSFORK) || (rnd(30) < ACURR(A_WIS)))
+#define save_vs_sanloss()	((uwep && uwep->oartifact == ART_NODENSFORK) || (rnd(30) < (ACURR(A_WIS) + (uring_art(ART_NARYA) ? narya() : 0))))
 
 #define Mortal_race	(!nonliving(youracedata) && !is_minion(youracedata) && !is_demon(youracedata) && !is_primordial(youracedata))
 #define Dark_immune	(is_unalive(youracedata) || is_primordial(youracedata))
@@ -232,6 +237,8 @@
 				 (Upolyd && dmgtype(youmonst.data, AD_HALU)))
 #define Hallucination		(HHallucination && !Halluc_resistance)
 
+#define Delusion(mon)	((mon) && !BlockableClearThoughts && ((mon)->mtyp == PM_WALKING_DELIRIUM))
+
 /* Timeout, plus a worn mask */
 #define HFumbling		u.uprops[FUMBLING].intrinsic
 #define EFumbling		u.uprops[FUMBLING].extrinsic
@@ -254,27 +261,27 @@
 
 #define HPanicking			u.uprops[PANIC].intrinsic
 #define EPanicking			u.uprops[PANIC].extrinsic
-#define Panicking			((HPanicking || EPanicking) && !ClearThoughts)
+#define Panicking			((HPanicking || EPanicking) && !BlockableClearThoughts)
 
 #define HStumbleBlind			u.uprops[STUMBLE_BLIND].intrinsic
 #define EStumbleBlind			u.uprops[STUMBLE_BLIND].extrinsic
-#define StumbleBlind			((HStumbleBlind || EStumbleBlind) && !ClearThoughts)
+#define StumbleBlind			((HStumbleBlind || EStumbleBlind) && !BlockableClearThoughts)
 
 #define HStaggerShock			u.uprops[STAGGER_SHOCK].intrinsic
 #define EStaggerShock			u.uprops[STAGGER_SHOCK].extrinsic
-#define StaggerShock			((HStaggerShock || EStaggerShock) && !ClearThoughts)
+#define StaggerShock			((HStaggerShock || EStaggerShock) && !BlockableClearThoughts)
 
 #define HBabble			u.uprops[BABBLING].intrinsic
 #define EBabble			u.uprops[BABBLING].extrinsic
-#define Babble			((HBabble || EBabble) && !ClearThoughts)
+#define Babble			((HBabble || EBabble) && !BlockableClearThoughts)
 
 #define HScreaming			u.uprops[SCREAMING].intrinsic
 #define EScreaming			u.uprops[SCREAMING].extrinsic
-#define Screaming			((HScreaming || EScreaming) && !ClearThoughts)
+#define Screaming			((HScreaming || EScreaming) && !BlockableClearThoughts)
 
 #define HFaintingFits			u.uprops[FAINTING_FIT].intrinsic
 #define EFaintingFits			u.uprops[FAINTING_FIT].extrinsic
-#define FaintingFits			((HFaintingFits || EFaintingFits) && !ClearThoughts)
+#define FaintingFits			((HFaintingFits || EFaintingFits) && !BlockableClearThoughts)
 
 /*** Vision and senses ***/
 #define HNormalvision		u.uprops[NORMALVISION].intrinsic
@@ -505,6 +512,8 @@
 #define ENightmare	u.uprops[WALKING_NIGHTMARE].extrinsic
 #define Nightmare		(HNightmare || ENightmare)
 
+#define BlockableClearThoughts		(ClearThoughts && !Nightmare)
+
 #define HSanctuary	u.uprops[SANCTUARY].intrinsic
 #define ESanctuary	u.uprops[SANCTUARY].extrinsic
 #define Sactuary	(HSanctuary || ESanctuary)
@@ -583,6 +592,26 @@
 #define ESpellboost		u.uprops[SPELLBOOST].extrinsic
 #define Spellboost		(HSpellboost || ESpellboost)
 
+#define HFire_crystal	u.uprops[FIRE_CRYSTAL].intrinsic
+#define EFire_crystal	u.uprops[FIRE_CRYSTAL].extrinsic
+#define Fire_crystal	(HFire_crystal || EFire_crystal)
+
+#define HWater_crystal	u.uprops[WATER_CRYSTAL].intrinsic
+#define EWater_crystal	u.uprops[WATER_CRYSTAL].extrinsic
+#define Water_crystal	(HWater_crystal || EWater_crystal)
+
+#define HAir_crystal	u.uprops[AIR_CRYSTAL].intrinsic
+#define EAir_crystal	u.uprops[AIR_CRYSTAL].extrinsic
+#define Air_crystal		(HAir_crystal || EAir_crystal)
+
+#define HEarth_crystal	u.uprops[EARTH_CRYSTAL].intrinsic
+#define EEarth_crystal	u.uprops[EARTH_CRYSTAL].extrinsic
+#define Earth_crystal	(HEarth_crystal || EEarth_crystal)
+
+#define HBlack_crystal	u.uprops[BLACK_CRYSTAL].intrinsic
+#define EBlack_crystal	u.uprops[BLACK_CRYSTAL].extrinsic
+#define Black_crystal	(HBlack_crystal || EBlack_crystal)
+
 #define HSterile	u.uprops[STERILE].intrinsic
 #define ESterile	u.uprops[STERILE].extrinsic
 #define Sterile		((HSterile || ESterile) && !GoodHealth)
@@ -607,7 +636,7 @@
 #define Fixed_abil		(u.uprops[FIXED_ABIL].extrinsic)	/* KMH */
 
 #define ELifesaved		u.uprops[LIFESAVED].extrinsic
-#define Lifesaved		(ELifesaved || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0)) /*Note: the rings only give life saving when charged, so it can't be a normal property*/
+#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0)) /*Note: the rings only give life saving when charged, so it can't be a normal property*/
 
 #define Necrospellboost	(u.uprops[NECROSPELLS].extrinsic)
 

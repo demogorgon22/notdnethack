@@ -54,7 +54,7 @@ dodrop()
 		HPanicking += 1+rnd(6);
 	}
 	
-	return result;
+	return result ? MOVE_STANDARD : MOVE_CANCELLED;
 }
 
 #endif /* OVLB */
@@ -777,7 +777,7 @@ doddrop()
 		You("panic after giving up your property!");
 		HPanicking += 1+rnd(6);
 	}
-	return result;
+	return result ? MOVE_STANDARD : MOVE_CANCELLED;
 }
 
 /* Drop things from the hero's inventory, using a menu. */
@@ -904,10 +904,10 @@ dodown()
 #ifdef STEED
 	if (u.usteed && !u.usteed->mcanmove) {
 		pline("%s won't move!", Monnam(u.usteed));
-		return(0);
+		return MOVE_CANCELLED;
 	} else if (u.usteed && u.usteed->meating) {
 		pline("%s is still eating.", Monnam(u.usteed));
-		return(0);
+		return MOVE_CANCELLED;
 	} else
 #endif
 	if (Levitation) {
@@ -927,11 +927,11 @@ dodown()
 		    }
 		}
 		if (float_down(I_SPECIAL|TIMEOUT, W_ARTI))
-		    return (1);   /* came down, so moved */
+		    return MOVE_STANDARD;   /* came down, so moved */
 	    }
 	    floating_above(stairs_down ? "stairs" : ladder_down ?
 			   "ladder" : surface(u.ux, u.uy));
-	    return (0);   /* didn't move */
+	    return MOVE_CANCELLED;   /* didn't move */
 	}
 	if (!stairs_down && !ladder_down) {
 		if (!(trap = t_at(u.ux,u.uy)) ||
@@ -951,7 +951,7 @@ dodown()
 					} else pline("These stairs don't go down!");
 				}
 				else You_cant("go down here.");
-				return(0);
+				return MOVE_CANCELLED;
 			}
 		}
 	}
@@ -959,13 +959,13 @@ dodown()
 		You("are %s, and cannot go down.",
 			!u.uswallow ? "being held" : is_animal(u.ustuck->data) ?
 			"swallowed" : "engulfed");
-		return(1);
+		return MOVE_STANDARD;
 	}
 	if(u.veil && Is_sumall(&u.uz)){
 		You("are standing at the head of a strangely-angled staircase.");
 		You("feel reality threatening to slip away!");
 		if (yn("Are you sure you want to descend?") != 'y')
-			return(0);
+			return MOVE_CANCELLED;
 		else pline("So be it.");
 		u.veil = FALSE;
 		change_uinsight(1);
@@ -986,7 +986,7 @@ dodown()
 	}
 	if(!next_to_u()) {
 		You("are held back by your pet!");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	if (trap)
@@ -1000,7 +1000,7 @@ dodown()
 		next_level(!trap);
 		at_ladder = FALSE;
 	}
-	return(1);
+	return MOVE_MOVED;
 }
 
 int
@@ -1030,54 +1030,54 @@ doup()
 			}
 			else You_cant("go up here.");
 		}
-		return(0);
+		return MOVE_CANCELLED;
 	}
 #ifdef STEED
 	if (u.usteed && !u.usteed->mcanmove) {
 		pline("%s won't move!", Monnam(u.usteed));
-		return(0);
+		return MOVE_CANCELLED;
 	} else if (u.usteed && u.usteed->meating) {
 		pline("%s is still eating.", Monnam(u.usteed));
-		return(0);
+		return MOVE_CANCELLED;
 	} else
 #endif
 	if(u.ustuck) {
 		You("are %s, and cannot go up.",
 			!u.uswallow ? "being held" : is_animal(u.ustuck->data) ?
 			"swallowed" : "engulfed");
-		return(1);
+		return MOVE_STANDARD;
 	}
 	if(near_capacity() > SLT_ENCUMBER) {
 		/* No levitation check; inv_weight() already allows for it */
 		Your("load is too heavy to climb the %s.",
 			levl[u.ux][u.uy].typ == STAIRS ? "stairs" : "ladder");
-		return(1);
+		return MOVE_STANDARD;
 	}
 	if(ledger_no(&u.uz) == 1) {
 		if (iflags.debug_fuzzer)
-			return 0;
+			return MOVE_CANCELLED;
 		if(!Role_if(PM_ANACHRONOUNBINDER)){
 			if (yn("Beware, there will be no return! Still climb?") != 'y')
-				return(0);
+				return MOVE_CANCELLED;
 		} else {
 			int items = acuOK();
 			if (yn("Beware, there will be no return! Still climb?") != 'y')
-				return(0);
+				return MOVE_CANCELLED;
 			else if(u.uhave.amulet && items){
 				You("require the %s.",items == 1?"Illithid Staff":items == 2?"Elder Cerebral Fluid":"Illithid Staff and the Elder Cerebral Fluid");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		}
 
 	}
 	if(!next_to_u()) {
 		You("are held back by your pet!");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	at_ladder = (boolean) (levl[u.ux][u.uy].typ == LADDER);
 	prev_level(TRUE);
 	at_ladder = FALSE;
-	return(1);
+	return MOVE_MOVED;
 }
 
 /*
@@ -1275,7 +1275,7 @@ int portal;
 	if (fd < 0) return;
 
 	if (falling) /* assuming this is only trap door or hole */
-	    impact_drop((struct obj *)0, u.ux, u.uy, newlevel->dlevel);
+	    impact_drop((struct obj *)0, u.ux, u.uy, newlevel->dlevel, TRUE);
 
 	check_special_room(TRUE);		/* probably was a trap door */
 	if (Punished) unplacebc();
@@ -1804,10 +1804,12 @@ final_level()
 		    bless(otmp);
 		    if (otmp->spe < 4) otmp->spe += rnd(4);
 		    if ((otmp = which_armor(mtmp, W_ARMS)) == 0 ||
-			    otmp->otyp != SHIELD_OF_REFLECTION) {
-			(void) mongets(mtmp, AMULET_OF_REFLECTION, NO_MKOBJ_FLAGS);
-			m_dowear(mtmp, TRUE);
-			init_mon_wield_item(mtmp);
+			    otmp->otyp != SHIELD_OF_REFLECTION
+			) {
+				(void) mongets(mtmp, AMULET_OF_REFLECTION, NO_MKOBJ_FLAGS);
+				m_dowear(mtmp, TRUE);
+				init_mon_wield_item(mtmp);
+				m_level_up_intrinsic(mtmp);
 		    }
 		}
 	    }
@@ -1918,6 +1920,8 @@ int different;
 	 */
 	if (different)
 	    mtmp->mhp = mtmp->mhpmax;
+	else if(has_sunflask(mtmp->mtyp))
+		mtmp->mvar_flask_charges = MAX_FLASK_CHARGES(mtmp);
 	chewed = !different && (mtmp->mhp < mtmp->mhpmax);
 	if (chewed) cname = cname_buf;	/* include "bite-covered" prefix */
 	if(different==REVIVE_ZOMBIE){
@@ -2001,6 +2005,7 @@ int different;
 				}
 				m_dowear(mtmp, TRUE);
 				init_mon_wield_item(mtmp);
+				m_level_up_intrinsic(mtmp);
 			}
 		}
 		break;
@@ -2454,6 +2459,7 @@ donull()
 {
 	static long lastreped = -13;//hacky way to tell if the player has recently tried repairing themselves
 	u.unull = TRUE;
+
 	if(uclockwork){
 		if(!Upolyd && u.uhp<u.uhpmax){
 			if(lastreped < monstermoves-13) You("attempt to make repairs.");
@@ -2492,7 +2498,9 @@ donull()
 		} else if(u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) unbind(SEAL_EURYNOME,TRUE);
 	} else if(uandroid){
 		if(!Upolyd && u.uhp<u.uhpmax && u.uen > 0){
-			u.uhp += u.ulevel/3+1;
+			u.uhp += u.ulevel/6+1;
+			if(rn2(6) < u.ulevel%6)
+				u.uhp++;
 			flags.botl = 1;
 			u.uen--;
 			if(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_HEALING){
@@ -2535,7 +2543,7 @@ donull()
 			}
 		}
 	}
-	return(1);	/* Do nothing, but let other things happen */
+	return MOVE_STANDARD;	/* Do nothing, but let other things happen */
 }
 
 #endif /* OVL3 */
@@ -2553,12 +2561,12 @@ wipeoff()
 		u.ucreamed = 0;
 		Blinded = 1;
 		make_blinded(0L,TRUE);
-		return(0);
+		return MOVE_FINISHED_OCCUPATION;
 	} else if (!u.ucreamed) {
 		Your("%s feels clean now.", body_part(FACE));
-		return(0);
+		return MOVE_FINISHED_OCCUPATION;
 	}
-	return(1);		/* still busy */
+	return MOVE_STANDARD;		/* still busy */
 }
 
 int
@@ -2572,10 +2580,10 @@ dowipe()
 		/* Not totally correct; what if they change back after now
 		 * but before they're finished wiping?
 		 */
-		return(1);
+		return MOVE_STANDARD;
 	}
 	Your("%s is already clean.", body_part(FACE));
-	return(1);
+	return MOVE_STANDARD;
 }
 
 void
@@ -2631,7 +2639,7 @@ int
 dowait()
 {
 	struct monst *mtmp;
-	if (!getdir("Indicate pet that should wait, or '.' for all.")) return(0);
+	if (!getdir("Indicate pet that should wait, or '.' for all.")) return MOVE_CANCELLED;
 	if(!(u.dx || u.dy)){
 		You("order all your pets to wait for your return.");
 		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
@@ -2642,21 +2650,21 @@ dowait()
 		mtmp = m_at(u.ux+u.dx, u.uy+u.dy);
 		if(!mtmp){
 			pline("There is no target there.");
-			return 0;
+			return MOVE_INSTANT;
 		}
 		if(mtmp->mtame){
 			mtmp->mwait = monstermoves;
 			You("order %s to wait for your return.", mon_nam(mtmp));
 		}
 	} else pline("There is no target there.");
-	return 0;
+	return MOVE_INSTANT;
 }
 
 int
 docome()
 {
 	struct monst *mtmp;
-	if (!getdir("Indicate pet that should come with you, or '.' for all.")) return(0);
+	if (!getdir("Indicate pet that should come with you, or '.' for all.")) return MOVE_CANCELLED;
 	if(!(u.dx || u.dy)){
 		You("order all your pets to follow you.");
 		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
@@ -2667,14 +2675,29 @@ docome()
 		mtmp = m_at(u.ux+u.dx, u.uy+u.dy);
 		if(!mtmp){
 			pline("There is no target there.");
-			return 0;
+			return MOVE_INSTANT;
 		}
 		if(mtmp->mtame){
 			mtmp->mwait = 0;
 			You("order %s to follow you.", mon_nam(mtmp));
 		}
 	} else pline("There is no target there.");
-	return 0;
+	return MOVE_INSTANT;
+}
+
+
+int
+dodownboy()
+{
+	u.peaceful_pets = TRUE;
+	return MOVE_INSTANT;
+}
+
+int
+dosickem()
+{
+	u.peaceful_pets = FALSE;
+	return MOVE_INSTANT;
 }
 
 #endif /* OVLB */

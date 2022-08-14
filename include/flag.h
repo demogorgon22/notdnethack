@@ -55,8 +55,7 @@ struct flag {
 	boolean  run_timers;	/* run timers as soon as possible (probably to desummon items) */
 	boolean  drgn_brth;		/* for use with breath weapons, indicates that a dragon is breathing */
 	boolean  phasing; /* Etherealoid phasing in or out*/
-	boolean  move;
-	boolean  mv;
+	boolean  mv;		/* player is doing a multi-tile movement */
 	boolean  bypasses;	/* bypass flag is set on at least one fobj */
 	boolean  nap;		/* `timed_delay' option for display effects */
 	boolean  nopick;	/* do not pickup objects (as when running) */
@@ -92,6 +91,25 @@ struct flag {
 	boolean  toptenwin;	/* ending list in window instead of stdout */
 	boolean  verbose;	/* max battle info */
 	boolean  prayconfirm;	/* confirm before praying */
+
+	int move;	/* type[s] of action taken by player's last input/action */
+	int movetoprint;
+	int movetoprintcost;
+#define MOVE_DEFAULT				0x04000	/* equivalent to Standard unless another move is layered overtop, in which case it is ignored */
+#define MOVE_CANCELLED				0x08000	/* overrides all other move types, total action takes no time. Also used for infomenus and other instant nonactions. */
+#define MOVE_FINISHED_OCCUPATION	0x10000	/* finished an occupation; does not affect action time */
+#define MOVE_STANDARD				0x00001	/* player did a general action -- takes 1 standard turn */
+#define MOVE_INSTANT				0x00002	/* player did an action that should take no time */
+#define MOVE_PARTIAL				0x00004	/* player did a general action -- takes no time for the first instance, 1 standard turn after, resets on non-instant action */ 
+#define MOVE_MOVED					0x00008	/* player moved */
+#define MOVE_ATTACKED				0x00010	/* player made a weapon attack */
+#define MOVE_QUAFFED				0x00020	/* player quaffed a potion (or sink/fountain) */
+#define MOVE_ZAPPED					0x00040	/* player zapped a wand */
+#define MOVE_READ					0x00080	/* player read a book, scroll, or other readable */
+#define MOVE_CASTSPELL				0x00100	/* player cast a spell */
+#define MOVE_ATE					0x00200	/* player ate food */
+#define MOVE_FIRED					0x00400	/* player properly fired ammo, using a launcher or intrinsic launching means, NOT a standard thrown object. */
+
 	int	 end_top, end_around;	/* describe desired score list */
 	unsigned ident;		/* social security number for each monster */
 	unsigned moonphase;
@@ -218,7 +236,7 @@ struct flag {
 #define POKEDEX_SHOW_ATTACKS	2048
 #define POKEDEX_SHOW_CRITICAL	4096
 #define MAX_POKEDEX_SHOW	POKEDEX_SHOW_CRITICAL
-#define POKEDEX_SHOW_DEFAULT	MAX_POKEDEX_SHOW-1 | MAX_POKEDEX_SHOW
+#define POKEDEX_SHOW_DEFAULT	(MAX_POKEDEX_SHOW-1) | MAX_POKEDEX_SHOW
 
 struct instance_flags {
 	boolean debug_fuzzer;  /* fuzz testing */
@@ -345,6 +363,7 @@ struct instance_flags {
     boolean artifact_descriptors;
 	boolean force_artifact_names;
     boolean dnethack_dungeon_colors;
+    boolean invweight;
 	boolean quick_m_abilities;
 
 	int pokedex;	/* default monster stats to show in the pokedex */

@@ -346,6 +346,8 @@ struct obj *box;
 		if (otmp->oclass == COIN_CLASS) {
 		    /* 2.5 x level's usual amount; weight adjusted below */
 		    otmp->quan = (long)(rnd(level_difficulty()+2) * rnd(75));
+			if(uring_art(ART_RING_OF_THROR))
+				otmp->quan *= 2;
 		    otmp->owt = weight(otmp);
 		} else while (otmp->otyp == ROCK) {
 		    otmp->otyp = rnd_class(DILITHIUM_CRYSTAL, LOADSTONE);
@@ -887,10 +889,14 @@ int mkflags;
 					add_to_container(otmp, gem);
 					container_weight(otmp);
 				}
-				otmp->ovar1 = random_saber_hilt();
+				if(otmp->otyp == LIGHTSABER)
+					otmp->ovar1 = random_saber_hilt();
+				else if(otmp->otyp == BEAMSWORD)
+					otmp->ovar1 = random_beam_hilt();
 				break;
 			case CHEST:
 			case BOX:
+			case SARCOPHAGUS:
 				if (Is_stronghold(&u.uz) && in_mklev){
 					otmp->olocked = 1;
 					otmp->otrapped = 0;
@@ -1065,8 +1071,9 @@ int mkflags;
 						PM_DROW_CAPTAIN, PM_HEDROW_WIZARD, PM_DROW_MATRON, PM_HEDROW_BLADEMASTER, 
 						PM_DROW_CAPTAIN, PM_HEDROW_WARRIOR, PM_DROW_MATRON, PM_DROW_ALIENIST, 
 						PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN, 
-						PM_ARCHEOLOGIST, PM_KNIGHT, PM_MADMAN, PM_MADWOMAN,
-						PM_BARBARIAN, PM_HALF_DRAGON, PM_PRIEST, PM_PRIESTESS
+						PM_ARCHEOLOGIST, PM_BARBARIAN, PM_HALF_DRAGON, PM_CAVEMAN, PM_CAVEWOMAN, 
+						PM_KNIGHT, PM_KNIGHT, PM_MADMAN, PM_MADWOMAN, PM_PRIEST, PM_PRIESTESS,
+						PM_RANGER, PM_ROGUE, PM_ROGUE, PM_SAMURAI, PM_VALKYRIE, PM_WIZARD 
 					};
 					skull = ROLL_FROM(skulls);
 				}
@@ -2003,6 +2010,7 @@ struct obj* obj;
 	case WRITING_DESK:
 		return NULL;
 		/* Any other cases for specific object types go here. */
+	case SARCOPHAGUS:
 	case SHIELD_OF_REFLECTION:
 		return shiny_materials;
 	case BOW:
@@ -2408,6 +2416,24 @@ int mat;
 			else if (mat == GEMSTONE)	obj->otyp = MAGICITE_CRYSTAL + rn2(LAST_GEM - MAGICITE_CRYSTAL + 1);
 			else						obj->otyp = ROCK;
 		break;
+		case WHITE_VIBROSPEAR:
+			if(mat == GOLD) obj->otyp = GOLD_BLADED_VIBROSPEAR;
+		break;
+		case WHITE_VIBROSWORD:
+			if(mat == GOLD) obj->otyp = GOLD_BLADED_VIBROSWORD;
+		break;
+		case WHITE_VIBROZANBATO:
+			if(mat == GOLD) obj->otyp = GOLD_BLADED_VIBROZANBATO;
+		break;
+		case GOLD_BLADED_VIBROSPEAR:
+			if(mat != GOLD) obj->otyp = WHITE_VIBROSPEAR;
+		break;
+		case GOLD_BLADED_VIBROSWORD:
+			if(mat != GOLD) obj->otyp = WHITE_VIBROSWORD;
+		break;
+		case GOLD_BLADED_VIBROZANBATO:
+			if(mat != GOLD) obj->otyp = WHITE_VIBROZANBATO;
+		break;
 		// case HEAVY_IRON_BALL:
 			// obj->otyp = ;
 		// break;
@@ -2539,7 +2565,7 @@ register struct obj *obj;
 		}
 	}
 	
-	if (obj->otyp == BOX && obj->spe){ /* Schroedinger's Cat */
+	if ((Is_real_container(obj) && obj->otyp != MAGIC_CHEST) && obj->spe){ /* Schroedinger's Cat */
 		if(obj->spe == 1){
 			wt += mons[PM_HOUSECAT].cwt;
 		}else if(obj->spe == 4){
@@ -2600,8 +2626,6 @@ register struct obj *obj;
 		return (int)((obj->quan + 50L) / 100L);
 	else if (obj->otyp == HEAVY_IRON_BALL && obj->owt != 0)
 		return((int)(obj->owt));	/* kludge for "very" heavy iron ball */
-	else if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD && obj->owt != 0)
-		return((int)(obj->owt));	/* kludge for "very" heavy gdcb */
 	return(wt ? wt*(int)obj->quan : ((int)obj->quan + 1)>>1);
 }
 
@@ -2669,7 +2693,7 @@ boolean new;
     register struct obj *gold = g_at(x,y);
 
     if (amount <= 0L)
-	amount = (long)(1 + rnd(level_difficulty()+2) * rnd(30));
+		amount = (long)(1 + rnd(level_difficulty()+2) * rnd(30));
     if (gold) {
 	gold->quan += amount;
     } else {
@@ -2687,7 +2711,20 @@ mkgold(amount, x, y)
 long amount;
 int x, y;
 {
-	return mkgold_core(amount, x, y, TRUE);
+	struct obj *gold;
+	gold = mkgold_core(amount, x, y, TRUE);
+	if(uring_art(ART_RING_OF_THROR)){
+		if(gold->quan&0x1L){//Odd piles stay odd
+			if(rn2(2))
+				gold->quan = 2*gold->quan + 1;
+			else
+				gold->quan = 2*gold->quan - 1;
+		}
+		else
+			gold->quan = 2*gold->quan;
+		gold->owt = weight(gold);
+	}
+	return gold;
 }
 
 #endif /* OVLB */
@@ -3472,7 +3509,7 @@ add_to_migration(obj)
     if (obj->where != OBJ_FREE)
 	panic("add_to_migration: obj not free");
 	
-	pause_timers(obj->timed);
+	migrate_timers(obj->timed);
     obj->where = OBJ_MIGRATING;
     obj->nobj = migrating_objs;
     migrating_objs = obj;
@@ -3528,6 +3565,9 @@ dealloc_obj(obj)
 	/* Free any oextra attached to the object */
 	if (obj->oextra_p)
 		rem_all_ox(obj);
+
+	if (obj->mp)
+		free((genericptr_t) obj->mp);
 
     free((genericptr_t) obj);
 }

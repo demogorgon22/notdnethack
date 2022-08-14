@@ -139,10 +139,11 @@ static struct Bool_Opt
 	{"hilite_obj_piles",    &iflags.hilite_obj_piles, FALSE, SET_IN_GAME},	/*WC*/
 	{"dnethack_start_text",    &iflags.dnethack_start_text, TRUE, DISP_IN_GAME},
 	{"artifact_descriptors",    &iflags.artifact_descriptors, FALSE, SET_IN_GAME},
-	{"force_artifact_names",    &iflags.force_artifact_names, FALSE, SET_IN_GAME},
+	{"force_artifact_names",    &iflags.force_artifact_names, TRUE, SET_IN_GAME},
 	{"role_obj_names",    &iflags.role_obj_names, TRUE, SET_IN_GAME},
 	{"obscure_role_obj_names",    &iflags.obscure_role_obj_names, FALSE, SET_IN_GAME},
 	{"dnethack_dungeon_colors",    &iflags.dnethack_dungeon_colors, TRUE, SET_IN_GAME},
+	{"invweight",    &iflags.invweight, TRUE, SET_IN_GAME},
 	{"hitpointbar", &iflags.hitpointbar, FALSE, SET_IN_GAME},
 	{"hp_monitor", (boolean *)0, TRUE, SET_IN_FILE}, /* For backward compat, HP monitor patch */
 	{"hp_notify", &iflags.hp_notify, FALSE, SET_IN_GAME},
@@ -218,7 +219,7 @@ static struct Bool_Opt
 	{"polearm_old_style", &flags.standard_polearms, FALSE, SET_IN_GAME},
 	{"polearm_peace_safe", &flags.peacesafe_polearms, TRUE, SET_IN_GAME},
 	{"polearm_pet_safe", &flags.petsafe_polearms, TRUE, SET_IN_GAME},
-	{"polearm_sequential_letters", &flags.relative_polearms, FALSE, SET_IN_GAME},
+	{"polearm_sequential_letters", &flags.relative_polearms, TRUE, SET_IN_GAME},
 	{"popup_dialog",  &iflags.wc_popup_dialog, FALSE, SET_IN_GAME},	/*WC*/
 	{"prayconfirm", &flags.prayconfirm, TRUE, SET_IN_GAME},
 	{"preload_tiles", &iflags.wc_preload_tiles, TRUE, DISP_IN_GAME},	/*WC*/
@@ -3564,7 +3565,7 @@ doset()
 	    }
  	    (void) doredraw();
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_OVL boolean
@@ -4394,7 +4395,7 @@ dotogglepickup()
 	    Strcpy(buf, "OFF");
 	}
 	pline("Autopickup: %s.", buf);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 #ifdef AUTOPICKUP_EXCEPTIONS

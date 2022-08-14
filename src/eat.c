@@ -253,7 +253,7 @@ init_uhunger()
 		u.uen = u.uenmax*.45;
 	} else {
 		u.uhungermax = DEFAULT_HMAX;
-		u.uhunger = u.uhungermax*.45;
+		u.uhunger = get_uhungermax()*.45;
 	}
 	u.uhs = NOT_HUNGRY;
 }
@@ -265,7 +265,7 @@ reset_uhunger()
 		u.uen = min(u.uen+400, u.uenmax*.45);
 		newuhs(TRUE);
 	} else {
-		u.uhunger = u.uhungermax*.45;
+		u.uhunger = get_uhungermax()*.45;
 		u.uhs = NOT_HUNGRY;
 	}
 }
@@ -279,12 +279,35 @@ satiate_uhunger()
 		u.uen = min(u.uen+400, u.uenmax*.55);
 		newuhs(TRUE);
 	} else {
-		if(u.uhunger > u.uhungermax*.55)
+		if(u.uhunger >= get_uhungermax()*.55)
 			return FALSE;
-		u.uhunger = u.uhungermax*.55;
+		u.uhunger = get_uhungermax()*.55;
 		u.uhs = NOT_HUNGRY;
 	}
 	return TRUE;
+}
+
+double
+get_uhungersizemod()
+{
+	double sizemod = 1;
+	if(youracedata->msize > MZ_MEDIUM)
+		sizemod *= 1 + youracedata->msize - MZ_MEDIUM;
+	else if(youracedata->msize < MZ_MEDIUM)
+		sizemod /= 1 + MZ_MEDIUM - youracedata->msize;
+
+	return sizemod;
+}
+
+int
+get_uhungermax()
+{
+	int hungermax = u.uhungermax;
+	if(youracedata->msize > MZ_MEDIUM)
+		hungermax *= 1 + youracedata->msize - MZ_MEDIUM;
+	//For gameplay reasons, Gnomes et al can overeat by the same amount as humans before choking
+
+	return hungermax;
 }
 
 static const struct { const char *txt; int nut; } tintxts[] = {
@@ -404,7 +427,7 @@ choke(food)	/* To a full belly all food is bad. (It.) */
 			return;
 		}
 		You("stuff yourself and then vomit voluminously.");
-		morehungry(1000);	/* you just got *very* sick! */
+		morehungry(1000*get_uhungersizemod());	/* you just got *very* sick! */
 		nomovemsg = 0;
 		vomit();
 	} else {
@@ -420,7 +443,7 @@ choke(food)	/* To a full belly all food is bad. (It.) */
 		morehungry(u.uenmax/2);	/* lifesaved */
 	 } else if(magivorous(youracedata)){
 		You("absorb too much energy and then vomit up a rainbow!");
-		morehungry(1000);	/* you just got *very* sick! */
+		morehungry(1000*get_uhungersizemod());	/* you just got *very* sick! */
 		nomovemsg = 0;
 		vomit();
 	 } else {
@@ -603,18 +626,18 @@ eatfood()		/* called each move during eating process */
 	 (!carried(victual.piece) && !obj_here(victual.piece, u.ux, u.uy))) {
 		/* maybe it was stolen? */
 		do_reset_eat();
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if (is_vampire(youracedata) != victual.piece->odrained) {
 	    /* Polymorphed while eating/draining */
 	    do_reset_eat();
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
-	if(!victual.eating) return(0);
+	if(!victual.eating) return MOVE_CANCELLED;
 
 	if(++victual.usedtime <= victual.reqtime) {
-	    if(bite()) return(0);
-	    return(1);	/* still busy */
+	    if(bite()) return MOVE_CANCELLED;
+	    return MOVE_ATE;	/* still busy */
 	} else {	/* done */
 	    int crumbs = victual.piece->oeaten;		/* The last crumbs */
 	    if (victual.piece->odrained) crumbs -= drainlevel(victual.piece);
@@ -623,7 +646,7 @@ eatfood()		/* called each move during eating process */
 			victual.piece->oeaten -= crumbs;
 	    }
 	    done_eating(TRUE);
-	    return(0);
+	    return MOVE_FINISHED_OCCUPATION;
 	}
 }
 
@@ -1002,6 +1025,7 @@ boolean drained;
 	if(ptr->geno & G_UNIQ && ptr->mlevel > 14) permanent = 1;
 
 	long duration = nutval * multiplier;
+	duration /= get_uhungersizemod();
 	if (permanent)
 		duration = -1;
 	
@@ -1425,13 +1449,13 @@ opentin()		/* called during each move whilst opening a tin */
 
 	if(!carried(tin.tin) && !obj_here(tin.tin, u.ux, u.uy))
 					/* perhaps it was stolen? */
-		return(0);		/* %% probably we should use tinoid */
+		return MOVE_CANCELLED;		/* %% probably we should use tinoid */
 	if(tin.usedtime++ >= 50) {
 		You("give up your attempt to open the tin.");
-		return(0);
+		return MOVE_FINISHED_OCCUPATION;
 	}
 	if(tin.usedtime < tin.reqtime)
-		return(1);		/* still busy */
+		return MOVE_STANDARD;		/* still busy */
 	if(tin.tin->otrapped ||
 	   (tin.tin->cursed && tin.tin->spe != -1 && !rn2(8))) {
 		b_trapped("tin", 0);
@@ -1685,7 +1709,7 @@ use_me:
 	if (carried(tin.tin)) useup(tin.tin);
 	else useupf(tin.tin, 1L);
 	tin.tin = (struct obj *) 0;
-	return(0);
+	return MOVE_FINISHED_OCCUPATION;
 }
 
 STATIC_OVL void
@@ -1923,12 +1947,14 @@ eatcorpse(otmp)		/* called when a corpse is selected as food */
 		tp++;
 		You("feel your stomach freeze!"); /* not body_part() */
 		roll_frigophobia();
-		losehp(rnd(12) + rnd(12), "cryonic corpse", KILLED_BY_AN);
-	} if (burning(&mons[mtyp]) && !Fire_resistance) {
+		losehp(d(2, 12), "cryonic corpse", KILLED_BY_AN);
+	}
+	if (burning(&mons[mtyp]) && !Fire_resistance) {
 		tp++;
 		You("feel your stomach boil!"); /* not body_part() */
 		losehp(rnd(20), "boiling hot corpse", KILLED_BY_AN);
-	} if (poisonous(&mons[mtyp]) && rn2(5)) {
+	}
+	if (poisonous(&mons[mtyp]) && rn2(5)) {
 		tp++;
 		pline("Ecch - that must have been poisonous!");
 		if(!Poison_resistance) {
@@ -2041,7 +2067,7 @@ struct obj *otmp;
 		if(YouHunger <= 200)
 		    pline(Hallucination ? "Oh wow, like, superior, man!" :
 			  "That food really hit the spot!");
-		else if(YouHunger <= u.uhungermax/2 - 300) pline("That satiated your %s!",
+		else if(YouHunger <= get_uhungermax()/2 - 300) pline("That satiated your %s!",
 						body_part(STOMACH));
 		break;
 	    case TRIPE_RATION:
@@ -2696,6 +2722,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	etype = 0;
 	char qbuf[QBUFSZ];
 	char c;
+	struct obj *obj2;
 	
 	boolean dont_start = FALSE;
 
@@ -2707,13 +2734,13 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	if(uandroid && !Race_if(PM_INCANTIFIER)){
 		pline("Though you may look human, you run on magical energy, not food.");
 		pline("Use #monster to rest and recover.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	if(uclockwork && !Race_if(PM_INCANTIFIER)){
 		long uUpgrades = (u.clockworkUpgrades&(WOOD_STOVE|MAGIC_FURNACE|HELLFIRE_FURNACE|SCRAP_MAW));
 		if(!uUpgrades){
 			pline("You are metal and springs, not flesh and blood. You cannot eat.");
-			return 0;
+			return MOVE_CANCELLED;
 		} else if(uUpgrades == WOOD_STOVE || 
 				uUpgrades == MAGIC_FURNACE || 
 				uUpgrades == HELLFIRE_FURNACE || 
@@ -2724,18 +2751,18 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	
 	if (Strangled) {
 		pline("If you can't breathe air, how can you consume solids?");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 
 	if (uarmh && FacelessHelm(uarmh)){
 		pline("The %s covers your whole face.", xname(uarmh));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	if (uarmc && FacelessCloak(uarmc)){
 		pline("The %s covers your whole face.", xname(uarmc));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if(herbivorous(youracedata) && !carnivorous(youracedata) && !Race_if(PM_INCANTIFIER)
@@ -2747,15 +2774,15 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	){
 		if(yn("Eat some of the grass growing here?") == 'y'){
 			You("eat some grass.");
-			if(u.uhunger < u.uhungermax * 3/4 || yn_function("You feel awfully full, stop eating?",ynchars,'y') == 'n'){
+			if(u.uhunger < get_uhungermax() * 3/4 || yn_function("You feel awfully full, stop eating?",ynchars,'y') == 'n'){
 				lesshungry(objects[FOOD_RATION].oc_nutrition/objects[FOOD_RATION].oc_delay);
 			}
-			return 1;
+			return MOVE_ATE;
 		}
 	}
 	
-	if (!(otmp = floorfood("eat", 0))) return 0;
-	if (check_capacity((char *)0)) return 0;
+	if (!(otmp = floorfood("eat", 0))) return MOVE_CANCELLED;
+	if (check_capacity((char *)0)) return MOVE_CANCELLED;
 	
 
 	/* We have to make non-foods take 1 move to eat, unless we want to
@@ -2765,7 +2792,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	 */
 	if (!is_edible(otmp)) {
 	    You("cannot eat that!");
-	    return 0;
+	    return MOVE_CANCELLED;
 	} else if ((otmp->owornmask & (W_ARMOR|W_TOOL|W_AMUL
 #ifdef STEED
 			|W_SADDLE
@@ -2773,7 +2800,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 			)) != 0) {
 	    /* let them eat rings */
 	    You_cant("eat %s you're wearing.", something);
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	if(otmp->otyp == CORPSE && your_race(&mons[otmp->corpsenm]) && !is_animal(&mons[otmp->corpsenm]) && !mindless(&mons[otmp->corpsenm])
 		&& !CANNIBAL_ALLOWED() && ((u.ualign.record >= 20 || ACURR(A_WIS) >= 20 || u.ualign.record >= rnd(20-ACURR(A_WIS))) && !roll_madness(MAD_CANNIBALISM))
@@ -2792,7 +2819,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 					body_part(NOSE));
 				u.uedibility = 0;
 			}
-		    if (res == 1) return 0;
+		    if (res == 1) return MOVE_INSTANT;
 		}
 	}
 	if (is_metallic(otmp) &&
@@ -2815,31 +2842,45 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 			dropy(otmp);
 		}
 		stackobj(otmp);
-		return 1;
+		return MOVE_ATE;
 	}
 	if(Race_if(PM_INCANTIFIER) || magivorous(youracedata)){
 		int curspe;
 		if(objects[otmp->otyp].oc_unique) return 1;//redundant check against unique
 		if((Race_if(PM_INCANTIFIER) || magivorous(youracedata)) && u.uen >= u.uenmax * 3/4 && yn("You feel overcharged. Continue eating?") != 'y'){
-			return 0;
+			return MOVE_INSTANT;
 		}
 		if (otmp->quan > 1L) {
 		    if(!carried(otmp))
 			(void) splitobj(otmp, otmp->quan - 1L);
 		    else
 			otmp = splitobj(otmp, 1L);
-		if (carried(otmp)) {
-			freeinv(otmp);
-			if (inv_cnt() >= 52) {
-				sellobj_state(SELL_DONTSELL);
-				dropy(otmp);
-				sellobj_state(SELL_NORMAL);
-			} else {
-				otmp->nomerge = TRUE;
-				otmp = addinv(otmp);
-				otmp->nomerge = FALSE;
+			if (carried(otmp)) {
+				freeinv(otmp);
+				if (inv_cnt() >= 52) {
+					sellobj_state(SELL_DONTSELL);
+					dropy(otmp);
+					sellobj_state(SELL_NORMAL);
+				} else {
+					otmp->nomerge = TRUE;
+					otmp = addinv(otmp);
+					otmp->nomerge = FALSE;
+				}
 			}
 		}
+		/*These cases destroy the object, rescue its contents*/
+		while((obj2 = otmp->cobj)){
+			obj_extract_self(obj2);
+			/* Compartmentalize tip() */
+			if(carried(otmp)){
+				sellobj_state(SELL_DONTSELL);
+				dropy(obj2);
+				sellobj_state(SELL_NORMAL);
+			}
+			else {
+				place_object(obj2, u.ux, u.uy);
+				stackobj(obj2);
+			}
 		}
 		switch(otmp->oclass){
 			case WEAPON_CLASS:
@@ -2959,30 +3000,58 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				}
 			break;
 		}
-		return 1;
+		return MOVE_ATE;
 	}
 	if(uclockwork){
 		if(etype == MAGIC_FURNACE && !otmp->oartifact){
 			int curspe;
 			if(objects[otmp->otyp].oc_unique) return 1;//redundant check against unique
 			You("place the %s in your magic furnace.", xname(otmp));
-			if (otmp->quan > 1L) {
-				if(!carried(otmp))
-				(void) splitobj(otmp, otmp->quan - 1L);
-				else
-				otmp = splitobj(otmp, 1L);
-			if (carried(otmp)) {
-				freeinv(otmp);
-				if (inv_cnt() >= 52) {
-				sellobj_state(SELL_DONTSELL);
-				dropy(otmp);
-				sellobj_state(SELL_NORMAL);
-				} else {
-					otmp->nomerge = TRUE;
-					otmp = addinv(otmp);
-					otmp->nomerge = FALSE;
+			/*These cases destroy the object, rescue its contents*/
+			while((obj2 = otmp->cobj)){
+				obj_extract_self(obj2);
+				/* Compartmentalize tip() */
+				if(carried(otmp)){
+					sellobj_state(SELL_DONTSELL);
+					dropy(obj2);
+					sellobj_state(SELL_NORMAL);
+				}
+				else {
+					place_object(obj2, u.ux, u.uy);
+					stackobj(obj2);
 				}
 			}
+			if (otmp->quan > 1L) {
+				if(!carried(otmp))
+					(void) splitobj(otmp, otmp->quan - 1L);
+				else
+					otmp = splitobj(otmp, 1L);
+				if (carried(otmp)) {
+					freeinv(otmp);
+					if (inv_cnt() >= 52) {
+					sellobj_state(SELL_DONTSELL);
+					dropy(otmp);
+					sellobj_state(SELL_NORMAL);
+					} else {
+						otmp->nomerge = TRUE;
+						otmp = addinv(otmp);
+						otmp->nomerge = FALSE;
+					}
+				}
+			}
+			/*These cases destroy the object, rescue its contents*/
+			while((obj2 = otmp->cobj)){
+				obj_extract_self(obj2);
+				/* Compartmentalize tip() */
+				if(carried(otmp)){
+					sellobj_state(SELL_DONTSELL);
+					dropy(obj2);
+					sellobj_state(SELL_NORMAL);
+				}
+				else {
+					place_object(obj2, u.ux, u.uy);
+					stackobj(obj2);
+				}
 			}
 			switch(otmp->oclass){
 				case WEAPON_CLASS:
@@ -3071,11 +3140,25 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 					}
 				break;
 			}
-			return 1;
+			return MOVE_ATE;
 		}
 		if(etype == WOOD_STOVE && !otmp->oartifact){
 			if(objects[otmp->otyp].oc_unique) return 1;//redundant check against unique
 			You("place the %s in your wood stove.", xname(otmp));
+			/*These cases destroy the object, rescue its contents*/
+			while((obj2 = otmp->cobj)){
+				obj_extract_self(obj2);
+				/* Compartmentalize tip() */
+				if(carried(otmp)){
+					sellobj_state(SELL_DONTSELL);
+					dropy(obj2);
+					sellobj_state(SELL_NORMAL);
+				}
+				else {
+					place_object(obj2, u.ux, u.uy);
+					stackobj(obj2);
+				}
+			}
 			if (otmp->quan > 1L) {
 				if(!carried(otmp))
 					(void) splitobj(otmp, otmp->quan - 1L);
@@ -3189,11 +3272,25 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 					}
 				break;
 			}
-			return 1;
+			return MOVE_ATE;
 		}
 		if(etype == HELLFIRE_FURNACE && !otmp->oartifact){
 			if(objects[otmp->otyp].oc_unique) return 1;//redundant check against unique
 			You("place the %s in your hellfire furnace.", xname(otmp));
+			/*These cases destroy the object, rescue its contents*/
+			while((obj2 = otmp->cobj)){
+				obj_extract_self(obj2);
+				/* Compartmentalize tip() */
+				if(carried(otmp)){
+					sellobj_state(SELL_DONTSELL);
+					dropy(obj2);
+					sellobj_state(SELL_NORMAL);
+				}
+				else {
+					place_object(obj2, u.ux, u.uy);
+					stackobj(obj2);
+				}
+			}
 			if (otmp->quan > 1L) {
 				if(!carried(otmp))
 					(void) splitobj(otmp, otmp->quan - 1L);
@@ -3307,11 +3404,25 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 					}
 				break;
 			}
-			return 1;
+			return MOVE_ATE;
 		}
 		if(etype == SCRAP_MAW && !otmp->oartifact){
 			if(objects[otmp->otyp].oc_unique) return 1;//redundant check against unique
 			You("crunch up the %s with your scrap maw.", xname(otmp));
+			/*These cases destroy the object, rescue its contents*/
+			while((obj2 = otmp->cobj)){
+				obj_extract_self(obj2);
+				/* Compartmentalize tip() */
+				if(carried(otmp)){
+					sellobj_state(SELL_DONTSELL);
+					dropy(obj2);
+					sellobj_state(SELL_NORMAL);
+				}
+				else {
+					place_object(obj2, u.ux, u.uy);
+					stackobj(obj2);
+				}
+			}
 			if (otmp->quan > 1L) {
 				if(!carried(otmp))
 					(void) splitobj(otmp, otmp->quan - 1L);
@@ -3437,12 +3548,12 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 					}
 				break;
 			}
-			return 1;
+			return MOVE_ATE;
 		}
 	}
 	if ((otmp->otyp == EYEBALL || otmp->otyp == SEVERED_HAND) && otmp->oartifact) {
 	    Strcpy(qbuf,"Are you sure you want to eat that?");
-	    if ((c = yn_function(qbuf, ynqchars, 'n')) != 'y') return 0;
+	    if ((c = yn_function(qbuf, ynqchars, 'n')) != 'y') return MOVE_CANCELLED;
 	}
 	/* KMH -- Slow digestion is... indigestible */
 	if (otmp->otyp == RIN_SLOW_DIGESTION) {
@@ -3451,7 +3562,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		if (otmp->dknown && !objects[otmp->otyp].oc_name_known
 				&& !objects[otmp->otyp].oc_uname)
 			docall(otmp);
-		return (1);
+		return MOVE_ATE;
 	}
 	if (otmp->oclass != FOOD_CLASS) {
 	    int material;
@@ -3463,7 +3574,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		/* Note: gold weighs 1 pt. for each 1000 pieces (see */
 		/* pickup.c) so gold and non-gold is consistent. */
 	    if (otmp->oclass == COIN_CLASS)
-			basenutrit = ((otmp->quan > ((long)u.uhungermax)*100L) ? u.uhungermax : (int)(otmp->quan/100L));
+			basenutrit = ((otmp->quan > ((long)get_uhungermax())*100L) ? get_uhungermax() : (int)(otmp->quan/100L));
 	    else if(otmp->oclass == BALL_CLASS || (otmp->oclass == CHAIN_CLASS && weight(otmp) > objects[otmp->otyp].oc_nutrition))
 			basenutrit = weight(otmp);
 			/* oc_nutrition is usually weight anyway */
@@ -3488,6 +3599,21 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	    
 	    if (otmp->cursed)
 		(void) rottenfood(otmp);
+
+		/*These cases destroy the object, rescue its contents*/
+		while((obj2 = otmp->cobj)){
+			obj_extract_self(obj2);
+			/* Compartmentalize tip() */
+			if(carried(otmp)){
+				sellobj_state(SELL_DONTSELL);
+				dropy(obj2);
+				sellobj_state(SELL_NORMAL);
+			}
+			else {
+				place_object(obj2, u.ux, u.uy);
+				stackobj(obj2);
+			}
+		}
 
 	    if (otmp->oclass == WEAPON_CLASS && otmp->opoisoned) {
 			if(otmp->opoisoned & OPOISON_BASIC){
@@ -3586,12 +3712,12 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				losehp(rnd(20), "silvery meal", KILLED_BY_AN);
 			}
 		} else if (!otmp->cursed)
-		pline("This %s is delicious!",
-		      otmp->oclass == COIN_CLASS ? foodword(otmp) :
-		      singular(otmp, xname));
+			pline("This %s is delicious!",
+				  otmp->oclass == COIN_CLASS ? foodword(otmp) :
+				  singular(otmp, xname));
 
 	    eatspecial();
-	    return 1;
+	    return MOVE_ATE;
 	}
 
 	/* [ALI] Hero polymorphed in the meantime.
@@ -3617,7 +3743,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	    victual.piece = touchfood(otmp);
 	    You("resume your meal.");
 	    start_eating(victual.piece);
-	    return(1);
+	    return MOVE_ATE;
 	}
 
 	/* nothing in progress - so try to find something. */
@@ -3625,7 +3751,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	/* tins must also check conduct separately in case they're discarded */
 	if(otmp->otyp == TIN) {
 	    start_tin(otmp);
-	    return(1);
+	    return MOVE_STANDARD;
 	}
 
 	/* KMH, conduct */
@@ -3661,11 +3787,11 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		    otmp->oeaten = 0;
 		/* ALI, conduct: didn't eat it after all */
 		u.uconduct.food--;
-		return 0;
+		return MOVE_INSTANT;
 	    } else if (tmp == 2) {
 		/* used up */
 		victual.piece = (struct obj *)0;
-		return(1);
+		return MOVE_ATE;
 	    } else if (tmp)
 		dont_start = TRUE;
 	    /* if not used up, eatcorpse sets up reqtime and may modify
@@ -3714,7 +3840,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		    victual.piece = (struct obj *)0;
 		    if (carried(otmp)) useup(otmp);
 		    else useupf(otmp, 1L);
-		    return 1;
+		    return MOVE_ATE;
 		} else
 		consume_oeaten(otmp, 1);	/* oeaten >>= 1 */
 	    } else fprefx(otmp);
@@ -3749,7 +3875,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	victual.canchoke = (u.uhs == SATIATED);
 
 	if (!dont_start) start_eating(otmp);
-	return(1);
+	return MOVE_ATE;
 }
 
 /* Take a single bite from a piece of food, checking for choking and
@@ -3760,7 +3886,7 @@ bite()
 {
 	if(victual.canchoke && 
 		((Race_if(PM_INCANTIFIER) && u.uen >= u.uenmax) ||
-		 (!Race_if(PM_INCANTIFIER)&& u.uhunger >= u.uhungermax) )
+		 (!Race_if(PM_INCANTIFIER)&& u.uhunger >= get_uhungermax()) )
 		) {
 		choke(victual.piece);
 		return 1;
@@ -3793,9 +3919,9 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	if (Race_if(PM_ETHEREALOID)) return;
 	if(inediate(youracedata) && !uclockwork && !Race_if(PM_INCANTIFIER)){
 		//Gradually return to normal if you departed from normal as a result of polymorph.
-		if(u.uhunger < u.uhungermax*.45)
+		if(u.uhunger < get_uhungermax()*.45)
 			u.uhunger++;
-		else if(u.uhunger > u.uhungermax*.45)
+		else if(u.uhunger > get_uhungermax()*.45)
 			u.uhunger--;
 		newuhs(TRUE);
 		return;
@@ -3822,12 +3948,26 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	if(Race_if(PM_INCANTIFIER))
 		hungermod *= 10;
 	
+	//Unusually-sized creatures have more or less hunger
+	if(get_uhungersizemod() < 1){
+		hungermod /= get_uhungersizemod();
+	}
+	
 	if ((!inediate(youracedata) || Race_if(PM_INCANTIFIER))
 		&& !(moves % hungermod)
 		&& !( (Slow_digestion && !Race_if(PM_INCANTIFIER)) ||
 				(uclockwork) )
 	){
-		(Race_if(PM_INCANTIFIER) ? u.uen-- : u.uhunger--);		/* ordinary food consumption */
+		int hunger = 1;
+		if(get_uhungersizemod() > 1){
+			hunger *= get_uhungersizemod();
+		}
+
+		/* ordinary food consumption */
+		if(Race_if(PM_INCANTIFIER))
+			u.uen -= hunger;
+		else u.uhunger -= hunger;
+
 		if(uwep && (
 			uwep->oartifact == ART_GARNET_ROD || (uwep->oartifact == ART_TENSA_ZANGETSU && !is_undead(youracedata)))
 		){
@@ -3838,11 +3978,11 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	
 	if ((!inediate(youracedata) || Race_if(PM_INCANTIFIER))
 		&& !uclockwork
-		&& u.usanity < 100
-		&& !ClearThoughts
+		&& NightmareAware_Sanity < 100
+		&& !BlockableClearThoughts
 		&& u.umadness&MAD_GLUTTONY
 	){
-		int delta = Insanity;
+		int delta = NightmareAware_Insanity;
 		if(Race_if(PM_INCANTIFIER)) losepw(delta/25);
 		else u.uhunger -= delta/25;
 		//remainder
@@ -3869,7 +4009,7 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	}
 	if (moves % 2) {	/* odd turns */
 	    /* Regeneration uses up food, unless due to an artifact */
-	    if ( (HRegeneration && !is_vampire(youracedata)) || ((ERegeneration & (~W_ART)) &&
+	    if ( (HRegeneration && uhp() < uhpmax()) || ((ERegeneration & (~W_ART)) &&
 				(ERegeneration != W_WEP || !uwep->oartifact) &&
 				(ERegeneration != W_ARMS || !uarms->oartifact) 
 				))
@@ -3928,7 +4068,7 @@ register int num;
 	if(Race_if(PM_INCANTIFIER)) u.uen += num;
 	else u.uhunger += num;
 	if(((Race_if(PM_INCANTIFIER) && u.uen > u.uenmax) ||
-		 (!Race_if(PM_INCANTIFIER)&& u.uhunger >= u.uhungermax) )
+		 (!Race_if(PM_INCANTIFIER)&& u.uhunger >= get_uhungermax()) )
 		) {
 	    if (!iseating || victual.canchoke) {
 		if (iseating) {
@@ -3957,7 +4097,7 @@ register int num;
 	     * warns when you're about to choke.
 	     */
 	    if ((Race_if(PM_INCANTIFIER) && u.uen >= u.uenmax * 3/4) ||
-			(!Race_if(PM_INCANTIFIER) && u.uhunger >= u.uhungermax * 3/4)) {
+			(!Race_if(PM_INCANTIFIER) && u.uhunger >= get_uhungermax() * 3/4)) {
 			if (!victual.eating || (victual.eating && !victual.fullwarn)) {
 				if(!uclockwork){
 					pline("You're having a hard time getting all of it down.");
@@ -4192,8 +4332,8 @@ windclock()
     stop_occupation();
     victual.piece = 0;
     victual.mon = 0;
-    return 0;
-  }else if(victual.canchoke && u.uhunger >= u.uhungermax && !Race_if(PM_INCANTIFIER)) {
+    return MOVE_CANCELLED;
+  }else if(victual.canchoke && u.uhunger >= get_uhungermax() && !Race_if(PM_INCANTIFIER)) {
     Your("mainspring is wound too tight!");
     Your("clockwork breaks apart!");
     killer_format = KILLED_BY;
@@ -4201,9 +4341,9 @@ windclock()
     done(OVERWOUND);
     victual.piece = 0;
     victual.mon = 0;
-    return 0;
+    return MOVE_FINISHED_OCCUPATION;
   }
-  else if (u.uhunger >= u.uhungermax * 3/4 && !victual.fullwarn && !Race_if(PM_INCANTIFIER)) {
+  else if (u.uhunger >= get_uhungermax() * 3/4 && !victual.fullwarn && !Race_if(PM_INCANTIFIER)) {
     pline("%s is having a hard time cranking the key.",Monnam(victual.mon));
     victual.fullwarn = TRUE;
   }
@@ -4217,7 +4357,7 @@ windclock()
 	}
   }
   flags.botl = 1;
-  return 1;
+  return MOVE_STANDARD;
 }
 #endif /* OVLB */
 #ifdef OVL0
@@ -4259,9 +4399,9 @@ boolean incr;
 	int h = YouHunger;
      boolean clockwork = uclockwork;
 
-	newhs = (h > (Race_if(PM_INCANTIFIER) ? max(u.uenmax/2,200) : u.uhungermax/2) ) ? SATIATED :
-		(h > 150) ? NOT_HUNGRY :
-		(h > 50) ? HUNGRY :
+	newhs = (h > (Race_if(PM_INCANTIFIER) ? max(u.uenmax/2,200) : get_uhungermax()/2) ) ? SATIATED :
+		(h > 150*get_uhungersizemod()) ? NOT_HUNGRY :
+		(h > 50*get_uhungersizemod()) ? HUNGRY :
 		(h > 0) ? WEAK : FAINTING;
 
 	/* While you're eating, you may pass from WEAK to HUNGRY to NOT_HUNGRY.

@@ -254,8 +254,8 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 					/* Prevent accidental donation prompt. */
 					pline("%s mutters a prayer.", Monnam(mdef));
 				}
-				else if (!dochat(FALSE, u.dx, u.dy, 0)) {
-					flags.move = 0;
+				else if (dochat(FALSE, u.dx, u.dy, 0) & (MOVE_CANCELLED|MOVE_INSTANT)) {
+					flags.move |= MOVE_INSTANT;
 				}
 				return ATTACKCHECK_NONE;
 			}
@@ -269,7 +269,7 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 					getlin(qbuf, buf);
 					(void)lcase(buf);
 					if (strcmp(buf, "yes")) {
-						flags.move = 0;
+						flags.move |= MOVE_CANCELLED;
 						return ATTACKCHECK_NONE;
 					}
 				}
@@ -277,7 +277,7 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 #endif
 					Sprintf(qbuf, "Really attack %s?", mon_nam(mdef));
 					if (yn(qbuf) != 'y') {
-						flags.move = 0;
+						flags.move |= MOVE_CANCELLED;
 						return ATTACKCHECK_NONE;
 					}
 #ifdef PARANOID
@@ -294,7 +294,7 @@ struct obj * wep;	/* uwep for attack(), null for kick_monster() */
 			return ATTACKCHECK_ATTACK;
 		/* Otherwise, be a pacifist. */
 		You("stop for %s.", mon_nam(mdef));
-		flags.move = 0;
+		flags.move |= MOVE_CANCELLED;
 		return ATTACKCHECK_NONE;
 	}
 
@@ -315,37 +315,17 @@ struct monst * mon;
 		return TRUE;
 	}
 
-	if ((mon->data->mlet == S_SNAKE
-		|| mon->data->mlet == S_NAGA
-		|| mon->mtyp == PM_COUATL
-		|| mon->mtyp == PM_LILLEND
-		|| mon->mtyp == PM_MEDUSA
-		|| mon->mtyp == PM_MARILITH
-		|| mon->mtyp == PM_MAMMON
-		|| mon->mtyp == PM_SHAKTARI
-		|| mon->mtyp == PM_DEMOGORGON
-		|| mon->mtyp == PM_GIANT_EEL
-		|| mon->mtyp == PM_ELECTRIC_EEL
-		|| mon->mtyp == PM_KRAKEN
-		|| mon->mtyp == PM_SALAMANDER
-		|| mon->mtyp == PM_KARY__THE_FIEND_OF_FIRE
-		|| mon->mtyp == PM_CATHEZAR
-		) && roll_madness(MAD_OPHIDIOPHOBIA)){
+	if (triggers_ophidiophobia(mon->data) && roll_madness(MAD_OPHIDIOPHOBIA)){
 		pline("You're afraid to go near that horrid serpent!");
 		return TRUE;
 	}
 
-	if ((is_insectoid(mon->data) || is_arachnid(mon->data)) && roll_madness(MAD_ENTOMOPHOBIA)){
+	if (triggers_entomophobia(mon->data) && roll_madness(MAD_ENTOMOPHOBIA)){
 		pline("You're afraid to go near that frightful bug!");
 		return TRUE;
 	}
 
-	if ((is_spider(mon->data)
-		|| mon->mtyp == PM_SPROW
-		|| mon->mtyp == PM_DRIDER
-		|| mon->mtyp == PM_PRIESTESS_OF_GHAUNADAUR
-		|| mon->mtyp == PM_AVATAR_OF_LOLTH
-		) && roll_madness(MAD_ARACHNOPHOBIA)){
+	if (triggers_arachnophobia(mon->data) && roll_madness(MAD_ARACHNOPHOBIA)){
 		pline("You're afraid to go near that terrifying spider!");
 		return TRUE;
 	}
@@ -360,14 +340,12 @@ struct monst * mon;
 		return TRUE;
 	}
 
-	if (u.umadness&MAD_PARANOIA && !ClearThoughts && u.usanity < rnd(100)){
+	if (u.umadness&MAD_PARANOIA && !BlockableClearThoughts && NightmareAware_Sanity < rnd(100)){
 		You("attack %s's hallucinatory twin!", mon_nam(mon));
 		return TRUE;
 	}
 
-	if ((mon->data->mlet == S_WORM
-		|| mon_attacktype(mon, AT_TENT)
-		) && roll_madness(MAD_HELMINTHOPHOBIA)){
+	if (triggers_helminthophobia(mon) && roll_madness(MAD_HELMINTHOPHOBIA)){
 		pline("You're afraid to go near that wormy thing!");
 		return TRUE;
 	}
@@ -427,6 +405,10 @@ struct monst *mtmp;
 {
 	//Animals and mindless creatures are always considered fair game
 	if(mindless_mon(mtmp) || is_animal(mtmp->data))
+		return;
+
+	//If a monster attacked you last turn, it's fair game
+	if(mtmp->mattackedu)
 		return;
 	
 	if (Role_if(PM_KNIGHT) && u.ualign.type == A_LAWFUL &&
@@ -495,11 +477,14 @@ struct attack *mattk;
 	    minvent_ptr = &mdef->minvent;
 	    while ((otmp = *minvent_ptr) != 0)
 			if (otmp->owornmask & (W_ARM|W_ARMU)){
-				if (stealoid) /*Steal suit or undershirt*/
-					continue;
-				*minvent_ptr = otmp->nobj;	/* take armor out of minvent */
-				stealoid = otmp;
-				stealoid->nobj = (struct obj *)0;
+				if (stealoid){ /*Steal suit or undershirt*/
+					minvent_ptr = &otmp->nobj;
+				}
+				else {
+					*minvent_ptr = otmp->nobj;	/* take armor out of minvent */
+					stealoid = otmp;
+					stealoid->nobj = (struct obj *)0;
+				}
 			} else {
 				minvent_ptr = &otmp->nobj;
 			}
@@ -834,6 +819,9 @@ struct attack *mattk;
 		else if (mattk->adtyp == AD_UNHY){
 			return "unholy light-blade";
 		}
+		else if (mattk->adtyp == AD_HLUH){
+			return "corrupted light-blade";
+		}
 		else {
 			return "blade";
 		}
@@ -1128,7 +1116,7 @@ int aatyp;
 	case AT_CLAW:
 		if(!mon)
 			slot = W_ARMG;
-		else if(nohands(mon->data))
+		else if(nogloves(mon->data))
 			slot = W_ARMF;
 		else if(
 			mon->mtyp == PM_CROW_WINGED_HALF_DRAGON
@@ -1207,6 +1195,7 @@ struct obj * weapon;
 		|| attk->adtyp == AD_MOON
 		|| attk->adtyp == AD_HOLY
 		|| attk->adtyp == AD_UNHY
+		|| attk->adtyp == AD_HLUH
 		)
 		)
 		return TRUE;	// will touch
@@ -1280,8 +1269,18 @@ beastmastery()
 	}
 	if ((uwep && uwep->oartifact == ART_CLARENT) || (uswapwep && uswapwep->oartifact == ART_CLARENT))
 		bm *= 2;
+
+	if(uring_art(ART_NARYA))
+		bm += narya();
 	return bm;
 }
+
+int
+narya()
+{
+	return (ACURR(A_CHA) - 11)/2;
+}
+
 int
 mountedCombat()
 {
@@ -1390,12 +1389,27 @@ struct obj * otmp;
 		ndice = 1;
 		diesize = 20;
 		/* special cases */
-		if (otmp->oartifact == ART_PEN_OF_THE_VOID && mvitals[PM_ACERERAK].died > 0)
+		if(otmp->otyp == KHAKKHARA)
+			ndice = khakharadice;
+		else if (otmp->oartifact == ART_PEN_OF_THE_VOID && mvitals[PM_ACERERAK].died > 0)
 			ndice = 2;
 		else if (otmp->oartifact == ART_SILVER_STARLIGHT)
 			ndice = 2;
-		else if(otmp->otyp == KHAKKHARA)
+		
+		/* calculate */
+		dmg += vd(ndice, diesize);
+	}
+	if(hates_silver(pd) && !(youdef && u.sealsActive&SEAL_EDEN)
+		&& check_oprop(otmp, OPROP_SFLMW)
+	){
+		/* default: 1d20 */
+		ndice = 1;
+		diesize = 20;
+		/* special cases */
+		if(otmp->otyp == KHAKKHARA)
 			ndice = khakharadice;
+		else if (otmp->oartifact == ART_PEN_OF_THE_VOID && mvitals[PM_ACERERAK].died > 0)
+			ndice = 2;
 		/* calculate */
 		dmg += vd(ndice, diesize);
 	}
@@ -1670,11 +1684,11 @@ struct obj * weapon;
 			return 2;
 
 		if (hates_holy_mon(mdef) &&
-			attk && attk->adtyp == AD_HOLY)
+			attk && (attk->adtyp == AD_HOLY || attk->adtyp == AD_HLUH))
 			return 2;
 
 		if (hates_unholy_mon(mdef) &&
-			attk && attk->adtyp == AD_UNHY)
+			attk && (attk->adtyp == AD_UNHY || attk->adtyp == AD_HLUH))
 			return 2;
 
 		if (has_blood_mon(mdef) &&
@@ -1712,9 +1726,9 @@ struct obj * weapon;
 			(youagr && u.sealsActive&SEAL_EDEN) ||
 			(attk && attk->adtyp == AD_GLSS) ||
 			(magr && is_silver_mon(magr)) ||
-			obj_silver_searing(otmp) ||
-			(youagr && slot == W_ARMG && uright && obj_silver_searing(uright)) ||
-			(youagr && slot == W_ARMG && uleft && obj_silver_searing(uleft))
+			obj_silver_searing(otmp) || obj_jade_searing(otmp) || check_oprop(otmp, OPROP_SFLMW) ||
+			(youagr && slot == W_ARMG && uright && (obj_silver_searing(uright) || obj_jade_searing(uright) || check_oprop(uright, OPROP_SFLMW))) ||
+			(youagr && slot == W_ARMG && uleft && (obj_silver_searing(uleft) || obj_jade_searing(uleft) || check_oprop(uleft, OPROP_SFLMW)))
 			))
 			return 1;
 
@@ -1763,6 +1777,9 @@ struct obj * weapon;
 		if (weapon->oartifact == ART_IBITE_ARM)	/* Ghost touch, not actually phasing */
 			return 2;
 
+		if (check_oprop(weapon, OPROP_SFLMW))
+			return 2;
+
 		if (hatesobjdmg(mdef, weapon))
 			return 1;
 
@@ -1799,6 +1816,7 @@ int vis;
 	/* monster displacement */
 	if (!youdef &&
 		mon_resistance(mdef, DISPLACED) &&
+		!(weapon && check_oprop(weapon, OPROP_SFLMW)) &&
 		!(youagr && u.ustuck && u.ustuck == mdef) &&
 		!(youagr && u.uswallow) &&
 		!(has_passthrough_displacement(mdef->data) && hits_insubstantial(magr, mdef, attk, weapon)) &&

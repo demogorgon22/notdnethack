@@ -218,7 +218,7 @@ lookat(x, y, buf, monbuf, shapebuff)
 	bhitpos.x = x;
 	bhitpos.y = y;
 	mtmp = m_at(x,y);
-	do_halu = Hallucination;
+	do_halu = Hallucination || Delusion(mtmp);
 	if (mtmp != (struct monst *) 0) {
 	    char *name, monnambuf[BUFSZ];
 	    boolean accurate = !do_halu;
@@ -900,7 +900,8 @@ static const char * const bogusobjects[] = {
 	   "crown of swords",					/* Wheel of Time */
 	   
 	   /* Interwebs */
-	   "memetic kill agent",				/* SCP Foundation */
+	   "memetic kill agent",
+		"global retrocausality torus",		/* SCP Foundation */
 	   "bottle of squid pro quo ink",		/* MSPA */
 		"highly indulgent self-insert",
 	   "cursed -1 phillips head",			/* xkcd nethack joke */
@@ -1104,7 +1105,7 @@ do_look(quick)
 	from_screen = TRUE;	/* yes, we want to use the cursor */
     } else {
 	i = ynq("Specify unknown object by cursor?");
-	if (i == 'q') return 0;
+	if (i == 'q') return MOVE_CANCELLED;
 	from_screen = (i == 'y');
     }
 
@@ -1115,7 +1116,7 @@ do_look(quick)
     } else {
 	getlin("Specify what? (type the word)", out_str);
 	if (out_str[0] == '\0' || out_str[0] == '\033')
-	    return 0;
+	    return MOVE_CANCELLED;
 
 	if (out_str[1]) {	/* user typed in a complete string */
 		winid datawin = create_nhwindow(NHW_MENU);
@@ -1148,7 +1149,7 @@ do_look(quick)
 	    if(checkfile(out_str, pm, (mntmp==NON_PM && otyp==STRANGE_OBJECT), TRUE, &datawin) || mntmp != NON_PM || otyp != STRANGE_OBJECT)
 			display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	sym = out_str[0];
     }
@@ -1180,7 +1181,7 @@ do_look(quick)
 	    ans = getpos(&cc, quick, what_is_an_unknown_object);
 	    if (ans < 0 || cc.x < 0) {
 		flags.verbose = save_verbose;
-		return 0;	/* done */
+		return MOVE_CANCELLED;	/* done */
 	    }
 	    flags.verbose = FALSE;	/* only print long question once */
 
@@ -1459,7 +1460,7 @@ do_look(quick)
     } while (from_screen && !quick && ans != LOOK_ONCE);
 
     flags.verbose = save_verbose;
-    return 0;
+    return MOVE_CANCELLED;
 }
 
 
@@ -1708,7 +1709,8 @@ get_mb_description_of_monster_type(struct monst * mtmp, char * description)
 	many = append(description, your_race(ptr)			, "same race as you"		, many);
 	many = append(description, !haseyes(ptr)			, "eyeless"					, many);
 	many = append(description, sensitive_ears(ptr)		, "has sensitive ears"		, many);
-	many = append(description, nohands(ptr)				, "handless"				, many);
+	many = append(description, nohands(ptr)				, "can't manipulate objects", many);
+	many = append(description, nogloves(ptr)			, "handless"				, many);
 	many = append(description, nolimbs(ptr)				, "limbless"				, many);
 	many = append(description, !has_head(ptr)			, "headless"				, many);
 	many = append(description, has_horns(ptr)			, "has horns"				, many);
@@ -2099,6 +2101,8 @@ get_description_of_damage_type(uchar id)
 	case AD_HOLY: return "holy energy";
 	case AD_UNHY: return "unholy energy";
 	case AD_PERH: return "level-based damage";
+	case AD_SVPN: return "severe poison";
+	case AD_HLUH: return "corrupted holy energy";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2159,7 +2163,7 @@ get_description_of_attack(struct attack *mattk, char * main_temp_buf)
 		strcat(main_temp_buf, " ");
 	}
 #endif
-	sprintf(temp_buf, "%s - %s%s", get_description_of_attack_type(mattk->aatyp), get_description_of_damage_prefix(mattk->aatyp, mattk->adtyp), get_description_of_damage_type(mattk->adtyp));
+	sprintf(temp_buf, "%s%s - %s%s", mattk->offhand ? "offhand " : "", get_description_of_attack_type(mattk->aatyp), get_description_of_damage_prefix(mattk->aatyp, mattk->adtyp), get_description_of_damage_type(mattk->adtyp));
 	strcat(main_temp_buf, temp_buf);
 #ifdef USE_TILES
 	strcat(main_temp_buf, "; ");
@@ -2323,7 +2327,7 @@ doidtrap()
 	register struct trap *trap;
 	int x, y, tt;
 
-	if (!getdir("^")) return 0;
+	if (!getdir("^")) return MOVE_CANCELLED;
 	x = u.ux + u.dx;
 	y = u.uy + u.dy;
 	for (trap = ftrap; trap; trap = trap->ntrap)
@@ -2343,10 +2347,10 @@ doidtrap()
 			     as much "set" as "dug" anyway */
 			  (tt == HOLE || tt == PIT) ? " dug" : " set",
 		      !trap->madeby_u ? "" : " by you");
-		return 0;
+		return MOVE_CANCELLED;
 	    }
 	pline("I can't see a trap there.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 char *
@@ -2415,7 +2419,7 @@ dowhatdoes()
 		pline("%s", reslt);
 	else
 		pline("I've never heard of such commands.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* data for help_menu() */
@@ -2514,14 +2518,14 @@ dohelp()
 #endif
 		}
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 int
 dohistory()
 {
 	display_file(HISTORY, TRUE);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /*pager.c*/

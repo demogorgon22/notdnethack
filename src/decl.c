@@ -275,7 +275,7 @@ NEARDATA struct c_color_names c_color_names = {
 	"black", "amber", "golden",
 	"light blue", "red", "green",
 	"silver", "blue", "purple",
-	"white"
+	"white", "yellow"
 };
 
 const char *c_obj_colors[] = {
@@ -399,6 +399,8 @@ boolean curses_stupid_hack = 1;
 /* Some arrays to help walk in a circle */
 const int clockwisex[8] = { 0, 1, 1, 1, 0,-1,-1,-1};
 const int clockwisey[8] = {-1,-1, 0, 1, 1, 1, 0,-1};
+
+coord save_d = {0};
 
 /* dummy routine used to force linkage */
 void

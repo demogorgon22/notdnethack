@@ -37,6 +37,7 @@ extern int NDECL(doextlist); /**/
 extern int NDECL(dodrop); /**/
 extern int NDECL(doddrop); /**/
 extern int NDECL(dodown); /**/
+extern int NDECL(dodownboy); /**/
 extern int NDECL(doup); /**/
 extern int NDECL(donull); /**/
 extern int NDECL(dowait); /**/
@@ -94,6 +95,7 @@ extern int NDECL(dosave); /**/
 extern int NDECL(dosearch); /**/
 extern int NDECL(doidtrap); /**/
 extern int NDECL(dopay); /**/
+extern int NDECL(dosickem); /**/
 extern int NDECL(dosit); /**/
 extern int NDECL(dodeepswim); /**/
 extern int NDECL(dotalk); /**/
@@ -205,10 +207,11 @@ doprev_message()
 STATIC_PTR int
 timed_occupation()
 {
-	(*timed_occ_fn)();
+	int result;
+	result = (*timed_occ_fn)();
 	if (multi > 0)
 		multi--;
-	return multi > 0;
+	return (multi > 0) ? result : (result|MOVE_FINISHED_OCCUPATION);
 }
 
 /* If you have moved since initially setting some occupations, they
@@ -679,7 +682,7 @@ boolean you_abilities;
 			pline("You are extraordinary mundane.");
 		}
 		destroy_nhwindow(tmpwin);
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if (mon_abilities && you_abilities)
@@ -692,7 +695,7 @@ boolean you_abilities;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
 	
-	if(n <= 0) return 0;
+	if(n <= 0) return MOVE_CANCELLED;
 	
 	switch (selected[0].item.a_int) {
 	/* Player abilities */
@@ -710,7 +713,7 @@ boolean you_abilities;
 	case MATTK_HBREATH: return dobreathe(&mons[PM_HALF_DRAGON]);
 	case MATTK_DSCALE:{
 		int res = dobreathe(Dragon_shield_to_pm(uarms));
-		if(res){
+		if(!(res & MOVE_CANCELLED)){
 			if(!uarm->oartifact) uarm->age = monstermoves + (long)(rnz(100)*(Role_if(PM_CAVEMAN) ? .8 : 1));
 			uarms->age = monstermoves + (long)(rnz(100)*(Role_if(PM_CAVEMAN) ? .8 : 1));
 		}
@@ -718,7 +721,7 @@ boolean you_abilities;
 	}
 	case MATTK_SPIT: return dospit();
 	case MATTK_MAGIC: 
-		return xcasty(&youmonst, (struct monst *)0, &youracedata->mattk[attackindex(youracedata, AT_MAGC, AD_ANY)], 0, 0);
+		return xcasty(&youmonst, (struct monst *)0, &youracedata->mattk[attackindex(youracedata, AT_MAGC, AD_ANY)], 0, 0) ? MOVE_CASTSPELL : MOVE_CANCELLED;
 		
 //		return castum((struct monst *)0,
 //	                   &youracedata->mattk[attackindex(youracedata, 
@@ -738,23 +741,23 @@ boolean you_abilities;
 	    if(IS_FOUNTAIN(levl[u.ux][u.uy].typ)) {
 			if (split_mon(&youmonst, (struct monst *)0))
 				dryup(u.ux, u.uy, TRUE);
-			return 1;
+			return MOVE_STANDARD;
 	    } else {
 			There("is no fountain here.");
-			return 0;
+			return MOVE_CANCELLED;
 		}
 	}
 	break;
 	case MATTK_UHORN: {
 	    use_unicorn_horn((struct obj *)0);
-	    return 1;
+	    return MOVE_STANDARD;
 	}
 	break;
 	case MATTK_SHRIEK: {
 	    You("shriek.");
 	    if(u.uburied) pline("Unfortunately sound does not carry well through rock.");
 	    else aggravate();
-		return 1;
+		return MOVE_STANDARD;
 	}
 	break;
 	case MATTK_SCREAM: {
@@ -769,7 +772,7 @@ boolean you_abilities;
 				}
 			}
 		}
-		return 1;
+		return MOVE_STANDARD;
 	}
 	break;
 	case MATTK_HOLE: {
@@ -817,10 +820,10 @@ boolean you_abilities;
 				digactualhole(u.ux, u.uy, &youmonst, PIT, FALSE, TRUE);
 			else
 				digactualhole(u.ux, u.uy, &youmonst, HOLE, FALSE, TRUE);
-			return 1;
+			return MOVE_STANDARD;
 		} else {
 			You("gyre and gimble, but the %s is too hard!", surface(u.ux,u.uy));
-			return 1;
+			return MOVE_STANDARD;
 		}
 	}
 	break;
@@ -837,7 +840,7 @@ boolean you_abilities;
 	case MATTK_PHASE_OUT:
 		if(In_endgame(&u.uz) || In_void(&u.uz) ||  u.uhave.amulet){
 			pline("A mysterious force prevents you from phasing out.");
-			return 0;
+			return MOVE_CANCELLED;
 		}
 		You("begin phasing out of reality.");
 		nomul(-2,"phasing out");
@@ -846,17 +849,17 @@ boolean you_abilities;
 		u.old_lev.ux = u.ux;
 		u.old_lev.uy = u.uy;
 		goto_level(&nowhere_level, FALSE, FALSE, FALSE);	
-		return 1;
+		return MOVE_STANDARD;
 	break;
 	case MATTK_PHASE_IN:
 		You("phase back into reality.");
 		flags.phasing = TRUE;
 		goto_level(&u.old_lev.uz, FALSE, FALSE, FALSE);	
 		flags.phasing = FALSE;
-		return 0;
+		return MOVE_INSTANT;
 	break;
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_OVL int
@@ -879,10 +882,10 @@ lavaify(){
 		levl[u.ux][u.uy].typ = LAVAPOOL;
 		u.uinwater = 0;
 		unblock_point(u.ux,u.uy);
-		return 1;
+		return MOVE_STANDARD;
 	}
 	You("cannot do that here.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* #mount command - order mount to attack */
@@ -894,17 +897,17 @@ domountattk()
 	int new_x,new_y;
 	if(!u.usteed){
 		You("don't have a mount.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if(P_SKILL(P_RIDING) < P_EXPERT){
 		pline("Only an expert is skilled enough to direct a mount's attacks.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if(!getdir("Attack in what direction?")){
 		pline("never mind");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	for(new_x = u.ux+u.dx, new_y = u.uy+u.dy; isok(new_x,new_y); new_x += u.dx, new_y += u.dy){
@@ -912,11 +915,11 @@ domountattk()
 		if(mtmp && mon_can_see_mon(u.usteed, mtmp) && canspotmon(mtmp)){
 			You("direct your mount to attack %s", mon_nam(mtmp));
 			mattackm(u.usteed, mtmp);
-			return 1;
+			return MOVE_STANDARD;
 		}
 	}
 	pline("Your mount can't find anything to attack!");
-	return 0;
+	return MOVE_CANCELLED;
 #else
 	pline("You can't ride anything!");
 #endif
@@ -926,10 +929,10 @@ int
 psionic_pulse(){
 	if(u.uen < 5){
 		You("lack the energy.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	You("concentrate!");
-	if(!getdir((char *)0)) return 0;
+	if(!getdir((char *)0)) return MOVE_CANCELLED;
 	struct obj *otmp = mksobj(PSIONIC_PULSE, MKOBJ_NOINIT);
 	otmp->spe = (int)u.ulevel/4;
 	otmp->quan = 1;
@@ -937,14 +940,14 @@ psionic_pulse(){
 	nomul(0, NULL);
 	flags.botl = 1;
 	u.uen -= 5;
-	return 1;
+	return MOVE_STANDARD;
 }
 
 STATIC_OVL int
 dotelekinesis(){
 	if(u.uen < 15){
 		You("lack the energy.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	coord cc;
 	int cancelled;
@@ -957,12 +960,12 @@ dotelekinesis(){
 		 else if(!OBJ_AT(cc.x,cc.y)) pline("There is nothing there for you to pick up!");
 		cancelled = getpos(&cc, TRUE, "the desired position");
 	}
-	if(cancelled < 0) return 0;
+	if(cancelled < 0) return MOVE_CANCELLED;
 	flags.botl = 1;
 	u.uen -= 15;
 	You("attempt to lift %s from the floor with your mind!",level.objects[cc.x][cc.y]->quan>1?"some items":"an item");
 	pickup_object(level.objects[cc.x][cc.y], level.objects[cc.x][cc.y]->quan, TRUE);
-	return 1;
+	return MOVE_STANDARD;
 
 }
 
@@ -970,7 +973,7 @@ STATIC_OVL int
 psionic_craze(){
 	if(u.uen < 5){
 		You("lack the energy.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	coord cc;
 	int cancelled;
@@ -986,7 +989,7 @@ psionic_craze(){
 		mon = m_at(cc.x,cc.y);
 	}
 	if(!mon)
-		return 0;
+		return MOVE_CANCELLED;
 	if(mon && !DEADMONSTER(mon) && !mindless_mon(mon) && !resist(mon, '\0', 0, TELL)) {
 		/*cost pw*/
 		u.uen -= 5;
@@ -999,7 +1002,7 @@ psionic_craze(){
 		}
 		monflee(mon, d(5,3+(int)u.ulevel/10), FALSE, TRUE);
 	}
-	return 1;
+	return MOVE_STANDARD;
 
 }
 
@@ -1007,7 +1010,7 @@ psionic_craze(){
 STATIC_OVL int
 use_reach_attack()
 {
-	int res = 0, typ, max_range = 4, min_range = 1;
+	int typ, max_range = 4, min_range = 1;
 	coord cc;
 	struct monst *mtmp;
 
@@ -1015,14 +1018,14 @@ use_reach_attack()
 	/* Are you allowed to use a reach attack? */
 	if (u.uswallow) {
 	    pline("There's not enough room here to use that.");
-	    return (0);
+	    return MOVE_CANCELLED;
 	}
 	/* Prompt for a location */
 	pline("Where do you want to hit?");
 	cc.x = u.ux;
 	cc.y = u.uy;
 	if (getpos(&cc, TRUE, "the spot to hit") < 0)
-	    return 0;	/* user pressed ESC */
+	    return MOVE_CANCELLED;	/* user pressed ESC */
 
 	/* Calculate range */
 	typ = P_BARE_HANDED_COMBAT;
@@ -1033,18 +1036,18 @@ use_reach_attack()
 	else max_range = 10;
 	if (distu(cc.x, cc.y) > max_range) {
 	    pline("Too far!");
-	    return (res);
+	    return MOVE_CANCELLED;
 	} else if (distu(cc.x, cc.y) < min_range) {
 	    pline("Too close!");
-	    return (res);
+	    return MOVE_CANCELLED;
 	} else if (!cansee(cc.x, cc.y) &&
 		   ((mtmp = m_at(cc.x, cc.y)) == (struct monst *)0 ||
 		    !canseemon(mtmp))) {
 	    You("won't hit anything if you can't see that spot.");
-	    return (res);
+	    return MOVE_CANCELLED;
 	} else if (!couldsee(cc.x, cc.y)) { /* Eyes of the Overworld */
 	    You("can't reach that spot from here.");
-	    return res;
+	    return MOVE_CANCELLED;
 	}
 
 	/* Attack the monster there */
@@ -1057,7 +1060,7 @@ use_reach_attack()
 	} else
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
-	return (1);
+	return MOVE_STANDARD;
 }
 int
 doMysticForm()
@@ -1129,10 +1132,10 @@ doMysticForm()
 	destroy_nhwindow(tmpwin);
 
 	if(n <= 0){
-		return 0;
+		return MOVE_CANCELLED;
 	} else {
 		toggle_monk_style(selected[0].item.a_int);
-		return 0;
+		return MOVE_INSTANT;
 	}
 
 }
@@ -1262,21 +1265,21 @@ dofightingform()
 	if(Role_if(PM_MONK) && !((uwep && is_lightsaber(uwep)) || (u.twoweap && uswapwep && is_lightsaber(uswapwep)))){
 		if(uwep || (u.twoweap && uswapwep)){
 			pline("You must not be wielding any weapons to use mystic combat.");
-			return 0;
+			return MOVE_CANCELLED;
 		}
 		doMabilForm();
 		doMysticForm();
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if(!(uwep && is_lightsaber(uwep))){
 		pline("You don't know any special fighting styles for use in this situation.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if(P_SKILL(weapon_type(uwep)) < P_BASIC){
 		pline("You must have at least some basic skill in the use of your weapon before you can employ special fighting styles.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 
 	tmpwin = create_nhwindow(NHW_MENU);
@@ -1314,10 +1317,10 @@ dofightingform()
 	destroy_nhwindow(tmpwin);
 	
 	if(n <= 0 || selectedFightingForm(selected[0].item.a_int)){
-		return 0;
+		return MOVE_CANCELLED;
 	} else {
 		setFightingForm(selected[0].item.a_int);
-		return 0;
+		return MOVE_INSTANT;
 	}
 }
 
@@ -1334,7 +1337,7 @@ dounmaintain()
 	
 	if(!(u.spells_maintained)){
 		pline("You aren't maintaining any spells.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	tmpwin = create_nhwindow(NHW_MENU);
@@ -1361,12 +1364,12 @@ dounmaintain()
 	destroy_nhwindow(tmpwin);
 	
 	if(n <= 0){
-		return 0;
+		return MOVE_CANCELLED;
 	} else {
 		pline("You cease to maintain %s.",
 			  OBJ_NAME(objects[selected[0].item.a_int]));
 		spell_unmaintain(selected[0].item.a_int);
-		return 0;
+		return MOVE_INSTANT;
 	}
 }
 
@@ -1378,7 +1381,7 @@ enter_explore_mode()
 	int really_xplor = FALSE;
 #endif
 	pline("Explore mode is for local games, not public servers.");
-	return 0;
+	return MOVE_CANCELLED;
 
 	if(!discover && !wizard) {
 		pline("Beware!  From explore mode there will be no return to normal game.");
@@ -1405,7 +1408,7 @@ enter_explore_mode()
 			pline("Resuming normal game.");
 		}
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_PTR int
@@ -1416,7 +1419,7 @@ dooverview_or_wiz_where()
 	else
 #endif
 	dooverview();
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_PTR int
@@ -1429,7 +1432,7 @@ doclearinvissyms()
 		unmap_object(x, y);
 		newsym(x, y);
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 #ifdef WIZARD
@@ -1440,7 +1443,7 @@ wiz_mk_mapglyphdump()
 #ifdef MAPDUMP_FN
     mk_mapdump(MAPDUMP_FN);
 #endif
-    return 0;
+    return MOVE_CANCELLED;
 }
 
 /* ^W command - wish for something */
@@ -1456,7 +1459,7 @@ wiz_wish()	/* Unlimited wishes for debug mode by Paul Polderman */
 	    (void) encumber_msg();
 	} else
 	    pline("Unavailable command '^W'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* ^I command - identify hero's inventory */
@@ -1465,7 +1468,7 @@ wiz_identify()
 {
 	if (wizard)	identify_pack(0);
 	else		pline("Unavailable command '^I'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 
@@ -1538,7 +1541,7 @@ wiz_makemap(VOID_ARGS)
         flush_screen(1);
         check_special_room(FALSE); /* room entry */
     }
-    return 0;
+    return MOVE_CANCELLED;
 }
 
 /* ^F command - reveal the level map and any traps on it */
@@ -1569,7 +1572,7 @@ wiz_map()
 	    HHallucination = save_Hhallu;
 	} else
 	    pline("Unavailable command '^F'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* ^G command - generate monster(s); a count prefix will be honored */
@@ -1578,7 +1581,7 @@ wiz_genesis()
 {
 	if (wizard)	(void) create_particular(-1, -1, TRUE, 0, 0, 0);
 	else		pline("Unavailable command '^G'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* ^O command - display dungeon layout */
@@ -1587,7 +1590,7 @@ wiz_where()
 {
 	if (wizard) (void) print_dungeon(FALSE, FALSE, (schar *)0, (int *)0);
 	else	    pline("Unavailable command '^O'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* ^E command - detect unseen (secret doors, traps, hidden monsters) */
@@ -1596,7 +1599,7 @@ wiz_detect()
 {
 	if(wizard)  (void) findit();
 	else	    pline("Unavailable command '^E'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* ^V command - level teleport */
@@ -1605,7 +1608,7 @@ wiz_level_tele()
 {
 	if (wizard)	level_tele();
 	else		pline("Unavailable command '^V'.");
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* #monpolycontrol command - choose new form for shapechangers, polymorphees */
@@ -1615,7 +1618,7 @@ wiz_mon_polycontrol()
     iflags.mon_polycontrol = !iflags.mon_polycontrol;
     pline("Monster polymorph control is %s.",
 	  iflags.mon_polycontrol ? "on" : "off");
-    return 0;
+    return MOVE_CANCELLED;
 }
 
 /* #levelchange command - adjust hero's experience level */
@@ -1633,14 +1636,14 @@ wiz_level_change()
 
     if (ret != 1) {
 	pline1(Never_mind);
-	return 0;
+	return MOVE_CANCELLED;
     }
     if (newlevel == u.ulevel) {
 	You("are already that experienced.");
     } else if (newlevel < u.ulevel) {
 	if (u.ulevel == 1) {
 	    You("are already as inexperienced as you can get.");
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	if (newlevel < 1) newlevel = 1;
 	while (u.ulevel > newlevel)
@@ -1648,14 +1651,14 @@ wiz_level_change()
     } else {
 	if (u.ulevel >= MAXULEV) {
 	    You("are already as experienced as you can get.");
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	if (newlevel > MAXULEV) newlevel = MAXULEV;
 	while (u.ulevel < newlevel)
 	    pluslvl(FALSE);
     }
     u.ulevelmax = u.ulevel;
-    return 0;
+    return MOVE_CANCELLED;
 }
 
 /* #panic command - test program's panic handling */
@@ -1665,20 +1668,20 @@ wiz_panic()
 	if (iflags.debug_fuzzer) {
         	u.uhp = u.uhpmax = 1000;
       		u.uen = u.uenmax = 1000;
-        	return 0;
+        	return MOVE_CANCELLED;
 	}
 
 	if (yn("Do you want to call panic() and end your game?") == 'y')
 		panic("crash test.");
-        return 0;
+	return MOVE_CANCELLED;
 }
 
 /* #polyself command - change hero's form */
 STATIC_PTR int
 wiz_polyself()
 {
-        polyself(TRUE);
-        return 0;
+	polyself(TRUE);
+	return MOVE_CANCELLED;
 }
 
 /* #seenv command */
@@ -1720,7 +1723,7 @@ wiz_show_seenv()
 	}
 	display_nhwindow(win, TRUE);
 	destroy_nhwindow(win);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* #vision command */
@@ -1757,7 +1760,7 @@ wiz_show_vision()
 	}
 	display_nhwindow(win, TRUE);
 	destroy_nhwindow(win);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* #wmode command */
@@ -1789,14 +1792,14 @@ wiz_show_wmodes()
 	}
 	display_nhwindow(win, TRUE);
 	destroy_nhwindow(win);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* #showkills command */
 STATIC_PTR int wiz_showkills()		/* showborn patch */
 {
 	list_vanquished('y', FALSE);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_PTR int wiz_setinsight()
@@ -1809,7 +1812,7 @@ STATIC_PTR int wiz_setinsight()
 		if (yn("Pierce veil?") == 'y')
 			u.veil = FALSE;
 		else
-			return 0;
+			return MOVE_CANCELLED;
 	}
 	getlin("Set your insight to what?", buf);
 
@@ -1819,10 +1822,10 @@ STATIC_PTR int wiz_setinsight()
 
 	if (ret != 1) {
 		pline1(Never_mind);
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	change_uinsight(newval - u.uinsight);
-	return 0;
+	return MOVE_INSTANT;
 }
 STATIC_PTR int wiz_setsanity()
 {
@@ -1838,10 +1841,10 @@ STATIC_PTR int wiz_setsanity()
 
 	if (ret != 1) {
 		pline1(Never_mind);
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	change_usanity(newval - u.usanity, FALSE);
-	return 0;
+	return MOVE_INSTANT;
 }
 
 #endif /* WIZARD */
@@ -1890,7 +1893,7 @@ int typ;
       if (pick_list) {
 	n = (pick_list[0].item.a_int - 1);
 	free((genericptr_t) pick_list);
-      } else return 0;
+      } else return MOVE_CANCELLED;
     } else {
       n = (typ - 1);
     }
@@ -1913,7 +1916,7 @@ int typ;
 
 	    if (!obj->dknown) {
 		You("would never recognize another one.");
-		return 0;
+		return MOVE_CANCELLED;
 	    }
 	    docall(obj);
 	}
@@ -1921,7 +1924,7 @@ int typ;
     case 3: dodiscovered(); break;
     case 4: do_floorname(); break;
     }
-    return 0;
+    return MOVE_INSTANT;
 }
 
 int
@@ -1982,6 +1985,7 @@ struct ext_func_tab extcmdlist[] = {
 	{"cast", "zap (cast) a spell", docast, IFBURIED},
 	{"discoveries", "show what object types have been discovered", dodiscovered, IFBURIED},
 	{"down", "go down a staircase", dodown, !IFBURIED},
+	{"downboy", "pets don't attack peaceful creatures", dodownboy, IFBURIED, AUTOCOMPLETE},
 	{"drop", "drop an item", dodrop, !IFBURIED},
 	{"dropall", "drop specific item types", doddrop, !IFBURIED},
 	{"takeoffall", "remove all armor", doddoremarm, !IFBURIED},
@@ -2059,6 +2063,7 @@ struct ext_func_tab extcmdlist[] = {
 	{"enhance", "advance or check weapons skills", enhance_weapon_skill, IFBURIED, AUTOCOMPLETE},
 	{"equip", "give a pet an item", dopetequip, !IFBURIED, AUTOCOMPLETE},
 	{"force", "force a lock", doforce, !IFBURIED, AUTOCOMPLETE},
+	{"getem", "pets may attack peaceful creaturs", dosickem, IFBURIED, AUTOCOMPLETE},
 	{"invoke", "invoke an object's powers", doinvoke, IFBURIED, AUTOCOMPLETE},
 	{"jump", "jump to a location", dojump, !IFBURIED, AUTOCOMPLETE},
 	{"loot", "loot a box on the floor", doloot, !IFBURIED, AUTOCOMPLETE},
@@ -2720,7 +2725,7 @@ wiz_show_stats()
 
 	display_nhwindow(win, FALSE);
 	destroy_nhwindow(win);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 void
@@ -2741,10 +2746,10 @@ wiz_migrate_mons()
 	struct monst *mtmp;
 	d_level tolevel;
 	getlin("How many random monsters to migrate? [0]", inbuf);
-	if (*inbuf == '\033') return 0;
+	if (*inbuf == '\033') return MOVE_CANCELLED;
 	mcount = atoi(inbuf);
 	if (mcount < 0 || mcount > (COLNO * ROWNO) || Is_botlevel(&u.uz))
-		return 0;
+		return MOVE_CANCELLED;
 	while (mcount > 0) {
 		if (Is_stronghold(&u.uz))
 		    assign_level(&tolevel, &valley_level);
@@ -2756,7 +2761,7 @@ wiz_migrate_mons()
 				MIGR_RANDOM, (coord *)0);
 		mcount--;
 	}
-	return 0;
+	return MOVE_INSTANT;
 }
 #endif
 
@@ -3058,7 +3063,7 @@ register char *cmd;
 		cmd = parse();
 	}
 	if (*cmd == DOESCAPE) {
-		flags.move = FALSE;
+		flags.move |= MOVE_CANCELLED;
 		return;
 	}
 #ifdef REDO
@@ -3076,7 +3081,7 @@ register char *cmd;
 #endif
 	{
 		nhbell();
-		flags.move = FALSE;
+		flags.move |= MOVE_CANCELLED;
 		return;		/* probably we just had an interrupt */
 	}
 	if (iflags.num_pad && iflags.num_pad_mode == 1) {
@@ -3136,7 +3141,7 @@ register char *cmd;
 		prefix_seen = TRUE;
 	} else if (*cmd == '0' && iflags.num_pad) {
 	    (void)ddoinv(); /* a convenience borrowed from the PC */
-	    flags.move = FALSE;
+	    flags.move |= MOVE_INSTANT;
 	    multi = 0;
 	} else if (*cmd == CMD_TRAVEL && iflags.travelcmd) {
 	  flags.travel = 1;
@@ -3194,17 +3199,21 @@ register char *cmd;
 
 		if (u.uburied && !extcmd->can_if_buried) {
 		    You_cant("do that while you are buried!");
-		    res = 0;
+		    res = MOVE_CANCELLED;
 		} else {
 		    func = extcmd->ef_funct;
 		    if (extcmd->f_text && !occupation && multi)
 			set_occupation(func, extcmd->f_text, multi);
 		    last_cmd_char = *cmd;	/* remember pressed character */
 		    res = (*func)();		/* perform the command */
+
+			/* backwards compatibility with functions returning 0 to mean no time taken */
+			if (res==0)
+				res = MOVE_INSTANT;
 		}
-		if (!res) {
-		    flags.move = FALSE;
-		    multi = 0;
+		flags.move = res;
+		if (res & MOVE_CANCELLED) {/* player cancelled action, don't try to repeat it */
+			multi = 0;
 		}
 		return;
 	    }
@@ -3232,9 +3241,12 @@ register char *cmd;
 	    if (!prefix_seen || !iflags.cmdassist ||
 		!help_dir(0, "Invalid direction key!"))
 		Norep("Unknown command '%s'.", expcmd);
+		flags.move |= MOVE_CANCELLED;
 	}
-	/* didn't move */
-	flags.move = FALSE;
+	else {
+		/* didn't move */
+		flags.move |= MOVE_INSTANT;
+	}
 	multi = 0;
 	return;
 }
@@ -3577,7 +3589,7 @@ parse()
 	boolean prezero = FALSE;
 
 	multi = 0;
-	flags.move = 1;
+	flags.move = MOVE_DEFAULT;
 	flush_screen(1); /* Flush screen buffer. Put the cursor on the hero. */
 
 	if (!iflags.num_pad || (foo = readchar()) == 'n')
@@ -3630,6 +3642,7 @@ parse()
 	}
 	clear_nhwindow(WIN_MESSAGE);
 	if (prezero) in_line[0] = DOESCAPE;
+
 	return(in_line);
 }
 
@@ -3706,7 +3719,7 @@ dotravel()
 	static char cmd[2];
 	coord cc;
 
-	if (!iflags.travelcmd) return 0;
+	if (!iflags.travelcmd) return MOVE_CANCELLED;
 	cmd[1]=0;
 	cc.x = iflags.travelcc.x;
 	cc.y = iflags.travelcc.y;
@@ -3718,13 +3731,13 @@ dotravel()
 	pline("Where do you want to travel to?");
 	if (getpos(&cc, TRUE, "the desired destination") < 0) {
 		/* user pressed ESC */
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	iflags.travelcc.x = u.tx = cc.x;
 	iflags.travelcc.y = u.ty = cc.y;
 	cmd[0] = CMD_TRAVEL;
 	readchar_queue = cmd;
-	return 0;
+	return MOVE_INSTANT;
 }
 
 #ifdef PORT_DEBUG

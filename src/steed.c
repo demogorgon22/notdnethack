@@ -67,11 +67,11 @@ use_saddle(otmp)
 
 
 	/* Can you use it? */
-	if (nohands(youracedata)) {
-		You("have no hands!");	/* not `body_part(HAND)' */
-		return 0;
-	} else if (nolimbs(youracedata)) {
+	if (nolimbs(youracedata)) {
 		You("have no limbs!");	/* not `body_part(HAND)' */
+		return 0;
+	} else if (nohands(youracedata)) {
+		You("have no hands!");	/* not `body_part(HAND)' */
 		return 0;
 	} else if (!freehand()) {
 		You("have no free %s.", body_part(HAND));
@@ -199,10 +199,10 @@ doride()
 	if (wizard && yn("Force the mount to succeed?") == 'y')
 		forcemount = TRUE;
 #endif
-	    return (mount_steed(m_at(u.ux+u.dx, u.uy+u.dy), forcemount));
+	    return (mount_steed(m_at(u.ux+u.dx, u.uy+u.dy), forcemount)) ? MOVE_STANDARD : MOVE_CANCELLED;
 	} else
-	    return 0;
-	return 1;
+	    return MOVE_CANCELLED;
+	return MOVE_STANDARD;
 }
 
 

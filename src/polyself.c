@@ -59,7 +59,12 @@ const char *fmt, *arg;
 		was_mimicking = (youmonst.m_ap_type == M_AP_OBJECT);
 	boolean could_pass_walls = Passes_walls;
 	boolean was_blind = !!Blind;
+	int starting_hungermax;
+	double starting_hungersizemod;
 
+	starting_hungermax = get_uhungermax();
+	starting_hungersizemod = get_uhungersizemod();
+	
 	if (Upolyd) {
 		u.acurr = u.macurr;	/* restore old attribs */
 		u.amax = u.mamax;
@@ -110,6 +115,12 @@ const char *fmt, *arg;
 	if(!Levitation && !u.ustuck &&
 	   (is_pool(u.ux,u.uy, TRUE) || is_lava(u.ux,u.uy)))
 		spoteffects(TRUE);
+
+	int new_hungermax = get_uhungermax();
+	if(starting_hungermax != new_hungermax){
+		u.uhunger = u.uhunger * new_hungermax/starting_hungermax;
+	}
+	newuhs(get_uhungersizemod() < starting_hungersizemod); //May result in a message for gnomes, as the starvation thresholds will move.
 
 	see_monsters();
 }
@@ -197,7 +208,7 @@ newman()
 	if(u.uen < 1) u.uen = 1;
 
 	if(Race_if(PM_INCANTIFIER)) u.uen = min(u.uenmax, rn1(500,500));
-	else u.uhunger = rn1(500,500);
+	else u.uhunger = rn1(500,500) * get_uhungersizemod();
 	if (Sick) make_sick(0L, (char *) 0, FALSE, SICK_ALL);
 	Stoned = 0;
 	Golded = 0;
@@ -378,6 +389,8 @@ int	mntmp;
 		was_blind = !!Blind, dochange = FALSE;
 	boolean could_pass_walls = Passes_walls;
 	int mlvl;
+	int starting_hungermax;
+	double starting_hungersizemod;
 	const char *s;
 
 	if (mvitals[mntmp].mvflags & G_GENOD && !In_quest(&u.uz)) {	/* allow G_EXTINCT */
@@ -388,7 +401,10 @@ int	mntmp;
 
 	/* KMH, conduct */
 	u.uconduct.polyselfs++;
-
+	
+	starting_hungermax = get_uhungermax();
+	starting_hungersizemod = get_uhungersizemod();
+	
 	if (!Upolyd) {
 		/* Human to monster; save human stats */
 		u.macurr = u.acurr;
@@ -661,6 +677,11 @@ int	mntmp;
 	    You("orient yourself on the web.");
 	    u.utrap = 0;
 	}
+	int new_hungermax = get_uhungermax();
+	if(starting_hungermax != new_hungermax){
+		u.uhunger = u.uhunger * new_hungermax/starting_hungermax;
+	}
+	newuhs(get_uhungersizemod() < starting_hungersizemod); //May result in a message for gnomes, as the starvation thresholds will move.
 	flags.botl = 1;
 	vision_full_recalc = 1;
 	see_monsters();
@@ -740,7 +761,7 @@ break_armor()
 		}
     }
 	if ((otmp = uarmg) != 0) {
-		if(nohands(youracedata) || nolimbs(youracedata) || otmp->objsize != youracedata->msize || is_whirly(youracedata) || noncorporeal(youracedata)){
+		if(nogloves(youracedata) || nolimbs(youracedata) || otmp->objsize != youracedata->msize || is_whirly(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();
 			/* Drop weapon along with gloves */
 			You("drop your gloves%s!", uwep ? " and weapon" : "");
@@ -782,7 +803,7 @@ int alone;
 	 * future it might not be so if there are monsters which cannot
 	 * wear gloves but can wield weapons
 	 */
-	if (!alone || cantwield(youracedata)) {
+	if (!alone || you_cantwield(youracedata)) {
 	    struct obj *wep = uwep;
 
 	    if (alone) You("find you must drop your weapon%s!",
@@ -843,7 +864,7 @@ struct permonst *mdat;
 	struct attack mattk;
 	int powermult = 100;
 
-	if (!getdir((char *)0)) return(0);
+	if (!getdir((char *)0)) return MOVE_CANCELLED;
 
 	{
 		struct attack * aptr;
@@ -853,7 +874,7 @@ struct permonst *mdat;
 
 		if (!aptr) {
 			impossible("bad breath attack?");
-			return 0;
+			return MOVE_CANCELLED;
 		}
 		mattk = *aptr;
 	}
@@ -873,7 +894,7 @@ struct permonst *mdat;
 		case AD_RBRE: mtyp = PM_SHIMMERING_DRAGON; break;
 		default:
 			impossible("bad HDbreath %d", flags.HDbreath);
-			return 0;
+			return MOVE_CANCELLED;
 		}
 		if (uarm && Dragon_armor_matches_mtyp(uarm, mtyp))
 			powermult += 50;
@@ -888,7 +909,7 @@ struct permonst *mdat;
 	mattk.damd = (mattk.damd ? mattk.damd : 6) * powermult / 100;
 
 	/* use xbreathey to do the attack */
-	return xbreathey(&youmonst, &mattk, 0, 0);
+	return xbreathey(&youmonst, &mattk, 0, 0) ? MOVE_STANDARD : MOVE_CANCELLED;
 }
 
 int
@@ -899,7 +920,7 @@ domakewhisperer()
 	int duration;
 	if (u.uen < (10+min(u.uinsight, 45))) {
 	    You("concentrate but lack the energy to maintain doing so.");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	
 	duration = ACURR(A_CHA) + 1;
@@ -914,14 +935,14 @@ domakewhisperer()
 	// makedog();
 	mtmp = makemon(&mons[PM_SECRET_WHISPERER], u.ux, u.uy, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
 
-	if(!mtmp) return 0; /* pets were genocided */
+	if(!mtmp) return MOVE_CANCELLED; /* pets were genocided */
 
 	mark_mon_as_summoned(mtmp, &youmonst, duration, 0);
 	for(int i = min(45, (u.uinsight - mtmp->m_lev)); i > 0; i--){
 		grow_up(mtmp, (struct monst *) 0);
 		//Technically might grow into a genocided form.
 		if(DEADMONSTER(mtmp))
-			return 0;
+			return MOVE_CANCELLED;
 	}
 	mtmp->mspec_used = 0;
 
@@ -934,7 +955,9 @@ domakewhisperer()
 	
 	initedog(mtmp);
 	EDOG(mtmp)->loyal = TRUE;
-	return 1;
+	EDOG(mtmp)->waspeaceful = TRUE;
+	mtmp->mpeacetime = 0;
+	return MOVE_STANDARD;
 }
 
 int
@@ -945,11 +968,11 @@ doelementalbreath()
 	
 	if (Strangled) {
 	    You_cant("breathe.  Sorry.");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	if (u.uen < 45) {
 	    You("don't have enough energy to sing an elemental!");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	losepw(45);
 	flags.botl = 1;
@@ -985,7 +1008,7 @@ doelementalbreath()
 		mon->mhpmax = (mon->m_lev * 8) - 4;
 		mon->mhp =  mon->mhpmax;
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -994,11 +1017,11 @@ dospit()
 	struct obj *otmp;
 
 	if (!getdir((char *)0))
-		return(0);
+		return MOVE_CANCELLED;
 	else {
 		xspity(&youmonst, attacktype_fordmg(youracedata, AT_SPIT, AD_ANY), 0, 0);
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1006,10 +1029,10 @@ doremove()
 {
 	if (!Punished) {
 		You("are not chained to anything!");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	unpunish();
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1020,13 +1043,13 @@ dospinweb()
 	if (Levitation || Weightless
 	    || Underwater || Is_waterlevel(&u.uz)) {
 		You("must be on the ground to spin a web.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if (u.uswallow) {
 		You("release web fluid inside %s.", mon_nam(u.ustuck));
 		if (is_animal(u.ustuck->data)) {
 			expels(u.ustuck, u.ustuck->data, TRUE);
-			return(0);
+			return MOVE_INSTANT;
 		}
 		if (is_whirly(u.ustuck->data)) {
 			int i;
@@ -1054,14 +1077,14 @@ dospinweb()
 				}
 				pline_The("web %sis swept away!", sweep);
 			}
-			return(0);
+			return MOVE_INSTANT;
 		}		     /* default: a nasty jelly-like creature */
 		pline_The("web dissolves into %s.", mon_nam(u.ustuck));
-		return(0);
+		return MOVE_INSTANT;
 	}
 	if (u.utrap) {
 		You("cannot spin webs while stuck in a trap.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	exercise(A_DEX, TRUE);
 	if (ttmp) switch (ttmp->ttyp) {
@@ -1070,35 +1093,35 @@ dospinweb()
 			deltrap(ttmp);
 			bury_objs(u.ux, u.uy);
 			newsym(u.ux, u.uy);
-			return(1);
+			return MOVE_STANDARD;
 		case SQKY_BOARD: pline_The("squeaky board is muffled.");
 			deltrap(ttmp);
 			newsym(u.ux, u.uy);
-			return(1);
+			return MOVE_STANDARD;
 		case TELEP_TRAP:
 		case LEVEL_TELEP:
 		case MAGIC_PORTAL:
 			Your("webbing vanishes!");
-			return(0);
+			return MOVE_INSTANT;
 		case WEB: You("make the web thicker.");
-			return(1);
+			return MOVE_STANDARD;
 		case HOLE:
 		case TRAPDOOR:
 			You("web over the %s.",
 			    (ttmp->ttyp == TRAPDOOR) ? "trap door" : "hole");
 			deltrap(ttmp);
 			newsym(u.ux, u.uy);
-			return 1;
+			return MOVE_STANDARD;
 		case ROLLING_BOULDER_TRAP:
 			You("spin a web, jamming the trigger.");
 			deltrap(ttmp);
 			newsym(u.ux, u.uy);
-			return(1);
+			return MOVE_STANDARD;
 		case VIVI_TRAP:
 			You("spin a web, ruining the delicate machinery.");
 			deltrap(ttmp);
 			newsym(u.ux, u.uy);
-			return(1);
+			return MOVE_STANDARD;
 		case ARROW_TRAP:
 		case DART_TRAP:
 		case BEAR_TRAP:
@@ -1111,18 +1134,19 @@ dospinweb()
 		case MAGIC_TRAP:
 		case ANTI_MAGIC:
 		case POLY_TRAP:
+		case MUMMY_TRAP:
 			You("have triggered a trap!");
 			dotrap(ttmp, 0);
-			return(1);
+			return MOVE_STANDARD;
 		default:
 			impossible("Webbing over trap type %d?", ttmp->ttyp);
-			return(0);
+			return MOVE_CANCELLED;
 		}
 	else if (On_stairs(u.ux, u.uy)) {
 	    /* cop out: don't let them hide the stairs */
 	    Your("web fails to impede access to the %s.",
 		 (levl[u.ux][u.uy].typ == STAIRS) ? "stairs" : "ladder");
-	    return(1);
+	    return MOVE_STANDARD;
 		 
 	}
 	ttmp = maketrap(u.ux, u.uy, WEB);
@@ -1131,7 +1155,7 @@ dospinweb()
 		ttmp->madeby_u = 1;
 	}
 	newsym(u.ux, u.uy);
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1140,7 +1164,7 @@ dosummon()
 	int placeholder;
 	if (u.uen < 10) {
 	    You("lack the energy to send forth a call for help!");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	losepw(10);
 	flags.botl = 1;
@@ -1149,7 +1173,7 @@ dosummon()
 	exercise(A_WIS, TRUE);
 	if (!were_summon(&youmonst, &placeholder, (char *)0))
 		pline("But none arrive.");
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1161,11 +1185,11 @@ dodemonpet()
 
 	if (u.uen < 10) {
 		You("lack the energy to call for help!");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	else if (youmonst.summonpwr >= youmonst.data->mlevel) {
 		You("don't have the authority to call for any more help!");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	losepw(10);
 	flags.botl = 1;
@@ -1188,7 +1212,7 @@ dodemonpet()
 	else {
 		pline("No help arrived.");
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 static NEARDATA const char food_types[] = { FOOD_CLASS, 0 };
@@ -1220,15 +1244,15 @@ dovampminion()
 		}
 	}
 	if (!corpse) corpse = getobj(food_types, "feed blood to");
-	if (!corpse) return(0);
+	if (!corpse) return MOVE_CANCELLED;
 
 	struct permonst *pm = &mons[corpse->corpsenm];
 	if (!has_blood(pm)){
 		pline("You can't put blood in a monster that didn't start with blood!");
-		return(0);
+		return MOVE_CANCELLED;
 	} else if (is_untamable(pm) || (pm->geno & G_UNIQ)){
 		pline("You can't create a minion of that type of monster!");
-		return(0);
+		return MOVE_CANCELLED;
 	} else {
 		struct monst * mtmp = revive(corpse, FALSE);
 		if (mtmp) {
@@ -1241,7 +1265,7 @@ dovampminion()
 		}
 	}
 	
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1249,7 +1273,7 @@ dotinker()
 {
 	if (u.uen < 10) {
 	    You("lack the energy to tinker.");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	losepw(10);
 	flags.botl = 1;
@@ -1272,34 +1296,38 @@ dotinker()
 		mlocal->mpeaceful = 1;
 		newsym(mlocal->mx,mlocal->my);
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
 dogaze()
 {
 	register struct monst *mtmp;
-	struct attack * attk = attacktype_fordmg(youracedata, AT_GAZE, AD_ANY);
-	int result;
+	int result = 0;
 
 	if (Blind) {
 		You_cant("see anything to gaze at.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	if (u.uen < 15) {
 		You("lack the energy to use your special gaze!");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if (!throwgaze()) {
 		/* player cancelled targetting or picked a not-allowed location */
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	else {
 		losepw(15);
 		flags.botl = 1;
 
 		if ((mtmp = m_at(u.dx, u.dy)) && canseemon(mtmp)) {
-			result = xgazey(&youmonst, mtmp, attk, -1);
+			struct attack *a;
+
+			for (a = &youracedata->mattk[0]; a < &youracedata->mattk[NATTK]; a++){
+				if (a->aatyp == AT_GAZE) 
+					result |= xgazey(&youmonst, mtmp, a, -1);
+			}
 
 			if (!result) {
 				pline("%s seemed not to notice.", Monnam(mtmp));
@@ -1320,7 +1348,7 @@ dogaze()
 						-d((int)mtmp->m_lev + 1,
 						(int)mtmp->data->mattk[0].damd)
 						: -200, "frozen by a monster's gaze");
-					return 1;
+					return MOVE_STANDARD;
 				}
 				else
 					You("stiffen momentarily under %s gaze.",
@@ -1347,7 +1375,7 @@ dogaze()
 			You("gaze at empty space.");
 		}
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 #if 0
 {
@@ -1589,7 +1617,7 @@ dohide()
 
 	if (u.uundetected || (ismimic && youmonst.m_ap_type != M_AP_NOTHING)) {
 		You("are already hiding.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if (ismimic) {
 		/* should bring up a dialog "what would you like to imitate?" */
@@ -1598,7 +1626,7 @@ dohide()
 	} else
 		u.uundetected = 1;
 	newsym(u.ux,u.uy);
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1609,7 +1637,7 @@ domindblast()
 
 	if (u.uen < 10) {
 	    You("concentrate but lack the energy to maintain doing so.");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	losepw(10);
 	flags.botl = 1;
@@ -1656,7 +1684,7 @@ domindblast()
 			}
 		}
 	}
-	return 1;
+	return MOVE_STANDARD;
 }
 
 void
@@ -1697,14 +1725,14 @@ dodarken()
 
 	if (u.uen < 10 && u.uen<u.uenmax) {
 	    You("lack the energy to invoke the darkness.");
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	u.uen = max(u.uen-10,0);
 	flags.botl = 1;
 	You("invoke the darkness.");
 	litroom(FALSE,NULL);
 	
-	return 1;
+	return MOVE_STANDARD;
 }
 
 int
@@ -1744,13 +1772,13 @@ doclockspeed()
 			break;
 			}
 		}
-		if(u.clockworkUpgrades&FAST_SWITCH) return 0;
-		else return 1;
+		if(u.clockworkUpgrades&FAST_SWITCH) return MOVE_INSTANT;
+		else return MOVE_STANDARD;
 	} else{
 		You("leave your clock at its current speed.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 int
@@ -1765,15 +1793,15 @@ doandroid()
 			u.phasengn = 1;
 			You("activate your phase engine.");
 		}
-		return 0;
+		return MOVE_INSTANT;
 	} else if(newspeed == HIGH_CLOCKSPEED){
 		You("activate emergency high speed.");
 		u.ucspeed = HIGH_CLOCKSPEED;
-		return 0;
+		return MOVE_INSTANT;
 	} else if(newspeed == NORM_CLOCKSPEED){
 		You("reduce speed to normal.");
 		u.ucspeed = NORM_CLOCKSPEED;
-		return 1;
+		return MOVE_STANDARD;
 	} else if(newspeed == SLOW_CLOCKSPEED){
 		int mult = HEALCYCLE/u.ulevel;
 		int duration = (u.uenmax - u.uen)*mult*2/3+30, i, lim;
@@ -1790,23 +1818,23 @@ doandroid()
 		u.nextsleep = moves+rnz(350)+duration;
 		u.lastslept = moves;
 		fall_asleep(-rn1(duration+1, duration+1), TRUE);
-		return 1;
+		return MOVE_STANDARD;
 	} else if(newspeed == RECHARGER){
 		static const char recharge_type[] = { ALLOW_COUNT, ALL_CLASSES, 0 };
 	    struct obj *otmp = getobj(recharge_type, "charge");
 
 	    if (!otmp) {
-			return 0;
+			return MOVE_CANCELLED;
 	    }
 	    if(!recharge(otmp, 0))
 			You("recharged %s.", the(xname(otmp)));
 		losepw(10);
 	    update_inventory();
-		return 1;
+		return MOVE_STANDARD;
 	} else if (newspeed == ANDROID_COMBO) {
 		return android_combo();	/* in xhity.c */
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 int
@@ -1896,7 +1924,7 @@ int splaction;
 		break;
 	} while (TRUE);
 
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_OVL void
@@ -2016,80 +2044,230 @@ struct monst *mon;
 int part;
 {
 	static NEARDATA const char
-	*humanoid_parts[] = { "arm", "eye", "face", "finger",
-		"fingertip", "foot", "hand", "handed", "head", "leg",
-		"light headed", "neck", "spine", "toe", "hair",
-		"blood", "lung", "nose", "stomach","heart","skin",
-		"flesh","beat","bones","ear","creak","crack"},
-	*clockwork_parts[] = { "arm", "photoreceptor", "face", "grasping digit",
-		"digit-tip", "foot", "manipulator", "manipulatored", "head", "leg",
-		"addled", "neck", "chassis", "toe", "doll-hair",
-		"oil", "gear", "chemoreceptor", "keyhole","mainspring","metal skin",
-		"brass structure","tick","rods","phonoreceptor","creak","bend"},
-	*jelly_parts[] = { "pseudopod", "dark spot", "front",
-		"pseudopod extension", "pseudopod extremity",
-		"pseudopod root", "grasp", "grasped", "cerebral area",
-		"lower pseudopod", "viscous", "middle", "centriole",
-		"pseudopod extremity", "ripples", "juices",
-		"tiny cilia", "sensor", "stomach","cytoskeletal structure","membrane",
-		"cortex","shift","cytoskeletal filaments","membrane","creak","crack" },
-	*animal_parts[] = { "forelimb", "eye", "face", "foreclaw", "claw tip",
-		"rear claw", "foreclaw", "clawed", "head", "rear limb",
-		"light headed", "neck", "spine", "rear claw tip",
-		"fur", "blood", "lung", "nose", "stomach","heart","skin",
-		"flesh","beat","bones","ear","creak","crack" },
-	*insect_parts[] = { "forelimb", "compound eye", "face", "foreclaw", "claw tip",
-		"rear claw", "foreclaw", "clawed", "head", "rear limb",
-		"light headed", "neck", "notochord", "rear claw tip",
-		"setae", "ichor", "spriacle", "antenna", "stomach","dorsal vessel","exoskeleton",
-		"chitin","pulse","apodeme","ear","creak","tear" },
-	*bird_parts[] = { "wing", "eye", "face", "wing", "wing tip",
-		"foot", "wing", "winged", "head", "leg",
-		"light headed", "neck", "spine", "toe",
-		"feathers", "blood", "lung", "bill", "stomach","heart","skin",
-		"flesh","beat","bones","ear","creak","crack" },
-	*horse_parts[] = { "foreleg", "eye", "face", "forehoof", "hoof tip",
-		"rear hoof", "foreclaw", "hooved", "head", "rear leg",
-		"light headed", "neck", "backbone", "rear hoof tip",
-		"mane", "blood", "lung", "nose", "stomach","heart","skin",
-		"flesh","beat","bones","ear","creak","crack"},
-	*sphere_parts[] = { "appendage", "optic nerve", "body", "tentacle", "tentacle tip", 
-		"lower appendage", "tentacle", "tentacled", "body", "lower tentacle", 
-		"rotational", "equator", "body", "lower tentacle tip", 
-		"surface", "life force", "retina", "olfactory nerve","interior","core","surface",
-		"subsurface layers","pulse","auras","tympanic membrane","flicker","blink out"},
-	*fungus_parts[] = { "mycelium", "visual area", "front", "hypha",
-		"hypha", "root", "strand", "stranded", "cap area",
-		"rhizome", "sporulated", "stalk", "root", "rhizome tip",
-		"spores", "juices", "gill", "gill", "interior","hyphal network","cuticle",
-		"...it doesn't sound like much",
-		"flesh","hyphae","tympanic area","stretch","tear" },
-	*vortex_parts[] = { "region", "eye", "front", "minor current",
-		"minor current", "lower current", "swirl", "swirled",
-		"central core", "lower current", "addled", "center",
-		"currents", "edge", "currents", "life force",
-		"center", "leading edge", "interior","core","vaporous currents",
-		"subsurface currents","pulse","currents","vapor","weaken","falter" },
-	*snake_parts[] = { "vestigial limb", "eye", "face", "large scale",
-		"large scale tip", "rear region", "scale gap", "scale gapped",
-		"head", "rear region", "light headed", "neck", "length",
-		"rear scale", "scales", "blood", "lung", "forked tongue", "stomach","heart","scales",
-		"flesh","beat","bones","ear","creak","crack" },
-	*fish_parts[] = { "fin", "eye", "premaxillary", "pelvic axillary",
-		"pelvic fin", "anal fin", "pectoral fin", "finned", "head", "peduncle",
-		"played out", "gills", "dorsal fin", "caudal fin",
-		"scales", "blood", "gill", "nostril", "stomach","heart","scales",
-		"flesh","beat","bones","ear","creak","crack" },
-	*snakeleg_humanoid_parts[] = { "arm", "eye", "face", "finger",
-		"fingertip", "serpentine lower body", "hand", "handed", "head", "rear region",
-		"light headed", "neck", "spine", "tail-tip", "scales",
-		"blood", "lung", "nose", "stomach","heart","scales",
-		"flesh","beat","bones","ear","creak","crack" },
-	*centauroid_parts[] = { "arm", "eye", "face", "finger",
-		"fingertip", "hoof", "hand", "handed", "head", "front leg",
-		"light headed", "neck", "spine", "hoof-nail", "hair",
-		"blood", "lung", "nose", "stomach","heart","skin",
-		"flesh","beat","bones","ear","creak","crack" };
+	*humanoid_parts[] = { 
+		"arm",			"eye",		"face",			"finger",
+		"fingertip",	"foot",		"hand",			"handed", 
+		"head", 		"leg",		"light headed", "neck",
+		"spine",		"toe",		"hair", 		"blood",
+		"lung",			"nose", 	"stomach",		"heart",
+		"skin",			"flesh",	"beat",			"bones",
+		"ear", 			"ears",		"creak",	"crack"},
+	*uvuudaum_parts[] = { 
+		"arm",			"eye",		"headspike",	"finger",
+		"fingertip",	"hand",		"hand",			"handed", 
+		"tentacle", 	"arm",		"addled", 		"tentacle-base",
+		"spine",		"finger",	"headspike", 	"ichor",
+		"pore",			"pore", 	"stomach",		"heart",
+		"skin",			"flesh",	"beat",			"bones",
+		"clairaudience", "clairaudience", "creak",	"crack"},
+	*clockwork_parts[] = { 
+		"arm", 			"photoreceptor",	"face",			"grasping digit",
+		"digit-tip",	"foot",				"manipulator",	"manipulatored",
+		"head",			"leg",				"addled",		"neck",
+		"chassis",		"toe",				"doll-hair",	"oil",
+		"gear",			"chemoreceptor",	"keyhole",		"mainspring",
+		"foil skin",	"brass structure",	"tick",			"armature",
+		"phonoreceptor","phonoreceptors",	"creak",		"bend"},
+	*doll_parts[] = { 
+		"arm", 			"glass eye",		"face",			"finger",
+		"fingertip",	"foot",				"hand",			"handed",
+		"head",			"leg",				"addled",		"neck",
+		"trunk",		"toe",				"doll-hair",	"ichor",
+		"lip",			"nose",				"wood",			"wood",
+		"painted skin",	"wood",				"...it doesn't sound like much", "wood",
+		"ear",			"ears",				"creak",		"crack"},
+	*android_parts[] = { 
+		"arm", 			"photoreceptor",	"face",			"finger",
+		"fingertip",	"foot",				"hand",			"handed",
+		"head",			"leg",				"buggy",		"neck",
+		"dorsal wiring","toe",				"doll-hair",	"oily red liquid",
+		"vocal pump",	"chemoreceptor",	"black box",	"heart",
+		"cosmetic layer","plasteel",		"pump",			"armature",
+		"phonoreceptor","phonoreceptors",	"flex",			"crack"},
+	*assessor_parts[] = {
+		"arm", 			"eye", 				"central eye", 	"grasping digit",
+		"digit-tip",	"foot",				"manipulator",	"manipulatored",
+		"head", 		"leg",				"addled", 		"shoulders",
+		"chassis", 		"toe", 				"topspike",		"oil",
+		"valve",		"olfactory nerve",	"gearbox",		"eternal core",
+		"armor",		"brass structure",	"tick",			"armature",
+		"phonoreceptor","phonoreceptors",	"creak",		"bend"},
+	*audient_parts[] = {
+		"distal limb",	"photoreceptor",	"front",		"articulated distal spike",
+		"spike-tip",	"ventral needle",	"distal spike",	"spiked",
+		"cap",			"ventral limb",		"addled",		"stalk",
+		"chassis",		"needle-tip",		"spores",		"oil",
+		"gear",			"gill",				"hyphal network","eternal core",
+		"metal skin",	"brass structure",	"tick",			"armature",
+		"phonoreceptor horn","phonoreceptor horn","creak",	"bend"},
+	*jelly_parts[] = {
+		"pseudopod",		"dark spot",		"front",		"pseudopod extension",
+		"pseudopod extremity","pseudopod root", "grasp", 		"grasped", 
+		"cerebral area",	"lower pseudopod",	"viscous",		"middle",
+		"centriole",		"pseudopod extremity","ripples",	"juices",
+		"tiny cilia",		"sensor",			"stomach",		"cytoskeletal structure",
+		"membrane",			"cortex",			"shift",		"cytoskeletal filaments",
+		"membrane",			"membrane",			"creak",		"crack" },
+	*animal_parts[] = {
+		"forelimb", 		"eye", 				"face", 		"foreclaw",
+		"claw tip",			"rear claw", 		"foreclaw", 	"clawed", 
+		"head", 			"rear limb",		"light headed", "neck",
+		"spine", 			"rear claw tip",	"fur", 			"blood", 
+		"lung", 			"nose", 			"stomach",		"heart",
+		"skin",				"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",			"crack" },
+	*insect_parts[] = { 
+		"forelimb",			"compound eye",		"face",			"foreclaw",
+		"claw tip",			"rear claw", 		"foreclaw", 	"clawed", 
+		"head", 			"rear limb",		"light headed", "neck", 
+		"notochord", 		"rear claw tip",	"setae", 		"haemolymph", 
+		"spriacle", 		"antenna", 			"stomach",		"dorsal vessel",
+		"exoskeleton",		"chitin",			"pulse",		"apodeme",
+		"tympanum",			"tympana",			"creak",		"tear" },
+	*bird_parts[] = { 
+		"wing", 			"eye", 				"face", 		"wing", 
+		"wing tip",			"foot", 			"wing", 		"winged", 
+		"head", 			"leg",				"light headed", "neck", 
+		"spine", 			"toe",				"feathers", 	"blood",
+		"lung", 			"bill", 			"stomach",		"heart",
+		"skin",				"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",		"crack" },
+	*horse_parts[] = {
+		"foreleg", 			"eye", 				"face", 		"forehoof",
+		"hoof tip",			"rear hoof", 		"foreclaw", 	"hooved", 
+		"head", 			"rear leg",			"light headed",	"neck",
+		"backbone", 		"rear hoof tip",	"mane", 		"blood", 
+		"lung", 			"nose", 			"stomach",		"heart",
+		"skin",				"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",		"crack"},
+	*sphere_parts[] = { 
+		"appendage", 		"optic nerve", 		"body", 		"tentacle", 
+		"tentacle tip", 	"lower appendage",	"tentacle",		"tentacled",
+		"body",				"lower tentacle", 	"rotational",	"equator",
+		"body", 			"lower tentacle tip","surface",		"life force",
+		"retina",			"olfactory nerve",	"interior",		"core",
+		"surface",			"subsurface layers","pulse",		"auras",
+		"tympanic membrane","tympanic membranes","flicker",		"blink out"},
+	*spore_parts[] = { 
+		"stalk", 			"visual area", 		"front", 		"stalk", 
+		"stalk tip", 		"stalk",			"stalk",		"stalked",
+		"annulus",			"stalk", 			"addled",		"equator",
+		"body", 			"stalk tip",		"surface",		"sap",
+		"lip",				"lip",				"interior",		"spores",
+		"annulus",			"flesh",			"...they don't sound like much","cells",
+		"tympanic area",	"tympanic area",	"flex",			"crack"},
+	*fungus_parts[] = {
+		"mycelium", 		"visual area", 		"front", 					"hypha",
+		"hypha", 			"root", 			"strand", 					"stranded",
+		"cap area",			"rhizome", 			"sporulated", 				"stalk", 
+		"root", 			"rhizome tip",		"spores", 					"juices", 
+		"gill", 			"gill", 			"interior",					"hyphal network",
+		"cuticle",			"flesh",			"...it doesn't sound like much","hyphae",
+		"tympanic area",	"tympanic area",	"stretch",					"tear" },
+	*tree_parts[] = { 
+		"limb", 	"visual area",	"front",						"leaf",
+		"leaftip",	"taproot",		"twig",							"twigged",
+		"crown", 	"root", 		"wilty", 						"trunk",
+		"heartwood","root-tip", 	"leaves", 						"sap",
+		"stoma", 	"stoma",		"xylem",						"phloem",
+		"bark", 	"sapwood",		"...it doesn't sound like much","wood",
+		"tympanic area","tympanic area","creak",					"crack" },
+	*vipertree_parts[] = { 
+		"coil", 	"eye",			"face",				"mouth",
+		"fang",		"taproot",		"viper head",		"headed",
+		"crown", 	"root", 		"disordered", 		"trunk",
+		"heartwood","root-tip", 	"scales", 			"blood",
+		"lung", 	"nose",			"stomach",			"heart",
+		"scales", 	"sapwood",		"beat",				"wood",
+		"ear",		"ears",			"creak",			"crack" },
+	*blackflower_parts[] = {
+		"arm",			"blank eye",	"face",			"finger",
+		"fingertip",	"petal"			"hand",			"handed", 
+		"head", 		"flower"	,	"light headed", "neck",
+		"spine",		"petal-tip", 	"hair", 		"pale fluid",
+		"lung",			"nose", 		"stomach",		"heart",
+		"skin",			"flesh",		"beat",			"bones",
+		"ear",			"ears",			"creak",		"crack" },
+	*plant_parts[] = {
+		"shoot", 		"visual area",	"front",						"leaf",
+		"leaftip",		"lateral root",	"twig",							"twigged",
+		"apical bud",	"primary root", "wilty", 						"stem",
+		"vascular tissue","root-tip", 	"leaves", 						"sap",
+		"stoma", 		"stoma",		"xylem",						"phloem",
+		"epidermis",	"flesh",		"...it doesn't sound like much","stem",
+		"tympanic area","tympanic area","stretch",						"tear" },
+	*mandrake_parts[] = { 
+		"arm-root", 	"eye spot",		"root-face",					"arm-root tip",
+		"arm-root hair","leg-root tip",	"arm-root end",					"rooted",
+		"leaves", 		"leg-root", 	"wilty", 						"ground tissue",
+		"spine",		"leg-root hair","apical bud", 					"bloody sap",
+		"stoma", 		"nose spots",	"xylem",						"phloem",
+		"epidermis",	"flesh",		"...it doesn't sound like much","stem",
+		"ear spot",		"ear spots",	"stretch",						"tear" },
+	*willow_parts[] = { 
+		"limb", 	"visual area",	"front",						"leaf",
+		"leaftip",	"taproot",		"twig",							"twigged",
+		"crown", 	"root", 		"wilty", 						"trunk",
+		"spine",	"root-tip", 	"leaves", 						"blood",
+		"stoma", 	"stoma",		"xylem",						"phloem",
+		"bark", 	"flesh",		"...it doesn't sound like much","wood",
+		"tympanic area","tympanic area","creak",					"crack" },
+	*birch_parts[] = { 
+		"limb", 		"eye",			"face",			"thorn",
+		"thorn-tip",	"crawling-root","scaffold",		"scaffolded",
+		"head", 		"bud union", 	"light headed", "neck",
+		"spine",		"root-tip", 	"hair", 		"sap",
+		"lung", 		"nose",			"stomach",		"heart",
+		"bark", 		"sapwood",		"beat",			"wood",
+		"ear",			"ears",			"creak",		"crack" },
+	*vortex_parts[] = {
+		"region",			"eye",				"front",		"minor current",
+		"minor current",	"lower current",	"swirl",		"swirled",
+		"central core",		"lower current",	"addled",		"center",
+		"currents",			"edge",				"currents",		"life force",
+		"center",			"leading edge", 	"interior",		"core",
+		"vaporous currents","subsurface currents","pulse",		"currents",
+		"vapor",			"vapor",			"weaken",		"falter" },
+	*snake_parts[] = {
+		"vestigial limb", 	"eye",				"face",			"large scale",
+		"large scale tip",	"rear region",		"scale gap",	"scale gapped",
+		"head",				"rear region",		"light headed",	"neck",
+		"length",			"rear scale",		"scales",		"blood",
+		"lung",				"forked tongue",	"stomach",		"heart",
+		"scales",			"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",		"crack" },
+	*naunet_parts[] = {
+		"watery tentacles", "eye",				"face",			"tentacle",
+		"tentacle tip",		"rear region",		"tentacle",		"tentacled",
+		"head",				"rear region",		"light headed",	"neck",
+		"length",			"rear surface",		"watery surface","blood",
+		"foamy depths",		"forked tongue",	"hungry depths","swirling depths",
+		"watery surface",	"waters",			"flow",			"waters",
+		"ear",				"ears",				"bubble",		"boil" },
+	*fish_parts[] = {
+		"fin",				"eye",				"premaxillary",	"pelvic axillary",
+		"pelvic fin",		"anal fin",			"pectoral fin", "finned",
+		"head",				"peduncle",			"played out",	"gills",
+		"dorsal fin",		"caudal fin",		"scales",		"blood",
+		"gill",				"nostril",			"stomach",		"heart",
+		"scales",			"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",		"crack" },
+	*snakeleg_humanoid_parts[] = {
+		"arm",				"eye",				"face",			"finger",
+		"fingertip",		"serpentine lower body","hand",		"handed", 
+		"head",				"rear region",		"light headed",	"neck",
+		"spine",			"tail-tip",			"scales",		"blood",
+		"lung",				"nose", 			"stomach",		"heart",
+		"scales",			"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",		"crack" },
+	*centauroid_parts[] = {
+		"arm", 				"eye", 				"face", 		"finger",
+		"fingertip", 		"hoof", 			"hand", 		"handed",
+		"head", 			"front leg",		"light headed", "neck", 
+		"spine", 			"hoof-nail", 		"hair",			"blood", 
+		"lung", 			"nose", 			"stomach",		"heart",
+		"skin",				"flesh",			"beat",			"bones",
+		"ear",				"ears",				"creak",		"crack" };
 	/* claw attacks are overloaded in mons[]; most humanoids with
 	   such attacks should still reference hands rather than claws */
 	static const char not_claws[] = {
@@ -2100,21 +2278,7 @@ int part;
 	};
 	struct permonst *mptr = mon->data;
 
-	if (part == HAND || part == HANDED) {	/* some special cases */
-	    if (mptr->mlet == S_DOG || mptr->mlet == S_FELINE ||
-		    mptr->mlet == S_YETI)
-		return part == HAND ? "paw" : "pawed";
-		if(mon == &youmonst && youracedata->mtyp == PM_HALF_DRAGON)
-			return part == HAND ? "claw" : "clawed";
-		if(mon->mtyp == PM_HALF_DRAGON)
-			return part == HAND ? "claw" : "clawed";
-	    if (humanoid(mptr) && attacktype(mptr, AT_CLAW) &&
-		    !index(not_claws, mptr->mlet) &&
-		    mptr->mtyp != PM_STONE_GOLEM &&
-		    mptr->mtyp != PM_SENTINEL_OF_MITHARDIR &&
-		    mptr->mtyp != PM_INCUBUS && mptr->mtyp != PM_SUCCUBUS)
-		return part == HAND ? "claw" : "clawed";
-	}
+	//Specific overrides
 	if ((mptr->mtyp == PM_MUMAK || mptr->mtyp == PM_MASTODON) &&
 		part == NOSE)
 	    return "trunk";
@@ -2125,9 +2289,82 @@ int part;
 	    return "tentacle";
 	if (mptr->mtyp == PM_FLOATING_EYE && part == EYE)
 	    return "cornea";
+	if (mptr->mtyp == PM_SUNFLOWER || mptr->mtyp == PM_MIRRORED_MOONFLOWER){
+		if(part == HEAD)
+			return "flower";
+		if(part == FACE)
+			return "mirrored corolla";
+	}
+	if (mptr->mtyp == PM_DREADBLOSSOM_SWARM){
+		if(part == HEAD)
+			return "flower";
+		if(part == FACE)
+			return "corolla";
+	}
+	if (is_fern(mptr)){
+		if(part == HEAD)
+			return "crosier";
+	}
+	if (mptr->mtyp == PM_DREADBLOSSOM_SWARM && part == LEG)
+	    return "root-thorn";
+	if ((mptr->mtyp == PM_DREADBLOSSOM_SWARM || mptr->mtyp == PM_SUNFLOWER || mptr->mtyp == PM_MIRRORED_MOONFLOWER) && part == HAIR)
+	    return "petals";
+	if (is_delouseable(mptr)){
+		if(mptr->mtyp == PM_PARASITIZED_DOLL){
+			if(part == HEAD)
+				return "nightmarish flesh mass";
+			if(part == FACE)
+				return "gnawing mouths";
+			if(part == EYE)
+				return "winking eye";
+			if(part == BLOOD)
+				return "seething blood";
+		} else {
+			if(part == FACE)
+				return "squid";
+			if(part == EAR)
+				return "skin";
+			if(part == EARS)
+				return "skin";
+			if(part == EYE)
+				return "eye";
+		}
+	}
+
+	//PM-based part lists
 	if (mptr->mtyp == PM_RAVEN || mptr->mtyp == PM_CROW)
 	    return bird_parts[part];
-	if (mptr->mlet == S_CENTAUR || mptr->mlet == S_UNICORN ||
+	if (mptr->mtyp == PM_DAUGHTER_OF_NAUNET)
+	    return naunet_parts[part];
+	if (mptr->mtyp == PM_APHANACTONAN_ASSESSOR)
+	    return assessor_parts[part];
+	if (mptr->mtyp == PM_APHANACTONAN_AUDIENT)
+	    return audient_parts[part];
+	if (mptr->mtyp == PM_MANDRAKE)
+	    return mandrake_parts[part];
+	if (mptr->mtyp == PM_CANDLE_TREE)
+	    return birch_parts[part];
+	if (mptr->mtyp == PM_WEEPING_WILLOW)
+	    return willow_parts[part];
+	if (mptr->mtyp == PM_VIPER_TREE)
+	    return vipertree_parts[part];
+	if (mptr->mtyp == PM_BLACK_FLOWER)
+	    return blackflower_parts[part];
+	if (is_fern_spore(mptr))
+	    return spore_parts[part];
+	if (mptr->mtyp == PM_WARDEN_TREE)
+	    return tree_parts[part];
+	if (mptr->mtyp == PM_LIVING_DOLL)
+	    return doll_parts[part];
+	if (is_android(mptr))
+	    return android_parts[part];
+	if (mptr->mtyp == PM_UVUUDAUM)
+	    return uvuudaum_parts[part];
+
+	//S-based part lists
+	if (mptr->mlet == S_PLANT)
+	    return plant_parts[part];
+	if (mptr->mlet == S_UNICORN ||
 		(mptr->mtyp == PM_ROTHE && part != HAIR))
 	    return horse_parts[part];
 	if (mptr->mlet == S_LIGHT) {
@@ -2149,6 +2386,23 @@ int part;
 	    return fish_parts[part];
 	if (mptr->mlet == S_ANT)
 		return insect_parts[part];
+
+	//General body shape-based
+	if (part == HAND || part == HANDED) {	/* some special cases */
+	    if (mptr->mlet == S_DOG || mptr->mlet == S_FELINE ||
+		    mptr->mlet == S_YETI)
+		return part == HAND ? "paw" : "pawed";
+		if(mon == &youmonst && youracedata->mtyp == PM_HALF_DRAGON)
+			return part == HAND ? "claw" : "clawed";
+		if(mon->mtyp == PM_HALF_DRAGON)
+			return part == HAND ? "claw" : "clawed";
+	    if (humanoid(mptr) && attacktype(mptr, AT_CLAW) &&
+		    !index(not_claws, mptr->mlet) &&
+		    mptr->mtyp != PM_STONE_GOLEM &&
+		    mptr->mtyp != PM_SENTINEL_OF_MITHARDIR &&
+		    mptr->mtyp != PM_INCUBUS && mptr->mtyp != PM_SUCCUBUS)
+		return part == HAND ? "claw" : "clawed";
+	}
 	if (serpentine(mptr) || (mptr->mlet == S_DRAGON && part == HAIR))
 	    return snake_parts[part];
 	if (snakemanoid(mptr))
@@ -2375,7 +2629,7 @@ dodroidmenu()
 			incntlet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
 	}
-	if(((uwep && (!is_lightsaber(uwep) || litsaber(uwep)) && P_SKILL(objects[uwep->otyp].oc_skill) >= P_BASIC) || ((!uwep || (is_lightsaber(uwep) && !litsaber(uwep))) && P_SKILL(P_MARTIAL_ARTS) >= P_BASIC)) && u.uen > 0 && !u.twoweap){
+	if(((uwep && (!is_lightsaber(uwep) || litsaber(uwep)) && P_SKILL(weapon_type(uwep)) >= P_BASIC) || ((!uwep || (is_lightsaber(uwep) && !litsaber(uwep))) && P_SKILL(P_MARTIAL_ARTS) >= P_BASIC)) && u.uen > 0 && !u.twoweap){
 		Sprintf(buf, "Combo");
 		incntlet = 'c';
 		any.a_int = ANDROID_COMBO;	/* must be non-zero */

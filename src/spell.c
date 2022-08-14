@@ -437,17 +437,17 @@ learn()
 	    book = 0;			/* no longer studying */
 	    nomul(delay, "reading a book");		/* remaining delay is uninterrupted */
 	    delay = 0;
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 	if (delay) {	/* not if (delay++), so at end delay == 0 */
 	    delay++;
-	    return(1); /* still busy */
+	    return MOVE_READ; /* still busy */
 	}
 	exercise(A_WIS, TRUE);		/* you're studying. */
 	booktype = book->otyp;
 	if(booktype == SPE_BOOK_OF_THE_DEAD) {
 	    deadbook(book);
-	    return(0);
+	    return MOVE_READ;
 	}
 	if(booktype == SPE_SECRETS){
 		if(book->oartifact) doparticularinvoke(book); //this is a redundant check
@@ -513,7 +513,7 @@ learn()
 			}
 		}
 		book = 0;
-	    return(0);
+	    return MOVE_FINISHED_OCCUPATION;
 	}
 	if(RoSbook == STUDY_WARD){
 	 if((book->oward)){
@@ -527,7 +527,7 @@ learn()
 	 } else{
 		pline("The spellbook is warded with a thaumaturgical ward, good for spellbooks but not much else.");
 	 }
-	 return(0);
+	 return MOVE_FINISHED_OCCUPATION;
 	}
 	
 	Sprintf(splname, objects[booktype].oc_name_known ?
@@ -596,7 +596,7 @@ learn()
 	
 	if (costly) check_unpaid(book);
 	book = 0;
-	return(0);
+	return MOVE_FINISHED_OCCUPATION;
 }
 
 int
@@ -648,7 +648,7 @@ struct obj *spellbook;
 	if(spellbook->oartifact){ //this is the primary artifact-book check.
 		if(spellbook->oartifact != ART_BOOK_OF_INFINITE_SPELLS){
 			doparticularinvoke(spellbook); //there is a redundant check in the spell learning code
-			return 1; //which should never be reached, and only catches books of secrets anyway.
+			return MOVE_READ; //which should never be reached, and only catches books of secrets anyway.
 		} else {
 			int i;
 			boolean read_book = FALSE;
@@ -707,7 +707,7 @@ struct obj *spellbook;
 				pline("The endless pages of the book turn themselves. They settle on a section describing %s.", OBJ_NAME(objects[spellbook->ovar1]));
 			}
 			if (i == MAXSPELL) impossible("Too many spells memorized!");
-			return 1;
+			return MOVE_READ;
 		}
 	}
 
@@ -718,7 +718,7 @@ struct obj *spellbook;
 		if (booktype == SPE_BLANK_PAPER) {
 			pline("This spellbook is all blank.");
 			makeknown(booktype);
-			return(1);
+			return MOVE_READ;
 		}
 		
 		delay = -10*objects[booktype].oc_delay;
@@ -728,14 +728,14 @@ struct obj *spellbook;
 			RoSbook = doreadstudy("You open the spellbook.");
 		if(!RoSbook){
 			delay = 0;
-			return 0;
+			return MOVE_INSTANT;
 		}
 		if((spellbook->oward) && RoSbook == STUDY_WARD){
 			if( (u.wardsknown & spellbook->oward) ){
 				pline("The spellbook is warded with a %s.", wardDecode[decode_wardID(spellbook->oward)]);
 				You("are already familiar with this ward.");
 				delay = 0;
-				return 0;
+				return MOVE_INSTANT;
 			}
 		}
 		
@@ -745,7 +745,7 @@ struct obj *spellbook;
 
 			for (int i = 0; i < MAXSPELL; i++)
 				if (spellid(i) == booktype && spellknow(i) > KEEN/10 && yn(qbuf) == 'n')
-					return 0;
+					return MOVE_CANCELLED;
 		}		
 		spellbook->in_use = TRUE;
 		
@@ -753,12 +753,12 @@ struct obj *spellbook;
 		if (confused) {
 		    if (!confused_book(spellbook)) spellbook->in_use = FALSE;
 		    delay = 0;
-		    return(1);
+		    return MOVE_STANDARD;
 		} else if (Hallucination) {
 		    hallu_book(spellbook);
 		    spellbook->in_use = FALSE;
 		    delay = 0;
-		    return(1);
+		    return MOVE_READ;
 		}
 		
 		if (!spellbook->oartifact && spellbook->otyp != SPE_BOOK_OF_THE_DEAD) {
@@ -779,7 +779,7 @@ struct obj *spellbook;
 			    Sprintf(qbuf, "This spellbook is %sdifficult to comprehend. Continue?", (read_ability < 12 ? "very " : ""));
 			    if (yn(qbuf) != 'y') {
 					spellbook->in_use = FALSE;
-					return(1);
+					return MOVE_READ;
 			    }
 			}
 			/* its up to random luck now */
@@ -802,7 +802,7 @@ struct obj *spellbook;
 				useup(spellbook);
 		    } else spellbook->in_use = FALSE;
 	
-		    return(1);
+		    return MOVE_READ;
 		}  
 		
 		spellbook->in_use = FALSE;
@@ -818,7 +818,7 @@ struct obj *spellbook;
 
 	book = spellbook;
 	set_occupation(learn, "studying", 0);
-	return(1);
+	return MOVE_READ;
 }
 
 /* from an SPE_ID get the index of spl_book that casts that spell */
@@ -907,7 +907,7 @@ run_maintained_spells()
 		int spell_level = objects[spell].oc_level;
 		if (u.uhave.amulet)
 			spell_level *= 2;
-		int hungr = spellhunger(spell_level * 5) * MAINTAINED_SPELL_HUNGER_MULTIPLIER;
+		int hungr = spellhunger(spell_level * 5) * MAINTAINED_SPELL_HUNGER_MULTIPLIER * get_uhungersizemod();
 		if (u.uen < spell_level){
 			You("lack the energy to maintain %s.",
 				spellname(spell_index));
@@ -1048,7 +1048,7 @@ age_spells()
 	 * does not alter the loss of memory.
 	 */
 	if(roll_madness(MAD_FORGETFUL))
-		timeout += (Insanity);
+		timeout += (NightmareAware_Insanity);
 		
 	for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++)
 	    if (spellknow(i)){
@@ -1073,6 +1073,7 @@ int menutype;
 		|| (uwep && uwep->oartifact == ART_DEATH_SPEAR_OF_KEPTOLO) 
 		|| (uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM)
 		|| (uarmh && check_oprop(uarmh, OPROP_BLAST))
+		|| Fire_crystal || Water_crystal || Air_crystal || Earth_crystal || Black_crystal
 	)){
 	    You("don't know any spells right now.");
 	    return FALSE;
@@ -1402,7 +1403,7 @@ docast()
 	int spell_no;
 	if (getspell(&spell_no, SPELLMENU_CAST))
 					return spelleffects(spell_no, FALSE, 0);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* allow the player to conditionally cast spells via equipped artifacts */
@@ -1412,33 +1413,99 @@ update_alternate_spells()
 	int i;
 
 	// for artifacts
-	if (uarmh){
-		if(uarmh->oartifact == ART_STORMHELM){
-			for (i = 0; i < MAXSPELL; i++) {
-				if (spellid(i) == SPE_LIGHTNING_STORM) {
-					if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-					break;
-				}
-				if (spellid(i) == NO_SPELL)  {
-					spl_book[i].sp_id = SPE_LIGHTNING_STORM;
-					spl_book[i].sp_lev = objects[SPE_LIGHTNING_STORM].oc_level;
-					spl_book[i].sp_know = 1;
-					break;
-				}
+	if(uarmh && uarmh->oartifact == ART_STORMHELM){
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_LIGHTNING_STORM) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_LIGHTNING_STORM;
+				spl_book[i].sp_lev = objects[SPE_LIGHTNING_STORM].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
 			}
 		}
-		if(check_oprop(uarmh, OPROP_BLAST)){
-			for (i = 0; i < MAXSPELL; i++) {
-				if (spellid(i) == SPE_FIREBALL) {
-					if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-					break;
-				}
-				if (spellid(i) == NO_SPELL)  {
-					spl_book[i].sp_id = SPE_FIREBALL;
-					spl_book[i].sp_lev = objects[SPE_FIREBALL].oc_level;
-					spl_book[i].sp_know = 1;
-					break;
-				}
+	}
+	if(Fire_crystal || (uarmh && check_oprop(uarmh, OPROP_BLAST))){
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_FIREBALL) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_FIREBALL;
+				spl_book[i].sp_lev = objects[SPE_FIREBALL].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
+			}
+		}
+	}
+	if(Water_crystal){
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_CONE_OF_COLD) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_CONE_OF_COLD;
+				spl_book[i].sp_lev = objects[SPE_CONE_OF_COLD].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
+			}
+		}
+	}
+	if(Air_crystal){
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_LIGHTNING_BOLT) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_LIGHTNING_BOLT;
+				spl_book[i].sp_lev = objects[SPE_LIGHTNING_BOLT].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
+			}
+		}
+	}
+	if(Earth_crystal){
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_DIG) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_DIG;
+				spl_book[i].sp_lev = objects[SPE_DIG].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
+			}
+		}
+	}
+	if(Black_crystal){
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_HASTE_SELF) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_HASTE_SELF;
+				spl_book[i].sp_lev = objects[SPE_HASTE_SELF].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
+			}
+		}
+		for (i = 0; i < MAXSPELL; i++) {
+			if (spellid(i) == SPE_EXTRA_HEALING) {
+				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+				break;
+			}
+			if (spellid(i) == NO_SPELL)  {
+				spl_book[i].sp_id = SPE_EXTRA_HEALING;
+				spl_book[i].sp_lev = objects[SPE_EXTRA_HEALING].oc_level;
+				spl_book[i].sp_know = 1;
+				break;
 			}
 		}
 	}
@@ -1492,7 +1559,7 @@ dospirit()
 	
 	if(mad_turn(MAD_TOO_BIG)){
 		pline("It's too big!");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	
 	if(!u.sealsActive && !u.specialSealsActive){
@@ -1501,17 +1568,17 @@ dospirit()
 				if(spiriteffects(PWR_GNOSIS_PREMONITION, FALSE))
 					u.spiritPColdowns[PWR_GNOSIS_PREMONITION] = moves + 125;
 			}
-			return 1;
+			return MOVE_STANDARD;
 		} else {
 			if(Role_if(PM_ANACHRONOUNBINDER)) pline("No spirits walk the earth currently.");
 			else You("don't have any spirits bound.");
-			return 0;
+			return MOVE_CANCELLED;
 		}
 	}
 	
 	if (getspirit(&power_no))
 					return spiriteffects(power_no, FALSE);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_OVL boolean
@@ -1551,6 +1618,7 @@ int atype;
 	case AD_STAR:
 	case AD_HOLY:
 	case AD_UNHY:
+	case AD_HLUH:
 		return P_ATTACK_SPELL;
 	case AD_DRST:
 	case AD_ACID:
@@ -2035,7 +2103,7 @@ purifying_blast()
 	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 25, &zapdata);
 
 	// u.uacinc-=7;  //Note: was added when purifying blast began to charge.
-	return 0;
+	return MOVE_INSTANT;
 }
 
 STATIC_PTR int
@@ -2067,7 +2135,7 @@ stargate()
 	n = select_menu(tmpwin, PICK_ONE, &selected);
 	if (n <= 0) {
 		destroy_nhwindow(tmpwin);
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	i = selected[0].item.a_int - 1;
 	free((genericptr_t)selected);
@@ -2098,7 +2166,7 @@ stargate()
 	losepw(125);
 	goto_level(&newlev, FALSE, FALSE, FALSE);
 	}
-	return 0;
+	return MOVE_INSTANT;
 }
 
 int
@@ -2113,7 +2181,7 @@ spiriteffects(power, atme)
 	switch(power){
 		case PWR_ABDUCTION:{
 			struct monst *mon;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon){
@@ -2149,7 +2217,7 @@ spiriteffects(power, atme)
 			}
 		}break;
 		case PWR_FIRE_BREATH:{
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			struct zapdata zapdata = { 0 };
 			basiczap(&zapdata, AD_FIRE, ZAP_BREATH, 0);
 			zapdata.damn = 5;
@@ -2163,7 +2231,7 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			sx = u.ux;
 			sy = u.uy;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(u.uswallow){
 				mon = u.ustuck;
 				if (!resists_magm(mon)) {
@@ -2215,7 +2283,7 @@ spiriteffects(power, atme)
 		break;
 		case PWR_JESTER_S_MIRTH:{
 			struct monst *mon;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon){
@@ -2248,7 +2316,7 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			sx = u.ux;
 			sy = u.uy;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(u.uswallow){
 				explode(u.ux, u.uy, AD_ELEC, WAND_CLASS, d(range, dsize) * (Double_spell_size ? 3 : 2) / 2, EXPL_MAGICAL, 1 + !!Double_spell_size);
 			} else {
@@ -2331,9 +2399,9 @@ spiriteffects(power, atme)
 			sy = u.uy;
 			if(Blind){
 				You("need to be able to see in order to glare!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(u.uswallow){
 				You("can't see well enough in here!");
 				break;
@@ -2409,7 +2477,7 @@ spiriteffects(power, atme)
 			//thick-skinned creatures loose their eyes
 			struct monst *mon;
 			int dmg;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon){
@@ -2417,7 +2485,7 @@ spiriteffects(power, atme)
 					break;
 				} if(!freehand()){
 					You("need a free hand to make a touch attack!");
-					return 0;
+					return MOVE_CANCELLED;
 				}
 				struct attack basictouch = { AT_TUCH, AD_PHYS, 0, 0 };
 				int dieroll = rnd(20);
@@ -2466,7 +2534,7 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			sx = u.ux;
 			sy = u.uy;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(u.uswallow){
 				mon = u.ustuck;
 				enoughGold = FALSE;
@@ -2537,7 +2605,7 @@ spiriteffects(power, atme)
 		case PWR_GIFT_OF_HEALING:{
 			struct monst *mon;
 			int dmg;
-			if (!getdir((char *)0) || (u.dz)) return(0);
+			if (!getdir((char *)0) || (u.dz)) return MOVE_CANCELLED;
 			if(!(u.dx || u.dy)){
 				You("heal yourself.");
 				healup(d(5,dsize), 0, FALSE, FALSE);
@@ -2557,7 +2625,7 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			struct obj *pseudo;
 			int dmg;
-			if (!getdir((char *)0) || (u.dz)) return(0);
+			if (!getdir((char *)0) || (u.dz)) return MOVE_CANCELLED;
 			if(!(u.dx || u.dy)){
 				int idx, recover, val_limit, aprobs = 0, fixpoint, curpoint;
 				
@@ -2633,7 +2701,7 @@ spiriteffects(power, atme)
 				otmp->ovar1 = 1 + u.ulevel/10;
 				projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, rn1(5,5), TRUE, TRUE, FALSE);
 				nomul(0, NULL);
-			} else return 0;
+			} else return MOVE_CANCELLED;
 		break;
 		case PWR_THOUGHT_TRAVEL:{
 			if(Is_astralevel(&u.uz)){
@@ -2652,7 +2720,7 @@ spiriteffects(power, atme)
 					else if (!tt_findadjacent(&cc, mon)) pline("Something blocks your way!");
 					cancelled = getpos(&cc, TRUE, "the desired creature");
 				}
-				if(cancelled < 0) return 0; /*abort*/
+				if(cancelled < 0) return MOVE_CANCELLED; /*abort*/
 //			    if (u.usteed){
 //				}
 				teleds(cc.x, cc.y, FALSE);
@@ -2669,7 +2737,7 @@ spiriteffects(power, atme)
 			}
 		}break;
 		case PWR_EARTH_SWALLOW:{
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				struct obj *otmp;
 				You("ask the earth to open.");
@@ -2681,7 +2749,7 @@ spiriteffects(power, atme)
 		}break;
 		case PWR_ECHIDNA_S_VENOM:{
 			struct obj *otmp;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			otmp = mksobj(ACID_VENOM, NO_MKOBJ_FLAGS);
 			otmp->spe = 1; /* to indicate it's yours */
 			otmp->ovar1 = d(5,dsize); /* save the damge this should do */
@@ -2691,7 +2759,7 @@ spiriteffects(power, atme)
 		case PWR_SUCKLE_MONSTER:{
 			struct monst *mon;
 			int dmg;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon) break;
@@ -2709,7 +2777,7 @@ spiriteffects(power, atme)
 			} else break;
 		}break;
 		case PWR_PURIFYING_BLAST:{
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				// u.uacinc+=7; //Note: purifying_blast subtracts 7 from uacinc to compensate.
 				u.edenshield = moves+5;
@@ -2721,7 +2789,7 @@ spiriteffects(power, atme)
 		case PWR_RECALL_TO_EDEN:{
 			struct monst *mon;
 			int perc;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon || mon->data->geno & G_UNIQ) break;
@@ -2752,7 +2820,7 @@ spiriteffects(power, atme)
 		    pline("To which doorway do you wish to travel?");
 			do cancelled = getpos(&cc, TRUE, "the desired doorway");
 			while( !(IS_DOOR(levl[cc.x][cc.y].typ) && teleok(cc.x, cc.y, FALSE)) && cancelled >= 0);
-			if(cancelled < 0) return 0; /*abort*/
+			if(cancelled < 0) return MOVE_CANCELLED; /*abort*/
 //		    if (u.usteed){
 //			}
 			teleds(cc.x, cc.y, FALSE);
@@ -2761,7 +2829,7 @@ spiriteffects(power, atme)
 			int dmg = 0;
 			struct monst *mon;
 			struct trap *t;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				t = t_at(u.ux+u.dx, u.uy+u.dy);
@@ -2921,7 +2989,7 @@ spiriteffects(power, atme)
 				barrage = FALSE;
 			} else {
 				You("have nothing quivered.");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		break;
 		case PWR_BREATH_POISON:{
@@ -2931,7 +2999,7 @@ spiriteffects(power, atme)
 			cc.y = u.uy;
 			if (getpos(&cc, TRUE, "the desired position") < 0) {
 				pline1(Never_mind);
-				return 0;
+				return MOVE_CANCELLED;
 			}
 			if (!cansee(cc.x, cc.y) || distu(cc.x, cc.y) >= 32) {
 				You("smell rotten eggs.");
@@ -2945,9 +3013,9 @@ spiriteffects(power, atme)
 			struct trap *ttmp;
 			if (u.utrap){
 				You("can't use a ruinous strike while stuck in a trap!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				You("deliver a ruinous strike.");
 				zap_dig(-1,-1,1);
@@ -2984,7 +3052,7 @@ spiriteffects(power, atme)
 		case PWR_RAVEN_S_TALONS:{
 			int dmg;
 			struct monst *mon;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon) break;
@@ -3013,12 +3081,12 @@ spiriteffects(power, atme)
 		case PWR_HORRID_WILTING:{
 			int dmg;
 			struct monst *mon;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon){
 					pline("\"There's no one there, buddy!\"");
-					return 0;
+					return MOVE_CANCELLED;
 				} if(nonliving(mon->data) || is_anhydrous(mon->data)){
 					shieldeff(mon->mx, mon->my);
 					break;
@@ -3040,7 +3108,7 @@ spiriteffects(power, atme)
 				healup(dmg, 0, FALSE, FALSE);
 			} else {
 				pline("\"There's no one there, buddy!\"");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		}break;
 		case PWR_TURN_ANIMALS_AND_HUMANOIDS:{
@@ -3074,7 +3142,7 @@ spiriteffects(power, atme)
 					end_burn(uwep, TRUE);
 					begin_burn(uwep);
 				}
-			} else return 0;
+			} else return MOVE_CANCELLED;
 		break;
 		case PWR_HELLFIRE:
 			if(uwep && (uwep->otyp == OIL_LAMP || uwep->otyp == POT_OIL || (is_lightsaber(uwep) && uwep->oartifact != ART_INFINITY_S_MIRRORED_ARC && uwep->otyp != KAMEREL_VAJRA)) && !uwep->oartifact && uwep->lamplit){
@@ -3084,11 +3152,11 @@ spiriteffects(power, atme)
 					explode(u.dx, u.dy, AD_FIRE, WAND_CLASS, d(rnd(5), dsize)* (Double_spell_size ? 3 : 2) / 2, EXPL_FIERY, 1 + !!Double_spell_size);
 					end_burn(uwep, TRUE);
 					begin_burn(uwep);
-				} else return 0;
+				} else return MOVE_CANCELLED;
 			} else{
 				if(uwep && uwep->otyp == LANTERN) pline("You need an oil lamp. These modern lamps just aren't the same!");
 				else You("must wield a burning lamp!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		break;
 		case PWR_CALL_MURDER:{
@@ -3123,7 +3191,7 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			sx = u.ux;
 			sy = u.uy;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			You("scream!");
 			if(u.uswallow){
 				zap_dig(-1,-1,1); /*try to blast free of engulfing monster*/
@@ -3245,7 +3313,7 @@ spiriteffects(power, atme)
 				}
 				spoteffects(FALSE);
 			}
-			if(!once) return 0; //Canceled first prompt
+			if(!once) return MOVE_CANCELLED; //Canceled first prompt
 		}break;
 		case PWR_DISGUSTED_GAZE:{
 			struct monst *mon;
@@ -3289,27 +3357,27 @@ spiriteffects(power, atme)
 						}
 					} else {
 						You("don't see a monster there.");
-						return 0;
+						return MOVE_CANCELLED;
 					}
-				} else return 0;
+				} else return MOVE_CANCELLED;
 			} else{
 				pline("The eyes on your hands are covered!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		}break;
 		case PWR_BLOODY_TOUNGE:{
 			struct monst *mon;
-			if(!getdir((char *)0)  || !(u.dx || u.dy)) return 0;
+			if(!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			Your("forked red tongue speaks of its own accord.");
 			mon = m_at(u.ux+u.dx, u.uy+u.dy);
 			if(mon){
 				mon->mflee = 1;//does not make monster hostile
 				pline("%s turns to flee.", Monnam(mon));
-			} else return 0;
+			}
 		}break;
 		case PWR_SILVER_TOUNGE:{
 			struct monst *mon;
-			if(!getdir((char *)0)  || !(u.dx || u.dy)) return 0;
+			if(!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			mon = m_at(u.ux+u.dx, u.uy+u.dy);
 			if(mon){
 				Your("forked tongue speaks with silvery grace.");
@@ -3329,7 +3397,7 @@ spiriteffects(power, atme)
 				}
 			} else{
 				pline("There's nothing there!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		}break;
 		case PWR_EXHALATION_OF_THE_RIFT:{
@@ -3339,7 +3407,7 @@ spiriteffects(power, atme)
 			struct monst *mon;
 			sx = u.ux;
 			sy = u.uy;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(u.uswallow){
 				mon = u.ustuck;
 				if(is_whirly(mon->data)){
@@ -3490,28 +3558,28 @@ spiriteffects(power, atme)
 		}break;
 		case PWR_GREAT_LEAP:
 			You("plunge through the ceiling!");
-			morehungry(rnd(625));
+			morehungry(max_ints(1, rnd(625)*get_uhungersizemod()));
 			level_tele();
 		break;
 		case PWR_MASTER_OF_DOORWAYS:{
 			//with apologies to Neil Gaiman
 			struct monst *mon;
-			if (!getdir((char *)0)) return(0);
+			if (!getdir((char *)0)) return MOVE_CANCELLED;
 			if(!(u.dx || u.dy || u.dz)){
 				if(masterDoorBox(u.ux,u.uy)) break;
 				//else
 				pline("Maybe your innards should stay inside your body?");
-				return 0;
+				return MOVE_CANCELLED;
 			} else if(u.dz > 0) {
-				if(!opentrapdoor(!Can_dig_down(&u.uz))) return 0;
+				if(!opentrapdoor(!Can_dig_down(&u.uz))) return MOVE_CANCELLED;
 				else break;
 			} else if(u.dz < 0) {
-				if(!openrocktrap()) return 0;
+				if(!openrocktrap()) return MOVE_CANCELLED;
 				else break;
 			} else if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon){
-					if(!opennewdoor(u.ux+u.dx, u.uy+u.dy) && !masterDoorBox(u.ux+u.dx,u.uy+u.dy)) return 0;
+					if(!opennewdoor(u.ux+u.dx, u.uy+u.dy) && !masterDoorBox(u.ux+u.dx,u.uy+u.dy)) return MOVE_CANCELLED;
 					else break;
 				} 
 				struct attack basicattack = {
@@ -3560,7 +3628,7 @@ spiriteffects(power, atme)
 						setmangry(mon);
 					}
 				}
-			} else return 0;
+			} else return MOVE_CANCELLED;
 		}break;
 		case PWR_READ_SPELL:{
 			if(uwep && uwep->oclass == SPBOOK_CLASS && !uwep->oartifact && 
@@ -3579,14 +3647,14 @@ spiriteffects(power, atme)
 				// }
 			} else{
 				You("need to be holding a spellbook.");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		}break;
 		case PWR_BOOK_TELEPATHY:
 			book_detect(u.ulevel>13);
 		break;
 		case PWR_UNITE_THE_EARTH_AND_SKY:
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)){
 				struct trap *t = t_at(u.ux+u.dx, u.uy+u.dy);
 				struct monst *mon = m_at(u.ux+u.dx, u.uy+u.dy);
@@ -3667,12 +3735,12 @@ spiriteffects(power, atme)
 		break;
 		case PWR_TOUCH_OF_THE_VOID:{
 			struct monst *mon;
-			if(!getdir((char *)0) || (!u.dx && !u.dy)) return 0;
+			if(!getdir((char *)0) || (!u.dx && !u.dy)) return MOVE_CANCELLED;
 			mon = m_at(u.ux+u.dx,u.uy+u.dy);
-			if(!mon) return 0;
+			if(!mon) return MOVE_CANCELLED;
 			if(!freehand()){
 				You("need a free hand to make a touch attack!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 			struct attack basictouch = { AT_TUCH, AD_PHYS, 0, 0 };
 			int dieroll = rnd(20);
@@ -3706,9 +3774,9 @@ spiriteffects(power, atme)
 		}break;
 		case PWR_ECHOS_OF_THE_LAST_WORD:{
 			struct monst *mon;
-			if(!getdir((char *)0) || (!u.dx && !u.dy)) return 0;
+			if(!getdir((char *)0) || (!u.dx && !u.dy)) return MOVE_CANCELLED;
 			mon = m_at(u.ux+u.dx,u.uy+u.dy);
-			if(!mon) return 0;
+			if(!mon) return MOVE_CANCELLED;
 			You("speak an echo of the Last Word of creation.");
 			if(mon->mtyp == PM_DREAD_SERAPH || mon->mtyp == PM_BLACK_FLOWER){
 				pline("Its voice harmonizes with your own!");
@@ -3725,13 +3793,13 @@ spiriteffects(power, atme)
 						if (canspotmon(mon))
 						pline("%s flickers for a moment.",
 							Monnam(mon));
-						return 0;
+						return MOVE_INSTANT;
 					}
 					nlev = random_teleport_level();
 					if (nlev == depth(&u.uz)) {
 						if (canspotmon(mon))
 							pline("%s flickers for a moment.", Monnam(mon));
-						return 0;
+						return MOVE_INSTANT;
 					}
 					get_level(&tolevel, nlev);
 					if (canspotmon(mon)) {
@@ -3754,7 +3822,7 @@ spiriteffects(power, atme)
 		    pline("At what monster do you wish to gaze?");
 			do cancelled = getpos(&cc, TRUE, "the monster to gaze at");
 			while( !((mon=m_at(cc.x,cc.y))  && canspotmon(mon)) && cancelled >= 0);
-			if(cancelled < 0) return 0; /*abort*/
+			if(cancelled < 0) return MOVE_CANCELLED; /*abort*/
 			if(!mon || !canseemon(mon)){
 				You("don't see a monster there.");
 				break;
@@ -3789,7 +3857,7 @@ spiriteffects(power, atme)
 				HLevitation |= I_SPECIAL;
 			} else {
 				You("are already levitating.");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 		break;
 		case PWR_MOAN:{
@@ -3812,9 +3880,9 @@ spiriteffects(power, atme)
 		}break;
 		case PWR_SWALLOW_SOUL:{
 			struct monst *mon;
-			if(!getdir((char *)0) || (!u.dx && !u.dy)) return 0;
+			if(!getdir((char *)0) || (!u.dx && !u.dy)) return MOVE_CANCELLED;
 			mon = m_at(u.ux+u.dx,u.uy+u.dy);
-			if(!mon) return 0;
+			if(!mon) return MOVE_CANCELLED;
 			if(resists_drli(mon) || nonliving(mon->data)){
 				pline("You can't swallow the soul of %s.", mon_nam(mon));
 				shieldeff(mon->mx, mon->my);
@@ -3832,7 +3900,7 @@ spiriteffects(power, atme)
 		case PWR_EMBASSY_OF_ELEMENTS:{
 		    int spirit_id = pick_council_seal();
 			if(spirit_id) councilspirit(spirit_id);
-			else return 0;
+			else return MOVE_CANCELLED;
 			You("re-contact %s.", sealNames[spirit_id-FIRST_SEAL]);
 		}break;
 		case PWR_SUMMON_MONSTER:{
@@ -3842,7 +3910,7 @@ spiriteffects(power, atme)
 			if(pm && (mon = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ESUM))){
 				initedog(mon);
 				mark_mon_as_summoned(mon, &youmonst, 10+u.ulevel/2, 0);
-			} else return 0;
+			} else return MOVE_CANCELLED;
 		}break;
 		case PWR_PSEUDONATURAL_SURGE:
 			pline("The dustlight seethes around you as tentacles erupt from your body!");
@@ -3852,7 +3920,7 @@ spiriteffects(power, atme)
 		case PWR_SILVER_DEW:{
 			int dmg;
 			struct monst *mon;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon) break;
@@ -3889,7 +3957,7 @@ spiriteffects(power, atme)
 		case PWR_GOLDEN_DEW:{
 			int dmg;
 			struct monst *mon;
-			if (!getdir((char *)0)  || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0)  || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				mon = m_at(u.ux+u.dx, u.uy+u.dy);
 				if(!mon) break;
@@ -3928,7 +3996,7 @@ spiriteffects(power, atme)
 		
 			if (u.uswallow){
 				You("can't do that in here!");
-				return 0;
+				return MOVE_CANCELLED;
 			}
 			else
 			{
@@ -3941,31 +4009,31 @@ spiriteffects(power, atme)
 				}
 				if (!(umirror)) {
 					You("must have a breakable mirror in inventory to use this power!");
-					return 0;
+					return MOVE_CANCELLED;
 				}
 
 				/* get direction of power*/
-				if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+				if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 
 				/* arbitrary 50 range; note it is decreased by 3 when passing through monsters */
 				(void)bhit(u.dx, u.dy, 50, TRIGGER_BEAM, nudzirath_hit_mon, nudzirath_hit_pile, umirror, &foundmirror);
 
 				/* bhit will have set foundmirror to TRUE if it had worked */
 				if (!foundmirror)
-					return 0;
+					return MOVE_CANCELLED;
 			}
 			break;
 		case PWR_FLOWING_FORMS:{
 			struct monst *mon;
 			if(!getdir((char *)0) || u.dz)
-				return 0;
+				return MOVE_CANCELLED;
 			else if((!u.dx && !u.dy)) {
 				You_feel("a little %s.", Hallucination ? "normal" : "strange");
 				if (!Unchanging) polyself(FALSE);
 				break;
 			}
 			mon = m_at(u.ux+u.dx,u.uy+u.dy);
-			if(!mon) return 0;
+			if(!mon) return MOVE_CANCELLED;
 			if (resist(mon, '\0', 0, NOTELL) || resists_poly(mon->data)){
 				shieldeff(mon->mx, mon->my);
 				break;
@@ -3984,7 +4052,7 @@ spiriteffects(power, atme)
 				if (is_mplayer(mdat) || (!is_human(mdat) && polyok(mdat)))
 					break;
 				}
-				if (tryct > 100) return 0;	/* Should never happen */
+				if (tryct > 100) return MOVE_CANCELLED;	/* Should never happen */
 				newcham(mon, mndx, FALSE, FALSE);
 			}
 		}break;
@@ -4005,7 +4073,7 @@ spiriteffects(power, atme)
 			struct trap *ttmp2;
 			sx = u.ux;
 			sy = u.uy;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			// if(u.uswallow); //Phase through the surounding monster.
 			while(TRUE){ //Exits via break, phase through walls.
 				sx += u.dx;
@@ -4023,7 +4091,7 @@ spiriteffects(power, atme)
 					if(mon) break;
 				} else break;
 			}
-			if(!mon) return 0;
+			if(!mon) return MOVE_CANCELLED;
 			qvr = mksobj(SPIKE, NO_MKOBJ_FLAGS);
 			qvr->blessed = 0;
 			qvr->cursed = 0;
@@ -4071,7 +4139,7 @@ spiriteffects(power, atme)
 		case PWR_GNOSIS_PREMONITION:{
 		    int spirit_id = pick_gnosis_seal();
 			if(spirit_id) gnosisspirit(spirit_id);
-			else return 0;
+			else return MOVE_CANCELLED;
 			You("dream of %s...", sealNames[spirit_id-FIRST_SEAL]);
 		}break;
 		default:
@@ -4080,7 +4148,7 @@ spiriteffects(power, atme)
 		break;
 	}
 	u.spiritPColdowns[power] = monstermoves + 25;
-	return 1;
+	return MOVE_STANDARD;
 }
 
 struct permonst *
@@ -4338,7 +4406,7 @@ int spell;
 		case PART_WATER:{
 			boolean parted = FALSE;
 			struct trap *ttmp;
-			if (!getdir((char *)0) || !(u.dx || u.dy)) return(0);
+			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			if(u.uswallow){
 				mon = u.ustuck;
 				pline("%s splits in half!",Monnam(mon));
@@ -4459,14 +4527,11 @@ int spell;
 		break;
 		default:
 			pline("Unknown word of power!");
-			return 0;
+			return MOVE_CANCELLED;
 		break;
 	}
-	{
-	int res;
 	//Speak one word of power per move free.
-	return partial_action();
-	}
+	return MOVE_PARTIAL;
 }
 int
 spelleffects(int spell, boolean atme, int spelltyp)
@@ -4491,7 +4556,7 @@ spelleffects(int spell, boolean atme, int spelltyp)
 			Your("knowledge of this spell is twisted.");
 			pline("It invokes nightmarish images in your mind...");
 			spell_backfire(spell);
-			return(0);
+			return MOVE_INSTANT;
 		} else if (
 			!(spellid(spell) == SPE_LIGHTNING_STORM && uarmh && uarmh->oartifact == ART_STORMHELM) &&
 			!(spellid(spell) == SPE_FIREBALL && uarmh && check_oprop(uarmh, OPROP_BLAST)) &&
@@ -4566,16 +4631,16 @@ spelleffects(int spell, boolean atme, int spelltyp)
 
 		if (!Race_if(PM_INCANTIFIER) && u.uhunger <= 10 && spellid(spell) != SPE_DETECT_FOOD) {
 			You("are too hungry to cast that spell.");
-			return(0);
+			return MOVE_CANCELLED;
 		} else if (ACURR(A_STR) < 4 && casting_stat != A_CHA)  {
 			You("lack the strength to cast spells.");
-			return(0);
+			return MOVE_CANCELLED;
 		} else if(check_capacity(
 			"Your concentration falters while carrying so much stuff.")) {
-			return (1);
+			return MOVE_STANDARD;
 		} else if (!freehand() && casting_stat != A_CHA) {
 			Your("arms are not free to cast!");
-			return (0);
+			return MOVE_CANCELLED;
 		}
 
 		if (u.uhave.amulet) {
@@ -4584,10 +4649,10 @@ spelleffects(int spell, boolean atme, int spelltyp)
 		}
 		if(energy > u.uen)  {
 			You("don't have enough energy to cast that spell (need %d).", energy);
-			return(0);
+			return MOVE_CANCELLED;
 		} else {
 			if (spellid(spell) != SPE_DETECT_FOOD) {
-				int hungr = spellhunger(energy);
+				int hungr = spellhunger(energy) * get_uhungersizemod();
 				/* don't put player (quite) into fainting from
 				 * casting a spell, particularly since they might
 				 * not even be hungry at the beginning; however,
@@ -4605,7 +4670,7 @@ spelleffects(int spell, boolean atme, int spelltyp)
 			You("fail to cast the spell correctly.");
 			losepw(energy / 2);
 			flags.botl = 1;
-			return(1);
+			return MOVE_CASTSPELL;
 		}
 
 		losepw(energy);
@@ -4844,7 +4909,7 @@ dothrowspell:
 	default:
 		impossible("Unknown spell %d attempted.", spell);
 		obfree(pseudo, (struct obj *)0);
-		return(0);
+		return MOVE_INSTANT;
 	}
 	
 	/* gain skill for successful cast */
@@ -4854,10 +4919,11 @@ dothrowspell:
 		u.lastcast += uwep->spe;
 
 	obfree(pseudo, (struct obj *)0);	/* now, get rid of it */
-	return(1);
+	return MOVE_CASTSPELL;
 }
 
 /* Choose location where spell takes effect. */
+/* returns 1 if the action should happen, 0 otherwise */
 STATIC_OVL int
 throwspell()
 {
@@ -4943,7 +5009,7 @@ dovspell()
 	int spell_no;
 	if (getspell(&spell_no, SPELLMENU_VIEW))
 		return spelleffects(spell_no, FALSE, 0);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 int
@@ -5811,10 +5877,14 @@ int spell;
 		return 0;
 
 	/* some artifacts pracically cast the spells on their own */
-	if ((uarmh && uarmh->oartifact == ART_STORMHELM && spellid(spell) == SPE_LIGHTNING_STORM) ||
-		(uarmh && check_oprop(uarmh, OPROP_BLAST) && (spellid(spell) == SPE_FIREBALL || spellid(spell) == SPE_FIRE_STORM)) ||
-		(uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM && (
-		(spellid(spell) == SPE_FORCE_BOLT || spellid(spell) == SPE_MAGIC_MISSILE)))
+	if ((uarmh && uarmh->oartifact == ART_STORMHELM && spellid(spell) == SPE_LIGHTNING_STORM)
+		|| (uarmh && check_oprop(uarmh, OPROP_BLAST) && (spellid(spell) == SPE_FIREBALL || spellid(spell) == SPE_FIRE_STORM))
+		|| (uring_art(ART_LOMYA) && (spell_skilltype(spellid(spell)) == P_ENCHANTMENT_SPELL))
+		|| (uring_art(ART_NARYA) && (spellid(spell) == SPE_FIREBALL || spellid(spell) == SPE_FIRE_STORM))
+		|| (uring_art(ART_NENYA) && (spell_skilltype(spellid(spell)) == P_DIVINATION_SPELL))
+		|| (uring_art(ART_VILYA) && (spell_skilltype(spellid(spell)) == P_HEALING_SPELL))
+		|| (uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM && (
+			(spellid(spell) == SPE_FORCE_BOLT || spellid(spell) == SPE_MAGIC_MISSILE)))
 		) {
 		splcaster -= 200;
 	}
@@ -5835,6 +5905,7 @@ int spell;
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
 			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
+			|| Black_crystal
 		) splcaster -= urole.spelarmr;
 
 		if(uwep->obj_material == MERCURIAL)
@@ -5985,7 +6056,7 @@ int spell;
 
 	if (uarmg) {
 		if(Role_if(PM_MONK)){
-			if(is_hard(uarmg))
+			if(is_hard(uarmg) && uarmg->oartifact != ART_PREMIUM_HEART && uarmg->oartifact != ART_GODHANDS)
 				splcaster += uarmgbon;
 		}
 		else if (is_metallic(uarmg) && !check_oprop(uarmg, OPROP_BRIL)){
@@ -6081,23 +6152,24 @@ int spell;
 	
 	//Many madnesses affect spell casting chances
 	if(u.umadness){
-		int delta = Insanity;
-		if(u.umadness&MAD_RAGE && !ClearThoughts){
+		int delta = NightmareAware_Insanity;
+		if(u.umadness&MAD_RAGE && !BlockableClearThoughts){
 			chance -= delta;
 		}
-		if(u.umadness&MAD_FORMICATION && !ClearThoughts){
+		if(u.umadness&MAD_FORMICATION && !BlockableClearThoughts){
 			chance -= delta/2;
 		}
-		if(u.umadness&MAD_SCIAPHILIA && !ClearThoughts && ((dimness(u.ux, u.uy) != 3 && dimness(u.ux, u.uy) > 0) || (!levl[u.ux][u.uy].lit && dimness(u.ux, u.uy) == 0))){
+		if(u.umadness&MAD_SCIAPHILIA && !BlockableClearThoughts && unshadowed_square(u.ux, u.uy)){
 			chance -= delta;
 		}
-		if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
+		if(u.umadness&MAD_NUDIST && !BlockableClearThoughts && NightmareAware_Sanity < 100){
 			int discomfort = u_clothing_discomfort();
 			if (discomfort) {
 				chance -= (discomfort * delta)/10;
 			} else {
 				if (!uwep && !uarms) {
-					chance += delta/10;
+					//Not reduced by ClearThoughts+Nightmare combo
+					chance += Insanity/10;
 				}
 			}
 		}
@@ -6132,7 +6204,7 @@ int spell;
 	// these effects totally block the spell-choosing menu, but need to be handled here too for quivered spells
 	else if ((mad_turn(MAD_TOO_BIG)) ||
 		(Doubt && casting_stat == A_WIS) ||
-//		(mad_turn(MAD_SCIAPHILIA) && ()(dimness(u.ux, u.uy) != 3 && dimness(u.ux, u.uy) > 0) || (!levl[u.ux][u.uy].lit && dimness(u.ux, u.uy) == 0)) ||
+//		(mad_turn(MAD_SCIAPHILIA) && unshadowed_square(u.ux, u.uy)) ||
 		(casting_stat == A_WIS && flat_mad_turn(MAD_APOSTASY))
 		){
 		chance = 0;
@@ -6319,7 +6391,7 @@ reorder_spirit_powers()
 	char swaplet;
 	if(!u.sealsActive && !u.specialSealsActive){
 		You("don't have any spirits bound.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	if (flags.menu_style == MENU_TRADITIONAL) {
 		char ilet, lets[BUFSZ], qbuf[QBUFSZ];
@@ -6332,7 +6404,7 @@ reorder_spirit_powers()
 		ilet = yn_function(qbuf, (char *)0, '\0');
 
 		if (index(quitchars, ilet))
-		    return 0;
+		    return MOVE_CANCELLED;
 		
 		if(check_spirit_let(ilet)){
 			if(ilet >= 'a' && ilet <= 'z'){
@@ -6342,7 +6414,7 @@ reorder_spirit_powers()
 			}
 		} else {
 			You("don't know that power.");
-			return 0;
+			return MOVE_CANCELLED;
 		}
 	} else {
 		int power_no;
@@ -6352,7 +6424,7 @@ reorder_spirit_powers()
 					break;
 			}
 	}
-	if(power_indx == -1) return 0;
+	if(power_indx == -1) return MOVE_CANCELLED;
 	pline("Move power to what letter? (a-z, A-Z)");
 	swaplet = readchar();
 	if(swaplet >= 'a' && swaplet <= 'z'){
@@ -6360,17 +6432,18 @@ reorder_spirit_powers()
 		u.spiritPOrder[power_indx] = u.spiritPOrder[(int)swaplet-'a'];
 		u.spiritPOrder[(int)swaplet-'a'] = power;
 		pline("Power reordered.");
-		return 0;
+		return MOVE_INSTANT;
 	} else if(swaplet >= 'A' && swaplet <= 'Z'){
 		int power = u.spiritPOrder[power_indx];
 		u.spiritPOrder[power_indx] = u.spiritPOrder[swaplet-'A'+26];
 		u.spiritPOrder[swaplet-'A'+26] = power;
 		pline("Power reordered.");
-		return 0;
+		return MOVE_INSTANT;
 	} else {
 		pline("Invalid letter.");
-		return 0;
+		return MOVE_CANCELLED;
 	}
+	return MOVE_CANCELLED;	/* not reached */
 }
 
 void

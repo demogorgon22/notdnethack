@@ -482,6 +482,82 @@ find_good_iring()
     return 0;
 }
 
+/* find the object index for a non-polymorph granite or gold ring */
+int
+find_good_dring()
+{
+	static int i = -1;
+    register const char *s;
+	if (i != -1) return i;
+	
+	/* maybe use granite ring */
+	if ((i = find_otyp_of_desc("granite", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1 && i != RIN_POLYMORPH)
+		return i;
+	/* if we don't like the iron ring, use "gold" */
+	if ((i = find_otyp_of_desc("gold", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1)
+		return i;
+	else
+		impossible("could not find gold ring");
+    return 0;
+}
+
+/* find the object index for a non-polymorph ruby or gold ring */
+int
+find_good_fring()
+{
+	static int i = -1;
+    register const char *s;
+	if (i != -1) return i;
+	
+	/* maybe use ruby ring */
+	if ((i = find_otyp_of_desc("ruby", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1 && i != RIN_POLYMORPH)
+		return i;
+	/* if we don't like the iron ring, use "gold" */
+	if ((i = find_otyp_of_desc("gold", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1)
+		return i;
+	else
+		impossible("could not find gold ring");
+    return 0;
+}
+
+/* find the object index for a non-polymorph iron ring */
+int
+find_good_wring()
+{
+	static int i = -1;
+    register const char *s;
+	if (i != -1) return i;
+	
+	/* maybe use diamond ring */
+	if ((i = find_otyp_of_desc("diamond", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1 && i != RIN_POLYMORPH)
+		return i;
+	/* if we don't like the diamond ring, use "silver" */
+	if ((i = find_otyp_of_desc("silver", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1)
+		return i;
+	else
+		impossible("could not find silver ring");
+    return 0;
+}
+
+/* find the object index for a non-polymorph iron ring */
+int
+find_good_aring()
+{
+	static int i = -1;
+    register const char *s;
+	if (i != -1) return i;
+	
+	/* maybe use sapphire ring */
+	if ((i = find_otyp_of_desc("sapphire", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1 && i != RIN_POLYMORPH)
+		return i;
+	/* if we don't like the sapphire ring, use "brass" */
+	if ((i = find_otyp_of_desc("brass", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1)
+		return i;
+	else
+		impossible("could not find brass ring");
+    return 0;
+}
+
 /* find the object index for visored helmet */
 int
 find_vhelm()
@@ -1298,7 +1374,7 @@ dodiscovered()				/* free after Robert Viduya */
 	display_nhwindow(tmpwin, TRUE);
     destroy_nhwindow(tmpwin);
 
-    return 0;
+    return MOVE_INSTANT;
 }
 
 void
@@ -1473,15 +1549,11 @@ struct obj *otmp;
 	switch (otmp->oartifact)
 	{
 	case ART_EPOCH_S_CURVE:		return CLR_WHITE;
-	case ART_BLACK_CRYSTAL:		return mvitals[PM_CHAOS].died ? CLR_BLACK : HI_GLASS;
-	case ART_EARTH_CRYSTAL:		return mvitals[PM_LICH__THE_FIEND_OF_EARTH].died ? 
-										CLR_YELLOW : CLR_BROWN;
-	case ART_FIRE_CRYSTAL:		return  mvitals[PM_KARY__THE_FIEND_OF_FIRE].died ? 
-										CLR_ORANGE : CLR_RED;
-	case ART_WATER_CRYSTAL:		return  mvitals[PM_KRAKEN__THE_FIEND_OF_WATER].died ? 
-										CLR_BRIGHT_BLUE : CLR_BLUE;
-	case ART_AIR_CRYSTAL:		return  mvitals[PM_TIAMAT__THE_FIEND_OF_WIND].died ? 
-										CLR_BRIGHT_GREEN : CLR_GREEN;
+	case ART_BLACK_CRYSTAL:		return PURIFIED_CHAOS ? CLR_BLACK : HI_GLASS;
+	case ART_EARTH_CRYSTAL:		return PURIFIED_EARTH ? CLR_YELLOW : CLR_BROWN;
+	case ART_FIRE_CRYSTAL:		return PURIFIED_FIRE ? 	CLR_ORANGE : CLR_RED;
+	case ART_WATER_CRYSTAL:		return PURIFIED_WATER ? CLR_BRIGHT_BLUE : CLR_BLUE;
+	case ART_AIR_CRYSTAL:		return PURIFIED_WIND ?  CLR_BRIGHT_GREEN : CLR_GREEN;
 	case ART_SPELL_WARDED_WRAPPINGS_OF_:		return CLR_BLACK;
 	}
 	

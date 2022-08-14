@@ -253,16 +253,16 @@ dig()
 	    !on_level(&digging.level, &u.uz) ||
 	    ((digging.down ? (dpx != u.ux || dpy != u.uy)
 			   : (distu(dpx,dpy) > 2)))
-	) return(0);
+	) return MOVE_CANCELLED;
 	
 	if (digging.down) {
-		if(!dig_check(BY_YOU, TRUE, u.ux, u.uy)) return(0);
+		if(!dig_check(BY_YOU, TRUE, u.ux, u.uy)) return MOVE_CANCELLED;
 	} else { /* !digging.down */
 		if (IS_TREES(lev->typ) && !may_dig(dpx,dpy) &&
 			dig_typ(digitem, dpx, dpy) == DIGTYP_TREE
 		) {
 			pline("This tree seems to be petrified.");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 	    /* ALI - Artifact doors from Slash'em */
 		if ((IS_ROCK(lev->typ) && !may_dig(dpx,dpy) &&
@@ -271,7 +271,7 @@ dig()
 		) {
 			pline("This %s is too hard to %s.",
 				IS_DOOR(lev->typ) ? "door" : "wall", verb);
-			return(0);
+			return MOVE_CANCELLED;
 		}
 	}
 	if(Fumbling &&
@@ -309,7 +309,7 @@ dig()
 	    default: Your("swing misses its mark.");
 		break;
 	    }
-	    return(0);
+	    return MOVE_CANCELLED;
 	}
 
 	bonus = 10 + rn2(5) + abon() +
@@ -333,7 +333,7 @@ dig()
 		if (digging.effort > 250) {
 		    (void) dighole(FALSE);
 		    (void) memset((genericptr_t)&digging, 0, sizeof digging);
-		    return(0);	/* done with digging */
+		    return MOVE_FINISHED_OCCUPATION;	/* done with digging */
 		}
 
 		if (digging.effort <= 50 ||
@@ -341,7 +341,7 @@ dig()
 		    ((ttmp = t_at(dpx,dpy)) != 0 &&
 			(ttmp->ttyp == PIT || ttmp->ttyp == SPIKED_PIT ||
 			 ttmp->ttyp == TRAPDOOR || ttmp->ttyp == HOLE)))
-		    return(1);
+		    return MOVE_STANDARD;
 
 		if (IS_ALTAR(lev->typ)) {
 		    altar_wrath(dpx, dpy);
@@ -352,7 +352,7 @@ dig()
 		    digging.level.dnum = 0;
 		    digging.level.dlevel = -1;
 		}
-		return(0);
+		return MOVE_FINISHED_OCCUPATION;
 	}
 
 	if (digging.effort > 100) {
@@ -520,7 +520,7 @@ dig()
 			}
 			if(!(lev->doormask & D_TRAPPED))
 				lev->doormask = D_BROKEN;
-		} else return(0); /* statue or boulder got taken */
+		} else return MOVE_CANCELLED; /* statue or boulder got taken */
 
 		if(!does_block(dpx,dpy,&levl[dpx][dpy]))
 		    unblock_point(dpx,dpy);	/* vision:  can see through */
@@ -557,7 +557,7 @@ cleanup:
 		digging.quiet = FALSE;
 		digging.level.dnum = 0;
 		digging.level.dlevel = -1;
-		return(0);
+		return MOVE_FINISHED_OCCUPATION;
 	} else {		/* not enough effort has been spent yet */
 		static const char *const d_target[10] = {
 			"", "rock", "statue", "boulder", "crate", "mass", "door", "tree", "bars", "chains"
@@ -570,10 +570,10 @@ cleanup:
 		    if(*in_rooms(dpx, dpy, SHOPBASE)) {
 			pline("This %s seems too hard to %s.",
 			      IS_DOOR(lev->typ) ? "door" : "wall", verb);
-			return(0);
+			return MOVE_CANCELLED;
 		    }
 		} else if (!IS_ROCK(lev->typ) && dig_target == DIGTYP_ROCK)
-		    return(0); /* statue or boulder got taken */
+		    return MOVE_CANCELLED; /* statue or boulder got taken */
 		if(!did_dig_msg) {
 		    if (is_lightsaber(digitem)) You("burn steadily through the %s.",
 			d_target[dig_target]);
@@ -583,7 +583,7 @@ cleanup:
 		    did_dig_msg = TRUE;
 		}
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 /* When will hole be finished? Very rough indication used by shopkeeper. */
@@ -744,7 +744,7 @@ boolean msgs;
 		 */
 		if (u.ustuck || wont_fall) {
 		    if (newobjs)
-			impact_drop((struct obj *)0, x, y, 0);
+			impact_drop((struct obj *)0, x, y, 0, madeby_u);
 		    if (oldobjs != newobjs)
 			(void) pickup(1);
 		    if (shopdoor && madeby_u) pay_for_damage("ruin", FALSE);
@@ -755,7 +755,7 @@ boolean msgs;
 		    if (*u.ushops && madeby_u)
 			shopdig(1); /* shk might snatch pack */
 		    /* handle earlier damage, eg breaking wand of digging */
-		    else if (!madeby_u) pay_for_damage("dig into", TRUE);
+		    else if (madeby_u) pay_for_damage("dig into", TRUE);
 
 		    fall_through(TRUE);
 		    /* Earlier checks must ensure that the destination
@@ -765,7 +765,7 @@ boolean msgs;
 	    } else {
 		if (shopdoor && madeby_u) pay_for_damage("ruin", FALSE);
 		if (newobjs)
-		    impact_drop((struct obj *)0, x, y, 0);
+		    impact_drop((struct obj *)0, x, y, 0, madeby_u);
 		if (mtmp && !DEADMONSTER(mtmp)) {
 		     /*[don't we need special sokoban handling here?]*/
 		    if (mon_resistance(mtmp,FLYING) || mon_resistance(mtmp,LEVITATION) ||
@@ -875,7 +875,7 @@ int ttyp;
 		 */
 		if (u.ustuck || wont_fall) {
 		    if (newobjs)
-			impact_drop((struct obj *)0, x, y, 0);
+			impact_drop((struct obj *)0, x, y, 0, madeby_u);
 		    if (oldobjs != newobjs)
 			(void) pickup(1);
 		    if (shopdoor && madeby_u) pay_for_damage("ruin", FALSE);
@@ -886,7 +886,7 @@ int ttyp;
 		    if (*u.ushops && madeby_u)
 			shopdig(1); /* shk might snatch pack */
 		    /* handle earlier damage, eg breaking wand of digging */
-		    else if (!madeby_u) pay_for_damage("dig into", TRUE);
+		    else if (madeby_u) pay_for_damage("dig into", TRUE);
 
 		    You("fall through...");
 		    /* Earlier checks must ensure that the destination
@@ -901,7 +901,7 @@ int ttyp;
 	    } else {
 		if (shopdoor && madeby_u) pay_for_damage("ruin", FALSE);
 		if (newobjs)
-		    impact_drop((struct obj *)0, x, y, 0);
+		    impact_drop((struct obj *)0, x, y, 0, madeby_u);
 		if (mtmp) {
 		     /*[don't we need special sokoban handling here?]*/
 		    if (mon_resistance(mtmp,FLYING) || mon_resistance(mtmp,LEVITATION) ||
@@ -1744,6 +1744,7 @@ int x, y;
 			(void) mpickobj(mon, otmp);
 			m_dowear(mon, TRUE);
 			init_mon_wield_item(mon);
+			m_level_up_intrinsic(mon);
 		}
 	}
 	else if(mid == PM_NESSIAN_PIT_FIEND){
@@ -1768,6 +1769,7 @@ int x, y;
 			curse(otmp);
 			m_dowear(mon, TRUE);
 			init_mon_wield_item(mon);
+			m_level_up_intrinsic(mon);
 		}
 #undef NPF_ARMOR
 	}
@@ -1786,6 +1788,7 @@ int x, y;
 			SHAY_WEAPON(BATTLE_AXE)
 			m_dowear(mon, TRUE);
 			init_mon_wield_item(mon);
+			m_level_up_intrinsic(mon);
 		}
 #undef NPF_ARMOR
 	}
@@ -1860,24 +1863,29 @@ struct obj *obj;
 	char qbuf[QBUFSZ];
 	register char *dsp = dirsyms;
 	register int rx, ry;
-	int res = 0;
+	int res = MOVE_CANCELLED;
 	register const char *sdp, *verb;
 
 	if(iflags.num_pad) sdp = ndir; else sdp = sdir;	/* DICE workaround */
 
 	/* Check tool */
 	if (obj != uwep && obj != uarmg) {
-	    if (!wield_tool(obj, "swing")) return 0;
-	    else res = 1;
+	    if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
+	    else res = MOVE_STANDARD;
+	}
+	if(Straitjacketed){
+		//Tool: axe or pickaxe
+		You("can't swing a tool while your %s are bound!", makeplural(body_part(ARM)));
+		return MOVE_CANCELLED;
 	}
 	ispick = is_pick(obj);
 	verb = ispick ? "dig" : "chop";
 
 	if (u.utrap && u.utraptype == TT_WEB) {
 	    pline("%s you can't %s while entangled in a web.",
-		  /* res==0 => no prior message;
-		     res==1 => just got "You now wield a pick-axe." message */
-		  !res ? "Unfortunately," : "But", verb);
+		  /* res==MOVE_CANCELLED => no prior message;
+		     res==MOVE_STANDARD => just got "You now wield a pick-axe." message */
+		  res == MOVE_CANCELLED ? "Unfortunately," : "But", verb);
 	    return res;
 	}
 
@@ -1897,7 +1905,8 @@ struct obj *obj;
 	if(!getdir(qbuf))
 		return(res);
 
-	return(use_pick_axe2(obj));
+	res |= use_pick_axe2(obj);
+	return res; /*Pickaxe might be an attack. It will not cancel*/
 }
 
 /* general dig through doors/etc. function
@@ -1954,7 +1963,7 @@ struct obj *obj;
 				OBJ_NAME(objects[obj->otyp]));
 		losehp(dam, buf, KILLED_BY);
 		flags.botl=1;
-		return(1);
+		return MOVE_STANDARD;
 	} else if(u.dz == 0) {
 		if(Stunned || (Confusion && !rn2(5))) confdir();
 		rx = u.ux + u.dx;
@@ -1964,11 +1973,11 @@ struct obj *obj;
 				aobjnam(obj, (char *)0));
 			else if (digtyp == HAMMER_TYP) pline("Clunk!");
 			else pline("Clash!");
-			return(1);
+			return MOVE_STANDARD;
 		}
 		lev = &levl[rx][ry];
 		if(MON_AT(rx, ry) && attack2(m_at(rx, ry)))
-			return(1);
+			return MOVE_ATTACKED;
 		dig_target = dig_typ(obj, rx, ry);
 		if (dig_target == DIGTYP_UNDIGGABLE) {
 			/* ACCESSIBLE or POOL */
@@ -2089,7 +2098,7 @@ struct obj *obj;
 		did_dig_msg = FALSE;
 		set_occupation(dig, verbing, 0);
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 /*
@@ -2492,7 +2501,7 @@ bury_an_obj(otmp)
 		&& !obj_resists(otmp, 0, 100)) {
 	    (void) start_timer((under_ice ? 0L : 250L) + (long)rnd(250),
 			       TIMER_OBJECT, ROT_ORGANIC, (genericptr_t)otmp);
-	} else if(otmp->otyp == HOLY_SYMBOL_OF_THE_BLACK_MOTHE){
+	} else if(otmp->otyp == HOLY_SYMBOL_OF_THE_BLACK_MOTHE && !Infuture){
 	    (void) start_timer(250L + (long)rnd(250), TIMER_OBJECT, ROT_ORGANIC, (genericptr_t)otmp);
 	}
 	add_to_buried(otmp);
@@ -2583,6 +2592,11 @@ long timeout;	/* unused */
 		if(cansee(obj->ox, obj->oy))
 			pline_The("%s boils to black mist!", surface(obj->ox, obj->oy));
 		makemon(&mons[PM_MOUTH_OF_THE_GOAT], obj->ox, obj->oy, MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+		/* Spreading the Goat's influence is worth credit. Intentionally not affected by the usual diminishing returns on credit gain. */
+		if (u.shubbie_atten) {
+			u.shubbie_credit += 30;
+			u.shubbie_devotion += 30;
+		}
 	}
 	obj_extract_self(obj);
 	obfree(obj, (struct obj *) 0);

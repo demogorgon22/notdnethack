@@ -517,7 +517,8 @@ struct you {
 #define RITUAL_HI_LAW	0x40
 #define RITUAL_DONE		(RITUAL_CHAOS|RITUAL_NEUTRAL|RITUAL_LAW)
 #define HI_RITUAL_DONE	(RITUAL_HI_CHAOS|RITUAL_HI_NEUTRAL|RITUAL_HI_LAW)
-	/* 13 free bits */
+	Bitfield(peaceful_pets,1);	/* pets don't attack peaceful monsters */
+	/* 12 free bits */
 	
 	int oonaenergy;				/* Record the energy type used by Oona in your game. (Worm that Walks switches?) */
 	int brand_otyp;				/* Record the otyp of Fire and Frost Brand in this game */
@@ -570,14 +571,21 @@ struct you {
 	int uartisval;		/* approximate strength of artifacts and gifts bestowed and wished for */
 	int ublessed, ublesscnt;	/* blessing/duration from #pray */
 	long usaccredit;		/* credit towards next gift */
-	int ucultblesscnt[MAX_CULTS];
-#define ugoatblesscnt ucultblesscnt[GOAT_CULT]
-	boolean cult_atten[MAX_CULTS];
+	boolean cult_atten[MAX_CULTS];	/* for having started with a cult */
 #define shubbie_atten		cult_atten[GOAT_CULT]
 #define silver_atten		cult_atten[FLAME_CULT]
 #define yog_sothoth_atten	cult_atten[SOTH_CULT]
 #define good_neighbor_atten	cult_atten[RAT_CULT]
-	long ucultcredit[MAX_CULTS];
+	long ucultcredit[MAX_CULTS];	/* for doing deeds for the cult, spendable */
+#define shubbie_credit			ucultcredit[GOAT_CULT]
+#define silver_credit			ucultcredit[FLAME_CULT]
+#define yog_sothoth_credit		ucultcredit[SOTH_CULT]
+#define good_neighbor_credit	ucultcredit[RAT_CULT]
+	long ucultcredit_total[MAX_CULTS];	/* total credit accumulated for the cult */ 
+#define shubbie_devotion		ucultcredit_total[GOAT_CULT]
+#define silver_devotion			ucultcredit_total[FLAME_CULT]
+#define yog_sothoth_devotion	ucultcredit_total[SOTH_CULT]
+#define good_neighbor_devotion	ucultcredit_total[RAT_CULT]
 	d_level silver_flame_z; 
 	xchar s_f_x, s_f_y; 
 	long lastprayed;

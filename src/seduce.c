@@ -205,6 +205,9 @@ struct monst * mon;
 
 	/* perform effect */
 	seduce_effect(mon, effect);
+	/*Some effects result in theft, some thefts result in death!*/
+	if(DEADMONSTER(mon))
+		return 1;
 
 	/* knife to the ribs -- Belial, Lilith only */
 	if (mon->mtyp == PM_BELIAL || mon->mtyp == PM_MOTHER_LILITH)
@@ -806,14 +809,13 @@ int dmg;
 					){ //only steal if you have at least one item and everything else of interest is already gone.
 					n = 0;
 					You_feel("the tentacles pick through your remaining possessions.");
-					buf[0] = '\0';
-					steal(mon, buf,FALSE, FALSE);
-					buf[0] = '\0';
-					steal(mon, buf,FALSE, FALSE);
-					buf[0] = '\0';
-					steal(mon, buf,FALSE, FALSE);
-					buf[0] = '\0';
-					steal(mon, buf,FALSE, FALSE);
+					for(int i = 0; i<4; i++){
+						buf[0] = '\0';
+						steal(mon, buf,FALSE, FALSE);
+						/*The elder priest is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+						if(DEADMONSTER(mon))
+							return 1;
+					}
 				}
 			break;
 		   }
@@ -1552,7 +1554,7 @@ boolean badeffect;
 				if (uclockwork) {
 					if (!rn2(5))
 						return SEDU_EDUCATE;
-					else if (u.uhunger < .5*u.uhungermax && !Race_if(PM_INCANTIFIER))
+					else if (u.uhunger < .5*get_uhungermax() && !Race_if(PM_INCANTIFIER))
 						return SEDU_WIND;
 					else
 						return SEDU_NOTHING;
@@ -1714,6 +1716,9 @@ int effect_num;
 			for (tmp = 0; tmp < 8; tmp++) {
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, TRUE);
+				/*Lolth is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+				if(DEADMONSTER(mon))
+					return;
 			}
 			break;
 		
@@ -1852,6 +1857,9 @@ int effect_num;
 			for (tmp = 0; tmp < 6; tmp++) {
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
+				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+				if(DEADMONSTER(mon))
+					return;
 			}
 			break;
 
@@ -1879,6 +1887,9 @@ int effect_num;
 			if (!uwep){
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
+				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+				if(DEADMONSTER(mon))
+					return;
 				optr = mksobj(BAR, NO_MKOBJ_FLAGS);
 				curse(optr);
 				optr->spe = -6;
@@ -1907,6 +1918,9 @@ int effect_num;
 				verbalize("This should greatly improve your intellect.");
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
+				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+				if(DEADMONSTER(mon))
+					return;
 				optr = mksobj(DUNCE_CAP, NO_MKOBJ_FLAGS);
 				curse(optr);
 				optr->spe = -6;
@@ -1936,6 +1950,9 @@ int effect_num;
 				verbalize("These boots will improve your looks.");
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
+				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+				if(DEADMONSTER(mon))
+					return;
 				optr = mksobj(FUMBLE_BOOTS, NO_MKOBJ_FLAGS);
 				curse(optr);
 				optr->spe = -6;
@@ -1964,6 +1981,9 @@ int effect_num;
 				verbalize("You need to take things more slowly.");
 				buf[0] = '\0';
 				steal(mon, buf, FALSE, FALSE);
+				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
+				if(DEADMONSTER(mon))
+					return;
 				optr = mksobj(AMULET_OF_RESTFUL_SLEEP, NO_MKOBJ_FLAGS);
 				curse(optr);
 				(void)hold_another_object(optr, u.uswallow ?
@@ -2371,16 +2391,20 @@ int *result;
 		
 		if(seduce && (attk->adtyp == AD_SSEX || attk->adtyp == AD_LSEX)){
 			minvent_ptr = &mdef->minvent;
-			while ((otmp = *minvent_ptr) != 0)
+			while ((otmp = *minvent_ptr) != 0){
 				if (otmp->owornmask & (W_ARM|W_ARMU)){
-					if (stealoid) /*Steal suit or undershirt*/
-						continue;
-					*minvent_ptr = otmp->nobj;	/* take armor out of minvent */
-					stealoid = otmp;
-					stealoid->nobj = (struct obj *)0;
+					if (stealoid){ /*Steal suit or undershirt*/
+						minvent_ptr = &otmp->nobj;
+					}
+					else {
+						*minvent_ptr = otmp->nobj;	/* take armor out of minvent */
+						stealoid = otmp;
+						stealoid->nobj = (struct obj *)0;
+					}
 				} else {
 					minvent_ptr = &otmp->nobj;
 				}
+			}
 			*minvent_ptr = stealoid;	/* put armor back into minvent */
 			otmp = stealoid;
 		}

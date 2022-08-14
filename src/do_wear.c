@@ -195,7 +195,7 @@ Boots_off()
 			HFumbling = EFumbling = 0;
 		break;
 	case FLYING_BOOTS:
-		if (!oldprop && !species_flies(youracedata) && !(u.usteed && mon_resistance(u.usteed,FLYING)) && !Levitation && !cancelled_don) {
+		if (!oldprop && !species_flies(youracedata) && !(u.usteed && mon_resistance(u.usteed,FLYING)) && !Levitation && !cancelled_don && !Flying) {
 			(void) float_down(0L, 0L);
 			makeknown(otyp);
 		}
@@ -1167,7 +1167,9 @@ boolean gone;
 		}
 		break;
 	case RIN_LEVITATION:
-		(void) float_down(0L, 0L);
+		if (!species_flies(youracedata) && !(u.usteed && mon_resistance(u.usteed,FLYING)) && !Levitation && !cancelled_don && !Flying) {
+			(void) float_down(0L, 0L);
+		}
 		if (!Levitation) makeknown(RIN_LEVITATION);
 		break;
 	case RIN_GAIN_STRENGTH:
@@ -1373,15 +1375,14 @@ dotakeoff()
 	register struct obj *otmp = (struct obj *)0;
 	int armorpieces = 0;
 
-	/* nohands checks for shields, gloves, etc... */
 	if (nohands(youracedata)) {
 		pline("Don't even bother.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	
 	if(!freehand()){
 		You("have no free %s to undress yourself with!", body_part(HAND));
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 #define MOREARM(x) if (x) { armorpieces++; otmp = x; }
@@ -1414,7 +1415,7 @@ dotakeoff()
 		    pline("Not wearing any armor.%s", (iflags.cmdassist && 
 				(uleft || uright || uamul || ublindf)) ?
 			  "  Use 'R' command to remove accessories." : "");
-		return 0;
+		return MOVE_CANCELLED;
 	}
 	if (armorpieces > 1
 #ifdef PARANOID
@@ -1422,10 +1423,10 @@ dotakeoff()
 #endif
 	    )
 		otmp = getobj(clothes, "take off");
-	if (otmp == 0) return(0);
+	if (otmp == 0) return MOVE_CANCELLED;
 	if (!(otmp->owornmask & W_ARMOR)) {
 		You("are not wearing that.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	/* note: the `uskin' case shouldn't be able to happen here; dragons
 	   can't wear any armor so will end up with `armorpieces == 0' above */
@@ -1433,16 +1434,16 @@ dotakeoff()
 	  || ((otmp == uarmu) && (uarmc || (uarm && arm_blocks_upper_body(uarm->otyp))))
 	){
 	    You_cant("take that off.");
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 
 	reset_remarm();		/* clear takeoff_mask and taking_off */
 	(void) select_off(otmp);
-	if (!takeoff_mask) return 0;
+	if (!takeoff_mask) return MOVE_CANCELLED;
 	reset_remarm();		/* armoroff() doesn't use takeoff_mask */
 
 	(void) armoroff(otmp);
-	return(1);
+	return MOVE_STANDARD;
 }
 
 /* the 'R' command */
@@ -1454,7 +1455,7 @@ doremring()
 
 	if(!freehand()){
 		You("have no free %s to remove accessories with!", body_part(HAND));
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 #define MOREACC(x) if (x) { Accessories++; otmp = x; }
@@ -1468,22 +1469,22 @@ doremring()
 			    (uarm || uarmc || uarmu ||
 			     uarms || uarmh || uarmg || uarmf)) ?
 		      "  Use 'T' command to take off armor." : "");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if (Accessories != 1
 #ifdef PARANOID
 	    || iflags.paranoid_remove
 #endif
 	    ) otmp = getobj(accessories, "remove");
-	if(!otmp) return(0);
+	if(!otmp) return MOVE_CANCELLED;
 	if(!(otmp->owornmask & (W_RING | W_AMUL | W_TOOL))) {
 		You("are not wearing that.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	reset_remarm();		/* clear takeoff_mask and taking_off */
 	(void) select_off(otmp);
-	if (!takeoff_mask) return 0;
+	if (!takeoff_mask) return MOVE_CANCELLED;
 	reset_remarm();		/* not used by Ring_/Amulet_/Blindf_off() */
 
 	if (otmp == uright || otmp == uleft) {
@@ -1503,7 +1504,7 @@ doremring()
 	} else {
 		impossible("removing strange accessory?");
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 /* Check if something worn is cursed _and_ unremovable. */
@@ -1528,7 +1529,7 @@ register struct obj *otmp;
 {
 	register int delay = -objects[otmp->otyp].oc_delay;
 
-	if(cursed(otmp)) return(0);
+	if(cursed(otmp)) return MOVE_CANCELLED;
 	if(delay) {
 		nomul(delay, "disrobing");
 		if (otmp == uarms) {
@@ -1599,7 +1600,7 @@ register struct obj *otmp;
 		off_msg(otmp);
 	}
 	takeoff_mask = taking_off = 0L;
-	return(1);
+	return MOVE_STANDARD;
 }
 
 STATIC_OVL void
@@ -1646,7 +1647,7 @@ boolean noisy;
 		return 0;
     }
 	
-	if((is_whirly(youracedata) || noncorporeal(youracedata)) && !(!cantwield(youracedata) && is_shield(otmp))){
+	if((is_whirly(youracedata) || noncorporeal(youracedata)) && !(!you_cantwield(youracedata) && is_shield(otmp))){
 		if(noisy) Your("body can't support clothing.");
 		return 0;
 	}
@@ -1724,10 +1725,9 @@ boolean noisy;
 		if (uarmg) {
 			if (noisy) already_wearing(c_gloves);
 			err++;
-		} else if(nohands(youracedata)){
-			/*Included for completeness, but having no hands actually prevents you from equiping anything*/
+		} else if(nogloves(youracedata)){
 			if (noisy)
-			You("don't have hands.");
+			You("don't have proper hands.");
 			err++;
 		} else if(youracedata->msize != otmp->objsize){
 			if (noisy)
@@ -1737,7 +1737,7 @@ boolean noisy;
 			if (noisy) You("cannot wear gloves over your %s.",
 				   is_sword(uwep) ? c_sword : c_weapon);
 			err++;
-		} else if (uwep && uwep->otyp == ARM_BLASTER && is_metal(otmp)) {
+		} else if (uwep && uwep->otyp == ARM_BLASTER && is_metallic(otmp)) {
 			if (noisy) pline("%s too tightly to allow such bulky, rigid gloves.",
 				   Tobjnam(uwep, "fit"));
 			err++;
@@ -1818,24 +1818,23 @@ dowear()
 	int delay;
 	long mask = 0;
 
-	/* nohands checks for shields, gloves, etc... */
 	if (nohands(youracedata)) {
 		pline("Don't even bother.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	
 	if(!freehand()){
 		You("have no free %s to dress yourself with!", body_part(HAND));
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	otmp = getobj(clothes, "wear");
-	if(!otmp) return(0);
+	if(!otmp) return MOVE_CANCELLED;
 
-	if (!canwearobj(otmp,&mask,TRUE)) return(0);
+	if (!canwearobj(otmp,&mask,TRUE)) return MOVE_CANCELLED;
 
 	if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
-	    return 1;	/* costs a turn even though it didn't get worn */
+	    return MOVE_STANDARD;	/* costs a turn even though it didn't get worn */
 
 	if (otmp->otyp == HELM_OF_OPPOSITE_ALIGNMENT &&
 			qstart_level.dnum == u.uz.dnum) {	/* in quest */
@@ -1846,7 +1845,7 @@ dowear()
 		u.ublessed = 0; /* lose your god's protection */
 		makeknown(otmp->otyp);
 		flags.botl = 1;
-		return 1;
+		return MOVE_STANDARD;
 	}
 
 	if(otmp->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
@@ -1880,7 +1879,7 @@ dowear()
 		on_msg(otmp);
 	}
 	takeoff_mask = taking_off = 0L;
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int
@@ -1891,7 +1890,7 @@ doputon()
 
 	if(!freehand()){
 		You("have no free %s to put on accessories with!", body_part(HAND));
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ublindf) {
@@ -1899,17 +1898,17 @@ doputon()
 			humanoid(youracedata) ? "ring-" : "",
 			makeplural(body_part(FINGER)),
 			(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses" : (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	otmp = getobj(accessories, "put on");
-	if(!otmp) return(0);
+	if(!otmp) return MOVE_CANCELLED;
 	if(otmp->owornmask & (W_RING | W_AMUL | W_TOOL)) {
 		already_wearing(c_that_);
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if(welded(otmp)) {
 		weldmsg(otmp);
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if(otmp == uwep)
 		setuwep((struct obj *)0);
@@ -1920,13 +1919,13 @@ doputon()
 	if(otmp->oclass == RING_CLASS || otmp->otyp == MEAT_RING) {
 		if(nolimbs(youracedata)) {
 			You("cannot make the ring stick to your body.");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER))){
 			There("are no more %s%s to fill.",
 				humanoid(youracedata) ? "ring-" : "",
 				makeplural(body_part(FINGER)));
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if(uleft) mask = RIGHT_RING;
 		else if((uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER))) mask = LEFT_RING;
@@ -1938,7 +1937,7 @@ doputon()
 				humanoid(youracedata) ? "ring-" : "",
 				body_part(FINGER));
 			if(!(answer = yn_function(qbuf, "rl", '\0')))
-				return(0);
+				return MOVE_CANCELLED;
 			switch(answer){
 			case 'l':
 			case 'L':
@@ -1953,34 +1952,34 @@ doputon()
 		if (uarmg && uarmg->cursed && !Weldproof) {
 			uarmg->bknown = TRUE;
 		    You("cannot remove your gloves to put on the ring.");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if (welded(uwep) && bimanual(uwep,youracedata)) {
 			/* welded will set bknown */
 	    You("cannot free your weapon hands to put on the ring.");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if (welded(uwep) && mask==RIGHT_RING) {
 			/* welded will set bknown */
 	    You("cannot free your weapon hand to put on the ring.");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
-		    return 1; /* costs a turn even though it didn't get worn */
+		    return MOVE_STANDARD; /* costs a turn even though it didn't get worn */
 		setworn(otmp, mask);
 		Ring_on(otmp);
 	} else if (otmp->oclass == AMULET_CLASS) {
 		if(uamul) {
 			already_wearing("an amulet");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
-		    return 1;
+		    return MOVE_STANDARD;
 		setworn(otmp, W_AMUL);
 		if (otmp->otyp == AMULET_OF_CHANGE) {
 			Amulet_on();
 			/* Don't do a prinv() since the amulet is now gone */
-			return(1);
+			return MOVE_STANDARD;
 		}
 		Amulet_on();
 	} else {	/* it's a blindfold, towel, or lenses */
@@ -2000,7 +1999,7 @@ doputon()
 					already_wearing("some lenses");
 			} else
 				already_wearing(something);
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if (otmp->otyp != MASK && otmp->otyp != R_LYEHIAN_FACEPLATE && 
 			otmp->otyp != BLINDFOLD && otmp->otyp != ANDROID_VISOR && 
@@ -2008,7 +2007,7 @@ doputon()
 			otmp->otyp != SUNGLASSES && otmp->otyp != LIVING_MASK
 		) {
 			You_cant("wear that!");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 		if (uarmh && FacelessHelm(uarmh) && uarmh->cursed && !Weldproof){
 			pline("The %s covers your whole face. You need to remove it first.", xname(uarmh));
@@ -2027,11 +2026,11 @@ doputon()
 			return 0;
 		}
 		Blindf_on(otmp);
-		return(1);
+		return MOVE_STANDARD;
 	}
 	if (is_worn(otmp))
 	    prinv((char *)0, otmp, 0L);
-	return(1);
+	return MOVE_STANDARD;
 }
 
 #endif /* OVLB */
@@ -2325,9 +2324,12 @@ base_uac()
 	if(multi >= 0)
 		dexbonus += mons[u.umonnum].dac;
 	
-	if((uright && uright->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN) || (uleft && uleft->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN)){
+	if(uring_art(ART_SHARD_FROM_MORGOTH_S_CROWN)){
 		uac -= 6;
 	}
+
+	if(!flat_foot && uring_art(ART_NENYA))
+		uac -= (ACURR(A_WIS)-11)/2;
 
 	if(uwep){
 		if(uwep->oartifact == ART_LANCE_OF_LONGINUS) uac -= max((uwep->spe+1)/2,0);
@@ -2449,11 +2451,11 @@ base_uac()
 		dexbonus = -5;
 	} else {
 		dexbonus += (int)( (ACURR(A_DEX)-11)/2 ); /*ranges from -5 to +7 (1 to 25) */
-		if(u.umadness&MAD_RAGE && !ClearThoughts){
-			dexbonus -= (Insanity)/10;
+		if(u.umadness&MAD_RAGE && !BlockableClearThoughts){
+			dexbonus -= (NightmareAware_Insanity)/10;
 		}
-		if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
-			int delta = Insanity;
+		if(u.umadness&MAD_NUDIST && !BlockableClearThoughts && NightmareAware_Sanity < 100){
+			int delta = NightmareAware_Insanity;
 			int discomfort = u_clothing_discomfort();
 			if (discomfort) {
 				dexbonus -= (discomfort * delta)/20;
@@ -2531,7 +2533,7 @@ find_ac()
 				P_SKILL(weapon_type(uwep))-1
 				)
 			,0);
-		if(uwep->oartifact == ART_TOBIUME || uwep->oartifact == ART_MASAMUNE)
+		if(uwep->oartifact == ART_TOBIUME)
 			uac -= max(uwep->spe,0);
 		if(uwep->otyp == NAGINATA && !uarms){
 			if(uwep->oartifact == ART_JINJA_NAGINATA)
@@ -2602,7 +2604,7 @@ int base_udr()
 {
 	int udr = 0;
 	
-	if((uright && uright->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN) || (uleft && uleft->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN)){
+	if(uring_art(ART_SHARD_FROM_MORGOTH_S_CROWN)){
 		udr += 3;
 	}
 	if(is_ent_species(youracedata, ENT_MIMOSA)) udr++;
@@ -2620,8 +2622,8 @@ int base_udr()
 	if (HProtection & INTRINSIC) udr += (u.ublessed)/2;
 	if(u.edenshield > moves) udr += 7;
 
-	if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
-		int delta = Insanity;
+	if(u.umadness&MAD_NUDIST && !BlockableClearThoughts && NightmareAware_Sanity < 100){
+		int delta = NightmareAware_Insanity;
 		int discomfort = u_clothing_discomfort();
 		if (discomfort) {
 			udr -= (discomfort * delta)/100;
@@ -2737,8 +2739,9 @@ int depth;
 		}
 	}
 	/* Wearing the Shard from Morgoth's Crown adds +3 magical DR to arms and head (in addition to its +3 to all slots) */
-	if (((uright && uright->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN) || (uleft && uleft->oartifact == ART_SHARD_FROM_MORGOTH_S_CROWN))
-		&& (slot & (ARM_DR | HEAD_DR))) {
+	if(uring_art(ART_SHARD_FROM_MORGOTH_S_CROWN)
+		&& (slot & (ARM_DR | HEAD_DR))
+	){
 		bas_udr += 3;
 	}
 	/* Vaul is not randomized, and contributes to magical DR */
@@ -3132,7 +3135,7 @@ register struct obj *otmp;
 
 	else impossible("select_off: %s???", doname(otmp));
 
-	return(0);
+	return MOVE_CANCELLED;
 }
 
 STATIC_OVL struct obj *
@@ -3206,7 +3209,7 @@ take_off()
 	if (taking_off) {
 	    if (todelay > 0) {
 		todelay--;
-		return(1);	/* still busy */
+		return MOVE_STANDARD;	/* still busy */
 	    } else {
 		if ((otmp = do_takeoff())) off_msg(otmp);
 	    }
@@ -3225,7 +3228,7 @@ take_off()
 
 	if (taking_off == 0L) {
 	  You("finish %s.", disrobing);
-	  return 0;
+	  return MOVE_FINISHED_OCCUPATION;
 	} else if (taking_off == W_WEP) {
 	  todelay = 1;
 	} else if (taking_off == W_SWAPWEP) {
@@ -3266,7 +3269,7 @@ take_off()
 	  todelay = 2;
 	} else {
 	  impossible("take_off: taking off %lx", taking_off);
-	  return 0;	/* force done */
+	  return MOVE_FINISHED_OCCUPATION;	/* force done */
 	}
 
 	if (otmp) todelay += objects[otmp->otyp].oc_delay;
@@ -3278,7 +3281,7 @@ take_off()
 	if (todelay > 0) todelay--;
 
 	set_occupation(take_off, disrobing, 0);
-	return(1);		/* get busy */
+	return MOVE_STANDARD;		/* get busy */
 }
 
 /* clear saved context to avoid inappropriate resumption of interrupted 'A' */
@@ -3298,11 +3301,11 @@ doddoremarm()
     if (taking_off || takeoff_mask) {
 	You("continue %s.", disrobing);
 	set_occupation(take_off, disrobing, 0);
-	return 0;
+	return MOVE_INSTANT;
     } else if (!uwep && !uswapwep && !uquiver && !uamul && !ublindf &&
 		!uleft && !uright && !wearing_armor()) {
 	You("are not wearing anything.");
-	return 0;
+	return MOVE_CANCELLED;
     }
 
     add_valid_menu_class(0); /* reset */
@@ -3323,7 +3326,7 @@ doddoremarm()
      * in take_off(); if we return 1, that would add an extra turn to each
      * disrobe.
      */
-    return 0;
+    return MOVE_INSTANT;
 }
 
 STATIC_OVL int
@@ -3488,6 +3491,10 @@ destroy_marm(mtmp, otmp)
 register struct monst *mtmp;
 register struct obj *otmp;
 {
+	/* call the player's version if need be */
+	if (mtmp == &youmonst)
+		return destroy_arm(otmp);
+
 	long unwornmask;
 	if(!otmp || !mtmp)
 		return 0;

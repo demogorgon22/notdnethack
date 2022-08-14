@@ -5,6 +5,7 @@
 #include "hack.h"
 #include "mfndpos.h"
 #include "artifact.h"
+#include "xhity.h"
 
 extern boolean notonhead;
 extern struct attack noattack;
@@ -113,7 +114,7 @@ dochugw(mtmp)
 	     * which the weapon does extra damage, as there is no "monster
 	     * which the weapon warns against" field.
 	     */
-	    if (spec_ability(uwep, SPFX_WARN) && spec_dbon(uwep, mtmp, 1, (int *)0, (int *)0))
+	    if (spec_ability(uwep, SPFX_WARN) && spec_dbon(uwep, &youmonst, mtmp, 1, (int *)0, (int *)0))
 		warnlevel = 100;
 	    else if ((int) (mtmp->m_lev / 4) > warnlevel)
 		warnlevel = (mtmp->m_lev / 4);
@@ -156,15 +157,41 @@ struct monst *mtmp;
 	if(mtmp == &youmonst)
 		return FALSE;
 	
-	if(no_upos(mtmp))
-		return FALSE;
-	
 	/* Nitocris's wrappings are especially warded against Nyarlathotep, and accidently work vs. summons generally */
 	if(u.ux == x && u.uy == y && !mtmp->mpeaceful && (get_mx(mtmp, MX_ESUM) || is_mask_of_nyarlathotep(mtmp->data)) && uarmc && uarmc->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)
 		return TRUE;
-	else if(mat && (get_mx(mtmp, MX_ESUM) || is_mask_of_nyarlathotep(mtmp->data)) && which_armor(mat, W_ARMC) && which_armor(mat, W_ARMC)->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)
+	if(!no_upos(mtmp) && mtmp->mux == x && mtmp->muy == y && !mtmp->mpeaceful && (get_mx(mtmp, MX_ESUM) || is_mask_of_nyarlathotep(mtmp->data)) && uarmc && uarmc->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)
 		return TRUE;
+	if(mat && (get_mx(mtmp, MX_ESUM) || is_mask_of_nyarlathotep(mtmp->data)) && which_armor(mat, W_ARMC) && which_armor(mat, W_ARMC)->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)
+		return TRUE;
+
+	if(no_upos(mtmp) && !mat)
+		return FALSE;
 	
+	if(mat && rn2(100) < (80-mtmp->m_lev)){
+		if(mtmp->msanctity && gender(mat) == 1){
+			return TRUE;
+		}
+		if(mtmp->marachno && humanoid_upperbody(mat->data) && gender(mat) == 1){
+			return TRUE;
+		}
+		if(mtmp->margent && gender(mat) == 0){
+			return TRUE;
+		}
+	}
+	if(!no_upos(mtmp) && mtmp->mux == x && mtmp->muy == y && rn2(100) < (80-mtmp->m_lev)){
+		char curgen = is_neuter(youracedata) ? 2 : Upolyd ? u.mfemale : flags.female;
+		if(mtmp->msanctity && curgen == 1){
+			return TRUE;
+		}
+		if(mtmp->marachno && humanoid_upperbody(youracedata) && curgen == 1){
+			return TRUE;
+		}
+		if(mtmp->margent && curgen == 0){
+			return TRUE;
+		}
+	}
+
 	return (boolean)(
 				((
 					sobj_at(SCR_SCARE_MONSTER, x, y)
@@ -251,6 +278,7 @@ struct monst *mtmp;
 	return 	mtmp->data->mlet == S_DOG ||
 			mtmp->data->mlet == S_FELINE;
 }
+
 boolean
 scaryDre(mtmp)
 struct monst *mtmp;
@@ -779,22 +807,58 @@ boolean digest_meal;
 			}
 		}
 	}
-	if(is_uvuudaum(mon->data)){
-		mon->mhp += 25; //Fast healing
-	} else {
-		if((mon->mhp < mon->mhpmax && mon_resistance(mon,REGENERATION)) || (likes_lava(mon->data) && levl[mon->mx][mon->my].typ == LAVAPOOL)) mon->mhp++;
+	/*Cthulhu's mind blast*/
+	if(mon->mdreams && (mon->msleeping || !rn2(70)) && !rn2(5)){
+		int dmg;
+		int nd = 1;
+		if(on_level(&rlyeh_level,&u.uz))
+			nd = 5;
+		dmg = d(nd,15);
+		if(Half_spel(mon))
+			dmg = (dmg+1) / 2;
+		if(m_losehp(mon, dmg, FALSE, "fevered dreams"))
+			return; //Died.
+		if(!mon->msleeping && !resists_sleep(mon)){
+			mon->msleeping = 1;
+			slept_monst(mon);
+		}
+		
+	}
+	if(mon->mhp < mon->mhpmax){
+		int perX = 0;
+		if(is_uvuudaum(mon->data)){
+			perX += 25*HEALCYCLE; //Fast healing
+		} else {
+			perX += mon->m_lev;
+		}
+		if(likes_lava(mon->data) && levl[mon->mx][mon->my].typ == LAVAPOOL) perX += HEALCYCLE;
+		//Worn Vilya bonus ranges from (penalty) to +7 HP per 10 turns
+		if(uring_art(ART_VILYA)){
+			perX += heal_vilya()*HEALCYCLE/10;
+		}
 		if(!nonliving(mon->data)){
+			if(perX < 1)
+				perX = 1;
 			if (mon->mhp < mon->mhpmax){
 				//recover 1/HEALCYCLEth hp per turn:
-				mon->mhp += (mon->m_lev)/HEALCYCLE;
+				mon->mhp += perX/HEALCYCLE;
 				//Now deal with any remainder
-				if(((moves)*((mon->m_lev)%HEALCYCLE))/HEALCYCLE > ((moves-1)*((mon->m_lev)%HEALCYCLE))/HEALCYCLE) mon->mhp += 1;
+				if(((moves)*(perX%HEALCYCLE))/HEALCYCLE > ((moves-1)*(perX%HEALCYCLE))/HEALCYCLE)
+					mon->mhp += 1;
 			}
 		}
+		if(mon_resistance(mon,REGENERATION))
+			mon->mhp+=1;
+		if(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_HEALING && !mindless_mon(mon) && !is_deaf(mon) && mon->mtame)
+			mon->mhp += 1;
+		if (mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
 	}
-	if(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_HEALING && !mindless_mon(mon) && !is_deaf(mon) && mon->mtame) mon->mhp += 1;
-	if (mon->mhp > mon->mhpmax) mon->mhp = mon->mhpmax;
 	if (mon->mspec_used) mon->mspec_used--;
+
+	if(mon->mspec_used && uring_art(ART_LOMYA)){
+		mon->mspec_used--;
+	}
 	if (digest_meal) {
 	    if (mon->meating) mon->meating--;
 	}
@@ -1115,9 +1179,20 @@ register struct monst *mtmp;
 			mtmp->mlaughing=rnd(5);
 		}
 	}
+	if(mtmp->mrage){
+		extern const int monstr[];
+		if(!rn2(4)){
+			mtmp->mberserk = 1;
+			(void) set_apparxy(mtmp);
+		}
+		mtmp->encouraged = max(mtmp->encouraged, min(20, monstr[mtmp->mtyp]));
+	}
 	
 	if(mtmp->mdisrobe){
-		if(mon_remove_armor(mtmp))
+		if(mon_throw_armor(mtmp))
+			return 0;
+	} else if(mtmp->mnudist){
+		if(mon_strip_armor(mtmp))
 			return 0;
 	}
 	
@@ -1198,6 +1273,7 @@ register struct monst *mtmp;
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
 					m_dowear(mtmp, TRUE);
+					m_level_up_intrinsic(mtmp);
 				}
 			}
 			return 0;
@@ -1787,19 +1863,19 @@ register struct monst *mtmp;
 					}
 					if(power >= 4 && !Babble && !Screaming){
 						if(rn2(3)){
-							if(!ClearThoughts)
+							if(!BlockableClearThoughts)
 								You("scream in pain!");
 							HScreaming = 2;
 						}
 						else if(rn2(2)){
-							if(ClearThoughts)
+							if(BlockableClearThoughts)
 								You_feel("a little frightened.");
 							else
 								You("begin screaming in terror and madness!");
 							HScreaming = 1+rnd((dmg)/5+1)+rnd((dmg)/5+1);
 						}
 						else {
-							if(ClearThoughts)
+							if(BlockableClearThoughts)
 								You_feel("a little incoherent.");
 							else
 								You("begin babbling incoherently!");
@@ -2091,6 +2167,7 @@ static NEARDATA const char magical[] = {
 static NEARDATA const char indigestion[] = { BALL_CLASS, ROCK_CLASS, 0 };
 static NEARDATA const char boulder_class[] = { ROCK_CLASS, 0 };
 static NEARDATA const char gem_class[] = { GEM_CLASS, 0 };
+static NEARDATA const char tool_class[] = { TOOL_CLASS, 0 };
 
 boolean
 itsstuck(mtmp)
@@ -2117,7 +2194,7 @@ register int after;
 	int appr;
 	xchar gx,gy,nix,niy,chcnt;
 	int chi;	/* could be schar except for stupid Sun-2 compiler */
-	boolean likegold=0, likegems=0, likeobjs=0, likemagic=0, conceals=0;
+	boolean likegold=0, likegems=0, likeobjs=0, likemagic=0, likefood=0, likemirrors=0, conceals=0;
 	boolean likerock=0, can_tunnel=0;
 	boolean can_open=0, can_unlock=0, doorbuster=0;
 	boolean uses_items=0, setlikes=0;
@@ -2165,7 +2242,7 @@ register int after;
 	can_open = !(nohands(ptr) || verysmall(ptr) || straitjacketed_mon(mtmp));
 	can_unlock = ((can_open && (m_carrying(mtmp, SKELETON_KEY)||m_carrying(mtmp, UNIVERSAL_KEY))) ||
 		      mtmp->iswiz || is_rider(ptr) || ptr->mtyp==PM_DREAD_SERAPH);
-	doorbuster = is_giant(ptr);
+	doorbuster = species_busts_doors(ptr);
 	if(mtmp->wormno) goto not_special;
 	/* my dog gets special treatment */
 	if(mtmp->mtame) {
@@ -2317,9 +2394,11 @@ not_special:
 				likegems = (likes_gems(ptr) && pctload < 85);
 				uses_items = (!mindless_mon(mtmp) && !is_animal(ptr)
 					&& pctload < 75);
-				likeobjs = (!mtmp->mdisrobe && likes_objs(ptr) && pctload < 75);
+				likeobjs = (!mad_no_armor(mtmp) && likes_objs(ptr) && pctload < 75);
 				likemagic = (likes_magic(ptr) && pctload < 85);
 				likerock = (throws_rocks(ptr) && pctload < 50 && !In_sokoban(&u.uz));
+				likefood = mtmp->mgluttony;
+				likemirrors = (mtmp->margent && pctload < 100);
 				conceals = hides_under(ptr);
 				setlikes = TRUE;
 			}
@@ -2341,7 +2420,7 @@ not_special:
 	/* guards shouldn't get too distracted */
 	if(!mtmp->mpeaceful && is_mercenary(ptr)) minr = 1;
 
-	if((likegold || likegems || likeobjs || likemagic || likerock || conceals)
+	if((likegold || likegems || likeobjs || likemagic || likerock || likefood || likemirrors || conceals)
 	      && (!*in_rooms(omx, omy, SHOPBASE) || (!rn2(25) && !mtmp->isshk))) {
 	look_for_obj:
 	    oomx = min(COLNO-1, omx+minr);
@@ -2385,6 +2464,10 @@ not_special:
 					is_boulder(otmp))) ||
 				(likegems && (
 					otmp->oclass == GEM_CLASS && otmp->obj_material != MINERAL)) ||
+				(likefood && (
+					otmp->oclass == FOOD_CLASS || (otmp->obj_material == VEGGY && herbivorous(ptr)) || (otmp->obj_material == FLESH && carnivorous(ptr)) )) ||
+				(likemirrors && (
+					otmp->otyp == MIRROR || item_has_property(otmp, REFLECTING) )) ||
 				(conceals && (
 					!cansee(otmp->ox, otmp->oy))) ||
 				((ptr->mtyp == PM_GELATINOUS_CUBE || ptr->mtyp == PM_ANCIENT_OF_CORRUPTION) && (
@@ -2425,7 +2508,7 @@ not_special:
 	} else if(likegold) {
 	    /* don't try to pick up anything else, but use the same loop */
 	    uses_items = 0;
-	    likegems = likeobjs = likemagic = likerock = conceals = 0;
+	    likegems = likeobjs = likemagic = likerock = likefood = likemirrors = conceals = 0;
 	    goto look_for_obj;
 	}
 
@@ -2896,28 +2979,31 @@ postmov:
 		    likegems = (likes_gems(ptr) && pctload < 85);
 		    uses_items = (!mindless_mon(mtmp) && !is_animal(ptr)
 				  && pctload < 75);
-		    likeobjs = (!mtmp->mdisrobe && likes_objs(ptr) && pctload < 75);
+		    likeobjs = (!mad_no_armor(mtmp) && likes_objs(ptr) && pctload < 75);
 		    likemagic = (likes_magic(ptr) && pctload < 85);
 		    likerock = (throws_rocks(ptr) && pctload < 50 &&
 				!In_sokoban(&u.uz));
 		    conceals = hides_under(ptr);
 		}
 
-		/* Maybe a rock mole just ate some metal object */
-		if (metallivorous(ptr)) {
-		    if (meatmetal(mtmp) == 2) return 2;	/* it died */
+		if(ptr->mtyp == PM_NACHASH_TANNIN){
+			mvanishobj(mtmp, mtmp->mx, mtmp->my);
 		}
-
-		if(g_at(mtmp->mx,mtmp->my) && likegold) mpickgold(mtmp);
 
 		/* Maybe a cube ate just about anything */
 		if (ptr->mtyp == PM_GELATINOUS_CUBE || ptr->mtyp == PM_ANCIENT_OF_CORRUPTION) {
 		    if (meatobj(mtmp) == 2) return 2;	/* it died */
 		}
-		
-		if(ptr->mtyp == PM_NACHASH_TANNIN){
-			mvanishobj(mtmp, mtmp->mx, mtmp->my);
+		/* Maybe a rock mole just ate some metal object */
+		else if (metallivorous(ptr)) {
+		    if (meatmetal(mtmp) == 2) return 2;	/* it died */
 		}
+		/* Maybe a gluttonous monster just ate some food */
+		else if (mtmp->mgluttony || mtmp->mcannibal) {
+		    if (meatgluttony(mtmp) == 2) return 2;	/* it died */
+		}
+
+		if(g_at(mtmp->mx,mtmp->my) && likegold) mpickgold(mtmp);
 
 		if(!*in_rooms(mtmp->mx, mtmp->my, SHOPBASE) || !rn2(25)) {
 		    boolean picked = FALSE;
@@ -2926,6 +3012,7 @@ postmov:
 		    if(likemagic) picked |= mpickstuff(mtmp, magical);
 		    if(likerock) picked |= mpickstuff(mtmp, boulder_class);
 		    if(likegems) picked |= mpickstuff(mtmp, gem_class);
+		    if(likemirrors) picked |= mpickstuff(mtmp, tool_class);
 		    if(uses_items) picked |= mpickstuff(mtmp, (char *)0);
 		    if(picked) mmoved = 3;
 		}

@@ -1093,7 +1093,7 @@ register struct obj *sobj;
 	else found = TRUE;
 	}
 	for (obj = fobj; obj; obj = obj->nobj) {
-	if ((obj->otyp==BOX || obj->otyp==CHEST) && obj->otrapped) {
+	if ((obj->otyp==BOX || obj->otyp==SARCOPHAGUS || obj->otyp==CHEST) && obj->otrapped) {
 		if (obj->ox != u.ux || obj->oy != u.uy)
 		goto outtrapmap;
 		else found = TRUE;
@@ -1126,7 +1126,7 @@ outtrapmap:
 	sense_trap(ttmp, 0, 0, sobj && sobj->cursed);
 
 	for (obj = fobj; obj; obj = obj->nobj)
-	if ((obj->otyp==BOX || obj->otyp==CHEST) && obj->otrapped)
+	if ((obj->otyp==BOX || obj->otyp==SARCOPHAGUS || obj->otyp==CHEST) && obj->otrapped)
 	sense_trap((struct trap *)0, obj->ox, obj->oy, sobj && sobj->cursed);
 
 	for (door = 0; door < doorindex; door++) {
@@ -1646,7 +1646,7 @@ register int aflag;
 					}
 				} else if (!sensemon(mtmp))
 					You("find %s.", a_monnam(mtmp));
-				return(1);
+				return MOVE_STANDARD;
 				}
 				if(!canspotmon(mtmp)) {
 				if (mtmp->mundetected &&
@@ -1672,7 +1672,7 @@ register int aflag;
 				if (trap->ttyp == STATUE_TRAP) {
 				if (activate_statue_trap(trap, x, y, FALSE))
 					exercise(A_WIS, TRUE);
-				return(1);
+				return MOVE_STANDARD;
 				} else {
 				find_trap(trap);
 				}
@@ -1681,7 +1681,7 @@ register int aflag;
 		}
 		}
 	}
-	return(1);
+	return MOVE_STANDARD;
 }
 
 int

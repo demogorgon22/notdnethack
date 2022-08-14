@@ -189,6 +189,17 @@ boolean domsg;
     int r = 0;
 
     if (song_being_played() == SNG_NONE) return 0;
+    if (mtmp->mtemplate == ZOMBIFIED
+		|| mtmp->mtemplate == CRYSTALFIED
+		|| mtmp->mtemplate == TOMB_HERD
+		|| mtmp->mtemplate == YITH
+		|| mtmp->mtemplate == M_BLACK_WEB
+		|| mtmp->mtemplate == SLIME_REMNANT
+		|| mtmp->mtemplate == YELLOW_TEMPLATE
+		|| mtmp->mtemplate == DREAM_LEECH
+		|| mtmp->mtemplate == MINDLESS
+	)
+		return 0;
 
     if ((mtmp->mcanmove) && (!mtmp->msleeping) && (!Conflict)
 	&& !mtmp->mberserk && (!mtmp->mconf) && (!mtmp->mflee) 
@@ -294,6 +305,17 @@ boolean domsg;
     int r = 0;
 
     if (song_being_played() == SNG_NONE) return 0;
+    if (mtmp->mtemplate == ZOMBIFIED
+		|| mtmp->mtemplate == CRYSTALFIED
+		|| mtmp->mtemplate == TOMB_HERD
+		|| mtmp->mtemplate == YITH
+		|| mtmp->mtemplate == M_BLACK_WEB
+		|| mtmp->mtemplate == SLIME_REMNANT
+		|| mtmp->mtemplate == YELLOW_TEMPLATE
+		|| mtmp->mtemplate == DREAM_LEECH
+		|| mtmp->mtemplate == MINDLESS
+	)
+		return 0;
 	
 	//Ill-regard specimens are unconscious
 	// So are prisoners
@@ -764,9 +786,9 @@ play_song()
 		exercise(A_DEX, TRUE);
 		/*if (songs[song_played].turns > 1)*/
 		You("finish the song.");
-		return 0;
+		return MOVE_FINISHED_OCCUPATION;
 	}
-	return 1;
+	return MOVE_STANDARD;
 }
 
 

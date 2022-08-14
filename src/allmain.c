@@ -22,6 +22,7 @@ STATIC_DCL void NDECL(mercurial_repair);
 STATIC_DCL void NDECL(clothes_bite_you);
 STATIC_DCL void NDECL(androidUpkeep);
 STATIC_DCL void NDECL(printMons);
+STATIC_DCL void NDECL(printMonNames);
 STATIC_DCL void NDECL(printDPR);
 STATIC_DCL void NDECL(printBodies);
 STATIC_DCL void NDECL(printSanAndInsight);
@@ -481,6 +482,168 @@ clothes_bite_you()
 
 static long prev_dgl_extrainfo = 0;
 
+/* returns the movement point cost of the requested action type 
+ * affect_game_state should only be TRUE when called from the
+ * main game loop
+ */
+int
+you_action_cost(actiontype, affect_game_state)
+int actiontype;
+boolean affect_game_state;
+{
+	int actiontypes_remaining = actiontype; 
+	int current_action, current_cost, highest_cost = 0;
+	int i;
+
+	/* 1. ignore the MOVE_FINISHED_OCCUPATION flag, it only says to end occupations
+	 * 2. if no other types are specified 'default' means 'standard', otherwise is ignored
+	 */
+	actiontypes_remaining &= ~MOVE_FINISHED_OCCUPATION;
+	actiontypes_remaining = (actiontypes_remaining == MOVE_DEFAULT) ? MOVE_STANDARD : (actiontypes_remaining&(~MOVE_DEFAULT));
+
+	/* loop through all flagged action types to determine which is the largest cost,
+	 * and, if affect_game_state is TRUE, apply all necessary effects.
+	 * 
+	 * Most often, there is only one action type per player input.
+	 * In very rare circumstances, two actions that should take time can happen simultaneously.
+	 */
+	if(wizard && actiontypes_remaining != MOVE_CANCELLED && (actiontypes_remaining&MOVE_CANCELLED))
+		pline("ERROR: incompletely cancelled actions in you_action_cost: %d", actiontypes_remaining);
+	for (i=0, current_action = MOVE_STANDARD;
+		actiontypes_remaining != 0;
+		current_action = 1<<i, i++)
+	{
+		if (!(actiontypes_remaining & current_action))
+			continue;
+		else
+			actiontypes_remaining -= current_action;
+
+		current_cost = NORMAL_SPEED;
+
+		switch(current_action) {
+		case MOVE_STANDARD:
+			/* the default for any not-otherwise-handled non-instant action */
+			break;
+
+		case MOVE_INSTANT:
+			current_cost = 0;
+			break;
+		
+		case MOVE_PARTIAL:
+			if (affect_game_state ? partial_action() : check_partial_action()) {
+				if (affect_game_state)
+					flags.movetoprint &= ~MOVE_PARTIAL;
+				current_cost = NORMAL_SPEED;
+			}
+			else {
+				if (affect_game_state)
+					flags.movetoprint |= MOVE_PARTIAL;
+				current_cost = 0;
+			}
+			break;
+
+		case MOVE_MOVED:
+			/* to determine the fastest movement booster applicable */
+#define MOVECOST(val) current_cost = min(val, current_cost)
+
+			/* these only apply if you didn't attack this action */
+			if (!u.uattked) {
+				if(uwep && uwep->oartifact == ART_TENSA_ZANGETSU){
+					MOVECOST(NORMAL_SPEED/12);
+				} else if(uwep && uwep->oartifact == ART_SODE_NO_SHIRAYUKI){
+					MOVECOST(NORMAL_SPEED/4);
+				} else if(uwep && uwep->oartifact == ART_TOBIUME){
+					if (affect_game_state) {
+						if((HStealth&TIMEOUT) < 2)
+							set_itimeout(&HStealth, 2L);
+						if((HInvis&TIMEOUT) < 2){
+							set_itimeout(&HInvis, 2L);
+							newsym(u.ux, u.uy);
+						}
+					}
+					MOVECOST(NORMAL_SPEED/4);
+				}
+				if(uandroid && u.ucspeed == HIGH_CLOCKSPEED){
+					MOVECOST(NORMAL_SPEED/3);
+				}
+				if(uarmf && uarmf->oartifact == ART_SEVEN_LEAGUE_BOOTS){
+					MOVECOST(NORMAL_SPEED - artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod);
+					if(affect_game_state && artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod < 5*NORMAL_SPEED/6){
+						artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod += NORMAL_SPEED/6;
+					}
+				}
+			}
+#undef MOVECOST
+			break;
+
+		case MOVE_ATTACKED:
+			current_cost = NORMAL_SPEED;
+
+			/* some weapons are faster */
+			/*  Note: Fire brand is a fast weapon, and works with frost brand in the main hand */
+			if ((uwep && fast_weapon(uwep))
+				|| (!uwep && uarmg && fast_weapon(uarmg))
+				|| (uwep && uwep->oartifact == ART_FROST_BRAND && u.twoweap && uswapwep && uswapwep->oartifact == ART_FIRE_BRAND && fast_weapon(uswapwep))
+			){
+				current_cost -= NORMAL_SPEED / 6;
+			}
+
+			/* some weapons are slower */
+			if (uwep
+				&& (uwep->otyp == RAKUYO || uwep->otyp == DOUBLE_FORCE_BLADE || uwep->otyp == DOUBLE_SWORD || 
+					((uwep->otyp == DOUBLE_LIGHTSABER || uwep->otyp == BEAMSWORD || uwep->otyp == LIGHTSABER || uwep->otyp == ROD_OF_FORCE) && uwep->altmode)
+				)
+				&& !u.twoweap
+				){
+				current_cost += NORMAL_SPEED / 4;
+			}
+
+			/* some artifacts are faster */
+			// note - you don't have to actually be two-weaponing, and that's intentional,
+			// but you must have another ARTA_HASTE wep offhanded (and there's only 2 so)
+			if (uwep && uwep->oartifact && arti_attack_prop(uwep, ARTA_HASTE)){
+				current_cost -= NORMAL_SPEED / 3;
+				if (uswapwep && uswapwep->oartifact && arti_attack_prop(uwep, ARTA_HASTE))
+					current_cost -= NORMAL_SPEED / 6;
+			}
+			break;
+
+		case MOVE_QUAFFED:
+			break;
+		
+		case MOVE_ZAPPED:
+			if (QuickDraw) {
+				current_cost = you_action_cost(MOVE_PARTIAL, affect_game_state);
+			}
+			break;
+
+		case MOVE_READ:
+			break;
+		
+		case MOVE_CASTSPELL:
+			break;
+
+		case MOVE_ATE:
+			break;
+
+		case MOVE_FIRED:
+			break;
+
+		case MOVE_CANCELLED:
+			/* ignore other costs, force a cost of 0 */
+			return 0;
+
+		default:
+			impossible("Unhandled MOVE_XYZ case (%d)", current_action);
+			break;
+		}
+		/* assign as new highest cost, if applicable */
+		highest_cost = max(current_cost, highest_cost);
+	}
+
+	return highest_cost;
+}
+
 void
 you_calc_movement()
 {
@@ -671,8 +834,8 @@ you_calc_movement()
 	default: break;
 	}
 	
-	if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
-		int delta = Insanity;
+	if(u.umadness&MAD_NUDIST && !BlockableClearThoughts && NightmareAware_Sanity < 100){
+		int delta = NightmareAware_Insanity;
 		int discomfort = u_clothing_discomfort();
 		discomfort = (discomfort * delta)/100;
 		if (moveamt - discomfort < NORMAL_SPEED/2) {
@@ -826,6 +989,8 @@ you_regen_hp()
 					reglevel *= 1.5;
 				else if(bed->otyp == BED)
 					reglevel *= 2;
+				else if(bed->otyp == EXPENSIVE_BED)
+					reglevel *= 10;
 			}
 			// restfully
 			if(RestfulSleep){
@@ -877,9 +1042,8 @@ you_regen_hp()
 
 	// The Ring of Hygiene's Disciple
 	if (!Upolyd &&	// Question for Chris: should this be enabled to also work while polymorphed?
-		((uleft  && uleft->oartifact == ART_RING_OF_HYGIENE_S_DISCIPLE) ||
-		(uright && uright->oartifact == ART_RING_OF_HYGIENE_S_DISCIPLE))
-		){
+		uring_art(ART_RING_OF_HYGIENE_S_DISCIPLE)
+	){
 		perX += HEALCYCLE * min(4, (*hpmax) / max((*hp), 1));
 	}
 
@@ -910,9 +1074,23 @@ you_regen_hp()
 		}
 	}
 	
-	if(FaintingFits && rn2(100) >= u.usanity && multi >= 0){
+	if(FaintingFits && rn2(100) >= NightmareAware_Sanity && multi >= 0){
 		You("suddenly faint!");
-		fall_asleep((u.usanity - 100)/10 - 1, FALSE);
+		fall_asleep((NightmareAware_Sanity - 100)/10 - 1, FALSE);
+	}
+
+	//Worn Vilya bonus ranges from -4 (penalty) to +7 HP per 10 turns
+	// If you're currently dying (negative HP regen) Vilya may make it worse,
+	//  but vilya won't cause you to start dying if you aren't already.
+	// Consequently, it should be applied after all other bonuses
+	if(uring_art(ART_VILYA)){
+		int vmod = heal_vilya()*HEALCYCLE/10;
+		if(perX >= 0){
+			perX = max(0, perX+vmod);
+		}
+		else {
+			perX += vmod;
+		}
 	}
 
 	if (((perX > 0) && ((*hp) < (*hpmax))) ||			// if regenerating
@@ -964,9 +1142,11 @@ you_regen_pw()
 			if(bed && bed->oclass == BED_CLASS){
 				// A bedroll must be the only object in the square, other beds can have stuff tucked under them
 				if((bed->otyp == BEDROLL && !bed->nexthere) || bed->otyp == GURNEY)
-					reglevel *= 1.5;
+					reglevel *= 3;
 				else if(bed->otyp == BED)
-					reglevel *= 2;
+					reglevel *= 4;
+				else if(bed->otyp == EXPENSIVE_BED)
+					reglevel *= 20;
 			}
 			// restfully
 			if(RestfulSleep){
@@ -995,6 +1175,8 @@ you_regen_pw()
 			reglevel += 7;
 		if (Race_if(PM_DROW) && !Upolyd)
 			reglevel += 8;
+		if (Race_if(PM_GNOME) && !Upolyd)
+			reglevel += 12;
 		// penalty for being itchy
 		reglevel -= u_healing_penalty();
 		// penalty from spell protection interfering with natural pw regeneration
@@ -1011,6 +1193,9 @@ you_regen_pw()
 	// Carried spiritual soulstones
 	perX += stone_energy();
 	if(u.utats & TAT_FOUNTAIN) perX += 3;
+	//Worn Nenya bonus ranges from -4 penalty to +7 HP per 10 turns
+	if(uring_art(ART_NENYA))
+		perX += en_nenya()*HEALCYCLE/10;
 	
 	// external power regeneration
 	if (Energy_regeneration ||										// energy regeneration 'trinsic
@@ -1142,6 +1327,10 @@ you_regen_san()
 
 	if(active_glyph(TRANSPARENT_SEA))
 		reglevel += 30;
+
+	//Worn Vilya bonus ranges from -4 (penalty) to +7
+	if(uring_art(ART_VILYA))
+		reglevel += heal_vilya();
 
 	// penalty for certain areas
 	if(Is_rlyeh(&u.uz)){
@@ -1292,69 +1481,25 @@ moveloop()
 #ifdef POSITIONBAR
 	do_positionbar();
 #endif
+	movement_combos();
 
-	didmove = flags.move;
-	if(didmove) {
-	    /* actual time passed */
-		if(u.umoved && !u.uattked){
-			int step_cost = NORMAL_SPEED;
-			#define COST(val) step_cost = min(val, step_cost);
-			if(uwep && uwep->oartifact == ART_TENSA_ZANGETSU){
-				COST(1)
-			} else if(uwep && uwep->oartifact == ART_SODE_NO_SHIRAYUKI){
-				COST(3)
-			} else if(uwep && uwep->oartifact == ART_TOBIUME){
-				if((HStealth&TIMEOUT) < 2)
-					set_itimeout(&HStealth, 2L);
-				if((HInvis&TIMEOUT) < 2){
-					set_itimeout(&HInvis, 2L);
-					newsym(u.ux, u.uy);
-				}
-				COST(4)
-			}
-			if(uandroid && u.ucspeed == HIGH_CLOCKSPEED){
-				COST(3)
-			}
-			if(uarmf && uarmf->oartifact == ART_SEVEN_LEAGUE_BOOTS){
-				COST(12 - artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod)
-				if(artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod < 10){
-					artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod += 2;
-				}
-			}
-			//Subtract the cost.
-			youmonst.movement -= step_cost;
-			#undef COST
-		} else {
-			if(uandroid && u.ucspeed == HIGH_CLOCKSPEED)
-				u.ucspeed = NORM_CLOCKSPEED;
-			artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod = 0;
-			youmonst.movement -= NORMAL_SPEED;
-		}
-		if(Role_if(PM_MONK) && !Upolyd){
-			if(u.umoved || u.uattked){
-				if((u.prev_dir.x || u.prev_dir.y) && !flags.nopick && (multi < 0 || monk_moves())){
-					//Did a move: clear previous input.
-					u.prev_dir.x = 0;
-					u.prev_dir.y = 0;
-				}
-				else {
-					u.prev_dir.x = u.dx;
-					u.prev_dir.y = u.dy;
-				}
-			}
-			else {
-				u.prev_dir.x = 0;
-				u.prev_dir.y = 0;
-			}
-		}
+	
+	if (!(flags.move & MOVE_CANCELLED)) {
+		flags.movetoprint = flags.move == MOVE_DEFAULT ? MOVE_STANDARD : flags.move;
+		flags.movetoprintcost = you_action_cost(flags.move, FALSE);
+	}
+	if(you_action_cost(flags.move, TRUE) > 0) {
+		/* actual time passed */
+		youmonst.movement -= flags.movetoprintcost;
+		didmove = TRUE;
 
 		  /**************************************************/
-		 /*monsters that respond to the player turn go here*/
+		 /* things that respond to the player turn go here */
 		/**************************************************/
 		for (mtmp = fmon; mtmp; mtmp = nxtmon){
 			nxtmon = mtmp->nmon;
 			if(mtmp->m_insight_level > u.uinsight
-			  || (mtmp->mtyp == PM_WALKING_DELIRIUM && ClearThoughts)
+			  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 			){
 				insight_vanish(mtmp);
 				continue;
@@ -1379,6 +1524,11 @@ moveloop()
 				You("panic from traveling over ice!");
 				HPanicking += 1+rnd(3);
 			}
+		}
+		if (u.uattked || !u.umoved) {
+			if(uandroid && u.ucspeed == HIGH_CLOCKSPEED)
+				u.ucspeed = NORM_CLOCKSPEED;
+			artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod = 0;
 		}
 		
 	    do { /* hero can't move this turn loop */
@@ -1431,7 +1581,7 @@ moveloop()
 					}
 				}
 				if(mtmp->m_insight_level > u.uinsight
-				  || (mtmp->mtyp == PM_WALKING_DELIRIUM && ClearThoughts)
+				  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 				){
 					insight_vanish(mtmp);
 					continue;
@@ -1883,7 +2033,7 @@ moveloop()
 						}
 						set_mon_data(mtmp, PM_ARA_KAMEREL);
 						mtmp->m_lev = 15;
-						mtmp->mhpmax = d(15, 8);
+						mtmp->mhpmax = d(15, hd_size(mtmp->data));
 						mtmp->mhp = mtmp->mhpmax;
 						if(M_HAS_NAME(mtmp)) mtmp = christen_monst(mtmp, ""); //Now a different entity
 						mtmp->movement = 9;//Don't pause for a turn
@@ -1925,7 +2075,7 @@ karemade:
 				if(DEADMONSTER(mtmp) || MIGRATINGMONSTER(mtmp))
 					continue;
 
-				if(mtmp->mtyp == PM_WALKING_DELIRIUM && !mtmp->mtame && !ClearThoughts) {
+				if(mtmp->mtyp == PM_WALKING_DELIRIUM && !mtmp->mtame && !BlockableClearThoughts) {
 					static long lastusedmove = 0;
 					if (lastusedmove != moves) {
 						if (!mtmp->mappearance || (canseemon(mtmp) && distmin(mtmp->mx, mtmp->my, u.ux, u.uy) <= 1 && rn2(3))) {
@@ -1941,7 +2091,7 @@ karemade:
 					}
 				}
 
-				if(has_template(mtmp, MAD_TEMPLATE) && !ClearThoughts && canseemon(mtmp) && dimness(mtmp->mx, mtmp->my) <= 0 && distmin(mtmp->mx, mtmp->my, u.ux, u.uy) <= 1){
+				if(has_template(mtmp, MAD_TEMPLATE) && !BlockableClearThoughts && canseemon(mtmp) && dimness(mtmp->mx, mtmp->my) <= 0 && distmin(mtmp->mx, mtmp->my, u.ux, u.uy) <= 1){
 					static long lastusedmove = 0;
 					static int lastcost = 0;
 					int sancost = u_sanity_loss_minor(mtmp);
@@ -2222,7 +2372,10 @@ karemade:
 					You("feel it %s inside your body!", hoststrings[rn2(SIZE(hoststrings))]);
 					make_vomiting(Vomiting+49+d(4,11), TRUE);
 				}
+				if(Nightmare)
+					dohost_mon(&youmonst);
 			}
+
 			if(roll_madness(MAD_ROTTING)){
 				if(roll_madness(MAD_ROTTING))
 					create_gas_cloud(u.ux+rn2(3)-1, u.uy+rn2(3)-1, 1, rnd(6), FALSE); //Longer-lived smoke
@@ -2483,7 +2636,7 @@ karemade:
 
 		    if (flags.bypasses) clear_bypasses();
 		    if(Glib) glibr();
-		    // if(StumbleBlind && rn2(100) >= u.usanity) bumbler();
+		    // if(StumbleBlind && rn2(100) >= NightmareAware_Sanity) bumbler();
 		    nh_timeout();
 		    run_regions();
 		    run_maintained_spells();
@@ -2492,8 +2645,6 @@ karemade:
 
 		    if(!Is_nowhere(&u.uz)){
 			    if (u.ublesscnt)  u.ublesscnt--;
-			    if (u.ugoatblesscnt && u.shubbie_atten && !godlist[GOD_THE_BLACK_MOTHER].anger)
-					u.ugoatblesscnt--;
 		    }
 		    if(flags.time && !flags.run)
 			flags.botl = 1;
@@ -2668,13 +2819,14 @@ karemade:
 					u.ill_cnt = rn1(1000, 250);
 				}
 		    }
-		    if ((Role_if(PM_MADMAN) && quest_status.touched_artifact && !mvitals[PM_STRANGER].died)
+		    if ((!Role_if(PM_MADMAN) || quest_status.touched_artifact) && !mvitals[PM_STRANGER].died
 				&& !(Invulnerable)
 			) {
-				if (u.yel_cnt) u.yel_cnt--;
 				if (!u.yel_cnt) {
-					yello_intervene();
-					u.yel_cnt = rn1(1000, 555);
+					if(!yello_intervene())
+						u.yel_cnt = rn1(51, 5);
+					else
+						u.yel_cnt = rn1(501, 55);
 				}
 		    }
 		    restore_attrib();
@@ -2811,7 +2963,7 @@ karemade:
 			}
 		}
 		if(mtmp->m_insight_level > u.uinsight
-		  || (mtmp->mtyp == PM_WALKING_DELIRIUM && ClearThoughts)
+		  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 		){
 			insight_vanish(mtmp);
 			continue;
@@ -2863,11 +3015,11 @@ karemade:
 			see_objects();
 			see_traps();
 			if (u.uswallow) swallowed(0);
-		} else if (Unblind_telepat || goodsmeller(youracedata) || Warning || Warn_of_mon || u.usanity < 100 || oldsanity < 100) {
+		} else if (Unblind_telepat || goodsmeller(youracedata) || Warning || Warn_of_mon || NightmareAware_Sanity < 100 || oldsanity < 100) {
 	     	see_monsters();
 	    }
 		
-		oldsanity = u.usanity;
+		oldsanity = NightmareAware_Sanity;
 
 		switch (((u_healing_penalty() - healing_penalty) > 0) - ((u_healing_penalty() - healing_penalty) < 0))
 		{
@@ -2911,11 +3063,11 @@ karemade:
 			see_objects();
 			see_traps();
 			if (u.uswallow) swallowed(0);
-		} else if (Unblind_telepat || goodsmeller(youracedata) || Warning || Warn_of_mon || u.usanity < 100 || oldsanity < 100) {
+		} else if (Unblind_telepat || goodsmeller(youracedata) || Warning || Warn_of_mon || NightmareAware_Sanity < 100 || oldsanity < 100) {
 	     	see_monsters();
 	    }
 		
-		oldsanity = u.usanity;
+		oldsanity = NightmareAware_Sanity;
 
 		if (!oldLightBlind ^ !LightBlind) {  /* one or the other but not both */
 			see_monsters();
@@ -2964,7 +3116,7 @@ karemade:
 	  prev_hp_notify = uhp();
 	}
 
-	flags.move = 1;
+	flags.move = MOVE_DEFAULT;
 
 	if(multi >= 0 && occupation) {
 #if defined(MICRO) || defined(WIN32)
@@ -2977,9 +3129,9 @@ karemade:
 		    pushch(ch);
 # endif /* REDO */
 	    }
-	    if (!abort_lev && (*occupation)() == 0)
+	    if (!abort_lev && ((flags.move = (*occupation)()) & (MOVE_CANCELLED|MOVE_FINISHED_OCCUPATION)))
 #else
-	    if ((*occupation)() == 0)
+	    if (((flags.move = (*occupation)()) & (MOVE_CANCELLED|MOVE_FINISHED_OCCUPATION)))
 #endif
 		occupation = 0;
 	    if(
@@ -3020,7 +3172,7 @@ karemade:
 	    lookaround();
 	    if (!multi) {
 		/* lookaround may clear multi */
-		flags.move = 0;
+		flags.move |= MOVE_CANCELLED;
 		if (flags.time) flags.botl = 1;
 		continue;
 	    }
@@ -3331,7 +3483,7 @@ boolean new_game;	/* false => restoring an old game */
     *buf = '\0';
     *racebuf = '\0';
     if (new_game || galign(u.ugodbase[UGOD_ORIGINAL]) != galign(u.ugodbase[UGOD_CURRENT]))
-	Sprintf(eos(buf), " %s", align_str(galign(u.ugodbase[UGOD_ORIGINAL])));
+	Sprintf(eos(buf), " %s", align_str(galign(u.ugodbase[UGOD_CURRENT])));
     if (!urole.name.f &&
 	    (new_game ? (urole.allow & ROLE_GENDMASK) == (ROLE_MALE|ROLE_FEMALE) :
 	     currentgend != flags.initgend))
@@ -3487,14 +3639,34 @@ printBodies(){
 	struct permonst *ptr;
 	rfile = fopen_datafile("MonBodies.tab", "w", SCOREPREFIX);
 	if (rfile) {
-		Sprintf(pbuf,"Number\tName\tclass\thumanoid\tanimaloid\tserpentine\tcentauroid\tnaganoid\tleggedserpent\tNAoid\thumanoid torso\thumanoid upperbody\thead\thands\tfeet\tboots\teyes\n");
+		Sprintf(pbuf,"Number\tName\tclass\thumanoid\tanimaloid\tserpentine\tcentauroid\tnaganoid\tleggedserpent\tNAoid\thumanoid torso\thumanoid upperbody\thead\thands\tgloves\tfeet\tboots\teyes\toldpolywep\thands but no polywep\n");
 		fprintf(rfile, "%s", pbuf);
 		fflush(rfile);
 		for(j=0;j<NUMMONS;j++){
 			ptr = &mons[j];
 			pbuf[0] = 0;// n	nm	let	hm	anm	srp	cen	ng	lgs	hd	hn	ft	bt  ey
-			Sprintf(pbuf,"%d	%s	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d\n", 
-					j, mons[j].mname, mons[j].mlet,humanoid(ptr),animaloid(ptr),serpentine(ptr),centauroid(ptr),snakemanoid(ptr),leggedserpent(ptr),naoid(ptr),humanoid_torso(ptr),humanoid_upperbody(ptr),has_head(ptr),!nohands(ptr),!noboots(ptr),can_wear_boots(ptr),haseyes(ptr));
+			Sprintf(pbuf,"%d	%s	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d	%d\n", 
+						   j,	mons[j].mname, 
+									mons[j].mlet,
+										humanoid(ptr),
+											animaloid(ptr),
+												serpentine(ptr),
+													centauroid(ptr),
+														snakemanoid(ptr),
+															leggedserpent(ptr),
+																naoid(ptr),
+																	humanoid_torso(ptr),
+																		humanoid_upperbody(ptr),
+																			has_head(ptr),
+																				!nohands(ptr),
+																					!nogloves(ptr),
+																						!noboots(ptr),
+																							can_wear_boots(ptr),
+																								haseyes(ptr),
+																									!nohands(ptr) && ((ptr->mattk[0].aatyp == AT_CLAW || (ptr->mattk[0].aatyp == AT_TUCH && ptr->mlet == S_LICH))
+																									|| (ptr->mattk[1].aatyp == AT_CLAW && (ptr->mtyp == PM_INCUBUS || ptr->mtyp == PM_SUCCUBUS))),
+																										!nohands(ptr) && you_cantwield(ptr)
+																										);
 			fprintf(rfile, "%s", pbuf);
 			fflush(rfile);
 		}
@@ -3535,13 +3707,13 @@ STATIC_DCL
 void
 printDPR(){
 	FILE *rfile;
-	register int i, j, avdm, mdm;
+	register int i, j, avdm, mdm, avgperhit, maxperhit;
 	char pbuf[BUFSZ];
 	struct permonst *ptr;
 	struct attack *attk;
 	rfile = fopen_datafile("MonDPR.tab", "w", SCOREPREFIX);
 	if (rfile) {
-		Sprintf(pbuf,"Number\tName\tclass\taverage\tmax\tspeed\talignment\tunique?\n");
+		Sprintf(pbuf,"Number\tName\tclass\taverage\tmax\tper-hit avg\tper-hit max\tspeed\talignment\tunique?\n");
 		fprintf(rfile, "%s", pbuf);
 		fflush(rfile);
 		for(j=0;j<NUMMONS;j++){
@@ -3549,6 +3721,8 @@ printDPR(){
 			pbuf[0] = 0;
 			avdm = 0;
 			mdm = 0;
+			avgperhit = 0;
+			maxperhit = 0;
 			for(i = 0; i<6; i++){
 				attk = &ptr->mattk[i];
 				if(attk->aatyp == 0 &&
@@ -3558,10 +3732,14 @@ printDPR(){
 				) break;
 				else {
 					avdm += attk->damn * (attk->damd + 1)/2;
+					if(avgperhit < attk->damn * (attk->damd + 1)/2)
+						avgperhit = attk->damn * (attk->damd + 1)/2;
 					mdm += attk->damn * attk->damd;
+					if(maxperhit < attk->damn * attk->damd)
+						maxperhit = attk->damn * attk->damd;
 				}
 			}
-			Sprintf(pbuf,"%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n", j, mons[j].mname, mons[j].mlet,avdm, mdm, mons[j].mmove,ptr->maligntyp,(mons[j].geno&G_UNIQ) ? "unique":"");
+			Sprintf(pbuf,"%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n", j, mons[j].mname, mons[j].mlet,avdm, mdm, avgperhit, maxperhit, mons[j].mmove,ptr->maligntyp,(mons[j].geno&G_UNIQ) ? "unique":"");
 			fprintf(rfile, "%s", pbuf);
 			fflush(rfile);
 		}
@@ -3858,6 +4036,21 @@ printMons(){
 
 STATIC_DCL
 void
+printMonNames(){
+	FILE *rfile;
+	register int i;
+	rfile = fopen_datafile("wikiNames.txt", "w", SCOREPREFIX);
+	if (rfile) {
+		for(i=0;i<NUMMONS;i++){
+			fprintf(rfile, "==%s==\n\n\n", mons[i].mname);
+			fflush(rfile);
+		}
+	}
+	fclose(rfile);
+}
+
+STATIC_DCL
+void
 resFlags(buf, rflags)
 	char *buf;
 	unsigned int rflags;
@@ -4094,6 +4287,8 @@ printAttacks(buf, ptr)
 		"holy energy",			/*145*/
 		"unholy energy",		/*146*/
 		"level-based damage",	/*147*/
+		"severe poison",		/*148*/
+		"corrupted holy energy",/*149*/
 		// "[[ahazu abduction]]",	/**/
 		"[[stone choir]]",		/* */
 		"[[water vampire]]",	/* */
@@ -4473,11 +4668,11 @@ struct monst *mon;
 static int pharaohspawns[] = {PM_COBRA, PM_COBRA, PM_COBRA, PM_SERPENT_NECKED_LIONESS, PM_HUNTING_HORROR,
 							  PM_COBRA, PM_COBRA, PM_COBRA, PM_SERPENT_NECKED_LIONESS, PM_HUNTING_HORROR,
 							  PM_HUMAN_MUMMY, PM_HUMAN_MUMMY, PM_HUMAN_MUMMY, PM_GIANT_MUMMY, PM_PHARAOH,
-							  PM_ENERGY_VORTEX, PM_ENERGY_VORTEX, PM_ENERGY_VORTEX, PM_LIGHTNING_PARAELEMENTAL, PM_BLUE_DRAGON};
+							  PM_ENERGY_VORTEX, PM_ENERGY_VORTEX, PM_ENERGY_VORTEX, PM_LIGHTNING_PARAELEMENTAL, PM_BLUE_DRAGON, PM_DAUGHTER_OF_NAUNET};
 
 static int toughpharaohspawns[] = {PM_COBRA, PM_SERPENT_NECKED_LIONESS, PM_HUNTING_HORROR,
 							  PM_GIANT_MUMMY, PM_PHARAOH,
-							  PM_LIGHTNING_PARAELEMENTAL, PM_BLUE_DRAGON};
+							  PM_LIGHTNING_PARAELEMENTAL, PM_BLUE_DRAGON, PM_DAUGHTER_OF_NAUNET};
 
 
 STATIC_OVL
@@ -4772,6 +4967,7 @@ struct monst *mon;
 					mon->m_insight_level = 0;
 					m_dowear(mon, TRUE);
 					init_mon_wield_item(mon);
+					m_level_up_intrinsic(mon);
 
 					/*Break out of loop. Warning Note: otmp is stale*/
 					break;
@@ -4917,7 +5113,7 @@ struct monst *mon;
 		}
 		/* The Stranger arrives from other levels and appears as soon as you gain enough insight */
 		if(mon->m_insight_level <= u.uinsight){
-			for(mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
+			for(mtmp = migrating_mons; mtmp; mtmp = mtmp2){
 				mtmp2 = mtmp->nmon;
 				if (mtmp == mon) {
 					mtmp->mtrack[0].x = MIGR_RANDOM;
@@ -4936,22 +5132,34 @@ struct monst *mon;
 		}
 	}
 	/* Otherwise, The Stranger acts against you */
-	if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && xyloc == MIGR_EXACT_XY && rn2(5)){ /*Sometimes skip a turn so that it can be evaded*/
-		if(u.ux == xlocale && u.uy == ylocale && !mon->mpeaceful){
-			You_feel("a stranger's gaze on your back!");
-			u.ustdy = max_ints(u.ustdy, min_ints(5, u.ustdy+rnd(5)));
-		}
-		else {
-			xlocale += sgn(u.ux - xlocale);
-			ylocale += sgn(u.uy - ylocale);
-			if(isok(xlocale, ylocale) && (
-				(!is_pool(xlocale, ylocale, FALSE) && ZAP_POS(levl[xlocale][ylocale].typ))
-				|| is_pool(mon->mtrack[1].x, mon->mtrack[1].y, FALSE) 
-				|| !ZAP_POS(levl[mon->mtrack[1].x][mon->mtrack[1].y].typ)
-				|| ((!Role_if(PM_MADMAN) || quest_status.touched_artifact) && !rn2(5)) /* Sometimes phases through walls */
-			)){
-				mon->mtrack[1].x = xlocale;
-				mon->mtrack[1].y = ylocale;
+	if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && xyloc == MIGR_EXACT_XY){
+		flags.yello_level=1;
+		//Smite counter runs
+		if (u.yel_cnt && (!Role_if(PM_MADMAN) || quest_status.touched_artifact))
+			u.yel_cnt--;
+		if(rn2(5)){ /*Sometimes skip a turn so that it can be evaded*/
+			if(u.ux == xlocale && u.uy == ylocale && !mon->mpeaceful){
+				You_feel("a stranger's gaze on your back!");
+				u.ustdy = max_ints(u.ustdy, min_ints(5, u.ustdy+rnd(5)));
+				if (!Role_if(PM_MADMAN) || quest_status.touched_artifact){
+					if(u.yel_cnt < 4)
+						u.yel_cnt = 0;
+					else
+						u.yel_cnt -= 4; //5 total
+				}
+			}
+			else {
+				xlocale += sgn(u.ux - xlocale);
+				ylocale += sgn(u.uy - ylocale);
+				if(isok(xlocale, ylocale) && (
+					(!is_pool(xlocale, ylocale, FALSE) && ZAP_POS(levl[xlocale][ylocale].typ))
+					|| is_pool(mon->mtrack[1].x, mon->mtrack[1].y, FALSE) 
+					|| !ZAP_POS(levl[mon->mtrack[1].x][mon->mtrack[1].y].typ)
+					|| ((!Role_if(PM_MADMAN) || quest_status.touched_artifact) && !rn2(5)) /* Sometimes phases through walls */
+				)){
+					mon->mtrack[1].x = xlocale;
+					mon->mtrack[1].y = ylocale;
+				}
 			}
 		}
 	}
@@ -5093,8 +5301,8 @@ struct monst *magr;
 
 		if(symbiote.aatyp != AT_MAGC && symbiote.aatyp != AT_GAZE){
 			if((touch_petrifies(mdef->data)
-			 || mdef->mtyp == PM_MEDUSA)
-			 && ((!youagr && !resists_ston(magr)) || (youagr && !Stone_resistance))
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
 			) continue;
 			
 			if(mdef->mtyp == PM_PALE_NIGHT)
@@ -5107,6 +5315,305 @@ struct monst *magr;
 			xgazey(magr, mdef, &symbiote, -1);
 		else
 			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+	}
+}
+
+void
+dochaos_mon(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int i = rnd(8),j;
+	int ax, ay;
+	struct attack symbiote = { AT_BITE, AD_UNHY, 5, 4 };
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	struct permonst *pa;
+	
+	pa = youagr ? youracedata : magr->data;
+
+	//mostly uses default 5d4 damage dice
+	switch(rnd(4)){
+		//1: Bite
+		case 2:
+			symbiote.aatyp = AT_GAZE;
+			symbiote.adtyp = AD_STDY;
+		break;
+		case 3:
+			//Bad luck, curse items
+			symbiote.aatyp = AT_MAGC;
+			symbiote.adtyp = AD_CLRC;
+		break;
+		case 4:
+			symbiote.aatyp = AT_SPIT;
+			symbiote.adtyp = AD_BLND;
+			symbiote.damn = 0;
+			symbiote.damd = 0;
+		break;
+	}
+	
+	//Attack all surrounding foes
+	for(j=8;j>=1;j--){
+		ax = x(magr)+clockwisex[(i+j)%8];
+		ay = y(magr)+clockwisey[(i+j)%8];
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(ax, ay))
+			continue;
+		else if(onscary(ax, ay, magr))
+			continue;
+		else mdef = m_at(ax, ay);
+		
+		if(u.ux == ax && u.uy == ay)
+			mdef = &youmonst;
+		
+		if(!mdef)
+			continue;
+		
+		youdef = (mdef == &youmonst);
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(youdef && (magr->mpeaceful))
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(!youdef && imprisoned(mdef))
+			continue;
+
+		if(symbiote.aatyp != AT_MAGC && symbiote.aatyp != AT_GAZE && symbiote.aatyp != AT_SPIT){
+			if((touch_petrifies(mdef->data)
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
+			) continue;
+			
+			if(mdef->mtyp == PM_PALE_NIGHT)
+				continue;
+		}
+		
+		if(symbiote.aatyp == AT_MAGC)
+			cast_spell(magr, mdef, &symbiote, rn2(2) ? EVIL_EYE : CURSE_ITEMS, x(mdef), y(mdef));
+		else if(symbiote.aatyp == AT_GAZE)
+			xgazey(magr, mdef, &symbiote, -1);
+		else if(symbiote.aatyp == AT_SPIT)
+			xspity(magr, &symbiote, ax, ay);
+		else
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+	}
+}
+
+void
+dohost_mon(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	struct monst *nmon;
+	int count_close = 0;
+	int count_far = 0;
+	int dist;
+	boolean peace = 0;
+	boolean youagr = &youmonst == magr;
+	struct attack symbiote = { 0, 0, 6, 6 };
+	// if(&youmonst == magr || magr->mpeaceful)
+	if(youagr)
+		peace = 1;
+	else peace = magr->mpeaceful;
+
+	//Loop init
+	nmon = fmon;
+	if(!nmon){
+		if(!peace)
+			nmon = &youmonst;
+	}
+	//mdef may be null (player attacking and no monsters on level
+	while((mdef = nmon)){
+		//Loop update
+		if(mdef == &youmonst)
+			nmon = (struct monst *)0;
+		else if(mdef->nmon)
+			nmon = mdef->nmon;
+		else if(!peace)
+			nmon = &youmonst;
+		else
+			nmon = (struct monst *)0;
+
+		if(mdef->mpeaceful == peace)
+			continue;
+		dist = distmin(x(magr), y(magr), x(mdef), y(mdef));
+		if(dist > BOLT_LIM)
+			continue;
+		if(youagr ? !couldsee(x(mdef), y(mdef)) : !clear_path(x(magr), y(magr), x(mdef), y(mdef)))
+			continue;
+		if(dist > 1)
+			count_far++;
+		if((touch_petrifies(mdef->data)
+			|| mdef->mtyp == PM_MEDUSA)
+		 && (youagr ? !Stone_resistance : !resists_ston(magr))
+		) continue;
+		
+		if(mdef->mtyp == PM_PALE_NIGHT)
+			continue;
+		if(dist <= 2)
+			count_close++;
+	}
+
+	switch(rn2(6)){
+		//Acid blast
+		case 0:
+			// pline("acid blast");
+			if(!count_far)
+				return;
+			count_far = rn2(count_far);
+			//Loop init
+			nmon = fmon;
+			if(!nmon){
+				if(!peace)
+					nmon = &youmonst;
+			}
+			//mdef may be null (player attacking and no monsters on level
+			while((mdef = nmon)){
+				//Loop update
+				if(mdef == &youmonst)
+					nmon = (struct monst *)0;
+				else if(mdef->nmon)
+					nmon = mdef->nmon;
+				else if(!peace)
+					nmon = &youmonst;
+				else
+					nmon = (struct monst *)0;
+
+				if(mdef->mpeaceful == peace)
+					continue;
+				dist = distmin(x(magr), y(magr), x(mdef), y(mdef));
+				if(dist > BOLT_LIM)
+					continue;
+				if(youagr ? !couldsee(x(mdef), y(mdef)) : !clear_path(x(magr), y(magr), x(mdef), y(mdef)))
+					continue;
+				if(dist > 1){
+					if(count_far-- > 0)
+						continue;
+					explode(x(mdef), y(mdef), AD_ACID, 0, d(6,6), EXPL_NOXIOUS, 1);
+					return;
+				}
+			}
+		break;
+		//Sickness
+		case 1:
+			// pline("sickness");
+			if(!count_far && !count_close)
+				return;
+			count_far = rn2(count_far+count_close);
+			symbiote.aatyp = AT_MAGC;
+			symbiote.adtyp = AD_CLRC;
+			//Loop init
+			nmon = fmon;
+			if(!nmon){
+				if(!peace)
+					nmon = &youmonst;
+			}
+			//mdef may be null (player attacking and no monsters on level
+			while((mdef = nmon)){
+				//Loop update
+				if(mdef == &youmonst)
+					nmon = (struct monst *)0;
+				else if(mdef->nmon)
+					nmon = mdef->nmon;
+				else if(!peace)
+					nmon = &youmonst;
+				else
+					nmon = (struct monst *)0;
+
+				if(mdef->mpeaceful == peace)
+					continue;
+				dist = distmin(x(magr), y(magr), x(mdef), y(mdef));
+				if(dist > BOLT_LIM)
+					continue;
+				if(youagr ? !couldsee(x(mdef), y(mdef)) : !clear_path(x(magr), y(magr), x(mdef), y(mdef)))
+					continue;
+				if(count_far-- > 0)
+					continue;
+				cast_spell(magr, mdef, &symbiote, PLAGUE, x(mdef), y(mdef));
+				return;
+			}
+		break;
+		//Flesh hook
+		case 2:
+			// pline("flesh hook");
+			if(!count_close)
+				return;
+			count_close = rn2(count_close);
+			symbiote.aatyp = AT_LRCH;
+			symbiote.adtyp = AD_HOOK;
+		break;
+		//Vampiric
+		case 3:
+			// pline("vampire");
+			if(!count_close)
+				return;
+			count_close = rn2(count_close);
+			symbiote.aatyp = AT_BITE;
+			symbiote.adtyp = AD_VAMP;
+		break;
+		//Brain
+		case 4:
+			// pline("brain");
+			if(!count_close)
+				return;
+			count_close = rn2(count_close);
+			symbiote.aatyp = AT_TENT;
+			symbiote.adtyp = AD_DRIN;
+		break;
+		//Acid slash
+		case 5:
+			// pline("acid slash");
+			if(!count_close)
+				return;
+			count_close = rn2(count_close);
+			symbiote.aatyp = AT_SRPR;
+			symbiote.adtyp = AD_EACD;
+		break;
+	}
+	//Loop init
+	nmon = fmon;
+	if(!nmon){
+		if(!peace)
+			nmon = &youmonst;
+	}
+	//mdef may be null (player attacking and no monsters on level
+	while((mdef = nmon)){
+		//Loop update
+		if(mdef == &youmonst)
+			nmon = (struct monst *)0;
+		else if(mdef->nmon)
+			nmon = mdef->nmon;
+		else if(!peace)
+			nmon = &youmonst;
+		else
+			nmon = (struct monst *)0;
+
+		if(mdef->mpeaceful == peace)
+			continue;
+		dist = distmin(x(magr), y(magr), x(mdef), y(mdef));
+		if(dist > BOLT_LIM)
+			continue;
+		if(youagr ? !couldsee(x(mdef), y(mdef)) : !clear_path(x(magr), y(magr), x(mdef), y(mdef)))
+			continue;
+		if((touch_petrifies(mdef->data)
+			|| mdef->mtyp == PM_MEDUSA)
+		 && (youagr ? !Stone_resistance : !resists_ston(magr))
+		) continue;
+		
+		if(mdef->mtyp == PM_PALE_NIGHT)
+			continue;
+		if(dist <= 2){
+			if(count_close-- > 0)
+				continue;
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			return;
+		}
 	}
 }
 
@@ -5183,6 +5690,7 @@ struct monst *magr;
 	int mult = 1;
 	int ax, ay;
 	struct attack * attk;
+	struct attack attkbuff = {0};
 	boolean youagr = (magr == &youmonst);
 	boolean youdef;
 	struct permonst *pa;
@@ -5191,7 +5699,9 @@ struct monst *magr;
 	pa = youagr ? youracedata : magr->data;
 	
 	// get attack from statblock
-	attk = dmgtype_fromattack(magr->data, AD_DRST, AT_OBIT);
+	attk = mon_get_attacktype(magr, AT_OBIT, &attkbuff);
+	if(!attk)
+		return;
 	
 	if(pa->mtyp == PM_ANCIENT_NAGA){
 		max = youagr ? 5 : magr->m_id%2 ? 7 : 5;
@@ -5235,8 +5745,8 @@ struct monst *magr;
 
 		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
 			if((touch_petrifies(mdef->data)
-			 || mdef->mtyp == PM_MEDUSA)
-			 && ((!youagr && !resists_ston(magr)) || (youagr && !Stone_resistance))
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
 			) continue;
 			
 			if(mdef->mtyp == PM_PALE_NIGHT)
@@ -5245,6 +5755,80 @@ struct monst *magr;
 		
 		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
 		// Nagas have 5 or 7 snake bites
+		if(--max <= 0)
+			return;
+	}
+}
+
+void
+dokraken_mon(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int i = rnd(8),j;
+	int mult = 1;
+	int ax, ay;
+	struct attack * attk;
+	struct attack attkbuff = {0};
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	struct permonst *pa;
+	int max = 8;
+	
+	pa = youagr ? youracedata : magr->data;
+	
+	// get attack from statblock
+	attk = mon_get_attacktype(magr, AT_TENT, &attkbuff);
+	if(!attk)
+		return;
+
+	//1-8 tentacles attack, up to all of which can be vs. one target
+	max = mult = rnd(8);
+
+	//Attack all surrounding foes
+	for(j=8*mult;j>=1;j--){
+		ax = x(magr)+clockwisex[(i+j)%8];
+		ay = y(magr)+clockwisey[(i+j)%8];
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(ax, ay))
+			continue;
+		else if(onscary(ax, ay, magr))
+			continue;
+		else mdef = m_at(ax, ay);
+		
+		if(u.ux == ax && u.uy == ay)
+			mdef = &youmonst;
+		
+		if(!mdef)
+			continue;
+		
+		youdef = (mdef == &youmonst);
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(youdef && (magr->mpeaceful))
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(!youdef && imprisoned(mdef))
+			continue;
+
+		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
+			if((touch_petrifies(mdef->data)
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
+			) continue;
+			
+			if(mdef->mtyp == PM_PALE_NIGHT)
+				continue;
+		}
+		
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		// 1-8 tentacles attack
 		if(--max <= 0)
 			return;
 	}
@@ -5260,6 +5844,7 @@ struct monst *magr;
 	int i = rnd(8),j;
 	int ax, ay;
 	struct attack * attk;
+	struct attack attkbuff = {0};
 	boolean youagr = (magr == &youmonst);
 	boolean youdef;
 	struct permonst *pa;
@@ -5267,7 +5852,9 @@ struct monst *magr;
 	pa = youagr ? youracedata : magr->data;
 	
 	// get attack from statblock
-	attk = dmgtype_fromattack(magr->data, AD_PHYS, AT_TAIL);
+	attk = mon_get_attacktype(magr, AT_TAIL, &attkbuff);
+	if(!attk)
+		return;
 	
 	//Attack one foe
 	for(j=8;j>=1;j--){
@@ -5304,8 +5891,8 @@ struct monst *magr;
 
 		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
 			if((touch_petrifies(mdef->data)
-			 || mdef->mtyp == PM_MEDUSA)
-			 && ((!youagr && !resists_ston(magr)) || (youagr && !Stone_resistance))
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
 			) continue;
 			
 			if(mdef->mtyp == PM_PALE_NIGHT)
@@ -5315,6 +5902,214 @@ struct monst *magr;
 		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
 		return; //Only attack one foe
 	}
+}
+
+void
+dovines(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int i = rnd(8),j;
+	int ax, ay;
+	struct attack * attk;
+	struct attack attkbuff = {0};
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	struct permonst *pa;
+	
+	pa = youagr ? youracedata : magr->data;
+	
+	// get attack from statblock
+	attk = mon_get_attacktype(magr, AT_VINE, &attkbuff);
+	if(!attk)
+		return;
+	
+	//Attack one foe
+	for(j=8;j>=1;j--){
+		ax = x(magr)+clockwisex[(i+j)%8];
+		ay = y(magr)+clockwisey[(i+j)%8];
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(ax, ay))
+			continue;
+		else if(onscary(ax, ay, magr))
+			continue;
+		else mdef = m_at(ax, ay);
+		
+		if(u.ux == ax && u.uy == ay)
+			mdef = &youmonst;
+		
+		if(!mdef)
+			continue;
+		
+		if(mlev(magr) < 30 && rn2(31-mlev(magr))) //Vine attacks grow more likely as the moster grows more powerful.
+			continue;
+		
+		youdef = (mdef == &youmonst);
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(youdef && (magr->mpeaceful))
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(!youdef && imprisoned(mdef))
+			continue;
+
+		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
+			if((touch_petrifies(mdef->data)
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
+			) continue;
+			
+			if(mdef->mtyp == PM_PALE_NIGHT)
+				continue;
+		}
+		
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+	}
+}
+
+void
+dostarblades(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int i = rnd(8),j;
+	int ax, ay;
+	struct attack * attk;
+	struct attack attkbuff = {0};
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	struct permonst *pa;
+	
+	pa = youagr ? youracedata : magr->data;
+	
+	// get attack from statblock
+	attk = mon_get_attacktype(magr, AT_ESPR, &attkbuff);
+	if(!attk)
+		return;
+	
+	for(j=8;j>=1;j--){
+		ax = x(magr)+clockwisex[(i+j)%8];
+		ay = y(magr)+clockwisey[(i+j)%8];
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(ax, ay))
+			continue;
+		else if(onscary(ax, ay, magr))
+			continue;
+		else mdef = m_at(ax, ay);
+		
+		if(u.ux == ax && u.uy == ay)
+			mdef = &youmonst;
+		
+		if(!mdef)
+			continue;
+		
+		if(mlev(magr) < 30 && rn2(31-mlev(magr))) //Star blade attacks grow more likely as the moster grows more powerful.
+			continue;
+		
+		youdef = (mdef == &youmonst);
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(youdef && (magr->mpeaceful))
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(!youdef && imprisoned(mdef))
+			continue;
+
+		if(mdef->mtyp == PM_PALE_NIGHT)
+			continue;
+
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+	}
+}
+
+void
+dostorm(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	boolean youagr = (magr == &youmonst);
+	struct attack attkbuff = {AT_MAGC, AD_CLRC, 0, 6};
+	struct permonst *pa;
+	int spellnum = 0;
+	int range = magr->mtyp == PM_DAO_LAO_GUI_MONK ? 2 : BOLT_LIM;
+	boolean frequency_decrease = TRUE;
+	
+	pa = youagr ? youracedata : magr->data;
+
+	if(pa->mtyp == PM_GHAELE_ELADRIN){
+		spellnum = rn2(3) ? LIGHTNING : HAIL_FLURY;
+	}
+	else if(pa->mtyp == PM_LUMINOUS_CLOUD){
+		if(rn2(2) && (mlev(magr) >= 30 || !rn2(31-mlev(magr)))){
+			cast_spell(magr, (struct monst *)0, &attkbuff, MASS_CURE_CLOSE, x(magr), y(magr));
+			return;
+		}
+		spellnum = rn2(3) ? LIGHTNING : HAIL_FLURY;
+	}
+	else if(pa->mtyp == PM_CAILLEA_ELADRIN){
+		spellnum = ICE_STORM;
+	}
+	else if(pa->mtyp == PM_MOONSHADOW){
+		spellnum = STARFALL;
+	}
+	else if(pa->mtyp == PM_DAO_LAO_GUI_MONK){
+		spellnum = rn2(3) ? RAIN : rn2(3) ? LIGHTNING : HAIL_FLURY;
+		frequency_decrease = FALSE;
+	}
+	else {
+		spellnum = ACID_RAIN;
+	}
+
+	if(youagr && u.ustuck && u.uswallow){
+		cast_spell(magr, u.ustuck, &attkbuff, spellnum, x(u.ustuck), y(u.ustuck));
+		return;
+	}
+	for(mdef = fmon; mdef; mdef = mdef->nmon){
+		if(DEADMONSTER(mdef))
+			continue;
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(!youagr && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(distmin(x(magr), y(magr), x(mdef), y(mdef)) > range)
+			continue;
+
+		if(youagr && !canspotmon(mdef))
+			continue;
+		if(!youagr && !mon_can_see_mon(magr, mdef))
+			continue;
+
+		if(onscary(mdef->mx, mdef->my, magr))
+			continue;
+
+		if(!rn2(4) || (frequency_decrease && mlev(magr) < 30 && rn2(31-mlev(magr)))) //Storm attacks grow more likely as the moster grows more powerful.
+			continue;
+
+		cast_spell(magr, mdef, &attkbuff, spellnum, x(mdef), y(mdef));
+	}
+
+	if(!magr->mpeaceful && mon_can_see_you(magr)
+		&& distmin(x(magr), y(magr), u.ux, u.uy) <= range
+		&& !onscary(u.ux, u.uy, magr)
+		&& !(!rn2(4) || (frequency_decrease && mlev(magr) < 30 && rn2(31-mlev(magr))))
+	){
+		cast_spell(magr, &youmonst, &attkbuff, spellnum, u.ux, u.uy);
+	}
+
 }
 
 #endif /* OVLB */

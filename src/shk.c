@@ -1375,12 +1375,12 @@ dopay()
 
 	if ((!sk && (!Blind || Blind_telepat)) || (!Blind && !seensk)) {
       There("appears to be no shopkeeper here to receive your payment.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	if(!seensk) {
 		You_cant("see...");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	/* the usual case.  allow paying at a distance when */
@@ -1397,7 +1397,7 @@ dopay()
 		if (shkp != resident && distu(shkp->mx, shkp->my) > 2) {
 		    pline("%s is not near enough to receive your payment.",
 					     Monnam(shkp));
-		    return(0);
+		    return MOVE_CANCELLED;
 		}
 	} else {
 		struct monst *mtmp;
@@ -1408,31 +1408,31 @@ dopay()
 		cc.x = u.ux;
 		cc.y = u.uy;
 		if (getpos(&cc, TRUE, "the creature you want to pay") < 0)
-		    return 0;	/* player pressed ESC */
+		    return MOVE_CANCELLED;	/* player pressed ESC */
 		cx = cc.x;
 		cy = cc.y;
 		if(cx < 0) {
 		     pline("Try again...");
-		     return(0);
+		     return MOVE_CANCELLED;
 		}
 		if(u.ux == cx && u.uy == cy) {
 		     You("are generous to yourself.");
-		     return(0);
+		     return MOVE_CANCELLED;
 		}
 		mtmp = m_at(cx, cy);
 		if(!mtmp) {
 		     There("is no one there to receive your payment.");
-		     return(0);
+		     return MOVE_CANCELLED;
 		}
 		if(!mtmp->isshk) {
 		     pline("%s is not interested in your payment.",
 				    Monnam(mtmp));
-		     return(0);
+		     return MOVE_CANCELLED;
 		}
 		if (mtmp != resident && distu(mtmp->mx, mtmp->my) > 2) {
 		     pline("%s is too far to receive your payment.",
 				    Monnam(mtmp));
-		     return(0);
+		     return MOVE_CANCELLED;
 		}
 		shkp = mtmp;
 	}
@@ -1441,13 +1441,13 @@ dopay()
 #ifdef DEBUG
 		pline("dopay: null shkp.");
 #endif
-		return(0);
+		return MOVE_CANCELLED;
 	}
 proceed:
 	eshkp = ESHK(shkp);
 	ltmp = eshkp->robbed;
 	
-	if(!shkp->mnotlaugh) return 0;
+	if(!shkp->mnotlaugh) return MOVE_CANCELLED;
 	
 	/* wake sleeping shk when someone who owes money offers payment */
 	if (ltmp || eshkp->billct || eshkp->debit) 
@@ -1456,7 +1456,7 @@ proceed:
 	if (!shkp->mcanmove || shkp->msleeping) { /* still asleep/paralyzed */
 		pline("%s %s.", Monnam(shkp),
 		      rn2(2) ? "seems to be napping" : "doesn't respond");
-		return 0;
+		return MOVE_INSTANT;
 	}
 	
 	if(shkp != resident && NOTANGRY(shkp)) {
@@ -1506,7 +1506,7 @@ proceed:
 		    else
 			make_happy_shk(shkp, FALSE);
 		}
-		return(1);
+		return MOVE_STANDARD;
 	}
 
 	/* ltmp is still eshkp->robbed here */
@@ -1541,7 +1541,7 @@ proceed:
 #endif
 			    pline(no_money, stashed_gold ? " seem to" : "");
 			else pline(not_enough_money, mhim(shkp));
-			return(1);
+			return MOVE_STANDARD;
 		    }
 		    pline("But since %s shop has been robbed recently,",
 			  mhis(shkp));
@@ -1573,7 +1573,7 @@ proceed:
 #endif
 			    pline(no_money, stashed_gold ? " seem to" : "");
 			else pline(not_enough_money, mhim(shkp));
-			return(1);
+			return MOVE_STANDARD;
 		    }
 		    You("try to appease %s by giving %s 1000 gold pieces.",
 			x_monnam(shkp, ARTICLE_THE, "angry", 0, FALSE),
@@ -1584,12 +1584,12 @@ proceed:
 		    else
 			pline("But %s is as angry as ever.", mon_nam(shkp));
 		}
-		return(1);
+		return MOVE_STANDARD;
 	}
 	if(shkp != resident) {
 		impossible("dopay: not to shopkeeper?");
 		if(resident) setpaid(resident);
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	seenSeals = countFarSigns(shkp);
 	if(seenSeals && strcmp(shkname(shkp), "Izchak") == 0) seenSeals = 0;
@@ -1633,11 +1633,11 @@ proceed:
 	}
 	if(eshkp->pbanned){
 		pline("I'll never sell to you!");
-		return(0);
+		return MOVE_INSTANT;
 	}
 	if(seenSeals){
 		pline("I don't sell to your kind!");
-		return(0);
+		return MOVE_INSTANT;
 	}
 	/* pay debt, if any, first */
 	if(eshkp->debit) {
@@ -1664,7 +1664,7 @@ proceed:
 		    pline("But you don't%s have enough gold%s.",
 			stashed_gold ? " seem to" : "",
 			eshkp->credit ? " or credit" : "");
-		    return(1);
+		    return MOVE_STANDARD;
 		} else {
 		    if (eshkp->credit >= dtmp) {
 			eshkp->credit -= dtmp;
@@ -1715,7 +1715,7 @@ proceed:
 		You("%shave no money or credit%s.",
 				    stashed_gold ? "seem to " : "",
 				    paid ? " left" : "");
-		return(0);
+		return MOVE_INSTANT;
 	    }
 #ifndef GOLDOBJ
 	    if ((u.ugold + eshkp->credit) < cheapest_item(shkp)) {
@@ -1726,7 +1726,7 @@ proceed:
 		    eshkp->billct > 1 ? " any of" : "", plur(eshkp->billct));
 		if(stashed_gold)
 		    pline("Maybe you have some gold stashed away?");
-		return(0);
+		return MOVE_INSTANT;
 	    }
 
 	    /* this isn't quite right; it itemizes without asking if the
@@ -1750,7 +1750,7 @@ proceed:
 		    } else {
 			impossible("Shopkeeper administration out of order.");
 			setpaid(shkp);	/* be nice to the player */
-			return 1;
+			return MOVE_STANDARD;
 		    }
 		    if (pass == bp->useup && otmp->quan == bp->bquan) {
 			/* pay for used-up items on first pass and others
@@ -1762,7 +1762,7 @@ proceed:
 			if (payme_item == NULL || payme_item == otmp) {
 				switch (dopayobj(shkp, bp, &otmp, pass, itemize)) {
 					case PAY_CANT:
-						return 1;	/*break*/
+						return MOVE_STANDARD;	/*break*/
 					case PAY_BROKE:
 						paid = TRUE;
 						goto thanks;	/*break*/
@@ -1793,7 +1793,7 @@ proceed:
 	    verbalize("Thank you for shopping in %s %s!",
 		s_suffix(shkname(shkp)),
 		shtypes[eshkp->shoptype - SHOPBASE].name);
-	return(1);
+	return MOVE_STANDARD;
 }
 
 #ifdef OTHER_SERVICES
@@ -5523,13 +5523,19 @@ shk_armor_works(slang, shkp)
 					obj->otyp <= YELLOW_DRAGON_SCALES) {
 			/* dragon scales get turned into dragon scale mail */
 			Your("%s merges and hardens!", xname(obj));
-			setworn((struct obj *)0, W_ARM);
+			boolean is_worn = !!(obj->owornmask & W_ARM);
+			if (is_worn) {
+			    setworn((struct obj *)0, W_ARM);
+			}
 			/* assumes same order */
 			obj->otyp = GRAY_DRAGON_SCALE_MAIL +
 						obj->otyp - GRAY_DRAGON_SCALES;
 			obj->cursed = 0;
 			obj->known = 1;
-			setworn(obj, W_ARM);
+			long wornmask = 0L;
+			if (is_worn && canwearobj(obj, &wornmask, FALSE)) {
+			    setworn(obj, wornmask);
+			}
 			break;
 		}
 

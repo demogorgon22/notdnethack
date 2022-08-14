@@ -894,6 +894,7 @@ carrying_readable_tool()
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 		if(otmp->otyp == CANDLE_OF_INVOCATION
 			|| otmp->otyp == LIGHTSABER
+			|| otmp->otyp == BEAMSWORD
 			|| otmp->otyp == MISOTHEISTIC_PYRAMID
 			|| otmp->otyp == MISOTHEISTIC_FRAGMENT
 		)
@@ -1329,6 +1330,30 @@ register const char *let,*word;
 			(otmp->oclass == CHAIN_CLASS)))
 		|| (!strcmp(word, "attach to your spear") && !otmp->oknapped)
 		|| (!strcmp(word, "charge") && !is_chargeable(otmp))
+		|| (!strcmp(word, "give the Goat's bite") &&
+			!goat_acidable(otmp))
+		|| (!strcmp(word, "give the Goat's hunger") &&
+			!goat_droolable(otmp))
+		|| (!strcmp(word, "offer to the flame") && 
+			!sflm_offerable(otmp))
+		|| (!strcmp(word, "mirror-finish") && 
+			!sflm_mirrorable(otmp))
+		|| (!strcmp(word, "curse-proof glaze") && 
+			!sflm_glazeable(otmp))
+		|| (!strcmp(word, "reveal mortality") && 
+			!sflm_mortalable(otmp))
+		|| (!strcmp(word, "reveal true death") && 
+			!sflm_truedeathable(otmp))
+		|| (!strcmp(word, "reveal the unworthy") && 
+			!sflm_unworthyable(otmp))
+		|| (!strcmp(word, "smelt silver in the silver light") && 
+			!sflm_smeltable_silver(otmp))
+		|| (!strcmp(word, "smelt platinum in the silver light") && 
+			!sflm_smeltable_platinum(otmp))
+		|| (!strcmp(word, "smelt mithril in the silver light") && 
+			!sflm_smeltable_mithril(otmp))
+		|| (!strcmp(word, "burn in the silver flame") && 
+			!(otmp->blessed || otmp->cursed))
 		|| (!strcmp(word, "upgrade your stove with") &&
 		    (otyp != TINNING_KIT))
 		|| (!strcmp(word, "upgrade your switch with") &&
@@ -2128,10 +2153,10 @@ ddoinv()
 				checkfile(xname(otmp), 0, FALSE, TRUE, &datawin);
 				display_nhwindow(datawin, TRUE);
 				destroy_nhwindow(datawin);
-				return 0;
+				return MOVE_INSTANT;
 			}
 		}
-	return 0;
+	return MOVE_INSTANT;
 }
 
 /** Puts up a menu asking what to do with an object;
@@ -2968,6 +2993,24 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			
+			if (check_oprop(obj, OPROP_MORTW))
+			{
+				Sprintf(buf2, "Drains 1d2 levels from living intelligent targets.");
+				OBJPUTSTR(buf2);
+			}
+
+			if (check_oprop(obj, OPROP_TDTHW))
+			{
+				Sprintf(buf2, "Deals double damage plus 2d7 to undead.");
+				OBJPUTSTR(buf2);
+			}
+
+			if (check_oprop(obj, OPROP_SFUWW))
+			{
+				Sprintf(buf2, "Deals double disintegration damage to spiritual beings.");
+				OBJPUTSTR(buf2);
+			}
+
 			ADDCLASSPROP(check_oprop(obj, OPROP_PSIOW), "psionic");
 			if (buf[0] != '\0')
 			{
@@ -3582,6 +3625,7 @@ winid *datawin;
 			subclass = "facial accessory";
 			break;
 		case BOX:
+		case SARCOPHAGUS:
 		case CHEST:
 		case MAGIC_CHEST:
 		case MASSIVE_STONE_CRATE:
@@ -3804,6 +3848,8 @@ winid *datawin;
 	if (otyp == RIN_INCREASE_ACCURACY)			OBJPUTSTR("Increases your to-hit modifier.");
 	if (otyp == AMULET_VERSUS_CURSES ||
 		otyp == PRAYER_WARDED_WRAPPING ||
+		check_oprop(obj, OPROP_BCRS) ||
+		check_oprop(obj, OPROP_CGLZ) ||
 		oartifact == ART_HELPING_HAND ||
 		oartifact == ART_STAFF_OF_NECROMANCY ||
 		oartifact == ART_TREASURY_OF_PROTEUS ||
@@ -3935,6 +3981,24 @@ find_unpaid(list, last_found)
 }
 
 #ifdef SORTLOOT
+void
+munge_objnames(obj, buffer)
+	struct obj *obj;
+	char *buffer;
+{
+  if (obj->otyp == POT_WATER && obj->bknown
+	  && (obj->blessed || obj->cursed)) {
+	  Strcpy(buffer, cxname2(obj));
+	  (void) strsubst(buffer, obj->blessed ? "holy ": "unholy ", "");
+  }
+  else if (obj->otyp == POT_BLOOD) {
+	  Strcpy(buffer, "potion of blood");
+  }
+  else {
+	  Strcpy(buffer, cxname2(obj));
+  }
+}
+
 int
 sortloot_cmp(obj1, obj2)
      struct obj *obj1;
@@ -3943,12 +4007,29 @@ sortloot_cmp(obj1, obj2)
   int val1 = 0;
   int val2 = 0;
 
+  char name1[BUFSZ];
+  char name2[BUFSZ];
+
+  munge_objnames(obj1, name1);
+  munge_objnames(obj2, name2);
+
   /* Sort object names in lexicographical order. */
-  int name_cmp = strcmpi(cxname2(obj1), cxname2(obj2));
+  int name_cmp = strcmpi(name1, name2);
 
   if (name_cmp != 0) {
     return name_cmp;
   }
+
+  /* Sort potions of blood by the corpse they represent */
+  if (obj1->otyp == POT_BLOOD && obj2->otyp == POT_BLOOD) {
+	  const char *corpse_name1 = obj1->corpsenm == NON_PM
+		  ? "" : mons[obj1->corpsenm].mname;
+	  const char *corpse_name2 = obj2->corpsenm == NON_PM
+		  ? "" : mons[obj2->corpsenm].mname;
+	  name_cmp = strcmpi(corpse_name1, corpse_name2);
+	  if (name_cmp) return name_cmp;
+  }
+
   /* Sort by BUC. Map blessed to 4, uncursed to 2, cursed to 1, and unknown to 0. */
   val1 = obj1->bknown ? (obj1->blessed << 2) + ((!obj1->blessed && !obj1->cursed) << 1) + obj1->cursed : 0;
   val2 = obj2->bknown ? (obj2->blessed << 2) + ((!obj2->blessed && !obj2->cursed) << 1) + obj2->cursed : 0;
@@ -4132,9 +4213,19 @@ long* out_cnt;
 #endif /* SORTLOOT */
 
 #ifdef DUMP_LOG
-	if (want_disp)
+	if (want_disp){
 #endif
-	start_menu(win);
+		start_menu(win);
+#ifdef DUMP_LOG
+		if (!lets){
+			any.a_void = 0;
+			char invheading[QBUFSZ];
+			int wcap = weight_cap();
+			Sprintf(invheading, "Inventory: %d/%d weight (%d/52 slots)", inv_weight() + wcap, wcap, inv_cnt());
+			add_menu(win, NO_GLYPH, &any, 0, 0, ATR_BOLD, invheading, MENU_UNSELECTED);
+		}
+	}
+#endif
 nextclass:
 	classcount = 0;
 	any.a_void = 0;		/* set all bits to zero */
@@ -4461,7 +4552,7 @@ dotypeinv()
 	if (!invent && !billx) {
 #endif
 	    You("aren't carrying anything.");
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	unpaid_count = count_unpaid(invent);
 	if (flags.menu_style != MENU_TRADITIONAL) {
@@ -4471,7 +4562,7 @@ dotypeinv()
 		i = UNPAID_TYPES;
 		if (billx) i |= BILLED_TYPES;
 		n = query_category(prompt, invent, i, &pick_list, PICK_ONE);
-		if (!n) return 0;
+		if (!n) return MOVE_CANCELLED;
 		this_type = c = pick_list[0].item.a_int;
 		free((genericptr_t) pick_list);
 	    }
@@ -4512,7 +4603,7 @@ dotypeinv()
 #endif
 		if(c == '\0') {
 			clear_nhwindow(WIN_MESSAGE);
-			return 0;
+			return MOVE_CANCELLED;
 		}
 	    } else {
 		/* only one thing to itemize */
@@ -4529,14 +4620,14 @@ dotypeinv()
 		(void) doinvbill(1);
 	    else
 		pline("No used-up objects on your shopping bill.");
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	if (c == 'u') {
 	    if (unpaid_count)
 		dounpaid();
 	    else
 		You("are not carrying any unpaid objects.");
-	    return 0;
+	    return MOVE_CANCELLED;
 	}
 	if (traditional) {
 	    oclass = def_char_to_objclass(c); /* change to object class */
@@ -4544,7 +4635,7 @@ dotypeinv()
 		return doprgold();
 	    } else if (index(types, c) > index(types, '\033')) {
 		You("have no such objects.");
-		return 0;
+		return MOVE_CANCELLED;
 	    }
 	    this_type = oclass;
 	}
@@ -4552,7 +4643,7 @@ dotypeinv()
 		    (flags.invlet_constant ? USE_INVLET : 0)|INVORDER_SORT,
 		    &pick_list, PICK_NONE, this_type_only) > 0)
 	    free((genericptr_t)pick_list);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* return a string describing the dungeon feature at <x,y> if there
@@ -4672,7 +4763,7 @@ boolean picked_some;
 	    } else {
 		You("%s no objects here.", verb);
 	    }
-	    return(!!Blind);
+	    return (Blind ? MOVE_STANDARD : MOVE_INSTANT);
 	}
 	if (!skip_objects && (trap = t_at(u.ux,u.uy)) && trap->tseen)
 		There("is %s here.",
@@ -4697,7 +4788,7 @@ boolean picked_some;
 			dfeature = 0;		/* ice already identifed */
 		if (!can_reach_floor()) {
 			pline("But you can't reach it!");
-			return(0);
+			return MOVE_INSTANT;
 		}
 	}
 
@@ -4709,7 +4800,7 @@ boolean picked_some;
 		read_engr_at(u.ux, u.uy); /* Eric Backus */
 		if (!skip_objects && (Blind || !dfeature))
 		    You("%s no objects here.", verb);
-		return(!!Blind);
+		return (Blind ? MOVE_STANDARD : MOVE_INSTANT);
 	}
 	/* we know there is something here */
 
@@ -4753,7 +4844,7 @@ boolean picked_some;
 	    if (felt_cockatrice) feel_cockatrice(otmp, FALSE);
 	    read_engr_at(u.ux, u.uy); /* Eric Backus */
 	}
-	return(!!Blind);
+	return (Blind ? MOVE_STANDARD : MOVE_INSTANT);
 }
 
 /* explicilty look at what is here, including all objects */
@@ -4938,7 +5029,7 @@ doprgold()
 	    Your("wallet contains %ld %s.", umoney, currency(umoney));
 #endif
 	shopper_financial_report();
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 #endif /* OVL1 */
@@ -4956,7 +5047,7 @@ doprwep()
 		if (!uwep) You("are empty %s.", body_part(HANDED));
 		else prinv((char *)0, uwep, 0L);
 	}
-    return 0;
+    return MOVE_CANCELLED;
 }
 
 int
@@ -4985,7 +5076,7 @@ doprarm()
 		(void) display_inventory(lets, FALSE);
 	}
 	udr_enlightenment();
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 int
@@ -5002,7 +5093,7 @@ doprring()
 		lets[ct] = 0;
 		(void) display_inventory(lets, FALSE);
 	}
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 int
@@ -5012,7 +5103,7 @@ dopramulet()
 		You("are not wearing an amulet.");
 	else
 		prinv((char *)0, uamul, 0L);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 STATIC_OVL boolean
@@ -5042,7 +5133,7 @@ doprtool()
 	lets[ct] = '\0';
 	if (!ct) You("are not using any tools.");
 	else (void) display_inventory(lets, FALSE);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /* '*' command; combines the ')' + '[' + '=' + '"' + '(' commands;
@@ -5060,7 +5151,7 @@ doprinuse()
 	lets[ct] = '\0';
 	if (!ct) You("are not wearing or wielding anything.");
 	else (void) display_inventory(lets, FALSE);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /*
@@ -5227,7 +5318,7 @@ doorganize()	/* inventory organizer by Del Lamb */
 	if (!flags.invlet_constant) reassign();
 	/* get a pointer to the object the user wants to organize */
 	allowall[0] = ALL_CLASSES; allowall[1] = '\0';
-	if (!(obj = getobj(allowall,"adjust"))) return(0);
+	if (!(obj = getobj(allowall,"adjust"))) return MOVE_CANCELLED;
 
 	/* initialize the list with all upper and lower case letters */
 	for (let = 'a', ix = 0;  let <= 'z';) alphabet[ix++] = let++;
@@ -5296,7 +5387,7 @@ doorganize()	/* inventory organizer by Del Lamb */
 
 	prinv(adj_type, obj, 0L);
 	update_inventory();
-	return(0);
+	return MOVE_CANCELLED;
 }
 
 /* common to display_minventory and display_cinventory */
@@ -5531,8 +5622,8 @@ u_healing_penalty()
 
 		penalty += plat_penalty/2;
 	}
-	if(u.umadness&MAD_NUDIST && !ClearThoughts && u.usanity < 100){
-		int delta = Insanity;
+	if(u.umadness&MAD_NUDIST && !BlockableClearThoughts && NightmareAware_Sanity < 100){
+		int delta = NightmareAware_Insanity;
 		penalty += (u_clothing_discomfort() * delta)/10;
 	}
 	return penalty;

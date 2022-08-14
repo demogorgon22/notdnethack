@@ -319,6 +319,8 @@ makedog()
 
 	initedog(mtmp);
 	EDOG(mtmp)->loyal = TRUE;
+	EDOG(mtmp)->waspeaceful = TRUE;
+	mtmp->mpeacetime = 0;
 	if(is_half_dragon(mtmp->data) && flags.HDbreath){
 		mtmp->mvar_hdBreath = flags.HDbreath;
 		set_mon_data(mtmp, mtmp->mtyp);
@@ -353,7 +355,7 @@ losedogs()
 		mtmp2 = mtmp->nmon;
 		if (mtmp->mux == u.uz.dnum && mtmp->muy == u.uz.dlevel 
 			&& mtmp->m_insight_level <= u.uinsight
-		    && !(mtmp->mtyp == PM_WALKING_DELIRIUM && ClearThoughts)
+		    && !(mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 		) {
 			mon_extract_from_list(mtmp, &migrating_mons);
 		    mon_arrive(mtmp, FALSE);
@@ -564,7 +566,7 @@ boolean with_you;
 		}
 	}
 	/* now that it's placed, we can resume timers (which may kill mtmp) */
-	resume_timers(mtmp->timed);
+	receive_timers(mtmp->timed);
 }
 
 /* heal monster for time spent elsewhere */
@@ -938,7 +940,7 @@ migrate_to_level(mtmp, tolev, xyloc, cc)
 	summoner_gone(mtmp, TRUE);
 
 	/* timers pause processing while mon is migrating */
-	pause_timers(mtmp->timed);
+	migrate_timers(mtmp->timed);
 
 	relmon(mtmp);
 	mtmp->nmon = migrating_mons;
@@ -1019,7 +1021,7 @@ register struct obj *obj;
 	boolean herbi = herbivorous(mon->data);
 	boolean starving;
 
-	if (is_quest_artifact(obj) || obj_resists(obj, 0, 95))
+	if (is_quest_artifact(obj) || obj_resists(obj, 0, 100))
 	    return (obj->cursed ? TABU : APPORT);
 
 	switch(obj->oclass) {
@@ -1156,6 +1158,121 @@ rock:
 	}
 }
 
+/* return whether the given monster can eat the food */
+/* fungi will eat even tainted food */
+boolean
+is_edible_mon(mon,obj)
+struct monst *mon;
+register struct obj *obj;
+{
+	boolean carni = carnivorous(mon->data);
+	boolean herbi = herbivorous(mon->data);
+	boolean metal = metallivorous(mon->data);
+	boolean magic = magivorous(mon->data);
+
+	if (is_quest_artifact(obj) || obj_resists(obj, 0, 100))
+	    return 0;
+
+	if (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))
+		return 0;
+	
+	if (hates_unholy_mon(mon) && is_unholy(obj))
+		return 0;
+	if (hates_unholy_mon(mon) && obj->obj_material == GREEN_STEEL)
+		return 0;
+	if (hates_unblessed_mon(mon) && (is_unholy(obj) || obj->blessed))
+		return 0;
+
+	if(metal){
+		if(hates_silver(mon->data) && obj->obj_material == SILVER)
+			return 0;
+	    if (hates_iron(mon->data) && is_iron_obj(obj))
+			return 0;
+		if(mon->mtyp == PM_RUST_MONSTER)
+			return is_rustprone(obj);
+		else return is_metallic(obj);
+	}
+
+	if(magic) return incantifier_edible(obj);
+
+	switch(obj->oclass) {
+	case FOOD_CLASS:
+
+	    /* Ghouls only eat old corpses... yum! */
+	    if (mon->mtyp == PM_GHOUL){
+		return (obj->otyp == CORPSE && obj->corpsenm != PM_ACID_BLOB &&
+		  peek_at_iced_corpse_age(obj) + 5*rn1(20,10) <= monstermoves) ?
+			1 : 0;
+	    }
+	    /* vampires only "eat" very fresh corpses ... 
+	     * Assume meat -> blood
+	     */
+	    if (is_vampire(mon->data)) {
+		return (obj->otyp == CORPSE &&
+		  has_blood(&mons[obj->corpsenm]) && !obj->oeaten &&
+	    	  peek_at_iced_corpse_age(obj) + 5 >= monstermoves) ?
+				1 : 0;
+	    }
+
+	    if (!carni && !herbi)
+		    return 0;
+
+	    switch (obj->otyp) {
+		case TRIPE_RATION:
+		case MEATBALL:
+		case MEAT_RING:
+		case MEAT_STICK:
+		case MASSIVE_CHUNK_OF_MEAT:
+		case EGG:
+		    return carni;
+		case CORPSE:
+rock:
+		   if (peek_at_iced_corpse_age(obj) + 50L <= monstermoves
+				&& obj->corpsenm != PM_LIZARD
+				&& obj->corpsenm != PM_BABY_CAVE_LIZARD
+				&& obj->corpsenm != PM_SMALL_CAVE_LIZARD
+				&& obj->corpsenm != PM_CAVE_LIZARD
+				&& obj->corpsenm != PM_LARGE_CAVE_LIZARD
+				&& obj->corpsenm != PM_LICHEN
+				&& obj->corpsenm != PM_BEHOLDER
+				&& mon->data->mlet != S_FUNGUS
+			)
+				return 0;
+		    else if (vegan(&mons[obj->corpsenm]))
+				return herbi;
+		    else return carni;
+		case CLOVE_OF_GARLIC:
+		    return is_undead(mon->data) ? 0 : herbi;
+		case TIN:
+		    return 0;
+		case APPLE:
+		case CARROT:
+		    return herbi;
+		case BANANA:
+		    return herbi;
+
+		case K_RATION:
+		case C_RATION:
+		case CRAM_RATION:
+		case LEMBAS_WAFER:
+		case FOOD_RATION:
+			return herbi || carni; 
+
+		default:
+		    return (obj->otyp > SLIME_MOLD ? carni : herbi);
+	    }
+	default:
+		if (is_vampire(mon->data) &&
+		obj->otyp == POT_BLOOD && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
+			return 1;
+	    if (herbi && !carni && (obj->otyp == SHEAF_OF_HAY || obj->otyp == SEDGE_HAT))
+			return 1;
+	    if ((mon->mtyp == PM_GELATINOUS_CUBE || mon->mtyp == PM_ANCIENT_OF_CORRUPTION) && is_organic(obj))
+			return 1;
+	}
+	return 0;
+}
+
 #endif /* OVL1 */
 #ifdef OVLB
 
@@ -1225,6 +1342,8 @@ dog_limit()
 	int n = ACURR(A_CHA)/3;
 	if(u.ufirst_know)
 		n += 3;
+	if(uring_art(ART_SHARD_FROM_MORGOTH_S_CROWN))
+		n += 6;
 	return n;
 }
 
@@ -1443,13 +1562,14 @@ boolean be_peaceful;
 }
 
 struct monst *
-make_pet_minion(mtyp,godnum)
+make_pet_minion(mtyp,godnum, is_summoned)
 int mtyp;
 int godnum;
+boolean is_summoned;
 {
     register struct monst *mon;
     register struct monst *mtmp2;
-	mon = makemon_full(&mons[mtyp], u.ux, u.uy, NO_MM_FLAGS, -1, god_faction(godnum));
+	mon = makemon_full(&mons[mtyp], u.ux, u.uy, is_summoned ? MM_ESUM : NO_MM_FLAGS, -1, god_faction(godnum));
     if (!mon) return 0;
     /* now tame that puppy... */
 	add_mx(mon, MX_EDOG);

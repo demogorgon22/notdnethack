@@ -490,7 +490,7 @@ unsigned int type;
 	
        case PM_GRAND_MASTER:
        case PM_MASTER_KAEN:
-          return (rn2(2) ? WEAKEN_YOU : EARTHQUAKE);
+          return (!rn2(3) ? MON_AURA_BOLT : rn2(2) ? WEAKEN_YOU : EARTHQUAKE);
 
        case PM_MINION_OF_HUHETOTL:
            return (rn2(2) ? CURSE_ITEMS : (rn2(2) ? DESTRY_WEPN : DROP_BOULDER));
@@ -581,7 +581,6 @@ unsigned int type;
 	case PM_ALIGNED_PRIEST:
 	case PM_HIGH_PRIEST:
 	case PM_ARCH_PRIEST:
-	case PM_ABBOT:
 		quake = TRUE; //Casts earthquake instead of tremor
 	break;
 	case PM_STRANGER:
@@ -1123,6 +1122,14 @@ unsigned int type;
 	break;
 	case PM_GREAT_HIGH_SHAMAN_OF_KURTULMAK:
 		return SUMMON_DEVIL; 
+	case PM_DOOM_KNIGHT:
+		switch(rn2(4)){
+			case 0: return BLIND_YOU;
+			case 1: return VULNERABILITY;
+			case 2: return MON_FLARE;
+			case 3: return DRAIN_LIFE;
+		}
+	break;
 	case PM_LICH__THE_FIEND_OF_EARTH:
 		if(mtmp->mvar_spList_1 > 3) mtmp->mvar_spList_1 = 0;
 		switch(mtmp->mvar_spList_1++){
@@ -1173,21 +1180,21 @@ unsigned int type;
 			if(mtmp->mvar_spList_1 > 7) mtmp->mvar_spList_1 = 0;
 			switch(mtmp->mvar_spList_1++){
 				case 0: return MON_BLIZZAGA;
-				case 1: return WEAKEN_STATS;
-				case 2: return MON_THUNDAGA;
+				case 1: return MON_THUNDAGA;
+				case 2: return !PURIFIED_EARTH ? DEATH_TOUCH : WEAKEN_STATS;
 				case 3: return CURE_SELF;
-				case 4: return HASTE_SELF;
-				case 5: return MON_FIRAGA;
-				case 6: return ICE_STORM;
+				case 4: return MON_FIRAGA;
+				case 5: return !PURIFIED_EARTH ? MON_WARP : ICE_STORM;
+				case 6: return HASTE_SELF;
 				case 7: return MON_FLARE;
 			}
 		} else {
 			if(mtmp->mvar_spList_2 > 3) mtmp->mvar_spList_2 = 0;
 			switch(mtmp->mvar_spList_2++){
-				case 0: return FIRE_PILLAR;
-				case 1: return GEYSER;
-				case 2: return MON_POISON_GAS;
-				case 3: return EARTHQUAKE;
+				case 0: return !PURIFIED_EARTH ? MON_FLARE : EARTH_CRACK;
+				case 1: return (!PURIFIED_FIRE && rn2(2)) ? STUN_YOU : FIRE_PILLAR;
+				case 2: return !PURIFIED_WATER ? ICE_STORM : GEYSER;
+				case 3: return !PURIFIED_WIND ? PLAGUE : MON_POISON_GAS;
 			}
 		}
 	break;
@@ -1216,6 +1223,34 @@ unsigned int type;
 				break;
 				case 1:
 				return DISAPPEAR;
+				break;
+			}
+	   break;
+	   case PM_DROW_ALIENIST:
+			switch (rnd(8)) {
+				case 8:
+				return MAKE_WEB;
+				break;
+				case 7:
+				return SUMMON_ALIEN;
+				break;
+				case 6:
+				return DESTRY_WEPN;
+				break;
+				case 5:
+				return DESTRY_ARMR;
+				break;
+				case 4:
+				return BLIND_YOU;
+				break;
+				case 3:
+				return PARALYZE;
+				break;
+				case 2:
+				return MON_CANCEL;
+				break;
+				case 1:
+				return PSI_BOLT;
 				break;
 			}
 	   break;
@@ -1739,6 +1774,12 @@ const char * spellname[] =
 	"INCARCERATE",
 	"MUMMY_CURSE",
 	"YELLOW_DEAD",
+	"MON_CANCEL",
+	"STARFALL",
+	//85
+	"EARTH_CRACK",
+	"AURA_BOLT",
+	"RAIN",
 };
 
 
@@ -1918,7 +1959,11 @@ int tary;
 	}
 
 	/* failure chance determined, check if attack fumbles */
-	if (force_fail || rn2(mlev(magr) * 2) < chance) {
+	if (force_fail 
+		|| rn2(mlev(magr) * 2) < chance
+		|| (magr->mtoobig && magr->m_lev < rnd(100))
+		|| (magr->msciaphilia && magr->m_lev < rnd(100) && unshadowed_square(magr->mx, magr->my))
+	) {
 		if (youagr) {
 			pline_The("air crackles around you.");
 			u.uen += mlev(magr) / 2;
@@ -2265,6 +2310,20 @@ int tary;
 				dmg /= 3;
 			return xdamagey(magr, mdef, attk, dmg);
 
+		case AD_HLUH:
+			/* message */
+			if (youdef || canspotmon(mdef)) {
+				pline("%s %s hit by a shower of corrupted missiles!",
+					youdef ? "You" : Monnam(mdef),
+					youdef ? "are" : "is"
+					);
+			}
+			if(hates_unholy_mon(mdef) && hates_holy_mon(mdef))
+				dmg *= 3;
+			else if(hates_unholy_mon(mdef) || hates_holy_mon(mdef))
+				dmg *= 2;
+			return xdamagey(magr, mdef, attk, dmg);
+
 		case AD_STAR:
 			/* message */
 			if (youdef || canspotmon(mdef)) {
@@ -2376,7 +2435,7 @@ int tary;
 				zapdata.unreflectable = ZAP_REFL_NEVER;
 				zapdata.damd = 8;
 			}
-			if (adtyp == AD_HOLY || adtyp == AD_UNHY) {
+			if (adtyp == AD_HOLY || adtyp == AD_UNHY || adtyp == AD_HLUH) {
 				zapdata.affects_floor = FALSE;
 				zapdata.phase_armor = TRUE;
 			}
@@ -2545,6 +2604,7 @@ int tary;
 	case LIGHTNING_BOLT:
 	case SLEEP:
 	case DISINT_RAY:
+	case MON_AURA_BOLT:
 		/* these are allowed to miss */
 		if (!mdef) {
 			impossible("ray spell with no mdef?");
@@ -2563,6 +2623,41 @@ int tary;
 			case LIGHTNING_BOLT:	alt_attk.adtyp = AD_ELEC; break;
 			case SLEEP:				alt_attk.adtyp = AD_SLEE; break;
 			case DISINT_RAY:		alt_attk.adtyp = AD_DISN; break;
+			case MON_AURA_BOLT:
+				if(youagr){
+					if(u.ualign.record < -3){
+						alt_attk.damn = 0;
+						alt_attk.damd = min(alt_attk.damd, 4);
+						alt_attk.adtyp = AD_UNHY;
+					}
+					else if(u.ualign.record > 3){
+						alt_attk.damn = 0;
+						alt_attk.damd = min(alt_attk.damd, 4);
+						alt_attk.adtyp = AD_HOLY; 
+					}
+					else
+						return MM_MISS;
+				}
+				else if(magr->mtyp == PM_GRAND_MASTER){
+					alt_attk.damd = 4;
+					alt_attk.adtyp = AD_HOLY;
+				}
+				else if(magr->mtyp == PM_MASTER_KAEN){
+					alt_attk.damn = 0;
+					alt_attk.damd = 4;
+					alt_attk.adtyp = AD_UNHY; 
+				}
+				else if(is_unholy_mon(magr)){
+					alt_attk.damn = 0;
+					alt_attk.damd = min(alt_attk.damd, 4);
+					alt_attk.adtyp = AD_UNHY; 
+				}
+				else {
+					alt_attk.damn = 0;
+					alt_attk.damd = min(alt_attk.damd, 4);
+					alt_attk.adtyp = AD_HOLY; 
+				}
+			break;
 			}
 			return elemspell(magr, mdef, &alt_attk, tarx, tary);
 		}
@@ -2888,6 +2983,41 @@ int tary;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case RAIN:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("rain with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("A torrent of water rains down on %s!",
+					youdef ? "you" : mon_nam(mdef));
+			}
+
+			struct obj * helm = (youdef ? uarmh : which_armor(mdef, W_ARMH));
+
+			if (helm && is_wide_helm(helm)) {
+				dmg = 0;
+				if (youagr || youdef || canseemon(mdef)) {
+					pline("It runs off the brim of %s %s.",
+						youdef ? "your" : s_suffix(mon_nam(mdef)),
+						OBJ_DESCR(objects[helm->otyp]));
+				}
+			}
+			else {
+				/* check resistance and override damage */
+				dmg = flaming(mdef->data) ? d(8, 6) : 0;
+				if (!dmg) {
+					if (youdef)
+						pline("It feels mildly uncomfortable.");
+				}
+				water_damage(youdef ? invent : mdef->minvent, FALSE, FALSE, FALSE, mdef);
+			}
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
 	case HAIL_FLURY:
 	case ICE_STORM:
 		/* ice storm is identical to hail flury, except it overrides dmg to 8d8 */
@@ -2913,6 +3043,75 @@ int tary;
 			pdmg -= max(0, (youdef ? u.udr : avg_mdr(mdef)));
 			if (pdmg < 1)
 				pdmg = 1;
+
+			/* calculate cold damage */
+			if (Cold_res(mdef)) {
+				shieldeff(x(mdef), y(mdef));
+				cdmg = 0;
+			}
+			else {
+				if (Half_spel(mdef))
+					cdmg = (cdmg + 1) / 2;
+			}
+			if (!UseInvCold_res(mdef)) {
+				destroy_item(mdef, POTION_CLASS, AD_COLD);
+			}
+
+			/* sum damage components to override dmg */
+			dmg = pdmg + cdmg;
+			/* apply u.uvaul to all */
+			if (youdef && u.uvaul_duration)
+				dmg = (dmg + 1) / 2;
+
+			/* player cold madness*/
+			if (youdef) roll_frigophobia();
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
+	case STARFALL:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("starfall with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int pdmg = d(8, 8);	/* physical */
+			int cdmg = d(4, 8);	/* cold */
+			int edmg = d(4, 8);	/* energy */
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("%s %s hit by a flury of hail and silver stars!",
+					youdef ? "You" : Monnam(mdef),
+					youdef ? "are" : "is"
+					);
+			}
+			
+			/* extra message for the silver */
+			if (hates_silver(youracedata)) {
+				pdmg += d(4, 20);/* silver */
+				if(youdef){
+					if (noncorporeal(youracedata)) {
+						pline("The silver stars sear you!");
+					}
+					else {
+						pline("The silver stars sear your %s!", body_part(BODY_FLESH));
+					}
+				}
+			}
+
+			/* calculate physical damage */
+			if (Half_phys(mdef))
+				pdmg = (pdmg + 1) / 2;
+			/* apply average DR */
+			pdmg -= max(0, (youdef ? u.udr : avg_mdr(mdef)));
+			if (pdmg < 1)
+				pdmg = 1;
+
+			/* special antimagic effect */
+			if (youdef)
+				drain_en(edmg);
+			else
+				mdef->mspec_used += edmg;
 
 			/* calculate cold damage */
 			if (Cold_res(mdef)) {
@@ -3042,6 +3241,75 @@ int tary;
 			}
 		}
 		return xdamagey(magr, mdef, attk, dmg);
+
+
+	case EARTH_CRACK:
+		/* needs direct target */
+		if (!(tarx || tary)) {
+			impossible("earth-crack spell with no target location?");
+			return MM_MISS;
+		}
+		else {
+			struct trap * ttmp = t_at(tarx, tary);
+			if(!ttmp || !(ttmp->ttyp == PIT || ttmp->ttyp == SPIKED_PIT || ttmp->ttyp == HOLE || ttmp->ttyp == TRAPDOOR)){
+				/* message */
+				pline_The("%s tremors!",
+					In_endgame(&u.uz) ? "plane" : "dungeon");
+
+				do_earthquake(tarx, tary, 0, min((mlev(magr) - 1) / 6 + 1, 8), FALSE, magr);
+
+				aggravate(); /* wake up without scaring */
+				if(couldsee(tarx, tary))
+					stop_occupation();	/* even if you weren't targeted, you certainly noticed! */
+				return MM_HIT;
+			}
+			else {
+				/*Note: May be different than the intended target!*/
+				struct monst *smdef = m_u_at(tarx, tary);
+				/* message */
+				char heshe[BUFSZ];
+				youdef = smdef == &youmonst;
+
+				/* check resistance cases and do effects */
+				if (youdef ? !u.utrap : !smdef->mtrapped) {
+					pline("The earth's maw snaps shut!");
+					deltrap(ttmp);
+					return MM_MISS;
+				}
+				else if ((youdef && (u.sealsActive & SEAL_OSE)) || (smdef == u.usteed && u.sealsActive&SEAL_BERITH && u.sealsActive&SEAL_OSE)) {
+					//phasing
+					shieldeff(x(smdef), y(smdef));
+					dmg = 0;
+				}
+				else {
+					if (rn2(mlev(magr)) > 12) {
+						dmg += *hp(smdef)/4;
+						if(youdef){
+							pline("The earth's maw chews you!");
+							killer_format = KILLED_BY;
+							killer = "the hungry earth";
+						}
+						else if(canspotmon(smdef)){
+							pline("The earth's maw chews %s!", mon_nam(smdef));
+						}
+						if(youdef || smdef == u.usteed)
+							set_wounded_legs(BOTH_SIDES, (int)HWounded_legs + rn1(100,50));
+					}
+					else {
+						if(youdef)
+							pline("The earth's maw squeezes you!");
+						else if(canspotmon(smdef))
+							pline("The earth's maw squeezes %s!", mon_nam(smdef));
+						dmg /= 4; //still take damage
+					}
+				}
+				if(couldsee(tarx, tary))
+					stop_occupation();	/* even if you weren't targeted, you certainly noticed! */
+				return xdamagey(magr, smdef, attk, dmg);
+			}
+		}
+		impossible("Bad flow through crack spell handling.");
+		return MM_MISS;/*shouldn't be reached*/
 
 
 	case PLAGUE:
@@ -3641,7 +3909,7 @@ int tary;
 			case MON_BLIZZARA:
 			case MON_BLIZZAGA:
 				adtyp = AD_COLD;
-				color = EXPL_FIERY;
+				color = EXPL_FROSTY;
 				break;
 			case MON_THUNDARA:
 			case MON_THUNDAGA:
@@ -3677,7 +3945,7 @@ int tary;
 				}
 			}
 		}
-		return MM_HIT | ((mdef && DEADMONSTER(mdef)) ? MM_DEF_DIED : 0);
+		return MM_HIT | ((mdef && DEADMONSTER(mdef)) ? MM_DEF_DIED : 0) | ((magr && DEADMONSTER(magr)) ? MM_AGR_DIED : 0);
 
 	case MON_FLARE:
 		if (!(tarx || tary)) {
@@ -3693,7 +3961,7 @@ int tary;
 			explode(tarx, tary, AD_PHYS, MON_EXPLODE, dmg, EXPL_FROSTY, 2);
 			dmg = 0;
 		}
-		return MM_HIT | ((mdef && DEADMONSTER(mdef)) ? MM_DEF_DIED : 0);
+		return MM_HIT | ((mdef && DEADMONSTER(mdef)) ? MM_DEF_DIED : 0) | ((magr && DEADMONSTER(magr)) ? MM_AGR_DIED : 0);
 
 	case PRISMATIC_SPRAY:
 		if (!(tarx || tary)) {
@@ -3728,6 +3996,7 @@ int tary;
 				}
 			}
 		}
+		return MM_HIT | ((mdef && DEADMONSTER(mdef)) ? MM_DEF_DIED : 0) | ((magr && DEADMONSTER(magr)) ? MM_AGR_DIED : 0);
 
 //////////////////////////////////////////////////////////////////////////////////////
 // CLOUDS
@@ -3813,7 +4082,13 @@ int tary;
 			else {
 				if (canseemon(magr))
 					pline("%s looks better.", Monnam(magr));
-				*hp(magr) += d(dmn, 8);
+				if(magr->mtyp == PM_CHAOS){
+					//Chaos could heal himself fully, but lets not do that.
+					*hp(magr) += 999;
+				}
+				else {
+					*hp(magr) += d(dmn, 8);
+				}
 				if (*hp(magr) > *hpmax(magr))
 					*hp(magr) = *hpmax(magr);
 			}
@@ -4188,6 +4463,16 @@ int tary;
 			mk_yellow_undead(&mm, TRUE, NO_MINVENT, YELLOW_FACTION);
 			stop_occupation();
 		}
+		return MM_HIT;
+
+	case MON_CANCEL:
+		if (!mdef) {
+			impossible("debuff spell with no target?");
+			return MM_MISS;
+		}
+		if(!foundem)
+			return MM_MISS;
+		cancel_monst(mdef, (struct obj	*)0, youagr, TRUE, FALSE,0);
 		return MM_HIT;
 
 	case SUMMON_MONS:
@@ -4745,7 +5030,7 @@ int tary;
 
 	case DRAIN_ENERGY:
 		if (!mdef) {
-			impossible("nightmare with no target?");
+			impossible("drain energy with no target?");
 			return MM_MISS;
 		}
 		else {
@@ -4977,7 +5262,7 @@ int tary;
 			}
 			else if (!oresist_disintegration(smarm)){
 				if (smarm->spe <= -1 * a_acdr(objects[smarm->otyp])) {
-					youdef ? destroy_arm(smarm) : destroy_marm(mdef, smarm);
+					destroy_marm(mdef, smarm);
 				}
 				else {
 					dmg = rnd(4);
@@ -5305,6 +5590,7 @@ int spellnum;
 	case FIRE_PILLAR:
 	case GEYSER:
 	case ACID_RAIN:
+	case RAIN:
 	case HAIL_FLURY:
 	case ICE_STORM:
 	case DEATH_TOUCH:
@@ -5319,6 +5605,8 @@ int spellnum;
 	case MON_WARP_THROW:
 	case DROP_BOULDER:
 	case DISINT_RAY:
+	case STARFALL:
+	case MON_AURA_BOLT:
 		return TRUE;
 	default:
 		break;
@@ -5347,12 +5635,14 @@ int spellnum;
 	case SOLID_FOG:
 	case EARTHQUAKE:
 	case TREMOR:
+	case EARTH_CRACK:
 	/* also directed attack spells */
 	case MAGIC_MISSILE:
 	case CONE_OF_COLD:
 	case LIGHTNING_BOLT:
 	case SLEEP:
 	case DISINT_RAY:
+	case MON_AURA_BOLT:
 		return TRUE;
 	default:
 		break;
@@ -5440,6 +5730,7 @@ int spellnum;
 	case INCARCERATE:
 	case DARKNESS:
 	case MAKE_WEB:
+	case MON_CANCEL:
 		return TRUE;
 	default:
 		break;
@@ -5531,7 +5822,7 @@ int tary;
 
 	/* earthquake should not be cast in the endgame (even for the plane of earth?) */
 	///The wizard can't even cast this anyway :(
-	if ((spellnum == EARTHQUAKE || spellnum == TREMOR) && In_endgame(&u.uz))
+	if ((spellnum == EARTHQUAKE || spellnum == TREMOR || spellnum == EARTH_CRACK) && In_endgame(&u.uz))
 		return TRUE;
 
 	/* don't do strangulation if there's no room in player's inventory */
@@ -5549,7 +5840,7 @@ int tary;
 //////////////////////////////////////////////////////////////////////////////////////
 
 	/* ray attack when monster isn't lined up */
-	if ((spellnum == MAGIC_MISSILE || spellnum == SLEEP || spellnum == CONE_OF_COLD || spellnum == LIGHTNING_BOLT || spellnum == DISINT_RAY)
+	if ((spellnum == MAGIC_MISSILE || spellnum == SLEEP || spellnum == CONE_OF_COLD || spellnum == LIGHTNING_BOLT || spellnum == MON_AURA_BOLT || spellnum == DISINT_RAY)
 		&& !clearline)
 		return TRUE;
 
@@ -5661,6 +5952,10 @@ int tary;
 	if (spellnum == EARTHQUAKE && !(tarx == x(mdef) && tary == y(mdef)))
 		return TRUE;
 
+	/* don't bother re-canceling already canceled target */
+	if (spellnum == MON_CANCEL && mdef != &youmonst && mdef->mcan)
+		return TRUE;
+
 	/* the wiz won't use the following cleric-specific or otherwise weak spells */
 	if (!youagr && magr->iswiz && (
 		spellnum == SUMMON_SPHERE || spellnum == DARKNESS ||
@@ -5712,7 +6007,7 @@ int tary;
 	if ((youdef ? Reflecting : mon_resistance(mdef, REFLECTING)) && (
 		spellnum == MAGIC_MISSILE || spellnum == SLEEP ||
 		spellnum == CONE_OF_COLD || spellnum == LIGHTNING ||
-		spellnum == LIGHTNING_BOLT
+		spellnum == LIGHTNING_BOLT || spellnum == MON_AURA_BOLT
 		))
 		return TRUE;
 	/* Elemental Resistances */

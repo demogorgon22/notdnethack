@@ -301,7 +301,7 @@ int
 done2()
 {
 	if (iflags.debug_fuzzer)
-		return 0;
+		return MOVE_CANCELLED;
 #ifdef PARANOID
 	char buf[BUFSZ];
 	int really_quit = FALSE;
@@ -328,7 +328,7 @@ done2()
 		    u.uinvulnerable = FALSE;	/* avoid ctrl-C bug -dlc */
 		    u.usleep = 0;
 		}
-		return 0;
+		return MOVE_CANCELLED;
 	}
 #if defined(WIZARD) && (defined(UNIX) || defined(VMS) || defined(LATTICE))
 	if(wizard) {
@@ -352,7 +352,7 @@ done2()
 #ifndef LINT
 	done(QUIT);
 #endif
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 #ifndef NO_SIGNAL
@@ -690,7 +690,7 @@ int how;
 		delayed_killer = 0;
 	}
 	nomovemsg = "You survived that attempt on your life.";
-	flags.move = 0;
+	flags.move |= MOVE_INSTANT;
 	if(multi > 0) multi = 0; else multi = -1;
 	if(u.utrap && u.utraptype == TT_LAVA) u.utrap = 0;
 	flags.botl = 1;
@@ -829,6 +829,91 @@ get_alignment_adj()
 		if(u.ualign.type == aligns[i].value) return aligns[i].adj;
 	}
 	return "Not applicable"; //Not An Alignment
+}
+
+boolean
+Check_crystal_lifesaving()
+{
+	if(!Black_crystal)
+		return FALSE;
+	struct obj *otmp;
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oartifact == ART_BLACK_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_CHAOS)
+			return TRUE;
+	}
+	int count = 0;
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oartifact == ART_EARTH_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_EARTH)
+			count++;
+		else if(otmp->oartifact == ART_FIRE_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_FIRE)
+			count++;
+		else if(otmp->oartifact == ART_WATER_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WATER)
+			count++;
+		else if(otmp->oartifact == ART_AIR_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WIND)
+			count++;
+
+		if(count == 4)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+STATIC_OVL void
+Use_crystal_lifesaving()
+{
+	//Use less advantageous l.s. first (the full set of 5 crystals is heavy and riskier for theft)
+	struct obj *otmp, *ec = 0, *fc = 0, *wc = 0, *ac = 0;
+	int count = 0;
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oartifact == ART_EARTH_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_EARTH){
+			ec = otmp;
+			count++;
+		}
+		else if(otmp->oartifact == ART_FIRE_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_FIRE){
+			fc = otmp;
+			count++;
+		}
+		else if(otmp->oartifact == ART_WATER_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WATER){
+			wc = otmp;
+			count++;
+		}
+		else if(otmp->oartifact == ART_AIR_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WIND){
+			ac = otmp;
+			count++;
+		}
+
+		if(count == 4){
+			pline("The four elemental crystals crack!");
+			if(ec){
+				ec->oeroded3 = 1;
+				count--;
+			}
+			if(fc){
+				fc->oeroded3 = 1;
+				count--;
+			}
+			if(wc){
+				wc->oeroded3 = 1;
+				count--;
+			}
+			if(ac){
+				ac->oeroded3 = 1;
+				count--;
+			}
+			if(count)
+				impossible("elemental crystals miscount?");
+			return;
+		}
+	}
+	//Otherwise find the black crystal
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oartifact == ART_BLACK_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_CHAOS){
+			pline("The black crystal cracks!");
+			otmp->oeroded3 = 1;
+			return;
+		}
+	}
+	impossible("Crystal lifesaving with invalid crystals!?");
 }
 
 /* Be careful not to call panic from here! */
@@ -973,6 +1058,10 @@ int how;
 		} else if(u.sealsActive&SEAL_JACK){
 			lsvd = LSVD_JACK;
 			unbind_lifesaving(SEAL_JACK);
+		} else if(Check_crystal_lifesaving()){
+			lsvd = LSVD_MISC;
+			pline("Time unwinds and twists!");
+			Use_crystal_lifesaving();
 		} else if(uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0){
 			lsvd = LSVD_MISC;
 			You("wish that hadn't happened.");

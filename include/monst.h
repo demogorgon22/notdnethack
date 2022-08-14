@@ -40,7 +40,7 @@
 #endif
 
 #define toostrong(monindx, lev) (monstr[monindx] > lev)
-#define tooweak(monindx, lev)	(monstr[monindx] < lev)
+#define tooweak(monindx, lev)	(monstr[monindx] < lev && !is_eladrin(&mons[monindx]))
 
 struct monst {
 	struct monst *nmon;
@@ -159,8 +159,7 @@ struct monst {
 	Bitfield(menvy,1);/* wants only others stuff */ /*94*/
 	/*Monster madnesses*/
 	Bitfield(msanctity,1);/* can't attack women */ /*95*/
-	/**unimplemented**/
-	Bitfield(mgluttony,1);/* eats food */ /*96*/
+	/** Needs improvement **/ Bitfield(mgluttony,1);/* eats food */ /*96*/
 	Bitfield(mfrigophobia,1);/* won't cross ice */ /*97*/
 	Bitfield(mcannibal,1);/* attacks same race, eats corpses */ /*98*/
 	Bitfield(mrage,1);/* berserk plus morale*/ /*99*/
@@ -175,7 +174,7 @@ struct monst {
 	Bitfield(mparanoid,1);/* attacks the wrong squares */ /*108*/
 	Bitfield(mtalons,1);/* won't use items */ /*109*/
 	Bitfield(mdreams,1);/* blasted by cthulhu while asleep */ /*110*/
-	Bitfield(mscaiaphilia,1);/* won't move into the light */ /*111*/
+	Bitfield(msciaphilia,1);/* elevated spell failure and lowered accuracy while not in shadows */ /*111*/
 	Bitfield(mforgetful,1);/* can't use wizard spellcasting */ /*112*/
 	Bitfield(mapostasy,1);/* can't use priest spellcasting */ /*113*/
 	Bitfield(mtoobig,1);/* elevated spell failure */ /*114*/
@@ -187,6 +186,7 @@ struct monst {
 #define DEADMONSTER(mon)	((mon) != &youmonst && (mon)->deadmonster)
 	Bitfield(mnoise,1); /* made noise in the last turn (dochug) */ /*118*/
 	Bitfield(marriving,1); /* monster is arriving on the level and should be placed when there's space */ /*119*/
+	Bitfield(mflamemarked,1); /* monster is arriving on the level and should be placed when there's space */ /*119*/
 	
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
@@ -270,7 +270,8 @@ struct monst {
 #define	FALLEN_TEMPLATE	19	/* fallen angel template */
 #define WORLD_SHAPER	20	/* plane-of-earth nastify */
 #define	WHISPERING		21	/* Voidified */
-#define MAXTEMPLATE	WHISPERING
+#define MINDLESS		22	/* brain eaten by mind flayers */
+#define MAXTEMPLATE	MINDLESS
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */
@@ -317,6 +318,9 @@ struct monst {
 #define	MAX_DOLL_MASK	DOLLMAKER_MIND_BLASTS
 #define	mvar_tanninType	mvar1
 #define	mvar_ancient_breath_cooldown	mvar1
+#define	mvar_deminymph_role	mvar1
+#define	mvar_flask_charges	mvar1
+#define MAX_FLASK_CHARGES(mtmp) (mtmp->m_lev/3)
 	long mvar2;
 #define	mvar_dracaePregTimer	mvar2
 #define	mvar_spList_2	mvar2

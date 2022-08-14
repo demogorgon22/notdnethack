@@ -666,15 +666,11 @@ DOOR:locked,(35,14)
 DOOR:closed,(35,16)
 DOOR:locked,(54,10)
 
-MONSTER: '@', "Black Knight", (15,9), hostile
-#OBJECT: '[', "plate mail", (15,9)
-MONSTER: '@', "Black Knight", (15,11), hostile
-#OBJECT: '[', "plate mail", (15,11)
+MONSTER: '@', "doom knight", (15,9), hostile
+MONSTER: '@', "doom knight", (15,11), hostile
 
-MONSTER: '@', "Black Knight", (55,9), hostile
-#OBJECT: '[', "plate mail", (55,09)
-MONSTER: '@', "Black Knight", (55,11), hostile
-#OBJECT: '[', "plate mail", (55,11)
+MONSTER: '@', "doom knight", (55,9), hostile
+MONSTER: '@', "doom knight", (55,11), hostile
 
 MAZE:"chaosfrh",' '
 FLAGS: nommap,hardfloor, shortsighted
@@ -1049,7 +1045,7 @@ STAIR:(51,02),down
 MONSTER:'D',"Tiamat, the Fiend of Wind", (35, 06)
 
 CONTAINER: '(', "chest"  , (60,03)
-OBJECT:')',"tsurugi", contained, blessed, +8, "Masamune"
+OBJECT:')',"tsurugi", contained, blessed, +3, "Masamune"
 MONSTER:'G',"Warmachine", (51, 18), asleep
 
 MAZE:"chaose",' '

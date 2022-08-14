@@ -51,7 +51,10 @@ extern char *viz_rmax;			/* max could see indices */
 #define isdark(x,y)	( (!levl[x][y].lit && !(viz_array[y][x] & TEMP_LIT1 && !(viz_array[y][x] & TEMP_DRK1))) ||\
 					   (levl[x][y].lit &&  (viz_array[y][x] & TEMP_DRK1 && !(viz_array[y][x] & TEMP_LIT1))))
 
+#define unshadowed_square(x,y)	((levl[x][y].lit && !(viz_array[y][x]&TEMP_DRKMASK)) || (!levl[x][y].lit && !(viz_array[y][x]&TEMP_LITMASK)))
+
 #define xrayrange()	((Xray_vision ? 3 : -1) + (u.sealsActive&SEAL_ORTHOS ? spiritDsize() + 1 : 0) + (Race_if(PM_ETHEREALOID)?3 + u.ulevel/7:0))
+
 #define xraydist() (xrayrange() < 0 ? -1 : xrayrange()*xrayrange())
 
 /*

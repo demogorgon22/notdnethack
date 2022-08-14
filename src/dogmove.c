@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "xhity.h"
 
 #include "mfndpos.h"
 
@@ -60,9 +61,12 @@ register struct obj *otmp;
     if (is_helmet(otmp) && (!has_head_mon(mtmp) || otmp->objsize != mtmp->data->msize || !helm_match(mtmp->data,otmp)) && !is_flimsy(otmp))
         return FALSE;
     
-    if (is_shield(otmp) &&
-        (mtmp == &youmonst) ? (uwep && bimanual(uwep,youracedata)) 
-	                    : (MON_WEP(mtmp) && bimanual(MON_WEP(mtmp),mtmp->data)))
+    if (is_shield(otmp) && (
+			((mtmp == &youmonst) ? (uwep && bimanual(uwep,youracedata)) 
+							: (MON_WEP(mtmp) && bimanual(MON_WEP(mtmp),mtmp->data)))
+			|| mon_offhand_attack(mtmp)
+		)
+	)
 		return FALSE;
     
     if (is_gloves(otmp) && (otmp->objsize != mtmp->data->msize || !can_wear_gloves(mtmp->data))) return FALSE;
@@ -354,24 +358,49 @@ int x, y;
 boolean devour;
 {
 	register struct edog *edog = EDOG(mtmp);
-	boolean poly = FALSE, grow = FALSE, heal = FALSE;
+	boolean poly = FALSE, grow = FALSE, heal = FALSE, ston = FALSE,
+		tainted = FALSE, acidic = FALSE, freeze = FALSE, burning = FALSE, poison = FALSE;
 	int nutrit;
 	boolean vampiric = is_vampire(mtmp->data);
 	boolean eatonlyone = (obj->oclass == FOOD_CLASS || obj->oclass == CHAIN_CLASS || obj->oclass == POTION_CLASS);
 
-#ifdef PET_SATIATION
 	// boolean can_choke = (edog->hungrytime >= monstermoves + DOG_SATIATED && !vampiric);
-	boolean can_choke = FALSE;
-#else
-        /* disabled if pets can choke;
-	   if they're really hungry you should feed them big food! */
-	if(edog->hungrytime < monstermoves)
+	boolean can_choke = mtmp->mgluttony && !Breathless_res(mtmp);
+
+	if(!can_choke && edog->hungrytime < monstermoves)
 	    edog->hungrytime = monstermoves;
-#endif /* PET_SATIATION */
+
 	nutrit = dog_nutrition(mtmp, obj);
+	long rotted = 0;
 	poly = polyfodder(obj) && !resists_poly(mtmp->data);
 	grow = mlevelgain(obj);
 	heal = mhealup(obj);
+	ston = (obj->otyp == CORPSE || obj->otyp == EGG || obj->otyp == TIN || obj->otyp == POT_BLOOD) && obj->corpsenm >= LOW_PM && touch_petrifies(&mons[obj->corpsenm]) && !Stone_res(mtmp);
+	
+	if(obj->otyp == CORPSE){
+		int mtyp = obj->corpsenm;
+		if (mtyp != PM_LIZARD && mtyp != PM_SMALL_CAVE_LIZARD && mtyp != PM_CAVE_LIZARD 
+			&& mtyp != PM_LARGE_CAVE_LIZARD && mtyp != PM_LICHEN && mtyp != PM_BEHOLDER
+		) {
+			long age = peek_at_iced_corpse_age(obj);
+
+			rotted = (monstermoves - age)/(10L + rn2(20));
+			if (obj->cursed) rotted += 2L;
+			else if (obj->blessed) rotted -= 2L;
+		}
+
+		if(mtyp != PM_ACID_BLOB && !ston && rotted > 5L)
+			tainted = TRUE;
+		else if(acidic(&mons[mtyp]) && !Acid_res(mtmp))
+			acidic = TRUE;
+		if(freezing(&mons[mtyp]) && !Cold_res(mtmp))
+			freeze = TRUE;
+		if(burning(&mons[mtyp]) && !Fire_res(mtmp))
+			burning = TRUE;
+		if(poisonous(&mons[mtyp]) && !Poison_res(mtmp))
+			poison = TRUE;
+	}
+
 	if (devour) {
 	    if (mtmp->meating > 1) mtmp->meating /= 2;
 	    if (nutrit > 1) nutrit = (nutrit * 3) / 4;
@@ -426,6 +455,8 @@ boolean devour;
 		pline("%s spits %s out in disgust!",
 		      Monnam(mtmp), distant_name(obj,doname));
 	    }
+		can_choke = FALSE;
+		nutrit = 0;
 	} else if (vampiric && !(obj->otyp == POT_BLOOD)) {
 		/* Split Object */
 		if (obj->quan > 1L) {
@@ -449,37 +480,81 @@ boolean devour;
 		/* Take away blood nutrition */
 	    	obj->oeaten = drainlevel(obj);
 		obj->odrained = 1;
-	} else if (obj == uball) {
-	    unpunish();
-	    delobj(obj);
-	} else if (obj == uchain)
-	    unpunish();
-	else if (obj->quan > 1L && eatonlyone) {
-	    obj->quan--;
-	    obj->owt = weight(obj);
-	} else
-	    delobj(obj);
+		can_choke = FALSE;
+	} else {
+		/*These cases destroy the object, rescue its contents*/
+		struct obj *obj2;
+		while((obj2 = obj->cobj)){
+			obj_extract_self(obj2);
+			/* Compartmentalize tip() */
+			place_object(obj2, mtmp->mx, mtmp->my);
+			stackobj(obj2);
+		}
 
-#ifdef PET_SATIATION
-	if (can_choke && edog->hungrytime >= (monstermoves + 2*DOG_SATIATED))
+		if (obj == uball) {
+			unpunish();
+			delobj(obj);
+		} else if (obj == uchain)
+			unpunish();
+		else if (obj->quan > 1L && eatonlyone) {
+			obj->quan--;
+			obj->owt = weight(obj);
+		} else
+			delobj(obj);
+	}
+
+	if (can_choke && edog->hungrytime >= (monstermoves + 5*DOG_SATIATED))
 	{
 	    if (canseemon(mtmp))
 	    {
 	        pline("%s chokes over %s food!", Monnam(mtmp), mhis(mtmp));
-		pline("%s dies!", Monnam(mtmp));
+			pline("%s dies!", Monnam(mtmp));
 	    } else {
 	        You("have a very sad feeling for a moment, then it passes.");
 	    }
-            mondied(mtmp);
-	    if (mtmp->mhp > 0) return 1;
-	    return 2;
+		mondied(mtmp);
+	    if (mtmp->mhp <= 0)
+			return 2;
 	}
-#endif /* PET_SATIATION */
 
+	if (ston) {
+		xstoney((struct monst *)0, mtmp);
+	    if (mtmp->mhp <= 0)
+			return 2;
+	}
+	if(tainted){
+		int dmg = d(3, 12);
+		if(!rn2(10))
+			dmg += 100;
+		if(m_losehp(mtmp, dmg, FALSE, "tainted corpse"))
+			return 2;
+	}
+	if(acidic){
+		// if(canspotmon(mtmp))
+			// pline()
+		if(m_losehp(mtmp, rnd(15), FALSE, "acidic corpse"))
+			return 2;
+	}
+	if(freeze){
+		if(m_losehp(mtmp, d(2, 12), FALSE, "frozen corpse"))
+			return 2;
+	}
+	if(burning){
+		if(m_losehp(mtmp, rnd(20), FALSE, "burning corpse"))
+			return 2;
+	}
+	if(poison){
+		int dmg = d(1, 8);
+		if(!rn2(10))
+			dmg += 80;
+		if(m_losehp(mtmp, dmg, FALSE, "poisonous corpse"))
+			return 2;
+	}
 	if (poly) {
 	    (void) newcham(mtmp, NON_PM, FALSE,
 			   cansee(mtmp->mx, mtmp->my));
 	}
+	
 	/* limit "instant" growth to prevent potential abuse */
 	if (grow && (int) mtmp->m_lev < (int)mtmp->data->mlevel + 15) {
 	    if (!grow_up(mtmp, (struct monst *)0)) return 2;
@@ -862,6 +937,9 @@ boolean ranged;
 	
 	if(imprisoned(mtmp2)) return FALSE;
 	
+	if(mtmp->mtame && u.peaceful_pets && mtmp2->mpeaceful)
+		return FALSE;
+
 	if(mtmp->mtame && mtmp2->mpeaceful && !u.uevent.uaxus_foe && mtmp2->mtyp == PM_AXUS)
 		return FALSE;
 	
@@ -883,29 +961,32 @@ boolean ranged;
 	if(mtmp2->mtyp == PM_BEAUTEOUS_ONE && mtmp->mpeaceful == mtmp2->mpeaceful)
 		return FALSE;
 	
-    return !((!ranged &&
-#ifdef BARD
-                (int)mtmp2->m_lev >= (int)mtmp->m_lev+2 + (mtmp->encouraged)*2 &&
-#else
-                (int)mtmp2->m_lev >= (int)mtmp->m_lev+2 &&
-#endif
-		!(mon_attacktype(mtmp, AT_EXPL) || extra_nasty(mtmp->data))) ||
+    return !(
 		(!ranged &&
-		 mtmp2->mtyp == PM_FLOATING_EYE && rn2(10) &&
-		 !is_blind(mtmp) && haseyes(mtmp->data) && !is_blind(mtmp2)
-		 && (mon_resistance(mtmp,SEE_INVIS) || !mtmp2->minvis)) ||
+			(int)mtmp2->m_lev >= (int)mtmp->m_lev+2 + (mtmp->encouraged)*2 &&
+			!(mon_attacktype(mtmp, AT_EXPL) || extra_nasty(mtmp->data) || mtmp->m_lev >= max(mtmp->data->mlevel*1.5, 5))
+		) ||
 		(!ranged &&
-		 mtmp2->mtyp==PM_GELATINOUS_CUBE && rn2(10)) ||
+			 mtmp2->mtyp == PM_FLOATING_EYE && rn2(10) &&
+			 !is_blind(mtmp) && haseyes(mtmp->data) && !is_blind(mtmp2)
+			 && (mon_resistance(mtmp,SEE_INVIS) || !mtmp2->minvis)
+		) ||
 		(!ranged &&
-		 max_passive_dmg(mtmp2, mtmp) >= mtmp->mhp) ||
+			mtmp2->mtyp==PM_GELATINOUS_CUBE && rn2(10)
+		) ||
+		(!ranged &&
+			max_passive_dmg(mtmp2, mtmp) >= mtmp->mhp
+		) ||
 		((   mtmp2->mtyp == urole.guardnum
-		  || mtmp2->mtyp == urole.ldrnum
-		  || (Role_if(PM_NOBLEMAN) && (mtmp->mtyp == PM_KNIGHT || mtmp->mtyp == PM_MAID || mtmp->mtyp == PM_PEASANT) && mtmp->mpeaceful)
-		  || (Race_if(PM_DROW) && is_drow(mtmp->data) && mtmp->mpeaceful)
-		  || (Role_if(PM_KNIGHT) && (mtmp->mtyp == PM_KNIGHT) && mtmp->mpeaceful)
-		  || (Race_if(PM_GNOME) && (is_gnome(mtmp->data) && !is_undead(mtmp->data)) && mtmp->mpeaceful)
-		  || always_peaceful(mtmp2->data)) &&
-		 mtmp2->mpeaceful && !(Conflict || mtmp->mberserk)) ||
+			  || mtmp2->mtyp == urole.ldrnum
+			  || (Role_if(PM_NOBLEMAN) && (mtmp->mtyp == PM_KNIGHT || mtmp->mtyp == PM_MAID || mtmp->mtyp == PM_PEASANT) && mtmp->mpeaceful)
+			  || (Race_if(PM_DROW) && is_drow(mtmp->data) && mtmp->mpeaceful)
+			  || (Role_if(PM_KNIGHT) && (mtmp->mtyp == PM_KNIGHT) && mtmp->mpeaceful)
+			  || (Race_if(PM_GNOME) && (is_gnome(mtmp->data) && !is_undead(mtmp->data)) && mtmp->mpeaceful)
+			  || always_peaceful(mtmp2->data)
+		  ) &&
+			mtmp2->mpeaceful && !(Conflict || mtmp->mberserk)
+		) ||
 	   (!ranged && touch_petrifies(mtmp2->data) &&
 		!resists_ston(mtmp)));
 }
@@ -1107,7 +1188,7 @@ register int after;	/* this is extra fast monster movement */
 		allowflags |= OPENDOOR;
 		if (m_carrying(mtmp, SKELETON_KEY)||m_carrying(mtmp, UNIVERSAL_KEY)) allowflags |= UNLOCKDOOR;
 	}
-	if (is_giant(mtmp->data)) allowflags |= BUSTDOOR;
+	if (species_busts_doors(mtmp->data)) allowflags |= BUSTDOOR;
 	if (tunnels(mtmp->data)) allowflags |= ALLOW_DIG;
 	cnt = mfndpos(mtmp, poss, info, allowflags);
 

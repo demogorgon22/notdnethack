@@ -685,7 +685,7 @@ int mode;
 		    if (amorphous(youracedata))
 			You("try to ooze under the door, but can't squeeze your possessions through.");
 			if (iflags.autoopen && !flags.run && !Confusion && !Stunned && !Fumbling) {
-				iflags.door_opened = flags.move = doopen_indir(x, y);
+				iflags.door_opened = !(doopen_indir(x, y) & (MOVE_CANCELLED|MOVE_INSTANT));
 		    } else if (x == ux || y == uy) {
 				if (Blind || Stunned || ACURR(A_DEX) < 10 || Fumbling) {
 #ifdef STEED
@@ -1042,13 +1042,18 @@ domove()
 	    nomul(0, NULL);
 	    return;
 	}
+	
 	if(u.uswallow) {
 		if(u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20){
 			You("pass right through %s!", mon_nam(u.ustuck));
 			expels(u.ustuck, u.ustuck->data, 0);
 			u.lastmoved = monstermoves;
+			flags.move |= MOVE_MOVED;
 			return;
 		} else {
+			extern coord save_d;
+			save_d.x = u.dx;
+			save_d.y = u.dy;
 			u.dx = u.dy = 0;
 			u.ux = x = u.ustuck->mx;
 			u.uy = y = u.ustuck->my;
@@ -1130,7 +1135,7 @@ domove()
 		     (is_pool(x, y, TRUE) || is_lava(x, y)) && levl[x][y].seenv)) {
 			if(flags.run >= 2) {
 				nomul(0, NULL);
-				flags.move = 0;
+				flags.move |= MOVE_CANCELLED;
 				return;
 			} else
 				nomul(0, NULL);
@@ -1191,7 +1196,7 @@ domove()
 			       Protection_from_shape_changers)) ||
 			     sensemon(mtmp))) {
 				nomul(0, NULL);
-				flags.move = 0;
+				flags.move |= MOVE_CANCELLED;
 				return;
 			}
 		}
@@ -1280,6 +1285,7 @@ domove()
 				}
 
 			}
+			flags.move |= MOVE_ATTACKED;
 			return;
 		}
 	    }
@@ -1338,6 +1344,7 @@ domove()
 		    u.mh = -1;		/* dead in the current form */
 		    rehumanize();
 		}
+		flags.move |= MOVE_ATTACKED;
 		return;
 	}
 	if (glyph_is_invisible(levl[x][y].glyph)) {
@@ -1540,7 +1547,7 @@ domove()
 
 	if (!test_move(u.ux, u.uy, x-u.ux, y-u.uy, DO_MOVE)) {
 		if (!iflags.door_opened) {
-		    flags.move = 0;
+		    flags.move |= MOVE_INSTANT;
 		    nomul(0, NULL);
 		}
 	    return;
@@ -1552,9 +1559,12 @@ domove()
 	     * then we are entitled to our normal attack.
 	     */
 	    if (!attack2(mtmp)) {
-		flags.move = 0;
-		nomul(0, NULL);
+			flags.move |= MOVE_INSTANT;
+			nomul(0, NULL);
 	    }
+		else {
+			flags.move |= MOVE_ATTACKED;
+		}
 	    return;
 	}
 	
@@ -1634,13 +1644,8 @@ domove()
 	 * be caught by the normal falling-monster code.
 	 */
 	if (is_safepet(mtmp) && !(is_hider(mtmp->data) && mtmp->mundetected)) {
-	    /* if trapped, there's a chance the pet goes wild */
-	    if (mtmp->mtrapped) {
-			abuse_dog(mtmp);
-	    }
 	    mtmp->mundetected = 0;
 	    if (mtmp->m_ap_type) seemimic(mtmp);
-	    else if (!mtmp->mtame) newsym(mtmp->mx, mtmp->my);
 
 	    if (mtmp->mtrapped &&
 		    (trap = t_at(mtmp->mx, mtmp->my)) != 0 &&
@@ -1655,7 +1660,20 @@ domove()
 		/* can't swap places when pet won't fit thru the opening */
 		u.ux = u.ux0,  u.uy = u.uy0;	/* didn't move after all */
 		You("stop.  %s won't fit through.", upstart(y_monnam(mtmp)));
+	    } else if (mtmp->mpeaceful && !mtmp->mtame
+		    && (!goodpos(u.ux0, u.uy0, mtmp, 0)
+			|| t_at(u.ux0, u.uy0) != NULL
+			|| mtmp->m_id == quest_status.leader_m_id
+		       )) {
+		u.ux = u.ux0, u.uy = u.uy0; /* didn't move after all */
+		You("stop. %s doesn't want to swap places.",
+			upstart(y_monnam(mtmp)));
+
 	    } else {
+		/* if trapped, there's a chance the pet goes wild */
+		if (mtmp->mtrapped) {
+		    abuse_dog(mtmp);
+		}
 		char pnambuf[BUFSZ];
 
 		/* save its current description in case of polymorph */
@@ -1663,13 +1681,15 @@ domove()
 		mtmp->mtrapped = 0;
 		remove_monster(x, y);
 		place_monster(mtmp, u.ux0, u.uy0);
+		newsym(x, y);
+		newsym(u.ux0, u.uy0);
 
 		/* check for displacing it into pools and traps */
 		trap = t_at(u.ux0, u.uy0);
 		int switchcase = minliquid(mtmp) ? 2 : mintrap(mtmp);
 		switch (switchcase) {
 		case 0:
-		    You("%s %s.", mtmp->mtame ? "displaced" : "frightened",
+		    You("%s %s.", mtmp->mpeaceful ? "displaced" : "frightened",
 			pnambuf);
 		    break;
 		case 1:		/* trapped */
@@ -1769,6 +1789,7 @@ domove()
 		}
 	    }
 	}
+	flags.move |= MOVE_MOVED;
 }
 
 void
@@ -2342,7 +2363,7 @@ dopickup()
 		} else
 		    You("don't %s anything in here to pick up.",
 			  Blind ? "feel" : "see");
-		return(1);
+		return MOVE_STANDARD;
 	    } else {
 	    	int tmpcount = -count;
 		return loot_mon(u.ustuck, &tmpcount, (boolean *)0);
@@ -2352,11 +2373,11 @@ dopickup()
 	    if (Wwalking || mon_resistance(&youmonst,LEVITATION) || is_clinger(youracedata)
 			|| (Flying && !Breathless)) {
 		You("cannot dive into the water to pick things up.");
-		return(0);
+		return MOVE_CANCELLED;
 	    } else if (!Underwater) {
 		You_cant("even see the bottom, let alone pick up %s.",
 				something);
-		return(0);
+		return MOVE_CANCELLED;
 	    }
 	}
 	if (is_lava(u.ux, u.uy)) {
@@ -2364,15 +2385,15 @@ dopickup()
 			    || (mon_resistance(&youmonst,LEVITATION) || is_clinger(youracedata))
 			) {
 		You_cant("reach the bottom to pick things up.");
-		return(0);
+		return MOVE_CANCELLED;
 	    } else if (!likes_lava(youracedata)) {
 		You("would burn to a crisp trying to pick things up.");
-		return(0);
+		return MOVE_CANCELLED;
 	    }
 	}
 	if(!OBJ_AT(u.ux, u.uy)) {
 		There("is nothing here to pick up.");
-		return(0);
+		return MOVE_CANCELLED;
 	}
 	if (!can_reach_floor()) {
 #ifdef STEED
@@ -2382,7 +2403,7 @@ dopickup()
 		else
 #endif
 		You("cannot reach the %s.", surface(u.ux,u.uy));
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
  	if (traphere && traphere->tseen) {
@@ -2394,11 +2415,11 @@ dopickup()
 		if ((traphere->ttyp == PIT || traphere->ttyp == SPIKED_PIT) &&
 		     (!u.utrap || (u.utrap && u.utraptype != TT_PIT)) && !Flying) {
 			You("cannot reach the bottom of the pit.");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 	}
 
-	return (pickup(-count));
+	return (pickup(-count)) ? MOVE_STANDARD : MOVE_CANCELLED;
 }
 
 #endif /* OVLB */
@@ -2455,7 +2476,7 @@ lookaround()
 		  (mtmp->mappearance == S_hcdoor ||
 		   mtmp->mappearance == S_vcdoor))) {
 	    if(x != u.ux && y != u.uy) continue;
-	    if(flags.run != 1) goto stop;
+	    if(flags.run != 1 && !flags.travel) goto stop;
 	    goto bcorr;
 	} else if (levl[x][y].typ == CORR) {
 bcorr:
@@ -2692,6 +2713,8 @@ boolean
 adjacent_mon()
 {
 	int i, j;
+	if(u.ustuck)
+		return TRUE;
 	for(i = -1; i < 2; i++)
 		for(j = -1; j < 2; j++)
 			if(i != 0 || j != 0)
@@ -2713,6 +2736,10 @@ register int n;
 			if (uwep->osinging == OSING_DIRGE && !mtmp->mtame){
 				n -= uwep->spe + 1;
 			}
+		}
+		if(mtmp->mtame){
+			if(uring_art(ART_NARYA))
+				n += narya();
 		}
 		if (n < 0) n = 0;
 	}

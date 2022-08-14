@@ -565,6 +565,7 @@ register boolean special;
 			
 			m_dowear(mtmp, TRUE);
 			init_mon_wield_item(mtmp);
+			m_level_up_intrinsic(mtmp);
 
 			quan = rn2(3) ? rn2(3) : rn2(16);
 			while(quan--)
@@ -592,6 +593,7 @@ register boolean special;
 			
 			m_dowear(mtmp, TRUE);
 			init_mon_wield_item(mtmp);
+			m_level_up_intrinsic(mtmp);
 		}
 	    quan = rnd(3);
 	    while(quan--)
@@ -607,7 +609,7 @@ register boolean special;
 			|| (Role_if(PM_MADMAN) && In_quest(&u.uz) && (mtmp->mtyp == PM_NOBLEMAN || mtmp->mtyp == PM_NOBLEWOMAN || mtmp->mtyp == PM_HEALER))
 		){
 			for(struct obj *otmp = mtmp->minvent; otmp; otmp = otmp->nobj){
-				if(is_metal(otmp)){
+				if(is_metallic(otmp)){
 					set_material_gm(otmp, GOLD);
 				} else if(otmp->owornmask){
 					otmp->obj_color = CLR_YELLOW;
@@ -625,7 +627,7 @@ register boolean special;
 				if(otmp->otyp == STRAITJACKET){
 					curse(otmp);
 				}
-				else if(!is_metal(otmp)){
+				else if(!is_metallic(otmp)){
 					otmp->obj_color = CLR_RED;
 					otmp->oeroded3 = 1;
 				}

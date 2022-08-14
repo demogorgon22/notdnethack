@@ -103,6 +103,7 @@
 #define MM_NOTONL		0x00004000L	/* Tries to avoid being on same line as player */
 #define MM_FLEETFLEE	0x00008000L	/* Flees if adjacent if it thinks it can outrun you */
 #define MM_WEBRIP		0x00010000L	/* Tears through webs instead of getting stuck */
+#define MM_DOORBUST		0x00020000L	/* Breaks down locked doors (UNIMPLEMENTED, part of ma_giant currently!) */
 
 //Monster Thoughts and behavior
 #define MT_WANTSAMUL	0x00000001L	/* would like to steal the amulet */
@@ -145,11 +146,14 @@
 #define MT_WAITMASK		(MT_WAITFORU|MT_CLOSE)	/* waiting... */
 
 //Monster Skills
-#define MF_MARTIAL_B        0x00000001L   /* basic   martial skill -- does nothing yet? */
+#define MF_MARTIAL_B        0x00000001L   /* basic   martial skill */
 #define MF_MARTIAL_S        0x00000002L   /* skilled martial skill */
 #define MF_MARTIAL_E        0x00000004L   /* expert  martial skill */
 #define MF_BAB_FULL        	0x00000008L   /* full base attack bonus */
 #define MF_BAB_HALF        	0x00000010L   /* half base attack bonus */
+#define MF_LEVEL_30        	0x00000020L   /* can reach level 30 */
+#define MF_LEVEL_45        	0x00000040L   /* can reach level 45 */
+#define MF_PHYS_SCALING   	0x00000080L   /* recieves HD-based bonus on physical damage */
 
 //Monster Body plan
 #define MB_NOEYES		0x00000001L	/* no eyes to gaze into or blind */
@@ -179,6 +183,7 @@
 #define MB_CAN_AMULET	0x01000000L	/* can wear an amulet even if it has no head */
 #define MB_INDIGESTIBLE	0x02000000L	/* immune to purple worms */
 #define MB_INSUBSTANTIAL	0x04000000L	/* Weapons pass through the monster */
+#define MB_NOGLOVES		0x08000000L	/* can handle things but has no glove slot */
 
 #define MB_SNAKELEG	(MB_HUMANOID|MB_SLITHY)
 #define MB_CENTAUR	(MB_HUMANOID|MB_ANIMAL)
@@ -276,6 +281,7 @@
 #define MA_G_O_O		0x08000000L	/* is a Great Old One */
 #define MA_ETHEREAL		0x10000000L	/* is an ethereal being*/
 
+#define MA_XORN			0x20000000L	/* is a Xorn */
 
 #define MZ_TINY		0		/* < 2' */
 #define MZ_SMALL	1		/* 2-4' */
@@ -420,8 +426,14 @@
 #define INCARCERATE            TREMOR+1
 #define MUMMY_CURSE            INCARCERATE+1
 #define YELLOW_DEAD            MUMMY_CURSE+1
+#define MON_CANCEL             YELLOW_DEAD+1
+#define STARFALL               MON_CANCEL+1
+//85
+#define EARTH_CRACK            STARFALL+1
+#define MON_AURA_BOLT          EARTH_CRACK+1
+#define RAIN                   MON_AURA_BOLT+1
 
-#define MON_LASTSPELL          YELLOW_DEAD
+#define MON_LASTSPELL          RAIN
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

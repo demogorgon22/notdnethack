@@ -154,7 +154,7 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 	    You("cannot wield a two-handed %s while wearing a shield.",
 		is_sword(wep) ? "sword" :
 		    wep->otyp == BATTLE_AXE ? "axe" : "weapon");
-	else if (wep->otyp == ARM_BLASTER && uarmg && is_metal(uarmg))
+	else if (wep->otyp == ARM_BLASTER && uarmg && is_metallic(uarmg))
 		You("cannot fit the bracer over such bulky, rigid gloves.");
 	else if (wep->oartifact == ART_KUSANAGI_NO_TSURUGI && !(u.ulevel >= 30 || u.uhave.amulet)) {
 	    pline("Only a Shogun, or a bearer of the Amulet of Yendor, is truly worthy of wielding this sword.");
@@ -228,7 +228,7 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 		}
 	    }
 	}
-	return(res);
+	return (res) ? MOVE_STANDARD : MOVE_CANCELLED;
 }
 
 void
@@ -265,29 +265,32 @@ dowield()
 
 	/* May we attempt this? */
 	multi = 0;
-	if (cantwield(youracedata)) {
-		pline("Don't be ridiculous!");
-		return(0);
+	if (you_cantwield(youracedata)) {
+		if(!nohands(youracedata))
+			Your("%s aren't dexterous enough to properly wield weapons!", makeplural(body_part(HAND)));
+		else
+			pline("Don't be ridiculous!");
+		return MOVE_CANCELLED;
 	}
 	
 	if (!freehand()) {
 		You("have no free %s to wield anything!", body_part(HAND));
-		return(0);
+		return MOVE_CANCELLED;
 	}
 
 	/* Prompt for a new weapon */
 	if (!(wep = getobj(wield_objs, "wield")))
 		/* Cancelled */
-		return (0);
+		return MOVE_CANCELLED;
 	else if (wep == uwep) {
 	    You("are already wielding that!");
 	    if (is_weptool(wep)) unweapon = FALSE;	/* [see setuwep()] */
-		return (0);
+		return MOVE_CANCELLED;
 	} else if (welded(uwep)) {
 		weldmsg(uwep);
 		/* previously interrupted armor removal mustn't be resumed */
 		reset_remarm();
-		return (0);
+		return MOVE_INSTANT;
 	}
 
 	/* Handle no object, or object in other slot */
@@ -305,7 +308,7 @@ dowield()
 #endif
 			)) {
 		You("cannot wield that!");
-		return (0);
+		return MOVE_CANCELLED;
 	}
 
 	/* Set your new primary weapon */
@@ -325,18 +328,21 @@ int
 doswapweapon()
 {
 	register struct obj *oldwep, *oldswap;
-	int result = 0;
+	int result = MOVE_INSTANT;
 
 
 	/* May we attempt this? */
 	multi = 0;
-	if (cantwield(youracedata)) {
-		pline("Don't be ridiculous!");
-		return(0);
+	if (you_cantwield(youracedata)) {
+		if(!nohands(youracedata))
+			Your("%s aren't dexterous enough to properly wield weapons!", makeplural(body_part(HAND)));
+		else
+			pline("Don't be ridiculous!");
+		return MOVE_CANCELLED;
 	}
 	if (welded(uwep)) {
 		weldmsg(uwep);
-		return (0);
+		return MOVE_INSTANT;
 	}
 
 	/* Unwield your current secondary weapon */
@@ -363,7 +369,7 @@ doswapweapon()
 		untwoweapon();
 
 	// return (result);
-	return (0);
+	return MOVE_INSTANT;
 }
 
 int
@@ -385,7 +391,7 @@ dowieldquiver()
 	/* Prompt for a new quiver */
 	if (!(newquiver = getobj(quivee_types, "ready")))
 		/* Cancelled */
-		return (0);
+		return MOVE_CANCELLED;
 
 	/* Handle no object, or object in other slot */
 	/* Any type is okay, since we give no intrinsics anyways */
@@ -396,23 +402,23 @@ dowieldquiver()
 			setuqwep(newquiver = (struct obj *) 0);
 		} else {
 			You("already have no ammunition readied!");
-			return(0);
+			return MOVE_CANCELLED;
 		}
 	} else if (newquiver == uquiver) {
 		pline("That ammunition is already readied!");
-		return(0);
+		return MOVE_CANCELLED;
 	} else if (newquiver == uwep) {
 		/* Prevent accidentally readying the main weapon */
 		pline("%s already being used as a weapon!",
 		      !is_plural(uwep) ? "That is" : "They are");
-		return(0);
+		return MOVE_CANCELLED;
 	} else if (newquiver->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif
 			)) {
 		You("cannot ready that!");
-		return (0);
+		return MOVE_CANCELLED;
 	} else {
 		long dummy;
 
@@ -434,7 +440,7 @@ dowieldquiver()
 	/* Finally, place it in the quiver */
 	setuqwep(newquiver);
 	/* Take no time since this is a convenience slot */
-	return (0);
+	return MOVE_INSTANT;
 }
 /* use to re-wield a returned thrown weapon */
 void
@@ -496,7 +502,13 @@ const char *verb;	/* "rub",&c */
 	}
 	return FALSE;
     }
-    if (cantwield(youracedata)) {
+	if(Straitjacketed){
+	    pline(
+	     "Since your %s are trapped in a straitjacket, you cannot %s %s %s.",
+		  makeplural(body_part(HAND)), verb, more_than_1 ? "those" : "that", xname(obj));
+		return FALSE;
+	}
+    if (you_cantwield(youracedata)) {
 	You_cant("hold %s strongly enough.", more_than_1 ? "them" : "it");
 	return FALSE;
     }
@@ -580,7 +592,7 @@ test_twoweapon()
 	else if (uarms)
 		You_cant("use two weapons while wearing a shield.");
 	/* cannot fit armblaster over metal gloves */
-	else if (uswapwep && uswapwep->otyp == ARM_BLASTER && uarmg && is_metal(uarmg))
+	else if (uswapwep && uswapwep->otyp == ARM_BLASTER && uarmg && is_metallic(uarmg))
 		You("cannot fit the bracer over such bulky, rigid gloves.");
 	/* some artifacts resist being offhanded */
 	else if (uswapwep && uswapwep->oartifact && !is_twoweapable_artifact(uswapwep))
@@ -636,7 +648,7 @@ dotwoweapon()
 		You("switch to your primary weapon.");
 		u.twoweap = 0;
 		update_inventory();
-		return (0);
+		return MOVE_INSTANT;
 	}
 
 	/* May we use two weapons? */
@@ -645,9 +657,9 @@ dotwoweapon()
 		You("begin two-weapon combat.");
 		u.twoweap = 1;
 		update_inventory();
-		return 0;
+		return MOVE_INSTANT;
 	}
-	return (0);
+	return MOVE_INSTANT;
 }
 
 /*** Functions to empty a given slot ***/

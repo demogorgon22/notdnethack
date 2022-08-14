@@ -2553,6 +2553,8 @@ struct obj *otmp;
 			bonus *= 2;
 		else if(otmp->otyp == DISKOS && !arms && !mswp)
 			bonus *= 2;
+		else if(is_spear(otmp) && !arms && !mswp)
+			bonus *= 1.5;
 		else if(otmp->otyp == ISAMUSEI && !arms && !mswp)
 			bonus *= 1.5;
 		else if(otmp->otyp == KATANA && !arms && !mswp)
@@ -2657,7 +2659,7 @@ struct obj *otmp;
 	if(is_ancient_knowledge_ent(youracedata, u.ent_species))
 		bonus += ACURR(A_WIS)/4;
 	
-	if(u.umadness&MAD_RAGE && !ClearThoughts){
+	if(u.umadness&MAD_RAGE && !BlockableClearThoughts){
 		bonus += (Insanity)/10;
 	}
 	if(otmp){
@@ -3083,7 +3085,7 @@ int enhance_skill(boolean want_dump)
 	    }
 #endif
 	} while (speedy && n > 0);
-	return 0;
+	return MOVE_CANCELLED;
 }
 
 /*
@@ -3259,9 +3261,8 @@ struct obj *obj;
 		return (P_NONE);
 
 #define CHECK_ALTERNATE_SKILL(alt_skill) {\
-	if(P_SKILL(type) > P_SKILL(alt_skill));\
-	else if(P_MAX_SKILL(type) >= P_MAX_SKILL(alt_skill));\
-	else type = alt_skill;\
+	if(P_SKILL(type) < P_SKILL(alt_skill)) type = alt_skill;\
+	else if(P_SKILL(type) == P_SKILL(alt_skill) && P_MAX_SKILL(type) < P_MAX_SKILL(alt_skill)) type = alt_skill;\
 }
 	type = objects[obj->otyp].oc_skill;
 	
@@ -3282,6 +3283,21 @@ struct obj *obj;
 	}
 	else if(obj->oartifact == ART_WAND_OF_ORCUS){
 		type = P_MACE;
+	}
+	else if(obj->oartifact == ART_MASAMUNE){
+		for(int skl = P_FIRST_WEAPON; skl <= P_LAST_WEAPON; skl++){
+			/* Ranged weapon skills are intermixed with melee skills :( */
+			if(skl == P_BOW
+				|| skl == P_SLING
+				|| skl == P_FIREARM
+				|| skl == P_CROSSBOW
+				|| skl == P_DART
+				|| skl == P_SHURIKEN
+				|| skl == P_BOOMERANG
+			)
+				continue;
+			CHECK_ALTERNATE_SKILL(skl)
+		}
 	}
 
 	if(obj->otyp == DOUBLE_LIGHTSABER){

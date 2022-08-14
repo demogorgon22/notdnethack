@@ -237,6 +237,7 @@ struct obj *otmp;
 #define MUSE_UNICORN_HORN 17
 #define MUSE_POT_FULL_HEALING 18
 #define MUSE_LIZARD_CORPSE 19
+#define MUSE_LIFE_FLASK 20
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -265,6 +266,8 @@ struct monst *mtmp;
 		return FALSE;
 	if (u.uswallow && stuck) return FALSE;
 
+	if(mtmp->mtalons) return FALSE;
+	
 	m.defensive = (struct obj *)0;
 	m.has_defense = 0;
 
@@ -322,15 +325,25 @@ struct monst *mtmp;
 	}
 
 	fraction = u.ulevel < 10 ? 5 : u.ulevel < 14 ? 4 : 3;
-	if(mtmp->mhp >= mtmp->mhpmax ||
-			(mtmp->mhp >= 10 && mtmp->mhp*fraction >= mtmp->mhpmax))
+	if(mtmp->mhp >= mtmp->mhpmax
+		|| (mtmp->mhp >= 10 && mtmp->mhp*fraction >= mtmp->mhpmax)
+	){
+		if(mtmp->mhp < mtmp->mhpmax*9/10 && has_sunflask(mtmp->mtyp) && mtmp->mvar_flask_charges > 3 && mtmp->mvar_flask_charges == MAX_FLASK_CHARGES(mtmp)){
+			m.has_defense = MUSE_LIFE_FLASK;
+		    return TRUE;
+		}
 		return FALSE;
+	}
 
 	if (mtmp->mpeaceful) {
 	    if (!nohands(mtmp->data)) {
 		if ((obj = m_carrying(mtmp, POT_FULL_HEALING)) != 0) {
 		    m.defensive = obj;
 		    m.has_defense = MUSE_POT_FULL_HEALING;
+		    return TRUE;
+		}
+		if(has_sunflask(mtmp->mtyp) && mtmp->mvar_flask_charges > 0){
+			m.has_defense = MUSE_LIFE_FLASK;
 		    return TRUE;
 		}
 		if ((obj = m_carrying(mtmp, POT_EXTRA_HEALING)) != 0) {
@@ -486,6 +499,10 @@ struct monst *mtmp;
 		if(obj->otyp == POT_FULL_HEALING) {
 			m.defensive = obj;
 			m.has_defense = MUSE_POT_FULL_HEALING;
+		}
+		nomore(MUSE_LIFE_FLASK);
+		if(has_sunflask(mtmp->mtyp) && mtmp->mvar_flask_charges > 0){
+			m.has_defense = MUSE_LIFE_FLASK;
 		}
 		nomore(MUSE_POT_EXTRA_HEALING);
 		if(obj->otyp == POT_EXTRA_HEALING) {
@@ -910,8 +927,14 @@ mon_tele:
 	case MUSE_POT_FULL_HEALING:
 		mquaffmsg(mtmp, otmp);
 		if (otmp->otyp == POT_SICKNESS) unbless(otmp); /* Pestilence */
-		if(mtmp->mhpmax - mtmp->mhp > 400) mtmp->mhp += 400;
-		else mtmp->mhp = (mtmp->mhpmax += (otmp->blessed ? 8 : 4));
+		if(mtmp->mhpmax - mtmp->mhp > 400){
+			mtmp->mhp += 400;
+			if (vismon) pline("%s looks far healthier.", Monnam(mtmp));
+		}
+		else {
+			mtmp->mhp = (mtmp->mhpmax += (otmp->blessed ? 8 : 4));
+			if (vismon) pline("%s looks completely healed.", Monnam(mtmp));
+		}
 		if (!mtmp->mcansee && otmp->otyp != POT_SICKNESS) {
 			mtmp->mcansee = 1;
 			mtmp->mblinded = 0;
@@ -922,10 +945,20 @@ mon_tele:
 			mtmp->mdeafened = 0;
 			if (vismon) pline(mcha, Monnam(mtmp));
 		}
-		if (vismon) pline("%s looks completely healed.", Monnam(mtmp));
 		if (oseen) makeknown(otmp->otyp);
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
+		return 2;
+	case MUSE_LIFE_FLASK:
+		if(vismon)
+			pline("%s drinks from %s flask of warm light!", Monnam(mtmp), mhis(mtmp));
+		if(mtmp->mhpmax - mtmp->mhp > 200){
+			mtmp->mhp += min(200, mtmp->mhpmax/2);
+		}
+		else{
+			mtmp->mhp += mtmp->mhpmax/2;
+		}
+		mtmp->mvar_flask_charges--;
 		return 2;
 	case MUSE_LIZARD_CORPSE:
 		/* not actually called for its unstoning effect */
@@ -966,9 +999,10 @@ struct monst *mtmp;
 	int difficulty = monstr[(monsndx(pm))];
 	int trycnt = 0;
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || nohands(mtmp->data)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
+
     try_again:
 	switch (rn2(8 + (difficulty > 3) + (difficulty > 6) +
 				(difficulty > 8))) {
@@ -1064,6 +1098,8 @@ struct monst *mtmp;
 	
 	if(noactions(mtmp)) return 0;
 	
+	if(mtmp->mtalons) return 0;
+	
 	if (target)
 	{
 	    ranged_stuff = TRUE;
@@ -1098,9 +1134,9 @@ struct monst *mtmp;
 	if(m.has_offense==MUSE_MJOLLNIR) break;
 		}
 		nomore(MUSE_CRYSTAL_SKULL);
-		if(obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj)) {
-		m.offensive = obj;
-		m.has_offense = MUSE_CRYSTAL_SKULL;
+		if(obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj) && !get_ox(obj, OX_ESUM)) {
+			m.offensive = obj;
+			m.has_offense = MUSE_CRYSTAL_SKULL;
 		}
 		nomore(MUSE_WAN_DEATH);
 		if (!reflection_skip) {
@@ -1745,7 +1781,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))], diesize;
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || nohands(mtmp->data) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 	if (difficulty > 7 && !rn2(35)) return WAN_DEATH;
@@ -1935,6 +1971,8 @@ struct monst *mtmp;
 			|| ((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC)
 				&& FacelessCloak(which_armor(mtmp, W_ARMC)));
 
+	if(mtmp->mtalons) return 0;
+	
 	m.misc = (struct obj *)0;
 	m.has_misc = 0;
 	if (is_animal(mdat) || mindless_mon(mtmp))
@@ -2482,6 +2520,7 @@ museamnesia:
 		mtmp->m_insight_level = 0;
 		m_dowear(mtmp, TRUE);
 		init_mon_wield_item(mtmp);
+		m_level_up_intrinsic(mtmp);
 	}break;
 	case 0: return 0; /* i.e. an exploded wand */
 	default: impossible("%s wanted to perform action %d?", Monnam(mtmp),
@@ -2590,8 +2629,8 @@ struct obj *obj;
 		return abs(obj->objsize - mon->data->msize) <= 1;
 	else if(is_helmet(obj))
 		return ((!has_horns(mon->data) || obj->otyp == find_gcirclet()) && helm_match(mon->data,obj) && has_head_mon(mon) && obj->objsize == mon->data->msize) || is_flimsy(obj);
-	else if(is_shield(obj))
-		return !cantwield(mon->data);
+	else if(is_shield(obj) && !mon_offhand_attack(mon))
+		return !noshield(mon->data);
 	else if(is_gloves(obj))
 		return obj->objsize == mon->data->msize && can_wear_gloves(mon->data);
 	else if(is_boots(obj))
@@ -2619,7 +2658,7 @@ struct obj *obj;
 		case WEAPON_CLASS:
 			return likes_objs(ptr);
 		case ARMOR_CLASS:
-			return !mon->mdisrobe && likes_objs(ptr);
+			return !mad_no_armor(mon) && likes_objs(ptr);
 		case RING_CLASS:
 			return likes_magic(ptr);
 		case AMULET_CLASS:

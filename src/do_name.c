@@ -530,7 +530,7 @@ register struct obj *obj;
 	(void)mungspaces(buf);
 
 	/* relax restrictions over proper capitalization for artifacts */
-	if ((aname = artifact_name(buf, &objtyp, NULL)) != 0 && objtyp == obj->otyp)
+	if ((aname = artifact_name(buf, &objtyp, NULL)) != 0)
 		Strcpy(buf, aname);
 
 	if (obj->oartifact) {
@@ -675,6 +675,10 @@ const char *name;
 		/* property */
 		if (obj->oartifact == ART_IBITE_ARM)
 			add_oprop(obj, OPROP_CCLAW);
+		
+		/* symbol */
+		if (obj->oartifact == ART_LOMYA)
+			obj->oward = LOLTH_SYMBOL;
 		
 		/* size */
 		if (obj->oartifact && artilist[obj->oartifact].size != MZ_DEFAULT)
@@ -919,6 +923,7 @@ boolean full;
 		else if (full && template == SKELIFIED) 		Sprintf(buf2, "%s's skeleton", buf);
 		else if (full && template == CRYSTALFIED)		Sprintf(buf2, "%s's vitrean", buf);
 		else if (full && template == WHISPERING)		Sprintf(buf2, "%s's whispers", buf);
+		else if (full && template == MINDLESS) 			Sprintf(buf2, "%s's husk", buf);
 		else if (full && template == FRACTURED)			Sprintf(buf2, "%s, Witness of the Fracture", buf);
 		else if (full && template == ILLUMINATED)		Sprintf(buf2, "%s the Illuminated", buf);
 		else if (full && template == VAMPIRIC)			Sprintf(buf2, "%s, vampire", buf);
@@ -941,6 +946,7 @@ boolean full;
 		else if (full && template == SKELIFIED)			Sprintf(buf2, "%s skeleton", buf);
 		else if (full && template == CRYSTALFIED)		Sprintf(buf2, "%s vitrean", buf);
 		else if (full && template == WHISPERING)		Sprintf(buf2, "%s whispers", buf);
+		else if (full && template == MINDLESS)			Sprintf(buf2, "%s husk", buf);
 		else if (full && template == FRACTURED)			Sprintf(buf2, "fractured %s", buf);
 		else if (full && template == ILLUMINATED)		Sprintf(buf2, "illuminated %s", buf);
 		else if (full && template == VAMPIRIC)			Sprintf(buf2, "%s vampire", buf);
@@ -1063,7 +1069,7 @@ boolean called;
 	if (article == ARTICLE_YOUR && !mtmp->mtame)
 	    article = ARTICLE_THE;
 
-	do_hallu = (Hallucination) && !(suppress & SUPPRESS_HALLUCINATION);
+	do_hallu = (Hallucination || Delusion(mtmp)) && !(suppress & SUPPRESS_HALLUCINATION);
 	do_invis = mtmp->minvis && !(suppress & SUPPRESS_INVISIBLE);
 	do_it = !canspotmon(mtmp) && 
 	    article != ARTICLE_YOUR &&
@@ -1575,12 +1581,13 @@ char *outbuf;
     /* high priest(ess)'s identity is concealed on the Astral Plane,
        unless you're adjacent (overridden for hallucination which does
        its own obfuscation) */
-    if ( (mon->mtyp == PM_HIGH_PRIEST || mon->mtyp == PM_ELDER_PRIEST) && !(Hallucination) &&
-	    Is_astralevel(&u.uz) && distu(mon->mx, mon->my) > 2) {
-	Strcpy(outbuf, article == ARTICLE_THE ? "the " : "");
-	Strcat(outbuf, mon->female ? "high priestess" : "high priest");
+	if ( (mon->mtyp == PM_HIGH_PRIEST || mon->mtyp == PM_ELDER_PRIEST) && !(Hallucination || Delusion(mon)) &&
+	    Is_astralevel(&u.uz) && distu(mon->mx, mon->my) > 2
+	) {
+		Strcpy(outbuf, article == ARTICLE_THE ? "the " : "");
+		Strcat(outbuf, mon->female ? "high priestess" : "high priest");
     } else {
-	Strcpy(outbuf, x_monnam(mon, article, (char *)0, 0, TRUE));
+		Strcpy(outbuf, x_monnam(mon, article, (char *)0, 0, TRUE));
     }
     return outbuf;
 }
@@ -1932,6 +1939,9 @@ static const char * const bogusmons[] = {
 	"obelus",
 	"miniature blimp",
 	"lungfish",
+
+	"hard-to-destroy reptile",
+		"shy guy",								/* SCP Foundation */
 
         "apostrophe golem", "angry flower named Bob",
         "bonsai-kitten", "Boxxy", "lonelygirl15",

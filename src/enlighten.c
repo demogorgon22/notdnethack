@@ -131,10 +131,10 @@ doattributes()
 			spirits_enlightenment();
 			break;
 		default:
-			return 0;
+			return MOVE_INSTANT;
 		}
 	}
-	return 0;
+	return MOVE_INSTANT;
 }
 
 /* KMH, #conduct
@@ -144,14 +144,14 @@ int
 doconduct()
 {
 	show_conduct(0, FALSE);
-	return 0;
+	return MOVE_INSTANT;
 }
 
 int
 doenlightenment()
 {
 	show_enlightenment(0, FALSE);
-	return 0;
+	return MOVE_INSTANT;
 }
 
 /*
@@ -623,7 +623,7 @@ boolean dumping;
 	if(Doubt)
 		enl_msg("You ", "can't", "couldn't", " pray or use clerical magic");
 	/*** Madnesses ***/
-	if(u.usanity < 100 && !ClearThoughts){
+	if(NightmareAware_Sanity < 100 && !BlockableClearThoughts){
 		if (u.umadness&MAD_DELUSIONS){
 			you_have("a tendency to hallucinate, obscuring some monsters' true forms");
 		}
@@ -1228,7 +1228,7 @@ resistances_enlightenment()
 	if(Doubt)
 		putstr(en_win, 0, "You are having a crisis of faith.");
 	/*** Madnesses ***/
-	if(u.usanity < 100 && !ClearThoughts){
+	if(NightmareAware_Sanity < 100 && !BlockableClearThoughts){
 		char messaged = 0;
 		if (u.umadness&MAD_DELUSIONS){
 			putstr(en_win, 0, "You have a tendency to hallucinate.");

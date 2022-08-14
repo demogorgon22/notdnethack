@@ -150,6 +150,18 @@ STATIC_OVL char *SaberHilts[] = {
 /*39*/"This %s is quite intricate in its design, covered in delicate runes and inlaid with black markings.",
 };
 
+STATIC_OVL char *BeamHilts[] = {
+/*00*/"This %s is shaped like an angel statuette. The angel's upswept wings form the crossguard.",
+/*01*/"This %s is shaped like an angel statuette. The angel's unfurling wings form the handguard.",
+/*02*/"This %s is shaped like a stylized winged humanoid. The wings form the handguard.",
+/*03*/"This %s is shaped like a demonic statuette. The demon's upswept wings form the handguard.",
+/*04*/"This %s is shaped like a demonic statuette. The demon's unfurling wings form the handguard.",
+/*05*/"This %s is shaped like a many-horned draconic being. The longest horns form the crossguard.",
+/*06*/"This %s is crowned with many curling horns. The longest horns form the crossguard.",
+/*07*/"This %s is surmounted by a rising sun. The sun's rays form the crossguard.",
+};
+
+
 STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ BATTLE_AXE, "ono" },
 	{ BROADSWORD, "ninja-to" },
@@ -379,10 +391,23 @@ struct obj *otmp;
 	return SaberHilts[(int)otmp->ovar1];
 }
 
+char *
+beamsword_hiltText(otmp)
+struct obj *otmp;
+{
+	return BeamHilts[(int)otmp->ovar1];
+}
+
 int
 random_saber_hilt()
 {
 	return rn2(SIZE(SaberHilts));
+}
+
+int
+random_beam_hilt()
+{
+	return rn2(SIZE(BeamHilts));
 }
 
 char *
@@ -1012,6 +1037,8 @@ boolean dofull;
 			Strcat(buf, "disintegration-proof ");
 		if(check_oprop(obj, OPROP_BCRS) && obj->known)
 			Strcat(buf, "prayer-warded ");
+		if(check_oprop(obj, OPROP_CGLZ))
+			Strcat(buf, "glazed ");
 		
 		if (check_oprop(obj, OPROP_LESSER_ANARW) && obj->known)
 			Strcat(buf, "unruly ");
@@ -1524,16 +1551,22 @@ boolean adjective;
 		else
 			return "bronze";
 	case SILVER:
+		if(check_oprop(obj,  OPROP_SFLMW))
+			return "shining silver";
 		return "silver";
 	case GOLD:
 		if(obj->otyp == APHANACTONAN_RECORD || obj->otyp == APHANACTONAN_ARCHIVE)
 			return (adjective ? "golden-red" : "red gold");
 		else return (adjective ? "golden" : "gold");
 	case PLATINUM:
+		if(check_oprop(obj,  OPROP_SFLMW))
+			return "shining platinum";
 		return "platinum";
 	case LEAD:
 		return "lead";
 	case MITHRIL:
+		if(check_oprop(obj,  OPROP_SFLMW))
+			return "shining mithril";
 		return "mithril";
 	case PLASTIC:
 		return "plastic";
@@ -2422,6 +2455,10 @@ weapon:
 		if (!strncmp(buf, "a ", 2) && an_bool(buf + 2))
 		{
 			buf = strprepend(buf + 2, "an ");
+		}
+
+		if (iflags.invweight && (obj->where == OBJ_INVENT || wizard)) {
+			Sprintf(eos(buf), " {%d}", obj->owt);
 		}
 	}
 	return buf;
@@ -3515,6 +3552,7 @@ const char *oldstr;
 			   !BSTRCMPI(bp, p-5, "dress") ||
 			   !BSTRCMPI(bp, p-16, "descent of stars") ||
 			   !BSTRCMPI(bp, p-13, "dragon scales") ||
+			   !BSTRCMPI(bp, p-11, "sarcophagus") ||
 			   !BSTRCMPI(bp, p-6, "fungus"))
 				return bp;
 	mins:
@@ -4426,6 +4464,17 @@ int wishflags;
 		} else if (!strncmpi(bp, "ornate ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_BRIL);
 
+		} else if (!strncmpi(bp, "glazed ", l=7)) {
+			add_oprop_list(oprop_list, OPROP_SFLMW);
+		} else if (!strncmpi(bp, "silverflame ", l=12)) {
+			add_oprop_list(oprop_list, OPROP_SFLMW);
+		} else if (!strncmpi(bp, "mortalflame ", l=12)) {
+			add_oprop_list(oprop_list, OPROP_MORTW);
+		} else if (!strncmpi(bp, "trueflame ", l=10)) {
+			add_oprop_list(oprop_list, OPROP_TDTHW);
+		} else if (!strncmpi(bp, "unworthyflame ", l=14)) {
+			add_oprop_list(oprop_list, OPROP_SFUWW);
+
 		} else if (!strncmpi(bp, "magicite ", l=9)) {
 			mat = GEMSTONE; gemtype = MAGICITE_CRYSTAL;
 		} else if (!strncmpi(bp, "dilithium ", l=10)) {
@@ -4758,9 +4807,9 @@ int wishflags;
 		*wishreturn = WISH_SUCCESS;
 		return (&zeroobj);
 #else
-                otmp = mksobj(GOLD_PIECE, mkobjflags|MKOBJ_NOINIT);
+		otmp = mksobj(GOLD_PIECE, mkobjflags|MKOBJ_NOINIT);
 		otmp->quan = cnt;
-                otmp->owt = weight(otmp);
+		otmp->owt = weight(otmp);
 		flags.botl=1;
 		*wishreturn = WISH_SUCCESS;
 		return (otmp);
@@ -4805,7 +4854,8 @@ int wishflags;
 	   strncmpi(bp, "sceptre of lolth", 16) && 
 	   strncmpi(bp, "atma weapon", 11) &&
 	   strncmpi(bp, "wand of orcus", 13) &&
-	   strncmpi(bp, "shard from morgoth's crown", 26)
+	   strncmpi(bp, "shard from morgoth's crown", 26) &&
+	   strncmpi(bp, "ring of thror", 13)
 	)
 	for (i = 0; i < (int)(sizeof wrpsym); i++) {
 		register int j = strlen(wrp[i]);
@@ -5289,40 +5339,7 @@ typfnd:
 	if (typ) oclass = objects[typ].oc_class;
 
 	/* some objects are only allowed for tourists (or if it's an artifact) */
-	if (typ && !wizwish && !Role_if(PM_TOURIST) && !isartifact && (
-		typ == LIGHTSABER ||
-		typ == BEAMSWORD ||
-		typ == DOUBLE_LIGHTSABER ||
-		typ == VIBROBLADE ||
-		typ == WHITE_VIBROSWORD ||
-		typ == GOLD_BLADED_VIBROSWORD ||
-		typ == WHITE_VIBROZANBATO ||
-		typ == GOLD_BLADED_VIBROZANBATO ||
-		typ == RED_EYED_VIBROSWORD ||
-		typ == SEISMIC_HAMMER ||
-		typ == FORCE_PIKE ||
-		typ == ETHERBLADE ||
-		typ == DOUBLE_FORCE_BLADE ||
-		typ == FORCE_BLADE ||
-		typ == FORCE_SWORD ||
-		typ == WHITE_VIBROSPEAR ||
-		typ == GOLD_BLADED_VIBROSPEAR ||
-		(typ >= PISTOL && typ <= RAYGUN) ||
-		(typ >= SHOTGUN_SHELL && typ <= LASER_BEAM) ||
-		typ == FLACK_HELMET ||
-		typ == PLASTEEL_HELM ||
-		typ == PLASTEEL_ARMOR ||
-		typ == JUMPSUIT ||
-		typ == BODYGLOVE ||
-		typ == POWER_ARMOR ||
-		typ == KNUCKLE_DUSTERS ||
-		typ == PLASTEEL_GAUNTLETS ||
-		typ == PLASTEEL_BOOTS ||
-		(typ >= SENSOR_PACK && typ <= HYPOSPRAY_AMPULE) ||
-		typ == BULLET_FABBER ||
-		typ == PROTEIN_PILL
-		))
-	{
+	if (typ && !wizwish && !Role_if(PM_TOURIST) && !isartifact && is_future_otyp(typ)){
 		*wishreturn = WISH_DENIED;
 		return &zeroobj;
 	}
@@ -5402,6 +5419,7 @@ typfnd:
 		case SLIME_MOLD: otmp->spe = ftype;
 			/* Fall through */
 		case SKELETON_KEY: case UNIVERSAL_KEY: case CHEST: case BOX:
+		case SARCOPHAGUS:
 		case HEAVY_IRON_BALL: case CHAIN: case STATUE:
 			/* otmp->cobj already done in mksobj() */
 				break;
@@ -5726,11 +5744,13 @@ typfnd:
 		}
 		else {
 			/* they get the artifact */
-			if(!wizwish)
+			if(!wizwish){
 				u.uconduct.wisharti++;	/* KMH, conduct */
-			/* characters other than priests also have their god's likelyhood to grant artifacts decreased */
-			if(!Role_if(PM_PRIEST))
-				u.uartisval += arti_value(otmp);
+
+				/* characters other than priests also have their god's likelyhood to grant artifacts decreased */
+				if(!Role_if(PM_PRIEST))
+					u.uartisval += arti_value(otmp);
+			}
 		}
 	}
 	/* even more wishing abuse: if we tried to create an artifact but failed (it was already generated) we may need a new otyp */
