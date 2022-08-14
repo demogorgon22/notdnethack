@@ -12392,7 +12392,7 @@ int faction;
 	    /* We want low HP, but a high mlevel so they can attack well */
 	    mtmp->mhpmax = mtmp->mhp = d(10,8);
 	} else if (ptr->mtyp == PM_LOKOBAN_PINATA) {
-	    mtmp->mhpmax = mtmp->mhp = 15*mtmp->mhpmax;
+	    mtmp->mhpmax = mtmp->mhp = 1000;
 	} else if (ptr->mtyp == PM_LICH__THE_FIEND_OF_EARTH) {
 	    mtmp->mhpmax = mtmp->mhp = 500;
 	} else if (ptr->mtyp == PM_KARY__THE_FIEND_OF_FIRE) {
