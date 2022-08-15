@@ -129,7 +129,6 @@ OBJECT:'%',"corpse",place[2],"Elvenqueen",0
 OBJECT:'/',"light",place[2]
 OBJECT:')',"elven broadsword",place[2],uncursed,1
 OBJECT:'[',"cloak of displacement",place[2]
-OBJECT:'=',"teleportation",place[2],uncursed,3,"Nenya"
 ENGRAVING:place[2], engrave, "Elbere-"
 OBJECT:random,random,random
 OBJECT:random,random,random
