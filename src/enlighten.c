@@ -346,7 +346,12 @@ minimal_enlightenment()
 	end_menu(tmpwin, "Base Attributes");
 	n = select_menu(tmpwin, PICK_ONE, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n>0 ? selected[0].item.a_int : 0);
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 
@@ -844,6 +849,8 @@ boolean dumping;
 		if(flags.warntypeg & MG_PRINCE) you_are("aware of the presence of rulers");
 		if(flags.warntypea & MV_TELEPATHIC) you_are("aware of the presence of telepaths");
 		if(flags.warntypea & MA_WERE) you_are("aware of the presence of werecreatures");
+		if(flags.warntypea & MA_G_O_O) you_are("aware of the presence of great old ones");
+		if(flags.warntypea & MA_XORN) you_are("aware of the presence of xorns");
 	}
 	if (Searching) you_have("automatic searching");
 	if (Clairvoyant) you_are("clairvoyant");

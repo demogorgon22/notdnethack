@@ -1837,7 +1837,7 @@ moveloop()
 					mtmp->mpeaceful = TRUE;
 				}
 				//Remove after testing (can cause "re-trapping" of untrapped monsters)
-				if(!mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP && !DEADMONSTER(mtmp)){
+				if(!mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP && !DEADMONSTER(mtmp) && mtmp != u.usteed && !(u.uswallow && mtmp == u.ustuck)){
 					impossible("Re-trapping mon %s in vivi trap",noit_mon_nam(mtmp));
 					mtmp->mtrapped = TRUE;
 				}
@@ -3460,7 +3460,12 @@ do_inheritor_menu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? selected[0].item.a_int : 0;
+	if(n > 0){
+		int inherited = selected[0].item.a_int;
+		free(selected);
+		return inherited;
+	}
+	return 0;
 }
 
 /* show "welcome [back] to nethack" message at program startup */

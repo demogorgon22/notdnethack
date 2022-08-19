@@ -697,7 +697,10 @@ boolean you_abilities;
 	
 	if(n <= 0) return MOVE_CANCELLED;
 	
-	switch (selected[0].item.a_int) {
+	int picked = selected[0].item.a_int;
+	free(selected);
+	
+	switch (picked) {
 	/* Player abilities */
 	case MATTK_U_WORD: return dowords(SPELLMENU_CAST);
 	case MATTK_U_SPELLS: return docast();
@@ -802,7 +805,9 @@ boolean you_abilities;
 			You("gyre and gimble into the %s.", surface(u.ux,u.uy));
 			if (typ != ROOM) {
 				lev->typ = typ;
-				if (ttmp) (void) delfloortrap(ttmp);
+				if (ttmp) {
+					if(delfloortrap(ttmp)) ttmp = (struct trap *)0;
+				}
 				/* if any objects were frozen here, they're released now */
 				unearth_objs(u.ux, u.uy);
 
@@ -1132,9 +1137,11 @@ doMysticForm()
 	destroy_nhwindow(tmpwin);
 
 	if(n <= 0){
+		free(selected);
 		return MOVE_CANCELLED;
 	} else {
 		toggle_monk_style(selected[0].item.a_int);
+		free(selected);
 		return MOVE_INSTANT;
 	}
 
@@ -1317,9 +1324,11 @@ dofightingform()
 	destroy_nhwindow(tmpwin);
 	
 	if(n <= 0 || selectedFightingForm(selected[0].item.a_int)){
+		if(n>0) free(selected);
 		return MOVE_CANCELLED;
 	} else {
 		setFightingForm(selected[0].item.a_int);
+		free(selected);
 		return MOVE_INSTANT;
 	}
 }
@@ -1369,6 +1378,7 @@ dounmaintain()
 		pline("You cease to maintain %s.",
 			  OBJ_NAME(objects[selected[0].item.a_int]));
 		spell_unmaintain(selected[0].item.a_int);
+		free(selected);
 		return MOVE_INSTANT;
 	}
 }
@@ -3141,7 +3151,8 @@ register char *cmd;
 		prefix_seen = TRUE;
 	} else if (*cmd == '0' && iflags.num_pad) {
 	    (void)ddoinv(); /* a convenience borrowed from the PC */
-	    flags.move |= MOVE_INSTANT;
+		if(flags.move != MOVE_CANCELLED)
+			flags.move |= MOVE_INSTANT;
 	    multi = 0;
 	} else if (*cmd == CMD_TRAVEL && iflags.travelcmd) {
 	  flags.travel = 1;

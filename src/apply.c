@@ -3359,7 +3359,12 @@ sensorMenu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 STATIC_OVL int
@@ -4530,7 +4535,12 @@ struct obj *pole;
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 static const char
@@ -5642,7 +5652,12 @@ do_candle_menu()
 		n = select_menu(tmpwin, how, &selected);
 	} while (n <= 0);
 	destroy_nhwindow(tmpwin);
-	return selected[0].item.a_int;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 int
@@ -5677,7 +5692,12 @@ do_demon_lord_summon_menu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 boolean
@@ -6683,6 +6703,7 @@ struct obj *obj;
 			obj->altmode = ENG_MODE_ENR;
 		break;
 	}
+	free(selected);
 	return TRUE;
 }
 
@@ -6846,15 +6867,19 @@ boolean describe;
 	destroy_nhwindow(tmpwin);
 
 	if (n > 0 && selected[0].item.a_int == -1){
+		free(selected);
 		return pick_rune(!describe);
 	}
 
 	if (n > 0 && describe){
 		describe_rune(selected[0].item.a_int);
+		free(selected);
 		return pick_rune(describe);
 	}
 	if (n > 0 && !describe){
-		return selected[0].item.a_int;
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
 	}
 
 	return 0;
@@ -6953,7 +6978,12 @@ pick_carvee()
 	if(count) n = select_menu(tmpwin, how, &selected);
 	else You("don't have any carvable items.");
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_char : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 STATIC_OVL boolean
@@ -7049,7 +7079,12 @@ struct obj *obj;
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? &mons[selected[0].item.a_int] : (struct permonst *) 0;
+	if(n > 0){
+		struct permonst * picked = &mons[selected[0].item.a_int];
+		free(selected);
+		return picked;
+	}
+	return (struct permonst *) 0;
 }
 
 STATIC_OVL int
@@ -7316,7 +7351,12 @@ upgradeMenu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? 0x1L<<(selected[0].item.a_int - 1) :  0;
+	if(n > 0){
+		long picked = 0x1L<<(selected[0].item.a_int - 1);
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 STATIC_OVL int
@@ -8557,7 +8597,12 @@ dotrephination_menu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 STATIC_OVL int
@@ -8598,7 +8643,12 @@ dotrephination_options()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 //Returns 0 if this is the first time its called this round, 1 otherwise.
