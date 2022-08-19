@@ -2277,7 +2277,7 @@ long wp_mask;
 	if(!is_tipped_spear(otmp) || !point) return;
 	if(!(wp_mask & (W_WEP))) return;
 	int prop = get_spear_prop(otmp);
-	switch(point->otyp){
+	/*switch(point->otyp){
 		case JET:
 			if(on) You("are shrouded in a black mist!");
 			else pline("The black mist around you dissipates.");
@@ -2286,7 +2286,7 @@ long wp_mask;
 			if(on) You("are surrounded by colorful lights.");
 			else pline("The lights around you fade out.");
 			break;
-	}
+	}*/
 	if(prop){
 		if(on) u.uprops[prop].extrinsic |= wp_mask;
 		else u.uprops[prop].extrinsic &= ~wp_mask;
