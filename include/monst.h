@@ -200,6 +200,7 @@ struct monst {
 #define imprisoned(mon)	((mon)->entangled == SHACKLES || ((mon)->mtrapped && t_at((mon)->mx, (mon)->my) && t_at((mon)->mx, (mon)->my)->ttyp == VIVI_TRAP))
 #define noactions(mon)	((mon)->entangled || imprisoned(mon))
 #define helpless(mon) (mon->msleeping || !(mon->mcanmove) || !(mon->mnotlaugh) || noactions(mon))	
+#define helpless_still(mon) (mon->msleeping || !(mon->mcanmove) || noactions(mon))	
 	long mstrategy;		/* for monsters with mflag3: current strategy */
 #define STRAT_ARRIVE	0x40000000L	/* just arrived on current level */
 #define STRAT_WAITFORU	0x20000000L
@@ -271,7 +272,9 @@ struct monst {
 #define WORLD_SHAPER	20	/* plane-of-earth nastify */
 #define	WHISPERING		21	/* Voidified */
 #define MINDLESS		22	/* brain eaten by mind flayers */
-#define MAXTEMPLATE	MINDLESS
+#define POISON_TEMPLATE	23	/* turned evil by poison */
+#define MOLY_TEMPLATE	24	/* off-turn snake-bite + insight */
+#define MAXTEMPLATE	MOLY_TEMPLATE
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */

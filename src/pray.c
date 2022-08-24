@@ -3244,7 +3244,12 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 int
@@ -3504,7 +3509,12 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 int

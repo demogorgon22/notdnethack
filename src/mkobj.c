@@ -429,7 +429,7 @@ long num;
 		cpy_ox(obj, otmp, ox_id);
 		
 	if (obj->unpaid) splitbill(obj,otmp);
-	if (obj->timed) split_timers(obj->timed, TIMER_OBJECT, (genericptr_t)otmp);
+	if (obj->timed) copy_timers(obj->timed, TIMER_OBJECT, (genericptr_t)otmp);
 	if (obj_sheds_light(obj)) obj_split_light_source(obj, otmp);
 	return otmp;
 }
@@ -485,7 +485,7 @@ struct obj *obj;
 		cpy_ox(obj, otmp, ox_id);
 	
 	otmp->unpaid = 0;
-	if (obj->timed) split_timers(obj->timed, TIMER_OBJECT, (genericptr_t)otmp);
+	if (obj->timed) copy_timers(obj->timed, TIMER_OBJECT, (genericptr_t)otmp);
 	if (obj_sheds_light(obj)) obj_split_light_source(obj, otmp);
 	return otmp;
 }
@@ -660,7 +660,7 @@ int mkflags;
 #ifdef INVISIBLE_OBJECTS
 	otmp->oinvis = !rn2(1250);
 #endif
-	otmp->quan = is_multigen(otmp) ? (long) rn1(6,6) : 1L;
+	otmp->quan = is_multigen(otmp) ? ((long) rn1(4,4) + d(2,level_difficulty()+2)) : 1L;
 	if (init) {
 		switch (let) {
 		case WEAPON_CLASS:

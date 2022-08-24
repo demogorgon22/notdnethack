@@ -638,6 +638,35 @@ int template;
 		ptr->mresists |= MR_STONE;
 		/* misc: */
 		ptr->mmove = (ptr->mmove+3)/4;
+		break;
+	case POISON_TEMPLATE:
+		if(ptr->mtyp == PM_JRT_NETJER){
+			ptr->geno &= ~(G_NOCORPSE);
+			ptr->mflagst |= MT_HOSTILE;
+			ptr->mflagsg |= MG_NOTAME;
+			ptr->spe_bdr = 0;
+			ptr->bdr = -4;
+		}
+		else{
+			ptr->dac = 0;
+			ptr->pac = 0;
+			ptr->spe_hdr = 0;
+			ptr->spe_bdr = 0;
+			ptr->spe_gdr = 0;
+			ptr->spe_ldr = 0;
+			ptr->spe_fdr = 0;
+			ptr->mflagst |= MT_BOLD|MT_HOSTILE;
+		}
+		break;
+		case MOLY_TEMPLATE:
+			ptr->mflagst &= ~(MT_ANIMAL | MT_MINDLESS | MT_PEACEFUL);
+			ptr->mflagst |= MT_HOSTILE;
+			ptr->mflagsg |= MG_LORD|MG_COMMANDER|MG_NOTAME;
+			ptr->mlevel *= 1.5;
+			ptr->dac += 6;
+			ptr->pac += 6;
+			ptr->hdr += 6;
+		break;
 	}
 #undef MT_ITEMS
 
@@ -745,6 +774,24 @@ int template;
 			for (j = 0; j < (NATTK - i); j++)
 				attk[j] = attk[j + 1];
 			attk[j] = noattack;
+		}
+
+		/* some templates alter damage types */
+		if (template == POISON_TEMPLATE){
+			if(ptr->mtyp == PM_JRT_NETJER){
+				if(attk->aatyp == AT_SRPR)
+					attk->adtyp = AD_SVPN;
+			}
+			else if(attk->adtyp == AD_STAR
+			|| attk->adtyp == AD_ECLD
+			|| attk->adtyp == AD_FIRE
+			)
+				attk->adtyp = AD_EDRC;
+			else if(attk->adtyp == AD_SLEE)
+				attk->adtyp = AD_DRDX;
+			else if(attk->adtyp == AD_PHYS && (attk->aatyp || attk->damn || attk->damd))
+				attk->adtyp = AD_DRCO;
+			//Note: also affects AD_MOON, but this must be handled after the phase of moon code in xhity.
 		}
 
 		/* if creatures don't have eyes, some gaze attacks are impossible */
@@ -857,12 +904,22 @@ int template;
 			attk->damd = max(ptr->msize * 2, max(attk->damd, 4));
 			special = TRUE;
 		}
-		/* vampires' bites are vampiric */
+		/* vampires' bites are vampiric: pt 1: other bites */
 		if (template == VAMPIRIC && (
-			(attk->aatyp == AT_BITE)
-			|| insert_okay
-			))
-		{
+			attk->aatyp == AT_OBIT
+			|| attk->aatyp == AT_LNCK
+			)
+		){
+			attk->adtyp = AD_VAMP;
+			attk->damn = max(1, attk->damn);
+			attk->damd = max(4, max(ptr->msize * 2, attk->damd));
+		}
+		/* vampires' bites are vampiric: pt 2: primary bites*/
+		if (template == VAMPIRIC && (
+			attk->aatyp == AT_BITE
+			|| (insert_okay && !nomouth(ptr->mtyp))
+			)
+		){
 			maybe_insert();
 			attk->aatyp = AT_BITE;
 			attk->adtyp = AD_VAMP;
@@ -1027,6 +1084,17 @@ int template;
 			attk->damd = 9;
 			special = TRUE;
 		}
+		if (template == MOLY_TEMPLATE && (
+			end_insert_okay
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_OBIT;
+			attk->adtyp = AD_SVPN;
+			attk->damn = 6;
+			attk->damd = 6;
+			special = TRUE;
+		}
 	}
 #undef insert_okay
 #undef end_insert_okay
@@ -1111,6 +1179,10 @@ int mtyp;
 		return TRUE;
 	case WORLD_SHAPER:
 		return (ptr->mtyp != PM_EARTH_ELEMENTAL && ptr->mtyp != PM_WIZARD_OF_YENDOR);
+	case POISON_TEMPLATE:
+		return is_minion(ptr);
+	case MOLY_TEMPLATE:
+		return is_cha_demon(ptr);
 	}
 	/* default fall through -- allow all */
 	return TRUE;
@@ -1647,6 +1719,38 @@ int atyp;
 		return TRUE;
 
     return FALSE;
+}
+
+//Count the number of attacks of type atyp a monster has.
+
+int
+mon_count_attacktype(mon, atyp)
+struct monst *mon;
+int atyp;
+{
+	struct attack *attk;
+	struct attack prev_attk = {0};
+	int	indexnum = 0,	/* loop counter */
+		subout = 0,	/* remembers what attack substitutions have been made for [mon]'s attack chain */
+		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
+		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
+	int counter = 0;
+
+	/* zero out res[] */
+	res[0] = MM_MISS;
+	res[1] = MM_MISS;
+	res[2] = MM_MISS;
+	res[3] = MM_MISS;
+	
+	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod);
+		!is_null_attk(attk);
+		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod)
+	){
+		if(attk->aatyp == atyp)
+			counter++;
+	}
+
+    return counter;
 }
 
 //Get a pointer to mon's first attack of type atyp. prev_attk must point to the attack buffer the attack's data should end up in.

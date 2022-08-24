@@ -1866,7 +1866,23 @@ gotit:
 	else
 		mtmp = m_at(cc.x, cc.y);
 	if (mtmp) {
-		if (costly_spot(mtmp->mx, mtmp->my)) {
+		if(mtmp->mtyp == PM_JRT_NETJER && has_template(mtmp, POISON_TEMPLATE) && canseemon(mtmp)){
+			struct obj *armor;
+			if((armor = which_armor(mtmp, W_ARM)) && arm_blocks_upper_body(armor->otyp))
+				/*no message*/;
+			else if((armor = which_armor(mtmp, W_ARMU)) && arm_blocks_upper_body(armor->otyp))
+				/*no message*/;
+			else {
+				pline("A broken-off fang is embedded in %s chest. It seems to have pierced %s heart!", s_suffix(mon_nam(mtmp)), mhis(mtmp));
+				if(!helpless_still(mtmp)){
+					pline("%s moves to quickly for you to grasp the fang.", Monnam(mtmp));
+				}
+				else if(yn("Attempt to remove the fang?")=='y'){
+					timepassed = you_remove_jrt_fang(mtmp, (struct obj *)0);
+				}
+			}
+		}
+		else if (costly_spot(mtmp->mx, mtmp->my)) {
 			verbalize("Not in my store!");
 			timepassed = MOVE_STANDARD;
 		}
@@ -1918,7 +1934,7 @@ boolean *prev_loot;
     /* 3.3.1 introduced the ability to remove saddle from a steed             */
     /* 	*passed_info is set to TRUE if a loot query was given.               */
     /*	*prev_loot is set to TRUE if something was actually acquired in here. */
-	if(mtmp && mtmp != u.usteed 
+	if(mtmp 
 		&& (mtmp->mtame || (urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && (quest_faction(mtmp) || mtmp->data->msound == MS_GUARDIAN)))
 	){
 	if((otmp = pick_creatures_armor(mtmp, passed_info))){
@@ -2928,7 +2944,12 @@ pick_gemstone()
 	if(count) n = select_menu(tmpwin, how, &selected);
 	else You("don't have any gems.");
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_char : 0;
+	if(n > 0){
+		char picked = selected[0].item.a_char;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 STATIC_OVL
@@ -2967,7 +2988,12 @@ pick_bullet()
 	if(count) n = select_menu(tmpwin, how, &selected);
 	else You("don't have any bullets.");
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_char : 0;
+	if(n > 0){
+		char picked = selected[0].item.a_char;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 STATIC_OVL
@@ -3013,7 +3039,12 @@ int *passed_info;
 		n = select_menu(tmpwin, how, &selected);
 	} else pline("Nothing to remove!");
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_obj : 0;
+	if(n > 0){
+		struct obj *picked = selected[0].item.a_obj;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 #define addArmorMenuOption	Sprintf1(buf, doname(otmp));\
@@ -3088,7 +3119,12 @@ struct monst *mon;
 		n = select_menu(tmpwin, how, &selected);
 	} else pline("Nothing to equip!");
 	destroy_nhwindow(tmpwin);
-	return ( n > 0 ) ? selected[0].item.a_obj : 0;
+	if(n > 0){
+		struct obj *picked = selected[0].item.a_obj;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 

@@ -1220,7 +1220,7 @@ boolean goodequip;
 		fix_object(otmp);
 		(void) mpickobj(mtmp,otmp);
 		
-		otmp = mksobj(HELMET, mkobjflags|MKOBJ_NOINIT);
+		otmp = mksobj(FACELESS_HELM, mkobjflags|MKOBJ_NOINIT);
 		set_material_gm(otmp, METAL);
 		otmp->bodytypeflag = MB_LONGHEAD;
 		fix_object(otmp);
@@ -6512,7 +6512,6 @@ int mmflags;
 		    case PM_ORC_OF_THE_AGES_OF_STARS:
 				otmp = mongets(mtmp, HIGH_ELVEN_WARSWORD, mkobjflags);
 				if(otmp) MAYBE_MERC(otmp)
-				(void)mongets(mtmp, HIGH_ELVEN_WARSWORD, mkobjflags);
 				(void)mongets(mtmp, HIGH_ELVEN_HELM, mkobjflags);
 				(void)mongets(mtmp, HIGH_ELVEN_PLATE, mkobjflags);
 				(void)mongets(mtmp, ORCISH_CLOAK, mkobjflags);
@@ -10528,6 +10527,68 @@ boolean goodequip;
 					if(otmp) set_material_gm(otmp, COPPER);
 					otmp = mongets(mtmp, HELMET, mkobjflags);
 					if(otmp) set_material_gm(otmp, COPPER);
+			} else if(ptr->mtyp == PM_JRT_NETJER){
+				otmp = mongets(mtmp, KHOPESH, mkobjflags);
+				if(otmp){
+					bless(otmp);
+					set_material_gm(otmp, MERCURIAL);
+					add_oprop(otmp, OPROP_ANARW);
+				}
+				otmp = mongets(mtmp, KHOPESH, mkobjflags);
+				if(otmp){
+					bless(otmp);
+					set_material_gm(otmp, SILVER);
+					add_oprop(otmp, OPROP_HOLYW);
+				}
+
+				otmp = mongets(mtmp, LEO_NEMAEUS_HIDE, mkobjflags);
+				if(otmp){
+					bless(otmp);
+					add_oprop(otmp, OPROP_HOLY);
+					add_oprop(otmp, OPROP_ANAR);
+				}
+
+				otmp = mongets(mtmp, WAISTCLOTH, mkobjflags);
+				if(otmp){
+					bless(otmp);
+					set_material_gm(otmp, CLOTH);
+					add_oprop(otmp, OPROP_HEAL);
+					otmp->obj_color = CLR_WHITE;
+				}
+
+				otmp = mksobj(rnd_good_amulet(), mkobjflags);
+				set_material_gm(otmp, GOLD);
+				fix_object(otmp);
+				bless(otmp);
+				(void) mpickobj(mtmp, otmp);
+
+				otmp = mksobj(MASK, mkobjflags);
+				otmp->corpsenm = PM_DAUGHTER_OF_NAUNET;
+				set_material_gm(otmp, GOLD);
+				fix_object(otmp);
+				bless(otmp);
+				(void) mpickobj(mtmp, otmp);
+
+				otmp = mongets(mtmp, ARCHAIC_HELM, mkobjflags);
+				if(otmp){
+					bless(otmp);
+					set_material_gm(otmp, GOLD);
+					add_oprop(otmp, OPROP_HOLY);
+					add_oprop(otmp, OPROP_ANAR);
+				}
+
+			} else if(ptr->mtyp == PM_POLYPOID_BEING){
+				int masktypes[] = {PM_ELVENKING, PM_ELVENQUEEN, PM_ALABASTER_ELF_ELDER, PM_GROVE_GUARDIAN, 
+								   PM_TULANI_ELADRIN, PM_GAE_ELADRIN, PM_LILLEND, 
+								   PM_DARK_YOUNG, PM_GOAT_SPAWN, PM_TITAN};
+				int i;
+				for(i = d(3,3); i > 0; i--){
+					otmp = mksobj(MASK, mkobjflags|MKOBJ_NOINIT);
+					otmp->corpsenm = masktypes[rn2(SIZE(masktypes))];
+					set_material_gm(otmp, WOOD);
+					bless(otmp);
+					(void) mpickobj(mtmp, otmp);
+				}
 			}
 		break;
 	    case S_DEMON:
@@ -11611,7 +11672,7 @@ xchar x, y;	/* clone's preferred location or 0 (near mon) */
 	/* duplicate timers */
 	if (mon->timed) {
 		m2->timed = (struct timer *) 0;
-		split_timers(mon->timed, TIMER_MONSTER, (genericptr_t)m2);
+		copy_timers(mon->timed, TIMER_MONSTER, (genericptr_t)m2);
 	}
 
 	/* place the monster -- we want to do this before any display things happen */
@@ -11791,6 +11852,10 @@ boolean randmonst;
 		/* insight check: making yith */
 		else if(randmonst && check_insight() && (level_difficulty()+u.ulevel)/2+5 > monstr[PM_DEMILICH]){
 			mkmon_template = YITH;
+		}
+		/* insight check: making blood war recruiters */
+		else if(randmonst && is_cha_demon(ptr) && !is_dlord(ptr) && check_insight() && Inhell){
+			mkmon_template = MOLY_TEMPLATE;
 		}
 		/* most general case at bottom -- creatures randomly being zombified */
 		#ifdef REINCARNATION

@@ -112,8 +112,9 @@ int typ;
 }
 
 void
-init_mplayer_gear(ptr, special, weapon, secweapon, rweapon, rwammo, armor, shirt, cloak, helm, boots, gloves, shield, tool)
+init_mplayer_gear(ptr, female, special, weapon, secweapon, rweapon, rwammo, armor, shirt, cloak, helm, boots, gloves, shield, tool)
 register struct permonst *ptr;
+boolean female;
 boolean special;
 int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boots, *gloves, *shield, *tool;
 {
@@ -155,6 +156,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 			*helm = CRYSTAL_HELM;
 			*gloves = CRYSTAL_GAUNTLETS;
 			*boots = CRYSTAL_BOOTS;
+			*cloak = CLOAK_OF_MAGIC_RESISTANCE;
 		} else {
 			if (!rn2(4)) *weapon = FORCE_PIKE;
 			else *weapon = VIBROBLADE;
@@ -183,6 +185,8 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 			FLUTE, TOOLED_HORN, HARP,
 			BELL, BUGLE, DRUM
 		};
+		if(special)
+			*weapon = LONG_SWORD;
 		*tool = trotyp[rn2(SIZE(trotyp))];
 		*armor = rn2(2) ? ELVEN_MITHRIL_COAT : ELVEN_TOGA;
 		*cloak = rn2(2) ? DWARVISH_CLOAK : CLOAK;
@@ -216,8 +220,8 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 	break;
 #endif
 	case PM_EXILE:
+		*weapon = SCYTHE;
 		if(!special){
-			*weapon = SCYTHE;
 			*rweapon = SLING;
 			*rwammo = ROCK;
 			*cloak = CLOAK;
@@ -280,8 +284,15 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		}
 	case PM_MADWOMAN:
 		if(special){
-			*weapon = BLADE_OF_GRACE;
-			*secweapon = BLADE_OF_PITY;
+			if(!rn2(4)){
+				*weapon = RAKUYO_SABER;
+				*secweapon = RAKUYO_DAGGER;
+				//Loch shield+katana
+			}
+			else {
+				*weapon = BLADE_OF_GRACE;
+				*secweapon = BLADE_OF_PITY;
+			}
 			*armor = GENTLEWOMAN_S_DRESS;
 			*shirt = VICTORIAN_UNDERWEAR;
 			*cloak = ALCHEMY_SMOCK;
@@ -355,8 +366,14 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		*boots = LOW_BOOTS;
 	break;
 	case PM_SAMURAI:
-		*weapon = KATANA;
-		*secweapon = WAKIZASHI;
+		if(female){
+			*weapon = NAGINATA;
+			*secweapon = KNIFE;
+		}
+		else {
+			*weapon = KATANA;
+			*secweapon = WAKIZASHI;
+		}
 		*rweapon = YUMI;
 		*rwammo = YA;
 		*helm = HELMET;
@@ -448,7 +465,7 @@ register boolean special;
 	    struct obj *otmp;
 		int weapon, secweapon, rweapon, rwammo, armor, shirt, cloak, helm, boots, gloves, shield, tool;
 		
-		init_mplayer_gear(ptr, special, &weapon, &secweapon, &rweapon, &rwammo, &armor, &shirt, &cloak, &helm, &boots, &gloves, &shield, &tool);
+		init_mplayer_gear(ptr, mtmp->female, special, &weapon, &secweapon, &rweapon, &rwammo, &armor, &shirt, &cloak, &helm, &boots, &gloves, &shield, &tool);
 		
 		if(mtmp && ptr->mtyp == PM_INCANTIFIER && Infuture){
 			give_mintrinsic(mtmp, TELEPAT);
@@ -608,6 +625,8 @@ register boolean special;
 		if((special && (mtmp->mtyp == PM_MADMAN || mtmp->mtyp == PM_MADWOMAN))
 			|| (Role_if(PM_MADMAN) && In_quest(&u.uz) && (mtmp->mtyp == PM_NOBLEMAN || mtmp->mtyp == PM_NOBLEWOMAN || mtmp->mtyp == PM_HEALER))
 		){
+			if(mtmp->mtyp == PM_HEALER && in_mklev)
+				mongets(mtmp, TREPHINATION_KIT, NO_MKOBJ_FLAGS);
 			for(struct obj *otmp = mtmp->minvent; otmp; otmp = otmp->nobj){
 				if(is_metallic(otmp)){
 					set_material_gm(otmp, GOLD);

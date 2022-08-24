@@ -1770,18 +1770,34 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			attk->damd = 6;
 		}
 		else if(attk->aatyp == AT_SRPR){
-			attk->aatyp = (humanoid_upperbody(pa) && !nogloves(pa)) ? AT_WEAP : AT_CLAW;
-			attk->adtyp = AD_PHYS;
-			attk->damn = 1;
-			attk->damd = 6;
+			if(magr->mtyp == PM_JRT_NETJER){
+				attk->aatyp = AT_WEAP;
+				attk->adtyp = AD_PHYS;
+				attk->damn = 1;
+				attk->damd = 7;
+			}
+			else {
+				attk->aatyp = (humanoid_upperbody(pa) && !nogloves(pa)) ? AT_WEAP : AT_CLAW;
+				attk->adtyp = AD_PHYS;
+				attk->damn = 1;
+				attk->damd = 6;
+			}
 		}
 		else if(attk->aatyp == AT_XSPR){
-			attk->aatyp = (humanoid_upperbody(pa) && !nogloves(pa)) ? AT_XWEP : AT_CLAW;
-			attk->adtyp = AD_PHYS;
-			attk->damn = 1;
-			attk->damd = 6;
-			if(attk->aatyp == AT_CLAW)
-				attk->offhand = 1; /*Note: redundant with xwep but needed for claw*/
+			if(magr->mtyp == PM_JRT_NETJER){
+				attk->aatyp = AT_XWEP;
+				attk->adtyp = AD_PHYS;
+				attk->damn = 1;
+				attk->damd = 7;
+			}
+			else {
+				attk->aatyp = (humanoid_upperbody(pa) && !nogloves(pa)) ? AT_XWEP : AT_CLAW;
+				attk->adtyp = AD_PHYS;
+				attk->damn = 1;
+				attk->damd = 6;
+				if(attk->aatyp == AT_CLAW)
+					attk->offhand = 1; /*Note: redundant with xwep but needed for claw*/
+			}
 		}
 		else if(attk->aatyp == AT_MSPR){
 			attk->aatyp = (humanoid_upperbody(pa) && pa->mtyp != PM_ALIDER && !nogloves(pa)) ? AT_MARI : AT_CLAW;
@@ -1862,6 +1878,13 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				}
 			}
 		}
+		//Most other poison template subs happen when the template is applied, but the moon phase stuff still needs to happen so this had to be postponed.
+		if(has_template(magr, POISON_TEMPLATE)){
+			if(attk->adtyp == AD_PHYS)
+				attk->adtyp = AD_DRCO;
+			else if(attk->adtyp == AD_MOON)
+				attk->adtyp = AD_EDRC;
+		}
 	}
 
 	/* Alabaster mummies:
@@ -1900,11 +1923,15 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		GETNEXT
 	}
 	/* auto-tailslappers skip their tailslap in main combat sequence */
-	if(!by_the_book && attk->aatyp == AT_TAIL && is_tailslap_mtyp(pa)) {
+	if(!by_the_book && attk->aatyp == AT_TAIL && is_tailslap_mon(magr)) {
 		GETNEXT
 	}
 	/* auto-snake-biters skip their other-snake-head attacks in main combat sequence */
-	if(!by_the_book && attk->aatyp == AT_OBIT && is_snake_bite_mtyp(pa)) {
+	if(!by_the_book && attk->aatyp == AT_OBIT && is_snake_bite_mon(magr)) {
+		GETNEXT
+	}
+	/* auto-rapier-slashers skip their floating rapier attacks in main combat sequence */
+	if(!by_the_book && attk->aatyp == AT_ESPR && is_star_blades_mon(magr)) {
 		GETNEXT
 	}
 	/* the Five Fiends spellcasting */
@@ -2545,6 +2572,7 @@ struct attack *attk;
 						(attk->adtyp == AD_BLUD) ? " with a blade of blood!" :
 						(attk->adtyp == AD_EFIR) ? " with a blade of fire!" :
 						(attk->adtyp == AD_EACD) ? " with a blade of acid!" :
+						(attk->adtyp == AD_SVPN) ? " with a pitch-black blade!" :
 						(attk->adtyp == AD_EDRC) ? " with a blade of poison!" : "!";
 					if (youdef)
 						specify_you = TRUE;
@@ -2770,7 +2798,7 @@ int vis;
 	}
 	
 	//Star spawn bypass most helmets.
-	if(magr && magr->mtyp == PM_STAR_SPAWN && obj && obj->oartifact != ART_APOTHEOSIS_VEIL)
+	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_VEIL_RENDER) && obj && obj->oartifact != ART_APOTHEOSIS_VEIL)
 		return FALSE;
 
 	if (obj && (
@@ -5693,6 +5721,9 @@ boolean ranged;
 			/* metroids gain life (but not the player) */
 			if (!youagr && is_metroid(pa)) {
 				*hpmax(magr) += d(1, 4);
+				if(ptmp < 0){
+					impossible("Monster (%s) has negative current hp in metroid code (hp: %d ptmp: %d)!", noit_mon_nam(mdef), mdef->mhp, ptmp);
+				}
 				heal(magr, ptmp/2);
 				/* tame metroids gain nutrition (does not stack with for-vampires above, since they have lifedrain instead of bloodsuck attacks) */
 				if (get_mx(magr, MX_EDOG)){
@@ -7806,7 +7837,7 @@ boolean ranged;
 
 		/* protected by helmets */
 		otmp = (youdef ? uarmh : which_armor(mdef, W_ARMH));
-		if(pa->mtyp == PM_STAR_SPAWN && otmp && is_hard(otmp) && otmp->oartifact != ART_APOTHEOSIS_VEIL){
+		if((pa->mtyp == PM_STAR_SPAWN || pa->mtyp == PM_VEIL_RENDER) && otmp && is_hard(otmp) && otmp->oartifact != ART_APOTHEOSIS_VEIL){
 			if (youdef) {
 				pline("%s somehow reaches right past your helmet!", Monnam(magr));
 			}
@@ -13644,6 +13675,8 @@ int vis;						/* True if action is at all visible to the player */
 			poisons |= OPOISON_SLEEP;
 		if (poisonedobj->oartifact == ART_DIRGE)
 			poisons |= OPOISON_ACID;
+		if (poisonedobj->otyp == FANG_OF_APEP)
+			poisons |= OPOISON_DIRE;
 		/* Plague adds poisons to its launched ammo */
 		if (launcher && launcher->oartifact == ART_PLAGUE) {
 			if (monstermoves < artinstance[ART_PLAGUE].PlagueDuration)
@@ -13706,6 +13739,9 @@ int vis;						/* True if action is at all visible to the player */
 			{
 			case OPOISON_BASIC:
 				resists = Poison_res(mdef);
+				majoreff = !rn2(10);
+				break;
+			case OPOISON_DIRE:
 				majoreff = !rn2(10);
 				break;
 			case OPOISON_FILTH:
@@ -13778,6 +13814,12 @@ int vis;						/* True if action is at all visible to the player */
 				break;
 			case OPOISON_FILTH:
 				poisdmg += (major) ? (youdef ? d(3, 12) : 100) : rnd(12);
+				break;
+			case OPOISON_DIRE:
+				if(Poison_res(mdef))
+					poisdmg += (major) ? (youdef ? d(3, 6) : 80) : rn1(10, 6)/2;
+				else
+					poisdmg += (major) ? (youdef ? d(6, 6) : 160) : rn1(10, 6);
 				break;
 			case OPOISON_SLEEP:
 				/* no damage */
@@ -15716,6 +15758,7 @@ int vis;						/* True if action is at all visible to the player */
 				case OPOISON_BASIC:
 				case OPOISON_BLIND:
 				case OPOISON_PARAL:
+				case OPOISON_DIRE:
 					Sprintf(poisons_str, "poison");
 					break;
 				case OPOISON_FILTH:
@@ -15763,6 +15806,33 @@ int vis;						/* True if action is at all visible to the player */
 						!rn2(2) ?	A_CON :
 									A_DEX);
 					int amnt = rnd(ACURR(attrib) / 5);
+
+					if (adjattrib(attrib, -amnt, 1))
+						pline_The("poison was quite debilitating...");
+				}
+				else if ((vis&VIS_MDEF) && lethaldamage)
+					pline_The("poison was deadly...");
+				break;
+			case OPOISON_DIRE:
+				if (youdef) {
+					int attrib = (
+						!rn2(3) ?	A_STR :
+						!rn2(2) ?	A_CON :
+									A_DEX);
+					if (!rn2(10) && attrib != A_CHA) {
+						int drain = attrib == A_CON ? -2 : -rn1(3, 3);
+						if(Poison_resistance)
+							drain = (drain - 1)/2;
+						else
+							drain -= 4;
+
+						adjattrib(A_CON, drain, 1);
+					}
+					int amnt = rn1(3, 3);
+					if(Poison_resistance)
+						amnt = (amnt + 1)/2;
+					else
+						amnt += 2;
 
 					if (adjattrib(attrib, -amnt, 1))
 						pline_The("poison was quite debilitating...");
@@ -18045,9 +18115,9 @@ int moveID;
 			if((mdef = adjacent_monk_target(uarmf))){
 				pline("Swoop!");
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				if(is_monk_weapon(uwep))
+				if(!uwep || is_monk_weapon(uwep))
 					xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE);
-				if(u.twoweap && STILLVALID(mdef) && is_monk_weapon(uswapwep))
+				if(u.twoweap && STILLVALID(mdef) && (!uswapwep || is_monk_weapon(uswapwep)))
 					xmeleehity(&youmonst, mdef, &xweponhit, &uswapwep, vis, 0, FALSE);
 				if(STILLVALID(mdef))
 					xmeleehity(&youmonst, mdef, &bitehit, (struct obj **)0, vis, 0, FALSE);

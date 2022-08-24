@@ -312,7 +312,7 @@ register struct monst *mtmp;
 	if(u.specialSealsActive&SEAL_NUDZIRATH && !rn2(4)){
 		(void) mksobj_at(MIRROR, x, y, NO_MKOBJ_FLAGS);
 	}
-	
+
 	if(has_template(mtmp, CRYSTALFIED)){
 		obj = mkcorpstat(STATUE, (struct monst *)0,
 			mdat, x, y, FALSE);
@@ -1111,6 +1111,11 @@ register struct monst *mtmp;
 	    case PM_STONE_GOLEM:
 			obj = mkcorpstat(STATUE, (struct monst *)0,
 				mdat, x, y, FALSE);
+		break;
+	    case PM_JRT_NETJER:
+			if(has_template(mtmp, POISON_TEMPLATE)){
+				(void) mksobj_at(FANG_OF_APEP, x, y, MKOBJ_NOINIT);
+			}
 		break;
 	    case PM_TERAPHIM_TANNAH:
 			obj = mkcorpstat(STATUE, (struct monst *)0,
@@ -3467,7 +3472,7 @@ struct monst * mdef;	/* another monster which is next to it */
 	}
 	// Some madnesses cause infighting.
 	//  These grudges are one-way by design.
-	if(mdef->mophidio && triggers_ophidiophobia(magr->data)){
+	if(mdef->mophidio && triggers_ophidiophobia(magr)){
 		return ALLOW_M | ALLOW_TM;
 	}
 	if(mdef->marachno && (
@@ -5178,6 +5183,9 @@ boolean was_swallowed;			/* digestion */
 	if (has_template(mon, TOMB_HERD))
 		return TRUE;
 
+	if (has_template(mon, POISON_TEMPLATE))
+		return TRUE;
+
 	if (is_golem(mdat)
 		   || is_mplayer(mdat)
 		   || is_rider(mdat)
@@ -5282,22 +5290,16 @@ struct monst *mon;
 
 	/* create a gas cloud */
 	create_gas_cloud(mm.x, mm.y, rn1(2,1), rnd(8), FALSE);
-
-	if (ferntype != NON_PM) 
+	
+	/*Note: the original summoner might already be dead by the time the fern grows, so what to do with summoned ferns can be unclear*/
+	if (ferntype != NON_PM && !get_mx(mon, MX_ESUM)) 
 	{
 		struct monst * mtmp;
-		boolean summoned = !!get_mx(mon, MX_ESUM);
-		int mmflags = summoned ? MM_ESUM : NO_MM_FLAGS;
 		/* when creating a new fern, 5/6 chance of creating a fern sprout and 1/6 chance of a fully-grown one */
 		if (rn2(6))
 			ferntype = big_to_little(ferntype);
 
-		mtmp = makemon(&mons[ferntype], mm.x, mm.y, mmflags);
-
-		if (mtmp) {
-			if (summoned)
-				mark_mon_as_summoned(mtmp, mon->mextra_p->esum_p->summoner, ESUMMON_PERMANENT, 0);
-		}
+		mtmp = makemon(&mons[ferntype], mm.x, mm.y, NO_MM_FLAGS);
 	}
 }
 
@@ -6406,9 +6408,9 @@ boolean severe;			/* Powerful poison that partially overcomes poison resistance 
 		if (i == 0 && attrib != A_CHA) {
 			drain = attrib == A_CON ? -2 : -rn1(3, 3);
 			if(Poison_resistance)
-				drain = (drain + 1)/2;
+				drain = (drain - 1)/2;
 			else if(severe)
-				drain += 4;
+				drain -= 4;
 			if (adjattrib(A_CON, drain, 1)){
 				pline_The("poison was quite debilitating...");
 				printed = TRUE;
@@ -6417,9 +6419,9 @@ boolean severe;			/* Powerful poison that partially overcomes poison resistance 
 		if (i <= 5) {
 			drain = -rn1(3, 3);
 			if(Poison_resistance)
-				drain = (drain + 1)/2;
+				drain = (drain - 1)/2;
 			else if(severe)
-				drain += 2;
+				drain -= 2;
 			/* Check that a stat change was made */
 			if (adjattrib(attrib, drain, 1) && !printed)
 				pline("You%s!", poiseff[attrib]);

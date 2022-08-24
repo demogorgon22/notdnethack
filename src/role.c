@@ -1987,6 +1987,8 @@ int newgame;
 					flags.panNgod == flags.panCgod );
 		}
 	}
+	if((Pantheon_if(PM_NOBLEMAN) || Role_if(PM_NOBLEMAN)) && Race_if(PM_VAMPIRE))
+		urole.questarti = ART_VESTMENT_OF_HELL;
 	
 	if(Role_if(PM_EXILE)){
 		urole.lgod = roles[flags.panLgod].lgod;

@@ -292,7 +292,6 @@ hack_artifacts()
 		artilist[ART_HELM_OF_THE_DARK_LORD].size = (&mons[urace.malenum])->msize;
 
 		if(Race_if(PM_VAMPIRE)){
-			urole.questarti = ART_VESTMENT_OF_HELL;
 			artilist[ART_HELM_OF_THE_DARK_LORD].alignment = alignmnt;
 		} else if(Race_if(PM_ELF)){
 			artilist[ART_ROD_OF_LORDLY_MIGHT].gflags |= ARTG_NOGEN;
@@ -1084,10 +1083,11 @@ struct obj *otmp;	/* existing object */
 		if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) 
 			|| (is_hard(otmp) && otmp->oclass == ARMOR_CLASS && otmp->otyp != ORIHALCYON_GAUNTLETS)
 		){
+			void (*func)(struct obj *, int) = is_ammo(otmp) ? &set_material : &set_material_gm;
 			if(objects[otmp->otyp].oc_material == GLASS)
-				set_material_gm(otmp, rn2(2) ? GLASS : rn2(3) ? OBSIDIAN_MT : GEMSTONE);
+				(*func)(otmp, rn2(2) ? GLASS : rn2(3) ? OBSIDIAN_MT : GEMSTONE);
 			else
-				set_material_gm(otmp, !rn2(7) ? SHADOWSTEEL 
+				(*func)(otmp, !rn2(7) ? SHADOWSTEEL 
 									: !rn2(6) ? SILVER 
 									: !rn2(5) ? MITHRIL 
 									: !rn2(4) ? GLASS
@@ -1181,6 +1181,108 @@ struct obj *otmp;	/* existing object */
 }
 
 STATIC_OVL struct obj *
+mk_jrt_special(otmp)
+struct obj *otmp;	/* existing object */
+{
+	//Can make metal studed leather
+	bless(otmp);
+	/* materials */
+	if((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && !is_ammo(otmp) && !rn2(3)){
+		set_material_gm(otmp, MERCURIAL);
+	}
+	else if(rn2(3)){
+		if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
+			|| (is_hard(otmp) && otmp->oclass == ARMOR_CLASS && otmp->otyp != ORIHALCYON_GAUNTLETS)
+		){
+			//Ammo can be stuff like silver arrows, so it should use sim-facing material setting
+			if(is_ammo(otmp))
+				set_material(otmp, rn2(4) ? GOLD : SILVER);
+			else
+				set_material_gm(otmp, rn2(4) ? GOLD : SILVER);
+		}
+		else if(otmp->oclass == ARMOR_CLASS){
+			set_material_gm(otmp, DRAGON_HIDE);
+		}
+	}
+	/* armor props */
+	if(otmp->oclass == ARMOR_CLASS){
+		if(rn2(2)){
+			ADD_WEAPON_ARMOR_OPROP(otmp, HOLY);
+		}
+		if(rn2(3)){
+			ADD_WEAPON_ARMOR_OPROP(otmp, ANAR);
+		}
+		if(rn2(3)) switch(rnd(is_hard(otmp) ? 5 : 4)){
+			case 1:
+				ADD_WEAPON_ARMOR_OPROP(otmp, FIRE);
+			break;
+			case 2:
+				ADD_WEAPON_ARMOR_OPROP(otmp, ELEC);
+			break;
+			case 3:
+				ADD_WEAPON_ARMOR_OPROP(otmp, COLD);
+			break;
+			case 4:
+				add_oprop(otmp, OPROP_BCRS);
+			break;
+			//Anything above here should be ok for soft items
+			case 5:
+				add_oprop(otmp, OPROP_REFL);
+				set_material_gm(otmp, rn2(4) ? GOLD : SILVER);
+			break;
+		}
+		if(!rn2(7)){
+			add_oprop(otmp, OPROP_LIFE);
+		}
+		if(!rn2(7)){
+			add_oprop(otmp, OPROP_HEAL);
+		}
+		if(is_gloves(otmp)){
+			if(!rn2(7)){
+				add_oprop(otmp, OPROP_BLADED);
+			}
+		}
+	}
+	/* weapon props */
+	else if(otmp->oclass == WEAPON_CLASS){
+		if(rn2(2)){
+			ADD_WEAK_OR_STRONG_OPROP(otmp, HOLY);
+		}
+		if(rn2(3)){
+			ADD_WEAK_OR_STRONG_OPROP(otmp, ANAR);
+		}
+		if(rn2(3)) switch(rn2(6)){
+			case 0:
+				add_oprop(otmp, OPROP_WRTHW);
+			break;
+			case 1:
+				ADD_WEAK_OR_STRONG_OPROP(otmp, FIRE);
+			break;
+			case 2:
+				ADD_WEAK_OR_STRONG_OPROP(otmp, ELEC);
+			break;
+			case 3:
+				ADD_WEAK_OR_STRONG_OPROP(otmp, COLD);
+			break;
+			case 4:
+				add_oprop(otmp, OPROP_VORPW);
+			break;
+			case 5:
+				ADD_WEAK_OR_STRONG_OPROP(otmp, ACID);
+			break;
+		}
+		/* Living weapons */
+		if(!rn2(20)){
+			add_oprop(otmp, OPROP_LIVEW);
+		}
+		if(!rn2(20)){
+			add_oprop(otmp, OPROP_ASECW);
+		}
+	}
+	return otmp;
+}
+
+STATIC_OVL struct obj *
 mk_holy_special(otmp)
 struct obj *otmp;	/* existing object */
 {
@@ -1190,7 +1292,11 @@ struct obj *otmp;	/* existing object */
 		if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) 
 			|| (is_hard(otmp) && otmp->oclass == ARMOR_CLASS && otmp->otyp != ORIHALCYON_GAUNTLETS)
 		){
-			set_material_gm(otmp, rn2(2) ? GOLD : SILVER);
+			//Ammo can be stuff like silver arrows, so it should use sim-facing material setting
+			if(is_ammo(otmp))
+				set_material(otmp, rn2(2) ? GOLD : SILVER);
+			else
+				set_material_gm(otmp, rn2(2) ? GOLD : SILVER);
 		}
 		else if(otmp->oclass == ARMOR_CLASS){
 			add_oprop(otmp, OPROP_WOOL);
@@ -1300,7 +1406,11 @@ struct obj *otmp;	/* existing object */
 		if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) 
 			|| (is_hard(otmp) && otmp->oclass == ARMOR_CLASS && otmp->otyp != ORIHALCYON_GAUNTLETS)
 		){
-			set_material_gm(otmp, rn2(2) ? GOLD : GREEN_STEEL);
+			//Ammo can be stuff like silver arrows, so it should use sim-facing material setting
+			if(is_ammo(otmp))
+				set_material(otmp, rn2(2) ? GOLD : GREEN_STEEL);
+			else
+				set_material_gm(otmp, rn2(2) ? GOLD : GREEN_STEEL);
 		}
 	}
 	/* armor props */
@@ -1392,7 +1502,11 @@ struct obj *otmp;	/* existing object */
 		if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) 
 			|| (is_hard(otmp) && otmp->oclass == ARMOR_CLASS && otmp->otyp != ORIHALCYON_GAUNTLETS)
 		){
-			set_material_gm(otmp, rn2(2) ? GOLD : IRON);
+			//Ammo can be stuff like silver arrows, so it should use sim-facing material setting
+			if(is_ammo(otmp))
+				set_material(otmp, rn2(2) ? GOLD : IRON);
+			else
+				set_material_gm(otmp, rn2(2) ? GOLD : IRON);
 		}
 	}
 	/* armor props */
@@ -1494,40 +1608,47 @@ struct obj *otmp;	/* existing object */
 int vn;
 {
 	int type = -1;
-#define VN_TANNIN	0
-#define VN_ANCIENT	1
-#define VN_ANGEL	2
-#define VN_DEVIL	3
-#define VN_DEMON	4
-	if(vn < LIMIT_VN_RANGE_1_TANNINIM){
-		type = VN_TANNIN;
+#define VL_TANNIN	0
+#define VL_ANCIENT	1
+#define VL_ANGEL	2
+#define VL_DEVIL	3
+#define VL_DEMON	4
+#define VL_JRT		5
+	if(vn == VN_JRT){
+		type = VL_JRT;
+	}
+	else if(vn < LIMIT_VN_RANGE_1_TANNINIM){
+		type = VL_TANNIN;
 	}
 	else if(vn < LIMIT_VN_RANGE_2_ANCIENT){
-		type = VN_ANCIENT;
+		type = VL_ANCIENT;
 	}
 	else if(vn < LIMIT_VN_RANGE_3_ANGEL){
-		type = VN_ANGEL;
+		type = VL_ANGEL;
 	}
 	else if(vn < LIMIT_VN_RANGE_4_DEVIL){
-		type = VN_DEVIL;
+		type = VL_DEVIL;
 	}
 	else if(vn < LIMIT_VN_RANGE_5_DEMON){
-		type = VN_DEMON;
+		type = VL_DEMON;
 	}
 	switch(type){
-		case VN_ANGEL:
+		case VL_JRT:
+			otmp = mk_jrt_special(otmp);
+		break;
+		case VL_ANGEL:
 			otmp = mk_holy_special(otmp);
 		break;
-		case VN_DEVIL:
+		case VL_DEVIL:
 			otmp = mk_devil_special(otmp);
 		break;
-		case VN_ANCIENT:
+		case VL_ANCIENT:
 			otmp = mk_ancient_special(otmp);
 		break;
-		case VN_DEMON:
+		case VL_DEMON:
 			otmp = mk_demon_special(otmp);
 		break;
-		case VN_TANNIN:
+		case VL_TANNIN:
 			otmp = mk_tannin_special(otmp);
 		break;
 		default:
@@ -8303,10 +8424,6 @@ arti_invoke(obj)
 				pline("That creature has no bones!");
 				obj->age = monstermoves;
 				return MOVE_CANCELLED;
-			} else if (is_untamable(pm) || (pm->geno & G_UNIQ)){
-				pline("You can't create a minion of that type of monster!");
-				obj->age = monstermoves;
-				return MOVE_CANCELLED;
 			}
 			if (is_mind_flayer(pm)){
 				//Ceremorphosis works on a wide variety of hostes, however, it is typically only done to human-sized creatures.
@@ -12378,7 +12495,7 @@ living_items()
 	/* Animate objects in the dungeon -- this only happens to items in one chain (floor) and it changes the state of the dungeon,
 	 * so it's convenient not to handle this in the all_items() loop */
 	extern const int monstr[];
-	if((level_difficulty()+u.ulevel)/2 > monstr[PM_STONE_GOLEM] && check_insight()){
+	if(!Inhell && (level_difficulty()+u.ulevel)/2 > monstr[PM_STONE_GOLEM] && check_insight()){
 		for (obj = fobj; obj; obj = nobj) {
 			nobj = obj->nobj;
 			if(obj->otyp == STATUE && !get_ox(obj, OX_EMON) && !(obj->spe)){

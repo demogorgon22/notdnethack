@@ -1472,6 +1472,7 @@ moveloop()
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
 	// printMons();
+	// printMonNames();
 	// printDPR();
 	// printBodies();
 	// printSanAndInsight();
@@ -1862,7 +1863,7 @@ moveloop()
 						continue;
 					}
 				}
-				if(mtmp->mtyp == PM_STRANGE_LARVA){
+				if(mtmp->mtyp == PM_STRANGE_LARVA && !has_template(mtmp, TOMB_HERD)){
 					grow_up(mtmp, (struct monst *)0);
 					//grow up can kill monster.
 					if(DEADMONSTER(mtmp))
@@ -5986,7 +5987,7 @@ struct monst *magr;
 	extern const int clockwisex[8];
 	extern const int clockwisey[8];
 	int i = rnd(8),j;
-	int ax, ay;
+	int ax, ay, n;
 	struct attack * attk;
 	struct attack attkbuff = {0};
 	boolean youagr = (magr == &youmonst);
@@ -5999,8 +6000,10 @@ struct monst *magr;
 	attk = mon_get_attacktype(magr, AT_ESPR, &attkbuff);
 	if(!attk)
 		return;
+	// count attacks in statblock (assumes that all of these attacks are equals! If this is not true, this will need to be adjusted)
+	n = mon_count_attacktype(magr, AT_ESPR);
 	
-	for(j=8;j>=1;j--){
+	for(j=8*n;j>=1;j--){
 		ax = x(magr)+clockwisex[(i+j)%8];
 		ay = y(magr)+clockwisey[(i+j)%8];
 		if(youagr && u.ustuck && u.uswallow)
@@ -6017,7 +6020,7 @@ struct monst *magr;
 		if(!mdef)
 			continue;
 		
-		if(mlev(magr) < 30 && rn2(31-mlev(magr))) //Star blade attacks grow more likely as the moster grows more powerful.
+		if(!rn2(3))
 			continue;
 		
 		youdef = (mdef == &youmonst);

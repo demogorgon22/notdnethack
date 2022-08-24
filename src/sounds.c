@@ -3054,6 +3054,12 @@ mon_in_command_chain(follower, commander)
 struct monst * follower;
 struct monst * commander;
 {
+	if(has_template(commander, MOLY_TEMPLATE)){
+		if(is_cha_demon(follower->data))
+			return TRUE;
+		else return FALSE;
+	}
+	// else 
 	switch (monsndx(commander->data))	// for special cases
 	{
 	case PM_LEGION:
@@ -3131,7 +3137,7 @@ struct monst * commander;
 			continue;
 
 		tmp = d(nd, sd);
-		
+
 		inrange += 1;
 		if (tmp > mtmp->encouraged || mtmp->mflee){
 			mtmp->encouraged = max(tmp, mtmp->encouraged);
@@ -6926,7 +6932,12 @@ doblessmenu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 int
@@ -7023,7 +7034,12 @@ donursemenu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 boolean
@@ -7247,7 +7263,12 @@ dorendermenu()
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 boolean
@@ -7386,7 +7407,12 @@ struct monst *dollmaker;
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? (int)selected[0].item.a_int : 0;
+	if(n > 0){
+		int picked = selected[0].item.a_int;
+		free(selected);
+		return picked;
+	}
+	return 0;
 }
 
 boolean

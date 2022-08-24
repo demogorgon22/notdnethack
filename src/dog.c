@@ -1495,7 +1495,7 @@ int enhanced;
 		return (struct monst *)0;
 	}
 
-	if (mtmp->mtame || (!mtmp->mcanmove && !mtmp->moccupation) ||
+	if (mtmp->mtame || (!mtmp->mcanmove && !mtmp->moccupation && !enhanced) ||
 	    /* monsters with conflicting structures cannot be tamed */
 	    mtmp->isshk || mtmp->isgd || mtmp->ispriest || mtmp->isminion ||
 	    mtmp->mtyp == urole.neminum ||
@@ -1613,9 +1613,9 @@ boolean was_dead;
     }
 
     if (edog && (edog->killed_by_u == 1 || edog->abuse > 2)) {
-	untame(mtmp, 0);
-	if (edog->abuse >= 0 && edog->abuse < 10)
-	    if (!rn2(edog->abuse + 1)) mtmp->mpeaceful = 1;
+      boolean be_peaceful = edog->abuse >= 0 && edog->abuse < 10 && !rn2(edog->abuse + 1);
+      untame(mtmp, be_peaceful);
+      edog = (struct edog *)0;
 	if(!quietly && cansee(mtmp->mx, mtmp->my)) {
 	    if (haseyes(youracedata)) {
 		if (haseyes(mtmp->data))
@@ -1632,7 +1632,8 @@ boolean was_dead;
     } else {
 	/* chance it goes wild anyway - Pet Semetary */
 	if (!(edog && (edog->loyal || edog->dominated)) && !rn2(mtmp->mtame)) {
-	    untame(mtmp, 0);
+      untame(mtmp, 0);
+      edog = (struct edog *)0;
 	}
     }
     if (!mtmp->mtame) {
