@@ -9247,11 +9247,11 @@ arti_invoke(obj)
 		break;
 		case DEATH_GAZE:{
 			struct monst *mtmp2;
-			if (u.uluck < -9) { /* uh oh... */
+			if (!Blind && !is_undead(youracedata) && u.uluck < -9) { /* uh oh... */
 				pline("The Eye turns on you!");
 				u.uhp = 0;
 				killer_format = KILLED_BY;
-				killer = "the Eye of Vecna";
+				killer = "a deadly gaze";
 				done(DIED);
 			}
 			pline("The Eye looks around with its icy gaze!");
