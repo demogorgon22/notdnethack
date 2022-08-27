@@ -924,9 +924,7 @@ static const struct def_skill Skill_Ana[] = {
     { P_SABER, P_EXPERT },		{ P_LONG_SWORD,  P_BASIC },
     { P_CLUB, P_SKILLED },		{ P_QUARTERSTAFF, P_EXPERT },
 	{ P_BROAD_SWORD, P_EXPERT },{ P_HAMMER, P_BASIC },
-//#ifdef FIREARMS
-    { P_FIREARM, P_EXPERT },
-//#endif
+    { P_FIREARM, P_EXPERT }, { P_POLEARMS, P_BASIC },
     { P_DART, P_EXPERT },		{ P_CROSSBOW, P_SKILLED },
     { P_WHIP, P_SKILLED },		 { P_BOOMERANG, P_EXPERT },
     { P_ATTACK_SPELL, P_SKILLED },	{ P_HEALING_SPELL, P_SKILLED },
