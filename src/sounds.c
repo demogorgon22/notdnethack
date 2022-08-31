@@ -3659,7 +3659,7 @@ int dz;
 		verbalize("Let's get out of here!");
 		mtmp->mpeaceful = 1;
 		mtmp = tamedog(mtmp, (struct obj *)0);
-		if(mtmp && mtmp->mtame){
+		if(mtmp && mtmp->mtame && get_mx(mtmp, MX_EDOG)){
 			EDOG(mtmp)->loyal = TRUE;
 			EDOG(mtmp)->waspeaceful = TRUE;
 			mtmp->mpeacetime = 0;
@@ -6312,6 +6312,9 @@ int floorID;
 	}
 	else
 	{
+		if (u.sealCounts == GATE_SPIRITS) {
+			unbind(u.spirit[0], FALSE);
+		}
 		spirit_type = u.sealCounts;
 	}
 

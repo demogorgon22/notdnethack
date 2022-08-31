@@ -2848,7 +2848,7 @@ int mode;
 		}
 	} else {
 		if(!len){
-			ward = pick_seal();
+			ward = pick_seal("Choose seal:");
 			len = 5;//seals are always 5.
 		}
 		if (ward == 0 || index(ebuf, '\033')) {
@@ -3721,7 +3721,8 @@ doseal()
 }
 
 int
-pick_seal()
+pick_seal(prompt)
+const char * prompt;
 {
 	winid tmpwin;
 	int i, n, how;
@@ -3827,7 +3828,7 @@ pick_seal()
 				MENU_UNSELECTED);
 			incntlet = (incntlet != 'z') ? (incntlet + 1) : 'A';
 		}
-		end_menu(tmpwin, "Choose seal:");
+		end_menu(tmpwin, prompt);
 
 		how = PICK_ONE;
 		n = select_menu(tmpwin, how, &selected);

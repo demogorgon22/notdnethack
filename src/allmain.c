@@ -507,8 +507,8 @@ boolean affect_game_state;
 	 * Most often, there is only one action type per player input.
 	 * In very rare circumstances, two actions that should take time can happen simultaneously.
 	 */
-	if(wizard && actiontypes_remaining != MOVE_CANCELLED && (actiontypes_remaining&MOVE_CANCELLED))
-		pline("ERROR: incompletely cancelled actions in you_action_cost: %d", actiontypes_remaining);
+	if(wizard && actiontypes_remaining != MOVE_CANCELLED && (actiontypes_remaining&MOVE_CANCELLED) && affect_game_state)
+		impossible("Incompletely cancelled actions in you_action_cost: %d", actiontypes_remaining-MOVE_CANCELLED);
 	for (i=0, current_action = MOVE_STANDARD;
 		actiontypes_remaining != 0;
 		current_action = 1<<i, i++)
@@ -533,12 +533,12 @@ boolean affect_game_state;
 			if (affect_game_state ? partial_action() : check_partial_action()) {
 				if (affect_game_state)
 					flags.movetoprint &= ~MOVE_PARTIAL;
-				current_cost = NORMAL_SPEED;
+				current_cost = highest_cost;
 			}
 			else {
 				if (affect_game_state)
 					flags.movetoprint |= MOVE_PARTIAL;
-				current_cost = 0;
+				return 0;
 			}
 			break;
 
@@ -3958,7 +3958,7 @@ printMons(){
 			// if()	Sprintf(eos(pbuf)," |hitasfour=\n");
 			if(is_vampire(ptr))	Sprintf(eos(pbuf)," |vampire=%s\n", is_vampire(ptr) ? "1":"");
 			if(can_betray(ptr))	Sprintf(eos(pbuf)," |traitor=%s\n", can_betray(ptr) ? "1":"");
-			if((!(is_covetous(ptr) || is_human(ptr))))	Sprintf(eos(pbuf)," |notame=%s\n", (!(is_covetous(ptr) || is_human(ptr))) ? "1":"");
+			if(is_untamable(ptr))	Sprintf(eos(pbuf)," |notame=%s\n", is_untamable(ptr) ? "1":"");
 			if((emits_light(ptr) == 1))	Sprintf(eos(pbuf)," |light1=%s\n", (emits_light(ptr) == 1) ? "1":"");
 			if((emits_light(ptr) == 2))	Sprintf(eos(pbuf)," |light2=%s\n", (emits_light(ptr) == 2) ? "1":"");
 			if((emits_light(ptr) == 3))	Sprintf(eos(pbuf)," |light3=%s\n", (emits_light(ptr) == 3) ? "1":"");
@@ -5302,7 +5302,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(symbiote.aatyp != AT_MAGC && symbiote.aatyp != AT_GAZE){
@@ -5387,7 +5387,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(symbiote.aatyp != AT_MAGC && symbiote.aatyp != AT_GAZE && symbiote.aatyp != AT_SPIT){
@@ -5667,7 +5667,7 @@ struct monst *magr;
 			if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 				continue;
 
-			if(!youdef && imprisoned(mdef))
+			if(!youdef && nonthreat(mdef))
 				continue;
 
 			if(mdef->mtyp == PM_PALE_NIGHT)
@@ -5746,7 +5746,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
@@ -5820,7 +5820,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
@@ -5892,7 +5892,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
@@ -5962,7 +5962,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
@@ -6032,7 +6032,7 @@ struct monst *magr;
 		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
 			continue;
 
-		if(!youdef && imprisoned(mdef))
+		if(!youdef && nonthreat(mdef))
 			continue;
 
 		if(mdef->mtyp == PM_PALE_NIGHT)

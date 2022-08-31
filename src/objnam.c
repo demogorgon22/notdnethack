@@ -1345,9 +1345,6 @@ char *buf;
 	if (show_poison){
 		if (arti_poisoned(obj) && obj->oartifact != ART_WEBWEAVER_S_CROOK)
 			Strcat(buf, "poisoned ");
-	
-		if (arti_silvered(obj))
-			Strcat(buf, "silvered ");
 	}
 	if (obj->opoisoned){
 		if (obj->opoisoned & OPOISON_BASIC) Strcat(buf, "poisoned ");
@@ -4227,6 +4224,7 @@ int wishflags;
 			&& strncmpi(bp, "golden scroll", 13) && strncmpi(bp, "Gold Scroll of Law", 18)
 			&& strncmpi(bp, "gold wand", 9) && strncmpi(bp, "gold piece", 10)
 			&& strncmpi(bp, "gold coin", 9) && strncmpi(bp, "Golden Sword of Y'ha-Talla", 26)
+			&& strncmpi(bp, "Golden Knight", 13)
 			&& strncmpi(bp, "gold golem", 10)
 		) {
 			mat = GOLD;

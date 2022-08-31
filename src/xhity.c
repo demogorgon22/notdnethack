@@ -20,6 +20,7 @@ STATIC_DCL int FDECL(xtinkery, (struct monst *, struct monst *, struct attack *,
 STATIC_DCL int FDECL(xengulfhurty, (struct monst *, struct monst *, struct attack *, int));
 STATIC_DCL int FDECL(xexplodey, (struct monst *, struct monst *, struct attack *, int));
 STATIC_DCL int FDECL(hmoncore, (struct monst *, struct monst *, struct attack *, struct attack *, struct obj **, void *, int, int, int, boolean, int, boolean, int));
+STATIC_DCL void FDECL(add_silvered_art_sear_adjectives, (char *, struct obj*));
 STATIC_DCL int FDECL(shadow_strike, (struct monst *));
 STATIC_DCL int FDECL(xpassivehity, (struct monst *, struct monst *, struct attack *, struct attack *, struct obj *, int, int, struct permonst *, boolean));
 
@@ -660,30 +661,36 @@ int tary;
 				otmp = (youagr) ? uswapwep : MON_SWEP(magr);
 			}
 			else if (aatyp == AT_MARI) {
-				/* randomly(ish) from inventory */
-				int wcount = 0;	// valid weapons so far
-				// loop through attacker's inv to find next allowable weapon to hit with
-				for (otmp = (youagr ? invent : magr->minvent); otmp; otmp = otmp->nobj){
-					if ((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
-						|| (otmp->otyp == CHAIN && pa->mtyp == PM_CATHEZAR)
-						)																	// valid weapon
-						&& !(otmp->oartifact && !always_twoweapable_artifact(otmp))			// ok artifact
-						&& (!bimanual(otmp, pa) || pa->mtyp == PM_GYNOID || pa->mtyp == PM_PARASITIZED_GYNOID)// not two-handed
-						&& (youagr || (otmp != MON_WEP(magr) && otmp != MON_SWEP(magr)))	// not wielded already (monster)
-						&& (!youagr || otmp->owt <= max(10, P_SKILL(P_TWO_WEAPON_COMBAT)*10))// not too heavy
-						&& (!youagr || (otmp != uwep && (!u.twoweap || otmp != uswapwep)))	// not wielded already (player)
-						&& !(is_ammo(otmp) || (is_bad_melee_pole(otmp) && !melee_polearms(pa)) || is_missile(otmp))	// not unsuitable for melee (ammo, polearm, missile)
-						&& !otmp->owornmask)												// not worn
-					{
-						/* we have a potential weapon */
-						if (wcount == marinum) {
-							// found the next weapon, exit loop
-							marinum++;
-							break;
-						}
-						else {
-							// not the next weapon, continue looping
-							wcount++;
+				if(youagr && !uwep && !(u.twoweap && uswapwep)){
+					//The PC is fighting unarmed
+					otmp = (struct obj *) 0;
+				}
+				else {
+					/* randomly(ish) from inventory */
+					int wcount = 0;	// valid weapons so far
+					// loop through attacker's inv to find next allowable weapon to hit with
+					for (otmp = (youagr ? invent : magr->minvent); otmp; otmp = otmp->nobj){
+						if ((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
+							|| (otmp->otyp == CHAIN && pa->mtyp == PM_CATHEZAR)
+							)																	// valid weapon
+							&& !(otmp->oartifact && !always_twoweapable_artifact(otmp))			// ok artifact
+							&& (!bimanual(otmp, pa) || pa->mtyp == PM_GYNOID || pa->mtyp == PM_PARASITIZED_GYNOID)// not two-handed
+							&& (youagr || (otmp != MON_WEP(magr) && otmp != MON_SWEP(magr)))	// not wielded already (monster)
+							&& (!youagr || otmp->owt <= max(10, P_SKILL(P_TWO_WEAPON_COMBAT)*10))// not too heavy
+							&& (!youagr || (otmp != uwep && (!u.twoweap || otmp != uswapwep)))	// not wielded already (player)
+							&& !(is_ammo(otmp) || (is_bad_melee_pole(otmp) && !melee_polearms(pa)) || is_missile(otmp))	// not unsuitable for melee (ammo, polearm, missile)
+							&& !otmp->owornmask)												// not worn
+						{
+							/* we have a potential weapon */
+							if (wcount == marinum) {
+								// found the next weapon, exit loop
+								marinum++;
+								break;
+							}
+							else {
+								// not the next weapon, continue looping
+								wcount++;
+							}
 						}
 					}
 				}
@@ -2887,7 +2894,7 @@ int dmg;				/* damage to deal */
 	}
 
 	/* debug */
-	if (wizard && youagr && ublindf && ublindf->otyp == LENSES)
+	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 		pline("(dmg = %d)", dmg);
 	/* deal damage */
 	*hp(mdef) -= dmg;
@@ -2900,6 +2907,12 @@ int dmg;				/* damage to deal */
 		flags.botl = 1;
 		if (dmg > 0 && magr)
 			magr->mhurtu = TRUE;
+		/* the golden knight saves you from dying from hp loss */
+		if (uarms && uarms->oartifact == ART_GOLDEN_KNIGHT && u.uhp < 1 && (u.uhp*-2 < u.uen) && !Upolyd)
+		{	
+			Your("power pours into your shield, and your mortal wounds close!");
+			healup(u.uen, 0, FALSE, FALSE); losepw(u.uen);
+		}
 		/* messages */
 		if ((dmg > 0) && (*hp(mdef) > 0) && (*hp(mdef) * 10 < *hpmax(mdef)) && !(Upolyd && !Unchanging))
 			maybe_wail();
@@ -3774,7 +3787,7 @@ int *shield_margin;
 		+ defn_acc
 		+ flat_acc;
 
-	if (wizard && ublindf && (ublindf->otyp == LENSES || ublindf->otyp == ANDROID_VISOR)) {
+	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_ACCURACY) && WIZCOMBATDEBUG_APPLIES(magr, mdef)) {
 		pline("Accuracy = %d+%d+%d+%d+%d+%d+%d+%d=%d",
 			base_acc,
 			rang_acc,
@@ -3878,7 +3891,7 @@ boolean ranged;
 	/* roll to-hit die */
 	dieroll = rnd(20);
 	
-	if (wizard && ublindf && (ublindf->otyp == LENSES || ublindf->otyp == ANDROID_VISOR)) {
+	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_ACCURACY) && WIZCOMBATDEBUG_APPLIES(magr, mdef)) {
 		pline("accuracy = %d, die roll = %d", accuracy, dieroll);
 	}
 	/* Diverge on aatyp */
@@ -12955,10 +12968,19 @@ int vis;						/* True if action is at all visible to the player */
 	long rslot = 0L;	/* slot, dedicated to rings (left and right) -- set at start, should not be reset */
 
 	/* pick the most correct ring slot */
-	rslot = (!melee || !attk || !magr || attk->aatyp == AT_MARI) ? 0L	/* no attack, or no attacker, or marilith: not a ring-hand */
-		//: (attk->aatyp == AT_WEAP || attk->aatyp == AT_DEVA || attk->aatyp == AT_HODS) ? W_RINGR /* mainhand */
-		//: (attk->aatyp == AT_XWEP) ? W_RINGL	/* offhand */
-		: ((youagr ? uarms : which_armor(magr, W_ARMS)) || !rn2(2)) ? W_RINGR : W_RINGL;	/* either hand, but not offhand if wearing a shield */
+	if(!youagr || !magr)
+		rslot = 0L; /* no attacker or the attacker isn't you (redundant for now) */
+	else if(!melee || !attk || attk->aatyp == AT_MARI)
+		rslot = 0L; /* no attack, not in melee, or marilith: not a ring-hand */
+	else if(youagr ? uarms : which_armor(magr, W_ARMS))
+		rslot = W_RINGR; /* sadly, all characters are right-handed */
+	else if(u.twoweap){
+		if(attk->aatyp == AT_XWEP || attk->aatyp == AT_XSPR || attk->offhand)
+			rslot = W_RINGL;
+		else 
+			rslot = W_RINGR;
+	}
+	else rslot = rn2(2) ? W_RINGR : W_RINGL;
 
 	int precision_mult = 0;	/* damage multiplier for precision weapons */
 
@@ -13663,8 +13685,6 @@ int vis;						/* True if action is at all visible to the player */
 		poisons |= poisonedobj->opoisoned;
 		if (arti_poisoned(poisonedobj))
 			poisons |= OPOISON_BASIC;
-		if (arti_silvered(poisonedobj))
-			poisons |= OPOISON_SILVER;
 		if (poisonedobj->oartifact == ART_WEBWEAVER_S_CROOK)
 			poisons |= (OPOISON_SLEEP | OPOISON_BLIND | OPOISON_PARAL);
 		if (is_wet_merc(poisonedobj) && !rn2(5))
@@ -15175,7 +15195,7 @@ int vis;						/* True if action is at all visible to the player */
 	lethaldamage = (totldmg >= *hp(mdef));
 
 	/* Debug mode: report sum components */
-	if (wizard && ublindf && (ublindf->otyp == LENSES || ublindf->otyp == ANDROID_VISOR)) {
+	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_FULLDMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef)) {
 		pline("dmg = (b:%d + art:%d + bon:%d + mon:%d + s/j:%d - defense) = %d; + add:%d = %d",
 			basedmg,
 			artidmg,
@@ -15506,6 +15526,8 @@ int vis;						/* True if action is at all visible to the player */
 		long active_slots = (silverobj | jadeobj | grnstlobj | ironobj | holyobj | unholyobj | unblessedobj | otherobj);
 		char buf[BUFSZ];
 		char * obuf;
+		boolean plural = FALSE;
+		char searcount = 0;
 		/* Examples:
 		 * Your silver skin and blessed silver ring sear Foo's flesh!
 		 * Bar's white-burning blade sears Foo!
@@ -15519,6 +15541,7 @@ int vis;						/* True if action is at all visible to the player */
 		/* skin / simurgh claws */
 		slot = W_SKIN;
 		if (active_slots & slot) {
+			searcount++;
 			if (holyobj & slot)
 				Strcat(buf, "glorious ");
 			if (unholyobj & slot)
@@ -15559,6 +15582,7 @@ int vis;						/* True if action is at all visible to the player */
 		/* weapon */
 		slot = W_WEP;
 		if (active_slots & slot) {
+			searcount++;
 			otmp = weapon;
 			obuf = xname(otmp);
 
@@ -15589,8 +15613,11 @@ int vis;						/* True if action is at all visible to the player */
 			}
 			else {
 				if (silverobj & slot){
-					if (!strstri(obuf, "silver "))
-						Strcat(buf, (otmp->obj_material != SILVER ? "silvered " : "silver "));
+					if (!strstri(obuf, "silver")){
+						if(otmp->obj_material != SILVER && arti_silvered(otmp))
+							add_silvered_art_sear_adjectives(buf, otmp);
+						else Strcat(buf, (otmp->obj_material != SILVER ? "silvered " : "silver "));
+					}
 				}
 				if (jadeobj & slot) {
 					if (!strstri(obuf, "jade "))
@@ -15633,6 +15660,7 @@ int vis;						/* True if action is at all visible to the player */
 
 			if (otmp)
 			{
+				searcount++;
 				if (holyobj & slot)
 					Strcat(buf,
 					(otmp->known && (check_oprop(otmp, OPROP_HOLYW) || check_oprop(otmp, OPROP_HOLY))) ? "holy " : 
@@ -15649,7 +15677,9 @@ int vis;						/* True if action is at all visible to the player */
 					(otmp->known && check_oprop(otmp, OPROP_LESSER_CONCW)) ? "accordant " : "uncursed "
 					);
 				if (silverobj & slot){
-					Strcat(buf, ((jadeobj&slot) || (ironobj&slot) ? "silvered " : "silver "));
+					if(otmp->obj_material != SILVER && arti_silvered(otmp))
+						add_silvered_art_sear_adjectives(buf, otmp);
+					else Strcat(buf, (otmp->obj_material != SILVER || (jadeobj&slot) || (ironobj&slot) ? "silvered " : "silver "));
 				}
 				if (jadeobj & slot) {
 					Strcat(buf, "jade ");
@@ -15674,9 +15704,11 @@ int vis;						/* True if action is at all visible to the player */
 		{
 		case W_ARMG:
 			otmp = (youagr ? uarmg : which_armor(magr, slot));
+			plural = TRUE;
 			break;
 		case W_ARMF:
 			otmp = (youagr ? uarmf : which_armor(magr, slot));
+			plural = TRUE;
 			break;
 		case W_ARMH:
 			otmp = (youagr ? uarmh : which_armor(magr, slot));
@@ -15686,6 +15718,9 @@ int vis;						/* True if action is at all visible to the player */
 			break;
 		}
 		if (otmp && (active_slots & slot)) {
+			searcount++;
+			if(plural)
+				searcount++;
 			obuf = xname(otmp);
 			if (active_slots & (W_SKIN|W_WEP|rslot))
 				Strcat(buf, " and ");
@@ -15706,8 +15741,11 @@ int vis;						/* True if action is at all visible to the player */
 				(otmp->known && check_oprop(otmp, OPROP_LESSER_CONCW)) ? "accordant " : "uncursed "
 				);
 			if (silverobj & slot){
-				if (!strstri(obuf, "silver "))
-					Strcat(buf, (otmp->obj_material != SILVER ? "silvered " : "silver "));
+				if (!strstri(obuf, "silver")){
+					if(otmp->obj_material != SILVER && arti_silvered(otmp))
+						add_silvered_art_sear_adjectives(buf, otmp);
+					else Strcat(buf, (otmp->obj_material != SILVER ? "silvered " : "silver "));
+				}
 			}
 			if (jadeobj & slot) {
 				if (!strstri(obuf, "jade "))
@@ -15737,7 +15775,7 @@ int vis;						/* True if action is at all visible to the player */
 				(youdef ? body_part(BODY_FLESH) : mbodypart(mdef, BODY_FLESH))
 				);
 		}
-		pline("%s sears %s!", buf, seared);
+		pline("%s sear%s %s!", buf, (searcount > 1) ? "" : "s", seared);
 	}
 
 	/* poison */
@@ -16204,6 +16242,61 @@ int vis;						/* True if action is at all visible to the player */
 	}
 
 	return result;
+}
+
+void
+add_silvered_art_sear_adjectives(buf, otmp)
+char *buf;
+struct obj *otmp;
+{
+	switch(otmp->oartifact){
+		default:
+			if (!strstri(xname(otmp), "silver"))
+				Strcat(buf, "silvered ");
+		break;
+		case ART_NODENSFORK:
+			Strcat(buf, "silver-waved ");
+		break;
+		case ART_PEACE_KEEPER:
+			Strcat(buf, "minute-silver-runed ");
+		break;
+		case ART_SKY_RENDER:
+			Strcat(buf, "half-silver ");
+		break;
+		case ART_WATER_FLOWERS:
+			Strcat(buf, "silver-flowered ");
+		break;
+		case ART_GAUNTLETS_OF_SPELL_POWER:
+			Strcat(buf, "silver-runed ");
+		break;
+		case ART_LOLTH_S_FANG:
+			Strcat(buf, "silver-edged ");
+		break;
+		case ART_WEB_OF_LOLTH:
+			Strcat(buf, "silver-starred ");
+		break;
+		case ART_RUINOUS_DESCENT_OF_STARS:
+			Strcat(buf, "silver-spiked ");
+		break;
+		case ART_STAFF_OF_AESCULAPIUS:
+			Strcat(buf, "silver-snaked ");
+		break;
+		case ART_DURIN_S_AXE:
+			Strcat(buf, "silver-inlaid ");
+		break;
+		case ART_WEB_OF_THE_CHOSEN:
+			Strcat(buf, "silver-dewed ");
+		break;
+		case ART_YENDORIAN_EXPRESS_CARD:
+			Strcat(buf, "silver-writing-embossed ");
+		break;
+		case ART_UNBLEMISHED_SOUL:
+			Strcat(buf, "silver-spattered ");
+		break;
+		case ART_WRATHFUL_WIND:
+			Strcat(buf, "silver-clouded ");
+		break;
+	}
 }
 
 /* shadow_strike()
@@ -17900,7 +17993,7 @@ movement_combos()
 	save_d.y = 0;
 }
 
-#define peace_check_monk(mon) ((canspotmon(mon) || mon_warning(mon)) && (Hallucination || !mon->mpeaceful) && !imprisoned(mon))
+#define peace_check_monk(mon) ((canspotmon(mon) || mon_warning(mon)) && (Hallucination || !mon->mpeaceful) && !nonthreat(mon))
 
 struct monst *
 adjacent_monk_target(arm)

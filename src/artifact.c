@@ -4426,7 +4426,7 @@ boolean lethal;
 		)
 			continue;
 
-		if(!youtar && imprisoned(target))
+		if(!youtar && nonthreat(target))
 			continue;
 
 		targets[count++] = target;
@@ -8691,7 +8691,7 @@ arti_invoke(obj)
 				u.sealsKnown = obj->ovar1;
 				u.specialSealsKnown = 0;
 				u.uconduct.literate++;
-				lostname = pick_seal();
+				lostname = pick_seal("Bind spirit:");
 				u.sealsKnown = yourseals;
 				u.specialSealsKnown = yourspecial;
 				if(!lostname) break;
@@ -12363,7 +12363,7 @@ do_passive_attacks()
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 		if(DEADMONSTER(mtmp))
 			continue;
-		if(!mtmp->mappearance && !imprisoned(mtmp) && !mtmp->msleeping && mtmp->mcanmove && !(mtmp->mstrategy & STRAT_WAITMASK)){
+		if(!mtmp->mappearance && !nonthreat(mtmp) && !mtmp->msleeping && mtmp->mcanmove && !(mtmp->mstrategy & STRAT_WAITMASK)){
 			if(is_goat_tentacle_mon(mtmp))
 				dogoat_mon(mtmp);
 			if(is_snake_bite_mon(mtmp))

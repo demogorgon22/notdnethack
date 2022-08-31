@@ -3233,8 +3233,6 @@ winid *datawin;
 			//int artipoisons = 0;
 			if (arti_poisoned(obj))
 				poisons |= OPOISON_BASIC;
-			if (arti_silvered(obj))
-				poisons |= OPOISON_SILVER;
 			if (oartifact == ART_WEBWEAVER_S_CROOK)
 				poisons |= (OPOISON_SLEEP | OPOISON_BLIND | OPOISON_PARAL);
 			if (oartifact == ART_SUNBEAM)
@@ -3832,6 +3830,7 @@ winid *datawin;
 	if (otyp == GAUNTLETS_OF_POWER ||
 		oartifact == ART_SCEPTRE_OF_MIGHT ||
 		oartifact == ART_STORMBRINGER ||
+		oartifact == ART_GOLDEN_KNIGHT ||
 		oartifact == ART_OGRESMASHER)			OBJPUTSTR("Greatly increases STR.");
 	if (oartifact == ART_STORMBRINGER ||
 		oartifact == ART_GREAT_CLAWS_OF_URDLEN ||

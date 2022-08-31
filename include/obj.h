@@ -872,9 +872,11 @@ struct obj {
 
 #define is_plusten(otmp)	(arti_plusten(otmp)\
 								|| is_rakuyo(otmp)\
+								|| rakuyo_prop(otmp)\
 								|| is_mercy_blade(otmp)\
 								|| otmp->otyp == ISAMUSEI\
 								|| otmp->otyp == BESTIAL_CLAW\
+								|| check_oprop(otmp, OPROP_CCLAW)\
 								)
 #define is_plussev_armor(otmp)	(is_elven_armor((otmp))\
 								|| arti_plussev((otmp))\
@@ -1117,6 +1119,15 @@ struct obj {
 							|| onum == GENTLEMAN_S_SUIT\
 							|| onum == find_gcirclet())
 
+#define is_museable_amulet(otyp) (otyp == AMULET_OF_LIFE_SAVING \
+								||otyp == AMULET_OF_REFLECTION \
+								||otyp == AMULET_OF_NULLIFY_MAGIC \
+								||otyp == AMULET_OF_MAGICAL_BREATHING \
+								||otyp == AMULET_OF_DRAIN_RESISTANCE \
+								||otyp == AMULET_VERSUS_CURSES \
+								||otyp == AMULET_OF_ESP \
+								||otyp == AMULET_VERSUS_POISON \
+								)
 
 /* helpers, simple enough to be macros */
 #define is_plural(o)	((o)->quan > 1 || \

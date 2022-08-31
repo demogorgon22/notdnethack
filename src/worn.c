@@ -830,8 +830,9 @@ struct monst *mon;
 	}
 	if(armac > 11) armac = rnd(armac-10) + 10; /* high armor ac values act like player ac values */
 	
-	if (wizard && ublindf && (ublindf->otyp == LENSES || ublindf->otyp == ANDROID_VISOR))
+	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_ACCURACY) && WIZCOMBATDEBUG_APPLIES((struct monst *)0, mon)) {
 		pline("base: %d, armac: %d", base, armac);
+	}
 	
 	base -= armac;
 	/* since arm_ac_bonus is positive, subtracting it increases AC */
@@ -1442,8 +1443,7 @@ boolean racialexception;
 		case W_AMUL:
 		    if (obj->oclass != AMULET_CLASS ||
 				!can_wear_amulet(mon->data) || 
-			    (obj->otyp != AMULET_OF_LIFE_SAVING &&
-				obj->otyp != AMULET_OF_REFLECTION))
+			    !searches_for_item(mon, obj))
 			continue;
 		    best = obj;
 		    goto outer_break; /* no such thing as better amulets */
