@@ -22,7 +22,6 @@ STATIC_DCL int FDECL(menu_drop, (int));
 #endif
 #ifdef OVL2
 STATIC_DCL int NDECL(currentlevel_rewrite);
-STATIC_DCL int NDECL(acuOK);
 STATIC_DCL void NDECL(final_level);
 STATIC_DCL boolean NDECL(no_spirits);
 
@@ -890,6 +889,11 @@ int retry;
 #endif /* OVL0 */
 #ifdef OVL2
 
+enum AcuItemsCheck {
+	ACU_MISSING_STAFF = (1 << 0),
+	ACU_MISSING_FLUID = (1 << 1),
+};
+
 /* on a ladder, used in goto_level */
 static NEARDATA boolean at_ladder = FALSE;
 
@@ -1060,15 +1064,14 @@ doup()
 			if (yn("Beware, there will be no return! Still climb?") != 'y')
 				return MOVE_CANCELLED;
 		} else {
-			int items = acuOK();
+			int missing_items = acu_asc_items_check();
 			if (yn("Beware, there will be no return! Still climb?") != 'y')
 				return MOVE_CANCELLED;
-			else if(u.uhave.amulet && items){
-				You("require the %s.",items == 1?"Illithid Staff":items == 2?"Elder Cerebral Fluid":"Illithid Staff and the Elder Cerebral Fluid");
+			else if(u.uhave.amulet && missing_items){
+				acu_asc_items_warning(missing_items);
 				return MOVE_CANCELLED;
 			}
 		}
-
 	}
 	if(!next_to_u()) {
 		You("are held back by your pet!");
@@ -1083,20 +1086,36 @@ doup()
 /*
 * Disclaimer, I do not endorse this code or know if it works and I refuse to read it so we are sticking with it.
 */
-STATIC_OVL int
-acuOK()
+int
+acu_asc_items_check()
 {
 	struct obj *otmp;
-	int found = 3;
+	int missing_items = ACU_MISSING_STAFF | ACU_MISSING_FLUID;
 	for(otmp = invent; otmp; otmp=otmp->nobj){
 		if(otmp->oartifact == ART_ILLITHID_STAFF){
-			if(otmp->cobj->oartifact == ART_ELDER_CEREBRAL_FLUID) found -=2;
-			found -= 1;
+			if(otmp->cobj->oartifact == ART_ELDER_CEREBRAL_FLUID) {
+				missing_items &= ~ACU_MISSING_FLUID;
+			}
+			missing_items &= ~ACU_MISSING_STAFF;
 		} else if(otmp->oartifact == ART_ELDER_CEREBRAL_FLUID){
-			found -=2;
+			missing_items &= ~ACU_MISSING_FLUID;
 		}
 	}
-	return found;
+	return missing_items;
+}
+
+void
+acu_asc_items_warning(int missing_items)
+{
+	if (!missing_items) {
+		impossible("warning about not-missing acu items");
+		return;
+	}
+	You("require the %s.", missing_items == ACU_MISSING_STAFF
+						? "Illithid Staff"
+						: missing_items == ACU_MISSING_FLUID
+							? "Elder Cerebral Fluid"
+							: "Illithid Staff and the Elder Cerebral Fluid");
 
 }
 

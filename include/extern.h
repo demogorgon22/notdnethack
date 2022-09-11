@@ -491,6 +491,8 @@ E boolean FDECL(obj_summon_out, (struct obj *));
 E int NDECL(doddrop);
 E int NDECL(dodown);
 E int NDECL(doup);
+E int NDECL(acu_asc_items_check);
+E void FDECL(acu_asc_items_warning, (int));
 #ifdef INSURANCE
 E void NDECL(save_currentstate);
 #endif
