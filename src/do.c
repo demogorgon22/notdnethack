@@ -1022,9 +1022,9 @@ doup()
 			pseudo->blessed = pseudo->cursed = 0;
 			pseudo->blessed = TRUE;
 			pseudo->quan = 23L;			/* do not let useup get it */
-			(void) peffects(pseudo);
-			(void) peffects(pseudo);
-			(void) peffects(pseudo);
+			(void) peffects(pseudo, TRUE);
+			(void) peffects(pseudo, TRUE);
+			(void) peffects(pseudo, TRUE);
 			obfree(pseudo, (struct obj *)0);	/* now, get rid of it */
 			artinstance[ART_ROD_OF_SEVEN_PARTS].RoSPflights--;
 		}
@@ -1709,9 +1709,14 @@ misc_levelport:
 		if(Role_if(PM_EXILE)){
 			You("sense something reaching out to you....");
 		} else if(Role_if(PM_MADMAN)){
-			You("receive a faint telepathic message from Lady Constance:");
-			pline("Your help is urgently needed at Archer Asylum!  Look for a ...ic transporter.");
-			pline("You couldn't quite make out that last message.");
+			if(u.uevent.qcalled){
+				You("again sense Lady Constance pleading for help.");
+			}
+			else {
+				You("receive a faint telepathic message from Lady Constance:");
+				pline("Your help is urgently needed at Archer Asylum!  Look for a ...ic transporter.");
+				pline("You couldn't quite make out that last message.");
+			}
 		} else {
 			if (u.uevent.qcalled) {
 				com_pager(Role_if(PM_ROGUE) ? 4 : 3);

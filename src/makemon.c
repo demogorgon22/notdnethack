@@ -1868,11 +1868,11 @@ boolean goodequip;
 			switch(rn2(6)){
 				case 0:
 					otmp = mongets(mtmp, SICKLE, mkobjflags);
-					set_material_gm(otmp, OBSIDIAN_MT);
+					if(otmp) set_material_gm(otmp, OBSIDIAN_MT);
 				break;
 				case 1:
 					otmp = mongets(mtmp, SCYTHE, mkobjflags);
-					set_material_gm(otmp, OBSIDIAN_MT);
+					if(otmp) set_material_gm(otmp, OBSIDIAN_MT);
 				break;
 				case 2:
 					(void)mongets(mtmp, DROVEN_DAGGER, mkobjflags);
@@ -2059,27 +2059,34 @@ boolean goodequip;
 		} else if(mm == PM_ALABASTER_ELF){
 			if(rn2(3)){
 				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
-				set_material_gm(otmp, METAL);
-				otmp->objsize = MZ_HUGE;
-				fix_object(otmp);
-				(void) mpickobj(mtmp, otmp);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					otmp->objsize = MZ_HUGE;
+					fix_object(otmp);
+					(void) mpickobj(mtmp, otmp);
+				}
 			} else if(rn2(3)){
 				otmp = mksobj(ELVEN_DAGGER, mkobjflags);
-				set_material_gm(otmp, METAL);
-				otmp->objsize = MZ_LARGE;
-				fix_object(otmp);
-				(void) mpickobj(mtmp, otmp);
-				
-				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
-				set_material_gm(otmp, METAL);
-				fix_object(otmp);
-				(void) mpickobj(mtmp, otmp);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					otmp->objsize = MZ_LARGE;
+					fix_object(otmp);
+					(void) mpickobj(mtmp, otmp);
+				}
+				if(otmp){
+					otmp = mksobj(ELVEN_SICKLE, mkobjflags);
+					set_material_gm(otmp, METAL);
+					fix_object(otmp);
+					(void) mpickobj(mtmp, otmp);
+				}
 			} else {
 				otmp = mksobj(ELVEN_BROADSWORD, mkobjflags);
-				set_material_gm(otmp, METAL);
-				if(rn2(2)) otmp->objsize = MZ_LARGE;
-				fix_object(otmp);
-				(void) mpickobj(mtmp, otmp);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					if(rn2(2)) otmp->objsize = MZ_LARGE;
+					fix_object(otmp);
+					(void) mpickobj(mtmp, otmp);
+				}
 			}
 			
 			(void)mongets(mtmp, ELVEN_BOW, mkobjflags);
@@ -2497,7 +2504,10 @@ boolean goodequip;
 		otmp = mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 		if(otmp) otmp->obj_color = CLR_BLACK;
 		otmp = mongets(mtmp, CLOAK, mkobjflags);
-		if(otmp) otmp->obj_color = CLR_BLACK;
+		if(otmp){
+			otmp->obj_color = CLR_BLACK;
+			add_oprop(otmp, OPROP_MAGC);
+		}
 		otmp = mongets(mtmp, GLOVES, mkobjflags);
 		if(otmp) otmp->obj_color = CLR_BLACK;
 		mongets(mtmp, WITCH_HAT, mkobjflags);
@@ -6887,6 +6897,10 @@ int mmflags;
 			} else if(ptr->mtyp == PM_DEMINYMPH){
 				if(faction == GOATMOM_FACTION){
 					//Cultist of the Black Goat
+					boolean special = FALSE;
+					if(in_mklev && on_level(&lethe_temples, &u.uz)){
+						special = TRUE;
+					}
 					mtmp->mvar_deminymph_role = PM_PRIEST;
 					otmp = mksobj(VIPERWHIP, mkobjflags|MKOBJ_NOINIT);
 					otmp->spe = 3;
@@ -6894,6 +6908,10 @@ int mmflags;
 					otmp->opoisoned = OPOISON_ACID;
 					otmp->opoisonchrgs = 3;
 					set_material_gm(otmp, BONE);
+					if(special){
+						add_oprop(otmp, OPROP_ASECW);
+						add_oprop(otmp, OPROP_LIVEW);
+					}
 					(void) mpickobj(mtmp, otmp);
 					int threshold = rnd(10)+rn2(11);
 					if(mtmp->female && u.uinsight > threshold){
@@ -6911,6 +6929,14 @@ int mmflags;
 					set_material_gm(otmp, BONE);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
+					if(special){
+						otmp = mksobj(CLOAK, mkobjflags);
+						otmp->spe = 2;
+						set_material_gm(otmp, FLESH);
+						add_oprop(otmp, OPROP_MAGC);
+						fix_object(otmp);
+						(void) mpickobj(mtmp, otmp);
+					}
 					otmp = mksobj(GAUNTLETS, mkobjflags);
 					otmp->spe = 2;
 					set_material_gm(otmp, BONE);

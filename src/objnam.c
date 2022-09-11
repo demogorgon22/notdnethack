@@ -4065,6 +4065,7 @@ int wishflags;
 		} else if (!strncmpi(bp, "rusty ", l=6) ||
 			   !strncmpi(bp, "rusted ", l=7) ||
 			   !strncmpi(bp, "burnt ", l=6) ||
+			   !strncmpi(bp, "tenuous ", l=8) ||
 			   !strncmpi(bp, "burned ", l=7)) {
 			eroded = 1 + very;
 			very = 0;
@@ -5644,7 +5645,7 @@ typfnd:
 	
 	/* set eroded */
 	if (is_damageable(otmp) || otmp->otyp == MASK || otmp->otyp == CRYSKNIFE) {
-	    if (eroded && (is_flammable(otmp) || is_rustprone(otmp)))
+	    if (eroded && (is_flammable(otmp) || is_rustprone(otmp) || is_evaporable(otmp)))
 		    otmp->oeroded = eroded;
 	    if (eroded2 && (is_corrodeable(otmp) || is_rottable(otmp)))
 		    otmp->oeroded2 = eroded2;

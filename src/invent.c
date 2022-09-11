@@ -913,14 +913,13 @@ carrying_readable_armor()
 		if(otmp->oclass == ARMOR_CLASS
 			&& ((otmp->ohaluengr
 					&& otmp->oward
-					&& (   otmp->otyp == DROVEN_PLATE_MAIL 
-						|| otmp->otyp == DROVEN_CHAIN_MAIL
-						|| otmp->otyp == CONSORT_S_SUIT)
+					&& is_readable_armor_otyp(otmp->otyp)
 				) || (otmp->oartifact && (
-					otmp->oartifact == ART_ITLACHIAYAQUE)
+					otmp->oartifact == ART_ITLACHIAYAQUE
+				 )
 				)
 			   )
-			)
+		)
 			return TRUE;
 	return FALSE;
 }
@@ -5610,7 +5609,7 @@ u_healing_penalty()
 	if(hates_unblessed(youracedata)){
 		penalty += (8*u_bcu_next_to_skin(0)+1)/2;
 	}
-	if(is_demon(youracedata) || is_undead(youracedata)){
+	if(hates_holy(youracedata)){
 		penalty += (4*u_bcu_next_to_skin(1)+1)/2;
 	}
 	if(u.ualign.type == A_CHAOTIC){
@@ -5703,14 +5702,14 @@ int material;
 {
 	int count = 0;
 	if(uarmu && uarmu->obj_material == material)
-		count++;
+		count += uarmu->otyp == BODYGLOVE ? 5 : 1;
 	if(uarmu && uarmu->otyp == BODYGLOVE)
 		return count;
 	if(uwep && uwep->obj_material == material && !uarmg)
 		count++;
 	if(uarm && uarm->obj_material == material && !uarmu)
 		count++;
-	if(uarmc && uarmc->obj_material == material && !uarmu && !uarm)
+	if(uarmc && uarmc->obj_material == material && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
 		count++;
 	if(uarmh && uarmh->obj_material == material)
 		count++;
@@ -5724,9 +5723,9 @@ int material;
 		count++;
 	if(uright && uright->obj_material == material)
 		count++;
-	if(uamul && uamul->obj_material == material && !uarmu && !uarm)
+	if(uamul && uamul->obj_material == material && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
 		count++;
-	if(u.uentangled && !uarmu && !uarm && !uarmc && entangle_material(&youmonst, material))
+	if(u.uentangled && !uarmu && !uarm && !(uarm && arm_blocks_upper_body(uarm->otyp)) && entangle_material(&youmonst, material))
 		count++;
 	if(ublindf && ublindf->obj_material == material)
 		count++;
@@ -5744,14 +5743,14 @@ int bcu;
 	#define bcu(otmp) (is_unholy(otmp) ? -1 : otmp->blessed ? 1 : 0)
 	int count = 0;
 	if(uarmu && bcu(uarmu) == bcu)
-		count++;
+		count += uarmu->otyp == BODYGLOVE ? 5 : 1;
 	if(uarmu && uarmu->otyp == BODYGLOVE)
 		return count;
 	if(uwep && bcu(uwep) == bcu && !uarmg)
 		count++;
 	if(uarm && bcu(uarm) == bcu && !uarmu)
 		count++;
-	if(uarmc && bcu(uarmc) == bcu && !uarmu && !uarm)
+	if(uarmc && bcu(uarmc) == bcu && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
 		count++;
 	if(uarmh && bcu(uarmh) == bcu)
 		count++;
@@ -5765,9 +5764,9 @@ int bcu;
 		count++;
 	if(uright && bcu(uright) == bcu)
 		count++;
-	if(uamul && bcu(uamul) == bcu && !uarmu && !uarm)
+	if(uamul && bcu(uamul) == bcu && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
 		count++;
-	if(u.uentangled && !uarmu && !uarm && !uarmc && entangle_beatitude(&youmonst, bcu))
+	if(u.uentangled && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc && entangle_beatitude(&youmonst, bcu))
 		count++;
 	if(ublindf && bcu(ublindf) == bcu)
 		count++;

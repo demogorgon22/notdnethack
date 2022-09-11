@@ -1384,7 +1384,7 @@ int mkflags;
 				otmp->age = (long) rn1(5000,7500);
 				otmp->lamplit = 0;
 			}
-			if (otmp->otyp == DROVEN_PLATE_MAIL || otmp->otyp == DROVEN_CHAIN_MAIL || otmp->otyp == CONSORT_S_SUIT){
+			if (is_readable_armor_otyp(otmp->otyp)){
 				otmp->ohaluengr = TRUE;
 				if (Race_if(PM_DROW) && Is_qstart(&u.uz)) otmp->oward = u.start_house;
 				else if (!(rn2(10))) otmp->oward = rn2(EDDER_SYMBOL + 1 - LOLTH_SYMBOL) + LOLTH_SYMBOL;

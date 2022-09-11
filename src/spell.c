@@ -4881,7 +4881,7 @@ dothrowspell:
 		if (role_skill >= P_SKILLED) pseudo->blessed = 1;
 		/* fall through */
 	case SPE_INVISIBILITY:
-		(void) peffects(pseudo);
+		(void) peffects(pseudo, TRUE);
 		break;
 
 	case SPE_CURE_BLINDNESS:
