@@ -364,7 +364,7 @@ int
 init_village(rndlevs)
 int rndlevs;
 {
-	if(Race_if(PM_ELF))
+	if(Race_if(PM_ELF) || Race_if(PM_ENT))
 		return FOREST_VILLAGE;
 	int levvar;
 	boolean levelBad = TRUE;
