@@ -1372,6 +1372,8 @@ int ochance, achance;	/* percent chance for ordinary objects, artifacts */
 	    (obj->oartifact >= ART_FIRST_KEY_OF_LAW && obj->oartifact <= ART_THIRD_KEY_OF_NEUTRALITY) ||
 	    obj->oartifact == ART_PEN_OF_THE_VOID ||
 	    obj->oartifact == ART_ANNULUS ||
+	    obj->oartifact == ART_ILLITHID_STAFF ||
+	    obj->oartifact == ART_ELDER_CEREBRAL_FLUID ||
 	    (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
 		return TRUE;
 	} else {

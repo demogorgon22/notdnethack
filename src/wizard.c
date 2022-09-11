@@ -138,6 +138,8 @@ register struct monst *mtmp;
 			(otmp->oartifact >= ART_FIRST_KEY_OF_LAW && otmp->oartifact <= ART_THIRD_KEY_OF_NEUTRALITY) ||
 			otmp->oartifact == ART_PEN_OF_THE_VOID ||
 			otmp->oartifact == ART_ANNULUS ||
+			otmp->oartifact == ART_ILLITHID_STAFF ||
+			otmp->oartifact == ART_ELDER_CEREBRAL_FLUID ||
 			otmp->otyp == BELL_OF_OPENING ||
 			otmp->otyp == CANDELABRUM_OF_INVOCATION ||
 			otmp->otyp == SPE_BOOK_OF_THE_DEAD) return(1);

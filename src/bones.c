@@ -168,6 +168,11 @@ boolean restore;
 				rem_ox(otmp, OX_ENAM);
 				otmp->owt = weight(otmp);
 			}
+			if (otmp->oartifact == ART_ILLITHID_STAFF || otmp->oartifact == ART_ELDER_CEREBRAL_FLUID) { /*Convert ACU special artis to oridnary items */
+				otmp->oartifact = 0;
+				rem_ox(otmp, OX_ENAM);
+				otmp->owt = weight(otmp);
+			}
 			if (otmp->oartifact == ART_HAND_OF_VECNA ||
 				otmp->oartifact == ART_EYE_OF_VECNA
 			) { /*Convert the Vecna artifacts to an ordinary whatever*/
