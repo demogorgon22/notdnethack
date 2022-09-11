@@ -2106,6 +2106,7 @@ boolean goodequip;
 			mtmp->m_lev = 4;
 			mtmp->mhp = mtmp->mhpmax = 6*mtmp->m_lev;
 			if(mtmp->female){
+				(void)mongets(mtmp, CRYSTAL_HELM, mkobjflags);
 				otmp = mksobj(NOBLE_S_DRESS, mkobjflags);
 				set_material_gm(otmp, PLASTIC);
 				otmp->obj_color = CLR_WHITE;
@@ -6399,7 +6400,7 @@ int mmflags;
 					otmp = mongets(mtmp, PISTOL, mkobjflags);
 					if(otmp){
 						otmp->spe = 7;
-						add_oprop(otmp, OPROP_BLADED);
+						// add_oprop(otmp, OPROP_BLADED);
 						otmp = mksobj(SILVER_BULLET, mkobjflags);
 						if(otmp){
 							otmp->quan += rn1(100,100);
@@ -6419,6 +6420,7 @@ int mmflags;
 					
 					otmp = mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
 					if(otmp){
+						otmp->obj_color = CLR_GRAY;
 						otmp->spe = rn1(4,4);
 						otmp->cursed = FALSE; //Either uncurses or has no effect.
 					}
