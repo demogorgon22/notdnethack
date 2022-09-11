@@ -1205,6 +1205,8 @@ int portal;
 	struct obj *obj;
 	char whynot[BUFSZ];
 	if(Is_nowhere(&u.uz) && !flags.phasing) return;
+	if(In_adventure_branch(&u.uz) && In_tower(newlevel)) up = TRUE;
+	if(In_adventure_branch(newlevel) && In_tower(&u.uz)) up = FALSE;
 
 	if (dunlev(newlevel) > dunlevs_in_dungeon(newlevel))
 		newlevel->dlevel = dunlevs_in_dungeon(newlevel);
