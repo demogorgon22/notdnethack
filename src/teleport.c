@@ -1197,6 +1197,15 @@ register struct trap *ttmp;
 	    You_feel("dizzy for a moment, but nothing happens...");
 	    return;
 	}
+
+	if (In_endgame(&u.uz) && Role_if(PM_ANACHRONOUNBINDER)) {
+		int missing_items = acu_asc_items_check();
+		if (missing_items) {
+			You("stop yourself from entering.");
+			acu_asc_items_warning(missing_items);
+			return;
+		}
+	}
 	
 	//The exit portal tries to return fem half dragon nobles to where they entered the quest.
 	if(Role_if(PM_NOBLEMAN) && Race_if(PM_HALF_DRAGON) && flags.initgend && In_quest(&u.uz)){

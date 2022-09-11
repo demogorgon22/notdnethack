@@ -1033,6 +1033,16 @@ peffects(otmp)
 	case POT_GAIN_LEVEL:
 		if (otmp->cursed) {
 			unkn++;
+			if (Role_if(PM_ANACHRONOUNBINDER)
+					&& u.uhave.amulet
+					&& ledger_no(&u.uz) == 1) {
+				int missing_items = acu_asc_items_check();
+				if (missing_items) {
+					You("have an uneasy feeling.");
+					acu_asc_items_warning(missing_items);
+					break;
+				}
+			}
 			/* they went up a level */
 			if((ledger_no(&u.uz) == 1 && u.uhave.amulet) ||
 				Can_rise_up(u.ux, u.uy, &u.uz)) {
