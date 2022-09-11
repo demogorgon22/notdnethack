@@ -2026,6 +2026,7 @@ register struct monst *mtmp;
 					if(mon_resistance(m2, HALF_SPDAM))
 						dmg = (dmg+1) / 2;
 					m2->mhp -= dmg;
+					pline("%s hit %s for %d and has %d hp left.", noit_mon_nam(mtmp), noit_mon_nam(m2), dmg, m2->mhp);
 					if (m2->mhp <= 0)
 						monkilled(m2, "", AD_DRIN);
 					else
@@ -2086,7 +2087,6 @@ register struct monst *mtmp;
 							}
 						}
 					} else if(mdat->mtyp == PM_ELDER_BRAIN){
-						m2->mhp -= dmg;
 						m2->mstdy = max(dmg, m2->mstdy);
 					} else {
 						if(mdat->mtyp == PM_SEMBLANCE) 
