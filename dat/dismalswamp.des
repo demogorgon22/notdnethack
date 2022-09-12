@@ -170,38 +170,40 @@ GOLD: random,random
 GOLD: random,random
 GOLD: random,random
 MONSTER: 'B',"giant bat", (43,11), hostile, asleep
-OBJECT:'(',"chest",(45,12)
+CONTAINER:'(',"chest",(45,12)
 GOLD: random,(45,12)
 GOLD: random,(45,12)
 GOLD: random,(45,12)
 OBJECT: '(',"pick-axe",(31,13)
-OBJECT: '*',random,(45,12)
-OBJECT: '/',random,(45,12)
-OBJECT: '*',random,(45,12)
+OBJECT: '*',random,contained
+OBJECT: '/',random,contained
+OBJECT: '*',random,contained
 MONSTER: 'B',"giant bat", (65,13), hostile, asleep
-OBJECT:'(',"chest",(65,13)
+CONTAINER:'(',"chest",(65,13)
 GOLD: random,(65,13)
 GOLD: random,(65,13)
-OBJECT: '*',random,(65,13)
-OBJECT: '*',random,(65,13)
-OBJECT: '*',random,(65,13)
+OBJECT: '*',random,contained
+OBJECT: '*',random,contained
+OBJECT: '*',random,contained
+OBJECT: '!',random,contained
 MONSTER: 's',"giant spider", (67,1), hostile, asleep
+CONTAINER:'(',"chest",(68,2)
 GOLD: random,(68,2)
 GOLD: random,(68,2)
 GOLD: random,(68,2)
-OBJECT: '*',random,(68,2)
-OBJECT: '*',random,(68,2)
-OBJECT: '*',random,(68,2)
-OBJECT:'(',"chest",(68,2)
+OBJECT: '*',random,contained
+OBJECT: '*',random,contained
+OBJECT: '*',random,contained
+OBJECT: '+',random,contained
 OBJECT:'(',"chest",(2,1)
 OBJECT:'(',"chest",(3,1)
 OBJECT:'(',"chest",(4,1)
-OBJECT:'(',"chest",(18,14)
-OBJECT: ')',random,(18,14)
-OBJECT: ')',random,(18,14)
+CONTAINER:'(',"chest",(18,14)
+OBJECT: ')',random,contained
+OBJECT: ')',random,contained
 OBJECT: '/',random,(18,14)
-OBJECT: '[',random,(18,14)
-OBJECT: '[',random,(18,14)
+OBJECT: '[',random,contained
+OBJECT: '[',random,contained
 OBJECT: '!',random,(18,14)
 OBJECT: '!',random,(18,14)
 MONSTER: '@', "armorsmith", random, peaceful
