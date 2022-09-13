@@ -337,7 +337,7 @@ LEVEL:          "lbyrnth" "none" @ (1, 0)
 
 
 ##
-DUNGEON:        "The Spire" "none" (14, 0)
+DUNGEON:        "The Spire" "none" (15, 0)
 ALIGNMENT:      neutral
 DESCRIPTION:    mazelike
 ENTRY:		-1
@@ -354,7 +354,8 @@ LEVEL:          "stairs2" "none" @ (10, 0)
 LEVEL:          "stairs1" "none" @ (11, 0)
 LEVEL:          "stairs2" "none" @ (12, 0)
 LEVEL:          "stairs1" "none" @ (13, 0)
-LEVEL:          "stairs3" "none" @ (14, 0)
+LEVEL:          "stairs2" "none" @ (14, 0)
+LEVEL:          "stairs3" "none" @ (15, 0)
 
 
 #
