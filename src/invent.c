@@ -37,6 +37,7 @@ STATIC_DCL char FDECL(obj_to_let,(struct obj *));
 STATIC_PTR int FDECL(u_material_next_to_skin,(int));
 STATIC_PTR int FDECL(u_bcu_next_to_skin,(int));
 STATIC_DCL int FDECL(itemactions,(struct obj *));
+STATIC_DCL void FDECL(describe_spear_point, (char *, struct obj *));
 
 #ifdef OVLB
 
@@ -3167,6 +3168,10 @@ winid *datawin;
 		}
 		/* other weapon special effects */
 		if(obj){
+			if(has_any_spear_point(obj)) {
+				describe_spear_point(buf2, obj);
+				OBJPUTSTR(buf2);
+			}
 			if(obj->otyp == TORCH){
 				Sprintf(buf2, "Deals 1d6 + enchantment bonus fire damage when lit.");
 				OBJPUTSTR(buf2);
@@ -3944,6 +3949,88 @@ winid *datawin;
 	}
 	if (oc.oc_unique) {
 		OBJPUTSTR("Unique item.");
+	}
+}
+
+STATIC_DCL void
+describe_spear_point(char *buf, struct obj *otmp) {
+	if (!has_any_spear_point(otmp)) {
+		impossible("Describing a spear point that doesn't exist.");
+	}
+	Sprintf(buf, "%s: ", xname(otmp->cobj));
+	switch(otmp->cobj->otyp) {
+		case FLINT:
+			Strcat(buf, "Adds nothing special.");
+			break;
+		case DILITHIUM_CRYSTAL:
+			Strcat(buf, "Deals double damage.");
+			break;
+		case TURQUOISE:
+			Strcat(buf, "Hitting an enemy warps you nearby.");
+			break;
+		case MORGANITE:
+			Strcat(buf, "Grants regeneration.");
+			break;
+		case CITRINE:
+			Strcat(buf, "Acts as a bright light and blinds on-hit.");
+			break;
+		case AMBER:
+			Strcat(buf, "Slows monster on-hit.");
+			break;
+		case JET:
+			Strcat(buf, "Adds enchantment to AC and DR.");
+			break;
+		case OPAL:
+			Strcat(buf, "Grants reflection.");
+			break;
+		case CHRYSOBERYL:
+			Strcat(buf, "Grants disease resistance.");
+			break;
+		case GARNET:
+			Strcat(buf, "Grants fire resistance and deals double fire damage.");
+			break;
+		case AMETHYST:
+			Strcat(buf, "Grants telepathy.");
+			break;
+		case JASPER:
+			Strcat(buf, "Adds 1d8 damage.");
+			break;
+		case VIOLET_FLUORITE:
+			Strcat(buf, "Grants sleep resistance and sleeps on-hit.");
+			break;
+		case BLUE_FLUORITE:
+			Strcat(buf, "Grants half spell damage and adds 1d8 magic damage.");
+			break;
+		case WHITE_FLUORITE:
+			Strcat(buf, "Grants energy regeneration.");
+			break;
+		case GREEN_FLUORITE:
+			Strcat(buf, "Grants curse resistance.");
+			break;
+		case OBSIDIAN:
+			Strcat(buf, "Attack ignores DR.");
+			break;
+		case JADE:
+			Strcat(buf, "Grants poison resistance and performs stinking cloud.");
+			break;
+		case LUCKSTONE:
+			Strcat(buf, "Adds 1d7 to-hit bonus.");
+			break;
+		case LOADSTONE:
+			Strcat(buf, "Grants weldproof and adds 2d4 damage.");
+			break;
+		case TOUCHSTONE:
+			Strcat(buf, "Adds 3d5 study on-hit.");
+			break;
+		case CHUNK_OF_FOSSIL_DARK:
+			Strcat(buf, "Deals double drain damage.");
+			break;
+		case SILVER_SLINGSTONE:
+			Strcat(buf, "Sears silver haters.");
+			break;
+		default:
+			impossible("Unknown spearhead type being described.");
+			break;
 	}
 }
 
