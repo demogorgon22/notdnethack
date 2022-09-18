@@ -3957,7 +3957,7 @@ describe_spear_point(char *buf, struct obj *otmp) {
 	if (!has_any_spear_point(otmp)) {
 		impossible("Describing a spear point that doesn't exist.");
 	}
-	Sprintf(buf, "%s: ", xname(otmp->cobj));
+	Sprintf(buf, "%s tip: ", An(obj_descr[otmp->cobj->otyp].oc_name));
 	switch(otmp->cobj->otyp) {
 		case FLINT:
 			Strcat(buf, "Adds nothing special.");
