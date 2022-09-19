@@ -2359,7 +2359,7 @@ register int after;
 	    if((dist2(mtmp->mx, mtmp->my, tx, ty) < 2) &&
 	       intruder && (intruder != mtmp)) {
 			notonhead = (intruder->mx != tx || intruder->my != ty);
-			if(mattackm(mtmp, intruder) == 2) return(2);
+			if(mattackm(mtmp, intruder)&(MM_AGR_DIED)) return(2);
 			mmoved = 1;
 			goto postmov;
 		} else if(mtmp->mtyp != PM_DEMOGORGON 
@@ -2911,7 +2911,9 @@ not_special:
 		
 		if(mtmp->mtyp == PM_SURYA_DEVA){
 			struct monst *blade;
-			for(blade = fmon; blade; blade = blade->nmon) if(blade->mtyp == PM_DANCING_BLADE && mtmp->m_id == blade->mvar_suryaID) break;
+			for(blade = fmon; blade; blade = blade->nmon)
+				if(blade->mtyp == PM_DANCING_BLADE && mtmp->m_id == blade->mvar_suryaID && !DEADMONSTER(blade))
+					break;
 			if(blade){
 				int bx = blade->mx, by = blade->my;
 				remove_monster(bx, by);
