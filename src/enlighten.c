@@ -1180,6 +1180,25 @@ resistances_enlightenment()
 		else Sprintf(buf, "Your %s are glowing%s %s.", makeplural(body_part(HAND)), u.umconf > 20 ? " brilliantly" : u.umconf > 10 ? " brightly" : "", hcolor(NH_RED));
 		putstr(en_win, 0, buf);
 	}
+
+	if(is_ent(youracedata)){
+		if(is_ancient_body_ent(youracedata, u.ent_species)) putstr(en_win, 0, "Your ancient body is blow resistant.");
+		if(is_ancient_knowledge_ent(youracedata, u.ent_species)) putstr(en_win, 0, "Your ancient knowledge enhances your combat.");
+		if(is_beautiful_scent_ent(youracedata, u.ent_species)) putstr(en_win, 0, "You smell beautiful.");
+		if(is_coniferous_ent(youracedata, u.ent_species)) putstr(en_win, 0, "You are coniferous.");
+		if(is_decidious_ent(youracedata, u.ent_species)) putstr(en_win, 0, "You are deciduous.");
+		if(is_powerful_build_ent(youracedata, u.ent_species)) putstr(en_win, 0, "You have a larger, powerful, build.");
+		if(is_fast_healing_ent(youracedata, u.ent_species)) putstr(en_win, 0, "You are fast healing.");
+		if(is_spry_ent(youracedata, u.ent_species)) putstr(en_win, 0, "You are spry.");
+		if(is_ent_species(youracedata, ENT_BLUEGUM)) putstr(en_win, 0, "You are a large bluegum.");
+		if(is_ent_species(youracedata, ENT_DOGWOOD)) putstr(en_win, 0, "You are a small quick dogwood.");
+		if(is_ent_species(youracedata, ENT_ELDER)) putstr(en_win, 0, "You are a magically attuned elder.");
+		if(is_ent_species(youracedata, ENT_GINKGO)) putstr(en_win, 0, "You are a hardy ginkgo.");
+		if(is_ent_species(youracedata, ENT_LOCUST)) putstr(en_win, 0, "You are a hard hitting locust.");
+		if(is_ent_species(youracedata, ENT_MIMOSA)) putstr(en_win, 0, "You are a thick barked mimosa.");
+		if(is_ent_species(youracedata, ENT_METHUSELAH)) putstr(en_win, 0, "You are a magical methuselah.");
+
+	}
 	
 	/*** Thoughts ***/
 	if (active_glyph(CLOCKWISE_METAMORPHOSIS)) putstr(en_win, 0, "A clockwise gyre turns in the depths below your id.");
