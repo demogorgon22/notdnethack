@@ -600,10 +600,6 @@ const char *name;
 	   obj && obj->otyp != find_good_iring()){
 		obj = poly_obj(obj,find_good_iring());
 	}
-	else if(!strcmp((&artilist[ART_NENYA])->name,name) &&
-	   obj && obj->otyp != find_sring()){
-		obj = poly_obj(obj,find_sring());
-	}
 	else if(!strcmp((&artilist[ART_SILVER_KEY])->name,name) &&
 	   obj && obj->otyp == UNIVERSAL_KEY && Role_if(PM_EXILE)){
 		obj = poly_obj(obj,MIRROR);
