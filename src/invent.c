@@ -37,7 +37,7 @@ STATIC_DCL char FDECL(obj_to_let,(struct obj *));
 STATIC_PTR int FDECL(u_material_next_to_skin,(int));
 STATIC_PTR int FDECL(u_bcu_next_to_skin,(int));
 STATIC_DCL int FDECL(itemactions,(struct obj *));
-STATIC_DCL void FDECL(describe_spear_point, (char *, struct obj *));
+STATIC_DCL boolean FDECL(describe_spear_point, (char *, struct obj *));
 
 #ifdef OVLB
 
@@ -3169,8 +3169,8 @@ winid *datawin;
 		/* other weapon special effects */
 		if(obj){
 			if(has_any_spear_point(obj)) {
-				describe_spear_point(buf2, obj);
-				OBJPUTSTR(buf2);
+				if(describe_spear_point(buf2, obj))
+					OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == TORCH){
 				Sprintf(buf2, "Deals 1d6 + enchantment bonus fire damage when lit.");
@@ -3952,16 +3952,16 @@ winid *datawin;
 	}
 }
 
-STATIC_DCL void
-describe_spear_point(char *buf, struct obj *otmp) {
+STATIC_DCL boolean
+describe_spear_point(char *ret_buf, struct obj *otmp) {
 	if (!has_any_spear_point(otmp)) {
 		impossible("Describing a spear point that doesn't exist.");
 	}
+	boolean describe = TRUE;
+	char buf[BUFSZ];
+	buf[0] = '\0';
 	Sprintf(buf, "%s tip: ", An(obj_descr[otmp->cobj->otyp].oc_name));
 	switch(otmp->cobj->otyp) {
-		case FLINT:
-			Strcat(buf, "Adds nothing special.");
-			break;
 		case DILITHIUM_CRYSTAL:
 			Strcat(buf, "Deals double damage.");
 			break;
@@ -4029,9 +4029,11 @@ describe_spear_point(char *buf, struct obj *otmp) {
 			Strcat(buf, "Sears silver haters.");
 			break;
 		default:
-			impossible("Unknown spearhead type being described.");
+			describe = FALSE;
 			break;
 	}
+	if(describe) Sprintf(ret_buf, "%s", buf);
+	return describe;
 }
 
 /*
