@@ -3222,7 +3222,7 @@ register struct obj *obj;
 	for (otmp = invent; otmp; otmp = otmp->nobj) {
 		if(otmp->invlet == gemlet && valid_focus_gem(otmp)) break;
 	}
-	if(otmp->oartifact == ART_ELDER_CEREBRAL_FLUID && obj->oartifact != ART_ILLITHID_STAFF){
+	if(otmp && otmp->oartifact == ART_ELDER_CEREBRAL_FLUID && obj->oartifact != ART_ILLITHID_STAFF){
 		pline("That focus gem can only be used in The Illithid Staff.");
 		return MOVE_CANCELLED;
 	}
