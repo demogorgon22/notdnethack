@@ -4326,7 +4326,7 @@ struct obj *obj;
 
     /* proficiency check */
     proficient = 0;
-	if(u.umartial){
+	if(martial_bonus()){
 		proficient = min(P_SKILL(P_FLAIL)-P_UNSKILLED, P_SKILL(P_MARTIAL_ARTS)-P_BASIC);
 	}
     if (Role_if(PM_MONK)) ++proficient;
