@@ -680,7 +680,7 @@ you_calc_movement()
 		|| Race_if(PM_ORC)
 		|| (Race_if(PM_HALF_DRAGON) && Humanoid_half_dragon(urole.malenum))
 	)) moveamt = 12;
-	if(is_ent(youracedata)){
+	else if(is_ent(youracedata)){
 		if(is_spry_ent(youracedata, u.ent_species))
 			moveamt = 12;
 		else if(u.ent_species == ENT_REDWOOD)
