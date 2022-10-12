@@ -1928,7 +1928,8 @@ movemon()
 		//else no quant lock
 	}
 	
-	if(Nightmare && mon_can_see_you(mtmp) && !mindless_mon(mtmp)){
+	//Peaceful exemption?
+	if(Nightmare && mon_can_see_you(mtmp) && !mindless_mon(mtmp) && !mtmp->mtame && !is_render(mtmp->mtyp)){
 		you_inflict_madness(mtmp);
 	}
 	

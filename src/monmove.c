@@ -683,7 +683,17 @@ boolean digest_meal;
 		mon->mhp += 10;
 	}
 	
-	if(!DEADMONSTER(mon) &&  mon->entangled == RAZOR_WIRE){
+	if (mon->mspec_used) mon->mspec_used--;
+
+	if(mon->mspec_used && uring_art(ART_LOMYA)){
+		mon->mspec_used--;
+	}
+	if (digest_meal) {
+	    if (mon->meating) mon->meating--;
+	}
+
+	/* Razor wire deals damage */
+	if(mon->entangled == RAZOR_WIRE){
 		int beat;
 		mon->mhp -= rnd(6);
 		if(hates_silver(mon->data) && entangle_material(mon, SILVER))
@@ -706,78 +716,8 @@ boolean digest_meal;
 			if(canspotmon(mon))
 				pline("%s is sliced to ribbons in %s struggles!", Monnam(mon), hisherits(mon));
 			mondied(mon);
-			return;
-		}
-	}
-	
-	if(!DEADMONSTER(mon) && mon->mhp < mon->mhpmax/2 && (mon->mtyp == PM_CHANGED || mon->mtyp == PM_WARRIOR_CHANGED)){
-		mon->mhp -= 1;
-		create_gas_cloud(mon->mx+rn2(3)-1, mon->my+rn2(3)-1, rnd(3), rnd(3)+1, FALSE);
-		if(mon->mhp == 0){
-			mondied(mon);
-			return;
-		}
-		if (mon->mspec_used) mon->mspec_used--;
-		if (digest_meal) {
-			if (mon->meating) mon->meating--;
-		}
-		return;
-	}
-	if(!DEADMONSTER(mon) && mon->mtyp == PM_INVIDIAK && !isdark(mon->mx, mon->my)){
-		mon->mhp -= 1;
-		if(mon->mhp == 0){
-			mondied(mon);
-			return;
-		}
-		if (mon->mspec_used) mon->mspec_used--;
-		if (digest_meal) {
-			if (mon->meating) mon->meating--;
-		}
-		return;
-	}
-	if(!DEADMONSTER(mon) && mon->mbdrown > 0){
-		mon->mbdrown--;
-		water_damage(mon->minvent, FALSE, FALSE, WD_BLOOD, mon);
-		mon->mhp -= 99;
-		if(mon->mhp <= 0){
-			pline("%s drowns in blood!", Monnam(mon));
-			mondied(mon);
-		}
-		else if(!resist(mon, RING_CLASS, 0, NOTELL)){
-			mon->mberserk = 1;
-		}
-		return;
-	}
-	if(!DEADMONSTER(mon) && mon->mtyp == PM_ALIDER){
-		struct monst *mtmp;
-		int healup = 0;
-		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
-			if(!DEADMONSTER(mtmp) && (mtmp != mon) && (mtmp->mpeaceful == mon->mpeaceful)){
-				if(mtmp->mtyp == PM_MYRKALFAR_MATRON)
-					healup += 3;
-				else if((!mon->mcan && free_android(mtmp->data))
-					|| mtmp->mtyp == PM_MYRKALFR || mtmp->mtyp == PM_MYRKALFAR_WARRIOR
-					|| mtmp->mtyp == PM_ARCADIAN_AVENGER
-					|| (mtmp->mtyp == PM_ELVENKING && mtmp->mfaction == QUEST_FACTION)
-					|| (is_drow(mtmp->data) && mtmp->mtame && mon->mtame)
-				)
-					healup += 2;
-				else if(mtmp->mfaction == LAST_BASTION_SYMBOL || (mtmp->mtame && mon->mtame))
-					healup += 1;
-			}
-		}
-		if(mon->mtame || (Race_if(PM_DROW) && Role_if(PM_ANACHRONONAUT)))
-			healup += (!mon->mcan && Race_if(PM_ANDROID)) ? 3 : Race_if(PM_DROW) ? 2 : 1;
-		if(mon->mcan) healup /= 2;
-		if(healup){
-			set_mcan(mon, FALSE);
-			mon->mdoubt = FALSE;
-			mon->mhp += healup;
-			mon->mhp = min(mon->mhpmax, mon->mhp);
-		}
-		else {
-			if(!rn2(8)) set_mcan(mon, TRUE);
-			if(mon->mcan) mon->mdoubt = TRUE;
+			if(DEADMONSTER(mon))
+				return; //Didn't lifesave
 		}
 	}
 	/* Clouds on Lolth's level deal damage */
@@ -822,7 +762,72 @@ boolean digest_meal;
 			mon->msleeping = 1;
 			slept_monst(mon);
 		}
-		
+	}
+	
+	//Degeneration cases block normal healing. Only one will take effect (bug?).
+	/*Degen from drowning in blood*/
+	if(mon->mbdrown > 0){
+		mon->mbdrown--;
+		water_damage(mon->minvent, FALSE, FALSE, WD_BLOOD, mon);
+		mon->mhp -= 99;
+		if(mon->mhp <= 0){
+			pline("%s drowns in blood!", Monnam(mon));
+			mondied(mon);
+		}
+		else if(!resist(mon, RING_CLASS, 0, NOTELL)){
+			mon->mberserk = 1;
+		}
+		return;
+	}
+	/*The Changed degenerate due to damage*/
+	if(mon->mhp < mon->mhpmax/2 && (mon->mtyp == PM_CHANGED || mon->mtyp == PM_WARRIOR_CHANGED)){
+		mon->mhp -= 1;
+		create_gas_cloud(mon->mx+rn2(3)-1, mon->my+rn2(3)-1, rnd(3), rnd(3)+1, FALSE);
+		if(mon->mhp <= 0){
+			mondied(mon);
+		}
+		return;
+	}
+	/*Invidiaks degenerate due to light*/
+	if(mon->mtyp == PM_INVIDIAK && !isdark(mon->mx, mon->my)){
+		mon->mhp -= 1;
+		if(mon->mhp <= 0){
+			mondied(mon);
+		}
+		return;
+	}
+
+	//Normal healing cases
+	if(mon->mtyp == PM_ALIDER){
+		struct monst *mtmp;
+		int healup = 0;
+		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+			if(!DEADMONSTER(mtmp) && (mtmp != mon) && (mtmp->mpeaceful == mon->mpeaceful)){
+				if(mtmp->mtyp == PM_MYRKALFAR_MATRON)
+					healup += 3;
+				else if((!mon->mcan && free_android(mtmp->data))
+					|| mtmp->mtyp == PM_MYRKALFR || mtmp->mtyp == PM_MYRKALFAR_WARRIOR
+					|| mtmp->mtyp == PM_ARCADIAN_AVENGER
+					|| (mtmp->mtyp == PM_ELVENKING && mtmp->mfaction == QUEST_FACTION)
+					|| (is_drow(mtmp->data) && mtmp->mtame && mon->mtame)
+				)
+					healup += 2;
+				else if(mtmp->mfaction == LAST_BASTION_SYMBOL || (mtmp->mtame && mon->mtame))
+					healup += 1;
+			}
+		}
+		if(mon->mtame || (Race_if(PM_DROW) && Role_if(PM_ANACHRONONAUT)))
+			healup += (!mon->mcan && Race_if(PM_ANDROID)) ? 3 : Race_if(PM_DROW) ? 2 : 1;
+		if(mon->mcan) healup /= 2;
+		if(healup){
+			set_mcan(mon, FALSE);
+			mon->mdoubt = FALSE;
+			mon->mhp += healup;
+		}
+		else {
+			if(!rn2(8)) set_mcan(mon, TRUE);
+			if(mon->mcan) mon->mdoubt = TRUE;
+		}
 	}
 	if(mon->mhp < mon->mhpmax){
 		int perX = 0;
@@ -851,17 +856,9 @@ boolean digest_meal;
 			mon->mhp+=1;
 		if(uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_HEALING && !mindless_mon(mon) && !is_deaf(mon) && mon->mtame)
 			mon->mhp += 1;
-		if (mon->mhp > mon->mhpmax)
-			mon->mhp = mon->mhpmax;
 	}
-	if (mon->mspec_used) mon->mspec_used--;
-
-	if(mon->mspec_used && uring_art(ART_LOMYA)){
-		mon->mspec_used--;
-	}
-	if (digest_meal) {
-	    if (mon->meating) mon->meating--;
-	}
+	mon->mhp = min(mon->mhpmax, mon->mhp);
+	
 }
 
 /*
@@ -1021,6 +1018,93 @@ struct monst *mon;
 	mon->mstrategy &= ~STRAT_ARRIVE;	/* always reset */
 
 	return -1;
+}
+
+STATIC_OVL void
+jrt_eladrin_spawn_equip(tmpm, mtyp)
+struct monst *tmpm;
+int mtyp;
+{
+	struct obj *otmp;
+	otmp = mongets(tmpm, KHOPESH, MKOBJ_NOINIT);
+	set_material_gm(otmp, COPPER);
+	add_oprop(otmp, OPROP_HOLYW);
+	if(mtyp != PM_TULANI_ELADRIN){
+		otmp = mongets(tmpm, KHOPESH, MKOBJ_NOINIT);
+		set_material_gm(otmp, COPPER);
+		add_oprop(otmp, OPROP_HOLYW);
+	}
+
+	otmp = mongets(tmpm, ARCHAIC_HELM, MKOBJ_NOINIT);
+	set_material_gm(otmp, COPPER);
+	add_oprop(otmp, OPROP_HOLY);
+
+	otmp = mongets(tmpm, WAISTCLOTH, MKOBJ_NOINIT);
+	set_material_gm(otmp, CLOTH);
+	add_oprop(otmp, OPROP_HOLY);
+	otmp->obj_color = CLR_WHITE;
+
+}
+
+STATIC_OVL void
+dracae_eladrin_spawn_equip(mtmp, mtyp)
+struct monst *mtmp;
+int mtyp;
+{
+	struct obj *otmp;
+	int size = mons[mtyp].msize;
+	if(mtyp != PM_UISCERRE_ELADRIN){
+		otmp = mksobj(LONG_SWORD, MKOBJ_NOINIT);
+		set_material_gm(otmp, DRAGON_HIDE);
+		otmp->objsize = size;
+		add_oprop(otmp, OPROP_ACIDW);
+		fix_object(otmp);
+		(void) mpickobj(mtmp, otmp);
+	}
+	if(mtyp == PM_COURE_ELADRIN || mtyp == PM_BRALANI_ELADRIN
+	 || mtyp == PM_FIRRE_ELADRIN || mtyp == PM_GHAELE_ELADRIN
+	 || mtyp == PM_GAE_ELADRIN || mtyp == PM_BRIGHID_ELADRIN
+	 || mtyp == PM_CAILLEA_ELADRIN
+	){
+		//Note: 2/3 then 1/6 / 1/6 is the intended behavior
+		if(rn2(3)){
+			otmp = mksobj(SHORT_SWORD, MKOBJ_NOINIT);
+			set_material_gm(otmp, DRAGON_HIDE);
+			otmp->objsize = size;
+			add_oprop(otmp, OPROP_ACIDW);
+			fix_object(otmp);
+			(void) mpickobj(mtmp, otmp);
+		}
+		else if(rn2(2)){
+			otmp = mksobj(KITE_SHIELD, MKOBJ_NOINIT);
+			set_material_gm(otmp, DRAGON_HIDE);
+			otmp->objsize = size;
+			fix_object(otmp);
+			(void) mpickobj(mtmp, otmp);
+		}
+		//else nothing
+	}
+	else if(mtyp == PM_NOVIERE_ELADRIN || mtyp == PM_SHIERE_ELADRIN){
+		otmp = mksobj(KITE_SHIELD, MKOBJ_NOINIT);
+		set_material_gm(otmp, DRAGON_HIDE);
+		otmp->objsize = size;
+		fix_object(otmp);
+		(void) mpickobj(mtmp, otmp);
+	}
+	//Tulani, Uiscerre
+
+	int armors[] = {PLATE_MAIL, GAUNTLETS, ARMORED_BOOTS};
+	for(int i = 0; i < SIZE(armors); i++){
+		if(mtyp == PM_UISCERRE_ELADRIN && armors[i] == ARMORED_BOOTS)
+			continue;
+		otmp = mksobj(armors[i], NO_MKOBJ_FLAGS);
+		set_material_gm(otmp, SHELL_MAT);
+		otmp->objsize = size;
+		if(mtyp == PM_UISCERRE_ELADRIN && armors[i] == PLATE_MAIL)
+			otmp->bodytypeflag = MB_HUMANOID|MB_SLITHY;
+		fix_object(otmp);
+		(void) mpickobj(mtmp, otmp);
+	}
 }
 
 /* returns 1 if monster died moving, 0 otherwise */
@@ -1250,28 +1334,7 @@ register struct monst *mtmp;
 				mtmp->mvar_dracaePregTimer = 0;
 				mtmp = makemon(&mons[type], ox, oy, NO_MINVENT|MM_NOCOUNTBIRTH);
 				if(mtmp){
-					struct obj *otmp;
-					otmp = mksobj(LONG_SWORD, MKOBJ_NOINIT);
-					set_material_gm(otmp, DRAGON_HIDE);
-					otmp->objsize = mtmp->data->msize;
-					add_oprop(otmp, OPROP_ACIDW);
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(PLATE_MAIL, NO_MKOBJ_FLAGS);
-					set_material_gm(otmp, SHELL_MAT);
-					otmp->objsize = mtmp->data->msize;
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(GAUNTLETS, NO_MKOBJ_FLAGS);
-					set_material_gm(otmp, SHELL_MAT);
-					otmp->objsize = mtmp->data->msize;
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(ARMORED_BOOTS, NO_MKOBJ_FLAGS);
-					set_material_gm(otmp, SHELL_MAT);
-					otmp->objsize = mtmp->data->msize;
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
+					dracae_eladrin_spawn_equip(mtmp, mtmp->mtyp);
 					m_dowear(mtmp, TRUE);
 					m_level_up_intrinsic(mtmp);
 				}
@@ -1300,27 +1363,8 @@ register struct monst *mtmp;
 				else return 0;
 				if(mtmp){
 					struct obj *otmp;
-					otmp = mksobj(LONG_SWORD, MKOBJ_NOINIT);
-					set_material_gm(otmp, DRAGON_HIDE);
-					otmp->objsize = mons[type].msize;
-					add_oprop(otmp, OPROP_ACIDW);
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(PLATE_MAIL, NO_MKOBJ_FLAGS);
-					set_material_gm(otmp, SHELL_MAT);
-					otmp->objsize = mons[type].msize;
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(GAUNTLETS, NO_MKOBJ_FLAGS);
-					set_material_gm(otmp, SHELL_MAT);
-					otmp->objsize = mons[type].msize;
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
-					otmp = mksobj(ARMORED_BOOTS, NO_MKOBJ_FLAGS);
-					set_material_gm(otmp, SHELL_MAT);
-					otmp->objsize = mons[type].msize;
-					fix_object(otmp);
-					(void) mpickobj(mtmp, otmp);
+					dracae_eladrin_spawn_equip(mtmp, type);
+					m_level_up_intrinsic(mtmp);
 				}
 			}
 			return 0;
@@ -1351,22 +1395,8 @@ register struct monst *mtmp;
 				struct obj *otmp;
 				if(canseemon(tmpm))
 					pline("%stars coalesce into %s!", printed ? "The s" : "S", an(mons[type].mname));
-				otmp = mongets(tmpm, KHOPESH, MKOBJ_NOINIT);
-				set_material_gm(otmp, COPPER);
-				add_oprop(otmp, OPROP_HOLYW);
-				if(type != PM_TULANI_ELADRIN){
-					otmp = mongets(tmpm, KHOPESH, MKOBJ_NOINIT);
-					set_material_gm(otmp, COPPER);
-					add_oprop(otmp, OPROP_HOLYW);
-				}
-				otmp = mongets(tmpm, ARCHAIC_HELM, MKOBJ_NOINIT);
-				set_material_gm(otmp, COPPER);
-				add_oprop(otmp, OPROP_HOLY);
 				
-				otmp = mongets(tmpm, WAISTCLOTH, MKOBJ_NOINIT);
-				set_material_gm(otmp, CLOTH);
-				add_oprop(otmp, OPROP_HOLY);
-				otmp->obj_color = CLR_WHITE;
+				jrt_eladrin_spawn_equip(tmpm, type);
 				tmpm->mpeaceful = mtmp->mpeaceful;
 				set_malign(tmpm);
 				if(has_template(mtmp, POISON_TEMPLATE))
