@@ -2383,7 +2383,7 @@ register struct obj *obj;
 		return;
 	}
 	if(u.uinsight < 10 || !(u.thoughts || skulls)){
-		You("examine the drills in the kit, but have know idea how to use them!");
+		You("examine the drills in the kit, but have no idea how to use them!");
 		return;
 	}
 	
