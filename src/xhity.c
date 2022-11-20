@@ -11382,7 +11382,7 @@ int vis;
 			pline("%s attacks you with a beam of reflected light!", Monnam(magr));
 			stop_occupation();
 
-			if (canseemon(magr) && !resists_blnd(&youmonst)) {
+			if (canseemon(magr) && !resists_blnd(&youmonst) && !Reflecting) {
 				You("are blinded by %s beam!", s_suffix(mon_nam(magr)));
 				make_blinded((long)dmg, FALSE);
 			}
