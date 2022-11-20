@@ -1292,7 +1292,8 @@ int x;
 			// (uswapwep && uswapwep->oartifact == ART_STORMBRINGER) ||
 			(uwep && uwep->oartifact == ART_OGRESMASHER) ||
 			(uswapwep && uswapwep->oartifact == ART_OGRESMASHER) ||
-			(uarms && uarms->oartifact == ART_GOLDEN_KNIGHT)
+			(uarms && uarms->oartifact == ART_GOLDEN_KNIGHT) ||
+			(u.sealsActive&SEAL_YMIR)
 		) return(125);
 #ifdef WIN32_BUG
 		else return(x=((tmp >= 125) ? 125 : (tmp <= 3) ? 3 : tmp));
