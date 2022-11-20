@@ -11314,7 +11314,6 @@ boolean goodequip;
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
 			(void) mpickobj(mtmp,otmp);
-			(void)mongets(mtmp, AMULET_OF_LIFE_SAVING, mkobjflags);
 			break;
 		}
 		case PM_CHUPOCLOPS:{
