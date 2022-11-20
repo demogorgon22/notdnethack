@@ -803,11 +803,6 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 	if (!thrownobj)
 		return;
 
-	if (thrownobj->otyp == PSIONIC_PULSE && youagr && mdef && !DEADMONSTER(mdef)) {
-		pline("%s is thrown backwards by the force of your pulse!",Monnam(mdef));
-		mhurtle(mdef, u.dx, u.dy, (int)u.ulevel/3, FALSE);
-	}
-
 	/* projectiles that never survive being fired; their special effects are handled in destroy_projectile() */
 	if (fired && (
 		thrownobj->otyp == ROCKET ||

@@ -3302,6 +3302,8 @@ int *shield_margin;
 			} else warnpanic = 0L;
 		}
 	}
+	if(weapon && weapon->otyp == PSIONIC_PULSE)
+		wepn_acc += 1000;
 	/* other attacker-related accuracy bonuses */
 	if (magr) {
 		/* Small monsters are more accurate */
@@ -3578,7 +3580,7 @@ int *shield_margin;
 			wepn_acc += hitval(weapon, mdef, magr);
 			/* Houchou always hits when thrown */
 			if (weapon->oartifact == ART_HOUCHOU && thrown)
-				wepn_acc += 1000;
+				wepn_acc += 1000;	
 
 			/* -4 accuracy per weapon size too large (not for thrown objects) */
 			if (!thrown){

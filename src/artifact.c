@@ -4927,10 +4927,10 @@ boolean printmessages; /* print generic elemental damage messages */
 
 	/* EXTERNAL damage sources -- explosions and the like, primarily */
 	/* knockback effect */
-	if (((arti_attack_prop(otmp, ARTA_KNOCKBACK) && !rn2(4)) || arti_attack_prop(otmp, ARTA_KNOCKBACKX)) && !(
+	if ((((arti_attack_prop(otmp, ARTA_KNOCKBACK) && !rn2(4)) || arti_attack_prop(otmp, ARTA_KNOCKBACKX)) && !(
 		/* exclusions below */
 		(oartifact == ART_TOBIUME) /* Tobiume only does the knockback if mdef is nearly dead */
-		))
+		)) || otmp->otyp == PSIONIC_PULSE)
 	{
 		/* determine if we do the full hurtle, or just stun */
 		int hurtledistance;
@@ -4944,11 +4944,12 @@ boolean printmessages; /* print generic elemental damage messages */
 
 		/* message */
 		if (vis) {
-			pline("%s %s %s by %s blow!",
+			pline("%s %s %s by %s %s!",
 				(youdef ? "You" : Monnam(mdef)),
 				(youdef ? "are" : "is"),
 				(hurtledistance > 1 ? "thrown" : "stunned"),
-				(youagr ? "your" : (magr && (vis&VIS_MAGR)) ? s_suffix(mon_nam(magr)) : magr ? "a" : "the")
+				(youagr ? "your" : (magr && (vis&VIS_MAGR)) ? s_suffix(mon_nam(magr)) : magr ? "a" : "the"),
+				(otmp->otyp == PSIONIC_PULSE?"pulse":"blow")
 				);
 			*messaged = TRUE;
 		}
