@@ -638,7 +638,7 @@ long nmv;		/* number of moves */
 	 )
 	 && !In_sokoban(&u.uz)
 	 && !Is_gatetown(&u.uz)
-	 && !Is_minetown_level(&u.uz)
+	 && !Is_advtown_level(&u.uz)
 	 && !on_level(&u.uz, &elshava_level)
 	) {
 	    int wilder = (imv + 75) / 150;
