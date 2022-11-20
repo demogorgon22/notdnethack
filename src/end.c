@@ -1166,10 +1166,17 @@ die:
         if (dump_fn[0]) {
             dump_init();
             if (dump_fp) {
+    		char racebuf[BUFSZ];
+    		*racebuf = '\0';
+		if(Race_if(PM_ENT)){
+		    Sprintf(eos(racebuf), "%s %s", get_ent_species(u.ent_species), urace.adj);
+		} else {
+		    Sprintf(eos(racebuf), "%s", urace.adj);
+		}
                 Sprintf(pbuf, "%s, %s %s %s %s", plname,
                         get_alignment_adj(),
                         genders[flags.female].adj,
-                        urace.adj,
+                        racebuf,
                         (flags.female && urole.name.f)?
                         urole.name.f : urole.name.m);
                 dump("", pbuf);
