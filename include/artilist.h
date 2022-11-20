@@ -3004,8 +3004,8 @@ A("Flickering Outline",			CLOAK_OF_DISPLACEMENT,		(const char *)0,
 	SHADOW_FLARE, (ARTI_PLUSSEV)
 	),
 
-A("The Archivist",			KHAKKHARA,		(const char *)0,
-	9999L, GEMSTONE, MZ_DEFAULT, WT_DEFAULT,
+A("The Archivist",			QUARTERSTAFF,		(const char *)0,
+	9999L, GEMSTONE, MZ_DEFAULT, 48,
 	A_NONE, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_NOCNT),
 	NO_MONS(),
 	ATTK(AD_PHYS, 5, 0), NOFLAG,
