@@ -141,7 +141,7 @@ struct permonst * ptr;	/* summon as though you were <X> */
 			if (mon && mon->mfaction){
 				set_faction(mtmp, mon->mfaction);
 			}
-			if(!is_lord(mtmp->data) && !is_prince(mtmp->data)){
+			if(mon && !is_lord(mtmp->data) && !is_prince(mtmp->data)){
 				mtmp->mpeaceful = mon->mpeaceful;
 				set_malign(mtmp);
 			}
