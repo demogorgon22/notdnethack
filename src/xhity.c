@@ -13747,7 +13747,7 @@ int vis;						/* True if action is at all visible to the player */
 					adjalign(5);
 				}
 			}
-			else if ((u.ualign.type == A_LAWFUL) && !Race_if(PM_ORC) &&
+			else if ((u.ualign.type == A_LAWFUL) && !Race_if(PM_ORC) && !Role_if(PM_ANACHRONOUNBINDER) &&
 				!((Race_if(PM_DROW) && !flags.initgend &&
 						(Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || Role_if(PM_WIZARD)))
 				  || ((Race_if(PM_HUMAN) || Race_if(PM_INHERITOR) || Race_if(PM_INCANTIFIER) || Race_if(PM_HALF_DRAGON)) && (Pantheon_if(PM_RANGER) || Role_if(PM_RANGER)))
