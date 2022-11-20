@@ -2558,6 +2558,7 @@ find_ac()
 	if(u.sealsActive&SEAL_ECHIDNA) uac -= max((ACURR(A_CON)-10)/2, 0);
 	if(u.specialSealsActive&SEAL_DAHLVER_NAR && !Upolyd) uac -=  min(u.ulevel/2,(u.uhpmax - u.uhp)/10);
 	else if(u.specialSealsActive&SEAL_DAHLVER_NAR && Upolyd) uac -=  min(u.ulevel/2,(u.mhmax - u.mh)/10);
+	if(is_ent(youracedata)) uac -= 3;
 	if(uclockwork) uac -= (u.clockworkUpgrades&ARMOR_PLATING) ? 5 : 2; /*armor bonus for automata*/
 	if(uandroid) uac -= 6; /*armor bonus for androids*/
 	if (uac < -128) uac = -128;	/* u.uac is an schar */
@@ -2575,6 +2576,8 @@ int base_nat_udr()
 	if(Race_if(PM_ORC)){
 		udr += u.ulevel/10;
 	}
+	if(is_ent_species(youracedata, ENT_MIMOSA)) udr++;
+	if(is_ent(youracedata)) udr += 3;
 	
 	if(Race_if(PM_HALF_DRAGON)){
 		//DS half dragons may be more humanoid
@@ -2607,7 +2610,6 @@ int base_udr()
 	if(uring_art(ART_SHARD_FROM_MORGOTH_S_CROWN)){
 		udr += 3;
 	}
-	if(is_ent_species(youracedata, ENT_MIMOSA)) udr++;
 	
 	if(uwep){
 		if(uwep->oartifact == ART_LANCE_OF_LONGINUS) udr += max((uwep->spe)/2,0);
