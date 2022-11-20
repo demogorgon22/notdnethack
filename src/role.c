@@ -803,7 +803,7 @@ const struct Race races[] = {
 },
 {	"etherealoid", "etherealoidic", "etherealoid-kind", "Eth",
 	{0,0},
-	PM_ETHEREALOID, NON_PM, PM_HUMAN_MUMMY, PM_ZOMBIE,
+	PM_ETHEREALOID, NON_PM, NON_PM, NON_PM,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
 	MA_ETHEREAL, 0, MA_ET,
 	/*  Str    Int Wis Dex Con Cha */
@@ -888,7 +888,7 @@ const struct Race races[] = {
 },
 {	"salamander", "salamandic", "sala-broship", "Sal",
 	{0, 0},
-	PM_SALAMANDER, NON_PM, PM_HUMAN_MUMMY, PM_ZOMBIE,
+	PM_SALAMANDER, NON_PM, PM_HUMAN_MUMMY, PM_SALAMANDER,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL |ROLE_CHAOTIC,
 	MA_REPTILIAN, 0, MA_GNOME|MA_DWARF,
 	/*    Str     Int Wis Dex Con Cha */
