@@ -3428,8 +3428,9 @@ int wep_type;
 			case P_MASTER:			maxweight = 50; break;
 			case P_GRAND_MASTER:	maxweight = 60; break;
 		}
-		if (youracedata->msize > MZ_MEDIUM)
-			maxweight *= 1+(youracedata->msize - MZ_MEDIUM);
+		int effective_size = youracedata->msize + wielder_size_bonus(youracedata);
+		if (effective_size > MZ_MEDIUM)
+			maxweight *= 1+(effective_size - MZ_MEDIUM);
 
 		if (wep_type == P_BARE_HANDED_COMBAT) {
 			bonus -= abs(bonus * 2 / 3);
