@@ -5214,7 +5214,7 @@ boolean ranged;
 							if(!(rnl(20)<15)){/*-13 luck, 21% chance to avoid, 0 luck, 75% chance to avoid, 99% chance at like 10 and up*/
 								if(obj_resists(otmp,0,95)) continue;
 								Your("%s shift%s shape!",xname(otmp),otmp->quan>1?"":"s");
-								otmp = poly_obj(otmp, STRANGE_OBJECT);	
+								otmp = randpoly_obj(otmp);
 							}
 				        	}
 					break;
