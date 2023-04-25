@@ -809,6 +809,8 @@ aligntyp alignment;
 			skip_if(Role_if(PM_MONK) && !is_monk_safe_artifact(m) && !u.uconduct.weaphit);
 			skip_if(Role_if(PM_MONK) && !is_monk_safe_artifact(m) && rn2(20));	/* we relax this requirement before removing it */
 
+			skip_if(Race_if(PM_ETHEREALOID) && !is_eth_safe_artifact(m));
+
 			/* avoid artifacts of materials that hate the player's natural form */
 			skip_if(!(Role_if(a->role) || Pantheon_if(a->role)) && (
 				(hates_iron((&mons[urace.malenum]))

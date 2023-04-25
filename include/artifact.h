@@ -637,6 +637,7 @@ extern struct artifact * artilist;
                 (m) == ART_RING_OF_THROR ||\
                 (m) == ART_MARAUDER_S_MAP\
             )
+#define is_eth_safe_artifact(m) (objects[artilist[m].otyp].oc_class != ARMOR_CLASS)
 
 #define double_bonus_damage_artifact(m) (\
 	(m) == ART_LIMITED_MOON ||\
