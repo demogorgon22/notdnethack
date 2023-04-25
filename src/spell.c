@@ -38,6 +38,7 @@ STATIC_DCL void FDECL(cast_mass_healing, (struct obj *));
 STATIC_DCL boolean FDECL(sightwedge, (int,int, int,int, int,int));
 STATIC_DCL void FDECL(spell_backfire, (int));
 STATIC_DCL int FDECL(spellhunger, (int));
+STATIC_DCL char * FDECL(splknowpct, (int));
 STATIC_DCL int FDECL(isqrt, (int));
 STATIC_DCL boolean FDECL(run_maintained_spell, (int));
 STATIC_DCL boolean FDECL(can_maintain_spell, (int));
@@ -237,8 +238,7 @@ STATIC_OVL boolean cursed_book(struct obj *bp){
 				dmg = 2*rnd(10) + 10;
 			}
 			
-			if (Half_spell_damage) dmg = (dmg+1/2);
-			if (u.uvaul_duration) dmg = (dmg+1/2);
+			dmg = reduce_dmg(&youmonst,dmg,FALSE,TRUE);
 			losehp(dmg, "exploding rune", KILLED_BY_AN);
 			
 			return TRUE;
@@ -255,7 +255,8 @@ STATIC_OVL boolean cursed_book(struct obj *bp){
 }
 
 /* study while confused: returns TRUE if the book is destroyed */
-STATIC_OVL boolean confused_book(struct obj *spellbook){
+STATIC_OVL boolean
+confused_book(struct obj *spellbook){
 	boolean gone = FALSE;
 	
 	if (!rn2(3) && spellbook->otyp != SPE_BOOK_OF_THE_DEAD) {
@@ -277,7 +278,8 @@ STATIC_OVL boolean confused_book(struct obj *spellbook){
 }
 
 /* study while confused: returns TRUE if the book is destroyed */
-STATIC_OVL void hallu_book(struct obj *spellbook){
+STATIC_OVL void
+hallu_book(struct obj *spellbook){
 	switch(rn2(4)){
 		case 0:
 			if (!(ublindf && ublindf->otyp == LENSES)){
@@ -453,10 +455,10 @@ learn()
 	if(booktype == SPE_SECRETS){
 		if(book->oartifact) doparticularinvoke(book); //this is a redundant check
 		else{ 
-			if(!(book->ovar1) || 
-				book->ovar1 > 10 ||
-				book->ovar1 < 1) book->ovar1 = d(1,10);
-			switch(book->ovar1){
+			if(!(book->ovar1_secretsSecret) || 
+				book->ovar1_secretsSecret > 10 ||
+				book->ovar1_secretsSecret < 1) book->ovar1_secretsSecret = d(1,10);
+			switch(book->ovar1_secretsSecret){
 				case 1:
 					pline("...these are some surprisingly petty secrets.");
 				break;
@@ -466,8 +468,9 @@ learn()
 				case 3:
 					pline("It's blank. You guess the author KEPT his secrets.");
 				    book->otyp = booktype = SPE_BLANK_PAPER;
-					book->ovar1 = 0;
+					book->ovar1_secretsSecret = 0;
 					book->obj_color = objects[SPE_BLANK_PAPER].oc_color;
+					remove_oprop(book, OPROP_TACTB);
 				break;
 				case 4:
 					pline("...these metallurgical techniques are 200 years out of date.");
@@ -593,6 +596,7 @@ learn()
 		pline("This spellbook is too faint to be read any more.");
 		book->otyp = booktype = SPE_BLANK_PAPER;
 		book->obj_color = objects[SPE_BLANK_PAPER].oc_color;
+		remove_oprop(book, OPROP_TACTB);
 	}
 	
 	if (costly) check_unpaid(book);
@@ -653,10 +657,10 @@ struct obj *spellbook;
 		} else {
 			int i;
 			boolean read_book = FALSE;
-			Sprintf(splname, objects[spellbook->ovar1].oc_name_known ? "\"%s\"" : "the \"%s\" spell", OBJ_NAME(objects[spellbook->ovar1]));
+			Sprintf(splname, objects[spellbook->ovar1_infinitespells].oc_name_known ? "\"%s\"" : "the \"%s\" spell", OBJ_NAME(objects[spellbook->ovar1_infinitespells]));
 			for (i = 0; i < MAXSPELL; i++)  {
-				if (spellid(i) == spellbook->ovar1)  {
-					pline("The endless pages of the book cover the material of a spellbook of %s in exhaustive detail.", OBJ_NAME(objects[spellbook->ovar1]));
+				if (spellid(i) == spellbook->ovar1_infinitespells)  {
+					pline("The endless pages of the book cover the material of a spellbook of %s in exhaustive detail.", OBJ_NAME(objects[spellbook->ovar1_infinitespells]));
 					if (spellknow(i) <= KEEN) {
 						Your("knowledge of %s is keener.", splname);
 						incrnknow(i);
@@ -667,17 +671,17 @@ struct obj *spellbook;
 					}
 					break;
 				} else if (spellid(i) == NO_SPELL)  {
-					spl_book[i].sp_id = spellbook->ovar1;
-					spl_book[i].sp_lev = objects[spellbook->ovar1].oc_level;
+					spl_book[i].sp_id = spellbook->ovar1_infinitespells;
+					spl_book[i].sp_lev = objects[spellbook->ovar1_infinitespells].oc_level;
 					incrnknow(i);
 					read_book = TRUE;
-					pline("The endless pages of the book cover the material of a spellbook of %s in exhaustive detail.",OBJ_NAME(objects[spellbook->ovar1]));
+					pline("The endless pages of the book cover the material of a spellbook of %s in exhaustive detail.",OBJ_NAME(objects[spellbook->ovar1_infinitespells]));
 					pline("Using the instructions on the pages, you easily learn to cast the spell!");
 					break;
 				}
 			}
 			int booktype;
-			if ((booktype = further_study(spellbook->ovar1))){
+			if ((booktype = further_study(spellbook->ovar1_infinitespells))){
 				You("understand the material thoroughly, and can see a way to cast another spell.");
 				Sprintf(splname, objects[booktype].oc_name_known ? "\"%s\"" : "the \"%s\" spell", OBJ_NAME(objects[booktype]));
 				for (i = 0; i < MAXSPELL; i++)  {
@@ -704,8 +708,8 @@ struct obj *spellbook;
 				}
 			}
 			if (read_book && !rn2(20)){
-				spellbook->ovar1 = rn1(SPE_BLANK_PAPER - SPE_DIG, SPE_DIG);
-				pline("The endless pages of the book turn themselves. They settle on a section describing %s.", OBJ_NAME(objects[spellbook->ovar1]));
+				spellbook->ovar1_infinitespells = rn1(SPE_BLANK_PAPER - SPE_DIG, SPE_DIG);
+				pline("The endless pages of the book turn themselves. They settle on a section describing %s.", OBJ_NAME(objects[spellbook->ovar1_infinitespells]));
 			}
 			if (i == MAXSPELL) impossible("Too many spells memorized!");
 			return MOVE_READ;
@@ -908,7 +912,7 @@ run_maintained_spells()
 		int spell_level = objects[spell].oc_level;
 		if (u.uhave.amulet)
 			spell_level *= 2;
-		int hungr = spellhunger(spell_level * 5) * MAINTAINED_SPELL_HUNGER_MULTIPLIER * get_uhungersizemod();
+		int hungr = spellhunger(spellenergy(spell_index)) * MAINTAINED_SPELL_HUNGER_MULTIPLIER * get_uhungersizemod();
 		if (u.uen < spell_level){
 			You("lack the energy to maintain %s.",
 				spellname(spell_index));
@@ -927,7 +931,7 @@ run_maintained_spells()
 			/* first, power cost*/
 			spell_level += (spell_level*(5 - tries)) / 2;	//costs more if it has a higher failure rate
 
-			u.maintained_en_debt += spell_level * 5 * MAINTAINED_SPELL_PW_MULTIPLIER;
+			u.maintained_en_debt += spellenergy(spell_index) * MAINTAINED_SPELL_PW_MULTIPLIER;
 
 			/* next, hunger cost */
 			if (spell != SPE_DETECT_FOOD && !(Race_if(PM_INCANTIFIER)))	// detect_food exception is moot, but consistent
@@ -1056,6 +1060,17 @@ age_spells()
 			ndecrnknow(i, timeout);
 		}
 	return;
+}
+
+void
+damage_spells(dmg)
+int dmg;
+{
+	int i;
+	for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++)
+	    if (spellknow(i)){
+			ndecrnknow(i, dmg);
+		}
 }
 
 /*
@@ -1419,143 +1434,57 @@ docast()
 
 /* allow the player to conditionally cast spells via equipped artifacts */
 void
-update_alternate_spells()
+update_externally_granted_spells()
 {
-	int i;
+	int i, j, n = 0;
+	int exspells[MAXSPELL];
 
-	// for artifacts
-	if(uarmh && uarmh->oartifact == ART_STORMHELM){
+	/* reset all sp_ext for recalc */
+	for (i = 0; i < MAXSPELL; i++)
+		spellext(i) = FALSE;
+
+	/* build list of all externally-provided spells */
+	if (uarmh && uarmh->oartifact == ART_STORMHELM)
+		exspells[n++] = SPE_LIGHTNING_STORM;
+	if (Fire_crystal || (uarmh && check_oprop(uarmh, OPROP_BLAST)))
+		exspells[n++] = SPE_FIREBALL;
+	if (Water_crystal)
+		exspells[n++] = SPE_CONE_OF_COLD;
+	if (Air_crystal)
+		exspells[n++] = SPE_LIGHTNING_BOLT;
+	if (Earth_crystal)
+		exspells[n++] = SPE_DIG;
+	if (Black_crystal) {
+		exspells[n++] = SPE_HASTE_SELF;
+		exspells[n++] = SPE_EXTRA_HEALING;
+	}
+	if (uwep && uwep->oartifact == ART_DEATH_SPEAR_OF_KEPTOLO)
+		exspells[n++] = SPE_DRAIN_LIFE;
+	if (uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM) {
+		exspells[n++] = SPE_MAGIC_MISSILE;
+		exspells[n++] = SPE_FORCE_BOLT;
+	}
+	if(uarmh && uarmh->oartifact == ART_CROWN_OF_THE_PERCIPIENT){
 		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_LIGHTNING_STORM) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_LIGHTNING_STORM;
-				spl_book[i].sp_lev = objects[SPE_LIGHTNING_STORM].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
+			if (spellid(i) != NO_SPELL) {
+				if (spl_book[i].sp_lev <= (u.uinsight*2)/11+1)
+					spellext(i) = TRUE;
 			}
 		}
 	}
-	if(Fire_crystal || (uarmh && check_oprop(uarmh, OPROP_BLAST))){
+
+	/* mark sp_ext, and add them to the book if necessary */
+	for (j = 0; j < n; j++) {
 		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_FIREBALL) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_FIREBALL;
-				spl_book[i].sp_lev = objects[SPE_FIREBALL].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-	}
-	if(Water_crystal){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_CONE_OF_COLD) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_CONE_OF_COLD;
-				spl_book[i].sp_lev = objects[SPE_CONE_OF_COLD].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-	}
-	if(Air_crystal){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_LIGHTNING_BOLT) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_LIGHTNING_BOLT;
-				spl_book[i].sp_lev = objects[SPE_LIGHTNING_BOLT].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-	}
-	if(Earth_crystal){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_DIG) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_DIG;
-				spl_book[i].sp_lev = objects[SPE_DIG].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-	}
-	if(Black_crystal){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_HASTE_SELF) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_HASTE_SELF;
-				spl_book[i].sp_lev = objects[SPE_HASTE_SELF].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_EXTRA_HEALING) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_EXTRA_HEALING;
-				spl_book[i].sp_lev = objects[SPE_EXTRA_HEALING].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-	}
-	if (uwep && uwep->oartifact == ART_DEATH_SPEAR_OF_KEPTOLO){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_DRAIN_LIFE) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL)  {
-				spl_book[i].sp_id = SPE_DRAIN_LIFE;
-				spl_book[i].sp_lev = objects[SPE_DRAIN_LIFE].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-	}
-	if (uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM){
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_MAGIC_MISSILE) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
+			if (spellid(i) == exspells[j]) {
+				spellext(i) = TRUE;
 				break;
 			}
 			if (spellid(i) == NO_SPELL) {
-				spl_book[i].sp_id = SPE_MAGIC_MISSILE;
-				spl_book[i].sp_lev = objects[SPE_MAGIC_MISSILE].oc_level;
-				spl_book[i].sp_know = 1;
-				break;
-			}
-		}
-		for (i = 0; i < MAXSPELL; i++) {
-			if (spellid(i) == SPE_FORCE_BOLT) {
-				if (spl_book[i].sp_know < 1) spl_book[i].sp_know = 1;
-				break;
-			}
-			if (spellid(i) == NO_SPELL) {
-				spl_book[i].sp_id = SPE_FORCE_BOLT;
-				spl_book[i].sp_lev = objects[SPE_FORCE_BOLT].oc_level;
-				spl_book[i].sp_know = 1;
+				spl_book[i].sp_id = exspells[j];
+				spl_book[i].sp_lev = objects[exspells[j]].oc_level;
+				spl_book[i].sp_know = 0;
+				spellext(i) = TRUE;
 				break;
 			}
 		}
@@ -1718,7 +1647,7 @@ int energy;
 	 * b) Wizards have spent their life at magic and
 	 * understand quite well how to cast spells.
 	 */
-	intell = acurr(A_INT);
+	intell = ACURR(A_INT);
 	if (!Role_if(PM_WIZARD)){
 		if(uarmh && uarmh->oartifact == ART_APOTHEOSIS_VEIL) intell -= 4;
 		else if(u.sealsActive&SEAL_PAIMON) intell -= 6;
@@ -1865,7 +1794,7 @@ genericptr_t arg;
 	struct monst * mtmp = m_u_at(x, y);
 	if (mtmp == &youmonst)
 		zapyourself((struct obj *)arg, TRUE);
-	else if (mtmp && mtmp->mtame)
+	else if (mtmp && (mtmp->mtame || mtmp->mpeaceful))
 		bhitm(mtmp, (struct obj *)arg);
 }
 
@@ -1873,7 +1802,7 @@ STATIC_OVL void
 cast_mass_healing(otmp)
 struct obj * otmp;
 {
-	int radius = 2 + P_SKILL(P_HEALING_SPELL) + Spellboost;
+	int radius = 2 + P_SKILL(P_HEALING_SPELL) + !!Spellboost;
 	do_clear_area(u.ux, u.uy, radius, cast_extra_healing_at, (genericptr_t)otmp);
 }
 
@@ -2709,7 +2638,7 @@ spiriteffects(power, atme)
 				otmp->blessed = 0;
 				otmp->cursed = 0;
 				otmp->spe = 1; /* to indicate it's yours */
-				otmp->ovar1 = 1 + u.ulevel/10;
+				otmp->ovar1_webGush = 1 + u.ulevel/10;
 				projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, rn1(5,5), TRUE, TRUE, FALSE);
 				nomul(0, NULL);
 			} else return MOVE_CANCELLED;
@@ -2763,7 +2692,7 @@ spiriteffects(power, atme)
 			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
 			otmp = mksobj(ACID_VENOM, NO_MKOBJ_FLAGS);
 			otmp->spe = 1; /* to indicate it's yours */
-			otmp->ovar1 = d(5,dsize); /* save the damge this should do */
+			otmp->ovar1_acidSplashDamage = d(5,dsize); /* save the damge this should do */
 			You("spit venom.");
 			projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 10, TRUE, FALSE, FALSE);
 		}break;
@@ -3181,18 +3110,9 @@ spiriteffects(power, atme)
 				mon->m_lev += (u.ulevel - mon->m_lev)/3;
 				mon->mhpmax = (mon->m_lev * 8) - 4;
 				mon->mhp =  mon->mhpmax;
-				for(curmon = fmon; curmon; curmon = curmon->nmon){
-					if(curmon->mspiritual && !get_timer(curmon->timed, DESUMMON_MON)){
-						numdogs++;
-						if(!weakdog) weakdog = curmon;
-						if(weakdog->m_lev > curmon->m_lev) weakdog = curmon;
-						else if(weakdog->mtame > curmon->mtame) weakdog = curmon;
-						else if(weakdog->mtame > curmon->mtame) weakdog = curmon;
-						else if(weakdog->mtame > curmon->mtame) weakdog = curmon;
-					}
-				}
-				if(weakdog && numdogs > dog_limit()) start_timer(5L, TIMER_MONSTER, DESUMMON_MON, (genericptr_t)mon);
 				mon->mspiritual = TRUE;
+				// May result in the new dog getting the vanish timer if it's weakest, but that's fine.
+				vanish_dogs();
 			}
 		}break;
 		case PWR_ROOT_SHOUT:{
@@ -3655,6 +3575,7 @@ spiriteffects(power, atme)
 					// pline("The magical energy within %s is exhausted.",the(xname(uwep)));
 					// uwep->otyp = SPE_BLANK_PAPER;
 					// uwep->obj_color = objects[SPE_BLANK_PAPER].oc_color;
+					// remove_oprop(uwep, OPROP_TACTB);
 				// }
 			} else{
 				You("need to be holding a spellbook.");
@@ -4529,12 +4450,14 @@ int spell;
 			u.ufirst_life_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 		break;
 		case APPLE_WORD:
-			You("preach dreadful knowledge!");
+			You("speak the dreadful truth!");
 			for(sy = 0; sy < ROWNO; sy++){
 				for(sx = 0; sx < COLNO; sx++){
-					if(isok(sx,sy) && couldsee(sx,sy) && (mon = m_at(sx, sy)) && !resist(mon, '\0', 0, NOTELL)){
-						mon->mcrazed = TRUE;
-						mon->mflee = TRUE;
+					if(isok(sx,sy) && couldsee(sx,sy) && (mon = m_at(sx, sy)) && !is_deaf(mon) && !resist(mon, '\0', 0, NOTELL)){
+						if(!mon->mpeaceful){
+							mon->mcrazed = TRUE;
+							mon->mflee = TRUE;
+						}
 						mon->mdisrobe = TRUE;
 					}
 				}
@@ -4549,6 +4472,75 @@ int spell;
 	//Speak one word of power per move free.
 	return MOVE_PARTIAL;
 }
+
+/* returns the Pw cost of spl_book[spell] */
+/* does *not* include Amulet of Yendor cost */
+int
+spellenergy(spell)
+int spell;
+{
+	int energy = spellev(spell) * 5;
+
+	if(uwep && uwep->obj_material == MERCURIAL){
+		int level = u.ulevel;
+		int spellev = spellev(spell);
+		//Streaming
+		if(you_merc_streaming(uwep)){
+			if(level < 3);
+			else if(level < 10){
+				if(spellev == 1)
+					energy *= .8;
+			}
+			else if(level < 18){
+				if(spellev == 1)
+					energy *= .5;
+				else if(spellev == 2)
+					energy *= .8;
+			}
+			else{
+				if(spellev == 1)
+					energy *= .5;
+				else if(spellev == 2)
+					energy *= .5;
+				else if(spellev == 3)
+					energy *= .8;
+			}
+		}
+		else if(you_merc_kinstealing(uwep)){
+			if(level < 3);
+			else if(level < 18){
+				if(spellev == 1)
+					energy *= .8;
+			}
+			else{
+				if(spellev == 1)
+					energy *= .5;
+			}
+		}
+		//Chained
+		else {
+			if(level < 3);
+			else if(level < 10){
+				if(spellev == 1)
+					energy *= .8;
+			}
+			else if(level < 18){
+				if(spellev == 1)
+					energy *= .8;
+				else if(spellev == 2)
+					energy *= .8;
+			}
+			else{
+				if(spellev == 1)
+					energy *= .5;
+				else if(spellev == 2)
+					energy *= .5;
+			}
+		}
+	}
+	return energy;
+}
+
 int
 spelleffects(int spell, boolean atme, int spelltyp)
 {
@@ -4568,82 +4560,21 @@ spelleffects(int spell, boolean atme, int spelltyp)
 		 * Spell casting no longer affects knowledge of the spell. A
 		 * decrement of spell knowledge is done every turn.
 		 */
-		if (spellknow(spell) <= 0) {
-			Your("knowledge of this spell is twisted.");
-			pline("It invokes nightmarish images in your mind...");
-			spell_backfire(spell);
-			return MOVE_INSTANT;
-		} else if (
-			!(spellid(spell) == SPE_LIGHTNING_STORM && uarmh && uarmh->oartifact == ART_STORMHELM) &&
-			!(spellid(spell) == SPE_FIREBALL && uarmh && check_oprop(uarmh, OPROP_BLAST)) &&
-			!((spellid(spell) == SPE_FORCE_BOLT || spellid(spell) == SPE_MAGIC_MISSILE) && 
-				uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM)
-		) {
-			if(spellknow(spell) <= 200) { /* 1% */
-				You("strain to recall the spell.");
-			} else if (spellknow(spell) <= 1000) { /* 5% */
-				Your("knowledge of this spell is growing faint.");
-			}
-		}
-		energy = (spellev(spell) * 5);    /* 5 <= energy <= 35 */
-		
-		if(uwep && uwep->obj_material == MERCURIAL){
-			int level = u.ulevel;
-			int spellev = spellev(spell);
-			//Streaming
-			if(you_merc_streaming(uwep)){
-				if(level < 3);
-				else if(level < 10){
-					if(spellev == 1)
-						energy *= .8;
-				}
-				else if(level < 18){
-					if(spellev == 1)
-						energy *= .5;
-					else if(spellev == 2)
-						energy *= .8;
-				}
-				else{
-					if(spellev == 1)
-						energy *= .5;
-					else if(spellev == 2)
-						energy *= .5;
-					else if(spellev == 3)
-						energy *= .8;
-				}
-			}
-			else if(you_merc_kinstealing(uwep)){
-				if(level < 3);
-				else if(level < 18){
-					if(spellev == 1)
-						energy *= .8;
-				}
-				else{
-					if(spellev == 1)
-						energy *= .5;
-				}
-			}
-			//Chained
-			else {
-				if(level < 3);
-				else if(level < 10){
-					if(spellev == 1)
-						energy *= .8;
-				}
-				else if(level < 18){
-					if(spellev == 1)
-						energy *= .8;
-					else if(spellev == 2)
-						energy *= .8;
-				}
-				else{
-					if(spellev == 1)
-						energy *= .5;
-					else if(spellev == 2)
-						energy *= .5;
+		if (!spellext(spell)) {
+			if (spellknow(spell) <= 0) {
+				Your("knowledge of this spell is twisted.");
+				pline("It invokes nightmarish images in your mind...");
+				spell_backfire(spell);
+				return MOVE_INSTANT;
+			} else  {
+				if(spellknow(spell) <= 200) { /* 1% */
+					You("strain to recall the spell.");
+				} else if (spellknow(spell) <= 1000) { /* 5% */
+					Your("knowledge of this spell is growing faint.");
 				}
 			}
 		}
+		energy = spellenergy(spell);
 
 		if (!Race_if(PM_INCANTIFIER) && u.uhunger <= 10 && spellid(spell) != SPE_DETECT_FOOD) {
 			You("are too hungry to cast that spell.");
@@ -5221,6 +5152,20 @@ int respect_timeout;
 	return FALSE;
 }
 
+char *
+splknowpct(spell)
+int spell;
+{
+	static char buf[BUFSZ];
+
+	if (spellext(spell))
+		return "N/A ";
+	
+	Sprintf(buf, "%3d%%", (spellknow(spell) * 100 + (KEEN - 1)) / KEEN);
+
+	return buf; 
+}
+
 STATIC_OVL boolean
 dospellmenu(splaction, spell_no)
 int splaction;	/* SPELLMENU_CAST, SPELLMENU_VIEW, SPELLMENU_DESCRIBE, SPELLMENU_MAINTAIN, SPELLMENU_PICK, SPELLMENU_QUIVER, or spl_book[] index */
@@ -5240,7 +5185,7 @@ int *spell_no;
 		any.a_void = 0;		/* zero out all bits */
 		maintainable = 0;
 
-		update_alternate_spells();	// make sure all spells are listed
+		update_externally_granted_spells();	// make sure all spells are listed
 
 		/*
 		 * The correct spacing of the columns depends on the
@@ -5286,12 +5231,12 @@ int *spell_no;
 			if (spell_maintained(spellid(i))) Strcat(buf2, " [M]");
 			if (spellid(i) == u.quivered_spell) Strcat(buf2, " [Q]");
 			Sprintf(buf, iflags.menu_tab_sep ?
-				"%s\t%-d%s\t%s\t%-d%%\t%-d%%\t" : "%-20s  %2d%s   %-12s %3d%%     %3d%%",
+				"%s\t%-d%s\t%s\t%-d%%\t%s\t" : "%-20s  %2d%s   %-12s %3d%%     %s",
 				buf2, spellev(i),
-				spellknow(i) ? " " : "*",
+				(spellknow(i) || spellext(i)) ? " " : "*",
 				spelltypemnemonic(spell_skilltype(spellid(i))),
 				100 - percent_success(i),
-				(spellknow(i) * 100 + (KEEN - 1)) / KEEN
+				splknowpct(i)
 				);
 
 			any.a_int = i + 1;	/* must be non-zero */
@@ -5967,9 +5912,21 @@ int spell;
 			splcaster -= urole.spelarmr * cast_bon / 3;
 		}
 
-		if (uwep->otyp == SCALPEL) {	// a tool of healing
+		if (uwep->otyp == SCALPEL
+			|| uwep->oartifact == ART_STAFF_OF_AESCULAPIUS
+			|| uwep->oartifact == ART_ESSCOOAHLIPBOOURRR
+		) {	// tools of healing
 			cast_bon = 0;
 			if(spell_skilltype(spellid(spell)) == P_HEALING_SPELL)
+			cast_bon += 2;
+			if (uwep->oartifact)
+				cast_bon *= 2;
+			splcaster -= urole.spelarmr * cast_bon / 3;
+		}
+
+		if (uwep->oartifact == ART_ESSCOOAHLIPBOOURRR) {	// mutation
+			cast_bon = 0;
+			if(spell_skilltype(spellid(spell)) == P_MATTER_SPELL)
 			cast_bon += 2;
 			if (uwep->oartifact)
 				cast_bon *= 2;
@@ -6072,8 +6029,17 @@ int spell;
 
 	if (uarmh && !Role_if(PM_MONK)) {
 		//Something up with madmen and this, it doesn't affect much.
-		if (is_metallic(uarmh) && uarmh->otyp != HELM_OF_BRILLIANCE && !check_oprop(uarmh, OPROP_BRIL))
-			splcaster += casting_stat == A_CHA ? urole.spelarmr : uarmhbon;
+		if (is_metallic(uarmh) && uarmh->otyp != HELM_OF_BRILLIANCE && !check_oprop(uarmh, OPROP_BRIL)){
+			if(casting_stat == A_CHA){
+				splcaster += FacelessHelm(uarmh) ? 4*urole.spelarmr : 
+							 (uarmh->otyp == find_gcirclet()) ? urole.spelarmr/2 : 
+							 uarmh->otyp == ORCISH_HELM ? urole.spelarmr :
+							 2*urole.spelarmr;
+			}
+			else {
+				splcaster += uarmhbon;
+			}
+		}
 	}
 
 	if (uarmg) {
@@ -6178,7 +6144,7 @@ int spell;
 		if(u.umadness&MAD_RAGE && !BlockableClearThoughts){
 			chance -= delta;
 		}
-		if(u.umadness&MAD_FORMICATION && !BlockableClearThoughts){
+		if((u.umadness&MAD_FORMICATION || u.umadness&MAD_SCORPIONS) && !BlockableClearThoughts){
 			chance -= delta/2;
 		}
 		if(u.umadness&MAD_SCIAPHILIA && !BlockableClearThoughts && unshadowed_square(u.ux, u.uy)){
@@ -6190,7 +6156,7 @@ int spell;
 				chance -= (discomfort * delta)/10;
 			} else {
 				if (!uwep && !uarms) {
-					//Not reduced by ClearThoughts+Nightmare combo
+					//Bonus, not reduced by ClearThoughts+Nightmare combo
 					chance += Insanity/10;
 				}
 			}
@@ -6266,6 +6232,90 @@ struct obj *obj;
 	        spl_book[i].sp_id = obj->otyp;
 	        spl_book[i].sp_lev = objects[obj->otyp].oc_level;
 	        incrnknow(i);
+	        return;
+	    }
+	}
+	impossible("Too many spells memorized!");
+	return;
+}
+
+void
+initialforgotwizardspells(num)
+int num;
+{
+	int spells[num];
+	int found = 0;
+	int i = 0, j;
+	int lim;
+	boolean ok;
+	while(num--){
+		lim = 500;
+		while(lim-- > 0){
+			spells[i] = rn2(SPE_STONE_TO_FLESH-SPE_DIG)+SPE_DIG;
+			if(objects[spells[i]].oc_level > 3)
+				continue;
+			ok = TRUE;
+			for(j = 0; j < found; j++)
+				if(spells[j] == spells[i])
+					ok = FALSE;
+			if(ok){
+				initialforgotspell(spells[i]);
+				found++;
+				i++;
+				break;
+			}
+		}
+	}
+}
+
+void
+initialforgotpriestspells(num)
+int num;
+{
+	int candidatespells[] = {SPE_LIGHT, SPE_DETECT_MONSTERS, SPE_DETECT_UNSEEN,
+				  SPE_CURE_BLINDNESS, SPE_EXTRA_HEALING,
+				  SPE_TURN_UNDEAD, SPE_REMOVE_CURSE, SPE_PROTECTION};
+	int spells[num];
+	int found = 0;
+	int i = 0, j;
+	int lim;
+	boolean ok;
+	while(num--){
+		lim = 500;
+		while(lim-- > 0){
+			spells[i] = ROLL_FROM(candidatespells);
+
+			ok = TRUE;
+			for(j = 0; j < found; j++)
+				if(spells[j] == spells[i])
+					ok = FALSE;
+			if(ok){
+				initialforgotspell(spells[i]);
+				found++;
+				i++;
+				break;
+			}
+		}
+	}
+}
+
+/* Learn a forgotten spell during creation of the initial inventory */
+void
+initialforgotspell(otyp)
+int otyp;
+{
+	int i;
+	knows_object(otyp);
+	for (i = 0; i < MAXSPELL; i++) {
+	    if (spellid(i) == otyp) {
+	         pline("Error: Spell %s already known.",
+	         		OBJ_NAME(objects[otyp]));
+	         return;
+	    }
+	    if (spellid(i) == NO_SPELL)  {
+	        spl_book[i].sp_id = otyp;
+	        spl_book[i].sp_lev = objects[otyp].oc_level;
+	        spl_book[i].sp_know = 0;
 	        return;
 	    }
 	}

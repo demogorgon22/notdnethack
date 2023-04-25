@@ -1070,6 +1070,16 @@ makelevel()
 				// pline("%s",fillname);
 				makemaz(fillname);
 			}
+			else if(Role_if(PM_HEALER) && Race_if(PM_DROW) && qstart_level.dnum == u.uz.dnum && qstart_level.dlevel == (u.uz.dlevel-1)){
+				Sprintf(fillname, "%s-secn", urole.filecode);
+				// pline("%s",fillname);
+				makemaz(fillname);
+			}
+			else if(Role_if(PM_HEALER) && Race_if(PM_DROW) && qstart_level.dnum == u.uz.dnum && qlocate_level.dlevel == (u.uz.dlevel-1)){
+				Sprintf(fillname, "%s-flor", urole.filecode);
+				// pline("%s",fillname);
+				makemaz(fillname);
+			}
 			else {
 			    Sprintf(fillname, "%s-loca", urole.filecode);
 			    loc_lev = find_level(fillname);
@@ -2105,6 +2115,7 @@ int x, y, hv_id;
 		case VN_APOCALYPSE:
 		case VN_HARROWER:
 		case VN_MAD_ANGEL:
+		case VN_JRT:
 			mid = PM_ANGEL;
 		break;
 		case VN_N_PIT_FIEND:

@@ -6,6 +6,7 @@
 #define MONST_H
 
 #include "prop.h"
+#include "attrib.h"
 
 /* The weapon_check flag is used two ways:
  * 1) When calling mon_wield_item, is 2-6 depending on what is desired.
@@ -76,7 +77,12 @@ struct monst {
 	int m_san_level;/* DEPRECATED: to record sanity level at which this monster will be obscured */
 	int m_insight_level;/* to record insight level at which this monster will be reveled */
 	
-	short mstr, mdex, mcon, mint, mwis, mcha; /* Monster ability scores */
+	struct attribs	acurr,		/* your attributes (eg. str)*/
+			aexe,		/* for gain/loss via "exercise" */
+			abon,		/* your bonus attributes (eg. str) */
+			amax,		/* max attributes (eg. str) */
+			atemp,		/* used for temporary loss/gain */
+			atime;		/* used for loss/gain countdown */
 
 	Bitfield(mferal,1);	/* was once tame */ /*1*/
 	
@@ -154,39 +160,43 @@ struct monst {
 	Bitfield(ispolyp,1);/* is a polypoid being */ /*89*/
 	Bitfield(mdisrobe,1);/* disrobing */ /*90*/
 	Bitfield(mgoatmarked,1);/* will be eaten by the goat if you kill it this turn */ /*91*/
-	Bitfield(mpetitioner,1);/* already dead (shouldn't leave a corpse) */ /*92*/
-	Bitfield(mdoubt,1);/* clerical spellcasting blocked */ /*93*/
-	Bitfield(menvy,1);/* wants only others stuff */ /*94*/
+	Bitfield(mflamemarked,1); /* monster was damaged by a silver flame weapon and will be sacced if they die */ /*92*/
+	Bitfield(myoumarked,1); /* monster was marked for cult sacrifice on your behalf */ /*93*/
+	Bitfield(mpetitioner,1);/* already dead (shouldn't leave a corpse) */ /*94*/
+	Bitfield(mdoubt,1);/* clerical spellcasting blocked */ /*95*/
+	Bitfield(menvy,1);/* wants only others stuff */ /*96*/
 	/*Monster madnesses*/
-	Bitfield(msanctity,1);/* can't attack women */ /*95*/
-	/** Needs improvement **/ Bitfield(mgluttony,1);/* eats food */ /*96*/
-	Bitfield(mfrigophobia,1);/* won't cross ice */ /*97*/
-	Bitfield(mcannibal,1);/* attacks same race, eats corpses */ /*98*/
-	Bitfield(mrage,1);/* berserk plus morale*/ /*99*/
-	Bitfield(margent,1);/* can't attack men, distracted by mirrors */ /*100*/
-	Bitfield(msuicide,1);/* doesn't defend self */ /*101*/
-	Bitfield(mnudist,1);/* takes off clothing */ /*102*/
-	Bitfield(mophidio,1);/* attacked by snakes */ /*103*/
-	Bitfield(marachno,1);/* attacked by spiders, can't attack women */ /*104*/
-	Bitfield(mentomo,1);/* attacked by insects */ /*105*/
-	Bitfield(mthalasso,1);/* attacked by seamonsters */ /*106*/
-	Bitfield(mhelmintho,1);/* attacked by wormy things */ /*107*/
-	Bitfield(mparanoid,1);/* attacks the wrong squares */ /*108*/
-	Bitfield(mtalons,1);/* won't use items */ /*109*/
-	Bitfield(mdreams,1);/* blasted by cthulhu while asleep */ /*110*/
-	Bitfield(msciaphilia,1);/* elevated spell failure and lowered accuracy while not in shadows */ /*111*/
-	Bitfield(mforgetful,1);/* can't use wizard spellcasting */ /*112*/
-	Bitfield(mapostasy,1);/* can't use priest spellcasting */ /*113*/
-	Bitfield(mtoobig,1);/* elevated spell failure */ /*114*/
-	Bitfield(mrotting,1);/* spreads poison clouds */ /*115*/
+	Bitfield(msanctity,1);/* can't attack women */ /*97*/
+	/** Needs improvement **/ Bitfield(mgluttony,1);/* eats food */ /*98*/
+	Bitfield(mfrigophobia,1);/* won't cross ice */ /*99*/
+	Bitfield(mcannibal,1);/* attacks same race, eats corpses */ /*100*/
+	Bitfield(mrage,1);/* berserk plus morale*/ /*101*/
+	Bitfield(margent,1);/* can't attack men, distracted by mirrors */ /*102*/
+	Bitfield(msuicide,1);/* doesn't defend self */ /*103*/
+	Bitfield(mnudist,1);/* takes off clothing */ /*104*/
+	Bitfield(mophidio,1);/* attacked by snakes */ /*105*/
+	Bitfield(marachno,1);/* attacked by spiders, can't attack women */ /*106*/
+	Bitfield(mentomo,1);/* attacked by insects */ /*107*/
+	Bitfield(mthalasso,1);/* attacked by seamonsters */ /*108*/
+	Bitfield(mhelmintho,1);/* attacked by wormy things */ /*109*/
+	Bitfield(mparanoid,1);/* attacks the wrong squares */ /*110*/
+	Bitfield(mtalons,1);/* won't use items */ /*111*/
+	Bitfield(mdreams,1);/* blasted by cthulhu while asleep */ /*112*/
+	Bitfield(msciaphilia,1);/* elevated spell failure and lowered accuracy while not in shadows */ /*113*/
+	Bitfield(mforgetful,1);/* can't use wizard spellcasting */ /*114*/
+	Bitfield(mapostasy,1);/* can't use priest spellcasting */ /*115*/
+	Bitfield(mtoobig,1);/* elevated spell failure */ /*116*/
+	Bitfield(mrotting,1);/* spreads poison clouds */ /*117*/
+	Bitfield(mspores,1); /* monster is being consumed by Zuggutmoy's spores */ /*118*/
+	Bitfield(mformication,1); /* monster is covered in imaginary insects */ /*119*/
+	Bitfield(mscorpions,1); /* monster is covered in stinging scorpions */ /*120*/
 	
-	Bitfield(deadmonster,2); /* is DEADMONSTER */ /*116*/
+	Bitfield(deadmonster,2); /* is DEADMONSTER */ /*121*/
 #define DEADMONSTER_DEAD	0x1
 #define DEADMONSTER_PURGE	0x2
 #define DEADMONSTER(mon)	((mon) != &youmonst && (mon)->deadmonster)
-	Bitfield(mnoise,1); /* made noise in the last turn (dochug) */ /*118*/
-	Bitfield(marriving,1); /* monster is arriving on the level and should be placed when there's space */ /*119*/
-	Bitfield(mflamemarked,1); /* monster was damaged by a silver flame weapon and will be sacced if they die */ /*120*/
+	Bitfield(mnoise,1); /* made noise in the last turn (dochug) */ /*123*/
+	Bitfield(marriving,1); /* monster is arriving on the level and should be placed when there's space */ /*124*/
 	
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
@@ -196,10 +206,11 @@ struct monst {
 	int encouraged;	/* affected by Encourage song */
 #define BASE_DOG_ENCOURAGED_MAX		7
 	
-	int entangled;/* The monster is entangled, and in what? */
-#define imprisoned(mon)	((mon)->entangled == SHACKLES || ((mon)->mtrapped && t_at((mon)->mx, (mon)->my) && t_at((mon)->mx, (mon)->my)->ttyp == VIVI_TRAP))
-#define noactions(mon)	((mon)->entangled || imprisoned(mon))
-#define nonthreat(mon)	(imprisoned(mon))
+	int entangled_otyp;/* The monster is entangled, and in what? */
+	long entangled_oid;/* The monster is entangled, and in what? */
+#define imprisoned(mon)	((mon)->entangled_otyp == SHACKLES || ((mon)->mtrapped && t_at((mon)->mx, (mon)->my) && t_at((mon)->mx, (mon)->my)->ttyp == VIVI_TRAP))
+#define noactions(mon)	((mon)->entangled_oid || imprisoned(mon))
+#define nonthreat(mon)	(imprisoned(mon) || has_template(mon, PLAGUE_TEMPLATE))
 #define helpless(mon) (mon->msleeping || !(mon->mcanmove) || !(mon->mnotlaugh) || noactions(mon))	
 #define helpless_still(mon) (mon->msleeping || !(mon->mcanmove) || noactions(mon))	
 	long mstrategy;		/* for monsters with mflag3: current strategy */
@@ -266,16 +277,20 @@ struct monst {
 #define	M_BLACK_WEB		13	/* Zombie with a shadow blade attack */
 #define	M_GREAT_WEB		14	/* Has a stronger shadow blade attack */
 #define	SLIME_REMNANT	15	/* slimey, like an ancient of corruption */
-#define	YELLOW_TEMPLATE	16	/* causes sleep and damages sanity (unimplemented) */
+#define	YELLOW_TEMPLATE	16	/* causes sleep and damages sanity */
 #define	DREAM_LEECH		17	/* sucks mental atributes */
 #define	MAD_TEMPLATE	18	/* mad angel template */
 #define	FALLEN_TEMPLATE	19	/* fallen angel template */
 #define WORLD_SHAPER	20	/* plane-of-earth nastify */
-#define	WHISPERING		21	/* Voidified */
-#define MINDLESS		22	/* brain eaten by mind flayers */
-#define POISON_TEMPLATE	23	/* turned evil by poison */
-#define MOLY_TEMPLATE	24	/* off-turn snake-bite + insight */
-#define MAXTEMPLATE	MOLY_TEMPLATE
+#define MINDLESS		21	/* brain eaten by mind flayers */
+#define POISON_TEMPLATE	22	/* turned evil by poison */
+#define MOLY_TEMPLATE	23	/* off-turn snake-bite + insight */
+#define PLAGUE_TEMPLATE	24	/* suffering from a life-drain plague, cure to recruit */
+#define SPORE_ZOMBIE	25	/* fungus zombie */
+#define CORDYCEPS		26	/* spore shedder */
+#define PSURLON			27	/* psychic worm */
+#define	WHISPERING		28	/* Voidified */
+#define MAXTEMPLATE	WHISPERING
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */
@@ -325,6 +340,7 @@ struct monst {
 #define	mvar_deminymph_role	mvar1
 #define	mvar_flask_charges	mvar1
 #define MAX_FLASK_CHARGES(mtmp) (mtmp->m_lev/3)
+#define	mvar_yellow_lifesaved	mvar1
 	long mvar2;
 #define	mvar_dracaePregTimer	mvar2
 #define	mvar_spList_2	mvar2

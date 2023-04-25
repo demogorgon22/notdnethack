@@ -73,6 +73,9 @@ int adtyp, ztyp;
 		case AD_DEAD: return "death ray";
 		case AD_ELEC: return "lightning bolt";
 		case AD_DARK: return "bolt of darkness";
+		case AD_HOLY: return "holy missile";
+		case AD_UNHY: return "unholy missile";
+		case AD_STAR: return "stream of silver stars";
 		default:      impossible("unknown wand damage type in flash_type: %d", adtyp);
 			return "NaN ray";
 		}
@@ -289,7 +292,7 @@ struct obj *otmp;
 	case WAN_SLOW_MONSTER:
 	case SPE_SLOW_MONSTER:
 		if (!resist(mtmp, otmp->oclass, 0, TELL)) {
-			mon_adjust_speed(mtmp, -1, otmp);
+			mon_adjust_speed(mtmp, -1, otmp, TRUE);
 			m_dowear(mtmp, FALSE); /* might want speed boots */
 			if (u.uswallow && (mtmp == u.ustuck) &&
 			    is_whirly(mtmp->data)) {
@@ -301,7 +304,7 @@ struct obj *otmp;
 		break;
 	case WAN_SPEED_MONSTER:
 		if (!resist(mtmp, otmp->oclass, 0, TELL)) {
-			mon_adjust_speed(mtmp, 1, otmp);
+			mon_adjust_speed(mtmp, 1, otmp, TRUE);
 			m_dowear(mtmp, FALSE); /* might want speed boots */
 		} else if(cansee(mtmp->mx,mtmp->my)) shieldeff(mtmp->mx, mtmp->my);
 		break;
@@ -414,8 +417,22 @@ struct obj *otmp;
 	case SPE_FULL_HEALING:
 	case SPE_MASS_HEALING:{
 		int delta = mtmp->mhp;
+		const char *starting_word_ptr = injury_desc_word(mtmp);
 		int health = otyp == SPE_FULL_HEALING ? (50*P_SKILL(P_HEALING_SPELL)) : (d(6, otyp != SPE_HEALING ? 8 : 4) + 6*(P_SKILL(P_HEALING_SPELL)-1));
 		reveal_invis = TRUE;
+		if(has_template(mtmp, PLAGUE_TEMPLATE) && otyp == SPE_FULL_HEALING){
+			if(canseemon(mtmp))
+				pline("%s is no longer sick!", Monnam(mtmp));
+			set_template(mtmp, 0);
+			if(rnd(!always_hostile(mtmp->data) ? 12 : 20) < ACURR(A_CHA)){
+			struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+			if(newmon){
+				mtmp = newmon;
+				newsym(mtmp->mx, mtmp->my);
+				pline("%s is very grateful!", Monnam(mtmp));
+			}
+		}
+		}
 	    if (mtmp->mtyp != PM_PESTILENCE) {
 			char hurtmonbuf[BUFSZ];
 			Strcpy(hurtmonbuf, Monnam(mtmp));
@@ -444,10 +461,20 @@ struct obj *otmp;
 							otyp != SPE_HEALING ? " much" : "" );
 					}
 					else {
-						pline("%s %s %s.",
-							hurtmonbuf, 
-							(delta != 0 && mtmp->mhp < mtmp->mhpmax) ? "now looks only" : "looks",
-							injury_desc_word(mtmp));
+						const char * ending_word_ptr = injury_desc_word(mtmp);
+						// Note: this compares the string pointers recieved from injury_desc_word. They should be the same if the level is unchanged, and different otherwise.
+						if(starting_word_ptr != ending_word_ptr){
+							pline("%s %s %s.",
+								hurtmonbuf, 
+								(mtmp->mhp < mtmp->mhpmax) ? "now looks only" : "looks",
+								ending_word_ptr);
+						}
+						else if(delta != 0){
+							pline("%s looks better, but still %s.", hurtmonbuf, ending_word_ptr);
+						}
+						// else {
+							// pline("%s is still %s.", hurtmonbuf, ending_word_ptr);
+						// }
 					}
 				}
 			}
@@ -864,7 +891,7 @@ boolean dolls;
 				       NO_MINVENT|MM_NOWAIT);
 			if (mtmp) {
 				mtmp->mhp = mtmp->mhpmax = 100;
-				mon_adjust_speed(mtmp, 2, (struct obj *)0); /* MFAST */
+				mon_adjust_speed(mtmp, 2, (struct obj *)0, TRUE); /* MFAST */
 			}
 		} else {
 		    if (get_ox(obj, OX_EMON)) {
@@ -1191,6 +1218,7 @@ register struct obj *obj;
 		costly_cancel(obj);
 		if (obj->otyp == SCR_GOLD_SCROLL_OF_LAW) break;	//no cancelling these
 		obj->otyp = SCR_BLANK_PAPER;
+		remove_oprop(obj, OPROP_TACTB);
 		obj->spe = 0;
 		obj->oward = 0;
 		break;
@@ -1202,6 +1230,7 @@ register struct obj *obj;
 		    costly_cancel(obj);
 		    obj->otyp = SPE_BLANK_PAPER;
 			obj->obj_color = objects[SPE_BLANK_PAPER].oc_color;
+			remove_oprop(obj, OPROP_TACTB);
 			obj->spe = 0;
 			obj->oward = 0;
 		}
@@ -1636,6 +1665,7 @@ struct obj * obj;
 	/* too-worn-out spellbooks turn blank */
 	if (obj->oclass == SPBOOK_CLASS && obj->spestudied > MAX_SPELL_STUDY) {
 		new_otyp = SPE_BLANK_PAPER;
+		remove_oprop(obj, OPROP_TACTB);
 	}
 
 	/* create the new object, otmp, of the new type (or random type) */
@@ -1700,8 +1730,8 @@ struct obj * obj;
 				POT_SPEED,POT_HALLUCINATION,POT_HEALING,POT_EXTRA_HEALING,POT_GAIN_ENERGY,
 				POT_SLEEPING,POT_FULL_HEALING,POT_POLYMORPH,POT_AMNESIA};
 		do {
-			otmp->ovar1 = (long)ROLL_FROM(hypospray_ampules);
-		} while(otmp->ovar1 == obj->ovar1);
+			otmp->ovar1_ampule = (long)ROLL_FROM(hypospray_ampules);
+		} while(otmp->ovar1_ampule == obj->ovar1_ampule);
 		otmp->spe = obj->spe;
 	}
 	/* gold scrolls of law turn a small randomize amount of gold (and were guaranteed to turn into gold pieces) */
@@ -1871,6 +1901,10 @@ int id;
 		gem->owt = weight(gem);
 		add_to_container(otmp, gem);
 	}
+	//Transfer body type flags. A non-armor item that becomes armor SHOULD end up MB_HUMANOID
+	if(is_suit(otmp) || is_shirt(otmp) || is_helmet(otmp)){
+		set_obj_shape(otmp, obj->bodytypeflag);
+	}
 
 	/* update the weight */
 	otmp->owt = weight(otmp);
@@ -2039,7 +2073,7 @@ struct obj *obj, *otmp;
 	case SCR_LIGHT:
 	case SPE_LIGHT:
 		if ((obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP ||
-			obj->otyp == LANTERN || obj->otyp == POT_OIL ||
+			obj->otyp == LANTERN || obj->otyp == LANTERN_PLATE_MAIL || obj->otyp == POT_OIL ||
 			obj->otyp == DWARVISH_HELM || obj->otyp == GNOMISH_POINTY_HAT ||
 			obj->otyp == TALLOW_CANDLE || obj->otyp == WAX_CANDLE) &&
 			!((!Is_candle(obj) && obj->age == 0) || (obj->otyp == MAGIC_LAMP && obj->spe == 0))
@@ -2049,7 +2083,9 @@ struct obj *obj, *otmp;
 			// Assumes the player is the only cause of this effect for purposes of shk billing
 
 			if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP ||
-				obj->otyp == LANTERN || obj->otyp == DWARVISH_HELM) {
+				obj->otyp == LANTERN || obj->otyp == LANTERN_PLATE_MAIL || 
+				obj->otyp == DWARVISH_HELM
+			) {
 				check_unpaid(obj);
 			}
 			else {
@@ -2371,6 +2407,21 @@ register struct obj *wand;
 		wand->age = max(wand->age-10000, 0);
 		return 1;
 	}
+	else if(wand->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(wand, IEA_BOLTS)){
+		int encost = u.twoweap ? 20 : 10;
+		if(!wand->owornmask || u.uen < encost)
+			return 0;
+		u.uen -= encost;
+		flags.botl = TRUE;
+		return 1;
+	}
+	else if(wand->oartifact == ART_STAR_EMPEROR_S_RING){
+		if(!wand->owornmask || u.uen < 15)
+			return 0;
+		u.uen -= 15;
+		flags.botl = TRUE;
+		return 1;
+	}
 	return 0;
 }
 
@@ -2472,7 +2523,7 @@ struct obj *otmp;
 	useup(otmp);
 }
 
-static NEARDATA const char zap_syms[] = { WAND_CLASS, TOOL_CLASS, 0 };
+static NEARDATA const char zap_syms[] = { ARMOR_CLASS, WAND_CLASS, TOOL_CLASS, RING_CLASS, 0 };
 
 int
 dozap()
@@ -2637,7 +2688,29 @@ boolean ordinary;
 			pline("Idiot!  You've shot yourself!");
 		    }
 		    break;
-
+		case IMPERIAL_ELVEN_GAUNTLETS:
+			if(u.ualign.record > 3){
+				damage = d(max(1, 1+(obj->spe+1)/2),8);
+				if(hates_holy(youracedata))
+					damage *= 2;
+				pline("Idiot!  You've shot yourself!");
+			}
+			else if(u.ualign.record < -3){
+				damage = d(max(1, 1+(obj->spe+1)/2),8);
+				if(hates_unholy(youracedata))
+					damage *= 2;
+				pline("Idiot!  You've shot yourself!");
+			}
+			else {
+				if(Antimagic) {
+					shieldeff(u.ux, u.uy);
+					pline_The("missiles bounce!");
+				} else {
+				damage = d(max(1, 1+(obj->spe+1)/2),4);
+					pline("Idiot!  You've shot yourself!");
+				}
+			}
+		break;
 		case WAN_POLYMORPH:
 		    if (!Unchanging)
 		    	makeknown(WAN_POLYMORPH);
@@ -3257,6 +3330,37 @@ register struct	obj	*obj;
 		
 	    if (otyp == WAN_DIGGING || otyp == SPE_DIG)
 			zap_dig(-1,-1,-1);//-1-1-1 = "use defaults"
+		else if(otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(obj, IEA_BOLTS)){
+			basiczap(&zapdat, 0, ZAP_WAND, 1);
+			zapdat.damn = max(1, P_SKILL(P_WAND_POWER)+(obj->spe+1)/2);
+			if(u.twoweap)
+				zapdat.damn *= 2;
+			zapdat.affects_floor = FALSE;
+			if(u.ualign.record > 3){
+				zapdat.damd = 8;
+				zapdat.adtyp = AD_HOLY;
+				zapdat.phase_armor = TRUE;
+			}
+			else if(u.ualign.record < -3){
+				zapdat.damd = 8;
+				zapdat.adtyp = AD_UNHY;
+				zapdat.phase_armor = TRUE;
+			}
+			else {
+				zapdat.damd = 4;
+				zapdat.adtyp = AD_MAGM;
+			}
+			use_skill(P_WAND_POWER, 1);
+			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, range, &zapdat);
+		}
+		else if(obj->oartifact == ART_STAR_EMPEROR_S_RING){
+			basiczap(&zapdat, AD_STAR, ZAP_WAND, wand_damage_die(P_SKILL(P_WAND_POWER)));
+			zapdat.unreflectable = ZAP_REFL_NEVER;
+			zapdat.damd = 8;
+			zapdat.affects_floor = FALSE;
+			use_skill(P_WAND_POWER, 3);
+			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, range, &zapdat);
+		}
 	    else if (otyp >= SPE_MAGIC_MISSILE && otyp <= SPE_ACID_SPLASH){
 			basiczap(&zapdat, spell_adtype(otyp), ZAP_SPELL, u.ulevel / 2 + 1);
 			/* some spells are special */
@@ -3710,7 +3814,8 @@ struct zapdata * zapdata;
 			)
 			dmg /= 2;
 	}
-
+	if(dmg < 1)
+		dmg = 1;
 	/* madness damage reductions */
 	if (mdef && youagr) {
 		if (mdef->female && humanoid_torso(mdef->data) && roll_madness(MAD_SANCTITY)){
@@ -4140,6 +4245,10 @@ struct zapdata * zapdata;
 
 	/* do effects of zap */
 	switch (zapdata->adtyp) {
+	case AD_PHYS:
+		if (Half_phys(mdef))
+			dmg = (dmg + 1) / 2;
+		return xdamagey(magr, mdef, &attk, dmg);
 	case AD_MAGM:
 		/* check resist */
 		if (Magic_res(mdef)) {
@@ -4464,12 +4573,9 @@ struct zapdata * zapdata;
 			drain_en(dmg / 2);
 		else
 			mdef->mspec_used += dmg / 2;
-		/* approximate as dmn/3 silver stars */
-		if (Half_phys(mdef))
-			dmg = (dmg + 1) / 2;
-		if (youdef && u.uvaul_duration)
-			dmg = (dmg + 1) / 2;
 
+		dmg = reduce_dmg(mdef, dmg, TRUE, FALSE);
+		/* approximate as dmn/3 silver stars */
 		if (dmg > 0) {
 			int i;
 			/* reduce by DR */
@@ -4937,7 +5043,8 @@ int type;
 		otmp->oeroded = 1;
 		fix_object(otmp);
 		(void) mpickobj(mon, otmp);
-		mon->entangled = SHACKLES;
+		mon->entangled_otyp = SHACKLES;
+		mon->entangled_oid = otmp->o_id;
 		mon->movement = 0;
 	}
 	else if(mon->mtyp == PM_PARASITIZED_DOLL){
@@ -5440,7 +5547,8 @@ int damage, tell;
 			}
 		break;	
 	    case WEAPON_CLASS:  /* artifact */
-			alev = 20;
+	    case CHAIN_CLASS:  /* artifact */
+			alev = 45;
 			if(!flags.mon_moving){
 				LUCK_MODIFIER
 			}

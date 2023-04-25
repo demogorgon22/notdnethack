@@ -169,7 +169,7 @@
 #define NightmareAware_Sanity ((Nightmare && ClearThoughts) ? (u.usanity + 4*Insanity/5) : u.usanity)
 #define NightmareAware_Insanity ((Nightmare && ClearThoughts) ? (Insanity/5) : Insanity)
 
-#define	FacelessHelm(obj) ((obj)->otyp == PLASTEEL_HELM || (obj)->otyp == CRYSTAL_HELM || (obj)->otyp == PONTIFF_S_CROWN || (obj)->otyp == FACELESS_HELM)
+#define	FacelessHelm(obj) ((obj)->otyp == PLASTEEL_HELM || (obj)->otyp == CRYSTAL_HELM || (obj)->otyp == PONTIFF_S_CROWN || (obj)->otyp == FACELESS_HELM || (obj)->otyp == IMPERIAL_ELVEN_HELM)
 #define	FacelessCloak(obj) ((obj)->otyp == WHITE_FACELESS_ROBE || (obj)->otyp == BLACK_FACELESS_ROBE || (obj)->otyp == SMOKY_VIOLET_FACELESS_ROBE)
 #define	Faceless(obj) (FacelessHelm(obj) || FacelessCloak(obj))
 
@@ -213,6 +213,10 @@
 		 !forcesight) || StumbleBlind)
 		/* ...the Eyes operate even when you really are blind
 		    or don't have any eyes */
+
+#define HGaze_immune		u.uprops[GAZE_RES].intrinsic
+#define EGaze_immune		u.uprops[GAZE_RES].extrinsic
+#define Gaze_immune			(HGaze_immune || EGaze_immune)
 
 #define Sick			u.uprops[SICK].intrinsic
 #define Stoned			u.uprops[STONED].intrinsic
@@ -636,7 +640,7 @@
 #define Fixed_abil		(u.uprops[FIXED_ABIL].extrinsic)	/* KMH */
 
 #define ELifesaved		u.uprops[LIFESAVED].extrinsic
-#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0)) /*Note: the rings only give life saving when charged, so it can't be a normal property*/
+#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || Check_iaso_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0)) /*Note: the rings only give life saving when charged, so it can't be a normal property*/
 
 #define Necrospellboost	(u.uprops[NECROSPELLS].extrinsic)
 
@@ -647,6 +651,6 @@
 
 #define BConfStun	(EBConfStun || HBConfStun)
 
-#define Straitjacketed	(uarm && uarm->otyp == STRAITJACKET && uarm->cursed)
+#define Straitjacketed	(u.uentangled_oid || (uarm && uarm->otyp == STRAITJACKET && uarm->cursed))
 
 #endif /* YOUPROP_H */

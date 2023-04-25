@@ -29,9 +29,9 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_NONE,                       ART_VORPAL_BLADE,				"the Envoy of Balance",					"Thou shalt be my %s!",					became_the	},
 {GOD_NONE,                       ART_STORMBRINGER,				"the Glory of Arioch",					chosen("steal souls for My Glory"),		became_the	},
 	/* Monk */
-{GOD_SHAN_LAI_CHING,             ART_GRANDMASTER_S_ROBE,		"the Sage of Law",						dub_thee_the,							became_the	},
-{GOD_CHIH_SUNG_TZU,              ART_GRANDMASTER_S_ROBE,		"the Grandmaster of Balance",			"Thou shalt be the %s!",				became_the	},
-{GOD_HUAN_TI,                    ART_ROBE_OF_THE_ARCHMAGI,		"the Glory of Eequor",					chosen("cause dismay in My Name"),		became_the	},
+{GOD_PRINCE_NEZHA,               ART_FENG_HUO_LUN,		"the Sage of Law",						dub_thee_the,							became_the	},
+{GOD_LAOZI,                      ART_JIN_GANG_ZUO,				"the Grandmaster of Balance",			"Thou shalt be the %s!",				became_the	},
+{GOD_THE_HUNSHI_SIHOU,           ART_RUYI_JINGU_BANG,			"the Glory of Eequor",					chosen("cause dismay in My Name"),		became_the	},
 	/* Noble (human, vampire, incant). Vampires always get Dark Lord regardless of alignment */
 {GOD_GOD_THE_FATHER,             ART_CROWN_OF_THE_SAINT_KING,	"the Saint %s",							verb_thee_the("crown"),					"received the crown of the Saint King",	CRWN_TTL_KING	},
 {GOD_MOTHER_EARTH,               ART_CROWN_OF_THE_SAINT_KING,	"the Grey Saint",						verb_thee_the("crown"),					"received the crown of the Saint King"	},
@@ -110,7 +110,10 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_ZO_KALAR,                   ART_SICKLE_OF_THUNDERBLASTS,	"the %s of Mnar",						"Thou shalt be the %s!",				became_the, CRWN_TTL_KING	},
 {GOD_LOBON,                      ART_SPEAR_OF_PEACE,			"the Ambasador of Sarnath",				dub_thee_the,							became_the	},
 {GOD_TAMASH,                     ART_WAR_HELM_OF_THE_DREAMING,	"Dreamking",							dub_thee_the,							became_the	},
-// {GOD_TAMASH,                     ART_STORMBRINGER,				"the Glory of Placeholdergon",					chosen("steal souls for My Glory"),		became_the	},
+// {GOD_TAMASH,                     ART_STORMBRINGER,			"the Glory of Placeholdergon",					chosen("steal souls for My Glory"),		became_the	},
+	/* Drow Healer */
+{GOD_ILMATER,                    ART_RED_CORDS_OF_ILMATER,		"the Arm of Ilmater",						"Thou shalt be the %s!",				became_the	},
+{GOD_PEN_A,                      ART_CROWN_OF_THE_PERCIPIENT,	"the Messenger of Pen'a",					"Thou shalt be the %s!",				became_the	},
 	/* Terminator -- (-1) to avoid confusion with GOD_NONE */
 {-1}
 };
@@ -436,10 +439,10 @@ gcrownu()
 					fix_object(obj);
 					break;
 				case ART_NECRONOMICON:
-					obj->ovar1 |= SP_DEATH;
+					obj->ovar1_necronomicon |= SP_DEATH;
 					break;
 				case ART_BOOK_OF_INFINITE_SPELLS:
-					obj->ovar1 = SPE_FINGER_OF_DEATH;
+					obj->ovar1_infinitespells = SPE_FINGER_OF_DEATH;
 					break;
 				case ART_POSEIDON_S_TRIDENT:
 					HSwimming |= FROMOUTSIDE;

@@ -17,7 +17,6 @@ extern const int monstr[];
 #ifdef OVLB
 
 STATIC_DCL short FDECL(which_arti, (long int));
-STATIC_DCL boolean FDECL(mon_has_arti, (struct monst *,SHORT_P));
 STATIC_DCL struct monst *FDECL(other_mon_has_arti, (struct monst *,SHORT_P));
 STATIC_DCL boolean FDECL(rightful_owner, (struct monst *,SHORT_P, struct monst *));
 STATIC_DCL struct obj *FDECL(on_ground, (SHORT_P));
@@ -176,7 +175,7 @@ which_arti(mask)
  *	since bell, book, candle, and amulet are all objects, not really
  *	artifacts right now.	[MRS]
  */
-STATIC_OVL boolean
+boolean
 mon_has_arti(mtmp, otyp)
 	register struct monst *mtmp;
 	register short	otyp;
@@ -185,10 +184,11 @@ mon_has_arti(mtmp, otyp)
 
 	for(otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
 	    if(otyp) {
-		if(otmp->otyp == otyp)
-			return(1);
+			if(otmp->otyp == otyp)
+				return(1);
 	    }
-	     else if(is_quest_artifact(otmp)) return(1);
+	    else if(is_quest_artifact(otmp))
+			return(1);
 	}
 	return(0);
 
@@ -196,8 +196,8 @@ mon_has_arti(mtmp, otyp)
 
 STATIC_OVL struct monst *
 other_mon_has_arti(mtmp, otyp)
-	register struct monst *mtmp;
-	register short	otyp;
+	struct monst *mtmp;
+	int otyp;
 {
 	register struct monst *mtmp2;
 
@@ -248,12 +248,14 @@ on_ground(otyp)
 {
 	register struct obj *otmp;
 
-	for (otmp = fobj; otmp; otmp = otmp->nobj)
+	for (otmp = fobj; otmp; otmp = otmp->nobj){
 	    if (otyp) {
-		if (otmp->otyp == otyp)
-		    return(otmp);
-	    } else if (is_quest_artifact(otmp))
-		return(otmp);
+			if (otmp->otyp == otyp)
+				return(otmp);
+	    }
+		else if (is_quest_artifact(otmp))
+			return(otmp);
+	}
 	return((struct obj *)0);
 }
 
@@ -277,9 +279,9 @@ target_on(mask, mtmp)
 	register long int mask;
 	register struct monst *mtmp;
 {
-	register short	otyp;
-	register struct obj *otmp;
-	register struct monst *mtmp2;
+	int otyp;
+	struct obj *otmp;
+	struct monst *mtmp2;
 
 	if(!M_Wants(mask))	return(STRAT_NONE);
 
@@ -341,24 +343,23 @@ strategy(mtmp)
 	if(u.uevent.invoked) {		/* priorities change once gate opened */
 
 	    if((strat = target_on(MT_WANTSARTI, mtmp)) != STRAT_NONE)
-		return(strat);
+			return(strat);
 	    if((strat = target_on(MT_WANTSBOOK, mtmp)) != STRAT_NONE)
-		return(strat);
+			return(strat);
 	    if((strat = target_on(MT_WANTSBELL, mtmp)) != STRAT_NONE)
-		return(strat);
+			return(strat);
 	    if((strat = target_on(MT_WANTSCAND, mtmp)) != STRAT_NONE)
-		return(strat);
+			return(strat);
 	} else {
 
 	    if((strat = target_on(MT_WANTSBOOK, mtmp)) != STRAT_NONE)
-		return(strat);
+			return(strat);
 	    if((strat = target_on(MT_WANTSBELL, mtmp)) != STRAT_NONE)
-		return(strat);
+			return(strat);
 	    if((strat = target_on(MT_WANTSCAND, mtmp)) != STRAT_NONE)
-		return(strat);
-	    if((strat = target_on(MT_WANTSARTI, mtmp)) != STRAT_NONE){
-		return(strat);
-		}
+			return(strat);
+	    if((strat = target_on(MT_WANTSARTI, mtmp)) != STRAT_NONE)
+			return(strat);
 	}
 	return(dstrat);
 }
@@ -797,11 +798,11 @@ void
 yellow_nasty()
 {
     register struct monst *mtmp;
-    register int i, j, tmp, makeindex, maketemplate;
+    register int i, j, tmp, makeindex, maketemplate = YELLOW_TEMPLATE;
     coord bypos;
 	tmp = (u.ulevel > 3) ? u.ulevel/3 : 1; /* just in case -- rph */
 	for(i = rnd(tmp); i > 0; --i){
-		switch(rn2(6)){
+		switch(rn2(10)){
 			case 0:
 				makeindex = PM_BYAKHEE;
 				maketemplate = 0;
@@ -821,19 +822,43 @@ yellow_nasty()
 				bypos.y = 0;
 			break;
 			case 3:
-				makeindex = PM_HUMAN;
-				maketemplate = SKELIFIED;
+				makeindex = PM_SKELETON;
+				maketemplate = 0;
 				bypos.x = u.ux;
 				bypos.y = u.uy;
 			break;
 			case 4:
-				makeindex = PM_HUMAN;
+				makeindex = Race_if(PM_ELF) ? PM_STAR_ELF : PM_HUMAN;
 				maketemplate = DREAM_LEECH;
 				bypos.x = u.ux;
 				bypos.y = u.uy;
 			break;
 			case 5:
 				makeindex = rn2(2) ? PM_MADMAN : PM_MADWOMAN;
+				maketemplate = YELLOW_TEMPLATE;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 6:
+				makeindex = PM_PURPLE_WORM;
+				maketemplate = PSURLON;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 7:
+				makeindex = PM_LONG_WORM;
+				maketemplate = PSURLON;
+				bypos.x = 0;
+				bypos.y = 0;
+			break;
+			case 8:
+				makeindex = PM_FLAXEN_STARSHADOW;
+				maketemplate = 0;
+				bypos.x = u.ux;
+				bypos.y = u.uy;
+			break;
+			case 9:
+				makeindex = PM_BARD;
 				maketemplate = YELLOW_TEMPLATE;
 				bypos.x = u.ux;
 				bypos.y = u.uy;
@@ -862,7 +887,7 @@ void
 yellow_dead()
 {
     register struct monst *mtmp;
-    register int makeindex, maketemplate;
+    register int makeindex, maketemplate = 0;
 	int zombiepms[] ={PM_HUMAN, PM_ELF, PM_DROW, PM_DWARF, PM_HOBBIT, PM_HALF_DRAGON, PM_CHIROPTERAN, PM_KOBOLD, PM_GNOME, PM_ORC, PM_ETTIN, PM_GIANT};
     coord bypos;
 	switch(rn2(6)){
@@ -879,7 +904,7 @@ yellow_dead()
 			bypos.y = 0;
 		break;
 		case 2:
-			makeindex = PM_HUMAN;
+			makeindex = Race_if(PM_ELF) ? PM_STAR_ELF : PM_HUMAN;
 			maketemplate = DREAM_LEECH;
 			bypos.x = u.ux;
 			bypos.y = u.uy;
@@ -985,10 +1010,7 @@ yellow_smite()
 			dmg = d(10,5);
 			if (Antimagic)
 				dmg = (dmg + 1) / 2;
-			if (Half_spell_damage)
-				dmg = (dmg + 1) / 2;
-			if (u.uvaul_duration)
-				dmg = (dmg + 1) / 2;
+			dmg = reduce_dmg(&youmonst,dmg,FALSE,TRUE);
 			if (dmg >= *hp(&youmonst)) {
 				Your("body is covered with deadly wounds!");
 				dmg = max(*hp(&youmonst) - 5, 0);	/* Cap the damage */
@@ -1008,10 +1030,7 @@ yellow_smite()
 			dmg = rnd(d(5,15));
 			if (Antimagic)
 				dmg = (dmg + 1) / 2;
-			if (Half_spell_damage)
-				dmg = (dmg + 1) / 2;
-			if (u.uvaul_duration)
-				dmg = (dmg + 1) / 2;
+			dmg = reduce_dmg(&youmonst,dmg,FALSE,TRUE);
 			You_hear("Menacing laughter as the world blurs around you...");
 			make_confused(HConfusion + dmg * 10, FALSE);
 			make_stunned(HStun + dmg, FALSE);

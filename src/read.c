@@ -353,6 +353,34 @@ doread()
 				if (i == MAXSPELL) impossible("Too many spells memorized!");
 				return MOVE_READ;
 			}
+		} else if(scroll->oartifact == ART_ESSCOOAHLIPBOOURRR){
+			if (Blind) {
+				You_cant("see the staff!");
+				return MOVE_INSTANT;
+			} else {
+				int i;
+				You("read the still-visible traceries of healing magics inscribed on the shackles fusing the sword together.");
+				for (i = 0; i < MAXSPELL; i++)  {
+					if (spellid(i) == SPE_MASS_HEALING)  {
+						if (spellknow(i) <= 1000) {
+							Your("knowledge of Mass Healing is keener.");
+							spl_book[i].sp_know = 20000;
+							exercise(A_WIS,TRUE);       /* extra study */
+						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
+							You("know Mass Healing quite well already.");
+						}
+						break;
+					} else if (spellid(i) == NO_SPELL)  {
+						spl_book[i].sp_id = SPE_MASS_HEALING;
+						spl_book[i].sp_lev = objects[SPE_MASS_HEALING].oc_level;
+						spl_book[i].sp_know = 20000;
+						You("learn to cast Mass Healing!");
+						break;
+					}
+				}
+				if (i == MAXSPELL) impossible("Too many spells memorized!");
+				return MOVE_READ;
+			}
 		} else if(scroll->otyp == LIGHTSABER){
 			if (Blind) {
 				You_cant("see it!");
@@ -432,7 +460,6 @@ doread()
 				pline("With that realization comes knowledge of the seal's final form!");
 				u.specialSealsKnown |= SEAL_NUDZIRATH;
 			}
-
 		}
 		return MOVE_READ;
 	} else if(scroll->oclass == WEAPON_CLASS && (scroll)->obj_material == WOOD && scroll->oward != 0){
@@ -480,11 +507,15 @@ doread()
 	    return MOVE_READ;
 #ifdef TOURIST
 	} else if(scroll->oclass == ARMOR_CLASS
-		&& scroll->ohaluengr
-		&& scroll->oward
-		&& is_readable_armor_otyp(scroll->otyp)
+		&& is_readable_armor(scroll)
 	){
 		pline("There is %s engraved on the armor.",fetchHaluWard((int)scroll->oward));
+		if(!scroll->ohaluengr){
+			if( !(u.wardsknown & get_wardID(scroll->oward)) ){
+				You("have learned a new warding sign!");
+				u.wardsknown |= get_wardID(scroll->oward);
+			}
+		}
 		return MOVE_READ;
 	}else if (scroll->otyp == T_SHIRT) {
 	    static const char *shirt_msgs[] = { /* Scott Bigham */
@@ -654,8 +685,20 @@ doread()
 	) {
 	    pline(silly_thing_to, "read");
 	    return MOVE_CANCELLED;
+	} else if ((Babble || Screaming || mad_turn(MAD_TOO_BIG))
+		&& (scroll->oclass == SPBOOK_CLASS)
+	){
+		if(Screaming)
+			You_cant("focus on that while you're screaming!");
+		else if(Babble)
+			You_cant("focus on that while you're babbling incoherently!");
+		else if(mad_turn(MAD_TOO_BIG))
+			pline("It's too big!");
+		else
+			impossible("You can't read that book for some reason?");
+	    return MOVE_INSTANT;
 	} else if ((Babble || Strangled || Drowning || mad_turn(MAD_TOO_BIG))
-		&& (scroll->oclass == SCROLL_CLASS || scroll->oclass == SPBOOK_CLASS || (scroll->oclass == TILE_CLASS && objects[scroll->otyp].oc_magic))
+		&& (scroll->oclass == SCROLL_CLASS || (scroll->oclass == TILE_CLASS && objects[scroll->otyp].oc_magic))
 	){
 		if(Strangled)
 			You_cant("read that aloud, you can't breathe!");
@@ -669,18 +712,23 @@ doread()
 			impossible("You can't read that aloud for some reason?");
 	    return MOVE_INSTANT;
 		//Note, you CAN scream one syllable
-	} else if (Screaming && (scroll->oclass == SCROLL_CLASS || scroll->oclass == SPBOOK_CLASS)){
+	} else if (Screaming && (scroll->oclass == SCROLL_CLASS)){
 	    You_cant("read that aloud, you're too busy screaming!");
 	    return MOVE_INSTANT;
 	} else if (Blind) {
 	    const char *what = 0;
 	    if (scroll->oclass == SPBOOK_CLASS)
-		what = "mystic runes";
+			what = "mystic runes";
 	    else if (!scroll->dknown)
-		what = "formula on the scroll";
+			what = "formula on the scroll";
 	    if (what) {
-		pline("Being blind, you cannot read the %s.", what);
-		return MOVE_INSTANT;
+			if(check_oprop(scroll, OPROP_TACTB)){
+				pline("A tactile script supplements the %s.", what);
+			}
+			else {
+				pline("Being blind, you cannot read the %s.", what);
+				return MOVE_INSTANT;
+			}
 	    }
 	}
 
@@ -857,11 +905,17 @@ struct obj *scroll;
 				return 0;
 			}
 			else {
+				int objcount = 2 + rn2(3) + rn2(5);
 				You("can't understand what they say...");
 				pline("Suddenly, the glyphs glow in rainbow hues and escape from the fracturing disk!");
 				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
-				know_random_obj(2 + rn2(3) + rn2(5));
-				change_uinsight(1);
+				know_random_obj(objcount);
+				if(!u.uinsight || !rn2(u.uinsight)){
+					change_uinsight(1);
+					objcount++;
+				}
+				more_experienced(d(objcount, 100), 0);
+				newexplevel();
 			}
 		}
 	} else if(scroll->otyp == APHANACTONAN_ARCHIVE){
@@ -878,24 +932,38 @@ struct obj *scroll;
 			else {
 				int i;
 				int rolls;
+				int effectcount;
+				int xp = 0;
 				boolean seals = FALSE, wards = FALSE, combat = FALSE;
 				You("can't understand what it says...");
 				pline("Suddenly, the glyphs glow in impossible hues and escape from the fracturing disk!");
 				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
-				know_random_obj(4 + rn2(5) + rn2(9));
-				change_uinsight(rnd(8));
-				change_usanity(-1*d(8,8),TRUE);
-				
+				//ID
+				effectcount = 4 + rn2(5) + rn2(9);
+				xp += d(effectcount,100);
+				know_random_obj(effectcount);
+
+				//Insight
+				effectcount = 1;
+				for(rolls = rnd(8); rolls > 0; rolls--){
+					if(!u.uinsight || !rn2(u.uinsight))
+						effectcount++;
+				}
+				xp += d(effectcount,100);
+				change_uinsight(effectcount);
+
 				for(rolls = d(1,4); rolls > 0; rolls--){
 					switch(rnd(4)){
 						case 1:
 							for(i = rnd(4); i > 0; i--){
+								xp += d(1,200);
 								learn_spell_aphanactonan(rn1(SPE_BLANK_PAPER - SPE_DIG, SPE_DIG));
 							}
 						break;
 						case 2:
 							if(!Role_if(PM_EXILE) && !Role_if(PM_ANACHRONOUNBINDER)){
 								if(!seals){
+									xp += 625;
 									You("see circular seals!");
 									seals = TRUE;
 								}
@@ -910,6 +978,7 @@ struct obj *scroll;
 								wards = TRUE;
 							}
 							for(i = d(2,4); i > 0; i--){
+								xp += d(1,50);
 								u.wardsknown |= 0x1L<<rnd(NUM_WARDS-1); //Note: Ward_Elbereth is 0x1L, and does nothing.
 							}
 						break;
@@ -918,12 +987,18 @@ struct obj *scroll;
 								You("suddenly know secret combat techniques!");
 								combat = TRUE;
 							}
+							xp += 1000;
 							u.uhitinc = min_ints(100, u.uhitinc+d(1,2));
 							u.udaminc = min_ints(100, u.udaminc+d(1,2));
 							u.uacinc = min_ints(100, u.uacinc+d(1,2));
 						break;
 					}
 				}
+				more_experienced(xp, 0);
+				newexplevel();
+
+				//Sanity
+				change_usanity(-1*d(8,8),TRUE);
 			}
 		}
 	} else if(scroll->otyp >= ANTI_CLOCKWISE_METAMORPHOSIS_G && scroll->otyp <= ORRERY_GLYPH) {
@@ -1203,7 +1278,9 @@ int curse_bless;
 	    }
 
 	} else if (obj->oclass == TOOL_CLASS || is_blaster(obj) || obj->otyp == ETHERBLADE
-		   || obj->otyp == DWARVISH_HELM || is_vibroweapon(obj) || obj->otyp == POWER_ARMOR) {
+		   || obj->otyp == DWARVISH_HELM || obj->otyp == LANTERN_PLATE_MAIL || obj->otyp == POWER_ARMOR
+		   || is_vibroweapon(obj)
+	   ) {
 	    int rechrg = (int)obj->recharged;
 
 	    if (objects[obj->otyp].oc_charged) {
@@ -1261,8 +1338,9 @@ int curse_bless;
 	    case DWARVISH_HELM:
 	    case OIL_LAMP:
 	    case LANTERN:
+	    case LANTERN_PLATE_MAIL:
 		if (is_cursed) {
-		    if (obj->otyp == DWARVISH_HELM) {
+		    if (obj->otyp == DWARVISH_HELM && obj->otyp != LANTERN_PLATE_MAIL) {
 			/* Don't affect the +/- of the helm */
 			obj->age = 0;
 		    }
@@ -1274,7 +1352,7 @@ int curse_bless;
 			end_burn(obj, TRUE);
 		    }
 		} else if (is_blessed) {
-		    if (obj->otyp != DWARVISH_HELM) {
+		    if (obj->otyp != DWARVISH_HELM && obj->otyp != LANTERN_PLATE_MAIL) {
 				obj->spe = 1;
 		    }
 		    obj->age = 1500;
@@ -1294,15 +1372,15 @@ int curse_bless;
 			if(obj->recharged >= 4){
 				obj->recharged = 4;
 			} else {
-				if(is_blessed) obj->ovar1 = 100L;
-				else if(is_cursed) obj->ovar1 = 10L;
-				else obj->ovar1 = 80L + rn2(20);
+				if(is_blessed) obj->ovar1_charges = 100L;
+				else if(is_cursed) obj->ovar1_charges = 10L;
+				else obj->ovar1_charges = 80L + rn2(20);
 			}
 		break;
 	    case MASS_SHADOW_PISTOL:
-			if(is_blessed) obj->ovar1 = 1000L;
-			else if(is_cursed) obj->ovar1 = 100L;
-			else obj->ovar1 = 800L + rn2(200);
+			if(is_blessed) obj->ovar1_charges = 1000L;
+			else if(is_cursed) obj->ovar1_charges = 100L;
+			else obj->ovar1_charges = 800L + rn2(200);
 		break;
 	    case CUTTING_LASER:
 	    case VIBROBLADE:
@@ -1321,20 +1399,20 @@ int curse_bless;
 	    case FORCE_WHIP:
 	    case SEISMIC_HAMMER:
 	    case FLAMETHROWER:
-			if(is_blessed) obj->ovar1 = 100L;
-			else if(is_cursed) obj->ovar1 = 10L;
-			else obj->ovar1 = 80L + rn2(20);
+			if(is_blessed) obj->ovar1_charges = 100L;
+			else if(is_cursed) obj->ovar1_charges = 10L;
+			else obj->ovar1_charges = 80L + rn2(20);
 		break;
 	    case RAYGUN:
 			if(Role_if(PM_ANACHRONONAUT) || Role_if(PM_TOURIST)){
-				if(is_blessed) obj->ovar1 = 160L;
-				else if(is_cursed) obj->ovar1 = 10L;
-				else obj->ovar1 = (8 + rn2(8))*10L;
+				if(is_blessed) obj->ovar1_charges = 160L;
+				else if(is_cursed) obj->ovar1_charges = 10L;
+				else obj->ovar1_charges = (8 + rn2(8))*10L;
 			} else {
 				//The Raygun's power cell is damaged:
-				if(is_blessed) obj->ovar1 = 15L;
-				else if(is_cursed) obj->ovar1 = 2L;
-				else obj->ovar1 = 2+rnd(5)*2;
+				if(is_blessed) obj->ovar1_charges = 15L;
+				else if(is_cursed) obj->ovar1_charges = 2L;
+				else obj->ovar1_charges = 2+rnd(5)*2;
 			}
 		break;
 //#endif
@@ -1915,7 +1993,7 @@ struct obj	*sobj;
 						otmp->otyp - GRAY_DRAGON_SCALES;
 			otmp->objsize = youracedata->msize;
 			
-			otmp->bodytypeflag = youracedata->mflagsb&MB_BODYTYPEMASK;
+			set_obj_shape(otmp, youracedata->mflagsb);
 			
 			otmp->cursed = 0;
 			if (sobj->blessed) {
@@ -2167,7 +2245,7 @@ struct obj	*sobj;
 		}
 	    break;
 	case SCR_ENCHANT_WEAPON:
-		if(uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep))
+		if(uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep) || uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS)
 			&& confused && uwep->oartifact != ART_ROD_OF_SEVEN_PARTS) {
 		/* read text for the rod of seven parts may lead players to think they need to errode-proof it.
 			Since this is a logical deduction, it is not penalized. CM */
@@ -2393,7 +2471,29 @@ struct obj	*sobj;
 			pline("Who was that Maud person anyway?");
 		else
 			pline("Thinking of Maud you forget everything else.");
-		exercise(A_WIS, FALSE);
+		/* Blessed amnesia makes you forget lycanthropy, sickness */
+		if (sobj->blessed) {
+			if (u.ulycn >= LOW_PM && !Race_if(PM_HUMAN_WEREWOLF)) {
+				You("forget your affinity to %s!",
+						makeplural(mons[u.ulycn].mname));
+				if (youmonst.data->mtyp == u.ulycn)
+					you_unwere(FALSE);
+				u.ulycn = NON_PM;	/* cure lycanthropy */
+			}
+			make_sick(0L, (char *) 0, TRUE, SICK_ALL);
+
+			/* You feel refreshed */
+			if(Race_if(PM_INCANTIFIER)) u.uen += 50 + rnd(50);
+			else u.uhunger += 50 + rnd(50);
+			
+			newuhs(FALSE);
+		} else {
+			if(Role_if(PM_MADMAN)){
+				You_feel("ashamed of wiping your own memory.");
+				u.hod += sobj->cursed ? 5 : 2;
+			}
+			exercise(A_WIS, FALSE);
+		}
 		break;
 	case SCR_FIRE:{
 		/*
@@ -2481,7 +2581,7 @@ struct obj	*sobj;
 				    if (mtmp->minvis && !canspotmon(mtmp))
 					map_invisible(mtmp->mx, mtmp->my);
 				}
-	    	    	    	mdmg = dmgval(otmp2, mtmp, 0) * otmp2->quan;
+	    	    	    	mdmg = dmgval(otmp2, mtmp, 0, &youmonst) * otmp2->quan;
 				if (helmet) {
 				    if(is_hard(helmet)) {
 					if (canspotmon(mtmp))
@@ -2524,7 +2624,7 @@ struct obj	*sobj;
 				!noncorporeal(youracedata) &&
 				!unsolid(youracedata)) {
 			You("are hit by %s!", doname(otmp2));
-			dmg = dmgval(otmp2, &youmonst, 0) * otmp2->quan;
+			dmg = dmgval(otmp2, &youmonst, 0, &youmonst) * otmp2->quan;
 			if (uarmh && !sobj->cursed) {
 			    if(is_hard(uarmh)) {
 				pline("Fortunately, you are wearing a hard helmet.");
@@ -3244,7 +3344,7 @@ do_class_genocide()
 			       quest_info(MS_LEADER) == i)
 			   && (mons[i].msound != MS_NEMESIS ||
 			       quest_info(MS_NEMESIS) == i)
-			   && (mons[i].msound != MS_GUARDIAN ||
+			   && (i < PM_STUDENT ||
 			       quest_info(MS_GUARDIAN) == i)
 			/* non-leader/nemesis/guardian role-specific monster */
 			   && (i != PM_NINJA ||		/* nuisance */
@@ -3525,17 +3625,21 @@ boolean revival;
  * than a mimic; this behavior quirk is useful so don't "fix" it...
  */
 struct monst *
-create_particular(specify_attitude, specify_derivation, allow_multi, ma_require, mg_restrict, gen_restrict)
+create_particular(x, y, specify_attitude, specify_derivation, allow_multi, ma_require, mg_restrict, gen_restrict, in_buff)\
+int x,y;
 unsigned long specify_attitude;		// -1 -> true; 0 -> false; >0 -> as given
 int specify_derivation;				// -1 -> true; 0 -> false; >0 -> as given
 int allow_multi;
 unsigned long ma_require;
 unsigned long mg_restrict;
 int gen_restrict;
+char *in_buff;
 {
 	char buf[BUFSZ], *bufp, *p, *q, monclass = MAXMCLASSES;
 	int which, tries, i;
 	int undeadtype = 0;
+	boolean mad_suicidal = FALSE;
+	boolean noequip = FALSE;
 	struct permonst *whichpm;
 	struct monst *mtmp = (struct monst *)0;
 	boolean madeany = FALSE;
@@ -3546,8 +3650,13 @@ int gen_restrict;
 	do {
 	    which = urole.malenum;	/* an arbitrary index into mons[] */
 	    maketame = makeloyal = makepeaceful = makehostile = makesummoned = FALSE;
-	    getlin("Create what kind of monster? [type the name or symbol]",
-		   buf);
+		if(in_buff){
+			Sprintf(buf, "%s", in_buff);
+		}
+		else {
+			getlin("Create what kind of monster? [type the name or symbol]",
+			   buf);
+		}
 	    bufp = mungspaces(buf);
 	    if (*bufp == '\033') return (struct monst *)0;
 
@@ -3610,6 +3719,9 @@ int gen_restrict;
 			else if (!strncmpi(bufp, "cranium ", l = 8)) {
 				undeadtype = CRANIUM_RAT;
 			}
+			else if (!strncmpi(bufp, "psurlon ", l = 8)) {
+				undeadtype = PSURLON;
+			}
 			else if (!strncmpi(bufp, "mistweaver ", l = 11)) {
 				undeadtype = MISTWEAVER;
 			}
@@ -3621,6 +3733,12 @@ int gen_restrict;
 			}
 			else if (!strncmpi(bufp, "moly-", l = 5)) {
 				undeadtype = MOLY_TEMPLATE;
+			}
+			else if (!strncmpi(bufp, "suicidal ", l = 9)) {
+				mad_suicidal = TRUE;
+			}
+			else if (!strncmpi(bufp, "noequip ", l = 8)) {
+				noequip = TRUE;
 			}
 			else
 				break;
@@ -3668,12 +3786,22 @@ int gen_restrict;
 				undeadtype = YITH;
 			else if (!strncmpi(p, "cranium",	7))
 				undeadtype = CRANIUM_RAT;
+			else if (!strncmpi(p, "psurlon",	7))
+				undeadtype = PSURLON;
 			else if (!strncmpi(p, "mistweaver", 10))
 				undeadtype = MISTWEAVER;
 			else if (!strncmpi(p, "worldshaper", 11))
 				undeadtype = WORLD_SHAPER;
 			else if (!strncmpi(p, "husk",	4))
 				undeadtype = MINDLESS;
+			else if (!strncmpi(p, "infectee",	8))
+				undeadtype = SPORE_ZOMBIE;
+			else if (!strncmpi(p, "cordyceps",	9))
+				undeadtype = CORDYCEPS;
+			else if (!strncmpi(p, "finger",	6))
+				undeadtype = PSURLON;
+			else if (!strncmpi(p, "plague-victim",	13))
+				undeadtype = PLAGUE_TEMPLATE;
 			else
 			{
 				/* no suffix was used, undo the split made to search for suffixes */
@@ -3711,6 +3839,11 @@ int gen_restrict;
 			if (monclass == MAXMCLASSES)
 			{
 				pline("I've never heard of such monsters.");
+				if(in_buff){
+					impossible("Bad parsed monster name in sp_lev");
+					tries = 5;
+					break;
+				}
 				continue;	//try again
 			}
 			if (monclass == S_MIMIC_DEF && !(ma_require || mg_restrict || gen_restrict))	// bugfeature made feature
@@ -3781,8 +3914,10 @@ createmon:
 				mm_flags |= MM_EDOG;
 			if (makesummoned)
 				mm_flags |= MM_ESUM;
+			if (noequip)
+				mm_flags |= NO_MINVENT;
 
-			mtmp = makemon_full(whichpm, u.ux, u.uy, mm_flags, undeadtype ? undeadtype : -1, -1);
+			mtmp = makemon_full(whichpm, x, y, mm_flags, undeadtype ? undeadtype : -1, -1);
 
 			if (mtmp) {
 				if (maketame){
@@ -3798,6 +3933,9 @@ createmon:
 
 				if (makesummoned)
 					mark_mon_as_summoned(mtmp, (struct monst *)0, ESUMMON_PERMANENT, 0);
+
+				if (mad_suicidal)
+					mtmp->msuicide = TRUE;
 
 				madeany = TRUE;
 				newsym(mtmp->mx, mtmp->my);

@@ -203,7 +203,7 @@ boolean seal;
 		portal_flag = u.uevent.qexpelled ? 0 :	/* returned via artifact? */
 			  !seal ? 1 : -1;
 	}
-    schedule_goto(dest, FALSE, FALSE, portal_flag, (char *)0, (char *)0);
+    schedule_goto(dest, FALSE, FALSE, portal_flag, (char *)0, (char *)0,0, 0);
     if (seal) {	/* remove the portal to the quest - sealing it off */
 		int reexpelled = u.uevent.qexpelled;
 		u.uevent.qexpelled = 1;
@@ -562,7 +562,7 @@ quest_chat(mtmp)
 		return;
 	}
 	
-	switch(quest_faction(mtmp) ? MS_GUARDIAN : mtmp->data->msound) {
+	switch((quest_faction(mtmp) || mtmp->mtyp == urole.guardnum) ? MS_GUARDIAN : mtmp->data->msound) {
 		case MS_NEMESIS:	chat_with_nemesis(); break;
 		case MS_GUARDIAN:	chat_with_guardian(); break;
 		default:	impossible("quest_chat: Unknown quest character %s.",
@@ -693,7 +693,6 @@ turn_stag()
 	    mons[urole.ldrnum].mflagst |= (MT_PEACEFUL|MT_CLOSE);
 	    mons[urole.ldrnum].mflagst &= ~(MT_WAITFORU|MT_COVETOUS);
 		
-	    mons[urole.guardnum].msound = MS_GUARDIAN;
 	    mons[urole.guardnum].mflagst |= (MT_PEACEFUL);
 	    mons[urole.guardnum].mflagst &= ~(MT_WAITFORU|MT_COVETOUS);
 		

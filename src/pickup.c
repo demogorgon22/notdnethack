@@ -1235,9 +1235,7 @@ boolean telekinesis;
 	return -1;
     }
     if (obj->otyp == LOADSTONE
-		 || (obj->otyp == ROPE_OF_ENTANGLING && obj->spe == 1)
-		 || (obj->otyp == IRON_BANDS && obj->spe == 1)
-		 || (obj->otyp == RAZOR_WIRE && obj->spe == 1)
+		 || (obj->o_id == u.uentangled_oid)
 	     || (is_boulder(obj) && (throws_rocks(youracedata) || (u.sealsActive&SEAL_YMIR))))
 	return 1;		/* lift regardless of current situation */
 
@@ -1636,8 +1634,7 @@ boolean noit;
 	You("carefully open the bag...");
 	pline("It develops a huge set of teeth and bites you!");
 	tmp = rnd(10);
-	if (Half_physical_damage) tmp = (tmp+1) / 2;
-	if(u.uvaul_duration) tmp = (tmp + 1) / 2;
+	tmp = reduce_dmg(&youmonst,tmp,TRUE,FALSE);
 	losehp(tmp, "carnivorous bag", KILLED_BY_AN);
 	makeknown(BAG_OF_TRICKS);
 	return MOVE_STANDARD;
@@ -1752,8 +1749,7 @@ lootcont:
 						You("carefully open the bag...");
 						pline("It develops a huge set of teeth and bites you!");
 						tmp = rnd(10);
-						if (Half_physical_damage) tmp = (tmp+1) / 2;
-						if(u.uvaul_duration) tmp = (tmp + 1) / 2;
+						tmp = reduce_dmg(&youmonst,tmp,TRUE,FALSE);
 						losehp(tmp, "carnivorous bag", KILLED_BY_AN);
 						makeknown(BAG_OF_TRICKS);
 						timepassed = MOVE_STANDARD;
@@ -1947,7 +1943,7 @@ boolean *prev_loot;
     /* 	*passed_info is set to TRUE if a loot query was given.               */
     /*	*prev_loot is set to TRUE if something was actually acquired in here. */
 	if(mtmp 
-		&& (mtmp->mtame || (urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && (quest_faction(mtmp) || mtmp->data->msound == MS_GUARDIAN)))
+		&& (mtmp->mtame || (urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && quest_faction(mtmp)))
 	){
 	if((otmp = pick_creatures_armor(mtmp, passed_info))){
 	long unwornmask;
@@ -2029,7 +2025,7 @@ dopetequip()
 		return MOVE_CANCELLED;
 	}
 	if(!mtmp->mtame
-		&& !(urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && (quest_faction(mtmp) || mtmp->data->msound == MS_GUARDIAN))
+		&& !(urole.ldrnum == PM_OLD_FORTUNE_TELLER && mtmp->mpeaceful && quest_faction(mtmp))
 	){
 		pline("%s doesn't trust you enough for that!", Monnam(mtmp));
 		return MOVE_CANCELLED;
@@ -2091,6 +2087,12 @@ dopetequip()
 		mtmp->misc_worn_check |= flag;
 		otmp->owornmask |= flag;
 		update_mon_intrinsics(mtmp, otmp, TRUE, FALSE);
+		if(check_oprop(otmp, OPROP_CURS)){
+			if (!Blind && canseemon(mtmp))
+				pline("%s %s for a moment.",
+					  Tobjnam(otmp, "glow"), hcolor(NH_BLACK));
+			curse(otmp);
+		}
 		/* if couldn't see it but now can, or vice versa, */
 		if (unseen ^ !canseemon(mtmp)) {
 			if (mtmp->minvis && !See_invisible(mtmp->mx,mtmp->my)) {
@@ -2148,12 +2150,13 @@ struct obj *cont;
 struct obj *newobj;
 {
 	long weight = newobj->owt;
+	long weight_lim = 1000;
 	if(Is_container(newobj))
 		return TRUE;
 	for(struct obj *otmp = cont->cobj; otmp; otmp = otmp->nobj){
-		weight += otmp->owt;
+		weight += objects[otmp->otyp].oc_weight;
 	}
-	return weight > 1000;
+	return weight > weight_lim;
 }
 
 STATIC_OVL boolean
@@ -2190,6 +2193,11 @@ register struct obj *obj;
 	) {
 		pline("That combination is a little too explosive.");
 		return 0;*/
+	} else if (!(is_magic_obj(obj))
+		&& current_container->oartifact == ART_ESSCOOAHLIPBOOURRR
+	) {
+		pline("The artifact isn't interested in taking %s.", the(xname(obj)));
+		return 0;
 	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL)) {
 		Norep("You cannot %s %s you are wearing.",
 			Icebox ? "refrigerate" : "stash", something);
@@ -2345,13 +2353,13 @@ register struct obj *obj;
 	    Strcpy(buf, the(xname(current_container)));
 	    You("put %s into %s.", doname(obj), buf);
 		if(cobj_is_magic_chest(current_container))
-			pline("The lock labeled '%d' is open.", (int)current_container->ovar1);
+			pline("The lock labeled '%d' is open.", (int)current_container->ovar1_mgclcknm);
 
 	    /* gold in container always needs to be added to credit */
 	    if (floor_container && obj->oclass == COIN_CLASS && !cobj_is_magic_chest(current_container))
 			sellobj(obj, current_container->ox, current_container->oy);
 		if(cobj_is_magic_chest(current_container)){
-			add_to_magic_chest(obj,((int)(current_container->ovar1))%10);
+			add_to_magic_chest(obj,((int)(current_container->ovar1_mgclcknm))%10);
 		} else {
 			(void) add_to_container(current_container, obj);
 			current_container->owt = weight(current_container);
@@ -2391,19 +2399,19 @@ register struct obj *obj;
 	}
 
 	if(obj->oartifact && !touch_artifact(obj, &youmonst, FALSE)) return 0;
-	// if(obj->oartifact && obj->oartifact == ART_PEN_OF_THE_VOID && !Role_if(PM_EXILE)) u.sealsKnown |= obj->ovar1;
+	// if(obj->oartifact && obj->oartifact == ART_PEN_OF_THE_VOID && !Role_if(PM_EXILE)) u.sealsKnown |= obj->ovar1_seals;
 	/*Handle the pen of the void here*/
 	if(obj && obj->oartifact == ART_PEN_OF_THE_VOID){
-		if(obj->ovar1 && !Role_if(PM_EXILE)){
+		if(obj->ovar1_seals && !Role_if(PM_EXILE)){
 			long oldseals = u.sealsKnown;
-			u.sealsKnown |= obj->ovar1;
+			u.sealsKnown |= obj->ovar1_seals;
 			if(oldseals != u.sealsKnown) You("learned new seals.");
 		}
-		obj->ovar1 = u.spiritTineA|u.spiritTineB;
+		obj->ovar1_seals = u.spiritTineA|u.spiritTineB;
 		if(u.voidChime){
 			int i;
 			for(i=0; i<u.sealCounts; i++){
-				obj->ovar1 |= u.spirit[i];
+				obj->ovar1_seals |= u.spirit[i];
 			}
 		}
 	}
@@ -2575,6 +2583,195 @@ boolean past;
 }
 
 void
+open_giants_sack(box, past)
+struct obj *box;
+boolean past;
+{
+    struct monst *victim;
+    xchar ox, oy;
+
+	pline(past ? "That %s was being used to haul a plague victim!" : "This %s is being used to haul a plague victim!", simple_typename(box->otyp));
+    box->spe = 0;		/* box->owt will be updated below */
+    if (get_obj_location(box, &ox, &oy, 0))
+		box->ox = ox, box->oy = oy;	/* in case it's being carried */
+	if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
+		int drow_plague_types[] = {
+			PM_DWARF_QUEEN, PM_DWARF_KING, 
+			PM_ORC_CAPTAIN, PM_JUSTICE_ARCHON, PM_SHIELD_ARCHON, PM_SWORD_ARCHON,
+			PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, 
+			PM_LILLEND, PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN,
+			PM_SPROW, PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR,
+			PM_NURSE,
+			PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+			PM_ANULO, PM_ANULO,
+			PM_DROW_CAPTAIN, PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_DROW_MATRON,
+			PM_DROW_CAPTAIN, PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_DROW_MATRON, PM_UNEARTHLY_DROW, PM_HEDROW_BLADEMASTER,
+			PM_HEDROW_MASTER_WIZARD, PM_STJARNA_ALFR, PM_PEN_A_MENDICANT, PM_MENDICANT_SPROW, PM_MENDICANT_DRIDER,
+			PM_YOCHLOL, PM_LILITU, PM_MARILITH,
+			PM_ALLIANCE_VANGUARD, PM_PAGE, PM_DWARF_WARRIOR,
+			PM_BARBARIAN, PM_HALF_DRAGON, PM_BARD, PM_HEALER, PM_RANGER, PM_VALKYRIE
+		};
+
+		victim = makemon(&mons[ROLL_FROM(drow_plague_types)], box->ox, box->oy, MM_ADJACENTOK);
+	}
+	else {
+		int plague_types[] = {
+			PM_DWARF_LORD, PM_DWARF_CLERIC, PM_DWARF_QUEEN, PM_DWARF_KING, 
+			PM_DEEP_ONE, PM_WINGED_KOBOLD,
+			PM_DEMINYMPH, PM_THRIAE, 
+			PM_ORC_CAPTAIN, PM_JUSTICE_ARCHON, PM_SHIELD_ARCHON, PM_SWORD_ARCHON,
+			PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, 
+			PM_LILLEND, PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN,
+			PM_CENTAUR_CHIEFTAIN,
+			PM_DRIDER, PM_FORMIAN_CRUSHER, PM_FORMIAN_TASKMASTER,
+			PM_MYRMIDON_YPOLOCHAGOS, PM_MYRMIDON_LOCHAGOS,
+			PM_GNOME_KING, PM_GNOME_QUEEN,
+			PM_HILL_GIANT, PM_MINOTAUR, PM_MINOTAUR_PRIESTESS,
+			PM_VAMPIRE, PM_VAMPIRE_LORD, PM_VAMPIRE_LADY,
+			PM_NURSE, PM_WATCH_CAPTAIN, 
+			PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+			PM_DROW_MATRON,
+			PM_HORNED_DEVIL, PM_SUCCUBUS, PM_INCUBUS, PM_ERINYS, PM_VROCK, PM_BARBED_DEVIL,
+			PM_LILITU,
+			PM_BARBARIAN, PM_HALF_DRAGON, PM_BARD, PM_HEALER, PM_RANGER, PM_VALKYRIE,
+			PM_GOAT_SPAWN, PM_GIANT_GOAT_SPAWN
+		};
+
+		victim = makemon(&mons[ROLL_FROM(plague_types)], box->ox, box->oy, MM_ADJACENTOK);
+	}
+	if(victim){
+		struct obj *nobj, *obj;
+		for(obj = victim->minvent; obj; obj = nobj){
+			nobj = obj->nobj;
+			victim->misc_worn_check &= ~obj->owornmask;
+			update_mon_intrinsics(victim, obj, FALSE, FALSE);
+			if (obj->owornmask & W_WEP){
+				setmnotwielded(victim,obj);
+				MON_NOWEP(victim);
+			}
+			if (obj->owornmask & W_SWAPWEP){
+				setmnotwielded(victim,obj);
+				MON_NOSWEP(victim);
+			}
+			obj->owornmask = 0L;
+			obj_extract_self(obj);
+			if(past)
+				place_object(obj, victim->mx, victim->my);
+			else
+				add_to_container(box, obj);
+		}
+		obj = mongets(victim, SHACKLES, NO_MKOBJ_FLAGS);
+		if(obj){
+			victim->entangled_otyp = SHACKLES;
+			victim->entangled_oid = obj->o_id;
+		}
+		//Note: these are "fresh" so they don't take the 1/3rd penalty to level
+		set_template(victim, PLAGUE_TEMPLATE);
+		victim->mpeaceful = 1;
+		set_malign(victim);
+	} else {
+		pline(past ? "But the sack was now empty." : "But the sack is now empty.");
+	}
+    box->owt = weight(box);
+    return;
+}
+
+void
+kill_giants_sack(box)
+struct obj *box;
+{
+    struct monst *victim;
+    xchar ox, oy;
+	struct obj *corpse;
+
+    box->spe = 0;		/* box->owt will be updated below */
+    if (get_obj_location(box, &ox, &oy, 0))
+		box->ox = ox, box->oy = oy;	/* in case it's being carried */
+	if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
+		int drow_plague_types[] = {
+			PM_DWARF_QUEEN, PM_DWARF_KING, 
+			PM_ORC_CAPTAIN, PM_JUSTICE_ARCHON, PM_SHIELD_ARCHON, PM_SWORD_ARCHON,
+			PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, 
+			PM_LILLEND, PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN,
+			PM_SPROW, PM_DRIDER, PM_PRIESTESS_OF_GHAUNADAUR,
+			PM_NURSE,
+			PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+			PM_ANULO, PM_ANULO,
+			PM_DROW_CAPTAIN, PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_DROW_MATRON,
+			PM_DROW_CAPTAIN, PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_DROW_MATRON, PM_UNEARTHLY_DROW, PM_HEDROW_BLADEMASTER,
+			PM_HEDROW_MASTER_WIZARD, PM_STJARNA_ALFR, PM_PEN_A_MENDICANT, PM_MENDICANT_SPROW, PM_MENDICANT_DRIDER,
+			PM_YOCHLOL, PM_LILITU, PM_MARILITH,
+			PM_ALLIANCE_VANGUARD, PM_PAGE, PM_DWARF_WARRIOR,
+			PM_BARBARIAN, PM_HALF_DRAGON, PM_BARD, PM_HEALER, PM_RANGER, PM_VALKYRIE
+		};
+
+		victim = makemon(&mons[ROLL_FROM(drow_plague_types)], box->ox, box->oy, MM_ADJACENTOK);
+	}
+	else {
+		int plague_types[] = {
+			PM_DWARF_LORD, PM_DWARF_CLERIC, PM_DWARF_QUEEN, PM_DWARF_KING, 
+			PM_DEEP_ONE, PM_WINGED_KOBOLD,
+			PM_DEMINYMPH, PM_THRIAE, 
+			PM_ORC_CAPTAIN, PM_JUSTICE_ARCHON, PM_SHIELD_ARCHON, PM_SWORD_ARCHON,
+			PM_MOVANIC_DEVA, PM_MONADIC_DEVA, PM_ASTRAL_DEVA, 
+			PM_LILLEND, PM_COURE_ELADRIN, PM_NOVIERE_ELADRIN, PM_BRALANI_ELADRIN, PM_FIRRE_ELADRIN, PM_SHIERE_ELADRIN,
+			PM_CENTAUR_CHIEFTAIN,
+			PM_DRIDER, PM_FORMIAN_CRUSHER, PM_FORMIAN_TASKMASTER,
+			PM_MYRMIDON_YPOLOCHAGOS, PM_MYRMIDON_LOCHAGOS,
+			PM_GNOME_KING, PM_GNOME_QUEEN,
+			PM_HILL_GIANT, PM_MINOTAUR, PM_MINOTAUR_PRIESTESS,
+			PM_VAMPIRE, PM_VAMPIRE_LORD, PM_VAMPIRE_LADY,
+			PM_NURSE, PM_WATCH_CAPTAIN, 
+			PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+			PM_DROW_MATRON,
+			PM_HORNED_DEVIL, PM_SUCCUBUS, PM_INCUBUS, PM_ERINYS, PM_VROCK, PM_BARBED_DEVIL,
+			PM_LILITU,
+			PM_BARBARIAN, PM_HALF_DRAGON, PM_BARD, PM_HEALER, PM_RANGER, PM_VALKYRIE,
+			PM_GOAT_SPAWN, PM_GIANT_GOAT_SPAWN
+		};
+
+		victim = makemon(&mons[ROLL_FROM(plague_types)], box->ox, box->oy, MM_ADJACENTOK);
+	}
+	if(victim){
+		struct obj *nobj;
+		struct obj *obj;
+		for(obj = victim->minvent; obj; obj = nobj){
+			nobj = obj->nobj;
+			victim->misc_worn_check &= ~obj->owornmask;
+			update_mon_intrinsics(victim, obj, FALSE, FALSE);
+			if (obj->owornmask & W_WEP){
+				setmnotwielded(victim,obj);
+				MON_NOWEP(victim);
+			}
+			if (obj->owornmask & W_SWAPWEP){
+				setmnotwielded(victim,obj);
+				MON_NOSWEP(victim);
+			}
+			obj->owornmask = 0L;
+			obj_extract_self(obj);
+			add_to_container(box, obj);
+		}
+		obj = mksobj(SHACKLES, NO_MKOBJ_FLAGS);
+		if(obj)
+			add_to_container(box, obj);
+		//Note: these are "fresh" so they don't take the 1/3rd penalty to level
+		set_template(victim, PLAGUE_TEMPLATE);
+		victim->mpeaceful = 1;
+		set_malign(victim);
+		if(!(mons[victim->mtyp].geno & (G_NOCORPSE))){
+			corpse = mkcorpstat(CORPSE, victim, (struct permonst *)0, box->ox, box->oy, FALSE);
+			if(corpse){
+				obj_extract_self(corpse);
+				add_to_container(box, corpse);
+			}
+		}
+		mongone(victim);
+	}
+    box->owt = weight(box);
+    return;
+}
+
+void
 open_sarcophagus(box, past)
 struct obj *box;
 boolean past;
@@ -2659,42 +2856,42 @@ boolean past;
 				continue;
 			obj_extract_self(otmp);
 			mpickobj(daughter, otmp);
-			break; //Found boots.  Also, otmp->nobj should now be 0 anyway.
+			break; //Found gloves.  Also, otmp->nobj should now be 0 anyway.
 		}
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(!is_shirt(otmp))
 				continue;
 			obj_extract_self(otmp);
 			mpickobj(daughter, otmp);
-			break; //Found boots.  Also, otmp->nobj should now be 0 anyway.
+			break; //Found shirt.  Also, otmp->nobj should now be 0 anyway.
 		}
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(!is_suit(otmp))
 				continue;
 			obj_extract_self(otmp);
 			mpickobj(daughter, otmp);
-			break; //Found boots.  Also, otmp->nobj should now be 0 anyway.
+			break; //Found suit.  Also, otmp->nobj should now be 0 anyway.
 		}
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(!is_cloak(otmp))
 				continue;
 			obj_extract_self(otmp);
 			mpickobj(daughter, otmp);
-			break; //Found boots.  Also, otmp->nobj should now be 0 anyway.
+			break; //Found cloak.  Also, otmp->nobj should now be 0 anyway.
 		}
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(!is_helmet(otmp))
 				continue;
 			obj_extract_self(otmp);
 			mpickobj(daughter, otmp);
-			break; //Found boots.  Also, otmp->nobj should now be 0 anyway.
+			break; //Found helm.  Also, otmp->nobj should now be 0 anyway.
 		}
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(!is_shield(otmp))
 				continue;
 			obj_extract_self(otmp);
 			mpickobj(daughter, otmp);
-			break; //Found boots.  Also, otmp->nobj should now be 0 anyway.
+			break; //Found shield.  Also, otmp->nobj should now be 0 anyway.
 		}
 		m_dowear(daughter, TRUE);
 		m_level_up_intrinsic(daughter);
@@ -2742,23 +2939,28 @@ boolean past;
 		case PM_HUMAN:
 		case PM_VAMPIRE:
 		case PM_INCANTIFIER:
-		case PM_GNOME:
 			if(flags.initgend){
 				expert_weapon_skill(P_DAGGER);
 				free_skill_up(P_DAGGER);
+				skilled_weapon_skill(P_SHORT_SWORD);
+				free_skill_up(P_SHORT_SWORD);
 				skilled_weapon_skill(P_TWO_WEAPON_COMBAT);
 			}
 			else {
 				expert_weapon_skill(P_SABER);
 				free_skill_up(P_SABER);
 			}
-			if(Race_if(PM_GNOME)){
-				knows_object(GNOMISH_POINTY_HAT);
-				knows_object(AKLYS);
-				knows_object(DWARVISH_HELM);
-				knows_object(DWARVISH_MATTOCK);
-				knows_object(DWARVISH_CLOAK);
-			}
+		break;
+		case PM_GNOME:
+			expert_weapon_skill(P_BROAD_SWORD);
+			free_skill_up(P_BROAD_SWORD);
+			expert_weapon_skill(P_BEAST_MASTERY);
+			free_skill_up(P_BEAST_MASTERY);
+			knows_object(GNOMISH_POINTY_HAT);
+			knows_object(AKLYS);
+			knows_object(DWARVISH_HELM);
+			knows_object(DWARVISH_MATTOCK);
+			knows_object(DWARVISH_CLOAK);
 		break;
 		case PM_DWARF:
 			expert_weapon_skill(P_PICK_AXE);
@@ -2773,11 +2975,9 @@ boolean past;
 			knows_object(DWARVISH_ROUNDSHIELD);
 		break;
 		case PM_ELF:
-			expert_weapon_skill(P_BOW);
-			free_skill_up(P_BOW);
-			expert_weapon_skill(P_SCIMITAR);
-			free_skill_up(P_SCIMITAR);
-			skilled_weapon_skill(P_BROAD_SWORD);
+			expert_weapon_skill(P_BROAD_SWORD);
+			skilled_weapon_skill(P_SHIELD);
+			expert_weapon_skill(P_WAND_POWER);
 			knows_object(ELVEN_SHORT_SWORD);
 			knows_object(ELVEN_ARROW);
 			knows_object(ELVEN_BOW);
@@ -2791,6 +2991,31 @@ boolean past;
 			knows_object(ELVEN_SHIELD);
 			knows_object(ELVEN_BOOTS);
 			knows_object(ELVEN_CLOAK);
+			knows_object(IMPERIAL_ELVEN_BOOTS);
+			knows_object(IMPERIAL_ELVEN_ARMOR);
+			knows_object(IMPERIAL_ELVEN_GAUNTLETS);
+			knows_object(IMPERIAL_ELVEN_HELM);
+			You("vaguely recall how to perform field repairs on imperial elven armor.");
+			u.uiearepairs = TRUE;
+			//The PC was actually lawful, and changes back if they are uncrowned and still their starting alignment
+			if(u.ugodbase[UGOD_CURRENT] == u.ugodbase[UGOD_ORIGINAL] && !u.uevent.uhand_of_elbereth){
+				/* The player wears a helm of opposite alignment? */
+				if (uarmh && uarmh->otyp == HELM_OF_OPPOSITE_ALIGNMENT)
+					u.ugodbase[UGOD_ORIGINAL] = u.ugodbase[UGOD_CURRENT] = GOD_ZO_KALAR;
+				else {
+					u.ualign.god = u.ugodbase[UGOD_ORIGINAL] = u.ugodbase[UGOD_CURRENT] = GOD_ZO_KALAR;
+					u.ualign.type = A_LAWFUL;
+				}
+				You("have a sudden sense of returning to an old direction.");
+				flags.initalign = 0;
+				flags.botl = TRUE;
+				change_luck(-3);
+				u.ublesscnt += 300;
+				u.lastprayed = moves;
+				u.reconciled = REC_NONE;
+				u.lastprayresult = PRAY_CONV;
+				adjalign(-1*u.ualign.record);
+			}
 		break;
 		case PM_DROW:
 			if(flags.initgend){
@@ -3099,18 +3324,13 @@ struct monst *mon;
 				addArmorMenuOption
 			} else if(is_cloak(otmp) && !(mon->misc_worn_check&W_ARMC) && (abs(otmp->objsize - mon->data->msize) <= 1)){
 				addArmorMenuOption
-			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && 
-				((helm_match(mon->data,otmp) && has_head_mon(mon) && otmp->objsize == mon->data->msize && !has_horns(mon->data))
-				|| is_flimsy(otmp)
-				|| otmp->otyp == find_gcirclet()
-				)
-			){
+			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon->data,otmp) && helm_size_fits(mon->data,otmp)){
 				addArmorMenuOption
 			} else if(is_shield(otmp) && !(mon->misc_worn_check&W_ARMS) && !noshield(mon->data)){
 				addArmorMenuOption
 			} else if(is_gloves(otmp) && !(mon->misc_worn_check&W_ARMG) && otmp->objsize == mon->data->msize && can_wear_gloves(mon->data)){
 				addArmorMenuOption
-			} else if(is_boots(otmp) && !(mon->misc_worn_check&W_ARMF) && otmp->objsize == mon->data->msize && can_wear_boots(mon->data)){
+			} else if(is_boots(otmp) && !(mon->misc_worn_check&W_ARMF) && boots_size_fits(mon->data, otmp) && can_wear_boots(mon->data)){
 				addArmorMenuOption
 			} else if(is_suit(otmp) && !(mon->misc_worn_check&W_ARM) && arm_match(mon->data, otmp) && arm_size_fits(mon->data, otmp)){
 				addArmorMenuOption
@@ -3281,7 +3501,7 @@ register int held;
 	struct obj *u_gold = (struct obj *)0;
 #endif
 	boolean one_by_one, allflag, quantum_cat = FALSE,
-		loot_out = FALSE, loot_in = FALSE;
+		loot_out = FALSE, loot_in = FALSE, tip_over = FALSE;
 	char select[MAXOCLASSES+1];
 	char qbuf[BUFSZ], emptymsg[BUFSZ], pbuf[QBUFSZ];
 	long loss = 0L;
@@ -3311,32 +3531,36 @@ register int held;
 	    return MOVE_STANDARD;
 	}
 	current_container = obj;	/* for use by in/out_container */
-
-	if (obj->spe == 1) {
-	    observe_quantum_cat(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
-	    used = 1;
-	    quantum_cat = TRUE;	/* for adjusting "it's empty" message */
-	}else if(obj->spe == 4){
-	    open_coffin(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
-		return MOVE_STANDARD;
-	}else if(obj->spe == 5){
-	    open_sarcophagus(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
-	    return MOVE_STANDARD;
-	}else if(obj->spe == 6 && u.uinsight >= 10){
-	    open_crazy_box(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
-	    return MOVE_STANDARD;
-	}else if(obj->spe == 7){
-		// Madman reclaims their stuff. Contents handled by the level loader.
-		//FALSE: the box was not destroyed. Use present tense.
-	    if(open_madstuff_box(obj, FALSE)){
+	if(Is_real_container(obj)){
+		if (obj->spe == 1) {
+			observe_quantum_cat(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
+			used = 1;
+			quantum_cat = TRUE;	/* for adjusting "it's empty" message */
+		} else if(obj->spe == 4){
+			open_coffin(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
+			return MOVE_STANDARD;
+		} else if(obj->spe == 5){
+			open_sarcophagus(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
+			return MOVE_STANDARD;
+		} else if(obj->spe == 6 && u.uinsight >= 10){
+			open_crazy_box(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
+			return MOVE_STANDARD;
+		} else if(obj->spe == 7){
+			// Madman reclaims their stuff. Contents handled by the level loader.
+			//FALSE: the box was not destroyed. Use present tense.
+			if(open_madstuff_box(obj, FALSE)){
+				return MOVE_STANDARD;
+			}
+		} else if(obj->spe == 8){
+			// Nothing. Fulvous desk spawns monsters.
+		} else if(obj->spe == 9){
+			open_giants_sack(obj, FALSE); //FALSE: not destroyed
 			return MOVE_STANDARD;
 		}
-	}else if(obj->spe == 8){
-		// Nothing. Fulvous desk spawns monsters.
 	}
 	/* Count the number of contained objects. Sometimes toss objects if a cursed magic bag. */
 	if (cobj_is_magic_chest(obj))
-	    curr = magic_chest_objs[((int)obj->ovar1)%10];/*guard against polymorph related whoopies*/
+	    curr = magic_chest_objs[((int)obj->ovar1_mgclcknm)%10];/*guard against polymorph related whoopies*/
 	else
 	    curr = obj->cobj;
 	for (; curr; curr = otmp) {
@@ -3364,34 +3588,45 @@ register int held;
 	    Sprintf(eos(qbuf), "%s?",
 		    safe_qbuf(qbuf, 1, yname(obj), ysimple_name(obj), "it"));
 	    if (flags.menu_style != MENU_TRADITIONAL) {
-		if (flags.menu_style == MENU_FULL) {
-		    int t;
-		    char menuprompt[BUFSZ];
-		    boolean outokay = (cnt != 0);
+			if (flags.menu_style == MENU_FULL) {
+				int t;
+				char menuprompt[BUFSZ];
+				boolean outokay = (cnt != 0);
 #ifndef GOLDOBJ
-		    boolean inokay = (invent != 0) || (u.ugold != 0);
+				boolean inokay = (invent != 0) || (u.ugold != 0);
 #else
-		    boolean inokay = (invent != 0);
+				boolean inokay = (invent != 0);
 #endif
-		    if (!outokay && !inokay) {
-			pline("%s", emptymsg);
-			You("don't have anything to put in.");
-			return used ? MOVE_STANDARD : MOVE_CANCELLED;
-		    }
-		    menuprompt[0] = '\0';
-		    if (!cnt) Sprintf(menuprompt, "%s ", emptymsg);
-		    Strcat(menuprompt, "Do what?");
-		    t = in_or_out_menu(menuprompt, current_container, outokay, inokay);
-		    if (t <= 0) return MOVE_CANCELLED;
-		    loot_out = (t & 0x01) != 0;
-		    loot_in  = (t & 0x02) != 0;
-		} else {	/* MENU_COMBINATION or MENU_PARTIAL */
-		    loot_out = (yn_function(qbuf, "ynq", 'n') == 'y');
-		}
-		if (loot_out) {
-		    add_valid_menu_class(0);	/* reset */
-		    used |= menu_loot(0, current_container, FALSE) > 0;
-		}
+				if (!outokay && !inokay) {
+					pline("%s", emptymsg);
+					You("don't have anything to put in.");
+					return used ? MOVE_STANDARD : MOVE_CANCELLED;
+				}
+				menuprompt[0] = '\0';
+				if (!cnt) Sprintf(menuprompt, "%s ", emptymsg);
+				Strcat(menuprompt, "Do what?");
+				t = in_or_out_menu(menuprompt, current_container, outokay, inokay);
+				if (t <= 0) return MOVE_CANCELLED;
+				loot_out = (t & 0x01) != 0;
+				loot_in  = (t & 0x02) != 0;
+				tip_over  = (t & 0x04) != 0;
+			} else {	/* MENU_COMBINATION or MENU_PARTIAL */
+				loot_out = (yn_function(qbuf, "ynq", 'n') == 'y');
+			}
+			if (tip_over) {
+				tipcontainer(current_container);
+				if(current_container->oartifact == ART_ESSCOOAHLIPBOOURRR)
+					current_container->age = monstermoves + rnz(100);
+				used |= MOVE_STANDARD;
+			}
+			if (loot_out) {
+				int sub_used;
+				add_valid_menu_class(0);	/* reset */
+				sub_used = menu_loot(0, current_container, FALSE) > 0;
+				if(sub_used && current_container->oartifact == ART_ESSCOOAHLIPBOOURRR)
+					current_container->age = monstermoves + rnz(100);
+				used |= sub_used;
+			}
 	    } else {
 		/* traditional code */
 ask_again2:
@@ -3438,10 +3673,11 @@ ask_again2:
 	}
 
 #ifndef GOLDOBJ
-	if (!invent && u.ugold == 0) {
+	if (!invent && u.ugold == 0)
 #else
-	if (!invent) {
+	if (!invent)
 #endif
+	{
 	    /* nothing to put in, but some feedback is necessary */
 	    You("don't have anything to put in.");
 	    return used ? MOVE_STANDARD : MOVE_CANCELLED;
@@ -3488,24 +3724,25 @@ ask_again2:
 #endif
 	    add_valid_menu_class(0);	  /* reset */
 	    if (flags.menu_style != MENU_TRADITIONAL) {
-		used |= menu_loot(0, current_container, TRUE) > 0;
+			used |= menu_loot(0, current_container, TRUE) > 0;
 	    } else {
-		/* traditional code */
-		menu_on_request = 0;
-		if (query_classes(select, &one_by_one, &allflag, "put in",
-				   invent, FALSE,
+			/* traditional code */
+			menu_on_request = 0;
+			if (query_classes(select, &one_by_one, &allflag, "put in",
+					   invent, FALSE,
 #ifndef GOLDOBJ
-				   (u.ugold != 0L),
+					(u.ugold != 0L),
 #endif
-				   &menu_on_request)) {
-		    (void) askchain((struct obj **)&invent,
-				    (one_by_one ? (char *)0 : select), allflag,
-				    in_container, ck_bag, 0, "nodot");
-		    used = 1;
-		} else if (menu_on_request < 0) {
-		    used |= menu_loot(menu_on_request,
-				      current_container, TRUE) > 0;
-		}
+					&menu_on_request)
+			) {
+				(void) askchain((struct obj **)&invent,
+						(one_by_one ? (char *)0 : select), allflag,
+						in_container, ck_bag, 0, "nodot");
+				used = 1;
+			} else if (menu_on_request < 0) {
+				used |= menu_loot(menu_on_request,
+						  current_container, TRUE) > 0;
+			}
 	    }
 	}
 
@@ -3548,7 +3785,7 @@ boolean put_in;
 	    otmp = invent;
 	} else {
 	    if (cobj_is_magic_chest(container))
-		otmp = magic_chest_objs[((int)(container->ovar1))%10];
+		otmp = magic_chest_objs[((int)(container->ovar1_mgclcknm))%10];
 	    else
 		otmp = container->cobj;
 	}
@@ -3567,7 +3804,7 @@ boolean put_in;
 
     if (loot_everything) {
 	if (cobj_is_magic_chest(container))
-	    otmp = magic_chest_objs[((int)(container->ovar1))%10];
+	    otmp = magic_chest_objs[((int)(container->ovar1_mgclcknm))%10];
 	else
 	    otmp = container->cobj;
 	for (; otmp; otmp = otmp2) {
@@ -3584,7 +3821,7 @@ boolean put_in;
 	    otmp = invent;
 	} else {
 	    if (cobj_is_magic_chest(container))
-		otmp = magic_chest_objs[((int)(container->ovar1))%10];
+		otmp = magic_chest_objs[((int)(container->ovar1_mgclcknm))%10];
 	    else
 		otmp = container->cobj;
 	}
@@ -3627,7 +3864,7 @@ boolean outokay, inokay;
     menu_item *pick_list;
     char buf[BUFSZ];
     int n;
-    const char *menuselector = iflags.lootabc ? "abc" : "oib";
+    const char *menuselector = iflags.lootabc ? "abcd" : "oibt";
 
     any.a_void = 0;
     win = create_nhwindow(NHW_MENU);
@@ -3649,6 +3886,12 @@ boolean outokay, inokay;
 	any.a_int = 3;
 	add_menu(win, NO_GLYPH, &any, *menuselector, 0, ATR_NONE,
 			"Both of the above", MENU_UNSELECTED);
+    }
+    menuselector++;
+    if (outokay) {
+	any.a_int = 4;
+	add_menu(win, NO_GLYPH, &any, *menuselector, 0, ATR_NONE,
+			"Tip out all contents", MENU_UNSELECTED);
     }
     end_menu(win, prompt);
     n = select_menu(win, PICK_ONE, &pick_list);
@@ -3960,6 +4203,7 @@ struct obj *box; /* or bag */
 		pline("You can't tip something bolted down!");
 		return;
 	}
+	char yourbuf[BUFSZ];
 	if (box->olocked) {
 		pline("It's locked.");
 	} else if (box->otrapped) {
@@ -3995,13 +4239,54 @@ struct obj *box; /* or bag */
 		if (maybeshopgoods && !box->no_charge)
 			subfrombill(box, shop_keeper(*in_rooms(ox, oy, SHOPBASE)));
 	} else if (box->otyp == BOX && box->spe == 1) {
-		char yourbuf[BUFSZ];
-
 		observe_quantum_cat(box, TRUE);
 		if (!Has_contents(box)) /* evidently a live cat came out */
 			/* container type of "large box" is inferred */
 			pline("%sbox is now empty.", Shk_Your(yourbuf, box));
 		else /* holds cat corpse */
+			empty_it = TRUE;
+	} else if(Is_real_container(box) && box->spe == 4){
+		open_coffin(box, FALSE); //FALSE: the box was not destroyed. Use present tense.
+
+		if (!Has_contents(box))
+			pline("%scoffin is now empty.", Shk_Your(yourbuf, box));
+		else
+			empty_it = TRUE;
+	} else if(Is_real_container(box) && box->spe == 5){
+		open_sarcophagus(box, FALSE); //FALSE: the box was not destroyed. Use present tense.
+
+		if (!Has_contents(box))
+			pline("%ssarcophagus is now empty.", Shk_Your(yourbuf, box));
+		else
+			empty_it = TRUE;
+	} else if(Is_real_container(box) && box->spe == 6 && u.uinsight >= 10){
+		open_crazy_box(box, TRUE);
+
+		if (!Has_contents(box))
+			pline("%s%s is now empty.", Shk_Your(yourbuf, box), simple_typename(box->otyp));
+		else
+			empty_it = TRUE;
+	} else if(Is_real_container(box) && box->spe == 7){
+		// Madman reclaims their stuff. Contents handled by the level loader.
+		//FALSE: the box was not destroyed. Use present tense.
+		open_madstuff_box(box, TRUE);
+
+		if (!Has_contents(box))
+			pline("%s%s is now empty.", Shk_Your(yourbuf, box), simple_typename(box->otyp));
+		else
+			empty_it = TRUE;
+	} else if(Is_real_container(box) && box->spe == 8){
+		// Nothing. Fulvous desk spawns monsters.
+		if (!Has_contents(box))
+			pline("It's empty.");
+		else
+			empty_it = TRUE;
+	} else if(Is_real_container(box) && box->spe == 9){
+		open_giants_sack(box, TRUE);
+
+		if (!Has_contents(box))
+			pline("%s%s is now empty.", Shk_Your(yourbuf, box), simple_typename(box->otyp));
+		else
 			empty_it = TRUE;
 	} else if (!Has_contents(box)) {
 		pline("It's empty.");

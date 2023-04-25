@@ -438,7 +438,7 @@ boolean incr;	/* true iff via incremental experience growth */
 	}
 	num = newen();
 	u.uenrolled += num;
-	u.uen += num + ACURR(A_WIS)/4;
+	u.uen += num + ACURR(A_INT)/4;
 	if (u.ulevel < MAXULEV) {
 	    if (incr) {
 		long tmp = newuexp(u.ulevel + 1);

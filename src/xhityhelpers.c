@@ -467,6 +467,7 @@ struct attack *mattk;
 	long unwornmask;
 	int petrifies = FALSE;
 	char kbuf[BUFSZ];
+	boolean mi_only = is_chuul(youracedata);
 
 	if (!mdef->minvent) return;		/* nothing to take */
 
@@ -501,6 +502,8 @@ struct attack *mattk;
 		    mon_nam(mdef), mhe(mdef), mhis(mdef));
 	}
 	while ((otmp = mdef->minvent) != 0) {
+		if(mi_only && !is_magic_obj(otmp) && otmp != stealoid)
+			continue;
 	    /* take the object away from the monster */
 	    obj_extract_self(otmp);
 	    if ((unwornmask = otmp->owornmask) != 0L) {
@@ -1348,7 +1351,7 @@ struct obj * obj;
 	if (
 		(obj->otyp == JADE) ||
 		(obj->oclass == RING_CLASS && obj->otyp == jadeRing) ||
-		(obj->obj_material == GEMSTONE && !obj_type_uses_ovar1(obj) && !obj_art_uses_ovar1(obj) && obj->ovar1 == JADE)
+		(obj->obj_material == GEMSTONE && !obj_type_uses_ovar1(obj) && !obj_art_uses_ovar1(obj) && obj->sub_material == JADE)
 		)
 		return TRUE;
 
@@ -1454,6 +1457,8 @@ struct obj * otmp;
 			dmg += vd(2, 10); // Crackling holy energy
 		else if (otmp->oartifact == ART_GODHANDS)
 			dmg += 7;
+		else if (otmp->oartifact == ART_RED_CORDS_OF_ILMATER)
+			dmg += 7;
 		else if (otmp->oartifact == ART_JINJA_NAGINATA)
 			dmg += vd(1, 12);
 		else if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && !otmp->lamplit)
@@ -1470,7 +1475,7 @@ struct obj * otmp;
 		else if (otmp->otyp == KHAKKHARA)
 			ndice = khakharadice;
 		/* gold has a particular affinity to blessings and curses */
-		if (otmp->obj_material == GOLD &&
+		if ((otmp->obj_material == GOLD || otmp->oartifact == ART_RUYI_JINGU_BANG) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			diesize = 20;
 		}
@@ -1778,6 +1783,9 @@ struct obj * weapon;
 			return 2;
 
 		if (check_oprop(weapon, OPROP_SFLMW))
+			return 2;
+
+		if (weapon->oartifact == ART_GRAYSWANDIR) /* Grayswandir can interact with phantoms */
 			return 2;
 
 		if (hatesobjdmg(mdef, weapon))
@@ -2745,3 +2753,93 @@ struct attack * attk;
 	}
 	return result;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/* Blade-dancing monsters hit multiple targets                               */
+///////////////////////////////////////////////////////////////////////////////
+int
+hit_with_dance(magr, otmp, tarx, tary, tohitmod, attk)
+struct monst * magr;
+struct obj * otmp;
+int tarx;
+int tary;
+int tohitmod;
+struct attack * attk;
+{
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	int dx = sgn(tarx - x(magr));
+	int dy = sgn(tary - y(magr));
+	int nx, ny;
+	int result = 0;
+	int cleave_range = (mlev(magr) - 16)/2;
+	/*Not all attacks can cleave*/
+	if(attk->aatyp != AT_WEAP
+	 && attk->aatyp != AT_XWEP
+	 && attk->aatyp != AT_MARI
+	 && attk->aatyp != AT_CLAW
+	 && attk->aatyp != AT_KICK
+	 && attk->aatyp != AT_BUTT
+	 && attk->aatyp != AT_TUCH
+	 && attk->aatyp != AT_WHIP
+	 && attk->aatyp != AT_LRCH
+	 && attk->aatyp != AT_SRPR
+	 && attk->aatyp != AT_XSPR
+	 && attk->aatyp != AT_MSPR
+	 && attk->aatyp != AT_DSPR
+	 && attk->aatyp != AT_ESPR
+	 && attk->aatyp != AT_DEVA
+	 && attk->aatyp != AT_5SQR
+	 && attk->aatyp != AT_VINE
+	 && attk->aatyp != AT_TAIL
+	)
+		return result;
+	if(!(isok(tarx - dx, tary - dy) &&
+		x(magr) == tarx - dx &&
+		y(magr) == tary - dy)
+	)
+		return result;
+	
+	for(int i = cleave_range; i > 0; i--){
+		if(monstermoves%2 == 1){
+			//45 degree rotation
+			nx = sgn(dy+dx);
+			ny = sgn(dy-dx);
+		}
+		else {
+			//-45 degree rotation
+			nx = sgn(dx-dy);
+			ny = sgn(dx+dy);
+		}
+		dx = nx;
+		dy = ny;
+		if(!isok(x(magr) + nx, y(magr) + ny))
+			continue;
+		if(result&(MM_AGR_DIED|MM_AGR_STOP))
+			return result;
+		struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+								u.uswallow ? u.ustuck : 
+								(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+								(struct monst *)0;
+		if (mdef2 
+			&& (!DEADMONSTER(mdef2))
+			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+				(youagr && !mdef2->mpeaceful))
+		) { //Can hit a worm multiple times
+			int vis2 = VIS_NONE;
+			if(youagr || canseemon(magr))
+				vis2 |= VIS_MAGR;
+			if(mdef2 == &youmonst || canseemon(mdef2))
+				vis2 |= VIS_MDEF;
+			bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		}
+	}
+	return result;
+}
+
+

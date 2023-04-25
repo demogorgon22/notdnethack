@@ -518,7 +518,8 @@ struct you {
 #define RITUAL_DONE		(RITUAL_CHAOS|RITUAL_NEUTRAL|RITUAL_LAW)
 #define HI_RITUAL_DONE	(RITUAL_HI_CHAOS|RITUAL_HI_NEUTRAL|RITUAL_HI_LAW)
 	Bitfield(peaceful_pets,1);	/* pets don't attack peaceful monsters */
-	/* 12 free bits */
+	Bitfield(uiearepairs,1);	/* Knows how to repair Imperial Elven Armor */
+	/* 11 free bits */
 	
 	int oonaenergy;				/* Record the energy type used by Oona in your game. (Worm that Walks switches?) */
 	int brand_otyp;				/* Record the otyp of Fire and Frost Brand in this game */
@@ -625,7 +626,8 @@ struct you {
 #define DISMAL_SWAMP	4
 #define ARCHIPELAGO	5
 	int 	uencouraged;/* to record the buff from tame encouragement songs */
-	int		uentangled; /* to record the otyp of an item entangling you */
+	int		uentangled_otyp; /* to record the otyp of an item entangling you */
+	long	uentangled_oid; /* to record the oid of the item entangling you */
 	long int spawnedGold; /* to record total amount of gold spawned in a game */
 		int	utats; /*Used to store Fell's tattoo information*/
 #define TAT_HOURGLASS	0x0001
@@ -674,7 +676,9 @@ struct you {
 #define	MAD_TOO_BIG			0x0000000040000000L
 #define	MAD_APOSTASY		0x0000000080000000L
 #define	MAD_ROTTING			0x0000000100000000L
-#define	LAST_MADNESS		MAD_ROTTING
+#define	MAD_REACHER			0x0000000200000000L
+#define	MAD_SCORPIONS		0x0000000400000000L
+#define	LAST_MADNESS		MAD_SCORPIONS
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)

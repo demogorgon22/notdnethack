@@ -244,6 +244,7 @@ int monkey_business; /* true iff an animal is doing the thievery */
 	struct obj *otmp;
 	int tmp, could_petrify, named = 0, armordelay;
 	boolean charms = (is_neuter(mtmp->data) || flags.female == mtmp->female);
+	boolean mi_only = is_chuul(mtmp->data);
 	if(mtmp->mtyp == PM_ALRUNES) charms = !charms;
 	else if(mtmp->mtyp == PM_FIERNA) charms = TRUE;
 	else if(mtmp->mtyp == PM_BEAUTEOUS_ONE) charms = FALSE;
@@ -283,6 +284,7 @@ nothing_to_steal:
 	tmp = 0;
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	    if ((!uarm || otmp != uarmc) && otmp != uskin
+				&& (!mi_only || is_magic_obj(otmp))
 #ifdef INVISIBLE_OBJECTS
 				&& (!otmp->oinvis || mon_resistance(mtmp,SEE_INVIS))
 #endif
@@ -293,6 +295,7 @@ nothing_to_steal:
 	tmp = rn2(tmp);
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	    if ((!uarm || otmp != uarmc) && otmp != uskin
+				&& (!mi_only || is_magic_obj(otmp))
 #ifdef INVISIBLE_OBJECTS
 				&& (!otmp->oinvis || mon_resistance(mtmp,SEE_INVIS))
 #endif
@@ -316,7 +319,7 @@ nothing_to_steal:
 gotobj:
 	if(otmp->o_id == stealoid) return(0);
 	
-	if(otmp->oartifact == ART_PEN_OF_THE_VOID && otmp->ovar1&SEAL_ANDROMALIUS){
+	if(otmp->oartifact == ART_PEN_OF_THE_VOID && otmp->ovar1_seals&SEAL_ANDROMALIUS){
 		pline("%s tries to steal your weapon, but is prevented!",Monnam(mtmp));
 		return 0;
 	}
@@ -636,13 +639,24 @@ struct monst *mon;
     struct obj *obj, *otmp;
 
     for (obj = mon->minvent; obj; obj = otmp) {
-	otmp = obj->nobj;
-	/* the Amulet, invocation tools, and Rider corpses resist even when
-	   artifacts and ordinary objects are given 0% resistance chance */
-	if (obj_resists(obj, 0, 0)) {
-	    obj_extract_self(obj);
-	    mdrop_obj(mon, obj, FALSE);
-	}
+		otmp = obj->nobj;
+		/* the Amulet, invocation tools, and Rider corpses resist even when
+		   artifacts and ordinary objects are given 0% resistance chance */
+		if (obj_resists(obj, 0, 0)) {
+			obj_extract_self(obj);
+			mdrop_obj(mon, obj, FALSE);
+		}
+		/* Items that are entangling a monster don't vanish with it */
+		else if(mon->entangled_oid == obj->o_id){
+			obj_extract_self(obj);
+			//Assumes that the only way the jin gang zuo can come into play is via crowning gift.
+			if(obj->oartifact == ART_JIN_GANG_ZUO){
+				hold_another_object(obj, "Oops!  The returning %s slips to the floor!", "snare", (const char *)0);
+			}
+			else {
+				mdrop_obj(mon, obj, FALSE);
+			}
+		}
     }
 }
 
@@ -673,7 +687,13 @@ boolean is_pet;		/* If true, pet should keep wielded/worn items */
 		//Drop everything, I'm dying :(
 		while((otmp = mtmp->minvent)){
 			obj_extract_self(otmp);
-			mdrop_obj(mtmp, otmp, is_pet && flags.verbose);
+			//Assumes that the only way the jin gang zuo can come into play is via crowning gift.
+			if(otmp->oartifact == ART_JIN_GANG_ZUO){
+				hold_another_object(otmp, "Oops!  The returning %s slips to the floor!", "snare", (const char *)0);
+			}
+			else {
+				mdrop_obj(mtmp, otmp, is_pet && flags.verbose);
+			}
 		}
 	}
 

@@ -158,6 +158,7 @@ boolean restore;
 			} else if (otmp->otyp == SPE_BOOK_OF_THE_DEAD) {
 			    otmp->otyp = SPE_BLANK_PAPER;
 				otmp->obj_color = objects[SPE_BLANK_PAPER].oc_color;
+				remove_oprop(otmp, OPROP_TACTB);
 			    curse(otmp);
 			}
 			if(is_lightsaber(otmp)){
@@ -187,7 +188,7 @@ boolean restore;
 			//Plasteel Armor: Ok for bones inclusion
 			//Sensors and Hyposprays: Ok for bones inclusion
 			if(otmp->otyp == HAND_BLASTER || otmp->otyp == ARM_BLASTER || otmp->otyp == RAYGUN){
-			    otmp->ovar1 /= 2;
+			    otmp->ovar1_charges /= 2;
 			    otmp->recharged = 4;
 				curse(otmp);
 			//Actually, make it so these can barely be recharged/don't work, but let them be saved

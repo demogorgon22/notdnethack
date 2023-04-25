@@ -7,13 +7,13 @@
 
 #include "macromagic.h"
 /* we need to set these *before* makedefs.c or else it won't be getting the right number of arguments */
-#define PROPS(...) {FIRST_EIGHT(dummy, ##__VA_ARGS__, 0,0,0,0,0,0,0,0)}
-#define FIRST_EIGHT(dummy, a1, a2, a3, a4, a5, a6, a7, a8, ...) a1, a2, a3, a4, a5, a6, a7, a8
+#define PROPS(...) {FIRST_TEN(dummy, ##__VA_ARGS__, 0,0,0,0,0,0,0,0,0,0)}
+#define FIRST_TEN(dummy, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, ...) a1, a2, a3, a4, a5, a6, a7, a8, a9, a10
 
-#define NO_MONS()									 0,   0,   0,   0,   0,   0,   0,   0
-//#define MONS(mt, mfm, mft, mfb, mfg, mfr, mfv)		mt, mfm, mft, mff, mfb, mfg, mfr, mfv
+#define NO_MONS()									 0,   0,   0,   0,   0,   0,   0,   0,   0
+//#define MONS(mt, mfm, mft, mfb, mfg, mfr, mfv, mfw)		mt, mfm, mft, mff, mfb, mfg, mfr, mfv, mfw
 
-#define MONS(...) SET08(0,0,0,0,0,0,0,0, __VA_ARGS__)
+#define MONS(...) SET09(0,0,0,0,0,0,0,0,0, __VA_ARGS__)
 #define vsMSYM(x) C01((x))
 #define vsMM(x)   C02((x))
 #define vsMT(x)   C03((x))
@@ -22,6 +22,7 @@
 #define vsMG(x)   C06((x))
 #define vsMA(x)   C07((x))
 #define vsMV(x)   C08((x))
+#define vsMW(x)   C09((x))
 
 #define NO_ATTK()									    0,   0,   0
 #define ATTK(adtyp, acc, dam)						adtyp, acc, dam
@@ -1214,6 +1215,16 @@ A("Godhands",					GAUNTLETS_OF_POWER,				(const char *)0,
 	NOINVOKE, (ARTI_PLUSSEV)
 	),
 
+A("The Wrappings of the Sacred Fist",	HAND_WRAPS,		"prayer-warded wraps",
+	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NONE, NON_PM, NON_PM, TIER_D, (ARTG_GIFT),
+	NO_MONS(),
+	ATTK(AD_HOLY, 8, 0), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	FAST_TURNING, (ARTI_PLUSSEV)
+	),
+
 /* permanently polymorphs you into a death knight when you die -- does not work for monsters */
 A("The Helm of Undeath",			WAR_HAT,				(const char *)0,
 	2500L, BONE, MZ_DEFAULT, WT_DEFAULT,
@@ -1252,7 +1263,7 @@ A("Apotheosis Veil",				CRYSTAL_HELM,			(const char *)0,
 /* Also gives +1d6 physical damage to attacks when worn. */
 A("Ring of Thror",								RIN_GAIN_STRENGTH,	/* granite or gold (Note: since gold is the fallback at most one of this or Narya will be gold) */			(const char *)0,
 	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_NONE, NON_PM, PM_ELF, TIER_C, (ARTG_INHER),
+	A_NONE, NON_PM, PM_DWARF, TIER_C, (ARTG_INHER),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 6), NOFLAG,
 	PROPS(AGGRAVATE_MONSTER), NOFLAG,
@@ -1778,6 +1789,36 @@ A("Poseidon's Trident",				TRIDENT,				(const char *)0,
 	WATER, NOFLAG
 	),
 
+A("Feng Huo Lun",				WIND_AND_FIRE_WHEELS,				"flaming %s",
+	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_MONK, NON_PM, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	ATTK(AD_FIRE, 1, 0), NOFLAG,
+	PROPS(FAST, FLYING), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Jin Gang Zuo",				BANDS,				"hoop",
+	4500L, GEMSTONE, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_MONK, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	NO_ATTK(), ARTA_RETURNING,
+	PROPS(), NOFLAG,
+	PROPS(FIRE_RES, WATERPROOF), NOFLAG,
+	SNARE_WEAPONS, NOFLAG
+	),
+
+A("Ruyi Jingu Bang",				QUARTERSTAFF,				"golden-hooped %s",
+	4500L, IRON, MZ_DEFAULT, WT_DEFAULT,
+	A_CHAOTIC, PM_MONK, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 1, 0), ARTA_RETURNING,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	CHANGE_SIZE, NOFLAG
+	),
+
 A("The Sickle of Thunderblasts",				SICKLE,				(const char *)0,
 	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_MADMAN, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
@@ -1816,6 +1857,16 @@ A("The Ibite arm",				CLUB,				"flabby green arm",
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	IBITE_ARM, NOFLAG
+	),
+
+A("Star-emperor's Ring",				RIN_WISHES,				(const char *)0,
+	3000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NONE, PM_MADMAN, PM_ELF, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_FXALGN),
+	NO_MONS(),
+	ATTK(AD_STAR, 20, 20), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	IMPERIAL_RING, NOFLAG
 	),
 
 A("The Eye of the Oracle",			EYEBALL,				(const char *)0,
@@ -2010,7 +2061,7 @@ A("Wrathful Spider",				DROVEN_CROSSBOW,	(const char *)0,
 /* protects vs curses while wielded */
 A("The Tentacle Rod",				FLAIL,				(const char *)0,
 	5000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_NONE, NON_PM, PM_DROW, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	A_NONE, NON_PM, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	ATTK(AD_PHYS, 7, 1), (ARTA_TENTROD),
 	PROPS(), NOFLAG,
@@ -2021,7 +2072,7 @@ A("The Tentacle Rod",				FLAIL,				(const char *)0,
 /* needs encyc entry */
 A("The Crescent Blade",				SABER,				(const char *)0,
 	5000L, SILVER, MZ_DEFAULT, WT_DEFAULT,
-	A_LAWFUL, NON_PM, PM_DROW, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	A_LAWFUL, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	ATTK(AD_FIRE, 4, 0), (ARTA_SHINING|ARTA_VORPAL),
 	PROPS(), NOFLAG,
@@ -2032,7 +2083,7 @@ A("The Crescent Blade",				SABER,				(const char *)0,
 /* needs encyc entry */
 A("The Darkweaver's Cloak",			DROVEN_CLOAK,		(const char *)0,
 	5000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_NONE, NON_PM, PM_DROW, TIER_C, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	A_NONE, NON_PM, NON_PM, TIER_C, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
 	PROPS(ANTIMAGIC), NOFLAG,
@@ -2055,7 +2106,7 @@ A("Spidersilk",						DROVEN_CHAIN_MAIL,	(const char *)0,
 /* needs encyc entry */
 A("The Webweaver's Crook",			FAUCHARD,			(const char *)0,
 	5000L, CHITIN, MZ_DEFAULT, WT_DEFAULT,
-	A_LAWFUL, NON_PM, PM_DROW, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	A_LAWFUL, NON_PM, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 0), (ARTA_POIS),
 	PROPS(), NOFLAG,
@@ -2115,7 +2166,7 @@ A("Liecleaver",						DROVEN_CROSSBOW,	(const char *)0,
 /* Hedrow noble crowning gift, Chaotic */
 A("The Ruinous Descent of Stars",	MORNING_STAR,		"silver-spiked %s",
 	8000L, METAL, MZ_DEFAULT, WT_DEFAULT,
-	A_CHAOTIC, NON_PM, PM_DROW, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	A_CHAOTIC, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 0), (ARTA_SILVER),
 	PROPS(), NOFLAG,
@@ -2200,7 +2251,7 @@ A("The Eyes of the Overworld",		LENSES,				(const char *)0,
 	A_NEUTRAL, PM_MONK, NON_PM, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
-	PROPS(BLIND_RES, XRAY_VISION), (ARTP_FORCESIGHT),
+	PROPS(BLIND_RES, XRAY_VISION, GAZE_RES), (ARTP_FORCESIGHT),
 	PROPS(ANTIMAGIC), NOFLAG,
 	ENLIGHTENING, NOFLAG
 	),
@@ -2395,6 +2446,49 @@ A("The Cloak of the Consort",		DROVEN_CLOAK,		(const char *)0,
 	PROPS(HALF_PHDAM, DRAIN_RES), NOFLAG,
 	PROPS(COLD_RES), NOFLAG,
 	NOINVOKE, NOFLAG
+	),
+
+/*Needs encyc entry*/
+A("Esscooahlipboourrr",			DOUBLE_SWORD,					"tentacle-auraed shackle-entwined %s",
+	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_HEALER, PM_DROW, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 20, 10), NOFLAG,
+	PROPS(DRAIN_RES, SEARCHING), (ARTP_SEEK),
+	PROPS(), NOFLAG,
+	LOOT_SELF, NOFLAG
+	),
+
+A("The Robe of Closed Eyes",				ROBE,			"shut-eye-patterned %s",
+	4000L, LEATHER, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_HEALER, PM_DROW, TIER_C, (ARTG_NOGEN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(INVIS, GAZE_RES), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, (ARTI_PLUSSEV)
+	),
+
+/*Needs encyc entry*/
+A("The Red Cords of Ilmater",		HAND_WRAPS,	"pair of red cords",
+	1000L, CLOTH, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, NON_PM, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_MAJOR),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(FREE_ACTION, STONE_RES), NOFLAG,
+	PROPS(DRAIN_RES), NOFLAG,
+	NOINVOKE, (ARTI_PLUSSEV)
+	),
+
+/*Needs encyc entry*/
+A("The Crown of the Percipient",				HELM_OF_BRILLIANCE,	(const char *)0,
+	1000L, FLESH, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_HEALER, PM_DROW, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(DETECT_MONSTERS, DRAIN_RES, STONE_RES, FIRE_RES, COLD_RES, SHOCK_RES, HALLUC_RES, SLEEP_RES, BLOCK_CONFUSION), NOFLAG,
+	PROPS(ANTIMAGIC), NOFLAG,
+	ENLIGHTENING, NOFLAG
 	),
 
 /*Needs encyc entry*/
@@ -3566,17 +3660,6 @@ A("The Booze of the Drunken Master",	POT_BOOZE,		(const char *)0,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	FIRE_BLAST, NOFLAG
-	),
-
-/* TODO 2x damage against undead/demons */
-A("The Wrappings of the Sacred Fist",	GLOVES,			(const char *)0,
-	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_NONE, PM_MONK, NON_PM, NO_TIER, (ARTG_NOGEN|ARTG_NOWISH),
-	NO_MONS(),
-	NO_ATTK(), NOFLAG,
-	PROPS(), NOFLAG,
-	PROPS(), NOFLAG,
-	FAST_TURNING, (ARTI_PLUSSEV)
 	),
 
 /* TODO jumping while wielded */

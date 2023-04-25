@@ -1043,6 +1043,32 @@ domove()
 	    return;
 	}
 	
+	if(u.uentangled_oid){
+		//Any movement attempt (whether true move or bump attack) tries to break the entangling item.
+		if(!ubreak_entanglement()){
+			if(u.uentangled_otyp == RAZOR_WIRE){
+				int dmg = d(1,6);
+				int beat;
+				if(hates_silver(youracedata) && entangle_material(&youmonst, SILVER))
+					dmg += rnd(20);
+				if(hates_iron(youracedata) && (entangle_material(&youmonst, IRON) || entangle_material(&youmonst, GREEN_STEEL)))
+					dmg += rnd(u.ulevel);
+				if(hates_unholy(youracedata) && entangle_material(&youmonst, GREEN_STEEL))
+					dmg += d(2,9);
+				beat = entangle_beatitude(&youmonst, -1);
+				if(hates_unholy(youracedata) && beat)
+					dmg += beat == 2 ? d(2,9) : rnd(9);
+				beat = entangle_beatitude(&youmonst, 0);
+				if(hates_unblessed(youracedata) && beat)
+					dmg += beat == 2 ? d(2,8) : rnd(8);
+				beat = entangle_beatitude(&youmonst, 1);
+				if(hates_holy(youracedata) && beat)
+					dmg += beat == 2 ? rnd(20) : rnd(4);
+				losehp(dmg, "being sliced to ribbons by razor wire", KILLED_BY);
+			}
+		}
+	}
+	
 	if(u.uswallow) {
 		if(u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20){
 			You("pass right through %s!", mon_nam(u.ustuck));
@@ -1327,6 +1353,10 @@ domove()
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
 					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
 				}
+				/* Dancers hit additional targets */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){
+					result |= hit_with_dance(&youmonst, otmp, x, y, 0, attk);
+				}
 				
 				attk = mon_get_attacktype(&youmonst, AT_XWEP, &attkbuff);
 				otmp = uswapwep;
@@ -1365,6 +1395,11 @@ domove()
 		You("are rooted %s.",
 		    Levitation || Weightless || Is_waterlevel(&u.uz) ?
 		    "in place" : "to the ground");
+		nomul(0, NULL);
+		return;
+	}
+	if(u.uentangled_oid){
+		You("struggle against your bindings!");
 		nomul(0, NULL);
 		return;
 	}
@@ -1922,6 +1957,17 @@ stillinwater:;
 			zap_over_floor(u.ux, u.uy, AD_COLD, WAND_CLASS, FALSE, NULL);
 		}
 	}
+	if(!Levitation && !Flying && In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && levl[u.ux][u.uy].typ == AIR){
+		if(on_level(&u.uz, &qstart_level) && !ok_to_quest()){
+			pline("A mysterious force prevents you from falling.");
+		} else {
+			struct d_level target_level;
+			target_level.dnum = u.uz.dnum;
+			target_level.dlevel = qlocate_level.dlevel+1;
+			int dist = qlocate_level.dlevel+1 - u.uz.dlevel;
+			schedule_goto(&target_level, FALSE, TRUE, FALSE, "You plummet through the cavern air!", "You slam into the rocky floor!", d(dist*5,6), 0);
+		}
+	}
 	check_special_room(FALSE);
 #ifdef SINKS
 	if(IS_SINK(levl[u.ux][u.uy].typ) && Levitation)
@@ -1952,8 +1998,7 @@ stillinwater:;
 			    pline("Its blow glances off your helmet.");
 				if(((mtmp->m_lev) - 8) > 0){
 				    dmg = d((mtmp->m_lev) - 5,3);
-				    if(Half_physical_damage) dmg = (dmg+1) / 2;
-					if(u.uvaul_duration) dmg = (dmg + 1) / 2;
+					dmg = reduce_dmg(&youmonst,dmg,TRUE,FALSE);
 				    mdamageu(mtmp, dmg);
 				}
 			}
@@ -1962,8 +2007,7 @@ stillinwater:;
 			    pline("Its blow glances off your head.");
 				if(((mtmp->m_lev) - 8) > 0){
 				    dmg = d((mtmp->m_lev) - 5,3);
-				    if(Half_physical_damage) dmg = (dmg+1) / 2;
-					if(u.uvaul_duration) dmg = (dmg + 1) / 2;
+					dmg = reduce_dmg(&youmonst,dmg,TRUE,FALSE);
 				    mdamageu(mtmp, dmg);
 				}
 			} else if (u.uac + 3 <= rnd(20))
@@ -1974,8 +2018,7 @@ stillinwater:;
 			    You("are hit by %s!",
 				x_monnam(mtmp, ARTICLE_A, "falling", 0, TRUE));
 			    dmg = d(mtmp->m_lev,6);
-			    if(Half_physical_damage) dmg = (dmg+1) / 2;
-				if(u.uvaul_duration) dmg = (dmg + 1) / 2;
+				dmg = reduce_dmg(&youmonst,dmg,TRUE,FALSE);
 			    mdamageu(mtmp, dmg);
 			}
 			break;
@@ -2014,7 +2057,7 @@ void sigilfloat()
 	}
 	schedule_goto(&spire_level, FALSE, FALSE, 0,
 		      "You fall from the spire! A mysterious force pads your landing.",
-		      (char *)0);
+		      (char *)0, 0, 0);
 
 }
 

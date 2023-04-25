@@ -139,10 +139,14 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 #define HMON_TRAP		0x10	/* trap-owned attack, either projectile or melee depending on ttyp */
 #define HMON_KICKED		0x20	/* object is a kicked projectile */
 
+#define beastMateryRadius(mon)	(P_SKILL(P_BEAST_MASTERY) > P_ISRESTRICTED && distmin(u.ux, u.uy, mon->mx, mon->my) <= (P_SKILL(P_BEAST_MASTERY) - P_ISRESTRICTED))
+
+
 #define MATCH_WARN_OF_MON(mon)	( MATCH_WARN_OF_MON_STRICT(mon) || \
 					(u.sealsActive&SEAL_PAIMON && is_magical((mon)->data)) || \
 					(u.sealsActive&SEAL_ANDROMALIUS && is_thief((mon)->data)) || \
 					(u.sealsActive&SEAL_TENEBROUS && !nonliving(mon->data)) || \
+					(mon->mtame && beastMateryRadius(mon)) || \
 					(Upolyd && youmonst.data->mtyp == PM_SHARK && has_blood((mon)->data) && \
 						(mon)->mhp < (mon)->mhpmax && is_pool(u.ux, u.uy, TRUE) && is_pool((mon)->mx, (mon)->my, TRUE)) || \
 					(u.specialSealsActive&SEAL_ACERERAK && is_undead(mon->data)) || \
@@ -169,8 +173,9 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 				)
 
 #define Weightless	(Is_airlevel(&u.uz) || \
-			(Is_lolth_level(&u.uz) && levl[u.ux][u.uy].typ == CLOUD) || \
-			(Role_if(PM_MADMAN) && In_quest(&u.uz) && (levl[u.ux][u.uy].typ == AIR || levl[u.ux][u.uy].typ == CLOUD)))
+			(Is_lolth_level(&u.uz) && levl[u.ux][u.uy].typ == CLOUD) \
+			|| (Role_if(PM_MADMAN) && In_quest(&u.uz) && (levl[u.ux][u.uy].typ == CLOUD)) \
+			|| (!In_endgame(&u.uz) && levl[u.ux][u.uy].typ == AIR))
 
 #include "trap.h"
 #include "flag.h"

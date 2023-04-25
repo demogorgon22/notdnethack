@@ -579,8 +579,6 @@ room_chance	: CHANCE_ID ':' INTEGER
 		   {
 			if (tmproom[nrooms]->chance)
 			    yyerror("This room already assigned a chance!");
-			else if (tmproom[nrooms]->rtype == OROOM)
-			    yyerror("Only typed rooms can have a chance!");
 			else if ($3 < 1 || $3 > 99)
 			    yyerror("The chance is supposed to be percentile.");
 			else
@@ -852,13 +850,19 @@ monster_detail	: MONSTER_ID chance ':' monster_c ',' m_name ',' coordinate '[' S
 			    check_coord(current_coord.x, current_coord.y,
 					"Monster");
 			if ($6) {
-			    int token = get_monster_id($6, (char) $<i>4);
-			    if (token == ERR)
-				yywarning(
-			      "Invalid monster name!  Making random monster.");
-			    else
-				tmpmonst[nmons]->id = token;
-			    Free($6);
+				if($4=='#')
+				{
+					tmpmonst[nmons]->name.str = $6;
+				}
+				else {
+					int token = get_monster_id($6, (char) $<i>4);
+					if (token == ERR)
+					yywarning(
+					  "Invalid monster name!  Making random monster.");
+					else
+					tmpmonst[nmons]->id = token;
+					Free($6);
+					}
 			}
 		  }
 		 monster_infos
@@ -886,13 +890,19 @@ monster_detail	: MONSTER_ID chance ':' monster_c ',' m_name ',' coordinate '[' S
 			    check_coord(current_coord.x, current_coord.y,
 					"Monster");
 			if ($6) {
-			    int token = get_monster_id($6, (char) $<i>4);
-			    if (token == ERR)
-				yywarning(
-			      "Invalid monster name!  Making random monster.");
-			    else
-				tmpmonst[nmons]->id = token;
-			    Free($6);
+				if($4=='#')
+				{
+					tmpmonst[nmons]->name.str = $6;
+				}
+				else {
+					int token = get_monster_id($6, (char) $<i>4);
+					if (token == ERR)
+					yywarning(
+					  "Invalid monster name!  Making random monster.");
+					else
+					tmpmonst[nmons]->id = token;
+					Free($6);
+				}
 			}
 		  }
 		 monster_infos
@@ -960,13 +970,13 @@ object_desc	: chance ':' object_c ',' o_name
 					tmpobj[nobj]->class = '#';
 				}
 				else{
-				int token = get_object_id($5, $<i>3);
-				if (token == ERR)
-				yywarning(
-				"Illegal object name!  Making random object.");
-				else
-				tmpobj[nobj]->id = token;
-				Free($5);
+					int token = get_object_id($5, $<i>3);
+					if (token == ERR)
+					yywarning(
+					"Illegal object name!  Making random object.");
+					else
+					tmpobj[nobj]->id = token;
+					Free($5);
 				}
 			}
 			
@@ -1721,7 +1731,8 @@ place		: coord
 
 monster		: CHAR
 		  {
-			if (check_monster_char((char) $1))
+			char c = (char) $1;
+			if (check_monster_char(c)||c=='#')
 				$<i>$ = $1 ;
 			else {
 				yyerror("Unknown monster class!");

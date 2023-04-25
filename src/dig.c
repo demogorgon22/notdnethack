@@ -141,7 +141,7 @@ xchar x, y;
 {
 	boolean ispick = is_pick(otmp),
 		is_saber = is_lightsaber(otmp),
-		is_seismic = (otmp->otyp == SEISMIC_HAMMER && otmp->ovar1 > 0),
+		is_seismic = (otmp->otyp == SEISMIC_HAMMER && otmp->ovar1_charges > 0),
 		is_axe = is_axe(otmp);
 
 	return ((ispick||is_saber||is_seismic) && sobj_at(STATUE, x, y) ? DIGTYP_STATUE :
@@ -314,6 +314,10 @@ dig()
 
 	bonus = 10 + rn2(5) + abon() +
 			   digitem->spe - greatest_erosion(digitem) + u.udaminc + aeshbon();
+
+	if(uarmg && uarmg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(uarmg, IEA_INC_DAM))
+		bonus += uarmg->spe;
+
 	if (Race_if(PM_DWARF))
 	    bonus *= 2;
 	if (digitem->oartifact == ART_GREAT_CLAWS_OF_URDLEN)
@@ -322,7 +326,7 @@ dig()
 	    bonus *= 2;
 	if (is_lightsaber(digitem) && !IS_TREES(lev->typ))
 	    bonus -= 11; /* Melting a hole takes longer */
-	if ((digitem->otyp == SEISMIC_HAMMER) && digitem->ovar1-- > 0)
+	if ((digitem->otyp == SEISMIC_HAMMER) && digitem->ovar1_charges-- > 0)
 	    bonus += 1000; /* Smashes through */
 
 	digging.effort += bonus;
@@ -1126,7 +1130,7 @@ openfakedoor()
 	Sprintf(msgbuf, "The hole in the %s above you closes up.",
 		ceiling(u.ux,u.uy));
 	schedule_goto(&dtmp, FALSE, TRUE, 0,
-			  (char *)0, !Blind ? msgbuf : (char *)0);
+			  (char *)0, !Blind ? msgbuf : (char *)0, 0, 0);
 }
 
 /* return TRUE if digging succeeded, FALSE otherwise */

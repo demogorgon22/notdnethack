@@ -199,14 +199,14 @@ struct Role roles[] = {
 	PM_HIPPOCRATES, PM_ATTENDANT, PM_CYCLOPS,
 	PM_GIANT_RAT, PM_SNAKE, S_RODENT, S_YETI,
 	ART_STAFF_OF_AESCULAPIUS,
-	MA_HUMAN|MA_GNOME|MA_FEY|MA_ETHEREAL|MA_PLANT, ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
+	MA_HUMAN|MA_ELF|MA_GNOME|MA_FEY|MA_ETHEREAL|MA_PLANT, ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
-	{   7,  7, 13,  7, 11, 16 },
-	{  15, 20, 20, 15, 25, 5 },
+	{   7, 13, 11,  7, 11, 16 },
+	{   5, 30, 20, 15, 25, 5 },
 	/* Init   Lower  Higher */
 	{ 11, 0,  0, 8,  1, 0 },	/* Hit points */
 	{  1, 4,  1, 2,  0, 3 },20,	/* Energy */
-	10, 3,-3, 2, 10, A_WIS, SPE_FULL_HEALING,   -14
+	10, 3,-3, 2, 10, A_INT, SPE_FULL_HEALING,   -14
 },
 {	{"Illithanachronounbinder", 		 0}, {
 	{"Exorcist",        0},
@@ -269,7 +269,7 @@ struct Role roles[] = {
 	{"Student of Winds",  0},
 	{"Student of Fire",   0},
 	{"Master",            0} },
-	GOD_SHAN_LAI_CHING, GOD_CHIH_SUNG_TZU, GOD_HUAN_TI, /* Chinese */
+	GOD_PRINCE_NEZHA, GOD_LAOZI, GOD_THE_HUNSHI_SIHOU, /* Chinese */
 	"Mon", "the Monastery of Chan-Sune",
 	  "the Monastery of the Earth-Lord",
 	PM_MONK, NON_PM, NON_PM,
@@ -300,7 +300,8 @@ struct Role roles[] = {
 	"Mad", "Archer Asylum", "the ground floor",
 	PM_MADMAN, PM_MADWOMAN, NON_PM,
 	PM_CASSILDA_THE_IRON_MAIDEN, PM_PATIENT, PM_DOCTOR_ARCHER,
-	PM_ENORMOUS_RAT, PM_CONTAMINATED_PATIENT, S_RODENT, S_BAT,
+	PM_ENORMOUS_RAT, PM_CONTAMINATED_PATIENT, S_RODENT, S_WORM,
+	//Switches to PM_LARGE_CAT, PM_CONTAMINATED_PATIENT, S_WORM, S_BAT from locate level onwards
 	ART_STAR_OF_HYPERNOTUS,
 	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ORC|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_FEY|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
@@ -310,7 +311,7 @@ struct Role roles[] = {
 	/* Init   Lower  Higher */
 	{ 12, 0,  0, 8,  0, 1 },	/* Hit points */
 	{  4, 3,  0, 1,  2, 4 },14,	/* Energy */
-	10, 8,-2, 2, 20, A_CHA, SPE_CONFUSE_MONSTER, -24
+	0, 3,-2, 2, 10, A_CHA, SPE_CONFUSE_MONSTER, -24
 },
 	// "The Silver Fire", "_The Fury", "The Shadow",	/* Sorta-eberron */
 	// "_The Inheritor", "_The Dawnflower", "_The Everbloom",	/* Sorta-glorion */
@@ -2052,7 +2053,7 @@ int newgame;
 				}
 				if(flags.stag == 0){
 					
-					urole.homebase = "Erelhei-Cinlu";
+					urole.homebase = "Menzoberranzan";
 					urole.intermed = "the drider caves";
 					urole.questarti = ART_SILVER_STARLIGHT;
 					
@@ -2066,7 +2067,7 @@ int newgame;
 					urole.enemy2sym = S_LAW_ANGEL;
 				} else {					
 					urole.homebase = "the Grove of Eilistraee";
-					urole.intermed = "Erelhei-Cinlu";
+					urole.intermed = "Menzoberranzan";
 					urole.questarti = ART_TENTACLE_ROD;
 					
 					urole.ldrnum = PM_SEYLL_AUZKOVYN;
@@ -2133,6 +2134,27 @@ int newgame;
 					urole.enemy2sym = S_ZOMBIE;
 				}
 			}
+		}
+	} else if(Race_if(PM_DROW) && Role_if(PM_HEALER)){
+		urole.filecode = "Dhl";
+		urole.lgod = GOD_ILMATER;
+		urole.ngod = GOD_PEN_A;
+		urole.cgod = GOD_GHAUNADAUR;
+
+		urole.homebase = "Ceiling District";/*Menzoberranzan*/
+		urole.intermed = "Floor District";
+		urole.questarti = ART_ESSCOOAHLIPBOOURRR; /*Steals items and stores them weightlessly, but can only be accessed via #invoke. Deals bonus damage with repeated hits.*/
+		
+		urole.ldrnum = PM_SHUUSHAR_THE_ENLIGHTENED;
+		urole.guardnum = PM_ALLIANCE_VANGUARD; /*Also drow commoners*/
+		urole.neminum = PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH; /*Chuul/drow grab and steal magic items. Demogorgon cultists? Madness causes victims to imagine different natural attacks for themselves*/
+		
+		urole.enemy1num = PM_DUERGAR;
+		urole.enemy2num = PM_KUO_TOA;
+		urole.enemy1sym = S_HUMANOID;
+		urole.enemy2sym = S_HUMANOID;
+		for(int i = 0; i<6; i++){
+			dungeons[quest_dnum].connect_side[i] = !rn2(3) ? CONNECT_LEFT : rn2(2) ? CONNECT_CENT : CONNECT_RGHT;
 		}
 	} else if((Race_if(PM_ELF) || Pantheon_if(PM_ELF)) && (Role_if(PM_RANGER) || Role_if(PM_WIZARD) || Role_if(PM_NOBLEMAN))){
 		flags.racial_pantheon = PM_ELF;
@@ -2407,17 +2429,17 @@ int newgame;
 		if (urole.guardnum != NON_PM) {
 			mons[urole.guardnum].mflagst |= (MT_PEACEFUL);
 			mons[urole.guardnum].mflagst &= ~(MT_WAITFORU|MT_COVETOUS);
-			mons[urole.guardnum].msound = MS_GUARDIAN;
 		}
 		if(Race_if(PM_DROW) && (Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || Role_if(PM_WIZARD))){
-			mons[PM_HEDROW_MASTER_WIZARD].msound = MS_GUARDIAN;
+			mons[PM_HEDROW_MASTER_WIZARD].msound = MS_GUARDIAN; /*:( :(*/
 		}
 	}
 
 	/* Fix up the quest nemesis */
-	if (urole.neminum != NON_PM && 
-		!(Race_if(PM_DWARF) && (Role_if(PM_KNIGHT) || Role_if(PM_NOBLEMAN))) && 
-		!(Race_if(PM_DROW) && Role_if(PM_NOBLEMAN) && flags.initgend)
+	if (urole.neminum != NON_PM
+		 && !(Race_if(PM_DWARF) && (Role_if(PM_KNIGHT) || Role_if(PM_NOBLEMAN)))
+		 && !(Race_if(PM_DROW) && Role_if(PM_NOBLEMAN) && flags.initgend)
+		 && !(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
 	) {
 	    mons[urole.neminum].msound = MS_NEMESIS;
 	    mons[urole.neminum].mflagst &= ~(MT_PEACEFUL);
@@ -2570,6 +2592,12 @@ give_quest_trophy()
 		achieve.trophies |= GNO_RAN_QUEST;
 	else if(urole.neminum == PM_DOCTOR_ARCHER)
 		achieve.trophies |= MAD_QUEST;
+	else if(urole.neminum == PM_MASTER_KAEN)
+		achieve.trophies |= MONK_QUEST;
+	else if(urole.neminum == PM_CYCLOPS)
+		achieve.trophies |= HEA_QUEST;
+	else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
+		achieve.trophies |= DRO_HEA_QUEST;
 	
 	if(quest_status.second_thoughts)
 		achieve.trophies |= SECOND_THOUGHTS;
@@ -2693,6 +2721,7 @@ int hv_id;
 		case VN_APOCALYPSE:
 		case VN_HARROWER:
 		case VN_MAD_ANGEL:
+		case VN_JRT:
 			give_angel_vault_trophy();
 		case VN_N_PIT_FIEND:
 			give_devil_vault_trophy();

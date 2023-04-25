@@ -534,7 +534,10 @@ register struct obj *obj;
 		Strcpy(buf, aname);
 
 	if (obj->oartifact) {
-		pline_The("artifact seems to resist the attempt.");
+		if(obj->known)
+			pline_The("artifact seems to resist the attempt.");
+		else
+			pline_The("object seems to resist the attempt.");
 		return;
 	} else if (restrict_name(obj, buf) || art_already_exists_byname(obj->otyp, buf)) {
 		int n = rn2((int)strlen(buf));
@@ -574,7 +577,7 @@ const char *name;
 	
     if(!strcmp((&artilist[ART_SCALPEL_OF_LIFE_AND_DEATH])->name,name) &&
        obj && obj->otyp == SCALPEL){
-      obj->ovar1 = COMMAND_DEATH;
+      obj->ovar1_lifeDeath = COMMAND_DEATH;
     }
     if(((!strcmp((&artilist[ART_FIGURINE_OF_GALATEA])->name,name)) || (!strcmp((&artilist[ART_FIGURINE_OF_PYGMALION])->name,name))) &&
        obj && obj->otyp == FIGURINE){
@@ -707,7 +710,7 @@ const char *name;
 			set_material_gm(obj, tmp);
 		
 		if(obj->oartifact == ART_STAR_OF_HYPERNOTUS){
-			obj->ovar1 = STAR_SAPPHIRE;
+			obj->sub_material = STAR_SAPPHIRE;
 			obj->obj_color = CLR_BRIGHT_GREEN;
 			obj->oward = ELDER_SIGN;
 		}
@@ -717,18 +720,27 @@ const char *name;
 		else if(obj->oartifact == ART_IDOL_OF_BOKRUG__THE_WATER_){
 			obj->obj_color = CLR_GREEN;
 		}
+		else if(obj->oartifact == ART_ROBE_OF_CLOSED_EYES){
+			obj->obj_color = CLR_BLUE;
+		}
+		else if(obj->oartifact == ART_RED_CORDS_OF_ILMATER){
+			obj->obj_color = CLR_RED;
+		}
+		else if(obj->oartifact == ART_CROWN_OF_THE_PERCIPIENT){
+			obj->obj_color = CLR_MAGENTA;
+		}
 		
 		/* body type */
 		if (is_malleable_artifact(&artilist[obj->oartifact])); //keep current/default body type
 		else if (Role_if(PM_PRIEST) && obj->oartifact == ART_MITRE_OF_HOLINESS)
-			obj->bodytypeflag = ((&mons[urace.malenum])->mflagsb&MB_HEADMODIMASK);
+			set_obj_shape(obj, mons[urace.malenum].mflagsb);
 		else if (Pantheon_if(PM_NOBLEMAN) && (obj->oartifact == ART_HELM_OF_THE_DARK_LORD || obj->oartifact == ART_CROWN_OF_THE_SAINT_KING))
-			obj->bodytypeflag = ((&mons[urace.malenum])->mflagsb&MB_HEADMODIMASK);
-		else obj->bodytypeflag = MB_HUMANOID;
+			set_obj_shape(obj, mons[urace.malenum].mflagsb);
+		else set_obj_shape(obj, MB_HUMANOID);
 		
 		/* viperwhip heads */
 		if (obj->oartifact == ART_SCOURGE_OF_LOLTH)
-			obj->ovar1 = 8;
+			obj->ovar1_heads = 8;
 
 		fix_object(obj);
 
@@ -935,6 +947,10 @@ boolean full;
 				if (mtmp->female) 						Sprintf(buf2, "%s, Daughter of the Black Goat", buf);
 				else 									Sprintf(buf2, "%s, Child of the Black Goat", buf);
 		}
+		else if (full && template == PLAGUE_TEMPLATE)	Sprintf(buf2, "%s, plague victim", buf);
+		else if (full && template == SPORE_ZOMBIE)		Sprintf(buf2, "%s, spore infectee", buf);
+		else if (full && template == CORDYCEPS)			Sprintf(buf2, "%s's sporulating corpse", buf);
+		else if (full && template == PSURLON)			Sprintf(buf2, "%s the finger", buf);
 		else											Strcpy(buf2, buf);
 	}
 	else {
@@ -962,6 +978,10 @@ boolean full;
 				if (mtmp->female) 						Sprintf(buf2, "%s dark daughter", buf);
 				else 									Sprintf(buf2, "%s dark child", buf);
 		}
+		else if (full && template == PLAGUE_TEMPLATE)	Sprintf(buf2, "%s plague-victim", buf);
+		else if (full && template == SPORE_ZOMBIE)		Sprintf(buf2, "%s infectee", buf);
+		else if (full && template == CORDYCEPS)			Sprintf(buf2, "%s cordyceps", buf);
+		else if (full && template == PSURLON)			Sprintf(buf2, "%s finger", buf);
 		else											Strcpy(buf2, buf);
 	}
 
@@ -1136,13 +1156,13 @@ boolean called;
 
 		if (maybe_append_injury_desc(mtmp, buf)) name_at_start = FALSE;
 
-		if(mtmp->entangled == SHACKLES){
+		if(mtmp->entangled_otyp == SHACKLES){
 			Strcat(buf, "shackled ");
 		}
 		if(is_drow(mdat)){
 			struct obj *otmp;
 			for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
-				if (is_readable_armor_otyp(otmp->otyp)
+				if (is_readable_armor(otmp)
 					&& otmp->owornmask & mtmp->misc_worn_check && otmp->oward
 				){
 						Sprintf(eos(buf), "%s ", getDrowHouse(otmp->oward));
@@ -1200,13 +1220,13 @@ boolean called;
 			}
 			if (maybe_append_injury_desc(mtmp, buf)) name_at_start = FALSE;
 
-			if(mtmp->entangled == SHACKLES){
+			if(mtmp->entangled_otyp == SHACKLES){
 				Strcat(buf, "shackled ");
 			}
 			if(is_drow(mdat)){
 				struct obj *otmp;
 				for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
-					if (is_readable_armor_otyp(otmp->otyp) 
+					if (is_readable_armor(otmp) 
 						&& otmp->owornmask & mtmp->misc_worn_check && otmp->oward){
 							Sprintf(eos(buf), "%s ", getDrowHouse(otmp->oward));
 							name_at_start = FALSE;
@@ -1240,7 +1260,7 @@ boolean called;
 			name_at_start = TRUE;
 			if (maybe_append_injury_desc(mtmp, buf))
 				name_at_start = FALSE;
-			if(mtmp->entangled == SHACKLES){
+			if(mtmp->entangled_otyp == SHACKLES){
 				Strcat(buf, "shackled ");
 				name_at_start = FALSE;
 			}
@@ -1263,7 +1283,7 @@ boolean called;
 
 		if (maybe_append_injury_desc(mtmp, buf)) name_at_start = FALSE;
 
-		if(mtmp->entangled == SHACKLES){
+		if(mtmp->entangled_otyp == SHACKLES){
 			Strcat(buf, "shackled ");
 		}
 		if(is_drow(mdat)){
@@ -1754,6 +1774,8 @@ long hnum;
 			return "silver-sign bearing";
 		case EDDER_SYMBOL:
 			return u.uevent.knoweddergud ? "Edderkirke" : "black-webbed";
+		case Y_CULT_SYMBOL:
+			return "Y bearing";
 	}
 	return "";
 }

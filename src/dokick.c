@@ -7,7 +7,7 @@
 
 #define is_bigfoot(x)	((x) == &mons[PM_SASQUATCH])
 #define martial()	(martial_bonus() || is_bigfoot(youracedata) || \
-		(uarmf && uarmf->otyp == KICKING_BOOTS))
+		(uarmf && (uarmf->otyp == KICKING_BOOTS || (uarmf->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(uarmf, IEA_KICKING)))))
 
 static NEARDATA struct rm *maploc;
 static NEARDATA const char *gate_str;
@@ -796,6 +796,9 @@ int dx, dy;
 	} else if (u.uinwater && !rn2(2)) {
 		Your("slow motion kick doesn't hit anything.");
 		no_kick = TRUE;
+	} else if (u.uentangled_oid) {
+		You_cant("move your %s!", body_part(LEG));
+		no_kick = TRUE;
 	} else if (u.utrap) {
 		switch (u.utraptype) {
 		    case TT_PIT:
@@ -837,7 +840,7 @@ int dx, dy;
 	y = u.uy + dy;
 
 	/* KMH -- Kicking boots always succeed */
-	if (uarmf && uarmf->otyp == KICKING_BOOTS)
+	if (uarmf && (uarmf->otyp == KICKING_BOOTS || (uarmf->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(uarmf, IEA_KICKING))))
 	    avrg_attrib = 99;
 	else
 	    avrg_attrib = (ACURRSTR+ACURR(A_DEX)+ACURR(A_CON))/3;
@@ -1097,7 +1100,7 @@ int dx, dy;
 					short frtype = treefruit->otyp;
 					int frtspe = treefruit->spe;
 					if(u.sealsActive&SEAL_EVE) nfruit *= 1.5L;
-					else if(uwep && uwep->oartifact==ART_PEN_OF_THE_VOID && uwep->ovar1&SEAL_EVE) nfruit *= 1.2L;
+					else if(uwep && uwep->oartifact==ART_PEN_OF_THE_VOID && uwep->ovar1_seals&SEAL_EVE) nfruit *= 1.2L;
 					treefruit->quan = nfruit;
 					if (is_plural(treefruit))
 					    pline("Some %s fall from the tree!", xname(treefruit));
@@ -1151,7 +1154,7 @@ int dx, dy;
 					short frtype = treefruit->otyp;
 					int frtspe = treefruit->spe;
 					if(u.sealsActive&SEAL_EVE) nfruit *= 1.5L;
-					else if(uwep && uwep->oartifact==ART_PEN_OF_THE_VOID && uwep->ovar1&SEAL_EVE) nfruit *= 1.2L;
+					else if(uwep && uwep->oartifact==ART_PEN_OF_THE_VOID && uwep->ovar1_seals&SEAL_EVE) nfruit *= 1.2L;
 					treefruit->quan = nfruit;
 					if (is_plural(treefruit))
 					    pline("Some %s fall from the tree!", xname(treefruit));

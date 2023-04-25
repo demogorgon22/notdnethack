@@ -238,6 +238,7 @@ struct obj *otmp;
 #define MUSE_POT_FULL_HEALING 18
 #define MUSE_LIZARD_CORPSE 19
 #define MUSE_LIFE_FLASK 20
+#define MUSE_HEALING_SURGE 21
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -254,6 +255,7 @@ find_defensive(mtmp)
 struct monst *mtmp;
 {
 	register struct obj *obj = 0;
+	struct monst *mtarg;
 	struct trap *t;
 	int x=mtmp->mx, y=mtmp->my;
 	boolean stuck = (mtmp == u.ustuck);
@@ -262,7 +264,7 @@ struct monst *mtmp;
 
 	if (is_animal(mtmp->data) || mindless_mon(mtmp))
 		return FALSE;
-	if(dist2(x, y, mtmp->mux, mtmp->muy) > 25)
+	if(dist2(x, y, mtmp->mux, mtmp->muy) > 25 || (mtmp->mux == 0 && mtmp->muy == 0))
 		return FALSE;
 	if (u.uswallow && stuck) return FALSE;
 
@@ -325,6 +327,21 @@ struct monst *mtmp;
 	}
 
 	fraction = u.ulevel < 10 ? 5 : u.ulevel < 14 ? 4 : 3;
+	if(mon_healing_turn(mtmp) && !mtmp->mspec_used && !mtmp->mcan){
+		int range = BOLT_LIM + (mtmp->m_lev / 5);
+		range *= range;
+		for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+			if(DEADMONSTER(mtarg)) continue;
+			if(is_undead(mtarg->data) || is_demon(mtarg->data)) continue;
+			if(!mtmp->mtame != !mtarg->mtame || mtmp->mpeaceful != mtarg->mpeaceful || mm_grudge(mtmp, mtarg)) continue;
+			if (!clear_path(mtmp->mx,mtmp->my, mtarg->mx,mtarg->my) ||
+				dist2(mtmp->mx,mtmp->my, mtarg->mx,mtarg->my) > range
+			) continue;
+			if(mtarg->mhp*fraction >= mtarg->mhpmax) continue;
+		    m.has_defense = MUSE_HEALING_SURGE;
+		    return TRUE;
+		}
+	}
 	if(mtmp->mhp >= mtmp->mhpmax
 		|| (mtmp->mhp >= 10 && mtmp->mhp*fraction >= mtmp->mhpmax)
 	){
@@ -964,6 +981,10 @@ mon_tele:
 		/* not actually called for its unstoning effect */
 		mon_consume_unstone(mtmp, otmp, FALSE, FALSE);
 		return 2;
+	case MUSE_HEALING_SURGE:
+		mon_doturn(mtmp);
+		mtmp->mspec_used = 3;
+		return 2;
 	case 0: return 0; /* i.e. an exploded wand */
 	default: impossible("%s wanted to perform action %d?", Monnam(mtmp),
 			m.has_defense);
@@ -982,7 +1003,9 @@ const int good_amulets[] = {
 	AMULET_OF_UNCHANGING,
 	AMULET_OF_NULLIFY_MAGIC,
 	AMULET_OF_REFLECTION,
-	AMULET_OF_MAGICAL_BREATHING
+	AMULET_OF_MAGICAL_BREATHING,
+	AMULET_OF_WOUND_CLOSURE,
+	AMULET_VERSUS_EVIL_EYES
 };
 
 int
@@ -1056,6 +1079,7 @@ struct monst *mtmp;
 
 #define MUSE_WAN_CANCELLATION 22	/* Lethe */
 #define MUSE_CRYSTAL_SKULL 	  23
+#define MUSE_MON_TURN_UNDEAD  24
 
 /* Find a mask.
  */
@@ -1092,7 +1116,7 @@ struct monst *mtmp;
 	boolean reflection_skip = FALSE; 
 	struct obj *helmet = which_armor(mtmp, W_ARMH);
 
-	struct monst *target = mfind_target(mtmp, TRUE);
+	struct monst *target = mfind_target(mtmp, TRUE, FALSE);
 	
 	if(tbx == 0 && tby == 0) return FALSE; //Target is not lined up.
 	
@@ -1120,24 +1144,36 @@ struct monst *mtmp;
 	}
 
 	if (!ranged_stuff) return FALSE;
+
+	if(mon_turn_undead(mtmp) && !mtmp->mspec_used && !mtmp->mcan && (!Inhell || mon_healing_turn(mtmp))){
+		struct monst *target2 = mfind_target(mtmp, FALSE, FALSE); 
+		if((target && is_undead(target->data))
+		 || (target2 && is_undead(target2->data))
+		) {
+			m.offensive = (struct obj *) 0;
+			m.has_offense = MUSE_MON_TURN_UNDEAD;
+		}
+	}
+
 #define nomore(x) if(m.has_offense==x) continue;
 	for(obj=mtmp->minvent; obj; obj=obj->nobj) {
-	    if(mtmp->mtyp == PM_VALKYRIE && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & ARM_GLOVES) {
+	    if(mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
 			struct obj *otmp;
 			for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
-				if (otmp->owornmask & ARM_GLOVES && otmp->otyp == GAUNTLETS_OF_POWER){
+				if (otmp->owornmask & W_ARMG && (otmp->otyp == GAUNTLETS_OF_POWER || (otmp->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(otmp, IEA_GOPOWER)))){
 					m.offensive = obj;
 					m.has_offense = MUSE_MJOLLNIR;
 			break;
 				}
 			}
-	if(m.has_offense==MUSE_MJOLLNIR) break;
+			if(m.has_offense==MUSE_MJOLLNIR) break;
 		}
 		nomore(MUSE_CRYSTAL_SKULL);
 		if(obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj) && !get_ox(obj, OX_ESUM)) {
 			m.offensive = obj;
 			m.has_offense = MUSE_CRYSTAL_SKULL;
 		}
+		nomore(MUSE_MON_TURN_UNDEAD);
 		nomore(MUSE_WAN_DEATH);
 		if (!reflection_skip) {
 		    if(obj->otyp == WAN_DEATH && obj->spe > 0) {
@@ -1303,8 +1339,7 @@ register struct monst *magr;
 			} else {
 			    pline_The("wand hits you!");
 			    tmp = d(2,12);
-			    if(Half_spell_damage) tmp = (tmp+1) / 2;
-				if(u.uvaul_duration) tmp = (tmp + 1) / 2;
+				tmp = reduce_dmg(&youmonst,tmp,FALSE,TRUE);
 			    losehp(tmp, "wand", KILLED_BY_AN);
 				if(otmp->otyp == ROD_OF_FORCE)
 					hurtle(sgn(u.ux-magr->mx), sgn(u.uy-magr->my), BOLT_LIM, FALSE, TRUE);
@@ -1500,11 +1535,15 @@ struct monst *mtmp;
 	boolean oseen;
 
 	/* offensive potions are not drunk, they're thrown */
-	if (otmp->oclass != POTION_CLASS && (i = precheck(mtmp, otmp)) != 0)
+	if (otmp && otmp->oclass != POTION_CLASS && (i = precheck(mtmp, otmp)) != 0)
 		return i;
 	oseen = otmp && canseemon(mtmp);
 
 	switch(m.has_offense) {
+	case MUSE_MON_TURN_UNDEAD:{
+		mon_doturn(mtmp);
+		mtmp->mspec_used = 3;
+	}break;
 	case MUSE_CRYSTAL_SKULL:{
 		coord cc;
 		if(!enexto(&cc, mtmp->mx+sgn(tbx), mtmp->my+sgn(tby), (struct permonst *)0)){
@@ -1623,7 +1662,7 @@ struct monst *mtmp;
 				    if (mtmp2->minvis && !canspotmon(mtmp2))
 					map_invisible(mtmp2->mx, mtmp2->my);
 				}
-	    	    	    	mdmg = dmgval(otmp2, mtmp2, 0) * otmp2->quan;
+					mdmg = dmgval(otmp2, mtmp2, 0, mtmp) * otmp2->quan;
 				if (helmet) {
 				    if(is_hard(helmet)) {
 					if (canspotmon(mtmp2))
@@ -1672,7 +1711,7 @@ struct monst *mtmp;
 			    !noncorporeal(youracedata) &&
 			    !unsolid(youracedata)) {
 			You("are hit by %s!", doname(otmp2));
-			dmg = dmgval(otmp2, &youmonst, 0) * otmp2->quan;
+			dmg = dmgval(otmp2, &youmonst, 0, mtmp) * otmp2->quan;
 			if (uarmh) {
 			    if(is_hard(uarmh)) {
 				pline("Fortunately, you are wearing a hard helmet.");
@@ -1720,8 +1759,7 @@ struct monst *mtmp;
 			    You("are not harmed.");
 			burn_away_slime();
 			melt_frozen_air();
-			if (Half_spell_damage) num = (num+1) / 2;
-			if(u.uvaul_duration) num = (num + 1) / 2;
+			num = reduce_dmg(&youmonst,num,FALSE,TRUE);
 			losehp(num, "scroll of fire", KILLED_BY_AN);
 			for(mtmp2 = fmon; mtmp2; mtmp2 = mtmp2->nmon) {
 			   if(DEADMONSTER(mtmp2)) continue;
@@ -1971,19 +2009,19 @@ struct monst *mtmp;
 			|| ((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC)
 				&& FacelessCloak(which_armor(mtmp, W_ARMC)));
 
-	if(mtmp->mtalons) return 0;
+	if(mtmp->mtalons) return FALSE;
 	
 	m.misc = (struct obj *)0;
 	m.has_misc = 0;
 	if (is_animal(mdat) || mindless_mon(mtmp))
-		return 0;
+		return FALSE;
 	if (u.uswallow && stuck) return FALSE;
 
 	/* We arbitrarily limit to times when a player is nearby for the
 	 * same reason as Junior Pac-Man doesn't have energizers eaten until
 	 * you can see them...
 	 */
-	if(dist2(x, y, mtmp->mux, mtmp->muy) > 36)
+	if(dist2(x, y, mtmp->mux, mtmp->muy) > 36 || (mtmp->mux == 0 && mtmp->muy == 0))
 		return FALSE;
 
 	if (!stuck && !immobile && !mtmp->cham 
@@ -2121,11 +2159,11 @@ struct monst *mtmp;
 		}
 		nomore(MUSE_SCR_AMNESIA);
 		nomore(MUSE_POT_AMNESIA);
-		if((mtmp->mcrazed || mtmp->mberserk) && (obj->otyp == SCR_AMNESIA)) {
+		if(mon_insane(mtmp) && (obj->otyp == SCR_AMNESIA)) {
 			m.misc = obj;
 			m.has_misc = MUSE_SCR_AMNESIA;
 		}
-		if(!nomouth && (mtmp->mcrazed || mtmp->mberserk) && (obj->otyp == POT_AMNESIA)) {
+		if(!nomouth && mon_insane(mtmp) && (obj->otyp == POT_AMNESIA)) {
 			m.misc = obj;
 			m.has_misc = MUSE_POT_AMNESIA;
 		}
@@ -2212,58 +2250,20 @@ skipmsg:
 	case MUSE_POT_GAIN_ABILITY:
 		mquaffmsg(mtmp, otmp);
 		if (otmp->cursed) {
-			switch(rnd(6)){
-				case 1:
-					if(mtmp->mstr > 3) mtmp->mstr--;
-				break;
-				case 2:
-					if(mtmp->mdex > 3) mtmp->mdex--;
-				break;
-				case 3:
-					if(mtmp->mcon > 3) mtmp->mcon--;
-				break;
-				case 4:
-					if(mtmp->mint > 3) mtmp->mint--;
-				break;
-				case 5:
-					if(mtmp->mwis > 3) mtmp->mwis--;
-				break;
-				case 6:
-					if(mtmp->mcha > 3) mtmp->mcha--;
-				break;
-			}
+			int i = rn2(A_MAX);
+			if(ABASE_MON(i, mtmp) > 3) ABASE_MON(i, mtmp)--;
 			if (vismon) pline("%s seems weaker.", Monnam(mtmp));
 			if (oseen) makeknown(POT_GAIN_ABILITY);
 		} else if(otmp->blessed){
-			if(mtmp->mstr < 25) mtmp->mstr++;
-			if(mtmp->mdex < 25) mtmp->mdex++;
-			if(mtmp->mcon < 25) mtmp->mcon++;
-			if(mtmp->mint < 25) mtmp->mint++;
-			if(mtmp->mwis < 25) mtmp->mwis++;
-			if(mtmp->mcha < 25) mtmp->mcha++;
-			if (vismon) pline("%s seems enhanced.", Monnam(mtmp));
+			int i;
+			for(int i = 0; i < A_MAX; i++){
+				if(ABASE_MON(i,mtmp) < 25) ABASE_MON(i,mtmp)++;
+			}
+			if (vismon) pline("%s seems quite enhanced.", Monnam(mtmp));
 			if (oseen) makeknown(POT_GAIN_ABILITY);
 		} else {
-			switch(rnd(6)){
-				case 1:
-					if(mtmp->mstr < 25) mtmp->mstr++;
-				break;
-				case 2:
-					if(mtmp->mdex < 25) mtmp->mdex++;
-				break;
-				case 3:
-					if(mtmp->mcon < 25) mtmp->mcon++;
-				break;
-				case 4:
-					if(mtmp->mint < 25) mtmp->mint++;
-				break;
-				case 5:
-					if(mtmp->mwis < 25) mtmp->mwis++;
-				break;
-				case 6:
-					if(mtmp->mcha < 25) mtmp->mcha++;
-				break;
-			}
+			int i = rn2(A_MAX);
+			if(ABASE_MON(i, mtmp) < 25) ABASE_MON(i, mtmp)++;
 			if (vismon) pline("%s seems enhanced.", Monnam(mtmp));
 			if (oseen) makeknown(POT_GAIN_ABILITY);
 		}
@@ -2299,7 +2299,7 @@ skipmsg:
 	case MUSE_WAN_SPEED_MONSTER:
 		mzapmsg(mtmp, otmp, TRUE);
 		otmp->spe--;
-		mon_adjust_speed(mtmp, 1, otmp);
+		mon_adjust_speed(mtmp, 1, otmp, TRUE);
 		return 2;
 	case MUSE_POT_SPEED:
 		mquaffmsg(mtmp, otmp);
@@ -2307,7 +2307,7 @@ skipmsg:
 		   different methods of maintaining speed ratings:
 		   player's character becomes "very fast" temporarily;
 		   monster becomes "one stage faster" permanently */
-		mon_adjust_speed(mtmp, 1, otmp);
+		mon_adjust_speed(mtmp, 1, otmp, TRUE);
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
 		return 2;
@@ -2339,10 +2339,34 @@ museamnesia:
 				untame(mtmp, 1);
 				mtmp->mferal = 0;
 			}
+			mtmp->seenmadnesses = 0;
 			mtmp->mcrazed = 0;
 			mtmp->mberserk = 0;
 			mtmp->mdisrobe = 0;
 			mtmp->mdoubt = 0;
+			mtmp->msanctity = 0;
+			mtmp->mgluttony = 0;
+			mtmp->mfrigophobia = 0;
+			mtmp->mcannibal = 0;
+			mtmp->mrage = 0;
+			mtmp->margent = 0;
+			mtmp->msuicide = 0;
+			mtmp->mnudist = 0;
+			mtmp->mophidio = 0;
+			mtmp->marachno = 0;
+			mtmp->mentomo = 0;
+			mtmp->mthalasso = 0;
+			mtmp->mhelmintho = 0;
+			mtmp->mparanoid = 0;
+			mtmp->mtalons = 0;
+			mtmp->mdreams = 0;
+			mtmp->msciaphilia = 0;
+			mtmp->mforgetful = 0;
+			mtmp->mapostasy = 0;
+			mtmp->mtoobig = 0;
+			mtmp->mrotting = 0;
+			mtmp->mformication = 0;
+			mtmp->mscorpions = 0;
 		} else {
 			if (vismon) pline("%s looks angry and confused!", Monnam(mtmp));
 			untame(mtmp, 0);
@@ -2630,13 +2654,13 @@ struct obj *obj;
 	else if(is_cloak(obj))
 		return abs(obj->objsize - mon->data->msize) <= 1;
 	else if(is_helmet(obj))
-		return ((!has_horns(mon->data) || obj->otyp == find_gcirclet()) && helm_match(mon->data,obj) && has_head_mon(mon) && obj->objsize == mon->data->msize) || is_flimsy(obj);
+		return helm_match(mon->data, obj) && helm_size_fits(mon->data,obj);
 	else if(is_shield(obj) && !mon_offhand_attack(mon))
 		return !noshield(mon->data);
 	else if(is_gloves(obj))
 		return obj->objsize == mon->data->msize && can_wear_gloves(mon->data);
 	else if(is_boots(obj))
-		return obj->objsize == mon->data->msize && can_wear_boots(mon->data);
+		return boots_size_fits(mon->data, obj) && can_wear_boots(mon->data);
 	else if(is_suit(obj))
 		return arm_match(mon->data, obj) && arm_size_fits(mon->data, obj);
 	return FALSE;
@@ -2793,7 +2817,7 @@ struct obj *obj;
 		return (boolean)(obj->corpsenm != NON_PM && touch_petrifies(&mons[obj->corpsenm]));
 	    break;
 	case CHAIN_CLASS:
-	    if (typ == IRON_BANDS
+	    if (typ == BANDS
 		    || typ == RAZOR_WIRE
 		    || typ == ROPE_OF_ENTANGLING
 		)
@@ -3070,7 +3094,7 @@ boolean stoning;
 
     /* give a "<mon> is slowing down" message and also remove
        intrinsic speed (comparable to similar effect on the hero) */
-    mon_adjust_speed(mon, -3, (struct obj *)0);
+    mon_adjust_speed(mon, -3, (struct obj *)0, TRUE);
 
     if (canseemon(mon)) {
 	long save_quan = obj->quan;
@@ -3127,22 +3151,23 @@ struct monst *mon;
 {
 	struct obj *obj;
 	int count;
-	if(mon->entangled == SHACKLES) return FALSE;
-	else if(mon->entangled == ROPE_OF_ENTANGLING){
+	if(mon->entangled_otyp == SHACKLES) return FALSE;
+	else if(mon->entangled_otyp == ROPE_OF_ENTANGLING){
 		if((mon->data->msize + !!strongmonst(mon->data))*2 <= rn2(100))
 			return FALSE;
-	} else if(mon->entangled == IRON_BANDS){
+	} else if(mon->entangled_otyp == BANDS){
 		if(!strongmonst(mon->data) && mon->data->msize != MZ_GIGANTIC) return FALSE;
 		if((mon->data->msize - 3) <= rn2(200)) return FALSE;
-	} else if(mon->entangled == RAZOR_WIRE){
+	} else if(mon->entangled_otyp == RAZOR_WIRE){
 		if((mon->data->msize + !!strongmonst(mon->data)) <= rn2(200))
 			return FALSE;
 	} else {
-		mon->entangled = 0;
+		mon->entangled_otyp = 0;
+		mon->entangled_oid = 0;
 		return TRUE;
 	}
 	for(obj = mon->minvent; obj; obj = obj->nobj){
-		if(obj->otyp == mon->entangled && obj->spe == 1){
+		if(obj->o_id == mon->entangled_oid && !obj->oartifact){
 			if(canseemon(mon))
 				pline("%s breaks the entangling %s!", Monnam(mon), xname(obj));
 			else if(canspotmon(mon))
@@ -3152,12 +3177,13 @@ struct monst *mon;
 		}
 	}
 	for(obj = mon->minvent; obj; obj = obj->nobj){
-		if(obj->otyp == mon->entangled && obj->spe == 1){
+		if(obj->o_id == mon->entangled_oid){
 			return FALSE;
 		}
 	}
 	// else
-	mon->entangled = 0;
+	mon->entangled_otyp = 0;
+	mon->entangled_oid = 0;
 	return TRUE;
 }
 
@@ -3171,7 +3197,7 @@ struct monst *mon;
 		struct obj *nobj;
 		for(obj = mon->minvent; obj; obj = nobj){
 			nobj = obj->nobj;
-			if(obj->otyp == mon->entangled && obj->spe == 1){
+			if(obj->o_id == mon->entangled_oid){
 				if(canseemon(mon))
 					pline("%s slips loose from the entangling %s!", Monnam(mon), xname(obj));
 				else if(canspotmon(mon))
@@ -3182,34 +3208,44 @@ struct monst *mon;
 				stackobj(obj);
 			}
 		}
-		mon->entangled = 0;
+		mon->entangled_otyp = 0;
+		mon->entangled_oid = 0;
 		return TRUE;
 	}
-	if(mon->entangled == SHACKLES) return FALSE;
+	if(mon->entangled_otyp == SHACKLES) return FALSE;
 	else if(outermost_armor(mon) && outermost_armor(mon)->greased);//Slip free
-	else if(mon->entangled == ROPE_OF_ENTANGLING){
+	else if(mon->entangled_otyp == ROPE_OF_ENTANGLING){
 		if((7-mon->data->msize) <= rn2(20)+rn2(20))
 			return FALSE;
-	} else if(mon->entangled == IRON_BANDS){
+	} else if(mon->entangled_otyp == BANDS){
 		if((7-mon->data->msize) <= rn2(20))
 			return FALSE;
-	} else if(mon->entangled == RAZOR_WIRE){
+	} else if(mon->entangled_otyp == RAZOR_WIRE){
 		if((7-mon->data->msize) <= rn2(20)+rn2(20))
 			return FALSE;
 	} else {
-		mon->entangled = 0;
+		mon->entangled_otyp = 0;
+		mon->entangled_oid = 0;
 		return TRUE;
 	}
 	for(obj = mon->minvent; obj; obj = obj->nobj){
-		if(obj->otyp == mon->entangled && obj->spe == 1){
+		if(obj->o_id == mon->entangled_oid){
+			//Very hard to escape from the diamond snare
+			if(obj->oartifact == ART_JIN_GANG_ZUO && rn2(20))
+				break;
 			if(canseemon(mon))
 				pline("%s slips loose from the entangling %s!", Monnam(mon), xname(obj));
 			else if(canspotmon(mon))
 				pline("%s slips loose from a restraint!", Monnam(mon));
 			obj->spe = 0;
 			obj_extract_self(obj);
-			place_object(obj, mon->mx, mon->my);
-			stackobj(obj);
+			if(obj->oartifact == ART_JIN_GANG_ZUO){
+				hold_another_object(obj, "Oops!  The returning %s slips to the floor!", "snare", (const char *)0);
+			}
+			else {
+				place_object(obj, mon->mx, mon->my);
+				stackobj(obj);
+			}
 			obj = outermost_armor(mon);
 			if(obj && obj->greased){
 				if (!rn2(obj->blessed ? 4 : 2)){
@@ -3221,12 +3257,13 @@ struct monst *mon;
 		}
 	}
 	for(obj = mon->minvent; obj; obj = obj->nobj){
-		if(obj->otyp == mon->entangled && obj->spe == 1){
+		if(obj->o_id == mon->entangled_oid){
 			return FALSE;
 		}
 	}
 	// else
-	mon->entangled = 0;
+	mon->entangled_otyp = 0;
+	mon->entangled_oid = 0;
 	return TRUE;
 }
 
@@ -3238,14 +3275,14 @@ int mat;
 	struct obj *obj;
 	if(mon == &youmonst){
 		for(obj = invent; obj; obj = obj->nobj){
-			if(obj->otyp == u.uentangled && obj->spe == 1){
+			if(obj->o_id == u.uentangled_oid){
 				if(obj->obj_material == mat)
 					return TRUE;
 			}
 		}
 	} else {
 		for(obj = mon->minvent; obj; obj = obj->nobj){
-			if(obj->otyp == mon->entangled && obj->spe == 1){
+			if(obj->o_id == mon->entangled_oid){
 				if(obj->obj_material == mat)
 					return TRUE;
 			}
@@ -3263,7 +3300,7 @@ int bet;
 	int strength = 0;
 	if(mon == &youmonst){
 		for(obj = invent; obj; obj = obj->nobj){
-			if(obj->otyp == u.uentangled && obj->spe == 1){
+			if(obj->o_id == u.uentangled_oid){
 				if(obj->cursed){
 					if(bet < 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
 				}
@@ -3278,7 +3315,7 @@ int bet;
 		}
 	} else {
 		for(obj = mon->minvent; obj; obj = obj->nobj){
-			if(obj->otyp == mon->entangled && obj->spe == 1){
+			if(obj->o_id == mon->entangled_oid){
 				if(obj->cursed){
 					if(bet < 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
 				}

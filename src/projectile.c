@@ -110,8 +110,8 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		/* Blasters create ammo as needed */
 		/* we also need to leave the ammo object left behind so it can be cleaned up */
 		if (launcher && is_blaster(launcher)) {
-			if (launcher->ovar1 > 0) {
-				launcher->ovar1--;
+			if (launcher->ovar1_charges > 0) {
+				launcher->ovar1_charges--;
 				ammo->quan++;
 			}
 			else {
@@ -349,6 +349,9 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		return MM_MISS;
 	}
 
+	if(!thrownobj->dknown && cansee(initx, inity)){
+		thrownobj->dknown = 1;
+	}
 	/* set projectile glyph to show */
 	tmp_at(DISP_FLASH, obj_to_glyph(thrownobj));
 
@@ -526,6 +529,11 @@ move_projectile:
 			range--;
 			bhitpos.x += dx;
 			bhitpos.y += dy;
+			if(!thrownobj->dknown && cansee(bhitpos.x, bhitpos.y)){
+				thrownobj->dknown = 1;
+				tmp_at(DISP_END, 0);
+				tmp_at(DISP_FLASH, obj_to_glyph(thrownobj));
+			}
 			tmp_at(bhitpos.x, bhitpos.y);
 			if (cansee(bhitpos.x, bhitpos.y))
 				delay_output();
@@ -1332,6 +1340,24 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 			*thrownobj_p = NULL;
 			result |= MM_HIT;
 		}
+		else if(!(youdef ? u.uentangled_oid : mdef->entangled_oid) && (thrownobj->otyp == ROPE_OF_ENTANGLING || thrownobj->otyp == BANDS || thrownobj->otyp == RAZOR_WIRE)){
+			if(youdef){
+				u.uentangled_oid = thrownobj->o_id;
+				u.uentangled_otyp = thrownobj->otyp;
+			}
+			else {
+				mdef->entangled_otyp = thrownobj->otyp;
+				mdef->entangled_oid = thrownobj->o_id;
+				mdef->movement = 0;
+			}
+
+			if(youdef)
+				pickup_object(thrownobj, 1, TRUE);
+			else
+				mpickobj(mdef, thrownobj);
+			*thrownobj_p = NULL;
+			result |= MM_HIT;
+		}
 		/* general case */
 		else {
 			/* projectiles other than magic stones
@@ -1778,6 +1804,8 @@ int shotlimit;
 		int magr_wepskill;
 		if (youagr)
 			magr_wepskill = P_SKILL(weapon_type((launcher && launcher->oartifact != ART_PEN_OF_THE_VOID) ? launcher : ammo));
+		else if(magr->mformication || magr->mscorpions)
+			magr_wepskill = P_UNSKILLED;
 		else
 			magr_wepskill = m_martial_skill(magr->data);
 
@@ -1907,8 +1935,8 @@ int shotlimit;
 
 	/* Blasters limit multishot to charge */
 	if (launcher && is_blaster(launcher) &&
-		multishot > launcher->ovar1)
-		multishot = launcher->ovar1;
+		multishot > launcher->ovar1_charges)
+		multishot = launcher->ovar1_charges;
 
 	/* minimum multishot of 1*/
 	if (multishot < 1)
@@ -1970,11 +1998,11 @@ int * hurtle_dist;
 		/* some things maximize range */
 		if ((launcher->oartifact == ART_LONGBOW_OF_DIANA) ||
 			(launcher->oartifact == ART_XIUHCOATL) ||
-			(launcher->oartifact == ART_PEN_OF_THE_VOID && launcher->ovar1&SEAL_EVE && mvitals[PM_ACERERAK].died > 0)
+			(launcher->oartifact == ART_PEN_OF_THE_VOID && launcher->ovar1_seals&SEAL_EVE && mvitals[PM_ACERERAK].died > 0)
 			) {
 			range = 1000;
 		}
-		else if (launcher->oartifact == ART_PEN_OF_THE_VOID && launcher->ovar1&SEAL_EVE) {
+		else if (launcher->oartifact == ART_PEN_OF_THE_VOID && launcher->ovar1_seals&SEAL_EVE) {
 			/* the pen, being an athame, has a conflict between oc_range and oc_wsdam */
 			range = 8;	/* arbitrary */
 		}
@@ -2144,7 +2172,7 @@ dofire()
 					struct obj * ammo = (struct obj *)0;
 
 					/* do we have enough charge to fire? */
-					if (!launcher->ovar1 || (launcher->otyp == MASS_SHADOW_PISTOL && (!launcher->cobj || Has_contents(launcher->cobj)))) {
+					if (!launcher->ovar1_charges || (launcher->otyp == MASS_SHADOW_PISTOL && (!launcher->cobj || Has_contents(launcher->cobj)))) {
 						if (launcher->otyp == RAYGUN) You("push the firing stud, but nothing happens.");
 						else pline("Nothing happens when you pull the trigger.");
 						/* nothing else happens */
@@ -2182,7 +2210,7 @@ dofire()
 						/* always destroy ammo fired from a blaster */
 						if (ammo) {
 							if (launcher->otyp == MASS_SHADOW_PISTOL)
-								ammo->ovar1 = -P_FIREARM;	/* special case to use FIREARM skill instead of SLING */
+								ammo->ovar1_projectileSkill = -P_FIREARM;	/* special case to use FIREARM skill instead of SLING */
 
 							result = uthrow(ammo, launcher, shotlimit, TRUE);
 							/* and now delete the ammo object we created */
@@ -2933,7 +2961,12 @@ int tary;
 	/* message */
 	if (youagr || canseemon(magr)) {
 		char * bofp = flash_type(typ, ZAP_BREATH);
-		char * p = strstri(bofp, " of ")+4;
+		char * p = strstri(bofp, " of ");
+
+		if (p) {
+			p += 4;
+			if (!*p) p = NULL;
+		}
 		
 		/* some breaths sound better as "a noun of x" */
 		if (typ == AD_DISN || typ == AD_BLUD)
@@ -3071,7 +3104,7 @@ int tary;
 	case AD_ACID:
 		otmp = mksobj(ACID_VENOM, NO_MKOBJ_FLAGS);
 		if (attk->damn && attk->damd)
-			otmp->ovar1 = d(attk->damn, attk->damd);
+			otmp->ovar1_projectileSkill = d(attk->damn, attk->damd);
 		break;
 	}
 
@@ -3427,7 +3460,7 @@ int tary;
 				struct obj * ammo;
 
 				/* do we have enough charge to fire? */
-				if (!launcher->ovar1) {
+				if (!launcher->ovar1_charges) {
 					/* nothing happens */
 					magr->weapon_check = NEED_WEAPON;	/* magr figures out it needs new weapons */
 				}

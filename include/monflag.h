@@ -64,9 +64,11 @@
 #define MS_SCREAM	53	/* Screams in madness */
 #define MS_HARROW	54	/* Summon wraiths */
 #define MS_APOC		55	/* Dire Revelations */
-#define MS_TATTOO	56	/* Tattoos service */
-#define MS_SMITH	57	/* Armorsmith service */
-#define MS_PORTAL	58	/* Offer portal options */
+#define MS_COUGH	56	/* Sick coughing */
+#define MS_RIBBIT	57	/* Frog sounds */
+#define MS_TATTOO	58	/* Tattoos service */
+#define MS_SMITH	59	/* Armorsmith service */
+#define MS_PORTAL	60	/* Offer portal options */
 
 
 #define MR_FIRE			0x0001	/* 1 resists fire */
@@ -291,6 +293,14 @@
 #define MZ_HUGE		4		/* 12-25' */
 #define MZ_GIGANTIC	7		/* off the scale */
 
+//Monster Warded
+#define MW_ELDER_SIGN		0x00000001L	/* by the elder sign */
+#define MW_EYE_OF_YGG		0x00000002L	/* by the fully-reinforced elder sign */
+#define MW_ELDER_EYE_ELEM	0x00000004L	/* by the basic elder elemental eye */
+#define MW_ELDER_EYE_ENERGY	0x00000008L	/* by the 4-level elder eye */
+#define MW_ELDER_EYE_PLANES	0x00000010L	/* by the 7-level elder eye */
+
+
 /* for mons[].geno (constant during game) */
 #define G_NON_GEN_CORPSE	(G_SPCORPSE|G_NOCORPSE)		/* nongenerated corpse */
 #define G_SPCORPSE	0x00010000		/* Corpse is special, and should be non-wishable */
@@ -432,8 +442,25 @@
 #define EARTH_CRACK            STARFALL+1
 #define MON_AURA_BOLT          EARTH_CRACK+1
 #define RAIN                   MON_AURA_BOLT+1
+#define BLOOD_RAIN             RAIN+1
+#define STEAM_GEYSER           BLOOD_RAIN+1
+//90
+#define MOTHER_S_GAZE          STEAM_GEYSER+1
+#define PAIN_BOLT              MOTHER_S_GAZE+1
+#define SAN_BOLT               PAIN_BOLT+1
+#define DOUBT_BOLT             SAN_BOLT+1
+#define BARF_BOLT              DOUBT_BOLT+1
+//95
+#define BABBLE_BOLT            BARF_BOLT+1
+#define MON_SPE_BEARTRAP       BABBLE_BOLT+1
+#define PYRO_STORM             MON_SPE_BEARTRAP+1
+#define GOD_RAY                PYRO_STORM+1
+#define MON_RED_WORD           GOD_RAY+1
+//100
+#define HYPNOTIC_COLORS        MON_RED_WORD+1
+#define CRUSH_BOLT             HYPNOTIC_COLORS+1
 
-#define MON_LASTSPELL          RAIN
+#define MON_LASTSPELL          CRUSH_BOLT
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

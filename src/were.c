@@ -16,7 +16,12 @@ register struct monst *mon;
 		&& !(is_yochlol(mon->data) && mon->mhp < .5*mon->mhpmax)
 		&& !(mon->mtyp == PM_SELKIE || mon->mtyp == PM_SEAL)
 		&& !(mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS)
+		&& !(is_duergar(mon))
+		&& !(mon->mtyp == PM_LURKING_HAND || mon->mtyp == PM_BLASPHEMOUS_HAND)
 	) return;
+
+	if(u.ustuck == mon && u.uswallow)
+		return;
 
 	if(mon->mtyp == PM_NOVIERE_ELADRIN && !is_pool(mon->mx, mon->my, FALSE)) return;
 	
@@ -41,6 +46,27 @@ register struct monst *mon;
 			}
 	    } else if (is_heladrin(mon->data)){
 			if(!Protection_from_shape_changers) new_were(mon);
+	    } else if (is_duergar(mon)){
+			if(mon->data->mlet == S_HUMANOID){
+				if(Protection_from_shape_changers)
+					;//Do nothing
+				else if(!mon->mpeaceful && mon_can_see_you(mon)){
+					if(rn2(2)) new_were(mon);
+				}
+				else if(nearby_targets(mon)){
+					if(!rn2(4)) new_were(mon);
+				}
+			}
+			else {
+				if(Protection_from_shape_changers)
+					new_were(mon); //Revert
+				else if(!mon->mpeaceful && !mon_can_see_you(mon)){
+					if(!rn2(20)) new_were(mon);
+				}
+				else if(!nearby_targets(mon)){
+					if(!rn2(20)) new_were(mon);
+				}
+			}
 	    } else if (
 			!rn2(night() ? (flags.moonphase == FULL_MOON ?  3 : 30)
 					 : (flags.moonphase == FULL_MOON ? 10 : 50))
@@ -61,6 +87,10 @@ register struct monst *mon;
 				}
 			}
 	    }
+	} else if (mon->mtyp == PM_LURKING_HAND){
+		if(!rn2(20)) new_were(mon);
+	} else if (mon->mtyp == PM_BLASPHEMOUS_HAND){
+		if(!rn2(10)) new_were(mon);
 	} else if (!rn2(30) || (is_were(mon->data) && Protection_from_shape_changers) 
 		|| (is_yochlol(mon->data) && !Protection_from_shape_changers)
 		|| (is_eeladrin(mon->data) && mon->mhp >= mon->mhpmax && !Protection_from_shape_changers)
@@ -134,6 +164,16 @@ int pm;
 		case PM_GREEN_PIT_FIEND:  return(PM_MAMMON);
 		case PM_SELKIE: return(PM_SEAL);
 		case PM_SEAL: return(PM_SELKIE);
+		
+		case PM_DUERGAR: return(PM_GIANT_DUERGAR);
+		case PM_GIANT_DUERGAR: return(PM_DUERGAR);
+		case PM_DUERGAR_STONEGUARD: return(PM_GIANT_STONEGUARD);
+		case PM_GIANT_STONEGUARD: return(PM_DUERGAR_STONEGUARD);
+		case PM_DUERGAR_DEBILITATOR: return(PM_DUERGAR_ANNIHILATOR);
+		case PM_DUERGAR_ANNIHILATOR: return(PM_DUERGAR_DEBILITATOR);
+
+		case PM_LURKING_HAND: return(PM_BLASPHEMOUS_HAND);
+		case PM_BLASPHEMOUS_HAND: return(PM_LURKING_HAND);
 		
 		case PM_YOCHLOL: 
 			switch(rnd(3)){
@@ -211,10 +251,15 @@ struct monst *mon;
 		return;
 	
 	if(canseemon(mon) && !Hallucination) {
-		if(mon->mtyp != PM_ANUBITE && mon->mtyp != PM_ANUBAN_JACKAL
+		if(mon->mtyp == PM_BLASPHEMOUS_HAND)
+			pline("%s relaxes its gesture.", Monnam(mon));
+		else if(mon->mtyp == PM_LURKING_HAND)
+			pline("%s adopts a blasphemous gesture.", Monnam(mon));
+		else if(mon->mtyp != PM_ANUBITE && mon->mtyp != PM_ANUBAN_JACKAL
 		  && !is_eladrin(mon->data) && !is_yochlol(mon->data)
 		  && !(mon->mtyp == PM_SELKIE || mon->mtyp == PM_SEAL)
 		  && !(mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS)
+		  && !is_duergar(mon)
 		) pline("%s changes into %s.", Monnam(mon),
 			is_human(&mons[pm]) ? "a human" :
 			an(mons[pm].mname+4));
@@ -273,6 +318,13 @@ struct monst *mon;
 	} else if(is_heladrin(mon->data)){
 		m_dowear(mon, TRUE);
 		init_mon_wield_item(mon);
+	} else if(is_duergar(mon)){
+		for(otmp = mon->minvent; otmp; otmp = otmp->nobj){
+			if(otmp->owornmask && !otmp->oartifact && !((is_weptool(otmp) || otmp->oclass == WEAPON_CLASS) && !check_oprop(otmp, OPROP_NONE))){
+				size_and_shape_to_fit(otmp, mon);
+			}
+		}
+		mon_break_armor(mon, FALSE);
 	} else mon_break_armor(mon, FALSE);
 	possibly_unwield(mon, FALSE);
 }

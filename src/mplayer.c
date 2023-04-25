@@ -394,8 +394,10 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 	break;
 #endif
 	case PM_VALKYRIE:
+	case PM_AWAKENED_VALKYRIE:
+	case PM_TRANSCENDENT_VALKYRIE:
 		if (rn2(2)) *weapon = WAR_HAMMER;
-		else *weapon = SPEAR;
+		else *weapon = ptr->mtyp == PM_VALKYRIE ? SPEAR : ATGEIR;
 		*rweapon = BOW;
 		*rwammo = ARROW;
 		if(special){
@@ -439,13 +441,17 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 
 
 struct monst *
-mk_mplayer(ptr, x, y, special)
+mk_mplayer(ptr, x, y, flags)
 register struct permonst *ptr;
 xchar x, y;
-register boolean special;
+long flags;
 {
+	boolean special = (flags&MM_GOODEQUIP) == MM_GOODEQUIP;
 	register struct monst *mtmp;
 	char nam[PL_NSIZ];
+
+	flags &= ~MM_GOODEQUIP;
+	flags |= NO_MINVENT;
 
 	//if ptr is null don't make a monster
 	if(!ptr)
@@ -455,12 +461,10 @@ register boolean special;
 	if(!is_mplayer(ptr))
 		return((struct monst *)0);
 
-	if(MON_AT(x, y))
+	if(MON_AT(x, y) && !(flags&MM_ADJACENTOK))
 		(void) rloc(m_at(x, y), FALSE); /* insurance */
 
-	if(!In_endgame(&u.uz)) special = FALSE;
-
-	if ((mtmp = makemon(ptr, x, y, NO_MM_FLAGS)) != 0) {
+	if ((mtmp = makemon(ptr, x, y, flags)) != 0) {
 	    int quan;
 	    struct obj *otmp;
 		int weapon, secweapon, rweapon, rwammo, armor, shirt, cloak, helm, boots, gloves, shield, tool;
@@ -651,8 +655,11 @@ register boolean special;
 					otmp->oeroded3 = 1;
 				}
 			}
-			(void)mongets(mtmp, SHACKLES, NO_MKOBJ_FLAGS);
-			mtmp->entangled = SHACKLES;
+			otmp = mongets(mtmp, SHACKLES, NO_MKOBJ_FLAGS);
+			if(otmp){
+				mtmp->entangled_otyp = SHACKLES;
+				mtmp->entangled_oid = otmp->o_id;
+			}
 		}
 	}
 
@@ -690,7 +697,7 @@ boolean special;
 		/* if pos not found in 50 tries, don't bother to continue */
 		if(tryct > 50) return;
 
-		(void) mk_mplayer(&mons[pm], (xchar)x, (xchar)y, special);
+		(void) mk_mplayer(&mons[pm], (xchar)x, (xchar)y, special ? MM_GOODEQUIP : NO_MM_FLAGS);
 		num--;
 	}
 }

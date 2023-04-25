@@ -538,6 +538,7 @@ boolean dumping;
 	if (Sleep_resistance) you_are("sleep resistant");
 	if (Half_physical_damage) you_are("resistant to physical damage");
 	if (Half_spell_damage) you_are("resistant to magical damage");
+	if (Gaze_immune) you_are("immune to gaze attacks");
 	if (u.uedibility || u.sealsActive&SEAL_BUER) you_can("recognize detrimental food");
 	// if ( (ublindf && ublindf->otyp == R_LYEHIAN_FACEPLATE && !ublindf->cursed) || 
 		 // (uarmc && uarmc->otyp == OILSKIN_CLOAK && !uarmc->cursed) ||
@@ -720,7 +721,7 @@ boolean dumping;
 		}
 		if(has_blood(youracedata)){
 			if (u.umadness&MAD_FRENZY){
-				Sprintf(buf, "your %s seethe below your %s", body_part(BLOOD), body_part(BODY_SKIN));
+				Sprintf(buf, "your %s seethes below your %s", body_part(BLOOD), body_part(BODY_SKIN));
 				enl_msg("You ", "feel ", "felt ", buf);
 			}
 		}
@@ -747,6 +748,9 @@ boolean dumping;
 		}
 		if (u.umadness&MAD_ROTTING){
 			enl_msg("Your body ", "is", "was", " rotting from within");
+		}
+		if (u.umadness&MAD_REACHER){
+			enl_msg("Sometimes, a lurking thing ", "tries", "tried", " to reach in and grab you");
 		}
 	}
 	
@@ -1135,7 +1139,7 @@ resistances_enlightenment()
 	
 	if(Deadmagic && base_casting_stat() == A_INT){
 		int i;
-		update_alternate_spells();
+		update_externally_granted_spells();
 		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
 			putstr(en_win, 0, "Magic is damaged.");
 			break;
@@ -1143,7 +1147,7 @@ resistances_enlightenment()
 	}
 	else if(Catapsi && base_casting_stat() == A_CHA){
 		int i;
-		update_alternate_spells();
+		update_externally_granted_spells();
 		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
 			putstr(en_win, 0, "Your mind is full of static.");
 			break;
@@ -1151,7 +1155,7 @@ resistances_enlightenment()
 	}
 	else if(Misotheism && base_casting_stat() == A_WIS){
 		int i;
-		update_alternate_spells();
+		update_externally_granted_spells();
 		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
 			putstr(en_win, 0, "Your mind is full of static.");
 			break;
@@ -1159,7 +1163,7 @@ resistances_enlightenment()
 	}
 	else if(Nullmagic){
 		int i;
-		update_alternate_spells();
+		update_externally_granted_spells();
 		for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
 			putstr(en_win, 0, "Your magic is blocked.");
 			break;
@@ -1359,7 +1363,7 @@ resistances_enlightenment()
 		}
 		if(has_blood(youracedata)){
 			if (u.umadness&MAD_FRENZY){
-				Sprintf(buf, "You feel your %s seethe below your %s.", body_part(BLOOD), body_part(BODY_SKIN));
+				Sprintf(buf, "You feel your %s seethes below your %s.", body_part(BLOOD), body_part(BODY_SKIN));
 				putstr(en_win, 0, buf);
 				messaged++;
 			}
@@ -1387,6 +1391,9 @@ resistances_enlightenment()
 		}
 		if (u.umadness&MAD_ROTTING){
 			putstr(en_win, 0, "Your body is rotting from within.");
+		}
+		if (u.umadness&MAD_REACHER){
+			putstr(en_win, 0, "You are being stalked by a blasphemous reacher.");
 		}
 		if(messaged){
 			//Clockworks specifically can't get drunk (androids can)
@@ -1432,44 +1439,44 @@ resistances_enlightenment()
 	}
 	
 	if(u.wimage >= 10){
-		if(ACURR(A_WIS) < 6) Sprintf(buf, "Your mind is filled with the image of a weeping angel");
-		else if(ACURR(A_WIS) < 9) Sprintf(buf, "The image of a weeping angel is ever on your mind");
-		else if(ACURR(A_WIS) < 12) Sprintf(buf, "You can't seem to shake the image of a weeping angel from your mind");
-		else Sprintf(buf, "The image of a weeping angel lurks in the back of your mind");
+		if(ACURR(A_WIS) < 6) Sprintf(buf, "Your mind is filled with the image of a weeping angel.");
+		else if(ACURR(A_WIS) < 9) Sprintf(buf, "The image of a weeping angel is ever on your mind.");
+		else if(ACURR(A_WIS) < 12) Sprintf(buf, "You can't seem to shake the image of a weeping angel from your mind.");
+		else Sprintf(buf, "The image of a weeping angel lurks in the back of your mind.");
 		putstr(en_win, 0, buf);
 	}
 	if (u.umorgul){
-		Sprintf(buf, "You feel deathly cold");
+		Sprintf(buf, "You feel deathly cold.");
 		putstr(en_win, 0, buf);
 	}
 	if (u.umummyrot){
-		Sprintf(buf, "You are gradually rotting to dust");
+		Sprintf(buf, "You are gradually rotting to dust.");
 		putstr(en_win, 0, buf);
 	}
 	
 	if(u.lastprayed){
-		Sprintf(buf, "You last %s %ld turns ago", u.lastprayresult==PRAY_GIFT ? "recieved a gift" :
+		Sprintf(buf, "You last %s %ld turns ago.", u.lastprayresult==PRAY_GIFT ? "received a gift" :
 												  u.lastprayresult==PRAY_ANGER ? "angered your god" : 
 												  u.lastprayresult==PRAY_CONV ? "converted to a new god" : 
 												  "prayed",
 			moves - u.lastprayed);
 		putstr(en_win, 0, buf);
 		if(u.lastprayresult==PRAY_GOOD){
-			Sprintf(buf, "That prayer was well recieved");
+			Sprintf(buf, "That prayer was well received.");
 			putstr(en_win, 0, buf);
 		} else if(u.lastprayresult==PRAY_IGNORED){
-			Sprintf(buf, "That prayer went unanswered");
+			Sprintf(buf, "That prayer went unanswered.");
 			putstr(en_win, 0, buf);
 		} else if(u.lastprayresult==PRAY_BAD){
-			Sprintf(buf, "That prayer was poorly recieved");
+			Sprintf(buf, "That prayer was poorly received.");
 			putstr(en_win, 0, buf);
 		} else if(u.lastprayresult==PRAY_INPROG){
-			Sprintf(buf, "That prayer is in progress");
+			Sprintf(buf, "That prayer is in progress.");
 			putstr(en_win, 0, buf);
 		}
 		if(u.reconciled){
-			if(u.reconciled==REC_REC) Sprintf(buf, "You have since reconciled with your god");
-			else if(u.reconciled==REC_MOL) Sprintf(buf, "You have since mollified your god");
+			if(u.reconciled==REC_REC) Sprintf(buf, "You have since reconciled with your god.");
+			else if(u.reconciled==REC_MOL) Sprintf(buf, "You have since mollified your god.");
 			putstr(en_win, 0, buf);
 		}
 	}
@@ -1639,7 +1646,7 @@ udr_enlightenment()
 	if(active_glyph(DEEP_SEA))
 		cap += 3;
 	if(!has_head_mon(&youmonst)){
-		Sprintf(mbuf, "You have no head; shots hit upper body");
+		Sprintf(mbuf, "You have no head; shots hit upper body.");
 		putstr(en_win, 0, mbuf);
 	} else {
 		dr = slot_udr(HEAD_DR, (struct monst *)0, 0);
@@ -1662,7 +1669,7 @@ udr_enlightenment()
 		Sprintf(mbuf, "Lower Body Armor: %d", dr);
 	putstr(en_win, 0, mbuf);
 	if(!can_wear_gloves(youracedata)){
-		Sprintf(mbuf, "You have no hands; shots hit upper body");
+		Sprintf(mbuf, "You have no hands; shots hit upper body.");
 		putstr(en_win, 0, mbuf);
 	} else {
 		dr = slot_udr(ARM_DR, (struct monst *)0, 0);
@@ -1673,7 +1680,7 @@ udr_enlightenment()
 		putstr(en_win, 0, mbuf);
 	}
 	if(!can_wear_boots(youracedata)){
-		Sprintf(mbuf, "You have no feet; shots hit lower body");
+		Sprintf(mbuf, "You have no feet; shots hit lower body.");
 		putstr(en_win, 0, mbuf);
 	} else {
 		dr = slot_udr(LEG_DR, (struct monst *)0, 0);
@@ -2382,7 +2389,7 @@ signs_mirror()
 		if(dimness(u.ux, u.uy) <= 0)
 			putstr(en_win, 0, "Your rigid features can't be seen in the dark.");
 		else if((ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE)) //face-covering mask
-			 || (uarmh && (uarmh->otyp==PLASTEEL_HELM || uarmh->otyp==PONTIFF_S_CROWN || uarmh->otyp==FACELESS_HELM)) //opaque face-covering helm
+			 || (uarmh && (uarmh->otyp==PLASTEEL_HELM || uarmh->otyp==PONTIFF_S_CROWN || uarmh->otyp==FACELESS_HELM || uarmh->otyp==IMPERIAL_ELVEN_HELM)) //opaque face-covering helm
 			 || (uarmc && (uarmc->otyp==WHITE_FACELESS_ROBE || uarmc->otyp==BLACK_FACELESS_ROBE || uarmc->otyp==SMOKY_VIOLET_FACELESS_ROBE))//face-covering robe
 		) putstr(en_win, 0, "Your rigid features can't be seen through your disguise.");
 		else putstr(en_win, 0, "Your features have taken on the rigidity of a cheap disguise.");
@@ -2812,6 +2819,7 @@ boolean dumping;
 	CHECK_ACHIEVE(CAV_QUEST,"Serpent slayer: completed caveman quest")
 	CHECK_ACHIEVE(CON_QUEST,"Sentence commuted: completed convict quest")
 	CHECK_ACHIEVE(KNI_QUEST,"Into the crystal cave: completed knight quest")
+	CHECK_ACHIEVE(HEA_QUEST,"Plague of stolen lives: completed healer quest")
 	CHECK_ACHIEVE(ANA_QUEST,"Back from the future: completed anachrononaut quest")
 	CHECK_ACHIEVE(AND_QUEST,"Glory to mankind: completed android quest")
 	CHECK_ACHIEVE(BIN_QUEST,"33 spirits: completed binder quest")
@@ -2819,10 +2827,12 @@ boolean dumping;
 	CHECK_ACHIEVE(BRD_QUEST,"Not so spoony: completed bard quest")
 	CHECK_ACHIEVE(NOB_QUEST,"Rebellion crushed: completed base noble quest")
 	CHECK_ACHIEVE(MAD_QUEST,"Oh good. I'm not crazy: completed madman quest")
+	CHECK_ACHIEVE(MONK_QUEST,"You must defeat Sheng Long to stand a chance: completed monk quest")
 	CHECK_ACHIEVE(HDR_NOB_QUEST,"Family drama: completed hedrow noble quest")
 	CHECK_ACHIEVE(HDR_SHR_QUEST,"On agency: completed hedrow shared quest")
 	CHECK_ACHIEVE(DRO_NOB_QUEST,"Foreshadowing: completed drow noble quest")
 	CHECK_ACHIEVE(DRO_SHR_QUEST,"Old friends: completed drow shared quest")
+	CHECK_ACHIEVE(DRO_HEA_QUEST,"Twisted by dreams: completed drow healer quest")
 	CHECK_ACHIEVE(DWA_NOB_QUEST,"Durin's Bane's Bane: completed dwarf noble quest")
 	CHECK_ACHIEVE(DWA_KNI_QUEST,"Battle of (5-4) armies: completed dwarf knight quest")
 	CHECK_ACHIEVE(GNO_RAN_QUEST,"Strongest of all time: completed gnome ranger quest")

@@ -222,20 +222,21 @@ struct flag {
 #define ATTACK_MODE_FIGHT_ALL 'f'
 
 /* values for iflags.pokedex */
-#define POKEDEX_SHOW_STATS		1
-#define POKEDEX_SHOW_GENERATION 2
-#define POKEDEX_SHOW_WEIGHT		4
-#define POKEDEX_SHOW_RESISTS	8
-#define POKEDEX_SHOW_CONVEYS	16
-#define POKEDEX_SHOW_MM			32
-#define POKEDEX_SHOW_MT			64
-#define POKEDEX_SHOW_MB			128
-#define POKEDEX_SHOW_MG			256
-#define POKEDEX_SHOW_MA			512
-#define POKEDEX_SHOW_MV			1024
-#define POKEDEX_SHOW_ATTACKS	2048
-#define POKEDEX_SHOW_CRITICAL	4096
-#define MAX_POKEDEX_SHOW	POKEDEX_SHOW_CRITICAL
+#define POKEDEX_SHOW_STATS		0x0001
+#define POKEDEX_SHOW_GENERATION 0x0002
+#define POKEDEX_SHOW_WEIGHT		0x0004
+#define POKEDEX_SHOW_RESISTS	0x0008
+#define POKEDEX_SHOW_CONVEYS	0x0010
+#define POKEDEX_SHOW_MM			0x0020
+#define POKEDEX_SHOW_MT			0x0040
+#define POKEDEX_SHOW_MB			0x0080
+#define POKEDEX_SHOW_MG			0x0100
+#define POKEDEX_SHOW_MA			0x0200
+#define POKEDEX_SHOW_MV			0x0400
+#define POKEDEX_SHOW_ATTACKS	0x0800
+#define POKEDEX_SHOW_CRITICAL	0x1000
+#define POKEDEX_SHOW_WARDS		0x2000
+#define MAX_POKEDEX_SHOW	POKEDEX_SHOW_WARDS
 #define POKEDEX_SHOW_DEFAULT	(MAX_POKEDEX_SHOW-1) | MAX_POKEDEX_SHOW
 
 struct instance_flags {
@@ -373,7 +374,6 @@ struct instance_flags {
 	boolean wc_color;		/* use color graphics                  */
 	boolean wc_hilite_pet;		/* hilight pets (blue)                    */
 	boolean wc_hilite_peaceful;		/* hilight peaceful monsters (brown)   */
-	boolean wc_hilite_zombies;		/* hilight pets  (green)               */
 	boolean wc_zombie_z;		/* show zombies as Z of monster's color    */
 	boolean wc_hilite_detected;		/* hilight detected monsters (magenta)   */
 	boolean wc_ascii_map;		/* show map using traditional ascii    */
@@ -455,6 +455,12 @@ struct instance_flags {
 #ifdef REALTIME_ON_BOTL
   boolean  showrealtime; /* show actual elapsed time */
 #endif
+	struct {
+		int set;
+		int fg;
+		int bg;
+		char symbol;
+	} monstertemplate[MAXTEMPLATE];
 };
 
 /*
@@ -468,8 +474,6 @@ struct instance_flags {
 #endif
 #define hilite_pet wc_hilite_pet
 #define hilite_peaceful wc_hilite_peaceful
-#define hilite_zombies wc_hilite_zombies
-#define zombie_z wc_zombie_z
 #define hilite_detected wc_hilite_detected
 #define use_inverse wc_inverse
 #ifdef MAC_GRAPHICS_ENV
@@ -508,5 +512,10 @@ extern NEARDATA struct instance_flags iflags;
 	(((magr) == &youmonst) ? WIZCOMBATDEBUG_UVM : 0) | \
 	(((mdef) == &youmonst) ? WIZCOMBATDEBUG_MVU : 0)   \
 	))
+
+/* monstertemplate options */
+#define MONSTERTEMPLATE_FOREGROUND	0x1
+#define MONSTERTEMPLATE_BACKGROUND	0x2
+#define MONSTERTEMPLATE_SYMBOL		0x4
 
 #endif /* FLAG_H */

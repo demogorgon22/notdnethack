@@ -44,6 +44,8 @@ const struct propname {
     { VOMITING, "vomiting" },
     { GLIB, "slippery fingers" },
     { WOUNDED_LEGS, "wounded legs" },
+	{ BLIND_RES, "immune to blinding" },
+	{ GAZE_RES, "immune to gazes" },
 	{ SLEEPING, "sleeping" },
     { TELEPORT, "teleporting" },
     { POLYMORPH, "polymorphing" },
@@ -438,10 +440,10 @@ boolean lifesave_forced;
 				u.uprops[spiritprops[i]].extrinsic &= ~W_SPIRIT;
 
 		} else if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID){
-			uwep->ovar1 &= ~spir;
+			uwep->ovar1_seals &= ~spir;
 			if(uwep->lamplit && !artifact_light(uwep)) end_burn(uwep, TRUE);
 		} else if(uswapwep  && uswapwep->oartifact == ART_PEN_OF_THE_VOID){
-			uswapwep->ovar1 &= ~spir;
+			uswapwep->ovar1_seals &= ~spir;
 			if(uswapwep->lamplit && !artifact_light(uswapwep)) end_burn(uswapwep, TRUE);
 		}
 		if(u.spiritTineA == spir){
@@ -617,16 +619,16 @@ nh_timeout()
 					u.uprops[spiritprops[i]].extrinsic &= ~W_SPIRIT;
 			}
 			if(uwep && uwep->oartifact==ART_PEN_OF_THE_VOID){
-				uwep->ovar1 = 0;
-				uwep->ovar1 |= u.spiritTineA;
-				uwep->ovar1 |= u.spiritTineB;
+				uwep->ovar1_seals = 0;
+				uwep->ovar1_seals |= u.spiritTineA;
+				uwep->ovar1_seals |= u.spiritTineB;
 				if(artifact_light(uwep) && !uwep->lamplit) begin_burn(uwep);
 				else if(!artifact_light(uwep) && uwep->lamplit) end_burn(uwep, TRUE);
 			}
 			else if(uswapwep && uswapwep->oartifact==ART_PEN_OF_THE_VOID){
-				uswapwep->ovar1 = 0;
-				uswapwep->ovar1 |= u.spiritTineA;
-				uswapwep->ovar1 |= u.spiritTineB;
+				uswapwep->ovar1_seals = 0;
+				uswapwep->ovar1_seals |= u.spiritTineA;
+				uswapwep->ovar1_seals |= u.spiritTineB;
 				// if(artifact_light(uswapwep) && !uswapwep->lamplit) begin_burn(uswapwep);
 				// else if(!artifact_light(uswapwep) && uswapwep->lamplit) end_burn(uswapwep, TRUE);
 			}
@@ -1143,7 +1145,7 @@ long timeout;
 			goto free_bomb;
 			break;
 		}
-		grenade_explode(bomb, x, y, bomb->yours, silent ? 2 : 0);
+		grenade_explode(bomb, x, y, bomb->yours, silent ? 3 : 0);
 		return;
 	} /* Migrating grenades "blow up in midair" */
 
@@ -1535,6 +1537,7 @@ long timeout;
 	/* timeout while away */
 	if (timeout != monstermoves && (obj->where != OBJ_MINVENT || (
 				(!is_dwarf(obj->ocarry->data) || obj->otyp != DWARVISH_HELM)
+				&& obj->otyp != LANTERN_PLATE_MAIL
 				&& (!is_gnome(obj->ocarry->data) || obj->otyp != GNOMISH_POINTY_HAT)
 				&& (!is_szcultist(obj->ocarry->data) || !(obj->otyp == TORCH || obj->otyp == SHADOWLANDER_S_TORCH))
 	))) {
@@ -1630,29 +1633,35 @@ long timeout;
 
    	    case DWARVISH_HELM:
 	    case LANTERN:
+	    case LANTERN_PLATE_MAIL:
 	    case OIL_LAMP:
 		switch((int)obj->age) {
 		    case 150:
 		    case 100:
 		    case 50:
 			if (canseeit) {
-			    if (obj->otyp == LANTERN 
-				|| obj->otyp == DWARVISH_HELM)
-				lantern_message(obj);
+			    if (obj->otyp == LANTERN
+				 || obj->otyp == DWARVISH_HELM
+				 || obj->otyp == LANTERN_PLATE_MAIL
+				)
+					lantern_message(obj);
 			    else
 				see_lamp_flicker(obj,
 				    obj->age == 50L ? " considerably" : "");
 			}
 			//Dwarvish lamps don't go out in monster inventories
 			if(obj->where == OBJ_MINVENT && 
-				is_dwarf(obj->ocarry->data) &&
-				obj->otyp == DWARVISH_HELM) obj->age = (long) rn1(250,250);
+				((is_dwarf(obj->ocarry->data) && obj->otyp == DWARVISH_HELM)
+				 || obj->otyp == LANTERN_PLATE_MAIL)
+			) obj->age = (long) rn1(250,250);
 			break;
 
 		    case 25:
 			if (canseeit) {
 			    if (obj->otyp == LANTERN 
-				|| obj->otyp == DWARVISH_HELM)
+				|| obj->otyp == DWARVISH_HELM
+				|| obj->otyp == LANTERN_PLATE_MAIL
+				)
 				lantern_message(obj);
 			    else {
 				switch (obj->where) {
@@ -1670,8 +1679,9 @@ long timeout;
 			}
 			//Dwarvish lamps don't go out in monster inventories
 			if(obj->where == OBJ_MINVENT && 
-				is_dwarf(obj->ocarry->data) &&
-				obj->otyp == DWARVISH_HELM) obj->age = (long) rn1(50,25);
+				((is_dwarf(obj->ocarry->data) && obj->otyp == DWARVISH_HELM)
+				 || obj->otyp == LANTERN_PLATE_MAIL)
+			) obj->age = (long) rn1(50,25);
 			break;
 
 		    case 0:
@@ -1681,6 +1691,7 @@ long timeout;
 				case OBJ_INVENT:
 				case OBJ_MINVENT:
 			    if (obj->otyp == LANTERN 
+				|| obj->otyp == LANTERN_PLATE_MAIL
 				|| obj->otyp == DWARVISH_HELM)
 					pline("%s lantern has run out of power.",
 					    whose);
@@ -1690,6 +1701,7 @@ long timeout;
 				    break;
 				case OBJ_FLOOR:
 			    if (obj->otyp == LANTERN 
+				|| obj->otyp == LANTERN_PLATE_MAIL
 				|| obj->otyp == DWARVISH_HELM)
 					You("see a lantern run out of power.");
 				    else
@@ -2156,6 +2168,7 @@ struct obj * obj;
 	case MAGIC_LAMP:
 	case DWARVISH_HELM:
 	case LANTERN:
+	case LANTERN_PLATE_MAIL:
 	case OIL_LAMP:
 	case CANDLE_OF_INVOCATION:
 		radius = 3;
@@ -2248,6 +2261,7 @@ struct obj * obj;
 
 	case DWARVISH_HELM:
 	case LANTERN:
+	case LANTERN_PLATE_MAIL:
 	case OIL_LAMP:
 		/* magic times are 150, 100, 50, 25, and 0 */
 		if (obj->age > 150L)
@@ -2312,6 +2326,7 @@ struct obj * obj;
 		(obj->otyp == GNOMISH_POINTY_HAT) ||
 		(obj->otyp == DWARVISH_HELM) ||
 		(obj->otyp == LANTERN) ||
+		(obj->otyp == LANTERN_PLATE_MAIL) ||
 		(obj->otyp == OIL_LAMP) ||
 		(obj->otyp == CANDELABRUM_OF_INVOCATION) ||
 		(obj->otyp == TALLOW_CANDLE) ||
@@ -2542,6 +2557,85 @@ do_storms()
 }
 #endif /* OVL1 */
 
+struct obj *
+update_skull_mon(mon, obj)
+struct monst *mon;
+struct obj *obj;
+{
+	if(!get_mx(mon, MX_ESUM) || !mon->mextra_p->esum_p->sm_o_id){
+		impossible("Monster %s to update skull stats, but doesn't have an item id set!", noit_mon_nam(mon));
+		return obj;
+	}
+	
+	if(!obj){
+		obj = find_oid(mon->mextra_p->esum_p->sm_o_id);
+	}
+
+	//Not an error, the skull may have been destroyed or left on another level or be otherwise unfindable.
+	if(!obj){
+		return obj;
+	}
+
+	if(mon->mextra_p->esum_p->sm_o_id != obj->o_id){
+		impossible("Monster %s to update skull stats, but given wrong item %s!", noit_mon_nam(mon), xname(obj));
+		return obj;
+	}
+
+	if(!get_ox(obj, OX_EMON)){
+		impossible("Monster %s to update skull stats, but item %s has no attached monster!", noit_mon_nam(mon), xname(obj));
+		return obj;
+	}
+
+	if(big_to_little(mon->mtyp) == big_to_little(EMON(obj)->mtyp)){
+		EMON(obj)->data = mon->data;
+		EMON(obj)->mhpmax = mon->mhpmax;
+		EMON(obj)->mhp = mon->mhpmax;
+		EMON(obj)->m_lev = mon->m_lev;
+		for(int i = 0; i < MPROP_SIZE; i++){
+			EMON(obj)->mintrinsics[i] = mon->mintrinsics[i];
+		}
+		EMON(obj)->acurr = mon->acurr;
+		EMON(obj)->aexe = mon->aexe;
+		EMON(obj)->abon = mon->abon;
+		EMON(obj)->amax = mon->amax;
+		EMON(obj)->atemp = mon->atemp;
+		EMON(obj)->atime = mon->atime;
+		EMON(obj)->female = mon->female;
+	}
+	EMON(obj)->mcrazed = mon->mcrazed;
+	EMON(obj)->mnotlaugh = mon->mnotlaugh;
+	EMON(obj)->mlaughing = mon->mlaughing;
+	EMON(obj)->mdoubt = mon->mdoubt;
+	
+	EMON(obj)->menvy = mon->menvy;
+	EMON(obj)->msanctity = mon->msanctity;
+	EMON(obj)->mgluttony = mon->mgluttony;
+	EMON(obj)->mfrigophobia = mon->mfrigophobia;
+	EMON(obj)->mrage = mon->mrage;
+	EMON(obj)->margent = mon->margent;
+	EMON(obj)->msuicide = mon->msuicide;
+	EMON(obj)->mophidio = mon->mophidio;
+	EMON(obj)->marachno = mon->marachno;
+	EMON(obj)->mentomo = mon->mentomo;
+	EMON(obj)->mthalasso = mon->mthalasso;
+	EMON(obj)->mhelmintho = mon->mhelmintho;
+	EMON(obj)->mparanoid = mon->mparanoid;
+	EMON(obj)->mtalons = mon->mtalons;
+	EMON(obj)->mdreams = mon->mdreams;
+	EMON(obj)->msciaphilia = mon->msciaphilia;
+	EMON(obj)->mapostasy = mon->mapostasy;
+	EMON(obj)->mtoobig = mon->mtoobig;
+	EMON(obj)->mrotting = mon->mrotting;
+	EMON(obj)->mspores = mon->mspores;
+	EMON(obj)->mformication = mon->mformication;
+	EMON(obj)->mscorpions = mon->mscorpions;
+	
+	
+	EMON(obj)->encouraged = mon->encouraged;
+	EMON(obj)->mtrapseen = mon->mtrapseen;
+	EMON(obj)->mfaction = mon->mfaction;
+	return obj;
+}
 
 /* callback procs to desummon monsters/objects */
 void
@@ -2565,6 +2659,11 @@ long timeout;
 		mon->mextra_p->esum_p->sm_o_id = 0;
 	}
 
+	/* Update crystal skull if it has one. Find the skull in the update function. */
+	if(get_mx(mon, MX_ESUM) && mon->mextra_p->esum_p->sm_o_id){
+		update_skull_mon(mon, (struct obj *) 0);
+	}
+
 	/* special case for vexing orbs -- awful */
 	if (mon->mtyp == PM_VEXING_ORB) {
 		boolean monmoving = flags.mon_moving;
@@ -2580,6 +2679,7 @@ long timeout;
 		monvanished(mon);
 	}
 }
+
 void
 cleanup_msummon(arg, timeout)
 genericptr_t arg;
@@ -2589,41 +2689,13 @@ long timeout;
 	/* if we are stopping the timer because mon died or vanished, reduce tax on summoner */
 	if (get_mx(mon, MX_ESUM) && DEADMONSTER(mon) && mon->mextra_p->esum_p->summoner) {
 		mon->mextra_p->esum_p->summoner->summonpwr -= mon->mextra_p->esum_p->summonstr;
-		if(mon->mextra_p->esum_p->sm_o_id){
-			struct obj *obj = find_oid(mon->mextra_p->esum_p->sm_o_id);
-			if(obj){
-				if(get_ox(obj, OX_EMON)){
-					if(big_to_little(mon->mtyp) == big_to_little(EMON(obj)->mtyp)){
-						EMON(obj)->data = mon->data;
-						EMON(obj)->mhpmax = mon->mhpmax;
-						EMON(obj)->mhp = mon->mhpmax;
-						EMON(obj)->m_lev = mon->m_lev;
-						for(int i = 0; i < MPROP_SIZE; i++){
-							EMON(obj)->mintrinsics[i] = mon->mintrinsics[i];
-						}
-						EMON(obj)->mstr = mon->mstr;
-						EMON(obj)->mdex = mon->mdex;
-						EMON(obj)->mcon = mon->mcon;
-						EMON(obj)->mint = mon->mint;
-						EMON(obj)->mwis = mon->mwis;
-						EMON(obj)->mcha = mon->mcha;
-						EMON(obj)->female = mon->female;
-					}
-					EMON(obj)->mcrazed = mon->mcrazed;
-					EMON(obj)->mnotlaugh = mon->mnotlaugh;
-					EMON(obj)->mlaughing = mon->mlaughing;
-					EMON(obj)->mdoubt = mon->mdoubt;
-					
-					EMON(obj)->menvy = mon->menvy;
-					EMON(obj)->msanctity = mon->msanctity;
-					
-					EMON(obj)->encouraged = mon->encouraged;
-					EMON(obj)->mtrapseen = mon->mtrapseen;
-				}
-			}
-		}
+	}
+	/* Update crystal skull if it has one. Find the skull in the update function. */
+	if(get_mx(mon, MX_ESUM) && mon->mextra_p->esum_p->sm_o_id){
+		update_skull_mon(mon, (struct obj *) 0);
 	}
 }
+
 void
 desummon_obj(arg, timeout)
 genericptr_t arg;
@@ -2657,7 +2729,11 @@ long timeout;
 		otmp->olarva--;
 		otmp->odead_larva = min(3, otmp->odead_larva + 1);
 	}
-	if(otmp->olarva > 0) {
+	if(otmp->obyak > 0){
+		otmp->obyak--;
+		otmp->odead_larva = min(3, otmp->odead_larva + 1);
+	}
+	if(otmp->olarva > 0 || otmp->obyak > 0) {
 		start_timer(4+d(2,4), TIMER_OBJECT, LARVAE_DIE, arg);
 	}
 }

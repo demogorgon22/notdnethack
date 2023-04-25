@@ -621,8 +621,9 @@ E NEARDATA struct permonst upermonst;	/* init'd in decl.c,
 					 */
 
 E NEARDATA struct mvitals {
-	uchar	born;
-	uchar	died;
+	uchar	born; /*How many of this monster have been created in a way that respects extinction*/
+	uchar	died; /*How many of this monster have died of any cause*/
+	uchar	killed; /*How many of this monster have died at the PC's hands*/
 	long long mvflags;
 	int	san_lost;
 	int	insight_gained;
@@ -849,7 +850,10 @@ struct u_achieve {
 #define	DEVIL_VAULT	0x1L << 46
 #define	DEMON_VAULT	0x1L << 47
 #define	BOKRUG_QUEST	0x1L << 48
-#define ACHIEVE_NUMBER	60
+#define	HEA_QUEST		0x1L << 49
+#define	DRO_HEA_QUEST	0x1L << 50
+#define	MONK_QUEST		0x1L << 51
+#define ACHIEVE_NUMBER	63
 };
 
 E struct u_achieve achieve;

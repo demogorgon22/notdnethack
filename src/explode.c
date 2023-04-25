@@ -122,7 +122,7 @@ ExplodeRegion *reg;
 
 /* This is the "do-it-all" explosion command */
 STATIC_DCL void FDECL(do_explode,
-	(int,int,ExplodeRegion *,int,int,int,int,int,BOOLEAN_P));
+	(int,int,ExplodeRegion *,int,int,int,int,int,BOOLEAN_P, struct permonst *));
 
 /* Note: I had to choose one of three possible kinds of "type" when writing
  * this function: a wand type (like in zap.c), an adtyp, or an object type.
@@ -140,6 +140,46 @@ int olet;
 int dam;
 int color;
 int radius;
+{
+	explode_full(x, y, adtyp, olet, dam, color, radius, (struct permonst *) 0, 0);
+}
+
+void
+explode_sound(x, y, adtyp, olet, dam, color, radius, dest)
+int x, y;
+int adtyp; /* the same as in zap.c */
+int olet;
+int dam;
+int color;
+int radius;
+int dest;
+{
+	explode_full(x, y, adtyp, olet, dam, color, radius, (struct permonst *) 0, dest);
+}
+
+void
+explode_pa(x, y, adtyp, olet, dam, color, radius, pa)
+int x, y;
+int adtyp; /* the same as in zap.c */
+int olet;
+int dam;
+int color;
+int radius;
+struct permonst *pa;
+{
+	explode_full(x, y, adtyp, olet, dam, color, radius, pa, 0);
+}
+
+void
+explode_full(x, y, adtyp, olet, dam, color, radius, pa, dest)
+int x, y;
+int adtyp; /* the same as in zap.c */
+int olet;
+int dam;
+int color;
+int radius;
+struct permonst *pa;
+int dest;
 {
 	ExplodeRegion *area;
 	area = create_explode_region();
@@ -161,7 +201,7 @@ int radius;
 		do_clear_area(x, y, radius, add_location_to_explode_region, (genericptr_t)(area));
 	}
 
-	do_explode(x, y, area, adtyp, olet, dam, color, 0, !flags.mon_moving);
+	do_explode(x, y, area, adtyp, olet, dam, color, dest, !flags.mon_moving, pa);
 	free_explode_region(area);
 }
 
@@ -195,7 +235,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 		do_clear_area(x, y, radius, add_location_to_explode_region, (genericptr_t)(area));
 	}
 
-	do_explode(x, y, area, adtyp, olet, dam, color, 0, yours);
+	do_explode(x, y, area, adtyp, olet, dam, color, 0, yours, (struct permonst *)0);
 	free_explode_region(area);
 }
 
@@ -230,20 +270,21 @@ int color;
 	if (isok(x + i, y + j) && ((!i && dx) || (!j && dy) || ((!dx || i == dx) & (!dy || j == dy))) && ((ZAP_POS(levl[x][y].typ) || distmin(x - dx, y - dy, x + i, y + j) == 1) || ZAP_POS(levl[x - dx + i][y - dy + j].typ))) // it looks strange, but it works
 		add_location_to_explode_region(x + i, y + j, area);
 
-	do_explode(x, y, area, adtyp, olet, dam, color, 0, !flags.mon_moving);
+	do_explode(x, y, area, adtyp, olet, dam, color, 0, !flags.mon_moving, (struct permonst *)0);
 	free_explode_region(area);
 }
 
 STATIC_DCL void
-do_explode(x, y, area, adtyp, olet, dam, color, dest, yours)
+do_explode(x, y, area, adtyp, olet, dam, color, dest, yours, pa)
 int x, y;
 ExplodeRegion *area;
 int adtyp; /* AD_TYPE and O_CLASS describing the cause of the explosion */
 int olet;
 int dam;
 int color;
-int dest; /* 0 = normal, 1 = silent, 2 = silent/remote */	
+int dest; /* 0 = normal, 1 = silent, 2 = remote, 4 = no sound */	
 boolean yours; /* is it your fault (for killing monsters) */
+struct permonst *pa; /* permonst of the attacker (used for disease) */
 {
 	int i, k, damu = dam;
 	boolean starting = 1, silver = FALSE;
@@ -255,7 +296,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 	boolean explmask;
 	boolean shopdamage = FALSE;
 	boolean generic = FALSE;
-	boolean silent = FALSE, remote = FALSE;
+	boolean silent = FALSE, remote = FALSE, blast = TRUE;
 	boolean dig = FALSE;
 	xchar xi, yi;
 
@@ -265,8 +306,9 @@ boolean yours; /* is it your fault (for killing monsters) */
 		dig = TRUE;
 	}
 
-	if (dest > 0) silent = TRUE;	
-	if (dest == 2) remote = TRUE;
+	if (dest & 1) silent = TRUE;	
+	if (dest & 2) remote = TRUE;
+	if (dest & 4) blast = FALSE;
 
 	if (olet == WAND_CLASS)		/* retributive strike */
 		switch (Role_switch) {
@@ -297,6 +339,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 			break;
 		case AD_DISN: str = "disintegration field";
 			break;
+		case AD_EELC:
 		case AD_ELEC: str = "ball of lightning";
 			break;
 		case AD_DRST: str = "poison gas cloud";
@@ -363,9 +406,10 @@ boolean yours; /* is it your fault (for killing monsters) */
 			case AD_SLIM:
 				explmask = (Acid_resistance || Slime_res(&youmonst));
 				break;
-			case AD_DISE: /*assumes only swamp ferns have disease explosions*/
+			case AD_DISE:
 				explmask = !!Sick_resistance;
-				diseasemu(&mons[PM_SWAMP_FERN_SPORE]);
+				if(pa)
+					diseasemu(pa);
 				break;
 			case AD_DARK:
 				explmask = !!Dark_immune;
@@ -505,8 +549,8 @@ boolean yours; /* is it your fault (for killing monsters) */
 		str = "explosion";
 		generic = TRUE;
 	    }
-	    if (flags.soundok)
-		You_hear(is_pool(x, y, FALSE) ? "a muffled explosion." : "a blast.");
+	    if (flags.soundok && blast)
+			You_hear(is_pool(x, y, FALSE) ? "a muffled explosion." : "a blast.");
 	}
 	    if(dig){
 		    for(i = 0; i < area->nlocations; i++) {
@@ -732,9 +776,7 @@ boolean yours; /* is it your fault (for killing monsters) */
 		    damu = 0;
 		    You("are unharmed!");
 		} else {
-			if (Half_physical_damage && adtyp == AD_PHYS)
-		    damu = (damu+1) / 2;
-			if (u.uvaul_duration) damu = (damu + 1) / 2;
+			damu = reduce_dmg(&youmonst,damu,TRUE,FALSE);
 		}
 		if (adtyp == AD_FIRE || adtyp == AD_EFIR) (void) burnarmor(&youmonst, FALSE);
 		if(uhurt == 2){
@@ -1256,7 +1298,7 @@ int dest;
     grenade_effects(obj, x, y, fiery_area, gas_area, dig_area, isyou);
     if (fiery_area->nlocations) {
 	adtyp = AD_FIRE;
-	do_explode(x, y, fiery_area, adtyp, WEAPON_CLASS, d(3,6), EXPL_FIERY, dest, isyou);
+	do_explode(x, y, fiery_area, adtyp, WEAPON_CLASS, d(3,6), EXPL_FIERY, dest, isyou, (struct permonst *)0);
     }
     wake_nearto(x, y, 400);
     /* Like cartoons - the explosion first, then
@@ -1282,7 +1324,7 @@ int dest;
     if (gas_area->nlocations) {
 	adtyp = AD_DRST;
 	do_explode(x, y, gas_area, adtyp, WEAPON_CLASS, d(3,6),
-	  EXPL_NOXIOUS, dest, isyou);
+	  EXPL_NOXIOUS, dest, isyou, (struct permonst *)0);
     }
     free_explode_region(gas_area);
     if (shop_damage) pay_for_damage("damage", FALSE);

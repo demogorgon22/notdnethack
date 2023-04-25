@@ -191,7 +191,7 @@ $(AUTO_C:%.c=%.d): ;
 ##### DATA FILES #####
 
 QUEST_DES = Arch.des Anachrononaut.des Android.des Barb.des Bard.des Binder.des Caveman.des 	\
-            Convict.des Drow.des DrowNoble.des Elf.des Erebor.des GnomeRanger.des	\
+            Convict.des Drow.des DrowNoble.des DrowHealer.des Elf.des Erebor.des GnomeRanger.des	\
             HalfDragonFemaleNoble.des Healer.des Hedrow.des HedrowNoble.des Knight.des \
 			Monk.des Moria.des Madman.des Noble.des Pirate.des Priest.des Ranger.des Rogue.des	\
             Samurai.des Tourist.des Valkyrie.des Wizard.des Anachronounbinder.des Salamander.des
@@ -209,7 +209,7 @@ $(ALL_TAG): dat/%.tag: dat/%.des util/lev_comp
 	cd dat && ../util/lev_comp $(<F) && touch $(@F)
 AUTO_DAT += $(ALL_TAG)
 
-DAT_NHDAT = cmdhelp data dngnch1 dngnch2 dngnch3 help hh history opthelp options	\
+DAT_NHDAT = cmdhelp data dungeon help hh history opthelp options	\
             oracles quest.dat rumors wizhelp
 dat/nhdat: util/dlb $(DAT_NHDAT:%=dat/%) $(ALL_TAG)
 	cd dat && ../util/dlb cf nhdat $(DAT_NHDAT) *.lev
@@ -227,21 +227,12 @@ dat/rumors: dat/rumors.tru dat/rumors.fal util/makedefs
 	cd util && ./makedefs -r  # dat/rumors
 AUTO_DAT += dat/data dat/options dat/oracles dat/quest.dat dat/rumors
 
-dat/dngnch1: dat/dngnch1.pdf util/dgn_comp
-	cd dat && ../util/dgn_comp dngnch1.pdf  # dat/dngnch1
-dat/dngnch1.pdf: dat/dngnch1.def util/makedefs
-	cd util && ./makedefs -e  # dat/dngnch1.pdf
+dat/dungeon: dat/dungeon.pdf util/dgn_comp
+	cd dat && ../util/dgn_comp dungeon.pdf  # dat/dungeon
+dat/dungeon.pdf: dat/dungeon.def util/makedefs
+	cd util && ./makedefs -e  # dat/dungeon.pdf
 
-dat/dngnch2: dat/dngnch2.pdf util/dgn_comp
-	cd dat && ../util/dgn_comp dngnch2.pdf  # dat/dngnch2
-dat/dngnch2.pdf: dat/dngnch2.def util/makedefs
-	cd util && ./makedefs -e  # dat/dngnch2.pdf
-
-dat/dngnch3: dat/dngnch3.pdf util/dgn_comp
-	cd dat && ../util/dgn_comp dngnch3.pdf  # dat/dngnch3
-dat/dngnch3.pdf: dat/dngnch3.def util/makedefs
-	cd util && ./makedefs -e  # dat/dngnch3.pdf
-AUTO_DAT += dat/dngnch1 dat/dngnch1.pdf dat/dngnch2 dat/dngnch2.pdf dat/dngnch3 dat/dngnch3.pdf
+AUTO_DAT += dat/dungeon dat/dungeon.pdf
 
 ##### CLEANING UP #####
 

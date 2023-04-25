@@ -541,7 +541,7 @@ boolean td;	/* td == TRUE : trap door or hole */
 	    Sprintf(msgbuf, "The hole in the %s above you closes up.",
 		    ceiling(u.ux,u.uy));
 	schedule_goto(&dtmp, FALSE, TRUE, 0,
-		      (char *)0, !td ? msgbuf : (char *)0);
+		      (char *)0, !td ? msgbuf : (char *)0, 0, 0);
 }
 
 /*
@@ -626,14 +626,23 @@ int *fail_reason;
 	    return (struct monst *)0;
 	}
 	
-	if(mon && cause == ANIMATE_SPELL && rnd(!always_hostile(mon->data) ? 12 : 20) < ACURR(A_CHA) && 
-		!(is_animal(mon->data) || mindless_mon(mon))
+	if(mon && cause == ANIMATE_SPELL 
+		&& ((In_quest(&u.uz) && Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON || mon->mtyp == PM_PANAKEIAN_ARCHON || mon->mtyp == PM_HYGIEIAN_ARCHON || mon->mtyp == PM_IKSH_NA_DEVA))
+			||  rnd(!always_hostile(mon->data) ? 12 : 20) < ACURR(A_CHA)
+		) && !(is_animal(mon->data) || mindless_mon(mon))
 	){
 		struct monst *newmon;
 		newmon = tamedog(mon, (struct obj *)0);
 		if(newmon) mon = newmon;
+
 		if(canspotmon(mon) && mon->mtame)
 			grateful = TRUE;
+
+		if(In_quest(&u.uz) && Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON || mon->mtyp == PM_PANAKEIAN_ARCHON || mon->mtyp == PM_HYGIEIAN_ARCHON || mon->mtyp == PM_IKSH_NA_DEVA)){
+			set_template(mon, PLAGUE_TEMPLATE);
+			if(get_mx(mon, MX_EDOG))
+				EDOG(mon)->loyal = TRUE;
+		}
 	}
 
 	/* in case statue is wielded and hero zaps stone-to-flesh at self */
@@ -672,8 +681,11 @@ int *fail_reason;
 	    		canspotmon(mon) ? comes_to_life : "disappears");
 	    } else if(cansee(x,y)) pline_The("statue %s!",
 			canspotmon(mon) ? comes_to_life : "disappears");
-		if(grateful)
-			pline("%s is incredibly grateful!", Monnam(mon));
+		if(grateful){
+			if(has_template(mon, PLAGUE_TEMPLATE))
+				pline("%s is glad to see you, but too sick to help!", Monnam(mon));
+			else pline("%s is incredibly grateful!", Monnam(mon));
+		}
 	    if (historic) {
 		    You_feel("guilty that the historic statue is now gone.");
 		    adjalign(-1);
@@ -1045,8 +1057,7 @@ unsigned trflags;
 
 		    pline("%s you!", A_gush_of_water_hits);
 		    You("are covered with rust!");
-		    if (Half_physical_damage) dam = (dam+1) / 2;
-			if(u.uvaul_duration) dam = (dam + 1) / 2;
+			dam = reduce_dmg(&youmonst,dam,TRUE,FALSE);
 		    losehp(dam, "rusting away", KILLED_BY);
 			nomul(0, NULL);
 		    break;
@@ -1055,8 +1066,7 @@ unsigned trflags;
 
 		    pline("%s you!", A_gush_of_water_hits);
 		    You("are extinguished!");
-		    if (Half_physical_damage) dam = (dam+1) / 2;
-			if(u.uvaul_duration) dam = (dam + 1) / 2;
+			dam = reduce_dmg(&youmonst,dam,TRUE,FALSE);
 		    losehp(dam, "drenching", KILLED_BY);
 			nomul(0, NULL);
 		    break;
@@ -2704,7 +2714,7 @@ boolean byplayer;
 
 	/* give a "<mon> is slowing down" message and also remove
 	   intrinsic speed (comparable to similar effect on the hero) */
-	mon_adjust_speed(mon, -3, (struct obj *)0);
+	mon_adjust_speed(mon, -3, (struct obj *)0, TRUE);
 
 	if (cansee(mon->mx, mon->my))
 		pline("%s turns to stone.", Monnam(mon));
@@ -2728,7 +2738,7 @@ int byplayer;
 
 	/* give a "<mon> is slowing down" message and also remove
 	   intrinsic speed (comparable to similar effect on the hero) */
-	mon_adjust_speed(mon, -3, (struct obj *)0);
+	mon_adjust_speed(mon, -3, (struct obj *)0, TRUE);
 
 	if (cansee(mon->mx, mon->my))
 		pline("%s turns to gold.", Monnam(mon));
@@ -2746,7 +2756,7 @@ boolean byplayer;
 {
 	/* give a "<mon> is slowing down" message and also remove
 	   intrinsic speed (comparable to similar effect on the hero) */
-	mon_adjust_speed(mon, -3, (struct obj *)0);
+	mon_adjust_speed(mon, -3, (struct obj *)0, TRUE);
 
 	if (cansee(mon->mx, mon->my))
 		pline("%s turns to glass.", Monnam(mon));
@@ -2951,9 +2961,9 @@ long hmask, emask;     /* might cancel timeout */
 	if (!trap) {
 	    trap = t_at(u.ux,u.uy);
 	    if(Weightless)
-		You("begin to tumble in place.");
+			You("begin to tumble in place.");
 	    else if (Is_waterlevel(&u.uz) && !no_msg)
-		You_feel("heavier.");
+			You_feel("heavier.");
 	    /* u.uinwater msgs already in spoteffects()/drown() */
 	    else if (!u.uinwater && !no_msg) {
 #ifdef STEED
@@ -2994,7 +3004,18 @@ long hmask, emask;     /* might cancel timeout */
 	   it gets changed to reflect the new level before we can check it */
 	assign_level(&current_dungeon_level, &u.uz);
 
-	if(trap)
+	if(!Levitation && !Flying && In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && levl[u.ux][u.uy].typ == AIR){
+		if(on_level(&u.uz, &qstart_level) && !ok_to_quest()){
+			pline("A mysterious force prevents you from falling.");
+		} else {
+			struct d_level target_level;
+			target_level.dnum = u.uz.dnum;
+			target_level.dlevel = qlocate_level.dlevel+1;
+			int dist = qlocate_level.dlevel+1 - u.uz.dlevel;
+			schedule_goto(&target_level, FALSE, TRUE, FALSE, "You plummet through the cavern air!", "You slam into the rocky floor!", d(dist*5,6), 0);
+		}
+	}
+	else if(trap)
 		switch(trap->ttyp) {
 		case STATUE_TRAP:
 			(void) activate_statue_trap(trap, trap->tx, trap->ty, FALSE);
@@ -3409,7 +3430,7 @@ struct monst *owner;
 			    obj->otyp = (is_lethe && !rn2(10)) ?
 					SCR_AMNESIA : SCR_BLANK_PAPER;
 			obj->spe = 0;
-			obj->ovar1 = 0;
+			obj->oward = 0;
 		    }
 			break;
 		    case SPBOOK_CLASS:
@@ -3420,6 +3441,7 @@ struct monst *owner;
 			else {
 				obj->otyp = SPE_BLANK_PAPER;
 				obj->obj_color = objects[SPE_BLANK_PAPER].oc_color;
+				remove_oprop(obj, OPROP_TACTB);
 			}
 			break;
 		    case POTION_CLASS:
@@ -3874,7 +3896,7 @@ register int n;
 			killer = antimagic_killer;
 			done(DIED);
 		}
-		u.uenbonus += u.uen;
+		u.uenbonus += u.uen/3;
 		calc_total_maxen();
 		u.uen = 0;
 	}
@@ -4152,12 +4174,13 @@ void
 unshackle_mon(mtmp)
 struct monst * mtmp;
 {
-	if (!mtmp || mtmp->entangled != SHACKLES) {
+	if (!mtmp || mtmp->entangled_otyp != SHACKLES) {
 		impossible("%s not shackled?", m_monnam(mtmp));
 		return;
 	}
 
-	mtmp->entangled = 0;
+	mtmp->entangled_otyp = 0;
+	mtmp->entangled_oid = 0;
 	You("unlock the shackles imprisoning %s.", mon_nam(mtmp));
 	if (mtmp->mtame){
 		verbalize("Thank you for rescuing me!");
@@ -4766,8 +4789,8 @@ struct obj * tool;
 		    }
 		}
 	} /* end if */
-	else if((mtmp = m_at(x,y)) && mtmp->entangled){
-		if(mtmp->entangled == SHACKLES){
+	else if((mtmp = m_at(x,y)) && mtmp->entangled_oid){
+		if(mtmp->entangled_otyp == SHACKLES){
 			unshackle_mon(mtmp);
 		}
 		else {
@@ -4775,14 +4798,15 @@ struct obj * tool;
 			You("disentangle %s.", mon_nam(mtmp));
 			for(obj = mtmp->minvent; obj; obj = nobj){
 				nobj = obj->nobj;
-				if(obj->otyp == mtmp->entangled && obj->spe == 1){
+				if(obj->o_id == mtmp->entangled_oid){
 					obj->spe = 0;
 					obj_extract_self(obj);
 					place_object(obj, mtmp->mx, mtmp->my);
 					stackobj(obj);
 				}
 			}
-			mtmp->entangled = 0;
+			mtmp->entangled_otyp = 0;
+			mtmp->entangled_oid = 0;
 		}
 		return MOVE_STANDARD;
 	}
@@ -5370,35 +5394,52 @@ ubreak_entanglement()
 {
 	struct obj *obj;
 	int breakcheck = (youracedata->msize*ATTRSCALE + ACURRSTR);
-	if(u.uentangled == ROPE_OF_ENTANGLING){
+	if(u.uentangled_otyp == ROPE_OF_ENTANGLING){
 		if(breakcheck*2 <= rn2(100*ATTRSCALE))
 			return FALSE;
-	} else if(u.uentangled == IRON_BANDS){
+	} else if(u.uentangled_otyp == BANDS){
 		if(ACURRSTR < 15 && youracedata->msize != MZ_GIGANTIC) return FALSE;
 		if(breakcheck <= rn2(200*ATTRSCALE))
 			return FALSE;
-	} else if(u.uentangled == RAZOR_WIRE){
+	} else if(u.uentangled_otyp == RAZOR_WIRE){
 		if(breakcheck <= rn2(100*ATTRSCALE))
 			return FALSE;
 	} else {
-		u.uentangled = 0;
+		u.uentangled_oid = 0;
+		u.uentangled_otyp = 0;
 		return TRUE;
 	}
 	for(obj = invent; obj; obj = obj->nobj){
-		if(obj->otyp == u.uentangled && obj->spe == 1){
+		if(obj->o_id == u.uentangled_oid && !obj->oartifact){
 			You("break the restraining %s!", xname(obj));
 			useup(obj);
 			break;
 		}
 	}
 	for(obj = invent; obj; obj = obj->nobj){
-		if(obj->otyp == u.uentangled && obj->spe == 1){
+		if(obj->o_id == u.uentangled_oid){
 			return FALSE;
 		}
 	}
 	// else
-	u.uentangled = 0;
+	u.uentangled_oid = 0;
+	u.uentangled_otyp = 0;
 	return TRUE;
+}
+
+void
+entangle_effects(mdef)
+struct monst *mdef;
+{
+	struct obj *obj;
+	boolean youdef = mdef == &youmonst;
+	int entangle_oid = youdef ? u.uentangled_oid : mdef->entangled_oid;
+	for(obj = youdef ? invent : mdef->minvent; obj; obj = obj->nobj){
+		if(obj->o_id == entangle_oid){
+			if(obj->oartifact == ART_JIN_GANG_ZUO)
+				cancel_monst(mdef, obj, FALSE, FALSE, FALSE, 0);
+		}
+	}
 }
 
 int
@@ -5410,33 +5451,38 @@ uescape_entanglement()
 		struct obj *nobj;
 		for(obj = invent; obj; obj = nobj){
 			nobj = obj->nobj;
-			if(obj->otyp == u.uentangled && obj->spe == 1){
+			if(obj->o_id == u.uentangled_oid){
 				You("slip loose from the entangling %s!", xname(obj));
 				obj->spe = 0;
 				obj_extract_self(obj);
 				dropy(obj);
 			}
 		}
-		u.uentangled = 0;
+		u.uentangled_oid = 0;
+		u.uentangled_otyp = 0;
 		return TRUE;
 	}
 	obj = outermost_armor(&youmonst);
 	if(obj && (obj->greased || obj->otyp == OILSKIN_CLOAK));//Slip free
-	else if(u.uentangled == ROPE_OF_ENTANGLING){
+	else if(u.uentangled_otyp == ROPE_OF_ENTANGLING){
 		if(escapecheck <= rn2(20*ATTRSCALE)+rn2(20*ATTRSCALE))
 			return FALSE;
-	} else if(u.uentangled == IRON_BANDS){
+	} else if(u.uentangled_otyp == BANDS){
 		if(escapecheck <= rn2(20*ATTRSCALE))
 			return FALSE;
-	} else if(u.uentangled == RAZOR_WIRE){
+	} else if(u.uentangled_otyp == RAZOR_WIRE){
 		if(escapecheck <= rn2(20*ATTRSCALE)+rn2(20*ATTRSCALE))
 			return FALSE;
 	} else {
-		u.uentangled = 0;
+		u.uentangled_oid = 0;
+		u.uentangled_otyp = 0;
 		return TRUE;
 	}
 	for(obj = invent; obj; obj = obj->nobj){
-		if(obj->otyp == u.uentangled && obj->spe == 1){
+		if(obj->o_id == u.uentangled_oid){
+			//Very hard to escape from the diamond snare
+			if(obj->oartifact == ART_JIN_GANG_ZUO && rn2(20))
+				break;
 			You("slip loose from the entangling %s!", xname(obj));
 			obj->spe = 0;
 			obj_extract_self(obj);
@@ -5452,12 +5498,13 @@ uescape_entanglement()
 		}
 	}
 	for(obj = invent; obj; obj = obj->nobj){
-		if(obj->otyp == u.uentangled && obj->spe == 1){
+		if(obj->o_id == u.uentangled_oid){
 			return FALSE;
 		}
 	}
 	// else
-	u.uentangled = 0;
+	u.uentangled_oid = 0;
+	u.uentangled_otyp = 0;
 	return TRUE;
 }
 
