@@ -2867,18 +2867,20 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				}
 			}
 		}
-		/*These cases destroy the object, rescue its contents*/
-		while((obj2 = otmp->cobj)){
-			obj_extract_self(obj2);
-			/* Compartmentalize tip() */
-			if(carried(otmp)){
-				sellobj_state(SELL_DONTSELL);
-				dropy(obj2);
-				sellobj_state(SELL_NORMAL);
-			}
-			else {
-				place_object(obj2, u.ux, u.uy);
-				stackobj(obj2);
+		if(!is_tipped_spear(otmp)){
+			/*These cases destroy the object, rescue its contents*/
+			while((obj2 = otmp->cobj)){
+				obj_extract_self(obj2);
+				/* Compartmentalize tip() */
+				if(carried(otmp)){
+					sellobj_state(SELL_DONTSELL);
+					dropy(obj2);
+					sellobj_state(SELL_NORMAL);
+				}
+				else {
+					place_object(obj2, u.ux, u.uy);
+					stackobj(obj2);
+				}
 			}
 		}
 		switch(otmp->oclass){

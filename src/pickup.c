@@ -3143,6 +3143,10 @@ struct obj *obj;
 		pline("The obsidian point is irremovable from your spear.");
 		return MOVE_CANCELLED;
 	}
+	if (!freehand()) {
+		You("have no free %s.", body_part(HAND));
+		return MOVE_CANCELLED;
+	}
 	char spearlet;
 	struct obj *otmp;
 	boolean should_rewield = FALSE;

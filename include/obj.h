@@ -616,7 +616,7 @@ struct obj {
 			 objects[otmp->otyp].oc_skill == P_SPEAR)
 #define is_tipped_spear(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill == P_SPEAR && \
-			otmp->otyp != JAVELIN && otmp->otyp != ATLATL)
+			otmp->otyp != JAVELIN && otmp->otyp != ATLATL && otmp->otyp != ATGEIR)
 #define has_any_spear_point(otmp) ((otmp) && is_tipped_spear(otmp) && (otmp)->cobj)
 #define has_spear_point(otmp,typ) (has_any_spear_point(otmp) && (otmp)->cobj->otyp == typ)
 #define is_farm(otmp)	(otmp->oclass == WEAPON_CLASS && \
