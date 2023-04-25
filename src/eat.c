@@ -214,6 +214,7 @@ register struct obj *obj;
 		    as engulfed items, but poly'd player can't do that] */
 	    !Has_contents(obj))
 		return TRUE;
+	if(obj->otyp == FEATHER) return FALSE;
 
 	/* a sheaf of straw is VEGGY, but only edible for herbivorous animals */
 	if ((obj->otyp == ROPE_OF_ENTANGLING || obj->otyp == SHEAF_OF_HAY || obj->otyp == SEDGE_HAT) 
