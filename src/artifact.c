@@ -9590,7 +9590,7 @@ arti_invoke(obj)
 				summon_loop = rn2(4) + 4;
 				pline("Tentacles flow from the %s!", xname(obj));
 				do {
-				  mtmp = makemon(&mons[PM_NEOTHELID], u.ux, u.uy, NO_MM_FLAGS);
+				  mtmp = makemon(&mons[PM_NEOTHELID], u.ux, u.uy, MM_ESUM);
 				  if ((mtmp2 = tamedog(mtmp, (struct obj *)0)) != 0){
 						mtmp = mtmp2;
 						mtmp->mtame = 30;
