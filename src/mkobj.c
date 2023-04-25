@@ -2009,6 +2009,7 @@ struct obj* obj;
 	case BROKEN_ANDROID:
 	case BROKEN_GYNOID:
 	case WRITING_DESK:
+	case PSIONIC_PULSE:
 		return NULL;
 		/* Any other cases for specific object types go here. */
 	case SARCOPHAGUS:
