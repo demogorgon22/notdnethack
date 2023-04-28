@@ -813,7 +813,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  3, 0,  3, 0 },	/* Hit points */
 	{  2, 0,  2, 0,  2, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_HASTE_SELF, -10
 },
 {	"gnome", "gnomish", "gnomehood", "Gno",
 	{0, 0},
@@ -898,7 +899,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  2, 0,  0, 2 },	/* Hit points */
 	{  1, 0,  1, 0,  1, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS, 
+	SPE_FIREBALL, -10
 },
 {	"treant", "treantic", "treant-kind", "Ent",
 	{0, 0},
@@ -912,7 +914,7 @@ const struct Race races[] = {
 	{  5, 0,  0, 4,  3, 0 },	/* Hit points */
 	{  1, 0,  1, 0,  1, 0 },	/* Energy */
 	NIGHTVISION2,
-	0, 0
+	SPE_RESTORE_ABILITY, -10
 },
 {	"vampire", "vampiric", "vampirehood", "Vam",
 	{"vampire", "vampiress"},
