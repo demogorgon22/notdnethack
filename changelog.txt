@@ -166,6 +166,21 @@ Ent race
 		Methuselah
 			Spell boost intrinsic
 	Special spell restore ability
+
+Yuki-Onna changes
+	Increase hp gain SLIGHTLY
+	Move max con from 14 to 16 to make it miserable but more reasonable
+	Fix nymph handling to act more like vanilla and not scale weight for nymphs but instead to always give 1000 carry cap.
+	Added a snow cloud form that can be switched back and forth from at will
+		Cannot wear armor or hold weapons or use hands
+		Gets a cold touch, engulf, and the same cold passive as base form
+		Movement only turns are done at (NORMAL_SPEED/((xlvl/10)+1)) (1-9, normal, 10-19 6, 20-29 4, 30 3)
+		Gets (xlvl/6)+1 DR in each slot and and extra -xlvl AC
+		Regenerates
+		Has catsight
+		Resists cold, sleep, poison, and sickness
+		Is human size but since it is an odd body the carry cap can be 25% higher
+	
 Monk changes
 	Can set attack styles with #style
 		Surge punch 
