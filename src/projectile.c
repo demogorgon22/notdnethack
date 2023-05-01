@@ -2230,6 +2230,7 @@ dofire()
 		/* Throw wielded weapon -- mainhand only */
 		if ((uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep)))) && (
 			(uwep->oartifact == ART_KHAKKHARA_OF_THE_MONKEY) ||
+			(uwep->oartifact == ART_RUYI_JINGU_BANG) ||
 			check_oprop(uwep, OPROP_RETRW) ||
 			(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL) || 
 			(uwep->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE) && ACURR(A_STR) == STR19(25)) ||

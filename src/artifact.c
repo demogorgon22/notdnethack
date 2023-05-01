@@ -506,6 +506,9 @@ struct obj * otmp;
 	if (artival == NO_TIER)
 		return 0;
 
+	if(Role_if(PM_EXILE) && otmp->oartifact == ART_PEN_OF_THE_VOID)
+		return 0;
+
 	/* monks can get a bonus for some offensive armors */
 	if (otmp->oclass == ARMOR_CLASS
 		&& Role_if(PM_MONK)) {
@@ -522,6 +525,7 @@ struct obj * otmp;
 			break;
 		}
 	}
+
 	/* everyone gets a bonus for a weapon they get Expert with */
 	if (weapon_type(otmp) != P_BARE_HANDED_COMBAT
 		&& P_MAX_SKILL(weapon_type(otmp)) >= P_EXPERT)
