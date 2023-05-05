@@ -1819,6 +1819,7 @@ E void FDECL(set_apparxy, (struct monst *));
 E boolean FDECL(can_ooze, (struct monst *));
 E void FDECL(remove_monster, (int, int));
 E void FDECL(held_item_bites, (struct monst *, struct obj *));
+E void FDECL(add_byakhee_to_obj, (struct obj *));
 E boolean FDECL(likes_obj, (struct monst *, struct obj *));
 E boolean FDECL(can_equip, (struct monst *, struct obj *));
 E void FDECL(phantom_scorpions_sting, (struct monst *));
@@ -2849,7 +2850,7 @@ E struct obj *FDECL(findgold, (struct obj *));
 
 #ifdef STEED
 E void NDECL(rider_cant_reach);
-E boolean FDECL(can_saddle, (struct monst *));
+E boolean FDECL(can_saddle, (struct monst *, struct obj *));
 E int FDECL(use_saddle, (struct obj *));
 E boolean FDECL(can_ride, (struct monst *));
 E int NDECL(doride);

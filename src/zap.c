@@ -240,7 +240,7 @@ struct obj *otmp;
 {
 	boolean wake = TRUE;	/* Most 'zaps' should wake monster */
 	boolean reveal_invis = FALSE;
-	boolean dbldam = !flags.mon_moving && ((Role_if(PM_KNIGHT) && u.uhave.questart) || Spellboost);
+	boolean dbldam = !flags.mon_moving && Spellboost;
 	int dmg, otyp = otmp->otyp;
 	const char *zap_type_text = "spell";
 	struct obj *obj;
@@ -5078,8 +5078,8 @@ struct monst *mon;
 			mon->mpeaceful = 1;
 			mon->mcrazed = 1;
 			EDOG(mon)->loyal = TRUE;
-			EDOG(mtmp)->waspeaceful = TRUE;
-			mtmp->mpeacetime = 0;
+			EDOG(mon)->waspeaceful = TRUE;
+			mon->mpeacetime = 0;
 			newsym(mon->mx, mon->my);
 		}
 	}
@@ -5644,6 +5644,7 @@ allow_artwish()
 	//if(u.ulevel >= 7) n++;		// enough levels to be intimidating to marids/djinni
 	n += (u.uevent.utook_castle & ARTWISH_EARNED);	// sitting on the castle throne
 	n += (u.uevent.uunknowngod & ARTWISH_EARNED);	// sacrificing five artifacts to the priests of the unknown god
+	n += (u.uevent.uconstellation & ARTWISH_SPENT);	// got an extra bonus artwish from the imperial elven ring
 
 	n -= u.uconduct.wisharti;	// how many artifacts the player has wished for
 

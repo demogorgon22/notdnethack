@@ -932,9 +932,9 @@ int godnum;
 	    if (Luck > 10 && u.ualign.record >= PIOUS && !u.uevent.uhand_of_elbereth && u.uevent.qcompleted){
 			gcrownu();
 		}
-		else if(Pantheon_if(PM_VALKYRIE) && u.ualign.record >= PIOUS 
+		else if((God_if(GOD_ODIN) || God_if(GOD_TYR)) && u.ualign.record >= PIOUS 
 			&& uwep && is_spear(uwep) && !uwep->oartifact && uwep->spe >= 5 
-			&& !art_already_exists(ART_GUNGNIR) && (galign(godnum) == A_LAWFUL || galign(godnum) == A_NEUTRAL)
+			&& !art_already_exists(ART_GUNGNIR)
 		){
 			pline("Secret runes are engraved on your %s.", xname(uwep));
 			oname(uwep, artilist[ART_GUNGNIR].name);
@@ -3798,7 +3798,7 @@ commune_with_silver_flame()
 			if(otmp){
 				if(sflm_mortalable(otmp)){
 					cost = 50;
-					pline("The silver light is focused by your mirror!");
+					pline("The silver light within %s is focused by your mirror!", doname(otmp));
 					add_oprop(otmp, OPROP_MORTW);
 					u.uartisval += TIER_B; /*Theory: Life drain is actually not all that powerful, but the Wizard and his summons are still affected. */
 				}
@@ -3811,7 +3811,7 @@ commune_with_silver_flame()
 			if(otmp){
 				if(sflm_truedeathable(otmp)){
 					cost = 50;
-					pline("The silver light is focused by your mirror!");
+					pline("The silver light within %s is focused by your mirror!", doname(otmp));
 					add_oprop(otmp, OPROP_TDTHW);
 					u.uartisval += TIER_A; /*Theory: Nasty stuff like liches and pharaohs is affected, plus it deals a lot of damage to them. */
 				}
@@ -3824,7 +3824,7 @@ commune_with_silver_flame()
 			if(otmp){
 				if(sflm_unworthyable(otmp)){
 					cost = 50;
-					pline("The silver light is focused by your mirror!");
+					pline("The silver light within %s is focused by your mirror!", doname(otmp));
 					add_oprop(otmp, OPROP_SFUWW);
 					u.uartisval += TIER_S; /*Theory: This specifically affects the nastiest late game enemies. */
 				}

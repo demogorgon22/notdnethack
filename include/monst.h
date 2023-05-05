@@ -289,7 +289,8 @@ struct monst {
 #define SPORE_ZOMBIE	25	/* fungus zombie */
 #define CORDYCEPS		26	/* spore shedder */
 #define PSURLON			27	/* psychic worm */
-#define	WHISPERING		28	/* Voidified */
+#define CONSTELLATION	28	/* star creature */
+#define	WHISPERING		29	/* Voidified */
 #define MAXTEMPLATE	WHISPERING
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */

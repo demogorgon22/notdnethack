@@ -1094,6 +1094,8 @@ boolean goodequip;
 		set_material_gm(otmp, IRON);
 		add_oprop(otmp, OPROP_UNHY);
 		add_oprop(otmp, OPROP_UNHYW);
+		add_oprop(otmp, OPROP_HOLY);
+		add_oprop(otmp, OPROP_HOLYW);
 		curse(otmp);
 		otmp->spe = 4;
 		(void) mpickobj(mtmp, otmp);
@@ -1105,6 +1107,8 @@ boolean goodequip;
 		set_material_gm(otmp, IRON);
 		add_oprop(otmp, OPROP_UNHY);
 		add_oprop(otmp, OPROP_UNHYW);
+		add_oprop(otmp, OPROP_HOLY);
+		add_oprop(otmp, OPROP_HOLYW);
 		curse(otmp);
 		otmp->spe = 4;
 		(void) mpickobj(mtmp, otmp);
@@ -2595,7 +2599,6 @@ boolean goodequip;
 				otmp->spe = 5;
 				add_oprop(otmp, OPROP_ELFLW);
 				add_oprop(otmp, OPROP_WRTHW);
-				add_oprop(otmp, OPROP_BYAK);
 				curse(otmp);
 				set_material_gm(otmp, GOLD);
 			}
@@ -2667,7 +2670,7 @@ boolean goodequip;
 					(void) mongets(mtmp, BODYGLOVE, mkobjflags);
 					(void) mongets(mtmp, RAYGUN, mkobjflags);
 				}
-			} else if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
+			} else if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && !in_mklev){
 				otmp = mongets(mtmp, ELVEN_CLOAK, mkobjflags);
 				if(otmp)
 					otmp->oeroded3 = 1;
@@ -2691,7 +2694,7 @@ boolean goodequip;
 					if (mm == PM_ELF_LORD) {
 						(void)mongets(mtmp, CRYSTAL_SWORD, mkobjflags);
 					}
-				} 
+				}
 				else switch (rn2(3)) {
 				case 0:
 					if (!rn2(4)) (void)mongets(mtmp, ELVEN_SHIELD, mkobjflags);
@@ -3696,6 +3699,7 @@ boolean goodequip;
 				set_material_gm(otmp, IRON);
 				add_oprop(otmp, OPROP_BLADED);
 				add_oprop(otmp, OPROP_UNHYW);
+				add_oprop(otmp, OPROP_HOLYW);
 				(void) mpickobj(mtmp,otmp);
 			}
 			else {
@@ -3704,6 +3708,7 @@ boolean goodequip;
 				set_material_gm(otmp, IRON);
 				add_oprop(otmp, OPROP_SPIKED);
 				add_oprop(otmp, OPROP_LESSER_UNHYW);
+				add_oprop(otmp, OPROP_LESSER_HOLYW);
 				(void) mpickobj(mtmp,otmp);
 			}
 		}
@@ -7010,7 +7015,6 @@ int mmflags;
 			if(!rn2(40)){
 				otmp = mksobj(TWO_HANDED_SWORD, mkobjflags);
 				set_material_gm(otmp, SILVER);
-				add_oprop(otmp, OPROP_PSIOW);
 				add_oprop(otmp, OPROP_VORPW);
 				add_oprop(otmp, OPROP_GSSDW);
 				otmp->spe = 5;
@@ -7286,7 +7290,7 @@ int mmflags;
 					if(is_prince(ptr) || (is_lord(ptr) && !rn2(3))) (void)mongets(mtmp, DWARVISH_MITHRIL_COAT, mkobjflags);
 					else (void)mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 				}
-			} else if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
+			} else if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && !in_mklev){
 				otmp = mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
 				if(otmp)
 					otmp->oeroded3 = 1;
@@ -7552,6 +7556,41 @@ int mmflags;
 				}
 				if(ptr->mtyp == PM_THRIAE)
 				(void)mongets(mtmp, (rn2(2) ? FLUTE : HARP), mkobjflags);
+			} else if(ptr->mtyp == PM_CARCOSAN_COURTIER){
+				int chance = rn2(40);
+				if(chance == 0){
+					mongets(mtmp, ISAMUSEI, mkobjflags);
+				}
+				else if(chance < 4){
+					mongets(mtmp, BROADSWORD, mkobjflags);
+				}
+				else if(chance < 10){
+					mongets(mtmp, RAPIER, mkobjflags);
+				}
+				else {
+					mongets(mtmp, STILETTO, mkobjflags);
+				}
+				mongets(mtmp, CARCOSAN_STING, mkobjflags);
+				chance = rn2(20);
+				if(chance == 0){
+					mongets(mtmp, ARCHAIC_BOOTS, mkobjflags);
+					mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
+					mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags);
+				}
+				else if(chance < 5){
+					mongets(mtmp, rn2(2) ? SHOES : STILETTOS, mkobjflags);
+					mongets(mtmp, rn2(2) ? NOBLE_S_DRESS : CONSORT_S_SUIT, mkobjflags);
+					mongets(mtmp, rn2(2) ? GAUNTLETS : LONG_GLOVES, mkobjflags);
+				}
+				else if(chance < 10){
+					mongets(mtmp, ELVEN_TOGA, mkobjflags);
+				}
+				else {
+					mongets(mtmp, rn2(2) ? SHOES : STILETTOS, mkobjflags);
+					mongets(mtmp, rn2(2) ? GENTLEMAN_S_SUIT : GENTLEWOMAN_S_DRESS, mkobjflags);
+					mongets(mtmp, rn2(2) ? RUFFLED_SHIRT : VICTORIAN_UNDERWEAR, mkobjflags);
+				}
+				mongets(mtmp, MASK, mkobjflags);
 			} else if(ptr->mtyp == PM_INTONER){
 				int intoner_color = HI_GLASS;
 				switch(rn2(6)){
@@ -7777,7 +7816,7 @@ int mmflags;
 					set_material_gm(otmp, BONE);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
-				} else if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
+				} else if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && !in_mklev){
 					switch(rn2(13)){
 						case 0:
 							mtmp->mvar_deminymph_role = PM_BARBARIAN;
@@ -13172,13 +13211,16 @@ struct monst * mon;
 		|| (mon->mtyp == PM_STAR_ELF && Role_if(PM_MADMAN))
 	)
 		out_faction = YELLOW_FACTION;
-	else if(Is_knox(&u.uz) || Is_sanctum(&u.uz))
+	else if(Is_knox(&u.uz)
+		|| Is_sanctum(&u.uz)
+		|| In_moloch_temple(&u.uz)
+	)
 		out_faction = YENDORIAN_FACTION;
 	else if((In_quest(&u.uz) 
 		|| Is_stronghold(&u.uz)
-		|| u.uz.dnum == temple_dnum
-		|| u.uz.dnum == tower_dnum
+		|| In_tower(&u.uz)
 		|| Is_astralevel(&u.uz)
+		|| Is_peanut(&u.uz)
 	) && !peaceful)
 		out_faction = YENDORIAN_FACTION;
 
@@ -14536,8 +14578,8 @@ int faction;
 	}
 	/* Delusions madness can hide the appearance of a monster */
 	if (roll_madness(MAD_DELUSIONS) && mtmp->m_ap_type == M_AP_NOTHING && !(
-			mtmp->mtyp == PM_LIVING_DOLL || mtmp->data->msound == MS_GLYPHS))
-	{
+			mtmp->mtyp == PM_LIVING_DOLL || mtmp->data->msound == MS_GLYPHS)
+	){
 		struct permonst *delusion = rndmonst();
 		if(delusion){
 			mtmp->m_ap_type = M_AP_MONSTER;
@@ -16311,6 +16353,12 @@ int mkobjflags;
 				}
 			}
 		}
+		if(mtmp->mtyp == PM_CARCOSAN_COURTIER){
+			if(is_metallic(otmp) || otmp->obj_material == SHADOWSTEEL)
+				set_material_gm(otmp, GOLD);
+			otmp->obj_color = CLR_YELLOW;
+		}
+
 		if (is_mplayer(mtmp->data) && is_sword(otmp)) {
 			otmp->spe = (3 + rn2(4));
 		}

@@ -2066,6 +2066,7 @@ get_description_of_damage_type(uchar id)
 	case AD_STTP: return "teleports your gear away";
 	case AD_HDRG: return "half-dragon breath";
 	case AD_STAR: return "silver starlight rapier";
+	case AD_BSTR: return "black-star rapier";
 	case AD_EELC: return "elemental electric";
 	case AD_EFIR: return "elemental fire";
 	case AD_EDRC: return "elemental poison (CON)";
@@ -2140,6 +2141,7 @@ get_description_of_damage_type(uchar id)
 	case AD_SVPN: return "severe poison";
 	case AD_HLUH: return "corrupted holy energy";
 	case AD_TSMI: return "magic-item-stealing tentacles";
+	case AD_BYAK: return "byakhee eggs";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";

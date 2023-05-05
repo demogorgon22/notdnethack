@@ -1157,7 +1157,8 @@ struct mkroom	*croom;
 					}
 				break;
 			}
-			set_faction(mon, YELLOW_FACTION);
+			if(mon)
+				set_faction(mon, YELLOW_FACTION);
 		}
 		else {
 			mon = makemon(&mons[asylum_types[rn2(SIZE(asylum_types))]], otmp->ox, otmp->oy, NO_MINVENT);
@@ -1771,7 +1772,6 @@ default_case:
 					stuff = mksobj(TWO_HANDED_SWORD, mkobjflags);
 					size_items_to_pc(stuff);
 					set_material_gm(stuff, SILVER);
-					add_oprop(stuff, OPROP_PSIOW);
 					add_oprop(stuff, OPROP_VORPW);
 					add_oprop(stuff, OPROP_GSSDW);
 					stuff->spe = 3;
@@ -1876,6 +1876,11 @@ default_case:
 				set_material_gm(stuff, WOOD);
 				add_to_container(otmp, stuff);
 
+				stuff = mksobj(SADDLE, MKOBJ_ARTIF);
+				set_material_gm(stuff, WOOD);
+				add_oprop(otmp, OPROP_PHSEW);
+				add_to_container(otmp, stuff);
+
 				if(flags.initgend){
 					default_add(PLAIN_DRESS);
 					stuff->obj_color = rn2(2) ? CLR_YELLOW : CLR_BRIGHT_GREEN;
@@ -1978,8 +1983,8 @@ default_case:
 				stuff = mksobj(FIGURINE, MKOBJ_NOINIT);
 				stuff->corpsenm = ROLL_FROM(stars);
 				if(stuff->corpsenm == PM_MOTE_OF_LIGHT)
-					stuff->spe |= FIGURINE_LOYAL|FIGURINE_PSEUDO;
-				else stuff->spe |= FIGURINE_LOYAL;
+					stuff->spe = FIGURINE_LOYAL|FIGURINE_PSEUDO;
+				else stuff->spe = FIGURINE_LOYAL;
 				stuff->objsize = MZ_TINY;
 				set_material_gm(stuff, GEMSTONE);
 				set_submat(stuff, DIAMOND);

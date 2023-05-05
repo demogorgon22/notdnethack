@@ -1741,6 +1741,15 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	if(pa->mtyp == PM_IKSH_NA_DEVA && mlev(magr) >= 45 && attk->aatyp == AT_WEAP && *indexnum == 0){
 		attk->aatyp = AT_DEVA;
 	}
+	/* Carcosan courtiers gain extra dice on their tentacles. */
+	if(pa->mtyp == PM_CARCOSAN_COURTIER && attk->aatyp == AT_TENT && u.uinsight > 5){
+		if(u.uinsight < 25){
+			attk->damn = u.uinsight/5;
+		}
+		else {
+			attk->damn = 5;
+		}
+	}
 	/* Grue does not make its later attacks if its square is lit */
 	if (pa->mtyp == PM_GRUE &&
 		!by_the_book &&
@@ -2661,6 +2670,7 @@ struct attack *attk;
 					verb = "slash";
 					ending = (attk->adtyp == AD_SHDW) ? " with bladed shadows!" :
 						(attk->adtyp == AD_STAR) ? " with a starlight rapier!" :
+						(attk->adtyp == AD_BSTR) ? " with a black-star rapier!" :
 						(attk->adtyp == AD_MOON) ? " with a moonlight rapier!" :
 						(attk->adtyp == AD_HOLY) ? " with a holy light-beam!" :
 						(attk->adtyp == AD_UNHY) ? " with a unholy light-blade!" :
@@ -4466,6 +4476,7 @@ boolean ranged;
 	case AD_HODS:	/* should be deprecated in favour of just physical damage */
 	case AD_SHDW:	/* poisoned, phases (blade of shadow) */
 	case AD_STAR:	/* silvered, phases (silver starlight rapier) */
+	case AD_BSTR:	/* phases (black-star rapier) */
 	case AD_MOON:	/* silvered, phases (silver moonlight rapier) */
 	case AD_BLUD:	/* bloodied, phases (blade of blood) */
 	case AD_MERC:	/* poisoned, cold, phases (blade of mercury) */
@@ -4485,6 +4496,21 @@ boolean ranged;
 				extrahit > 1 ? "s" : "",
 				extrahit < 3 ? "." : extrahit < 7 ? "!" : "!!");
 			dohitmsg = FALSE;
+		}
+		/* special effects of black star rapiers */
+		if(attk->adtyp == AD_BSTR){
+			if(youdef || !resist(mdef, WEAPON_CLASS, 0, TRUE)){
+				*hp(mdef) -= *hp(mdef)/5; /*Percentage based damage, will not kill*/
+			}
+			if (youdef) {
+				if (rndcurse())
+					You_feel("as if you need some help.");
+				stop_occupation();
+			}
+			else {
+				if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+					You_feel("as though %s needs some help.", mon_nam(mdef));
+			}
 		}
 		/* hit with [weapon] */
 		result = hmon_general(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, 0, dmg, dohitmsg, dieroll, FALSE, vis);
@@ -7353,6 +7379,52 @@ boolean ranged;
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
+	case AD_BYAK:{
+		/* print a basic hit message */
+		if (vis && dohitmsg) {
+			xyhitmsg(magr, mdef, originalattk);
+		}
+		
+		struct obj *otmp = some_armor(mdef);
+		if(otmp){
+			add_byakhee_to_obj(otmp);
+		}
+		else {
+			if(youagr ? flags.female : magr->female){
+				otmp = mksobj_at(EGG, x(mdef), y(mdef), MKOBJ_NOINIT);
+				if(otmp){
+					otmp->spe = youagr; //yours?
+					otmp->quan = 1;
+					otmp->owt = weight(otmp);
+					otmp->corpsenm = PM_BYAKHEE;
+					attach_egg_hatch_timeout(otmp);
+				}
+			}
+			else {
+				struct monst *larva = makemon(&mons[PM_STRANGE_LARVA], x(mdef), y(mdef), MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH|(youagr ? MM_EDOG : 0));
+				if(larva){
+					larva->mvar_tanninType = PM_BYAKHEE;
+					if(youagr){
+						initedog(larva);
+					}
+					else if(magr->mpeaceful){
+						larva->mpeaceful = TRUE;
+						set_faction(larva, magr->mfaction);
+					}
+					else {
+						larva->mpeaceful = FALSE;
+						set_faction(larva, magr->mfaction);
+					}
+					newsym(larva->mx, larva->my);
+					set_malign(larva);
+				}
+			}
+		}
+
+		/* make physical attack without hitmsg */
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
+	}
 	case AD_STDY:
 		/* study before doing the attack */
 		if (notmcan) {
@@ -7911,7 +7983,7 @@ boolean ranged;
 		/* maybe print glowy message */
 		if (!Blind && (youdef || canseemon(mdef))){
 			const char * glow = ((pa->mtyp == PM_SWORD_ARCHON || pa->mtyp == PM_BAEL) ?
-				"faintly blue" : "sickly green");
+				"faintly blue" : (pa->mtyp == PM_FLAXEN_STARSHADOW || pa->mtyp == PM_FLAXEN_STAR_PHANTOM) ? "bilious yellow" : "sickly green");
 			if (youdef)
 				You("glow %s!", glow);
 			else
@@ -11381,7 +11453,8 @@ int vis;
 			(!(youagr ? Blind : is_blind(magr))) &&
 			(!(youdef ? Invis : mdef->minvis) || (youagr ? See_invisible(x(mdef), y(mdef)) : mon_resistance(magr, SEE_INVIS))) &&
 			(youagr ? canseemon(mdef) : youdef ? mon_can_see_you(magr) : mon_can_see_mon(magr, mdef)) &&
-			(!(youagr ? Sleeping : magr->msleeping))
+			(!(youagr ? Sleeping : magr->msleeping)) &&
+			(!Gaze_res(mdef))
 		))
 		||
 		/* needs_mdef_eyes:   mdef must have eyes and can actively see magr */
@@ -13360,6 +13433,7 @@ int vis;						/* True if action is at all visible to the player */
 				|| check_oprop(weapon, OPROP_BLADED)
 				|| check_oprop(weapon, OPROP_SPIKED)
 				|| weapon->oartifact == ART_WAND_OF_ORCUS
+				|| weapon->otyp == WIND_AND_FIRE_WHEELS
 			) &&
 			/* being used with an attack action, or no attack action (which implies an oddly-launched object, like a falling boulder or something) */
 			(!attk || weapon_aatyp(attk->aatyp)) &&
@@ -13744,6 +13818,14 @@ int vis;						/* True if action is at all visible to the player */
 			seardmg += rnd(20);
 		}
 	}
+	else if(attk && (
+		attk->adtyp == AD_BSTR
+	)){
+		if (hates_unholy_mon(mdef) && !(youdef && u.sealsActive&SEAL_EDEN)) {
+			unholyobj |= W_SKIN;
+			seardmg += d(5,5);
+		}
+	}
 	/* weapons/armor */
 	else if (otmp &&
 		// if using a weapon, only check that weapon (probably moot)
@@ -13970,6 +14052,8 @@ int vis;						/* True if action is at all visible to the player */
 				!((Race_if(PM_DROW) && !flags.initgend &&
 						(Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || Role_if(PM_WIZARD)))
 				  || (Pantheon_if(PM_RANGER))
+				  || (God_if(GOD_APOLLO))
+				  || (!Holiness_if(HOLY_HOLINESS))
 				  || (Race_if(PM_HALF_DRAGON) && flags.initgend && Role_if(PM_MADMAN))
 				) &&
 				(u.ualign.record > -10)
@@ -14690,12 +14774,6 @@ int vis;						/* True if action is at all visible to the player */
 				basedmg = rnd(bigmonst(pd) ? 2 : 6) + weapon->spe + (youagr ? dbon(weapon) : 0);
 				if (youagr && u.twoweap)
 					basedmg += rnd(bigmonst(pd) ? 2 : 6) + weapon->spe;
-				break;
-
-			case WIND_AND_FIRE_WHEELS:
-				basedmg = rnd(bigmonst(pd) ? 9 : 14) + weapon->spe + (youagr ? dbon(weapon) : 0);
-				if (youagr && u.twoweap)
-					basedmg += rnd(bigmonst(pd) ? 9 : 14) + weapon->spe;
 				break;
 
 			default:
@@ -15805,6 +15883,10 @@ int vis;						/* True if action is at all visible to the player */
 			if (attk && attk->adtyp == AD_STAR)
 			{
 				Strcat(buf, "starlight rapier");
+			}
+			else if (attk && attk->adtyp == AD_BSTR)
+			{
+				Strcat(buf, "black-star rapier");
 			}
 			else if (attk && attk->adtyp == AD_MOON)
 			{

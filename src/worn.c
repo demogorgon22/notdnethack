@@ -747,6 +747,14 @@ struct monst *mon;
 	else{
 		base -= mon->data->nac;
 	}
+	if(mon->mtyp == PM_CARCOSAN_COURTIER){
+		if(u.uinsight < 25){
+			base -= u.uinsight/5;
+		}
+		else {
+			base -= 5;
+		}
+	}
 	if(!mon->mcan){
 		base -= mon->data->pac;
 		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
@@ -945,6 +953,14 @@ struct monst *mon;
 	}
 	else {
 		base -= mon->data->nac;
+	}
+	if(mon->mtyp == PM_CARCOSAN_COURTIER){
+		if(u.uinsight < 25){
+			base -= u.uinsight/5;
+		}
+		else {
+			base -= 5;
+		}
 	}
 	if(!mon->mcan){
 		base -= mon->data->pac;
@@ -1382,6 +1398,14 @@ int depth;
 		slotnatdr = slotnatdr*mon->mhp/mon->mhpmax;
 	}
 	nat_mdr += slotnatdr;
+	if(mon->mtyp == PM_CARCOSAN_COURTIER){
+		if(u.uinsight < 25){
+			nat_mdr += u.uinsight/5;
+		}
+		else {
+			nat_mdr += 5;
+		}
+	}
 	if (!mon->mcan) {
 		switch (slot)
 		{
@@ -2011,16 +2035,16 @@ boolean polyspot;
 		}
 	}
 #ifdef STEED
-	if (!can_saddle(mon)) {
-	    if ((otmp = which_armor(mon, W_SADDLE)) != 0) {
+	otmp = which_armor(mon, W_SADDLE);
+	if (otmp && !can_saddle(mon, otmp)) {
 		if (polyspot) bypass_obj(otmp);
 		m_lose_armor(mon, otmp);
 		if (vis)
 		    pline("%s saddle falls off.", s_suffix(Monnam(mon)));
-	    }
 	    if (mon == u.usteed)
-		goto noride;
-	} else if (mon == u.usteed && !can_ride(mon)) {
+			goto noride;
+	}
+	else if (mon == u.usteed && !can_ride(mon)) {
 	noride:
 	    You("can no longer ride %s.", mon_nam(mon));
 	    if (touch_petrifies(u.usteed->data) &&

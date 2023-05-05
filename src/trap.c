@@ -94,7 +94,7 @@ boolean candestroy;
 				return TRUE;
 			case 2:
 				item = (victim == &youmonst) ? uarms : which_armor(victim, W_ARMS);
-				if (!burn_dmg(item, "wooden shield")) continue;
+				if (!burn_dmg(item, "shield")) continue;
 				break;
 			case 3:
 				item = (victim == &youmonst) ? uarmg : which_armor(victim, W_ARMG);
@@ -1611,25 +1611,23 @@ struct obj *otmp;
 			}
 			break;
 		case POLY_TRAP: 
-		    if (!resists_magm(mtmp) && !resists_poly(mtmp->data)) {
-			if (!resist(mtmp, WAND_CLASS, 0, NOTELL)) {
-			(void) newcham(mtmp, NON_PM,
-				       FALSE, FALSE);
-			if (!can_saddle(mtmp) || !can_ride(mtmp)) {
-				dismount_steed(DISMOUNT_POLY);
-			} else {
-				You("have to adjust yourself in the saddle on %s.",
-					x_monnam(mtmp,
-					 M_HAS_NAME(mtmp) ? ARTICLE_NONE : ARTICLE_A,
-				 	 (char *)0, SUPPRESS_SADDLE, FALSE));
+			if (!resists_magm(mtmp) && !resists_poly(mtmp->data)) {
+				if (!resist(mtmp, WAND_CLASS, 0, NOTELL)) {
+					(void) newcham(mtmp, NON_PM, FALSE, FALSE);
+					if (!can_saddle(mtmp, which_armor(mtmp, W_SADDLE)) || !can_ride(mtmp)) {
+						dismount_steed(DISMOUNT_POLY);
+					} else {
+						You("have to adjust yourself in the saddle on %s.",
+						x_monnam(mtmp,
+						M_HAS_NAME(mtmp) ? ARTICLE_NONE : ARTICLE_A,
+						(char *)0, SUPPRESS_SADDLE, FALSE));
+					}
+				}
+				steedhit = TRUE;
 			}
-				
-		    }
-		    steedhit = TRUE;
-		    break;
+		break;
 		default:
-			return 0;
-	    }
+		return 0;
 	}
 	if(trapkilled) {
 		dismount_steed(DISMOUNT_POLY);

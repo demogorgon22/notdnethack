@@ -366,6 +366,7 @@ struct instance_flags {
     boolean dnethack_dungeon_colors;
     boolean invweight;
 	boolean quick_m_abilities;
+	boolean default_template_hilite;
 
 	int pokedex;	/* default monster stats to show in the pokedex */
 /*

@@ -2093,6 +2093,10 @@ struct obj* obj;
 	case BROKEN_GYNOID:
 	case WRITING_DESK:
 	case PSIONIC_PULSE:
+	case BLASTER_BOLT:
+	case HEAVY_BLASTER_BOLT:
+	case LASER_BEAM:
+	case CARCOSAN_BOLT:
 		return NULL;
 		/* Any other cases for specific object types go here. */
 	case SARCOPHAGUS:
@@ -2128,6 +2132,8 @@ struct obj* obj;
 	case FROST_HORN:
 	case HORN_OF_PLENTY:
 		return horn_materials;
+	case EILISTRAN_ARMOR:
+		return eli_materials;
 	default:
 		break;
 	}
@@ -2165,10 +2171,7 @@ struct obj* obj;
     }
     else if (obj->oclass == WEAPON_CLASS || is_weptool(obj)
              || obj->oclass == ARMOR_CLASS) {
-        if (obj->otyp == EILISTRAN_ARMOR) {
-            return eli_materials;
-        }
-        else if (default_material == IRON || default_material == METAL) {
+        if (default_material == IRON || default_material == METAL) {
             return metal_materials;
         }
         else if (default_material == WOOD) {
@@ -3070,7 +3073,7 @@ place_object(otmp, x, y)
 register struct obj *otmp;
 int x, y;
 {
-    register struct obj *otmp2 = level.objects[x][y];
+    register struct obj *otmp2;
 
     if (otmp->where != OBJ_FREE)
 	panic("place_object: obj not free");
@@ -3078,13 +3081,14 @@ int x, y;
     obj_no_longer_held(otmp);
     if (is_boulder(otmp)) block_point(x,y);	/* vision */
 
+	otmp2 = level.objects[x][y];//Special effects of obj_no_longer_held may change level.objects[x][y]
     /* obj goes under boulders */
     if (otmp2 && is_boulder(otmp2)) {
-	otmp->nexthere = otmp2->nexthere;
-	otmp2->nexthere = otmp;
+		otmp->nexthere = otmp2->nexthere;
+		otmp2->nexthere = otmp;
     } else {
-	otmp->nexthere = otmp2;
-	level.objects[x][y] = otmp;
+		otmp->nexthere = otmp2;
+		level.objects[x][y] = otmp;
     }
 
     /* set the new object's location */

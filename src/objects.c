@@ -587,8 +587,9 @@ GUN(("handgun", "unfamiliar handgun"),                0,   MZ_SMALL, 0,  12,  10
 GUN(("gun", "unfamiliar gun"),                        0,  MZ_MEDIUM, 0,  25,  250, 10,  3, -1, WP_BULLET, IRON, P_FIREARM, HI_METAL, O_NOWISH(1)),/*Needs tile*/
 GUN(("long gun", "unfamiliar long gun"),              0,    MZ_HUGE, 0,  30,  150, 22, -1,  1, WP_BULLET, IRON, P_FIREARM, HI_METAL, O_NOWISH(1)),/*Needs tile*/
 GUN(("heavy gun", "unfamiliar heavy gun"),            0,    MZ_HUGE, 0, 100, 2000, 20,  8, -4, WP_BULLET, IRON, P_FIREARM, HI_METAL, O_NOWISH(1)),/*Needs tile*/
-GUN(("hand blaster", "hard black handmirror", "hard handmirror"), 0,  MZ_MEDIUM, 0,   2, 1000, 10,  1,  0,WP_BLASTER, PLASTIC, P_FIREARM, CLR_BLACK, O_MAGIC(1)), /*Needs tile*/
-GUN(("arm blaster",  "hard white bracer", "hard bracer"),         0,   MZ_LARGE, 0,   8, 4500, 15,  6,  0,WP_BLASTER, PLASTIC, P_FIREARM, CLR_WHITE, O_MAGIC(1)), /*Needs tile*/
+GUN(("hand blaster", "hard black handmirror", "hard handmirror"), 0,  MZ_MEDIUM, 0,   2, 1000, 10,  1, -5,WP_BLASTER, PLASTIC, P_FIREARM, CLR_BLACK, O_MAGIC(1)), /*Needs tile*/
+GUN(("arm blaster",  "hard white bracer", "hard bracer"),         0,   MZ_LARGE, 0,   8, 4500, 15,  6, -5,WP_BLASTER, PLASTIC, P_FIREARM, CLR_WHITE, O_MAGIC(1)), /*Needs tile*/
+GUN(("carcosan sting", "curved dagger"),              0,   MZ_SMALL, 0,  10, 5000,  8, 1, 0, WP_BLASTER, GOLD, P_FIREARM, HI_GOLD, O_MATSPEC(NIDED)), /*Needs tile*/
  /*Needs encyc entry*/
 GUN(("mass-shadow pistol",  "rectangular device"),                0,  MZ_MEDIUM, 0,   4, 4500, 10,  1,  0,WP_BLASTER, PLASTIC, P_FIREARM, CLR_GRAY, O_MAGIC(1)), /*Needs tile*/
 GUN(("cutting laser","hard tan lozenge", "hard lozenge"),         0,   MZ_SMALL, 0,   1, 1000,  3, -1,  3,WP_BLASTER, PLASTIC, P_FIREARM, CLR_YELLOW, O_MAGIC(1)), /*Needs tile*/
@@ -626,6 +627,9 @@ BULLET(("heavy blaster bolt", "scarlet bolt", "bolt"),
 BULLET(("psionic pulse", (char *)0, "pulse"),
 	DMG(D(3, 3), F(4)), DMG(D(3, 3), F(4)),
 	0,    MZ_TINY, 0,  1,   0, 0, WP_GENERIC,   E,   METAL, P_NONE, CLR_BRIGHT_BLUE),/*Needs tile*/
+BULLET(("carcosan bolt", "golden bolt", "bolt"),
+	DMG(D(1, 5), F(5)), DMG(D(1, 5), F(5)),
+	0,    MZ_TINY, 0,  1,   0, 0, WP_BLASTER,   E|P,   METAL, -P_FIREARM, CLR_YELLOW),/*Needs tile*/
 BULLET(("laser beam", "green bolt", "bolt"),
 	DMG(D(3, 1), F(10)), DMG(D(3, 1), F(10)),
 	0,    MZ_TINY, 0,  1,   0, 0, WP_BLASTER,   E|S, METAL, -P_FIREARM, CLR_BRIGHT_GREEN),/*Needs tile*/
@@ -711,7 +715,7 @@ HELM(("elven helm", "runed helm"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 1, 10,   5, 9, 3, 0, WOOD, HI_WOOD),
 HELM(("high-elven helm", "runed helm"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 1, 15,   5, 8, 4, 0, MITHRIL, HI_MITHRIL, O_MATSPEC(UNIDED)),
-HELM(("imperial elven helm", "runed helm"), /*Needs encyc entry*//*Needs tile*/
+HELM(("imperial elven helm", "runed faceless helm"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 0, 30, 900, 8, 4, 2, WOOD, CLR_BRIGHT_GREEN),
 HELM(("droven helm", "spider-shaped helm"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 1, 20,   5, 8, 4, 0, SHADOWSTEEL, CLR_BLACK),
@@ -789,7 +793,7 @@ SUIT(("lantern plate mail", "glass-set plate mail"),
 SUIT(("high-elven plate", "runed plate mail"), /*Needs encyc entry*/
 	0, 0,   MZ_HUGE, ARMSZ_MEDIUM,  0,  5, 110, 1200,  3, 7, 3, MITHRIL, HI_MITHRIL),
 SUIT(("imperial elven armor", "runed plate mail"), /*Needs encyc entry*/
-	0, 0,   MZ_HUGE, ARMSZ_MEDIUM,  0,  5, 110, 9000,  4, 6, 3, WOOD, CLR_BRIGHT_GREEN),
+	0, 0,   MZ_HUGE, ARMSZ_HEAVY,  0,  5, 110, 9000,  4, 6, 3, WOOD, CLR_BRIGHT_GREEN),
 SUIT(("droven plate mail", "crested black plate", "crested plate mail"), /*Needs encyc entry*/
 	0, 0,   MZ_HUGE, ARMSZ_MEDIUM,  0,  5,  85, 2000,  3, 7, 3, SHADOWSTEEL, CLR_BLACK),
 SUIT(("elven toga"), /*Needs encyc entry*//*Needs tile*/
@@ -985,7 +989,7 @@ SHIELD(("stone dragon shield"),
 GLOVES(("crystal gauntlets", "gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 20, 400, 8, 4, 0, GLASS, HI_GLASS, O_MATSPEC(UNIDED)),
 GLOVES(("gauntlets"), /*Needs encyc entry*//*Needs tile*/
-		1, 0,  4, 2, 25, 10, 8, 4, 0, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED)),
+		1, 0,  4, 2, 25, 10, 8, 4, 1, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED)),
 GLOVES(("knuckle dusters","spikey rings"), /*Needs encyc entry*//*Needs tile*/
 		1, 0, 0, 2, 10, 250, 8, 2, 0, IRON, HI_METAL),
 GLOVES(("archaic gauntlets"), /*Needs encyc entry*//*Needs tile*/
@@ -999,7 +1003,7 @@ GLOVES(("harmonium gauntlets", "red-lacquered hooked gauntlets", "hooked gauntle
 GLOVES(("high-elven gauntlets", "runed gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 15, 50, 8, 4, 0, MITHRIL, HI_MITHRIL),
 GLOVES(("imperial elven gauntlets", "runed gauntlets"), /*Needs encyc entry*//*Needs tile*/
-		0, 0,  0, 2, 15,900, 8, 4, 2, WOOD, CLR_BRIGHT_GREEN),
+		0, 0,  0, 2, 15,900, 8, 4, 1, WOOD, CLR_BRIGHT_GREEN),
 GLOVES(("plasteel gauntlets", "hard white gauntlets", "gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 15, 50,  8, 3, 0, PLASTIC, CLR_WHITE),
 GLOVES(("gloves", "old gloves"),
@@ -1035,7 +1039,7 @@ BOOTS(("high boots", "jackboots"),
 BOOTS(("heeled boots", "tall boots"),
 		1, 0,   0, 2, 20, 12, 10, 2, 0, LEATHER, CLR_BLACK),
 BOOTS(("imperial elven boots", "runed armored boots"),
-		0, 0,   0, 2, 25,900,  8, 3, 0, WOOD, CLR_BRIGHT_GREEN, O_POWER(STEALTH)),
+		0, 0,   0, 2, 25,900,  8, 3, 1, WOOD, CLR_BRIGHT_GREEN, O_POWER(STEALTH)),
 BOOTS(("wind and fire wheels", "bladed disks"),
 		0, 0,   0, 2, 25,900, 10, 0, 0, IRON, HI_METAL),
 BOOTS(("crystal boots", "boots"), /*Needs encyc entry*//*Needs tile*/

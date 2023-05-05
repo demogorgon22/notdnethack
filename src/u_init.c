@@ -2666,6 +2666,11 @@ u_init()
 			HTelepat |= FROMOUTSIDE;
 			skill_add(Skill_Elf_Ana);
 		}
+		if(Role_if(PM_ELF)){
+			u.ualign.type = A_NEUTRAL;
+			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
+			flags.initalign = 1; // 1 == neutral
+		}
 	    /* Elves can recognize all elvish objects */
 		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
 			knows_object(ELVEN_SHORT_SWORD);
@@ -3129,7 +3134,7 @@ register struct trobj *trop;
 
 			if(obj->otyp == POT_BLOOD) 
 				obj->corpsenm = PM_HUMAN;
-			if(obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS || obj->otyp == SUNGLASSES)
+			if(obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS || obj->otyp == SUNGLASSES || is_weptool(obj))
 				set_obj_size(obj, youracedata->msize);
 			if(obj->oclass == ARMOR_CLASS){
 				set_obj_shape(obj, youracedata->mflagsb);

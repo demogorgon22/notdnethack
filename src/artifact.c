@@ -321,8 +321,6 @@ hack_artifacts()
 	}
 	if (Role_if(PM_MONK)) {
 	    artilist[ART_GRANDMASTER_S_ROBE].alignment = alignmnt;
-	    artilist[ART_ROBE_OF_THE_ARCHMAGI].alignment = A_CHAOTIC;
-	    artilist[ART_ROBE_OF_THE_ARCHMAGI].role = Role_switch;
 
 	    artilist[ART_EYES_OF_THE_OVERWORLD].size = (&mons[urace.malenum])->msize;
 	}
@@ -4387,6 +4385,27 @@ int * truedmgptr;
 		if (check_oprop(otmp, OPROP_LESSER_PSIOW))
 			*truedmgptr += d(2, 12);
 	}
+	if(check_oprop(otmp, OPROP_GSSDW)){
+		int power = youagr ? u.uinsight : magr ? magr->m_lev : 0;
+		//"Crit" chance
+		if(power > 0){
+			int multiplier = power >= 50 ? 3 : power >= 25 ? 2 : 1; 
+			int chance = power >= 50 ? 5 : power >= 25 ? 10 : 20; 
+			if(!rn2(chance))
+			*truedmgptr += multiplier*basedmg;
+		}
+		//Bonus psychic damage (More reliable than regular psychic damage)
+		if(youdef || !mindless_mon(mdef)){
+			if (power >= 30)
+				*truedmgptr += d(2, 12);
+			else if (power >= 20)
+				*truedmgptr += d(2, 10);
+			else if (power >= 10)
+				*truedmgptr += d(2, 8);
+			else
+				*truedmgptr += d(2, 6);
+		}
+	}
 	if(check_oprop(otmp, OPROP_DEEPW)){
 		if(otmp->spe < 8){
 		if(youdef && (Blind_telepat || !rn2(5)))
@@ -6851,6 +6870,21 @@ boolean printmessages; /* print generic elemental damage messages */
 		/* cancel_monst handles resistance */
 		cancel_monst(mdef, otmp, youagr, FALSE, FALSE, FALSE);
 	}
+
+	//Also does the bolt (when it hits as a launcher)
+	if(otmp->otyp == CARCOSAN_STING){
+		if(u.uinsight >= 25){
+			struct obj *arm = some_armor(mdef);
+			if(arm){
+				add_byakhee_to_obj(arm);
+			}
+		}
+		if(youdef)
+			make_stunned(HStun + d(1,3), FALSE);
+		else
+			mdef->mconf = TRUE;
+	}
+
 	/* ********************************************
 	KLUDGE ALERT AND WARNING: FROM THIS POINT ON, NON-ARTIFACTS OR ARTIFACTS THAT DID NOT TRIGGER SPEC_DBON_APPLIES WILL NOT OCCUR
 	********************************************************
@@ -7138,6 +7172,7 @@ arti_invoke(obj)
 		oart->inv_prop == ILLITHID ||
 		oart->inv_prop == VOID_CHIME ||
 		oart->inv_prop == CHANGE_SIZE ||
+		oart->inv_prop == IMPERIAL_RING ||
 		oart->inv_prop == SEVENFOLD
 	))
 		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
@@ -8331,7 +8366,7 @@ arti_invoke(obj)
 					exercise(A_WIS, TRUE);
 					otmp = mksobj(FOOD_RATION, NO_MKOBJ_FLAGS);
 					hold_another_object(otmp, "Suddenly %s out.",
-				       aobjnam(otmp, "fall"), (const char *)0);
+				       an(aobjnam(otmp, "fall")), (const char *)0);
 					obj->spe--; // lose charge
 					pline("Your weapon has become more flawed.");
 				} else pline("Your weapon rattles faintly.");
@@ -10481,6 +10516,63 @@ arti_invoke(obj)
 			doliving_ibite_arm(&youmonst, obj, TRUE);
 			time = MOVE_PARTIAL;
 		break;
+        case IMPERIAL_RING:{
+			if(obj->spe <= 0 && artinstance[obj->oartifact].uconstel_pets >= 2){
+				pline("Nothing happens!");
+				break;
+			}
+			winid tmpwin;
+			anything any;
+			menu_item *selected;
+			int n;
+
+			any.a_void = 0;         /* zero out all bits */
+			tmpwin = create_nhwindow(NHW_MENU);
+			start_menu(tmpwin);
+			
+			any.a_int = 1;
+			if(obj->spe > 0)
+				add_menu(tmpwin, NO_GLYPH, &any, 'a', 0, ATR_NONE, "Make Wish", MENU_UNSELECTED);
+			any.a_int++; //Advance to next option anyway
+			if(artinstance[obj->oartifact].uconstel_pets < 2)
+				add_menu(tmpwin, NO_GLYPH, &any, 'b', 0, ATR_NONE, "Summon Constellation", MENU_UNSELECTED);
+
+			end_menu(tmpwin, "Call upon the stars?");
+			n = select_menu(tmpwin, PICK_ONE, &selected);
+
+			if(n > 0){
+				n = selected[0].item.a_int;
+				free(selected);
+			}
+			destroy_nhwindow(tmpwin);
+			if(!n){
+				return MOVE_CANCELLED;
+			}
+
+			if(n == 1){
+				use_ring_of_wishes(obj);
+			}
+			else if(n == 2){
+				if(artinstance[obj->oartifact].uconstel_pets < 2){
+					struct monst *mtmp;
+					mtmp = create_particular(u.ux, u.uy, MT_DOMESTIC, 0, FALSE, 0, MG_NOWISH|MG_NOTAME, G_UNIQ, (char *)0);
+					if (!mtmp) {
+						pline("Perhaps try summoning something else?");
+					}
+					else {
+						set_template(mtmp, CONSTELLATION);
+						EDOG(mtmp)->loyal = 1;
+						if(!Blind)
+							pline("Motes of light condense into %s.", mon_nam(mtmp));
+						artinstance[obj->oartifact].uconstel_pets++;
+					}
+				}
+				else pline("Nothing happens!");
+			}
+			else {
+				pline1(Never_mind);
+			}
+		}break;
         case SNARE_WEAPONS:{
 			struct monst *mtmp;
 			struct obj *otmp, *nobj;

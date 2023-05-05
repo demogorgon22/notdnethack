@@ -960,6 +960,10 @@ you_regen_hp()
 	if (uarm && uarm->otyp == IMPERIAL_ELVEN_ARMOR && check_imp_mod(uarm, IEA_FAST_HEAL)){
 		perX += u.ulevel;
 	}
+	// regeneration weapon
+	if (uwep && uwep->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING){
+		perX += HEALCYCLE/2;
+	}
 	// Corruption thought
 	if(active_glyph(CORRUPTION) && (*hp < (*hpmax)*.3)){
 		perX += HEALCYCLE;
@@ -2021,6 +2025,7 @@ moveloop()
 				if(mtmp->mtyp == PM_PALE_NIGHT || mtmp->mtyp == PM_DREAD_SERAPH || mtmp->mtyp == PM_LEGION) flags.walky_level=1;
 				if(mtmp->mtyp == PM_ORCUS || mtmp->mtyp == PM_NAZGUL) flags.shade_level=1;
 				if(mtmp->mtyp == PM_STRANGER) flags.yello_level=1;
+				if(mtmp->mtyp == PM_SUZERAIN) flags.yello_level=1;
 				if(mtmp->mtyp == PM_HMNYW_PHARAOH) dark_pharaoh_visible(mtmp);
 				if(mtmp->mtyp == PM_GOOD_NEIGHBOR) good_neighbor_visible(mtmp);
 				if(mtmp->mtyp == PM_DREAD_SERAPH && (mtmp->mstrategy & STRAT_WAITMASK) && (u.uevent.invoked || Infuture)){
@@ -5241,7 +5246,7 @@ struct monst *mon;
 			mon->mux = u.uz.dnum;
 		return;
 	}
-	pline("ping");
+
 	/* Follows between levels */
 	if(mon->muy != u.uz.dlevel){
 		if(!rn2(55)){

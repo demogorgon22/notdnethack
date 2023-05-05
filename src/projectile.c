@@ -261,7 +261,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		/* if we are outdoors... */
 		if (In_outdoors(&u.uz)) {
 			/* some projectiles will explode mid-air */
-			if (thrownobj->otyp == ROCKET || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT) {
+			if (thrownobj->otyp == ROCKET || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT) {
 				pline("%s explodes harmlessly far up in the air.", Doname2(thrownobj));
 				obfree(thrownobj, 0);
 				return MM_MISS;
@@ -275,7 +275,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		/* or if we are indoors... */
 		else {
 			/* some projectiles will always hit the ceiling */
-			if (thrownobj->otyp == ROCKET || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT) {
+			if (thrownobj->otyp == ROCKET || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT) {
 				pline("%s the %s and explodes!", Tobjnam(thrownobj, "hit"), ceiling(bhitpos.x, bhitpos.y));
 				destroy_projectile(magr, thrownobj);
 				return MM_MISS;
@@ -324,7 +324,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		/* returning weapons don't return when thrown downwards */
 
 		/* some projectiles have special effects */
-		if (thrownobj->otyp == ROCKET || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT) {
+		if (thrownobj->otyp == ROCKET || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT) {
 			if (youagr || couldsee(bhitpos.x, bhitpos.y))
 				pline("%s the %s and explodes!", Tobjnam(thrownobj, "hit"), surface(bhitpos.x, bhitpos.y));
 			destroy_projectile(magr, thrownobj);
@@ -433,6 +433,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			else if (
 				thrownobj->otyp == BLASTER_BOLT ||
 				thrownobj->otyp == HEAVY_BLASTER_BOLT ||
+				thrownobj->otyp == CARCOSAN_BOLT ||
 				thrownobj->otyp == LASER_BEAM) {
 				if (result)
 					break;	/* stop on hit; keep going on miss */
@@ -613,7 +614,7 @@ int dy;							/* */
 	boolean shopdoor = FALSE, shopwall = FALSE;
 
 	/* Projectile must be a digger */
-	if (!((thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == LASER_BEAM)))
+	if (!((thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT || thrownobj->otyp == LASER_BEAM)))
 		return;
 
 	/* Doors (but not artifact doors) */
@@ -644,6 +645,7 @@ int dy;							/* */
 	else if (IS_WALL(room->typ) && may_dig(newx, newy) && (
 		(thrownobj->otyp == LASER_BEAM) ||
 		(thrownobj->otyp == BLASTER_BOLT && !rn2(20)) ||
+		(thrownobj->otyp == CARCOSAN_BOLT && !rn2(20)) ||
 		(thrownobj->otyp == HEAVY_BLASTER_BOLT && !rn2(5))
 		)) {
 		struct obj * otmp;	/* newly-created rocks */
@@ -765,9 +767,10 @@ struct obj * thrownobj;			/* Projectile object. Must be free. Will no longer exi
 
 	case BLASTER_BOLT:
 	case HEAVY_BLASTER_BOLT:
+	case CARCOSAN_BOLT:
 		explode(bhitpos.x, bhitpos.y, AD_PHYS, 0,
-			(thrownobj->otyp == HEAVY_BLASTER_BOLT ? (d(3, 10))   : (d(3, 6))),
-			(thrownobj->otyp == HEAVY_BLASTER_BOLT ? (EXPL_FIERY) : (EXPL_RED)),
+			(thrownobj->otyp == CARCOSAN_BOLT ? (d(4, 5))     : thrownobj->otyp == HEAVY_BLASTER_BOLT ? (d(3, 10))   : (d(3, 6))),
+			(thrownobj->otyp == CARCOSAN_BOLT ? (EXPL_YELLOW) : thrownobj->otyp == HEAVY_BLASTER_BOLT ? (EXPL_FIERY) : (EXPL_RED)),
 			1);
 		obfree(thrownobj, (struct obj *)0);
 		break;
@@ -817,6 +820,7 @@ boolean forcedestroy;			/* If TRUE, make sure the projectile is destroyed */
 		thrownobj->otyp == BLASTER_BOLT ||
 		thrownobj->otyp == HEAVY_BLASTER_BOLT ||
 		thrownobj->otyp == PSIONIC_PULSE ||
+		thrownobj->otyp == CARCOSAN_BOLT ||
 		is_bullet(thrownobj)
 		))
 	{
@@ -1117,7 +1121,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		return MM_REFLECT;
 	}
 	/* blaster bolts and laser beams are reflected by regular reflection */
-	else if ((thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT)
+	else if ((thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT)
 		&& (youdef ? Reflecting : mon_reflects(mdef, (char *)0)))
 	{
 		boolean shienuse = FALSE;
@@ -1152,7 +1156,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 	}
 	/* Non-future (and rockets) protectiles are blown back by Tiamat's winds (somehow!) */
 	/*  And also not a rock from a sling. It's pretty arbitrary, but the idea is aerodynamic stuff gets blown back. */
-	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == BULLET 
+	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT || thrownobj->otyp == BULLET 
 			|| (launcher && (launcher->otyp == SLING || launcher->otyp == GRENADE_LAUNCHER))
 		)
 		&& !trap
@@ -1169,7 +1173,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 		return MM_REFLECT;
 	}
 	/* the player has a chance to burn some projectiles (not blaster bolts or laser beams) out of the air with a lightsaber */
-	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == PSIONIC_PULSE)
+	else if (!(thrownobj->otyp == LASER_BEAM || thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == PSIONIC_PULSE || thrownobj->otyp == CARCOSAN_BOLT)
 		&& youdef && uwep && is_lightsaber(uwep) && litsaber(uwep) && (
 			(activeFightingForm(FFORM_SHIEN) && rnd(3) < FightingFormSkillLevel(FFORM_SHIEN)) ||
 			(activeFightingForm(FFORM_SORESU) && rnd(3) < FightingFormSkillLevel(FFORM_SORESU))
@@ -1384,6 +1388,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 				(fired && thrownobj->otyp == ROCKET) || 
 				(fired && thrownobj->otyp == BLASTER_BOLT) ||
 				(fired && thrownobj->otyp == HEAVY_BLASTER_BOLT) ||
+				(fired && thrownobj->otyp == CARCOSAN_BOLT) ||
 				(fired && thrownobj->otyp == FRAG_GRENADE) || 
 				(fired && thrownobj->otyp == GAS_GRENADE))
 				{
@@ -2183,6 +2188,7 @@ dofire()
 						case HAND_BLASTER:
 						case ARM_BLASTER:
 						case MASS_SHADOW_PISTOL:
+						case CARCOSAN_STING:
 							ammo = blaster_ammo(launcher);
 							break;
 						case RAYGUN:
@@ -2230,6 +2236,10 @@ dofire()
 		/* Throw wielded weapon -- mainhand only */
 		if ((uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep)))) && (
 			(uwep->oartifact == ART_KHAKKHARA_OF_THE_MONKEY) ||
+			(uwep->oartifact == ART_RUYI_JINGU_BANG) ||
+			(uwep->oartifact == ART_SICKLE_OF_THUNDERBLASTS) ||
+			(uwep->oartifact == ART_AMHIMITL) ||
+			(uwep->oartifact == ART_SICKLE_MOON) ||
 			check_oprop(uwep, OPROP_RETRW) ||
 			(Role_if(PM_ANACHRONOUNBINDER) && u.ulevel >= ACU_RETURN_LVL) || 
 			(uwep->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE) && ACURR(A_STR) == STR19(25)) ||
@@ -2453,6 +2463,9 @@ struct obj * blaster;
 		break;
 	case ARM_BLASTER:
 		ammo = mksobj(HEAVY_BLASTER_BOLT, MKOBJ_NOINIT);
+		break;
+	case CARCOSAN_STING:
+		ammo = mksobj(CARCOSAN_BOLT, MKOBJ_NOINIT);
 		break;
 	case MASS_SHADOW_PISTOL:
 		if (blaster->cobj) {
@@ -3470,6 +3483,7 @@ int tary;
 					case HAND_BLASTER:
 					case ARM_BLASTER:
 					case MASS_SHADOW_PISTOL:
+					case CARCOSAN_STING:
 						ammo = blaster_ammo(launcher);
 						/* no special changes required */
 						break;

@@ -1976,7 +1976,9 @@ movemon()
 				else baby->mpeaceful = 1;
 			}
 		}
-		if(!rn2(100)){
+		if((levl[mtmp->mx][mtmp->my].typ == ROOM || levl[mtmp->mx][mtmp->my].typ == CORR)
+			&& !rn2(100)
+		){
 			struct obj *egg;
 			egg = mksobj(EGG, MKOBJ_NOINIT);
 			egg->spe = 0; //not yours
@@ -3572,25 +3574,6 @@ struct monst * mdef;	/* another monster which is next to it */
 			return ALLOW_M|ALLOW_TM;
 		else return 0L;
 	}
-	// dreadblossoms attack almost anything
-	if(ma->mtyp == PM_DREADBLOSSOM_SWARM &&
-		!(is_fey(md) || is_plant(md))
-	) {
-		return ALLOW_M|ALLOW_TM;
-	}
-	// grue attacks anything in the dark
-	if(ma->mtyp == PM_GRUE &&
-		isdark(mdef->mx, mdef->my)
-	) {
-		return ALLOW_M|ALLOW_TM;
-	}
-	// Oona attacks chaotics and vice versa (normal pet-vs-monster logic takes precedence)
-	if ((ma->mtyp == PM_OONA || md->mtyp == PM_OONA)
-		&& sgn(ma->maligntyp) == -1*sgn(md->maligntyp) //"Oona grudges on chaotics, but not on neutrals"
-		&& !(magr->mtame || mdef->mtame) //Normal pet-vs-monster logic should take precedence over this
-	){
-		return ALLOW_M|ALLOW_TM;
-	}
 	// In the anachrononaut quest, all peaceful monsters are at threat from all hostile monsters.
 	// The leader IS in serious danger
 	// However, the imminent doom causes all peacefuls to forget any grudges against each other
@@ -3667,6 +3650,25 @@ struct monst * mdef;	/* another monster which is next to it */
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == YELLOW_FACTION)
 		return FALSE;
 	
+	// dreadblossoms attack almost anything
+	if(ma->mtyp == PM_DREADBLOSSOM_SWARM &&
+		!(is_fey(md) || is_plant(md))
+	) {
+		return ALLOW_M|ALLOW_TM;
+	}
+	// grue attacks anything in the dark
+	if(ma->mtyp == PM_GRUE &&
+		isdark(mdef->mx, mdef->my)
+	) {
+		return ALLOW_M|ALLOW_TM;
+	}
+	// Oona attacks chaotics and vice versa (normal pet-vs-monster logic takes precedence)
+	if ((ma->mtyp == PM_OONA || md->mtyp == PM_OONA)
+		&& sgn(ma->maligntyp) == -1*sgn(md->maligntyp) //"Oona grudges on chaotics, but not on neutrals"
+		&& !(magr->mtame || mdef->mtame) //Normal pet-vs-monster logic should take precedence over this
+	){
+		return ALLOW_M|ALLOW_TM;
+	}
 	/* elves (and Eladrin) vs. (orcs and undead and wargs) */
 	if((is_elf(ma) || is_eladrin(ma) || ma->mtyp == PM_GROVE_GUARDIAN || ma->mtyp == PM_FORD_GUARDIAN || ma->mtyp == PM_FORD_ELEMENTAL)
 		&& (is_orc(md) || md->mtyp == PM_WARG || is_ogre(md) || is_undead(mdef->data))
@@ -3722,15 +3724,17 @@ struct monst * mdef;	/* another monster which is next to it */
 	#else
 	if(!(In_cha(&u.uz))){
 	#endif
-		if(mm_undead(magr) && 
-			(!is_witch_mon(mdef) && mdef->mtyp != PM_WITCH_S_FAMILIAR && !mdef->mpetitioner && !mm_undead(mdef) && !mindless_mon(mdef) && mdef->mfaction != YELLOW_FACTION)
-		){
-			return ALLOW_M|ALLOW_TM;
-		}
-		if((!is_witch_mon(magr) && magr->mtyp != PM_WITCH_S_FAMILIAR && !magr->mpetitioner && !mm_undead(magr) && !mindless_mon(magr) && magr->mfaction != YELLOW_FACTION)
-			&& mm_undead(mdef)
-		){
-			return ALLOW_M|ALLOW_TM;
+		if(!(magr->mpeaceful && mdef->mpeaceful && is_undead(youracedata))){
+			if(mm_undead(magr) && 
+				(!is_witch_mon(mdef) && mdef->mtyp != PM_WITCH_S_FAMILIAR && !mdef->mpetitioner && !mm_undead(mdef) && !mindless_mon(mdef) && mdef->mfaction != YELLOW_FACTION)
+			){
+				return ALLOW_M|ALLOW_TM;
+			}
+			if((!is_witch_mon(magr) && magr->mtyp != PM_WITCH_S_FAMILIAR && !magr->mpetitioner && !mm_undead(magr) && !mindless_mon(magr) && magr->mfaction != YELLOW_FACTION)
+				&& mm_undead(mdef)
+			){
+				return ALLOW_M|ALLOW_TM;
+			}
 		}
 	}
 	
@@ -8260,6 +8264,7 @@ struct obj *obj;
 	int nd;
 	int dd;
 	int damage;
+	boolean vis = mdef != &youmonst && canseemon(mdef);
 	if(obj->owornmask){
 		/*Count raised bits*/
 		if(objects[obj->otyp].oc_class == ARMOR_CLASS)
@@ -8320,7 +8325,17 @@ struct obj *obj;
 
 			mdef->mhp -= damage;
 			if(mdef->mhp < 1){
+				pline("%s is killed by %s %s!", mon_nam(mdef), mhis(mdef), simple_typename(obj->otyp));
 				mondied(mdef);
+			}
+			else {
+				static long mid = 0, move = 0;
+				
+				if(mdef->m_id != mid || move != monstermoves){
+					pline("%s is bitten by %s clothes!", mon_nam(mdef), mhis(mdef));
+					mid = mdef->m_id;
+					move = monstermoves;
+				}
 			}
 		}
 	}
@@ -8351,9 +8366,23 @@ struct obj *obj;
 
 			mdef->mhp -= damage;
 			if(mdef->mhp < 1){
+				pline("%s is killed by %s %s!", mon_nam(mdef), mhis(mdef), simple_typename(obj->otyp));
 				mondied(mdef);
 			}
+			else {
+				pline("%s is stung by %s %s!", mon_nam(mdef), mhis(mdef), simple_typename(obj->otyp));
+			}
 		}
+	}
+}
+
+void
+add_byakhee_to_obj(obj)
+struct obj *obj;
+{
+	if(obj->obyak < 3){
+		if(!obj->olarva && !obj->obyak) start_timer(4+d(2,4), TIMER_OBJECT, LARVAE_DIE, (genericptr_t)obj);
+		obj->obyak++;
 	}
 }
 

@@ -1075,6 +1075,12 @@ boolean dofull;
 				Strcat(buf, "silver-feather-encrusted ");
 		}
 		
+		if (check_oprop(obj, OPROP_WRTHW) && obj->known)
+			Strcat(buf, "wrathful ");
+		
+		if (check_oprop(obj, OPROP_ELFLW))
+			Strcat(buf, u.uinsight >= 33 ? "radiant " : u.uinsight >= 11 ? "incandescent " : "luminous ");
+
 		if (check_oprop(obj, OPROP_WATRW))
 			Strcat(buf, "misty ");
 		if (check_oprop(obj, OPROP_LESSER_WATRW))
@@ -1139,9 +1145,6 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_LESSER_MORGW) && obj->known && obj->cursed)
 			Strcat(buf, "morgul-shard ");
 		
-		if (check_oprop(obj, OPROP_WRTHW) && obj->known)
-			Strcat(buf, "wrathful ");
-		
 		if (check_oprop(obj, OPROP_FLAYW) && obj->known)
 			Strcat(buf, "flaying ");
 		if (check_oprop(obj, OPROP_LESSER_FLAYW) && obj->known)
@@ -1150,6 +1153,9 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40)
 			Strcat(buf, "living ");
 		
+		if (check_oprop(obj, OPROP_GSSDW))
+			Strcat(buf, u.uinsight >= 50 ? "rushing " : u.uinsight >= 25 ? "flowing " : "rippling ");
+
 		if (check_oprop(obj, OPROP_BRIL) && !obj->known)
 			Strcat(buf, "ornate ");
 		
@@ -1558,8 +1564,6 @@ boolean adjective;
 	case GOLD:
 		if(obj->otyp == APHANACTONAN_RECORD || obj->otyp == APHANACTONAN_ARCHIVE)
 			return (adjective ? "golden-red" : "red gold");
-		else if (adjective && check_oprop(obj, OPROP_ELFLW))
-			return u.uinsight >= 33 ? "radiant" : u.uinsight >= 11 ? "incandescent" : "luminous";
 		else return (adjective ? "golden" : "gold");
 	case PLATINUM:
 		if(check_oprop(obj,  OPROP_SFLMW))
@@ -3843,6 +3847,8 @@ int wishflags;
 		veioistafur = FALSE,
 		thjofastafur = FALSE,
 		lolth_symbol = FALSE,
+		kiaransali_symbol = FALSE,
+		eilistraee_symbol = FALSE,
 		sizewished = FALSE;
 	int item_color = -1;
 	int objsize = (from_user ? youracedata->msize : MZ_MEDIUM);
@@ -3980,6 +3986,10 @@ int wishflags;
 			thjofastafur = TRUE;
 		} else if(!strncmpi(bp, "lolth_symbol ", l=13)){
 			lolth_symbol = TRUE;
+		} else if(!strncmpi(bp, "kiaransali_symbol ", l=18)){
+			kiaransali_symbol = TRUE;
+		} else if(!strncmpi(bp, "eilistraee_symbol ", l=18)){
+			eilistraee_symbol = TRUE;
 		} else if(!strncmpi(bp, "color_black ", l=12)){
 			item_color = CLR_BLACK;
 		} else if(!strncmpi(bp, "color_red ", l=10)){
@@ -5623,6 +5633,14 @@ typfnd:
 		else if(thjofastafur && wizwish)	otmp->oward = THJOFASTAFUR; /*can't be wished for*/
 		else if(lolth_symbol && wizwish){/*can't be wished for*/
 			otmp->oward = LOLTH_SYMBOL;
+			otmp->ohaluengr = TRUE;
+		}
+		else if(kiaransali_symbol && wizwish){/*can't be wished for*/
+			otmp->oward = KIARANSALEE_SYMBOL;
+			otmp->ohaluengr = TRUE;
+		}
+		else if(eilistraee_symbol && wizwish){/*can't be wished for*/
+			otmp->oward = EILISTRAEE_SYMBOL;
 			otmp->ohaluengr = TRUE;
 		}
 	}

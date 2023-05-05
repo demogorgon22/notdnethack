@@ -456,6 +456,27 @@ struct monst *magr;
 			ocn = 1;
 			ocd = (large ? 2 : 4);
 		}
+		else if (otyp == CARCOSAN_STING)
+		{
+			ocn = 1;
+			ocd = 3;
+			if(u.uinsight >= 25){
+				bonn = 1;
+				bond = 5;
+				spe_mult += 1;
+			}
+		}
+		else if (otyp == WIND_AND_FIRE_WHEELS)
+		{
+			if(large){
+				ocn = 1;
+				ocd = 9;
+			}
+			else {
+				ocn = 1;
+				ocd = 14;
+			}
+		}
 		else if (otyp == MOON_AXE)
 		{
 			/*
@@ -1448,6 +1469,7 @@ static NEARDATA const int pwep[] =
 	ELVEN_LANCE, /*1d8/1d8*/
 	BEC_DE_CORBIN, /*1d8/1d6*/
 	GLAIVE, /*1d6/1d10*/
+    DISKOS/*1d6/1d8*/,
 	FAUCHARD, /*1d6/1d8*/
 	LANCE, /*1d6/1d8*/
 	PARTISAN, /*1d6/1d6*/
@@ -1475,7 +1497,8 @@ struct obj *otmp;
 		if(wep->otyp == otmp->otyp) return dmgval(otmp, 0 /*zeromonst*/, 0, mtmp) > dmgval(wep, 0 /*zeromonst*/, 0, mtmp);
 		
 		if(wep->otyp == ARM_BLASTER) return FALSE;
-		if(wep->otyp == HAND_BLASTER) return (otmp->otyp == ARM_BLASTER && otmp->ovar1_charges > 0);
+		if(wep->otyp == CARCOSAN_STING) return (otmp->otyp == ARM_BLASTER && otmp->ovar1_charges > 0);
+		if(wep->otyp == HAND_BLASTER) return ((otmp->otyp == ARM_BLASTER || otmp->otyp == CARCOSAN_STING) && otmp->ovar1_charges > 0);
     }
     
     if (((strongmonst(mtmp->data) && (mtmp->misc_worn_check & W_ARMS) == 0) || !bimanual(otmp,mtmp->data)) && 
@@ -1551,6 +1574,10 @@ register struct monst *mtmp;
 	)){
 		return propellor;
 	} else if(!bigmonst(mtmp->data) && (propellor = m_carrying_charged(mtmp, HAND_BLASTER)) && !(
+		((otmp = MON_WEP(mtmp)) && otmp->cursed && otmp != propellor && mtmp->weapon_check == NO_WEAPON_WANTED)// || (mtmp->combat_mode == HNDHND_MODE)
+	)){
+		return propellor;
+	} else if((propellor = m_carrying_charged(mtmp, CARCOSAN_STING)) && !(
 		((otmp = MON_WEP(mtmp)) && otmp->cursed && otmp != propellor && mtmp->weapon_check == NO_WEAPON_WANTED)// || (mtmp->combat_mode == HNDHND_MODE)
 	)){
 		return propellor;
@@ -2319,6 +2346,7 @@ register struct monst *mon;
 				if (/* fixme: cannot twoweapon 2x arm blasters or 2x hand blasters */
 					((tobj = m_carrying_charged(mon, ARM_BLASTER)) && tobj != MON_WEP(mon)) ||
 					((tobj = m_carrying_charged(mon, HAND_BLASTER)) && tobj != MON_WEP(mon)) ||
+					((tobj = m_carrying_charged(mon, CARCOSAN_STING)) && tobj != MON_WEP(mon)) ||
 					/* bullets */
 					((m_carrying(mon, BULLET) || m_carrying(mon, SILVER_BULLET)) &&
 						(((tobj = oselect(mon, ASSAULT_RIFLE, W_SWAPWEP))) ||
@@ -2653,13 +2681,20 @@ struct obj *otmp;
 			if(arm && arm->otyp == HELM_OF_BRILLIANCE)
 				bonus += (arm->spe)/2;
 		}
-		
-		if(otmp->oartifact == ART_VELKA_S_RAPIER){
+
+		if(otmp->oartifact == ART_VELKA_S_RAPIER || (mon->m_lev > 0 && check_oprop(otmp, OPROP_GSSDW))){
 			bonus /= 2;
 			//Int only
 			arm = which_armor(mon, W_ARMH);
 			if(arm && arm->otyp == HELM_OF_BRILLIANCE)
 				bonus += (arm->spe)/2;
+		}
+
+		if(otmp->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING){
+			//Wis only
+			arm = which_armor(mon, W_ARMH);
+			if(arm && arm->otyp == HELM_OF_BRILLIANCE)
+				bonus += (arm->spe)/4;
 		}
 
 		if(is_mercy_blade(otmp)){
@@ -2675,6 +2710,16 @@ struct obj *otmp;
 			arm = which_armor(mon, W_ARMH);
 			if(arm && arm->otyp == HELM_OF_BRILLIANCE)
 				bonus += (arm->spe)/2;
+		}
+		if(check_oprop(otmp, OPROP_ELFLW)){
+			//Cha counts for half and Int and Wis count for half
+			arm = which_armor(mon, W_ARMH);
+			if(arm){
+				if(arm->otyp == HELM_OF_BRILLIANCE && arm->otyp == find_gcirclet())
+					bonus += (arm->spe);
+				else if(arm->otyp == HELM_OF_BRILLIANCE || arm->otyp == find_gcirclet())
+					bonus += (arm->spe)/2;
+			}
 		}
 	}
 	return bonus;
@@ -2753,10 +2798,14 @@ struct obj *otmp;
 			else bonus += (ACURR(A_INT)-10)/2;
 		}
 
-		if(otmp->oartifact == ART_VELKA_S_RAPIER){
+		if(otmp->oartifact == ART_VELKA_S_RAPIER || (u.uinsight > 0 && check_oprop(otmp, OPROP_GSSDW))){
 			bonus /= 2;
 			if(ACURR(A_INT) == 25) bonus += 8;
 			else bonus += (ACURR(A_INT)-10)/2;
+		}
+		if(otmp->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING){
+			if(ACURR(A_WIS) == 25) bonus += 4;
+			else bonus += (ACURR(A_WIS)-10)/4;
 		}
 		if(is_mercy_blade(otmp)){
 			if(ACURR(A_INT) == 25) bonus += 4;
@@ -2767,11 +2816,20 @@ struct obj *otmp;
 			if(ACURR(A_WIS) == 25) bonus += 8;
 			else bonus += (ACURR(A_WIS)-10)/2;
 		}
+		if(check_oprop(otmp, OPROP_ELFLW)){
+			if(ACURR(A_CHA) == 25) bonus += 8;
+			else bonus += (ACURR(A_CHA)-10)/2;
+			if((ACURR(A_WIS)+ACURR(A_INT)) == 50) bonus += 8;
+			else bonus += (ACURR(A_WIS)+ACURR(A_INT)-20)/4;
+		}
 		if(otmp->oartifact == ART_IBITE_ARM && u.umaniac){
 			//Combine mechanics: Gets a bonus from your bare-handed stuff.
 			if(weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT) > 0)
 				bonus += rnd(ACURR(A_CHA)/5 + weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT)*2);
 		}
+	}
+	else if(u.umaniac && weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT) > 0){
+		bonus += min_ints(weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT), (ACURR(A_CHA)-9)/2);
 	}
 	
 	return bonus;
@@ -3328,6 +3386,9 @@ struct obj *obj;
 	}
 	else if(obj->oartifact == ART_WAND_OF_ORCUS){
 		type = P_MACE;
+	}
+	else if(obj->otyp == CARCOSAN_STING){
+		type = P_DAGGER;
 	}
 	else if(obj->oartifact == ART_MASAMUNE){
 		for(int skl = P_FIRST_WEAPON; skl <= P_LAST_WEAPON; skl++){
