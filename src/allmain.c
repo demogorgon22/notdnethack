@@ -569,6 +569,9 @@ boolean affect_game_state;
 				if(uandroid && u.ucspeed == HIGH_CLOCKSPEED){
 					MOVECOST(NORMAL_SPEED/3);
 				}
+				if(Race_if(PM_SNOW_CLOUD) && !Upolyd){
+					MOVECOST(NORMAL_SPEED/((u.ulevel/10)+1));
+				}
 				if(uarmf && uarmf->oartifact == ART_SEVEN_LEAGUE_BOOTS){
 					MOVECOST(NORMAL_SPEED - artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod);
 					if(affect_game_state && artinstance[ART_SEVEN_LEAGUE_BOOTS].LeagueMod < 5*NORMAL_SPEED/6){

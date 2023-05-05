@@ -575,6 +575,9 @@ boolean you_abilities;
 	if (mon_abilities && uclockwork){
 		add_ability('c', "Adjust your clockspeed", MATTK_CLOCK);
 	}
+	if (mon_abilities && (Race_if(PM_YUKI_ONNA) || Race_if(PM_SNOW_CLOUD)) && !Upolyd){
+		add_ability('C', "Shift Form", MATTK_YUKI);
+	}
 	if (mon_abilities && uandroid){
 		add_ability('d', "Use Android abilities", MATTK_DROID);
 	}
@@ -864,6 +867,30 @@ boolean you_abilities;
 		flags.phasing = FALSE;
 		return MOVE_INSTANT;
 	break;
+	case MATTK_YUKI:
+		if(urace.malenum == PM_YUKI_ONNA){
+			You("disperse into a cloud of snow.");
+			urace.malenum = PM_SNOW_CLOUD;
+			flags.altrace = PM_SNOW_CLOUD;
+			newsym(u.ux,u.uy);
+			upermonst = mons[PM_SNOW_CLOUD];
+			set_uasmon();
+			float_up();
+			break_armor();
+			drop_weapon(1);
+		} else if (urace.malenum == PM_SNOW_CLOUD){
+			You("solidify.");
+			urace.malenum = PM_YUKI_ONNA;
+			flags.altrace = NON_PM;
+			newsym(u.ux,u.uy);
+			upermonst = mons[PM_YUKI_ONNA];
+			set_uasmon();
+			if(!Levitation && !u.ustuck &&
+			   (is_pool(u.ux,u.uy, TRUE) || is_lava(u.ux,u.uy)))
+				spoteffects(TRUE);
+		}
+		return MOVE_INSTANT;
+		break;
 	}
 	return MOVE_CANCELLED;
 }

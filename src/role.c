@@ -224,7 +224,7 @@ struct Role roles[] = {
 	PM_ULITHARID, PM_MINDLESS_THRALL, PM_MENZOBERRANZAN,
 	NON_PM, NON_PM, NON_PM, NON_PM,
 	ART_ELDER_CEREBRAL_FLUID,
-	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN|MA_PLANT, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN|MA_PLANT|MA_FEY, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL,
 	/* Str Int Wis Dex Con Cha */
 	{  12, 10,  7, 12,  12,  7 },
@@ -813,7 +813,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  3, 0,  3, 0 },	/* Hit points */
 	{  2, 0,  2, 0,  2, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS,
+	SPE_HASTE_SELF, -10
 },
 {	"gnome", "gnomish", "gnomehood", "Gno",
 	{0, 0},
@@ -898,7 +899,8 @@ const struct Race races[] = {
 	/* Init   Lower  Higher */
 	{  2, 0,  2, 0,  0, 2 },	/* Hit points */
 	{  1, 0,  1, 0,  1, 0 },	/* Energy */
-	NORMALNIGHTVIS
+	NORMALNIGHTVIS, 
+	SPE_FIREBALL, -10
 },
 {	"treant", "treantic", "treant-kind", "Ent",
 	{0, 0},
@@ -912,7 +914,7 @@ const struct Race races[] = {
 	{  5, 0,  0, 4,  3, 0 },	/* Hit points */
 	{  1, 0,  1, 0,  1, 0 },	/* Energy */
 	NIGHTVISION2,
-	0, 0
+	SPE_RESTORE_ABILITY, -10
 },
 {	"vampire", "vampiric", "vampirehood", "Vam",
 	{"vampire", "vampiress"},
@@ -935,9 +937,9 @@ const struct Race races[] = {
 	MA_FEY, 0, MA_ELF,
 	/*    Str     Int Wis Dex Con Cha */
 	{      3,      3,  3,  3,  3,  3 },
-	{     16,     18, 18, 20, 14, 20 },
+	{     16,     18, 18, 20, 16, 20 },
 	/* Init   Lower  Higher */
-	{  2, 0,  1, 0,  0, 1 },	/* Hit points */
+	{  2, 0,  1, 1,  0, 1 },	/* Hit points */
 	{  2, 0,  3, 0,  3, 0 },	/* Energy */
 	NORMALNIGHTVIS,
 	SPE_CHARM_MONSTER, -15
@@ -1930,6 +1932,8 @@ int newgame;
 	/* Check for a valid race */
 	if (!validrace(flags.initrole, flags.initrace) && newgame)
 	    flags.initrace = randrace(flags.initrole);
+	if(newgame)
+		flags.altrace = NON_PM;
 
 	/* Check for a valid gender.  If new game, check both initgend
 	 * and female.  On restore, assume flags.female is correct. */
@@ -1963,6 +1967,8 @@ int newgame;
 			}
 		}
 	}
+	if(flags.altrace != NON_PM)
+		urace.malenum = flags.altrace;
 	else if(Humanoid_half_dragon(urole.malenum)){
 		urace.attrmax[A_DEX] = 18;
 	}

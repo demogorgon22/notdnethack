@@ -2848,8 +2848,10 @@ weight_cap()
 		maxcap = 2*maxcap/3 + u.ulevel*maxcap/30;
 	}
 	/* consistent with can_carry() in mon.c */
-	if (mdat->mlet == S_NYMPH)
+	if (mdat->mlet == S_NYMPH){
 		carrcap = max(carrcap, MAX_CARR_CAP);
+		maxcap = max(maxcap, MAX_CARR_CAP);
+	}
 	else if (!mdat->cwt)
 		carrcap = (carrcap * (long)mdat->msize) / MZ_HUMAN;
 	else if (!strongmonst(mdat)

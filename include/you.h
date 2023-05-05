@@ -434,6 +434,7 @@ struct you {
 #define MATTK_LAVA	    34
 #define MATTK_PHASE_OUT 35
 #define MATTK_PHASE_IN 36
+#define MATTK_YUKI 37
 
 
 

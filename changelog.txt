@@ -42,7 +42,7 @@ Salamander race
 	Requires special snakeleg body armour
 	Cannot wear boots or even kick things
 	Unlock a salamander attack routine at lvl 10
-	Spear multishot bonus
+	Special spell fireball
 	Cannot eat monsters that are too close to amphibians without
 		cannibalism penalty
 	Lava balls burn down any door within heat range of impact
@@ -112,6 +112,7 @@ Etherealoid race
 	XP lvl is effectively gained at half the rate
 	50% of the time killing a monster will heal you for a 1/8 of the xp it
 	would have provided, or 5 hp if that is larger
+	Special spell haste self
 Ent race
 	Lawful/neutral
 	Stat caps
@@ -122,6 +123,7 @@ Ent race
 	HUGE
 	Better hp growth than dwarves
 	Base speed 10
+	Start with an extra -3 ac and 3 DR for each slot
 	Have a random species which determines the additional properties they get
 	Special Properties
 		Ancient Body	
@@ -163,6 +165,22 @@ Ent race
 			+1 DR in every slot
 		Methuselah
 			Spell boost intrinsic
+	Special spell restore ability
+
+Yuki-Onna changes
+	Increase hp gain SLIGHTLY
+	Move max con from 14 to 16 to make it miserable but more reasonable
+	Fix nymph handling to act more like vanilla and not scale weight for nymphs but instead to always give 1000 carry cap.
+	Added a snow cloud form that can be switched back and forth from at will
+		Cannot wear armor or hold weapons or use hands
+		Gets a cold touch, engulf, and the same cold passive as base form
+		Movement only turns are done at (NORMAL_SPEED/((xlvl/10)+1)) (1-9, normal, 10-19 6, 20-29 4, 30 3)
+		Gets (xlvl/6)+1 DR in each slot and and extra -xlvl AC
+		Regenerates
+		Has catsight
+		Resists cold, sleep, poison, and sickness
+		Is human size but since it is an odd body the carry cap can be 25% higher
+	
 Monk changes
 	Can set attack styles with #style
 		Surge punch 

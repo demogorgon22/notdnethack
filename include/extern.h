@@ -2293,6 +2293,8 @@ E int NDECL(domindblast);
 E int NDECL(dodarken);
 E int NDECL(doandroid);
 E int NDECL(doclockspeed);
+E void NDECL(break_armor);
+E void FDECL(drop_weapon, (int));
 E int FDECL(dowords, (int));
 E void FDECL(skinback, (BOOLEAN_P));
 E const char *FDECL(mbodypart, (struct monst *,int));

@@ -2606,6 +2606,7 @@ base_uac()
 	if(uright && uright->otyp == RIN_PROTECTION) uac -= uright->spe;
 	if (HProtection & INTRINSIC) uac -= (u.ublessed+1)/2;
 	if(Race_if(PM_ETHEREALOID)) uac -= u.ulevel;	
+	if(Race_if(PM_SNOW_CLOUD) && !Upolyd) uac -= u.ulevel;	
 	if(u.utats & TAT_BULWARK) uac -= 1;
 	uac -= u.uacinc;
 	uac -= u.spiritAC;
@@ -2751,6 +2752,9 @@ int base_nat_udr()
 	}
 	if(is_ent_species(youracedata, ENT_MIMOSA)) udr++;
 	if(is_ent(youracedata)) udr += 3;
+
+	if(Race_if(PM_SNOW_CLOUD) && !Upolyd)
+		udr += (u.ulevel/6)+1;
 	
 	if(Race_if(PM_HALF_DRAGON)){
 		//DS half dragons may be more humanoid

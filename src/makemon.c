@@ -11330,7 +11330,7 @@ boolean goodequip;
 			fix_object(otmp);
 			(void) mpickobj(mtmp, otmp);
 		} else if(ptr->mtyp == PM_NITOCRIS){
-			otmp = mksobj(MUMMY_WRAPPING, mkobjflags|MKOBJ_NOINIT);
+			otmp = mksobj(PRAYER_WARDED_WRAPPING, mkobjflags|MKOBJ_NOINIT);
 			otmp = oname(otmp, artiname(ART_SPELL_WARDED_WRAPPINGS_OF_));		
 			otmp->blessed = FALSE;
 			otmp->cursed = TRUE;
