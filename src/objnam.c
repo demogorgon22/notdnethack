@@ -1596,7 +1596,7 @@ boolean adjective;
 			int gemtype = (obj->oclass == GEM_CLASS) ? obj->otyp : obj->sub_material;
 
 			if (!objects[gemtype].oc_name_known) {
-				char str[BUFSZ];
+				static char str[BUFSZ];
 				char * s = str;	/* locally re-define s to be a non-const char*, to use Sprintf */
 				Sprintf(s, (adjective ? "%s gem" : "%s gemstone"), (char*)OBJ_DESCR(objects[gemtype]));
 				return (const char *)s;
@@ -3504,7 +3504,8 @@ const char *oldstr;
 				!BSTRCMPI(bp, p-13, "versus curses") ||
 			    !BSTRCMPI(bp, p-6, "scales") ||
 				!BSTRCMP(bp, p-6, "wishes") ||	/* ring */
-				!BSTRCMPI(bp, p-10, "Lost Names")) /* book */
+				!BSTRCMPI(bp, p-10, "Lost Names") || /* book */
+				!BSTRCMPI(bp, p-9, "mandibles"))
 				return bp;
 
 		} else if (!BSTRCMPI(bp, p-5, "boots") ||
@@ -3545,6 +3546,7 @@ const char *oldstr;
 			   !BSTRCMPI(bp, p-11, "Seven Parts") || /* spear */
 			   !BSTRCMPI(bp, p-10, "Lost Names") || /* book */
 			   !BSTRCMPI(bp, p-15, "Infinite Spells") || /* book */
+  			   !BSTRCMPI(bp, p-9, "mandibles") ||
 			   !BSTRCMPI(bp, p-6, "talons") || /* set of knives */
 			   !BSTRCMPI(bp, p-6, "Thorns") || /* artifact */
 			   !BSTRCMPI(bp, p-9, "Soul Lens") || /* artifact */
