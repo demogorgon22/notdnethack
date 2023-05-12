@@ -936,7 +936,7 @@ A("Callandor",			CRYSTAL_SWORD,					(const char *)0,
 
 /*Needs encyc entry*/
 A("The Unstoppable",	CROSSBOW,						(const char *)0,
-	3000L, MITHRIL, MZ_DEFAULT, WT_DEFAULT,
+	3000L, MITHRIL, MZ_DEFAULT, 15,
 	A_NEUTRAL, NON_PM, NON_PM, TIER_C, NOFLAG,
 	NO_MONS(),
 	ATTK(AD_PHYS, 12, 8), NOFLAG,
