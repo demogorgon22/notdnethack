@@ -189,7 +189,7 @@ PROJECTILE(("crossbow bolt"),
 		1, 55, 1, 2,  0, IRON,   -P_CROSSBOW, HI_METAL),
 PROJECTILE(("droven bolt", "crossbow bolt"), /*Needs encyc entry*/
 		DMG(D(9), F(1)), DMG(D(6), F(1)),
-		0,  0, 1, 2,  2, OBSIDIAN_MT, -P_CROSSBOW, CLR_BLACK, O_MATSPEC(UNIDED)),
+		0,  0, 1, 2,  8, OBSIDIAN_MT, -P_CROSSBOW, CLR_BLACK, O_MATSPEC(UNIDED)),
 
 WEAPON(("dart"),
 	DMG(D(3)), DMG(D(2)),
@@ -1326,16 +1326,16 @@ WEPTOOL(("seismic hammer", "dull metallic hammer"),/*Needs encyc entry*/
  * Torches work as clubs
  */
 WEPTOOL(("torch"),/*Needs encyc entry*/
-	DMG(D(6)), DMG(D(3)),
+	DMG(D(3)), DMG(D(2)),
 	1,  MZ_SMALL, 0, 0, 15, 10,   5,  0, B,   P_CLUB, WOOD, HI_WOOD),
 WEPTOOL(("magic torch", "torch"),/*Needs encyc entry*/
-	DMG(D(8)), DMG(D(4)),
+	DMG(D(6)), DMG(D(3)),
 	0,  MZ_SMALL, 1, 0,  0, 10, 500,  1, B,   P_CLUB, BONE, CLR_WHITE, O_MATSPEC(UNIDED)),
 WEPTOOL(("shadowlander's torch", "black torch", "torch"),/*Needs encyc entry*/
-	DMG(D(6)), DMG(D(3)),
+	DMG(D(3)), DMG(D(2)),
 	0,  MZ_SMALL, 0, 0, 10, 10,  50,  0, B,   P_CLUB, WOOD, CLR_BLACK),
 WEPTOOL(("sunrod", "rod"),/*Needs encyc entry*/
-	DMG(D(6)), DMG(D(3)),
+	DMG(D(3)), DMG(D(2)),
 	1,  MZ_SMALL, 0, 0,  5, 20,  50,  0, B,   P_MACE, GOLD, HI_GOLD, O_MATSPEC(UNIDED)),
 /* 
  * Lightsabers get 3x dice when lit, and go down to 1d2 damage when unlit

@@ -1537,6 +1537,17 @@ moveloop()
 				delouse_tame(mtmp);
 				continue;
 			}
+			if(mtmp->mamnesia){
+				if(mtmp->isshk){
+					make_happy_shk(mtmp, FALSE);
+				}
+				else {
+					mtmp->mpeaceful = TRUE;
+					mtmp->mtame = FALSE;
+				}
+				mtmp->mamnesia = FALSE;
+				newsym(mtmp->mx, mtmp->my);
+			}
 			if (!DEADMONSTER(mtmp)
 				&& mon_attacktype(mtmp, AT_WDGZ)
 				&& !(controlledwidegaze(mtmp->data) && (mtmp->mpeaceful || mtmp->mtame))
@@ -1621,6 +1632,17 @@ moveloop()
 				if(has_template(mtmp, DELOUSED)){
 					delouse_tame(mtmp);
 					continue;
+				}
+				if(mtmp->mamnesia){
+					if(mtmp->isshk){
+						make_happy_shk(mtmp, FALSE);
+					}
+					else {
+						mtmp->mpeaceful = TRUE;
+						mtmp->mtame = FALSE;
+					}
+					mtmp->mamnesia = FALSE;
+					newsym(mtmp->mx, mtmp->my);
 				}
 				if (mtmp->minvis){
 					newsym(mtmp->mx, mtmp->my);
@@ -2196,11 +2218,9 @@ karemade:
 				if(mtmp->mtyp == PM_GREAT_CTHULHU || mtmp->mtyp == PM_ZUGGTMOY 
 					|| mtmp->mtyp == PM_SWAMP_FERN) mtmp->mspec_used = 0;
 				if(is_weeping(mtmp->data)) mtmp->mspec_used = 0;
-				if(mtmp->mtyp == PM_CLOCKWORK_SOLDIER || mtmp->mtyp == PM_CLOCKWORK_DWARF || 
-				   mtmp->mtyp == PM_FABERGE_SPHERE || mtmp->mtyp == PM_FIREWORK_CART ||
-				   mtmp->mtyp == PM_ID_JUGGERNAUT
-				) if(rn2(2)) mtmp->mvar_vector = ((int)mtmp->mvar_vector + rn2(3) + 7)%8;
-				if((mtmp->mtyp == PM_JUGGERNAUT || mtmp->mtyp == PM_ID_JUGGERNAUT) && !rn2(3)){
+				if(is_random_vectored_mtyp(mtmp->mtyp) && rn2(2))
+					mtmp->mvar_vector = ((int)mtmp->mvar_vector + rn2(3) + 7)%8;
+				if(is_guided_vectored_mtyp(mtmp->mtyp) && !rn2(3)){
 					int mdx=0, mdy=0, i;
 					if(mtmp->mux == 0 && mtmp->muy == 0){
 						i = rn2(8);
@@ -3027,6 +3047,17 @@ karemade:
 		if(has_template(mtmp, DELOUSED)){
 			delouse_tame(mtmp);
 			continue;
+		}
+		if(mtmp->mamnesia){
+			if(mtmp->isshk){
+				make_happy_shk(mtmp, FALSE);
+			}
+			else {
+				mtmp->mpeaceful = TRUE;
+				mtmp->mtame = FALSE;
+			}
+			mtmp->mamnesia = FALSE;
+			newsym(mtmp->mx, mtmp->my);
 		}
 		if (mtmp->minvis){
 			newsym(mtmp->mx, mtmp->my);
