@@ -3,7 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 /* NetHack 3.4.3, dNethack version 3.15.1 */
-#define VERSION_MAJOR	2022
+#define VERSION_MAJOR	2023
 /* Started at 3.4.3, for the nethack version. Incremented straight 
    to 3.6 with the advent of the Noble role, counting the initial
    release as 3.5 (with Pirate already in, I think?).
@@ -15,7 +15,7 @@
    Incremented to 3.11 with the introduction Anachrononauts.
    Incremented to 3.12 with the introduction Magic chests, scrolls of antimagic, resistance, and consecration, YARevison to chaos quest, beter resistance-from-diet, and lightsaber forms.
 */
-#define VERSION_MINOR	9
+#define VERSION_MINOR	5
 /*
  * PATCHLEVEL is updated for each release.
  *
@@ -50,7 +50,7 @@
  * 3.21.3: Blades of mercy, Aphanacts, species favored spells, crystal skulls, magic torch on grue level, tweaks to regular insight monsters,  and misc bug fixes.
  * 3.21.4: War-helm of the dreaming and monster madnesses, Silver flame cult, Chaos 1 revision, Black goat revision, Monk quest revision and move fixes/improvements, ring artifacts, Singing sword is nameable, Jrt Netjer hell vaults, Insight commanders in hell, Golden Knight artifact, halve con bonus to hp, ds undead flasks, better handling for polyform weapons, Inv. weight, daughters of Naunet, move system improvements, #downboy and #getem, and misc bug fixes.
  */
-#define PATCHLEVEL	18
+#define PATCHLEVEL	15
 /*
  * Incrementing EDITLEVEL can be used to force invalidation of old bones
  * and save files.
