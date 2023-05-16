@@ -788,6 +788,7 @@ struct u_achieve {
 		Bitfield(killed_asmodeus,1);		/* Bragging rights */
 		Bitfield(killed_demogorgon,1);		/* Bragging rights */
 		unsigned long long	trophies;	/* Flags for Junethack trophies */
+		unsigned long iea_flags;	/* IEA flags for Junethack trophy */
 	Bitfield(get_kroo,1);        /* ring of kroo get*/
 	Bitfield(get_raggo,1);        /* raggo's rock get*/
         Bitfield(get_gilly,1);        /* gillystone get*/
@@ -853,7 +854,8 @@ struct u_achieve {
 #define	HEA_QUEST		0x1L << 49
 #define	DRO_HEA_QUEST	0x1L << 50
 #define	MONK_QUEST		0x1L << 51
-#define ACHIEVE_NUMBER	63
+#define	IEA_UPGRADES	0x1L << 52
+#define ACHIEVE_NUMBER	64
 };
 
 E struct u_achieve achieve;

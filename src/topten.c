@@ -1165,6 +1165,7 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(QUITE_MAD,"quite_mad")
 	CHECK_ACHIEVE(TOTAL_DRUNK,"booze_hound")
 	CHECK_ACHIEVE(BOKRUG_QUEST,"bokrug_ascension")
+	CHECK_ACHIEVE(IEA_UPGRADES,"iea_upgraded")
 	if(achievesWritten > 0) Sprintf(eos(achieveXbuff), ",");
 	if(achieve.get_kroo)   Sprintf(eos(achieveXbuff), "%s,", "get_kroo");
 	if(achieve.get_raggo)   Sprintf(eos(achieveXbuff), "%s,", "get_raggo");
