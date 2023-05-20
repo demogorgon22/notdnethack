@@ -3111,13 +3111,12 @@ const char *prompt;
 			's', 0, ATR_NONE, tat_to_name(TAT_UNKNOWN),
 			MENU_UNSELECTED);
 	}
-	/*if(!(u.utats & TAT_WILLOW) && u.ubranch == BLACK_FOREST){
-		Sprintf(buf, tat_to_name(TAT_WILLOW));
+	if(!(u.utats & TAT_WILLOW) && u.ubranch == BLACK_FOREST){
 		any.a_int = TAT_WILLOW;	
 		add_menu(tmpwin, NO_GLYPH, &any,
-			'w', 0, ATR_NONE, buf,
+			'w', 0, ATR_NONE, tat_to_name(TAT_WILLOW),
 			MENU_UNSELECTED);
-	}*/
+	}
 	if(!(u.utats & TAT_HAMMER) && u.sealsActive & SEAL_ASTAROTH){
 		any.a_int = TAT_HAMMER;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
