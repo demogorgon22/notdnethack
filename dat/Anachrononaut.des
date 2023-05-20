@@ -42,6 +42,7 @@ ENDMAP
 
 CONTAINER:'(',"chest",(16,01)
 	OBJECT:')',"arm blaster",contained, uncursed, 0
+	OBJECT:')',"flamethrower",contained, uncursed, 0	
 	OBJECT:')',"hand blaster",contained, uncursed, 0
 	OBJECT:')',"hand blaster",contained, uncursed, 0
 	OBJECT:')',"hand blaster",contained, uncursed, 0

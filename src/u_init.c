@@ -2166,6 +2166,8 @@ u_init()
 		knows_object(DOUBLE_LIGHTSABER);
 		knows_object(POWER_ARMOR);
 		knows_object(KNUCKLE_DUSTERS);
+		knows_object(ETHERBLADE);
+		knows_object(FLAMETHROWER);
 		if(Race_if(PM_DWARF)){
 			u.ualign.type = A_CHAOTIC;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);

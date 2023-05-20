@@ -41,6 +41,7 @@ ENDMAP
 #0         1         2         3         4         5         6         7     
 
 CONTAINER:'(',"chest",(16,01)
+	OBJECT[50%]:')',"flamethrower",contained, uncursed, 0	
 	OBJECT[50%]:')',"hand blaster",contained, uncursed, 0
 	OBJECT[50%]:')',"hand blaster",contained, uncursed, 0
 	OBJECT[50%]:')',"hand blaster",contained, uncursed, 0
@@ -677,6 +678,8 @@ OBJECT:'[',"plasteel armor",random
 OBJECT:'[',"plasteel armor",random
 OBJECT:'[',"plasteel armor",random
 OBJECT:'[',"plasteel armor",random
+
+OBJECT:'[',"power armor",random
 
 OBJECT:'[',"plasteel gauntlets",random
 OBJECT:'[',"plasteel gauntlets",random
