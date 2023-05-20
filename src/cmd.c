@@ -868,6 +868,10 @@ boolean you_abilities;
 		return MOVE_INSTANT;
 	break;
 	case MATTK_YUKI:
+		if(Protection_from_shape_changers){
+			pline("Something is blocking you from changing shape.");
+			return MOVE_CANCELLED;
+		}
 		if(urace.malenum == PM_YUKI_ONNA){
 			You("disperse into a cloud of snow.");
 			urace.malenum = PM_SNOW_CLOUD;

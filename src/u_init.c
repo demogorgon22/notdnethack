@@ -457,6 +457,10 @@ static struct trobj Ironmask[] = {
 	{ RIN_SLOW_DIGESTION, 0, RING_CLASS, 1, OBJ_CURSED },
 	{ 0, 0, 0, 0, 0 }
 };
+static struct trobj ProtShapeChangers[] = {
+	{ RIN_PROTECTION_FROM_SHAPE_CHAN, 0, RING_CLASS, 1, OBJ_CURSED },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Noble[] = {
 	{ RAPIER, 2, WEAPON_CLASS, 1, UNDEF_BLESS },
 #define NOB_SHIRT	1
@@ -2320,6 +2324,9 @@ u_init()
         ini_inv(Madman);
 		if(Race_if(PM_VAMPIRE)){
 			ini_inv(Ironmask);
+		}
+		if(Race_if(PM_YUKI_ONNA)){
+			ini_inv(ProtShapeChangers);
 		}
         knows_object(SKELETON_KEY);
         knows_object(POT_BOOZE);

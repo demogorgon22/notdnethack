@@ -13,6 +13,8 @@ register struct monst *mon;
 	if( !is_were(mon->data)
 		&& !(is_heladrin(mon->data) && mon->mhp < .5*mon->mhpmax && rn2(2))
 		&& !(is_eeladrin(mon->data) && mon->mhp > .5*mon->mhpmax)
+		&& !(mon->mtyp == PM_YUKI_ONNA && mon->mhp < .5*mon->mhpmax && rn2(2))
+		&& !(mon->mtyp == PM_SNOW_CLOUD && mon->mhp > .5*mon->mhpmax)
 		&& !(is_yochlol(mon->data) && mon->mhp < .5*mon->mhpmax)
 		&& !(mon->mtyp == PM_SELKIE || mon->mtyp == PM_SEAL)
 		&& !(mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS)
@@ -44,7 +46,7 @@ register struct monst *mon;
 				//Both mammon's forms have humanoid torsos
 				new_were(mon);
 			}
-	    } else if (is_heladrin(mon->data)){
+	    } else if (is_heladrin(mon->data) || mon->mtyp == PM_YUKI_ONNA){
 			if(!Protection_from_shape_changers) new_were(mon);
 	    } else if (is_duergar(mon)){
 			if(mon->data->mlet == S_HUMANOID){
@@ -94,6 +96,7 @@ register struct monst *mon;
 	} else if (!rn2(30) || (is_were(mon->data) && Protection_from_shape_changers) 
 		|| (is_yochlol(mon->data) && !Protection_from_shape_changers)
 		|| (is_eeladrin(mon->data) && mon->mhp >= mon->mhpmax && !Protection_from_shape_changers)
+		|| (mon->mtyp == PM_SNOW_CLOUD && mon->mhp >= mon->mhpmax && !Protection_from_shape_changers)
 	) {
 		if(mon->mtyp == PM_BALL_OF_LIGHT){
 			mon->mflee = 0;
@@ -120,6 +123,8 @@ int pm;
 	    case PM_HUMAN_WERERAT:    return(PM_WERERAT);
 		case PM_ANUBITE:		  return(PM_ANUBAN_JACKAL);
 		case PM_ANUBAN_JACKAL:	  return(PM_ANUBITE);
+		case PM_YUKI_ONNA:		  return(PM_SNOW_CLOUD);
+		case PM_SNOW_CLOUD:		  return(PM_YUKI_ONNA);
 		case PM_COURE_ELADRIN:	  return(PM_MOTE_OF_LIGHT);
 		case PM_MOTE_OF_LIGHT:	  return(PM_COURE_ELADRIN);
 		case PM_NOVIERE_ELADRIN:  return(PM_WATER_DOLPHIN);
@@ -239,7 +244,7 @@ struct monst *mon;
 	    return;
 	}
 	
-	if(is_heladrin(mon->data) && nonthreat(mon))
+	if((is_heladrin(mon->data) || mon->mtyp == PM_YUKI_ONNA) && nonthreat(mon))
 		return;
 	
 	if(mon == u.ustuck && u.uswallow)
@@ -257,6 +262,7 @@ struct monst *mon;
 			pline("%s adopts a blasphemous gesture.", Monnam(mon));
 		else if(mon->mtyp != PM_ANUBITE && mon->mtyp != PM_ANUBAN_JACKAL
 		  && !is_eladrin(mon->data) && !is_yochlol(mon->data)
+		  && !(mon->mtyp == PM_YUKI_ONNA || mon->mtyp == PM_SNOW_CLOUD)
 		  && !(mon->mtyp == PM_SELKIE || mon->mtyp == PM_SEAL)
 		  && !(mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS)
 		  && !is_duergar(mon)
@@ -282,7 +288,7 @@ struct monst *mon;
 		new_light_source(LS_MONSTER, (genericptr_t)mon, emits_light_mon(mon));
 	}
 	newsym(mon->mx,mon->my);
-	if(is_eeladrin(mon->data)){
+	if(is_eeladrin(mon->data) || mon->mtyp == PM_SNOW_CLOUD){
 		struct obj *mw_tmp = MON_WEP(mon);
 		struct obj *msw_tmp = MON_SWEP(mon);
 		for(otmp = mon->minvent; otmp; otmp = otmp->nobj){
@@ -315,7 +321,7 @@ struct monst *mon;
 		}
 		m_dowear(mon, TRUE);
 		init_mon_wield_item(mon);
-	} else if(is_heladrin(mon->data)){
+	} else if(is_heladrin(mon->data) || mon->mtyp == PM_YUKI_ONNA){
 		m_dowear(mon, TRUE);
 		init_mon_wield_item(mon);
 	} else if(is_duergar(mon)){
