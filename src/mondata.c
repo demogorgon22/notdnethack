@@ -2361,7 +2361,7 @@ struct monst *mon;
 	if(!mon) return FALSE;
 	
 	if(mon == &youmonst)
-		return (Slimed || Unchanging || GoodHealth || flaming(youracedata) 
+		return (Slimed || Unchanging || GoodHealth || flaming(youracedata) || (u.utats & TAT_FLAMING_WHIP)
 		|| youracedata->mtyp == PM_ANCIENT_OF_CORRUPTION
 		|| youracedata->mtyp == PM_GREEN_SLIME
 		|| youracedata->mtyp == PM_FLUX_SLIME

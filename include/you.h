@@ -634,9 +634,9 @@ struct you {
 	long	uentangled_oid; /* to record the oid of the item entangling you */
 	long int spawnedGold; /* to record total amount of gold spawned in a game */
 		int	utats; /*Used to store Fell's tattoo information*/
-#define TAT_HOURGLASS	0x0001
-#define TAT_FALCHION	0x0002
-#define TAT_KESTREL	0x0004
+#define TAT_HOURGLASS	0x0001 
+#define TAT_FALCHION	0x0002 
+#define TAT_KESTREL	0x0004 
 #define TAT_BULWARK	0x0008
 #define TAT_FOUNTAIN	0x0010
 #define TAT_CROESUS	0x0020
@@ -644,7 +644,10 @@ struct you {
 #define TAT_WILLOW	0x0080
 #define TAT_HAMMER	0x0100
 #define TAT_SPEARHEAD	0x0200
-#define NUM_TATS	10
+#define TAT_CRYSTAL_ORB	0x0400
+#define TAT_HYPHEN	0x0800
+#define TAT_FLAMING_WHIP 0x1000
+#define NUM_TATS	13
 	int 	usanity;	/* to record level of sanity */
 	unsigned long long int 	umadness;	/* to afflictions */
 #define	MAD_DELUSIONS		0x0000000000000001L

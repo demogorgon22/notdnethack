@@ -172,6 +172,7 @@ Yuki-Onna changes
 	Move max con from 14 to 16 to make it miserable but more reasonable
 	Fix nymph handling to act more like vanilla and not scale weight for nymphs but instead to always give 1000 carry cap.
 	Added a snow cloud form that can be switched back and forth from at will
+		Blocked by protection from shape changers
 		Cannot wear armor or hold weapons or use hands
 		Gets a cold touch, engulf, and the same cold passive as base form
 		Movement only turns are done at (NORMAL_SPEED/((xlvl/10)+1)) (1-9, normal, 10-19 6, 20-29 4, 30 3)
@@ -401,7 +402,7 @@ Dungeon Changes
 					$30000
 				Blasphemous shapes
 					grants intrinsic polymorphitis
-					must have u.regifted be 5, 
+					must have u.regifted be at least 1,  (donated an arti to an unknown god priest)
 					$8000
 				Willow
 					small curse resistance chance (1/20),
@@ -413,8 +414,20 @@ Dungeon Changes
 					$4000
 				Spearhead
 					teaches flintknapping
-					avaialble only for non caveman salamanders
+					available only for non caveman salamanders
 					$10000
+				Crystal Orb
+					Extreme Focus. Confusion misdirection chance acts as if another 30 booze have been consumed.
+					available after killing Chaos
+					$6000
+				Hyphen
+					+1 bonus for all syllables as if one of each has been read
+					available after killing an aspect of the Silence
+					$6000
+				Flaming Whip
+					Immunity to sliming
+					Available after killing Lungorthin
+					$6000
 	Chaos 1 changes
 		Upgrade several of the fixed loot items
 			The leather helm on the first level is now anarachic
@@ -446,10 +459,6 @@ Dungeon Changes
 				Ait Crystal - Shocking, 2x lightning damage
 				Earth Crystal - Flaying
 				Black Crystal - Sparkling, 2x magic damage
-	Add Nenya to Grue level elvenking item pile
-		Waterproof + water walking when worn
-		Detect orcs when carried
-		Random silver ring base item
 General changes
 	Red dragon scale based armor now grants flying.
 	Upgrade kits now work on tools.
