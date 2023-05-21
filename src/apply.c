@@ -8579,7 +8579,7 @@ doapply()
 	else {
 		static const char all_count[] = { ALLOW_COUNT, WEAPON_CLASS, GEM_CLASS, 0 };
 		struct obj *otmp = getobj(all_count, "feed to the fabber");
-		if (!otmp) break;
+		if (!otmp || otmp->oartifact) break;
 		switch(otmp->otyp){
 			case ROCK:
 				obj_extract_self(otmp);
