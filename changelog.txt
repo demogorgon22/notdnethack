@@ -438,8 +438,7 @@ Dungeon Changes
 		Add death eye boss to chaos catacombs
 			Pretty mean and has death gaze
 			Drops an artifact "The eye of death"
-				Grants slotless stone res, free action, and half spell damage
-				Invoke for beholder eye invoke effect
+				Grants slotless stone res, and half spell damage
 		Black knights are replaced with monsters instead of player monsters
 			Have a chance to generate with anarchic on some of their gear
 			Fixed difficulty instead of variable like player monsters
