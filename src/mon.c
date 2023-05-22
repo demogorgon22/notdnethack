@@ -1763,6 +1763,10 @@ struct monst *mtmp;
 		if(canspotmon(mtmp)) pline("%s forms new eyes!",Monnam(mtmp));
 		mtmp->mblinded = 1;
 	}
+	if(!mtmp->mcansee && (mtmp->mtyp == PM_BLASPHEMOUS_LURKER || mtmp->mtyp == PM_LURKING_ONE)){
+		if(canspotmon(mtmp)) pline("%s opens more eyes!",Monnam(mtmp));
+		mtmp->mblinded = 1;
+	}
 	
 	//No point in checking it before setting it.
 	mtmp->mgoatmarked = FALSE;
@@ -6362,7 +6366,10 @@ cleanup:
 	   u.ualign.type != A_CHAOTIC) {
 		HTelepat &= ~INTRINSIC;
 		change_luck(-2);
-		You("murderer!");
+		if(mtmp->mtyp == PM_BLASPHEMOUS_LURKER)
+			You("...murderer!?");
+		else
+			You("murderer!");
 		if(u.ualign.type == A_LAWFUL){
 			u.hod += 10;
 			u.ualign.sins += 5;
