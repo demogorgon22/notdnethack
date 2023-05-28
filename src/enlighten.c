@@ -2852,12 +2852,12 @@ boolean dumping;
 	CHECK_ACHIEVE(CASTLE_WISH,"Completed the castle")
 	CHECK_ACHIEVE(ILLUMIAN,"Became illuminated")
 	CHECK_ACHIEVE(RESCUE,"Lead an exodus")
-	CHECK_ACHIEVE(FULL_LOADOUT,"Super Fighting Robot: fully upgraded a clockwork automata")
+	CHECK_ACHIEVE(FULL_LOADOUT,"Super Fighting Robot: fully upgraded a clockwork automaton")
 	CHECK_ACHIEVE(NIGHTMAREHUNTER,"Hunter of Nightmares")
 	CHECK_ACHIEVE(QUITE_MAD,"Quite Mad: Suffered six madnesses")
 	CHECK_ACHIEVE(TOTAL_DRUNK,"Booze Hound")
 	CHECK_ACHIEVE(BOKRUG_QUEST,"Detestable gods: Completed Bokrug's ascension ritual")
-	CHECK_ACHIEVE(IEA_UPGRADES,": 15+ upgrades on a set of imperial elven armor")
+	CHECK_ACHIEVE(IEA_UPGRADES,"The Elfdalorian: 15+ upgrades on a set of imperial elven armor")
 	if(achieve.get_kroo)   put_enl("Kroo's Bling (Acquire the dismal swamp completion prize)");
 	if(achieve.get_raggo)   put_enl("Pet Rock (Acquire the gnomish mines completion prize)");
 	if(achieve.get_poplar) put_enl("Punishing Poplars (Acquire the black forest completion prize)");
