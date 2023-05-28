@@ -1620,7 +1620,7 @@ register struct monst *mtmp;
 		return 0;
 	}
 
-	if((mtmp->mtyp == PM_PORO_AULON || mtmp->mtyp == PM_ALIDER)
+	if((mtmp->mtyp == PM_PORO_AULON || mtmp->mtyp == PM_ALIDER || mtmp->mtyp == PM_OONA)
 		&& !mtmp->mcan && !mtmp->mspec_used
 		&& !(noactions(mtmp))
 		&& !(mindless_mon(mtmp))
@@ -1927,6 +1927,7 @@ register struct monst *mtmp;
 			if (m2->mpeaceful == mtmp->mpeaceful) continue;
 			if (mindless_mon(m2)) continue;
 			if (m2 == mtmp) continue;
+			if (m2->mstrategy&STRAT_WAITMASK) continue;
 			power = 0;
 			dmg = 0;
 			if(mdat->mtyp == PM_CLAIRVOYANT_CHANGED){

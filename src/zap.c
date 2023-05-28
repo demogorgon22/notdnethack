@@ -5546,6 +5546,7 @@ int damage, tell;
 				LUCK_MODIFIER
 			}
 		break;	
+	    case GEM_CLASS:  /* artifact */
 	    case WEAPON_CLASS:  /* artifact */
 	    case CHAIN_CLASS:  /* artifact */
 			alev = 45;

@@ -9708,23 +9708,29 @@ int mmflags;
 		} else if(mm == PM_SKELETAL_PIRATE){
 				otmp = rn2(2) ? mksobj(SCIMITAR, mkobjflags|MKOBJ_NOINIT) : mksobj(KNIFE, mkobjflags|MKOBJ_NOINIT);
 				// curse(otmp);
-				otmp->oeroded = 1;
+				if(otmp && is_rustprone(otmp))
+					otmp->oeroded = 1;
 				(void) mpickobj(mtmp, otmp);
 				
 				otmp = rn2(2) ? mksobj(HIGH_BOOTS, mkobjflags|MKOBJ_NOINIT) : mksobj(JACKET, mkobjflags|MKOBJ_NOINIT);
 				// curse(otmp);
-				otmp->oeroded2 = 1;
+				if(otmp && is_rottable(otmp))
+					otmp->oeroded2 = 1;
 				(void) mpickobj(mtmp, otmp);
 				
 				otmp = rn2(2) ? mksobj(FLINTLOCK, mkobjflags|MKOBJ_NOINIT) : mksobj(KNIFE, mkobjflags|MKOBJ_NOINIT);
 				// curse(otmp);
-				otmp->oeroded = 1;
+				if(otmp && is_rustprone(otmp))
+					otmp->oeroded = 1;
 				(void) mpickobj(mtmp, otmp);
 				
 				otmp = mksobj(BULLET, mkobjflags|MKOBJ_NOINIT);
-				otmp->quan += rnd(10);
-				otmp->oeroded = 1;
-				otmp->owt = weight(otmp);
+				if(otmp){
+					otmp->quan += rnd(10);
+					if(is_rustprone(otmp))
+						otmp->oeroded = 1;
+					otmp->owt = weight(otmp);
+				}
 				(void) mpickobj(mtmp, otmp);
 				break;
 		} else {
@@ -13202,7 +13208,7 @@ struct monst * mon;
 	
 	if(Infuture && !peaceful)
 		out_faction = ILSENSINE_FACTION;
-	else if(is_mind_flayer(mon->data))
+	else if(is_mind_flayer(mon->data) || Is_lethe_manse(&u.uz))
 		out_faction = ILSENSINE_FACTION;
 	else if(In_quest(&u.uz) && Role_if(PM_EXILE) && !peaceful)
 		out_faction = SEROPAENES_FACTION;
