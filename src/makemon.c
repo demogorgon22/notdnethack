@@ -12588,7 +12588,7 @@ boolean goodequip;
 			otmp->spe = 3;
 			set_material_gm(otmp, GEMSTONE);
 			(void) mpickobj(mtmp, otmp);
-			otmp = mksobj(KHAKKHARA, mkobjflags);
+			otmp = mksobj(QUARTERSTAFF, mkobjflags);
 			otmp = oname(otmp, artiname(ART_ARCHIVIST));
 			otmp->blessed = FALSE;
 			otmp->cursed = FALSE;
