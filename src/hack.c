@@ -731,7 +731,7 @@ int mode;
 		Your("body is too large to fit through.");
 	    return FALSE;
 	}
-	if(uarm && uarm->otyp == POWER_ARMOR){
+	if(uarm && uarm->otyp == POWER_ARMOR && !(u.sealsActive&SEAL_ANDREALPHUS)){
 	    if (mode == DO_MOVE)
 		Your("power armor is too bulky to fit through.");
 	    return FALSE;
