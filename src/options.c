@@ -157,7 +157,7 @@ static struct Bool_Opt
 	{"item_use_menu", &iflags.item_use_menu, TRUE, SET_IN_GAME},
 	{"large_font", &iflags.obsolete, FALSE, SET_IN_FILE},	/* OBSOLETE */
 	{"legacy", &flags.legacy, TRUE, DISP_IN_GAME},
-	{"lit_corridor", &flags.lit_corridor, FALSE, SET_IN_GAME},
+	{"lit_corridor", &flags.lit_corridor, TRUE, SET_IN_GAME},
 	{"lootabc", &iflags.lootabc, FALSE, SET_IN_GAME},
 #ifdef MAC_GRAPHICS_ENV
 	{"Macgraphics", &iflags.MACgraphics, TRUE, SET_IN_GAME},
@@ -286,7 +286,7 @@ static struct Bool_Opt
 #else
 	{"UTF8graphics", (boolean *)0, FALSE, SET_IN_FILE},
 #endif
-	{"use_darkgray", &iflags.wc2_darkgray, FALSE, SET_IN_FILE},
+	{"use_darkgray", &iflags.wc2_darkgray, TRUE, SET_IN_FILE},
 #ifdef WIN32CON
 	{"use_inverse",   &iflags.wc_inverse, TRUE, SET_IN_GAME},		/*WC*/
 #else
