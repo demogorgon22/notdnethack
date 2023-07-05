@@ -7372,7 +7372,7 @@ arti_invoke(obj)
 			pline("Nothing happens!");
 			break;
 		}
-	    if(u.uhave.amulet || In_endgame(&u.uz)){
+	    if(u.uhave.amulet || In_endgame(&u.uz) || In_void(&u.uz)){
 			You_feel("very disoriented for a moment.");
 			break;
 		}
