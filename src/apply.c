@@ -8344,7 +8344,7 @@ struct obj **optr;
 			}
 		}
 	}
-	if (yn("Resize a piece of armor?") == 'y'){
+	if (yn("Resize a piece of armor or tool?") == 'y'){
 		if (resizeArmor(obj) != MOVE_CANCELLED){
 			useup(obj);
 			*optr = 0;
