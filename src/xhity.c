@@ -5314,6 +5314,7 @@ boolean ranged;
 			if (youdef) {
 				if (u.ulycn == NON_PM
 					&& !Protection_from_shape_changers
+					&& !Unchanging
 					&& !arti_worn_prop(uwep, ARTP_NOWERE)
 					&& !umechanoid
 					&& is_were(pa)	/* or else Lillends can transmit lycanthropy via mask */
