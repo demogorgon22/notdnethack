@@ -5904,7 +5904,7 @@ int mmflags;
 						otmp->spe = max(otmp->spe, spe2);
 					}
 				}
-			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIRATH){
+			} else if(ptr->mtyp != PM_MISKA && ptr->mtyp != PM_NUDZIRATH && ptr->mtyp != PM_COSMOS){
 				//Generic angel artifact set
 				int artnum = rn2(8);
 	
