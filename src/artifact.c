@@ -10083,7 +10083,7 @@ arti_invoke(obj)
 					levl[u.ux][u.uy].typ = STAIRS;
 				} else {
 					You("feel knowledge coming over you!");
-					identify_pack(rn2(5));
+		    			identify_pack(0);
 				}
 			break;
 			
