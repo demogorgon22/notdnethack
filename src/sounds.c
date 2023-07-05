@@ -3025,6 +3025,9 @@ humanoid_sound:
 		}
 		verbl_msg = mtmp->mpeaceful ? soldier_pax_msg[rn2(3)]
 					    : soldier_foe_msg[rn2(3)];
+		if(Is_leveetwn_level(&u.uz)){
+			verbl_msg = "Do not break down the wall. It is the only thing keeping out the water.";
+		}	
 	    }
 	    break;
 	case MS_RIDER:
