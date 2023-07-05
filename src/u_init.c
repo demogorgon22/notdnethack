@@ -3033,6 +3033,9 @@ u_init()
 				flags.HDbreath = AD_FIRE;
 				HFire_resistance |= (FROMRACE|FROMOUTSIDE);
 			}
+		} else if(Role_if(PM_ANACHRONONAUT)){
+			flags.HDbreath = AD_DISN;
+			HDisint_resistance |= (FROMRACE|FROMOUTSIDE);
 		} else switch(rnd(6)){
 			case 1:
 				flags.HDbreath = AD_COLD;
@@ -3213,6 +3216,12 @@ register struct trobj *trop;
 			}
 			if(obj->otyp == GAUNTLETS && Role_if(PM_ANACHRONONAUT)){
 				set_material_gm(obj, COPPER);
+			}
+			if((obj->otyp == HELMET || obj->otyp == ARMORED_BOOTS) && Role_if(PM_ANACHRONONAUT) && Race_if(PM_HALF_DRAGON)){
+				set_material_gm(obj, COPPER);
+			}
+			if((obj->otyp == HELMET || obj->otyp == POWER_ARMOR || obj->otyp == KNUCKLE_DUSTERS) && Role_if(PM_ANACHRONONAUT) && Race_if(PM_GNOME)){
+				set_material_gm(obj, MITHRIL);
 			}
 			if(obj->otyp == GAUNTLETS && Race_if(PM_CHIROPTERAN)){
 				set_material_gm(obj, LEATHER);
