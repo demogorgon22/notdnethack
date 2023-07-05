@@ -2217,6 +2217,7 @@ struct obj * obj;
 		else radius = 1;
 		break;
 	case ROD_OF_FORCE:
+	case POWER_ARMOR:
 			radius = 0;
 		break;
 	default:
@@ -2243,6 +2244,7 @@ struct obj * obj;
 	case LIGHTSABER:
 	case BEAMSWORD:
 	case ROD_OF_FORCE:
+	case POWER_ARMOR:
 		turns = 1;
 		break;
 
@@ -2419,10 +2421,6 @@ begin_burn(obj)
 			}
 			else if (!Drain_resistance) obj->age++;
 		}
-	}
-	if(obj->otyp == POWER_ARMOR){
-		turns=obj->age;
-		radius = 0;
 	}
 	
 	if (do_timer) {

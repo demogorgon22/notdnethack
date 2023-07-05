@@ -1420,7 +1420,7 @@ int mkflags;
 				otmp->lamplit = 0;
 			}
 			if(otmp->otyp == POWER_ARMOR){
-				otmp->age = (long) rn1(5000,7500);
+				otmp->age = (long) rn1(10000,20000);
 				otmp->lamplit = 0;
 			}
 			if (otmp->otyp == LANTERN_PLATE_MAIL) {
