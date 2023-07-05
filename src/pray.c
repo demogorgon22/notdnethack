@@ -1849,8 +1849,7 @@ dosacrifice()
 				if(Is_sacris(&u.uz) || Is_ilsensine(&u.uz)){
 					if(uamul == otmp) Amulet_off();
 					u.uevent.ascended = 1;
-					if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID))
-						achieve.new_races = 1;
+					give_ascension_trophy();
 					if(carried(otmp)) useup(otmp);
 					else useupf(otmp, 1L);
 					You("offer the Amulet of Yendor to %s...", a_gname());
@@ -1903,8 +1902,6 @@ dosacrifice()
 					adjalign(10);
 #ifdef RECORD_ACHIEVE
 					achieve.ascended = 1;
-					if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID))
-						achieve.new_races = 1;
 					give_ascension_trophy();
 #endif
 					pline("An invisible choir sings, and you are bathed in radiance...");
@@ -1941,8 +1938,6 @@ dosacrifice()
 					adjalign(10);
 #ifdef RECORD_ACHIEVE
 					achieve.ascended = 1;
-					if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID))
-						achieve.new_races = 1;
 					give_ascension_trophy();
 #endif
 					pline("From the threshold of the Gate, you look back at the world");

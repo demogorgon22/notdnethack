@@ -2643,6 +2643,8 @@ give_ascension_trophy()
 		achieve.trophies |= HALF_ASC;
 	else if(Race_if(PM_YUKI_ONNA))
 		achieve.trophies |= YUKI_ASC;
+	if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID) || Race_if(PM_ENT))
+		achieve.new_races = 1;
 	int i;
 	int keys = 0;
 	for(i = 0; i<9; i++){
