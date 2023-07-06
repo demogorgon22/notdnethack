@@ -802,7 +802,7 @@ const struct Race races[] = {
 	NIGHTVISION3,
 	SPE_REMOVE_CURSE, -10
 },
-{	"etherealoid", "etherealoidic", "etherealoid-kind", "Eth",
+{	"Etherealoid", "etherealoidic", "etherealoid-kind", "Eth",
 	{0,0},
 	PM_ETHEREALOID, NON_PM, NON_PM, NON_PM,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,

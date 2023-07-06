@@ -480,7 +480,6 @@ give_up:	/* Quit */
 							flags.initalign)) {
 			    any.a_int = i+1;	/* must be non-zero */
 			    char selector = races[i].noun[0];
-			    if(!strcmp(races[i].noun,"etherealoid")) selector = 'E';
 			    add_menu(win, NO_GLYPH, &any, selector,
 				0, ATR_NONE, races[i].noun, MENU_UNSELECTED);
 			}
