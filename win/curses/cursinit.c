@@ -998,7 +998,7 @@ curses_display_splash_window()
         which_variant = GRUNTHACK_CURSES;
     }
 
-    if (strncmp("notdNethack", COPYRIGHT_BANNER_A, 8) == 0) {
+    if (strncmp("notdNetHack", COPYRIGHT_BANNER_A, 8) == 0) {
         which_variant = DNETHACK_CURSES;
     }
 
