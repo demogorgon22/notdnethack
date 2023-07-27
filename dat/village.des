@@ -91,8 +91,6 @@ GGGGGGGGGGGGGGGGGGGGGGGGGGGGG}}}}}}}}}}}}}}}}}}}}}}}}}GGGGGGGGGGGGGGGGGGGGG
 ENDMAP
 RANDOM_PLACES: (06,03), (16,02), (22,04), (06,12), (19,12), (18,16)
 REGION:(01,01,73,18),lit,"ordinary"
-TELEPORT_REGION:levregion(01,00,10,20),(1,1,61,15),down
-TELEPORT_REGION:levregion(01,00,10,20),(1,1,61,15),up
 # Stairs
 STAIR:levregion(02,01,05,20),(12,12,13,13),up
 STAIR:levregion(02,01,05,20),(0,0,0,0),down
