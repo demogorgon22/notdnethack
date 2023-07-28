@@ -836,6 +836,7 @@ struct obj {
 						  (otmp)->otyp == SET_OF_CROW_TALONS || \
 						  (otmp)->otyp == ISAMUSEI || \
 						  (otmp)->otyp == DISKOS || \
+						  (otmp)->otyp == PINCER_STAFF || \
 						  is_mercy_blade(otmp) || \
 						  (otmp)->otyp == KAMEREL_VAJRA)
 #define spec_prop_material(otmp)	(otmp->obj_material == MERCURIAL)
@@ -1329,6 +1330,19 @@ struct obj {
 			|| otmp->oeroded2 > 0\
 			|| otmp->oeroded3 > 0\
 			)
+
+/* Potentially required for ascension, shouldn't fail resist checks or be put in containers. */
+#define is_asc_obj(obj)	((obj)->otyp == AMULET_OF_YENDOR || \
+		   (obj)->otyp == CANDELABRUM_OF_INVOCATION || \
+		   (obj)->otyp == BELL_OF_OPENING || \
+		   (obj)->oartifact == ART_SILVER_KEY || \
+		   ((obj)->oartifact >= ART_FIRST_KEY_OF_LAW && (obj)->oartifact <= ART_THIRD_KEY_OF_NEUTRALITY) || \
+		   (obj)->oartifact == ART_PEN_OF_THE_VOID || \
+		   (obj)->oartifact == ART_ANNULUS || \
+		   (obj)->oartifact == ART_ILLITHID_STAFF || \
+		   (obj)->oartifact == ART_ELDER_CEREBRAL_FLUID || \
+		   (obj)->otyp == SPE_BOOK_OF_THE_DEAD \
+		)
 
 /* Flags for get_obj_location(). */
 #define CONTAINED_TOO	0x1

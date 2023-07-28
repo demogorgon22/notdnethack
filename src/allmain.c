@@ -999,7 +999,7 @@ you_regen_hp()
 
 		// CON bonus (while in natural form)
 		if (!Upolyd)
-			reglevel += ((int)ACURR(A_CON) - 10) / 2;
+			reglevel += ((int)ACURR(A_CON) - 10);
 		// minimum 1
 		if (reglevel < 1)
 			reglevel = 1;
@@ -1152,10 +1152,8 @@ you_regen_pw()
 	if(Is_nowhere(&u.uz)) return;
 
 	// natural power regeneration
-	if (wtcap < MOD_ENCUMBER &&		// not overly encumbered
-		!Race_if(PM_INCANTIFIER)	// not an incantifier
-		) {
-		int reglevel = u.ulevel + (((int)ACURR(A_WIS)) - 10) / 2;
+	if (wtcap < MOD_ENCUMBER) {	// not overly encumbered
+		int reglevel = u.ulevel + (((int)ACURR(A_WIS)) - 10);
 		// level + WISmod minimum 1
 		if (reglevel < 1)
 			reglevel = 1;
@@ -1185,7 +1183,10 @@ you_regen_pw()
 			reglevel *= 2;
 			reglevel += 8;
 		}
-		if (Role_if(PM_WIZARD))   reglevel += 10;
+		if (Role_if(PM_WIZARD)){
+			reglevel *= 2;
+			reglevel += 10;
+		}
 		if (Role_if(PM_MADMAN))   reglevel += 9;
 		if (Role_if(PM_HEALER))   reglevel += 6;
 		if (Role_if(PM_PRIEST))   reglevel += 6;
@@ -1530,8 +1531,10 @@ moveloop()
 			  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 			  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
 			){
-				insight_vanish(mtmp);
-				continue;
+				if(!(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
+					insight_vanish(mtmp);
+					continue;
+				}
 			}
 			if(has_template(mtmp, DELOUSED)){
 				delouse_tame(mtmp);
@@ -1626,8 +1629,10 @@ moveloop()
 				  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 				  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
 				){
-					insight_vanish(mtmp);
-					continue;
+					if(!(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
+						insight_vanish(mtmp);
+						continue;
+					}
 				}
 				if(has_template(mtmp, DELOUSED)){
 					delouse_tame(mtmp);
@@ -1898,8 +1903,31 @@ moveloop()
 				/* Spot the monster for sanity purposes */
 				spot_monster(mtmp);
 				/* Loyal monsters slowly recover tameness */
-				if(mtmp->mtame && mtmp->mtame < 5 && get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->loyal && (!moves%100))
+				if(mtmp->mtame && mtmp->mtame < 5 && get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->loyal && !(moves%100))
 					mtmp->mtame++;
+				/* Beast masters slowly improve tameness */
+				if(mtmp->mtame && !(moves%1000)){
+					if(P_SKILL(P_BEAST_MASTERY)>P_UNSKILLED){
+						if(get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->loyal){
+							if(mtmp->mtame < 5+P_SKILL(P_BEAST_MASTERY)-P_UNSKILLED)
+								mtmp->mtame++;
+						}
+						else {
+							if(mtmp->mtame < P_SKILL(P_BEAST_MASTERY)-P_UNSKILLED)
+								mtmp->mtame++;
+						}
+					}
+					if(u.usteed == mtmp && P_SKILL(P_RIDING)>P_UNSKILLED){
+						if(get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->loyal){
+							if(mtmp->mtame < 5+P_SKILL(P_RIDING)-P_UNSKILLED)
+								mtmp->mtame++;
+						}
+						else {
+							if(mtmp->mtame < P_SKILL(P_RIDING)-P_UNSKILLED)
+								mtmp->mtame++;
+						}
+					}
+				}
 				/* Dominated monsters stay tame */
 				if(mtmp->mtame && get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->dominated)
 					mtmp->mtame = 100;
@@ -3041,8 +3069,10 @@ karemade:
 		  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 		  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
 		){
-			insight_vanish(mtmp);
-			continue;
+			if(!(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
+				insight_vanish(mtmp);
+				continue;
+			}
 		}
 		if(has_template(mtmp, DELOUSED)){
 			delouse_tame(mtmp);
@@ -4162,7 +4192,7 @@ resFlags(buf, rflags)
 		"[[level drain]]",
 		"[[disease]]"
 	};
-	// Sprintf(buf,""); //What was this for?
+	buf[0] = '\0'; //Empty buffer (contains previous monster's resistances)
 	for(i = 0; i<10; i++){
 		if(rflags & (1 << i)){
 			if(!b){
@@ -4446,6 +4476,19 @@ printAttacks(buf, ptr)
 				attk->damd,
 				damageKey[((int)attk->adtyp)]
 			);
+		}
+		if(attk->lev_req > 0 || attk->ins_req > 0){
+			Sprintf(eos(buf), " (");
+				if(attk->lev_req > 0){
+					Sprintf(eos(buf), "level %d+", attk->lev_req);
+				}
+				if(attk->lev_req > 0 && attk->ins_req > 0){
+					Sprintf(eos(buf), " and ");
+				}
+				if(attk->ins_req > 0){
+					Sprintf(eos(buf), "%d+ [[insight]]", attk->ins_req);
+				}
+			Sprintf(eos(buf), ")");
 		}
 	}
 	return;
@@ -5281,14 +5324,14 @@ struct monst *mon;
 	ylocale = mon->mtrack[1].y;
 	/* Will eventually follow between branches */
 	if(mon->mux != u.uz.dnum){
-		if(!rn2(555))
+		if(!rn2(55))
 			mon->mux = u.uz.dnum;
 		return;
 	}
 
 	/* Follows between levels */
 	if(mon->muy != u.uz.dlevel){
-		if(!rn2(55)){
+		if(!rn2(5)){
 			if(mon->muy > u.uz.dlevel)
 				mon->muy--;
 			else if(mon->muy < u.uz.dlevel)

@@ -424,14 +424,19 @@ struct obj *otmp;
 			if(canseemon(mtmp))
 				pline("%s is no longer sick!", Monnam(mtmp));
 			set_template(mtmp, 0);
-			if(rnd(!always_hostile(mtmp->data) ? 12 : 20) < ACURR(A_CHA)){
-			struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
-			if(newmon){
-				mtmp = newmon;
-				newsym(mtmp->mx, mtmp->my);
+			if(!mtmp->mtame && rnd(!always_hostile(mtmp->data) ? 12 : 20) < ACURR(A_CHA)){
 				pline("%s is very grateful!", Monnam(mtmp));
+				mtmp->mpeaceful = TRUE;
+				char qbuf[BUFSZ];
+				Sprintf(qbuf, "Turn %s away from your party?", mhim(mtmp));
+				if(yn(qbuf) != 'y'){
+					struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+					if(newmon){
+						mtmp = newmon;
+						newsym(mtmp->mx, mtmp->my);
+					}
+				}
 			}
-		}
 		}
 	    if (mtmp->mtyp != PM_PESTILENCE) {
 			char hurtmonbuf[BUFSZ];
@@ -832,7 +837,7 @@ boolean dolls;
 		xchar x, y;
 		int wasfossil = (obj->otyp == FOSSIL);
 		
-		if(montype == PM_CHANGED || montype == PM_WARRIOR_CHANGED)
+		if(is_changed_mtyp(montype))
 			return (struct monst *) 0; //Can't revive these corpses, the main part of the monster vaporized.
 		
 		if (obj->where == OBJ_CONTAINED) {
@@ -1395,17 +1400,9 @@ obj_resists(obj, ochance, achance)
 struct obj *obj;
 int ochance, achance;	/* percent chance for ordinary objects, artifacts */
 {
-	if (obj->otyp == AMULET_OF_YENDOR ||
-	    obj->otyp == SPE_BOOK_OF_THE_DEAD ||
-	    obj->otyp == CANDELABRUM_OF_INVOCATION ||
-	    obj->otyp == BELL_OF_OPENING ||
-	    obj->oartifact == ART_SILVER_KEY ||
-	    (obj->oartifact >= ART_FIRST_KEY_OF_LAW && obj->oartifact <= ART_THIRD_KEY_OF_NEUTRALITY) ||
-	    obj->oartifact == ART_PEN_OF_THE_VOID ||
-	    obj->oartifact == ART_ANNULUS ||
-	    obj->oartifact == ART_ILLITHID_STAFF ||
-	    obj->oartifact == ART_ELDER_CEREBRAL_FLUID ||
-	    (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
+	if (is_asc_obj(obj) ||
+	    (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))
+	) {
 		return TRUE;
 	} else {
 		int chance = rn2(100);
@@ -2105,7 +2102,7 @@ struct obj *obj, *otmp;
 		if (obj->otyp == WAN_POLYMORPH ||
 			obj->otyp == SPE_POLYMORPH ||
 			obj->otyp == POT_POLYMORPH ||
-			obj_resists(obj, 0, 95)) {
+			obj_resists(obj, 0, 100)) {
 		    res = 0;
 		    break;
 		}

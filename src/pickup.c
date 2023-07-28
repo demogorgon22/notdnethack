@@ -1882,11 +1882,17 @@ gotit:
 				/*no message*/;
 			else {
 				pline("A broken-off fang is embedded in %s chest. It seems to have pierced %s heart!", s_suffix(mon_nam(mtmp)), mhis(mtmp));
-				if(!helpless_still(mtmp)){
+				if(!helpless_still(mtmp) && !TimeStop){
 					pline("%s moves to quickly for you to grasp the fang.", Monnam(mtmp));
 				}
 				else if(yn("Attempt to remove the fang?")=='y'){
-					timepassed = you_remove_jrt_fang(mtmp, (struct obj *)0);
+					/* Don't really want the solution to be wages of sloth */
+					if(TimeStop){
+						pline("The flesh around %s wound is too unyielding in your accelerated time frame.", s_suffix(mon_nam(mtmp)));
+					}
+					else {
+						timepassed = you_remove_jrt_fang(mtmp, (struct obj *)0);
+					}
 				}
 			}
 		}
@@ -2193,7 +2199,7 @@ register struct obj *obj;
 	) {
 		pline("That combination is a little too explosive.");
 		return 0;*/
-	} else if (!(is_magic_obj(obj))
+	} else if ((!is_magic_obj(obj) || is_asc_obj(obj))
 		&& current_container->oartifact == ART_ESSCOOAHLIPBOOURRR
 	) {
 		pline("The artifact isn't interested in taking %s.", the(xname(obj)));
@@ -2215,16 +2221,7 @@ register struct obj *obj;
 	) {
 		pline("%s doesn't fit in the skull!", The(xname(obj)));
 		return 0;
-	} else if (obj->otyp == AMULET_OF_YENDOR ||
-		   obj->otyp == CANDELABRUM_OF_INVOCATION ||
-		   obj->otyp == BELL_OF_OPENING ||
-		   obj->oartifact == ART_SILVER_KEY ||
-		   (obj->oartifact >= ART_FIRST_KEY_OF_LAW && obj->oartifact <= ART_THIRD_KEY_OF_NEUTRALITY) ||
-		   obj->oartifact == ART_PEN_OF_THE_VOID ||
-		   obj->oartifact == ART_ANNULUS ||
-		   obj->oartifact == ART_ILLITHID_STAFF ||
-		   (obj->oartifact == ART_ELDER_CEREBRAL_FLUID && current_container->oartifact != ART_ILLITHID_STAFF) ||
-		   obj->otyp == SPE_BOOK_OF_THE_DEAD) {
+	} else if (is_asc_obj(obj)) {
 	/* Prohibit Amulets in containers; if you allow it, monsters can't
 	 * steal them.  It also becomes a pain to check to see if someone
 	 * has the Amulet.  Ditto for the Candelabrum, the Bell and the Book.

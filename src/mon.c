@@ -1710,7 +1710,7 @@ mcalcdistress()
 		create_gas_cloud(mtmp->mx+rn2(3)-1, mtmp->my+rn2(3)-1, rnd(3), rnd(3)+1, FALSE);
 	}
 	
-	if(mtmp->mtyp == PM_FIRST_WRAITHWORM && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < 6){
+	if(mtmp->mtyp == PM_FIRST_WRAITHWORM && !mtmp->mcan && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < 6){
 		struct monst *tmpm;
 		You("are thrown by a blast of wind!");
 		hurtle(rn2(3)-1, rn2(3)-1, rnd(6), FALSE, TRUE);
@@ -1913,8 +1913,10 @@ movemon()
 	  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 	  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
 	){
-		insight_vanish(mtmp);
-		continue;
+		if(!(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
+			insight_vanish(mtmp);
+			continue;
+		}
 	}
     if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && levl[mtmp->mx][mtmp->my].typ == AIR
 		&& !mon_resistance(mtmp,FLYING)
@@ -2133,7 +2135,7 @@ meatmetal(mtmp)
 						otmp; otmp = otmp->nexthere) {
 	    if (mtmp->mtyp == PM_RUST_MONSTER && !is_rustprone(otmp))
 		continue;
-	    if (is_metallic(otmp) && !obj_resists(otmp, 0, 95) &&
+	    if (is_metallic(otmp) && !obj_resists(otmp, 0, 100) &&
 			touch_artifact(otmp, mtmp, FALSE) && !(otmp->otyp == MAGIC_CHEST && otmp->obolted)
 			) {
 		if (mtmp->mtyp == PM_RUST_MONSTER && otmp->oerodeproof) {
@@ -2474,7 +2476,7 @@ meatobj(mtmp)		/* for gelatinous cubes */
 	/* Engulfs others, except huge rocks and metal attached to player */
 	for (otmp = level.objects[mtmp->mx][mtmp->my]; otmp; otmp = otmp2) {
 	    otmp2 = otmp->nexthere;
-	    if (is_organic(otmp) && !obj_resists(otmp, 0, 95) &&
+	    if (is_organic(otmp) && !obj_resists(otmp, 0, 100) &&
 		    touch_artifact(otmp, mtmp, FALSE)) {
 		if (otmp->otyp == CORPSE && touch_petrifies(&mons[otmp->corpsenm]) &&
 			!resists_ston(mtmp))
@@ -4352,7 +4354,7 @@ struct monst *mtmp;
 				break; //???
 
 			/* message */
-			if (couldsee(mtmp->mx, mtmp->my) || couldsee(victim->mx, victim->my)) {
+			if (!Blind && (couldsee(mtmp->mx, mtmp->my) || (victim && couldsee(victim->mx, victim->my)))) {
 				messaged = TRUE;
 				pline("But wait...");
 				if(victim)
@@ -4366,14 +4368,14 @@ struct monst *mtmp;
 					pline("%s reconstitutes!", Monnam(mtmp));
 				else
 					pline("%s looks much better!", Monnam(mtmp));
-				if(victim){
-					if(canseemon(victim))
-						pline("%s dies of %s illness!", Monnam(victim), mhis(victim));
-					mondied(victim);
-				}
-				else if(sacked_victim){
-					kill_giants_sack(sacked_victim);
-				}
+			}
+			if(victim){
+				if(canseemon(victim))
+					pline("%s dies of %s illness!", Monnam(victim), mhis(victim));
+				mondied(victim);
+			}
+			else if(sacked_victim){
+				kill_giants_sack(sacked_victim);
 			}
 			break;
 		}
