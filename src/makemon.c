@@ -14020,7 +14020,7 @@ int faction;
 			if(mndx == PM_TRAVELLING_WIZARD){	
 				struct monst *mtmp2 = 0;
 				for(num = 0; num < 8+rnd(4); num++){
-					mtmp2 = makemon_full(&mons[urace.malenum], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+					mtmp2 = makemon_full(&mons[PM_PEASANT], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 					if(mtmp2){
 						mtmp2->mpeaceful = 1;
 						rloc(mtmp2,FALSE);

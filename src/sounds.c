@@ -888,7 +888,7 @@ boolean chatting;
 			}
 		}
 	}
-	if(Is_village_level(&u.uz) && Race_if(monsndx(ptr))){
+	if(Is_village_level(&u.uz) && ptr->mtyp == PM_PEASANT){
 		if(u.ubranch){
 			verbalize("%s",branch_info[rn2(5) + ((u.ubranch-1)*5)]);
 		} else {
