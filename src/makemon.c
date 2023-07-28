@@ -7665,13 +7665,18 @@ int mmflags;
 			else if(!rn2(2)) (void)mongets(mtmp, CLUB, mkobjflags);
 			if(In_dismalswamp(&u.uz)){
 				(void)mongets(mtmp,ORCISH_HELM, mkobjflags);
-				(void)mongets(mtmp,ORCISH_CLOAK, mkobjflags);
+				if(!rn2(3)) (void)mongets(mtmp, ORCISH_SPEAR, mkobjflags);
+				if(!rn2(2)) (void)mongets(mtmp, ORCISH_SHIELD, mkobjflags);
+				if(ptr->mtyp == PM_KOBOLD_SHAMAN)
+					(void)mongets(mtmp,ROBE, mkobjflags);
+				else
+					(void)mongets(mtmp,ORCISH_CLOAK, mkobjflags);
 				if(ptr->mtyp == PM_KOBOLD_LORD)
 					(void)mongets(mtmp,ORCISH_RING_MAIL, mkobjflags);
 				if(ptr->mtyp == PM_ROCK_KOBOLD)
 					(void)mongets(mtmp,ORCISH_CHAIN_MAIL, mkobjflags);
 				if(ptr->mtyp == PM_SWAMP_KOBOLD)
-					(void)mongets(mtmp,ORCISH_SHIELD, mkobjflags);
+					(void)mongets(mtmp,ORCISH_DAGGER, mkobjflags);
 			}
 		}
 		break;
