@@ -1639,7 +1639,7 @@ struct monst *other_mon;
 	return mon_nam(mon);
 }
 
-char * 
+const char * 
 get_ent_species(species)
 int species;
 {

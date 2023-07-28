@@ -1774,9 +1774,8 @@ int count;
 
 static void
 set_ent_species(){
-	int type = rn2(ENT_MAX_SPECIES);
-	u.ent_species = type;
-	switch(type){
+	u.ent_species = species[flags.initspecies].value;
+	switch(u.ent_species){
 		case ENT_DOGWOOD:
 			HFast |= FROMRACE;
 		break;
@@ -3016,51 +3015,33 @@ u_init()
 
 	dungeon_topology.eprecursor_typ = rnd(8);
 	if(Race_if(PM_HALF_DRAGON)){
-		if(Role_if(PM_NOBLEMAN) && flags.initgend){
-			if (rn2(2)) {
-				flags.HDbreath = AD_MAGM;
+		flags.HDbreath = species[flags.initspecies].value;
+		switch(flags.HDbreath){
+			case AD_MAGM:	
 				HAntimagic |= (FROMRACE|FROMOUTSIDE);
-			}
-			else {
-				flags.HDbreath = AD_COLD;
-				HCold_resistance |= (FROMRACE|FROMOUTSIDE);
-			}
-		} else if(Role_if(PM_MADMAN)){
-			if(flags.initgend){
-				flags.HDbreath = AD_RBRE;
-			}
-			else {
-				flags.HDbreath = AD_FIRE;
+				break;
+			case AD_COLD:
+				HAntimagic |= (FROMRACE|FROMOUTSIDE);
+				break;
+			case AD_FIRE:
 				HFire_resistance |= (FROMRACE|FROMOUTSIDE);
-			}
-		} else if(Role_if(PM_ANACHRONONAUT)){
-			flags.HDbreath = AD_DISN;
-			HDisint_resistance |= (FROMRACE|FROMOUTSIDE);
-		} else switch(rnd(6)){
-			case 1:
-				flags.HDbreath = AD_COLD;
-				HCold_resistance |= (FROMRACE|FROMOUTSIDE);
-			break;
-			case 2:
-				flags.HDbreath = AD_FIRE;
-				HFire_resistance |= (FROMRACE|FROMOUTSIDE);
-			break;
-			case 3:
-				flags.HDbreath = AD_SLEE;
+				break;
+			case AD_DISN:
+				HDisint_resistance |= (FROMRACE|FROMOUTSIDE);
+				break;
+			case AD_SLEE:
 				HSleep_resistance |= (FROMRACE|FROMOUTSIDE);
-			break;
-			case 4:
-				flags.HDbreath = AD_ELEC;
+				break;
+			case AD_ELEC:
 				HShock_resistance |= (FROMRACE|FROMOUTSIDE);
-			break;
-			case 5:
-				flags.HDbreath = AD_DRST;
+				break;
+			case AD_DRST:
 				HPoison_resistance |= (FROMRACE|FROMOUTSIDE);
-			break;
-			case 6:
-				flags.HDbreath = AD_ACID;
+				break;
+			case AD_ACID:
 				HAcid_resistance |= (FROMRACE|FROMOUTSIDE);
-			break;
+				break;
+
 		}
 	}
 	if(Race_if(PM_ENT)){

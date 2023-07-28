@@ -3613,6 +3613,8 @@ boolean new_game;	/* false => restoring an old game */
 
     if(Race_if(PM_ENT)){
 	Sprintf(eos(racebuf), "%s %s", get_ent_species(u.ent_species), urace.adj);
+    } else if (Race_if(PM_HALF_DRAGON)){
+	Sprintf(eos(racebuf), "%s %s", species[flags.initspecies].name, urace.adj);
     } else {
 	Sprintf(eos(racebuf), "%s", urace.adj);
     }
