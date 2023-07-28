@@ -804,6 +804,8 @@ blackforest_montype()
 		return &mons[PM_RAZORVINE];
 	if(chance < 60)
 		return &mons[PM_GIANT_BAT];
+	if(chance < 70)
+		return &mons[PM_WOLF_CUB];
 	if(chance < 80)
 		return &mons[PM_WEEPING_WILLOW];
 	if(chance < 90)
