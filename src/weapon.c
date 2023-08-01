@@ -641,6 +641,7 @@ struct monst *magr;
 		if (obj->oartifact == ART_VORPAL_BLADE
 			|| obj->oartifact == ART_SNICKERSNEE
 			|| obj->oartifact == ART_DURIN_S_AXE
+			|| obj->oartifact == ART_SMOKING_MIRROR
 			|| obj->oartifact == ART_RUYI_JINGU_BANG
 		){
 			ocn += 1;						// roll two oc dice
