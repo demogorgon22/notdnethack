@@ -1547,7 +1547,7 @@ struct monst *mon;
 			goto do_pit;
 #endif
 		  case ALTAR :
-			if (Is_astralevel(&u.uz) || Is_sanctum(&u.uz) || (Role_if(PM_EXILE) && Is_nemesis(&u.uz))) break;
+			if (Is_astralevel(&u.uz) || In_void(&u.uz) || Is_sanctum(&u.uz) || (Role_if(PM_EXILE) && Is_nemesis(&u.uz))) break;
 
 			if (cansee(x,y))
 				pline_The("altar falls into a chasm.");
