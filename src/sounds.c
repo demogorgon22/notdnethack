@@ -56,6 +56,7 @@ static int FDECL(dodollmenu, (struct monst *));
 static int FDECL(dotatmenu, (const char *));
 static int FDECL(doportalmenu, (const char *));
 static int FDECL(dosmithmenu, (const char *));
+static int FDECL(dodyemenu, (const char *));
 static boolean FDECL(smith_offer_price, (long charge, struct monst *));
 static boolean FDECL(nurse_services,(struct monst *));
 static boolean FDECL(render_services,(struct monst *));
@@ -1786,6 +1787,33 @@ asGuardian:
 			}
 		}
 	}break;
+	case MS_DYE:
+		if(chatting){
+			struct obj *obj;       /* The object to dye */
+			if(!mtmp->mpeaceful){
+				verbalize("Dye!");
+				break;
+			}
+			char allowall[2];
+			allowall[0] = ALL_CLASSES; allowall[1] = '\0';
+			if ( !(obj = getobj(allowall, "have dyed"))) {
+				verbalize("Please come back and talk to me about dye!");
+				break;
+			}
+			if(objects[obj->otyp].oc_merge){
+				verbalize("I can't dye stackable items.");
+				break;
+			}
+			int dye_color = dodyemenu("What color would you like me to dye it?");
+			if(dye_color < 0) {
+				verbalize("Please come back and talk to me about dye!");
+				break;
+			}
+			obj->obj_color = dye_color;
+			verbalize("Thanks for letting me dye your %s!", xname(obj));
+			break;
+		}
+		/* Otherwise fall thru into generic singing */
 	case MS_SONG:
 	case MS_INTONE:
 	case MS_FLOWER:
@@ -3280,6 +3308,53 @@ const char *prompt;
 	destroy_nhwindow(tmpwin);
 	return (n > 0) ? selected[0].item.a_int : 0;
 }
+
+
+#define dye_menu_item(str,clr) Sprintf(buf, str); \
+	any.a_int = clr;	/* must be non-zero */ \
+	add_menu(tmpwin, NO_GLYPH, &any, \
+		'a' + clr, 0, ATR_NONE, buf, \
+		MENU_UNSELECTED); 
+
+int
+dodyemenu(prompt)
+const char *prompt;
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Colors: ");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	dye_menu_item("Black", CLR_BLACK);
+	dye_menu_item("Red", CLR_RED);
+	dye_menu_item("Green", CLR_GREEN);
+	dye_menu_item("Brown", CLR_BROWN);
+	dye_menu_item("Blue", CLR_BLUE);
+	dye_menu_item("Magenta", CLR_MAGENTA);
+	dye_menu_item("Cyan", CLR_CYAN);
+	dye_menu_item("Gray", CLR_GRAY);
+	dye_menu_item("Orange", CLR_ORANGE);
+	dye_menu_item("Light Green", CLR_BRIGHT_GREEN);
+	dye_menu_item("Yellow", CLR_YELLOW);
+	dye_menu_item("Electric Blue", CLR_BRIGHT_BLUE);
+	dye_menu_item("Pink", CLR_BRIGHT_MAGENTA);
+	dye_menu_item("Sky Blue", CLR_BRIGHT_CYAN);
+	dye_menu_item("White", CLR_WHITE);
+	end_menu(tmpwin, prompt);
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	return (n > 0) ? selected[0].item.a_int : -1;
+}
+
+#undef dye_menu_item
 
 static const short command_chain[][2] = {
 	{ PM_ORC, PM_ORC_CAPTAIN }, { PM_HILL_ORC, PM_ORC_CAPTAIN }, { PM_MORDOR_ORC, PM_ORC_CAPTAIN },

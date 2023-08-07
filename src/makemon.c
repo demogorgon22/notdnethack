@@ -2802,6 +2802,21 @@ boolean goodequip;
 		mongets(mtmp, PLAIN_DRESS, mkobjflags);
 		mongets(mtmp, WITCH_HAT, mkobjflags);
 		mongets(mtmp, KNIFE, mkobjflags);
+	} else if(ptr->mtyp == PM_DYE_SAVANT){
+		/* Quirky and eccentric getup */
+		otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
+		if(otmp) otmp->obj_color = CLR_MAGENTA;
+		otmp = mongets(mtmp, PLAIN_DRESS, mkobjflags);
+		if(otmp) otmp->obj_color = CLR_BRIGHT_CYAN;
+		otmp = mongets(mtmp, CLOAK, mkobjflags);
+		if(otmp) otmp->obj_color = CLR_BRIGHT_BLUE;
+		otmp = mongets(mtmp, GLOVES, mkobjflags);
+		if(otmp) otmp->obj_color = CLR_BRIGHT_MAGENTA;
+		otmp = mongets(mtmp, WITCH_HAT, mkobjflags);
+		if(otmp) otmp->obj_color = CLR_YELLOW;
+		otmp = mongets(mtmp, MAGIC_MARKER, mkobjflags);
+		otmp->recharged = 1;
+		otmp->spe = 0;
 	} else if(ptr->mtyp == PM_WITCH){
 		struct monst *familliar;
 		familliar = makemon(&mons[PM_WITCH_S_FAMILIAR], mtmp->mx, mtmp->my, MM_ADJACENTOK|MM_NOCOUNTBIRTH);

@@ -458,6 +458,11 @@ Dungeon Changes
 				Ait Crystal - Shocking, 2x lightning damage
 				Earth Crystal - Flaying
 				Black Crystal - Sparkling, 2x magic damage
+	Law quest changes
+		Hide a dye savant posing as a statue in the arcward level
+			Will recolor any non stackable item for free
+			Sings songs, can be wished for, can be tamed
+
 General changes
 	Red dragon scale based armor now grants flying.
 	Upgrade kits now work on tools.

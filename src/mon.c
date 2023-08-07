@@ -6768,7 +6768,7 @@ register struct monst *mtmp;
 		|| mtmp->data->msound == MS_TRUMPET || mtmp->mtyp == PM_RHYMER
 		|| mtmp->data->msound == MS_SECRETS || mtmp->data->msound == MS_HOWL
 		|| mtmp->data->msound == MS_SCREAM || mtmp->data->msound == MS_HARROW
-		|| mtmp->data->msound == MS_APOC
+		|| mtmp->data->msound == MS_APOC || mtmp->data->msound == MS_DYE
 		)
 	) {
 		domonnoise(mtmp, FALSE);

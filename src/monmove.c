@@ -1342,6 +1342,7 @@ register struct monst *mtmp;
 		|| (mdat->msound == MS_DREAD && !rn2(4))
 		|| (mdat->msound == MS_OONA && (nearby || !rn2(6)))
 		|| (mdat->msound == MS_SONG && !rn2(6))
+		|| (mdat->msound == MS_DYE && !rn2(6))
 		|| (mdat->mtyp == PM_RHYMER && !mtmp->mspec_used && !rn2(6))
 		|| (mdat->msound == MS_INTONE && !rn2(6))
 		|| (mdat->msound == MS_FLOWER && !rn2(6))

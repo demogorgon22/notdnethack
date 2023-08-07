@@ -69,6 +69,7 @@
 #define MS_TATTOO	58	/* Tattoos service */
 #define MS_SMITH	59	/* Armorsmith service */
 #define MS_PORTAL	60	/* Offer portal options */
+#define MS_DYE 		61	/* Sell object dyeing */
 
 
 #define MR_FIRE			0x0001	/* 1 resists fire */
