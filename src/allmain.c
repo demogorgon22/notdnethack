@@ -4215,230 +4215,6 @@ printAttacks(buf, ptr)
 {
 	int i;
 	struct attack *attk;
-	static char *attackKey[] = {
-		"Passive",	/*0*/
-		"Claw",		/*1*/
-		"Bite",		/*2*/
-		"Kick",		/*3*/
-		"Butt",		/*4*/
-		"Touch",	/*5*/
-		"Sting",	/*6*/
-		"Bearhug",	/*7*/
-		"NA",		/*8*/
-		"NA",		/*9*/
-		"Spit",		/*10*/
-		"Engulf",	/*11*/
-		"Breath weapon",	/*12*/
-		"Splashing Breath",	/*13*/
-		"Suicidal explosion",	/*134*/
-		"Explode on death",	/*15*/
-		"Single-target (active) gaze attack",	/*16*/
-		"Tentacle",	/*17*/
-		"Arrow",	/*18*/
-		"Whip",	/*19*/
-		"Reach",	/*20*/
-		"Your weapon",	/*21*/
-		"Long-necked bite",	/*22*/
-		"Magic",	/*23*/
-		"Droplet storm",	/*24*/
-		"Automatic hit",	/*25*/
-		"Mist tendrils",	/*26*/
-		"Tinker",	/*27*/
-		"Magic blades",	/*28*/
-		"Beam",	/*29*/
-		"Deva Arms",	/*30*/
-		"Five-square-reach touch",	/*31*/
-		"Five-square-reach bite",	/*32*/
-		"Wide-angle (passive) gaze",/*33*/
-		"Rend",	/*34*/
-		"Lashing vines",	/*35*/
-		"Black goat (mist)",	/*36*/
-		"Black goat (blessed)",	/*37*/
-		"Magic blades (offhand)",	/*38*/
-		"Magic blades (extra hand)",	/*39*/
-		"Magic blades (deva arms)",	/*40*/
-		"Magic blades (floating)",	/*41*/
-		"Secondary bite",	/*42*/
-		"Waist-wolf bite",	/*43*/
-		"Tail slap",	/*44*/
-		""
-	};
-	static char *damageKey[] = {
-		"physical",				/*0*/
-		"[[magic missile]]s",	/*1*/
-		"[[fire]]",				/*2*/
-		"[[cold]]",				/*3*/
-		"[[sleep]]",			/*4*/
-		"[[disintegration]]",	/*5*/
-		"[[shock]]",			/*6*/
-		"[[poison]] (strength)",/*7*/
-		"[[acid]]",				/*8*/
-		"Unused 1",				/*9*/
-		"Unused 2",				/*10*/
-		"[[blind]]ing",			/*11*/
-		"[[stun]]ning",			/*12*/
-		"[[slow]]ing",			/*13*/
-		"[[paralysis]]",		/*14*/
-		"[[life drain]]",		/*15*/
-		"[[energy drain]]",		/*16*/
-		"[[leg wounding]]",		/*17*/
-		"[[petrifcation]]",		/*18*/
-		"[[sticky]]",			/*19*/
-		"[[steal gold]]",		/*20*/
-		"[[steal item]]",		/*21*/
-		"[[steal item|seduction]]",/*22*/
-		"[[teleportation]]",	/*23*/
-		"[[rust]]",				/*24*/
-		"[[confusion]]",		/*25*/
-		"[[digestion]]",		/*26*/
-		"[[healing]]",			/*27*/
-		"[[drowning]]",			/*28*/
-		"[[lycanthropy]]",		/*29*/
-		"[[poison]] (dexterity)",/*30*/
-		"[[poison]] (constitution)",/*31*/
-		"[[int drain]]",		/*32*/
-		"[[disease]]",			/*33*/
-		"[[rotting]]",			/*34*/
-		"[[seduction]]",		/*35*/
-		"[[hallucination]]",	/*36*/
-		"[[Death's touch]]",	/*37*/
-		"[[Pestilence]]",		/*38*/
-		"[[Famine]]",			/*39*/
-		"[[sliming]]",			/*40*/
-		"[[disenchant]]",		/*41*/
-		"[[corrosion]]",		/*42*/
-		"[[poison]] (HP damage)",/*43*/
-		"[[wis drain]]",		/*44*/
-		"[[vorpal]]",			/*45*/
-		"[[armor shredding]]",	/*46*/
-		"[[silver]]",			/*47*/
-		"[[cannon ball]]",		/*48*/
-		"[[boulder]]",			/*49*/
-		"[[random boulder]]",	/*50*/
-		"[[tickling]]",			/*51*/
-		"[[soaking]]",			/*52*/
-		"[[lethe]]",			/*53*/
-		"[[bisection]]",		/*54*/
-		"NA",					/*55*/
-		"NA",					/*56*/
-		"NA",					/*57*/
-		"NA",					/*58*/
-		"NA",					/*59*/
-		"[[cancellation]]",		/*60*/
-		"[[deadly]]",			/*61*/
-		"[[suction]]",			/*62*/
-		"[[malkuth]]",			/*63*/
-		"[[uvuudaum brainspike]]",/*64*/
-		"[[abduction]]",		/*65*/
-		"[[spawn Chaos]]",		/*66*/
-		"[[seduction]]",		/*67*/
-		"[[hellblood]]",		/*68*/
-		"[[spawn Leviathan]]",	/*69*/
-		"[[mist projection]]",	/*70*/
-		"[[teleport away]]",	/*71*/
-		"[[baleful polymorph]]",/*72*/
-		"[[psionic]]",			/*73*/
-		"[[promotion]]",		/*74*/
-		"[[shared soul]]",		/*75*/
-		"[[intrusion]]",		/*76*/
-		"[[jailer]]",			/*77*/
-		"[[special]]",			/*78*/
-		"[[take artifact]]",	/*79*/
-		"[[silver]]",			/*80*/
-		"[[special]]",			/*81*/
-		"[[your weapon]]",		/*82*/
-		"[[cursed unicorn horn]]",/*83*/
-		"[[loadstone]]",		/*84*/
-		"[[garo report]]",		/*85*/
-		"[[garo report]]",		/*86*/
-		"[[level teleport]]",	/*87*/
-		"[[blink]]",			/*88*/
-		"[[angel's touch]]",	/*89*/
-		"[[spore]]",			/*90*/
-		"[[explosive spore]]",	/*91*/
-		"[[sunlight]]",			/*92*/
-		"[[deadly shriek]]",	/*93*/
-		"[[barbs]]",			/*94*/
-		"[[luck drain]]",		/*95*/
-		"[[vampiric]]",			/*96*/
-		"[[webbing]]",			/*97*/
-		"[[special]]",			/*98*/
-		"[[spawn gizmos]]",		/*99*/
-		"[[fireworks]]",		/*100*/
-		"[[study]]",			/*101*/
-		"[[fire]], [[cold]], or [[shock]]",/*102*/
-		"[[netzach]]",			/*103*/
-		"[[special]]",			/*104*/
-		"[[shadow]]",			/*105*/
-		"[[armor teleportation]]",/*106*/
-		"[[half-dragon breath]]",/*107*/
-		"[[silver rapier]]",	/*108*/
-		"elemental [[shock]]",	/*109*/
-		"elemental [[fire]]",	/*110*/
-		"elemental [[poison]]",	/*111*/
-		"elemental [[cold]]",	/*112*/
-		"elemental [[acid]]",	/*113*/
-		"conflict",				/*114*/
-		"blood blade",			/*115*/
-		"Surya Deva arrow",		/*116*/
-		"[[constitution]] drain",/*117*/
-		"Silver mirror shards", /*118*/
-		"Mercury blade",		/*119*/
-		"Gold transmutation", 	/*120*/
-		"[[Holy fire]]", 		/*121*/
-		"[[Dessication]]",		/*122*/
-		"[[Anger god]]",		/*123*/
-		"[[four seasons]]",		/*124*/
-		"[[pollen]]",			/*125*/
-		"[[Blood frenzy]]",		/*126*/
-		"[[Create spheres]]",	/*127*/
-		"[[Dark]]",				/*128*/
-		"[[Implant egg]]",		/*129*/
-		"[[Flesh hook]]",		/*130*/
-		"[[Mindwipe]]",			/*131*/
-		"Slow [[petrification]]",/*132*/
-		"[[strength]] drain",	/*133*/
-		"[[dexterity]] drain",	/*134*/
-		"[[charisma]] drain",	/*135*/
-		"all attribute drain",	/*136*/
-		"inflict [[agnosis]]",	/*137*/
-		"revelatory whispers",	/*138*/
-		"pull closer",			/*139*/
-		"crippling pain",		/*140*/
-		"inflict curses",		/*141*/
-		"crushing lava",		/*142*/
-		"pyroclastic",			/*143*/
-		"silver moonlight",		/*144*/
-		"holy energy",			/*145*/
-		"unholy energy",		/*146*/
-		"level-based damage",	/*147*/
-		"severe poison",		/*148*/
-		"corrupted holy energy",/*149*/
-		"magic-item-stealing",	/*150*/
-		"byakhee larvae",		/*151*/
-		"black-star",			/*152*/
-		// "[[ahazu abduction]]",	/**/
-		"[[stone choir]]",		/* */
-		"[[water vampire]]",	/* */
-		"[[bloody fangs]]",		/* */
-		"[[item freeing]]",		/* */
-		"[[rainbow feathers]]",	/* */
-		// "[[Vorlon explosion]]",	/*NA*/
-		"[[cold explosion]]",	/* */
-		"[[fire explosion]]",	/* */
-		"[[shock explosion]]",	/* */
-		"[[physical explosion]]",/* */
-		// "[[Vorlon missile]]",	/*NA*/
-		"[[Warmachine missile]]",/* */
-		"[[clerical spell]]",	/* */
-		"[[mage spell]]",		/* */
-		"[[random breath type]]",/* */
-		"[[random gaze type]]",	/* */
-		"[[random elemental gaze]]",/* */
-		"[[Amulet theft]]",		/* */
-		"[[Intrinsic theft]]",	/* */
-		"[[Quest Artifact theft]]"/* */
-	};
 	buf[0] = '\0';
 	for(i = 0; i<10; i++){
 		attk = &ptr->mattk[i];
@@ -4447,25 +4223,16 @@ printAttacks(buf, ptr)
 			attk->damn == 0 &&
 			attk->damd == 0
 		) return;
-		if(SIZE(attackKey) <= attk->aatyp 
-			&& attk->aatyp != AT_WEAP 
-			&& attk->aatyp != AT_XWEP
-			&& attk->aatyp != AT_MARI
-			&& attk->aatyp != AT_MAGC
-		)
-			impossible("attack key %d out of range %d on monster %s!", attk->aatyp, SIZE(attackKey), ptr->mname);
-		if(SIZE(damageKey) <= attk->adtyp)
-			impossible("damage key %d out of range on monster %s!", attk->adtyp, ptr->mname);
 		if(!i){
 			Sprintf(buf, "%s %dd%d %s",
 				attk->aatyp == AT_WEAP ? "Weapon" :
 				attk->aatyp == AT_XWEP ? "Offhand Weapon" :
 				attk->aatyp == AT_MARI ? "Multiarm Weapon" :
 				attk->aatyp == AT_MAGC ? "Cast" :
-				attackKey[((int)attk->aatyp)],
+				get_description_of_attack_type(attk->aatyp),
 				attk->damn,
 				attk->damd,
-				damageKey[((int)attk->adtyp)]
+				get_description_of_damage_type(attk->adtyp)
 			);
 		} else {
 			Sprintf(eos(buf), ", %s %dd%d %s",
@@ -4473,10 +4240,10 @@ printAttacks(buf, ptr)
 				attk->aatyp == AT_XWEP ? "Offhand Weapon" :
 				attk->aatyp == AT_MARI ? "Multiarm Weapon" :
 				attk->aatyp == AT_MAGC ? "Cast" :
-				attackKey[((int)attk->aatyp)],
+				get_description_of_attack_type(attk->aatyp),
 				attk->damn,
 				attk->damd,
-				damageKey[((int)attk->adtyp)]
+				get_description_of_damage_type(attk->adtyp)
 			);
 		}
 		if(attk->lev_req > 0 || attk->ins_req > 0){

@@ -27,8 +27,6 @@ STATIC_DCL char * get_mv_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mg_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mw_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_speed_description_of_monster_type(struct monst *, char *);
-STATIC_DCL char * get_description_of_attack_type(uchar);
-STATIC_DCL char * get_description_of_damage_type(uchar);
 STATIC_DCL char * get_description_of_damage_prefix(uchar, uchar);
 STATIC_DCL int generate_list_of_resistances(struct monst *, char *, int);
 #ifdef PORT_HELP

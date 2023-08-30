@@ -2152,6 +2152,8 @@ E int NDECL(dowhatdoes);
 E boolean FDECL(object_from_map, (int,int,int,struct obj **));
 E const char *NDECL(rndobjnam);
 E char *FDECL(dowhatdoes_core,(CHAR_P, char *));
+E char *FDECL(get_description_of_attack_type,(uchar));
+E char *FDECL(get_description_of_damage_type,(uchar));
 E int NDECL(dohelp);
 E int NDECL(dohistory);
 E boolean FDECL(checkfile, (char *,struct permonst *,BOOLEAN_P,BOOLEAN_P, winid*));
