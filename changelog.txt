@@ -165,6 +165,8 @@ Ent race
 			+1 DR in every slot
 		Methuselah
 			Spell boost intrinsic
+		Redwood
+			8 speed but effectively another two sizes larger
 	Special spell restore ability
 
 Yuki-Onna changes
