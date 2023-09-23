@@ -6,7 +6,7 @@ OPTIONS=!autopickup
 OPTIONS=!legacy
 OPTIONS=use_darkgray
 
-OPTIONS=role:random,race:random,gender:random,align:random
+OPTIONS=role:random,race:random,gender:random,align:random,species:random
 
 ## HP
 STATUSCOLOR=hp%100=green,hp%66=yellow,hp%50=orange
