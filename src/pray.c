@@ -3934,6 +3934,8 @@ int eatflag;
 	extern const int monstr[];
 	xchar x, y;
 	
+	if(Role_if(PM_ANACHRONOUNBINDER))
+		return;	
 	get_obj_location(otmp, &x, &y, BURIED_TOO);
 	
 	if(goat_resurrect(otmp, eatflag)){
