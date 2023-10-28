@@ -721,7 +721,7 @@ int godnum;
 	register int	maxanger;
 	char buf[BUFSZ];
 
-	if(godnum == GOD_THE_VOID || godnum == GOD_BOKRUG__THE_WATER_LIZARD) {
+	if(godnum == GOD_THE_VOID || godnum == GOD_BOKRUG__THE_WATER_LIZARD || (godnum == GOD_ILSENSINE && Role_if(PM_ANACHRONOUNBINDER))) {
 		/* the void does not get angry */
 		/* Bokrug DOES get angry, but has really bad aim. */
 		return;
