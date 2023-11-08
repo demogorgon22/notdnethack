@@ -836,20 +836,26 @@ Check_crystal_lifesaving()
 {
 	if(!Black_crystal)
 		return FALSE;
-	struct obj *otmp;
+	struct obj *otmp, *crystal;
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-		if(otmp->oartifact == ART_BLACK_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_CHAOS)
+		crystal = otmp;
+		if(arti_socketed(otmp) && otmp->cobj)
+			crystal = otmp->cobj;
+		if(crystal->oartifact == ART_BLACK_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_CHAOS)
 			return TRUE;
 	}
 	int count = 0;
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-		if(otmp->oartifact == ART_EARTH_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_EARTH)
+		crystal = otmp;
+		if(arti_socketed(otmp) && otmp->cobj)
+			crystal = otmp->cobj;
+		if(crystal->oartifact == ART_EARTH_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_EARTH)
 			count++;
-		else if(otmp->oartifact == ART_FIRE_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_FIRE)
+		else if(crystal->oartifact == ART_FIRE_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_FIRE)
 			count++;
-		else if(otmp->oartifact == ART_WATER_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WATER)
+		else if(crystal->oartifact == ART_WATER_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_WATER)
 			count++;
-		else if(otmp->oartifact == ART_AIR_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WIND)
+		else if(crystal->oartifact == ART_AIR_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_WIND)
 			count++;
 
 		if(count == 4)
@@ -874,23 +880,26 @@ STATIC_OVL void
 Use_crystal_lifesaving()
 {
 	//Use less advantageous l.s. first (the full set of 5 crystals is heavy and riskier for theft)
-	struct obj *otmp, *ec = 0, *fc = 0, *wc = 0, *ac = 0;
+	struct obj *otmp, *crystal, *ec = 0, *fc = 0, *wc = 0, *ac = 0;
 	int count = 0;
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-		if(otmp->oartifact == ART_EARTH_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_EARTH){
-			ec = otmp;
+		crystal = otmp;
+		if(arti_socketed(otmp) && otmp->cobj)
+			crystal = otmp->cobj;
+		if(crystal->oartifact == ART_EARTH_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_EARTH){
+			ec = crystal;
 			count++;
 		}
-		else if(otmp->oartifact == ART_FIRE_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_FIRE){
-			fc = otmp;
+		else if(crystal->oartifact == ART_FIRE_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_FIRE){
+			fc = crystal;
 			count++;
 		}
-		else if(otmp->oartifact == ART_WATER_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WATER){
-			wc = otmp;
+		else if(crystal->oartifact == ART_WATER_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_WATER){
+			wc = crystal;
 			count++;
 		}
-		else if(otmp->oartifact == ART_AIR_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_WIND){
-			ac = otmp;
+		else if(crystal->oartifact == ART_AIR_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_WIND){
+			ac = crystal;
 			count++;
 		}
 
@@ -919,9 +928,12 @@ Use_crystal_lifesaving()
 	}
 	//Otherwise find the black crystal
 	for(otmp = invent; otmp; otmp = otmp->nobj){
-		if(otmp->oartifact == ART_BLACK_CRYSTAL && otmp->oeroded3 == 0 && !(get_ox(otmp, OX_ESUM)) && PURIFIED_CHAOS){
+		crystal = otmp;
+		if(arti_socketed(otmp) && otmp->cobj)
+			crystal = otmp->cobj;
+		if(crystal->oartifact == ART_BLACK_CRYSTAL && crystal->oeroded3 == 0 && !(get_ox(crystal, OX_ESUM)) && PURIFIED_CHAOS){
 			pline("The black crystal cracks!");
-			otmp->oeroded3 = 1;
+			crystal->oeroded3 = 1;
 			return;
 		}
 	}

@@ -453,6 +453,7 @@ Dungeon Changes
 			Masamune, Sasuke's blade, and werebuster are all socketed artifacts
 			A single chaos crystal can be socketed into the pommel of the blade
 			The artifact will confer the carry properties of the crystal but will not perform living attacks
+				This includes the new skill bonuses, and the life saving properties of the uncracked crystals
 			The weight of the crystal is not included in the weight of the artifact	
 			Socketing a crystal adds an oprop to the artifact
 				Fire Crystal - Flaming, 2x fire damage
