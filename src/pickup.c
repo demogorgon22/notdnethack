@@ -3069,6 +3069,7 @@ boolean past;
 			knows_object(URUK_HAI_SHIELD);
 			knows_object(ORCISH_CLOAK);
 		break;
+		case PM_SNOW_CLOUD:
 		case PM_YUKI_ONNA:
 			expert_weapon_skill(P_LONG_SWORD);
 			free_skill_up(P_LONG_SWORD);

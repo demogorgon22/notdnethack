@@ -1909,6 +1909,7 @@ default_case:
 				default_add_2(TWO_HANDED_SWORD);
 			break;
 			case PM_YUKI_ONNA:
+			case PM_SNOW_CLOUD:
 				stuff = mksobj(SHOES, MKOBJ_NOINIT);
 				size_items_to_pc(stuff);
 				set_material_gm(stuff, WOOD);
