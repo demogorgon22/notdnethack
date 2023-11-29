@@ -1304,6 +1304,7 @@ struct monst *mon;
 					 (wep->oartifact == ART_STORMBRINGER) ||
 					 (wep->oartifact == ART_OGRESMASHER)
 			)) ||
+			(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit) ||	
 			// (swapwep && swapwep->oartifact == ART_STORMBRINGER) ||
 			(swapwep && swapwep->oartifact == ART_OGRESMASHER) ||
 			(arms && arms->oartifact == ART_GOLDEN_KNIGHT) ||
