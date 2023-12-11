@@ -2861,7 +2861,7 @@ boolean dumping;
 	if(achieve.get_kroo)   put_enl("Kroo's Bling (Acquire the dismal swamp completion prize)");
 	if(achieve.get_raggo)   put_enl("Pet Rock (Acquire the gnomish mines completion prize)");
 	if(achieve.get_poplar) put_enl("Punishing Poplars (Acquire the black forest completion prize)");
-	if(achieve.get_abominable) put_enl("Snowplow (Acquire the ice caves completion prize)Snowplow (Acquire the ice caves completion prize)");
+	if(achieve.get_abominable) put_enl("Snowplow (Acquire the ice caves completion prize)");
 	if(achieve.get_gilly) put_enl("Gillywhatnow (Acquire the archipelago completion prize)");
 	if(achieve.did_unknown) put_enl("An Unknown Ritual (Perform the ritual of an unknown god)");
 	if(achieve.killed_illurien) put_enl("Angry Librarian (Kill Illurien of the Myriad Glimpses)");
