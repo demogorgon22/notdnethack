@@ -7674,6 +7674,42 @@ int mmflags;
 			(void) mpickobj(mtmp, otmp);
 			(void)mongets(mtmp, SHORT_SWORD, mkobjflags);
 			(void)mongets(mtmp, SHORT_SWORD, mkobjflags);
+		} else if(ptr->mtyp == PM_KOBOLD_BRUTE){
+			otmp = mongets(mtmp, rn2(2) ? ORCISH_SPEAR : ORCISH_SHORT_SWORD, mkobjflags);
+			if(otmp && (goodequip || !rn2(6)))
+				set_material_gm(otmp, DRAGON_HIDE);
+			if(otmp && (goodequip || !rn2(4))){
+				otmp->cursed = FALSE;
+				otmp->spe = rnd(3);
+			}
+			otmp = mongets(mtmp,ORCISH_CHAIN_MAIL, mkobjflags);
+			if(otmp && (goodequip || !rn2(6)))
+				set_material_gm(otmp, DRAGON_HIDE);
+			if(otmp && (goodequip || !rn2(4))){
+				otmp->cursed = FALSE;
+				otmp->spe = rnd(3);
+			}
+			otmp = mongets(mtmp,ORCISH_HELM, mkobjflags);
+			if(otmp && (goodequip || !rn2(6)))
+				set_material_gm(otmp, DRAGON_HIDE);
+			if(otmp && (goodequip || !rn2(4))){
+				otmp->cursed = FALSE;
+				otmp->spe = rnd(3);
+			}
+			otmp = mongets(mtmp,ORCISH_CLOAK, mkobjflags);
+			if(otmp && (goodequip || !rn2(6)))
+				set_material_gm(otmp, DRAGON_HIDE);
+			if(otmp && (goodequip || !rn2(4))){
+				otmp->cursed = FALSE;
+				otmp->spe = rnd(3);
+			}
+			otmp = mongets(mtmp,rn2(2)?ORCISH_SHIELD:ORCISH_DAGGER, mkobjflags);
+			if(otmp && (goodequip || !rn2(6)))
+				set_material_gm(otmp, DRAGON_HIDE);
+			if(otmp && (goodequip || !rn2(4))){
+				otmp->cursed = FALSE;
+				otmp->spe = rnd(3);
+			}
 		} else {
 			if (!rn2(4)) m_initthrow(mtmp, DART, 12, mkobjflags);
 			else if(!rn2(3)) (void)mongets(mtmp, SHORT_SWORD, mkobjflags);

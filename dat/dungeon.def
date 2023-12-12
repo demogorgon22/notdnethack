@@ -158,7 +158,7 @@ ENTRY:		2
 #	The dismal swamp 
 #
 DUNGEON:	"The Dismal Swamp" "S" (9, 1)
-ALIGNMENT:	chaotic
+ALIGNMENT:	lawful
 DESCRIPTION:	mazelike
 LEVEL:	"dsbog" "T" @ (4, 0) 
 LEVELDESC:	town

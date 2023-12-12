@@ -5643,6 +5643,161 @@ int typ;
 	}
 }
 
+STATIC_OVL
+void
+mk_kobold_bastion()
+{
+	int x,y,tries=0, roomtypb = nroom;
+	int i,j;
+	boolean good=FALSE, okspot, accessible;
+	int size = 8;
+	if(!rn2(20))
+		size += rnd(4);
+	while(!good && tries < 500){
+		x = rn2(COLNO-size)+1;
+		y = rn2(ROWNO-size);
+		tries++;
+		okspot = TRUE;
+		accessible = FALSE;
+		for(i=0;i<size;i++)
+			for(j=0;j<size;j++){
+				if(!isok(x+i,y+j) || t_at(x+i, y+j) || !(levl[x+i][y+j].typ == TREE || levl[x+i][y+j].typ == SOIL))
+					okspot = FALSE;
+			}
+		if(!okspot)
+			continue;
+		
+		for(i=0;i<size;i++){
+			if(isok(x+i,y) && levl[x+i][y].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x+i,y+size-1) && levl[x+i][y+size-1].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x+size-1,y+i) && levl[x+size-1][y+i].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x,y+i) && levl[x][y+i].typ == SOIL)
+				accessible = TRUE;
+		}
+		
+		if(okspot && accessible){
+			good = TRUE;
+		} else continue;
+		
+		for(i=0;i<size;i++){
+			for(j=0;j<size;j++){
+				levl[x+i][y+j].typ = SOIL;
+			}
+		}
+		for(i=1;i<size-1;i++){
+			for(j=1;j<size-1;j++){
+				levl[x+i][y+j].typ = HWALL;
+				if(m_at(x+i, y+j)) rloc(m_at(x+i, y+j), TRUE);
+			}
+		}
+		for(i=2;i<size-2;i++){
+			for(j=2;j<size-2;j++){
+				levl[x+i][y+j].typ = SOIL;
+			}
+		}
+		
+		wallification(x, y, x+size-1, y+size-1);
+		
+		if(rn2(2)){
+			i = rnd(size-4)+1;
+			j = rn2(2) ? size-2 : 1;
+		} else {
+			i = rn2(2) ? size-2 : 1;
+			j = rnd(size-4)+1;
+		}
+		levl[x+i][y+j].typ = DOOR;
+		levl[x+i][y+j].doormask = D_LOCKED;
+		
+		flood_fill_rm(x+size/2, y+size/2,
+			  nroom+ROOMOFFSET, TRUE, TRUE);
+		add_room(x+2, y+2, x+size-3, y+size-3, TRUE, BARRACKS, TRUE);
+		add_door(x+i,y+j,&rooms[roomtypb]);
+		fill_room(&rooms[roomtypb], FALSE);
+	}
+}
+
+
+
+static int kobold_prisoners[] = {
+	PM_BABY_WHITE_DRAGON,
+	PM_BABY_BLACK_DRAGON,
+	PM_BABY_BLUE_DRAGON,
+	PM_BABY_RED_DRAGON,
+	PM_BABY_DEEP_DRAGON,
+	PM_TINKER_GNOME,
+	PM_GNOME_QUEEN,
+	PM_GNOME_KING,
+	PM_GNOMISH_WIZARD
+};
+
+STATIC_OVL
+void
+mk_kobold_prison()
+{
+	int x,y,tries=0, roomtypb = nroom;
+	int i,j;
+	struct monst *mon;
+	struct obj *obj;
+	boolean good=FALSE, okspot, accessible;
+	int size = 5;
+	while(!good && tries < 500){
+		x = rn2(COLNO-size)+1;
+		y = rn2(ROWNO-size);
+		tries++;
+		okspot = TRUE;
+		accessible = FALSE;
+		for(i=0;i<size;i++)
+			for(j=0;j<size;j++){
+				if(!isok(x+i,y+j) || t_at(x+i, y+j) || !(levl[x+i][y+j].typ == TREE || levl[x+i][y+j].typ == SOIL))
+					okspot = FALSE;
+			}
+		if(!okspot)
+			continue;
+		
+		for(i=0;i<size;i++){
+			if(isok(x+i,y) && levl[x+i][y].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x+i,y+size-1) && levl[x+i][y+size-1].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x+size-1,y+i) && levl[x+size-1][y+i].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x,y+i) && levl[x][y+i].typ == SOIL)
+				accessible = TRUE;
+		}
+		
+		if(okspot && accessible){
+			good = TRUE;
+		} else continue;
+		
+		for(i=1;i<size-1;i++){
+			for(j=1;j<size-1;j++){
+				levl[x+i][y+j].typ = IRONBARS;
+			}
+		}
+
+
+		//set x and y to center
+		x = x + size/2;
+		y = y + size/2;
+		levl[x][y].typ = SOIL;
+		// select a prisoner
+		mon = makemon(&mons[ROLL_FROM(kobold_prisoners)], x, y, NO_MM_FLAGS);
+		if(mon){
+			obj = mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+			if(obj){
+				mon->entangled_otyp = SHACKLES;
+				mon->entangled_oid = obj->o_id;
+			}
+			// create the warden
+			mon = makemon(&mons[PM_KOBOLD_BRUTE], x, y, NO_MM_FLAGS|MM_ADJACENTOK|MM_GOODEQUIP);
+		}
+	}
+}
+
+
 void
 place_lolth_vaults()
 {
@@ -5799,6 +5954,25 @@ place_drow_healer_features()
 		}
 	}
 	wallification(1,0,COLNO-1,ROWNO-1);
+}
+
+
+
+void place_swamp_features(){
+	mk_kobold_bastion();
+	mk_kobold_prison();
+	/*if(!rn2(6)){
+		mk_kobold_bastion();
+	}
+	if(!rn2(6)){
+		mk_kobold_dragon();
+	}
+	if(!rn2(6)){
+		mk_kobold_prison();
+	}
+	if(!rn2(6)){
+		mk_kobold_village();
+	}*/
 }
 
 void
@@ -8839,6 +9013,8 @@ static struct soldier_squad_probabilities {
     {PM_FERRUMACH_RILMANI, 80}, {PM_IRON_GOLEM, 15}, {PM_ARGENTUM_GOLEM, 4}, {PM_CUPRILACH_RILMANI, 1}
 }, hell_squadprob[] = {
 	{ PM_LEGION_DEVIL_GRUNT, 80 }, { PM_LEGION_DEVIL_SOLDIER, 15 }, { PM_LEGION_DEVIL_SERGEANT, 4 }, { PM_LEGION_DEVIL_CAPTAIN, 1 }
+}, swamp_squadprob[] = {
+    {PM_KOBOLD, 65}, {PM_KOBOLD_BRUTE, 30}, {PM_KOBOLD_LORD, 4}, {PM_KOBOLD_SHAMAN, 1}
 };
 
 STATIC_OVL struct permonst *
@@ -8852,6 +9028,8 @@ d_level *lev;
 		squadies = neu_squadprob;
 	else if (In_hell(lev))
 		squadies = hell_squadprob;
+	else if (In_dismalswamp(lev))
+		squadies = swamp_squadprob;
 	else
 		squadies = squadprob;
 

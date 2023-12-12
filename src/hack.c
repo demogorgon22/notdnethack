@@ -2342,6 +2342,14 @@ register boolean newlev;
 					You("enter a legion barracks!");
 				else
 					You("enter an abandoned barracks.");
+			else if (In_dismalswamp(&u.uz))
+				if (monstinroom(&mons[PM_KOBOLD], roomno) ||
+					monstinroom(&mons[PM_KOBOLD_BRUTE], roomno) ||
+					monstinroom(&mons[PM_KOBOLD_LORD], roomno) ||
+					monstinroom(&mons[PM_KOBOLD_SHAMAN], roomno))
+					You("enter a kobold bastion!");
+				else
+					You("enter an abandoned bastion.");
 			else
 				if(monstinroom(&mons[PM_SOLDIER], roomno) ||
 				monstinroom(&mons[PM_SERGEANT], roomno) ||

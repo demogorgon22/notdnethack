@@ -785,6 +785,7 @@ fixup_special()
 			}
 		}
 		if(In_dismalswamp(&u.uz)){
+			place_swamp_features();
 			for(x = 0; x<COLNO; x++){
 				for(y = 0; y<ROWNO; y++){
 					if(levl[x][y].typ == TREE){
