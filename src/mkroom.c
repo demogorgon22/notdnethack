@@ -5737,7 +5737,7 @@ STATIC_OVL
 void
 mk_kobold_prison()
 {
-	int x,y,tries=0, roomtypb = nroom;
+	int x,y,tries=0;
 	int i,j;
 	struct monst *mon;
 	struct obj *obj;
@@ -5793,6 +5793,59 @@ mk_kobold_prison()
 			}
 			// create the warden
 			mon = makemon(&mons[PM_KOBOLD_BRUTE], x, y, NO_MM_FLAGS|MM_ADJACENTOK|MM_GOODEQUIP);
+		}
+	}
+}
+
+STATIC_OVL
+void
+mk_kobold_pool()
+{
+	int x,y,tries=0;
+	int i,j;
+	struct obj *egg;
+	boolean good=FALSE, okspot, accessible;
+	int size = 3;
+	while(!good && tries < 500){
+		x = rn2(COLNO-size)+1;
+		y = rn2(ROWNO-size);
+		tries++;
+		okspot = TRUE;
+		accessible = FALSE;
+		for(i=0;i<size;i++)
+			for(j=0;j<size;j++){
+				if(!isok(x+i,y+j) || t_at(x+i, y+j) || !(levl[x+i][y+j].typ == SOIL))
+					okspot = FALSE;
+			}
+		if(!okspot)
+			continue;
+		
+		for(i=0;i<size;i++){
+			if(isok(x+i,y) && levl[x+i][y].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x+i,y+size-1) && levl[x+i][y+size-1].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x+size-1,y+i) && levl[x+size-1][y+i].typ == SOIL)
+				accessible = TRUE;
+			if(isok(x,y+i) && levl[x][y+i].typ == SOIL)
+				accessible = TRUE;
+		}
+		
+		if(okspot && accessible){
+			good = TRUE;
+		} else continue;
+		
+		for(i=0;i<size;i++){
+			for(j=0;j<size;j++){
+				if(!rn2(2)) continue;
+				levl[x+i][y+j].typ = PUDDLE;
+				if(!rn2(2)) continue;
+				egg = mksobj_at(EGG, x+i, y+j, NO_MKOBJ_FLAGS);
+				egg->spe = 0; //not yours
+				egg->owt = weight(egg);
+				egg->corpsenm = egg_type_from_parent(PM_LARGE_KOBOLD, FALSE);
+				attach_egg_hatch_timeout(egg);
+			}
 		}
 	}
 }
@@ -5959,8 +6012,10 @@ place_drow_healer_features()
 
 
 void place_swamp_features(){
-	mk_kobold_bastion();
-	mk_kobold_prison();
+	if(!rn2(4)) mk_kobold_bastion();
+	if(!rn2(3)) mk_kobold_prison();
+	if(!rn2(3)) mk_kobold_pool();
+	if(!rn2(3)) mk_kobold_pool();
 	/*if(!rn2(6)){
 		mk_kobold_bastion();
 	}
