@@ -116,7 +116,7 @@ DESCRIPTION:    mazelike
 LEVEL:          "nowhere" "none" @ (1, 0)
 
 
-DUNGEON:	"The Collapsed Mineshaft" "Z" (1, 0)
+DUNGEON:	"The Collapsed Mineshaft" "Y" (1, 0)
 ALIGNMENT:	lawful
 DESCRIPTION:	mazelike
 RNDLEVEL:		"minend"  "none" @ (1, 0) 4
@@ -157,7 +157,7 @@ ENTRY:		2
 #
 #	The dismal swamp 
 #
-DUNGEON:	"The Dismal Swamp" "S" (9, 1)
+DUNGEON:	"The Dismal Swamp" "Z" (9, 1)
 ALIGNMENT:	lawful
 DESCRIPTION:	mazelike
 LEVEL:	"dsbog" "T" @ (4, 0) 
