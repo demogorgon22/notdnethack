@@ -1881,8 +1881,6 @@ dosacrifice()
 			/* The final Test.	Did you win? */
 			if(uamul == otmp) Amulet_off();
 			u.uevent.ascended = 1;
-			if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID))
-				achieve.new_races = 1;
 			if(carried(otmp)) useup(otmp); /* well, it's gone now */
 			else useupf(otmp, 1L);
 			You("offer the Amulet of Yendor to %s...", a_gname());
