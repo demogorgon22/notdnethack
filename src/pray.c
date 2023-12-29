@@ -1849,7 +1849,6 @@ dosacrifice()
 				if(Is_sacris(&u.uz) || Is_ilsensine(&u.uz)){
 					if(uamul == otmp) Amulet_off();
 					u.uevent.ascended = 1;
-					give_ascension_trophy();
 					if(carried(otmp)) useup(otmp);
 					else useupf(otmp, 1L);
 					You("offer the Amulet of Yendor to %s...", a_gname());
@@ -1859,6 +1858,8 @@ dosacrifice()
 						pline("What happens next?");
 						done(ESCAPED);
 					} else {
+						achieve.ascended = 1;
+						give_ascension_trophy();
 						adjalign(10);
 						pline("The Void collapses as you and Ilsensine are launched toward the heavens.");
 						pline("The Gate closes behind you, no longer able to hold the spirits of the enslaved.");
