@@ -5,6 +5,7 @@ OPTIONS=statuscolors
 OPTIONS=!autopickup
 OPTIONS=!legacy
 OPTIONS=use_darkgray
+OPTIONS=!descendant
 
 OPTIONS=role:random,race:random,gender:random,align:random,species:random
 

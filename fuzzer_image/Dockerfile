@@ -4,7 +4,7 @@ RUN apk update
 
 RUN apk add ncurses-dev gcc libc-dev flex bison linux-headers make git
 
-COPY debugrc /root/.nethackrc
+COPY debugrc /root/.notdnethackrc
 
 WORKDIR /app
 
