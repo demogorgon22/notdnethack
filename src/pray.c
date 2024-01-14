@@ -4364,6 +4364,9 @@ int sanctum;   /* is it the seat of the high priest? */
 		/* the High Shaman of moloch in Chaos3 */
 		priest = makemon(&mons[PM_HIGH_SHAMAN], sx + 1, sy, NO_MM_FLAGS);
 	}
+	else if(In_dismalswamp(&u.uz)){
+		priest = makemon(&mons[PM_KOBOLD_HIGH_SHAMAN], sx, sy, NO_MM_FLAGS);
+	}
 	else if(Is_bridge_temple(&u.uz)){
 		/* the Blasphemous Lurker in Neutral */
 		priest = makemon(&mons[PM_BLASPHEMOUS_LURKER], sx, sy, NO_MM_FLAGS);
