@@ -23,6 +23,7 @@
 
 #include "sp_lev.h"
 #include "rect.h"
+#include "artifact.h"
 
 extern void FDECL(mkmap, (lev_init *));
 
@@ -1448,16 +1449,20 @@ default_case:
 			PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN,
 			PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD,
 			PM_DROW_MATRON, PM_DROW_MATRON,
+			PM_SHADOWSMITH,
 			PM_UNEARTHLY_DROW
 		};
 		int other_types[] = {PM_HOBBIT, PM_BUGBEAR, PM_GNOLL, 
 			PM_HILL_ORC, PM_ORC_SHAMAN, PM_ORC_CAPTAIN,
+			PM_GOBLIN_SMITH,
 			PM_JUSTICE_ARCHON, PM_MOVANIC_DEVA,  PM_LILLEND, PM_COURE_ELADRIN,
 			PM_CHIROPTERAN, PM_CHIROPTERAN,
 			PM_STONE_GIANT, PM_HILL_GIANT, PM_FIRE_GIANT, PM_FROST_GIANT, 
 			PM_MINOTAUR, PM_MINOTAUR_PRIESTESS,
 			PM_WOODLAND_ELF, PM_GREEN_ELF, PM_ELF_LORD, PM_ELF_LADY,
+			PM_TREESINGER, PM_MITHRIL_SMITH,
 			PM_PRISONER, PM_PRISONER, PM_PRISONER,
+			PM_HUMAN_SMITH,
 			PM_HORNED_DEVIL, PM_ERINYS, PM_BARBED_DEVIL,
 			PM_SUCCUBUS, PM_INCUBUS, PM_VROCK, PM_LILITU, PM_NALFESHNEE, PM_MARILITH,
 			PM_HALF_DRAGON, PM_BARD, PM_CONVICT, PM_KNIGHT, PM_TOURIST, PM_VALKYRIE
@@ -1478,6 +1483,7 @@ default_case:
 		if(urole.neminum == PM_CYCLOPS){
 			int plague_types[] = {
 				PM_DWARF_LORD, PM_DWARF_CLERIC, PM_DWARF_QUEEN, PM_DWARF_KING, 
+				PM_DWARF_SMITH,
 				PM_DEEP_ONE, PM_WINGED_KOBOLD,
 				PM_DEMINYMPH, PM_THRIAE, 
 				PM_ORC_CAPTAIN, PM_JUSTICE_ARCHON, PM_SHIELD_ARCHON, PM_SWORD_ARCHON,
@@ -1491,6 +1497,7 @@ default_case:
 				PM_VAMPIRE, PM_VAMPIRE_LORD, PM_VAMPIRE_LADY,
 				PM_NURSE, PM_WATCH_CAPTAIN, 
 				PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+				PM_MITHRIL_SMITH,
 				PM_DROW_MATRON,
 				PM_HORNED_DEVIL, PM_SUCCUBUS, PM_INCUBUS, PM_ERINYS, PM_VROCK, PM_BARBED_DEVIL,
 				PM_LILITU,
@@ -1512,8 +1519,10 @@ default_case:
 			if(otmp->spe == 0){
 				int sacc_types[] = {
 					PM_DWARF_LORD, PM_DWARF_CLERIC, PM_DWARF_QUEEN, PM_DWARF_KING, 
+					PM_DWARF_SMITH,
 					PM_DEMINYMPH, PM_THRIAE,
 					PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+					PM_MITHRIL_SMITH,
 					PM_DROW_MATRON,
 					PM_BARBARIAN, PM_HALF_DRAGON, PM_VALKYRIE
 				};
@@ -1561,6 +1570,7 @@ default_case:
 					PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN, PM_DROW_CAPTAIN,
 					PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD, PM_HEDROW_WARRIOR, PM_HEDROW_WIZARD,
 					PM_DROW_MATRON, PM_DROW_MATRON,
+					PM_SHADOWSMITH,
 					PM_UNEARTHLY_DROW
 				};
 				int plague3_types[] = {
@@ -1571,11 +1581,13 @@ default_case:
 					PM_PRIESTESS_OF_GHAUNADAUR, PM_MENDICANT_DRIDER, PM_MENDICANT_SPROW,
 					PM_PEN_A_MENDICANT,
 					PM_DWARF_LORD, PM_DWARF_CLERIC, PM_DWARF_QUEEN, PM_DWARF_KING,
+					PM_DWARF_SMITH,
 					PM_DEMINYMPH, PM_ORC_CAPTAIN,
 					PM_DRIDER,
 					PM_GNOME_KING, PM_GNOME_QUEEN,
 					PM_HILL_GIANT, PM_MINOTAUR, PM_MINOTAUR_PRIESTESS,
-					PM_WOODLAND_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN
+					PM_WOODLAND_ELF, PM_GREEN_ELF, PM_GREY_ELF, PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN,
+					PM_TREESINGER, PM_MITHRIL_SMITH
 				};
 				
 				struct monst *mon;
@@ -1605,8 +1617,11 @@ default_case:
 			struct obj *tmpo;
 			int prisoners[] = {
 								PM_ELF_LORD, PM_ELF_LADY, PM_GREY_ELF, PM_GREY_ELF,
+								PM_TREESINGER, PM_MITHRIL_SMITH,
 								PM_HEDROW_BLADEMASTER, PM_DROW_CAPTAIN, PM_DROW_MATRON, PM_UNEARTHLY_DROW,
+								PM_SHADOWSMITH,
 								PM_DWARF_CLERIC, PM_DWARF_LORD, PM_DWARF_QUEEN, PM_DWARF_KING,
+								PM_DWARF_SMITH,
 								PM_RANGER, PM_RANGER, PM_WIZARD, PM_KNIGHT, PM_KNIGHT, PM_VALKYRIE,
 								PM_DEMINYMPH, PM_DEMINYMPH,
 								PM_SWORD_ARCHON, PM_SHIELD_ARCHON, PM_TRUMPET_ARCHON,
@@ -1680,6 +1695,13 @@ default_case:
 					stuff->spe = 2;\
 					size_items_to_pc(stuff)\
 					add_to_container(otmp, stuff);
+
+		if(flags.descendant){
+			struct obj* stuff = mksobj((int)artilist[u.inherited].otyp, MKOBJ_NOINIT);
+			stuff = oname(stuff, artilist[u.inherited].name);
+			add_to_container(otmp, stuff);
+		}
+
 		switch(urace.malenum){
 			default:
 			case PM_HUMAN:
@@ -1876,6 +1898,9 @@ default_case:
 				set_material_gm(stuff, WOOD);
 				add_to_container(otmp, stuff);
 
+				stuff = mksobj(SCR_ENCHANT_ARMOR, MKOBJ_NOINIT);
+				add_to_container(otmp, stuff);
+
 				stuff = mksobj(SADDLE, MKOBJ_ARTIF);
 				set_material_gm(stuff, WOOD);
 				add_oprop(stuff, OPROP_PHSEW);
@@ -1996,6 +2021,8 @@ default_case:
 
 			stuff = mksobj(CRYSTAL_SKULL, NO_MKOBJ_FLAGS);
 			stuff->objsize = MZ_TINY;
+			set_material_gm(stuff, GEMSTONE);
+			set_submat(stuff, DIAMOND);
 			int armors[] = {CRYSTAL_BOOTS, GAUNTLETS_OF_POWER, CRYSTAL_PLATE_MAIL, CLOAK_OF_MAGIC_RESISTANCE, CRYSTAL_HELM, SHIELD_OF_REFLECTION, CRYSTAL_SWORD};
 			struct obj *armor;
 			for(int i =  0; i < SIZE(armors); i++){
@@ -2149,8 +2176,10 @@ default_case:
 		delete_contents(otmp);
 		container = otmp;
 		break;
-	    /* nothing */
-	    case 0: break;
+	    /* neither container nor contained, reset container var */
+	    case 0:
+		container = (struct obj *)0;
+		break;
 
 	    default: impossible("containment type %d?", (int) o->containment);
 	}
@@ -2328,6 +2357,8 @@ create_altar(a, croom)
 
 	if (oldtyp == FOUNTAIN)
 	    level.flags.nfountains--;
+	else if (oldtyp == FORGE)
+	    level.flags.nforges--;
 	else if (oldtyp == SINK)
 	    level.flags.nsinks--;
 
@@ -2410,6 +2441,8 @@ int		typ;
 	levl[x][y].typ = typ;
 	if (typ == FOUNTAIN)
 	    level.flags.nfountains++;
+	else if (typ == FORGE)
+	    level.flags.nforges++;
 	else if (typ == SINK)
 	    level.flags.nsinks++;
 }
@@ -2878,6 +2911,11 @@ int n;
 			    Free(r->fountains[j]);
 			Free(r->fountains);
 		}
+		if ((j = r->nforge) != 0) {
+			while(j--)
+			    Free(r->forges[j]);
+			Free(r->forges);
+		}
 		if ((j = r->nsink) != 0) {
 			while(j--)
 			    Free(r->sinks[j]);
@@ -2963,6 +3001,9 @@ room *r, *pr;
 		for(i = 0; i<r->nfountain; i++)
 		    create_feature(r->fountains[i]->x, r->fountains[i]->y,
 				   aroom, FOUNTAIN);
+		for(i = 0; i<r->nforge; i++)
+		    create_feature(r->forges[i]->x, r->forges[i]->y,
+				   aroom, FORGE);
 		for(i = 0; i<r->naltar; i++)
 		    create_altar(r->altars[i], aroom);
 		for(i = 0; i<r->ndoor; i++)
@@ -3262,6 +3303,17 @@ dlb *fd;
 				sizeof(fountain), fd);
 		}
 
+		/* read the forges */
+		Fread((genericptr_t) &r->nforge, 1,
+			sizeof(r->nforge), fd);
+		if ((n = r->nforge) != 0)
+		    r->forges = NewTab(forge, n);
+		while (n--) {
+			r->forges[(int)n] = New(forge);
+			Fread((genericptr_t) r->forges[(int)n], 1,
+				sizeof(forge), fd);
+		}
+
 		/* read the sinks */
 		Fread((genericptr_t) &r->nsink, 1, sizeof(r->nsink), fd);
 		if ((n = r->nsink) != 0)
@@ -3436,6 +3488,7 @@ dlb *fd;
     altar   tmpaltar;
     gold    tmpgold;
     fountain tmpfountain;
+    forge tmpforge;
     engraving tmpengraving;
     xchar   mustfill[(MAXNROFROOMS+1)*2];
     struct trap *badtrap;
@@ -3895,6 +3948,15 @@ dlb *fd;
 
 		create_feature(tmpfountain.x, tmpfountain.y,
 			       (struct mkroom *)0, FOUNTAIN);
+	}
+
+	Fread((genericptr_t) &n, 1, sizeof(n), fd);
+						/* Number of forges */
+	while (n--) {
+		Fread((genericptr_t)&tmpforge, 1, sizeof(tmpforge), fd);
+
+		create_feature(tmpforge.x, tmpforge.y,
+			       (struct mkroom *)0, FORGE);
 	}
 
 	Fread((genericptr_t) &n, 1, sizeof(n), fd);

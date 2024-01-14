@@ -86,8 +86,9 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_GWYN__LORD_OF_SUNLIGHT,     ART_DRAGONHEAD_SHIELD,			"the Dragon-slayer of Gwyn",			dub_thee_the,							became_the	},
 {GOD_GWYNEVERE__PRINCESS_OF_SUN, ART_CRUCIFIX_OF_THE_MAD_KING,	"the Guardian of the Old Lords",		dub_thee_the,							became_the	},
 {GOD_DARK_SUN_GWYNDOLIN,         ART_RINGED_BRASS_ARMOR,		"the Darkmoon Champion",				dub_thee_the,							became_the	},
-	/* Knight -- lawful only */
+	/* Knight -- lawful and chaotic  */
 {GOD_LUGH,                       ART_CLARENT,					"the King of the Angles",				dub_thee,								"crowned %s"	},
+{GOD_MANANNAN_MAC_LIR,                       ART_DARK_CLAYMORE,					"the Warrior of the Sea",				dub_thee,								"crowned %s"	},
 	/* Pirate -- all alignments are identical */
 {GOD_THE_LORD,                   ART_REAVER,					"the Pirate King",						(const char *)0,						became_the	},
 {GOD_THE_DEEP_BLUE_SEA,          ART_REAVER,					"the Pirate King",						(const char *)0,						became_the	},
@@ -108,7 +109,7 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_AMATERASU_OMIKAMI,          ART_YOICHI_NO_YUMI,			"Nasu no %s",							verb_thee("proclaim"),					became_the,	CRWN_TTL_NAME	},
 	/* Madman */
 {GOD_ZO_KALAR,                   ART_SICKLE_OF_THUNDERBLASTS,	"the %s of Mnar",						"Thou shalt be the %s!",				became_the, CRWN_TTL_KING	},
-{GOD_LOBON,                      ART_SPEAR_OF_PEACE,			"the Ambasador of Sarnath",				dub_thee_the,							became_the	},
+{GOD_LOBON,                      ART_SPEAR_OF_PEACE,			"the Ambassador of Sarnath",				dub_thee_the,							became_the	},
 {GOD_TAMASH,                     ART_WAR_HELM_OF_THE_DREAMING,	"Dreamking",							dub_thee_the,							became_the	},
 // {GOD_TAMASH,                     ART_STORMBRINGER,			"the Glory of Placeholdergon",					chosen("steal souls for My Glory"),		became_the	},
 	/* Drow Healer */
@@ -287,7 +288,10 @@ gcrownu()
 			Strcpy(buf, crowndata->announcement);
 		}
 		/* speak it! */
-		godvoice(hand_of_elbereth[u.uevent.uhand_of_elbereth].godnum, buf);
+		if (hand_of_elbereth[u.uevent.uhand_of_elbereth].godnum != GOD_NONE)
+			godvoice(hand_of_elbereth[u.uevent.uhand_of_elbereth].godnum, buf);
+		else
+			godvoice(u.ualign.god, buf);
 	}
 
 	/* livelog your crowning */

@@ -97,6 +97,7 @@ int adtyp, ztyp;
 		case AD_HLUH: return "corrupted missile";
 		case AD_DISN: return "disintegration ray";
 		case AD_LASR: return "laser beam";
+		case AD_MADF: return "burst of magenta fire";
 		default:      impossible("unknown spell damage type in flash_type: %d", adtyp);
 			return "cube of questions";
 		}
@@ -196,7 +197,8 @@ int adtyp;
 	case AD_MAGM:
 	case AD_SLEE:
 		return CLR_BRIGHT_BLUE;
-		//	return CLR_BRIGHT_MAGENTA;
+	case AD_MADF:
+		return CLR_BRIGHT_MAGENTA;
 		//	return CLR_BRIGHT_CYAN;
 	case AD_ECLD:
 	case AD_COLD:
@@ -418,7 +420,7 @@ struct obj *otmp;
 	case SPE_MASS_HEALING:{
 		int delta = mtmp->mhp;
 		const char *starting_word_ptr = injury_desc_word(mtmp);
-		int health = otyp == SPE_FULL_HEALING ? (50*P_SKILL(P_HEALING_SPELL)) : (d(6, otyp != SPE_HEALING ? 8 : 4) + 6*(P_SKILL(P_HEALING_SPELL)-1));
+		int health = otyp == SPE_FULL_HEALING ? (50*min(2, P_SKILL(P_HEALING_SPELL))) : (d(otyp == SPE_EXTRA_HEALING ? (6 + P_SKILL(P_HEALING_SPELL)) : 6, otyp != SPE_HEALING ? 8 : 4) + 6*(P_SKILL(P_HEALING_SPELL)-1));
 		reveal_invis = TRUE;
 		if(has_template(mtmp, PLAGUE_TEMPLATE) && otyp == SPE_FULL_HEALING){
 			if(canseemon(mtmp))
@@ -1953,9 +1955,10 @@ int id;
 	otmp->owornmask = obj->owornmask;
 no_unwear:
 
-	if (obj_location == OBJ_FLOOR && is_boulder(obj) &&
-		!is_boulder(otmp))
+	if (obj_location == OBJ_FLOOR && is_boulder(obj) && !is_boulder(otmp))
 	    unblock_point(obj->ox, obj->oy);
+	else if (obj_location == OBJ_FLOOR && obj->otyp != BOULDER && otmp->otyp == BOULDER)
+		block_point(obj->ox, obj->oy);
 
 	/* copy OX structures */
 	mov_all_ox(obj, otmp);
@@ -2124,7 +2127,7 @@ struct obj *obj, *otmp;
 		res = !obj->dknown;
 		/* target object has now been "seen (up close)" */
 		obj->dknown = 1;
-		if (Is_container(obj) || obj->otyp == STATUE) {
+		if (Is_container(obj) || obj->otyp == STATUE || (obj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
 		    if (!obj->cobj)
 			pline("%s empty.", Tobjnam(obj, "are"));
 		    else {
@@ -2141,7 +2144,7 @@ struct obj *obj, *otmp;
 	case WAN_STRIKING:
 	case SPE_FORCE_BOLT:
 	case ROD_OF_FORCE:
-		if (is_boulder(obj) || obj->otyp == STATUE)
+		if (is_boulder(obj) || obj->otyp == STATUE || (obj->otyp == CRYSTAL_SKULL && u.uinsight >= 20))
 			break_boulder(obj);
 		else {
 			if (!flags.mon_moving)
@@ -2298,9 +2301,9 @@ makecorpse:			if (mons[obj->corpsenm].geno &
 			}
 			(void) get_obj_location(obj, &oox, &ooy, 0);
 			refresh_x = oox; refresh_y = ooy;
-			mon = makemon(&mons[obj->corpsenm],
-				      oox, ooy, NO_MM_FLAGS);
+			mon = make_familiar(obj, oox, ooy, FALSE);
 			if (mon) {
+				(void) stop_timer(FIG_TRANSFORM, obj->timed);
 			    delobj(obj);
 			    if (cansee(mon->mx, mon->my))
 				pline_The("figurine animates!");
@@ -2377,6 +2380,32 @@ bhitpile(obj,fhito,tx,ty)
 #endif /*OVLB*/
 #ifdef OVL1
 
+/* returns an int from 0-100 meaning chance to use a charge when zapping
+ * 100 => always uses a charge
+ * 0   => never uses a charge
+ * 
+ * if (rn2(100) < zapcost(wand, magr)) spe--;
+ */
+int
+zapcostchance(wand, magr)
+struct obj * wand;		/* wand being zapped */
+struct monst * magr;	/* creature zapping the wand (if any) */
+{
+	int base;	/* base chance */
+	switch (wand->otyp)
+	{
+	case WAN_MAGIC_MISSILE:
+		base = 10;
+		break;
+	
+	default:
+		base = 100;
+		break;
+	}
+
+	return base;
+}
+
 /*
  * zappable - returns 1 if zap is available, 0 otherwise.
  *	      it removes a charge from the wand if zappable.
@@ -2395,7 +2424,9 @@ register struct obj *wand;
 			return 0;
 		if(wand->spe == 0)
 			You("wrest one last charge from the worn-out wand.");
-		wand->spe--;
+
+		if (rn2(100) < zapcostchance(wand, &youmonst))
+			wand->spe--;
 		return 1;
 	}
 	else if(wand->otyp == ROD_OF_FORCE){
@@ -2854,12 +2885,16 @@ boolean ordinary;
 		case SPE_HEALING:
 		case SPE_EXTRA_HEALING:
 		case SPE_MASS_HEALING:
-		    healup((d((uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H) ?
-                  12 : 6, obj->otyp != SPE_HEALING ? 8 : 4) + 6*(P_SKILL(P_HEALING_SPELL)-1)),
+		{
+			int dice = (obj->otyp == SPE_EXTRA_HEALING) ? (6+P_SKILL(P_HEALING_SPELL)) : 6;
+			if(uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H)
+				dice *= 2;
+		    healup((d(dice, obj->otyp != SPE_HEALING ? 8 : 4) + 6*(P_SKILL(P_HEALING_SPELL)-1)),
 			   0, FALSE, (obj->otyp != SPE_HEALING));
 		    You_feel("%sbetter.",
-			obj->otyp != SPE_HEALING ? "much " : "");
+				obj->otyp != SPE_HEALING ? "much " : "");
 		    break;
+		}
 		case WAN_DARKNESS:	/* (broken wand) */
 		 /* assert( !ordinary ); */
 		    damage = d(obj->spe, 25);
@@ -3148,7 +3183,7 @@ struct obj *obj;	/* wand or spell */
 	case SPE_WIZARD_LOCK:
 	    /* down at open bridge or up or down at open portcullis */
 	    if ((levl[x][y].typ == DRAWBRIDGE_DOWN) ? (u.dz > 0) :
-			(is_drawbridge_wall(x,y) && !is_db_wall(x,y)) &&
+			(is_drawbridge_wall(x,y) >= 0 && !is_db_wall(x,y)) &&
 		    find_drawbridge(&xx, &yy)) {
 		if (!striking)
 		    close_drawbridge(xx, yy);
@@ -3232,7 +3267,10 @@ struct obj *obj;	/* wand or spell */
 				
 				if (ttmp->tseen) {
 					You("disarm a %s.", 
-					defsyms[trap_to_defsym(ttmp->ttyp)].explanation);
+						defsyms[trap_to_defsym(ttmp->ttyp)].explanation);
+					//Charitably assume that if the PC doesn't know the trap is there, this was an accident.
+					if(u.specialSealsActive&SEAL_YOG_SOTHOTH)
+						unbind(SEAL_SPECIAL|SEAL_YOG_SOTHOTH, TRUE);
 				}
 				deltrap(ttmp);
 				}
@@ -3371,6 +3409,7 @@ register struct	obj	*obj;
 				zapdat.directly_hits = FALSE;
 				zapdat.affects_floor = FALSE;
 				zapdat.no_hit_wall = TRUE;
+				zapdat.damn *= 1.5;
 				break;
 			case SPE_ACID_SPLASH:
 				range = 1;
@@ -3786,6 +3825,8 @@ struct zapdata * zapdata;
 		dmg = 0;
 		impossible("zap with no damage?");
 	}
+	if(zapdata->bonus > 0)
+		dmg += zapdata->bonus;
 
 	/* damage bonuses */
 	if (magr && zapdata->ztyp == ZAP_SPELL) {
@@ -3796,8 +3837,7 @@ struct zapdata * zapdata;
 		}
 		if (youagr && u.ukrau_duration)
 			dmg *= 1.5;
-		if (youagr ? Spellboost : mon_resistance(magr, SPELLBOOST)
-			&& !(zapdata->explosive || zapdata->splashing)) {
+		if (youagr ? Spellboost : mon_resistance(magr, SPELLBOOST)) {
 			dmg *= 2;
 		}
 	}
@@ -3854,6 +3894,7 @@ int ndice;
 	zapdat->adtyp = adtyp;
 	zapdat->damd = 6;
 	zapdat->damn = ndice;
+	zapdat->bonus = 0;
 	zapdat->ztyp = ztyp;
 	zapdat->affects_floor = 1;
 	zapdat->directly_hits = 1;
@@ -4425,6 +4466,56 @@ struct zapdata * zapdata;
 		/* deal damage */
 		return xdamagey(magr, mdef, &attk, dmg);
 
+	case AD_MADF:
+		/* check resist / weakness */
+		if (Fire_res(mdef) && Magic_res(mdef)) {
+			doshieldeff = TRUE;
+			if (youdef)
+				addmsg("You don't feel hot!");
+			dmg = 0;
+		}
+		else if (Fire_res(mdef)) {
+			dmg -= dmg/2;
+		}
+		else if (species_resists_cold(mdef)) {
+			dmg *= 1.5;
+		}
+		domsg();
+		golemeffects(mdef, AD_FIRE, svddmg);
+		/* damage inventory */
+		if (!UseInvFire_res(mdef)) {
+			burnarmor(mdef, FALSE);
+			if (!rn2(3)) (void)destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			if (!rn2(3)) (void)destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+			if (!rn2(5)) (void)destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+		}
+		/* other */
+		if (youdef) {
+			burn_away_slime();
+			melt_frozen_air();
+		}
+		if(magr == mdef); //You can't share your madness with yourself
+		else if(youdef){
+			if(!save_vs_sanloss()){
+				change_usanity(-1*d(3,6), TRUE);
+			}
+		}
+		else if(youagr || magr->mtyp == PM_TWIN_SIBLING){
+			if(!mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || tp_sensemon(mdef) || !rn2(5)) && roll_generic_madness(FALSE)){
+				//reset seen madnesses
+				mdef->seenmadnesses = 0L;
+				you_inflict_madness(mdef);
+			}
+		}
+		else {
+			if(!mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || !rn2(5))){
+				if(!resist(mdef, '\0', 0, FALSE))
+					mdef->mcrazed = TRUE;
+			}
+		}
+		/* deal damage */
+		return xdamagey(magr, mdef, &attk, dmg);
+
 	case AD_DRST:
 		if (zapdata->ztyp == ZAP_SPELL) {
 			/* the lethal "poison spray" spell */
@@ -4577,7 +4668,7 @@ struct zapdata * zapdata;
 			int i;
 			/* reduce by DR */
 			for (i = zapdata->damn / 3; i > 0; i--) {
-				dmg -= (youdef ? roll_udr(magr) : roll_mdr(mdef, magr));
+				dmg -= (youdef ? roll_udr(magr, AT_ANY) : roll_mdr(mdef, magr, AT_ANY));
 			}
 			/* deals silver-hating damage */
 			if (hates_silver((youdef ? youracedata : mdef->data))) {
@@ -5139,7 +5230,7 @@ boolean *shopdamage;
 	struct rm *lev = &levl[x][y];
 	int rangemod = 0;
 
-	if(adtyp == AD_FIRE) {
+	if(adtyp == AD_FIRE || adtyp == AD_MADF) {
 	    struct trap *t = t_at(x, y);
 
 	    if (t && t->ttyp == WEB && !Is_lolth_level(&u.uz) && !(u.specialSealsActive&SEAL_BLACK_WEB)) {
@@ -5275,6 +5366,7 @@ boolean *shopdamage;
 		    goto def_case;
 		switch(adtyp) {
 		case AD_FIRE:
+		case AD_MADF:
 		    new_doormask = D_NODOOR;
 		    see_txt = "The door is consumed in flames!";
 		    sense_txt = "smell smoke.";
@@ -5326,7 +5418,7 @@ boolean *shopdamage;
 		}
 	}
 
-	if(OBJ_AT(x, y) && adtyp == AD_FIRE)
+	if(OBJ_AT(x, y) && (adtyp == AD_FIRE || adtyp == AD_MADF))
 		if (burn_floor_paper(x, y, FALSE, yours) && couldsee(x, y)) {
 		    newsym(x,y);
 		    You("%s of smoke.",
@@ -5638,6 +5730,7 @@ allow_artwish()
 {
 	int n = 1;
 	
+	n -= flags.descendant; 			// 'used' their first on their inheritance
 	// n += u.uevent.qcalled;		// reaching the main dungeon branch of the quest
 	//if(u.ulevel >= 7) n++;		// enough levels to be intimidating to marids/djinni
 	n += (u.uevent.utook_castle & ARTWISH_EARNED);	// sitting on the castle throne
@@ -5701,6 +5794,26 @@ retry:
 		if (++tries < 5)
 			goto retry;
 	}
+	if (wishreturn & WISH_MERCYRULE)
+	{
+		/* wish was denied due to mercy rule - you couldn't even pick it up if it WAS granted */
+		if (wishflags & WISH_VERBOSE)
+			verbalize("Such an artifact would refuse to lend you aid.");
+		else
+			pline("You cannot wish for an artifact that would refuse you.");
+		if (++tries < 5)
+			goto retry;
+	}
+	if (wishreturn & WISH_OUTOFJUICE)
+	{
+		/* wish was read as an artifact and you're out of artifact wishes  */
+		if (wishflags & WISH_VERBOSE)
+			verbalize("Alone, such artifacts are beyond my power.");
+		else
+			pline("You cannot wish for an artifact right now.");
+		if (++tries < 5)
+			goto retry;
+	}
 	if (wishreturn & WISH_ARTEXISTS)
 	{
 		/* wish was read as an artifact that has already been generated */
@@ -5717,12 +5830,16 @@ retry:
 		if (wishflags & WISH_VERBOSE)
 			verbalize("Done.");
 	}
-	if ((tries == 5) && (wishreturn & (WISH_DENIED | WISH_FAILURE)))
+	if ((tries == 5) && !(wishreturn & (WISH_NOTHING | WISH_SUCCESS)))
 	{
-		/* no more tries, give a random item */
+		/* no more tries
+		 * removes vanilla behavior of random item
+		 * will still consume the wish for lamps/wands, will NOT for candles/rings
+		 * this is by-design, no real reason to punish the player,
+		 * mostly for if they didn't know that X thing was unwishable
+		 */
 		pline1(thats_enough_tries);
-		otmp = readobjnam((char *)0, &wishreturn, wishflags);
-		if (!otmp) return TRUE;	/* for safety; should never happen */
+		return FALSE;
 	}
 
 	/* KMH, conduct */

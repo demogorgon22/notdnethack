@@ -185,7 +185,7 @@ struct monst * mon;
 			badeffect = TRUE;
 		}
 	}
-	else if (u.ualign.type == A_CHAOTIC)
+	else if (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE)
 		adjalign(1);
 
 	/* select sedu effect */
@@ -566,7 +566,7 @@ int dmg;
 			if(uwep){
 				n--;
 				You_feel("the tentacles wrap around your weapon.");
-				if( d(1,130) > ACURR(A_STR)){
+				if( d(1,50) > ACURR(A_STR)){
 					pline("The tentacles yank your weapon out of your grasp!");
 					otmp = uwep;
 					uwepgone();
@@ -589,7 +589,7 @@ int dmg;
 				n--;
 				if(!slips_free(mon, &youmonst,  &handshit, -1)){
 					You_feel("the tentacles squirm into your gloves.");
-					if( (d(1,40) <= ACURR(A_STR) || uwep)){
+					if( (d(1,30) <= ACURR(A_STR) || uwep)){
 						if(!Preservation){
 							pline("The tentacles begin to tear at your gloves!");
 							if(uarmg->spe > 1){
@@ -623,7 +623,7 @@ int dmg;
 			if(uarms){
 				n--;
 				You_feel("the tentacles wrap around your shield.");
-				if( d(1,150) > ACURR(A_STR)){
+				if( d(1,80) > ACURR(A_STR)){
 					pline("The tentacles pull your shield out of your grasp!");
 					otmp = uarms;
 					if (donning(otmp)) cancel_don();
@@ -833,7 +833,7 @@ register struct obj *obj;
 const char *str;
 boolean helpless;
 {
-	mayberem_common(obj, str, !(rn2(20) < ACURR(A_CHA)));
+	mayberem_common(obj, str, !(rn2(20) < (ACURR(A_CHA) + check_mutation(TENDRIL_HAIR) ? 10 : 0)));
 }
 
 STATIC_OVL void
@@ -842,7 +842,7 @@ register struct obj *obj;
 const char *str;
 boolean helpless;
 {
-	mayberem_common(obj, str, !(rn2(60) < ACURR(A_CHA)));
+	mayberem_common(obj, str, !(rn2(60) < (ACURR(A_CHA) + check_mutation(TENDRIL_HAIR) ? 30 : 0)));
 }
 
 STATIC_OVL void
@@ -851,7 +851,7 @@ register struct obj *obj;
 const char *str;
 boolean helpless;
 {
-	mayberem_common(obj, str, helpless || !(rn2(60) < ACURR(A_CHA)));
+	mayberem_common(obj, str, helpless || !(rn2(60) < (ACURR(A_CHA) + check_mutation(TENDRIL_HAIR) ? 30 : 0)));
 }
 
 STATIC_OVL void
@@ -990,7 +990,6 @@ struct monst * mon;
 		case PM_AVATAR_OF_LOLTH:
 				if(flags.female){
 					verbalize("You're such a sweet lady, I wish you were more open to new things...");
-					if(u.sealsActive&SEAL_ENKI) unbind(SEAL_ENKI,TRUE);
 				} else {
 					verbalize("How dare you refuse me!");
 					return 0; /* don't fall down to the general "teleport and return 1" case */

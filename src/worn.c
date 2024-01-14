@@ -4,6 +4,8 @@
 
 #include <math.h>
 #include "hack.h"
+#include "artifact.h"
+
 void FDECL(mon_block_extrinsic, (struct monst *, struct obj *, int, boolean, boolean));
 boolean FDECL(mon_gets_extrinsic, (struct monst *, int, struct obj *));
 STATIC_DCL void FDECL(update_mon_intrinsic, (struct monst *,struct obj *,int,BOOLEAN_P,BOOLEAN_P));
@@ -105,6 +107,8 @@ int otyp;
 		while(objects[otyp].oc_oprop[j] && !got_prop) {
 			if (objects[otyp].oc_oprop[j] == cur_prop)
 				got_prop = TRUE;
+			if (obj && obj->oartifact == ART_ENFORCED_MIND && cur_prop == TELEPAT)
+				got_prop = FALSE;
 			j++;
 		}
 
@@ -135,13 +139,17 @@ int otyp;
 			case REFLECTING:
 				if (check_oprop(obj, OPROP_REFL))
 					got_prop = TRUE;
+				else if (obj->oartifact == ART_IBITE_ARM &&
+					(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_REFLECT)
+				)
+					got_prop = TRUE;
 				break;
 			case DISINT_RES:
 				if (check_oprop(obj, OPROP_DISN))
 					got_prop = TRUE;
 				break;
 			case LIFESAVED:
-				if (check_oprop(obj, OPROP_LIFE))
+				if (check_oprop(obj, OPROP_LIFE) || check_oprop(obj, OPROP_SLIF))
 					got_prop = TRUE;
 				break;
 			}
@@ -247,7 +255,7 @@ long mask;
 	register const struct worn *wp;
 	register struct obj *oobj;
 	register int p;
-	
+
 	/*Handle the pen of the void here*/
 	if(obj && obj->oartifact == ART_PEN_OF_THE_VOID){
 		if(obj->ovar1_seals && !Role_if(PM_EXILE)){
@@ -734,6 +742,24 @@ boolean on, silently;
 		newsym(mon->mx, mon->my);
 }
 
+int
+shield_ac_mon(mon, obj)
+struct monst *mon;
+struct obj *obj;
+{
+	int shield_ac = 0;
+	shield_ac += max(0, arm_ac_bonus(obj) + (obj->objsize - mon->data->msize));
+	if(mon_knight(mon)){
+		if(mon->m_lev >= 28)
+			shield_ac += 8;
+		else if(mon->m_lev >= 14)
+			shield_ac += 3;
+		else
+			shield_ac += 1;
+	}
+	return shield_ac;
+}
+
 int 
 base_mac(mon)
 struct monst *mon;
@@ -760,6 +786,8 @@ struct monst *mon;
 		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
 			base -= (32-u.uinsight)/2;
 	}
+	if(mon->mtyp == PM_VERMIURGE && mon->mvar_vermiurge > 0)
+		base -= min(mon->mvar_vermiurge/10, 20);
 	
 	if(mon->mtyp == PM_ASMODEUS && base < -9) base = -9 + MONSTER_AC_VALUE(base+9);
 	else if(mon->mtyp == PM_PALE_NIGHT && base < -6) base = -6 + MONSTER_AC_VALUE(base+6);
@@ -926,7 +954,7 @@ struct monst *mon;
 	else for (obj = mon->minvent; obj; obj = obj->nobj) {
 	    if (obj->owornmask & mwflags){
 			if(is_shield(obj))
-				armac += max(0, arm_ac_bonus(obj) + (obj->objsize - mon->data->msize));
+				armac += shield_ac_mon(mon, obj);
 			else
 				armac += arm_ac_bonus(obj);
 		}
@@ -964,11 +992,13 @@ struct monst *mon;
 			base -= 5;
 		}
 	}
-	if(!mon->mcan){
+	if(!mon->mcan && !(mon->mtyp == PM_SHADOWSMITH && dimness(mon->mx,mon->my) <= 0)){
 		base -= mon->data->pac;
 		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
 			base -= (32-u.uinsight)/2;
 	}
+	if(mon->mtyp == PM_VERMIURGE && mon->mvar_vermiurge > 0)
+		base -= min(mon->mvar_vermiurge/10, 20);
 	
 	if(mon->mtyp == PM_CHOKHMAH_SEPHIRAH){
 		base -= u.chokhmah;
@@ -1034,7 +1064,7 @@ struct monst *mon;
 	else for (obj = mon->minvent; obj; obj = obj->nobj) {
 	    if (obj->owornmask & mwflags){
 			if(is_shield(obj))
-				armac += max(0, arm_ac_bonus(obj) + (obj->objsize - mon->data->msize));
+				armac += shield_ac_mon(mon, obj);
 			else
 				armac += arm_ac_bonus(obj);
 		}
@@ -1097,7 +1127,7 @@ struct monst *mon;
 	else for (obj = mon->minvent; obj; obj = obj->nobj) {
 	    if (obj->owornmask & mwflags){
 			if(is_shield(obj))
-				armac += max(0, arm_ac_bonus(obj) + (obj->objsize - mon->data->msize));
+				armac += shield_ac_mon(mon, obj);
 			else
 				armac += arm_ac_bonus(obj);
 		}
@@ -1137,6 +1167,9 @@ struct monst *mon;
 		base += 4;
 	}
 	
+	if(flags.spriest_level && is_demon(mon->data) && is_lawful_mon(mon) && !mon->mpeaceful)
+		base += 9;
+
 	if(mon->mtame){
 		if(active_glyph(IMPURITY)) base += 3;
 		if(Role_if(PM_HEALER))
@@ -1176,7 +1209,7 @@ struct monst *mon;
 		base += 10;
 	
 
-	if(!mon->mcan){
+	if(!mon->mcan && !(mon->mtyp == PM_SHADOWSMITH && dimness(mon->mx,mon->my) <= 0)){
 		int dr = 0;
 #define m_bdr mon->data->spe_bdr
 #define m_ldr mon->data->spe_ldr
@@ -1215,21 +1248,25 @@ struct monst *mon;
 }
 
 int
-roll_mdr(mon, magr)
+roll_mdr(mon, magr, aatyp)
 struct monst *mon;
 struct monst *magr;
+uchar aatyp;
 {
-	return roll_mdr_detail(mon, magr, 0, 0);
+	return roll_mdr_detail(mon, magr, 0, 0, aatyp);
 }
 
 int
-roll_mdr_detail(mon, magr, slot, depth)
+roll_mdr_detail(mon, magr, slot, depth, aatyp)
 struct monst *mon;
 struct monst *magr;
 int slot;
 int depth;
+uchar aatyp;
 {
 	int base, nat_dr, armac;
+	boolean youagr = (magr == &youmonst);
+	struct obj *magr_helm = magr ? (youagr ? uarmh : which_armor(magr, W_ARMH)) : NULL;
 	
 	if(!slot) switch(rn2(7)){
 		case 0:
@@ -1254,7 +1291,7 @@ int depth;
 	mon_slot_dr(mon, magr, slot, &base, &armac, &nat_dr, depth);
 
 	//Star spawn reach extra-dimensionally past all armor, even bypassing natural armor.
-	if(magr && (magr->mtyp == PM_STAR_SPAWN || magr->mtyp == PM_GREAT_CTHULHU || magr->mtyp == PM_DREAM_EATER || magr->mtyp == PM_VEIL_RENDER || (magr->mtyp == PM_LADY_CONSTANCE && !rn2(2)) || mad_monster_turn(magr, MAD_NON_EUCLID))){
+	if(magr && (is_extradimensional(magr) || (aatyp == AT_BUTT && magr_helm && magr_helm->oartifact == ART_APOTHEOSIS_VEIL))){
 		armac = 0;
 		if(undiffed_innards(mon->data))
 			nat_dr /= 2;
@@ -1386,7 +1423,7 @@ int depth;
 	}
 	/* Hod Sephirah OVERRIDE other arm_mdr sources with the player's total DR (regardless of who's attacking them) */
 	if (mon->mtyp == PM_HOD_SEPHIRAH) {
-		arm_mdr = slot_udr(slot, magr, 0);
+		arm_mdr = slot_udr(slot, magr, 0, AT_ANY);
 	}
 	/* Natural DR */
 	int slotnatdr;
@@ -1410,7 +1447,7 @@ int depth;
 			nat_mdr += 5;
 		}
 	}
-	if (!mon->mcan) {
+	if (!mon->mcan && !(mon->mtyp == PM_SHADOWSMITH && dimness(mon->mx,mon->my) <= 0)) {
 		switch (slot)
 		{
 		case UPPER_TORSO_DR: bas_mdr += mon->data->spe_bdr; break;
@@ -1968,12 +2005,25 @@ boolean polyspot;
 				if (polyspot) bypass_obj(otmp);
 				m_lose_armor(mon, otmp);
 			} else {
-				if (vis)
-				pline("%s %s tears apart!", s_suffix(Monnam(mon)),
-					cloak_simple_name(otmp));
-				else
-				You_hear("a ripping sound.");
-				m_useup(mon, otmp);
+				if(otmp->otyp == MUMMY_WRAPPING || otmp->otyp == PRAYER_WARDED_WRAPPING){
+					if (vis)
+						pline("%s %s tears apart!", s_suffix(Monnam(mon)),
+							cloak_simple_name(otmp));
+					else
+						You_hear("a ripping sound.");
+					m_useup(mon, otmp);
+				}
+				else {
+					if (vis)
+						pline("%s %s pops open!", s_suffix(Monnam(mon)),
+							cloak_simple_name(otmp));
+					else
+						You_hear("a tearing sound.");
+					if(!otmp->oeroded3)
+						otmp->oeroded3 = 1;
+					if (polyspot) bypass_obj(otmp);
+					m_lose_armor(mon, otmp);
+				}
 			}
 		}
 	}
@@ -2258,7 +2308,8 @@ long timeout;
  	xchar x = 0, y = 0;
 	boolean on_floor = obj->where == OBJ_FLOOR,
 		in_invent = obj->where == OBJ_INVENT,
-		in_trap = obj->where == OBJ_INTRAP;
+		in_trap = obj->where == OBJ_INTRAP,
+		in_container = obj->where == OBJ_CONTAINED;
 	
 	if(obj->shopOwned){
 		start_timer(1, TIMER_OBJECT,
@@ -2332,7 +2383,7 @@ long timeout;
 			deltrap(obj->otrap);	/* deltrap deletes contained objects as well */
 		}
 	}
-	else if (in_invent) {
+	else if (in_invent || in_container) {
 //		pline("object in invent");
 		int armpro = 0;
 		boolean isarmor = obj == uarm || obj == uarmc || obj == uarms || obj == uarmh || 
@@ -2349,14 +2400,20 @@ long timeout;
 		}
 		
 		if ((!u.uswallow ? (dimness(u.ux, u.uy) > 0) : (uswallow_indark()))
-		  || ((rn2(3) < armpro) && rn2(50))
-		){
+			|| ((rn2(3) < armpro) && rn2(50)) || in_container)
+		{
 			if(obj->oeroded && obj->oerodeproof && 
-				(!u.uswallow ? (dimness(u.ux, u.uy) > 0) : (uswallow_indark())))
+				((!u.uswallow ? (dimness(u.ux, u.uy) > 0) : (uswallow_indark())) || in_container))
 				obj->oeroded--;
 			start_timer(1, TIMER_OBJECT, LIGHT_DAMAGE, (genericptr_t)obj);
 			return;
 		}
+
+		if (in_container){
+			start_timer(1, TIMER_OBJECT, LIGHT_DAMAGE, (genericptr_t)obj);
+			return;
+		}
+
 		if(obj->oeroded < 2){
 			obj->oeroded++;
 			Your("%s degrade%s.",xname(obj),(obj->quan > 1L ? "" : "s"));
@@ -2365,11 +2422,18 @@ long timeout;
 			if(flags.run) nomul(0, NULL);
 			return;
 		}
+
+		/* artifacts are durable - they will never evaporate entirely, though they're not immune to degrading */
+		if (obj->oartifact) {
+			start_timer(1, TIMER_OBJECT, LIGHT_DAMAGE, (genericptr_t)obj);
+			return;
+		}
+
 	    if (flags.verbose && !isarmor) {
 			char *name = obj->otyp == CORPSE ? corpse_xname(obj, FALSE) : xname(obj);
 			Your("%s%s%s %s away%c",
-				 obj == uwep ? "wielded " : nul, name, obj->otyp == NOBLE_S_DRESS ? "'s armored plates" : "",
-				 obj->otyp == NOBLE_S_DRESS ? "evaporate" : otense(obj, "evaporate"), obj == uwep ? '!' : '.');
+				obj == uwep ? "wielded " : nul, name, obj->otyp == NOBLE_S_DRESS ? "'s armored plates" : "",
+				obj->otyp == NOBLE_S_DRESS ? "evaporate" : otense(obj, "evaporate"), obj == uwep ? '!' : '.');
 	    }
 	    if (obj == uwep) {
 			uwepgone();	/* now bare handed */
@@ -2514,7 +2578,12 @@ long timeout;
 				m_useup(obj->ocarry, obj);
 			}
 		}
+	} else {
+		/* otherwise timer stops and never restarts */
+		start_timer(1, TIMER_OBJECT, LIGHT_DAMAGE, (genericptr_t)obj);
+		return;
 	}
+
 	if (on_floor) newsym(x, y);
 	else if (in_invent) update_inventory();
 }

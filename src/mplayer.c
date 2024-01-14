@@ -324,7 +324,8 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 	break;
 	case PM_PRIEST:
 	case PM_PRIESTESS:
-		if(Role_if(PM_MADMAN) && In_quest(&u.uz) && ptr->mtyp == PM_PRIESTESS){
+	case PM_ITINERANT_PRIESTESS:
+		if(Role_if(PM_MADMAN) && In_quest(&u.uz) && ptr->mtyp == PM_ITINERANT_PRIESTESS){
 			*armor = STRAITJACKET;
 			*cloak = ROBE;
 		}
@@ -616,15 +617,17 @@ long flags;
 			init_mon_wield_item(mtmp);
 			m_level_up_intrinsic(mtmp);
 		}
-	    quan = rnd(3);
+#define In_plat_tower (dungeon_topology.alt_tower && (Is_arcadiatower2(&u.uz) || Is_arcadiatower3(&u.uz) || Is_arcadiadonjon(&u.uz)))
+	    quan = In_plat_tower ? 1 : rnd(3);
 	    while(quan--)
 			(void)mongets(mtmp, rnd_offensive_item(mtmp), NO_MKOBJ_FLAGS);
-	    quan = rnd(3);
+	    quan = In_plat_tower ? 1 : rnd(3);
 	    while(quan--)
 			(void)mongets(mtmp, rnd_defensive_item(mtmp), NO_MKOBJ_FLAGS);
-	    quan = rnd(3);
+	    quan = In_plat_tower ? 1 : rnd(3);
 	    while(quan--)
 			(void)mongets(mtmp, rnd_misc_item(mtmp), NO_MKOBJ_FLAGS);
+#undef In_plat_tower
 
 		if((special && (mtmp->mtyp == PM_MADMAN || mtmp->mtyp == PM_MADWOMAN))
 			|| (Role_if(PM_MADMAN) && In_quest(&u.uz) && (mtmp->mtyp == PM_NOBLEMAN || mtmp->mtyp == PM_NOBLEWOMAN || mtmp->mtyp == PM_HEALER))
@@ -640,9 +643,9 @@ long flags;
 			}
 		}
 
-		if(Role_if(PM_MADMAN) && In_quest(&u.uz) && mtmp->mtyp == PM_PRIESTESS){
-			mtmp->m_lev = 20;
-			mtmp->mhpmax = d(20, 6) + 40;
+		if(Role_if(PM_MADMAN) && In_quest(&u.uz) && mtmp->mtyp == PM_ITINERANT_PRIESTESS){
+			mtmp->m_lev = 10;
+			mtmp->mhpmax = d(10, 4) + 40;
 			mtmp->mhp = mtmp->mhpmax;
 			mtmp->m_insight_level = 10;
 			set_template(mtmp, MISTWEAVER);

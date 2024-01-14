@@ -667,6 +667,9 @@ boolean msgs;
 	    dryup(x, y, madeby_u);
 		if(!flags.mon_moving && u.sealsActive&SEAL_EDEN) unbind(SEAL_EDEN,TRUE);
 	    return;
+	} else if (IS_FORGE(lev->typ)) {
+	    breakforge(x, y);
+	    return;
 #ifdef SINKS
 	} else if (IS_SINK(lev->typ)) {
 	    breaksink(x, y);
@@ -1253,6 +1256,14 @@ boolean pit_only;
 			pline_The("%s here refuses to open.", surface(u.ux,u.uy));
 			return FALSE;
 		}
+	} else if (IS_FORGE(lev->typ)) {
+		if(!pit_only){
+			openfakedoor();
+			return TRUE;
+		} else {
+			pline_The("%s here refuses to open.", surface(u.ux,u.uy));
+			return FALSE;
+		}
 #ifdef SINKS
 	} else if (IS_SINK(lev->typ)) {
 		if(!pit_only){
@@ -1468,6 +1479,9 @@ openrocktrap()
 		fakerocktrap();
 	    return TRUE;
 	} else if (IS_FOUNTAIN(lev->typ)) {
+		fakerocktrap();
+	    return TRUE;
+	} else if (IS_FORGE(lev->typ)) {
 		fakerocktrap();
 	    return TRUE;
 #ifdef SINKS
@@ -1976,7 +1990,7 @@ struct obj *obj;
 		char buf[BUFSZ];
 		int dam;
 
-		dam = rnd(2) + dbon(obj) + obj->spe;
+		dam = rnd(2) + dbon(obj, &youmonst) + obj->spe;
 		if (dam <= 0) dam = 1;
 		You("hit yourself with %s.", yname(obj));
 		Sprintf(buf, "%s own %s", uhis(),
@@ -2137,7 +2151,7 @@ watch_dig(mtmp, x, y, zap)
 
 	if (in_town(x, y) &&
 	    (closed_door(x, y) || lev->typ == SDOOR ||
-	     IS_WALL(lev->typ) || IS_FOUNTAIN(lev->typ) || IS_TREE(lev->typ))) {
+	     IS_WALL(lev->typ) || IS_FOUNTAIN(lev->typ) || IS_FORGE(lev->typ) || IS_TREE(lev->typ))) {
 	    if (!mtmp) {
 		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
 		    if (DEADMONSTER(mtmp)) continue;
@@ -2620,6 +2634,12 @@ long timeout;	/* unused */
 		if (u.shubbie_atten) {
 			u.shubbie_credit += 30;
 			u.shubbie_devotion += 30;
+		}
+	}
+	if(obj->otyp == BRAINROOT){
+		struct monst *mon = makemon(&mons[PM_BRAINBLOSSOM_PATCH], obj->ox, obj->oy, MM_NOCOUNTBIRTH);
+		if(mon && canspotmon(mon)){
+			pline("%s grows back from the roots!", Monnam(mon));
 		}
 	}
 	obj_extract_self(obj);

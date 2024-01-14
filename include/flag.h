@@ -162,10 +162,14 @@ struct flag {
 	boolean goldka_level;		/* the current level has a gold kamerel golem on it */
 
 	boolean silence_level;		/* the current level has an avatar of The Silence on it */
+
+	boolean spriest_level;		/* the current level has a priest of the serpent on it */
 	boolean made_first;			/* the first word slab has been created */
 	boolean made_divide;		/* the dividing word slab has been created */
 	boolean made_life;			/* the nurturing word slab has been created */
 	boolean made_know;			/* the word of knowledge slab has been created */
+
+	boolean made_twin;			/* your yog sothoth twin has been created */
 
 	boolean disp_inv;			/* currently displaying inventory, use separate obuf list */
 
@@ -200,6 +204,7 @@ struct flag {
 	int	 initgend;	/* starting gender    (index into genders[]) */
 	int	 initalign;	/* starting alignment (index into aligns[])  */
 	int	 initspecies;	/* starting species (index into species[])  */
+	int	 descendant;	/* start as descendant */
 	int	 chaosvar;	/* Set chaos variant */
 	int	 randomall;	/* randomly assign everything not specified */
 	int	 pantheon;	/* deity selection for priest character */
@@ -344,6 +349,7 @@ struct instance_flags {
 	boolean  paranoid_hit;  /* Ask for 'yes' when hitting peacefuls */
 	boolean  paranoid_quit; /* Ask for 'yes' when quitting */
 	boolean  paranoid_remove; /* Always show menu for 'T' and 'R' */
+	boolean  paranoid_swim; /* Require 'm' prefix to move into water/lava/air unless it's safe */
 #endif
 #ifdef USE_TILES
 	boolean  vt_nethack;
@@ -372,6 +378,12 @@ struct instance_flags {
 	int statuslines;
 
 	int pokedex;	/* default monster stats to show in the pokedex */
+	
+	boolean save_uinwater; /* tracks if we're actually buried etc. for #terrain*/
+	boolean save_uburied;
+	boolean save_uswallow;
+	
+	boolean autodescribe;
 /*
  * Window capability support.
  */

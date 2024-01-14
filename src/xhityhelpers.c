@@ -1092,6 +1092,7 @@ int aatyp;
 	case AT_STNG:
 	case AT_ENGL:
 	case AT_TENT:
+	case AT_TONG:
 	default:
 		w_mask = 0L;		/* no defense available */
 		break;
@@ -1465,6 +1466,30 @@ struct obj * otmp;
 			dmg += vd(1, 10) + otmp->spe;
 		else if (otmp->oartifact == ART_VAMPIRE_KILLER)
 			dmg += 7;
+
+#define sacred_bonus_dice ((FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_EXPERT) ? 6 : (FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_SKILLED ? 3 : 1))
+		if (activeFightingForm(FFORM_KNI_SACRED) && otmp == uwep){
+			if (((Holiness_if(HOLY_HOLINESS) || Holiness_if(NEUTRAL_HOLINESS)) && u.ualign.record >= 0) ||
+				((Holiness_if(UNHOLY_HOLINESS) || Holiness_if(VOID_HOLINESS)) && u.ualign.record < 0)){
+				if (FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_BASIC && u.uen >= 5){
+					dmg += vd(sacred_bonus_dice, 8); // 1d8/3d8/6d8 for basic/skilled/expert
+					u.uen -= 5;
+				}
+				use_skill(P_KNI_SACRED, 1);
+			}
+		}
+		else if(otmp->where == OBJ_MINVENT){
+			struct monst *magr = otmp->ocarry;
+			if(magr && mon_knight(magr) && MON_WEP(magr) == otmp && mlev(magr) >= 14){
+				if(mlev(magr) >= 28)
+					dmg += vd(6, 8);
+				else if(mlev(magr) >= 21)
+					dmg += vd(3, 8);
+				else 
+					dmg += vd(1, 8);
+			}
+		}
+
 		/* special cases that do affect dice */
 		if (otmp->oartifact == ART_AMHIMITL)
 			ndice = 3;
@@ -1507,6 +1532,17 @@ struct obj * otmp;
 		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
 		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
 
+		if (activeFightingForm(FFORM_KNI_SACRED) && otmp == uwep){
+			if (((Holiness_if(HOLY_HOLINESS) || Holiness_if(NEUTRAL_HOLINESS)) && u.ualign.record < 0) ||
+				((Holiness_if(UNHOLY_HOLINESS) || Holiness_if(VOID_HOLINESS)) && u.ualign.record >= 0)){
+				if (FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_BASIC && u.uen >= 5){
+					dmg += vd(sacred_bonus_dice, 8); // 1d8/3d8/6d8 for basic/skilled/expert
+					u.uen -= 5;
+				}
+				use_skill(P_KNI_SACRED, 1);
+			}
+		}
+#undef sacred_bonus_dice
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* gold has a particular affinity to blessings and curses */
@@ -1540,8 +1576,10 @@ struct obj * otmp;
 			diesize = 24;
 		else if (otmp->oartifact == ART_MIRROR_BRAND)
 			ndice = 2;
-		else if (otmp->oartifact == ART_GRAYSWANDIR)
+		else if (otmp->oartifact == ART_GRAYSWANDIR){
 			ndice = 3;
+			diesize = 9;
+		}
 		
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
@@ -1551,8 +1589,10 @@ struct obj * otmp;
 	}
 
 	if (hates_lawful_mon(mdef) &&
-		otmp->obj_material == PLATINUM &&
-		!(is_lightsaber(otmp) && litsaber(otmp))
+		((otmp->obj_material == PLATINUM &&
+		!(is_lightsaber(otmp) && litsaber(otmp)))
+		|| otmp->oartifact == ART_GRAYSWANDIR
+		)
 	) {
 		/* default: 1d5 */
 		ndice = 1;
@@ -1568,6 +1608,8 @@ struct obj * otmp;
 		
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
+		if (otmp->oartifact == ART_GRAYSWANDIR)
+			dmg += 9;
 		/* calculate */
 		if (ndice)
 			dmg += vd(ndice, diesize);
@@ -1596,7 +1638,21 @@ struct obj * otmp;
 		if (ndice)
 			dmg += vd(ndice, diesize);
 	}
-
+	if(otmp->oartifact == ART_LOLTH_S_FANG){
+		//Cross-aligned
+		if(!hates_lawful_mon(mdef)){
+			dmg += vd(1, 8);
+		}
+		if(!is_drow(pd)){
+			dmg += vd(1, 8);
+		}
+		if(!mdef->female){
+			dmg += vd(1, 8);
+		}
+		if(!(is_primordial(pd) || is_great_old_one(pd))){
+			dmg += vd(1, 8);
+		}
+	}
 	/* the Rod of Seven Parts gets a bonus vs holy and unholy when uncursed */
 	if (otmp->oartifact == ART_ROD_OF_SEVEN_PARTS
 		&& !otmp->blessed && !otmp->cursed
@@ -2540,6 +2596,9 @@ struct attack * attk;
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
+		if(otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
+			do_digging_impact(magr, otmp, tarx + dx, tary + dy);
+		}
 	}
 	if(u.uinsight >= 30){
 		//45 degree rotation
@@ -2567,6 +2626,9 @@ struct attack * attk;
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
 		}
+		if(otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
+			do_digging_impact(magr, otmp, x(magr) + nx, y(magr) + ny);
+		}
 		//-45 degree rotation
 		nx = sgn(dx-dy);
 		ny = sgn(dx+dy);
@@ -2591,6 +2653,9 @@ struct attack * attk;
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
+		}
+		if(otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
+			do_digging_impact(magr, otmp, x(magr) + nx, y(magr) + ny);
 		}
 	}
 	otmp->otyp = CLUB;
@@ -2674,6 +2739,119 @@ struct attack * attk;
 		//-90 degree rotation
 		nx = dy;
 		ny = -dx;
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+	}
+	if(u.uinsight >= 57){
+		//45 degree rotation
+		nx = sgn(dx+dy);
+		ny = sgn(dy-dx);
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+		//-45 degree rotation
+		nx = sgn(dx-dy);
+		ny = sgn(dx+dy);
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+	}
+	if(u.uinsight >= 70){
+		//135 degree rotation
+		//x = xcos0 - ysin0
+		//x = x*(-0.7) - y*(0.7)
+		//y = xsin0 + ycos0
+		//y = x*(0.7) + y*(-0.7)
+		nx = sgn(-dx-dy);
+		ny = sgn(dx-dy);
+		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
+			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
+									u.uswallow ? u.ustuck : 
+									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+									(struct monst *)0;
+			if (mdef2 
+				&& (!DEADMONSTER(mdef2))
+				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+					(youagr && !mdef2->mpeaceful))
+			) { //Can hit a worm multiple times
+				int vis2 = VIS_NONE;
+				if(youagr || canseemon(magr))
+					vis2 |= VIS_MAGR;
+				if(mdef2 == &youmonst || canseemon(mdef2))
+					vis2 |= VIS_MDEF;
+				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+			}
+		}
+		//-135 degree rotation
+		//x = xcos0 - ysin0
+		//x = x*(-0.7) - y*(-0.7)
+		//y = ysin0 + ycos0
+		//y = x*(-0.7) + y*(-0.7)
+		//-45 degree rotation
+		nx = sgn(-dx+dy);
+		ny = sgn(-dx-dy);
 		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
 			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
 									u.uswallow ? u.ustuck : 
@@ -2841,5 +3019,81 @@ struct attack * attk;
 	}
 	return result;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/* Mercurial weapons may strike behind primary target if the wielder is powerful enough */
+/////////////////////////////////////////////////////////////////////////////////////////
+int
+hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)
+struct monst * magr;
+struct obj * otmp;
+int tarx;
+int tary;
+int tohitmod;
+struct attack * attk;
+{
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	int dx = sgn(tarx - x(magr));
+	int dy = sgn(tary - y(magr));
+	int nx, ny;
+	int result = 0;
+	if(!(isok(tarx - dx, tary - dy) &&
+		x(magr) == tarx - dx &&
+		y(magr) == tary - dy)
+	)
+		return result;
+
+	if (isok(tarx + dx, tary + dy)){
+		struct monst *mdef2 = !youagr ? m_u_at(tarx + dx, tary + dy) : 
+								u.uswallow ? u.ustuck : 
+								(dx || dy) ? m_at(tarx + dx, tary + dy) : 
+								(struct monst *)0;
+		if (mdef2 
+			&& (!DEADMONSTER(mdef2))
+			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+				(youagr && !mdef2->mpeaceful))
+		){ //Can hit a worm multiple times
+			int vis2 = VIS_NONE;
+			if(youagr || canseemon(magr))
+				vis2 |= VIS_MAGR;
+			if(mdef2 == &youmonst || canseemon(mdef2))
+				vis2 |= VIS_MDEF;
+			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		}
+	}
+	if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && (youagr ? (u.uinsight > 60) : (mlev(magr) > 30)) && isok(tarx + 2*dx, tary + 2*dy)){
+		tarx += dx;
+		tary += dy;
+		struct monst *mdef2 = !youagr ? m_u_at(tarx + dx, tary + dy) : 
+								u.uswallow ? u.ustuck : 
+								(dx || dy) ? m_at(tarx + dx, tary + dy) : 
+								(struct monst *)0;
+		if (mdef2 
+			&& (!DEADMONSTER(mdef2))
+			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
+				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
+				(youagr && !mdef2->mpeaceful))
+		){ //Can hit a worm multiple times
+			int vis2 = VIS_NONE;
+			if(youagr || canseemon(magr))
+				vis2 |= VIS_MAGR;
+			if(mdef2 == &youmonst || canseemon(mdef2))
+				vis2 |= VIS_MDEF;
+			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		}
+	}
+	return result;
+}
+
 
 

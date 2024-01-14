@@ -2,7 +2,9 @@
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
+#include <math.h>
 #include "hack.h"
+#include "xhity.h"
 
 #ifdef OVL1
 #endif /*OVL1*/
@@ -1337,7 +1339,7 @@ domove()
 			struct obj *otmp;
 			attk = mon_get_attacktype(&youmonst, AT_WEAP, &attkbuff);
 			otmp = uwep;
-			do{
+			if(attk) do {
 				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && otmp->otyp == CLUB && check_oprop(otmp, OPROP_CCLAW)){
 					if(!attk){
@@ -1354,15 +1356,23 @@ domove()
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
 					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
 				}
+				/* Streaming mercurial weapons hit an aditional target if your insight is high enough */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
+					if(mlev(&youmonst) > 20 && (u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))){
+						result |= hit_with_streaming(&youmonst, otmp, x, y, 0, attk);
+					}
+				}
 				/* Dancers hit additional targets */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){
 					result |= hit_with_dance(&youmonst, otmp, x, y, 0, attk);
 				}
 				
+				if(!u.twoweap)
+					break;
 				attk = mon_get_attacktype(&youmonst, AT_XWEP, &attkbuff);
 				otmp = uswapwep;
 				i++;
-			} while(i < 2);
+			} while(i < 2 && attk);
 		}
 		// unmap_object(x, y); /* known empty -- remove 'I' if present */
 		if (glyph_is_invisible(levl[x][y].glyph)) {
@@ -1609,6 +1619,60 @@ domove()
 		}
 	    return;
 	}
+
+#ifdef PARANOID
+	/* credit - Ron Nazarov via IRC/discord, applied with some minor changes*/
+	/* If no 'm' prefix and paranoid_swim enabled, don't allow dangerous moves.  */
+	if (iflags.paranoid_swim && (!flags.nopick || flags.run)) {
+		static int last_messaged;
+
+	    /* Almost the same conditions as teleportation, except
+	     * that lava is allowed if you have wwalking and fireproof
+	     * boots and your steed matters.
+	     */
+	    boolean safe_air = Levitation || Flying;
+	    boolean safe_inwater = (Amphibious || Swimming)
+		&& !(u.sealsActive&SEAL_OSE) && Waterproof && !level.flags.lethe &&
+		/* If you try to ride into water while riding a non-flying steed, you'll fall off.  */
+		(!u.usteed || (amphibious_mon(u.usteed) && mon_resistance(u.usteed, FLYING)));
+
+		/* wwalking has to be visible, to prevent identifying via a message prompt
+		 * assumes that HWWalking is known always - i.e. level-up (monk) or similar where it messages
+		 * checks extrinsic from carry/invoke artifacts as well, but not worn :( those are W_WORN not W_ART(I)
+		 * this also assumes the only "object" that grants ww is ww boots
+		 */
+		boolean ww_boots = (uarmf && uarmf->otyp == WATER_WALKING_BOOTS && objects[WATER_WALKING_BOOTS].oc_name_known);
+		boolean visible_ww = ww_boots || u.sealsActive&SEAL_EURYNOME || HWwalking ||
+			(u.uprops[WWALKING].extrinsic & W_ARTI) || (u.uprops[WWALKING].extrinsic & W_ART) ||
+			(uleft && uleft->oartifact == ART_NENYA) || (uright && uright->oartifact == ART_NENYA);
+
+	    /* Going into 3D water with limited breath can be dangerous. */
+	    boolean safe_3dwater = safe_inwater && Breathless;
+	    boolean safe_water = safe_inwater || safe_air || (!u.usteed && visible_ww);
+	    boolean safe_lava = safe_air ||	(!u.usteed &&
+			(likes_lava(youracedata) || (visible_ww && Fire_resistance && (!uarmf || uarmf->oerodeproof || !is_flammable(uarmf)))));
+
+	    if ((!safe_air && levl[x][y].typ == AIR && levl[u.ux][u.uy].typ != AIR) ||
+			(!safe_water && is_pool(x, y, FALSE) && !is_pool(u.ux, u.uy, FALSE)) ||
+			(!safe_3dwater && is_3dwater(x, y) && !is_3dwater(u.ux, u.uy)) ||
+			(!safe_lava && is_lava(x, y) && !is_lava(u.ux, u.uy))
+		){
+			You("avoid %s into the %s.", ing_suffix(locomotion(&youmonst, "step")), levl[x][y].typ == AIR ? "open air" : waterbody_name(x, y));
+
+			if (!last_messaged || (moves - last_messaged) >= 11)
+				last_messaged = moves;
+
+			if (last_messaged >= moves){
+				pline("(Use 'm' prefix to step in if you really want to.)");
+				last_messaged = moves - 1;
+			}
+
+			flags.move |= MOVE_CANCELLED;
+			nomul(0, NULL);
+			return;
+	    }
+	}
+#endif
 	
 	/* Move ball and chain.  */
 	if (Punished){
@@ -1695,15 +1759,15 @@ domove()
 				boulder_at(trap->tx, trap->ty)
 			) || (
 				(trap->ttyp == VIVI_TRAP)
-			)
-		)) {
+			))
+		) {
 			/* can't swap places with pet pinned in a pit by a boulder, or one stuck in an essence trap */
 			u.ux = u.ux0,  u.uy = u.uy0;	/* didn't move after all */
 	    } else if (u.ux0 != x && u.uy0 != y &&
 		       bad_rock(mtmp, x, u.uy0) &&
 		       bad_rock(mtmp, u.ux0, y) &&
 		       (bigmonst(mtmp->data) || (curr_mon_load(mtmp) > 600))
-		){
+		) {
 			/* can't swap places when pet won't fit thru the opening */
 			u.ux = u.ux0,  u.uy = u.uy0;	/* didn't move after all */
 			You("stop.  %s won't fit through.", upstart(y_monnam(mtmp)));
@@ -1719,63 +1783,104 @@ domove()
 	    } else if (mtmp->mpeaceful && !mtmp->mtame
 		    && (!goodpos(u.ux0, u.uy0, mtmp, 0)
 			|| t_at(u.ux0, u.uy0) != NULL
-			|| mtmp->m_id == quest_status.leader_m_id
-		       )) {
-		u.ux = u.ux0, u.uy = u.uy0; /* didn't move after all */
-		You("stop. %s doesn't want to swap places.",
-			upstart(y_monnam(mtmp)));
+			|| mtmp->m_id == quest_status.leader_m_id)
+		) {
+			u.ux = u.ux0, u.uy = u.uy0; /* didn't move after all */
+			You("stop. %s doesn't want to swap places.",
+				upstart(y_monnam(mtmp)));
 
 	    } else {
-		/* if trapped, there's a chance the pet goes wild */
-		if (mtmp->mtrapped) {
-		    abuse_dog(mtmp);
-		}
-		char pnambuf[BUFSZ];
+			char pnambuf[BUFSZ];
+			extern const int clockwisex[8];
+			extern const int clockwisey[8];
+			int newx = 0;
+			int newy = 0;
 
-		/* save its current description in case of polymorph */
-		Strcpy(pnambuf, y_monnam(mtmp));
-		mtmp->mtrapped = 0;
-		remove_monster(x, y);
-		place_monster(mtmp, u.ux0, u.uy0);
-		newsym(x, y);
-		newsym(u.ux0, u.uy0);
+			/* goodpos for pet? otherwise we shunt somewhere else
+			 * pet knowledge of pets checks tseen / searching. polytraps and */
 
-		/* check for displacing it into pools and traps */
-		trap = t_at(u.ux0, u.uy0);
-		int switchcase = minliquid(mtmp) ? 2 : mintrap(mtmp);
-		switch (switchcase) {
-		case 0:
-		    You("%s %s.", mtmp->mpeaceful ? "displaced" : "frightened",
-			pnambuf);
-		    break;
-		case 1:		/* trapped */
-		case 3:		/* changed levels */
-		    /* there's already been a trap message, reinforce it */
-			if(!(switchcase == 3 && trap->ttyp == MAGIC_PORTAL)){
-			    abuse_dog(mtmp);
-			    adjalign(-3);
+			boolean pet_goodpos = goodpos(u.ux0, u.uy0, mtmp, 0);
+			
+			if ((trap = t_at(x, y)) != NULL && (trap->tseen || mon_resistance(mtmp, SEARCHING)) &&
+				!(trap->ttyp == MAGIC_PORTAL || trap->ttyp == POLY_TRAP))
+					pet_goodpos = FALSE;
+
+			/* save its current description in case of polymorph */
+			Strcpy(pnambuf, y_monnam(mtmp));
+
+			int i = rnd(8), j;
+#define tmpx clockwisex[(i + j) % 8] + x
+#define tmpy clockwisey[(i + j) % 8] + y
+			if (!pet_goodpos){
+				/* clear for goodpos */
+				u.ux = u.ux0, u.uy = u.uy0;
+				for (j = 8; j >= 1; j--){
+					if (!goodpos(tmpx, tmpy, mtmp, 0))
+						continue;
+					
+					trap = t_at(tmpx, tmpy);
+					if (trap != NULL && ((trap && trap->tseen) || mon_resistance(mtmp, SEARCHING)))
+						continue;
+
+					newx = tmpx;
+					newy = tmpy;
+					break;
+				}
+			} else {
+				newx = u.ux0;
+				newy = u.uy0;
 			}
-		    break;
-		case 2:
-		    /* it may have drowned or died.  that's no way to
-		     * treat a pet!  your god gets angry.
-		     */
-		    if (rn2(4)) {
-			You_feel("guilty about losing your pet like this.");
-			if(!Role_if(PM_ANACHRONOUNBINDER)) godlist[u.ualign.god].anger++;
-			adjalign(-15);
-		    }
-
-		    /* you killed your pet by direct action.
-		     * minliquid and mintrap don't know to do this
-		     */
-		    u.uconduct.killer++;
-			if(mtmp->mtyp == PM_CROW && u.sealsActive&SEAL_MALPHAS) unbind(SEAL_MALPHAS,TRUE);
-		    break;
-		default:
-		    pline("that's strange, unknown mintrap result!");
-		    break;
-		}
+#undef tmpx
+#undef tmpy
+			if (newx && newy){
+				u.ux = x, u.uy = y; /* re-move, cleared to check goodpos */
+				mtmp->mtrapped = 0;
+				remove_monster(x, y);
+				place_monster(mtmp, newx, newy);
+				newsym(newx, newy);
+				newsym(x, y);
+				newsym(u.ux0, u.uy0);
+			}
+			
+			if (mtmp->mx == x && mtmp->my == y){
+				You("stop. %s doesn't want to swap places.", upstart(y_monnam(mtmp)));
+			} else {
+				/* check for displacing it into pools and traps. 
+				 * pools should never happen due to goodpos - but just in case, not removing handling */
+				trap = t_at(u.ux0, u.uy0);
+				int switchcase = minliquid(mtmp) ? 2 : mintrap(mtmp);
+				switch (switchcase) {
+					case 0:
+						You("%s %s.", mtmp->mpeaceful ? "displaced" : "frightened", pnambuf);
+						break;
+					case 1:		/* trapped */
+					case 3:		/* changed levels */
+						/* there's already been a trap message, reinforce it */
+						if(!(switchcase == 3 && trap->ttyp == MAGIC_PORTAL)){
+							abuse_dog(mtmp);
+							adjalign(-3);
+						}
+						break;
+					case 2:
+						/* it may have drowned or died.  that's no way to
+						 * treat a pet!  your god gets angry.
+						 */
+						if (rn2(4)) {
+							You_feel("guilty about losing your pet like this.");
+							if(!Role_if(PM_ANACHRONOUNBINDER)) godlist[u.ualign.god].anger++;
+							adjalign(-15);
+						}
+						/* you killed your pet by direct action.
+						 * minliquid and mintrap don't know to do this
+						 */
+						u.uconduct.killer++;
+						if(mtmp->mtyp == PM_CROW && u.sealsActive&SEAL_MALPHAS) unbind(SEAL_MALPHAS,TRUE);
+						break;
+					default:
+						pline("that's strange, unknown mintrap result!");
+						break;
+				}
+			}
 	    }
 	}
 
@@ -2667,6 +2772,7 @@ nomul(nval, txt)
 	if(multi < nval) return;	/* This is a bug fix by ab@unido */
 	u.uinvulnerable = FALSE;	/* Kludge to avoid ctrl-C bug -dlc */
 	u.usleep = 0;
+	u.puzzle_time = 0;
 	if(!flags.forcefight) multi = nval;
 	flags.travel = iflags.travel1 = flags.mv = flags.run = 0;
 	if (txt && txt[0])
@@ -2686,7 +2792,43 @@ const char *msg_override;
 	else if (!nomovemsg) nomovemsg = You_can_move_again;
 	if (*nomovemsg) pline1(nomovemsg);
 	nomovemsg = 0;
+	struct obj *puzzle = get_most_complete_puzzle();
+	if(puzzle){
+		if(u.puzzle_time && (monstermoves - u.usleep) >= u.puzzle_time){
+			int difficulty = puzzle->ovar1_puzzle_steps + 1;
+			difficulty *= 6;
+			if(objects[HYPERBOREAN_DIAL].oc_name_known)
+				difficulty -= 6;
+			difficulty -= u.uinsight;
+			difficulty -= ACURR(A_INT);
+			if(rnd(20) >= difficulty && !(u.veil && puzzle->ovar1_puzzle_steps >= 5)){
+				if(u.uhyperborean_steps < 6){
+					if(puzzle->ovar1_puzzle_steps == u.uhyperborean_steps){
+						more_experienced(6*pow(10,u.uhyperborean_steps), 0);
+						newexplevel();
+						u.uhyperborean_steps++;
+						if(u.uhyperborean_steps == 6){
+							You("have solved the sixth and final ring of %s!", the(xname(puzzle)));
+							/*With appologies to "Through the Gates of the Silver Key" and "The Dunwich Horror" by H. P. Lovecraft. */
+							pline("The hexagonal pegs are now oddly arranged, seeming to follow the symmetries of some cosmic geometry quite unknown to Earth.");
+							pline("You have the faintest sense, as though from a memory within a dream, of strange shapes surmounting hexagonal pillars, and a voice that spoke without speaking.");
+							pline("A seal is engraved into your mind!");
+							u.specialSealsKnown |= SEAL_YOG_SOTHOTH;
+						}
+						else {
+							You("have solved the next ring of %s!", the(xname(puzzle)));
+						}
+					}
+					else You("have solved the next ring of %s.", the(xname(puzzle)));
+					puzzle->ovar1_puzzle_steps++;
+				}
+			}
+			else You("haven't made any headway on the puzzle.");
+		}
+		else You("awaken before you can make any serious attempt on the puzzle.");
+	}
 	u.usleep = 0;
+	u.puzzle_time = 0;
 	if (afternmv) (*afternmv)();
 	afternmv = 0;
 }
@@ -2810,6 +2952,8 @@ register int n;
 	//ifdef BARD
 	if (n > 0){
 		n += mtmp->encouraged;
+		if(flags.spriest_level && is_demon(mtmp->data) && is_lawful_mon(mtmp) && !mtmp->mpeaceful)
+			n += 9;
 		if (uwep && uwep->oartifact == ART_SINGING_SWORD && !mindless_mon(mtmp) && !is_deaf(mtmp)){
 			if (uwep->osinging == OSING_DIRGE && !mtmp->mtame){
 				n -= uwep->spe + 1;
@@ -2891,6 +3035,11 @@ weight_cap()
 
 		/* these carrcap modifiers only make sense if you have feet on the ground */
 		if (boots && boots->otyp == find_hboots()) carrcap += 100;
+		
+		if (boots && check_oprop(boots, OPROP_RBRD)
+			&& u.ualign.record >= 20 && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NEUTRAL
+		)
+			carrcap += max(200, maxcap/5);
 		
 		if (!u.usteed && !Flying) {
 			if(EWounded_legs & LEFT_SIDE) carrcap -= 100;

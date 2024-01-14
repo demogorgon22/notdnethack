@@ -136,6 +136,56 @@ getpos_prevmon()
 }
 
 
+void
+auto_describe(int cx, int cy)
+{
+    coord cc;
+    int sym = 0, glyph;
+    char tmpbuf[BUFSZ], out_str[LONGBUFSZ];
+	out_str[0] = 0;
+    const char *firstmatch = "unknown";
+	boolean force_defsyms;
+
+    cc.x = cx;
+    cc.y = cy;
+	
+	glyph = glyph_at(cc.x,cc.y);
+	if (glyph_is_cmap(glyph)) {
+		if (iflags.UTF8graphics) {
+			/* Temporary workaround as NetHack can't yet
+			 * display UTF-8 glyphs on the topline */
+			force_defsyms = TRUE;
+			sym = defsyms[glyph_to_cmap(glyph)].sym;
+		} else {
+			sym = showsyms[glyph_to_cmap(glyph)];
+		}
+	} else if (glyph_is_trap(glyph)) {
+		sym = showsyms[trap_to_defsym(glyph_to_trap(glyph))];
+	} else if (glyph_is_object(glyph)) {
+		sym = oc_syms[(int)objects[glyph_to_obj(glyph)].oc_class];
+		if (sym == '`' && iflags.bouldersym && ((int)glyph_to_obj(glyph) == BOULDER || (int)glyph_to_obj(glyph) == MASS_OF_STUFF))
+			sym = iflags.bouldersym;
+	} else if (glyph_is_monster(glyph)) {
+		/* takes care of pets, detected, ridden, and regular mons */
+		sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
+	} else if (glyph_is_swallow(glyph)) {
+		sym = showsyms[glyph_to_swallow(glyph)+S_sw_tl];
+	} else if (glyph_is_invisible(glyph)) {
+		sym = DEF_INVISIBLE;
+	} else if (glyph_is_warning(glyph)) {
+		sym = glyph_to_warning(glyph);
+		sym = warnsyms[sym];
+	} else {
+		impossible("do_look:  bad glyph %d at (%d,%d)",
+						glyph, (int)cc.x, (int)cc.y);
+		sym = ' ';
+	}
+    do_look_letter(sym, TRUE, TRUE, force_defsyms, cc, out_str, firstmatch);
+	if (out_str[0]) pline("%s", out_str);
+	else impossible("no out str for do_look_letter on current terrain? sym %d", sym);
+	flush_screen(1);
+}
+
 int
 getpos(cc, force, goal)
 coord *cc;
@@ -166,6 +216,10 @@ const char *goal;
     lock_mouse_cursor(TRUE);
 #endif
     for (;;) {
+	if (iflags.autodescribe) {
+		auto_describe(cx, cy);
+		curs(WIN_MAP,cx,cy);
+	}
 	c = nh_poskey(&tx, &ty, &sidx);
 	if (c == '\033') {
 	    cx = cy = -10;
@@ -241,34 +295,17 @@ const char *goal;
 		    if (c == defsyms[sidx].sym || c == (int)showsyms[sidx])
 			matching[sidx] = (char) ++k;
 		if (k) {
-		    for (pass = 0; pass <= 1; pass++) {
+		    for (pass = 0; pass <= 3; pass++) {
 			/* pass 0: just past current pos to lower right;
 			   pass 1: upper left corner to current pos */
-			lo_y = (pass == 0) ? cy : 0;
-			hi_y = (pass == 0) ? ROWNO - 1 : cy;
+			lo_y = (pass % 2 == 0) ? cy : 0;
+			hi_y = (pass % 2 == 0) ? ROWNO - 1 : cy;
 			for (ty = lo_y; ty <= hi_y; ty++) {
-			    lo_x = (pass == 0 && ty == lo_y) ? cx + 1 : 1;
-			    hi_x = (pass == 1 && ty == hi_y) ? cx : COLNO - 1;
+			    lo_x = (pass % 2 == 0 && ty == lo_y) ? cx + 1 : 1;
+			    hi_x = (pass % 2 == 1 && ty == hi_y) ? cx : COLNO - 1;
 				for (tx = lo_x; tx <= hi_x; tx++) {
 					/* look at dungeon feature, not at user-visible glyph */
-					k = back_to_glyph(tx, ty);
-					/* uninteresting background glyph */
-					if (glyph_is_cmap(k) &&
-						(IS_DOOR(levl[tx][ty].typ) || /* monsters mimicking a door */
-							glyph_to_cmap(k) == S_drkroom ||
-							glyph_to_cmap(k) == S_litroom ||
-							glyph_to_cmap(k) == S_drkgrass ||
-							glyph_to_cmap(k) == S_litgrass ||
-							glyph_to_cmap(k) == S_drksoil ||
-							glyph_to_cmap(k) == S_litsoil ||
-							glyph_to_cmap(k) == S_drksand ||
-							glyph_to_cmap(k) == S_litsand ||
-							glyph_to_cmap(k) == S_brightrm ||
-							glyph_to_cmap(k) == S_corr ||
-							glyph_to_cmap(k) == S_litcorr)) {
-						/* what the user remembers to be at tx,ty */
-						k = glyph_at(tx, ty);
-					}
+					k = pass < 2 ? back_to_glyph(tx, ty) : glyph_at(tx, ty);
 					/* TODO: - open doors are only matched with '-' */
 					/* should remembered or seen items be matched? */
 					if (glyph_is_cmap(k) &&
@@ -484,11 +521,11 @@ void do_floorname() {
         /* increased chance for fake monster */
         unames[3] = unames[2];
         /* traditional */
-	#ifdef REINCARNATION
+#ifdef REINCARNATION
         unames[4] = roguename();
-	#else
-        unames[4] = unames[1];
-	#endif
+#else
+        unames[4] = unames[2];
+#endif
         /* silly */
         unames[5] = "Wibbly Wobbly";
         pline("%s %s to call you \"%s.\"",
@@ -626,7 +663,10 @@ const char *name;
 					if (obj->otyp != u.brand_otyp)
 						obj = poly_obj(obj, u.brand_otyp);
 				}
-				else if (obj->otyp != a->otyp && !is_malleable_artifact(a)) {
+				else if ((a != &artilist[ART_LANCE_OF_LONGINUS]) && obj->otyp == LIGHTSABER){
+					set_obj_size(obj, MZ_TINY);
+				}
+				else if (obj->otyp != a->otyp && !is_malleable_artifact(a) && (a != &artilist[ART_LANCE_OF_LONGINUS])) {
 					obj = poly_obj(obj, a->otyp);
 				}
 			}
@@ -675,6 +715,10 @@ const char *name;
 		if (obj->oartifact == ART_IBITE_ARM)
 			add_oprop(obj, OPROP_CCLAW);
 		
+		/* property */
+		if (obj->oartifact == ART_AMALGAMATED_SKIES || obj->oartifact == ART_SILVER_SKY)
+			add_oprop(obj, OPROP_GSSDW);
+		
 		/* symbol */
 		if (obj->oartifact == ART_LOMYA)
 			obj->oward = LOLTH_SYMBOL;
@@ -684,6 +728,8 @@ const char *name;
 			obj->objsize = artilist[obj->oartifact].size;
 		else if(is_malleable_artifact(&artilist[obj->oartifact]))
 			;//keep current/default size
+		else if(obj->oartifact == ART_LANCE_OF_LONGINUS && obj->otyp == LIGHTSABER)
+			obj->objsize = MZ_TINY; // force it to be a proper lancet
 		else
 			obj->objsize = MZ_MEDIUM;
 		
@@ -730,6 +776,10 @@ const char *name;
 			obj->obj_color = CLR_MAGENTA;
 		}
 		
+		if ((is_lightsaber(obj) || obj->oartifact == ART_ANNULUS) && obj->oartifact != ART_INFINITY_S_MIRRORED_ARC && obj->age == 0){
+			obj->age = (long)rn1(50000, 100000);
+		}
+
 		/* body type */
 		if (is_malleable_artifact(&artilist[obj->oartifact])); //keep current/default body type
 		else if (Role_if(PM_PRIEST) && obj->oartifact == ART_MITRE_OF_HOLINESS)
@@ -932,9 +982,9 @@ boolean full;
 		else if (full && template == CRYSTALFIED)		Sprintf(buf2, "%s's vitrean", buf);
 		else if (full && template == WHISPERING)		Sprintf(buf2, "%s's whispers", buf);
 		else if (full && template == MINDLESS) 			Sprintf(buf2, "%s's husk", buf);
-		else if (full && template == FRACTURED)			Sprintf(buf2, "%s, Witness of the Fracture", buf);
+		else if (full && template == FRACTURED)			Sprintf(buf2, "%s the Witness of the Fracture", buf);
 		else if (full && template == ILLUMINATED)		Sprintf(buf2, "%s the Illuminated", buf);
-		else if (full && template == VAMPIRIC)			Sprintf(buf2, "%s, vampire", buf);
+		else if (full && template == VAMPIRIC)			Sprintf(buf2, "%s the vampire", buf);
 		else if (full && template == PSEUDONATURAL)		Sprintf(buf2, "%s the Pseudonatural", buf);
 		else if (full && template == TOMB_HERD)			Sprintf(buf2, "%s of the Herd", buf);
 		else if (full && template == SLIME_REMNANT)		Sprintf(buf2, "slimy remnant of %s", buf);
@@ -944,11 +994,11 @@ boolean full;
 		else if (full && template == FALLEN_TEMPLATE)	Sprintf(buf2, "%s the fallen", buf);
 		else if (full && template == WORLD_SHAPER)		Sprintf(buf2, "%s the Worldshaper", buf);
 		else if (mtmp && template == MISTWEAVER) {
-				if (mtmp->female) 						Sprintf(buf2, "%s, Daughter of the Black Goat", buf);
-				else 									Sprintf(buf2, "%s, Child of the Black Goat", buf);
+				if (mtmp->female) 						Sprintf(buf2, "%s the Daughter of the Black Goat", buf);
+				else 									Sprintf(buf2, "%s the Child of the Black Goat", buf);
 		}
-		else if (full && template == PLAGUE_TEMPLATE)	Sprintf(buf2, "%s, plague victim", buf);
-		else if (full && template == SPORE_ZOMBIE)		Sprintf(buf2, "%s, spore infectee", buf);
+		else if (full && template == PLAGUE_TEMPLATE)	Sprintf(buf2, "%s the plague victim", buf);
+		else if (full && template == SPORE_ZOMBIE)		Sprintf(buf2, "%s the spore infectee", buf);
 		else if (full && template == CORDYCEPS)			Sprintf(buf2, "%s's sporulating corpse", buf);
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s the finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
@@ -1273,6 +1323,8 @@ boolean called;
 	    Strcpy(pbuf, rank_of((int)mtmp->m_lev,
 				 monsndx(mdat),
 				 (boolean)mtmp->female));
+		if(mdat->mtyp == PM_ITINERANT_PRIESTESS)
+			Strcat(buf, "itinerant ");
 	    Strcat(buf, lcase(pbuf));
 		append_template_desc(mtmp, buf, FALSE, TRUE);
 	    name_at_start = FALSE;
@@ -1464,7 +1516,7 @@ char *
 mon_nam(mtmp)
 register struct monst *mtmp;
 {
-	return(x_monnam(mtmp, ARTICLE_THE, (char *)0,
+	return(x_monnam(mtmp, mtmp->mtyp == PM_TWIN_SIBLING ? ARTICLE_YOUR : ARTICLE_THE, (char *)0,
 		M_HAS_NAME(mtmp) ? SUPPRESS_SADDLE : 0, FALSE));
 }
 
@@ -1476,7 +1528,7 @@ char *
 noit_mon_nam(mtmp)
 register struct monst *mtmp;
 {
-	return(x_monnam(mtmp, ARTICLE_THE, (char *)0,
+	return(x_monnam(mtmp, mtmp->mtyp == PM_TWIN_SIBLING ? ARTICLE_YOUR : ARTICLE_THE, (char *)0,
 		M_HAS_NAME(mtmp) ? (SUPPRESS_SADDLE|SUPPRESS_IT) :
 		    SUPPRESS_IT, FALSE));
 }
@@ -1489,7 +1541,7 @@ char *
 noit_nohalu_mon_nam(mtmp)
 register struct monst *mtmp;
 {
-	return(x_monnam(mtmp, ARTICLE_THE, (char *)0,
+	return(x_monnam(mtmp, mtmp->mtyp == PM_TWIN_SIBLING ? ARTICLE_YOUR : ARTICLE_THE, (char *)0,
 		M_HAS_NAME(mtmp) ? (SUPPRESS_SADDLE|SUPPRESS_IT|SUPPRESS_HALLUCINATION) :
 		    SUPPRESS_IT|SUPPRESS_HALLUCINATION, FALSE));
 }
@@ -2174,6 +2226,24 @@ rndcolor()
 	int k = rn2(CLR_MAX);
 	return Hallucination ? hcolor((char *)0) : (k == NO_COLOR) ?
 		"colorless" : c_obj_colors[k];
+}
+
+static NEARDATA const char *const hliquids[] = {
+	"yoghurt", "oobleck", "clotted blood", "diluted water", "purified water",
+	"instant coffee", "tea", "herbal infusion", "liquid rainbow",
+	"creamy foam", "mulled wine", "bouillon", "nectar", "grog", "flubber",
+	"ketchup", "slow light", "oil", "vinaigrette", "liquid crystal", "honey",
+	"caramel sauce", "ink", "aqueous humour", "milk substitute",
+	"fruit juice", "glowing lava", "gastric acid", "mineral water",
+	"cough syrup", "quicksilver", "sweet vitriol", "grey goo", "pink slime",
+};
+
+const char *
+hliquid(liquidpref)
+const char *liquidpref;
+{
+	return (Hallucination || !liquidpref) ? hliquids[rn2(SIZE(hliquids))]
+										  : liquidpref;
 }
 
 /* Aliases for road-runner nemesis

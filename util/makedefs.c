@@ -15,6 +15,7 @@
 #include "dungeon.h"
 #include "obj.h"
 #include "monst.h"
+#include "mutations.h"
 #include "you.h"
 #include "flag.h"
 #include "dlb.h"
@@ -1564,7 +1565,7 @@ do_gods()
 		    else if (*c < 'A' || *c > 'Z') *c = '_';
 		Fprintf(ofp,"%s\t%d", limit(nam, 1), i);
 	}
-	Fprintf(ofp,"\n\n#define\tMAX_GOD\t%d\n", i);
+	Fprintf(ofp,"\n\n#define\tMAX_GOD\t%d\n", i-1);
 	Fprintf(ofp,"\n#endif /* GNAMES_H */\n");
 	Fclose(ofp);
 	return;

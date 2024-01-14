@@ -137,10 +137,9 @@
 #define MT_TRAITOR		0x00800000L	/* slash'em tag. */
 #define MT_NOTAKE		0x01000000L	/* doesn't pick up items. */
 #define MT_METALLIVORE	0x02000000L	/* eats metal. */
-
 #define MT_MAGIVORE		0x04000000L	/* eats magic */
-
 #define MT_BOLD			0x08000000L	/* recovers from fear quickly */
+#define MT_DETACHED		0x10000000L	/* detached from purpose/subsumed but intelligent, mindless but with muse roughly */
 
 #define MT_OMNIVORE		(MT_CARNIVORE|MT_HERBIVORE)	/* eats both */
 #define MT_MAID		(MT_MAGIC|MT_COLLECT|MT_JEWELS|MT_GREEDY)	/* tiddies up the dungeon */
@@ -187,6 +186,7 @@
 #define MB_INDIGESTIBLE	0x02000000L	/* immune to purple worms */
 #define MB_INSUBSTANTIAL	0x04000000L	/* Weapons pass through the monster */
 #define MB_NOGLOVES		0x08000000L	/* can handle things but has no glove slot */
+#define MB_NOHAT		0x10000000L	/* has a head to be beheaded but has no helm slot */
 
 #define MB_SNAKELEG	(MB_HUMANOID|MB_SLITHY)
 #define MB_CENTAUR	(MB_HUMANOID|MB_ANIMAL)
@@ -304,9 +304,11 @@
 
 /* for mons[].geno (constant during game) */
 #define G_NON_GEN_CORPSE	(G_SPCORPSE|G_NOCORPSE)		/* nongenerated corpse */
-#define G_SPCORPSE	0x00010000		/* Corpse is special, and should be non-wishable */
-#define G_INST20	0x00008000		/* generates only if you have 20 insight */
-#define G_INST10	0x00004000		/* generates only if you have 10 insight */
+#define G_DEPTHS	0x00200000		/* generated only in the lost cities/depths */
+#define G_SPCORPSE	0x00100000		/* Corpse is special, and should be non-wishable */
+#define G_INSTMSK	0x000FC000		/* mask for insight (five bits, 0 to 63), 11111100000000000000 */
+#define	G_S_INST(x)	(x<<14)
+#define	G_C_INST(x)	((x&G_INSTMSK)>>14)
 #define G_UNIQ		0x00002000		/* generated only once */
 #define G_PLANES	0x00001000		/* generated only in planes */
 #define G_NOHELL	0x00000800		/* not generated in "hell" */
@@ -460,8 +462,9 @@
 //100
 #define HYPNOTIC_COLORS        MON_RED_WORD+1
 #define CRUSH_BOLT             HYPNOTIC_COLORS+1
+#define MADF_BURST             CRUSH_BOLT+1
 
-#define MON_LASTSPELL          CRUSH_BOLT
+#define MON_LASTSPELL          MADF_BURST
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

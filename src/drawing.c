@@ -76,7 +76,7 @@ const char * const objexplain[] = {	/* these match def_oc_syms, above */
 	"iron chain",
 	"splash of venom",
 	"broken tile or slab",
-	"bed",
+	"bed or chair",
 	"strange coin"
 };
 
@@ -101,7 +101,7 @@ const char * const oclass_names[] = {
 	"chains",
 	"venoms",
 	"tiles",
-	"beds",
+	"furnature",
 	"strange coins"
 };
 
@@ -252,6 +252,10 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'>', "staircase down",	C(CLR_GRAY)},	/* dnstair */
 	{'<', "ladder up",	C(CLR_BROWN)},	/* upladder */
 	{'>', "ladder down",	C(CLR_BROWN)},	/* dnladder */
+	{'<', "branch staircase up",	C(CLR_YELLOW)},	/* brupstair */
+	{'>', "branch staircase down",	C(CLR_YELLOW)},	/* brdnstair */
+	{'<', "branch ladder up",	C(CLR_YELLOW)},	/* brupladder */
+	{'>', "branch ladder down",	C(CLR_YELLOW)},	/* brdnladder */
 	{'_', "altar",		C(CLR_GRAY)},	/* altar */
 	{'|', "grave",      C(CLR_GRAY)},   /* grave */
 	{'+', "hellish seal",      C(CLR_BRIGHT_MAGENTA)},   /* seal */
@@ -262,6 +266,7 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'#', "",		C(CLR_WHITE)},	/* sink */
 #endif
 /*30*/	{'{', "fountain",	C(CLR_BLUE)},	/* fountain */
+	{'{', "forge",		C(CLR_RED)},	/* forge */
 	{'}', "water",		C(CLR_BLUE)},	/* pool */
 	{'.', "ice",		C(CLR_CYAN)},	/* ice */
 	{',', "grass",		C(CLR_BRIGHT_GREEN)},	/* lit grass */
@@ -277,9 +282,9 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'#', "raised drawbridge",C(CLR_BROWN)},/* hcdbridge */
 	{'#', "air",		C(CLR_BLUE)},	/* open air */
 	{'#', "cloud",		C(CLR_GRAY)},	/* [part of] a cloud */
-/*40*/	{'#', "fog cloud",	C(HI_ZAP)},	/* [part of] a cloud */
-/*40*/	{'#', "dust cloud",	C(CLR_WHITE)},	/* [part of] a cloud */
-	{'~', "shallow water",	C(CLR_BLUE)},	/* shallow water */
+	{'#', "fog cloud",	C(HI_ZAP)},	/* [part of] a cloud */
+	{'#', "dust cloud",	C(CLR_WHITE)},	/* [part of] a cloud */
+/*40*/	{'~', "shallow water",	C(CLR_BLUE)},	/* shallow water */
 	{'}', "water",		C(CLR_BLUE)},	/* under water */
 	{'^', "arrow trap",	C(HI_METAL)},	/* trap */
 	{'^', "dart trap",	C(HI_METAL)},	/* trap */
@@ -288,9 +293,9 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'^', "bear trap",	C(HI_METAL)},	/* trap */
 	{'^', "land mine",	C(CLR_RED)},	/* trap */
 	{'^', "rolling boulder trap",	C(CLR_GRAY)},	/* trap */
-/*50*/	{'^', "sleeping gas trap",C(HI_ZAP)},	/* trap */
+	{'^', "sleeping gas trap",C(HI_ZAP)},	/* trap */
 	{'^', "rust trap",	C(CLR_BLUE)},	/* trap */
-	{'^', "fire trap",	C(CLR_ORANGE)},	/* trap */
+/*50*/	{'^', "fire trap",	C(CLR_ORANGE)},	/* trap */
 	{'^', "pit",		C(CLR_BLACK)},	/* trap */
 	{'^', "spiked pit",	C(CLR_BLACK)},	/* trap */
 	{'^', "hole",	C(CLR_BROWN)},	/* trap */
@@ -298,9 +303,9 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'^', "teleportation trap", C(CLR_MAGENTA)},	/* trap */
 	{'^', "level teleporter", C(CLR_MAGENTA)},	/* trap */
 	{'^', "magic portal",	C(CLR_BRIGHT_MAGENTA)},	/* trap */
-/*60*/	{'"', "web",		C(CLR_GRAY)},	/* web */
+	{'"', "web",		C(CLR_GRAY)},	/* web */
 	{'^', "statue trap",	C(CLR_GRAY)},	/* trap */
-	{'^', "magic trap",	C(HI_ZAP)},	/* trap */
+/*60*/	{'^', "magic trap",	C(HI_ZAP)},	/* trap */
 	{'^', "anti-magic field", C(HI_ZAP)},	/* trap */
 	{'^', "polymorph trap",	C(CLR_BRIGHT_GREEN)},	/* trap */
 	{'^', "essence trap",	C(CLR_GREEN)},	/* "trap" */
@@ -312,9 +317,9 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'\\',"wall",		C(CLR_GRAY)},	/* lslant */
 	{'/', "wall",		C(CLR_GRAY)},	/* rslant */
 	{'*', "",		C(CLR_WHITE)},	/* dig beam */
-/*70*/	{'!', "",		C(CLR_WHITE)},	/* camera flash beam */
+	{'!', "",		C(CLR_WHITE)},	/* camera flash beam */
 	{')', "",		C(HI_WOOD)},	/* boomerang open left */
-	{'(', "",		C(HI_WOOD)},	/* boomerang open right */
+/*70*/	{'(', "",		C(HI_WOOD)},	/* boomerang open right */
 	{'0', "",		C(HI_ZAP)},	/* 4 magic shield symbols */
 	{'#', "",		C(HI_ZAP)},
 	{'@', "",		C(HI_ZAP)},
@@ -322,9 +327,9 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'/', "",		C(CLR_GREEN)},	/* swallow top left	*/
 	{'-', "",		C(CLR_GREEN)},	/* swallow top center	*/
 	{'\\', "",		C(CLR_GREEN)},	/* swallow top right	*/
-/*80*/	{'|', "",		C(CLR_GREEN)},	/* swallow middle left	*/
+	{'|', "",		C(CLR_GREEN)},	/* swallow middle left	*/
 	{'|', "",		C(CLR_GREEN)},	/* swallow middle right	*/
-	{'\\', "",		C(CLR_GREEN)},	/* swallow bottom left	*/
+/*80*/	{'\\', "",		C(CLR_GREEN)},	/* swallow bottom left	*/
 	{'-', "",		C(CLR_GREEN)},	/* swallow bottom center*/
 	{'/', "",		C(CLR_GREEN)},	/* swallow bottom right	*/
 	{'/', "",		C(CLR_ORANGE)},	/* explosion top left     */
@@ -332,9 +337,9 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'\\', "",		C(CLR_ORANGE)},	/* explosion top right    */
 	{'|', "",		C(CLR_ORANGE)},	/* explosion middle left  */
 	{' ', "",		C(CLR_ORANGE)},	/* explosion middle center*/
-/*90*/	{'|', "",		C(CLR_ORANGE)},	/* explosion middle right */
+	{'|', "",		C(CLR_ORANGE)},	/* explosion middle right */
 	{'\\', "",		C(CLR_ORANGE)},	/* explosion bottom left  */
-	{'-', "",		C(CLR_ORANGE)},	/* explosion bottom center*/
+/*90*/	{'-', "",		C(CLR_ORANGE)},	/* explosion bottom center*/
 	{'/', "",		C(CLR_ORANGE)},	/* explosion bottom right */
 /*
  *  Note: Additions to this array should be reflected in the
@@ -384,12 +389,17 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_dnstair),
 	g_FILLER(S_upladder),
 	g_FILLER(S_dnladder),
+	g_FILLER(S_brupstair),
+	g_FILLER(S_brdnstair),
+	g_FILLER(S_brupladder),
+	g_FILLER(S_brdnladder),
 	g_FILLER(S_altar),
 	g_FILLER(S_grave),
 	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 /*30*/	0xf4,	/* S_fountain:	meta-t, integral top half */
+	0xf4,	/* S_forge:	meta-t, integral top half */
 	0xf7,	/* S_pool:	meta-w, approx. equals */
 	0xfa,	/* S_ice:	meta-z, centered dot */
 	0xfa,	/* S_litgrass:	meta-z, centered dot */
@@ -417,8 +427,8 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_land_mine),
 	g_FILLER(S_rolling_boulder_trap),
 	g_FILLER(S_sleeping_gas_trap),
-	g_FILLER(S_rust_trap),
-/*50*/	g_FILLER(S_fire_trap),
+/*50*/	g_FILLER(S_rust_trap),
+	g_FILLER(S_fire_trap),
 	g_FILLER(S_pit),
 	g_FILLER(S_spiked_pit),
 	g_FILLER(S_hole),
@@ -427,8 +437,8 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_level_teleporter),
 	g_FILLER(S_magic_portal),
 	g_FILLER(S_web),
-	g_FILLER(S_statue_trap),
-/*60*/	g_FILLER(S_magic_trap),
+/*60*/	g_FILLER(S_statue_trap),
+	g_FILLER(S_magic_trap),
 	g_FILLER(S_anti_magic_trap),
 	g_FILLER(S_polymorph_trap),
 	g_FILLER(S_essence_trap),
@@ -441,8 +451,8 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_rslant),
 	g_FILLER(S_digbeam),
 	g_FILLER(S_flashbeam),
-	g_FILLER(S_boomleft),
-/*70*/	g_FILLER(S_boomright),
+/*70*/	g_FILLER(S_boomleft),
+	g_FILLER(S_boomright),
 	g_FILLER(S_ss1),
 	g_FILLER(S_ss2),
 	g_FILLER(S_ss3),
@@ -451,8 +461,8 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	g_FILLER(S_sw_tc),
 	g_FILLER(S_sw_tr),
 	0xb3,	/* S_sw_ml:	meta-3, vertical rule */
-	0xb3,	/* S_sw_mr:	meta-3, vertical rule */
-/*80*/	g_FILLER(S_sw_bl),
+/*80*/	0xb3,	/* S_sw_mr:	meta-3, vertical rule */
+	g_FILLER(S_sw_bl),
 	g_FILLER(S_sw_bc),
 	g_FILLER(S_sw_br),
 	g_FILLER(S_explode1),
@@ -461,8 +471,8 @@ static glyph_t ibm_graphics[MAXPCHARS] = {
 	0xb3,	/* S_explode4:	meta-3, vertical rule */
 	g_FILLER(S_explode5),
 	0xb3,	/* S_explode6:	meta-3, vertical rule */
-	g_FILLER(S_explode7),
-/*90*/	g_FILLER(S_explode8),
+/*90*/	g_FILLER(S_explode7),
+	g_FILLER(S_explode8),
 	g_FILLER(S_explode9)
 };
 #endif  /* ASCIIGRAPH */
@@ -500,12 +510,17 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	g_FILLER(S_dnstair),
 	0xf9,	/* S_upladder:	meta-y, greater-than-or-equals */
 	0xfa,	/* S_dnladder:	meta-z, less-than-or-equals */
+	g_FILLER(S_brupstair),
+	g_FILLER(S_brdnstair),
+	0xf9,	/* S_brupladder:	meta-y, greater-than-or-equals */
+	0xfa,	/* S_brdnladder:	meta-z, less-than-or-equals */
 	g_FILLER(S_altar),	/* 0xc3, \E)3: meta-C, dagger */
 	g_FILLER(S_grave),
 	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 /*30*/	g_FILLER(S_fountain),	/* 0xdb, \E)3: meta-[, integral top half */
+	g_FILLER(S_forge),	/* 0xdb, \E)3: meta-[, integral top half */
 	0xe0,	/* S_pool:	meta-\, diamond */
 	0xfe,	/* S_ice:	meta-~, centered dot */
 	0xfe,	/* S_litgrass:	meta-~, centered dot */
@@ -533,8 +548,8 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	g_FILLER(S_land_mine),
 	g_FILLER(S_rolling_boulder_trap),
 	g_FILLER(S_sleeping_gas_trap),
-	g_FILLER(S_rust_trap),
-/*50*/	g_FILLER(S_fire_trap),
+/*50*/	g_FILLER(S_rust_trap),
+	g_FILLER(S_fire_trap),
 	g_FILLER(S_pit),
 	g_FILLER(S_spiked_pit),
 	g_FILLER(S_hole),
@@ -543,8 +558,8 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	g_FILLER(S_level_teleporter),
 	g_FILLER(S_magic_portal),
 	g_FILLER(S_web),	/* 0xbd, \E)3: meta-=, int'l currency */
-	g_FILLER(S_statue_trap),
-/*60*/	g_FILLER(S_magic_trap),
+/*60*/	g_FILLER(S_statue_trap),
+	g_FILLER(S_magic_trap),
 	g_FILLER(S_anti_magic_trap),
 	g_FILLER(S_polymorph_trap),
 	g_FILLER(S_essence_trap),
@@ -557,8 +572,8 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	g_FILLER(S_rslant),
 	g_FILLER(S_digbeam),
 	g_FILLER(S_flashbeam),
-	g_FILLER(S_boomleft),
-/*70*/	g_FILLER(S_boomright),
+/*70*/	g_FILLER(S_boomleft),
+	g_FILLER(S_boomright),
 	g_FILLER(S_ss1),
 	g_FILLER(S_ss2),
 	g_FILLER(S_ss3),
@@ -567,8 +582,8 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	0xef,	/* S_sw_tc:	meta-o, high horizontal line */
 	g_FILLER(S_sw_tr),
 	0xf8,	/* S_sw_ml:	meta-x, vertical rule */
-	0xf8,	/* S_sw_mr:	meta-x, vertical rule */
-/*80*/	g_FILLER(S_sw_bl),
+/*80*/	0xf8,	/* S_sw_mr:	meta-x, vertical rule */
+	g_FILLER(S_sw_bl),
 	0xf3,	/* S_sw_bc:	meta-s, low horizontal line */
 	g_FILLER(S_sw_br),
 	g_FILLER(S_explode1),
@@ -577,8 +592,8 @@ static glyph_t dec_graphics[MAXPCHARS] = {
 	0xf8,	/* S_explode4:	meta-x, vertical rule */
 	g_FILLER(S_explode5),
 	0xf8,	/* S_explode6:	meta-x, vertical rule */
-	g_FILLER(S_explode7),
-/*90*/	0xf3,	/* S_explode8:	meta-s, low horizontal line */
+/*90*/	g_FILLER(S_explode7),
+	0xf3,	/* S_explode8:	meta-s, low horizontal line */
 	g_FILLER(S_explode9)
 };
 #endif  /* TERMLIB */
@@ -614,12 +629,17 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_dnstair),
 	g_FILLER(S_upladder),
 	g_FILLER(S_dnladder),
+	g_FILLER(S_brupstair),
+	g_FILLER(S_brdnstair),
+	g_FILLER(S_brupladder),
+	g_FILLER(S_brdnladder),
 	g_FILLER(S_altar),
 	0xef,	/* S_grave:	same as open door */
 	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 /*30*/	g_FILLER(S_fountain),
+	g_FILLER(S_forge),
 	0xe0,	/* S_pool */
 	g_FILLER(S_ice),
 	g_FILLER(S_litgrass),
@@ -647,8 +667,8 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_land_mine),
 	g_FILLER(S_rolling_boulder_trap),
 	g_FILLER(S_sleeping_gas_trap),
-	g_FILLER(S_rust_trap),
-/*50*/	g_FILLER(S_fire_trap),
+/*50*/	g_FILLER(S_rust_trap),
+	g_FILLER(S_fire_trap),
 	g_FILLER(S_pit),
 	g_FILLER(S_spiked_pit),
 	g_FILLER(S_hole),
@@ -657,8 +677,8 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_level_teleporter),
 	g_FILLER(S_magic_portal),
 	g_FILLER(S_web),
-	g_FILLER(S_statue_trap),
-/*60*/	g_FILLER(S_magic_trap),
+/*60*/	g_FILLER(S_statue_trap),
+	g_FILLER(S_magic_trap),
 	g_FILLER(S_anti_magic_trap),
 	g_FILLER(S_polymorph_trap),
 	g_FILLER(S_essence_trap),
@@ -671,8 +691,8 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_rslant),
 	g_FILLER(S_digbeam),
 	g_FILLER(S_flashbeam),
-	g_FILLER(S_boomleft),
-/*70*/	g_FILLER(S_boomright),
+/*70*/	g_FILLER(S_boomleft),
+	g_FILLER(S_boomright),
 	g_FILLER(S_ss1),
 	g_FILLER(S_ss2),
 	g_FILLER(S_ss3),
@@ -681,8 +701,8 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_sw_tc),
 	g_FILLER(S_sw_tr),
 	g_FILLER(S_sw_ml),
-	g_FILLER(S_sw_mr),
-/*80*/	g_FILLER(S_sw_bl),
+/*80*/	g_FILLER(S_sw_mr),
+	g_FILLER(S_sw_bl),
 	g_FILLER(S_sw_bc),
 	g_FILLER(S_sw_br),
 	g_FILLER(S_explode1),
@@ -691,8 +711,8 @@ static glyph_t mac_graphics[MAXPCHARS] = {
 	g_FILLER(S_explode4),
 	g_FILLER(S_explode5),
 	g_FILLER(S_explode6),
-	g_FILLER(S_explode7),
-/*90*/	g_FILLER(S_explode8),
+/*90*/	g_FILLER(S_explode7),
+	g_FILLER(S_explode8),
 	g_FILLER(S_explode9)
 };
 #endif	/* MAC_GRAPHICS_ENV */
@@ -730,12 +750,17 @@ static glyph_t utf8_graphics[MAXPCHARS] = {
 	g_FILLER(S_dnstair),
 	0x2264,	/* S_upladder:	LESS-THAN OR EQUAL TO */
 	0x2265,	/* S_dnladder:	GREATER-THAN OR EQUAL TO */
+	g_FILLER(S_brupstair),
+	g_FILLER(S_brdnstair),
+	0x2264,	/* S_brupladder:	LESS-THAN OR EQUAL TO */
+	0x2265,	/* S_brdnladder:	GREATER-THAN OR EQUAL TO */
 	0x03A9,	/* S_altar:	GREEK CAPITAL LETTER OMEGA */
 	0x2020,	/* S_grave:	DAGGER */
 	g_FILLER(S_seal),
 	g_FILLER(S_throne),
 	g_FILLER(S_sink),
 	0x00b6,	/* S_fountain:	PILCROW SIGN */
+	0x00b6,	/* S_forge:	PILCROW SIGN */
 	0x224b,	/* S_pool:	TRIPLE TILDE */
 	0x00b7,	/* S_ice:	MIDDLE DOT */
 	0x00b7,	/* S_litgrass:	MIDDLE DOT */
@@ -1089,7 +1114,7 @@ boolean is_rlevel;
 				) {
 # endif
 	    showsyms[S_vodoor]  = showsyms[S_hodoor]  = showsyms[S_ndoor] = '+';
-	    showsyms[S_upstair] = showsyms[S_dnstair] = '%';
+	    showsyms[S_upstair] = showsyms[S_dnstair] = showsyms[S_brupstair] = showsyms[S_brdnstair] = '%';
 # ifdef ASCIIGRAPH
 	} else {
 	    /* a la EPYX Rogue */
@@ -1114,6 +1139,8 @@ boolean is_rlevel;
 	    showsyms[S_litcorr] = 0xb2;
 	    showsyms[S_upstair] = 0xf0; /* Greek Xi */
 	    showsyms[S_dnstair] = 0xf0;
+	    showsyms[S_brupstair] = 0xf0;
+	    showsyms[S_brdnstair] = 0xf0;
 #ifndef MSWIN_GRAPHICS
 	    showsyms[S_arrow_trap] = 0x04; /* diamond (cards) */
 	    showsyms[S_dart_trap] = 0x04;

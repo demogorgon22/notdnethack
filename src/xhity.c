@@ -13,7 +13,6 @@ STATIC_DCL void FDECL(xswingsy, (struct monst *, struct monst *, struct obj *, b
 STATIC_DCL void FDECL(xyhitmsg, (struct monst *, struct monst *, struct attack *));
 STATIC_DCL void FDECL(noises, (struct monst *, struct attack *));
 STATIC_DCL void FDECL(xymissmsg, (struct monst *, struct monst *, struct attack *, int, boolean));
-STATIC_DCL void FDECL(heal, (struct monst *, int));
 STATIC_DCL int FDECL(do_weapon_multistriking_effects, (struct monst *, struct monst *, struct attack *, struct obj *, int));
 STATIC_DCL int FDECL(xcastmagicy, (struct monst *, struct monst *, struct attack *, int));
 STATIC_DCL int FDECL(xtinkery, (struct monst *, struct monst *, struct attack *, int));
@@ -574,9 +573,12 @@ int tary;
 				(cloak && FacelessCloak(cloak)))
 				continue;
 		}
+		/* avoid making unsafe attacks if you choose not to */
+		if (youagr && u.uavoid_passives && !no_contact_attk(attk)) continue;
+
 		/* Generalized offhand attack when not allowed */
 		if ((attk->offhand) && (						// offhand attack
-				(youagr && (uarms || (uwep && bimanual(uwep, youracedata)))) ||					// player attacking with shield
+				(youagr && ((uarms && !activeFightingForm(FFORM_SHIELD_BASH)) || (uwep && bimanual(uwep, youracedata)))) ||	// player attacking with shield
 				(!youagr && (which_armor(magr, W_ARMS) || (MON_WEP(magr) && bimanual(MON_WEP(magr), pa))))	// monster attacking with shield
 				)
 			) {
@@ -639,7 +641,7 @@ int tary;
 			}
 			/* 2: Offhand attack when not allowed */
 			if ((aatyp == AT_XWEP || aatyp == AT_XSPR) && (	// offhand attack
-					(youagr && !u.twoweap) ||				// player attacking and choosing not to twoweapon
+					(youagr && !(u.twoweap || activeFightingForm(FFORM_SHIELD_BASH))) ||				// player attacking and choosing not to twoweapon
 					(!youagr && (which_armor(magr, W_ARMS) || (MON_WEP(magr) && bimanual(MON_WEP(magr), pa))))	// monster attacking and cannot twoweapon (wearing shield)
 					)
 				) {
@@ -661,7 +663,7 @@ int tary;
 			}
 			else if (aatyp == AT_XWEP) {
 				/* offhand */
-				otmp = (youagr) ? uswapwep : MON_SWEP(magr);
+				otmp = (youagr) ? (u.twoweap ? uswapwep : uarms) : MON_SWEP(magr);
 			}
 			else if (aatyp == AT_MARI) {
 				if(youagr && !uwep && !(u.twoweap && uswapwep)){
@@ -788,6 +790,15 @@ int tary;
 					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
 						result |= hit_with_rblood(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 					}
+					/* Mercurial weapons may hit additional targets */
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
+						if(magr && mlev(magr) > 20 && (
+							(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+							|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
+						)){
+							result |= hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
+						}
+					}
 					/* Dancers hit additional targets */
 					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(magr->data)){
 						result |= hit_with_dance(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
@@ -849,6 +860,7 @@ int tary;
 		case AT_STNG:	// 
 		case AT_BUTT:	// 
 		case AT_TAIL:	// 
+		case AT_TONG:	// 
 		case AT_TENT:	// 
 		case AT_WHIP:	// 
 		case AT_VINE:	// uses touch accuracy
@@ -880,7 +892,7 @@ int tary;
 				/* make the attack */
 				bhitpos.x = tarx; bhitpos.y = tary;
 				result = xmeleehity(magr, mdef, attk, (struct obj **)0, vis, tohitmod, ranged);
-				dopassive_local = TRUE;
+				if (!no_contact_attk(attk)) dopassive_local = TRUE;
 				/* if the attack hits, or if the creature is able to notice it was attacked (but the attack missed) it wakes up */
 				if (youdef || (!(result&MM_DEF_DIED) && (result || (!mdef->msleeping && mdef->mcanmove))))
 					wakeup2(mdef, youagr);
@@ -913,6 +925,9 @@ int tary;
 				continue;
 			/* ahazu protects the player from engulfing */
 			if (youdef && u.sealsActive&SEAL_AHAZU)
+				continue;
+			/* the player can out out of making engulf attacks */
+			if (youagr && u.uavoid_englattk)
 				continue;
 			/* check for wild misses */
 			if (missedyou) {
@@ -1147,6 +1162,9 @@ int tary;
 		case AT_MMGC:
 			/* the player cannot cast AT_MMGC (monster-only-magic) */
 			if (youagr && aatyp == AT_MMGC)
+				continue;
+			/* the player can opt-out of monster spellcasting, to save pw or not wake things up or w/e */
+			if (youagr && u.uavoid_msplcast)
 				continue;
 			/* Demogorgon casts spells less frequently in melee range */
 			if (pa->mtyp == PM_DEMOGORGON && !ranged && rn2(6) && !(youagr || magr->mflee))
@@ -1685,7 +1703,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		/* if the player IS polymorphed, they are limited to their polyform's attacks */
 		/* some things give the player additional weapon attacks; they can reset SUBOUT_XWEP to allow another offhand hit if unpoly'd */
 		/* stilettos and wind and fire wheels add extra damage instead */
-		if (!by_the_book && *indexnum > 0 && u.twoweap
+		if (!by_the_book && *indexnum > 0 && (u.twoweap || activeFightingForm(FFORM_SHIELD_BASH))
 			&& !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS))
 		) {
 			/* follow a weapon attack with an offhand attack */
@@ -1740,6 +1758,16 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		attk->adtyp = AD_MDWP;
 		attk->damd += 10;
 	}
+	/* charybdisone switch to water damage after dragging target in close */
+	else if (pa->mtyp == PM_CHARYBDISONE
+		&& mdef && distmin(x(magr),y(magr), x(mdef),y(mdef)) <= 1
+		&& attk->adtyp == AD_PULL
+	){
+		attk->aatyp = AT_TENT;
+		attk->adtyp = AD_WET;
+		attk->damn += 2;
+		attk->damd += 2;
+	}
 	/* Iksh'na devas upgrade their weapon attack at max level. This may be switched back later if they're cancelled. */
 	if(pa->mtyp == PM_IKSH_NA_DEVA && mlev(magr) >= 45 && attk->aatyp == AT_WEAP && *indexnum == 0){
 		attk->aatyp = AT_DEVA;
@@ -1752,6 +1780,10 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		else {
 			attk->damn = 5;
 		}
+	}
+	/* Dunwich horror can't cast if you don't have the correct mutation */
+	if(pa->mtyp == PM_TWIN_SIBLING && !check_mutation(TWIN_MIND) && attk->aatyp == AT_MAGC){
+		GETNEXT
 	}
 	/* Grue does not make its later attacks if its square is lit */
 	if (pa->mtyp == PM_GRUE &&
@@ -1767,8 +1799,19 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	if(magr->mapostasy && (attk->adtyp == AD_CLRC || attk->adtyp == AD_HOLY)){
 		GETNEXT
 	}
+	/* Shadowsmiths lose special attacks in the light */
+	if(magr->mtyp == PM_SHADOWSMITH && (magr->mcan || dimness(magr->mx,magr->my) <= 0)){
+		if(attk->aatyp == AT_SRPR || attk->aatyp == AT_XSPR){
+			if(attk->aatyp == AT_XSPR)
+				attk->offhand = 1;
+			attk->aatyp = AT_CLAW;
+			attk->adtyp = AD_PHYS;
+			attk->damn = 1;
+			attk->damd = 2;
+		}
+	}
 	/* Magic blade attacks are changed or lost if the creature is canceled */
-	if (magr->mcan) {
+	else if (magr->mcan) {
 		if(magr->mtyp == PM_ALIDER && magr->mcan && (attk->aatyp == AT_WEAP || attk->aatyp == AT_XWEP)){
 			attk->damn = 1;
 			attk->damd = 6;
@@ -1996,6 +2039,19 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			GETNEXT
 		else if(youdef && magr != u.ustuck)
 			GETNEXT
+	}
+	/*Skip grey devourer second and third jaws vs. non-psionics*/
+	if(pa->mtyp == PM_GRAY_DEVOURER && attk->aatyp == AT_BITE && attk->adtyp != AD_PHYS){
+		if(youdef || !mdef){
+			if(base_casting_stat() != A_CHA)
+				GETNEXT
+		}
+		else {
+			struct attack * aptr;
+			aptr = permonst_dmgtype(mdef->data, AD_PSON);
+			if(!(aptr || has_mind_blast_mon(mdef)))
+				GETNEXT
+		}
 	}
 	/* Nitocris uses clerical spells while wearing their Wrappings */
 	if(!by_the_book && pa->mtyp == PM_NITOCRIS){
@@ -2266,6 +2322,20 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		}
 	}
 
+	if ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
+		&& (prevattacknull || prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP || prev_attack.aatyp == AT_MARI)
+		&& !(*subout&SUBOUT_SHUBTONG)
+	){
+		if(youagr && check_mutation(MIND_STEALER) && !nomouth(youracedata->mtyp)){
+			attk->aatyp = AT_TONG;
+			attk->adtyp = AD_FATK;
+			attk->damn = 1;
+			attk->damd = 4;
+			fromlist = FALSE;
+			*subout |= SUBOUT_SHUBTONG;
+		}
+	}
+
 	/*Weapon user, not as good without*/
 	if (pa->mtyp == PM_DAO_LAO_GUI_MONK && attk->aatyp == AT_WEAP && (
 		 (youagr && !uwep) ||
@@ -2459,14 +2529,14 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		)) ||
 		/* If monster is stuck in a straitjacket */
 		(!youagr && 
-			( straitjacketed_mon(magr) || shackled_arms_mon(magr) ) && 
+			( straitjacketed_mon(magr) ) && 
 			!((*subout)&(SUBOUT_BAEL1|SUBOUT_BAEL2)) && (
 			attk->aatyp == AT_WEAP || attk->aatyp == AT_XWEP || attk->aatyp == AT_WHIP
 			|| attk->aatyp == AT_HODS || attk->aatyp == AT_MMGC 
 			/* "Deva" rapiers are assumed to be the Masked Queen's lower arms, and "Energy" rapiers just sorta float or something */
 			|| attk->aatyp == AT_SRPR || attk->aatyp == AT_XSPR || attk->aatyp == AT_MSPR
 			|| attk->aatyp == AT_DEVA || attk->aatyp == AT_5SQR || attk->aatyp == AT_MARI
-			|| (attk->aatyp == AT_MAGC && attk->adtyp != AD_PSON) ||
+			|| (attk->aatyp == AT_MAGC && attk->adtyp != AD_PSON && !(magr->mtyp == PM_ITINERANT_PRIESTESS && has_template(magr, MISTWEAVER))) ||
 			(humanoid(pa) && (
 				attk->aatyp == AT_CLAW
 				/* Note: Dream-leech "touch" attacks are the dream leeches eating your brain like a 'flayer */
@@ -2761,6 +2831,28 @@ struct attack *attk;
 				(youagr ? "your" : mhis(magr))
 				);
 			break;
+		case AT_TONG:
+			if(attk->adtyp == AD_FATK){
+				pline("%s slip%s %s needle-thin %s into %s %s through %s %s!",
+					(youagr ? "You" : Monnam(magr)),
+					(youagr ? "" : "s"),
+					(youagr ? "your" : mhis(magr)),
+					(youagr ? body_part(TONGUE) : mbodypart(mdef, TONGUE)),
+					(youdef ? "your" : mhis(mdef)),
+					(youdef ? body_part(BRAIN) : mbodypart(mdef, BRAIN)),
+					(youdef ? "your" : mhis(mdef)),
+					(youdef ? body_part(EAR) : mbodypart(mdef, EAR))
+					);
+			}
+			else {
+				pline("%s lash%s %s with %s tongue!",
+					(youagr ? "You" : Monnam(magr)),
+					(youagr ? "" : "s"),
+					((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr)),
+					(youagr ? "your" : mhis(magr))
+					);
+			}
+			break;
 		case AT_WBIT:
 			pline("%s waist-wolf bites %s!",
 				(youagr ? "Your" : s_suffix(Monnam(magr))),
@@ -3004,7 +3096,10 @@ int dmg;				/* damage to deal */
 	if (*hp(mdef) < 1) {
 		return (MM_HIT|MM_DEF_DIED);
 	}
-
+	/* brainblooms replicate */
+	if(!youdef && magr && mdef && magr->mtyp == PM_BRAINBLOSSOM_PATCH && !mindless_mon(mdef)){
+		mdef->brainblooms = 1;
+	}
 	/* debug */
 	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 		pline("(dmg = %d)", dmg);
@@ -3436,7 +3531,7 @@ int *shield_margin;
 				/* firing ranged attacks without a laucher (ex manticore tail spikes) can use STR */
 				/* hack: if wearing kicking boots, you effectively have 25 STR for kicked objects */
 				if (youagr && hmoncode & HMON_KICKED && uarmf && (uarmf->otyp == KICKING_BOOTS || (uarmf->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(uarmf, IEA_KICKING))))
-					override_str = 125;	/* 25 STR */
+					override_str = STR19(25);	/* 25 STR */
 				bons_acc += abon();
 				override_str = 0;
 			}
@@ -3547,12 +3642,17 @@ int *shield_margin;
 			}
 			/* Bard */
 			bons_acc += magr->encouraged;
+			if(magr->mtyp == PM_LUCKSUCKER)
+				bons_acc += magr->mvar_lucksucker;
 			/* Singing Sword */
 			if (uwep && uwep->oartifact == ART_SINGING_SWORD && !mindless_mon(magr) && !is_deaf(magr)){
 				if (uwep->osinging == OSING_DIRGE && !magr->mtame){
 					bons_acc -= uwep->spe + 1;
 				}
 			}
+			/* Priests of Asmodeus */
+			if(flags.spriest_level && is_demon(magr->data) && is_lawful_mon(magr) && !magr->mpeaceful)
+				bons_acc += 9;
 			/* trapped */
 			if (magr->mtrapped)
 				bons_acc -= 2;
@@ -3875,6 +3975,7 @@ int *shield_margin;
 	if ((youagr && u.sealsActive&SEAL_CHUPOCLOPS && (melee || thrust)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
 		(weapon && arti_shining(weapon)) ||
+		(melee && youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(melee && attk->aatyp == AT_TUCH) ||
 		(melee && attk->aatyp == AT_VINE) ||
 		(melee && spirit_rapier_at(attk->aatyp)) ||
@@ -3988,7 +4089,7 @@ boolean ranged;
 		domissmsg = FALSE;
 	}
 	/* mindless monsters and soul blades */
-	if (!miss && !youdef && spirit_rapier_at(attk->aatyp) && attk->adtyp == AD_PSON && mindless_mon(mdef)) {
+	if (!miss && spirit_rapier_at(attk->aatyp) && attk->adtyp == AD_PSON && ((!youdef && mindless_mon(mdef)) || Catapsi)) {
 		/* Print message */
 		if (vis&VIS_MAGR) {
 			Sprintf(buf, "%s", ((!weapon || valid_weapon(weapon)) ? "attack" : cxname(weapon)));
@@ -4041,7 +4142,7 @@ boolean ranged;
 			hit = TRUE;
 		}
 		
-		if ((accuracy > dieroll || dieroll == 1) && !miss) {
+		if ((accuracy > dieroll || (dieroll == 1 && accuracy > -10)) && !miss) {
 			hit = TRUE;
 		}
 		/* multistriking weapons need to determine how many hit, and set ostriking */
@@ -4075,6 +4176,7 @@ boolean ranged;
 	case AT_STNG:
 	case AT_BUTT:
 	case AT_TAIL:
+	case AT_TONG:
 	case AT_TENT:
 	case AT_WHIP:
 	case AT_VINE:	// uses touch accuracy
@@ -4095,7 +4197,7 @@ boolean ranged;
 		if (attk->aatyp == AT_HITS && !miss) {
 			hit = TRUE;
 		}
-		if ((accuracy > dieroll) && !miss) {
+		if ((accuracy > dieroll || (dieroll == 1 && accuracy > -10)) && !miss) {
 			hit = TRUE;
 		}
 		break;
@@ -4262,6 +4364,8 @@ boolean ranged;
 	struct obj * otmp;
 	struct monst * mtmp;
 	char buf[BUFSZ];
+	int damn = attk->damn;
+	int damd = attk->damd;
 	
 	/* Monsters with physical attack scaling treat the physical damage component of their attacks much like spellcasting damage */
 	/*  This represents skill, so the player doesn't get the bonus. */
@@ -4273,11 +4377,11 @@ boolean ranged;
 			flatdmg += d(min(MAX_BONUS_DICE, mlev(magr)/3), attk->damd <= 1 ? 6 : attk->damd);
 		}
 		else {
-			attk->damn += min(MAX_BONUS_DICE, mlev(magr)/3);
-			if(attk->damn < 1)
-				attk->damn = 1;
-			if(attk->damd <= 1)
-				attk->damd = 6;
+			damn += min(MAX_BONUS_DICE, mlev(magr)/3);
+			if(damn < 1)
+				damn = 1;
+			if(damd <= 1)
+				damd = 6;
 		}
 	}
 	
@@ -4285,8 +4389,13 @@ boolean ranged;
 	if (flatdmg >= 0) {
 		dmg = flatdmg;
 	}
-	else if (attk->damn && attk->damd) {
-		dmg = d((int)attk->damn, (int)attk->damd);
+	else if (damn && damd) {
+		dmg = d(damn, damd);
+	}
+	else if(damd && attk->adtyp != AD_PHYS){
+		damn = min(MAX_BONUS_DICE, mlev(magr)/3);
+		if(damn < 1) damn = 1;
+		dmg = d(damn, damd);
 	}
 	else {
 		dmg = 0;
@@ -4431,6 +4540,7 @@ boolean ranged;
 		case AD_DISE:
 		case AD_POSN:
 		case AD_DARK:
+		case AD_LUCK:
 			/* make a 0 damage physical attack 
 			 * This prints hitmsg and applies on-hit effects of any weapon
 			 */
@@ -4457,10 +4567,7 @@ boolean ranged;
 		&& attk->adtyp != AD_WRAP)
 	{
 		/* are grabs possible? */
-		if (!(youagr || youdef)
-			|| sticks(mdef)
-			)
-		{
+		if (!(youagr || youdef) || sticks(mdef) || (youagr && u.uavoid_grabattk)){
 			/* no grabs allowed, substitute basic claw attack */
 			alt_attk.aatyp = AT_CLAW;
 			return xmeleehurty(magr, mdef, &alt_attk, &alt_attk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
@@ -4938,7 +5045,7 @@ boolean ranged;
 			xyhitmsg(magr, mdef, originalattk);
 		}
 		/* active? */
-		if (notmcan && (youdef || !mindless_mon(mdef))) {
+		if (notmcan && (youdef || !mindless_mon(mdef)) && !Catapsi) {
 			dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
 			/* print message */
 			if (youdef) {
@@ -5019,6 +5126,38 @@ boolean ranged;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case AD_FATK:{
+		boolean exit = FALSE;
+		if(!youdef && mindless_mon(mdef))
+			return MM_MISS;
+		/* print a basic hit message */
+		if (vis && dohitmsg) {
+			xyhitmsg(magr, mdef, originalattk);
+		}
+		mindstealer_conflict(mdef, magr);
+		if(DEADMONSTER(mdef)){
+			result |= MM_DEF_DIED;
+			exit = TRUE;
+		}
+		else if(MIGRATINGMONSTER(mdef)){
+			result |= MM_AGR_STOP;
+			exit = TRUE;
+		}
+
+		if(DEADMONSTER(magr)){
+			result |= MM_AGR_DIED;
+			exit = TRUE;
+		}
+		else if(MIGRATINGMONSTER(magr)){
+			result |= MM_AGR_STOP;
+			exit = TRUE;
+		}
+		if(exit)
+			return result;
+
+		return xdamagey(magr, mdef, attk, dmg);
+	}
+
 //////////////////////////////////////////////////////////////
 // PHYSICAL DAMAGE BEFORE NON-LETHAL SPECIAL EFFECTS
 //////////////////////////////////////////////////////////////
@@ -5045,7 +5184,7 @@ boolean ranged;
 				if (canseemon(mdef) && !is_blind(mdef))
 					pline("%s is blinded!", Monnam(mdef));
 
-				int rnd_tmp = d((int)attk->damn, (int)attk->damd);
+				int rnd_tmp = d(damn, damd);
 				if ((rnd_tmp += mdef->mblinded) > 127) rnd_tmp = 127;
 				mdef->mblinded = rnd_tmp;
 				mdef->mcansee = 0;
@@ -5289,7 +5428,8 @@ boolean ranged;
 			&& !(result & MM_AGR_DIED)
 			&& (youagr || youdef)					/* the player must be involved in a sticking situation (gameplay limitation) */
 			&& !u.ustuck							/* can't already be stuck */
-			&& !(sticks(magr) && sticks(mdef)))		/* creatures can't grab other grabbers (gameplay limitation)  */
+			&& !(sticks(magr) && sticks(mdef))		/* creatures can't grab other grabbers (gameplay limitation)  */
+			&& !(youagr && u.uavoid_grabattk))		/* the player can opt out of grabbing monsters */
 		{
 			if (pa->mtyp == PM_TOVE)
 				pline("%s %s much too slithy to stick to %s!",
@@ -5856,6 +5996,9 @@ boolean ranged;
 				heal(magr, min(dmg, *hp(mdef)));
 			}
 
+			if(((youagr && u.specialSealsActive&SEAL_YOG_SOTHOTH) || pa->mtyp == PM_TWIN_SIBLING) && !youdef){
+				yog_credit(mdef->data->cnutrit/500);
+			}
 			/* Player vampires are smart enough not to feed while
 			   biting if they might have trouble getting it down */
 			if (youagr && !Race_if(PM_INCANTIFIER) && is_vampire(youracedata)
@@ -5891,6 +6034,9 @@ boolean ranged;
 				(void)split_mon(magr, 0);
 			}
 
+			if(attk->adtyp == AD_VAMP && (youagr || pa->mtyp == PM_TWIN_SIBLING) && !youdef && u.specialSealsActive&SEAL_YOG_SOTHOTH){
+				yog_credit(max(mdef->m_lev, mdef->data->cnutrit/50));
+			}
 			/* metroids gain life (but not the player) */
 			if (!youagr && is_metroid(pa)) {
 				*hpmax(magr) += d(1, 4);
@@ -5915,7 +6061,25 @@ boolean ranged;
 			/* drain life! */
 			if (youdef) {
 				/* the player has a handy level-drain function */
+				if(magr->mtyp == PM_STAR_VAMPIRE && !youagr){
+					if(rn2(2)){
+						losexp("life force drain", FALSE, FALSE, FALSE);
+						magr->mvar_star_vampire_blood += 10;
+					}
+					if(rn2(2)){
+						losexp("life force drain", FALSE, FALSE, FALSE);
+						magr->mvar_star_vampire_blood += 10;
+					}
+				}
 				losexp("life force drain", TRUE, FALSE, FALSE);
+				if(magr->mtyp == PM_STAR_VAMPIRE && !youagr){
+					magr->mvar_star_vampire_blood += 10;
+					if(magr->perminvis){
+						magr->minvis = FALSE;
+						magr->perminvis = FALSE;
+						newsym(magr->mx,magr->my);
+					}
+				}
 			}
 			else {
 				/* print message first -- this should happen before the victim is drained/dies */
@@ -6385,7 +6549,7 @@ boolean ranged;
 							while (!(ABASE(A_WIS) <= ATTRMIN(A_WIS)) && dmg > 0) {
 								dmg--;
 								(void)adjattrib(A_WIS, -1, TRUE);
-								forget(10);	/* lose 10% of memory per point lost*/
+								forget(4);	/* lose 4% of memory per point lost*/
 								exercise(A_WIS, FALSE);
 							}
 							if (dmg > 0) {
@@ -6704,6 +6868,12 @@ boolean ranged;
 							(youdef ? "your" : s_suffix(mon_nam(mdef)))
 							);
 						break;
+					case AT_TONG:
+						pline("%s tongue catches on %s armor!",
+							(youagr ? "Your" : s_suffix(Monnam(magr))),
+							(youdef ? "your" : s_suffix(mon_nam(mdef)))
+							);
+						break;
 					default:
 						pline("%s claws catch on %s armor!",
 							(youagr ? "Your" : s_suffix(Monnam(magr))),
@@ -6786,7 +6956,8 @@ boolean ranged;
 		if ((youagr || youdef)					/* the player must be involved in a sticking situation (gameplay limitation) */
 			&& !u.ustuck						/* can't already be stuck */
 			&& !(sticks(magr) && sticks(mdef))	/* grabbers can't grab other grabbers (gameplay limitation)  */
-			){
+			&& !(youagr && u.uavoid_grabattk)	/* the player can opt out of grabbing monsters */
+		){
 			if (pd->mtyp == PM_TOVE)
 			{
 				/* note: assumes player is either agr or def, vis is true */
@@ -6852,7 +7023,7 @@ boolean ranged;
 								(void)dropy(otmp);
 								if (roll_madness(MAD_TALONS)){
 									You("panic after having dropping your weapon!");
-									nomul(-1 * rnd(6), "panic");
+									HPanicking += 1+rnd(6);
 								}
 							}
 							else{
@@ -6872,7 +7043,7 @@ boolean ranged;
 						(void)dropy(otmp);
 						if (roll_madness(MAD_TALONS)){
 							You("panic after having your cloak taken!");
-							nomul(-1 * rnd(6), "panic");
+							HPanicking += 1+rnd(6);
 						}
 					}
 				}
@@ -6889,7 +7060,7 @@ boolean ranged;
 							(void)mpickobj(magr, otmp);
 							if (roll_madness(MAD_TALONS)){
 								You("panic after having your property stolen!");
-								nomul(-1 * rnd(6), "panic");
+								HPanicking += 1+rnd(6);
 							}
 						}
 					}
@@ -6904,7 +7075,7 @@ boolean ranged;
 							(void)dropy(otmp);
 							if (roll_madness(MAD_TALONS)){
 								You("panic after having your armor taken!");
-								nomul(-1 * rnd(6), "panic");
+								HPanicking += 1+rnd(6);
 							}
 						}
 					}
@@ -6992,7 +7163,7 @@ boolean ranged;
 						You_feel("%s pull on your weapon!", mon_nam(magr));
 					}
 					/* 1d130 > STR */
-					if (d(1, 130) > (youdef ? ACURR(A_STR) : ACURR_MON(A_STR, mdef))){
+					if (d(1, 50) > (youdef ? ACURR(A_STR) : ACURR_MON(A_STR, mdef))){
 						if (youdef) {
 							if(uwep == uball){
 								pline("Fortunately, you are chained to your weapon!");
@@ -7065,7 +7236,7 @@ boolean ranged;
 						You_feel("%s pull on your gloves!", mon_nam(magr));
 					}
 					/* 1d40 > STR */
-					if (d(1, 40) > (youdef ? ACURR(A_STR) : ACURR_MON(A_STR, mdef))){
+					if (d(1, 30) > (youdef ? ACURR(A_STR) : ACURR_MON(A_STR, mdef))){
 						if (youdef) {
 							Your("gloves are sucked off!");
 							if (donning(otmp)) cancel_don();
@@ -7104,7 +7275,7 @@ boolean ranged;
 						You_feel("%s pull on your shield!", mon_nam(magr));
 					}
 					/* 1d150 > STR */
-					if (d(1, 150) > (youdef ? ACURR(A_STR) : ACURR_MON(A_STR, mdef))){
+					if (d(1, 80) > (youdef ? ACURR(A_STR) : ACURR_MON(A_STR, mdef))){
 						if (youdef) {
 							Your("shield is sucked out of your grasp!");
 							if (donning(otmp)) cancel_don();
@@ -7251,7 +7422,7 @@ boolean ranged;
 					while (ABASE(A_WIS) > ATTRMIN(A_WIS) && wisdmg > 0){
 						wisdmg--;
 						(void)adjattrib(A_WIS, -1, TRUE);
-						forget(10);
+						forget(4);
 						exercise(A_WIS, FALSE);
 					}
 					if (AMAX(A_WIS) > ATTRMIN(A_WIS) &&
@@ -7522,7 +7693,10 @@ boolean ranged;
 							}
 							monflee(magr, 0, FALSE, FALSE);
 						}
-						return MM_AGR_STOP;
+						if(magr->mtyp == PM_ETHEREAL_FILCHER)
+							return MM_HIT;
+						else
+							return MM_AGR_STOP;
 					}
 				}
 				break;
@@ -7735,12 +7909,11 @@ boolean ranged;
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);
 		}
-		/* only implemented vs player */
-		if (youdef) {
-			otmp = some_armor(&youmonst);
-			if (otmp)
-				teleport_arm(otmp);
-		}
+
+		otmp = some_armor(mdef);
+		if (otmp)
+			teleport_arm(otmp, mdef);
+
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
@@ -8108,8 +8281,9 @@ boolean ranged;
 				pline("%s somehow reaches right past your helmet!", Monnam(magr));
 			}
 			else if (vis) {
-				pline("%s somehow reach right past %s helmet!",
+				pline("%s somehow reach%s right past %s helmet!",
 					(youagr ? "You" : s_suffix(Monnam(magr))),
+					(youagr ? "" : "es"),
 					s_suffix(mon_nam(mdef))
 					);
 			}
@@ -8154,7 +8328,7 @@ boolean ranged;
 			else {
 				(void)adjattrib(A_INT, -dmg, FALSE);
 				while (dmg--){
-					forget(10);	/* lose 10% of memory per point lost*/
+					forget(4);	/* lose 4% of memory per point lost*/
 					exercise(A_WIS, FALSE);
 				}
 			}
@@ -8342,8 +8516,7 @@ boolean ranged;
 		 * If the player isn't involved,
 		 * or if either creature could be the one doing the grabbing,
 		 * substitute simple physical damage */
-		if (!(youagr || youdef)
-			|| (sticks(mdef))){
+		if (!(youagr || youdef) || (sticks(mdef)) || (youagr && u.uavoid_grabattk)){
 			/* make physical attack */
 			alt_attk.adtyp = AD_PHYS;
 			return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
@@ -8363,7 +8536,7 @@ boolean ranged;
 		/* is the player stuck to the other creature? */
 		if (notmcan || (u.ustuck == mtmp)) {
 			/* if not attached to anything, attempt to attach to the other creature*/
-			if (!u.ustuck && (!rn2(10) || attk->aatyp == AT_HUGS)) {
+			if (!u.ustuck && (rn2(4) || attk->aatyp == AT_TUCH || attk->aatyp == AT_HUGS || attk->aatyp == AT_TENT)) {
 				if (slips_free(magr, mdef, attk, vis)) {
 					/* message was printed (if visible) */
 					/* nothing happens */
@@ -8376,6 +8549,21 @@ boolean ranged;
 						pline("%s grab%s %s!",
 							(youagr ? "You" : Monnam(mtmp)),
 							(youagr ? "" : "s"),
+							(youagr ? mon_nam(mtmp) : "you")
+							);
+					}
+					else if (attk->aatyp == AT_TUCH) {
+						pline("%s stick%s to %s!",
+							(youagr ? "You" : Monnam(mtmp)),
+							(youagr ? "" : "s"),
+							(youagr ? mon_nam(mtmp) : "you")
+							);
+					}
+					else if (attk->aatyp == AT_TENT) {
+						pline("%s swing%s %s tentacles around %s!",
+							(youagr ? "You" : Monnam(mtmp)),
+							(youagr ? "" : "s"),
+							(youagr ? "your" : "its"),
 							(youagr ? mon_nam(mtmp) : "you")
 							);
 					}
@@ -8884,10 +9072,12 @@ boolean ranged;
 			else {
 				pline("%s is crushing you!", Monnam(magr));
 			}
+			burn_away_slime();
+			melt_frozen_air();
 		}
 		else if(youagr){
 			if(u.ustuck != mdef ){
-				if(!sticks(mdef)){
+				if(!sticks(mdef) && !(youagr && u.uavoid_grabattk)){
 					pline("You begin to ooze around %s!", mon_nam(mdef));
 					u.ustuck = magr;
 				}
@@ -9402,7 +9592,7 @@ boolean ranged;
 				int hungr = rn1(40, 40);
 				morehungry(hungr*get_uhungersizemod());
 				//heal by the amount of HP it would heal by resting for that nutr worth of turns
-				heal(magr, (mlev(magr)*hungr / 30));
+				heal(magr, (mlev(magr)*hungr / HEALCYCLE));
 			}
 		}
 		else {
@@ -9499,6 +9689,37 @@ boolean ranged;
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 		break;
+	case AD_LUCK:
+		//Use encouragement code to give monster target a -1
+		if (!youdef){
+			if(vis&VIS_MAGR && magr->mtyp == PM_LUCKSUCKER){
+				pline("%s sucks %s luck!", Monnam(magr), s_suffix(mon_nam(mdef)));
+				magr->encouraged = min(magr->encouraged+1,+13);
+			}
+			mdef->encouraged = max(mdef->encouraged-1,-13);
+		}
+		else {
+			/* assumes you are defending */
+			if(magr->mtyp == PM_LUCKSUCKER)
+				pline("%s sucks your luck!", Monnam(magr));
+
+			/* misc protections */
+			if ((uwep && !uwep->cursed && confers_luck(uwep)) ||
+				(stone_luck(TRUE) > 0 && rn2(4))) {
+				pline("Luckily, you are not affected.");
+			}
+			else {
+				int old_luck = u.uluck;
+				You_feel("your luck running out.");
+				change_luck(-1 * dmg);
+				if(magr->mtyp == PM_LUCKSUCKER)
+					magr->mvar_lucksucker += old_luck - u.uluck;
+			}
+			stop_occupation();
+		}
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
+		break;
 //////////////////////////////////////////////////////////////
 // NOT IMPLEMENTED FOR XMELEEHURTY
 //////////////////////////////////////////////////////////////
@@ -9524,7 +9745,6 @@ boolean ranged;
 	case AD_CLRC:
 	case AD_SPEL:
 		/* gaze only, AT_GAZE or AT_WDGZ */
-	case AD_LUCK:
 	case AD_SSUN:
 	case AD_SPOR:
 	case AD_BLNK:
@@ -10697,7 +10917,7 @@ int vis;
 					);
 			}
 			/* heal from damage dealt*/
-			heal(mdef, min(*hp(mdef), dmg));
+			heal(magr, min(*hp(mdef), dmg));
 		}
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
@@ -10782,6 +11002,10 @@ boolean verbose;
 	struct obj *otmp;
 	static const char mal_aura[] = "feel a malignant aura surround %s.";
 	if(mon == &youmonst){
+		if (youracedata->mtyp == PM_PARASITIC_WALL_HUGGER){
+			if(verbose) You(mal_aura, "your bloated body");
+			return TRUE;
+		}
 		if (uamul && (uamul->otyp == AMULET_VERSUS_CURSES)) {
 			if(verbose) You(mal_aura, "your amulet");
 			return TRUE;
@@ -10824,36 +11048,7 @@ boolean verbose;
 				return TRUE;
 			}
 		}
-		int curse_glazed = 0;
-		//Head
-		otmp = uarmh;
-		if(otmp && check_oprop(otmp, OPROP_CGLZ))
-			curse_glazed++;
-		//upper body
-		if((otmp = uarm) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = uarmc) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = uarmu) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp))
-			curse_glazed++;
-
-		//lower body
-		if((otmp = uarm) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_lower_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = uarmc) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_lower_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = uarmu) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_lower_body(otmp->otyp))
-			curse_glazed++;
-
-		//gloves
-		if((otmp = uarmg) && check_oprop(otmp, OPROP_CGLZ))
-			curse_glazed++;
-
-		//feet
-		if((otmp = uarmf) && check_oprop(otmp, OPROP_CGLZ))
-			curse_glazed++;
-
-		if(rnd(5) <= curse_glazed){
+		if(uarm && check_oprop(uarm, OPROP_CGLZ)){
 			if(verbose)
 				You_feel("a malignant aura burn in the silver light.");
 			return TRUE;
@@ -10881,6 +11076,10 @@ boolean verbose;
 	else {
 		static const char mons_item_mal_aura[] = "feel a malignant aura surround %s %s.";
 		boolean visible = canseemon(mon);
+		if (mon->mtyp == PM_PARASITIC_WALL_HUGGER){
+			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "bloated body");
+			return TRUE;
+		}
 		if(has_template(mon, ILLUMINATED)){
 			if(visible && verbose) You("feel a malignant aura burn away in the Light.");
 			return TRUE;
@@ -10919,34 +11118,10 @@ boolean verbose;
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "languid tentacles");
 			return TRUE;
 		}
-		int curse_glazed = 0;
-		//Head - what if has no head etc?
-		otmp = which_armor(mon, W_ARMH);
-		if(otmp && check_oprop(otmp, OPROP_CGLZ))
-			curse_glazed++;
-		//upper body
-		if((otmp = which_armor(mon, W_ARM)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = which_armor(mon, W_ARMC)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = which_armor(mon, W_ARMU)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp))
-			curse_glazed++;
-
-		//lower body
-		if((otmp = which_armor(mon, W_ARM)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_lower_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = which_armor(mon, W_ARMC)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_lower_body(otmp->otyp))
-			curse_glazed++;
-		else if((otmp = which_armor(mon, W_ARMU)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_lower_body(otmp->otyp))
-			curse_glazed++;
-
-		//gloves
-		if((otmp = which_armor(mon, W_ARMG)) && check_oprop(otmp, OPROP_CGLZ))
-			curse_glazed++;
-
-		//feet
-		if((otmp = which_armor(mon, W_ARMF)) && check_oprop(otmp, OPROP_CGLZ))
-			curse_glazed++;
+		//curse proof glaze
+		if((otmp = which_armor(mon, W_ARM)) && check_oprop(otmp, OPROP_CGLZ) && arm_blocks_upper_body(otmp->otyp)){
+			return TRUE;
+		}
 
 		for(otmp = mon->minvent; otmp; otmp=otmp->nobj)
 			if(otmp->oartifact == ART_TREASURY_OF_PROTEUS)
@@ -11334,7 +11509,7 @@ boolean * needs_uncancelled;
 	case AD_SSEX:
 	case AD_SEDU:
 	case AD_VAMP:
-	case AD_DRIN:
+	case AD_UNRV:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, TRUE);
 		break;
@@ -11427,7 +11602,7 @@ int vis;
 		vis = getvis(magr, mdef, 0, 0);
 
 	/* Hamsa ward protects from gazes */
-	if (ward_at(x(mdef), y(mdef) == HAMSA))
+	if (ward_at(x(mdef), y(mdef)) == HAMSA)
 		return MM_MISS;
 	/* at the very least, all gaze attacks need a clear line of sight */
 	if (!clear_path(x(magr), y(magr), x(mdef), y(mdef)))
@@ -12486,6 +12661,25 @@ int vis;
 			return MM_MISS;
 		break;
 
+		/* unnerve (bad moral) */
+	case AD_UNRV:
+		{
+			int * moral = (youdef ? &(u.uencouraged) : &(mdef->encouraged));
+
+			if (dmg > -1*(*moral)) {	// reduce message spam by only showing when study is actually increased
+				if(youdef){
+					pline("%s looks unnervingly familliar!", Monnam(magr));
+				}
+				else if(vis&VIS_MAGR){
+					pline("%s looks unnerved.", Monnam(mdef));
+				}
+				//else no message
+				/* add to moral */
+				*moral = max(-dmg, *moral-dmg);
+			}
+		}
+		break;
+
 		/* luck drain */
 	case AD_LUCK:
 		/* 4/5 chance to succeed */
@@ -12644,7 +12838,7 @@ int vis;
 				(void)adjattrib(A_WIS, -1, TRUE);
 				if(pa->mtyp != PM_HUGINN){
 					change_usanity(-1,FALSE);
-					forget(10);	/* lose 10% of memory per point lost*/
+					forget(4);	/* lose 4% of memory per point lost*/
 				}
 				exercise(A_WIS, FALSE);
 				/* Great Cthulhu permanently drains wisdom */
@@ -12656,7 +12850,8 @@ int vis;
 				change_usanity(-1*dmg, TRUE);
 				xdamagey(magr, mdef, attk, dmg*10);
 			}
-			u.umadness |= MAD_SPIRAL;
+			if(magr->mtyp == PM_GREAT_CTHULHU)
+				u.umadness |= MAD_SPIRAL;
 		}
 		break;
 
@@ -13261,6 +13456,7 @@ int vis;						/* True if action is at all visible to the player */
 	boolean invalid_weapon_attack = FALSE;
 	boolean unarmed_punch = FALSE;
 	boolean unarmed_kick = FALSE;
+	boolean unarmed_butt = FALSE;
 	boolean natural_strike = FALSE;
 	boolean ulightsaberhit = FALSE;
 
@@ -13459,11 +13655,7 @@ int vis;						/* True if action is at all visible to the player */
 			(!attk || weapon_aatyp(attk->aatyp)) &&
 			/* isn't a misused launcher */
 			(!is_launcher(weapon) ||
-			check_oprop(weapon, OPROP_BLADED) ||
-			check_oprop(weapon, OPROP_SPIKED) ||
-			weapon->oartifact == ART_LIECLEAVER ||
-			weapon->oartifact == ART_ROGUE_GEAR_SPIRITS ||
-			weapon->otyp == CARCOSAN_STING
+			is_melee_launcher(weapon)
 			) &&
 			/* isn't a misused polearm */
 			(!is_bad_melee_pole(weapon) ||
@@ -13500,6 +13692,9 @@ int vis;						/* True if action is at all visible to the player */
 			/* Spellbooks are weapons if you have Paimon bound */
 			else if (melee && weapon && weapon->oclass == SPBOOK_CLASS && youagr && u.sealsActive&SEAL_PAIMON)
 				valid_weapon_attack = TRUE;
+			/* shield bashes are possibly if and only if using the style (youagr only) */
+			else if (melee && weapon && is_shield(weapon) && youagr && activeFightingForm(FFORM_SHIELD_BASH))
+				valid_weapon_attack = TRUE;
 			else
 				invalid_weapon_attack = TRUE;
 		}
@@ -13514,6 +13709,11 @@ int vis;						/* True if action is at all visible to the player */
 		/* monsdmg == 0 for a player's basic kick, monsdmg == -1 for a player's clumsy kick -- different from a horse's kick! */
 		else if (attk->aatyp == AT_KICK && melee)
 			unarmed_kick = TRUE;
+		/* unlike kicks and weapon attacks, player headbutts get monsdmg and only use basedmg for enchantment */
+		else if (attk->aatyp == AT_BUTT && melee) {
+			unarmed_butt = TRUE;
+			natural_strike = TRUE;
+		}
 		/* mercurial blades aren't spiritual rapiers */
 		else if (attk->adtyp == AD_MERC && melee)
 			fake_valid_weapon_attack = TRUE;
@@ -13578,6 +13778,8 @@ int vis;						/* True if action is at all visible to the player */
 	if (magr && is_backstabber(pa))
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_SPINESEEKER)
+		sneak_dice++;
+	if (weapon && weapon->oartifact == ART_LOLTH_S_FANG)
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE))
 		sneak_dice++;
@@ -13653,6 +13855,8 @@ int vis;						/* True if action is at all visible to the player */
 
 		/* some things increase the number of sneak dice even further */
 		if (weapon && weapon->owornmask && weapon->oartifact == ART_SPINESEEKER && (sneak_attack&SNEAK_BEHIND))
+			sneak_dice++;
+		if (weapon && weapon->oartifact == ART_LOLTH_S_FANG && (sneak_attack&SNEAK_TRAPPED) && t_at(x(mdef), y(mdef)) && t_at(x(mdef), y(mdef))->ttyp == WEB)
 			sneak_dice++;
 		if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovar1_seals&SEAL_ANDROMALIUS && (mvitals[PM_ACERERAK].died > 0))
 			sneak_dice++;
@@ -13821,6 +14025,7 @@ int vis;						/* True if action is at all visible to the player */
 		break;
 	case W_ARMH:
 		otmp = (youagr ? uarmh : which_armor(magr, slot));
+		unarmed_butt = TRUE;
 		break;
 	case W_WEP:
 		otmp = weapon;
@@ -13865,7 +14070,7 @@ int vis;						/* True if action is at all visible to the player */
 				jadeobj |= slot;
 		}
 		if (hates_iron(pd) &&
-			otmp->obj_material == IRON &&
+			(otmp->obj_material == IRON || otmp->oartifact == ART_AMALGAMATED_SKIES || otmp->oartifact == ART_SKY_REFLECTED) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			ironobj |= slot;
 		}
@@ -13905,8 +14110,8 @@ int vis;						/* True if action is at all visible to the player */
 				seardmg += rnd(20);
 			}
 			// no jade monsters (yet)
-			else if (youagr && unarmed_punch && u.sealsActive&SEAL_EDEN) {
-				/* Eden's silver hull, for the player attacking with bared hands */
+			else if (youagr && (unarmed_punch || unarmed_kick || unarmed_butt) && u.sealsActive&SEAL_EDEN) {
+				/* Eden's silver hull, for the player attacking with bared hands, feet, or head */
 				silverobj |= W_SKIN;
 				seardmg += rnd(20);
 			}
@@ -14043,6 +14248,10 @@ int vis;						/* True if action is at all visible to the player */
 				poisons |= OPOISON_FILTH;
 			else
 				poisons |= OPOISON_BASIC;
+		}
+		if (youagr && poisonedobj == uwep && activeFightingForm(FFORM_KNI_ELDRITCH)){
+			if (u.ueldritch_style == SPE_POISON_SPRAY) poisons |= OPOISON_BASIC;
+			if (u.ueldritch_style == SPE_ACID_SPLASH) poisons |= OPOISON_ACID;
 		}
 	}
 	/* All AD_SHDW attacks are poisoned as well */
@@ -14307,7 +14516,8 @@ int vis;						/* True if action is at all visible to the player */
 	/* case 2: invalid melee weapon */
 	/* case 3: unarmed punch */
 	/* case 4: unarmed kick */
-	/* case 5: none of the above */
+	/* case 5: unarmed headbutt */
+	/* case 6: none of the above */
 	if (valid_weapon_attack) {
 		/* note: dmgval() includes enchantment and erosion of weapon */
 		if ((weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovar1_seals&SEAL_MARIONETTE) ||
@@ -14793,7 +15003,7 @@ int vis;						/* True if action is at all visible to the player */
 				break;
 
 			case STILETTOS:
-				basedmg = rnd(bigmonst(pd) ? 2 : 6) + weapon->spe + (youagr ? dbon(weapon) : 0);
+				basedmg = rnd(bigmonst(pd) ? 2 : 6) + weapon->spe + dbon(weapon, magr);
 				if (youagr && u.twoweap)
 					basedmg += rnd(bigmonst(pd) ? 2 : 6) + weapon->spe;
 				break;
@@ -14815,7 +15025,7 @@ int vis;						/* True if action is at all visible to the player */
 		dmgval_core(&unarmed_dice, bigmonst(pd), (struct obj *)0, 0, magr);
 		/* determine unarmedMult */
 		if (youagr) {
-			unarmedMult = Race_if(PM_HALF_DRAGON) ? 3 : (!gloves && u.sealsActive&SEAL_ECHIDNA) ? 2 : 1;
+			unarmedMult = Race_if(PM_HALF_DRAGON) ? 3 : ((!gloves && u.sealsActive&SEAL_ECHIDNA) || check_mutation(SHUB_CLAWS)) ? 2 : 1;
 		}
 		else {
 			unarmedMult = 1;
@@ -14947,6 +15157,13 @@ int vis;						/* True if action is at all visible to the player */
 		if (monsdmg == -1)
 			basedmg /= 2;
 	}
+	else if (unarmed_butt) {
+		/* helm enchantment increases headbutt damage */
+		otmp = (youagr ? uarmh : which_armor(magr, W_ARMH));
+		if (otmp) {
+			basedmg += otmp->spe;
+		}
+	}
 	else {
 		basedmg = 0;
 	}
@@ -14985,6 +15202,7 @@ int vis;						/* True if action is at all visible to the player */
 	phase_armor = (
 		(weapon && arti_shining(weapon)) ||
 		(youagr && u.sealsActive&SEAL_CHUPOCLOPS) ||
+		(youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
 		(originalattk && spirit_rapier_at(originalattk->aatyp) && originalattk->adtyp != AD_BLUD && originalattk->adtyp != AD_WET) ||
 		(swordofblood) /* this touch adtyp is only conditionally phasing */
@@ -15013,6 +15231,8 @@ int vis;						/* True if action is at all visible to the player */
 			bonsdmg += u.uencouraged;
 		else if (magr){
 			bonsdmg += magr->encouraged;
+			if(magr->mtyp == PM_LUCKSUCKER)
+				bonsdmg += magr->mvar_lucksucker;
 			if(magr->mtame){
 				if(uring_art(ART_NARYA))
 					bonsdmg += narya();
@@ -15033,6 +15253,9 @@ int vis;						/* True if action is at all visible to the player */
 					bonsdmg -= (uwep->spe + 1);
 			}
 		}
+		/* Priests of Asmodeus */
+		if(magr && flags.spriest_level && is_demon(magr->data) && is_lawful_mon(magr) && !magr->mpeaceful)
+			bonsdmg += 9;
 		/* Dahlver Nar gives bonus damage to unarmed punches */
 		if (youagr && unarmed_punch && u.specialSealsActive&SEAL_DAHLVER_NAR) {
 			bonsdmg += d(2, 6) + min(u.ulevel / 2, (u.uhpmax - u.uhp) / 10);
@@ -15052,6 +15275,50 @@ int vis;						/* True if action is at all visible to the player */
 					if(uarmg && uarmg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(uarmg, IEA_INC_DAM))
 						bonsdmg += uarmg->spe;
 
+					/* due to lack of a nicer place, check for eldritch style bonuses here*/
+#define eld_bon_dice ((FightingFormSkillLevel(FFORM_KNI_ELDRITCH) >= P_EXPERT) ? 6 : (FightingFormSkillLevel(FFORM_KNI_ELDRITCH) >= P_SKILLED ? 3 : 1))
+#define eld_bon_size ((u.ueldritch_style == SPE_FINGER_OF_DEATH) ? 13 : (\
+		 (u.ueldritch_style == SPE_FIRE_STORM || u.ueldritch_style == SPE_BLIZZARD || u.ueldritch_style == SPE_LIGHTNING_STORM) ? 8 : 6))
+					if (weapon && weapon == uwep && activeFightingForm(FFORM_KNI_ELDRITCH)){
+						boolean resist_check = FALSE;
+						char *verb = "";
+						int spell_id;
+						if (u.ueldritch_style == SPE_FIREBALL || u.ueldritch_style == SPE_FIRE_STORM){
+							verb = "burn";
+							resist_check = Fire_res(mdef);
+						} else if (u.ueldritch_style == SPE_CONE_OF_COLD || u.ueldritch_style == SPE_BLIZZARD){
+							verb = "freeze";
+							resist_check = Cold_res(mdef);
+						} else if (u.ueldritch_style == SPE_LIGHTNING_BOLT || u.ueldritch_style == SPE_LIGHTNING_STORM){
+							verb = "shock";
+							resist_check = Shock_res(mdef);
+						} else if (u.ueldritch_style == SPE_ACID_SPLASH){
+							verb = "befoul";
+							resist_check = Acid_res(mdef);
+						} else if (u.ueldritch_style == SPE_POISON_SPRAY){
+							verb = "poison";
+							resist_check = Poison_res(mdef);
+						} else if (u.ueldritch_style == SPE_FINGER_OF_DEATH){
+							verb = "sap the life from";
+							resist_check = Dark_res(mdef);
+						}
+
+						for (spell_id = 0; spell_id < MAXSPELL; spell_id++)
+							if (spellid(spell_id) == u.ueldritch_style)
+								break;
+
+						if (spell_id < MAXSPELL && percent_success(spell_id) > rn2(100) && !resist_check){
+							if (FightingFormSkillLevel(FFORM_KNI_ELDRITCH) >= P_BASIC){
+								if (u.uen >= objects[u.ueldritch_style].oc_level){
+									bonsdmg += d(eld_bon_dice, eld_bon_size);
+									u.uen -= objects[u.ueldritch_style].oc_level;
+									pline("Eldritch energies %s %s!", verb, mon_nam(mdef));
+								}
+							}
+							use_skill(P_KNI_ELDRITCH, 1);
+						}
+					}
+
 					/* when bound, Dantalion gives bonus "precision" damage based on INT; 1x for all melee and ranged */
 					if ((u.sealsActive&SEAL_DANTALION) && !noanatomy(pd)) {
 						if (ACURR(A_INT) == 25) bonsdmg += 8;
@@ -15065,13 +15332,12 @@ int vis;						/* True if action is at all visible to the player */
 						bonsdmg += arm->spe;
 				}
 
-#define dbonus(wep) (youagr ? dbon((wep)) : m_dbon(magr, (wep)))
 				/* If you throw using a propellor, you don't get a strength
 				* bonus but you do get an increase-damage bonus.
 				*/
 				if (natural_strike || unarmed_punch || unarmed_kick || melee || thrust) {
 					boolean usewep = (weapon && (melee || thrust) && !martial_aid(weapon));
-					int tmp = dbonus(usewep ? weapon : (struct obj *)0);
+					int tmp = dbon(usewep ? weapon : (struct obj *)0, magr);
 					/* greatly reduced STR damage for offhand attacks */
 					if (attk->aatyp == AT_XWEP || attk->aatyp == AT_MARI)
 						tmp = min(0, tmp);
@@ -15081,10 +15347,10 @@ int vis;						/* True if action is at all visible to the player */
 				{
 					/* slings get STR bonus */
 					if (launcher && objects[launcher->otyp].oc_skill == P_SLING)
-						bonsdmg += dbonus(launcher);
+						bonsdmg += dbon(launcher, magr);
 					/* atlatls get 2x STR bonus */
 					else if (launcher && launcher->otyp == ATLATL)
-						bonsdmg += dbonus(launcher) * 2;
+						bonsdmg += dbon(launcher, magr) * 2;
 					/* other launchers get no STR bonus */
 					else if (launcher)
 						bonsdmg += 0;
@@ -15092,12 +15358,11 @@ int vis;						/* True if action is at all visible to the player */
 					else {
 						/* hack: if wearing kicking boots, you effectively have 25 STR for kicked objects */
 						if (hmoncode & HMON_KICKED && youagr && uarmf && (uarmf->otyp == KICKING_BOOTS || (uarmf->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(uarmf, IEA_KICKING))))
-							override_str = 125;	/* 25 STR */
-						bonsdmg += dbonus(weapon);
+							override_str = STR19(25);	/* 25 STR */
+						bonsdmg += dbon(weapon, magr);
 						override_str = 0;
 					}
 				}
-#undef dbonus
 
 			} else if (trap){
 				/* some traps deal increased damage */
@@ -15128,6 +15393,8 @@ int vis;						/* True if action is at all visible to the player */
 				wtype = P_PICK_AXE;
 			else if (weapon && weapon->otyp == KAMEREL_VAJRA && !litsaber(weapon))
 				wtype = P_MACE;
+			else if (weapon && is_shield(weapon) && activeFightingForm(FFORM_SHIELD_BASH))
+				wtype = P_SHIELD_BASH;
 			else if (weapon && (!valid_weapon(weapon) || is_launcher(weapon))){
 				if (weapon && check_oprop(weapon, OPROP_BLADED))
 					wtype = P_AXE;
@@ -15174,6 +15441,9 @@ int vis;						/* True if action is at all visible to the player */
 			/* now, train skills */
 			use_skill((melee && u.twoweap) ? P_TWO_WEAPON_COMBAT : wtype, 1);
 
+			if (weapon && activeFightingForm(FFORM_GREAT_WEP) && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1))
+				use_skill(P_GREAT_WEP, 1);
+
 			if (melee && weapon && is_lightsaber(weapon) && litsaber(weapon) && P_SKILL(wtype) >= P_BASIC){
 				use_skill(P_SHII_CHO, 1);
 				if (P_SKILL(P_SHII_CHO) >= P_BASIC || weapon->oartifact == ART_INFINITY_S_MIRRORED_ARC){
@@ -15213,7 +15483,7 @@ int vis;						/* True if action is at all visible to the player */
 	}
 	/* ARTIFACT HIT BLOCK */
 	/* this must come after skills are trained, as this can kill the defender and cause a return */
-	if (valid_weapon_attack || unarmed_punch || unarmed_kick)
+	if (valid_weapon_attack || unarmed_punch || unarmed_kick || unarmed_butt)
 	{
 		int returnvalue = 0;
 		boolean artif_hit = FALSE;
@@ -15233,6 +15503,8 @@ int vis;						/* True if action is at all visible to the player */
 				if (otmp->oartifact)
 					artif_hit = TRUE;
 			}
+			if(!fired && otmp->otyp == CARCOSAN_STING && otmp->ovar1_charges < 95)
+				otmp->ovar1_charges += rnd(5);
 		}
 		/* ranged weapon attacks also proc effects of the launcher */
 		if (fired && launcher && valid_weapon_attack) {
@@ -15283,6 +15555,19 @@ int vis;						/* True if action is at all visible to the player */
 					artif_hit = TRUE;
 			}
 		}
+		/* unarmed headbutts proc effects of worn helms */
+		if (unarmed_butt) {
+			//Monsters have extra damage for their attacks, it makes sense to treat it as part of the unarmed damage.
+			int unarmed_basedmg = basedmg + ((youagr && !natural_strike) ? 0 : monsdmg);
+			otmp = (youagr ? uarmh : which_armor(magr, W_ARMH));
+			if (otmp) {
+				returnvalue = apply_hit_effects(magr, mdef, otmp, (struct obj *)0, unarmed_basedmg, &artidmg, &elemdmg, dieroll, &hittxt, TRUE);
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+					return returnvalue;
+				if (otmp->oartifact)
+					artif_hit = TRUE;
+			}
+		}
 		/* all valid attacks proc effects of offensive rings */
 		if(youagr){
 			struct obj *rings[] = {uleft, uright};
@@ -15314,7 +15599,7 @@ int vis;						/* True if action is at all visible to the player */
 			}
 		}
 		/*Blind, confused (spun around), players attacking lokoban pinata with a bashing weapon one shot it*/
-		if(youagr && Blind && Confusion && weapon && valid_weapon_attack && (attack_mask(weapon, 0, 0) & WHACK) && mdef && monsndx(mdef->data) == PM_LOKOBAN_PINATA)
+		if(youagr && Blind && Confusion && weapon && valid_weapon_attack && (attack_mask(weapon, 0, 0, magr) & WHACK) && mdef && monsndx(mdef->data) == PM_LOKOBAN_PINATA)
 			bonsdmg += mdef->mhp*4;
 		/* monk mystic style forms */
 		if(youagr && !youdef && unarmed_punch){
@@ -15374,7 +15659,7 @@ int vis;						/* True if action is at all visible to the player */
 			dr = (youdef ? (base_udr() + base_nat_udr()) : (base_mdr(mdef) + base_nat_mdr(mdef)));
 		}
 		else {
-			dr = (youdef ? roll_udr(magr) : roll_mdr(mdef, magr));
+			dr = (youdef ? roll_udr(magr, attk->aatyp) : roll_mdr(mdef, magr, attk->aatyp));
 		}
 		
 		//Give spears a slight advantage vs. armor.
@@ -15402,7 +15687,7 @@ int vis;						/* True if action is at all visible to the player */
 
 		/* get attackmask */
 		if (weapon && (valid_weapon_attack || invalid_weapon_attack)) {
-			attackmask = attack_mask(weapon, 0, 0);
+			attackmask = attack_mask(weapon, 0, 0, magr);
 			otmp = weapon;
 		}
 		else if (unarmed_punch) {
@@ -15411,7 +15696,7 @@ int vis;						/* True if action is at all visible to the player */
 			/* gloves */
 			otmp = (youagr ? uarmg : which_armor(magr, W_ARMG));
 			if(otmp)
-				attackmask = attack_mask(otmp, 0, 0);
+				attackmask = attack_mask(otmp, 0, 0, magr);
 
 			if (/* claw attacks are slashing (even while wearing gloves?) */
 				(attk && attk->aatyp == AT_CLAW) ||
@@ -15421,6 +15706,10 @@ int vis;						/* True if action is at all visible to the player */
 				attackmask |= SLASH;
 			if(youagr && Race_if(PM_ETHEREALOID))
 				attackmask |= EXPLOSION;
+
+			if (youagr && check_mutation(SHUB_CLAWS))
+				attackmask |= SLASH|PIERCE;
+
 			if (/* claw attacks are slashing (even while wearing gloves?) */
 				(youagr && u.sealsActive&SEAL_EURYNOME)
 			){
@@ -15439,7 +15728,7 @@ int vis;						/* True if action is at all visible to the player */
 
 			otmp = (youagr ? uarmf : which_armor(magr, W_ARMF));
 			if(otmp)
-				attackmask = attack_mask(otmp, 0, 0);
+				attackmask = attack_mask(otmp, 0, 0, magr);
 		}
 		else {
 			/* something odd -- maybe it was a weapon attack and the weapon was destroyed earlier than usual? */
@@ -15460,11 +15749,12 @@ int vis;						/* True if action is at all visible to the player */
 		}
 
 		if ((thick_skinned(pd) || (youdef && u.sealsActive&SEAL_ECHIDNA)) && (
-			(unarmed_kick && !(otmp && (otmp->otyp == STILETTOS || otmp->otyp == WIND_AND_FIRE_WHEELS || otmp->otyp == HEELED_BOOTS || otmp->otyp == KICKING_BOOTS || (otmp->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(otmp, IEA_KICKING))))) || 
-			(otmp && (valid_weapon_attack || invalid_weapon_attack) && (otmp->obj_material <= LEATHER) && !litsaber(otmp)) ||
-			(otmp && (valid_weapon_attack || invalid_weapon_attack) && check_oprop(otmp, OPROP_FLAYW))
-			)
-		){
+			(unarmed_kick && !(youagr && !Upolyd && Race_if(PM_CLOCKWORK_AUTOMATON)) && !(otmp && (
+				otmp->otyp == STILETTOS || otmp->otyp == WIND_AND_FIRE_WHEELS || otmp->otyp == HEELED_BOOTS || otmp->otyp == KICKING_BOOTS 
+				|| is_metallic(otmp) || (otmp->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(otmp, IEA_KICKING))))
+			) || (otmp && (valid_weapon_attack || invalid_weapon_attack) && (otmp->obj_material <= LEATHER) && !litsaber(otmp))
+			))
+		{
 			if(otmp && otmp->oartifact == ART_IBITE_ARM){
 				if(otmp->otyp == CLAWED_HAND); /*Ghost hand doesn't notice it's too soft to harm the target*/
 				else {
@@ -16798,7 +17088,8 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 	
 	/* passives NOT from a creature's attacks */
 	/* per-attack */
-	if (attk) {
+	/* no-contact attacks are excluded from this even when they _maybe_ shouldn't be. counters yes, iris no? */
+	if (attk && !no_contact_attk(attk)) {
 		/* Iris unbinds on attacking a reflective creature */
 		if (youagr && u.sealsActive&SEAL_IRIS &&
 			!(result&MM_DEF_DIED) &&
@@ -17285,7 +17576,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 					}
 				}
 				/* damage (reduced by DR, half-phys damage, min 1) */
-				dmg -= (youagr ? roll_udr(mdef) : roll_mdr(magr, mdef));
+				dmg -= (youagr ? roll_udr(mdef, passive->aatyp) : roll_mdr(magr, mdef, passive->aatyp));
 				if (dmg < 1)
 					dmg = 1;
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
@@ -17567,7 +17858,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 				case AD_PHYS:
 					/* no message */
 					/* damage (reduced by DR, half-phys damage, min 1) */
-					dmg -= (youagr ? roll_udr(mdef) : roll_mdr(magr, mdef));
+					dmg -= (youagr ? roll_udr(mdef, passive->aatyp) : roll_mdr(magr, mdef, passive->aatyp));
 					if (dmg < 1)
 						dmg = 1;
 					dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
@@ -18317,7 +18608,6 @@ movement_combos()
 	if (Role_if(PM_MONK) && !Upolyd) {
 		int moveID = check_monk_move();
 		if (moveID != 0 && perform_monk_move(moveID)) {
-			u.uen -= 8;
 			nomul(0, NULL);
 			u.uattked = TRUE;
 			did_combo = TRUE;
@@ -18510,7 +18800,7 @@ struct monst *mdef;
 	if(!tmp)
 		return; //Too light to do damage :(
 	if (!DEADMONSTER(mdef) && tmp) {
-		int nd = dbon((struct obj *)0);
+		int nd = dbon((struct obj *)0, &youmonst);
 		nd = max(nd, 1);
 		xdamagey(&youmonst, mdef, (struct attack *)0, d(nd,tmp));
 	}
@@ -18553,8 +18843,6 @@ int moveID;
 	if(!moveID)
 		return FALSE;
 	if(!monk_style_active(moveID)) return FALSE;
-	if(u.uen < 8)
-		return FALSE;
 	switch(moveID){
 		case DIVE_KICK:
 		if(Race_if(PM_CHIROPTERAN)){
@@ -19160,5 +19448,8 @@ boolean magical;
 		else
 			dmg = (dmg + 1) / 2;
 	}
+	/* Priests of Asmodeus */
+	if(mdef != &youmonst && flags.spriest_level && is_demon(mdef->data) && is_lawful_mon(mdef) && !mdef->mpeaceful)
+		dmg = (dmg + 1) / 2;
 	return dmg;
 }

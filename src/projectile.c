@@ -693,7 +693,7 @@ int dy;							/* */
 			newsym(newx, newy);
 	}
 	/* Rock (laser cutter only) */
-	else if (isok(newx, newy) && IS_ROCK(room->typ) && may_dig(newx, newy) &&
+	else if (isok(newx, newy) && (IS_ROCK(room->typ) && !IS_TREES(room->typ)) && may_dig(newx, newy) &&
 		(thrownobj->otyp == LASER_BEAM)
 		) {
 		struct obj *otmp;	/* newly-created rocks */
@@ -715,6 +715,34 @@ int dy;							/* */
 		otmp->quan = 20L + rnd(20);
 		otmp->owt = weight(otmp);
 		/* update vision */
+		unblock_point(newx, newy);
+		if (!Blind && cansee(newx, newy))
+			newsym(newx, newy);
+	} else if (isok(newx, newy) && IS_TREES(room->typ) && may_dig(newx, newy) && (thrownobj->otyp == LASER_BEAM)) {
+		int numsticks;
+		struct obj *staff;
+		/* message */
+		if (cansee(newx, newy))
+			pline("The %s cuts the %swood into chunks!", xname(thrownobj), IS_DEADTREE(room->typ) ? "petrified " : "");
+
+		if (!(room->looted & TREE_LOOTED) && !rn2(5)){
+			if(!In_neu(&u.uz) && u.uz.dnum != chaos_dnum && !Is_medusa_level(&u.uz) &&
+					!(In_quest(&u.uz) && (Role_if(PM_NOBLEMAN) || Race_if(PM_DROW) ||
+					(Race_if(PM_ELF) && (Role_if(PM_RANGER) || Role_if(PM_PRIEST) || Role_if(PM_NOBLEMAN) || Role_if(PM_WIZARD)))
+					)) && u.uz.dnum != tower_dnum)
+				(void) rnd_treefruit_at(newx, newy);
+		}
+
+		for(numsticks = d(2,4)-1; numsticks > 0; numsticks--){
+			staff = mksobj_at(rn2(2) ? QUARTERSTAFF : CLUB, newx, newy, MKOBJ_NOINIT);
+			if (IS_DEADTREE(room->typ)) set_material_gm(staff, MINERAL);
+			else set_material_gm(staff, WOOD);
+			staff->spe = 0;
+			staff->cursed = staff->blessed = FALSE;
+		}
+		if(!flags.mon_moving && u.sealsActive&SEAL_EDEN) unbind(SEAL_EDEN,TRUE);
+
+		room->typ = SOIL;
 		unblock_point(newx, newy);
 		if (!Blind && cansee(newx, newy))
 			newsym(newx, newy);
@@ -745,6 +773,131 @@ int dy;							/* */
 	/* if you damaged a shop, add to bill */
 	if (youagr && (shopdoor || shopwall)) (thrownobj->otyp == LASER_BEAM) ?
 		pay_for_damage("cut into", FALSE) :
+		pay_for_damage("blast into", FALSE);
+
+	return;
+}
+
+/*
+ * do_digging_impact()
+ *
+ * Called when a digging-mpact weapon interacts with terrain by iron bars or some non-ZAP_POS.
+ */
+void
+do_digging_impact(magr, weapon, x, y)
+struct monst * magr;			/* Creature responsible for the projectile. Might not exist. */
+struct obj * weapon;
+int x;							/* */
+int y;							/* */
+{
+	boolean youagr = (magr && (magr == &youmonst));
+	struct rm *room = &levl[x][y];
+	boolean shopdoor = FALSE, shopwall = FALSE;
+
+	/* Doors (but not artifact doors) */
+	if ((closed_door(x, y) || room->typ == SDOOR) &&
+		!artifact_door(x, y)) 
+	{
+		/* message */
+		if (cansee(x, y))
+			pline("The door crumbles!");
+		/* check shops */
+		if (*in_rooms(x, y, SHOPBASE)) {
+			add_damage(x, y, (youagr ? 400L : 0L));
+			shopwall = TRUE;
+		}
+		/* anger watch */
+		if (youagr)
+			watch_dig((struct monst *)0, x, y, TRUE);
+		/* create doorway */
+		room->typ = DOOR;
+		room->doormask = D_NODOOR;
+		/* update vision */
+		unblock_point(x, y);
+		if (!Blind && cansee(x, y))
+			newsym(x, y);
+	}
+	/* Walls */
+	else if (IS_WALL(room->typ) && may_dig(x, y)) {
+		struct obj * otmp;	/* newly-created rocks */
+		/* message */
+		if (cansee(x, y))
+			pline("The wall crumbles!");
+		/* check shops */
+		if (*in_rooms(x, y, SHOPBASE)) {
+			add_damage(x, y, youagr ? 200L : 0L);
+			shopwall = TRUE;
+		}
+		/* anger watch */
+		if (youagr)
+			watch_dig((struct monst *)0, x, y, TRUE);
+		/* create opening */
+		if (level.flags.is_cavernous_lev && !in_town(x, y)) {
+			room->typ = CORR;
+		}
+		else {
+			room->typ = DOOR;
+			room->doormask = D_NODOOR;
+		}
+		/* create rocks */
+		otmp = mksobj_at(ROCK, x, y, NO_MKOBJ_FLAGS);
+		otmp->quan = 20L + rnd(20);
+		otmp->owt = weight(otmp);
+		/* update vision */
+		unblock_point(x, y);
+		if (!Blind && cansee(x, y))
+			newsym(x, y);
+	}
+	/* Rock (laser cutter only) */
+	else if (isok(x, y) && IS_ROCK(room->typ) && may_dig(x, y)) {
+		struct obj *otmp;	/* newly-created rocks */
+		/* message */
+		if (cansee(x, y))
+			pline("The stone crumbles!");
+		/* check shops */
+		if (*in_rooms(x, y, SHOPBASE)) {
+			add_damage(x, y, youagr ? 200L : 0L);
+			shopwall = TRUE;
+		}
+		/* anger watch */
+		if (youagr)
+			watch_dig((struct monst *)0, x, y, TRUE);
+		/* create opening */
+		room->typ = CORR;
+		/* create rocks */
+		otmp = mksobj_at(ROCK, x, y, NO_MKOBJ_FLAGS);
+		otmp->quan = 20L + rnd(20);
+		otmp->owt = weight(otmp);
+		/* update vision */
+		unblock_point(x, y);
+		if (!Blind && cansee(x, y))
+			newsym(x, y);
+	}
+	// /* Iron Bars (laser cutter only) */
+	// else if (isok(x, y) && (room->typ == IRONBARS) && 
+		// (thrownobj->otyp == LASER_BEAM)
+		// ) {
+		// int numbars;
+		// struct obj *otmp;
+		// /* message */
+		// if (cansee(x, y))
+			// pline("The %s cuts through the bars!", xname(thrownobj));
+		// /* create opening */
+		// room->typ = CORR;
+		// /* create iron bars */
+		// for (numbars = d(2, 4) - 1; numbars > 0; numbars--){
+			// otmp = mksobj_at(BAR, x, y, MKOBJ_NOINIT);
+			// set_material_gm(otmp, IRON);
+			// otmp->spe = 0;
+			// otmp->cursed = otmp->blessed = FALSE;
+		// }
+		// /* update vision */
+		// if (!Blind && cansee(newx, newy))
+			// newsym(newx, newy);
+	// }
+
+	/* if you damaged a shop, add to bill */
+	if (youagr && (shopdoor || shopwall))
 		pay_for_damage("blast into", FALSE);
 
 	return;
@@ -1326,7 +1479,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 	if (miss_via_insubstantial(magr, mdef, attkp, thrownobj, vis)) {
 		/* message already printed by miss_via_insubstantial */;
 	}
-	else if (accuracy > dieroll || dieroll == 1)
+	else if (accuracy > dieroll || (dieroll == 1 && accuracy > -10))
 	{
 		/* hit */
 		/* (player-only) exercise dex */
@@ -1816,7 +1969,7 @@ int shotlimit;
 		(skill == P_DART) ||
 		(skill == P_SHURIKEN) ||
 		(skill == P_BOOMERANG) ||
-		(ammo->otyp == ELVEN_SICKLE) ||
+		is_sickle(ammo) ||
 		(ammo->oartifact == ART_AMHIMITL)
 		) {
 		/* Skill based bonus */
@@ -2660,7 +2813,7 @@ boolean forcedestroy;
 	/* madness on losing an object */
 	if (takenfromyourinv && roll_madness(MAD_TALONS)) {
 		You("panic after throwing your property!");
-		nomul(-1 * rnd(6), "panic");
+		HPanicking += 1+rnd(6);
 	}
 
 	if(otyp == SHURIKEN && Role_if(PM_MONK))

@@ -1222,6 +1222,15 @@ register const char *let,*word;
 		|| (!strcmp(word, "resize") && !(otmp->oclass == ARMOR_CLASS || otmp->oclass == TOOL_CLASS))
 		|| (!strcmp(word, "trephinate") && !(otmp->otyp == CRYSTAL_SKULL))
 		|| (!strcmp(word, "eat") && !is_edible(otmp))
+		|| (!strcmp(word, "contribute for scrap iron") && otmp->obj_material != IRON)
+		|| (!strcmp(word, "contribute for scrap green steel") && otmp->obj_material != GREEN_STEEL)
+		|| (!strcmp(word, "contribute for scrap bronze") && otmp->obj_material != COPPER)
+		|| (!strcmp(word, "contribute for scrap silver") && otmp->obj_material != SILVER)
+		|| (!strcmp(word, "contribute for scrap gold") && otmp->obj_material != GOLD)
+		|| (!strcmp(word, "contribute for scrap lead") && otmp->obj_material != LEAD)
+		|| (!strcmp(word, "contribute for scrap mithril") && otmp->obj_material != MITHRIL)
+		|| (!strcmp(word, "contribute for scrap fossil dark") && otmp->obj_material != SHADOWSTEEL && otmp->otyp != CHUNK_OF_FOSSIL_DARK)
+		|| (!strcmp(word, "contribute for scrap platinum") && otmp->obj_material != PLATINUM)
 		|| (!strcmp(word, "zap") &&
 		    !(otmp->oclass == WAND_CLASS 
 				|| (otmp->oclass == TOOL_CLASS && otmp->otyp == ROD_OF_FORCE)
@@ -1297,6 +1306,8 @@ register const char *let,*word;
 			  otmp->otyp != RAKUYO && otmp->otyp != RAKUYO_SABER && 
 			  otmp->otyp != BLADE_OF_MERCY && otmp->otyp != BLADE_OF_GRACE && 
 			  otmp->otyp != DOUBLE_FORCE_BLADE && otmp->otyp != FORCE_BLADE &&
+			  !(otmp->oartifact == ART_SKY_REFLECTED && carrying_art(ART_SILVER_SKY)) &&
+			  !(otmp->oartifact == ART_SILVER_SKY && carrying_art(ART_SKY_REFLECTED)) &&
 			  otmp->otyp != MASS_SHADOW_PISTOL
 			 ) ||
 			 (otmp->oclass == CHAIN_CLASS && 
@@ -1348,6 +1359,10 @@ register const char *let,*word;
 			!goat_acidable(otmp))
 		|| (!strcmp(word, "give the Goat's hunger") &&
 			!goat_droolable(otmp))
+		|| (!strcmp(word, "reveal the Minor Stars") &&
+			!yog_magicable(otmp))
+		|| (!strcmp(word, "show distant vistas") &&
+			!yog_windowable(otmp))
 		|| (!strcmp(word, "offer to the flame") && 
 			!sflm_offerable(otmp))
 		|| (!strcmp(word, "mirror-finish") && 
@@ -1360,6 +1375,12 @@ register const char *let,*word;
 			!sflm_truedeathable(otmp))
 		|| (!strcmp(word, "reveal the unworthy") && 
 			!sflm_unworthyable(otmp))
+		|| (!strcmp(word, "reveal righteous wrath") && 
+			!sflm_wrathable(otmp))
+		|| (!strcmp(word, "share burdens") && 
+			!sflm_burdenable(otmp))
+		|| (!strcmp(word, "preserve life") && 
+			!sflm_lifeable(otmp))
 		|| (!strcmp(word, "smelt silver in the silver light") && 
 			!sflm_smeltable_silver(otmp))
 		|| (!strcmp(word, "smelt platinum in the silver light") && 
@@ -2174,7 +2195,7 @@ ddoinv()
 				winid datawin = create_nhwindow(NHW_MENU);
 				putstr(datawin, ATR_NONE, doname(otmp));
 				describe_item(otmp, otmp->otyp, otmp->oartifact, &datawin);
-				checkfile(xname(otmp), 0, FALSE, TRUE, &datawin);
+				checkfile(xname_bland(otmp), 0, FALSE, TRUE, &datawin);
 				display_nhwindow(datawin, TRUE);
 				destroy_nhwindow(datawin);
 				return MOVE_INSTANT;
@@ -2357,6 +2378,12 @@ struct obj *obj;
 	else if (obj->otyp == FORCE_SWORD)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Unlock your force whip", MENU_UNSELECTED);
+	else if (obj->oartifact == ART_SILVER_SKY)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Merge skies", MENU_UNSELECTED);
+	else if (obj->oartifact == ART_SKY_REFLECTED)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Merge skies", MENU_UNSELECTED);
 	else if (obj->otyp == TORCH || obj->otyp == SHADOWLANDER_S_TORCH || obj->otyp == MAGIC_TORCH)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Light or snuff this torch", MENU_UNSELECTED);
@@ -2622,7 +2649,7 @@ struct obj *obj;
 		winid datawin = create_nhwindow(NHW_MENU);
 		putstr(datawin, ATR_NONE, doname(obj));
 		describe_item(obj, obj->otyp, obj->oartifact, &datawin);
-		checkfile(xname(obj), 0, FALSE, TRUE, &datawin);
+		checkfile(xname_bland(obj), 0, FALSE, TRUE, &datawin);
 		display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
 		return 0;
@@ -2664,10 +2691,14 @@ winid *datawin;
 		: (oc.oc_dir == IMMEDIATE ? "Beam"
 		: "Ray"));
 	int goatweaponturn = 0;
+	int sothweaponturn = 0;
 	boolean printed_type = FALSE;
+	boolean has_artidmg = oartifact && (artilist[oartifact].adtyp || artilist[oartifact].damage || artilist[oartifact].accuracy);
 	
 	if(check_oprop(obj,OPROP_GOATW))
 		goatweaponturn = goat_weapon_damage_turn(obj);
+	if(check_oprop(obj,OPROP_SOTHW))
+		sothweaponturn = soth_weapon_damage_turn(obj);
 
 
 #define OBJPUTSTR(str) putstr(*datawin, ATR_NONE, str)
@@ -2703,13 +2734,15 @@ winid *datawin;
 	}
 
 	/* Object classes currently with no special messages here: amulets. */
-	if (olet == WEAPON_CLASS || (olet == TOOL_CLASS && oc.oc_skill) || otyp == HEAVY_IRON_BALL || olet == GEM_CLASS || oartifact == ART_WAND_OF_ORCUS) {
-		int mask = attack_mask(obj, otyp, oartifact);
+	if (olet == WEAPON_CLASS || (olet == TOOL_CLASS && oc.oc_skill) || otyp == HEAVY_IRON_BALL || olet == GEM_CLASS || has_artidmg) {
+		int mask = attack_mask(obj, otyp, oartifact, &youmonst);
 		boolean otyp_is_blaster = (otyp == CARCOSAN_STING || otyp == HAND_BLASTER || otyp == ARM_BLASTER || otyp == MASS_SHADOW_PISTOL || otyp == CUTTING_LASER || otyp == RAYGUN);
 		boolean otyp_is_launcher = (((oc.oc_skill >= P_BOW && oc.oc_skill <= P_CROSSBOW) || otyp == ATLATL) && !otyp_is_blaster);
+		/* armor and rings don't have meaningful base damage, but can have artifact bonus damage */
+		boolean artidmg_only = olet == ARMOR_CLASS || olet == RING_CLASS;
 
 		/* print type */
-		if (!printed_type) {
+		if (!printed_type && !artidmg_only) {
 			buf2[0] = '\0';
 			int i;
 			static const char * damagetypes[] = { "blunt", "piercing", "slashing", "energy" };
@@ -2760,7 +2793,7 @@ winid *datawin;
 		}
 
 		/* what skill does it use? */
-		if (obj ? weapon_type(obj) : oc.oc_skill != P_NONE) {
+		if (obj ? weapon_type(obj) : oc.oc_skill != P_NONE && !artidmg_only) {
 			if (obj) {
 				Sprintf(buf, "Uses your %s skill", P_NAME(abs(weapon_type(obj))));
 				/* special cases */
@@ -2794,7 +2827,7 @@ winid *datawin;
 		/* weapon dice! */
 		/* Does not apply for launchers. */
 		/* the melee-weapon artifact launchers need obj to exist because dmgval_core needs obj to find artifact. */
-		if ((!otyp_is_launcher && !otyp_is_blaster) || (
+		if ((!otyp_is_launcher && !otyp_is_blaster && !artidmg_only) || (
 			(otyp == CARCOSAN_STING) ||
 			(obj && oartifact == ART_LIECLEAVER) ||
 			(obj && oartifact == ART_WAND_OF_ORCUS) ||
@@ -2852,7 +2885,7 @@ winid *datawin;
 			OBJPUTSTR(buf);
 		}
 		/* artifact bonus damage (artifacts only) */
-		if (oartifact && (artilist[oartifact].adtyp || artilist[oartifact].damage || artilist[oartifact].accuracy))
+		if (has_artidmg)
 		{
 			register const struct artifact *oart = &artilist[oartifact];
 			/* bonus damage, or double damage? We already checked that oart->attk exists */
@@ -2863,7 +2896,7 @@ winid *datawin;
 				if (oart->damage > 1)
 				{
 					Sprintf(buf, "Deals %dd%d bonus ",
-						((obj && is_lightsaber(obj) && litsaber(obj)) ? 3 : 1) * (double_bonus_damage_artifact(oartifact) ? 2 : 1),
+						((obj && obj->oartifact == ART_SILVER_STARLIGHT) ? 4 : (obj && is_lightsaber(obj) && litsaber(obj)) ? 3 : 1) * (double_bonus_damage_artifact(oartifact) ? 2 : 1),
 						oart->damage);
 				}
 				else
@@ -2931,6 +2964,11 @@ winid *datawin;
 					case AD_DARK: Strcat(buf, "dark damage."); break;
 					case AD_BLUD: Strcat(buf, "blood damage."); break;
 					case AD_DRIN: Strcat(buf, "brain damage."); break;
+					case AD_HOLY: Strcat(buf, "holy damage."); break;
+					case AD_STDY: Strcat(buf, "study damage."); break;
+					case AD_HLUH: Strcat(buf, "corrupted holy damage."); break;
+					case AD_STAR: Strcat(buf, "silver damage."); break;
+					case AD_SLEE: Strcat(buf, "sleep damage."); break;
 						break;
 					}
 				}
@@ -2944,7 +2982,7 @@ winid *datawin;
 					{
 					case ART_ORCRIST:					Strcat(buf, "orcs and demons.");							break;
 					case ART_STING:						Strcat(buf, "orcs and spiders.");							break;
-					case ART_GRIMTOOTH:					Strcat(buf, "humans, elves, dwarves, and angels.");			break;
+					case ART_GRIMTOOTH:					Strcat(buf, "humans, elves, and dwarves.");					break;
 					case ART_CARNWENNAN:				Strcat(buf, "fey and magic-item users.");					break;
 					case ART_SLAVE_TO_ARMOK:			Strcat(buf, "nobility, elves, orcs, and the innocent.");	break;
 					case ART_CLAIDEAMH:					Strcat(buf, "those bound by iron and ancient laws.");		break;
@@ -2969,7 +3007,7 @@ winid *datawin;
 					case ART_CLARENT:					Strcat(buf, "the thick-skinned");							break;
 					case ART_SCEPTRE_OF_MIGHT:			Strcat(buf, "cross-aligned.");								break;
 					case ART_IRON_BALL_OF_LEVITATION:	Strcat(buf, "cross-aligned.");								break;
-					case ART_WEB_OF_LOLTH:				Strcat(buf, "elves.");										break;
+					case ART_WEB_OF_LOLTH:				Strcat(buf, "elves, demons, and godly minions.");			break;
 					case ART_MITRE_OF_HOLINESS:			Strcat(buf, "undead.");										break;
 					case ART_ICONOCLAST:				Strcat(buf, "humans, elves, dwarves, and gnomes.");			break;
 					case ART_SCOURGE_OF_LOLTH:			Strcat(buf, "elves.");										break;
@@ -3163,7 +3201,46 @@ winid *datawin;
 			Sprintf(buf2, "Deals double poison damage plus 4d4 physical.");
 			OBJPUTSTR(buf2);
 		}
-		
+		if(sothweaponturn == AD_VAMP)
+		{
+			Sprintf(buf2, "Drinks target's blood.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_FIRE)
+		{
+			Sprintf(buf2, "Deals fire, physical, and fear damage.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_DESC)
+		{
+			Sprintf(buf2, "Deals +50%% desiccation damage.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_MAGM)
+		{
+			Sprintf(buf2, "Deals 4d4 + enchantment magic damage.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_MADF)
+		{
+			Sprintf(buf2, "Exposes the target to the wielder's burning madness.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_DRST)
+		{
+			Sprintf(buf2, "Deals 1d6 stench damage and may cause vomiting.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_POLY)
+		{
+			Sprintf(buf2, "Polymorphs the target into earlier forms.");
+			OBJPUTSTR(buf2);
+		}
+		if(sothweaponturn == AD_STTP)
+		{
+			Sprintf(buf2, "Teleports away target's armor or deals double damage.");
+			OBJPUTSTR(buf2);
+		}
 		if (check_oprop(obj, OPROP_MORTW))
 		{
 			Sprintf(buf2, "Drains 1d2 levels from living intelligent targets.");
@@ -3394,7 +3471,7 @@ winid *datawin;
 			OBJPUTSTR("Holds enchantments well.");
 	}
 	/* Enchantment limit */
-	if (obj && arti_plusten(obj))
+	if (obj && is_plusten(obj))
 		OBJPUTSTR("Holds enchantments extremely well.");
 	if (obj && arti_socketed(obj))
 		OBJPUTSTR("Can hold a chaos crystal.");
@@ -3584,6 +3661,24 @@ winid *datawin;
 			Sprintf(buf, "%s wand.", dir);
 			OBJPUTSTR(buf);
 			printed_type = TRUE;
+		}
+		if (obj) {
+			int freechance = 100 - zapcostchance(obj, &youmonst);
+			if (freechance > 0) {
+				Sprintf(buf, "You have a %d%% chance not to use a charge each zap.", freechance);
+				OBJPUTSTR(buf);
+			}
+		}
+		else {
+			struct obj * fakeobj = mksobj(otyp, MKOBJ_NOINIT);
+			fakeobj->oartifact = oartifact;
+
+			int freechance = 100 - zapcostchance(fakeobj, (struct monst *)0);
+			if (freechance > 0) {
+				Sprintf(buf, "%d%% chance not to use a charge each zap.", freechance);
+				OBJPUTSTR(buf);
+			}
+			delobj(fakeobj);
 		}
 	}
 	if (olet == RING_CLASS) {
@@ -4795,6 +4890,8 @@ char *buf;
 		dfeature = "open drawbridge portcullis",  cmap = -1;
 	} else if (IS_FOUNTAIN(ltyp))
 	    cmap = S_fountain;				/* "fountain" */
+	else if (IS_FORGE(ltyp))
+	    cmap = S_forge;				/* "forge" */
 	else if (IS_THRONE(ltyp))
 	    cmap = S_throne;				/* "opulent throne" */
 	else if (is_lava(x,y))
@@ -4825,11 +4922,15 @@ char *buf;
 		}
 	    dfeature = altbuf;
 	} else if ((x == xupstair && y == yupstair) ||
-		 (x == sstairs.sx && y == sstairs.sy && sstairs.up))
+		 (x == sstairs.sx && y == sstairs.sy && sstairs.up && !sstairs.u_traversed))
 	    cmap = S_upstair;				/* "staircase up" */
+	else if (x == sstairs.sx && y == sstairs.sy && sstairs.up && sstairs.u_traversed)
+	    cmap = S_brupstair;				/* "staircase up" */
 	else if ((x == xdnstair && y == ydnstair) ||
-		 (x == sstairs.sx && y == sstairs.sy && !sstairs.up))
+		 (x == sstairs.sx && y == sstairs.sy && !sstairs.up && !sstairs.u_traversed))
 	    cmap = S_dnstair;				/* "staircase down" */
+	else if (x == sstairs.sx && y == sstairs.sy && !sstairs.up && sstairs.u_traversed)
+	    cmap = S_brdnstair;	
 	else if (x == xupladder && y == yupladder)
 	    cmap = S_upladder;				/* "ladder up" */
 	else if (x == xdnladder && y == ydnladder)
@@ -5103,7 +5204,10 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 
 	/* allow candle merging only if their ages are close */
 	/* see begin_burn() for a reference for the magic "25" */
-	if (Is_candle(obj) && obj->age/25 != otmp->age/25)
+	if ((Is_candle(obj) || Is_torch(obj)) && obj->age/25 != otmp->age/25)
+	    return(FALSE);
+
+	if (obj->otyp == SUNROD && obj->lamplit)
 	    return(FALSE);
 
 	if (obj->oartifact && obj->age/25 != otmp->age/25)
@@ -5319,21 +5423,21 @@ STATIC_VAR NEARDATA const char *names[] = { 0,
 	"Illegal objects", "Weapons", "Armor", "Rings", "Amulets",
 	"Tools", "Comestibles", "Potions", "Scrolls", "Spellbooks",
 	"Wands", "Coins", "Gems", "Boulders/Statues", "Iron balls",
-	"Scrap", "Venoms", "Tiles", "Beds", "Strange coins"
+	"Scrap", "Venoms", "Tiles", "Furnature", "Strange coins"
 };
 
 STATIC_VAR NEARDATA const char *bogusclasses[] = {
 	"Illegal objects", "Weapons", "Armor", "Rings", "Amulets",
 	"Tools", "Comestibles", "Potions", "Scrolls", "Spellbooks",
 	"Wands", "Coins", "Gems", "Boulders/Statues", "Iron balls",
-	"Scrap", "Venoms","Tiles", "Beds", "Strange coins",
+	"Scrap", "Venoms","Tiles", "Furnature", "Strange coins",
 	"Filler","Useless objects", "Artifacts", "Ascension kit items",
 	"Staves", "Songs", "Drinks", "Grimoires", "Gears", "Cogs",
 	"Marmosets", "Bugs", "Easter Eggs", "Tiny Monuments","Consumables",
 	"Junk", "FOOs", "BARs", "Spoilers", "YANIs", "Splatbooks", 
 	"Chains", "Paperwork", "Pop-culture references", "Dross",
 	"Pokemon","Forgotten escape items","Useless flavor items",
-	"SCPs"
+	"SCPs","Bloat"
 };
 
 static NEARDATA const char oth_symbols[] = {
@@ -6079,6 +6183,17 @@ struct monst *mon;
 		if(which_armor(mon, W_ARMU)) return which_armor(mon, W_ARMU);
 	}
 	return (struct obj *) 0;
+}
+
+struct obj *
+get_most_complete_puzzle()
+{
+	struct obj *puzzle = 0, *otmp;
+	for (otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->otyp == HYPERBOREAN_DIAL && otmp->ovar1_puzzle_steps < 6 && otmp->ovar1_puzzle_steps <= u.uhyperborean_steps && (!puzzle || puzzle->ovar1_puzzle_steps < otmp->ovar1_puzzle_steps))
+			puzzle = otmp;
+	}
+	return puzzle;
 }
 
 #endif /* OVL1 */

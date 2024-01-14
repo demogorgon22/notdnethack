@@ -302,8 +302,7 @@ gainstr(otmp, incr)
 
 	if(incr) num = incr;
 	else {
-	    if(ABASE(A_STR) < 18) num = (rn2(4) ? 1 : rnd(6) );
-	    else if (ABASE(A_STR) < STR18(85)) num = rnd(10);
+	    if(ABASE(A_STR) < STR18(85)) num = (rn2(4) ? 1 : rnd(6) );
 	}
 	(void) adjattrib(A_STR, (otmp && otmp->cursed) ? -num : num, TRUE);
 }
@@ -488,9 +487,9 @@ exerper()
 	if(!(moves % 10)) {
 		/* Hunger Checks */
 
-		int hs = (YouHunger > (Race_if(PM_INCANTIFIER) ? max(u.uenmax/2,200) : 1000)) ? SATIATED :
-			 (YouHunger > 150) ? NOT_HUNGRY :
-			 (YouHunger > 50) ? HUNGRY :
+		int hs = (YouHunger > (Race_if(PM_INCANTIFIER) ? max(u.uenmax/2,200) : get_uhungermax()/2)) ? SATIATED :
+			 (YouHunger > 150*get_uhungersizemod()) ? NOT_HUNGRY :
+			 (YouHunger > 50*get_uhungersizemod()) ? HUNGRY :
 			 (YouHunger > 0) ? WEAK : FAINTING;
 
 #ifdef DEBUG
@@ -596,9 +595,11 @@ exerchk()
 		 //	[MRS 92/10/28 - Treat Wisdom specially for balance.]
 		// if(rn2(AVAL) > ((i != A_WIS) ? abs(AEXE(i)*2/3) : abs(AEXE(i))))
 		    // continue;
-		if(!(ABASE(i) < AMAX(i) && !(i == A_STR && u.uhs >= 3) && AEXE(i) >= 0) && rn2(AVAL) > (abs(AEXE(i)*2/3)) )
+		if(i == A_STR && u.uhs >= 3 && AEXE(i) >= 0)
+			continue;
+		if(!(ABASE(i) < AMAX(i) && AEXE(i) >= 0) && rn2(AVAL) > (abs(AEXE(i)*2/3)) )
 		    continue;
-		mod_val = sgn(AEXE(i));
+		mod_val = AEXE(i) ? sgn(AEXE(i)) : 1;
 
 #ifdef DEBUG
 		pline("exerchk: changing %d.", i);
@@ -946,7 +947,7 @@ int oldlevel, newlevel;
 		int skillslots;
 	    if (newlevel > oldlevel){
 			skillslots = newlevel - oldlevel;
-			if(Race_if(PM_HUMAN) || Race_if(PM_INHERITOR) || Race_if(PM_ANDROID)){
+			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID)){
 				if(!(skillslots%2)) skillslots *= 1.5;
 				else if(!(newlevel%2)) skillslots = skillslots*1.5 + 1;
 				else skillslots *= 1.5;
@@ -955,12 +956,25 @@ int oldlevel, newlevel;
 		}
 	    else{
 			skillslots = oldlevel - newlevel;
-			if(Race_if(PM_HUMAN) || Race_if(PM_INHERITOR) || Race_if(PM_ANDROID)){
+			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID)){
 				if(!(skillslots%2)) skillslots *= 1.5;
 				else if(!(oldlevel%2)) skillslots = skillslots*1.5 + 1;
 				else skillslots *= 1.5;
 			}
 			lose_weapon_skill(skillslots);
+		}
+	}
+	int message = 0;
+	if ((oldlevel >= 14 && newlevel < 14) || (newlevel >= 14 && oldlevel < 14)){
+		for (int i = 0; i < P_NUM_SKILLS; i++) {
+			if (roleSkill(i)){
+				message = oldlevel - newlevel;
+				if (oldlevel > newlevel) restrict_weapon_skill(i);
+				else expert_weapon_skill(i);
+			}
+	    }
+		if (message != 0){
+			You_feel("your skills %s!", (message > 0) ? "slipping away" : "increasing");
 		}
 	}
 }
@@ -1140,6 +1154,10 @@ calc_total_maxhp()
 	int rawmax;
 	int maxbonus;
 	int adjbonus;
+	int uhpbonus = u.uhpbonus;
+	if(check_mutation(SHUB_RADIANCE))
+		uhpbonus -= Insanity;
+
 	if (Upolyd) {
 		ulev = (int)(mons[u.umonnum].mlevel);
 		hp = &u.mh;
@@ -1154,7 +1172,7 @@ calc_total_maxhp()
 		hpcap = 24 + 2*maxhp(1);
 	}
 	
-	if(u.uhpbonus > 0){
+	if(uhpbonus > 0){
 		rawmax = *hprolled + ulev*conplus(ACURR(A_CON));
 		
 		/*Calculate Metamorphosis *before* the max bonus is determined*/
@@ -1170,7 +1188,7 @@ calc_total_maxhp()
 			rawmax = rawmax + (rawmax * u.uhpmultiplier / 10); /*Multiplier is in units of tenths*/
 		
 		if(maxbonus > 0){
-			adjbonus = round(2.0*maxbonus/(1+exp(-(4.0/(2.0*maxbonus))*u.uhpbonus)) - maxbonus);
+			adjbonus = round(2.0*maxbonus/(1+exp(-(4.0/(2.0*maxbonus))*uhpbonus)) - maxbonus);
 		}
 		else adjbonus = 0;
 		
@@ -1186,7 +1204,7 @@ calc_total_maxhp()
 		if(u.uhpmultiplier)
 			rawmax = rawmax + (rawmax * u.uhpmultiplier / 10); /*Multiplier is in units of tenths*/
 		
-		*hpmax = rawmax + u.uhpbonus + u.uhpmod;
+		*hpmax = rawmax + uhpbonus + u.uhpmod;
 	}
 	
 	if(*hpmax < 1) *hpmax = 1;
@@ -1201,6 +1219,10 @@ void
 calc_total_maxen()
 {
 	int en;
+	int uenbonus = u.uenbonus;
+	if(check_mutation(SHUB_RADIANCE))
+		uenbonus += Insanity;
+
 	en = u.uenrolled + (u.ulevel*ACURR(A_INT))/4;
 	
 	if(active_glyph(FORMLESS_VOICE))
@@ -1209,7 +1231,7 @@ calc_total_maxen()
 	if(u.uenmultiplier)
 		en = en + (en * u.uhpmultiplier / 10); /*Multiplier is in units of tenths*/
 	
-	u.uenmax = en + u.uenbonus;
+	u.uenmax = en + uenbonus;
 	
 	if(u.uenmax < 0) u.uenmax = 0;
 	// *hpmax += min(nxtra, max(0, 6*nxtra/5 - 6*nxtra*(*hpmax)*(*hpmax)/(5*hpcap*hpcap)));
@@ -1288,9 +1310,11 @@ struct monst *mon;
 		if(arm && (arm->otyp == PLAIN_DRESS || arm->otyp == NOBLE_S_DRESS)){
 			tmp += arm->spe;
 		}
-
 		if(wep && wep->oartifact == ART_SODE_NO_SHIRAYUKI){
 			tmp += wep->spe;
+		}
+		if(uarmh && uarmh->oartifact == ART_ENFORCED_MIND){
+			tmp += uarmh->spe;
 		}
 	}
 	if (x == A_STR) {
@@ -1309,8 +1333,8 @@ struct monst *mon;
 			(swapwep && swapwep->oartifact == ART_OGRESMASHER) ||
 			(arms && arms->oartifact == ART_GOLDEN_KNIGHT) ||
 			(u.sealsActive&SEAL_YMIR)
-		) return(125);
-		else return((schar)((tmp >= 125) ? 125 : (tmp <= 3) ? 3 : tmp));
+		) return(STR19(25));
+		else return((schar)((tmp >= STR19(25)) ? STR19(25) : (tmp <= 3) ? 3 : tmp));
 	} else if (x == A_CON) {
 		if (
 			(uwep && uwep->oartifact == ART_OGRESMASHER)
@@ -1439,6 +1463,8 @@ boolean check;
 		}
 		nomul(0, NULL);
 	}
+	calc_total_maxen();
+	calc_total_maxhp();
 }
 
 void
@@ -1514,6 +1540,18 @@ int clearable;
 
 	if(usan < rnd(100))
 		return 1;
+	return 0;
+}
+
+int
+count_madnesses()
+{
+	int count = 0;
+	int i;
+	for(i=0; i < 32; i++){
+		if(u.umadness&(0x1L<<i))
+			count++;
+	}
 	return 0;
 }
 
@@ -1667,6 +1705,9 @@ struct monst *mon;
 		case PM_WALKING_DELIRIUM:
 			u.umadness |= MAD_DELUSIONS;
 		break;
+		case PM_VERMIURGE:
+			u.umadness |= MAD_VERMIN;//You are stung by vermin
+		break;
 		case PM_AKKABISH_TANNIN:
 			u.umadness |= MAD_FORMICATION;
 		break;
@@ -1755,7 +1796,10 @@ struct monst *mon;
 		for(madflag = 0x1L; madflag <= LAST_MADNESS; madflag = madflag << 1){
 			if(u.umadness&madflag && !(mon->seenmadnesses&madflag) && roll_generic_madness(FALSE)){
 				mon->seenmadnesses |= madflag;
-				if(d(2,u.ulevel) > mon->m_lev){
+				if(d(2,u.ulevel) >= mon->m_lev){
+					if(u.specialSealsActive&SEAL_YOG_SOTHOTH){
+						yog_credit(mon->m_lev);
+					}
 					if(madflag == MAD_DELUSIONS
 					 || madflag == MAD_REAL_DELUSIONS
 					 || madflag == MAD_SPIRAL
@@ -1843,6 +1887,9 @@ struct monst *mon;
 					else if(madflag == MAD_FRENZY){
 						mon->mhp = 1;
 					}
+					else if(madflag == MAD_VERMIN){
+						mon->mvermin = 1;
+					}
 					// MAD_HOST:
 					// MAD_COLD_NIGHT:
 					// MAD_OVERLORD:
@@ -1861,8 +1908,8 @@ acurrstr(str)
 	int str;
 {
 	if (str <= 18) return((schar)str);
-	if (str <= 121) return((schar)(19 + str / 50)); /* map to 19-21 */
-	else return((schar)(str - 100));
+	if (str <= 41) return((schar)(19 + str / 10)); /* map to 19-21 */
+	else return((schar)(str - 20));
 }
 
 #endif /* OVL0 */
@@ -1891,16 +1938,36 @@ register int n;
 }
 
 void
-setFightingForm(fform)
+unSetFightingForm(fform)
 int fform;
 {
-	int i;
+	int i, first, last;
 	if(fform > LAST_FFORM || fform < 0)
 		impossible("Attempting to set fighting form number %d?", fform);
 	
-	for(i=0; i < FFORM_LISTSIZE; i++)
+	if (fform >= FIRST_LS_FFORM && fform <= LAST_LS_FFORM){
+		first = FIRST_LS_FFORM;
+		last = LAST_LS_FFORM;
+	} else if (fform >= FIRST_KNI_FFORM && fform <= LAST_KNI_FFORM){
+		first = FIRST_KNI_FFORM;
+		last = LAST_KNI_FFORM;
+	} else {
+		first = 0;
+		last = FFORM_LISTSIZE*32;
+	}
+
+	/* this code assumes that each batch of 32 fighting forms are mutually exclusive, but not with other batches of 32 */
+	for(i=first/32; i <= last/32; i++)
 		u.fightingForm[i] = 0L;
 
+}
+
+void
+setFightingForm(fform)
+int fform;
+{
+	/* this code assumes that each batch of 32 fighting forms are mutually exclusive, but not with other batches of 32 */
+	unSetFightingForm(fform);
 	u.fightingForm[(fform-1)/32] |= (0x1L << ((fform-1)%32));
 }
 
@@ -1961,6 +2028,24 @@ int fform;
 		case FFORM_JUYO:
 			return P_JUYO;
 		break;
+		case FFORM_SHIELD_BASH:
+			return P_SHIELD_BASH;
+		break;
+		case FFORM_GREAT_WEP:
+			return P_GREAT_WEP;
+		break;
+		case FFORM_HALF_SWORD:
+			return P_HALF_SWORD;
+		break;
+		case FFORM_KNI_SACRED:
+			return P_KNI_SACRED;
+		break;
+		case FFORM_KNI_RUNIC:
+			return P_KNI_RUNIC;
+		break;
+		case FFORM_KNI_ELDRITCH:
+			return P_KNI_ELDRITCH;
+		break;
 		default:
 			impossible("Attempting to get skill of fighting form number %d?", fform);
 			return P_NONE;
@@ -1982,6 +2067,12 @@ int fform;
 		case FFORM_SHIEN:    return "Shien";
 		case FFORM_JUYO:     return "Juyo";
 		case FFORM_NIMAN:    return "Niman";
+		case FFORM_SHIELD_BASH:	return "Shield Bash";
+		case FFORM_GREAT_WEP:	return "Great Weapon Fighting";
+		case FFORM_HALF_SWORD:	return "Half-sword style";
+		case FFORM_KNI_SACRED:	return "Sacred style";
+		case FFORM_KNI_RUNIC:	return "Runic style";
+		case FFORM_KNI_ELDRITCH:return "Eldritch style";
 		default:
 			impossible("bad fform %d", fform);
 	}
@@ -2009,7 +2100,12 @@ int fform;
 	switch (fform) {
 		/* always available */
 		case NO_FFORM:
+			return FALSE;
 		case FFORM_SHII_CHO:
+		case FFORM_KNI_SACRED:
+			return (FightingFormSkillLevel(fform) <= P_ISRESTRICTED);
+		/* affected by spell success rate, handled elsewhere */
+		case FFORM_KNI_ELDRITCH:
 			return FALSE;
 		/* blocked by heavy armor */
 		case FFORM_MAKASHI:
@@ -2023,7 +2119,19 @@ int fform;
 			return (uarm && !(is_light_armor(uarm)));
 		/* blocked by metal armor */
 		case FFORM_NIMAN:
-			return (uarm && (is_metallic(uarm)));
+			return (uarm && (metal_blocks_spellcasting(uarm)));
+		/* requires longsword and free hand */
+		case FFORM_HALF_SWORD:
+			return !(uwep && uwep->otyp == LONG_SWORD && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
+		/* require longsword*/
+		case FFORM_KNI_RUNIC:
+			return !(uwep && uwep->otyp == LONG_SWORD && FightingFormSkillLevel(fform) > P_ISRESTRICTED);
+		/* requires shield */
+		case FFORM_SHIELD_BASH:
+			return (!uarms);
+		/* requires two-handed weapon */
+		case FFORM_GREAT_WEP:
+			return !(uwep && (bimanual(uwep, youracedata) || bimanual_mod(uwep, &youmonst) > 1));
 		default:
 			impossible("Attempting to get blockage of fighting form number %d?", fform);
 			break;

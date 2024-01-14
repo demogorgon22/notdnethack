@@ -26,6 +26,7 @@ STATIC_DCL char * get_ma_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mv_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mg_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mw_description_of_monster_type(struct monst *, char *);
+STATIC_DCL char * get_mf_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_speed_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_description_of_damage_prefix(uchar, uchar);
 STATIC_DCL int generate_list_of_resistances(struct monst *, char *, int);
@@ -140,6 +141,331 @@ object_from_map(glyph, x, y, obj_p)
     return fakeobj;
 }
 
+#define MM_FLAG 1
+#define MT_FLAG 2
+#define MB_FLAG 3
+#define MV_FLAG 4
+#define MG_FLAG 5
+#define MA_FLAG 6
+
+char *
+flag_to_word(flag, category)
+	unsigned long flag; /* flag to check */
+	int category; /* category (MM, MT, etc.). 1-indexed from MM in order in monflag.h */
+{
+	switch (category){
+	case MM_FLAG:
+		switch (flag) {
+			case MM_FLY: return "fly";
+			case MM_SWIM: return "swim";
+			case MM_AMORPHOUS: return "ooze";
+			case MM_WALLWALK: return "walk on walls";
+			case MM_CLING: return "cling";
+			case MM_TUNNEL: return "tunnel";
+			case MM_NEEDPICK: return "dig";
+			case MM_AMPHIBIOUS: return "breathe underwater";
+			case MM_BREATHLESS: return "don't breathe";
+			case MM_TPORT: return "teleport";
+			case MM_TPORT_CNTRL: return "control their teleports";
+			case MM_TENGTPORT: return "teleport to follow you";
+			case MM_STATIONARY: return "don't move";
+			case MM_FLOAT: return "float";
+			case MM_NOTONL: return "avoid projectiles";
+			case MM_FLEETFLEE: return "flee";
+			case MM_WEBRIP: return "tear webs";
+			case MM_DOORBUST: return "break down doors";
+		}
+	break;
+	case MT_FLAG:
+		switch (flag){
+			case MT_WANTSAMUL: return "want the Amulet of Yendor";
+			case MT_WANTSBELL: return "want the Bell of Opening";
+			case MT_WANTSBOOK: return "want the Book of the Dead";
+			case MT_WANTSCAND: return "want the Candelabrum";
+			case MT_WANTSARTI: return "want artifacts";
+			case MT_WAITFORU: return "wait for you";
+			case MT_CLOSE: return "let you close in";
+			case MT_PEACEFUL: return "start peaceful";
+			case MT_DOMESTIC: return "can be tamed by feeding";
+			case MT_WANDER: return "wander around";
+			case MT_STALK: return "stalk you";
+			case MT_ROCKTHROW: return "throw boulders";
+			case MT_GREEDY: return "like gold";
+			case MT_JEWELS: return "like precious gems";
+			case MT_COLLECT: return "like weapons and food";
+			case MT_MAGIC: return "like magic items";
+			case MT_CONCEAL: return "hides under objects";
+			case MT_HIDE: return "hides on the ceiling";
+			case MT_MINDLESS: return "are mindless";
+			case MT_ANIMAL: return "are animals";
+			case MT_CARNIVORE: return "are carnivores";
+			case MT_HERBIVORE: return "are herbivores";
+			case MT_HOSTILE: return "are always hostile";
+			case MT_TRAITOR: return "are traitorous";
+			case MT_NOTAKE: return "don't pick up items";
+			case MT_METALLIVORE: return "eat metal";
+			case MT_MAGIVORE: return "eat magic";
+			case MT_BOLD: return "recover from fear quickly";
+		}
+	break;
+	case MB_FLAG:
+		switch (flag){
+			case MB_NOEYES: return "have no eyes";
+			case MB_NOHANDS: return "have no hands";
+			case MB_NOLIMBS: return "have no limbs";
+			case MB_NOHEAD: return "have no head";
+			case MB_HUMANOID: return "are humanoid";
+			case MB_ANIMAL: return "are animals";
+			case MB_SLITHY: return "are slithery";
+			case MB_UNSOLID: return "are unsolid";
+			case MB_THICK_HIDE: return "have a thick hide";
+			case MB_OVIPAROUS: return "are oviparous";
+			case MB_ACID: return "are acidic";
+			case MB_POIS: return "are poisonous";
+			case MB_CHILL: return "are cold to the touch";
+			case MB_TOSTY: return "are hot to the touch";
+			case MB_HALUC: return "are hallucinogenic to eat";
+			case MB_MALE: return "are always male";
+			case MB_FEMALE: return "are always female";
+			case MB_NEUTER: return "are always gender-neutral";
+			case MB_STRONG: return "are physically strong";
+			case MB_WINGS: return "have wings";
+			case MB_LONGHEAD: return "have a long head";
+			case MB_LONGNECK: return "have a long neck";
+			case MB_NOFEET: return "have no feet";
+			case MB_HAS_FEET: return "have feet";
+			case MB_CAN_AMULET: return "can wear an amulet";
+			case MB_INDIGESTIBLE: return "are indigestible";
+			case MB_INSUBSTANTIAL: return "are insubstantial";
+			case MB_NOGLOVES: return "cannot wear gloves";
+			case MB_NOHAT: return "cannot wear hats";
+			case MB_SNAKELEG: return "have snake-like legs";
+			case MB_CENTAUR: return "have centaur-like legs";
+		}
+	case MV_FLAG:
+		switch (flag){
+			case MV_NORMAL: return "have normal sight";
+			case MV_INFRAVISION: return "have infravision";
+			case MV_DARKSIGHT: return "have darkvision";
+			case MV_LOWLIGHT2: return "have low-light vision";
+			case MV_LOWLIGHT3: return "have exceptional low-light vision";
+			case MV_CATSIGHT: return "have catsight";
+			case MV_ECHOLOCATE: return "can echolocate";
+			case MV_BLOODSENSE: return "have bloodsense";
+			case MV_LIFESENSE: return "have lifesense";
+			case MV_EXTRAMISSION: return "have extramission";
+			case MV_TELEPATHIC: return "have telepathy";
+			case MV_RLYEHIAN: return "have R'lyehian sight";
+			case MV_SEE_INVIS: return "can see invisible";
+			case MV_DETECTION: return "can detect monsters";
+			case MV_OMNI: return "have omnivision";
+			case MV_SCENT: return "have a keen sense of smell";
+			case MV_EARTHSENSE: return "can sense vibrations";
+		}
+	break;
+	case MG_FLAG:
+		switch (flag){
+			case MG_REGEN: return "regenerate naturally";
+			case MG_NOPOLY: return "cannot be polymorphed into";
+			case MG_MERC: return "work for coin";
+			case MG_PNAME: return "have a title";
+			case MG_LORD: return "are lords or ladies";
+			case MG_PRINCE: return "are princes or princesses";
+			case MG_NASTY: return "are particularly nasty";
+			case MG_INFRAVISIBLE: return "are infravisible";
+			case MG_OPAQUE: return "block line of sight";
+			case MG_DISPLACEMENT: return "have displacement";
+			case MG_HATESSILVER: return "hate silver";
+			case MG_HATESIRON: return "hate iron";
+			case MG_HATESUNHOLY: return "hate unholy";
+			case MG_HATESHOLY: return "hate holy";
+			case MG_RIDER: return "transcend mortality";
+			case MG_DEADLY: return "should not be consumed";
+			case MG_TRACKER: return "can track";
+			case MG_NOSPELLCOOLDOWN: return "have no spell cooldown";
+			case MG_RBLUNT: return "resist blunt";
+			case MG_RSLASH: return "resist slashing";
+			case MG_RPIERCE: return "resist piercing";
+			case MG_VBLUNT: return "are vulnerable to blunt";
+			case MG_VSLASH: return "are vulnerable to slashing";
+			case MG_VPIERCE: return "are vulnerable to piercing";
+			case MG_WRESIST: return "resist weapon damage";
+			case MG_NOTAME: return "are not tameable";
+			case MG_NOWISH: return "cannot be wished for";
+			case MG_BACKSTAB: return "can sneak attack";
+			case MG_COMMANDER: return "command others";
+			case MG_SANLOSS: return "drive you insane";
+			case MG_INSIGHT: return "reveal the truth";
+			case MG_RIDER_HP: return "have rider health";
+			case MG_FUTURE_WISH: return "are from the future";
+			case MG_HATESUNBLESSED: return "hate unblessed";
+		}
+	break;
+	case MA_FLAG:
+		switch (flag){
+			case MA_UNDEAD: return "undead";
+			case MA_WERE: return "werecreatures";
+			case MA_HUMAN: return "humans";
+			case MA_ELF: return "elves";
+			case MA_DROW: return "drow";
+			case MA_DWARF: return "dwarves";
+			case MA_GNOME: return "gnomes";
+			case MA_ORC: return "orcs";
+			case MA_VAMPIRE: return "vampires";
+			case MA_CLOCK: return "clockwork automatons and androids";
+			case MA_UNLIVING: return "unliving";
+			case MA_PLANT: return "plants";
+			case MA_GIANT: return "giants";
+			case MA_INSECTOID: return "insects";
+			case MA_ARACHNID: return "arachnids";
+			case MA_AVIAN: return "avians";
+			case MA_REPTILIAN: return "reptiles";
+			case MA_ANIMAL: return "animals";
+			case MA_AQUATIC: return "aquatic creatures";
+			case MA_DEMIHUMAN: return "demihumans";
+			case MA_FEY: return "fey";
+			case MA_ELEMENTAL: return "elementals";
+			case MA_DRAGON: return "dragons";
+			case MA_DEMON: return "demons";
+			case MA_MINION: return "divine minions";
+			case MA_PRIMORDIAL: return "primordials";
+			case MA_ET: return "extraterrestrial";
+			case MA_G_O_O: return "Great Old Ones";
+			case MA_XORN: return "xorns";
+		}
+	break;
+	default:
+		impossible("flag to words out of bounds?");
+	break;
+	}
+	return "";
+}
+
+void
+warned_monster_reasons(mon, wbuf)
+	struct monst * mon;
+	char * wbuf;
+{
+	char buf[BUFSZ];
+	strcpy(buf, "");
+
+	unsigned long ma_flags = mon->data->mflagsa;
+
+	if (is_undead(mon->data)) ma_flags |= MA_UNDEAD;
+
+	boolean has_ma = FALSE;
+	boolean has_other = FALSE;
+
+#define wflag_and_mflag(wflag, mflag) (((mflag & i) > 0) && ((wflag & i) > 0))
+
+	for (unsigned long i = MA_UNDEAD; i <= MA_XORN; i = i << 1){
+		if (!wflag_and_mflag(flags.warntypea, ma_flags) \
+			|| ((ma_flags & MA_UNDEAD) > 0 && u.sealsActive&SEAL_ACERERAK)) continue;
+
+		Strcat(buf, flag_to_word(i, MA_FLAG));
+		Strcat(buf, ", ");
+		if (!has_ma) has_ma = TRUE;
+	}
+
+	if ((flags.montype & (unsigned long long int)((unsigned long long int)1 << (int)(mon->data->mlet))) > 0){
+		Strcat(buf, makeplural(monexplain[(int)(mon->data->mlet)]));
+		Strcat(buf, ", ");
+		if (!has_ma) has_ma = TRUE;
+	}
+
+	if (u.sealsActive&SEAL_PAIMON && is_magical(mon->data)){
+		Strcat(buf, "magical beings, ");
+		has_ma = TRUE;
+	}
+
+	if (u.sealsActive&SEAL_ANDROMALIUS && is_thief(mon->data)){
+		Strcat(buf, "thieves, ");
+		has_ma = TRUE;
+	}
+
+	if (u.sealsActive&SEAL_TENEBROUS && !nonliving(mon->data)){
+		Strcat(buf, "living beings, ");
+		has_ma = TRUE;
+	}
+
+	//if (u.sealsActive&SEAL_ACERERAK && is_undead(mon->data)) Strcat(buf, "are undead");
+
+	if (uwep && uwep->oclass == WEAPON_CLASS && uwep->obj_material == WOOD && uwep->otyp != MOON_AXE &&\
+					 (uwep->oward & WARD_THJOFASTAFUR) && ((mon)->data->mlet == S_LEPRECHAUN || (mon)->data->mlet == S_NYMPH || is_thief((mon)->data)))
+	{
+		Strcat(buf, "tricksters, ");
+		has_ma = TRUE;
+	}
+
+	if (mon->mtame && beastMateryRadius(mon)){
+		Strcat(buf, "nearby pets, ");
+		has_ma = TRUE;
+	}
+
+	if (has_ma){
+		buf[strlen(buf)-2] = '\0';
+		Strcat(buf, " and monsters that ");
+	}
+	else Strcat(buf, "monsters that ");
+
+	for (unsigned long i = MM_FLY; i <= MM_DOORBUST; i = i << 1){
+		if (!wflag_and_mflag(flags.warntypem, mon->data->mflagsm)) continue;
+		Strcat(buf, flag_to_word(i, MM_FLAG));
+		Strcat(buf, ", ");
+		if (!has_other) has_other = TRUE;
+	}
+
+	for (unsigned long i = MT_WANTSAMUL; i <= MT_BOLD; i = i << 1){
+		if (!wflag_and_mflag(flags.warntypet, mon->data->mflagst)) continue;
+		Strcat(buf, flag_to_word(i, MT_FLAG));
+		Strcat(buf, ", ");
+		if (!has_other) has_other = TRUE;
+	}
+
+	for (unsigned long i = MB_NOEYES; i <= MB_NOHAT; i = i << 1){
+		if (!wflag_and_mflag(flags.warntypeb, mon->data->mflagsb)) continue;
+		Strcat(buf, flag_to_word(i, MB_FLAG));
+		Strcat(buf, ", ");
+	}
+
+	for (unsigned long i = MV_NORMAL; i <= MV_EARTHSENSE; i = i << 1){
+		if (!wflag_and_mflag(flags.warntypev, mon->data->mflagsv)) continue;
+		Strcat(buf, flag_to_word(i, MV_FLAG));
+		Strcat(buf, ", ");
+		if (!has_other) has_other = TRUE;
+	}
+
+	for (unsigned long i = MG_REGEN; i <= MG_HATESUNBLESSED; i = i << 1){
+		if (!wflag_and_mflag(flags.warntypeg, mon->data->mflagsg)) continue;
+		Strcat(buf, flag_to_word(i, MG_FLAG));
+		Strcat(buf, ", ");
+		if (!has_other) has_other = TRUE;
+	}
+
+	if ((Upolyd && youmonst.data->mtyp == PM_SHARK && has_blood((mon)->data) && \
+			(mon)->mhp < (mon)->mhpmax && is_pool(u.ux, u.uy, TRUE) && is_pool((mon)->mx, (mon)->my, TRUE)))
+	{
+		Strcat(buf, "are bleeding in the nearby water, ");
+		has_other = TRUE;
+	}
+
+	if (has_other)
+		buf[strlen(buf)-2] = '\0';
+	else if (has_ma)
+		buf[strlen(buf)-18] = '\0';
+	else {
+		buf[strlen(buf)-14] = '\0';
+		Strcat(buf, "nothing in particular");
+	}
+	Strcat(wbuf, buf);
+}
+
+#undef MM_FLAG
+#undef MT_FLAG
+#undef MB_FLAG
+#undef MV_FLAG
+#undef MG_FLAG
+#undef MA_FLAG
 
 /*
  * Return the name of the glyph found at (x,y).
@@ -376,42 +702,10 @@ lookat(x, y, buf, monbuf, shapebuff)
 					(mdat->mlet == S_LEPRECHAUN || mdat->mlet == S_NYMPH || is_thief(mdat)))) ways_seen++;
 				if(youracedata->mtyp == PM_SHARK && has_blood_mon(mtmp) &&
 						(mtmp)->mhp < (mtmp)->mhpmax && is_pool(u.ux, u.uy, TRUE) && is_pool((mtmp)->mx, (mtmp)->my, TRUE)) ways_seen++;
-				if(MATCH_WARN_OF_MON_STRICT(mtmp)){
-					Sprintf(wbuf, "warned of %s",
-						makeplural(mdat->mname));
+				if(MATCH_WARN_OF_MON(mtmp)){
+					Sprintf(wbuf, "warned of ");
+					warned_monster_reasons(mtmp, wbuf);
 					Strcat(monbuf, wbuf);
-				} else {
-					if(u.sealsActive&SEAL_PAIMON && is_magical(mdat)){
-					Sprintf(wbuf, "warned of magic users");
-					Strcat(monbuf, wbuf);
-					if (ways_seen-- > 1) Strcat(monbuf, ", ");
-					}
-					if(u.sealsActive&SEAL_ANDROMALIUS && is_thief(mdat)){
-					Sprintf(wbuf, "warned of item thieves");
-					Strcat(monbuf, wbuf);
-					if (ways_seen-- > 1) Strcat(monbuf, ", ");
-					}
-					if(uwep && (uwep->oward & WARD_THJOFASTAFUR) && (mdat->mlet == S_LEPRECHAUN || mdat->mlet == S_NYMPH || is_thief(mdat))){
-					Sprintf(wbuf, "warned of leprechauns, nymphs, and item thieves");
-					Strcat(monbuf, wbuf);
-					if (ways_seen-- > 1) Strcat(monbuf, ", ");
-					}
-					if(u.specialSealsActive&SEAL_ACERERAK && is_undead(mdat)){
-					Sprintf(wbuf, "warned of the undead");
-					Strcat(monbuf, wbuf);
-					if (ways_seen-- > 1) Strcat(monbuf, ", ");
-					}
-					if(u.sealsActive&SEAL_TENEBROUS && !nonliving(mdat)){
-					Sprintf(wbuf, "warned of living beings");
-					Strcat(monbuf, wbuf);
-					if (ways_seen-- > 1) Strcat(monbuf, ", ");
-					}
-					if(youracedata->mtyp == PM_SHARK && has_blood_mon(mtmp) &&
-						(mtmp)->mhp < (mtmp)->mhpmax && is_pool(u.ux, u.uy, TRUE) && is_pool((mtmp)->mx, (mtmp)->my, TRUE)){
-					Sprintf(wbuf, "smell blood in the water");
-					Strcat(monbuf, wbuf);
-					if (ways_seen-- > 1) Strcat(monbuf, ", ");
-					}
 				}
 		    }
 			}
@@ -1079,96 +1373,74 @@ STATIC_OVL int
 do_look(quick)
     boolean quick;	/* use cursor && don't search for "more info" */
 {
-	char    out_str[LONGBUFSZ], look_buf[BUFSZ];
-    const char *x_str, *firstmatch = 0;
+	char out_str[LONGBUFSZ];
+	out_str[0] = 0;
+    const char *x_str = 0;
+	const char firstmatch[BUFSZ] = {0};
     struct permonst *pm = 0;
-    struct monst *mtmp = 0;
-    int     i, ans = 0;
     glyph_t sym;		/* typed symbol or converted glyph */
-    int	    found;		/* count of matching syms found */
-    coord   cc;			/* screen pos of unknown glyph */
-    boolean save_verbose;	/* saved value of flags.verbose */
     boolean from_screen;	/* question from the screen */
-    boolean force_defsyms;	/* force using glyphs from defsyms[].sym */
-    boolean need_to_look;	/* need to get explan. from glyph */
-    boolean hit_trap;		/* true if found trap explanation */
-    boolean hit_cloud;		/* true if found cloud explanation */
-    int skipped_venom;		/* non-zero if we ignored "splash of venom" */
-	int hallu_obj;		/* non-zero if found hallucinable object */
 	short otyp = STRANGE_OBJECT;	/* to pass to artifact_name */
 	int oartifact;					/* to pass to artifact_name */
-    static const char *mon_interior = "the interior of a monster";
+	int i, ans = 0;
+	coord   cc;			/* screen pos of unknown glyph */
+	boolean force_defsyms = FALSE;	/* force using glyphs from defsyms[].sym */
+	boolean save_verbose = flags.verbose;
 
-    force_defsyms = FALSE;
     if (quick) {
-	from_screen = TRUE;	/* yes, we want to use the cursor */
+		from_screen = TRUE;	/* yes, we want to use the cursor */
     } else {
-	i = ynq("Specify unknown object by cursor?");
-	if (i == 'q') return MOVE_CANCELLED;
-	from_screen = (i == 'y');
+		i = ynq("Specify unknown object by cursor?");
+		if (i == 'q') return MOVE_CANCELLED;
+		from_screen = (i == 'y');
     }
 
     if (from_screen) {
-	cc.x = u.ux;
-	cc.y = u.uy;
-	sym = 0;		/* gcc -Wall lint */
-    } else {
-	getlin("Specify what? (type the word)", out_str);
-	if (out_str[0] == '\0' || out_str[0] == '\033')
-	    return MOVE_CANCELLED;
+		sym = 0;
+	} else {
+		getlin("Specify what? (type the word)", out_str);
+		if (out_str[0] == '\0' || out_str[0] == '\033')
+			return MOVE_CANCELLED;
 
-	if (out_str[1]) {	/* user typed in a complete string */
-		winid datawin = create_nhwindow(NHW_MENU);
-		// check if they specified a monster
-		int mntmp = NON_PM;
-		if ((mntmp = name_to_mon(out_str)) >= LOW_PM && !is_horror(&mons[mntmp])) {
-			char temp_buf[LONGBUFSZ];
-			strcat(out_str, "\n");
-			temp_buf[0] = '\0';
-			/* create a temporary mtmp to describe */
-			struct monst fake_mon = {0};
-			set_mon_data(&fake_mon, mntmp);
-			get_description_of_monster_type(&fake_mon, temp_buf);
-			(void)strncat(out_str, temp_buf, LONGBUFSZ - strlen(out_str) - 1);
-			pm = &mons[mntmp];
-			char * temp_print;
-			temp_print = strtok(out_str, "\n");
-			while (temp_print != NULL)
-			{
-				putstr(datawin, 0, temp_print);
-				temp_print = strtok(NULL, "\n");
+		if (out_str[1]) {	/* user typed in a complete string */
+			winid datawin = create_nhwindow(NHW_MENU);
+			// check if they specified a monster
+			int mntmp = NON_PM;
+			if ((mntmp = name_to_mon(out_str)) >= LOW_PM && !is_horror(&mons[mntmp])) {
+				char temp_buf[LONGBUFSZ];
+				strcat(out_str, "\n");
+				temp_buf[0] = '\0';
+				/* create a temporary mtmp to describe */
+				struct monst fake_mon = {0};
+				set_mon_data(&fake_mon, mntmp);
+				get_description_of_monster_type(&fake_mon, temp_buf);
+				(void)strncat(out_str, temp_buf, LONGBUFSZ - strlen(out_str) - 1);
+				pm = &mons[mntmp];
+				char * temp_print;
+				temp_print = strtok(out_str, "\n");
+				while (temp_print != NULL)
+				{
+					putstr(datawin, 0, temp_print);
+					temp_print = strtok(NULL, "\n");
+				}
 			}
+			// check if they specified an artifact
+			else if ((x_str = artifact_name(out_str, &otyp, &oartifact))) {
+				putstr(datawin, 0, x_str);
+				describe_item(NULL, otyp, oartifact, &datawin);
+			}
+			// check encyclopedia
+			if(checkfile(out_str, pm, (mntmp==NON_PM && otyp==STRANGE_OBJECT), TRUE, &datawin) || mntmp != NON_PM || otyp != STRANGE_OBJECT)
+				display_nhwindow(datawin, TRUE);
+			destroy_nhwindow(datawin);
+			return MOVE_CANCELLED;
 		}
-		// check if they specified an artifact
-		else if ((x_str = artifact_name(out_str, &otyp, &oartifact))) {
-			putstr(datawin, 0, x_str);
-			describe_item(NULL, otyp, oartifact, &datawin);
-		}
-		// check encyclopedia
-	    if(checkfile(out_str, pm, (mntmp==NON_PM && otyp==STRANGE_OBJECT), TRUE, &datawin) || mntmp != NON_PM || otyp != STRANGE_OBJECT)
-			display_nhwindow(datawin, TRUE);
-		destroy_nhwindow(datawin);
-	    return MOVE_CANCELLED;
-	}
-	sym = out_str[0];
+		sym = out_str[0];
     }
 
-    /* Save the verbose flag, we change it later. */
-    save_verbose = flags.verbose;
-    flags.verbose = flags.verbose && !quick;
-    /*
-     * The user typed one letter, or we're identifying from the screen.
-     */
-    do {
-	/* Reset some variables. */
-	need_to_look = FALSE;
-	pm = (struct permonst *)0;
-	skipped_venom = 0;
-	hallu_obj = 0;
-	found = 0;
-	out_str[0] = '\0';
-
 	if (from_screen) {
+		cc.x = u.ux;
+		cc.y = u.uy;
 	    int glyph;	/* glyph at selected position */
 
 	    if (flags.verbose)
@@ -1179,8 +1451,7 @@ do_look(quick)
 
 	    ans = getpos(&cc, quick, what_is_an_unknown_object);
 	    if (ans < 0 || cc.x < 0) {
-		flags.verbose = save_verbose;
-		return MOVE_CANCELLED;	/* done */
+			return MOVE_CANCELLED;	/* done */
 	    }
 	    flags.verbose = FALSE;	/* only print long question once */
 
@@ -1218,6 +1489,75 @@ do_look(quick)
 	    }
 	}
 
+    /*
+     * The user typed one letter, or we're identifying from the screen.
+     */
+	do_look_letter(sym, from_screen, quick, force_defsyms, cc, out_str, firstmatch);
+	
+	/* Finally, print out our explanation. */
+	if (out_str[0]) {
+		winid datawin = create_nhwindow(NHW_MENU);
+		char * temp_print;
+		temp_print = strtok(out_str, "\n");
+		while (temp_print != NULL)
+		{
+			putstr(datawin, 0, temp_print);
+			temp_print = strtok(NULL, "\n");
+		}
+	    /* check the data file for information about this thing */
+	    if (ans != LOOK_QUICK && ans != LOOK_ONCE &&
+			(ans == LOOK_VERBOSE || (flags.help && !quick))) {
+		char temp_buf[BUFSZ];
+		Strcpy(temp_buf, level.flags.lethe //lethe
+					&& !strcmp(firstmatch, "water")?
+				"lethe" : firstmatch);
+		(void)checkfile(temp_buf, pm, FALSE, (boolean)(ans == LOOK_VERBOSE), &datawin);
+	    }
+		display_nhwindow(datawin, TRUE);
+		destroy_nhwindow(datawin);
+	} else {
+	    pline("I've never heard of such things.");
+	}
+	flags.verbose = save_verbose;
+	return MOVE_CANCELLED;
+}
+
+char*
+do_look_letter(sym, from_screen, quick, force_defsyms, cc, out_str, firstmatch)
+	glyph_t sym;
+	boolean from_screen;
+	boolean quick;
+	boolean force_defsyms;
+	coord cc;
+	char* out_str;
+	const char* firstmatch;
+{
+	char look_buf[BUFSZ];
+    const char *x_str = 0;
+    struct permonst *pm = 0;
+    struct monst *mtmp = 0;
+    int     i, ans = 0;
+    int	    found;		/* count of matching syms found */
+    boolean save_verbose;	/* saved value of flags.verbose */
+    boolean need_to_look;	/* need to get explan. from glyph */
+    boolean hit_trap;		/* true if found trap explanation */
+    boolean hit_cloud;		/* true if found cloud explanation */
+    int skipped_venom;		/* non-zero if we ignored "splash of venom" */
+	int hallu_obj;		/* non-zero if found hallucinable object */
+	short otyp = STRANGE_OBJECT;	/* to pass to artifact_name */
+    static const char *mon_interior = "the interior of a monster";
+
+	save_verbose = flags.verbose;
+    flags.verbose = flags.verbose && !quick;
+
+    do {
+	/* Reset some variables. */
+	need_to_look = FALSE;
+	pm = (struct permonst *)0;
+	skipped_venom = 0;
+	hallu_obj = 0;
+	found = 0;
+	out_str[0] = '\0';
 	/*
 	 * Check all the possibilities, saving all explanations in a buffer.
 	 * When all have been checked then the string is printed.
@@ -1243,7 +1583,7 @@ do_look(quick)
 	if ((from_screen ?
 		(sym == monsyms[S_HUMAN] && cc.x == u.ux && cc.y == u.uy) :
 		(sym == def_monsyms[S_HUMAN] && !iflags.showrace)) &&
-	    !(Race_if(PM_HUMAN) || Race_if(PM_INHERITOR) || Race_if(PM_ELF) || Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && !Upolyd)
+	    !(Race_if(PM_HUMAN) || Race_if(PM_ELF) || Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && !Upolyd)
 	    found += append_str(out_str, "you");	/* tack on "or you" */
 
 	/*
@@ -1431,37 +1771,16 @@ do_look(quick)
 		}
 	}
 
-	/* Finally, print out our explanation. */
+	/* Finally, return our explanation. */
 	if (found) {
-		winid datawin = create_nhwindow(NHW_MENU);
-		char * temp_print;
-		temp_print = strtok(out_str, "\n");
-		while (temp_print != NULL)
-		{
-			putstr(datawin, 0, temp_print);
-			temp_print = strtok(NULL, "\n");
-		}
-	    /* check the data file for information about this thing */
-	    if (found == 1 && ans != LOOK_QUICK && ans != LOOK_ONCE &&
-			(ans == LOOK_VERBOSE || (flags.help && !quick))) {
-		char temp_buf[BUFSZ];
-		Strcpy(temp_buf, level.flags.lethe //lethe
-					&& !strcmp(firstmatch, "water")?
-				"lethe" : firstmatch);
-		(void)checkfile(temp_buf, pm, FALSE, (boolean)(ans == LOOK_VERBOSE), &datawin);
-	    }
-		display_nhwindow(datawin, TRUE);
-		destroy_nhwindow(datawin);
-	} else {
-	    pline("I've never heard of such things.");
+		return out_str;
 	}
-
     } while (from_screen && !quick && ans != LOOK_ONCE);
 
-    flags.verbose = save_verbose;
-    return MOVE_CANCELLED;
-}
+	flags.verbose = save_verbose;
 
+    return 0;
+}
 
 int
 append(char * buf, int condition, char * text, boolean many)
@@ -1672,9 +1991,10 @@ get_mt_description_of_monster_type(struct monst * mtmp, char * description)
 
 	many = append(description, bold(ptr)				, "fearless"					, many);
 	many = append(description, hides_under(ptr)			, "hides"						, many);
-	many = append(description, is_hider(ptr)			, "camoflauged"					, many);
+	many = append(description, is_hider(ptr)			, "camouflaged"					, many);
 	many = append(description, notake(ptr)				, "doesn't pick up items"		, many);
 	many = append(description, mindless_mon(mtmp)		, "mindless"					, many);
+	many = append(description, detached_from_purpose_mon(mtmp), "detached from original purpose", many);
 	many = append(description, is_animal(ptr)			, "animal minded"				, many);
 	eats = appendgroup(description, carnivorous(ptr)	, "eats",	"meat"				, many, eats);
 	eats = appendgroup(description, herbivorous(ptr)	, "eats",	"veggies"			, many, eats);
@@ -1712,6 +2032,7 @@ get_mb_description_of_monster_type(struct monst * mtmp, char * description)
 	many = append(description, nogloves(ptr)			, "handless"				, many);
 	many = append(description, nolimbs(ptr)				, "limbless"				, many);
 	many = append(description, !has_head(ptr)			, "headless"				, many);
+	many = append(description, has_head(ptr) && nohat(ptr), "can't wear helms"		, many);
 	many = append(description, has_horns(ptr)			, "has horns"				, many);
 	many = append(description, is_whirly(ptr)			, "whirly"					, many);
 	many = append(description, flaming(ptr)				, "flaming"					, many);
@@ -1832,6 +2153,33 @@ char * get_mg_description_of_monster_type(struct monst * mtmp, char * descriptio
 }
 
 char *
+get_mf_description_of_monster_type(struct monst * mtmp, char * description)
+{
+	struct permonst * ptr = mtmp->data;
+	strcat(description, "Martial Skill: ");
+	int many = 0;
+	char buff[BUFSZ] = {0};
+
+	Sprintf(buff, "can reach level %d", permonst_max_lev(ptr));
+	many = append(description, TRUE				, buff					, many);
+	
+	if(MON_BAB(mtmp) != 1)
+		Sprintf(buff, "recieves +%.2f to-hit per level", MON_BAB(mtmp));
+	else
+		Sprintf(buff, "recieves +1 to-hit per level");
+	many = append(description, TRUE				, buff					, many);
+
+	many = append(description, ptr->mflagsf&MF_MARTIAL_B				, "basic martial prowess"					, many);
+	many = append(description, ptr->mflagsf&MF_MARTIAL_S				, "skillful martial prowess"					, many);
+	many = append(description, ptr->mflagsf&MF_MARTIAL_E				, "expert martial prowess"					, many);
+
+	many = append(description, has_phys_scaling(ptr)			, "recieves bonus physical damage"			, many);
+
+	strcat(description, ". ");
+	return description;
+}
+
+char *
 get_mw_description_of_monster_type(struct monst * mtmp, char * description)
 {
 	struct permonst * ptr = mtmp->data;
@@ -1909,6 +2257,7 @@ get_description_of_attack_type(uchar id)
 	case AT_KICK: return "kick";
 	case AT_BUTT: return "head butt";
 	case AT_TAIL: return "tail slap";
+	case AT_TONG: return "tongue";
 	case AT_TUCH: return "touch";
 	case AT_STNG: return "sting";
 	case AT_HUGS: return "crushing bearhug";
@@ -2081,10 +2430,11 @@ get_description_of_damage_type(uchar id)
 	case AD_BLAS: return "blasphemy";
 	case AD_SESN: return "four seasons";
 	case AD_POLN: return "pollen";
+	case AD_FATK: return "forces target to attack";
 	case AD_DUNSTAN: return "stones throw themselves at target";
 	case AD_IRIS: return "iridescent tentacles";
 	case AD_NABERIUS: return "tarnished bloody fangs";
-	case AD_OTIAX: return "mist tendrals";
+	case AD_OTIAX: return "mist tendrils";
 	case AD_SIMURGH: return "thirty-colored feathers";
 	case AD_CMSL: return "cold missile";
 	case AD_FMSL: return "fire missile";
@@ -2139,6 +2489,7 @@ get_description_of_damage_type(uchar id)
 	case AD_HLUH: return "corrupted holy energy";
 	case AD_TSMI: return "magic-item-stealing tentacles";
 	case AD_BYAK: return "byakhee eggs";
+	case AD_UNRV: return "unnerving";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2345,8 +2696,12 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 				strcat(main_temp_buf, "\n");
 				strcat(description, main_temp_buf);
 			} while (!((attk)->aatyp == 0 && (attk)->adtyp == 0 && (attk)->damn == 0 && (attk)->damd == 0));		/* no more attacks */
+			temp_buf[0] = '\0';
+			strcat(description, "\n");
+			strcat(description, get_mf_description_of_monster_type(mtmp, temp_buf));
 		}
 		if(wizard){
+			strcat(description, "\n");
 			strcat(description, "Faction (debug-mode-only): ");
 			sprintf(temp_buf, "%d", mtmp->mfaction);
 			strcat(description, temp_buf);

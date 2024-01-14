@@ -1128,6 +1128,7 @@ struct obj **obj_p;
 					ward_at(mtmp->mx,mtmp->my) != HAMSA) {
 		if (mon_reflects(mtmp, "The gaze is reflected away by %s %s!"))
 			return MOVE_STANDARD;
+		minstapetrify(mtmp, TRUE);
 	} else if(!mtmp->mcan && !mtmp->minvis &&
 					mtmp->mtyp == PM_FLOATING_EYE && 
 					ward_at(mtmp->mx,mtmp->my) != HAMSA) {
@@ -1942,8 +1943,13 @@ struct obj *obj;
 		fix_object(dagger);
 		
 		if (obj->oartifact && obj->oartifact == ART_BLADE_SINGER_S_SABER){
-			artifact_exists(dagger, artiname(ART_BLADE_DANCER_S_DAGGER), FALSE);
-			dagger = oname(dagger, artiname(ART_BLADE_DANCER_S_DAGGER));
+			if (!art_already_exists(ART_BLADE_DANCER_S_DAGGER)){
+				artifact_exists(dagger, artiname(ART_BLADE_DANCER_S_DAGGER), FALSE);
+				dagger = oname(dagger, artiname(ART_BLADE_DANCER_S_DAGGER));
+			} else {
+				dagger->oartifact = 0;
+				rem_ox(dagger, OX_ENAM);
+			}
 		}
 
 		dagger = hold_another_object(dagger, "You drop %s!",
@@ -1964,6 +1970,11 @@ struct obj *obj;
 			pline("They don't fit together!");
 			return MOVE_CANCELLED;
 		}
+
+		if (uswapwep->oartifact && uswapwep->oartifact == ART_BLADE_DANCER_S_DAGGER){
+			flag_existance(ART_BLADE_DANCER_S_DAGGER, FALSE);
+		}
+
 		if (u.twoweap) {
 			u.twoweap = 0;
 			update_inventory();
@@ -2494,7 +2505,7 @@ int magic; /* 0=Physical, otherwise skill level */
 	} else if (!magic && near_capacity() > UNENCUMBERED) {
 		You("are carrying too much to jump!");
 		return MOVE_CANCELLED;
-	} else if (!magic && (YouHunger <= 100 || ACURR(A_STR) < 6)) {
+	} else if (!magic && (YouHunger <= 100*get_uhungersizemod() || ACURR(A_STR) < 6)) {
 		You("lack the strength to jump!");
 		return MOVE_CANCELLED;
 	} else if (Wounded_legs) {
@@ -3283,7 +3294,7 @@ coord *cc;
 		m_level_up_intrinsic(mtmp);
 		if(master == &youmonst || master->mtame){
 			mtmp = tamedog_core(mtmp, (struct obj *)0, TRUE);
-			if(mtmp && EDOG(mtmp)){
+			if(mtmp && get_mx(mtmp, MX_EDOG)){
 				EDOG(mtmp)->dominated = TRUE;
 				EDOG(mtmp)->hungrytime = monstermoves + 4500;
 			}
@@ -3612,7 +3623,7 @@ struct obj *sensor;
 					for(; pobj; pobj = pobj->nexthere){
 						/* target object has now been "seen (up close)" */
 						pobj->dknown = 1;
-						if (Is_container(pobj) || pobj->otyp == STATUE) {
+						if (Is_container(pobj) || pobj->otyp == STATUE || (pobj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
 							if (!pobj->cobj)
 							pline("%s empty.", Tobjnam(pobj, "are"));
 							else {
@@ -3633,7 +3644,7 @@ struct obj *sensor;
 					for(; pobj; pobj = pobj->nexthere){
 						/* target object has now been "seen (up close)" */
 						pobj->dknown = 1;
-						if (Is_container(pobj) || pobj->otyp == STATUE) {
+						if (Is_container(pobj) || pobj->otyp == STATUE || (pobj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
 							if (!pobj->cobj)
 							pline("%s empty.", Tobjnam(pobj, "are"));
 							else {
@@ -4558,7 +4569,7 @@ struct obj *obj;
 			return MOVE_STANDARD;
 			}
 		}
-		dam = rnd(2) + dbon(obj) + obj->spe;
+		dam = rnd(2) + dbon(obj, &youmonst) + obj->spe;
 		if (dam <= 0) dam = 1;
 		You("hit your %s with your whip.", body_part(FOOT));
 		Sprintf(buf, "killed %sself with %s whip", uhim(), uhis());
@@ -4674,7 +4685,7 @@ struct obj *obj;
 				int hitu, hitvalu;
 				int dieroll;
 				hitvalu = tohitval((struct monst *)0, &youmonst, (struct attack *)0, otmp, (void *)0, HMON_PROJECTILE, 8, (int *) 0);
-				if(hitvalu > (dieroll = rnd(20)) || dieroll == 1) {
+				if(hitvalu > (dieroll = rnd(20)) || (dieroll == 1 && hitvalu > -10)) {
 					boolean wepgone = FALSE;
 					pline_The("%s hits you as you try to snatch it!" the(onambuf));
 					hmon_general((struct monst *)0, &youmonst, (struct attack *)0, &otmp, (void *)0, HMON_PROJECTILE,
@@ -4801,7 +4812,7 @@ struct obj *obj;
 
     } else if ((!u.dx && !u.dy) || (u.dz > 0)) {
 		int dam;
-		dam = rnd(4) + dbon(obj) + obj->spe;
+		dam = rnd(4) + dbon(obj, &youmonst) + obj->spe;
 		if (dam <= 0) dam = 1;
 		You("hit your %s with your nunchaku.", body_part((u.dz > 0) ? FOOT : HAND));
 		Sprintf(buf, "killed %sself with %s whip", uhim(), uhis());
@@ -6042,13 +6053,18 @@ struct obj *obj;
 			/* made artifact wish */
 			if (mtmp2) {
 				pline("You feel %s presence fade.", s_suffix(mon_nam(mtmp2)));
+				mongone(mtmp2);
+				mtmp2 = (struct monst*) 0;
 				u.uevent.utook_castle |= ARTWISH_SPENT;
 			}
 			else if (mtmp3) {
 				pline("You feel %s presence fade.", s_suffix(mon_nam(mtmp3)));
+				mongone(mtmp3);
+				mtmp3 = (struct monst*) 0;
 				u.uevent.uunknowngod |= ARTWISH_SPENT;
 			}
 		}
+		pline("The djinni%s disappears with a puff of smoke.", (mtmp2 || mtmp3) ? " and their entourage" : "");
 		mongone(mtmp);
 		if (mtmp2)	mongone(mtmp2);
 		if (mtmp3)	mongone(mtmp3);
@@ -6101,6 +6117,7 @@ struct obj *obj;
 #define SUMMON_DJINNI		1
 #define SUMMON_SERVANT		2
 #define SUMMON_DEMON_LORD	3
+#define MISINPUT			4
 
 int
 do_candle_menu()
@@ -6132,6 +6149,13 @@ do_candle_menu()
 
 	Sprintf(buf, "Summon Demon Lord");
 	any.a_int = SUMMON_DEMON_LORD;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet + 1) : 'A';
+
+	Sprintf(buf, "Abort Summoning");
+	any.a_int = MISINPUT;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
@@ -6177,6 +6201,9 @@ do_demon_lord_summon_menu()
 				MENU_UNSELECTED);
 			incntlet = (incntlet != 'z') ? (incntlet + 1) : 'A';
 		}
+	}
+	if (incntlet == 'a'){
+		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, "There's nobody left to answer your summons!", MENU_UNSELECTED);
 	}
 
 	end_menu(tmpwin, "Which demon do you wish to summon?");
@@ -6245,22 +6272,31 @@ struct obj *obj;
 				}
 				verbalize("You have summoned me.  I will grant one wish!");
 				int artwishes = u.uconduct.wisharti;
-				makewish(allow_artwish() | WISH_VERBOSE);
+				consumed = makewish(allow_artwish() | WISH_VERBOSE);
+
 				if (u.uconduct.wisharti > artwishes) {
 					/* made artifact wish */
 					if (mtmp2) {
 						pline("You feel %s presence fade.", s_suffix(mon_nam(mtmp2)));
+						mongone(mtmp2);
+						mtmp2 = (struct monst*) 0;
 						u.uevent.utook_castle |= ARTWISH_SPENT;
 					}
 					else if (mtmp3) {
 						pline("You feel %s presence fade.", s_suffix(mon_nam(mtmp3)));
+						mongone(mtmp3);
+						mtmp3 = (struct monst*) 0;
 						u.uevent.uunknowngod |= ARTWISH_SPENT;
 					}
 				}
+				pline("The djinni%s disappears with a puff of smoke.", (mtmp2 || mtmp3) ? " and their entourage" : "");
 				mongone(mtmp);
 				if (mtmp2)	mongone(mtmp2);
 				if (mtmp3)	mongone(mtmp3);
-				consumed = TRUE;
+
+				if (!consumed){
+					pline("Perhaps try summoning something else?");
+				}
 			}
 			break;
 		case SUMMON_SERVANT:{
@@ -6300,6 +6336,8 @@ struct obj *obj;
 				consumed = TRUE;
 			}
 			break;
+		case MISINPUT:
+			return FALSE;
 		default:
 			consumed = FALSE;
 			break;
@@ -6317,6 +6355,7 @@ struct obj *obj;
 #undef SUMMON_DJINNI
 #undef SUMMON_SERVANT
 #undef SUMMON_DEMON_LORD
+#undef MISINPUT
 
 #define BY_OBJECT	((struct monst *)0)
 
@@ -9109,6 +9148,32 @@ doapply()
 		res = doUseUpgradeKit(&obj);
 		check_loadout_trophy();
 	break;
+	case HYPERBOREAN_DIAL:
+		if(obj->ovar1_puzzle_steps < u.uhyperborean_steps){
+			pline("You are able to solve the current disk of the puzzle.");
+			obj->ovar1_puzzle_steps++;
+			if(obj->ovar1_puzzle_steps == 6){
+				pline("You have completed this puzzle as well.");
+			}
+			return MOVE_STANDARD;
+		}
+		if(obj->ovar1_puzzle_steps == 0){
+			pline("This strange mechanism has a number of freely rotating disks and pegs that pop up and down.");
+			if(ACURR(A_INT) > 13)
+				pline("It seems to be some sort of puzzle, but you aren't able to make any progress!");
+		}
+		else if(obj->ovar1_puzzle_steps == 1){
+			pline("While you were sleeping, you seem to have solved part of the puzzle.");
+			pline("One ring has locked into place, and a hexagonal peg projects from the front face.");
+		}
+		else if(obj->ovar1_puzzle_steps < 6){
+			pline("Your sleeping mind has completed %ld rings of the puzzle.", obj->ovar1_puzzle_steps);
+		}
+		else {
+			pline("The puzzle is complete. All rings have locked into place, and six hexagonal pegs project from the front.");
+		}
+		return MOVE_CANCELLED;
+	break;
 	default:
 		/* Pole-weapons can strike at a distance */
 		if (is_pole(obj)) {
@@ -9116,6 +9181,13 @@ doapply()
 			break;
 		} else if (is_pick(obj) || is_axe(obj)) {
 			res = use_pick_axe(obj);
+			break;
+		}
+		else if(
+		  (obj->oartifact == ART_SKY_REFLECTED && carrying_art(ART_SILVER_SKY)) ||
+		  (obj->oartifact == ART_SILVER_SKY && carrying_art(ART_SKY_REFLECTED))
+		){
+			res = merge_skies(&obj);
 			break;
 		}
 		pline("Sorry, I don't know how to use that.");

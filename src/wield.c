@@ -150,11 +150,10 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 		mons[wep->corpsenm].mname, makeplural(body_part(HAND)));
 	    Sprintf(kbuf, "%s corpse", an(mons[wep->corpsenm].mname));
 	    instapetrify(kbuf);
-	} else if (uarms && bimanual(wep,youracedata))
-	    You("cannot wield a two-handed %s while wearing a shield.",
-		is_sword(wep) ? "sword" :
-		    wep->otyp == BATTLE_AXE ? "axe" : "weapon");
-	else if (wep->otyp == ARM_BLASTER && uarmg && is_metallic(uarmg))
+	} else if (uarms && bimanual(wep,youracedata)){
+		char* term = is_sword(wep) ? "sword" : wep->otyp == BATTLE_AXE ? "axe" : "weapon";
+	    You("cannot wield %s in both hands while wearing a shield.", an(term));
+	} else if (wep->otyp == ARM_BLASTER && uarmg && is_metallic(uarmg))
 		You("cannot fit the bracer over such bulky, rigid gloves.");
 	else if (wep->oartifact == ART_KUSANAGI_NO_TSURUGI && !(u.ulevel >= 30 || u.uhave.amulet)) {
 	    pline("Only a Shogun, or a bearer of the Amulet of Yendor, is truly worthy of wielding this sword.");
@@ -537,7 +536,7 @@ const char *verb;	/* "rub",&c */
 }
 
 /*Contains those parts of can_twoweapon() that DON'T change the game state.  Can be called anywhere the code needs to know if the player is capable of wielding two weapons*/
-#define NOT_WEAPON(obj) (obj && !is_weptool(obj) && obj->oclass != WEAPON_CLASS)
+#define NOT_WEAPON(obj) (obj && !is_weptool(obj) && obj->oclass != WEAPON_CLASS && obj->otyp != STILETTOS && obj->otyp != WIND_AND_FIRE_WHEELS && obj->oartifact != ART_WAND_OF_ORCUS)
 int
 test_twoweapon()
 {
@@ -561,7 +560,7 @@ test_twoweapon()
 			body_part(HAND), (!uwep && !uswapwep) ? "s are" : " is");
 	}
 	/* Objects must not be non-weapons */
-	else if ((NOT_WEAPON(uwep) || NOT_WEAPON(uswapwep)) && !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS))) {
+	else if ((NOT_WEAPON(uwep) || NOT_WEAPON(uswapwep))) {
 		otmp = NOT_WEAPON(uwep) ? uwep : uswapwep;
 		pline("%s %s.", Yname2(otmp),
 		    is_plural(otmp) ? "aren't weapons" : "isn't a weapon");
@@ -581,12 +580,14 @@ test_twoweapon()
 	}
 	/* not a launcher (guns and blasters are ok) */
 	else if (
-		(uwep && is_launcher(uwep) && !is_firearm(uwep)) ||
-		(uswapwep && is_launcher(uswapwep) && !is_firearm(uswapwep)))
+		(uwep && is_launcher(uwep) && !is_firearm(uwep) && !is_melee_launcher(uwep)) ||
+		(uswapwep && is_launcher(uswapwep) && !is_firearm(uswapwep) && !is_melee_launcher(uswapwep)))
 	{
 		You_cant("fight two-handed with this.");
 	}
 	/* cannot be wearing a shield */
+	else if (uarms && activeFightingForm(FFORM_SHIELD_BASH))
+		You("are already using a shield to bash enemies.");
 	else if (uarms)
 		You_cant("use two weapons while wearing a shield.");
 	/* cannot fit armblaster over metal gloves */
@@ -898,7 +899,7 @@ register int amount;
 
 	/* an elven magic clue, cookie@keebler */
 	/* elven weapons vibrate warningly when enchanted beyond a limit */
-	if ((uwep->spe > 5) 
+	if ((uwep->spe > safelim)
 		&& uwep->oartifact != ART_PEN_OF_THE_VOID && uwep->oartifact != ART_ANNULUS &&
 		(is_elven_weapon(uwep) || uwep->oartifact || !rn2(7)) &&
 		uwep->oartifact != ART_ROD_OF_SEVEN_PARTS
@@ -970,6 +971,52 @@ struct permonst * ptr;
 	}
 	return wielder_bonus;
 }
+/*
+ * hand & a half weapons, or bonus strength dmg weapons in general.
+ * basically, can this be two-handed if we have a free hand, for the purposes of extra str bonus
+ * return str multiplier
+ */
+double
+bimanual_mod(otmp, mon)
+struct obj * otmp;
+struct monst * mon;
+{
+	boolean youagr = (mon == &youmonst);
+	struct obj *arms = (youagr ? uarms : which_armor(mon, W_ARMS));
+	struct obj *swapwep = (youagr ? uswapwep : MON_SWEP(mon));
+	
+	if (!otmp)
+		return 1;
+
+	if (otmp->oartifact == ART_RUINOUS_DESCENT_OF_STARS)
+		return 2;
+
+	if (arms)
+		return 1;
+
+
+	/* monsters don't have a concept of swapwep outside two-weaponing,
+	 * I believe, so assume if MON_SWEP then it's two-weaponing */
+	if ((youagr && u.twoweap) || (!youagr && swapwep))
+		return 1;
+
+	if (bimanual(otmp, (youagr ? youracedata : mon->data)))
+		return 2;
+
+	if (otmp->oartifact==ART_PEN_OF_THE_VOID && otmp->ovar1_seals&SEAL_MARIONETTE && mvitals[PM_ACERERAK].died > 0)
+		return 2;
+
+	if (otmp->otyp == FORCE_SWORD || otmp->otyp == DISKOS || otmp->otyp == ROD_OF_FORCE || (youagr && weapon_type(otmp) == P_QUARTERSTAFF))
+		return 2;
+
+	if (is_spear(otmp))
+		return 1.5;
+
+	if (otmp->otyp == ISAMUSEI || otmp->otyp == KATANA || otmp->otyp == LONG_SWORD || is_vibrosword(otmp))
+		return 1.5;
+	
+	return 1;
+}
 
 boolean
 bimanual(otmp, ptr)
@@ -994,6 +1041,10 @@ struct permonst * ptr;
 	/* Some creatures are specifically always able to wield any weapon in one hand */
 	if (ptr && always_one_hand_mtyp(ptr))
 		return FALSE;
+
+	/* half-sword style requires both hands on the sword, regardless of size */
+	if (ptr == youracedata && otmp->otyp == LONG_SWORD && selectedFightingForm(FFORM_HALF_SWORD))
+		return TRUE;
 
 	/* get object size */
 	size_mod = objects[otmp->otyp].oc_size - MZ_MEDIUM;

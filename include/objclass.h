@@ -21,6 +21,7 @@ struct weapon_dice {
 	Bitfield(lucky, 1);			/* use luck-biased dice (rnl()) */
 	Bitfield(exploding, 1);		/* use exploding dice */
 	Bitfield(explode_amt, 3);	/* additional amount to increase roll by when dice explode */
+	Bitfield(ignore_rolls, 2);	/* rolls to ignore */
 };
 
 /* definition of a class of objects */
@@ -136,9 +137,9 @@ struct objclass {
 #define NIDED	8	/* never show material when base object type is known */
 
 #define is_organic(otmp)	((otmp)->obj_material <= CHITIN)
-#define is_metallic(otmp)	((otmp)->obj_material >= IRON && \
-				 (otmp)->obj_material <= MITHRIL)
-#define is_iron_obj(otmp)	((otmp)->obj_material == IRON || (otmp)->obj_material == GREEN_STEEL)
+#define is_metallic(otmp)	(metallic_material((otmp)->obj_material))
+#define metallic_material(mat)	((mat) >= IRON && (mat) <= MITHRIL)
+#define is_iron_obj(otmp)	((otmp)->obj_material == IRON || (otmp)->obj_material == GREEN_STEEL || (otmp)->oartifact == ART_AMALGAMATED_SKIES || (otmp)->oartifact == ART_SKY_REFLECTED)
 #define hard_mat(mat)	((mat) >= WOOD)
 #define is_hard(otmp)	(hard_mat((otmp)->obj_material))
 
@@ -264,6 +265,7 @@ extern NEARDATA struct colorTextClr LightsaberColor[];
 
 #define BURNING_OIL	(MAXOCLASSES+1) /* Can be used as input to explode. */
 #define MON_EXPLODE	(MAXOCLASSES+2) /* Exploding monster (e.g. gas spore) */
+#define FORGE_EXPLODE	(MAXOCLASSES+3) /* Exploding forge */
 
 #if 0	/* moved to decl.h so that makedefs.c won't see them */
 extern const char def_oc_syms[MAXOCLASSES];	/* default class symbols */

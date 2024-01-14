@@ -935,10 +935,10 @@ int mkflags;
 			case TINNING_KIT:
 			case MAGIC_MARKER:	otmp->spe = rn1(70, 30);
 				break;
+			case TREPHINATION_KIT:
 			case CAN_OF_GREASE:	otmp->spe = rnd(25);
 				blessorcurse(otmp, 10);
 				break;
-			case TREPHINATION_KIT:
 			case CRYSTAL_BALL:	otmp->spe = rnd(5);
 				blessorcurse(otmp, 2);
 				break;
@@ -1090,11 +1090,16 @@ int mkflags;
 				}
 				else {
 					int skulls[] = {PM_DWARF_KING, PM_DWARF_QUEEN, PM_MAID, 
-						PM_GITHYANKI_PIRATE, PM_DEMINYMPH, PM_MORDOR_ORC_ELITE, PM_MORDOR_MARSHAL,
+						PM_DUERGAR_DEEPKING,
+						PM_GITHYANKI_PIRATE, PM_GITHYANKI_PIRATE,
+						PM_DEMINYMPH, 
+						PM_MORDOR_ORC_ELITE, PM_MORDOR_MARSHAL, PM_ANGBAND_ORC, PM_ORC_OF_THE_AGES_OF_STARS,
 						PM_MOUNTAIN_CENTAUR, PM_DRIDER, 
 						PM_DROW_CAPTAIN, PM_HEDROW_WIZARD, PM_DROW_MATRON, PM_HEDROW_BLADEMASTER, 
 						PM_DROW_CAPTAIN, PM_HEDROW_WARRIOR, PM_DROW_MATRON, PM_DROW_ALIENIST, 
+						PM_ANULO, PM_ANULO_DANCER,
 						PM_ELF_LORD, PM_ELF_LADY, PM_ELVENKING, PM_ELVENQUEEN, 
+						PM_STAR_ELF, PM_STAR_ELF, PM_STAR_EMPEROR, PM_STAR_EMPRESS,
 						PM_ARCHEOLOGIST, PM_BARBARIAN, PM_HALF_DRAGON, PM_CAVEMAN, PM_CAVEWOMAN, 
 						PM_KNIGHT, PM_KNIGHT, PM_MADMAN, PM_MADWOMAN, PM_PRIEST, PM_PRIESTESS,
 						PM_RANGER, PM_ROGUE, PM_ROGUE, PM_SAMURAI, PM_VALKYRIE, PM_WIZARD 
@@ -1443,8 +1448,6 @@ int mkflags;
 		case WAND_CLASS:
 			if (otmp->otyp == WAN_WISHING)
 				otmp->spe = rnd(3);
-			else if(otmp->otyp == WAN_MAGIC_MISSILE)
-				otmp->spe = rn1(80, 31);
 			else
 				otmp->spe = rn1(5, (objects[otmp->otyp].oc_dir == NODIR) ? 11 : 4);
 			blessorcurse(otmp, 17);
@@ -1553,8 +1556,12 @@ int mkflags;
 				otmp->owt = weight(otmp);
 			}
 			break;
-		case COIN_CLASS:
 		case BED_CLASS:
+			if(otmp->otyp == BERGONIC_CHAIR){
+				otmp->spe = d(3,3);
+			}
+			break;
+		case COIN_CLASS:
 		case TILE_CLASS:
 		case SCOIN_CLASS:
 			break;	/* do nothing */
@@ -1637,7 +1644,7 @@ struct monst *mon;
 	}
 	else if (is_helmet(obj) && !is_hat(obj)){
 		//Check that the monster can actually have armor that fits it.
-		if(!has_head(ptr)){
+		if(!has_head(ptr) || nohat(ptr)){
 			return;
 		}
 		set_obj_shape(obj, ptr->mflagsb);
@@ -1791,7 +1798,7 @@ start_corpse_timeout(body)
 	if (action == ROT_CORPSE && !acidic(&mons[body->corpsenm])){
 		/* Corpses get moldy
 		 */
-		chance = (Is_zuggtmoy_level(&u.uz) && flags.spore_level) ? FULL_MOLDY_CHANCE : 
+		chance = ((Is_zuggtmoy_level(&u.uz) && flags.spore_level) || (attchmon && attchmon->brainblooms)) ? FULL_MOLDY_CHANCE : 
 				 (Is_zuggtmoy_level(&u.uz) || flags.spore_level) ? HALF_MOLDY_CHANCE : 
 				 BASE_MOLDY_CHANCE;
 		for (age = TAINT_AGE + 1; age <= ROT_AGE; age++)
@@ -2403,7 +2410,6 @@ int mat;
 		case LEATHER_HELM:
 		case ARCHAIC_HELM:
 		case DROVEN_HELM:
-		case HARMONIUM_HELM:			/* irreversible, metal */
 //		case PLASTEEL_HELM:				/* has a unique function of shape -- needs a generic version? */
 //		case CRYSTAL_HELM:				/* has a unique function of shape -- needs a generic version? */
 			if (mat == LEATHER)			obj->otyp = LEATHER_HELM;
@@ -2423,7 +2429,6 @@ int mat;
 		case GAUNTLETS:
 		case ARCHAIC_GAUNTLETS:
 		case PLASTEEL_GAUNTLETS:		/* irreversible, plastic */
-		case HARMONIUM_GAUNTLETS:		/* irreversible, metal */
 		case ORIHALCYON_GAUNTLETS:		/* irreversible, metal */
 			if		(mat == DRAGON_HIDE)obj->otyp = (is_hard(obj) ? GAUNTLETS : GLOVES);
 			else if	(mat == LEATHER
@@ -2444,13 +2449,16 @@ int mat;
 		case ARCHAIC_BOOTS:
 		case HIGH_BOOTS:
 		case PLASTEEL_BOOTS:			/* irreversible, plastic */
-		case HARMONIUM_BOOTS:			/* irreversible, metal */
-			if		(mat == DRAGON_HIDE)obj->otyp = (is_hard(obj) ? ARMORED_BOOTS : HIGH_BOOTS);
-			else if	(mat >= WOOD){		
-				if(obj->otyp != ARMORED_BOOTS && 
-					obj->otyp != ARCHAIC_BOOTS
-				) obj->otyp = ARMORED_BOOTS;
-			} else						obj->otyp = HIGH_BOOTS;
+			if(mat == DRAGON_HIDE)
+				obj->otyp = (is_hard(obj) ? ARMORED_BOOTS : HIGH_BOOTS);
+			else if(hard_mat(mat) != is_hard(obj)){
+				if(hard_mat(mat)){
+					if(obj->otyp != ARMORED_BOOTS && 
+						obj->otyp != ARCHAIC_BOOTS
+					) obj->otyp = ARMORED_BOOTS;
+				} else
+					obj->otyp = HIGH_BOOTS;
+			}
 		break;
 		/* shoes */
 		case SHOES:
@@ -2482,7 +2490,6 @@ int mat;
 //			else;
 //				// fall through
 		case SCALE_MAIL:
-		case HARMONIUM_SCALE_MAIL:		/* irreversible, metal */
 		case STUDDED_LEATHER_ARMOR:		/* irreversible, leather */
 		case LEATHER_ARMOR:				/* irreversible, leather */
 			obj->otyp = SCALE_MAIL;
@@ -2496,7 +2503,6 @@ int mat;
 		case PLATE_MAIL:
 		case PLASTEEL_ARMOR:			/* irreversible, plastic */
 		case DROVEN_PLATE_MAIL:			/* irreversible, shadowsteel */
-		case HARMONIUM_PLATE:			/* irreversible, metal */
 			obj->otyp = PLATE_MAIL;
 		break;
 		/* long swords */
@@ -2666,7 +2672,7 @@ register struct obj *obj;
 			difsize = abs(difsize)+1;
 			if(obj->oclass == ARMOR_CLASS || obj->oclass == WEAPON_CLASS) wt = wt/(difsize);
 			else wt = wt/(difsize*difsize);
-			if (wt < 1) wt = 1;
+			if (wt < 1 && wt != artifact_weight(obj)) wt = 1;
 		}
 	}
 	
@@ -2736,7 +2742,7 @@ register struct obj *obj;
 		return (int)((obj->quan + 50L) / 100L);
 	else if (obj->otyp == HEAVY_IRON_BALL && obj->owt != 0)
 		return((int)(obj->owt));	/* kludge for "very" heavy iron ball */
-	return(wt ? wt*(int)obj->quan : ((int)obj->quan + 1)>>1);
+	return((wt || obj->oartifact) ? wt*(int)obj->quan : ((int)obj->quan + 1)>>1);
 }
 
 static int treefruits[] = {APPLE,ORANGE,PEAR,BANANA,EUCALYPTUS_LEAF};
@@ -3046,7 +3052,19 @@ register struct obj *otmp;
 	int otyp = otmp->otyp;
 	int omat = otmp->obj_material;
 
-	if (item_has_property(otmp, FIRE_RES) || otyp == WAN_FIRE)
+	/* Candles can be burned, but they're not flammable in the sense that
+	 * they can't get fire damage and it makes no sense for them to be
+	 * fireproofed.
+	 */
+	if (Is_candle(otmp))
+		return FALSE;
+
+	if (item_has_property(otmp, FIRE_RES) || otyp == WAN_FIRE
+	 || otyp == SCR_FIRE || otyp == SCR_RESISTANCE || otyp == SPE_FIREBALL || otyp == FIRE_HORN
+	)
+		return FALSE;
+
+	if (otyp == SPE_BOOK_OF_THE_DEAD)
 		return FALSE;
 
 	return((boolean)((omat <= CHITIN && omat != LIQUID) || omat == PLASTIC));

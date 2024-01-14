@@ -37,6 +37,7 @@ typedef struct stairway {	/* basic stairway identifier */
 	xchar	sx, sy;		/* x / y location of the stair */
 	d_level tolev;		/* where does it go */
 	char	up;		/* what type of stairway (up/down) */
+	boolean u_traversed;
 } stairway;
 
 /* level region types */
@@ -197,6 +198,7 @@ typedef struct branch {
 #define Is_dis_level(x)		(on_level(x, &hell1_level) && dungeon_topology.hell1_variant == DISPATER_LEVEL)
 #define Is_mammon_level(x)	(on_level(x, &hell1_level) && dungeon_topology.hell1_variant == MAMMON_LEVEL)
 #define Is_belial_level(x)	(on_level(x, &hell1_level) && dungeon_topology.hell1_variant == BELIAL_LEVEL)
+#define Is_chromatic_level(x)	(on_level(x, &hell1_level) && dungeon_topology.hell1_variant == CHROMA_LEVEL)
 #define Is_hell2(x)			(on_level(x, &hell2_level))
 #define Is_leviathan_level(x)	(on_level(x, &hell2_level) && dungeon_topology.hell2_variant == LEVIATHAN_LEVEL)
 #define Is_lilith_level(x)		(on_level(x, &hell2_level) && dungeon_topology.hell2_variant == LILITH_LEVEL)
@@ -227,7 +229,9 @@ typedef struct branch {
 #define Is_wiz3_level(x)	(on_level(x, &wiz3_level))
 #define Is_sanctum(x)		(on_level(x, &sanctum_level))
 #define Is_portal_level(x)	(on_level(x, &portal_level))
+#ifdef REINCARNATION
 #define Is_rogue_level(x)	(on_level(x, &rogue_level))
+#endif
 #define Is_stronghold(x)	(on_level(x, &stronghold_level))
 #define Is_bigroom(x)		(on_level(x, &bigroom_level))
 #define Is_qstart(x)		(on_level(x, &qstart_level))
@@ -270,6 +274,7 @@ typedef struct branch {
 	       				on_level(x,&farvoid_level) || \
 	       				on_level(x,&ilsensin_level) || \
 					on_level(x,&sacris_level))
+#define In_lost_tomb(x)		((x)->dnum == tomb_dnum)
 #define Inhell			In_hell(&u.uz)	/* now gehennom */
 #define Infuture		(Role_if(PM_ANACHRONONAUT) && In_quest(&u.uz))
 #define In_endgame(x)		((x)->dnum == astral_level.dnum)
@@ -351,6 +356,7 @@ struct linfo {
 typedef struct mapseen_feat {
 	/* feature knowledge that must be calculated from levl array */
 	Bitfield(nfount, 2);
+	Bitfield(nforge, 2);
 	Bitfield(nsink, 2);
 	Bitfield(naltar, 2);
 	Bitfield(msalign, 3); /* corresponds to MSA_* above */

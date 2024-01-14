@@ -54,7 +54,7 @@ register struct monst *mtmp;
 {
 	int	x, y;
 
-	if (mtmp->mpeaceful && in_town(u.ux + u.dx, u.uy + u.dy) &&
+	if (mtmp->mpeaceful && !mtmp->mtame && in_town(u.ux + u.dx, u.uy + u.dy) &&
 		!is_blind(mtmp) && m_canseeu(mtmp) && !rn2(3)) {
 
 		//ifdef CONVICT
@@ -670,8 +670,8 @@ boolean digest_meal;
 					healup += 1;
 			}
 		}
-		if(mon->mtame || (Race_if(PM_DROW) && Role_if(PM_ANACHRONONAUT)))
-			healup += (!mon->mcan && Race_if(PM_ANDROID)) ? 3 : Race_if(PM_DROW) ? 2 : 1;
+		if(mon->mtame || (Race_if(PM_MYRKALFR) && Role_if(PM_ANACHRONONAUT)))
+			healup += (!mon->mcan && Race_if(PM_ANDROID)) ? 3 : Race_if(PM_MYRKALFR) ? 2 : 1;
 		if(mon->mcan) healup /= 2;
 		if(healup){
 			set_mcan(mon, FALSE);
@@ -691,6 +691,7 @@ boolean digest_meal;
 			perX += mon->m_lev;
 		}
 		if(likes_lava(mon->data) && levl[mon->mx][mon->my].typ == LAVAPOOL) perX += HEALCYCLE;
+		perX = hd_size(mon->data)*perX/8;
 		//Worn Vilya bonus ranges from (penalty) to +7 HP per 10 turns
 		if(uring_art(ART_VILYA)){
 			perX += heal_vilya()*HEALCYCLE/10;
@@ -708,6 +709,8 @@ boolean digest_meal;
 			}
 		}
 		if(mon_resistance(mon,REGENERATION))
+			mon->mhp+=1;
+		if(mon->mtyp == PM_TWIN_SIBLING && check_mutation(CRAWLING_FLESH))
 			mon->mhp+=1;
 		struct obj *arm = which_armor(mon, W_ARM);
 		// regeneration tech
@@ -1034,6 +1037,18 @@ register struct monst *mtmp;
 					mtmp->mfleetim = 0;
 				}
 			}
+		}
+	}
+	if(mtmp->mtyp == PM_STAR_VAMPIRE){
+		if(mtmp->mvar_star_vampire_blood > 0){
+			mtmp->mvar_star_vampire_blood--;
+			mtmp->mhp += 20;
+			mtmp->mhp = min(mtmp->mhp, mtmp->mhpmax);
+		}
+		if(mtmp->mvar_star_vampire_blood <= 0 && !mtmp->perminvis){
+			mtmp->minvis = TRUE;
+			mtmp->perminvis = TRUE;
+			newsym(mtmp->mx,mtmp->my);
 		}
 	}
 	if (mtmp->mstrategy & STRAT_ARRIVE){
@@ -1418,6 +1433,7 @@ register struct monst *mtmp;
 		&& mdat->mtyp!=PM_LEGION /*&& mdat->mtyp!=PM_SHAMI_AMOURAE*/
 		&& !(noactions(mtmp))
 		&& !(mtmp->mpeaceful && !mtmp->mtame) /*Don't telespam the player if peaceful*/
+		&& !(mtmp == u.usteed) /*Steeds can't use tactics*/
 	) (void) tactics(mtmp);
 	
 	if(mdat->mtyp == PM_GREAT_CTHULHU && !rn2(20)){
@@ -1510,7 +1526,7 @@ register struct monst *mtmp;
 					continue;
 				if(!isok(x, y))
 					continue;
-				patient = m_at(x,y);
+				patient = m_u_at(x,y);
 				if(!patient)
 					continue;
 				if(patient == &youmonst){
@@ -1535,6 +1551,40 @@ register struct monst *mtmp;
 		}
 	}
 	
+	if (mtmp->mtyp == PM_ITINERANT_PRIESTESS && u.uinsight >= 40 && !straitjacketed_mon(mtmp)){
+		struct monst *patient = 0;
+		int i, j, x, y, rot = rn2(3);
+		for(i = -1; i < 2; i++){
+			for(j = -1; j < 2; j++){
+				x = mtmp->mx+(i);
+				y = mtmp->my+(j);
+				if(mtmp->mx == x && mtmp->my == y)
+					continue;
+				if(!isok(x, y))
+					continue;
+				patient = m_u_at(x,y);
+				if(!patient)
+					continue;
+				if(patient == &youmonst){
+					if(!mtmp->mpeaceful || nonliving(youracedata) || hates_holy(youracedata))
+						continue;
+					if((Upolyd && u.mh < u.mhmax) || (!Upolyd && u.uhp < u.uhpmax)){
+						itiner_heal(mtmp, patient, TRUE);
+						return 0;
+					}
+				}
+				else {
+					if(nonliving(patient->data) || patient->mpeaceful != mtmp->mpeaceful || hates_holy_mon(patient))
+						continue;
+					if(patient->mhp < patient->mhpmax){
+						itiner_heal(mtmp, patient, canseemon(mtmp) || canseemon(patient));
+						return 0;
+					}
+				}
+			}
+		}
+	}
+	
 	if(mtmp->mtyp == PM_OPERATOR || mtmp->mtyp == PM_PARASITIZED_OPERATOR){
 		struct monst *repairee = 0;
 		int i, j, x, y, rot = rn2(3);
@@ -1544,9 +1594,7 @@ register struct monst *mtmp;
 				y = mtmp->my+(j+rot)%3;
 				if(!isok(x, y))
 					continue;
-				if(u.ux == x && u.uy == y)
-					repairee = &youmonst;
-				else repairee = m_at(x,y);
+				repairee = m_u_at(x,y);
 				if(!repairee)
 					continue;
 				if(repairee == &youmonst){
@@ -1568,55 +1616,47 @@ register struct monst *mtmp;
 			}
 		}
 	}
-	
-	if((mtmp->mtyp == PM_ANDROID || mtmp->mtyp == PM_GYNOID || mtmp->mtyp == PM_OPERATOR || mtmp->mtyp == PM_ALIDER ||
-		mtmp->mtyp == PM_PARASITIZED_ANDROID || mtmp->mtyp == PM_PARASITIZED_GYNOID || mtmp->mtyp == PM_PARASITIZED_OPERATOR)
-		&& MON_WEP(mtmp)
-		&& (is_vibroweapon(MON_WEP(mtmp)) || is_blaster(MON_WEP(mtmp)))
-		&& MON_WEP(mtmp)->ovar1_charges <= 0
-		&& (!(MON_WEP(mtmp)->otyp == HAND_BLASTER || MON_WEP(mtmp)->otyp == ARM_BLASTER) || MON_WEP(mtmp)->recharged < 4)
-		&& !mtmp->mcan && !mtmp->mspec_used
-		&& !(noactions(mtmp))
-		&& !(mindless_mon(mtmp))
-		&& !rn2(20)
-	){
-		if(canspotmon(mtmp)){
-			if(mtmp->mtyp == PM_ALIDER) pline("%s performs a ritual of recharging.",Monnam(mtmp));
-			else pline("%s uses %s on-board recharger.",Monnam(mtmp), hisherits(mtmp));
-		}
-		if(MON_WEP(mtmp)->otyp == MASS_SHADOW_PISTOL){
-			MON_WEP(mtmp)->ovar1_charges = 800L + rn2(200);
-		} else if(MON_WEP(mtmp)->otyp == RAYGUN){
-			if(Role_if(PM_ANACHRONONAUT) || Role_if(PM_TOURIST))
-				MON_WEP(mtmp)->ovar1_charges = (8 + rn2(8))*10L;
-			else MON_WEP(mtmp)->ovar1_charges = 2+rnd(5)*2;
-		} else {
-			MON_WEP(mtmp)->ovar1_charges =80L + rn2(20);
-		}
-		if(MON_WEP(mtmp)->recharged < 7) MON_WEP(mtmp)->recharged++;
-		mtmp->mspec_used = 10;
-		return 0;
-	}
 
-	if((mtmp->mtyp == PM_ANDROID || mtmp->mtyp == PM_GYNOID || mtmp->mtyp == PM_OPERATOR || mtmp->mtyp == PM_ALIDER ||
-		mtmp->mtyp == PM_PARASITIZED_ANDROID || mtmp->mtyp == PM_PARASITIZED_GYNOID || mtmp->mtyp == PM_PARASITIZED_OPERATOR)
-		&& MON_WEP(mtmp)
-		&& (is_lightsaber(MON_WEP(mtmp)) && MON_WEP(mtmp)->oartifact != ART_INFINITY_S_MIRRORED_ARC && MON_WEP(mtmp)->otyp != KAMEREL_VAJRA)
-		&& MON_WEP(mtmp)->age <= 0
-		&& (!(MON_WEP(mtmp)->otyp == HAND_BLASTER || MON_WEP(mtmp)->otyp == ARM_BLASTER) || MON_WEP(mtmp)->recharged < 4)
-		&& !mtmp->mcan && !mtmp->mspec_used
-		&& !(noactions(mtmp))
-		&& !(mindless_mon(mtmp))
-		&& !rn2(20)
-	){
-		if(canspotmon(mtmp)){
-			if(mtmp->mtyp == PM_ALIDER) pline("%s performs a ritual of recharging.",Monnam(mtmp));
-			else pline("%s uses %s on-board recharger.",Monnam(mtmp), hisherits(mtmp));
+#define can_recharge_mon(mtmp) (mtmp && (mtmp->mtyp == PM_ANDROID || mtmp->mtyp == PM_GYNOID || mtmp->mtyp == PM_OPERATOR || mtmp->mtyp == PM_ALIDER ||\
+		mtmp->mtyp == PM_PARASITIZED_ANDROID || mtmp->mtyp == PM_PARASITIZED_GYNOID || mtmp->mtyp == PM_PARASITIZED_OPERATOR))
+#define ovar1_rechargeable(otmp) (otmp && (is_vibroweapon(otmp) || is_blaster(otmp)) && otmp->ovar1_charges <= 0 && (!(otmp->otyp == HAND_BLASTER || otmp->otyp == ARM_BLASTER) || otmp->recharged < 4))
+#define age_rechargeable(otmp) (otmp && is_lightsaber(otmp) && otmp->age <= 0 && otmp->oartifact != ART_INFINITY_S_MIRRORED_ARC && otmp->otyp != KAMEREL_VAJRA)
+#define can_be_recharged(otmp) (ovar1_rechargeable(otmp) || age_rechargeable(otmp))
+
+
+	if (can_recharge_mon(mtmp) && !mtmp->mcan && !mtmp->mspec_used && !(noactions(mtmp)) && !(mindless_mon(mtmp)) && !rn2(20)){
+		struct obj * rechargee = (struct obj *) 0;
+		struct obj * otmp = (struct obj *) 0;
+		if (MON_WEP(mtmp) && can_be_recharged(MON_WEP(mtmp)))
+			rechargee = MON_WEP(mtmp);
+		else if (MON_SWEP(mtmp) && can_be_recharged(MON_SWEP(mtmp)))
+			rechargee = MON_SWEP(mtmp);
+		else {
+			for(otmp = mtmp->minvent; otmp; otmp = otmp->nobj){
+				if (can_be_recharged(otmp)) {
+					rechargee = otmp;
+					break;
+				}
+			}
 		}
-		MON_WEP(mtmp)->age = 75000;
-		if(MON_WEP(mtmp)->recharged < 7) MON_WEP(mtmp)->recharged++;
-		mtmp->mspec_used = 10;
-		return 0;
+		if (rechargee){
+			if(canspotmon(mtmp)){
+				if(mtmp->mtyp == PM_ALIDER) pline("%s performs a ritual of recharging.",Monnam(mtmp));
+				else pline("%s uses %s on-board recharger.",Monnam(mtmp), hisherits(mtmp));
+			}
+			if (age_rechargeable(rechargee)){
+				rechargee->age = 75000;
+			} else if(rechargee->otyp == MASS_SHADOW_PISTOL){
+				rechargee->ovar1_charges = 800L + rn2(200);
+			} else if(rechargee->otyp == RAYGUN){
+				rechargee->ovar1_charges = (8 + rn2(8))*10L;
+			} else {
+				rechargee->ovar1_charges = 80L + rn2(20);
+			}
+			if(rechargee->recharged < 7) rechargee->recharged++;
+			mtmp->mspec_used = 10;
+			return 0;
+		}
 	}
 
 	if((mtmp->mtyp == PM_PORO_AULON || mtmp->mtyp == PM_ALIDER || mtmp->mtyp == PM_OONA)
@@ -1821,7 +1861,7 @@ register struct monst *mtmp;
 		if (mtmp->mpeaceful && !mtmp->mberserk &&
 		    (!Conflict || resist(mtmp, RING_CLASS, 0, 0))){
 			if(!reducedFlayerMessages) pline("It feels quite soothing.");
-		} else {
+		} else if (!Tele_blind){
 			register boolean m_sen = tp_sensemon(mtmp);
 
 			if(mdat->mtyp == PM_ELDER_BRAIN){
@@ -2304,6 +2344,38 @@ register struct monst *mtmp;
 	return(FALSE);
 }
 
+/*
+ * smith_move: return 1: moved  0: didn't  -1: let m_move do it  -2: died
+ */
+int
+smith_move(smith)
+register struct monst *smith;
+{
+	register xchar gx,gy,omx,omy;
+	schar temple;
+	boolean avoid = TRUE;
+
+	omx = smith->mx;
+	omy = smith->my;
+
+	if(!on_level(&(ESMT(smith)->frglevel), &u.uz))
+		return -1;
+
+	gx = ESMT(smith)->frgpos.x;
+	gy = ESMT(smith)->frgpos.y;
+
+	gx += rn1(3,-1);	/* mill around the altar */
+	gy += rn1(3,-1);
+
+	if(!smith->mpeaceful || smith->mtame || smith->mberserk ||
+	   (Conflict && !resist(smith, RING_CLASS, 0, 0))
+	)
+	   return -1;
+	else if(Invis) avoid = FALSE;
+
+	return(move_special(smith,FALSE,TRUE,FALSE,avoid,omx,omy,gx,gy));
+}
+
 /* Return values:
  * 0: did not move, but can still attack and do other stuff.
  * 1: moved, possibly can attack.
@@ -2423,6 +2495,14 @@ register int after;
 	    mmoved = 0;
 	}
 
+	/* and for smiths */
+	if(HAS_ESMT(mtmp)) {
+	    mmoved = smith_move(mtmp);
+	    if(mmoved == -2) return(2);
+	    if(mmoved >= 0) goto postmov;
+	    mmoved = 0;
+	}
+
 #ifdef MAIL
 	if(ptr->mtyp == PM_MAIL_DAEMON) {
 	    if(flags.soundok && canseemon(mtmp))
@@ -2476,6 +2556,9 @@ not_special:
 		   ( (lepgold = findgold(mtmp->minvent)) && 
                    (lepgold->quan > ((ygold = findgold(invent)) ? ygold->quan : 0L)) ))
 #endif
+			appr = -1;
+
+		if(monsndx(ptr) == PM_LUCKSUCKER && (appr == 1) && mtmp->mvar_lucksucker > 0 && u.uluck < mtmp->mvar_lucksucker)
 			appr = -1;
 
 		/* monsters can track you */

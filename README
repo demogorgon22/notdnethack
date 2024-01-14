@@ -1,9 +1,25 @@
 To read about notdNethack, see the included changelog
 
-To chat about dNethack, visit IRC here: https://web.libera.chat/?channel=##nethack-variants
-                       or Discord here: https://discord.com/invite/vg9WWf2
+To chat about notdNethack, visit IRC here: https://web.libera.chat/?channel=##nethack-variants
 
 You can play notdNethack online using SSH or HTTPS:
 * https://www.hardfought.org/nethack/ (servers in USA, UK, and AUS)
-* https://slashem.me/ (located in Europe)
 * if other servers decide to host notdNethack, they will be listed here: https://nethackwiki.com/wiki/Public_server
+
+Setting up notdNetHack:
+
+notdNetHack is currently only supported on Unix, including WSL for Windows, with no plans to change this for the foreseeable future.
+
+For compiling on Windows:
+* Download Windows Subsystem for Linux (WSL)
+* Open the Terminal in WSL. (Just clicking on the shortcut opens the terminal)
+* Navigate (using `ls` and `cd`) to where you want to install notdnethack
+* Install git: `apt-get git`
+* Clone the version of notdnethack you want with git: `git clone https://github.com/demogorgon22/notdnethack.git` will get you whatever the default release branch is at the time
+* Install the following using `apt-get install <XXXX>`: `bison`, `build-essential`, `libncurses5-dev`, `flex`
+* Build & install by typing `make install`
+* Navigate to the newly-created notdnethackdir directory: `cd notdnethackdir`
+* Run by typing `./notdnethack`. Wizard mode is `./notdnethack -D -u wizard`
+* If you want an rc file (to have custom options and use things like menucolours and autopickup exceptions), edit it via `vim ~/.notdnethackrc` (or your preferred text editor)
+
+For Unix, the same steps apply minus installing WSL. 

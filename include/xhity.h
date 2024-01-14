@@ -71,5 +71,6 @@
 #define SUBOUT_ACU	0x4000	/* ACU tentacle attack */
 #define SUBOUT_SALA1	0x8000	/* Sala tuch attack */
 #define SUBOUT_SALA2	0x00010000	/* Sala hug attack */
+#define SUBOUT_SHUBTONG	0x00020000	/* Mind-stealing tongue attack */
 
 #endif

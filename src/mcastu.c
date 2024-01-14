@@ -551,9 +551,33 @@ unsigned int type;
 				break;
 			}
 		break;
-		case PM_PRIESTESS:
+		case PM_ITINERANT_PRIESTESS:
 			if(has_template(mtmp, MISTWEAVER)){
 				return !rn2(7) ? HYPNOTIC_COLORS : MON_RED_WORD;
+			}
+		break;
+		case PM_TWIN_SIBLING:
+			switch(rn2(4)){
+				case 0:
+				if(check_mutation(YOG_GAZE_1)){
+					return MADF_BURST;
+				}
+				break;
+				case 1:
+				if(check_mutation(YOG_GAZE_2)){
+					return MADF_BURST;
+				}
+				break;
+				case 2:
+				if(check_mutation(MIND_STEALER)){
+					return CRUSH_BOLT;
+				}
+				break;
+				case 3:
+				if(check_mutation(SHUB_CLAWS)){
+					return MON_WARP;
+				}
+				break;
 			}
 		break;
        }
@@ -587,6 +611,54 @@ unsigned int type;
 			break;
 		}
 	break;
+	case PM_TWIN_SIBLING:
+	switch(wzrd_spell_power){
+		case 30:
+		case 29:
+			return TURN_TO_STONE;
+			break;
+		case 28:
+		case 27:
+			return DEATH_TOUCH;
+			break;
+		case 26:
+		case 25:
+			return LIGHTNING;
+			break;
+		case 24:
+		case 23:
+		case 22:
+			return DESTRY_ARMR;
+			break;
+		case 21:
+		case 20:
+		case 19:
+			return DRAIN_ENERGY;
+			break;
+		case 18:
+		case 17:
+		case 16:
+			return MON_POISON_GAS;
+			break;
+		case 15:
+		case 14:
+		case 13:
+			if(!(HFast&INTRINSIC)){
+				return HASTE_SELF;
+				break;
+			}
+		case 12:
+		case 11:
+		case 10:
+			return CURE_SELF;
+		default:
+			return check_mutation(TWIN_MIND) ? BARF_BOLT : PSI_BOLT;
+			break;
+	}
+	break;
+	case PM_ITINERANT_PRIESTESS:
+		if(straitjacketed_mon(mtmp) && has_template(mtmp, MISTWEAVER))
+			return  0;
 	case PM_PRIEST:
 	case PM_PRIESTESS:
 	case PM_ALIGNED_PRIEST:
@@ -712,6 +784,32 @@ unsigned int type;
 			break;
 			case 1:
 			return AGGRAVATION;
+			break;
+		}
+	break;
+	case PM_SHADOWSMITH:
+		switch(clrc_spell_power){
+			default:
+				return OPEN_WOUNDS;
+			break;
+			case 0:
+			case 2:
+			case 4:
+				return BLIND_YOU;
+			break;
+			case 1:
+			case 3:
+			case 5:
+			case 7:
+				return DARKNESS;
+			break;
+			case 20:
+			case 22:
+			case 24:
+				return DRAIN_LIFE;
+			break;
+			case 29:
+				return DEATH_TOUCH;
 			break;
 		}
 	break;
@@ -1141,6 +1239,22 @@ unsigned int type;
 				return CURE_SELF;
 		}
 	   break;
+	case PM_FIRRE_ELADRIN:
+			switch (rnd(6)) {
+				case 1:
+					return FIRE_PILLAR;
+				case 2:
+					return LIGHTNING;
+				case 3:
+					return PARALYZE;
+				case 4:
+					return CURE_SELF;
+				case 5:
+					return RECOVER;
+				case 6:
+					return MON_FIRA;
+			}
+	   break;
 	case PM_GAE_ELADRIN:
 		switch (rnd(4)) {
 			case 1:
@@ -1209,6 +1323,7 @@ unsigned int type;
 			break;
 		}
 	break;
+	case PM_GLASYA:
 	case PM_COUATL:
 		switch(rn2(3)){
 			case 0:
@@ -2015,6 +2130,7 @@ const char * spellname[] =
 	//100
 	"HYPNOTIC_COLORS",
 	"CRUSH_BOLT",
+	"MADF_BURST",
 };
 
 
@@ -2096,6 +2212,7 @@ int tary;
 		(u.uen < mlev(magr))
 		) : (
 		(magr->mcan) ||
+		(magr->mtyp == PM_SHADOWSMITH && dimness(magr->mx,magr->my) <= 0) ||
 		(magr->mspec_used && !nospellcooldowns_mon(magr)) ||
 		(mlev(magr) == 0) ||
 		(youdef && Invulnerable) ||
@@ -2226,6 +2343,8 @@ int tary;
 		}
 	}
 	else {
+		if(magr->mrage && magr->mberserk)
+			spell_skill /= 2;
 		if(magr->mformication || magr->mscorpions)
 			spell_skill /= 2;
 		if(magr->msciaphilia && unshadowed_square(x(magr), y(magr)))
@@ -2303,9 +2422,8 @@ int tary;
 			angrygods(GOD_LOLTH);
 			result = MM_HIT;
 		}
-		// !!!
-		/* generally: cast the spell */
-		result = cast_spell(magr, mdef, attk, spellnum, tarx, tary);
+		else /* generally: cast the spell */
+			result = cast_spell(magr, mdef, attk, spellnum, tarx, tary);
 	}
 	else if (!notarget || youagr) {
 		/* no spell selected; this probably means we have an elemental spell to cast */
@@ -2433,9 +2551,17 @@ int tary;
 		/* increase die size */
 		if (!youagr && is_alabaster_mummy(magr->data) && magr->mvar_syllable == SYLLABLE_OF_POWER__KRAU)
 			dmd *= 1.5;
-
+		if(adtyp == AD_MADF && (youagr || magr->mtyp == PM_TWIN_SIBLING)){
+			dmn = 6 + P_SKILL(P_ATTACK_SPELL);
+			dmd = spiritDsize();
+			// zapdata.bonus += Insanity/10;
+		}
 		/* calculate damage */
 		dmg = d(dmn, dmd);
+
+		if(adtyp == AD_MADF && (youagr || magr->mtyp == PM_TWIN_SIBLING)){
+			dmg += Insanity/10;
+		}
 
 		/* apply damage reductions */
 		dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
@@ -2536,6 +2662,59 @@ int tary;
 			if (youdef) {
 				burn_away_slime();
 				melt_frozen_air();
+			}
+			return xdamagey(magr, mdef, attk, dmg);
+
+		case AD_MADF:
+			/* message */
+			if (youdef || canspotmon(mdef)) {
+				pline("%s%s enveloped in magenta flames.",
+					youdef ? "You" : Monnam(mdef),
+					youdef ? "'re" : " is"
+					);
+			}
+			/* do effect */
+			if (Fire_res(mdef) && Magic_res(mdef)) {
+				if (youdef || canseemon(mdef)) {
+					shieldeff(tarx, tary);
+					if (youdef) pline("But you resist the effects.");
+					else pline("But %s resists the effects.", mhe(mdef));
+				}
+				dmg = 0;
+			}
+			else if(Fire_res(mdef)){
+				dmg -= dmg/2;
+			}
+			/* damage inventory */
+			if (!UseInvFire_res(mdef)){
+				destroy_item(mdef, POTION_CLASS, AD_FIRE);
+				if (!rn2(6)) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+				if (!rn2(10)) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+			}
+			/* other effects */
+			if (youdef) {
+				burn_away_slime();
+				melt_frozen_air();
+			}
+			//Share madness
+			if(magr == mdef); //You can't share your madness with yourself
+			else if(youdef){
+				if(!save_vs_sanloss()){
+					change_usanity(-1*d(3,6), TRUE);
+				}
+			}
+			else if(youagr || magr->mtyp == PM_TWIN_SIBLING){
+				if(!mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || tp_sensemon(mdef) || !rn2(5)) && roll_generic_madness(FALSE)){
+					//reset seen madnesses
+					mdef->seenmadnesses = 0L;
+					you_inflict_madness(mdef);
+				}
+			}
+			else {
+				if(!mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || !rn2(5))){
+					if(!resist(mdef, '\0', 0, FALSE))
+						mdef->mcrazed = TRUE;
+				}
 			}
 			return xdamagey(magr, mdef, attk, dmg);
 
@@ -2647,7 +2826,7 @@ int tary;
 				int i;
 				/* reduce by DR */
 				for (i = dmn / 3; i > 0; i--) {
-					dmg -= (youdef ? roll_udr(magr) : roll_mdr(mdef, magr));
+					dmg -= (youdef ? roll_udr(magr, attk->aatyp) : roll_mdr(mdef, magr, attk->aatyp));
 				}
 				/* deals silver-hating damage */
 				if (hates_silver((youdef ? youracedata : mdef->data))) {
@@ -2733,6 +2912,14 @@ int tary;
 			if (adtyp == AD_STAR) {
 				zapdata.unreflectable = ZAP_REFL_NEVER;
 				zapdata.damd = 8;
+			}
+			if (adtyp == AD_MADF) {
+				if(youagr || magr->mtyp == PM_TWIN_SIBLING){
+					zapdata.damn = 6 + P_SKILL(P_ATTACK_SPELL);
+					zapdata.damd = spiritDsize();
+					zapdata.bonus += Insanity/10;
+				}
+				zapdata.no_bounce = TRUE;
 			}
 			if (adtyp == AD_HOLY || adtyp == AD_UNHY || adtyp == AD_HLUH) {
 				zapdata.affects_floor = FALSE;
@@ -3067,6 +3254,7 @@ int tary;
 	case LIGHTNING_BOLT:
 	case SLEEP:
 	case DISINT_RAY:
+	case MADF_BURST:
 	case MON_AURA_BOLT:
 		/* these are allowed to miss */
 		if (!mdef) {
@@ -3086,6 +3274,7 @@ int tary;
 			case LIGHTNING_BOLT:	alt_attk.adtyp = AD_ELEC; break;
 			case SLEEP:				alt_attk.adtyp = AD_SLEE; break;
 			case DISINT_RAY:		alt_attk.adtyp = AD_DISN; break;
+			case MADF_BURST:		alt_attk.adtyp = AD_MADF; break;
 			case MON_AURA_BOLT:
 				if(youagr){
 					if(u.ualign.record < -3){
@@ -4306,7 +4495,7 @@ int tary;
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s pierced by %s of silver light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
-				dmg = d(n, 20) - (youdef ? roll_udr(magr) : roll_mdr(mdef, magr));
+				dmg = d(n, 20) - (youdef ? roll_udr(magr, attk->aatyp) : roll_mdr(mdef, magr, attk->aatyp));
 				if(dmg < 1)
 					dmg = 1;
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
@@ -4409,7 +4598,7 @@ int tary;
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s slashed by golden light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
-				dmg = d(2, 12) - (youdef ? roll_udr(magr) : roll_mdr(mdef, magr));
+				dmg = d(2, 12) - (youdef ? roll_udr(magr, attk->aatyp) : roll_mdr(mdef, magr, attk->aatyp));
 				if(dmg < 1)
 					dmg = 1;
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
@@ -5027,6 +5216,7 @@ int tary;
 			return MM_MISS;
 		}
 		else {
+			if (DimensionalLock) return MM_MISS;
 			/* full uvm / mvm / mvu allowed */
 			int sphere;
 			/* For a change, let's not assume the spheres are together. : ) */
@@ -5863,7 +6053,7 @@ int tary;
 					else if (canseemon(mdef))
 						pline("%s weapon is damaged!", s_suffix(Monnam(mdef)));
 				}
-				else if (youdef && (rn2(3) && magr->data->maligntyp < 0) && !Hallucination) {
+				else if (youdef && (rn2(3) && is_chaotic_mon(magr)) && !Hallucination) {
 					if (malediction)
 						verbalize("%s, your %s broken!", plname, aobjnam(otmp, "are"));
 					Your("%s to pieces in your %s!", aobjnam(otmp, "shatter"), hands);
@@ -6319,6 +6509,7 @@ int spellnum;
 	case MON_WARP_THROW:
 	case DROP_BOULDER:
 	case DISINT_RAY:
+	case MADF_BURST:
 	case STARFALL:
 	case MON_AURA_BOLT:
 		return TRUE;
@@ -6357,6 +6548,7 @@ int spellnum;
 	case LIGHTNING_BOLT:
 	case SLEEP:
 	case DISINT_RAY:
+	case MADF_BURST:
 	case MON_AURA_BOLT:
 		return TRUE;
 	default:
@@ -6557,7 +6749,7 @@ int tary;
 //////////////////////////////////////////////////////////////////////////////////////
 
 	/* ray attack when monster isn't lined up */
-	if ((spellnum == MAGIC_MISSILE || spellnum == SLEEP || spellnum == CONE_OF_COLD || spellnum == LIGHTNING_BOLT || spellnum == MON_AURA_BOLT || spellnum == DISINT_RAY)
+	if ((spellnum == MAGIC_MISSILE || spellnum == SLEEP || spellnum == CONE_OF_COLD || spellnum == LIGHTNING_BOLT || spellnum == MON_AURA_BOLT || spellnum == DISINT_RAY || spellnum == MADF_BURST)
 		&& !clearline)
 		return TRUE;
 
@@ -6684,10 +6876,11 @@ int tary;
 
 	/* the wiz won't use the following cleric-specific or otherwise weak spells */
 	if (!youagr && magr->iswiz && (
-		spellnum == SUMMON_SPHERE || spellnum == DARKNESS ||
-		spellnum == PUNISH || spellnum == INSECTS ||
-		spellnum == SUMMON_ANGEL || spellnum == DROP_BOULDER ||
-		spellnum == DISINT_RAY || spellnum == DISINTEGRATION
+		spellnum == SUMMON_SPHERE || spellnum == DARKNESS
+		|| spellnum == PUNISH || spellnum == INSECTS
+		|| spellnum == SUMMON_ANGEL || spellnum == DROP_BOULDER
+		|| spellnum == DISINT_RAY || spellnum == DISINTEGRATION
+		|| spellnum == MADF_BURST
 		))
 		return TRUE;
 

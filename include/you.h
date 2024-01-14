@@ -347,6 +347,20 @@ struct you {
 
 #define FFORM_LISTSIZE	(LAST_FFORM/32 + 1)
 	unsigned long int fightingForm[FFORM_LISTSIZE];/* special properties */
+	int ueldritch_style;
+	Bitfield(uavoid_passives,1);
+	Bitfield(uavoid_msplcast,1);
+	Bitfield(uavoid_grabattk,1);
+	Bitfield(uavoid_englattk,1);
+	int umystic;	/*Monk mystic attacks active*/
+#define monk_style_active(style) (u.umystic & (1 << (style-1)))
+#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
+
+#define DIVE_KICK 1
+#define AURA_BOLT 2
+#define BIRD_KICK 3
+#define METODRIVE 4
+#define PUMMEL    5
 	// long laststruck;
 	long lastmoved;
 	long lastcast;
@@ -381,6 +395,7 @@ struct you {
 #define ENT_YEW 23
 #define ENT_MAX_SPECIES ENT_YEW
 	int start_house; /* starting drow house info */
+	int inherited; /* what you inherited at the start, if anything */
 	struct prop uprops[LAST_PROP+1];
 	int rift_count;
 	int vortex_count;
@@ -585,7 +600,8 @@ struct you {
 	int uhp_real, uhpmax_real, uhprolled_real, uhpbonus_real, uhpmod_real;
 	int uen_real, uenmax_real, uenrolled_real, uenbonus_real;
 	int ugifts;			/* number of artifacts bestowed */
-	int uartisval;		/* approximate strength of artifacts and gifts bestowed and wished for */
+	int uartisval;		/* approximate strength of artifacts bestowed and wished for */
+	int ucultsval;		/* approximate strength of wished artifacts and gifts bestowed */
 	int ublessed, ublesscnt;	/* blessing/duration from #pray */
 	long usaccredit;		/* credit towards next gift */
 	boolean cult_atten[MAX_CULTS];	/* for having started with a cult */
@@ -603,6 +619,12 @@ struct you {
 #define silver_devotion			ucultcredit_total[FLAME_CULT]
 #define yog_sothoth_devotion	ucultcredit_total[SOTH_CULT]
 #define good_neighbor_devotion	ucultcredit_total[RAT_CULT]
+	long ucultmutagen[MAX_CULTS];	/* total mutagen taken from the cult */
+#define shubbie_mutagen			ucultmutagen[GOAT_CULT]
+#define yog_sothoth_mutagen		ucultmutagen[SOTH_CULT]
+	long ucultmutations[MAX_CULTS];	/* total mutations taken from the cult */
+#define shubbie_mutations		ucultmutations[GOAT_CULT]
+#define yog_sothoth_mutations	ucultmutations[SOTH_CULT]
 	d_level silver_flame_z; 
 	xchar s_f_x, s_f_y; 
 	long lastprayed;
@@ -697,6 +719,7 @@ struct you {
 #define	MAD_ROTTING			0x0000000100000000L
 #define	MAD_REACHER			0x0000000200000000L
 #define	MAD_SCORPIONS		0x0000000400000000L
+#define	MAD_VERMIN			0x0000000800000000L
 #define	LAST_MADNESS		MAD_SCORPIONS
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
@@ -705,6 +728,8 @@ struct you {
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
 	int 	utaneggs;	/* tannin eggs */
+	int		udisks;		/* to record how many aphanactonan disks you've read */
+	int		uboln;		/* to record how many spirits you've gained from the boln */
 	int uinvault;
 	struct monst *ustuck;
 	boolean petattacked;
@@ -742,16 +767,6 @@ struct you {
 #define SPIRIT_PUNCH_LVL	10
 #define FLICKER_PUNCH_LVL	8
 #define ABSORPTIVE_PUNCH_LVL	2
-	int umystic;	/*Monk mystic attacks active*/	
-#define monk_style_active(style) (u.umystic & (1 << (style-1)))
-#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
-
-#define DIVE_KICK 1
-#define AURA_BOLT 2
-#define BIRD_KICK 3
-#define METODRIVE 4
-#define PUMMEL    5
-
 	long	wardsknown;	/* known wards */
 #define	WARD_ELBERETH		(0x1L<<0)
 #define WARD_HEPTAGRAM		(0x1L<<1)
@@ -837,6 +852,7 @@ struct you {
 #define SEAL_UNKNOWN_GOD			0x00000200L
 #define SEAL_BLACK_WEB				0x00000400L
 #define SEAL_YOG_SOTHOTH			0x00000800L
+	long	yogAttack;
 #define SEAL_NUMINA					0x40000000L
 //	long	numina;	//numina does not expire, and can be immediatly re-bound once 30th level is achived if the pact is broken.
 	
@@ -937,11 +953,14 @@ struct you {
 #define	PWR_PHASE_STEP				66
 #define	PWR_BLACK_BOLT				67
 #define	PWR_WEAVE_BLACK_WEB			68
-#define	PWR_IDENTIFY_INVENTORY		69
-#define	PWR_CLAIRVOYANCE			70
-#define	PWR_FIND_PATH				71
-#define	PWR_GNOSIS_PREMONITION		72
-#define	NUMBER_POWERS				80
+#define	PWR_MAD_BURST				69
+#define	PWR_UNENDURABLE_MADNESS		70
+#define	PWR_CONTACT_YOG_SOTHOTH		71
+#define	PWR_IDENTIFY_INVENTORY		72
+#define	PWR_CLAIRVOYANCE			73
+#define	PWR_FIND_PATH				74
+#define	PWR_GNOSIS_PREMONITION		75
+#define	NUMBER_POWERS				76
 
 	int spiritPOrder[52]; //# of letters in alphabet, capital and lowercase
 //	char spiritPLetters[NUMBER_POWERS];
@@ -953,7 +972,10 @@ struct you {
 	boolean summonMonster;
 	/* 	Variable that checks if the Wizard has increased the weight of the amulet */
 	boolean uleadamulet;
-	/*Ugly extra artifact variables workaround.  Spaghetti code alert!*/
+	/*Deprecated (moved to art-instance variables?): Ugly extra artifact variables workaround.  Spaghetti code alert!*/
+	char dracae_pets; /*How many pets have been incarnated by a dracae this game.*/
+	unsigned char puzzle_time; /*Time needed to solve the next step of a hyperborean dial puzzle.*/
+	unsigned char uhyperborean_steps; /*The most advanced step you've reached on a hyperborean dial puzzle.*/
 	int goldkamcount_tame; /*number of tame golden kamerel following you around*/
 	int voidChime;
 	long rangBell; /*Turn last rang bell of opening on*/
@@ -972,6 +994,7 @@ struct you {
 	long ufirst_know_timeout;
 	long thoughts;
 #define MAX_GLYPHS ((Role_if(PM_MADMAN) && u.uevent.qcompleted && (u.uinsight >= 20 || u.render_thought)) ? 4 : 3)
+	long mutations[MUTATION_LISTSIZE];
 };	/* end of `struct you' */
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))
 #define uandroid ((Race_if(PM_ANDROID) && !Upolyd) || (Upolyd && (youmonst.data->mtyp == PM_ANDROID || youmonst.data->mtyp == PM_GYNOID || youmonst.data->mtyp == PM_OPERATOR || youmonst.data->mtyp == PM_COMMANDER)))
@@ -1001,7 +1024,6 @@ extern long int_spirits; /*Defined in sounds.c*/
 extern long wis_spirits; /*Defined in sounds.c*/
 extern boolean barrage; /*Defined in dothrow.c*/
 extern boolean onlykicks; /*Defined in dokick.c*/
-extern const char *Velka, *Moloch, *Morgoth, *MolochLieutenant, *Silence, *Chaos, *DeepChaos, *tVoid, *Demiurge, *Sophia, *Other, *BlackMother, *Nodens, *DreadFracture, *AllInOne; /*defined in pray*/
 #define Upolyd (u.umonnum != u.umonster)
 
 #endif	/* YOU_H */

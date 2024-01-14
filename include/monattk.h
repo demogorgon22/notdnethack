@@ -52,6 +52,7 @@
 #define AT_OBIT		42	/* "Other" bite. Medusa's hair, an ancient naga's canopy, and the ring armor's skirt */
 #define AT_WBIT		43	/* Wolf-head bite */
 #define AT_TAIL		44	/* Tail-slap */
+#define AT_TONG		45	/* Tongue attack */
 
 #define AT_WEAP		252	/* uses weapon */
 #define AT_XWEP		253	/* uses offhanded weapon */
@@ -243,11 +244,14 @@
 #define AD_TSMI     165 /* Tentacles Steal Magic Items */
 #define AD_BYAK     166 /* Byakhee eggs */
 #define AD_BSTR		167 /* Black star rapier */
+#define AD_UNRV		168 /* Unnerving gaze */
+#define AD_MADF		169 /* Madness fire */
+#define AD_FATK		170 /* Force target to attack */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	168
+#define AD_DUNSTAN	171
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3
@@ -288,6 +292,9 @@
 #define WH_WISH		0x00000008L
 #define WH_AWISH	0x00000010L
 
+#define no_contact_attk(attk) (\
+	(spirit_rapier_at(attk->aatyp) && attk->adtyp != AD_MERC) || \
+	attk->aatyp == AT_WISP || attk->aatyp == AT_HITS)
 /*
  *  Monster to monster attacks.  When a monster attacks another (mattackm),
  *  any or all of the following can be returned.  See mattackm() for more

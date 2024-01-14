@@ -114,6 +114,7 @@ unsigned int *obgcolor;
 #endif
 	glyph_t ch;
 	unsigned special = 0;
+	struct trap *ttmp = t_at(x,y);
 
     /*
      *  Map the glyph back to a character and color.
@@ -123,7 +124,9 @@ unsigned int *obgcolor;
      */
     if ((offset = (glyph - GLYPH_WARNING_OFF)) >= 0) {	/* a warning flash */
     	ch = warnsyms[offset];
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 # ifdef ROGUE_COLOR
 	if (HAS_ROGUE_IBM_GRAPHICS)
 	    color = NO_COLOR;
@@ -197,7 +200,7 @@ unsigned int *obgcolor;
 					if(offset >= S_vwall && offset <= S_trwall){
 						color = CLR_BROWN;
 					}
-					if(offset >= S_drkroom && offset <= S_dnladder){
+					if(offset >= S_drkroom && offset <= S_brdnladder){
 						color = CLR_BROWN;
 					}
 				} else if(Is_waterlevel(&u.uz)){
@@ -211,7 +214,7 @@ unsigned int *obgcolor;
 					if(offset >= S_vwall && offset <= S_trwall){
 						color = CLR_BLACK;
 					}
-					if(offset >= S_drkroom && offset <= S_dnladder){
+					if(offset >= S_drkroom && offset <= S_brdnladder){
 						color = offset == S_litroom ? CLR_GRAY : CLR_BLACK;
 					}
 				}
@@ -232,7 +235,7 @@ unsigned int *obgcolor;
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_BROWN;
 				}
-				if(offset >= S_drkroom && offset <= S_dnladder){
+				if(offset >= S_drkroom && offset <= S_brdnladder){
 					color = CLR_BROWN;
 				}
 			} else if(Is_paradise(&u.uz)){
@@ -240,7 +243,7 @@ unsigned int *obgcolor;
 					color = CLR_BRIGHT_BLUE;
 				} else if(offset == S_drkroom || offset == S_corr || offset <= S_hcdoor){
 					color = CLR_BROWN;
-				} else if(offset >= S_litroom && offset <= S_dnladder){
+				} else if(offset >= S_litroom && offset <= S_brdnladder){
 					color = CLR_YELLOW;
 				}
 			} else if(Is_peanut(&u.uz)){
@@ -250,7 +253,7 @@ unsigned int *obgcolor;
 					color = CLR_BRIGHT_BLUE;
 				} else if(offset == S_drkroom || offset == S_corr || offset <= S_hcdoor){
 					color = CLR_BROWN;
-				} else if(offset >= S_litroom && offset <= S_dnladder){
+				} else if(offset >= S_litroom && offset <= S_brdnladder){
 					color = CLR_YELLOW;
 				}
 			} else if(Pantheon_if(PM_SALAMANDER) && In_quest(&u.uz)){
@@ -286,7 +289,7 @@ unsigned int *obgcolor;
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_RED;
 				}
-				if(offset >= S_drkroom && offset <= S_dnladder){
+				if(offset >= S_drkroom && offset <= S_brdnladder){
 					color = offset == S_litroom ? CLR_GRAY : CLR_BLACK;
 				}
 			} else if(In_quest(&u.uz)){
@@ -301,7 +304,7 @@ unsigned int *obgcolor;
 							|| offset == S_litroom
 							|| offset == S_brightrm
 							|| offset == S_litcorr
-							|| (offset >= S_upstair && offset <= S_dnladder)
+							|| (offset >= S_upstair && offset <= S_brdnladder)
 							|| offset == S_litsoil
 							|| offset == S_litsand
 						){
@@ -328,7 +331,7 @@ unsigned int *obgcolor;
 							|| offset == S_corr
 							|| offset == S_drksoil
 							|| offset == S_drksand
-							|| (offset >= S_upstair && offset <= S_dnladder)
+							|| (offset >= S_upstair && offset <= S_brdnladder)
 						){
 							color = CLR_BLACK;
 						}
@@ -337,7 +340,7 @@ unsigned int *obgcolor;
 							|| offset == S_litroom
 							|| offset == S_brightrm
 							|| offset == S_litcorr
-							|| (offset >= S_upstair && offset <= S_dnladder)
+							|| (offset >= S_upstair && offset <= S_brdnladder)
 							|| offset == S_litsoil
 							|| offset == S_litsand
 						){
@@ -363,7 +366,7 @@ unsigned int *obgcolor;
 					if(offset >= S_vwall && offset <= S_trwall){
 						color = CLR_BLACK;
 					}
-					if(offset >= S_drkroom && offset <= S_dnladder){
+					if(offset >= S_drkroom && offset <= S_brdnladder){
 						color = offset == S_litroom ? CLR_GRAY : CLR_BLACK;
 					}
 					if(Is_lich_level(&u.uz)){
@@ -405,20 +408,20 @@ unsigned int *obgcolor;
 					if(offset >= S_vwall && offset <= S_trwall){
 						color = CLR_BRIGHT_BLUE;
 					}
-					else if(offset >= S_drkroom && offset <= S_dnladder){
+					else if(offset >= S_drkroom && offset <= S_brdnladder){
 						color = CLR_BLUE;
 					}
 				} else {
 					if(offset >= S_vwall && offset <= S_trwall){
 						color = CLR_BLACK;
 					}
-					else if(offset >= S_drkroom && offset <= S_dnladder){
+					else if(offset >= S_drkroom && offset <= S_brdnladder){
 						color = offset == S_litroom ? CLR_GRAY : CLR_BLACK;
 					}
 				}
 			} else if(In_law(&u.uz)){
 				if(Is_path(&u.uz)){
-					if(offset >= S_drkroom && offset <= S_dnladder){
+					if(offset >= S_drkroom && offset <= S_brdnladder){
 						color = CLR_BROWN;
 					}
 				}
@@ -427,7 +430,7 @@ unsigned int *obgcolor;
 						if(offset >= S_vwall && offset <= S_trwall){
 							color = CLR_BROWN;
 						}
-						else if(offset >= S_drkroom && offset <= S_dnladder){
+						else if(offset >= S_drkroom && offset <= S_brdnladder){
 							if(offset == S_litcorr || offset == S_corr)
 								;
 							
@@ -530,6 +533,34 @@ unsigned int *obgcolor;
 						else if(offset == S_litroom) color = CLR_ORANGE;
 				}
 			}
+			if (offset >= S_brupstair && offset <= S_brdnladder){
+				/* each main dungeon stair should be identifiable by color
+				 * yellow is re-used for sea & sokoban but those are different directions
+				 * temple is red because wall color, lost tomb is black bc idk spooky
+				 * and mines is brown obviously
+				 */
+				if ((&sstairs.tolev)->dnum == mines_dnum)
+					color = CLR_BROWN;
+				else if (In_tower(&sstairs.tolev))
+					color = CLR_BLUE;
+				/* else if (In_sokoban(&sstairs.tolev))
+					color = CLR_BLUE; soko doesn't use blue stairs, leave this yellow */
+				else if (In_sea(&sstairs.tolev))
+					color = CLR_YELLOW;
+				else if (In_moloch_temple(&sstairs.tolev))
+					color = CLR_RED;
+				else if (In_lost_tomb(&sstairs.tolev))
+					color = CLR_BLACK;
+				else if (In_lost_cities(&sstairs.tolev))
+					color = CLR_BLUE;
+				else if (In_outlands(&sstairs.tolev))
+					color = CLR_BROWN;
+				else if (In_outlands(&u.uz)) /* if not going to lost cities, going to illurien */
+					color = CLR_BRIGHT_BLUE;
+				else if (In_hell(&u.uz) && (&sstairs.tolev)->dnum == 0) /* hell into VOTD */
+					color = CLR_GRAY;
+			}
+
 			if (offset >= S_vwall && offset <= S_hcdoor) {
 				if (*in_rooms(x,y,BEEHIVE))
 					color = CLR_YELLOW;
@@ -546,15 +577,16 @@ unsigned int *obgcolor;
 					color = (offset == S_drkroom) ? CLR_BLACK : CLR_BROWN;
 				}
 			} else if (offset == S_altar) {
-				// if (Hallucination) color = rn2(CLR_MAX); Redraw cycle doesn't trigger unless something passes over square
-				if (Is_astralevel(&u.uz)) color = CLR_BRIGHT_MAGENTA;
+				if (Hallucination) color = rn2(CLR_MAX);
+				else if (Is_astralevel(&u.uz)) color = CLR_BRIGHT_MAGENTA;
 				else if(Is_sanctum(&u.uz)) color = CLR_MAGENTA;
-				// else switch(a_align(x, y)) { Commented out due to hallucination code.
-					// case A_LAWFUL: color = CLR_WHITE; break; 
-					// case A_NEUTRAL: color = CLR_GRAY; break; 
-					// case A_CHAOTIC: color = CLR_BLACK; break; 
-					// default: color = CLR_RED; break;
-				// }
+				else switch(a_align(x, y)) {
+					case A_LAWFUL: color = CLR_WHITE; break;
+					case A_NEUTRAL: color = CLR_GRAY; break;
+					case A_CHAOTIC: color = CLR_BLACK; break;
+					case A_NONE: color = CLR_RED; break;
+					default: color = CLR_YELLOW; break;
+				}
 			}
 			if(artifact_door(x, y)){
 				color = CLR_MAGENTA;
@@ -580,7 +612,8 @@ unsigned int *obgcolor;
 			obj_color(offset);
 		/* shift out the 4 bits of color to leave the otyp */
 		offset = offset >> 4;
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
 		if ((offset == BOULDER || offset == MASSIVE_STONE_CRATE || offset == MASS_OF_STUFF) && iflags.bouldersym) ch = iflags.bouldersym;
 		else ch = get_objsym(offset);
 
@@ -590,7 +623,9 @@ unsigned int *obgcolor;
 		    special |= MG_OBJPILE;
 		}
     } else if ((offset = (glyph - GLYPH_RIDDEN_OFF)) >= 0) {	/* mon ridden */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = get_monsym(offset);
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS)
@@ -603,7 +638,9 @@ unsigned int *obgcolor;
 	    mon_color(offset);
 	    special |= MG_RIDDEN;
     } else if ((offset = (glyph - GLYPH_BODY_OFF)) >= 0) {	/* a corpse */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = get_objsym(CORPSE);
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS && iflags.use_color)
@@ -618,7 +655,9 @@ unsigned int *obgcolor;
 	    special |= MG_OBJPILE;
 	}
     } else if ((offset = (glyph - GLYPH_DETECT_OFF)) >= 0) {	/* mon detect */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = get_monsym(offset);
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS)
@@ -630,7 +669,9 @@ unsigned int *obgcolor;
 	/* is_reverse = TRUE; */
 	    special |= MG_DETECT;
     } else if ((offset = (glyph - GLYPH_INVIS_OFF)) >= 0) {	/* invisible */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = DEF_INVISIBLE;
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS)
@@ -640,7 +681,9 @@ unsigned int *obgcolor;
 	    invis_color(offset);
 	    special |= MG_INVIS;
     } else if ((offset = (glyph - GLYPH_MTEMPLATE_OFF)) >= 0) {	/* a templated monster */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = monsyms[(int)mons[offset % NUMMONS].mlet];
 		int template = (glyph - GLYPH_MTEMPLATE_OFF) / NUMMONS + 1;
 
@@ -659,7 +702,9 @@ unsigned int *obgcolor;
 		else
 	    	mtemplate_color(offset % NUMMONS);
     } else if ((offset = (glyph - GLYPH_PEACE_OFF)) >= 0) {	/* a peaceful monster */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = monsyms[(int)mons[offset].mlet];
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS)
@@ -669,7 +714,9 @@ unsigned int *obgcolor;
 	    peace_color(offset);
 	    special |= MG_PEACE;
     } else if ((offset = (glyph - GLYPH_PET_OFF)) >= 0) {	/* a pet */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = monsyms[(int)mons[offset].mlet];
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS)
@@ -679,7 +726,9 @@ unsigned int *obgcolor;
 	    pet_color(offset);
 	    special |= MG_PET;
     } else {							/* a monster */
-		if (On_stairs(x,y) && levl[x][y].seenv) special |= MG_STAIRS;
+		if ((On_stairs(x,y) || levl[x][y].typ == STAIRS) && levl[x][y].seenv) special |= MG_STAIRS;
+		if (ttmp && ttmp->ttyp == MAGIC_PORTAL && levl[x][y].seenv) special |= MG_PORTAL;
+
 		ch = get_monsym(glyph);
 #ifdef ROGUE_COLOR
 		if (HAS_ROGUE_IBM_GRAPHICS && iflags.use_color) {
@@ -706,6 +755,8 @@ unsigned int *obgcolor;
 		if ((special & MG_PET) && iflags.hilite_pet)
 			bgcolor = CLR_BLUE;
 		else if ((special & MG_STAIRS) && iflags.hilite_hidden_stairs)
+			bgcolor = CLR_RED;
+		else if ((special & MG_PORTAL) && iflags.hilite_hidden_stairs)
 			bgcolor = CLR_RED;
 		else if ((special & MG_PEACE) && iflags.hilite_peaceful)
 			bgcolor = CLR_BROWN;

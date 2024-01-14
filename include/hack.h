@@ -73,6 +73,7 @@
 #define MG_OBJPILE	0x040
 #define MG_ZOMBIE	0x080
 #define MG_PEACE	0x100
+#define MG_PORTAL	0x200
 
 /* sellobj_state() states */
 #define SELL_NORMAL	(0)
@@ -147,6 +148,7 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 					(u.sealsActive&SEAL_ANDROMALIUS && is_thief((mon)->data)) || \
 					(u.sealsActive&SEAL_TENEBROUS && !nonliving(mon->data)) || \
 					(mon->mtame && beastMateryRadius(mon)) || \
+					(mon->mtyp == PM_TWIN_SIBLING) || \
 					(Upolyd && youmonst.data->mtyp == PM_SHARK && has_blood((mon)->data) && \
 						(mon)->mhp < (mon)->mhpmax && is_pool(u.ux, u.uy, TRUE) && is_pool((mon)->mx, (mon)->my, TRUE)) || \
 					(u.specialSealsActive&SEAL_ACERERAK && is_undead(mon->data)) || \
@@ -219,6 +221,8 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 #define MM_NOGROUP          0x0400    /* don't generate its normal accompanying groupmates */
 #define MM_BIGGROUP         0x0800    /* do generate its larger size of accompanying groupmates */
 #define MM_GOODEQUIP        0x1000    /* do generate its better equipment sets (planar equip for angels) */
+#define MM_MALE             0x2000    /* make monster male */
+#define MM_FEMALE           0x4000    /* make monster female */
 
 /* flags to control mksobj() et al */
 #define NO_MKOBJ_FLAGS	0x00	/* use this rather than plain 0 */
@@ -315,36 +319,6 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 #define EXPL_RED	12
 #define EXPL_CYAN	13
 #define EXPL_MAX	14
-
-/* Macros for messages referring to hands, eyes, feet, etc... */
-#define ARM 0
-#define EYE 1
-#define FACE 2
-#define FINGER 3
-#define FINGERTIP 4
-#define FOOT 5
-#define HAND 6
-#define HANDED 7
-#define HEAD 8
-#define LEG 9
-#define LIGHT_HEADED 10
-#define NECK 11
-#define SPINE 12
-#define TOE 13
-#define HAIR 14
-#define BLOOD 15
-#define LUNG 16
-#define NOSE 17
-#define STOMACH 18
-#define HEART 19
-#define BODY_SKIN 20
-#define BODY_FLESH 21
-#define BEAT 22
-#define BONES 23
-#define EAR 24
-#define EARS 25
-#define CREAK 26
-#define CRACK 27
 
 #define BALL_IN_MON	(u.uswallow && uball && uball->where == OBJ_FREE)
 #define CHAIN_IN_MON	(u.uswallow && uchain && uchain->where == OBJ_FREE)

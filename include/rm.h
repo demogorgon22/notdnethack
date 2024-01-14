@@ -60,6 +60,7 @@ enum {
     STAIRS,
     LADDER,
     FOUNTAIN,
+    FORGE,
     THRONE,
     SINK,
     GRAVE,
@@ -102,6 +103,7 @@ enum {
 #define IS_3DWATER(typ)	((typ) == WATER)
 #define IS_THRONE(typ)	((typ) == THRONE)
 #define IS_FOUNTAIN(typ) ((typ) == FOUNTAIN)
+#define IS_FORGE(typ)	((typ) == FORGE)
 #define IS_SINK(typ)	((typ) == SINK)
 #define IS_GRAVE(typ)	((typ) == GRAVE)
 #define IS_SEAL(typ)	((typ) == HELLISH_SEAL)
@@ -155,12 +157,17 @@ enum {
     S_dnstair,
     S_upladder,
     S_dnladder,
+    S_brupstair,
+    S_brdnstair,
+    S_brupladder,
+    S_brdnladder,
     S_altar,
     S_grave,
     S_seal,
     S_throne,
     S_sink,
     S_fountain,
+    S_forge,
     S_pool,
     S_ice,
     S_litgrass,
@@ -432,6 +439,7 @@ struct rm {
   if ((x) >= 0 && (y) >= 0 && (x) < COLNO && (y) < ROWNO) {	\
     if ((ttyp) < MAX_TYPE) levl[(x)][(y)].typ = (ttyp);		\
     if ((ttyp) == LAVAPOOL) levl[(x)][(y)].lit = 1;		\
+    else if ((ttyp) == FORGE) levl[(x)][(y)].lit = 1;		\
     else if ((schar)(llit) != -2) {				\
 	if ((schar)(llit) == -1) levl[(x)][(y)].lit = rn2(2);	\
 	else levl[(x)][(y)].lit = (llit);			\
@@ -541,6 +549,7 @@ struct damage {
 
 struct levelflags {
 	uchar	nfountains;		/* number of fountains on level */
+	uchar	nforges;		/* number of forges on level */
 	uchar	nsinks;			/* number of sinks on the level */
 	int		goldkamcount_hostile;	/* number of hostile gold kamerel 'above' level */
 	int		goldkamcount_peace;	/* number of peaceful gold kamerel 'above' level */

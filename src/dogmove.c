@@ -218,7 +218,7 @@ register struct monst *mon;
 	if(on_level(&valley_level, &u.uz))
 		return (struct obj *)0; //The Dead hold on to their possessions (prevents the "drop whole inventory" bug
 	
-	if(is_eeladrin(mon->data) || mon->mtyp == PM_SNOW_CLOUD)
+	if(is_eeladrin(mon->data) || mon->mtyp == PM_SNOW_CLOUD ||  (mon->mtyp != PM_UNEARTHLY_DROW && is_yochlol(mon->data)))
 		return (struct obj *)0; //Eladrin don't drop objects in their energy form.
 	
 	rwep = mon_attacktype(mon, AT_WEAP) ? propellor : &zeroobj;
@@ -317,6 +317,8 @@ struct obj *obj;
 			mtmp->meating = objects[obj->otyp].oc_delay;
 			nutrit = objects[obj->otyp].oc_nutrition;
 	    }
+		if(mtmp->mtyp == PM_DRACAE_ELADRIN && HAS_ESMT(mtmp))
+			ESMT(mtmp)->smith_biomass_stockpile += nutrit;
 	    switch(mtmp->data->msize) {
 		case MZ_TINY: nutrit *= 8; break;
 		case MZ_SMALL: nutrit *= 6; break;
@@ -782,8 +784,10 @@ int udist;
 			*/
 		    if (edog->hungrytime < monstermoves + DOG_SATIATED || 
 				(!mindless_mon(mtmp) && 
-					((YouHunger < HUNGRY && edog->hungrytime < monstermoves + DOG_SATIATED/3) || 
-					(YouHunger < WEAK && edog->hungrytime < monstermoves))
+					(
+						(YouHunger > 150*get_uhungersizemod() && edog->hungrytime < monstermoves + DOG_SATIATED/3) ||
+						(YouHunger > 50*get_uhungersizemod() && edog->hungrytime < monstermoves)
+					)
 				)
 			) 
 #endif /* PET_SATIATION */
@@ -1267,7 +1271,11 @@ register int after;	/* this is extra fast monster movement */
 		if (m_carrying(mtmp, SKELETON_KEY)||m_carrying(mtmp, UNIVERSAL_KEY)) allowflags |= UNLOCKDOOR;
 	}
 	if (species_busts_doors(mtmp->data)) allowflags |= BUSTDOOR;
-	if (tunnels(mtmp->data)) allowflags |= ALLOW_DIG;
+	if (tunnels(mtmp->data)
+#ifdef REINCARNATION
+	    && !Is_rogue_level(&u.uz)	/* same restriction as m_move() */
+#endif
+		) allowflags |= ALLOW_DIG;
 	cnt = mfndpos(mtmp, poss, info, allowflags);
 
 	/* Normally dogs don't step on cursed items, but if they have no

@@ -22,7 +22,7 @@
 #define ARTG_NOWISH		0x0002L /* cannot be wished for */
 #define ARTG_NAME		0x0004L /* can be #named */
 #define ARTG_GIFT		0x0008L /* favoured early gift for a player */
-#define ARTG_INHER		0x0010L /* allowable for an Inheritor to start with */
+#define ARTG_INHER		0x0010L /* allowable for a descendant to start with as inheritance */
 #define ARTG_MAJOR		0x0020L /* artifact evades the grasp of the unworthy */
 #define ARTG_NOCNT		0x0040L /* should not be sacrificable to Priests of an Unknown God ??? */
 #define ARTG_FXALGN		0x0080L /* doesn't change alignment to match a role's */
@@ -311,13 +311,24 @@ struct artinstance{
 #define LeagueMod avar1
 #define Esscoo_mid avar1
 #define uconstel_pets avar1
+#define IbiteUpgrades avar1
+#define	IPROP_WAVE		0x00000001L
+#define	IPROP_REVOKE	0x00000002L
+#define	IPROP_DESTROY	0x00000004L
+#define	IPROP_TELEPORT	0x00000008L
+#define	IPROP_LEVELPORT	0x00000010L
+#define	IPROP_BRANCHPORT	0x00000020L
+#define	IPROP_REFLECT	0x00000040L
+#define	ALL_IPROP		(0x0000000FL|IPROP_LEVELPORTIPROP_BRANCHPORT|IPROP_REFLECT)
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2
 #define RRSlunar avar2
 #define PlagueDoOnHit avar2
+#define IbiteFavor avar2
 	long avar3;
 #define SnSd3 avar3
+#define IbiteBoons avar3
 	long avar4;
 #define SnSd3duration avar4
 };
@@ -397,7 +408,7 @@ extern struct artifact * artilist;
 #define COLLECT_TAX     (LAST_PROP+65)
 #define ALTMODE         (LAST_PROP+66)
 #define AEGIS           (LAST_PROP+67)
-#define WATER           (LAST_PROP+68)
+#define CREATE_POOL     (LAST_PROP+68)
 #define SINGING         (LAST_PROP+69)
 #define WIND_PETS	    (LAST_PROP+70)
 #define DEATH_TCH       (LAST_PROP+71)
@@ -413,7 +424,6 @@ extern struct artifact * artilist;
 #define RINGED_ARMOR    (LAST_PROP+81)
 #define BLOODLETTER     (LAST_PROP+82)
 #define SEVEN_LEAGUE_STEP   (LAST_PROP+83)
-#define CAPTURE_REFLECTION  (LAST_PROP+84)
 #define DETESTATION  	(LAST_PROP+85)
 #define INVULNERABILITY	(LAST_PROP+86)
 #define IBITE_ARM		(LAST_PROP+87)
@@ -425,6 +435,9 @@ extern struct artifact * artilist;
 #define RAND_SCROLL     (LAST_PROP+93)
 #define ILLITHID     (LAST_PROP+94)
 #define SMOKE_MIRROR     (LAST_PROP+95)
+#define GITH_ART		(LAST_PROP+96)
+#define ZERTH_ART		(LAST_PROP+97)
+#define AMALGUM_ART		(LAST_PROP+98)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20
@@ -494,7 +507,7 @@ extern struct artifact * artilist;
 	      (obj)->oartifact == ART_BLACK_CRYSTAL || (obj)->oartifact == ART_EARTH_CRYSTAL)
 
 /* artifact has no specific material or size, eg "silver Grimtooth" */
-#define is_malleable_artifact(a) (is_nameable_artifact((a)) || (a) == &artilist[ART_EXCALIBUR] || (a) == &artilist[ART_GUNGNIR] || (a) == &artilist[ART_DIRGE])
+#define is_malleable_artifact(a) (is_nameable_artifact((a)) || (a) == &artilist[ART_EXCALIBUR] || (a) == &artilist[ART_GUNGNIR] || (a) == &artilist[ART_DIRGE] || (a) == &artilist[ART_SKY_REFLECTED])
 
 #define is_living_artifact(obj) ((obj)->oartifact == ART_TENTACLE_ROD || (obj)->oartifact == ART_DRAGONHEAD_SHIELD || (obj)->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING || (obj)->oartifact == ART_RITUAL_RINGED_SPEAR || (obj)->oartifact == ART_RINGED_BRASS_ARMOR || (obj)->oartifact == ART_IBITE_ARM || (obj)->oartifact == ART_ESSCOOAHLIPBOOURRR || (obj)->oartifact == ART_CROWN_OF_THE_PERCIPIENT || (obj)->oartifact == ART_FALLINGSTAR_MANDIBLES)
 #define is_bloodthirsty_artifact(obj) (arti_is_prop(obj, ARTI_BLOODTHRST) && roll_generic_flat_madness(FALSE))

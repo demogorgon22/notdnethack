@@ -262,7 +262,7 @@ struct monst *mtmp;
 	boolean immobile = (mtmp->data->mmove == 0);
 	int fraction;
 
-	if (is_animal(mtmp->data) || mindless_mon(mtmp))
+	if (is_animal(mtmp->data) && mindless_muse_mon(mtmp))
 		return FALSE;
 	if(dist2(x, y, mtmp->mux, mtmp->muy) > 25 || (mtmp->mux == 0 && mtmp->muy == 0))
 		return FALSE;
@@ -282,7 +282,7 @@ struct monst *mtmp;
 				if (obj->otyp == UNICORN_HORN && !obj->cursed)
 				break;
 	    }
-	    if (obj || is_unicorn(mtmp->data) || mtmp->mtyp == PM_KI_RIN) {
+	    if (obj || is_unicorn(mtmp->data) || mtmp->mtyp == PM_KI_RIN || (mtmp->mtyp == PM_ITINERANT_PRIESTESS && !straitjacketed_mon(mtmp))) {
 			m.defensive = obj;
 			m.has_defense = MUSE_UNICORN_HORN;
 			return TRUE;
@@ -586,6 +586,14 @@ struct monst *mtmp;
 		if (vismon) {
 		    if (otmp)
 			pline("%s %s a unicorn horn!", Monnam(mtmp), is_weeping(mtmp->data) ? "is using" : "uses");
+		    else if(mtmp->mtyp == PM_ITINERANT_PRIESTESS && !straitjacketed_mon(mtmp)){
+				if(u.uinsight < 40){
+					pline("A glow issues from somewhere around %s torso, but trying to see the exact source gives you a %sache!", s_suffix(mon_nam(mtmp)), body_part(HEAD));
+				}
+				else {
+					pline_The("fingertip of %s third hand glows!", s_suffix(mon_nam(mtmp)));
+				}
+			}
 		    else
 			pline_The("tip of %s's horn glows!", mon_nam(mtmp));
 		}
@@ -615,7 +623,8 @@ struct monst *mtmp;
 		       || mtmp->isgd || mtmp->ispriest) return 2;
 		m_flee(mtmp);
 		mzapmsg(mtmp, otmp, TRUE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		how = WAN_TELEPORTATION;
 mon_tele:
 		if (tele_restrict(mtmp)) {	/* mysterious force... */
@@ -642,7 +651,8 @@ mon_tele:
 	case MUSE_WAN_TELEPORTATION:
 		zap_oseen = oseen;
 		mzapmsg(mtmp, otmp, FALSE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		m_using = TRUE;
 		mbhit(mtmp,rn1(8,6),mbhitm,bhito,otmp);
 		/* monster learns that teleportation isn't useful here */
@@ -689,7 +699,8 @@ mon_tele:
 
 		m_flee(mtmp);
 		mzapmsg(mtmp, otmp, FALSE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		if (oseen) makeknown(WAN_DIGGING);
 		if (IS_FURNITURE(levl[mtmp->mx][mtmp->my].typ) ||
 		    IS_DRAWBRIDGE(levl[mtmp->mx][mtmp->my].typ) ||
@@ -724,7 +735,8 @@ mon_tele:
 	case MUSE_WAN_CREATE_MONSTER:
 		if(DimensionalLock){
 			mzapmsg(mtmp, otmp, FALSE);
-			otmp->spe--;
+			if (rn2(100) < zapcostchance(otmp, mtmp))
+				otmp->spe--;
 			if (oseen)
 				pline("Nothing happens.");
 			return 2;
@@ -737,7 +749,8 @@ mon_tele:
 
 			if (!enexto(&cc, mtmp->mx, mtmp->my, pm)) return 0;
 			mzapmsg(mtmp, otmp, FALSE);
-			otmp->spe--;
+			if (rn2(100) < zapcostchance(otmp, mtmp))
+				otmp->spe--;
 			mon = makemon((struct permonst *)0, cc.x, cc.y, NO_MM_FLAGS);
 			if (mon && canspotmon(mon) && oseen)
 				makeknown(WAN_CREATE_MONSTER);
@@ -1020,7 +1033,7 @@ struct monst *mtmp;
 	int difficulty = monstr[(monsndx(pm))];
 	int trycnt = 0;
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || nohands(mtmp->data)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || nohands(mtmp->data)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 
@@ -1133,7 +1146,7 @@ struct monst *mtmp;
 
 	m.offensive = (struct obj *)0;
 	m.has_offense = 0;
-	if (is_animal(mtmp->data) || mindless_mon(mtmp) ||
+	if (is_animal(mtmp->data) || mindless_muse_mon(mtmp) ||
 	    nohands(mtmp->data))
 		return FALSE;
 	if (target == &youmonst){
@@ -1559,7 +1572,8 @@ struct monst *mtmp;
 	case MUSE_WAN_LIGHTNING:
 	case MUSE_WAN_MAGIC_MISSILE:
 		mzapmsg(mtmp, otmp, FALSE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		if (oseen) makeknown(otmp->otyp);
 		m_using = TRUE;
 		
@@ -1595,7 +1609,8 @@ struct monst *mtmp;
 	case MUSE_WAN_CANCELLATION:  /* Lethe */
 		zap_oseen = oseen;
 		mzapmsg(mtmp, otmp, FALSE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		m_using = TRUE;
 		mbhit(mtmp,rn1(8,6),mbhitm,bhito,otmp);
 		m_using = FALSE;
@@ -1817,7 +1832,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))], diesize;
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || nohands(mtmp->data) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || nohands(mtmp->data) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 	if (difficulty > 7 && !rn2(35)) return WAN_DEATH;
@@ -1856,7 +1871,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))];
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 	if (difficulty > 7 && !rn2(35)) return rnd(20) > 10 ? WAN_DRAINING : WAN_DEATH;
@@ -1906,7 +1921,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))];
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 	switch (rnd(6)) {
@@ -1928,7 +1943,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))];
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 	switch (rnd(6)) {
@@ -1950,7 +1965,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))];
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST || pm->mlet == S_SHADE || pm->mlet == S_KETER
 		) return 0;
 	switch (rnd(16)) {
@@ -1990,6 +2005,8 @@ struct monst *mtmp;
 #define MUSE_POT_AMNESIA 13
 #define MUSE_POT_GAIN_ABILITY 14
 #define MUSE_MASK 15
+#define MUSE_POT_HOLY 16
+#define MUSE_SCR_DESTROY_ARMOR 17
 
 boolean
 find_misc(mtmp)
@@ -2011,7 +2028,7 @@ struct monst *mtmp;
 	
 	m.misc = (struct obj *)0;
 	m.has_misc = 0;
-	if (is_animal(mdat) || mindless_mon(mtmp))
+	if (is_animal(mdat) || mindless_muse_mon(mtmp))
 		return FALSE;
 	if (u.uswallow && stuck) return FALSE;
 
@@ -2067,6 +2084,10 @@ struct monst *mtmp;
 		if(obj->otyp == MASK && obj->corpsenm != NON_PM && mtmp->mtyp == PM_POLYPOID_BEING
 			&& !(mons[obj->corpsenm].geno&G_UNIQ)
 			&& !(is_horror(&mons[obj->corpsenm]))
+			&& !(is_great_old_one(&mons[obj->corpsenm]))
+			&& obj->corpsenm != PM_DREAD_SERAPH
+			&& obj->corpsenm != PM_ALIGNED_PRIEST
+			&& obj->corpsenm != PM_PRIEST_OF_AN_UNKNOWN_GOD
 			&& !obj->oartifact) {
 			m.misc = obj;
 			m.has_misc = MUSE_MASK;
@@ -2138,7 +2159,7 @@ struct monst *mtmp;
 			m.has_misc = MUSE_POT_POLYMORPH;
 		}
 		nomore(MUSE_SCR_REMOVE_CURSE);
-		if(obj->otyp == SCR_REMOVE_CURSE)
+		if(obj->otyp == SCR_REMOVE_CURSE && !is_weldproof_mon(mtmp))
 		{
                         register struct obj *otmp;
 			for (otmp = mtmp->minvent;
@@ -2152,6 +2173,33 @@ struct monst *mtmp;
 			        m.has_misc = MUSE_SCR_REMOVE_CURSE;
 			    } 
 			}
+		}
+		nomore(MUSE_POT_HOLY);
+		if(obj->otyp == POT_WATER && obj->blessed && !is_weldproof_mon(mtmp))
+		{
+                        register struct obj *otmp;
+			for (otmp = mtmp->minvent;
+			     otmp; otmp = otmp->nobj)
+			{
+			    if (otmp->cursed && 
+			        (otmp->otyp == LOADSTONE ||
+				 otmp->owornmask))
+			    {
+			        m.misc = obj;
+			        m.has_misc = MUSE_POT_HOLY;
+			    } 
+			}
+		}
+		nomore(MUSE_SCR_DESTROY_ARMOR);
+		if(obj->otyp == SCR_DESTROY_ARMOR)
+		{
+			register struct obj *otmp;
+			otmp = which_armor(mtmp, W_ARM);
+			if (otmp && otmp->cursed && otmp->otyp == STRAITJACKET)
+			{
+				m.misc = obj;
+				m.has_misc = MUSE_SCR_DESTROY_ARMOR;
+			} 
 		}
 		nomore(MUSE_SCR_AMNESIA);
 		nomore(MUSE_POT_AMNESIA);
@@ -2272,7 +2320,8 @@ skipmsg:
 	case MUSE_POT_INVISIBILITY:
 		if (otmp->otyp == WAN_MAKE_INVISIBLE) {
 		    mzapmsg(mtmp, otmp, TRUE);
-		    otmp->spe--;
+			if (rn2(100) < zapcostchance(otmp, mtmp))
+				otmp->spe--;
 		} else
 		    mquaffmsg(mtmp, otmp);
 		/* format monster's name before altering its visibility */
@@ -2294,7 +2343,8 @@ skipmsg:
 		return 2;
 	case MUSE_WAN_SPEED_MONSTER:
 		mzapmsg(mtmp, otmp, TRUE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		mon_adjust_speed(mtmp, 1, otmp, TRUE);
 		return 2;
 	case MUSE_POT_SPEED:
@@ -2364,6 +2414,7 @@ museamnesia:
 			mtmp->mrotting = 0;
 			mtmp->mformication = 0;
 			mtmp->mscorpions = 0;
+			mtmp->mvermin = 0;
 		} else {
 			if (vismon) pline("%s looks angry and confused!", Monnam(mtmp));
 			untame(mtmp, 0);
@@ -2377,7 +2428,8 @@ museamnesia:
 		return 2;
 	case MUSE_WAN_POLYMORPH:
 		mzapmsg(mtmp, otmp, TRUE);
-		otmp->spe--;
+		if (rn2(100) < zapcostchance(otmp, mtmp))
+			otmp->spe--;
 		if(!resists_poly(mtmp->data)) newcham(mtmp, NON_PM, TRUE, FALSE);
 		if (oseen) makeknown(WAN_POLYMORPH);
 		return 2;
@@ -2531,6 +2583,61 @@ museamnesia:
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
 	    return 0;
+	case MUSE_POT_HOLY:
+		{
+		    register struct obj *obj;
+		    for (obj = mtmp->minvent; obj; obj = obj->nobj)
+		    {
+			if (obj->cursed && (obj->owornmask || obj->otyp == LOADSTONE)){
+				if (canseemon(mtmp))
+				{
+					pline("%s dips %s %s into %s.",
+						Monnam(mtmp),
+						mhis(mtmp),
+						xname(obj),
+						xname(otmp)
+					);
+				}
+			    uncurse(obj);
+				if (obj == MON_WEP(mtmp))
+					mtmp->weapon_check = NEED_WEAPON;
+				break;
+			}
+		    }
+		}
+		if (!otmp->oartifact)
+			m_useup(mtmp, otmp);
+	    return 0;
+	case MUSE_SCR_DESTROY_ARMOR:{
+		struct obj *obj;
+		obj = which_armor(mtmp, W_ARM);
+		mreadmsg(mtmp, otmp);
+		if(obj && !obj->oartifact){
+			if(mtmp->mconf){
+				if (canseemon(mtmp)){
+					pline("%s %s glows %s!", s_suffix(Monnam(mtmp)), xname(obj), hcolor(NH_PURPLE));
+				}
+				obj->oerodeproof = otmp->cursed;
+			}
+			else if(obj->cursed && otmp->cursed){
+				if (canseemon(mtmp)){
+					pline("%s looks uncomfortable.", Monnam(mtmp));
+				}
+				if(obj->spe > -7)
+					obj->spe--;
+				mtmp->mstun = TRUE;
+			}
+			else {
+				if (canseemon(mtmp)){
+					pline("%s %s turns to dust!", s_suffix(Monnam(mtmp)), xname(obj));
+				}
+				m_useup(mtmp, obj);
+			}
+		}
+		if (!otmp->oartifact)
+			m_useup(mtmp, otmp);
+	    return 0;
+	}
 	case MUSE_MASK:{
 		int pm = otmp->corpsenm;
 		if(canseemon(mtmp))
@@ -2601,7 +2708,7 @@ struct monst *mtmp;
 	struct permonst *pm = mtmp->data;
 	int difficulty = monstr[(monsndx(pm))];
 
-	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_mon(mtmp) || get_mx(mtmp, MX_ESUM)
+	if(is_animal(pm) || mon_attacktype(mtmp, AT_EXPL) || mindless_muse_mon(mtmp) || get_mx(mtmp, MX_ESUM)
 			|| pm->mlet == S_GHOST
 			|| pm->mlet == S_SHADE
 			|| pm->mlet == S_KETER
@@ -2726,7 +2833,7 @@ struct obj *obj;
 	int typ = obj->otyp;
 
 	if (is_animal(mon->data) ||
-		mindless_mon(mon) ||
+		mindless_muse_mon(mon) ||
 		mon->mtyp == PM_SHADE ||
 		mon->mtyp == PM_BROKEN_SHADOW ||
 		mon->mtyp == PM_GHOST)	/* don't loot bones piles */

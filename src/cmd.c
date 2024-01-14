@@ -129,13 +129,18 @@ STATIC_PTR int NDECL(doability);
 STATIC_PTR int NDECL(domonability);
 STATIC_PTR int FDECL(ability_menu, (boolean, boolean));
 STATIC_PTR int NDECL(domountattk);
+STATIC_PTR int NDECL(hasfightingforms);
 STATIC_PTR int NDECL(doMysticForm);
+STATIC_PTR int NDECL(doLightsaberForm);
+STATIC_PTR int NDECL(doKnightForm);
 STATIC_PTR int NDECL(dofightingform);
 STATIC_PTR int NDECL(doMabilForm);
 STATIC_PTR int NDECL(dooverview_or_wiz_where);
 STATIC_PTR int NDECL(doclearinvissyms);
 # ifdef WIZARD
 STATIC_PTR int NDECL(wiz_bind);
+STATIC_PTR int NDECL(wiz_mutate);
+STATIC_PTR int NDECL(wiz_cult);
 STATIC_PTR int NDECL(wiz_mk_mapglyphdump);
 STATIC_PTR int NDECL(wiz_wish);
 STATIC_PTR int NDECL(wiz_identify);
@@ -155,6 +160,7 @@ STATIC_PTR int NDECL(wiz_show_wmodes);
 STATIC_PTR int NDECL(wiz_showkills);	/* showborn patch */
 STATIC_PTR int NDECL(wiz_setinsight);
 STATIC_PTR int NDECL(wiz_setsanity);
+STATIC_PTR int FDECL(getvalue, (const char *));
 #ifdef SHOW_BORN
 extern void FDECL(list_vanquished, (int, BOOLEAN_P)); /* showborn patch */
 #endif /* SHOW_BORN */
@@ -590,7 +596,7 @@ boolean you_abilities;
 	if (you_abilities && (Role_if(PM_EXILE) || u.sealsActive || u.specialSealsActive)) {
 		add_ability('f', "Fire a spirit power", MATTK_U_SPIRITS);
 	}
-	if (you_abilities && uwep && is_lightsaber(uwep)) {	/* I can't wait until fighting forms are mainstream */
+	if (you_abilities && hasfightingforms() > 0) {	/* I can't wait until fighting forms are mainstream */
 		add_ability('F', "Pick a fighting form", MATTK_U_STYLE);
 	}
 	if (mon_abilities && attacktype(youracedata, AT_GAZE)){
@@ -617,7 +623,11 @@ boolean you_abilities;
 	if (mon_abilities && youracedata->mtyp == PM_SALAMANDER &&  levl[u.ux][u.uy].typ != LAVAPOOL){
 		add_ability('L', "Secrete Lava", MATTK_LAVA);
 	}
-	if (mon_abilities && (is_mind_flayer(youracedata) || Role_if(PM_MADMAN) || Role_if(PM_ANACHRONOUNBINDER)) && !Catapsi){
+	if (mon_abilities && (is_mind_flayer(youracedata) 
+				|| Role_if(PM_MADMAN) 
+				|| Role_if(PM_ANACHRONOUNBINDER)
+				|| (check_mutation(TWIN_DREAMS) && u.specialSealsActive&SEAL_YOG_SOTHOTH))
+			&& !Catapsi){
 		add_ability('m', "Emit a mind blast", MATTK_MIND);
 	}
 	if (you_abilities && !mon_abilities){
@@ -1102,6 +1112,7 @@ use_reach_attack()
 int
 doMysticForm()
 {
+	doMabilForm();
 	winid tmpwin;
 	int n, how;
 	char buf[BUFSZ];
@@ -1111,7 +1122,7 @@ doMysticForm()
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
 	any.a_void = 0;		/* zero out all bits */
-	Sprintf(buf,	"Known Moves");
+	Sprintf(buf,	"Known Techniques");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	if(monk_style_active(DIVE_KICK)) {
 		Sprintf(buf,	"Dive Kick (active)");
@@ -1163,7 +1174,7 @@ doMysticForm()
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	end_menu(tmpwin,	"Choose fighting style:");
+	end_menu(tmpwin,	"Toggle mystic techniques:");
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
@@ -1290,71 +1301,69 @@ doMabilForm()
 
 }
 
-int
-dofightingform()
+int doLightsaberForm()
 {
 	winid tmpwin;
-	int n, how;
+	int n, how, i;
 	char buf[BUFSZ];
 	char incntlet = 'a';
 	menu_item *selected;
 	anything any;
+	boolean remotely_competent = FALSE;
+	int curskill;
 
-	//If monk is wielding a saber in offhand or onhand, saber styles take precedent (blah, ima could be annoying)
-	if(Role_if(PM_MONK) && !((uwep && is_lightsaber(uwep)) || (u.twoweap && uswapwep && is_lightsaber(uswapwep)))){
-		if(uwep || (u.twoweap && uswapwep)){
-			pline("You must not be wielding any weapons to use mystic combat.");
-			return MOVE_CANCELLED;
-		}
-		doMabilForm();
-		doMysticForm();
-		return MOVE_CANCELLED;
-	}
-	
-	if(!(uwep && is_lightsaber(uwep))){
-		pline("You don't know any special fighting styles for use in this situation.");
-		return MOVE_CANCELLED;
-	}
-	
-	if(P_SKILL(weapon_type(uwep)) < P_BASIC){
-		pline("You must have at least some basic skill in the use of your weapon before you can employ special fighting styles.");
-		return MOVE_CANCELLED;
+	for (i = FIRST_LS_FFORM; i <= LAST_LS_FFORM; i++) {
+		if (FightingFormSkillLevel(i) >= P_BASIC)
+			remotely_competent = TRUE;
 	}
 
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
 	any.a_void = 0;		/* zero out all bits */
-	
-	Sprintf(buf,	"Known Forms");
+
+	Sprintf(buf,	"Known Lightsaber Forms");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 
-	int i;
-	for (i = FFORM_SHII_CHO; i <= LAST_FFORM; i++) {
-		if (P_SKILL(getFightingFormSkill(i)) >= P_BASIC) {
-			boolean active = selectedFightingForm(i);
-			boolean blocked = blockedFightingForm(i);
+	if (remotely_competent){
+		for (i = FIRST_LS_FFORM; i <= LAST_LS_FFORM; i++) {
+			curskill = FightingFormSkillLevel(i);
+			if (curskill >= P_BASIC) {
+				boolean active = selectedFightingForm(i);
+				boolean blocked = blockedFightingForm(i);
 
-			Strcpy(buf, nameOfFightingForm(i));
-			if (active && blocked)
-				Strcat(buf, " (selected; blocked by armor)");
-			else if (active)
-				Strcat(buf, " (active)");
-			else if (blocked)
-				Strcat(buf, " (blocked by armor)");		
+				Strcpy(buf, nameOfFightingForm(i));
+				Strcat(buf, " (");
+				Strcat(buf, (curskill >= P_EXPERT) ? "expert" : ((curskill >= P_SKILLED) ? "skilled" : "basic"));
+				if (active && blocked)
+					Strcat(buf, ", selected; blocked by armor");
+				else if (active)
+					Strcat(buf, ", active");
+				else if (blocked)
+					Strcat(buf, ", blocked by armor");
+				Strcat(buf, ")");
 
-			any.a_int = i;	/* must be non-zero */
-			add_menu(tmpwin, NO_GLYPH, &any,
-				incntlet, 0, ATR_NONE, buf,
-				MENU_UNSELECTED);
-			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+				any.a_int = i;	/* must be non-zero */
+				add_menu(tmpwin, NO_GLYPH, &any,
+					incntlet, 0, ATR_NONE, buf,
+					MENU_UNSELECTED);
+				incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+			}
 		}
+	} else {
+		Strcpy(buf, nameOfFightingForm(FFORM_SHII_CHO));
+		Strcat(buf, " (unskilled, active due to lack of alternatives)");
+		any.a_int = FFORM_SHII_CHO;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	}
-	end_menu(tmpwin,	"Choose fighting style:");
+	end_menu(tmpwin,	"Choose preferred lightsaber form:");
 
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	
+
 	if(n <= 0 || selectedFightingForm(selected[0].item.a_int)){
 		if(n>0) free(selected);
 		return MOVE_CANCELLED;
@@ -1364,6 +1373,415 @@ dofightingform()
 		return MOVE_INSTANT;
 	}
 }
+
+int doEldritchKniForm()
+{
+	winid tmpwin;
+	int n, how, i, j, damagetype, success_odds, spell_id;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+	boolean remotely_competent = FALSE;
+	int curskill = FightingFormSkillLevel(FFORM_KNI_ELDRITCH);;
+	int spell_list[] = {0, SPE_FIREBALL, SPE_FIRE_STORM, SPE_CONE_OF_COLD, SPE_BLIZZARD,
+		SPE_LIGHTNING_BOLT, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, SPE_POISON_SPRAY, SPE_FINGER_OF_DEATH, 0};
+
+	for (i = 1; spell_list[i]; i++)
+		for (j = 0; j < MAXSPELL; j++)
+			if (spellid(j) == spell_list[i] && spellknow(j) > 0)
+				remotely_competent = TRUE;
+
+	if (!remotely_competent){
+		pline("You don't know any appropriate spells!");
+		return MOVE_CANCELLED;
+	} else {
+		setFightingForm(FFORM_KNI_ELDRITCH);
+	}
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Known Eldritch Styles");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+
+	for (i = 1; spell_list[i]; i++) {
+		for (spell_id = 0; spell_id < MAXSPELL; spell_id++)
+			if (spellid(spell_id) == spell_list[i])
+				break;
+
+		if (spell_id >= MAXSPELL || spellknow(spell_id) <= 0)
+			continue;
+
+		success_odds = percent_success(spell_id);
+
+		Strcpy(buf, spellname(spell_id));
+		Strcat(buf, " (");
+		if (success_odds <= 0)
+			Strcat(buf, "impossible");
+		else if (success_odds < 25)
+			Strcat(buf, "very difficult");
+		else if (success_odds < 50)
+			Strcat(buf, "difficult");
+		else if (success_odds < 75)
+			Strcat(buf, "moderate");
+		else if (success_odds < 95)
+			Strcat(buf, "easy");
+		else
+			Strcat(buf, "trivial");
+
+		if (u.ueldritch_style == spell_list[i])
+			Strcat(buf, ", active");
+		Strcat(buf, ")");
+
+		any.a_int = i;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+
+	end_menu(tmpwin, "Choose preferred eldritch style:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+
+	if(n <= 0 ){
+		return MOVE_CANCELLED;
+	} else {
+		if (spell_list[selected[0].item.a_int] == u.ueldritch_style){
+			free(selected);
+			return MOVE_CANCELLED;
+		} else {
+			u.ueldritch_style = spell_list[selected[0].item.a_int];
+			free(selected);
+			return MOVE_INSTANT;
+		}
+	}
+	return MOVE_CANCELLED;
+}
+
+int doKnightForm()
+{
+	winid tmpwin;
+	int n, how, i;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+	boolean remotely_competent = FALSE;
+	int curskill;
+	char* block_reason;
+
+	for (i = FIRST_KNI_FFORM; i <= LAST_KNI_FFORM; i++) {
+		if (FightingFormSkillLevel(i) >= P_BASIC)
+			remotely_competent = TRUE;
+	}
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Known Knightly Styles");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+
+
+	for (i = FIRST_KNI_FFORM; i <= LAST_KNI_FFORM; i++) {
+		curskill = FightingFormSkillLevel(i);
+		if (curskill == P_ISRESTRICTED)
+			continue;
+
+		/* knight forms are shown if unskilled but not restricted, since training involves starting from unskilled */
+		boolean active = selectedFightingForm(i);
+		boolean blocked = blockedFightingForm(i);
+
+		Strcpy(buf, nameOfFightingForm(i));
+		Strcat(buf, " (");
+		if (fake_skill(getFightingFormSkill(i)))
+			Strcat(buf, "trained");
+		else if (curskill == P_UNSKILLED)
+			Strcat(buf, "unskilled");
+		else if (curskill == P_BASIC)
+			Strcat(buf, "basic");
+		else if (curskill == P_SKILLED)
+			Strcat(buf, "skilled");
+		else if (curskill == P_EXPERT)
+			Strcat(buf, "expert");
+
+		if (i == FFORM_SHIELD_BASH)
+			block_reason = "lack of a shield";
+		else if (i == FFORM_KNI_RUNIC)
+			block_reason = "lack of a longsword";
+		else if (i == FFORM_HALF_SWORD){
+			if (!uwep || uwep->otyp != LONG_SWORD) block_reason = "lack of a longsword";
+			else block_reason = "lack of a free hand";
+		}
+		else if (i == FFORM_GREAT_WEP)
+			block_reason = "lack of a two-handed weapon";
+		else if (i == FFORM_KNI_ELDRITCH)
+			block_reason = "your metallic armor";
+
+		if (active && blocked){
+			Strcat(buf, ", selected; blocked by ");
+			Strcat(buf, block_reason);
+		}
+		else if (active)
+			Strcat(buf, ", active");
+		else if (blocked){
+			Strcat(buf, ", blocked by ");
+			Strcat(buf, block_reason);
+		}
+		Strcat(buf, ")");
+
+		any.a_int = i;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	end_menu(tmpwin, "Choose preferred fighting style:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+
+	if(n <= 0){
+		return MOVE_CANCELLED;
+	} else if ((selected[0].item.a_int == FFORM_HALF_SWORD || activeFightingForm(FFORM_HALF_SWORD)) &&
+				(!freehand() || (uwep && uwep->otyp == LONG_SWORD && welded(uwep)))){
+		pline("You need a free hand to adjust your grip!");
+		return MOVE_CANCELLED;
+	} else if (selected[0].item.a_int == FFORM_KNI_ELDRITCH){
+		free(selected);
+		return doEldritchKniForm();
+	} else if (selectedFightingForm(selected[0].item.a_int)) {
+		unSetFightingForm(selected[0].item.a_int);
+		free(selected);
+		return MOVE_INSTANT;
+	} else {
+		setFightingForm(selected[0].item.a_int);
+		free(selected);
+		return MOVE_INSTANT;
+	}
+}
+
+#define MONK_FORMS			0x001L
+#define LIGHTSABER_FORMS	0x002L
+#define KNIGHT_FORMS		0x004L
+#define AVOID_PASSIVES		0x008L
+#define AVOID_MSPLCAST		0x010L
+#define AVOID_GRABATTK		0x020L
+#define AVOID_ENGLATTK		0x040L
+
+
+int
+hasfightingforms(){
+	/* lotsa shit to go "yo do we have a starblade" */
+	/* copied wholesale from the same usage in mondata.c*/
+	struct attack *attk;
+	struct attack prev_attk = {0};
+	struct attack prev_attk2 = {0};
+	int	indexnum, tohitmod, res[4];
+	long subout;
+	indexnum = subout = tohitmod = 0;
+	int i;
+
+	int formmask = 0x000L;
+
+	/* forms relevant due to situation/role are shown, even if you're bad at them (if applicable) */
+	if(Role_if(PM_MONK))
+		formmask |= MONK_FORMS;
+	if(Role_if(PM_KNIGHT))
+		formmask = KNIGHT_FORMS;
+	if((uwep && is_lightsaber(uwep)) || (uswapwep && is_lightsaber(uswapwep)))
+		formmask |= LIGHTSABER_FORMS;
+	if (u.uavoid_passives)
+		formmask |= AVOID_PASSIVES;
+	else {
+		indexnum = subout = tohitmod = 0;
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod)
+		){
+			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
+		}
+	}
+	if (u.uavoid_msplcast)
+		formmask |= AVOID_MSPLCAST;
+	else {
+		indexnum = subout = tohitmod = 0;
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod)
+		){
+			if(attk->aatyp == AT_MAGC) formmask |= AVOID_MSPLCAST;
+		}
+	}
+	if (u.uavoid_grabattk || sticks(&youmonst) || (uarmg && uarmg->oartifact == ART_GRAPPLER_S_GRASP))
+		formmask |= AVOID_GRABATTK;
+
+	if (u.uavoid_englattk)
+		formmask |= AVOID_ENGLATTK;
+	else {
+		indexnum = subout = tohitmod = 0;
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod)
+		){
+			if(attk->aatyp == AT_ENGL) formmask |= AVOID_ENGLATTK;
+		}
+	}
+	
+	/* next, forms trained are shown, even if inapplicable at the moment*/
+	for (i = FIRST_LS_FFORM; i <= LAST_LS_FFORM; i++) {
+		if (FightingFormSkillLevel(i) >= P_BASIC)
+			formmask |= LIGHTSABER_FORMS;
+	}
+
+	for (i = FIRST_KNI_FFORM; i <= LAST_KNI_FFORM; i++) {
+		if (FightingFormSkillLevel(i) >= P_BASIC)
+			formmask |= KNIGHT_FORMS;
+	}
+	
+	return formmask;
+}
+
+
+int
+dofightingform()
+{
+	winid tmpwin;
+	int n, how, i;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+
+	/* forms relevant due to situation/role are shown, even if you're bad at them (if applicable) */
+	int formmask = hasfightingforms();
+
+	/*
+	 * if we don't have any forms or only have one form set, don't bother with a menu.
+	 * note that if we have anything to avoid/allow, we want the menu, and if we have
+	 * avoids/allows then we still want a menu
+	*/
+	if (formmask == 0x000L){
+		pline("You don't know any special fighting styles for use in this situation.");
+		return MOVE_CANCELLED;
+	}
+	else if (formmask == MONK_FORMS)
+		return doMysticForm();
+	else if (formmask == LIGHTSABER_FORMS)
+		return doLightsaberForm();
+	else if (formmask == KNIGHT_FORMS)
+		return doKnightForm();
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	if (formmask & MONK_FORMS) {
+		any.a_int = 1;
+		add_menu(tmpwin, NO_GLYPH, &any, 'm', 0, ATR_NONE, "Select Mystic Forms", MENU_UNSELECTED);
+	}
+	if (formmask & LIGHTSABER_FORMS) {
+		any.a_int = 2;
+		add_menu(tmpwin, NO_GLYPH, &any, 'l', 0, ATR_NONE, "Select Lightsaber Forms", MENU_UNSELECTED);
+	}
+	if (formmask & KNIGHT_FORMS) {
+		any.a_int = 3;
+		add_menu(tmpwin, NO_GLYPH, &any, 'k', 0, ATR_NONE, "Select Knightly Forms", MENU_UNSELECTED);
+	}
+	if (formmask & AVOID_PASSIVES) {
+		any.a_int = 4;
+		if (!u.uavoid_passives) Strcpy(buf, "Only make passive-safe attacks");
+		else Strcpy(buf, "Allow passive-unsafe attacks");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'p', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
+	if (formmask & AVOID_MSPLCAST) {
+		any.a_int = 5;
+		if (!u.uavoid_msplcast) Strcpy(buf, "Avoid automatically casting spells when attacking");
+		else Strcpy(buf, "Allow the automatic casting of spells when attacking");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 's', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
+	if (formmask & AVOID_GRABATTK) {
+		any.a_int = 6;
+		if (!u.uavoid_grabattk) Strcpy(buf, "Avoid grabbing monsters when attacking");
+		else Strcpy(buf, "Allow grabbing monsters when attacking");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'g', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
+	if (formmask & AVOID_ENGLATTK) {
+		any.a_int = 7;
+		if (!u.uavoid_englattk) Strcpy(buf, "Avoid engulfing monsters when attacking");
+		else Strcpy(buf, "Allow engulfing monsters when attacking");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'e', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
+
+	end_menu(tmpwin, "Adjust fighting styles:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+
+	if(n <= 0){
+		return MOVE_CANCELLED;
+	} else {
+		n = selected[0].item.a_int;
+		free(selected);
+	}
+
+	switch (n){
+		case 1:
+			return doMysticForm();
+		case 2:
+			return doLightsaberForm();
+		case 3:
+			return doKnightForm();
+		case 4:
+			u.uavoid_passives = !u.uavoid_passives;
+			return MOVE_INSTANT;
+		case 5:
+			u.uavoid_msplcast = !u.uavoid_msplcast;
+			return MOVE_INSTANT;
+		case 6:
+			u.uavoid_grabattk = !u.uavoid_grabattk;
+			return MOVE_INSTANT;
+		case 7:
+			u.uavoid_englattk = !u.uavoid_englattk;
+			return MOVE_INSTANT;
+		default:
+			impossible("unknown fighting form set %d", n);
+			return MOVE_CANCELLED;
+	}
+	return MOVE_CANCELLED;
+}
+
+#undef MONK_FORMS
+#undef LIGHTSABER_FORMS
+#undef KNIGHT_FORMS
+#undef AVOID_PASSIVES
+#undef AVOID_MSPLCAST
+#undef AVOID_GRABATTK
+#undef AVOID_ENGLATTK
+
 
 int
 dounmaintain()
@@ -1489,6 +1907,266 @@ wiz_bind()
 		tmp = pick_seal("Bind spirit:");
 		if (tmp)
 			bindspirit(tmp);
+	}
+	else
+		pline("Unavailable command.");
+	return MOVE_CANCELLED;
+}
+
+
+STATIC_PTR int
+wiz_mutate()
+{
+	if (wizard) {
+		winid tmpwin;
+		int n, how;
+		char buf[BUFSZ];
+		menu_item *selected;
+		char inclet = 'a';
+		anything any;
+
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		any.a_void = 0;		/* zero out all bits */
+
+		Sprintf(buf, "Pick mutation:");
+		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		*buf = '\0';
+		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		
+		int mut;
+		int i;
+		extern const int shubbie_mutation_list[];
+		extern const struct mutationtype mutationtypes[];
+		for (i = 0; mutationtypes[i].mutation; i++){
+			any.a_int = mutationtypes[i].mutation;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, mutationtypes[i].name,
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+		end_menu(tmpwin, "You prepare to wizard your body....");
+
+		how = PICK_ONE;
+		n = select_menu(tmpwin, how, &selected);
+		destroy_nhwindow(tmpwin);
+		int picked;
+		if(n > 0){
+			picked = selected[0].item.a_int;
+			free(selected);
+		}
+		else return MOVE_CANCELLED;
+		
+		confer_mutation(picked);
+		return MOVE_CANCELLED;
+	}
+	else
+		pline("Unavailable command.");
+	return MOVE_CANCELLED;
+}
+
+#define GAIN_SHUB_ATTEN	1
+#define GAIN_FLAM_ATTEN	2
+#define GAIN_YOG_ATTEN	3
+#define SET_SHUB_FAVOR	4
+#define SET_FLAM_FAVOR	5
+#define SET_YOG_FAVOR	6
+#define SET_SHUB_MUT	7
+#define SET_YOG_MUT		8
+#define SET_SHUB_DEVOTION	9
+#define SET_FLAM_DEVOTION	10
+#define SET_YOG_DEVOTION	11
+
+STATIC_PTR int
+wiz_cult()
+{
+	if (wizard) {
+		winid tmpwin;
+		int n, how;
+		char buf[BUFSZ];
+		menu_item *selected;
+		char inclet = 'a';
+		anything any;
+
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		any.a_void = 0;		/* zero out all bits */
+		
+		if(!u.shubbie_atten){
+			any.a_int = GAIN_SHUB_ATTEN;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Activate Shub-Nugganoth cult.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+		else {
+			any.a_int = SET_SHUB_FAVOR;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Shub-Nugganoth favor.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+
+			any.a_int = SET_SHUB_DEVOTION;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Shub-Nugganoth devotion.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+
+			any.a_int = SET_SHUB_MUT;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Shub-Nugganoth mutagen.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+		if(!u.silver_atten){
+			any.a_int = GAIN_FLAM_ATTEN;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Activate Silver Flame cult.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+		else {
+			any.a_int = SET_FLAM_FAVOR;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Silver Flame favor.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+
+			any.a_int = SET_FLAM_DEVOTION;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Silver Flame devotion.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+		if(!u.yog_sothoth_atten){
+			any.a_int = GAIN_YOG_ATTEN;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Activate Yog-Sothoth cult.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+		else {
+			any.a_int = SET_YOG_FAVOR;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Yog-Sothoth favor.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+
+			any.a_int = SET_YOG_DEVOTION;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Yog-Sothoth devotion.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+
+			any.a_int = SET_YOG_MUT;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, "Set Yog-Sothoth mutagen.",
+				MENU_UNSELECTED);
+			if(inclet == 'z')
+				inclet = 'A';
+			else
+				inclet++;
+		}
+
+		end_menu(tmpwin, "Select one:");
+
+		how = PICK_ONE;
+		n = select_menu(tmpwin, how, &selected);
+		destroy_nhwindow(tmpwin);
+		int picked;
+		if(n > 0){
+			picked = selected[0].item.a_int;
+			free(selected);
+		}
+		else return MOVE_CANCELLED;
+		struct obj *icon;
+		int newfavor;
+#define set_value(str, val)					newfavor = getvalue(str);\
+				if(newfavor < 0){\
+					pline1(Never_mind);\
+				}\
+				else {\
+					val = newfavor;\
+				}
+
+
+		switch(picked){
+			case GAIN_SHUB_ATTEN:
+				u.shubbie_atten = TRUE;
+				icon = mksobj(HOLY_SYMBOL_OF_THE_BLACK_MOTHE, MKOBJ_NOINIT);
+				icon = hold_another_object(icon, "You drop %s!",
+							  doname(icon), (const char *)0); /*shouldn't merge, but may drop*/
+			break;
+			case GAIN_FLAM_ATTEN:
+				u.silver_atten = TRUE;
+				icon = mksobj(PURIFIED_MIRROR, MKOBJ_NOINIT);
+				icon = hold_another_object(icon, "You drop %s!",
+							  doname(icon), (const char *)0); /*shouldn't merge, but may drop*/
+			break;
+			case GAIN_YOG_ATTEN:
+				u.yog_sothoth_atten = TRUE;
+				pline("A seal is engraved into your mind!");
+				u.specialSealsKnown |= SEAL_YOG_SOTHOTH;
+			break;
+			case SET_SHUB_FAVOR:
+				set_value("Set Shub-Nuganoth favor to what?", u.shubbie_credit);
+			break;
+			case SET_SHUB_DEVOTION:
+				set_value("Set Shub-Nuganoth devotion to what?", u.shubbie_devotion);
+			break;
+			case SET_SHUB_MUT:
+				set_value("Set Shub-Nuganoth mutagen to what?", u.shubbie_mutagen);
+			break;
+			case SET_FLAM_FAVOR:
+				set_value("Set Silver Flame favor to what?", u.silver_credit);
+			break;
+			case SET_FLAM_DEVOTION:
+				set_value("Set Silver Flame devotion to what?", u.silver_devotion);
+			break;
+			case SET_YOG_FAVOR:
+				set_value("Set Yog-Sothoth favor to what?", u.yog_sothoth_credit);
+			break;
+			case SET_YOG_DEVOTION:
+				set_value("Set Yog-Sothoth devotion to what?", u.yog_sothoth_devotion);
+			break;
+			case SET_YOG_MUT:
+				set_value("Set Yog-Sothoth mutagen to what?", u.yog_sothoth_mutagen);
+			break;
+		}
+		return MOVE_CANCELLED;
 	}
 	else
 		pline("Unavailable command.");
@@ -1886,6 +2564,7 @@ STATIC_PTR int wiz_setinsight()
 	change_uinsight(newval - u.uinsight);
 	return MOVE_INSTANT;
 }
+
 STATIC_PTR int wiz_setsanity()
 {
 	char buf[BUFSZ];
@@ -1904,6 +2583,26 @@ STATIC_PTR int wiz_setsanity()
 	}
 	change_usanity(newval - u.usanity, FALSE);
 	return MOVE_INSTANT;
+}
+
+STATIC_PTR
+int getvalue(str)
+const char *str;
+{
+	char buf[BUFSZ];
+	int newval;
+	int ret;
+
+	getlin(str, buf);
+
+	(void)mungspaces(buf);
+	if (buf[0] == '\033' || buf[0] == '\0') ret = 0;
+	else ret = sscanf(buf, "%d", &newval);
+
+	if (ret != 1) {
+		return -1;
+	}
+	return newval;
 }
 
 #endif /* WIZARD */
@@ -2141,9 +2840,10 @@ struct ext_func_tab extcmdlist[] = {
 	{"style", "switch fighting style", dofightingform, !IFBURIED, AUTOCOMPLETE},
 	{"sit", "sit down", dosit, !IFBURIED, AUTOCOMPLETE},
 	{"swim", "swim under water", dodeepswim, !IFBURIED, AUTOCOMPLETE},
-	{"turn", "turn undead", doturn, IFBURIED, AUTOCOMPLETE},
+	{"terrain", "display level terrain", doterrain, IFBURIED, AUTOCOMPLETE },
 	{"tip", "empty a container", dotip, IFBURIED, AUTOCOMPLETE},
 	{"twoweapon", "toggle two-weapon combat", dotwoweapon, !IFBURIED, AUTOCOMPLETE},
+	{"turn", "turn undead", doturn, IFBURIED, AUTOCOMPLETE},
 	{"unseeinvis", "forget suspected invisible creatures", doclearinvissyms, IFBURIED, AUTOCOMPLETE},
 	{"untrap", "untrap something", dountrap, !IFBURIED, AUTOCOMPLETE},
 	{"unmaintain", "stop maintaining a spell", dounmaintain, IFBURIED, AUTOCOMPLETE},
@@ -2194,6 +2894,8 @@ struct ext_func_tab extcmdlist[] = {
 	{(char *)0, (char *)0, donull, TRUE}, /* #where */
 	{(char *)0, (char *)0, donull, TRUE}, /* #tests */
 	{(char *)0, (char *)0, donull, TRUE}, /* #wizbind */
+	{(char *)0, (char *)0, donull, TRUE}, /* #wizmutate */
+	{(char *)0, (char *)0, donull, TRUE}, /* #wizcult */
 #endif
 	{(char *)0, (char *)0, donull, TRUE}	/* sentinel */
 };
@@ -2223,6 +2925,8 @@ static struct ext_func_tab debug_extcmdlist[] = {
 	{"setinsight", "sets your insight value", wiz_setinsight, IFBURIED, AUTOCOMPLETE },
 	{"setsanity", "sets your sanity value", wiz_setsanity, IFBURIED, AUTOCOMPLETE },
 	{"wizbind", "grants knowledge of all seals and binds one", wiz_bind, IFBURIED, AUTOCOMPLETE},
+	{"wizcult", "manipulate cult variables", wiz_cult, IFBURIED, AUTOCOMPLETE},
+	{"wizmutate", "applies a mutation", wiz_mutate, IFBURIED, AUTOCOMPLETE},
 	{"dump_map", "dump map glyphs into a file", wiz_mk_mapglyphdump, IFBURIED, AUTOCOMPLETE},
 #ifdef DEBUG
 	{"wizdebug", "wizard debug command", wiz_debug_cmd, IFBURIED, AUTOCOMPLETE},
@@ -3146,17 +3850,17 @@ register char *cmd;
 		return;		/* probably we just had an interrupt */
 	}
 	if (iflags.num_pad && iflags.num_pad_mode == 1) {
-		/* This handles very old inconsistent DOS/Windows behaviour
-		 * in a new way: earlier, the keyboard handler mapped these,
-		 * which caused counts to be strange when entered from the
-		 * number pad. Now do not map them until here. 
-		 */
+	/* This handles very old inconsistent DOS/Windows behaviour
+	 * in a new way: earlier, the keyboard handler mapped these,
+	 * which caused counts to be strange when entered from the
+	 * number pad. Now do not map them until here. 
+	 */
 		switch (*cmd) {
-		    case '5':       *cmd = 'g'; break;
-		    case M('5'):    *cmd = 'G'; break;
-		    case M('0'):    *cmd = 'I'; break;
-        	}
-        }
+			case '5':       *cmd = 'g'; break;
+			case M('5'):    *cmd = 'G'; break;
+			case M('0'):    *cmd = 'I'; break;
+		}
+	}
 	/* handle most movement commands */
 	do_walk = do_rush = prefix_seen = FALSE;
 	flags.travel = iflags.travel1 = 0;
@@ -3568,6 +4272,9 @@ click_to_cmd(x, y, mod)
             /* here */
             if(IS_FOUNTAIN(levl[u.ux][u.uy].typ) || IS_SINK(levl[u.ux][u.uy].typ)) {
                 cmd[0]=mod == CLICK_1 ? 'q' : M('d');
+                return cmd;
+            } else if(IS_FORGE(levl[u.ux][u.uy].typ)) {
+                cmd[0]=M('d');
                 return cmd;
             } else if(IS_THRONE(levl[u.ux][u.uy].typ)) {
                 cmd[0]=M('s');
