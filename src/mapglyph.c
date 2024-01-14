@@ -539,7 +539,7 @@ unsigned int *obgcolor;
 				 * temple is red because wall color, lost tomb is black bc idk spooky
 				 * and mines is brown obviously
 				 */
-				if ((&sstairs.tolev)->dnum == mines_dnum)
+				if (Is_mineend_level(&sstairs.tolev))
 					color = CLR_BROWN;
 				else if (In_tower(&sstairs.tolev))
 					color = CLR_BLUE;
@@ -553,6 +553,8 @@ unsigned int *obgcolor;
 					color = CLR_BLACK;
 				else if (In_lost_cities(&sstairs.tolev))
 					color = CLR_BLUE;
+				else if (In_spire(&sstairs.tolev))
+					color = CLR_BROWN;
 				else if (In_outlands(&sstairs.tolev))
 					color = CLR_BROWN;
 				else if (In_outlands(&u.uz)) /* if not going to lost cities, going to illurien */
