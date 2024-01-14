@@ -3474,6 +3474,9 @@ hd_size(ptr)
 struct permonst *ptr;
 {
 	int size = 8;
+	// acu spirits all use 8 as hit dice
+	if((ptr->mtyp >= PM_AHAZU && ptr->mtyp <= PM_NUMINA))
+		return size;
 	if(ptr->mtyp == PM_ZHI_REN_MONK)
 		size = 4;
 	// return 8;
