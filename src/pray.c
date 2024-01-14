@@ -3463,6 +3463,7 @@ shub_nugganoth_mutation()
 	for (mut = 0; shubbie_mutation_list[mut]; mut++){
 		if(!check_mutation(shubbie_mutation_list[mut])) for (i = 0; mutationtypes[i].mutation; i++){
 			if(shubbie_mutation_list[mut] == mutationtypes[i].mutation){
+				if(Race_if(PM_ETHEREALOID) && shubbie_mutation_list[mut] == ABHORRENT_SPORE) continue;
 				any.a_int = shubbie_mutation_list[mut];
 				add_menu(tmpwin, NO_GLYPH, &any,
 					inclet, 0, ATR_NONE, mutationtypes[i].name,
@@ -3487,7 +3488,7 @@ shub_nugganoth_mutation()
 	}
 	else return FALSE;
 
-	pline("Your body solidifies.");
+	if(!Race_if(PM_ETHEREALOID)) pline("Your body solidifies.");
 	confer_mutation(picked);
 	u.shubbie_mutations++;
 	return TRUE;
