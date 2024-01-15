@@ -1354,6 +1354,13 @@ validspecies(rolenum, racenum, gendnum, speciesnum)
 
 }
 
+boolean
+validdescendant(rolenum)
+int rolenum;
+{
+	return roles[rolenum].malenum == PM_MADMAN || roles[rolenum].malenum == PM_NOBLEMAN || roles[rolenum].malenum == PM_CONVICT;
+}
+
 
 int
 randspecies(rolenum, racenum, gendnum)

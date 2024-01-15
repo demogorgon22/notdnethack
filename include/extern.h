@@ -2588,6 +2588,7 @@ E boolean FDECL(validrace, (int, int));
 E boolean FDECL(validgend, (int, int, int));
 E boolean FDECL(validalign, (int, int, int));
 E boolean FDECL(validspecies, (int, int, int, int));
+E boolean FDECL(validdescendant, (int));
 E int FDECL(randrole, (int));
 E int FDECL(randrace, (int));
 E int FDECL(randgend, (int, int));

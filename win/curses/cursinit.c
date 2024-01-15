@@ -899,7 +899,7 @@ curses_choose_character()
 
 	/* Select descendant status, if necessary */
     if (flags.descendant < 0){
-		if (flags.descendant == ROLE_RANDOM || flags.randomall) {
+	if (flags.descendant == ROLE_RANDOM || flags.randomall || !validdescendant(flags.initrole)) {
            flags.descendant = 0; // never randomly roll descendant
         } else {
             /* Always 2 options - yn */
