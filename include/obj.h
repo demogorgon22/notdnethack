@@ -1086,6 +1086,7 @@ struct obj {
 				|| ((otmp)->oartifact == ART_FLUORITE_OCTAHEDRON && uwep && uwep->oartifact==ART_FLUORITE_OCTAHEDRON)\
 				|| ((otmp)->oartifact == ART_SILVER_SKY && uwep && uwep->oartifact==ART_SKY_REFLECTED)\
 				|| ((otmp)->oartifact == ART_SKY_REFLECTED && uwep && uwep->oartifact==ART_SILVER_SKY)\
+				|| (uwep && uwep->oartifact == (otmp)->oartifact) \
 				|| ((otmp)->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE))\
 				|| ((otmp)->oartifact == ART_CLEAVER && Role_if(PM_BARBARIAN))\
 				|| ((otmp)->oartifact == ART_ATLANTEAN_ROYAL_SWORD && Role_if(PM_BARBARIAN))\
