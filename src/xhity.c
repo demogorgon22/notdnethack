@@ -15659,7 +15659,7 @@ int vis;						/* True if action is at all visible to the player */
 			dr = (youdef ? (base_udr() + base_nat_udr()) : (base_mdr(mdef) + base_nat_mdr(mdef)));
 		}
 		else {
-			dr = (youdef ? roll_udr(magr, attk->aatyp) : roll_mdr(mdef, magr, attk->aatyp));
+			dr = (youdef ? roll_udr(magr, attk?attk->aatyp:AT_NONE) : roll_mdr(mdef, magr, attk?attk->aatyp:AT_NONE));
 		}
 		
 		//Give spears a slight advantage vs. armor.
