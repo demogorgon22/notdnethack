@@ -4488,6 +4488,12 @@ struct monst *mtmp;
 	if (mvitals[monsndx(mtmp->data)].mvflags & G_GENOD && !In_quest(&u.uz))
 		lifesavers &= ~(LSVD_FRC | LSVD_NBW | LSVD_KAM | LSVD_HLO);
 
+	/* monsters laid to rest cannot lifesave by any means, except the twin sibling & the puppet emperors,
+	 * due to potentially weird/bleh behavior. yog & the suzerain send replacements.
+	 */
+	if (mtmp->mlaidtorest)
+		lifesavers &= (LSVD_YEL | LSVD_TWN);
+
 	/* quick check -- if no lifesavers, let's fail immediately */
 	if (!lifesavers) {
 		return;

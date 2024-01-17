@@ -2091,6 +2091,9 @@ boolean mod;
 				if(otmp->oartifact == ART_TENSA_ZANGETSU){
 					artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe = u.ulevel;//turns for which you can use Zangetsu safely
 				}
+				if(otmp->oartifact == ART_MORTAL_BLADE){
+					artinstance[ART_MORTAL_BLADE].drawnMortal = 0;// times you've drawn the mortal blade
+				}
 				if(otmp->oartifact == ART_SODE_NO_SHIRAYUKI){
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd1 = 0;//turn on which you can reuse the first dance
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd2 = 0;//turn on which you can reuse the second dance
@@ -2279,6 +2282,15 @@ struct obj *obj;
 {
     return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_RETURNING)));
 }
+
+/* used so that callers don't need to known about SPFX_ codes */
+boolean
+arti_laidtorest(obj)
+struct obj *obj;
+{
+    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_LAIDTOREST)));
+}
+
 
 /* used so that callers don't need to known about SPFX_ codes */
 boolean
@@ -3332,7 +3344,12 @@ int * truedmgptr;
 	/* The Annulus is a 2x damage artifact if it isn't a lightsaber */
 	if(otmp->oartifact == ART_ANNULUS && !is_lightsaber(otmp))
 		damd = 0;
-	
+
+	/* absolutely no artifact bonus effects for the mortal blade unless it's wielded,
+	   it's 'sheathed' otherwise - no cost equals no bonuses */
+	if (otmp->oartifact == ART_MORTAL_BLADE && uwep != otmp)
+		return FALSE;
+
 	/* The black arrow deals 4x damage + 108, and overkills Smaug */
 	if (otmp->oartifact == ART_BLACK_ARROW) {
 		if (goodpointers) {
@@ -3380,6 +3397,7 @@ int * truedmgptr;
 			|| (otmp->oartifact == ART_FROST_BRAND && species_resists_fire(mon) && spec_dbon_applies)
 			|| (otmp->oartifact == ART_FIRE_BRAND && species_resists_cold(mon) && spec_dbon_applies)
 			|| (attacks(AD_HOLY, otmp) && hates_holy_mon(mon) && spec_dbon_applies)
+			|| (attacks(AD_DARK, otmp) && Dark_vuln(mon) && spec_dbon_applies)
 		)
 			multiplier *= 2;
 		if(otmp->oartifact == ART_SILVER_STARLIGHT)
@@ -5851,6 +5869,10 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
+
+	if (arti_attack_prop(otmp, ARTA_LAIDTOREST)){
+		mdef->mlaidtorest = 1;
+	}
 	/* Genocide */
 	if (oartifact == ART_GENOCIDE) {
 		struct monst *tmpm, *nmon;
@@ -6513,6 +6535,15 @@ boolean printmessages; /* print generic elemental damage messages */
 		*truedmgptr += basedmg;
 	}
 	
+	if (youagr && oartifact == ART_MORTAL_BLADE)
+	{
+		/* Overall - 2x to all, 3x to mortal or undead
+		 * To compensate for AD_DARK already being 3x to Dark_vuln,
+		 * add the +1x to all & the extra +1x to undead here
+		 */
+		if (!Dark_vuln(mdef)) *truedmgptr += basedmg;
+		if (is_undead(pd)) *truedmgptr += basedmg;
+	}
 	
 	if (arti_attack_prop(otmp, ARTA_BLIND) && !resists_blnd(mdef) && !rn2(3)) {
 		long rnd_tmp;

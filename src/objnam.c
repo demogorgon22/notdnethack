@@ -2307,6 +2307,9 @@ weapon:
 			else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit) {
 				Strcat(buf, " (lit)");
 			}
+			else if (obj->oartifact == ART_MORTAL_BLADE && obj != uwep) {
+				Strcat(buf, " (sheathed)");
+			}
 			else if (obj->otyp == TONITRUS && obj->lamplit) {
 				Strcat(buf, " (crackling)");
 			}

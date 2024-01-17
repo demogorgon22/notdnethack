@@ -4839,6 +4839,9 @@ boolean ranged;
 		/* DEAL THE DAMAGE */
 		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, -1, dieroll, vis, ranged, longslash);
 
+		/* if the monster didn't die as part of that attack, clear its laid to rest status */
+		if (mdef->mlaidtorest) mdef->mlaidtorest = 0;
+
 		/* the player exercises dexterity when hitting */
 		if (youagr)
 			exercise(A_DEX, TRUE);

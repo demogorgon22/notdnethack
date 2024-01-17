@@ -426,6 +426,11 @@ struct monst *magr;
 			attackmask |= PIERCE;
 		else attackmask |= SLASH;
 	}
+	if (obj && oartifact == ART_MORTAL_BLADE){
+		/* hard to resist when drawn, but the sheath is just a club really */
+		if (obj == uwep) attackmask |= EXPLOSION;
+		else attackmask = WHACK;
+	}
 	/* if it's not any of the above, we're just smacking things with it */
 	if (!attackmask)
 		attackmask = WHACK;
@@ -1124,6 +1129,14 @@ struct monst *magr;
 		/* Fluorite Octet overrides the number of dice -- only 1 per blade, not 3 */
 		ocn /= 3;
 		/* but keep spe_mult */
+	}
+
+	if (obj && obj->oartifact == ART_MORTAL_BLADE && obj != uwep) {
+		/* when sheathed, it's barely a weapon - large club stats */
+		ocn = 1;
+		ocd = (large) ? 5 : 8;
+		bonn = 0;
+		bond = 0;
 	}
 
 	/* the Tentacle Rod gets no damage from enchantment */

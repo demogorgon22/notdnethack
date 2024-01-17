@@ -121,6 +121,43 @@ register struct obj *obj;
         }
 }
 
+boolean
+wield_mortal_blade(wep)
+struct obj* wep;
+{
+	boolean confirmation = FALSE;
+	char qbuf[QBUFSZ];
+
+	if (wep->oartifact != ART_MORTAL_BLADE) return TRUE;
+
+	if (artinstance[wep->oartifact].drawnMortal == 0){
+		if (undiscovered_artifact(wep->oartifact))
+			You_feel("a creeping doom from this blade. If you were to draw it, you're not sure you'd survive.");
+		else
+			You("know this blade - it is the blade that cannot be drawn. It is so-called as not one who has drawn it has survived.");
+	}
+	else
+		pline("If you draw the blade again, it will surely slay you once more.");
+
+	confirmation = (yn("Knowing this, do you still wish to attempt this?") == 'y');
+	if (confirmation){
+		You("draw the Mortal Blade from its sheath... and fall to the ground, dead.");
+		killer_format = KILLED_BY;
+		killer = "drawing the blade that could not be drawn";
+		done(DIED);
+
+		/* for fun, a little conduct tracker. could just be 0/1 but why not? */
+		artinstance[wep->oartifact].drawnMortal++;
+		You("stand up, with the blade in hand.");
+		return TRUE;
+	} else {
+		You("decide against such a risky maneuver.");
+		return FALSE;
+	}
+
+	return confirmation; /* redundant */
+}
+
 STATIC_OVL int
 ready_weapon(wep, quietly)
 struct obj *wep;
@@ -159,6 +196,8 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 	    pline("Only a Shogun, or a bearer of the Amulet of Yendor, is truly worthy of wielding this sword.");
 	    res++;	/* takes a turn even though it doesn't get wielded */
 	} else if (wep->oartifact && !touch_artifact(wep, &youmonst, FALSE)) {
+	    res++;	/* takes a turn even though it doesn't get wielded */
+	} else if (wep->oartifact == ART_MORTAL_BLADE && !wield_mortal_blade(wep)) {
 	    res++;	/* takes a turn even though it doesn't get wielded */
 	} else {
 	    /* Weapon WILL be wielded after this point */
@@ -449,7 +488,8 @@ long slot;
 {
 	switch (slot) {
 	case W_WEP:
-		ready_weapon(obj, TRUE);
+		if (obj->oartifact != ART_MORTAL_BLADE)
+			ready_weapon(obj, TRUE);
 		break;
 	case W_SWAPWEP:
 		setuswapwep(obj);

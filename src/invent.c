@@ -2769,6 +2769,9 @@ winid *datawin;
 	if(check_oprop(obj,OPROP_SOTHW) && !(obj->where == OBJ_INVENT && YOG_BAD))
 		sothweaponturn = soth_weapon_damage_turn(obj);
 
+	/* mortal blade has no bonus dmg when sheathed */
+	if (obj && oartifact == ART_MORTAL_BLADE && obj != uwep)
+		has_artidmg = FALSE;
 
 #define OBJPUTSTR(str) putstr(*datawin, ATR_NONE, str)
 #define ADDCLASSPROP(cond, str)         \
@@ -3021,6 +3024,9 @@ winid *datawin;
 			case ART_FALLINGSTAR_MANDIBLES:
 				Strcat(buf, "magic damage, doubled against those who came from the stars.");
 				break;
+			case ART_MORTAL_BLADE:
+				Strcat(buf, "damage to all, and triple to those that live or live again.");
+			break;
 			default:
 				switch (oart->adtyp) {
 					case AD_FIRE: Strcat(buf, "fire damage"); break;
@@ -3320,6 +3326,9 @@ winid *datawin;
 			if(is_vibroweapon(obj)){
 				Sprintf(buf2, "Drains one charge per hit and deals less damage when uncharged.");
 				OBJPUTSTR(buf2);
+			}
+			if (obj->oartifact == ART_MORTAL_BLADE){
+				Sprintf(buf2, "Slain foes will not lifesave or resurrect.");
 			}
 		}
 		/* poison */
@@ -3755,6 +3764,7 @@ winid *datawin;
 
 		buf[0] = '\0';
 		ADDCLASSPROP((oart->aflags&ARTA_RETURNING), "returns when thrown");
+		ADDCLASSPROP((oart->aflags&ARTA_LAIDTOREST), "lays foes to rest");
 		ADDCLASSPROP((oart->aflags&ARTA_HASTE), "hastens the wielder's attacks");
 		if (buf[0] != '\0')
 		{
