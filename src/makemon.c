@@ -15093,7 +15093,7 @@ int faction;
 	
 	if (allow_minvent) {
 		if(is_yochlol(mtmp->data)){
-			yochlol_initinv(mtmp, mkobjflags, faction, goodequip, mmflags);
+			yochlol_initinv(mtmp, mkobjflags, faction, goodequip);
 		}
 		else {
 			if(is_armed_mon(mtmp))
