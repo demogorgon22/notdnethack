@@ -2949,7 +2949,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 			case TOOL_CLASS:
 				u.uconduct.food++;
 				if (otmp->otyp == MAGIC_WHISTLE){
-					poly_obj(otmp, WHISTLE);
+					otmp = poly_obj(otmp, WHISTLE);
 					You("drain the %s of its magic.", xname(otmp));
 				} else {
 					curspe = otmp->spe;
