@@ -2735,7 +2735,7 @@ struct monst *mtmp;
 	
 	int str, dex, con, itl, wis, cha;
 	int strbon, dexbon, conbon, intbon, wisbon, chabon;
-	boolean half_str;
+	boolean half_str = FALSE;
 
 	str = acurr(A_STR, mtmp);
 	dex = acurr(A_DEX, mtmp);
