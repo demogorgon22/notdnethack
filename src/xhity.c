@@ -717,11 +717,11 @@ int tary;
 				boolean devaloop = (aatyp == AT_DEVA);
 				do {
 					bhitpos.x = tarx; bhitpos.y = tary;
-					if(ranged && otmp && check_oprop(otmp, OPROP_CCLAW) && u.uinsight >= 15)
+					if(ranged && otmp && is_cclub_able(otmp) && u.uinsight >= 15)
 						otmp->otyp = CLAWED_HAND;
 					result = xmeleehity(magr, mdef, attk, &otmp, vis, tohitmod, ranged);
-					if(ranged && otmp && check_oprop(otmp, OPROP_CCLAW) && u.uinsight >= 15)
-						otmp->otyp = CLUB;
+					if(ranged && otmp && is_cclub_able(otmp) && u.uinsight >= 15)
+						otmp->otyp = otmp->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
 					/* Marionette causes an additional weapon strike to a monster behind the original target */
 					/* this can attack peaceful/tame creatures without warning */
 					if (youagr && !ranged && u.sealsActive&SEAL_MARIONETTE && (result != MM_MISS))
@@ -745,6 +745,27 @@ int tary;
 								/* we aren't handling MM_AGR_DIED or MM_AGR_STOP; hopefully the attacker being a player covers those cases well enough */
 							}
 						}
+					}
+					/* Mercurial weapons may hit additional targets */
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
+						if(magr && mlev(magr) > 20 && (
+							(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+							|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
+						)){
+							result |= hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
+						}
+					}
+					/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
+						result |= hit_with_rblood(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
+					}
+					/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && is_cclub_able(otmp)){
+						result |= hit_with_cclaw(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
+					}
+					/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
+						result |= hit_with_iwarp(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 					}
 					/* Cleaving causes melee attacks to hit an additional neighboring monster */
 					if ((youagr && !ranged && Cleaving)
@@ -781,27 +802,6 @@ int tary;
 								/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 								result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 							}
-						}
-					}
-					/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && otmp->otyp == CLUB && check_oprop(otmp, OPROP_CCLAW)){
-						result |= hit_with_cclaw(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
-					}
-					/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
-						result |= hit_with_iwarp(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
-					}
-					/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
-						result |= hit_with_rblood(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
-					}
-					/* Mercurial weapons may hit additional targets */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
-						if(magr && mlev(magr) > 20 && (
-							(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
-							|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
-						)){
-							result |= hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 						}
 					}
 					/* Dancers hit additional targets */
@@ -3646,7 +3646,8 @@ int *shield_margin;
 					bons_acc += beastmastery(); // double for the beastmaster's duster
 			}
 			/* Bard */
-			bons_acc += magr->encouraged;
+			if(!(youdef && Nightmare && u.umadness&MAD_RAGE))
+				bons_acc += magr->encouraged;
 			if(magr->mtyp == PM_LUCKSUCKER)
 				bons_acc += magr->mvar_lucksucker;
 			/* Singing Sword */
@@ -3816,7 +3817,7 @@ int *shield_margin;
 				if (youagr){
 					int wielder_bonus = wielder_size_bonus(youracedata);
 					size_penalty = max(0, size_penalty - wielder_bonus);
-					if (check_oprop(weapon, OPROP_CCLAW))
+					if (is_cclub_able(weapon))
 						size_penalty = max(0, size_penalty-1);
 				}
 				
@@ -15235,7 +15236,8 @@ int vis;						/* True if action is at all visible to the player */
 		if (youagr)
 			bonsdmg += u.uencouraged;
 		else if (magr){
-			bonsdmg += magr->encouraged;
+			if(!(youdef && Nightmare && u.umadness&MAD_RAGE))
+				bonsdmg += magr->encouraged;
 			if(magr->mtyp == PM_LUCKSUCKER)
 				bonsdmg += magr->mvar_lucksucker;
 			if(magr->mtame){
@@ -19051,7 +19053,7 @@ struct monst * mdef;
 		uwep->otyp = CLAWED_HAND;
 	res = xmeleehity(&youmonst, mdef, &basicattack, &uwep, vis, 0, TRUE);
 	if(check_oprop(uwep, OPROP_CCLAW))
-		uwep->otyp = CLUB;
+		uwep->otyp = uwep->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
 	return res;
 }
 

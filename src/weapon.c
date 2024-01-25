@@ -874,22 +874,22 @@ struct monst *magr;
 	case ROD_OF_FORCE:			spe_mult *= 2; ocn *= 2; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	case DISKOS:
 								if(u.uinsight >= 40){
-									ocn+=3;
-									flat+=ocd;
+									ocn+=1;
+									flat+=(ocd+1)/2;
 								} else if(u.uinsight >= 35){
-									ocn+=2;
-									flat+=ocd;
+									ocn+=1;
+									flat+=(ocd+3)/4;
 								} else if(u.uinsight >= 30){
-									ocn+=2;
-									flat+=3*ocd/4;
+									plus(1,3*ocd/4);
+									flat+=(ocd+3)/4;
 								} else if(u.uinsight >= 25){
-									ocn++;
-									flat+=3*ocd/4;
+									plus(1,(ocd+1)/2);
+									flat+=(ocd+3)/4;
 								} else if(u.uinsight >= 10){
-									ocn++;
-									flat+=ocd/2;
+									plus(1,(ocd+3)/4);
+									flat+=(ocd+3)/4;
 								} else if(u.uinsight >= 5){
-									flat+=ocd/2;
+									flat+=(ocd+3)/4;
 								}
 	break;
 	}
@@ -3542,6 +3542,14 @@ max_offhand_weight(){
 	if (effective_size > MZ_MEDIUM)
 		maxweight *= 1+(effective_size - MZ_MEDIUM);
 	return maxweight;
+}
+
+int
+get_your_size()
+{
+	int wielder_size = (youracedata->msize - MZ_MEDIUM);
+
+	return wielder_size + wielder_size_bonus(youracedata);
 }
 
 /*

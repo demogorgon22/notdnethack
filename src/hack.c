@@ -1340,27 +1340,23 @@ domove()
 			attk = mon_get_attacktype(&youmonst, AT_WEAP, &attkbuff);
 			otmp = uwep;
 			if(attk) do {
-				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && otmp->otyp == CLUB && check_oprop(otmp, OPROP_CCLAW)){
-					if(!attk){
-						impossible("Cclaw attack attempt failed to find AT_WEAP attack on player attack chain.");
-						return;
-					}
-					result |= hit_with_cclaw(&youmonst, otmp, x, y, 0, attk);
-				}
-				/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
-					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
-				}
-				/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
-					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
-				}
 				/* Streaming mercurial weapons hit an aditional target if your insight is high enough */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
 					if(mlev(&youmonst) > 20 && (u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))){
 						result |= hit_with_streaming(&youmonst, otmp, x, y, 0, attk);
 					}
+				}
+				/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
+					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && is_cclub_able(otmp)){
+					result |= hit_with_cclaw(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
+					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Dancers hit additional targets */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){
@@ -2953,7 +2949,8 @@ register int n;
 	flags.botl = 1;
 	//ifdef BARD
 	if (n > 0){
-		n += mtmp->encouraged;
+		if(!(Nightmare && u.umadness&MAD_RAGE))
+			n += mtmp->encouraged;
 		if(flags.spriest_level && is_demon(mtmp->data) && is_lawful_mon(mtmp) && !mtmp->mpeaceful)
 			n += 9;
 		if (uwep && uwep->oartifact == ART_SINGING_SWORD && !mindless_mon(mtmp) && !is_deaf(mtmp)){

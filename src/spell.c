@@ -6148,6 +6148,23 @@ int spell;
 
 	if(u.sealsActive&SEAL_PAIMON) splcaster -= urole.spelarmr;
 	
+	if(ublindf && ublindf->otyp == SOUL_LENS){
+		if(u.ualign.record < 0 || ublindf->cursed){
+			if(casting_stat == A_CHA){
+				splcaster += urole.spelarmr;
+			}
+			else if(Role_if(PM_MONK))
+				splcaster += urole.spelarmr/2;
+		}
+		else if(u.ualign.record >= 20){
+			if(casting_stat == A_CHA){
+				splcaster -= urole.spelarmr;
+			}
+			else if(Role_if(PM_MONK))
+				splcaster -= urole.spelarmr/2;
+		}
+	}
+	
 	if(Race_if(PM_INCANTIFIER) || (is_ent_species(youracedata, ENT_ELDER)))
 		splcaster += max(-3*urole.spelarmr,urole.spelsbon);
 
@@ -6207,7 +6224,11 @@ int spell;
 	 * to cast a spell.  The penalty is not quite so bad for the
 	 * player's role-specific spell.
 	 */
-	if (uarms && casting_stat != A_CHA && ((metal_blocks_spellcasting(uarms)) || weight(uarms) > (int) objects[BUCKLER].oc_weight)) {
+	int size_adjust = get_your_size();
+	if(size_adjust < 1)
+		size_adjust = 1;
+	else size_adjust += 1;
+	if (uarms && casting_stat != A_CHA && ((metal_blocks_spellcasting(uarms)) || weight(uarms) > ((int) objects[BUCKLER].oc_weight)*size_adjust)) {
 		if (spellid(spell) == urole.spelspec) {
 			chance /= 2;
 		} else {

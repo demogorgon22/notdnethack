@@ -2044,7 +2044,9 @@ doputon()
 		Your("%s%s are full, and you're already wearing an amulet and %s.",
 			humanoid(youracedata) ? "ring-" : "",
 			makeplural(body_part(FINGER)),
-			(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses" : (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
+			(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
+			: (ublindf->otyp==SOUL_LENS) ? "a lens"
+			: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
 		return MOVE_CANCELLED;
 	}
 	otmp = getobj(accessories, "put on");
@@ -2137,13 +2139,24 @@ doputon()
 			else if (ublindf->otyp == BLINDFOLD || ublindf->otyp == LIVING_MASK || ublindf->otyp == ANDROID_VISOR) {
 				if (otmp->otyp == LENSES || otmp->otyp == SUNGLASSES)
 					already_wearing2("lenses", "a blindfold");
+				else if(otmp->otyp == SOUL_LENS)
+					already_wearing2("a lens", "a blindfold");
 				else
 					already_wearing("a blindfold");
 			} else if (ublindf->otyp == LENSES || ublindf->otyp == SUNGLASSES) {
 				if (otmp->otyp == BLINDFOLD || otmp->otyp == LIVING_MASK || otmp->otyp == ANDROID_VISOR)
 					already_wearing2("a blindfold", "some lenses");
+				else if (otmp->otyp == SOUL_LENS)
+					already_wearing2("a lense", "some lenses");
 				else
 					already_wearing("some lenses");
+			} else if (ublindf->otyp == SOUL_LENS) {
+				if (otmp->otyp == BLINDFOLD || otmp->otyp == LIVING_MASK || otmp->otyp == ANDROID_VISOR)
+					already_wearing2("a blindfold", "a lens");
+				else if (otmp->otyp == SOUL_LENS)
+					already_wearing("a lense");
+				else
+					already_wearing2("some lenses", "a lenses");
 			} else
 				already_wearing(something);
 			return MOVE_CANCELLED;
@@ -2151,7 +2164,8 @@ doputon()
 		if (otmp->otyp != MASK && otmp->otyp != R_LYEHIAN_FACEPLATE && 
 			otmp->otyp != BLINDFOLD && otmp->otyp != ANDROID_VISOR && 
 			otmp->otyp != TOWEL && otmp->otyp != LENSES && 
-			otmp->otyp != SUNGLASSES && otmp->otyp != LIVING_MASK
+			otmp->otyp != SUNGLASSES && otmp->otyp != LIVING_MASK &&
+			otmp->otyp != SOUL_LENS
 		) {
 			You_cant("wear that!");
 			return MOVE_CANCELLED;
@@ -5084,7 +5098,7 @@ struct obj *wep;
 			if (magr_can_attack_mdef(magr, mdef, i, j, FALSE)){
 				wep->otyp = CLAWED_HAND;
 				xmeleehity(magr, mdef, &symbiote, &wep, -1, 0, FALSE);
-				wep->otyp = CLUB;
+				wep->otyp = wep->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
 				if(DEADMONSTER(magr))
 					return; //oops!
 			}

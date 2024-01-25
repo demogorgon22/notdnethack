@@ -595,7 +595,7 @@ struct obj {
 			 otmp->otyp == BLADE_OF_GRACE || \
 			 otmp->otyp == BLADE_OF_PITY)
 #define rakuyo_prop(otmp)	(check_oprop(otmp, OPROP_RAKUW))
-#define is_insight_weapon(otmp) (check_oprop(otmp, OPROP_CCLAW) || \
+#define is_insight_weapon(otmp) (is_cclub_able(otmp) || \
 			 is_rakuyo(otmp) ||\
 			 rakuyo_prop(otmp) || \
 			 otmp->otyp == PINCER_STAFF || \
@@ -614,6 +614,9 @@ struct obj {
 			 otmp->otyp == ISAMUSEI ||\
 			 otmp->otyp == DISKOS ||\
 			 otmp->otyp == BESTIAL_CLAW)
+
+#define	is_cclub_able(otmp)	(((otmp)->otyp == CLUB || (otmp)->oartifact == ART_AMALGAMATED_SKIES) && check_oprop(otmp, OPROP_CCLAW))
+
 #define is_future_otyp(typ)	(\
 		typ == LIGHTSABER ||\
 		typ == BEAMSWORD ||\
@@ -703,7 +706,7 @@ struct obj {
 			  objects[(otmp)->otyp].oc_skill == P_LANCE || \
 			  (otmp)->otyp==AKLYS || \
 			  (otmp)->otyp==DISKOS || \
-			  (check_oprop(otmp, OPROP_CCLAW) && u.uinsight >= 15) || \
+			  (is_cclub_able(otmp) && u.uinsight >= 15) || \
 			  (otmp)->oartifact==ART_SOL_VALTIVA || \
 			  (otmp)->oartifact==ART_SHADOWLOCK || \
 			  (otmp)->oartifact==ART_RUYI_JINGU_BANG || \
@@ -778,7 +781,7 @@ struct obj {
 #define is_weptool(o)	((o)->oclass == TOOL_CLASS && \
 			 objects[(o)->otyp].oc_skill != P_NONE)
 #define is_worn_tool(o)	((o)->otyp == BLINDFOLD || (o)->otyp == ANDROID_VISOR || \
-							 (o)->otyp == TOWEL || (o)->otyp == LENSES || (o)->otyp == SUNGLASSES || \
+							 (o)->otyp == TOWEL || (o)->otyp == LENSES || (o)->otyp == SUNGLASSES || (o)->otyp == SOUL_LENS || \
 							 (o)->otyp == LIVING_MASK || (o)->otyp == MASK || (o)->otyp == R_LYEHIAN_FACEPLATE)
 #define is_opaque_worn_tool(o)	((o)->otyp == BLINDFOLD || (o)->otyp == TOWEL || (o)->otyp == R_LYEHIAN_FACEPLATE)
 #define is_instrument(o)	((o)->otyp >= FLUTE && \
