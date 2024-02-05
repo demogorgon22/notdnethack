@@ -2509,15 +2509,14 @@ karemade:
 				if(moves%5 && roll_madness(MAD_SPIRAL))
 					change_usanity(-1, FALSE);
 			}
-			//Mind dissolution double trigger: lose 1d4 levels
-			if(u.ulevel > 1 && roll_madness(MAD_FORGETFUL) && roll_madness(MAD_FORGETFUL)){
+			//Mind dissolution xp loss
+			if(u.ulevel > 1 && u.umadness&MAD_FORGETFUL && !BlockableClearThoughts){
 				int i;
-				int pre_drain = u.ulevel;
-				for(i = rn2(4); i > 0 && u.ulevel > 2; i--){
-					losexp("mind dissolution",FALSE,TRUE,TRUE);
+				lose_experience(666*NightmareAware_Insanity*NightmareAware_Insanity/(100*100));
+				for(i = 1; i < P_NUM_SKILLS; i++){
+					if(roll_madness(MAD_FORGETFUL))
+						lose_skill(i,1);
 				}
-				losexp("mind dissolution",TRUE,TRUE,TRUE);
-				forget((pre_drain - u.ulevel) * 100/(pre_drain)); //drain some proportion of your memory
 			}
 			
 			if(mad_turn(MAD_HOST)){
@@ -3950,7 +3949,7 @@ printDPR(){
 	struct attack *attk;
 	rfile = fopen_datafile("MonDPR.tab", "w", SCOREPREFIX);
 	if (rfile) {
-		Sprintf(pbuf,"Number\tName\tclass\taverage\tmax\tper-hit avg\tper-hit max\tspeed\talignment\tunique?\n");
+		Sprintf(pbuf,"Number\tName\tclass\tdifficulty\taverage\tmax\tper-hit avg\tper-hit max\tspeed\talignment\tunique?\n");
 		fprintf(rfile, "%s", pbuf);
 		fflush(rfile);
 		for(j=0;j<NUMMONS;j++){
@@ -3976,7 +3975,7 @@ printDPR(){
 						maxperhit = attk->damn * attk->damd;
 				}
 			}
-			Sprintf(pbuf,"%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n", j, mons[j].mname, mons[j].mlet,avdm, mdm, avgperhit, maxperhit, mons[j].mmove,ptr->maligntyp,(mons[j].geno&G_UNIQ) ? "unique":"");
+			Sprintf(pbuf,"%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n", j, mons[j].mname, mons[j].mlet,monstr[j],avdm, mdm, avgperhit, maxperhit, mons[j].mmove,ptr->maligntyp,(mons[j].geno&G_UNIQ) ? "unique":"");
 			fprintf(rfile, "%s", pbuf);
 			fflush(rfile);
 		}

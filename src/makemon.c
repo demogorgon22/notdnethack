@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include "hack.h"
+#include "artifact.h"
 
 #ifdef REINCARNATION
 #include <ctype.h>
@@ -3981,8 +3982,6 @@ boolean greatequip;
 			if(otmp->spe < 3) otmp->spe = 3;
 			set_material_gm(otmp, IRON);
 			otmp = oname(otmp, artiname(ART_AVENGER));
-			add_oprop(otmp, OPROP_HOLYW);
-			add_oprop(otmp, OPROP_UNHYW);
 			fix_object(otmp);
 			(void) mpickobj(mtmp, otmp);
 			(void) mongets(mtmp, HELMET, mkobjflags);
@@ -13779,9 +13778,7 @@ struct monst * mon;
 		|| (mon->mtyp == PM_STAR_ELF && Role_if(PM_MADMAN))
 	)
 		out_faction = YELLOW_FACTION;
-	else if(In_quest(&u.uz) && urole.neminum == PM_NECROMANCER && !peaceful)
-		out_faction = NECROMANCY_FACTION;
-	else if(In_mordor_quest(&u.uz) && !peaceful)
+	else if((In_mordor_quest(&u.uz) || (In_quest(&u.uz) && urole.neminum == PM_NECROMANCER)) && (is_orc(mon->data) || is_undead(mon->data)))
 		out_faction = NECROMANCY_FACTION;
 	else if(Is_knox(&u.uz)
 		|| Is_sanctum(&u.uz)
@@ -16761,12 +16758,16 @@ struct monst *mtmp, *victim;
 			// max_increase = max((hp_threshold + 1) - mtmp->mhpmax, 0);
 	    // cur_increase = (max_increase > 0) ? rn2(max_increase)+1 : 0;
 		int xp_threshold = victim->m_lev + d(2,5);
-		if(mtmp->mtyp == PM_TWIN_SIBLING && mtmp->m_lev < u.ulevel)
-			xp_threshold = mtmp->m_lev + 1;
-		if(Role_if(PM_HEALER))
-			xp_threshold += heal_mlevel_bonus();
-		if(uring_art(ART_LOMYA))
-			xp_threshold += lev_lomya();
+		if(mtmp->mtame){
+			if(mtmp->mtyp == PM_TWIN_SIBLING && mtmp->m_lev < u.ulevel)
+				xp_threshold = mtmp->m_lev + 1;
+			if(Role_if(PM_HEALER))
+				xp_threshold += heal_mlevel_bonus();
+			if(uring_art(ART_LOMYA))
+				xp_threshold += lev_lomya();
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_PATIENCE)
+				xp_threshold += 8;
+		}
 		if(has_sunflask(mtmp->mtyp) && mtmp->mvar_flask_charges < MAX_FLASK_CHARGES(mtmp) && !rn2(6+mtmp->mvar_flask_charges)){
 			if(canseemon(mtmp))
 				pline("Warm light shines on %s", mon_nam(mtmp));

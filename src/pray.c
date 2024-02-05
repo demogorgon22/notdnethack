@@ -2179,10 +2179,10 @@ dosacrifice()
 					if(u.ulevel > 20) summon_god_minion(altargod, FALSE);
 					if(u.ulevel >= 14) summon_god_minion(altargod, FALSE);
 					(void) summon_god_minion(altargod, TRUE);
+					/* anger priest; test handles bones files */
+					if((pri = findpriest(temple_occupied(u.urooms))) && !p_coaligned(pri))
+						angry_priest();
 				}
-				/* anger priest; test handles bones files */
-				if((pri = findpriest(temple_occupied(u.urooms))) && !p_coaligned(pri))
-					angry_priest();
 			} else {
 				pline("Unluckily, you feel the power of %s decrease.", u_gname());
 				change_luck(-1);
@@ -3669,7 +3669,7 @@ commune_with_goat()
 	}
 
 	u.shubbie_credit -= cost;
-	change_usanity(-cost/2, TRUE);
+	change_usanity(-(cost+4)/5, TRUE);
 	
 	return MOVE_STANDARD;
 }
@@ -4000,7 +4000,7 @@ commune_with_silver_flame()
 		pline("The silver light recedes.");
 
 	u.silver_credit -= cost;
-	change_usanity(-cost/2, TRUE);
+	change_usanity(-(cost+4)/5, TRUE);
 	
 	return MOVE_STANDARD;
 }
@@ -4218,7 +4218,7 @@ commune_with_yog()
 			s_suffix(yogname)
 			);
 		/* taxes sanity! (a tiny bit) */
-		change_usanity(-6, TRUE);
+		change_usanity(-1, TRUE);
 		return MOVE_STANDARD;
 	}
 
@@ -4366,7 +4366,7 @@ commune_with_yog()
 	}
 
 	u.yog_sothoth_credit -= cost;
-	change_usanity(-cost/2, TRUE);
+	change_usanity(-(cost+4)/5, TRUE);
 	
 	return MOVE_STANDARD;
 }

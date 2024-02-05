@@ -1206,6 +1206,15 @@ int tary;
 		/* make per-attack counterattacks */
 		if (dopassive_local) {
 			dopassive = TRUE;
+			if(youdef && (result&MM_HIT) && u.uspellprot && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_BALANCE){
+				struct monst *mon;
+				for(int i = 0; i < 8; i++){
+					if(isok(x(mdef)+xdir[i], y(mdef)+ydir[i]) && (mon = m_at(x(mdef)+xdir[i], y(mdef)+ydir[i])) && !DEADMONSTER(mon) && !mon->mpeaceful)
+						xdamagey(mdef, mon, (struct attack *) 0, 8);
+				}
+				if(DEADMONSTER(magr))
+					result |= MM_AGR_DIED;
+			}
 			result = xpassivey(magr, mdef, attk, otmp, vis, result, pd, FALSE);
 		}
 
@@ -3646,6 +3655,8 @@ int *shield_margin;
 				bons_acc += beastmastery();
 				if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(magr->data))
 					bons_acc += beastmastery(); // double for the beastmaster's duster
+				if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
+					bons_acc += 1;
 			}
 			/* Bard */
 			if(!(youdef && Nightmare && u.umadness&MAD_RAGE))
@@ -4485,7 +4496,7 @@ boolean ranged;
 	 *	armor's special magic protection.  Otherwise just use !mtmp->mcan.
 	 */
 	armpro = magic_negation(mdef);
-	armuncancel = ((rn2(3) >= armpro) || !rn2(50));
+	armuncancel = ((rn2(3) >= armpro) || !rn2(10));
 	/* hack: elemental gaze attacks call this function with their AT_GAZE; we want that to ignore armor cancellation */
 	if (attk->aatyp == AT_GAZE || attk->aatyp == AT_WDGZ)
 		armuncancel = TRUE;
@@ -15248,6 +15259,10 @@ int vis;						/* True if action is at all visible to the player */
 			if(magr->mtame){
 				if(uring_art(ART_NARYA))
 					bonsdmg += narya();
+				if(!youdef && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER))
+					bonsdmg += 8;
+				if(!youdef && activeMentalEdge(GSTYLE_RESONANT))
+					bonsdmg += u.usanity < 50 ? 0 : u.usanity < 75 ? 2 : u.usanity < 90 ? 5 : 8;
 			}
 		}
 		/* Singing Sword -- only works when the player is wielding it >_> */
@@ -19461,6 +19476,10 @@ boolean magical;
 		if(physical && magical)
 			dmg = (dmg + 3) / 4;
 		else
+			dmg = (dmg + 1) / 2;
+	}
+	if (mdef == &youmonst && u.uspellprot){
+		if(magical && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
 			dmg = (dmg + 1) / 2;
 	}
 	/* Priests of Asmodeus */

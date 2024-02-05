@@ -1358,7 +1358,17 @@ boolean
 validdescendant(rolenum)
 int rolenum;
 {
-	return roles[rolenum].malenum == PM_MADMAN || roles[rolenum].malenum == PM_NOBLEMAN || roles[rolenum].malenum == PM_CONVICT;
+	if(rolenum < 0) return FALSE;
+	return roles[rolenum].malenum == PM_MADMAN || 
+		roles[rolenum].malenum == PM_NOBLEMAN || 
+		roles[rolenum].malenum == PM_ARCHEOLOGIST || 
+		roles[rolenum].malenum == PM_KNIGHT || 
+		roles[rolenum].malenum == PM_PIRATE || 
+		roles[rolenum].malenum == PM_ROGUE || 
+		roles[rolenum].malenum == PM_SAMURAI || 
+		roles[rolenum].malenum == PM_TOURIST || 
+		roles[rolenum].malenum == PM_VALKYRIE || 
+		roles[rolenum].malenum == PM_CONVICT;
 }
 
 

@@ -790,7 +790,7 @@ give_up:	/* Quit */
 
 		any.a_int = 2;
 		add_menu(win, NO_GLYPH, &any , 'y', 0, ATR_NONE,
-			"Inherit from a past adventurer (start with an heirloom artifact, consuming an artifact wish)", MENU_UNSELECTED);
+			"Inherit from a past adventurer (start with an heirloom artifact but low stats and dangerous foes)", MENU_UNSELECTED);
 
 		any.a_int = 1;
 		add_menu(win, NO_GLYPH, &any , 'n', 0, ATR_NONE, "No past inheritance", MENU_UNSELECTED);

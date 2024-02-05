@@ -542,6 +542,12 @@ struct monst *magr;
 		} else if (magr == &youmonst && activeFightingForm(FFORM_GREAT_WEP) && (bimanual(obj, youracedata) || bimanual_mod(obj, &youmonst) > 1)) {
 			ignore_rolls = max(0, FightingFormSkillLevel(FFORM_GREAT_WEP) - 1); // 0-3 for unskilled-expert
 		}
+		
+		if(magr == &youmonst && obj->oartifact){
+			const struct artifact *weap = get_artifact(obj);
+			if((weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_PENETRATE))
+				ignore_rolls += u.usanity > 50 ? 0 : u.usanity > 25 ? 1 : u.usanity > 10 ? 2 : 3;
+		}
 
 		if (otyp == HEAVY_IRON_BALL) {
 			int wt = (int)objects[HEAVY_IRON_BALL].oc_weight;
@@ -1062,28 +1068,38 @@ boolean youdef;
 	/* determine function to use */
 	if (!wdie->exploding && !wdie->lucky) {
 		/* standard dice */
-		tmp += d(n, x-igrolls);
+		if(x-igrolls > 1)
+			tmp += d(n, x-igrolls);
 		tmp += n*igrolls;
 	}
 	else if (wdie->exploding && !wdie->lucky) {
 		/* exploding non-lucky dice */
 		/* great weapon fighting is a LARGE buff to these. possibly too strong */
-		tmp += exploding_d(n, x-igrolls, wdie->explode_amt);
+		if(x-igrolls > 1)
+			tmp += exploding_d(n, x-igrolls, wdie->explode_amt);
+		else igrolls = 2*x;
+
 		tmp += n*igrolls;
 	}
 	else if (!wdie->exploding && wdie->lucky) {
 		/* lucky non-exploding dice */
 		int i;
-		for (i = n; i; i--)
-		{
-			tmp += youdef ? (rnl(x-igrolls) + igrolls + 1) : (x - rnl(x-igrolls));
+		if(x-igrolls > 1){
+			for (i = n; i; i--)
+			{
+				tmp += youdef ? (rnl(x-igrolls) + igrolls + 1) : (x - rnl(x-igrolls));
+			}
 		}
+		else tmp += n*igrolls;
 	}
 	else if (wdie->exploding && wdie->lucky) {
 		/* EXTEMELY POTENT exploding lucky dice */
 		/* going to be honest - no CLUE what the distr with GWF turned on does,
 		 * but if you manage to get that, it's probably stupid or deserved */
-		tmp += (youdef ? unlucky_exploding_d : lucky_exploding_d)(n, x-igrolls, wdie->explode_amt);
+		if(x-igrolls > 1)
+			tmp += (youdef ? unlucky_exploding_d : lucky_exploding_d)(n, x-igrolls, wdie->explode_amt);
+		else igrolls = 10*x; //I think this is impossible, since this would be a Gith sword plus Fluorite Octet
+
 		tmp += n*igrolls;
 	}
 	return tmp;
@@ -3365,6 +3381,41 @@ int degree;
 	if (!advance_before && can_advance(skill, FALSE))
 	    give_may_advance_msg(skill);
     }
+}
+
+void
+lose_skill(skill,degree)
+int skill;
+int degree;
+{
+	if(skill < 0) skill *= -1;
+	
+    if (skill == P_NONE)
+		return;
+
+	if(P_ADVANCE(skill) > degree)
+		P_ADVANCE(skill)-=degree;
+	else P_ADVANCE(skill) = 0;
+
+	boolean try_reduce = TRUE; //Don't get stuck in an infinite loop if skill's default value is > P_UNSKILLED
+	while(OLD_P_SKILL(skill) > P_UNSKILLED
+	 && P_ADVANCE(skill) < practice_needed_to_advance(OLD_P_SKILL(skill)-1)
+	 && try_reduce
+	) {
+		try_reduce = FALSE;
+		for(int i = u.skills_advanced-1; i >= 0; i--){
+			if(skill == u.skill_record[i]){
+				try_reduce = TRUE;
+				OLD_P_SKILL(skill)--;
+				u.weapon_slots += slots_required(skill);
+				for(int j = i+1; j < u.skills_advanced; j++, i++){
+					u.skill_record[i] = u.skill_record[j];
+				}
+				u.skills_advanced--;
+				break; //End outer skill-finding loop
+			}
+		}
+	}
 }
 
 void

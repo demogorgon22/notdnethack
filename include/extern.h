@@ -241,11 +241,14 @@ E void FDECL(adjalign, (int));
 E void FDECL(unSetFightingForm, (int));
 E void FDECL(setFightingForm, (int));
 E boolean FDECL(activeFightingForm, (int));
+E boolean FDECL(activeMentalEdge, (int));
 E boolean FDECL(selectedFightingForm, (int));
 E int FDECL(getFightingFormSkill, (int));
+E const char * FDECL(nameOfMentalEdge, (int));
 E const char * FDECL(nameOfFightingForm, (int));
 E void NDECL(validateLightsaberForm);
 E boolean FDECL(blockedFightingForm, (int));
+E boolean FDECL(blockedMentalEdge, (int));
 E int NDECL(uhp);
 E int NDECL(uhpmax);
 E void NDECL(check_brainlessness);
@@ -293,6 +296,7 @@ E void FDECL(bot3str, (char *, boolean, int));
 
 
 E char NDECL(randomkey);
+E int NDECL(doGithForm);
 #ifdef USE_TRAMPOLI
 E int NDECL(doextcmd);
 E int NDECL(domonability);
@@ -963,6 +967,7 @@ E long FDECL(newuexp, (int));
 E int FDECL(experience, (struct monst *,int));
 E int FDECL(ptrexperience, (struct permonst *));
 E void FDECL(more_experienced, (int,int));
+E void FDECL(lose_experience, (int));
 E void FDECL(losexp, (const char *,BOOLEAN_P,BOOLEAN_P,BOOLEAN_P));
 E void NDECL(newexplevel);
 E void NDECL(binderup);
@@ -3292,6 +3297,7 @@ E void FDECL(restrict_weapon_skill, (int));
 E void FDECL(expert_weapon_skill, (int));
 E void FDECL(skilled_weapon_skill, (int));
 E void FDECL(use_skill, (int,int));
+E void FDECL(lose_skill, (int,int));
 E void FDECL(add_weapon_skill, (int));
 E void FDECL(lose_weapon_skill, (int));
 E int FDECL(weapon_type, (struct obj *));

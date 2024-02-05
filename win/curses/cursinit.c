@@ -905,7 +905,7 @@ curses_choose_character()
             /* Always 2 options - yn */
             choices = (const char **) alloc(sizeof (char *) * (3));
             pickmap = (int *) alloc(sizeof (int) * (3));
-			char * terms[] = {"Inherit from a past adventurer (start with an heirloom artifact, consuming an artifact wish)",
+			char * terms[] = {"Inherit from a past adventurer (start with an heirloom artifact but low stats and dangerous foes)",
 								"No past inheritance", '\0'};
 
             for (i = 0; i < 2; i++) {
