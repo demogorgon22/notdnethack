@@ -1031,7 +1031,7 @@ const struct Species species[] = {
 	{"green", AD_DRST, DRAGON_SPECIES},
 	{"yellow", AD_ACID, DRAGON_SPECIES},
 	{"gray", AD_MAGM, DRAGON_SPECIES},
-	{"shimmering", AD_RBRE, DRAGON_SPECIES},
+	{"chaos", AD_RBRE, DRAGON_SPECIES},
 	{"black", AD_DISN, DRAGON_SPECIES}
 };
 

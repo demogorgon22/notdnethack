@@ -296,7 +296,7 @@ struct Species {
 
 extern const struct Species species[];	/* table of available species */
 
-#define ROLE_SPECIES	32	/* number of permitted player species */
+#define ROLE_SPECIES	33	/* number of permitted player species */
 #define NONE_SPECIES 0
 #define ENT_SPECIES 1
 #define DRAGON_SPECIES 2
