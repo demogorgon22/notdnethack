@@ -1952,7 +1952,7 @@ level_difficulty()
 		else
 			dpth = ((int) depth(&u.uz));
 	
-	if(flags.descendant && !Role_if(PM_CONVICT) && !Role_if(PM_MADMAN))
+	if(flags.descendant && !(Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER)) && !Role_if(PM_MADMAN))
 		dpth += 10;
 
 	return max(1, dpth);

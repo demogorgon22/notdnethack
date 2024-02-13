@@ -3628,7 +3628,7 @@ newgame()
 			/* please do not have any artifacts where the otyp in artilist is not the same as the practical otyp after onaming */
 			expert_weapon_skill(weapon_type(otmp));
 			discover_artifact(inher_arti);
-			if (!Role_if(PM_CONVICT)){
+			if (!(Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER))){
 				otmp = oname(otmp, artilist[inher_arti].name);
 				fully_identify_obj(otmp);
 				otmp = hold_another_object(otmp, "Oops!  %s to the floor!",

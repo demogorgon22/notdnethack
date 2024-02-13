@@ -197,7 +197,7 @@ more_experienced(exp, rexp)
 		rexp *= 1.3;
 	}
 	if(flags.descendant && flags.beginner){
-		if(Role_if(PM_CONVICT) || Role_if(PM_MADMAN)){
+		if((Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER)) || Role_if(PM_MADMAN)){
 			exp = (exp+1)/2;
 			rexp = (rexp+1)/2;
 		}
