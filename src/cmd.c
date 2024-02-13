@@ -922,6 +922,8 @@ lavaify(){
 		(lev->typ == DRAWBRIDGE_DOWN ||
 		   (is_drawbridge_wall(u.ux, u.uy) >= 0)) ||
 		(lev->typ == DRAWBRIDGE_UP) ||
+		(lev->typ == STAIRS) ||
+		(lev->typ == LADDER) ||
 		(IS_ALTAR(lev->typ)) ||
 		(Is_waterlevel(&u.uz))
 	)){
