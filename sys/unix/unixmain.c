@@ -28,6 +28,9 @@ extern struct passwd *FDECL(getpwnam,(const char *));
 static void FDECL(chdirx, (const char *,BOOLEAN_P));
 #endif /* CHDIR */
 static boolean NDECL(whoami);
+#ifdef FUZZER_TIMEOUT
+static void NDECL(init_fuzzer_child);
+#endif
 static void FDECL(process_options, (int, char **));
 
 #ifdef _M_UNIX
@@ -200,6 +203,11 @@ char *argv[];
 	plnamesuffix();		/* strip suffix from name; calls askname() */
 				/* again if suffix was whole name */
 				/* accepts any suffix */
+#ifdef FUZZER_TIMEOUT
+	if(iflags.debug_fuzzer){
+		init_fuzzer_child();
+	}
+#endif
 #ifdef WIZARD
 	if(!wizard) {
 #endif
@@ -298,6 +306,25 @@ not_recovered:
 	/*NOTREACHED*/
 	return(0);
 }
+
+#ifdef FUZZER_TIMEOUT
+
+static void 
+init_fuzzer_child(){
+	pid_t pid = getpid();
+	pid_t child_pid = fork();
+	int status;
+	if(!child_pid){
+		while(TRUE){
+			sleep(FUZZER_TIMEOUT);
+			//check shared memory, if the timestamp is in date, go back to sleep, otherwise raise a SIGHUP to the parent and exit
+		}
+		
+	} else {
+		waitpid(child_pid, &status, WNOHANG);
+	}
+}
+#endif
 
 static void
 process_options(argc, argv)

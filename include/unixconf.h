@@ -30,6 +30,7 @@
 /* #define HPUX */	/* Hewlett-Packard's Unix, version 6.5 or higher */
 			/* use SYSV for < v6.5 */
 
+/*#define FUZZER_TIMEOUT 60*/
 
 /* define any of the following that are appropriate */
 /*#define SVR4*/		/* use in addition to SYSV for System V Release 4 */
