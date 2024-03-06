@@ -2696,7 +2696,7 @@ spiriteffects(power, atme)
 			if(isok(u.ux+u.dx, u.uy+u.dy)) {
 				struct obj *otmp;
 				You("ask the earth to open.");
-				digfarhole(TRUE, u.ux+u.dx, u.uy+u.dy);
+				digfarhole(TRUE, u.ux+u.dx, u.uy+u.dy, TRUE);
 				otmp = mksobj(BOULDER, MKOBJ_NOINIT);
 				projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, u.ux, u.uy, u.dx, u.dy, 0, 1, FALSE, FALSE, FALSE);
 				nomul(0, NULL);
@@ -3530,7 +3530,7 @@ spiriteffects(power, atme)
 					else break;
 				} 
 				struct attack basicattack = {
-					((uarmg && arti_shining(uarmg)) || u.sealsActive&SEAL_CHUPOCLOPS) ? AT_TUCH : AT_CLAW,
+					((uarmg && arti_phasing(uarmg)) || u.sealsActive&SEAL_CHUPOCLOPS) ? AT_TUCH : AT_CLAW,
 					AD_PHYS, 0, 0 };
 				
 				int dieroll = rnd(20);
@@ -5978,6 +5978,7 @@ int spell;
 			 || spell_skilltype(spellid(spell)) == P_HEALING_SPELL
 			 || Role_if(PM_PRIEST)
 			 || Role_if(PM_MONK)
+			 || Role_if(PM_HEALER)
 			) cast_bon += 2;
 			if (uwep->oartifact)
 				cast_bon *= 2;
@@ -5992,6 +5993,7 @@ int spell;
 			if(spell_skilltype(spellid(spell)) == P_CLERIC_SPELL
 			 || spell_skilltype(spellid(spell)) == P_HEALING_SPELL
 			 || Role_if(PM_PRIEST)
+			 || Role_if(PM_HEALER)
 			) cast_bon += 2;
 			if (uwep->oartifact || objects[uwep->otyp].oc_unique)
 				cast_bon *= 2;
@@ -6003,8 +6005,10 @@ int spell;
 			|| uwep->oartifact == ART_ESSCOOAHLIPBOOURRR
 		) {	// tools of healing
 			cast_bon = 0;
-			if(spell_skilltype(spellid(spell)) == P_HEALING_SPELL)
-			cast_bon += 2;
+			if(spell_skilltype(spellid(spell)) == P_HEALING_SPELL
+			  || Role_if(PM_HEALER)
+			)
+				cast_bon += 2;
 			if (uwep->oartifact)
 				cast_bon *= 2;
 			splcaster -= urole.spelarmr * cast_bon / 3;

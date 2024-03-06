@@ -1186,7 +1186,7 @@ boolean dofull;
 			Strcat(buf, "living ");
 		
 		if (check_oprop(obj, OPROP_GSSDW))
-			Strcat(buf, u.uinsight >= 50 ? "rushing " : u.uinsight >= 25 ? "flowing " : "rippling ");
+			Strcat(buf, u.uinsight >= 50 ? "rushing " : u.uinsight >= 25 ? "flowing " : u.uinsight > 0 ? "rippling " : "");
 
 		if (check_oprop(obj, OPROP_BRIL) && !obj->known)
 			Strcat(buf, "ornate ");
@@ -1481,7 +1481,10 @@ char *buf;
 	else
 #endif
 	if (is_lightsaber(obj) && litsaber(obj) && obj->otyp != ROD_OF_FORCE){
-		Strcat(buf, lightsaber_colorText(obj));
+		if (obj->cobj)
+			Strcat(buf, lightsaber_colorText(obj->cobj));
+		else
+			Strcat(buf, lightsaber_colorText(obj));
 		if (!objects[obj->otyp].oc_name_known && strncmpi(eos(buf)-7, " bladed", 7))
 			Strcat(buf, " bladed");
 		Strcat(buf, " ");
@@ -3503,7 +3506,7 @@ const char *oldstr;
 		(p = strstri(bp, " labelled ")) != 0 ||
 		(p = strstri(bp, " called ")) != 0) {
 		/* don't singularize these: */
-		if (!BSTRNCMPI(bp, p- 4, "Eyes of the Overworld", 21)
+		if (!BSTRNCMPI(bp, p- 4, "Eye of the Overworld", 20)
 			|| !BSTRNCMPI(bp, p-6, "Plates of The Near Void", 23)
 			|| !BSTRNCMPI(bp, p-11, "Great Claws of Urdlen", 21)
 			|| !BSTRNCMPI(bp, p- 5, "Claws of the Revenancer", 23)
@@ -3627,6 +3630,7 @@ const char *oldstr;
 			   !BSTRCMPI(bp, p-6, "talons") || /* set of knives */
 			   !BSTRCMPI(bp, p-6, "Thorns") || /* artifact */
 			   !BSTRCMPI(bp, p-9, "Soul Lens") || /* artifact */
+			   !BSTRCMPI(bp, p-9, "soul-lens") || /* item */
 			   !BSTRCMPI(bp, p-19, "Seal of the Spirits") || /* artifact */
 			   !BSTRCMPI(bp, p-20, "wind and fire wheels") || /* boots. Yeah. */
 			   !BSTRCMPI(bp, p-10, "eucalyptus") ||

@@ -301,7 +301,9 @@ curses_create_main_windows()
         msg_vertical = TRUE;
 
     int statusheight = 3;
-    if (iflags.classic_status)
+    if (!iflags.classic_status && iflags.statuslines >= 4)
+        statusheight = 4;
+    if (iflags.classic_status && iflags.statuslines <= 2)
         statusheight = 2;
 
     /* Vertical windows have priority. Otherwise, priotity is:
@@ -899,7 +901,7 @@ curses_choose_character()
 
 	/* Select descendant status, if necessary */
     if (flags.descendant < 0){
-	if (flags.descendant == ROLE_RANDOM || flags.randomall || !validdescendant(flags.initrole)) {
+	if (flags.descendant == ROLE_RANDOM || flags.randomall || flags.initrole < 0 || !validdescendant(flags.initrole)) {
            flags.descendant = 0; // never randomly roll descendant
         } else {
             /* Always 2 options - yn */

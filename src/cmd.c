@@ -8,6 +8,7 @@
 #include "artifact.h"
 #include "lev.h"
 #include "func_tab.h"
+#include "xhity.h"
 /* #define DEBUG */	/* uncomment for debugging */
 
 /*
@@ -679,6 +680,9 @@ boolean you_abilities;
 	if (Role_if(PM_MADMAN) && u.whisperturn < moves && !Catapsi && !DimensionalLock){
 		add_ability('W', "Call your whisperer", MATTK_WHISPER);
 	}
+	if (Role_if(PM_SAMURAI) && u.kiaiturn < moves && u.uencouraged < xlev_to_rank(u.ulevel)){
+		add_ability('K', "Kiai shout", MATTK_KI);
+	}
 	if (you_abilities && spellid(0) != NO_SPELL) {
 		add_ability('z', "Cast spells", MATTK_U_SPELLS);
 	}
@@ -725,6 +729,7 @@ boolean you_abilities;
 	case MATTK_U_MONST: return domonability();
 	case MATTK_U_ELMENTAL: return doelementalbreath();
 	case MATTK_WHISPER: return domakewhisperer();
+	case MATTK_KI: return dokiai();
 
 	/* Monster (or monster-like) abilities */
 	case MATTK_BREATH: return dobreathe(youmonst.data);
@@ -1095,7 +1100,7 @@ use_reach_attack()
 		    !canseemon(mtmp))) {
 	    You("won't hit anything if you can't see that spot.");
 	    return MOVE_CANCELLED;
-	} else if (!couldsee(cc.x, cc.y)) { /* Eyes of the Overworld */
+	} else if (!couldsee(cc.x, cc.y)) { /* Eye of the Overworld */
 	    You("can't reach that spot from here.");
 	    return MOVE_CANCELLED;
 	}
@@ -1669,9 +1674,8 @@ hasfightingforms(){
 	struct attack *attk;
 	struct attack prev_attk = {0};
 	struct attack prev_attk2 = {0};
-	int	indexnum, tohitmod, res[4];
-	long subout;
-	indexnum = subout = tohitmod = 0;
+	int	indexnum, subout[SUBOUT_ARRAY_SIZE]={0}, tohitmod, res[4];
+	indexnum = tohitmod = 0;
 	int i;
 
 	/* always shown */
@@ -1687,14 +1691,15 @@ hasfightingforms(){
 	if (u.uavoid_passives)
 		formmask |= AVOID_PASSIVES;
 	else {
-		indexnum = subout = tohitmod = 0;
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
 		res[0] = MM_MISS;
 		res[1] = MM_MISS;
 		res[2] = MM_MISS;
 		res[3] = MM_MISS;
-		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod);
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod);
 			!is_null_attk(attk);
-			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod)
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod)
 		){
 			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
 		}
@@ -1702,14 +1707,15 @@ hasfightingforms(){
 	if (u.uavoid_msplcast)
 		formmask |= AVOID_MSPLCAST;
 	else {
-		indexnum = subout = tohitmod = 0;
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
 		res[0] = MM_MISS;
 		res[1] = MM_MISS;
 		res[2] = MM_MISS;
 		res[3] = MM_MISS;
-		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod);
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod);
 			!is_null_attk(attk);
-			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod)
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod)
 		){
 			if(attk->aatyp == AT_MAGC) formmask |= AVOID_MSPLCAST;
 		}
@@ -1720,14 +1726,15 @@ hasfightingforms(){
 	if (u.uavoid_englattk)
 		formmask |= AVOID_ENGLATTK;
 	else {
-		indexnum = subout = tohitmod = 0;
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
 		res[0] = MM_MISS;
 		res[1] = MM_MISS;
 		res[2] = MM_MISS;
 		res[3] = MM_MISS;
-		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod);
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod);
 			!is_null_attk(attk);
-			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, &subout, &tohitmod)
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod)
 		){
 			if(attk->aatyp == AT_ENGL) formmask |= AVOID_ENGLATTK;
 		}

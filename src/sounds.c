@@ -4996,7 +4996,7 @@ int tx,ty;
 						newsym(tx,ty);
 					} else{
 						levl[tx][ty].typ = ROOM;
-						digfarhole(TRUE,tx,ty);
+						digfarhole(TRUE,tx,ty, TRUE);
 					}
 					// u.sealTimeout[CHUPOCLOPS-FIRST_SEAL] = moves + bindingPeriod/10;
 				}

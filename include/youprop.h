@@ -635,9 +635,9 @@
 						 && which_armor(u.usteed, W_SADDLE)->oartifact == ART_HELLRIDER_S_SADDLE) || \
 						species_reflects(&youmonst))
 
+#define HFree_action		u.uprops[FREE_ACTION].intrinsic
 #define EFree_action		u.uprops[FREE_ACTION].extrinsic
-
-#define Free_action		(EFree_action) /* [Tom] */
+#define Free_action		(HFree_action || EFree_action) /* [Tom] */
 
 #define Fixed_abil		(u.uprops[FIXED_ABIL].extrinsic)	/* KMH */
 

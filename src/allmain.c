@@ -554,11 +554,11 @@ boolean affect_game_state;
 
 			/* these only apply if you didn't attack this action */
 			if (!u.uattked) {
-				if(uwep && uwep->oartifact == ART_TENSA_ZANGETSU){
+				if(uwep && uwep->oartifact == ART_TENSA_ZANGETSU && !flags.beginner){
 					MOVECOST(NORMAL_SPEED/12);
-				} else if(uwep && uwep->oartifact == ART_SODE_NO_SHIRAYUKI){
+				} else if(uwep && uwep->oartifact == ART_SODE_NO_SHIRAYUKI && u.ulevel >= 14){
 					MOVECOST(NORMAL_SPEED/4);
-				} else if(uwep && uwep->oartifact == ART_TOBIUME){
+				} else if(uwep && uwep->oartifact == ART_TOBIUME && u.ulevel >= 14){
 					if (affect_game_state) {
 						if((HStealth&TIMEOUT) < 2)
 							set_itimeout(&HStealth, 2L);
@@ -704,6 +704,8 @@ you_calc_movement()
 	else moveamt = youmonst.data->mmove;
 	if(uarm && uarm->otyp == POWER_ARMOR && uarm->lamplit) moveamt += 4;
 	if(u.utats & TAT_HOURGLASS) moveamt++;
+	if(Race_if(PM_HALF_DRAGON) && flags.HDbreath == AD_ELEC && u.ulevel >= 15)
+		moveamt += 3;
 	if(uarmf && !Flying && !Levitation){
 		if(uarmf->otyp == STILETTOS)
 			moveamt = (moveamt*5)/6;
@@ -767,7 +769,8 @@ you_calc_movement()
 	}
 	if (uwep && uwep->oartifact == ART_GARNET_ROD) moveamt += NORMAL_SPEED / 2;
 	if (uwep && uwep->oartifact == ART_TENSA_ZANGETSU){
-		moveamt += NORMAL_SPEED;
+		if(u.ulevel >= 14)
+			moveamt += NORMAL_SPEED;
 		if(artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe-- < 1){
 			if(ublindf && ublindf->otyp == MASK && ublindf->corpsenm != NON_PM && is_undead(&mons[ublindf->corpsenm])){
 				artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe = mons[ublindf->corpsenm].mlevel;
@@ -2848,18 +2851,22 @@ karemade:
 					}
 				} else if(u.utemp) u.utemp--;
 				if(u.utemp > BURNING_HOT){
-					if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SCROLL_CLASS, AD_FIRE);
-					if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, POTION_CLASS, AD_FIRE);
-					if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SPBOOK_CLASS, AD_FIRE);
+					if (!InvFire_resistance){
+						if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SCROLL_CLASS, AD_FIRE);
+						if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, POTION_CLASS, AD_FIRE);
+						if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SPBOOK_CLASS, AD_FIRE);
+					}
 					
 					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_FAFNIR)){
-						You("are melting!");
+						Your("boiler is melting!");
 						losehp(u.ulevel, "melting from extreme heat", KILLED_BY);
 						if(u.utemp >= MELTED){
+							Your("boiler has melted to slag!");
 							if(Upolyd) losehp(u.mhmax*2, "melting to slag", KILLED_BY);
 							else { /* May have been rehumanized by previous damage. In that case, still die from left over bronze on your skin! */
-								if(uclockwork) losehp((Upolyd ? u.mhmax : u.uhpmax)*2, "melting to slag", KILLED_BY);
-								else if(!(HFire_resistance || u.sealsActive&SEAL_FAFNIR)) losehp((Upolyd ? u.mhmax : u.uhpmax)*2, "molten bronze", KILLED_BY);
+								losehp((Upolyd ? u.mhmax : u.uhpmax)*2, "melting to slag", KILLED_BY);
+								u.utemp = 19; // don't get stuck in a loop of permanently dying, clear temp & stove
+								u.ustove = 0; // this can still kill due to you taking damage, just no instadeath
 							}
 						}
 					}
@@ -2911,6 +2918,8 @@ karemade:
 		     * Another possible result is rehumanization, which requires
 		     * that encumbrance and movement rate be recalculated.
 		     */
+			do_your_auras();
+			
 			you_regen_hp();
 			you_regen_pw();
 			you_regen_san();
@@ -3585,6 +3594,46 @@ newgame()
 			com_pager(1);
 		}
 	}
+	if(Darksight) litroom(FALSE,NULL);
+	if(flags.descendant){
+		struct obj *otmp;
+		int inher_arti = find_preset_inherited(inherited);
+
+		while (!inher_arti) inher_arti = do_inheritance_menu();
+
+		u.inherited = inher_arti;
+
+		/* fix up artifact a little so we can use it fine */
+		/* the alignment check should be unnecessary, but otherwise this prevents intelligents from evading */
+		if (!Role_if(artilist[inher_arti].role)) artilist[inher_arti].role = ROLE_NONE;
+		if (!Pantheon_if(artilist[inher_arti].role)) artilist[inher_arti].role = ROLE_NONE;
+		if (!Race_if(artilist[inher_arti].race)) artilist[inher_arti].race = ROLE_NONE;
+		if (artilist[inher_arti].alignment != u.ualign.type) artilist[inher_arti].alignment = A_NONE;
+		artilist[inher_arti].gflags &= ~ARTG_GIFT;
+		artilist[inher_arti].gflags &= ~ARTG_NAME;
+		artilist[inher_arti].gflags |= ARTG_NOGEN;
+		artilist[inher_arti].gflags |= ARTG_NOWISH;
+		hack_artifacts();
+
+		if (!Role_if(PM_MADMAN)){
+			otmp = mksobj((int)artilist[inher_arti].otyp, MKOBJ_NOINIT);
+			/* please do not have any artifacts where the otyp in artilist is not the same as the practical otyp after onaming */
+			discover_artifact(inher_arti);
+			if (!(Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER))){
+				otmp = oname(otmp, artilist[inher_arti].name);
+				fully_identify_obj(otmp);
+				expert_weapon_skill(weapon_type(otmp));
+				otmp = hold_another_object(otmp, "Oops!  %s to the floor!",
+						   The(aobjnam(otmp, "slip")), (const char *)0);
+			} else {
+				//Create without creating
+				otmp->oartifact = inher_arti;
+				expert_weapon_skill(weapon_type(otmp));
+				otmp->oartifact = 0;
+				delobj(otmp);
+			}
+		}
+	}
 
 #ifdef INSURANCE
 	save_currentstate();
@@ -3604,40 +3653,8 @@ newgame()
 
 #endif /* RECORD_REALTIME || REALTIME_ON_BOTL */
 
-	if(Darksight) litroom(FALSE,NULL);
 	/* Success! */
 	welcome(TRUE);
-	if(flags.descendant){
-		struct obj *otmp;
-		int inher_arti = find_preset_inherited(inherited);
-
-		while (!inher_arti) inher_arti = do_inheritance_menu();
-
-		u.inherited = inher_arti;
-
-		/* fix up artifact a little so we can use it fine */
-		/* the alignment check should be unnecessary, but otherwise this prevents intelligents from evading */
-		if (!Role_if(artilist[inher_arti].role)) artilist[inher_arti].role = ROLE_NONE;
-		if (!Pantheon_if(artilist[inher_arti].role)) artilist[inher_arti].role = ROLE_NONE;
-		if (!Race_if(artilist[inher_arti].race)) artilist[inher_arti].race = ROLE_NONE;
-		if (artilist[inher_arti].alignment != u.ualign.type) artilist[inher_arti].alignment = A_NONE;
-		hack_artifacts();
-
-		if (!Role_if(PM_MADMAN)){
-			otmp = mksobj((int)artilist[inher_arti].otyp, MKOBJ_NOINIT);
-			/* please do not have any artifacts where the otyp in artilist is not the same as the practical otyp after onaming */
-			expert_weapon_skill(weapon_type(otmp));
-			discover_artifact(inher_arti);
-			if (!(Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER))){
-				otmp = oname(otmp, artilist[inher_arti].name);
-				fully_identify_obj(otmp);
-				otmp = hold_another_object(otmp, "Oops!  %s to the floor!",
-						   The(aobjnam(otmp, "slip")), (const char *)0);
-			} else {
-				delobj(otmp);
-			}
-		}
-	}
 	return;
 }
 
@@ -3685,7 +3702,6 @@ do_inheritance_menu()
 		if(artilist[i].gflags&ARTG_INHER
 		&& !Role_if(artilist[i].role) && !Pantheon_if(artilist[i].role)
 		&& !(urole.questarti == i)
-		&& (artilist[i].alignment == A_NONE || artilist[i].alignment == u.ualign.type)
 		){
 			Sprintf(buf, "%s", artilist[i].name);
 			any.a_int = i;	/* must be non-zero */

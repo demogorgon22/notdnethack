@@ -1382,7 +1382,7 @@ register struct obj *otmp;
 	    if (Punished) set_bc(0);
 	} else if (already_blind && !Blind) {
 	    changed = TRUE;
-	    /* "You are now wearing the Eyes of the Overworld." */
+	    /* "You are now wearing the Eye of the Overworld." */
 	    You("can see!");
 	}
 	if (changed) {
@@ -1419,7 +1419,7 @@ register struct obj *otmp;
 		    You("still cannot see.");
 	    } else {
 		changed = TRUE;	/* !was_blind */
-		/* "You were wearing the Eyes of the Overworld." */
+		/* "You were wearing the Eye of the Overworld." */
 		You_cant("see anything now!");
 		/* set ball&chain variables before the hero goes blind */
 		if (Punished) set_bc(0);
@@ -2360,6 +2360,12 @@ struct obj * otmp;
 	case ART_SPIDERSILK:
 		def += 2;//offsetting the cloth material
 		break;
+	case ART_SCORPION_CARAPACE:
+		if(check_carapace_mod(otmp, CPROP_PLATES))
+			def = 7;
+		else if(check_carapace_mod(otmp, CPROP_HARD_SCALE))
+			def += 1;//offsetting the chitin material
+		break;
 	}
 
 	return def;
@@ -2457,9 +2463,12 @@ struct obj * otmp;
 	case ART_SPIDERSILK:
 		def += 2;//offsetting the cloth material
 		break;
-	// case ART_CLAWS_OF_THE_REVENANCER:
-		// def += 5;
-		// break;
+	case ART_SCORPION_CARAPACE:
+		if(check_carapace_mod(otmp, CPROP_PLATES))
+			def = 7;
+		else if(check_carapace_mod(otmp, CPROP_HARD_SCALE))
+			def += 1;//offsetting the chitin material
+		break;
 	}
 
 	return def;
@@ -2534,7 +2543,7 @@ base_uac()
 				uac -= u.uinsight - 10;
 		}
 		if(!flat_foot){
-			if((is_rapier(uwep) && arti_shining(uwep)) || 
+			if((is_rapier(uwep) && arti_phasing(uwep)) || 
 				(uwep->otyp == LIGHTSABER && litsaber(uwep) && uwep->oartifact != ART_ANNULUS && uwep->ovar1_lightsaberHandle == 0)
 					) uac -= max(
 						min(
@@ -2715,11 +2724,16 @@ find_ac()
 		if(uwep && (objects[uwep->otyp].oc_skill == P_SPEAR || objects[uwep->otyp].oc_skill == P_POLEARMS || objects[uwep->otyp].oc_skill == P_LANCE))
 			uac -= 2;
 	}
+	else if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_SHIELDS)){
+		uac -= 1 + shield_skill(uarm);
+		if(uwep && (objects[uwep->otyp].oc_skill == P_SPEAR || objects[uwep->otyp].oc_skill == P_POLEARMS || objects[uwep->otyp].oc_skill == P_LANCE))
+			uac -= 3;//+1 bonus to shield size
+	}
 	if (uarmg)	uac -= arm_ac_bonus(uarmg);
 	if (uarmu)	uac -= arm_ac_bonus(uarmu);
 	
 	if(uwep){
-		if((is_rapier(uwep) && !arti_shining(uwep)))
+		if((is_rapier(uwep) && !arti_phasing(uwep)))
 			uac -= max(
 				min(
 				(ACURR(A_DEX)-13)/4,
@@ -2796,6 +2810,9 @@ int base_nat_udr()
 				udr += (u.ulevel)/3;
 			else udr += (u.ulevel)/6;
 		}
+	}
+	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5){
+		udr += 3;
 	}
 	
 	if(u.sealsActive&SEAL_ECHIDNA)
@@ -2967,6 +2984,12 @@ uchar aatyp;
 		&& (slot&HEAD_DR)
 	){
 		bas_udr += u.ulevel/10;
+	}
+	/* The Crown of Vermin adds up to +3 magic DR to the head (in practice it will usually at 2 or less due to missing vermin) */
+	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_CROWN)
+		&& (slot&HEAD_DR)
+	){
+		bas_udr += artinstance[ART_SCORPION_CARAPACE].CarapaceAura/C_CROWN_AURA_DIVISOR;
 	}
 	/* Vaul is not randomized, and contributes to magical DR */
 	if (u.uvaul) {
@@ -4358,6 +4381,61 @@ struct obj *armor;
 			if(youagr) morehungry(1);
 			lim++;
 			if(lim > 4) break;
+		}
+	}
+}
+
+void
+doscorpion(magr, armor)
+struct monst *magr;
+struct obj *armor;
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int i = rnd(8),j;
+	struct attack symbiote = { 0 };
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	if(check_carapace_mod(armor, CPROP_ILL_STING)){
+		symbiote = *attacktype_fordmg(&mons[PM_SCORPIUS], AT_STNG, AD_DISE);
+	}
+	else {
+		symbiote = *attacktype_fordmg(&mons[PM_SCORPION], AT_STNG, AD_DRST);
+	}
+	
+	for(j=8;j>=1;j--){
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]))
+			continue;
+		else mdef = m_u_at(x(magr)+clockwisex[(i+j)%8], y(magr)+clockwisey[(i+j)%8]);
+		
+		if(!mdef)
+			continue;
+
+		youdef = (mdef == &youmonst);
+		if(DEADMONSTER(mdef))
+			continue;
+		
+		if(youagr && (mdef->mpeaceful || rn2(11)))
+			continue;
+		if(youdef && (magr->mpeaceful || rn2(11)))
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || rn2(11)))
+			continue;
+
+		if(!youdef && nonthreat(mdef))
+			continue;
+
+		//Note: the armor avoids touching petrifying things even if you're immune
+		if(touch_petrifies(mdef->data)
+		 || mdef->mtyp == PM_MEDUSA
+		 || mdef->mtyp == PM_PALE_NIGHT
+		) continue;
+		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			break;
 		}
 	}
 }

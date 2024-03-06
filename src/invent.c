@@ -188,6 +188,9 @@ struct obj **potmp, **pobj;
 			    / (otmp->quan + obj->quan);
 
 		otmp->quan += obj->quan;
+		
+		otmp->rknown |= obj->rknown;
+		otmp->dknown |= obj->dknown;
 #ifdef GOLDOBJ
                 /* temporary special case for gold objects!!!! */
 #endif
@@ -1410,7 +1413,7 @@ register const char *let,*word;
 		|| (!strcmp(word, "build a phase engine with") &&
 		    (otyp != SUBETHAIC_COMPONENT))
 		|| (!strcmp(word, "build a magic furnace with") &&
-		    (otyp != CORPSE || otmp->corpsenm != PM_DISENCHANTER))
+		    (otyp != WAN_DRAINING))
 		|| (!strcmp(word, "build a hellfire furnace with") &&
 		    (otyp != HELLFIRE_COMPONENT))
 		|| (!strcmp(word, "build a scrap maw with") &&
@@ -2841,9 +2844,12 @@ winid *datawin;
 			))
 		{
 			// note: dmgval_core can handle not being given an obj; it will attempt to use otyp instead
+			// impractical edge case for varying spe_mult with size
 			struct weapon_dice wdice[2];
-			(void)dmgval_core(&wdice[0], FALSE, obj, otyp, &youmonst);	// small dice
-			(void)dmgval_core(&wdice[1], TRUE, obj, otyp, &youmonst);		// large dice
+			int spe_mult = dmgval_core(&wdice[0], FALSE, obj, otyp, &youmonst);	// small dice
+			int lspe_mult = dmgval_core(&wdice[1], TRUE, obj, otyp, &youmonst);		// large dice
+			int enc_bonus = (obj) ? (obj->spe) : 0;
+			if (otyp == CRYSTAL_SWORD) enc_bonus += enc_bonus / 3;
 
 			Sprintf(buf, "Damage: ");
 
@@ -2857,9 +2863,9 @@ winid *datawin;
 				Sprintf(buf2, "+%dd%d", wdice[0].bon_damn, wdice[0].bon_damd);
 				Strcat(buf, buf2);
 			}
-			if (wdice[0].flat)
+			if (wdice[0].flat || enc_bonus)
 			{
-				Sprintf(buf2, "%s", sitoa(wdice[0].flat));
+				Sprintf(buf2, "%s", sitoa(wdice[0].flat + enc_bonus*spe_mult));
 				Strcat(buf, buf2);
 			}
 			Strcat(buf, " versus small and ");
@@ -2880,9 +2886,9 @@ winid *datawin;
 					Sprintf(buf2, "+%dd%d", wdice[1].bon_damn, wdice[1].bon_damd);
 					Strcat(buf, buf2);
 				}
-				if (wdice[1].flat)
+				if (wdice[1].flat || enc_bonus)
 				{
-					Sprintf(buf2, "%s", sitoa(wdice[1].flat));
+					Sprintf(buf2, "%s", sitoa(wdice[1].flat + enc_bonus*lspe_mult));
 					Strcat(buf, buf2);
 				}
 				Strcat(buf, " versus ");
@@ -2952,40 +2958,35 @@ winid *datawin;
 				Strcat(buf, "magic damage, doubled against those who came from the stars.");
 				break;
 			default:
-				if (oart->adtyp == AD_PHYS && !(oart->aflags&ARTA_HATES))
-				{
-					Strcat(buf, "damage.");
-				}
-				else if (oart->adtyp != AD_PHYS)
-				{
-					switch (oart->adtyp) {
-					case AD_FIRE: Strcat(buf, "fire damage."); break;
-					case AD_COLD: Strcat(buf, "cold damage."); break;
-					case AD_ELEC: Strcat(buf, "lightning damage."); break;
-					case AD_ACID: Strcat(buf, "acid damage."); break;
-					case AD_MAGM: Strcat(buf, "magic damage."); break;
-					case AD_DRST: Strcat(buf, "poison damage."); break;
-					case AD_DRLI: Strcat(buf, "life drain damage."); break;
-					case AD_STON: Strcat(buf, "petrifying damage."); break;
-					case AD_DARK: Strcat(buf, "dark damage."); break;
-					case AD_BLUD: Strcat(buf, "blood damage."); break;
+				switch (oart->adtyp) {
+					case AD_FIRE: Strcat(buf, "fire damage"); break;
+					case AD_COLD: Strcat(buf, "cold damage"); break;
+					case AD_ELEC: Strcat(buf, "lightning damage"); break;
+					case AD_ACID: Strcat(buf, "acid damage"); break;
+					case AD_MAGM: Strcat(buf, "magic damage"); break;
+					case AD_DRST: Strcat(buf, "poison damage"); break;
+					case AD_DRLI: Strcat(buf, "life drain damage"); break;
+					case AD_STON: Strcat(buf, "petrifying damage"); break;
+					case AD_DARK: Strcat(buf, "dark damage"); break;
+					case AD_BLUD: Strcat(buf, "blood damage"); break;
 					case AD_DRIN: Strcat(buf, "brain damage."); break;
-					case AD_HOLY: Strcat(buf, "holy damage."); break;
-					case AD_STDY: Strcat(buf, "study damage."); break;
-					case AD_HLUH: Strcat(buf, "corrupted holy damage."); break;
-					case AD_STAR: Strcat(buf, "silver damage."); break;
-					case AD_SLEE: Strcat(buf, "sleep damage."); break;
-						break;
-					}
+					case AD_HOLY: Strcat(buf, "holy damage"); break;
+					case AD_STDY: Strcat(buf, "study damage"); break;
+					case AD_HLUH: Strcat(buf, "corrupted holy damage"); break;
+					case AD_STAR: Strcat(buf, "silver damage"); break;
+					case AD_SLEE: Strcat(buf, "sleep damage"); break;
+					case AD_PHYS: Strcat(buf, "damage"); break;
+					default: break;
 				}
-				else if (oart->aflags & ARTA_HATES)
-				{
-					Strcat(buf, "damage to ");
+				if (oart->aflags&ARTA_HATES){
+					Strcat(buf, " to ");
 					/* SMOP: this should be made into a list somewhere and used for specific warning messages as well,
 					 * ie, "Warned of fey and magic-item users." instead of "warned of demiliches"
+					 * Update 2024 - flag_to_word(flag, cat) now exists, but it's missing a good way to handle msym
+					 * pluralizations and would lose the fun flavor-ish messages for things like nodens, etc.
 					 */
-					switch (oartifact)
-					{
+
+					switch (oartifact){
 					case ART_ORCRIST:					Strcat(buf, "orcs and demons.");							break;
 					case ART_STING:						Strcat(buf, "orcs and spiders.");							break;
 					case ART_GRIMTOOTH:					Strcat(buf, "humans, elves, and dwarves.");					break;
@@ -3003,33 +3004,30 @@ winid *datawin;
 					case ART_PEACE_KEEPER:				Strcat(buf, "those that always seek violence.");			break;
 					case ART_OGRESMASHER:				Strcat(buf, "ogres.");										break;
 					case ART_TROLLSBANE:				Strcat(buf, "trolls and all who regenerate quickly.");		break;
-					case ART_MIRROR_BRAND:				Strcat(buf, "all lawful or chaotic");						break;
 					case ART_SUNSWORD:					Strcat(buf, "demons and the undead.");						break;
 					case ART_ATMA_WEAPON:				Strcat(buf, "worthy foes.");								break;
-					case ART_FUMA_ITTO_NO_KEN:			Strcat(buf, "cross-aligned.");								break;
 					case ART_ROD_OF_SEVEN_PARTS:		Strcat(buf, "any who stand against law.");					break;
 					case ART_WEREBUSTER:				Strcat(buf, "were-beasts.");								break;
 					case ART_BLACK_CRYSTAL:				Strcat(buf, "non-chaotics.");								break;
 					case ART_CLARENT:					Strcat(buf, "the thick-skinned");							break;
-					case ART_SCEPTRE_OF_MIGHT:			Strcat(buf, "cross-aligned.");								break;
-					case ART_IRON_BALL_OF_LEVITATION:	Strcat(buf, "cross-aligned.");								break;
 					case ART_WEB_OF_LOLTH:				Strcat(buf, "elves, demons, and godly minions.");			break;
 					case ART_MITRE_OF_HOLINESS:			Strcat(buf, "undead.");										break;
 					case ART_ICONOCLAST:				Strcat(buf, "humans, elves, dwarves, and gnomes.");			break;
 					case ART_SCOURGE_OF_LOLTH:			Strcat(buf, "elves.");										break;
 					default:
-						Strcat(buf, "hated foes.");
+						if (oart->aflags&ARTA_CROSSA) Strcat(buf, "cross-aligned foes.");
+						else Strcat(buf, "hated foes.");
 						break;
 					}
+				} else {
+					Strcat(buf, ".");
 				}
-				else {
-					buf[0] = '\0';
-				}
-				break;
+			break;
 			}
 			if (buf[0] != '\0')
 				OBJPUTSTR(buf);
 		}
+
 		/* other weapon special effects */
 		if(obj){
 			if(has_any_spear_point(obj)) {
@@ -3037,23 +3035,23 @@ winid *datawin;
 					OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == TORCH){
-				Sprintf(buf2, "Deals 1d6 + enchantment bonus fire damage when lit.");
+				Sprintf(buf2, "Deals 1d10%s bonus fire damage when lit.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == MAGIC_TORCH){
-				Sprintf(buf2, "Deals 1d4 + double enchantment bonus fire damage when lit.");
+				Sprintf(buf2, "Deals 1d8%s fire damage when lit.", (obj->spe ? sitoa(2*obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SHADOWLANDER_S_TORCH){
-				Sprintf(buf2, "Deals 1d6 + enchantment bonus cold damage when lit.");
+				Sprintf(buf2, "Deals 1d10%s bonus cold damage when lit.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SUNROD){
-				Sprintf(buf2, "Deals 1d6 + enchantment bonus lightning and acid damage when lit.");
+				Sprintf(buf2, "Deals 1d10%s bonus lightning and acid damage when lit.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == KAMEREL_VAJRA){
-				Sprintf(buf2, "Deals 2d6 bonus lightning damage, or 6d6 if wielded by an Ara Kamerel.");
+				Sprintf(buf2, "Deals 2d6 bonus lightning damage when lit, or 6d6 if wielded by an Ara Kamerel.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == VIPERWHIP && obj->ovar1_heads > 1){
@@ -3065,11 +3063,11 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == CRYSTAL_SWORD && obj->spe >= 3){
-				Sprintf(buf2, "Deals an extra %d enchantment damage.", obj->spe/3);
+				Sprintf(buf2, "Adds an extra %s to enchantment for damage calculations.", sitoa(obj->spe/3));
 				OBJPUTSTR(buf2);
 			}
 			if(force_weapon(obj)){
-				Sprintf(buf2, "Deals 1.5 base-damage-dice bonus energy damage.");
+				Sprintf(buf2, "When charged, deals an extra 1.5 dice of bonus energy damage.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == DOUBLE_FORCE_BLADE){
@@ -3077,7 +3075,16 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == RAKUYO){
-				Sprintf(buf2, "Deals an extra 1d4 vs small or 1d3 vs large and double enchantment damage if wielded without an off-hand weapon, at the cost of an extra 1/4 move.");
+				Sprintf(buf2, "Deals an extra 1d4%s vs small or 1d3%s vs large if wielded without an off-hand weapon, at the cost of an extra 1/4 move.", 
+					(obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_SILVER_STARLIGHT){
+				Sprintf(buf2, "Deals an extra base die + 1d4 bonus precision damage.");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_ATMA_WEAPON && !Drain_resistance){
+				Sprintf(buf2, "Scales base damage by your current health percentage.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == ETHERBLADE){
@@ -3383,31 +3390,54 @@ winid *datawin;
 	if (oartifact) {
 		register const struct artifact *oart = &artilist[oartifact];
 		buf[0] = '\0';
-		//ADDCLASSPROP((oart->aflags&ARTA_DEXPL), "weapon dice explode");
-		ADDCLASSPROP((oart->aflags&ARTA_DLUCK), "luck-biased");
 		ADDCLASSPROP((oart->aflags&ARTA_POIS), "always poisoned");
 		ADDCLASSPROP((oart->aflags&ARTA_SILVER), "silvered");
 		ADDCLASSPROP((oart->aflags&ARTA_VORPAL), "vorpal");
 		ADDCLASSPROP((oart->aflags&ARTA_CANCEL), "canceling");
 		ADDCLASSPROP((oart->aflags&ARTA_MAGIC), "magic-flourishing");
 		ADDCLASSPROP((oart->aflags&ARTA_DRAIN), "draining");
-		//ADDCLASSPROP((oart->aflags&ARTA_BRIGHT), " /* turns gremlins to dust and trolls to stone */");
+		ADDCLASSPROP((oart->aflags&ARTA_BRIGHT), "illuminating");
 		ADDCLASSPROP((oart->aflags&ARTA_BLIND), "blinding");
-		ADDCLASSPROP((oart->aflags&ARTA_SHINING), "armor-phasing");
+		ADDCLASSPROP((oart->aflags&ARTA_PHASING), "armor-phasing");
 		ADDCLASSPROP((oart->aflags&ARTA_SHATTER), "shattering");
 		ADDCLASSPROP((oart->aflags&ARTA_DISARM), "disarming");
-		ADDCLASSPROP((oart->aflags&ARTA_STEAL), "theiving");
-		ADDCLASSPROP((oart->aflags&(ARTA_EXPLFIRE|ARTA_EXPLFIREX)), "fire exploding");
-		ADDCLASSPROP((oart->aflags&(ARTA_EXPLCOLD|ARTA_EXPLCOLDX)), "cold exploding");
-		ADDCLASSPROP((oart->aflags&(ARTA_EXPLELEC|ARTA_EXPLELECX)), "shock exploding");
+		ADDCLASSPROP((oart->aflags&ARTA_STEAL), "thieving");
 		ADDCLASSPROP((oart->aflags&(ARTA_KNOCKBACK|ARTA_KNOCKBACKX)), "kinetic");
 		if (buf[0] != '\0')
 		{
 			Sprintf(buf2, "Attacks are %s.", buf);
 			OBJPUTSTR(buf2);
 		}
-		/* other stuff
-		 */
+
+		buf[0] = '\0';
+		ADDCLASSPROP((oart->aflags&ARTA_DLUCK), "luck-biased");
+		ADDCLASSPROP((oart->aflags&ARTA_DEXPL), "exploding");
+		if (buf[0] != '\0')
+		{
+			Sprintf(buf2, "Attacks use %s dice.", buf);
+			OBJPUTSTR(buf2);
+		}
+
+		buf[0] = '\0';
+		ADDCLASSPROP((oart->aflags&ARTA_EXPLFIRE), "fiery");
+		ADDCLASSPROP((oart->aflags&ARTA_EXPLCOLD), "freezing");
+		ADDCLASSPROP((oart->aflags&ARTA_EXPLELEC), "electrical");
+		if (buf[0] != '\0')
+		{
+			Sprintf(buf2, "Attacks may cause %s explosions.", buf);
+			OBJPUTSTR(buf2);
+		}
+
+		buf[0] = '\0';
+		ADDCLASSPROP((oart->aflags&ARTA_EXPLFIREX), "fiery");
+		ADDCLASSPROP((oart->aflags&ARTA_EXPLCOLDX), "freezing");
+		ADDCLASSPROP((oart->aflags&ARTA_EXPLELECX), "electrical");
+		if (buf[0] != '\0')
+		{
+			Sprintf(buf2, "Attacks cause %s explosions.", buf);
+			OBJPUTSTR(buf2);
+		}
+
 		buf[0] = '\0';
 		ADDCLASSPROP((oart->aflags&ARTA_RETURNING), "returns when thrown");
 		ADDCLASSPROP((oart->aflags&ARTA_HASTE), "hastens the wielder's attacks");
@@ -5193,7 +5223,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 		return FALSE;
 
 	if ((obj->oclass==WEAPON_CLASS || obj->oclass==ARMOR_CLASS) &&
-	    (obj->oerodeproof!=otmp->oerodeproof || obj->rknown!=otmp->rknown))
+	    (obj->oerodeproof!=otmp->oerodeproof))
 	    return FALSE;
 
 	if (obj->oclass == FOOD_CLASS && (obj->oeaten != otmp->oeaten ||

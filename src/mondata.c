@@ -2084,9 +2084,9 @@ struct monst *magr;
 	struct attack *attk;
 	struct attack prev_attk = {0};
 	int	indexnum = 0,	/* loop counter */
+		subout[SUBOUT_ARRAY_SIZE] = {0},	/* remembers what attack substitutions have been made for [magr]'s attack chain */
 		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
 		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
-	long subout = 0;	/* remembers what attack substitutions have been made for [magr]'s attack chain */
 
 	/* zero out res[] */
 	res[0] = MM_MISS;
@@ -2094,9 +2094,9 @@ struct monst *magr;
 	res[2] = MM_MISS;
 	res[3] = MM_MISS;
 	
-	for(attk = getattk(magr, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod);
+	for(attk = getattk(magr, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod);
 		!is_null_attk(attk);
-		attk = getattk(magr, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod)
+		attk = getattk(magr, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod)
 	){
 		if(attk->aatyp != AT_NONE && attk->aatyp != AT_SPIT && attk->aatyp != AT_BREA
 		&& attk->aatyp != AT_BOOM && attk->aatyp != AT_GAZE && attk->aatyp != AT_ARRW
@@ -2141,9 +2141,9 @@ int atyp;
 	struct attack *attk;
 	struct attack prev_attk = {0};
 	int	indexnum = 0,	/* loop counter */
+		subout[SUBOUT_ARRAY_SIZE] = {0},	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
 		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
-	long subout = 0;	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 	int counter = 0;
 
 	/* zero out res[] */
@@ -2152,9 +2152,9 @@ int atyp;
 	res[2] = MM_MISS;
 	res[3] = MM_MISS;
 	
-	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod);
+	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, subout, &tohitmod);
 		!is_null_attk(attk);
-		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod)
+		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk, TRUE, subout, &tohitmod)
 	){
 		if(attk->aatyp == atyp)
 			counter++;
@@ -2173,10 +2173,10 @@ struct attack *prev_attk;
 {
 	struct attack *attk;
 	int	indexnum = 0,	/* loop counter */
+		subout[SUBOUT_ARRAY_SIZE] = {0},	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
 		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
 
-	long  subout = 0;	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 
 	/* zero out res[] */
 	res[0] = MM_MISS;
@@ -2184,9 +2184,9 @@ struct attack *prev_attk;
 	res[2] = MM_MISS;
 	res[3] = MM_MISS;
 	
-	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, prev_attk, TRUE, &subout, &tohitmod);
+	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, prev_attk, TRUE, subout, &tohitmod);
 		!is_null_attk(attk);
-		attk = getattk(mon, (struct monst *) 0, res, &indexnum, prev_attk, TRUE, &subout, &tohitmod)
+		attk = getattk(mon, (struct monst *) 0, res, &indexnum, prev_attk, TRUE, subout, &tohitmod)
 	){
 		if(attk->aatyp == atyp)
 			return attk;
@@ -2202,9 +2202,9 @@ struct monst *mon;
 	struct attack *attk;
 	struct attack prev_attk_buffer = {0};
 	int	indexnum = 0,	/* loop counter */
+		subout[SUBOUT_ARRAY_SIZE] = {0},	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 		tohitmod = 0,	/* flat accuracy modifier for a specific attack */
 		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
-	long  subout = 0;	/* remembers what attack substitutions have been made for [mon]'s attack chain */
 
 	/* zero out res[] */
 	res[0] = MM_MISS;
@@ -2212,9 +2212,9 @@ struct monst *mon;
 	res[2] = MM_MISS;
 	res[3] = MM_MISS;
 	
-	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk_buffer, TRUE, &subout, &tohitmod);
+	for(attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk_buffer, TRUE, subout, &tohitmod);
 		!is_null_attk(attk);
-		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk_buffer, TRUE, &subout, &tohitmod)
+		attk = getattk(mon, (struct monst *) 0, res, &indexnum, &prev_attk_buffer, TRUE, subout, &tohitmod)
 	){
 		if(attk->offhand || attk->aatyp == AT_XSPR || (attk->aatyp == AT_XWEP && MON_SWEP(mon)))
 			return TRUE;
@@ -2393,6 +2393,7 @@ struct monst *mon;
 		|| youracedata->mtyp == PM_RED_DRAGON
 		|| is_rider(youracedata)
 		|| wearing_dragon_armor(mon, PM_RED_DRAGON)
+		|| (Race_if(PM_HALF_DRAGON) && flags.HDbreath == AD_FIRE && u.ulevel >= 15)
 		);
 	//else
 	return (Change_res(mon) || mon_resistance(mon, GOOD_HEALTH) || flaming(mon->data) 
@@ -2403,6 +2404,7 @@ struct monst *mon;
 		|| has_template(mon, SLIME_REMNANT)
 		|| is_rider(mon->data)
 		|| wearing_dragon_armor(mon, PM_RED_DRAGON)
+		|| (is_half_dragon(mon->data) && mon->mvar_hdBreath == AD_FIRE && mon->m_lev >= 15)
 		);
 }
 
@@ -3479,8 +3481,9 @@ struct permonst *ptr;
 		return size;
 	if(ptr->mtyp == PM_ZHI_REN_MONK)
 		size = 4;
-	// return 8;
-	switch(ptr->msize){
+	else if(ptr->mtyp == PM_ANCIENT_OF_DEATH)
+		size = 20;
+	else switch(ptr->msize){
 		case MZ_TINY:
 			size = 4;
 		break;
@@ -3500,9 +3503,11 @@ struct permonst *ptr;
 			size = 20;
 		break;
 	}
-	if(centauroid(ptr)){
+
+	if(centauroid(ptr) && size < 20){
 		size += 2;
 	}
+
 	if(is_elf(ptr)){
 		size += 3;
 	}

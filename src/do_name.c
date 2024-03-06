@@ -168,6 +168,8 @@ auto_describe(int cx, int cy)
 	} else if (glyph_is_monster(glyph)) {
 		/* takes care of pets, detected, ridden, and regular mons */
 		sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
+	} else if (glyph_is_cloud(glyph)) {
+		sym = showsyms[S_cloud];
 	} else if (glyph_is_swallow(glyph)) {
 		sym = showsyms[glyph_to_swallow(glyph)+S_sw_tl];
 	} else if (glyph_is_invisible(glyph)) {
@@ -764,6 +766,10 @@ const char *name;
 			obj->sub_material = STAR_SAPPHIRE;
 			obj->obj_color = CLR_BRIGHT_GREEN;
 			obj->oward = ELDER_SIGN;
+		}
+		else if(obj->oartifact == ART_EYE_OF_THE_OVERWORLD){
+			set_material_gm(obj, GEMSTONE);
+			obj->sub_material = MORGANITE;
 		}
 		else if(obj->oartifact == ART_IBITE_ARM){
 			obj->obj_color = CLR_BRIGHT_GREEN;

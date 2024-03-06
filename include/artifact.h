@@ -41,7 +41,7 @@
 #define ARTA_DRAIN		0x00000800L /* drains levels from defender and heals attacker */
 #define ARTA_BRIGHT		0x00001000L /* turns gremlins to dust and trolls to stone */
 #define ARTA_BLIND		0x00002000L /* blinds defender */
-#define ARTA_SHINING	0x00004000L /* phases armor; can hit shades */
+#define ARTA_PHASING	0x00004000L /* phases armor; can hit shades */
 #define ARTA_SHATTER	0x00008000L /* shatter's defender's weapon */
 #define ARTA_DISARM		0x00010000L /* disarms opponent */
 #define ARTA_STEAL		0x00020000L /* steals item from defender */
@@ -329,6 +329,7 @@ struct artinstance{
 #define	ZPROP_BALANCE	0x00000020L
 #define	ZPROP_PATIENCE	0x00000040L
 #define	ZPROP_FOCUS		0x00000080L
+#define CarapaceXP avar1
 
 	long avar2;
 #define SnSd2 avar2
@@ -344,12 +345,18 @@ struct artinstance{
 #define	GSTYLE_RESONANT		5
 #define FIRST_GSTYLE		GSTYLE_PENETRATE
 #define LAST_GSTYLE			GSTYLE_RESONANT
+#define CarapaceLevel avar2
 
 	long avar3;
 #define SnSd3 avar3
 #define IbiteBoons avar3
+#define CarapacePoints avar3
 	long avar4;
 #define SnSd3duration avar4
+#define CarapaceAura avar4
+#define C_CROWN_AURA_ADD 10
+#define C_CROWN_AURA_DIVISOR 100
+#define C_CROWN_AURA_MAX 333
 };
 
 
@@ -458,6 +465,7 @@ extern struct artifact * artilist;
 #define ZERTH_ART		(LAST_PROP+97)
 #define AMALGUM_ART		(LAST_PROP+98)
 #define MORGOTH         (LAST_PROP+99)
+#define SCORPION_UPGRADES  (LAST_PROP+100)
 
 
 #define MASTERY_ARTIFACT_LEVEL 20

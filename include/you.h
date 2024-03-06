@@ -463,6 +463,7 @@ struct you {
 #define MATTK_PHASE_OUT 35
 #define MATTK_PHASE_IN 36
 #define MATTK_YUKI 37
+#define MATTK_KI 38
 
 
 
@@ -631,7 +632,9 @@ struct you {
 	long lastprayed;
 	long lastslept;
 	long nextsleep;
-	long whisperturn;
+	long role_technique_turn;
+#define whisperturn role_technique_turn
+#define kiaiturn role_technique_turn
 	int regen_blocked;
 	uchar lastprayresult, reconciled;
 #define	PRAY_NONE	0

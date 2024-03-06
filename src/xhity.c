@@ -43,6 +43,49 @@ struct attack acu_tent = { AT_TENT, AD_DRIN, 1, 4 };	/* for acu tentacles */
 struct attack sala_tuch = { AT_TUCH, AD_FIRE, 1, 4 };	/* for sala tuch */
 struct attack sala_grab = { AT_HUGS, AD_FIRE, 1, 4 };	/* for sala grab */
 
+int
+check_subout(subout_list, subout)
+int *subout_list;
+int subout;
+{
+	if(subout >= MAX_SUBOUT || subout < 1){
+		impossible("Attempting to check subout number %d?", subout);
+		return FALSE;
+	}
+	return !!(subout_list[(subout-1)/32] & (0x1L << ((subout-1)%32)));
+}
+
+void
+add_subout(subout_list, subout)
+int *subout_list;
+int subout;
+{
+	if(subout >= MAX_SUBOUT || subout < 1){
+		impossible("Attempting to set subout number %d?", subout);
+	}
+	subout_list[(subout-1)/32] |= (0x1L << ((subout-1)%32));
+}
+
+void
+remove_subout(subout_list, subout)
+int *subout_list;
+int subout;
+{
+	if(subout >= MAX_SUBOUT || subout < 1){
+		impossible("Attempting to set subout number %d?", subout);
+	}
+	subout_list[(subout-1)/32] &= ~(0x1L << ((subout-1)%32));
+}
+
+void
+zero_subout(subout_list)
+int *subout_list;
+{
+	for(int i = 0; i < SUBOUT_ARRAY_SIZE; i++)
+		subout_list[i] = 0;
+}
+
+
 /* getvis()
  * 
  * determines vis if needed.
@@ -330,9 +373,9 @@ int tary;
 		adtyp = 0,	/* adtyp of current attack; used for brevity */
 		struck = 0,	/* hit at least once */
 		marinum = 0,/* number of AT_MARI weapons used */
-		mariarm = 0,/* remembers what attack substitutions had been [magr]'s attack chain, to charge for eilistran armor */
+		subout[SUBOUT_ARRAY_SIZE] = {0},	/* remembers what attack substitutions have been made for [magr]'s attack chain */
+		mariarm = 0,/* remembers how many eilistran armor attacks have been made, so they can be charged for. */
 		res[4];		/* results of previous 2 attacks ([0] -> current attack, [1] -> 1 ago, [2] -> 2 ago) -- this is dynamic! */
-	long subout = 0;	/* remembers what attack substitutions have been made for [magr]'s attack chain */
 	int attacklimit = 0;
 	int attacksmade = 0;
 	struct attack *attk;
@@ -550,7 +593,7 @@ int tary;
 		res[1] = res[0];
 		res[0] = MM_MISS;
 		/* get next attack */
-		attk = getattk(magr, mdef, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod);
+		attk = getattk(magr, mdef, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod);
 		/* set aatyp, adtyp */
 		aatyp = attk->aatyp;
 		adtyp = attk->adtyp;
@@ -679,9 +722,11 @@ int tary;
 					otmp = get_mariwep(magr, pa, marinum);
 					marinum++;
 				}
-				if((mariarm&(SUBOUT_MARIARM1|SUBOUT_MARIARM2)) != (subout&(SUBOUT_MARIARM1|SUBOUT_MARIARM2))){
-					struct obj *armor = (youagr ? uarm : which_armor(magr, W_ARM));;
-					mariarm = subout;
+				if( (check_subout(subout, SUBOUT_MARIARM1) && mariarm < 1)
+				 || (check_subout(subout, SUBOUT_MARIARM2) && mariarm < 2)
+				){
+					struct obj *armor = (youagr ? uarm : which_armor(magr, W_ARM));
+					mariarm++;
 					if(armor && armor->otyp == EILISTRAN_ARMOR){
 						armor->ovar1_eilistran_charges--;
 					}
@@ -1662,7 +1707,7 @@ int * prev_res;					/* results of previous attacks; ignored if by_the_book is tr
 int * indexnum;					/* index number to use, incremented HERE (if actually pulling the attack from the monster's index) */
 struct attack * prev_and_buf;	/* double-duty pointer: 1st, is the previous attack; 2nd, is a pointer to allocated memory */
 boolean by_the_book;			/* if true, gives the "standard" attacks for [magr]. Useful for the pokedex. */
-long * subout;					/* records what attacks have been subbed out */
+int * subout;					/* records what attacks have been subbed out */
 int * tohitmod;					/* some attacks are made with decreased accuracy */
 {
 	struct attack * attk;
@@ -1721,18 +1766,18 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		) {
 			/* follow a weapon attack with an offhand attack */
 			if (prev_attack.aatyp == AT_WEAP && attk->aatyp != AT_XWEP
-				&& !((*subout) & SUBOUT_XWEP)
-				) {
+				&& !check_subout(subout, SUBOUT_XWEP)
+			) {
 				fromlist = FALSE;
 				attk->aatyp = AT_XWEP;
 				attk->adtyp = AD_PHYS;
 				attk->damn = 1;
 				attk->damd = 4;
-				(*subout) |= SUBOUT_XWEP;
+				add_subout(subout, SUBOUT_XWEP);
 			}
 			/* fixup for black web, which replaces AT_WEAP with an AT_SRPR */
 			if ((u.specialSealsActive & SEAL_BLACK_WEB)
-				&& !((*subout) & SUBOUT_XWEP)
+				&& !check_subout(subout, SUBOUT_XWEP)
 				&& prev_attack.aatyp == AT_SRPR && attk->aatyp != AT_XWEP
 				) {
 				fromlist = FALSE;
@@ -1740,7 +1785,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				attk->adtyp = AD_PHYS;
 				attk->damn = 1;
 				attk->damd = 4;
-				(*subout) |= SUBOUT_XWEP;
+				add_subout(subout, SUBOUT_XWEP);
 			}
 		}
 	}
@@ -2024,11 +2069,11 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				(pa->mtyp == PM_GAE_ELADRIN && !magr->mcan && !magr->mspec_used && !rn2(3)) ||
 				(pa->mtyp == PM_CAILLEA_ELADRIN && !magr->mcan && !magr->mspec_used)
 				){
-				*subout |= SUBOUT_SPELLS;
+				add_subout(subout, SUBOUT_SPELLS);
 			}
 		}
 		/* cast only spells if SUBOUT_SPELLS; cast no spells if !SUBOUT_SPELLS */
-		if (!is_null_attk(attk) && ((attk->aatyp == AT_MAGC) == !(*subout&SUBOUT_SPELLS))) {
+		if (!is_null_attk(attk) && ((attk->aatyp == AT_MAGC) == !check_subout(subout, SUBOUT_SPELLS))) {
 			/* just get the next attack */
 			GETNEXT
 		}
@@ -2097,7 +2142,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 					|| !could_seduce(magr,mdef,0)
 					|| !(uarm || uarmu || uarmh || uarmg || uarmf || uarmc || uwep || uswapwep)
 				))){
-					*subout |= SUBOUT_GOATSPWN;
+					add_subout(subout, SUBOUT_GOATSPWN);
 					attk->aatyp = AT_CLAW;
 					attk->adtyp = AD_SEDU;
 					attk->damn = 0;
@@ -2116,7 +2161,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 						 MON_WEP(mdef) || MON_SWEP(mdef)
 					))
 				))){
-					*subout |= SUBOUT_GOATSPWN;
+					add_subout(subout, SUBOUT_GOATSPWN);
 					attk->aatyp = AT_CLAW;
 					attk->adtyp = AD_SEDU;
 					attk->damn = 0;
@@ -2126,7 +2171,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 					GETNEXT;
 			}
 		}
-		else if (*subout&SUBOUT_GOATSPWN){
+		else if (check_subout(subout, SUBOUT_GOATSPWN)){
 			/* If spellcasting, stop after the first index */
 			return &noattack;
 		}
@@ -2196,18 +2241,18 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		// first index -- determine which attack form
 		if (*indexnum == 0){
 			if (!rn2(7)){		// 1/7 of sword archon
-				*subout |= SUBOUT_BAEL1;
+				add_subout(subout, SUBOUT_BAEL1);
 			}
 			else if (!rn2(6)){	// 1/7 of marilith-hands
-				*subout |= SUBOUT_BAEL2;
+				add_subout(subout, SUBOUT_BAEL2);
 			}
 			//else;				// 5/7 of normal
 		}
 		// If using marilith-hands or sword archon, sub out entire attack chain
-		if (*subout & SUBOUT_BAEL1){
+		if (check_subout(subout, SUBOUT_BAEL1)){
 			*attk = swordArchon[*indexnum];
 		}
-		else if (*subout & SUBOUT_BAEL2){
+		else if (check_subout(subout, SUBOUT_BAEL2)){
 			*attk = marilithHands[*indexnum];
 		}
 	}
@@ -2239,12 +2284,12 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		// first index -- determine which attack form
 		if (*indexnum == 0){
 			if (!magr->mcan && !Protection_from_shape_changers && rn2(2)){		// 1/2 of marilith-hands
-				*subout |= SUBOUT_LOLTH1;
+				add_subout(subout, SUBOUT_LOLTH1);
 			}
 			//else;				// 1/2 of normal
 		}
 		// If using marilith-hands sub out entire attack chain
-		if (*subout & SUBOUT_LOLTH1){
+		if (check_subout(subout, SUBOUT_LOLTH1)){
 			*attk = lolthHands[*indexnum];
 		}
 	}
@@ -2262,7 +2307,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	/* Various weapons can cause an additional full attack to be made */
 	/* This only works if it is wielded in the mainhand, and a weapon attack is being made with it (AT_WEAP, AT_DEVA) */
 	/* not shown in pokedex */
-	if ((attk->aatyp == AT_WEAP || attk->aatyp == AT_DEVA) && !(*subout&SUBOUT_MAINWEPB) && !by_the_book) {
+	if ((attk->aatyp == AT_WEAP || attk->aatyp == AT_DEVA) && !check_subout(subout, SUBOUT_MAINWEPB) && !by_the_book) {
 		/* get weapon */
 		struct obj * otmp = (youagr ? uwep : MON_WEP(magr));
 		/* continue checking conditions */
@@ -2280,8 +2325,8 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			if (otmp->oartifact == ART_QUICKSILVER)
 				*tohitmod = -15;
 			fromlist = FALSE;
-			(*subout) &= ~SUBOUT_XWEP; /* allow another followup offhand attack if twoweaponing (unpoly'd only) */
-			*subout |= SUBOUT_MAINWEPB;
+			remove_subout(subout, SUBOUT_XWEP); /* allow another followup offhand attack if twoweaponing (unpoly'd only) */
+			add_subout(subout, SUBOUT_MAINWEPB);
 		}
 	}
 
@@ -2291,8 +2336,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			&& ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
 			&& (prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP))) {
 		int nattacks = (u.ulevel >= 14) + (u.ulevel >= 30);
-		/* note: this code assumes subout_barb1 and barb2 are sequential bits, as it uses them like a tiny int */
-		int attacknum = (*subout&(SUBOUT_BARB1|SUBOUT_BARB2)) / SUBOUT_BARB1;
+		int attacknum = (!!check_subout(subout, SUBOUT_BARB1) + !!check_subout(subout, SUBOUT_BARB2));
 
 		if (attacknum < nattacks)
 		{
@@ -2302,10 +2346,13 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			attk->damd = 4;
 			*tohitmod = -10 * attacknum;
 			fromlist = FALSE;
-
-			(*subout) |= ((SUBOUT_BARB1 & (*subout&SUBOUT_BARB1)) ? SUBOUT_BARB2 : 0);
-			(*subout) ^= SUBOUT_BARB1;
-			(*subout) &= ~SUBOUT_XWEP;	/* allow another followup offhand attack if twoweaponing */
+			if(check_subout(subout, SUBOUT_BARB1)){
+				add_subout(subout, SUBOUT_BARB2);
+			}
+			else {
+				add_subout(subout, SUBOUT_BARB1);
+			}
+			remove_subout(subout, SUBOUT_XWEP);	/* allow another followup offhand attack if twoweaponing */
 		}
 	}
 
@@ -2316,7 +2363,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 #pragma GCC diagnostic pop
 	if ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
 		&& (prevattacknull || prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP || prev_attack.aatyp == AT_MARI)
-		&& ((*subout&(SUBOUT_MARIARM1|SUBOUT_MARIARM2)) != (SUBOUT_MARIARM1|SUBOUT_MARIARM2))
+		&& !(check_subout(subout, SUBOUT_MARIARM1) && check_subout(subout, SUBOUT_MARIARM2))
 	){
 		struct obj * otmp = (youagr ? uarm : which_armor(magr, W_ARM));
 		
@@ -2330,16 +2377,16 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			attk->damn = 2;
 			attk->damd = 8;
 			fromlist = FALSE;
-			if(*subout&SUBOUT_MARIARM1)
-				*subout |= SUBOUT_MARIARM2;
+			if(check_subout(subout, SUBOUT_MARIARM1))
+				add_subout(subout, SUBOUT_MARIARM2);
 			else
-				*subout |= SUBOUT_MARIARM1;
+				add_subout(subout, SUBOUT_MARIARM1);
 		}
 	}
 
 	if ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
 		&& (prevattacknull || prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP || prev_attack.aatyp == AT_MARI)
-		&& !(*subout&SUBOUT_SHUBTONG)
+		&& !check_subout(subout, SUBOUT_SHUBTONG)
 	){
 		if(youagr && check_mutation(MIND_STEALER) && !nomouth(youracedata->mtyp)){
 			attk->aatyp = AT_TONG;
@@ -2347,7 +2394,26 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			attk->damn = 1;
 			attk->damd = 4;
 			fromlist = FALSE;
-			*subout |= SUBOUT_SHUBTONG;
+			add_subout(subout, SUBOUT_SHUBTONG);
+		}
+	}
+
+	if ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
+		&& (prevattacknull || prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP || prev_attack.aatyp == AT_MARI || prev_attack.aatyp == AT_CLAW)
+		&& !(check_subout(subout, SUBOUT_V_CLAWS1) && check_subout(subout, SUBOUT_V_CLAWS2))
+	){
+		struct obj * otmp = (youagr ? uarm : which_armor(magr, W_ARM));
+		
+		if(!otmp);//Nothing
+		else if (otmp->oartifact == ART_SCORPION_CARAPACE 
+			&& check_carapace_mod(otmp, CPROP_CLAWS)
+		){
+			*attk = *attacktype_fordmg(&mons[PM_VERMIURGE], AT_CLAW, AD_PHYS);
+			fromlist = FALSE;
+			if(check_subout(subout, SUBOUT_V_CLAWS1))
+				add_subout(subout, SUBOUT_V_CLAWS2);
+			else
+				add_subout(subout, SUBOUT_V_CLAWS1);
 		}
 	}
 
@@ -2435,46 +2501,54 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	
 
 	/* creatures wearing the Grappler's Grasp and currently grappling something get a hug attack if they don't have one already */
-	if (is_null_attk(attk) && !by_the_book && !dmgtype(pa, AT_HUGS) && !(*subout&SUBOUT_GRAPPLE)) {
+	if (is_null_attk(attk) && !by_the_book && !dmgtype(pa, AT_HUGS) && !check_subout(subout, SUBOUT_GRAPPLE)) {
 		struct obj * otmp = (youagr ? uarmg : which_armor(magr, W_ARMG));
 		/* magr must already have hold of mdef, however, which makes it much less useful mvm */
 		if (otmp && (otmp->oartifact == ART_GRAPPLER_S_GRASP || (otmp->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(otmp, IEA_STRANGLE))) &&
 			((youagr || youdef) && !u.uswallow && u.ustuck && u.ustuck == (youagr ? mdef : magr))) {
 			*attk = grapple;
 			attk->damn = youagr ? ((P_SKILL(P_BARE_HANDED_COMBAT) + 1) / 2 + martial_bonus()) : 2;
-			*subout |= SUBOUT_GRAPPLE;
+			add_subout(subout, SUBOUT_GRAPPLE);
+			fromlist = FALSE;
 		}
 	}
 
 	/* creatures wearing the Scorpion Carpace get a scorpion's sting */
-	if (is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_SCORPION)) {
+	if (is_null_attk(attk) && !by_the_book && !check_subout(subout, SUBOUT_SCORPION)) {
 		struct obj * otmp = (youagr ? uarm : which_armor(magr, W_ARM));
 		if (otmp && otmp->oartifact == ART_SCORPION_CARAPACE) {
-			*attk = *attacktype_fordmg(&mons[PM_SCORPION], AT_STNG, AD_DRST);
-			*subout |= SUBOUT_SCORPION;
+			if(check_carapace_mod(otmp, CPROP_ILL_STING)){
+				*attk = *attacktype_fordmg(&mons[PM_SCORPIUS], AT_STNG, AD_DISE);
+				add_subout(subout, SUBOUT_SCORPION);
+			}
+			else {
+				*attk = *attacktype_fordmg(&mons[PM_SCORPION], AT_STNG, AD_DRST);
+				add_subout(subout, SUBOUT_SCORPION);
+			}
+			fromlist = FALSE;
 		}
 	}
 	
-	if (youagr && !Upolyd && Role_if(PM_ANACHRONOUNBINDER) && is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_ACU)) {
+	if (youagr && !Upolyd && Role_if(PM_ANACHRONOUNBINDER) && is_null_attk(attk) && !by_the_book && !check_subout(subout, SUBOUT_ACU)) {
 		*attk = acu_tent;
-		*subout |= SUBOUT_ACU;
+		add_subout(subout, SUBOUT_ACU);
 	}
 	
-	if (youagr && !Upolyd && Race_if(PM_SALAMANDER) && u.ulevel >= 7 && is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_SALA1)) {
+	if (youagr && !Upolyd && Race_if(PM_SALAMANDER) && u.ulevel >= 7 && is_null_attk(attk) && !by_the_book && !check_subout(subout, SUBOUT_SALA1)) {
 		*attk = sala_tuch;
-		*subout |= SUBOUT_SALA1;
+		add_subout(subout, SUBOUT_SALA1);
 	}
-	if (youagr && !Upolyd && Race_if(PM_SALAMANDER) && u.ulevel >= 14 && is_null_attk(attk) && !by_the_book && !(*subout&SUBOUT_SALA2)) {
+	if (youagr && !Upolyd && Race_if(PM_SALAMANDER) && u.ulevel >= 14 && is_null_attk(attk) && !by_the_book && !check_subout(subout, SUBOUT_SALA2)) {
 		*attk = sala_grab;
-		*subout |= SUBOUT_SALA2;
+		add_subout(subout, SUBOUT_SALA2);
 	}
 
 	/* players can get a whole host of spirit attacks */
 	if (youagr && is_null_attk(attk) && !by_the_book) {
 		/* this assumes that getattk() will not be interrupted with youagr when already called with youagr */
-		if (!(*subout&SUBOUT_SPIRITS)) {
+		if (!check_subout(subout, SUBOUT_SPIRITS)) {
 			attk = getnextspiritattack(TRUE);
-			*subout |= SUBOUT_SPIRITS;
+			add_subout(subout, SUBOUT_SPIRITS);
 		}
 		else {
 			attk = getnextspiritattack(FALSE);
@@ -2545,7 +2619,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		/* If monster is stuck in a straitjacket */
 		(!youagr && 
 			( straitjacketed_mon(magr) ) && 
-			!((*subout)&(SUBOUT_BAEL1|SUBOUT_BAEL2)) && (
+			!(check_subout(subout, SUBOUT_BAEL1) || check_subout(subout, SUBOUT_BAEL2)) && (
 			attk->aatyp == AT_WEAP || attk->aatyp == AT_XWEP || attk->aatyp == AT_WHIP
 			|| attk->aatyp == AT_HODS || attk->aatyp == AT_MMGC 
 			/* "Deva" rapiers are assumed to be the Masked Queen's lower arms, and "Energy" rapiers just sorta float or something */
@@ -3992,7 +4066,7 @@ int *shield_margin;
 	/* ignore worn armor? */
 	if ((youagr && u.sealsActive&SEAL_CHUPOCLOPS && (melee || thrust)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
-		(weapon && arti_shining(weapon)) ||
+		(weapon && arti_phasing(weapon)) ||
 		(melee && youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(melee && attk->aatyp == AT_TUCH) ||
 		(melee && attk->aatyp == AT_VINE) ||
@@ -4012,7 +4086,16 @@ int *shield_margin;
 		if (youdef){
 			defn_acc += AC_VALUE(u.uac + u.uspellprot) - u.uspellprot;
 			if(shield_margin) {
-				if(uarms) *shield_margin = max(0, arm_ac_bonus(uarms) + (uarms->objsize - youracedata->msize)) + shield_skill(uarms);
+				if(uarms){
+					*shield_margin = max(0, arm_ac_bonus(uarms) + (uarms->objsize - youracedata->msize)) + shield_skill(uarms);
+					if(uwep && (objects[uwep->otyp].oc_skill == P_SPEAR || objects[uwep->otyp].oc_skill == P_POLEARMS || objects[uwep->otyp].oc_skill == P_LANCE))
+						*shield_margin += 2;
+				}
+				else if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_SHIELDS)){
+					*shield_margin = 1 + shield_skill(uarm);
+					if(uwep && (objects[uwep->otyp].oc_skill == P_SPEAR || objects[uwep->otyp].oc_skill == P_POLEARMS || objects[uwep->otyp].oc_skill == P_LANCE))
+						*shield_margin += 3;//+1 bonus to shield size
+				}
 				else *shield_margin = -1;
 			}
 		}
@@ -14301,23 +14384,19 @@ int vis;						/* True if action is at all visible to the player */
 					}
 				}
 				else {
-					You("dishonorably use a poisoned weapon!");
+					static long dishonorable_ninja = -100L;
+
+					if(dishonorable_ninja+100 < moves){
+						You("dishonorably use a poisoned weapon!");
+					}
+					dishonorable_ninja = moves;
 					adjalign(5);
 				}
 			}
-			else if ((u.ualign.type == A_LAWFUL) && !Race_if(PM_ORC) && !Role_if(PM_ANACHRONOUNBINDER) &&
-				!((Race_if(PM_DROW) && !flags.initgend &&
-						(Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || Role_if(PM_WIZARD)))
-				  || (Pantheon_if(PM_RANGER))
-				  || (God_if(GOD_APOLLO))
-				  || (!Holiness_if(HOLY_HOLINESS))
-				  || (Race_if(PM_HALF_DRAGON) && flags.initgend && Role_if(PM_MADMAN))
-				) &&
-				(u.ualign.record > -10)
-				) {
+			else if ((u.ualign.type == A_LAWFUL) && (Pantheon_if(PM_KNIGHT) || Pantheon_if(PM_VALKYRIE)) && (u.ualign.record > -10)) {
 				You_feel("like an evil coward for using a poisoned weapon.");
-				adjalign(-2);//stiffer penalty
-				if (rn2(2)) u.hod++;
+				adjalign(-2); //stiffer penalty
+				u.hod++;
 			}
 		}
 
@@ -15051,7 +15130,9 @@ int vis;						/* True if action is at all visible to the player */
 		dmgval_core(&unarmed_dice, bigmonst(pd), (struct obj *)0, 0, magr);
 		/* determine unarmedMult */
 		if (youagr) {
-			unarmedMult = Race_if(PM_HALF_DRAGON) ? 3 : ((!gloves && u.sealsActive&SEAL_ECHIDNA) || check_mutation(SHUB_CLAWS)) ? 2 : 1;
+			unarmedMult = Race_if(PM_HALF_DRAGON) ? 3 : u.sealsActive&SEAL_ECHIDNA ? 2 : 1;
+			if(check_mutation(SHUB_CLAWS))
+				unarmedMult++;
 		}
 		else {
 			unarmedMult = 1;
@@ -15226,7 +15307,7 @@ int vis;						/* True if action is at all visible to the player */
 
 	/* Set Phasing */
 	phase_armor = (
-		(weapon && arti_shining(weapon)) ||
+		(weapon && arti_phasing(weapon)) ||
 		(youagr && u.sealsActive&SEAL_CHUPOCLOPS) ||
 		(youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
@@ -15374,7 +15455,7 @@ int vis;						/* True if action is at all visible to the player */
 						tmp = min(0, tmp);
 					bonsdmg += tmp;
 				}
-				else if (fired)
+				else if (fired || thrown)
 				{
 					/* slings get STR bonus */
 					if (launcher && objects[launcher->otyp].oc_skill == P_SLING)
@@ -17055,7 +17136,7 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 	int newres;
 	int dmg;
 	int indexnum = 0;
-	long subout = 0;
+	int subout[SUBOUT_ARRAY_SIZE] = {0};
 	int tohitmod = 0;
 	int res[4];
 	long slot = 0L;
@@ -17097,7 +17178,7 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 		res[1] = res[0];
 		res[0] = MM_MISS;
 		/* get next attack */
-		passive = getattk(mdef, magr, res, &indexnum, &prev_attk, FALSE, &subout, &tohitmod);
+		passive = getattk(mdef, magr, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod);
 		/* if we don't have a passive attack, continue */
 		if (is_null_attk(passive) || passive->aatyp != AT_NONE)
 			continue;
@@ -17275,7 +17356,7 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 						newvis |= VIS_MAGR;
 
 					/* get 1st weapon attack defender has */
-					long subout2 = 0;
+					int subout2 = 0;
 					int indexnum2 = 0;
 					/* grab the first weapon attack mdef has, or else use a basic 1d4 attack */
 					do {
@@ -18841,7 +18922,7 @@ struct monst *mdef;
 
 	/* do pit/hole digging after applying damage - holes can migrate monsters, and we cannot kill migrating monsters */
 	if (dodig) {
-		digfarhole(!chasm, x(mdef), y(mdef));
+		digfarhole(!chasm, x(mdef), y(mdef), FALSE);
 		chasm = t_at(x(mdef), y(mdef));
 		if (chasm){
 			if(chasm->ttyp == PIT && !DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef)) {

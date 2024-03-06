@@ -190,6 +190,34 @@ const struct innate {
 	hlf_abil[] = { {	14, &(HFlying), "wings sprout from your back", "your wings shrivel and die" },
 		     {	 0, 0, 0, 0 } },
 
+	hlf_cold_abil[] = { {	15, &(HMagical_breathing), "able to breathe underwater", "unable to breathe underwater" },
+			  {	15, &(HSwimming), "able to swim", "unable to swim" },
+			  {	15, &(HWaterproof), "waterproof", "less waterproof" },
+			  {	 0, 0, 0, 0 } },
+
+	/* Not an actual intrinsic, handled elsewhere */
+	hlf_fire_abil[] = { {	15, &(HNo_prop), "slime resistant", "less slime resistant" },
+			  {	 0, 0, 0, 0 } },
+
+	hlf_acid_abil[] = { {	15, &(HStone_resistance), "limber", "stiff" },
+			  {	 0, 0, 0, 0 } },
+
+	hlf_slee_abil[] = { {	15, &(HFree_action), "freed", "a loss of freedom" },
+			  {	 0, 0, 0, 0 } },
+
+	hlf_drst_abil[] = { {	15, &(HSick_resistance), "immunized", "immunocompromized" },
+			  {	 0, 0, 0, 0 } },
+
+	/* Not an actual intrinsic, handled elsewhere */
+	hlf_elec_abil[] = { {	15, &(HNo_prop), "lightning-fast", "slower" },
+			  {	 0, 0, 0, 0 } },
+
+	hlf_magm_abil[] = { {	15, &(HHalf_spell_damage), "resistant to spells", "less resistant to spells" },
+			  {	 0, 0, 0, 0 } },
+
+	hlf_disn_abil[] = { {	15, &(HDrain_resistance), "resistant to level drain", "less resistant to level drain" },
+			  {	 0, 0, 0, 0 } },
+
 	yki_abil[] = { {	1, &(HCold_resistance), "", "" },
 		     {  11, &(HFire_resistance), "cool", "warmer" },
 		     {	 0, 0, 0, 0 } },
@@ -260,7 +288,7 @@ adjattrib(ndx, incr, msgflg)
 				&& ABASE(A_CHA) <= ATTRMIN(A_CHA)
 			){
 				int temparise = u.ugrave_arise;
-				You("crack appart and turn to dust!");
+				You("crack apart and turn to dust!");
 				u.ugrave_arise = 0;
 				killer_format = KILLED_BY;
 				killer = "mummy rot";
@@ -488,7 +516,7 @@ exerper()
 	if(!(moves % 10)) {
 		/* Hunger Checks */
 
-		int hs = (YouHunger > (Race_if(PM_INCANTIFIER) ? max(u.uenmax/2,200) : get_uhungermax()/2)) ? SATIATED :
+		int hs = (YouHunger > get_satiationlimit()) ? SATIATED :
 			 (YouHunger > 150*get_uhungersizemod()) ? NOT_HUNGRY :
 			 (YouHunger > 50*get_uhungersizemod()) ? HUNGRY :
 			 (YouHunger > 0) ? WEAK : FAINTING;
@@ -821,12 +849,13 @@ void
 adjabil(oldlevel,newlevel)
 int oldlevel, newlevel;
 {
-	register const struct innate *abil, *rabil;
+	register const struct innate *abil, *rabil, *sabil;
 	long mask = FROMEXPER;
 
 	// set default values
 	abil = 0;
 	rabil = 0;
+	sabil = 0;
 
 	switch (Role_switch) {
 	case PM_ARCHEOLOGIST:   abil = arc_abil;	break;
@@ -899,15 +928,35 @@ int oldlevel, newlevel;
 	default:                rabil = 0;		break;
 	}
 
-	while (abil || rabil) {
+	if (Race_if(PM_HALF_DRAGON)) {
+		switch (flags.HDbreath) {
+		case AD_COLD: sabil = hlf_cold_abil; break;
+		case AD_FIRE: sabil = hlf_fire_abil; break;
+		case AD_ACID: sabil = hlf_acid_abil; break;
+		case AD_SLEE: sabil = hlf_slee_abil; break;
+		case AD_DRST: sabil = hlf_drst_abil; break;
+		case AD_ELEC: sabil = hlf_elec_abil; break;
+		case AD_MAGM: sabil = hlf_magm_abil; break;
+		case AD_DISN: sabil = hlf_disn_abil; break;
+		}
+	}
+
+	while (abil || rabil || sabil) {
 	    long prevabil;
 	    /* Have we finished with the intrinsics list? */
 	    if (!abil || !abil->ability) {
 	    	/* Try the race intrinsics */
-	    	if (!rabil || !rabil->ability) break;
-	    	abil = rabil;
-	    	rabil = 0;
-	    	mask = FROMRACE;
+		if (!rabil || !rabil->ability) {
+		    /* Then the species intrinsics */
+		    if (!sabil || !sabil->ability) break;
+		    abil = sabil;
+		    sabil = 0;
+		    mask = FROMRACE;
+		} else {
+		    abil = rabil;
+		    rabil = 0;
+		    mask = FROMRACE;
+		}
 	    }
 		prevabil = *(abil->ability);
 		if(oldlevel < abil->ulevel && newlevel >= abil->ulevel) {
@@ -1912,8 +1961,8 @@ acurrstr(str)
 	int str;
 {
 	if (str <= 18) return((schar)str);
-	if (str <= 41) return((schar)(19 + str / 10)); /* map to 19-21 */
-	else return((schar)(str - 20));
+	if (str <= 38) return((schar)(18)); /* map to 18 */
+	return((schar)(str - 20));
 }
 
 #endif /* OVL0 */

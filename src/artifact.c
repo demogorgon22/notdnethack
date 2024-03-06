@@ -329,7 +329,7 @@ hack_artifacts()
 	if (Role_if(PM_MONK)) {
 	    artilist[ART_GRANDMASTER_S_ROBE].alignment = alignmnt;
 
-	    artilist[ART_EYES_OF_THE_OVERWORLD].size = (&mons[urace.malenum])->msize;
+	    artilist[ART_EYE_OF_THE_OVERWORLD].size = (&mons[urace.malenum])->msize;
 	}
 
 	if(Role_if(PM_PRIEST)){
@@ -2130,6 +2130,9 @@ boolean mod;
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3 = 0;//turn on which you can reuse the third dance
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd3duration = 0;//turn until which the weapon does full damage
 				}
+				if(otmp->oartifact == ART_SCORPION_CARAPACE){
+					artinstance[ART_SCORPION_CARAPACE].CarapaceLevel = 10;//Starts off at "10th level" Max upgrade points is therefor 20, and it takes a while to earn the first
+				}
 			}
 			if(otmp->oartifact && (get_artifact(otmp)->inv_prop == NECRONOMICON || get_artifact(otmp)->inv_prop == SPIRITNAMES)){
 				otmp->ovar1_necronomicon = 0;//used to track special powers, via flags
@@ -2379,11 +2382,11 @@ struct obj *obj;
 }
 
 boolean
-arti_shining(obj)
+arti_phasing(obj)
 struct obj *obj;
 {
     return (obj && (
-		(obj->oartifact && arti_attack_prop(obj, ARTA_SHINING)) ||
+		(obj->oartifact && arti_attack_prop(obj, ARTA_PHASING)) ||
 		has_spear_point(obj, OBSIDIAN) ||
 		(is_lightsaber(obj) && litsaber(obj)) ||
 		(check_oprop(obj, OPROP_ELFLW) && u.uinsight >= 22) ||
@@ -3180,8 +3183,7 @@ boolean narrow_only;
 		}
 		/* thinking */
 		if (weap->mflagst != 0L && ((ptr->mflagst & weap->mflagst) != 0L)) {
-			return 
-			TRUE;
+			return TRUE;
 		}
 		/* fighting */
 		if (weap->mflagsf != 0L && ((ptr->mflagsf & weap->mflagsf) != 0L)) {
@@ -3362,6 +3364,8 @@ get_premium_heart_multiplier()
 	if (Blind) multiplier++;
 	if (Stunned) multiplier++;
 	if (Confusion) multiplier++;
+	if (Doubt) multiplier++;
+	if (Punished) multiplier++;
 	if (Sick) multiplier++;
 	if (Stoned) multiplier++;
 	if (Golded) multiplier++;
@@ -4675,7 +4679,7 @@ int * truedmgptr;
 		if(power > 0){
 			int multiplier = power >= 50 ? 3 : power >= 25 ? 2 : 1; 
 			int chance = power >= 50 ? 4 : power >= 25 ? 3 : 2;
-			if(u.usanity > 80 &&(oart->inv_prop == GITH_ART || oart->inv_prop == ZERTH_ART || oart->inv_prop == AMALGUM_ART) && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
+			if(u.usanity > 80 && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
 				chance += (u.usanity-81)/5;//0, 1, 2, or 3 starting at 81, 86, 91, 96
 			if(rn2(20) < chance){
 				*truedmgptr += multiplier*basedmg;
@@ -6213,7 +6217,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				wepdesc,
 				vtense(wepdesc,
 					!spec_dbon_applies ? "hit" :
-					"tase"),
+					"shock"),
 				hittee, !spec_dbon_applies ? '.' : '!');
 			*messaged = TRUE;
 		}
@@ -6952,7 +6956,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				armor = youdef ? uarms : which_armor(mdef, W_ARMS);
 				break;
 			}
-			if (arti_shining(otmp))
+			if (arti_phasing(otmp))
 				armor = (struct obj *)0;
 
 			/* damage, destroy armor */
@@ -7604,8 +7608,15 @@ boolean printmessages; /* print generic elemental damage messages */
 				if(m_u_at(nx,ny) != 0)
 					continue;
 				//The world around the target warps into giant stinging scorpion tails
-				if(u.uinsight > 64 || u.uinsight > rnd(64))
+				if(u.uinsight > 64 || u.uinsight > rnd(64)){
 					*plusdmgptr += d(1,8);
+					if(!Poison_res(mdef)){
+						if(!rn2(10))
+							*truedmgptr += 80;
+						else *truedmgptr += rnd(6);
+						
+					}
+				}
 			}
 		}
 		if(u.uinsight > 64 && (otmp->otyp == BULLWHIP || !rn2(4))){
@@ -8439,6 +8450,279 @@ struct obj *obj;
 }
 
 int
+scorpion_upgrade_menu(obj)
+struct obj *obj;
+{
+
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	char inclet = 'a';
+	const char *msg = 0;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	*buf = '\0';
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	
+	if(!(obj->ovar1_carapace&CPROP_HARD_SCALE)){
+		Sprintf(buf, "Harden exoskeletal scales (1 point)");
+		any.a_int = CPROP_HARD_SCALE;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	else if(!(obj->ovar1_carapace&CPROP_PLATES)){
+		Sprintf(buf, "Grow exoskeletal Plates (2 points)");
+		any.a_int = CPROP_PLATES;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_FLEXIBLE)){
+		Sprintf(buf, "Flexible chitin links (1 point)");
+		any.a_int = CPROP_FLEXIBLE;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_WHIPPING)){
+		Sprintf(buf, "Whipping tail (2 points)");
+		any.a_int = CPROP_WHIPPING;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_ILL_STING)){
+		Sprintf(buf, "Illness-inducing stinger (3 points)");
+		any.a_int = CPROP_ILL_STING;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_SWIMMING)){
+		Sprintf(buf, "Swimming (2 points)");
+		any.a_int = CPROP_SWIMMING;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_ACID_RES) && mvitals[PM_SOLDIER_ANT].seen){
+		Sprintf(buf, "Acid resistance (1 point)");
+		any.a_int = CPROP_ACID_RES;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_FIRE_RES) && mvitals[PM_FIRE_ANT].seen){
+		Sprintf(buf, "Fire resistance (1 point)");
+		any.a_int = CPROP_FIRE_RES;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_SHIELDS) && mvitals[PM_GIANT_BEETLE].seen){
+		Sprintf(buf, "Arm shields (2 points)");
+		any.a_int = CPROP_SHIELDS;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_TELEPORT) && mvitals[PM_PHASE_SPIDER].seen){
+		Sprintf(buf, "Teleportation (1 point)");
+		any.a_int = CPROP_TELEPORT;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_TCONTROL) && mvitals[PM_PHASE_SPIDER].seen){
+		Sprintf(buf, "Teleport control (1 point)");
+		any.a_int = CPROP_TCONTROL;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_DRAINRES) && mvitals[PM_DEMONIC_BLACK_WIDOW].seen){
+		Sprintf(buf, "Drain resistance (1 point)");
+		any.a_int = CPROP_DRAINRES;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_IMPURITY) && u.uinsight >= 5){
+		Sprintf(buf, "Armor of impurity (2 points)");
+		any.a_int = CPROP_IMPURITY;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_WINGS) && mvitals[PM_VERMIURGE].seen){
+		Sprintf(buf, "Wings (2 points)");
+		any.a_int = CPROP_WINGS;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_CLAWS) && mvitals[PM_VERMIURGE].seen){
+		Sprintf(buf, "Claws (2 points)");
+		any.a_int = CPROP_CLAWS;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	if(!(obj->ovar1_carapace&CPROP_CROWN) && mvitals[PM_VERMIURGE].seen && mvitals[PM_VERMIURGE].died > 0){
+		Sprintf(buf, "Crown (3 points)");
+		any.a_int = CPROP_CROWN;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
+	Sprintf(buf, "What upgrade?  (%ld upgrade point%s available and %ld unearned)",
+		artinstance[ART_SCORPION_CARAPACE].CarapacePoints, plur(artinstance[ART_SCORPION_CARAPACE].CarapacePoints), 30 - artinstance[ART_SCORPION_CARAPACE].CarapaceLevel);
+	end_menu(tmpwin, buf);
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	int picked;
+	if(n > 0){
+		picked = selected[0].item.a_int;
+		free(selected);
+	}
+	else return MOVE_CANCELLED;
+
+	int price = 1;
+	if(picked == CPROP_ILL_STING
+	 || picked == CPROP_CROWN
+	){
+		price = 3;
+	}
+	else if(picked == CPROP_PLATES
+	 || picked == CPROP_WHIPPING
+	 || picked == CPROP_SHIELDS
+	 || picked == CPROP_IMPURITY
+	 || picked == CPROP_SWIMMING
+	 || picked == CPROP_CLAWS
+	){
+		price = 2;
+	}
+
+	if(price > artinstance[ART_SCORPION_CARAPACE].CarapacePoints){
+		pline("Not enough upgrade points!");
+		return MOVE_CANCELLED;
+	}
+
+	if(picked == CPROP_HARD_SCALE){
+		msg = "The little scorpion carapaces clink like steel.";
+	}
+	else if(picked == CPROP_PLATES){
+		msg = "The little scorpion carapaces fuse and grow.";
+	}
+	else if(picked == CPROP_FLEXIBLE){
+		msg = "The chitin links between carapaces grow more flexible.";
+	}
+	else if(picked == CPROP_WHIPPING){
+		msg = "The scorpion tail takes on a life of its own.";
+	}
+	else if(picked == CPROP_ILL_STING){
+		msg = "The scorpion tail's venom crawls with a life of its own!";
+	}
+	else if(picked == CPROP_SWIMMING){
+		msg = "...Scorpions can swim.";
+	}
+	else if(picked == CPROP_ACID_RES){
+		msg = "The carapaces look tough.";
+	}
+	else if(picked == CPROP_FIRE_RES){
+		msg = "The carapaces look fireproof.";
+	}
+	else if(picked == CPROP_SHIELDS){
+		msg = "Elytra grow over the vambrace carapaces.";
+	}
+	else if(picked == CPROP_TELEPORT){
+		msg = "The scorpion carapaces look jumpy.";
+	}
+	else if(picked == CPROP_TCONTROL){
+		msg = "The scorpion carapaces are in control.";
+	}
+	else if(picked == CPROP_DRAINRES){
+		msg = "The scorpion carapaces look full of energy.";
+	}
+	else if(picked == CPROP_IMPURITY){
+		msg = "Red millipedes crawl over the filth coating the carapaces.";
+	}
+	else if(picked == CPROP_WINGS){
+		msg = "Vermiurge wings unfold from your back!";
+	}
+	else if(picked == CPROP_CLAWS){
+		msg = "The carapaces grow an extra pair of claws!";
+	}
+	else if(picked == CPROP_CROWN){
+		msg = "A crown of vermin gathers!";
+	}
+
+	if(msg)
+		pline("%s", msg);
+	obj->ovar1_carapace |= picked;
+	if(obj == uarm){
+		if(picked == CPROP_FIRE_RES)
+			EFire_resistance |= W_ARM;
+		else if(picked == CPROP_ACID_RES)
+			EAcid_resistance |= W_ARM;
+		else if(picked == CPROP_DRAINRES)
+			EDrain_resistance |= W_ARM;
+		else if(picked == CPROP_SWIMMING){
+			ESwimming |= W_ARM;
+			EWaterproof |= W_ARM;
+		}
+		else if(picked == CPROP_TELEPORT)
+			ETeleportation |= W_ARM;
+		else if(picked == CPROP_TCONTROL)
+			ETeleport_control |= W_ARM;
+		else if(picked == CPROP_WINGS)
+			EFlying |= W_ARM;
+	}
+	
+	artinstance[ART_SCORPION_CARAPACE].CarapacePoints -= price;
+
+	return MOVE_STANDARD;
+}
+
+int
 doinvoke()
 {
     register struct obj *obj;
@@ -8507,9 +8791,11 @@ arti_invoke(obj)
 		oart->inv_prop == ALTMODE || 
 		oart->inv_prop == LORDLY ||
 		oart->inv_prop == DETESTATION ||
-		oart->inv_prop == GITH_ART ||
-		oart->inv_prop == ZERTH_ART ||
-		oart->inv_prop == AMALGUM_ART
+		oart->inv_prop == THEFT_TYPE ||
+		oart->inv_prop == GITH_ART
+		|| oart->inv_prop == ZERTH_ART
+		|| oart->inv_prop == AMALGUM_ART
+		|| oart->inv_prop == SCORPION_UPGRADES
 	)) {
 	    /* the artifact is tired :-) */
 		if(obj->oartifact == ART_FIELD_MARSHAL_S_BATON){
@@ -8538,9 +8824,11 @@ arti_invoke(obj)
 		oart->inv_prop == VOID_CHIME ||
 		oart->inv_prop == CHANGE_SIZE ||
 		oart->inv_prop == IMPERIAL_RING ||
+		oart->inv_prop == THEFT_TYPE ||
 		oart->inv_prop == GITH_ART ||
 		oart->inv_prop == ZERTH_ART ||
 		oart->inv_prop == AMALGUM_ART ||
+		oart->inv_prop == SCORPION_UPGRADES ||
 		oart->inv_prop == SEVENFOLD
 	))
 		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
@@ -8698,7 +8986,13 @@ arti_invoke(obj)
 	    if (!otmp) goto nothing_special;
 	    otmp->blessed = obj->blessed;
 	    otmp->cursed = obj->cursed;
-	    otmp->bknown = obj->bknown;
+
+	    otmp->bknown |= obj->bknown;
+		otmp->known |= obj->known;
+		otmp->rknown |= obj->rknown;
+		otmp->dknown |= obj->dknown;
+		otmp->sknown |= obj->sknown;
+
 	    if (obj->blessed) {
 			if (otmp->spe < 0) otmp->spe = 0;
 			otmp->quan += rnd(10);
@@ -9663,7 +9957,7 @@ arti_invoke(obj)
 						int x, y;
 						x = u.ux + u.dx;
 						y = u.uy + u.dy;
-						if(isok(x, y) && digfarhole(TRUE, x, y)){
+						if(isok(x, y) && digfarhole(TRUE, x, y, TRUE)){
 							obj->spe--; // lose charge
 							pline("Your weapon has become more flawed.");
 						} else if( (d(1,20)-10) > 0 ){
@@ -10615,7 +10909,12 @@ arti_invoke(obj)
 						if (!otmp) break;
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
-						otmp->bknown = obj->bknown;
+
+						otmp->bknown |= obj->bknown;
+						otmp->known |= obj->known;
+						otmp->rknown |= obj->rknown;
+						otmp->dknown |= obj->dknown;
+						otmp->sknown |= obj->sknown;
 						if (obj->blessed) {
 							if (otmp->spe < 0) otmp->spe = 0;
 							otmp->quan += rnd(10);
@@ -10741,7 +11040,11 @@ arti_invoke(obj)
 						otmp = mksobj(SILVER_BULLET, NO_MKOBJ_FLAGS);
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
-						otmp->bknown = obj->bknown;
+						otmp->bknown |= obj->bknown;
+						otmp->known |= obj->known;
+						otmp->rknown |= obj->rknown;
+						otmp->dknown |= obj->dknown;
+						otmp->sknown |= obj->sknown;
 						if (obj->blessed) {
 							if (otmp->spe < 0) otmp->spe = 0;
 							otmp->quan += 10+rnd(10);
@@ -10758,7 +11061,11 @@ arti_invoke(obj)
 						otmp = mksobj(ROCKET, NO_MKOBJ_FLAGS);
 						otmp->blessed = obj->blessed;
 						otmp->cursed = obj->cursed;
-						otmp->bknown = obj->bknown;
+						otmp->bknown |= obj->bknown;
+						otmp->known |= obj->known;
+						otmp->rknown |= obj->rknown;
+						otmp->dknown |= obj->dknown;
+						otmp->sknown |= obj->sknown;
 						if (obj->blessed) {
 							if (otmp->spe < 0) otmp->spe = 0;
 						} else if (obj->cursed) {
@@ -11988,6 +12295,9 @@ arti_invoke(obj)
 			if (obj->otyp == RIN_NOTHING) makeknown(RIN_NOTHING);
 			obj->age = 0;
 		}break;
+		case SCORPION_UPGRADES:
+			scorpion_upgrade_menu();
+		break;
 		default: pline("Program in disorder.  Artifact invoke property not recognized");
 		break;
 	} //end of first case:  Artifact Specials!!!!
@@ -14106,11 +14416,16 @@ char *name;	/* target name or ""*/
 			break;
 		}
 	} else if (!strcmp(name,  "Inherited")){
+		rem_ox(otmp, OX_ENAM);
 		if (flags.descendant){
-			otmp->otyp = (int)artilist[u.inherited].otyp;
-			otmp = oname(otmp, artilist[u.inherited].name);
-		} else {
-			rem_ox(otmp, OX_ENAM);
+			struct obj *art;
+			art = mksartifact(u.inherited);
+			if(art){
+				discover_artifact(u.inherited);
+				fully_identify_obj(art);
+				place_object(art, otmp->ox, otmp->oy);
+			}
+			else impossible("Delayed inheritance failed in minor_artifact.");
 		}
 	}
 	return otmp;
@@ -14134,6 +14449,8 @@ dosymbiotic_equip()
 	}
 	if(uarm && (uarm->otyp == LIVING_ARMOR || uarm->otyp == BARNACLE_ARMOR))
 		dosymbiotic(&youmonst, uarm);
+	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_WHIPPING))
+		doscorpion(&youmonst, uarm);
 	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uwep) || is_bloodthirsty_artifact(uwep) ))
 		doliving(&youmonst, uwep);
 	if(uswapwep && ((check_oprop(uswapwep, OPROP_LIVEW) && u.twoweap && u.uinsight >= 40) || is_living_artifact(uswapwep) || (is_bloodthirsty_artifact(uswapwep) && u.twoweap) ))
@@ -14159,6 +14476,8 @@ dosymbiotic_equip()
 		obj = which_armor(mtmp, W_ARM);
 		if(obj && (obj->otyp == LIVING_ARMOR || obj->otyp == BARNACLE_ARMOR))
 			dosymbiotic(mtmp, obj);
+		if(obj && obj->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(obj, CPROP_WHIPPING))
+			doscorpion(mtmp, obj);
 		
 		obj = MON_WEP(mtmp);
 		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
@@ -14789,4 +15108,75 @@ struct obj **opptr;
 	else return MOVE_CANCELLED;
 }
 
+void
+do_your_auras()
+{
+	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_CROWN)){
+		int distance = 0, damage = 0;
+		static const int dice[] = {6,6,5,4,2,1};
+		artinstance[ART_SCORPION_CARAPACE].CarapaceAura += C_CROWN_AURA_ADD;
+		if(artinstance[ART_SCORPION_CARAPACE].CarapaceAura > C_CROWN_AURA_MAX)
+			artinstance[ART_SCORPION_CARAPACE].CarapaceAura = C_CROWN_AURA_MAX;
+		for(struct monst *tmpm = fmon; tmpm && artinstance[ART_SCORPION_CARAPACE].CarapaceAura > 0; tmpm = tmpm->nmon){
+			if(!DEADMONSTER(tmpm)
+				&& tmpm->mtyp != PM_VERMIURGE
+				&& !tmpm->mpeaceful
+				&& couldsee(tmpm->mx,tmpm->my)
+				&& !nonthreat(tmpm)
+			){
+				distance = dist2(tmpm->mx,tmpm->my,u.ux,u.uy);
+				distance = (int)sqrt(distance);
+				//0, 1, 2, 3, 4, 5
+				//0, 0, 1, 2, 4, 5
+				if(distance < 6){
+					damage = d(dice[distance],10);
+					if(damage > artinstance[ART_SCORPION_CARAPACE].CarapaceAura)
+						damage = artinstance[ART_SCORPION_CARAPACE].CarapaceAura;
+					damage -= avg_mdr(tmpm);
+					if(damage > 0){
+						damage = min(damage, tmpm->mhp);
+						artinstance[ART_SCORPION_CARAPACE].CarapaceAura -= damage;
+						//Reduce after charging vermin
+						damage = reduce_dmg(tmpm, damage, TRUE, FALSE);
+						if(canspotmon(tmpm)){
+							pline("%s is stung%s by swarming vermin!",
+								Monnam(tmpm),
+								damage >= tmpm->mhp ? " to death" : ""
+							);
+						}
+						tmpm->mhp -= damage;
+						if(tmpm->mhp <= 0){
+							xkilled(tmpm, 0);
+						}
+					}
+					// else continue
+				}
+				// else continue
+			}
+			// else continue
+		}
+		// if(!mon->mpeaceful && couldsee(mon->mx,mon->my)){
+			// distance = dist2(u.ux,u.uy,mon->mx,mon->my);
+			// distance = (int)sqrt(distance);
+			// //0, 1, 2, 3, 4, 5
+			// //0, 0, 1, 2, 4, 8
+			// if(distance < 6){
+				// damage = d(dice[distance],10);
+				// if(damage > mon->mvar_vermiurge)
+					// damage = mon->mvar_vermiurge;
+				// damage -= u.udr;
+				// if(damage > 0){
+					// damage = min(damage, uhp());
+					// You("are stung by swarming vermin!");
+					// mon->mvar_vermiurge -= damage;
+					// //Reduce after charging vermin
+					// damage = reduce_dmg(&youmonst, damage, TRUE, FALSE);
+					// losehp(damage,"swarming vermin",KILLED_BY);
+				// }
+				// // else continue
+			// }
+			// // else continue
+		// }
+	}
+}
 /*artifact.c*/

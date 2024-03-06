@@ -7,6 +7,7 @@
 
 #include "hack.h"
 #include "dlb.h"
+#include "xhity.h"
 
 STATIC_DCL boolean FDECL(is_swallow_sym, (int));
 STATIC_DCL int FDECL(append_str, (char *, const char *));
@@ -147,6 +148,8 @@ object_from_map(glyph, x, y, obj_p)
 #define MV_FLAG 4
 #define MG_FLAG 5
 #define MA_FLAG 6
+#define MF_FLAG 7
+#define MSYM	8
 
 char *
 flag_to_word(flag, category)
@@ -334,6 +337,20 @@ flag_to_word(flag, category)
 			case MA_XORN: return "xorns";
 		}
 	break;
+	case MF_FLAG:
+		switch (flag){
+			case MF_MARTIAL_B: return "basic martial skill";
+			case MF_MARTIAL_S: return "skilled martial skill";
+			case MF_MARTIAL_E: return "expert martial skill";
+			case MF_BAB_FULL: return "full base attack bonus";
+			case MF_BAB_HALF: return "half base attack bonus";
+			case MF_LEVEL_30: return "can reach level 30";
+			case MF_LEVEL_45: return "can reach level 45";
+			case MF_PHYS_SCALING: return "receives level-based bonus to physical damage";
+		}
+	break;
+	case MSYM:
+		return (char*)monexplain[flag];
 	default:
 		impossible("flag to words out of bounds?");
 	break;
@@ -678,7 +695,7 @@ lookat(x, y, buf, monbuf, shapebuff)
 		    }
 		    if (useemon && xraydist > 0 &&
 			    distu(mtmp->mx, mtmp->my) <= xraydist) {
-			/* Eyes of the Overworld */
+			/* Eye of the Overworld */
 			Strcat(monbuf, "astral vision");
 			if (ways_seen-- > 1) Strcat(monbuf, ", ");
 		    }
@@ -2670,7 +2687,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 			int res[4];
 			int indexnum = 0;
 			int tohitmod = 0;
-			long subout = 0;
+			int subout[SUBOUT_ARRAY_SIZE] = {0};
 			/* zero out res[] */
 			res[0] = MM_MISS;
 			res[1] = MM_MISS;
@@ -2678,7 +2695,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 			res[3] = MM_MISS;
 			do {
 				/* get next attack */
-				attk = getattk(mtmp, (struct monst *)0, res, &indexnum, &prev_attk, TRUE, &subout, &tohitmod);
+				attk = getattk(mtmp, (struct monst *)0, res, &indexnum, &prev_attk, TRUE, subout, &tohitmod);
 
 				main_temp_buf[0] = '\0';
 				get_description_of_attack(attk, temp_buf);

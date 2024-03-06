@@ -975,6 +975,27 @@ domakewhisperer()
 }
 
 int
+dokiai()
+{
+	const char *petname;
+	struct monst *mtmp;
+	int duration;
+
+	pline("Hyah!");
+	song_noise(u.ulevel * 3);
+	duration = xlev_to_rank(u.ulevel);
+	if(ACURR(A_CHA) > 13){
+		duration += rnd(ACURR(A_CHA)-13);
+	}
+	u.uencouraged = max(duration, u.uencouraged);
+	incr_itimeout(&HAggravate_monster, duration*4);
+	u.kiaiturn = moves+duration*8+rnz(100);
+	flags.botl = 1;
+	
+	return MOVE_PARTIAL;
+}
+
+int
 doelementalbreath()
 {
 	struct monst *mon = 0;
@@ -1208,7 +1229,7 @@ dodemonpet()
 	losepw(10);
 	flags.botl = 1;
 
-	i = (!is_demon(youracedata) || !rn2(6)) 
+	i = (is_demon(youracedata) && !rn2(6)) 
 	     ? ndemon(u.ualign.type) : NON_PM;
 	pm = i != NON_PM ? &mons[i] : youracedata;
 	if(pm->geno&G_UNIQ) {
