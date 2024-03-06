@@ -2743,6 +2743,7 @@ karemade:
 				for (obj = fobj; obj; obj = obj->nobj) {
 					if(levl[obj->ox][obj->oy].typ == AIR){
 						if(obj->otyp == AMULET_OF_YENDOR) continue;
+						if(obj == uchain || obj == uball) continue;
 						if(cansee(obj->ox,obj->oy)) pline("%s falls from the spire.",The(xname(obj)));
 						obj_extract_self(obj);
 						add_to_migration(obj);
