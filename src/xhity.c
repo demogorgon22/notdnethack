@@ -11619,6 +11619,7 @@ boolean * needs_uncancelled;
 	case AD_SEDU:
 	case AD_VAMP:
 	case AD_UNRV:
+	case AD_DRIN:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, TRUE);
 		break;
