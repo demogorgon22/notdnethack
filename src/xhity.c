@@ -11118,7 +11118,7 @@ boolean verbose;
 		if (uamul && (uamul->otyp == AMULET_VERSUS_CURSES)) {
 			if(verbose) You(mal_aura, "your amulet");
 			return TRUE;
-		 } else if (uwep && has_spear_point(uwep,GREEN_FLUORITE)) {
+		 } else if ((uwep && has_spear_point(uwep,GREEN_FLUORITE)) || (u.twoweap && uswapwep && has_spear_point(uswapwep, GREEN_FLUORITE))) {
             		if(verbose) You(mal_aura, "the green fluorite point of your spear");
                 	return TRUE;
 		} else if ((uarmc && (uarmc->otyp == PRAYER_WARDED_WRAPPING || uarmc->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_))
@@ -11126,7 +11126,7 @@ boolean verbose;
 		) {
 			if(verbose) You(mal_aura, "your wrappings");
 			return TRUE;
-		} else if (uwep && (uwep->oartifact == ART_MAGICBANE)) {
+		} else if ((uwep && (uwep->oartifact == ART_MAGICBANE)) || (u.twoweap && uswapwep && uswapwep->oartifact == ART_MAGICBANE)) {
 			if(verbose) You(mal_aura, "the magic-absorbing blade");
 			return TRUE;
 		} else if (uwep && (uwep->oartifact == ART_STAFF_OF_NECROMANCY)) {
