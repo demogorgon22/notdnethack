@@ -2223,7 +2223,7 @@ register struct obj *obj;
 	) {
 		pline("%s doesn't fit in the skull!", The(xname(obj)));
 		return 0;
-	} else if (is_asc_obj(obj)) {
+	} else if (is_asc_obj(obj) && !(obj->oartifact == ART_ELDER_CEREBRAL_FLUID && current_container->oartifact == ART_ILLITHID_STAFF)) {
 	/* Prohibit Amulets in containers; if you allow it, monsters can't
 	 * steal them.  It also becomes a pain to check to see if someone
 	 * has the Amulet.  Ditto for the Candelabrum, the Bell and the Book.
