@@ -5544,7 +5544,7 @@ int x, y;
 	// It's not EASY to permanently break magic with these, but it is POSSIBLE!
 	if(Misotheism < TIMEOUT_INF){
 		long increment = (long)(33 * pow(1.1,u.miso_count));
-		if(!Inhell && !Misotheism && u.ualign.type != A_VOID){
+		if(!Inhell && !Misotheism && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONOUNBINDER)){
 			godlist[u.ualign.god].anger++;
 			gods_angry(u.ualign.god);
 		}
