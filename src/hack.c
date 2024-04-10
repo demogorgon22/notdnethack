@@ -1342,7 +1342,7 @@ domove()
 			if(attk) do {
 				/* Streaming mercurial weapons hit an aditional target if your insight is high enough */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
-					if(mlev(&youmonst) > 20 && (u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))){
+					if(mlev(&youmonst) > 20 && (u.uinsight > 20 && YOU_MERC_SPECIAL)){
 						result |= hit_with_streaming(&youmonst, otmp, x, y, 0, attk);
 					}
 				}
@@ -1380,6 +1380,7 @@ domove()
 		if (expl) {
 		    u.mh = -1;		/* dead in the current form */
 		    rehumanize();
+			change_gevurah(1); //cheated death.
 		}
 		flags.move |= MOVE_ATTACKED;
 		return;
@@ -2075,7 +2076,7 @@ stillinwater:;
 				if (verysmall(youmonst.data)){
 					water_damage(invent, FALSE,FALSE,FALSE,(struct monst *) 0);
 				}
-				else if(rustmessage_turn < monstermoves || (is_rustprone(uarmf) && !uarmf->oerodeproof && uarmf->oeroded != MAX_ERODE)){
+				else if(rustmessage_turn < monstermoves || (uarmf && is_rustprone(uarmf) && !uarmf->oerodeproof && uarmf->oeroded != MAX_ERODE)){
 					(void)rust_dmg(uarmf, "boots", 1, TRUE, &youmonst, FALSE);
 					rustmessage_turn = monstermoves + 100;
 				}
@@ -2896,8 +2897,10 @@ boolean k_format;
 		u.mh -= n;
 		if (u.mhmax < u.mh) u.mh = u.mhmax;
 		flags.botl = 1;
-		if (u.mh < 1)
+		if (u.mh < 1){
 		    rehumanize();
+			change_gevurah(1); //cheated death.
+		}
 		else if (n > 0 && u.mh*10 < u.mhmax && Unchanging)
 		    maybe_wail();
 		return;
@@ -2911,6 +2914,7 @@ boolean k_format;
 	{	
 		Your("power pours into your shield, and your mortal wounds close!");
 		healup(u.uen, 0, FALSE, FALSE); losepw(u.uen);
+		change_gevurah(1); //cheated death.
 	}
 	if(u.uhp < 1) {
 		killer_format = k_format;
@@ -2973,7 +2977,10 @@ register int n;
 	if (n > 0) mtmp->mhurtu = TRUE;
 	if (Upolyd) {
 		u.mh -= n;
-		if (u.mh < 1) rehumanize();
+		if (u.mh < 1){
+			rehumanize();
+			change_gevurah(1); //cheated death.
+		}
 	}
 	else {
 		u.uhp -= n;

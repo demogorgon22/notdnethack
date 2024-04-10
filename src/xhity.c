@@ -793,7 +793,7 @@ int tary;
 					/* Mercurial weapons may hit additional targets */
 					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
 						if(magr && mlev(magr) > 20 && (
-							(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+							(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
 							|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 						)){
 							result |= hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
@@ -3209,13 +3209,16 @@ int dmg;				/* damage to deal */
 		{	
 			Your("power pours into your shield, and your mortal wounds close!");
 			healup(u.uen, 0, FALSE, FALSE); losepw(u.uen);
+			change_gevurah(1); //cheated death.
 		}
 		/* messages */
 		if ((dmg > 0) && (*hp(mdef) > 0) && (*hp(mdef) * 10 < *hpmax(mdef)) && !(Upolyd && !Unchanging))
 			maybe_wail();
 		if (*hp(mdef) < 1) {
-			if (Upolyd && !Unchanging)
+			if (Upolyd && !Unchanging){
 				rehumanize();
+				change_gevurah(1); //cheated death.
+			}
 			else if (magr && !oldkiller)
 				done_in_by(magr);
 			else {
@@ -4878,6 +4881,7 @@ boolean ranged;
 						/* assumes the player was polyed and not in natural form */
 						You("burn up!");
 						rehumanize();
+						change_gevurah(1); //cheated death.
 						return (MM_HIT | MM_DEF_LSVD);
 					}
 					else {
@@ -4899,6 +4903,7 @@ boolean ranged;
 						/* assumes the player was polyed and not in natural form */
 						You("burn up!");
 						rehumanize();
+						change_gevurah(1); //cheated death.
 						break;
 					}
 					else {
@@ -5808,6 +5813,7 @@ boolean ranged;
 					You("rust!");
 					/* KMH -- this is okay with unchanging */
 					rehumanize();
+					change_gevurah(1); //cheated death.
 					return 0;
 				}
 				else {
@@ -5858,6 +5864,7 @@ boolean ranged;
 					You("rot!");
 					/* KMH -- this is okay with unchanging */
 					rehumanize();
+					change_gevurah(1); //cheated death.
 					return 0;
 				}
 				else {
@@ -6616,12 +6623,20 @@ boolean ranged;
 					else {
 						/* angers a random pantheon god */
 						pline("Blasphemous thoughts fill your mind!");
-						int angrygod = align_to_god(A_CHAOTIC + rn2(3));
-						u.ualign.record -= rnd(20);
-						u.ualign.sins++;
-						u.hod += rnd(20);
-						godlist[angrygod].anger++;
-						angrygods(angrygod);
+						if(Infuture){
+							u.ualign.record -= rnd(20);
+							u.ualign.sins++;
+							godlist[GOD_ILSENSINE].anger++;
+							angrygods(GOD_ILSENSINE);
+						}
+						else {
+							int angrygod = align_to_god(A_CHAOTIC + rn2(3));
+							u.ualign.record -= rnd(20);
+							u.ualign.sins++;
+							change_hod(rnd(20));
+							godlist[angrygod].anger++;
+							angrygods(angrygod);
+						}
 					}
 					return MM_HIT;
 				/*Lower Sanity*/
@@ -6797,6 +6812,7 @@ boolean ranged;
 					pline("Some writing vanishes from your head!");
 					/* KMH -- this is okay with unchanging */
 					rehumanize();
+					change_gevurah(1); //cheated death.
 					return (MM_HIT|MM_DEF_LSVD);	/* You died but didn't actually die. Lifesaved. */
 				}
 				attrcurse();
@@ -10655,6 +10671,7 @@ int vis;
 					You("are laden with moisture and rust away!");
 					/* KMH -- this is okay with unchanging */
 					rehumanize();
+					change_gevurah(1); //cheated death.
 					result = MM_DEF_LSVD;
 					if(magr){
 						magr->mhp = 1;
@@ -11316,8 +11333,10 @@ int vis;
 			else
 				explode(x(magr), y(magr), AD_ACID, MON_EXPLODE, dmg, EXPL_NOXIOUS, 1);
 			/* players, on the other hand, shouldn't be rehumanized before the explosion (since it will hurt them too) */
-			if (youagr && Upolyd)
+			if (youagr && Upolyd){
 				rehumanize();
+				change_gevurah(1); //cheated death.
+			}
 			return (*hp(magr) > 0 ? MM_AGR_STOP : MM_AGR_DIED) | (*hp(mdef) > 0 ? MM_HIT : MM_DEF_DIED);
 		case AD_NUKE:
 			/* mini nukes are extra special */
@@ -11544,6 +11563,7 @@ expl_common:
 	/* kill exploder */
 	if (youagr) {
 		rehumanize();
+		change_gevurah(1); //cheated death.
 		result |= MM_AGR_STOP;
 	}
 	else {
@@ -13098,7 +13118,7 @@ int vis;
 			int angrygod = align_to_god(A_CHAOTIC + rn2(3));
 			u.ualign.record -= rnd(20);
 			u.ualign.sins++;
-			u.hod += rnd(20);
+			change_hod(rnd(20));
 			godlist[angrygod].anger++;
 			angrygods(angrygod);
 		}
@@ -14383,7 +14403,7 @@ int vis;						/* True if action is at all visible to the player */
 					if (sgn(u.ualign.type) > 0) {
 						You("dishonorably use a poisoned weapon!");
 						u.ualign.sins++;
-						u.hod++;
+						change_hod(1);
 					}
 				}
 				else {
@@ -14399,7 +14419,7 @@ int vis;						/* True if action is at all visible to the player */
 			else if ((u.ualign.type == A_LAWFUL) && (Pantheon_if(PM_KNIGHT) || Pantheon_if(PM_VALKYRIE)) && (u.ualign.record > -10)) {
 				You_feel("like an evil coward for using a poisoned weapon.");
 				adjalign(-2); //stiffer penalty
-				u.hod++;
+				change_hod(1);
 			}
 		}
 
@@ -17549,6 +17569,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 							if (youdef) {
 								You("collapse into a puddle of water!");
 								rehumanize();
+								change_gevurah(1); //cheated death.
 							}
 							else {
 								if (canseemon(mdef))
@@ -17838,6 +17859,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 							if (youdef) {
 								You("collapse into a puddle of noxious fluid!");
 								rehumanize();
+								change_gevurah(1); //cheated death.
 							}
 							else {
 								if (canseemon(mdef))

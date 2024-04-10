@@ -80,7 +80,7 @@ static struct Bool_Opt
 #endif
 #ifdef CURSES_GRAPHICS
 	{"classic_status", &iflags.classic_status, TRUE, SET_IN_FILE},
-	{"classic_colors", &iflags.classic_colors, TRUE, SET_IN_FILE},
+	{"classic_colors", &iflags.classic_colors, TRUE, DISP_IN_GAME},
 #endif
 	{"cmdassist", &iflags.cmdassist, TRUE, SET_IN_GAME},
 # if defined(MICRO) || defined(WIN32) || defined(CURSES_GRAPHICS)
@@ -440,9 +440,6 @@ static struct Comp_Opt
 						32, SET_IN_GAME },
 	{ "scroll_amount", "amount to scroll map when scroll_margin is reached",
 						20, DISP_IN_GAME }, /*WC*/
-#ifdef CURSES_GRAPHICS
-	{ "setcolor", "set color to specific value", 32, DISP_IN_GAME }, /*WC*/
-#endif
 	{ "scroll_margin", "scroll map when this far from the edge", 20, DISP_IN_GAME }, /*WC*/
 	{ "species",    "your starting species (e.g., poplar, blue)",
 						PL_CSIZ, DISP_IN_GAME },

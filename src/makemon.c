@@ -15606,12 +15606,11 @@ rndmonst()
 	}
 
 	if(u.hod && !rn2(10) && rn2(40+u.hod) > 50){
-		u.hod-=10;
-		if(u.hod<0) u.hod = 0;
+		change_hod(-10);
 		if(!tooweak(PM_HOD_SEPHIRAH, minmlev)){
 			return &mons[PM_HOD_SEPHIRAH];
 		}
-		else u.keter++;
+		else change_keter(1);
 	}
 	if(u.gevurah && !rn2(20) && rn2(u.gevurah + 94) > 100){
 		/* Notes on frequency: cheating death via lifesaving counts as +4
@@ -15620,14 +15619,13 @@ rndmonst()
 			return &mons[PM_GEVURAH_SEPHIRAH];
 		}
 		else{
-			u.gevurah -= 4;
-			if(u.gevurah<0) u.gevurah = 0;
-			u.keter++;
+			change_gevurah(-4);
+			change_keter(1);
 			return &mons[PM_CHOKHMAH_SEPHIRAH];
 		}
 	}
 	if(u.keter && !rn2(100) && rn2(u.keter+10) > 10){
-		u.chokhmah++;
+		change_chokhmah(1);
 		return &mons[PM_CHOKHMAH_SEPHIRAH];
 	}
 	if (u.uz.dnum == tower_dnum)
@@ -17524,11 +17522,19 @@ struct monst *mtmp;
 			mal = EMIN(mtmp)->min_align;
 		/* unless alignment is none, set mal to -5,0,5 */
 		/* (see align.h for valid aligntyp values)     */
-		if(mal != A_NONE)
+		if(mal == A_NONE)
+			mal = MON_A_NONE;
+		else if(mal == A_VOID)
+			mal = MON_A_VOID;
+		else{
 			mal *= 5;
+		}
 	}
-
-	coaligned = (sgn(mal) == sgn(u.ualign.type));
+	
+	if(mal == MON_A_VOID)
+		coaligned = u.ualign.type == A_VOID;
+	else
+		coaligned = (sgn(mal) == sgn(u.ualign.type)); //A_NONE is coaligned with A_CHAOS because that's the standard vanilla handling
 	if (mtmp->mtyp == urole.ldrnum) {
 		mtmp->malign = -20;
 	} else if (mtmp->mtyp == PM_BLASPHEMOUS_LURKER) {
@@ -17537,11 +17543,16 @@ struct monst *mtmp;
 	} else if (mtmp->mtyp == PM_BLASPHEMOUS_HAND || mtmp->mtyp == PM_LURKING_HAND) {
 		// The Blasphemous Lurker always anomalously counts as a co-aligned priest.
 		mtmp->malign = -5;
-	} else if (mal == A_NONE) {
+	} else if (mal == MON_A_NONE) {
 		if (mtmp->mpeaceful)
 			mtmp->malign = 0;
 		else
 			mtmp->malign = 20;	/* really hostile */
+	} else if (mal == MON_A_VOID) {
+		if (mtmp->mpeaceful)
+			mtmp->malign = 0;
+		else
+			mtmp->malign = 25;	/* highly rewarded */
 	} else if (always_peaceful(mtmp->data)) {
 		int absmal = abs(mal);
 		if (mtmp->mpeaceful)

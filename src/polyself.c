@@ -867,7 +867,6 @@ rehumanize()
 	flags.botl = 1;
 	vision_full_recalc = 1;
 	(void) encumber_msg();
-	u.gevurah++; //cheated death.
 }
 
 int

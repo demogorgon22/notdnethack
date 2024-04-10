@@ -333,7 +333,7 @@ struct monst *magr;
 		attackmask |= WHACK;
 	}
 	if(obj && magr && !litsaber(obj) && is_chained_merc(obj) && (
-		(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 	)){
 		attackmask |= WHACK;
@@ -3591,6 +3591,14 @@ uwep_skill_type()
 }
 
 int
+get_your_shield_size()
+{
+	int wielder_size = (youracedata->msize - MZ_MEDIUM);
+
+	return wielder_size;
+}
+
+int
 max_offhand_weight(){
 	/* Sporkhack:
 	 * Heavy things are hard to use in your offhand unless you're
@@ -4163,7 +4171,11 @@ int
 shield_skill(shield)
 struct obj *shield;
 {
-	if(weight(shield) > (int)objects[BUCKLER].oc_weight){
+	int size_adjust = get_your_shield_size();
+	if(size_adjust < 0)
+		size_adjust = 0;
+	else size_adjust += 1;
+	if(weight(shield) > (int)objects[BUCKLER].oc_weight*size_adjust){
 		switch(P_SKILL(P_SHIELD)){
 			case P_BASIC:	return 1;
 			case P_SKILLED:	return activeFightingForm(FFORM_SHIELD_BASH) ? 2 : 3;

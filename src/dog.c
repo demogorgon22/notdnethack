@@ -1556,9 +1556,11 @@ int enhanced;
 		    {
 		        /* You choked your pet, you cruel, cruel person! */
 		        You_feel("guilty about losing your pet like this.");
-				if(!Role_if(PM_ANACHRONOUNBINDER)) godlist[u.ualign.god].anger++;
 				adjalign(-15);
-				u.hod += 5;
+				if(!Infuture){
+					if(!Role_if(PM_ANACHRONOUNBINDER)) godlist[u.ualign.god].anger++;
+					change_hod(5);
+				}
 		    }
 		}
 		/* eating might have killed it, but that doesn't matter here;

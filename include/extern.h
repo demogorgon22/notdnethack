@@ -253,6 +253,10 @@ E boolean FDECL(blockedMentalEdge, (int));
 E int NDECL(uhp);
 E int NDECL(uhpmax);
 E void NDECL(check_brainlessness);
+E boolean FDECL(change_hod, (int));
+E boolean FDECL(change_chokhmah, (int));
+E boolean FDECL(change_gevurah, (int));
+E boolean FDECL(change_keter, (int));
 
 /* ### ball.c ### */
 
@@ -3317,6 +3321,7 @@ E void FDECL(lose_weapon_skill, (int));
 E int FDECL(weapon_type, (struct obj *));
 E int NDECL(uwep_skill_type);
 E int NDECL(get_your_size);
+E int NDECL(get_your_shield_size);
 E int FDECL(weapon_hit_bonus, (struct obj *, int));
 E int FDECL(mon_weapon_dam_bonus, (struct permonst *, struct obj *, int));
 E int FDECL(weapon_dam_bonus, (struct obj *, int));

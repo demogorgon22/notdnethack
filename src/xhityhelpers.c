@@ -414,14 +414,14 @@ struct monst *mtmp;
 			if(u.ualign.record > 10) {
 				u.ualign.sins++;
 			    adjalign(-2); //slightly stiffer penalty
-				u.hod++;
+				change_hod(1);
 			}
 			else if(u.ualign.record > -10) {
 			    adjalign(-5); //slightly stiffer penalty
 			}
 			else{
 			    adjalign(-5); //slightly stiffer penalty
-				u.hod++;
+				change_hod(1);
 			}
 	}
 /*	attacking peaceful creatures is bad for the samurai's giri */
@@ -430,7 +430,7 @@ struct monst *mtmp;
           You("dishonorably attack the innocent!");
           u.ualign.sins++;
           u.ualign.sins++;
-          u.hod++;
+          change_hod(1);
           adjalign(-1);
           if(u.ualign.record > -10) {
               adjalign(-4);
@@ -2588,7 +2588,7 @@ struct attack * attk;
 	)
 		return result;
 	if(is_streaming_merc(otmp) && otmp->oartifact == ART_AMALGAMATED_SKIES && mlev(magr) > 20 && (
-		(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr)))
 	){
 		merc_mult++;

@@ -4676,7 +4676,7 @@ int * truedmgptr;
 	}
 	if(check_oprop(otmp, OPROP_RLYHW)){
 		int bonus = 0;
-		if(magr && (magr->mtyp == PM_LADY_CONSTANCE || is_mind_flayer(magr->data))){
+		if(magr && (magr->mtyp == PM_LADY_CONSTANCE || is_mind_flayer(magr->data) || (youagr && u.sealsActive&SEAL_OSE))){
 			if(mlev(magr)/10 > 1)
 				bonus = d(mlev(magr)/10, 15);
 			else
@@ -4826,7 +4826,7 @@ int dieroll;
 	int original_truedmgptr = *truedmgptr;
 	
 	if(otmp->obj_material == MERCURIAL && magr && mlev(magr) > 20 && (
-		(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 	)){
 		if(is_streaming_merc(otmp)){
@@ -6045,7 +6045,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 		pline_The("%s %s %s %s%c",
-			u.uinsight > 20 ? "many-colored" : "paper-thin",
+			(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL) ? "many-colored" : "paper-thin",
 			wepdesc,
 			vtense(wepdesc, "hit"),
 			hittee, !spec_dbon_applies ? '.' : '!');
@@ -6076,7 +6076,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	else if(is_chained_merc(otmp)){
 		pline_The("%s %s %s %s%c",
-	u.uinsight > 20 ? "dense" : "shimmering",
+			(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL) ? "dense" : "shimmering",
 			wepdesc,
 			vtense(wepdesc, "hit"),
 			hittee, !spec_dbon_applies ? '.' : '!');
@@ -6084,7 +6084,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	else if(is_kinstealing_merc(otmp)){
 		pline_The("%s %s %s %s%c",
-			u.uinsight > 20 ? "grasping" : "jagged",
+			(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL) ? "grasping" : "jagged",
 			wepdesc,
 			vtense(wepdesc, "hit"),
 			hittee, !spec_dbon_applies ? '.' : '!');
@@ -7816,7 +7816,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	if(is_kinstealing_merc(otmp) && (
-		(youagr && u.uinsight > 20 && (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE))
+		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 	)){
 		int target;
