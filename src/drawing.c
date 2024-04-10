@@ -343,8 +343,125 @@ const struct symdef defsyms[MAXPCHARS] = {
 	{'/', "",		C(CLR_ORANGE)},	/* explosion bottom right */
 /*
  *  Note: Additions to this array should be reflected in the
- *	  {ibm,dec,mac}_graphics[] arrays below.
+ *	  symbol_names[] and {ibm,dec,mac}_graphics[] arrays below.
  */
+};
+
+const char * const symbol_names[MAXPCHARS] = {
+	"S_stone",
+	"S_vwall",
+	"S_hwall",
+	"S_tlcorn",
+	"S_trcorn",
+	"S_blcorn",
+	"S_brcorn",
+	"S_crwall",
+	"S_tuwall",
+	"S_tdwall",
+	"S_tlwall",
+	"S_trwall",
+	"S_ndoor",
+	"S_vodoor",
+	"S_hodoor",
+	"S_vcdoor",
+	"S_hcdoor",
+	"S_bars",
+	"S_tree",
+	"S_deadtree",
+	"S_drkroom",
+	"S_litroom",
+	"S_brightrm",
+	"S_corr",
+	"S_litcorr",
+	"S_upstair",
+	"S_dnstair",
+	"S_upladder",
+	"S_dnladder",
+	"S_brupstair",
+	"S_brdnstair",
+	"S_brupladder",
+	"S_brdnladder",
+	"S_altar",
+	"S_grave",
+	"S_seal",
+	"S_throne",
+	"S_sink",
+	"S_fountain",
+	"S_forge",
+	"S_pool",
+	"S_ice",
+	"S_litgrass",
+	"S_drkgrass",
+	"S_litsoil",
+	"S_drksoil",
+	"S_litsand",
+	"S_drksand",
+	"S_lava",
+	"S_vodbridge",
+	"S_hodbridge",
+	"S_vcdbridge",
+	"S_hcdbridge",
+	"S_air",
+	"S_cloud",
+	"S_fog",
+	"S_dust",
+	"S_puddle",
+	"S_water",
+	"S_arrow_trap",
+	"S_dart_trap",
+	"S_falling_rock_trap",
+	"S_squeaky_board",
+	"S_bear_trap",
+	"S_land_mine",
+	"S_rolling_boulder_trap",
+	"S_sleeping_gas_trap",
+	"S_rust_trap",
+	"S_fire_trap",
+	"S_pit",
+	"S_spiked_pit",
+	"S_hole",
+	"S_trap_door",
+	"S_teleportation_trap",
+	"S_level_teleporter",
+	"S_magic_portal",
+	"S_web",
+	"S_statue_trap",
+	"S_magic_trap",
+	"S_anti_magic_trap",
+	"S_polymorph_trap",
+	"S_essence_trap",
+	"S_mummy_trap",
+	"S_switch",
+	"S_flesh_hook",
+	"S_vbeam",
+	"S_hbeam",
+	"S_lslant",
+	"S_rslant",
+	"S_digbeam",
+	"S_flashbeam",
+	"S_boomleft",
+	"S_boomright",
+	"S_ss1",
+	"S_ss2",
+	"S_ss3",
+	"S_ss4",
+	"S_sw_tl",
+	"S_sw_tc",
+	"S_sw_tr",
+	"S_sw_ml",
+	"S_sw_mr",
+	"S_sw_bl",
+	"S_sw_bc",
+	"S_sw_br",
+	"S_explode1",
+	"S_explode2",
+	"S_explode3",
+	"S_explode4",
+	"S_explode5",
+	"S_explode6",
+	"S_explode7",
+	"S_explode8",
+	"S_explode9",
 };
 
 #undef C
@@ -905,16 +1022,19 @@ int gr_set_flag;
     iflags.IBMgraphics = FALSE;
     iflags.DECgraphics = FALSE;
     iflags.UTF8graphics = FALSE;
+#ifdef CURSES_GRAPHICS
+    iflags.cursesgraphics = FALSE;
+#endif
     switch (gr_set_flag) {
-	default:
-	case ASCII_GRAPHICS:
+    default:
+    case ASCII_GRAPHICS:
 	    assign_graphics((glyph_t *)0, 0, MAXPCHARS, 0);
 #ifdef PC9800
 	    if (ascgraphics_mode_callback) (*ascgraphics_mode_callback)();
 #endif
 	    break;
 #ifdef ASCIIGRAPH
-	case IBM_GRAPHICS:
+    case IBM_GRAPHICS:
 /*
  * Use the nice IBM Extended ASCII line-drawing characters (codepage 437).
  *
@@ -923,39 +1043,39 @@ int gr_set_flag;
  * set the codepage to 437.
  */
 	    iflags.IBMgraphics = TRUE;
-	    iflags.DECgraphics = FALSE;
-#ifdef CURSES_GRAPHICS
-        iflags.cursesgraphics = FALSE;
-#endif
 	    assign_graphics(ibm_graphics, SIZE(ibm_graphics), MAXPCHARS, 0);
-		monsyms[S_LAW_ANGEL] = 0x8F;
-		monsyms[S_NEU_ANGEL] = 0x8E;
+	    /*
+	     * Special angel symbols disabled because they are broken:
+	     * they don't work if you start the game with IBMgraphics
+	     * and have the "monsters" option configured (but do if
+	     * you switch to IBMgraphics in-game), and aren't reset
+	     * when you switch away from IBMgraphics.
+	     *
+	     * monsyms[S_LAW_ANGEL] = 0x8F;
+	     * monsyms[S_NEU_ANGEL] = 0x8E;
+	     */
 #ifdef PC9800
 	    if (ibmgraphics_mode_callback) (*ibmgraphics_mode_callback)();
 #endif
 	    break;
 #endif /* ASCIIGRAPH */
 #ifdef TERMLIB
-	case DEC_GRAPHICS:
+    case DEC_GRAPHICS:
 /*
  * Use the VT100 line drawing character set.
  */
 	    iflags.DECgraphics = TRUE;
-	    iflags.IBMgraphics = FALSE;
-#ifdef CURSES_GRAPHICS
-        iflags.cursesgraphics = FALSE;
-#endif
 	    assign_graphics(dec_graphics, SIZE(dec_graphics), MAXPCHARS, 0);
 	    if (decgraphics_mode_callback) (*decgraphics_mode_callback)();
 	    break;
 #endif /* TERMLIB */
 #ifdef MAC_GRAPHICS_ENV
-	case MAC_GRAPHICS:
+    case MAC_GRAPHICS:
 	    assign_graphics(mac_graphics, SIZE(mac_graphics), MAXPCHARS, 0);
 	    break;
 #endif
 #ifdef UTF8_GLYPHS
-	case UTF8_GRAPHICS:
+    case UTF8_GRAPHICS:
 	    assign_graphics(utf8_graphics, SIZE(utf8_graphics), MAXPCHARS, 0);
 	    iflags.UTF8graphics = TRUE;
 	    break;
@@ -963,12 +1083,10 @@ int gr_set_flag;
 #ifdef CURSES_GRAPHICS
     case CURS_GRAPHICS:
 	    assign_graphics((glyph_t *)0, 0, MAXPCHARS, 0);
-        iflags.cursesgraphics = TRUE;
-	    iflags.IBMgraphics = FALSE;
-	    iflags.DECgraphics = FALSE;
-        break;
+	    iflags.cursesgraphics = TRUE;
+	    break;
 #endif
-	}
+    }
     return;
 }
 

@@ -1719,15 +1719,14 @@ dosacrifice()
 		}
 
 		if (your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID) {
+			Sprintf(buf, "You feel a deep sense of kinship to %s!  Sacrifice %s anyway?",
+				the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
+			if (yn_function(buf,ynchars,'n')=='n') return MOVE_CANCELLED;
+
 			if (is_demon(youracedata)) {
 				You("find the idea very satisfying.");
 				exercise(A_WIS, TRUE);
 			} else if ((u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) || altaralign != A_CHAOTIC) {
-				if((u.ualign.record >= 20 || ACURR(A_WIS) >= 20 || u.ualign.record >= rnd(20-ACURR(A_WIS))) && !roll_madness(MAD_CANNIBALISM)){
-					Sprintf(buf, "You feel a deep sense of kinship to %s!  Sacrifice %s anyway?",
-						the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
-					if (yn_function(buf,ynchars,'n')=='n') return MOVE_CANCELLED;
-				}
 				pline("You'll regret this infamous offense!");
 				exercise(A_WIS, FALSE);
 			}
@@ -2313,7 +2312,7 @@ dosacrifice()
 	    } else if (rnl((30 + u.ulevel)*10) < 10) {
 			/* no artifact, but maybe a helpful pet? */
 			/* WAC is now some generic benefit (includes pets) */
-			god_gives_benefit(altaralign);
+			god_gives_benefit(altargod);
 		    return MOVE_STANDARD;
 	    }
 	    change_luck((value * LUCKMAX) / (MAXVALUE * 2));
@@ -2732,7 +2731,7 @@ struct monst *mon;
 			dist2(mon->mx,mon->my, mtmp->mx,mtmp->my) > range
 		) continue;
 		
-	    if (mm_grudge(mon, mtmp) && 
+	    if (mm_grudge(mon, mtmp, FALSE) && 
 			(is_undead(mtmp->data) ||
 				(is_demon(mtmp->data) && (mon->m_lev > (MAXULEV/2)))
 			)
@@ -2760,7 +2759,7 @@ struct monst *mon;
 		    }
 	    }
 		else if (mon_healing_turn(mon) && mtmp->mhp < mtmp->mhpmax 
-			&& !mon->mtame == !mtmp->mtame && mon->mpeaceful == mtmp->mpeaceful && !mm_grudge(mon, mtmp)
+			&& !mon->mtame == !mtmp->mtame && mon->mpeaceful == mtmp->mpeaceful && !mm_grudge(mon, mtmp, FALSE)
 			&& !(is_undead(mtmp->data) || is_demon(mtmp->data))
 		){
 			if(canseemon(mtmp))

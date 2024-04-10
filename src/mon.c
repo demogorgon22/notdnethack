@@ -110,6 +110,18 @@ double x;
 	return x >= 0 ? sum : -sum;
 }
 
+STATIC_OVL void
+ara_died(mtmp)
+struct monst *mtmp;
+{
+	if(mtmp->mtame)
+		u.goldkamcount_tame++;
+	else if(mtmp->mpeaceful)
+		level.flags.goldkamcount_peace++;
+	else
+		level.flags.goldkamcount_hostile++;
+}
+
 void
 removeMonster(x,y)
 int x,y;
@@ -2821,6 +2833,9 @@ register struct monst *mtmp;
 	if(centauroid(mdat) || mdat->mtyp == PM_BLESSED){
 		carcap *= 1.25;
 	}
+	if(is_half_dragon(mdat) && mtmp->mvar_hdBreath == AD_FIRE && mdat->mlevel >= 15){
+		carcap *= 1.2;
+	}
 	if(arti_lighten(bodyarmor, FALSE)){
 		if(bodyarmor->blessed) carcap *= 1.5;
 		else if(!bodyarmor->cursed) carcap *= 1.25;
@@ -3598,18 +3613,20 @@ mm_aggression(magr, mdef)
 struct monst * magr;	/* monster that is currently deciding where to move */
 struct monst * mdef;	/* another monster which is next to it */
 {
-	long res = mm_grudge(magr, mdef);
+	long res = mm_grudge(magr, mdef, TRUE);
 
 	// must be able to see mdef -- note that this has a 1/8 chance when adjacent even when totally blind!
-	if(res && mon_can_see_mon(magr, mdef))
+	if(res && mon_can_see_mon(magr, mdef)){
 		return res;
+	}
 	return 0L;
 }
 
 long
-mm_grudge(magr, mdef)
+mm_grudge(magr, mdef, actual)
 struct monst * magr;	/* monster that is currently deciding where to move */
 struct monst * mdef;	/* another monster which is next to it */
+boolean actual;			/* actual attack or faction check? */
 {
 	struct permonst *ma, *md;
 	ma = magr->data;
@@ -3632,13 +3649,35 @@ struct monst * mdef;	/* another monster which is next to it */
 	)){
 		return 0L;
 	}
+	if(actual
+		&& magr->mtame 
+		&& get_mx(magr, MX_EDOG)
+		&& ((monstermoves - EDOG(magr)->whistletime < 5)
+			|| magr->mpassive
+			// || magr->mretreat
+			)
+	){
+		return 0L;
+	}
+	//3/4 chance to avoid drawing attacks even from zombies etc.
+	if(actual
+		&& mdef->mtame 
+		&& get_mx(mdef, MX_EDOG)
+		&& ((monstermoves - EDOG(mdef)->whistletime < 5)
+			|| mdef->mpassive
+			// || mdef->mretreat
+			)
+		&& rn2(4)
+	){
+		return 0L;
+	}
 	// monsters trapped in vivisection traps are excluded
 	// shackled monsters aren't a threat
 	if(nonthreat(magr) || nonthreat(mdef)){
 		return 0L;
 	}
 	// must be in range to attack mdef
-	if (distmin(magr->mx, magr->my, mdef->mx, mdef->my) > BOLT_LIM) {
+	if (actual && distmin(magr->mx, magr->my, mdef->mx, mdef->my) > BOLT_LIM) {
 		return 0L;
 	}
 	// magr cannot be waiting
@@ -3690,7 +3729,7 @@ struct monst * mdef;	/* another monster which is next to it */
 		return 0L;
 	}
 	// careful around cockatrices
-	if (touch_petrifies(md) && !resists_ston(magr)
+	if (actual && touch_petrifies(md) && !resists_ston(magr)
 		&& !mindless(magr->data) && distmin(magr->mx, magr->my, mdef->mx, mdef->my) < 3 && !MON_WEP(magr)
 	) {
 		return 0L;
@@ -3756,10 +3795,10 @@ struct monst * mdef;	/* another monster which is next to it */
 	}
 #ifdef ATTACK_PETS
     // pets attack hostile monsters
-	if (magr->mtame && !mdef->mpeaceful && (magr->mhp > magr->mhpmax/2 || banish_kill(magr->mtyp)) && !magr->mflee)
+	if (magr->mtame && !mdef->mpeaceful && (!actual || magr->mhp > magr->mhpmax/2 || banish_kill(magr->mtyp)) && !magr->mflee)
 	    return ALLOW_M|ALLOW_TM;
 	// and vice versa, with some limitations that will help your pet survive
-	if (mdef->mtame && !magr->mpeaceful && (mdef->mhp > mdef->mhpmax/2 || banish_kill(mdef->mtyp)) && !mdef->meating && mdef != u.usteed && !mdef->mflee)
+	if (mdef->mtame && !magr->mpeaceful && (!actual || mdef->mhp > mdef->mhpmax/2 || banish_kill(mdef->mtyp)) && !mdef->meating && mdef != u.usteed && !mdef->mflee)
 	    return ALLOW_M|ALLOW_TM;
 #endif /* ATTACK_PETS */
 
@@ -3789,21 +3828,21 @@ struct monst * mdef;	/* another monster which is next to it */
 	
 	/* Various factions don't attack faction-mates */
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == YENDORIAN_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == NECROMANCY_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == GOATMOM_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == QUEST_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == ILSENSINE_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == SEROPAENES_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == YELLOW_FACTION)
-		return FALSE;
+		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == YOG_FACTION)
-		return FALSE;
+		return 0L;
 	
 	// dreadblossoms attack almost anything
 	if(ma->mtyp == PM_DREADBLOSSOM_SWARM &&
@@ -4938,12 +4977,7 @@ register struct monst *mtmp;
 			}
 	}
 	if(tmp == PM_ARA_KAMEREL && !has_template(mtmp, FRACTURED)){
-		if(mtmp->mtame)
-			u.goldkamcount_tame++;
-		else if(mtmp->mpeaceful)
-			level.flags.goldkamcount_peace++;
-		else
-			level.flags.goldkamcount_hostile++;
+		ara_died(mtmp);
 	}
 	if(tmp == PM_FATHER_DAGON){
 		u.uevent.ukilled_dagon = 1;
@@ -5232,6 +5266,9 @@ boolean was_swallowed;			/* digestion */
 	if(Role_if(PM_ANACHRONONAUT) && (mon->mpeaceful || (has_lifesigns(mon) && mon->mvar_lifesigns)) && In_quest(&u.uz) && Is_qstart(&u.uz)){
 		if(!cansee(mon->mx,mon->my)) map_invisible(mon->mx, mon->my);
 	}
+	/* bypass anything about templates, etc. just always make a corpse*/
+	if (is_rider(mdat)) return TRUE;
+
 	/* Liches and Vlad and his wives have a fancy death message, and leave no corpse */
 	if ((mdat->mlet == S_LICH) ||
 		(mdat->mlet == S_VAMPIRE && mdat->geno & G_UNIQ)) {
@@ -5826,6 +5863,21 @@ register struct monst *mdef;
 	// mdef->mgold = 0L;
 // #endif
 	m_detach(mdef, mdef->data);
+}
+
+void
+monslime(mdef)
+struct monst *mdef;
+{
+	int mhp = mdef->mhp;
+	lifesaved_monster(mdef);
+	if (mdef->mhp > 0)
+		return;
+	mdef->mhp = mhp;
+	if(mdef->mtyp == PM_ARA_KAMEREL && !has_template(mdef, FRACTURED)){
+		ara_died(mdef);
+	}
+	(void)newcham(mdef, PM_GREEN_SLIME, FALSE, canseemon(mdef));
 }
 
 /* drop a statue or rock and remove monster */
@@ -6484,7 +6536,7 @@ xkilled(mtmp, dest)
 		goto cleanup;
 	}
 
-	if((dest & 2) || LEVEL_SPECIFIC_NOCORPSE(mdat))
+	if(!is_rider(mdat) && ((dest & 2) || LEVEL_SPECIFIC_NOCORPSE(mdat)))
 		goto cleanup;
 
 #ifdef MAIL
@@ -7421,9 +7473,16 @@ struct monst *mon;
 			if (rn2(7)) mndx = pick_nasty();
 			break;
 			case CHAM_DOPPELGANGER:
-			if (!rn2(7)) mndx = pick_nasty();
-			else if (rn2(3)) mndx = rn1(PM_WIZARD - PM_ARCHEOLOGIST + 1,
-							PM_ARCHEOLOGIST);
+				if (!rn2(7)) mndx = pick_nasty();
+				else if (rn2(3)){
+					do{
+						mndx = rn1(PM_WIZARD - PM_ARCHEOLOGIST + 1, PM_ARCHEOLOGIST);
+					} while(mndx == PM_ITINERANT_PRIESTESS
+						|| mndx == PM_TRANSCENDENT_VALKYRIE
+						|| mndx == PM_AWAKENED_VALKYRIE
+						|| mndx == PM_WORM_THAT_WALKS
+						|| mndx == PM_INCANTIFIER);
+				}
 			break;
 			case CHAM_CHAMELEON:
 			if (!rn2(3)) mndx = rndshape(&pick_animal);

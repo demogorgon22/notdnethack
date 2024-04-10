@@ -2794,7 +2794,7 @@ int tary;
 			}
 			/* damage inventory */
 			if (!UseInvCold_res(mdef)){
-				destroy_item(mdef, POTION_CLASS, AD_FIRE);
+				destroy_item(mdef, POTION_CLASS, AD_COLD);
 			}
 			/* other effects */
 			if (youdef) {
@@ -4510,7 +4510,7 @@ int tary;
 				n++;
 			if (!n){
 				if (youagr || youdef || canseemon(mdef))
-					pline("Silver rays whiz past %s!",
+					pline("Silver rays whizz past %s!",
 					youdef ? "you" : mon_nam(mdef));
 				return MM_MISS;
 			}

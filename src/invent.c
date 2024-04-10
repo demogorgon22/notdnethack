@@ -2,6 +2,7 @@
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
+#include <math.h>
 #include "hack.h"
 #include "artifact.h"
 
@@ -2850,6 +2851,10 @@ winid *datawin;
 			int lspe_mult = dmgval_core(&wdice[1], TRUE, obj, otyp, &youmonst);		// large dice
 			int enc_bonus = (obj) ? (obj->spe) : 0;
 			if (otyp == CRYSTAL_SWORD) enc_bonus += enc_bonus / 3;
+			if (otyp == SEISMIC_HAMMER) {
+				wdice[0].oc_damd += 3*enc_bonus;
+				wdice[1].oc_damd += 3*enc_bonus;
+			}
 
 			Sprintf(buf, "Damage: ");
 
@@ -3034,24 +3039,26 @@ winid *datawin;
 				if(describe_spear_point(buf2, obj))
 					OBJPUTSTR(buf2);
 			}
+			int ldamd = objects[otyp].oc_wldam.oc_damd;
+			int sdamd = objects[otyp].oc_wsdam.oc_damd;
 			if(obj->otyp == TORCH){
-				Sprintf(buf2, "Deals 1d10%s bonus fire damage when lit.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == MAGIC_TORCH){
-				Sprintf(buf2, "Deals 1d8%s fire damage when lit.", (obj->spe ? sitoa(2*obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d8%s fire damage.", (obj->spe ? sitoa(2*obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SHADOWLANDER_S_TORCH){
-				Sprintf(buf2, "Deals 1d10%s bonus cold damage when lit.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s cold damage.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SUNROD){
-				Sprintf(buf2, "Deals 1d10%s bonus lightning and acid damage when lit.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s lightning and acid damage and may blind struck targets.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == KAMEREL_VAJRA){
-				Sprintf(buf2, "Deals 2d6 bonus lightning damage when lit, or 6d6 if wielded by an Ara Kamerel.");
+				Sprintf(buf2, "When lit, deals +2d6 lightning damage, or +6d6 if wielded by an Ara Kamerel, and may blind struck targets.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == VIPERWHIP && obj->ovar1_heads > 1){
@@ -3059,7 +3066,7 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == MIRRORBLADE){
-				Sprintf(buf2, "May use a weapon-wielding opponent's own weapon against them.");
+				Sprintf(buf2, "Uses a weapon-wielding opponent's own weapon against them, if their damage is higher.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == CRYSTAL_SWORD && obj->spe >= 3){
@@ -3067,24 +3074,163 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(force_weapon(obj)){
-				Sprintf(buf2, "When charged, deals an extra 1.5 dice of bonus energy damage.");
+				if (obj->otyp == FORCE_WHIP)
+					Sprintf(buf2, "When charged, deals +1d%d%s energy damage versus small and +2d%d%s versus large.",
+						sdamd, sitoa((sdamd+1)/2+2), ldamd, sitoa((ldamd+1)/2+2));
+				else
+					Sprintf(buf2, "When charged, deals +1d%d%s energy damage versus small and +1d%d%s versus large.",
+						sdamd, sitoa((sdamd+1)/2), ldamd, sitoa((ldamd+1)/2));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == DOUBLE_FORCE_BLADE){
-				Sprintf(buf2, "Deals double damage if wielded without an off-hand weapon, at the cost of an extra 1/4 move.");
+				Sprintf(buf2, "Doubles base damage if wielded without two-weaponing, at the cost of an extra 1/4 move.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == RAKUYO){
-				Sprintf(buf2, "Deals an extra 1d4%s vs small or 1d3%s vs large if wielded without an off-hand weapon, at the cost of an extra 1/4 move.", 
-					(obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "Deals +1d%d%s base damage vs small and +1d%d%s vs large if wielded without two-weaponing, at the cost of an extra 1/4 move.", 
+					(4 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""),
+					(3 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->otyp == DISKOS && u.uinsight >= 15){
+				int dice = (u.uinsight >= 45) ? 3 : ((u.uinsight >= 20) ? 2 : 1);
+				int lflat = (u.uinsight >= 50) ? ldamd : 0;
+				int sflat = (u.uinsight >= 50) ? sdamd : 0;
+
+				if(u.ualign.record < -3 && Insanity > 50){
+					lflat += ldamd*(50-u.usanity)/50;
+					sflat += sdamd*(50-u.usanity)/50;
+				}
+				else if(u.ualign.record > 3 && u.usanity > 90){
+					lflat += ldamd*(10-Insanity)/10;
+					sflat += sdamd*(10-Insanity)/10;
+				}
+
+				Sprintf(buf2, "Deals +%dd%d%s %senergy damage versus small and +%dd%d%s versus large.",
+					dice, sdamd, (sflat ? sitoa(sflat) : ""), (u.ualign.record < -3) ? "unholy " : ((u.ualign.record > 3) ? "holy " : ""), 
+					dice, ldamd, (lflat ? sitoa(lflat) : ""));
+				OBJPUTSTR(buf2);
+			}
+			if(mercy_blade_prop(obj) & !u.veil){
+				Sprintf(buf2, "Deals extra damage scaled by insight%s, currently %d%% extra damage.",
+					(u.uinsight >= 25) ? " and charisma" : "",
+					(min(u.uinsight, 50) + ((u.uinsight >= 25) ? min((u.uinsight-25)/2, ACURR(A_CHA)) : 0))*2);
+				OBJPUTSTR(buf2);
+
+				if (u.uinsight >= 25){
+					Sprintf(buf2, "Lowers struck targets' morale based on your charisma, currently -%d per hit, capped at -%d.",
+						ACURR(A_CHA)/5, (obj->spe + ACURR(A_CHA)));
+					OBJPUTSTR(buf2);
+				}
+			}
+			if(obj->otyp == CROW_QUILL || obj->otyp == SET_OF_CROW_TALONS){
+				Sprintf(buf2, "Makes struck targets vulnerable, adding %d stacks per hit.", (obj->otyp == CROW_QUILL) ? 4 : 3);
+				OBJPUTSTR(buf2);
+			}
+			if(obj->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE)){
+				Sprintf(buf2, "Makes struck targets vulnerable, adding stacks equal to 10%% of damage, capped at %d (scaling inversely with insight).",
+					(int)(30*pow(.97, u.uinsight)));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->otyp == ISAMUSEI){
+				int factor = 20;
+				if(u.uinsight >= 70){
+					factor = 4;
+				}
+				else if(u.uinsight >= 57){
+					factor = 5;
+				}
+				else if(u.uinsight >= 45){
+					factor = 6;
+				}
+				else if(u.uinsight >= 33){
+					factor = 8;
+				}
+				else if(u.uinsight >= 22){
+					factor = 10;
+				}
+				Sprintf(buf2, "Attempts to lower the target's current health by %d%% of its current value.", 100/factor);
+				OBJPUTSTR(buf2);
+			}
+			if(obj->otyp == PINCER_STAFF && u.uinsight >= 10){
+				Sprintf(buf2, "Deals double base damage %s%son consecutive attacks against the same target.",
+					(obj->oartifact == ART_FALLINGSTAR_MANDIBLES) ? "plus 1d12 magic damage " : "",
+					(u.uinsight >= 50) ? "and attempts to steal worn armor " : "");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_ESSCOOAHLIPBOOURRR){
+				Sprintf(buf2, "Deals double base damage on consecutive attacks against the same target.");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_ROD_OF_SEVEN_PARTS){
+				Sprintf(buf2, "Gains +1 enchantment for every 7 kills, capped at %d.", min(u.ulevel/3, 7));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_RUINOUS_DESCENT_OF_STARS){
+				if (u.uinsight >= 6){
+					Sprintf(buf2, "Deals +%dd6 fire damage, scaling with your insight.", min(6, u.uinsight/6));
+					OBJPUTSTR(buf2);
+				}
+				if (NightmareAware_Insanity >= 4){
+					Sprintf(buf2, "Deals +%dd%d acid damage, scaling with your missing sanity.",
+						ClearThoughts ? 1 : 2, min(12, NightmareAware_Insanity/4));
+					OBJPUTSTR(buf2);
+				}
+				if (u.uinsight >= 42){
+					Sprintf(buf2, "Randomly drops falling stars on a hit, causing up to %d physical & fiery explosions centered anywhere on the level.",
+						min(6, (u.uinsight - 36)/6));
+					OBJPUTSTR(buf2);
+				}
+			}
+			if(obj->oartifact == ART_ARYVELAHR_KERYM){
+				Sprintf(buf2, "Deals +2d10 damage to orcs, demons, drow, and the undead.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_SILVER_STARLIGHT){
 				Sprintf(buf2, "Deals an extra base die + 1d4 bonus precision damage.");
 				OBJPUTSTR(buf2);
 			}
+			if (obj->oartifact == ART_SHADOWLOCK){
+				Sprintf(buf2, "Deals +2d6%s cold damage, but also deals 4d6%s physical and 2d6%s cold damage to the wielder every hit.",
+					(obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_TROLLSBANE){
+				Sprintf(buf2, "Deals +2d20%s to covetous monsters.", (obj->spe ? sitoa(obj->spe*2) : ""));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_MASAMUNE){
+				int experts = -2;
+				for(int skl = 1; skl < P_NUM_SKILLS; skl++){
+					if(P_SKILL(skl) >= P_EXPERT)
+						experts += 2;
+				}
+				Sprintf(buf2, "Deals +2 damage for every expert weapon skill past your first, currently %s.", sitoa(max(0, experts)));
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_KUSANAGI_NO_TSURUGI){
+				Sprintf(buf2, "Instantly kills struck elementals and vortices.");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_GIANTSLAYER){
+				Sprintf(buf2, "Hamstrings giants & other boulder-throwers, reducing their speed by 6 movement points.");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_TECPATL_OF_HUHETOTL){
+				Sprintf(buf2, "Drinks the blood of targets that have any, dealing +2d4 damage and potentially sacrificing slain foes.");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_PLAGUE && monstermoves < artinstance[ART_PLAGUE].PlagueDuration){
+				Sprintf(buf2, "Terminally ill targets explode in a cloud of virulent toxins, damaging those around them.");
+				OBJPUTSTR(buf2);
+			}
+			if(obj->oartifact == ART_WEBWEAVER_S_CROOK){
+				Sprintf(buf2, "Traps struck targets in webs.");
+				OBJPUTSTR(buf2);
+			}
 			if(obj->oartifact == ART_ATMA_WEAPON && !Drain_resistance){
-				Sprintf(buf2, "Scales base damage by your current health percentage.");
+				Sprintf(buf2, "Scales base damage by your current health percentage, currently %d%%.",
+					Upolyd ? (u.mh * 100) / u.mhmax : (u.uhp * 100) / u.uhpmax);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == ETHERBLADE){
@@ -3103,6 +3249,10 @@ winid *datawin;
 				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at 30%% health or lower.");
 				OBJPUTSTR(buf2);
 			}
+			if(is_vibroweapon(obj)){
+				Sprintf(buf2, "Drains one charge per hit and deals less damage when uncharged.");
+				OBJPUTSTR(buf2);
+			}
 		}
 		/* poison */
 		if (obj) {
@@ -3118,6 +3268,8 @@ winid *datawin;
 				poisons |= OPOISON_SLEEP;
 			if (oartifact == ART_DIRGE)
 				poisons |= OPOISON_ACID;
+			if (check_oprop(obj, OPROP_RLYHW) && u.uinsight && rnd(u.uinsight) >= 44)
+				poisons |= OPOISON_ACID;
 			
 			if (poisons) {
 				/* special cases */
@@ -3131,7 +3283,7 @@ winid *datawin;
 					OBJPUTSTR("Coated with silver.");
 				}
 				else if (poisons == OPOISON_HALLU) {
-					OBJPUTSTR("Coated with hallucinogen.");
+					OBJPUTSTR("Coated with hallucinogens.");
 				}
 				/* general mash-em-together poison */
 				else {
@@ -3173,6 +3325,29 @@ winid *datawin;
 				(hitbon >= 0 ? "bonus" : "penalty"));
 			OBJPUTSTR(buf);
 		}
+
+		/* Damage bonus from attributes */
+#define dbon_to_word(num) ((num == 0) ? "no " : ((num == 0.5) ? "half " : ((num == 1.5) ? "half again " : ((num == 2) ? "double " : "full "))))
+#define atr_to_word(atr) ((atr == A_STR) ? "strength" : ((atr == A_DEX) ? "dexterity" : ((atr == A_CON) ? "constitution" \
+						: ((atr == A_INT) ? "intelligence" : ((atr == A_WIS) ? "wisdom" : "charisma")))))
+		if (obj){
+			float atrdbon = 0;
+			boolean has_before = FALSE;
+			Sprintf(buf, "Gains ");
+			for (int i = A_STR; i < A_MAX; i++){
+				atrdbon = atr_dbon(obj, &youmonst, i);
+				if ((atrdbon == 0 && i == A_STR) || atrdbon > 0){
+					Sprintf(buf2, "%sbonus %sfrom %s, ", dbon_to_word(atrdbon), (has_before) ? "" : "damage ", atr_to_word(i));
+					Strcat(buf, buf2);
+					has_before = TRUE;
+				}
+			}
+			Sprintf(buf2, "currently %d.", dbon(obj, &youmonst));
+			Strcat(buf, buf2);
+			OBJPUTSTR(buf);
+		}
+#undef dbon_to_word
+#undef atr_to_word
 	}
 	/* object properties (objects only) */
 	if(!check_oprop(obj, OPROP_NONE)){
@@ -3385,6 +3560,24 @@ winid *datawin;
 			Sprintf(buf2, "%s.", buf);
 			OBJPUTSTR(buf2);
 		}
+
+		if (check_oprop(obj, OPROP_SFLMW))
+		{
+			Sprintf(buf2, "Offers slain targets to the Silver Flame.");
+			OBJPUTSTR(buf2);
+		}
+
+		if (check_oprop(obj, OPROP_GOATW))
+		{
+			Sprintf(buf2, "Feeds slain foes to the Black Mother.");
+			OBJPUTSTR(buf2);
+		}
+
+		if (check_oprop(obj, OPROP_SOTHW))
+		{
+			Sprintf(buf2, "Slakes the thirst of Yog-Sothoth.");
+			OBJPUTSTR(buf2);
+		}
 	}
 	/* other artifact weapon effects */
 	if (oartifact) {
@@ -3445,6 +3638,24 @@ winid *datawin;
 		{
 			buf[0] = buf[0] + 'A' - 'a';
 			Sprintf(buf2, "%s.", buf);
+			OBJPUTSTR(buf2);
+		}
+		if(oartifact == ART_AMALGAMATED_SKIES || oartifact == ART_SKY_REFLECTED){
+			buf[0] = '\0';
+#define	ZERTHPROPS(prop, string)	\
+	ADDCLASSPROP(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&prop, string);
+			ZERTHPROPS(ZPROP_WRATH, "missiles of wrath");
+			ZERTHPROPS(ZPROP_STEEL, "scripture of steel");
+			ZERTHPROPS(ZPROP_WILL, "submerge the will");
+			ZERTHPROPS(ZPROP_VILQUAR, "Vilquar's eye");
+			ZERTHPROPS(ZPROP_POWER, "power of one");
+			ZERTHPROPS(ZPROP_BALANCE, "balance in all things");
+			ZERTHPROPS(ZPROP_PATIENCE, "work of patience");
+			ZERTHPROPS(ZPROP_FOCUS, "Zerthimon's focus");
+			if(buf[0] != '\0')
+				Sprintf(buf2, "Known mantras: %s.", buf);
+			else
+				Sprintf(buf2, "No mantras known.");
 			OBJPUTSTR(buf2);
 		}
 	}
@@ -5576,59 +5787,148 @@ reassign()
 #endif /* OVLB */
 #ifdef OVL1
 
+/** #adjust command
+ *
+ *      User specifies a 'from' slot for inventory stack to move,
+ *      then a 'to' slot for its destination.  Open slots and those
+ *      filled by compatible stacks are listed as likely candidates
+ *      but user can pick any inventory letter (including 'from').
+ *
+ *  to == from, 'from' has a name
+ *      All compatible items (same name or no name) are gathered
+ *      into the 'from' stack.  No count is allowed.
+ *  to == from, 'from' does not have a name
+ *      All compatible items without a name are gathered into the
+ *      'from' stack.  No count is allowed.  Compatible stacks with
+ *      names are left as-is.
+ *  to != from, no count
+ *      Move 'from' to 'to'.  If 'to' is not empty, merge 'from'
+ *      into it if possible, otherwise swap it with the 'from' slot.
+ *  to != from, count given
+ *      If the user specifies a count when choosing the 'from' slot,
+ *      and that count is less than the full size of the stack,
+ *      then the stack will be split.  The 'count' portion is moved
+ *      to the destination, and the only candidate for merging with
+ *      it is the stack already at the 'to' slot, if any.  When the
+ *      destination is non-empty but won't merge, whatever is there
+ *      will be moved to an open slot; if there isn't any open slot
+ *      available, the adjustment attempt fails.
+ *
+ *      To minimize merging for 'from == to', unnamed stacks will
+ *      merge with named 'from' but named ones won't merge with
+ *      unnamed 'from'.  Otherwise attempting to collect all unnamed
+ *      stacks would lump the first compatible named stack with them
+ *      and give them its name.
+ *
+ *      To maximize merging for 'from != to', compatible stacks will
+ *      merge when either lacks a name (or they already have the same
+ *      name).  When no count is given and one stack has a name and
+ *      the other doesn't, the merged result will have that name.
+ *      However, when splitting results in a merger, the name of the
+ *      destination overrides that of the source, even if destination
+ *      is unnamed and source is named.
+ */
 int
-doorganize()	/* inventory organizer by Del Lamb */
+doorganize(void) /* inventory organizer by Del Lamb */
 {
 	struct obj *obj, *otmp;
-	register int ix, cur;
-	register char let;
-	char alphabet[52+1], buf[52+1];
+	int ix, cur;
+	char let;
+#define GOLD_INDX   0
+#define GOLD_OFFSET 1
+#define OVRFLW_INDX (GOLD_OFFSET + 52) /* past gold and 2*26 letters */
+#define ALPHABET_SIZE 1 + 52 + 1 + 1
+	char alphabet[ALPHABET_SIZE], buf[ALPHABET_SIZE]; /* room for '$a-zA-Z#\0' */
 	char qbuf[QBUFSZ];
-	char allowall[2];
+	char *objname, *otmpname;
+	char allowallcnt[3];
+	struct obj *splitting;
 	const char *adj_type;
 
-	if (!flags.invlet_constant) reassign();
+	/* when no invent, or just gold in '$' slot, there's nothing to adjust */
+	if (!invent ||
+		(invent->oclass == COIN_CLASS && invent->invlet == GOLD_SYM && !invent->nobj)) {
+		You("aren't carrying anything %s.", !invent ? "to adjust" : "adjustable");
+		return 0;
+	}
+
+	if (!flags.invlet_constant) {
+		reassign();
+	}
 	/* get a pointer to the object the user wants to organize */
-	allowall[0] = ALL_CLASSES; allowall[1] = '\0';
-	if (!(obj = getobj(allowall,"adjust"))) return MOVE_CANCELLED;
+	allowallcnt[0] = ALLOW_COUNT;
+	allowallcnt[1] = ALL_CLASSES;
+	allowallcnt[2] = '\0';
+	if (!(obj = getobj(allowallcnt, "adjust"))) {
+		return 0;
+	}
+	/* figure out whether user gave a split count to getobj() */
+	splitting = 0;
+	for (otmp = invent; otmp; otmp = otmp->nobj) {
+		if (otmp->nobj == obj) { /* knowledge of splitobj() operation */
+			if (otmp->invlet == obj->invlet)
+				splitting = otmp;
+			break;
+		}
+	}
 
 	/* initialize the list with all upper and lower case letters */
-	for (let = 'a', ix = 0;  let <= 'z';) alphabet[ix++] = let++;
-	for (let = 'A', ix = 26; let <= 'Z';) alphabet[ix++] = let++;
-	alphabet[52] = 0;
+	alphabet[GOLD_INDX] = (obj->oclass == COIN_CLASS) ? GOLD_SYM : ' ';
+	for (ix = GOLD_OFFSET, let = 'a'; let <= 'z';) {
+		alphabet[ix++] = let++;
+	}
+	for (let = 'A'; let <= 'Z';) {
+		alphabet[ix++] = let++;
+	}
+	alphabet[OVRFLW_INDX] = ' ';
+	alphabet[sizeof alphabet - 1] = '\0';
 
 	/* blank out all the letters currently in use in the inventory */
 	/* except those that will be merged with the selected object   */
-	for (otmp = invent; otmp; otmp = otmp->nobj)
-		if (otmp != obj && !mergable(otmp,obj)) {
-			if (otmp->invlet <= 'Z')
-				alphabet[(otmp->invlet) - 'A' + 26] = ' ';
-			else	alphabet[(otmp->invlet) - 'a']	    = ' ';
+	for (otmp = invent; otmp; otmp = otmp->nobj) {
+		if (otmp != obj && !mergable(otmp, obj)) {
+			let = otmp->invlet;
+			if (let >= 'a' && let <= 'z') {
+				alphabet[GOLD_OFFSET + let - 'a'] = ' ';
+			} else if (let >= 'A' && let <= 'Z') {
+				alphabet[GOLD_OFFSET + let - 'A' + 26] = ' ';
+			/* overflow defaults to off, but it we find a stack using that
+			   slot, switch to on -- the opposite of normal invlet handling */
+			} else if (let == NOINVSYM) {
+				alphabet[OVRFLW_INDX] = NOINVSYM;
+			}
 		}
+	}
 
 	/* compact the list by removing all the blanks */
-	for (ix = cur = 0; ix <= 52; ix++)
-		if (alphabet[ix] != ' ') buf[cur++] = alphabet[ix];
+	for (ix = cur = 0; ix <= sizeof alphabet-1; ix++) {
+		if (alphabet[ix] != ' ') {
+			buf[cur++] = alphabet[ix];
+		}
+	}
+	buf[cur] = '\0';
 
 	/* and by dashing runs of letters */
-	if(cur > 5) compactify(buf);
+	if (cur > 5) {
+		compactify(buf);
+	}
 
 	/* get new letter to use as inventory letter */
 	for (;;) {
-		Sprintf(qbuf, "Adjust letter to what [%s]?",buf);
+		Sprintf(qbuf, "Adjust letter to what [%s]?", buf);
 		let = yn_function(qbuf, (char *)0, '\0');
-		if(index(quitchars,let)) {
-			pline1(Never_mind);
-			return(0);
+		if (index(quitchars, let)) {
+			pline("%s", Never_mind);
+			goto cleansplit;
 		}
-		if (let == '@' || !letter(let))
+		if (let == '@' || !letter(let)) {
 			pline("Select an inventory slot letter.");
-		else
+		} else {
 			break;
+		}
 	}
 
 	/* change the inventory and print the resulting item */
-	adj_type = "Moving:";
 
 	/*
 	 * don't use freeinv/addinv to avoid double-touching artifacts,
@@ -5636,19 +5936,64 @@ doorganize()	/* inventory organizer by Del Lamb */
 	 */
 	extract_nobj(obj, &invent);
 
-	for (otmp = invent; otmp;)
-		if (merged(&otmp,&obj)) {
-			adj_type = "Merging:";
-			obj = otmp;
-			otmp = otmp->nobj;
-			extract_nobj(obj, &invent);
-		} else {
-			if (otmp->invlet == let) {
-				adj_type = "Swapping:";
-				otmp->invlet = obj->invlet;
+	for (otmp = invent; otmp && otmp->invlet != let;) {
+		otmp = otmp->nobj;
+	}
+	/* Collecting: #adjust an inventory stack into its same slot;
+	   keep it there and merge other compatible stacks into it.
+	   Traditional inventory behavior is to merge unnamed stacks
+	   with compatible named ones; we only want that if it is
+	   the 'from' stack (obj) with a name and candidate (otmp)
+	   without one, not unnamed 'from' with named candidate. */
+	if (let == obj->invlet) {
+		adj_type = "Collecting:";
+		for (otmp = invent; otmp;) {
+			/* it's tempting to pull this outside the loop, but merged() could
+			   free ONAME(obj) [via obfree()] and replace it with ONAME(otmp) */
+			objname = get_ox(obj, OX_ENAM) ? ONAME(obj) : (char *) 0;
+			otmpname = get_ox(otmp, OX_ENAM) ? ONAME(otmp) : (char *) 0;
+			if ((!otmpname || (objname && !strcmp(objname, otmpname)))
+			    && merged(&otmp, &obj)) {
+				obj = otmp;
+				otmp = otmp->nobj;
+				extract_nobj(obj, &invent);
+				continue; /* otmp has already been updated */
 			}
 			otmp = otmp->nobj;
 		}
+	} else if (!otmp) {
+		adj_type = splitting ? "Splitting:" : "Moving:";
+	} else if (merged(&otmp, &obj)) {
+		adj_type = "Merging:";
+		obj = otmp;
+		extract_nobj(obj, &invent);
+	} else {
+		struct obj *otmp2;
+		for (otmp2 = invent; otmp2
+			 && otmp2->invlet != obj->invlet;) {
+			otmp2 = otmp2->nobj;
+		}
+		if (otmp2) {
+			char oldlet = obj->invlet;
+
+			adj_type = "Displacing:";
+
+			/* Here be a nasty hack; solutions that don't
+			 * require duplication of assigninvlet's code
+			 * here are welcome.
+			 */
+			assigninvlet(obj);
+
+			if (obj->invlet == NOINVSYM) {
+				pline("There's nowhere to put that.");
+				obj->invlet = oldlet;
+				goto cleansplit;
+			}
+		} else {
+			adj_type = "Swapping:";
+		}
+		otmp->invlet = obj->invlet;
+	}
 
 	/* inline addinv (assuming flags.invlet_constant and !merged) */
 	obj->invlet = let;
@@ -5659,7 +6004,16 @@ doorganize()	/* inventory organizer by Del Lamb */
 
 	prinv(adj_type, obj, 0L);
 	update_inventory();
-	return MOVE_CANCELLED;
+	return 0;
+cleansplit:
+	for (otmp = invent; otmp; otmp = otmp->nobj) {
+		if (otmp != obj && otmp->invlet == obj->invlet) {
+			merged(&otmp, &obj);
+			break;
+		}
+	}
+
+	return 0;
 }
 
 /* common to display_minventory and display_cinventory */

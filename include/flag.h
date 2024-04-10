@@ -252,12 +252,14 @@ struct instance_flags {
 	boolean  cbreak;	/* in cbreak mode, rogue format */
 #ifdef CURSES_GRAPHICS
 	boolean  classic_status;	/* What kind of horizontal statusbar to use */
+	boolean  classic_colors; 	/* Use traditional curses colors (normally terminal settings)? */
 	boolean  cursesgraphics;	/* Use portable curses extended characters */
 #endif
 	boolean  DECgraphics;	/* use DEC VT-xxx extended character set */
 	boolean  echo;		/* 1 to echo characters */
 	boolean  IBMgraphics;	/* use IBM extended character set */
 	boolean  UTF8graphics;	/* use UTF-8 characters */
+	int supports_utf8;	/* if the terminal supports utf8 */
 	unsigned msg_history;	/* hint: # of top lines to save */
 	boolean  num_pad;	/* use numbers for movement commands */
 	boolean  news;		/* print news */

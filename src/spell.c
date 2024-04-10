@@ -746,12 +746,14 @@ struct obj *spellbook;
 		if (RoSbook == READ_SPELL){
 			char qbuf[QBUFSZ];
 			Sprintf(qbuf, "You know \"%s\" quite well already. Try to refresh your memory anyway?", OBJ_NAME(objects[booktype]));
-			/* identify the book in case you learnt the spell from an artifact book or aphanactonan archive */
-			makeknown(booktype);
 
-			for (int i = 0; i < MAXSPELL; i++)
-				if (spellid(i) == booktype && spellknow(i) > KEEN/10 && yn(qbuf) == 'n')
+			for (int i = 0; i < MAXSPELL; i++){
+				if (spellid(i) == booktype && spellknow(i) > KEEN/10 && yn(qbuf) == 'n'){
+					/* identify the book in case you learnt the spell from an artifact book or aphanactonan archive */
+					makeknown(booktype);
 					return MOVE_CANCELLED;
+				}
+			}
 		}		
 		spellbook->in_use = TRUE;
 		
@@ -817,9 +819,10 @@ struct obj *spellbook;
 			You("begin to study the ward.");
 		else if (spellbook->otyp == SPE_BOOK_OF_THE_DEAD)
 			You("begin to recite the runes.");
-		else
+		else {
 			You("begin to memorize the runes.");
-			
+			makeknown(spellbook->otyp);
+		}
 	}
 
 	book = spellbook;
@@ -1411,7 +1414,11 @@ spiritLets(lets, respect_timeout)
 				if(u.spiritPOrder[i] == -1) continue;
 				if(u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1)) continue;
 				if(u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2)) continue;
-				if(spirit_powers[u.spiritPOrder[i]].owner == u.spirit[s] && (u.spiritPColdowns[u.spiritPOrder[i]] < monstermoves || !respect_timeout)){
+				if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
+					if(u.yog_sothoth_credit >= 50)
+						Sprintf(lets, "%c", i<26 ? 'a'+(char)i : 'A'+(char)(i-26));
+				}
+				else if(spirit_powers[u.spiritPOrder[i]].owner == u.spirit[s] && (u.spiritPColdowns[u.spiritPOrder[i]] < monstermoves || !respect_timeout)){
 					Sprintf(lets, "%c", i<26 ? 'a'+(char)i : 'A'+(char)(i-26));
 				}
 			}
@@ -1421,7 +1428,11 @@ spiritLets(lets, respect_timeout)
 			if(u.spiritPOrder[i] == -1) continue;
 			if(u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1)) continue;
 			if(u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2)) continue;
-			if(((spirit_powers[u.spiritPOrder[i]].owner & u.sealsActive &&
+			if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
+				if(u.yog_sothoth_credit >= 50)
+					Sprintf(lets, "%c", i<26 ? 'a'+(char)i : 'A'+(char)(i-26));
+			}
+			else if(((spirit_powers[u.spiritPOrder[i]].owner & u.sealsActive &&
 				!(spirit_powers[u.spiritPOrder[i]].owner & SEAL_SPECIAL)) || 
 				(spirit_powers[u.spiritPOrder[i]].owner & u.specialSealsActive & ~SEAL_SPECIAL &&
 				 spirit_powers[u.spiritPOrder[i]].owner & SEAL_SPECIAL)) &&
@@ -5062,7 +5073,20 @@ int respect_timeout;
 						if (u.spiritPOrder[i] == -1) continue;
 						if (u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 						if (u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
-						if (spirit_powers[u.spiritPOrder[i]].owner == u.spirit[s]){
+						if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
+							if(u.yog_sothoth_credit >= 50){
+								Sprintf1(buf, spirit_powers[u.spiritPOrder[i]].name);
+								any.a_int = u.spiritPOrder[i] + 1;	/* must be non-zero */
+								add_menu(tmpwin, NO_GLYPH, &any,
+									i < 26 ? 'a' + (char)i : 'A' + (char)(i - 26),
+									0, ATR_NONE, buf, MENU_UNSELECTED);
+							}
+							else {
+								Sprintf(buf, " na %s", spirit_powers[u.spiritPOrder[i]].name);
+								add_menu(tmpwin, NO_GLYPH, &anyvoid, 0, 0, ATR_NONE, buf, MENU_UNSELECTED);
+							}
+						}
+						else if (spirit_powers[u.spiritPOrder[i]].owner == u.spirit[s]){
 							if (action != SPELLMENU_CAST || u.spiritPColdowns[u.spiritPOrder[i]] < monstermoves || !respect_timeout){
 								if ((u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1))
 								 || (u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2))
@@ -5093,7 +5117,20 @@ int respect_timeout;
 			for (i = 0; i < 52; i++){
 				if (u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 				if (u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
-				if (u.spiritPOrder[i] != -1 && ((
+				if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
+					if(u.yog_sothoth_credit >= 50){
+						Sprintf1(buf, spirit_powers[u.spiritPOrder[i]].name);
+						any.a_int = u.spiritPOrder[i] + 1;	/* must be non-zero */
+						add_menu(tmpwin, NO_GLYPH, &any,
+							i < 26 ? 'a' + (char)i : 'A' + (char)(i - 26),
+							0, ATR_NONE, buf, MENU_UNSELECTED);
+					}
+					else {
+						Sprintf(buf, " na %s", spirit_powers[u.spiritPOrder[i]].name);
+						add_menu(tmpwin, NO_GLYPH, &anyvoid, 0, 0, ATR_NONE, buf, MENU_UNSELECTED);
+					}
+				}
+				else if (u.spiritPOrder[i] != -1 && ((
 					spirit_powers[u.spiritPOrder[i]].owner & u.sealsActive &&
 					!(spirit_powers[u.spiritPOrder[i]].owner & SEAL_SPECIAL)) ||
 					((spirit_powers[u.spiritPOrder[i]].owner & SEAL_SPECIAL) &&
@@ -6154,18 +6191,18 @@ int spell;
 	
 	if(ublindf && ublindf->otyp == SOUL_LENS){
 		if(u.ualign.record < 0 || ublindf->cursed){
-			if(casting_stat == A_CHA){
+			if(casting_stat == A_CHA || Race_if(PM_ELF)){
 				splcaster += urole.spelarmr;
 			}
 			else if(Role_if(PM_MONK))
-				splcaster += urole.spelarmr/2;
+				splcaster += ublindf->oartifact == ART_EYE_OF_THE_OVERWORLD ? urole.spelarmr : urole.spelarmr/2;
 		}
 		else if(u.ualign.record >= 20){
-			if(casting_stat == A_CHA){
+			if(casting_stat == A_CHA || Race_if(PM_ELF)){
 				splcaster -= urole.spelarmr;
 			}
 			else if(Role_if(PM_MONK))
-				splcaster -= urole.spelarmr/2;
+				splcaster -= ublindf->oartifact == ART_EYE_OF_THE_OVERWORLD ? urole.spelarmr : urole.spelarmr/2;
 		}
 	}
 	

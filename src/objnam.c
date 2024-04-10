@@ -303,6 +303,7 @@ const char *
 lightsaber_colorText(otmp)
 struct obj *otmp;
 {
+	struct obj *gem = otmp->cobj;
 	if(otmp->oartifact) switch(otmp->oartifact){
 		case ART_ANNULUS: return Hallucination ? hcolor(0) : "cerulean";
 		case ART_INFINITY_S_MIRRORED_ARC:
@@ -329,19 +330,24 @@ struct obj *otmp;
 				return "bladeless";
 			}
 			break;
-		case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
-		case ART_FLUORITE_OCTAHEDRON: return Hallucination ? hcolor(0) : "burning cobalt";
-		case ART_HEART_OF_AHRIMAN: return Hallucination ? hcolor(0) : "pulsing and shimmering ruby";
-		case ART_GLITTERSTONE: return Hallucination ? hcolor(0) : "glittering gold";
-		case ART_ILLITHID_STAFF: return Hallucination ? hcolor(0) : "tendrilled";
-		case ART_ELDER_CEREBRAL_FLUID: return Hallucination ? hcolor(0) : "tentacled";
-
-		
-		default: return Hallucination ? hcolor(0) : otmp->cobj ? LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorText : "bladeless";
+			case ART_ILLITHID_STAFF: 
+				if(!gem || gem->oartifact != ART_ELDER_CEREBRAL_FLUID)
+					return Hallucination ? hcolor(0) : "tendrilled";
 	}
 	if(otmp->otyp == KAMEREL_VAJRA)
 		return "lightning bladed";
-	return Hallucination ? hcolor(0) : otmp->cobj ? LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorText : "bladeless";
+	if(gem){
+		switch(gem->oartifact){
+			case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
+			case ART_FLUORITE_OCTAHEDRON: return Hallucination ? hcolor(0) : "burning cobalt";
+			case ART_HEART_OF_AHRIMAN: return Hallucination ? hcolor(0) : "pulsing and shimmering ruby";
+			case ART_GLITTERSTONE: return Hallucination ? hcolor(0) : "glittering gold";
+			case ART_ELDER_CEREBRAL_FLUID: return Hallucination ? hcolor(0) : "tentacled";
+			
+			default: return Hallucination ? hcolor(0) : LightsaberColor[((int)gem->otyp) - MAGICITE_CRYSTAL].colorText;
+		}
+	}
+	return "bladeless";
 }
 
 int
@@ -1061,6 +1067,9 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_LESSER_PSIOW)){
 			if (Blind_telepat) Strcat(buf, "rustling ");
 		}
+		if (check_oprop(obj, OPROP_RLYHW)){
+			if (Blind_telepat) Strcat(buf, "slithering ");
+		}
 		if (check_oprop(obj, OPROP_DEEPW)){
 			if (Blind_telepat && obj->spe < 8) Strcat(buf, "mumbling ");
 		}
@@ -1442,7 +1451,7 @@ char *buf;
 		else if(u.uinsight >= 5)
 			Strcat(buf, "spinning ");
 	}
-	if (is_mercy_blade(obj)){
+	if (mercy_blade_prop(obj)){
 		//Note: Brain fluid
 		if(u.uinsight >= 50)
 			Strcat(buf, "sticky ");
@@ -1482,10 +1491,7 @@ char *buf;
 	else
 #endif
 	if (is_lightsaber(obj) && litsaber(obj) && obj->otyp != ROD_OF_FORCE){
-		if (obj->cobj && !(obj->oartifact == ART_ILLITHID_STAFF && obj->cobj && obj->cobj->oartifact != ART_ELDER_CEREBRAL_FLUID))
-			Strcat(buf, lightsaber_colorText(obj->cobj));
-		else
-			Strcat(buf, lightsaber_colorText(obj));
+		Strcat(buf, lightsaber_colorText(obj));
 		if (!objects[obj->otyp].oc_name_known && strncmpi(eos(buf)-7, " bladed", 7))
 			Strcat(buf, " bladed");
 		Strcat(buf, " ");
@@ -1995,10 +2001,11 @@ boolean getting_obj_base_desc;
 			}
 			if ((typ == VICTORIAN_UNDERWEAR && nn) ||
 				(typ == JUMPSUIT && !nn) ||
-				(typ == BODYGLOVE && !nn) ||
+				(typ == BODYGLOVE && !nn)
 				/* depends on order of dragon scales */
-				(typ >= GRAY_DRAGON_SCALES && typ <= YELLOW_DRAGON_SCALES) ||
-				(typ == BANDS)
+				|| (typ >= GRAY_DRAGON_SCALES && typ <= YELLOW_DRAGON_SCALES)
+				|| (typ == BANDS)
+				|| (typ == SHACKLES)
 				) {
 				Strcat(buf, "set of ");
 			}
@@ -3586,6 +3593,7 @@ const char *oldstr;
 			    !BSTRCMPI(bp, p-6, "scales") ||
 				!BSTRCMP(bp, p-6, "wishes") ||	/* ring */
 				!BSTRCMPI(bp, p-10, "Lost Names") || /* book */
+			    !BSTRCMPI(bp, p-17, "Amalgamated Skies") || /* sword (wizmode) */
 				!BSTRCMPI(bp, p-9, "mandibles"))
 				return bp;
 
@@ -4530,6 +4538,8 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_PSIOW);
 		} else if (!strncmpi(bp, "rustling ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_LESSER_PSIOW);
+		} else if (!strncmpi(bp, "slithering ", l=11)) {
+			add_oprop_list(oprop_list, OPROP_RLYHW);
 
 		} else if ((!strncmpi(bp, "deep ", l=5) && strncmpi(bp, "deep sea", 8) && strncmpi(bp, "deep dragon", 11)) || !strncmpi(bp, "mumbling ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_DEEPW);
@@ -4600,6 +4610,9 @@ int wishflags;
 
 		} else if (!strncmpi(bp, "wrathful ", l=9) && strncmpi(bp, "Wrathful Wind", 13) && strncmpi(bp, "Wrathful Spider", 15)) {
 			add_oprop_list(oprop_list, OPROP_WRTHW);
+
+		} else if (!strncmpi(bp, "luminous ", l=9) || !strncmpi(bp, "radiant ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_ELFLW);
 
 		} else if (!strncmpi(bp, "flaying ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_FLAYW);

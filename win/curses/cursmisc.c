@@ -325,12 +325,12 @@ curses_str_remainder(const char *str, int width, int line_num)
     int last_space, count;
     char *retstr;
     int curline = 0;
-    int strsize = strlen(str);
+    int strsize = strlen(str) + 1;
     char substr[strsize];
     char curstr[strsize];
     char tmpstr[strsize];
 
-    strcpy(substr, str);
+    strncpy(substr, str, strsize);
 
     while (curline < line_num) {
         if (strlen(substr) == 0) {
@@ -544,7 +544,7 @@ void
 curses_view_file(const char *filename, boolean must_exist)
 {
     winid wid;
-    anything *identifier;
+    anything identifier;
     char buf[BUFSZ];
     menu_item *selected = NULL;
     dlb *fp = dlb_fopen(filename, "r");
@@ -559,11 +559,10 @@ curses_view_file(const char *filename, boolean must_exist)
 
     wid = curses_get_wid(NHW_MENU);
     curses_create_nhmenu(wid);
-    identifier = malloc(sizeof (anything));
-    identifier->a_void = NULL;
+    identifier = zeroany;
 
     while (dlb_fgets(buf, BUFSZ, fp) != NULL) {
-        curses_add_menu(wid, NO_GLYPH, identifier, 0, 0, A_NORMAL, buf, FALSE);
+        curses_add_menu(wid, NO_GLYPH, &identifier, 0, 0, A_NORMAL, buf, FALSE);
     }
 
     dlb_fclose(fp);

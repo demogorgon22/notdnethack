@@ -2391,6 +2391,7 @@ struct obj *obj;
 		(is_lightsaber(obj) && litsaber(obj)) ||
 		(check_oprop(obj, OPROP_ELFLW) && u.uinsight >= 22) ||
 		(check_oprop(obj, OPROP_PHSEW)) ||
+		(check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 40) ||
 		((obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) && obj->lamplit)
 	));
 }
@@ -4673,6 +4674,25 @@ int * truedmgptr;
 		if (check_oprop(otmp, OPROP_LESSER_PSIOW))
 			*truedmgptr += d(2, 12);
 	}
+	if(check_oprop(otmp, OPROP_RLYHW)){
+		int bonus = 0;
+		if(magr && (magr->mtyp == PM_LADY_CONSTANCE || is_mind_flayer(magr->data))){
+			if(mlev(magr)/10 > 1)
+				bonus = d(mlev(magr)/10, 15);
+			else
+				bonus = rnd(15);
+			bonus += otmp->spe;
+		}
+		if(u.uinsight >= 36){//Works on all monsters, even mindless ones
+			*truedmgptr += basedmg + otmp->spe + bonus;
+		}
+		else if(youdef && !Tele_blind && (Blind_telepat || u.uinsight >= 6 || !rn2(4))){
+			*truedmgptr += basedmg + otmp->spe + bonus;
+		}
+		else if(!youdef && !mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || u.uinsight >= 6 || !rn2(4))){
+			*truedmgptr += basedmg + otmp->spe + bonus;
+		}
+	}
 	if(check_oprop(otmp, OPROP_GSSDW)){
 		int power = youagr ? min(u.uinsight, u.usanity) : magr ? magr->m_lev : 0;
 		//"Crit" chance
@@ -4732,6 +4752,14 @@ int * truedmgptr;
 		if(magr){
 			bmod = min_ints(4, (*hpmax(magr)-*hp(magr)+mlev(magr))*4/(*hpmax(magr)));
 			*plusdmgptr += bmod*basedmg / 4;
+		}
+	}
+	if(mercy_blade_prop(otmp)){
+		if(!u.veil && !Magic_res(mdef)){
+			int mod = min(u.uinsight, 50);
+			if(youagr && u.uinsight > 25)
+				mod += min((u.uinsight-25)/2, ACURR(A_CHA));
+			*truedmgptr += basedmg*mod/50;
 		}
 	}
 	if(youdef ? (u.ualign.type != A_CHAOTIC) : (sgn(mdef->data->maligntyp) >= 0)){
@@ -4956,7 +4984,7 @@ boolean lethal;
 			mdef->encouraged = (youagr ? (u.uinsight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			if(lethal)
 				pline("The blade lodges in %s %s!", s_suffix(mon_nam(mdef)), mbodypart(mdef, SPINE));
-			friendly_fire = !mm_grudge(mdef, target);
+			friendly_fire = !mm_grudge(mdef, target, FALSE);
 			result = xattacky(mdef, target, x(target), y(target));
 			if(friendly_fire && (result&(MM_DEF_DIED|MM_DEF_LSVD)) && !taxes_sanity(mdef->data) && !mindless_mon(mdef) && !resist(mdef, POTION_CLASS, 0, NOTELL)){
 				if (canseemon(mdef) && !lethal)
@@ -5241,27 +5269,6 @@ boolean printmessages;
 		bonus = reduce_dmg(mdef,bonus,FALSE,TRUE);
 		*truedmgptr += bonus;
 	}
-	if(is_mercy_blade(otmp)){
-		if(!u.veil && !Magic_res(mdef)){
-			int mod = min(u.uinsight, 50);
-			if(youagr && u.uinsight > 25)
-				mod += min((u.uinsight-25)/2, ACURR(A_CHA));
-			*truedmgptr += basedmg*mod/50;
-		}
-		if(u.uinsight >= 25 && !resist(mdef, youagr ? SPBOOK_CLASS : WEAPON_CLASS, 0, NOTELL)){
-			if(youdef){
-				if(u.uencouraged >= 0 && ACURR_MON(A_CHA, magr)/5 > 0)
-					You("feel a rush of irrational mercy!");
-				u.uencouraged = max(-1*(otmp->spe + ACURR_MON(A_CHA, magr)), u.uencouraged - ACURR_MON(A_CHA, magr)/5);
-			}
-			else if(youagr){
-				mdef->encouraged = max(-1*(otmp->spe + ACURR(A_CHA)), mdef->encouraged - ACURR(A_CHA)/5);
-			}
-			else {
-				mdef->encouraged = max(-1*(otmp->spe + ACURR_MON(A_CHA, mdef)), mdef->encouraged - ACURR_MON(A_CHA, magr)/5);
-			}
-		}
-	}
 	
 	if(pure_weapon(otmp) && otmp->spe >= 6){
 		if(youagr){
@@ -5415,8 +5422,8 @@ boolean printmessages;
 		}
 	}
 	if(otmp->otyp == BESTIAL_CLAW){
-		int insight_mod;
-		int studystack;
+		int insight_mod = 0;
+		int studystack = 0;
 		if(youagr){
 			if(active_glyph(BEASTS_EMBRACE))
 				insight_mod = 30*pow(.97,u.uinsight);
@@ -7974,6 +7981,21 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
+	if(mercy_blade_prop(otmp)){
+		if(u.uinsight >= 25 && !resist(mdef, youagr ? SPBOOK_CLASS : WEAPON_CLASS, 0, NOTELL)){
+			if(youdef){
+				if(u.uencouraged >= 0 && ACURR_MON(A_CHA, magr)/5 > 0)
+					You("feel a rush of irrational mercy!");
+				u.uencouraged = max(-1*(otmp->spe + ACURR_MON(A_CHA, magr)), u.uencouraged - ACURR_MON(A_CHA, magr)/5);
+			}
+			else if(youagr){
+				mdef->encouraged = max(-1*(otmp->spe + ACURR(A_CHA)), mdef->encouraged - ACURR(A_CHA)/5);
+			}
+			else {
+				mdef->encouraged = max(-1*(otmp->spe + ACURR_MON(A_CHA, mdef)), mdef->encouraged - ACURR_MON(A_CHA, magr)/5);
+			}
+		}
+	}
 	/* ********************************************
 	KLUDGE ALERT AND WARNING: FROM THIS POINT ON, NON-ARTIFACTS OR ARTIFACTS THAT DID NOT TRIGGER SPEC_DBON_APPLIES WILL NOT OCCUR
 	********************************************************
@@ -9782,7 +9804,7 @@ arti_invoke(obj)
 			x=u.dx;y=u.dy;
 			getLoc = FALSE;
 		}
-		verbalize("Even Stars Fall");
+		verbalize("Even Stars Fall.");
 		for (; starfall > 0; starfall--){
 			if(getLoc){
 				x = rn2(COLNO-2)+1;
@@ -14423,7 +14445,12 @@ char *name;	/* target name or ""*/
 			if(art){
 				discover_artifact(u.inherited);
 				fully_identify_obj(art);
-				place_object(art, otmp->ox, otmp->oy);
+				if(Is_real_container(otmp)){
+					add_to_container(otmp, art);
+				}
+				else {
+					place_object(art, otmp->ox, otmp->oy);
+				}
 			}
 			else impossible("Delayed inheritance failed in minor_artifact.");
 		}
@@ -14881,6 +14908,7 @@ int spe;
 		nmon2 = m2->nmon;
 		if (DEADMONSTER(m2)) continue;
 		if (mindless_mon(m2)) continue;
+		if (nonthreat(m2)) continue;
 		if ((mon_resistance(m2,TELEPAT) && (rn2(2) || m2->mblinded))
 			|| !rn2(10)
 		){

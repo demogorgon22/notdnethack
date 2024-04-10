@@ -2344,7 +2344,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			attk->adtyp = AD_PHYS;
 			attk->damn = 1;
 			attk->damd = 4;
-			*tohitmod = -10 * attacknum;
+			*tohitmod = -10 * (attacknum+1); //Correct off-by-one error, these are the *subout* attacks specifically
 			fromlist = FALSE;
 			if(check_subout(subout, SUBOUT_BARB1)){
 				add_subout(subout, SUBOUT_BARB2);
@@ -3013,16 +3013,17 @@ boolean ranged;
 	if (!ranged) {
 		char *swingwords[] = {"thrusts", "swings"};
 		int swingindex;
+		int mask = attack_mask(otmp, 0, 0, magr);
 		
-		if(!(objects[otmp->otyp].oc_dtyp&PIERCE))
+		if(!(mask&PIERCE))
 			swingindex = 1;
 		else if(weapon_type(otmp) == P_PICK_AXE || weapon_type(otmp) == P_MORNING_STAR || weapon_type(otmp) == P_FLAIL || weapon_type(otmp) == P_WHIP)
 			swingindex = 1;
-		else if(objects[otmp->otyp].oc_dtyp == PIERCE)
+		else if(mask == PIERCE)
 			swingindex = 0;
-		else if(resist_pierce(mdef->data) && ((objects[otmp->otyp].oc_dtyp&WHACK && !resist_blunt(mdef->data)) || (objects[otmp->otyp].oc_dtyp&SLASH && !resist_slash(mdef->data))))
+		else if(resist_pierce(mdef->data) && ((mask&WHACK && !resist_blunt(mdef->data)) || (mask&SLASH && !resist_slash(mdef->data))))
 			swingindex = 1;
-		else if(!resist_pierce(mdef->data) && !((objects[otmp->otyp].oc_dtyp&WHACK && !resist_blunt(mdef->data)) || (objects[otmp->otyp].oc_dtyp&SLASH && !resist_slash(mdef->data))))
+		else if(!resist_pierce(mdef->data) && !((mask&WHACK && !resist_blunt(mdef->data)) || (mask&SLASH && !resist_slash(mdef->data))))
 			swingindex = 0;
 		else
 			swingindex = !rn2(3) ? 0 : 1;
@@ -5375,12 +5376,13 @@ boolean ranged;
 					You("%s.", chg ? "are freaked out" : "seem unaffected");
 				}
 			}
-			/* monsters get confused by AD_HALU */
-			else {
+			/* monsters get confused and berserked by AD_HALU */
+			else if (!mon_resistance(mdef, HALLUC_RES)) {
 				if (vis&VIS_MDEF)
 					pline("%s looks confused.", Monnam(mdef));
 
 				mdef->mconf = 1;
+				mdef->mberserk = 1;
 				mdef->mstrategy &= ~STRAT_WAITFORU;
 			}
 		}
@@ -6407,11 +6409,13 @@ boolean ranged;
 				/* you slimed it */
 				else if (youagr) {
 					You("turn %s into slime.", mon_nam(mdef));
-					(void)newcham(mdef, PM_GREEN_SLIME, FALSE, FALSE);
+					monslime(mdef);
+					if(mdef->mtyp != PM_GREEN_SLIME)
+						pline("...Or maybe not.");
 				}
 				/* monster slimed it */
 				else {
-					(void)newcham(mdef, PM_GREEN_SLIME, FALSE, vis);
+					monslime(mdef);
 					mdef->mstrategy &= ~STRAT_WAITFORU;
 				}
 			}
@@ -13626,7 +13630,7 @@ int vis;						/* True if action is at all visible to the player */
 	int seardmg = 0;	/* X-hating */
 	int poisdmg = 0;	/* poisons */
 	int elemdmg = 0;	/* artifacts, objproperties, and clockwork heat */
-	int specdmg = 0;	/* sword of blood; sword of mercury */
+	int specdmg = 0;	/* sword of blood; sword of mercury; clawmark thought */
 	int totldmg = 0;	/* total of subtotal and below */
 	
 	int wepspe = weapon ? weapon->spe : 0;		/* enchantment of weapon, saved in case it goes poof. */
@@ -13889,11 +13893,11 @@ int vis;						/* True if action is at all visible to the player */
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_SPINESEEKER)
 		sneak_dice++;
-	if (weapon && weapon->oartifact == ART_LOLTH_S_FANG)
+	if (weapon && weapon->owornmask && weapon->oartifact == ART_LOLTH_S_FANG)
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE))
 		sneak_dice++;
-	if (weapon && weapon->owornmask && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovar1_seals&SEAL_ANDROMALIUS)
+	if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovar1_seals&SEAL_ANDROMALIUS)
 		sneak_dice++;
 
 	/* check sneak attack conditions -- defender's conditions must allow sneak attacking */
@@ -13966,15 +13970,13 @@ int vis;						/* True if action is at all visible to the player */
 		/* some things increase the number of sneak dice even further */
 		if (weapon && weapon->owornmask && weapon->oartifact == ART_SPINESEEKER && (sneak_attack&SNEAK_BEHIND))
 			sneak_dice++;
-		if (weapon && weapon->oartifact == ART_LOLTH_S_FANG && (sneak_attack&SNEAK_TRAPPED) && t_at(x(mdef), y(mdef)) && t_at(x(mdef), y(mdef))->ttyp == WEB)
+		if (weapon && weapon->owornmask && weapon->oartifact == ART_LOLTH_S_FANG && (sneak_attack&SNEAK_TRAPPED) && t_at(x(mdef), y(mdef)) && t_at(x(mdef), y(mdef))->ttyp == WEB)
 			sneak_dice++;
 		if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovar1_seals&SEAL_ANDROMALIUS && (mvitals[PM_ACERERAK].died > 0))
 			sneak_dice++;
 
 		/* some of the player's glyphs proc on sneak attacks */
 		if (youagr) {
-			if (active_glyph(CLAWMARK))
-				snekdie = snekdie * 13 / 10;
 			if (active_glyph(BLOOD_RAPTURE))
 				heal(&youmonst, 30);
 			if (active_glyph(WRITHE)){
@@ -14059,8 +14061,8 @@ int vis;						/* True if action is at all visible to the player */
 			(mdef->mattackedu || !rn2(5))) ||	// (odds reduced by 80% when not counterattacking)
 			// Juyo 
 			(ulightsaberhit && activeFightingForm(FFORM_JUYO) &&
-			(snekdmg > 0) && (dieroll < min(P_SKILL(P_JUYO), P_SKILL(weapon_type(uwep)))) &&
-			((sneak_attack&SNEAK_JUYO) || (rn2(5) < 2)))	// (odds reduced by 60% when not sneak attacking)
+			(dieroll < min(P_SKILL(P_JUYO), P_SKILL(weapon_type(uwep)))) &&
+			((sneak_attack&~SNEAK_JUYO) || (rn2(5) < 2)))	// (odds reduced by 60% when not sneak attacking)
 			)
 		{
 			staggering_strike = TRUE;
@@ -14114,7 +14116,7 @@ int vis;						/* True if action is at all visible to the player */
 		}
 	}
 	/* Will eventually do a mercy blade attack after all messages are printed */
-	if(valid_weapon_attack && (melee || thrust) && !recursed && is_mercy_blade(weapon))
+	if(valid_weapon_attack && (melee || thrust) && !recursed && mercy_blade_prop(weapon))
 		mercy_blade = TRUE;
 	/* X-hating */
 	/* note: setting holyobj/etc affects messages later, but damage happens regardless of whether holyobj/etc is set correctly here */
@@ -15583,7 +15585,7 @@ int vis;						/* True if action is at all visible to the player */
 					if ((activeFightingForm(FFORM_SHII_CHO) ||
 						(activeFightingForm(FFORM_JUYO))
 						) &&
-						(sneak_attack != 0)	/* attacking a disadvantaged target, but might not have sneak dice */
+						(sneak_attack&~SNEAK_JUYO)	/* attacking a disadvantaged target, but might not have sneak dice */
 						) use_skill(P_JUYO, 1);
 				}
 			}
@@ -15940,6 +15942,11 @@ int vis;						/* True if action is at all visible to the player */
 		pd->mtyp == PM_SHRIEKER &&
 		(subtotl > *hp(mdef)))
 		subtotl = max(*hp(mdef) - 1, 1);
+
+	/*clawmark adjustment*/
+	if(youagr && sneak_attack && active_glyph(CLAWMARK)){
+		specdmg += 3*(subtotl + seardmg + elemdmg + poisdmg + specdmg)/10;
+	}
 
 	/* Final sum of damage */
 	totldmg = subtotl + seardmg + elemdmg + poisdmg + specdmg;
@@ -17252,7 +17259,7 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 							(void)newcham(mdef, PM_GREEN_SLIME, FALSE, FALSE);
 						}
 						else {
-							(void)newcham(mdef, PM_GREEN_SLIME, FALSE, vis);
+							monslime(mdef);
 							mdef->mstrategy &= ~STRAT_WAITFORU;
 						}
 					}
@@ -17357,12 +17364,12 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 						newvis |= VIS_MAGR;
 
 					/* get 1st weapon attack defender has */
-					int subout2 = 0;
+					int subout2[SUBOUT_ARRAY_SIZE] = {0};
 					int indexnum2 = 0;
 					/* grab the first weapon attack mdef has, or else use a basic 1d4 attack */
 					do {
 						/* we'll ignore res[], tohitmod, and prev_attk, resusing them from earlier */
-						counter = getattk(mdef, magr, res, &indexnum2, &prev_attk, FALSE, &subout2, &tohitmod);
+						counter = getattk(mdef, magr, res, &indexnum2, &prev_attk, FALSE, subout2, &tohitmod);
 					} while (counter->aatyp != AT_WEAP && !is_null_attk(counter));
 					if (is_null_attk(counter))
 						counter = &basicattack;

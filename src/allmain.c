@@ -912,7 +912,7 @@ you_regen_hp()
 		morehungry(d(4,10)*10);
 		(*hp) += (*hpmax)/2;
 		struct monst *mon;
-		Your("flesh crawles!");
+		Your("flesh crawls!");
 		for(mon = fmon; mon; mon = mon->nmon){
 			if(!DEADMONSTER(mon) && mon_can_see_you(mon) && 
 				!insightful(mon->data) && 
@@ -3620,7 +3620,9 @@ newgame()
 			otmp = mksobj((int)artilist[inher_arti].otyp, MKOBJ_NOINIT);
 			/* please do not have any artifacts where the otyp in artilist is not the same as the practical otyp after onaming */
 			discover_artifact(inher_arti);
-			if (!(Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER))){
+			if ((!(Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER))
+				|| (Role_if(PM_HEALER) && Race_if(PM_DROW))
+			)){
 				otmp = oname(otmp, artilist[inher_arti].name);
 				fully_identify_obj(otmp);
 				expert_weapon_skill(weapon_type(otmp));
@@ -5116,7 +5118,7 @@ struct monst *mon;
 			if(mon->mhp > mon->mhpmax)
 				mon->mhp = mon->mhpmax;
 			for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
-				if(mon->mpeaceful == mtmp->mpeaceful && !mm_grudge(mon, mtmp)){
+				if(mon->mpeaceful == mtmp->mpeaceful && !mm_grudge(mon, mtmp, FALSE)){
 					if(mtmp->mhp < mtmp->mhpmax && dist2(xlocale, ylocale, mtmp->mx, mtmp->my) <= 3*3 + 1){
 						mtmp->mhp += healing;
 						if(mtmp->mhp > mtmp->mhpmax)

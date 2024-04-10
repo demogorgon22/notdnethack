@@ -174,8 +174,7 @@ int adtyp;
 	case AD_BLUD:
 		return CLR_RED;
 	case AD_SLIM:
-	case AD_ACID:
-	case AD_EACD:
+	case AD_DRST:
 		return CLR_GREEN;
 	case AD_PHYS:
 		return CLR_BROWN;
@@ -192,7 +191,9 @@ int adtyp;
 		return CLR_ORANGE;
 	case AD_LASR:
 		return CLR_RED;
-	case AD_DRST:
+		//	return CLR_BRIGHT_GREEN;
+	case AD_ACID:
+	case AD_EACD:
 	case AD_GOLD:
 		return CLR_YELLOW;
 	case AD_MAGM:
@@ -4619,7 +4620,7 @@ struct zapdata * zapdata;
 				if (Poison_res(mdef)) dmg = 0; else dmg = 4;
 				domsg();	/* gotta call before poisoned() */
 				/* poisoned() deals the damage and checks resistance */
-				poisoned("blast", A_DEX, "poisoned blast", 15, FALSE);
+				poisoned("blast", A_STR, "poisoned blast", 15, FALSE);
 			}
 			else {
 				if (Poison_res(mdef)) {
@@ -4633,7 +4634,7 @@ struct zapdata * zapdata;
 		return xdamagey(magr, mdef, &attk, dmg);
 
 	case AD_SLEE:
-		/* does not acutally do damage; */
+		/* does not actually do damage; */
 		dmg = 0;
 		{
 		int sleeptime = zapdata->flat ? zapdata->flat : d(zapdata->damn, 25);
@@ -4664,11 +4665,15 @@ struct zapdata * zapdata;
 			}
 		}
 		/* dragons' sleep gas is hallucinogenic */
-		if (magr && is_true_dragon(magr->data)) {
+		if (magr && zapdata->ztyp == ZAP_BREATH &&
+		    (is_true_dragon(magr->data) ||
+		     youagr ? Race_if(PM_HALF_DRAGON) && u.ulevel >= 14 :
+		     is_half_dragon(magr->data) && magr->data->mlevel >= 14)) {
 			if (youdef) {
 				make_hallucinated(HHallucination + sleeptime, TRUE, 0L);
 			}
-			else {
+			else if (!mon_resistance(mdef, HALLUC_RES) && !mon_resistance(mdef, SLEEP_RES)){
+				mdef->mberserk = TRUE;
 				mdef->mconf = TRUE;
 			}
 		}

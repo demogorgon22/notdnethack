@@ -35,6 +35,8 @@ extern int NDECL(doapply); /**/
 extern int NDECL(dorub); /**/
 extern int NDECL(dojump); /**/
 extern int NDECL(docome); /**/
+extern int NDECL(doattack); /**/
+extern int NDECL(dopassive); /**/
 extern int NDECL(doextlist); /**/
 extern int NDECL(dodrop); /**/
 extern int NDECL(doddrop); /**/
@@ -1685,7 +1687,7 @@ hasfightingforms(){
 	if(Role_if(PM_MONK))
 		formmask |= MONK_FORMS;
 	if(Role_if(PM_KNIGHT))
-		formmask = KNIGHT_FORMS;
+		formmask |= KNIGHT_FORMS;
 	if((uwep && is_lightsaber(uwep)) || (uswapwep && is_lightsaber(uswapwep)))
 		formmask |= LIGHTSABER_FORMS;
 	if (u.uavoid_passives)
@@ -2921,6 +2923,7 @@ struct ext_func_tab extcmdlist[] = {
 	{"ability", "use an inherent or learned ability", doability, IFBURIED, AUTOCOMPLETE},
 	{"adjust", "adjust inventory letters", doorganize, IFBURIED, AUTOCOMPLETE},
 	{"annotate", "annotate current dungeon level", donamelevel, IFBURIED, AUTOCOMPLETE},
+	{"attack", "order pets to battle foes", doattack, IFBURIED, AUTOCOMPLETE},
 	{"chat", "talk to someone", dotalk, IFBURIED, AUTOCOMPLETE},	/* converse? */
 	{"combo", "use an android combo based on your weapon", android_combo, !IFBURIED},
 	{"come", "order pets to come", docome, !IFBURIED, AUTOCOMPLETE},
@@ -2937,6 +2940,7 @@ struct ext_func_tab extcmdlist[] = {
 	{"mount", "order mount to attack", domountattk, !IFBURIED, AUTOCOMPLETE},
 	{"name", "name an item or type of object", do_naming_ddocall, IFBURIED, AUTOCOMPLETE},
 	{"nameold", "name an item or type of object (vanilla)", ddocall, IFBURIED},
+	{"passive", "order pets to never attack foes", dopassive, IFBURIED, AUTOCOMPLETE},
 	{"offer", "offer a sacrifice to the gods", dosacrifice, !IFBURIED, AUTOCOMPLETE},
 	{"overview", "give an overview of dungeon", dooverview, !IFBURIED, AUTOCOMPLETE},
 	{"pray", "pray to the gods for help", dopray, IFBURIED, AUTOCOMPLETE},
