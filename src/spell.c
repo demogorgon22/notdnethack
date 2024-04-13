@@ -1506,6 +1506,11 @@ update_externally_granted_spells()
 			}
 		}
 	}
+	/* Not externally granted, but it fits here anyway */
+	if (Role_if(PM_WIZARD) && u.ulevel >= 14){
+		if (urole.spelspec) exspells[n++] = urole.spelspec;
+		if (urace.spelspec) exspells[n++] = urace.spelspec;
+	}
 
 	/* mark sp_ext, and add them to the book if necessary */
 	for (j = 0; j < n; j++) {

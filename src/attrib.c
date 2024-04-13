@@ -1024,8 +1024,33 @@ int oldlevel, newlevel;
 				message = TRUE;
 				expert_weapon_skill(i);
 			}
-	    }
+		}
 		if (message) You_feel("like you've unlocked new potential!");
+	}
+	if (Role_if(PM_WIZARD) && newlevel >= 14 && oldlevel < 14){
+		/* Actually learning the spell is handled in update_externally_granted_spells() */
+		boolean new_spell_role, new_spell_race = FALSE;
+		if (urole.spelspec) {
+			for (int i = 0; i < MAXSPELL; i++) {
+				if (spellid(i) == urole.spelspec && !spl_book[i].sp_know) {
+					new_spell_role = TRUE;
+					break;
+				}
+			}
+		}
+		if (urace.spelspec) {
+			for (int i = 0; i < MAXSPELL; i++) {
+				if (spellid(i) == urace.spelspec && !spl_book[i].sp_know) {
+					new_spell_race = TRUE;
+					break;
+				}
+			}
+		}
+		if (new_spell_role || new_spell_race)
+			You("learn how to cast %s%s%s!",
+			    new_spell_role ? OBJ_NAME(objects[urole.spelspec]) : "",
+			    (new_spell_race && new_spell_role) ? " and " : "",
+			    new_spell_race ? OBJ_NAME(objects[urace.spelspec]) : "");
 	}
 }
 
