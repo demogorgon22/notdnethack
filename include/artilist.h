@@ -124,13 +124,13 @@ A("Stormbringer",		RUNESWORD,						(const char *)0,
  *	2) doesn't give unusual message for 2-headed monsters (but
  *	allowing those at all causes more problems than worth the effort).
  *
- * Special code in weapon.c uses an extra die (2d8, 2d12) and makes the dice explode
- * According to an article on 1d4Chan, the average of an exploading die is roughly that of a die one size larger
- *  -> effectively, 2d10+2/2d14+2
+ * Special code in weapon.c uses an extra die (2d12, 2d8) and makes the dice explode
+ * According to an article on 1d4Chan, the average of an exploding die is roughly that of a die one size larger
+ *  -> effectively, 2d14+2/2d10+2
  */
-A("Vorpal Blade",		LONG_SWORD,						(const char *)0,
+A("Vorpal Blade",	        ISAMUSEI,						(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_NEUTRAL, NON_PM, NON_PM, TIER_B, NOFLAG,
+	A_NEUTRAL, NON_PM, NON_PM, TIER_S, NOFLAG,
 	NO_MONS(),
 	ATTK(AD_PHYS, 5, 1), (ARTA_VORPAL|ARTA_DEXPL),
 	PROPS(), NOFLAG,

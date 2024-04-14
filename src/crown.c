@@ -527,9 +527,9 @@ gcrownu()
 	/* finally, FOR SOME REASON you get weapon skill for these ones even if you didn't get the weapon */
 	switch (u.uevent.uhand_of_elbereth) {
 		case 1:	/* Excalibur */
-		case 2:	/* Vorpal Blade */
 			expert_weapon_skill(P_LONG_SWORD);
 			break;
+		case 2:	/* Vorpal Blade */
 		case 3:	/* Stormbringer */
 			expert_weapon_skill(P_BROAD_SWORD);
 			break;
