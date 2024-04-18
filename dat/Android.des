@@ -147,6 +147,7 @@ CONTAINER:'(',"chest",(19,17)
 	OBJECT:'[',"bodyglove",contained, uncursed, 0
 CONTAINER:'(',"chest",(19,16)
 	OBJECT:'(',"towel",contained, uncursed, 0
+	OBJECT:'(',"night vision goggles",contained, uncursed, 0
 
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7     

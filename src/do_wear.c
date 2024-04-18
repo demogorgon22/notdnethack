@@ -1365,6 +1365,7 @@ Blindf_on(otmp)
 register struct obj *otmp;
 {
 	boolean already_blind = Blind, changed = FALSE;
+	boolean already_extramission = Extramission;
 
 	if (otmp == uwep)
 	    setuwep((struct obj *) 0);
@@ -1374,7 +1375,14 @@ register struct obj *otmp;
 	    setuqwep((struct obj *) 0);
 	setworn(otmp, W_TOOL);
 	on_msg(otmp);
-
+	
+	if (Extramission && !already_extramission){
+	    changed = TRUE;
+	    if (flags.verbose && !Blind) {
+		    You("can see in the %s!", ((Catsight && (dimness(u.ux, u.uy) > 0)) || Darksight) ? "light" : "dark");
+		    makeknown(otmp->otyp);
+	    }
+	}
 	if (Blind && !already_blind) {
 	    changed = TRUE;
 	    if (flags.verbose) You_cant("see any more.");
@@ -1406,11 +1414,15 @@ Blindf_off(otmp)
 register struct obj *otmp;
 {
 	boolean was_blind = Blind, changed = FALSE;
+	boolean was_extramission = Extramission;
 
 	takeoff_mask &= ~W_TOOL;
 	setworn((struct obj *)0, otmp->owornmask);
 	off_msg(otmp);
 
+	if (!Extramission && was_extramission) {
+	    changed = TRUE;
+	}
 	if (Blind) {
 	    if (was_blind) {
 		/* "still cannot see" makes no sense when removing lenses
@@ -2165,7 +2177,8 @@ doputon()
 			otmp->otyp != BLINDFOLD && otmp->otyp != ANDROID_VISOR && 
 			otmp->otyp != TOWEL && otmp->otyp != LENSES && 
 			otmp->otyp != SUNGLASSES && otmp->otyp != LIVING_MASK &&
-			otmp->otyp != SOUL_LENS
+			otmp->otyp != SOUL_LENS && otmp->otyp != NIGHT_VISION_GOGGLES &&
+			otmp->otyp != NIGHT_VISION_GOGGLES
 		) {
 			You_cant("wear that!");
 			return MOVE_CANCELLED;

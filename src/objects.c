@@ -1234,6 +1234,8 @@ TOOL(("sensor pack", "rigid box"), /*Needs encyc entry*//*Needs tile*/
 								0,  MZ_SMALL, 0, 1, 1,   0, 15,2000, PLASTIC,CLR_WHITE),
 TOOL(("hypospray", "hammer-shaped device"), /*Needs encyc entry*//*Needs tile*/
 								0,  MZ_SMALL, 0, 1, 0,   0, 15, 500, PLASTIC,CLR_GRAY),
+TOOL(("night vision goggles", "strange goggles"), /*Needs encyc entry*//*Needs tile*/
+								0,  MZ_TINY, 0, 1, 0,   0, 15, 200, GLASS, CLR_GREEN, O_POWER(EXTRAMISSION)),
 TOOL(("hypospray ampule", "hard gray bottle", "hard bottle"), /*Needs encyc entry*//*Needs tile*/
 								0,   MZ_TINY, 0, 1, 0,   0,  1,  50, PLASTIC,CLR_GRAY),
 TOOL(("mask"),			1,  MZ_SMALL, 0, 0, 0,  10, 10,  80, LEATHER, CLR_WHITE),

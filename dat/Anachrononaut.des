@@ -238,6 +238,7 @@ CONTAINER:'(',"chest",(19,16)
 	OBJECT:'(',"mirror",contained, uncursed, 0
 	OBJECT:'(',"mirror",contained, uncursed, 0
 	OBJECT:'(',"mirror",contained, uncursed, 0
+	OBJECT:'(',"night vision goggles",contained, uncursed, 0
 	OBJECT:'(',"towel",contained, uncursed, 0
 	OBJECT:'(',"towel",contained, uncursed, 0
 	OBJECT:'(',"towel",contained, uncursed, 0

@@ -102,6 +102,7 @@ static struct trobj Anachrononaut_Dw[] = {
 	{ AMULET_OF_NULLIFY_MAGIC, 0, AMULET_CLASS, 1, 0 },
 	{ BULLET, 3, WEAPON_CLASS, 100, 0 },
 	{ BULLET_FABBER, 0, TOOL_CLASS, 1, 0 },
+	{ NIGHT_VISION_GOGGLES, UNDEF_SPE, TOOL_CLASS, 1, 0 },
 	{ PROTEIN_PILL, 0, FOOD_CLASS, 6, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
@@ -2156,6 +2157,7 @@ u_init()
 		knows_object(ROCKET);
 		knows_object(FRAG_GRENADE);
 		knows_object(GAS_GRENADE);
+		knows_object(NIGHT_VISION_GOGGLES);
 		knows_object(STICK_OF_DYNAMITE);
 		knows_object(HEAVY_BLASTER_BOLT);
 		knows_object(BLASTER_BOLT);
@@ -3536,6 +3538,9 @@ register struct trobj *trop;
 		if(obj->otyp == AMULET_OF_NULLIFY_MAGIC && (Role_if(PM_ANACHRONONAUT) || Role_if(PM_MADMAN)) && !uamul){
 			setworn(obj, W_AMUL);
 		}
+
+		if(obj->otyp == NIGHT_VISION_GOGGLES && !ublindf)
+			setworn(obj, W_TOOL);
 
 		if(obj->oclass == RING_CLASS && Role_if(PM_MADMAN) && !uright){
 			setworn(obj, W_RINGR);

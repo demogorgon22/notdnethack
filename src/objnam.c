@@ -1993,6 +1993,7 @@ boolean getting_obj_base_desc;
 			}	
 			if (typ == LENSES ||
 				typ == SUNGLASSES ||
+				typ == NIGHT_VISION_GOGGLES ||
 				typ == HAWAIIAN_SHORTS ||
 				is_boots(obj) ||
 				is_gloves(obj)
@@ -3581,6 +3582,7 @@ const char *oldstr;
 			if (!BSTRCMP(bp, p-6, "gloves") ||
 			    !BSTRCMP(bp, p-6, "lenses") ||
 			    !BSTRCMP(bp, p-10, "sunglasses") ||
+			    !BSTRCMP(bp, p-7, "goggles") ||
 			    !BSTRCMP(bp, p-9, "soul-lens") ||
 			    !BSTRCMPI(bp, p-8, "shackles") ||
 			    !BSTRCMP(bp, p-5, "shoes") ||
