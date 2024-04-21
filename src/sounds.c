@@ -3397,7 +3397,7 @@ const char *prompt;
 
 
 #define dye_menu_item(str,clr) Sprintf(buf, str); \
-	any.a_int = clr;	/* must be non-zero */ \
+	any.a_int = clr+1;	/* must be non-zero */ \
 	add_menu(tmpwin, NO_GLYPH, &any, \
 		'a' + clr, 0, ATR_NONE, buf, \
 		MENU_UNSELECTED); 
@@ -3437,7 +3437,7 @@ const char *prompt;
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
-	return (n > 0) ? selected[0].item.a_int : -1;
+	return (n > 0) ? selected[0].item.a_int-1 : -1;
 }
 
 #undef dye_menu_item
