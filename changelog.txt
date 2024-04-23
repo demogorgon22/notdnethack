@@ -167,6 +167,8 @@ Ent race
 			Spell boost intrinsic
 		Redwood
 			8 speed but effectively another two sizes larger
+		Willow
+			Intrinsic weldproof
 	Special spell restore ability
 
 Yuki-Onna changes
