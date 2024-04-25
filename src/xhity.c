@@ -15153,7 +15153,10 @@ int vis;						/* True if action is at all visible to the player */
 		dmgval_core(&unarmed_dice, bigmonst(pd), (struct obj *)0, 0, magr);
 		/* determine unarmedMult */
 		if (youagr) {
-			unarmedMult = Race_if(PM_HALF_DRAGON) ? 3 : u.sealsActive&SEAL_ECHIDNA ? 2 : 1;
+			unarmedMult =
+				(Race_if(PM_HALF_DRAGON) ||
+				 (gloves && gloves->otyp == KNUCKLE_DUSTERS))
+				? 3 : u.sealsActive&SEAL_ECHIDNA ? 2 : 1;
 			if(check_mutation(SHUB_CLAWS))
 				unarmedMult++;
 		}
@@ -15162,8 +15165,6 @@ int vis;						/* True if action is at all visible to the player */
 		}
 		if (gloves && gloves->oartifact == ART_GREAT_CLAWS_OF_URDLEN)
 			unarmedMult += 2;
-		if(gloves && gloves->otyp == KNUCKLE_DUSTERS)
-			unarmedMult = 3;
 
 		/* base unarmed dice */
 		if (youagr && martial_bonus())
