@@ -1720,6 +1720,16 @@ boolean adjective;
 	}
 }
 
+/* Hack to make material_name work on a raw material without an object */
+const char *
+default_material_name(int material, boolean adjective)
+{
+	/* Create a fake object and call material_name on it */
+	struct obj obj = {0};
+	obj.obj_material = material;
+	return material_name(&obj, adjective);
+}
+
 static void
 add_material_words(obj, buf)
 struct obj *obj;

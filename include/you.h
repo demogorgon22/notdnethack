@@ -296,10 +296,14 @@ struct Species {
 
 extern const struct Species species[];	/* table of available species */
 
-#define ROLE_SPECIES	33	/* number of permitted player species */
+#define current_species_name() (uclockwork ? default_material_name(u.clk_material, FALSE) : species[flags.initspecies].name)
+#define base_species_name() (Race_if(PM_CLOCKWORK_AUTOMATON) ? default_material_name(u.clk_material, FALSE) : species[flags.initspecies].name)
+
+#define ROLE_SPECIES	36	/* number of permitted player species */
 #define NONE_SPECIES 0
 #define ENT_SPECIES 1
 #define DRAGON_SPECIES 2
+#define CLK_SPECIES 3
 
 /*** Information about the player ***/
 struct you {
@@ -735,6 +739,7 @@ struct you {
 	int		udisks;		/* to record how many aphanactonan disks you've read */
 	int		uboln;		/* to record how many spirits you've gained from the boln */
 	int uinvault;
+	int clk_material;	/* clockwork material */
 	struct monst *ustuck;
 	boolean petattacked;
 	boolean pethped;

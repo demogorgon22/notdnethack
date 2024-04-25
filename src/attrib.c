@@ -41,7 +41,7 @@ const struct innate {
 		     {	1, &(ETelepat), "telepathic", "zoned out" },
 		     {  7, &(HEcholocation), "able to echolocate with psionic pulses","less psionic" },
 		     {	10, &(HFlying), "able to control your altitude with your mind", "less in control of your altitude" },
-		     {	14, &(EReflecting), "able to repel forces with your mind", "less telekinetic" },
+		     {	14, &(HReflecting), "able to repel forces with your mind", "less telekinetic" },
 		     {  17, &(HTeleport_control), "controlled","uncontrolled" },
 		     {	 0, 0, 0, 0 } },
 

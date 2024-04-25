@@ -3098,6 +3098,10 @@ u_init()
 	if(Race_if(PM_ENT)){
 		set_ent_species();
 	}
+	u.clk_material = COPPER;
+	if(Race_if(PM_CLOCKWORK_AUTOMATON)){
+		u.clk_material = species[flags.initspecies].value;
+	}
 	/* Fix up the alignment quest nemesi */
 	mons[PM_OONA].mcolor = (u.oonaenergy == AD_FIRE) ? CLR_RED 
 						 : (u.oonaenergy == AD_COLD) ? CLR_CYAN 

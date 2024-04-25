@@ -305,7 +305,11 @@ struct toptenentry *tt;
                 SEP "gender=%s"
                 SEP "align=%s",
                 tt->plrole, tt->plrace, tt->plgend, tt->plalign);
-   
+
+  if (Race_if(PM_ENT) || Race_if(PM_HALF_DRAGON) || Race_if(PM_CLOCKWORK_AUTOMATON)) {
+    (void)fprintf(rfile, SEP "species=%s", base_species_name());
+  }
+
    munge_xlstring(buf, plname, DTHSZ + 1);
   (void)fprintf(rfile, SEP "name=%s", buf);
 
@@ -362,6 +366,10 @@ struct toptenentry *tt;
   (void)fprintf(rfile, SEP "align0=%s", 
           aligns[1 - galign(u.ugodbase[UGOD_ORIGINAL])].filecode);
 #endif
+
+  if (Race_if(PM_ENT) || Race_if(PM_HALF_DRAGON) || Race_if(PM_CLOCKWORK_AUTOMATON)) {
+    (void)fprintf(rfile, SEP "species0=%s", species[flags.initspecies].name);
+  }
 
   (void)fprintf(rfile, "\n");
 

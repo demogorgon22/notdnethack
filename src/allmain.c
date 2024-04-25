@@ -2573,7 +2573,8 @@ karemade:
 				}
 			}
 			
-			if(u.sealsActive&SEAL_ASTAROTH && u.uinwater){
+			if((u.sealsActive&SEAL_ASTAROTH || (uclockwork && rustprone_material(u.clk_material)))
+			   && u.uinwater && !Waterproof){
 				losehp(1, "rusting through", KILLED_BY);
 			}
 			if (u.sealsActive&SEAL_ORTHOS && !(Darksight || Catsight || Extramission)
@@ -3759,10 +3760,8 @@ boolean new_game;	/* false => restoring an old game */
 	     currentgend != flags.initgend))
 	Sprintf(eos(buf), " %s", genders[currentgend].adj);
 
-    if(Race_if(PM_ENT)){
-	Sprintf(eos(racebuf), "%s %s", get_ent_species(u.ent_species), urace.adj);
-    } else if (Race_if(PM_HALF_DRAGON)){
-	Sprintf(eos(racebuf), "%s %s", species[flags.initspecies].name, urace.adj);
+    if (Race_if(PM_ENT) || Race_if(PM_HALF_DRAGON) || Race_if(PM_CLOCKWORK_AUTOMATON)){
+	Sprintf(eos(racebuf), "%s %s", current_species_name(), urace.adj);
     } else {
 	Sprintf(eos(racebuf), "%s", urace.adj);
     }

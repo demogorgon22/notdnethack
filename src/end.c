@@ -1290,8 +1290,8 @@ die:
             if (dump_fp) {
     		char racebuf[BUFSZ];
     		*racebuf = '\0';
-		if(Race_if(PM_ENT)){
-		    Sprintf(eos(racebuf), "%s %s", get_ent_species(u.ent_species), urace.adj);
+		if(Race_if(PM_ENT) || Race_if(PM_HALF_DRAGON) || Race_if(PM_CLOCKWORK_AUTOMATON)){
+		    Sprintf(eos(racebuf), "%s %s", base_species_name(), urace.adj);
 		} else {
 		    Sprintf(eos(racebuf), "%s", urace.adj);
 		}

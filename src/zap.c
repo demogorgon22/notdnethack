@@ -4961,6 +4961,10 @@ struct zapdata * zapdata;
 				killer_format = KILLED_BY;
 				/* continue on to deal damage */
 			}
+			/* player clockworks turn to gold but don't die */
+			if (youdef && uclockwork && u.clk_material != GOLD) {
+				u.clk_material = GOLD;
+			}
 			/* monster */
 			if (!youdef && !resists_ston(mdef) && !is_gold(mdef->data)) {
 				minstagoldify(mdef, youagr);

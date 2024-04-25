@@ -185,6 +185,32 @@ Yuki-Onna changes
 		Has catsight
 		Resists cold, sleep, poison, and sickness
 		Is human size but since it is an odd body the carry cap can be 25% higher
+
+Clockwork changes - takes nndnh clkwk materials patch
+	Player clockwork automata have materials
+	Valid starting materials: bronze, iron, green-steel
+	Mammon's breath changes material to gold
+	Can apply silver flame boons to smelt self to silver, platinum, or mithril
+		If made from a sflame material, can apply reflection boon to self to get intrinsic reflection
+	Material properties
+		bronze
+			2x boiler heat damage dice
+		iron
+			rusting, iron sear damage (+1d(defender's level))
+		green-steel
+			rusting, green-steel sear damage (+2d9 unholy)
+		silver
+			silver sear damage (+1d20)
+		platinum
+			platinum sear damage (+1d5 to +1d20)
+		mithril
+			-3 AC and +3 DR
+		gold
+			gold sear damage (+1d20 holy if alignment record > 3, +1d20 unholy if alignment record < -3, else nothing)
+	Rusting is resisted by waterproofing
+	Sear damage only applies on direct contact (like bare-handed attacks with no gloves)
+		Unlike Eden, there's no passive damage
+	
 	
 Monk changes
 	Can set attack styles with #style

@@ -3163,7 +3163,7 @@ const char *fmt, *str;
 	    if (fmt && str)
 	    	pline(fmt, str, "scales");
 	    return TRUE;
-	} else if (u.sealsActive&SEAL_EDEN || species_reflects(&youmonst)) {
+	} else if (HReflecting || u.sealsActive&SEAL_EDEN || species_reflects(&youmonst)) {
 	    if (fmt && str)
 			pline(fmt, str, mbodypart(&youmonst, BODY_SKIN));
 	    return TRUE;

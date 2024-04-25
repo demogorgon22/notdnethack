@@ -205,8 +205,8 @@ minimal_enlightenment()
 	start_menu(tmpwin);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, iflags.menu_headings, "Starting", FALSE);
 
-	if(is_ent(youracedata)){
-		Sprintf(racebuf, "%s %s", get_ent_species(u.ent_species), urace.noun);
+	if(Race_if(PM_ENT) || Race_if(PM_HALF_DRAGON) || Race_if(PM_CLOCKWORK_AUTOMATON)){
+		Sprintf(racebuf, "%s %s", species[flags.initspecies].name, urace.noun);
 	} else {
 		Sprintf(racebuf, "%s", urace.noun);
 	}
@@ -226,9 +226,9 @@ minimal_enlightenment()
 	Sprintf(buf, fmtstr, "alignment", align_str(galign(u.ugodbase[UGOD_ORIGINAL])));
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_NONE, buf, FALSE);
 
-	if(is_ent(youracedata)){
+	if((is_ent(youracedata) && Race_if(PM_ENT)) || (!Upolyd && Race_if(PM_HALF_DRAGON)) || uclockwork){
 		racebuf[0] = '\0';
-		Sprintf(racebuf, "%s %s", get_ent_species(u.ent_species), Upolyd ? youmonst.data->mname : urace.noun);
+		Sprintf(racebuf, "%s %s", current_species_name(), Upolyd ? youmonst.data->mname : urace.noun);
 	} else {
 		Sprintf(racebuf, "%s",Upolyd ? youmonst.data->mname : urace.noun);
 	}
@@ -513,6 +513,8 @@ boolean dumping;
 			Sprintf(buf, "special seals active: %lx", u.specialSealsActive);
 			you_have(buf);
 		}
+	}
+	if (wizard || final) {
 		if(dungeon_topology.eprecursor_typ == PRE_DRACAE){
 			enl_msg("Eladrin precursors ", "are", "were", " Dracae Eladrin");
 		}
@@ -865,14 +867,12 @@ boolean dumping;
 		Sprintf(buf, "wounded %s", makeplural(body_part(LEG)));
 		you_have(buf);
 	}
-#if defined(WIZARD) && defined(STEED)
-	if (Wounded_legs && u.usteed && wizard) {
+	if (Wounded_legs && u.usteed && (wizard || final)) {
 	    Strcpy(buf, x_monnam(u.usteed, ARTICLE_YOUR, (char *)0, 
 		    SUPPRESS_SADDLE | SUPPRESS_HALLUCINATION, FALSE));
 	    *buf = highc(*buf);
 	    enl_msg(buf, " has", " had", " wounded legs");
 	}
-#endif
 	if (Sleeping) enl_msg("You ", "fall", "fell", " asleep");
 	if (Hunger) enl_msg("You hunger", "", "ed", " rapidly");
 	if(u.wimage >= 10){
@@ -930,12 +930,10 @@ boolean dumping;
 	if (Detect_monsters) you_are("sensing the presence of monsters");
 
 	/*** Appearance and behavior ***/
-#ifdef WIZARD
 	Sprintf(buf, "a carrying capacity of %d remaining", -1*inv_weight());
-    you_have(buf);
+	you_have(buf);
 	Sprintf(buf, "%d points of nutrition remaining", YouHunger);
-    you_have(buf);
-#endif
+	you_have(buf);
 	if (Adornment) {
 	    int adorn = 0;
 
@@ -980,9 +978,7 @@ boolean dumping;
 #endif
 	if (u.uswallow) {
 	    Sprintf(buf, "swallowed by %s", a_monnam(u.ustuck));
-#ifdef WIZARD
-	    if (wizard) Sprintf(eos(buf), " (%u)", u.uswldtim);
-#endif
+	    if (wizard || final) Sprintf(eos(buf), " (%u)", u.uswldtim);
 	    you_are(buf);
 	} else if (u.ustuck) {
 	    Sprintf(buf, "%s %s",
@@ -1016,9 +1012,10 @@ boolean dumping;
 			else
 				enl_msg("Your intenal boiler ", "is", "was", " nothing but molten bronze");
 		}
-		if (wizard) {
+		if (wizard || final) {
 			Sprintf(buf, " %d", u.utemp);
 			enl_msg("Your boiler temperature ", "is", "was", buf);
+			enl_msg("You ", "are made of ", "were made of ", default_material_name(u.clk_material, FALSE));
 		}
 	}
 	if (uandroid){
@@ -1070,9 +1067,7 @@ boolean dumping;
 	if (Upolyd) {
 	    if (u.umonnum == u.ulycn) Strcpy(buf, "in beast form");
 	    else Sprintf(buf, "polymorphed into %s", an(youmonst.data->mname));
-#ifdef WIZARD
-	    if (wizard) Sprintf(eos(buf), " (%d)", u.mtimedone);
-#endif
+	    if (wizard || final) Sprintf(eos(buf), " (%d)", u.mtimedone);
 	    you_are(buf);
 	}
 	if (Unchanging) you_can("not change from your current form");
@@ -1101,14 +1096,10 @@ boolean dumping;
 	    Sprintf(buf, "%s%slucky",
 		    ltmp >= 10 ? "extremely " : ltmp >= 5 ? "very " : "",
 		    Luck < 0 ? "un" : "");
-#ifdef WIZARD
-	    if (wizard) Sprintf(eos(buf), " (%d)", Luck);
-#endif
+	    if (wizard || final) Sprintf(eos(buf), " (%d)", Luck);
 	    you_are(buf);
 	}
-#ifdef WIZARD
-	 else if (wizard) enl_msg("Your luck ", "is", "was", " zero");
-#endif
+	else if (wizard || final) enl_msg("Your luck ", "is", "was", " zero");
 	if (u.moreluck > 0) you_have("extra luck");
 	else if (u.moreluck < 0) you_have("reduced luck");
 	if (has_luckitem()) {
@@ -1122,9 +1113,7 @@ boolean dumping;
 	if (godlist[u.ualign.god].anger) {
 	    Sprintf(buf, " %sangry with you",
 		    godlist[u.ualign.god].anger > 6 ? "extremely " : godlist[u.ualign.god].anger > 3 ? "very " : "");
-#ifdef WIZARD
-	    if (wizard) Sprintf(eos(buf), " (%d)", godlist[u.ualign.god].anger);
-#endif
+	    if (wizard || final) Sprintf(eos(buf), " (%d)", godlist[u.ualign.god].anger);
 	    enl_msg(u_gname(), " is", " was", buf);
 	} else
 	    /*
@@ -1140,9 +1129,7 @@ boolean dumping;
 #else
 	    Sprintf(buf, "%ssafely pray", can_pray(FALSE) ? "" : "not ");
 #endif
-#ifdef WIZARD
-	    if (wizard) Sprintf(eos(buf), " (%d)", u.ublesscnt);
-#endif
+	    if (wizard || final) Sprintf(eos(buf), " (%d)", u.ublesscnt);
 	    you_can(buf);
 	}
 
@@ -2917,25 +2904,21 @@ boolean dumping;
 
 	if (!u.uconduct.weaphit)
 	    you_have_never("hit with a wielded weapon");
-#ifdef WIZARD
-	else if (wizard) {
+	else if (wizard || final) {
 	    Sprintf(buf, "used a wielded weapon %ld time%s",
 		    u.uconduct.weaphit, plur(u.uconduct.weaphit));
 	    you_have_X(buf);
 	}
-#endif
 	if (!u.uconduct.killer)
 	    you_have_been("a pacifist");
 
 	if (!u.uconduct.literate)
 	    you_have_been("illiterate");
-#ifdef WIZARD
-	else if (wizard) {
+	else if (wizard || final) {
 	    Sprintf(buf, "read items or engraved %ld time%s",
 		    u.uconduct.literate, plur(u.uconduct.literate));
 	    you_have_X(buf);
 	}
-#endif
 
 	ngenocided = num_genocides();
 	if (ngenocided == 0) {
@@ -2948,23 +2931,19 @@ boolean dumping;
 
 	if (!u.uconduct.polypiles)
 	    you_have_never("polymorphed an object");
-#ifdef WIZARD
-	else if (wizard) {
+	else if (wizard || final) {
 	    Sprintf(buf, "polymorphed %ld item%s",
 		    u.uconduct.polypiles, plur(u.uconduct.polypiles));
 	    you_have_X(buf);
 	}
-#endif
 
 	if (!u.uconduct.polyselfs)
 	    you_have_never("changed form");
-#ifdef WIZARD
-	else if (wizard) {
+	else if (wizard || final) {
 	    Sprintf(buf, "changed form %ld time%s",
 		    u.uconduct.polyselfs, plur(u.uconduct.polyselfs));
 	    you_have_X(buf);
 	}
-#endif
 
 	if (!u.uconduct.wishes)
 	    you_have_X("used no wishes");

@@ -628,8 +628,9 @@
 #define Fast			(HFast || EFast)
 #define Very_fast		((HFast & ~INTRINSIC) || EFast)
 
+#define HReflecting		u.uprops[REFLECTING].intrinsic
 #define EReflecting		u.uprops[REFLECTING].extrinsic
-#define Reflecting		(EReflecting || \
+#define Reflecting		(HReflecting || EReflecting || \
 						 (uwep && is_lightsaber(uwep) && uwep->lamplit && (activeFightingForm(FFORM_SORESU) || activeFightingForm(FFORM_SHIEN))) || \
 						 (u.usteed && u.usteed->misc_worn_check & W_SADDLE \
 						 && which_armor(u.usteed, W_SADDLE)->oartifact == ART_HELLRIDER_S_SADDLE) || \

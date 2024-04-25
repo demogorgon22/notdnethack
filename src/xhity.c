@@ -14237,7 +14237,7 @@ int vis;						/* True if action is at all visible to the player */
 	else {
 		/* skin/touch/etc */
 		if (hates_silver(pd) && !(youdef && u.sealsActive&SEAL_EDEN)) {
-			if (is_silver_mon(magr)) {
+			if (is_silver_mon(magr) || (youagr && uclockwork && u.clk_material == SILVER)) {
 				silverobj |= W_SKIN;
 				seardmg += rnd(20);
 			}
@@ -14248,8 +14248,24 @@ int vis;						/* True if action is at all visible to the player */
 				seardmg += rnd(20);
 			}
 		}
+		if (hates_lawful(pd)) {
+			/* TODO unify this with weapon sear code */
+			if (youagr && uclockwork && u.clk_material == PLATINUM) {
+				/* default: 1d5 */
+				int diesize = 5;
+				/* spiritual beings are hurt more */
+				if(is_minion(mdef->data) || is_demon(mdef->data))
+					diesize *= 2;
+				/* strongly chaotic beings are hurt more */
+				if(youdef ? u.ualign.record >= 100 : ( mdef->mtyp == PM_ANGEL || mdef->data->maligntyp <= -10))
+					diesize *= 2;
+				// Platinum searing is currently silent
+				//platinumobj |= W_SKIN;
+				seardmg += rnd(diesize);
+			}
+		}
 		if (hates_iron(pd)){
-			if(is_iron_mon(magr)) {
+			if(is_iron_mon(magr) || (youagr && uclockwork && u.clk_material == IRON)) {
 				ironobj |= W_SKIN;
 				seardmg += rnd(mlev(mdef));
 			}
@@ -14268,7 +14284,11 @@ int vis;						/* True if action is at all visible to the player */
 			else if(is_holy_mon(magr)) {
 				holyobj |= W_SKIN;
 				seardmg += d(3, 7);
-			} 
+			}
+			else if (youagr && uclockwork && u.clk_material == GOLD && u.ualign.record > 3) {
+				holyobj |= W_SKIN;
+				seardmg += rnd(20);
+			}
 		}
 		if (hates_unholy_mon(mdef)){
 			if(magr->mtyp == PM_UVUUDAUM){
@@ -14279,9 +14299,13 @@ int vis;						/* True if action is at all visible to the player */
 				unholyobj |= W_SKIN;
 				seardmg += d(4, 9);
 			}
-			else if(magr->mtyp == PM_GREEN_STEEL_GOLEM) {
+			else if(magr->mtyp == PM_GREEN_STEEL_GOLEM || (youagr && uclockwork && u.clk_material == GREEN_STEEL)) {
 				grnstlobj |= W_SKIN;
 				seardmg += d(2, 9);
+			}
+			else if (youagr && uclockwork && u.clk_material == GOLD && u.ualign.record < -3) {
+				unholyobj |= W_SKIN;
+				seardmg += rnd(20);
 			}
 		}
 		if (hates_unblessed_mon(mdef)){
@@ -14550,6 +14574,8 @@ int vis;						/* True if action is at all visible to the player */
 		if (uclockwork && !Fire_res(mdef) && u.utemp) {
 			int heatdie = min(u.utemp, 20);
 			int heatdice = (1 + (u.utemp >= MELTING) + (u.utemp >= MELTED));
+			if (u.clk_material == COPPER)
+				heatdice *= 2;
 			/* unarmed */
 			if (unarmed_punch)
 			{
