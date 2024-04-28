@@ -580,7 +580,6 @@ struct obj {
 										!is_rakuyo((o)) && \
 										!((o)->otyp == SET_OF_CROW_TALONS) && \
 										!((o)->otyp == CROW_QUILL) && \
-										!((o)->otyp == CRYSTAL_SWORD) && \
 										!((o)->otyp == RUNESWORD) && \
 										!((o)->otyp == MIRRORBLADE)) \
 									|| (o)->otyp == GAUNTLETS) : \
