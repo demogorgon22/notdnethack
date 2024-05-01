@@ -15,7 +15,7 @@ For compiling on Windows:
 * Open the Terminal in WSL. (Just clicking on the shortcut opens the terminal)
 * Navigate (using `ls` and `cd`) to where you want to install notdnethack
 * Install git: `apt install git`
-* Download the version of dNAO you want with git: `git clone https://github.com/demogorgon22/notdnethack.git` will get you whatever is the default releast branch is at the time
+* Download the version of dNAO you want with git: `git clone https://github.com/demogorgon22/notdnethack.git` will get you whatever is the default release branch is at the time
 * Install the following using `apt install <XXXX>`: `bison`, `build-essential`, `libncurses5-dev`, `flex`
   * If you want to rebuild `include/macromagic.h` (this is only required if you modify `util/MacroMagicMarker.py` or `doc/macromagic.txt`), you also need `python3`
 * Build & install by typing `make install`
