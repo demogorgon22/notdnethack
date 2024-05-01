@@ -30,6 +30,7 @@ STATIC_DCL char * get_mw_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mf_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_speed_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_description_of_damage_prefix(uchar, uchar);
+STATIC_DCL char * get_description_of_ancient_breath(struct monst *, char *);
 STATIC_DCL int generate_list_of_resistances(struct monst *, char *, int);
 #ifdef PORT_HELP
 extern void NDECL(port_help);
@@ -639,6 +640,9 @@ lookat(x, y, buf, monbuf, shapebuff)
 		/* telepathy */
 		if (tp_sensemon(mtmp))
 		    ways_seen++;
+		/* r'lyehian sight */
+		if (rlyehian_sensemon(mtmp))
+	            ways_seen++;
 		/* xray */
 		if (useemon && xraydist > 0 &&
 			distu(mtmp->mx, mtmp->my) <= xraydist) {
@@ -691,6 +695,10 @@ lookat(x, y, buf, monbuf, shapebuff)
 		    }
 		    if (tp_sensemon(mtmp)) {
 			Strcat(monbuf, "telepathy");
+			if (ways_seen-- > 1) Strcat(monbuf, ", ");
+		    }
+		    if (rlyehian_sensemon(mtmp)) {
+			Strcat(monbuf, "r'lyehian sight");
 			if (ways_seen-- > 1) Strcat(monbuf, ", ");
 		    }
 		    if (useemon && xraydist > 0 &&
@@ -2579,6 +2587,39 @@ get_description_of_attack(struct attack *mattk, char * main_temp_buf)
 }
 
 char *
+get_description_of_ancient_breath(struct monst * mtmp, char * description)
+{
+	switch(mtmp->mtyp){
+		case PM_ANCIENT_OF_BLESSINGS:
+			sprintf(description, "Inhales blessings and exhales injuries.");
+		break;
+		case PM_ANCIENT_OF_VITALITY:
+			sprintf(description, "Inhales death and exhales life.");
+		break;
+		case PM_ANCIENT_OF_CORRUPTION:
+			sprintf(description, "Inhales good health and exhales slimy corruption.");
+		break;
+		case PM_ANCIENT_OF_THE_BURNING_WASTES:
+			sprintf(description, "Inhales moisture and exhales sweltering heat.");
+		break;
+		case PM_ANCIENT_OF_THOUGHT:
+			sprintf(description, "Inhales thought and exhales psychic shrieks.");
+		break;
+		case PM_ANCIENT_OF_ICE:
+			sprintf(description, "Inhales warmth and exhales ice.");
+		break;
+		case PM_ANCIENT_OF_DEATH:
+			sprintf(description, "Inhales life and exhales death.");
+		break;
+		case PM_BAALPHEGOR:
+			if(mtmp->mhp < mtmp->mhpmax)
+				sprintf(description, "Inhales free will and exhales static curses.");
+		break;
+	}
+	return description;
+}
+
+char *
 get_description_of_monster_type(struct monst * mtmp, char * description)
 {
 	/*
@@ -2716,6 +2757,15 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 				strcat(main_temp_buf, "\n");
 				strcat(description, main_temp_buf);
 			} while (!((attk)->aatyp == 0 && (attk)->adtyp == 0 && (attk)->damn == 0 && (attk)->damd == 0));		/* no more attacks */
+			if(is_ancient(mtmp->data)){
+				temp_buf[0] = '\0';
+				get_description_of_ancient_breath(mtmp, temp_buf);
+				if(temp_buf[0] != '\0'){
+					strcat(description, "\n");
+					strcat(description, temp_buf);
+				}
+					
+			}
 			temp_buf[0] = '\0';
 			strcat(description, "\n");
 			strcat(description, get_mf_description_of_monster_type(mtmp, temp_buf));

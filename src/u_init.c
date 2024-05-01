@@ -1954,10 +1954,6 @@ u_init()
 	u.sealsActive = 0;
 	u.specialSealsActive = 0;
 
-	u.sealTimeout[AHAZU-FIRST_SEAL] = u.sealTimeout[AMON-FIRST_SEAL] = u.sealTimeout[ANDREALPHUS-FIRST_SEAL] = u.sealTimeout[ANDROMALIUS-FIRST_SEAL] = u.sealTimeout[ASTAROTH-FIRST_SEAL] = u.sealTimeout[BALAM-FIRST_SEAL] = u.sealTimeout[BERITH-FIRST_SEAL] = u.sealTimeout[BUER-FIRST_SEAL] = u.sealTimeout[CHUPOCLOPS-FIRST_SEAL] = u.sealTimeout[DANTALION-FIRST_SEAL] = u.sealTimeout[SHIRO-FIRST_SEAL] = 0;
-	u.sealTimeout[ECHIDNA-FIRST_SEAL] = u.sealTimeout[EDEN-FIRST_SEAL] = u.sealTimeout[ENKI-FIRST_SEAL] = u.sealTimeout[EURYNOME-FIRST_SEAL] = u.sealTimeout[EVE-FIRST_SEAL] = u.sealTimeout[FAFNIR-FIRST_SEAL] = u.sealTimeout[HUGINN_MUNINN-FIRST_SEAL] = u.sealTimeout[IRIS-FIRST_SEAL] = u.sealTimeout[JACK-FIRST_SEAL] = u.sealTimeout[MALPHAS-FIRST_SEAL] = u.sealTimeout[MARIONETTE-FIRST_SEAL] = u.sealTimeout[MOTHER-FIRST_SEAL] = 0;
-	u.sealTimeout[NABERIUS-FIRST_SEAL] = u.sealTimeout[ORTHOS-FIRST_SEAL] = u.sealTimeout[OSE-FIRST_SEAL] = u.sealTimeout[OTIAX-FIRST_SEAL] = u.sealTimeout[PAIMON-FIRST_SEAL] = u.sealTimeout[SIMURGH-FIRST_SEAL] = u.sealTimeout[TENEBROUS-FIRST_SEAL] = u.sealTimeout[YMIR-FIRST_SEAL] = u.sealTimeout[DAHLVER_NAR-FIRST_SEAL] = u.sealTimeout[ACERERAK-FIRST_SEAL] = 0;
-	
 	u.osepro[0] = '\0';
 	u.osegen[0] = '\0';
 	
@@ -2337,8 +2333,6 @@ u_init()
 		u.ualign.type = A_CHAOTIC;
 		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
 		flags.initalign = 2; // 2 == chaotic
-        urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
-        urace.lovemask = 0; /* Convicts are pariahs of their race */
         break;
 #endif	/* CONVICT */
 	case PM_MADMAN:
@@ -2381,9 +2375,10 @@ u_init()
 		u.usanity = 75; /* Your sanity is not so hot */
 		u.umadness |= MAD_DELUSIONS; /* Your sanity is not so hot */
 		u.udrunken = 30; /* Your sanity is not so hot (and you may have once been more powerful) */
+		if(Race_if(PM_ELF)){
+			u.gevurah += 4;//cheated death.
+		}
 
-        urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
-        urace.lovemask = 0; /* Madmen are pariahs of their race */
         break;
 	case PM_HEALER:
 		if(Race_if(PM_DROW)){

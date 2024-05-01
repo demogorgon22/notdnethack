@@ -131,6 +131,7 @@ struct obj {
 #define STATUE_FEMALE   0x04
 #define STATUE_FACELESS 0x08
 #define STATUE_EPRE		0x10
+#define STATUE_LOYAL	0x20
 
 #define FIGURINE_LOYAL	0x01
 #define FIGURINE_MALE	0x02
@@ -684,6 +685,8 @@ struct obj {
 			 || ((otmp)->otyp >= EFFIGY && (otmp)->otyp <= DOLL_S_TEAR)\
 			 || (otmp)->otyp == HOLY_SYMBOL_OF_THE_BLACK_MOTHE\
 			 || (otmp)->oartifact == ART_ESSCOOAHLIPBOOURRR\
+			 || (otmp)->otyp == FIGURINE\
+			 || (otmp)->otyp == STATUE\
 			 || (otmp)->otyp == MAGIC_LAMP\
 			 || (otmp)->otyp == CANDLE_OF_INVOCATION\
 			 || (otmp)->otyp == RIN_WISHES\

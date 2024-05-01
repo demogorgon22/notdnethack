@@ -1681,7 +1681,7 @@ struct obj *obj;
 			pline("Your broken shackles don't touch anything.");
 		else
 			pline("Your staff doesn't touch anything.");
-		return MOVE_STANDARD;
+		return MOVE_PARTIAL;
 	}
 	else {
 		mon = m_at(u.ux + u.dx, u.uy + u.dy);
@@ -1691,7 +1691,7 @@ struct obj *obj;
 			pline("Your broken shackles don't touch anything!");
 		else
 			pline("Your staff doesn't touch anything.");
-		return MOVE_STANDARD;
+		return MOVE_PARTIAL;
 	}
 	boolean good_effect = (mon->mpeaceful && !obj->cursed) || (!mon->mpeaceful && obj->cursed);
 	if(good_effect){
@@ -1889,7 +1889,7 @@ struct obj *obj;
 			}
 		}
 	}
-	return MOVE_STANDARD;
+	return MOVE_PARTIAL;
 }
 
 int

@@ -460,15 +460,8 @@ boolean incr;	/* true iff via incremental experience growth */
 	register int num;
 
 	if (!incr) You_feel("more experienced.");
-	num = newhp();
-	u.uhprolled += num;
-	u.uhp += num + conplus(ACURR(A_CON));
-	if((int)(conplus(ACURR(A_CON))) != conplus(ACURR(A_CON))){
-		/* Remainder (just give an extra HP of healing)*/
-		u.uhp++;
-	}
 	if (Upolyd) {
-	    num = rnd(8);
+	    num = rnd(hd_size(youracedata));
 	    u.mhrolled += num;
 	    u.mh += num + conplus(ACURR(A_CON));
 		if((int)(conplus(ACURR(A_CON))) != conplus(ACURR(A_CON))){
@@ -476,10 +469,17 @@ boolean incr;	/* true iff via incremental experience growth */
 			u.mh++;
 		}
 	}
-	num = newen();
-	u.uenrolled += num;
-	u.uen += num + ACURR(A_INT)/4;
 	if (u.ulevel < MAXULEV) {
+		num = newhp();
+		u.uhprolled += num;
+		u.uhp += num + conplus(ACURR(A_CON));
+		if((int)(conplus(ACURR(A_CON))) != conplus(ACURR(A_CON))){
+			/* Remainder (just give an extra HP of healing)*/
+			u.uhp++;
+		}
+		num = newen();
+		u.uenrolled += num;
+		u.uen += num + ACURR(A_INT)/4;
 	    if (incr) {
 		long tmp = newuexp(u.ulevel + 1);
 		if (u.uexp >= tmp) u.uexp = tmp - 1;
@@ -491,6 +491,12 @@ boolean incr;	/* true iff via incremental experience growth */
 	    pline("Welcome to experience level %d.", u.ulevel);
 	    adjabil(u.ulevel - 1, u.ulevel);	/* give new intrinsics */
 	    reset_rndmonst(NON_PM);		/* new monster selection */
+	}
+	else {
+		num = newhp();
+		u.uhpbonus += num;
+		num = newen();
+		u.uenbonus += num;
 	}
 	if(Role_if(PM_EXILE)) binderup();
 	if(Role_if(PM_ANACHRONOUNBINDER)) acuup();

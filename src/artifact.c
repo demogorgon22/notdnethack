@@ -3878,7 +3878,7 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 			if(vis) pline("%s is thrown backwards by the gusting winds!",Monnam(mdef));
 			if(mdef->data->msize >= MZ_HUGE) mhurtle(mdef, u.dx, u.dy, 1, TRUE);
 			else mhurtle(mdef, u.dx, u.dy, 10, FALSE);
-			if(mdef->mhp <= 0 || MIGRATINGMONSTER(mdef)) return vis;//Monster was killed as part of movement OR fell to new level and we should stop.
+			if(DEADMONSTER(mdef) || MIGRATINGMONSTER(mdef)) return vis;//Monster was killed as part of movement OR fell to new level and we should stop.
 		}
 		and = TRUE;
 	}
@@ -4699,13 +4699,13 @@ int * truedmgptr;
 		if(power > 0){
 			int multiplier = power >= 50 ? 3 : power >= 25 ? 2 : 1; 
 			int chance = power >= 50 ? 4 : power >= 25 ? 3 : 2;
-			if(u.usanity > 80 && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
+			if(youagr && u.usanity > 80 && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
 				chance += (u.usanity-81)/5;//0, 1, 2, or 3 starting at 81, 86, 91, 96
 			if(rn2(20) < chance){
 				*truedmgptr += multiplier*basedmg;
 				if(otmp->oartifact){
 					const struct artifact *weap = get_artifact(otmp);
-					if((weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_RESONANT)){
+					if(youagr && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_RESONANT)){
 						for(struct monst *tmon = fmon; tmon; tmon = tmon->nmon){
 							if(DEADMONSTER(tmon))
 								continue;
@@ -4835,7 +4835,7 @@ int dieroll;
 			boolean notResisted = TRUE;
 			int dsize;
 			for(i = 0; i < SIZE(abil); i++){
-				switch(hash((unsigned long) (nonce + otmp->o_id + youmonst.movement))%4){
+				switch(hash((unsigned long) (nonce + otmp->o_id + youmonst.movement + i))%4){
 					case 0:
 						if(Fire_res(mdef))
 							notResisted = FALSE;
@@ -4853,20 +4853,22 @@ int dieroll;
 							notResisted = FALSE;
 					break;
 				}
-				if(youagr){
-					if(ACURR(abil[i]) >= 15){
-						if(ACURR(abil[i]) >= 25)
-							dsize = (u.uinsight + u.usanity)/10;
-						else if(ACURR(abil[i]) >= 18)
-							dsize = (u.uinsight + u.usanity)/20;
-						else /*>= 15*/
-							dsize = (u.uinsight + u.usanity)/40;
-						
-						*truedmgptr += rnd(dsize);
+				if(notResisted){
+					if(youagr){
+						if(ACURR(abil[i]) >= 15){
+							if(ACURR(abil[i]) >= 25)
+								dsize = (u.uinsight + u.usanity)/10;
+							else if(ACURR(abil[i]) >= 18)
+								dsize = (u.uinsight + u.usanity)/20;
+							else /*>= 15*/
+								dsize = (u.uinsight + u.usanity)/40;
+							
+							*truedmgptr += rnd(dsize);
+						}
 					}
-				}
-				else {
-					*truedmgptr += d(1, mlev(magr)/5);
+					else {
+						*truedmgptr += d(1, mlev(magr)/5);
+					}
 				}
 			}
 		}
@@ -5619,6 +5621,10 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 			else {
 				mhurtle(mdef, dx, dy, hurtledistance, FALSE);
+				if (DEADMONSTER(mdef))
+					return MM_DEF_DIED;
+				if(MIGRATINGMONSTER(mdef))
+					return MM_AGR_STOP;
 			}
 		}
 		else {
@@ -8164,7 +8170,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			fall_asleep(-rnd(arti_struct->damage ? arti_struct->damage : basedmg ? basedmg : 1), TRUE);
 		}
 		else {
-			if (sleep_monst(mdef, rnd(arti_struct->damage ? arti_struct->damage : basedmg ? basedmg : 1), 0)) {
+			if (sleep_monst(mdef, rnd(arti_struct->damage ? arti_struct->damage : basedmg ? basedmg : 1), youagr ? 0 : WEAPON_CLASS)) {
 				pline("%s falls asleep!",
 					Monnam(mdef));
 				mdef->mstrategy &= ~STRAT_WAITFORU;
@@ -14538,7 +14544,7 @@ do_passive_attacks()
 		return;
 
 	if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
-		if(!ClearThoughts){
+		if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
 			pline("Lashing tentacles erupt from your brain!");
 			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
 			morehungry(d(4,4)*get_uhungersizemod());

@@ -3582,6 +3582,21 @@ winid *datawin;
 			Sprintf(buf2, "Slakes the thirst of Yog-Sothoth.");
 			OBJPUTSTR(buf2);
 		}
+		if (check_oprop(obj, OPROP_RWTH))
+		{
+			Sprintf(buf2, "Channels the wrath of the Silver Flame.");
+			OBJPUTSTR(buf2);
+		}
+		if (check_oprop(obj, OPROP_RBRD))
+		{
+			Sprintf(buf2, "The Silver Flame shares burdens.");
+			OBJPUTSTR(buf2);
+		}
+		if (check_oprop(obj, OPROP_SLIF))
+		{
+			Sprintf(buf2, "The Silver Flame will save the wearer's life.");
+			OBJPUTSTR(buf2);
+		}
 	}
 	/* other artifact weapon effects */
 	if (oartifact) {
@@ -6495,6 +6510,8 @@ u_material_next_to_skin(material)
 int material;
 {
 	int count = 0;
+	if(u.sealsActive&SEAL_EDEN)
+		return 0;
 	if(uarmu && uarmu->obj_material == material)
 		count += uarmu->otyp == BODYGLOVE ? 5 : 1;
 	if(uarmu && uarmu->otyp == BODYGLOVE)
@@ -6536,6 +6553,8 @@ int bcu;
 {
 	#define bcu(otmp) (is_unholy(otmp) ? -1 : otmp->blessed ? 1 : 0)
 	int count = 0;
+	if(u.sealsActive&SEAL_EDEN)
+		return 0;
 	if(uarmu && bcu(uarmu) == bcu)
 		count += uarmu->otyp == BODYGLOVE ? 5 : 1;
 	if(uarmu && uarmu->otyp == BODYGLOVE)

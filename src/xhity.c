@@ -2482,7 +2482,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				attk->damd += (int)((Insanity/30.0)*(Insanity/30.0) + 0.5);
 
 				/* this is applied to all acceptable attacks; no subout marker is necessary */
-			}	
+			}
 		}
 		else if (!youagr && otmp->otyp == BESTIAL_CLAW && magr->mcrazed) {
 			if (attk->aatyp == AT_XWEP) {
@@ -3642,6 +3642,29 @@ int *shield_margin;
 			/* Stat (INT) (from Dantalion vs telepathically sensed enemies) */
 			if (u.sealsActive&SEAL_DANTALION && tp_sensemon(mdef))
 				bons_acc += max(0, (ACURR(A_INT) - 10) / 2);
+
+			if(attk && is_bite_at(attk->aatyp)
+				&& mdef && (!vegetarian(mdef->data) || your_race(mdef->data))
+				&& mad_turn(MAD_CANNIBALISM)
+			){
+				int can_bon = str_abon();
+
+				if (ACURR(A_CHA) == 25) can_bon += 8;
+				else can_bon += max(0, (ACURR(A_CHA) - 10) / 2);
+
+				if(your_race(mdef->data))
+					can_bon *= 2;
+
+				bons_acc += can_bon;
+			}
+			if(attk && is_insight_tentacle_at(attk->aatyp)
+				&& (u.sealsActive&SEAL_OSE)
+			){
+				if(u.uinsight)
+					bons_acc += rnd(min(u.uinsight, mlev(magr)));
+				if (ACURR(A_CHA) == 25) bons_acc += 8;
+				else bons_acc += max(0, (ACURR(A_CHA) - 10) / 2);
+			}
 			/* intrinsic accuracy bonuses */
 			bons_acc += u.uhitinc;
 			if(uarmg && uarmg->otyp == IMPERIAL_ELVEN_HELM && check_imp_mod(uarmg, IEA_INC_ACC))
@@ -4739,14 +4762,14 @@ boolean ranged;
 		/* hit with [weapon] */
 		result = hmon_general(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, 0, dmg, dohitmsg, dieroll, FALSE, vis);
 		if (weapon_p) weapon = *weapon_p;
-		if (result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED))
+		if (result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
 			return result;
 		if (weapon && is_multi_hit(weapon) && weapon->ostriking) {
 			int i;
 			for (i = 0; weapon && (i < weapon->ostriking); i++) {
 				result = hmon_general(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, 0, 0, FALSE, dieroll, TRUE, vis);
 				if (weapon_p) weapon = *weapon_p;
-				if (result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED))
+				if (result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
 					return result;
 			}
 			do_weapon_multistriking_effects(magr, mdef, attk, weapon, vis);
@@ -7057,7 +7080,7 @@ boolean ranged;
 								);
 						}
 						/* kill */
-						killer = "ripped apart by Demogorgon";
+						killer = pa->mtyp == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH ? "ripped apart by Blibdoolpoolp" : "ripped apart by Demogorgon";
 						killer_format = NO_KILLER_PREFIX;
 						return xdamagey(magr, mdef, attk, FATAL_DAMAGE_MODIFIER);
 					}
@@ -7678,8 +7701,13 @@ boolean ranged;
 		
 		if(youdef)
 			hurtle(sgn(dx), sgn(dy), 1, FALSE, FALSE);
-		else
+		else {
 			mhurtle(mdef, sgn(dx), sgn(dy), 1, FALSE);
+			if (DEADMONSTER(mdef))
+				return MM_DEF_DIED;
+			if(MIGRATINGMONSTER(mdef))
+				return MM_AGR_STOP;
+		}
 		
 		/* make physical attack without hitmsg */
 		alt_attk.adtyp = AD_PHYS;
@@ -13915,6 +13943,7 @@ int vis;						/* True if action is at all visible to the player */
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_LOLTH_S_FANG)
 		sneak_dice++;
+	//Offhand attacks as well
 	if (weapon && weapon->owornmask && weapon->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE))
 		sneak_dice++;
 	if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovar1_seals&SEAL_ANDROMALIUS)
@@ -14231,7 +14260,7 @@ int vis;						/* True if action is at all visible to the player */
 			otherobj |= slot;
 		}
 		/* calculate sear damage */
-		seardmg += hatesobjdmg(mdef, otmp);
+		seardmg += hatesobjdmg(mdef, otmp, magr);
 	}
 	/* direct contact (includes rings) */
 	else {
@@ -14358,7 +14387,7 @@ int vis;						/* True if action is at all visible to the player */
 						unblessedobj |= rslot;
 					}
 					/* calculate sear damage */
-					seardmg += hatesobjdmg(mdef, otmp);
+					seardmg += hatesobjdmg(mdef, otmp, magr);
 				}
 			}
 		}
@@ -15486,6 +15515,28 @@ int vis;						/* True if action is at all visible to the player */
 						if (ACURR(A_INT) == 25) bonsdmg += 8;
 						else bonsdmg += max(0, (ACURR(A_INT) - 10) / 2);
 					}
+					if(attk && is_bite_at(attk->aatyp)
+						&& mdef && (!vegetarian(mdef->data) || your_race(mdef->data))
+						&& mad_turn(MAD_CANNIBALISM)
+					){
+						int can_bon = str_dbon(&youmonst);
+
+						if (ACURR(A_CHA) == 25) can_bon += 8;
+						else can_bon += max(0, (ACURR(A_CHA) - 10) / 2);
+
+						if(your_race(mdef->data))
+							can_bon *= 2;
+
+						bonsdmg += can_bon;
+					}
+					if(attk && is_insight_tentacle_at(attk->aatyp)
+						&& (u.sealsActive&SEAL_OSE)
+					){
+						if(u.uinsight)
+							bonsdmg += rnd(min(u.uinsight, mlev(magr)));
+						if (ACURR(A_CHA) == 25) bonsdmg += 8;
+						else bonsdmg += max(0, (ACURR(A_CHA) - 10) / 2);
+					}
 				}
 				//Monster specific bonuses
 				else if(magr){
@@ -15638,7 +15689,7 @@ int vis;						/* True if action is at all visible to the player */
 			}
 		}
 		/* misc: train player's Soresu skill if applicable */
-		if (youdef && uwep && is_lightsaber(uwep) && litsaber(uwep) && magr && melee &&
+		if (youdef && uwep && is_lightsaber(uwep) && litsaber(uwep) && magr && melee && P_SKILL(P_SHII_CHO) >= P_BASIC &&
 			(activeFightingForm(FFORM_SHII_CHO) ||
 			(activeFightingForm(FFORM_SORESU))
 			)) use_skill(P_SORESU, 1);
@@ -15660,7 +15711,7 @@ int vis;						/* True if action is at all visible to the player */
 				/* if the weapon caused a miss and we incremented u.uconduct.weaphit, decrement decrement it back */
 				if (returnvalue == MM_MISS && youagr && (melee || thrust))
 					u.uconduct.weaphit--;
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED|MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -15673,7 +15724,7 @@ int vis;						/* True if action is at all visible to the player */
 			otmp = launcher;
 			if (otmp) {
 				returnvalue = apply_hit_effects(magr, mdef, otmp, weapon, basedmg, &artidmg, &elemdmg, dieroll, &hittxt, FALSE);
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD | MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -15685,7 +15736,7 @@ int vis;						/* True if action is at all visible to the player */
 			otmp->oartifact == ART_HELM_OF_THE_ARCANE_ARCHER)) {
 			if (otmp) {
 				returnvalue = apply_hit_effects(magr, mdef, otmp, weapon, basedmg, &artidmg, &elemdmg, dieroll, &hittxt, FALSE);
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD | MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -15698,7 +15749,7 @@ int vis;						/* True if action is at all visible to the player */
 			otmp = (youagr ? uarmg : which_armor(magr, W_ARMG));
 			if (otmp) {
 				returnvalue = apply_hit_effects(magr, mdef, otmp, (struct obj *)0, unarmed_basedmg, &artidmg, &elemdmg, dieroll, &hittxt, TRUE);
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD | MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -15711,7 +15762,7 @@ int vis;						/* True if action is at all visible to the player */
 			otmp = (youagr ? uarmf : which_armor(magr, W_ARMF));
 			if (otmp) {
 				returnvalue = apply_hit_effects(magr, mdef, otmp, (struct obj *)0, unarmed_basedmg, &artidmg, &elemdmg, dieroll, &hittxt, TRUE);
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD | MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -15724,7 +15775,7 @@ int vis;						/* True if action is at all visible to the player */
 			otmp = (youagr ? uarmh : which_armor(magr, W_ARMH));
 			if (otmp) {
 				returnvalue = apply_hit_effects(magr, mdef, otmp, (struct obj *)0, unarmed_basedmg, &artidmg, &elemdmg, dieroll, &hittxt, TRUE);
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD | MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -15739,7 +15790,7 @@ int vis;						/* True if action is at all visible to the player */
 					continue;
 				// Note: artifact rings are currently set to always add their damage, but to only print the generic x hits messages when unarmed.
 				returnvalue = apply_hit_effects(magr, mdef, otmp, (struct obj *)0, basedmg, &artidmg, &elemdmg, dieroll, &hittxt, unarmed_punch);
-				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD)))
+				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED | MM_DEF_LSVD | MM_AGR_STOP)))
 					return returnvalue;
 				if (otmp->oartifact)
 					artif_hit = TRUE;
@@ -16036,8 +16087,13 @@ int vis;						/* True if action is at all visible to the player */
 		}
 		if (youdef)
 			hurtle(dx, dy, BOLT_LIM, FALSE, TRUE);
-		else
+		else {
 			mhurtle(mdef, dx, dy, BOLT_LIM, FALSE);
+			if (DEADMONSTER(mdef))
+				return MM_DEF_DIED;
+			if(MIGRATINGMONSTER(mdef))
+				return MM_AGR_STOP;
+		}
 		
 		if(x(mdef)) explode(x(mdef), y(mdef),
 			AD_FIRE, 0,
@@ -16808,7 +16864,7 @@ int vis;						/* True if action is at all visible to the player */
 		if (otmp && poisons_wipedoff) {
 			/* rings subtract from corpsenm */
 			if (otmp->oclass == RING_CLASS) {
-				if (otmp->opoisonchrgs-- <= 0)
+				if (--otmp->opoisonchrgs <= 0)
 					otmp->opoisoned = OPOISON_NONE;
 			}
 			/* viperwhips also subtract from corpsenm, but do so with a message */
@@ -16996,6 +17052,10 @@ int vis;						/* True if action is at all visible to the player */
 			mhurtle(mdef, dx, dy, pd->mtyp == PM_KHAAMNUN_TANNIN ? 4 : 1, TRUE);
 			if(pd->mtyp == PM_KHAAMNUN_TANNIN && (ix != x(mdef) || iy != y(mdef)))
 				pline("%s jets away.", Monnam(mdef));
+			if (DEADMONSTER(mdef))
+				return MM_DEF_DIED;
+			if(MIGRATINGMONSTER(mdef))
+				return MM_AGR_STOP;
 			if (staggering_strike)
 				mdef->mstun = TRUE;
 			pd = mdef->data; /* in case of a polymorph trap */
