@@ -2004,7 +2004,7 @@ dosacrifice()
 	(Is_astralevel(&u.uz) || Is_sanctum(&u.uz))) {
 	/*
 	 * REAL BAD NEWS!!! High altars cannot be converted.  Even an attempt
-	 * gets the god who owns it truely pissed off.
+	 * gets the god who owns it truly pissed off.
 	 */
 	You_feel("the air around you grow charged...");
 	pline("Suddenly, you realize that %s has noticed you...", a_gname());

@@ -5704,7 +5704,7 @@ bent on it.
 
 "You must take it far from here, to the Dungeons
 of Doom. May it aid you in your search for the
-amulet of Yendor.
+Amulet of Yendor.
 
 "Travel swiftly, and beware The Stranger!
 

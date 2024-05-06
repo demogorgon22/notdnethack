@@ -102,7 +102,7 @@
 #define MM_TPORT_CNTRL	0x00000400L	/* controls where it teleports to */
 #define MM_TENGTPORT	0x00000800L	/* Monster teleports as Tengu */
 #define MM_STATIONARY	0x00001000L	/* does not move. */
-#define MM_FLOAT		0x00002000L	/* Monster floats instead of truely flying (modifier) */
+#define MM_FLOAT		0x00002000L	/* Monster floats instead of truly flying (modifier) */
 #define MM_NOTONL		0x00004000L	/* Tries to avoid being on same line as player */
 #define MM_FLEETFLEE	0x00008000L	/* Flees if adjacent if it thinks it can outrun you */
 #define MM_WEBRIP		0x00010000L	/* Tears through webs instead of getting stuck */

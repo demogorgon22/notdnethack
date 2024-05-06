@@ -1911,7 +1911,7 @@ static const char * const bogusmons[] = {
 	"incredible hulk",		/* Comics */
 	"incredible bulk",		/* 8-bit theater */
 	"hegemonic brute", "sovereign slayer", "draconian dignitary", "courtyard droll", /* Homestuck */
-	"sprit named Totoro",	/* Tonari no Totoro */
+	"spirit named Totoro",	/* Tonari no Totoro */
 	"ohmu",					/* Nausicaa */
 	"youma",				/* Sailor Moon */
 	"Lone Power", 			/* So you want to be a Wizard? */
