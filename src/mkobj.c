@@ -1038,6 +1038,7 @@ int mkflags;
 			case TINNING_KIT:
 			case MAGIC_MARKER:	otmp->spe = rn1(70, 30);
 				break;
+			case MIST_PROJECTOR:
 			case TREPHINATION_KIT:
 			case CAN_OF_GREASE:	otmp->spe = rnd(25);
 				blessorcurse(otmp, 10);

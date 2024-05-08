@@ -2342,6 +2342,15 @@ struct obj *obj;
 	else if (obj->otyp == UNICORN_HORN)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Squeeze the unicorn horn tightly", MENU_UNSELECTED);
+	else if (obj->otyp == MIST_PROJECTOR)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Use this mist projector", MENU_UNSELECTED);
+	else if (obj->otyp == HOLY_SYMBOL_OF_THE_BLACK_MOTHE)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Commune with the Black Mother", MENU_UNSELECTED);
+	else if (obj->otyp == HYPERBOREAN_DIAL)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Try to solve this puzzle", MENU_UNSELECTED);
 	else if ((obj->otyp >= FLUTE && obj->otyp <= DRUM_OF_EARTHQUAKE) ||
 			(obj->otyp == HORN_OF_PLENTY && !obj->known))
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,

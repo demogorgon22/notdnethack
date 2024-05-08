@@ -1372,6 +1372,8 @@ TOOL(("holy symbol of the black mother", "tarnished triple goat-head"), /*Needs 
 								0,   MZ_TINY, 0, 1, 0,   0, 50,8000, SILVER, CLR_BLACK),
 TOOL(("Hyperborean dial", "silvery mechanism"), /*Needs encyc entry*/
 								0,   MZ_SMALL, 0, 1, 0,   0, 66,8000, METAL, HI_SILVER),
+TOOL(("mist projector", "cluster of twisted metal tubes"), /*Needs encyc entry*/
+								0,   MZ_SMALL, 0, 1, 1,   0, 50,500, METAL, HI_METAL),
 TOOL(("magic marker"), 1,   MZ_TINY, 0, 1, 1,  15,  2,  50, PLASTIC, CLR_RED),
 TOOL(("church-brick", "engraved brick"), /*Needs encyc entry*/
 								0,   MZ_HUGE, 0, 1, 0,   0, 170,100, MINERAL, CLR_GRAY, O_MATSPEC(IDED|UNIDED)),

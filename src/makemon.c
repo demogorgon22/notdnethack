@@ -11301,6 +11301,7 @@ boolean greatequip;
 					}
 					n = rn2(200)+200;
 					for(i=0; i<n; i++) (void)mongets(mtmp, GOLD_PIECE, mkobjflags);
+					(void)mongets(mtmp, MIST_PROJECTOR, mkobjflags);
 				break;
 				case PM_MIGO_PHILOSOPHER:
 					if(!rn2(6)){ 
@@ -11316,6 +11317,7 @@ boolean greatequip;
 					rng = SCR_STINKING_CLOUD-SCR_ENCHANT_ARMOR;
 					n = rn2(4)+3;
 					for(i=0; i<n; i++) (void)mongets(mtmp, rn2(rng)+SCR_ENCHANT_ARMOR, mkobjflags);
+					(void)mongets(mtmp, MIST_PROJECTOR, mkobjflags);
 				break;
 				case PM_MIGO_QUEEN:
 					
@@ -11331,6 +11333,7 @@ boolean greatequip;
 					rng = SCR_STINKING_CLOUD-SCR_ENCHANT_ARMOR;
 					n = rn2(4);
 					for(i=0; i<n; i++) (void)mongets(mtmp, rn2(rng)+SCR_ENCHANT_ARMOR, mkobjflags);
+					(void)mongets(mtmp, MIST_PROJECTOR, mkobjflags);
 				break;
 			}
 		}

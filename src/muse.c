@@ -1132,6 +1132,7 @@ struct monst *mtmp;
 #define MUSE_WAN_CANCELLATION 22	/* Lethe */
 #define MUSE_CRYSTAL_SKULL 	  23
 #define MUSE_MON_TURN_UNDEAD  24
+#define MUSE_MIST_PROJECTOR 25
 
 /* Find a mask.
  */
@@ -1209,7 +1210,7 @@ struct monst *mtmp;
 
 #define nomore(x) if(m.has_offense==x) continue;
 	for(obj=mtmp->minvent; obj; obj=obj->nobj) {
-	    if(mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
+		if(mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
 			struct obj *otmp;
 			for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
 				if (otmp->owornmask & W_ARMG && (otmp->otyp == GAUNTLETS_OF_POWER || (otmp->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(otmp, IEA_GOPOWER)))){
@@ -1224,6 +1225,11 @@ struct monst *mtmp;
 		if(obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj) && !get_ox(obj, OX_ESUM)) {
 			m.offensive = obj;
 			m.has_offense = MUSE_CRYSTAL_SKULL;
+		}
+		nomore(MUSE_MIST_PROJECTOR);
+		if(obj->otyp == MIST_PROJECTOR && obj->spe > 0 && resists_cold(mtmp)) {
+			m.offensive = obj;
+			m.has_offense = MUSE_MIST_PROJECTOR;
 		}
 		nomore(MUSE_MON_TURN_UNDEAD);
 		nomore(MUSE_WAN_DEATH);
@@ -1604,6 +1610,19 @@ struct monst *mtmp;
 		if(canspotmon(mtmp))
 			pline("%s concentrates on %s!", Monnam(mtmp), canseemon(mtmp) ? "a crystal skull" : "something");
 		x_uses_crystal_skull(&otmp, mtmp, &cc);
+		return 2;
+	}break;
+	case MUSE_MIST_PROJECTOR:{
+		struct region_arg cloud_data;
+		cloud_data.damage = 3+3*(mtmp->mtyp == PM_MIGO_QUEEN ? 3 :
+					 mtmp->mtyp == PM_MIGO_PHILOSOPHER ? 2 :
+					 mtmp->mtyp == PM_MIGO_SOLDIER ? 1 : 0);
+		cloud_data.adtyp = AD_COLD;
+		(void) create_generic_cloud(u.ux, u.uy, 4+bcsign(otmp), &cloud_data, TRUE);
+		if (cansee(mtmp->mx, mtmp->my))
+			You("see whirling snow swirl out from around %s %s.",
+			    s_suffix(mon_nam(mtmp)), xname(otmp));
+		otmp->spe--;
 		return 2;
 	}break;
 	case MUSE_WAN_DEATH:
