@@ -12324,7 +12324,7 @@ arti_invoke(obj)
 			obj->age = 0;
 		}break;
 		case SCORPION_UPGRADES:
-			scorpion_upgrade_menu();
+			scorpion_upgrade_menu(obj);
 		break;
 		default: pline("Program in disorder.  Artifact invoke property not recognized");
 		break;

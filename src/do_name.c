@@ -144,7 +144,7 @@ auto_describe(int cx, int cy)
     char tmpbuf[BUFSZ], out_str[LONGBUFSZ];
 	out_str[0] = 0;
     const char *firstmatch = "unknown";
-	boolean force_defsyms;
+	boolean force_defsyms = FALSE;
 
     cc.x = cx;
     cc.y = cy;
@@ -1904,7 +1904,7 @@ static const char * const bogusmons[] = {
 	"Ent",					/* Lord of the Rings */
 	"tangle tree", "nickelpede", "wiggle",	/* Xanth */
 	"white rabbit", "snark",		/* Lewis Carroll */
-	"pushmi-pullyu",			/* Dr. Doolittle */
+	"pushmi-pullyu",			/* Dr. Dolittle */
 	"smurf",				/* The Smurfs */
 	"tribble", "Klingon", "Borg",		/* Star Trek */
 	"Ewok",	"Wookiee", "Jedi", "Sith",	/* Star Wars */
