@@ -8816,6 +8816,7 @@ use_mist_projector(struct obj *obj)
 	(void) create_generic_cloud(u.ux, u.uy, 4+bcsign(obj), &cloud_data, TRUE);
 	pline("Whirling snow swirls out from around the %s.", xname(obj));
 	obj->spe--;
+	use_skill(P_FIREARM, 1);
 	return MOVE_STANDARD;
 }
 
