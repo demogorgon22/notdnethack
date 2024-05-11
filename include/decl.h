@@ -791,11 +791,9 @@ E struct realtime_data {
 } realtime_data;
 #endif /* RECORD_REALTIME || REALTIME_ON_BOTL */
 
-
 #ifdef SIMPLE_MAIL
 E int mailckfreq;
 #endif
-
 
 struct _plinemsg {
     xchar msgtype;
@@ -811,6 +809,20 @@ E struct _plinemsg *pline_msg;
 #define MSGTYP_NOREP   1
 #define MSGTYP_NOSHOW  2
 #define MSGTYP_STOP    3
+
+struct querytype {
+    xchar querytype;
+    char *pattern;
+    regex_t match;
+    boolean is_regexp;
+    struct querytype *next;
+};
+
+extern struct querytype *query_types;
+
+#define QUERYTYP_NORMAL 0
+#define QUERYTYP_YN     1
+#define QUERYTYP_YESNO  2
 
 #define ROLL_FROM(array)	array[rn2(SIZE(array))]
 

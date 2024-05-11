@@ -7,9 +7,6 @@
 #include "hack.h"
 #include "hashmap.h"
 
-#ifdef WIZARD
-#endif
-
 #ifdef OVLB
 
 static boolean no_repeat = FALSE;
@@ -20,7 +17,6 @@ static char *FDECL(You_buf, (int));
 char msgs[DUMPMSGS][BUFSZ];
 int lastmsg = -1;
 #endif
-
 
 void
 msgpline_add(typ, pattern)
@@ -86,8 +82,6 @@ msgpline_type(msg)
     }
     return MSGTYP_NORMAL;
 }
-
-
 
 /*VARARGS1*/
 /* Note that these declarations rely on knowledge of the internals

@@ -1591,7 +1591,7 @@ opentin()		/* called during each move whilst opening a tin */
 			Sprintf(buf, "You feel a deep sense of kinship to the tin!  Eat it anyway?");
 		else
 			Sprintf(buf, "Eat it?");
-		if (yn_function(buf,ynchars,'n')=='n') {
+		if (yn(buf)=='n') {
 			if (!Hallucination) tin.tin->dknown = tin.tin->known = TRUE;
 			if (flags.verbose) You("discard the open tin.");
 			costly_tin((const char*)0);
@@ -2657,54 +2657,54 @@ struct obj *otmp;
 		/* Tainted meat */
 		Sprintf(buf, "%s like %s could be tainted! %s",
 			foodsmell, it_or_they, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (stoneorslime) {
 		Sprintf(buf, "%s like %s could be something very dangerous! %s",
 			foodsmell, it_or_they, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (otmp->orotten || (cadaver && rotted > 3L)) {
 		/* Rotten */
 		Sprintf(buf, "%s like %s could be rotten! %s",
 			foodsmell, it_or_they, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (cadaver && polyfodder(otmp) && !Unchanging) {
 		/* polymorphous */
 		Sprintf(buf, "%s strangely variable! %s",
 			foodsmell, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (cadaver && poisonous(&mons[mtyp]) && !Poison_resistance) {
 		/* poisonous */
 		Sprintf(buf, "%s like %s might be poisonous! %s",
 			foodsmell, it_or_they, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (cadaver && !vegetarian(&mons[mtyp]) &&
 	    !u.uconduct.unvegetarian && Role_if(PM_MONK)) {
 		Sprintf(buf, "%s unhealthy. %s",
 			foodsmell, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (cadaver && acidic(&mons[mtyp]) && !Acid_resistance) {
 		Sprintf(buf, "%s rather acidic. %s",
 			foodsmell, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (Upolyd && u.umonnum == PM_RUST_MONSTER &&
 	    is_metallic(otmp) && otmp->oerodeproof) {
 		Sprintf(buf, "%s disgusting to you right now. %s",
 			foodsmell, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 
@@ -2719,7 +2719,7 @@ struct obj *otmp;
 	     (cadaver && !vegan(&mons[mtyp])))) {
 		Sprintf(buf, "%s foul and unfamiliar to you. %s",
 			foodsmell, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	if (!u.uconduct.unvegetarian && !(Race_if(PM_INCANTIFIER) || magivorous(youracedata)) &&
@@ -2729,7 +2729,7 @@ struct obj *otmp;
 	     (cadaver && !vegetarian(&mons[mtyp])))) {
 		Sprintf(buf, "%s unfamiliar to you. %s",
 			foodsmell, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 
@@ -2737,7 +2737,7 @@ struct obj *otmp;
 		/* Tainted meat with Sick_resistance */
 		Sprintf(buf, "%s like %s could be tainted! %s",
 			foodsmell, it_or_they, eat_it_anyway);
-		if (yn_function(buf,ynchars,'n')=='n') return 1;
+		if (yn(buf)=='n') return 1;
 		else return 2;
 	}
 	return 0;
@@ -2799,7 +2799,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	){
 		if(yn("Eat some of the grass growing here?") == 'y'){
 			You("eat some grass.");
-			if(u.uhunger < (uclockwork ? ((get_uhungermax()*7)/8) : ((get_uhungermax()*3)/4)) || yn_function("You feel awfully full, stop eating?",ynchars,'y') == 'n'){
+			if(u.uhunger < (uclockwork ? ((get_uhungermax()*7)/8) : ((get_uhungermax()*3)/4)) || yn("You feel awfully full, continue eating?") == 'y'){
 				lesshungry(objects[FOOD_RATION].oc_nutrition/objects[FOOD_RATION].oc_delay);
 			}
 			return MOVE_ATE;
@@ -2833,7 +2833,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		char buf[BUFSZ];
 		Sprintf(buf, "You feel a deep sense of kinship to %s!  Eat %s anyway?",
 			the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
-		if (yn_function(buf,ynchars,'n')=='n') return 0;
+		if (yn(buf)=='n') return 0;
 	}
 	
 	if (u.uedibility || u.sealsActive&SEAL_BUER || goodsmeller(youracedata)) {
@@ -3586,7 +3586,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	}
 	if ((otmp->otyp == EYEBALL || otmp->otyp == SEVERED_HAND) && otmp->oartifact) {
 	    Strcpy(qbuf,"Are you sure you want to eat that?");
-	    if ((c = yn_function(qbuf, ynqchars, 'n')) != 'y') return MOVE_CANCELLED;
+	    if ((c = yesno(qbuf, TRUE)) != 'y') return MOVE_CANCELLED;
 	}
 	/* KMH -- Slow digestion is... indigestible */
 	if (otmp->otyp == RIN_SLOW_DIGESTION) {
@@ -4156,7 +4156,7 @@ register int num;
 					victual.fullwarn = TRUE;
 					if (victual.canchoke && victual.reqtime > 1) {
 						/* a one-gulp food will not survive a stop */
-						if (yn_function("Stop eating?",ynchars,'y')=='y') {
+						if (yn("Continue eating?")=='n') {
 						reset_eat();
 						nomovemsg = (char *)0;
 						}
@@ -4662,7 +4662,7 @@ floorfood(verb,corpsecheck)	/* get food from floor or pack */
 		Sprintf(qbuf, "There is a bear trap here (%s); eat it?",
 			(u.utrap && u.utraptype == TT_BEARTRAP) ?
 				"holding you" : "armed");
-		if ((c = yn_function(qbuf, ynqchars, 'n')) == 'y') {
+		if ((c = yn(qbuf)) == 'y') {
 		    u.utrap = u.utraptype = 0;
 		    deltrap(ttmp);
 		    return mksobj(BEARTRAP, NO_MKOBJ_FLAGS);
@@ -4679,7 +4679,7 @@ floorfood(verb,corpsecheck)	/* get food from floor or pack */
 		else
 		    Sprintf(qbuf, "There are %ld gold pieces here; eat them?",
 			    gold->quan);
-		if ((c = yn_function(qbuf, ynqchars, 'n')) == 'y') {
+		if ((c = yn(qbuf)) == 'y') {
 		    return gold;
 		} else if (c == 'q') {
 		    return (struct obj *)0;
@@ -4703,7 +4703,7 @@ floorfood(verb,corpsecheck)	/* get food from floor or pack */
 				otense(otmp, "are"),
 				doname(otmp), verb,
 				(otmp->quan == 1L) ? "it" : "one");
-			if((c = yn_function(qbuf,ynqchars,'n')) == 'y')
+			if((c = yn(qbuf)) == 'y')
 				return(otmp);
 			else if(c == 'q')
 				return((struct obj *) 0);

@@ -363,6 +363,11 @@ struct instance_flags {
        boolean  pickup_thrown;
     boolean msgtype_regex;
     boolean ape_regex;
+    boolean menucolor_regex;
+    boolean querytype_regex;
+#ifdef USER_SOUNDS
+    boolean usersound_regex;
+#endif
     boolean show_shop_prices;
     boolean item_use_menu;
     boolean notice_walls;

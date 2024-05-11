@@ -4632,6 +4632,68 @@ char def;
 }
 #endif
 
+void
+querytype_add(xchar typ, char *pattern)
+{
+    int errnum;
+    char errbuf[80];
+    const char *err = (char *)0;
+    struct querytype *tmp = (struct querytype *) alloc(sizeof(struct querytype));
+    if (!tmp) return;
+    tmp->querytype = typ;
+    tmp->is_regexp = iflags.querytype_regex;
+    if (tmp->is_regexp) {
+	errnum = regcomp(&tmp->match, pattern, REG_EXTENDED | REG_NOSUB);
+	if (errnum != 0) {
+	    regerror(errnum, &tmp->match, errbuf, sizeof(errbuf));
+	    err = errbuf;
+	}
+	if (err) {
+	    raw_printf("\nQUERYTYPE regex error: %s\n", err);
+	    wait_synch();
+	    free(tmp);
+	    return;
+	}
+    } else {
+	tmp->pattern = strdup(pattern);
+    }
+    tmp->next = query_types;
+    query_types = tmp;
+}
+
+void
+querytype_free(void)
+{
+    struct querytype *tmp = query_types;
+    struct querytype *tmp2;
+    while (tmp) {
+	if (tmp->is_regexp) {
+	    (void) regfree(&tmp->match);
+	} else {
+	    free(tmp->pattern);
+	}
+	tmp2 = tmp;
+	tmp = tmp->next;
+	free(tmp2);
+    }
+    query_types = NULL;
+}
+
+xchar
+querytype_type(const char *msg)
+{
+    struct querytype *tmp = query_types;
+    while (tmp) {
+	if (tmp->is_regexp) {
+	    if (regexec(&tmp->match, msg, 0, NULL, 0) == 0) return tmp->querytype;
+	} else {
+	    if (pmatch(tmp->pattern, msg)) return tmp->querytype;
+	}
+	tmp = tmp->next;
+    }
+    return QUERYTYP_NORMAL;
+}
+
 /*
  * Replacement for yn() that can give a yes/no prompt instead.
  *
@@ -4641,6 +4703,9 @@ char def;
 char
 yesno(const char *query, boolean paranoid)
 {
+	xchar typ = querytype_type(query);
+	if (typ == QUERYTYP_YN) paranoid = FALSE;
+	else if (typ == QUERYTYP_YESNO) paranoid = TRUE;
 	if (paranoid) {
 		char qbuf[BUFSZ];
 		char rbuf[BUFSZ];
