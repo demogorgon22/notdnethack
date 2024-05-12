@@ -8390,7 +8390,7 @@ struct obj **optr;
 			}
 		}
 	}
-	else if(u.uiearepairs && carrying_imperial_elven_armor()){
+	if(u.uiearepairs && carrying_imperial_elven_armor()){
 		if (yn("Repair your imperial armor?") == 'y'){
 			if (upgradeImpArmor() != MOVE_CANCELLED){
 				useup(obj);
