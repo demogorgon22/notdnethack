@@ -9,6 +9,9 @@
 #else
 #include "patchlevel.h"
 #endif
+#ifdef XLOGFILE
+#include "artifact.h" /* we need artilist so inherited arti can be in xlogfile */
+#endif
 #ifdef UNIX /* filename chmod() */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -369,6 +372,10 @@ struct toptenentry *tt;
 
   if (Race_if(PM_ENT) || Race_if(PM_HALF_DRAGON) || Race_if(PM_CLOCKWORK_AUTOMATON)) {
     (void)fprintf(rfile, SEP "species0=%s", species[flags.initspecies].name);
+  }
+
+  if (flags.descendant) {
+    (void)fprintf(rfile, SEP "inherited=%s", artilist[u.inherited].name);
   }
 
   (void)fprintf(rfile, "\n");
