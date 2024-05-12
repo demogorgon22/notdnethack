@@ -957,6 +957,15 @@ level_tele()
 	    if (newlev == 0 && !force_dest) {
 			if (trycnt >= 10)
 				goto random_levtport;
+			if (Is_nowhere(&u.uz)) return FALSE;
+			else if (Race_if(PM_ETHEREALOID)) {
+				flags.phasing = FALSE;
+				u.old_lev.uz = u.uz;
+				u.old_lev.ux = u.ux;
+				u.old_lev.uy = u.uy;
+				goto_level(&nowhere_level, FALSE, FALSE, FALSE);
+				return TRUE;
+			}
 			if (ynq("Go to Nowhere.  Are you sure?") != 'y') return FALSE;
 			You("%s in agony as your body begins to warp...",
 				is_silent(youracedata) ? "writhe" : "scream");
