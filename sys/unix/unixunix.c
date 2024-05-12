@@ -195,6 +195,8 @@ getlock()
 				error("Couldn't destroy old game.");
 			}
 		} else {
+			if (iflags.window_inited)
+				exit_nhwindows((char *)0);
 			unlock_file(HLOCK);
 			error("%s", "");
 		}
