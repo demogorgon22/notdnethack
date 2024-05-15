@@ -2001,22 +2001,22 @@ int level_bonus;
 		horror->mflagsv = 0;
 
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsm |= (1 << rn2(33));		/* trainwreck this way :D */
+			horror->mflagsm |= (1L << rn2(33));		/* trainwreck this way :D */
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagst |= (1 << rn2(33));
+			horror->mflagst |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsb |= (1 << rn2(33));
+			horror->mflagsb |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsg |= (1 << rn2(33));
+			horror->mflagsg |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsa |= (1 << rn2(33));
+			horror->mflagsa |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsv |= (1 << rn2(33));
+			horror->mflagsv |= (1L << rn2(33));
 		}
 
 		// horror->mflagsb &= ~MB_UNSOLID;			/* no ghosts */
