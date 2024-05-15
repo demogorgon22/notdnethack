@@ -11,7 +11,7 @@ CFLAGS = -g3
 # LDFLAGS += -pg -Wno-knr-promoted-parameter
 LDFLAGS += -Wno-knr-promoted-parameter
 
-GAMELIBS = -lncurses -lm
+GAMELIBS = -lncursesw -lm
 
 -include local.mk
 
@@ -28,6 +28,7 @@ CPPFLAGS += -Wno-unused-label
 CPPFLAGS += -Wno-unknown-pragmas
 CPPFLAGS += -Wno-missing-braces
 CPPFLAGS += -Wno-format-overflow
+CPPFLAGS += -Werror
 
 .DELETE_ON_ERROR:
 
