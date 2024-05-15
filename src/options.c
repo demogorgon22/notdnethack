@@ -748,18 +748,11 @@ initoptions()
 # endif
 # ifdef HAVE_SETLOCALE
 	/* try to detect if a utf-8 locale is supported */
-	/* 
-		commenting this out for now. it is obnoxious. 
-		this should be as it has been. 
-		default tty graphics is part of the aesthetic
-	*/
-	/*
 	if (setlocale(LC_ALL, "") &&
 	    (opts = setlocale(LC_CTYPE, NULL)) &&
 	    ((strstri(opts, "utf8") != 0) || (strstri(opts, "utf-8") != 0))) {
 	        switch_graphics(UTF8_GRAPHICS);
 	}
-	*/
 # endif
 #endif /* UNIX || VMS */
 
