@@ -484,7 +484,8 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		}
 		/* space ahead has iron bars and no monster */
 		/* 1/5 chance for 'small' objects (see hits_bars), unless if launched from right beside the iron bars */
-		if (levl[bhitpos.x + dx][bhitpos.y + dy].typ == IRONBARS &&
+		if (isok(bhitpos.x + dx, bhitpos.y + dy) &&
+		    levl[bhitpos.x + dx][bhitpos.y + dy].typ == IRONBARS &&
 			!m_at(bhitpos.x + dx, bhitpos.y + dy) && 
 			hits_bars(
 				/* object fired   */ thrownobj_p,
@@ -624,8 +625,15 @@ int dy;							/* */
 	boolean youagr = (magr && (magr == &youmonst));
 	int newx = bhitpos.x + dx;
 	int newy = bhitpos.y + dy;
-	struct rm *room = &levl[newx][newy];
+
+	struct rm *room;
 	boolean shopdoor = FALSE, shopwall = FALSE;
+	
+	//If we're out of bounds, return. Can happen if a bolt hits the level boundery.
+	if(!isok(newx, newy))
+		return;
+
+	room = &levl[newx][newy];
 
 	/* Projectile must be a digger */
 	if (!((thrownobj->otyp == BLASTER_BOLT || thrownobj->otyp == HEAVY_BLASTER_BOLT || thrownobj->otyp == CARCOSAN_BOLT || thrownobj->otyp == LASER_BEAM)))
