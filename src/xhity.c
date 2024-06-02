@@ -10830,6 +10830,11 @@ int vis;
 					Monnam(mdef));
 			}
 		}
+		/* set killer for cloud */
+		if (!magr) {
+			killer = "acidic cloud";
+			killer_format = KILLED_BY_AN;
+		}
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
@@ -10873,6 +10878,11 @@ int vis;
 		}
 		else
 			dmg = 0;
+		/* set killer for cloud */
+		if (!magr) {
+			killer = "shocking cloud";
+			killer_format = KILLED_BY_AN;
+		}
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
@@ -10929,6 +10939,11 @@ int vis;
 		}
 		else
 			dmg = 0;
+		/* set killer for cloud */
+		if (!magr) {
+			killer = "freezing cloud";
+			killer_format = KILLED_BY_AN;
+		}
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
@@ -11006,6 +11021,11 @@ int vis;
 		}
 		else
 			dmg = 0;
+		/* set killer for cloud */
+		if (!magr) {
+			killer = "flaming cloud";
+			killer_format = KILLED_BY_AN;
+		}
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		}
