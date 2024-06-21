@@ -416,7 +416,8 @@ char *nam;
 		}
 	}break;
 	case PM_PRIEST:
-	case PM_PRIESTESS:{
+	case PM_PRIESTESS:
+	case PM_ITINERANT_PRIESTESS:{
 		//Medieval monks and nuns. h.t. wikipedia
 		const char *masculine[] = {
 			"Aelfwine", "Aelfwold", "Alan", "Aldhelm", "Aldred",
@@ -546,6 +547,13 @@ char *nam;
 			"Sycorax"
 		};
 		sprintf(nam, "%s", fmlkind ? ROLL_FROM(feminine) : ROLL_FROM(masculine));
+	}break;
+	case PM_ANACHRONOUNBINDER:{
+		//IDK I stole these from an online generator for mindflayer names lol
+		const char *names[] = {
+			"Ghadeos", "Qrr'Aldrefiz", "Ryndenthil", "Askrikath", "Ghaluum", "Thilathrod", "Dremethik", "Fizdenih", "Oordenik", "Xetrikal"	
+		};
+		sprintf(nam, "%s", ROLL_FROM(names));
 	}break;
 	default:
 		pline("Received %d.",monsndx(mtmp->data));
