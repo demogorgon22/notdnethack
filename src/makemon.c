@@ -1427,6 +1427,8 @@ boolean greatequip;
 		set_material_gm(otmp, GOLD);
 		fix_object(otmp);
 		(void) mpickobj(mtmp,otmp);
+		(void)mongets(mtmp, POT_MIDAS, mkobjflags);
+		(void)mongets(mtmp, POT_MIDAS, mkobjflags);
 	} else if(ptr->mtyp == PM_DOOM_KNIGHT) {
 		otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
 		if(otmp) otmp->obj_color = CLR_GRAY;
