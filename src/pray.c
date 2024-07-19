@@ -491,7 +491,7 @@ register int trouble;
 			    goto decurse;
 			}
 		    }
-		    if (nohands(youracedata) || !freehand())
+		    if ((nohands(youracedata) || !freehand()) && !Race_if(PM_SNOW_CLOUD))
 			impossible("fix_worst_trouble: couldn't cure hands.");
 		    break;
 	    case TROUBLE_CURSED_BLINDFOLD:
