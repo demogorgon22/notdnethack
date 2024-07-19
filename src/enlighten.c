@@ -527,6 +527,19 @@ boolean dumping;
 	}
 	
 	if(u.uencouraged) you_have(enlght_combatinc("morale", u.uencouraged, 1, buf));
+	if(u.utats){
+		int i, tat;
+		Sprintf(buf, "Tattoos: ");
+		for(i = 0; i < NUM_TATS; i++){
+			tat = 1 << i;
+			if(u.utats & tat){
+				Strcat(buf, tat_to_name(tat));
+				Strcat(buf, ", ");
+			}
+		}
+		buf[strlen(buf)-2] = '\0';
+		enl_msg(buf,"","","");
+	}
 	
 	if(u.sealsActive || u.specialSealsActive){
 		int i,j,numBound,numFound=0;
