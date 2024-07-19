@@ -5267,7 +5267,7 @@ boolean was_swallowed;			/* digestion */
 		if(!cansee(mon->mx,mon->my)) map_invisible(mon->mx, mon->my);
 	}
 	/* bypass anything about templates, etc. just always make a corpse*/
-	if (is_rider(mdat)) return TRUE;
+	if (is_rider(mdat) && mdat->mtyp != PM_JACK) return TRUE;
 
 	/* Liches and Vlad and his wives have a fancy death message, and leave no corpse */
 	if ((mdat->mlet == S_LICH) ||
