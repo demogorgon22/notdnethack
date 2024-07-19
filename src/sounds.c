@@ -6455,6 +6455,10 @@ int tx,ty;
 			|| carrying_art(ART_SILVER_KEY)
 			){
 				You("percieve a great BEING beyond the gate, and it addresses you with waves of thunderous and burning power.");
+				if(Role_if(PM_ANACHRONOUNBINDER)){
+					pline("It cannot pass through the askew gate.");	
+					return MOVE_STANDARD;
+				}
 				You("are smote and changed by the unendurable violence of its voice!");
 				exercise(A_CON, FALSE);
 				bindspirit(ep->ward_id);
