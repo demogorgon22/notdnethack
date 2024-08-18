@@ -3473,6 +3473,8 @@ register struct trobj *trop;
             if (obj->otyp == STRAITJACKET ) {
                 obj->cursed = TRUE;
             }
+	    if((obj->oclass == SPBOOK_CLASS || obj->oclass == POTION_CLASS || obj->oclass == WAND_CLASS) && youracedata->msize < MZ_MEDIUM)
+		set_obj_size(obj, youracedata->msize);
             if (obj->otyp == AMULET_OF_NULLIFY_MAGIC && Role_if(PM_MADMAN) ) {
                 obj->cursed = TRUE;
             }
