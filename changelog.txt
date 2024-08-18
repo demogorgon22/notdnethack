@@ -500,3 +500,4 @@ General changes
 	Artifacts' birthplace is now tracked.
 		When an artiwish fails for an arti that already exists, you will be told where it was born.
 		The Oracle can now be consulted for a list of generated artifacts, and you can query an artifact's birthplace.
+	Starting spellbooks, potions, and wands for less than medium sized players are scaled down to player size.	
