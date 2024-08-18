@@ -1963,6 +1963,12 @@ level_difficulty()
 	return max(1, dpth);
 }
 
+void
+name_by_lev(char *buf, d_level *lev){
+	Sprintf(buf, "level %d of %s", lev->dlevel, dungeons[lev->dnum].dname);
+}
+
+
 /* Take one word and try to match it to a level.
  * Recognized levels are as shown by print_dungeon().
  */
