@@ -1585,6 +1585,7 @@ E void FDECL(maybe_set_material, (struct obj *, int));
 E void FDECL(rand_interesting_obj_material, (struct obj *));
 E void FDECL(set_material, (struct obj *, int));
 E void FDECL(set_material_gm, (struct obj *, int));
+E int FDECL(gold_weight, (long));
 E int FDECL(weight, (struct obj *));
 E struct obj *FDECL(mkgold, (long,int,int));
 E struct obj *FDECL(mkgold_core, (long,int,int,boolean));

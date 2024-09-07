@@ -67,7 +67,7 @@ STATIC_DCL struct obj * FDECL(pick_armor_for_creature, (struct monst *));
 #define DELTA_CWT(cont,obj)		\
     ((cont)->cursed ? (obj)->owt * 2 :	\
 		      1 + ((obj)->owt / ((cont)->blessed ? 4 : 2)))
-#define GOLD_WT(n)		(((n) + 50L) / 100L)
+#define GOLD_WT(n)		(gold_weight(n))
 /* if you can figure this out, give yourself a hearty pat on the back... */
 #define GOLD_CAPACITY(w,n)	(((w) * -100L) - ((n) + 50L) - 1L)
 

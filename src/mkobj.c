@@ -2670,6 +2670,11 @@ int mat;
 }
 
 
+int gold_weight(long quan){
+	return (int)(((quan + 50L) / 100L) * (Race_if(PM_LEPRECHAUN) ? -1 : 1));
+}
+
+
 /*
  *  Calculate the weight of the given object.  This will recursively follow
  *  and calculate the weight of any containers.
@@ -2777,7 +2782,7 @@ register struct obj *obj;
 	} else if (obj->oclass == FOOD_CLASS && obj->oeaten) {
 		return eaten_stat((int)obj->quan * wt, obj);
 	} else if (obj->oclass == COIN_CLASS)
-		return (int)((obj->quan + 50L) / 100L);
+		return gold_weight(obj->quan);
 	else if (obj->otyp == HEAVY_IRON_BALL && obj->owt != 0)
 		return((int)(obj->owt));	/* kludge for "very" heavy iron ball */
 	return((wt || obj->oartifact) ? wt*(int)obj->quan : ((int)obj->quan + 1)>>1);
