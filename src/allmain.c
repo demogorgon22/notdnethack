@@ -1605,7 +1605,7 @@ moveloop()
 	// printBodies();
 	// printSanAndInsight();
     for(;;) {/////////////////////////MAIN LOOP/////////////////////////////////
-	gosleep();
+	if (!iflags.debug_fuzzer) gosleep();
     hpDiff = u.uhp;
 	get_nh_event();
 #ifdef POSITIONBAR
