@@ -46,6 +46,7 @@ struct q_score {			/* Quest "scorecard" */
 #define ANA_SPAWN_FOUR (quest_status.time_on_home > MAX_HOME_TIMER*3/4)
 	/*30*/
 	long time_doing_quest;
+#define CON_QUEST_INCREMENT	3000
 	unsigned leader_m_id;
 };
 //Random spawns invade city:

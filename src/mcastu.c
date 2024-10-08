@@ -379,6 +379,20 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 		if(rn2(2))
 			return CRUSH_BOLT;
 	}
+	if(has_template(mtmp, FLAYED)){
+		switch(rn2(5)){
+			case 0:
+				return OPEN_WOUNDS;
+			case 1:
+				return DOUBT_BOLT;
+			case 2:
+				return SAN_BOLT;
+			case 3:
+				return BARF_BOLT;
+			case 4:
+				return PAIN_BOLT;
+		}
+	}
 	//50% favored spells
     if (rn2(2)) {
        switch(monsndx(mtmp->data)) {
@@ -1930,6 +1944,47 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 			}
 		}
 	   return ARROW_RAIN; //Fallback, should be unreached
+	case PM_WARDEN_ARIANNA:
+	case PM_ARIANNA:
+	{
+		int options = quest_status.time_doing_quest/CON_QUEST_INCREMENT;
+		options = rn2(options);
+		switch(options%6){
+			case 0:
+				return PSI_BOLT;
+			case 1:
+				return DOUBT_BOLT;
+			case 2:
+				return SAN_BOLT;
+			case 3:
+				return BARF_BOLT;
+			case 4:
+				return PAIN_BOLT;
+			case 5:
+				return MON_WARP;
+		}
+	}
+	case PM_VOICE_IN_SCREAMS:
+		switch(rn2(9)){
+			case 0:
+				return PSI_BOLT;
+			case 1:
+				return DOUBT_BOLT;
+			case 2:
+				return SAN_BOLT;
+			case 3:
+				return BARF_BOLT;
+			case 4:
+				return PAIN_BOLT;
+			case 5:
+				return MON_WARP;
+			case 6:
+				return MON_SPE_BEARTRAP;
+			case 7:
+				return ARROW_RAIN;
+			case 8:
+				return PUNISH;
+		}
 	case PM_NALFESHNEE:
 		switch(rn2(5)){
 			case 0:
@@ -2304,6 +2359,71 @@ const char * spellname[] =
 	"PEST_THREADS",
 };
 
+/* Returns the word the monster uses when casting a psionic spell */
+const char *
+psionic_word(struct monst *magr)
+{
+	const char *voice_words[] = {
+		"scream",
+		"howl",
+		"wail",
+		"shriek",
+		"moan",
+		"groan",
+		"whimper",
+		"twitch",
+		"thrash",
+		"quiver",
+		"shudder",
+		"shiver",
+		"invert",
+		"shatter",
+		"echo",
+		"vibrate",
+		"resonate"
+	};
+	const char *scream_words[] = {
+		"scream",
+		"howl",
+		"wail",
+		"shriek",
+		"moan",
+		"groan",
+		"whimper",
+		"twitch",
+		"thrash",
+		"quiver",
+		"shudder",
+		"shiver",
+		"resonate"
+	};
+	const char *harnessed_words[] = {
+		"hum",
+		"hiss",
+		"moan",
+		"groan",
+		"whimper",
+		"twitch",
+		"quiver",
+		"shudder",
+		"shiver"
+	};
+
+	if (!magr) return "concentrate";
+
+	if (magr->mtyp == PM_VOICE_IN_SCREAMS) {
+		return ROLL_FROM(voice_words);
+	}
+	else if(has_template(magr, FLAYED) || magr->mtyp == PM_WARDEN_ARIANNA){
+		return ROLL_FROM(scream_words);
+	}
+	else if(magr->mtyp == PM_ARIANNA){
+		if(rn2(3)) return "concentrate";
+		if(!rn2(100)) return "resonate";
+		return ROLL_FROM(harnessed_words);
+	}
+	return "concentrate";
+}
 
 /* xcasty()
  * 
@@ -2347,7 +2467,7 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 		struct obj *lens = which_armor(magr, W_TOOL);
 		if(!lens || lens->otyp != SOUL_LENS)
 			return MM_MISS;
-		if(lens->cursed){
+		if(lens->cursed && !magr->mcan){
 			set_mcan(magr, TRUE);
 			magr->mcansee = 0;
 			pline("%s yelps!", Monnam(magr));
@@ -2435,9 +2555,10 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 		/* message */
 		if ((youagr || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS)	{
 			if(attk->adtyp == AD_PSON){
-				pline("%s concentrate%s.",
+				const char *verb = psionic_word(magr);
+				pline("%s %s.",
 					youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
-					youagr ? "" : "s");
+					youagr ? verb : vtense((const char *)0, verb));
 			}
 			else {
 				pline("%s cast%s a spell at %s!",
@@ -2530,9 +2651,18 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 			spell_skill /= 2;
 	}
 	
+	int spell_roll = rn2(spell_skill);
+	
+	if(!youagr && couldsee(magr->mx,magr->my) && u.uluck > 0 && !magr->mpeaceful){
+		if(OffensiveLuck && rn2(13) < u.uluck)
+			chance += u.uluck;
+		if(DefensiveLuck)
+			spell_roll = min_ints(spell_roll, rn2(spell_skill));
+	}
+
 	/* failure chance determined, check if attack fumbles */
 	if (force_fail 
-		|| rn2(spell_skill) < chance
+		|| spell_roll < chance
 		|| (magr->mtoobig && magr->m_lev < rnd(100))
 		|| (magr->msciaphilia && magr->m_lev < rnd(100) && unshadowed_square(magr->mx, magr->my))
 	) {
@@ -2557,9 +2687,10 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 			&& spellnum != HYPNOTIC_COLORS
 		) {
 			if(attk->adtyp == AD_PSON){
-				pline("%s concentrate%s.",
+				const char *verb = psionic_word(magr);
+				pline("%s %s.",
 					youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
-					youagr ? "" : "s");
+					youagr ? verb : vtense((const char *)0, verb));
 			}
 			else {
 				if (is_undirected_spell(spellnum) || notarget || (!foundem && distmin(x(mdef), y(mdef), tarx, tary) > 2))
@@ -2729,9 +2860,10 @@ int tary;
 				&& magr->mtyp != PM_HOUND_OF_TINDALOS
 			) {
 				if(attk->adtyp == AD_PSON){
-					pline("%s concentrate%s.",
+					const char *verb = psionic_word(magr);
+					pline("%s %s.",
 						youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
-						youagr ? "" : "s");
+						youagr ? verb : vtense((const char *)0, verb));
 				}
 				else {
 					pline("%s cast%s a spell at %s!",
@@ -2746,10 +2878,11 @@ int tary;
 		/* otherwise, print a spellcasting message */
 		else {
 			if ((youagr || youdef || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS) {
+				const char *verb = psionic_word(magr);
 				if(attk->adtyp == AD_PSON){
-					pline("%s concentrate%s.",
+					pline("%s %s.",
 						youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
-						youagr ? "" : "s");
+						youagr ? verb : vtense((const char *)0, verb));
 				}
 				else {
 					pline("%s cast%s a spell at %s!",
@@ -3636,7 +3769,9 @@ int tary;
 			int weap;
 
 			/* get weapon type to rain */
-			if (rn2(3)) weap = ARROW;
+			if(magr && magr->mtyp == PM_VOICE_IN_SCREAMS)
+				weap = SCALPEL;
+			else if (rn2(3)) weap = ARROW;
 			else if (!rn2(3)) weap = DAGGER;
 			else if (!rn2(3)) weap = SPEAR;
 			else if (!rn2(3)) weap = KNIFE;
@@ -3656,7 +3791,7 @@ int tary;
 			otmp->quan = min(dmn, 16);
 			otmp->owt = weight(otmp);
 			otmp->spe = 0;
-			if(magr && magr->mtyp == PM_SUZERAIN){
+			if(magr && (magr->mtyp == PM_SUZERAIN || magr->mtyp == PM_VOICE_IN_SCREAMS)){
 				add_oprop(otmp, OPROP_LESSER_FLAYW);
 				if(magr->mtyp == PM_SUZERAIN){
 					TRANSCENDENCE_IMPURITY_UP(FALSE)
@@ -6725,7 +6860,7 @@ int tary;
 			return cast_spell(magr, mdef, attk, PSI_BOLT, tarx, tary);
 		}
 		else {
-			if (u.ualign.record <= 1 || !rn2(min(u.ualign.record, 20))){
+			if (magr->mtyp == PM_VOICE_IN_SCREAMS || u.ualign.record <= 1 || !rn2(min(u.ualign.record, 20))){
 				if (!Punished) {
 					punish((struct obj *)0);
 					if (is_prince(magr->data) && Punished) uball->owt += 160;
@@ -6860,19 +6995,37 @@ int tary;
 		return MM_HIT;
 		case MON_SPE_BEARTRAP:
 		if (!youdef) {
-			struct trap * ttmp;
-			if ((ttmp = maketrap(mdef->mx, mdef->my, BEAR_TRAP))) {
-				mintrap(mdef);
-				newsym(mdef->mx, mdef->my);
+			if(!mdef->mtrapped){
+				struct trap * ttmp;
+				if ((ttmp = maketrap(mdef->mx, mdef->my, BEAR_TRAP))) {
+					mintrap(mdef);
+					newsym(mdef->mx, mdef->my);
+				}
+			}
+			else {
+				struct monst *mtmp = makemon(&mons[PM_CHAIN_GOLEM], tarx, tary, MM_ADJACENTOK|NO_MINVENT);
+				if (mtmp && ((magr && magr->mpeaceful) || youagr)) {
+					mtmp->mpeaceful = 1;
+					set_malign(mtmp);
+				}
 			}
 		}
 		else
 		{
-			struct trap * ttmp;
-			if ((ttmp = maketrap(u.ux, u.uy, BEAR_TRAP))) {
-				dotrap(ttmp, 0);
-				newsym(u.ux, u.uy);
-				stop_occupation();
+			if(!u.utrap){
+				struct trap * ttmp;
+				if ((ttmp = maketrap(u.ux, u.uy, BEAR_TRAP))) {
+					dotrap(ttmp, 0);
+					newsym(u.ux, u.uy);
+					stop_occupation();
+				}
+			}
+			else {
+				struct monst *mtmp = makemon(&mons[PM_CHAIN_GOLEM], tarx, tary, MM_ADJACENTOK|NO_MINVENT);
+				if (mtmp && ((magr && magr->mpeaceful) || youagr)) {
+					mtmp->mpeaceful = 1;
+					set_malign(mtmp);
+				}
 			}
 		}
 		return MM_HIT;

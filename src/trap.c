@@ -625,6 +625,7 @@ int *fail_reason;
 	if(mon && ((cause == ANIMATE_SPELL 
 		&& ((In_quest(&u.uz) && Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON || mon->mtyp == PM_PANAKEIAN_ARCHON || mon->mtyp == PM_HYGIEIAN_ARCHON || mon->mtyp == PM_IKSH_NA_DEVA))
 			||  rnd(!always_hostile(mon->data) ? 12 : 20) < ACURR(A_CHA)
+			|| carrying_art(ART_LUCK_BLADE)
 		) && !(is_animal(mon->data) || mindless_mon(mon))
 		)
 		|| statue->spe&STATUE_LOYAL)
@@ -3991,8 +3992,11 @@ struct trap *ttmp;
 	if (ttmp && ttmp->madeby_u) chance--;
 	if (Role_if(PM_ROGUE)) {
 	    if (rn2(2 * MAXULEV) < u.ulevel) chance--;
-	    if (u.uhave.questart && chance > 1) chance--;
-	} else if (Role_if(PM_RANGER) && chance > 1) chance--;
+	    if (u.uhave.questart) chance--;
+	} else if (Role_if(PM_RANGER)) chance--;
+	if(DefensiveLuck && u.uluck > 0)
+		chance--;
+	if (chance < 1) chance = 1;
 	return rn2(chance);
 }
 
@@ -4245,6 +4249,7 @@ void
 unshackle_mon(mtmp)
 struct monst * mtmp;
 {
+	boolean luck_tame = (carrying_art(ART_LUCK_BLADE) != 0);
 	if (!mtmp || mtmp->entangled_otyp != SHACKLES) {
 		impossible("%s not shackled?", m_monnam(mtmp));
 		return;
@@ -4256,7 +4261,7 @@ struct monst * mtmp;
 	if (mtmp->mtame){
 		verbalize("Thank you for rescuing me!");
 	}
-	else if (rnd(20) < ACURR(A_CHA) && !(is_animal(mtmp->data) || mindless_mon(mtmp))){
+	else if ((luck_tame || rnd(20) < ACURR(A_CHA)) && !(is_animal(mtmp->data) || mindless_mon(mtmp))){
 		struct monst *newmon;
 		pline("%s is very grateful!", Monnam(mtmp));
 		newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
@@ -4270,7 +4275,7 @@ struct monst * mtmp;
 	if (mtmp->mpeaceful){
 		pline("%s is grateful for the assistance, but makes no move to help you in return.", Monnam(mtmp));
 	}
-	else if (!mtmp->mpeaceful && rnd(10) < ACURR(A_CHA) && !(is_animal(mtmp->data) || mindless_mon(mtmp))){
+	else if (!mtmp->mpeaceful && (luck_tame || rnd(10) < ACURR(A_CHA)) && !(is_animal(mtmp->data) || mindless_mon(mtmp))){
 		mtmp->mpeaceful = 1;
 		pline("%s is thankful enough for the rescue to not attack you, at least.", Monnam(mtmp));
 	}

@@ -1719,6 +1719,65 @@ default_case:
 				}
 			}
 		}
+		else if(Role_if(PM_CONVICT) && otmp->spe == 1){
+			struct obj *tmpo;
+			/* Thieves, assassins, barbarians, murderers, vow-of-poverty-ers, and cultists */
+			int prisoners[] = {
+				PM_ROGUE, PM_ROGUE, PM_VALKYRIE, PM_BARBARIAN, PM_BARBARIAN, PM_GITHYANKI_PIRATE,
+				PM_GITHYANKI_PIRATE, PM_DEMINYMPH, PM_DEMINYMPH, PM_COURE_ELADRIN, PM_COURE_ELADRIN,
+				PM_OGRE_MAGE, PM_VAMPIRE, PM_VAMPIRE_LADY, PM_VAMPIRE_LORD,
+				PM_SHADOWSMITH, PM_DROW_MATRON, PM_HALF_DRAGON, PM_HALF_DRAGON, PM_BARD, PM_BARD,
+				PM_THUG, PM_THUG, PM_PIRATE, PM_PIRATE,
+				PM_NINJA, PM_NINJA, PM_MAID, 
+				PM_PEN_A_MENDICANT, PM_MENDICANT_SPROW, PM_MENDICANT_DRIDER,
+				PM_SMALL_GOAT_SPAWN, PM_GOAT_SPAWN, PM_APPRENTICE_WITCH, PM_WITCH, 
+				PM_DROW_ALIENIST, PM_DROW_ALIENIST, 
+			};
+			int mtyp = ROLL_FROM(prisoners);
+			struct monst *mon = makemon(&mons[mtyp], otmp->ox, otmp->oy, NO_MM_FLAGS);
+			if(mon){
+				if(mtyp == PM_APPRENTICE_WITCH || mtyp == PM_WITCH){
+					for(struct monst *tmpmon = fmon; tmpmon; tmpmon = tmpmon->nmon){
+						if(tmpmon->mtyp == PM_WITCH_S_FAMILIAR && tmpmon->mvar_witchID == mon->m_id){
+							mongone(tmpmon);
+							break;
+						}
+					}
+				}
+				struct obj *nobj;
+				int guard_count = 0;
+				int guardnum;
+				struct monst *mtmp;
+				for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+					if(mtmp->mtyp == PM_PRISON_GUARD)
+						guard_count++;
+				}
+#define FIND_GUARD_NUM(counter)	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon)\
+								if(mtmp->mtyp == PM_PRISON_GUARD)\
+									if(counter-- == 0)\
+										break;
+				for(tmpo = mon->minvent; tmpo; tmpo = nobj){
+					nobj = tmpo->nobj;
+					obj_extract_and_unequip_self(tmpo);
+					guardnum = rn2(guard_count);
+					FIND_GUARD_NUM(guardnum);
+					if(mtmp)
+						mpickobj(mtmp, tmpo);
+					else
+						place_object(tmpo, mon->mx, mon->my);
+					stackobj(tmpo);
+				}
+				tmpo = mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+				if(tmpo){
+					mon->entangled_otyp = SHACKLES;
+					mon->entangled_oid = tmpo->o_id;
+				}
+				tmpo = mongets(mon, STRIPED_SHIRT, NO_MKOBJ_FLAGS);
+				if(tmpo){
+					curse(tmpo);
+				}
+			}
+		}
 	}
 	if(otmp->otyp == CHAIN && otmp->spe == 1 && otmp->where == OBJ_FLOOR && Is_stronghold(&u.uz)){
 		struct obj *tmpo;

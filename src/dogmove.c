@@ -138,7 +138,7 @@ boolean check_if_better;
 	    /* slotless non-artifact items */
 		 ((otmp->otyp == ARMOR_SALVE && Insight >= 66) || otmp->otyp == PRESERVATIVE_ENGINE) ||
 	    /* chains for some */
-		 ((mtmp->mtyp == PM_CATHEZAR) && otmp->otyp == CHAIN) ||
+		 ((mtmp->mtyp == PM_CATHEZAR || mtmp->mtyp == PM_CHAIN_DEVIL) && otmp->otyp == CHAIN) ||
 	    /* better weapons */
 	     (is_armed_mon(mtmp) &&
 	      (otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && 

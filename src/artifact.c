@@ -254,6 +254,13 @@ hack_artifacts()
 	if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags |= ARTG_GIFT;
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags &= ~ARTG_NOGEN;
+		artilist[ART_RED_CORDS_OF_ILMATER].role = PM_HEALER;
+	}
+	if(Role_if(PM_CONVICT)){
+		artilist[ART_ROBE_OF_CLOSED_EYES].gflags |= ARTG_GIFT;
+		artilist[ART_ROBE_OF_CLOSED_EYES].gflags &= ~ARTG_NOGEN;
+		artilist[ART_ROBE_OF_CLOSED_EYES].role = NON_PM;
+		artilist[ART_RED_CORDS_OF_ILMATER].role = PM_CONVICT;
 	}
 	
 	/* fem hlf nob, or fem hlf without a first gift, always get Lifehunt Scythe */
@@ -4505,6 +4512,15 @@ int * truedmgptr;
 	int original_plusdmgptr = *plusdmgptr;
 	int original_truedmgptr = *truedmgptr;
 	const struct artifact *oart = get_artifact(otmp);
+	int mistlight_bonus = 0;
+	if(magr && magr->mtyp == PM_ARIANNA && (otmp->obj_material == SILVER || otmp->obj_material == GOLD || otmp->obj_material == PLATINUM)){
+		if(mlev(magr) >= 28)
+			mistlight_bonus += d(6, 8);
+		else if(mlev(magr) >= 21)
+			mistlight_bonus += d(3, 8);
+		else 
+			mistlight_bonus += d(1, 8);
+	}
 	
 	if(!Fire_res(mdef)){
 		if(check_oprop(otmp, OPROP_FIREW))
@@ -4542,8 +4558,10 @@ int * truedmgptr;
 		} else if (!(youdef && Waterproof) && !(!youdef && mon_resistance(mdef, WATERPROOF))){
 			int mult = (flaming(pd) || is_iron(pd)) ? 2 : 1;
 
-			if(check_oprop(otmp, OPROP_WATRW))
+			if(check_oprop(otmp, OPROP_WATRW)){
 				*truedmgptr += basedmg*mult;
+				*truedmgptr += mult*mistlight_bonus;
+			}
 			if(check_oprop(otmp, OPROP_LESSER_WATRW))
 				*truedmgptr += d(2, 6)*mult;
 		}
@@ -4574,8 +4592,10 @@ int * truedmgptr;
 		double mult = 1;
 		if(magm_vulnerable(mdef))
 			mult *= 1.5;
-		if(check_oprop(otmp, OPROP_MAGCW))
+		if(check_oprop(otmp, OPROP_MAGCW)){
 			*truedmgptr += mult*basedmg;
+			*truedmgptr += mult*mistlight_bonus;
+		}
 		if(check_oprop(otmp, OPROP_LESSER_MAGCW))
 			*truedmgptr += mult*d(3, 4);
 		
@@ -4961,16 +4981,20 @@ int * truedmgptr;
 			*truedmgptr += d(2, 6);
 	}
 	if(youdef ? (u.ualign.type != A_LAWFUL) : (sgn(mdef->data->maligntyp) <= 0)){
-		if(check_oprop(otmp, OPROP_AXIOW))
+		if(check_oprop(otmp, OPROP_AXIOW)){
 			*truedmgptr += basedmg;
+			*truedmgptr += mistlight_bonus;
+		}
 		if(check_oprop(otmp, OPROP_OONA_FIREW) || check_oprop(otmp, OPROP_OONA_COLDW) || check_oprop(otmp, OPROP_OONA_ELECW))
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_AXIOW))
 			*truedmgptr += d(2, 6);
 	}
 	if((youdef ? (hates_holy(youracedata)) : (hates_holy_mon(mdef))) && otmp->blessed){
-		if(check_oprop(otmp, OPROP_HOLYW))
+		if(check_oprop(otmp, OPROP_HOLYW)){
 			*truedmgptr += basedmg;
+			*truedmgptr += mistlight_bonus;
+		}
 		if(check_oprop(otmp, OPROP_LESSER_HOLYW))
 			*truedmgptr += d(2, 6);
 	}

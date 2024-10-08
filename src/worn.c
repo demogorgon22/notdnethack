@@ -1796,12 +1796,12 @@ boolean racialexception;
 		    if (!is_shirt(obj) || obj->objsize != mon->data->msize || !shirt_match(mon->data,obj)) continue;
 		    break;
 		case W_ARMC:
-			if(mon->mtyp == PM_CATHEZAR && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
 		    if (!is_cloak(obj) || (abs(obj->objsize - mon->data->msize) > 1)) continue;
 		    break;
 		case W_ARMH:
-			if(mon->mtyp == PM_CATHEZAR && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
 		    if (!is_helmet(obj) || !helm_match(mon->data,obj) || !helm_size_fits(mon->data,obj)) continue;
 		    break;
@@ -1809,17 +1809,17 @@ boolean racialexception;
 		    if (noshield(mon->data) || (mon_offhand_attack(mon) && !creation) || !is_shield(obj)) continue;
 		    break;
 		case W_ARMG:
-			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
 				break;
 		    if (!is_gloves(obj) || obj->objsize != mon->data->msize || !can_wear_gloves(mon->data)) continue;
 		    break;
 		case W_ARMF:
-			if((mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_WARDEN_ARIANNA || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
 		    if (!is_boots(obj) || !boots_size_fits(mon->data, obj) || !can_wear_boots(mon->data)) continue;
 		    break;
 		case W_ARM:
-			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
 				break;
 		    if (!is_suit(obj) || !arm_match(mon->data, obj) || !arm_size_fits(mon->data, obj))
 				continue;

@@ -287,6 +287,7 @@ struct monst {
 #define	CITY_FACTION		FACTION_PADDING+13	/* Undead Hunter city faction */
 #define	MOON_FACTION		FACTION_PADDING+14	/* Undead Hunter lycanthrope faction */
 #define	ROT_FACTION			FACTION_PADDING+15	/* Rot monster faction */
+#define	NUNCIO_FACTION		FACTION_PADDING+16	/* Nuncio from the far reaches */
 
 /* template applied to monster to create a new-ish monster */
 	int mtemplate;
@@ -322,7 +323,8 @@ struct monst {
 #define TONGUE_PUPPET	30	/* moon-tongue puppet */
 #define SWOLLEN_TEMPLATE	33	/* giant */
 #define BLOOD_MON		34	/* blood clone */
-#define MAXTEMPLATE	BLOOD_MON
+#define FLAYED			35	/* flayed undead */
+#define MAXTEMPLATE	FLAYED
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */

@@ -693,6 +693,7 @@ struct obj {
 				|| typ == DOUBLE_SWORD \
 				|| typ == AKLYS \
 				|| typ == FLAIL \
+				|| (Role_if(PM_CONVICT) && typ == BALL) \
 				|| typ == NUNCHAKU \
 				|| (Race_if(PM_DROW) && typ == DROVEN_GREATSWORD) \
 				|| typ == KATAR \

@@ -1268,6 +1268,7 @@ int portal;
 	 */
 	if ((!up && Is_qhome(&u.uz) && !newdungeon && !ok_to_quest() && !flags.stag)
 	&& !(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend)
+	&& !(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 10)
 	) {
 		pline("A mysterious force prevents you from descending.");
 		return;
@@ -1495,7 +1496,7 @@ remake:
 				}
 			}
 			/* Remove bug which crashes with levitation/punishment  KAA */
-			if (Punished && !Levitation) {
+			if (Punished && uball->oartifact != ART_IRON_BALL_OF_LEVITATION && !Levitation) {
 				pline("With great effort you climb the %s.",
 				at_ladder ? "ladder" : "stairs");
 			} else if (at_ladder)
@@ -1518,7 +1519,7 @@ remake:
 				at_ladder ? "ladder" : "stairs");
 			else if (u.dz &&
 	#ifdef CONVICT
-				(near_capacity() > UNENCUMBERED || (Punished &&
+				(near_capacity() > UNENCUMBERED || (Punished && uball->oartifact != ART_IRON_BALL_OF_LEVITATION &&
 				((uwep != uball) || ((P_SKILL(P_FLAIL) < P_BASIC))
 				|| !Role_if(PM_CONVICT)))
 				 || Fumbling)

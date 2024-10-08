@@ -2863,7 +2863,7 @@ int * dz;
 
 	/* mis-throw/fire can change the direction of the projectile */
 	if (/* needs a creature to be involved in throwing the projectile */
-		magr && (
+		magr && (((
 		/* cursed ammo */
 		(ammo->cursed && !(youagr ? Weldproof : is_weldproof_mon(magr)))
 		||
@@ -2879,6 +2879,12 @@ int * dz;
 		&&
 		/* at a 1/7 chance */
 		(*dx || *dy) && !rn2(7)
+		) || (
+			/* Bad luck */
+			!youagr && !magr->mpeaceful && couldsee(magr->mx,magr->my)
+			&& OffensiveLuck && u.uluck > 0
+			&& rn2(20) < u.uluck
+		))
 		) {
 		boolean slipok = TRUE;
 		/* misfires */

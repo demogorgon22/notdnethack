@@ -1756,6 +1756,73 @@ struct monst *mtmp;
 	if (mtmp->cham && !rn2(6))
 	    (void) newcham(mtmp, NON_PM, FALSE, FALSE);
 	were_change(mtmp);
+	if(mtmp->mtyp == PM_WARDEN_ARIANNA && Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7){
+		if(canspotmon(mtmp)){
+			pline("%s is torn apart from within by rending chains!", Monnam(mtmp));
+		}
+		else if(flags.soundok){
+			You_hear("screaming in the distance.");
+		}
+		set_template(mtmp, 0);
+		set_mon_data(mtmp, PM_VOICE_IN_SCREAMS);
+		set_faction(mtmp, NUNCIO_FACTION);
+		if(mtmp->m_lev < mons[PM_VOICE_IN_SCREAMS].mlevel)
+			mtmp->m_lev = mons[PM_VOICE_IN_SCREAMS].mlevel;
+		mtmp->mhpmax = mtmp->m_lev * (hd_size(mtmp->data)/2) + d(mtmp->m_lev, (hd_size(mtmp->data)+1)/2);
+		mtmp->mhp = mtmp->mhpmax;
+		mtmp->mpeaceful = FALSE;
+		mtmp->mspec_used = 0;
+		mtmp->mstdy = 0;
+		mtmp->ustdym = 0;
+		set_mcan(mtmp, FALSE);
+
+		mtmp->mflee = 0;
+		mtmp->mfleetim = 0;
+		mtmp->mcansee = 1;
+		mtmp->mblinded = 0;
+		mtmp->mcanhear = 1;
+		mtmp->mdeafened = 0;
+		mtmp->mcanmove = 1;
+		mtmp->mfrozen = 0;
+		mtmp->msleeping = 0;
+		mtmp->mstun = 0;
+		mtmp->mconf = 0;
+		mtmp->mtrapped = 0;
+		mtmp->entangled_otyp = 0;
+		mtmp->entangled_oid = 0;
+		newsym(mtmp->mx, mtmp->my);
+	}
+	if(Role_if(PM_CONVICT)
+		&& In_quest(&u.uz)
+		&& !quest_status.killed_nemesis
+		&& quest_status.time_doing_quest/CON_QUEST_INCREMENT >= (Is_nemesis(&u.uz) ? 7 : u.uz.dlevel >= qlocate_level.dlevel ? 8 : Is_qstart(&u.uz) ? 10 : 9)
+	){
+		if(mtmp->mtyp == PM_MALKUTH_SEPHIRAH){
+			(void) newcham(mtmp, PM_CUBOID, FALSE, TRUE);
+			if(canseemon(mtmp))
+				pline("%s %s splits as %s suddenly turns inside-out and reconfigures into a cuboid form.", s_suffix(Monnam(mtmp)), mbodypart(mtmp, BODY_SKIN), mhe(mtmp));
+		}
+		else if(mtmp->mtyp == PM_HOD_SEPHIRAH){
+			(void) newcham(mtmp, PM_RHOMBOHEDROID, FALSE, TRUE);
+			if(canseemon(mtmp))
+				pline("%s %s splits as %s suddenly turns inside-out and reconfigures into a rhombohedroid form.", s_suffix(Monnam(mtmp)), mbodypart(mtmp, BODY_SKIN), mhe(mtmp));
+		}
+		else if((quest_faction(mtmp) || mtmp->mfaction == YENDORIAN_FACTION || mtmp->mpeaceful)
+			&& !mtmp->mtame && !is_naturally_unalive(mtmp->data) && !thick_skinned(mtmp->data)
+		){
+			if(mtmp->m_id == quest_status.leader_m_id){
+				quest_status.leader_m_id = 0;
+				quest_status.leader_is_dead = TRUE;
+			}
+			if(canseemon(mtmp))
+				pline("Lashing chains flay the %s from %s!", mbodypart(mtmp, BODY_SKIN), mon_nam(mtmp));
+			set_faction(mtmp, NUNCIO_FACTION);
+			set_template(mtmp, FLAYED);
+			mtmp->mpeaceful = FALSE;
+			set_malign(mtmp);
+			newsym(mtmp->mx, mtmp->my);
+		}
+	}
 
 	if((quest_status.time_doing_quest >= UH_QUEST_TIME_2 || (quest_status.time_doing_quest >= UH_QUEST_TIME_1 && !Is_qhome(&u.uz)))
 		&& In_quest(&u.uz)
@@ -3858,6 +3925,8 @@ boolean actual;			/* actual attack or faction check? */
 		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == ROT_FACTION)
 		return 0L;
+	if(magr->mfaction == mdef->mfaction && mdef->mfaction == NUNCIO_FACTION)
+		return 0L;
 	
 	// rot kin attack almost anything
 	if(magr->mfaction == ROT_FACTION || mdef->mfaction == ROT_FACTION) {
@@ -4435,6 +4504,14 @@ struct monst *mtmp;
 	/* set to kill */
 	mtmp->mhp = 0;
 
+	if(couldsee(mtmp->mx,mtmp->my) && OffensiveLuck && u.uluck > 0 && !mtmp->mpeaceful && lifesave && rn2(20) < u.uluck){
+		if(canseemon(mtmp))
+			pline("%s %s slips off as it dies!", s_suffix(Monnam(mtmp)), xname(lifesave));
+		obj_extract_and_unequip_self(lifesave);
+		mdrop_obj(mtmp,lifesave,FALSE);
+		lifesave = mlifesaver(mtmp); /* Might have a backup (helm and amulet for example) */
+	}
+
 	/* get all lifesavers */
 	if (Infuture && !(mtmp->mpeaceful) && !rn2(20))
 		lifesavers |= LSVD_ANA;
@@ -4534,7 +4611,15 @@ struct monst *mtmp;
 				pline("Something vast and terrible writhes beneath %s wrappings!", hisherits(mtmp));
 				pline("It's trying to escape!");
 			}
-			if(rn2(3)){
+			if(couldsee(mtmp->mx,mtmp->my) && OffensiveLuck && u.uluck > 0 && !mtmp->mpeaceful && lifesave && rn2(13) < u.uluck){
+				struct obj *otmp = which_armor(mtmp, W_ARMC);
+				if(canseemon(mtmp))
+					pline("The wrappings slip off!");
+				obj_extract_and_unequip_self(otmp);
+				mdrop_obj(mtmp,otmp,FALSE);
+				continue; //didn't life save after all :(
+			}
+			else if(rn2(3)){
 				if(which_armor(mtmp, W_ARMC)->oeroded3){
 					if (cansee(mtmp->mx, mtmp->my))
 						pline("%s wrappings rip to shreds!", s_suffix(Monnam(mtmp)));

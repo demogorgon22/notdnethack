@@ -1476,6 +1476,7 @@ E boolean FDECL(create_critters, (int,struct permonst *));
 E struct permonst *FDECL(rndmonst, (int, int));
 E int FDECL(rndshape, (boolean(*)(int)));
 E void FDECL(reset_rndmonst, (int));
+E struct permonst *NDECL(mkdragon);
 E struct permonst *FDECL(mkclass, (CHAR_P,int));
 E struct permonst *NDECL(mkzombie);
 E int FDECL(adj_lev, (struct permonst *));

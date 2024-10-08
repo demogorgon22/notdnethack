@@ -10489,6 +10489,38 @@ int mmflags;
 					mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 				}
 			break;
+		    case PM_CHAIN_DEVIL:
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				return;
+			break;
 		    case PM_ERINYS:{
 				if(In_mordor_quest(&u.uz) 
 					&& !In_mordor_forest(&u.uz)
@@ -10645,6 +10677,53 @@ int mmflags;
 					set_material_gm(otmp, BONE);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
+				}
+				else if(In_quest(&u.uz) && Role_if(PM_CONVICT)){
+					if(rn2(2)){
+						otmp = mksobj(BALL, mkobjflags|MKOBJ_NOINIT);
+						set_material_gm(otmp, IRON);
+						mpickobj(mtmp, otmp);
+
+						otmp = mksobj(SPOON, mkobjflags|MKOBJ_NOINIT);
+						otmp->spe = 4;
+						mpickobj(mtmp, otmp);
+
+						otmp = mongets(mtmp, STRIPED_SHIRT, mkobjflags|MKOBJ_NOINIT);
+						if(otmp){
+							curse(otmp);
+							otmp->spe = 4;
+						}
+						otmp = mongets(mtmp, SHOES, mkobjflags|MKOBJ_NOINIT);
+						if(otmp){
+							curse(otmp);
+							set_material_gm(otmp, IRON);
+							otmp->spe = 4;
+						}
+					}
+					else {
+						otmp = mksobj(CLUB, mkobjflags|MKOBJ_NOINIT);
+						set_material_gm(otmp, IRON);
+						mpickobj(mtmp, otmp);
+
+						otmp = mksobj(BUCKLER, mkobjflags|MKOBJ_NOINIT);
+						curse(otmp);
+						otmp->spe = 4;
+						mpickobj(mtmp, otmp);
+
+						if (rn2(5))
+							mongets(mtmp, PLATE_MAIL, mkobjflags);
+						else if (rn2(5))
+							mongets(mtmp, (rn2(3)) ? SPLINT_MAIL : BANDED_MAIL, mkobjflags);
+						else if (rn2(5))
+							mongets(mtmp, (rn2(3)) ? RING_MAIL : STUDDED_LEATHER_ARMOR, mkobjflags);
+						else
+							mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+
+						mongets(mtmp, ARMORED_BOOTS, mkobjflags);
+						mongets(mtmp, (rn2(3)) ? GLOVES : GAUNTLETS, mkobjflags);
+						if(rn2(2))
+							mongets(mtmp, ROBE, mkobjflags);
+					}
 				}
 				else if(Inhell || goodequip){
 					int kit = rn2(6);
@@ -13462,6 +13541,27 @@ boolean randmonst;
 		else if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
 			mkmon_template = SWOLLEN_TEMPLATE;
 		}
+		/* convict worldwide apocalypse -- a very general effect */
+		else if(randmonst && (is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ) && Role_if(PM_CONVICT) && !quest_status.killed_nemesis &&
+			((In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT > 10)
+			||(!In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT > 14)
+			)
+		){
+			int chance;
+			int roll = rn2(100);
+			if(In_quest(&u.uz))
+				chance = 10*(quest_status.time_doing_quest/CON_QUEST_INCREMENT - 10);
+			else
+				chance = 100 - 100 * pow(0.97, quest_status.time_doing_quest/CON_QUEST_INCREMENT - 14);
+			if(roll < chance){
+				if(roll < chance/3)
+					mkmon_template = FLAYED;
+				else if(roll < chance/3)
+					mkmon_template = ZOMBIFIED;
+			}
+			//else no template after all. I guess the unrelenting horde of zombies in the mines gets pre-empted
+			else mkmon_template = 0;
+		}
 		/* most general case at bottom -- creatures randomly being zombified */
 		else if(randmonst && can_undead(ptr)
 #ifdef REINCARNATION
@@ -13518,6 +13618,9 @@ int faction;
 
 	if(template == MISTWEAVER)
 		return GOATMOM_FACTION;
+	
+	if(template == FLAYED)
+		return NUNCIO_FACTION;
 	
 	if(template == M_BLACK_WEB || template == M_GREAT_WEB)
 		return EDDER_SYMBOL;
@@ -13688,6 +13791,14 @@ struct monst * mon;
 		|| (mon->mtyp == PM_STAR_ELF && Role_if(PM_MADMAN))
 	)
 		out_faction = YELLOW_FACTION;
+	else if((In_quest(&u.uz) && Role_if(PM_CONVICT) && (
+			mon->mtyp == PM_DAUGHTER_OF_BEDLAM
+			|| mon->mtyp == PM_LAVA_DEMON
+			|| (quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && is_demon(mon->data) && !quest_status.killed_nemesis)
+		))
+		|| nuncio_monster(mon)
+	)
+		out_faction = NUNCIO_FACTION;
 	else if((In_mordor_quest(&u.uz) || (In_quest(&u.uz) && urole.neminum == PM_NECROMANCER)) && (is_orc(mon->data) || is_undead(mon->data)))
 		out_faction = NECROMANCY_FACTION;
 	else if(Is_knox(&u.uz)
@@ -13752,6 +13863,22 @@ int faction;
 	boolean givenpos = (x != 0 || y != 0);
 	boolean byyou = (x == u.ux && y == u.uy);
 	unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
+
+	/* Maybe rewire the quest levels */
+	if(ptr && in_mklev && In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7){
+		if(ptr->mtyp == PM_WARDEN_ARIANNA)
+			ptr = &mons[PM_VOICE_IN_SCREAMS];
+		else if(ptr->mtyp == PM_MALKUTH_SEPHIRAH){
+			ptr = &mons[PM_CUBOID];
+			givenpos = FALSE; x = y = 0;
+		}
+		else if(ptr->mtyp == PM_HOD_SEPHIRAH){
+			ptr = &mons[PM_RHOMBOHEDROID];
+			givenpos = FALSE; x = y = 0;
+		}
+		else if((is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ))
+			template = FLAYED;
+	}
 
 	/* if a monster is being randomly chosen, use its bigger spawning group */
 	if (!ptr && !(mmflags & MM_NOGROUP))
@@ -16386,6 +16513,11 @@ struct monst *mtmp;
 			give_mintrinsic(mtmp, FAST);
 		}
 	}
+	else if(mtmp->mtyp == PM_ARIANNA){
+		if(mtmp->m_lev >= 21){
+			give_mintrinsic(mtmp, FAST);
+		}
+	}
 	if(mon_archeologist(mtmp)){
 		give_mintrinsic(mtmp, FAST);
 		give_mintrinsic(mtmp, STEALTH);
@@ -16798,6 +16930,12 @@ struct monst *mtmp, *victim;
 				xp_threshold = mtmp->m_lev + 1;
 			if(Role_if(PM_HEALER))
 				xp_threshold += heal_mlevel_bonus();
+			if(carrying_art(ART_LUCK_BLADE)){
+				if(Luck < 0)
+					xp_threshold -= rnd(-1*Luck);
+				else if(Luck > 0)
+					xp_threshold += rnd(Luck);
+			}
 			if(uring_art(ART_LOMYA))
 				xp_threshold += lev_lomya();
 			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_PATIENCE)

@@ -600,6 +600,14 @@ struct monst *mtmp;
 #define m_flee(m)	if (fleetim && !m->iswiz) \
 			{ monflee(m, fleetim, FALSE, FALSE); }
 
+	if(couldsee(mtmp->mx,mtmp->my) && OffensiveLuck && u.uluck > 0 && !mtmp->mpeaceful && otmp && rn2(20) < u.uluck){
+		if(canseemon(mtmp))
+			pline("%s fumbles %s!", Monnam(mtmp), xname(otmp));
+		obj_extract_and_unequip_self(otmp);
+		mdrop_obj(mtmp,otmp,FALSE);
+		return 2; /* Stunned by its own stupidity I guess */
+	}
+
 	switch(m.has_defense) {
 	case MUSE_UNICORN_HORN:
 		if (vismon) {
@@ -1601,6 +1609,14 @@ struct monst *mtmp;
 		return i;
 	oseen = otmp && canseemon(mtmp);
 
+	if(couldsee(mtmp->mx,mtmp->my) && OffensiveLuck && u.uluck > 0 && !mtmp->mpeaceful && otmp && rn2(20) < u.uluck){
+		if(canseemon(mtmp))
+			pline("%s fumbles %s!", Monnam(mtmp), xname(otmp));
+		obj_extract_and_unequip_self(otmp);
+		mdrop_obj(mtmp,otmp,FALSE);
+		return 2; /* Stunned by its own stupidity I guess */
+	}
+
 	switch(m.has_offense) {
 	case MUSE_MON_TURN_UNDEAD:
 		mon_doturn(mtmp);
@@ -2320,6 +2336,14 @@ struct monst *mtmp;
 	vismon = canseemon(mtmp);
 	oseen = otmp && vismon;
 
+	if(couldsee(mtmp->mx,mtmp->my) && OffensiveLuck && u.uluck > 0 && !mtmp->mpeaceful && otmp && rn2(20) < u.uluck){
+		if(canseemon(mtmp))
+			pline("%s fumbles %s!", Monnam(mtmp), xname(otmp));
+		obj_extract_and_unequip_self(otmp);
+		mdrop_obj(mtmp,otmp,FALSE);
+		return 2; /* Stunned by its own stupidity I guess */
+	}
+
 	switch(m.has_misc) {
 	case MUSE_POT_GAIN_LEVEL:
 		mquaffmsg(mtmp, otmp);
@@ -2832,6 +2856,8 @@ struct obj *obj;
 		return FALSE;
 
 	if(mon->mtyp == PM_CATHEZAR && obj->otyp == CHAIN)
+		return TRUE;
+	if(mon->mtyp == PM_CHAIN_DEVIL && obj->otyp == CHAIN)
 		return TRUE;
 	if(obj->oclass == WEAPON_CLASS || is_weptool(obj))
 		return mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA);

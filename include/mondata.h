@@ -208,7 +208,9 @@
 				 (ptr)->mtyp == PM_WINGED_GARGOYLE || \
 				 (ptr)->mtyp == PM_XORN)
 #define is_anhydrous(ptr)	(flaming(ptr)  || \
-							 is_clockwork(ptr) || \
+							 is_gizmo(ptr) ||                     \
+							 (is_clockwork(ptr) &&                \
+								is_naturally_unalive(ptr)) ||     \
 							 is_stone(ptr) || \
 							 is_auton(ptr) || \
 				 (ptr)->mlet == S_KETER || \
@@ -728,6 +730,18 @@
 							 || (mon)->mtyp == PM_MAN_FLY \
 							 || has_template(mon, SWOLLEN_TEMPLATE) \
 							)
+#define always_nuncio_monster(ptr) (\
+									   (ptr)->mtyp == PM_VOICE_IN_SCREAMS \
+									|| (ptr)->mtyp == PM_CHAIN_DEVIL \
+									|| (ptr)->mtyp == PM_CUBOID \
+									|| (ptr)->mtyp == PM_RHOMBOHEDROID \
+									|| (ptr)->mtyp == PM_WARDEN_ARIANNA \
+								  )
+
+#define nuncio_monster(mon) (\
+							   always_nuncio_monster(mon->data) \
+							|| has_template(mon, FLAYED) \
+							)
 
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
 								&& !is_auton(ptr) \
@@ -1020,10 +1034,13 @@
 
 #define emits_light_mon(mon) (emits_light((mon)->data))
 
+/*	The Voice casts light */
 #define Is_darklight_monster(ptr)	((ptr)->mtyp == PM_EDDERKOP\
 					|| (ptr)->mtyp == PM_DARK_WORM\
 					|| (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE\
 					|| (ptr)->mtyp == PM_DAO_LAO_GUI_MONK\
+					|| (ptr)->mtyp == PM_CUBOID\
+					|| (ptr)->mtyp == PM_RHOMBOHEDROID\
 					)
 /*	[note: the light ranges above were reduced to 1 for performance...] */
 #define likes_lava(ptr)		( \
@@ -1416,8 +1433,11 @@
 				   (ptr)->mtyp != PM_JELLYFISH && \
 				   (ptr)->mtyp != PM_CHORISTER_JELLY && \
 				   (ptr)->mtyp != PM_CHORISTER_TRAIN && \
-				   !is_clockwork(ptr) && \
+				   !is_gizmo(ptr) &&                     \
+				   !(is_clockwork(ptr) &&                \
+					 is_naturally_unalive(ptr)) &&     \
 				   (!nonliving(ptr) || is_vampire(ptr) || (ptr)->mtyp == PM_INDEX_WOLF))
+
 #define has_blood_mon(mon)	(has_blood((mon)->data))
 
 /* Keep track of ferns, fern sprouts, fern spores, and other plants */

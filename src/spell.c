@@ -6087,6 +6087,12 @@ int spell;
 	if(Black_crystal)
 		splcaster -= urole.spelarmr;
 
+	if(carrying_art(ART_IRON_SPOON_OF_LIBERATION) && (
+		spellid(spell) == SPE_TELEPORT_AWAY
+		|| spellid(spell) == SPE_STONE_TO_FLESH
+		|| spellid(spell) == SPE_DIG
+	))
+		splcaster -= urole.spelarmr;
 	if(uwep){
 		int cast_bon;
 		// powerful channeling artifacts
@@ -6490,6 +6496,11 @@ int spell;
 	/* Clamp to percentile */
 	if (chance > 100) chance = 100;
 	if (chance < 0) chance = 0;
+
+	if (uwep && uwep->oartifact == ART_LUCK_BLADE){
+		int c = 100-chance;
+		chance = 100 - (c*c)/100;
+	}
 
 	return chance;
 }

@@ -568,6 +568,36 @@ int template;
 		ptr->mresists |= (MR_SLEEP | MR_POISON);	/* individual monsters gain cold res at mlev >= 10 */
 		ptr->mflagsw |= (MW_ELDER_EYE_ENERGY);
 		break;
+	case FLAYED:
+		ptr->mlevel = max(20, ptr->mlevel);
+		ptr->nac += 6;
+		ptr->pac += 3;
+		ptr->hdr += 6;
+		ptr->bdr += 6;
+		ptr->gdr += 6;
+		ptr->ldr += 6;
+		ptr->fdr += 6;
+		ptr->spe_hdr += 3;
+		ptr->spe_bdr += 3;
+		ptr->spe_gdr += 3;
+		ptr->spe_ldr += 3;
+		ptr->spe_fdr += 3;
+		/* flags: */
+		ptr->mflagst |= (MT_HOSTILE | MT_STALK);
+		ptr->mflagst &= ~(MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
+		ptr->mflagsg &= ~(MG_HATESUNHOLY);
+		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
+		ptr->mflagsa |= (MA_DEMON);
+		/* resists: */
+		ptr->mresists |= (MR_SLEEP | MR_POISON);	/* individual monsters gain cold res at mlev >= 10 */
+		
+		ptr->msound = (ptr->msound == MS_SILENT) ? MS_SILENT : MS_SCREAM;
+
+		if (ptr->mmove < 6)
+			ptr->mmove = 12;
+		else
+			ptr->mmove += 6;
+		break;
 	case ILLUMINATED:
 		/* flags: */
 		ptr->mflagsg |= (MG_HATESUNHOLY);
@@ -1604,6 +1634,21 @@ int template;
 					ptr->mmove = 6;
 			}
 		}
+		/* flayed are psychic */
+		if (template == FLAYED && (
+			(attk->aatyp == AT_MAGC
+			|| attk->aatyp == AT_MMGC
+			)
+			|| insert_okay(special)
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_MAGC;
+			attk->adtyp = AD_PSON;
+			attk->damn = (attk->damn+1)/2;
+			attk->damd = 15;
+			special = TRUE;
+		}
 	}
 #undef insert_okay
 #undef end_insert_okay
@@ -1698,6 +1743,9 @@ int mtyp;
 	case CORDYCEPS:
 	case SPORE_ZOMBIE:
 		return can_undead(ptr);
+	case FLAYED:
+		/* makes minimal sense for flaying */
+		return !is_naturally_unalive(ptr) && !thick_skinned(ptr);
 	}
 	/* default fall through -- allow all */
 	return TRUE;

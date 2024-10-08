@@ -2341,8 +2341,15 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 					magr->mvar_spellweaver_count = 0;
 			}
 		}
-		if(*indexnum > magr->mvar_spellweaver_count)
+		if(*indexnum > magr->mvar_spellweaver_count){
 			GETNEXT
+		}
+	}
+	/*Arianna skips the spellcasting attack unless the PC spent enough time without doing the quest*/
+	if((pa->mtyp == PM_WARDEN_ARIANNA || pa->mtyp == PM_ARIANNA) && attk->adtyp == AD_PSON){
+		if(quest_status.time_doing_quest<CON_QUEST_INCREMENT || !Role_if(PM_CONVICT)){
+			GETNEXT
+		}
 	}
 	/* Nitocris uses clerical spells while wearing their Wrappings */
 	if(!by_the_book && pa->mtyp == PM_NITOCRIS){
@@ -4753,7 +4760,7 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 
 	/* get accuracy of attack */
 	if (miss){
-		accuracy = 0;
+		accuracy = -20;
 		shield_margin = -1;
 	}
 	else
@@ -4762,6 +4769,26 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 	/* roll to-hit die */
 	dieroll = rnd(20);
 	
+	if ((youdef || mdef->mtame) && DefensiveLuck && u.uluck > 0){
+		if (dieroll == 20){
+			int ix, iy;
+			struct monst *mdef2;
+			for (ix = x(magr)-1; ix <= x(magr)+1; ix++) {
+				for (iy = y(magr)-1; iy <= y(magr)+1; iy++) {
+					if (isok(ix, iy) && (ix != x(magr) || iy != y(magr))) {
+						mdef2 = m_at(ix, iy);
+						if (mdef2 && mdef2 != magr && mdef2 != mdef && !mdef2->mpeaceful){
+							return xmeleehity(magr, mdef2, attk, weapon_p, vis, flat_acc, ranged, attack_flags);
+						}
+					}
+				}
+			}
+			//Otherwise miss
+			accuracy = -20;
+			shield_margin = -1;
+		}
+		else dieroll = max_ints(dieroll, rnd(20));
+	}
 	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_ACCURACY) && WIZCOMBATDEBUG_APPLIES(magr, mdef)) {
 		pline("accuracy = %d, die roll = %d", accuracy, dieroll);
 	}
@@ -5800,6 +5827,13 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				exercise(A_INT, FALSE);
 				exercise(A_WIS, FALSE);
 				exercise(A_CHA, FALSE);
+			}
+			if(magr->mtyp == PM_WARDEN_ARIANNA || magr->mtyp == PM_ARIANNA || magr->mtyp == PM_VOICE_IN_SCREAMS){
+				alt_attk.aatyp = AT_HITS;
+				alt_attk.aatyp = AD_PAIN;
+				alt_attk.damn = 0;
+				alt_attk.damd = 0;
+				xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, 0, dieroll, vis, ranged);
 			}
 		}
 		else
@@ -9687,6 +9721,9 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				mdef->movement = max(mdef->movement - 6, -12);
 			}
 		}
+		/* rider on another attack */
+		if(magr->mtyp == PM_WARDEN_ARIANNA || magr->mtyp == PM_ARIANNA || magr->mtyp == PM_VOICE_IN_SCREAMS)
+			return MM_HIT;
 		/* make posion/physical attack without hitmsg */
 		alt_attk.adtyp = AD_DRST;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
@@ -10379,6 +10416,41 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 		break;
+	case AD_UNRV:
+		{
+			int * moral = (youdef ? &(u.uencouraged) : &(mdef->encouraged));
+
+			if(youdef){
+				if(Role_if(PM_CONVICT)){
+					int sanloss = -dmg;
+					if(magr->mtyp == PM_CUBOID){
+						pline("The black light fills your mind with surreal images of your capture and trial!");
+						dmg *= 1.5;
+					}
+					else if(magr->mtyp == PM_RHOMBOHEDROID){
+						pline("The black light fills your mind with surreal images of your crimes!");
+						dmg *= 1.5;
+						dmg += u.hod + u.ualign.sins;
+					}
+					if(!save_vs_sanloss())
+						change_usanity(sanloss, TRUE);
+				}
+				else
+					pline("The black light fills your mind with unnerving images!");
+			}
+			else if(vis&VIS_MDEF){
+				if (dmg > -1*(*moral)) {	// reduce message spam by only showing when study is actually increased
+					pline("%s looks unnerved.", Monnam(mdef));
+				}
+			}
+			//else no message
+			/* add to moral */
+			*moral = max(-dmg, *moral-dmg);
+			dmg = 0;
+			return MM_HIT;
+		}
+		break;
+
 //////////////////////////////////////////////////////////////
 // NOT IMPLEMENTED FOR XMELEEHURTY
 //////////////////////////////////////////////////////////////
@@ -13390,9 +13462,16 @@ int vis;
 
 			if (dmg > -1*(*moral)) {	// reduce message spam by only showing when study is actually increased
 				if(youdef){
-					pline("%s looks unnervingly familliar!", Monnam(magr));
+					if(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && !rn2(20)){
+						pline("...Warden Arianna!?");
+						dmg *= 1.5;
+						if(!save_vs_sanloss())
+							change_usanity(-dmg, TRUE);
+					}
+					else
+						pline("%s looks unnervingly familliar!", Monnam(magr));
 				}
-				else if(vis&VIS_MAGR){
+				else if(vis&VIS_MDEF){
 					pline("%s looks unnerved.", Monnam(mdef));
 				}
 				//else no message

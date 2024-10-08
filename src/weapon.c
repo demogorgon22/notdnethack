@@ -721,9 +721,8 @@ struct monst *magr;
 			int wt = (int)objects[BALL].oc_weight;
 
 			if ((int)obj->owt > wt) {
-				wt = ((int)obj->owt - wt) / 160;
-				ocd += 4 * wt;
-				if (ocd > 25) ocd = 25;	/* objects[].oc_wldam */
+				wt = ((int)obj->owt - wt) / 40;
+				ocd += wt;
 			}
 		}
 		if (check_oprop(obj, OPROP_BLADED))
@@ -1712,6 +1711,7 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 				( (otmp->owt <= (30 + (mtmp->m_lev/5)*5))
 				|| (marilith && ok_mariwep(otmp, mtmp, mtmp->data, FALSE))
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CATHEZAR) 
+				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CHAIN_DEVIL) 
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_FIERNA)
 				|| (otmp->otyp == BALL && (mtmp->mtyp == PM_WARDEN_ARIANNA || mtmp->mtyp == PM_ARIANNA || mtmp->mtyp == PM_RAGE_WALKER))
 				|| (mtmp->mtyp == PM_BASTARD_OF_THE_BOREAL_VALLEY)
@@ -2383,6 +2383,8 @@ register struct monst *mtmp;
 			(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
 			|| otmp->otyp == CHAIN || otmp->otyp == BALL
 			) &&
+			/* not worn as armor (chain devils etc) */
+			!(otmp->owornmask&W_ARMOR) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
 				|| !check_oprop(otmp, OPROP_NONE)
@@ -2462,6 +2464,8 @@ register struct monst *mtmp;
 			) &&
 			/* not already weided in main hand */
 			(otmp != MON_WEP(mtmp)) &&
+			/* not worn as armor (chain devils etc) */
+			!(otmp->owornmask&W_ARMOR) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
 				|| !check_oprop(otmp, OPROP_NONE)
