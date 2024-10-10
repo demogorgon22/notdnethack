@@ -3873,27 +3873,34 @@ drown()
 int
 dodeepswim()
 {
-	if(u.uinwater && Swimming){
+	if((u.uinwater && Swimming) || ((Flying || Wwalking) && (Swimming || Amphibious) && !Levitation && is_pool(u.ux, u.uy, FALSE))){
 		if(u.usubwater){
 			if(is_3dwater(u.ux, u.uy)){
 				pline("There is no surface!");
 				return MOVE_CANCELLED;
 			} else {
-				You("swim up to the surface.");
+				if (Flying)
+					You("fly out of the water.");
+				else if (Wwalking)
+					You("slowly rise above the surface.");
+				else
+					You("swim up to the surface.");
 				u.usubwater = 0;
+				if (Flying || Wwalking) u.uinwater = 0;
 				vision_recalc(2);	/* unsee old position */
 				vision_full_recalc = 1;
 				doredraw();
 				return MOVE_STANDARD;
 			}
 		} else {
-			if(ACURR(A_CON) > 5){
+			if(ACURR(A_CON) > 5 || Amphibious){
 				if(Is_waterlevel(&u.uz)){
 					You("are already under water!");
 					return MOVE_CANCELLED;
 				} else {
 					You("dive below the surface.");
 					u.usubwater = 1;
+					if (Flying || Wwalking) u.uinwater = 1;
 					under_water(1);
 					vision_recalc(2);	/* unsee old position */
 					vision_full_recalc = 1;
@@ -3903,8 +3910,9 @@ dodeepswim()
 			return MOVE_CANCELLED;
 		}
 	} else {
-		if(!u.uinwater) You("can't dive unless you're swimming!");
+		if(!is_pool(u.ux, u.uy, FALSE)) You("can't dive into the %s!", surface(u.ux, u.uy));
 		else if(!Swimming) You("can't swim!");
+		else if(Levitation) You("can't reach the water!");
 		return MOVE_CANCELLED;
 	}
 }
