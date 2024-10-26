@@ -425,7 +425,9 @@ smithing_object(struct obj *obj)
 		// Sprintf(buf, "Functions");
 		// add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 
-		if(is_metallic(obj) && (obj->spe <= 0 || obj->spe < smithing_bonus()) && check_oprop(obj, OPROP_NONE) && !obj->oartifact){
+		if(is_metallic(obj) && (obj->spe <= 0 || obj->spe < smithing_bonus())
+			&& check_oprop(obj, OPROP_NONE) && !obj->oartifact && !objects[obj->otyp].oc_unique
+		){
 			n++;
 			incntlet = 'm';
 			Sprintf(buf, "Melt for scrap");
