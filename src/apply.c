@@ -2887,11 +2887,19 @@ parasite_score()
 }
 
 boolean
+parasite_research_ok()
+{
+	if(parasite_score() < u.uparasitology_research)
+		return TRUE;
+	return FALSE;
+}
+
+boolean
 parasite_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
-	if(parasite_score() < u.uparasitology_research)
+	if(parasite_research_ok())
 		return TRUE;
 	return FALSE;
 }
@@ -2945,13 +2953,21 @@ defile_score()
 }
 
 boolean
+defile_research_ok()
+{
+	if(defile_score() < u.udefilement_research)
+		return TRUE;
+	return FALSE;
+}
+
+boolean
 defile_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
 	if(!impurity_ok())
 		return FALSE;
-	if(defile_score() < u.udefilement_research)
+	if(defile_research_ok())
 		return TRUE;
 	return FALSE;
 }
@@ -2993,13 +3009,21 @@ reanimation_insight_ok()
 }
 
 boolean
+reanimation_research_ok()
+{
+	if(reanimation_score() < u.ureanimation_research)
+		return TRUE;
+	return FALSE;
+}
+
+boolean
 reanimation_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
 	if(!reanimation_insight_ok())
 		return FALSE;
-	if(reanimation_score() < u.ureanimation_research)
+	if(reanimation_research_ok())
 		return TRUE;
 	return FALSE;
 }
@@ -3691,13 +3715,19 @@ doresearch()
 		//Research
 		IMPURITY_UP(u.uimp_bodies) //dead bodies are impure
 		if(researchtype == A_CHAOTIC){
+			boolean pre_research = defile_research_ok();
+			pline("You drain and fractionate the corpses's blood, studying its impurities.");
 			IMPURITY_UP(u.uimp_blood)
 			u.udefilement_research += rnd(value);
 			otmp->odrained = TRUE;
 			otmp->oeaten = drainlevel(otmp);
 			fix_object(otmp);
+			if(pre_research != defile_research_ok()){
+				You("have devised a new experiment into the nature of defilement.");
+			}
 		}
 		else if(researchtype == A_NEUTRAL){
+			boolean pre_research = parasite_research_ok();
 			u.uparasitology_research += 1;
 			if(!mindless(&mons[otmp->corpsenm]) && !is_animal(&mons[otmp->corpsenm])){
 				u.uparasitology_research += rn2(value);
@@ -3708,9 +3738,19 @@ doresearch()
 					}
 					u.uparasitology_research += rn2(value);
 				}
+				else {
+					You("dissect the subject's %s, looking for parasites.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+				}
+			}
+			else {
+				You("dissect the subject's rudimentary %s, fruitlessly searching for parasites.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+			}
+			if(pre_research != parasite_research_ok()){
+				You("have devised a new experiment into the parasite choir.");
 			}
 		}
 		else if(researchtype == A_LAWFUL){
+			boolean pre_research = reanimation_research_ok();
 			u.ureanimation_research += 1;
 			if(mvitals[otmp->corpsenm].dissected < 225)
 				mvitals[otmp->corpsenm].dissected++;
@@ -3718,6 +3758,13 @@ doresearch()
 				u.ureanimation_research += rn2(value);
 				if(mvitals[otmp->corpsenm].reanimated < 225)
 					mvitals[otmp->corpsenm].reanimated++;
+				You("dissect the subject's %s and optical pathways.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+			}
+			else {
+				You("dissect the subject's %s and optical pathways. The effects of necrosis have already largely spoiled the sample.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+			}
+			if(pre_research != reanimation_research_ok()){
+				You("have devised a new experiment into the great animating thoughts.");
 			}
 		}
 	}
@@ -10282,6 +10329,7 @@ doapply()
 		mtmp = revive(corpse, FALSE);
 		set_template(mtmp, SPARK_SKELETON);
 		if(mtmp){
+			boolean pre_research = reanimation_research_ok();
 			add_mx(mtmp, MX_ESUM);
 			u.ureanimation_research += rnd(value);
 			if(mvitals[mtmp->mtyp].reanimated < 225)
@@ -10302,6 +10350,9 @@ doapply()
 			}
 			else {
 				tamedog_core(mtmp, (struct obj *) 0, TRUE);
+			}
+			if(pre_research != reanimation_research_ok()){
+				You("have devised a new experiment into the great animating thoughts.");
 			}
 		}
 	}break;
