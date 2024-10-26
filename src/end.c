@@ -487,6 +487,11 @@ register struct monst *mtmp;
 	if (u.ugrave_arise >= LOW_PM &&
 				(mvitals[u.ugrave_arise].mvflags & G_GENOD && !In_quest(&u.uz)))
 		u.ugrave_arise = NON_PM;
+	if (!u.uconduct.killer){
+		//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+		IMPURITY_UP(u.uimp_murder)
+		IMPURITY_UP(u.uimp_bloodlust)
+	}
 	if (touch_petrifies(mtmp->data))
 		done(STONING);
 	else if (mtmp->mtraitor)

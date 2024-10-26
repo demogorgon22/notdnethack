@@ -483,6 +483,7 @@ struct attack *mattk;
 	    else
 		You("seduce %s and %s starts to take off %s clothes.",
 		    mon_nam(mdef), mhe(mdef), mhis(mdef));
+		IMPURITY_UP(u.uimp_seduction)
 	}
 	while ((otmp = mdef->minvent) != 0) {
 		if(mi_only && !is_magic_obj(otmp) && otmp != stealoid)

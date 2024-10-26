@@ -5396,6 +5396,11 @@ boolean was_swallowed;			/* digestion */
 					} else {
 					killer_format = KILLED_BY_AN;
 					killer = "mandrake's dying shriek";
+					if (!u.uconduct.killer){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DIED);
 					}
 				} else shieldeff(u.ux,u.uy);
@@ -9518,6 +9523,11 @@ struct monst *mtmp;
 				} else {
 					killer_format = KILLED_BY;
 					killer = "the scream of an old one";
+					if (!u.uconduct.killer){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DIED);
 				}
 				//Roll vs. sanity
@@ -9805,6 +9815,11 @@ struct monst *mtmp;
 				} else {
 					killer_format = KILLED_BY;
 					killer = "the ancient breath of death";
+					if (!u.uconduct.killer){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DIED);
 				}
 				nomul(0, NULL); //Interrupt
@@ -9997,7 +10012,14 @@ struct monst *mtmp;
 						if (!Very_fast)
 							You_feel("yourself slowing down%s.",
 										Fast ? " a bit" : "");
-					} else done(GLASSED);
+					} else{
+						if (!u.uconduct.killer){
+							//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+							IMPURITY_UP(u.uimp_murder)
+							IMPURITY_UP(u.uimp_bloodlust)
+						}
+						done(GLASSED);
+					}
 				} else {
 					int nobj = 0, cnt, onum;
 					for (otmp = invent; otmp; otmp = otmp->nobj) {

@@ -734,6 +734,11 @@ int dmg;
 							Your("last thought fades away.");
 						killer = "destruction of the brain and spinal cord";
 						killer_format = KILLED_BY;
+						if (!u.uconduct.killer){
+							//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+							IMPURITY_UP(u.uimp_murder)
+							IMPURITY_UP(u.uimp_bloodlust)
+						}
 						done(DIED);
 						lifesaved++;
 					}
@@ -1734,6 +1739,11 @@ int effect_num;
 					else
 						killer = "a poisoned kiss of fangs";
 					killer_format = KILLED_BY;
+					if (!u.uconduct.killer){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DIED);
 				}
 				else {

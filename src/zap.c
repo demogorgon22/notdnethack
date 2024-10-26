@@ -4624,6 +4624,11 @@ struct zapdata * zapdata;
 					domsg();
 					pline_The("poison was deadly...");
 					killer_format = NO_KILLER_PREFIX;
+					if (!u.uconduct.killer && !youagr){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(POISONING);
 					return MM_DEF_LSVD;
 				}
@@ -4898,6 +4903,11 @@ struct zapdata * zapdata;
 					killer = flash_type(zapdata->adtyp, zapdata->ztyp);
 					/* when killed by disintegration breath, don't leave corpse */
 					u.ugrave_arise = NON_PM;
+					if (!u.uconduct.killer && !youagr){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DISINTEGRATED);
 					return MM_DEF_LSVD; /* or, lifesaved */
 				}

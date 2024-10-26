@@ -57,6 +57,7 @@ register struct monst *mtmp;
 	} else if(u.ugold) {
 	    u.ugold -= (tmp = somegold());
 	    Your("purse feels lighter.");
+		IMPURITY_UP(u.uimp_theft)
 	    mtmp->mgold += tmp;
 	if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
 	    mtmp->mavenge = 1;

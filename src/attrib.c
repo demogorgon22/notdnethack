@@ -260,6 +260,11 @@ adjattrib(ndx, incr, msgflg)
 				int temparise = u.ugrave_arise;
 				pline("The image of the weeping angel is taking over your body!");
 				u.ugrave_arise = PM_WEEPING_ANGEL;
+				if (!u.uconduct.killer){
+					//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+					IMPURITY_UP(u.uimp_murder)
+					IMPURITY_UP(u.uimp_bloodlust)
+				}
 				done(WEEPING);
 				u.ugrave_arise = temparise;
 			} else if(u.umorgul

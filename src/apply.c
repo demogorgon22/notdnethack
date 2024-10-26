@@ -2819,6 +2819,7 @@ transfusion(struct obj *obj)
 		pline("Never mind");
 		return MOVE_CANCELLED;
 	}
+	IMPURITY_UP(u.uimp_blood)
 	if(your_race(&mons[obj->corpsenm])){
 		if(obj->cursed && !Race_if(PM_VAMPIRE)){
 			Your("%s stops!", body_part(HEART));
@@ -3348,6 +3349,7 @@ blood_draw(struct obj *obj)
 	nightmare_mold_lose_experience();
 	morehungry((blood->odiluted ? 1 : 2) * (mons[(blood)->corpsenm].cnutrit/5 ));
 	exercise(A_CON, FALSE);
+	IMPURITY_UP(u.uimp_blood)
 
 	if(obj->spe > 0)
 		obj->spe--;
@@ -3687,7 +3689,9 @@ doresearch()
 		}
 		else otmp->researched = TRUE;
 		//Research
+		IMPURITY_UP(u.uimp_bodies) //dead bodies are impure
 		if(researchtype == A_CHAOTIC){
+			IMPURITY_UP(u.uimp_blood)
 			u.udefilement_research += rnd(value);
 			otmp->odrained = TRUE;
 			otmp->oeaten = drainlevel(otmp);
@@ -6247,6 +6251,8 @@ struct obj *obj;
 			possibly_unwield(mtmp, FALSE);
 			setmnotwielded(mtmp,otmp);
 
+			/*stealing is impure*/
+			IMPURITY_UP(u.uimp_theft)
 			switch (rn2(proficient + 1)) {
 			case 2:
 				/* to floor near you */
@@ -6437,6 +6443,8 @@ struct obj *obj;
 				possibly_unwield(mtmp, FALSE);
 				setmnotwielded(mtmp,otmp);
 
+				/*stealing is impure*/
+				IMPURITY_UP(u.uimp_theft)
 				switch (rn2(proficient + 1)) {
 					case 2:
 						/* to floor near you */

@@ -800,6 +800,11 @@ nh_timeout()
 				killer_format = NO_KILLER_PREFIX;
 				killer = "killed by petrification";
 			}
+			if (!u.uconduct.killer){
+				//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+				IMPURITY_UP(u.uimp_murder)
+				IMPURITY_UP(u.uimp_bloodlust)
+			}
 			done(STONING);
 			break;
 		case GOLDED:
@@ -812,6 +817,11 @@ nh_timeout()
 				   "petrified by petrification" */
 				killer_format = NO_KILLER_PREFIX;
 				killer = "killed by turning to gold";
+			}
+			if (!u.uconduct.killer){
+				//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+				IMPURITY_UP(u.uimp_murder)
+				IMPURITY_UP(u.uimp_bloodlust)
 			}
 			done(GOLDING);
 			break;
@@ -826,6 +836,11 @@ nh_timeout()
 			if (!killer) {
 				killer_format = NO_KILLER_PREFIX;
 				killer = "turned into green slime";
+			}
+			if (!u.uconduct.killer){
+				//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+				IMPURITY_UP(u.uimp_murder)
+				IMPURITY_UP(u.uimp_bloodlust)
 			}
 			done(TURNED_SLIME);
 			break;

@@ -3339,6 +3339,11 @@ int dmg;				/* damage to deal */
 			else {
 				killer = oldkiller;
 				You("die...");
+				if (!u.uconduct.killer && !youagr){
+					//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+					IMPURITY_UP(u.uimp_murder)
+					IMPURITY_UP(u.uimp_bloodlust)
+				}
 				done(DIED);
 				killer = 0;
 			}
@@ -7962,6 +7967,7 @@ boolean ranged;
 				u.ugold += mdef->mgold;
 				mdef->mgold = 0;
 				Your("purse feels heavier.");
+				IMPURITY_UP(u.uimp_theft)
 			}
 #else
 			/* This you as a leprechaun, so steal
@@ -7973,6 +7979,7 @@ boolean ranged;
 					if (merge_choice(invent, mongold) || inv_cnt() < 52) {
 						addinv(mongold);
 						Your("purse feels heavier.");
+						IMPURITY_UP(u.uimp_theft)
 					}
 					else {
 						You("grab %s's gold, but find no room in your knapsack.", mon_nam(mdef));
@@ -8356,6 +8363,11 @@ boolean ranged;
 						killer = killer_buf;
 						/* when killed by disintegration, don't leave corpse */
 						u.ugrave_arise = NON_PM;
+						if (!u.uconduct.killer && !youagr){
+							//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+							IMPURITY_UP(u.uimp_murder)
+							IMPURITY_UP(u.uimp_bloodlust)
+						}
 						done(DISINTEGRATED);
 						You("reintegrate!");//lifesaved
 						return (MM_HIT|MM_DEF_LSVD);
@@ -8783,6 +8795,11 @@ boolean ranged;
 								moat ? "moat" : "pool of water",
 								an(mtmp->data->mname));
 							killer = buf;
+							if (!u.uconduct.killer && !youagr){
+								//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+								IMPURITY_UP(u.uimp_murder)
+								IMPURITY_UP(u.uimp_bloodlust)
+							}
 							done(DROWNING);
 							return (MM_HIT|MM_DEF_DIED);
 						}
@@ -12033,6 +12050,11 @@ int vis;
 				else {
 					killer_format = KILLED_BY_AN;
 					killer = "gaze of death";
+					if (!u.uconduct.killer && !youagr){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DIED);
 
 					if (*hp(mdef) > 0)
@@ -19354,6 +19376,11 @@ struct monst * mdef;
 				if(youdef){
 					killer_format = KILLED_BY_AN;
 					killer = "heart attack";
+					if (!u.uconduct.killer && !youagr){
+						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+						IMPURITY_UP(u.uimp_murder)
+						IMPURITY_UP(u.uimp_bloodlust)
+					}
 					done(DIED);
 				}
 				else {
