@@ -199,6 +199,9 @@ int newpm;
 		case PM_DEMINYMPH:
 			mon->mvar_deminymph_role = PM_CAVEMAN;
 		break;
+		case PM_VERMIURGE:
+			mon->mvar_vermiurge = 1000;
+		break;
 		default:
 			//mon->mvar_ancient_breath_cooldown = 0;
 			//mon->mvar_yellow_lifesaved = FALSE;
@@ -206,6 +209,10 @@ int newpm;
 			//mon->mvar_witchID = 0;
 			//mon->mvar_suryaID = 0;
 			//mon->mvar_huskID = 0;
+			//mon->mvar_elfwraith_target = 0;
+			//mon->mvar_lucksucker = 0;
+			//mon->mvar_star_vampire_blood = 0;
+			//mon->mvar_spellweaver_count = 0;
 			mon->mvar1 = 0;
 		break;
 	}
@@ -215,9 +222,12 @@ int newpm;
 	// mvar_spList_2 = 0
 	// mvar_dreadPrayer_progress = 0
 	// mvar_attack_pm = 0
+	// mvar_elfwraith_spell = 0
+	// mvar_spellweaver_seed = 0
 
 	// mvar_conversationTracker = 0
 	// mvar_lifesigns = 0 /*Note: lifesigns are 0ed */
+	// mvar_spellweaver_last_cast = 0
 
 	mon->mvar3 = 0;
 }
