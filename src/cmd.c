@@ -4169,7 +4169,7 @@ parse()
 	flags.move = MOVE_DEFAULT;
 	flush_screen(1); /* Flush screen buffer. Put the cursor on the hero. */
 
-	if (!iflags.num_pad || (foo = readchar()) == 'n')
+	if (!iflags.num_pad || (foo = readchar()) == 'n'){
 	    for (;;) {
 		foo = readchar();
 		if (foo >= '0' && foo <= '9') {
@@ -4185,6 +4185,7 @@ parse()
 		    if (!multi && foo == '0') prezero = TRUE;
 		} else break;	/* not a digit */
 	    }
+	}
 
 	if (foo == DOESCAPE) {   /* esc cancels count (TH) */
 	    clear_nhwindow(WIN_MESSAGE);
@@ -4249,19 +4250,55 @@ readchar()
 {
 	register int sym;
 	int x = u.ux, y = u.uy, mod = 0;
-
+	boolean overriding = FALSE;
+	boolean bracket = FALSE;
+	
 	if (iflags.debug_fuzzer)
-	        return randomkey();
+			return randomkey();
 
-	if ( *readchar_queue )
-	    sym = *readchar_queue++;
-	else
+	do {
+		if ( *readchar_queue )
+			sym = *readchar_queue++;
+		else
 #ifdef REDO
-	    sym = in_doagain ? Getchar() : nh_poskey(&x, &y, &mod);
+			sym = in_doagain ? Getchar() : nh_poskey(&x, &y, &mod);
 #else
-	    sym = Getchar();
+			sym = Getchar();
 #endif
-
+		if(sym == 033 && !overriding){
+			overriding = TRUE;
+		}
+		else if(overriding && sym == '[' && !bracket){
+			bracket = TRUE;
+		}
+		else if(overriding && bracket){
+			const char *sdp;
+			if(iflags.num_pad) sdp = ndir; else sdp = sdir;	/* DICE workaround */
+			overriding = FALSE;
+			switch(sym){
+				case 'A':
+					//Up
+					sym = sdp[2];
+				break;
+				case 'B':
+					//Down
+					sym = sdp[6];
+				break;
+				case 'C':
+					//Right
+					sym = sdp[4];
+				break;
+				case 'D':
+					//Left
+					sym = sdp[0];
+				break;
+			}
+		}
+		else {
+			overriding = FALSE;
+		}
+	} while(overriding);
+	
 #ifdef UNIX
 # ifdef NR_OF_EOFS
 	if (sym == EOF) {
