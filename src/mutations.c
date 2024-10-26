@@ -25,7 +25,7 @@ const struct mutationtype mutationtypes[] =
 	{ ABHORRENT_SPORE, -1, "abhorrent spore", "An abhorrent spore has taken root on your body." },
 	{ CRAWLING_FLESH, -1, "crawling flesh", "Your flesh crawls, closing wounds with horrid swiftness." },
 	{ SHUB_RADIANCE, -1, "illumination of Shub-Nugganoth", "HER light shines in your eyes!" },
-	{ TENDRIL_HAIR, -1, "hairlike tendrils", "Your body is covered with hairlike tentrils." },
+	{ TENDRIL_HAIR, -1, "hairlike tendrils", "Your body is covered with hairlike tendrils." },
 	{ SHIFTING_MIND, -1, "shifting mind", "Your mind has shifted."},
 	{ SHUB_CLAWS, HAND, "pointed claws", "Your fingernails can fuse into your fingers and transform into long claws."},
 	{ MIND_STEALER, TONGUE, "mind-stealing tongue", "Your long thin tongue can slip into others' thoughts."},
