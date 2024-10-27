@@ -1374,7 +1374,7 @@ int curse_bless;
 				obj->spe = 1;
 		    }
 		    obj->age += 750;
-		    if (obj->age > 150000) obj->age = 1500;
+		    if (obj->age > 1500) obj->age = 1500;
 		    p_glow1(obj);
 		}
 		break;
