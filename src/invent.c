@@ -3623,6 +3623,10 @@ winid *datawin;
 			Sprintf(buf2, "The Silver Flame will save the wearer's life.");
 			OBJPUTSTR(buf2);
 		}
+		if(check_oprop(obj, OPROP_ANTAW)){
+			Sprintf(buf2, "Conducts arcane forces.");
+			OBJPUTSTR(buf2);
+		}
 	}
 	/* other artifact weapon effects */
 	if (oartifact) {
