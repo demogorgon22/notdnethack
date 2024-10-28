@@ -1259,7 +1259,6 @@ int portal;
 			at_stairs = at_ladder = FALSE;
 		}
 	}
-
 	/* Prevent the player from going past the first quest level unless
 	 * (s)he has been given the go-ahead by the leader.
 	 */
@@ -1268,6 +1267,29 @@ int portal;
 	) {
 		pline("A mysterious force prevents you from descending.");
 		return;
+	}
+	/* Mysterious force to shake up the uh quest*/
+	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
+		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
+		&& dunlev(&u.uz) < qlocate_level.dlevel
+		&& rnd(20) < u.uinsight && rn2(2)
+	){
+		int diff = rn2(2);	/* 0 - 1 */
+		if (diff != 0) {
+			assign_rnd_level(newlevel, &u.uz, diff);
+		}
+		else {
+			assign_level(newlevel, &u.uz);
+		    new_ledger = ledger_no(newlevel);
+
+		    pline("A mysterious force momentarily surrounds you...");
+		    if (on_level(newlevel, &u.uz)) {
+				(void) safe_teleds(FALSE);
+				(void) next_to_u();
+				return;
+		    } else
+				at_stairs = at_ladder = FALSE;
+		}
 	}
 	// if (on_level(&u.uz, &nemesis_level) && !(quest_status.got_quest) && flags.stag) {
 		// pline("A mysterious force prevents you from leaving.");
