@@ -314,6 +314,10 @@ struct monst *magr;
 		else
 			attackmask = WHACK; //No claws! Just a flabby hand.
 	}
+	if (oartifact == ART_DIRGE){
+		if(check_mutation(SHUB_CLAWS))
+			attackmask |= SLASH|PIERCE; //Claws
+	}
 	if(oartifact == ART_JIN_GANG_ZUO){
 		attackmask = WHACK;
 	}

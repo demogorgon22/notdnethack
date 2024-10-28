@@ -1446,6 +1446,10 @@ struct monst * magr;
 			dmg += vd(2, 10); // Crackling holy energy
 		else if (otmp->oartifact == ART_GODHANDS)
 			dmg += 7;
+		else if (otmp->oartifact == ART_DIRGE){
+			if(check_mutation(SHUB_RADIANCE))
+				dmg += vd(3, 7);
+		}
 		else if (otmp->oartifact == ART_RED_CORDS_OF_ILMATER)
 			dmg += 7;
 		else if (otmp->oartifact == ART_JINJA_NAGINATA)
@@ -1507,8 +1511,13 @@ struct monst * magr;
 			ndice = 4; //Extra unholy (4d9 vs excal's 3d7)
 		else if (otmp->oartifact == ART_GODHANDS)
 			dmg += 9;
-		else if (otmp->oartifact == ART_DIRGE)
+		else if (otmp->oartifact == ART_DIRGE){
 			dmg += 6;
+			if(check_mutation(SHUB_RADIANCE))
+				ndice = 4;
+			dmg += (u.uimpurity+1)/2;
+			dmg += (u.uimp_murder+1)/2;
+		}
 		else if (otmp->oartifact == ART_LANCE_OF_LONGINUS)
 			ndice = 3;
 		else if (otmp->oartifact == ART_SCEPTRE_OF_THE_FROZEN_FLOO)

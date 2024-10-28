@@ -5873,6 +5873,12 @@ boolean printmessages; /* print generic elemental damage messages */
 				set_mcan(mdef, TRUE);
 			mdef->mspec_used += 6;
 		}
+		if(youagr){
+			*plusdmgptr += u.uimpurity/2;
+			*truedmgptr += u.uimp_murder/2;
+			if(check_mutation(SHUB_CLAWS) && !resist_slash(pd))
+				*plusdmgptr += basedmg;
+		}
 	}
 
 	/* Liecleaver does NOT double the damage of fired bolts */
