@@ -2733,7 +2733,7 @@ register struct obj *obj;
 				wt += mons[PM_VAMPIRE_LADY].cwt;
 		}
 	}
-	if ((Is_container(obj) && obj->otyp != MAGIC_CHEST) || obj->otyp == STATUE) {
+	if ((Is_container(obj) && obj->otyp != MAGIC_CHEST && obj->oartifact != ART_TREASURY_OF_PROTEUS) || obj->otyp == STATUE) {
 		struct obj *contents;
 		register int cwt = 0;
 
