@@ -649,7 +649,7 @@ boolean dumping;
 		enl_msg("The pitch-black waters ", "reduce", "reduced", " physical damage by 3");
 	}
 	if (active_glyph(TRANSPARENT_SEA)){
-		enl_msg("The perfectly clear sea ", "speed", "sped", " sanity recovery");
+		enl_msg("The perfectly clear sea ", "speeds", "sped", " sanity recovery");
 	}
 	if (active_glyph(COMMUNION)){
 		enl_msg("The strange minister's prayer ", "increases", "increased", " your carry capacity by 25%");
