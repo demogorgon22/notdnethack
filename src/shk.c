@@ -6302,16 +6302,18 @@ pickeladrin()
 }
 
 void
-smith_resizeArmor(smith, otmp)
-	struct monst *smith;
-	struct obj *otmp;
+smith_resizeArmor(struct monst *smith, struct obj *otmp)
 {
 	struct permonst *ptr = 0;
 	struct monst *mtmp;
 	int rx, ry;
+	boolean you = smith == &youmonst;
 	
 	if (Is_dragon_scales(otmp)){
-		verbalize("Dragon scales cannot be resized.");
+		if(you)
+			You_cant("resize dragon scales");
+		else
+			verbalize("Dragon scales cannot be resized.");
 		return;
 	}
 
@@ -6322,14 +6324,20 @@ smith_resizeArmor(smith, otmp)
 		else 
 #endif
 		if(u.dz){
-			verbalize("I don't think anybody's there.");
+			if(you)
+				You_cant("find anyone there.");
+			else
+				verbalize("I don't think anybody's there.");
 		} else if (u.dx == 0 && u.dy == 0) {
 			ptr = youracedata;
 		} else {
 			rx = u.ux+u.dx; ry = u.uy+u.dy;
 			mtmp = m_at(rx, ry);
 			if(!mtmp){
-				verbalize("I don't think anybody's there.");
+				if(you)
+					You_cant("find anyone there.");
+				else
+					verbalize("I don't think anybody's there.");
 			}
 			else
 				ptr = mtmp->data;
@@ -6340,7 +6348,10 @@ smith_resizeArmor(smith, otmp)
 		if (is_shirt(otmp) || is_suit(otmp)){
 			//Check that the monster can actually have armor that fits it.
 			if(!(ptr->mflagsb&MB_BODYTYPEMASK)){
-				verbalize("I can't figure out how to make it fit.");
+				if(you)
+					You_cant("figure out how to make it fit.");
+				else
+					verbalize("I can't figure out how to make it fit.");
 				return;
 			}
 			set_obj_shape(otmp, ptr->mflagsb);
@@ -6348,7 +6359,10 @@ smith_resizeArmor(smith, otmp)
 		else if (is_helmet(otmp) && !is_hat(otmp)){
 			//Check that the monster can actually have armor that fits it.
 			if(!has_head(ptr)){
-				verbalize("No head!");
+				if(you)
+					You_cant("figure out how to make it fit.");
+				else
+					verbalize("No head!");
 				return;
 			}
 			set_obj_shape(otmp, ptr->mflagsb);
@@ -6389,7 +6403,10 @@ smith_resizeArmor(smith, otmp)
 		add_menu(tmpwin, NO_GLYPH, &any , 'g', 0, ATR_NONE,
 			 "Gigantic.", MENU_UNSELECTED);
 
-		end_menu(tmpwin, "What size shall I make it?");
+		if(you)
+			end_menu(tmpwin, "What size do you want to make it?");
+		else
+			end_menu(tmpwin, "What size shall I make it?");
 		n = select_menu(tmpwin, PICK_ONE, &selected);
 		if(n > 0){
 			otmp->objsize = selected[0].item.a_int-1;
