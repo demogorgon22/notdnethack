@@ -1373,6 +1373,12 @@ struct obj {
 							  || onum == CONSORT_S_SUIT\
 							)
 
+#define is_invokable_otyp(onum)		(onum == RIN_WISHES\
+							|| onum == CANDLE_OF_INVOCATION\
+							|| onum == CRYSTAL_BALL\
+							)
+
+
 #define is_readable_armor(obj)	((obj)->oward)
 
 #define is_museable_amulet(otyp) (otyp == AMULET_OF_LIFE_SAVING \

@@ -1238,6 +1238,7 @@ E char NDECL(carrying_readable_weapon);
 E char NDECL(carrying_readable_tool);
 E char NDECL(carrying_readable_armor);
 E struct obj *FDECL(carrying_art, (int));
+E char NDECL(carrying_invokable_object);
 E boolean NDECL(have_lizard);
 E struct obj *FDECL(o_on, (unsigned int,struct obj *));
 E boolean FDECL(obj_here, (struct obj *,int,int));
