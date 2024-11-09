@@ -1603,6 +1603,7 @@ static const struct def_skill Skill_U[] = {
 	{ P_ATTACK_SPELL, P_SKILLED }, { P_HEALING_SPELL, P_SKILLED },
 	{ P_DIVINATION_SPELL, P_EXPERT },
     { P_SMITHING, P_BASIC },/*Improves to expert over the game*/
+    { P_NONE, 0 }
 };
 
 static const struct def_skill Skill_V[] = {
