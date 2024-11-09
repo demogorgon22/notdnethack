@@ -34,17 +34,7 @@ register struct monst *mon;
 				: night() ? (flags.moonphase == FULL_MOON ?  3 : 30)
 				: (flags.moonphase == FULL_MOON ? 10 : 50))
 		){
-			if(canseemon(mon)){
-				pline("%s fur ripples.", s_suffix(Monnam(mon)));
-			}
-			if (mon->msleeping || !mon->mcanmove) {
-				/* transformation wakens and/or revitalizes */
-				mon->msleeping = 0;
-				mon->mfrozen = 0;	/* not asleep or paralyzed */
-				mon->mcanmove = 1;
-			}
-			/* regenerate by 1/4 of the lost hit points */
-			mon->mhp += (mon->mhpmax - mon->mhp) / 4;
+			new_were(mon);
 		}
 	} else if (humanoid_torso(mon->data)) {
 		if (mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS){
@@ -352,6 +342,20 @@ struct monst *mon;
 	if(nonthreat(mon))
 		return;
 	
+	if(healing_were(mon->data)){
+		if(canseemon(mon)){
+			pline("%s fur ripples.", s_suffix(Monnam(mon)));
+		}
+		if (mon->msleeping || !mon->mcanmove) {
+			/* transformation wakens and/or revitalizes */
+			mon->msleeping = 0;
+			mon->mfrozen = 0;	/* not asleep or paralyzed */
+			mon->mcanmove = 1;
+		}
+		/* regenerate by 1/4 of the lost hit points */
+		mon->mhp += (mon->mhpmax - mon->mhp) / 4;
+	}
+
 	pm = counter_were(monsndx(mon->data));
 	if(!pm) {
 	    impossible("unknown lycanthrope %s.", mon->data->mname);
