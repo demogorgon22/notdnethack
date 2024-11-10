@@ -2289,6 +2289,52 @@ dothrow()
 	return (result);
 }
 
+int
+ufire_blaster(struct obj *launcher, int shotlimit)
+{
+	/* blasters need to generate their ammo on the fly */
+	struct obj * ammo = (struct obj *)0;
+	int result = MOVE_CANCELLED;
+					/* do we have enough charge to fire? */
+	if (!launcher->ovar1_charges || (launcher->otyp == MASS_SHADOW_PISTOL && (!launcher->cobj || Has_contents(launcher->cobj)))) {
+		if (launcher->otyp == RAYGUN) You("push the firing stud, but nothing happens.");
+		else pline("Nothing happens when you pull the trigger.");
+		/* nothing else happens */
+	}
+	else {
+		switch (launcher->otyp) {
+			case CUTTING_LASER:
+			case HAND_BLASTER:
+			case ARM_BLASTER:
+			case MASS_SHADOW_PISTOL:
+			case CARCOSAN_STING:
+				ammo = blaster_ammo(launcher);
+				break;
+			case RAYGUN:
+				/* create fake ammo in order to calculate multishot correctly */
+				ammo = blaster_ammo(launcher);
+				if (getdir((char *)0))
+					result = zap_raygun(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);
+				/* destroy ammo and don't go through uthrow */
+				obfree(ammo, 0);
+				ammo = (struct obj *)0;
+				break;
+			default:
+				impossible("Unhandled blaster %d!", launcher->otyp);
+				break;
+		}
+		/* always destroy ammo fired from a blaster */
+		if (ammo) {
+			if (launcher->otyp == MASS_SHADOW_PISTOL)
+				ammo->ovar1_projectileSkill = -P_FIREARM;	/* special case to use FIREARM skill instead of SLING */
+
+			result = uthrow(ammo, launcher, shotlimit, TRUE);
+			/* and now delete the ammo object we created */
+			obfree(ammo, 0);
+		}
+	}
+	return result;
+}
 
 /*
  * dofire()
@@ -2348,47 +2394,7 @@ dofire()
 					result = uthrow(uquiver, launcher, shotlimit, FALSE);
 				}
 				else if (is_blaster(launcher)) {
-					/* blasters need to generate their ammo on the fly */
-					struct obj * ammo = (struct obj *)0;
-
-					/* do we have enough charge to fire? */
-					if (!launcher->ovar1_charges || (launcher->otyp == MASS_SHADOW_PISTOL && (!launcher->cobj || Has_contents(launcher->cobj)))) {
-						if (launcher->otyp == RAYGUN) You("push the firing stud, but nothing happens.");
-						else pline("Nothing happens when you pull the trigger.");
-						/* nothing else happens */
-					}
-					else {
-						switch (launcher->otyp) {
-						case CUTTING_LASER:
-						case HAND_BLASTER:
-						case ARM_BLASTER:
-						case MASS_SHADOW_PISTOL:
-						case CARCOSAN_STING:
-							ammo = blaster_ammo(launcher);
-							break;
-						case RAYGUN:
-							/* create fake ammo in order to calculate multishot correctly */
-							ammo = blaster_ammo(launcher);
-							if (getdir((char *)0))
-								result = zap_raygun(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);
-							/* destroy ammo and don't go through uthrow */
-							obfree(ammo, 0);
-							ammo = (struct obj *)0;
-							break;
-						default:
-							impossible("Unhandled blaster %d!", launcher->otyp);
-							break;
-						}
-						/* always destroy ammo fired from a blaster */
-						if (ammo) {
-							if (launcher->otyp == MASS_SHADOW_PISTOL)
-								ammo->ovar1_projectileSkill = -P_FIREARM;	/* special case to use FIREARM skill instead of SLING */
-
-							result = uthrow(ammo, launcher, shotlimit, TRUE);
-							/* and now delete the ammo object we created */
-							obfree(ammo, 0);
-						}
-					}
+					return ufire_blaster(launcher, shotlimit);
 				}
 			}
 			return result;

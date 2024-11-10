@@ -1298,7 +1298,14 @@ int tary;
 		&& uswapwep && is_launcher(uswapwep)
 		&& ((uquiver && ammo_and_launcher(uquiver, uswapwep)) || is_blaster(uswapwep))
 	){
-		uthrow(uquiver, uswapwep, 0, FALSE);
+		if (uquiver && ammo_and_launcher(uquiver, uswapwep)) {
+			/* simply fire uquiver from the launcher */
+			uthrow(uquiver, uswapwep, 0, FALSE);
+		}
+		else if (is_blaster(uswapwep)) {
+			/* simply fire blaster */
+			ufire_blaster(uswapwep, 0);
+		}
 		if(DEADMONSTER(mdef))
 			allres |= MM_DEF_DIED;
 	}
