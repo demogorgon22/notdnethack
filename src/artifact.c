@@ -8771,6 +8771,8 @@ struct obj *obj;
 
 STATIC_OVL boolean
 invoke_on_cooldown(struct obj* obj, const struct artifact *oart){
+	if(is_lightsaber(obj) && obj->cobj && obj->oartifact == obj->cobj->oartifact)
+		obj = obj->cobj;
 	boolean on = oart->inv_prop <= LAST_PROP && (u.uprops[oart->inv_prop].extrinsic & W_ARTI);
 	return obj->age > monstermoves && !(
 		oart->inv_prop == FIRE_SHIKAI ||
@@ -8798,6 +8800,7 @@ do_invoke_menu(){
 	char buf[BUFSZ];
 	menu_item *selected;
 	anything any, anyvoid;
+	long cooldown;
 
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
@@ -8810,7 +8813,10 @@ do_invoke_menu(){
 		oart = (struct artifact *) 0;
 		if(is_invokable_otyp(otmp->otyp) || (otmp->oartifact && (oart = get_artifact(otmp)) && oart->inv_prop)){
 			if(oart && invoke_on_cooldown(otmp, oart)){
-				Sprintf(buf, "%3ld %s", otmp->age - monstermoves, doname(otmp));
+				cooldown = otmp->age - monstermoves;
+				if(is_lightsaber(otmp) && otmp->cobj && otmp->oartifact == otmp->cobj->oartifact)
+					cooldown = otmp->cobj->age - monstermoves;
+				Sprintf(buf, "%3ld %s", cooldown, doname(otmp));
 				add_menu(tmpwin, NO_GLYPH, &anyvoid,
 					0, 0, ATR_NONE, buf,
 					MENU_UNSELECTED);
