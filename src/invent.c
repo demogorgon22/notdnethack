@@ -944,7 +944,7 @@ register int artnum;
 }
 
 STATIC_OVL char
-is_invokable_object(struct obj* otmp){
+is_invokable_object(struct obj *otmp){
 	struct artifact *oart;
 	return is_invokable_otyp(otmp->otyp) || (otmp->oartifact && (oart = get_artifact(otmp)) && oart->inv_prop);
 }
@@ -2681,8 +2681,8 @@ struct obj *obj;
 		return 0;
 	}
 
-	/* The getobj hack won't work for invoking, so we have to call 
-	    doparticular invoke with an argument isntead.*/
+	/* The getobj hack won't work for invoking, so we have to call
+	    doparticular invoke with an argument instead.*/
 	if(feedback_fn == (genericptr_t)doparticularinvoke)
 		return (*(((int (*)(struct obj *)) feedback_fn)))(obj);	
 

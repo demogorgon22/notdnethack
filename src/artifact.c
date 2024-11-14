@@ -8770,7 +8770,7 @@ struct obj *obj;
 }
 
 STATIC_OVL boolean
-invoke_on_cooldown(struct obj* obj, const struct artifact *oart){
+invoke_on_cooldown(struct obj *obj, const struct artifact *oart){
 	if(is_lightsaber(obj) && obj->cobj && obj->oartifact == obj->cobj->oartifact)
 		obj = obj->cobj;
 	boolean on = oart->inv_prop <= LAST_PROP && (u.uprops[oart->inv_prop].extrinsic & W_ARTI);
