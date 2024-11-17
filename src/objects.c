@@ -1142,6 +1142,8 @@ BOOTS(("fumble boots", "riding boots"),
 		0, 1,  12, 2, 20, 30, 10, 1, 0, LEATHER, HI_LEATHER, O_POWER(FUMBLING)),
 BOOTS(("flying boots", "snow boots"),
 		0, 1,  12, 2, 15, 30,  9, 1, 0, LEATHER, HI_LEATHER, O_POWER(FLYING)),
+BELT(("belt of power", "segmented belt"),
+		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
 #undef SUIT
 #undef SHIRT
 #undef HELM

@@ -1388,6 +1388,7 @@ struct monst *mon;
 			if(tmp > 18) tmp = STR19(tmp);
 		}
 		if ((armg && (armg->otyp == GAUNTLETS_OF_POWER || (armg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(armg, IEA_GOPOWER)))) || 
+			(belt && belt->otyp == BELT_OF_POWER) ||
 			(wep &&((wep->oartifact == ART_SCEPTRE_OF_MIGHT) || 
 					 (wep->oartifact == ART_PEN_OF_THE_VOID && wep->ovar1&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0) ||
 					 (oart && (oart->inv_prop == GITH_ART || oart->inv_prop == ZERTH_ART || oart->inv_prop == AMALGUM_ART) && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER) ||
