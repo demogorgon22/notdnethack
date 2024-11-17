@@ -3617,7 +3617,7 @@ boolean *lostsome;
 		    if (!((obj->otyp == LOADSTONE && obj->cursed) ||
 			  obj == uamul || obj == uleft || obj == uright ||
 			  obj == ublindf || obj == uarm || obj == uarmc ||
-			  obj == uarmg || obj == uarmf ||
+			  obj == uarmg || obj == ubelt || obj == uarmf ||
 			  obj == uarmu ||
 			  (obj->cursed && !Weldproof && (obj == uarmh || obj == uarms)) ||
 			  welded(obj)))
@@ -5371,6 +5371,7 @@ boolean initialize;
 					else if(obj == uright) Ring_gone(obj);
 					else if(obj == ublindf) Blindf_off(obj);
 					else if(obj == uamul) Amulet_off();
+					else if(obj == ubelt) Belt_off();
 					else if(obj == uwep) uwepgone();
 					else if (obj == uquiver) uqwepgone();
 					else if (obj == uswapwep) uswapwepgone();

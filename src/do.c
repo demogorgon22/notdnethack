@@ -547,7 +547,7 @@ canletgo(obj,word)
 register struct obj *obj;
 register const char *word;
 {
-	if(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL)){
+	if(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT)){
 		if (*word)
 			Norep("You cannot %s %s you are wearing.",word,
 				something);

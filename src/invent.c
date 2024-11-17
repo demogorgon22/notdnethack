@@ -1175,14 +1175,14 @@ register const char *let,*word;
 
 		/* ugly check: remove inappropriate things */
 		if ((taking_off(word) &&
-		    (!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL))
+		    (!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT))
 		     || (otmp==uarm && uarmc && arm_blocks_upper_body(uarm->otyp))
 #ifdef TOURIST
 		     || (otmp==uarmu && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
 #endif
 		    ))
 		|| (putting_on(word) &&
-		     (otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL)))
+		     (otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)))
 							/* already worn */
 #if 0	/* 3.4.1 -- include currently wielded weapon among the choices */
 		|| (!strcmp(word, "wield") &&
@@ -1198,13 +1198,16 @@ register const char *let,*word;
 		/* Second ugly check; unlike the first it won't trigger an
 		 * "else" in "you don't have anything else to ___".
 		 */
-		else if ((putting_on(word) &&
+		else if ((!strcmp(word, "put on") &&
 		    ((otmp->oclass == FOOD_CLASS && otmp->otyp != MEAT_RING) ||
+			 (otmp->oclass == ARMOR_CLASS && !is_belt(otmp)) ||
 		    (otmp->oclass == TOOL_CLASS &&
 		     otyp != BLINDFOLD && otyp != MASK && otyp != R_LYEHIAN_FACEPLATE && 
 			 otyp != TOWEL && otyp != ANDROID_VISOR && otyp != LIVING_MASK && otyp != LENSES && otyp != SUNGLASSES && otyp != SOUL_LENS) ||
 			 (otmp->oclass == CHAIN_CLASS)
 			))
+		|| (!strcmp(word, "wear") &&
+		    (otmp->oclass == ARMOR_CLASS && is_belt(otmp)))
 		|| (!strcmp(word, "wield") &&
 		    ((otmp->oclass == TOOL_CLASS && !is_weptool(otmp)) ||
 			(otmp->oclass == CHAIN_CLASS && otmp->otyp != CHAIN)))
@@ -1635,18 +1638,20 @@ struct obj *otmp;
 	s1 = s2 = s3 = 0;
 	/* check for attempted use of accessory commands ('P','R') on armor
 	   and for corresponding armor commands ('W','T') on accessories */
-	if (ocls == ARMOR_CLASS) {
-	    if (!strcmp(word, "put on"))
-		s1 = "W", s2 = "wear", s3 = "";
-	    else if (!strcmp(word, "remove"))
-		s1 = "T", s2 = "take", s3 = " off";
-	} else if ((ocls == RING_CLASS || otyp == MEAT_RING) ||
+	if ((ocls == RING_CLASS || otyp == MEAT_RING) ||
 		ocls == AMULET_CLASS ||
+		is_belt(otmp) ||
 		(is_worn_tool(otmp))) {
 	    if (!strcmp(word, "wear"))
 		s1 = "P", s2 = "put", s3 = " on";
 	    else if (!strcmp(word, "take off"))
 		s1 = "R", s2 = "remove", s3 = "";
+	}
+	else if (ocls == ARMOR_CLASS) {
+	    if (!strcmp(word, "put on"))
+		s1 = "W", s2 = "wear", s3 = "";
+	    else if (!strcmp(word, "remove"))
+		s1 = "T", s2 = "take", s3 = " off";
 	}
 	if (s1) {
 	    what = "that";
@@ -1692,7 +1697,7 @@ boolean
 is_worn(otmp)
 register struct obj *otmp;
 {
-    return((boolean)(!!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL |
+    return((boolean)(!!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
 #ifdef STEED
 			W_SADDLE |
 #endif
@@ -2583,10 +2588,10 @@ struct obj *obj;
 	add_menu(win, NO_GLYPH, &any, 't', 0, ATR_NONE,
 			"Throw this item", MENU_UNSELECTED);
 	/* T: unequip worn item */
-	if ((obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL))) {
+	if ((obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT))) {
 	    if ((obj->owornmask & (W_ARMOR)))
 		any.a_void = (genericptr_t)dotakeoff;
-	    if ((obj->owornmask & (W_RING | W_AMUL | W_TOOL)))
+	    if ((obj->owornmask & (W_RING | W_AMUL | W_TOOL | W_BELT)))
 		any.a_void = (genericptr_t)doremring;
 	    add_menu(win, NO_GLYPH, &any, 'T', 0, ATR_NONE,
 		     "Unequip this equipment", MENU_UNSELECTED);
@@ -2615,7 +2620,7 @@ struct obj *obj;
 		add_menu(win, NO_GLYPH, &any, 'w', 0, ATR_NONE,
 				"Hold this item in your hands", MENU_UNSELECTED);
 	/* W: Equip this item */
-	if (!(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL))) {
+	if (!(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT))) {
 	    any.a_void = (genericptr_t)dowear;
 	    if (obj->oclass == ARMOR_CLASS)
 		add_menu(win, NO_GLYPH, &any, 'W', 0, ATR_NONE,
@@ -3764,7 +3769,7 @@ winid *datawin;
 		* Expects ARM_SUIT = 0, all the way up to ARM_SHIRT = 6. */
 		if (!printed_type) {
 			const char* armorslots[] = {
-				"torso", "shield", "helm", "gloves", "boots", "cloak", "shirt"
+				"torso", "shield", "helm", "gloves", "boots", "cloak", "shirt", "belt"
 			};
 			if (obj) {
 				Sprintf(buf, "%s, worn in the %s slot.",
@@ -6370,6 +6375,9 @@ u_clothing_discomfort()
 	if(uamul){
 		count++;
 	}
+	if(ubelt){
+		count++;
+	}
 	if(uleft) count++;
 	if(uright) count++;
 	if(ublindf){
@@ -6395,6 +6403,7 @@ int material;
 	boolean marm_blocks_ub = FALSE;
 	boolean hasgloves = !!which_armor(mon, W_ARMG);
 	boolean hasshirt = !!which_armor(mon, W_ARMU);
+	boolean hasarm = !!which_armor(mon, W_ARMU);
 
 	curarm = which_armor(mon, W_ARMU);
 	if(curarm && curarm->obj_material == material)
@@ -6435,6 +6444,10 @@ int material;
 	if(curarm && curarm->obj_material == material && !hasshirt && !marm_blocks_ub)
 		count++;
 
+	curarm = which_armor(mon, W_BELT);
+	if(curarm && curarm->obj_material == material && !hasshirt && !hasarm)
+		count++;
+
 	if(mon->entangled_oid && !hasshirt && !marm_blocks_ub && !which_armor(mon, W_ARMC) && entangle_material(mon, material))
 		count++;
 
@@ -6458,6 +6471,7 @@ int bcu;
 	boolean marm_blocks_ub = FALSE;
 	boolean hasgloves = !!which_armor(mon, W_ARMG);
 	boolean hasshirt = !!which_armor(mon, W_ARMU);
+	boolean hasarm = !!which_armor(mon, W_ARM);
 
 	curarm = which_armor(mon, W_ARMU);
 	if(curarm && bcu(curarm) == bcu)
@@ -6496,6 +6510,10 @@ int bcu;
 
 	curarm = which_armor(mon, W_AMUL);
 	if(curarm && bcu(curarm) == bcu && !hasshirt && !marm_blocks_ub)
+		count++;
+
+	curarm = which_armor(mon, W_BELT);
+	if(curarm && bcu(curarm) == bcu && !hasshirt && !hasarm)
 		count++;
 
 	if(mon->entangled_oid && !hasshirt && !marm_blocks_ub && !which_armor(mon, W_ARMC) && entangle_beatitude(mon, bcu))
@@ -6541,6 +6559,8 @@ int material;
 		count++;
 	if(uamul && uamul->obj_material == material && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
 		count++;
+	if(ubelt && ubelt->obj_material == material && !uarmu && !uarm)
+		count++;
 	if(u.uentangled_oid && !uarmu && !uarm && !(uarm && arm_blocks_upper_body(uarm->otyp)) && entangle_material(&youmonst, material))
 		count++;
 	if(ublindf && ublindf->obj_material == material)
@@ -6583,6 +6603,8 @@ int bcu;
 	if(uright && bcu(uright) == bcu)
 		count++;
 	if(uamul && bcu(uamul) == bcu && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
+		count++;
+	if(ubelt && bcu(ubelt) == bcu && !uarmu && !uarm)
 		count++;
 	if(u.uentangled_oid && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc && entangle_beatitude(&youmonst, bcu))
 		count++;

@@ -514,12 +514,12 @@ E NEARDATA struct obj *invent,
 #ifdef TOURIST
 	*uarmu,				/* under-wear, so to speak */
 #endif
-	*uskin, *uamul, *uleft, *uright, *ublindf,
+	*uskin, *uamul, *ubelt, *uleft, *uright, *ublindf,
 	*uwep, *uswapwep, *uquiver;
 
 /* Needs to update, so it's redefined each time whenever it's used */
 #define ARMOR_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu }
-#define WORN_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu, uamul, uleft, uright, ublindf, uwep, uswapwep, uquiver }
+#define WORN_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu, uamul, ubelt, uleft, uright, ublindf, uwep, uswapwep, uquiver }
 
 E NEARDATA struct obj *urope;		/* defined only when entangled */
 E NEARDATA struct obj *uchain;		/* defined only when punished */

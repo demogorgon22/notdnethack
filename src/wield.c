@@ -301,7 +301,7 @@ dowield()
 	} else if (wep == uquiver){
 		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
 		setuqwep((struct obj *) 0);
-	} else if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL
+	} else if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif
@@ -411,7 +411,7 @@ dowieldquiver()
 		pline("%s already being used as a weapon!",
 		      !is_plural(uwep) ? "That is" : "They are");
 		return MOVE_CANCELLED;
-	} else if (newquiver->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL
+	} else if (newquiver->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif
@@ -479,7 +479,7 @@ const char *verb;	/* "rub",&c */
 		   strstri(what, "pair of ") != 0 ||
 		   strstri(what, "s of ") != 0);
 
-    if (obj->owornmask & (W_ARMOR|W_RING|W_AMUL|W_TOOL)) {
+    if (obj->owornmask & (W_ARMOR|W_RING|W_AMUL|W_BELT|W_TOOL)) {
 	char yourbuf[BUFSZ];
 
 	You_cant("%s %s %s while wearing %s.",

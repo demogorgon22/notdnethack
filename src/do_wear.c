@@ -39,7 +39,7 @@ static NEARDATA const char c_armor[]  = "armor",
 
 static NEARDATA const long takeoff_order[] = { WORN_BLINDF, W_WEP,
 	WORN_SHIELD, WORN_GLOVES, LEFT_RING, RIGHT_RING, WORN_CLOAK,
-	WORN_HELMET, WORN_AMUL, WORN_ARMOR,
+	WORN_HELMET, WORN_AMUL, WORN_BELT, WORN_ARMOR,
 #ifdef TOURIST
 	WORN_SHIRT,
 #endif
@@ -1424,6 +1424,32 @@ register struct obj *otmp;
 	}
 }
 
+void
+Belt_on()
+{
+    if (!ubelt) return;
+	if(check_oprop(ubelt, OPROP_CURS)){
+		if (Blind)
+		pline("%s for a moment.", Tobjnam(ubelt, "vibrate"));
+		else
+		pline("%s %s for a moment.",
+			  Tobjnam(ubelt, "glow"), hcolor(NH_BLACK));
+		curse(ubelt);
+	}
+}
+
+void
+Belt_off()
+{
+	takeoff_mask &= ~W_BELT;
+	
+	if(!ubelt){
+		impossible("Belt_off() was called, but no belt is worn.");
+		return;
+	}
+	setworn((struct obj *)0, W_BELT);
+}
+
 /* called in main to set intrinsics of worn start-up items */
 void
 set_wear()
@@ -1492,7 +1518,7 @@ cancel_don()
 }
 
 static NEARDATA const char clothes[] = {ARMOR_CLASS, 0};
-static NEARDATA const char accessories[] = {RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, 0};
+static NEARDATA const char accessories[] = {ARMOR_CLASS, RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, 0};
 
 /* the 'T' command */
 int
@@ -1589,6 +1615,7 @@ doremring()
 	MOREACC(uright);
 	MOREACC(uamul);
 	MOREACC(ublindf);
+	MOREACC(ubelt);
 
 	if(!Accessories) {
 		pline("Not wearing any accessories.%s", (iflags.cmdassist &&
@@ -1603,7 +1630,7 @@ doremring()
 #endif
 	    ) otmp = getobj(accessories, "remove");
 	if(!otmp) return MOVE_CANCELLED;
-	if(!(otmp->owornmask & (W_RING | W_AMUL | W_TOOL))) {
+	if(!(otmp->owornmask & (W_RING | W_AMUL | W_TOOL | W_BELT))) {
 		You("are not wearing that.");
 		return MOVE_CANCELLED;
 	}
@@ -1624,6 +1651,9 @@ doremring()
 		Ring_off(otmp);
 	} else if (otmp == uamul) {
 		Amulet_off();
+		off_msg(otmp);
+	} else if (otmp == ubelt) {
+		Belt_off();
 		off_msg(otmp);
 	} else if (otmp == ublindf) {
 		Blindf_off(otmp);	/* does its own off_msg */
@@ -1758,7 +1788,7 @@ boolean noisy;
 {
     int err = 0;
 
-	if (otmp->owornmask & W_ARMOR) {
+	if (otmp->owornmask & (W_ARMOR|W_BELT)) {
 		if (noisy) already_wearing(c_that_);
 		return 0;
     }
@@ -1890,6 +1920,9 @@ boolean noisy;
 						   (uarm && !uarmc) ? c_armor : cloak_simple_name(uarmc));
 			}
 			err++;
+		} else if (ubelt && ubelt->cursed && !Weldproof) {
+			if (noisy) already_wearing("a belt");
+			err++;
 		} else if(youracedata->msize != otmp->objsize){
 			if (noisy)
 			pline_The("%s is the wrong size for you.", c_shirt);
@@ -1917,6 +1950,9 @@ boolean noisy;
 		} else if (uarm) {
 			if (noisy) already_wearing("some armor");
 			err++;
+		} else if (ubelt && ubelt->cursed && !Weldproof) {
+			if (noisy) already_wearing("a belt");
+			err++;
 		} else if(!arm_size_fits(youracedata,otmp)){
 			if (noisy)
 			pline_The("%s is the wrong size for you.", c_armor);
@@ -1927,6 +1963,11 @@ boolean noisy;
 			err++;
 		} else
 			*mask = W_ARM;
+    } else if (is_belt(otmp)) {
+		if (ubelt) {
+			if (noisy) already_wearing("a belt");
+			err++;
+		}
     } else {
 		/* getobj can't do this after setting its allow_all flag; that
 		   happens if you have armor for slots that are covered up or
@@ -1968,6 +2009,11 @@ dowear()
 
 	if (!canwearobj(otmp,&mask,TRUE)) return MOVE_CANCELLED;
 
+	if (is_belt(otmp)){
+		silly_thing("wear", otmp);
+		return MOVE_CANCELLED;
+	}
+
 	if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
 	    return MOVE_STANDARD;	/* costs a turn even though it didn't get worn */
 
@@ -2001,6 +2047,7 @@ dowear()
 		else if(is_gloves(otmp)) afternmv = Gloves_on;
 		else if(is_cloak(otmp)) afternmv = Cloak_on;
 		else if(is_shirt(otmp)) afternmv = Shirt_on;
+		// else if(is_belt(otmp)) afternmv = Belt_on;
 		else if(otmp == uarm) afternmv = Armor_on;
 		nomovemsg = "You finish your dressing maneuver.";
 	} else {
@@ -2010,6 +2057,7 @@ dowear()
 		else if(is_gloves(otmp)) (void) Gloves_on();
 		else if(is_cloak(otmp)) (void) Cloak_on();
 		else if(is_shirt(otmp)) (void) Shirt_on();
+		// else if(is_belt(otmp)) (void) Belt_on();
 		else if(otmp == uarm) (void) Armor_on();
 		on_msg(otmp);
 	}
@@ -2028,8 +2076,8 @@ doputon()
 		return MOVE_CANCELLED;
 	}
 
-	if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ublindf) {
-		Your("%s%s are full, and you're already wearing an amulet and %s.",
+	if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf) {
+		Your("%s%s are full, and you're already wearing a belt, an amulet, and %s.",
 			humanoid(youracedata) ? "ring-" : "",
 			makeplural(body_part(FINGER)),
 			(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
@@ -2039,7 +2087,7 @@ doputon()
 	}
 	otmp = getobj(accessories, "put on");
 	if(!otmp) return MOVE_CANCELLED;
-	if(otmp->owornmask & (W_RING | W_AMUL | W_TOOL)) {
+	if(otmp->owornmask & (W_RING | W_AMUL | W_TOOL| W_BELT)) {
 		already_wearing(c_that_);
 		return MOVE_CANCELLED;
 	}
@@ -2119,6 +2167,19 @@ doputon()
 			return MOVE_STANDARD;
 		}
 		Amulet_on();
+	} else if (is_belt(otmp)) {
+		if(ubelt) {
+			already_wearing("a belt");
+			return MOVE_CANCELLED;
+		}
+		if(!can_wear_belt(youracedata)){
+			pline("It doesn't fit!");
+			return MOVE_CANCELLED;
+		}
+		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
+		    return MOVE_STANDARD;
+		setworn(otmp, W_BELT);
+		Belt_on();
 	} else {	/* it's a blindfold, towel, or lenses */
 		if (ublindf) {
 			if (ublindf->otyp == TOWEL)
@@ -3414,6 +3475,7 @@ register struct obj *otmp;
 	else if(otmp == uleft) takeoff_mask |= LEFT_RING;
 	else if(otmp == uright) takeoff_mask |= RIGHT_RING;
 	else if(otmp == uamul) takeoff_mask |= WORN_AMUL;
+	else if(otmp == ubelt) takeoff_mask |= WORN_BELT;
 	else if(otmp == ublindf) takeoff_mask |= WORN_BLINDF;
 	else if(otmp == uwep) takeoff_mask |= W_WEP;
 	else if(otmp == uswapwep) takeoff_mask |= W_SWAPWEP;
@@ -3470,6 +3532,9 @@ do_takeoff()
 	} else if (taking_off == WORN_AMUL) {
 	  otmp = uamul;
 	  if(!cursed(otmp)) Amulet_off();
+	} else if (taking_off == WORN_BELT) {
+	  otmp = ubelt;
+	  if(!cursed(otmp)) Belt_off();
 	} else if (taking_off == LEFT_RING) {
 	  otmp = uleft;
 	  if(!cursed(otmp)) Ring_off(uleft);
@@ -3547,6 +3612,8 @@ take_off()
 #endif
 	} else if (taking_off == WORN_AMUL) {
 	  todelay = 1;
+	} else if (taking_off == WORN_BELT) {
+	  todelay = 1;
 	} else if (taking_off == LEFT_RING) {
 	  todelay = 1;
 	} else if (taking_off == RIGHT_RING) {
@@ -3588,7 +3655,7 @@ doddoremarm()
 	You("continue %s.", disrobing);
 	set_occupation(take_off, disrobing, 0);
 	return MOVE_INSTANT;
-    } else if (!uwep && !uswapwep && !uquiver && !uamul && !ublindf &&
+    } else if (!uwep && !uswapwep && !uquiver && !uamul && !ubelt && !ublindf &&
 		!uleft && !uright && !wearing_armor()) {
 	You("are not wearing anything.");
 	return MOVE_CANCELLED;

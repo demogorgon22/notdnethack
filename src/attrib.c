@@ -1317,6 +1317,7 @@ struct monst *mon;
 	struct obj *armg = (is_player ? uarmg : which_armor(mon, W_ARMG));
 	struct obj *arms = (is_player ? uarms : which_armor(mon, W_ARMS));
 	struct obj *armh = (is_player ? uarmh : which_armor(mon, W_ARMH));
+	struct obj *belt = (is_player ? ubelt : which_armor(mon, W_BELT));
 	struct obj *wep = (is_player ? uwep : MON_WEP(mon));
 	struct obj *swapwep = (is_player ? uswapwep : MON_SWEP(mon));
     const struct artifact *oart = (struct artifact *) 0;

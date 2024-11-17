@@ -378,7 +378,7 @@ is_worn_by_type(otmp)
 register struct obj *otmp;
 {
 	return((boolean)(!!(otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
+			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
 	        && (index(valid_menu_classes, otmp->oclass) != (char *)0));
 }
 
@@ -905,7 +905,7 @@ int how;			/* type of query */
 	if (ccount == 1 && !do_unpaid && num_buc_types <= 1 && !(qflags & BILLED_TYPES)) {
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if ((qflags & WORN_TYPES) &&
-		    !(curr->owornmask & (W_ARMOR|W_RING|W_AMUL|W_TOOL|W_WEP|W_SWAPWEP|W_QUIVER)))
+		    !(curr->owornmask & (W_ARMOR|W_RING|W_AMUL|W_BELT|W_TOOL|W_WEP|W_SWAPWEP|W_QUIVER)))
 		    continue;
 		break;
 	    }
@@ -939,7 +939,7 @@ int how;			/* type of query */
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if (curr->oclass == *pack) {
 		   if ((qflags & WORN_TYPES) &&
-		   		!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL |
+		   		!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
 		    	W_WEP | W_SWAPWEP | W_QUIVER)))
 			 continue;
 		   if (!collected_type_name) {
@@ -1039,7 +1039,7 @@ int qflags;
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if (curr->oclass == *pack) {
 		   if ((qflags & WORN_TYPES) &&
-		    	!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL |
+		    	!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
 		    	W_WEP | W_SWAPWEP | W_QUIVER)))
 			 continue;
 		   if (!counted_category) {
@@ -2077,6 +2077,8 @@ dopetequip()
 			flag = W_ARM;
 		} else if(is_worn_tool(otmp)){
 			flag = W_TOOL;
+		} else if(is_belt(otmp)){
+			flag = W_BELT;
 		} else {
 			pline("Error: Unknown monster armor type!?");
 			return MOVE_CANCELLED;
@@ -2204,7 +2206,7 @@ register struct obj *obj;
 	) {
 		pline("The artifact isn't interested in taking %s.", the(xname(obj)));
 		return 0;
-	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL)) {
+	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) {
 		Norep("You cannot %s %s you are wearing.",
 			Icebox ? "refrigerate" : "stash", something);
 		return 0;
@@ -3364,6 +3366,8 @@ struct monst *mon;
 			} else if(is_suit(otmp) && !(mon->misc_worn_check&W_ARM) && arm_match(mon->data, otmp) && arm_size_fits(mon->data, otmp)){
 				addArmorMenuOption
 			} else if(is_worn_tool(otmp) && !(mon->misc_worn_check&W_TOOL) && can_wear_blindf(mon->data)){
+				addArmorMenuOption
+			} else if(is_belt(otmp) && !(mon->misc_worn_check&W_BELT) && can_wear_belt(mon->data)){
 				addArmorMenuOption
 			}
 		}

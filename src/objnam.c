@@ -2284,7 +2284,7 @@ weapon:
 			}
 			break;
 		case ARMOR_CLASS:
-			if (obj->owornmask & W_ARMOR)
+			if (obj->owornmask & (W_ARMOR|W_BELT))
 				Strcat(buf, (obj == uskin) ? " (embedded in your skin)" :
 				" (being worn)");
 			if (obj->lamplit)

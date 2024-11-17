@@ -630,6 +630,8 @@ E int NDECL(Shirt_on);
 E int NDECL(Shirt_off);
 E void NDECL(Amulet_off);
 E void NDECL(Amulet_on);
+E void NDECL(Belt_off);
+E void NDECL(Belt_on);
 E void FDECL(Ring_on, (struct obj *));
 E void FDECL(Ring_off, (struct obj *));
 E void FDECL(Ring_gone, (struct obj *));

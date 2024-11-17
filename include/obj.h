@@ -317,6 +317,7 @@ struct obj {
 //define W_SADDLE     0x00100000L	/* KMH -- For riding monsters */
 //define W_BALL	    0x00200000L /* Punishment ball */
 //define W_CHAIN	    0x00400000L /* Punishment chain */
+//define W_BELT		0x04000000L	/* Belt */
 	long o_e_trait;
 	long oward;
 			/*Records the warding sign of spellbooks. */
@@ -1071,6 +1072,8 @@ struct obj {
 			 objects[otmp->otyp].oc_armcat == ARM_SHIRT)
 #define is_suit(otmp)	(otmp->oclass == ARMOR_CLASS && \
 			 objects[otmp->otyp].oc_armcat == ARM_SUIT)
+#define is_belt(otmp)	(otmp->oclass == ARMOR_CLASS && \
+			 objects[otmp->otyp].oc_armcat == ARM_BELT)
 			 
 #define is_harmonium_armor(otmp)	is_harmonium_otyp((otmp)->otyp)
 
@@ -1480,7 +1483,7 @@ struct obj {
 
 #define higher_depth(armdepth, depth)	(armdepth == depth || (\
 		(depth&(W_ARMC|W_GLYPH)) ? FALSE :\
-		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
+		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_BELT|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
 		(depth&(W_ARMH|W_ARMG|W_ARMF|W_ARM|W_RINGL|W_RINGR|W_TOOL)) ? (armdepth != W_ARMU) :\
 		(depth&(W_ARMU|W_SKIN|W_UPGRADE)) ? TRUE :\
 		FALSE))

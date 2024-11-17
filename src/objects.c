@@ -764,6 +764,8 @@ BOW(("bladed bow"), 1,  MZ_LARGE, 0, 60,  75,  0, IRON, P_BOW, HI_METAL, O_TRAIT
 	ARMOR(names, kn, mgc, MZ_SMALL, 0, {0}, prob, delay, wt, cost, ac, dr, can, ARM_DR, ARM_GLOVES, metal, c, __VA_ARGS__)
 #define BOOTS(names,kn,mgc,prob,delay,wt,cost,ac,dr,can,metal,c,...) \
 	ARMOR(names, kn, mgc, MZ_SMALL, 0, {0}, prob, delay, wt, cost, ac, dr, can, LEG_DR, ARM_BOOTS, metal, c, __VA_ARGS__)
+#define BELT(names,kn,mgc,prob,wt,cost,ac,dr,can,metal,c,...) \
+	ARMOR(names, kn, mgc, MZ_SMALL, 0, {0}, prob, 1, wt, cost, ac, dr, can, LEG_DR, ARM_BELT, metal, c, __VA_ARGS__)
 
 /* helmets */
 HELM(("sedge hat", "wide conical hat"), /*Needs encyc entry*//*Needs tile*/
@@ -1148,6 +1150,7 @@ BOOTS(("flying boots", "snow boots"),
 #undef GLOVES
 #undef BOOTS
 #undef ARMOR
+#undef BELT
 
 /* rings ... */
 #define RING(names,power,cost,mgc,spec,mohs,metal,color,...) OBJECT( \

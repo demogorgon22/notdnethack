@@ -86,6 +86,7 @@ struct objclass {
 							   mask == W_ART ? 0 :\
 							   mask == W_ARTI ? 0 :\
 							   mask == W_AMUL ? UPPER_TORSO_DR :\
+							   mask == W_BELT ? LOWER_TORSO_DR :\
 							   mask == W_RINGL ? ARM_DR :\
 							   mask == W_RINGR ? ARM_DR :\
 							   mask == W_TOOL ? HEAD_DR :\
@@ -174,6 +175,7 @@ struct objclass {
 #define ARM_BOOTS	4
 #define ARM_CLOAK	5
 #define ARM_SHIRT	6
+#define ARM_BELT	7
 #define ARM_SUIT	0
 
 	uchar	oc_oprop[8];	/* property (invis, &c.) conveyed */

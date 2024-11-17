@@ -35,6 +35,7 @@ const struct worn {
 	{ W_SWAPWEP, &uswapwep },
 	{ W_QUIVER, &uquiver },
 	{ W_AMUL, &uamul },
+	{ W_BELT, &ubelt },
 	{ W_TOOL, &ublindf },
 	{ W_BALL, &uball },
 	{ W_CHAIN, &uchain },
@@ -1714,6 +1715,7 @@ boolean creation;
 	m_dowear_type(mon, W_ARMF, creation, FALSE);
 	m_dowear_type(mon, W_ARM, creation, FALSE);
 	m_dowear_type(mon, W_TOOL, creation, FALSE);
+	m_dowear_type(mon, W_BELT, creation, FALSE);
 }
 
 STATIC_OVL void
@@ -1740,6 +1742,7 @@ boolean racialexception;
 	if (old && old->otyp == STATUE && (old->corpsenm == PM_PARASITIC_MIND_FLAYER || old->corpsenm == PM_PARASITIC_MASTER_MIND_FLAYER))
 		return;
 	if (old && flag == W_AMUL) return; /* no such thing as better amulets */
+	if (old && flag == W_BELT) return; /* no such thing as better belts */
 	best = old;
 
 	for(obj = mon->minvent; obj; obj = obj->nobj) {
@@ -1758,6 +1761,9 @@ boolean racialexception;
 			continue;
 		    best = obj;
 		    goto outer_break; /* no such thing as better amulets */
+		case W_BELT:
+		    if (!is_belt(obj) || !can_wear_belt(mon->data)) continue;
+		    break;
 		case W_ARMU:
 		    if (!is_shirt(obj) || obj->objsize != mon->data->msize || !shirt_match(mon->data,obj)) continue;
 		    break;
@@ -1891,7 +1897,7 @@ struct monst *mon;
 	
 	if (mon->mfrozen) return FALSE;
 	
-	do switch(rnd(7)){
+	do switch(rnd(8)){
 		case 1:
 			flag = W_ARM;
 		break;
@@ -1912,6 +1918,9 @@ struct monst *mon;
 		break;
 		case 7:
 			flag = W_AMUL;
+		break;
+		case 8:
+			flag = W_BELT;
 		break;
 	} while(tries-- && !(old = which_armor(mon, flag)));
 
@@ -1943,7 +1952,7 @@ struct monst *mon;
 	if (mon->mfrozen) return FALSE;
 	
 	for(i = 1; i<=7;i++){
-		switch(rnd(7)){
+		switch(rnd(8)){
 			case 1:
 				flag = W_ARM;
 			break;
@@ -1964,6 +1973,9 @@ struct monst *mon;
 			break;
 			case 7:
 				flag = W_AMUL;
+			break;
+			case 8:
+				flag = W_BELT;
 			break;
 		}
 

@@ -331,6 +331,8 @@ worst_cursed_item()
 #endif
     } else if (uamul && uamul->cursed) {		/* amulet */
 	otmp = uamul;
+    } else if (ubelt && ubelt->cursed) {		/* belt */
+	otmp = ubelt;
     } else if (uleft && uleft->cursed) {		/* left ring */
 	otmp = uleft;
     } else if (uright && uright->cursed) {		/* right ring */
@@ -3146,6 +3148,7 @@ int godnum;
 				if (uwep && not_fully_identified(uwep)) identify(uwep);
 				else if (uswapwep && not_fully_identified(uswapwep)) identify(uswapwep);
 				else if (uamul && not_fully_identified(uamul)) identify(uamul);
+				else if (ubelt && not_fully_identified(ubelt)) identify(ubelt);
 				else if (uleft && not_fully_identified(uleft)) identify(uleft);
 				else if (uright && not_fully_identified(uright)) identify(uright);
 				else if (uarmc && not_fully_identified(uarmc)) identify(uarmc);
@@ -3251,6 +3254,7 @@ int godnum;
 				else if (uarms && wrongbuc(uarms)) otmp = uarms;
 				/* then cloak due to body armor */
 				else if (uarmc && wrongbuc(uarmc)) otmp = uarmc;
+				else if (ubelt && wrongbuc(ubelt)) otmp = uarmc;
 				else if (uarm && wrongbuc(uarm)) otmp = uarm;
 				else if (uarmh && wrongbuc(uarmh)) otmp = uarmh;
 				else if (uarmf && wrongbuc(uarmf)) otmp = uarmf;

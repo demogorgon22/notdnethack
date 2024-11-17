@@ -2820,7 +2820,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 	if (!is_edible(otmp)) {
 	    You("cannot eat that!");
 	    return MOVE_CANCELLED;
-	} else if ((otmp->owornmask & (W_ARMOR|W_TOOL|W_AMUL
+	} else if ((otmp->owornmask & (W_ARMOR|W_TOOL|W_AMUL|W_BELT
 #ifdef STEED
 			|W_SADDLE
 #endif

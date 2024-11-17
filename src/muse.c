@@ -3179,6 +3179,11 @@ const char *fmt, *str;
 	    	if(uamul && uamul->otyp == AMULET_OF_REFLECTION) makeknown(AMULET_OF_REFLECTION);
 	    }
 	    return TRUE;
+	} else if (EReflecting & W_BELT) {
+	    if (fmt && str) {
+	    	pline(fmt, str, "belt");
+	    }
+	    return TRUE;
 	} else if (EReflecting & W_ARMG) {
 	    if (fmt && str) {
 	    	pline(fmt, str, "gauntlets");
