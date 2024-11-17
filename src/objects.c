@@ -765,7 +765,10 @@ BOW(("bladed bow"), 1,  MZ_LARGE, 0, 60,  75,  0, IRON, P_BOW, HI_METAL, O_TRAIT
 #define BOOTS(names,kn,mgc,prob,delay,wt,cost,ac,dr,can,metal,c,...) \
 	ARMOR(names, kn, mgc, MZ_SMALL, 0, {0}, prob, delay, wt, cost, ac, dr, can, LEG_DR, ARM_BOOTS, metal, c, __VA_ARGS__)
 #define BELT(names,kn,mgc,prob,wt,cost,ac,dr,can,metal,c,...) \
-	ARMOR(names, kn, mgc, MZ_SMALL, 0, {0}, prob, 1, wt, cost, ac, dr, can, LEG_DR, ARM_BELT, metal, c, __VA_ARGS__)
+	OBJECT( \
+		names, BITS(kn,0,1,0,mgc,1,0,0,MZ_SMALL,0,0,0,LOWER_TORSO_DR,ARM_BELT,metal,0), {0}, \
+		BELT_CLASS, prob, 0, wt, cost, \
+		{0}, {0}, 10 - ac, can, dr, wt, c, __VA_ARGS__ )
 
 /* helmets */
 HELM(("sedge hat", "wide conical hat"), /*Needs encyc entry*//*Needs tile*/
@@ -1142,6 +1145,7 @@ BOOTS(("fumble boots", "riding boots"),
 		0, 1,  12, 2, 20, 30, 10, 1, 0, LEATHER, HI_LEATHER, O_POWER(FUMBLING)),
 BOOTS(("flying boots", "snow boots"),
 		0, 1,  12, 2, 15, 30,  9, 1, 0, LEATHER, HI_LEATHER, O_POWER(FLYING)),
+
 BELT(("belt of power", "segmented belt"),
 		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
 #undef SUIT

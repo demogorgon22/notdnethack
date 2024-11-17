@@ -2861,6 +2861,7 @@ struct obj *obj;
 	switch(obj->oclass){
 		case WEAPON_CLASS:
 			return likes_objs(ptr);
+		case BELT_CLASS:
 		case ARMOR_CLASS:
 			return !mad_no_armor(mon) && likes_objs(ptr);
 		case RING_CLASS:

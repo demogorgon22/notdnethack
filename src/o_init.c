@@ -191,6 +191,7 @@ shuffle_all()
 				oclass != WEAPON_CLASS &&
 				oclass != ARMOR_CLASS &&
 				oclass != SCOIN_CLASS &&
+				oclass != BELT_CLASS &&
 				oclass != GEM_CLASS) {
 			int j = last-1;
 

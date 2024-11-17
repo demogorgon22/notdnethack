@@ -1518,7 +1518,7 @@ cancel_don()
 }
 
 static NEARDATA const char clothes[] = {ARMOR_CLASS, 0};
-static NEARDATA const char accessories[] = {ARMOR_CLASS, RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, 0};
+static NEARDATA const char accessories[] = {BELT_CLASS, RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, 0};
 
 /* the 'T' command */
 int

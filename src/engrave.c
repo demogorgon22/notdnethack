@@ -2068,6 +2068,10 @@ int mode;
 		}
 		break;
 
+	    case BELT_CLASS:
+			type = DUST;
+			break;
+
 	    case ARMOR_CLASS:
 		if (is_boots(otmp)) {
 			type = DUST;

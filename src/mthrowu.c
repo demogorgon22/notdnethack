@@ -489,6 +489,7 @@ int whodidit;	/* 1==hero, 0=other, -1==just check whether it'll pass thru */
 		    hits = (obj_type == MEAT_STICK ||
 			    obj_type == MASSIVE_CHUNK_OF_MEAT);
 		break;
+	case BELT_CLASS:
 	case SPBOOK_CLASS:
 	case WAND_CLASS:
 	case BALL_CLASS:

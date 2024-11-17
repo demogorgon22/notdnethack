@@ -1072,7 +1072,7 @@ struct obj {
 			 objects[otmp->otyp].oc_armcat == ARM_SHIRT)
 #define is_suit(otmp)	(otmp->oclass == ARMOR_CLASS && \
 			 objects[otmp->otyp].oc_armcat == ARM_SUIT)
-#define is_belt(otmp)	(otmp->oclass == ARMOR_CLASS && \
+#define is_belt(otmp)	(otmp->oclass == BELT_CLASS && \
 			 objects[otmp->otyp].oc_armcat == ARM_BELT)
 			 
 #define is_harmonium_armor(otmp)	is_harmonium_otyp((otmp)->otyp)

@@ -294,7 +294,8 @@ extern NEARDATA struct colorTextClr LightsaberColor[];
 #define TILE_CLASS	18
 #define BED_CLASS	19
 #define SCOIN_CLASS	20
-#define MAXOCLASSES	21
+#define BELT_CLASS	21
+#define MAXOCLASSES	22
 
 #define ALLOW_COUNT	(MAXOCLASSES+1) /* Can be used in the object class */
 #define ALL_CLASSES	(MAXOCLASSES+2) /* input to getobj().		   */
@@ -314,6 +315,7 @@ extern uchar oc_syms[MAXOCLASSES];		/* current class symbols */
 #define ILLOBJ_SYM	']'	/* also used for mimics */
 #define WEAPON_SYM	')'
 #define ARMOR_SYM	'['
+#define BELT_SYM	'['
 #define RING_SYM	'='
 #define AMULET_SYM	'"'
 #define TOOL_SYM	'('

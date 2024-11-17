@@ -1200,14 +1200,11 @@ register const char *let,*word;
 		 */
 		else if ((!strcmp(word, "put on") &&
 		    ((otmp->oclass == FOOD_CLASS && otmp->otyp != MEAT_RING) ||
-			 (otmp->oclass == ARMOR_CLASS && !is_belt(otmp)) ||
 		    (otmp->oclass == TOOL_CLASS &&
 		     otyp != BLINDFOLD && otyp != MASK && otyp != R_LYEHIAN_FACEPLATE && 
 			 otyp != TOWEL && otyp != ANDROID_VISOR && otyp != LIVING_MASK && otyp != LENSES && otyp != SUNGLASSES && otyp != SOUL_LENS) ||
 			 (otmp->oclass == CHAIN_CLASS)
 			))
-		|| (!strcmp(word, "wear") &&
-		    (otmp->oclass == ARMOR_CLASS && is_belt(otmp)))
 		|| (!strcmp(word, "wield") &&
 		    ((otmp->oclass == TOOL_CLASS && !is_weptool(otmp)) ||
 			(otmp->oclass == CHAIN_CLASS && otmp->otyp != CHAIN)))
@@ -3763,7 +3760,7 @@ winid *datawin;
 			OBJPUTSTR(buf2);
 		}
 	}
-	if (olet == ARMOR_CLASS) {
+	if (olet == ARMOR_CLASS || olet == BELT_CLASS) {
 		/* Armor type */
 		/* Indexes here correspond to ARM_SHIELD, etc; not the W_* masks.
 		* Expects ARM_SUIT = 0, all the way up to ARM_SHIRT = 6. */
@@ -5706,7 +5703,8 @@ STATIC_VAR NEARDATA const char *names[] = { 0,
 	"Illegal objects", "Weapons", "Armor", "Rings", "Amulets",
 	"Tools", "Comestibles", "Potions", "Scrolls", "Spellbooks",
 	"Wands", "Coins", "Gems", "Boulders/Statues", "Iron balls",
-	"Scrap", "Venoms", "Tiles", "Furnature", "Strange coins"
+	"Scrap", "Venoms", "Tiles", "Furnature", "Strange coins",
+	"Belts"
 };
 
 STATIC_VAR NEARDATA const char *bogusclasses[] = {
