@@ -15853,7 +15853,7 @@ int vis;						/* True if action is at all visible to the player */
 			}
 			else {
 				/* damage entirely mitigated */
-				subtotl = 1;
+				subtotl = 0;
 				resisted_thick_skin = TRUE;
 			}
 		}
