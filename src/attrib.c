@@ -975,6 +975,9 @@ int oldlevel, newlevel;
 					if(Race_if(PM_ANDROID) && mask == FROMRACE)
 						pline("%s", abil->gainstr);
 					else You_feel("%s!", abil->gainstr);
+					if(abil->ability == &(HStone_resistance)){ //Are we pointing to the stone res field?
+						fix_petrification();
+					}
 				}
 			}
 		} else if (oldlevel >= abil->ulevel && newlevel < abil->ulevel) {
