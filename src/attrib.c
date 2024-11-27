@@ -256,7 +256,7 @@ adjattrib(ndx, incr, msgflg)
 	    }
 	} else {
 	    if (ABASE(ndx) <= ATTRMIN(ndx)) {
-			if(ndx == A_WIS && u.wimage >= 10){
+			if(ndx == A_WIS && u.wimage >= 10 && !Blind){
 				int temparise = u.ugrave_arise;
 				pline("The image of the weeping angel is taking over your body!");
 				u.ugrave_arise = PM_WEEPING_ANGEL;

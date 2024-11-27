@@ -2520,8 +2520,10 @@ karemade:
 				}
 				if(u.wimage){
 					if(u.wimage >= 10){
-						exercise(A_INT, TRUE);
-						exercise(A_WIS, FALSE);
+						if(!Blind){
+							exercise(A_INT, TRUE);
+							exercise(A_WIS, FALSE);
+						}
 					} else if(!(moves%10)) u.wimage--;
 				}
 				if(u.umorgul){
