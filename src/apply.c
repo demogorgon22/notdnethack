@@ -436,7 +436,10 @@ use_towel(obj)
 		You("wipe off your %s.", makeplural(body_part(HAND)));
 		return MOVE_STANDARD;
 	} else if(u.ucreamed) {
-		Blinded -= u.ucreamed;
+		if(Blinded < u.ucreamed)
+			Blinded = 0L;
+		else
+			Blinded -= u.ucreamed;
 		u.ucreamed = 0;
 
 		if (!Blinded) {
