@@ -17057,11 +17057,11 @@ register struct permonst *ptr;
 	}
 	else if (sgn(mal) != sgn(ual)) return FALSE;
 
-	/* Negative monster hostile to player with Amulet. */
-	if (mal < A_NEUTRAL && u.uhave.amulet) return FALSE;
-
 	/* minions are hostile to players that have strayed at all */
 	if (is_minion(ptr)) return((boolean)(u.ualign.record >= 0));
+
+	/* Negative monster hostile to player with Amulet. */
+	if (mal < A_NEUTRAL && u.uhave.amulet) return FALSE;
 
 	/* Last case:  a chance of a co-aligned monster being
 	 * hostile.  This chance is greater if the player has strayed
