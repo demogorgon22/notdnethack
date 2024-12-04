@@ -3662,7 +3662,7 @@ register char *cmd;
 	 * which caused counts to be strange when entered from the
 	 * number pad. Now do not map them until here. 
 	 */
-		switch (*cmd) {
+		switch ((signed char) *cmd) {
 			case '5':       *cmd = 'g'; break;
 			case M('5'):    *cmd = 'G'; break;
 			case M('0'):    *cmd = 'I'; break;
