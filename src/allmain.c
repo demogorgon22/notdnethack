@@ -3102,6 +3102,8 @@ karemade:
 		if(u.ustdy > 0) u.ustdy -= 1;
 		if(u.ustdy < 0) u.ustdy += 1;
 		
+		if(youmonst.mopen) youmonst.mopen--;
+		
 ////////////////////////////////////////////////////////////////////////////////////////////////
 		if (flags.run_timers){
 			run_timers();
