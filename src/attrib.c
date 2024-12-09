@@ -1219,7 +1219,7 @@ calc_total_maxhp()
 		hp = &u.uhp;
 		hpmax = &u.uhpmax;
 		hprolled = &u.uhprolled;
-		hpcap = 24 + 2*maxhp(1);
+		hpcap = 24 + maxhp(1) + ulev*12;
 	}
 	
 	if(uhpbonus > 0){
