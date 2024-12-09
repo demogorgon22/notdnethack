@@ -1448,8 +1448,10 @@ register const char *s;
 			*/
 			if (!strcmp(sp->proto, "chalev"))
 				levvar = chaos_dvariant + 1;
-			else if (Is_hell1(&u.uz))
-				levvar = dungeon_topology.hell1_variant;
+			else if (Is_hell1(&u.uz)){
+				if (dungeon_topology.hell1_variant == CHROMA_LEVEL) levvar = BAEL_LEVEL;
+				else levvar = dungeon_topology.hell1_variant;
+			}
 			else if (Is_hell2(&u.uz))
 				levvar = dungeon_topology.hell2_variant;
 			else if (Is_abyss1(&u.uz))
@@ -1458,9 +1460,7 @@ register const char *s;
 				levvar = dungeon_topology.abys2_variant;
 			else if (Is_abyss3(&u.uz))
 				levvar = dungeon_topology.brine_variant;
-			
-			if (dungeon_topology.hell1_variant == CHROMA_LEVEL) levvar = BAEL_LEVEL;
-			
+						
 			Sprintf(protofile, "%s-%d", s, levvar);
 		}
 	    else Strcpy(protofile, s);
