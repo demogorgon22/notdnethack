@@ -15754,7 +15754,9 @@ int vis;						/* True if action is at all visible to the player */
 	}
 
 	/* some creatures resist weapon attacks to the extreme */
-	if (resist_attacks(pd) && (unarmed_punch || unarmed_kick || valid_weapon_attack || invalid_weapon_attack)) {
+	if (resist_attacks(pd) && (pd->mtyp != PM_ASPECT_OF_THE_SILENCE || !youagr || !u.uaesh_duration)
+		&& (unarmed_punch || unarmed_kick || valid_weapon_attack || invalid_weapon_attack)
+	) {
 		if (subtotl > 0) {
 			resisted_weapon_attacks = TRUE;
 			subtotl = 1;
