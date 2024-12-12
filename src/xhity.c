@@ -17836,24 +17836,26 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 				break;
 			case AD_OONA:
 				/* */
-				if (u.oonaenergy == AD_FIRE){
-					if (rn2(2)) mtmp = makemon(&mons[PM_FLAMING_SPHERE], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
-					else		mtmp = makemon(&mons[PM_FIRE_VORTEX], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
-				}
-				else if (u.oonaenergy == AD_COLD){
-					if (rn2(2)) mtmp = makemon(&mons[PM_FREEZING_SPHERE], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
-					else		mtmp = makemon(&mons[PM_ICE_VORTEX], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
-				}
-				else if (u.oonaenergy == AD_ELEC){
-					if (rn2(2)) mtmp = makemon(&mons[PM_SHOCKING_SPHERE], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
-					else		mtmp = makemon(&mons[PM_ENERGY_VORTEX], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
-				}
-				/* Oona's summons time out and vanish */
-				if (mtmp) {
-					mark_mon_as_summoned(mtmp, mdef, mlev(mdef) + rnd(mlev(mdef)), 0);
-					/* can be tame */
-					if (maketame) {
-						initedog(mtmp);
+				if(!DEADMONSTER(mdef)){
+					if (u.oonaenergy == AD_FIRE){
+						if (rn2(2)) mtmp = makemon(&mons[PM_FLAMING_SPHERE], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
+						else		mtmp = makemon(&mons[PM_FIRE_VORTEX], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
+					}
+					else if (u.oonaenergy == AD_COLD){
+						if (rn2(2)) mtmp = makemon(&mons[PM_FREEZING_SPHERE], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
+						else		mtmp = makemon(&mons[PM_ICE_VORTEX], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
+					}
+					else if (u.oonaenergy == AD_ELEC){
+						if (rn2(2)) mtmp = makemon(&mons[PM_SHOCKING_SPHERE], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
+						else		mtmp = makemon(&mons[PM_ENERGY_VORTEX], x(mdef), y(mdef), MM_ADJACENTOK|maketame|MM_ESUM);
+					}
+					/* Oona's summons time out and vanish */
+					if (mtmp) {
+						mark_mon_as_summoned(mtmp, mdef, mlev(mdef) + rnd(mlev(mdef)), 0);
+						/* can be tame */
+						if (maketame) {
+							initedog(mtmp);
+						}
 					}
 				}
 				break;

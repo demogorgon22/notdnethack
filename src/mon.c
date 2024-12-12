@@ -5278,13 +5278,15 @@ boolean was_swallowed;			/* digestion */
 				maskmon->movement = 12;
 		}
 	}
-	/* Gas spores always explode upon death */
+	/* On-death explosions and other effects */
 	for(i = 0; i < NATTK; i++) {
-		if(mdat->mattk[i].aatyp == AT_NONE &&  mdat->mattk[i].adtyp == AD_OONA){
-			mdat->mattk[i].aatyp = AT_BOOM;
-			mdat->mattk[i].adtyp = u.oonaenergy;
+		int aatyp = mdat->mattk[i].aatyp;
+		int adtyp = mdat->mattk[i].adtyp;
+		if(aatyp == AT_NONE &&  adtyp == AD_OONA){
+			aatyp = AT_BOOM;
+			adtyp = u.oonaenergy;
 		}
-		if (mdat->mattk[i].aatyp == AT_BOOM  &&  mdat->mattk[i].adtyp != AD_HLBD && mdat->mattk[i].adtyp != AD_POSN) {
+		if (aatyp == AT_BOOM  &&  adtyp != AD_HLBD && adtyp != AD_POSN) {
 			if (mdat->mattk[i].damn)
 				tmp = d((int)mdat->mattk[i].damn,
 						(int)mdat->mattk[i].damd);
@@ -5316,14 +5318,14 @@ boolean was_swallowed;			/* digestion */
 	    	Sprintf(killer_buf, "%s explosion", s_suffix(mdat->mname));
 	    	killer = killer_buf;
 	    	killer_format = KILLED_BY_AN;
-			if(mdat->mattk[i].adtyp == AD_JAILER){
+			if(adtyp == AD_JAILER){
 				explode_pa(mon->mx, mon->my, AD_FIRE, MON_EXPLODE, tmp, EXPL_FIERY, 1, mdat);
 				u.uevent.ukilled_apollyon = 1;
 			}
 			else if(mdat->mtyp == PM_ANCIENT_OF_DEATH){
-				if(!(u.sealsActive&SEAL_OSE)) explode_pa(mon->mx, mon->my, mdat->mattk[i].adtyp, MON_EXPLODE, tmp, EXPL_DARK, 1, mdat);
+				if(!(u.sealsActive&SEAL_OSE)) explode_pa(mon->mx, mon->my, adtyp, MON_EXPLODE, tmp, EXPL_DARK, 1, mdat);
 			}
-			else if(mdat->mattk[i].adtyp == AD_GARO){
+			else if(adtyp == AD_GARO){
 				if(couldsee(mon->mx, mon->my)){
 					pline("\"R-regrettable... Although my rival, you were spectacular.");
 					pline("I shall take my bow by opening my heart and revealing my wisdom...");
@@ -5336,7 +5338,7 @@ boolean was_swallowed;			/* digestion */
 					explode_pa(mon->mx, mon->my, AD_PHYS, MON_EXPLODE, tmp, EXPL_MUDDY, 1, mdat);
 				}
 			}
-			else if(mdat->mattk[i].adtyp == AD_GARO_MASTER){
+			else if(adtyp == AD_GARO_MASTER){
 				if(couldsee(mon->mx, mon->my)){
 					pline("\"To think thou couldst defeat me...");
 					pline("Though my rival, thou were't spectacular.");
@@ -5350,7 +5352,7 @@ boolean was_swallowed;			/* digestion */
 					explode_pa(mon->mx, mon->my, AD_PHYS, MON_EXPLODE, tmp, EXPL_MUDDY, 1, mdat);
 				}
 			}
-			else if(mdat->mattk[i].adtyp == AD_FRWK){
+			else if(adtyp == AD_FRWK){
 				int x, y, i;
 				for(i = rn2(3)+2; i > 0; i--){
 					x = mon->mx+rn2(7)-3;
@@ -5363,14 +5365,14 @@ boolean was_swallowed;			/* digestion */
 				}
 				tmp=0;
 			}
-			else if(mdat->mattk[i].adtyp == AD_SPNL){
+			else if(adtyp == AD_SPNL){
 				struct monst *levi;
 				explode_pa(mon->mx, mon->my, AD_COLD, MON_EXPLODE, tmp, EXPL_WET, 1, mdat);
 				levi = makemon(&mons[rn2(2) ? PM_LEVISTUS : PM_LEVIATHAN], mon->mx, mon->my, MM_ADJACENTOK);
 				if(levi)
 					levi_spawn_items(mon->mx, mon->my, levi);
 			}
-			else if(mdat->mattk[i].adtyp == AD_MAND){
+			else if(adtyp == AD_MAND){
 				struct monst *mtmp, *mtmp2;
 				if(mon->mcan){
 					char buf[BUFSZ];
@@ -5407,10 +5409,10 @@ boolean was_swallowed;			/* digestion */
 			}
 			else {
 				explode_pa(mon->mx, mon->my, 
-						mdat->mattk[i].adtyp, 
+						adtyp, 
 						MON_EXPLODE, 
 						tmp, 
-						mon_expl_color(mdat, mdat->mattk[i].adtyp), 
+						mon_expl_color(mdat, adtyp), 
 						1,
 						mdat);
 			}
@@ -5420,7 +5422,7 @@ boolean was_swallowed;			/* digestion */
 			) return (TRUE);
 			else return (FALSE);
 	    } //End AT_BOOM != AD_HLBD && != AD_POSN
-		else if(mdat->mattk[i].adtyp == AD_HLBD && mdat->mtyp == PM_ASMODEUS){
+		else if(adtyp == AD_HLBD && mdat->mtyp == PM_ASMODEUS){
 			int i;
 			for(i=0; i<2; i++) makemon(&mons[PM_NESSIAN_PIT_FIEND], mon->mx, mon->my, MM_ADJACENTOK);
 			for(i=0; i<7; i++) makemon(&mons[PM_PIT_FIEND], mon->mx, mon->my, MM_ADJACENTOK);
@@ -5429,7 +5431,7 @@ boolean was_swallowed;			/* digestion */
 			for(i = 0; i<30; i++) makemon(&mons[PM_LEMURE], mon->mx, mon->my, MM_ADJACENTOK);
 	    	return (FALSE);
 		}
-		else if(mdat->mattk[i].adtyp == AD_HLBD && mdat->mtyp == PM_VERIER){
+		else if(adtyp == AD_HLBD && mdat->mtyp == PM_VERIER){
 			int i;
 			for(i=0; i<9; i++) makemon(&mons[PM_PIT_FIEND], mon->mx, mon->my, MM_ADJACENTOK);
 			for(i = 0; i<12; i++) makemon(&mons[PM_BARBED_DEVIL], mon->mx, mon->my, MM_ADJACENTOK);
@@ -5437,9 +5439,9 @@ boolean was_swallowed;			/* digestion */
 			for(i = 0; i<30; i++) makemon(&mons[PM_LEMURE], mon->mx, mon->my, MM_ADJACENTOK);
 	    	return (FALSE);
 		}
-  		else if(	( (mdat->mattk[i].aatyp == AT_NONE && mdat->mtyp==PM_GREAT_CTHULHU)
-					 || mdat->mattk[i].aatyp == AT_BOOM) 
-				&& mdat->mattk[i].adtyp == AD_POSN
+  		else if(	( (aatyp == AT_NONE && mdat->mtyp==PM_GREAT_CTHULHU)
+					 || aatyp == AT_BOOM) 
+				&& adtyp == AD_POSN
 		){
 	    	Sprintf(killer_buf, "%s explosion", s_suffix(mdat->mname));
 	    	killer = killer_buf;
@@ -5449,7 +5451,7 @@ boolean was_swallowed;			/* digestion */
 				create_gas_cloud(mon->mx, mon->my, 2, 30, FALSE);
 			}
 		}
-		else if(mdat->mattk[i].adtyp == AD_GROW){
+		else if(adtyp == AD_GROW){
 			struct monst *mtmp;
 			struct monst * axus = (struct monst *)0;
 			boolean found;
@@ -5495,7 +5497,7 @@ boolean was_swallowed;			/* digestion */
 				}
 			}
 		}//end AD_GROW basic
-		else if(mdat->mattk[i].adtyp == AD_SOUL){
+		else if(adtyp == AD_SOUL){
 			struct monst *mtmp;
 			struct permonst *mdat1;
 			int hpgain = 0;
