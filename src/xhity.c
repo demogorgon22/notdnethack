@@ -14540,6 +14540,13 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_ACID;
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
+		if (poisonedobj->otyp == GREATCLUB){
+			poisons |= OPOISON_BASIC;
+			//All greatclubs upgrade to filth due to your influence on the world
+			if(u.uinsight >= 20 && u.uimpurity >= 20){
+				poisons |= OPOISON_FILTH;
+			}
+		}
 		if (poisonedobj->otyp == CHIKAGE && poisonedobj->obj_material == HEMARGYOS){
 			poisons |= OPOISON_BASIC;
 			if(youagr){
