@@ -3822,6 +3822,11 @@ int *shield_margin;
 		else {
 			base_acc = mlev(magr) * (youagr ? BASE_ATTACK_BONUS(weapon) : thrown ? 0.67 : MON_BAB(magr));
 		}
+		if(!thrown && weapon && weapon->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(weapon, magr, ETRAIT_FOCUS_FIRE)){
+			//-2 to hit if expert, -5 if skilled
+			base_acc -= ROLL_ETRAIT(weapon, magr, 2, 5);
+		}
+
 		if(youagr){
 			static long warnpanic = 0;
 			if(Panicking){
