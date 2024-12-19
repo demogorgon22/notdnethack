@@ -3521,6 +3521,7 @@ E void FDECL(weave_black_web, (struct monst *));
 E int NDECL(android_combo);
 E void NDECL(movement_combos);
 E boolean FDECL(perform_monk_move, (int));
+E boolean NDECL(perform_expert_move);
 E int NDECL(check_monk_move);
 E int FDECL(u_pole_pound, (struct monst *));
 E boolean FDECL(Curse_res, (struct monst *, boolean));

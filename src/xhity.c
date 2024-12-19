@@ -19162,6 +19162,16 @@ movement_combos()
 			flags.move |= MOVE_STANDARD;
 		}
 	}
+	/* Expert Moves (lunges and knockback charges) */
+	if(!did_combo && u.umoved && !flags.nopick && (multi >= 0)){
+		if (perform_expert_move()) {
+			nomul(0, NULL);
+			u.uattked = TRUE;
+			did_combo = TRUE;
+			/* takes at least as long as a standard action */
+			flags.move |= MOVE_STANDARD;
+		}
+	}
 	extern coord save_d;
 	if (did_combo) {
 		/* successfully doing a combo clears prev_dir */
@@ -19181,10 +19191,10 @@ movement_combos()
 	save_d.y = 0;
 }
 
-#define peace_check_monk(mon) ((canspotmon(mon) || mon_warning(mon)) && (Hallucination || !mon->mpeaceful) && !nonthreat(mon))
+#define peace_check_move(mon) ((canspotmon(mon) || mon_warning(mon)) && (Hallucination || !mon->mpeaceful) && !nonthreat(mon))
 
 struct monst *
-adjacent_monk_target(arm)
+adjacent_move_target(arm)
 struct obj *arm;
 {
 	struct monst *mon;
@@ -19203,7 +19213,7 @@ struct obj *arm;
 		|| mon->mtyp == PM_MEDUSA)
 	 && !(Stone_resistance || arm))
 		return (struct monst *)0;
-	if(peace_check_monk(mon))
+	if(peace_check_move(mon))
 		return mon;
 	return (struct monst *)0;
 }
@@ -19232,7 +19242,7 @@ struct obj *arm;
 			|| mon->mtyp == PM_MEDUSA)
 		 && !(Stone_resistance || arm))
 			continue;
-		if(peace_check_monk(mon))
+		if(peace_check_move(mon))
 			return TRUE;
 	}
 	return FALSE;
@@ -19262,7 +19272,7 @@ beam_monk_target()
 				return at_least_one;
 			continue;
 		}
-		if(!peace_check_monk(mon)){
+		if(!peace_check_move(mon)){
 			//We'll call this the Monk's "sixth sense" talking <_<'
 			if(mon->mpeaceful && !Hallucination)
 				return FALSE;
@@ -19369,8 +19379,47 @@ struct monst *mdef;
 	return;
 }
 
-#undef peace_check_monk
+#undef peace_check_move
 
+
+/* perform_expert_move()
+ *
+ * Attempts to perform any applicable expert weapon trait move, given that a target is found.
+ *
+ * Returns TRUE if a move goes off.
+ */
+boolean
+perform_expert_move()
+{
+	struct monst *mdef;
+#define STILLVALID(mdef) (!DEADMONSTER(mdef) && mdef == m_at(u.ux + u.dx, u.uy + u.dy))
+	struct attack lungehit =	{ AT_WEAP, AD_PHYS, 0, 0 };
+	struct attack pushhit =	{ AT_WEAP, AD_PUSH, 0, 0 };
+	if(!uwep)
+		return FALSE;
+	if(CHECK_ETRAIT(uwep, &youmonst, ETRAIT_LUNGE)
+		&& ROLL_ETRAIT(uwep, &youmonst, TRUE, rn2(2))
+	) {
+		mdef = adjacent_move_target(uwep);
+		if(mdef){
+			pline("Lunge!");
+			boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
+			xmeleehity(&youmonst, mdef, &lungehit, &uwep, vis, 0, FALSE);
+		}
+	}
+	if(CHECK_ETRAIT(uwep, &youmonst, ETRAIT_KNOCK_BACK_CHARGE)
+		&& ROLL_ETRAIT(uwep, &youmonst, TRUE, rn2(2))
+		&& (uwep->o_e_trait&ETRAIT_KNOCK_BACK)
+	) {
+		mdef = adjacent_move_target(uwep);
+		if(mdef){
+			pline("Push!");
+			boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
+			xmeleehity(&youmonst, mdef, &pushhit, &uwep, vis, 0, FALSE);
+		}
+	}
+	return FALSE;
+}
 
 /* perform_monk_move()
  *
@@ -19393,7 +19442,7 @@ int moveID;
 	switch(moveID){
 		case DIVE_KICK:
 		if(Race_if(PM_CHIROPTERAN)){
-			if((mdef = adjacent_monk_target(uarmf))){
+			if((mdef = adjacent_move_target(uarmf))){
 				pline("Swoop!");
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 				if(!uwep || is_monk_weapon(uwep))
@@ -19406,7 +19455,7 @@ int moveID;
 			}
 		}
 		else {
-			if(!EWounded_legs && (mdef = adjacent_monk_target(uarmf)) && near_capacity() <= SLT_ENCUMBER){
+			if(!EWounded_legs && (mdef = adjacent_move_target(uarmf)) && near_capacity() <= SLT_ENCUMBER){
 				pline("Dive kick!");
 				dive_kick_monster(mdef);
 				return TRUE;
@@ -19439,14 +19488,14 @@ int moveID;
 		}
 		break;
 		case METODRIVE:
-		if(!uwep && !(uswapwep && u.twoweap) && inv_weight() < 0 && !u.uswallow && (mdef = adjacent_monk_target(uarmg))){
+		if(!uwep && !(uswapwep && u.twoweap) && inv_weight() < 0 && !u.uswallow && (mdef = adjacent_move_target(uarmg))){
 			pline("Meteor drive!");
 			monk_meteor_drive(mdef);
 			return TRUE;
 		}
 		break;
 		case PUMMEL:
-		if((!uwep || is_monk_weapon(uwep)) && (!(uswapwep && u.twoweap) || is_monk_weapon(uswapwep)) && (mdef = adjacent_monk_target(uarmg))){
+		if((!uwep || is_monk_weapon(uwep)) && (!(uswapwep && u.twoweap) || is_monk_weapon(uswapwep)) && (mdef = adjacent_move_target(uarmg))){
 			if(uwep)
 				pline("Flurry!");
 			else
