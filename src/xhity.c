@@ -13755,6 +13755,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	int bonsdmg = 0;	/* various bonus damage */
 	int snekdmg = 0;	/* sneak attack bonus damage */
 	int jostdmg = 0;	/* jousting bonus damage */
+	int tratdmg = 0;	/* trait bonus damage */
 	//  monsdmg			/* passed to this function */
 	int subtotl = 0;	/* subtotal of above damages */
 	int seardmg = 0;	/* X-hating */
@@ -15773,10 +15774,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				struct weapon_dice wdice;
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-				/* add to the bonsdmg counter */
-				bonsdmg += weapon_dmg_roll(&wdice, youdef);
+				/* add to the tratdmg counter */
+				tratdmg += weapon_dmg_roll(&wdice, youdef);
 				if(youagr)
-					bonsdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
 			if(weapon->o_e_trait == ETRAIT_FELL
 				&& CHECK_ETRAIT(weapon, magr, ETRAIT_FELL)
@@ -15807,17 +15808,19 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				&& ROLL_ETRAIT(weapon, magr, rn2(2), !rn2(10))
 			){
 				struct weapon_dice wdice;
+				int bleeddmg;
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-				/* add to the bonsdmg counter */
-				bonsdmg += wdice.oc_damn + wdice.bon_damn + wdice.flat + ROLL_ETRAIT(weapon, magr, 5, 2) + weapon->spe;
+				bleeddmg = wdice.oc_damn + wdice.bon_damn + wdice.flat + ROLL_ETRAIT(weapon, magr, 5, 2) + weapon->spe;
+				/* add to the tratdmg counter */
+				tratdmg += bleeddmg;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 					pline("Bleeding wound!");
 				if(youdef){
-					mdef->mbleed += bonsdmg;
+					mdef->mbleed += bleeddmg;
 				}
 				else {
-					mdef->mbleed += bonsdmg;
+					mdef->mbleed += bleeddmg;
 				}
 			}
 			if(CHECK_ETRAIT(weapon, magr, ETRAIT_STOP_THRUST)
@@ -15832,10 +15835,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					pline("Stop thrust!");
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-				/* add to the bonsdmg counter */
-				bonsdmg += weapon_dmg_roll(&wdice, youdef);
+				/* add to the tratdmg counter */
+				tratdmg += weapon_dmg_roll(&wdice, youdef);
 				if(youagr)
-					bonsdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
 			if(braced_weapon){
 				struct weapon_dice wdice;
@@ -15843,10 +15846,21 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					pline("Braced attack!");
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-				/* add to the bonsdmg counter */
-				bonsdmg += weapon_dmg_roll(&wdice, youdef);
+				/* add to the tratdmg counter */
+				tratdmg += weapon_dmg_roll(&wdice, youdef);
 				if(youagr)
-					bonsdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+			}
+			if(stunning_strike && has_head_mon(mdef)){
+				struct weapon_dice wdice;
+				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
+					pline("Stun bonus damage!");
+				/* grab the weapon dice from dmgval_core */
+				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+				/* add to the tratdmg counter */
+				tratdmg += weapon_dmg_roll(&wdice, youdef) + d(2,10);
+				if(youagr)
+					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
 			if(modifier_flags&MELEEHURT_LONGSLASH){
 				struct weapon_dice wdice;
@@ -15854,10 +15868,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					pline("Long slash!");
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-				/* add to the bonsdmg counter */
-				bonsdmg += weapon_dmg_roll(&wdice, youdef);
+				/* add to the tratdmg counter */
+				tratdmg += weapon_dmg_roll(&wdice, youdef);
 				if(youagr)
-					bonsdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
 		}
 	}
@@ -16025,7 +16039,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		+ bonsdmg
 		+ ((youagr && !natural_strike) ? 0 : monsdmg)	/* only add monsdmg for monsters or a player making a monster attack */
 		+ snekdmg
-		+ jostdmg;
+		+ jostdmg
+		+ tratdmg;
 
 	/*physical serration adjustment*/
 	if(weapon && is_serrated(weapon) && is_serration_vulnerable(mdef)){
@@ -16294,12 +16309,12 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 	/* Debug mode: report sum components */
 	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_FULLDMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef)) {
-		pline("dmg = (b:%d + art:%d + bon:%d + mon:%d + s/j:%d - defense) = %d; + add:%d = %d",
+		pline("dmg = (b:%d + art:%d + bon:%d + mon:%d + s/j/t:%d - defense) = %d; + add:%d = %d",
 			basedmg,
 			artidmg,
 			bonsdmg,
 			((youagr && !natural_strike) ? 0 : monsdmg),	/* only add monsdmg for monsters or a player making a monster attack */
-			snekdmg + jostdmg,
+			snekdmg + jostdmg + tratdmg,
 			subtotl,
 			seardmg + elemdmg + poisdmg + specdmg,
 			totldmg
