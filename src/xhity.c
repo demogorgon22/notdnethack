@@ -15840,6 +15840,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				struct weapon_dice wdice;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 					pline("Stop thrust!");
+				if(youagr)
+					You("use %s momentum to your advantage!", s_suffix(mon_nam(mdef)));
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
@@ -19417,6 +19419,7 @@ perform_expert_move()
 #define STILLVALID(mdef) (!DEADMONSTER(mdef) && mdef == m_at(u.ux + u.dx, u.uy + u.dy))
 	struct attack lungehit =	{ AT_WEAP, AD_PHYS, 0, 0 };
 	struct attack pushhit =	{ AT_WEAP, AD_PUSH, 0, 0 };
+	boolean messaged = FALSE;
 	if(!uwep)
 		return FALSE;
 	if(CHECK_ETRAIT(uwep, &youmonst, ETRAIT_LUNGE)
@@ -19424,7 +19427,12 @@ perform_expert_move()
 	) {
 		mdef = adjacent_move_target(uwep);
 		if(mdef){
-			pline("Lunge!");
+			if(wizard)
+				pline("Lunge!");
+			else if(!messaged){
+				You("charge %s.", mon_nam(mdef));
+				messaged = TRUE;
+			}
 			boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 			xmeleehity(&youmonst, mdef, &lungehit, &uwep, vis, 0, FALSE);
 		}
@@ -19435,7 +19443,12 @@ perform_expert_move()
 	) {
 		mdef = adjacent_move_target(uwep);
 		if(mdef){
-			pline("Push!");
+			if(wizard)
+				pline("Push!");
+			else if(!messaged){
+				You("charge %s.", mon_nam(mdef));
+				messaged = TRUE;
+			}
 			boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 			xmeleehity(&youmonst, mdef, &pushhit, &uwep, vis, 0, FALSE);
 		}
