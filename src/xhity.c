@@ -3836,6 +3836,10 @@ int *shield_margin;
 				warnpanic = moves;
 				base_acc = -5;
 			} else warnpanic = 0L;
+
+			if(weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)){
+				base_acc += 2; //Dagger bonus
+			}
 		}
 	}
 	/* other attacker-related accuracy bonuses */
