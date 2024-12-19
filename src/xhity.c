@@ -12614,7 +12614,7 @@ int vis;
 				maxdmg = 10;
 			}
 
-			if(!cantmove(mdef))
+			if(cantmove(mdef))
 					return MM_MISS;
 
 			/* split between player and monster */
