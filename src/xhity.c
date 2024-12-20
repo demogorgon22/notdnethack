@@ -14179,7 +14179,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	/* jousting */
 #ifdef STEED
 	if (youagr && melee && !recursed) {	/* do not joust in multihits */
-		if (u.usteed && weapon &&
+		if ((u.usteed || centauroid(youracedata) || animaloid(youracedata)) && weapon &&
 			(weapon_type(weapon) == P_LANCE ||
 			(weapon->oartifact == ART_ROD_OF_SEVEN_PARTS) ||
 			(weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH)
