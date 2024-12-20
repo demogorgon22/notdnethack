@@ -2729,8 +2729,52 @@ boolean amnesia;
 
 	if (used) 
 	    update_inventory();
-	else 
+	else {
 	    pline("%s %s wet.", Your_buf, aobjnam(obj,"get"));
+		if(obj->opoisoned && obj->otyp != VIPERWHIP){
+			if(obj->opoisoned&OPOISON_ACID){
+				pline("Its acid coating boils vigorously!");
+				You("are caught in the explosion!");
+				losehp(Acid_resistance ? rnd(2) : rnd(5),
+					   "elementary chemistry", KILLED_BY);
+				obj->opoisoned &= ~OPOISON_ACID;
+			}
+			if(obj->opoisoned&(~OPOISON_AMNES)){
+				if(obj->opoisoned&OPOISON_BASIC && !rn2(10)){
+					pline("The poison coating washes off.");
+					obj->opoisoned &= ~OPOISON_BASIC;
+				}
+				else if(obj->opoisoned&OPOISON_DIRE && !rn2(10)){
+					pline("The poison coating washes off.");
+					obj->opoisoned &= ~OPOISON_DIRE;
+				}
+				if(obj->opoisoned&OPOISON_FILTH && !rn2(10)){
+					pline("The crusted filth washes off.");
+					obj->opoisoned &= ~OPOISON_FILTH;
+				}
+				if(obj->opoisoned&OPOISON_SLEEP && rn2(2)){
+					pline("The drug washes off.");
+					obj->opoisoned &= ~OPOISON_SLEEP;
+				}
+				if(obj->opoisoned&OPOISON_BLIND && rn2(2)){
+					pline("The stain washes off.");
+					obj->opoisoned &= ~OPOISON_BLIND;
+				}
+				if(obj->opoisoned&OPOISON_PARAL && rn2(8)){
+					pline("The venom washes off.");
+					obj->opoisoned &= ~OPOISON_PARAL;
+				}
+				if(obj->opoisoned&OPOISON_SILVER){
+					pline("The silver dew washes off.");
+					obj->opoisoned &= ~OPOISON_SILVER;
+				}
+				if(obj->opoisoned&OPOISON_HALLU && rn2(2)){
+					pline("The hallucinogen washes off.");
+					obj->opoisoned &= ~OPOISON_HALLU;
+				}
+			}
+		}
+	}
 
 	return used;
 }
