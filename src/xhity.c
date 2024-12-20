@@ -15863,6 +15863,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				struct weapon_dice wdice;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 					pline("Braced attack!");
+				if(youagr)
+					You("turn %s aggression to your advantage!", s_suffix(mon_nam(mdef)));
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
