@@ -15842,6 +15842,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			if(CHECK_ETRAIT(weapon, magr, ETRAIT_STOP_THRUST)
 				&& ROLL_ETRAIT(weapon, magr, TRUE, !rn2(10))
 				&& magr != mdef
+				&& !((youdef || youagr) && (u.ustuck == magr || u.ustuck == mdef))
 				&& ((!youdef && mdef->mprev_dir.x == sgn(x(magr) - x(mdef)) && mdef->mprev_dir.y == sgn(y(magr) - y(mdef)))
 					|| (youdef && u.umoved && u.prev_dir.x == sgn(x(magr) - x(mdef)) && u.prev_dir.y == sgn(y(magr) - y(mdef)))
 					)
