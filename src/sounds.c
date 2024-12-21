@@ -2111,7 +2111,7 @@ humanoid_sound:
 						pacify_goat_faction();
 					}
 				}
-				switch(rn2(15)){
+				switch(rn2(18)){
 					case 0:
 						verbl_msg = "Ia! Shub-Nugganoth! The Goat with a Thousand Young!";
 					break;
@@ -2120,6 +2120,9 @@ humanoid_sound:
 					break;
 					case 2:
 						verbl_msg = "From the wells of night to the gulfs of space, and from the gulfs of space to the wells of night, ever Their praises!";
+					break;
+					case 17:
+						verbl_msg = "On the wings of night, out beyond space.";
 					break;
 					case 3:
 						verbl_msg = "May Her eyes guide you.";
@@ -2154,6 +2157,13 @@ humanoid_sound:
 					break;
 					case 14:
 						verbl_msg = "Silet per diem universus, lucet nocturnis ignibus.";
+					break;
+					case 15:
+						verbl_msg = "Chorus AEgipanum undique personatur: audiuntur et cantus tibiarum, et tinnitus cymbalorum per oram maritimam.";
+					break;
+					case 16:
+						//SCP-2771: Border Duty
+						pline_msg = "points impatiently forward with index and middle finger extended.";
 					break;
 				}
 			}
