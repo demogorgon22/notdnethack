@@ -437,7 +437,7 @@ dodrink()
 		Sprintf(buf,"at your %s", makeplural(body_part(FOOT)));
 		Sprintf(buf2,"Drink the water %s?", 
 			(Underwater || (IS_PUDDLE(levl[u.ux][u.uy].typ) &&
-			verysmall(youmonst.data) && !Wwalking)) ? "around you"
+			verysmall(youracedata) && !Wwalking)) ? "around you"
 								: buf);
 		if (yn(buf2) == 'y') {
 		    pline("Do you know what lives in this water?!");

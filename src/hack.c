@@ -1301,7 +1301,7 @@ domove()
 	if (flags.forcefight ||
 	    /* remembered an 'I' && didn't use a move command */
 	    (glyph_is_invisible(levl[x][y].glyph) && !flags.nopick)) {
-		boolean expl = (Upolyd && attacktype(youmonst.data, AT_EXPL));
+		boolean expl = (Upolyd && attacktype(youracedata, AT_EXPL));
 	    	char buf[BUFSZ];
 		Sprintf(buf,"a vacant spot on the %s", surface(x,y));
 		You("%s %s.",
@@ -2062,8 +2062,8 @@ stillinwater:;
 	    } else if (IS_PUDDLE(levl[u.ux][u.uy].typ) && !Wwalking) {
 
 			/*You("%s through the shallow water.",
-				verysmall(youmonst.data) ? "wade" : "splash");
-			if (!verysmall(youmonst.data) && !rn2(4)) wake_nearby();*/
+				verysmall(youracedata) ? "wade" : "splash");
+			if (!verysmall(youracedata) && !rn2(4)) wake_nearby();*/
 
 			if(u.umonnum == PM_GREMLIN)
 				(void)split_mon(&youmonst, (struct monst *)0);
@@ -2075,7 +2075,7 @@ stillinwater:;
 				Your("%s rust!", makeplural(body_part(FOOT)));
 				if (u.mhmax > dam) u.mhmax -= dam;
 				losehp(dam, "rusting away", KILLED_BY);
-			// } else if (is_longworm(youmonst.data)) { /* water is lethal to Shai-Hulud */
+			// } else if (is_longworm(youracedata)) { /* water is lethal to Shai-Hulud */
 				// int dam = d(3,12);
 				// if (u.mhmax > dam) u.mhmax -= (dam+1) / 2;
 					// pline_The("water burns your flesh!");
@@ -2083,7 +2083,7 @@ stillinwater:;
 			}
 			if (!u.usteed){
 				static long rustmessage_turn = 0L;
-				if (verysmall(youmonst.data)){
+				if (verysmall(youracedata)){
 					water_damage(invent, FALSE,FALSE,FALSE,(struct monst *) 0);
 				}
 				else if(rustmessage_turn < monstermoves || (uarmf && is_rustprone(uarmf) && !uarmf->oerodeproof && uarmf->oeroded != MAX_ERODE)){
