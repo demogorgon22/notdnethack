@@ -1099,8 +1099,6 @@ int doEldritchKniForm()
 	if (!remotely_competent){
 		pline("You don't know any appropriate spells!");
 		return MOVE_CANCELLED;
-	} else {
-		setFightingForm(FFORM_KNI_ELDRITCH);
 	}
 
 	tmpwin = create_nhwindow(NHW_MENU);
@@ -1159,6 +1157,8 @@ int doEldritchKniForm()
 			free(selected);
 			return MOVE_CANCELLED;
 		} else {
+			//Only change the fform once we've picked a spell
+			setFightingForm(FFORM_KNI_ELDRITCH);
 			u.ueldritch_style = spell_list[selected[0].item.a_int];
 			free(selected);
 			return MOVE_INSTANT;
