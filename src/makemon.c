@@ -13916,7 +13916,7 @@ int faction;
 		mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
 	} else if (!mtmp->m_lev) {
 	    mtmp->mhpmax = mtmp->mhp = rnd(hd_size(ptr)/2);
-	} else if (ptr->mlet == S_DRAGON && mndx >= PM_GRAY_DRAGON) {
+	} else if (is_true_adult_dragon(ptr)) {
 	    /* adult dragons */
 	    mtmp->mhpmax = mtmp->mhp = (int) (In_endgame(&u.uz) ?
 		(hd_size(ptr) * mtmp->m_lev) : (hd_size(ptr)/2 * mtmp->m_lev + d((int)mtmp->m_lev, hd_size(ptr)/2)));
