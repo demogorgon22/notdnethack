@@ -299,7 +299,7 @@ extern const struct Species species[];	/* table of available species */
 #define current_species_name() (uclockwork ? default_material_name(u.clk_material, FALSE) : species[flags.initspecies].name)
 #define base_species_name() (Race_if(PM_CLOCKWORK_AUTOMATON) ? default_material_name(u.clk_material, FALSE) : species[flags.initspecies].name)
 
-#define ROLE_SPECIES	36	/* number of permitted player species */
+#define ROLE_SPECIES	37	/* number of permitted player species */
 #define NONE_SPECIES 0
 #define ENT_SPECIES 1
 #define DRAGON_SPECIES 2
@@ -398,7 +398,8 @@ struct you {
 #define ENT_SPRUCE 21
 #define ENT_WILLOW 22
 #define ENT_YEW 23
-#define ENT_MAX_SPECIES ENT_YEW
+#define ENT_YGGDRASIL 24
+#define ENT_MAX_SPECIES ENT_YGGDRASIL
 	int start_house; /* starting drow house info */
 	int inherited; /* what you inherited at the start, if anything */
 	struct prop uprops[LAST_PROP+1];

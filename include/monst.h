@@ -297,7 +297,8 @@ struct monst {
 #define CORDYCEPS		26	/* spore shedder */
 #define PSURLON			27	/* psychic worm */
 #define CONSTELLATION	28	/* star creature */
-#define	WHISPERING		29	/* Voidified */
+#define YGGDRASIL	29	/* of the sacred tree */
+#define	WHISPERING		30	/* Voidified */
 #define MAXTEMPLATE	WHISPERING
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */

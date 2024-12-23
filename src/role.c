@@ -66,7 +66,7 @@ struct Role roles[] = {
 	PM_SARA__THE_LAST_ORACLE, PM_TROOPER, NON_PM,
 	NON_PM, NON_PM, NON_PM, NON_PM,
 	ART_ANNULUS,
-	MA_HUMAN|MA_DWARF|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_CLOCK|MA_GNOME|MA_REPTILIAN|MA_ETHEREAL, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_CLOCK|MA_GNOME|MA_REPTILIAN|MA_ETHEREAL|MA_PLANT, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  12, 10,  7, 10,  10,  7 },
@@ -1024,6 +1024,7 @@ const struct Species species[] = {
 	{"spruce", ENT_SPRUCE, ENT_SPECIES},
 	{"willow", ENT_WILLOW, ENT_SPECIES},
 	{"yew", ENT_YEW, ENT_SPECIES},
+	{"yggdrasil", ENT_YGGDRASIL, ENT_SPECIES},
 	{"white", AD_COLD, DRAGON_SPECIES},
 	{"red", AD_FIRE, DRAGON_SPECIES},
 	{"orange", AD_SLEE, DRAGON_SPECIES},
@@ -1328,7 +1329,12 @@ validspecies(rolenum, racenum, gendnum, speciesnum)
 	if (speciesnum < 0 || speciesnum >= ROLE_SPECIES)
 		return FALSE; 
 	if(races[racenum].malenum == PM_ENT){
-		return species[speciesnum].type == ENT_SPECIES;
+		if(species[speciesnum].type == ENT_SPECIES){
+			if(roles[rolenum].malenum == PM_ANACHRONONAUT)
+				return species[speciesnum].value == ENT_YGGDRASIL;
+			return species[speciesnum].value != ENT_YGGDRASIL;
+		}
+		return FALSE;
 	} else if(races[racenum].malenum == PM_HALF_DRAGON){
 		if(species[speciesnum].type != DRAGON_SPECIES)
 			return FALSE;	

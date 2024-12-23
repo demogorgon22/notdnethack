@@ -1796,6 +1796,9 @@ set_ent_species(){
 		case ENT_WILLOW:
 			HWeldproof |= FROMRACE;
 		break;
+		case ENT_YGGDRASIL:
+			set_template(&youmonst, YGGDRASIL);
+		break;
 	}
 	if(is_coniferous_ent(youracedata, u.ent_species))
 		HCold_resistance |= FROMRACE;
@@ -2078,7 +2081,12 @@ u_init()
 
 	/* set nvrange */
 	u.nv_range   =  urace.nv_range;
+	
 
+	/* Need to do this early because it might change your body size */
+	if(Race_if(PM_ENT)){
+		set_ent_species();
+	}
 
 	/*** Role-specific initializations ***/
 	switch (Role_switch) {
@@ -3089,9 +3097,6 @@ u_init()
 				break;
 
 		}
-	}
-	if(Race_if(PM_ENT)){
-		set_ent_species();
 	}
 	u.clk_material = COPPER;
 	if(Race_if(PM_CLOCKWORK_AUTOMATON)){

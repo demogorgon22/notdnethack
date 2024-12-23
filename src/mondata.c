@@ -490,6 +490,11 @@ int template;
 	case WHISPERING:
 		ptr->mflagsa |= (MA_UNLIVING);
 		break;
+	case YGGDRASIL:
+		ptr->mflagst &= ~(MT_HERBIVORE | MT_CARNIVORE | MT_METALLIVORE | MT_MAGIVORE);
+		ptr->msize = MZ_GIGANTIC;
+		ptr->cwt = WT_GIGANTIC;
+		break;
 	case CORDYCEPS:
 		ptr->mflagsm |= (MM_STATIONARY);
 	case SPORE_ZOMBIE:
