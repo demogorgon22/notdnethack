@@ -74,7 +74,7 @@ int mtyp;
 	struct permonst * ptr;
 	/* players in their base form are a very special case */
 	if (mon == &youmonst && (mtyp == u.umonster)) {
-		ptr = &upermonst;
+		ptr = permonst_of(mtyp, get_template(mon));
 		/* I'm not sure what bas should be, if it were to be needed */
 	}
 	/* horrors are a special case, and have memory allocated on a per-monster basis */
