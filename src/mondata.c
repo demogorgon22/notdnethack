@@ -494,6 +494,13 @@ int template;
 		ptr->mflagst &= ~(MT_HERBIVORE | MT_CARNIVORE | MT_METALLIVORE | MT_MAGIVORE);
 		ptr->msize = MZ_GIGANTIC;
 		ptr->cwt = WT_GIGANTIC;
+		ptr->nac += 3;
+		ptr->dac += 3;
+		ptr->hdr += 3;
+		ptr->bdr += 3;
+		ptr->gdr += 3;
+		ptr->ldr += 3;
+		ptr->fdr += 3;
 		break;
 	case CORDYCEPS:
 		ptr->mflagsm |= (MM_STATIONARY);

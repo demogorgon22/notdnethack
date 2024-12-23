@@ -1704,65 +1704,6 @@ struct monst *other_mon;
 	return mon_nam(mon);
 }
 
-const char * 
-get_ent_species(species)
-int species;
-{
-	switch(species){
-		case ENT_ASH:
-			return "ash";
-		case ENT_BEECH:
-			return "beech";
-		case ENT_BIRCH:
-			return "birch";
-		case ENT_BLUEGUM:
-			return "bluegum";
-		case ENT_CEDAR:
-			return "cedar";
-		case ENT_CHESTNUT:
-			return "chestnut";
-		case ENT_CYPRESS:
-			return "cypress";
-		case ENT_DOGWOOD:
-			return "dogwood";
-		case ENT_ELDER:
-			return "elder";
-		case ENT_ELM:
-			return "elm";
-		case ENT_FIR:
-			return "fir";
-		case ENT_GINKGO:
-			return "gingko";
-		case ENT_LARCH:
-			return "larch";
-		case ENT_LOCUST:
-			return "locust";
-		case ENT_MAGNOLIA:
-			return "magnolia";
-		case ENT_MAPLE:
-			return "maple";
-		case ENT_MIMOSA:
-			return "mimosa";
-		case ENT_METHUSELAH:
-			return "methuselah";
-		case ENT_OAK:
-			return "oak";
-		case ENT_POPLAR:
-			return "poplar";
-		case ENT_REDWOOD:
-			return "redwood";
-		case ENT_SPRUCE:
-			return "spruce";
-		case ENT_WILLOW:
-			return "willow";
-		case ENT_YEW:
-			return "yew";
-		default:
-			return "strange";
-	}
-
-}
-
 char *
 getDrowHouse(hnum)
 long hnum;
