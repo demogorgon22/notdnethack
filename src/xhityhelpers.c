@@ -2052,6 +2052,11 @@ int dmgtyp;
 	if (osym == RING_CLASS && dmgtyp == AD_ELEC)
 		return MM_MISS; /*Rings aren't destroyed by electrical damage anymore*/
 
+	if (ProtectItems(mtmp) && (osym == POTION_CLASS || osym == SCROLL_CLASS || osym == WAND_CLASS)){
+		return MM_MISS;
+	}
+		
+
 	for (obj = (youdef ? invent : mtmp->minvent); obj; obj = obj2) {
 		obj2 = obj->nobj;
 		if (obj->oclass != osym) continue; /* test only objs of type osym */

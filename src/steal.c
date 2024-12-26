@@ -286,6 +286,7 @@ nothing_to_steal:
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	    if ((!uarm || otmp != uarmc) && otmp != uskin
 				&& (!mi_only || is_magic_obj(otmp))
+				&& !(ProtItems && (otmp->oclass == POTION_CLASS || otmp->oclass == SCROLL_CLASS || otmp->oclass == WAND_CLASS))
 #ifdef INVISIBLE_OBJECTS
 				&& (!otmp->oinvis || mon_resistance(mtmp,SEE_INVIS))
 #endif
@@ -297,6 +298,7 @@ nothing_to_steal:
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	    if ((!uarm || otmp != uarmc) && otmp != uskin
 				&& (!mi_only || is_magic_obj(otmp))
+				&& !(ProtItems && (otmp->oclass == POTION_CLASS || otmp->oclass == SCROLL_CLASS || otmp->oclass == WAND_CLASS))
 #ifdef INVISIBLE_OBJECTS
 				&& (!otmp->oinvis || mon_resistance(mtmp,SEE_INVIS))
 #endif

@@ -141,6 +141,10 @@
 #define EPreservation		u.uprops[PRESERVATION].extrinsic
 #define Preservation		(HPreservation || EPreservation)
 
+#define HProtItems		u.uprops[PROT_ITEMS].intrinsic
+#define EProtItems		u.uprops[PROT_ITEMS].extrinsic
+#define ProtItems		(HProtItems || EProtItems)
+
 #define HQuickDraw		u.uprops[QUICK_DRAW].intrinsic
 #define EQuickDraw		u.uprops[QUICK_DRAW].extrinsic
 #define QuickDraw		(HQuickDraw || EQuickDraw)
