@@ -3125,16 +3125,17 @@ inv_weight()
 				objwt = max(0, objwt - wtmod);
 			wt += objwt;
 		}
-		else if (otmp->otyp == BELT_OF_WEIGHT && otmp == ubelt){
-			wt += 500;
-		}
 		else if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #endif
 		{
-			objwt = otmp->owt;
-			if(nymph)
-				objwt = max(0, objwt - wtmod);
-			wt += objwt;
+			if(otmp->otyp == BELT_OF_WEIGHT && otmp == ubelt)
+				wt += 500;
+			else {
+				objwt = otmp->owt;
+				if(nymph)
+					objwt = max(0, objwt - wtmod);
+				wt += objwt;
+			}
 		}
 
 		if(otmp->oartifact == ART_IRON_BALL_OF_LEVITATION)
