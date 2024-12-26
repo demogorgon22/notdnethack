@@ -699,9 +699,9 @@ break_armor()
     register struct obj *otmp;
 #define special_armor(a) (a->oartifact || is_imperial_elven_armor(a))
 	if ((otmp = uarm) != 0) {
-		if(!arm_size_fits(youracedata,otmp) || !arm_match(youracedata,otmp) || is_whirly(youracedata) || noncorporeal(youracedata)){
+		if(!arm_size_fits(youracedata,otmp) || !arm_match(youracedata,otmp) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();
-			if(special_armor(otmp) || otmp->objsize > youracedata->msize || is_whirly(youracedata) || noncorporeal(youracedata)){
+			if(special_armor(otmp) || otmp->objsize > youracedata->msize || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 				Your("armor falls around you!");
 				(void) Armor_gone();
 				dropx(otmp);
@@ -715,10 +715,10 @@ break_armor()
 	}
 	if ((otmp = uarmc) != 0) {
 		if(abs(otmp->objsize - youracedata->msize) > 1
-				 || is_whirly(youracedata) || noncorporeal(youracedata)
+				 || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)
 		){
 			if (donning(otmp)) cancel_don();
-			if(special_armor(otmp) || otmp->objsize > youracedata->msize || is_whirly(youracedata) || noncorporeal(youracedata)) {
+			if(special_armor(otmp) || otmp->objsize > youracedata->msize || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)) {
 				Your("%s falls off!", cloak_simple_name(otmp));
 				(void) Cloak_off();
 				dropx(otmp);
@@ -731,10 +731,10 @@ break_armor()
 	}
 	if ((otmp = uarmu) != 0) {
 		if(otmp->objsize != youracedata->msize
-				|| !shirt_match(youracedata,otmp) || is_whirly(youracedata) || noncorporeal(youracedata)
+				|| !shirt_match(youracedata,otmp) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)
 		){
 			if (donning(otmp)) cancel_don();
-			if(special_armor(otmp) || otmp->objsize > youracedata->msize || is_whirly(youracedata) || noncorporeal(youracedata)) {
+			if(special_armor(otmp) || otmp->objsize > youracedata->msize || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)) {
 				Your("shirt falls off!");
 				(void) Shirt_off();
 		// setworn((struct obj *)0, otmp->owornmask & W_ARMU);
@@ -752,7 +752,7 @@ break_armor()
 			|| (!has_head_mon(&youmonst) && !hat)
 			|| !helm_size_fits(youracedata, uarmh)
 			|| (has_horns(youracedata) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp)))
-			|| is_whirly(youracedata)
+			|| is_gaseous_noequip(youracedata)
 			|| noncorporeal(youracedata)
 		) {
 			if (donning(otmp)) cancel_don();
@@ -771,7 +771,7 @@ break_armor()
 		if(nogloves(youracedata) 
 			|| nolimbs(youracedata) 
 			|| youracedata->msize != otmp->objsize
-			|| is_whirly(youracedata)
+			|| is_gaseous_noequip(youracedata)
 			|| noncorporeal(youracedata)
 		){
 			if (donning(otmp)) cancel_don();
@@ -783,7 +783,7 @@ break_armor()
 		}
 	}
 	if ((otmp = uarms) != 0) {
-		if(nohands(youracedata) || nolimbs(youracedata) || bimanual(uwep,youracedata) || is_whirly(youracedata) || noncorporeal(youracedata)){
+		if(nohands(youracedata) || nolimbs(youracedata) || bimanual(uwep,youracedata) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();
 			You("can no longer hold your shield!");
 			(void) Shield_off();
@@ -794,11 +794,11 @@ break_armor()
 		if(noboots(youracedata)
 			|| (!humanoid(youracedata) && !can_wear_boots(youracedata))
 			|| !boots_size_fits(youracedata, otmp)
-			|| is_whirly(youracedata)
+			|| is_gaseous_noequip(youracedata)
 			|| noncorporeal(youracedata)
 		){
 			if (donning(otmp)) cancel_don();
-			if (is_whirly(youracedata))
+			if (is_gaseous_noequip(youracedata))
 				Your("boots fall away!");
 			else Your("boots %s off your feet!",
 				youracedata->msize < otmp->objsize ? "slide" : "are pushed");
@@ -2369,7 +2369,16 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 			"nose", 			"stomach",		"heart",
 		"skin",				"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",		"crack" };
+		"creak",		"crack" },
+	*luminous_parts[] = {
+		"arm", 				"eye", 				"face", 		"finger",
+		"fingertip", 		"leg spike", 		"claw", 		"clawed",
+		"head", 			"front leg",		"light headed", "neck", 
+		"spine", 			"spike-tip", 		"setae",		"swarm", 
+		"swarm center", 	"swarm antenna", 	"interior",		"vital core",
+		"outer swarm",		"swarm currents",	"pulse",		"latice",
+		"swarm tympanum",	"swarm tympana",	"swarm haustellum",	"ego core",
+		"weaken",		"falter" };
 	/* claw attacks are overloaded in mons[]; most humanoids with
 	   such attacks should still reference hands rather than claws */
 	static const char not_claws[] = {
@@ -2463,6 +2472,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	    return uvuudaum_parts[part];
 	if (mptr->mtyp == PM_DRACAE_ELADRIN)
 	    return dracae_parts[part];
+	if (mptr->mtyp == PM_LUMINESCENT_SWARM)
+	    return luminous_parts[part];
 
 	//S-based part lists
 	if (mptr->mlet == S_PLANT)

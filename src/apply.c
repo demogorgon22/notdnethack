@@ -5978,8 +5978,8 @@ struct obj **optr;
 	else if (Stunned)
 	    what = "while stunned";
 	else if (u.uswallow)
-	    what = is_animal(u.ustuck->data) ? "while swallowed" :
-			"while engulfed";
+	    what = (naoid(u.ustuck->data) || is_whirly(u.ustuck->data)) ? "while engulfed" :
+			"while swallowed";
 	else if (Underwater)
 	    what = "underwater";
 	else if (Levitation)
@@ -9768,6 +9768,7 @@ upgradeImpArmor()
 				return MOVE_CANCELLED;
 			}
 			switch(upitm->otyp){
+				case ENCOUNTER_EXOSKELETON:
 				case AMULET_OF_MAGICAL_BREATHING:
 					STANDARD_UPGRADE(IEA_NOBREATH, "life-support subsystem")
 				break;
@@ -9826,6 +9827,7 @@ upgradeImpArmor()
 				case RIN_INCREASE_DAMAGE:
 					STANDARD_UPGRADE(IEA_INC_DAM, "microtargetting servos")
 				break;
+				case ENCOUNTER_EXOSKELETON:
 				case WAN_MAGIC_MISSILE:
 					STANDARD_UPGRADE(IEA_BOLTS, "missile projectors")
 				break;
@@ -9871,6 +9873,7 @@ upgradeImpArmor()
 				case AMULET_VERSUS_SICKNESS:
 				case HEALER_UNIFORM:
 				case BODYGLOVE:
+				case ENCOUNTER_EXOSKELETON:
 					STANDARD_UPGRADE(IEA_SICK_RES, "sealed bodyglove")
 				break;
 				case CLOAK_OF_PROTECTION:
@@ -9928,6 +9931,7 @@ upgradeImpArmor()
 					STANDARD_UPGRADE(IEA_TELEPORT, "blink subsystem")
 				break;
 				case KICKING_BOOTS:
+				case ENCOUNTER_EXOSKELETON:
 					STANDARD_UPGRADE(IEA_KICKING, "concussive impactors")
 				break;
 				default:

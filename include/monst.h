@@ -368,6 +368,7 @@ struct monst {
 #define	mvar_star_vampire_blood	mvar1
 #define	mvar_elfwraith_target	mvar1
 #define	mvar_spellweaver_count	mvar1
+#define	mvar1_tettigon_uncancel	mvar1
 	long mvar2;
 #define	mvar_dracaePregTimer	mvar2
 #define	mvar_spList_2	mvar2

@@ -13,8 +13,8 @@
 STATIC_DCL void NDECL(reorder_invent);
 STATIC_DCL boolean FDECL(mergable,(struct obj *,struct obj *));
 STATIC_DCL void FDECL(invdisp_nothing, (const char *,const char *));
-STATIC_DCL boolean FDECL(worn_wield_only, (struct obj *));
-STATIC_DCL boolean FDECL(only_here, (struct obj *));
+STATIC_DCL boolean FDECL(worn_wield_only, (struct obj *, int));
+STATIC_DCL boolean FDECL(only_here, (struct obj *, int));
 #endif /* OVL1 */
 STATIC_DCL void FDECL(compactify,(char *));
 STATIC_DCL boolean FDECL(taking_off, (const char *));
@@ -28,7 +28,7 @@ static char FDECL(display_pickinv,
 static char FDECL(display_pickinv, (const char *,BOOLEAN_P, long *));
 #endif /* DUMP_LOG */
 #ifdef OVLB
-STATIC_DCL boolean FDECL(this_type_only, (struct obj *));
+STATIC_DCL boolean FDECL(this_type_only, (struct obj *, int));
 STATIC_DCL void NDECL(dounpaid);
 STATIC_DCL struct obj *FDECL(find_unpaid,(struct obj *,struct obj **));
 STATIC_DCL void FDECL(menu_identify, (int));
@@ -1672,7 +1672,7 @@ ckvalidcat(otmp)
 register struct obj *otmp;
 {
 	/* use allow_category() from pickup.c */
-	return((int)allow_category(otmp));
+	return((int)allow_category(otmp, 0));
 }
 
 STATIC_PTR int
@@ -1693,8 +1693,13 @@ wearing_armor()
 }
 
 boolean
-is_worn(otmp)
-register struct obj *otmp;
+is_worn_no_flags(struct obj *otmp)
+{
+    return is_worn(otmp, 0);
+}
+
+boolean
+is_worn(struct obj *otmp, int qflags)
 {
     return((boolean)(!!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
 #ifdef STEED
@@ -1745,7 +1750,7 @@ unsigned *resultflags;
 	add_valid_menu_class(0);	/* reset */
 	if (taking_off(word)) {
 	    takeoff = TRUE;
-	    filter = is_worn;
+	    filter = is_worn_no_flags;
 	} else if (!strcmp(word, "identify")) {
 	    ident = TRUE;
 	    filter = not_fully_identified;
@@ -1933,7 +1938,7 @@ nextclass:
 		if(ilet == 'z') ilet = 'A'; else ilet++;
 		otmp2 = otmp->nobj;
 		if (olets && *olets && otmp->oclass != *olets) continue;
-		if (takeoff && !is_worn(otmp)) continue;
+		if (takeoff && !is_worn(otmp, 0)) continue;
 		if (ident && !not_fully_identified(otmp)) continue;
 		if (ckfn && !(*ckfn)(otmp)) continue;
 		if (!allflag) {
@@ -2038,7 +2043,7 @@ int id_limit;
 	Sprintf(buf, "What would you like to identify %s?",
 		first ? "first" : "next");
 	n = query_objlist(buf, invent, SIGNAL_NOMENU|USE_INVLET|INVORDER_SORT|SIGNAL_ESCAPE,
-		&pick_list, PICK_ANY, not_fully_identified);
+		&pick_list, PICK_ANY, not_fully_identified_dummy_flags);
 
 	if (n > 0) {
 	    if (n > id_limit) n = id_limit;
@@ -5052,9 +5057,10 @@ dounpaid()
 static int this_type;
 
 STATIC_OVL boolean
-this_type_only(obj)
-    struct obj *obj;
+this_type_only(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     return (obj->oclass == this_type);
 }
 
@@ -5679,7 +5685,7 @@ doprinuse()
 	char lets[52+1];
 
 	for (otmp = invent; otmp; otmp = otmp->nobj)
-	    if (is_worn(otmp) || tool_in_use(otmp))
+	    if (is_worn(otmp, 0) || tool_in_use(otmp))
 		lets[ct++] = obj_to_let(otmp);
 	lets[ct] = '\0';
 	if (!ct) You("are not wearing or wielding anything.");
@@ -6091,8 +6097,7 @@ const char *hdr, *txt;
 
 /* query_objlist callback: return things that could possibly be worn/wielded */
 STATIC_OVL boolean
-worn_wield_only(obj)
-struct obj *obj;
+worn_wield_only(struct obj *obj, int qflags)
 {
     return (obj->oclass == WEAPON_CLASS
 		|| obj->oclass == ARMOR_CLASS
@@ -6229,9 +6234,10 @@ register struct obj *obj;
 static coord only;
 
 STATIC_OVL boolean
-only_here(obj)
-    struct obj *obj;
+only_here(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     return (obj->ox == only.x && obj->oy == only.y);
 }
 

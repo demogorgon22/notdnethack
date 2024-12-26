@@ -355,6 +355,7 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 {
 	int clrc_spell_power;
 	int wzrd_spell_power;
+	boolean youagr = (mtmp == &youmonst);
 	if(mtmp->m_id == 0){
 		clrc_spell_power = rn2(u.ulevel) * 18 / 30;
 		wzrd_spell_power = rn2(u.ulevel) * 24 / 30;
@@ -1796,6 +1797,28 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 	case PM_SHOGGOTH:
 		if(!rn2(20)) return SUMMON_MONS; 
 		else return 0;
+	case PM_TETTIGON_LEGATUS:
+	case PM_UNMASKED_TETTIGON:
+	case PM_TRANSCENDENT_TETTIGON:
+		if(!youagr && !mtmp->mpeaceful && distmin(mtmp->mux, mtmp->muy, x(mtmp), y(mtmp)) < 3 && rn2(2))
+			return MON_WARP_THROW;
+		switch(rnd(8)){
+			case 1: return PSI_BOLT;
+			case 2: return FORCE_SPHERES;
+			case 3: return MON_WARP;
+			case 4: return MON_WARP_THROW;
+			case 5: return HOLY_BOLT;
+			case 6: return PAIN_BOLT;
+			case 7: return VULNERABILITY;
+			case 8: return STUN_YOU;
+		}
+	case PM_TETTIGON_EIDOLON:
+		switch(rnd(4)){
+			case 1: return PSI_BOLT;
+			case 2: return MON_WARP_THROW;
+			case 3: return VULNERABILITY;
+			case 4: return STUN_YOU;
+		}
 	case PM_VERIER: 
 		if(!rn2(3)) return WEAKEN_YOU;
 		else return DESTRY_ARMR;
@@ -2255,7 +2278,8 @@ const char * spellname[] =
 	"MADF_BURST",
 	"HOLY_BOLT",
 	"MIST_WOLVES",
-	//106
+	//105
+	"FORCE_SPHERES",
 };
 
 
@@ -4878,9 +4902,14 @@ int tary;
 			do{
 				dx = rn2(3) - 1;
 				dy = rn2(3) - 1;
+				//Reduce odds of being flung into an adjacent wall
+				if(!isok(x(mdef)+dx,y(mdef)+dy) || !ZAP_POS(levl[x(mdef)+dx][y(mdef)+dy].typ)){
+					dx = rn2(3) - 1;
+					dy = rn2(3) - 1;
+				}
 			} while(
 				!(dx || dy) &&
-				!(dx == x(mdef) - x(magr) && dy == y(mdef) - y(magr))
+				!(dx == x(magr) - x(mdef) && dy == y(magr) - y(mdef))
 			);
 			if(youdef){
 				hurtle(dx, dy, BOLT_LIM, FALSE, FALSE);
@@ -5504,6 +5533,31 @@ int tary;
 					set_malign(mtmp);
 					/* all spheres are very temporary */
 					mark_mon_as_summoned(mtmp, magr, d(dmn, 3)+1, 0);
+				}
+			}
+		}
+		return MM_HIT;
+	case FORCE_SPHERES:{
+			int i = 0;
+			int n;
+			struct monst *mtmp;
+			int maketame = ((magr->mtame || youagr) ? MM_EDOG : 0);
+			int makesum = MM_ESUM;
+			for(n = (dmg+5)/6; n > 0; n--){
+				mtmp = makemon(&mons[PM_SPHERE_OF_FORCE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame|makesum);
+				if (mtmp) {
+					/* time out */
+					if(makesum)
+						mark_mon_as_summoned(mtmp, magr, mlev(magr) + rnd(mlev(magr)), 0);
+					/* can be peaceful */
+					if(magr->mpeaceful)
+						mtmp->mpeaceful = TRUE;
+					/* can be tame */
+					if (maketame) {
+						initedog(mtmp);
+					}
+					/* bonus movement */
+					mtmp->movement = 3*NORMAL_SPEED;
 				}
 			}
 		}
@@ -6460,7 +6514,7 @@ int tary;
 					dist2(tarx, tary, cmon->mx, cmon->my) <= 3 * 3 + 1
 					)
 				{
-					dmg = rnd(dmn);
+					dmg = d(dmn, dmd);
 					if (Half_spel(mdef))
 						dmg = (dmg + 1) / 2;
 					if (Magic_res(mdef))
@@ -6473,7 +6527,7 @@ int tary;
 			if (!(youagr || magr->mtame)
 				&& dist2(tarx, tary, u.ux, u.uy) <= 3 * 3 + 1)
 			{
-				dmg = rnd(dmn);
+				dmg = d(dmn, dmd);
 				if (Half_spel(mdef))
 					dmg = (dmg + 1) / 2;
 				if (Magic_res(mdef))
@@ -6730,6 +6784,7 @@ int spellnum;
 		)) ||
 		spellnum == RAISE_DEAD ||
 		spellnum == TIME_DUPLICATE ||
+		spellnum == FORCE_SPHERES ||
 		spellnum == CLONE_WIZ
 		)
 		return TRUE;

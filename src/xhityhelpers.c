@@ -329,6 +329,16 @@ struct monst * mon;
 		pline("You're afraid to go near that wormy thing!");
 		return TRUE;
 	}
+
+	if (mon->mtyp == PM_UNMASKED_TETTIGON
+		&& canspotmon(mon)
+		&& !ClearThoughts
+		&& !roll_generic_madness(TRUE)
+		&& !roll_impurity(TRUE)
+	){
+		You("can't bring yourself to strike %s!", mon_nam(mon));
+		return TRUE;
+	}
 	return FALSE;
 }
 

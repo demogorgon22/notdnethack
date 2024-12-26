@@ -1583,7 +1583,7 @@ register struct monst *mtmp;
 		}
     } else {
 		/* but eels have a difficult time outside */
-		if (mtmp->data->mlet == S_EEL && !Is_waterlevel(&u.uz)) {
+		if ((mtmp->data->mflagsm&MM_AQUATIC) && !Is_waterlevel(&u.uz)) {
 			/* Puddles can sustain a tiny sea creature, or lessen the burdens of a larger one */
 			if (!(inshallow && mtmp->data->msize == MZ_TINY))
 			{
@@ -1952,6 +1952,12 @@ movemon()
 	if(mtmp->mlstmv != monstermoves){
 		mtmp->mprev_attk.x = 0;
 		mtmp->mprev_attk.y = 0;
+	if(u.specialSealsActive&SEAL_LIVING_CRYSTAL)
+		average_dogs();
+	if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+		set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
+		mtmp->m_insight_level -= 35;
+		newsym(x(mtmp), y(mtmp));
 	}
 	if(mtmp->m_insight_level > u.uinsight
 	  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
@@ -3296,7 +3302,7 @@ mfndpos(mon, poss, info, flag)
 	nowtyp = levl[x][y].typ;
 
 	nodiag = (mdat->mtyp == PM_GRID_BUG) || (mdat->mtyp == PM_BEBELITH);
-	wantpool = mdat->mlet == S_EEL;
+	wantpool = (mdat->mflagsm&MM_AQUATIC);
 	wantdry = !wantpool;
 	puddleispool = (wantpool && mdat->msize == MZ_TINY) || (wantdry && is_iron(mon));
 
@@ -3379,11 +3385,11 @@ nexttry:
 			continue;
 		if((mdat->mtyp == PM_GRUE) && isdark(mon->mx, mon->my) && !isdark(nx, ny))
 				continue;
-		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO) && 
+		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO || mdat->mtyp == PM_TETTIGON_LEGATUS) && 
 			!no_upos(mon) && 
 			distmin(nx, ny, mon->mux, mon->muy) <= 3 && 
 			dist2(nx, ny, mon->mux, mon->muy) <= dist2(mon->mx, mon->my, mon->mux, mon->muy)) continue;
-		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER) && 
+		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_TETTIGON_LEGATUS) && 
 			onlineu(nx, ny) && (lined_up(mon) || !rn2(4))) continue;
 		if(witw && dist2(nx, ny, witw->mx, witw->my) > 32 && 
 			dist2(nx, ny, witw->mx, witw->my) >= dist2(mon->mx, mon->my, witw->mx, witw->my)) continue;
@@ -4376,22 +4382,23 @@ struct monst *mtmp;
 	boolean messaged = FALSE;
 	int lifesavers = 0;
 	int i;
-#define LSVD_ANA 0x0001	/* anachrononaut quest */
-#define LSVD_IAS 0x0002	/* Iasoian Archon grants recovery */
-#define LSVD_HLO 0x0004	/* Halo (Blessed) */
-#define LSVD_UVU 0x0008	/* uvuuduam + prayerful thing */
-#define LSVD_ASC 0x0010	/* drained the life from another */
-#define LSVD_OBJ 0x0020	/* lifesaving items */
-#define LSVD_ILU 0x0040	/* illuminated */
-#define LSVD_TWN 0x0080	/* twin sibling */
-#define LSVD_FRC 0x0100	/* fractured kamerel */
-#define LSVD_NBW 0x0200	/* nitocris's black wraps */
-#define LSVD_YEL 0x0400	/* Cannot die unless on the Astral Plane */
-#define LSVD_PLY 0x0800	/* polypoids */
-#define LSVD_NIT 0x1000	/* Nitocris becoming a ghoul */
-#define LSVD_KAM 0x2000	/* kamerel becoming fractured */
-#define LSVD_ALA 0x4000	/* alabaster decay */
-#define LSVD_FLS 0x8000	/* God of flesh claims body */
+#define LSVD_ANA 0x00000001	/* anachrononaut quest */
+#define LSVD_IAS 0x00000002	/* Iasoian Archon grants recovery */
+#define LSVD_HLO 0x00000004	/* Halo (Blessed) */
+#define LSVD_UVU 0x00000008	/* uvuuduam + prayerful thing */
+#define LSVD_ASC 0x00000010	/* drained the life from another */
+#define LSVD_TRA 0x00000020	/* Transforms */
+#define LSVD_OBJ 0x00000040	/* lifesaving items */
+#define LSVD_ILU 0x00000080	/* illuminated */
+#define LSVD_TWN 0x00000100	/* twin sibling */
+#define LSVD_FRC 0x00000200	/* fractured kamerel */
+#define LSVD_NBW 0x00000400	/* nitocris's black wraps */
+#define LSVD_YEL 0x00000800	/* Cannot die unless on the Astral Plane */
+#define LSVD_PLY 0x00001000	/* polypoids */
+#define LSVD_NIT 0x00002000	/* Nitocris becoming a ghoul */
+#define LSVD_KAM 0x00004000	/* kamerel becoming fractured */
+#define LSVD_ALA 0x00008000	/* alabaster decay */
+#define LSVD_FLS 0x00010000	/* God of flesh claims body */
 #define LSVDLAST LSVD_FLS	/* last lifesaver */
 
 	/* set to kill */
@@ -4414,6 +4421,8 @@ struct monst *mtmp;
 		|| is_alabaster_mummy(mtmp->data)
 		)))
 		lifesavers |= LSVD_ALA;
+	if (mtmp->mtyp == PM_TETTIGON_LEGATUS)
+		lifesavers |= LSVD_TRA;
 	if (Infuture && mtmp->mpeaceful && !is_myrkalfr(mtmp) && !nonliving(mtmp->data) && !is_android(mtmp->data))
 		lifesavers |= LSVD_FLS;
 	if (has_template(mtmp, FRACTURED) && !rn2(2) && !mtmp->mcan)
@@ -4517,11 +4526,41 @@ struct monst *mtmp;
 			/* restore level, maxhp */
 			if (mtmp->m_lev < 38)
 				mtmp->m_lev = 38;
-			if (mtmp->mhpmax < 171)	/* 171 = 38x4.5 = avg(38d8) */
-				mtmp->mhpmax = 171;
+			if (mtmp->mhpmax < 38*hd_size(mtmp->data))
+				mtmp->mhpmax = 38*hd_size(mtmp->data);
 			/* set mspec_used */
 			mtmp->mspec_used = mtmp->mhpmax / 5;
 			break;
+		case LSVD_TRA:{
+			struct obj *otmp;
+			/* message */
+			if (couldsee(mtmp->mx, mtmp->my)) {
+				messaged = TRUE;
+				pline("But wait...");
+				pline("A glowing crack forms around the head!");
+			}
+			/* restore level, maxhp */
+			if (mtmp->m_lev < 16)
+				mtmp->m_lev = 16;
+			if (mtmp->mhpmax < 16*hd_size(mtmp->data))
+				mtmp->mhpmax = 16*hd_size(mtmp->data);
+			if(mtmp->mcan)
+				set_mcan(mtmp, FALSE);
+			otmp = mksobj_at(ENCOUNTER_EXOSKELETON, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
+			if(otmp){
+				otmp->quan = 1;
+				if(stoned)
+					set_material(otmp, MINERAL);
+				else if(golded)
+					set_material(otmp, GOLD);
+				else if(glassed)
+					set_material(otmp, GLASS);
+				fix_object(otmp);
+			}
+			set_mon_data(mtmp, u.uinsight > 40 ? PM_TRANSCENDENT_TETTIGON : PM_UNMASKED_TETTIGON);
+			mtmp->m_insight_level = 5+rn2(6);
+			newsym(x(mtmp), y(mtmp));
+		}break;
 		case LSVD_ASC:{
 			struct monst *victim = random_plague_victim();
 			struct obj *sacked_victim = 0;
@@ -5240,6 +5279,8 @@ int adtyp;
 		case PM_DUNGEON_FERN_SPORE:
 		case PM_APHANACTONAN_AUDIENT:
 			return EXPL_NOXIOUS;
+		case PM_SPHERE_OF_FORCE:
+			return EXPL_GRAY;
 		case PM_SWAMP_FERN_SPORE:
 			return EXPL_MAGICAL;
 		case PM_BURNING_FERN_SPORE:

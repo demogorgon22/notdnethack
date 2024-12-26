@@ -13,6 +13,7 @@ typedef struct d_flags {	/* dungeon/level type flags */
 	Bitfield(align, 3);	/* dungeon alignment. */
 	Bitfield(raise, 3);	/* corpse resurection type (current max 8) */
 	Bitfield(mirror, 1);	/* has at least one mirror on the ground */
+	Bitfield(day, 1);	/* Is the map currently in day mode? */
 } d_flags;
 
 typedef struct d_level {	/* basic dungeon level element */

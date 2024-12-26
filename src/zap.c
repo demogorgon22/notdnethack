@@ -169,7 +169,7 @@ int adtyp;
 	case AD_DRST:
 		return CLR_GREEN;
 	case AD_PHYS:
-		return CLR_BROWN;
+		return CLR_BRIGHT_MAGENTA;
 	case AD_WET:
 		return CLR_BLUE;
 	case AD_DISE:

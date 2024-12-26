@@ -236,8 +236,9 @@ E double FDECL(conplus, (int));
 E void FDECL(change_usanity, (int, boolean));
 E void FDECL(change_uinsight, (int));
 E boolean NDECL(check_insight);
-E int FDECL(roll_generic_madness, (int));
-E int FDECL(roll_generic_flat_madness, (int));
+E int FDECL(roll_impurity, (boolean));
+E int FDECL(roll_generic_madness, (boolean));
+E int FDECL(roll_generic_flat_madness, (boolean));
 E int NDECL(count_madnesses);
 E int FDECL(roll_madness, (long int));
 E int FDECL(mad_turn, (long int));
@@ -1213,6 +1214,7 @@ E char *FDECL(strstri, (const char *,const char *));
 E char *FDECL(strsubst, (char *bp, const char *orig, const char *replacement));
 E boolean FDECL(fuzzymatch, (const char *,const char *,const char *,BOOLEAN_P));
 E void NDECL(setrandom);
+E struct tm * NDECL(getlt);
 E int NDECL(getyear);
 #if 0
 E char *FDECL(yymmdd, (time_t));
@@ -1266,7 +1268,8 @@ E boolean NDECL(have_lizard);
 E struct obj *FDECL(o_on, (unsigned int,struct obj *));
 E boolean FDECL(obj_here, (struct obj *,int,int));
 E boolean NDECL(wearing_armor);
-E boolean FDECL(is_worn, (struct obj *));
+E boolean FDECL(is_worn_no_flags, (struct obj *));
+E boolean FDECL(is_worn, (struct obj *, int));
 E struct obj *FDECL(g_at, (int,int));
 E struct obj *FDECL(mkgoldobj, (long));
 E struct obj *FDECL(getobj, (const char *,const char *));
@@ -2168,6 +2171,7 @@ E char *FDECL(mshot_xname, (struct obj *));
 E boolean FDECL(the_unique_obj, (struct obj *obj));
 E char *FDECL(doname, (struct obj *));
 E char *FDECL(doname_with_price, (struct obj *));
+E boolean FDECL(not_fully_identified_dummy_flags, (struct obj *, int));
 E boolean FDECL(not_fully_identified, (struct obj *));
 E char *FDECL(corpse_xname, (struct obj *,BOOLEAN_P));
 E char *FDECL(cxname, (struct obj *));
@@ -2310,9 +2314,10 @@ E int FDECL(collect_obj_classes,
 	(char *,struct obj *,BOOLEAN_P,BOOLEAN_P,boolean FDECL((*),(OBJ_P)), int *));
 #endif
 E void FDECL(add_valid_menu_class, (int));
-E boolean FDECL(allow_all, (struct obj *));
-E boolean FDECL(allow_category, (struct obj *));
-E boolean FDECL(is_worn_by_type, (struct obj *));
+E boolean FDECL(allow_all_nomods, (struct obj *));
+E boolean FDECL(allow_all, (struct obj *, int));
+E boolean FDECL(allow_category, (struct obj *, int));
+E boolean FDECL(is_worn_by_type, (struct obj *, int));
 #ifdef USE_TRAMPOLI
 E int FDECL(ck_bag, (struct obj *));
 E int FDECL(in_container, (struct obj *));
@@ -2323,7 +2328,7 @@ E int FDECL(pickup_object, (struct obj *, long, BOOLEAN_P));
 E int FDECL(query_category, (const char *, struct obj *, int,
 				menu_item **, int));
 E int FDECL(query_objlist, (const char *, struct obj *, int,
-				menu_item **, int, boolean (*)(OBJ_P)));
+				menu_item **, int, boolean (*)(OBJ_P, int)));
 E struct obj *FDECL(pick_obj, (struct obj *));
 E int NDECL(encumber_msg);
 E int NDECL(doloot);

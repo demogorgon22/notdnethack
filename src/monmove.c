@@ -802,7 +802,7 @@ boolean fleemsg;
 			mtmp->mspec_used = 10;
 			for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 				if(tmpm != mtmp && !DEADMONSTER(tmpm)){
-					if(tmpm->mpeaceful != mtmp->mpeaceful && !resist(tmpm, 0, 0, FALSE)){
+					if(tmpm->mpeaceful != mtmp->mpeaceful && !mm_resist(tmpm, mtmp, 0, FALSE)){
 						tmpm->mconf = 1;
 					}
 				}

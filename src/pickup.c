@@ -17,8 +17,8 @@ STATIC_DCL boolean FDECL(query_classes, (char *,boolean *,boolean *,
 		const char *,struct obj *,BOOLEAN_P,int *));
 #endif
 STATIC_DCL void FDECL(check_here, (BOOLEAN_P));
-STATIC_DCL boolean FDECL(n_or_more, (struct obj *));
-STATIC_DCL boolean FDECL(all_but_uchain, (struct obj *));
+STATIC_DCL boolean FDECL(n_or_more, (struct obj *, int));
+STATIC_DCL boolean FDECL(all_but_uchain, (struct obj *, int));
 #if 0 /* not used */
 STATIC_DCL boolean FDECL(allow_cat_no_uchain, (struct obj *));
 #endif
@@ -293,9 +293,10 @@ static long val_for_n_or_more;
 
 /* query_objlist callback: return TRUE if obj's count is >= reference value */
 STATIC_OVL boolean
-n_or_more(obj)
-struct obj *obj;
+n_or_more(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     if (obj == uchain) return FALSE;
     return (obj->quan >= val_for_n_or_more);
 }
@@ -304,8 +305,7 @@ struct obj *obj;
 static char valid_menu_classes[MAXOCLASSES + 2];
 
 void
-add_valid_menu_class(c)
-int c;
+add_valid_menu_class(int c)
 {
 	static int vmc_count = 0;
 
@@ -318,25 +318,36 @@ int c;
 
 /* query_objlist callback: return TRUE if not uchain */
 STATIC_OVL boolean
-all_but_uchain(obj)
-struct obj *obj;
+all_but_uchain(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     return (obj != uchain);
 }
 
 /* query_objlist callback: return TRUE */
 /*ARGSUSED*/
 boolean
-allow_all(obj)
-struct obj *obj;
+allow_all_nomods(struct obj *obj)
 {
     return TRUE;
 }
 
+/* query_objlist callback: return TRUE */
+/*ARGSUSED*/
 boolean
-allow_category(obj)
-struct obj *obj;
+allow_all(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
+    return TRUE;
+}
+
+boolean
+allow_category(struct obj *obj, int qflags)
+{
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     if (Role_if(PM_PRIEST)) obj->bknown = TRUE;
     if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0))
@@ -360,9 +371,10 @@ struct obj *obj;
 #if 0 /* not used */
 /* query_objlist callback: return TRUE if valid category (class), no uchain */
 STATIC_OVL boolean
-allow_cat_no_uchain(obj)
-struct obj *obj;
+allow_cat_no_uchain(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     if ((obj != uchain) &&
 	(((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0)))
@@ -374,8 +386,7 @@ struct obj *obj;
 
 /* query_objlist callback: return TRUE if valid class and worn */
 boolean
-is_worn_by_type(otmp)
-register struct obj *otmp;
+is_worn_by_type(struct obj *otmp, int qflags)
 {
 	return((boolean)(!!(otmp->owornmask &
 			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
@@ -462,7 +473,7 @@ int what;		/* should be a long */
 		traverse_how = BY_NEXTHERE;
 	} else {
 		objchain = u.ustuck->minvent;
-		traverse_how = 0;	/* nobj */
+		traverse_how = 0|NO_EQUIPMENT;	/* nobj */
 	}
 	/*
 	 * Start the actual pickup process.  This is split into two main
@@ -516,18 +527,28 @@ menu_pickup:
 	    selective = FALSE;		/* ask for each item */
 
 	    /* check for more than one object */
-	    for (obj = objchain;
-		  obj; obj = (traverse_how == BY_NEXTHERE) ? obj->nexthere : obj->nobj)
-		ct++;
+	    for (obj = objchain; obj;
+			obj = (traverse_how&BY_NEXTHERE) ? obj->nexthere : obj->nobj
+		 ){
+			if(traverse_how&NO_EQUIPMENT && obj->owornmask)
+				continue;
+			ct++;
+		}
 
 	    if (ct == 1 && count) {
 		/* if only one thing, then pick it */
 		obj = objchain;
 		lcount = min(obj->quan, (long)count);
 		n_tried++;
-		if (pickup_object(obj, lcount, FALSE) > 0)
-		    n_picked++;	/* picked something */
-		goto end_query;
+	    for (obj = objchain; obj;
+			obj = (traverse_how&BY_NEXTHERE) ? obj->nexthere : obj->nobj
+		 ){
+			if(traverse_how&NO_EQUIPMENT && obj->owornmask)
+				continue;
+			if (pickup_object(obj, lcount, FALSE) > 0)
+				n_picked++;	/* picked something */
+			goto end_query;
+		}
 
 	    } else if (ct >= 2) {
 		int via_menu = 0;
@@ -536,7 +557,7 @@ menu_pickup:
 		      (ct <= 10) ? "several" : "many");
 		if (!query_classes(oclasses, &selective, &all_of_a_type,
 				   "pick up", objchain,
-				   traverse_how == BY_NEXTHERE,
+				   !!(traverse_how&BY_NEXTHERE),
 #ifndef GOLDOBJ
 				   FALSE,
 #endif
@@ -552,11 +573,14 @@ menu_pickup:
 	    }
 
 	    for (obj = objchain; obj; obj = obj2) {
-		if (traverse_how == BY_NEXTHERE)
+		if (traverse_how&BY_NEXTHERE)
 			obj2 = obj->nexthere;	/* perhaps obj will be picked up */
 		else
 			obj2 = obj->nobj;
 		lcount = -1L;
+
+		if(traverse_how&NO_EQUIPMENT && obj->owornmask)
+			continue;
 
 		if (!selective && oclasses[0] && !index(oclasses,obj->oclass))
 		    continue;
@@ -726,7 +750,7 @@ struct obj *olist;		/* the list to pick from */
 int qflags;			/* options to control the query */
 menu_item **pick_list;		/* return list of items picked */
 int how;			/* type of query */
-boolean FDECL((*allow), (OBJ_P));/* allow function */
+boolean FDECL((*allow), (OBJ_P, int));/* allow function */
 {
 #ifdef SORTLOOT
 	int i, j;
@@ -746,7 +770,7 @@ boolean FDECL((*allow), (OBJ_P));/* allow function */
 
 	/* count the number of items allowed */
 	for (n = 0, last = 0, curr = olist; curr; curr = FOLLOW(curr, qflags))
-	    if ((*allow)(curr)) {
+	    if ((*allow)(curr, qflags)) {
 		last = curr;
 		n++;
 	    }
@@ -768,7 +792,7 @@ boolean FDECL((*allow), (OBJ_P));/* allow function */
 	/* Add objects to the array */
 	i = 0;
 	for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
-	  if ((*allow)(curr)) {
+	  if ((*allow)(curr, qflags)) {
 	    if (iflags.sortloot == 'f' ||
 		(iflags.sortloot == 'l' && !(qflags & USE_INVLET)))
 	      {
@@ -814,7 +838,7 @@ boolean FDECL((*allow), (OBJ_P));/* allow function */
 			return 0;
 		}
 		if ((!(qflags & INVORDER_SORT) || curr->oclass == *pack)
-							&& (*allow)(curr)) {
+							&& (*allow)(curr, qflags)) {
 
 		    /* if sorting, print type name (once only) */
 		    if (qflags & INVORDER_SORT && !printed_type_name) {
@@ -1465,7 +1489,7 @@ struct obj *
 pick_obj(otmp)
 struct obj *otmp;
 {
-	obj_extract_self(otmp);
+	obj_extract_and_unequip_self(otmp);
 	if (!u.uswallow && otmp != uball && costly_spot(otmp->ox, otmp->oy)) {
 	    char saveushops[5], fakeshop[2];
 
@@ -3355,7 +3379,7 @@ struct monst *mon;
 	
 	Sprintf(buf, "Equipment");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
-	if(!(is_whirly(mon->data) || noncorporeal(mon->data))) for(otmp = invent; otmp; otmp = otmp->nobj){
+	if(!(is_gaseous_noequip(mon->data) || noncorporeal(mon->data))) for(otmp = invent; otmp; otmp = otmp->nobj){
 		if(!otmp->owornmask){
 			if(otmp->oclass == AMULET_CLASS && !(mon->misc_worn_check&W_AMUL) &&
 				can_wear_amulet(mon->data) && 

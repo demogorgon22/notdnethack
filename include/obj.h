@@ -1200,6 +1200,7 @@ struct obj {
 				|| carrying(IMPERIAL_ELVEN_BOOTS)\
 				)
 #define helm_upgrade_obj(obj)	(((obj)->otyp == AMULET_OF_MAGICAL_BREATHING \
+								|| (obj)->otyp == ENCOUNTER_EXOSKELETON \
 								|| (obj)->otyp == WAN_DRAINING \
 								|| (obj)->otyp == RIN_SEE_INVISIBLE \
 								|| (obj)->otyp == HELM_OF_TELEPATHY \
@@ -1214,6 +1215,7 @@ struct obj {
 								|| (obj)->otyp == GAUNTLETS_OF_DEXTERITY \
 								|| (obj)->otyp == RIN_INCREASE_DAMAGE \
 								|| (obj)->otyp == WAN_MAGIC_MISSILE \
+								|| (obj)->otyp == ENCOUNTER_EXOSKELETON \
 								|| (obj)->otyp == AMULET_OF_STRANGULATION \
 								) && objects[(obj)->otyp].oc_name_known)
 #define armor_upgrade_obj(obj)	(((obj)->otyp == FLYING_BOOTS \
@@ -1226,6 +1228,7 @@ struct obj {
 								|| (obj)->otyp == AMULET_VERSUS_SICKNESS \
 								|| (obj)->otyp == HEALER_UNIFORM \
 								|| (obj)->otyp == BODYGLOVE \
+								|| (obj)->otyp == ENCOUNTER_EXOSKELETON \
 								|| (obj)->otyp == CLOAK_OF_PROTECTION \
 								|| (obj)->otyp == CLOAK_OF_MAGIC_RESISTANCE \
 								|| (obj)->otyp == ORIHALCYON_GAUNTLETS \
@@ -1239,6 +1242,7 @@ struct obj {
 #define boots_upgrade_obj(obj)	(((obj)->otyp == JUMPING_BOOTS \
 								|| (obj)->otyp == SPEED_BOOTS \
 								|| (obj)->otyp == KICKING_BOOTS \
+								|| (obj)->otyp == ENCOUNTER_EXOSKELETON \
 								|| (obj)->otyp == WAN_SPEED_MONSTER \
 								|| (obj)->otyp == RIN_ALACRITY \
 								|| (obj)->otyp == WAN_TELEPORTATION \

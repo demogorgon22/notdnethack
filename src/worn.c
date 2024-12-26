@@ -1736,7 +1736,7 @@ boolean racialexception;
 
 	if (mon->mfrozen) return; /* probably putting previous item on */
 	
-	if(is_whirly(mon->data) || noncorporeal(mon->data)) return;
+	if(is_gaseous_noequip(mon->data) || noncorporeal(mon->data)) return;
 
 	/* Get a copy of monster's name before altering its visibility */
 	Strcpy(nambuf, See_invisible(mon->mx,mon->my) ? Monnam(mon) : mon_nam(mon));
@@ -2098,8 +2098,8 @@ boolean polyspot;
 			m_useup(mon, otmp);	/* no message here;
 			   "the dragon merges with his scaly armor" is odd
 			   and the monster's previous form is already gone */
-		else if(!arm_size_fits(mon->data, otmp) || !arm_match(mon->data,otmp) || is_whirly(mon->data) || noncorporeal(mon->data)){
-			if (special_armor(otmp) || otmp->objsize > mon->data->msize || is_whirly(mon->data) || noncorporeal(mon->data)) {
+		else if(!arm_size_fits(mon->data, otmp) || !arm_match(mon->data,otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
+			if (special_armor(otmp) || otmp->objsize > mon->data->msize || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)) {
 				if (vis)
 					pline("%s armor falls around %s!",
 						s_suffix(Monnam(mon)), pronoun);
@@ -2117,8 +2117,8 @@ boolean polyspot;
 		}
 	}
 	if ((otmp = which_armor(mon, W_ARMC)) != 0) {
-		if(abs(otmp->objsize - mon->data->msize) > 1 || is_whirly(mon->data) || noncorporeal(mon->data)){
-			if (special_armor(otmp) || otmp->objsize > mon->data->msize || is_whirly(mon->data) || noncorporeal(mon->data)) {
+		if(abs(otmp->objsize - mon->data->msize) > 1 || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
+			if (special_armor(otmp) || otmp->objsize > mon->data->msize || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)) {
 				if (vis)
 				pline("%s %s falls off!", s_suffix(Monnam(mon)),
 					cloak_simple_name(otmp));
@@ -2148,8 +2148,8 @@ boolean polyspot;
 		}
 	}
 	if ((otmp = which_armor(mon, W_ARMU)) != 0) {
-		if(otmp->objsize != mon->data->msize || !shirt_match(mon->data,otmp) || is_whirly(mon->data) || noncorporeal(mon->data)){
-			if (special_armor(otmp) || otmp->objsize > mon->data->msize || is_whirly(mon->data) || noncorporeal(mon->data)) {
+		if(otmp->objsize != mon->data->msize || !shirt_match(mon->data,otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
+			if (special_armor(otmp) || otmp->objsize > mon->data->msize || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)) {
 				if (vis)
 				pline("%s %s falls off!", s_suffix(Monnam(mon)),
 					cloak_simple_name(otmp));
@@ -2165,7 +2165,7 @@ boolean polyspot;
 		}
 	}
 	if ((otmp = which_armor(mon, W_ARMG)) != 0) {
-		if(nogloves(mon->data) || nolimbs(mon->data) || otmp->objsize != mon->data->msize || is_whirly(mon->data) || noncorporeal(mon->data)){
+		if(nogloves(mon->data) || nolimbs(mon->data) || otmp->objsize != mon->data->msize || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
 			if (vis)
 				pline("%s drops %s gloves!", Monnam(mon), ppronoun);
 			if (polyspot) bypass_obj(otmp);
@@ -2173,7 +2173,7 @@ boolean polyspot;
 		}
 	}
 	if ((otmp = which_armor(mon, W_ARMS)) != 0) {
-		if(nohands(mon->data) || nolimbs(mon->data) || bimanual(MON_WEP(mon),mon->data) || is_whirly(mon->data) || noncorporeal(mon->data)){
+		if(nohands(mon->data) || nolimbs(mon->data) || bimanual(MON_WEP(mon),mon->data) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
 			if (vis)
 				pline("%s can no longer hold %s shield!", Monnam(mon), ppronoun);
 			else
@@ -2184,7 +2184,7 @@ boolean polyspot;
 	}
 	if ((otmp = which_armor(mon, W_ARMH)) != 0 &&
 		/* flimsy test for horns matches polyself handling */
-		(!helm_match(mon->data, otmp) || !helm_size_fits(mon->data, otmp) || is_whirly(mon->data) || noncorporeal(mon->data) )
+		(!helm_match(mon->data, otmp) || !helm_size_fits(mon->data, otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data) )
 	) {
 		if (vis)
 			pline("%s helmet falls to the %s!",
@@ -2195,9 +2195,9 @@ boolean polyspot;
 		m_lose_armor(mon, otmp);
 	}
 	if ((otmp = which_armor(mon, W_ARMF)) != 0) {
-		if(((noboots(mon->data) || !humanoid(mon->data)) && !can_wear_boots(mon->data)) || !boots_size_fits(mon->data, otmp) || is_whirly(mon->data) || noncorporeal(mon->data)){
+		if(((noboots(mon->data) || !humanoid(mon->data)) && !can_wear_boots(mon->data)) || !boots_size_fits(mon->data, otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
 			if (vis) {
-				if (is_whirly(mon->data) || noncorporeal(mon->data))
+				if (is_gaseous_noequip(mon->data) || noncorporeal(mon->data))
 					pline("%s %s falls, unsupported!",
 							 s_suffix(Monnam(mon)), cloak_simple_name(otmp));
 				else pline("%s boots %s off %s feet!",

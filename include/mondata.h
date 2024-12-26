@@ -100,12 +100,13 @@
 #define species_tears_webs(ptr)		(((ptr)->mflagsm & MM_WEBRIP) != 0L)
 #define species_busts_doors(ptr)		(((ptr)->mflagsm & MM_DOORBUST) != 0L)
 #define is_suicidal(ptr)		(is_fern_spore(ptr) || \
+					(ptr)->mtyp == PM_SPHERE_OF_FORCE || \
 					(ptr)->mtyp == PM_FREEZING_SPHERE || \
 					(ptr)->mtyp == PM_FLAMING_SPHERE || \
 					(ptr)->mtyp == PM_SHOCKING_SPHERE)
 #define breathless(ptr)			(((ptr)->mflagsm & MM_BREATHLESS) != 0L)
 #define breathless_mon(mon)		(breathless((mon)->data) || mon_resistance((mon), MAGICAL_BREATHING))
-#define amphibious(ptr)			(((ptr)->mflagsm & (MM_AMPHIBIOUS | MM_BREATHLESS)) != 0L)
+#define amphibious(ptr)			(((ptr)->mflagsm & (MM_AQUATIC | MM_AMPHIBIOUS | MM_BREATHLESS)) != 0L)
 #define amphibious_mon(mon)		(amphibious((mon)->data) || mon_resistance((mon), MAGICAL_BREATHING) || mon_resistance((mon), SWIMMING))
 #define species_passes_walls(ptr)	(((ptr)->mflagsm & MM_WALLWALK) != 0L)
 #define amorphous(ptr)			(((ptr)->mflagsm & MM_AMORPHOUS) != 0L)
@@ -142,6 +143,10 @@
 #define is_whirly(ptr)		((ptr)->mlet == S_VORTEX || \
 				 (ptr)->mtyp == PM_AIR_ELEMENTAL ||\
 				 (ptr)->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES ||\
+				 (ptr)->mtyp == PM_LUMINESCENT_SWARM ||\
+				 (ptr)->mtyp == PM_DREADBLOSSOM_SWARM)
+#define is_gaseous_noequip(ptr)		((ptr)->mlet == S_VORTEX || \
+				 (ptr)->mtyp == PM_AIR_ELEMENTAL ||\
 				 (ptr)->mtyp == PM_DREADBLOSSOM_SWARM)
 #define has_passthrough_displacement(ptr)	((ptr)->mtyp == PM_WRAITHWORM ||\
 				 (ptr)->mtyp == PM_FIRST_WRAITHWORM)
@@ -1037,6 +1042,9 @@
 				 || (ptr)->mtyp == PM_MAD_SEER \
 				 || (ptr)->mtyp == PM_CLAIRVOYANT_CHANGED \
 				 || (ptr)->mtyp == PM_FOETID_ANGEL \
+				 || (ptr)->mtyp == PM_TETTIGON_LEGATUS \
+				 || (ptr)->mtyp == PM_UNMASKED_TETTIGON \
+				 || (ptr)->mtyp == PM_TRANSCENDENT_TETTIGON \
 				 || ((ptr)->mtyp == PM_TWIN_SIBLING && check_mutation(TWIN_DREAMS)) \
 				)
 
@@ -1231,6 +1239,8 @@
 						 (mon)->mtyp == PM_ARIANNA || (mon)->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION || \
 						 (mon)->mtyp == PM_REBEL_RINGLEADER || (mon)->mtyp == PM_RADIANT_PYRAMID || \
 						 (mon)->mtyp == PM_SIR_ALJANOR || (mon)->mtyp == PM_ALLIANCE_VANGUARD || \
+						 (mon)->mtyp == PM_TETTIGON_LEGATUS || (mon)->mtyp == PM_UNMASKED_TETTIGON || \
+						 (mon)->mtyp == PM_TRANSCENDENT_TETTIGON ||  \
 						 ((mon)->mtyp == PM_HOD_SEPHIRAH && Role_if(PM_KNIGHT)) || \
 						 ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_KNIGHT))
 #define mon_healing_turn(mon)	((mon)->mtyp == PM_DRACAE_ELADRIN || (mon)->mtyp == PM_UNBODIED)

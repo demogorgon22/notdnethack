@@ -42,6 +42,11 @@ boolean state;
 {
 	boolean weap_attack, xwep_attack;
 	mon->mcan = state;
+	if(mon->mcan && mon->mtyp == PM_UNMASKED_TETTIGON){
+		set_mon_data(mon, PM_TRANSCENDENT_TETTIGON);
+		mon->m_insight_level += 35;
+		mon->mvar1_tettigon_uncancel = TRUE;
+	}
 	set_mon_data_core(mon, mon->data);
 	weap_attack = mon_attacktype(mon, AT_WEAP) ? TRUE : FALSE;
 	xwep_attack = mon_attacktype(mon, AT_XWEP) ? TRUE : FALSE;
@@ -213,6 +218,7 @@ int newpm;
 			//mon->mvar_lucksucker = 0;
 			//mon->mvar_star_vampire_blood = 0;
 			//mon->mvar_spellweaver_count = 0;
+			//mon->mvar1_tettigon_uncancel = 0;
 			mon->mvar1 = 0;
 		break;
 	}
@@ -3558,6 +3564,8 @@ struct permonst *ptr;
 		size = 4;
 	else if(ptr->mtyp == PM_ANCIENT_OF_DEATH)
 		size = 20;
+	else if(ptr->mtyp == PM_TETTIGON_LEGATUS || ptr->mtyp == PM_UNMASKED_TETTIGON || ptr->mtyp == PM_TRANSCENDENT_TETTIGON)
+		size = 16;
 	else switch(ptr->msize){
 		case MZ_TINY:
 			size = 4;

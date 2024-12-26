@@ -1413,6 +1413,14 @@ law_montype()
 	}
 	else if(on_level(&arcadia1_level,&u.uz)){
 		int chance = d(1,100);
+		int diff = (u.ulevel+level_difficulty())/2;
+		if(check_insight()){
+			if(!night() && !toostrong(PM_TETTIGON_LEGATUS, diff+5))
+				return &mons[PM_TETTIGON_LEGATUS];
+			else if(night() && !toostrong(PM_LUMINESCENT_SWARM, diff+5))
+				return &mons[PM_LUMINESCENT_SWARM];
+		}
+		//No insight event or too strong
 		if(chance <= 20){
 			return !(mvitals[PM_KILLER_BEE].mvflags & G_GONE) ? &mons[PM_KILLER_BEE] : mkclass(S_ANT, 0);
 		}

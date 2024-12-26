@@ -1540,6 +1540,9 @@ FOOD(("parasite"),                0,   MZ_TINY,  1,  1, 0, VEGGY,  25, CLR_BRIGH
 /* Body parts.... eeeww */
 FOOD(("eyeball"),                 0,   MZ_TINY,  1,  0, 0, FLESH,  10, CLR_WHITE),/*Needs tile*/
 FOOD(("severed hand"),            0,   MZ_TINY,  1,  0, 0, FLESH,  40, CLR_BROWN),/*Needs tile*/
+FOOD(("encounter exoskeleton"),   0,   MZ_SMALL,20,  
+													 750, 
+														0, CHITIN,200, CLR_GREEN),/*Needs tile*/
 
 /* fruits & veggies */
 FOOD(("kelp frond"),              0,  MZ_SMALL,  1,  1, 0, VEGGY,  30, CLR_GREEN),

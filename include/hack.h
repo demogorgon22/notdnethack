@@ -247,6 +247,7 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 #define SIGNAL_NOMENU	  0x10	/* return -1 rather than 0 if none allowed */
 #define FEEL_COCKATRICE   0x20  /* engage cockatrice checks and react */
 #define SIGNAL_ESCAPE	  0x40  /* return -2 if menu was escaped */
+#define NO_EQUIPMENT	  0x80  /* don't show equipped items */
 
 /* Flags to control query_category() */
 /* BY_NEXTHERE used by query_category() too, so skip 0x01 */

@@ -10988,6 +10988,16 @@ boolean greatequip;
 					mongets(mtmp, SCIMITAR, mkobjflags);
 				}
 		    }
+			else if(ptr->mtyp == PM_LUMINESCENT_SWARM){
+				otmp = mongets(mtmp, SPEAR, mkobjflags);
+				if(otmp) set_material_gm(otmp, METAL);
+				otmp = mongets(mtmp, ROUNDSHIELD, mkobjflags);
+				if(otmp) set_material_gm(otmp, CHITIN);
+				switch (rnd(3)) {
+					case 1: (void) mongets(mtmp, POT_EXTRA_HEALING, mkobjflags);
+					case 2: (void) mongets(mtmp, POT_HEALING, mkobjflags);
+				}
+			}
 		break;
 		case S_DOG:
 			//Escaped war-dog

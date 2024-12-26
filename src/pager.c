@@ -180,6 +180,7 @@ flag_to_word(flag, category)
 			case MM_FLEETFLEE: return "flee";
 			case MM_WEBRIP: return "tear webs";
 			case MM_DOORBUST: return "break down doors";
+			case MM_AQUATIC: return "lives underwater";
 		}
 	break;
 	case MT_FLAG:

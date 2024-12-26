@@ -2238,7 +2238,7 @@ doputon()
 		Blindf_on(otmp);
 		return MOVE_STANDARD;
 	}
-	if (is_worn(otmp))
+	if (is_worn(otmp, 0))
 	    prinv((char *)0, otmp, 0L);
 	return MOVE_STANDARD;
 }

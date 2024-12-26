@@ -1582,8 +1582,23 @@ check_insight()
 }
 
 int
-roll_generic_madness(clearable)
-boolean clearable;
+roll_impurity(boolean clearable)
+{
+	int implevel;
+	if((clearable && ClearThoughts) || TimeStop)
+		return FALSE;
+
+	implevel = 100 - (int)(((float)rand()/(float)(RAND_MAX)) * ((float)rand()/(float)(RAND_MAX)) * 100);
+	
+	//Note: Clear Thoughts plus Walking Nightmare yields partial resistance rather than complete.
+
+	if(u.uimpurity > implevel)
+		return TRUE;
+	return FALSE;
+}
+
+int
+roll_generic_madness(boolean clearable)
 {
 	int sanlevel;
 	int usan = u.usanity;
@@ -1602,8 +1617,7 @@ boolean clearable;
 }
 
 int
-roll_generic_flat_madness(clearable)
-int clearable;
+roll_generic_flat_madness(boolean clearable)
 {
 	int sanlevel;
 	int usan = u.usanity;

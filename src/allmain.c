@@ -1592,6 +1592,7 @@ moveloop()
 	pline("Be careful!  New moon tonight.");
     }
     flags.friday13 = friday_13th();
+    flags.tm_hour = getlt()->tm_hour;
     if (flags.friday13) {
 	pline("Watch out!  Bad things can happen on Friday the 13th.");
 	change_luck(-1);
@@ -1662,6 +1663,13 @@ moveloop()
 		/**************************************************/
 		for (mtmp = fmon; mtmp; mtmp = nxtmon){
 			nxtmon = mtmp->nmon;
+			if(DEADMONSTER(mtmp))
+				continue;
+			if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+				set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
+				mtmp->m_insight_level -= 35;
+				newsym(x(mtmp), y(mtmp));
+			}
 			if(mtmp->m_insight_level > u.uinsight
 			  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 			  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
@@ -1669,6 +1677,10 @@ moveloop()
 			  || (mtmp->mtyp == PM_TWIN_SIBLING && (mtmp->mvar_twin_lifesaved || !(u.specialSealsActive&SEAL_YOG_SOTHOTH)))
 			){
 				if(!(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
+					if(mtmp->mvar1_tettigon_uncancel){
+						mtmp->mvar1_tettigon_uncancel = FALSE;
+						set_mcan(mtmp, FALSE);
+					}
 					insight_vanish(mtmp);
 					continue;
 				}
@@ -1694,8 +1706,7 @@ moveloop()
 				mtmp->mamnesia = FALSE;
 				newsym(mtmp->mx, mtmp->my);
 			}
-			if (!DEADMONSTER(mtmp)
-				&& mon_attacktype(mtmp, AT_WDGZ)
+			if (mon_attacktype(mtmp, AT_WDGZ)
 				&& !(controlledwidegaze(mtmp->data) && (mtmp->mpeaceful || mtmp->mtame || helpless(mtmp)))
 				&& !(hideablewidegaze(mtmp->data) && hiddenwidegaze(mtmp))
 				&& !vivitrapped(mtmp)
@@ -1737,6 +1748,8 @@ moveloop()
 				average_dogs();
 			for (mtmp = fmon; mtmp; mtmp = nxtmon){
 				nxtmon = mtmp->nmon;
+				if(DEADMONSTER(mtmp))
+					continue;
 				if(mtmp->mtyp == PM_HELLCAT){
 					if(!isdark(mtmp->mx,mtmp->my) && !mtmp->minvis){
 						mtmp->minvis = TRUE;
@@ -1767,6 +1780,11 @@ moveloop()
 						mtmp->perminvis = FALSE;
 						newsym(mtmp->mx,mtmp->my);
 					}
+				}
+				if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+					set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
+					mtmp->m_insight_level -= 35;
+					newsym(x(mtmp), y(mtmp));
 				}
 				if(mtmp->m_insight_level > u.uinsight
 				  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
@@ -2798,6 +2816,8 @@ karemade:
 		      /********************************/
 		     /* once-per-turn things go here */
 		    /********************************/
+			/* Update the hour of the day */
+			flags.tm_hour = getlt()->tm_hour;
 			/* Environment effects */
 			dust_storm();
 			/* Unseen monsters may take action */
@@ -3211,6 +3231,8 @@ karemade:
 ////////////////////////////////////////////////////////////////////////////////////////////////
 	for (mtmp = fmon; mtmp; mtmp = nxtmon){
 		nxtmon = mtmp->nmon;
+		if(DEADMONSTER(mtmp))
+			continue;
 		if(mtmp->mtyp == PM_HELLCAT){
 			if(!isdark(mtmp->mx,mtmp->my) && !mtmp->minvis){
 				mtmp->minvis = TRUE;
@@ -3246,6 +3268,11 @@ karemade:
 			mtmp->m_ap_type = M_AP_NOTHING;
 			mtmp->mappearance = 0;
 			newsym(mtmp->mx, mtmp->my);
+		}
+		if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+			set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
+			mtmp->m_insight_level -= 35;
+			newsym(x(mtmp), y(mtmp));
 		}
 		if(mtmp->m_insight_level > u.uinsight
 		  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)

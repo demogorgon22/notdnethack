@@ -2284,7 +2284,11 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		}
 	}
 	/* Dream leech dream leeches disappear when cancelled */
-	if(has_template(magr, DREAM_LEECH) && magr->mcan &&attk->aatyp == AT_TUCH && attk->adtyp == AT_TUCH){
+	if(has_template(magr, DREAM_LEECH) && magr->mcan &&attk->aatyp == AT_TUCH && attk->adtyp == AD_DRIN){
+		GETNEXT
+	}
+	/* Tettigon touch attack is magical and can be cancelled */
+	if(magr->mtyp == PM_TETTIGON_LEGATUS && magr->mcan &&attk->aatyp == AT_TUCH){
 		GETNEXT
 	}
 	/* Skip kicks with wounded legs */
@@ -10952,6 +10956,18 @@ int vis;
 			}
 			else if (vis&VIS_MDEF) {
 				pline("%s is sliced by whirling stems!",
+					Monnam(mdef));
+			}
+		}
+		else if (pa && pa->mtyp == PM_LUMINESCENT_SWARM) {
+			if (youdef) {
+				You("are bitten and stung by the swarming insects!");
+				exercise(A_STR, FALSE);
+				exercise(A_DEX, FALSE);
+				exercise(A_CON, FALSE);
+			}
+			else if (vis&VIS_MDEF) {
+				pline("%s is bitten and stung by the swarming insects!",
 					Monnam(mdef));
 			}
 		}

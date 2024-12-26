@@ -2639,10 +2639,15 @@ doname_with_price(obj)
 #endif /* OVL0 */
 #ifdef OVLB
 
+boolean
+not_fully_identified_dummy_flags(struct obj *otmp, int qflags)
+{
+	return not_fully_identified(otmp);
+}
+
 /* used from invent.c */
 boolean
-not_fully_identified(otmp)
-register struct obj *otmp;
+not_fully_identified(struct obj *otmp)
 {
 #ifdef GOLDOBJ
     /* gold doesn't have any interesting attributes [yet?] */
