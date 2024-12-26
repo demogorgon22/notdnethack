@@ -2768,6 +2768,7 @@ register struct monst *mtmp;
 	struct obj *bodyarmor;
 	struct obj *underarmor;	
 	struct obj *boots;	
+	struct obj *belt;	
 	// long carcap = 25L*(acurrstr((int)(mtmp->mstr)) + mtmp->mcon) + 50L;
 	long carcap;
 	gloves = which_armor(mtmp, W_ARMG);
@@ -2775,6 +2776,7 @@ register struct monst *mtmp;
 	bodyarmor = which_armor(mtmp, W_ARM);
 	underarmor = which_armor(mtmp, W_ARMU);
 	boots = which_armor(mtmp, W_ARMF);
+	belt = which_armor(mtmp, W_BELT);
 	
 	if(gloves && (gloves->otyp == GAUNTLETS_OF_POWER || (gloves->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(gloves, IEA_GOPOWER)))){
 		carcap = 25L*(25L + 11L) + 50L;
@@ -2803,12 +2805,22 @@ register struct monst *mtmp;
 	
 	if (carcap > maxload) carcap = maxload;
 
+	if (belt && belt->otyp == BELT_OF_CARRYING){
+		if(belt->blessed)
+			carcap += carcap/4;
+		else if(belt->cursed)
+			carcap -= carcap/4;
+		else
+			carcap += carcap/8;
+	}
+
 	static int hboots = 0;
 	if (!hboots) hboots = find_hboots();
 	if (boots && boots->otyp == hboots) carcap += boots->cursed ? 0 : maxload/10;
 	if (boots && check_oprop(boots, OPROP_RBRD) && is_lawful_mon(mtmp)) 
 		carcap += boots->cursed ? 0 : max(200, maxload/5);
 	
+
 	if(animaloid(mdat) || naoid(mdat)){
 		carcap *= 1.5;
 	}
