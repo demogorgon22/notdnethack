@@ -3125,6 +3125,9 @@ inv_weight()
 				objwt = max(0, objwt - wtmod);
 			wt += objwt;
 		}
+		else if (otmp->otyp == BELT_OF_WEIGHT && otmp == ubelt){
+			wt += 500;
+		}
 		else if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #endif
 		{

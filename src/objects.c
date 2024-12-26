@@ -1154,6 +1154,8 @@ BELT(("belt of carrying", "braced belt"),
 		0, 1, 0, 15, 50, 10, 0, 0, BONE, CLR_BROWN),
 BELT(("utility belt", "bumpy belt"),
 		0, 0, 0, 15, 30, 10, 0, 0, LEATHER, HI_LEATHER, O_POWER(PROT_ITEMS)),
+BELT(("belt of weight", "lumpy belt"),
+		0, 1, 0, 15, 30, 10, 0, 0, LEAD, CLR_BROWN),
 BELT(("kidney belt", "wide belt"),
 		0, 0, 0, 15,  1, 9, 1, 1, LEATHER, HI_LEATHER),
 #undef SUIT

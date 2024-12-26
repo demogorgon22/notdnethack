@@ -1658,6 +1658,7 @@ int mkflags;
 		case BELT_CLASS:
 			if (rn2(10) && (otmp->otyp == BELT_OF_WEAKNESS
 				|| otmp->otyp == BELT_OF_CARRYING 
+				|| otmp->otyp == BELT_OF_WEIGHT 
 				|| !rn2(11))
 			) {
 				curse(otmp);
