@@ -1147,15 +1147,15 @@ BOOTS(("flying boots", "snow boots"),
 		0, 1,  12, 2, 15, 30,  9, 1, 0, LEATHER, HI_LEATHER, O_POWER(FLYING)),
 
 BELT(("belt of power", "segmented belt"),
-		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
+		0, 1, 0, 15, 50, 10, 0, 0, IRON, CLR_BROWN),
 BELT(("belt of weakness", "articulated belt"),
-		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
+		0, 1, 0, 15, 50, 10, 0, 0, IRON, CLR_BROWN),
 BELT(("belt of carrying", "braced belt"),
-		0, 1, 0, 15, 30, 10, 0, 0, BONE, CLR_BROWN),
+		0, 1, 0, 15, 50, 10, 0, 0, BONE, CLR_BROWN),
 BELT(("utility belt", "bumpy belt"),
-		0, 1, 0, 15, 30, 10, 0, 0, LEATHER, HI_LEATHER, O_POWER(PROT_ITEMS)),
+		0, 0, 0, 15, 30, 10, 0, 0, LEATHER, HI_LEATHER, O_POWER(PROT_ITEMS)),
 BELT(("kidney belt", "wide belt"),
-		0, 1, 0, 15, 30, 9, 1, 1, LEATHER, HI_LEATHER),
+		0, 0, 0, 15,  1, 9, 1, 1, LEATHER, HI_LEATHER),
 #undef SUIT
 #undef SHIRT
 #undef HELM
