@@ -5545,6 +5545,10 @@ typfnd:
 		otmp = mkobj(oclass, mkobjflags);
 		if (otmp) typ = otmp->otyp;
 	}
+	if(!otmp){
+		*wishreturn = WISH_DENIED;
+		return &zeroobj;
+	}
 
 	if (get_ox(otmp, OX_ESUM) && summoned != ESUMMON_PERMANENT) {
 		otmp->oextra_p->esum_p->permanent = 0;
