@@ -1150,6 +1150,8 @@ BELT(("belt of power", "segmented belt"),
 		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
 BELT(("utility belt", "bumpy belt"),
 		0, 1, 0, 15, 30, 10, 0, 0, LEATHER, HI_LEATHER, O_POWER(PROT_ITEMS)),
+BELT(("kidney belt", "wide belt"),
+		0, 1, 0, 15, 30, 9, 1, 1, LEATHER, HI_LEATHER),
 #undef SUIT
 #undef SHIRT
 #undef HELM

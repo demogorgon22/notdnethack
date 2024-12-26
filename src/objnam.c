@@ -1318,6 +1318,7 @@ char *buf;
 {
 	if ((obj->oclass == WEAPON_CLASS) ||
 		(obj->oclass == ARMOR_CLASS) ||
+		(obj->oclass == BELT_CLASS && obj->otyp == KIDNEY_BELT) ||
 		(obj->oclass == TOOL_CLASS && is_weptool(obj)) ||
 		(obj->oclass == RING_CLASS && objects[obj->otyp].oc_charged && obj->otyp != RIN_WISHES)
 		)

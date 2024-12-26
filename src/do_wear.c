@@ -2354,7 +2354,7 @@ struct obj * otmp;
 	if (otmp->otyp == find_gcirclet()) def /= 2;
 
 	// add enchantment
-	if (otmp->spe)
+	if (otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
 	{
 		int spemult = 1; // out of 2
 		// shields get full enchantment to AC
@@ -2463,7 +2463,7 @@ struct obj * otmp;
 
 
 	// add enchantment
-	if (otmp->spe)
+	if (otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
 	{
 		int spemult = 1; // out of 2
 		// shields get no enchantment to DR
@@ -2802,6 +2802,7 @@ find_ac()
 	}
 	if (uarmg)	uac -= arm_ac_bonus(uarmg);
 	if (uarmu)	uac -= arm_ac_bonus(uarmu);
+	if (ubelt)	uac -= arm_ac_bonus(ubelt);
 	
 	if(uwep && hand_protecting(uwep) && !arti_phasing(uwep)){
 		if(!u.twoweap)
@@ -3310,6 +3311,8 @@ struct monst *victim;
 	otmp = (victim == &youmonst) ? uarmg : which_armor(victim, W_ARMG);
 	if(otmp && (!otmph || !rn2(4))) otmph = otmp;
 	otmp = (victim == &youmonst) ? uarmf : which_armor(victim, W_ARMF);
+	if(otmp && (!otmph || !rn2(4))) otmph = otmp;
+	otmp = (victim == &youmonst) ? ubelt : which_armor(victim, W_BELT);
 	if(otmp && (!otmph || !rn2(4))) otmph = otmp;
 	otmp = (victim == &youmonst) ? uarms : which_armor(victim, W_ARMS);
 	if(otmp && (!otmph || !rn2(4))) otmph = otmp;

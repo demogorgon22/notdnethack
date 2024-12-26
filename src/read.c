@@ -1944,6 +1944,12 @@ struct obj	*sobj;
 			}
 			break;
 		}
+		if(is_belt(otmp) && otmp->otyp != KIDNEY_BELT){
+			Your("%s %s.",
+			 xname(otmp),
+			 otense(otmp, Blind ? "feels warm for a moment" : "glows and then fades"));
+			break;
+		}
 		/* elven armor vibrates warningly when enchanted beyond a limit */
 		special_armor = is_plussev_armor(otmp);
 		plusten_armor = is_plusten(otmp);

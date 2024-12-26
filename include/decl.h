@@ -518,7 +518,7 @@ E NEARDATA struct obj *invent,
 	*uwep, *uswapwep, *uquiver;
 
 /* Needs to update, so it's redefined each time whenever it's used */
-#define ARMOR_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu }
+#define ARMOR_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu, ubelt }
 #define WORN_SLOTS { uarm, uarmc, uarmf, uarmh, uarmg, uarms, uarmu, uamul, ubelt, uleft, uright, ublindf, uwep, uswapwep, uquiver }
 
 E NEARDATA struct obj *urope;		/* defined only when entangled */
