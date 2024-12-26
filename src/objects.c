@@ -1148,6 +1148,8 @@ BOOTS(("flying boots", "snow boots"),
 
 BELT(("belt of power", "segmented belt"),
 		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
+BELT(("belt of weakness", "articulated belt"),
+		0, 1, 0, 15, 30, 10, 0, 0, IRON, CLR_BROWN),
 BELT(("belt of carrying", "braced belt"),
 		0, 1, 0, 15, 30, 10, 0, 0, BONE, CLR_BROWN),
 BELT(("utility belt", "bumpy belt"),

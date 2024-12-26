@@ -1655,10 +1655,25 @@ int mkflags;
 				otmp->spe = d(3,3);
 			}
 			break;
+		case BELT_CLASS:
+			if (rn2(10) && (otmp->otyp == BELT_OF_WEAKNESS
+				|| otmp->otyp == BELT_OF_CARRYING 
+				|| !rn2(11))
+			) {
+				curse(otmp);
+				if(otmp->otyp == KIDNEY_BELT)
+					otmp->spe = -rne(3);
+			}
+			else if (!rn2(10)) {
+				otmp->blessed = rn2(2);
+				if(otmp->otyp == KIDNEY_BELT)
+					otmp->spe = rne(3);
+			}
+			else	blessorcurse(otmp, 10);
+			break;
 		case COIN_CLASS:
 		case TILE_CLASS:
 		case SCOIN_CLASS:
-		case BELT_CLASS:
 			break;	/* do nothing */
 		default:
 			impossible("impossible mkobj %d, sym '%c'.", otmp->otyp,
