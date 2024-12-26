@@ -486,8 +486,11 @@ struct attack *mattk;
 		IMPURITY_UP(u.uimp_seduction)
 	}
 	while ((otmp = mdef->minvent) != 0) {
-		if(mi_only && !is_magic_obj(otmp) && otmp != stealoid)
-			continue;
+		if(mi_only && !is_magic_obj(otmp) && otmp != stealoid){
+			for(otmp = otmp->nobj; otmp && !is_magic_obj(otmp) && otmp != stealoid; otmp = otmp->nobj); //Fast forward through objects array
+			if(!otmp)
+				break; //No fitting objects, break while
+		}
 	    /* take the object away from the monster */
 	    obj_extract_self(otmp);
 	    if ((unwornmask = otmp->owornmask) != 0L) {
