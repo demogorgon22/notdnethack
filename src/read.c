@@ -1404,9 +1404,11 @@ int curse_bless;
 	    case ETHERBLADE:
 	    case DOUBLE_FORCE_BLADE:
 	    case FORCE_SWORD:
+	    case FORCE_CLUB:
 	    case FORCE_WHIP:
 	    case SEISMIC_HAMMER:
 	    case FLAMETHROWER:
+	    case SHOCK_MORTAR:
 			if(is_blessed) obj->ovar1_charges = 100L;
 			else if(is_cursed) obj->ovar1_charges = 10L;
 			else obj->ovar1_charges = 80L + rn2(20);

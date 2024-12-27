@@ -656,6 +656,7 @@ struct obj {
 		typ == DOUBLE_FORCE_BLADE ||\
 		typ == FORCE_BLADE ||\
 		typ == FORCE_SWORD ||\
+		typ == FORCE_CLUB ||\
 		typ == WHITE_VIBROSPEAR ||\
 		typ == GOLD_BLADED_VIBROSPEAR ||\
 		(typ >= PISTOL && typ <= RAYGUN) ||\
@@ -791,7 +792,7 @@ struct obj {
 			   (ltmp->otyp == MASS_SHADOW_PISTOL && ltmp->cobj && (otmp->otyp == ltmp->cobj->otyp)) ||\
 			   (ltmp->otyp == ATLATL && is_spear(otmp)) ||\
 			   (\
-			    (otmp->objsize == (ltmp)->objsize || objects[(ltmp)->otyp].oc_skill == P_SLING || (ltmp)->oartifact == ART_ROGUE_GEAR_SPIRITS) &&\
+			    (otmp->objsize == (ltmp)->objsize || objects[(ltmp)->otyp].oc_skill == P_SLING || (ltmp)->oartifact == ART_ROGUE_GEAR_SPIRITS || is_blaster((ltmp))) &&\
 			    (objects[(otmp)->otyp].w_ammotyp & objects[(ltmp)->otyp].w_ammotyp) && \
 			    (objects[(otmp)->otyp].oc_skill == -objects[(ltmp)->otyp].oc_skill)\
 			   )\
@@ -875,6 +876,7 @@ struct obj {
 						  (otmp)->otyp == DOUBLE_FORCE_BLADE || \
 						  (otmp)->otyp == FORCE_BLADE || \
 						  (otmp)->otyp == FORCE_SWORD || \
+						  (otmp)->otyp == FORCE_CLUB || \
 						  (otmp)->otyp ==  FORCE_WHIP)
 #define pure_weapon(otmp)	 ((otmp)->otyp == WHITE_VIBROSWORD || \
 						  (otmp)->otyp == WHITE_VIBROZANBATO || \

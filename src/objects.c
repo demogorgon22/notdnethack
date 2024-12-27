@@ -418,6 +418,9 @@ WEAPON(("force blade", "latch-ended blade"),
 WEAPON(("force sword", "hard segmented sword"), /*Needs encyc entry*/
 	DMG(D(8)), DMG(D(6)),
 	0, 0, MZ_MEDIUM,  0, 40,1000, 2, P|B, P_BROAD_SWORD, PLASTIC, FALSE, HI_SILVER, O_MAGIC(1)),
+WEAPON(("force club", "hard segmented stick"), /*Needs encyc entry*/
+	DMG(D(6)), DMG(D(3)),
+	0, 0, MZ_MEDIUM,  0, 10,1000, 2, B, P_CLUB, PLASTIC, FALSE, HI_SILVER, O_MAGIC(1)),
 WEAPON(("force whip", "segmented whip"),
 	DMG(D(6)), DMG(D(4)),
 	0, 0, MZ_MEDIUM,  0, 40,1000, 2, P|S, P_WHIP, PLASTIC, FALSE, CLR_ORANGE, O_MAGIC(1)),
@@ -589,6 +592,7 @@ GUN(("long gun", "unfamiliar long gun"),              0,    MZ_HUGE, 0,  30,  15
 GUN(("heavy gun", "unfamiliar heavy gun"),            0,    MZ_HUGE, 0, 100, 2000, 20,  8, -4, WP_BULLET, IRON, P_FIREARM, HI_METAL, O_NOWISH(1)),/*Needs tile*/
 GUN(("hand blaster", "hard black handmirror", "hard handmirror"), 0,  MZ_MEDIUM, 0,   2, 1000, 10,  1, -5,WP_BLASTER, PLASTIC, P_FIREARM, CLR_BLACK, O_MAGIC(1)), /*Needs tile*/
 GUN(("arm blaster",  "hard white bracer", "hard bracer"),         0,   MZ_LARGE, 0,   8, 4500, 15,  6, -5,WP_BLASTER, PLASTIC, P_FIREARM, CLR_WHITE, O_MAGIC(1)), /*Needs tile*/
+GUN(("shock mortar",  "massive hard tube"),         0,   MZ_HUGE, 0,   400, 9500, 15,  1, 0,WP_BLASTER, METAL, P_FIREARM, HI_METAL, O_MAGIC(1)), /*Needs tile*/
 GUN(("carcosan sting", "curved dagger"),              0,   MZ_SMALL, 0,  10, 5000,  8, 1, 0, WP_BLASTER, GOLD, P_FIREARM, HI_GOLD, O_MATSPEC(NIDED)), /*Needs tile*/
  /*Needs encyc entry*/
 GUN(("mass-shadow pistol",  "rectangular device"),                0,  MZ_MEDIUM, 0,   4, 4500, 10,  1,  0,WP_BLASTER, PLASTIC, P_FIREARM, CLR_GRAY, O_MAGIC(1)), /*Needs tile*/

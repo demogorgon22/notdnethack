@@ -137,6 +137,14 @@ static struct trobj Anachrononaut_Eth[] = {
 	{ MASK, 0, TOOL_CLASS, 1, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+static struct trobj Anachrononaut_Ent[] = {
+	{ FORCE_CLUB,  3, WEAPON_CLASS, 1, 0 },
+	{ SHOCK_MORTAR,  3, WEAPON_CLASS, 1, 0 },
+	{ BODYGLOVE, 0, ARMOR_CLASS, 1, 0 },
+	{ RIN_SHOCK_RESISTANCE,  0, RING_CLASS, 1, 0 },
+	{ POWER_PACK, 0, TOOL_CLASS, 10, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Anachrononaut_Inc[] = {
 	{ LIGHTSABER,  3, WEAPON_CLASS, 1, 0 },
 	{ ELVEN_TOGA, 1, ARMOR_CLASS, 1, 0 },
@@ -2133,6 +2141,7 @@ u_init()
 		else if(Race_if(PM_GNOME)) ini_inv(Anachrononaut_Gno);
 		else if(Race_if(PM_SALAMANDER)) ini_inv(Anachrononaut_Sal);
 		else if(Race_if(PM_ETHEREALOID)) ini_inv(Anachrononaut_Eth);
+		else if(Race_if(PM_ENT)) ini_inv(Anachrononaut_Ent);
 		else if(Race_if(PM_ANDROID)){
 			if(!flags.female) ini_inv(Anachrononaut_Mal_Clk);
 			else ini_inv(Anachrononaut_Fem_Clk);
@@ -3232,6 +3241,13 @@ register struct trobj *trop;
 				obj->oerodeproof = 1;
 				obj->rknown = 1;
 			}
+			if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_ENT) && (obj->oclass == ARMOR_CLASS || obj->oclass == WEAPON_CLASS) && obj->otyp != SHOCK_MORTAR){ 
+				if(hard_mat(objects[obj->otyp].oc_material)){
+					set_material_gm(obj, WOOD);
+					obj->oerodeproof = 1;
+					obj->rknown = 1;
+				}
+			}
 			if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_ETHEREALOID) && obj->otyp == MASK)
 				obj->corpsenm = PM_ETHEREALOID;
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
@@ -3565,6 +3581,9 @@ register struct trobj *trop;
 		}
 		
 		if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_ETHEREALOID) && obj->otyp == RIN_PROTECTION && !uleft){
+			setworn(obj, W_RINGL);
+		}
+		if(Role_if(PM_ANACHRONONAUT) && Race_if(PM_ENT) && obj->otyp == RIN_SHOCK_RESISTANCE && !uleft){
 			setworn(obj, W_RINGL);
 		}
 		

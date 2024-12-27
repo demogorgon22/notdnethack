@@ -234,6 +234,32 @@ int shots, shotlimit;
 	return MOVE_FIRED;
 }
 
+int
+zap_mortar(struct obj *obj, int shots, int shotlimit, coord *cc)
+{
+	int cost = 1;
+	int radius = 3;
+	
+	if(obj->ovar1 < cost){
+		shots = 0;
+	}
+	
+	if(shots <= 0){
+		You("pull the trigger, but nothing happens.");
+		return MOVE_STANDARD;
+	}
+
+		
+	obj->ovar1 -= cost;
+	radius += shots;
+	explode(cc->x, cc->y,
+		AD_ELEC, 0,
+		d(6,12) + 10 * shots,
+		EXPL_MAGICAL, radius);
+	nomul(-2, "firing a mortar");
+	return MOVE_FIRED;
+}
+
 /* KMH -- Automatically fill quiver */
 /* Suggested by Jeffrey Bay <jbay@convex.hp.com> */
 void

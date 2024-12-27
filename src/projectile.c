@@ -2307,6 +2307,7 @@ dofire()
 	int oldmulti = multi;
 	int result = MOVE_CANCELLED;
 	int shotlimit = 0;
+	coord cc;
 	char *oldsave_cm = save_cm;
 
 	if (check_capacity((char *)0))
@@ -2385,7 +2386,17 @@ dofire()
 							/* create fake ammo in order to calculate multishot correctly */
 							ammo = blaster_ammo(launcher);
 							if (getdir((char *)0))
-								result += zap_flamethrower(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);
+								result = zap_flamethrower(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);
+							/* destroy ammo and don't go through uthrow */
+							obfree(ammo, 0);
+							ammo = (struct obj *)0;
+							break;
+						case SHOCK_MORTAR:
+							ammo = blaster_ammo(launcher);
+							cc.x = u.ux;
+							cc.y = u.uy;
+							if (getpos(&cc, TRUE, "the desired position") >= 0)
+								result = zap_mortar(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit, &cc);
 							/* destroy ammo and don't go through uthrow */
 							obfree(ammo, 0);
 							ammo = (struct obj *)0;
@@ -2658,6 +2669,7 @@ struct obj * blaster;
 		break;
 	case RAYGUN:
 	case FLAMETHROWER:
+	case SHOCK_MORTAR:
 		/* create fake ammo in order to calculate multishot correctly */
 		ammo = mksobj(LASER_BEAM, MKOBJ_NOINIT);
 		break;
@@ -3684,6 +3696,7 @@ int tary;
 						break;
 					case RAYGUN:
 					case FLAMETHROWER:
+					case SHOCK_MORTAR:
 						// TODO: monster raygun function
 						//if (!getdir((char *)0))
 						//	result = zap_raygun(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);

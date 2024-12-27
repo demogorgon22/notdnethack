@@ -820,6 +820,7 @@ struct monst *magr;
 	case FORCE_PIKE:
 	case DOUBLE_FORCE_BLADE:// external special case: wielded without twoweaponing
 	case FORCE_BLADE:
+	case FORCE_CLUB:
 	case FORCE_SWORD:
 								if(chrgd){
 									ocn++;
@@ -1255,6 +1256,7 @@ struct monst *magr;
 	case FORCE_PIKE:
 	case FORCE_BLADE:
 	case FORCE_SWORD:
+	case FORCE_CLUB:
 	case FORCE_WHIP:
 		// drain charge on future-tech powered weapons
 		if (affect_state && otmp->ovar1_charges)
@@ -1822,6 +1824,7 @@ static const NEARDATA short hwep[] = {
 	  DOUBLE_LIGHTSABER/*6d8*/, 
 	  RED_EYED_VIBROSWORD,/*3d8+8/3d12+12*/
 	  FORCE_SWORD,/*3d8+8/3d6+6*/
+	  FORCE_CLUB,/*good/good*/
 	  FORCE_WHIP,/*3d6+6+3/3d4+6+3d4+4*/
 	  FORCE_PIKE,/*3d6+6/3d8+8*/
 	  FORCE_BLADE,/*3d6+6/3d4+4*/
@@ -1928,6 +1931,7 @@ static const NEARDATA short hpwep[] = {
 	  DOUBLE_LIGHTSABER/*6d8*/, 
 	  RED_EYED_VIBROSWORD,/*3d8+8/3d12+12*/
 	  FORCE_SWORD,/*3d8+8/3d6+6*/
+	  FORCE_CLUB,/*good/good*/
 	  FORCE_WHIP,/*3d6+6+3/3d4+6+3d4+4*/
 	  FORCE_PIKE,/*3d6+6/3d8+8*/
 	  FORCE_BLADE,/*3d6+6/3d4+4*/

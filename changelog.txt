@@ -342,6 +342,18 @@ Anachrononaut changes
 			Can be charged and fired with F to shoot a 3d6 blast of darkness
 		+5 ring of protection
 		Can get expert in polearms and darts
+	Ent ana -
+		Yggdrasil species
+			Gigantic
+			Inediate
+			3 nat ac/dr
+		Shock Mortar
+			Energy based blaster
+			6d12+10*shots electric explosion of 3+shots radius
+			No target range limitations or LoS requirements
+			nomul(-2) player after firing
+		Force Club
+		Shock res ring
 Added armorsmiths
 		Armorsmiths are meant to address the weird gap caused by
 		upgrade kits for strangely sized races
