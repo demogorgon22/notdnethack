@@ -910,7 +910,7 @@ int tary;
 					}
 					/* Second weapon trait can cause melee attacks to hit an additional neighboring monster, if the blow kills the primary target */
 					if (!ranged && magr && (result&MM_DEF_DIED)){
-						struct obj *second = youagr ? uswapwep : MON_SWEP(magr);
+						struct obj *second = youagr ? (u.twoweap ? uswapwep : 0) : MON_SWEP(magr);
 						if(second && CHECK_ETRAIT(second, magr, ETRAIT_SECOND) && ROLL_ETRAIT(second, magr, TRUE, !rn2(4))){
 							struct attack secattk = {AT_XWEP, AD_PHYS, 0, 0}; 
 							int subresult = 0;
