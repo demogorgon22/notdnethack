@@ -1595,6 +1595,13 @@ register int aflag;
 			arti_worn_prop(uwep, ARTP_SEEK)) ?
 			uwep->spe : 0;
 		if(u.sealsActive&SEAL_OTIAX) fund += spiritDsize();
+		if(Role_if(PM_ROGUE)){
+			fund += 2;
+			if(u.ulevel > 13)
+				fund += 3;
+			if(u.ulevel > 29)
+				fund += 5;
+		}
 		if (ublindf && ublindf->otyp == LENSES && !Blind)
 			fund += 2; /* JDS: lenses help searching */
 		if (ublindf && ublindf->otyp == SUNGLASSES && !Blind)
