@@ -2816,7 +2816,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			/* "Deva" rapiers are assumed to be the Masked Queen's lower arms, and "Energy" rapiers just sorta float or something */
 			|| attk->aatyp == AT_SRPR || attk->aatyp == AT_XSPR || attk->aatyp == AT_MSPR
 			|| attk->aatyp == AT_DEVA || attk->aatyp == AT_5SQR || attk->aatyp == AT_MARI
-			|| (attk->aatyp == AT_MAGC && attk->adtyp != AD_PSON && !(magr->mtyp == PM_ITINERANT_PRIESTESS && has_template(magr, MISTWEAVER))) ||
+			|| ((attk->aatyp == AT_MAGC || attk->aatyp == AT_MMGC) && attk->adtyp != AD_PSON && !(magr->mtyp == PM_ITINERANT_PRIESTESS && has_template(magr, MISTWEAVER))) ||
 			(humanoid(pa) && (
 				attk->aatyp == AT_CLAW
 				/* Note: Dream-leech "touch" attacks are the dream leeches eating your brain like a 'flayer */
