@@ -141,6 +141,10 @@ static struct trobj Anachrononaut_Ent[] = {
 	{ FORCE_CLUB,  3, WEAPON_CLASS, 1, 0 },
 	{ SHOCK_MORTAR,  3, WEAPON_CLASS, 1, 0 },
 	{ BODYGLOVE, 0, ARMOR_CLASS, 1, 0 },
+	{ ARMORED_BOOTS, 0, ARMOR_CLASS, 1, 0 },
+	{ GAUNTLETS, 0, ARMOR_CLASS, 1, 0 },
+	{ HELMET, 0, ARMOR_CLASS, 1, 0 },
+	{ ELVEN_TOGA, 0, ARMOR_CLASS, 1, 0 },
 	{ RIN_SHOCK_RESISTANCE,  0, RING_CLASS, 1, 0 },
 	{ POWER_PACK, 0, TOOL_CLASS, 10, 0 },
 	{ 0, 0, 0, 0, 0 }
@@ -3266,10 +3270,7 @@ register struct trobj *trop;
 			if(obj->otyp == SCALE_MAIL && Role_if(PM_ANACHRONONAUT)){
 				set_material_gm(obj, COPPER);
 			}
-			if(obj->otyp == GAUNTLETS && Role_if(PM_ANACHRONONAUT)){
-				set_material_gm(obj, COPPER);
-			}
-			if((obj->otyp == HELMET || obj->otyp == ARMORED_BOOTS) && Role_if(PM_ANACHRONONAUT) && Race_if(PM_HALF_DRAGON)){
+			if((obj->otyp == HELMET || obj->otyp == ARMORED_BOOTS || obj->otyp == GAUNTLETS) && Role_if(PM_ANACHRONONAUT) && Race_if(PM_HALF_DRAGON)){
 				set_material_gm(obj, COPPER);
 			}
 			if((obj->otyp == HELMET || obj->otyp == POWER_ARMOR || obj->otyp == KNUCKLE_DUSTERS) && Role_if(PM_ANACHRONONAUT) && Race_if(PM_GNOME)){
