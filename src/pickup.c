@@ -1993,8 +1993,7 @@ boolean *prev_loot;
 		otmp = hold_another_object(otmp, "You drop %s!", doname(otmp),
 					(const char *)0);
 		timepassed = rnd(3) +  objects[otmp->otyp].oc_delay;
-		mtmp->mcanmove = FALSE;
-		mtmp->mfrozen = timepassed;
+		mtmp->mequipping = timepassed;
 		if (prev_loot) *prev_loot = TRUE;
 	} else {
 		return MOVE_CANCELLED;
@@ -2111,8 +2110,7 @@ dopetequip()
 		}
 		timepassed = rnd(3) +  objects[otmp->otyp].oc_delay;
 		if(unseen) timepassed += d(3,4);
-		mtmp->mcanmove = FALSE;
-		mtmp->mfrozen = timepassed;
+		mtmp->mequipping = timepassed;
 	} else {
 		return MOVE_CANCELLED;
 	}

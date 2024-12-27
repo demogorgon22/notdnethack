@@ -392,7 +392,7 @@ struct monst *mtmp;
 		return;
 	
 	if (Role_if(PM_KNIGHT) && u.ualign.type == A_LAWFUL &&
-	    (!mtmp->mcanmove || !mtmp->mnotlaugh || mtmp->msleeping ||
+	    (!mtmp->mcanmove || !mtmp->mnotlaugh || mtmp->msleeping || mtmp->mequipping ||
 		(mtmp->mflee && mtmp->mtyp != PM_BANDERSNATCH && !mtmp->mavenge))){
 		    You("caitiff!");
 			if(u.ualign.record > 10) {

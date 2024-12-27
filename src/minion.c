@@ -11,6 +11,7 @@ extern const int monstr[];
 /* mon summons a monster 
  * 
  * if mon is null, treat as if as being summoned by a far-off Wizard of Yendor
+ * Monster hell-p function
  */
 void
 msummon(mon, ptr)

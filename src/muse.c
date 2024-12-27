@@ -456,7 +456,7 @@ struct monst *mtmp;
 		if (isok(xx,yy))
 		if ((mon = m_at(xx,yy)) && is_mercenary(mon->data) &&
 				mon->mtyp != PM_GUARD &&
-				(mon->msleeping || (!mon->mcanmove && mon->mnotlaugh))) {
+				(mon->msleeping || (!mon->mcanmove && mon->mnotlaugh && !mon->mequipping))) {
 			m.defensive = obj;
 			m.has_defense = MUSE_BUGLE;
 		}

@@ -1816,6 +1816,8 @@ struct monst *mtmp;
 	    mtmp->mcanmove = 1;
 	if (mtmp->mfleetim && !--mtmp->mfleetim)
 	    mtmp->mflee = 0;
+	if (mtmp->mequipping)
+	    mtmp->mequipping--;
 }
 
 

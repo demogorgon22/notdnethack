@@ -657,6 +657,10 @@ long nmv;		/* number of moves */
 	    if (imv >= (int) mtmp->mfrozen) mtmp->mfrozen = 1;
 	    else mtmp->mfrozen -= imv;
 	}
+	if (mtmp->mequipping) {
+	    if (imv >= (int) mtmp->mequipping) mtmp->mequipping = 1;
+	    else mtmp->mequipping -= imv;
+	}
 	if (mtmp->mfleetim) {
 	    if (imv >= (int) mtmp->mfleetim) mtmp->mfleetim = 1;
 	    else mtmp->mfleetim -= imv;

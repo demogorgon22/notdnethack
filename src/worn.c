@@ -1834,8 +1834,7 @@ outer_break:
 		      buf, distant_name(best,doname));
 	    } /* can see it */
 	    m_delay += objects[best->otyp].oc_delay;
-	    mon->mfrozen = m_delay;
-	    if (mon->mfrozen) mon->mcanmove = 0;
+	    mon->mequipping = m_delay;
 	}
 	if (old)
 	    update_mon_intrinsics(mon, old, FALSE, creation);
@@ -1874,9 +1873,7 @@ long flag;
 	    m_delay += 2;
 	m_delay += objects[old->otyp].oc_delay;
 	old->owornmask = 0L;
-	mon->mfrozen = max(mon->mfrozen, m_delay);
-	if(mon->mfrozen)
-		mon->mcanmove = 0;
+	mon->mequipping = max(mon->mequipping, m_delay);
 	update_mon_intrinsics(mon, old, FALSE, FALSE);
 	mon->misc_worn_check &= ~flag;
 	return old;

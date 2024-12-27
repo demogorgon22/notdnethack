@@ -741,7 +741,7 @@ int udist;
 
 	boolean droppables = FALSE;
 
-	if (mtmp->msleeping || !mtmp->mcanmove) return(0);
+	if (mtmp->msleeping || mtmp->mequipping || !mtmp->mcanmove) return(0);
 
 	omx = mtmp->mx;
 	omy = mtmp->my;

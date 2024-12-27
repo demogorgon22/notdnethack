@@ -14070,7 +14070,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	){
 		if (youagr) {
 			if (!mdef->mcanmove || !mdef->mnotlaugh ||
-				mdef->mstun || mdef->mconf || mdef->msleeping)
+				mdef->mstun || mdef->mconf || mdef->msleeping || mdef->mequipping)
 				sneak_attack |= SNEAK_HELPLESS;
 			if (mdef->msuicide)
 				sneak_attack |= SNEAK_SUICIDAL;
@@ -14116,7 +14116,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			if (mdef->mtrapped)
 				sneak_attack |= SNEAK_TRAPPED;
 			if (!mdef->mcanmove || !mdef->mnotlaugh ||
-				mdef->mstun || mdef->mconf || mdef->msleeping)
+				mdef->mstun || mdef->mconf || mdef->msleeping || mdef->mequipping)
 				sneak_attack |= SNEAK_HELPLESS;
 			if (mdef->msuicide)
 				sneak_attack |= SNEAK_SUICIDAL;

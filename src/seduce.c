@@ -2443,8 +2443,7 @@ int *result;
 			mdef->mstrategy &= ~STRAT_WAITFORU;
 			mselftouch(mdef, (const char *)0, FALSE);
 			if(delay){
-				mdef->mfrozen = max(mdef->mfrozen, delay);
-				mdef->mcanmove = FALSE;
+				mdef->mequipping = max(mdef->mequipping, delay);
 			}
 			m_dowear(magr, FALSE);
 			if (mdef->mhp <= 0)

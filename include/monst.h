@@ -205,6 +205,8 @@ struct monst {
 	Bitfield(mwounded_legs,1);/* wounded legs */ /*129*/
 	Bitfield(mopen,2);/* open to sneak attacks */ /*131*/
 	
+	Bitfield(mequipping,7); /*146*/
+
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */
