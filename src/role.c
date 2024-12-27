@@ -1369,22 +1369,16 @@ validspecies(rolenum, racenum, gendnum, speciesnum)
 }
 
 boolean
-validdescendant(rolenum)
-int rolenum;
+validdescendant(int rolenum)
 {
-	if(rolenum < 0) return FALSE;
-	return roles[rolenum].malenum == PM_MADMAN || 
-		roles[rolenum].malenum == PM_NOBLEMAN || 
-		roles[rolenum].malenum == PM_ARCHEOLOGIST || 
-		roles[rolenum].malenum == PM_KNIGHT || 
-		roles[rolenum].malenum == PM_PIRATE || 
-		roles[rolenum].malenum == PM_ROGUE || 
-		roles[rolenum].malenum == PM_SAMURAI || 
-		roles[rolenum].malenum == PM_TOURIST || 
-		roles[rolenum].malenum == PM_VALKYRIE || 
-		roles[rolenum].malenum == PM_CONVICT;
+	/* Assumes validrole */
+	return (rolenum >= 0 && rolenum < SIZE(roles)-1 &&
+		!(roles[rolenum].malenum == PM_ANACHRONONAUT
+			|| roles[rolenum].malenum == PM_EXILE
+			|| roles[rolenum].malenum == PM_CAVEMAN
+			|| roles[rolenum].malenum == PM_ANACHRONOUNBINDER
+		));
 }
-
 
 int
 randspecies(rolenum, racenum, gendnum)
