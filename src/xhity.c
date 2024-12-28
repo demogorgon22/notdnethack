@@ -1748,6 +1748,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			(Race_if(PM_YUKI_ONNA) && (!uwep || attk->aatyp == AT_NONE)) ||	/* yuki-onna get their additional attacks when unarmed, and their passive always */
 			(Race_if(PM_SNOW_CLOUD)) ||
 			(Race_if(PM_VAMPIRE)) ||
+			(Race_if(PM_LEPRECHAUN)) ||
 			(Race_if(PM_ETHEREALOID)) ||
 			(Race_if(PM_CHIROPTERAN))
 			)){
