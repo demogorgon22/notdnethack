@@ -2892,27 +2892,27 @@ u_init()
 			init_attr(55);
 	} else if(Race_if(PM_ORC)){
 		if(flags.descendant)
-			init_attr(45);
+			init_attr(50);
 		else
 			init_attr(55);
 	} else if (Race_if(PM_ANDROID)){
 		if(flags.descendant)
-			init_attr(75);
+			init_attr(80);
 		else
 			init_attr(95);
 	} else if (Role_if(PM_VALKYRIE)){
 		if(flags.descendant)
-			init_attr(70);
+			init_attr(75);
 		else
 			init_attr(85);
 	} else if (Race_if(PM_ELF)){
 		if(flags.descendant)
-			init_attr(65);
+			init_attr(70);
 		else
 			init_attr(80);
 	} else {
 		if(flags.descendant)
-			init_attr(60);
+			init_attr(65);
 		else
 			init_attr(75);	/* init attribute values */
 	}
