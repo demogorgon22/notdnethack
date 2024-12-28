@@ -118,7 +118,7 @@ struct Role roles[] = {
 	PM_STRANGE_CORPSE, PM_PEASANT, PM_ACERERAK,
 	PM_SKELETON, PM_LICH, S_HUMAN, S_HUMANOID,
 	ART_PEN_OF_THE_VOID,
-	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_CLOCK|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY|MA_REPTILIAN|MA_ETHEREAL|MA_PLANT, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ELF|MA_ORC|MA_CLOCK|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY|MA_REPTILIAN|MA_ETHEREAL|MA_PLANT|MA_DEMIHUMAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  6,  6,  6,  6,  6,  6 },
@@ -866,10 +866,10 @@ const struct Race races[] = {
 	MA_DEMIHUMAN, 0, MA_GNOME|MA_DWARF,
 	/*    Str     Int Wis Dex Con Cha */
 	{      3,      3,  3,  3,  3,  3 },
-	{ 16,  25, 16, 18, 18, 20 },
+	{ 18,  18, 18, 25, 18, 20 },
 	/* Init   Lower  Higher */
-	{  2, 0,  2, 0,  0, 2 },	/* Hit points */
-	{  1, 0,  1, 0,  1, 0 },	/* Energy */
+	{   7, 0,  3, 0,  1, 0 },	/* Hit points */
+	{  2, 0,  2, 0,  2, 0 },	/* Energy */
 	NIGHTVISION2, 
 	SPE_DETECT_TREASURE, -10
 },

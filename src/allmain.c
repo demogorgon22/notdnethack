@@ -1098,6 +1098,10 @@ you_regen_hp()
 			reglevel += 7;
 		if (Race_if(PM_DROW) && !Upolyd)
 			reglevel += flags.female ? 4 : 8; //Note: blessing of Lolth
+		
+		// Leprechaun bonus lucky seven
+		if (Race_if(PM_LEPRECHAUN) && !Upolyd)
+			reglevel += 7;
 		// Healer role bonus
 		if (Role_if(PM_HEALER) && !Upolyd)
 			reglevel += 10;
