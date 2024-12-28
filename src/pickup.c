@@ -1104,7 +1104,7 @@ int *wt_before, *wt_after;
     *wt_after  = wt;
 
     /* special case the iron ball here, it actually improves carrycap */
-    if (wt < 0 || obj->oartifact == ART_IRON_BALL_OF_LEVITATION)
+    if (wt < 0 || obj->oartifact == ART_IRON_BALL_OF_LEVITATION || (is_gold && Race_if(PM_LEPRECHAUN)))
 	return count;
 
     /* see how many we can lift */
