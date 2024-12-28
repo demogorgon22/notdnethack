@@ -9308,7 +9308,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			xyhitmsg(magr, mdef, originalattk);
 		}
 		/* big picture: can stunlock monsters, can't stunlock you because it uses the Screaming status effect */
-		if((!nonliving(pd) || is_android(pd)) 
+		if((!nonliving(pd) || is_android(pd) || has_template(mdef, TOMB_HERD)) 
 			&& pd->mflagsa != MA_ELEMENTAL /*not a PURE elemental like a vortex, sphere, or elemental*/
 			&& !has_template(mdef, TOMB_HERD) /*not a statue-piloting thingy */
 			&& !is_great_old_one(pd)
