@@ -82,7 +82,7 @@
 
 #define is_alabaster_mummy(ptr)	((ptr)->mtyp == PM_ALABASTER_MUMMY)
 
-#define is_leprechaun(ptr) ((ptr)->mtyp == PM_LEPRECHAUN)
+#define is_leprechaun(ptr) ((ptr)->mtyp == PM_LEPRECHAUN || (ptr)->mtyp == PM_LAVA_LEPRECHAUN)
 
 #define is_ent(ptr) ((ptr)->mtyp == PM_ENT)
 
@@ -1050,6 +1050,7 @@
 /*	[note: the light ranges above were reduced to 1 for performance...] */
 #define likes_lava(ptr)		( \
 			(ptr)->mtyp == PM_FIRE_ELEMENTAL || \
+			(ptr)->mtyp == PM_LAVA_LEPRECHAUN || \
 			is_salamander(ptr) \
 			)
 #define is_salamander(ptr)	((ptr)->mtyp == PM_FIRE_SNAKE || \

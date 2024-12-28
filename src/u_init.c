@@ -901,6 +901,9 @@ static struct inv_sub { short race_pm, item_otyp, subs_otyp; } inv_subs[] = {
     { PM_INCANTIFIER,	BANANA,						SCR_FOOD_DETECTION    	  },
     { PM_INCANTIFIER,	ORANGE,						SCR_FOOD_DETECTION    	  },
     { PM_INCANTIFIER,	POT_BOOZE,					SCR_FOOD_DETECTION   	  },
+    // Leprechaun substitutions
+    { PM_LEPRECHAUN,	CRAM_RATION,			LEMBAS_WAFER	      },
+    { PM_LEPRECHAUN,	FOOD_RATION,			LEMBAS_WAFER	      },
     // Salamander substitutions
     { PM_SALAMANDER,	ATHAME,			SPEAR	      },
     { PM_SALAMANDER,	DAGGER,			SPEAR	      },
@@ -3512,7 +3515,12 @@ register struct trobj *trop;
             if (obj->otyp == STRAITJACKET ) {
                 obj->cursed = TRUE;
             }
-	    if((obj->oclass == SPBOOK_CLASS || obj->oclass == POTION_CLASS || obj->oclass == WAND_CLASS || obj->oclass == TOOL_CLASS) && youracedata->msize < MZ_MEDIUM)
+	    if((obj->oclass == SPBOOK_CLASS || 
+		obj->oclass == POTION_CLASS || 
+		obj->oclass == WAND_CLASS || 
+		obj->oclass == TOOL_CLASS || 
+		(obj->oclass == FOOD_CLASS && Race_if(PM_LEPRECHAUN))
+		) && youracedata->msize < MZ_MEDIUM)
 		set_obj_size(obj, youracedata->msize);
             if (obj->otyp == AMULET_OF_NULLIFY_MAGIC && Role_if(PM_MADMAN) ) {
                 obj->cursed = TRUE;
