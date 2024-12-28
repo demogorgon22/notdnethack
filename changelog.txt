@@ -170,6 +170,15 @@ Ent race
 		Willow
 			Intrinsic weldproof
 	Special spell restore ability
+Leprechaun race
+	Tiny
+	Gold weighs negative
+	Starts with +2000 gold and then adds more as needed to not start encumbered
+	Starts fast and stealthy
+	Has teleportitis
+	Gets tele control at xlvl 7
+	Unarmed attacks steal gold
+	Special spell detect treasure
 
 Yuki-Onna changes
 	Increase hp gain SLIGHTLY
