@@ -3290,6 +3290,19 @@ register struct trobj *trop;
 				set_material_gm(obj, objects[otyp].oc_material);
 			}
 
+			if (urace.malenum != PM_HUMAN) {
+				/* substitute specific items for generic ones */
+				for (i = 0; inv_subs[i].race_pm != NON_PM; ++i)
+				if (inv_subs[i].race_pm == urace.malenum &&
+					otyp == inv_subs[i].item_otyp) {
+					otyp = inv_subs[i].subs_otyp;
+					break;
+				}
+			}
+			if(otyp != obj->otyp){
+				obj = poly_obj(obj, otyp);
+				otyp = obj->otyp;
+			}
 			/* Don't start with +0 or negative rings */
 			if (objects[otyp].oc_charged && obj->spe <= 0)
 				obj->spe = rne(3);
