@@ -1425,7 +1425,7 @@ char *buf;
 	if (obj->otyp == HOLY_SYMBOL_OF_THE_BLACK_MOTHE){
 		if (u.shubbie_credit < 50)
 			return;
-		else if (u.shubbie_devotion < 25*(10 + (u.ucultsval * u.ucultsval * 2 / 25)))
+		else if (u.shubbie_devotion <= 25*(10 + (u.ucultsval * u.ucultsval * 2 / 25)))
 			Strcat(buf, "glistening ");
 		else
 			Strcat(buf, "drooling ");
@@ -1434,7 +1434,7 @@ char *buf;
 	if (obj->otyp == PURIFIED_MIRROR){
 		if (u.silver_credit < 50)
 			return;
-		else if (u.silver_devotion < 25*(10 + (u.ucultsval * u.ucultsval * 2 / 25)))
+		else if (u.silver_devotion <= 25*(10 + (u.ucultsval * u.ucultsval * 2 / 25)))
 			Strcat(buf, "glinting ");
 		else
 			Strcat(buf, "shining ");
