@@ -1836,6 +1836,8 @@ struct obj *sobj;
 				role_skill = 1;
 			if(sobj->blessed)
 				role_skill++;
+			if(u.ukrau_duration)
+				role_skill += (role_skill+1)/2;
 			
 			for(; role_skill; role_skill--)
 				if(!resist(mtmp, sobj->oclass, 0, NOTELL)){
