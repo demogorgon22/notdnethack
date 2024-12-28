@@ -1078,7 +1078,8 @@ doLightsaberForm()
 	}
 }
 
-int doEldritchKniForm()
+int
+doEldritchKniForm()
 {
 	winid tmpwin;
 	int n, how, i, j, damagetype, success_odds, spell_id;
@@ -1133,8 +1134,9 @@ int doEldritchKniForm()
 		else
 			Strcat(buf, "trivial");
 
-		if (u.ueldritch_style == spell_list[i])
+		if (u.ueldritch_style == spell_list[i] && activeFightingForm(FFORM_KNI_ELDRITCH)){
 			Strcat(buf, ", active");
+		}
 		Strcat(buf, ")");
 
 		any.a_int = i;	/* must be non-zero */
@@ -1153,7 +1155,7 @@ int doEldritchKniForm()
 	if(n <= 0 ){
 		return MOVE_CANCELLED;
 	} else {
-		if (spell_list[selected[0].item.a_int] == u.ueldritch_style){
+		if (spell_list[selected[0].item.a_int] == u.ueldritch_style && activeFightingForm(FFORM_KNI_ELDRITCH)){
 			free(selected);
 			return MOVE_CANCELLED;
 		} else {
