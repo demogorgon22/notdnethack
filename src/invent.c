@@ -3654,7 +3654,7 @@ winid *datawin;
 		EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
 		EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
 		EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
-		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand, strikes a second foe after killing the first");
+		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
 		EXPERTTRAITS(ETRAIT_CREATE_OPENING, "creates openings for sneak attacks");
 		EXPERTTRAITS(ETRAIT_BRACED, "delivers powerful counterattacks");
 		if(buf[0] != '\0')
