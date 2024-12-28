@@ -2682,6 +2682,14 @@ u_init()
 	case PM_CLOCKWORK_AUTOMATON:
 		ini_inv(Key);
     break;
+	case PM_LEPRECHAUN:
+		#ifndef GOLDOBJ
+			u.ugold += 2000; 
+			u.ugold0 += 2000;
+		#else
+			u.umoney0 += 2000;
+		#endif
+	break;
 
 	case PM_INCANTIFIER:
 		skill_up(Skill_I);
@@ -2996,6 +3004,15 @@ u_init()
 	while (inv_weight() > 0) {
 		if (adjattrib(A_STR, 1, TRUE)) continue;
 		if (adjattrib(A_CON, 1, TRUE)) continue;
+		if (Race_if(PM_LEPRECHAUN)){
+			#ifndef GOLDOBJ
+				u.ugold += 100; 
+				u.ugold0 += 100;
+			#else
+				u.umoney0 += 100;
+			#endif
+			continue;
+		}
 		/* only get here when didn't boost strength or constitution */
 		break;
 	}
