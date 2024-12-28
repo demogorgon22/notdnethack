@@ -82,6 +82,8 @@
 
 #define is_alabaster_mummy(ptr)	((ptr)->mtyp == PM_ALABASTER_MUMMY)
 
+#define is_leprechaun(ptr) ((ptr)->mtyp == PM_LEPRECHAUN)
+
 #define is_ent(ptr) ((ptr)->mtyp == PM_ENT)
 
 #define is_ent_species(ptr, species) (is_ent(ptr) && u.ent_species == species)

@@ -1311,7 +1311,7 @@ NEARDATA struct permonst mons[] = {
 	SIZ(60, 30, MS_LAUGH, MZ_TINY), 0, 0,
 	MM_TPORT /*MM*/, MT_HOSTILE|MT_GREEDY /*MT*/, 0 /*MF*/,
 	MB_HUMANOID /*MB*/, MG_INFRAVISIBLE|MG_HATESIRON /*MG*/,
-	MA_FEY /*MA*/,  MV_LOWLIGHT2|MV_INFRAVISION /*MV*/, 0 /*MW*/, CLR_GREEN),
+	MA_FEY|MA_DEMIHUMAN /*MA*/,  MV_LOWLIGHT2|MV_INFRAVISION /*MV*/, 0 /*MW*/, CLR_GREEN),
     MON("ethereal filcher", S_LEPRECHAUN,//9 /* Needs encyc entry */
 	LVL(5, 15, 20, 0), (G_GENO|G_S_INST(5)|1),
 	DEF(NAT_AC(3), DEX_AC(4)),

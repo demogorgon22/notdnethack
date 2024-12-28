@@ -764,9 +764,6 @@ int dx, dy;
 	if (nolimbs(youracedata) || slithy(youracedata)) {
 		You("have no legs to kick with.");
 		no_kick = TRUE;
-	} else if (verysmall(youracedata)) {
-		You("are too small to do any kicking.");
-		no_kick = TRUE;
 #ifdef STEED
 	} else if (u.usteed) {
 		if (!dx && !dy && yn_function("Kick your steed?", ynchars, 'y') == 'y') {

@@ -172,7 +172,7 @@ struct Role roles[] = {
 	PM_SOLDIER_ANT, PM_MALKUTH_SEPHIRAH, S_RODENT, S_SPIDER,
 	ART_IRON_SPOON_OF_LIBERATION,
 	// ART_IRON_BALL_OF_LIBERATION,
-	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ORC|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_DWARF|MA_GNOME|MA_ORC|MA_ELF|MA_VAMPIRE|MA_DRAGON|MA_ANIMAL|MA_FEY|MA_REPTILIAN|MA_DEMIHUMAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7, 13,  6 },
@@ -412,7 +412,7 @@ struct Role roles[] = {
 	PM_MASTER_OF_THIEVES, PM_THUG, PM_MASTER_ASSASSIN,
 	PM_LEPRECHAUN, PM_GUARDIAN_NAGA, S_NYMPH, S_NAGA,
 	ART_MASTER_KEY_OF_THIEVERY,
-	MA_HUMAN|MA_ORC|MA_VAMPIRE|MA_ELF|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|MA_ORC|MA_VAMPIRE|MA_ELF|MA_DRAGON|MA_ANIMAL|MA_REPTILIAN|MA_DEMIHUMAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7,  7, 10,  7,  6 },
@@ -858,6 +858,20 @@ const struct Race races[] = {
 	{  0, 0,  100, 0, 100, 0 },		/* Energy */
 	NORMALNIGHTVIS
 	//Note: Bonus to all spells.
+},
+{	"leprechaun", "leprechaunic", "leprechaundum", "Lep",
+	{0, 0},
+	PM_LEPRECHAUN, NON_PM, PM_HUMAN_MUMMY, PM_LEPRECHAUN,
+	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
+	MA_DEMIHUMAN, 0, MA_GNOME|MA_DWARF,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ 16,  25, 16, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  2, 0,  0, 2 },	/* Hit points */
+	{  1, 0,  1, 0,  1, 0 },	/* Energy */
+	NIGHTVISION2, 
+	SPE_DETECT_TREASURE, -10
 },
 {	"orc", "orcish", "orcdom", "Orc",
 	{0, 0},
