@@ -2501,11 +2501,14 @@ int
 base_uac()
 {
 	int dexbonus = 0;
-	int uac = 10-mons[u.umonnum].nac;
+	int uac = 10;
 	boolean flat_foot = multi < 0 || mad_turn(MAD_SUICIDAL) || u.ustuck;
 	
-	if(multi >= 0)
-		dexbonus += mons[u.umonnum].dac;
+	if(Upolyd){
+		uac -= youracedata->nac;
+		if(multi >= 0)
+			dexbonus += youracedata->dac;
+	}
 	
 	if(uring_art(ART_SHARD_FROM_MORGOTH_S_CROWN)){
 		uac -= 6;
