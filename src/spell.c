@@ -612,26 +612,26 @@ int booktype;
 	int skillmin = 0;
 
 #define set_related(spell) if(!related) related = spell
-	switch (booktype)
+	switch (booktype) // comments show relative levels of book->related spell
 	{
-	case SPE_FINGER_OF_DEATH:	set_related(SPE_DRAIN_LIFE);
+	case SPE_EXTRA_HEALING:		set_related(SPE_HEALING);			// 3->1 (-2)
+	case SPE_FINGER_OF_DEATH:	set_related(SPE_DRAIN_LIFE);		// 7->2 (-5)
 		skillmin = P_BASIC;
 		break;
-	case SPE_FIREBALL:			set_related(SPE_FIRE_STORM);
-	case SPE_CONE_OF_COLD:		set_related(SPE_BLIZZARD);
-	case SPE_FIRE_STORM:		set_related(SPE_FIREBALL);
-	case SPE_BLIZZARD:		set_related(SPE_CONE_OF_COLD);
-	case SPE_LIGHTNING_STORM:	set_related(SPE_LIGHTNING_BOLT);
-	case SPE_EXTRA_HEALING:		set_related(SPE_HEALING);
-	case SPE_CHARM_MONSTER:		set_related(SPE_PACIFY_MONSTER);
+	case SPE_HEALING:			set_related(SPE_EXTRA_HEALING);		// 1->3 (+2)
+	case SPE_FIRE_STORM:		set_related(SPE_FIREBALL);			// 6->3 (-3)
+	case SPE_BLIZZARD:			set_related(SPE_CONE_OF_COLD);		// 6->3 (-3)
+	case SPE_CHARM_MONSTER:		set_related(SPE_PACIFY_MONSTER);	// 5->3 (-2)
+	case SPE_LIGHTNING_STORM:	set_related(SPE_LIGHTNING_BOLT);	// 7->5 (-2)
+	case SPE_PACIFY_MONSTER:	set_related(SPE_CHARM_MONSTER);		// 3->5 (+2)
+	case SPE_FIREBALL:			set_related(SPE_FIRE_STORM);		// 3->6 (+3)
+	case SPE_CONE_OF_COLD:		set_related(SPE_BLIZZARD);			// 3->6 (+3)
 		skillmin = P_SKILLED;
 		break;
-	case SPE_LIGHTNING_BOLT:	set_related(SPE_LIGHTNING_STORM);
-	case SPE_HEALING:			set_related(SPE_EXTRA_HEALING);
-	case SPE_DRAIN_LIFE:		set_related(SPE_FINGER_OF_DEATH);
-	case SPE_CREATE_MONSTER:	set_related(SPE_CREATE_FAMILIAR);
-	case SPE_CREATE_FAMILIAR:	set_related(SPE_CREATE_MONSTER);
-	case SPE_PACIFY_MONSTER:	set_related(SPE_CHARM_MONSTER);
+	case SPE_CREATE_MONSTER:	set_related(SPE_CREATE_FAMILIAR);	// 6->6 (+0)
+	case SPE_CREATE_FAMILIAR:	set_related(SPE_CREATE_MONSTER);	// 6->6 (+0)
+	case SPE_LIGHTNING_BOLT:	set_related(SPE_LIGHTNING_STORM);	// 5->7 (+2)
+	case SPE_DRAIN_LIFE:		set_related(SPE_FINGER_OF_DEATH);	// 2->7 (+5)
 		skillmin = P_EXPERT;
 		break;
 	}
@@ -6260,10 +6260,10 @@ int spell;
 	if(Race_if(PM_INCANTIFIER))
 		splcaster += max(-3*urole.spelarmr,urole.spelsbon);
 
-	if(spellid(spell) == urole.spelspec)
+	if(spellid(spell) == urole.spelspec || spellid(spell) == further_study(urole.spelspec))
 		splcaster += urole.spelsbon;
 
-	if(spellid(spell) == urace.spelspec)
+	if(spellid(spell) == urace.spelspec || spellid(spell) == further_study(urace.spelspec))
 		splcaster += urace.spelsbon;
 
 	/* `healing spell' bonus */
