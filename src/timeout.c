@@ -5,6 +5,7 @@
 #pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
 
 #include "hack.h"
+#include "artifact.h"
 
 #include "lev.h"	/* for checking save modes */
 
@@ -2821,6 +2822,48 @@ long timeout;
 }
 
 
+void
+revert_mercurial(arg, timeout)
+genericptr_t arg;
+long timeout;
+{
+	struct obj *obj = (struct obj *) arg;
+	if(obj->obj_material != MERCURIAL){
+		if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+			switch(obj->obj_material){
+				case IRON:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+				break;
+				case GREEN_STEEL:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+				break;
+				case SILVER:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+				break;
+				case GOLD:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+				break;
+				case PLATINUM:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+				break;
+				case MITHRIL:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+				break;
+			}
+		}
+		if(obj->where == OBJ_INVENT){
+			Your("%s is tired of its rigid composition and melts back to silvery chaos.", xname(obj));
+		}
+		else if(obj->where == OBJ_FLOOR && cansee(obj->ox, obj->oy)){
+			pline("%s is tired of its rigid composition and melts back to silvery chaos.", The(xname(obj)));
+		}
+		set_material_gm(obj, MERCURIAL);
+		fix_object(obj);
+		update_inventory();
+	}
+}
+
+
 #ifdef OVL0
 /* ------------------------------------------------------------------------- */
 /*
@@ -2916,6 +2959,7 @@ static const ttable timeout_funcs[NUM_TIME_FUNCS] = {
 	TTAB(larvae_die,		(timeout_proc)0,	"larvae_die"),
 	TTAB(revive_mon_pickup,	(timeout_proc)0,	"revive_mon_pickup"),
 	TTAB(revert_object,		(timeout_proc)0,	"revert_object"),
+	TTAB(revert_mercurial,	(timeout_proc)0,	"revert_mercurial"),
 };
 #undef TTAB
 

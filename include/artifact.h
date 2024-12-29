@@ -324,6 +324,7 @@ struct artinstance{
 #define	ZPROP_BALANCE	0x00000020L
 #define	ZPROP_PATIENCE	0x00000040L
 #define	ZPROP_FOCUS		0x00000080L
+#define TwinSkiesEtraits	avar2
 #define CarapaceXP avar1
 #define FingerprintProgress avar1
 
@@ -341,6 +342,7 @@ struct artinstance{
 #define	GSTYLE_RESONANT		5
 #define FIRST_GSTYLE		GSTYLE_PENETRATE
 #define LAST_GSTYLE			GSTYLE_RESONANT
+#define ZerthOtyp	avar2
 #define CarapaceLevel avar2
 
 	long avar3;
@@ -348,6 +350,13 @@ struct artinstance{
 #define IbiteBoons avar3
 #define CarapacePoints avar3
 #define GithStylesSeen avar3
+#define ZerthMaterials avar3
+#define	ZMAT_IRON		0x00000001L
+#define	ZMAT_GREEN		0x00000002L
+#define	ZMAT_SILVER		0x00000004L
+#define	ZMAT_GOLD		0x00000008L
+#define	ZMAT_PLATINUM	0x00000010L
+#define	ZMAT_MITHRIL	0x00000020L
 	long avar4;
 #define SnSd3duration avar4
 #define CarapaceAura avar4

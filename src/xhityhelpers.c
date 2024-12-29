@@ -1307,7 +1307,7 @@ struct obj * obj;
 	if (is_lightsaber(obj) && litsaber(obj))
 		return FALSE;
 
-	if ((obj->obj_material == SILVER || obj->obj_material == HEMARGYOS || arti_silvered(obj)) ||
+	if ((obj_is_material(obj, SILVER) || obj_is_material(obj, HEMARGYOS) || arti_silvered(obj)) ||
 		(obj->oclass == RING_CLASS && obj->ohaluengr
 		&& (isEngrRing(obj->otyp) || isSignetRing(obj->otyp))
 		&& obj->oward >= LOLTH_SYMBOL && obj->oward <= LOST_HOUSE) ||
@@ -1406,9 +1406,9 @@ struct monst * magr;
 		dmg += vd(ndice, diesize);
 	}
 
-	if (hates_unholy_mon(mdef) &&
-		otmp->obj_material == GREEN_STEEL &&
-		!(is_lightsaber(otmp) && litsaber(otmp))) {
+	if (hates_unholy_mon(mdef) && obj_is_material(otmp, GREEN_STEEL) &&
+		!(is_lightsaber(otmp) && litsaber(otmp))
+	) {
 		/* default: 2d9 */
 		/* Note: stacks with curse damage to 3d9 total (pre modifiers). */
 		ndice = 2;
@@ -1492,7 +1492,7 @@ struct monst * magr;
 		if (otmp->otyp == KHAKKHARA)
 			ndice = khakharadice;
 		/* gold has a particular affinity to blessings and curses */
-		if ((otmp->obj_material == GOLD || otmp->oartifact == ART_RUYI_JINGU_BANG) &&
+		if ((obj_is_material(otmp, GOLD) || otmp->oartifact == ART_RUYI_JINGU_BANG) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			diesize = 20;
 		}
@@ -1559,7 +1559,7 @@ struct monst * magr;
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* gold has a particular affinity to blessings and curses */
-		if (otmp->obj_material == GOLD &&
+		if (obj_is_material(otmp, GOLD) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			ndice *= 2;
 		}
@@ -1604,7 +1604,7 @@ struct monst * magr;
 	}
 
 	if (hates_lawful_mon(mdef) &&
-		((otmp->obj_material == PLATINUM &&
+		((obj_is_material(otmp, PLATINUM) &&
 		!(is_lightsaber(otmp) && litsaber(otmp)))
 		|| otmp->oartifact == ART_GRAYSWANDIR
 		)
@@ -1875,7 +1875,7 @@ struct obj * weapon;
 
 		if (hates_unholy_mon(mdef) && (
 			(magr && is_unholy_mon(magr)) ||
-			(otmp && otmp->obj_material == GREEN_STEEL) ||
+			(otmp && obj_is_material(otmp, GREEN_STEEL)) ||
 			(otmp && is_unholy(otmp)) ||
 			(youagr && slot == W_ARMG && uright && is_unholy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_unholy(uleft))
@@ -3525,6 +3525,44 @@ obj_is_material(struct obj *obj, int mat)
 {
 	if(obj->obj_material == mat)
 		return TRUE;
+	switch(mat){
+		case IRON:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_IRON)
+					return TRUE;
+			}
+		break;
+		case GREEN_STEEL:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GREEN)
+					return TRUE;
+			}
+		break;
+		case SILVER:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_SILVER)
+					return TRUE;
+			}
+		break;
+		case GOLD:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GOLD)
+					return TRUE;
+			}
+		break;
+		case PLATINUM:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_PLATINUM)
+					return TRUE;
+			}
+		break;
+		case MITHRIL:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL)
+					return TRUE;
+			}
+		break;
+	}
 	return FALSE;
 }
 

@@ -14182,7 +14182,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if ((u.usteed || centauroid(youracedata) || animaloid(youracedata)) && weapon &&
 			(weapon_type(weapon) == P_LANCE ||
 			(weapon->oartifact == ART_ROD_OF_SEVEN_PARTS) ||
-			(weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH)
+			(weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH) ||
+			(weapon->oartifact == ART_SKY_REFLECTED && objects[(artinstance[ART_SKY_REFLECTED].ZerthOtyp)].oc_skill == P_LANCE)
 			) &&
 			mdef != u.ustuck &&
 			!Fumbling &&
@@ -14376,13 +14377,14 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			if (obj_jade_searing(otmp))
 				jadeobj |= slot;
 		}
+		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
 		if (hates_iron(pd) &&
-			(otmp->obj_material == IRON || otmp->oartifact == ART_AMALGAMATED_SKIES || otmp->oartifact == ART_SKY_REFLECTED) &&
+			obj_is_material(otmp, IRON) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			ironobj |= slot;
 		}
 		if ((hates_iron(pd) || hates_unholy_mon(mdef)) &&
-			otmp->obj_material == GREEN_STEEL &&
+			obj_is_material(otmp, GREEN_STEEL) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			grnstlobj |= slot;
 		}
@@ -14487,12 +14489,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 						if (obj_jade_searing(otmp))
 							jadeobj |= rslot;
 					}
-					if (hates_iron(pd) &&
-						otmp->obj_material == IRON) {
+					if (hates_iron(pd) && obj_is_material(otmp, IRON)) {
 						ironobj |= rslot;
 					}
-					if ((hates_iron(pd) || hates_unholy_mon(mdef)) &&
-						otmp->obj_material == GREEN_STEEL) {
+					if ((hates_iron(pd) || hates_unholy_mon(mdef)) && obj_is_material(otmp, GREEN_STEEL)) {
 						grnstlobj |= rslot;
 					}
 					if (hates_holy_mon(mdef) &&

@@ -236,6 +236,7 @@ struct objclass {
 #define CHECK_ETRAIT(obj, mon, trait) (( (objects[(obj)->otyp].expert_traits&trait && (obj)->objsize == wielder_size(mon) && (trait == ETRAIT_PENETRATE_ARMOR || !is_lightsaber(obj) || litsaber(obj)) && !((mon) == &youmonst && objects[(obj)->otyp].oc_skill == P_LANCE && !(u.usteed || centauroid(youracedata) || animaloid(youracedata)))) \
 										|| (trait == ETRAIT_QUICK && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD))\
 										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
+										|| ((obj)->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits&trait)\
 									   ) && \
 	((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
 #define ROLL_ETRAIT(obj, mon, echance, schance) (((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_SKILLED) : ((mon)->data->mflagsf&MF_MARTIAL_E)) ? echance : schance)

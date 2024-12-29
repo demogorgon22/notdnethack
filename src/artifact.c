@@ -2107,6 +2107,10 @@ boolean mod;
 				}
 				if(otmp->oartifact == ART_SKY_REFLECTED){
 					artinstance[ART_SKY_REFLECTED].ZerthUpgrades = 0;
+					artinstance[ART_SKY_REFLECTED].ZerthOtyp = otmp->otyp;
+				}
+				if(otmp->oartifact == ART_AMALGAMATED_SKIES){
+					artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits = objects[TWO_HANDED_SWORD].expert_traits;
 				}
 			}
 			if(otmp->oartifact && (get_artifact(otmp)->inv_prop == NECRONOMICON || get_artifact(otmp)->inv_prop == SPIRITNAMES)){
@@ -2491,6 +2495,11 @@ struct obj *obj;
 		/* explicitly set in artilist.h */
 		wt = artiweight;
 	}
+
+	if((obj->oartifact == ART_AMALGAMATED_SKIES || obj->oartifact == ART_SKY_REFLECTED) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL){
+		wt = (wt+1)/2;//Note: Iron to mithril, not merc to mithril
+	}
+
 	return wt;
 }
 
@@ -15088,16 +15097,22 @@ struct obj **opptr;
 	if(yn("Merge the two skies into one?") == 'y'){
 		struct obj *sky2;
 		struct obj *amalgam;
-		if(u.ulevel < 22){ //Less than rank 7
-			pline("The two swords ripple for a moment, then push each-other away!");
-			pline("It seems you are not powerful enough to merge them together.");
-			return MOVE_CANCELLED;
-		}
 		for(sky2 = invent; sky2; sky2 = sky2->nobj)
 			if(sky2->oartifact == needed)
 				break;
 		if(!sky2){
 			impossible("Missing second sky in merge_skies.");
+			return MOVE_CANCELLED;
+		}
+		if((sky1->oartifact == ART_SKY_REFLECTED && sky1->obj_material != MERCURIAL) ||
+		   (sky2->oartifact == ART_SKY_REFLECTED && sky2->obj_material != MERCURIAL)
+		){
+			pline("The two weapons clink together awkwardly.");
+			return MOVE_CANCELLED;
+		}
+		if(u.ulevel < 22){ //Less than rank 7
+			pline("The two weapons ripple for a moment, then push each-other away!");
+			pline("It seems you are not powerful enough to merge them together.");
 			return MOVE_CANCELLED;
 		}
 		amalgam = mksartifact(ART_AMALGAMATED_SKIES);
@@ -15113,6 +15128,48 @@ struct obj **opptr;
 		for(int prop = 1; prop < MAX_OPROP; prop++){
 			if(check_oprop(sky1, prop) || check_oprop(sky2, prop))
 				add_oprop(amalgam, prop);
+		}
+		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= objects[sky1->otyp].expert_traits;
+		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= objects[sky2->otyp].expert_traits;
+		switch(sky1->obj_material){
+			case IRON:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+			break;
+			case GREEN_STEEL:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+			break;
+			case SILVER:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+			break;
+			case GOLD:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+			break;
+			case PLATINUM:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+			break;
+			case MITHRIL:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+			break;
+		}
+		switch(sky2->obj_material){
+			case IRON:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+			break;
+			case GREEN_STEEL:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+			break;
+			case SILVER:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+			break;
+			case GOLD:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+			break;
+			case PLATINUM:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+			break;
+			case MITHRIL:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+			break;
 		}
 		if(sky1->blessed || sky2->blessed)
 			bless(amalgam);

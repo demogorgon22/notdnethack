@@ -3670,7 +3670,8 @@ winid *datawin;
 		register const struct artifact *oart = &artilist[oartifact];
 		buf[0] = '\0';
 		ADDCLASSPROP((oart->aflags&ARTA_POIS), "always poisoned");
-		ADDCLASSPROP((oart->aflags&ARTA_SILVER), "silvered");
+		if(oartifact != ART_AMALGAMATED_SKIES)
+			ADDCLASSPROP((oart->aflags&ARTA_SILVER), "silvered");
 		ADDCLASSPROP((oart->aflags&ARTA_VORPAL), "vorpal");
 		ADDCLASSPROP((oart->aflags&ARTA_CANCEL), "canceling");
 		ADDCLASSPROP((oart->aflags&ARTA_MAGIC), "magic-flourishing");
@@ -3742,6 +3743,18 @@ winid *datawin;
 				Sprintf(buf2, "Known mantras: %s.", buf);
 			else
 				Sprintf(buf2, "No mantras known.");
+			OBJPUTSTR(buf2);
+			buf[0] = '\0';
+			if(oartifact == ART_AMALGAMATED_SKIES)
+				ADDCLASSPROP(TRUE, "silver");
+			ADDCLASSPROP(TRUE, "iron");
+#define	ZERTHMATS(prop, string)	\
+	ADDCLASSPROP(artinstance[ART_SKY_REFLECTED].ZerthMaterials&prop, string);
+			ZERTHMATS(ZMAT_GREEN, "green steel");
+			ZERTHMATS(ZMAT_GOLD, "gold");
+			ZERTHMATS(ZMAT_PLATINUM, "platinum");
+			ZERTHMATS(ZMAT_MITHRIL, "mithril");
+			Sprintf(buf2, "Amalgamated metals: %s.", buf);
 			OBJPUTSTR(buf2);
 		}
 	}
@@ -6103,6 +6116,7 @@ char *title;
 		   : (mon->misc_worn_check || MON_WEP(mon) || MON_SWEP(mon))) {
 	    /* Fool the 'weapon in hand' routine into
 	     * displaying 'weapon in claw', etc. properly.
+		 * Set back by set_uasmon() bellow
 	     */
 	    youmonst.data = mon->data;
 
