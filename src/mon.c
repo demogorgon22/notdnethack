@@ -3647,6 +3647,10 @@ boolean actual;			/* actual attack or faction check? */
 	if (actual && onscary(mdef->mx, mdef->my, magr)) {
 		return 0L;
 	}
+	// Don't focus-down steeds
+	if (actual && mdef == u.usteed) {
+		return 0L;
+	}
 	// Berserked creatures are effectively always conflicted, and aren't careful about anything unnecessary
 	if (magr->mberserk) {
 		return ALLOW_M | ALLOW_TM;
