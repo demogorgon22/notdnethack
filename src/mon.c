@@ -3643,6 +3643,10 @@ boolean actual;			/* actual attack or faction check? */
 		else
 			return 0L;
 	}
+	// Respect wards
+	if (actual && onscary(mdef->mx, mdef->my, magr)) {
+		return 0L;
+	}
 	// Berserked creatures are effectively always conflicted, and aren't careful about anything unnecessary
 	if (magr->mberserk) {
 		return ALLOW_M | ALLOW_TM;
