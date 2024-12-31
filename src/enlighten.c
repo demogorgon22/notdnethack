@@ -3095,6 +3095,9 @@ research_enlightenment()
 		if(!(active_glyph(DEFILEMENT) || (u.ualign.god == GOD_DEFILEMENT && known_glyph(DEFILEMENT)))){
 			putstr(en_win, 0, "Though, you are not currently a serious student of that philosophy.");
 		}
+		else if(u.veil){
+			putstr(en_win, 0, "You have yet to feel beyond.");
+		}
 		else {
 			if(!(u.upreservation_upgrades&PRESERVE_MAX) || (Race_if(PM_VAMPIRE) && vampire_count() < VAMPIRE_COUNT)){
 				if(defile_ok()){
@@ -3163,6 +3166,9 @@ research_enlightenment()
 		if(!(active_glyph(LUMEN) || (u.ualign.god == GOD_THE_CHOIR && known_glyph(LUMEN)))){
 			putstr(en_win, 0, "Though, you are not currently a serious student of that philosophy.");
 		}
+		else if(u.veil){
+			putstr(en_win, 0, "You have yet to hear the song.");
+		}
 		else {
 			if(parasite_ok()){
 				putstr(en_win, 0, "You are ready to conduct another experiment into the song of the parasite choir.");
@@ -3212,6 +3218,9 @@ research_enlightenment()
 		}
 		if(!(active_glyph(ROTTEN_EYES) || (u.ualign.god == GOD_THE_COLLEGE && known_glyph(ROTTEN_EYES)))){
 			putstr(en_win, 0, "Though, you are not currently a serious student of that philosophy.");
+		}
+		else if(u.veil){
+			putstr(en_win, 0, "Your eyes have yet to open.");
 		}
 		else {
 			if(reanimation_count() < REANIMATION_COUNT){

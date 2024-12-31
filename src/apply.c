@@ -2902,6 +2902,8 @@ parasite_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
+	if(u.veil)
+		return FALSE;
 	if(parasite_research_ok())
 		return TRUE;
 	return FALSE;
@@ -2968,6 +2970,8 @@ defile_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
+	if(u.veil)
+		return FALSE;
 	if(!impurity_ok())
 		return FALSE;
 	if(defile_research_ok())
@@ -3023,6 +3027,8 @@ boolean
 reanimation_ok()
 {
 	if(ABASE(A_INT) < 6)
+		return FALSE;
+	if(u.veil)
 		return FALSE;
 	if(!reanimation_insight_ok())
 		return FALSE;
