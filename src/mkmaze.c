@@ -693,6 +693,7 @@ fixup_special()
 					if (!rn2(3))mkobj_at(TOOL_CLASS, x, y, NO_MKOBJ_FLAGS);
 					if (rn2(6)) mkobj_at(SCROLL_CLASS, x, y, NO_MKOBJ_FLAGS);
 					if (!rn2(4))mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
+					if (!rn2(4)) mkobj_at(BELT_CLASS, x, y, NO_MKOBJ_FLAGS);
 					if (!rn2(3))mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
 					if (!rn2(2))mkobj_at(GEM_CLASS, x, y, NO_MKOBJ_FLAGS);
 					if (!rn2(4))mksobj_at(SILVER_SLINGSTONE, x, y, NO_MKOBJ_FLAGS);

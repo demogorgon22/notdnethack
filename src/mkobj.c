@@ -42,7 +42,8 @@ struct icp {
 const struct icp mkobjprobs[] = {
 {10, WEAPON_CLASS},
 {10, ARMOR_CLASS},
-{20, FOOD_CLASS},
+{18, FOOD_CLASS},
+{ 2, BELT_CLASS},
 { 8, TOOL_CLASS},
 { 8, GEM_CLASS},
 {16, POTION_CLASS},
@@ -80,9 +81,10 @@ const struct icp rogueprobs[] = {
 const struct icp hellprobs[] = {
 {20, WEAPON_CLASS},
 {20, ARMOR_CLASS},
-{16, FOOD_CLASS},
+{ 8, FOOD_CLASS},
+{ 6, BELT_CLASS},
 {12, TOOL_CLASS},
-{10, GEM_CLASS},
+{12, GEM_CLASS},
 { 1, POTION_CLASS},
 { 1, SCROLL_CLASS},
 { 8, WAND_CLASS},
