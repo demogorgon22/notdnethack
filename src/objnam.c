@@ -2050,6 +2050,8 @@ boolean getting_obj_base_desc;
 						Strcat(buf, "shield");
 					else if (obj->oclass == ARMOR_CLASS)
 						Strcat(buf, "armor");
+					else if (obj->oclass == BELT_CLASS)
+						Strcat(buf, "belt");
 					else
 						Strcat(buf, dn ? dn : actualn);
 
@@ -3126,13 +3128,13 @@ static const char *wrp[] = {
 	"wand", "ring", "potion", "scroll", "shard", "wage", "strange coin", "gem", "amulet",
 	"spellbook", "spell book",
 	/* for non-specific wishes */
-	"weapon", "armor", "armour", "tool", "food", "comestible",
+	"weapon", "armor", "armour", "tool", "food", "comestible","belt",
 };
 static const char wrpsym[] = {
 	WAND_CLASS, RING_CLASS, POTION_CLASS, SCROLL_CLASS, TILE_CLASS, SCOIN_CLASS, SCOIN_CLASS, GEM_CLASS,
 	AMULET_CLASS, SPBOOK_CLASS, SPBOOK_CLASS,
 	WEAPON_CLASS, ARMOR_CLASS, ARMOR_CLASS, TOOL_CLASS, FOOD_CLASS,
-	FOOD_CLASS
+	FOOD_CLASS, BELT_CLASS
 };
 
 #endif /* OVLB */
@@ -5028,8 +5030,19 @@ int wishflags;
 	   strncmpi(bp, "sceptre of lolth", 16) && 
 	   strncmpi(bp, "atma weapon", 11) &&
 	   strncmpi(bp, "wand of orcus", 13) &&
-	   strncmpi(bp, "shard from morgoth's crown", 26) &&
-	   strncmpi(bp, "ring of thror", 13)
+	   strncmpi(bp, "shard from morgoth's crown", 26)
+	   && strncmpi(bp, "ring of thror", 13)
+	   && strncmpi(bp, "belt of power", 13)
+	   && strncmpi(bp, "belt of weakness", 16)
+	   && strncmpi(bp, "belt of carrying", 16)
+	   && strncmpi(bp, "belt of weight", 14)
+	   && strncmpi(bp, "kidney belt", 11)
+	   && strncmpi(bp, "utility belt", 12)
+	   && strncmpi(bp, "chastity belt", 13)
+	   && strncmpi(bp, "Star-emperor's Ring", 19)
+	   && strncmpi(bp, "Stake of Withering", 18)
+	   && strncmpi(bp, "Ring of Hygiene's Disciple", 26)
+	   && strncmpi(bp, "Belthronding", 12)
 	)
 	for (i = 0; i < (int)(sizeof wrpsym); i++) {
 		register int j = strlen(wrp[i]);
