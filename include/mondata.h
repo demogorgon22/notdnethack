@@ -325,7 +325,7 @@
 								 (ptr)->mtyp == PM_UVUUDAUM || \
 								 (ptr)->mtyp == PM_MASKED_QUEEN \
 								 )
-#define controlledwidegaze(ptr)		(!((ptr)->mtyp == PM_MEDUSA || (ptr)->mtyp == PM_UVUUDAUM || (ptr)->mtyp == PM_GREAT_CTHULHU || (ptr)->mtyp == PM_OBOX_OB || (ptr)->mtyp == PM_DAGON))
+#define controlledwidegaze(ptr)		(!((ptr)->mtyp == PM_MEDUSA || (ptr)->mtyp == PM_UVUUDAUM || (ptr)->mtyp == PM_DESERT_SEER || (ptr)->mtyp == PM_GREAT_CTHULHU || (ptr)->mtyp == PM_OBOX_OB || (ptr)->mtyp == PM_DAGON))
 #define controlledwidegaze_mon(mon)		(controlledwidegaze((mon)->data) || has_template(mon, ILLUMINATED))
 #define acidic(ptr)			(((ptr)->mflagsb & MB_ACID) != 0L)
 #define poisonous(ptr)		(((ptr)->mflagsb & MB_POIS) != 0L)
@@ -1022,6 +1022,7 @@
 
 #define is_alienist(ptr)		(is_mind_flayer(ptr) || \
 								 (ptr)->mlet == S_UMBER ||\
+								 (ptr)->mtyp == PM_DESERT_SEER ||\
 								 (ptr)->mtyp == PM_DROW_ALIENIST ||\
 								 (ptr)->mtyp == PM_DARUTH_XAXOX ||\
 								 (ptr)->mtyp == PM_EMBRACED_DROWESS\

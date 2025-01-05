@@ -271,6 +271,8 @@ Cloak_on()
 	case CLOAK_OF_MAGIC_RESISTANCE:
 	case ROBE:
 	case CLOAK:
+	case CAPELET:
+	case HOODED_CAPELET:
 	case LEO_NEMAEUS_HIDE:
 	case WHITE_FACELESS_ROBE:
 	case BLACK_FACELESS_ROBE:
@@ -353,6 +355,8 @@ Cloak_off()
 	case OILSKIN_CLOAK:
 	case ROBE:
 	case CLOAK:
+	case CAPELET:
+	case HOODED_CAPELET:
 	case LEO_NEMAEUS_HIDE:
 	case WHITE_FACELESS_ROBE:
 	case BLACK_FACELESS_ROBE:
@@ -410,6 +414,7 @@ Helmet_on()
 	case CRYSTAL_HELM:
 	case PONTIFF_S_CROWN:
 	case FACELESS_HELM:
+	case FACELESS_HOOD:
 	case SEDGE_HAT:
 	case WAR_HAT:
 	case WIDE_HAT:
@@ -527,6 +532,7 @@ Helmet_off()
 	case CRYSTAL_HELM:
 	case PONTIFF_S_CROWN:
 	case FACELESS_HELM:
+	case FACELESS_HOOD:
 	case SEDGE_HAT:
 	case WAR_HAT:
 	case WIDE_HAT:
@@ -575,7 +581,7 @@ Helmet_off()
 	if (Blind) {
 		if (was_blind) {
 			/* "still cannot see" needs the helmet to possibly have been the cause of your blindness */
-			if ((otmp->otyp == CRYSTAL_HELM && is_opaque(otmp)) ||
+			if (((otmp->otyp == CRYSTAL_HELM || otmp->otyp == FACELESS_HOOD) && is_opaque(otmp)) ||
 				(otmp->otyp == PLASTEEL_HELM && is_opaque(otmp) && otmp->obj_material != objects[otmp->otyp].oc_material))
 				You("still cannot see.");
 		}

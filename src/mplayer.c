@@ -912,7 +912,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		}
 		*armor = JACKET;
 		*helm = FEDORA;
-		*cloak = CLOAK;
+		*cloak = CAPELET;
 		*gloves = GLOVES;
 		*boots = HIGH_BOOTS;
 	break;

@@ -1952,6 +1952,7 @@ movemon()
 	if(mtmp->mlstmv != monstermoves){
 		mtmp->mprev_attk.x = 0;
 		mtmp->mprev_attk.y = 0;
+	}
 	if(u.specialSealsActive&SEAL_LIVING_CRYSTAL)
 		average_dogs();
 	if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){

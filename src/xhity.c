@@ -11794,15 +11794,7 @@ expl_common:
 }
 
 void
-getgazeinfo(aatyp, adtyp, pa, magr, mdef, needs_magr_eyes, needs_mdef_eyes, needs_uncancelled)
-int aatyp;
-int adtyp;
-struct permonst * pa;
-struct monst * magr;
-struct monst * mdef;
-boolean * needs_magr_eyes;
-boolean * needs_mdef_eyes;
-boolean * needs_uncancelled;
+getgazeinfo(int aatyp, int adtyp, struct permonst *pa, struct monst *magr, struct monst *mdef, boolean *needs_magr_eyes, boolean *needs_mdef_eyes, boolean *needs_magr_head, boolean *needs_uncancelled)
 {
 #define maybeset(b, tf) if(b) {*(b)=tf;}
 	boolean adjacent = FALSE;
@@ -11848,6 +11840,12 @@ boolean * needs_uncancelled;
 	case AD_UNRV:
 		maybeset(needs_magr_eyes, TRUE);
 		maybeset(needs_mdef_eyes, TRUE);
+		break;
+		/* seeing the monster's face is dangerous */
+	case AD_PAIN:
+		maybeset(needs_magr_eyes, FALSE);
+		maybeset(needs_mdef_eyes, TRUE);
+		maybeset(needs_magr_head, TRUE);
 		break;
 		/* the monster staring *at* something is dangerous */
 	case AD_FIRE:
@@ -11916,6 +11914,7 @@ int vis;
 
 	boolean needs_magr_eyes = TRUE;		/* when TRUE, mdef is protected if magr is blind */
 	boolean needs_mdef_eyes = TRUE;		/* when TRUE, mdef is protected by being blind */
+	boolean needs_magr_head = FALSE;		/* when TRUE, mdef is protected if magr's head is covered */
 	boolean needs_uncancelled = TRUE;	/* when TRUE, attack cannot happen when cancelled */
 	boolean maybe_not = (!youagr && pa->mtyp != PM_DEMOGORGON);		/* when TRUE, occasionally doesn't use gaze attack at all */
 	boolean cooldown = TRUE;			/* when TRUE, attack may set cooldown */
@@ -11924,6 +11923,8 @@ int vis;
 		AD_CONF, AD_SLOW, AD_STUN, AD_BLND, AD_FIRE, AD_FIRE,
 		AD_COLD, AD_COLD, AD_ELEC, AD_ELEC, AD_HALU, AD_SLEE };
 	static const int elementalgazeattacks[] = { AD_FIRE, AD_COLD, AD_ELEC };
+	struct obj *ahelm = youagr ? uarmh : which_armor(magr, W_ARMH);
+	struct obj *acloak = youagr ? uarmc : which_armor(magr, W_ARMC);
 
 	char buf[BUFSZ];
 	struct attack alt_attk;
@@ -11959,7 +11960,7 @@ int vis;
 		break;
 	}
 	/* get eyes, uncancelledness */
-	getgazeinfo(attk->aatyp, adtyp, pa, magr, mdef, &needs_magr_eyes, &needs_mdef_eyes, &needs_uncancelled);
+	getgazeinfo(attk->aatyp, adtyp, pa, magr, mdef, &needs_magr_eyes, &needs_mdef_eyes, &needs_magr_head, &needs_uncancelled);
 
 	/* widegazes cannot fail, and don't use mspec_used */
 	if (attk->aatyp == AT_WDGZ){
@@ -11988,6 +11989,12 @@ int vis;
 			(youdef ? canseemon(magr) : youagr ? mon_can_see_you(mdef) : mon_can_see_mon(mdef, magr)) &&
 			(!(youdef ? Sleeping : mdef->msleeping)) &&
 			(!Gaze_res(mdef)) /* wearing the Eyes, nearly anything is safe to see */
+		))
+		||
+		/* needs_mdef_eyes:   mdef must have eyes and can actively see magr */
+		(needs_magr_head && (
+			( (ahelm && FacelessHelm(ahelm)) || (acloak && FacelessCloak(acloak)) ) || /* wearing a faceless helm or cloak (cloak even if headless) */
+			(Gaze_res(mdef)) /* wearing the Eyes, nearly anything is safe to see */
 		))
 		){
 		/* gaze fails because the appropriate gazer/gazee eye (contact?) is not available */
@@ -13144,6 +13151,67 @@ int vis;
 			if(magr->mtyp == PM_GREAT_CTHULHU)
 				u.umadness |= MAD_SPIRAL;
 		}
+		break;
+
+	/*crushing pain*/
+	case AD_PAIN:
+		if (distmin(x(magr), y(magr), x(mdef), y(mdef)) > BOLT_LIM)
+			return MM_MISS;
+
+		if (youdef) {
+			Your("mind is imploding from the sight of %s visage!", s_suffix(mon_nam(magr)));
+			// make_blinded((long)dmg, FALSE);
+			// stop_occupation();
+			// make_stunned((long)d(1, 3), TRUE);
+			if(!HScreaming){
+				if (!is_silent(pd)){
+					You("%s from the pain!", humanoid_torso(pd) ? "scream" : "shriek");
+				}
+				else {
+					You("writhe in pain!");
+				}
+				change_usanity(-dmg, TRUE); //May result in screaming being set, or other minor madness
+				HScreaming += dmg;
+			}
+			else {
+				HScreaming += 2;
+				change_usanity(-2, FALSE);
+			}
+			if(!u.veil && !mvitals[monsndx(magr->data)].vis_insight){
+				mvitals[monsndx(magr->data)].vis_insight = TRUE;
+				uchar insight = u_insight_gain(magr);
+				mvitals[monsndx(magr->data)].insight_gained += insight;
+				change_uinsight(insight);
+			}
+			stop_occupation();
+		}
+		else {
+			if((nonliving(pd) && !is_android(pd)) 
+				|| has_template(mdef, TOMB_HERD) /*not a statue-piloting thingy */
+				|| is_primordial(pd)
+				|| is_alienist(pd)
+				|| is_great_old_one(pd)
+			){
+				return MM_MISS;
+			}
+			unsigned int oldspeed = mdef->mspeed;
+			if(mdef->movement > 0 && mdef->mcanmove){
+				if (!is_silent_mon(mdef)){
+					if (canseemon(mdef))
+						pline("%s %s in pain!", Monnam(mdef), humanoid_torso(mdef->data) ? "screams" : "shrieks");
+					else You_hear("%s %s in pain!", mdef->mtame ? noit_mon_nam(mdef) : mon_nam(mdef), humanoid_torso(mdef->data) ? "screaming" : "shrieking");
+				}
+				else {
+					if (canseemon(mdef))
+						pline("%s writhes in pain!", Monnam(mdef));
+				}
+			}
+
+			mdef->movement = max(mdef->movement - 2*dmg, -12);
+		}
+		/* apply half damage (both) */
+		dmg = reduce_dmg(mdef,dmg,TRUE,TRUE);
+		return xdamagey(magr, mdef, attk, dmg);
 		break;
 
 	case AD_SEDU:

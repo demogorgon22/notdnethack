@@ -372,6 +372,9 @@ WEAPON(("hunter's shortsword"),
 WEAPON(("scimitar", "curved sword"),
 	DMG(D(8)), DMG(D(8)),
 	0, 0, MZ_MEDIUM, 13, 40, 15,  0, S,   P_SCIMITAR, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH)),
+WEAPON(("elven scimitar", "runed curved sword"),
+	DMG(D(6), F(2)), DMG(D(6), F(1)),
+	0, 0, MZ_MEDIUM,  0, 12, 15,  2, S,   P_SCIMITAR, WOOD, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH)),
 WEAPON(("high-elven warsword", "runed curved sword"), /*Needs encyc entry*/
 	DMG(D(10), D(6)), DMG(D(10), D(6)),
 	0, 0, MZ_HUGE,    1, 75,150,  2, S,   P_SCIMITAR, MITHRIL, UNIDED, HI_MITHRIL, O_TRAITS(ETRAIT_HEW|ETRAIT_FELL|ETRAIT_CLEAVE|ETRAIT_LONG_SLASH)),
@@ -834,6 +837,8 @@ HELM(("pontiff's crown", "filigreed faceless helm"), /*Needs encyc entry*//*Need
 		0, 0,  0, 2, 90, 300, 8, 5, 0, GOLD, HI_GOLD, O_MATSPEC(IDED)),
 HELM(("shemagh", "headscarf"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 0, 5,   5, 10, 0, 0, CLOTH, CLR_WHITE, O_MATSPEC(UNIDED)),
+HELM(("faceless hood"), /*Needs encyc entry*//*Needs tile*/
+		1, 0,  0, 0, 5,   5, 10, 0, 0, CLOTH, CLR_BROWN),
 HELM(("faceless helm"), /*Needs encyc entry*//*Needs tile*/
 		1, 0,  0, 2, 30, 300, 8, 5, 0, BONE, CLR_GRAY, O_MATSPEC(IDED)),
 
@@ -1017,6 +1022,10 @@ CLOAK(("dwarvish cloak", "hooded cloak"),
 		0, 0,	8, 0, 10, 50,10, 1, 2, CLOTH, CLR_BLUE, O_DRSLOT(HEAD_DR|CLOAK_DR)),
 CLOAK(("oilskin cloak", "slippery cloak"),
 		0, 0,	8, 0, 10, 50,  9, 0, 3, CLOTH, HI_CLOTH, O_POWER(WATERPROOF)),
+CLOAK(("capelet"),
+		1, 0,	0, 0,  5,  2, 10, 1, 1, LEATHER, HI_LEATHER, O_DRSLOT(UPPER_TORSO_DR)),
+CLOAK(("hooded capelet"),
+		1, 0,	0, 0,  5,  2, 10, 1, 1, LEATHER, HI_LEATHER, O_DRSLOT(HEAD_DR|UPPER_TORSO_DR)),
 CLOAK(("robe"),
 		1, 1,	3, 0, 15, 50, 10, 2, 3, CLOTH, CLR_RED),
 CLOAK(("white faceless robe", (char *)0, "faceless robe"),

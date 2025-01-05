@@ -1812,13 +1812,6 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 			case 7: return VULNERABILITY;
 			case 8: return STUN_YOU;
 		}
-	case PM_TETTIGON_EIDOLON:
-		switch(rnd(4)){
-			case 1: return PSI_BOLT;
-			case 2: return MON_WARP_THROW;
-			case 3: return VULNERABILITY;
-			case 4: return STUN_YOU;
-		}
 	case PM_VERIER: 
 		if(!rn2(3)) return WEAKEN_YOU;
 		else return DESTRY_ARMR;

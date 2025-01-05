@@ -897,6 +897,7 @@ chaos_montype()
 struct permonst *
 chaos2_montype()
 {
+	int diff = (u.ulevel+level_difficulty())/2;
 	if(on_level(&elshava_level,&u.uz)){
 		if(rn2(3))
 			return !(mvitals[PM_FOG_CLOUD].mvflags & G_GONE) ? &mons[PM_FOG_CLOUD] : mkclass(S_VORTEX, G_NOHELL);
@@ -909,6 +910,10 @@ chaos2_montype()
 		else
 			return !(mvitals[PM_NOVIERE_ELADRIN].mvflags & G_GONE) ? &mons[PM_NOVIERE_ELADRIN] : mkclass(S_CHA_ANGEL, G_NOHELL);
 	} else if(In_mithardir_desert(&u.uz)){
+		if(G_C_INST(mons[PM_DESERT_SEER].geno) < u.uinsight && !rn2(10)){
+			if(!toostrong(PM_DESERT_SEER, diff+5))
+				return &mons[PM_DESERT_SEER];
+		}
 		if(rn2(3))
 			return !(mvitals[PM_DUST_VORTEX].mvflags & G_GONE) ? &mons[PM_DUST_VORTEX] : mkclass(S_ZOMBIE, G_NOHELL);
 		else if(rn2(2))

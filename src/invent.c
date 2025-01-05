@@ -4396,6 +4396,7 @@ winid *datawin;
 		otyp == CRYSTAL_HELM ||
 		otyp == PONTIFF_S_CROWN ||
 		otyp == FACELESS_HELM ||
+		otyp == FACELESS_HOOD ||
 		otyp == IMPERIAL_ELVEN_HELM ||
 		otyp == WHITE_FACELESS_ROBE ||
 		otyp == BLACK_FACELESS_ROBE ||

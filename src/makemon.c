@@ -2281,6 +2281,126 @@ boolean greatequip;
 			(void)mongets(mtmp, SHEMAGH, mkobjflags);
 			(void)mongets(mtmp, ELVEN_TOGA, mkobjflags);
 			(void)mongets(mtmp, ELVEN_BOOTS, mkobjflags);
+		} else if(mm == PM_DESERT_SEER){
+			otmp = mongets(mtmp, FACELESS_HOOD, mkobjflags);
+			if(otmp){
+				curse(otmp);
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, HOODED_CAPELET, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_ORANGE;
+			}
+			(void)mongets(mtmp, GLOVES, mkobjflags);
+			(void)mongets(mtmp, ELVEN_BOOTS, mkobjflags);
+			switch(rn2(12)){
+				case 0:
+				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 1:
+				otmp = mksobj(ELVEN_SPEAR, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 2:
+				otmp = mksobj(ELVEN_SHORT_SWORD, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 3:
+				otmp = mksobj(ELVEN_SHORT_SWORD, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SHORT_SWORD, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 4:
+				case 5:
+				otmp = mksobj(HIGH_ELVEN_WARSWORD, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 6:
+				otmp = mksobj(ELVEN_BROADSWORD, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SHORT_SWORD, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 7:
+				case 8:
+				case 9:
+				otmp = mksobj(ELVEN_SCIMITAR, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SCIMITAR, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 10:
+				otmp = mksobj(VIPERWHIP, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SCIMITAR, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+				case 11:
+				otmp = mksobj(VIPERWHIP, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				otmp = mksobj(ELVEN_SICKLE, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, METAL);
+					(void) mpickobj(mtmp, otmp);
+				}
+				break;
+			}
 		} else if(mm == PM_MYRKALFR){
 			mtmp->m_lev = 4;
 			mtmp->mhp = mtmp->mhpmax = 6*mtmp->m_lev;
@@ -9281,6 +9401,9 @@ int mmflags;
 							}
 						}
 						otmp = mksobj(JACKET, mkobjflags|MKOBJ_ARTIF);
+						otmp->spe = 0+rn2(4);
+						(void) mpickobj(mtmp, otmp);
+						otmp = mksobj(CAPELET, mkobjflags|MKOBJ_ARTIF);
 						otmp->spe = 0+rn2(4);
 						(void) mpickobj(mtmp, otmp);
 						otmp = mksobj(FEDORA, mkobjflags|MKOBJ_ARTIF);
