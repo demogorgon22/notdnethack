@@ -125,6 +125,7 @@ static int NDECL((*timed_occ_fn));
 
 STATIC_DCL int NDECL(use_reach_attack);
 STATIC_DCL int NDECL(psionic_craze);
+STATIC_DCL int NDECL(do_lepre_menu);
 STATIC_DCL int NDECL(dotelekinesis);
 STATIC_DCL int NDECL(lavaify);
 STATIC_PTR int NDECL(doprev_message);
@@ -692,6 +693,9 @@ boolean you_abilities;
 	if (mon_abilities && attacktype(youracedata, AT_MAGC)){
 		add_ability('Z', "Cast a monster spell", MATTK_MAGIC);
 	}
+	if (mon_abilities && Race_if(PM_LEPRECHAUN)){
+		add_ability('$', "Leprechaun powers", MATTK_LEPRE);
+	}
 
 #undef add_ability
 
@@ -914,6 +918,9 @@ boolean you_abilities;
 		}
 		return MOVE_INSTANT;
 		break;
+	case MATTK_LEPRE:
+		return do_lepre_menu();
+		break;
 	}
 	return MOVE_CANCELLED;
 }
@@ -1062,6 +1069,11 @@ psionic_craze(){
 	}
 	return MOVE_STANDARD;
 
+}
+
+STATIC_OVL int
+do_lepre_menu(){
+	return MOVE_STANDARD;
 }
 
 

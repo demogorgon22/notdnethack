@@ -468,7 +468,8 @@ struct you {
 #define MATTK_PHASE_OUT 35
 #define MATTK_PHASE_IN 36
 #define MATTK_YUKI 37
-#define MATTK_KI 38
+#define MATTK_LEPRE 38
+#define MATTK_KI 39
 
 
 
