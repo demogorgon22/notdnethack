@@ -1012,7 +1012,7 @@ register struct monst *mtmp;
 		}
 	}
 	if(mdat->mtyp == PM_FORD_GUARDIAN){
-		if(!rn2(2) && distmin(mtmp->mux, mtmp->muy, mtmp->mx, mtmp->my) < 4 && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < 4 && !(mtmp->mstrategy&STRAT_WAITFORU)){
+		if(!rn2(2) && distmin(mtmp->mux, mtmp->muy, mtmp->mx, mtmp->my) < BOLT_LIM && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < BOLT_LIM && !(mtmp->mstrategy&STRAT_WAITFORU)){
 			ford_rises(mtmp);
 		}
 	}
@@ -2254,7 +2254,7 @@ int x;
 int y;
 {
 	int i;
-	for(i = 1; i < 2; i++){
+	for(i = -1; i < 2; i++){
 		if(isok(x+i,y+i) && !is_pool(x+i,y+i,FALSE) && ZAP_POS(levl[x+i][y+i].typ))
 			return TRUE;
 	}
