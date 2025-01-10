@@ -57,6 +57,7 @@ register struct monst *mtmp;
 	} else if(u.ugold) {
 	    u.ugold -= (tmp = somegold());
 	    Your("purse feels lighter.");
+		IMPURITY_UP(u.uimp_theft)
 	    mtmp->mgold += tmp;
 	if(mtmp->mtyp != PM_FAFNIR){
 		if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
@@ -209,6 +210,8 @@ boolean unchain_ball;	/* whether to unpunish or just unwield */
 	    else setworn((struct obj *)0, obj->owornmask & W_ARMOR);
 	} else if (obj->owornmask & W_AMUL) {
 	    Amulet_off();
+	} else if (obj->owornmask & W_BELT) {
+	    Belt_off();
 	} else if (obj->owornmask & W_RING) {
 	    Ring_gone(obj);
 	} else if (obj->owornmask & W_TOOL) {
@@ -285,23 +288,25 @@ nothing_to_steal:
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	    if ((!uarm || otmp != uarmc) && otmp != uskin
 				&& (!mi_only || is_magic_obj(otmp))
+				&& !(ProtItems && (otmp->oclass == POTION_CLASS || otmp->oclass == SCROLL_CLASS || otmp->oclass == WAND_CLASS))
 #ifdef INVISIBLE_OBJECTS
 				&& (!otmp->oinvis || mon_resistance(mtmp,SEE_INVIS))
 #endif
 				)
 		tmp += ((otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_TOOL)) ? 5 : 1);
+			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) ? 5 : 1);
 	if (!tmp) goto nothing_to_steal;
 	tmp = rn2(tmp);
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	    if ((!uarm || otmp != uarmc) && otmp != uskin
 				&& (!mi_only || is_magic_obj(otmp))
+				&& !(ProtItems && (otmp->oclass == POTION_CLASS || otmp->oclass == SCROLL_CLASS || otmp->oclass == WAND_CLASS))
 #ifdef INVISIBLE_OBJECTS
 				&& (!otmp->oinvis || mon_resistance(mtmp,SEE_INVIS))
 #endif
 			)
 		if((tmp -= ((otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_TOOL)) ? 5 : 1)) < 0)
+			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) ? 5 : 1)) < 0)
 			break;
 	if(!otmp) {
 		impossible("Steal fails!");
@@ -319,7 +324,7 @@ nothing_to_steal:
 gotobj:
 	if(otmp->o_id == stealoid) return(0);
 	
-	if(otmp->oartifact == ART_PEN_OF_THE_VOID && otmp->ovar1_seals&SEAL_ANDROMALIUS){
+	if(otmp->oartifact == ART_PEN_OF_THE_VOID && otmp->ovara_seals&SEAL_ANDROMALIUS){
 		pline("%s tries to steal your weapon, but is prevented!",Monnam(mtmp));
 		return 0;
 	}
@@ -350,6 +355,9 @@ gotobj:
 	    }
 	}
 
+	/*stealing is impure*/
+	IMPURITY_UP(u.uimp_theft)
+
 	if (otmp->otyp == LEASH && otmp->leashmon) {
 	    if (monkey_business && otmp->cursed) goto cant_take;
 	    o_unleash(otmp);
@@ -358,7 +366,7 @@ gotobj:
 	/* you're going to notice the theft... */
 	stop_occupation();
 
-	if((otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL))){
+	if((otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL))){
 		switch(otmp->oclass) {
 		case TOOL_CLASS:
 		case AMULET_CLASS:
@@ -394,18 +402,24 @@ gotobj:
 				  curssv ? "let him take" :
 				  slowly ? "start removing" : "hand over",
 				  equipname(otmp));
-			else if(charms)
+			else if(charms){
 			    pline("%s charms you.  You gladly %s your %s.",
 				  !seen ? SheHeIt(mtmp) : Monnam(mtmp),
 				  curssv ? "let her take" :
 				  slowly ? "start removing" : "hand over",
 				  equipname(otmp));
-			else
+				  if(!rn2(2+u.uimp_seduction)){
+					IMPURITY_UP(u.uimp_seduction)
+				  }
+			}
+			else {
 			    pline("%s seduces you and %s off your %s.",
 				  !seen ? SheHeIt(mtmp) : Adjmonnam(mtmp, "beautiful"),
 				  curssv ? "helps you to take" :
 				  slowly ? "you start taking" : "you take",
 				  equipname(otmp));
+				  IMPURITY_UP(u.uimp_seduction)
+			}
 			named++;
 			}
 			/* the following is to set multi for later on */

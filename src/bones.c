@@ -31,6 +31,8 @@ boolean recursed;
 
 	return (boolean)(((sptr = Is_special(lev)) != 0 && !sptr->boneid)
 		|| !dungeons[lev->dnum].boneid
+			/* no bones in the true madman home level */
+		|| (Role_if(PM_MADMAN) && qstart_level.dnum == lev->dnum && qlocate_level.dlevel == (lev->dlevel+1))
 			/* no bones in the branch level TO the Quest (because this portal can be voided) */
 		|| (!recursed && (bptr = Is_branchlev(lev)) && In_quest(branchlev_other_end(bptr, lev)))
 			/* no bones in a branch level if the other end is nobones */
@@ -366,6 +368,13 @@ int y;
 		} else if(u.thoughts & SIGHT){
 			u.thoughts &= ~SIGHT;
 			otmp = mksobj(ORRERY_GLYPH, MKOBJ_NOINIT);
+		//Philosophy runes do not death-drop
+		} else if(u.thoughts & DEFILEMENT){
+			u.thoughts &= ~DEFILEMENT;
+		} else if(u.thoughts & LUMEN){
+			u.thoughts &= ~LUMEN;
+		} else if(u.thoughts & ROTTEN_EYES){
+			u.thoughts &= ~ROTTEN_EYES;
 		} else {
 			pline("Can't find glyph!");
 		}

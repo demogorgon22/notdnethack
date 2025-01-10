@@ -177,7 +177,7 @@ doread()
 			}
 			return MOVE_READ;
 		} else if(scroll->oartifact == ART_HOLY_MOONLIGHT_SWORD && scroll->lamplit){
-			/* Note: you can see the blade even when blid */
+			/* Note: you can see the blade even when blind */
 			if(u.uinsight < 2) {
 				pline("The glowing cyan blade is decorated with faint curves.");
 			}
@@ -501,7 +501,12 @@ doread()
 	else if(scroll->otyp == FORTUNE_COOKIE) {
 	    if(flags.verbose)
 		You("break up the cookie and throw away the pieces.");
-		if(scroll->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+		if(scroll->ostolen){
+			if(u.sealsActive&SEAL_ANDROMALIUS)
+				unbind(SEAL_ANDROMALIUS, TRUE);
+			/*stealing is impure*/
+			IMPURITY_UP(u.uimp_theft)
+		}
 	    outrumor(bcsign(scroll), BY_COOKIE);
 	    if (!Blind) u.uconduct.literate++;
 	    useup(scroll);
@@ -738,7 +743,12 @@ doread()
 	    scroll->otyp != SCR_MAIL &&
 		scroll->otyp != SPE_BLANK_PAPER &&
 		scroll->otyp != SCR_BLANK_PAPER){
-			if(scroll->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+			if(scroll->ostolen){
+				if(u.sealsActive&SEAL_ANDROMALIUS)
+					unbind(SEAL_ANDROMALIUS, TRUE);
+				/*stealing is impure*/
+				IMPURITY_UP(u.uimp_theft)
+			}
 			u.uconduct.literate++;
 		}
 
@@ -1365,7 +1375,7 @@ int curse_bless;
 				obj->spe = 1;
 		    }
 		    obj->age += 750;
-		    if (obj->age > 150000) obj->age = 1500;
+		    if (obj->age > 1500) obj->age = 1500;
 		    p_glow1(obj);
 		}
 		break;
@@ -1497,6 +1507,7 @@ int curse_bless;
 	    case BAG_OF_TRICKS:
 	    case CAN_OF_GREASE:
 	    case TREPHINATION_KIT:
+	    case MIST_PROJECTOR:
 		if (is_cursed) stripspe(obj);
 		else if (is_blessed) {
 		    if (obj->spe <= 10)
@@ -1507,6 +1518,20 @@ int curse_bless;
 		} else {
 		    obj->spe += rnd(5);
 		    if (obj->spe > 50) obj->spe = 50;
+		    p_glow1(obj);
+		}
+		break;
+		case PHLEBOTOMY_KIT:
+		if (is_cursed) stripspe(obj);
+		else if (is_blessed) {
+		    if (obj->spe <= 0)
+				obj->spe += rn1(3, 3);
+		    else obj->spe += 1;
+		    if (obj->spe > 20) obj->spe = 20;
+		    p_glow2(obj, NH_BLUE);
+		} else {
+		    obj->spe += 1;
+		    if (obj->spe > 20) obj->spe = 20;
 		    p_glow1(obj);
 		}
 		break;
@@ -1814,10 +1839,14 @@ struct obj *sobj;
 			int skill = spell_skilltype(sobj->otyp);
 			int role_skill = P_SKILL(skill)-1; //P_basic would be 2
 			if(Spellboost) role_skill++;
+			if(u.cuckoo && active_glyph(LUMEN))
+				role_skill += u.cuckoo/3;
 			if(role_skill < 1)
 				role_skill = 1;
 			if(sobj->blessed)
 				role_skill++;
+			if(u.ukrau_duration)
+				role_skill += (role_skill+1)/2;
 			
 			for(; role_skill; role_skill--)
 				if(!resist(mtmp, sobj->oclass, 0, NOTELL)){
@@ -1922,6 +1951,12 @@ struct obj	*sobj;
 					 otense(otmp, Blind ? "feel" : "look"));
 				}
 			}
+			break;
+		}
+		if(is_belt(otmp) && otmp->otyp != KIDNEY_BELT){
+			Your("%s %s.",
+			 xname(otmp),
+			 otense(otmp, Blind ? "feels warm for a moment" : "glows and then fades"));
 			break;
 		}
 		/* elven armor vibrates warningly when enchanted beyond a limit */
@@ -2971,7 +3006,18 @@ struct obj	*sobj;
 			levl[u.ux][u.uy].typ == SOIL ||
 			levl[u.ux][u.uy].typ == SAND)
 		{
-			add_altar(u.ux, u.uy, whichgod, FALSE, GOD_NONE);
+			int godnum = GOD_NONE;
+			if(philosophy_index(align_to_god(whichgod))){
+				//Undead slayer used a second Egyptian pantheon for some reason.
+				// Just go ahead and use the Egyptian one as a reference.
+				if(whichgod == A_LAWFUL)
+					godnum = GOD_PTAH;
+				else if(whichgod == A_NEUTRAL)
+					godnum = GOD_THOTH;
+				else if(whichgod == A_CHAOTIC)
+					godnum = GOD_ANHUR;
+			}
+			add_altar(u.ux, u.uy, whichgod, FALSE, godnum);
 			pline("%s altar appears in front of you!", An(align_str(whichgod)));
 			newsym(u.ux, u.uy);
 		}
@@ -3428,7 +3474,7 @@ int how;
 		if (!strcmpi(buf, "none") || !strcmpi(buf, "nothing")) {
 		    /* ... but no free pass if cursed */
 		    if (!(how & REALLY)) {
-			ptr = rndmonst();
+			ptr = rndmonst(0, 0);
 			if (!ptr) return; /* no message, like normal case */
 			mndx = monsndx(ptr);
 			break;		/* remaining checks don't apply */
@@ -3995,12 +4041,12 @@ int spellnum;
 	Sprintf(splname, objects[spellnum].oc_name_known ? "\"%s\"" : "the \"%s\" spell", OBJ_NAME(objects[spellnum]));
 	for (i = 0; i < MAXSPELL; i++)  {
 		if (spellid(i) == spellnum)  {
-			if (spellknow(i) <= KEEN) {
+			if (spellknow(i) < KEEN) {
 				Your("knowledge of %s is keener.", splname);
 				incrnknow(i);
 				exercise(A_WIS,TRUE);       /* extra study */
-			} else { /* 1000 < spellknow(i) <= KEEN */
-				You("know %s quite well already.", splname);
+			// } else { /* 1000 < spellknow(i) <= KEEN */
+				// You("know %s quite well already.", splname);
 			}
 			break;
 		} else if (spellid(i) == NO_SPELL)  {

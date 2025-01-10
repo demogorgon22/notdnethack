@@ -7,6 +7,7 @@
  */
 
 #include "hack.h"
+#include "xhity.h"
 
 
 extern const int monstr[];
@@ -239,6 +240,7 @@ struct obj *otmp;
 #define MUSE_LIZARD_CORPSE 19
 #define MUSE_LIFE_FLASK 20
 #define MUSE_HEALING_SURGE 21
+#define MUSE_DANCING_SWORD 22
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -345,6 +347,16 @@ struct monst *mtmp;
 		    return TRUE;
 		}
 	}
+	if(mtmp->mtyp == PM_SURYA_DEVA && mtmp->summonpwr == 0){
+		for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+			if(DEADMONSTER(mtarg)) continue;
+			if(distmin(mtmp->mx,mtmp->my, mtarg->mx,mtarg->my) > 8) continue;
+			if(!clear_path(mtmp->mx,mtmp->my, mtarg->mx,mtarg->my)) continue;
+			if((mtmp->mtame && mtarg->mtame) || !mm_grudge(mtmp, mtarg, FALSE)) continue;
+			m.has_defense = MUSE_DANCING_SWORD;
+			return TRUE;
+		}
+	}
 	if(mtmp->mhp >= mtmp->mhpmax
 		|| (mtmp->mhp >= 10 && mtmp->mhp*fraction >= mtmp->mhpmax)
 	){
@@ -444,7 +456,7 @@ struct monst *mtmp;
 		if (isok(xx,yy))
 		if ((mon = m_at(xx,yy)) && is_mercenary(mon->data) &&
 				mon->mtyp != PM_GUARD &&
-				(mon->msleeping || (!mon->mcanmove && mon->mnotlaugh))) {
+				(mon->msleeping || (!mon->mcanmove && mon->mnotlaugh && !mon->mequipping))) {
 			m.defensive = obj;
 			m.has_defense = MUSE_BUGLE;
 		}
@@ -922,7 +934,7 @@ mon_tele:
 		goto mon_tele;
 	case MUSE_POT_HEALING:
 		mquaffmsg(mtmp, otmp);
-		i = d(6 + 2 * bcsign(otmp), 4);
+		i = d(6 + 2 * bcsign(otmp), 4)+mlev(mtmp);
 		mtmp->mhp += i;
 		if (mtmp->mhp > mtmp->mhpmax) mtmp->mhp = ++mtmp->mhpmax;
 		if (!otmp->cursed && !mtmp->mcansee) {
@@ -942,7 +954,7 @@ mon_tele:
 		return 2;
 	case MUSE_POT_EXTRA_HEALING:
 		mquaffmsg(mtmp, otmp);
-		i = d(6 + 2 * bcsign(otmp), 8);
+		i = d(6 + 2 * bcsign(otmp), 8)+d(max(1, mlev(mtmp)),8);
 		mtmp->mhp += i;
 		if (mtmp->mhp > mtmp->mhpmax)
 			mtmp->mhp = (mtmp->mhpmax += (otmp->blessed ? 5 : 2));
@@ -1005,6 +1017,26 @@ mon_tele:
 		mon_doturn(mtmp);
 		mtmp->mspec_used = 3;
 		return DEADMONSTER(mtmp) ? 1 : 2;
+	case MUSE_DANCING_SWORD:
+	{
+		struct monst * blade;
+		blade = makemon(&mons[PM_DANCING_BLADE], x(mtmp), y(mtmp), MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
+		if (blade) {
+			if (canspotmon(blade))
+				pline("%s draws %s sword!", Monnam(mtmp), mhis(mtmp));
+			mark_mon_as_summoned(blade, mtmp, 88, 0);
+			blade->mvar_suryaID = mtmp->m_id;
+			if(mtmp->mtame){
+				blade = tamedog(blade, (struct obj *) 0);
+			}
+			else if(mtmp->mpeaceful){
+				blade->mpeaceful = TRUE;
+			}
+		}
+		if(!mtmp->mpeaceful)
+			stop_occupation();
+		return 0;
+	}
 	case 0: return 0; /* i.e. an exploded wand */
 	default: impossible("%s wanted to perform action %d?", Monnam(mtmp),
 			m.has_defense);
@@ -1100,6 +1132,7 @@ struct monst *mtmp;
 #define MUSE_WAN_CANCELLATION 22	/* Lethe */
 #define MUSE_CRYSTAL_SKULL 	  23
 #define MUSE_MON_TURN_UNDEAD  24
+#define MUSE_MIST_PROJECTOR 25
 
 /* Find a mask.
  */
@@ -1177,7 +1210,7 @@ struct monst *mtmp;
 
 #define nomore(x) if(m.has_offense==x) continue;
 	for(obj=mtmp->minvent; obj; obj=obj->nobj) {
-	    if(mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
+		if(mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
 			struct obj *otmp;
 			for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
 				if (otmp->owornmask & W_ARMG && (otmp->otyp == GAUNTLETS_OF_POWER || (otmp->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(otmp, IEA_GOPOWER)))){
@@ -1192,6 +1225,11 @@ struct monst *mtmp;
 		if(obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj) && !get_ox(obj, OX_ESUM)) {
 			m.offensive = obj;
 			m.has_offense = MUSE_CRYSTAL_SKULL;
+		}
+		nomore(MUSE_MIST_PROJECTOR);
+		if(obj->otyp == MIST_PROJECTOR && obj->spe > 0 && resists_cold(mtmp)) {
+			m.offensive = obj;
+			m.has_offense = MUSE_MIST_PROJECTOR;
 		}
 		nomore(MUSE_MON_TURN_UNDEAD);
 		nomore(MUSE_WAN_DEATH);
@@ -1572,6 +1610,19 @@ struct monst *mtmp;
 		if(canspotmon(mtmp))
 			pline("%s concentrates on %s!", Monnam(mtmp), canseemon(mtmp) ? "a crystal skull" : "something");
 		x_uses_crystal_skull(&otmp, mtmp, &cc);
+		return 2;
+	}break;
+	case MUSE_MIST_PROJECTOR:{
+		struct region_arg cloud_data;
+		cloud_data.damage = 3+3*(mtmp->mtyp == PM_MIGO_QUEEN ? 3 :
+					 mtmp->mtyp == PM_MIGO_PHILOSOPHER ? 2 :
+					 mtmp->mtyp == PM_MIGO_SOLDIER ? 1 : 0);
+		cloud_data.adtyp = AD_COLD;
+		(void) create_generic_cloud(u.ux, u.uy, 4+bcsign(otmp), &cloud_data, TRUE);
+		if (cansee(mtmp->mx, mtmp->my))
+			You("see whirling snow swirl out from around %s %s.",
+			    s_suffix(mon_nam(mtmp)), xname(otmp));
+		otmp->spe--;
 		return 2;
 	}break;
 	case MUSE_WAN_DEATH:
@@ -2184,16 +2235,17 @@ struct monst *mtmp;
 			}
 		}
 		nomore(MUSE_POT_HOLY);
-		if(obj->otyp == POT_WATER && obj->blessed && !is_weldproof_mon(mtmp))
+		if(obj->otyp == POT_WATER && obj->blessed)
 		{
-                        register struct obj *otmp;
+			struct obj *otmp;
 			for (otmp = mtmp->minvent;
 			     otmp; otmp = otmp->nobj)
 			{
-			    if (otmp->cursed && 
-			        (otmp->otyp == LOADSTONE ||
-				 otmp->owornmask))
-			    {
+			    if (otmp->cursed
+			      && (otmp->otyp == LOADSTONE ||
+					otmp->owornmask)
+				  && !is_weldproof_mon(mtmp)
+				){
 			        m.misc = obj;
 			        m.has_misc = MUSE_POT_HOLY;
 			    }
@@ -2247,7 +2299,7 @@ struct monst *mon;
 	    else if (Is_dragon_mail(m_armr))
 		return Dragon_mail_to_pm(m_armr);
 	}
-	return rndmonst();
+	return rndmonst(0, 0);
 }
 
 int
@@ -2406,6 +2458,7 @@ museamnesia:
 			mtmp->mberserk = 0;
 			mtmp->mdisrobe = 0;
 			mtmp->mdoubt = 0;
+			mtmp->mwounded_legs = 0;
 			mtmp->msanctity = 0;
 			mtmp->mgluttony = 0;
 			mtmp->mfrigophobia = 0;
@@ -2514,7 +2567,7 @@ museamnesia:
 		    if (!where_to) {
 				pline_The("whip slips free.");  /* not `The_whip' */
 				return 1;
-		    } else if (where_to == 3 && hates_silver(mtmp->data) && (obj->obj_material == SILVER || arti_silvered(obj))) {
+		    } else if (where_to == 3 && hates_silver(mtmp->data) && (obj_is_material(obj, SILVER))) {
 				/* this monster won't want to catch a silver
 				   weapon; drop it at hero's feet instead */
 				where_to = 2;
@@ -2522,7 +2575,7 @@ museamnesia:
 				/* this monster won't want to catch an iron
 				   weapon; drop it at hero's feet instead */
 				where_to = 2;
-		    } else if (where_to == 3 && hates_unholy_mon(mtmp) && obj->obj_material == GREEN_STEEL) {
+		    } else if (where_to == 3 && hates_unholy_mon(mtmp) && obj_is_material(obj, GREEN_STEEL)) {
 				/* this monster won't want to catch a green-steel
 				   weapon; drop it at hero's feet instead */
 				where_to = 2;
@@ -2808,6 +2861,7 @@ struct obj *obj;
 	switch(obj->oclass){
 		case WEAPON_CLASS:
 			return likes_objs(ptr);
+		case BELT_CLASS:
 		case ARMOR_CLASS:
 			return !mad_no_armor(mon) && likes_objs(ptr);
 		case RING_CLASS:
@@ -3127,6 +3181,11 @@ const char *fmt, *str;
 	    	if(uamul && uamul->otyp == AMULET_OF_REFLECTION) makeknown(AMULET_OF_REFLECTION);
 	    }
 	    return TRUE;
+	} else if (EReflecting & W_BELT) {
+	    if (fmt && str) {
+	    	pline(fmt, str, "belt");
+	    }
+	    return TRUE;
 	} else if (EReflecting & W_ARMG) {
 	    if (fmt && str) {
 	    	pline(fmt, str, "gauntlets");
@@ -3401,14 +3460,14 @@ int mat;
 	if(mon == &youmonst){
 		for(obj = invent; obj; obj = obj->nobj){
 			if(obj->o_id == u.uentangled_oid){
-				if(obj->obj_material == mat)
+				if(obj_is_material(obj, mat))
 					return TRUE;
 			}
 		}
 	} else {
 		for(obj = mon->minvent; obj; obj = obj->nobj){
 			if(obj->o_id == mon->entangled_oid){
-				if(obj->obj_material == mat)
+				if(obj_is_material(obj, mat))
 					return TRUE;
 			}
 		}
@@ -3427,13 +3486,13 @@ int bet;
 		for(obj = invent; obj; obj = obj->nobj){
 			if(obj->o_id == u.uentangled_oid){
 				if(obj->cursed){
-					if(bet < 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
+					if(bet < 0 && strength < 2) strength = obj_is_material(obj, GOLD) ? 2 : 1;
 				}
 				else if(obj->blessed){
-					if(bet > 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
+					if(bet > 0 && strength < 2) strength = obj_is_material(obj, GOLD) ? 2 : 1;
 				}
 				else {
-					if(bet == 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
+					if(bet == 0 && strength < 2) strength = obj_is_material(obj, GOLD) ? 2 : 1;
 				}
 			}
 			if(strength == 2) return strength;
@@ -3442,13 +3501,13 @@ int bet;
 		for(obj = mon->minvent; obj; obj = obj->nobj){
 			if(obj->o_id == mon->entangled_oid){
 				if(obj->cursed){
-					if(bet < 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
+					if(bet < 0 && strength < 2) strength = obj_is_material(obj, GOLD) ? 2 : 1;
 				}
 				else if(obj->blessed){
-					if(bet > 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
+					if(bet > 0 && strength < 2) strength = obj_is_material(obj, GOLD) ? 2 : 1;
 				}
 				else {
-					if(bet == 0 && strength < 2) strength = obj->obj_material == GOLD ? 2 : 1;
+					if(bet == 0 && strength < 2) strength = obj_is_material(obj, GOLD) ? 2 : 1;
 				}
 			}
 			if(strength == 2) return strength;

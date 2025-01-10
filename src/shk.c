@@ -1877,7 +1877,7 @@ shk_other_services()
 	}
 	
 	/* Do you want to use other services */
-	if (yn("What can I help you with today?") != 'y' ) return;
+	if (yn("Do you wish to try our other services?") != 'y' ) return;
 
 	if (!ESHK(shkp)->services) return;
 
@@ -3096,6 +3096,8 @@ register boolean peaceful, silent;
 		} else  Norep("You hear a scream, \"Thief!\"");
 	    }
 		if(u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS,TRUE);
+		/*stealing is impure*/
+		IMPURITY_UP(u.uimp_theft)
 	    hot_pursuit(shkp);
 	    (void) angry_guards(FALSE);
 	}
@@ -5329,10 +5331,11 @@ struct monst *shkp;
 			Your("%s to evaporate into thin air!", aobjnam(obj, "seem"));
 			/* ...No actual vibrating and no evaporating */
 
-			if (obj->otyp == WORM_TOOTH) {
-			obj->otyp = CRYSKNIFE;
-			Your("weapon seems sharper now.");
-			obj->cursed = 0;
+			if (obj->otyp == WORM_TOOTH && (is_organic(obj) || obj->obj_material == MINERAL)) {
+				obj->otyp = CRYSKNIFE;
+				Your("weapon seems sharper now.");
+				obj->cursed = 0;
+				fix_object(obj);
 			break;
 			}
 
@@ -5449,10 +5452,12 @@ struct monst *shkp;
 					obj->opoisonchrgs = 1;
 					obj->opoisoned = OPOISON_FILTH;
 				}
+				IMPURITY_UP(u.uimp_dirtiness)
 			}
 			else if (is_poisonable(obj)){
 				obj->opoisoned = OPOISON_FILTH;
 				update_inventory();
+				IMPURITY_UP(u.uimp_dirtiness)
 			}
 			else {
 				verbalize("All done!");
@@ -6130,6 +6135,9 @@ int mat;
 		CRYSTAL_HELM, CRYSTAL_PLATE_MAIL, CRYSTAL_SHIELD, CRYSTAL_GAUNTLETS, CRYSTAL_BOOTS, 
 		FANG_OF_APEP, MIRRORBLADE, 
 		RUNESWORD, CLAWED_HAND, KAMEREL_VAJRA,
+		PINCER_STAFF, ISAMUSEI, DISKOS, BESTIAL_CLAW, CARCOSAN_STING, CHIKAGE,
+		RAKUYO, RAKUYO_SABER, RAKUYO_DAGGER,
+		BLADE_OF_MERCY, BLADE_OF_GRACE, BLADE_OF_PITY,
 		LIVING_MASK,
 		UNIVERSAL_KEY, CREDIT_CARD, LANTERN, OIL_LAMP, 
 		EXPENSIVE_CAMERA, MIRROR, PURIFIED_MIRROR, R_LYEHIAN_FACEPLATE,
@@ -6154,7 +6162,7 @@ int mat;
 			if(unduplicatable_otyps[i] == example->otyp)
 				return 0;
 		}
-		if(is_insight_weapon(example) || is_future_otyp(example->otyp) 
+		if(is_future_otyp(example->otyp) 
 			|| ensouled_item(example) || objects[example->otyp].oc_magic
 			|| is_firearm(example) || is_harmonium_armor(example)
 			|| Is_dragon_armor(example)
@@ -6301,17 +6309,19 @@ pickeladrin()
 	return picked;
 }
 
-STATIC_OVL void
-smith_resizeArmor(smith, otmp)
-	struct monst *smith;
-	struct obj *otmp;
+void
+smith_resizeArmor(struct monst *smith, struct obj *otmp)
 {
 	struct permonst *ptr = 0;
 	struct monst *mtmp;
 	int rx, ry;
+	boolean you = smith == &youmonst;
 	
 	if (Is_dragon_scales(otmp)){
-		verbalize("Dragon scales cannot be resized.");
+		if(you)
+			You_cant("resize dragon scales");
+		else
+			verbalize("Dragon scales cannot be resized.");
 		return;
 	}
 
@@ -6322,14 +6332,20 @@ smith_resizeArmor(smith, otmp)
 		else 
 #endif
 		if(u.dz){
-			verbalize("I don't think anybody's there.");
+			if(you)
+				You_cant("find anyone there.");
+			else
+				verbalize("I don't think anybody's there.");
 		} else if (u.dx == 0 && u.dy == 0) {
 			ptr = youracedata;
 		} else {
 			rx = u.ux+u.dx; ry = u.uy+u.dy;
 			mtmp = m_at(rx, ry);
 			if(!mtmp){
-				verbalize("I don't think anybody's there.");
+				if(you)
+					You_cant("find anyone there.");
+				else
+					verbalize("I don't think anybody's there.");
 			}
 			else
 				ptr = mtmp->data;
@@ -6340,7 +6356,10 @@ smith_resizeArmor(smith, otmp)
 		if (is_shirt(otmp) || is_suit(otmp)){
 			//Check that the monster can actually have armor that fits it.
 			if(!(ptr->mflagsb&MB_BODYTYPEMASK)){
-				verbalize("I can't figure out how to make it fit.");
+				if(you)
+					You_cant("figure out how to make it fit.");
+				else
+					verbalize("I can't figure out how to make it fit.");
 				return;
 			}
 			set_obj_shape(otmp, ptr->mflagsb);
@@ -6348,7 +6367,10 @@ smith_resizeArmor(smith, otmp)
 		else if (is_helmet(otmp) && !is_hat(otmp)){
 			//Check that the monster can actually have armor that fits it.
 			if(!has_head(ptr)){
-				verbalize("No head!");
+				if(you)
+					You_cant("figure out how to make it fit.");
+				else
+					verbalize("No head!");
 				return;
 			}
 			set_obj_shape(otmp, ptr->mflagsb);
@@ -6389,7 +6411,10 @@ smith_resizeArmor(smith, otmp)
 		add_menu(tmpwin, NO_GLYPH, &any , 'g', 0, ATR_NONE,
 			 "Gigantic.", MENU_UNSELECTED);
 
-		end_menu(tmpwin, "What size shall I make it?");
+		if(you)
+			end_menu(tmpwin, "What size do you want to make it?");
+		else
+			end_menu(tmpwin, "What size shall I make it?");
 		n = select_menu(tmpwin, PICK_ONE, &selected);
 		if(n > 0){
 			otmp->objsize = selected[0].item.a_int-1;
@@ -6482,9 +6507,11 @@ struct monst *smith;
 			0
 		};
 	int oona_advanced_armor[] = {CORNUTHAUM, DUNCE_CAP, GAUNTLETS_OF_FUMBLING, GAUNTLETS_OF_POWER, GAUNTLETS_OF_DEXTERITY, 
-								HELM_OF_BRILLIANCE, HELM_OF_OPPOSITE_ALIGNMENT, HELM_OF_TELEPATHY, HELM_OF_DRAIN_RESISTANCE, 
-								SHIELD_OF_REFLECTION, 
-								SPEED_BOOTS, JUMPING_BOOTS, KICKING_BOOTS, FUMBLE_BOOTS, FLYING_BOOTS };
+			HELM_OF_BRILLIANCE, HELM_OF_OPPOSITE_ALIGNMENT, HELM_OF_TELEPATHY, HELM_OF_DRAIN_RESISTANCE, 
+			SHIELD_OF_REFLECTION, 
+			SPEED_BOOTS, JUMPING_BOOTS, KICKING_BOOTS, FUMBLE_BOOTS, FLYING_BOOTS,
+			0
+	};
 	int oona_advanced_tools[] = { 0 };
 	int oona_advanced_weapons[] = {0};
 	struct obj *example = 0;
@@ -7269,6 +7296,12 @@ d_weapon:
 					verbalize("That doesn't seem suitable to me.");
 				}
 			}
+			else if(resource->unpaid){
+				verbalize("You'd need to buy that first.");
+			}
+			else if(smith->isshk && resource->ostolen){
+				verbalize("Someone stole that!");
+			}
 			else if(resource->obj_material == mat
 				&& !resource->oartifact
 				&& !get_ox(resource, OX_ESUM)
@@ -7303,7 +7336,6 @@ d_weapon:
 		else obj->corpsenm = rndmonnum();
 	}
 	else if(objects[otyp].oc_class == ARMOR_CLASS){
-		int element = 0;
 		if(yn("Size it to a particular creature?")=='y')
 			smith_resizeArmor(smith, obj);
 		else {
@@ -7312,6 +7344,12 @@ d_weapon:
 			set_obj_shape(obj, youracedata->mflagsb);
 		}
 		fix_object(obj);
+	}
+	else if(objects[otyp].oc_class == WEAPON_CLASS || is_weptool(obj)){
+		if(example)
+			obj->objsize = example->objsize;
+		else
+			obj->objsize = youracedata->msize;
 	}
 	// Make shadowsteel stuff fixed
 	if(mat == SHADOWSTEEL){
@@ -7412,7 +7450,11 @@ struct monst *smith;
 							0 };
 	int advanced_weapons[] = { ATHAME, 0 };
 	int basic_armor[] = { ELVEN_HELM, ELVEN_BOOTS, ELVEN_MITHRIL_COAT, ELVEN_SHIELD, HIGH_ELVEN_HELM, HIGH_ELVEN_PLATE, HIGH_ELVEN_GAUNTLETS, 0 };
-	int advanced_armor[] = { DWARVISH_MITHRIL_COAT, 0 };
+	int advanced_armor[] = { DUNCE_CAP, HELM_OF_BRILLIANCE, HELM_OF_OPPOSITE_ALIGNMENT, HELM_OF_TELEPATHY, HELM_OF_DRAIN_RESISTANCE,
+							 GAUNTLETS_OF_FUMBLING, GAUNTLETS_OF_POWER, GAUNTLETS_OF_DEXTERITY, SPEED_BOOTS, 
+							 WATER_WALKING_BOOTS, JUMPING_BOOTS, KICKING_BOOTS, FUMBLE_BOOTS, 
+							 FLYING_BOOTS, DWARVISH_MITHRIL_COAT, 
+							 0 };
 	int basic_tools[] = { BOX, LOCK_PICK, MASK, OIL_LAMP, PICK_AXE, SKELETON_KEY, BELL, BUGLE, DRUM, FLUTE, HARP, TOOLED_HORN, 0 };
 	int advanced_tools[] = { 0 };
 

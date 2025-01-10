@@ -417,6 +417,7 @@ static const char *haluMesg[] = {
 		"And in doing so, you will restore the world to what it was.",
 		">^ N^T R3A> T||1S S1<N",
 		">^ R3A> T||1S ^N3",
+		"This wasn't your decision to make.","It was. I'd do it again, exactly the same.",
 	"Fall in a more hardboiled manner.", /* MS Paint Adventures */
 		"Since you are reading this, chances are you have already installed this game on your computer.  If this is true, you have just participated in bringing about the end of the world.  But don't beat yourself up about it.",
 		"YOU HATE TIME TRAVEL YOU HATE TIME TRAVEL YOU HATE....",
@@ -441,6 +442,7 @@ static const char *haluMesg[] = {
 
 		"What's the Bureau's vacation policy?",
 		"I'm interested to hear about your expenditure plan.", /* Awkward Zombie */
+	"It's dangerous to go alone.", /*Zelda I*/
 	"WHEN ALL ELSE FAILS USE FIRE", /*Zelda II*/
 	"Don't you see? All of you... YOUR GODS DESTROYED YOU", /*Wind Waker*/
 		"The wind... It is blowing...",
@@ -453,6 +455,8 @@ static const char *haluMesg[] = {
 
 	"This land is peaceful, its inhabitants kind.", /* Dark Souls */
 	"Long may the sun shine!", /* Dark Souls 3 */
+	"A bottomless curse, a bottomless sea, accepting of all that there is... and can be.", /*Bloodborne*/
+	"Heresy is not native to the world; it is but a contrivance. All things can be conjoined.", /*Elden Ring*/
 
 	"Why are you sad?", /*Blood-C*/
 	"Only accurate information has practical application.", /* not sure where this originated, possibly Aron Ra?*/
@@ -2023,9 +2027,12 @@ int mode;
 		return MOVE_CANCELLED;
 	}
 	if (IS_ALTAR(levl[u.ux][u.uy].typ)) {
-		You("make a motion towards the altar with your %s.", writer);
-		altar_wrath(u.ux, u.uy);
-		return MOVE_INSTANT;
+		int godnum = god_at_altar(u.ux,u.uy);
+		if(!no_altar_index(godnum)){
+			You("make a motion towards the altar with your %s.", writer);
+			altar_wrath(u.ux, u.uy);
+			return MOVE_INSTANT;
+		}
 	}
 	if(mode == ENGRAVE_MODE){
 		if (IS_GRAVE(levl[u.ux][u.uy].typ)) {
@@ -2061,6 +2068,10 @@ int mode;
 			break;
 		}
 		break;
+
+	    case BELT_CLASS:
+			type = DUST;
+			break;
 
 	    case ARMOR_CLASS:
 		if (is_boots(otmp)) {
@@ -2319,7 +2330,7 @@ int mode;
 
 	    case WEAPON_CLASS:
 		if (otmp->oartifact == ART_PEN_OF_THE_VOID &&
-				mvitals[PM_ACERERAK].died > 0 && (otmp->ovar1_seals & SEAL_ANDREALPHUS)
+				mvitals[PM_ACERERAK].died > 0 && (otmp->ovara_seals & SEAL_ANDREALPHUS)
 		) {
 			type = BURN;
 		} else if (is_lightsaber(otmp)) {
@@ -3007,6 +3018,7 @@ int mode;
 		break;
 	    case ENGR_BLOOD:
 			multi = -(len/10);
+			IMPURITY_UP(u.uimp_blood)
 			if (multi) nomovemsg =	"You finish scrawling.";
 		break;
 	}
@@ -3389,7 +3401,7 @@ int describe;
 				MENU_UNSELECTED);
 			incntlet = (incntlet != 'z') ? (incntlet + 1) : 'A';
 		}
-		if (uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && uwep->ovar1_seals&SEAL_ANDREALPHUS){
+		if (uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && uwep->ovara_seals&SEAL_ANDREALPHUS){
 			Sprintf(buf, "Hypergeometric transit solution");
 			any.a_int = ANDREALPHUS_TRANSIT;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
@@ -3397,7 +3409,7 @@ int describe;
 				MENU_UNSELECTED);
 			incntlet = (incntlet != 'z') ? (incntlet + 1) : 'A';
 		}
-		if (uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && uwep->ovar1_seals&SEAL_ANDREALPHUS){
+		if (uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && uwep->ovara_seals&SEAL_ANDREALPHUS){
 			Sprintf(buf, "Hypergeometric stabilization solution");
 			any.a_int = ANDREALPHUS_STABILIZE;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
@@ -4086,6 +4098,7 @@ static const char *epitaphs[] = {
 	"The sun of the desert consumes what it never can cheer.", /* HP Lovecraft */
 	
 	"Summer Rose - Thus Kindly I Scatter", /* RWBY */
+		"Black out the sky, all things must die.",
 	
 	"Hold my beer and watch this!", /* Rango */
 	
@@ -4098,6 +4111,7 @@ static const char *epitaphs[] = {
 		"Fear not the dark, my friend. And let the feast begin.",
 
 	"Let the winds lift you, to a higher place.", /* Elden Ring */
+		"Felled by King Morgott! Last of all kings.",
 
 	"For every hero commemorated, a thousand martyrs die unmourned and unremembered.", /*Warhammer 40k*/
 	
@@ -4133,6 +4147,8 @@ static const char *epitaphs[] = {
 	"I wake. I work. I sleep. I die.", /*Alpha Centauri*/
 	
 	"I suddenly have a LOT of regrets.", /*Water Phoenix King is very quotable...*/
+	
+	"I GOT A 4!", /*Order of the Stick*/
 	
 	"You either die a hero, or you live long enough to see yourself become the villain.", /* Batman, the Dark Knight */
 	
@@ -4525,7 +4541,11 @@ int x, y;
 const char *str;
 {
 	/* Can we put a grave here? */
-	if ((levl[x][y].typ != ROOM && levl[x][y].typ != GRAVE) || t_at(x,y)) return;
+	if ((levl[x][y].typ != ROOM
+		&& levl[x][y].typ != GRAVE
+		&& levl[x][y].typ != SOIL
+		&& levl[x][y].typ != GRASS
+	) || t_at(x,y)) return;
 
 	/* Make the grave */
 	levl[x][y].typ = GRAVE;

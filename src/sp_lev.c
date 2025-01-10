@@ -906,8 +906,18 @@ struct mkroom	*croom;
 				(Race_if(PM_DWARF) || Race_if(PM_GNOME)) && rn2(3))
 			pm = (struct permonst *) 0;
 		/* replace priests with angels on Binder's Astral */
-		if (Role_if(PM_EXILE) && on_level(&u.uz, &astral_level) && m->id == PM_ALIGNED_PRIEST) {
+		if (Role_if(PM_EXILE) && Is_astralevel(&u.uz) && m->id == PM_ALIGNED_PRIEST) {
 			pm = &mons[PM_ANGEL];
+		}
+		/* replace angels with aether wolves on Undead Hunter Moon Astral */
+		if (Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && Is_astralevel(&u.uz) && m->id == PM_ANGEL) {
+			if(alignment == A_NONE){
+				pm = &mons[PM_FOETID_ANGEL];
+			}
+			else {
+				pm = &mons[PM_AETHER_WOLF];
+			}
+			m->align = -12;
 		}
 
 		x = m->x;
@@ -1008,11 +1018,13 @@ struct mkroom	*croom;
 	    }
 
 	    if (m->peaceful >= 0) {
-		mtmp->mpeaceful = m->peaceful;
-		/* changed mpeaceful again; have to reset malign */
-		set_malign(mtmp);
-		if(mtmp->mpeaceful && Infuture && !Race_if(PM_ANDROID))
-			set_faction(mtmp, QUEST_FACTION);
+			mtmp->mpeaceful = m->peaceful;
+			/* changed mpeaceful again; have to reset malign */
+			set_malign(mtmp);
+			if(mtmp->mpeaceful && Infuture && !Race_if(PM_ANDROID))
+				set_faction(mtmp, QUEST_FACTION);
+			if(mtmp->mpeaceful && mtmp->mfaction == MOON_FACTION)
+				set_faction(mtmp, CITY_FACTION);
 	    }
 	    if (m->asleep >= 0) {
 #ifdef UNIXPC
@@ -1025,6 +1037,19 @@ struct mkroom	*croom;
 		mtmp->msleeping = m->asleep;
 #endif
 	    }
+		if(Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && Is_astralevel(&u.uz)){
+		// if(Role_if(PM_UNDEAD_HUNTER) && Is_astralevel(&u.uz)){
+			if(mtmp->mtyp != PM_DEATH
+				&& mtmp->mtyp != PM_PESTILENCE
+				&& mtmp->mtyp != PM_FAMINE
+				&& mtmp->mtyp != PM_HIGH_PRIEST
+				&& mtmp->mtyp != PM_ANGEL
+				&& mtmp->mtyp != PM_FOETID_ANGEL
+				&& mtmp->mtyp != PM_AETHER_WOLF
+			){
+				set_template(mtmp, TONGUE_PUPPET);
+			}
+		}
 	}
 
     }		/* if (rn2(100) < m->chance) */
@@ -1711,6 +1736,45 @@ default_case:
 			}
 		}
 	}
+	if(otmp->otyp == CHAIN && otmp->where == OBJ_FLOOR && u.uz.dlevel == dungeons[neutral_dnum].depth_start && u.uz.dnum == oracle_level.dnum){
+		struct obj *tmpo;
+		struct monst *mon = 0;
+
+		if(otmp->spe == 1){
+			mon = prisoner(PM_MASTER_MIND_FLAYER, otmp->ox, otmp->oy);
+		}
+		else if(otmp->spe == 2){
+		}
+		if(mon){
+			struct monst *flayer;
+			for(flayer = fmon; flayer; flayer = flayer->nmon){
+				if(flayer->mtyp == PM_MASTER_MIND_FLAYER){
+					struct obj *obj;
+					for(obj = mon->minvent; obj; obj = mon->minvent){
+						mon->misc_worn_check &= ~obj->owornmask;
+						update_mon_intrinsics(mon, obj, FALSE, FALSE);
+						if (obj->owornmask & W_WEP){
+							setmnotwielded(mon,obj);
+							MON_NOWEP(mon);
+						}
+						if (obj->owornmask & W_SWAPWEP){
+							setmnotwielded(mon,obj);
+							MON_NOSWEP(mon);
+						}
+						obj->owornmask = 0L;
+						obj_extract_self(obj);
+						mpickobj(flayer, obj);
+					}
+					break;
+				}
+			}
+			tmpo = mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+			if(tmpo){
+				mon->entangled_otyp = SHACKLES;
+				mon->entangled_oid = tmpo->o_id;
+			}
+		}
+	}
 
 	// Madman's old stuff to reclaim
 	if(Is_real_container(otmp) && otmp->spe == 7){
@@ -1784,6 +1848,8 @@ default_case:
 				}
 				if(urace.malenum == PM_GNOME){
 					default_add_2(GNOMISH_POINTY_HAT);
+					/* Gnomish pointy hats are supposed to be medium */
+					stuff->objsize = MZ_MEDIUM;
 					default_add_2(AKLYS);
 				}
 				if(urace.malenum == PM_HUMAN){
@@ -1793,6 +1859,19 @@ default_case:
 					}
 					else {
 						default_add_2(RAKUYO);
+					}
+				}
+				if(urace.malenum == PM_VAMPIRE){
+					if(flags.initgend){
+						default_add(CHIKAGE);
+						set_material_gm(stuff, COPPER);
+						default_add_2(FACELESS_HELM);
+						set_material_gm(stuff, METAL);
+						add_oprop(stuff, OPROP_BRIL);
+					}
+					else {
+						default_add_2(SOLDIER_S_RAPIER);
+						default_add(NIGHTMARE_S_BULLET_MOLD);
 					}
 				}
 			break;
@@ -2413,7 +2492,26 @@ create_altar(a, croom)
 
 	if (a->shrine && !a->god) {
 		/* shrines should be to a god, pick most appropriate god. */
-		a->god = align_to_god(alignment);
+		if(Role_if(PM_UNDEAD_HUNTER) && (Is_bridge_temple(&u.uz) || (!quest_status.moon_close && In_endgame(&u.uz)))){
+			switch(alignment) {
+				case A_LAWFUL:
+					a->god = GOD_PTAH;
+				break;
+				case A_NEUTRAL:
+					a->god = GOD_THOTH;
+				break;
+				case A_CHAOTIC:
+					a->god = GOD_ANHUR;
+				break;
+				case A_VOID:
+					a->god = GOD_THE_VOID;
+				break;
+				case A_NONE:
+					a->god = GOD_MOLOCH;
+				break;
+			}
+		}
+		else a->god = align_to_god(alignment);
 	}
 	if(Role_if(PM_ANACHRONOUNBINDER) && Is_astralevel(&u.uz) && alignment == A_LAWFUL){
 		a->god = GOD_THE_VOID;
@@ -2869,6 +2967,26 @@ boolean prefilled;
 			// } else {
 				// croom->rtype = ELSHAROOM;
 			// }
+		}
+		if(Role_if(PM_UNDEAD_HUNTER) && In_quest(&u.uz) && croom->rtype == GENERALSHOP){
+			if(!quest_status.uh_shop_created)
+				quest_status.uh_shop_created = TRUE;
+			else if(rn2(3)){
+				switch(rnd(10)){
+					case  1: croom->rtype = GENERALSHOP; break;
+					case  2: croom->rtype = ARMORSHOP; break;
+					case  3: croom->rtype = SCROLLSHOP; break;
+					case  4: croom->rtype = POTIONSHOP; break;
+					case  5: croom->rtype = WEAPONSHOP; break;
+					case  6: croom->rtype = RINGSHOP; break;
+					case  7: croom->rtype = WANDSHOP; break;
+					case  8: croom->rtype = TOOLSHOP; break;
+					case  9: croom->rtype = BOOKSHOP; break;
+					case 10: croom->rtype = MUSICSHOP; break;
+				}
+			} else {
+				croom->rtype = OROOM;
+			}
 		}
 	    /* Shop ? */
 	    if (croom->rtype >= SHOPBASE) {

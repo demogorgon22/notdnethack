@@ -208,13 +208,12 @@ static struct Bool_Opt
 #else
 	{"page_wait", (boolean *)0, FALSE, SET_IN_FILE},
 #endif
-#ifdef PARANOID
 	{"paranoid_self_cast", &iflags.paranoid_self_cast, FALSE, SET_IN_GAME},
 	{"paranoid_hit", &iflags.paranoid_hit, FALSE, SET_IN_GAME},
 	{"paranoid_quit", &iflags.paranoid_quit, FALSE, SET_IN_GAME},
 	{"paranoid_remove", &iflags.paranoid_remove, FALSE, SET_IN_GAME},
 	{"paranoid_swim", &iflags.paranoid_swim, TRUE, SET_IN_GAME},
-#endif
+	{"paranoid_wand_break", &iflags.paranoid_wand_break, TRUE, SET_IN_GAME},
 	{"perm_invent", &flags.perm_invent, FALSE, SET_IN_GAME},
        {"pickup_thrown", &iflags.pickup_thrown, FALSE, SET_IN_GAME},
 	{"polearm_old_style", &flags.standard_polearms, FALSE, SET_IN_GAME},
@@ -501,7 +500,7 @@ extern char ttycolors[CLR_MAX];	  /* in sys/msdos/video.c */
 #endif
 
 static char def_inv_order[MAXOCLASSES] = {
-	COIN_CLASS, AMULET_CLASS, WEAPON_CLASS, ARMOR_CLASS, FOOD_CLASS,
+	COIN_CLASS, AMULET_CLASS, WEAPON_CLASS, ARMOR_CLASS, BELT_CLASS, FOOD_CLASS,
 	SCROLL_CLASS, TILE_CLASS, SPBOOK_CLASS, POTION_CLASS, RING_CLASS, WAND_CLASS,
 	TOOL_CLASS, GEM_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, BED_CLASS, SCOIN_CLASS, 0,
 };

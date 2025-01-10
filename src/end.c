@@ -82,7 +82,7 @@ static NEARDATA const char *deaths[] = {		/* the array of death */
 	"burning", "dissolving under the heat and pressure",
 	"crushed", "turned to stone", "turned to gold", "turned to glass", "turned into slime",
 	"exploded after being overwound", "turned into a weeping angel", "disintegrated",
-	"genocided",
+	"genocided", "world ended",
 	"panic", "trickery",
 	"quit", "escaped", "ascended"
 };
@@ -92,7 +92,7 @@ static NEARDATA const char *ends[] = {		/* "when you..." */
 	"burned", "dissolved in the lava",
 	"were crushed", "turned to stone", "turned to gold", "turned to glass", "turned into slime",
 	"were overwound and exploded", "turned into a weeping angel", "were disintegrated",
-	"were genocided",
+	"were genocided", "world ended",
 	"panicked", "were tricked",
 	"quit", "escaped", "ascended"
 };
@@ -299,21 +299,7 @@ done2()
 {
 	if (iflags.debug_fuzzer)
 		return MOVE_CANCELLED;
-#ifdef PARANOID
-	char buf[BUFSZ];
-	int really_quit = FALSE;
-
-	if (iflags.paranoid_quit) {
-	  getlin ("Really quit [yes/no]?",buf);
-	  (void) lcase (buf);
-	  if (!(strcmp (buf, "yes"))) really_quit = TRUE;
-	} else {
-	  if(yn("Really quit?") == 'y') really_quit = TRUE;
-	}
-	if (!really_quit) {
-#else /* PARANOID */
-	if(yn("Really quit?") == 'n') {
-#endif /* PARANOID */
+	if (yesno("Really quit?", iflags.paranoid_quit) != 'y') {
 #ifndef NO_SIGNAL
 		(void) signal(SIGINT, (SIG_RET_TYPE) done1);
 #endif
@@ -501,6 +487,11 @@ register struct monst *mtmp;
 	if (u.ugrave_arise >= LOW_PM &&
 				(mvitals[u.ugrave_arise].mvflags & G_GENOD && !In_quest(&u.uz)))
 		u.ugrave_arise = NON_PM;
+	if (!u.uconduct.killer){
+		//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+		IMPURITY_UP(u.uimp_murder)
+		IMPURITY_UP(u.uimp_bloodlust)
+	}
 	if (touch_petrifies(mtmp->data))
 		done(STONING);
 	else if (mtmp->mtraitor)
@@ -999,10 +990,6 @@ void
 done(how)
 int how;
 {
-#if defined(WIZARD) && defined(PARANOID)
-	char paranoid_buf[BUFSZ];
-	int really_bon = TRUE;
-#endif
 	boolean taken;
 	char kilbuf[BUFSZ], pbuf[BUFSZ];
 	winid endwin = WIN_ERR;
@@ -1046,7 +1033,7 @@ int how;
 	            killer_format = 0;
 	            return;
 	        }
-	    } else
+	} else
 
 
 	/* kilbuf: used to copy killer in case it comes from something like
@@ -1054,12 +1041,12 @@ int how;
 	 *	xname() when listing possessions
 	 * pbuf: holds Sprintf'd output for raw_print and putstr
 	 */
-	if (how == ASCENDED || (!killer && how == GENOCIDED))
+	if (!killer && (how == ASCENDED || how == GENOCIDED))
 		killer_format = NO_KILLER_PREFIX;
 	/* Avoid killed by "a" burning or "a" starvation */
 	if (!killer && (how == STARVING || how == BURNING))
 		killer_format = KILLED_BY;
-	Strcpy(kilbuf, (!killer || how >= PANICKED ? deaths[how] : killer));
+	Strcpy(kilbuf, (!killer || (how >= PANICKED && how != ASCENDED) ? deaths[how] : killer));
 	killer = kilbuf;
 
 #define LSVD_NONE 0
@@ -1414,11 +1401,11 @@ die:
 		if (lastmsg >= 0) {
 		  dump ("", "Latest messages");
 		  for (i = lastmsg + 1; i < DUMPMSGS; i++) {
-		    if (msgs[i] && strcmp(msgs[i], "") )
+		    if (strcmp(msgs[i], "") )
 		      dump ("  ", msgs[i]);
 		  } 
 		  for (i = 0; i <= lastmsg; i++) {
-		    if (msgs[i] && strcmp(msgs[i], "") )
+		    if (strcmp(msgs[i], "") )
 		      dump ("  ", msgs[i]);
 		  } 
 		  dump ("","");
@@ -1456,17 +1443,7 @@ die:
 
 	if (bones_ok) {
 #ifdef WIZARD
-# ifdef PARANOID
-	    if(wizard) {
-		getlin("Save WIZARD MODE bones? [no/yes]", paranoid_buf);
-		(void) lcase (paranoid_buf);
-		if (strcmp (paranoid_buf, "yes"))
-		  really_bon = FALSE;
-            }
-            if(really_bon)
-# else
-	    if (!wizard || yn("Save bones?") == 'y')
-#endif /* PARANOID */
+	    if(yesno("Save WIZARD MODE bones?", TRUE) == 'y')
 #endif /* WIZARD */
 		savebones(corpse);
 	    /* corpse may be invalid pointer now so
@@ -1537,7 +1514,7 @@ die:
 		   how != ASCENDED ?
 		      (const char *) ((flags.female && urole.name.f) ?
 		         urole.name.f : urole.name.m) :
-		      (const char *) (flags.female ? "Demigoddess" : "Demigod"));
+		      (const char *) title_override ? title_override : (flags.female ? "Demigoddess" : "Demigod"));
 	if (!done_stopprint) {
 	    putstr(endwin, 0, pbuf);
 	    putstr(endwin, 0, "");

@@ -11,6 +11,7 @@ extern const int monstr[];
 /* mon summons a monster 
  * 
  * if mon is null, treat as if as being summoned by a far-off Wizard of Yendor
+ * Monster hell-p function
  */
 void
 msummon(mon, ptr)
@@ -34,6 +35,13 @@ struct permonst * ptr;	/* summon as though you were <X> */
 		ptr = mon->data;
 	    atyp = (ptr->maligntyp==A_NONE) ? A_NONE : sgn(ptr->maligntyp);
 		gnum = (ptr->maligntyp==A_NONE) ? GOD_MOLOCH : align_to_god(sgn(ptr->maligntyp));
+		if(gnum == GOD_THE_COLLEGE)
+			gnum = GOD_PTAH;
+		else if(gnum == GOD_THE_CHOIR)
+			gnum = GOD_THOTH;
+		else if(gnum == GOD_DEFILEMENT)
+			gnum = GOD_ANHUR;
+
 	    if (get_mx(mon, MX_EPRI)) {
 			atyp = EPRI(mon)->shralign;
 			gnum = EPRI(mon)->godnum;
@@ -46,6 +54,13 @@ struct permonst * ptr;	/* summon as though you were <X> */
 	    if (!ptr) ptr = &mons[PM_WIZARD_OF_YENDOR];
 	    atyp = (ptr->maligntyp==A_NONE) ? A_NONE : sgn(ptr->maligntyp);
 		gnum = (ptr->maligntyp==A_NONE) ? GOD_MOLOCH : align_to_god(sgn(ptr->maligntyp));
+
+		if(gnum == GOD_THE_COLLEGE)
+			gnum = GOD_PTAH;
+		else if(gnum == GOD_THE_CHOIR)
+			gnum = GOD_THOTH;
+		else if(gnum == GOD_DEFILEMENT)
+			gnum = GOD_ANHUR;
 	}
 
 	if (!mon) {
@@ -293,10 +308,17 @@ boolean angels;
     } else {
 		mon = makemon(&mons[mtyp], u.ux, u.uy, MM_ESUM);
 		if (mon) {
+			int gnum = align_to_god(alignment);
 			add_mx(mon, MX_EMIN);
 			mon->isminion = TRUE;
 			EMIN(mon)->min_align = alignment;
-			EMIN(mon)->godnum = align_to_god(alignment);
+			if(gnum == GOD_THE_COLLEGE)
+				gnum = GOD_PTAH;
+			else if(gnum == GOD_THE_CHOIR)
+				gnum = GOD_THOTH;
+			else if(gnum == GOD_DEFILEMENT)
+				gnum = GOD_ANHUR;
+			EMIN(mon)->godnum = gnum;
 			
 			mark_mon_as_summoned(mon, (struct monst *)0, ESUMMON_PERMANENT, 0);
 		}

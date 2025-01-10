@@ -35,6 +35,7 @@ const struct worn {
 	{ W_SWAPWEP, &uswapwep },
 	{ W_QUIVER, &uquiver },
 	{ W_AMUL, &uamul },
+	{ W_BELT, &ubelt },
 	{ W_TOOL, &ublindf },
 	{ W_BALL, &uball },
 	{ W_CHAIN, &uchain },
@@ -295,16 +296,16 @@ long mask;
 
 	/*Handle the pen of the void here*/
 	if(obj && obj->oartifact == ART_PEN_OF_THE_VOID){
-		if(obj->ovar1_seals && !Role_if(PM_EXILE)){
+		if(obj->ovara_seals && !Role_if(PM_EXILE)){
 			long oldseals = u.sealsKnown;
-			u.sealsKnown |= obj->ovar1_seals;
+			u.sealsKnown |= obj->ovara_seals;
 			if(oldseals != u.sealsKnown) You("learned new seals.");
 		}
-		obj->ovar1_seals = u.spiritTineA|u.spiritTineB;
+		obj->ovara_seals = u.spiritTineA|u.spiritTineB;
 		if(u.voidChime){
 			int i;
 			for(i=0; i<u.sealCounts; i++){
-				obj->ovar1_seals |= u.spirit[i];
+				obj->ovara_seals |= u.spirit[i];
 			}
 		}
 	} else if(obj && obj->oartifact == ART_HELM_OF_THE_ARCANE_ARCHER){
@@ -406,8 +407,8 @@ register struct obj *obj;
 		}
 		
 		if(obj->oartifact == ART_GAUNTLETS_OF_THE_BERSERKER){
-//        adj_abon(uarmg, -uarmg->ovar1_gober);
-          uarmg->ovar1_gober = 0;
+//        adj_abon(uarmg, -uarmg->ovara_gober);
+          uarmg->ovara_gober = 0;
         }
 		obj->owornmask &= ~wp->w_mask;
 		if (obj->oartifact)
@@ -624,13 +625,13 @@ boolean on, silently;
 		{
 		case INVIS:
 			if (mon->mtyp != PM_HELLCAT){
-				mon->mextrinsics[(which-1)/32] |= (1 << (which-1)%32);
+				mon->mextrinsics[(which-1)/32] |= (1L << (which-1)%32);
 				mon->minvis = !mon->invis_blkd;
 			}
 			break;
 		case FAST:
 			{
-			mon->mextrinsics[(which-1)/32] |= (1 << (which-1)%32);
+			mon->mextrinsics[(which-1)/32] |= (1L << (which-1)%32);
 			boolean save_in_mklev = in_mklev;
 			if (silently) in_mklev = TRUE;
 			mon_adjust_speed(mon, 0, obj, TRUE);
@@ -640,7 +641,7 @@ boolean on, silently;
 			}
 		case LEVITATION:
 		case FLYING:
-			mon->mextrinsics[(which-1)/32] |= (1 << (which-1)%32);
+			mon->mextrinsics[(which-1)/32] |= (1L << (which-1)%32);
 			if (!oldprop && (mon_resistance(mon,LEVITATION) || mon_resistance(mon,FLYING))) {
 				m_float_up(mon, silently);
 				if (obj && !silently && canseemon(mon)) {
@@ -649,7 +650,7 @@ boolean on, silently;
 			}
 			break;
 		case DISPLACED:
-			mon->mextrinsics[(which-1)/32] |= (1 << (which-1)%32);
+			mon->mextrinsics[(which-1)/32] |= (1L << (which-1)%32);
 			if (!oldprop && mon_resistance(mon,DISPLACED) && !silently && canseemon(mon)) {
 				pline("%s outline begins shimmering!", s_suffix(Monnam(mon)));
 				if (obj) {
@@ -658,13 +659,13 @@ boolean on, silently;
 			}
 			break;
 		case SWIMMING:
-			mon->mextrinsics[(which-1)/32] |= (1 << (which-1)%32);
+			mon->mextrinsics[(which-1)/32] |= (1L << (which-1)%32);
 			if (!oldprop && mon_resistance(mon,SWIMMING)) {
 				minliquid(mon);
 			}
 			break;
 		default:
-			mon->mextrinsics[(which-1)/32] |= (1 << (which-1)%32);
+			mon->mextrinsics[(which-1)/32] |= (1L << (which-1)%32);
 			break;
 		}
     }
@@ -786,7 +787,7 @@ struct obj *obj;
 {
 	int shield_ac = 0;
 	shield_ac += max(0, arm_ac_bonus(obj) + (obj->objsize - mon->data->msize));
-	if(mon_knight(mon)){
+	if(mon_knight(mon) || mon_dark_knight(mon)){
 		if(mon->m_lev >= 28)
 			shield_ac += 8;
 		else if(mon->m_lev >= 14)
@@ -825,6 +826,12 @@ struct monst *mon;
 	}
 	if(mon->mtyp == PM_VERMIURGE && mon->mvar_vermiurge > 0)
 		base -= min(mon->mvar_vermiurge/10, 20);
+
+	if(Role_if(PM_ANACHRONONAUT) && !quest_status.leader_is_dead && mon->mfaction == QUEST_FACTION && Is_qhome(&u.uz)){
+		if(mon->mtyp != PM_SARA__THE_LAST_ORACLE){
+			base -= rnd(min(mon->m_lev, 20));
+		}
+	}
 	
 	if(mon->mtyp == PM_ASMODEUS && base < -9) base = -9 + MONSTER_AC_VALUE(base+9);
 	else if(mon->mtyp == PM_PALE_NIGHT && base < -6) base = -6 + MONSTER_AC_VALUE(base+6);
@@ -854,6 +861,8 @@ struct monst *mon;
 			base -= rnd(def_beastmastery()); // the duster doubles for tame animals
 		
 		if(u.usteed && mon==u.usteed) base -= rnd(def_mountedCombat());
+		
+		if(is_vampire(mon->data) && check_vampire(VAMPIRE_MASTERY)) base -= rnd(5);
 		
 		if(uring_art(ART_VILYA) && def_vilya())
 			base -=  sgn(def_vilya())*rnd(abs(def_vilya()));
@@ -1052,6 +1061,12 @@ struct monst *mon;
 	if(mon->mtyp == PM_VERMIURGE && mon->mvar_vermiurge > 0)
 		base -= min(mon->mvar_vermiurge/10, 20);
 	
+	if(Role_if(PM_ANACHRONONAUT) && !quest_status.leader_is_dead && mon->mfaction == QUEST_FACTION && Is_qhome(&u.uz)){
+		if(mon->mtyp != PM_SARA__THE_LAST_ORACLE){
+			base -= min(mon->m_lev, 20);
+		}
+	}
+
 	if(mon->mtyp == PM_CHOKHMAH_SEPHIRAH){
 		base -= u.chokhmah;
 	}
@@ -1090,6 +1105,8 @@ struct monst *mon;
 		if(u.specialSealsActive&SEAL_COSMOS) base -= spiritDsize();
 		if(u.usteed && mon==u.usteed) base -= def_mountedCombat();
 		
+		if(is_vampire(mon->data) && check_vampire(VAMPIRE_MASTERY)) base -= 5;
+
 		if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(mon->data))
 			base -= def_beastmastery(); // the duster doubles for tame animals
 
@@ -1239,8 +1256,15 @@ struct monst *mon;
 
 	if(mon->mtame){
 		if(active_glyph(IMPURITY)) base += 3;
+		if(active_glyph(DEFILEMENT)) base += 3;
 		if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5){
 			base += 3;
+		}
+		if(active_glyph(DEFILEMENT)){
+			if(active_glyph(IMPURITY))
+				base += max(0, u.uimpurity/3-3);
+			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5)
+				base += max(0, (u.uimpurity+4)/3-3);
 		}
 		if(Role_if(PM_HEALER))
 			base += heal_mlevel_bonus();
@@ -1282,8 +1306,15 @@ struct monst *mon;
 	
 	if(mon->mtame){
 		if(active_glyph(IMPURITY)) base += 3;
+		if(active_glyph(DEFILEMENT)) base += 3;
 		if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5){
 			base += 3;
+		}
+		if(active_glyph(DEFILEMENT)){
+			if(active_glyph(IMPURITY))
+				base += max(0, u.uimpurity/3-3);
+			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5)
+				base += max(0, (u.uimpurity+4)/3-3);
 		}
 		if(Role_if(PM_HEALER))
 			base += heal_mlevel_bonus();
@@ -1334,21 +1365,13 @@ struct monst *mon;
 }
 
 int
-roll_mdr(mon, magr, aatyp)
-struct monst *mon;
-struct monst *magr;
-uchar aatyp;
+roll_mdr(struct monst *mon, struct monst *magr, int slot)
 {
-	return roll_mdr_detail(mon, magr, 0, 0, aatyp);
+	return roll_mdr_detail(mon, magr, slot, 0, 0);
 }
 
 int
-roll_mdr_detail(mon, magr, slot, depth, aatyp)
-struct monst *mon;
-struct monst *magr;
-int slot;
-int depth;
-uchar aatyp;
+roll_mdr_detail(struct monst *mon, struct monst *magr, int slot, int depth, uchar aatyp)
 {
 	int base, nat_dr, armac;
 	boolean youagr = (magr == &youmonst);
@@ -1471,15 +1494,20 @@ int depth;
 	for (i = 0; i < SIZE(marmor); i++) {
 		if((curarm = which_armor(mon, marmor[i]))){
 			if(curarm->oclass == ARMOR_CLASS){
-				if (curarm && ((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i])))) {
-					if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
-						continue;
-					if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
-						if(!full_body_match(mon->data, curarm))
+				if (curarm){
+					if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
+						if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
 							continue;
+						if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
+							if(!full_body_match(mon->data, curarm))
+								continue;
+						}
+						arm_mdr += arm_dr_bonus(curarm);
+						if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
 					}
-					arm_mdr += arm_dr_bonus(curarm);
-					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
+					else if(curarm->otyp == CLOAK_OF_PROTECTION){
+						arm_mdr += arm_dr_bonus(curarm)/2;
+					}
 				}
 			}
 			else if(!depth){
@@ -1693,6 +1721,7 @@ boolean creation;
 	m_dowear_type(mon, W_ARMF, creation, FALSE);
 	m_dowear_type(mon, W_ARM, creation, FALSE);
 	m_dowear_type(mon, W_TOOL, creation, FALSE);
+	m_dowear_type(mon, W_BELT, creation, FALSE);
 }
 
 STATIC_OVL void
@@ -1719,6 +1748,7 @@ boolean racialexception;
 	if (old && old->otyp == STATUE && (old->corpsenm == PM_PARASITIC_MIND_FLAYER || old->corpsenm == PM_PARASITIC_MASTER_MIND_FLAYER))
 		return;
 	if (old && flag == W_AMUL) return; /* no such thing as better amulets */
+	if (old && flag == W_BELT) return; /* no such thing as better belts */
 	best = old;
 
 	for(obj = mon->minvent; obj; obj = obj->nobj) {
@@ -1737,6 +1767,9 @@ boolean racialexception;
 			continue;
 		    best = obj;
 		    goto outer_break; /* no such thing as better amulets */
+		case W_BELT:
+		    if (!is_belt(obj) || !can_wear_belt(mon->data)) continue;
+		    break;
 		case W_ARMU:
 		    if (!is_shirt(obj) || obj->objsize != mon->data->msize || !shirt_match(mon->data,obj)) continue;
 		    break;
@@ -1813,8 +1846,7 @@ outer_break:
 		      buf, distant_name(best,doname));
 	    } /* can see it */
 	    m_delay += objects[best->otyp].oc_delay;
-	    mon->mfrozen = m_delay;
-	    if (mon->mfrozen) mon->mcanmove = 0;
+	    mon->mequipping = m_delay;
 	}
 	if (old)
 	    update_mon_intrinsics(mon, old, FALSE, creation);
@@ -1853,9 +1885,7 @@ long flag;
 	    m_delay += 2;
 	m_delay += objects[old->otyp].oc_delay;
 	old->owornmask = 0L;
-	mon->mfrozen = max(mon->mfrozen, m_delay);
-	if(mon->mfrozen)
-		mon->mcanmove = 0;
+	mon->mequipping = max(mon->mequipping, m_delay);
 	update_mon_intrinsics(mon, old, FALSE, FALSE);
 	mon->misc_worn_check &= ~flag;
 	return old;
@@ -1873,7 +1903,7 @@ struct monst *mon;
 	
 	if (mon->mfrozen) return FALSE;
 	
-	do switch(rnd(7)){
+	do switch(rnd(8)){
 		case 1:
 			flag = W_ARM;
 		break;
@@ -1894,6 +1924,9 @@ struct monst *mon;
 		break;
 		case 7:
 			flag = W_AMUL;
+		break;
+		case 8:
+			flag = W_BELT;
 		break;
 	} while(tries-- && !(old = which_armor(mon, flag)));
 
@@ -1925,7 +1958,7 @@ struct monst *mon;
 	if (mon->mfrozen) return FALSE;
 	
 	for(i = 1; i<=7;i++){
-		switch(rnd(7)){
+		switch(rnd(8)){
 			case 1:
 				flag = W_ARM;
 			break;
@@ -1946,6 +1979,9 @@ struct monst *mon;
 			break;
 			case 7:
 				flag = W_AMUL;
+			break;
+			case 8:
+				flag = W_BELT;
 			break;
 		}
 

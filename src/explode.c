@@ -742,7 +742,8 @@ struct permonst *pa; /* permonst of the attacker (used for disease) */
 				mdam *= 2;
 			else if (has_blood_mon(mtmp) && adtyp == AD_BLUD)
 				mdam += mlev(mtmp);
-			
+			if(yours && adtyp == AD_BLUD)
+				mdam += u.uimpurity/2;
 			if(adtyp == AD_WET){
 				water_damage(mtmp->minvent, FALSE, FALSE, FALSE, mtmp);
 			}
@@ -878,6 +879,11 @@ struct permonst *pa; /* permonst of the attacker (used for disease) */
 			killer = killer_buf;
 			/* Known BUG: BURNING suppresses corpse in bones data,
 			   but done does not handle killer reason correctly */
+			if (!u.uconduct.killer && !yours){
+				//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+				IMPURITY_UP(u.uimp_murder)
+				IMPURITY_UP(u.uimp_bloodlust)
+			}
 			done((adtyp == AD_FIRE || adtyp == AD_EFIR || adtyp == AD_MADF) ? BURNING : DIED);
 		    }
 		}

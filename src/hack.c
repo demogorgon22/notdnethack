@@ -1324,7 +1324,7 @@ domove()
 	if (flags.forcefight ||
 	    /* remembered an 'I' && didn't use a move command */
 	    (glyph_is_invisible(levl[x][y].glyph) && !flags.nopick)) {
-		boolean expl = (Upolyd && attacktype(youmonst.data, AT_EXPL));
+		boolean expl = (Upolyd && attacktype(youracedata, AT_EXPL));
 	    	char buf[BUFSZ];
 		Sprintf(buf,"a vacant spot on the %s", surface(x,y));
 		You("%s %s.",
@@ -1350,6 +1350,10 @@ domove()
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
 					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
 				}
+				/* Chikage launch blood iff you DON'T have a primary target, if your insight is high enough to percieve the blood */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
+					result |= hit_with_cblood(&youmonst, otmp, x, y, 0, attk);
+				}
 				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && is_cclub_able(otmp)){
 					result |= hit_with_cclaw(&youmonst, otmp, x, y, 0, attk);
@@ -1361,6 +1365,10 @@ domove()
 				/* Dancers hit additional targets */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){
 					result |= hit_with_dance(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Rejection antenae hit additional targets (last) */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && check_oprop(otmp, OPROP_ANTAW) && check_reanimation(ANTENNA_REJECT)){
+					result |= hit_with_rreject(&youmonst, otmp, x, y, 0, attk);
 				}
 				
 				if(!u.twoweap)
@@ -1529,6 +1537,32 @@ domove()
 			else
 #endif
 			You("disentangle yourself.");
+		    }
+			}
+		} else if (u.utraptype == TT_SALIVA) {
+			if(u.spiritPColdowns[PWR_PHASE_STEP] >= moves+20){
+				You("phase free from the gooey saliva.");
+				u.utrap=0;
+			} else {
+		    if(--u.utrap) {
+			if(flags.verbose) {
+			    predicament = "glued down";
+#ifdef STEED
+			    if (u.usteed)
+				Norep("%s is %s.", upstart(y_monnam(u.usteed)),
+				      predicament);
+			    else
+#endif
+			    Norep("You are %s.", predicament);
+			}
+		    } else {
+#ifdef STEED
+			if (u.usteed)
+			    pline("%s pulls loose from the gooey saliva.",
+				  upstart(y_monnam(u.usteed)));
+			else
+#endif
+			You("unstick yourself.");
 		    }
 			}
 		} else if (u.utraptype == TT_INFLOOR) {
@@ -2014,11 +2048,11 @@ boolean pick;
 			goto stillinwater;
 		else if (Levitation)
 			You("pop out of the water like a cork!");
-		else if (Flying)
+		else if (Flying && !Underwater)
 			You("fly out of the water.");
 		else if (uarmf && uarmf->oartifact == ART_FROST_TREADS)
 			You("climb stairs of ice out of the water.");
-		else if (Wwalking)
+		else if (Wwalking && !Underwater)
 			You("slowly rise above the surface.");
 		else
 			goto stillinwater;
@@ -2052,8 +2086,8 @@ stillinwater:;
 	    } else if (IS_PUDDLE(levl[u.ux][u.uy].typ) && !Wwalking) {
 
 			/*You("%s through the shallow water.",
-				verysmall(youmonst.data) ? "wade" : "splash");
-			if (!verysmall(youmonst.data) && !rn2(4)) wake_nearby();*/
+				verysmall(youracedata) ? "wade" : "splash");
+			if (!verysmall(youracedata) && !rn2(4)) wake_nearby();*/
 
 			if(u.umonnum == PM_GREMLIN)
 				(void)split_mon(&youmonst, (struct monst *)0);
@@ -2065,7 +2099,7 @@ stillinwater:;
 				Your("%s rust!", makeplural(body_part(FOOT)));
 				if (u.mhmax > dam) u.mhmax -= dam;
 				losehp(dam, "rusting away", KILLED_BY);
-			// } else if (is_longworm(youmonst.data)) { /* water is lethal to Shai-Hulud */
+			// } else if (is_longworm(youracedata)) { /* water is lethal to Shai-Hulud */
 				// int dam = d(3,12);
 				// if (u.mhmax > dam) u.mhmax -= (dam+1) / 2;
 					// pline_The("water burns your flesh!");
@@ -2073,7 +2107,7 @@ stillinwater:;
 			}
 			if (!u.usteed){
 				static long rustmessage_turn = 0L;
-				if (verysmall(youmonst.data)){
+				if (verysmall(youracedata)){
 					water_damage(invent, FALSE,FALSE,FALSE,(struct monst *) 0);
 				}
 				else if(rustmessage_turn < monstermoves || (uarmf && is_rustprone(uarmf) && !uarmf->oerodeproof && uarmf->oeroded != MAX_ERODE)){
@@ -3001,6 +3035,7 @@ weight_cap()
 	struct obj *bodyarmor = uarm;
 	struct obj *underarmor = uarmu;
 	struct obj *boots = uarmf;
+	struct obj *belt = ubelt;
 	
 	/*If mounted your steed is doing the carrying, use its data instead*/
 	if(u.usteed && u.usteed->data){
@@ -3011,6 +3046,7 @@ weight_cap()
 		bodyarmor = which_armor(u.usteed, W_ARM);
 		underarmor = which_armor(u.usteed, W_ARMU);
 		boots = which_armor(u.usteed, W_ARMF);
+		belt = which_armor(u.usteed, W_BELT);
 		
 		carrcap = 25L*(mstr + mcon) + 50L;
 		mdat = u.usteed->data;
@@ -3045,8 +3081,17 @@ weight_cap()
 			carrcap = maxcap;
 
 		/* these carrcap modifiers only make sense if you have feet on the ground */
-		if (boots && boots->otyp == find_hboots()) carrcap += 100;
+		if (belt && belt->otyp == BELT_OF_CARRYING){
+			if(belt->blessed)
+				carrcap += carrcap/4;
+			else if(belt->cursed)
+				carrcap -= carrcap/4;
+			else
+				carrcap += carrcap/8;
+		}
 		
+		if (boots && boots->otyp == find_hboots()) carrcap += maxcap/10;
+
 		if (boots && check_oprop(boots, OPROP_RBRD)
 			&& u.ualign.record >= 20 && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NEUTRAL
 		)
@@ -3065,6 +3110,7 @@ weight_cap()
 	carrcap += u.ucarinc;
 	if(u.sealsActive&SEAL_FAFNIR) carrcap *= 1+((double) u.ulevel)/100;
 	if(active_glyph(COMMUNION)) carrcap *= 1.25;
+	if(active_glyph(LUMEN)) carrcap *= 1.064;
 	if(animaloid(mdat) || naoid(mdat)){
 		carrcap *= 1.5;
 	}
@@ -3102,16 +3148,22 @@ static int wc;	/* current weight_cap(); valid after call to inv_weight() */
 int
 inv_weight()
 {
-	register struct obj *otmp = invent;
-	register int wt = 0;
+	struct obj *otmp = invent;
+	int wt = 0;
+	int objwt;
+	boolean nymph = youracedata->mlet == S_NYMPH;
+	int wtmod = mlev(&youmonst)*5;
 
 #ifndef GOLDOBJ
 	/* when putting stuff into containers, gold is inserted at the head
 	   of invent for easier manipulation by askchain & co, but it's also
 	   retained in u.ugold in order to keep the status line accurate; we
 	   mustn't add its weight in twice under that circumstance */
-	wt = (otmp && otmp->oclass == COIN_CLASS) ? 0 :
+	objwt = (otmp && otmp->oclass == COIN_CLASS) ? 0 :
 		gold_weight(u.ugold);
+	if(nymph)
+		objwt = max(0, objwt - wtmod);
+	wt += objwt;
 #endif
 	if(u.utats & TAT_CROESUS) wt = 0;
 	while (otmp) {
@@ -3120,11 +3172,24 @@ inv_weight()
 #ifndef GOLDOBJ
 		if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #else
-		if (otmp->oclass == COIN_CLASS && !(u.utats&TAT_CROESUS))
-			wt += gold_weight(u.ugold);
+		if (otmp->oclass == COIN_CLASS && !(u.utats&TAT_CROESUS)){
+			objwt += gold_weight(u.ugold);
+			if(nymph)
+				objwt = max(0, objwt - wtmod);
+			wt += objwt;
+		}
 		else if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #endif
-			wt += otmp->owt;
+		{
+			if(otmp->otyp == BELT_OF_WEIGHT && otmp == ubelt)
+				wt += 500;
+			else {
+				objwt = otmp->owt;
+				if(nymph)
+					objwt = max(0, objwt - wtmod);
+				wt += objwt;
+			}
+		}
 
 		if(otmp->oartifact == ART_IRON_BALL_OF_LEVITATION)
 			wt -= 2*otmp->owt;
@@ -3137,10 +3202,15 @@ inv_weight()
 	}
 	
 	if(u.usteed){
+		nymph = u.usteed->data->mlet == S_NYMPH;
+		wtmod = mlev(u.usteed)*5;
 		otmp = u.usteed->minvent;
 		while (otmp){
 			if(otmp->oartifact) otmp->owt = weight(otmp);
-			wt += otmp->owt;
+			objwt = otmp->owt;
+			if(nymph)
+				objwt = max(0, objwt - wtmod);
+			wt += objwt;
 			otmp = otmp->nobj;
 		}
 	}

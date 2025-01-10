@@ -576,9 +576,10 @@ pick_lock(pick_p) /* pick a lock with a given object */
 		if (is_drawbridge_wall(cc.x,cc.y) >= 0)
 		    You("%s no lock on the drawbridge.",
 				Blind ? "feel" : "see");
-		else
+		else {
 		    You("%s no door there.",
 				Blind ? "feel" : "see");
+		}
 		return MOVE_CANCELLED;
 		}
 	    switch (door->doormask) {
@@ -734,6 +735,9 @@ doforce()		/* try to force a chest with your weapon */
 
 	x = u.ux + u.dx;
 	y = u.uy + u.dy;
+	
+	if (!isok(x,y)) goto nodoor_force;
+	
 	if (x == u.ux && y == u.uy && u.dz > -1) {
 	for(otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp->nexthere)
 	    if(Is_box(otmp)) {
@@ -798,9 +802,11 @@ doforce()		/* try to force a chest with your weapon */
 	    if(!IS_DOOR(door->typ)) {
 		if (is_drawbridge_wall(x,y) >= 0)
 		    pline("The drawbridge is too solid to force open.");
-		else
+		else {
+nodoor_force:
 		    You("%s no door there.",
 				Blind ? "feel" : "see");
+		}
 		return MOVE_CANCELLED;
 	    }
 	    /* ALI - artifact doors */
@@ -876,6 +882,8 @@ int x, y;
 	    return MOVE_CANCELLED;
 	}
 	
+	if (!isok(x,y)) goto nodoor_indr;
+	
 	if(x > 0 && y > 0){
 		cc.x = x;
 		cc.y = y;
@@ -900,6 +908,7 @@ int x, y;
 		    There("is no obvious way to open the drawbridge.");
 		    return MOVE_INSTANT;
 		}
+nodoor_indr:
 		You("%s no door there.",
 				Blind ? "feel" : "see");
 		return MOVE_CANCELLED;
@@ -993,6 +1002,9 @@ doclose()		/* try to close a door */
 
 	x = u.ux + u.dx;
 	y = u.uy + u.dy;
+
+	if (!isok(x,y)) goto nodoor;
+
 	if((x == u.ux) && (y == u.uy)) {
 		You("are in the way!");
 		return MOVE_STANDARD;
@@ -1013,9 +1025,11 @@ doclose()		/* try to close a door */
 	if(!IS_DOOR(door->typ)) {
 		if (door->typ == DRAWBRIDGE_DOWN)
 		    There("is no obvious way to close the drawbridge.");
-		else
+		else {
+nodoor:
 		    You("%s no door there.",
 				Blind ? "feel" : "see");
+		}
 		return MOVE_CANCELLED;
 	}
 

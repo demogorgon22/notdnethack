@@ -616,7 +616,7 @@ const char *name;
 	
     if(!strcmp((&artilist[ART_SCALPEL_OF_LIFE_AND_DEATH])->name,name) &&
        obj && obj->otyp == SCALPEL){
-      obj->ovar1_lifeDeath = COMMAND_DEATH;
+      obj->ovara_lifeDeath = COMMAND_DEATH;
     }
     if(((!strcmp((&artilist[ART_FIGURINE_OF_GALATEA])->name,name)) || (!strcmp((&artilist[ART_FIGURINE_OF_PYGMALION])->name,name))) &&
        obj && obj->otyp == FIGURINE){
@@ -809,7 +809,7 @@ const char *name;
 	    if (obj == uswapwep) untwoweapon();
 	    /* activate warning if you've just named your weapon "Sting" */
 	    if (obj == uwep) set_artifact_intrinsic(obj, TRUE, W_WEP);
-	    if (obj == uwep && obj->oartifact == ART_KUSANAGI_NO_TSURUGI){
+	    if (obj == uwep && obj->oartifact == ART_KUSANAGI_NO_TSURUGI && !(u.ulevel >= 22 || u.uhave.amulet)){
 	    	setuwep((struct obj *) 0);
 	    	pline("You are not yet worthy of wielding this sword, but you may bear it until you are ready.");
 	    }
@@ -1247,8 +1247,13 @@ boolean called;
 	/* Put the adjectives in the buffer */
 	if (adjective)
 	    Strcat(strcat(buf, adjective), " ");
-	if (get_mx(mtmp, MX_ESUM))
-		Strcat(buf, "summoned ");
+	if (get_mx(mtmp, MX_ESUM)){
+		if(has_template(mtmp, SPARK_SKELETON)){
+			Strcat(buf, "reanimated ");
+		}
+		else
+			Strcat(buf, "summoned ");
+	}
 	if (do_invis)
 	    Strcat(buf, "invisible ");
 #ifdef STEED

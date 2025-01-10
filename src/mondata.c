@@ -199,6 +199,9 @@ int newpm;
 		case PM_DEMINYMPH:
 			mon->mvar_deminymph_role = PM_CAVEMAN;
 		break;
+		case PM_VERMIURGE:
+			mon->mvar_vermiurge = 1000;
+		break;
 		default:
 			//mon->mvar_ancient_breath_cooldown = 0;
 			//mon->mvar_yellow_lifesaved = FALSE;
@@ -206,6 +209,10 @@ int newpm;
 			//mon->mvar_witchID = 0;
 			//mon->mvar_suryaID = 0;
 			//mon->mvar_huskID = 0;
+			//mon->mvar_elfwraith_target = 0;
+			//mon->mvar_lucksucker = 0;
+			//mon->mvar_star_vampire_blood = 0;
+			//mon->mvar_spellweaver_count = 0;
 			mon->mvar1 = 0;
 		break;
 	}
@@ -215,9 +222,12 @@ int newpm;
 	// mvar_spList_2 = 0
 	// mvar_dreadPrayer_progress = 0
 	// mvar_attack_pm = 0
+	// mvar_elfwraith_spell = 0
+	// mvar_spellweaver_seed = 0
 
 	// mvar_conversationTracker = 0
 	// mvar_lifesigns = 0 /*Note: lifesigns are 0ed */
+	// mvar_spellweaver_last_cast = 0
 
 	mon->mvar3 = 0;
 }
@@ -423,6 +433,7 @@ int template;
 			ptr->mmove = max(6, ptr->mmove / 2);
 		break;
 	case SKELIFIED:
+	case SPARK_SKELETON:
 		/* flags: */
 		ptr->geno |= (G_NOCORPSE);
 		ptr->mflagsm |= (MM_BREATHLESS);
@@ -942,6 +953,47 @@ int template;
 			ptr->mflagsv = MV_DETECTION|MV_OMNI;
 			ptr->mflagsw = MW_ELDER_EYE_PLANES;
 		break;
+	case TONGUE_PUPPET:
+		/* flags: */
+		ptr->mflagsm |= (MM_FLY|MM_FLOAT|MM_WEBRIP|MM_DOORBUST);
+		if(ptr->mflagsm&MM_NEEDPICK)
+			ptr->mflagsm &= ~(MM_TUNNEL|MM_NEEDPICK);
+		ptr->mflagst |= (MT_MINDLESS | MT_HOSTILE | MT_STALK | MT_CARNIVORE);
+		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL | MT_HERBIVORE);
+		ptr->mflagsg &= ~(MG_RSLASH);
+		ptr->mflagsg |= MG_INFRAVISIBLE | MG_SANLOSS | MG_INSIGHT;
+		ptr->mflagsa = (MA_G_O_O|MA_ANIMAL|MA_ET);
+		ptr->mflagsw = (MW_EYE_OF_YGG);
+		
+		ptr->maligntyp = -28;
+
+		/*Note: The actual effect of this is to zero out mflagsf, but flags are removed explicitly for futureproofing reasons.*/
+		ptr->mflagsf &= ~(MF_MARTIAL_B|MF_MARTIAL_S|MF_MARTIAL_E);
+		ptr->mflagsf &= ~(MF_BAB_FULL|MF_BAB_HALF);
+		ptr->mflagsf &= ~(MF_LEVEL_30|MF_LEVEL_45);
+		ptr->mflagsf &= ~(MF_PHYS_SCALING);
+		/* defense: */
+		ptr->mr = 90;
+		ptr->nac = max(ptr->nac+4, 12);
+		ptr->dac += 2;
+		ptr->pac = 12;
+		ptr->hdr += 4;
+		ptr->bdr += 4;
+		ptr->gdr += 4;
+		ptr->ldr += 4;
+		ptr->fdr += 4;
+		ptr->spe_hdr = 8;
+		ptr->spe_bdr = 8;
+		ptr->spe_gdr = 8;
+		ptr->spe_ldr = 8;
+		ptr->spe_fdr = 8;
+		/* resists: */
+		ptr->mresists |= (MR_POISON|MR_STONE|MR_COLD|MR_MAGIC);
+		/* misc: */
+		ptr->msound = MS_SILENT;
+
+		ptr->mmove = 15;
+		break;
 	}
 #undef MT_ITEMS
 
@@ -959,7 +1011,7 @@ int template;
 		insert = FALSE;
 
 		/* some templates completely skip specific attacks */
-		while ((template == ZOMBIFIED || template == SKELIFIED || template == SPORE_ZOMBIE) &&
+		while ((template == ZOMBIFIED || template == SKELIFIED || template == SPORE_ZOMBIE || template == SPARK_SKELETON) &&
 			(
 			attk->lev_req > ptr->mlevel ||
 			attk->aatyp == AT_SPIT ||
@@ -1158,7 +1210,7 @@ int template;
 #define end_insert_okay(specvar) (!(specvar) && (is_null_attk(attk) || attk->aatyp == AT_NONE) && (insert = TRUE))
 #define maybe_insert() if(insert) {for(j=NATTK-i-1;j>0;j--)attk[j]=attk[j-1];*attk=noattack;insert=FALSE;}
 		/* zombies/skeletons get a melee attack if they don't have any (likely due to disallowed aatyp) */
-		if ((template == ZOMBIFIED || template == SKELIFIED || template == MINDLESS) && (
+		if ((template == ZOMBIFIED || template == SPORE_ZOMBIE || template == SKELIFIED || template == SPARK_SKELETON || template == MINDLESS) && (
 			i == 0 && (!nolimbs(ptr) || has_head(ptr)) && (
 			is_null_attk(attk) ||
 			(attk->aatyp == AT_NONE || attk->aatyp == AT_BOOM)
@@ -1173,7 +1225,7 @@ int template;
 		}
 
 		/* skeletons get a paralyzing touch */
-		if (template == SKELIFIED && (
+		if ((template == SKELIFIED || template == SPARK_SKELETON) && (
 			insert_okay(special)
 			))
 		{
@@ -1183,6 +1235,19 @@ int template;
 			attk->damn = 1;
 			attk->damd = max(ptr->msize * 2, 4);
 			special = TRUE;
+		}
+		
+		/* spark skeletons get a bolt touch */
+		if (template == SPARK_SKELETON && (
+			insert_okay(special_2)
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_TUCH;
+			attk->adtyp = AD_ELEC;
+			attk->damn = 2;
+			attk->damd = max(ptr->msize * 3, 6);
+			special_2 = TRUE;
 		}
 		
 		/* vitreans get a cold touch */
@@ -1492,6 +1557,17 @@ int template;
 			attk->adtyp = AD_SVPN;
 			attk->damn = 6;
 			attk->damd = 6;
+			special = TRUE;
+		}
+		if (template == TONGUE_PUPPET && (
+			end_insert_okay(special)
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_TONG;
+			attk->adtyp = AD_FATK;
+			attk->damn = 1;
+			attk->damd = 3;
 			special = TRUE;
 		}
 	}
@@ -1940,22 +2016,22 @@ int level_bonus;
 		horror->mflagsv = 0;
 
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsm |= (1 << rn2(33));		/* trainwreck this way :D */
+			horror->mflagsm |= (1L << rn2(33));		/* trainwreck this way :D */
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagst |= (1 << rn2(33));
+			horror->mflagst |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsb |= (1 << rn2(33));
+			horror->mflagsb |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsg |= (1 << rn2(33));
+			horror->mflagsg |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsa |= (1 << rn2(33));
+			horror->mflagsa |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
-			horror->mflagsv |= (1 << rn2(33));
+			horror->mflagsv |= (1L << rn2(33));
 		}
 
 		// horror->mflagsb &= ~MB_UNSOLID;			/* no ghosts */
@@ -2067,7 +2143,7 @@ int atyp, dtyp;
     struct attack *a;
 
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if (a->aatyp == atyp && (dtyp == AD_ANY || a->adtyp == dtyp)) 
+		if (a->ins_req <= u.uinsight && a->aatyp == atyp && (dtyp == AD_ANY || a->adtyp == dtyp)) 
 			return a;
 	}
 
@@ -2082,7 +2158,7 @@ int dtyp;
     struct attack *a;
 
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if ((dtyp == AD_ANY || a->adtyp == dtyp)) 
+		if (a->ins_req <= u.uinsight && (dtyp == AD_ANY || a->adtyp == dtyp)) 
 			return a;
 	}
 
@@ -2931,6 +3007,11 @@ const char *in_str;
 		{ "wererat (human)",	PM_HUMAN_WERERAT },
 		{ "werejackal (human)",	PM_HUMAN_WEREJACKAL },
 		{ "werewolf (human)",	PM_HUMAN_WEREWOLF },
+	    /* and now the dnh specific stuff */
+	    /* myrmidon monster names are from Greek, so use appropriate plurals */
+	        { "myrmidon lochies",	PM_MYRMIDON_LOCHIAS },
+	    	{ "myrmidon ypolochagoi",	PM_MYRMIDON_YPOLOCHAGOS },
+	    	{ "myrmidon lochagoi",	PM_MYRMIDON_LOCHAGOS },
 	    /* end of list */
 		{ 0, 0 }
 	};
@@ -3402,7 +3483,7 @@ struct monst *mon;
 	//else
 	if(weap){
 		if(weap->oartifact == ART_SCEPTRE_OF_MIGHT
-		|| (weap->oartifact == ART_PEN_OF_THE_VOID && weap->ovar1_seals&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0)
+		|| (weap->oartifact == ART_PEN_OF_THE_VOID && weap->ovara_seals&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0)
 		|| weap->oartifact == ART_STORMBRINGER
 		|| weap->oartifact == ART_OGRESMASHER
 		)

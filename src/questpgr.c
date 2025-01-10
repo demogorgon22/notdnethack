@@ -454,8 +454,34 @@ int	msgnum;
 	return;
 }
 
+void
+string_pager(char *string)
+{
+	long	size;
+	winid datawin = create_nhwindow(NHW_TEXT);
+	char buf[BUFSZ];
+	int c = 0;
+	for(int i = 0; string[i]; i++){
+		if(string[i] != '\n'){
+			buf[c] = string[i];
+			c++;
+		}
+		else {
+			buf[c] = '\0';
+			putstr(datawin, 0, (const char *)&buf);
+			c = 0;
+		}
+	}
+	if(c > 0){
+		buf[c] = '\0';
+		putstr(datawin, 0, (const char *)&buf);
+	}
+	display_nhwindow(datawin, TRUE);
+	destroy_nhwindow(datawin);
+}
+
 struct permonst *
-qt_montype()
+qt_montype(int x, int y)
 {
 	if(Role_if(PM_ANACHRONONAUT)){
 		switch(rn2(7)){
@@ -680,6 +706,16 @@ qt_montype()
 		if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
 			return (&mons[qpm]);
 		return (mkclass(S_DOG, G_NOHELL));
+	} else if(Role_if(PM_UNDEAD_HUNTER)
+		&& ((u.uz.dlevel < qlocate_level.dlevel && quest_status.time_doing_quest < (mvitals[PM_INDEX_WOLF].died ? UH_QUEST_TIME_1 : UH_QUEST_TIME_0))
+			|| (u.uz.dlevel == qstart_level.dlevel && quest_status.time_doing_quest < UH_QUEST_TIME_2)
+			|| (mvitals[PM_MOON_S_CHOSEN].died)
+		)
+	){
+		if(quest_status.moon_close && *in_rooms(x, y, MORGUE)){
+			return mkclass(rn2(100) ? S_ZOMBIE : S_LICH, G_NOHELL|G_HELL);
+		}
+		return mvitals[PM_MOON_S_CHOSEN].died ? (u.uz.dlevel <= qlocate_level.dlevel ? &mons[PM_FOG_CLOUD] : &mons[PM_MIST_CLOUD]) : &mons[PM_LONG_WORM_TAIL];
 	} else {
 		int qpm;
 		if(Race_if(PM_DROW) && !flags.initgend && Role_if(PM_NOBLEMAN) && on_level(&u.uz, &qstart_level)) return &mons[PM_LONG_WORM_TAIL];
@@ -1617,4 +1653,24 @@ law_montype()
 	return (struct permonst *)0;
 }
 
+struct permonst *
+moon_montype()
+{
+	int chance = rnd(100);
+	if(chance > 92)
+		return &mons[PM_MOON_ENTITY_MANIPALP];
+	if(chance > 88)
+		return &mons[PM_MOON_ENTITY_TONGUE];
+	if(chance > 84)
+		return &mons[PM_MOON_ENTITY_EYE_CLUSTER];
+	if(chance > 82)
+		return &mons[PM_FOETID_ANGEL];
+	if(chance > 72)
+		return &mons[PM_AETHER_WOLF];
+	if(chance > 62)
+		return &mons[PM_MIST_WOLF];
+	if(chance > 50)
+		return &mons[PM_MOON_FLEA];
+	return (struct permonst *)0;
+}
 /*questpgr.c*/

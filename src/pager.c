@@ -2518,6 +2518,9 @@ get_description_of_damage_type(uchar id)
 	case AD_TSMI: return "magic-item-stealing tentacles";
 	case AD_BYAK: return "byakhee eggs";
 	case AD_UNRV: return "unnerving";
+	case AD_DRHP: return "drains bonus HP";
+	case AD_PUSH: return "push away";
+	case AD_LICK: return "monstrous tongue lick";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";

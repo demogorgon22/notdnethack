@@ -646,6 +646,31 @@ static struct trobj Tourist[] = {
 	{ 0, 0, 0, 0, 0 }
 };
 #endif
+static struct trobj UndeadHunter[] = {
+#define U_WEAPON		0
+	{ CANE, 0, WEAPON_CLASS, 1, 1 },
+#define U_GUN			1
+	{ FLINTLOCK, 0, WEAPON_CLASS, 1, 0 },
+#define U_SMITH_HAMMER	2
+	{ SMITHING_HAMMER, 0, WEAPON_CLASS, 1, 0 },
+#define U_JACKET		3
+	{ JACKET, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+#define U_SHIRT			4
+	{ RUFFLED_SHIRT, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+#define U_HAT			5
+	{ FEDORA, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ CLOAK, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ GLOVES, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+#define U_BULLETS		9
+	{ BLOOD_BULLET, 0, WEAPON_CLASS, 20, 0 },
+	{ NIGHTMARE_S_BULLET_MOLD, 0, TOOL_CLASS, 1, 0 },
+	{ PHLEBOTOMY_KIT, 0, TOOL_CLASS, 1, 0 },
+	{ TORCH, 0, TOOL_CLASS, 1, 0 },
+	{ POT_BOOZE, 0, POTION_CLASS, 2, 1 },
+	{ POT_BLOOD, 0, POTION_CLASS, 3, 1 },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Valkyrie[] = {
 	{ SPEAR, 1, WEAPON_CLASS, 1, UNDEF_BLESS },
 	{ BOW, 	 1, WEAPON_CLASS, 1, UNDEF_BLESS },
@@ -1286,6 +1311,16 @@ static const struct def_skill Skill_Elf_Music[] = {
     { P_NONE, 0 }
 };
 
+static const struct def_skill Skill_Dwarf_Smithing[] = {
+    { P_SMITHING, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Gnome_Smithing[] = {
+    { P_SMITHING, P_SKILLED },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_Elf_Ana[] = {
     { P_ENCHANTMENT_SPELL, P_EXPERT },
     { P_MARTIAL_ARTS, P_GRAND_MASTER },
@@ -1356,7 +1391,7 @@ static const struct def_skill Skill_K[] = {
 static const struct def_skill Skill_Kni_Forms[] = {
     { P_SHIELD_BASH, P_EXPERT },
     { P_GREAT_WEP, P_EXPERT },
-    { P_HALF_SWORD, P_EXPERT },
+    { P_GENERIC_KNIGHT_FORM, P_EXPERT },
     { P_NONE, 0 }
 };
 
@@ -1678,6 +1713,30 @@ static const struct def_skill Skill_T[] = {
     { P_NONE, 0 }
 };
 #endif /* TOURIST */
+
+static const struct def_skill Skill_U[] = {
+    { P_LONG_SWORD, P_SKILLED }, { P_WHIP, P_SKILLED },
+    { P_AXE, P_SKILLED }, { P_HARVEST, P_SKILLED },
+    { P_TWO_HANDED_SWORD, P_SKILLED }, { P_HAMMER, P_SKILLED },
+    { P_SABER, P_SKILLED }, { P_BROAD_SWORD, P_SKILLED },
+    { P_SHORT_SWORD, P_SKILLED }, { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_CLUB, P_SKILLED }, { P_MACE, P_SKILLED },
+    { P_SCIMITAR, P_SKILLED }, { P_QUARTERSTAFF, P_SKILLED },
+
+    { P_DAGGER, P_EXPERT }, { P_CROSSBOW, P_EXPERT },
+	{ P_FIREARM, P_SKILLED },
+    { P_BOW, P_BASIC }, { P_SLING, P_BASIC },
+    { P_DART, P_BASIC }, { P_SHURIKEN, P_BASIC },
+    { P_BOOMERANG, P_BASIC }, { P_BOW, P_SKILLED },
+
+    { P_TWO_WEAPON_COMBAT, P_SKILLED },
+
+    { P_MATTER_SPELL, P_BASIC },
+	{ P_ATTACK_SPELL, P_SKILLED }, { P_HEALING_SPELL, P_SKILLED },
+	{ P_DIVINATION_SPELL, P_EXPERT },
+    { P_SMITHING, P_BASIC },/*Improves to expert over the game*/
+    { P_NONE, 0 }
+};
 
 static const struct def_skill Skill_V[] = {
     { P_DAGGER, P_BASIC },			{ P_AXE, P_EXPERT },
@@ -2648,6 +2707,82 @@ u_init()
 		skill_init(Skill_T);
 		break;
 #endif
+	case PM_UNDEAD_HUNTER:
+		if(Race_if(PM_VAMPIRE)){
+			switch(rn2(5)){
+			case 0:
+				//UndeadHunter[U_WEAPON].trotyp = CANE;
+			break;
+			case 1:
+				UndeadHunter[U_WEAPON].trotyp = SOLDIER_S_RAPIER;
+				knows_object(SOLDIER_S_SABER);
+				UndeadHunter[U_GUN].trotyp = BUCKLER;
+			break;
+			case 2:
+				UndeadHunter[U_WEAPON].trotyp = CHIKAGE;
+			break;
+			case 3:
+				UndeadHunter[U_WEAPON].trotyp = RAKUYO;
+				knows_object(RAKUYO_SABER);
+				knows_object(RAKUYO_DAGGER);
+			break;
+			case 4:
+				UndeadHunter[U_WEAPON].trotyp = SHANTA_PATA;
+				knows_object(TWINGUN_SHANTA);
+				UndeadHunter[U_GUN].trotyp = BUCKLER;
+			break;
+			}
+			UndeadHunter[U_BULLETS].trspe = 1;
+			UndeadHunter[U_JACKET].trotyp = flags.female ? GENTLEWOMAN_S_DRESS : GENTLEMAN_S_SUIT;
+		}
+		else switch(rn2(6)){
+			case 0:
+				//UndeadHunter[U_WEAPON].trotyp = CANE;
+			break;
+			case 1:
+				UndeadHunter[U_WEAPON].trotyp = CHURCH_HAMMER;
+				knows_object(HUNTER_S_SHORTSWORD);
+				knows_object(CHURCH_BRICK);
+			break;
+			case 2:
+				UndeadHunter[U_WEAPON].trotyp = CHURCH_BLADE;
+				knows_object(HUNTER_S_LONGSWORD);
+				knows_object(CHURCH_SHEATH);
+			break;
+			case 3:
+				UndeadHunter[U_WEAPON].trotyp = HUNTER_S_AXE;
+				knows_object(HUNTER_S_LONG_AXE);
+			break;
+			case 4:
+				UndeadHunter[U_WEAPON].trotyp = SAW_CLEAVER;
+				knows_object(RAZOR_CLEAVER);
+			break;
+			case 5:
+				UndeadHunter[U_WEAPON].trotyp = BOW_BLADE;
+				knows_object(BLADED_BOW);
+				UndeadHunter[U_GUN].trotyp = ARROW;
+				UndeadHunter[U_GUN].trquan = rn1(20, 26);
+				UndeadHunter[U_GUN].trbless = 1;
+				UndeadHunter[U_GUN].trspe = 2;
+			break;
+		}
+		u.ublood_smithing = TRUE;
+		knows_object(POT_HEALING);
+		knows_object(POT_EXTRA_HEALING);
+		knows_object(POT_FULL_HEALING);
+		knows_object(SILVER_BULLET);
+		knows_object(BULLET);
+		ini_inv(UndeadHunter);
+		skill_init(Skill_U);
+		/*Extra thought for philosophy (will only come on-line later)*/
+		u.render_thought = TRUE;
+		if(u.ualign.type == A_CHAOTIC)
+			give_thought(DEFILEMENT);
+		else if(u.ualign.type == A_NEUTRAL)
+			give_thought(LUMEN);
+		else if(u.ualign.type == A_LAWFUL)
+			give_thought(ROTTEN_EYES);
+	break;
 	case PM_VALKYRIE:
 		ini_inv(Valkyrie);
 		// if(!rn2(6)) ini_inv(Lamp);
@@ -2855,6 +2990,7 @@ u_init()
 			knows_object(DWARVISH_CLOAK);
 			knows_object(DWARVISH_ROUNDSHIELD);
 		}
+		if(!Role_if(PM_UNDEAD_HUNTER)) skill_add(Skill_Dwarf_Smithing);
 		/* Dwarves know all carved wards */
 		u.wardsknown |= WARD_TOUSTEFNA;
 		u.wardsknown |= WARD_DREPRUN;
@@ -2872,6 +3008,7 @@ u_init()
 		skill_add(Skill_G);
 		skill_up(Skill_G_Spe);
 		ini_inv(TallowCandles);
+		if(!Role_if(PM_UNDEAD_HUNTER)) skill_add(Skill_Gnome_Smithing);
 		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
 			knows_object(GNOMISH_POINTY_HAT);
 			knows_object(AKLYS);
@@ -2933,9 +3070,11 @@ u_init()
 	case PM_VAMPIRE:
 	    /* Vampires start off with gods not as pleased, luck penalty */
 	    knows_object(POT_BLOOD);
-	    adjalign(-5); 
+	    adjalign(-5);
 		u.ualign.sins += 5;
 	    change_luck(-1);
+		u.uimpurity += 3;
+		u.uimp_blood = 15;
 	    break;
 	case PM_YUKI_ONNA:
 	    knows_object(POT_OBJECT_DETECTION);
@@ -2967,27 +3106,27 @@ u_init()
 			init_attr(55);
 	} else if(Race_if(PM_ORC)){
 		if(flags.descendant)
-			init_attr(45);
+			init_attr(50);
 		else
 			init_attr(55);
 	} else if (Race_if(PM_ANDROID)){
 		if(flags.descendant)
-			init_attr(75);
+			init_attr(80);
 		else
 			init_attr(95);
 	} else if (Role_if(PM_VALKYRIE)){
 		if(flags.descendant)
-			init_attr(70);
+			init_attr(75);
 		else
 			init_attr(85);
 	} else if (Race_if(PM_ELF)){
 		if(flags.descendant)
-			init_attr(65);
+			init_attr(70);
 		else
 			init_attr(80);
 	} else {
 		if(flags.descendant)
-			init_attr(60);
+			init_attr(65);
 		else
 			init_attr(75);	/* init attribute values */
 	}
@@ -3178,6 +3317,7 @@ int otyp;
 #ifdef TOURIST
      case PM_TOURIST:		skills = Skill_T; break;
 #endif
+     case PM_UNDEAD_HUNTER:	skills = Skill_U; break;
      case PM_VALKYRIE:		skills = Skill_V; break;
      case PM_WIZARD:		skills = Skill_W; break;
      default:			skills = 0; break;	/* lint suppression */
@@ -3220,7 +3360,7 @@ register struct trobj *trop;
 			}	
 
 			if(obj->otyp == POT_BLOOD) 
-				obj->corpsenm = PM_HUMAN;
+				obj->corpsenm = Role_if(PM_UNDEAD_HUNTER) ? youracedata->mtyp : PM_HUMAN;
 			if(obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS || obj->otyp == SUNGLASSES || is_weptool(obj))
 				set_obj_size(obj, youracedata->msize);
 			if(obj->oclass == ARMOR_CLASS){
@@ -3305,6 +3445,10 @@ register struct trobj *trop;
 			if(obj->otyp == FACELESS_HELM && Role_if(PM_MADMAN)){
 				set_material_gm(obj, IRON);
 			}
+			/* Gnomish pointy hats are supposed to be medium */
+			if(obj->otyp == GNOMISH_POINTY_HAT && Race_if(PM_GNOME)){
+				obj->objsize = MZ_MEDIUM;
+			}
 			
 			/* Don't start with +0 or negative rings */
 			if (objects[obj->otyp].oc_charged && obj->spe <= 0)
@@ -3385,6 +3529,19 @@ register struct trobj *trop;
 				set_material_gm(obj, objects[otyp].oc_material);
 			}
 
+			if (urace.malenum != PM_HUMAN) {
+				/* substitute specific items for generic ones */
+				for (i = 0; inv_subs[i].race_pm != NON_PM; ++i)
+				if (inv_subs[i].race_pm == urace.malenum &&
+					otyp == inv_subs[i].item_otyp) {
+					otyp = inv_subs[i].subs_otyp;
+					break;
+				}
+			}
+			if(otyp != obj->otyp){
+				obj = poly_obj(obj, otyp);
+				otyp = obj->otyp;
+			}
 			/* Don't start with +0 or negative rings */
 			if (objects[otyp].oc_charged && obj->spe <= 0)
 				obj->spe = rne(3);

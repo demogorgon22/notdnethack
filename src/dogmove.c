@@ -741,7 +741,7 @@ int udist;
 
 	boolean droppables = FALSE;
 
-	if (mtmp->msleeping || !mtmp->mcanmove) return(0);
+	if (mtmp->msleeping || mtmp->mequipping || !mtmp->mcanmove) return(0);
 
 	omx = mtmp->mx;
 	omy = mtmp->my;
@@ -1442,17 +1442,9 @@ newdogpos:
 		/* insert a worm_move() if worms ever begin to eat things */
 		remove_monster(omx, omy);
 		place_monster(mtmp, nix, niy);
-		if(mtmp->mtyp == PM_SURYA_DEVA){
-			struct monst *blade;
-			for(blade = fmon; blade; blade = blade->nmon) if(blade->mtyp == PM_DANCING_BLADE && mtmp->m_id == blade->mvar_suryaID) break;
-			if(blade){
-				int bx = blade->mx, by = blade->my;
-				remove_monster(bx, by);
-				place_monster(blade, omx, omy);
-				newsym(omx,omy);
-				newsym(bx,by);
-			}
-		}
+		mtmp->mprev_dir.x = sgn(nix - omx);
+		mtmp->mprev_dir.y = sgn(niy - omy);
+		mtmp->mlast_movement = monstermoves;
 		if (cursemsg[chi] && (cansee(omx,omy) || cansee(nix,niy)))
 			pline("%s moves only reluctantly.", Monnam(mtmp));
 		for (j=MTSZ-1; j>0; j--) mtmp->mtrack[j] = mtmp->mtrack[j-1];
@@ -1491,6 +1483,9 @@ newdogpos:
 dognext:
 		if (!m_in_out_region(mtmp, nix, niy))
 		  return 1;
+		mtmp->mprev_dir.x = sgn(cc.x - mtmp->mx);
+		mtmp->mprev_dir.y = sgn(cc.y - mtmp->my);
+		mtmp->mlast_movement = monstermoves;
 		remove_monster(mtmp->mx, mtmp->my);
 		place_monster(mtmp, cc.x, cc.y);
 		newsym(cc.x,cc.y);

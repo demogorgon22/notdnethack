@@ -21,6 +21,7 @@ STATIC_DCL void FDECL(fry_by_god, (int));
 STATIC_DCL void FDECL(consume_offering,(struct obj *));
 STATIC_DCL void FDECL(eat_offering,(struct obj *, boolean, int));
 STATIC_DCL void FDECL(burn_offering,(struct obj *, boolean));
+STATIC_DCL void FDECL(drink_offering,(struct obj *));
 STATIC_DCL boolean FDECL(water_prayer,(BOOLEAN_P));
 STATIC_DCL boolean FDECL(blocked_boulder,(int,int));
 static void NDECL(lawful_god_gives_angel);
@@ -332,6 +333,8 @@ worst_cursed_item()
 #endif
     } else if (uamul && uamul->cursed) {		/* amulet */
 	otmp = uamul;
+    } else if (ubelt && ubelt->cursed) {		/* belt */
+	otmp = ubelt;
     } else if (uleft && uleft->cursed) {		/* left ring */
 	otmp = uleft;
     } else if (uright && uright->cursed) {		/* right ring */
@@ -742,9 +745,10 @@ int godnum;
 	register int	maxanger;
 	char buf[BUFSZ];
 
-	if(godnum == GOD_THE_VOID || godnum == GOD_BOKRUG__THE_WATER_LIZARD || (godnum == GOD_ILSENSINE && Role_if(PM_ANACHRONOUNBINDER))) {
+	if(godnum == GOD_THE_VOID || godnum == GOD_BOKRUG__THE_WATER_LIZARD || (godnum == GOD_ILSENSINE && Role_if(PM_ANACHRONOUNBINDER)) || philosophy_index(godnum)) {
 		/* the void does not get angry */
 		/* Bokrug DOES get angry, but has really bad aim. */
+		/* the various philosophies don't have gods per se. */
 		return;
 	}
 
@@ -1140,6 +1144,8 @@ int godnum;
 	{
 		struct monst *tmpm;
 		for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
+			if(DEADMONSTER(tmpm))
+				continue;
 			if(!tmpm->mpeaceful){
 				monflee(tmpm, 77, TRUE, TRUE);
 			}
@@ -1222,6 +1228,8 @@ const char *words;
 	quot = "\"";
     else
 	words = "";
+	if(philosophy_index(godnum))
+		return;
 	
 	if(godnum == GOD_THE_VOID || Role_if(PM_ANACHRONOUNBINDER)){
 		You("think you hear a voice in the distance: %s%s%s", quot, words, quot);
@@ -1262,7 +1270,9 @@ void
 gods_upset(godnum)
 int godnum;
 {
-	if(godnum == GOD_THE_VOID) return;
+	if(godnum == GOD_THE_VOID || philosophy_index(godnum)) return;
+
+	IMPURITY_UP(u.uimp_god_anger)
 
 	if (godnum == u.ualign.god)
 		godlist[godnum].anger++;
@@ -1416,6 +1426,33 @@ boolean silently;
     if (carried(otmp)) useup(otmp);
     else useupf(otmp, 1L);
     exercise(A_CHA, TRUE);
+}
+
+STATIC_OVL void
+drink_offering(struct obj *otmp)
+{
+	xchar x, y;
+	get_obj_location(otmp, &x, &y, BURIED_TOO);
+	char *modifier = rn2(10) ? "" : "great ";
+	char *direction = !rn2(3) ? "over" : rn2(2) ? "down" : "up";
+	char *verb = "crushes";
+	pline("A %shand reaches %s and %s the blood from your offering!", modifier, direction, verb);
+	if(u.sealsActive&SEAL_BALAM){
+		struct permonst *ptr = &mons[otmp->corpsenm];
+		if(!(is_animal(ptr) || nohands(ptr))) unbind(SEAL_BALAM,TRUE);
+	}
+	if(u.sealsActive&SEAL_YMIR){
+		struct permonst *ptr = &mons[otmp->corpsenm];
+		if(is_giant(ptr)) unbind(SEAL_YMIR,TRUE);
+	}
+	otmp->odrained = TRUE;
+	fix_object(otmp);
+	if(otmp->where == OBJ_INVENT)
+		update_inventory();
+    exercise(A_CON, FALSE);
+    exercise(A_CHA, TRUE);
+    exercise(A_WIS, TRUE);
+    exercise(A_INT, TRUE);
 }
 
 STATIC_OVL void
@@ -1634,6 +1671,10 @@ dosacrifice()
     aligntyp altaralign = (a_align(u.ux,u.uy));
 	char buf[BUFSZ];
 	int altargod = god_at_altar(u.ux, u.uy);
+	if(Role_if(PM_UNDEAD_HUNTER) && philosophy_index(u.ualign.god) && IS_ALTAR(levl[u.ux][u.uy].typ) && philosophy_index(god_at_altar(u.ux, u.uy))){
+		return doresearch();
+	}
+	
     if (!on_altar() || (u.uswallow && u.ustuck->mtyp != PM_MOUTH_OF_THE_GOAT)) {
 		You("are not standing on an altar.");
 		return MOVE_CANCELLED;
@@ -1646,7 +1687,7 @@ dosacrifice()
     if (In_endgame(&u.uz) || In_void(&u.uz)) {
 	if (!(otmp = getobj(sacrifice_types, "sacrifice"))) return MOVE_CANCELLED;
     } else {
-	if (!(otmp = floorfood("sacrifice", 1))) return MOVE_CANCELLED;
+	if (!(otmp = floorfood("sacrifice", yog_altar_at(u.ux, u.uy) ? 3 : 1))) return MOVE_CANCELLED;
     }
     /*
       Was based on nutritional value and aging behavior (< 50 moves).
@@ -1680,6 +1721,10 @@ dosacrifice()
 		bokrug_offer(otmp);
 		return MOVE_STANDARD;
 	}
+	if(yog_altar_at(u.ux, u.uy)){
+		yog_sothoth_drink(otmp);
+		return MOVE_STANDARD;
+	}
 	
 	if(Role_if(PM_ANACHRONONAUT) && otmp->otyp != AMULET_OF_YENDOR && flags.questprogress!=2){
 		You("do not give offerings to the God of the future.");
@@ -1687,9 +1732,13 @@ dosacrifice()
 	}
 
 	
-	if(u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD 
+	if((u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD 
 		&& (a_gnum(u.ux, u.uy) == GOD_BOKRUG__THE_WATER_LIZARD 
-			|| (a_align(u.ux, u.uy) == A_NONE && a_gnum(u.ux, u.uy) == GOD_NONE))
+			|| (a_align(u.ux, u.uy) == A_NONE && a_gnum(u.ux, u.uy) == GOD_NONE)))
+	 || (a_gnum(u.ux, u.uy) == GOD_THE_BLACK_MOTHER && u.shubbie_atten) //Otherwise convert altar
+	 || (a_gnum(u.ux, u.uy) == GOD_YOG_SOTHOTH && u.yog_sothoth_atten) //Otherwise convert altar
+	 || (no_altar_index(altargod) && a_gnum(u.ux, u.uy) != GOD_THE_BLACK_MOTHER) //BM handled above, can't even convert
+	 || (Misotheism && !(otmp->otyp == AMULET_OF_YENDOR && Is_astralevel(&u.uz)))
 	){
 		if (otmp->otyp == CORPSE)
 			feel_cockatrice(otmp, TRUE);
@@ -1697,20 +1746,6 @@ dosacrifice()
 		return MOVE_STANDARD;
 	}
 	
-	if (a_gnum(u.ux, u.uy) == GOD_THE_BLACK_MOTHER && u.shubbie_atten) {
-		if (otmp->otyp == CORPSE)
-			feel_cockatrice(otmp, TRUE);
-		pline1(nothing_happens);
-		return MOVE_STANDARD;
-	}
-
-	if(Misotheism && !(otmp->otyp == AMULET_OF_YENDOR && Is_astralevel(&u.uz))){
-		if (otmp->otyp == CORPSE)
-			feel_cockatrice(otmp, TRUE);
-		pline1(nothing_happens);
-		return MOVE_STANDARD;
-	}
-
 #define MAXVALUE 24 /* Highest corpse value (besides Wiz) */
 
     if (otmp->otyp == CORPSE) {
@@ -1857,7 +1892,7 @@ dosacrifice()
 			/* If sacrificing unicorn of your alignment to altar not of */
 			/* your alignment, your god gets angry and it's a conversion */
 			if (unicalign == u.ualign.type) {
-				u.ualign.record = -1;
+				u.ualign.record = min(-1,u.ualign.record-20);
 				value = 1;
 			} else value += 3;
 		}
@@ -1907,13 +1942,19 @@ dosacrifice()
 			else useupf(otmp, 1L);
 			You("offer the Amulet of Yendor to %s...", a_gname());
 			if(!Role_if(PM_EXILE)){
-				if (u.ualign.type != altaralign) {
+				if (u.ualign.type != altaralign || (altargod && altargod != u.ualign.god)) {
 					/* And the opposing team picks you up and
 					   carries you off on their shoulders */
 					adjalign(-99);
-					pline("%s accepts your gift, and gains dominion over %s...",
-						  a_gname(), u_gname());
-					pline("%s is enraged...", u_gname());
+					if(philosophy_index(u.ualign.god)){
+						pline("%s accepts your gift, and gains dominion over the other gods...",
+							  a_gname());
+					}
+					else {
+						pline("%s accepts your gift, and gains dominion over %s...",
+							  a_gname(), u_gname());
+						pline("%s is enraged...", u_gname());
+					}
 					pline("Fortunately, %s permits you to live...", a_gname());
 					pline("A cloud of %s smoke surrounds you...",
 						  hcolor((const char *)"orange"));
@@ -1953,7 +1994,7 @@ dosacrifice()
 					pline("...as well as everything that made you YOU.");
 					killer_format = KILLED_BY;
 					killer = "the end of the world."; //8-bit theater
-					done(DISINTEGRATED);
+					done(APOCALYPSE);
 				} else { /* super big win */
 					adjalign(10);
 #ifdef RECORD_ACHIEVE
@@ -2145,7 +2186,7 @@ dosacrifice()
 			You("sense a conference between %s and %s.",
 				u_gname(), a_gname());
 			pline("But nothing else occurs.");
-		} else if(u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD){
+		} else if(u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD || philosophy_index(u.ualign.god)){
 			You("sense %s prepare for a conflict....",
 				a_gname());
 			pline("But nothing else occurs.");
@@ -2430,6 +2471,11 @@ dopray()
 		return MOVE_CANCELLED;
 	}
 	
+	if(philosophy_index(u.ualign.god)){
+		pline("While you are devoted to your philosophy, there is nothing in it that could answer a prayer.");
+		return MOVE_CANCELLED;
+	}
+
     /* Confirm accidental slips of Alt-P */
     if (flags.prayconfirm)
 	if (yn("Are you sure you want to pray?") == 'n')
@@ -2627,7 +2673,9 @@ doturn()
 
 	if(!Race_if(PM_VAMPIRE)) u.uconduct.gnostic++;
 
-	if(!Race_if(PM_VAMPIRE) && u.uen >= 30 && yn("Use abbreviated liturgy?") == 'y'){
+	if(Race_if(PM_VAMPIRE))
+		fast = 1;
+	else if(u.uen >= 30 && yn("Use abbreviated liturgy?") == 'y'){
 		fast = 1;
 	}
 	
@@ -2663,7 +2711,7 @@ doturn()
 			distu(mtmp->mx,mtmp->my) > range
 		) continue;
 
-	    if (!mtmp->mpeaceful && (is_undead(mtmp->data) ||
+	    if ((!mtmp->mpeaceful || Race_if(PM_VAMPIRE)) && (is_undead(mtmp->data) ||
 		   (is_demon(mtmp->data) && (u.ulevel > (MAXULEV/2))))) {
 
 		    mtmp->msleeping = 0;
@@ -2702,7 +2750,7 @@ doturn()
 	}
 	//Altered turn undead to consume energy if possible, otherwise take full time.
 	if(fast){
-		losepw(30);
+		if(!Race_if(PM_VAMPIRE)) losepw(30);
 		nomul(-1, "trying to turn the undead");
 	}
 	else
@@ -3007,7 +3055,10 @@ void
 altar_wrath(x, y)
 register int x, y;
 {
-	if(god_at_altar(x, y) == u.ualign.god) {
+	int godnum = god_at_altar(x, y);
+	if(godnum == GOD_THE_VOID || godnum == GOD_BOKRUG__THE_WATER_LIZARD || no_altar_index(godnum))
+		return;
+	if(godnum == u.ualign.god) {
 		godvoice(u.ualign.god, "How darest thou desecrate my altar!");
 	(void) adjattrib(A_WIS, -1, FALSE);
 	} else {
@@ -3141,6 +3192,7 @@ int godnum;
 				if (uwep && not_fully_identified(uwep)) identify(uwep);
 				else if (uswapwep && not_fully_identified(uswapwep)) identify(uswapwep);
 				else if (uamul && not_fully_identified(uamul)) identify(uamul);
+				else if (ubelt && not_fully_identified(ubelt)) identify(ubelt);
 				else if (uleft && not_fully_identified(uleft)) identify(uleft);
 				else if (uright && not_fully_identified(uright)) identify(uright);
 				else if (uarmc && not_fully_identified(uarmc)) identify(uarmc);
@@ -3246,6 +3298,7 @@ int godnum;
 				else if (uarms && wrongbuc(uarms)) otmp = uarms;
 				/* then cloak due to body armor */
 				else if (uarmc && wrongbuc(uarmc)) otmp = uarmc;
+				else if (ubelt && wrongbuc(ubelt)) otmp = uarmc;
 				else if (uarm && wrongbuc(uarm)) otmp = uarm;
 				else if (uarmh && wrongbuc(uarmh)) otmp = uarmh;
 				else if (uarmf && wrongbuc(uarmf)) otmp = uarmf;
@@ -3633,6 +3686,14 @@ commune_with_goat()
 				otmp->oeroded = 0;
 				otmp->oeroded2 = 0;
 				otmp->oerodeproof = 1;
+				if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+					if(otmp->cobj){
+						add_oprop(otmp->cobj, OPROP_LESSER_ACIDW);
+						otmp->cobj->oeroded = 0;
+						otmp->cobj->oeroded2 = 0;
+						otmp->cobj->oerodeproof = 1;
+					}
+				}
 				u.ugifts++;
 				u.ucultsval += TIER_B;
 			}
@@ -3653,6 +3714,15 @@ commune_with_goat()
 				otmp->oeroded = 0;
 				otmp->oeroded2 = 0;
 				otmp->oerodeproof = 1;
+				if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+					if(otmp->cobj){
+						remove_oprop(otmp->cobj, OPROP_LESSER_ACIDW);
+						add_oprop(otmp->cobj, OPROP_GOATW);
+						otmp->cobj->oeroded = 0;
+						otmp->cobj->oeroded2 = 0;
+						otmp->cobj->oerodeproof = 1;
+					}
+				}
 				u.ugifts++;
 				u.ucultsval += TIER_S;
 			}
@@ -3972,6 +4042,11 @@ commune_with_silver_flame()
 					cost = 50;
 					pline("The silver light within %s is focused by your mirror!", doname(otmp));
 					add_oprop(otmp, OPROP_MORTW);
+					if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+						if(otmp->cobj){
+							add_oprop(otmp->cobj, OPROP_MORTW);
+						}
+					}
 					u.ucultsval += TIER_B; /*Theory: Life drain is actually not all that powerful, but the Wizard and his summons are still affected. */
 				}
 				else pline("Nothing happens.");
@@ -3985,6 +4060,11 @@ commune_with_silver_flame()
 					cost = 50;
 					pline("The silver light within %s is focused by your mirror!", doname(otmp));
 					add_oprop(otmp, OPROP_TDTHW);
+					if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+						if(otmp->cobj){
+							add_oprop(otmp->cobj, OPROP_TDTHW);
+						}
+					}
 					u.ucultsval += TIER_A; /*Theory: Nasty stuff like liches and pharaohs is affected, plus it deals a lot of damage to them. */
 				}
 				else pline("Nothing happens.");
@@ -3998,6 +4078,11 @@ commune_with_silver_flame()
 					cost = 50;
 					pline("The silver light within %s is focused by your mirror!", doname(otmp));
 					add_oprop(otmp, OPROP_SFUWW);
+					if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+						if(otmp->cobj){
+							add_oprop(otmp->cobj, OPROP_SFUWW);
+						}
+					}
 					u.ucultsval += TIER_S; /*Theory: This specifically affects the nastiest late game enemies. */
 				}
 				else pline("Nothing happens.");
@@ -4342,6 +4427,14 @@ commune_with_yog()
 				otmp->oeroded = 0;
 				otmp->oeroded2 = 0;
 				otmp->oerodeproof = 1;
+				if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+					if(otmp->cobj){
+						add_oprop(otmp->cobj, OPROP_LESSER_MAGCW);
+						otmp->cobj->oeroded = 0;
+						otmp->cobj->oeroded2 = 0;
+						otmp->cobj->oerodeproof = 1;
+					}
+				}
 				u.ugifts++;
 				u.ucultsval += TIER_B;
 			}
@@ -4362,6 +4455,15 @@ commune_with_yog()
 				otmp->oeroded = 0;
 				otmp->oeroded2 = 0;
 				otmp->oerodeproof = 1;
+				if(otmp->otyp == CHURCH_BLADE || otmp->otyp == CHURCH_HAMMER){
+					if(otmp->cobj){
+						remove_oprop(otmp->cobj, OPROP_LESSER_MAGCW);
+						add_oprop(otmp->cobj, OPROP_SOTHW);
+						otmp->cobj->oeroded = 0;
+						otmp->cobj->oeroded2 = 0;
+						otmp->cobj->oerodeproof = 1;
+					}
+				}
 				u.ugifts++;
 				u.ucultsval += TIER_S;
 			}
@@ -4454,6 +4556,21 @@ int x, y;
 	return FALSE;
 }
 
+boolean
+yog_altar_at(x, y)
+int x, y;
+{
+	struct obj *otmp;
+	if(isok(x,y) && IS_ALTAR(levl[x][y].typ) && god_at_altar(x,y) == GOD_YOG_SOTHOTH)
+		return TRUE;
+
+	if(u.yog_sothoth_atten) for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere) {
+		if (otmp->oartifact == ART_FINGERPRINT_SHIELD)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 void
 bokrug_offer(otmp)
 struct obj *otmp;
@@ -4522,7 +4639,7 @@ int eatflag;
 		value = 1;
 	}
 
-	if (eatflag != GOAT_EAT_PASSIVE && your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)) {
+	if (eatflag != GOAT_EAT_PASSIVE && your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
 	//No demon summoning.  Your god just smites you, and sac continues.
 		if (u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) {
 			adjalign(-5);
@@ -4532,9 +4649,7 @@ int eatflag;
 			change_luck(-5);
 		} else adjalign(5);
 	//Pets are just eaten like anything else.  Your god doesn't know you did it, and the goat doesn't care.
-	} else if (is_undead(ptr)) { /* Not demons--no demon corpses */
-		if (u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE)
-			value += 1;
+	//Shubbie doesn't give extra credit for undead.
 	//Unicorns are resurrected.
 	}
     /* corpse */
@@ -4547,10 +4662,10 @@ int eatflag;
 	/* never an altar conversion*/
 	
 	/* Rider handled */
-	eat_offering(otmp, eatflag == GOAT_EAT_MARKED && !(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)) && goat_seenonce, eatflag);
+	eat_offering(otmp, eatflag == GOAT_EAT_MARKED && !(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) && goat_seenonce, eatflag);
 	if(eatflag == GOAT_EAT_MARKED)
 		goat_seenonce = TRUE;
-	if(eatflag != GOAT_EAT_PASSIVE && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)) {
+	if(eatflag != GOAT_EAT_PASSIVE && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
 		adjalign(-value);
 		godlist[u.ualign.god].anger += 1;
 		(void) adjattrib(A_WIS, -1, TRUE);
@@ -4585,13 +4700,12 @@ int eatflag;
 	/* the player must carry a holy symbol to gain credit. Chance to give one, if missing. return early */
 	if(!has_object_type(invent, HOLY_SYMBOL_OF_THE_BLACK_MOTHE)){
 		struct obj *otmp;
-		if(!u.shubbie_atten ? !rn2(10+u.ugifts) : !rn2(4)){
+		if(!u.shubbie_atten ? !rn2(10) : !rn2(4)){
 			otmp = mksobj(HOLY_SYMBOL_OF_THE_BLACK_MOTHE, MKOBJ_NOINIT);
 			dropy(otmp);
 			at_your_feet("An object");
 			//event: only increment this once.
 			if(!u.shubbie_atten){
-				u.ugifts++;
 				u.shubbie_atten = 1;
 			}
 		}
@@ -4620,6 +4734,72 @@ int eatflag;
 			);
 	}
 	return;
+}
+
+void
+yog_sothoth_drink(struct obj *otmp)
+{
+    int value = 0;
+	struct permonst *ptr = &mons[otmp->corpsenm];
+	struct monst *mtmp;
+	extern const int monstr[];
+	xchar x, y;
+	
+	get_obj_location(otmp, &x, &y, BURIED_TOO);
+	
+	//Note: Not interested in the amulet.
+	
+	if(otmp->otyp != CORPSE
+		|| otmp->odrained
+		|| !has_blood(ptr)
+		|| (peek_at_iced_corpse_age(otmp) + 10) < monstermoves
+	){
+		if(u.yog_sothoth_atten)
+			pline("Yog-Sothoth is uninterested.");
+		else
+			pline("Nothing happens.");
+		return;
+	}
+	
+	//Note: Nondestructive, so Rider corpses are fine.
+	
+	//Old corpses don't make it here.
+	value = monstr[otmp->corpsenm] + 1;
+	if (otmp->oeaten)
+		value = eaten_stat(value, otmp);
+
+	if (your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
+	//No demon summoning.  Your god just smites you, and sac continues.
+		if (u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) {
+			adjalign(-5);
+			godlist[u.ualign.god].anger += 3;
+			(void) adjattrib(A_WIS, -1, TRUE);
+			if (!Inhell) angrygods(u.ualign.god);
+			change_luck(-5);
+		} else adjalign(5);
+	//Pets are just eaten like anything else.  Your god doesn't know you did it, and the goat doesn't care.
+	//Yog doesn't give extra credit for undead.
+	} else if (is_unicorn(ptr)) {
+		int unicalign = sgn(ptr->maligntyp);
+
+		/* Yog has no unicorns, and doesn't give bonus. */
+		/* If sacrificing unicorn of your alignment to altar not of */
+		/* your alignment, your god gets angry */
+		if (unicalign == u.ualign.type) {
+			u.ualign.record = min(-1,u.ualign.record-20);
+			// value unchanged
+		}
+	}
+    /* corpse */
+	//Value can't be 0
+	//Value can't be -1
+	/* Sacrificing at an altar of a different alignment */
+	/* Never a conversion */
+	/* never an altar conversion*/
+	
+	/* Rider unimportant (corpse is not destroyed) */
+	drink_offering(otmp);
+	yog_credit(value, TRUE);
 }
 
 void
@@ -4660,7 +4840,7 @@ boolean offering;
 	if (otmp && otmp->oeaten)
 		value = eaten_stat(value, otmp);
 
-	if (your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)) {
+	if (your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
 	//No demon summoning.  Your god just smites you, and sac continues.
 		if (u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE) {
 			adjalign(-5);
@@ -4684,8 +4864,8 @@ boolean offering;
 	
 	/* Rider handled */
 	if(otmp)
-		burn_offering(otmp, !(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)));
-	if(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)) {
+		burn_offering(otmp, !(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)));
+	if(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
 		adjalign(-value);
 		godlist[u.ualign.god].anger += 1;
 		(void) adjattrib(A_CHA, -1, TRUE);
@@ -4723,14 +4903,13 @@ boolean offering;
 }
 
 void
-yog_credit(value)
-int value;
+yog_credit(int value, boolean offered)
 {
 	//May be zero if draining a small monster etc.
 	if(!value)
 		return;
 
-	if(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT)) {
+	if(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
 		adjalign(-value);
 		godlist[u.ualign.god].anger += 1;
 		(void) adjattrib(A_CHA, -1, TRUE);
@@ -4758,12 +4937,16 @@ int value;
 			u.yog_sothoth_credit + max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)),
 			max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)),
 			value,
-			u.yog_sothoth_devotion + max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit))
+			u.yog_sothoth_devotion + (offered ? value : max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)))
 			);
 	}
+	//Increment devotion BEFORE diminishing returns 
+	if(offered)
+		u.yog_sothoth_devotion += value;
 	value = max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit));
 	u.yog_sothoth_credit += value;
-	u.yog_sothoth_devotion += value;
+	if(!offered)
+		u.yog_sothoth_devotion += value;
 	return;
 }
 
@@ -4975,6 +5158,10 @@ int sanctum;   /* is it the seat of the high priest? */
 		/* the Blasphemous Lurker in Neutral */
 		priest = makemon(&mons[PM_BLASPHEMOUS_LURKER], sx, sy, NO_MM_FLAGS);
 	}
+	else if(philosophy_index(godnum) && !In_endgame(&u.uz)){
+		/* philosophy altars in general lack gods */
+		priest = (struct monst *) 0;
+	}
 	else {
 		struct obj *otmp;
 		priest = makemon(&mons[sanctum ? PM_HIGH_PRIEST : PM_ALIGNED_PRIEST],
@@ -4982,6 +5169,12 @@ int sanctum;   /* is it the seat of the high priest? */
 		if (priest) {
 			/* special cases */
 			switch (godnum) {
+				// case GOD_THE_COLLEGE:
+					// break;
+				// case GOD_THE_CHOIR:
+					// break;
+				// case GOD_DEFILEMENT:
+					// break;
 				case GOD_MOLOCH:
 					give_mintrinsic(priest, POISON_RES);
 					break;
@@ -5301,6 +5494,32 @@ int godnum;
 	if (godnum == GOD_VELKA__GODDESS_OF_SIN)
 		return FALSE;
 
+	return TRUE;
+}
+
+boolean
+research_incomplete()
+{
+	switch(u.ualign.god){
+		case GOD_THE_COLLEGE:
+			if(known_glyph(ROTTEN_EYES) && reanimation_count() >= 6)
+				return FALSE;
+		break;
+		case GOD_THE_CHOIR:
+			if(known_glyph(LUMEN) && parasite_count() >= 6)
+				return FALSE;
+		break;
+		case GOD_DEFILEMENT:
+			if(known_glyph(DEFILEMENT) && defile_count() >= 6)
+				return FALSE;
+		break;
+	}
+	if(active_glyph(ROTTEN_EYES) && reanimation_count() >= 6)
+		return FALSE;
+	if(active_glyph(LUMEN) && parasite_count() >= 6)
+		return FALSE;
+	if(active_glyph(DEFILEMENT) && defile_count() >= 6)
+		return FALSE;
 	return TRUE;
 }
 

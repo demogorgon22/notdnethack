@@ -165,6 +165,7 @@ int type;
 
 	if (xtime > 0L) {
 	    if (Sick_resistance) return;
+		IMPURITY_UP(u.uimp_illness)
 	    if (!old) {
 		/* newly sick */
 		if(talk) You_feel("deathly sick.");
@@ -424,7 +425,7 @@ dodrink()
         /* not as low as floor level but similar restrictions apply */
         && can_reach_floor()
 	) {
-        if (yn("Drink from the forge?") == 'y') {
+        if (yesno("Drink from the forge?", TRUE) == 'y') {
             drinkforge();
             return 1;
         }
@@ -437,7 +438,7 @@ dodrink()
 		Sprintf(buf,"at your %s", makeplural(body_part(FOOT)));
 		Sprintf(buf2,"Drink the water %s?", 
 			(Underwater || (IS_PUDDLE(levl[u.ux][u.uy].typ) &&
-			verysmall(youmonst.data) && !Wwalking)) ? "around you"
+			verysmall(youracedata) && !Wwalking)) ? "around you"
 								: buf);
 		if (yn(buf2) == 'y') {
 		    pline("Do you know what lives in this water?!");
@@ -446,7 +447,12 @@ dodrink()
 
 	otmp = getobj(beverages, "drink");
 	if(!otmp) return MOVE_CANCELLED;
-	if(otmp->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+	if(otmp->ostolen){
+		if(u.sealsActive&SEAL_ANDROMALIUS)
+			unbind(SEAL_ANDROMALIUS, TRUE);
+		/*stealing is impure*/
+		IMPURITY_UP(u.uimp_theft)
+	}
 
 	/* quan > 1 used to be left to useup(), but we need to force
 	   the current potion to be unworn, and don't want to do
@@ -1069,7 +1075,9 @@ boolean force;
 				}
 			}
 			/* they went up a level */
-			if((ledger_no(&u.uz) == 1 && u.uhave.amulet) ||
+			if((ledger_no(&u.uz) == 1 && u.uhave.amulet
+				&& !(Role_if(PM_UNDEAD_HUNTER) && philosophy_index(u.ualign.god) && (!quest_status.moon_close || research_incomplete() || u.veil))
+			) ||
 				Can_rise_up(u.ux, u.uy, &u.uz)) {
 			    const char *riseup ="rise up, through the %s!";
 			    if(ledger_no(&u.uz) == 1) {
@@ -1100,7 +1108,7 @@ boolean force;
 	case POT_HEALING:
 		You_feel("better.");
         enhanced = uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
-		healup(d((enhanced ? 2 : 1) * (6 + 2 * bcsign(otmp)), 4),
+		healup(d((enhanced ? 2 : 1) * (6 + 2 * bcsign(otmp)), 4)+ (enhanced ? 2 : 1) * mlev(&youmonst),
 		       !(get_ox(otmp, OX_ESUM)) * ((enhanced ? 2 : 1) * (!otmp->cursed ? 1 : 0)),
 			   otmp->blessed, !otmp->cursed);
 		exercise(A_CON, TRUE);
@@ -1109,7 +1117,7 @@ boolean force;
 as_extra_healing:
 		You_feel("much better.");
         enhanced = uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_HEALING_H;
-		healup(d((enhanced ? 2 : 1) * (6 + 2 * bcsign(otmp)), 8),
+		healup(d((enhanced ? 2 : 1) * (6 + 2 * bcsign(otmp)), 8)+d((enhanced ? 2 : 1) * max(1, mlev(&youmonst)),8),
 		       !(get_ox(otmp, OX_ESUM)) * (enhanced ? 2 : 1) * (otmp->blessed ? 5 : !otmp->cursed ? 2 : 0),
 		       !otmp->cursed, TRUE);
 		(void) make_hallucinated(0L,TRUE,0L);
@@ -1193,7 +1201,7 @@ as_extra_healing:
 		exercise(A_STR, TRUE);
 		exercise(A_CON, TRUE);
 		//Makes you crazy
-		change_usanity(-1*rnd(10), FALSE);
+		change_usanity(-1*d(4,4), FALSE);
 		u.umadness |= MAD_GOAT_RIDDEN;
 		lift_veil();
 		break;
@@ -1389,18 +1397,6 @@ as_extra_healing:
 		else
 			pline("Magical energies course through your body.");
 		}break;
-	case POT_MIDAS:
-		if (!Golded && !(Stone_resistance && youracedata->mtyp != PM_STONE_GOLEM)
-			&& !is_gold(youracedata)
-			&& !(poly_when_golded(youracedata) && polymon(PM_GOLD_GOLEM))
-			) {
-			Golded = 9;
-			delayed_killer = "the draught of Midas";
-			killer_format = KILLED_BY;
-			You("are turning to gold!");
-		} else
-			You_feel("shiny inside.");
-		break;
 	case POT_POLYMORPH:
 		You_feel("a little %s.", Hallucination ? "normal" : "strange");
 		if (!Unchanging) polyself(FALSE);
@@ -1457,6 +1453,7 @@ as_extra_healing:
 					(otmp->blessed ? mons[(otmp)->corpsenm].cnutrit*1.5/5 : mons[(otmp)->corpsenm].cnutrit/5 ));
 			}
 		}
+		IMPURITY_UP(u.uimp_blood)
 		//Note: clockworks that use potions of blood as oil gain the intrinsics!
 		//Incantifiers likewise gain intrinsics but not nutrition.
 		cprefx(otmp->corpsenm, TRUE, FALSE);
@@ -1637,6 +1634,7 @@ boolean your_fault;
 			delayed_killer = killer_buf;
 		    }
 		}
+		IMPURITY_UP(u.uimp_blood)
 	}break;
 	case POT_AMNESIA:
 		/* Uh-oh! */
@@ -2756,8 +2754,52 @@ boolean amnesia;
 
 	if (used) 
 	    update_inventory();
-	else 
+	else {
 	    pline("%s %s wet.", Your_buf, aobjnam(obj,"get"));
+		if(obj->opoisoned && obj->otyp != VIPERWHIP){
+			if(obj->opoisoned&OPOISON_ACID){
+				pline("Its acid coating boils vigorously!");
+				You("are caught in the explosion!");
+				losehp(Acid_resistance ? rnd(2) : rnd(5),
+					   "elementary chemistry", KILLED_BY);
+				obj->opoisoned &= ~OPOISON_ACID;
+			}
+			if(obj->opoisoned&(~OPOISON_AMNES)){
+				if(obj->opoisoned&OPOISON_BASIC && !rn2(10)){
+					pline("The poison coating washes off.");
+					obj->opoisoned &= ~OPOISON_BASIC;
+				}
+				else if(obj->opoisoned&OPOISON_DIRE && !rn2(10)){
+					pline("The poison coating washes off.");
+					obj->opoisoned &= ~OPOISON_DIRE;
+				}
+				if(obj->opoisoned&OPOISON_FILTH && !rn2(10)){
+					pline("The crusted filth washes off.");
+					obj->opoisoned &= ~OPOISON_FILTH;
+				}
+				if(obj->opoisoned&OPOISON_SLEEP && rn2(2)){
+					pline("The drug washes off.");
+					obj->opoisoned &= ~OPOISON_SLEEP;
+				}
+				if(obj->opoisoned&OPOISON_BLIND && rn2(2)){
+					pline("The stain washes off.");
+					obj->opoisoned &= ~OPOISON_BLIND;
+				}
+				if(obj->opoisoned&OPOISON_PARAL && rn2(8)){
+					pline("The venom washes off.");
+					obj->opoisoned &= ~OPOISON_PARAL;
+				}
+				if(obj->opoisoned&OPOISON_SILVER){
+					pline("The silver dew washes off.");
+					obj->opoisoned &= ~OPOISON_SILVER;
+				}
+				if(obj->opoisoned&OPOISON_HALLU && rn2(2)){
+					pline("The hallucinogen washes off.");
+					obj->opoisoned &= ~OPOISON_HALLU;
+				}
+			}
+		}
+	}
 
 	return used;
 }
@@ -3332,7 +3374,20 @@ dodip()
 
 	if (potion->otyp == POT_OIL) {
 	    boolean wisx = FALSE;
-	    if (potion->lamplit) {	/* burning */
+	    if((obj->lamplit || potion->lamplit) 
+			&& (obj->otyp == TORCH || obj->otyp == SHADOWLANDER_S_TORCH)
+		) {
+			// Note: magic torches don't burn items (magic. The torch itself is not burned, and it doesn't burn other things. It does burn creatures though!)
+			if(!obj->lamplit)
+				begin_burn(obj);
+			//Note: done in THIS ORDER SPECIFICALLY to avoid the explosion using up the potion!
+			// Requires duplicating the below useup and return here :(
+			makeknown(potion->otyp);
+			useup(potion);
+			explode(u.ux, u.uy, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1);
+			exercise(A_WIS, FALSE);
+			return MOVE_STANDARD;
+	    } else if (potion->lamplit) {	/* burning */
 			int omat = obj->obj_material;
 			/* the code here should be merged with fire_damage */
 			if (catch_lit(obj)) {
@@ -3382,26 +3437,52 @@ dodip()
 			if(potion->dknown && !objects[potion->otyp].oc_name_known)
 				makeknown(potion->otyp);
 			goto poof;
-	    } else if (obj->oclass != WEAPON_CLASS && !is_weptool(obj)) {
-			/* the following cases apply only to weapons */
-			goto more_dips;
-			/* Oil removes rust and corrosion, but doesn't unburn.
-			 * Arrows, etc are classed as metallic due to arrowhead
-			 * material, but dipping in oil shouldn't repair them.
-			 */
-	    } else if ((!is_rustprone(obj) && !is_corrodeable(obj)) ||
-			is_ammo(obj) || (!obj->oeroded && !obj->oeroded2)) {
-			/* uses up potion, doesn't set obj->greased */
+		/* Allow filling of MAGIC_LAMPs to prevent identification by player */
+		/*  This is another one that can't use the general handling below and so has early returns */
+		} else if ((obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP)) {
+			/* Turn off engine before fueling, turn off fuel too :-)  */
+			if (obj->lamplit || potion->lamplit) {
+				useup(potion);
+				explode(u.ux, u.uy, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1);
+				exercise(A_WIS, FALSE);
+				return MOVE_STANDARD;
+			}
+			/* Adding oil to an empty magic lamp renders it into an oil lamp */
+			if ((obj->otyp == MAGIC_LAMP) && obj->spe == 0) {
+				obj->otyp = OIL_LAMP;
+				obj->age = 0;
+			}
+			if (obj->age > 1000L) {
+				pline("%s %s full.", Yname2(obj), otense(obj, "are"));
+				potion->in_use = FALSE;	/* didn't go poof */
+			} else {
+				You("fill %s with oil.", yname(obj));
+				check_unpaid(potion);	/* Yendorian Fuel Tax */
+				obj->age += 2*potion->age;	/* burns more efficiently */
+				if (obj->age > 1500L) obj->age = 1500L;
+				useup(potion);
+				exercise(A_WIS, TRUE);
+			}
+			makeknown(POT_OIL);
+			obj->spe = 1;
+			update_inventory();
+			return MOVE_STANDARD;
+	    } else if (is_rustprone(obj) && obj->oeroded > 0){
+			pline("%s %s less rusty.", Yname2(obj), otense(obj, "are"));
+			obj->oeroded--;
+			wisx = TRUE;
+	    } else if (is_corrodeable(obj) && obj->oeroded2 > 0){
+			pline("%s %s less corroded.", Yname2(obj), otense(obj, "are"));
+			obj->oeroded2--;
+			wisx = TRUE;
+	    } else {
+			/* uses up potion */
 			pline("%s %s with an oily sheen.",
 				  Yname2(obj), otense(obj, "gleam"));
-	    } else {
-			pline("%s %s less %s.",
-				  Yname2(obj), otense(obj, "are"),
-				  (obj->oeroded && obj->oeroded2) ? "corroded and rusty" :
-				obj->oeroded ? "rusty" : "corroded");
-			if (obj->oeroded > 0) obj->oeroded--;
-			if (obj->oeroded2 > 0) obj->oeroded2--;
-			wisx = TRUE;
+			if(!obj->greased){
+				wisx = TRUE;
+				obj->greased = TRUE;
+			}
 	    }
 	    exercise(A_WIS, wisx);
 	    makeknown(potion->otyp);
@@ -3410,18 +3491,7 @@ dodip()
 	}
     more_dips:
 
-	// Note: magic torches don't burn items (magic. The torch itself is not burned, and it doesn't burn other things. It does burn creatures though!)
-	if((obj->lamplit || potion->lamplit) 
-		&& (obj->otyp == TORCH || obj->otyp == SHADOWLANDER_S_TORCH)
-		&& (potion->otyp == POT_OIL)
-	) {
-		if(!obj->lamplit)
-			begin_burn(obj);
-		useup(potion);
-		explode(u.ux, u.uy, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1);
-		exercise(A_WIS, FALSE);
-		return MOVE_STANDARD;
-	} else if((obj->otyp == SUNROD)
+	if((obj->otyp == SUNROD)
 		&& (potion->otyp == POT_ACID)
 	) {
 		obj->age = max(obj->age-100, 1);
@@ -3449,36 +3519,6 @@ dodip()
 		}
 		exercise(A_WIS, FALSE);
 		return MOVE_STANDARD;
-	/* Allow filling of MAGIC_LAMPs to prevent identification by player */
-	} else if ((obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP) &&
-	   (potion->otyp == POT_OIL)) {
-	    /* Turn off engine before fueling, turn off fuel too :-)  */
-	    if (obj->lamplit || potion->lamplit) {
-		useup(potion);
-		explode(u.ux, u.uy, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1);
-		exercise(A_WIS, FALSE);
-		return MOVE_STANDARD;
-	    }
-	    /* Adding oil to an empty magic lamp renders it into an oil lamp */
-	    if ((obj->otyp == MAGIC_LAMP) && obj->spe == 0) {
-		obj->otyp = OIL_LAMP;
-		obj->age = 0;
-	    }
-	    if (obj->age > 1000L) {
-		pline("%s %s full.", Yname2(obj), otense(obj, "are"));
-		potion->in_use = FALSE;	/* didn't go poof */
-	    } else {
-		You("fill %s with oil.", yname(obj));
-		check_unpaid(potion);	/* Yendorian Fuel Tax */
-		obj->age += 2*potion->age;	/* burns more efficiently */
-		if (obj->age > 1500L) obj->age = 1500L;
-		useup(potion);
-		exercise(A_WIS, TRUE);
-	    }
-	    makeknown(POT_OIL);
-	    obj->spe = 1;
-	    update_inventory();
-	    return MOVE_STANDARD;
 	}
 	
 	potion->in_use = FALSE;		/* didn't go poof */

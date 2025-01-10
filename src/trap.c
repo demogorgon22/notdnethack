@@ -503,12 +503,12 @@ boolean td;	/* td == TRUE : trap door or hole */
 	else if(Levitation || u.ustuck || !Can_fall_thru(&u.uz)
 	   || Flying || is_clinger(youracedata)
 	   || (Role_if(PM_ARCHEOLOGIST) && uwep && 
-			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP))
+			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP || uwep->otyp == WHIP_SAW))
 	   || (Inhell && !u.uevent.invoked &&
 					newlevel == (dunlevs_in_dungeon(&u.uz) - 1))/*seal off sanctum and square level until the invocation is performed*/
 		) {
 		if (Role_if(PM_ARCHEOLOGIST) && uwep && 
-			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP)
+			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP || uwep->otyp == WHIP_SAW)
 		)            
 		pline("But thanks to your trusty whip ...");
 	    dont_fall = "don't fall in.";
@@ -3635,7 +3635,7 @@ boolean *lostsome;
 		    if (!((obj->otyp == LOADSTONE && obj->cursed) ||
 			  obj == uamul || obj == uleft || obj == uright ||
 			  obj == ublindf || obj == uarm || obj == uarmc ||
-			  obj == uarmg || obj == uarmf ||
+			  obj == uarmg || obj == ubelt || obj == uarmf ||
 			  obj == uarmu ||
 			  (obj->cursed && !Weldproof && (obj == uarmh || obj == uarms)) ||
 			  welded(obj)))
@@ -3891,27 +3891,34 @@ drown()
 int
 dodeepswim()
 {
-	if(u.uinwater && Swimming){
+	if((u.uinwater && Swimming) || ((Flying || Wwalking) && (Swimming || Amphibious) && !Levitation && is_pool(u.ux, u.uy, FALSE))){
 		if(u.usubwater){
 			if(is_3dwater(u.ux, u.uy)){
 				pline("There is no surface!");
 				return MOVE_CANCELLED;
 			} else {
-				You("swim up to the surface.");
+				if (Flying)
+					You("fly out of the water.");
+				else if (Wwalking)
+					You("slowly rise above the surface.");
+				else
+					You("swim up to the surface.");
 				u.usubwater = 0;
+				if (Flying || Wwalking) u.uinwater = 0;
 				vision_recalc(2);	/* unsee old position */
 				vision_full_recalc = 1;
 				doredraw();
 				return MOVE_STANDARD;
 			}
 		} else {
-			if(ACURR(A_CON) > 5){
+			if(ACURR(A_CON) > 5 || Amphibious){
 				if(Is_waterlevel(&u.uz)){
 					You("are already under water!");
 					return MOVE_CANCELLED;
 				} else {
 					You("dive below the surface.");
 					u.usubwater = 1;
+					if (Flying || Wwalking) u.uinwater = 1;
 					under_water(1);
 					vision_recalc(2);	/* unsee old position */
 					vision_full_recalc = 1;
@@ -3921,8 +3928,9 @@ dodeepswim()
 			return MOVE_CANCELLED;
 		}
 	} else {
-		if(!u.uinwater) You("can't dive unless you're swimming!");
+		if(!is_pool(u.ux, u.uy, FALSE)) You("can't dive into the %s!", surface(u.ux, u.uy));
 		else if(!Swimming) You("can't swim!");
+		else if(Levitation) You("can't reach the water!");
 		return MOVE_CANCELLED;
 	}
 }
@@ -5381,6 +5389,7 @@ boolean initialize;
 					else if(obj == uright) Ring_gone(obj);
 					else if(obj == ublindf) Blindf_off(obj);
 					else if(obj == uamul) Amulet_off();
+					else if(obj == ubelt) Belt_off();
 					else if(obj == uwep) uwepgone();
 					else if (obj == uquiver) uqwepgone();
 					else if (obj == uswapwep) uswapwepgone();

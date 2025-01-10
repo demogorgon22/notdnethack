@@ -197,6 +197,14 @@ more_experienced(exp, rexp)
 		exp *= 1.3;
 		rexp *= 1.3;
 	}
+	if(Withering_stake && quest_status.moon_close){
+		exp *= 1.3;
+		rexp *= 1.3;
+	}
+	if(active_glyph(ROTTEN_EYES)){
+		exp *= 1.1;
+		rexp *= 1.1;
+	}
 	if(flags.descendant && flags.beginner){
 		if((Role_if(PM_CONVICT) && !Race_if(PM_SALAMANDER))
 		|| (Role_if(PM_HEALER) && Race_if(PM_DROW))
@@ -252,7 +260,16 @@ lose_experience(exp)
 #endif
 	   ) flags.botl = 1;
 	if (u.ulevel > 1 && u.uexp < newuexp(u.ulevel-1))
-	    losexp("lost experience",FALSE,FALSE,FALSE);
+	    losexp("lost experience",FALSE,TRUE,FALSE);
+}
+
+void
+nightmare_mold_lose_experience()
+{
+	if(u.ulevel > 1)
+		lose_experience(3*(newuexp(u.ulevel) - newuexp(u.ulevel-1))/10);
+	else
+		lose_experience(3*(newuexp(u.ulevel))/10);
 }
 
 void

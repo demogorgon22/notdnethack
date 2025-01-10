@@ -88,7 +88,7 @@
 #define Antimagic		(EAntimagic || HAntimagic || \
 						(u.usteed && u.usteed->misc_worn_check & W_SADDLE \
 						&& which_armor(u.usteed, W_SADDLE)->oartifact == ART_HELLRIDER_S_SADDLE) || \
-						(activeFightingForm(FFORM_KNI_RUNIC) && uwep && uwep->otyp == LONG_SWORD) || \
+						(activeFightingForm(FFORM_KNI_RUNIC) && uwep && is_runic_form_sword(uwep)) || \
 						Nullmagic ||\
 				 (Upolyd && resists_magm(&youmonst)))
 
@@ -123,7 +123,7 @@
 
 #define HCleaving		u.uprops[CLEAVING].intrinsic
 #define ECleaving		u.uprops[CLEAVING].extrinsic
-#define Cleaving		(HCleaving || ECleaving)
+#define Cleaving		(HCleaving || ECleaving || (uwep && uwep->otyp == RAZOR_CLEAVER && !u.twoweap))
 
 #define HGoodHealth		u.uprops[GOOD_HEALTH].intrinsic
 #define EGoodHealth		u.uprops[GOOD_HEALTH].extrinsic
@@ -140,6 +140,10 @@
 #define HPreservation		u.uprops[PRESERVATION].intrinsic
 #define EPreservation		u.uprops[PRESERVATION].extrinsic
 #define Preservation		(HPreservation || EPreservation)
+
+#define HProtItems		u.uprops[PROT_ITEMS].intrinsic
+#define EProtItems		u.uprops[PROT_ITEMS].extrinsic
+#define ProtItems		(HProtItems || EProtItems)
 
 #define HQuickDraw		u.uprops[QUICK_DRAW].intrinsic
 #define EQuickDraw		u.uprops[QUICK_DRAW].extrinsic
@@ -617,6 +621,10 @@
 #define HBlack_crystal	u.uprops[BLACK_CRYSTAL].intrinsic
 #define EBlack_crystal	u.uprops[BLACK_CRYSTAL].extrinsic
 #define Black_crystal	(HBlack_crystal || EBlack_crystal)
+
+#define HWithering_stake	u.uprops[WITHERING_STAKE].intrinsic
+#define EWithering_stake	u.uprops[WITHERING_STAKE].extrinsic
+#define Withering_stake	(HWithering_stake || EWithering_stake)
 
 #define HSterile	u.uprops[STERILE].intrinsic
 #define ESterile	u.uprops[STERILE].extrinsic

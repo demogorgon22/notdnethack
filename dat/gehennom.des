@@ -43,7 +43,7 @@ REGION:(37,09,43,14),unlit,"morgue",filled,true
 STAIR:(01,01),down
 # Branch location
 BRANCH:(66,17,66,17),(0,0,0,0)
-TELEPORT_REGION:(58,09,72,18),(0,0,0,0),down
+TELEPORT_REGION:(58,09,72,18),(00,00,11,05),down
 
 # Artifact Doors
 NON_PASSWALL:(00,00,11,05)
@@ -1515,19 +1515,19 @@ MAP
 1} } }--                 S    |
 2 }   S                  |    |
 3}}}}---------------------    |
-4    |{          ---------- --|
+4    |           ---------- --|
 5 } F--          |........|   |
 6}  F S          |........|   |
 7 }}F --- ---|---|--.--.--|-| |
 8}----|      |                |
-9}||}}|     {|              | |
+9}||}}|      |              | |
 0}||}}|      S             \| |
-1}||}}|     {|              | |
+1}||}}|      |              | |
 2}----|      |                |
 3 }}F --- ---|---|--.--.--|-| |
 4} }F S          |........|   |
 5 }}F--          |........|   |
-6}}}}|{          ---------- --|
+6}}}}|           ---------- --|
 7 }}}---------------------    |
 8}} }}S                  |    |
 9 }} }--                 S    |
@@ -3400,7 +3400,7 @@ MONSTER:'@',"Daemon", place[1]
 
 MONSTER:'&', "ancient of ice", place[2], "the Ambassador of Cania"
 MONSTER:'&', "fallen angel", place[2], "the Ambassador of Maladomini"
-MONSTER:'&', "bone devil", place[2], "the Ambassador of Malbloge"
+MONSTER:'&', "bone devil", place[2], "the Ambassador of Malbolge"
 MONSTER:'&', "ice devil", place[2], "the Ambassador of Cania"
 MONSTER:'&', "nessian pit fiend", place[2], "the Warden of Nessus"
 MONSTER:'&', "pit fiend", place[2], "the Ambassador of Phlegethos"

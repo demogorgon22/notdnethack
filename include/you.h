@@ -68,8 +68,9 @@ struct u_event {
 #define ARTWISH_SPENT	2
 	Bitfield(ascended,1);			/*34 has offered the Amulet */
 	Bitfield(knoxmade,1);			/*35 Portal to Ludios has been made in the main dungeon, teleport ok */
+	Bitfield(qrecalled,1);			/*36 Quest re-opened */
 	
-	Bitfield(padding,10);			/*45 reseve another bitfield in event. */
+	Bitfield(padding, 9);			/*45 reseve another bitfield in event. */
 };
 
 /* KMH, conduct --
@@ -332,6 +333,7 @@ struct you {
 #define TT_LAVA		3
 #define TT_INFLOOR	4
 #define TT_FLESH_HOOK	5
+#define TT_SALIVA	6
 	char	urooms[5];	/* rooms (roomno + 3) occupied now */
 	char	urooms0[5];	/* ditto, for previous position */
 	char	uentered[5];	/* rooms (roomno + 3) entered this turn */
@@ -349,7 +351,7 @@ struct you {
 #define DEFAULT_HMAX	2000
 	unsigned uhs;		/* hunger state - see eat.c */
 
-#define FFORM_LISTSIZE	(LAST_FFORM/32 + 1)
+#define FFORM_LISTSIZE	(LAST_FFORM/16 + 1)
 	unsigned long int fightingForm[FFORM_LISTSIZE];/* special properties */
 	int ueldritch_style;
 	Bitfield(uavoid_passives,1);
@@ -735,6 +737,107 @@ struct you {
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)
 #define COA_PROB	 (max(1, 10000*pow(.95,(Role_if(PM_ANACHRONOUNBINDER)?max(0,u.uinsight-100):u.uinsight))))
+	int 	uimpurity;	/* to record level of impurity */
+	Bitfield(uimp_meat, 4);
+	Bitfield(uimp_blood, 4);
+	Bitfield(uimp_bodies, 4);
+	Bitfield(uimp_death_magic, 4);
+	Bitfield(uimp_goo_transcendence, 6);
+	Bitfield(uimp_theft, 4);
+	Bitfield(uimp_murder, 4);
+	Bitfield(uimp_bloodlust, 4);
+	Bitfield(uimp_graverobbery, 4);
+	Bitfield(uimp_god_anger, 4);
+	Bitfield(uimp_illness, 4);
+	Bitfield(uimp_dirtiness, 4);
+	Bitfield(uimp_disaster, 4);
+	Bitfield(uimp_seduction, 4);
+	Bitfield(uimp_deep_one, 4);
+	Bitfield(uimp_betrayal, 4);
+	Bitfield(uimp_kuo_toa, 4);
+	Bitfield(uimp_ibite, 4);
+	Bitfield(uimp_mind_flayers, 4); //51/+25 eve/+12 bullets?
+	int 	ureanimation_research;	/* to record progress on reanimation */
+	//Power 1: raise crazed corpses
+	//Power 2: Summon blood creatures
+	//Power 3: Upgrades?
+	long ureanimation_upgrades;
+	int antenae_upgrades;
+// #define ANTENNA_BOLT	0x0001L
+// #define ANTENNA_ERRANT 	0x0002L
+// #define ANTENNA_BOIL 	0x0004L
+// #define ANTENNA_REJECT 	0x0008L
+#define	RE_BOLT_RES		0x00000001L
+#define	RE_WATER_RES	0x00000002L
+#define	RE_CLAIR		0x00000004L
+#define	RE_CLONE_SELF	0x00000008L
+#define	ANTENNA_ERRANT	0x00000010L
+#define	ANTENNA_BOLT	0x00000020L
+#define	ANTENNA_REJECT	0x00000040L
+#define	LAMP_PHASE		0x00000080L
+#define REANIMATION_MAX LAMP_PHASE
+#define REANIMATION_COUNT 8
+#define check_reanimation(upgrade)	(u.ureanimation_upgrades&(upgrade))
+#define add_reanimation(upgrade)	(u.ureanimation_upgrades|=(upgrade))
+	int 	uparasitology_research;	/* to record progress on parasitology */
+	char brainsuckers;
+	char mm_up;
+	char explosion_up;
+	char jellyfish;
+	char cuckoo;
+	// int 	usaprobiology_research; /* to record progress on rot */
+	int 	udefilement_research; /* to record progress on defilement */
+	int mental_scores_down;
+	//Path 1: Preservation
+	long upreservation_upgrades;
+#define PRESERVE_REDUCE_HUNGER 0x00000001L
+#define PRESERVE_PREVENT_ABUSE 0x00000002L
+#define PRESERVE_GAIN_DR 	   0x00000004L
+#define PRESERVE_COLD_RES 	   0x00000008L
+#define PRESERVE_SLEEP_RES 	   0x00000010L
+#define PRESERVE_GAIN_DR_2 	   0x00000020L
+//
+#define PRESERVE_DEAD_TRUCE	   0x00000040L
+#define PRESERVE_MAX		   PRESERVE_DEAD_TRUCE
+#define check_preservation(upgrade)	(u.upreservation_upgrades&(upgrade))
+#define add_preservation(upgrade)	(u.upreservation_upgrades|=(upgrade))
+	//Path 2: Steal will
+	long uvampire_upgrades;
+#define VAMPIRE_THRALLS		   0x00000001L
+#define VAMPIRE_MASTERY		   0x00000002L
+#define VAMPIRE_BLOOD_RIP	   0x00000004L
+#define VAMPIRE_BLOOD_SPIKES   0x00000008L
+#define VAMPIRE_GAZE		   0x00000010L
+#define VAMPIRE_MAX			   VAMPIRE_GAZE
+#define VAMPIRE_COUNT		   5
+#define check_vampire(upgrade)	(u.uvampire_upgrades&(upgrade))
+#define add_vampire(upgrade)	(u.uvampire_upgrades|=(upgrade))
+
+	// long urot_upgrades;
+	//Path 3: New life
+	// Blood fly swarm
+	// Rot enemy
+	// Ants and fungi are peaceful
+	// Rotting corpses spawn silvermen
+
+	Bitfield(ublood_smithing, 1);
+	Bitfield(umagic_smithing, 1);
+	Bitfield(uring_lore, 1);
+#define IMPURITY_UP(counter) 	if((counter) < 15){\
+		if((counter) == 0 || !rn2((counter))){\
+			((counter))++;\
+			if((counter) == 1 || (counter) == 4 || (counter) == 15)\
+				u.uimpurity++;\
+		}\
+	}
+#define TRANSCENDENCE_IMPURITY_UP(force) 	if((u.uimp_goo_transcendence) < 63){\
+		if(force || (u.uimp_goo_transcendence) < 4 || !rn2((u.uimp_goo_transcendence/2))){\
+			((u.uimp_goo_transcendence))++;\
+			if((u.uimp_goo_transcendence) == 1 || (u.uimp_goo_transcendence) == 4 || (u.uimp_goo_transcendence) == 8 || (u.uimp_goo_transcendence) == 16 || (u.uimp_goo_transcendence) == 32 || (u.uimp_goo_transcendence) == 63)\
+				u.uimpurity++;\
+		}\
+	}
+
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
 	int 	utaneggs;	/* tannin eggs */
@@ -1004,7 +1107,7 @@ struct you {
 	boolean ufirst_know;
 	long ufirst_know_timeout;
 	long thoughts;
-#define MAX_GLYPHS ((Role_if(PM_MADMAN) && u.uevent.qcompleted && (u.uinsight >= 20 || u.render_thought)) ? 4 : 3)
+#define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (u.uinsight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
 	long mutations[MUTATION_LISTSIZE];
 };	/* end of `struct you' */
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))
@@ -1012,7 +1115,7 @@ struct you {
 #define umechanoid (uclockwork || uandroid)
 //BAB
 #define BASE_ATTACK_BONUS(wep)	((Role_if(PM_BARBARIAN) || Role_if(PM_ANACHRONOUNBINDER) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_ANACHRONONAUT) || \
-								Role_if(PM_PIRATE) || Role_if(PM_SAMURAI) || Role_if(PM_VALKYRIE) || (u.sealsActive&SEAL_BERITH) || \
+								Role_if(PM_PIRATE) || Role_if(PM_UNDEAD_HUNTER) || Role_if(PM_SAMURAI) || Role_if(PM_VALKYRIE) || (u.sealsActive&SEAL_BERITH) || \
 								(!wep && (martial_bonus() || (u.sealsActive&SEAL_EURYNOME))) || \
 								(Role_if(PM_MONK) && wep && is_monk_weapon(wep)) || \
 								(wep && is_lightsaber(wep) && (Unblind_telepat || (Blind && Blind_telepat)))) ? 1.00 :\

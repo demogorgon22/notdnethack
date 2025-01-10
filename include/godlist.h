@@ -51,6 +51,9 @@ GOD_V2("Camaxtli",              A_NEUTRAL, NEUTRAL_HOLINESS,
 GOD_V2("Huhetotl",              A_CHAOTIC, UNHOLY_HOLINESS,
 	MINIONS(Cdemons)
 	),
+GOD_V2("Tezcatlipoca",          A_NONE, UNHOLY_HOLINESS,
+	MINIONS(Cdemons)
+	),
 /* barbarian */
 GOD_V2("Mitra",                 A_LAWFUL, HOLY_HOLINESS,
 	MINIONS(Langels)
@@ -198,6 +201,16 @@ GOD_V2("Lobon",                 A_NEUTRAL, HOLY_HOLINESS,
 	),
 GOD_V2("Tamash",                A_CHAOTIC, NEUTRAL_HOLINESS,
 	MINIONS(PM_HOMUNCULUS,PM_COURE_ELADRIN,PM_ANGEL,PM_WARDEN_ARCHON,PM_CAILLEA_ELADRIN)
+	),
+/* undead hunter */
+GOD_V2("the college",              A_LAWFUL, NEUTRAL_HOLINESS,
+	MINIONS()
+	),
+GOD_V2("the choir",                 A_NEUTRAL, HOLY_HOLINESS,
+	MINIONS()
+	),
+GOD_V2("defilement",                A_CHAOTIC, UNHOLY_HOLINESS,
+	MINIONS()
 	),
 /* valkyrie, Norse */
 GOD_V2("Tyr",                   A_LAWFUL, HOLY_HOLINESS,
