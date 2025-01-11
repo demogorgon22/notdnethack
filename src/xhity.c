@@ -14549,6 +14549,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_ACID;
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
+		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && u.uinsight >= 20 && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
+			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
@@ -14634,6 +14636,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				majoreff = !rn2(10);
 				break;
 			case OPOISON_DIRE:
+				resists = FALSE;
 				majoreff = !rn2(10);
 				break;
 			case OPOISON_FILTH:
@@ -14694,8 +14697,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		for (n = 0; n < NUM_POISONS; n++)
 		{
 			i = (1 << n);
-			boolean major = (poisons_majoreff & i);
-			boolean minor = (poisons_minoreff & i);
+			boolean major = (poisons_majoreff & i) != 0;
+			boolean minor = (poisons_minoreff & i) != 0;
 			if (!major && !minor)
 				continue;
 			/* calculate poison damage */
@@ -16065,6 +16068,19 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 	/*physical serration adjustment*/
 	if(weapon && is_serrated(weapon) && is_serration_vulnerable(mdef)){
+		subtotl *= 1.2;
+	}
+	//There is something in the tip that, when driven deep, is deleterious to beasts and the ritually impure
+	if(weapon 
+		&& (weapon->otyp == CHURCH_PICK || (weapon->otyp == CHURCH_SHORTSWORD && !resist_pierce(pd)))
+		&& (is_animal(pd) || (youdef && u.uimpurity > 10)
+			|| pd->mtyp == PM_DEEP_ONE || pd->mtyp == PM_DEEPER_ONE
+			|| pd->mtyp == PM_KUO_TOA || pd->mtyp == PM_KUO_TOA_WHIP
+			|| pd->mtyp == PM_BEING_OF_IB || pd->mtyp == PM_PRIEST_OF_IB
+			|| is_mind_flayer(pd)
+			|| pd->mtyp == PM_BEFOULED_WRAITH || mdef->mtraitor || mdef->mferal
+		)
+	){
 		subtotl *= 1.2;
 	}
 

@@ -10095,11 +10095,13 @@ int mmflags;
 			(void) mpickobj(mtmp,otmp);
 		} else if(mm == PM_OCCULTIST){
 			mtmp->mvar_flask_charges = 4;
-			otmp = mksobj(CLUB, mkobjflags|MKOBJ_NOINIT);
-			set_material_gm(otmp, DRAGON_HIDE);
+			otmp = mksobj(rn2(20) ? CLUB : TOOTH, mkobjflags|MKOBJ_NOINIT);
 			add_oprop(otmp, OPROP_OCLTW);
-			otmp->objsize = MZ_HUGE;
-			fix_object(otmp);
+			if(otmp->otyp == CLUB){
+				set_material_gm(otmp, DRAGON_HIDE);
+				otmp->objsize = MZ_HUGE;
+				fix_object(otmp);
+			}
 			otmp->spe = 3;
 			(void) mpickobj(mtmp, otmp);
 

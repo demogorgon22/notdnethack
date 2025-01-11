@@ -1951,6 +1951,9 @@ struct obj *obj;
 	if((obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE) && !u.dx && !u.dy && !u.dz){
 		return use_hunter_axe(obj);
 	}
+	else if(obj->otyp == CHURCH_PICK && !u.dx && !u.dy && !u.dz){
+		return use_church_pick(obj);
+	}
 
 	res &= ~MOVE_CANCELLED;
 	res |= use_pick_axe2(obj);

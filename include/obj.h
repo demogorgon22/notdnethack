@@ -349,7 +349,11 @@ struct obj {
 #define ovar1_puzzle_steps ovar1
 #define ovar1_alt_mat ovar1
 #define ovar1_last_blooded ovar1
-
+#define ovar1_tooth_type ovar1
+#define SERPENT_TOOTH	1
+#define MAGMA_TOOTH		2
+#define VOID_TOOTH		3
+#define MAX_TOOTH		VOID_TOOTH
 	/* Number of viperwhip heads */
 	/* Moon axe phase */
 	/* Acid venom non-1d6 damage */
@@ -379,6 +383,7 @@ struct obj {
 	|| (otmp)->otyp == CANE \
 	|| (otmp)->otyp == WHIP_SAW \
 	|| (otmp)->otyp == CHIKAGE \
+	|| (otmp)->otyp == TOOTH \
 	|| is_imperial_elven_armor(otmp) \
 	)
 #define ECLIPSE_MOON	0
@@ -662,6 +667,9 @@ struct obj {
 			 is_rakuyo(otmp) ||\
 			 otmp->otyp == CARCOSAN_STING || \
 			 otmp->otyp == CHIKAGE || \
+			 otmp->otyp == TOOTH || \
+			 otmp->otyp == CHURCH_SHORTSWORD || \
+			 otmp->otyp == CHURCH_PICK || \
 			 check_oprop(otmp,OPROP_GSSDW) || \
 			 check_oprop(otmp,OPROP_INSTW) || \
 			 check_oprop(otmp,OPROP_ELFLW) || \
@@ -872,11 +880,15 @@ struct obj {
 						|| (o)->otyp == LONG_SAW \
 						|| (o)->otyp == DISKOS \
 						|| (o)->otyp == DEMON_CLAW \
+						|| (o)->otyp == BEAST_CUTTER \
+						|| (o)->otyp == BEAST_CRUSHER \
 						|| ((o)->otyp == MOON_AXE && (o)->ovar1_moonPhase == HUNTING_MOON) \
 						)
 #define is_self_righteous(o)	((o)->otyp == CANE \
 						|| (o)->otyp == CHURCH_HAMMER \
 						|| (o)->otyp == CHURCH_BLADE \
+						|| (o)->otyp == CHURCH_PICK \
+						|| (o)->otyp == CHURCH_SHORTSWORD \
 						|| (o)->otyp == DEVIL_FIST \
 						)
 
@@ -954,6 +966,7 @@ struct obj {
 						  (otmp)->otyp == CROW_QUILL || \
 						  (otmp)->otyp == SET_OF_CROW_TALONS || \
 						  (otmp)->otyp == MOON_AXE || \
+						  (otmp)->otyp == TOOTH || \
 						  (otmp)->otyp == CANE || \
 						  (otmp)->otyp == WHIP_SAW || \
 						  (otmp)->otyp == CHURCH_HAMMER || \

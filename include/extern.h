@@ -72,6 +72,7 @@ E int FDECL(use_whip, (struct obj *));
 E int FDECL(use_nunchucks, (struct obj *));
 E int FDECL(use_force_sword, (struct obj *));
 E int FDECL(use_hunter_axe, (struct obj *));
+E int FDECL(use_church_pick, (struct obj *));
 E int FDECL(do_bloodletter, (struct obj *));
 E int NDECL(parasite_count);
 E boolean NDECL(parasite_ok);

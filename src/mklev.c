@@ -1527,7 +1527,13 @@ mineralize()
 				}
 			}
 			if (depth(&u.uz) > 14 && rn2(1000) < fossilprob) {
-				if ((otmp = mksobj(FOSSIL, 0)) != 0) {
+				if(!rn2(20)){
+					otmp = mksobj(TOOTH, NO_MKOBJ_FLAGS);
+					otmp->ox = x,  otmp->oy = y;
+					if (!rn2(3) && Can_dig_down(&u.uz)) add_to_buried(otmp);
+					else place_object(otmp, x, y);
+				}
+				else if ((otmp = mksobj(FOSSIL, 0)) != 0) {
 					otmp->quan = 1L;
 					otmp->owt = weight(otmp);
 					otmp->ox = x,  otmp->oy = y;

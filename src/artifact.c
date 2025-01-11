@@ -5111,6 +5111,40 @@ boolean direct_weapon;
 			}
 		}
 	}
+	if (otmp->otyp == TOOTH && u.uinsight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE)){
+		if(otmp->ovar1_tooth_type == MAGMA_TOOTH){
+			if (!Fire_res(mdef)) {
+				if (species_resists_cold(mdef))
+					(*truedmgptr) += 3 * (d(5,10) + otmp->spe) / 2;
+				else
+					(*truedmgptr) += d(5,10) + otmp->spe;
+			}
+			if (!UseInvFire_res(mdef)){
+				if (rn2(3)) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+				if (rn2(3)) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+				if (rn2(3)) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			}
+		}
+		else if(otmp->ovar1_tooth_type == SERPENT_TOOTH){
+			if (!Poison_res(mdef)) {
+				(*truedmgptr) += d(1,8) + otmp->spe;
+			}
+			if (!Acid_res(mdef)) {
+				(*truedmgptr) += d(1,8) + otmp->spe;
+			}
+			if (!UseInvAcid_res(mdef)){
+				if (rn2(3)) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			}
+		}
+		else if(otmp->ovar1_tooth_type == VOID_TOOTH){
+			if (!Cold_res(mdef)) {
+				(*truedmgptr) += d(3,3) + otmp->spe;
+			}
+			if (!UseInvCold_res(mdef)){
+				if (rn2(3)) destroy_item(mdef, POTION_CLASS, AD_COLD);
+			}
+		}
+	}
 	
 	if (otmp->otyp == TONITRUS && otmp->lamplit){
 		int modifier = (youdef ? (Blind_telepat && !Tele_blind) : mon_resistance(mdef, TELEPAT)) ? 2 : 1;
@@ -7225,8 +7259,16 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	/*level drain*/
-	if (check_oprop(otmp, OPROP_DRANW) && !Drain_res(mdef)){
+	if ((check_oprop(otmp, OPROP_DRANW) 
+		|| (otmp->otyp == TOOTH && otmp->ovar1_tooth_type == VOID_TOOTH && u.uinsight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE))
+		) && !Drain_res(mdef)
+	){
 		int dlife;
+		int n = 0;
+		if(check_oprop(otmp, OPROP_DRANW))
+			n++;
+		if(otmp->otyp == TOOTH && otmp->ovar1_tooth_type == VOID_TOOTH && u.uinsight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE))
+			n += 3;
 		/* message */
 		if (youdef) {
 			if (Blind)
@@ -7244,20 +7286,23 @@ boolean printmessages; /* print generic elemental damage messages */
 
 		if (youdef) {
 			dlife = *hpmax(mdef);
-			losexp("life drainage", FALSE, FALSE, FALSE);
+			for(int i = 0; i < n; i++)
+				losexp("life drainage", FALSE, FALSE, FALSE);
 			dlife -= *hpmax(mdef);
 		}
 		else {
 			dlife = *hpmax(mdef);
-			*hpmax(mdef) -= min_ints(rnd(hd_size(mdef->data)), *hpmax(mdef));
-			if (*hpmax(mdef) == 0 || mlev(mdef) == 0) {
-				*hp(mdef) = 1;
-				*hpmax(mdef) = 1;
+			for(int i = 0; i < n; i++){
+				*hpmax(mdef) -= min_ints(rnd(hd_size(mdef->data)), *hpmax(mdef));
+				if (*hpmax(mdef) == 0 || mlev(mdef) == 0) {
+					*hp(mdef) = 1;
+					*hpmax(mdef) = 1;
+				}
+				if (mdef->m_lev > 0)
+					mdef->m_lev--;
+				else
+					*truedmgptr += *hpmax(mdef);
 			}
-			if (mdef->m_lev > 0)
-				mdef->m_lev--;
-			else
-				*truedmgptr += *hpmax(mdef);
 			dlife -= *hpmax(mdef);
 		}
 

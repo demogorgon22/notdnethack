@@ -738,6 +738,9 @@ int mkflags;
 		otmp->ovar1_alt_mat = otmp->obj_material;
 		set_material_gm(otmp, mat_primary);
 	}
+	else if(otmp->otyp == TOOTH){
+		otmp->ovar1_tooth_type = rnd(MAX_TOOTH);
+	}
 	
 	set_object_color(otmp);
 	

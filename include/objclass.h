@@ -235,7 +235,11 @@ struct objclass {
 #define ETRAIT_BRACED			0x00010000L
 
 #define wielder_size(mon) ((mon) == &youmonst ? youracedata->msize : (mon)->data->msize)
-#define CHECK_ETRAIT(obj, mon, trait) (( (objects[(obj)->otyp].expert_traits&trait && (obj)->objsize == wielder_size(mon) && (trait == ETRAIT_PENETRATE_ARMOR || !is_lightsaber(obj) || litsaber(obj)) && !((mon) == &youmonst && objects[(obj)->otyp].oc_skill == P_LANCE && !(u.usteed || centauroid(youracedata) || animaloid(youracedata)))) \
+#define CHECK_ETRAIT(obj, mon, trait) (( (objects[(obj)->otyp].expert_traits&trait && (obj)->objsize == wielder_size(mon) \
+											&& (trait == ETRAIT_PENETRATE_ARMOR || !is_lightsaber(obj) || litsaber(obj)) \
+											&& (trait == ETRAIT_FOCUS_FIRE || (obj)->otyp != TOOTH || !((obj)->o_e_trait&ETRAIT_FOCUS_FIRE)) \
+											&& !((mon) == &youmonst && objects[(obj)->otyp].oc_skill == P_LANCE && !(u.usteed || centauroid(youracedata) || animaloid(youracedata))) \
+										) \
 										|| (trait == ETRAIT_QUICK && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD))\
 										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
 										|| ((obj)->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits&trait)\
