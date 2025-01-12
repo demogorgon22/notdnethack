@@ -3377,6 +3377,12 @@ struct monst *owner;
 	struct obj *obj_original = obj;
 	boolean obj_destroyed = FALSE;
 	int is_lethe = lethe;
+	if(owner && ProtectItems(owner) &&
+		(obj->oclass == POTION_CLASS
+		 || obj->oclass == SCROLL_CLASS
+		 || obj->oclass == WAND_CLASS
+	))
+		return 0;
 	if(owner == &youmonst){
 		if(Waterproof) {
 			return 0;
