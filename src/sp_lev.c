@@ -2258,6 +2258,7 @@ default_case:
 	    /* contents */
 	    case 1:
 		if (!container) {
+			pline("%s", xname(otmp));
 		    impossible("create_object: no container");
 		    break;
 		}
