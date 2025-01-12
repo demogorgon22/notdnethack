@@ -403,6 +403,80 @@ get_blood_smithing_x(int oprop, struct obj **crystal, int *spellnum)
 }
 
 void
+expert_undead_hunter_skill()
+{
+	int count = 0;
+	int skill;
+	for(skill = P_FIRST_WEAPON; skill <= P_LAST_WEAPON; skill++){
+		if(OLD_P_MAX_SKILL(skill) == P_SKILLED)
+			count++;
+	}
+	if(!count)
+		return; //Apparently upgraded all skills to expert via other means
+	count = rn2(count);
+	for(skill = P_FIRST_WEAPON; skill <= P_LAST_WEAPON; skill++){
+		if(OLD_P_MAX_SKILL(skill) == P_SKILLED){
+			if(count) count--;
+			else {
+				expert_weapon_skill(skill);
+				if(skill == P_DAGGER){
+					static const int complements[] = {P_SHORT_SWORD, P_SABER};
+					expert_weapon_skill(ROLL_FROM(complements));
+				}
+				else if(skill == P_SHORT_SWORD){
+					static const int complements[] = {P_DAGGER, P_HAMMER};
+					expert_weapon_skill(ROLL_FROM(complements));
+				}
+				else if(skill == P_TWO_HANDED_SWORD){
+					expert_weapon_skill(P_LONG_SWORD);
+				}
+				else if(skill == P_SCIMITAR){
+					expert_weapon_skill(P_BOW);
+				}
+				else if(skill == P_SABER){
+					if(rn2(2))
+						expert_weapon_skill(P_DAGGER);
+				}
+				else if(skill == P_HAMMER){
+					expert_weapon_skill(P_SHORT_SWORD);
+				}
+				else if(skill == P_SPEAR){
+					expert_weapon_skill(P_HARVEST);
+				}
+				else if(skill == P_BOW){
+					expert_weapon_skill(P_SCIMITAR);
+				}
+				else if(skill == P_WHIP){
+					expert_weapon_skill(P_LONG_SWORD);
+				}
+				else if(skill == P_HARVEST){
+					if(rn2(2))
+						expert_weapon_skill(P_SPEAR);
+				}
+				else if(skill == P_CLUB){
+					if(rn2(2))
+						expert_weapon_skill(P_FLAIL);
+				}
+				else if(skill == P_FLAIL){
+					expert_weapon_skill(P_CLUB);
+				}
+				else if(skill == P_MACE){
+					if(rn2(2))
+						expert_weapon_skill(P_PICK_AXE);
+				}
+				else if(skill == P_PICK_AXE){
+					if(rn2(2))
+						expert_weapon_skill(P_MACE);
+					else
+						expert_weapon_skill(P_SHORT_SWORD);
+				}
+				return;
+			}
+		}
+	}
+}
+
+void
 smithing_object(struct obj *obj)
 {
 	winid tmpwin;
@@ -620,9 +694,14 @@ smithing_object(struct obj *obj)
 							if(crystal->spe == 2 && OLD_P_MAX_SKILL(P_SMITHING) < P_SKILLED){
 								pline("The knowledge from the crystal sinks into your subconscious.");
 								skilled_weapon_skill(P_SMITHING);
+								expert_undead_hunter_skill();
 							}
 							else if(crystal->spe > 2 && OLD_P_MAX_SKILL(P_SMITHING) < P_EXPERT){
 								pline("The knowledge from the crystal sinks into your subconscious.");
+								if(OLD_P_MAX_SKILL(P_SMITHING) < P_SKILLED)
+									expert_undead_hunter_skill();
+								expert_undead_hunter_skill();
+								expert_undead_hunter_skill();
 								expert_weapon_skill(P_SMITHING);
 							}
 						}
