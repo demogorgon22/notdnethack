@@ -16498,6 +16498,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 				/* useup() will be called later */
 			}
+			if(lethaldamage && u.usteed){
+				grow_up(u.usteed, mdef);
+			}
 		}
 		else {
 			impossible("Monsters jousting? Someone forgot to fully implement this...");
