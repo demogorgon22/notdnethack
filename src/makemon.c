@@ -14643,14 +14643,6 @@ int faction;
 				pline("Lamashtu, the Demon Queen, is near!");
 				com_pager(201);
 			}
-			else if(mndx == PM_DURIN_S_BANE){
-				mtmp->mhpmax = 3*mtmp->mhpmax;
-				mtmp->mhp = mtmp->mhpmax;
-			}
-			else if(mndx == PM_LUNGORTHIN){
-				mtmp->mhpmax = 3*mtmp->mhpmax;
-				mtmp->mhp = mtmp->mhpmax;
-			}
 			else if(mndx == PM_PALE_NIGHT){
 				mtmp->mvar_paleWarning = 0;
 			}
@@ -16475,8 +16467,6 @@ struct monst *mtmp, *victim;
 			ptr->mtyp == PM_KETO ||
 			ptr->mtyp == PM_DRACAE_ELADRIN ||
 			ptr->mtyp == PM_MOTHERING_MASS ||
-			ptr->mtyp == PM_DURIN_S_BANE ||
-			ptr->mtyp == PM_LUNGORTHIN ||
 			ptr->mtyp == PM_BOLG ||
 			ptr->mtyp == PM_PRIEST_OF_GHAUNADAUR ||
 			ptr->mtyp == PM_SHOGGOTH
