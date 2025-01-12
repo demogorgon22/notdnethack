@@ -341,7 +341,6 @@ struct monst *magr;
 	if (   oartifact == ART_YORSHKA_S_SPEAR
 		|| oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD
 		|| oartifact == ART_INFINITY_S_MIRRORED_ARC
-		|| oartifact == ART_FROST_BRAND
 		|| (obj && otyp == KAMEREL_VAJRA && !litsaber(obj))
 		){
 		attackmask |= WHACK;
@@ -398,6 +397,13 @@ struct monst *magr;
 		|| (obj && check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 24)
 		){
 		attackmask |= EXPLOSION;
+	}
+	if(oartifact == ART_FROST_BRAND){
+		if(!(attackmask&WHACK))
+			attackmask |= WHACK;
+		else if(!(attackmask&PIERCE))
+			attackmask |= PIERCE;
+		else attackmask |= SLASH;
 	}
 	/* if it's not any of the above, we're just smacking things with it */
 	if (!attackmask)
