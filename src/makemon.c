@@ -1030,15 +1030,19 @@ boolean greatequip;
 	}
 	else if(mm == PM_STRANGER){
 		otmp = mongets(mtmp, SHEPHERD_S_CROOK, MKOBJ_NOINIT);
-		otmp->spe = 5;
-		otmp->obj_color = CLR_YELLOW;
+		if(otmp){
+			otmp->spe = 5;
+			otmp->obj_color = CLR_YELLOW;
+		}
 	}
 	else if(mm == PM_SUZERAIN){
 		otmp = mongets(mtmp, SHEPHERD_S_CROOK, MKOBJ_NOINIT);
-		otmp->spe = 5;
-		set_material_gm(otmp, MINERAL);
-		set_submat(otmp, SUBMAT_MARBLE);
-		otmp->obj_color = CLR_YELLOW;
+		if(otmp){
+			otmp->spe = 5;
+			set_material_gm(otmp, MINERAL);
+			set_submat(otmp, SUBMAT_MARBLE);
+			otmp->obj_color = CLR_YELLOW;
+		}
 	}
 	else if(mm == PM_SILENT_ONE){
 		otmp = mksobj(QUARTERSTAFF, mkobjflags);
@@ -1306,19 +1310,24 @@ boolean greatequip;
 	}
 	else if(ptr->mtyp == PM_PARASITIZED_KNIGHT){
 		otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, GAUNTLETS, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, KITE_SHIELD, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 3+rn2(5));
 	}
 	else if (ptr->mtyp == PM_CROESUS) {
 		otmp = mksobj(TWO_HANDED_SWORD, mkobjflags);
