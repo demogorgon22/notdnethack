@@ -380,7 +380,7 @@ register struct monst *mtmp;
 	    case PM_DEEP_DRAGON:
 		/* Make dragon scales.  This assumes that the order of the */
 		/* dragons is the same as the order of the scales.	   */
-		if (!rn2(mtmp->mrevived ? 20 : 3)) {
+		if (!rn2(Role_if(PM_CAVEMAN) ? (mtmp->mrevived ? 14 : 2) : (mtmp->mrevived ? 20 : 3))) {
 		    num = GRAY_DRAGON_SCALES + monsndx(mdat) - PM_GRAY_DRAGON;
 		    obj = mksobj_at(num, x, y, MKOBJ_NOINIT);
 		    obj->spe = 0;
@@ -396,7 +396,7 @@ register struct monst *mtmp;
 			obj = oname(obj, artiname(ART_DRAGON_PLATE));
 		goto default_1;
 	    case PM_MANTICORE:
-		if (mtmp->mrevived ? !rn2(6) : TRUE) {
+		if (mtmp->mrevived ? (Role_if(PM_CAVEMAN) ? rn2(2) : !rn2(6)) : TRUE) {
 			obj = mksobj_at(SPIKE, x, y, NO_MKOBJ_FLAGS);
 			set_material_gm(obj, BONE);
 			obj->blessed = 0;
@@ -407,7 +407,7 @@ register struct monst *mtmp;
 		}
 		goto default_1;
 	    case PM_SON_OF_TYPHON:
-		if (!rn2(mtmp->mrevived ? 20 : 3)) {
+		if (!rn2(Role_if(PM_CAVEMAN) ? (mtmp->mrevived ? 14 : 2) : (mtmp->mrevived ? 20 : 3))) {
 			obj = mksobj_at(LEO_NEMAEUS_HIDE, x, y, MKOBJ_NOINIT);
 		    obj->spe = 0;
 		    obj->cursed = obj->blessed = FALSE;
@@ -445,7 +445,7 @@ register struct monst *mtmp;
 		}
 		goto default_1;
 	    case PM_DIRE_SHEEP:
-		if (!mtmp->mrevived && find_pcloth() > 0 && !rn2(20)) {
+		if (!mtmp->mrevived && find_pcloth() > 0 && Role_if(PM_CAVEMAN) ? !rn2(3) : !rn2(20)) {
 			obj = mksobj_at(find_pcloth(), x, y, MKOBJ_NOINIT);
 		    obj->spe = 0;
 		    obj->cursed = obj->blessed = FALSE;
@@ -539,7 +539,7 @@ register struct monst *mtmp;
 			}
 		goto default_1;
 		case PM_SCORPION:
-			if (!rn2(20) && !(
+			if (!rn2(Role_if(PM_CAVEMAN) ? 3 : 20) && !(
 				(Role_if(PM_RANGER) && In_quest(&u.uz)) ||
 				(art_already_exists(ART_SCORPION_CARAPACE)) ||
 				(mtmp->mrevived && rn2(20))
@@ -621,11 +621,11 @@ register struct monst *mtmp;
 			obj = mksobj_at(CLOCKWORK_COMPONENT, x, y, NO_MKOBJ_FLAGS);
 			obj->quan = d(1,4);
 			obj->owt = weight(obj);
-			if(!mtmp->mrevived && !rn2(20)){
+			if(!mtmp->mrevived && !rn2(Role_if(PM_CAVEMAN) ? 9 : 20)){
 				obj = mksobj_at(UPGRADE_KIT, x, y, NO_MKOBJ_FLAGS);
-			} else if(!mtmp->mrevived && !rn2(19)){
+			} else if(!mtmp->mrevived && !rn2(Role_if(PM_CAVEMAN) ? 8 : 19)){
 				obj = mksobj_at(TINNING_KIT, x, y, NO_MKOBJ_FLAGS);
-			} else if(!mtmp->mrevived && !rn2(10)){
+			} else if(!mtmp->mrevived && !rn2(Role_if(PM_CAVEMAN) ? 3 : 10)){
 				obj = mksobj_at(CAN_OF_GREASE, x, y, NO_MKOBJ_FLAGS);
 			}
 			rem_mx(mtmp, MX_ENAM);
@@ -667,9 +667,9 @@ register struct monst *mtmp;
 			obj = mksobj_at(CLOCKWORK_COMPONENT, x, y, NO_MKOBJ_FLAGS);
 			obj->quan = d(3,4);
 			obj->owt = weight(obj);
-			if(!rn2(20)){
+			if(!rn2(Role_if(PM_CAVEMAN) ? 3 : 20)){
 				obj = mksobj_at(TINNING_KIT, x, y, NO_MKOBJ_FLAGS);
-			} else if(!rn2(10)){
+			} else if(!rn2(Role_if(PM_CAVEMAN) ? 2 : 10)){
 				obj = mksobj_at(CAN_OF_GREASE, x, y, NO_MKOBJ_FLAGS);
 			}
 			rem_mx(mtmp, MX_ENAM);
@@ -678,11 +678,11 @@ register struct monst *mtmp;
 			obj = mksobj_at(CLOCKWORK_COMPONENT, x, y, NO_MKOBJ_FLAGS);
 			obj->quan = d(3,4);
 			obj->owt = weight(obj);
-			if(!rn2(20)){
+			if(!rn2(Role_if(PM_CAVEMAN) ? 9 : 20)){
 				obj = mksobj_at(UPGRADE_KIT, x, y, NO_MKOBJ_FLAGS);
-			} else if(!rn2(19)){
+			} else if(!rn2(Role_if(PM_CAVEMAN) ? 8 : 19)){
 				obj = mksobj_at(TINNING_KIT, x, y, NO_MKOBJ_FLAGS);
-			} else if(!rn2(10)){
+			} else if(!rn2(Role_if(PM_CAVEMAN) ? 3 : 10)){
 				obj = mksobj_at(CAN_OF_GREASE, x, y, NO_MKOBJ_FLAGS);
 			}
 			rem_mx(mtmp, MX_ENAM);
@@ -746,7 +746,7 @@ register struct monst *mtmp;
 			obj->quan = d(2,4);
 			obj->owt = weight(obj);
 			rem_mx(mtmp, MX_ENAM);
-			if(!rn2(20))
+			if(!rn2(Role_if(PM_CAVEMAN) ? 3 : 20))
 				obj = mksobj_at(UPGRADE_KIT, x, y, NO_MKOBJ_FLAGS);
 			obj = mksobj_at(APHANACTONAN_RECORD, x, y, NO_MKOBJ_FLAGS);
 		break;
