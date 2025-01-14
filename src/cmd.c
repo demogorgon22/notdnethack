@@ -1004,7 +1004,7 @@ psionic_pulse(){
 	projectile(&youmonst, otmp, (void *)0, HMON_FIRED, u.ux, u.uy, u.dx, u.dy, u.dz, BOLT_LIM, TRUE, FALSE, FALSE);
 	nomul(0, NULL);
 	flags.botl = 1;
-	u.uen -= 5;
+	losepw(5);
 	return MOVE_STANDARD;
 }
 
@@ -1027,7 +1027,7 @@ dotelekinesis(){
 	}
 	if(cancelled < 0) return MOVE_CANCELLED;
 	flags.botl = 1;
-	u.uen -= 15;
+	losepw(15);
 	You("attempt to lift %s from the floor with your mind!",level.objects[cc.x][cc.y]->quan>1?"some items":"an item");
 	pickup_object(level.objects[cc.x][cc.y], level.objects[cc.x][cc.y]->quan, TRUE);
 	return MOVE_STANDARD;
@@ -1057,7 +1057,7 @@ psionic_craze(){
 		return MOVE_CANCELLED;
 	if(mon && !DEADMONSTER(mon) && !mindless_mon(mon) && !resist(mon, '\0', 0, TELL)) {
 		/*cost pw*/
-		u.uen -= 5;
+		losepw(5);
 		if(u.ulevel >= mon->m_lev-5){
 			mon->mconf = 1;
 			if(u.ulevel >= mon->m_lev+5){
@@ -1071,10 +1071,84 @@ psionic_craze(){
 
 }
 
+#define LEP_DET_GOLD 1
+#define LEP_WARP_GOLD 2
+
 STATIC_OVL int
 do_lepre_menu(){
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	anything any;
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	Sprintf(buf,	"Leprechaun powers");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	Sprintf(buf,	"Detect Gold");
+	any.a_int = LEP_DET_GOLD;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'a', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	Sprintf(buf,	"Warp to Gold");
+	any.a_int = LEP_WARP_GOLD;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		'b', 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	end_menu(tmpwin,	"Use a leprechaun power:");
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+		
+	if(n <= 0)
+		return MOVE_CANCELLED;
+	switch(selected[0].item.a_int) {
+		case LEP_DET_GOLD:{
+			if(u.uen < 5){
+				You("lack the energy.");
+				return MOVE_CANCELLED;
+			}
+			losepw(5);
+			struct obj* otmp;
+			otmp = mksobj(SCR_GOLD_DETECTION, NO_MKOBJ_FLAGS);
+			otmp->quan = 20L;
+			otmp->blessed = TRUE;
+			seffects(otmp);
+			obfree(otmp,(struct obj *)0);
+			break;
+			}
+		case LEP_WARP_GOLD:{
+			if(u.uen < 15){
+				You("lack the energy.");
+				return MOVE_CANCELLED;
+			}
+			losepw(15);
+			coord cc;
+			int cancelled;
+			struct monst *mon;
+			cc.x = u.ux;
+			cc.y = u.uy;
+			pline("To what gold do you wish to travel?");
+			cancelled = getpos(&cc, TRUE, "the desired target");
+			while( !(((mon = m_at(cc.x,cc.y)) && mon->mgold && tt_findadjacent(&cc, mon)) || g_at(cc.x,cc.y)) && cancelled >= 0){
+				if(!mon || !(sensemon(mon) || (mon_visible(mon) && cansee(mon->mx,mon->my)) )) You("don't sense any gold there.");
+				else if (!tt_findadjacent(&cc, mon)) pline("Something blocks your way!");
+				cancelled = getpos(&cc, TRUE, "the desired gold");
+			}
+			if(cancelled < 0) return MOVE_CANCELLED; /*abort*/
+			teleds(cc.x, cc.y, FALSE);
+			break;
+		}
+		default:
+			impossible("Unhandled Leprechaun Power?");
+			break;
+	}
 	return MOVE_STANDARD;
 }
+
+#undef LEP_DET_GOLD
+#undef LEP_WARP_GOLD 
 
 
 STATIC_OVL int
@@ -1306,7 +1380,7 @@ doMabilForm()
 	destroy_nhwindow(tmpwin);
 		
 	if(n <= 0){
-		return 0;
+		return MOVE_CANCELLED;
 	} else {
 		if(u.umabil & selected[0].item.a_int) 
 			u.umabil &= ~(selected[0].item.a_int);
@@ -1319,7 +1393,7 @@ doMabilForm()
 			u.umabil &= ~ABSORPTIVE_PUNCH;
 		}
 		
-		return 0;
+		return MOVE_INSTANT;
 	}
 
 }
