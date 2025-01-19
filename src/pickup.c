@@ -1624,8 +1624,14 @@ boolean noit;
 		return use_demon_claw(cobj);
 	}
     if (cobj->olocked) {
-	pline("Hmmm, %s seems to be locked.", noit ? the(xname(cobj)) : "it");
-	return MOVE_CANCELLED;
+		pline("Hmmm, %s seems to be locked.", noit ? the(xname(cobj)) : "it");
+		struct obj *unlocktool;
+		if (flags.autounlock && (unlocktool = autokey(TRUE)) != 0) {
+			if (cobj->otyp == BOX || cobj->otyp == CHEST) {
+				/* pass ox and oy to avoid direction prompt */
+				return (pick_lock(unlocktool, cobj->ox, cobj->oy, cobj) != 0);
+			}
+		} else { return MOVE_CANCELLED; }
     }
     if (cobj->otyp == BAG_OF_TRICKS) {
 	int tmp;
@@ -1744,8 +1750,14 @@ lootcont:
 					any = TRUE;
 
 					if (cobj->olocked) {
+						struct obj *unlocktool;
 						pline("Hmmm, it seems to be locked.");
-						continue;
+						if (flags.autounlock && (unlocktool = autokey(TRUE)) != 0) {
+							if (cobj->otyp == BOX || cobj->otyp == CHEST) {
+								/* pass ox and oy to avoid direction prompt */
+								return (pick_lock(unlocktool, cobj->ox, cobj->oy, cobj) != 0);
+							}
+						} else { continue; }
 					}
 					if (cobj->otyp == BAG_OF_TRICKS) {
 						int tmp;

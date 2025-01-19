@@ -7,6 +7,8 @@ autoautoopen       walking into a door attempts to open it        [TRUE]
 autopickup     automatically pick up objects you move over        [TRUE]
 autoquiver     when firing with an empty quiver, select some
                suitable inventory weapon to fill the quiver       [FALSE]
+autounlock     when opening a locked door or looting a locked
+               container while carrying a key, offer to use it    [TRUE]
 BIOS           allow the use of IBM ROM BIOS calls                [FALSE]
 cmdassist      give help for errors on direction & other commands [TRUE]
 confirm        ask before hitting tame or peaceful monsters       [TRUE]
