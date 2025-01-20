@@ -2327,7 +2327,7 @@ check_msgod(mapseen *mptr, int godnum)
 		impossible("Attempting to check god number %d in mapseen?", godnum);
 		return FALSE;
 	}
-	return !!(mptr->feat.msgods[(godnum-1)/32] & (0x1L << ((godnum-1)%32)));
+	return !!(mptr->feat.msgods[(godnum-1)/16] & (0x1L << ((godnum-1)%16)));
 }
 
 void
@@ -2336,7 +2336,7 @@ add_msgod(mapseen *mptr, int godnum)
 	if(godnum >= MAX_GOD || godnum < 1){
 		impossible("Attempting to set god number %d in mapseen?", godnum);
 	}
-	mptr->feat.msgods[(godnum-1)/32] |= (0x1L << ((godnum-1)%32));
+	mptr->feat.msgods[(godnum-1)/16] |= (0x1L << ((godnum-1)%16));
 }
 
 int

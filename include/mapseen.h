@@ -48,8 +48,8 @@ typedef struct mapseen_feat {
 
 	Bitfield(forgot, 1); /* player has forgotten about this level? */
 
-#define MSGODS_ARRAY_SIZE (MAX_GOD/8+1)
-	unsigned int msgods[MSGODS_ARRAY_SIZE];
+#define MSGODS_ARRAY_SIZE (MAX_GOD/16+1)
+	unsigned short msgods[MSGODS_ARRAY_SIZE];
 } mapseen_feat;
 
 /* for mapseen->rooms */
