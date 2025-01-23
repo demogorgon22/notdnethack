@@ -1081,6 +1081,79 @@ smithing_object(struct obj *obj)
 }
 
 void
+reshape_brand(struct obj *obj)
+{
+	winid tmpwin;
+	anything any;
+	any.a_void = 0;         /* zero out all bits */
+	menu_item *selected;
+	int otyp = -1;
+	int n, i, b;
+	char ch = 'a';
+	char buffer[BUFSZ] = {0};
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	for(i = 0; i < NUM_OBJECTS; i++){
+		if(!(objects[i].oc_class == ARMOR_CLASS
+			 || objects[i].oc_class == TOOL_CLASS
+			 || objects[i].oc_class == WEAPON_CLASS
+			 || objects[i].oc_class == RING_CLASS
+		))
+			continue;
+		if(!(objects[i].oc_name_known
+			|| objects[i].oc_class == RING_CLASS
+		))
+			continue;
+		if(objects[i].oc_class == WEAPON_CLASS || (objects[i].oc_class == TOOL_CLASS && objects[i].oc_skill != P_NONE)){
+			if(P_SKILL(objects[i].oc_skill < 0 ? -1*objects[i].oc_skill : objects[i].oc_skill) < P_SKILLED || !has_object_type(invent, i))
+				continue;
+		}
+		if(!brandtype(i))
+			continue;
+
+		//Add to menu
+		any.a_int = i;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 obj_descr[i].oc_name, MENU_UNSELECTED);
+		if(ch == 'z'){
+			ch = 'A';
+		}
+		else if(ch == 'Z'){
+			ch = 'a';
+		}
+		else ch++;
+	}
+	end_menu(tmpwin, "Shapes Known:");
+	n = select_menu(tmpwin, PICK_ONE, &selected);
+	destroy_nhwindow(tmpwin);
+	if(n <= 0){
+		return;
+	}
+	int picked = selected[0].item.a_int;
+	free(selected);
+	
+	obj->otyp = picked;
+	obj->oclass = objects[picked].oc_class;
+	if(objects[picked].oc_class == ARMOR_CLASS){
+		if(yn("Size it to a particular creature?")=='y')
+			smith_resizeArmor(&youmonst, obj);
+		else {
+			//sized for you
+			obj->objsize = youracedata->msize;
+			set_obj_shape(obj, youracedata->mflagsb);
+		}
+	}
+	if(picked == CANE || picked == WHIP_SAW){
+		obj->ovar1_alt_mat = obj->obj_material;
+	}
+	obj->oeroded = 0;
+	obj->oeroded2 = 0;
+	obj->oeroded3 = 0;
+	fix_object(obj);
+}
+
+void
 dipforge(struct obj *obj)
 {
 	if (Levitation) {
@@ -1093,6 +1166,14 @@ dipforge(struct obj *obj)
 	
 	boolean forgeable = (u.ublood_smithing && (!is_flammable(obj) || obj->oerodeproof)) || is_metallic(obj);
 
+	if(obj->oartifact == ART_FIRE_BRAND && (P_RESTRICTED(P_SMITHING) || yn("Reshape Fire Brand?") == 'y')){
+		if(obj->owornmask&W_ARMOR){
+			You("can't reshape fire brand while wearing it.");
+			return;
+		}
+		reshape_brand(obj);
+		return;
+	}
 	/* Dipping something you're still wearing into a forge filled with
 	 * lava, probably not the smartest thing to do. This is gonna hurt.
 	 * Non-metallic objects are handled by lava_damage().
@@ -1445,6 +1526,14 @@ register struct obj *obj;
 		return;
 	}
 
+	if(obj->oartifact == ART_FROST_BRAND){
+		if(obj->owornmask&W_ARMOR){
+			You("can't reshape frost brand while wearing it.");
+			return;
+		}
+		reshape_brand(obj);
+		return;
+	}
 	/* Don't grant Excalibur when there's more than one object.  */
 	/* (quantity could be > 1 if merged daggers got polymorphed) */
 	if (obj->otyp == LONG_SWORD && obj->quan == 1L
