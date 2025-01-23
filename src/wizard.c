@@ -738,7 +738,7 @@ nasty(mcast)
 
     if(!rn2(10) && Inhell) {
 		/* creatures made this way are full monsters gated in, not summons tied to mcast */
-		msummon(mcast, &mons[PM_WIZARD_OF_YENDOR]);	/* summons like WoY */
+		msummon(mcast, (struct permonst *) 0);	/* summons like WoY */
 		count++;
     } else {
 	tmp = (u.ulevel > 3) ? u.ulevel/3 : 1; /* just in case -- rph */
