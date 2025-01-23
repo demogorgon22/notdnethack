@@ -4345,7 +4345,7 @@ use_smithing_hammer(struct obj *obj)
 				continue;
 			if(i != CHURCH_HAMMER && i != BOX && !metallic_material(objects[i].oc_material))
 				continue;
-			if(objects[i].oc_class == WEAPON_CLASS){
+			if(objects[i].oc_class == WEAPON_CLASS || (objects[i].oc_class == TOOL_CLASS && objects[i].oc_skill != P_NONE)){
 				if(P_SKILL(objects[i].oc_skill < 0 ? -1*objects[i].oc_skill : objects[i].oc_skill) < P_SKILLED && (P_SKILL(P_SMITHING) < P_SKILLED || !has_object_type(invent, i)))
 					continue;
 			}
