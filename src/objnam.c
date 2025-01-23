@@ -1842,6 +1842,24 @@ boolean getting_obj_base_desc;
 		else if(obj->spe == 4)
 			actualn = "columnar mass";
 	}
+	if(obj->otyp == CRYSTAL
+		&& obj->obj_material == CHITIN
+		&& check_oprop(obj, OPROP_GOATW)
+	){
+		actualn = "misty seed";
+	}
+	if(obj->otyp == CRYSTAL
+		&& obj->obj_material == SILVER
+		&& check_oprop(obj, OPROP_SFLMW)
+	){
+		actualn = "mirror shard";
+	}
+	if(obj->otyp == CRYSTAL
+		&& obj->obj_material == FIRMAMENT
+		&& check_oprop(obj, OPROP_SOTHW)
+	){
+		actualn = "sky fragment";
+	}
 	
 	buf[0] = '\0';
 	/*

@@ -3499,7 +3499,8 @@ int new_cap;
     if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < new_cap) {
 		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
 		OLD_P_MAX_SKILL(skill) = new_cap;
-		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
+		P_ADVANCE(skill) = max(practice_needed_to_advance(OLD_P_SKILL(skill)-1), P_ADVANCE(skill));
+		P_ADVANCE(skill) = min(practice_needed_to_advance(OLD_P_SKILL(skill)), P_ADVANCE(skill));
     }
 }
 
