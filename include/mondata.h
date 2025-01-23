@@ -230,9 +230,7 @@
 						 ((ptr)->mtyp == PM_GHOUL_QUEEN_NITOCRIS) || \
 						 ((ptr)->mtyp == PM_PHARAOH) \
 						)
-#define skeleton_innards(ptr)	(((ptr)->mtyp == PM_SKELETON) || \
-						 ((ptr)->mtyp == PM_SKELETAL_PIRATE) \
-						)
+#define skeleton_innards(ptr)	(((ptr)->mflagsb&MB_SKELETAL) != 0)
 #define no_innards(ptr)	((ptr)->mlet == S_VORTEX || \
 						 (ptr)->mlet == S_LIGHT || \
 						 (ptr)->mlet == S_ELEMENTAL || \

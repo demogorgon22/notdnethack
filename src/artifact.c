@@ -10627,7 +10627,7 @@ arti_invoke(obj)
 			
 			struct monst *mtmp = makemon(pm, u.ux, u.uy, MM_EDOG|MM_ADJACENTOK);
 			initedog(mtmp);
-			if (mtmp->mtyp != PM_SKELETON)
+			if (!skeleton_innards(mtmp->data))
 				set_template(mtmp, SKELIFIED);
 
 			if (onfloor) useupf(corpse, 1);
