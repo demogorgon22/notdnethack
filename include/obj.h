@@ -892,9 +892,10 @@ struct obj {
 						|| (o)->otyp == DEVIL_FIST \
 						)
 
-#define is_lightsaber(otmp) ((otmp)->otyp == LIGHTSABER || \
+#define is_lightsaber(otmp) (is_lasersword(otmp) || \
 							 (otmp)->otyp == KAMEREL_VAJRA || \
-							 (otmp)->otyp == ROD_OF_FORCE || \
+							 (otmp)->otyp == ROD_OF_FORCE)
+#define is_lasersword(otmp) ((otmp)->otyp == LIGHTSABER || \
 							 (otmp)->otyp == BEAMSWORD || \
 							 (otmp)->otyp == DOUBLE_LIGHTSABER)
 #define is_gemable_lightsaber(otmp) (((otmp)->otyp == LIGHTSABER\
@@ -1496,7 +1497,9 @@ struct obj {
 
 #define higher_depth(armdepth, depth)	(armdepth == depth || (\
 		(depth&(W_ARMC|W_GLYPH)) ? FALSE :\
-		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_BELT|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
+		(depth&(W_BELT)) ? !!(armdepth&(W_ARMC|W_GLYPH)) :\
+		(depth&(W_DRESS_DEPTH)) ? !!(armdepth&(W_ARMC|W_GLYPH|W_BELT)) :\
+		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
 		(depth&(W_ARMH|W_ARMG|W_ARMF|W_ARM|W_RINGL|W_RINGR|W_TOOL)) ? (armdepth != W_ARMU) :\
 		(depth&(W_ARMU|W_SKIN|W_UPGRADE)) ? TRUE :\
 		FALSE))

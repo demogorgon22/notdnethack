@@ -2362,7 +2362,6 @@ struct obj *obj;
 {
     return (obj && (
 		(obj->oartifact && arti_attack_prop(obj, ARTA_PHASING)) ||
-		(is_lightsaber(obj) && litsaber(obj)) ||
 		(check_oprop(obj, OPROP_ELFLW) && u.uinsight >= 22) ||
 		(check_oprop(obj, OPROP_PHSEW)) ||
 		(check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 40) ||
@@ -7408,7 +7407,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				else if (otmp->oartifact == ART_THORNS) i = rnd(3);
 				else i = 1;
 				for (; i>0; i--){
-					if (obj->spe > -1 * objects[(obj)->otyp].a_ac){
+					if ((obj->oclass == ARMOR_CLASS || obj->oclass == BELT_CLASS) && obj->spe > -1 * a_acdr(objects[(obj)->otyp])){
 						damage_item(obj);
 						if (!i && vis) {
 							pline("%s %s less effective.",

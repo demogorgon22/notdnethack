@@ -669,6 +669,8 @@ E int FDECL(destroy_arm, (struct obj *));
 E int FDECL(destroy_marm, (struct monst *, struct obj *));
 E int FDECL(claws_destroy_arm, (struct obj *));
 E int FDECL(claws_destroy_marm, (struct monst *, struct obj *));
+E int FDECL(saber_destroys_arm, (struct obj *));
+E int FDECL(saber_destroys_marm, (struct monst *, struct obj *));
 E int FDECL(teleport_arm, (struct obj *, struct monst *));
 E int FDECL(teleport_steal_arm, (struct monst *, struct obj *));
 E int FDECL(tent_destroy_arm, (struct obj *));
@@ -3487,6 +3489,7 @@ E int NDECL(heal_mlevel_bonus);
 E int NDECL(heal_vilya);
 E int NDECL(lev_lomya);
 E int NDECL(en_nenya);
+E void FDECL(saber_damage_slot, (struct monst *, struct obj *, int, boolean, boolean, boolean *));
 
 /* ### write.c ### */
 

@@ -2811,4 +2811,114 @@ def_mountedCombat()
 	return bm;
 }
 
+long
+armor_depth(struct obj *otmp, int slot)
+{
+	return (slot == LOWER_TORSO_DR && is_dress(otmp->otyp)) ? W_DRESS_DEPTH : otmp->owornmask;
+}
+
+boolean
+default_coverage(int slot, long wornmask)
+{
+	switch(slot){
+		case HEAD_DR:
+			return !!(wornmask&W_ARMH);
+		break;
+		case UPPER_TORSO_DR:
+			return !!(wornmask&(W_ARM|W_ARMC|W_ARMU));
+		break;
+		case LOWER_TORSO_DR:
+			return !!(wornmask&(W_ARM|W_ARMC|W_BELT));
+		break;
+		case ARM_DR:
+			return !!(wornmask&W_ARMG);
+		break;
+		case LEG_DR:
+			return !!(wornmask&(W_ARMF|W_ARMC));
+		break;
+	}
+	return FALSE;
+}
+
+long
+next_armor_depth(long depth)
+{
+	if(depth&W_ARMS)
+		return W_ARMC;
+	if(depth&W_ARMC)
+		return W_BELT;
+	if(depth&W_BELT)
+		return W_DRESS_DEPTH;
+	if(depth&W_DRESS_DEPTH)
+		return W_ARM;
+	if(depth&W_ARM)
+		return W_ARMH;
+	if(depth&W_ARMH)
+		return W_ARMG;
+	if(depth&W_ARMG)
+		return W_ARMF;
+	if(depth&W_ARMF)
+		return W_ARMU;
+	return 0L;
+}
+
+void
+saber_damage_slot(struct monst *mdef, struct obj *saber, int slot, boolean lethal, boolean vis, boolean * messaged)
+{
+	long depth = W_ARMS;
+	struct obj *otmp, *nobj;
+	int i;
+	int limit = lethal ? 3 : rnd(3);
+	boolean youdef = mdef == &youmonst;
+	boolean immune = FALSE;
+
+	if((youdef && Preservation) || (!youdef && mon_resistance(mdef, PRESERVATION)) || check_res_engine(mdef, AD_SHRD))
+		return; //No inventory damage
+	while(depth){
+		for(otmp = youdef ? invent : mdef->minvent; otmp; otmp = nobj){
+			nobj = otmp->nobj;
+			if(otmp->owornmask&(W_ARMOR|W_BELT) && armor_depth(otmp, slot) == depth){
+				if(otmp->owornmask != W_ARMS){
+					if(otmp->oclass == ARMOR_CLASS && !(objects[otmp->otyp].oc_dtyp & slot) && !(!objects[otmp->otyp].oc_dtyp && default_coverage(slot,otmp->owornmask)))
+						continue;
+					if(otmp->oclass != ARMOR_CLASS && !default_coverage(slot,otmp->owornmask))
+						continue;
+				}
+				if (vis) {
+					pline("%s slices %s armor!",
+						The(xname(saber)),
+						(youdef ? "your" : s_suffix(mon_nam(mdef)))
+						);
+					*messaged = TRUE;
+					vis = FALSE;
+				}
+				pline("%s is hit", The(xname(otmp)));
+				if((is_lasersword(saber) && item_has_property(otmp, REFLECTING))
+				 ||(saber->otyp == ROD_OF_FORCE && (item_has_property(otmp, ANTIMAGIC) || item_has_property(otmp, NULLMAGIC)))
+				 ||(saber->otyp == KAMEREL_VAJRA && item_has_property(otmp, SHOCK_RES))
+				)
+					immune = TRUE;
+				if(!immune) for(i = 0; i < limit; i++){
+					if ((otmp->oclass == ARMOR_CLASS || otmp->oclass == ARMOR_CLASS) && otmp->spe > -1 * a_acdr(objects[(otmp)->otyp])){
+						damage_item(otmp);
+					}
+					else if (!otmp->oartifact){
+						saber_destroys_marm(mdef, otmp);
+						break;
+					}
+				}
+				if(!lethal){
+					if(immune || rn2(3)){
+						depth = 0;
+						break;
+					}
+					if(limit > 1)
+						limit--;
+				}
+			}
+		}
+		depth = next_armor_depth(depth);
+	}
+	
+}
 /*worn.c*/

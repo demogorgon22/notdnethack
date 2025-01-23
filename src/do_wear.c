@@ -4044,6 +4044,152 @@ register struct obj *otmp;
 	return 1;
 }
 
+/* hit by destroy armor scroll/black dragon breath/monster spell */
+int
+saber_destroys_arm(atmp)
+register struct obj *atmp;
+{
+	register struct obj *otmp;
+#define DESTROY_ARM(o) ((otmp = (o)) != 0 && \
+			(!atmp || atmp == otmp) && \
+			(!obj_resists(otmp, 0, 90)))
+
+	if(Preservation)
+		return 0;
+	
+	if (DESTROY_ARM(uarmc)) {
+		if (donning(otmp)) cancel_don();
+		Your("%s is sliced to shreds!",
+		     cloak_simple_name(uarmc));
+		(void) Cloak_off();
+		useup(otmp);
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your cloak shredded!");
+			HPanicking += 1+rnd(6);
+		}
+	} else if (DESTROY_ARM(uarm)) {
+		if (donning(otmp)) cancel_don();
+		Your("armor is sliced apart and falls to the %s!",
+			surface(u.ux,u.uy));
+		(void) Armor_gone();
+		useup(otmp);
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your armor sliced apart!");
+			HPanicking += 1+rnd(6);
+		}
+#ifdef TOURIST
+	} else if (DESTROY_ARM(uarmu)) {
+		if (donning(otmp)) cancel_don();
+		Your("underclothes are sliced open!");
+		(void) Shirt_off();
+		useup(otmp);
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your underclothes sliced off!");
+			HPanicking += 1+rnd(6);
+		}
+#endif
+	} else if (DESTROY_ARM(uarmh)) {
+		if (donning(otmp)) cancel_don();
+		Your("helmet is sliced to pieces!");
+		(void) Helmet_off();
+		useup(otmp);
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your helmet destroyed!");
+			HPanicking += 1+rnd(6);
+		}
+	} else if (DESTROY_ARM(uarmg)) {
+		if (donning(otmp)) cancel_don();
+		Your("gloves are sliced open!");
+		(void) Gloves_off();
+		useup(otmp);
+		selftouch("You");
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your gloves sliced off!");
+			HPanicking += 1+rnd(6);
+		}
+	} else if (DESTROY_ARM(uarmf)) {
+		if (donning(otmp)) cancel_don();
+		Your("boots are sliced open!");
+		(void) Boots_off();
+		useup(otmp);
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your boots sliced open!");
+			HPanicking += 1+rnd(6);
+		}
+	} else if (DESTROY_ARM(uarms)) {
+		if (donning(otmp)) cancel_don();
+		Your("shield is cut in two!");
+		(void) Shield_off();
+		useup(otmp);
+		if(roll_madness(MAD_TALONS)){
+			You("panic after having your shield destroyed!");
+			HPanicking += 1+rnd(6);
+		}
+	} else {
+		return 0;		/* could not destroy anything */
+	}
+
+#undef DESTROY_ARM
+	stop_occupation();
+	return(1);
+}
+
+int
+saber_destroys_marm(mtmp, otmp)
+register struct monst *mtmp;
+register struct obj *otmp;
+{
+	/* call the player's version if need be */
+	if (mtmp == &youmonst)
+		return saber_destroys_arm(otmp);
+
+	long unwornmask;
+	if(!otmp || !mtmp)
+		return 0;
+	if(obj_resists(otmp, 0, 100))
+		return 0;
+	if(!otmp->owornmask)
+		return 0;
+	obj_extract_self(otmp);
+	if ((unwornmask = otmp->owornmask) != 0L) {
+		mtmp->misc_worn_check &= ~unwornmask;
+		if (otmp->owornmask & W_WEP){
+			setmnotwielded(mtmp,otmp);
+			MON_NOWEP(mtmp);
+		}
+		if (otmp->owornmask & W_SWAPWEP){
+			setmnotwielded(mtmp,otmp);
+			MON_NOSWEP(mtmp);
+		}
+		otmp->owornmask = 0L;
+		update_mon_intrinsics(mtmp, otmp, FALSE, FALSE);
+		if(unwornmask&W_ARM){
+			if(canseemon(mtmp))
+				pline("%s armor is sliced open!", s_suffix(Monnam(mtmp)));
+		} else if(unwornmask&W_ARMC){
+			if(canseemon(mtmp))
+				pline("%s %s is sliced to shreds!", s_suffix(Monnam(mtmp)), cloak_simple_name(otmp));
+		} else if(unwornmask&W_ARMH){
+			if(canseemon(mtmp))
+				pline("%s helm is sliced open!", s_suffix(Monnam(mtmp)));
+		} else if(unwornmask&W_ARMS){
+			if(canseemon(mtmp))
+				pline("%s shield is cut in two!", s_suffix(Monnam(mtmp)));
+		} else if(unwornmask&W_ARMG){
+			if(canseemon(mtmp))
+				pline("%s gloves are sliced open!", s_suffix(Monnam(mtmp)));
+		} else if(unwornmask&W_ARMF){
+			if(canseemon(mtmp))
+				pline("%s boots are sliced open!", s_suffix(Monnam(mtmp)));
+		} else if(unwornmask&W_ARMU){
+			if(canseemon(mtmp))
+				pline("%s underclothes are sliced open!", s_suffix(Monnam(mtmp)));
+		}
+		m_useup(mtmp, otmp);
+	}
+	return 1;
+}
+
 int
 teleport_arm(atmp, mdef)
 struct obj *atmp;

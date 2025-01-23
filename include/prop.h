@@ -176,6 +176,7 @@ struct prop {
 #	define W_GLYPH		0x01000000L	/* Active thought-glyph */
 #	define W_UPGRADE	0x02000000L	/* Permanent upgrade */
 #	define W_BELT		0x04000000L	/* Belt */
+#	define W_DRESS_DEPTH	0x08000000L	/* Dummy slot for depth considerations concerning the bottom bit of dresses */
 #	define W_SKIN		I_SPECIAL	/* merged into skin */
 #	define W_ACCESSORY	    (W_AMUL | W_RING | W_TOOL | W_BELT)
 #	define W_WORN	     (W_ARMOR | W_ACCESSORY)
