@@ -1400,15 +1400,18 @@ struct monst *magr;
 		}
 		break;
 	case ART_ATMA_WEAPON:
-		/* damage is multiplied % of health remaining (currently only implemented for the player) */
+		/* damage is multiplied % of health remaining */
 		/* calculate damage normally */
 		tmp += weapon_dmg_roll(&wdice, youdefend);
 		/* apply the multiplier, if applicable */
-		if (otmp == uwep &&	!Drain_resistance)
+		if (magr == &youmonst && !Drain_resistance)
 		{
 			tmp *= Upolyd ?
 				((float)u.mh) / u.mhmax :
 				((float)u.uhp) / u.uhpmax;
+		}
+		else if(magr && !Drain_res(magr)){
+			tmp *= ((float)magr->mhp) / magr->mhpmax;
 		}
 		/* cannot be negative */
 		if (tmp < 0)
