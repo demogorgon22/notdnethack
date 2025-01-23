@@ -1305,7 +1305,7 @@ glovecheck:		(void) rust_dmg(uarmg, "gauntlets", 1, TRUE, &youmonst, FALSE);
 		break;
 	    case LEVEL_TELEP:
 		seetrap(trap);
-		level_tele_trap(trap);
+		level_tele_trap(trap, FALSE);
 		nomul(0, NULL);
 		break;
 

@@ -2991,7 +2991,7 @@ E boolean NDECL(level_tele);
 E boolean NDECL(branch_tele);
 E void FDECL(domagicportal, (struct trap *));
 E void FDECL(tele_trap, (struct trap *));
-E void FDECL(level_tele_trap, (struct trap *));
+E void FDECL(level_tele_trap, (struct trap *, boolean));
 E void FDECL(rloc_to, (struct monst *,int,int));
 E boolean FDECL(rloc, (struct monst *, BOOLEAN_P));
 E boolean FDECL(tele_restrict, (struct monst *));
