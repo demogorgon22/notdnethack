@@ -16072,7 +16072,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	//There is something in the tip that, when driven deep, is deleterious to beasts and the ritually impure
 	if(weapon 
-		&& (weapon->otyp == CHURCH_PICK || (weapon->otyp == CHURCH_SHORTSWORD && !resist_pierce(pd)))
+		&& (weapon->otyp == CHURCH_PICK || (weapon->otyp == CHURCH_SHORTSWORD && !(resist_pierce(pd) && !resist_slash(pd))))
 		&& (is_animal(pd) || (youdef && u.uimpurity > 10)
 			|| pd->mtyp == PM_DEEP_ONE || pd->mtyp == PM_DEEPER_ONE
 			|| pd->mtyp == PM_KUO_TOA || pd->mtyp == PM_KUO_TOA_WHIP
@@ -16081,7 +16081,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			|| pd->mtyp == PM_BEFOULED_WRAITH || mdef->mtraitor || mdef->mferal
 		)
 	){
-		subtotl *= 1.2;
+		subtotl *= u.uinsight >= 40 ? 1.5 : 1.2;
 	}
 
 

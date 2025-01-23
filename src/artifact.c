@@ -5344,6 +5344,7 @@ boolean direct_weapon;
 	//Flogging raises sanity (note: this is "backwards" on purpose)
 	if((otmp->otyp == CANE && !youdef && mdef && is_serration_vulnerable(mdef) && u.uinsight >= rnd(100))
 	|| (otmp->otyp == WHIP_SAW && !youdef && mdef && hates_holy_mon(mdef) && u.uinsight >= rnd(100))
+	|| (otmp->otyp == CHURCH_SHORTSWORD && (resist_pierce(mdef->data) && !resist_slash(mdef->data)) && u.uinsight >= rnd(100))
 	){
 		int reglevel = san_threshhold() + otmp->spe;
 		if(u.usanity < reglevel){

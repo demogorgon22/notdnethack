@@ -1500,9 +1500,9 @@ struct monst * magr;
 			diesize = 20;
 		}
 		if (is_self_righteous(otmp) && 
-			(otmp->otyp != CHURCH_SHORTSWORD || !resist_pierce(pd))
+			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
 		)
-			diesize *= 2.5;
+			diesize *= otmp->otyp == CHURCH_SHORTSWORD && u.uinsight >= 40 ? 5 : 2.5;
 		/* calculate dice */
 		dmg += vd(ndice, diesize);
 	}
@@ -1569,9 +1569,9 @@ struct monst * magr;
 			ndice *= 2;
 		}
 		if (is_self_righteous(otmp) && 
-			(otmp->otyp != CHURCH_SHORTSWORD || !resist_pierce(pd))
+			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
 		)
-			diesize *= 2.5;
+			diesize *= otmp->otyp == CHURCH_SHORTSWORD && u.uinsight >= 40 ? 5 : 2.5;
 		/* calculate */
 		if (ndice)
 			dmg += vd(ndice, diesize);
