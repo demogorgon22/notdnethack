@@ -2371,8 +2371,10 @@ use_chikage(struct obj *obj)
 	} else {
 		if(u.uinsight < 27)
 			You("sheath your sword in your saya and draw it forth bloody.");
-		else
+		else if(u.uinsight < 50)
 			You("sheath your sword in your %s and draw it forth bloody.", body_part(HEART));
+		else
+			You("sheath your sword in your shadow's %s and draw it forth bloody.", body_part(HEART));
 
 		if(obj->obj_material != obj->ovar1_alt_mat)
 			obj->ovar1_alt_mat = obj->obj_material;
