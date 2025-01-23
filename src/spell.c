@@ -3279,7 +3279,7 @@ spiriteffects(power, atme)
 		case PWR_DISGUSTED_GAZE:{
 			struct monst *mon;
 			struct obj *obj;
-			if((!uarmg || !is_opaque(uarmg)) && !(uarmc && is_mummy_wrap(uarmc))){
+			if((!uarmg || !is_opaque(uarmg)) && !(uarmc && is_mummy_wrap(uarmc) && is_opaque(uarmc))){
 				if(throwgaze()){
 					if((mon = m_at(u.dx,u.dy)) && canseemon(mon)){
 						Your("arms swing up and your hands jerk open in a single, spasmodic motion.");
@@ -3628,7 +3628,10 @@ spiriteffects(power, atme)
 					levl[u.ux+u.dx][u.uy+u.dy].typ = POOL;
 					newsym(u.ux+u.dx, u.uy+u.dy);
 					if(mon) mon->mtrapped = 0;
-				} else if(levl[u.ux+u.dx][u.uy+u.dy].typ == ROOM || levl[u.ux+u.dx][u.uy+u.dy].typ == CORR){
+				} else if(levl[u.ux+u.dx][u.uy+u.dy].typ == ROOM || levl[u.ux+u.dx][u.uy+u.dy].typ == CORR
+					 || levl[u.ux+u.dx][u.uy+u.dy].typ == GRASS  || levl[u.ux+u.dx][u.uy+u.dy].typ == SOIL
+					 || levl[u.ux+u.dx][u.uy+u.dy].typ == SAND
+				){
 					pline("Water rains down from above, and a tree grows up from the ground.");
 					levl[u.ux+u.dx][u.uy+u.dy].typ = TREE;
 					newsym(u.ux+u.dx, u.uy+u.dy);
