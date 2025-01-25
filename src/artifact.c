@@ -15155,7 +15155,9 @@ struct obj **opptr;
 			pline("The two weapons clink together awkwardly.");
 			return MOVE_CANCELLED;
 		}
-		if(u.ulevel < 22){ //Less than rank 7
+		if((u.usanity < 50 || u.ulevel < 22 || u.uinsight < 50) //Lower threshold than that for using the Resonant Edge of Fellowship
+			|| !(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_BALANCE) //From the *knowing* of Two Skies came the realization that hurting others, hurts oneself. 
+		){
 			pline("The two weapons ripple for a moment, then push each-other away!");
 			pline("It seems you are not powerful enough to merge them together.");
 			return MOVE_CANCELLED;
