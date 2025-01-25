@@ -6466,7 +6466,7 @@ struct monst *mtmp;
 
 	otmp = mkobj(RANDOM_CLASS, MKOBJ_ARTIF);
 	if(In_quest(&u.uz) && !Role_if(PM_CONVICT)){
-		if(otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS) otmp->objsize = (&mons[urace.malenum])->msize;
+		if(otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS) otmp->objsize = permonst_of(urace.malenum, get_template(&youmonst))->msize;
 		if(otmp->oclass == ARMOR_CLASS){
 			set_obj_shape(otmp, mons[urace.malenum].mflagsb);
 		}
