@@ -1030,8 +1030,8 @@ migrate_to_level(mtmp, tolev, xyloc, cc)
 			blade->nmon = migrating_mons;
 			migrating_mons = blade;
 			
-			new_lev.dnum = ledger_to_dnum((xchar)tolev);
-			new_lev.dlevel = ledger_to_dlev((xchar)tolev);
+			new_lev.dnum = ledger_to_dnum(tolev);
+			new_lev.dlevel = ledger_to_dlev(tolev);
 			/* overload mtmp->[mx,my], mtmp->[mux,muy], and mtmp->mtrack[] as */
 			/* destination codes (setup flag bits before altering mx or my) */
 			xyflags = (depth(&new_lev) < depth(&u.uz));	/* 1 => up */
