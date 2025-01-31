@@ -3660,8 +3660,26 @@ commune_with_goat()
 		case GOATBOON_LUCK:
 			cost = 20;
 			/* removes all negative luck, and adds a few extra */
-			You_feel("%slucky.",
-				greater_boon ? "very " : "");
+			if (Blind)
+				You("think %s brushed your %s.",something, body_part(FOOT));
+			else {
+				You(Hallucination ?
+				"see crabgrass at your %s.  A funny thing in a dungeon." :
+				"glimpse a four-leaf clover at your %s.",
+				makeplural(body_part(FOOT)));
+				if(u.uinsight >= 40){
+					pline(Hallucination ?
+					"It waves its major cheliped at you." :
+					"...actually, that's a little mouth on a stalk.");
+				}
+				else if(u.uinsight >= 20){
+					pline(Hallucination ?
+					"It waves its major cheliped at you." :
+					"...you don't remember clovers having serrated leaves.");
+				}
+			}
+			// You_feel("%slucky.",
+				// greater_boon ? "very " : "");
 			if (u.uluck < 0) u.uluck = 0;
 			change_luck(greater_boon ? 7 : 3);
 			break;

@@ -1713,6 +1713,8 @@ boolean adjective;
 		/* not quite bone, not quite stone */
 		else if (obj->otyp == WORM_TOOTH || obj->otyp == CRYSKNIFE)
 			return "enamel";
+		else if (obj->otyp == TOOTH)
+			return (adjective ? "fossilized" : "stone");
 		else if (obj->oartifact == ART_LASH_OF_THE_COLD_WASTE)
 			return "onyx";
 		else if (obj->oartifact == ART_DRAGONHEAD_SHIELD)
@@ -1788,7 +1790,7 @@ char *buf;
 		if (obj->otyp == find_gcirclet())
 			goto force_add_material_name;
 		/*Item is made from standard material, and isn't of a type for which the material is always shown*/
-		if(objects[obj->otyp].oc_name_known && !(objects[obj->otyp].oc_showmat&IDED) && obj->obj_material == objects[obj->otyp].oc_material)
+		if(objects[obj->otyp].oc_name_known && (!(objects[obj->otyp].oc_showmat&IDED) || (obj->otyp == TOOTH && u.uinsight >= 20)) && obj->obj_material == objects[obj->otyp].oc_material)
 			return;
 		/*Unknown item is made from standard material, and isn't of a type for which the material is always shown*/
 		if(!objects[obj->otyp].oc_name_known && !(objects[obj->otyp].oc_showmat&UNIDED) && obj->obj_material == objects[obj->otyp].oc_material)
@@ -1844,6 +1846,22 @@ char *buf;
 	}
 }
 
+static void
+add_otyp_words(obj, buf)
+struct obj *obj;
+char *buf;
+{
+	if (obj->otyp == TOOTH && objects[obj->otyp].oc_name_known){
+		if(u.uinsight >= 20){
+			switch (obj->ovar1_tooth_type){
+			case SERPENT_TOOTH:  Strcat(buf, "world-serpent ");  break;
+			case MAGMA_TOOTH: Strcat(buf, "primordial dragon "); break;
+			case VOID_TOOTH:     Strcat(buf, "void-dragon ");     break;
+			}
+		}
+	}
+}
+
 /* Supposedly, the order of adjectives in English is: determiner, opinion, size, shape, age, colour, origin, material, purpose, noun
  * We will transfer that over to dNethack as:
  * quantity, stolen, BUC, size, moving, shape, erosion, grease, enchantment, properties, poison, colour, material, object
@@ -1895,6 +1913,24 @@ boolean getting_obj_base_desc;
 		else if(obj->spe == 4)
 			actualn = "columnar mass";
 	}
+	if(obj->otyp == CRYSTAL
+		&& obj->obj_material == CHITIN
+		&& check_oprop(obj, OPROP_GOATW)
+	){
+		actualn = "misty seed";
+	}
+	if(obj->otyp == CRYSTAL
+		&& obj->obj_material == SILVER
+		&& check_oprop(obj, OPROP_SFLMW)
+	){
+		actualn = "mirror shard";
+	}
+	if(obj->otyp == CRYSTAL
+		&& obj->obj_material == FIRMAMENT
+		&& check_oprop(obj, OPROP_SOTHW)
+	){
+		actualn = "sky fragment";
+	}
 	
 	buf[0] = '\0';
 	/*
@@ -1928,6 +1964,7 @@ boolean getting_obj_base_desc;
 		add_biting_words(obj, buf);
 		add_material_words(obj, buf);
 		if (dofull) add_type_words(obj, buf);
+		add_otyp_words(obj, buf);
 	}
 
 	/* finishing up xname stuff, which has a lot of special cases */
@@ -3925,6 +3962,7 @@ struct alt_spellings {
 	{ "droven dress", NOBLE_S_DRESS },
 	{ "armored boots", ARMORED_BOOTS },
 	{ "fossil dark", CHUNK_OF_FOSSIL_DARK },
+	{ "fossilized darkness", CHUNK_OF_FOSSIL_DARK },
 	{ "aesh", SYLLABLE_OF_STRENGTH__AESH },
 	{ "strength syllable", SYLLABLE_OF_STRENGTH__AESH },
 	{ "krau", SYLLABLE_OF_POWER__KRAU },
@@ -3937,6 +3975,7 @@ struct alt_spellings {
 	{ "thought syllable", SYLLABLE_OF_THOUGHT__NAEN },
 	{ "vaul", SYLLABLE_OF_SPIRIT__VAUL },
 	{ "spirit syllable", SYLLABLE_OF_SPIRIT__VAUL },
+	{ "fossilized tooth", TOOTH },
 	{ (const char *)0, 0 },
 };
 
@@ -3971,7 +4010,7 @@ int wishflags;
 	boolean allow_artifact = !!(wishflags & WISH_ARTALLOW);
 	
 	int halfeaten, halfdrained, mntmp, contents;
-	int islit, unlabeled, ishistoric, ispetrified, isdiluted;
+	int islit, unlabeled, ishistoric, ispetrified, isdiluted, toothtype;
 	struct fruit *f;
 	int ftype = current_fruit;
 	char fruitbuf[BUFSZ];
@@ -4029,7 +4068,8 @@ int wishflags;
 		isinvisible =
 #endif
 		ispoisoned = isgreased = eroded = eroded2 = eroded3 = erodeproof =
-		halfeaten = islit = unlabeled = ishistoric = ispetrified = isdiluted = 0;
+		halfeaten = islit = unlabeled = ishistoric = ispetrified = isdiluted = 
+		toothtype = 0;
 	mntmp = NON_PM;
 #define UNDEFINED 0
 #define EMPTY 1
@@ -4287,6 +4327,18 @@ int wishflags;
 			ispoisoned=OPOISON_SILVER;
 		} else if(!strncmpi(bp, "greased ",l=8)) {
 			isgreased=1;
+		} else if(!strncmpi(bp, "world-serpent ",l=14)
+			|| !strncmpi(bp, "world serpent ",l=14)
+		) {
+			toothtype=SERPENT_TOOTH;
+		} else if(!strncmpi(bp, "primordial dragon ",l=18)
+			|| !strncmpi(bp, "primordial-dragon ",l=18)
+		) {
+			toothtype=MAGMA_TOOTH;
+		} else if(!strncmpi(bp, "void-dragon ",l=12)
+			|| !strncmpi(bp, "void dragon ",l=12)
+		) {
+			toothtype=VOID_TOOTH;
 		} else if (!strncmpi(bp, "very ", l=5)) {
 			/* very rusted very heavy iron ball */
 			very = 1;
@@ -5139,7 +5191,6 @@ int wishflags;
 	   && strncmpi(bp, "belt of weight", 14)
 	   && strncmpi(bp, "kidney belt", 11)
 	   && strncmpi(bp, "utility belt", 12)
-	   && strncmpi(bp, "chastity belt", 13)
 	   && strncmpi(bp, "Star-emperor's Ring", 19)
 	   && strncmpi(bp, "Stake of Withering", 18)
 	   && strncmpi(bp, "Ring of Hygiene's Disciple", 26)
@@ -5852,6 +5903,9 @@ typfnd:
 		}
 		
 	}
+	
+	if(otmp->otyp == TOOTH && toothtype)
+		otmp->ovar1_tooth_type = toothtype;
 	
 	if(wizwish || (otmp->oclass == RING_CLASS && isEngrRing((otmp)->otyp) && otmp->oward && !otmp->ohaluengr)){
 		if(heptagram && wizwish)			otmp->oward = HEPTAGRAM;  /*can't be wished for*/

@@ -2055,8 +2055,9 @@ int shotlimit;
 		case PM_SAMURAI:
 			if (ammo->otyp == YA && launcher && launcher->otyp == YUMI) multishot++;
 			break;
+		case PM_KNIGHT:
 		case PM_WIZARD:
-			if (skill == P_DAGGER) multishot -= 3;	/* very bad at throwing daggers */
+			if (skill == P_DAGGER) multishot -= 3;	/* very bad at throwing daggers, but good at stabbing with them */
 		default:
 			break;	/* No bonus */
 		}

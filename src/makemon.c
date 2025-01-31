@@ -1029,15 +1029,19 @@ boolean greatequip;
 	}
 	else if(mm == PM_STRANGER){
 		otmp = mongets(mtmp, SHEPHERD_S_CROOK, MKOBJ_NOINIT);
-		otmp->spe = 5;
-		otmp->obj_color = CLR_YELLOW;
+		if(otmp){
+			otmp->spe = 5;
+			otmp->obj_color = CLR_YELLOW;
+		}
 	}
 	else if(mm == PM_SUZERAIN){
 		otmp = mongets(mtmp, SHEPHERD_S_CROOK, MKOBJ_NOINIT);
-		otmp->spe = 5;
-		set_material_gm(otmp, MINERAL);
-		set_submat(otmp, SUBMAT_MARBLE);
-		otmp->obj_color = CLR_YELLOW;
+		if(otmp){
+			otmp->spe = 5;
+			set_material_gm(otmp, MINERAL);
+			set_submat(otmp, SUBMAT_MARBLE);
+			otmp->obj_color = CLR_YELLOW;
+		}
 	}
 	else if(mm == PM_SILENT_ONE){
 		otmp = mksobj(QUARTERSTAFF, mkobjflags);
@@ -1358,19 +1362,24 @@ boolean greatequip;
 	}
 	else if(ptr->mtyp == PM_PARASITIZED_KNIGHT){
 		otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, GAUNTLETS, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, KITE_SHIELD, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
 
 		otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
-		otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+		if(otmp)
+			otmp->spe = max_ints(otmp->spe, 3+rn2(5));
 	}
 	else if (ptr->mtyp == PM_CROESUS) {
 		otmp = mksobj(TWO_HANDED_SWORD, mkobjflags);
@@ -10258,11 +10267,13 @@ int mmflags;
 			(void) mpickobj(mtmp,otmp);
 		} else if(mm == PM_OCCULTIST){
 			mtmp->mvar_flask_charges = 4;
-			otmp = mksobj(CLUB, mkobjflags|MKOBJ_NOINIT);
-			set_material_gm(otmp, DRAGON_HIDE);
+			otmp = mksobj(rn2(20) ? CLUB : TOOTH, mkobjflags|MKOBJ_NOINIT);
 			add_oprop(otmp, OPROP_OCLTW);
-			otmp->objsize = MZ_HUGE;
-			fix_object(otmp);
+			if(otmp->otyp == CLUB){
+				set_material_gm(otmp, DRAGON_HIDE);
+				otmp->objsize = MZ_HUGE;
+				fix_object(otmp);
+			}
 			otmp->spe = 3;
 			(void) mpickobj(mtmp, otmp);
 
@@ -15216,14 +15227,6 @@ int faction;
 				pline("Lamashtu, the Demon Queen, is near!");
 				com_pager(201);
 			}
-			else if(mndx == PM_DURIN_S_BANE){
-				mtmp->mhpmax = 3*mtmp->mhpmax;
-				mtmp->mhp = mtmp->mhpmax;
-			}
-			else if(mndx == PM_LUNGORTHIN){
-				mtmp->mhpmax = 3*mtmp->mhpmax;
-				mtmp->mhp = mtmp->mhpmax;
-			}
 			else if(mndx == PM_PALE_NIGHT){
 				mtmp->mvar_paleWarning = 0;
 			}
@@ -17064,8 +17067,6 @@ struct monst *mtmp, *victim;
 			ptr->mtyp == PM_KETO ||
 			ptr->mtyp == PM_DRACAE_ELADRIN ||
 			ptr->mtyp == PM_MOTHERING_MASS ||
-			ptr->mtyp == PM_DURIN_S_BANE ||
-			ptr->mtyp == PM_LUNGORTHIN ||
 			ptr->mtyp == PM_BOLG ||
 			ptr->mtyp == PM_PRIEST_OF_GHAUNADAUR ||
 			ptr->mtyp == PM_SHOGGOTH

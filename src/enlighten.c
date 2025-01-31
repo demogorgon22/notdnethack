@@ -3128,29 +3128,29 @@ research_enlightenment()
 			putstr(en_win, 0, "You still have much to learn of defilement.");
 		}
 		if(!(active_glyph(DEFILEMENT) || (u.ualign.god == GOD_DEFILEMENT && known_glyph(DEFILEMENT)))){
-			putstr(en_win, 0, "Though, you are not currently a serious student of that philosophy.");
+			putstr(en_win, 0, " Though, you are not currently a serious student of that philosophy.");
 		}
 		else if(u.veil){
-			putstr(en_win, 0, "You have yet to feel beyond.");
+			putstr(en_win, 0, " You have yet to feel beyond.");
 		}
 		else {
 			if(!(u.upreservation_upgrades&PRESERVE_MAX) || (Race_if(PM_VAMPIRE) && vampire_count() < VAMPIRE_COUNT)){
 				if(defile_ok()){
-					putstr(en_win, 0, "You are ready to conduct another experiment into the nature of defilement.");
-					putstr(en_win, 0, "Use your phlebotomy kit while standing at a workbench-altar to defilement.");
+					putstr(en_win, 0, " You are ready to conduct another experiment into the nature of defilement.");
+					putstr(en_win, 0, " Use your phlebotomy kit while standing at a workbench-altar to defilement.");
 				}
 				else {
-					putstr(en_win, 0, "You are unable to devise further experiments into the nature of defilement.");
+					putstr(en_win, 0, " You are unable to devise further experiments into the nature of defilement.");
 					if(!impurity_ok())
-						putstr(en_win, 0, "You must immerse yourself in the ritually unclean to make progress.");
+						putstr(en_win, 0, " You must immerse yourself in the ritually unclean to make progress.");
 					else if(ABASE(A_INT) < 6)
-						putstr(en_win, 0, "You must repair the damage to your intellect to survive further self-experimentation.");
+						putstr(en_win, 0, " You must repair the damage to your intellect to survive further self-experimentation.");
 					else
-						putstr(en_win, 0, "You must conduct more dissections to make progress.");
+						putstr(en_win, 0, " You must conduct more dissections to make progress.");
 				}
 			}
 			else {
-				putstr(en_win, 0, "You have progressed your study of defilement as far as can be done in the Dungeons of Doom.");
+				putstr(en_win, 0, " You have progressed your study of defilement as far as can be done in the Dungeons of Doom.");
 			}
 		}
 		//Upgrade list
@@ -3199,27 +3199,27 @@ research_enlightenment()
 			putstr(en_win, 0, "You still have much to learn of parasitology.");
 		}
 		if(!(active_glyph(LUMEN) || (u.ualign.god == GOD_THE_CHOIR && known_glyph(LUMEN)))){
-			putstr(en_win, 0, "Though, you are not currently a serious student of that philosophy.");
+			putstr(en_win, 0, " Though, you are not currently a serious student of that philosophy.");
 		}
 		else if(u.veil){
-			putstr(en_win, 0, "You have yet to hear the song.");
+			putstr(en_win, 0, " You have yet to hear the song.");
 		}
 		else {
 			if(parasite_ok()){
-				putstr(en_win, 0, "You are ready to conduct another experiment into the song of the parasite choir.");
+				putstr(en_win, 0, " You are ready to conduct another experiment into the song of the parasite choir.");
 				if(carrying(PARASITE))
-					putstr(en_win, 0, "Use your trephination kit while standing at a workbench-altar to the choir.");
+					putstr(en_win, 0, " Use your trephination kit while standing at a workbench-altar to the choir.");
 				else {
-					sprintf(buf, "You will need to find %s parasite first, though.", parasite_count() > 0 ? "another" : "a");
+					sprintf(buf, " You will need to find %s parasite first, though.", parasite_count() > 0 ? "another" : "a");
 					putstr(en_win, 0, buf);
 				}
 			}
 			else {
-				putstr(en_win, 0, "You are unable to devise further surgical experiments.");
+				putstr(en_win, 0, " You are unable to devise further surgical experiments.");
 				if(ABASE(A_INT) < 6)
-					putstr(en_win, 0, "You must repair the damage to your intellect to survive further self-experimentation.");
+					putstr(en_win, 0, " You must repair the damage to your intellect to survive further self-experimentation.");
 				else
-					putstr(en_win, 0, "You must conduct more dissections to make progress.");
+					putstr(en_win, 0, " You must conduct more dissections to make progress.");
 			}
 		}
 		//Upgrade list
@@ -3252,29 +3252,29 @@ research_enlightenment()
 			putstr(en_win, 0, "You still have much to learn of reanimation.");
 		}
 		if(!(active_glyph(ROTTEN_EYES) || (u.ualign.god == GOD_THE_COLLEGE && known_glyph(ROTTEN_EYES)))){
-			putstr(en_win, 0, "Though, you are not currently a serious student of that philosophy.");
+			putstr(en_win, 0, " Though, you are not currently a serious student of that philosophy.");
 		}
 		else if(u.veil){
-			putstr(en_win, 0, "Your eyes have yet to open.");
+			putstr(en_win, 0, " Your eyes have yet to open.");
 		}
 		else {
 			if(reanimation_count() < REANIMATION_COUNT){
 				if(reanimation_ok()){
-					putstr(en_win, 0, "You are ready to conduct another experiment into the great animating thoughts pursued by the college.");
-					putstr(en_win, 0, "Use your portable electrode while standing at a workbench-altar to the college.");
+					putstr(en_win, 0, " You are ready to conduct another experiment into the great animating thoughts pursued by the college.");
+					putstr(en_win, 0, " Use your portable electrode while standing at a workbench-altar to the college.");
 				}
 				else {
-					putstr(en_win, 0, "You are unable to devise further Galvanic experiments.");
+					putstr(en_win, 0, " You are unable to devise further Galvanic experiments.");
 					if(!reanimation_insight_ok())
-						putstr(en_win, 0, "You must hunt the strange creatures of the veil to make progress.");
+						putstr(en_win, 0, " You must hunt the strange creatures of the veil to make progress.");
 					else if(ABASE(A_INT) < 6)
-						putstr(en_win, 0, "You must repair the damage to your intellect to survive further self-experimentation.");
+						putstr(en_win, 0, " You must repair the damage to your intellect to survive further self-experimentation.");
 					else
-						putstr(en_win, 0, "You must conduct more dissections and reanimations to make progress.");
+						putstr(en_win, 0, " You must conduct more dissections and reanimations to make progress.");
 				}
 			}
 			else {
-				putstr(en_win, 0, "You have progressed your study of the animating thoughts as far as can be done in the Dungeons of Doom.");
+				putstr(en_win, 0, " You have progressed your study of the animating thoughts as far as can be done in the Dungeons of Doom.");
 			}
 		}
 		//Upgrade list

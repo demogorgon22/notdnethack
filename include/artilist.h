@@ -191,7 +191,7 @@ A("Grimtooth",			ORCISH_DAGGER,					(const char *)0,
 	),
 
 /*Needs encyc entry*/
-A("Carnwennan",			DAGGER,							(const char *)0,
+A("Carnwennan",			RONDEL_DAGGER,							(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_KNIGHT, NON_PM, TIER_C, (ARTG_NOGEN),	/* ARTG_NAME is added during game-creation for eligible characters */
 	MONS(vsMT(MT_MAGIC), vsMA(MA_FEY)),

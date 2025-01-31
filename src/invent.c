@@ -1250,15 +1250,15 @@ register const char *let,*word;
 		|| (!strcmp(word, "resize") && !(otmp->oclass == ARMOR_CLASS || otmp->oclass == TOOL_CLASS))
 		|| (!strcmp(word, "trephinate") && !(otmp->otyp == CRYSTAL_SKULL))
 		|| (!strcmp(word, "eat") && !is_edible(otmp))
-		|| (!strcmp(word, "contribute for scrap iron") && otmp->obj_material != IRON)
-		|| (!strcmp(word, "contribute for scrap green steel") && otmp->obj_material != GREEN_STEEL)
-		|| (!strcmp(word, "contribute for scrap bronze") && otmp->obj_material != COPPER)
-		|| (!strcmp(word, "contribute for scrap silver") && otmp->obj_material != SILVER)
-		|| (!strcmp(word, "contribute for scrap gold") && otmp->obj_material != GOLD)
-		|| (!strcmp(word, "contribute for scrap lead") && otmp->obj_material != LEAD)
-		|| (!strcmp(word, "contribute for scrap mithril") && otmp->obj_material != MITHRIL)
+		|| (!strcmp(word, "contribute for scrap iron") && (otmp->obj_material != IRON || otmp->owornmask))
+		|| (!strcmp(word, "contribute for scrap green steel") && (otmp->obj_material != GREEN_STEEL || otmp->owornmask))
+		|| (!strcmp(word, "contribute for scrap bronze") && (otmp->obj_material != COPPER || otmp->owornmask))
+		|| (!strcmp(word, "contribute for scrap silver") && (otmp->obj_material != SILVER || otmp->owornmask))
+		|| (!strcmp(word, "contribute for scrap gold") && (otmp->obj_material != GOLD || otmp->owornmask))
+		|| (!strcmp(word, "contribute for scrap lead") && (otmp->obj_material != LEAD || otmp->owornmask))
+		|| (!strcmp(word, "contribute for scrap mithril") && (otmp->obj_material != MITHRIL || otmp->owornmask))
 		|| (!strcmp(word, "contribute for scrap fossil dark") && otmp->obj_material != SHADOWSTEEL && otmp->otyp != CHUNK_OF_FOSSIL_DARK)
-		|| (!strcmp(word, "contribute for scrap platinum") && otmp->obj_material != PLATINUM)
+		|| (!strcmp(word, "contribute for scrap platinum") && (otmp->obj_material != PLATINUM || otmp->owornmask))
 		|| (!strcmp(word, "zap") &&
 		    !(otmp->oclass == WAND_CLASS 
 				|| (otmp->oclass == TOOL_CLASS && otmp->otyp == ROD_OF_FORCE)
@@ -1354,6 +1354,8 @@ register const char *let,*word;
 			  otmp->otyp != TONITRUS &&
 			  otmp->otyp != HUNTER_S_LONGSWORD && otmp->otyp != CHURCH_BLADE && otmp->otyp != CHURCH_SHEATH &&
 			  otmp->otyp != HUNTER_S_SHORTSWORD && otmp->otyp != CHURCH_HAMMER && otmp->otyp != CHURCH_BRICK &&
+			  otmp->otyp != BEAST_CRUSHER && otmp->otyp != BEAST_CUTTER && otmp->otyp != DEVIL_FIST &&
+			  otmp->otyp != DEMON_CLAW && otmp->otyp != CHURCH_SHORTSWORD &&
 			  otmp->otyp != SMITHING_HAMMER &&
 			  !(otmp->oartifact == ART_SKY_REFLECTED && carrying_art(ART_SILVER_SKY)) &&
 			  !(otmp->oartifact == ART_SILVER_SKY && carrying_art(ART_SKY_REFLECTED)) &&
@@ -3139,6 +3141,20 @@ winid *datawin;
 			}
 			int ldamd = objects[otyp].oc_wldam.oc_damd;
 			int sdamd = objects[otyp].oc_wsdam.oc_damd;
+			if(obj->otyp == TOOTH && u.uinsight >= 20 && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, &youmonst, ETRAIT_FOCUS_FIRE)){
+				if(obj->ovar1_tooth_type == MAGMA_TOOTH){
+					Sprintf(buf2, "Deals +5d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
+					OBJPUTSTR(buf2);
+				}
+				else if(obj->ovar1_tooth_type == VOID_TOOTH){
+					Sprintf(buf2, "Drains three levels from the target and deals +3d3%s cold damage.", (obj->spe ? sitoa(obj->spe) : ""));
+					OBJPUTSTR(buf2);
+				}
+				else if(obj->ovar1_tooth_type == SERPENT_TOOTH){
+					Sprintf(buf2, "Injects dire poison and deals +1d8%s poison and +1d8%s acid damage.",(obj->spe ? sitoa(obj->spe) : ""),(obj->spe ? sitoa(obj->spe) : ""));
+					OBJPUTSTR(buf2);
+				}
+			}
 			if(obj->otyp == TORCH){
 				Sprintf(buf2, "When lit, deals +1d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);

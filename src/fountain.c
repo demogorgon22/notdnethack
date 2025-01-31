@@ -293,10 +293,24 @@ have_blood_smithing_buc(struct obj * obj)
 }
 
 boolean
+have_blood_smithing_hunger(struct obj * obj)
+{
+	return have_blood_smithing_x(obj, OPROP_GOATW);
+}
+
+boolean
+have_blood_smithing_sothoth(struct obj * obj)
+{
+	return have_blood_smithing_x(obj, OPROP_SOTHW);
+}
+
+boolean
 have_blood_smithing_x(struct obj * obj, int oprop)
 {
 	int oprop_lesser = 0;
+	int oprop_alt = 0;
 	int spell = 0;
+	boolean cult = FALSE;
 	if(oprop == OPROP_FIREW){
 		oprop_lesser = OPROP_LESSER_FIREW;
 		spell = SPE_FIREBALL;
@@ -325,16 +339,26 @@ have_blood_smithing_x(struct obj * obj, int oprop)
 		oprop_lesser = OPROP_LESSER_UNHYW;
 		spell = SPE_REMOVE_CURSE;
 	}
+	else if(oprop == OPROP_GOATW){
+		oprop_lesser = OPROP_LESSER_ACIDW;
+		oprop_alt = OPROP_ACIDW;
+		cult = TRUE;
+	}
+	else if(oprop == OPROP_SOTHW){
+		oprop_lesser = OPROP_LESSER_MAGCW;
+		oprop_alt = OPROP_MAGCW;
+		cult = TRUE;
+	}
 
-	if(obj->oartifact && !is_malleable_artifact(&artilist[obj->oartifact]))
+	if(!cult && obj->oartifact && !is_malleable_artifact(&artilist[obj->oartifact]))
 		return FALSE;
 
-	if(obj_is_material(obj, MERCURIAL))
+	if(!cult && obj_is_material(obj, MERCURIAL))
 		return FALSE;
 
-	if(check_oprop(obj, oprop) || (oprop_lesser && check_oprop(obj, oprop_lesser)))
+	if(check_oprop(obj, oprop) || (oprop_lesser && check_oprop(obj, oprop_lesser)) || (oprop_alt && check_oprop(obj, oprop_alt)))
 		return FALSE;
-	if(check_oprop(obj, OPROP_SMITHU) && oprop != OPROP_HOLYW && oprop != OPROP_UNHYW)
+	if(!cult && check_oprop(obj, OPROP_SMITHU) && oprop != OPROP_HOLYW && oprop != OPROP_UNHYW)
 		return FALSE;
 	int j;
 	for (j = 0; j < MAXSPELL; j++)
@@ -403,6 +427,121 @@ get_blood_smithing_x(int oprop, struct obj **crystal, int *spellnum)
 }
 
 void
+expert_undead_hunter_skill()
+{
+	int count = 0;
+	int skill;
+	for(skill = P_FIRST_WEAPON; skill <= P_LAST_WEAPON; skill++){
+		if(OLD_P_MAX_SKILL(skill) == P_SKILLED)
+			count++;
+	}
+	if(!count)
+		return; //Apparently upgraded all skills to expert via other means
+	count = rn2(count);
+	for(skill = P_FIRST_WEAPON; skill <= P_LAST_WEAPON; skill++){
+		if(OLD_P_MAX_SKILL(skill) == P_SKILLED){
+			if(count) count--;
+			else {
+				expert_weapon_skill(skill);
+				if(skill == P_DAGGER){
+					expert_weapon_skill(rn2(2) ? P_SHORT_SWORD : P_SABER);
+					expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+				}
+				else if(skill == P_SHORT_SWORD){
+					if(!rn2(3)){
+						expert_weapon_skill(P_DAGGER);
+						expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+					}
+					else if(rn2(2)){
+						expert_weapon_skill(P_PICK_AXE);
+					}
+					else {
+						expert_weapon_skill(P_HAMMER);
+					}
+				}
+				else if(skill == P_TWO_HANDED_SWORD){
+					expert_weapon_skill(P_LONG_SWORD);
+				}
+				else if(skill == P_SCIMITAR){
+					expert_weapon_skill(P_BOW);
+				}
+				else if(skill == P_SABER){
+					if(rn2(2)){
+						expert_weapon_skill(P_DAGGER);
+						expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+					}
+					else {
+						expert_weapon_skill(P_FIREARM);
+					}
+				}
+				else if(skill == P_HAMMER){
+					expert_weapon_skill(P_SHORT_SWORD);
+				}
+				else if(skill == P_SPEAR){
+					expert_weapon_skill(P_HARVEST);
+				}
+				else if(skill == P_BOW){
+					expert_weapon_skill(P_SCIMITAR);
+				}
+				else if(skill == P_WHIP){
+					expert_weapon_skill(P_LONG_SWORD);
+				}
+				else if(skill == P_HARVEST){
+					if(rn2(2))
+						expert_weapon_skill(P_SPEAR);
+				}
+				else if(skill == P_CLUB){
+					if(rn2(2))
+						expert_weapon_skill(P_FLAIL);
+				}
+				else if(skill == P_FLAIL){
+					expert_weapon_skill(P_CLUB);
+				}
+				else if(skill == P_MACE){
+					if(rn2(2))
+						expert_weapon_skill(P_PICK_AXE);
+				}
+				else if(skill == P_PICK_AXE){
+					if(rn2(2))
+						expert_weapon_skill(P_MACE);
+					else
+						expert_weapon_skill(P_SHORT_SWORD);
+				}
+				else if(skill == P_FIREARM){
+					if(rn2(2))
+						expert_weapon_skill(P_BARE_HANDED_COMBAT);
+					else
+						expert_weapon_skill(P_SABER);
+				}
+				else if(skill == P_BARE_HANDED_COMBAT){
+					if(rn2(2))
+						expert_weapon_skill(P_FIREARM);
+				}
+				return;
+			}
+		}
+	}
+}
+
+#define	MELT_DOWN	1
+#define REPAIR_DAMAGE 2
+#define ENCHANT_OBJ 3
+#define FIRE_OPROP 4
+#define COLD_OPROP 5
+#define SHOCK_OPROP 6
+#define ACID_OPROP 7
+#define MAGIC_OPROP 8
+#define HLUH_OPROPS 9
+#define SHATTER_CRYSTAL 10
+#define EXTRACT_OPROP 11
+#define HUNGER_OPROP 12
+#define EXTRACT_HUNGER 13
+#define SOTHOTH_OPROP 14
+#define EXTRACT_SOTHOTH 15
+#define FLAME_OPROP 16
+#define EXTRACT_FLAME 17
+
+void
 smithing_object(struct obj *obj)
 {
 	winid tmpwin;
@@ -431,7 +570,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'm';
 			Sprintf(buf, "Melt for scrap");
-			any.a_int = 1;	/* must be non-zero */
+			any.a_int = MELT_DOWN;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -440,7 +579,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'r';
 			Sprintf(buf, "Repair damage");
-			any.a_int = 2;	/* must be non-zero */
+			any.a_int = REPAIR_DAMAGE;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -449,7 +588,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'i';
 			Sprintf(buf, "Improve %s", xname(obj));
-			any.a_int = 3;	/* must be non-zero */
+			any.a_int = ENCHANT_OBJ;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -460,7 +599,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'f';
 			Sprintf(buf, "Imbue %s with fire", xname(obj));
-			any.a_int = 4;	/* must be non-zero */
+			any.a_int = FIRE_OPROP;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -471,7 +610,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'c';
 			Sprintf(buf, "Imbue %s with cold", xname(obj));
-			any.a_int = 5;	/* must be non-zero */
+			any.a_int = COLD_OPROP;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -482,7 +621,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'l';
 			Sprintf(buf, "Imbue %s with lightning", xname(obj));
-			any.a_int = 6;	/* must be non-zero */
+			any.a_int = SHOCK_OPROP;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -493,7 +632,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'a';
 			Sprintf(buf, "Imbue %s with acid", xname(obj));
-			any.a_int = 7;	/* must be non-zero */
+			any.a_int = ACID_OPROP;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -504,7 +643,45 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'g';
 			Sprintf(buf, "Imbue %s with magic", xname(obj));
-			any.a_int = 8;	/* must be non-zero */
+			any.a_int = MAGIC_OPROP;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		if(u.ublood_smithing && have_blood_smithing_hunger(obj)){
+			n++;
+			incntlet = 'h';
+			Sprintf(buf, "Imbue %s with hunger", xname(obj));
+			any.a_int = HUNGER_OPROP;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		if(obj->otyp != CRYSTAL && u.ublood_smithing && check_oprop(obj, OPROP_GOATW)){
+			n++;
+			incntlet = 'h';
+			Sprintf(buf, "Extract hunger from %s", xname(obj));
+			any.a_int = EXTRACT_HUNGER;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		if((obj->oclass == WEAPON_CLASS || is_weptool(obj))
+			&& (u.ublood_smithing && have_blood_smithing_sothoth(obj))
+		){
+			n++;
+			incntlet = 'y';
+			Sprintf(buf, "Imbue %s with distant vistas", xname(obj));
+			any.a_int = SOTHOTH_OPROP;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		if(obj->otyp != CRYSTAL && u.ublood_smithing && check_oprop(obj, OPROP_SOTHW)){
+			n++;
+			incntlet = 'y';
+			Sprintf(buf, "Extract distant vistas from %s", xname(obj));
+			any.a_int = EXTRACT_SOTHOTH;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -515,7 +692,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 's';
 			Sprintf(buf, "Imbue %s with spiritual energy", xname(obj));
-			any.a_int = 9;	/* must be non-zero */
+			any.a_int = HLUH_OPROPS;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -524,7 +701,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'b';
 			Sprintf(buf, "Break down into smaller crystals");
-			any.a_int = 10;	/* must be non-zero */
+			any.a_int = SHATTER_CRYSTAL;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -533,7 +710,7 @@ smithing_object(struct obj *obj)
 			n++;
 			incntlet = 'e';
 			Sprintf(buf, "Extract energy from %s", xname(obj));
-			any.a_int = 11;	/* must be non-zero */
+			any.a_int = EXTRACT_OPROP;	/* must be non-zero */
 			add_menu(tmpwin, NO_GLYPH, &any,
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
@@ -556,7 +733,7 @@ smithing_object(struct obj *obj)
 		}
 		else return;
 		switch(selection){
-			case 1:{
+			case MELT_DOWN:{
 				struct obj *ingots = mksobj(INGOT, MKOBJ_NOINIT);
 				ingots->quan = obj->owt;
 				ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = TRUE;
@@ -581,7 +758,7 @@ smithing_object(struct obj *obj)
 				exercise(A_STR, TRUE);
 				return;
 			}break;
-			case 2:
+			case REPAIR_DAMAGE:
 				if (!Blind)
 					You("successfully reforge your %s, repairing %sthe damage.",
 						xname(obj),
@@ -594,7 +771,7 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, obj->oeroded+obj->oeroded2+1);
 				exercise(A_DEX, TRUE);
 			break;
-			case 3:
+			case ENCHANT_OBJ:
 				if(!upgrade_gem_required){
 					obj->spe++;
 					if(obj->otyp == CHURCH_HAMMER || obj->otyp == CHURCH_BLADE)
@@ -620,9 +797,14 @@ smithing_object(struct obj *obj)
 							if(crystal->spe == 2 && OLD_P_MAX_SKILL(P_SMITHING) < P_SKILLED){
 								pline("The knowledge from the crystal sinks into your subconscious.");
 								skilled_weapon_skill(P_SMITHING);
+								expert_undead_hunter_skill();
 							}
 							else if(crystal->spe > 2 && OLD_P_MAX_SKILL(P_SMITHING) < P_EXPERT){
 								pline("The knowledge from the crystal sinks into your subconscious.");
+								if(OLD_P_MAX_SKILL(P_SMITHING) < P_SKILLED)
+									expert_undead_hunter_skill();
+								expert_undead_hunter_skill();
+								expert_undead_hunter_skill();
 								expert_weapon_skill(P_SMITHING);
 							}
 						}
@@ -635,7 +817,7 @@ smithing_object(struct obj *obj)
 					}
 				}
 			break;
-			case 4:{
+			case FIRE_OPROP:{
 				int spellnum = 0;
 				struct obj *crystal = (struct obj *) 0;
 				get_blood_smithing_x(OPROP_FIREW, &crystal, &spellnum);
@@ -654,7 +836,7 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, 2*4);
 			}
 			break;
-			case 5:{
+			case COLD_OPROP:{
 				int spellnum = 0;
 				struct obj *crystal = (struct obj *) 0;
 				get_blood_smithing_x(OPROP_COLDW, &crystal, &spellnum);
@@ -674,7 +856,7 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, 2*4);
 			}
 			break;
-			case 6:{
+			case SHOCK_OPROP:{
 				int spellnum = 0;
 				struct obj *crystal = (struct obj *) 0;
 				get_blood_smithing_x(OPROP_ELECW, &crystal, &spellnum);
@@ -694,7 +876,7 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, 2*5);
 			}
 			break;
-			case 7:{
+			case ACID_OPROP:{
 				int spellnum = 0;
 				struct obj *crystal = (struct obj *) 0;
 				get_blood_smithing_x(OPROP_ACIDW, &crystal, &spellnum);
@@ -714,7 +896,7 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, 2*4);
 			}
 			break;
-			case 8:{
+			case MAGIC_OPROP:{
 				int spellnum = 0;
 				struct obj *crystal = (struct obj *) 0;
 				get_blood_smithing_x(OPROP_MAGCW, &crystal, &spellnum);
@@ -734,7 +916,31 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, 2*2);
 			}
 			break;
-			case 9:{
+			case HUNGER_OPROP:{
+				int spellnum = 0;
+				struct obj *crystal = (struct obj *) 0;
+				get_blood_smithing_x(OPROP_GOATW, &crystal, &spellnum);
+
+				if(crystal){
+					useup(crystal);
+				}
+				add_oprop(obj, OPROP_GOATW);
+				use_skill(P_SMITHING, 1);
+			}
+			break;
+			case SOTHOTH_OPROP:{
+				int spellnum = 0;
+				struct obj *crystal = (struct obj *) 0;
+				get_blood_smithing_x(OPROP_SOTHW, &crystal, &spellnum);
+
+				if(crystal){
+					useup(crystal);
+				}
+				add_oprop(obj, OPROP_SOTHW);
+				use_skill(P_SMITHING, 1);
+			}
+			break;
+			case HLUH_OPROPS:{
 				int spellnum = 0;
 				struct obj *crystal = (struct obj *) 0;
 				get_blood_smithing_x(OPROP_HOLYW, &crystal, &spellnum);
@@ -757,7 +963,7 @@ smithing_object(struct obj *obj)
 				use_skill(P_SMITHING, 2*5);
 			}
 			break;
-			case 10:{
+			case SHATTER_CRYSTAL:{
 				struct obj *new;
 				if(obj->spe == 2){
 					You("split the twin columnar crystals appart.");
@@ -881,7 +1087,7 @@ smithing_object(struct obj *obj)
 				return;
 			}
 			break;
-			case 11:{
+			case EXTRACT_OPROP:{
 				int count_energy = 0;
 				long latest_oprop = 0;
 				long latest_energy = 0;
@@ -997,8 +1203,117 @@ smithing_object(struct obj *obj)
 							   (const char *)0);
 			}
 			break;
+			case EXTRACT_HUNGER:{
+				remove_oprop(obj, OPROP_GOATW);
+				struct obj *crystal = mksobj(CRYSTAL, MKOBJ_NOINIT);
+				add_oprop(crystal, OPROP_GOATW);
+				set_material_gm(crystal, CHITIN);
+
+				hold_another_object(crystal, u.uswallow ?
+						   "Oops!  %s out of your reach!" :
+						(Weightless ||
+						 Is_waterlevel(&u.uz) ||
+						 levl[u.ux][u.uy].typ < IRONBARS ||
+						 levl[u.ux][u.uy].typ >= ICE) ?
+							   "Oops!  %s away from you!" :
+							   "Oops!  %s to the floor!",
+							   The(aobjnam(crystal, "slip")),
+							   (const char *)0);
+			}
+			break;
+			case EXTRACT_SOTHOTH:{
+				remove_oprop(obj, OPROP_SOTHW);
+				struct obj *crystal = mksobj(CRYSTAL, MKOBJ_NOINIT);
+				add_oprop(crystal, OPROP_SOTHW);
+				set_material_gm(crystal, FIRMAMENT);
+
+				hold_another_object(crystal, u.uswallow ?
+						   "Oops!  %s out of your reach!" :
+						(Weightless ||
+						 Is_waterlevel(&u.uz) ||
+						 levl[u.ux][u.uy].typ < IRONBARS ||
+						 levl[u.ux][u.uy].typ >= ICE) ?
+							   "Oops!  %s away from you!" :
+							   "Oops!  %s to the floor!",
+							   The(aobjnam(crystal, "slip")),
+							   (const char *)0);
+			}
+			break;
 		}
 	}
+}
+
+void
+reshape_brand(struct obj *obj)
+{
+	winid tmpwin;
+	anything any;
+	any.a_void = 0;         /* zero out all bits */
+	menu_item *selected;
+	int otyp = -1;
+	int n, i, b;
+	char ch = 'a';
+	char buffer[BUFSZ] = {0};
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	for(i = 0; i < NUM_OBJECTS; i++){
+		if(!(objects[i].oc_class == ARMOR_CLASS
+			 || objects[i].oc_class == TOOL_CLASS
+			 || objects[i].oc_class == WEAPON_CLASS
+			 || objects[i].oc_class == RING_CLASS
+		))
+			continue;
+		if(!(objects[i].oc_name_known
+			|| objects[i].oc_class == RING_CLASS
+		))
+			continue;
+		if(objects[i].oc_class == WEAPON_CLASS || (objects[i].oc_class == TOOL_CLASS && objects[i].oc_skill != P_NONE)){
+			if(P_SKILL(objects[i].oc_skill < 0 ? -1*objects[i].oc_skill : objects[i].oc_skill) < P_SKILLED || !has_object_type(invent, i))
+				continue;
+		}
+		if(!brandtype(i))
+			continue;
+
+		//Add to menu
+		any.a_int = i;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 obj_descr[i].oc_name, MENU_UNSELECTED);
+		if(ch == 'z'){
+			ch = 'A';
+		}
+		else if(ch == 'Z'){
+			ch = 'a';
+		}
+		else ch++;
+	}
+	end_menu(tmpwin, "Shapes Known:");
+	n = select_menu(tmpwin, PICK_ONE, &selected);
+	destroy_nhwindow(tmpwin);
+	if(n <= 0){
+		return;
+	}
+	int picked = selected[0].item.a_int;
+	free(selected);
+	
+	obj->otyp = picked;
+	obj->oclass = objects[picked].oc_class;
+	if(objects[picked].oc_class == ARMOR_CLASS){
+		if(yn("Size it to a particular creature?")=='y')
+			smith_resizeArmor(&youmonst, obj);
+		else {
+			//sized for you
+			obj->objsize = youracedata->msize;
+			set_obj_shape(obj, youracedata->mflagsb);
+		}
+	}
+	if(picked == CANE || picked == WHIP_SAW){
+		obj->ovar1_alt_mat = obj->obj_material;
+	}
+	obj->oeroded = 0;
+	obj->oeroded2 = 0;
+	obj->oeroded3 = 0;
+	fix_object(obj);
 }
 
 void
@@ -1014,6 +1329,14 @@ dipforge(struct obj *obj)
 	
 	boolean forgeable = (u.ublood_smithing && (!is_flammable(obj) || obj->oerodeproof)) || is_metallic(obj);
 
+	if(obj->oartifact == ART_FIRE_BRAND && (P_RESTRICTED(P_SMITHING) || yn("Reshape Fire Brand?") == 'y')){
+		if(obj->owornmask&W_ARMOR){
+			You("can't reshape fire brand while wearing it.");
+			return;
+		}
+		reshape_brand(obj);
+		return;
+	}
 	/* Dipping something you're still wearing into a forge filled with
 	 * lava, probably not the smartest thing to do. This is gonna hurt.
 	 * Non-metallic objects are handled by lava_damage().
@@ -1366,6 +1689,14 @@ register struct obj *obj;
 		return;
 	}
 
+	if(obj->oartifact == ART_FROST_BRAND){
+		if(obj->owornmask&W_ARMOR){
+			You("can't reshape frost brand while wearing it.");
+			return;
+		}
+		reshape_brand(obj);
+		return;
+	}
 	/* Don't grant Excalibur when there's more than one object.  */
 	/* (quantity could be > 1 if merged daggers got polymorphed) */
 	if (obj->otyp == LONG_SWORD && obj->quan == 1L

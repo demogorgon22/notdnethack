@@ -264,9 +264,7 @@
 						 ((ptr)->mtyp == PM_GHOUL_QUEEN_NITOCRIS) || \
 						 ((ptr)->mtyp == PM_PHARAOH) \
 						)
-#define skeleton_innards(ptr)	(((ptr)->mtyp == PM_SKELETON) || \
-						 ((ptr)->mtyp == PM_SKELETAL_PIRATE) \
-						)
+#define skeleton_innards(ptr)	(((ptr)->mflagsb&MB_SKELETAL) != 0)
 #define no_innards(ptr)	((ptr)->mlet == S_VORTEX || \
 						 (ptr)->mlet == S_LIGHT || \
 						 (ptr)->mlet == S_ELEMENTAL || \
@@ -993,8 +991,8 @@
 #define omnisense(ptr)		((ptr->mflagsv & MV_OMNI))
 
 #define can_betray(ptr)		((ptr->mflagst & MT_TRAITOR))
-// #define opaque(ptr)	(((ptr)->mflagsg & MG_OPAQUE))
-#define opaque(ptr)	(FALSE)
+#define opaque(ptr)	(((ptr)->mflagsg & MG_OPAQUE))
+// #define opaque(ptr)	(FALSE)
 #define mteleport(ptr)	(((ptr)->mflagsm & MM_TENGTPORT))
 #define is_mplayer(ptr)		(((ptr)->mtyp >= PM_ARCHEOLOGIST) && \
 				 ((ptr)->mtyp <= PM_WIZARD))

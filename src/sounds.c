@@ -4976,7 +4976,7 @@ int tx,ty;
 				pline("The creature's five legs are arranged in a star pattern, and to move it rolls from foot to foot.");
 				pline("At the center of the wheel is a lion's head, complete with a glorious mane.");
 			}
-			pline("The creature speaks to you; and it's voice, though deep, is clearly that of a woman.");
+			pline("The creature speaks to you; and its voice, though deep, is clearly that of a woman.");
 			pline("\"I am Buer, %s, %s to %s.", buerTitles[rn2(SIZE(buerTitles))], buerSetOne[rn2(SIZE(buerSetOne))], buerSetTwo[rn2(SIZE(buerSetTwo))]);
 			if(u.sealCounts < numSlots){
 				if(Role_if(PM_ANACHRONOUNBINDER)){

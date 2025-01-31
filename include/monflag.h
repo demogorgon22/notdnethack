@@ -187,6 +187,7 @@
 #define MB_INSUBSTANTIAL	0x04000000L	/* Weapons pass through the monster */
 #define MB_NOGLOVES		0x08000000L	/* can handle things but has no glove slot */
 #define MB_NOHAT		0x10000000L	/* has a head to be beheaded but has no helm slot */
+#define MB_SKELETAL		0x20000000L	/* only bones */
 
 #define MB_SNAKELEG	(MB_HUMANOID|MB_SLITHY)
 #define MB_CENTAUR	(MB_HUMANOID|MB_ANIMAL)

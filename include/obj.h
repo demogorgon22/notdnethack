@@ -349,7 +349,11 @@ struct obj {
 #define ovar1_puzzle_steps ovar1
 #define ovar1_alt_mat ovar1
 #define ovar1_last_blooded ovar1
-
+#define ovar1_tooth_type ovar1
+#define SERPENT_TOOTH	1
+#define MAGMA_TOOTH		2
+#define VOID_TOOTH		3
+#define MAX_TOOTH		VOID_TOOTH
 	/* Number of viperwhip heads */
 	/* Moon axe phase */
 	/* Acid venom non-1d6 damage */
@@ -381,6 +385,7 @@ struct obj {
 	|| (otmp)->otyp == CANE \
 	|| (otmp)->otyp == WHIP_SAW \
 	|| (otmp)->otyp == CHIKAGE \
+	|| (otmp)->otyp == TOOTH \
 	|| is_imperial_elven_armor(otmp) \
 	)
 #define ECLIPSE_MOON	0
@@ -603,21 +608,105 @@ struct obj {
 							( (a) == &artilist[ART_SKY_REFLECTED] ) ? (o->obj_material == MERCURIAL && (o->oclass == WEAPON_CLASS || is_weptool(o))) : \
 							((a) == &artilist[ART_FIRE_BRAND] || (a) == &artilist[ART_FROST_BRAND]) ? \
 								(u.brand_otyp == STRANGE_OBJECT ? \
-									((is_blade((o)) && objects[(o)->otyp].oc_size < MZ_HUGE && \
-										!is_vibroweapon((o)) && \
-										!is_rakuyo((o)) && \
-										!((o)->otyp == SET_OF_CROW_TALONS) && \
-										!((o)->otyp == CROW_QUILL) && \
-										!((o)->otyp == CARCOSAN_STING) && \
-										!((o)->otyp == CHIKAGE) && \
-										!((o)->otyp == PINCER_STAFF) && \
-										!((o)->otyp == BESTIAL_CLAW) && \
-										!(is_mercy_blade(o)) && \
-										!((o)->otyp == RUNESWORD) && \
-										!((o)->otyp == MIRRORBLADE)) \
-									|| (o)->otyp == GAUNTLETS) : \
+									(brandtype((o)->otyp)) : \
 									(u.brand_otyp == (o)->otyp)) : \
 							(a)->otyp == (o)->otyp)
+
+#define brandtype(typ) ( \
+				typ == CHAKRAM \
+				|| typ == SPEAR \
+				|| typ == ATGEIR \
+				|| typ == JAVELIN \
+				|| typ == TRIDENT \
+				|| typ == DAGGER \
+				|| typ == STAKE \
+				|| typ == ATHAME \
+				|| (Role_if(PM_NOBLEMAN) && Race_if(PM_HALF_DRAGON) && typ == SET_OF_CROW_TALONS) \
+				|| typ == SCALPEL \
+				|| typ == KNIFE \
+				|| typ == STILETTO \
+				|| typ == SICKLE \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == SAW_CLEAVER) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == RAZOR_CLEAVER) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == LONG_SAW) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == SAW_SPEAR) \
+				|| typ == AXE \
+				|| (Role_if(PM_ANACHRONONAUT) && typ == DISKOS) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_AXE) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_LONG_AXE) \
+				|| typ == BATTLE_AXE \
+				|| typ == SHORT_SWORD \
+				|| (Role_if(PM_WIZARD) && typ == KHOPESH) \
+				|| (Role_if(PM_SAMURAI) && typ == WAKIZASHI) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_BRICK) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_SHORTSWORD) \
+				|| typ == SCIMITAR \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == BOW_BLADE) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == BLADED_BOW) \
+				|| typ == RAPIER \
+				|| typ == SABER \
+				|| (Role_if(PM_NOBLEMAN) && Race_if(PM_HALF_DRAGON) && typ == CROW_QUILL) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == SOLDIER_S_RAPIER) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == SOLDIER_S_SABER) \
+				|| typ == BROADSWORD \
+				|| typ == LONG_SWORD \
+				|| typ == CRYSTAL_SWORD \
+				|| typ == TWO_HANDED_SWORD \
+				|| typ == KATANA \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CANE) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == WHIP_SAW) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == BEAST_CUTTER) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == BEAST_CRUSHER) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_PICK) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_SHORTSWORD) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_SHEATH) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_LONGSWORD) \
+				|| (Role_if(PM_SAMURAI) && typ == TSURUGI) \
+				|| typ == PARTISAN \
+				|| typ == RANSEUR \
+				|| typ == SPETUM \
+				|| typ == GLAIVE \
+				|| (Role_if(PM_SAMURAI) && typ == NAGINATA) \
+				|| typ == LANCE \
+				|| typ == HALBERD \
+				|| typ == POLEAXE \
+				|| typ == BARDICHE \
+				|| typ == VOULGE \
+				|| typ == FAUCHARD \
+				|| typ == GUISARME \
+				|| typ == BILL_GUISARME \
+				|| typ == LUCERN_HAMMER \
+				|| typ == BEC_DE_CORBIN \
+				|| typ == SCYTHE \
+				|| typ == MACE \
+				|| typ == GREAT_MACE \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == TONITRUS) \
+				|| typ == MORNING_STAR \
+				|| typ == WAR_HAMMER \
+				|| typ == SMITHING_HAMMER \
+				|| typ == CLUB \
+				|| typ == MACUAHUITL \
+				|| typ == QUARTERSTAFF \
+				|| typ == KHAKKHARA \
+				|| typ == DOUBLE_SWORD \
+				|| typ == AKLYS \
+				|| typ == FLAIL \
+				|| typ == NUNCHAKU \
+				|| (Race_if(PM_DROW) && typ == DROVEN_GREATSWORD) \
+				|| typ == KATAR \
+				|| (Role_if(PM_PIRATE) && typ == FLINTLOCK) \
+				|| (Role_if(PM_UNDEAD_HUNTER) && typ == PISTOL) \
+				|| (Role_if(PM_MADMAN) && u.uinsight > 30 && typ == CARCOSAN_STING) \
+				|| typ == BOW \
+				|| (Role_if(PM_SAMURAI) && typ == YUMI) \
+				|| (Race_if(PM_GNOME) && typ == CROSSBOW) \
+				|| (Role_if(PM_ARCHEOLOGIST) && typ == ATLATL) \
+				|| (Role_if(PM_CAVEMAN) && typ == ATLATL) \
+				|| (Race_if(PM_ELF) && typ == RIN_NOTHING) \
+				|| typ == CRYSTAL_GAUNTLETS \
+			)
+
+
 #define is_blade(otmp)	((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && \
 			 ((objects[otmp->otyp].oc_skill >= P_DAGGER && \
 			 objects[otmp->otyp].oc_skill <= P_SABER) || \
@@ -667,6 +756,9 @@ struct obj {
 			 is_rakuyo(otmp) ||\
 			 otmp->otyp == CARCOSAN_STING || \
 			 otmp->otyp == CHIKAGE || \
+			 otmp->otyp == TOOTH || \
+			 otmp->otyp == CHURCH_SHORTSWORD || \
+			 otmp->otyp == CHURCH_PICK || \
 			 check_oprop(otmp,OPROP_GSSDW) || \
 			 check_oprop(otmp,OPROP_INSTW) || \
 			 check_oprop(otmp,OPROP_ELFLW) || \
@@ -887,17 +979,22 @@ struct obj {
 						|| (o)->otyp == LONG_SAW \
 						|| (o)->otyp == DISKOS \
 						|| (o)->otyp == DEMON_CLAW \
+						|| (o)->otyp == BEAST_CUTTER \
+						|| (o)->otyp == BEAST_CRUSHER \
 						|| ((o)->otyp == MOON_AXE && (o)->ovar1_moonPhase == HUNTING_MOON) \
 						)
 #define is_self_righteous(o)	((o)->otyp == CANE \
 						|| (o)->otyp == CHURCH_HAMMER \
 						|| (o)->otyp == CHURCH_BLADE \
+						|| (o)->otyp == CHURCH_PICK \
+						|| (o)->otyp == CHURCH_SHORTSWORD \
 						|| (o)->otyp == DEVIL_FIST \
 						)
 
-#define is_lightsaber(otmp) ((otmp)->otyp == LIGHTSABER || \
+#define is_lightsaber(otmp) (is_lasersword(otmp) || \
 							 (otmp)->otyp == KAMEREL_VAJRA || \
-							 (otmp)->otyp == ROD_OF_FORCE || \
+							 (otmp)->otyp == ROD_OF_FORCE)
+#define is_lasersword(otmp) ((otmp)->otyp == LIGHTSABER || \
 							 (otmp)->otyp == BEAMSWORD || \
 							 (otmp)->otyp == DOUBLE_LIGHTSABER)
 #define is_gemable_lightsaber(otmp) (((otmp)->otyp == LIGHTSABER\
@@ -970,6 +1067,7 @@ struct obj {
 						  (otmp)->otyp == CROW_QUILL || \
 						  (otmp)->otyp == SET_OF_CROW_TALONS || \
 						  (otmp)->otyp == MOON_AXE || \
+						  (otmp)->otyp == TOOTH || \
 						  (otmp)->otyp == CANE || \
 						  (otmp)->otyp == WHIP_SAW || \
 						  (otmp)->otyp == CHURCH_HAMMER || \
@@ -1510,7 +1608,9 @@ struct obj {
 
 #define higher_depth(armdepth, depth)	(armdepth == depth || (\
 		(depth&(W_ARMC|W_GLYPH)) ? FALSE :\
-		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_BELT|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
+		(depth&(W_BELT)) ? !!(armdepth&(W_ARMC|W_GLYPH)) :\
+		(depth&(W_DRESS_DEPTH)) ? !!(armdepth&(W_ARMC|W_GLYPH|W_BELT)) :\
+		(depth&(W_ARMS|W_WEP|W_QUIVER|W_SWAPWEP|W_AMUL|W_SADDLE|W_CHAIN)) ? (armdepth == W_ARMC) :\
 		(depth&(W_ARMH|W_ARMG|W_ARMF|W_ARM|W_RINGL|W_RINGR|W_TOOL)) ? (armdepth != W_ARMU) :\
 		(depth&(W_ARMU|W_SKIN|W_UPGRADE)) ? TRUE :\
 		FALSE))

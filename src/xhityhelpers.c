@@ -1500,8 +1500,10 @@ struct monst * magr;
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			diesize = 20;
 		}
-		if (is_self_righteous(otmp))
-			diesize *= 2.5;
+		if (is_self_righteous(otmp) && 
+			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
+		)
+			diesize *= otmp->otyp == CHURCH_SHORTSWORD && u.uinsight >= 40 ? 5 : 2.5;
 		/* calculate dice */
 		dmg += vd(ndice, diesize);
 	}
@@ -1567,8 +1569,10 @@ struct monst * magr;
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			ndice *= 2;
 		}
-		if (is_self_righteous(otmp))
-			diesize *= 2.5;
+		if (is_self_righteous(otmp) && 
+			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
+		)
+			diesize *= otmp->otyp == CHURCH_SHORTSWORD && u.uinsight >= 40 ? 5 : 2.5;
 		/* calculate */
 		if (ndice)
 			dmg += vd(ndice, diesize);

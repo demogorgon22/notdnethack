@@ -4359,7 +4359,7 @@ int *shield_margin;
 	/* ignore worn armor? */
 	if ((youagr && u.sealsActive&SEAL_CHUPOCLOPS && (melee || thrust)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
-		(weapon && arti_phasing(weapon)) ||
+		(weapon && (arti_phasing(weapon) || (is_lightsaber(weapon) && litsaber(weapon)))) ||
 		(melee && youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(melee && attk->aatyp == AT_TUCH) ||
 		(melee && attk->aatyp == AT_VINE) ||
@@ -14089,7 +14089,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	static int warnedotyp = -1;
 	static struct permonst *warnedptr = 0;
 
-	char killerbuf[BUFSZ];		/* only for use with killer */
+	static char killerbuf[BUFSZ];		/* only for use with killer */
 	char buf[BUFSZ];
 
 	boolean phase_armor = FALSE;
@@ -14962,6 +14962,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_ACID;
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
+		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && u.uinsight >= 20 && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
+			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
@@ -15047,6 +15049,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				majoreff = !rn2(10);
 				break;
 			case OPOISON_DIRE:
+				resists = FALSE;
 				majoreff = !rn2(10);
 				break;
 			case OPOISON_FILTH:
@@ -15107,8 +15110,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		for (n = 0; n < NUM_POISONS; n++)
 		{
 			i = (1 << n);
-			boolean major = (poisons_majoreff & i);
-			boolean minor = (poisons_minoreff & i);
+			boolean major = (poisons_majoreff & i) != 0;
+			boolean minor = (poisons_minoreff & i) != 0;
 			if (!major && !minor)
 				continue;
 			/* calculate poison damage */
@@ -16551,6 +16554,19 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	if(weapon && is_serrated(weapon) && is_serration_vulnerable(mdef)){
 		subtotl *= 1.2;
 	}
+	//There is something in the tip that, when driven deep, is deleterious to beasts and the ritually impure
+	if(weapon 
+		&& (weapon->otyp == CHURCH_PICK || (weapon->otyp == CHURCH_SHORTSWORD && !(resist_pierce(pd) && !resist_slash(pd))))
+		&& (is_animal(pd) || (youdef && u.uimpurity > 10)
+			|| pd->mtyp == PM_DEEP_ONE || pd->mtyp == PM_DEEPER_ONE
+			|| pd->mtyp == PM_KUO_TOA || pd->mtyp == PM_KUO_TOA_WHIP
+			|| pd->mtyp == PM_BEING_OF_IB || pd->mtyp == PM_PRIEST_OF_IB
+			|| is_mind_flayer(pd)
+			|| pd->mtyp == PM_BEFOULED_WRAITH || mdef->mtraitor || mdef->mferal
+		)
+	){
+		subtotl *= u.uinsight >= 40 ? 1.5 : 1.2;
+	}
 
 
 	/* If the character is panicking, all their attacks do half damage */
@@ -16569,6 +16585,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	
 	/* Apply DR before multiplicative defences/vulnerabilites */
+	int hit_slot = ROLL_SLOT;
 	if (subtotl > 0){
 		int dr = 0;
 		if (phase_armor){
@@ -16582,31 +16599,34 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			dr = (youdef ? roll_udr(magr, LEG_DR) : roll_mdr(mdef, magr, LEG_DR));
 		}
 		else if(weapon && magr){
-			int slot = ROLL_SLOT;
 			if(weapon->o_e_trait == ETRAIT_HEW && CHECK_ETRAIT(weapon, magr, ETRAIT_HEW)){
 				int hewslots[] = {HEAD_DR, UPPER_TORSO_DR, ARM_DR};
-				slot = ROLL_FROM(hewslots);
+				hit_slot = ROLL_FROM(hewslots);
 			}
 			else if(weapon->o_e_trait == ETRAIT_FELL && CHECK_ETRAIT(weapon, magr, ETRAIT_FELL)){
 				int hewslots[] = {LEG_DR, LOWER_TORSO_DR};
-				slot = ROLL_FROM(hewslots);
+				hit_slot = ROLL_FROM(hewslots);
 			}
 			else if(weapon->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(weapon, magr, ETRAIT_FOCUS_FIRE)){
 				if(ROLL_ETRAIT(weapon, magr, TRUE, !rn2(5))){
 					int min_slot = UPPER_TORSO_DR;
 					int min_dr = (youdef ? roll_udr(magr, UPPER_TORSO_DR) : roll_mdr(mdef, magr, UPPER_TORSO_DR));
-					for(slot = LOWER_TORSO_DR; slot <= ARM_DR; slot = slot<<1){
-						dr = (youdef ? roll_udr(magr, slot) : roll_mdr(mdef, magr, slot));
+					for(hit_slot = LOWER_TORSO_DR; hit_slot <= ARM_DR; hit_slot = hit_slot<<1){
+						dr = (youdef ? roll_udr(magr, hit_slot) : roll_mdr(mdef, magr, hit_slot));
 						if(dr < min_dr){
 							min_dr = dr;
-							min_slot = slot;
+							min_slot = hit_slot;
 						}
 					}
 					//Targets lowest
-					slot = min_slot;
+					hit_slot = min_slot;
 				}
 			}
-			dr = (youdef ? roll_udr(magr, slot) : roll_mdr(mdef, magr, slot));
+			else if(is_lightsaber(weapon) && litsaber(weapon)){
+				int saber_slots[] = {HEAD_DR, UPPER_TORSO_DR, ARM_DR, LEG_DR, LOWER_TORSO_DR};
+				hit_slot = ROLL_FROM(saber_slots);
+			}
+			dr = (youdef ? roll_udr(magr, hit_slot) : roll_mdr(mdef, magr, hit_slot));
 		}
 		else {
 			dr = (youdef ? roll_udr(magr, ROLL_SLOT) : roll_mdr(mdef, magr, ROLL_SLOT));
@@ -16856,6 +16876,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			d(6, 6),
 			EXPL_FIERY, 1);
 	}
+	if(hit_slot != ROLL_SLOT && weapon && magr && is_lightsaber(weapon) && litsaber(weapon)){
+		saber_damage_slot(mdef, weapon, hit_slot, lethaldamage, vis, &hittxt);
+	}
 	/* PRINT HIT MESSAGE. MAYBE. */
 	if (dohitmsg && vis){
 		if (thrown && !hittxt)
@@ -16972,6 +16995,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					uswapwepgone();	/* set unweapon */
 
 				/* useup() will be called later */
+			}
+			if(lethaldamage && u.usteed){
+				grow_up(u.usteed, mdef);
 			}
 		}
 		else {

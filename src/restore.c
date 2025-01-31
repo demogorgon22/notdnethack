@@ -59,6 +59,7 @@ extern int amii_numcolors;
 #include "quest.h"
 
 boolean restoring = FALSE;
+boolean loading_mons = FALSE;
 static NEARDATA struct fruit *oldfruit;
 static NEARDATA long omoves;
 
@@ -266,6 +267,7 @@ boolean ghostly;
 	struct permonst *monbegin;
 	boolean moved;
 
+	loading_mons = TRUE;
 	/* get the original base address */
 	mread(fd, (genericptr_t)&monbegin, sizeof(monbegin));
 	moved = (monbegin != mons);
@@ -345,6 +347,7 @@ boolean ghostly;
 		impossible("Restmonchn: error reading monchn.");
 		mtmp2->nmon = 0;
 	}
+	loading_mons = FALSE;
 	return(first);
 }
 

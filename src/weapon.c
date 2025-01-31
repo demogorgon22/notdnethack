@@ -341,7 +341,6 @@ struct monst *magr;
 	if (   oartifact == ART_YORSHKA_S_SPEAR
 		|| oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD
 		|| oartifact == ART_INFINITY_S_MIRRORED_ARC
-		|| oartifact == ART_FROST_BRAND
 		|| (obj && otyp == KAMEREL_VAJRA && !litsaber(obj))
 		){
 		attackmask |= WHACK;
@@ -368,6 +367,9 @@ struct monst *magr;
 			attackmask = PIERCE; // only thrusting
 		else if(activeFightingForm(FFORM_POMMEL))
 			attackmask = WHACK; // only bashing
+	}
+	if (obj && magr && obj->otyp == TOOTH && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
+		attackmask = PIERCE; // only thrusting
 	}
 	if(obj && obj->o_e_trait == ETRAIT_HEW && magr
 		&& CHECK_ETRAIT(obj, magr, ETRAIT_HEW)
@@ -396,6 +398,13 @@ struct monst *magr;
 		|| (obj && check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 24)
 		){
 		attackmask |= EXPLOSION;
+	}
+	if(oartifact == ART_FROST_BRAND){
+		if(!(attackmask&WHACK))
+			attackmask |= WHACK;
+		else if(!(attackmask&PIERCE))
+			attackmask |= PIERCE;
+		else attackmask |= SLASH;
 	}
 	/* if it's not any of the above, we're just smacking things with it */
 	if (!attackmask)
@@ -508,13 +517,12 @@ struct monst *magr;
 				flat += min(mlev(magr)/3, 10);
 		}
 
-		if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD)
+		if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD){
 			dmod += 1;
+			if (obj->lamplit)
+				dmod += 2;
+		}
 
-		if (obj->oartifact == ART_FRIEDE_S_SCYTHE)
-			dmod += 2;
-		else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit)
-			dmod += 2;
 		if(obj->where == OBJ_INVENT && is_slashing(obj) && u.utats & TAT_FALCHION)
 			ocd++;
 
@@ -540,6 +548,15 @@ struct monst *magr;
 				flat = 0;
 			}
 		}
+		if (magr && obj->otyp == TOOTH && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
+				ocn = 1;
+				ocd = 8;
+				bonn = 0;
+				bond = 0;
+				flat = 0;
+		}
+		if (obj->oartifact == ART_FRIEDE_S_SCYTHE)
+			dmod += 2;
 
 		if (obj->oartifact == ART_LIECLEAVER) {
 			ocn = 1;
@@ -1391,21 +1408,29 @@ struct monst *magr;
 		}
 		break;
 	case ART_ATMA_WEAPON:
-		/* damage is multiplied % of health remaining (currently only implemented for the player) */
+		/* damage is multiplied % of health remaining */
 		/* calculate damage normally */
 		tmp += weapon_dmg_roll(&wdice, youdefend);
 		/* apply the multiplier, if applicable */
-		if (otmp == uwep &&	!Drain_resistance)
+		if (magr == &youmonst && !Drain_resistance)
 		{
 			tmp *= Upolyd ?
 				((float)u.mh) / u.mhmax :
 				((float)u.uhp) / u.uhpmax;
+		}
+		else if(magr && !Drain_res(magr)){
+			tmp *= ((float)magr->mhp) / magr->mhpmax;
 		}
 		/* cannot be negative */
 		if (tmp < 0)
 			tmp = 0;
 		/* don't re-add the weapon dice */
 		add_dice = FALSE;
+		break;
+	case ART_STORMBRINGER:
+		if(mon && (mon != &youmonst || Upolyd) && hd_size(mon->data) > 8){
+			tmp *= ((float)hd_size(mon->data)) / 8;
+		}
 		break;
 	}
 
@@ -1936,16 +1961,21 @@ static const NEARDATA short hwep[] = {
 	  LIGHTSABER/*3d8*/,
 	  ETHERBLADE,/*3d6*/
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
+	  TOOTH/*6d6/3d12+3*/,
+	  GREATCLUB/*3d6/1d12*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
 	  CHURCH_HAMMER,/*2d8+2/2d8*/
 	  DOUBLE_SWORD,/*2d8/2d12*/
+	  BEAST_CUTTER,/*1d6+4/3d4+3*/
+	  BEAST_CRUSHER,/*2d6/1d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
 	  TSURUGI/*1d16/1d8+2d6*/, 
 	  MOON_AXE/*variable, 2d6 to 2d12*/,
+	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,
 	  CHURCH_BLADE/*1d12+1/3d8*/, 
 	  RUNESWORD/*1d10+1d4/1d10+1*/, 
@@ -1954,9 +1984,11 @@ static const NEARDATA short hwep[] = {
 	  DROVEN_SPEAR/*1d12/1d12*/,
 	  UNICORN_HORN/*1d12/1d12*/,
 	  ISAMUSEI/*1d12/1d8*/, 
+	  CHURCH_PICK/*1d12/1d8*/, 
 	  DWARVISH_MATTOCK/*1d12/1d8*/, 
 	  RAKUYO/*1d8+1d4/1d8+1d3*/, 
 	  ELVEN_BROADSWORD/*1d6+1d4/1d6+2*/, 
+	  TONITRUS/*1d10+1/1d10*/, 
 	  CHIKAGE/*1d10/1d12*/,
 	  KATANA/*1d10/1d12*/,
 	  CRYSKNIFE/*1d10/1d10*/, 
@@ -1987,6 +2019,7 @@ static const NEARDATA short hwep[] = {
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
 	  SCIMITAR/*1d8/1d8*/,
+	  CHURCH_SHORTSWORD/*1d8/1d7*/, 
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
 	  WAKIZASHI/*1d8/1d6*/,
 	  KHOPESH,/*1d8/1d6*/
@@ -2061,16 +2094,21 @@ static const NEARDATA short hpwep[] = {
 	  LIGHTSABER/*3d8*/,
 	  ETHERBLADE,/*3d6*/
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
+	  TOOTH/*6d6/3d12+3*/,
+	  GREATCLUB/*3d6/1d12*/,
 	  HEAVY_IRON_BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
 	  CHURCH_HAMMER,/*2d8+2/2d8*/
 	  DOUBLE_SWORD,/*2d8/2d12*/
+	  BEAST_CUTTER,/*1d6+4/3d4+3*/
+	  BEAST_CRUSHER,/*2d6/1d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
 	  TSURUGI/*1d16/1d8+2d6*/, 
 	  MOON_AXE/*variable, 2d6 to 2d12*/,
+	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,
 	  CHURCH_BLADE/*1d12+1/3d8*/, 
 	  RUNESWORD/*1d10+1d4/1d10+1*/, 
@@ -2079,10 +2117,12 @@ static const NEARDATA short hpwep[] = {
 	  DROVEN_SPEAR/*1d12/1d12*/,
 	  UNICORN_HORN/*1d12/1d12*/,
 	  ISAMUSEI/*1d12/1d8*/, 
+	  CHURCH_PICK/*1d12/1d8*/, 
 	  DWARVISH_MATTOCK/*1d12/1d8*/, 
 	  RAKUYO/*1d8+1d4/1d8+1d3*/, 
 	  ELVEN_BROADSWORD/*1d6+1d4/1d6+2*/, 
 	  POLEAXE, /*1d10/2d6*/
+	  TONITRUS/*1d10+1/1d10*/, 
 	  HALBERD, /*1d10/2d6*/
 	  CHIKAGE/*1d10/1d12*/,
 	  KATANA/*1d10/1d12*/,
@@ -2123,6 +2163,7 @@ static const NEARDATA short hpwep[] = {
 	  NAGINATA/*1d6+1/2d4*/, 
 	  ELVEN_LANCE, /*1d8/1d8*/
 	  SCIMITAR/*1d8/1d8*/,
+	  CHURCH_SHORTSWORD/*1d8/1d7*/, 
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
 	  WAKIZASHI/*1d8/1d6*/,
 	  KHOPESH,/*1d8/1d6*/
@@ -3487,7 +3528,8 @@ int new_cap;
     if (skill < P_NUM_SKILLS && OLD_P_MAX_SKILL(skill) < new_cap) {
 		if(OLD_P_SKILL(skill) == P_ISRESTRICTED) OLD_P_SKILL(skill) = P_UNSKILLED;
 		OLD_P_MAX_SKILL(skill) = new_cap;
-		P_ADVANCE(skill) = practice_needed_to_advance(OLD_P_SKILL(skill)-1);
+		P_ADVANCE(skill) = max(practice_needed_to_advance(OLD_P_SKILL(skill)-1), P_ADVANCE(skill));
+		P_ADVANCE(skill) = min(practice_needed_to_advance(OLD_P_SKILL(skill)), P_ADVANCE(skill));
     }
 }
 
