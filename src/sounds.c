@@ -996,7 +996,7 @@ boolean chatting;
 				if (smith_offer_price(charge, mtmp) == FALSE) break;
 				u.utats |= selection;
 				pline("%s tattoos a %s onto you.",Monnam(mtmp),tat_to_name(selection));
-				You_feel("your coin purse's weight vanish.");
+				You_feel("gilded.");
 				break;
 			case TAT_UNKNOWN:
 				charge = (int) 8000 * discount;

@@ -3165,14 +3165,13 @@ inv_weight()
 		objwt = max(0, objwt - wtmod);
 	wt += objwt;
 #endif
-	if(u.utats & TAT_CROESUS) wt = 0;
 	while (otmp) {
 		//Correct artifact weights before adding them.  Because that code isn't being run.
 		if(otmp->oartifact) otmp->owt = weight(otmp);
 #ifndef GOLDOBJ
 		if (!is_boulder(otmp) || !(throws_rocks(youracedata) || u.sealsActive&SEAL_YMIR))
 #else
-		if (otmp->oclass == COIN_CLASS && !(u.utats&TAT_CROESUS)){
+		if (otmp->oclass == COIN_CLASS){
 			objwt += gold_weight(u.ugold);
 			if(nymph)
 				objwt = max(0, objwt - wtmod);

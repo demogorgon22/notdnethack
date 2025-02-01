@@ -448,7 +448,7 @@ Dungeon Changes
 					for anyone
 					 $2000
 				Croesus family crest
-					gold in open inventory weighs nothing.
+					let everyone know how broke they are compared to you
 					available for someone wearing all gold chest,gloves,boot,helm 
 					$30000
 				Blasphemous shapes
