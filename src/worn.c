@@ -2892,7 +2892,6 @@ saber_damage_slot(struct monst *mdef, struct obj *saber, int slot, boolean letha
 					*messaged = TRUE;
 					vis = FALSE;
 				}
-				pline("%s is hit", The(xname(otmp)));
 				if((is_lasersword(saber) && item_has_property(otmp, REFLECTING))
 				 ||(saber->otyp == ROD_OF_FORCE && (item_has_property(otmp, ANTIMAGIC) || item_has_property(otmp, NULLMAGIC)))
 				 ||(saber->otyp == KAMEREL_VAJRA && item_has_property(otmp, SHOCK_RES))
