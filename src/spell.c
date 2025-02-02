@@ -6028,6 +6028,9 @@ int spell;
 			splcaster -= urole.spelarmr;
 	}
 
+	if(Black_crystal)
+		splcaster -= urole.spelarmr;
+
 	if(uwep){
 		int cast_bon;
 		// powerful channeling artifacts
@@ -6037,7 +6040,6 @@ int spell;
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
 			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
-			|| Black_crystal
 		) splcaster -= urole.spelarmr;
 
 		if(uwep->obj_material == MERCURIAL)
