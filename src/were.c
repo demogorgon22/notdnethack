@@ -354,6 +354,7 @@ struct monst *mon;
 		}
 		/* regenerate by 1/4 of the lost hit points */
 		mon->mhp += (mon->mhpmax - mon->mhp) / 4;
+		return;
 	}
 
 	pm = counter_were(monsndx(mon->data));
