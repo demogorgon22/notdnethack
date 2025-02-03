@@ -100,7 +100,7 @@ int otyp;
 		otyp = obj->otyp;
 
 	i = 0;
-	for (cur_prop = 1; cur_prop < LAST_PROP; cur_prop++)
+	for (cur_prop = 1; cur_prop <= LAST_PROP; cur_prop++)
 	{
 		got_prop = FALSE;
 		// from objclass
