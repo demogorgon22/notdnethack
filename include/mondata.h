@@ -1415,6 +1415,7 @@
 				 (ptr)->mtyp != PM_FLESH_GOLEM &&     \
 				 (ptr)->mtyp != PM_LEATHER_GOLEM) ||  \
 				 (ptr)->mtyp == PM_WOOD_TROLL ||      \
+				 (ptr)->mtyp == PM_ENT ||             \
 				 noncorporeal(ptr))
 #define is_burnable(ptr)	((ptr)->mlet == S_PLANT || \
 							((ptr)->mlet == S_FUNGUS && !is_migo(ptr)) || \
