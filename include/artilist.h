@@ -1676,7 +1676,7 @@ A("Fingerprint Shield",	TOWER_SHIELD,			"fingerprint-covered %s",
 	NO_ATTK(), NOFLAG,
 	PROPS(HALF_PHDAM, HALF_SPDAM), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, (ARTI_PLUSTEN)
+	FINGERPRINT_SHIELD, (ARTI_PLUSTEN)
 	),
 
 /*Needs encyc entry*/
