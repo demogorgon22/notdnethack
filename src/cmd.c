@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include <ctype.h>
+#include <limits.h>
 
 #include "hack.h"
 #include "artifact.h"
@@ -4678,8 +4679,11 @@ parse()
 	    for (;;) {
 		foo = readchar();
 		if (foo >= '0' && foo <= '9') {
-		    multi = 10 * multi + foo - '0';
-		    if (multi < 0 || multi >= 200) multi = 200;
+		    if (ckd_mul(&multi, 10, multi)) multi = INT_MAX;
+		    else if (ckd_add(&multi, multi, foo - '0')) multi = INT_MAX;
+#ifdef LIMIT_IPS
+		    if (multi > 200) multi = 200;
+#endif
 		    if (multi > 9) {
 			clear_nhwindow(WIN_MESSAGE);
 			Sprintf(in_line, "Count: %d", multi);
