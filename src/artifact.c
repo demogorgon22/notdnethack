@@ -747,7 +747,7 @@ aligntyp alignment;	/* target alignment, or A_NONE */
 			int otyp = a->otyp;
 
 			if ((arti == ART_FIRE_BRAND || arti == ART_FROST_BRAND) && u.brand_otyp == STRANGE_OBJECT) {
-				if (Role_if(PM_MONK))
+				if (Role_if(PM_MONK) && !Race_if(PM_ETHEREALOID))
 					otyp = GAUNTLETS;
 				else
 					otyp =	!rn2(3) ? LONG_SWORD :
@@ -824,6 +824,10 @@ aligntyp alignment;
 			skip_if(Role_if(PM_MONK) && !is_monk_safe_artifact(m) && rn2(20));	/* we relax this requirement before removing it */
 
 			skip_if(Race_if(PM_ETHEREALOID) && !is_eth_safe_artifact(m));
+
+			skip_if(Race_if(PM_ETHEREALOID) && Role_if(PM_MONK)
+				&& ((m) == ART_FIRE_BRAND || (m) == ART_FROST_BRAND)
+				&& u.brand_otyp == STRANGE_OBJECT);
 
 			/* avoid artifacts of materials that hate the player's natural form */
 			skip_if(!(Role_if(a->role) || Pantheon_if(a->role)) && (
