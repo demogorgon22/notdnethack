@@ -3281,6 +3281,7 @@ get_premium_heart_multiplier()
 	if (Sick) multiplier++;
 	if (Stoned) multiplier++;
 	if (Golded) multiplier++;
+	if (Salted) multiplier++;
 	if (Strangled) multiplier++;
 	if (Vomiting) multiplier++;
 	if (Slimed) multiplier++;

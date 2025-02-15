@@ -212,6 +212,7 @@ newman()
 	if (Sick) make_sick(0L, (char *) 0, FALSE, SICK_ALL);
 	Stoned = 0;
 	Golded = 0;
+	Salted = 0;
 	delayed_killer = 0;
 	if (u.uhp <= 0 || u.uhpmax <= 0) {
 		if (Polymorph_control) {
@@ -496,10 +497,15 @@ int	mntmp;
 		delayed_killer = 0;
 		You("no longer seem to be petrifying.");
 	}
-	if (Stone_resistance && Golded) { /* parnes@eniac.seas.upenn.edu */
+	if (Stone_resistance && Golded) {
 		Golded = 0;
 		delayed_killer = 0;
 		You("no longer seem to be turning to gold.");
+	}
+	if (Stone_resistance && Salted) {
+		Salted = 0;
+		delayed_killer = 0;
+		You("no longer seem to be turning to salt.");
 	}
 	if (Sick_resistance && Sick) {
 		make_sick(0L, (char *) 0, FALSE, SICK_ALL);

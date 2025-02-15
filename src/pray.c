@@ -209,8 +209,7 @@ in_trouble()
 	/*
 	 * major troubles
 	 */
-	if(Stoned) return(TROUBLE_STONED);
-	if(Golded) return(TROUBLE_STONED);
+	if(Stoned || Golded || Salted) return(TROUBLE_STONED);
 	if(BloodDrown) return(TROUBLE_BLOOD_DROWN);
 	if(FrozenAir) return(TROUBLE_FROZEN_AIR);
 	if(Slimed) return(TROUBLE_SLIMED);
@@ -371,6 +370,7 @@ register int trouble;
 		    You_feel("more limber.");
 		    Stoned = 0;
 		    Golded = 0;
+			Salted = 0;
 		    flags.botl = 1;
 		    delayed_killer = 0;
 		    break;
@@ -761,15 +761,15 @@ int godnum;
 	/* changed from tmp = anger + abs (u.uluck) -- rph */
 	/* added test for alignment diff -dlc */
 	if(u.ualign.god != godnum){
-	    maxanger =  3*godlist[godnum].anger +
+		maxanger =  3*godlist[godnum].anger +
 		((Luck > 0 || u.ualign.record <= STRAYED) ? -Luck/3 : -Luck);
 	} else {
-	    maxanger =  3*godlist[godnum].anger +
+		maxanger =  3*godlist[godnum].anger +
 		((Luck > 0 || u.ualign.record >= STRIDENT) ? -Luck/3 : -Luck);
 	}
 	
 	if (maxanger < 1) maxanger = 1; /* possible if bad align & good luck */
-	else if (maxanger > 15) maxanger = 15;	/* be reasonable */
+	else if (maxanger > 18) maxanger = 15;	/* be reasonable */
 	
 	if(godnum == GOD_THE_BLACK_MOTHER){
 		/* anger goat-following creatures on the level */
@@ -794,54 +794,88 @@ int godnum;
 		godvoice(godnum,"");
 		return;
 	}
-	
+	// 1 anger: 2/3 nothing, 1/3 lose xp
+	// 2 anger: 1/3 nothing, 1/3 lose xp, 1/3 curse items
+	// 3 anger: 2/9 nothing, 2/9 lose xp, 2/9 curse items, 1/9 punishment, 2/9 minions
+	// 4 anger: 
 	switch (rn2(maxanger)) {
-	    case 0:
-	    case 1:
+		case 0:
+		case 1:
 			if(godnum == GOD_THE_BLACK_MOTHER){
-				You_feel("that %s is %s.", godname(godnum),
-					Hallucination ? "peckish" : "hungry");
+				You_feel("that %s is %s.", godname(godnum), Hallucination ? "peckish" : "hungry");
 			} else {
-				You_feel("that %s is %s.", godname(godnum),
-			    Hallucination ? "bummed" : "displeased");
+				You_feel("that %s is %s.", godname(godnum), Hallucination ? "bummed" : "displeased");
 			}
 			break;
-	    case 2:
-	    case 3:
+		case 2:
+		case 3:
 			Sprintf(buf,"Thou %s, %s. Thou must relearn thy lessons!",
-			    (ugod_is_angry() && godnum == u.ualign.god)
-				? "hast strayed from the path" :
-						"art arrogant",
-			      youracedata->mlet == S_HUMAN ? "mortal" : "creature");
+				(ugod_is_angry() && godnum == u.ualign.god) ? "hast strayed from the path" : "art arrogant",
+				(Mortal_race) ? "mortal" : "creature"
+			);
 			godvoice(godnum,buf);
 			(void) adjattrib(A_WIS, -1, FALSE);
 			losexp((char *)0,TRUE,FALSE,TRUE);
 			break;
-	    case 6:	if (!Punished) {
-			    gods_angry(godnum);
-			    punish((struct obj *)0);
-			    break;
+		case 6:
+			if (!Punished) {
+				gods_angry(godnum);
+				punish((struct obj *)0);
+				break;
 			} /* else fall thru */
-	    case 4:
-	    case 5:	gods_angry(godnum);
-			if (!Blind && !Antimagic)
-			    pline("%s glow surrounds you.",
-				  An(hcolor(NH_BLACK)));
+		case 4:
+		case 5:	gods_angry(godnum);
+			if (!Blind && !Antimagic) pline("%s glow surrounds you.", An(hcolor(NH_BLACK)));
 			rndcurse();
 			break;
-	    case 7:
-	    case 8:	
+		case 7:
+		case 8:	
 			Sprintf(buf,"Thou durst %s me? Then die, %s!",
-				  (on_altar() &&
-				   ((god_at_altar(u.ux,u.uy)) != godnum)) ?
-				  "scorn":"call upon",
-			      youracedata->mlet == S_HUMAN ? "mortal" : "creature"
+				(on_altar() && ((god_at_altar(u.ux,u.uy)) != godnum)) ? "scorn":"call upon",
+				(Mortal_race) ? "mortal" : "creature"
 			);
 			godvoice(godnum, buf);
 			(void) summon_god_minion(godnum, FALSE);
 			break;
-
-	    default:	
+		case 9:
+		case 10:
+			Sprintf(buf, "Let thy senses fail and thine %s be sewn shut!", makeplural(body_part(EYE)));
+			godvoice(godnum, buf);
+			HStumbleBlind += rn1(80, 150);
+			break;
+		case 11:
+		case 12:
+			if (has_blood_mon(&youmonst)){ 
+				Sprintf(buf,"Such insolence! Let thy own %s scorn thee!", body_part(BLOOD));
+				godvoice(godnum, buf);
+				pline("Your %s boils!", body_part(BLOOD));
+				if (!FIXED_ABIL) adjattrib(A_CON, -3, FALSE);
+			} else {
+				Sprintf(buf,"Such insolence! Let thy %s creak and shatter!", body_part(BONES));
+				godvoice(godnum, buf);
+				pline("Pain erupts from your %s!", makeplural(body_part(LEG)));
+				set_wounded_legs(BOTH_SIDES, rn1(100, 80));
+			}
+			// should be nonlethal down to 1 hp. 12d12 (78) at anger 4, 15d15 (112) at anger 5, scales indefinitely
+			losehp(min(d(maxanger, maxanger), u.uhp - 1), "divine intervention", KILLED_BY); 
+			break;
+		case 13:
+		case 14:
+			Sprintf(buf,"Thou hath affronted me for the last time, %s! %s!",
+				(Mortal_race) ? "mortal" : "creature",
+				(Mortal_race) ? "Return to the earth from whence thou came" : "Become inanimate once more"
+			);
+			godvoice(godnum, buf);
+			if (!Salted && !Stone_resistance) {
+				pline("Salt crystals form on your body.");
+				Salted = 7;
+				delayed_killer = "the fate of Sodom & Gomorrah";
+				killer_format = KILLED_BY;
+			} else {
+				pline("But nothing seems to happen.");
+			}
+			break;
+		default:	
 			gods_angry(godnum);
 			god_zaps_you(godnum);
 			break;
@@ -849,6 +883,7 @@ int godnum;
 	u.ublesscnt = rnz(300);
 	return;
 }
+
 
 /* chance for god to give you a gift */
 /* returns TRUE if your god should give you a gift */
