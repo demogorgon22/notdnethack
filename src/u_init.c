@@ -2828,6 +2828,9 @@ u_init()
 		#else
 			u.umoney0 += 2000;
 		#endif
+		u.uenbonus += 15 - u.uenmax;
+		calc_total_maxen();
+		u.uen = u.uenmax;
 	break;
 
 	case PM_INCANTIFIER:
