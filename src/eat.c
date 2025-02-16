@@ -763,16 +763,14 @@ BOOLEAN_P bld, nobadeffects;
 	    case PM_SMALL_CAVE_LIZARD:
 	    case PM_CAVE_LIZARD:
 	    case PM_LARGE_CAVE_LIZARD:
-			if (Stoned) fix_petrification();
-			if (Golded) fix_petrification();
+			if (Stoned || Golded || Salted) fix_petrification();
 		break;
 	    case PM_MANDRAKE:
 			if(!nobadeffects){
 				pline ("Oh wow!  Great stuff!");
 				make_hallucinated(HHallucination + 200,FALSE,0L);
 			}
-			if (Stoned) fix_petrification();
-			if (Golded) fix_petrification();
+			if (Stoned || Golded || Salted) fix_petrification();
 			make_sick(0L, (char *) 0, TRUE, SICK_ALL);
 		break;
 	    case PM_GREEN_SLIME:
@@ -803,7 +801,7 @@ BOOLEAN_P bld, nobadeffects;
 			victual.piece = (struct obj *)0;
 		    return;
 		}
-		if (acidic(&mons[pm]) && (Stoned || Golded))
+		if (acidic(&mons[pm]) && (Stoned || Golded || Salted))
 		    fix_petrification();
 		break;
 	}
@@ -824,8 +822,7 @@ struct monst *mon;
 	case PM_SMALL_CAVE_LIZARD:
 	case PM_CAVE_LIZARD:
 	case PM_LARGE_CAVE_LIZARD:
-	    if (Stoned) fix_petrification();
-	    if (Golded) fix_petrification();
+	    if (Stoned || Golded || Salted) fix_petrification();
 	    break;
 	// case PM_MANDRAKE: No blood
 		// if(!nobadeffects){
@@ -851,7 +848,7 @@ struct monst *mon;
 	    }
 	    /* Fall through */
 	default:
-	    if (acidic(mon->data) && (Stoned || Golded))
+	    if (acidic(mon->data) && (Stoned || Golded || Salted))
 		fix_petrification();
 	    break;
     }
@@ -863,6 +860,7 @@ fix_petrification()
 {
 	Stoned = 0;
 	Golded = 0;
+	Salted = 0;
 	delayed_killer = 0;
 	if (Hallucination)
 	    pline("What a pity - you just ruined a future piece of %sart!",

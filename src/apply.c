@@ -7470,8 +7470,7 @@ use_doll(obj)
 				flags.botl = 1;
 			}
 			healup(0, 0, TRUE, FALSE);
-			if (Stoned) fix_petrification();
-			if (Golded) fix_petrification();
+			if (Stoned || Golded || Salted) fix_petrification();
 			res = MOVE_STANDARD;
 			pline("You feel very healthy.");
 			give_intrinsic(GOOD_HEALTH, 100L);
@@ -11068,6 +11067,7 @@ unfixable_trouble_count(is_horn)
 
 	if (Stoned) unfixable_trbl++;
 	if (Golded) unfixable_trbl++;
+	if (Salted) unfixable_trbl++;
 	if (Strangled) unfixable_trbl++;
 	if (Panicking) unfixable_trbl++;
 	if (StumbleBlind) unfixable_trbl++;

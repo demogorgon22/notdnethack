@@ -857,6 +857,7 @@ boolean dumping;
 	}
 	if (Stoned) you_are("turning to stone");
 	if (Golded) you_are("turning to gold");
+	if (Salted) you_are("turning to salt");
 	if (Slimed) you_are("turning into slime");
 	if (FrozenAir) you_are("suffocating in the cold night");
 	if (BloodDrown) you_are("drowning in blood");
