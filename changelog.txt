@@ -179,6 +179,7 @@ Leprechaun race
 	Gets tele control at xlvl 7
 	Unarmed attacks steal gold
 	Special spell detect treasure
+	Natural fast energy regen getting a flat half a pw per turn bonus
 
 Yuki-Onna changes
 	Increase hp gain SLIGHTLY

@@ -1361,6 +1361,8 @@ you_regen_pw()
 			reglevel += flags.female ? 8 : 4;//Note: blessing of Lolth
 		if (Race_if(PM_GNOME) && !Upolyd)
 			reglevel += 12;
+		if ((Race_if(PM_LEPRECHAUN)) && !Upolyd)
+			reglevel += HEALCYCLE/2;
 		// penalty for being itchy
 		reglevel -= u_healing_penalty();
 		// penalty from spell protection interfering with natural pw regeneration
