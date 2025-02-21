@@ -9403,10 +9403,6 @@ arti_invoke(obj)
 	struct permonst *pm;
 	struct monst *mtmp = 0;
 
-	if(obj->oartifact == ART_FINGERPRINT_SHIELD && artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress < 3){
-		return fingerprint_shield(obj);
-	}
-
 	if (!oart || !oart->inv_prop) {
 		switch (obj->otyp)
 		{
@@ -9461,7 +9457,8 @@ arti_invoke(obj)
 		oart->inv_prop == ZERTH_ART ||
 		oart->inv_prop == AMALGUM_ART ||
 		oart->inv_prop == SCORPION_UPGRADES ||
-		oart->inv_prop == SEVENFOLD
+		oart->inv_prop == SEVENFOLD ||
+		oart->inv_prop == FINGERPRINT_SHIELD
 	))
 		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 
@@ -12912,6 +12909,11 @@ arti_invoke(obj)
 		}break;
 		case SCORPION_UPGRADES:
 			scorpion_upgrade_menu(obj);
+		break;
+		case FINGERPRINT_SHIELD:
+			if(artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress < 3)
+				return fingerprint_shield(obj);
+			else pline("Nothing happens.");
 		break;
 		default: pline("Program in disorder.  Artifact invoke property not recognized");
 		break;
