@@ -1976,11 +1976,11 @@ OBJECT(("Bergonic chair", "strange chair"), BITS(0,0,0,0,0,0,0,0,MZ_LARGE,1,0,0,
 		BED_CLASS,     0, 0, 60,  100, DMG(D(4)), DMG(D(4)), 0, 0, 0, 2000, HI_ZAP),
 
 #ifdef CONVICT
-OBJECT(("heavy iron ball"), BITS(1,0,0,0,0,0,0,0,MZ_LARGE,0,0,0,WHACK,P_FLAIL,IRON,0), {0},
+OBJECT(("ball"), BITS(1,0,0,0,0,0,0,0,MZ_LARGE,0,0,0,WHACK,P_FLAIL,IRON,0), {0},
 #else
-OBJECT(("heavy iron ball"), BITS(1,0,0,0,0,0,0,0,MZ_LARGE,0,0,0,WHACK,P_NONE,IRON,0), {0},
+OBJECT(("ball"), BITS(1,0,0,0,0,0,0,0,MZ_LARGE,0,0,0,WHACK,P_NONE,IRON,0), {0},
 #endif /* CONVICT */
-		BALL_CLASS,  1000, 0,  480, 10, DMG(D(25)), DMG(D(25)), 0, 0,  0, 200, HI_METAL),
+		BALL_CLASS,  1000, 0,  480, 10, DMG(D(25)), DMG(D(25)), 0, 0,  0, 200, HI_METAL, O_MATSPEC(IDED|UNIDED)),
 						/* +d4 when "very heavy" */
 
 #define CHAIN(names,sdam,ldam,nutr,wt,cost,hitbon,dtyp,mat,color,...) OBJECT( \

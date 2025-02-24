@@ -3232,7 +3232,7 @@ boolean greatequip;
 			(void) mpickobj(mtmp, otmp);
 // ifdef CONVICT
 		} else if (mm == PM_INMATE){
-			(void)mongets(mtmp, rn2(2) ? HEAVY_IRON_BALL : SPOON, mkobjflags);
+			(void)mongets(mtmp, rn2(2) ? BALL : SPOON, mkobjflags);
 			(void)mongets(mtmp, STRIPED_SHIRT, mkobjflags);
 // endif
 		} else if (mm == PM_ATTENDANT){
@@ -3586,7 +3586,7 @@ boolean greatequip;
 			otmp->spe = 5;
 			(void) mpickobj(mtmp, otmp);
 		} else if (mm == PM_ROBERT_THE_LIFER){
-			otmp = mksobj(HEAVY_IRON_BALL, mkobjflags|MKOBJ_NOINIT);
+			otmp = mksobj(BALL, mkobjflags|MKOBJ_NOINIT);
 			curse(otmp);
 			otmp->spe = -5;
 			(void) mpickobj(mtmp, otmp);
@@ -3952,8 +3952,8 @@ boolean greatequip;
 		otmp->cursed = TRUE;
 		// otmp->spe = -6;
 		(void) mpickobj(mtmp,otmp);
-		(void)mongets(mtmp, HEAVY_IRON_BALL, mkobjflags);
-		(void)mongets(mtmp, HEAVY_IRON_BALL, mkobjflags);
+		(void)mongets(mtmp, BALL, mkobjflags);
+		(void)mongets(mtmp, BALL, mkobjflags);
 	} else if (mm == PM_MINER) {
 		(void)mongets(mtmp, PICK_AXE, mkobjflags);
 		otmp = mksobj(LANTERN, mkobjflags);
@@ -9449,7 +9449,7 @@ int mmflags;
 						}
 					break;
 				}
-			} else {//not shopkeepers, deminymphs, or intoners
+			} else {//not shopkeepers, deminymphs, rage-walkers, or intoners
 				int threshold = rnd(10)+rn2(11);
 				if(mtmp->female && (faction == GOATMOM_FACTION) && u.uinsight > threshold){
 					set_template(mtmp, MISTWEAVER);
@@ -11366,6 +11366,26 @@ boolean greatequip;
 			(void) mongets(mtmp, VICTORIAN_UNDERWEAR, mkobjflags);
 			(void) mongets(mtmp, LONG_GLOVES, mkobjflags);
 			(void) mongets(mtmp, STILETTOS, mkobjflags);
+		} else if(ptr->mtyp == PM_RAGE_WALKER){
+#define RAGE_WALKER_ITEM(otyp)	\
+			otmp = mksobj(otyp, NO_MKOBJ_FLAGS); \
+			otmp->spe = 3; \
+			add_oprop(otmp, OPROP_SPIKED); \
+			set_material_gm(otmp, IRON); \
+			curse(otmp); \
+			(void) mpickobj(mtmp, otmp);
+			RAGE_WALKER_ITEM(ELVEN_BOOTS)
+			RAGE_WALKER_ITEM(HIGH_ELVEN_PLATE)
+			RAGE_WALKER_ITEM(HIGH_ELVEN_GAUNTLETS)
+			RAGE_WALKER_ITEM(FACELESS_HELM)
+			/*Note: none of this is equipped */
+			RAGE_WALKER_ITEM(CHAIN)
+			RAGE_WALKER_ITEM(CHAIN)
+			RAGE_WALKER_ITEM(CHAIN)
+			RAGE_WALKER_ITEM(CHAIN)
+			RAGE_WALKER_ITEM(SHACKLES)
+			RAGE_WALKER_ITEM(BALL)
+			RAGE_WALKER_ITEM(BALL)
 		} else if(Infuture && ptr->mtyp != PM_INTONER && ptr->mtyp != PM_DEMINYMPH && ptr->mtyp != PM_NEVERWAS && ptr->mtyp != PM_CARCOSAN_COURTIER){
 			if(rn2(3)){
 				(void) mongets(mtmp, ELVEN_CLOAK, mkobjflags);

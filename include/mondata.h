@@ -177,6 +177,7 @@
 				 (ptr)->mtyp == PM_SCRAP_TITAN || \
 				 (ptr)->mtyp == PM_HELLFIRE_COLOSSUS || \
 				 (ptr)->mtyp == PM_HELLFIRE_ORB || \
+				 (ptr)->mtyp == PM_RAGE_WALKER || \
 				 (ptr)->mtyp == PM_FERRUMACH_RILMANI)
 #define is_iron_mon(mon)	(is_iron((mon)->data))
 #define is_silver(ptr)	((ptr)->mtyp == PM_ARGENACH_RILMANI || \
@@ -641,6 +642,8 @@
 							 || (ptr)->mtyp == PM_GHAELE_ELADRIN || (ptr)->mtyp == PM_LUMINOUS_CLOUD\
 							 || (ptr)->mtyp == PM_PYROCLASTIC_VORTEX)
 #define	is_storm_mon(mon)	((is_level_storm_mtyp((mon)->data) && (mon)->m_lev >= 20) || is_storm_mtyp((mon)->data))
+#define	is_chain_lash_mtyp(ptr)	((ptr)->mtyp == PM_RAGE_WALKER)
+#define	is_chain_lash_mon(mon)	(is_chain_lash_mtyp((mon)->data))
 #define	is_dancer(ptr)	((ptr)->mtyp == PM_PORO_AULON || (ptr)->mtyp == PM_SEYLL_AUZKOVYN || (ptr)->mtyp == PM_ANULO_DANCER || (ptr)->mtyp == PM_MYRKALFAR_MATRON)
 
 #define goat_monster(ptr) (In_lost_cities(&u.uz) ? lost_cities_goat_monster(ptr) : always_goat_monster(ptr))

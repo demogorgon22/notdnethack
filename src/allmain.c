@@ -48,6 +48,7 @@ STATIC_DCL void FDECL(goat_sacrifice, (struct monst *));
 STATIC_DCL void FDECL(palid_stranger, (struct monst *));
 STATIC_DCL void FDECL(sib_follow, (struct monst *));
 STATIC_DCL void FDECL(invisible_twin_act, (struct monst *));
+void FDECL(make_rage_walker_polts, (int));
 
 #ifdef OVL0
 
@@ -2548,6 +2549,18 @@ karemade:
 						}
 					}
 				}
+				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(98)+2 < u.uinsight){
+					mtmp = makemon(&mons[PM_RAGE_WALKER], 0, 0, MM_ADJACENTOK);
+					if(mtmp){
+						make_rage_walker_polts(u.uz.rage+3);
+						u.uz.rage = 0;
+					}
+					int i;
+					int vort[] = {PM_ICE_VORTEX, PM_ENERGY_VORTEX, PM_FIRE_VORTEX};
+					for(i = d(3,3); i > 0; i--) makemon(&mons[ROLL_FROM(vort)], 0, 0, NO_MM_FLAGS);
+					int sphere[] = {PM_FREEZING_SPHERE, PM_FLAMING_SPHERE, PM_SHOCKING_SPHERE};
+					for(i = d(3,3); i > 0; i--) makemon(&mons[ROLL_FROM(sphere)], 0, 0, NO_MM_FLAGS);
+				}
 			}
 			if(Infuture && !(Is_qstart(&u.uz) && !Race_if(PM_ANDROID)) && !rn2(35)){
 				struct monst* mtmp = makemon(&mons[PM_SEMBLANCE], rn1(COLNO-3,2), rn1(ROWNO-3,2), MM_ADJACENTOK);
@@ -4715,11 +4728,20 @@ printAttacks(buf, ptr)
 				if(attk->lev_req > 0){
 					Sprintf(eos(buf), "level %d+", attk->lev_req);
 				}
-				if(attk->lev_req > 0 && attk->ins_req > 0){
+				if(attk->lev_req > 0 && (attk->ins_req > 0 || attk->san_req != 0)){
 					Sprintf(eos(buf), " and ");
 				}
 				if(attk->ins_req > 0){
 					Sprintf(eos(buf), "%d+ [[insight]]", attk->ins_req);
+				}
+				if((attk->lev_req > 0 || attk->ins_req > 0) && attk->san_req != 0){
+					Sprintf(eos(buf), " and ");
+				}
+				if(attk->san_req < 0){
+					Sprintf(eos(buf), "<%d [[sanity]]", -1*attk->san_req);
+				}
+				if(attk->san_req > 0){
+					Sprintf(eos(buf), ">%d [[sanity]]", attk->san_req);
 				}
 			Sprintf(eos(buf), ")");
 		}
@@ -4870,6 +4892,8 @@ struct monst *mon;
 		alkilith_spawn(mon);
 	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_MOUTH_OF_THE_GOAT)
 		goat_sacrifice(mon);
+	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_RAGE_WALKER && (check_insight() || (!rn2(u.uevent.udemigod ? 25 : 50) && roll_generic_madness(TRUE))))
+		make_rage_walker_polts(u.uz.rage+3);
 	else if(mon->mtyp == PM_STRANGER)
 		palid_stranger(mon);
 	else if(mon->mtyp == PM_PUPPET_EMPEROR_XELETH || mon->mtyp == PM_PUPPET_EMPRESS_XEDALLI)
@@ -6982,6 +7006,146 @@ struct monst *magr;
 		cast_spell(magr, &youmonst, &attkbuff, spellnum, u.ux, u.uy);
 	}
 
+}
+
+void
+dochain_lashes(magr)
+struct monst *magr;
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	struct attack attkbuff = {AT_WEAP, AD_ELEC, 3, 6};
+	int i = rnd(8),j;
+	int ax, ay, n;
+	int chain_count = 0;
+	struct obj *ofirst;
+	struct obj *chain;
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	struct permonst *pa;
+	
+	pa = youagr ? youracedata : magr->data;
+	ofirst = youagr ? invent : magr->minvent;
+	
+	// Find chains etc:
+	for(chain = ofirst; chain; chain = chain->nobj){
+		if(chain->otyp == CHAIN)
+			chain_count+=4;
+		else if(chain->otyp == BALL)
+			chain_count++;
+	}
+	if(!chain_count)
+		return;
+	chain_count = rnd(chain_count);
+	for(chain = ofirst; chain; chain = chain->nobj){
+		if(chain->otyp == CHAIN)
+			chain_count-=4;
+		else if(chain->otyp == BALL)
+			chain_count--;
+		if(chain_count <= 0)
+			break;
+	}
+	if(!chain)
+		return;
+	
+	for(j=8;j>=1;j--){
+		ax = x(magr)+clockwisex[(i+j)%8];
+		ay = y(magr)+clockwisey[(i+j)%8];
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(ax, ay))
+			continue;
+		else if(onscary(ax, ay, magr))
+			continue;
+		else mdef = m_at(ax, ay);
+		
+		if(u.ux == ax && u.uy == ay)
+			mdef = &youmonst;
+		
+		if(!mdef)
+			continue;
+		
+		if(!rn2(3))
+			continue;
+		
+		youdef = (mdef == &youmonst);
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(youdef && (magr->mpeaceful))
+			continue;
+		if(youdef && Invulnerable)
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(youdef && u.uswallow)
+			continue;
+		if(!youdef && nonthreat(mdef))
+			continue;
+
+		if(mdef->mtyp == PM_PALE_NIGHT)
+			continue;
+
+		xmeleehity(magr, mdef, &attkbuff, &chain, +3, 0, FALSE);
+	}
+}
+
+void
+make_rage_walker_polts(int rage)
+{
+	struct obj *otmp, *nobj;
+	struct monst *polt;
+	int ox, oy;
+	boolean created = FALSE;
+	int otyp = ELVEN_BROADSWORD;
+	int otyp_index = 0;
+	int elven_weapon_types[] = {ELVEN_BROADSWORD, ELVEN_SHORT_SWORD, ELVEN_SPEAR, ELVEN_SICKLE, ELVEN_SCIMITAR, HIGH_ELVEN_WARSWORD, ELVEN_LANCE, ELVEN_MACE};
+	while(rage > 0){
+		if(!otyp){
+			polt = makemon(&mons[PM_POLTERGEIST], 0, 0, MM_ADJACENTOK|NO_MINVENT);
+			otmp = mksobj(ROLL_FROM(elven_weapon_types), NO_MKOBJ_FLAGS);
+			set_material_gm(otmp, IRON);
+			rage--;
+			if(otmp->spe < 3)
+				otmp->spe = 3;
+			curse(otmp);
+			mpickobj(polt, otmp);
+			m_dowear(polt, TRUE);
+			continue;
+		}
+		created = FALSE;
+		for(ox = 0; ox < COLNO && rage > 0; ox++){
+		for(oy = 0; oy < ROWNO && rage > 0; oy++){
+			otmp =  level.objects[ox][oy];
+			if(!otmp)
+				continue;
+			for(; otmp; otmp = otmp->nexthere){
+				if(otmp->otyp == otyp){
+					polt = makemon(&mons[PM_POLTERGEIST], otmp->ox, otmp->oy, MM_ADJACENTOK|NO_MINVENT);
+					obj_extract_self(otmp);
+					set_material_gm(otmp, IRON);
+					rage--;
+					if(otmp->spe < 3)
+						otmp->spe = 3;
+					curse(otmp);
+					mpickobj(polt, otmp);
+					m_dowear(polt, TRUE);
+					created = TRUE;
+					break; //Break nexthere loop, continue location loop
+				}
+			}
+		}}
+		if(!created){
+			otyp_index++;
+			if(otyp_index < SIZE(elven_weapon_types)){
+				otyp = elven_weapon_types[otyp_index];
+			}
+			else otyp = 0;
+		}
+	}
+	doredraw(); //Just moved a bunch of items
 }
 
 #endif /* OVLB */

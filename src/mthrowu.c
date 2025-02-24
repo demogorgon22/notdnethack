@@ -505,7 +505,7 @@ int whodidit;	/* 1==hero, 0=other, -1==just check whether it'll pass thru */
 	if (whodidit ? hero_breaks(otmp, x, y, FALSE) : breaks(otmp, x, y))
 	    *obj_p = otmp = 0;		/* object is now gone */
 	    /* breakage makes its own noises */
-	else if (obj_type == BOULDER || obj_type == STATUE || obj_type == HEAVY_IRON_BALL)
+	else if (obj_type == BOULDER || obj_type == STATUE || obj_type == BALL)
 	    pline("Whang!");
 	else if (otmp->oclass == COIN_CLASS ||
 		otmp->obj_material == GOLD ||

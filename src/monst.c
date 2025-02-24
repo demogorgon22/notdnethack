@@ -52,16 +52,17 @@ void NDECL(monst_init);
 #define LVL(lvl,mov,mr,aln) lvl,mov,mr,aln
 #define SIZ(wt,nut,snd,siz) wt,nut,snd,siz
 /* ATTK() and A() are to avoid braces and commas within args to MON() */
-#define ATTK(at,ad,n,d) {at,ad,n,d,0,0,0,0}
-#define ATTK_LEV(at,ad,n,d, lev) {at,ad,n,d,lev,0,0,0}
-#define ATTK_INS(at,ad,n,d, ins) {at,ad,n,d,0,0,0,ins}
-#define ATTK_INS_LEV(at,ad,n,d, ins, lev) {at,ad,n,d,lev,0,0,ins}
-#define OFFHND_ATTK(at,ad,n,d) {at,ad,n,d,0,1,0,0}
-#define OFFHND_ATTK_LEV(at,ad,n,d, lev) {at,ad,n,d,lev,1,0,0}
-#define OFFHND_ATTK_INS(at,ad,n,d, ins) {at,ad,n,d,0,1,0,ins}
-#define POLYWEP_ATTK(at,ad,n,d) {at,ad,n,d,0,0,1,0}
-#define POLYWEP_ATTK_LEV(at,ad,n,d, lev) {at,ad,n,d,lev,0,1,0}
-#define NO_ATTK {0,0,0,0,0,0,0,0}
+#define ATTK(at,ad,n,d) {at,ad,n,d,0,0,0,0,0}
+#define ATTK_LEV(at,ad,n,d, lev) {at,ad,n,d,lev,0,0,0,0}
+#define ATTK_INS(at,ad,n,d, ins) {at,ad,n,d,0,0,0,ins,0}
+#define ATTK_SAN(at,ad,n,d, san) {at,ad,n,d,0,0,0,0,san}
+#define ATTK_INS_LEV(at,ad,n,d, ins, lev) {at,ad,n,d,lev,0,0,ins,0}
+#define OFFHND_ATTK(at,ad,n,d) {at,ad,n,d,0,1,0,0,0}
+#define OFFHND_ATTK_LEV(at,ad,n,d, lev) {at,ad,n,d,lev,1,0,0,0}
+#define OFFHND_ATTK_INS(at,ad,n,d, ins) {at,ad,n,d,0,1,0,ins,0}
+#define POLYWEP_ATTK(at,ad,n,d) {at,ad,n,d,0,0,1,0,0}
+#define POLYWEP_ATTK_LEV(at,ad,n,d, lev) {at,ad,n,d,lev,0,1,0,0}
+#define NO_ATTK {0,0,0,0,0,0,0,0,0}
 #define A(...) {FIRST_TEN(dummy, ##__VA_ARGS__, NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK,NO_ATTK)}
 #define FIRST_TEN(dummy, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, ...) a1, a2, a3, a4, a5, a6, a7, a8, a9, a10
 
@@ -600,7 +601,7 @@ NEARDATA struct permonst mons[] = {
 	SIZ(WT_DIMINUTIVE, CN_DIMINUTIVE, MS_SILENT, MZ_SMALL), MR_ELEC|MR_POISON|MR_SICK, MR_ELEC,
 	MM_FLY|MM_FLOAT|MM_BREATHLESS /*MM*/, MT_HOSTILE|MT_MINDLESS /*MT*/, 0 /*MF*/,
 	MB_NOLIMBS|MB_NOHEAD|MB_NEUTER /*MB*/, 0 /*MG*/,
-	MA_ELEMENTAL /*MA*/,  MV_TELEPATHIC /*MV*/, MW_ELDER_EYE_ELEM /*MW*/, CLR_GRAY),
+	MA_ELEMENTAL /*MA*/,  MV_TELEPATHIC /*MV*/, MW_ELDER_EYE_ELEM /*MW*/, 0 /*light radius*/, CLR_GRAY),
 
     MON("pursuer", S_EYE, //3 /* needs encyc entry */
 	LVL(2, 13, 0, 0), (G_NOCORPSE|G_NOGEN),
@@ -1426,6 +1427,17 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_OMNIVORE|MT_HOSTILE|MT_COLLECT /*MT*/, MF_MARTIAL_S|MF_BAB_FULL /*MF*/,
 	MB_STRONG|MB_FEMALE|MB_HUMANOID /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_UNDEAD|MA_MINION|MA_PLANT /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
+    MON("rage-walker", S_NYMPH,//37 /*Needs tile, Needs encyc entry*/
+	LVL(20, 18, 30, -10), (G_NOGEN|G_S_INST(33)),
+	DEF(NAT_AC(12), SPE_AC(8), NAT_DR_ALL(4,6,4,6,4)),
+	A(ATTK(AT_CLAW, AD_VAMP, 3, 6), ATTK(AT_CLAW, AD_VAMP, 3, 6), OFFHND_ATTK(AT_CLAW, AD_VAMP, 3, 6), 
+	  ATTK_SAN(AT_CLAW, AD_SEDU, 0, 0, -50), ATTK_SAN(AT_CLAW, AD_SEDU, 0, 0, -10),
+	  ATTK(AT_BOOM, AD_MAND, 0, 0)),
+	SIZ(WT_HUMAN, CN_HUMAN, MS_SHRIEK, MZ_HUMAN),
+	MR_COLD|MR_FIRE|MR_ELEC|MR_POISON|MR_SLEEP|MR_DRAIN, 0,
+	MM_BREATHLESS /*MM*/, MT_CARNIVORE|MT_HOSTILE|MT_NOTAKE /*MT*/, MF_MARTIAL_S|MF_BAB_FULL /*MF*/,
+	MB_STRONG|MB_FEMALE|MB_HUMANOID /*MB*/, MG_INFRAVISIBLE|MG_SANLOSS|MG_INSIGHT /*MG*/,
+	MA_UNDEAD|MA_ELF|MA_FEY /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_CYAN),
     MON("Echo", S_NYMPH,//24 /* Needs encyc entry */
 	LVL(20, 12, 50, -15), (G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(8)),
@@ -6564,6 +6576,15 @@ is a red right hand
 	MM_BREATHLESS /*MM*/, MT_HIDE|MT_STALK|MT_HOSTILE /*MT*/, MF_MARTIAL_E /*MF*/,
 	MB_HUMANOID /*MB*/, MG_RPIERCE|MG_NOPOLY|MG_LORD|MG_TRACKER /*MG*/,
 	MA_UNDEAD /*MA*/,  MV_EXTRAMISSION|MV_SEE_INVIS /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_MAGENTA),
+    MON("poltergeist", S_GHOST,//12
+	LVL(20, 18, 50, -5), (G_NOCORPSE|G_NOGEN),
+	DEF(SPE_AC(15)),
+	A(ATTK(AT_WEAP, AD_PHYS, 0, 6)),
+	SIZ(0, 0, MS_SILENT, MZ_HUMAN),
+	MR_COLD|MR_FIRE|MR_ELEC|MR_DISINT|MR_SLEEP|MR_POISON|MR_STONE|MR_SICK|MR_DRAIN, 0,
+	MM_FLY|MM_BREATHLESS /*MM*/, MT_STALK|MT_HOSTILE|MT_MINDLESS /*MT*/, MF_BAB_FULL|MF_MARTIAL_E /*MF*/,
+	MB_HUMANOID|MB_UNSOLID /*MB*/, MG_NOPOLY|MG_HATESHOLY|MG_SANLOSS /*MG*/,
+	MA_UNDEAD /*MA*/,  MV_EXTRAMISSION /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_CYAN),
 /*
  * shades
  */

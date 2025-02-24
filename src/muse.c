@@ -2542,7 +2542,7 @@ museamnesia:
 		    if (vismon){
 				pline("%s flicks a whip towards your %s!", Monnam(mtmp), hand);
 			}
-		    if (obj->otyp == HEAVY_IRON_BALL) {
+		    if (obj->otyp == BALL) {
 				pline("%s fails to wrap around %s.", The_whip, the_weapon);
 				return 1;
 		    }

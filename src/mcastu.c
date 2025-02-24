@@ -4947,7 +4947,7 @@ int tary;
 				Is_rogue_level(&u.uz) ||
 #endif
 				(In_endgame(&u.uz) && !Is_earthlevel(&u.uz)));
-			otmp = mksobj(iron ? HEAVY_IRON_BALL : BOULDER, MKOBJ_NOINIT);
+			otmp = mksobj(iron ? BALL : BOULDER, MKOBJ_NOINIT);
 			otmp->quan = 1;
 			otmp->owt = weight(otmp);
 			if (iron) otmp->owt += 160 * rn2(2);

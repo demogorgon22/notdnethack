@@ -1697,6 +1697,12 @@ add_material_words(obj, buf)
 struct obj *obj;
 char *buf;
 {
+	if (obj->otyp == BALL && (obj->owt > objects[BALL].oc_weight)) {
+		Strcat(buf, "very ");
+	}
+	if(obj->otyp == BALL){
+		Strcat(buf, "heavy ");
+	}
 	/*To avoid an if statement with a massive condition, detect cases where the material should NOT be printed, and return out*/
 	/*Materials don't matter for lit lightsabers, and they should be described in terms of color*/
 	if(is_lightsaber(obj) && litsaber(obj))
@@ -2035,9 +2041,6 @@ boolean getting_obj_base_desc;
 				}
 				Strcat(buf, OBJ_NAME(objects[ptyp]));
 				Strcat(buf, " ");
-			}
-			if (obj->oclass == BALL_CLASS && (obj->owt > ocl->oc_weight)) {
-				Strcat(buf, "very ");
 			}
 			if (typ == STATUE) {
 				if (Role_if(PM_ARCHEOLOGIST) && (obj->spe & STATUE_HISTORIC))
@@ -3787,7 +3790,7 @@ struct alt_spellings {
 	{ "orichalcum gauntlets", ORIHALCYON_GAUNTLETS },
 	{ "chain", CHAIN },
 	{ "iron chain", CHAIN },
-	{ "iron ball", HEAVY_IRON_BALL },
+	{ "iron ball", BALL },
 	{ "mattock", DWARVISH_MATTOCK },
 	{ "amulet of poison resistance", AMULET_VERSUS_POISON },
 	{ "amulet of curse resistance", AMULET_VERSUS_CURSES },
@@ -5675,7 +5678,7 @@ typfnd:
 			/* Fall through */
 		case SKELETON_KEY: case UNIVERSAL_KEY: case CHEST: case BOX:
 		case SARCOPHAGUS:
-		case HEAVY_IRON_BALL: case CHAIN: case STATUE:
+		case BALL: case CHAIN: case STATUE:
 			/* otmp->cobj already done in mksobj() */
 				break;
 #ifdef MAIL
@@ -6105,7 +6108,7 @@ typfnd:
 		}
 	}
 	otmp->owt = weight(otmp);
-	if (very && otmp->otyp == HEAVY_IRON_BALL) otmp->owt += 160;
+	if (very && otmp->otyp == BALL) otmp->owt += 160;
 
 	*wishreturn = WISH_SUCCESS;
 	return(otmp);

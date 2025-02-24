@@ -450,7 +450,7 @@ chat_with_leader()
 			urole.lgod = GOD_ILSENSINE;
 		} else if(Role_if(PM_CONVICT)){
 			struct obj *obj;
-			obj = mksobj(HEAVY_IRON_BALL, NO_MKOBJ_FLAGS);
+			obj = mksobj(BALL, NO_MKOBJ_FLAGS);
 			obj = oname(obj, artiname(ART_IRON_BALL_OF_LEVITATION));
 			obj->oerodeproof = TRUE;
 			obj->blessed = TRUE;

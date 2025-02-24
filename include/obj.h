@@ -1143,7 +1143,7 @@ struct obj {
 	is_weptool((otmp)) || \
 	(otmp)->otyp == BOULDER || \
 	(otmp)->otyp == MASS_OF_STUFF || \
-	(otmp)->otyp == HEAVY_IRON_BALL || \
+	(otmp)->otyp == BALL || \
 	(otmp)->otyp == CHAIN || \
 	(otmp)->oclass == GEM_CLASS)
 #define throwing_weapon(otmp)	(is_missile((otmp)) || is_spear((otmp)) || \

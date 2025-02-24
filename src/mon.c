@@ -609,7 +609,7 @@ register struct monst *mtmp;
 			}
 			num = d(2,4);
 			while(num--)
-				obj = mksobj_at(HEAVY_IRON_BALL, x, y, NO_MKOBJ_FLAGS);
+				obj = mksobj_at(BALL, x, y, NO_MKOBJ_FLAGS);
 			rem_mx(mtmp, MX_ENAM);
 		    otmp = mksobj(MACE, NO_MKOBJ_FLAGS);
 			otmp = oname(otmp, artiname(ART_FIELD_MARSHAL_S_BATON));
@@ -1804,6 +1804,7 @@ struct monst *mtmp;
 	mtmp->mflamemarked = FALSE;
 	mtmp->mibitemarked = FALSE;
 	mtmp->myoumarked = FALSE;
+	mtmp->mironmarked = FALSE;
 	
 	/* gradually time out temporary problems */
 	if (mtmp->mblinded && !--mtmp->mblinded)
@@ -6566,6 +6567,12 @@ xkilled(mtmp, dest)
 		struct obj *corpse = 0;
 		if (corpse_chance(mtmp, (struct monst *)0, FALSE)){
 			corpse = make_corpse(mtmp);
+		}
+		if(mtmp->mironmarked && (
+			is_elf(mtmp->data)
+			|| is_fey(mtmp->data)
+		)){
+			u.uz.rage++;
 		}
 		if(mtmp->mibitemarked){
 			mtmp->mflamemarked = FALSE;

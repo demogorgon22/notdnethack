@@ -3609,7 +3609,7 @@ register struct obj	*sobj;
 	}
 	setworn(mkobj(CHAIN_CLASS, TRUE), W_CHAIN);
 #ifdef CONVICT
-    if (((otmp = carrying(HEAVY_IRON_BALL)) != 0) &&(otmp->oartifact ==
+    if (((otmp = carrying(BALL)) != 0) &&(otmp->oartifact ==
      ART_IRON_BALL_OF_LEVITATION)) {
         setworn(otmp, W_BALL);
         Your("%s chains itself to you!", xname(otmp));

@@ -287,7 +287,7 @@ ENDMAP
 NON_DIGGABLE:(00,00,75,20)
 
 PORTAL:(35,10,35,10),(00,00,00,00),"chaosm"
-OBJECT:'0',"heavy iron ball",(35,10)
+OBJECT:'0',"ball",(35,10)
 
 BRANCH:(35,19,35,19),(0,0,0,0)
 
@@ -640,7 +640,7 @@ STAIR:(16,19),down
 LADDER:(16,01),down
 
 ALTAR:(35,09),noalign,altar,"Chaos"
-OBJECT:'0',"heavy iron ball",(35,10)
+OBJECT:'0',"ball",(35,10)
 
 MAZEWALK:(02,10),south
 MAZEWALK:(02,10),north

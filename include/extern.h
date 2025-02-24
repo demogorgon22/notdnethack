@@ -39,6 +39,7 @@ E void FDECL(dochaos_mon, (struct monst *));
 E void FDECL(dohost_mon, (struct monst *));
 E void FDECL(dosnake, (struct monst *));
 E void FDECL(dokraken_mon, (struct monst *));
+E void FDECL(dochain_lashes, (struct monst *));
 E void FDECL(dotailslap, (struct monst *));
 E void FDECL(dovines, (struct monst *));
 E void FDECL(dostarblades, (struct monst *));

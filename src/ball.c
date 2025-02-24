@@ -851,7 +851,7 @@ bc_sanity_check()
                    uball ? "iron ball" : "");
     }
     /* ball is free when swallowed, changing levels, other times? */
-    if (uball && (uball->otyp != HEAVY_IRON_BALL
+    if (uball && (uball->otyp != BALL
                   || (uball->where != OBJ_FLOOR
                       && uball->where != OBJ_INVENT
                       && uball->where != OBJ_FREE)

@@ -650,8 +650,8 @@ struct monst *magr;
 				ignore_rolls += u.usanity > 50 ? 0 : u.usanity > 25 ? 1 : u.usanity > 10 ? 2 : 3;
 		}
 
-		if (otyp == HEAVY_IRON_BALL) {
-			int wt = (int)objects[HEAVY_IRON_BALL].oc_weight;
+		if (otyp == BALL) {
+			int wt = (int)objects[BALL].oc_weight;
 
 			if ((int)obj->owt > wt) {
 				wt = ((int)obj->owt - wt) / 160;
@@ -1615,7 +1615,7 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 				|| (marilith && ok_mariwep(otmp, mtmp, mtmp->data, FALSE))
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CATHEZAR) 
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_FIERNA)
-				|| (otmp->otyp == HEAVY_IRON_BALL && mtmp->mtyp == PM_WARDEN_ARIANNA)
+				|| (otmp->otyp == BALL && (mtmp->mtyp == PM_WARDEN_ARIANNA || mtmp->mtyp == PM_ARIANNA || mtmp->mtyp == PM_RAGE_WALKER))
 				|| (mtmp->mtyp == PM_BASTARD_OF_THE_BOREAL_VALLEY)
 				|| (mtmp->mtyp == PM_LUNGORTHIN)
 				|| (mtmp->mtyp == PM_CORVIAN_KNIGHT)
@@ -1952,7 +1952,7 @@ static const NEARDATA short hwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
-	  HEAVY_IRON_BALL,/*1d25/1d25*/
+	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
@@ -2084,7 +2084,7 @@ static const NEARDATA short hpwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
-	  HEAVY_IRON_BALL,/*1d25/1d25*/
+	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
@@ -2277,7 +2277,7 @@ register struct monst *mtmp;
 	for(otmp=mtmp->minvent; otmp; otmp = otmp->nobj) {
 		if (/* valid weapon */
 			(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
-			|| otmp->otyp == CHAIN || otmp->otyp == HEAVY_IRON_BALL
+			|| otmp->otyp == CHAIN || otmp->otyp == BALL
 			) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
@@ -2354,7 +2354,7 @@ register struct monst *mtmp;
 	for(otmp=mtmp->minvent; otmp; otmp = otmp->nobj) {
 		if (/* valid weapon */
 			(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
-			|| otmp->otyp == CHAIN || otmp->otyp == HEAVY_IRON_BALL
+			|| otmp->otyp == CHAIN || otmp->otyp == BALL
 			) &&
 			/* not already weided in main hand */
 			(otmp != MON_WEP(mtmp)) &&
@@ -3682,7 +3682,7 @@ struct obj *obj;
 		/* Not using a weapon */
 		return (P_BARE_HANDED_COMBAT);
 #ifdef CONVICT
-    if ((obj->otyp == HEAVY_IRON_BALL) && (Role_if(PM_CONVICT) || u.sealsActive&SEAL_AHAZU))
+    if ((obj->otyp == BALL) && (Role_if(PM_CONVICT) || u.sealsActive&SEAL_AHAZU))
         return objects[obj->otyp].oc_skill;
 #endif /* CONVICT */
     if ((obj->otyp == CHAIN) && (Role_if(PM_CONVICT) || u.sealsActive&SEAL_AHAZU))

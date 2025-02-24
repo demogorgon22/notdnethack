@@ -207,6 +207,7 @@ struct monst {
 	
 	Bitfield(mequipping,7); /*146*/
 
+	Bitfield(mironmarked,1);/* recently hit by an iron weapon (elves/fey/rage-walker) */ /*147*/
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */

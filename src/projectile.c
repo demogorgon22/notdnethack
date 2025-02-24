@@ -235,7 +235,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 	/* player exercises STR just be throwing heavy things */
 	if (youagr && !launcher && !(hmoncode & HMON_KICKED) && (
 		is_boulder(thrownobj) ||
-		thrownobj->otyp == HEAVY_IRON_BALL
+		thrownobj->otyp == BALL
 		))
 	{
 		exercise(A_STR, TRUE);
@@ -480,7 +480,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		}
 
 		/* limit range of iron balls so hero won't make an invalid move */
-		if (range > 0 && thrownobj && thrownobj->otyp == HEAVY_IRON_BALL) {
+		if (range > 0 && thrownobj && thrownobj->otyp == BALL) {
 			struct obj *bobj;
 			struct trap *t;
 			if ((bobj = boulder_at(bhitpos.x, bhitpos.y)) != 0) {
@@ -2156,7 +2156,7 @@ int * hurtle_dist;
 		* than 1, so the effects from throwing attached balls are
 		* actually possible
 		*/
-		if (ammo->otyp == HEAVY_IRON_BALL)
+		if (ammo->otyp == BALL)
 			range = urange - (heaviness / 100);
 		else
 			range = urange - (heaviness / 40);
@@ -3398,7 +3398,7 @@ int n;	/* number to try to fire */
 		ammo_type = SILVER_ARROW;
 		break;
 	case AD_BALL:
-		ammo_type = HEAVY_IRON_BALL;
+		ammo_type = BALL;
 		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		break;
@@ -3414,7 +3414,7 @@ int n;	/* number to try to fire */
 		rngmod = 8;
 		break;
 	case AD_VBLD:
-		ammo_type = HEAVY_IRON_BALL;
+		ammo_type = BALL;
 		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		rngmod = 8;
 		volley = TRUE;

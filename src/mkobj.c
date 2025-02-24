@@ -2704,7 +2704,7 @@ int mat;
 		case GOLD_BLADED_VIBROZANBATO:
 			if(mat != GOLD) obj->otyp = WHITE_VIBROZANBATO;
 		break;
-		// case HEAVY_IRON_BALL:
+		// case BALL:
 			// obj->otyp = ;
 		// break;
 		// case CHAIN:
@@ -2915,7 +2915,7 @@ register struct obj *obj;
 		return eaten_stat((int)obj->quan * wt, obj);
 	} else if (obj->oclass == COIN_CLASS)
 		return (int)((obj->quan + 50L) / 100L);
-	else if (obj->otyp == HEAVY_IRON_BALL && obj->owt != 0)
+	else if (obj->otyp == BALL && obj->owt != 0)
 		return((int)(obj->owt));	/* kludge for "very" heavy iron ball */
 	return((wt || obj->oartifact) ? wt*(int)obj->quan : ((int)obj->quan + 1)>>1);
 }

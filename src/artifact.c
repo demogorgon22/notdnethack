@@ -9905,7 +9905,7 @@ arti_invoke(obj)
 			for(i = 12; i > 0; i--){
 				int xadj=0;
 				int yadj=0;
-				otmp = mksobj(HEAVY_IRON_BALL, NO_MKOBJ_FLAGS);
+				otmp = mksobj(BALL, NO_MKOBJ_FLAGS);
 			    otmp->blessed = 0;
 			    otmp->cursed = 0;
 				if(u.dy == 0) yadj = d(1,3)-2;
@@ -14651,6 +14651,8 @@ do_passive_attacks()
 				dohost_mon(mtmp);
 			if(is_storm_mon(mtmp))
 				dostorm(mtmp);
+			if(is_chain_lash_mon(mtmp))
+				dochain_lashes(mtmp);
 			if(mtmp->mtyp == PM_KRAKEN__THE_FIEND_OF_WATER)
 				dokraken_mon(mtmp);
 			if(mtmp->mtyp == PM_CHAOS && !PURIFIED_WATER)

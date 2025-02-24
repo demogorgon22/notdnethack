@@ -1951,6 +1951,37 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	if(attk->ins_req > u.uinsight){
 		GETNEXT
 	}
+	/*Some attacks have sanity requirements*/
+	if(attk->san_req > 0){
+		if(youdef || by_the_book){
+			if(NightmareAware_Sanity < attk->san_req){
+				GETNEXT
+			}
+		}
+		else if(mdef){
+			if(mdef->encouraged < attk->san_req/10){
+				GETNEXT
+			}
+		}
+		else {
+			GETNEXT
+		}
+	}
+	else if(attk->san_req < 0){
+		if(youdef || by_the_book){
+			if(NightmareAware_Sanity > -1*attk->san_req){
+				GETNEXT
+			}
+		}
+		else if(mdef){
+			if(mdef->encouraged > -1*attk->san_req/10){
+				GETNEXT
+			}
+		}
+		else {
+			GETNEXT
+		}
+	}
 	/* khaamnun tanninim switch to sucking memories after dragging target in close */
 	if (pa->mtyp == PM_KHAAMNUN_TANNIN
 		&& mdef && distmin(x(magr),y(magr), x(mdef),y(mdef)) <= 1
@@ -3819,7 +3850,7 @@ int *shield_margin;
 			(u.sealsActive&SEAL_EVE) ||
 			(weapon->otyp == DAGGER && Role_if(PM_ROGUE)) ||
 			(weapon->otyp == DART && Role_if(PM_TOURIST)) ||
-			(weapon->otyp == HEAVY_IRON_BALL && Role_if(PM_CONVICT))
+			(weapon->otyp == BALL && Role_if(PM_CONVICT))
 			)) {
 			base_acc = mlev(magr);
 		}
@@ -4112,7 +4143,7 @@ int *shield_margin;
 		}
 		/* some objects are more likely to hit than others */
 		switch (weapon->otyp) {
-		case HEAVY_IRON_BALL:
+		case BALL:
 			if (weapon != uball)
 				rang_acc += 2;
 			break;
@@ -9640,9 +9671,10 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						(youagr ? "Your" : s_suffix(Monnam(magr))),
 						(youdef ? "you" : mon_nam(mdef))
 						);
-					result = xdamagey(magr, mdef, attk, d(rnd(5), (mlev(mdef) + 1) / 2));
-					if (result&(MM_DEF_DIED|MM_DEF_LSVD)) return result;
 				}
+				mdef->mironmarked = TRUE;
+				result = xdamagey(magr, mdef, attk, d(rnd(5), (mlev(mdef) + 1) / 2));
+				if (result&(MM_DEF_DIED|MM_DEF_LSVD)) return result;
 			}
 		}
 		/* 1/5 chance of radiant feathers */
@@ -9658,6 +9690,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					pline("The cold iron rachises sear %s.",
 						(youdef ? "you" : mon_nam(mdef)));
 				}
+				mdef->mironmarked = TRUE;
 				result = xdamagey(magr, mdef, attk, d(5, mlev(mdef)));
 				if (result&(MM_DEF_DIED|MM_DEF_LSVD)) return result;
 			}
@@ -14518,6 +14551,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				/* Simurgh's iron claws, for the player attacking with bared hands */
 				ironobj |= W_SKIN;
 				seardmg += rnd(mlev(mdef));
+				mdef->mironmarked = TRUE;
 			}
 		}
 
