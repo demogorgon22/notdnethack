@@ -4388,6 +4388,10 @@ use_smithing_hammer(struct obj *obj)
 		return MOVE_CANCELLED;
 	}
 	struct obj *product = mksobj(picked, MKOBJ_NOINIT);
+	boolean product_bknown = metal_ingots->bknown && obj->bknown;
+	boolean inner_bknown;
+	boolean metal_ingots_blessed = metal_ingots->blessed, metal_ingots_cursed = metal_ingots->cursed;
+	boolean metal_ingots_2_blessed, metal_ingots_2_cursed;
 	set_material(product, metal_ingots->obj_material);
 	if(objects[picked].oc_class == ARMOR_CLASS){
 		if(yn("Size it to a particular creature?")=='y')
@@ -4406,6 +4410,9 @@ use_smithing_hammer(struct obj *obj)
 			obfree(product, (struct obj *)0);
 			return MOVE_CANCELLED;
 		}
+		inner_bknown = obj->bknown && metal_ingots_2->bknown;
+		metal_ingots_2_blessed = metal_ingots_2->blessed;
+		metal_ingots_2_cursed = metal_ingots_2->cursed;
 		if(metal_ingots == metal_ingots_2){
 			if(picked == CANE || picked == WHIP_SAW){
 				product->ovar1_alt_mat = metal_ingots_2->obj_material;
@@ -4497,40 +4504,36 @@ use_smithing_hammer(struct obj *obj)
 		}
 	}
 	
-	if((metal_ingots->blessed && obj->cursed)
-		|| (obj->blessed && metal_ingots->cursed)
+	if((metal_ingots_blessed && obj->cursed)
+		|| (obj->blessed && metal_ingots_cursed)
 	){
 		product->blessed = FALSE;
 		product->cursed = FALSE;
 	}
-	else if(metal_ingots->blessed || obj->blessed){
+	else if(metal_ingots_blessed || obj->blessed){
 		product->blessed = TRUE;
 		product->cursed = FALSE;
 	}
-	else if(metal_ingots->cursed || obj->cursed){
+	else if(metal_ingots_cursed || obj->cursed){
 		product->blessed = FALSE;
 		product->cursed = TRUE;
 	}
 	if(sword){
-		struct obj *ingots = metal_ingots_2 ? metal_ingots_2 : metal_ingots;
-		sword->bknown = ingots->bknown;
-		sword->dknown = TRUE;
-		sword->sknown = TRUE;
-		if((ingots->blessed && obj->cursed)
-			|| (obj->blessed && ingots->cursed)
+		if((metal_ingots_2_blessed && obj->cursed)
+			|| (obj->blessed && metal_ingots_2_cursed)
 		){
 			sword->blessed = FALSE;
 			sword->cursed = FALSE;
 		}
-		else if(ingots->blessed || obj->blessed){
+		else if(metal_ingots_2_blessed || obj->blessed){
 			sword->blessed = TRUE;
 			sword->cursed = FALSE;
 		}
-		else if(ingots->cursed || obj->cursed){
+		else if(metal_ingots_2_cursed || obj->cursed){
 			sword->blessed = FALSE;
 			sword->cursed = TRUE;
 		}
-		sword->bknown = ingots->bknown;
+		sword->bknown = inner_bknown;
 		sword->dknown = TRUE;
 		sword->sknown = TRUE;
 	}
@@ -4549,7 +4552,10 @@ use_smithing_hammer(struct obj *obj)
 		exercise(A_STR, TRUE);
 		exercise(A_STR, TRUE);
 		exercise(A_DEX, TRUE);
+		product->bknown = product_bknown;
 	}
+	product->dknown = TRUE;
+	product->sknown = TRUE;
 	use_skill(P_SMITHING, 2);
 
 	product = hold_another_object(product, "You can't pick up %s.",
