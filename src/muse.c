@@ -261,7 +261,7 @@ struct monst *mtmp;
 	struct trap *t;
 	int x=mtmp->mx, y=mtmp->my;
 	boolean stuck = (mtmp == u.ustuck);
-	boolean immobile = (mtmp->data->mmove == 0);
+	boolean immobile = (mtmp->data->mmove == 0) || stationary_mon(mtmp);
 	int fraction;
 
 	if (is_animal(mtmp->data) && mindless_muse_mon(mtmp))
@@ -2077,7 +2077,7 @@ struct monst *mtmp;
 	int x = mtmp->mx, y = mtmp->my;
 	struct trap *t;
 	int xx, yy;
-	boolean immobile = (mdat->mmove == 0);
+	boolean immobile = (mdat->mmove == 0) || stationary_mon(mtmp);
 	boolean stuck = (mtmp == u.ustuck);
 	boolean nomouth = nomouth(mtmp->mtyp)
 			|| ((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) && FacelessHelm(which_armor(mtmp, W_ARMH)))
