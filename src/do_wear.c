@@ -3313,7 +3313,7 @@ struct monst *victim;
 	otmp = (victim == &youmonst) ? uarmf : which_armor(victim, W_ARMF);
 	if(otmp && (!otmph || !rn2(4))) otmph = otmp;
 	otmp = (victim == &youmonst) ? ubelt : which_armor(victim, W_BELT);
-	if(otmp && (!otmph || !rn2(4))) otmph = otmp;
+	if(otmp && otmp->otyp == KIDNEY_BELT && (!otmph || !rn2(4))) otmph = otmp;
 	otmp = (victim == &youmonst) ? uarms : which_armor(victim, W_ARMS);
 	if(otmp && (!otmph || !rn2(4))) otmph = otmp;
 	return(otmph);
