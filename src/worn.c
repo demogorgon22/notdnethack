@@ -233,6 +233,10 @@ int otyp;
 					if(check_imp_mod(obj, IEA_PROT_SHAPE))
 						got_prop = TRUE;
 				break;
+				case QUICK_DRAW:
+					if(check_imp_mod(obj, IEA_GODEXTERITY))
+						got_prop = TRUE;
+				break;
 			}
 		}
 		//From scorpion carapace

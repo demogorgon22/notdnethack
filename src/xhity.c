@@ -15429,8 +15429,15 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		otmp = (youagr ? uarmf : which_armor(magr, W_ARMF));
 		if (otmp) {
 			basedmg += otmp->spe;
-			if (otmp->otyp == KICKING_BOOTS || (otmp->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(otmp, IEA_KICKING))){
+			if (otmp->otyp == KICKING_BOOTS){
 				basedmg += rnd(6) + rnd(5) + (bigmonst(pd) ? 0 : 1);
+			}
+			if(otmp->otyp == IMPERIAL_ELVEN_BOOTS && check_imp_mod(otmp, IEA_KICKING)){
+				basedmg += rnd(6) + (bigmonst(pd) ? 0 : 1);
+				if(mdef && !resists_magm(mdef) && !resist(mdef, RING_CLASS, 0, NOTELL)){
+					//Half spell etc.
+					elemdmg += d(2,12) + otmp->spe;
+				}
 			}
 			if (otmp->otyp == STILETTOS || otmp->otyp == HEELED_BOOTS){
 				basedmg += rnd(bigmonst(pd) ? 2 : 6);
