@@ -978,45 +978,10 @@
    monsters, we'll likely have to add a new light range field to mons[] 
    KEEP IN SYNC with MAX_RADIUS, circle_data, and circle_start[].
    Maximum allowable lightsource radius is currently 10 (30 after 3x lowlight modifier) */
-#define emits_light(ptr)	(((ptr)->mlet == S_LIGHT || \
-				  (ptr)->mtyp == PM_BRIGHT_WALKER || \
-				  (ptr)->mtyp == PM_FLAMING_SPHERE || \
-				  (ptr)->mtyp == PM_SHOCKING_SPHERE || \
-				  (ptr)->mtyp == PM_PARASITIZED_DOLL || \
-				  (ptr)->mtyp == PM_MOTE_OF_LIGHT || \
-				  (ptr)->mtyp == PM_BALL_OF_LIGHT || \
-				  (ptr)->mtyp == PM_LIGHT_ELF || \
-				  (ptr)->mtyp == PM_BLOODY_SUNSET || \
-				  (ptr)->mtyp == PM_BALL_OF_GOSSAMER_SUNLIGHT || \
-				  (ptr)->mtyp == PM_LUMINOUS_CLOUD || \
-				  (ptr)->mtyp == PM_HOOLOOVOO || \
-				  (ptr)->mtyp == PM_LIGHTNING_PARAELEMENTAL || \
-				  (ptr)->mtyp == PM_FALLEN_ANGEL || \
-				  (ptr)->mtyp == PM_ANCIENT_OF_THOUGHT || \
-				  (ptr)->mtyp == PM_DARK_WORM || \
-				  (ptr)->mtyp == PM_FIRE_VORTEX) ? 1 : \
-				 ((ptr)->mtyp == PM_FIRE_ELEMENTAL ||\
-				  (ptr)->mtyp == PM_FLAMING_ORB || \
-				  (ptr)->mtyp == PM_CANDLE_TREE || \
-				  (ptr)->mtyp == PM_PARASITIZED_KNIGHT || \
-				  (ptr)->mtyp == PM_DANCING_FLAME ||\
-				  (ptr)->mtyp == PM_COTERIE_OF_MOTES ||\
-				  (ptr)->mtyp == PM_BALL_OF_RADIANCE) ? 2 : \
-				 ((ptr)->mtyp == PM_THRONE_ARCHON ||\
-				  (ptr)->mtyp == PM_UNBODIED ||\
-				  (ptr)->mtyp == PM_BEAUTEOUS_ONE ||\
-				  (ptr)->mtyp == PM_DAO_LAO_GUI_MONK ||\
-				 (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE) ? 3 : \
-				 ((ptr)->mtyp == PM_BLESSED) ? 4 : \
-				 ((ptr)->mtyp == PM_LIGHT_ARCHON|| \
-				  (ptr)->mtyp == PM_GOD ||\
-				  (ptr)->mtyp == PM_LUCIFER) ? 7 : \
-				 ((ptr)->mtyp == PM_EDDERKOP) ? 8 : \
-				 ((ptr)->mtyp == PM_SURYA_DEVA) ? 9 : \
-				 0)
-#define emits_light_mon(mon) (has_template(mon, ILLUMINATED) ? \
-							 max(3, emits_light((mon)->data)) : \
-							 emits_light((mon)->data))
+#define emits_light(ptr)	((ptr)->light_radius)
+
+#define emits_light_mon(mon) (emits_light((mon)->data))
+
 #define Is_darklight_monster(ptr)	((ptr)->mtyp == PM_EDDERKOP\
 					|| (ptr)->mtyp == PM_DARK_WORM\
 					|| (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE\

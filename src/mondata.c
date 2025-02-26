@@ -568,6 +568,7 @@ int template;
 		ptr->mflagsg &= ~(MG_HATESHOLY);
 		ptr->mflagsa |= (MA_MINION);
 		ptr->mflagsw |= (MW_ELDER_EYE_PLANES);
+		ptr->light_radius = max(3, ptr->light_radius);
 		break;
 	case PSEUDONATURAL:
 		/* flags */

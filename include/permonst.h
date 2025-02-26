@@ -110,6 +110,7 @@ struct permonst {
 					mflagsa,		/* Monster rAce boolean bitflags */
 					mflagsv,		/* Monster Vision boolean bitflags */
 					mflagsw;		/* Monster Warded boolean bitflags */
+	unsigned char light_radius;
 # ifdef TEXTCOLOR
 	uchar		mcolor;			/* color to use */
 # endif
