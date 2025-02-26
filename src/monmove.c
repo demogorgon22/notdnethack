@@ -439,7 +439,7 @@ scaryItem(mtmp)
 struct monst *mtmp;
 {
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || (mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    is_lminion(mtmp) || mtmp->mtyp == PM_ANGEL ||
 	    is_rider(mtmp->data) || mtmp->mtyp == PM_MINOTAUR)
 		return(FALSE);
@@ -460,7 +460,7 @@ struct monst *mtmp;
   if(u.ualign.type == A_VOID) return FALSE;
   if(LOLTH_HIGH_POWER){
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || (mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    (is_rider(mtmp->data))
 	)
 		return(FALSE);
@@ -481,7 +481,8 @@ struct monst *mtmp;
   if(Infuture) return FALSE;
   if(ELBERETH_HIGH_POWER){
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || 
+		(mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    is_lminion(mtmp) || mtmp->mtyp == PM_ANGEL ||
 	    (is_rider(mtmp->data) && !(mtmp->mtyp == PM_NAZGUL)) || 
 		mtmp->mtyp == PM_MINOTAUR)
@@ -496,7 +497,7 @@ struct monst *mtmp;
   }
   else{
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || (mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    is_lminion(mtmp) || mtmp->mtyp == PM_ANGEL ||
 	    (is_rider(mtmp->data) && !(mtmp->mtyp == PM_NAZGUL)) || 
 		mtmp->mtyp == PM_MINOTAUR)
