@@ -2931,7 +2931,7 @@ parasite_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
-	if(u.veil)
+	if(u.uinsight < 10)
 		return FALSE;
 	if(parasite_research_ok())
 		return TRUE;
