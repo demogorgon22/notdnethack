@@ -3179,6 +3179,9 @@ research_enlightenment()
 					putstr(en_win, 0, buf);
 				}
 			}
+			else if(u.uinsight < 10){
+				putstr(en_win, 0, " You must listen beyond the veil.");
+			}
 			else {
 				putstr(en_win, 0, " You are unable to devise further surgical experiments.");
 				if(ABASE(A_INT) < 6)
