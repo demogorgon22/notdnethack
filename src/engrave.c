@@ -190,6 +190,8 @@ static const char *haluMesg[] = {
 	
 	"I don't care if it compiles / Or makes your head explode / I want a messy makefile / I want a billion lines of code", /* Scope Creep by Radiohead by qt */
 
+	"my eternal angel form dnh soul has a gun with a spoon in it", /* Demo */
+
 	"I see you...",
 		"...do you see me?",
 		"That was a mistake.",
