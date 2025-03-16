@@ -2935,7 +2935,7 @@ karemade:
 
 		    if (flags.bypasses) clear_bypasses();
 		    if(Glib) glibr();
-			if (uswapwep && !Weldproof && uswapwep->cursed) {
+			if (uswapwep && !Weldproof && uswapwep->cursed && u.twoweap) {
 				uswapwep->bknown = TRUE;
 				drop_uswapwep();
 			}
