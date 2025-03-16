@@ -1779,12 +1779,12 @@ misc_levelport:
 			}
 			else if(quest_status.time_doing_quest >= UH_QUEST_TIME_1){
 				You("again sense Vicar Amalia pleading for help:");
-				pline("Somthing is wrong. The infection is now spreading in the city!");
+				pline("Something is wrong. The infection is now spreading in the city!");
 			}
 			//Futureproof, but I don't think this can be reached.
 			else {
 				You("again sense Vicar Amalia pleading for help:");
-				pline("Somthing is wrong. The infection is still spreading.");
+				pline("Something is wrong. The infection is still spreading.");
 			}
 		} else {
 			if (u.uevent.qcalled) {
