@@ -1560,7 +1560,6 @@ struct obj {
 
 #define is_invokable_otyp(onum)		(onum == RIN_WISHES\
 							|| onum == CANDLE_OF_INVOCATION\
-							|| onum == CRYSTAL_BALL\
 							)
 
 
