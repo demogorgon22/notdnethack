@@ -587,14 +587,14 @@ static struct trobj UndeadHunter[] = {
 #define U_SMITH_HAMMER	2
 	{ SMITHING_HAMMER, 0, WEAPON_CLASS, 1, 0 },
 #define U_JACKET		3
-	{ JACKET, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ JACKET, 0, ARMOR_CLASS, 1, 0 },
 #define U_SHIRT			4
-	{ RUFFLED_SHIRT, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ RUFFLED_SHIRT, 0, ARMOR_CLASS, 1, 0 },
 #define U_HAT			5
-	{ FEDORA, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
-	{ GLOVES, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
-	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ TRICORN, 0, ARMOR_CLASS, 1, 0 },
 	{ CAPELET, 0, ARMOR_CLASS, 1, 0 },
+	{ GLOVES, 0, ARMOR_CLASS, 1, 0 },
+	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, 0 },
 #define U_BULLETS		9
 	{ BLOOD_BULLET, 0, WEAPON_CLASS, 20, 0 },
 	{ NIGHTMARE_S_BULLET_MOLD, 0, TOOL_CLASS, 1, 0 },
@@ -2510,6 +2510,7 @@ u_init()
 			switch(rn2(5)){
 			case 0:
 				//UndeadHunter[U_WEAPON].trotyp = CANE;
+				UndeadHunter[U_HAT].trotyp = flags.female ? (rn2(2) ? ESCOFFION : HENNIN) : TOP_HAT;
 			break;
 			case 1:
 				UndeadHunter[U_WEAPON].trotyp = SOLDIER_S_RAPIER;
@@ -3175,6 +3176,19 @@ register struct trobj *trop;
 			}
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
+			}
+			if(Role_if(PM_UNDEAD_HUNTER)){
+				if(Race_if(PM_VAMPIRE) && obj->otyp != HIGH_BOOTS){
+					if(obj->obj_material == LEATHER || obj->otyp == TRICORN){
+						set_material_gm(obj, CLOTH);
+						if(obj->otyp == GLOVES)
+							obj->obj_color = CLR_RED;
+						else
+							obj->obj_color = CLR_BLACK;
+					}
+				}
+				else if(obj->otyp == TRICORN)
+					set_material_gm(obj, LEATHER);
 			}
 			if(obj->otyp == RIFLE && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);

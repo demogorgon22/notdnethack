@@ -406,6 +406,7 @@ Helmet_on()
 	adj_abon(uarmh, uarmh->spe);
     switch(uarmh->otyp) {
 	case FEDORA:
+	case TRICORN:
 	case SHEMAGH:
 	case HELMET:
 	case DROVEN_HELM:
@@ -432,6 +433,12 @@ Helmet_on()
 	case HARMONIUM_HELM:
 	case HELM_OF_BRILLIANCE:
 	case SUNLIGHT_MAGGOT:
+		break;
+	case TOP_HAT:
+	case ESCOFFION:
+	case HENNIN:
+		ABON(A_CHA) += 1;
+		flags.botl = 1;
 		break;
 	case CORNUTHAUM:
 		/* people think marked wizards know what they're talking
@@ -524,6 +531,7 @@ Helmet_off()
 
     switch(uarmh->otyp) {
 	case FEDORA:
+	case TRICORN:
 	case SHEMAGH:
 	case HELMET:
 	case DROVEN_HELM:
@@ -548,6 +556,12 @@ Helmet_off()
 	case HARMONIUM_HELM:
 	case SUNLIGHT_MAGGOT:
 	    break;
+	case TOP_HAT:
+	case ESCOFFION:
+	case HENNIN:
+		ABON(A_CHA) -= 1;
+		flags.botl = 1;
+		break;
 	case DUNCE_CAP:
 	    flags.botl = 1;
 	    break;
@@ -4518,7 +4532,9 @@ register schar delta;
 				flags.botl = 1;
 			}
 		}
-		if (otmp->otyp == find_gcirclet() || otmp->oartifact == ART_CROWN_OF_THE_PERCIPIENT){
+		if (otmp->otyp == find_gcirclet() || otmp->oartifact == ART_CROWN_OF_THE_PERCIPIENT
+		 || otmp->otyp == TOP_HAT || otmp->otyp == ESCOFFION || otmp->otyp == HENNIN
+		){
 			if (delta) {
 				ABON(A_CHA) += (delta);
 				flags.botl = 1;

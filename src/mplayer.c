@@ -911,7 +911,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 			break;
 		}
 		*armor = JACKET;
-		*helm = FEDORA;
+		*helm = TRICORN;
 		*cloak = CAPELET;
 		*gloves = GLOVES;
 		*boots = HIGH_BOOTS;

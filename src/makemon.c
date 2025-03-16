@@ -6485,6 +6485,7 @@ int mmflags;
 					rn2(2) ? mongets(mtmp, HEELED_BOOTS, mkobjflags) : mongets(mtmp, HIGH_BOOTS, mkobjflags);
 					break;
 					case 2:
+					(void) mongets(mtmp, rn2(3) ? HENNIN : ESCOFFION, mkobjflags);
 					(void) mongets(mtmp, GENTLEWOMAN_S_DRESS, mkobjflags);
 					(void) mongets(mtmp, VICTORIAN_UNDERWEAR, mkobjflags);
 					(void) mongets(mtmp, LONG_GLOVES, mkobjflags);
@@ -8050,6 +8051,7 @@ int mmflags;
 						mongets(mtmp, rn2(2) ? SHOES : STILETTOS, mkobjflags);
 						mongets(mtmp, rn2(2) ? GENTLEMAN_S_SUIT : GENTLEWOMAN_S_DRESS, mkobjflags);
 						mongets(mtmp, rn2(2) ? RUFFLED_SHIRT : VICTORIAN_UNDERWEAR, mkobjflags);
+						mongets(mtmp, rn2(2) ? TOP_HAT : HENNIN, mkobjflags);
 					}
 					mongets(mtmp, MASK, mkobjflags);
 				}
@@ -8086,6 +8088,7 @@ int mmflags;
 						mongets(mtmp, rn2(2) ? SHOES : STILETTOS, mkobjflags);
 						mongets(mtmp, rn2(2) ? GENTLEMAN_S_SUIT : GENTLEWOMAN_S_DRESS, mkobjflags);
 						mongets(mtmp, rn2(2) ? RUFFLED_SHIRT : VICTORIAN_UNDERWEAR, mkobjflags);
+						mongets(mtmp, rn2(2) ? TOP_HAT : HENNIN, mkobjflags);
 					}
 					mongets(mtmp, MASK, mkobjflags);
 				}
@@ -9408,6 +9411,10 @@ int mmflags;
 						(void) mpickobj(mtmp, otmp);
 						otmp = mksobj(FEDORA, mkobjflags|MKOBJ_ARTIF);
 						otmp->spe = 0+rn2(4);
+						(void) mpickobj(mtmp, otmp);
+						otmp = mksobj(TRICORN, mkobjflags|MKOBJ_ARTIF);
+						otmp->spe = 0+rn2(4);
+						set_material_gm(otmp, LEATHER);
 						(void) mpickobj(mtmp, otmp);
 						otmp = mksobj(HIGH_BOOTS, mkobjflags|MKOBJ_ARTIF);
 						otmp->spe = 0+rn2(4);
@@ -11241,7 +11248,7 @@ boolean greatequip;
 				if(chance == 100){
 					if(mtmp->female) mongets(mtmp, GENTLEWOMAN_S_DRESS, mkobjflags);
 					else mongets(mtmp, GENTLEMAN_S_SUIT, mkobjflags);
-					mongets(mtmp, FEDORA, mkobjflags);
+					mongets(mtmp, TOP_HAT, mkobjflags);
 				}
 				else if(chance >= 90) mongets(mtmp, JACKET, mkobjflags);
 			}
@@ -12602,6 +12609,7 @@ boolean greatequip;
 				(void) mpickobj(mtmp, otmp);
 				(void) mongets(mtmp, RUFFLED_SHIRT, mkobjflags);
 				(void) mongets(mtmp, GENTLEMAN_S_SUIT, mkobjflags);
+				(void) mongets(mtmp, TOP_HAT, mkobjflags);
 				(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
 				(void) mongets(mtmp, GLOVES, mkobjflags);
 				(void) mongets(mtmp, SPE_CHARM_MONSTER, mkobjflags);
