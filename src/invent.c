@@ -3685,6 +3685,8 @@ winid *datawin;
 			EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
 			EXPERTTRAITS(ETRAIT_CREATE_OPENING, "creates openings for sneak attacks");
 			EXPERTTRAITS(ETRAIT_BRACED, "delivers powerful counterattacks");
+			EXPERTTRAITS(ETRAIT_BLADESONG, "delivers powerful blows when combined with songs or spells");
+			EXPERTTRAITS(ETRAIT_BLADEDANCE, "delivers powerful blows when moving and striking erratically");
 			if(buf[0] != '\0')
 				Sprintf(buf2, "Expert traits: %s.", buf);
 			else

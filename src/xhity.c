@@ -15987,6 +15987,60 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				if(youagr)
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
+			if(CHECK_ETRAIT(weapon, magr, ETRAIT_BLADESONG)){
+				struct weapon_dice wdice;
+				/* grab the weapon dice from dmgval_core */
+				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+				/* Maybe add to the tratdmg counter */
+				if(youagr){
+					long timeout = u.bladesong + (Race_if(PM_ELF) ? 3 : 0);
+					if(timeout >= monstermoves && 
+						(Race_if(PM_ELF) ?
+						 (timeout >= monstermoves+4 || ROLL_ETRAIT(weapon, magr, TRUE, rn2((monstermoves+6) - u.bladesong))):
+						 (timeout >= monstermoves+10 || ROLL_ETRAIT(weapon, magr, TRUE, rn2((monstermoves+10) - u.bladesong)))
+						)
+					){
+						tratdmg += weapon_dmg_roll(&wdice, youdef);
+						tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+						if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
+							pline("Blade song!");
+					}
+				}
+				else if(is_elf(pa) && ROLL_ETRAIT(weapon, magr, rn2(3), !rn2(3))){
+					if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
+						pline("Blade song!");
+					tratdmg += weapon_dmg_roll(&wdice, youdef);
+				}
+			}
+			if(CHECK_ETRAIT(weapon, magr, ETRAIT_BLADEDANCE)){
+				struct weapon_dice wdice;
+				/* grab the weapon dice from dmgval_core */
+				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+				/* Maybe add to the tratdmg counter */
+				if(youagr){
+					int dx1 = u.prev_dir.x;
+					int dy1 = u.prev_dir.y;
+					//Note: allows thrown etc.
+					int dx = x(mdef) - x(magr);
+					int dy = y(mdef) - y(magr);
+					if((dx != dx1 || dy != dy1) && (dx1 || dy1)){
+						int tmpdmg;
+						tmpdmg = weapon_dmg_roll(&wdice, youdef);
+						tmpdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+						if(Race_if(PM_ELF))
+							tmpdmg += (ACURR(A_CHA)+1)/2;
+						tratdmg += ROLL_ETRAIT(weapon, magr, tmpdmg, (tmpdmg+2)/3);
+						if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
+							pline("Blade dance!");
+						You("twirl and strike!");
+					}
+				}
+				else if(is_elf(pa) && magr->mspec_used && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(3))){
+					tratdmg += weapon_dmg_roll(&wdice, youdef);
+					if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
+						pline("Blade dance!");
+				}
+			}
 			if(braced_weapon){
 				struct weapon_dice wdice;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))

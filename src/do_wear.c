@@ -2820,6 +2820,9 @@ find_ac()
 		)
 			uac -= 3;//+1 bonus to shield size
 	}
+	if(!uarms && uwep && CHECK_ETRAIT(uwep, &youmonst, ETRAIT_BLADEDANCE) && Race_if(PM_ELF)){
+		uac -= ROLL_ETRAIT(uwep, &youmonst, 3, 1);
+	}
 	if (uarmg)	uac -= arm_ac_bonus(uarmg);
 	if (uarmu)	uac -= arm_ac_bonus(uarmu);
 	if (ubelt)	uac -= arm_ac_bonus(ubelt);

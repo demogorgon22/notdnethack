@@ -347,6 +347,7 @@ struct you {
 	// long laststruck;
 	long lastmoved;
 	long lastcast;
+	long bladesong;
 	
 	boolean ukinghill; /* records if you are carying the pirate treasure (and are therefor king of the hill) */
 	int protean; /* counter for the auto-polypiling power of the pirate treasure*/

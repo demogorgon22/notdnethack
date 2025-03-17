@@ -233,6 +233,8 @@ struct objclass {
 #define ETRAIT_SECOND			0x00004000L
 #define ETRAIT_CREATE_OPENING	0x00008000L
 #define ETRAIT_BRACED			0x00010000L
+#define ETRAIT_BLADESONG		0x00020000L
+#define ETRAIT_BLADEDANCE		0x00040000L
 
 #define wielder_size(mon) ((mon) == &youmonst ? youracedata->msize : (mon)->data->msize)
 #define CHECK_ETRAIT(obj, mon, trait) (((obj)->objsize == wielder_size(mon) || (obj)->oartifact == ART_AMALGAMATED_SKIES) && \
@@ -242,6 +244,8 @@ struct objclass {
 										) \
 										|| (trait == ETRAIT_QUICK && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD))\
 										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
+										|| (trait == ETRAIT_BLADESONG && (obj)->oartifact == ART_BLADE_SINGER_S_SABER)\
+										|| (trait == ETRAIT_BLADEDANCE && (obj)->oartifact == ART_BLADE_DANCER_S_DAGGER)\
 										|| ((obj)->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits&trait)\
 									   ) && \
 	((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))

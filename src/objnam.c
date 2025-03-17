@@ -946,6 +946,14 @@ boolean dofull;
 			Strcat(buf, "wool-lined ");
 	}
 	
+	if((obj == uwep || obj == uswapwep)
+		&& CHECK_ETRAIT(obj, &youmonst, ETRAIT_BLADESONG)
+		&& ((u.bladesong + (Race_if(PM_ELF) ? 3 : 0)) >= monstermoves)
+	){
+		Strcat(buf, "chiming ");
+		return;
+	}
+
 	if(obj->oartifact && get_artifact(obj)->inv_prop == RINGED_SPEAR){
 		if (artinstance[obj->oartifact].RRSember >= moves)
 			Strcat(buf, "molten ");
