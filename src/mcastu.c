@@ -2585,10 +2585,10 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 			magr->mux = magr->muy = 0;
 		}
 	}
-	if(result == MM_HIT && magr && !youagr && magr->mfaction == NECROMANCY_FACTION && magr->mtyp != PM_ELVEN_WRAITH && u.uinsight >= 15 && spellnum && mdef){
+	if(result == MM_HIT && magr && !youagr && magr->mfaction == NECROMANCY_FACTION && magr->mtyp != PM_ELVEN_WRAITH && Insight >= 15 && spellnum && mdef){
 		struct monst *wraith = makemon(&mons[PM_ELVEN_WRAITH], magr->mx, magr->my, MM_ESUM|MM_ADJACENTOK|NO_MINVENT);
 		if(wraith){
-			mark_mon_as_summoned(wraith, magr, u.uinsight/5, 0);
+			mark_mon_as_summoned(wraith, magr, Insight/5, 0);
 			wraith->m_insight_level = 15;
 			wraith->m_lev = magr->m_lev;
 			wraith->mpeaceful = magr->mpeaceful;
@@ -2605,7 +2605,7 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 	if(result == MM_HIT && magr && !youagr && magr->mtyp == PM_SPELLWEAVER_GODDESS_MOCKER && spellnum && mdef){
 		struct monst *wraith = makemon(&mons[PM_SILVERFIRE_SHADOW_S_WRAITH], magr->mx, magr->my, MM_ESUM|MM_ADJACENTOK|NO_MINVENT);
 		if(wraith){
-			mark_mon_as_summoned(wraith, magr, u.uinsight/5, 0);
+			mark_mon_as_summoned(wraith, magr, Insight/5, 0);
 			wraith->m_insight_level = magr->m_insight_level;
 			wraith->m_lev = max(1, magr->m_lev-6);
 			wraith->mpeaceful = magr->mpeaceful;
@@ -3731,10 +3731,10 @@ int tary;
 			if(distmin(x(magr), y(magr), x(mdef), y(mdef)) <= mlev(magr)/10+1 && !resist(mdef, '\0', 0, NOTELL)){
 				if(!youdef){
 					mdef->mcanmove = 0;
-					mdef->mfrozen = min_ints(7, max(mdef->mfrozen, u.uinsight/11));
+					mdef->mfrozen = min_ints(7, max(mdef->mfrozen, Insight/11));
 				}
 				else {
-					mdef->movement -= u.uinsight/11;
+					mdef->movement -= Insight/11;
 				}
 			}
 			if(!youdef && cansee(x(mdef),y(mdef)))
@@ -3744,7 +3744,7 @@ int tary;
 			if (Shock_res(mdef)) {
 				shieldeff(mdef->mx, mdef->my);
 			} else {
-				dmg = d(min(10, u.uinsight/11*2),6);
+				dmg = d(min(10, Insight/11*2),6);
 			}
 		}
 		return xdamagey(magr, mdef, attk, dmg);

@@ -2624,10 +2624,10 @@ base_uac()
 			if(!uarmc && !uarm) uac -= max( (uwep->spe+1)/2,0);
 		}
 		else if(uwep->oartifact == ART_LASH_OF_THE_COLD_WASTE){
-			if(u.uinsight >= 20)
+			if(Insight >= 20)
 				uac -= 10;
-			else if(u.uinsight > 10)
-				uac -= u.uinsight - 10;
+			else if(Insight > 10)
+				uac -= Insight - 10;
 		}
 		if(!flat_foot){
 			if((is_rapier(uwep) && arti_phasing(uwep)) || 
@@ -2914,7 +2914,7 @@ int base_nat_udr()
 			else udr += (u.ulevel)/6;
 		}
 	}
-	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5){
+	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && Insight >= 5){
 		udr += 3;
 	}
 	if(check_preservation(PRESERVE_GAIN_DR)){
@@ -2946,10 +2946,10 @@ int base_udr()
 	if(uwep){
 		if(uwep->oartifact == ART_LANCE_OF_LONGINUS) udr += max((uwep->spe)/2,0);
 		else if(uwep->oartifact == ART_LASH_OF_THE_COLD_WASTE){
-			if(u.uinsight >= 40)
+			if(Insight >= 40)
 				udr += 5;
-			else if(u.uinsight > 20)
-				udr += (u.uinsight - 20)/4;
+			else if(Insight > 20)
+				udr += (Insight - 20)/4;
 		}
 	}
 	if (HProtection & INTRINSIC) udr += (u.ublessed)/2;
@@ -5726,16 +5726,16 @@ struct monst *magr;
 struct obj *wep;
 boolean invoked;
 {
-	if(u.uinsight >= 60 && invoked){
+	if(Insight >= 60 && invoked){
 		//summon ghosts
 		doibite_ghosts(magr, wep);
 	}
 
-	if(u.uinsight >= 50 && !rn2(20)){
+	if(Insight >= 50 && !rn2(20)){
 		//cast spell
 		doibite_cast(magr, wep);
 	}
-	else if(u.uinsight >= 40 || invoked){
+	else if(Insight >= 40 || invoked){
 		//hit targets
 		doibite_thrash(magr, wep);
 	}
@@ -6014,7 +6014,7 @@ boolean invoked;
 	boolean youdef;
 	
 	/*Must have some insight or all targets will be skipped.*/
-	if(u.uinsight < 1)
+	if(Insight < 1)
 		return;
 	
 	for(j=8;j>=1;j--){
@@ -6041,7 +6041,7 @@ boolean invoked;
 		if(!youdef && nonthreat(mdef))
 			continue;
 		
-		if(rn2(101) >= u.uinsight)
+		if(rn2(101) >= Insight)
 			continue;
 		
 		if(youdef && u.uen > 0){
@@ -6076,7 +6076,7 @@ boolean invoked;
 		if(wep == MON_WEP(magr)) delta = 3;
 	}
 	
-	if (!invoked && u.uinsight < rnd(100)) return;
+	if (!invoked && Insight < rnd(100)) return;
 	
 	for(i = x-delta; i <= x+delta; i++)
 		for(j = y-delta; j <= y+delta; j++){
@@ -6116,7 +6116,7 @@ boolean invoked;
 					return; //oops!
 			}
 			
-			if(u.uinsight >= 50 && invoked && !rn2(4) && m_online(magr, mdef, x(mdef), y(mdef), TRUE, TRUE)){
+			if(Insight >= 50 && invoked && !rn2(4) && m_online(magr, mdef, x(mdef), y(mdef), TRUE, TRUE)){
 				pline("A torrent of energy erupts from the jaws!");
 				struct zapdata beam;
 				basiczap(&beam, AD_MAGM, ZAP_BREATH, 6);
@@ -6182,10 +6182,10 @@ struct obj *salve;
 	if(rn2(180))
 		return;
 
-	if(u.uinsight >= 18 && salve->spe < 6){
+	if(Insight >= 18 && salve->spe < 6){
 		salve->spe++;
 	}
-	else if(u.uinsight >= 66 && salve->spe >= 6){
+	else if(Insight >= 66 && salve->spe >= 6){
 		for(struct obj *otmp = yours ? invent : mon->minvent; otmp; otmp = otmp->nobj){
 			if(salve_target(otmp) && rn2(2)){
 				if(yours) pline("%s crawls across %s.", Yname2(salve), yname(otmp));

@@ -2136,7 +2136,7 @@ int atyp, dtyp;
     struct attack *a;
 
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if (a->ins_req <= u.uinsight && a->aatyp == atyp && (dtyp == AD_ANY || a->adtyp == dtyp)) 
+		if (a->ins_req <= Insight && a->aatyp == atyp && (dtyp == AD_ANY || a->adtyp == dtyp)) 
 			return a;
 	}
 
@@ -2151,7 +2151,7 @@ int dtyp;
     struct attack *a;
 
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if (a->ins_req <= u.uinsight && (dtyp == AD_ANY || a->adtyp == dtyp)) 
+		if (a->ins_req <= Insight && (dtyp == AD_ANY || a->adtyp == dtyp)) 
 			return a;
 	}
 

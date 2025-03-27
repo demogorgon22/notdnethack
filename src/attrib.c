@@ -1484,7 +1484,7 @@ boolean check;
 	long int thought;
 	for (thought = 1L; thought <= u.thoughts; thought = thought << 1) {
 		if ((u.thoughts&thought) &&
-			active_glyph(thought) != was_active_glyph(thought, u.uinsight, u.usanity - delta)
+			active_glyph(thought) != was_active_glyph(thought, Insight, u.usanity - delta)
 			) {
 			change_glyph_active(thought, active_glyph(thought));
 		}
@@ -1563,7 +1563,7 @@ int delta;
 	long int thought;
 	for (thought = 1L; thought <= u.thoughts; thought = thought << 1) {
 		if ((u.thoughts&thought) &&
-			active_glyph(thought) != was_active_glyph(thought, u.uinsight-delta, u.usanity)
+			active_glyph(thought) != was_active_glyph(thought, Insight-delta, u.usanity)
 			) {
 			change_glyph_active(thought, active_glyph(thought));
 		}
@@ -1574,9 +1574,9 @@ boolean
 check_insight()
 {
 	int insight;
-	if(u.uinsight > INSIGHT_RATE/20)
+	if(Insight > INSIGHT_RATE/20)
 		insight = INSIGHT_RATE/20;
-	else insight = u.uinsight;
+	else insight = Insight;
 	
 	return insight > rn2(INSIGHT_RATE);
 }
@@ -2289,7 +2289,7 @@ int edge;
 			return u.usanity > 50 || u.ulevel < 14;
 		break;
 		case GSTYLE_COLD:
-			return u.usanity > 50 || u.ulevel < 14 || u.uinsight < 9;
+			return u.usanity > 50 || u.ulevel < 14 || Insight < 9;
 		break;
 		case GSTYLE_DEFENSE:
 			return u.usanity < 50 || u.ulevel < 14;
@@ -2298,7 +2298,7 @@ int edge;
 			return u.usanity < 50 || u.ulevel < 14;
 		break;
 		case GSTYLE_RESONANT:
-			return u.usanity < 50 || u.ulevel < 30 || u.uinsight < 81;
+			return u.usanity < 50 || u.ulevel < 30 || Insight < 81;
 		break;
 		default:
 			impossible("Attempting to get blockage of mental edge number %d?", edge);

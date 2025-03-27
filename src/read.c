@@ -178,19 +178,19 @@ doread()
 			return MOVE_READ;
 		} else if(scroll->oartifact == ART_HOLY_MOONLIGHT_SWORD && scroll->lamplit){
 			/* Note: you can see the blade even when blind */
-			if(u.uinsight < 2) {
+			if(Insight < 2) {
 				pline("The glowing cyan blade is decorated with faint curves.");
 			}
-			else if(u.uinsight < 5) {
+			else if(Insight < 5) {
 				You("faintly see strange arches inside the cyan blade.");
 			}
-			else if(u.uinsight < 10){
+			else if(Insight < 10){
 				You("can barely see faint bright stars behind the arches inside the cyan blade.");
 			}
-			else if(u.uinsight < 20){
+			else if(Insight < 20){
 				pline("The blade is the deep black of the night sky. You don't know why you ever thought it was cyan.");
 			}
-			else if(u.uinsight < 40){
+			else if(Insight < 40){
 				pline("The distant stars wink and dance among the arches within the black night sky.");
 			}
 			else {

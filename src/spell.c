@@ -1492,7 +1492,7 @@ update_externally_granted_spells()
 	if(uarmh && uarmh->oartifact == ART_CROWN_OF_THE_PERCIPIENT){
 		for (i = 0; i < MAXSPELL; i++) {
 			if (spellid(i) != NO_SPELL) {
-				if (spl_book[i].sp_lev <= (u.uinsight*2)/11+1)
+				if (spl_book[i].sp_lev <= (Insight*2)/11+1)
 					spellext(i) = TRUE;
 			}
 		}
@@ -6343,7 +6343,7 @@ int spell;
 	chance = chance * (20-splcaster) / 15 - splcaster;
 	
 	if(check_mutation(SHUB_RADIANCE)){
-		int insight = u.uinsight;
+		int insight = Insight;
 		while(insight){
 			chance += 1;
 			insight /= 2;

@@ -1356,11 +1356,11 @@ resistances_enlightenment()
 	else if(u.usanity < 100)
 		putstr(en_win, 0, "You are a little touched in the head.");
 	
-	if(u.uinsight > 40)
+	if(Insight > 40)
 		putstr(en_win, 0, "You frequently see things you wish you hadn't.");
-	else if(u.uinsight > 20)
+	else if(Insight > 20)
 		putstr(en_win, 0, "You periodically see things you wish you hadn't.");
-	else if(u.uinsight > 1)
+	else if(Insight > 1)
 		putstr(en_win, 0, "You occasionally see things you wish you hadn't.");
 	
 	if(Doubt)
@@ -3179,7 +3179,7 @@ research_enlightenment()
 					putstr(en_win, 0, buf);
 				}
 			}
-			else if(u.uinsight < 10){
+			else if(Insight < 10){
 				putstr(en_win, 0, " You must listen beyond the veil.");
 			}
 			else {

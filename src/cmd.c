@@ -1300,9 +1300,9 @@ doGithForm()
 
 
 	for (i = FIRST_GSTYLE; i <= LAST_GSTYLE; i++) {
-		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || u.uinsight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
+		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || Insight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
 			continue;
-		if (i == GSTYLE_COLD && u.uinsight < 9 && (artinstance[ART_SILVER_SKY].GithStylesSeen & 1) == 0)
+		if (i == GSTYLE_COLD && Insight < 9 && (artinstance[ART_SILVER_SKY].GithStylesSeen & 1) == 0)
 			continue;
 
 		/* knight forms are shown if unskilled but not restricted, since training involves starting from unskilled */
@@ -1316,9 +1316,9 @@ doGithForm()
 		else if (i == GSTYLE_PENETRATE)
 			block_reason = "lack of hate";
 		else if (i == GSTYLE_COLD)
-			block_reason = (u.uinsight < 9) ? "lack of knowledge" : "lack of wrath";
+			block_reason = (Insight < 9) ? "lack of knowledge" : "lack of wrath";
 		else if (i == GSTYLE_RESONANT)
-			block_reason = (u.ulevel < 30) ? "lack of skill" : ((u.uinsight < 81) ? "lack of knowledge" : "lack of mental discipline");
+			block_reason = (u.ulevel < 30) ? "lack of skill" : ((Insight < 81) ? "lack of knowledge" : "lack of mental discipline");
 		else
 			block_reason = "lack of mental discipline";
 
@@ -2473,7 +2473,7 @@ STATIC_PTR int wiz_setinsight()
 		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
-	change_uinsight(newval - u.uinsight);
+	change_uinsight(newval - Insight);
 	return MOVE_INSTANT;
 }
 

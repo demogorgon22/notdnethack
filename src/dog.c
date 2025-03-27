@@ -276,7 +276,7 @@ makedog()
 	
 	if(pettype == PM_SECRET_WHISPERER){
 		mark_mon_as_summoned(mtmp, &youmonst, ACURR(A_CHA) + 1, 0);
-		for(int i = min(45, (u.uinsight - mtmp->m_lev)); i > 0; i--){
+		for(int i = min(45, (Insight - mtmp->m_lev)); i > 0; i--){
 			grow_up(mtmp, (struct monst *) 0);
 			//Technically might grow into a genocided form.
 			if(DEADMONSTER(mtmp))
@@ -390,7 +390,7 @@ losedogs()
 	for(mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
 		mtmp2 = mtmp->nmon;
 		if (mtmp->mux == u.uz.dnum && mtmp->muy == u.uz.dlevel 
-			&& mtmp->m_insight_level <= u.uinsight
+			&& mtmp->m_insight_level <= Insight
 		    && !(mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 		    && !(mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 		    && !((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)

@@ -57,7 +57,7 @@ register struct permonst *ptr;
 		case PM_ICE_PARAELEMENTAL: return Is_waterlevel(&u.uz);
 	}
 	else if((ptr->mlet == S_CHA_ANGEL || ptr->mlet == S_NEU_ANGEL || ptr->mlet == S_LAW_ANGEL ) && is_minion(ptr))
-		return Is_astralevel(&u.uz) && u.uinsight >= 7;
+		return Is_astralevel(&u.uz) && Insight >= 7;
 	return FALSE;
 }
 
@@ -752,7 +752,7 @@ boolean goodequip;
 		(void) mpickobj(mtmp, otmp);
 	} else if(ptr->mtyp == PM_GIANT_GOAT_SPAWN) {
 		int threshold = rnd(10)+rn2(11);
-		if(mtmp->female && (In_lost_cities(&u.uz)) && u.uinsight > threshold){
+		if(mtmp->female && (In_lost_cities(&u.uz)) && Insight > threshold){
 			set_template(mtmp, MISTWEAVER);
 			mtmp->m_insight_level = threshold;
 		}
@@ -1059,7 +1059,7 @@ boolean greatequip;
 	}
 	else if(mm == PM_GOAT_SPAWN) {
 		int threshold = rnd(10)+rn2(11);
-		if(mtmp->female && (In_lost_cities(&u.uz)) && u.uinsight > threshold){
+		if(mtmp->female && (In_lost_cities(&u.uz)) && Insight > threshold){
 			set_template(mtmp, MISTWEAVER);
 			mtmp->m_insight_level = threshold;
 		}
@@ -5182,7 +5182,7 @@ int mmflags;
 	    case S_CHA_ANGEL:
 		{
 		int spe2;
-		boolean endgame_equip = goodequip || (In_endgame(&u.uz) && rn2(7) < u.uinsight);
+		boolean endgame_equip = goodequip || (In_endgame(&u.uz) && rn2(7) < Insight);
 			if(In_mordor_quest(&u.uz) 
 				&& !In_mordor_forest(&u.uz)
 				&& !Is_ford_level(&u.uz)
@@ -6778,7 +6778,7 @@ int mmflags;
 			(void) mpickobj(mtmp, otmp);
 		} else if(mm == PM_SMALL_GOAT_SPAWN) {
 			int threshold = rnd(10)+rn2(11);
-			if(mtmp->female && (In_lost_cities(&u.uz)) && u.uinsight > threshold){
+			if(mtmp->female && (In_lost_cities(&u.uz)) && Insight > threshold){
 				set_template(mtmp, MISTWEAVER);
 				mtmp->m_insight_level = threshold;
 			}
@@ -8279,7 +8279,7 @@ int mmflags;
 					}
 					(void) mpickobj(mtmp, otmp);
 					int threshold = rnd(10)+rn2(11);
-					if(mtmp->female && u.uinsight > threshold){
+					if(mtmp->female && Insight > threshold){
 						set_template(mtmp, MISTWEAVER);
 						mtmp->m_insight_level = threshold;
 					} else {
@@ -9458,7 +9458,7 @@ int mmflags;
 				}
 			} else {//not shopkeepers, deminymphs, rage-walkers, or intoners
 				int threshold = rnd(10)+rn2(11);
-				if(mtmp->female && (faction == GOATMOM_FACTION) && u.uinsight > threshold){
+				if(mtmp->female && (faction == GOATMOM_FACTION) && Insight > threshold){
 					set_template(mtmp, MISTWEAVER);
 					mtmp->m_insight_level = threshold;
 				}
@@ -9575,7 +9575,7 @@ int mmflags;
 		}
 		if(ptr->mtyp == PM_FOREST_CENTAUR || ptr->mtyp == PM_PLAINS_CENTAUR || ptr->mtyp == PM_PLAINS_CENTAUR){
 			int threshold = rnd(10)+rn2(11);
-			if(mtmp->female && (faction == GOATMOM_FACTION) && u.uinsight > threshold){
+			if(mtmp->female && (faction == GOATMOM_FACTION) && Insight > threshold){
 				set_template(mtmp, MISTWEAVER);
 				mtmp->m_insight_level = threshold;
 			}
@@ -10519,7 +10519,7 @@ int mmflags;
 					set_material_gm(otmp, BONE);
 					(void) mpickobj(mtmp, otmp);
 					int threshold = rnd(10)+rn2(11);
-					if(mtmp->female && u.uinsight > threshold){
+					if(mtmp->female && Insight > threshold){
 						set_template(mtmp, MISTWEAVER);
 						mtmp->m_insight_level = threshold;
 					} else {
@@ -15106,7 +15106,7 @@ int mndx;
 {
 	if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) return TRUE;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
-	if (G_C_INST(mons[mndx].geno) > u.uinsight) return TRUE;
+	if (G_C_INST(mons[mndx].geno) > Insight) return TRUE;
 	if (Inhell)
 		return((mons[mndx].geno & (G_PLANES|G_DEPTHS)) != 0);
 	else if (In_endgame(&u.uz))
@@ -15735,7 +15735,7 @@ int	spc;
 	for (first = LOW_PM; first < SPECIAL_PM; first++)
 	    if (mons[first].mlet == class
 			&& !(mons[first].geno & mask)
-			&& (G_C_INST(mons[first].geno) <= u.uinsight)
+			&& (G_C_INST(mons[first].geno) <= Insight)
 		) break;
 	if (first == SPECIAL_PM) return (struct permonst *) 0;
 
@@ -15745,7 +15745,7 @@ int	spc;
 	    if (!(mvitals[last].mvflags & G_GONE && !In_quest(&u.uz))
 			&& !(mons[last].geno & mask)
 			&& !is_placeholder(&mons[last])
-			&& (G_C_INST(mons[last].geno) <= u.uinsight)
+			&& (G_C_INST(mons[last].geno) <= Insight)
 		) {
 			/* consider it */
 			if(num && toostrong(last, maxmlev) && monstr[last] != monstr[last-1]) break;
@@ -15765,7 +15765,7 @@ int	spc;
 	    if (!(mvitals[first].mvflags & G_GONE && !In_quest(&u.uz))
 			&& !(mons[first].geno & mask)
 			&& !is_placeholder(&mons[first])
-			&& (G_C_INST(mons[first].geno) <= u.uinsight)
+			&& (G_C_INST(mons[first].geno) <= Insight)
 		) {
 			/* skew towards lower value monsters at lower exp. levels */
 			freq = (mons[first].geno & G_FREQ);
@@ -16902,7 +16902,7 @@ int mkobjflags;
 			otmp->blessed = TRUE;
 			if (otmp->spe < 0) otmp->spe *= -1;
 			otmp->oerodeproof = TRUE;
-			if((In_endgame(&u.uz) && rn2(7) < u.uinsight) || (mkobjflags&MKOBJ_GOODEQUIP)){
+			if((In_endgame(&u.uz) && rn2(7) < Insight) || (mkobjflags&MKOBJ_GOODEQUIP)){
 				if(otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)){
 					int min = 3;
 					if(Is_astralevel(&u.uz)){
@@ -17115,7 +17115,7 @@ register struct permonst *ptr;
 	if(Race_if(PM_CLOCKWORK_AUTOMATON) && (mndx == PM_TINKER_GNOME || mndx == PM_HOOLOOVOO) ) return TRUE;
 	
 	if(mndx == PM_CENTER_OF_ALL){
-		if(In_endgame(&u.uz) || u.uinsight > 8)
+		if(In_endgame(&u.uz) || Insight > 8)
 			return FALSE;
 		else if(!u.uevent.sum_entered)
 			return TRUE;

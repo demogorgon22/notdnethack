@@ -874,7 +874,7 @@ int *inrange, *nearby, *scared;
 	}
 	
 	if(mtmp->mtyp == PM_DAUGHTER_OF_BEDLAM && !rn2(20)) *scared = TRUE;
-	else if(mtmp->mtyp == PM_CARCOSAN_COURTIER && *nearby && !mtmp->mflee && (u.uinsight < 25 || mtmp->m_id%2)) *scared = TRUE;
+	else if(mtmp->mtyp == PM_CARCOSAN_COURTIER && *nearby && !mtmp->mflee && (Insight < 25 || mtmp->m_id%2)) *scared = TRUE;
 	else if(*nearby && !mtmp->mflee && fleetflee(mtmp->data) && (mtmp->data->mmove > youracedata->mmove || noattacks(mtmp->data))) *scared = TRUE;
 	
 	if(*scared) {
@@ -1081,7 +1081,7 @@ register struct monst *mtmp;
 		&& !mtmp->mtame 
 		&& !Is_astralevel(&u.uz)
 		&& (near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
-		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || u.uinsight < 2 || (u.uinsight < 32 && !rn2(u.uinsight))) 
+		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
 		&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
 	){
 		int nlev;
@@ -1539,7 +1539,7 @@ register struct monst *mtmp;
 		}
 	}
 	
-	if (mtmp->mtyp == PM_ITINERANT_PRIESTESS && u.uinsight >= 40 && !straitjacketed_mon(mtmp)){
+	if (mtmp->mtyp == PM_ITINERANT_PRIESTESS && Insight >= 40 && !straitjacketed_mon(mtmp)){
 		struct monst *patient = 0;
 		int i, j, x, y, rot = rn2(3);
 		for(i = -1; i < 2; i++){
@@ -1914,7 +1914,7 @@ register struct monst *mtmp;
 					u.umadness |= MAD_DREAMS;
 				}
 				if(mdat->mtyp == PM_FOETID_ANGEL){
-					make_doubtful((long) u.uinsight,TRUE);
+					make_doubtful((long) Insight,TRUE);
 				}
 				if (mdat->mtyp == PM_ELDER_BRAIN) {
 					for (m2 = fmon; m2; m2 = nmon) {

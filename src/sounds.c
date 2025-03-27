@@ -1370,7 +1370,7 @@ asGuardian:
 			}
 			switch(rnd(4)){
 				case 1:
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s screams melodiously.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s screams melodiously.", Monnam(mtmp));
 					else pline("%s sings the song of broken eyes.", Monnam(mtmp));
 					
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
@@ -1390,7 +1390,7 @@ asGuardian:
 					}
 				break;
 				case 2:
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s sings a resonant note.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s sings a resonant note.", Monnam(mtmp));
 					else pline("%s sings a harmless song of ruin.", Monnam(mtmp));
 					int trycount;
 					for(i = rnd(5); i > 0; i--){
@@ -1417,7 +1417,7 @@ asGuardian:
 				break;
 				case 3:{
 					struct obj *ispe = mksobj(SPE_TURN_UNDEAD, MKOBJ_NOINIT);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s wails deafeningly.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s wails deafeningly.", Monnam(mtmp));
 					else pline("%s sings the song of the day of repentance.", Monnam(mtmp));
 					//Rapture invisible creatures
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
@@ -1451,7 +1451,7 @@ asGuardian:
 					}
 				}break;
 				case 4:
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s screams furiously.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s screams furiously.", Monnam(mtmp));
 					else pline("%s sings the song of bloodied prayers.", Monnam(mtmp));
 					
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
@@ -1486,7 +1486,7 @@ asGuardian:
 					if(!inrange) break;
 					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5)
 						map_invisible(mtmp->mx, mtmp->my);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s screeches discordantly.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s screeches discordantly.", Monnam(mtmp));
 					else pline("%s sings a song of courage.", Monnam(mtmp));
 					if(mtmp->mtyp != PM_INTONER) mtmp->mspec_used = rn1(10,10);
 
@@ -1540,7 +1540,7 @@ asGuardian:
 					if(!inrange) break;
 					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5)
 						map_invisible(mtmp->mx, mtmp->my);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s whistles shrilly.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s whistles shrilly.", Monnam(mtmp));
 					else pline("%s sings a song of good health.", Monnam(mtmp));
 					if(mtmp->mtyp != PM_INTONER) mtmp->mspec_used = rn1(10,10);
 
@@ -1598,7 +1598,7 @@ asGuardian:
 					if(!inrange) break;
 					if (!canspotmon(mtmp) && distmin(u.ux,u.uy,mtmp->mx,mtmp->my) < 5 && !Invulnerable)
 						map_invisible(mtmp->mx, mtmp->my);
-					if(ptr->mtyp == PM_INTONER && u.uinsight > Insanity+10) pline("%s laughs frantically.", Monnam(mtmp));
+					if(ptr->mtyp == PM_INTONER && Insight > Insanity+10) pline("%s laughs frantically.", Monnam(mtmp));
 					else pline("%s sings a song of haste.", Monnam(mtmp));
 					if(mtmp->mtyp != PM_INTONER) mtmp->mspec_used = rn1(10,10);
 					

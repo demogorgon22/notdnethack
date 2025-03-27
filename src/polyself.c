@@ -939,18 +939,18 @@ domakewhisperer()
 	const char *petname;
 	struct monst *mtmp;
 	int duration;
-	if (u.uen < (10+min(u.uinsight, 45))) {
+	if (u.uen < (10+min(Insight, 45))) {
 	    You("concentrate but lack the energy to maintain doing so.");
 	    return MOVE_CANCELLED;
 	}
 	
 	duration = ACURR(A_CHA) + 1;
 	
-	if(u.uinsight >= 20)
+	if(Insight >= 20)
 		duration = 2*ACURR(A_CHA);
 	
 	u.whisperturn = moves+duration+14;
-	losepw(10+min(u.uinsight, 45));
+	losepw(10+min(Insight, 45));
 	flags.botl = 1;
 	
 	// makedog();
@@ -959,7 +959,7 @@ domakewhisperer()
 	if(!mtmp) return MOVE_CANCELLED; /* pets were genocided */
 
 	mark_mon_as_summoned(mtmp, &youmonst, duration, 0);
-	for(int i = min(45, (u.uinsight - mtmp->m_lev)); i > 0; i--){
+	for(int i = min(45, (Insight - mtmp->m_lev)); i > 0; i--){
 		grow_up(mtmp, (struct monst *) 0);
 		//Technically might grow into a genocided form.
 		if(DEADMONSTER(mtmp))

@@ -1306,7 +1306,7 @@ you_regen_pw()
 			reglevel += 10;
 		}
 		if (Role_if(PM_MADMAN))   reglevel += 9;
-		if (Role_if(PM_UNDEAD_HUNTER) && u.uinsight > 10)
+		if (Role_if(PM_UNDEAD_HUNTER) && Insight > 10)
 								  reglevel += 9;
 		if (Role_if(PM_HEALER))   reglevel += 6;
 		if (Role_if(PM_PRIEST))   reglevel += 6;
@@ -1437,7 +1437,7 @@ san_threshhold()
 {
 	// Threshold levels based on wis.
 	int reglevel = ACURR(A_WIS);
-	int insight = u.uinsight;
+	int insight = Insight;
 
 	// role bonuses
 	if (Role_if(PM_BARBARIAN))   reglevel += 10;
@@ -1451,7 +1451,7 @@ san_threshhold()
 	if (Role_if(PM_CONVICT))  reglevel -= 3;
 	if (Role_if(PM_NOBLEMAN))  reglevel -= 5;
 	if (Role_if(PM_MADMAN))   reglevel -= 10;
-	if (Role_if(PM_UNDEAD_HUNTER) && (u.uinsight >= 50 || quest_status.moon_close))   reglevel -= 10;
+	if (Role_if(PM_UNDEAD_HUNTER) && (Insight >= 50 || quest_status.moon_close))   reglevel -= 10;
 	//Maybe scale undead hunter based on how well they did on the quest as well.
 
 	if (Race_if(PM_ELF))   reglevel += 3;
@@ -1666,12 +1666,12 @@ moveloop()
 			nxtmon = mtmp->nmon;
 			if(DEADMONSTER(mtmp))
 				continue;
-			if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+			if(mtmp->m_insight_level > Insight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
 				set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
 				mtmp->m_insight_level -= 35;
 				newsym(x(mtmp), y(mtmp));
 			}
-			if(mtmp->m_insight_level > u.uinsight
+			if(mtmp->m_insight_level > Insight
 			  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 			  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 			  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
@@ -1782,12 +1782,12 @@ moveloop()
 						newsym(mtmp->mx,mtmp->my);
 					}
 				}
-				if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+				if(mtmp->m_insight_level > Insight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
 					set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
 					mtmp->m_insight_level -= 35;
 					newsym(x(mtmp), y(mtmp));
 				}
-				if(mtmp->m_insight_level > u.uinsight
+				if(mtmp->m_insight_level > Insight
 				  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 				  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 				  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
@@ -2545,11 +2545,11 @@ karemade:
 								messaged = TRUE;
 								TRANSCENDENCE_IMPURITY_UP(FALSE)
 							}
-							mark_mon_as_summoned(mtmp, (struct monst *)0, NightmareAware_Insanity+u.uinsight, 0);
+							mark_mon_as_summoned(mtmp, (struct monst *)0, NightmareAware_Insanity+Insight, 0);
 						}
 					}
 				}
-				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(98)+2 < u.uinsight){
+				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(98)+2 < Insight){
 					mtmp = makemon(&mons[PM_RAGE_WALKER], 0, 0, MM_ADJACENTOK);
 					if(mtmp){
 						make_rage_walker_polts(u.uz.rage+3);
@@ -3284,12 +3284,12 @@ karemade:
 			mtmp->mappearance = 0;
 			newsym(mtmp->mx, mtmp->my);
 		}
-		if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+		if(mtmp->m_insight_level > Insight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
 			set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
 			mtmp->m_insight_level -= 35;
 			newsym(x(mtmp), y(mtmp));
 		}
-		if(mtmp->m_insight_level > u.uinsight
+		if(mtmp->m_insight_level > Insight
 		  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 		  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 		  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
@@ -5688,7 +5688,7 @@ struct monst *mon;
 			return;
 		}
 		/* The Stranger arrives from other levels and appears as soon as you gain enough insight */
-		if(mon->m_insight_level <= u.uinsight && quest_status.touched_artifact){
+		if(mon->m_insight_level <= Insight && quest_status.touched_artifact){
 			for(mtmp = migrating_mons; mtmp; mtmp = mtmp2){
 				mtmp2 = mtmp->nmon;
 				if (mtmp == mon) {
@@ -5774,7 +5774,7 @@ struct monst *mon;
 		return;
 	}
 	/* Arrives from other levels (and from death) and appears as soon as you gain enough insight */
-	if(mon->m_insight_level <= u.uinsight && (!mon->mvar_yellow_lifesaved || !rn2(55))){
+	if(mon->m_insight_level <= Insight && (!mon->mvar_yellow_lifesaved || !rn2(55))){
 		mon->mvar_yellow_lifesaved = FALSE;
 		for(mtmp = migrating_mons; mtmp; mtmp = mtmp2){
 			mtmp2 = mtmp->nmon;
@@ -5834,7 +5834,7 @@ struct monst *mon;
 			return;
 		}
 		/* Arrives from other levels and appears as soon as you gain enough insight */
-		if(mon->m_insight_level <= u.uinsight && u.specialSealsActive&SEAL_YOG_SOTHOTH){
+		if(mon->m_insight_level <= Insight && u.specialSealsActive&SEAL_YOG_SOTHOTH){
 			for(mtmp = migrating_mons; mtmp; mtmp = mtmp2){
 				mtmp2 = mtmp->nmon;
 				if (mtmp == mon) {

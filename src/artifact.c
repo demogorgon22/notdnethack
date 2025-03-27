@@ -2362,9 +2362,9 @@ struct obj *obj;
 {
     return (obj && (
 		(obj->oartifact && arti_attack_prop(obj, ARTA_PHASING)) ||
-		(check_oprop(obj, OPROP_ELFLW) && u.uinsight >= 22) ||
+		(check_oprop(obj, OPROP_ELFLW) && Insight >= 22) ||
 		(check_oprop(obj, OPROP_PHSEW)) ||
-		(check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 40) ||
+		(check_oprop(obj, OPROP_RLYHW) && Insight >= 40) ||
 		((obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) && obj->lamplit)
 	));
 }
@@ -4425,7 +4425,7 @@ int * truedmgptr;
 		}
 	}
 	if(check_oprop(otmp, OPROP_ELFLW)){
-		int level = u.uinsight >= 33 ? 2 : u.uinsight >= 11 ? 1 : 0;
+		int level = Insight >= 33 ? 2 : Insight >= 11 ? 1 : 0;
 		int bonus = 0;
 		if(youagr){
 			if(u.ualign.record < -3){
@@ -4604,18 +4604,18 @@ int * truedmgptr;
 				bonus = rnd(15);
 			bonus += otmp->spe;
 		}
-		if(u.uinsight >= 36){//Works on all monsters, even mindless ones
+		if(Insight >= 36){//Works on all monsters, even mindless ones
 			*truedmgptr += basedmg + otmp->spe + bonus;
 		}
-		else if(youdef && !Tele_blind && (Blind_telepat || u.uinsight >= 6 || !rn2(4))){
+		else if(youdef && !Tele_blind && (Blind_telepat || Insight >= 6 || !rn2(4))){
 			*truedmgptr += basedmg + otmp->spe + bonus;
 		}
-		else if(!youdef && !mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || u.uinsight >= 6 || !rn2(4))){
+		else if(!youdef && !mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || Insight >= 6 || !rn2(4))){
 			*truedmgptr += basedmg + otmp->spe + bonus;
 		}
 	}
 	if(check_oprop(otmp, OPROP_GSSDW)){
-		int power = youagr ? min(u.uinsight, u.usanity) : magr ? magr->m_lev : 0;
+		int power = youagr ? min(Insight, u.usanity) : magr ? magr->m_lev : 0;
 		//"Crit" chance
 		if(power > 0){
 			int multiplier = power >= 50 ? 3 : power >= 25 ? 2 : 1; 
@@ -4677,9 +4677,9 @@ int * truedmgptr;
 	}
 	if(mercy_blade_prop(otmp)){
 		if(!u.veil && !Magic_res(mdef)){
-			int mod = min(u.uinsight, 50);
-			if(youagr && u.uinsight > 25)
-				mod += min((u.uinsight-25)/2, ACURR(A_CHA));
+			int mod = min(Insight, 50);
+			if(youagr && Insight > 25)
+				mod += min((Insight-25)/2, ACURR(A_CHA));
 			*truedmgptr += basedmg*mod/50;
 		}
 	}
@@ -4765,7 +4765,7 @@ int dieroll;
 	int original_truedmgptr = *truedmgptr;
 	
 	if(otmp->obj_material == MERCURIAL && magr && mlev(magr) > 20 && (
-		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
+		(youagr && Insight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 	)){
 		if(is_streaming_merc(otmp)){
@@ -4796,11 +4796,11 @@ int dieroll;
 					if(youagr){
 						if(ACURR(abil[i]) >= 15){
 							if(ACURR(abil[i]) >= 25)
-								dsize = (u.uinsight + u.usanity)/10;
+								dsize = (Insight + u.usanity)/10;
 							else if(ACURR(abil[i]) >= 18)
-								dsize = (u.uinsight + u.usanity)/20;
+								dsize = (Insight + u.usanity)/20;
 							else /*>= 15*/
-								dsize = (u.uinsight + u.usanity)/40;
+								dsize = (Insight + u.usanity)/40;
 							
 							*truedmgptr += rnd(dsize);
 						}
@@ -4814,10 +4814,10 @@ int dieroll;
 		else if(is_chained_merc(otmp)){
 			if(youdef){
 				if(u.uen > 0){
-					u.uen -= youagr ? u.uinsight/10 : mlev(magr)/10;
+					u.uen -= youagr ? Insight/10 : mlev(magr)/10;
 					flags.botl = 1;
 				}
-				if((dieroll == 1 && (youagr ? u.uinsight : mlev(magr)) >= 40) || u.uen < 0){
+				if((dieroll == 1 && (youagr ? Insight : mlev(magr)) >= 40) || u.uen < 0){
 					if(u.uen > 0){
 						u.uen = max(u.uen-400, 0);
 						flags.botl = 1;
@@ -4825,8 +4825,8 @@ int dieroll;
 				}
 			}
 			else {
-				mdef->mspec_used += rnd(youagr ? u.uinsight/10 : mlev(magr)/10);
-				if(dieroll == 1 && (youagr ? u.uinsight : mlev(magr)) >= 40)
+				mdef->mspec_used += rnd(youagr ? Insight/10 : mlev(magr)/10);
+				if(dieroll == 1 && (youagr ? Insight : mlev(magr)) >= 40)
 					set_mcan(mdef, TRUE);
 			}
 			int wt = youagr ? inv_weight() : curr_mon_load(magr);
@@ -4912,7 +4912,7 @@ boolean lethal;
 			int temp_encouraged = u.uencouraged;
 			if(lethal)
 				pline("The blade lodges in your %s!", body_part(SPINE));
-			u.uencouraged = (youagr ? (u.uinsight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
+			u.uencouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			flags.forcefight = TRUE;
 			xattacky(mdef, target, x(target), y(target));
 			flags.forcefight = FALSE;
@@ -4922,7 +4922,7 @@ boolean lethal;
 			int temp_encouraged = mdef->encouraged;
 			boolean friendly_fire;
 			long result;
-			mdef->encouraged = (youagr ? (u.uinsight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
+			mdef->encouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			if(lethal)
 				pline("The blade lodges in %s %s!", s_suffix(mon_nam(mdef)), mbodypart(mdef, SPINE));
 			friendly_fire = !mm_grudge(mdef, target, FALSE);
@@ -5012,7 +5012,7 @@ struct monst *magr;
 		target = targets[rn2(count)];
 		if(youdef){
 			int temp_encouraged = u.uencouraged;
-			u.uencouraged = (youagr ? (u.uinsight + ACURR(A_CHA))/5 : magr->m_lev/5);
+			u.uencouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5);
 			flags.forcefight = TRUE;
 			xattacky(mdef, target, x(target), y(target));
 			flags.forcefight = FALSE;
@@ -5020,7 +5020,7 @@ struct monst *magr;
 		}
 		else {
 			int temp_encouraged = mdef->encouraged;
-			mdef->encouraged = (youagr ? (u.uinsight + ACURR(A_CHA))/5 : magr->m_lev/5);
+			mdef->encouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5);
 			xattacky(mdef, target, x(target), y(target));
 			mdef->encouraged = temp_encouraged;
 		}
@@ -5110,7 +5110,7 @@ boolean direct_weapon;
 			}
 		}
 	}
-	if (otmp->otyp == TOOTH && u.uinsight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE)){
+	if (otmp->otyp == TOOTH && Insight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE)){
 		if(otmp->ovar1_tooth_type == MAGMA_TOOTH){
 			if (!Fire_res(mdef)) {
 				if (species_resists_cold(mdef))
@@ -5215,21 +5215,21 @@ boolean direct_weapon;
 		*truedmgptr += bonus;
 	}
 	
-	if(otmp->otyp == DISKOS && u.uinsight >= 15 && !on_level(&spire_level,&u.uz)){
+	if(otmp->otyp == DISKOS && Insight >= 15 && !on_level(&spire_level,&u.uz)){
 		int bonus = 0;
 		//Holy/Unholy energy attack
-		if(u.uinsight >= 50){
+		if(Insight >= 50){
 			bonus += d(3, (mdef && bigmonst(pd)) ? 
 							objects[otmp->otyp].oc_wldam.oc_damd : 
 							objects[otmp->otyp].oc_wsdam.oc_damd);
 			bonus += (mdef && bigmonst(pd)) ? 
 						(objects[otmp->otyp].oc_wldam.oc_damd) : 
 						(objects[otmp->otyp].oc_wsdam.oc_damd);
-		} else if(u.uinsight >= 45){
+		} else if(Insight >= 45){
 			bonus += d(3, (mdef && bigmonst(pd)) ? 
 							objects[otmp->otyp].oc_wldam.oc_damd : 
 							objects[otmp->otyp].oc_wsdam.oc_damd);
-		} else if(u.uinsight >= 20){
+		} else if(Insight >= 20){
 			bonus += d(2, (mdef && bigmonst(pd)) ? 
 							objects[otmp->otyp].oc_wldam.oc_damd : 
 							objects[otmp->otyp].oc_wsdam.oc_damd);
@@ -5300,7 +5300,7 @@ boolean direct_weapon;
 		int studystack = 0;
 		if(youagr){
 			if(active_glyph(BEASTS_EMBRACE))
-				insight_mod = 30*pow(.97,u.uinsight);
+				insight_mod = 30*pow(.97,Insight);
 		}
 		else if(magr){
 			if(magr->mcrazed)
@@ -5329,22 +5329,22 @@ boolean direct_weapon;
 			mdef->mstdy += 3;
 		}
 	}
-	if(otmp->otyp == MOON_AXE && otmp->ovar1_moonPhase == HUNTING_MOON && u.uinsight >= 5){
+	if(otmp->otyp == MOON_AXE && otmp->ovar1_moonPhase == HUNTING_MOON && Insight >= 5){
 		if(youdef){
-			u.ustdy += rnd(u.uinsight/5);
+			u.ustdy += rnd(Insight/5);
 		} else if(mdef){
-			mdef->mstdy += rnd(u.uinsight/5);
+			mdef->mstdy += rnd(Insight/5);
 		}
 	}
 	//Banishes summoned monsters
 	if(otmp->otyp == CHURCH_HAMMER && !youdef && mdef && get_mx(mdef, MX_ESUM)){
-		*truedmgptr += 10*u.uinsight;
+		*truedmgptr += 10*Insight;
 	}
 
 	//Flogging raises sanity (note: this is "backwards" on purpose)
-	if((otmp->otyp == CANE && !youdef && mdef && is_serration_vulnerable(mdef) && u.uinsight >= rnd(100))
-	|| (otmp->otyp == WHIP_SAW && !youdef && mdef && hates_holy_mon(mdef) && u.uinsight >= rnd(100))
-	|| (otmp->otyp == CHURCH_SHORTSWORD && (resist_pierce(mdef->data) && !resist_slash(mdef->data)) && u.uinsight >= rnd(100))
+	if((otmp->otyp == CANE && !youdef && mdef && is_serration_vulnerable(mdef) && Insight >= rnd(100))
+	|| (otmp->otyp == WHIP_SAW && !youdef && mdef && hates_holy_mon(mdef) && Insight >= rnd(100))
+	|| (otmp->otyp == CHURCH_SHORTSWORD && (resist_pierce(mdef->data) && !resist_slash(mdef->data)) && Insight >= rnd(100))
 	){
 		int reglevel = san_threshhold() + otmp->spe;
 		if(u.usanity < reglevel){
@@ -5360,22 +5360,22 @@ boolean direct_weapon;
 				change_usanity(1, FALSE);
 		}
 	}
-	if(otmp->otyp == ISAMUSEI && u.uinsight >= 10 && !on_level(&spire_level,&u.uz) && mdef){
+	if(otmp->otyp == ISAMUSEI && Insight >= 10 && !on_level(&spire_level,&u.uz) && mdef){
 		if(youdef || !resist(mdef, WEAPON_CLASS, 0, TRUE)){
 			int factor = 20;
-			if(u.uinsight >= 70){
+			if(Insight >= 70){
 				factor = 4;
 			}
-			else if(u.uinsight >= 57){
+			else if(Insight >= 57){
 				factor = 5;
 			}
-			else if(u.uinsight >= 45){
+			else if(Insight >= 45){
 				factor = 6;
 			}
-			else if(u.uinsight >= 33){
+			else if(Insight >= 33){
 				factor = 8;
 			}
-			else if(u.uinsight >= 22){
+			else if(Insight >= 22){
 				factor = 10;
 			}
 			if(Half_phys(mdef))
@@ -5385,15 +5385,15 @@ boolean direct_weapon;
 		}
 	}
 
-	if(otmp->otyp == PINCER_STAFF && u.uinsight >= 10 && !on_level(&spire_level,&u.uz) && mdef){
+	if(otmp->otyp == PINCER_STAFF && Insight >= 10 && !on_level(&spire_level,&u.uz) && mdef){
 		if(otmp->ovar1_pincerTarget == mdef->m_id){
 			*plusdmgptr += basedmg;
-			if (u.uinsight >= 20 && otmp->oartifact && otmp->oartifact == ART_FALLINGSTAR_MANDIBLES && !Magic_res(mdef)){
+			if (Insight >= 20 && otmp->oartifact && otmp->oartifact == ART_FALLINGSTAR_MANDIBLES && !Magic_res(mdef)){
 				*truedmgptr += reduce_dmg(mdef, d(1, 12), FALSE, TRUE);
 			}
 		}
 		else otmp->ovar1_pincerTarget = mdef->m_id;
-		if(u.uinsight >= 50){
+		if(Insight >= 50){
 			struct obj *armor = some_armor(mdef);
 			if(!armor){
 				*plusdmgptr += basedmg;
@@ -5423,7 +5423,7 @@ boolean direct_weapon;
 			if(youagr)
 				*plusdmgptr += u.uimpurity/2;
 			if(!u.veil && !Magic_res(mdef)){
-				int mod = min(u.uinsight, 100);
+				int mod = min(Insight, 100);
 				*truedmgptr += basedmg*mod/100;
 			}
 			if(has_blood_mon(mdef) && direct_weapon){
@@ -5441,7 +5441,7 @@ boolean direct_weapon;
 			if(youagr)
 				*plusdmgptr += u.uimpurity/4;
 			if(!u.veil && !Magic_res(mdef)){
-				int mod = min(u.uinsight/2, 100);
+				int mod = min(Insight/2, 100);
 				*truedmgptr += basedmg*mod/100;
 			}
 			if(has_blood_mon(mdef) && direct_weapon){
@@ -6128,7 +6128,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 		pline_The("%s %s %s %s%c",
-			(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL) ? "many-colored" : "paper-thin",
+			(youagr && Insight > 20 && YOU_MERC_SPECIAL) ? "many-colored" : "paper-thin",
 			wepdesc,
 			vtense(wepdesc, "hit"),
 			hittee, !spec_dbon_applies ? '.' : '!');
@@ -6159,7 +6159,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	else if(is_chained_merc(otmp)){
 		pline_The("%s %s %s %s%c",
-			(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL) ? "dense" : "shimmering",
+			(youagr && Insight > 20 && YOU_MERC_SPECIAL) ? "dense" : "shimmering",
 			wepdesc,
 			vtense(wepdesc, "hit"),
 			hittee, !spec_dbon_applies ? '.' : '!');
@@ -6167,7 +6167,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	else if(is_kinstealing_merc(otmp)){
 		pline_The("%s %s %s %s%c",
-			(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL) ? "grasping" : "jagged",
+			(youagr && Insight > 20 && YOU_MERC_SPECIAL) ? "grasping" : "jagged",
 			wepdesc,
 			vtense(wepdesc, "hit"),
 			hittee, !spec_dbon_applies ? '.' : '!');
@@ -6222,7 +6222,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	if(check_oprop(otmp, OPROP_ELFLW)){
 		static boolean suddenly = TRUE;
-		if(u.uinsight >= 56 && 
+		if(Insight >= 56 && 
 			(yellow_monster(mdef) || mdef->mfaction == YELLOW_FACTION)
 		){
 			/*Note: magic green flames, damage through fire res but still check invent fire res to see if inventory should burn*/
@@ -6423,7 +6423,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 		//sunlight code adapted from Sporkhack
 	if ((pd->mtyp == PM_GREMLIN || pd->mtyp == PM_HUNTING_HORROR)
-		&& (arti_bright(otmp) || (check_oprop(otmp, OPROP_ELFLW) && u.uinsight >= 33 && u.ualign.record > 3))
+		&& (arti_bright(otmp) || (check_oprop(otmp, OPROP_ELFLW) && Insight >= 33 && u.ualign.record > 3))
 	){
 		wepdesc = oartifact ? artilist[oartifact].name : simple_typename(otmp->otyp);
 		/* Sunlight kills gremlins */
@@ -6441,7 +6441,7 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 	}
 	if ((pd->mlet == S_TROLL)
-		&& (arti_bright(otmp) || (check_oprop(otmp, OPROP_ELFLW) && u.uinsight >= 33 && u.ualign.record > 3))
+		&& (arti_bright(otmp) || (check_oprop(otmp, OPROP_ELFLW) && Insight >= 33 && u.ualign.record > 3))
 	){
 		wepdesc = oartifact ? artilist[oartifact].name : simple_typename(otmp->otyp);
 		/* Sunlight turns trolls to stone (Middle-earth) */
@@ -7260,14 +7260,14 @@ boolean printmessages; /* print generic elemental damage messages */
 
 	/*level drain*/
 	if ((check_oprop(otmp, OPROP_DRANW) 
-		|| (otmp->otyp == TOOTH && otmp->ovar1_tooth_type == VOID_TOOTH && u.uinsight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE))
+		|| (otmp->otyp == TOOTH && otmp->ovar1_tooth_type == VOID_TOOTH && Insight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE))
 		) && !Drain_res(mdef)
 	){
 		int dlife;
 		int n = 0;
 		if(check_oprop(otmp, OPROP_DRANW))
 			n++;
-		if(otmp->otyp == TOOTH && otmp->ovar1_tooth_type == VOID_TOOTH && u.uinsight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE))
+		if(otmp->otyp == TOOTH && otmp->ovar1_tooth_type == VOID_TOOTH && Insight >= 20 && otmp->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(otmp, magr, ETRAIT_FOCUS_FIRE))
 			n += 3;
 		/* message */
 		if (youdef) {
@@ -7684,17 +7684,17 @@ boolean printmessages; /* print generic elemental damage messages */
 	
 	if(arti_struct && arti_struct->inv_prop == FALLING_STARS){
 		if(!Fire_res(mdef)){
-			if(u.uinsight >= 36){
+			if(Insight >= 36){
 				*truedmgptr += d(6,6);
 			}
-			else if(u.uinsight >= 6){
-				*truedmgptr += d(u.uinsight/6,6);
+			else if(Insight >= 6){
+				*truedmgptr += d(Insight/6,6);
 			}
 		}
-		if (!UseInvFire_res(mdef) && u.uinsight >= 6){
+		if (!UseInvFire_res(mdef) && Insight >= 6){
 			if (rn2(3)) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
-			if (rn2(3) && u.uinsight >= 12) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
-			if (rn2(3) && u.uinsight >= 18) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			if (rn2(3) && Insight >= 12) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+			if (rn2(3) && Insight >= 18) destroy_item(mdef, POTION_CLASS, AD_FIRE);
 		}
 		if(NightmareAware_Insanity >= 4){
 			int n = ClearThoughts ? 1 : 2;
@@ -7708,7 +7708,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				if (rn2(3)) destroy_item(mdef, POTION_CLASS, AD_FIRE);
 			}
 		}
-		if(u.uinsight >= 42 && u.uinsight > rn2(73)){
+		if(Insight >= 42 && Insight > rn2(73)){
 			int x, y, n, tries = 0;
 			coord cc;
 			do{
@@ -7718,14 +7718,14 @@ boolean printmessages; /* print generic elemental damage messages */
 			} while (!(isok(x,y) && ACCESSIBLE(levl[x][y].typ) && (!magr || (distmin(x(magr), y(magr), x, y) > 2 &&
 					clear_path(x(magr), y(magr), x, y)))) && tries++ < 1000);
 
-			if(u.uinsight >= 72)
+			if(Insight >= 72)
 				n = 6;
 			else
-				n = (u.uinsight - 36)/6;
+				n = (Insight - 36)/6;
 			n=rnd(n)+1;
 			explode_yours(x, y, AD_PHYS, 0, d(6,6), EXPL_MUDDY, 1, FALSE);
 			if (cansee(x, y)){
-				if (Hallucination || u.uinsight > 96) pline("Another Star Falls.");
+				if (Hallucination || Insight > 96) pline("Another Star Falls.");
 				else pline("A star falls from the %s!", (In_outdoors(&u.uz) ? "sky" : ceiling(x, y)));
 			} else {
 				You_hear("a thunderous crash!");
@@ -7745,7 +7745,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	
 	if(otmp->oartifact == ART_GOLDEN_SWORD_OF_Y_HA_TALLA){
-		if(u.uinsight > 8){
+		if(Insight > 8){
 			extern const int clockwisex[8];
 			extern const int clockwisey[8];
 			int nx, ny;
@@ -7765,7 +7765,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				if(m_u_at(nx,ny) != 0)
 					continue;
 				//The world around the target warps into giant stinging scorpion tails
-				if(u.uinsight > 64 || u.uinsight > rnd(64)){
+				if(Insight > 64 || Insight > rnd(64)){
 					*plusdmgptr += d(1,8);
 					if(!Poison_res(mdef)){
 						if(!rn2(10))
@@ -7776,7 +7776,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				}
 			}
 		}
-		if(u.uinsight > 64 && (otmp->otyp == BULLWHIP || !rn2(4))){
+		if(Insight > 64 && (otmp->otyp == BULLWHIP || !rn2(4))){
 			if(youdef){
 				u.umadness |= MAD_SCORPIONS;
 			}
@@ -7786,14 +7786,14 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 	}
 	
-	if(check_oprop(otmp, OPROP_ELFLW) && u.uinsight >= 33 && u.ualign.record > 3 && u.uinsight > rn2(333)){
+	if(check_oprop(otmp, OPROP_ELFLW) && Insight >= 33 && u.ualign.record > 3 && Insight > rn2(333)){
 		/* cancel_monst handles resistance */
 		cancel_monst(mdef, otmp, youagr, FALSE, FALSE, FALSE);
 	}
 
 	//Also does the bolt (when it hits as a launcher)
 	if(otmp->otyp == CARCOSAN_STING){
-		if(u.uinsight >= 25){
+		if(Insight >= 25){
 			struct obj *arm = some_armor(mdef);
 			if(arm){
 				add_byakhee_to_obj(arm);
@@ -7968,7 +7968,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	if(is_kinstealing_merc(otmp) && (
-		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
+		(youagr && Insight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 	)){
 		int target;
@@ -8028,7 +8028,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 		// Theft
-		target = youagr ? (u.uinsight + ACURR(A_DEX)) : mlev(magr);
+		target = youagr ? (Insight + ACURR(A_DEX)) : mlev(magr);
 		target -= mlev(mdef);
 		if(rnd(100) < target){
 			if (youagr){
@@ -8134,7 +8134,7 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 	}
 	if(mercy_blade_prop(otmp)){
-		if(u.uinsight >= 25 && !resist(mdef, youagr ? SPBOOK_CLASS : WEAPON_CLASS, 0, NOTELL)){
+		if(Insight >= 25 && !resist(mdef, youagr ? SPBOOK_CLASS : WEAPON_CLASS, 0, NOTELL)){
 			if(youdef){
 				if(u.uencouraged >= 0 && ACURR_MON(A_CHA, magr)/5 > 0)
 					You("feel a rush of irrational mercy!");
@@ -8575,7 +8575,7 @@ struct obj *obj;
 			MENU_UNSELECTED);
 	}
 	inclet++;
-	if(u.uinsight >= 60){
+	if(Insight >= 60){
 		Sprintf(buf, "Raise ibite mob");
 		any.a_int = -2;
 		add_menu(tmpwin, NO_GLYPH, &any,
@@ -8749,7 +8749,7 @@ struct obj *obj;
 	}
 	inclet++;
 
-	if(!(obj->ovara_carapace&CPROP_IMPURITY) && u.uinsight >= 5){
+	if(!(obj->ovara_carapace&CPROP_IMPURITY) && Insight >= 5){
 		Sprintf(buf, "Armor of impurity (2 points)");
 		any.a_int = CPROP_IMPURITY;
 		add_menu(tmpwin, NO_GLYPH, &any,
@@ -8953,7 +8953,7 @@ struct obj *obj;
 
 	int difficulty = artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress + 1;
 	difficulty *= 12;
-	difficulty -= u.uinsight;
+	difficulty -= Insight;
 	difficulty -= ACURR(A_INT);
 	difficulty -= 14 - ACURR(A_WIS); //High wis may apply a penalty
 	difficulty -= 10 - ACURR(A_CHA); //High cha may apply a penalty
@@ -8965,12 +8965,12 @@ struct obj *obj;
 	if(artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress == 0){
 		pline("As you study the patterns, you begin to sense some elusive deeper meaning.");
 		if(u.usanity > 90){
-			if(u.uinsight > 40)
+			if(Insight > 40)
 				You("feel an itch behind your eyes.");
 			change_usanity(-1*d(2,6), FALSE);
 		}
 		else {
-			if(u.uinsight > 60)
+			if(Insight > 60)
 				You("scratch at your eyes.");
 			else 
 				You("are blinded by a flash of magenta light.");
@@ -8986,12 +8986,12 @@ struct obj *obj;
 	else if(artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress == 1){
 		pline("You study the patterns, chasing the elusive deeper meaning.");
 		if(u.usanity > 50){
-			if(u.uinsight > 45)
+			if(Insight > 45)
 				You("feel a scratching behind your eyes.");
 			change_usanity(-1*d(3,12), TRUE);
 		}
 		else {
-			if(u.uinsight > 60)
+			if(Insight > 60)
 				You("claw at your eyes.");
 			else 
 				You("are blinded by a flare of magenta flame.");
@@ -9013,13 +9013,13 @@ struct obj *obj;
 	else if(artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress == 2){
 		pline("You study the patterns. You are closing on the Truth at last.");
 		if(u.usanity > 10){
-			if(u.uinsight > 50)
+			if(Insight > 50)
 				You("feel a clawing behind your eyes.");
 			u.umadness |= MAD_FRENZY;
 			change_usanity(-1*d(4,20), TRUE);
 		}
 		else {
-			if(u.uinsight > 60)
+			if(Insight > 60)
 				You("tear out your eyes!");
 			else 
 				Your("eyes are blasted away by magenta fire.");
@@ -14554,15 +14554,15 @@ dosymbiotic_equip()
 		dosymbiotic(&youmonst, uarm);
 	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_WHIPPING))
 		doscorpion(&youmonst, uarm);
-	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uwep) || is_bloodthirsty_artifact(uwep) ))
+	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uwep) || is_bloodthirsty_artifact(uwep) ))
 		doliving(&youmonst, uwep);
-	if(uswapwep && ((check_oprop(uswapwep, OPROP_LIVEW) && u.twoweap && u.uinsight >= 40) || is_living_artifact(uswapwep) || (is_bloodthirsty_artifact(uswapwep) && u.twoweap) ))
+	if(uswapwep && ((check_oprop(uswapwep, OPROP_LIVEW) && u.twoweap && Insight >= 40) || is_living_artifact(uswapwep) || (is_bloodthirsty_artifact(uswapwep) && u.twoweap) ))
 		doliving(&youmonst, uswapwep);
-	if(uarms && ((check_oprop(uarms, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uarms) ))
+	if(uarms && ((check_oprop(uarms, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uarms) ))
 		doliving(&youmonst, uarms);
-	if(uarm && ((check_oprop(uarm, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uarm) ))
+	if(uarm && ((check_oprop(uarm, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uarm) ))
 		doliving(&youmonst, uarm);
-	if(uarmh && ((check_oprop(uarmh, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(uarmh) ))
+	if(uarmh && ((check_oprop(uarmh, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uarmh) ))
 		doliving(&youmonst, uarmh);
 	
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
@@ -14579,19 +14579,19 @@ dosymbiotic_equip()
 			doscorpion(mtmp, obj);
 		
 		obj = MON_WEP(mtmp);
-		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
+		if(obj && ((check_oprop(obj, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
 		obj = MON_SWEP(mtmp);
-		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
+		if(obj && ((check_oprop(obj, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
 		obj = which_armor(mtmp, W_ARMS);
-		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
+		if(obj && ((check_oprop(obj, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
 		obj = which_armor(mtmp, W_ARM);
-		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
+		if(obj && ((check_oprop(obj, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
 		obj = which_armor(mtmp, W_ARMH);
-		if(obj && ((check_oprop(obj, OPROP_LIVEW) && u.uinsight >= 40) || is_living_artifact(obj) ))
+		if(obj && ((check_oprop(obj, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(obj) ))
 			doliving(mtmp, obj);
 	}
 }
@@ -14798,7 +14798,7 @@ living_items()
 		if((obj->otyp == BROKEN_ANDROID || obj->otyp == BROKEN_GYNOID || obj->otyp == LIFELESS_DOLL) && obj->ovar1_insightlevel){
 			xchar ox, oy;
 			get_obj_location(obj, &ox, &oy, 0);
-			if(obj->ovar1_insightlevel <= u.uinsight && !rn2(20)){
+			if(obj->ovar1_insightlevel <= Insight && !rn2(20)){
 				struct monst *mtmp;
 				mtmp = revive(obj, TRUE);
 				if (mtmp && cansee(ox, oy)) pline("%s wakes up.", Monnam(mtmp));
@@ -15081,7 +15081,7 @@ int stat;
 		if(youagr){
 			if(!YOU_MERC_SPECIAL)
 				return 0;
-			if(u.uinsight <= 20 || ACURR(stat) < 15)
+			if(Insight <= 20 || ACURR(stat) < 15)
 				return 0;
 		}
 		else {
@@ -15157,7 +15157,7 @@ struct obj **opptr;
 			pline("The two weapons clink together awkwardly.");
 			return MOVE_CANCELLED;
 		}
-		if((u.usanity < 50 || u.ulevel < 22 || u.uinsight < 50) //Lower threshold than that for using the Resonant Edge of Fellowship
+		if((u.usanity < 50 || u.ulevel < 22 || Insight < 50) //Lower threshold than that for using the Resonant Edge of Fellowship
 			|| !(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_BALANCE) //From the *knowing* of Two Skies came the realization that hurting others, hurts oneself. 
 		){
 			pline("The two weapons ripple for a moment, then push each-other away!");

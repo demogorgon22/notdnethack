@@ -649,7 +649,7 @@ struct you {
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)
-#define COA_PROB	 (max(1, 10000*pow(.95,u.uinsight)))
+#define COA_PROB	 (max(1, 10000*pow(.95,Insight)))
 	int 	uimpurity;	/* to record level of impurity */
 	Bitfield(uimp_meat, 4);
 	Bitfield(uimp_blood, 4);
@@ -1002,7 +1002,7 @@ struct you {
 	boolean ufirst_know;
 	long ufirst_know_timeout;
 	long thoughts;
-#define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (u.uinsight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
+#define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (Insight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
 	long mutations[MUTATION_LISTSIZE];
 };	/* end of `struct you' */
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))

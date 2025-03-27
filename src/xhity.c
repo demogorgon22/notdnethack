@@ -770,10 +770,10 @@ int tary;
 				boolean devaloop = (aatyp == AT_DEVA);
 				do {
 					bhitpos.x = tarx; bhitpos.y = tary;
-					if(ranged && otmp && is_cclub_able(otmp) && u.uinsight >= 15)
+					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
 						otmp->otyp = CLAWED_HAND;
 					result = xmeleehity(magr, mdef, attk, &otmp, vis, tohitmod, ranged);
-					if(ranged && otmp && is_cclub_able(otmp) && u.uinsight >= 15)
+					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
 						otmp->otyp = otmp->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
 					/* Marionette causes an additional weapon strike to a monster behind the original target */
 					/* this can attack peaceful/tame creatures without warning */
@@ -802,22 +802,22 @@ int tary;
 					/* Mercurial weapons may hit additional targets */
 					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
 						if(magr && mlev(magr) > 20 && (
-							(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
+							(youagr && Insight > 20 && YOU_MERC_SPECIAL)
 							|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 						)){
 							result |= hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 						}
 					}
 					/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 20 && otmp && rakuyo_prop(otmp)){
 						result |= hit_with_rblood(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 					}
 					/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && is_cclub_able(otmp)){
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 15 && otmp && is_cclub_able(otmp)){
 						result |= hit_with_cclaw(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 					}
 					/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
-					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
+					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && otmp->otyp == ISAMUSEI){
 						result |= hit_with_iwarp(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 					}
 					/* Soldier's katar may shoot additional targets */
@@ -1948,7 +1948,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	}
 	/*Some attacks have insight requirements*/
 	/*PCs can gain monster insight attacks, since insight is always about the PC's perceptions*/
-	if(attk->ins_req > u.uinsight){
+	if(attk->ins_req > Insight){
 		GETNEXT
 	}
 	/*Some attacks have sanity requirements*/
@@ -2006,9 +2006,9 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		attk->aatyp = AT_DEVA;
 	}
 	/* Carcosan courtiers gain extra dice on their tentacles. */
-	if(pa->mtyp == PM_CARCOSAN_COURTIER && attk->aatyp == AT_TENT && u.uinsight > 5){
-		if(u.uinsight < 25){
-			attk->damn = u.uinsight/5;
+	if(pa->mtyp == PM_CARCOSAN_COURTIER && attk->aatyp == AT_TENT && Insight > 5){
+		if(Insight < 25){
+			attk->damn = Insight/5;
 		}
 		else {
 			attk->damn = 5;
@@ -2485,7 +2485,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		}
 	}
 	/* Blibdoolpoolp switches to a worse attack routine at high insight -- shown in pokedex */
-	if (pa->mtyp == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && *indexnum < NATTK && u.uinsight >= 54) {
+	if (pa->mtyp == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && *indexnum < NATTK && Insight >= 54) {
 		static const struct attack blib_alternate[NATTK] = {
 			{ AT_CLAW, AD_SQUE, 4, 8, 0, 0, 1 },
 			{ AT_CLAW, AD_SQUE, 4, 8, 0, 1, 0 },
@@ -3937,8 +3937,8 @@ int *shield_margin;
 			if(attk && is_insight_tentacle_at(attk->aatyp)
 				&& (u.sealsActive&SEAL_OSE)
 			){
-				if(u.uinsight)
-					bons_acc += rnd(min(u.uinsight, mlev(magr)));
+				if(Insight)
+					bons_acc += rnd(min(Insight, mlev(magr)));
 				if (ACURR(A_CHA) == 25) bons_acc += 8;
 				else bons_acc += max(0, (ACURR(A_CHA) - 10) / 2);
 			}
@@ -4245,8 +4245,8 @@ int *shield_margin;
 
 				if (is_insight_weapon(launcher) && (youagr ? (Role_if(PM_MADMAN) || u.sealsActive&SEAL_OSE || mvitals[PM_MOON_S_CHOSEN].died) : insightful(magr->data))){
 					if(youagr){
-						if(u.uinsight)
-							wepn_acc += rnd(min(u.uinsight, mlev(magr)));
+						if(Insight)
+							wepn_acc += rnd(min(Insight, mlev(magr)));
 					}
 					else {
 						wepn_acc += rnd(mlev(magr));
@@ -6723,7 +6723,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		if(youdef){
 			//Lifts the veil
 			lift_veil();
-			hits = rn2(u.uinsight) >= 10;
+			hits = rn2(Insight) >= 10;
 		}
 		else {
 			//Just do a level check for monsters
@@ -14667,22 +14667,22 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_ACID;
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
-		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && u.uinsight >= 20 && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
+		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && Insight >= 20 && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
 			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
-			if(u.uinsight >= 20 && u.uimpurity >= 20){
+			if(Insight >= 20 && u.uimpurity >= 20){
 				poisons |= OPOISON_FILTH;
 			}
 		}
 		if (poisonedobj->otyp == CHIKAGE && poisonedobj->obj_material == HEMARGYOS){
 			poisons |= OPOISON_BASIC;
 			if(youagr){
-				if(u.uinsight >= 20 && u.uimpurity >= 10){
+				if(Insight >= 20 && u.uimpurity >= 10){
 					poisons |= OPOISON_FILTH;
 				}
-				if(u.uinsight >= 50 && *hp(magr) <= (u.uimpurity*(*hpmax(magr)))/50){
+				if(Insight >= 50 && *hp(magr) <= (u.uimpurity*(*hpmax(magr)))/50){
 					poisons |= OPOISON_DIRE;
 				}
 			}
@@ -15767,8 +15767,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					if(attk && is_insight_tentacle_at(attk->aatyp)
 						&& (u.sealsActive&SEAL_OSE)
 					){
-						if(u.uinsight)
-							bonsdmg += rnd(min(u.uinsight, mlev(magr)));
+						if(Insight)
+							bonsdmg += rnd(min(Insight, mlev(magr)));
 						if (ACURR(A_CHA) == 25) bonsdmg += 8;
 						else bonsdmg += max(0, (ACURR(A_CHA) - 10) / 2);
 					}
@@ -16090,16 +16090,16 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				doguidance(mdef, basedmg);
 			if(weapon){
 				if(weapon->oartifact == ART_HOLY_MOONLIGHT_SWORD){
-					if(u.uinsight >= 40)
+					if(Insight >= 40)
 						doguidance(mdef, active_glyph(GUIDANCE) ? basedmg : basedmg/2);
 					else if(active_glyph(GUIDANCE)){
-						doguidance(mdef, (u.uinsight*basedmg)/40);
+						doguidance(mdef, (Insight*basedmg)/40);
 					}
 					else {
-						doguidance(mdef, (u.uinsight*basedmg)/80);
+						doguidance(mdef, (Insight*basedmg)/80);
 					}
 				}
-				else if(weapon->otyp == CHURCH_BLADE && u.uinsight >= 40){
+				else if(weapon->otyp == CHURCH_BLADE && Insight >= 40){
 					doguidance(mdef, active_glyph(GUIDANCE) ? basedmg/2 : basedmg/4);
 				}
 			}
@@ -16227,8 +16227,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		/* madmen do extra damage with insight weapons */
 		if (valid_weapon_attack && is_insight_weapon(weapon) && !recursed && magr && (youagr ? (Role_if(PM_MADMAN) || u.sealsActive&SEAL_OSE || mvitals[PM_MOON_S_CHOSEN].died) : insightful(magr->data))){
 			if(youagr){
-				if(u.uinsight)
-					bonsdmg += d(1, (min(u.uinsight, (bimanual(weapon, youracedata) ? 2 : 1) * mlev(magr))+1)/2);
+				if(Insight)
+					bonsdmg += d(1, (min(Insight, (bimanual(weapon, youracedata) ? 2 : 1) * mlev(magr))+1)/2);
 			}
 			else {
 				bonsdmg += d(1, ((bimanual(weapon, magr->data) ? 2 : 1) * mlev(magr) + 1)/2+1);
@@ -16260,7 +16260,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			|| pd->mtyp == PM_BEFOULED_WRAITH || mdef->mtraitor || mdef->mferal
 		)
 	){
-		subtotl *= u.uinsight >= 40 ? 1.5 : 1.2;
+		subtotl *= Insight >= 40 ? 1.5 : 1.2;
 	}
 
 
@@ -17471,7 +17471,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	/* Use the mercy blade */
 	/* this can print a message, can possibly kill monster, returning immediately */
 	if(mercy_blade){
-		if(u.uinsight >= 50 && (youdef || lethaldamage || !resist(mdef, youagr ? SPBOOK_CLASS : WEAPON_CLASS, 0, TRUE))){
+		if(Insight >= 50 && (youdef || lethaldamage || !resist(mdef, youagr ? SPBOOK_CLASS : WEAPON_CLASS, 0, TRUE))){
 			mercy_blade_conflict(mdef, magr, wepspe, lethaldamage);
 		}
 		//Might have died in mvm combat, for example, attacking a cockatrice.
@@ -20293,7 +20293,7 @@ boolean magical;
 		dmg = (dmg + 1) / 2;
 	if (magical && Half_spel(mdef))
 		dmg = (dmg + 1) / 2;
-	if (mdef->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
+	if (mdef->mtyp == PM_CENTER_OF_ALL && Insight < 32)
 		dmg = (dmg + 1) / 2;
 	if (mdef == &youmonst && u.uvaul_duration){
 		if(physical && magical)

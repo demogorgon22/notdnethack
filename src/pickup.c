@@ -3164,7 +3164,7 @@ boolean past;
 			expert_weapon_skill(P_TWO_WEAPON_COMBAT);
 		break;
 	}
-	if(u.uinsight >= 10){
+	if(Insight >= 10){
 		open_crazy_box(box, past);
 		box->spe = 0;
 		return TRUE;
@@ -3552,7 +3552,7 @@ register int held;
 		} else if(obj->spe == 5){
 			open_sarcophagus(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
 			return MOVE_CONTAINER;
-		} else if(obj->spe == 6 && u.uinsight >= 10){
+		} else if(obj->spe == 6 && Insight >= 10){
 			open_crazy_box(obj, FALSE); //FALSE: the box was not destroyed. Use present tense.
 			return MOVE_CONTAINER;
 		} else if(obj->spe == 7){
@@ -4269,7 +4269,7 @@ struct obj *box; /* or bag */
 			pline("%ssarcophagus is now empty.", Shk_Your(yourbuf, box));
 		else
 			empty_it = TRUE;
-	} else if(Is_real_container(box) && box->spe == 6 && u.uinsight >= 10){
+	} else if(Is_real_container(box) && box->spe == 6 && Insight >= 10){
 		open_crazy_box(box, TRUE);
 
 		if (!Has_contents(box))

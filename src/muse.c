@@ -602,7 +602,7 @@ struct monst *mtmp;
 		    if (otmp)
 				pline("%s %s a unicorn horn!", Monnam(mtmp), is_weeping(mtmp->data) ? "is using" : "uses");
 		    else if(mtmp->mtyp == PM_ITINERANT_PRIESTESS && !straitjacketed_mon(mtmp)){
-				if(u.uinsight < 40){
+				if(Insight < 40){
 					pline("A glow issues from somewhere around %s torso, but trying to see the exact source gives you a %sache!", s_suffix(mon_nam(mtmp)), body_part(HEAD));
 				}
 				else {

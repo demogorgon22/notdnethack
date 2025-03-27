@@ -1272,7 +1272,7 @@ int portal;
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
 		&& dunlev(&u.uz) < qlocate_level.dlevel
-		&& rnd(20) < u.uinsight && rn2(2)
+		&& rnd(20) < Insight && rn2(2)
 	){
 		int diff = rn2(2);	/* 0 - 1 */
 		if (diff != 0) {

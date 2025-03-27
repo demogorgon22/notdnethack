@@ -689,7 +689,7 @@ struct obj {
 				|| typ == KATAR \
 				|| (Role_if(PM_PIRATE) && typ == FLINTLOCK) \
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == PISTOL) \
-				|| (Role_if(PM_MADMAN) && u.uinsight > 30 && typ == CARCOSAN_STING) \
+				|| (Role_if(PM_MADMAN) && Insight > 30 && typ == CARCOSAN_STING) \
 				|| typ == BOW \
 				|| (Role_if(PM_SAMURAI) && typ == YUMI) \
 				|| (Race_if(PM_GNOME) && typ == CROSSBOW) \
@@ -868,7 +868,7 @@ struct obj {
 			  (otmp)->otyp==AKLYS || \
 			  (otmp)->otyp==DISKOS || \
 			  (otmp)->otyp==HUNTER_S_LONG_AXE || \
-			  (is_cclub_able(otmp) && u.uinsight >= 15) || \
+			  (is_cclub_able(otmp) && Insight >= 15) || \
 			  (otmp)->oartifact==ART_SOL_VALTIVA || \
 			  (otmp)->oartifact==ART_SHADOWLOCK || \
 			  (otmp)->oartifact==ART_RUYI_JINGU_BANG || \

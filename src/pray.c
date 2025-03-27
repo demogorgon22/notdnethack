@@ -3622,12 +3622,12 @@ commune_with_goat()
 				"see crabgrass at your %s.  A funny thing in a dungeon." :
 				"glimpse a four-leaf clover at your %s.",
 				makeplural(body_part(FOOT)));
-				if(u.uinsight >= 40){
+				if(Insight >= 40){
 					pline(Hallucination ?
 					"It waves its major cheliped at you." :
 					"...actually, that's a little mouth on a stalk.");
 				}
-				else if(u.uinsight >= 20){
+				else if(Insight >= 20){
 					pline(Hallucination ?
 					"It waves its major cheliped at you." :
 					"...you don't remember clovers having serrated leaves.");
@@ -4824,7 +4824,7 @@ boolean offering;
 	/* at this point, gain credit */
 
 	/* credit gain suffers diminishing returns, less harshly if you have a lot of insight */
-	int dim_return_factor = max(1, u.uinsight);
+	int dim_return_factor = max(1, Insight);
 	if (wizard) {
 		/* debug */
 		pline("FlameCredit = %ld [+%ld base %d], FlameDevotion = %ld",

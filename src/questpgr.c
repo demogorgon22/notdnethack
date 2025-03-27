@@ -910,7 +910,7 @@ chaos2_montype()
 		else
 			return !(mvitals[PM_NOVIERE_ELADRIN].mvflags & G_GONE) ? &mons[PM_NOVIERE_ELADRIN] : mkclass(S_CHA_ANGEL, G_NOHELL);
 	} else if(In_mithardir_desert(&u.uz)){
-		if(G_C_INST(mons[PM_DESERT_SEER].geno) < u.uinsight && !rn2(10)){
+		if(G_C_INST(mons[PM_DESERT_SEER].geno) < Insight && !rn2(10)){
 			if(!toostrong(PM_DESERT_SEER, diff+5))
 				return &mons[PM_DESERT_SEER];
 		}

@@ -1956,12 +1956,12 @@ movemon()
 	}
 	if(u.specialSealsActive&SEAL_LIVING_CRYSTAL)
 		average_dogs();
-	if(mtmp->m_insight_level > u.uinsight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+	if(mtmp->m_insight_level > Insight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
 		set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
 		mtmp->m_insight_level -= 35;
 		newsym(x(mtmp), y(mtmp));
 	}
-	if(mtmp->m_insight_level > u.uinsight
+	if(mtmp->m_insight_level > Insight
 	  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 	  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 	  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
@@ -4559,7 +4559,7 @@ struct monst *mtmp;
 					set_material(otmp, GLASS);
 				fix_object(otmp);
 			}
-			set_mon_data(mtmp, u.uinsight > 40 ? PM_TRANSCENDENT_TETTIGON : PM_UNMASKED_TETTIGON);
+			set_mon_data(mtmp, Insight > 40 ? PM_TRANSCENDENT_TETTIGON : PM_UNMASKED_TETTIGON);
 			mtmp->m_insight_level = 5+rn2(6);
 			newsym(x(mtmp), y(mtmp));
 		}break;

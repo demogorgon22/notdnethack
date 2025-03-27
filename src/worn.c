@@ -810,8 +810,8 @@ struct monst *mon;
 		base -= mon->data->nac;
 	}
 	if(mon->mtyp == PM_CARCOSAN_COURTIER){
-		if(u.uinsight < 25){
-			base -= u.uinsight/5;
+		if(Insight < 25){
+			base -= Insight/5;
 		}
 		else {
 			base -= 5;
@@ -819,8 +819,8 @@ struct monst *mon;
 	}
 	if(!mon->mcan){
 		base -= mon->data->pac;
-		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
-			base -= (32-u.uinsight)/2;
+		if(mon->mtyp == PM_CENTER_OF_ALL && Insight < 32)
+			base -= (32-Insight)/2;
 	}
 	if(mon->mtyp == PM_VERMIURGE && mon->mvar_vermiurge > 0)
 		base -= min(mon->mvar_vermiurge/10, 20);
@@ -893,10 +893,10 @@ struct monst *mon;
 			if(!uarmc && !uarm) base -= max( (monwep->spe+1)/2,0);
 		}
 		else if(monwep->oartifact == ART_LASH_OF_THE_COLD_WASTE){
-			if(u.uinsight >= 20)
+			if(Insight >= 20)
 				base -= 10;
-			else if(u.uinsight > 10)
-				base -= u.uinsight - 10;
+			else if(Insight > 10)
+				base -= Insight - 10;
 		}
 		if(monwep->obj_material == MERCURIAL){
 			int level = monwep->ocarry->m_lev;
@@ -1044,8 +1044,8 @@ struct monst *mon;
 		base -= mon->data->nac;
 	}
 	if(mon->mtyp == PM_CARCOSAN_COURTIER){
-		if(u.uinsight < 25){
-			base -= u.uinsight/5;
+		if(Insight < 25){
+			base -= Insight/5;
 		}
 		else {
 			base -= 5;
@@ -1053,8 +1053,8 @@ struct monst *mon;
 	}
 	if(!mon->mcan && !(mon->mtyp == PM_SHADOWSMITH && dimness(mon->mx,mon->my) <= 0)){
 		base -= mon->data->pac;
-		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
-			base -= (32-u.uinsight)/2;
+		if(mon->mtyp == PM_CENTER_OF_ALL && Insight < 32)
+			base -= (32-Insight)/2;
 	}
 	if(mon->mtyp == PM_VERMIURGE && mon->mvar_vermiurge > 0)
 		base -= min(mon->mvar_vermiurge/10, 20);
@@ -1255,13 +1255,13 @@ struct monst *mon;
 	if(mon->mtame){
 		if(active_glyph(IMPURITY)) base += 3;
 		if(active_glyph(DEFILEMENT)) base += 3;
-		if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5){
+		if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && Insight >= 5){
 			base += 3;
 		}
 		if(active_glyph(DEFILEMENT)){
 			if(active_glyph(IMPURITY))
 				base += max(0, u.uimpurity/3-3);
-			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5)
+			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && Insight >= 5)
 				base += max(0, (u.uimpurity+4)/3-3);
 		}
 		if(Role_if(PM_HEALER))
@@ -1305,13 +1305,13 @@ struct monst *mon;
 	if(mon->mtame){
 		if(active_glyph(IMPURITY)) base += 3;
 		if(active_glyph(DEFILEMENT)) base += 3;
-		if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5){
+		if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && Insight >= 5){
 			base += 3;
 		}
 		if(active_glyph(DEFILEMENT)){
 			if(active_glyph(IMPURITY))
 				base += max(0, u.uimpurity/3-3);
-			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && u.uinsight >= 5)
+			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && Insight >= 5)
 				base += max(0, (u.uimpurity+4)/3-3);
 		}
 		if(Role_if(PM_HEALER))
@@ -1349,8 +1349,8 @@ struct monst *mon;
 #undef m_fdr
 #undef m_gdr
 		base += (dr / 7);
-		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
-			base += (33-u.uinsight)/2;
+		if(mon->mtyp == PM_CENTER_OF_ALL && Insight < 32)
+			base += (33-Insight)/2;
 
 		if(mon->mtyp == PM_OONA && mon->mhp < mon->mhpmax/2){
 			base += 7;
@@ -1527,10 +1527,10 @@ int depth;
 			}
 		}
 		else if(MON_WEP(mon)->oartifact == ART_LASH_OF_THE_COLD_WASTE){
-			if(u.uinsight >= 40)
+			if(Insight >= 40)
 				bas_mdr += 5;
-			else if(u.uinsight > 20)
-				bas_mdr += (u.uinsight - 20)/4;
+			else if(Insight > 20)
+				bas_mdr += (Insight - 20)/4;
 		}
 	}
 	/* Hod Sephirah OVERRIDE other arm_mdr sources with the player's total DR (regardless of who's attacking them) */
@@ -1552,8 +1552,8 @@ int depth;
 	}
 	nat_mdr += slotnatdr;
 	if(mon->mtyp == PM_CARCOSAN_COURTIER){
-		if(u.uinsight < 25){
-			nat_mdr += u.uinsight/5;
+		if(Insight < 25){
+			nat_mdr += Insight/5;
 		}
 		else {
 			nat_mdr += 5;
@@ -1568,8 +1568,8 @@ int depth;
 		case LEG_DR:         bas_mdr += mon->data->spe_fdr; break;
 		case ARM_DR:         bas_mdr += mon->data->spe_gdr; break;
 		}
-		if(mon->mtyp == PM_CENTER_OF_ALL && u.uinsight < 32)
-			bas_mdr += (33-u.uinsight)/2;
+		if(mon->mtyp == PM_CENTER_OF_ALL && Insight < 32)
+			bas_mdr += (33-Insight)/2;
 
 		if(mon->mtyp == PM_OONA && mon->mhp < mon->mhpmax/2){
 			bas_mdr += 7;

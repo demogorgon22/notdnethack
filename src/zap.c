@@ -2184,7 +2184,7 @@ struct obj *obj, *otmp;
 		res = !obj->dknown;
 		/* target object has now been "seen (up close)" */
 		obj->dknown = 1;
-		if (Is_container(obj) || obj->otyp == STATUE || (obj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
+		if (Is_container(obj) || obj->otyp == STATUE || (obj->otyp == CRYSTAL_SKULL && Insight >= 20)) {
 		    if (!obj->cobj)
 			pline("%s empty.", Tobjnam(obj, "are"));
 		    else {

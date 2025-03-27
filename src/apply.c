@@ -996,7 +996,7 @@ struct obj **obj_p;
 			if (vis){
 				signs_mirror();
 			}
-			if(u.uinsight >= 10 && !obj->oartifact){
+			if(Insight >= 10 && !obj->oartifact){
 				// if(wizard)
 					// pline("silver flame d: %d, l: %d, x:%d, y:%d", u.silver_flame_z.dnum, u.silver_flame_z.dlevel, u.s_f_x, u.s_f_y);
 				if(u.uz.dnum == u.silver_flame_z.dnum){
@@ -2358,7 +2358,7 @@ use_chikage(struct obj *obj)
 	}
 	
 	if(obj_is_material(obj, HEMARGYOS)){
-		if (u.uinsight < 13)
+		if (Insight < 13)
 			You("wipe the blood from your sword.");
 		else
 			You("wipe your blood from the sword.");
@@ -2369,9 +2369,9 @@ use_chikage(struct obj *obj)
 		obj->oeroded3 = access_oeroded3(obj->ovar2_alt_erosion);
 		(void) stop_timer(REVERT_OBJECT, obj->timed);
 	} else {
-		if(u.uinsight < 27)
+		if(Insight < 27)
 			You("sheath your sword in your saya and draw it forth bloody.");
-		else if(u.uinsight < 50)
+		else if(Insight < 50)
 			You("sheath your sword in your %s and draw it forth bloody.", body_part(HEART));
 		else
 			You("sheath your sword in your shadow's %s and draw it forth bloody.", body_part(HEART));
@@ -2931,7 +2931,7 @@ parasite_ok()
 {
 	if(ABASE(A_INT) < 6)
 		return FALSE;
-	if(u.uinsight < 10)
+	if(Insight < 10)
 		return FALSE;
 	if(parasite_research_ok())
 		return TRUE;
@@ -3039,7 +3039,7 @@ reanimation_score()
 boolean
 reanimation_insight_ok()
 {
-	if(u.uinsight < 60 && (reanimation_count()+1) * 10 > u.uinsight)
+	if(Insight < 60 && (reanimation_count()+1) * 10 > Insight)
 		return FALSE;
 	return TRUE;
 }
@@ -4049,7 +4049,7 @@ register struct obj *obj;
 	int otyp;
 	struct obj *glyph;
 	
-	if(Upolyd && u.uinsight < 20){
+	if(Upolyd && Insight < 20){
 		You("can't get at your own brain right now!");
 		return;
 	}
@@ -4185,7 +4185,7 @@ register struct obj *obj;
 		pline("The kit's medical supplies are exhausted.");
 		return;
 	}
-	if(u.uinsight < 10 || !(u.thoughts || skulls || parasites)){
+	if(Insight < 10 || !(u.thoughts || skulls || parasites)){
 		You("examine the drills in the kit, but have no idea how to use them!");
 		return;
 	}
@@ -4913,7 +4913,7 @@ struct obj **optr;
 		return MOVE_STANDARD;
 	}
 	
-	if(rnd(20) > u.uinsight || u.uen < EMON(*optr)->m_lev){
+	if(rnd(20) > Insight || u.uen < EMON(*optr)->m_lev){
 		You_cant("maintain your focus on the crystal!");
 		if(save_vs_sanloss())
 			change_usanity(-1, FALSE);
@@ -5287,7 +5287,7 @@ struct obj *sensor;
 					for(; pobj; pobj = pobj->nexthere){
 						/* target object has now been "seen (up close)" */
 						pobj->dknown = 1;
-						if (Is_container(pobj) || pobj->otyp == STATUE || (pobj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
+						if (Is_container(pobj) || pobj->otyp == STATUE || (pobj->otyp == CRYSTAL_SKULL && Insight >= 20)) {
 							if (!pobj->cobj)
 							pline("%s empty.", Tobjnam(pobj, "are"));
 							else {
@@ -5308,7 +5308,7 @@ struct obj *sensor;
 					for(; pobj; pobj = pobj->nexthere){
 						/* target object has now been "seen (up close)" */
 						pobj->dknown = 1;
-						if (Is_container(pobj) || pobj->otyp == STATUE || (pobj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
+						if (Is_container(pobj) || pobj->otyp == STATUE || (pobj->otyp == CRYSTAL_SKULL && Insight >= 20)) {
 							if (!pobj->cobj)
 							pline("%s empty.", Tobjnam(pobj, "are"));
 							else {
@@ -5676,7 +5676,7 @@ struct obj *hypo;
 				if(amp->cursed){
 					if(u.usanity > 0)
 						change_usanity(-1, FALSE);
-					if(u.uinsight > 0)
+					if(Insight > 0)
 						change_uinsight(-1);
 					exercise(A_WIS, FALSE);
 					exercise(A_INT, FALSE);
@@ -10425,7 +10425,7 @@ doapply()
 		}
 	}break;
 	case NIGHTMARE_S_BULLET_MOLD:{
-		You("jab the bullet mold into your %s!", u.uinsight < 18 ? body_part(LEG) : body_part(HEAD));
+		You("jab the bullet mold into your %s!", Insight < 18 ? body_part(LEG) : body_part(HEAD));
 		if(u.uexp > 7 && *hp(&youmonst) > 3*(*hpmax(&youmonst))/10){
 			if(uwep && (uwep->otyp == TWINGUN_SHANTA || uwep->otyp == SHANTA_PATA)){
 				if(uwep->ovar1_last_blooded > moves - 10)
