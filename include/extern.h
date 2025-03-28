@@ -1605,7 +1605,7 @@ E struct obj *FDECL(mksobj_at, (int,int,int,int));
 E struct obj *FDECL(mkobj, (CHAR_P,int));
 E int NDECL(rndmonnum);
 E struct obj *FDECL(splitobj, (struct obj *,long));
-E struct obj *FDECL(duplicate_obj, (struct obj *));
+E struct obj *FDECL(duplicate_obj, (struct obj *, boolean));
 E void FDECL(replace_object, (struct obj *,struct obj *));
 E void FDECL(bill_dummy_object, (struct obj *));
 E struct obj *FDECL(mksobj, (int,int));

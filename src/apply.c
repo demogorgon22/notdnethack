@@ -4959,7 +4959,7 @@ coord *cc;
 			if(oinv->otyp == TREPHINATION_KIT || ensouled_item(oinv))
 				continue;
 
-			otmp = duplicate_obj(oinv);
+			otmp = duplicate_obj(oinv, TRUE);
 			obj_extract_self(otmp);
 			if(otmp->oclass == SCROLL_CLASS){
 				otmp = poly_obj(otmp, SCR_BLANK_PAPER);
