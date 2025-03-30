@@ -701,6 +701,17 @@
 							|| has_template(mon, DREAM_LEECH) \
 							)
 
+#define rot_monster(mon)	(((mon)->data->mlet == S_FUNGUS && mindless_mon(mon)) \
+							 || (mon)->mtyp == PM_SWAMP_FERN \
+							 || (mon)->mtyp == PM_SWAMP_FERN_SPORE \
+							 || (mon)->mtyp == PM_SWAMP_FERN_SPROUT \
+							 || (mon)->mtyp == PM_SWAMP_NYMPH \
+							 || (mon)->mtyp == PM_SILVERMAN \
+							 || (mon)->mtyp == PM_SILVERGRUB \
+							 || (mon)->mtyp == PM_MAN_FLY \
+							 || has_template(mon, SWOLLEN_TEMPLATE) \
+							)
+
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
 								&& !is_auton(ptr) \
 								&& (ptr)->mtyp != PM_OONA \

@@ -33,6 +33,8 @@ E time_t NDECL(get_realtime);
 E void NDECL(dogoat);
 E void FDECL(dogoat_mon, (struct monst *));
 E void FDECL(dojellysting, (struct monst *));
+E void FDECL(dorotbite, (struct monst *));
+E void FDECL(dorotsting, (struct monst *));
 E boolean FDECL(doyog, (struct monst *));
 E void FDECL(dotwin_cast, (struct monst *));
 E void FDECL(dochaos_mon, (struct monst *));
@@ -80,6 +82,7 @@ E boolean NDECL(parasite_ok);
 E int NDECL(defile_count);
 E int NDECL(preservation_count);
 E int NDECL(vampire_count);
+E int NDECL(rot_count);
 E boolean NDECL(defile_ok);
 E boolean NDECL(impurity_ok);
 E boolean NDECL(research_incomplete);
@@ -208,6 +211,7 @@ E int FDECL(merc_weapon_damage_slice, (struct obj *, struct monst *, int));
 E int FDECL(infinity_s_mirrored_arc_litness, (struct obj *));
 E int FDECL(merge_skies, (struct obj **));
 E void NDECL(do_your_auras);
+E int NDECL(throweffect);
 
 /* ### astar.c ### */
 E boolean FDECL(path_exists, (int, int, int, int, long, int));
@@ -1455,7 +1459,7 @@ E struct permonst *FDECL(grow_up, (struct monst *,struct monst *));
 E struct obj * FDECL(mongets, (struct monst *,int,int));
 E void FDECL(m_initthrow,(struct monst *, int, int, int));
 E int FDECL(golemhp, (int));
-E boolean FDECL(peace_minded, (struct permonst *));
+E boolean FDECL(peace_minded, (struct monst *));
 E void FDECL(set_malign, (struct monst *));
 E void FDECL(set_mimic_sym, (struct monst *));
 E void FDECL(set_curhouse, (int));
@@ -1913,6 +1917,7 @@ E void FDECL(add_byakhee_to_obj, (struct obj *));
 E boolean FDECL(likes_obj, (struct monst *, struct obj *));
 E boolean FDECL(can_equip, (struct monst *, struct obj *));
 E void FDECL(phantom_scorpions_sting, (struct monst *));
+E void FDECL(rot_caterpillars_bite, (struct monst *));
 
 /* ### monst.c ### */
 
@@ -2614,6 +2619,9 @@ E NhRegion* FDECL(create_generic_cloud, (XCHAR_P, XCHAR_P, int, struct region_ar
 E NhRegion* FDECL(create_gas_cloud, (XCHAR_P, XCHAR_P, int, int, boolean));
 E NhRegion* FDECL(create_fog_cloud, (XCHAR_P, XCHAR_P, int, int, boolean));
 E NhRegion* FDECL(create_dust_cloud, (XCHAR_P, XCHAR_P, int, int));
+
+/* ### research.c ### */
+E int NDECL(doupgradeability);
 
 /* ### restore.c ### */
 

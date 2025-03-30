@@ -1812,6 +1812,9 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 			case 7: return VULNERABILITY;
 			case 8: return STUN_YOU;
 		}
+	case PM_SILVERMAN:
+	case PM_SILVERGRUB:
+		return PEST_THREADS;
 	case PM_VERIER: 
 		if(!rn2(3)) return WEAKEN_YOU;
 		else return DESTRY_ARMR;
@@ -2273,6 +2276,7 @@ const char * spellname[] =
 	"MIST_WOLVES",
 	//105
 	"FORCE_SPHERES",
+	"PEST_THREADS",
 };
 
 
@@ -2493,7 +2497,7 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 	else {
 		if(magr->mrage && magr->mberserk)
 			spell_skill /= 2;
-		if(magr->mformication || magr->mscorpions)
+		if(magr->mformication || magr->mscorpions || magr->mcaterpillars)
 			spell_skill /= 2;
 		if(magr->msciaphilia && unshadowed_square(x(magr), y(magr)))
 			spell_skill /= 2;
@@ -4877,6 +4881,51 @@ int tary;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case PEST_THREADS:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("sticky threads with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int n = 0;
+			int i;
+			char * rays;
+			
+			for(i = 0; i < dmn; i++)
+				if (zap_hit(mdef, 0, TRUE))
+					n++;
+			
+			if(dmn > 1 && dmn == n)
+				n *= 2;
+
+			if (!n){
+				if (youagr || youdef || canseemon(mdef))
+					pline("Sticky threads whizz past %s!",
+					youdef ? "you" : mon_nam(mdef));
+				return MM_MISS;
+			}
+			if (n == 1)
+				rays = "a sticky thread";
+			if (n >= 2)
+				rays = "sticky threads";
+
+			if (youagr || youdef || canseemon(mdef))
+				pline("%s %s %s by %s!",
+				youdef ? "You" : Monnam(mdef), youdef ? "are" : "is",
+				dmn < n ? "torn apart" : "torn",
+				rays);
+			int ndmg;
+			for(i = 0; i < n; i++){
+				ndmg = d(n, hd_size(mdef->data)) - (youdef ? roll_udr(magr, ROLL_SLOT) : roll_mdr(mdef, magr, ROLL_SLOT));
+				if(ndmg < 1)
+					ndmg = 1;
+				dmg += ndmg;
+			}
+			dmg = reduce_dmg(mdef,dmg,TRUE,TRUE);
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
 	case MON_WARP_THROW:
 		/* needs direct target */
 		if (!foundem) {
@@ -6834,6 +6883,7 @@ int spellnum;
 	case MADF_BURST:
 	case STARFALL:
 	case MON_AURA_BOLT:
+	case PEST_THREADS:
 		return TRUE;
 	default:
 		break;

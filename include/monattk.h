@@ -53,6 +53,7 @@
 #define AT_WBIT		43	/* Wolf-head bite */
 #define AT_TAIL		44	/* Tail-slap */
 #define AT_TONG		45	/* Tongue attack */
+#define AT_VOMT		46	/* Vomit attack */
 
 #define AT_WEAP		252	/* uses weapon */
 #define AT_XWEP		253	/* uses offhanded weapon */
@@ -250,11 +251,12 @@
 #define AD_DRHP		156 /* Drains bonus HP */
 #define AD_PUSH		157 /* Push target away */
 #define AD_LICK		158 /* Pull target, immobalize target, cold touch, acid touch */
+#define AD_PFBT		159 /* rot and poison damage */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	159
+#define AD_DUNSTAN	160
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3
@@ -287,7 +289,7 @@
 
 #define no_contact_attk(attk) (\
 	(spirit_rapier_at(attk->aatyp) && attk->adtyp != AD_MERC) || \
-	attk->aatyp == AT_WISP || attk->aatyp == AT_HITS)
+	attk->aatyp == AT_WISP || attk->aatyp == AT_HITS || attk->aatyp == AT_VOMT)
 /*
  *  Monster to monster attacks.  When a monster attacks another (mattackm),
  *  any or all of the following can be returned.  See mattackm() for more

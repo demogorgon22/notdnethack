@@ -2108,6 +2108,9 @@ int different;
 	if(different==REVIVE_ZOMBIE){
 		if(mtmp->mspores){
 			set_template(mtmp, SPORE_ZOMBIE);
+			if(couldsee(mtmp->mx, mtmp->my) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my)){
+				IMPURITY_UP(u.uimp_rot)
+			}
 			mtmp->mspores = 0;
 		}
 		else {
@@ -2369,6 +2372,9 @@ long timeout;
 	) pmtype = -1;
 
 	if (pmtype != -1) {
+		if(couldsee(body->ox, body->oy) && distmin(body->ox, body->oy, u.ux, u.uy) <= BOLT_LIM){
+			IMPURITY_UP(u.uimp_rot)
+		}
 		/* We don't want special case revivals */
 		if (cant_create(&pmtype, TRUE) || get_ox(body, OX_EMON))
 			pmtype = -1; /* cantcreate might have changed it so change it back */

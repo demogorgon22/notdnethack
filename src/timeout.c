@@ -320,6 +320,10 @@ burn_away_slime()
 	    flags.botl = 1;
 		delayed_killer = 0;
 	}
+	if (youmonst.mcaterpillars) {
+	    pline_The("parasitic caterpillars are burned off!");
+	    youmonst.mcaterpillars = FALSE;
+	}
 	return;
 }
 
@@ -1235,6 +1239,13 @@ long timeout;
 
 	mon = mon2 = (struct monst *)0;
 	mtyp = big_to_little(egg->corpsenm);
+	if(u.silvergrubs && !rn2(20)){
+		u.silvergrubs = FALSE;
+	}
+	if(check_rot(ROT_KIN) && (u.silvergrubs || !rn2(100)) && !(mvitals[PM_MAN_FLY].mvflags&G_GONE && !In_quest(&u.uz))){
+		mtyp = PM_MAN_FLY;
+		u.silvergrubs = TRUE;
+	}
 	/* The identity of one's father is learned, not innate */
 	yours = (egg->spe || (!flags.female && carried(egg) && !rn2(2)));
 	silent = (timeout != monstermoves);	/* hatched while away */
@@ -2676,6 +2687,7 @@ struct obj *obj;
 	EMON(obj)->mspores = mon->mspores;
 	EMON(obj)->mformication = mon->mformication;
 	EMON(obj)->mscorpions = mon->mscorpions;
+	EMON(obj)->mcaterpillars = mon->mcaterpillars;
 	
 	
 	EMON(obj)->encouraged = mon->encouraged;

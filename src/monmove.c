@@ -1139,8 +1139,9 @@ register struct monst *mtmp;
 	if (mtmp->mdoubt && !rn2(300)) mtmp->mdoubt = 0;
 	if (mtmp->mwounded_legs && !rn2(60)) mtmp->mwounded_legs = 0;
 	if (mtmp->mscorpions && !rn2(20)) mtmp->mscorpions = 0;
+	if (mtmp->mcaterpillars && !rn2(20)) mtmp->mcaterpillars = 0;
 	
-	if(mtmp->msleeping && (mtmp->mformication || mtmp->mscorpions) && rn2(mtmp->m_lev)){
+	if(mtmp->msleeping && (mtmp->mformication || mtmp->mscorpions || mtmp->mcaterpillars) && rn2(mtmp->m_lev)){
 		//Awakens from the bugs. High level is good for it here.
 		mtmp->msleeping = 0;
 	}

@@ -2303,6 +2303,7 @@ get_description_of_attack_type(uchar id)
 	case AT_ARRW: return "launch ammo";
 	case AT_WHIP: return "whip";
 	case AT_VINE: return "vines";
+	case AT_VOMT: return "vomit";
 	case AT_LRCH: return "reaching attack";
 	case AT_HODS: return "mirror attack";
 	case AT_LNCK: return "reaching bite";
@@ -2510,6 +2511,7 @@ get_description_of_damage_type(uchar id)
 	case AD_DRHP: return "drains bonus HP";
 	case AD_PUSH: return "push away";
 	case AD_LICK: return "monstrous tongue lick";
+	case AD_PFBT: return "poison and disease damage";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";

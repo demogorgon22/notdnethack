@@ -5298,6 +5298,9 @@ int tx,ty;
 					if (uwep->opoisoned & OPOISON_BASIC)
 						uwep->opoisoned &= ~OPOISON_BASIC;
 					u.sealTimeout[YMIR-FIRST_SEAL] = moves + bindingPeriod;
+					if(moves>5000){
+						IMPURITY_UP(u.uimp_rot)
+					}
 				} else {
 					if(!Blind) pline("The eye closes.");
 					else pline("But nothing else occurs.");

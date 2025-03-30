@@ -1719,6 +1719,9 @@ mcalcdistress()
 	if(mtmp->mscorpions){
 		phantom_scorpions_sting(mtmp);
 	}
+	if(mtmp->mcaterpillars){
+		rot_caterpillars_bite(mtmp);
+	}
 	if(mtmp->mvermin){
 		int damage = d(10,10);
 		damage -= avg_mdr(mtmp);
@@ -3833,7 +3836,13 @@ boolean actual;			/* actual attack or faction check? */
 		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == MOON_FACTION)
 		return 0L;
+	if(magr->mfaction == mdef->mfaction && mdef->mfaction == ROT_FACTION)
+		return 0L;
 	
+	// rot kin attack almost anything
+	if(magr->mfaction == ROT_FACTION || mdef->mfaction == ROT_FACTION) {
+		return ALLOW_M|ALLOW_TM;
+	}
 	// dreadblossoms attack almost anything
 	if(ma->mtyp == PM_DREADBLOSSOM_SWARM &&
 		!(is_fey(md) || is_plant(md))
@@ -6947,6 +6956,7 @@ boolean severe;			/* Powerful poison that partially overcomes poison resistance 
 				pline_The("poison was quite debilitating...");
 				printed = TRUE;
 			}
+			IMPURITY_UP(u.uimp_poison)
 		}
 		if (i <= 5) {
 			drain = -rn1(3, 3);
@@ -8317,6 +8327,41 @@ struct monst *mtmp;
 	}
 }
 
+STATIC_OVL void
+mark_item_chain_summoned(struct obj *otmp, struct monst *mon, int duration)
+{
+	for (; otmp; otmp = otmp->nobj) {
+		if(otmp->cobj)
+			mark_item_chain_summoned(otmp->cobj, mon, duration);
+		if (!get_ox(otmp, OX_ESUM)) {
+			/* add component to obj */
+			add_ox(otmp, OX_ESUM);
+			otmp->oextra_p->esum_p->summoner = mon;
+			otmp->oextra_p->esum_p->sm_id = mon->m_id;
+			otmp->oextra_p->esum_p->sm_o_id = 0;
+			otmp->oextra_p->esum_p->summonstr = 0;
+			otmp->oextra_p->esum_p->sticky = 0;
+			otmp->oextra_p->esum_p->permanent = (duration == ESUMMON_PERMANENT);
+			otmp->oextra_p->esum_p->staleptr = 0;
+			/* add timer to obj */
+			start_timer(duration, TIMER_OBJECT, DESUMMON_OBJ, (genericptr_t)otmp);
+		}
+		else {
+			/* already marked as summoned -- double-check it's the right mon */
+			if (otmp->oextra_p->esum_p->summoner != mon)
+				impossible("%s already attached to %s, cannot attach to %s",
+					xname(otmp), m_monnam(otmp->oextra_p->esum_p->summoner), m_monnam(mon));
+			else {
+				/* change duration, if applicable */
+				if (duration != ESUMMON_PERMANENT) {
+					otmp->oextra_p->esum_p->permanent = 0;
+					adjust_timer_duration(get_timer(otmp->timed, DESUMMON_OBJ), duration - ESUMMON_PERMANENT);
+				}
+			}
+		}
+	}
+}
+
 /* marks `mon` as being summoned by the summoner, which causes it to vanish after duration expires or summoner dies */
 /* its inventory at time of marking is set to vanish when `mon` dies */
 void
@@ -8365,39 +8410,7 @@ int flags;
 		}
 	}
 #endif
-	struct obj * otmp, * pobj = 0;
-	for (otmp = mon->minvent; otmp || (pobj && pobj->where == OBJ_CONTAINED); otmp = otmp->nobj) {
-		if(otmp)
-			while(otmp->cobj) {pobj = otmp; otmp = otmp->cobj;}
-		else
-			otmp = pobj->ocontainer;
-		if (!get_ox(otmp, OX_ESUM)) {
-			/* add component to obj */
-			add_ox(otmp, OX_ESUM);
-			otmp->oextra_p->esum_p->summoner = mon;
-			otmp->oextra_p->esum_p->sm_id = mon->m_id;
-			otmp->oextra_p->esum_p->sm_o_id = 0;
-			otmp->oextra_p->esum_p->summonstr = 0;
-			otmp->oextra_p->esum_p->sticky = 0;
-			otmp->oextra_p->esum_p->permanent = (duration == ESUMMON_PERMANENT);
-			otmp->oextra_p->esum_p->staleptr = 0;
-			/* add timer to obj */
-			start_timer(duration, TIMER_OBJECT, DESUMMON_OBJ, (genericptr_t)otmp);
-		}
-		else {
-			/* already marked as summoned -- double-check it's the right mon */
-			if (otmp->oextra_p->esum_p->summoner != mon)
-				impossible("%s already attached to %s, cannot attach to %s",
-					xname(otmp), m_monnam(otmp->oextra_p->esum_p->summoner), m_monnam(mon));
-			else {
-				/* change duration, if applicable */
-				if (duration != ESUMMON_PERMANENT) {
-					otmp->oextra_p->esum_p->permanent = 0;
-					adjust_timer_duration(get_timer(otmp->timed, DESUMMON_OBJ), duration - ESUMMON_PERMANENT);
-				}
-			}
-		}
-	}
+	mark_item_chain_summoned(mon->minvent, mon, duration);
 }
 
 struct monst *
@@ -10372,6 +10385,52 @@ struct monst *mdef;
 		if(m_losehp(mdef, damage, FALSE, "swarm of scorpions")); //died
 		else if (canseemon(mdef))
 			pline("%s is stung by phantom scorpions.", Monnam(mdef));
+	}
+}
+
+void
+rot_caterpillars_bite(struct monst *mdef)
+{
+	int damage = 0;
+	if(mdef == &youmonst){
+		IMPURITY_UP(u.uimp_rot)
+		if (!Sick_res(mdef)) {
+			if(!Sick) make_sick((long)rn1(ACURR(A_CON), 20), "rotting caterpillars", TRUE, SICK_NONVOMITABLE);
+			damage += (*hp(mdef))*3.3/100 + 26;
+		}
+		else {
+			damage += (*hp(mdef))*2/100 + 8;
+		}
+		You("are bitten by a swarm of parasitic caterpillars!");
+		losehp(damage, "a swarm of parasitic caterpillars", KILLED_BY);
+		if(has_blood(youracedata)){
+			Your("blood is being drained!");
+			IMPURITY_UP(u.uimp_blood)
+			if(!rn2(3) && !Drain_res(mdef)){
+				losexp("life force drain", TRUE, FALSE, FALSE);
+			}
+		}
+	}
+	else {
+		if (!Sick_res(mdef)) {
+			damage += (!rn2(10)) ? 100 : rnd(12);
+			damage += (*hp(mdef))*3.3/100 + 26;
+		}
+		else {
+			damage += (*hp(mdef))*2/100 + 8;
+		}
+		if(has_blood_mon(mdef) && !rn2(3) && !Drain_res(mdef)){
+			pline("%s suddenly seems weaker!", Monnam(mdef));
+			if(!mdef->m_lev)
+				damage += mdef->mhpmax;
+			else mdef->m_lev--;
+			mdef->mhpmax -= (hd_size(mdef->data)+1)/2;
+			mdef->mhpmax = max(mdef->mhpmax, 1);
+			mdef->mhp = min(mdef->mhpmax, mdef->mhp);
+		}
+		if(m_losehp(mdef, damage, FALSE, "swarm of parasitic caterpillars")); //died
+		else if (canseemon(mdef))
+			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
 	}
 }
 

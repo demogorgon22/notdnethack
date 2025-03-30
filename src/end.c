@@ -1152,6 +1152,18 @@ int how;
 			You("wish that hadn't happened.");
 			pline("A star flares on your right ring-finger!");
 			uright->spe--;
+		} else if(check_rot(ROT_CENT) && !(mvitals[PM_CENTIPEDE].mvflags & G_GENOD) && !HUnchanging){
+			lsvd = LSVD_MISC;
+			if (how == DISINTEGRATED) pline("A monstrous centipede crawls out of your dust!");
+			else pline("A monstrous centipede crawls out of your rotting body!");
+			struct obj *otmp, *nobj;
+			for(otmp = invent; otmp; otmp = nobj){
+				nobj = otmp->nobj;
+				obj_extract_and_unequip_self(otmp);
+				dropy(otmp);
+			}
+			polymon(PM_CENTIPEDE);
+			remove_rot(ROT_CENT);
 		} else if(check_mutation(ABHORRENT_SPORE) && !(mvitals[PM_DARK_YOUNG].mvflags & G_GENOD)){
 			lsvd = LSVD_SPOR;
 			if (how == DISINTEGRATED) pline("Your dust is consumed by the abhorrent spore!");

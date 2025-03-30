@@ -85,7 +85,7 @@ STATIC_DCL void FDECL(soul_crush_consequence, (struct obj *));
 STATIC_DCL int FDECL(do_soul_coin, (struct obj *));
 STATIC_DCL boolean FDECL(figurine_location_checks,
 				(struct obj *, coord *, BOOLEAN_P));
-STATIC_DCL boolean NDECL(uhave_graystone);
+STATIC_DCL boolean NDECL(uhave_usablestone);
 STATIC_DCL int FDECL(do_carve_obj, (struct obj *));
 STATIC_PTR int FDECL(pick_rune, (BOOLEAN_P));
 STATIC_DCL void FDECL(describe_rune, (int));
@@ -2942,15 +2942,9 @@ int
 defile_count()
 {
 	int count = 0;
-	long i;
-	for(i = 1L; i <= PRESERVE_MAX; i = i<<1){
-		if(u.upreservation_upgrades&i)
-			count++;
-	}
-	for(i = 1L; i <= VAMPIRE_MAX; i = i<<1){
-		if(u.uvampire_upgrades&i)
-			count++;
-	}
+	count += preservation_count();
+	count += vampire_count();
+	count += rot_count();
 	return count;
 }
 
@@ -2972,7 +2966,19 @@ vampire_count()
 	int count = 0;
 	long i;
 	for(i = 1L; i <= VAMPIRE_MAX; i = i<<1){
-		if(u.upreservation_upgrades&i)
+		if(u.uvampire_upgrades&i)
+			count++;
+	}
+	return count;
+}
+
+int
+rot_count()
+{
+	int count = 0;
+	long i;
+	for(i = ROT_MIN; i <= ROT_MAX; i = i<<1){
+		if(u.urot_upgrades&i)
 			count++;
 	}
 	return count;
@@ -2981,8 +2987,9 @@ vampire_count()
 STATIC_OVL int
 defile_score()
 {
-	int count = defile_count()+1;
+	int count = vampire_count()+1;
 	count *= 4; //TIER_B	4
+	count += preservation_count()*2;//TIER_D 2
 	return (count*(count+1))/2;
 }
 
@@ -2990,6 +2997,71 @@ boolean
 defile_research_ok()
 {
 	if(defile_score() < u.udefilement_research)
+		return TRUE;
+	return FALSE;
+}
+
+STATIC_OVL int
+rot_score()
+{
+	return rot_count()+1;
+}
+
+STATIC_OVL int
+rot_crys()
+{
+	int count = 0;
+	for(struct obj *obj = invent; obj; obj = obj->nobj){
+		if(obj->otyp == CRYSTAL && obj->obj_material == FLESH){
+			count += obj->quan;
+		}
+	}
+	return count;
+}
+
+
+STATIC_OVL void
+use_rot_crys(int num)
+{
+	int count = 0;
+	for(struct obj *obj = invent; obj; obj = obj->nobj){
+		if(obj->otyp == CRYSTAL && obj->obj_material == FLESH){
+			count += obj->quan;
+		}
+	}
+	if(count <= num){
+		struct obj *nobj;
+		for(struct obj *obj = invent; obj; obj = nobj){
+			nobj = obj->nobj;
+			if(obj->otyp == CRYSTAL && obj->obj_material == FLESH){
+				useupall(obj);
+			}
+		}
+	}
+	else {
+		int n;
+		while(num > 0){
+			n = rn2(count);
+			for(struct obj *obj = invent; obj; obj = obj->nobj){
+				if(obj->otyp == CRYSTAL && obj->obj_material == FLESH){
+					n -= obj->quan;
+					if(n < 1){
+						useup(obj);
+						count--;
+						num--;
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+boolean
+rot_research_ok()
+{
+	if(rot_score() <= rot_crys())
 		return TRUE;
 	return FALSE;
 }
@@ -3754,7 +3826,7 @@ doresearch()
 		IMPURITY_UP(u.uimp_bodies) //dead bodies are impure
 		if(researchtype == A_CHAOTIC){
 			boolean pre_research = defile_research_ok();
-			pline("You drain and fractionate the corpses's blood, studying its impurities.");
+			pline("You drain and fractionate the corpse's blood, studying its impurities.");
 			IMPURITY_UP(u.uimp_blood)
 			u.udefilement_research += rnd(value);
 			otmp->odrained = TRUE;
@@ -7303,6 +7375,186 @@ struct obj *obj;
 }
 
 STATIC_OVL int
+use_crysalis(struct obj *obj)
+{
+	winid tmpwin;
+	anything any;
+	any.a_void = 0;         /* zero out all bits */
+	menu_item *selected;
+	int n = 0;
+	char ch = 'a';
+	int accident_n = 0;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+
+	if(!rot_research_ok()){
+		pline("Nothing happens.");
+		return MOVE_CANCELLED;
+	}
+
+	any.a_int = 1;
+	if(!check_rot(ROT_VOMIT)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Vomit rot", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 2;
+	if(!check_rot(ROT_WINGS)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Rot wings", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 3;
+	if(check_rot(ROT_WINGS) && !check_rot(ROT_CLONE)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Send forth a phantom duplicate", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 4;
+	if(!check_rot(ROT_TRUCE)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Become uninteresting to beings of rot", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 5;
+	if(!check_rot(ROT_KIN)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Become followed by the kindred of rot", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 6;
+	if(!check_rot(ROT_FEAST)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Feast on injury and destruction", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 7;
+	if(!check_rot(ROT_CENT)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Seek saprovorous imortality", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 8;
+	if(!check_rot(ROT_STING)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Rot stinger", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 9;
+	if(!check_rot(ROT_SPORES)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Rot spores", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	if(!n){
+		destroy_nhwindow(tmpwin);
+		return MOVE_CANCELLED;
+	}
+	boolean override = FALSE;
+	if(rn2(n) && rn2(n))
+		override = TRUE;
+
+	end_menu(tmpwin, "Pick an upgrade to attempt to manifest:");
+	n = select_menu(tmpwin, PICK_ONE, &selected);
+	destroy_nhwindow(tmpwin);
+	if(n <= 0){
+		return MOVE_CANCELLED;
+	}
+	n = selected[0].item.a_int;
+	free(selected);
+	if(override)
+		n = accident_n;
+
+	use_rot_crys(rot_score());
+
+	if(n == 1){
+		add_rot(ROT_VOMIT);
+		pline("You feel a little nauseated.");
+	}
+	if(n == 2){
+		add_rot(ROT_WINGS);
+		pline((Race_if(PM_HALF_DRAGON) && u.ulevel >= 14) || has_wings(youracedata) ? "Your wings rot!" : "Wings of rot grow from your back!");
+		HFlying |= FROMOUTSIDE;
+		float_up();
+		spoteffects(FALSE);
+	}
+	if(n == 3){
+		add_rot(ROT_CLONE);
+		pline("Strange butterflies hatch from your wings and dance overhead.");
+	}
+	if(n == 4){
+		add_rot(ROT_TRUCE);
+		You("become uninteresting to the beings of rot.");
+	}
+	if(n == 5){
+		add_rot(ROT_KIN);
+		You("are followed by the kin of rot.");
+	}
+	if(n == 6){
+		add_rot(ROT_FEAST);
+		You("feast on injury and destruction.");
+	}
+	if(n == 7){
+		add_rot(ROT_CENT);
+		pline("A monstrous centipede bores out of your body.");
+	}
+	if(n == 8){
+		add_rot(ROT_STING);
+		pline("A monstrous scorpion stinger tears loose from your flesh.");
+	}
+	if(n == 9){
+		add_rot(ROT_SPORES);
+		pline("Puffball mushrooms errupt from your skin.");
+	}
+	// u.udefilement_research += rn2(defile_score());
+	u.mental_scores_down++;
+	ABASE(A_INT) -= 1;
+	// check_brainlessness();
+	ABASE(A_INT) = max(ABASE(A_INT), ATTRMIN(A_INT));
+	AMAX(A_INT) = max(AMAX(A_INT)-1, ATTRMIN(A_INT)); //Can't be recovered via restore ability
+	ABASE(A_CON) = max(ABASE(A_CON)-1, ATTRMIN(A_CON));
+	AMAX(A_CON) = max(AMAX(A_CON)-1, ATTRMIN(A_CON));
+
+	return MOVE_STANDARD;
+}
+
+STATIC_OVL int
 use_dilithium(obj)
 	struct obj *obj;
 {
@@ -8340,13 +8592,16 @@ do_break_wand(obj)
 }
 
 STATIC_OVL boolean
-uhave_graystone()
+uhave_usablestone()
 {
 	register struct obj *otmp;
 
-	for(otmp = invent; otmp; otmp = otmp->nobj)
+	for(otmp = invent; otmp; otmp = otmp->nobj){
 		if(is_graystone(otmp))
 			return TRUE;
+		if(otmp->otyp == CRYSTAL && otmp->obj_material == FLESH)
+			return TRUE;
+	}
 	return FALSE;
 }
 
@@ -10117,7 +10372,7 @@ doapply()
 
 	if(check_capacity((char *)0)) return MOVE_CANCELLED;
 
-	if (carrying(POT_OIL) || carrying(POT_BLOOD) || uhave_graystone())
+	if (carrying(POT_OIL) || carrying(POT_BLOOD) || uhave_usablestone())
 		Strcpy(class_list, tools_too);
 	else
 		Strcpy(class_list, tools);
@@ -10872,6 +11127,11 @@ doapply()
 	break;
 	case ANTIMAGIC_RIFT:
 		res = use_rift(obj);
+	break;
+	case CRYSTAL:
+		if(obj->obj_material == FLESH)
+			res = use_crysalis(obj);
+		else res = MOVE_CANCELLED;
 	break;
 	case VITAL_SOULSTONE:
 		if (objects[obj->otyp].oc_name_known)

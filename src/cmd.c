@@ -141,6 +141,7 @@ STATIC_PTR int NDECL(doclearinvissyms);
 # ifdef WIZARD
 STATIC_PTR int NDECL(wiz_bind);
 STATIC_PTR int NDECL(wiz_mutate);
+STATIC_PTR int NDECL(wiz_research);
 STATIC_PTR int NDECL(wiz_cult);
 STATIC_PTR int NDECL(wiz_mk_mapglyphdump);
 STATIC_PTR int NDECL(wiz_wish);
@@ -645,6 +646,9 @@ boolean you_abilities;
 	if (mon_abilities && is_unicorn(youracedata)){
 		add_ability('u', "Use your unicorn horn", MATTK_UHORN);
 	}
+	if (you_abilities && ((check_rot(ROT_VOMIT) && (umechanoid || u.uhs < WEAK)) || (check_rot(ROT_CLONE) && u.uen >= 45) )){
+		add_ability('U', "Use your upgrade abilities", MATTK_UPGRADE);
+	}
 	if (mon_abilities && is_vampire(youracedata) && u.ulevel > 1){
 		add_ability('V', "Raise a vampiric minion", MATTK_VAMP);
 	}
@@ -748,6 +752,10 @@ boolean you_abilities;
 	case MATTK_UHORN: {
 	    use_unicorn_horn((struct obj *)0);
 	    return MOVE_STANDARD;
+	}
+	break;
+	case MATTK_UPGRADE: {
+	    return doupgradeability();
 	}
 	break;
 	case MATTK_SHRIEK: {
@@ -1877,6 +1885,26 @@ wiz_mutate()
 	}
 	else
 		pline("Unavailable command.");
+	return MOVE_CANCELLED;
+}
+
+STATIC_PTR int
+wiz_research()
+{
+	if (!wizard)
+		return MOVE_CANCELLED;
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	char inclet = 'a';
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+
 	return MOVE_CANCELLED;
 }
 

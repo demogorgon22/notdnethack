@@ -1349,6 +1349,7 @@ register const char *let,*word;
 		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp)
 				&& otyp != CATAPSI_VORTEX && otyp != ANTIMAGIC_RIFT
 				&& otyp != VITAL_SOULSTONE && otyp != SPIRITUAL_SOULSTONE
+				&& !(otyp == CRYSTAL && otmp->obj_material == FLESH)
 				&& !(otyp == DILITHIUM_CRYSTAL && Role_if(PM_ANACHRONONAUT) && !otmp->oartifact)
 			 )))
 		|| (!strcmp(word, "invoke") &&
@@ -2470,6 +2471,9 @@ struct obj *obj;
 	else if (obj->otyp == ANTIMAGIC_RIFT || obj->otyp == CATAPSI_VORTEX)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Crush this flawed gem", MENU_UNSELECTED);
+	else if (obj->otyp == CRYSTAL && obj->obj_material == FLESH)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Contemplate this crysalis", MENU_UNSELECTED);
 	else if (obj->otyp == MISOTHEISTIC_PYRAMID || obj->otyp == MISOTHEISTIC_FRAGMENT)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Shatter this pyramid", MENU_UNSELECTED);

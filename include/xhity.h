@@ -75,7 +75,10 @@
 #define SUBOUT_V_CLAWS1	16	/* Extra vermiurge claws 1 */
 #define SUBOUT_V_CLAWS2	17	/* Extra vermiurge claws 2 */
 #define SUBOUT_BRAINSUCK	18	/* Brain suckers */
-#define MAX_SUBOUT		19
-#define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/8+1)
+#define SUBOUT_ROT_SPORES	19	/* Pasive spore attack */
+#define SUBOUT_ROT_VOMIT	20	/* Vomit rot */
+#define SUBOUT_ROT_STING	21	/* Rot stinger */
+#define MAX_SUBOUT		22
+#define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/16+1)
 
 #endif

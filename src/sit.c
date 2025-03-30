@@ -700,6 +700,9 @@ rndcurse()			/* curse a few inventory items at random! */
 		did_curse = TRUE;
 	}
 #endif	/*STEED*/
+	if(did_curse){
+		IMPURITY_UP(u.uimp_curse)
+	}
 	return did_curse;
 }
 

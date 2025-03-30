@@ -1024,6 +1024,7 @@ int tary;
 		case AT_WISP:	// 
 		case AT_HITS:	// always hits
 		case AT_TUCH:	// uses touch accuracy
+		case AT_VOMT:	// uses touch accuracy
 		case AT_SRPR:	// uses touch accuracy
 		case AT_XSPR:	// uses touch accuracy
 		case AT_MSPR:	// uses touch accuracy
@@ -2330,6 +2331,10 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	if(!youagr && magr->mstun && !by_the_book && !rn2(6)){
 		GETNEXT
 	}
+	/* Man flies actually have only a 1/10th chance to barf */
+	if(pa->mtyp == PM_MAN_FLY && attk->aatyp == AT_VOMT && !by_the_book && rn2(10)){
+		GETNEXT
+	}
 		
 	if(!by_the_book && 
 		(pa->mtyp == PM_SMALL_GOAT_SPAWN || pa->mtyp == PM_GOAT_SPAWN || pa->mtyp == PM_GIANT_GOAT_SPAWN || pa->mtyp == PM_XUENU_MONK)
@@ -2757,6 +2762,18 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		}
 	}
 
+	/* Player may get rot stinger attack */
+	if (youagr && is_null_attk(attk) && !by_the_book && check_rot(ROT_STING)
+		&& !check_subout(subout, SUBOUT_ROT_STING)
+	) {
+		attk->aatyp = AT_STNG;
+		attk->adtyp = AD_DISE;
+		attk->damn = 1;
+		attk->damd = 4;
+		fromlist = FALSE;
+		add_subout(subout, SUBOUT_ROT_STING);
+	}
+
 	/* Player may get brain sucker attack */
 	if (youagr && is_null_attk(attk) && !by_the_book && u.brainsuckers && active_glyph(LUMEN)
 		&& !check_subout(subout, SUBOUT_BRAINSUCK)
@@ -2767,6 +2784,22 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		attk->damd = 2;
 		fromlist = FALSE;
 		add_subout(subout, SUBOUT_BRAINSUCK);
+	}
+
+	/* Player may get rot vomit attack */
+	if (youagr && is_null_attk(attk) && !by_the_book && check_rot(ROT_VOMIT) && (umechanoid || u.uhs < WEAK)
+		&& !check_subout(subout, SUBOUT_ROT_VOMIT)
+	) {
+		if(!rn2(10)){
+			attk->aatyp = AT_VOMT;
+			attk->adtyp = AD_DISE;
+			attk->damn = 1;
+			attk->damd = 1;
+			fromlist = FALSE;
+			make_sick(0L, (char *) 0, TRUE, SICK_VOMITABLE);
+			if(!umechanoid) morehungry(20*get_uhungersizemod());
+		}
+		add_subout(subout, SUBOUT_ROT_VOMIT);
 	}
 
 	/* players can get a whole host of spirit attacks */
@@ -2782,6 +2815,17 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		fromlist = FALSE;
 	}
 
+	/* Player may get rot spores passive attack */
+	if (youagr && is_null_attk(attk) && !by_the_book && check_rot(ROT_SPORES)
+		&& !check_subout(subout, SUBOUT_ROT_SPORES)
+	) {
+		attk->aatyp = AT_NONE;
+		attk->adtyp = AD_DISE;
+		attk->damn = 1;
+		attk->damd = 1;
+		fromlist = FALSE;
+		add_subout(subout, SUBOUT_ROT_SPORES);
+	}
 	/* some pseudonatural's claws become more-damaging tentacles */
 	if (!youagr && has_template(magr, PSEUDONATURAL) && (
 		attk->aatyp == AT_CLAW && (magr->m_id + *indexnum) % 4 == 0)
@@ -3004,6 +3048,7 @@ struct attack *attk;
 	boolean youagr = (magr == &youmonst);
 	boolean youdef = (mdef == &youmonst);
 	struct permonst * pa = youagr ? youracedata : magr->data;
+	struct permonst * pd = youdef ? youracedata : mdef->data;
 	int compat;
 
 	/* AT_NONE is silent */
@@ -3148,7 +3193,7 @@ struct attack *attk;
 		case AT_OBIT:
 			pline("%s %s bites %s!",
 				(youagr ? "Your" : s_suffix(Monnam(magr))),
-				(attk->adtyp == AD_MAGM ? "skirt" : magr->mtyp == PM_MEDUSA ? "hair" : magr->mtyp == PM_MOON_S_CHOSEN ? "cranial wolfpack" : magr->mtyp == PM_HYGIEIAN_ARCHON ? "snake" : magr->mtyp == PM_ANCIENT_NAGA ? "canopy" : "snake head"),
+				(attk->adtyp == AD_MAGM ? "skirt" : magr->mtyp == PM_MEDUSA ? "hair" : magr->mtyp == PM_MOON_S_CHOSEN ? "cranial wolfpack" : magr->mtyp == PM_HYGIEIAN_ARCHON ? "snake" : magr->mtyp == PM_ANCIENT_NAGA ? "canopy" : attk->adtyp == AD_DISE ? "centipede" : "snake head"),
 				((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr))
 				);
 			break;
@@ -3158,6 +3203,14 @@ struct attack *attk;
 				(youagr ? "" : "s"),
 				((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr)),
 				(youagr ? "your" : mhis(magr))
+				);
+			break;
+		case AT_VOMT:
+			pline("%s vomit%s %s %s!",
+				(youagr ? "You" : Monnam(magr)),
+				(youagr ? "" : "s"),
+				(pd->msize > pa->msize ? "on" : "all over"),
+				((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr))
 				);
 			break;
 		case AT_TONG:
@@ -3980,7 +4033,7 @@ int *shield_margin;
 		/* monster-only accuracy bonuses */
 		else {
 			/* martial-trained foes are accurate */
-			if(magr->mformication || magr->mscorpions)
+			if(magr->mformication || magr->mscorpions || magr->mcaterpillars)
 				bons_acc -= 2;
 			else switch(m_martial_skill(pa)) {
 			case P_UNSKILLED: bons_acc += 0; break;
@@ -4370,6 +4423,7 @@ int *shield_margin;
 		(melee && youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(melee && attk->aatyp == AT_TUCH) ||
 		(melee && attk->aatyp == AT_VINE) ||
+		(melee && attk->aatyp == AT_VOMT) ||
 		(melee && spirit_rapier_at(attk->aatyp)) ||
 		(weapon && !valid_weapon(weapon))	/* potions, cream pies, rubber chickens, eggs, etc. */
 	) {
@@ -4380,6 +4434,9 @@ int *shield_margin;
 			defn_acc += base_mac(mdef);
 		}
 		if(shield_margin) *shield_margin = -1;
+		if(melee && attk->aatyp == AT_VOMT){
+			defn_acc += 5;
+		}
 	}
 	/* do not ignore worn armor */
 	else {
@@ -4593,6 +4650,7 @@ boolean ranged;
 	case AT_MSPR:	// uses touch accuracy
 	case AT_DSPR:	// uses touch accuracy
 	case AT_ESPR:	// uses touch accuracy
+	case AT_VOMT:	// uses touch accuracy
 	/* ranged attack types that are also melee */
 	case AT_LNCK:
 	case AT_5SBT:
@@ -5526,6 +5584,9 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			xyhitmsg(magr, mdef, originalattk);
 		}
 		/* asymetric: diseasemu prints out messages, applies sickness to player*/
+		if(originalattk->aatyp == AT_VOMT){
+			mdef->mcaterpillars = TRUE;
+		}
 		if (youdef) {
 			if (!diseasemu(pa))
 				dmg = 0;
@@ -5544,6 +5605,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					pline("%s is afflicted by disease!",
 						Monnam(mdef));
 				}
+				if(!rn2(10)) dmg += 100;
 				if(!youagr && mdef->mhp < mdef->mhpmax/2 && ((magr->mspores && !rn2(20)) || has_template(magr, SPORE_ZOMBIE) || has_template(magr, CORDYCEPS)))
 					mdef->mspores = TRUE;
 			}
@@ -6143,6 +6205,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
 		/* various poisons */
+	case AD_PFBT:
 	case AD_SVPN:
 	case AD_DRST:
 	case AD_DRDX:
@@ -6152,6 +6215,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		switch (attk->adtyp)
 		{
 		case AD_SVPN:	ptmp = !rn2(3) ? A_STR : rn2(2) ? A_DEX : A_CON; break;
+		case AD_PFBT:
 		case AD_DRST:	ptmp = A_STR; break;
 		case AD_DRDX:	ptmp = A_DEX; break;
 		case AD_EDRC:
@@ -6197,6 +6261,9 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					else {
 						if (vis)
 							pline_The("poison was deadly...");
+						if(youagr){
+							IMPURITY_UP(u.uimp_poison)
+						}
 						mdef->mhp = 0;
 					}
 					/* if the poison killed, deal with the maybe-dead monster and return early */
@@ -6215,7 +6282,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			}
 		}
 		/* make physical attack without hitmsg */
-		alt_attk.adtyp = AD_PHYS;
+		alt_attk.adtyp = attk->adtyp == AD_PFBT ? AD_DISE : AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
 	case AD_VAMP:
@@ -11345,6 +11412,7 @@ int vis;
 			if (!Sick_res(mdef)) {
 				if (vis&VIS_MDEF)
 					pline("%s is afflicted by disease!", Monnam(mdef));
+				if(!rn2(10)) dmg += 100;
 			}
 		}
 		if(pa->mtyp == PM_JUIBLEX){
@@ -14126,7 +14194,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			precision_mult += max(P_SKILL(objects[launcher->otyp].oc_skill) - 2, 0);
 		}
 		else {
-			if(!magr->mformication && !magr->mscorpions)
+			if(!magr->mformication && !magr->mscorpions && !magr->mcaterpillars)
 				precision_mult += max(m_martial_skill(magr->data)-2, 0);
 		}
 		
@@ -16080,6 +16148,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	/* ARTIFACT HIT BLOCK */
 	/* this must come after skills are trained, as this can kill the defender and cause a return */
+	if(youagr && melee){
+		if(check_rot(ROT_FEAST))
+			healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
+	}
 	if (valid_weapon_attack || unarmed_punch || unarmed_kick || unarmed_butt)
 	{
 		int returnvalue = 0;
@@ -17235,9 +17307,14 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 					if (adjattrib(attrib, -amnt, 1))
 						pline_The("poison was quite debilitating...");
+					IMPURITY_UP(u.uimp_poison)
 				}
-				else if ((vis&VIS_MDEF) && lethaldamage)
+				else if ((vis&VIS_MDEF) && lethaldamage) {
 					pline_The("poison was deadly...");
+					if(youagr){
+						IMPURITY_UP(u.uimp_poison)
+					}
+				}
 				break;
 			case OPOISON_DIRE:
 				if (youdef) {
@@ -17253,6 +17330,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 							drain -= 4;
 
 						adjattrib(A_CON, drain, 1);
+						IMPURITY_UP(u.uimp_poison)
 					}
 					int amnt = rn1(3, 3);
 					if(Poison_resistance)
@@ -17263,8 +17341,12 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					if (adjattrib(attrib, -amnt, 1))
 						pline_The("poison was quite debilitating...");
 				}
-				else if ((vis&VIS_MDEF) && lethaldamage)
+				else if ((vis&VIS_MDEF) && lethaldamage){
 					pline_The("poison was deadly...");
+					if(youagr){
+						IMPURITY_UP(u.uimp_poison)
+					}
+				}
 				break;
 			case OPOISON_FILTH:
 				if (youdef) {
@@ -17272,8 +17354,12 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					make_sick(Sick ? Sick / 2L + 1L : (long)rn1(ACURR(A_CON), 20),
 						"filth-coated weapon", TRUE, SICK_NONVOMITABLE);
 				}
-				else if ((vis&VIS_MDEF) && lethaldamage)
+				else if ((vis&VIS_MDEF) && lethaldamage){
 					pline_The("tainted filth was deadly...");
+					if(youagr){
+						IMPURITY_UP(u.uimp_dirtiness)
+					}
+				}
 				break;
 			case OPOISON_SLEEP:
 				if (youdef) {
@@ -19919,6 +20005,9 @@ struct monst * mdef;
 	//Check curse resistance
 	if(Curse_res(mdef, TRUE))
 		return MM_MISS;
+	if(youdef){
+		IMPURITY_UP(u.uimp_curse)
+	}
 	//Roll type
 	switch(magr->mtyp){
 		case PM_HMNYW_PHARAOH:

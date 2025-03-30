@@ -135,7 +135,7 @@ register int x, y, n;
 	mm.y = y;
 	mndx = monsndx(mtmp->data);
 	while(cnt--) {
-		if (peace_minded(mtmp->data) && 
+		if (peace_minded(mtmp) && 
 			!(is_auton(mtmp->data) && u.uevent.uaxus_foe)) continue;
 		/* Don't create groups of peaceful monsters since they'll get
 		 * in our way.  If the monster has a percentage chance so some
@@ -169,7 +169,7 @@ register int x, y, n;
 			    set_malign(mon);
 
 				/* if auton was going to be peaceful but you killed Axus, make it hostile and worth negative alignment */
-				if (is_auton(mon->data) && peace_minded(mtmp->data) && u.uevent.uaxus_foe) {
+				if (is_auton(mon->data) && peace_minded(mtmp) && u.uevent.uaxus_foe) {
 					mon->mpeaceful = 1;
 					mon->mavenge = 0;
 					set_malign(mon);
@@ -13340,6 +13340,10 @@ boolean randmonst;
 		else if(randmonst && (is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ) && Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && Is_astralevel(&u.uz)){
 			mkmon_template = TONGUE_PUPPET;
 		}
+		/**/
+		if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
+			mkmon_template = SWOLLEN_TEMPLATE;
+		}
 		/* most general case at bottom -- creatures randomly being zombified */
 		else if(randmonst && can_undead(ptr)
 #ifdef REINCARNATION
@@ -13551,6 +13555,8 @@ struct monst * mon;
 		out_faction = ILSENSINE_FACTION;
 	else if(In_quest(&u.uz) && Role_if(PM_EXILE) && !peaceful)
 		out_faction = SEROPAENES_FACTION;
+	else if(rot_monster(mon) && check_rot(ROT_KIN))
+		out_faction = ROT_FACTION;
 	else if(In_quest(&u.uz) && Role_if(PM_UNDEAD_HUNTER)){
 		if(!peaceful)
 			out_faction = MOON_FACTION;
@@ -14052,6 +14058,31 @@ int faction;
 	else if(G_C_INST(mtmp->data->geno) > 0){
 		mtmp->m_insight_level = G_C_INST(mtmp->data->geno)-rn2((G_C_INST(mtmp->data->geno)+3)/4);
 	}
+
+	//Templates
+	if (template != 0){
+		/* apply template */
+		set_template(mtmp, template);
+		/* update ptr to mtmp's new data */
+		ptr = mtmp->data;
+		/* special case: some templates increase the level of the creatures made */
+		int plslvl = 0;
+		switch (template) {
+		case FRACTURED:
+			plslvl = 4; break;
+		case YITH:
+			plslvl = 2; break;
+		}
+		if (plslvl) {
+			mtmp->m_lev += plslvl;
+		}
+		/* update symbol */
+		newsym(mtmp->mx,mtmp->my);
+		/* zombies and other derived undead are much less likely to have their items */
+		if (is_undead(mtmp->data))
+			allow_minvent = rn2(2);
+	}
+	
 	
 	if(mtmp->mtyp == PM_CHOKHMAH_SEPHIRAH)
 		mtmp->m_lev += u.chokhmah;
@@ -14178,31 +14209,6 @@ int faction;
 			unsethouse = TRUE;
 		}
 	}
-	if (template != 0){
-		/* apply template */
-		set_template(mtmp, template);
-		/* update ptr to mtmp's new data */
-		ptr = mtmp->data;
-		/* special case: some templates increase the level of the creatures made */
-		int plslvl = 0;
-		switch (template) {
-		case FRACTURED:
-			plslvl = 4; break;
-		case YITH:
-			plslvl = 2; break;
-		}
-		if (plslvl) {
-			mtmp->m_lev += plslvl;
-			mtmp->mhpmax += d(plslvl, hd_size(mtmp->data));
-			mtmp->mhp = mtmp->mhpmax;
-		}
-		/* update symbol */
-		newsym(mtmp->mx,mtmp->my);
-		/* zombies and other derived undead are much less likely to have their items */
-		if (is_undead(mtmp->data))
-			allow_minvent = rn2(2);
-	}
-	
 	//One-off templates like Yith should be unset immediately after being applied
 	if(template == YITH){
 		template = 0;
@@ -14211,7 +14217,7 @@ int faction;
 	if(Race_if(PM_DROW) && in_mklev && Is_qstart(&u.uz) && 
 		(ptr->mtyp == PM_SPROW || ptr->mtyp == PM_DRIDER || ptr->mtyp == PM_CAVE_LIZARD || ptr->mtyp == PM_LARGE_CAVE_LIZARD)
 	) mtmp->mpeaceful = TRUE;
-	else mtmp->mpeaceful = (mmflags & MM_ANGRY) ? FALSE : peace_minded(ptr);
+	else mtmp->mpeaceful = (mmflags & MM_ANGRY) ? FALSE : peace_minded(mtmp);
 	
 	if(mtmp->mfaction <= 0)
 		makemon_set_monster_faction(mtmp);
@@ -17104,11 +17110,10 @@ struct permonst *ptr;
  *	( some "animal" types are co-aligned, but also hungry )
  */
 boolean
-peace_minded(ptr)
-register struct permonst *ptr;
+peace_minded(struct monst *mon)
 {
-	int mndx = monsndx(ptr);
-	aligntyp mal = ptr->maligntyp, ual = u.ualign.type;
+	int mndx = monsndx(mon->data);
+	aligntyp mal = mon->data->maligntyp, ual = u.ualign.type;
 	
 	if(Infuture && !in_mklev) return FALSE;
 	
@@ -17122,9 +17127,11 @@ register struct permonst *ptr;
 		//else fall through
 	}
 	
-	if(goat_monster(ptr) && u.shubbie_atten && !godlist[GOD_THE_BLACK_MOTHER].anger) return TRUE;
+	if(goat_monster(mon->data) && u.shubbie_atten && !godlist[GOD_THE_BLACK_MOTHER].anger) return TRUE;
 	
-	if(is_undead(ptr) && mindless(ptr) && check_preservation(PRESERVE_DEAD_TRUCE)) return TRUE;
+	if(is_undead(mon->data) && mindless_mon(mon) && check_preservation(PRESERVE_DEAD_TRUCE)) return TRUE;
+	
+	if(rot_monster(mon) && check_rot(ROT_TRUCE)) return TRUE;
 	
 	if(Race_if(PM_DROW) && 
 		((ual == A_CHAOTIC && (!Role_if(PM_NOBLEMAN) || flags.initgend)) || (ual == A_NEUTRAL && !flags.initgend)) && /*Males can be neutral or chaotic, but a chaotic male nobleman converted to a different god*/
@@ -17139,33 +17146,33 @@ register struct permonst *ptr;
 	
 	if(u.uhouse &&
 		u.uhouse == EILISTRAEE_SYMBOL
-		&& is_elf(ptr) && !is_drow(ptr)
+		&& is_elf(mon->data) && !is_drow(mon->data)
 	) return TRUE;
 	
 	if(u.uhouse &&
 		(u.uhouse == XAXOX || u.uhouse == EDDER_SYMBOL)
-		&& ptr->mtyp == PM_EDDERKOP
+		&& mon->mtyp == PM_EDDERKOP
 	) return TRUE;
 	
 	if(u.uhouse &&
 		u.uhouse == GHAUNADAUR_SYMBOL
-		&& (ptr->mlet == S_PUDDING || ptr->mlet == S_BLOB || ptr->mlet == S_JELLY)
-		&& mindless(ptr)
+		&& (mon->data->mlet == S_PUDDING || mon->data->mlet == S_BLOB || mon->data->mlet == S_JELLY)
+		&& mindless_mon(mon)
 	) return TRUE;
 	
 	if(u.uhouse &&
 		u.uhouse == GHAUNADAUR_SYMBOL
-		&& (ptr->mtyp == PM_SHOGGOTH || ptr->mtyp == PM_PRIEST_OF_GHAUNADAUR || ptr->mtyp == PM_PRIESTESS_OF_GHAUNADAUR)
+		&& (mon->mtyp == PM_SHOGGOTH || mon->mtyp == PM_PRIEST_OF_GHAUNADAUR || mon->mtyp == PM_PRIESTESS_OF_GHAUNADAUR)
 	) return TRUE;
 	
-	if (ptr->mtyp == urole.ldrnum || ptr->mtyp == urole.guardnum)
+	if (mon->mtyp == urole.ldrnum || mon->mtyp == urole.guardnum)
 		return TRUE;
-	if (ptr->msound == MS_NEMESIS)	return FALSE;
+	if (mon->data->msound == MS_NEMESIS)	return FALSE;
 	
-	if (ptr->mtyp == PM_GRAY_DEVOURER && base_casting_stat() == A_CHA)	return FALSE;
+	if (mon->mtyp == PM_GRAY_DEVOURER && base_casting_stat() == A_CHA)	return FALSE;
 	
 	//As a foulness shall ye know Them.
-	if(goodsmeller(ptr) && u.specialSealsActive&SEAL_YOG_SOTHOTH)
+	if(goodsmeller(mon->data) && u.specialSealsActive&SEAL_YOG_SOTHOTH)
 		return FALSE;
 	
 	//The painting is normally peaceful
@@ -17173,15 +17180,15 @@ register struct permonst *ptr;
 		return((boolean)(!!rn2(6 + (u.ualign.record < -5 ? -5 : u.ualign.record))));
 	}
 
-	if((ptr->mtyp == PM_TREESINGER || ptr->mtyp == PM_MITHRIL_SMITH) && In_mordor_quest(&u.uz));//Not always peaceful
-	else if (always_peaceful(ptr)) return TRUE;
+	if((mon->mtyp == PM_TREESINGER || mon->mtyp == PM_MITHRIL_SMITH) && In_mordor_quest(&u.uz));//Not always peaceful
+	else if (always_peaceful(mon->data)) return TRUE;
 	
 	if(!u.uevent.invoked && mndx==PM_UVUUDAUM && !Infuture) return TRUE;
 	
 	if(ual == A_VOID) return FALSE;
 	
 	//Law quest uniques
-	if (is_auton(ptr)){
+	if (is_auton(mon->data)){
 		/* u.uevent.uaxus_foe must be checked elsewhere
 		* it will make autons hostile AND penalize alignment as though they had been generated peaceful */
 		if (sgn(mal) == sgn(ual) && (u.ualign.record >= 10 || u.uevent.uaxus_foe))
@@ -17193,19 +17200,19 @@ register struct permonst *ptr;
 	if (mndx==PM_OONA && u.ualign.record >= 20 && u.ualign.sins < 10 && sgn(mal) == sgn(ual)) return TRUE;
 	
 	//Always hostility, with exception for vampireness and law quest insects
-	if (always_hostile(ptr) && 
-		(u.uz.dnum != law_dnum || !(is_social_insect(ptr) || is_mercenary(ptr))
+	if (always_hostile(mon->data) && 
+		(u.uz.dnum != law_dnum || !(is_social_insect(mon->data) || is_mercenary(mon->data))
 		|| (!on_level(&arcadia1_level,&u.uz) && !on_level(&arcadia2_level,&u.uz) && !on_level(&arcadia3_level,&u.uz))
-		) && (!is_vampire(ptr) || !is_vampire(youracedata))
+		) && (!is_vampire(mon->data) || !is_vampire(youracedata))
 		) return FALSE;
 
 	if(Role_if(PM_VALKYRIE) && (mndx==PM_CROW || mndx==PM_RAVEN)) return TRUE;
 	
-	if(u.silver_atten && sflm_target_data(ptr))
+	if(u.silver_atten && sflm_target_data(mon->data))
 		return FALSE;
 
-	if (race_peaceful(ptr)) return TRUE;
-	if (race_hostile(ptr)) return FALSE;
+	if (race_peaceful(mon->data)) return TRUE;
+	if (race_hostile(mon->data)) return FALSE;
 	
 
 	/* the monster is hostile if its alignment is different from the
@@ -17214,13 +17221,13 @@ register struct permonst *ptr;
 	 * A_NONE: Done by a special function.
 	 */
 	if(ual == A_NONE){
-		if(conflicting_unaligned_alignment(u.ualign.god, ptr))
+		if(conflicting_unaligned_alignment(u.ualign.god, mon->data))
 			return FALSE;
 	}
 	else if (sgn(mal) != sgn(ual)) return FALSE;
 
 	/* minions are hostile to players that have strayed at all */
-	if (is_minion(ptr)) return((boolean)(u.ualign.record >= 0));
+	if (is_minion(mon->data)) return((boolean)(u.ualign.record >= 0));
 
 	/* Negative monster hostile to player with Amulet. */
 	if (mal < A_NEUTRAL && u.uhave.amulet) return FALSE;

@@ -20,7 +20,6 @@ extern struct attack grapple;
 
 //duplicates of other functions, created due to problems with the linker
 STATIC_DCL void NDECL(cast_protection);
-STATIC_DCL int NDECL(throweffect);
 STATIC_DCL void FDECL(awaken_monsters,(int));
 
 STATIC_DCL void FDECL(do_item_blast, (int));
@@ -3603,7 +3602,7 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 			if (!rn2(4)) (void) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
 			if (!rn2(7)) (void) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 		}
-	    if (youdefend && Slimed) burn_away_slime();
+	    if (youdefend) burn_away_slime();
 	    if (youdefend && FrozenAir) melt_frozen_air();
 	    // if(youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))){
 		if(youdefend ? !Fire_resistance : !resists_fire(mdef)){
@@ -5057,6 +5056,8 @@ boolean direct_weapon;
 			if (!rn2(3)) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 			if (!rn2(3)) destroy_item(mdef, POTION_CLASS, AD_FIRE);
 		}
+	    if (youdef) burn_away_slime();
+	    if (youdef && FrozenAir) melt_frozen_air();
 	}
 	if (otmp->otyp == MAGIC_TORCH && otmp->lamplit){
 		if (!Fire_res(mdef)) {
@@ -6195,7 +6196,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			if (!rn2(4)) (void) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
 			if (!rn2(7)) (void) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 		}
-	    if (youdef && Slimed) burn_away_slime();
+	    if (youdef) burn_away_slime();
 	    if (youdef && FrozenAir) melt_frozen_air();
 	}
 	if(oartifact == ART_ARYVELAHR_KERYM &&
@@ -6217,7 +6218,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			if (!rn2(4)) (void) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
 			if (!rn2(7)) (void) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 		}
-	    if (youdef && Slimed) burn_away_slime();
+	    if (youdef) burn_away_slime();
 	    if (youdef && FrozenAir) melt_frozen_air();
 	}
 	if(check_oprop(otmp, OPROP_ELFLW)){
@@ -6243,7 +6244,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				if (!rn2(4)) (void) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
 				if (!rn2(7)) (void) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 			}
-			if (youdef && Slimed) burn_away_slime();
+			if (youdef) burn_away_slime();
 			if (youdef && FrozenAir) melt_frozen_air();
 		}
 		else suddenly = TRUE;
@@ -6503,7 +6504,7 @@ boolean printmessages; /* print generic elemental damage messages */
 					experts += 2;
 			}
 		}
-		else if(m_martial_skill(magr->data) == P_EXPERT && !magr->mformication && !magr->mscorpions){
+		else if(m_martial_skill(magr->data) == P_EXPERT && !magr->mformication && !magr->mscorpions && !magr->mcaterpillars){
 			experts = 10;
 		}
 		/* Masamune rewards skill */
@@ -14389,7 +14390,7 @@ arti_poly_contents(obj)
 }
 #endif /* OVLB */
 
-STATIC_OVL int
+int
 throweffect()
 {
 	coord cc;
@@ -14629,6 +14630,10 @@ do_passive_attacks()
 		dotailslap(&youmonst);
 	if(uring_art(ART_STAR_EMPEROR_S_RING))
 		dostarblades(&youmonst);
+	if(check_rot(ROT_CENT))
+		dorotbite(&youmonst);
+	if(check_rot(ROT_STING))
+		dorotsting(&youmonst);
 	//Note: The player never gets Eladrin vines, starblades, or storms
 	flags.mon_moving = TRUE;
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){

@@ -1718,6 +1718,8 @@ char *buf;
 	/* gold pieces should not have their material described, it's in their name */
 	if(obj->otyp == GOLD_PIECE)
 		return;
+	if(obj->otyp == CRYSTAL && obj->obj_material == FLESH)
+		return;
 	if (obj->oartifact && !iflags.artifact_descriptors && !undiscovered_artifact(obj->oartifact) && artilist[obj->oartifact].material != MT_DEFAULT){
 		/*Known artifact is made from the artifact's expected material */
 		if(artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material)
@@ -1846,33 +1848,44 @@ boolean getting_obj_base_desc;
 		if(Insight >= 15)
 			actualn = "arm";
 	}
-	if(obj->otyp == CRYSTAL && obj->obj_material == HEMARGYOS){
-		if(obj->spe == 1)
-			actualn = "columnar crystal rod";
-		else if(obj->spe == 2)
-			actualn = "twin-columnar crystal";
-		else if(obj->spe == 3)
-			actualn = "columnar chunk";
-		else if(obj->spe == 4)
-			actualn = "columnar mass";
-	}
-	if(obj->otyp == CRYSTAL
-		&& obj->obj_material == CHITIN
-		&& check_oprop(obj, OPROP_GOATW)
-	){
-		actualn = "misty seed";
-	}
-	if(obj->otyp == CRYSTAL
-		&& obj->obj_material == SILVER
-		&& check_oprop(obj, OPROP_SFLMW)
-	){
-		actualn = "mirror shard";
-	}
-	if(obj->otyp == CRYSTAL
-		&& obj->obj_material == FIRMAMENT
-		&& check_oprop(obj, OPROP_SOTHW)
-	){
-		actualn = "sky fragment";
+	if(obj->otyp == CRYSTAL){
+		if(obj->obj_material == HEMARGYOS){
+			if(obj->spe == 1)
+				actualn = "columnar crystal rod";
+			else if(obj->spe == 2)
+				actualn = "twin-columnar crystal";
+			else if(obj->spe == 3)
+				actualn = "columnar chunk";
+			else if(obj->spe == 4)
+				actualn = "columnar mass";
+		}
+		else if(obj->obj_material == CHITIN
+			&& check_oprop(obj, OPROP_GOATW)
+		){
+			actualn = "misty seed";
+		}
+		else if(obj->obj_material == SILVER
+			&& check_oprop(obj, OPROP_SFLMW)
+		){
+			actualn = "mirror shard";
+		}
+		else if(obj->obj_material == FIRMAMENT
+			&& check_oprop(obj, OPROP_SOTHW)
+		){
+			actualn = "sky fragment";
+		}
+		else if(obj->obj_material == FLESH){
+			const char *butterflies[] = {
+				"novel Hedylidae crysalis",
+				"novel Hesperiidae crysalis",
+				"novel Lycaenidae crysalis",
+				"novel Nymphalidae crysalis",
+				"novel Papilionidae crysalis",
+				"novel Pieridae crysalis",
+				"novel Riodinidae crysalis",
+			};
+			actualn = butterflies[obj->spe];
+		}
 	}
 	
 	buf[0] = '\0';
@@ -4045,6 +4058,12 @@ int wishflags;
 		return mkcolumnarcrystal(3);
 	if(!strcmpi(bp, "columnar mass"))
 		return mkcolumnarcrystal(4);
+	if(!strcmpi(bp, "crysalis")){
+		struct obj *crys = mksobj(CRYSTAL, NO_MKOBJ_FLAGS);
+		set_material_gm(crys, FLESH);
+		crys->spe = rn2(7);
+		return crys;
+	}
 
 	for(;;) {
 		register int l;

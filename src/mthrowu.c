@@ -387,7 +387,7 @@ struct monst * magr;
 		return 8;
 	}
 	
-	if(magr->mformication || magr->mscorpions)
+	if(magr->mformication || magr->mscorpions || magr->mcaterpillars)
 		return 4;
 
 	switch (m_martial_skill(magr->data)) {

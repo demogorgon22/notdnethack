@@ -462,8 +462,9 @@
 #define MIST_WOLVES            HOLY_BOLT+1
 //105
 #define FORCE_SPHERES          MIST_WOLVES+1
+#define PEST_THREADS           FORCE_SPHERES+1
 
-#define MON_LASTSPELL          FORCE_SPHERES
+#define MON_LASTSPELL          PEST_THREADS
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

@@ -3155,6 +3155,39 @@ research_enlightenment()
 		if(check_vampire(VAMPIRE_GAZE)){
 			putstr(en_win, 0, "    You have learned to hypnotize your prey.");
 		}
+		if(rot_count() > 0){
+			if(rot_count() < ROT_COUNT)
+				putstr(en_win, 0, " You have discovered a strange form of all-consuming rot.");
+			else
+				putstr(en_win, 0, " You have progressed your study of the cycle of rot and renewal as far as can be done in the Dungeons of Doom.");
+			if(check_rot(ROT_VOMIT)){
+				putstr(en_win, 0, "    Your guts have blossomed into parasitic caterpillars.");
+			}
+			if(check_rot(ROT_WINGS)){
+				putstr(en_win, 0, "    You fly on wings of rot.");
+			}
+			if(check_rot(ROT_CLONE)){
+				putstr(en_win, 0, "      Strange butterflies hatch from your wings.");
+			}
+			if(check_rot(ROT_TRUCE)){
+				putstr(en_win, 0, "    You no longer interest the beings of rot.");
+			}
+			if(check_rot(ROT_KIN)){
+				putstr(en_win, 0, "    You are followed by the kindred of rot.");
+			}
+			if(check_rot(ROT_FEAST)){
+				putstr(en_win, 0, "    You feast on injury and destruction.");
+			}
+			if(check_rot(ROT_CENT)){
+				putstr(en_win, 0, "    Monstrous centipedes bore through your body.");
+			}
+			if(check_rot(ROT_STING)){
+				putstr(en_win, 0, "    A monstrous scorpion stinger has torn loose from your flesh.");
+			}
+			if(check_rot(ROT_SPORES)){
+				putstr(en_win, 0, "    Puffball mushrooms errupt from your skin.");
+			}
+		}
 	}
 	if(active_glyph(LUMEN) || u.ualign.god == GOD_THE_CHOIR || u.uparasitology_research){
 		if(parasite_count() >= 6){

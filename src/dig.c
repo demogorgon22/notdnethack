@@ -2676,10 +2676,9 @@ long timeout;	/* unused */
 	boolean on_floor = obj->where == OBJ_FLOOR,
 		in_invent = obj->where == OBJ_INVENT;
 
-	if (on_floor) {
-	    x = obj->ox;
-	    y = obj->oy;
-	} else if (in_invent) {
+	get_obj_location(obj, &x, &y, 0);
+
+	if (in_invent) {
 	    if (flags.verbose) {
 		char *cname = corpse_xname(obj, FALSE);
 		Your("%s%s %s away%c",
@@ -2754,6 +2753,42 @@ long timeout;	/* unused */
 				mksobj_at(PARASITE, x, y, NO_MKOBJ_FLAGS);
 			}
 		}
+		if(check_preservation(PRESERVE_ROT_TRIGGER)){
+			int out_of = check_preservation(PRESERVE_MAX) ? 300 : check_preservation(PRESERVE_GAIN_DR_2) ? 600 : 900;
+			if(check_rot(ROT_KIN))
+				out_of /= 2;
+			out_of -= u.uimpurity;
+			out_of -= u.uimp_rot;
+			if(active_glyph(EYE_THOUGHT) && active_glyph(LUMEN))
+				out_of /= 3;
+			else if(active_glyph(EYE_THOUGHT))
+				out_of /= 2;
+			else if(active_glyph(LUMEN))
+				out_of = 2*out_of/3;
+			if(!obj->researched)
+				out_of /= 2;
+			if(!obj->odrained)
+				out_of /= 3;
+			if(out_of < 2 || !rn2(out_of)){
+				struct obj *crys = mksobj(CRYSTAL, NO_MKOBJ_FLAGS);
+				if(crys){
+					set_material_gm(crys, FLESH);
+					crys->spe = rn2(7);
+					place_object(crys, x, y);
+				}
+			}
+			if(u.silvergrubs && !rn2(20)){
+				u.silvergrubs = FALSE;
+			}
+			if(check_rot(ROT_KIN) && !mindless(&mons[obj->corpsenm]) && !is_animal(&mons[obj->corpsenm]) && (u.silvergrubs || !rn2(100)) && !(mvitals[PM_SILVERGRUB].mvflags&G_GONE && !In_quest(&u.uz))){
+				u.silvergrubs = TRUE;
+				makemon(&mons[PM_SILVERGRUB], x, y, NO_MM_FLAGS);
+			}
+		}
+	}
+
+	if(x && couldsee(x, y) && distmin(x, y, u.ux, u.uy) <= BOLT_LIM/2){
+		IMPURITY_UP(u.uimp_rot)
 	}
 	// rot_organic(arg, timeout); //This is not for corpses, it is for buried containers.
 	obj_extract_self(obj);

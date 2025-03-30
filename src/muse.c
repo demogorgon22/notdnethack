@@ -2483,6 +2483,7 @@ museamnesia:
 			mtmp->mformication = 0;
 			mtmp->mscorpions = 0;
 			mtmp->mvermin = 0;
+			mtmp->mcaterpillars = 0;
 		} else {
 			if (vismon) pline("%s looks angry and confused!", Monnam(mtmp));
 			untame(mtmp, 0);

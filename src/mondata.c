@@ -987,6 +987,10 @@ int template;
 
 		ptr->mmove = 15;
 		break;
+		case SWOLLEN_TEMPLATE:
+			ptr->msize = MZ_GIGANTIC;
+			ptr->geno |= (G_NOCORPSE);
+		break;
 	}
 #undef MT_ITEMS
 
@@ -1562,6 +1566,23 @@ int template;
 			attk->damn = 1;
 			attk->damd = 3;
 			special = TRUE;
+		}
+		/* swollen monsters's attacks are generally stronger */
+		if (template == SWOLLEN_TEMPLATE && (
+			!is_null_attk(attk))
+			)
+		{
+			int delta = ptr->msize - mons[ptr->mtyp].msize;
+			if (attk->damn < 3)
+				attk->damd += delta*2;
+			else
+				attk->damn += delta;
+
+			if(ptr->mmove){
+				ptr->mmove /= 2;
+				if(ptr->mmove < 6)
+					ptr->mmove = 6;
+			}
 		}
 	}
 #undef insert_okay
@@ -3189,6 +3210,7 @@ static const short grownups[][2] = {
 	{PM_DUNGEON_FERN_SPROUT, PM_DUNGEON_FERN},
 	{PM_SWAMP_FERN_SPROUT, PM_SWAMP_FERN},
 	{PM_BURNING_FERN_SPROUT, PM_BURNING_FERN},
+	{PM_SILVERGRUB, PM_SILVERMAN},
 	{NON_PM,NON_PM}
 
 };

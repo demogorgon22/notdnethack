@@ -208,6 +208,7 @@ struct monst {
 	Bitfield(mequipping,7); /*146*/
 
 	Bitfield(mironmarked,1);/* recently hit by an iron weapon (elves/fey/rage-walker) */ /*147*/
+	Bitfield(mcaterpillars,1); /* monster is covered in rot scorpions */ /*148*/
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */
@@ -279,6 +280,7 @@ struct monst {
 #define	NECROMANCY_FACTION	FACTION_PADDING+12	/* Elf Necromacer's faction */
 #define	CITY_FACTION		FACTION_PADDING+13	/* Undead Hunter city faction */
 #define	MOON_FACTION		FACTION_PADDING+14	/* Undead Hunter lycanthrope faction */
+#define	ROT_FACTION			FACTION_PADDING+15	/* Rot monster faction */
 
 /* template applied to monster to create a new-ish monster */
 	int mtemplate;
@@ -312,7 +314,9 @@ struct monst {
 #define CONSTELLATION	28	/* star creature */
 #define SPARK_SKELETON	29	/* spark skeleton */
 #define TONGUE_PUPPET	30	/* moon-tongue puppet */
-#define MAXTEMPLATE	TONGUE_PUPPET
+#define SWOLLEN_TEMPLATE	33	/* giant */
+#define BLOOD_MON		34	/* blood clone */
+#define MAXTEMPLATE	BLOOD_MON
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */

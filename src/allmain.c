@@ -2705,6 +2705,7 @@ karemade:
 				&& !Race_if(PM_ANDROID) && !Race_if(PM_CLOCKWORK_AUTOMATON)
 			){
 				make_hallucinated(itimeout_incr(HHallucination, 100), TRUE, 0L);
+				IMPURITY_UP(u.uimp_rot)
 				if(roll_madness(MAD_SPORES)){//Second roll for more severe symptoms
 					make_stunned(itimeout_incr(HStun, 100), TRUE);
 					make_confused(itimeout_incr(HConfusion, 100), FALSE);
@@ -2712,6 +2713,7 @@ karemade:
 					exercise(A_INT, FALSE);exercise(A_WIS, FALSE);exercise(A_CHA, FALSE);
 					exercise(A_INT, FALSE);exercise(A_WIS, FALSE);exercise(A_CHA, FALSE);
 					exercise(A_INT, FALSE);exercise(A_WIS, FALSE);exercise(A_CHA, FALSE);
+					IMPURITY_UP(u.uimp_rot)
 				}
 				else {
 					make_confused(itimeout_incr(HConfusion, 100), TRUE);
@@ -2738,11 +2740,19 @@ karemade:
 				}
 			}
 			
-			if(u.umadness&MAD_SCORPIONS){
-				change_usanity(-1, FALSE);
-				phantom_scorpions_sting(&youmonst);
-				if(!rn2(20)){
-					u.umadness &= ~MAD_SCORPIONS;
+			if(!u.uinvulnerable){
+				if(u.umadness&MAD_SCORPIONS){
+					change_usanity(-1, FALSE);
+					phantom_scorpions_sting(&youmonst);
+					if(!rn2(20)){
+						u.umadness &= ~MAD_SCORPIONS;
+					}
+				}
+				if(youmonst.mcaterpillars){
+					rot_caterpillars_bite(&youmonst);
+					if(!rn2(20)){
+						youmonst.mcaterpillars = FALSE;
+					}
 				}
 			}
 			
@@ -6622,6 +6632,92 @@ struct monst *magr;
 			return;
 	}
 	return;
+}
+
+STATIC_OVL void
+dorotattack(struct monst *magr, struct attack * attk, int max, int mult)
+{
+	struct monst *mdef;
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int i = rnd(8),j;
+	int ax, ay;
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	boolean attacked = FALSE;
+	struct permonst *pa;
+
+	pa = youagr ? youracedata : magr->data;
+
+	//Attack all surrounding foes
+	for(j=8*mult;j>=1;j--){
+		ax = x(magr)+clockwisex[(i+j)%8];
+		ay = y(magr)+clockwisey[(i+j)%8];
+		if(youagr && u.ustuck && u.uswallow)
+			mdef = u.ustuck;
+		else if(!isok(ax, ay))
+			continue;
+		else if(onscary(ax, ay, magr))
+			continue;
+		else mdef = m_at(ax, ay);
+		
+		if(u.ux == ax && u.uy == ay)
+			mdef = &youmonst;
+		
+		if(!mdef)
+			continue;
+		
+		if(rn2(2)) //1/2 chance to just skip anyway, stings are too powerful if they attack too frequently.
+			continue;
+
+		youdef = (mdef == &youmonst);
+
+		if(youagr && (mdef->mpeaceful))
+			continue;
+		if(youdef && (magr->mpeaceful))
+			continue;
+		if(youdef && Invulnerable)
+			continue;
+		if(!youagr && !youdef && ((mdef->mpeaceful == magr->mpeaceful) || (!!mdef->mtame == !!magr->mtame)))
+			continue;
+
+		if(youdef && u.uswallow)
+			continue;
+		if(!youdef && nonthreat(mdef))
+			continue;
+
+		if(attk->aatyp != AT_MAGC && attk->aatyp != AT_GAZE){
+			if((touch_petrifies(mdef->data)
+				|| mdef->mtyp == PM_MEDUSA)
+			 && (youagr ? !Stone_resistance : !resists_ston(magr))
+			) continue;
+			
+			if(mdef->mtyp == PM_PALE_NIGHT)
+				continue;
+		}
+		
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		// Limited attacks
+		if(--max <= 0)
+			return;
+	}
+	return;
+}
+
+void
+dorotbite(struct monst *magr)
+{
+	struct attack * attk;
+	struct attack symbiote = { AT_OBIT, AD_DISE, 1, 3 };
+	dorotattack(magr, &symbiote, 1, 1);
+}
+
+void
+dorotsting(struct monst *magr)
+{
+	struct attack * attk;
+	struct attack symbiote = { AT_STNG, AD_DISE, 1, 4 };
+	dorotattack(magr, &symbiote, 1, 1);
 }
 
 void

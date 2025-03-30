@@ -1060,6 +1060,7 @@ int aatyp;
 	case AT_DSPR:
 	case AT_ESPR:
 	case AT_WISP:
+	case AT_VOMT:
 	case AT_REND:		/* If the previous attacks were OK, this one is too */
 		w_mask = ~0L;		/* special case; no defense needed */
 		break;
@@ -2068,7 +2069,6 @@ int dmgtyp;
 
 	if (osym == RING_CLASS && dmgtyp == AD_ELEC)
 		return MM_MISS; /*Rings aren't destroyed by electrical damage anymore*/
-
 	if (ProtectItems(mtmp) && (osym == POTION_CLASS || osym == SCROLL_CLASS || osym == WAND_CLASS)){
 		return MM_MISS;
 	}
