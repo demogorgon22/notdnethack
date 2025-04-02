@@ -33,7 +33,7 @@ init_uasmon()
 void
 set_uasmon()
 {
-	set_mon_data(&youmonst, (flags.female && urace.femalenum != NON_PM) ? urace.femalenum : urace.malenum);
+	set_mon_data(&youmonst, maybe_polyd(u.umonnum, ((flags.female && urace.femalenum != NON_PM) ? urace.femalenum : urace.malenum)));
 }
 
 /** Returns true if the player monster is genocided. */
