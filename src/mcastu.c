@@ -7366,7 +7366,7 @@ int tary;
 		))
 		return TRUE;
 	/* Don't de-stone the player */
-	if (youdef && (Stoned || Golded) && (
+	if (youdef && (Stoned || Golded || Salted) && (
 		spellnum == ACID_RAIN
 		))
 		return TRUE;

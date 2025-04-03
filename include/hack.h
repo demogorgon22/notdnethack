@@ -96,18 +96,19 @@
 #define CRUSHING	 8
 #define STONING		 9
 #define GOLDING		10
-#define GLASSED		11
-#define TURNED_SLIME	12
-#define OVERWOUND 	13
-#define WEEPING 	14
-#define DISINTEGRATED 15
-#define GENOCIDED	16 //Life saving triggers here and below, including wizard lifesaving
-#define APOCALYPSE	17
-#define PANICKED	18 //Below this, umortality is incremented
-#define TRICKED		19
-#define QUIT		20
-#define ESCAPED		21
-#define ASCENDED	22
+#define SALTING		11
+#define GLASSED		12
+#define TURNED_SLIME	13
+#define OVERWOUND 	14
+#define WEEPING 	15
+#define DISINTEGRATED 16
+#define GENOCIDED	17 //Life saving triggers here and below, including wizard lifesaving
+#define APOCALYPSE	18
+#define PANICKED	19 //Below this, umortality is incremented
+#define TRICKED		20
+#define QUIT		21
+#define ESCAPED		22
+#define ASCENDED	23
 
 #include "align.h"
 #include "dungeon.h"

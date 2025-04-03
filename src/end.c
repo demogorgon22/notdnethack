@@ -80,7 +80,7 @@ extern void FDECL(nethack_exit,(int));
 static NEARDATA const char *deaths[] = {		/* the array of death */
 	"died", "betrayed", "choked", "poisoned", "starvation", "drowning", /*5*/
 	"burning", "dissolving under the heat and pressure",
-	"crushed", "turned to stone", "turned to gold", "turned to glass", "turned into slime",
+	"crushed", "turned to stone", "turned to gold", "turned to salt", "turned to glass", "turned into slime",
 	"exploded after being overwound", "turned into a weeping angel", "disintegrated",
 	"genocided", "world ended",
 	"panic", "trickery",
@@ -90,7 +90,7 @@ static NEARDATA const char *deaths[] = {		/* the array of death */
 static NEARDATA const char *ends[] = {		/* "when you..." */
 	"died", "were betrayed", "choked", "were poisoned", "starved", "drowned",
 	"burned", "dissolved in the lava",
-	"were crushed", "turned to stone", "turned to gold", "turned to glass", "turned into slime",
+	"were crushed", "turned to stone", "turned to gold", "turned to salt", "turned to glass", "turned into slime",
 	"were overwound and exploded", "turned into a weeping angel", "were disintegrated",
 	"were genocided", "world ended",
 	"panicked", "were tricked",
@@ -1341,8 +1341,10 @@ die:
 		u.ugrave_arise = (NON_PM - 1);	/* statue instead of corpse */
 	    else if (how == GOLDING)
 		u.ugrave_arise = (NON_PM - 3);	/* statue instead of corpse */
-	    else if (how == GLASSED)
+		else if (how == SALTING)
 		u.ugrave_arise = (NON_PM - 4);	/* statue instead of corpse */
+	    else if (how == GLASSED)
+		u.ugrave_arise = (NON_PM - 5);	/* statue instead of corpse */
 	    else if (u.ugrave_arise == NON_PM &&
 		     !(mvitals[u.umonnum].mvflags & G_NOCORPSE && !uandroid)) {
 		int mtyp = u.umonnum;

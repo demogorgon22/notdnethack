@@ -1344,8 +1344,7 @@ as_extra_healing:
 					"potion of acid", KILLED_BY_AN);
 			exercise(A_CON, FALSE);
 		}
-		if (Stoned) fix_petrification();
-		if (Golded) fix_petrification();
+		if (Stoned || Golded || Salted) fix_petrification();
 		unkn++; /* holy/unholy water can burn like acid too */
 		break;
 	case POT_PRIMORDIAL_WATERS:{
@@ -1359,8 +1358,7 @@ as_extra_healing:
 					"primordial water", KILLED_BY);
 			exercise(A_CON, FALSE);
 		}
-		if (Stoned) fix_petrification();
-		if (Golded) fix_petrification();
+		if (Stoned || Golded || Salted) fix_petrification();
 
 		int num;
 		num = rnd(5) + 5 * otmp->blessed + 1;

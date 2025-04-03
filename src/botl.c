@@ -64,7 +64,7 @@ long get_status_duration(long long mask) {
 
 long long get_status_mask() {
 	long long mask = 0;
-	if(Stoned || Golded)
+	if(Stoned || Golded || Salted)
 		mask |= BL_MASK_STONE;
 	if(Slimed)
 		mask |= BL_MASK_SLIME;

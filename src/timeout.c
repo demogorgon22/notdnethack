@@ -11,6 +11,7 @@
 
 STATIC_DCL void NDECL(stoned_dialogue);
 STATIC_DCL void NDECL(golded_dialogue);
+STATIC_DCL void NDECL(salted_dialogue);
 #ifdef CONVICT
 STATIC_DCL void NDECL(phasing_dialogue);
 #endif /* CONVICT */
@@ -158,6 +159,30 @@ golded_dialogue()
 		HFast = 0L;
 	if (i == 3L && !Free_action)
 		nomul(-3, "turning to gold");
+	exercise(A_DEX, FALSE);
+}
+
+static NEARDATA const char * const salted_texts[] = {
+	"You are slowing down.",		/* 5 */
+	"Your limbs are stiffening.",		/* 4 */
+	"Your limbs have turned to salt.",	/* 3 */
+	"You have turned to salt.",		/* 2 */
+	"You have become a pillar of salt."			/* 1 */
+};
+
+STATIC_OVL void
+salted_dialogue()
+{
+	register long i = (Salted & TIMEOUT);
+
+	if (i > 0L && i <= SIZE(salted_texts)) {
+		pline1(salted_texts[SIZE(salted_texts) - i]);
+		nomul(0, NULL); /* fix for C343-74 */
+	}
+	if (i == 5L)
+		HFast = 0L;
+	if (i == 3L && !Free_action)
+		nomul(-3, "turning to salt");
 	exercise(A_DEX, FALSE);
 }
 
@@ -566,6 +591,7 @@ nh_timeout()
 	if(Invulnerable) return; /* things past this point could kill you */
 	if(Stoned) stoned_dialogue();
 	if(Golded) golded_dialogue();
+	if(Salted) salted_dialogue();
 	if(Slimed) slime_dialogue();
 	if(Vomiting) vomiting_dialogue();
 	if((Strangled || FrozenAir || BloodDrown) && !Breathless) choke_dialogue();
@@ -829,6 +855,24 @@ nh_timeout()
 				IMPURITY_UP(u.uimp_bloodlust)
 			}
 			done(GOLDING);
+			break;
+		case SALTED:
+			if (delayed_killer && !killer) {
+				killer = delayed_killer;
+				delayed_killer = 0;
+			}
+			if (!killer) {
+				/* leaving killer_format would make it
+				   "petrified by petrification" */
+				killer_format = NO_KILLER_PREFIX;
+				killer = "killed by turning to salt";
+			}
+			if (!u.uconduct.killer){
+				//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+				IMPURITY_UP(u.uimp_murder)
+				IMPURITY_UP(u.uimp_bloodlust)
+			}
+			done(SALTING);
 			break;
 		case FROZEN_AIR:
 			pline("The frozen air surrounding you becomes vapor.");
