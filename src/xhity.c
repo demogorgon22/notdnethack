@@ -5492,6 +5492,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		/* acid */
 	case AD_EACD:
 	case AD_ACID:
+	case AD_OMUD:
 		/* print a basic hit message */
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);
@@ -5500,9 +5501,11 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		if ((notmcan && !rn2(3)) || attk->adtyp == AD_EACD) {
 			/* someone's splashed -- print mesage message! */
 			if (vis) {
-				Sprintf(buf, "%s%s covered in acid",
+				Sprintf(buf, "%s%s covered in %s",
 					(youdef ? "You" : Monnam(mdef)),
-					(youdef ? "'re" : " is"));
+					(youdef ? "'re" : " is"),
+					(attk->adtyp == AD_OMUD ? "writhing tarry mud" : "acid")
+				);
 			}
 			if (Acid_res(mdef)) {
 				if (attk->adtyp == AD_EACD)
@@ -5513,7 +5516,10 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			/* print message */
 			if (youdef){
 				if (dmg == 0) {
-					Strcat(buf, ", but it seems harmless.");
+					if(attk->adtyp == AD_OMUD)
+						Strcat(buf, ".");
+					else
+						Strcat(buf, ", but it seems harmless.");
 				}
 				else if (Acid_res(mdef)) {
 					Strcat(buf, "! It stings!");
@@ -5538,6 +5544,12 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				pline("%s", buf);
 				if (dmg == 0 && !youdef)
 					shieldeff(mdef->mx, mdef->my);
+				if(attk->adtyp == AD_OMUD){
+					pline("It begins stabbing %s with bone daggers!", youdef ? "you" : mon_nam(mdef));
+				}
+			}
+			if(attk->adtyp == AD_OMUD){
+				mdef->momud = TRUE;
 			}
 
 			/* erode armor, if inventory isn't protected */
@@ -10450,6 +10462,17 @@ int vis;
 				it take longer for you to be digested, but
 				you'll end up trapped inside for longer too */
 				tim_tmp += -u.uac + 10 + (ACURR(A_CON) / 3 - 1);
+				if(magr->mtyp == PM_NAMELESS_GNAWER){
+					int nid = u.ualign.sins + u.uimpurity;
+					if(u.ualign.record < 0)
+						nid -= u.ualign.record; //Increases score
+					if(u.ualign.record >= 20)
+						tim_tmp += 1;
+					for (; nid > 0 && tim_tmp > 2; nid/=2){//Digests faster
+						tim_tmp--;
+					}
+					
+				}
 				if(thick_skinned(youracedata) || u.sealsActive&SEAL_ECHIDNA)
 					tim_tmp += 2;
 			}

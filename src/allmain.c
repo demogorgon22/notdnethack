@@ -37,6 +37,7 @@ STATIC_DCL void NDECL(cthulhu_mind_blast);
 STATIC_DCL void FDECL(unseen_actions, (struct monst *));
 STATIC_DCL void FDECL(blessed_spawn, (struct monst *));
 STATIC_DCL void FDECL(alkilith_spawn, (struct monst *));
+STATIC_DCL void FDECL(incarnator_action, (struct monst *));
 STATIC_DCL void FDECL(befouled_wraith, (struct monst *));
 STATIC_DCL void FDECL(good_neighbor, (struct monst *));
 STATIC_DCL void FDECL(dark_pharaoh, (struct monst *));
@@ -2754,6 +2755,19 @@ karemade:
 						youmonst.mcaterpillars = FALSE;
 					}
 				}
+				if(youmonst.momud){
+					orc_mud_stabs(&youmonst);
+					if(!rn2(20)){
+						youmonst.momud = FALSE;
+						struct obj *daggers = mksobj(ORCISH_DAGGER, NO_MKOBJ_FLAGS);
+						curse(daggers);
+						daggers->opoisoned = OPOISON_ACID;
+						daggers->quan = d(3,8);
+						set_obj_size(daggers, MZ_TINY);
+						set_material_gm(daggers, BONE);
+						place_object(daggers, u.ux, u.uy);
+					}
+				}
 			}
 			
 			if(!rn2(8) && !flaming(youracedata) && roll_madness(MAD_COLD_NIGHT)){
@@ -4901,6 +4915,8 @@ struct monst *mon;
 		unbodied_heal(mon);
 	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_ALKILITH)
 		alkilith_spawn(mon);
+	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_INCARNATOR_MAGGOT)
+		incarnator_action(mon);
 	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_MOUTH_OF_THE_GOAT)
 		goat_sacrifice(mon);
 	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_RAGE_WALKER && (check_insight() || (!rn2(u.uevent.udemigod ? 25 : 50) && roll_generic_madness(TRUE))))
@@ -4936,9 +4952,9 @@ struct monst *mon;
 	}
 }
 
+STATIC_OVL
 void
-alkilith_spawn(mon)
-struct monst *mon;
+alkilith_spawn(struct monst *mon)
 {
 	struct monst *mtmp;
 	xchar xlocale, ylocale, xyloc;
@@ -4979,6 +4995,59 @@ struct monst *mon;
 					set_malign(mtmp);
 				}
 			}
+		}
+	}
+}
+
+void
+incarnator_spawn(xchar xlocale, xchar ylocale, boolean death)
+{
+	struct monst *mtmp;
+	const static int orcs[] = {PM_HILL_ORC, PM_MORDOR_ORC, PM_ORC_SHAMAN, PM_ORC_CAPTAIN, PM_URUK_HAI, PM_URUK_CAPTAIN, PM_MORDOR_ORC_ELITE, PM_MORDOR_SHAMAN, PM_MORDOR_MARSHAL};
+	int orc = ROLL_FROM(orcs);
+	if(mvitals[orc].died > rnd(death ? 200 : 500)){
+		mvitals[orc].died--;
+		mtmp = makemon(&mons[orc], xlocale, ylocale, MM_ADJACENTOK|MM_NOCOUNTBIRTH|NO_MINVENT);
+		if(mtmp){
+			const static int orc_weapons[] = {ORCISH_DAGGER, ORCISH_SHORT_SWORD, ORCISH_SPEAR};
+			struct obj *otmp;
+			mtmp->mpeaceful = 0;
+			set_malign(mtmp);
+
+			otmp = mongets(mtmp, ROLL_FROM(orc_weapons), NO_MKOBJ_FLAGS);
+			if(otmp){
+				set_material_gm(otmp, rn2(3) ? BONE : MINERAL);
+			}
+
+			otmp = mongets(mtmp, ORCISH_HELM, NO_MKOBJ_FLAGS);
+			if(otmp){
+				set_material_gm(otmp, rn2(3) ? BONE : MINERAL);
+			}
+
+			otmp = mongets(mtmp, rn2(2) ? ORCISH_CHAIN_MAIL : ORCISH_RING_MAIL, NO_MKOBJ_FLAGS);
+			if(otmp){
+				set_material_gm(otmp, rn2(3) ? BONE : MINERAL);
+			}
+
+			otmp = mongets(mtmp, ORCISH_SHIELD, NO_MKOBJ_FLAGS);
+			if(otmp){
+				set_material_gm(otmp, rn2(3) ? BONE : MINERAL);
+			}
+		}
+	}
+}
+
+STATIC_OVL
+void
+incarnator_action(struct monst *mon)
+{
+	xchar xlocale, ylocale, xyloc;
+	xyloc	= mon->mtrack[0].x;
+	xlocale = mon->mtrack[1].x;
+	ylocale = mon->mtrack[1].y;
+	if(xyloc == MIGR_EXACT_XY){
+		if(!mon->mpeaceful && !rn2(6)){
+			incarnator_spawn(xlocale, ylocale, FALSE);
 		}
 	}
 }

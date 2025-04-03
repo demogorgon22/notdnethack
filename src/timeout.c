@@ -349,6 +349,10 @@ burn_away_slime()
 	    pline_The("parasitic caterpillars are burned off!");
 	    youmonst.mcaterpillars = FALSE;
 	}
+	if (youmonst.momud) {
+	    pline_The("writhing mud that covers you is burned away!");
+	    youmonst.momud = FALSE;
+	}
 	return;
 }
 

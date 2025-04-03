@@ -47,6 +47,7 @@ E void FDECL(dovines, (struct monst *));
 E void FDECL(dostarblades, (struct monst *));
 E void FDECL(dostorm, (struct monst *));
 E void FDECL(donachash, (struct monst *));
+E void FDECL(incarnator_spawn, (xchar, xchar, boolean));
 
 /* ### apply.c ### */
 
@@ -1918,6 +1919,7 @@ E boolean FDECL(likes_obj, (struct monst *, struct obj *));
 E boolean FDECL(can_equip, (struct monst *, struct obj *));
 E void FDECL(phantom_scorpions_sting, (struct monst *));
 E void FDECL(rot_caterpillars_bite, (struct monst *));
+E void FDECL(orc_mud_stabs, (struct monst *));
 
 /* ### monst.c ### */
 

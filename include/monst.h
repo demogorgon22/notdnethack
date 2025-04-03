@@ -209,6 +209,8 @@ struct monst {
 
 	Bitfield(mironmarked,1);/* recently hit by an iron weapon (elves/fey/rage-walker) */ /*147*/
 	Bitfield(mcaterpillars,1); /* monster is covered in rot scorpions */ /*148*/
+	Bitfield(momud,1); /* monster is covered in orc-mud */ /*148*/
+
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */

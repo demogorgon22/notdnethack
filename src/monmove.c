@@ -1013,6 +1013,11 @@ register struct monst *mtmp;
 			makemon(&mons[PM_GNOLL], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT);
 		}
 	}
+	if(mdat->mtyp == PM_INCARNATOR_MAGGOT){
+		if(!rn2(3)){ //Twice as likely when active
+			incarnator_spawn(mtmp->mx, mtmp->my, FALSE);
+		}
+	}
 	if(mdat->mtyp == PM_FORD_GUARDIAN){
 		if(!rn2(2) && distmin(mtmp->mux, mtmp->muy, mtmp->mx, mtmp->my) < BOLT_LIM && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < BOLT_LIM && !(mtmp->mstrategy&STRAT_WAITFORU)){
 			ford_rises(mtmp);

@@ -2142,7 +2142,14 @@ movemon()
 	    if(mtmp->m_ap_type == M_AP_FURNITURE ||
 				mtmp->m_ap_type == M_AP_OBJECT)
 		    continue;
-	    if(mtmp->mundetected) continue;
+	    if(mtmp->mundetected){
+			if(mtmp->mtyp == PM_INCARNATOR_MAGGOT){
+				if(!rn2(6)){
+					incarnator_spawn(mtmp->mx, mtmp->my, FALSE);
+				}
+			}
+			continue;
+		}
 	}
 
 	if (minliquid(mtmp)) continue;
@@ -5528,6 +5535,10 @@ boolean was_swallowed;			/* digestion */
 			for(i = 0; i<18; i++) makemon(&mons[PM_HORNED_DEVIL], mon->mx, mon->my, MM_ADJACENTOK);
 			for(i = 0; i<30; i++) makemon(&mons[PM_LEMURE], mon->mx, mon->my, MM_ADJACENTOK);
 	    	return (FALSE);
+		}
+		else if(adtyp == AD_OMUD){
+			int i;
+			for(i=0; i<39; i++) incarnator_spawn(mon->mx, mon->my, TRUE);
 		}
   		else if(	( (aatyp == AT_NONE && mdat->mtyp==PM_GREAT_CTHULHU)
 					 || aatyp == AT_BOOM) 
@@ -10429,6 +10440,34 @@ rot_caterpillars_bite(struct monst *mdef)
 			mdef->mhp = min(mdef->mhpmax, mdef->mhp);
 		}
 		if(m_losehp(mdef, damage, FALSE, "swarm of parasitic caterpillars")); //died
+		else if (canseemon(mdef))
+			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
+	}
+}
+
+void
+orc_mud_stabs(struct monst *mdef)
+{
+	int damage = 0;
+	int number = rnd(3);
+	damage += d(number, 2);
+	if(mdef == &youmonst)
+		damage -= roll_udr_detail((struct monst *)0, 0x1<<rn2(5), W_ARMC, ROLL_SLOT);
+	else
+		damage -= roll_mdr_detail(mdef, (struct monst *)0, 0x1<<rn2(5), W_ARMC, ROLL_SLOT);
+
+	damage = max(damage, 1);
+
+	if (!Acid_res(mdef)) {
+		damage += d(number, 2) + d(number, 10);
+	}
+
+	if(mdef == &youmonst){
+		You("are stabbed by the writhing tarry mud!");
+		losehp(damage, "a swarm of parasitic caterpillars", KILLED_BY);
+	}
+	else {
+		if(m_losehp(mdef, damage, FALSE, "inchoate orcs")); //died
 		else if (canseemon(mdef))
 			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
 	}
