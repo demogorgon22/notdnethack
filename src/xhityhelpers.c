@@ -521,7 +521,7 @@ struct attack *mattk;
 				  Monnam(mdef), mhis(mdef));
 	    }
 
-		if(near_capacity() < calc_capacity(otmp->owt)){
+		if(near_capacity() < calc_capacity(otmp->owt) || u.uavoid_theft){
 			You("steal %s %s and drop it to the %s.",
 				  s_suffix(mon_nam(mdef)), xname(otmp), surface(u.ux, u.uy));
 			if(otmp->otyp == CORPSE && touch_petrifies(&mons[otmp->corpsenm]) && !uarmg && !Stone_resistance){
