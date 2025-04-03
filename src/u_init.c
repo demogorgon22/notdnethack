@@ -1742,6 +1742,7 @@ u_init()
 	u.uavoid_grabattk = 0; // by default, allow grabbing attacks
 	u.uavoid_englattk = 0; // by default, allow engulfing attacks
 	u.uavoid_unsafetouch = 1; // avoid touching potentally unsafe monsters by default
+	u.uavoid_theft = 0; // by default, allow theft attacks
 	u.umystic = ~0; //By default, all monk style attacks are active
 
 	u.summonMonster = FALSE;

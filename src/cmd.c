@@ -1472,7 +1472,7 @@ doEtechForm()
 #define AVOID_UNSAFETOUCH	0x080L
 #define GITH_FORMS			0x100L
 #define ETECH_FORMS			0x200L
-
+#define AVOID_THEFT			0x400L
 
 int
 hasfightingforms(){
@@ -1511,8 +1511,8 @@ hasfightingforms(){
 			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
 		}
 	}
-	if (u.uavoid_msplcast)
-		formmask |= AVOID_MSPLCAST;
+	if (u.uavoid_theft)
+		formmask |= AVOID_THEFT;
 	else {
 		indexnum = tohitmod = 0;
 		zero_subout(subout);
@@ -1524,7 +1524,7 @@ hasfightingforms(){
 			!is_null_attk(attk);
 			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod)
 		){
-			if(attk->aatyp == AT_MAGC) formmask |= AVOID_MSPLCAST;
+			if(attk->adtyp == AD_SEDU || attk->adtyp == AD_SITM || attk->adtyp == AD_SSEX) formmask |= AVOID_THEFT;
 		}
 	}
 	if (u.uavoid_grabattk || sticks(&youmonst))
@@ -1606,6 +1606,7 @@ dofightingform()
 #define	AVOD_TUCH	8
 #define	GITH_FORM	9
 #define	ETCH_FORM	10
+#define	AVOD_THFT   11
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
@@ -1662,6 +1663,13 @@ dofightingform()
 
 		add_menu(tmpwin, NO_GLYPH, &any, 't', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AVOID_THEFT) {
+		any.a_int = AVOD_THFT;
+		if (!u.uavoid_theft) Strcpy(buf, "Discard stolen items from monsters");
+		else Strcpy(buf, "Keep stolen items from monsters");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 
 	end_menu(tmpwin, "Adjust fighting styles:");
 
@@ -1702,12 +1710,27 @@ dofightingform()
 			return doGithForm();
 		case ETCH_FORM:
 			return doEtechForm();
+		case AVOD_THFT:
+			u.uavoid_theft = !u.uavoid_theft;
+			return MOVE_INSTANT;
 		default:
 			impossible("unknown fighting form set %d", n);
 			return MOVE_CANCELLED;
 	}
 	return MOVE_CANCELLED;
 }
+
+#undef	MONK_FORM
+#undef	LGHT_FORM
+#undef	KNIT_FORM
+#undef	AVOD_FORM
+#undef	AVOD_MSPL
+#undef	AVOD_GRAB
+#undef	AVOD_ENGL
+#undef	AVOD_TUCH
+#undef	GITH_FORM
+#undef	ETCH_FORM
+#undef	AVOD_THFT
 
 #undef MONK_FORMS
 #undef LIGHTSABER_FORMS
@@ -1717,7 +1740,7 @@ dofightingform()
 #undef AVOID_GRABATTK
 #undef AVOID_ENGLATTK
 #undef AVOID_UNSAFETOUCH
-
+#undef AVOID_THEFT
 
 int
 dounmaintain()
