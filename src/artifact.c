@@ -14606,35 +14606,37 @@ do_passive_attacks()
 	if(Invulnerable)
 		return;
 
-	if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
-		if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
-			pline("Lashing tentacles erupt from your brain!");
-			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
-			morehungry(d(4,4)*get_uhungersizemod());
+	if(!u.uno_auto_attacks){
+		if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
+			if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
+				pline("Lashing tentacles erupt from your brain!");
+				losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
+				morehungry(d(4,4)*get_uhungersizemod());
+			}
+			dogoat();
 		}
-		dogoat();
-	}
-	
-	if(is_goat_tentacle_mtyp(youracedata))
-		dogoat();
-	if(u.specialSealsActive&SEAL_YOG_SOTHOTH){
-		if(!doyog(&youmonst)){
-			if(check_mutation(TWIN_MIND) && roll_generic_madness(FALSE))
-				dotwin_cast(&youmonst);
+		
+		if(is_goat_tentacle_mtyp(youracedata))
+			dogoat();
+		if(u.specialSealsActive&SEAL_YOG_SOTHOTH){
+			if(!doyog(&youmonst)){
+				if(check_mutation(TWIN_MIND) && roll_generic_madness(FALSE))
+					dotwin_cast(&youmonst);
+			}
 		}
+		if(is_snake_bite_mtyp(youracedata))
+			dosnake(&youmonst);
+		if(u.jellyfish && active_glyph(LUMEN))
+			dojellysting(&youmonst);
+		if(is_tailslap_mtyp(youracedata))
+			dotailslap(&youmonst);
+		if(uring_art(ART_STAR_EMPEROR_S_RING))
+			dostarblades(&youmonst);
+		if(check_rot(ROT_CENT))
+			dorotbite(&youmonst);
+		if(check_rot(ROT_STING))
+			dorotsting(&youmonst);
 	}
-	if(is_snake_bite_mtyp(youracedata))
-		dosnake(&youmonst);
-	if(u.jellyfish && active_glyph(LUMEN))
-		dojellysting(&youmonst);
-	if(is_tailslap_mtyp(youracedata))
-		dotailslap(&youmonst);
-	if(uring_art(ART_STAR_EMPEROR_S_RING))
-		dostarblades(&youmonst);
-	if(check_rot(ROT_CENT))
-		dorotbite(&youmonst);
-	if(check_rot(ROT_STING))
-		dorotsting(&youmonst);
 	//Note: The player never gets Eladrin vines, starblades, or storms
 	flags.mon_moving = TRUE;
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){

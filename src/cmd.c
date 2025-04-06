@@ -1473,6 +1473,7 @@ doEtechForm()
 #define GITH_FORMS			0x100L
 #define ETECH_FORMS			0x200L
 #define AVOID_THEFT			0x400L
+#define AUTO_ATTKS			0x800L
 
 int
 hasfightingforms(){
@@ -1487,6 +1488,18 @@ hasfightingforms(){
 
 	/* always shown */
 	int formmask = AVOID_UNSAFETOUCH;
+
+	if((u.umadness&MAD_GOAT_RIDDEN)
+		|| is_goat_tentacle_mtyp(youracedata)
+		|| u.specialSealsActive&SEAL_YOG_SOTHOTH
+		|| is_snake_bite_mtyp(youracedata)
+		|| (u.jellyfish && active_glyph(LUMEN))
+		|| is_tailslap_mtyp(youracedata)
+		|| uring_art(ART_STAR_EMPEROR_S_RING)
+		|| check_rot(ROT_CENT)
+		|| check_rot(ROT_STING)
+	)
+		formmask |= AUTO_ATTKS;
 
 	/* forms relevant due to situation/role are shown, even if you're bad at them (if applicable) */
 	if(Role_if(PM_MONK))
@@ -1607,6 +1620,7 @@ dofightingform()
 #define	GITH_FORM	9
 #define	ETCH_FORM	10
 #define	AVOD_THFT   11
+#define	NO_AUTO		12
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
@@ -1670,6 +1684,13 @@ dofightingform()
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AUTO_ATTKS) {
+		any.a_int = NO_AUTO;
+		if (!u.uno_auto_attacks) Strcpy(buf, "Automatic attacks (active)");
+		else Strcpy(buf, "Automatic attacks");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'a', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 
 	end_menu(tmpwin, "Adjust fighting styles:");
 
@@ -1706,6 +1727,9 @@ dofightingform()
 		case AVOD_TUCH:
 			u.uavoid_unsafetouch = !u.uavoid_unsafetouch;
 			return MOVE_INSTANT;
+		case NO_AUTO:
+			u.uno_auto_attacks = !u.uno_auto_attacks;
+			return MOVE_INSTANT;
 		case GITH_FORM:
 			return doGithForm();
 		case ETCH_FORM:
@@ -1741,6 +1765,7 @@ dofightingform()
 #undef AVOID_ENGLATTK
 #undef AVOID_UNSAFETOUCH
 #undef AVOID_THEFT
+#undef AUTO_ATTKS
 
 int
 dounmaintain()
