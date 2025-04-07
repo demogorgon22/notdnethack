@@ -1049,6 +1049,13 @@
 								 (ptr)->mtyp == PM_DARUTH_XAXOX ||\
 								 (ptr)->mtyp == PM_EMBRACED_DROWESS\
 								)
+
+#define is_tettigon(ptr)	((ptr)->mtyp == PM_TETTIGON_LEGATUS \
+				 || (ptr)->mtyp == PM_UNMASKED_TETTIGON \
+				 || (ptr)->mtyp == PM_TRANSCENDENT_TETTIGON \
+				)
+
+
 #define has_mind_blast_mon(mon)	((has_mind_blast((mon)->data) \
 				 || has_template(mon, DREAM_LEECH) \
 				) && !((mon)->mtyp == PM_MAD_SEER && (mon)->mspec_used)\

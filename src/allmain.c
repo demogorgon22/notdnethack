@@ -4815,6 +4815,7 @@ cthulhu_mind_blast()
 		if (DEADMONSTER(mon)) continue;
 		if (is_mind_flayer(mon->data)) continue;
 		if (mindless_mon(mon)) continue;
+		if(is_tettigon(mon->data) && rn2(20)) continue;
 		if (mon_resistance(mon,TELEPAT) || !rn2(5)){
 			mon->mhp -= d(nd,15);
 			if (mon->mhp <= 0) mondied(mon);

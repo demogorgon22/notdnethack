@@ -1903,6 +1903,14 @@ register struct monst *mtmp;
 					m_sen ? "at you through your telepathy" :
 					Blind_telepat ? "at you through your latent telepathy" : "into your mind");
 			}
+			else if(is_tettigon(mdat)){
+				if(m_sen || (Blind_telepat && rn2(2)) || !rn2(7)){
+					Your("%s fills with white sunlight!", body_part(HEAD));
+					dmg = d(3,15);
+					if(hates_holy(youracedata))
+						dmg += d(3,15);
+				}
+			}
 			else if (m_sen || (Blind_telepat && rn2(2)) || !rn2(10)) {
 				pline("It locks on to your %s!",
 					m_sen ? "telepathy" :
@@ -1921,6 +1929,23 @@ register struct monst *mtmp;
 				}
 				if(mdat->mtyp == PM_FOETID_ANGEL){
 					make_doubtful((long) Insight,TRUE);
+				}
+				if(is_tettigon(mdat)){
+					if(hates_holy(youracedata)){
+						cancel_monst(&youmonst, (struct obj	*)0, FALSE, TRUE, FALSE,0);
+						if (!Blinded) {
+							if (Hallucination)
+								pline("Oh, bummer!  Can't see!");
+							else You("are blinded!");
+							make_blinded((long)dmg, FALSE);
+							if (!Blind) Your1(vision_clears);
+						}
+						int xlev = turn_level(&youmonst);
+						if(is_undead(youracedata) && mtmp->m_lev >= xlev && rnd(u.ulevel) <= xlev && !rn2(HPanicking)){
+							You("panic!");
+							HPanicking += dmg;
+						}
+					}
 				}
 				if (mdat->mtyp == PM_ELDER_BRAIN) {
 					for (m2 = fmon; m2; m2 = nmon) {
@@ -1986,6 +2011,7 @@ register struct monst *mtmp;
 			if (m2 == mtmp) continue;
 			if (m2->mstrategy&STRAT_WAITMASK) continue;
 			if (nonthreat(m2)) continue;
+			if(is_tettigon(m2->data) && rn2(20)) continue;
 			power = 0;
 			dmg = 0;
 			if(mdat->mtyp == PM_CLAIRVOYANT_CHANGED){
@@ -2022,6 +2048,10 @@ register struct monst *mtmp;
 						dmg = d(5,15);
 					else if(mdat->mtyp == PM_ELDER_BRAIN){
 						dmg = d(3,15);
+					} else if(is_tettigon(mdat)){
+						dmg = d(3,15);
+						if(hates_holy_mon(m2))
+							dmg += d(3,15);
 					} else {
 						dmg = rnd(15);
 					}
@@ -2042,6 +2072,27 @@ register struct monst *mtmp;
 							m2->mconf=TRUE;
 						else if(mdat->mtyp == PM_FOETID_ANGEL){
 							m2->mdoubt = TRUE;
+						}
+						else if(is_tettigon(mdat)){
+							if(hates_holy_mon(m2)){
+								cancel_monst(m2, (struct obj	*)0, FALSE, TRUE, FALSE,0);
+								m2->mblinded = TRUE;
+								m2->mcansee = FALSE;
+								if (!resist(m2, WAND_CLASS, 0, TELL)) {
+									int xlev = turn_level(m2);
+									if(is_undead(m2->data)){
+										xlev = turn_level(m2);
+										if (mtmp->m_lev >= xlev && !resist(m2, WAND_CLASS, 0, NOTELL)) {
+											pline("%s is destroyed!", Monnam(m2));
+											grow_up(mtmp, m2);
+											monkilled(m2, (const char *)0, AD_SPEL);
+										}
+									}
+									/* else flee */
+									if(!DEADMONSTER(m2))
+										monflee(m2, 0, FALSE, TRUE);
+								}
+							}
 						}
 						else if(mdat->mtyp == PM_CLAIRVOYANT_CHANGED){
 							if(power >= 3){
