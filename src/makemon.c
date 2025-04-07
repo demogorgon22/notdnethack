@@ -14055,6 +14055,9 @@ int faction;
 	else if(mtmp->mtyp == PM_APHANACTONAN_ASSESSOR)
 		mtmp->m_insight_level = 16+d(4,4);
 
+	else if(mtmp->mtyp == PM_ALABASTER_CACTOID)
+		mtmp->m_insight_level = rn2(5)+rn2(5)+rnd(20);
+
 	else if(G_C_INST(mtmp->data->geno) > 0){
 		mtmp->m_insight_level = G_C_INST(mtmp->data->geno)-rn2((G_C_INST(mtmp->data->geno)+3)/4);
 	}

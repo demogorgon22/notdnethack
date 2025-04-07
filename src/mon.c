@@ -600,6 +600,11 @@ register struct monst *mtmp;
 		num = undead_to_corpse(mndx);
 		obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, TRUE);
 		break;
+	    case PM_ALABASTER_CACTOID:
+			obj = mkobj_at(TILE_CLASS, x, y, NO_MKOBJ_FLAGS);
+			if(obj)
+				curse(obj);
+		break;
 	    case PM_ARSENAL:
 			num = d(3,6);
 			while(num--){
@@ -5733,6 +5738,7 @@ boolean was_swallowed;			/* digestion */
 		   || mdat->mtyp == PM_PARASITIZED_COMMANDER
 		   || mdat->mtyp == PM_CRUCIFIED_ANDROID
 		   || mdat->mtyp == PM_CRUCIFIED_GYNOID
+		   || mdat->mtyp == PM_ALABASTER_CACTOID
 //		   || mdat->mtyp == PM_PINK_UNICORN
 		   )
 		return TRUE;
