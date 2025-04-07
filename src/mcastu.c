@@ -4688,6 +4688,16 @@ int tary;
 				dmg = d(n * 2, 20);
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
 			}
+			else if (!Shock_res(mdef) && shock_vulnerable_species(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s shocked by %s of silver light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
+				dmg = d(n*2, 20);
+				if (!UseInvShock_res(mdef)) {
+					destroy_item(mdef, WAND_CLASS, AD_ELEC);
+					destroy_item(mdef, RING_CLASS, AD_ELEC);
+				}
+			}
 			else if (!Fire_res(mdef) && species_resists_cold(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s burned by %s of silver light!",
@@ -4785,7 +4795,17 @@ int tary;
 			return MM_MISS;
 		}
 		else {
-			if (!Fire_res(mdef) && species_resists_cold(mdef)){
+			if (!Shock_res(mdef) && shock_vulnerable_species(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s shocked by golden light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
+				dmg = d(4, 12);
+				if (!UseInvFire_res(mdef)) {
+					destroy_item(mdef, WAND_CLASS, AD_ELEC);
+					destroy_item(mdef, RING_CLASS, AD_ELEC);
+				}
+			}
+			else if (!Fire_res(mdef) && species_resists_cold(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s burned by golden light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");

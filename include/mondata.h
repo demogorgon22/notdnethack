@@ -36,6 +36,14 @@
 #define species_resists_magic(mon)	(((mon)->data->mresists & MR_MAGIC) != 0)
 #define species_reflects(mon)		(((mon)->data->mresists & MR_REFLECT) != 0)
 
+#define shock_vulnerable_species(mon)	((mon)->mtyp == PM_MIST_WOLF \
+									  || (mon)->mtyp == PM_MIST_CLOUD \
+									  || (mon)->mtyp == PM_MOON_S_CHOSEN \
+									  || (mon)->mtyp == PM_MOON_ENTITY_TONGUE \
+									  || (mon)->mtyp == PM_MOON_ENTITY_MANIPALP \
+									  || (mon)->mtyp == PM_MOON_ENTITY_EYE_CLUSTER \
+										)
+
 #define	resist_attacks(ptr)	((((ptr)->mflagsg & MG_WRESIST) != 0L))
 #define	resist_blunt(ptr)	((((ptr)->mflagsg & MG_RBLUNT) != 0L))
 #define	resist_slash(ptr)	((((ptr)->mflagsg & MG_RSLASH) != 0L))

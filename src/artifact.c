@@ -3620,6 +3620,8 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 			if (!rn2(5)) (void) destroy_item(mdef, WAND_CLASS, AD_ELEC);
 		}
 		if(youdefend ? !Shock_resistance : !resists_elec(mdef)){
+			if(shock_vulnerable_species(mdef))
+				dnum *= 2;
 			*dmgptr += d(dnum,4);
 		}
 	} // nvPh - shock res
@@ -4398,12 +4400,15 @@ int * truedmgptr;
 	}
 
 	if (!Shock_res(mdef)){
+		int mult = 1;
+		if(shock_vulnerable_species(mdef))
+			mult *= 2;
 		if(check_oprop(otmp, OPROP_ELECW))
-			*truedmgptr += basedmg;
+			*truedmgptr += mult*basedmg;
 		if(check_oprop(otmp, OPROP_OONA_ELECW))
-			*truedmgptr += d(1, 8);
+			*truedmgptr += d(mult*1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_ELECW))
-			*truedmgptr += d(2, 6);
+			*truedmgptr += d(mult*2, 6);
 	}
 	
 	if (!Acid_res(mdef)){
@@ -4524,7 +4529,10 @@ int * truedmgptr;
 			break;
 			case AD_ELEC:
 				if (!Shock_res(mdef)){
-					*truedmgptr += d(3,8);
+					int mult = 1;
+					if(shock_vulnerable_species(mdef))
+						mult *= 2;
+					*truedmgptr += d(mult*3,8);
 				}
 			break;
 			case AD_ACID:
@@ -4725,21 +4733,24 @@ int * truedmgptr;
 		*truedmgptr += d(2,7);
 	}
 	if(check_oprop(otmp, OPROP_ANTAW)){
+		int mult = 1;
+		if(shock_vulnerable_species(mdef))
+			mult *= 2;
 		if(!Shock_res(mdef) && magr)
-			*truedmgptr += atr_dbon(otmp, magr, A_INT);
+			*truedmgptr += mult*atr_dbon(otmp, magr, A_INT);
 
 		if(check_reanimation(ANTENNA_ERRANT)){
 			if(youdef && !Tele_blind && (Blind_telepat || !rn2(5))){
-				*truedmgptr += rnd(15) + otmp->spe;
+				*truedmgptr += mult*(rnd(15) + otmp->spe);
 			}
 			else if(!youdef && !mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || !rn2(5))){
-				*truedmgptr += rnd(15) + otmp->spe;
+				*truedmgptr += mult*(rnd(15) + otmp->spe);
 			}
 		}
 
 		if(check_reanimation(ANTENNA_BOLT)){
 			int modifier = (youdef ? (Blind_telepat && !Tele_blind) : mon_resistance(mdef, TELEPAT)) ? 2 : 1;
-			(*truedmgptr) += modifier*(rnd(10) + otmp->spe);
+			(*truedmgptr) += mult*modifier*(rnd(10) + otmp->spe);
 		}
 	}
 	return ((*truedmgptr != original_truedmgptr) || (*plusdmgptr != original_plusdmgptr));
@@ -5080,12 +5091,16 @@ boolean direct_weapon;
 		}
 	}
 	if (otmp->otyp == SUNROD && otmp->lamplit) {
-
-		if (!Shock_res(mdef) || !Acid_res(mdef)) {
-			if (!Shock_res(mdef) && !Acid_res(mdef))
-				(*truedmgptr) += 3 * (rnd(10) + otmp->spe) / 2;
-			else
-				(*truedmgptr) += rnd(10) + otmp->spe;
+		int num = 1, den = 1;
+		if(!Shock_res(mdef) && !Acid_res(mdef)){
+			num *= 3;
+			den *= 2;
+		}
+		if(shock_vulnerable_species(mdef)){
+			num *= 2;
+		}
+		if(!Shock_res(mdef) || !Acid_res(mdef)){
+			(*truedmgptr) += num * (rnd(10) + otmp->spe) / den;
 		}
 		if (!UseInvShock_res(mdef)){
 			if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
@@ -5149,6 +5164,8 @@ boolean direct_weapon;
 	
 	if (otmp->otyp == TONITRUS && otmp->lamplit){
 		int modifier = (youdef ? (Blind_telepat && !Tele_blind) : mon_resistance(mdef, TELEPAT)) ? 2 : 1;
+		if(shock_vulnerable_species(mdef))
+			modifier += 1;
 		if (!Shock_res(mdef)) {
 			if(magr)
 				(*truedmgptr) += modifier*(rnd(10) + otmp->spe) + atr_dbon(otmp, magr, A_INT);
@@ -5167,10 +5184,14 @@ boolean direct_weapon;
 
 	if (otmp->otyp == KAMEREL_VAJRA && litsaber(otmp)) {
 		if (!Shock_res(mdef)) {
+			int num = 1;
+			if(shock_vulnerable_species(mdef)){
+				num *= 2;
+			}
 			if (otmp->where == OBJ_MINVENT && otmp->ocarry->mtyp == PM_ARA_KAMEREL)
-				*truedmgptr += d(6, 6);
+				*truedmgptr += num*d(6, 6);
 			else
-				*truedmgptr += d(2, 6);
+				*truedmgptr += num*d(2, 6);
 		}
 		if (!UseInvShock_res(mdef)) {
 			if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
@@ -5479,7 +5500,11 @@ boolean direct_weapon;
 			break;
 			case WAGE_OF_PRIDE:
 				if(!Shock_res(mdef)){
-					*truedmgptr += d(2, 9);
+					if(shock_vulnerable_species(mdef)){
+						*truedmgptr += d(4, 9);
+					}
+					else
+						*truedmgptr += d(2, 9);
 				}
 			break;
 		}
