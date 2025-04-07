@@ -3653,6 +3653,7 @@ E boolean FDECL(break_statue, (struct obj *));
 E void FDECL(break_crate, (struct obj *));
 E void FDECL(separate_mass_of_stuff, (struct obj *, boolean));
 E int FDECL(resist, (struct monst *,CHAR_P,int,int));
+E int FDECL(mm_resist, (struct monst *,struct monst *,int,int));
 E boolean FDECL(makewish, (int));
 E void FDECL(costly_cancel, (struct obj *));
 E void FDECL(revive_egg, (struct obj *));

@@ -3205,7 +3205,7 @@ int tary;
 		if (dmg > 50)
 			dmg = 50;
 		/* calculate resistance */
-		if (Magic_res(mdef) || (!youdef && resist(mdef, 0, 0, FALSE))) {
+		if (Magic_res(mdef) || (!youdef && mm_resist(mdef, magr, 0, FALSE))) {
 			shieldeff(x(mdef), y(mdef));
 			dmg = (dmg + 1) / 2;
 		}
@@ -3257,7 +3257,7 @@ int tary;
 				dmg += dmg_base;
 		}
 		/* calculate resistance */
-		if ((!youdef && resist(mdef, 0, 0, FALSE))) {
+		if ((!youdef && mm_resist(mdef, magr, 0, FALSE))) {
 			shieldeff(x(mdef), y(mdef));
 			dmg = (dmg + 1) / 2;
 		}
@@ -3452,7 +3452,7 @@ int tary;
 		if (dmg > 60)
 			dmg = 60;
 		/* calculate resistance */
-		if (Magic_res(mdef) || (!youdef && resist(mdef, 0, 0, FALSE))) {
+		if (Magic_res(mdef) || (!youdef && mm_resist(mdef, magr, 0, FALSE))) {
 			shieldeff(x(mdef), y(mdef));
 			dmg = (dmg + 1) / 2;
 		}
@@ -4318,7 +4318,7 @@ int tary;
 					/* monster */
 					boolean resisted = FALSE;
 
-					if (!(resisted = (Magic_res(mdef) || resists_death(mdef) || resist(mdef, 0, 0, FALSE))) &&
+					if (!(resisted = (Magic_res(mdef) || resists_death(mdef) || mm_resist(mdef, magr, 0, FALSE))) &&
 						rn2(mlev(magr)) > 12
 						){
 						if (is_delouseable(mdef->data)){
@@ -6133,7 +6133,7 @@ int tary;
 		}
 		else {
 			/* these three spells are very similar, and share their resist checks */
-			if (Magic_res(mdef) || (youdef ? Free_action : resist(mdef, 0, 0, FALSE))) {
+			if (Magic_res(mdef) || (youdef ? Free_action : mm_resist(mdef, magr, 0, FALSE))) {
 				shieldeff(x(mdef), y(mdef));
 
 				switch (spell)
