@@ -1388,7 +1388,7 @@
 				   (ptr)->mtyp != PM_GREAT_CTHULHU && \
 				   (ptr)->mtyp != PM_STAR_SPAWN && \
 				   !is_clockwork(ptr) && \
-				   (!nonliving(ptr) || is_vampire(ptr)))
+				   (!nonliving(ptr) || is_vampire(ptr) || (ptr)->mtyp == PM_INDEX_WOLF))
 #define has_blood_mon(mon)	(has_blood((mon)->data))
 
 /* Keep track of ferns, fern sprouts, fern spores, and other plants */
