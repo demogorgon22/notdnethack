@@ -354,6 +354,7 @@ struct obj {
 #define MAGMA_TOOTH		2
 #define VOID_TOOTH		3
 #define MAX_TOOTH		VOID_TOOTH
+#define ovar1_offhand_oid ovar1
 	/* Number of viperwhip heads */
 	/* Moon axe phase */
 	/* Acid venom non-1d6 damage */
@@ -385,6 +386,8 @@ struct obj {
 	|| (otmp)->otyp == CHIKAGE \
 	|| (otmp)->otyp == TOOTH \
 	|| is_imperial_elven_armor(otmp) \
+	|| (otmp)->otyp == RAKUYO_DAGGER \
+	|| (otmp)->otyp == BLADE_OF_PITY \
 	)
 #define ECLIPSE_MOON	0
 #define CRESCENT_MOON	1

@@ -1951,6 +1951,14 @@ struct obj *obj;
 		You("need to buy it.");
 		return MOVE_CANCELLED;
 	}
+
+	if(inv_cnt() >= 52 && (
+		obj->otyp == RAKUYO
+	)){
+		You("are carrying too much junk to successfully split your sword.");
+		return MOVE_CANCELLED;
+	}
+	
 	
 	if(obj->otyp == RAKUYO){
 		You("unlatch %s.",the(xname(obj)));
@@ -1975,7 +1983,13 @@ struct obj *obj;
 
 		dagger = hold_another_object(dagger, "You drop %s!",
 				      doname(dagger), (const char *)0); /*shouldn't merge, but may drop*/
-		if(dagger && !uswapwep && carried(dagger)){
+		if(dagger && carried(dagger)){
+			if(uswapwep){
+				dagger->ovar1_offhand_oid = uswapwep->o_id;
+			}
+			else {
+				dagger->ovar1_offhand_oid = 0;
+			}
 			setuswapwep(dagger);
 			if(!u.twoweap) dotwoweapon();
 		}
@@ -1995,6 +2009,9 @@ struct obj *obj;
 		if (uswapwep->oartifact && uswapwep->oartifact == ART_BLADE_DANCER_S_DAGGER){
 			flag_existance(ART_BLADE_DANCER_S_DAGGER, FALSE);
 		}
+		
+		
+		long oid = uswapwep->ovar1_offhand_oid;
 
 		if (u.twoweap) {
 			u.twoweap = 0;
@@ -2004,6 +2021,18 @@ struct obj *obj;
 		obj->otyp = RAKUYO;
 		fix_object(obj);
 		You("latch %s.",the(xname(obj)));
+		if(oid){
+			struct obj *offhand;
+			for(offhand = invent; offhand; offhand = offhand->nobj){
+				if(oid == offhand->o_id){
+					setuswapwep(offhand);
+					break;
+				}
+			}
+			if(!offhand){
+				Your("previous swap-weapon is no-longer close to hand");
+			}
+		}
 	}
 	return MOVE_INSTANT;
 }
@@ -2026,6 +2055,13 @@ struct obj *obj;
 		return MOVE_CANCELLED;
 	}
 	
+	if(inv_cnt() >= 52 && (
+		obj->otyp == BLADE_OF_MERCY
+	)){
+		You("are carrying too much junk to successfully split your sword.");
+		return MOVE_CANCELLED;
+	}
+	
 	if(obj->otyp == BLADE_OF_MERCY){
 		You("unlatch %s.",the(xname(obj)));
 		obj->otyp = BLADE_OF_GRACE;
@@ -2037,14 +2073,15 @@ struct obj *obj;
 		fix_object(obj);
 		fix_object(dagger);
 		
-		// if (obj->oartifact && obj->oartifact == ART_BLADE_SINGER_S_SABER){
-			// artifact_exists(dagger, artiname(ART_BLADE_DANCER_S_DAGGER), FALSE);
-			// dagger = oname(dagger, artiname(ART_BLADE_DANCER_S_DAGGER));
-		// }
-
 		dagger = hold_another_object(dagger, "You drop %s!",
 				      doname(dagger), (const char *)0); /*shouldn't merge, but may drop*/
-		if(dagger && !uswapwep && carried(dagger)){
+		if(dagger && carried(dagger)){
+			if(uswapwep){
+				dagger->ovar1_offhand_oid = uswapwep->o_id;
+			}
+			else {
+				dagger->ovar1_offhand_oid = 0;
+			}
 			setuswapwep(dagger);
 			if(!u.twoweap) dotwoweapon();
 		}
@@ -2060,6 +2097,9 @@ struct obj *obj;
 			pline("They don't fit together!");
 			return MOVE_CANCELLED;
 		}
+
+		long oid = uswapwep->ovar1_offhand_oid;
+
 		if (u.twoweap) {
 			u.twoweap = 0;
 			update_inventory();
@@ -2068,6 +2108,18 @@ struct obj *obj;
 		obj->otyp = BLADE_OF_MERCY;
 		fix_object(obj);
 		You("latch %s.",the(xname(obj)));
+		if(oid){
+			struct obj *offhand;
+			for(offhand = invent; offhand; offhand = offhand->nobj){
+				if(oid == offhand->o_id){
+					setuswapwep(offhand);
+					break;
+				}
+			}
+			if(!offhand){
+				Your("previous swap-weapon is no-longer close to hand");
+			}
+		}
 	}
 	return MOVE_INSTANT;
 }
@@ -2400,6 +2452,14 @@ use_church_weapon(struct obj *obj)
 		You("need to buy it.");
 		return MOVE_CANCELLED;
 	}
+	if(inv_cnt() >= 52 && (
+		obj->otyp == CHURCH_BLADE
+		|| obj->otyp == CHURCH_BRICK
+	)){
+		You("are carrying too much junk to successfully draw your sword.");
+		return MOVE_CANCELLED;
+	}
+	
 	struct obj *sword = 0;
 	
 	if(obj->otyp == CHURCH_BLADE){
