@@ -369,7 +369,7 @@ do_present_item(obj)
 				mtmp->housealert = 1;
 				for(tm = fmon; tm; tm = tm->nmon){
 					if((is_drow(tm->data) && (mtmp->mfaction == tm->mfaction || allied_faction(mtmp->mfaction, tm->mfaction))) || 
-						((mtmp->mfaction == EDDER_SYMBOL || mtmp->mfaction == XAXOX || tm->mtyp == PM_EDDERKOP) && 
+						((mtmp->mfaction == EDDER_SYMBOL || mtmp->mfaction == XAXOX || mtmp->mtyp == PM_EDDERKOP) && 
 							(tm->mfaction == EDDER_SYMBOL || tm->mfaction == XAXOX || tm->mtyp == PM_EDDERKOP)) ||
 						((mtmp->mfaction == EILISTRAEE_SYMBOL || is_elf(mtmp->data)) && 
 							(tm->mfaction == EILISTRAEE_SYMBOL || is_elf(tm->data)))
