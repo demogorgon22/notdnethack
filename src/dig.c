@@ -2715,6 +2715,14 @@ long timeout;	/* unused */
 					otmp->spe = 3;
 				}
 			}
+			else if(obj->corpsenm == PM_GHOUL_QUEEN_NITOCRIS){
+				//Guaranteed mass
+				struct obj *otmp = mksobj_at(CRYSTAL, x, y, MKOBJ_NOINIT);
+				if(otmp){
+					set_material_gm(otmp, HEMARGYOS);
+					otmp->spe = 4;
+				}
+			}
 			else {
 				int out_of = 20;
 				if(active_glyph(EYE_THOUGHT) && active_glyph(LUMEN))
@@ -2727,8 +2735,6 @@ long timeout;	/* unused */
 					struct obj *otmp = mksobj_at(CRYSTAL, x, y, MKOBJ_NOINIT);
 					if(otmp){
 						set_material_gm(otmp, HEMARGYOS);
-						if(obj->corpsenm == PM_GHOUL_QUEEN_NITOCRIS)
-							otmp->spe = 4;
 						if(monstr[obj->corpsenm] >= 20)
 							otmp->spe = 4;
 						else if(monstr[obj->corpsenm] >= 14)
