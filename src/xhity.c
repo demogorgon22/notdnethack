@@ -864,6 +864,7 @@ int tary;
 									result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 								}
 							}
+							i++;
 						}
 					}
 					/* Cleaving weapon trait can cause melee attacks to hit an additional neighboring monster, if the blow kills the primary target */
