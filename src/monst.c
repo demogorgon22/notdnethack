@@ -620,7 +620,7 @@ NEARDATA struct permonst mons[] = {
 	MB_NOLIMBS|MB_NOHEAD|MB_NEUTER /*MB*/, 0 /*MG*/,
 	MA_ELEMENTAL /*MA*/,  MV_TELEPATHIC /*MV*/, MW_ELDER_EYE_ELEM /*MW*/, 0 /*light radius*/, CLR_GRAY),
 
-    MON("pursuer", S_EYE, //3 /* needs encyc entry */
+    MON("pursuer", S_EYE, //3
 	LVL(2, 13, 0, 0), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(6)),
 	A(ATTK(AT_EXPL, AD_DARK, 2, 10)),
@@ -628,7 +628,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_FLOAT|MM_BREATHLESS /*MM*/, MT_HOSTILE|MT_MINDLESS /*MT*/, 0 /*MF*/,
 	MB_NOLIMBS|MB_NOHEAD|MB_NEUTER /*MB*/, 0 /*MG*/,
 	MA_ELEMENTAL /*MA*/,  MV_LIFESENSE|MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BLACK),
-    MON("vexing orb", S_EYE, //7 /* needs encyc entry */
+    MON("vexing orb", S_EYE, //7
 	LVL(5, 4, 0, 0), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(14)),
 	A(ATTK(AT_BOOM, AD_DARK, 5, 10)),
@@ -636,7 +636,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_FLOAT|MM_BREATHLESS /*MM*/, MT_HOSTILE|MT_MINDLESS /*MT*/, 0 /*MF*/,
 	MB_NOLIMBS|MB_NOHEAD|MB_NEUTER /*MB*/, 0 /*MG*/,
 	MA_ELEMENTAL /*MA*/,  MV_LIFESENSE /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_MAGENTA),
-    MON("flaming orb", S_EYE, //15 /* needs encyc entry */
+    MON("flaming orb", S_EYE, //15
 	LVL(12, 12, 0, 0), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_GAZE, AD_SPHR, 1, 1), ATTK(AT_BOOM, AD_FIRE, 6, 6)),
@@ -812,7 +812,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_HOSTILE|MT_ANIMAL|MT_CARNIVORE /*MT*/, 0 /*MF*/,
 	MB_STRONG|MB_ANIMAL|MB_LONGHEAD|MB_NOHANDS /*MB*/, MG_NASTY|MG_TRACKER|MG_HATESHOLY /*MG*/,
 	MA_ANIMAL|MA_DEMON /*MA*/,  MV_CATSIGHT|MV_SCENT /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, HI_ZAP),
-    MON("saber-toothed cat", S_FELINE,//12 /* needs encyc entry */
+    MON("saber-toothed cat", S_FELINE,//12
 	LVL(10, 12, 0, -5), (G_NOGEN),
 	DEF(DEX_AC(4)),
 	A(ATTK(AT_CLAW, AD_PHYS, 2, 4), ATTK(AT_CLAW, AD_PHYS, 2, 4),
@@ -1287,7 +1287,7 @@ NEARDATA struct permonst mons[] = {
 	MM_TPORT /*MM*/, MT_HOSTILE|MT_GREEDY /*MT*/, 0 /*MF*/,
 	MB_HUMANOID /*MB*/, MG_INFRAVISIBLE|MG_HATESIRON /*MG*/,
 	MA_FEY /*MA*/,  MV_LOWLIGHT2|MV_INFRAVISION /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_GREEN),
-    MON("ethereal filcher", S_LEPRECHAUN,//9 /* Needs encyc entry */
+    MON("ethereal filcher", S_LEPRECHAUN,//9
 	LVL(5, 15, 20, 0), (G_GENO|G_S_INST(5)|1),
 	DEF(NAT_AC(3), DEX_AC(4)),
 	A(POLYWEP_ATTK(AT_CLAW, AD_SITM, 1, 1), ATTK(AT_CLAW, AD_SITM, 1, 1),
@@ -1444,7 +1444,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_OMNIVORE|MT_HOSTILE|MT_COLLECT /*MT*/, MF_MARTIAL_S|MF_BAB_FULL /*MF*/,
 	MB_STRONG|MB_FEMALE|MB_HUMANOID /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_UNDEAD|MA_MINION|MA_PLANT /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
-    MON("rage-walker", S_NYMPH,//37 /*Needs tile, Needs encyc entry*/
+    MON("rage-walker", S_NYMPH,//37 /*Needs tile*/
 	LVL(20, 18, 30, -10), (G_NOGEN|G_S_INST(33)),
 	DEF(NAT_AC(12), SPE_AC(8), NAT_DR_ALL(4,6,4,6,4)),
 	A(ATTK(AT_CLAW, AD_VAMP, 3, 6), ATTK(AT_CLAW, AD_VAMP, 3, 6), OFFHND_ATTK(AT_CLAW, AD_VAMP, 3, 6), 
@@ -1576,7 +1576,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_OMNIVORE|MT_GREEDY|MT_JEWELS|MT_COLLECT|MT_TRAITOR /*MT*/, MF_MARTIAL_E /*MF*/,
 	MB_STRONG|MB_HUMANOID /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_ORC /*MA*/,  MV_LOWLIGHT2|MV_SEE_INVIS /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_CYAN),
-    MON("orc of the ages of stars", S_ORC,//37 /* Needs encyc entry */
+    MON("orc of the ages of stars", S_ORC,//37
 	LVL(30, 18, 45, -15), (G_GENO|1),
 	DEF(NAT_AC(2), DEX_AC(3), SPE_AC(10)),
 	A(ATTK(AT_WEAP, AD_PHYS, 4, 8), ATTK_LEV(AT_WEAP, AD_PHYS, 4, 8, 14), ATTK_LEV(AT_WEAP, AD_PHYS, 4, 8, 30),
@@ -1623,7 +1623,7 @@ NEARDATA struct permonst mons[] = {
 /*
  * quadrupeds
  */
-    MON("lamb", S_QUADRUPED, //2 /* Needs encyc entry */
+    MON("lamb", S_QUADRUPED, //2
 	LVL(0, 12, 0, 0), (G_GENO|G_SGROUP|1),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_BUTT, AD_PHYS, 1, 2), ATTK(AT_KICK, AD_PHYS, 1, 2)),
@@ -1640,7 +1640,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_HOSTILE|MT_ANIMAL|MT_OMNIVORE /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_NOHANDS /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_ANIMAL /*MA*/,  MV_NORMAL|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BROWN),
-    MON("musimon", S_QUADRUPED, //4 /* Needs encyc entry */
+    MON("musimon", S_QUADRUPED, //4
 	LVL(2, 12, 0, 0), (G_GENO|G_S_INST(1)|G_SGROUP|2),
 	DEF(NAT_AC(3)),
 	A(ATTK(AT_BITE, AD_PHYS, 1, 3),
@@ -1651,7 +1651,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_HOSTILE|MT_ANIMAL|MT_OMNIVORE /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_NOHANDS /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_ANIMAL /*MA*/,  MV_NORMAL|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_RED),
-    MON("sheep", S_QUADRUPED, //5 /* Needs encyc entry */
+    MON("sheep", S_QUADRUPED, //5
 	LVL(3, 12, 0, 0), (G_GENO|G_SGROUP|1),
 	DEF(NAT_AC(2)),
 	A(ATTK(AT_BUTT, AD_PHYS, 1, 4), ATTK(AT_KICK, AD_PHYS, 1, 3)),
@@ -1724,7 +1724,7 @@ NEARDATA struct permonst mons[] = {
 	MM_WEBRIP|MM_DOORBUST /*MM*/, MT_HOSTILE|MT_ANIMAL|MT_HERBIVORE /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_THICK_HIDE|MB_NOGLOVES|MB_STRONG /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_ANIMAL|MA_GIANT /*MA*/,  MV_NORMAL|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BLACK),
-    MON("deep dweller", S_QUADRUPED,//23 /* Needs encyc entry Dweller in the Depths */
+    MON("deep dweller", S_QUADRUPED,//23
 	LVL(21, 7, 17, 0), (G_SGROUP|G_DEPTHS|5),
 	DEF(NAT_AC(15)),
 	A(POLYWEP_ATTK(AT_TENT, AD_PHYS, 3, 6)),
@@ -1896,7 +1896,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_HOSTILE|MT_CARNIVORE /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_NOHANDS|MB_OVIPAROUS|MB_POIS|MB_STRONG /*MB*/, 0 /*MG*/,
 	MA_ARACHNID /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
-    MON("spellweaver", S_SPIDER,//16 /*Needs tile*/
+    MON("spellweaver", S_SPIDER,//16 /*Needs tile*/ /*Needs encyc entry*/
 	LVL(11, 12, 33, -5), (G_NOCORPSE|G_NOHELL|G_S_INST(19)|1),
 	DEF(SPE_AC(8), SPE_DR(4)),
 	A(ATTK(AT_MAGC, AD_SPEL, 0, 0),
@@ -1916,7 +1916,7 @@ NEARDATA struct permonst mons[] = {
 	MM_AMPHIBIOUS /*MM*/, MT_OMNIVORE|MT_PEACEFUL|MT_COLLECT|MT_MAGIC /*MT*/, 0 /*MF*/,
 	MB_STRONG|MB_NOGLOVES|MB_HAS_FEET /*MB*/, MG_NOWISH|MG_NOPOLY /*MG*/,
 	MA_INSECTOID|MA_AQUATIC /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
-    MON("spellweaver goddess-mocker", S_SPIDER,//40 /*Needs tile*/
+    MON("spellweaver goddess-mocker", S_SPIDER,//40 /*Needs tile*/ /*Needs encyc entry*/
 	LVL(30, 12, 99, -5), (G_NOCORPSE|G_NOHELL|G_S_INST(45)|1),
 	DEF(SPE_AC(32), SPE_DR(20)),
 	A(ATTK(AT_MAGC, AD_SPEL, 0, 0),
@@ -2139,7 +2139,7 @@ NEARDATA struct permonst mons[] = {
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_UNSOLID /*MB*/, MG_RALL|MG_NOPOLY|MG_INFRAVISIBLE|MG_REGEN|MG_HATESSILVER|MG_TRACKER|MG_INSIGHT /*MG*/,
 	MA_WERE|MA_ELEMENTAL|MA_ET /*MA*/,  MV_TELEPATHIC|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_GREEN),
 
-    MON("swirling mist", S_VORTEX,//15 /*Needs encyc entry*/
+    MON("swirling mist", S_VORTEX,//15
 	LVL(13, 16, 0, 0), (G_NOCORPSE|G_S_INST(40)),
 	DEF(NAT_AC(10)),
 	A(ATTK(AT_BKGT, AD_WET, 3, 6)),
@@ -2147,7 +2147,7 @@ NEARDATA struct permonst mons[] = {
 	MM_AMORPHOUS|MM_FLY|MM_BREATHLESS /*MM*/, MT_MINDLESS|MT_HOSTILE /*MT*/, MF_LEVEL_45 /*MF*/,
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_UNSOLID|MB_NEUTER /*MB*/, MG_RALL|MG_NOPOLY /*MG*/,
 	MA_G_O_O|MA_ANIMAL|MA_ELEMENTAL /*MA*/,  MV_DETECTION /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_GRAY),
-    MON("dust storm", S_VORTEX,//16 /*Needs encyc entry*/
+    MON("dust storm", S_VORTEX,//16
 	LVL(14, 16, 30, 0), (G_NOCORPSE|G_S_INST(40)),
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_BKGT, AD_BLND, 3, 8)),
@@ -2155,7 +2155,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_BREATHLESS /*MM*/, MT_HOSTILE|MT_MINDLESS /*MT*/, MF_LEVEL_45 /*MF*/,
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_NEUTER /*MB*/, MG_RALL|MG_NOPOLY /*MG*/,
 	MA_G_O_O|MA_ANIMAL|MA_ELEMENTAL /*MA*/,  MV_DETECTION /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BROWN),
-    MON("ice storm", S_VORTEX,//17 /*Needs encyc entry*/
+    MON("ice storm", S_VORTEX,//17
 	LVL(15, 16, 30, 0), (G_NOCORPSE|G_S_INST(40)),
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_BKGT, AD_COLD, 3, 8), ATTK(AT_NONE, AD_COLD, 0, 4)),
@@ -2164,7 +2164,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_BREATHLESS /*MM*/, MT_HOSTILE|MT_MINDLESS /*MT*/, MF_LEVEL_45 /*MF*/,
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_NEUTER /*MB*/, MG_RALL|MG_INFRAVISIBLE|MG_NOPOLY /*MG*/,
 	MA_G_O_O|MA_ANIMAL|MA_ELEMENTAL /*MA*/,  MV_DETECTION /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_CYAN),
-    MON("thunder storm", S_VORTEX,//18 /*Needs encyc entry*/
+    MON("thunder storm", S_VORTEX,//18
 	LVL(16, 16, 30, 0), (G_NOCORPSE|G_S_INST(40)),
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_BKGT, AD_ELEC, 3, 8), ATTK(AT_NONE, AD_ELEC, 0, 4)),
@@ -2173,7 +2173,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_BREATHLESS /*MM*/, MT_MINDLESS|MT_HOSTILE /*MT*/, MF_LEVEL_45 /*MF*/,
 	MB_NOLIMBS|MB_NOHEAD|MB_UNSOLID|MB_NEUTER /*MB*/, MG_RALL|MG_NOPOLY /*MG*/,
 	MA_G_O_O|MA_ANIMAL|MA_ELEMENTAL /*MA*/,  MV_DETECTION /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_ZAP),
-    MON("fire storm", S_VORTEX,//20 /*Needs encyc entry*/
+    MON("fire storm", S_VORTEX,//20
 	LVL(18, 16, 30, 0), (G_NOCORPSE|G_S_INST(40)),
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_BKGT, AD_FIRE, 3,10), ATTK(AT_NONE, AD_FIRE, 0, 4)),
@@ -2220,7 +2220,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_BREATHLESS /*MM*/, MT_STALK|MT_HOSTILE /*MT*/, MF_LEVEL_30 /*MF*/,
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_UNSOLID|MB_STRONG /*MB*/, MG_RALL|MG_INFRAVISIBLE|MG_REGEN|MG_NASTY|MG_HATESUNHOLY|MG_NOPOLY|MG_TRACKER /*MG*/,
 	MA_MINION|MA_FEY /*MA*/,  MV_CATSIGHT|MV_INFRAVISION|MV_LOWLIGHT3 /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 1 /*light radius*/, CLR_WHITE),
-    MON("pyroclastic vortex", S_VORTEX,//21 /*Needs tile*/
+    MON("pyroclastic vortex", S_VORTEX,//21 /*Needs tile*/ /*needs encyc entry*/
 	LVL(18, 12, 30, -12), (G_PLANES|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(17)),
 	A(ATTK(AT_ENGL, AD_PYCL, 4, 12)),
@@ -2229,7 +2229,7 @@ NEARDATA struct permonst mons[] = {
 	MM_FLY|MM_BREATHLESS /*MM*/, MT_STALK|MT_HOSTILE /*MT*/, MF_LEVEL_30 /*MF*/,
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_UNSOLID|MB_STRONG /*MB*/, MG_RALL|MG_INFRAVISIBLE|MG_REGEN|MG_NASTY|MG_HATESUNHOLY|MG_NOPOLY|MG_TRACKER /*MG*/,
 	MA_MINION|MA_FEY /*MA*/,  MV_CATSIGHT|MV_INFRAVISION|MV_LOWLIGHT3 /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
-    MON("waterspout", S_VORTEX,//21 /*Needs tile*/
+    MON("waterspout", S_VORTEX,//21 /*Needs tile*/ /*needs encyc entry*/
 	LVL(18, 16, 30, -12), (G_PLANES|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(17)),
 	A(ATTK(AT_MAGC, AD_SPEL, 0, 6)),
@@ -2422,7 +2422,7 @@ then fill new spaces with our spawn!
 	MM_FLY /*MM*/, MT_STALK|MT_COLLECT|MT_BOLD /*MT*/, MF_MARTIAL_E|MF_BAB_FULL|MF_LEVEL_30 /*MF*/,
 	MB_STRONG|MB_HUMANOID|MB_WINGS /*MB*/, MG_NOPOLY|MG_NASTY|MG_INFRAVISIBLE|MG_HATESUNHOLY|MG_TRACKER /*MG*/,
 	MA_MINION /*MA*/,  MV_EXTRAMISSION|MV_SEE_INVIS /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_WHITE),
-    MON("aether wolf", S_DOG,//
+    MON("aether wolf", S_DOG,//  /*needs encyc entry*/
 	LVL(15, 10, 55, 12), (G_PLANES|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(7), DEX_AC(7), SPE_AC(7), SPE_DR(3), SPE_DR_HEAD(7)),
 	A(ATTK(AT_WEAP, AD_PHYS, 3, 7), ATTK(AT_WEAP, AD_PHYS, 3, 7), 
@@ -2432,7 +2432,7 @@ then fill new spaces with our spawn!
 	MM_FLY /*MM*/, MT_STALK|MT_COLLECT|MT_BOLD /*MT*/, MF_MARTIAL_E|MF_BAB_FULL|MF_LEVEL_30 /*MF*/,
 	MB_LONGHEAD|MB_STRONG|MB_HUMANOID|MB_WINGS /*MB*/, MG_NOPOLY|MG_NASTY|MG_INFRAVISIBLE|MG_HATESUNHOLY|MG_TRACKER /*MG*/,
 	MA_WERE|MA_MINION /*MA*/,  MV_EXTRAMISSION|MV_SCENT|MV_SEE_INVIS /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_WHITE),
-    MON("aether cyclone", S_VORTEX,//
+    MON("aether cyclone", S_VORTEX,// /*needs encyc entry*/
 	LVL(15, 10, 55, 12), (G_PLANES|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(7), SPE_AC(7), SPE_DR(3)),
 	A(ATTK(AT_ENGL, AD_PHYS, 3, 7)),
@@ -2441,7 +2441,7 @@ then fill new spaces with our spawn!
 	MM_AMORPHOUS|MM_FLY|MM_BREATHLESS /*MM*/, MT_HOSTILE /*MT*/, MF_LEVEL_30 /*MF*/,
 	MB_NOEYES|MB_NOLIMBS|MB_NOHEAD|MB_UNSOLID|MB_INSUBSTANTIAL /*MB*/, MG_RALL|MG_NOPOLY|MG_INFRAVISIBLE|MG_REGEN|MG_HATESUNHOLY|MG_TRACKER|MG_INSIGHT /*MG*/,
 	MA_WERE|MA_MINION /*MA*/,  MV_DETECTION|MV_SCENT|MV_SEE_INVIS /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_BRIGHT_GREEN),
-    MON("foetid angel", S_LAW_ANGEL,//
+    MON("foetid angel", S_LAW_ANGEL,// /*needs encyc entry*/
 	LVL(15, 10, 55, 12), (G_PLANES|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(7), DEX_AC(7), SPE_AC(7), SPE_DR(3), SPE_DR_HEAD(7)),
 	A(ATTK(AT_WEAP, AD_DISE, 3, 7), ATTK(AT_WEAP, AD_DISE, 3, 7), 
@@ -2982,7 +2982,7 @@ then fill new spaces with our spawn!
 	MB_HUMANOID|MB_STRONG|MB_SLITHY|MB_FEMALE /*MB*/, MG_NOPOLY|MG_NOWISH|MG_INFRAVISIBLE|MG_NASTY|MG_LORD|MG_HATESUNHOLY|MG_TRACKER|MG_INSIGHT /*MG*/,
 	MA_PRIMORDIAL|MA_MINION|MA_FEY /*MA*/,  MV_CATSIGHT|MV_SEE_INVIS|MV_INFRAVISION|MV_LOWLIGHT3 /*MV*/, MW_ELDER_SIGN|MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_GREEN),
 	
-    MON("Jrt Netjer", S_CHA_ANGEL,//25 /*Needs tile*/
+    MON("Jrt Netjer", S_CHA_ANGEL,//25 /*Needs tile*/ /*needs encyc entry*/
 	LVL(18, 16, 88, -12), (G_PLANES|G_NOCORPSE|G_NOGEN),
 	DEF(DEX_AC(4), SPE_AC(3), SPE_DR_ALL(21, 7, 4, 4, 4)),
 	A(ATTK(AT_SRPR, AD_STAR, 4, 7), OFFHND_ATTK(AT_XSPR, AD_STAR, 4, 7),
@@ -2994,7 +2994,7 @@ then fill new spaces with our spawn!
 	MB_HUMANOID|MB_STRONG|MB_NOGLOVES|MB_WINGS|MB_FEMALE /*MB*/, MG_NOWISH|MG_NOPOLY|MG_INFRAVISIBLE|MG_NASTY|MG_LORD|MG_HATESUNHOLY|MG_TRACKER|MG_REGEN /*MG*/,
 	MA_MINION|MA_FEY /*MA*/,  MV_CATSIGHT|MV_SEE_INVIS|MV_INFRAVISION|MV_LOWLIGHT3 /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_BRIGHT_CYAN),
 
-    MON("Light-elf", S_CHA_ANGEL,//17
+    MON("Light-elf", S_CHA_ANGEL,//17 /*needs encyc entry*/
 	LVL(12, 12, 33, -12), (G_PLANES|1),
 	DEF(DEX_AC(6), SPE_AC(3), SPE_DR(3)),
 	A(ATTK(AT_WEAP, AD_PHYS, 3, 3), ATTK(AT_WEAP, AD_PHYS, 3, 3),
@@ -3313,7 +3313,7 @@ then fill new spaces with our spawn!
 	0 /*MM*/, MT_OMNIVORE /*MT*/, MF_LEVEL_30 /*MF*/,
 	MB_HUMANOID|MB_FEMALE|MB_NOHANDS|MB_NOFEET /*MB*/, MG_INFRAVISIBLE|MG_HATESIRON /*MG*/,
 	MA_ARACHNID|MA_DEMIHUMAN|MA_DROW|MA_ELF /*MA*/,  MV_DARKSIGHT /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BLACK),
-    MON("centaur chieftain", S_CENTAUR,//
+    MON("centaur chieftain", S_CENTAUR,// /*needs encyc entry*/
 	LVL(14, 20, 20, 6), (G_GENO|1),
 	DEF(NAT_AC(9)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1,12), ATTK(AT_XWEP, AD_PHYS, 1,6), 
@@ -3564,7 +3564,7 @@ then fill new spaces with our spawn!
 	MM_FLY|MM_WEBRIP /*MM*/, MT_HOSTILE|MT_GREEDY|MT_JEWELS|MT_MAGIC|MT_CARNIVORE /*MT*/, MF_LEVEL_30 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_WINGS|MB_OVIPAROUS|MB_NOGLOVES|MB_THICK_HIDE|MB_STRONG|MB_TOSTY /*MB*/, MG_INFRAVISIBLE|MG_NASTY|MG_TRACKER /*MG*/,
 	MA_DRAGON /*MA*/,  MV_CATSIGHT|MV_SEE_INVIS|MV_SCENT /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_RED),
-    MON("deep dragon", S_DRAGON, //31
+    MON("deep dragon", S_DRAGON, //31 /*needs encyc entry*/
 	LVL(22, 9, 20, -6), (G_GENO|1),
 	DEF(NAT_AC(21), NAT_DR(8)),
 	A(ATTK(AT_BREA, AD_DRLI, 2, 8), ATTK(AT_BITE, AD_DRLI, 4, 13),
@@ -3895,7 +3895,7 @@ then fill new spaces with our spawn!
 	MM_BREATHLESS /*MM*/, MT_COLLECT|MT_JEWELS|MT_MAGIC /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_NEUTER|MB_NOEYES|MB_NOHEAD|MB_CAN_AMULET|MB_POIS|MB_HALUC|MB_CHILL /*MB*/, MG_NASTY|MG_LORD|MG_TRACKER|MG_COMMANDER|MG_SANLOSS|MG_INSIGHT|MG_RPIERCE /*MG*/,
 	MA_PLANT|MA_INSECTOID|MA_ET /*MA*/,  MV_EXTRAMISSION|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_ELDER_SIGN|MW_ELDER_EYE_ELEM /*MW*/, 0 /*light radius*/, CLR_WHITE),
-    MON("fungal brain", S_FUNGUS,//12
+    MON("fungal brain", S_FUNGUS,//12 /*needs encyc entry*/
 	LVL(9, 6, 0, -5), (G_GENO|G_NOGEN),
 	DEF(NAT_AC(1)),
 	A(ATTK(AT_TUCH, AD_STCK, 0, 0),
@@ -4167,7 +4167,7 @@ struct permonst _mons2[] = {
 	MM_WEBRIP|MM_DOORBUST /*MM*/, MT_CARNIVORE|MT_ROCKTHROW|MT_COLLECT|MT_JEWELS /*MT*/, MF_MARTIAL_E /*MF*/,
 	MB_STRONG|MB_HUMANOID /*MB*/, MG_INFRAVISIBLE|MG_NASTY|MG_HATESIRON /*MG*/,
 	MA_GIANT /*MA*/,  MV_NORMAL|MV_INFRAVISION /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BLUE),
-    MON("giant goat spawn", S_GIANT,//20 /*Needs encyc entry*/
+    MON("giant goat spawn", S_GIANT,//20
 	LVL(16, 18, 15, 0), (G_DEPTHS|3),
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 6), ATTK(AT_XWEP, AD_PHYS, 2, 6),
@@ -4912,7 +4912,7 @@ struct permonst _mons2[] = {
 	MM_SWIM /*MM*/, MT_CARNIVORE|MT_HOSTILE|MT_MAGIC /*MT*/, MF_MARTIAL_S /*MF*/,
 	MB_MALE|MB_HUMANOID|MB_NOHEAD|MB_OVIPAROUS /*MB*/, MG_REGEN|MG_NOWISH|MG_NOTAME|MG_NOPOLY|MG_INFRAVISIBLE|MG_TRACKER|MG_SANLOSS|MG_INSIGHT /*MG*/,
 	MA_REPTILIAN|MA_DEMON /*MA*/,  MV_NORMAL|MV_INFRAVISION|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_WHITE),
-    MON("daughter of Naunet", S_SNAKE,//36
+    MON("daughter of Naunet", S_SNAKE,//36 /*needs encyc entry*/
 	LVL(30, 12, 100, -15), (G_NOCORPSE|G_GENO|1),
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_LNCK, AD_SVPN, 4, 8), ATTK(AT_TENT, AD_WET, 3, 8),
@@ -5043,7 +5043,7 @@ struct permonst _mons2[] = {
 /*
  * Unknown abominations
  */
-    MON("chuul", S_UMBER,//
+    MON("chuul", S_UMBER,// /*needs encyc entry*/
 	LVL(4, 10, 0, -6), (G_GENO|G_SGROUP|1),
 	DEF(NAT_AC(5), NAT_DR_ALL(5, 5, 5, 5, 3)),
 	A(ATTK(AT_CLAW, AD_PHYS, 2, 6), OFFHND_ATTK(AT_CLAW, AD_PHYS, 2, 6),
@@ -5062,7 +5062,7 @@ struct permonst _mons2[] = {
 	MM_TUNNEL /*MM*/, MT_CARNIVORE|MT_WANDER /*MT*/, 0 /*MF*/,
 	MB_THICK_HIDE|MB_STRONG|MB_ANIMAL|MB_HAS_FEET /*MB*/, MG_INFRAVISIBLE|MG_TRACKER|MG_SANLOSS|MG_INSIGHT /*MG*/,
 	0 /*MA*/,  MV_NORMAL|MV_SCENT|MV_INFRAVISION /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_BROWN),
-    MON("elder chuul", S_UMBER,//14
+    MON("elder chuul", S_UMBER,//14 /*needs encyc entry*/
 	LVL(11, 10, 0, -6), (G_GENO|G_DEPTHS|1),
 	DEF(NAT_AC(10), NAT_DR_ALL(10, 10, 10, 10, 6)),
 	A(ATTK(AT_CLAW, AD_PHYS, 2, 8), OFFHND_ATTK(AT_CLAW, AD_PHYS, 2, 8),
@@ -5080,7 +5080,7 @@ struct permonst _mons2[] = {
 	MM_WALLWALK /*MM*/, 0 /*MT*/, 0 /*MF*/,
 	MB_STRONG|MB_NOLIMBS|MB_NOEYES|MB_INDIGESTIBLE /*MB*/, MG_RALL|MG_INFRAVISIBLE|MG_INSIGHT /*MG*/,
 	MA_ET /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 1 /*light radius*/, CLR_BLUE),
-    MON("parasitic wall-hugger", S_UMBER,//17
+    MON("parasitic wall-hugger", S_UMBER,//17 /*needs encyc entry*/
 	LVL(15, 6, 25, 0), (G_S_INST(10)|1),
 	DEF(NAT_AC(2)),
 	A(ATTK(AT_CLAW, AD_PHYS, 1, 10), ATTK(AT_CLAW, AD_PHYS, 1, 10),
@@ -5297,7 +5297,7 @@ struct permonst _mons2[] = {
 	MM_BREATHLESS|MM_FLY /*MM*/, MT_STALK|MT_HOSTILE /*MT*/, 0 /*MF*/,
 	MB_HUMANOID|MB_UNSOLID /*MB*/, 0 /*MG*/,
 	MA_UNDEAD /*MA*/,  MV_LIFESENSE /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_BLACK),
-    MON("befouled wraith", S_WRAITH,//8
+    MON("befouled wraith", S_WRAITH,//8 /*needs encyc entry*/
 	LVL(9, 8, 100, -6), (G_GENO|G_SGROUP|G_S_INST(20)|G_NOCORPSE|G_DEPTHS|1),
 	DEF(SPE_AC(6)),
 	A(ATTK(AT_WEAP, AD_DRHP, 1, 6), ATTK(AT_XWEP, AD_DRHP, 1, 6)),
@@ -5770,7 +5770,7 @@ struct permonst _mons2[] = {
 	MM_BREATHLESS|MM_WEBRIP /*MM*/, MT_MINDLESS|MT_HOSTILE /*MT*/, MF_MARTIAL_B|MF_BAB_FULL /*MF*/,
 	MB_HUMANOID|MB_THICK_HIDE|MB_POIS|MB_STRONG|MB_INDIGESTIBLE /*MB*/, MG_VBLUNT /*MG*/,
 	MA_UNLIVING /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_METAL),
-    MON("green-steel golem", S_GOLEM,//23
+    MON("green-steel golem", S_GOLEM,//23 /*needs encyc entry*/
 	LVL(19, 9, 99, 9), (G_HELL|G_NOCORPSE|1),
 	DEF(NAT_AC(9), NAT_DR(13)),
 	A(ATTK(AT_WEAP, AD_PHYS, 4,12), ATTK(AT_BREA, AD_DRST, 4, 9)),
@@ -5779,8 +5779,8 @@ struct permonst _mons2[] = {
 	MM_BREATHLESS|MM_WEBRIP /*MM*/, MT_MINDLESS|MT_HOSTILE /*MT*/, MF_MARTIAL_B|MF_BAB_FULL /*MF*/,
 	MB_HUMANOID|MB_THICK_HIDE|MB_POIS|MB_STRONG|MB_INDIGESTIBLE /*MB*/, MG_VBLUNT /*MG*/,
 	MA_UNLIVING /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BRIGHT_GREEN),
-    MON("retriever", S_GOLEM, //25
-	LVL(20, 10, 80, -6), (G_HELL|G_NOCORPSE|1),//needs quote
+    MON("retriever", S_GOLEM, //25 /*needs encyc entry*/
+	LVL(20, 10, 80, -6), (G_HELL|G_NOCORPSE|1),
 	DEF(NAT_AC(10)),
 	A(POLYWEP_ATTK(AT_CLAW, AD_PHYS, 2,8), OFFHND_ATTK(AT_CLAW, AD_SAMU, 2, 8),  //claw attacks must come first
 	  ATTK(AT_GAZE, AD_RETR, 4, 8), ATTK(AT_CLAW, AD_ABDC, 1,8)),  //AD_RETR 
@@ -5790,7 +5790,7 @@ struct permonst _mons2[] = {
 	MB_ANIMAL|MB_LONGHEAD|MB_THICK_HIDE|MB_POIS|MB_STRONG|MB_INDIGESTIBLE /*MB*/, MG_VBLUNT|MG_HATESHOLY /*MG*/,
 	MA_UNLIVING|MA_DEMON /*MA*/,  MV_CATSIGHT|MV_INFRAVISION /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, HI_LORD),
     MON("living doll", S_GOLEM, //17 /* Needs encyc entry */
-	LVL(15, 10, 50, 0), (G_NOGEN|G_S_INST(20)),//needs quote
+	LVL(15, 10, 50, 0), (G_NOGEN|G_S_INST(20)),
 	DEF(NAT_DR(4)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 1)),
 	SIZ(WT_HUMAN/2, 0, MS_STATS, MZ_HUMAN), 
@@ -5799,7 +5799,7 @@ struct permonst _mons2[] = {
 	MB_HUMANOID|MB_THICK_HIDE|MB_STRONG|MB_INDIGESTIBLE /*MB*/, MG_NOWISH|MG_NOPOLY /*MG*/,
 	MA_UNLIVING /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("parasitized doll", S_GOLEM, //33 /* Needs encyc entry */
-	LVL(30, 10, 75, 0), (G_NOGEN|G_S_INST(20)),//needs quote
+	LVL(30, 10, 75, 0), (G_NOGEN|G_S_INST(20)),
 	DEF(NAT_AC(10), NAT_DR_BODY(2), NAT_DR_GLOV(4), NAT_DR_LEGS(4), NAT_DR_FEET(4)),
 	A(ATTK(AT_CLAW, AD_PHYS, 1, 8), ATTK(AT_CLAW, AD_PHYS, 1, 8), 
 	  POLYWEP_ATTK(AT_HUGS, AD_PHYS, 2, 8), ATTK(AT_GAZE, AD_BDFN, 1, 6)),
@@ -5811,7 +5811,7 @@ struct permonst _mons2[] = {
 /*
  * Neutral Outsiders (Rilmani and Kamerel)
  */
-    MON("Amm Kamerel", S_NEU_OUTSIDER,//6 /* Needs encyc entry */
+    MON("Amm Kamerel", S_NEU_OUTSIDER,//6
 	LVL(3, 12, 0, 0), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 1),
@@ -6610,7 +6610,7 @@ is a red right hand
 	MM_BREATHLESS /*MM*/, MT_HIDE|MT_STALK|MT_HOSTILE /*MT*/, MF_MARTIAL_E /*MF*/,
 	MB_HUMANOID /*MB*/, MG_RPIERCE|MG_NOPOLY|MG_LORD|MG_TRACKER /*MG*/,
 	MA_UNDEAD /*MA*/,  MV_EXTRAMISSION|MV_SEE_INVIS /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_MAGENTA),
-    MON("poltergeist", S_GHOST,//12
+    MON("poltergeist", S_GHOST,//12 /* Needs encyc entry */
 	LVL(20, 18, 50, -5), (G_NOCORPSE|G_NOGEN),
 	DEF(SPE_AC(15)),
 	A(ATTK(AT_WEAP, AD_PHYS, 0, 6)),
@@ -6643,7 +6643,7 @@ is a red right hand
 /*
  * (major) demons
  */
-    MON("marid", S_DEMON,//10
+    MON("marid", S_DEMON,//10 /* Needs encyc entry */
 	LVL(8, 12, 30, -7), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(14)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 8), OFFHND_ATTK(AT_CLAW, AD_PHYS, 1, 3)),
@@ -6835,7 +6835,7 @@ is a red right hand
 	/*
 	*plague daemon
 	*/
-    MON("alkilith", S_DEMON,//18
+    MON("alkilith", S_DEMON,//18 /* Needs encyc entry */
 	LVL(15, 6, 65, -16), (G_NOHELL|G_NOCORPSE|G_S_INST(6)|2),
 	DEF(NAT_AC(2)),
 	A(ATTK(AT_TENT, AD_ACID, 6, 6), ATTK(AT_NONE, AD_ACID, 4, 8)),
@@ -6998,7 +6998,7 @@ is a red right hand
 	MA_DEMON|MA_INSECTOID /*MA*/,  
 	MV_CATSIGHT|MV_INFRAVISION /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_GRAY),
     MON("akkabish tannin", S_DEMON,//21 /* Needs encyc entry */
-	LVL(12, 24, 0, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(12, 24, 0, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(4), DEX_AC(7), SPE_AC(3), NAT_DR(4), SPE_DR(3)),
 	A(ATTK(AT_STNG, AD_LRVA, 1, 4), ATTK(AT_STNG, AD_LRVA, 1, 4),
 	  ATTK(AT_STNG, AD_LRVA, 1, 4), ATTK(AT_STNG, AD_LRVA, 1, 4),
@@ -7012,7 +7012,7 @@ is a red right hand
 	MA_DEMON|MA_PRIMORDIAL|MA_INSECTOID /*MA*/,  
 	MV_CATSIGHT|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG|MW_ELDER_EYE_PLANES  /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("shalosh tannah", S_DEMON,//23 /* Needs encyc entry */
-	LVL(18, 18, 18, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(18, 18, 18, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(6), DEX_AC(6), SPE_AC(6), NAT_DR(5), SPE_DR(13)),
 	A(ATTK(AT_LRCH, AD_HOOK, 3, 6), ATTK(AT_LRCH, AD_HOOK, 3, 6),
 	  ATTK(AT_LRCH, AD_HOOK, 3, 6), ATTK(AT_NONE, AD_ACID, 0, 3)),
@@ -7023,7 +7023,7 @@ is a red right hand
 	MA_DEMON|MA_PRIMORDIAL /*MA*/,  
 	MV_CATSIGHT|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG|MW_ELDER_EYE_PLANES  /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("nachash tannin", S_DEMON,//24 /* Needs encyc entry */
-	LVL(18, 12, 24, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(18, 12, 24, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(7), DEX_AC(4), SPE_AC(6), NAT_DR(4), SPE_DR(6)),
 	A(ATTK(AT_5SBT, AD_PHYS, 1, 20), ATTK(AT_5SBT, AD_PHYS, 1, 20),
 	  ATTK(AT_5SBT, AD_PHYS, 1, 20), ATTK(AT_5SBT, AD_PHYS, 1, 20),
@@ -7035,7 +7035,7 @@ is a red right hand
 	MA_DEMON|MA_PRIMORDIAL /*MA*/,  
 	MV_CATSIGHT|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG|MW_ELDER_EYE_PLANES  /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("khaamnun tannin", S_DEMON,//24 /* Needs encyc entry */
-	LVL(15, 12, 21, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(15, 12, 21, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(15), SPE_AC(6), NAT_DR(5), SPE_DR(6)),
 	/*Reaches become tent/mindwipe attacks once adjacent*/
 	A(ATTK(AT_5SQR, AD_PULL, 1, 6), ATTK(AT_5SQR, AD_PULL, 1, 6),
@@ -7050,7 +7050,7 @@ is a red right hand
 	MA_DEMON|MA_PRIMORDIAL /*MA*/,
 	MV_CATSIGHT|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG|MW_ELDER_EYE_PLANES  /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("raglayim tannin", S_DEMON,//31 /* Needs encyc entry */
-	LVL(20, 12, 26, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(20, 12, 26, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(18), SPE_AC(6), NAT_DR(8), SPE_DR(6)),
 	A(ATTK(AT_CLAW, AD_PHYS, 1, 24), OFFHND_ATTK(AT_CLAW, AD_PHYS, 1, 24),
 			   ATTK(AT_HUGS, AD_PHYS, 2, 12),
@@ -7065,7 +7065,7 @@ is a red right hand
 	MA_DEMON|MA_PRIMORDIAL /*MA*/,  
 	MV_CATSIGHT|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG|MW_ELDER_EYE_PLANES  /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("teraphim tannah", S_DEMON,//38 /* Needs encyc entry */
-	LVL(25, 18, 32, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(25, 18, 32, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(3), DEX_AC(4), SPE_AC(6), NAT_DR_HEAD(15), NAT_DR_BODY(8), NAT_DR_GLOV(8), NAT_DR_LEGS(10), NAT_DR_FEET(10), SPE_DR(6)),
 	A(POLYWEP_ATTK(AT_CLAW, AD_SSTN, 4, 8), OFFHND_ATTK(AT_CLAW, AD_SSTN, 4, 8),
 			   ATTK(AT_CLAW, AD_SSTN, 4, 8), ATTK(AT_CLAW, AD_SSTN, 4, 8),
@@ -7079,7 +7079,7 @@ is a red right hand
 	MA_UNLIVING|MA_DEMON|MA_PRIMORDIAL /*MA*/,  
 	MV_CATSIGHT|MV_INFRAVISION|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG|MW_ELDER_EYE_PLANES  /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
     MON("sartan tannin", S_DEMON,//26 /* Needs encyc entry */
-	LVL(18, 8, 25, -14), (G_HELL|G_NOCORPSE|G_NOGEN),  /*Needs encyc entry*/
+	LVL(18, 8, 25, -14), (G_HELL|G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(21), SPE_AC(12), NAT_DR(7), SPE_DR(6)),
 	A(ATTK(AT_STNG, AD_NPDS, 1, 14), ATTK(AT_STNG, AD_NPDD, 1, 14),
 	  ATTK(AT_STNG, AD_NPDR, 1, 14), 
@@ -7680,7 +7680,7 @@ is a red right hand
 	MM_SWIM|MM_AMPHIBIOUS /*MM*/, MT_HOSTILE|MT_ANIMAL|MT_CARNIVORE /*MT*/, 0 /*MF*/,
 	MB_OVIPAROUS|MB_ANIMAL|MB_LONGHEAD|MB_NOHANDS /*MB*/, 0 /*MG*/,
 	MA_REPTILIAN|MA_AQUATIC /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BROWN),
-    MON("small cave lizard", S_LIZARD,//4 /*Needs tile*/
+    MON("small cave lizard", S_LIZARD,//4 /*Needs tile*/ /* Needs encyc entry */
 	LVL(3, 12, 0, 0),  G_GENO,
 	DEF(NAT_AC(4)),
 	A(ATTK(AT_BITE, AD_PHYS, 1, 6)),
@@ -7696,7 +7696,7 @@ is a red right hand
 	0 /*MM*/, MT_ANIMAL|MT_CARNIVORE|MT_HOSTILE /*MT*/, 0 /*MF*/,
 	MB_OVIPAROUS|MB_NOHANDS|MB_ANIMAL|MB_LONGHEAD /*MB*/, 0 /*MG*/,
 	MA_REPTILIAN /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_GREEN),
-    MON("cave lizard", S_LIZARD,//6 /*Needs tile*/
+    MON("cave lizard", S_LIZARD,//6 /*Needs tile*/ /* Needs encyc entry */
 	LVL(5, 16, 0, 0),  G_GENO,
 	DEF(NAT_AC(6)),
 	A(ATTK(AT_BITE, AD_PHYS, 1, 6),
@@ -7729,7 +7729,7 @@ is a red right hand
 	MM_SWIM|MM_AMPHIBIOUS|MM_WEBRIP|MM_DOORBUST /*MM*/, MT_ANIMAL|MT_HERBIVORE|MT_HOSTILE /*MT*/, 0 /*MF*/,
 	MB_OVIPAROUS|MB_ANIMAL|MB_LONGHEAD|MB_THICK_HIDE|MB_NOHANDS|MB_OVIPAROUS|MB_STRONG /*MB*/, MG_VPIERCE|MG_OPAQUE /*MG*/,
 	MA_REPTILIAN|MA_GIANT|MA_AQUATIC /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_RED),
-    MON("large cave lizard", S_LIZARD,//9 /*Needs tile*/
+    MON("large cave lizard", S_LIZARD,//9 /*Needs tile*/ /* Needs encyc entry */
 	LVL(7, 20, 0, 0),  G_GENO,
 	DEF(NAT_AC(8)),
 	A(ATTK(AT_BITE, AD_PHYS, 1, 8),
@@ -7750,7 +7750,7 @@ is a red right hand
 /* 
  * ferns, their spores, and other plants
  */
-    MON("weeping willow", S_PLANT,//6 /*Needs encyc entry*//*Needs tile*/
+    MON("weeping willow", S_PLANT,//6 /*Needs tile*/
 	LVL(5, 0, 0, 0), (G_NOGEN),
 	DEF(NAT_DR(4)),
 	A(ATTK(AT_NONE, AD_RUST, 1, 1)),
@@ -7769,7 +7769,7 @@ is a red right hand
 	MA_PLANT|MA_DEMON /*MA*/,  0 /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BLACK),
 
     MON("sunflower", S_PLANT,//9
-	LVL(6, 6, 0, -10), (G_GENO|G_NOHELL|G_LGROUP|1),//needs quote
+	LVL(6, 6, 0, -10), (G_GENO|G_NOHELL|G_LGROUP|1),
 	DEF(NAT_AC(10)),
 	A(ATTK(AT_GAZE, AD_SSUN, 1, 4)),
 	SIZ(WT_SMALL, 200, MS_SILENT, MZ_SMALL), MR_COLD|MR_REFLECT, 0,
@@ -7889,7 +7889,7 @@ is a red right hand
 	MA_PLANT /*MA*/,  0 /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BLUE),
 
     MON("viper tree", S_PLANT,//19
-	LVL(9, 18, 66, -10), (G_HELL|G_GENO|G_SGROUP|1),//needs quote
+	LVL(9, 18, 66, -10), (G_HELL|G_GENO|G_SGROUP|1),
 	DEF(NAT_AC(18), NAT_DR(6)),
 	A(ATTK(AT_LNCK, AD_DRST, 1, 4), ATTK(AT_BITE, AD_DRST, 1, 4),
 	  ATTK(AT_BITE, AD_DRST, 1, 4), ATTK(AT_BITE, AD_DRST, 1, 4), 
@@ -7923,7 +7923,7 @@ is a red right hand
 	MA_PLANT|MA_MINION|MA_FEY /*MA*/,  MV_CATSIGHT|MV_SEE_INVIS|MV_INFRAVISION|MV_LOWLIGHT3 /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
 	
     MON("candle tree", S_PLANT,//12 /* Needs encyc entry */
-	LVL(9, 4, 0, -5), (G_NOGEN),//needs quote
+	LVL(9, 4, 0, -5), (G_NOGEN),
 	DEF(NAT_AC(2), NAT_DR(2)),
 	A(ATTK(AT_CLAW, AD_PHYS, 1, 6), OFFHND_ATTK(AT_CLAW, AD_PHYS, 1, 6),
 	  ATTK(AT_BREA, AD_COLD, 1, 6), ATTK(AT_GAZE, AD_SPHR, 3, 3)),
@@ -8122,7 +8122,7 @@ is a red right hand
 	0 /*MM*/, MT_OMNIVORE|MT_COLLECT /*MT*/, MF_MARTIAL_B|MF_LEVEL_30 /*MF*/,
 	MB_HUMANOID|MB_STRONG|MB_FEMALE /*MB*/, MG_NOWISH|MG_NOPOLY|MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
-    MON("itinerant priestess", S_HUMAN,//
+    MON("itinerant priestess", S_HUMAN,// /*Needs encyc entry */
 	LVL(10, 12, 2, 0),  G_NOGEN,
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 10), ATTK(AT_XWEP, AD_PHYS, 1, 6), ATTK_INS(AT_TUCH, AD_HOLY, 0, 3, 40), 
@@ -8176,7 +8176,7 @@ is a red right hand
 	MB_HUMANOID|MB_STRONG /*MB*/, MG_NOWISH|MG_NOPOLY|MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
 #endif
-    MON("undead hunter", S_HUMAN,//13
+    MON("undead hunter", S_HUMAN,//13 /*Needs encyc entry */
 	LVL(10, 12, 1, -1),  G_NOGEN,
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 8), ATTK(AT_XWEP, AD_PHYS, 1, 8)),
@@ -8239,7 +8239,7 @@ is a red right hand
 /*
  * quest leaders
  */
-    MON("Lord Carnarvon", S_HUMAN,//22
+    MON("Lord Carnarvon", S_HUMAN,//22 /*Needs encyc entry */
 	LVL(20, 10, 30, 20), (G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 6)),
@@ -8274,7 +8274,7 @@ is a red right hand
 	MB_STRONG|MB_MALE|MB_HUMANOID /*MB*/, MG_NOWISH|MG_NOTAME|MG_NOPOLY|MG_PNAME|MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL|MV_SEE_INVIS /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_LORD),
 #endif
-    MON("strange corpse", S_MUMMY,//2 /*Needs encyc entry*//*Needs tile?*/
+    MON("strange corpse", S_MUMMY,//2 /*Needs tile?*/
 	LVL(0, 0, 125, 0), (G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(10+55)),
 	A(NO_ATTK),
@@ -8360,7 +8360,7 @@ is a red right hand
 	MA_HUMAN /*MM*/, MT_CLOSE|MT_OMNIVORE|MT_PEACEFUL|MT_COLLECT|MT_MAGIC /*MT*/, MF_BAB_HALF /*MF*/,
 	MB_HUMANOID|MB_STRONG|MB_FEMALE /*MB*/, MG_NOWISH|MG_NOTAME|MG_NOPOLY|MG_INFRAVISIBLE|MG_TRACKER /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL|MV_SEE_INVIS /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_LORD),
-    MON("Thorin II Oakenshield", S_HUMANOID,//24 /*Needs tile*/ /* Needs encyc entry */
+    MON("Thorin II Oakenshield", S_HUMANOID,//24 /*Needs tile*/
 	LVL(20, 12, 30, 20), (G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 6), ATTK(AT_WEAP, AD_PHYS, 2, 6)),
@@ -8539,7 +8539,7 @@ is a red right hand
 /*
  * quest nemeses
  */
-    MON("Minion of Tezcatlipoca", S_DEMON,//23
+    MON("Minion of Tezcatlipoca", S_DEMON,//23 /*Needs encyc entry */
 	LVL(16, 12, 75, -14), (G_NOCORPSE|G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(6), SPE_AC(6), SPE_DR(6)),
 	A(ATTK(AT_WEAP, AD_PHYS, 8, 4), ATTK(AT_WEAP, AD_PHYS, 4, 6),
@@ -8832,7 +8832,7 @@ is a red right hand
 	MM_WEBRIP|MM_DOORBUST /*MM*/, MT_WANTSARTI|MT_WAITFORU|MT_OMNIVORE|MT_ROCKTHROW|MT_STALK|MT_HOSTILE|MT_JEWELS|MT_COLLECT /*MT*/, MF_MARTIAL_B /*MF*/,
 	MB_HUMANOID|MB_STRONG|MB_MALE /*MB*/, MG_NOTAME|MG_NOPOLY|MG_NASTY|MG_INFRAVISIBLE|MG_HATESIRON /*MG*/,
 	MA_GIANT|MA_MINION /*MA*/,  MV_NORMAL|MV_INFRAVISION /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_GRAY),
-    MON("Blibdoolpoolp, graven-into-flesh", S_HUMAN,//
+    MON("Blibdoolpoolp, graven-into-flesh", S_HUMAN,// /*Needs encyc entry */
 	LVL(27, 8, 95, -20), (G_NOGEN|G_NOCORPSE|G_UNIQ),
 	DEF(SPE_AC(10), DEX_AC(4), NAT_AC(4), NAT_DR_HEAD(10), NAT_DR_GLOV(10)),
 	A(POLYWEP_ATTK(AT_CLAW, AD_SQUE, 2, 8), OFFHND_ATTK(AT_CLAW, AD_SQUE, 2, 8),
@@ -8846,7 +8846,7 @@ is a red right hand
 	MM_WEBRIP|MM_SWIM|MM_AMPHIBIOUS /*MM*/, MT_WANTSBELL|MT_WAITFORU|MT_OMNIVORE|MT_STALK|MT_HOSTILE|MT_MAGIC|MT_COLLECT /*MT*/, 0 /*MF*/,
 	MB_HUMANOID|MB_STRONG|MB_FEMALE /*MB*/, MG_SANLOSS|MG_INSIGHT|MG_NOTAME|MG_NOPOLY|MG_NASTY|MG_INFRAVISIBLE|MG_HATESIRON|MG_PRINCE|MG_PNAME /*MG*/,
 	MA_DEMIHUMAN|MA_AQUATIC|MA_DROW|MA_ELF|MA_MINION /*MA*/,  MV_NORMAL|MV_SEE_INVIS|MV_DETECTION /*MV*/, MW_EYE_OF_YGG /*MW*/, 0 /*light radius*/, HI_LORD),
-    MON("Blibdoolpoolp's mindgraven champion", S_CENTAUR,//
+    MON("Blibdoolpoolp's mindgraven champion", S_CENTAUR,// /*Needs encyc entry */
 	LVL(6, 10, 50, -20), (G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(4), NAT_DR_LEGS(4), NAT_DR_FEET(3)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 4), ATTK(AT_XWEP, AD_PHYS, 1, 4),
@@ -8887,7 +8887,7 @@ is a red right hand
 	MM_AMPHIBIOUS /*MM*/, MT_WANTSARTI|MT_WAITFORU|MT_HERBIVORE|MT_HOSTILE|MT_STALK|MT_COLLECT|MT_MAGIC /*MT*/, MF_MARTIAL_E|MF_BAB_FULL /*MF*/,
 	MB_HUMANOID|MB_STRONG|MB_MALE /*MB*/, MG_PNAME|MG_NOTAME|MG_NOPOLY|MG_NASTY|MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL|MV_SEE_INVIS /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_LORD),
-    MON("Doctor Archer", S_HUMAN,//25 /*Needs encyc entry*/
+    MON("Doctor Archer", S_HUMAN,//25
 	LVL(20, 12, 40, 14), (G_NOGEN|G_UNIQ),
 	DEF(SPE_AC(10), SPE_DR(10)),
 	A(ATTK(AT_TUCH, AD_SLEE, 1, 6),
@@ -9139,7 +9139,7 @@ is a red right hand
 	MM_WEBRIP|MM_DOORBUST /*MM*/, MT_CARNIVORE|MT_HOSTILE|MT_STALK /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_MALE|MB_STRONG /*MB*/, MG_NOTAME|MG_NOPOLY|MG_NASTY|MG_INFRAVISIBLE|MG_HATESSILVER|MG_TRACKER|MG_SANLOSS /*MG*/,
 	MA_WERE|MA_DEMIHUMAN|MA_UNDEAD /*MA*/,  MV_NORMAL|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_LORD),
-    MON("Moon's Chosen", S_UMBER,//29
+    MON("Moon's Chosen", S_UMBER,//29 /* Needs encyc entry */
 	LVL(36, 12, 40, -14), (G_NOGEN|G_NOCORPSE|G_UNIQ|G_S_INST(27)),
 	DEF(DEX_AC(12), SPE_AC(12), NAT_AC(12), SPE_DR_ALL(8, 2, 1, 1, 0), NAT_DR_HEAD(12)),
 	A(ATTK(AT_LRCH, AD_SQUE, 3, 4), ATTK(AT_LRCH, AD_SAMU, 3, 4),
@@ -9166,7 +9166,7 @@ is a red right hand
 	MM_FLY|MM_FLOAT|MM_WEBRIP|MM_DOORBUST /*MM*/, MT_MINDLESS|MT_HOSTILE|MT_STALK|MT_ROCKTHROW /*MT*/, MF_MARTIAL_B /*MF*/,
 	MB_NEUTER|MB_STRONG|MB_NOEYES|MB_NOHANDS|MB_NOFEET /*MB*/, MG_INFRAVISIBLE|MG_SANLOSS|MG_INSIGHT|MG_NOPOLY|MG_NOWISH /*MG*/,
 	MA_G_O_O|MA_ANIMAL|MA_ET /*MA*/,  MV_DETECTION|MV_SEE_INVIS|MV_OMNI /*MV*/, MW_EYE_OF_YGG /*MW*/, 0 /*light radius*/, CLR_BRIGHT_GREEN),
-    MON("Moon-entity eye-cluster", S_EYE,// /* Needs encyc entry */
+    MON("Moon-entity eye-cluster", S_EYE,//
 	LVL(30, 12, 90, -28), (G_NOGEN|G_NOCORPSE),
 	DEF(SPE_AC(12), SPE_DR(8)),
 	A(ATTK(AT_GAZE, AD_STDY, 8, 8), ATTK(AT_NONE, AD_PLYS, 1, 8)),
@@ -9198,7 +9198,7 @@ is a red right hand
 /*  
  * alignment quest nemeses
  */
-    MON("doom knight", S_HUMAN,//12
+    MON("doom knight", S_HUMAN,//12 /* Needs encyc entry */
 	LVL(10, 12, 1, -3),  G_NOGEN|G_SGROUP,
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 8), ATTK(AT_XWEP, AD_PHYS, 1, 8),
@@ -9280,7 +9280,7 @@ is a red right hand
 	MB_HUMANOID|MB_WINGS|MB_MALE|MB_POIS /*MB*/, MG_PRINCE|MG_NOTAME|MG_NOPOLY|MG_NASTY|MG_PNAME|MG_INFRAVISIBLE|MG_NOSPELLCOOLDOWN /*MG*/,
 	MA_DEMON|MA_HUMAN /*MA*/,  MV_SEE_INVIS|MV_EXTRAMISSION /*MV*/, MW_ELDER_EYE_PLANES /*MW*/, 0 /*light radius*/, CLR_BROWN),
 
-    MON("Alabaster elf", S_HUMAN,//11 /*Needs encyc entry*/
+    MON("Alabaster elf", S_HUMAN,//11
 	LVL(7, 12, 10, -8), (G_GENO|G_LGROUP|G_NOGEN),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 4), ATTK(AT_WEAP, AD_PHYS, 2, 4),
@@ -9289,7 +9289,7 @@ is a red right hand
 	0 /*MM*/, MT_COLLECT|MT_OMNIVORE /*MT*/, MF_MARTIAL_B|MF_LEVEL_30 /*MF*/,
 	MB_HUMANOID|MB_STRONG /*MB*/, MG_NOPOLY|MG_INFRAVISIBLE|MG_HATESIRON|MG_TRACKER /*MG*/,
 	MA_ELF /*MA*/,  MV_LOWLIGHT3|MV_SEE_INVIS /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_WHITE),
-    MON("Alabaster elf-elder", S_HUMAN,//13 /*Needs encyc entry*/
+    MON("Alabaster elf-elder", S_HUMAN,//13
 	LVL(10, 6, 10, -8), (G_GENO|G_NOGEN),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 4), ATTK(AT_MMGC, AD_SPEL, 0, 4)),
@@ -9335,7 +9335,7 @@ is a red right hand
 	MM_BREATHLESS /*MM*/, MT_HOSTILE|MT_MINDLESS /*MT*/, 0 /*MF*/,
 	MB_HUMANOID|MB_POIS /*MB*/, MG_VSLASH|MG_HATESIRON /*MG*/,
 	MA_UNDEAD|MA_ELF /*MA*/,  MV_NORMAL|MV_INFRAVISION /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_WHITE),
-    MON("first wraithworm", S_SNAKE,//13 /*Needs encyc entry*/
+    MON("first wraithworm", S_SNAKE,//13
 	LVL(10, 12, 0, -10), (G_NOGEN|G_UNIQ),
 	DEF(NAT_AC(7)),
 	A(ATTK(AT_5SBT, AD_DRLI, 1, 8), ATTK(AT_GAZE, AD_PLYS, 2, 4)),
@@ -9822,7 +9822,7 @@ is a red right hand
 	MM_SWIM|MM_FLY|MM_WEBRIP|MM_DOORBUST /*MM*/, MT_HOSTILE|MT_WANDER|MT_OMNIVORE|MT_METALLIVORE|MT_TRAITOR /*MT*/, 0 /*MF*/,
 	MB_HUMANOID|MB_WINGS|MB_STRONG|MB_NEUTER /*MB*/, MG_RALL|MG_NOTAME|MG_NOPOLY|MG_NASTY|MG_PNAME|MG_OPAQUE|MG_RIDER|MG_DEADLY|MG_SANLOSS|MG_INSIGHT /*MG*/,
 	MA_G_O_O|MA_PRIMORDIAL|MA_ET /*MA*/,  MV_TELEPATHIC|MV_EXTRAMISSION|MV_RLYEHIAN|MV_SEE_INVIS /*MV*/, MW_EYE_OF_YGG /*MW*/, 0 /*light radius*/, CLR_GREEN),
-    MON("tettigon legatus", S_ANT,//22 /*Needs tile*/
+    MON("tettigon legatus", S_ANT,//22 /*Needs tile*/ /*Needs encyc entry*/
 	LVL(16, 8, 50, 8), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(8), SPE_AC(8), NAT_DR(8), SPE_DR_HEAD(8), SPE_DR_BODY(8), SPE_DR_GLOV(4), SPE_DR_LEGS(4)),
 	A(ATTK(AT_TUCH, AD_PUSH, 5,4), ATTK(AT_MAGC, AD_PSON, 1, 15), 
@@ -9832,7 +9832,7 @@ is a red right hand
 	MM_FLY|MM_FLOAT|MM_BREATHLESS|MM_DOORBUST /*MM*/, MT_STALK|MT_BOLD /*MT*/, MF_LEVEL_30 /*MF*/,
 	MB_HUMANOID|MB_NOGLOVES|MB_STRONG|MB_INDIGESTIBLE /*MB*/, MG_RSLASH|MG_NASTY|MG_TRACKER|MG_NOSPELLCOOLDOWN|MG_NOWISH|MG_NOPOLY /*MG*/,
 	MA_MINION|MA_INSECTOID /*MA*/,  MV_EXTRAMISSION|MV_TELEPATHIC /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_GREEN),
-    MON("unmasked tettigon", S_ANT,//24 /*Needs tile*/
+    MON("unmasked tettigon", S_ANT,//24 /*Needs tile*/ /*Needs encyc entry*/
 	LVL(16, 12, 55, 8), (G_NOCORPSE|G_NOGEN),
 	DEF(DEX_AC(8), SPE_AC(8), SPE_DR_HEAD(8), SPE_DR_BODY(8), SPE_DR_GLOV(4), SPE_DR_LEGS(4)),
 	A(ATTK(AT_TUCH, AD_HOLY, 3, 8), OFFHND_ATTK(AT_TUCH, AD_HOLY, 3, 8),
@@ -9842,7 +9842,7 @@ is a red right hand
 	MM_FLY|MM_AMPHIBIOUS|MM_WALLWALK /*MM*/, MT_STALK|MT_BOLD /*MT*/, MF_MARTIAL_E|MF_BAB_FULL /*MF*/,
 	MB_HUMANOID|MB_WINGS|MB_STRONG|MB_INDIGESTIBLE|MB_INSUBSTANTIAL /*MB*/, MG_HATESUNHOLY|MG_NASTY|MG_TRACKER /*MG*/,
 	MA_MINION|MA_INSECTOID /*MA*/,  MV_EXTRAMISSION|MV_TELEPATHIC /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BRIGHT_CYAN),
-    MON("transcendent tettigon", S_EEL,//30 /*Needs tile*/
+    MON("transcendent tettigon", S_EEL,//30 /*Needs tile*/ /*Needs encyc entry*/
 	LVL(16, 18, 88, 8), (G_NOCORPSE|G_NOGEN),
 	DEF(DEX_AC(8), SPE_AC(8), SPE_DR(8)),
 	A(ATTK(AT_TUCH, AD_HOLY, 3, 8), ATTK(AT_TUCH, AD_HOLY, 3, 8),
@@ -9855,7 +9855,7 @@ is a red right hand
 	MB_SLITHY|MB_STRONG|MB_INDIGESTIBLE|MB_INSUBSTANTIAL /*MB*/, MG_HATESUNHOLY|MG_NASTY|MG_TRACKER|MG_SANLOSS|MG_INSIGHT /*MG*/,
 	MA_MINION|MA_INSECTOID /*MA*/,  MV_EXTRAMISSION|MV_TELEPATHIC /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BRIGHT_CYAN),
 
-    MON("luminescent swarm", S_ANT,//23
+    MON("luminescent swarm", S_ANT,//23 /*Needs encyc entry*/
 	LVL(16, 18, 88, 8), (G_NOGEN|G_SGROUP),
 	DEF(NAT_AC(10), SPE_AC(8)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 6), ATTK(AT_XWEP, AD_PHYS, 1, 6),
@@ -9932,7 +9932,7 @@ is a red right hand
 /*  
  * quest "guardians"
  */
-    MON("student", S_HUMAN,//7
+    MON("student", S_HUMAN,//7 /*Needs encyc entry*/
 	LVL(5, 12, 10, 3),  G_NOGEN,
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 4)),
@@ -10023,7 +10023,7 @@ is a red right hand
 	MM_BREATHLESS /*MM*/, 0 /*MT*/, MF_MARTIAL_B|MF_BAB_HALF|MF_LEVEL_30 /*MF*/,
 	MB_FEMALE|MB_THICK_HIDE|MB_HUMANOID|MB_STRONG|MB_INDIGESTIBLE /*MB*/, MG_NOWISH|MG_COMMANDER|MG_NOPOLY /*MG*/,
 	MA_CLOCK|MA_UNLIVING /*MA*/,  MV_EXTRAMISSION /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_GOLD),
-    MON("chieftain", S_HUMAN,//15
+    MON("chieftain", S_HUMAN,//15 /*Needs encyc entry*/
 	LVL(13, 12, 10, 0),  G_NOGEN,
 	DEF(DEX_AC(2)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 6), ATTK_LEV(AT_WEAP, AD_PHYS, 2, 6, 14), ATTK_LEV(AT_WEAP, AD_PHYS, 2, 6, 30)),
@@ -10686,7 +10686,7 @@ is a red right hand
 	MB_HUMANOID|MB_STRONG /*MB*/, MG_NOWISH|MG_NOPOLY|MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
 #endif
-    MON("verger", S_HUMAN,//7
+    MON("verger", S_HUMAN,//7 /*Needs encyc entry*/
 	LVL(5, 12, 10, 3),  G_NOGEN,
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 6)),
