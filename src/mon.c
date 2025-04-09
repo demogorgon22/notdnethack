@@ -2885,7 +2885,7 @@ mon_can_see_mon(looker, lookie)
 	boolean hardtosee;
 	boolean indark = (dimness(looker->mx, looker->my) > 0);
 	
-	if(lookie->mtyp == PM_TWIN_SIBLING && !insightful(looker->data))
+	if(lookie->mtyp == PM_TWIN_SIBLING && !insightful(looker->data) && !is_great_old_one(looker->data))
 		return FALSE;
 	
 	if(looker->mtyp == PM_DREADBLOSSOM_SWARM){
