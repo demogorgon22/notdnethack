@@ -678,6 +678,7 @@ int how;
 		HStrangled &= ~TIMEOUT;
 		delayed_killer = 0;
 	}
+	make_invulnerable(HSanctuary + 1, TRUE);
 	nomovemsg = "You survived that attempt on your life.";
 	flags.move |= MOVE_INSTANT;
 	if(multi > 0) multi = 0; else multi = -1;
@@ -1195,8 +1196,6 @@ int how;
 				calc_total_maxhp();
 			}
 		}
-		if(youmonst.movement < 12)
-			youmonst.movement = 12;
 		savelife(how);
 		if (how == GENOCIDED)
 			pline("Unfortunately you are still genocided...");
