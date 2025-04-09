@@ -7950,16 +7950,18 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		}
 		int dx = x(magr) - x(mdef);
 		int dy = y(magr) - y(mdef);
+		int dist = 1;
 		
 		if(attk->adtyp == AD_PUSH){
 			dx *= -1;
 			dy *= -1;
+			dist = rnd(3);
 		}
 		
 		if(youdef)
-			hurtle(sgn(dx), sgn(dy), 1, FALSE, FALSE);
+			hurtle(sgn(dx), sgn(dy), dist, FALSE, FALSE);
 		else {
-			mhurtle(mdef, sgn(dx), sgn(dy), 1, FALSE);
+			mhurtle(mdef, sgn(dx), sgn(dy), dist, FALSE);
 			if (DEADMONSTER(mdef))
 				return MM_DEF_DIED;
 			if(MIGRATINGMONSTER(mdef))
