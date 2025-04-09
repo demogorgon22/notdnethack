@@ -10759,6 +10759,7 @@ doapply()
 			bullets->cursed = obj->cursed;
 			bullets->quan = u.ulevel > 21 ? 20 : u.ulevel > 12 ? 10 : 5;
 			bullets->spe = u.uimpurity/4;
+			copy_oprop_list(bullets, obj->oproperties);
 			fix_object(bullets);
 			nightmare_mold_lose_experience();
 			*hp(&youmonst) -= 3*(*hp(&youmonst))/10;
