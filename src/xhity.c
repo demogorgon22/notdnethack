@@ -6841,7 +6841,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					dmg = rnd(u.ulevel);
 				else
 					dmg = rnd(monstr[magr->mtyp]);
-				if(resist(mdef, 0, 0, NOTELL))
+				if(mm_resist(mdef, magr, 0, NOTELL))
 					dmg = max(1, dmg/2);
 			}
 			switch(rn2(9)){
@@ -9877,7 +9877,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					}
 				}
 				else {
-					if (!resists_magm(mdef) && !resist(mdef, 0, 0, 0)) {
+					if (!resists_magm(mdef) && !mm_resist(mdef, magr, 0, 0)) {
 						/* heal Death to full */
 						heal(magr, *hpmax(magr));
 						/* instakill */
@@ -10001,7 +10001,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		}
 		else {
 			/* arbitrarily reduce defender's hp (by 1/2 if not sickres, by 3/4 if sickres) */
-			if (!resist(mdef, 0, 0, NOTELL)) {
+			if (!mm_resist(mdef, magr, 0, NOTELL)) {
 				*hpmax(mdef) = min(*hpmax(mdef) * (Sick_res(mdef) ? 2 : 3) / 4, mlev(mdef));
 				if (*hp(mdef) > *hpmax(mdef))
 					*hp(mdef) = *hpmax(mdef);
