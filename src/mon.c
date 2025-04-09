@@ -7813,7 +7813,6 @@ int mtyp;
     if (mtyp == PM_SCORPIUS) mtyp = PM_SCORPION;
 	else if(mtyp == PM_ANCIENT_NAGA) mtyp = rn2(PM_GUARDIAN_NAGA_HATCHLING - PM_RED_NAGA_HATCHLING + 1) + PM_RED_NAGA_HATCHLING;
 	else if(mtyp == PM_SERPENT_MAN_OF_YOTH) mtyp = rn2(PM_COBRA - PM_GARTER_SNAKE + 1) + PM_GARTER_SNAKE;
-	else if(mtyp == PM_HUNTING_HORROR) mtyp = PM_BABY_LONG_WORM;
 	else if(mtyp == PM_SMAUG) mtyp = PM_BABY_RED_DRAGON;
 	
     mtyp = little_to_big(mtyp, (boolean)rn2(2));
