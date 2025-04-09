@@ -3329,8 +3329,8 @@ mfndpos(mon, poss, info, flag)
 	nowtyp = levl[x][y].typ;
 
 	nodiag = (mdat->mtyp == PM_GRID_BUG) || (mdat->mtyp == PM_BEBELITH);
-	wantpool = (mdat->mflagsm&MM_AQUATIC);
-	wantdry = !wantpool;
+	wantpool = !!(mdat->mflagsm&MM_AQUATIC);
+	wantdry = !(mdat->mflagsm&MM_AQUATIC);
 	puddleispool = (wantpool && mdat->msize == MZ_TINY) || (wantdry && is_iron(mon));
 
 	/* nexttry can reset some of the above booleans, but recalculates the ones below. */
