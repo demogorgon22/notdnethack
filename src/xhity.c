@@ -14619,6 +14619,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
 		if (hates_iron(pd) &&
 			obj_is_material(otmp, IRON) &&
+			!(youdef && u.sealsActive&SEAL_EDEN) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			ironobj |= slot;
 		}
