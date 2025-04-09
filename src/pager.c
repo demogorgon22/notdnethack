@@ -1804,6 +1804,7 @@ do_look_letter(sym, from_screen, quick, force_defsyms, cc, out_str, firstmatch)
 
 	/* Finally, return our explanation. */
 	if (found) {
+		flags.verbose = save_verbose;
 		return out_str;
 	}
     } while (from_screen && !quick && ans != LOOK_ONCE);
