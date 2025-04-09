@@ -1735,7 +1735,7 @@ int mkflags;
 	if (otyp == WORD_OF_KNOWLEDGE)
 	    flags.made_know = TRUE;
 	
-	otmp->owt = weight(otmp);
+	fix_object(otmp);
 	return(otmp);
 }
 

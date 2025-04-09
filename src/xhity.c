@@ -14106,7 +14106,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	/* FIGURE OUT WHAT APPLIES */
 	/* what kind of attack is being made? */
 	if (weapon) {
-		if(CHECK_ETRAIT(weapon, magr, ETRAIT_BRACED)
+		if(magr && CHECK_ETRAIT(weapon, magr, ETRAIT_BRACED)
 			&& ROLL_ETRAIT(weapon, magr, TRUE, !rn2(10))
 			&& magr != mdef
 			&& ((!youdef && mdef->mprev_attk.x == sgn(x(magr) - x(mdef)) && mdef->mprev_attk.y == sgn(y(magr) - y(mdef)))
@@ -14758,7 +14758,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_ACID;
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
-		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && Insight >= 20 && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
+		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && Insight >= 20 && magr && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
 			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
@@ -16051,6 +16051,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				tratdmg += bleeddmg;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 					pline("Bleeding wound!");
+				if (vis) 
+					pline("%s sustained a bleeding wound in the fighting!", youdef ? "You" : Monnam(mdef));
 				if(youdef){
 					mdef->mbleed += bleeddmg;
 				}
@@ -16097,7 +16099,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 							pline("Blade song!");
 					}
 				}
-				else if(is_elf(pa) && ROLL_ETRAIT(weapon, magr, rn2(3), !rn2(3))){
+				else if(is_elf(pa) && magr->mspec_used && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(3))){
 					if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 						pline("Blade song!");
 					tratdmg += weapon_dmg_roll(&wdice, youdef);
@@ -16126,7 +16128,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 						You("twirl and strike!");
 					}
 				}
-				else if(is_elf(pa) && magr->mspec_used && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(3))){
+				else if(is_elf(pa) && ROLL_ETRAIT(weapon, magr, rn2(3), !rn2(3))){
 					tratdmg += weapon_dmg_roll(&wdice, youdef);
 					if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 						pline("Blade dance!");
@@ -16351,7 +16353,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			|| pd->mtyp == PM_DEEP_ONE || pd->mtyp == PM_DEEPER_ONE
 			|| pd->mtyp == PM_KUO_TOA || pd->mtyp == PM_KUO_TOA_WHIP
 			|| pd->mtyp == PM_BEING_OF_IB || pd->mtyp == PM_PRIEST_OF_IB
-			|| is_mind_flayer(pd)
+			|| is_mind_flayer(pd) || is_were(pd)
 			|| pd->mtyp == PM_BEFOULED_WRAITH || mdef->mtraitor || mdef->mferal
 		)
 	){
@@ -16430,7 +16432,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if(fired && launcher && valid_weapon_attack && weapon && is_aimable(weapon, attackmask) && dr)
 			dr = max(dr-skill_damage, 0);
 		//Armor-penetrating weapons do 0-1x or 1-2x bonus skill damage to dr (up to +10 vs dr)
-		if(valid_weapon_attack && weapon && CHECK_ETRAIT(weapon, magr, ETRAIT_PENETRATE_ARMOR) && ROLL_ETRAIT(weapon, magr, TRUE, rn2(2))){
+		if(valid_weapon_attack && weapon && magr && CHECK_ETRAIT(weapon, magr, ETRAIT_PENETRATE_ARMOR) && ROLL_ETRAIT(weapon, magr, TRUE, rn2(2))){
 			dr = max_ints(dr - (ROLL_ETRAIT(weapon, magr, rnd(2), 1) * skill_damage), 0);
 		}
 		
@@ -19513,7 +19515,7 @@ movement_combos()
 		}
 	}
 	/* Expert Moves (lunges and knockback charges) */
-	if(!did_combo && u.umoved && !flags.nopick && (multi >= 0)){
+	if((!did_combo || (uwep && is_monk_weapon(uwep))) && u.umoved && !flags.nopick && (multi >= 0)){
 		if (perform_expert_move()) {
 			nomul(0, NULL);
 			u.uattked = TRUE;

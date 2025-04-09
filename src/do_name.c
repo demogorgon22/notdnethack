@@ -824,6 +824,7 @@ const char *name;
 		}
 	}
 	if (carried(obj)) update_inventory();
+	fix_object(obj);
 	return obj;
 }
 

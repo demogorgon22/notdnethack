@@ -1205,6 +1205,13 @@ static const struct def_skill Skill_Orc_Brd[] = {
     { P_NONE, 0 }
 };
 
+static const struct def_skill Skill_Elf_Brd[] = {
+    { P_DAGGER, P_EXPERT },
+    { P_BROAD_SWORD, P_EXPERT },
+    { P_TWO_WEAPON_COMBAT, P_EXPERT },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_Drow_Unarmed[] = {
     { P_BARE_HANDED_COMBAT, P_GRAND_MASTER },
     { P_NONE, 0 }
@@ -2650,7 +2657,10 @@ u_init()
 	    }
 
 #ifdef BARD
-		if(!Role_if(PM_BARD)) skill_add(Skill_Elf_Music);
+		if(Role_if(PM_BARD)){
+			skill_add(Skill_Elf_Brd);
+		}
+		else skill_add(Skill_Elf_Music);
 #endif
 		if(Role_if(PM_ANACHRONONAUT)){
 			u.umartial = TRUE;

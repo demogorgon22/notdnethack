@@ -6719,7 +6719,10 @@ boolean printmessages; /* print generic elemental damage messages */
 						}
 					}
 					/* Ask the player if they want to keep the object */
-					pline("Your blade sweeps %s away from %s.", doname(otmp2), mon_nam(mdef));
+					if(otmp->oartifact == ART_REAVER)
+						pline("Reaver sweeps %s away from %s.", doname(otmp2), mon_nam(mdef));
+					else
+						pline("Your blade sweeps %s away from %s.", doname(otmp2), mon_nam(mdef));
 					if (otmp->ovara_artiTheftType == 0 && yn("Do you try to grab it for yourself?") == 'y'){
 						/* give the object to the character */
 						otmp2 = Role_if(PM_PIRATE) ?
@@ -15211,8 +15214,8 @@ struct obj **opptr;
 			if(check_oprop(sky1, prop) || check_oprop(sky2, prop))
 				add_oprop(amalgam, prop);
 		}
-		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= objects[sky1->otyp].expert_traits;
-		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= objects[sky2->otyp].expert_traits;
+		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= sky1->expert_traits;
+		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= sky2->expert_traits;
 		switch(sky1->obj_material){
 			case IRON:
 				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;

@@ -6134,7 +6134,7 @@ typfnd:
 			consume_oeaten(otmp, -amt);
 		}
 	}
-	otmp->owt = weight(otmp);
+	fix_object(otmp);
 	if (very && otmp->otyp == BALL) otmp->owt += 160;
 
 	*wishreturn = WISH_SUCCESS;

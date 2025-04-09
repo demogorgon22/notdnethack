@@ -1740,7 +1740,7 @@ A("The Dark Claymore",						TWO_HANDED_SWORD,				(const char *)0,
 	),
 
 /*Needs encyc entry*/
-A("Reaver",							SCIMITAR,				(const char *)0,
+A("Reaver",							FLINTLOCK,				(const char *)0,
 	6000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, PM_PIRATE, NON_PM, TIER_C, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),

@@ -973,10 +973,10 @@ struct monst *magr;
 
 	case SEISMIC_HAMMER:		if (chrgd){ ocd *= 3; } break;
 	case ACID_VENOM:			if (obj&&obj->ovar1_acidSplashDamage){ ocn = 0; flat = obj->ovar1_acidSplashDamage; } else{ add(6); } break;
-	case LIGHTSABER:			spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: lightsaber forms
-	case BEAMSWORD:				spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ plus(3,3); spe_mult *= 2;} break;	// external special case: Atma Weapon, lightsaber forms
-	case DOUBLE_LIGHTSABER:		spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
-	case ROD_OF_FORCE:			spe_mult *= 2; ocn *= 2; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
+	case LIGHTSABER:			spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode&&!activeFightingForm(FFORM_MAKASHI)){ plus(3,3); spe_mult *= 2;} break;	// external special case: lightsaber forms
+	case BEAMSWORD:				spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode&&!activeFightingForm(FFORM_MAKASHI)){ plus(3,3); spe_mult *= 2;} break;	// external special case: Atma Weapon, lightsaber forms
+	case DOUBLE_LIGHTSABER:		spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode&&!activeFightingForm(FFORM_MAKASHI)){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
+	case ROD_OF_FORCE:			spe_mult *= 2; ocn *= 2; if(obj&&obj->altmode&&!activeFightingForm(FFORM_MAKASHI)){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	case DISKOS:
 								if(Insight >= 40){
 									ocn+=1;
@@ -1338,7 +1338,7 @@ struct monst *magr;
 			otmp->oartifact == ART_INFINITY_S_MIRRORED_ARC))
 		{
 			otmp->age -= 100;
-			if (otmp->altmode){
+			if (otmp->altmode&&!activeFightingForm(FFORM_MAKASHI)){
 				otmp->age -= 100;
 			}
 		}
@@ -1455,20 +1455,20 @@ struct monst *magr;
 			switch (min(P_SKILL(P_ATARU), P_SKILL(weapon_type(otmp)))){
 			case P_BASIC:
 				tmp += d(2, wdice.oc_damd);
-				if (otmp->altmode){ //Probably just the Annulus
-					tmp += d(2, 3);
+				if (otmp->altmode){
+					tmp += d(2, otmp->oartifact == ART_ANNULUS ? 3 : wdice.oc_damd);
 				}
 				break;
 			case P_SKILLED:
 				tmp += d(4, wdice.oc_damd);
-				if (otmp->altmode){ //Probably just the Annulus
-					tmp += d(4, 3);
+				if (otmp->altmode){
+					tmp += d(4, otmp->oartifact == ART_ANNULUS ? 3 : wdice.oc_damd);
 				}
 				break;
 			case P_EXPERT:
 				tmp += d(6, wdice.oc_damd);
-				if (otmp->altmode){ //Probably just the Annulus
-					tmp += d(6, 3);
+				if (otmp->altmode){
+					tmp += d(6, otmp->oartifact == ART_ANNULUS ? 3 : wdice.oc_damd);
 				}
 				break;
 			}
@@ -3966,7 +3966,7 @@ int wep_type;
 	if(weapon && is_lightsaber(weapon) && litsaber(weapon) && uwep == weapon){
 		validateLightsaberForm();
 		if(activeFightingForm(FFORM_MAKASHI)){
-			if(wep_type != P_SABER){
+			if(!is_makashi_saber(weapon)){
 				if(makashiwarn) pline("Your %s seem%s very unwieldy.",xname(uwep),uwep->quan == 1 ? "s" : "");
 				makashiwarn = FALSE;
 				bonus += -20;
@@ -4288,7 +4288,7 @@ int wep_type;
 			// //no bonus
 		// }
 		if(activeFightingForm(FFORM_MAKASHI)){
-			if(!uarms && !u.twoweap && wep_type == P_SABER) switch(min(P_SKILL(P_MAKASHI), P_SKILL(wep_type))){
+			if(!uarms && !u.twoweap && is_makashi_saber(weapon)) switch(min(P_SKILL(P_MAKASHI), P_SKILL(wep_type))){
 				case P_BASIC:
 					bonus += 2 + ((ACURR(A_DEX)+3)/3 - 4);
 				break;

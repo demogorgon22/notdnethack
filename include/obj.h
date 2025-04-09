@@ -319,6 +319,7 @@ struct obj {
 //define W_CHAIN	    0x00400000L /* Punishment chain */
 //define W_BELT		0x04000000L	/* Belt */
 	long o_e_trait;
+	long expert_traits;
 	long oward;
 			/*Records the warding sign of spellbooks. */
 			/*Records the warding sign of scrolls of ward. */
@@ -989,6 +990,9 @@ struct obj {
 							&& (otmp)->oartifact != ART_ANNULUS\
 							&& (otmp)->oartifact != ART_INFINITY_S_MIRRORED_ARC\
 							)
+#define is_makashi_saber(otmp) ( ( (otmp)->otyp == LIGHTSABER ) \
+							  || (otmp)->otyp == ROD_OF_FORCE \
+							)
 #define valid_focus_gem(otmp) ((otmp)->oclass == GEM_CLASS && ((otmp)->otyp < LUCKSTONE \
 								|| (otmp)->otyp == CHUNK_OF_FOSSIL_DARK \
 								|| (otmp)->otyp == CATAPSI_VORTEX \
@@ -1134,7 +1138,7 @@ struct obj {
 #define multi_ended(otmp)	(!(otmp) ? 0 : \
 	(otmp)->otyp == DOUBLE_SWORD ? 1 : \
 	(otmp)->otyp == BLADED_BOW ? 1 : \
-	((otmp) == uwep && martial_bonus() && (otmp)->otyp == QUARTERSTAFF && P_SKILL(P_QUARTERSTAFF) >= P_EXPERT && P_SKILL(P_BARE_HANDED_COMBAT) >= P_EXPERT && !uarms && !(u.twoweap && uswapwep)) ? 1 : \
+	((otmp) == uwep && martial_bonus() && (otmp)->otyp == QUARTERSTAFF && (otmp)->objsize >= youracedata->msize && P_SKILL(P_QUARTERSTAFF) >= P_EXPERT && P_SKILL(P_BARE_HANDED_COMBAT) >= P_EXPERT && !uarms && !(u.twoweap && uswapwep)) ? 1 : \
 	0)
 /*  */
 #define is_multi_hit(otmp)	(multistriking(otmp) || multi_ended(otmp) || otmp->otyp == STILETTOS || otmp->otyp == WIND_AND_FIRE_WHEELS)
