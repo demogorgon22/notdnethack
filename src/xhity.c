@@ -12090,6 +12090,8 @@ int vis;
 	/* at the very least, all gaze attacks need a clear line of sight */
 	if (!clear_path(x(magr), y(magr), x(mdef), y(mdef)))
 		return MM_MISS;
+	if (youdef && Invulnerable)
+		return MM_MISS;
 
 	/* fix up adtyps for some gazes */
 	switch (adtyp)
