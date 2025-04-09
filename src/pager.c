@@ -1991,12 +1991,12 @@ get_mm_description_of_monster_type(struct monst * mtmp, char * description)
 	int many = 0;
 	many = append(description, notonline(ptr)			, "avoids you"			, many);
 	many = append(description, fleetflee(ptr)			, "flees"				, many);
-	many = append(description, species_flies(ptr)	, "flies"				, many);
-	many = append(description, species_floats(ptr)	, "floats"				, many);
+	many = append(description, species_flies(ptr)		, "flies"				, many);
+	many = append(description, species_floats(ptr)		, "floats"				, many);
 	many = append(description, is_clinger(ptr)			, "clings to ceilings"	, many);
-	many = append(description, species_swims(ptr)	, "swims"				, many);
+	many = append(description, species_swims(ptr)		, "swims"				, many);
 	many = append(description, breathless_mon(mtmp)		, "is breathless"		, many);
-	many = append(description, amphibious(ptr)			, "survives underwater"	, many);
+	many = append(description, amphibious(ptr)			, (ptr->mflagsm&MM_AQUATIC) ? "lives underwater" : "survives underwater"	, many);
 	many = append(description, species_passes_walls(ptr), "phases"				, many);
 	many = append(description, amorphous(ptr)			, "squeezes in gaps"	, many);
 	many = append(description, tunnels(ptr)				, "tunnels"				, many);
@@ -2005,7 +2005,7 @@ get_mm_description_of_monster_type(struct monst * mtmp, char * description)
 	many = append(description, species_teleports(ptr), "teleports"			, many);
 	many = append(description, species_controls_teleports(ptr)	, "controls teleports"	, many);
 	many = append(description, mteleport(ptr)			, "teleports often"		, many);
-	many = append(description, stationary_mon(mtmp)			, "stationary"			, many);
+	many = append(description, stationary_mon(mtmp)		, "stationary"			, many);
 	many = append(description, (many==0)				, "moves normally"		, many);
 	strcat(description, ". ");
 	return description;
