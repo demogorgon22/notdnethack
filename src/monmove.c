@@ -1899,9 +1899,12 @@ register struct monst *mtmp;
 				}
 			}
 			else if(mdat->mtyp == PM_FOETID_ANGEL){
-				pline("It screams %s!",
-					m_sen ? "at you through your telepathy" :
-					Blind_telepat ? "at you through your latent telepathy" : "into your mind");
+				if(m_sen || (Blind_telepat && rn2(2)) || !rn2(10)){
+					pline("It screams %s!",
+						m_sen ? "at you through your telepathy" :
+						Blind_telepat ? "at you through your latent telepathy" : "into your mind");
+					dmg = rnd(15);
+				}
 			}
 			else if(is_tettigon(mdat)){
 				if(m_sen || (Blind_telepat && rn2(2)) || !rn2(7)){
