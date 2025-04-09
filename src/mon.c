@@ -1592,7 +1592,7 @@ register struct monst *mtmp;
 			/* Puddles can sustain a tiny sea creature, or lessen the burdens of a larger one */
 			if (!(inshallow && mtmp->data->msize == MZ_TINY))
 			{
-				if (mtmp->mhp > 1 && rn2(mtmp->data->msize)) mtmp->mhp--;
+				if (mtmp->mhp > 1 && rn2(1 + mtmp->data->msize)) mtmp->mhp--;
 				monflee(mtmp, 2, FALSE, FALSE);
 			}
 		}
