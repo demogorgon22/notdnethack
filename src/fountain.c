@@ -667,7 +667,7 @@ smithing_object(struct obj *obj)
 				incntlet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
 		}
-		if((obj->oclass == WEAPON_CLASS || is_weptool(obj))
+		if(opropable
 			&& (u.ublood_smithing && have_blood_smithing_sothoth(obj))
 		){
 			n++;
