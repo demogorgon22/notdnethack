@@ -10637,8 +10637,8 @@ int vis;
 		if (youdef) {
 			if (pa && pa->mtyp == PM_METROID_QUEEN && !Drain_resistance) {
 				losexp("life force drain", TRUE, FALSE, FALSE);
-				magr->mhpmax += d(1, 4);
-				magr->mhp += d(1, 6);
+				magr->mhpmax += d(1, (hd_size(youracedata)+1)/2);
+				magr->mhp += d(1, hd_size(youracedata));
 				if (magr->mhp > magr->mhpmax) magr->mhp = magr->mhpmax;
 				if (magr->mtame){
 					EDOG(magr)->hungrytime += 100;  //400/4 = human nut/4
