@@ -6047,9 +6047,9 @@ typfnd:
 		{
 			*wishreturn = (NOWISH) ? WISH_DENIED : ((NOJUICE) ? WISH_OUTOFJUICE : WISH_MERCYRULE);
 			/* wish failed */
-			artifact_exists(otmp, ONAME(otmp), FALSE);	// Is this necessary?
-			obfree(otmp, (struct obj *) 0);		// Is this necessary?
-			otmp = &zeroobj;					// Is this necessary?
+			artifact_exists(otmp, ONAME(otmp), FALSE);
+			obfree(otmp, (struct obj *) 0);
+			otmp = &zeroobj;
 			return &zeroobj;
 		}
 		else {
