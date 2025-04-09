@@ -5161,7 +5161,7 @@ int respect_timeout;
 				if (u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 				if (u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 				if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
-					if(u.yog_sothoth_credit >= 50){
+					if(u.yog_sothoth_credit >= 50 && (u.specialSealsActive & SEAL_YOG_SOTHOTH)){
 						Sprintf1(buf, spirit_powers[u.spiritPOrder[i]].name);
 						any.a_int = u.spiritPOrder[i] + 1;	/* must be non-zero */
 						add_menu(tmpwin, NO_GLYPH, &any,
