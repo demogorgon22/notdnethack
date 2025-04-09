@@ -12120,12 +12120,15 @@ int vis;
 	/* these gazes are actually hacks and only work vs the player */
 	if (!youdef && (adtyp == AD_WTCH || adtyp == AD_MIST))
 		return MM_MISS;
+	if (adtyp == AD_SSUN && ((youdef ? Invis : mdef->minvis) && !(youagr ? See_invisible(x(mdef), y(mdef)) : mon_resistance(magr, SEE_INVIS)) ))
+		return MM_MISS;
 	if (/* needs_magr_eyes:   magr must have eyes and can actively see mdef */
 		(needs_magr_eyes && !(
 			(haseyes(pa)) &&
 			(!(youagr ? Blind : is_blind(magr))) &&
 			(!(youdef ? Invis : mdef->minvis) || (youagr ? See_invisible(x(mdef), y(mdef)) : mon_resistance(magr, SEE_INVIS))) &&
 			(youagr ? canseemon(mdef) : youdef ? mon_can_see_you(magr) : mon_can_see_mon(magr, mdef)) &&
+			(youdef ? (Invis && !mon_resistance(magr, SEE_INVIS)) : (mdef->minvis && !mon_resistance(magr, SEE_INVIS))) &&
 			(!(youagr ? Sleeping : magr->msleeping)) &&
 			(!Gaze_res(mdef))
 		))
@@ -12321,8 +12324,11 @@ int vis;
 		break;
 	case AD_SSUN:
 		/* requires reflectable light */
-		if (!levl[x(magr)][y(magr)].lit)
+		if (dimness(x(magr), y(magr))  > 0)
 			return MM_MISS;
+		
+		if (!levl[x(magr)][y(magr)].lit)
+			dmg = (dmg+1)/2;
 
 		/* message and blind */
 		if (youdef) {
@@ -12362,7 +12368,7 @@ int vis;
 				dmg = 0;
 		}
 		/* damage inventory */
-		if (!UseInvFire_res(mdef) && !(youdef ? Reflecting : mon_resistance(mdef, REFLECTING))) {
+		if (levl[x(magr)][y(magr)].lit && !UseInvFire_res(mdef) && !(youdef ? Reflecting : mon_resistance(mdef, REFLECTING))) {
 			if ((int)mlev(magr) > rn2(20))
 				destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
 			if ((int)mlev(magr) > rn2(20))
