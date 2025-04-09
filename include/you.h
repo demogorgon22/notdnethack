@@ -611,6 +611,7 @@ struct you {
 	int		uentangled_otyp; /* to record the otyp of an item entangling you */
 	long	uentangled_oid; /* to record the oid of the item entangling you */
 	long int spawnedGold; /* to record total amount of gold spawned in a game */
+	long int total_damage; /* to record total amount of damage in game */
 	int 	usanity;	/* to record level of sanity */
 	unsigned long long int 	umadness;	/* to afflictions */
 #define	MAD_DELUSIONS		0x0000000000000001LL

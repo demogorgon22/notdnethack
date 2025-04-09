@@ -3531,6 +3531,7 @@ int dmg;				/* damage to deal */
 	if (youdef) {
 		stop_occupation();
 		flags.botl = 1;
+		u.total_damage += dmg;
 		if (dmg > 0 && magr)
 			magr->mhurtu = TRUE;
 		/* the golden knight saves you from dying from hp loss */

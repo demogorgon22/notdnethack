@@ -2887,6 +2887,7 @@ register int n;
 register const char *knam;
 boolean k_format;
 {
+	u.total_damage += n;
 	if (Upolyd) {
 		u.mh -= n;
 		if (u.mhmax < u.mh) u.mh = u.mhmax;
