@@ -6384,6 +6384,9 @@ struct monst *mtmp;
 		&& (otmp->owt > max(3, mtmp->data->cwt/10) || objects[typ].oc_size > MZ_MEDIUM)
 		&& !is_divider(mtmp->data)
 	) {
+		//properly uncreate an artifact
+		if (otmp->oartifact)
+			artifact_exists(otmp, ONAME(otmp), FALSE);
 		delobj(otmp);
 		otmp = 0;
 	}
