@@ -263,13 +263,13 @@ struct monst * mdef;
 		if (!DEADMONSTER(mdef) && u.sealsActive&SEAL_SHIRO){
 			int i, dx, dy;
 			struct obj *otmp;
-			for (i = rnd(8); i>0; i--){
+			for (i = rnd(8); i>0 && !DEADMONSTER(mdef); i--){
 				dx = rn2(3) - 1;
 				dy = rn2(3) - 1;
 				otmp = mksobj(ROCK, NO_MKOBJ_FLAGS);
 				otmp->blessed = 0;
 				otmp->cursed = 0;
-				if ((dx || dy) && !DEADMONSTER(mdef)){
+				if ((dx || dy) && isok(x(mdef) + dx, y(mdef) + dy)){
 					projectile(&youmonst, otmp, (void *)0, HMON_PROJECTILE|HMON_FIRED, x(mdef) + dx, y(mdef) + dy, -dx, -dy, 0, 1, TRUE, FALSE, FALSE);
 				}
 				else {
