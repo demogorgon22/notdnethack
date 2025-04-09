@@ -3250,6 +3250,13 @@ struct attack *attk;
 					(youagr ? "your" : mhis(magr))
 					);
 			}
+			else if(attk->adtyp == AD_PLYS){
+				pline("%s lick%s %s!",
+					(youagr ? "You" : Monnam(magr)),
+					(youagr ? "" : "s"),
+					((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr))
+					);
+			}
 			else {
 				pline("%s lash%s %s with %s tongue!",
 					(youagr ? "You" : Monnam(magr)),
