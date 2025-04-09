@@ -2934,6 +2934,10 @@ mon_can_see_mon(looker, lookie)
 	if(distmin(looker->mx,looker->my,lookie->mx,lookie->my) <= 1 && !rn2(8))
 		return TRUE;
 	
+	/* Monsters with sensitive ears can find enemies without stealth */
+	if(sensitive_ears(looker->data) && looker->mcanhear && !mon_resistance(lookie,STEALTH) && distmin(looker->mx,looker->my,lookie->mx,lookie->my) <= rn2(8))
+		return TRUE;
+	
 	/* R'lyehian psychic sight, see minds, blocked by water */
 	if(rlyehiansight(looker->data) && !mindless_mon(lookie)
 		&& (!is_pool(looker->mx, looker->my, FALSE) || mon_resistance(looker,FLYING) || mon_resistance(looker,LEVITATION))
@@ -3081,6 +3085,10 @@ struct monst *looker;
 	if(distmin(looker->mx,looker->my,u.ux,u.uy) <= 1 && !rn2(8))
 		return TRUE;
 	
+	/* Monsters with sensitive ears can find enemies without stealth */
+	if(sensitive_ears(looker->data) && looker->mcanhear && !Stealth && distmin(looker->mx,looker->my,u.ux, u.uy) <= rn2(8))
+		return TRUE;
+
 	if(Invis && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_VILQUAR) && !resist(looker, '\0', 0, NOTELL)){
 		return FALSE;
 	}
@@ -3124,7 +3132,9 @@ struct monst *looker;
 		}
 		/* nv range auto-succeeds within its distance */
 		if (nvrange > 0
-			&& dist2(looker->mx, looker->my, u.ux, u.uy) <= nvrange * nvrange + nvrange) {
+			&& dist2(looker->mx, looker->my, u.ux, u.uy) <= nvrange * nvrange + nvrange
+			&& !(Stealth && (Role_if(PM_ROGUE) || (u.sealsActive&SEAL_ANDROMALIUS) || !rn2(8)))
+		) {
 			return TRUE;
 		}
 		/* otherwise, check sight vs how lit/dim the square is */
