@@ -3877,8 +3877,15 @@ register char *cmd;
 		 * normal movement: attack if 'I', move otherwise
 		 */
 	    if (movecmd(cmd[1])) {
-		flags.forcefight = 1;
-		do_walk = TRUE;
+			flags.forcefight = 1;
+			do_walk = TRUE;
+		} else if(cmd[1] == '.'){
+			//Not a move command, but if force fight we want to attack ourselves so...
+			//Because it isn't a move command, dx and dy must be manually set here.
+			u.dx = 0;
+			u.dy = 0;
+			flags.forcefight = 1;
+			do_walk = TRUE;
 	    } else
 		prefix_seen = TRUE;
 	} else if (*cmd == DONOPICKUP) {

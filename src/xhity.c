@@ -2996,6 +2996,8 @@ boolean nearmiss;
 	if (youagr) {
 		if (compat)
 			You("pretend to be friendly to %s.", mon_nam(mdef));
+		else if (youdef)
+			You("fail to hit yourself. How embarrassing!");
 		else if (flags.verbose)
 			You("miss %s.", mon_nam(mdef));
 		else
@@ -3503,6 +3505,11 @@ int dmg;				/* damage to deal */
 
 	const char * oldkiller = killer;
 	killer = 0;
+
+	if(dmg > 0 && youdef && youagr){
+		dmg = (dmg - ACURR(A_DEX))/2;
+		dmg = max(1, dmg);
+	}
 
 	/* if defender is already dead, avoid re-killing them; just note that they are dead */
 	if (*hp(mdef) < 1) {
@@ -4420,6 +4427,11 @@ int *shield_margin;
 		otmp = (youagr ? uarmf : which_armor(magr, W_ARMF));
 		if (otmp && otmp->otyp == find_cboots())
 			wepn_acc++;
+	}
+	
+
+	if(youdef && youagr){
+		bons_acc += 2000; //Auto hit.
 	}
 
 
