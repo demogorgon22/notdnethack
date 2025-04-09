@@ -6365,6 +6365,8 @@ place_law_features()
 			for(; n > 0; n--)
 				mklawfossil(STONE);
 		}
+		if(!rn2(20))
+			mksobj(HYPERBOREAN_DIAL, NO_MKOBJ_FLAGS);
 		
 	} else if(Is_arcadia_woods(&u.uz)){
 		if(on_level(&u.uz, &arcadia1_level)){
