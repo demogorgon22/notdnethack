@@ -1302,6 +1302,7 @@ struct obj {
 				|| ((otmp)->oartifact == ART_CLEAVER && Role_if(PM_BARBARIAN))\
 				|| ((otmp)->oartifact == ART_ATLANTEAN_ROYAL_SWORD && Role_if(PM_BARBARIAN))\
 				|| ((otmp)->oartifact == ART_TECPATL_OF_HUHETOTL && Role_if(PM_ARCHEOLOGIST))\
+				|| ((otmp)->oartifact == ART_REAVER && Role_if(PM_PIRATE))\
 				|| ((otmp)->oartifact == ART_KIKU_ICHIMONJI && Role_if(PM_SAMURAI))\
 				|| ((otmp)->oartifact == ART_JINJA_NAGINATA && Role_if(PM_SAMURAI))\
 				|| ((otmp)->oartifact == ART_SNICKERSNEE && (Role_if(PM_SAMURAI) || Role_if(PM_TOURIST) ))\
