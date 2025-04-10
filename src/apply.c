@@ -2893,8 +2893,8 @@ transfusion(struct obj *obj)
 	}
 	if (is_vampire(youracedata) || (carnivorous(youracedata) && !herbivorous(youracedata))) {
 		pline("It smells like %s%s.", 
-				!type_is_pname(&mons[obj->corpsenm]) ||
-				!(mons[obj->corpsenm].geno & G_UNIQ) ||
+				(!type_is_pname(&mons[obj->corpsenm]) &&
+				 (mons[obj->corpsenm].geno & G_UNIQ)) ||
 				Hallucination ? 
 					"the " : 
 					"", 

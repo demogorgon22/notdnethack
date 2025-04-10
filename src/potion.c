@@ -1411,8 +1411,8 @@ as_extra_healing:
 		}
 		if (is_vampire(youracedata) || (carnivorous(youracedata) && !herbivorous(youracedata))) {
 			pline("It smells like %s%s.", 
-					!type_is_pname(&mons[otmp->corpsenm]) ||
-					!(mons[otmp->corpsenm].geno & G_UNIQ) ||
+					(!type_is_pname(&mons[otmp->corpsenm]) &&
+					 (mons[otmp->corpsenm].geno & G_UNIQ)) ||
 					Hallucination ? 
 						"the " : 
 						"", 
