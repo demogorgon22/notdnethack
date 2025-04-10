@@ -2813,9 +2813,9 @@ karemade:
 				nomul(0, NULL);
 			}
 
-			if(!rn2(7) && roll_madness(MAD_REACHER)){
+			if(!rn2(7) && (Is_bridge_temple(&u.uz) || !rn2(11)) && roll_madness(MAD_REACHER)){
 				You("feel its multitudinous gaze upon you!");
-				if(!UseInvShock_res(&youmonst) || !rn2(11)){
+				if(!UseInvShock_res(&youmonst) || (!rn2(11) && Is_bridge_temple(&u.uz))){
 					destroy_item(&youmonst, WAND_CLASS, AD_ELEC);
 					destroy_item(&youmonst, RING_CLASS, AD_ELEC);
 				}
