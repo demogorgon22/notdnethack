@@ -92,6 +92,7 @@ struct flag {
 	boolean  toptenwin;	/* ending list in window instead of stdout */
 	boolean  verbose;	/* max battle info */
 	boolean  prayconfirm;	/* confirm before praying */
+	boolean  tm_hour;	/* hour of the day (updated once per global turn) */
 
 	int move;	/* type[s] of action taken by player's last input/action */
 	int movetoprint;

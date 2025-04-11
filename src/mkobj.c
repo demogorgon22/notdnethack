@@ -527,8 +527,7 @@ long num;
  * in the nobj chain (and nexthere chain when on the floor).
  */
 struct obj *
-duplicate_obj(obj)
-struct obj *obj;
+duplicate_obj(struct obj *obj, boolean same_chain)
 {
 	struct obj *otmp;
 
@@ -545,7 +544,7 @@ struct obj *obj;
 		struct obj *cntdup;
 		struct obj **curcobj = &(otmp->cobj);
 		for(struct obj *cntobj = obj->cobj; cntobj; cntobj = cntobj->nobj){
-			cntdup = duplicate_obj(cntobj);
+			cntdup = duplicate_obj(cntobj, TRUE);
 			if(cntdup){
 				obj_extract_self(cntdup);
 				//Note: don't use the normal add to container function, or it will reverse the order of cobj
@@ -561,11 +560,18 @@ struct obj *obj;
 	if (!otmp->o_id) otmp->o_id = flags.ident++;	/* ident overflowed */
 	otmp->lamplit = 0;	/* not lit, yet */
 	otmp->owornmask = 0L;	/* new object isn't worn */
-	obj->nobj = otmp;
-	/* Only set nexthere when on the floor, nexthere is also used */
-	/* as a back pointer to the container object when contained. */
-	if (obj->where == OBJ_FLOOR)
-	    obj->nexthere = otmp;
+	if(same_chain){
+		obj->nobj = otmp;
+		/* Only set nexthere when on the floor, nexthere is also used */
+		/* as a back pointer to the container object when contained. */
+		if (obj->where == OBJ_FLOOR)
+			obj->nexthere = otmp;
+	}
+	else {
+		otmp->where = OBJ_FREE;
+		otmp->nobj = 0;
+		otmp->nexthere = 0;
+	}
 
 	register int ox_id;
 	for (ox_id=0; ox_id<NUM_OX; ox_id++)
@@ -2729,7 +2735,7 @@ int mat;
 		case GOLD_BLADED_VIBROZANBATO:
 			if(mat != GOLD) obj->otyp = WHITE_VIBROZANBATO;
 		break;
-		// case HEAVY_IRON_BALL:
+		// case BALL:
 			// obj->otyp = ;
 		// break;
 		// case CHAIN:
@@ -2945,7 +2951,7 @@ register struct obj *obj;
 		return eaten_stat((int)obj->quan * wt, obj);
 	} else if (obj->oclass == COIN_CLASS)
 		return gold_weight(obj->quan);
-	else if (obj->otyp == HEAVY_IRON_BALL && obj->owt != 0)
+	else if (obj->otyp == BALL && obj->owt != 0)
 		return((int)(obj->owt));	/* kludge for "very" heavy iron ball */
 	return((wt || obj->oartifact) ? wt*(int)obj->quan : ((int)obj->quan + 1)>>1);
 }

@@ -78,7 +78,8 @@ const char * const objexplain[] = {	/* these match def_oc_syms, above */
 	"splash of venom",
 	"broken tile or slab",
 	"bed or chair",
-	"strange coin"
+	"strange coin",
+	"belt"
 };
 
 /* Object class names.  Used in object_detect(). */

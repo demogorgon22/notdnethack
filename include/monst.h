@@ -207,6 +207,10 @@ struct monst {
 	
 	Bitfield(mequipping,7); /*146*/
 
+	Bitfield(mironmarked,1);/* recently hit by an iron weapon (elves/fey/rage-walker) */ /*147*/
+	Bitfield(mcaterpillars,1); /* monster is covered in rot scorpions */ /*148*/
+	Bitfield(momud,1); /* monster is covered in orc-mud */ /*148*/
+
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */
@@ -278,6 +282,7 @@ struct monst {
 #define	NECROMANCY_FACTION	FACTION_PADDING+12	/* Elf Necromacer's faction */
 #define	CITY_FACTION		FACTION_PADDING+13	/* Undead Hunter city faction */
 #define	MOON_FACTION		FACTION_PADDING+14	/* Undead Hunter lycanthrope faction */
+#define	ROT_FACTION			FACTION_PADDING+15	/* Rot monster faction */
 
 /* template applied to monster to create a new-ish monster */
 	int mtemplate;
@@ -313,7 +318,9 @@ struct monst {
 #define TONGUE_PUPPET	30	/* moon-tongue puppet */
 #define YGGDRASIL	31	/* of the sacred tree */
 #define	WHISPERING		32	/* Voidified */
-#define MAXTEMPLATE	WHISPERING
+#define SWOLLEN_TEMPLATE	33	/* giant */
+#define BLOOD_MON		34	/* blood clone */
+#define MAXTEMPLATE	BLOOD_MON
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */
@@ -370,6 +377,7 @@ struct monst {
 #define	mvar_star_vampire_blood	mvar1
 #define	mvar_elfwraith_target	mvar1
 #define	mvar_spellweaver_count	mvar1
+#define	mvar1_tettigon_uncancel	mvar1
 	long mvar2;
 #define	mvar_dracaePregTimer	mvar2
 #define	mvar_spList_2	mvar2

@@ -12,6 +12,7 @@
 STATIC_DCL void NDECL(stoned_dialogue);
 STATIC_DCL void NDECL(golded_dialogue);
 STATIC_DCL void NDECL(gillyweed_dialogue);
+STATIC_DCL void NDECL(salted_dialogue);
 #ifdef CONVICT
 STATIC_DCL void NDECL(phasing_dialogue);
 #endif /* CONVICT */
@@ -175,6 +176,30 @@ gillyweed_dialogue()
     }
 }
 
+static NEARDATA const char * const salted_texts[] = {
+	"You are slowing down.",		/* 5 */
+	"Your limbs are stiffening.",		/* 4 */
+	"Your limbs have turned to salt.",	/* 3 */
+	"You have turned to salt.",		/* 2 */
+	"You have become a pillar of salt."			/* 1 */
+};
+
+STATIC_OVL void
+salted_dialogue()
+{
+	register long i = (Salted & TIMEOUT);
+
+	if (i > 0L && i <= SIZE(salted_texts)) {
+		pline1(salted_texts[SIZE(salted_texts) - i]);
+		nomul(0, NULL); /* fix for C343-74 */
+	}
+	if (i == 5L)
+		HFast = 0L;
+	if (i == 3L && !Free_action)
+		nomul(-3, "turning to salt");
+	exercise(A_DEX, FALSE);
+}
+
 #ifdef CONVICT
 STATIC_OVL void
 phasing_dialogue()
@@ -333,6 +358,14 @@ burn_away_slime()
 	    Slimed = 0L;
 	    flags.botl = 1;
 		delayed_killer = 0;
+	}
+	if (youmonst.mcaterpillars) {
+	    pline_The("parasitic caterpillars are burned off!");
+	    youmonst.mcaterpillars = FALSE;
+	}
+	if (youmonst.momud) {
+	    pline_The("writhing mud that covers you is burned away!");
+	    youmonst.momud = FALSE;
 	}
 	return;
 }
@@ -577,6 +610,7 @@ nh_timeout()
 	if(Invulnerable) return; /* things past this point could kill you */
 	if(Stoned) stoned_dialogue();
 	if(Golded) golded_dialogue();
+	if(Salted) salted_dialogue();
 	if(Slimed) slime_dialogue();
 	if(Vomiting) vomiting_dialogue();
 	if((Strangled || FrozenAir || BloodDrown) && !Breathless) choke_dialogue();
@@ -705,7 +739,7 @@ nh_timeout()
 		if(u.divetimer<=3) You("are running short on air.");
 		if(u.divetimer==1) You("are running out of air!");
 	} else if (!u.usubwater){ /* limited duration dive, 2 turns to 6 turns naturally, 8 turns with magic */ 
-		if(u.divetimer < (ACURR(A_CON))/3 && !u.ustuck && !Babble && !Screaming) u.divetimer++;
+		if(u.divetimer < (ACURR(A_CON))/3 && !u.ustuck && (u.divetimer == 0 || (!Babble && !Screaming))) u.divetimer++;
 		else if(u.divetimer > (ACURR(A_CON))/3) u.divetimer--;
 	}
 
@@ -840,6 +874,24 @@ nh_timeout()
 				IMPURITY_UP(u.uimp_bloodlust)
 			}
 			done(GOLDING);
+			break;
+		case SALTED:
+			if (delayed_killer && !killer) {
+				killer = delayed_killer;
+				delayed_killer = 0;
+			}
+			if (!killer) {
+				/* leaving killer_format would make it
+				   "petrified by petrification" */
+				killer_format = NO_KILLER_PREFIX;
+				killer = "killed by turning to salt";
+			}
+			if (!u.uconduct.killer){
+				//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
+				IMPURITY_UP(u.uimp_murder)
+				IMPURITY_UP(u.uimp_bloodlust)
+			}
+			done(SALTING);
 			break;
 		case FROZEN_AIR:
 			pline("The frozen air surrounding you becomes vapor.");
@@ -1250,6 +1302,13 @@ long timeout;
 
 	mon = mon2 = (struct monst *)0;
 	mtyp = big_to_little(egg->corpsenm);
+	if(u.silvergrubs && !rn2(20)){
+		u.silvergrubs = FALSE;
+	}
+	if(check_rot(ROT_KIN) && (u.silvergrubs || !rn2(100)) && !(mvitals[PM_MAN_FLY].mvflags&G_GONE && !In_quest(&u.uz))){
+		mtyp = PM_MAN_FLY;
+		u.silvergrubs = TRUE;
+	}
 	/* The identity of one's father is learned, not innate */
 	yours = (egg->spe || (!flags.female && carried(egg) && !rn2(2)));
 	silent = (timeout != monstermoves);	/* hatched while away */
@@ -2696,6 +2755,7 @@ struct obj *obj;
 	EMON(obj)->mspores = mon->mspores;
 	EMON(obj)->mformication = mon->mformication;
 	EMON(obj)->mscorpions = mon->mscorpions;
+	EMON(obj)->mcaterpillars = mon->mcaterpillars;
 	
 	
 	EMON(obj)->encouraged = mon->encouraged;

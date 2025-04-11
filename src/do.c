@@ -1336,7 +1336,7 @@ int portal;
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
 		&& dunlev(&u.uz) < qlocate_level.dlevel
-		&& rnd(20) < u.uinsight && rn2(2)
+		&& rnd(20) < Insight && rn2(2)
 	){
 		int diff = rn2(2);	/* 0 - 1 */
 		if (diff != 0) {
@@ -1843,12 +1843,12 @@ misc_levelport:
 			}
 			else if(quest_status.time_doing_quest >= UH_QUEST_TIME_1){
 				You("again sense Vicar Amalia pleading for help:");
-				pline("Somthing is wrong. The infection is now spreading in the city!");
+				pline("Something is wrong. The infection is now spreading in the city!");
 			}
 			//Futureproof, but I don't think this can be reached.
 			else {
 				You("again sense Vicar Amalia pleading for help:");
-				pline("Somthing is wrong. The infection is still spreading.");
+				pline("Something is wrong. The infection is still spreading.");
 			}
 		} else {
 			if (u.uevent.qcalled) {
@@ -2185,6 +2185,9 @@ int different;
 	if(different==REVIVE_ZOMBIE){
 		if(mtmp->mspores){
 			set_template(mtmp, SPORE_ZOMBIE);
+			if(couldsee(mtmp->mx, mtmp->my) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my)){
+				IMPURITY_UP(u.uimp_rot)
+			}
 			mtmp->mspores = 0;
 		}
 		else {
@@ -2446,6 +2449,9 @@ long timeout;
 	) pmtype = -1;
 
 	if (pmtype != -1) {
+		if(couldsee(body->ox, body->oy) && distmin(body->ox, body->oy, u.ux, u.uy) <= BOLT_LIM){
+			IMPURITY_UP(u.uimp_rot)
+		}
 		/* We don't want special case revivals */
 		if (cant_create(&pmtype, TRUE) || get_ox(body, OX_EMON))
 			pmtype = -1; /* cantcreate might have changed it so change it back */

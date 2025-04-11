@@ -261,7 +261,7 @@ struct monst *mtmp;
 	struct trap *t;
 	int x=mtmp->mx, y=mtmp->my;
 	boolean stuck = (mtmp == u.ustuck);
-	boolean immobile = (mtmp->data->mmove == 0);
+	boolean immobile = (mtmp->data->mmove == 0) || stationary_mon(mtmp);
 	int fraction;
 
 	if (is_animal(mtmp->data) && mindless_muse_mon(mtmp))
@@ -602,7 +602,7 @@ struct monst *mtmp;
 		    if (otmp)
 				pline("%s %s a unicorn horn!", Monnam(mtmp), is_weeping(mtmp->data) ? "is using" : "uses");
 		    else if(mtmp->mtyp == PM_ITINERANT_PRIESTESS && !straitjacketed_mon(mtmp)){
-				if(u.uinsight < 40){
+				if(Insight < 40){
 					pline("A glow issues from somewhere around %s torso, but trying to see the exact source gives you a %sache!", s_suffix(mon_nam(mtmp)), body_part(HEAD));
 				}
 				else {
@@ -2077,7 +2077,7 @@ struct monst *mtmp;
 	int x = mtmp->mx, y = mtmp->my;
 	struct trap *t;
 	int xx, yy;
-	boolean immobile = (mdat->mmove == 0);
+	boolean immobile = (mdat->mmove == 0) || stationary_mon(mtmp);
 	boolean stuck = (mtmp == u.ustuck);
 	boolean nomouth = nomouth(mtmp->mtyp)
 			|| ((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) && FacelessHelm(which_armor(mtmp, W_ARMH)))
@@ -2483,6 +2483,7 @@ museamnesia:
 			mtmp->mformication = 0;
 			mtmp->mscorpions = 0;
 			mtmp->mvermin = 0;
+			mtmp->mcaterpillars = 0;
 		} else {
 			if (vismon) pline("%s looks angry and confused!", Monnam(mtmp));
 			untame(mtmp, 0);
@@ -2542,7 +2543,7 @@ museamnesia:
 		    if (vismon){
 				pline("%s flicks a whip towards your %s!", Monnam(mtmp), hand);
 			}
-		    if (obj->otyp == HEAVY_IRON_BALL) {
+		    if (obj->otyp == BALL) {
 				pline("%s fails to wrap around %s.", The_whip, the_weapon);
 				return 1;
 		    }

@@ -260,8 +260,8 @@ struct monst *magr;
 						|| (Role_if(PM_UNDEAD_HUNTER) && mvitals[PM_MOON_S_CHOSEN].died)
 					)
 		){
-			if(u.uinsight)
-				tmp += rnd(min(u.uinsight, mlev(magr)));
+			if(Insight)
+				tmp += rnd(min(Insight, mlev(magr)));
 		}
 		else if(magr && insightful(magr->data)){
 			tmp += rnd(mlev(magr));
@@ -269,8 +269,8 @@ struct monst *magr;
 	}
 
 	if (otmp->oartifact == ART_LASH_OF_THE_COLD_WASTE){
-		if(youagr && u.uinsight){
-			tmp += rnd(min(u.uinsight, mlev(magr)));
+		if(youagr && Insight){
+			tmp += rnd(min(Insight, mlev(magr)));
 		} else if(magr && insightful(magr->data)) {
 			tmp += rnd(mlev(magr));
 		}
@@ -346,7 +346,7 @@ struct monst *magr;
 		attackmask |= WHACK;
 	}
 	if(obj && magr && !litsaber(obj) && is_chained_merc(obj) && (
-		(youagr && u.uinsight > 20 && YOU_MERC_SPECIAL)
+		(youagr && Insight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
 	)){
 		attackmask |= WHACK;
@@ -383,7 +383,7 @@ struct monst *magr;
 		|| oartifact == ART_CLAWS_OF_THE_REVENANCER
 		|| (obj && otyp == KNUCKLE_DUSTERS)
 		|| (obj && check_oprop(obj, OPROP_BLADED) && !litsaber(obj))
-		|| (obj && check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 12)
+		|| (obj && check_oprop(obj, OPROP_RLYHW) && Insight >= 12)
 		|| (obj && !litsaber(obj) && is_streaming_merc(obj))
 		){
 		attackmask |= SLASH;
@@ -395,7 +395,7 @@ struct monst *magr;
 		|| (oartifact == ART_BLOODLETTER && artinstance[oartifact].BLactive >= moves)
 		|| oartifact == ART_FIRE_BRAND
 		|| oartifact == ART_ARYFAERN_KERYM
-		|| (obj && check_oprop(obj, OPROP_RLYHW) && u.uinsight >= 24)
+		|| (obj && check_oprop(obj, OPROP_RLYHW) && Insight >= 24)
 		){
 		attackmask |= EXPLOSION;
 	}
@@ -577,7 +577,7 @@ struct monst *magr;
 		{
 			ocn = 1;
 			ocd = 3;
-			if(u.uinsight >= 25){
+			if(Insight >= 25){
 				bonn = 1;
 				bond = 5;
 				spe_mult += 1;
@@ -654,8 +654,8 @@ struct monst *magr;
 				ignore_rolls += u.usanity > 50 ? 0 : u.usanity > 25 ? 1 : u.usanity > 10 ? 2 : 3;
 		}
 
-		if (otyp == HEAVY_IRON_BALL) {
-			int wt = (int)objects[HEAVY_IRON_BALL].oc_weight;
+		if (otyp == BALL) {
+			int wt = (int)objects[BALL].oc_weight;
 
 			if ((int)obj->owt > wt) {
 				wt = ((int)obj->owt - wt) / 160;
@@ -726,8 +726,8 @@ struct monst *magr;
 					modnum = &flat;
 				}
 				if(magr == &youmonst || (!magr && obj->where == OBJ_INVENT)){
-					*modnum += u.uinsight/10;
-					if (((moves)*(u.uinsight % 10)) / 10 > ((moves - 1)*(u.uinsight % 10)) / 10)
+					*modnum += Insight/10;
+					if (((moves)*(Insight % 10)) / 10 > ((moves - 1)*(Insight % 10)) / 10)
 						*modnum += 1;
 				}
 				else if(magr){
@@ -985,22 +985,22 @@ struct monst *magr;
 	case DOUBLE_LIGHTSABER:		spe_mult *= 3; ocn *= 3; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	case ROD_OF_FORCE:			spe_mult *= 2; ocn *= 2; if(obj&&obj->altmode){ ocn*=2;    spe_mult *= 2;} break;	// external special case: lightsaber forms
 	case DISKOS:
-								if(u.uinsight >= 40){
+								if(Insight >= 40){
 									ocn+=1;
 									flat+=(ocd+1)/2;
-								} else if(u.uinsight >= 35){
+								} else if(Insight >= 35){
 									ocn+=1;
 									flat+=(ocd+3)/4;
-								} else if(u.uinsight >= 30){
+								} else if(Insight >= 30){
 									plus(1,3*ocd/4);
 									flat+=(ocd+3)/4;
-								} else if(u.uinsight >= 25){
+								} else if(Insight >= 25){
 									plus(1,(ocd+1)/2);
 									flat+=(ocd+3)/4;
-								} else if(u.uinsight >= 10){
+								} else if(Insight >= 10){
 									plus(1,(ocd+3)/4);
 									flat+=(ocd+3)/4;
-								} else if(u.uinsight >= 5){
+								} else if(Insight >= 5){
 									flat+=(ocd+3)/4;
 								}
 	break;
@@ -1623,7 +1623,7 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 				|| (marilith && ok_mariwep(otmp, mtmp, mtmp->data, FALSE))
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CATHEZAR) 
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_FIERNA)
-				|| (otmp->otyp == HEAVY_IRON_BALL && mtmp->mtyp == PM_WARDEN_ARIANNA)
+				|| (otmp->otyp == BALL && (mtmp->mtyp == PM_WARDEN_ARIANNA || mtmp->mtyp == PM_ARIANNA || mtmp->mtyp == PM_RAGE_WALKER))
 				|| (mtmp->mtyp == PM_BASTARD_OF_THE_BOREAL_VALLEY)
 				|| (mtmp->mtyp == PM_LUNGORTHIN)
 				|| (mtmp->mtyp == PM_CORVIAN_KNIGHT)
@@ -1963,7 +1963,7 @@ static const NEARDATA short hwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
-	  HEAVY_IRON_BALL,/*1d25/1d25*/
+	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
@@ -2008,6 +2008,7 @@ static const NEARDATA short hwep[] = {
 	  PINCER_STAFF/*1d6+2/2d6+1*/, 
 	  SHANTA_PATA/*1d6+2/2d6+1*/, 
 	  TRIDENT/*1d8+1/3d6*/, 
+	  ELVEN_SCIMITAR/*1d6+2/1d6+1*/,
 	  HUNTER_S_LONG_AXE/*1d8+1/1d6+2*/, 
 	  SAW_SPEAR/*1d8/1d10*/,
 	  BOW_BLADE/*1d8/1d8*/,
@@ -2096,7 +2097,7 @@ static const NEARDATA short hpwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
-	  HEAVY_IRON_BALL,/*1d25/1d25*/
+	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
 	  CRYSTAL_SWORD/*2d8/2d12*/,
@@ -2151,6 +2152,7 @@ static const NEARDATA short hpwep[] = {
 	  PINCER_STAFF/*1d6+2/2d6+1*/, 
 	  SHANTA_PATA/*1d6+2/2d6+1*/, 
 	  TRIDENT/*1d8+2/3d6*/, 
+	  ELVEN_SCIMITAR/*1d6+2/1d6+1*/,
 	  HUNTER_S_LONG_AXE/*1d8+1/1d6+2*/, 
 	  SAW_SPEAR/*1d8/1d10*/,
 	  BOW_BLADE/*1d8/1d8*/,
@@ -2236,7 +2238,7 @@ struct obj *otmp;
     
         if (wep->oartifact) return FALSE;
 		
-        if (!check_oprop(wep, OPROP_NONE) || (rakuyo_prop(wep) && u.uinsight >= 20)) return FALSE;
+        if (!check_oprop(wep, OPROP_NONE) || (rakuyo_prop(wep) && Insight >= 20)) return FALSE;
 
         if (is_giant(mtmp->data) &&  wep->otyp == CLUB) return FALSE;
         if (is_giant(mtmp->data) && otmp->otyp == CLUB) return TRUE;
@@ -2277,10 +2279,10 @@ register struct monst *mtmp;
 	otmp = MON_WEP(mtmp);
 	if(otmp && (otmp->oartifact
 			|| !check_oprop(otmp, OPROP_NONE)
-			|| (rakuyo_prop(otmp) && u.uinsight >= 20) //Note: Rakuyo-ness is accidently caught by OPROP_
-			|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
-			|| (otmp->otyp == DISKOS && u.uinsight >= 10)
-			|| (otmp->otyp == PINCER_STAFF && u.uinsight >= 10)
+			|| (rakuyo_prop(otmp) && Insight >= 20) //Note: Rakuyo-ness is accidently caught by OPROP_
+			|| (otmp->otyp == ISAMUSEI && Insight >= 22)
+			|| (otmp->otyp == DISKOS && Insight >= 10)
+			|| (otmp->otyp == PINCER_STAFF && Insight >= 10)
 	))
 		return otmp;
 	
@@ -2288,15 +2290,15 @@ register struct monst *mtmp;
 	for(otmp=mtmp->minvent; otmp; otmp = otmp->nobj) {
 		if (/* valid weapon */
 			(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
-			|| otmp->otyp == CHAIN || otmp->otyp == HEAVY_IRON_BALL
+			|| otmp->otyp == CHAIN || otmp->otyp == BALL
 			) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
 				|| !check_oprop(otmp, OPROP_NONE)
-				|| (rakuyo_prop(otmp) && u.uinsight >= 20)
-				|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
-				|| (otmp->otyp == DISKOS && u.uinsight >= 10)
-				|| (otmp->otyp == PINCER_STAFF && u.uinsight >= 10)
+				|| (rakuyo_prop(otmp) && Insight >= 20)
+				|| (otmp->otyp == ISAMUSEI && Insight >= 22)
+				|| (otmp->otyp == DISKOS && Insight >= 10)
+				|| (otmp->otyp == PINCER_STAFF && Insight >= 10)
 			) &&
 			/* never uncharged lightsabers */
             (!is_lightsaber(otmp) || otmp->age
@@ -2354,10 +2356,10 @@ register struct monst *mtmp;
 	otmp = MON_SWEP(mtmp);
 	if(otmp && (otmp->oartifact
 		|| !check_oprop(otmp, OPROP_NONE)
-		|| (rakuyo_prop(otmp) && u.uinsight >= 20)
-		|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
-		|| (otmp->otyp == DISKOS && u.uinsight >= 10)
-		|| (otmp->otyp == PINCER_STAFF && u.uinsight >= 10)
+		|| (rakuyo_prop(otmp) && Insight >= 20)
+		|| (otmp->otyp == ISAMUSEI && Insight >= 22)
+		|| (otmp->otyp == DISKOS && Insight >= 10)
+		|| (otmp->otyp == PINCER_STAFF && Insight >= 10)
 	))
 		return otmp;
 	
@@ -2365,17 +2367,17 @@ register struct monst *mtmp;
 	for(otmp=mtmp->minvent; otmp; otmp = otmp->nobj) {
 		if (/* valid weapon */
 			(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
-			|| otmp->otyp == CHAIN || otmp->otyp == HEAVY_IRON_BALL
+			|| otmp->otyp == CHAIN || otmp->otyp == BALL
 			) &&
 			/* not already weided in main hand */
 			(otmp != MON_WEP(mtmp)) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
 				|| !check_oprop(otmp, OPROP_NONE)
-				|| (rakuyo_prop(otmp) && u.uinsight >= 20)
-				|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
-				|| (otmp->otyp == DISKOS && u.uinsight >= 10)
-				|| (otmp->otyp == PINCER_STAFF && u.uinsight >= 10)
+				|| (rakuyo_prop(otmp) && Insight >= 20)
+				|| (otmp->otyp == ISAMUSEI && Insight >= 22)
+				|| (otmp->otyp == DISKOS && Insight >= 10)
+				|| (otmp->otyp == PINCER_STAFF && Insight >= 10)
 			) &&
 			/* never uncharged lightsabers */
             (!is_lightsaber(otmp) || otmp->age
@@ -2954,7 +2956,7 @@ int atr;
 				otmp->oartifact == ART_FRIEDE_S_SCYTHE || otmp->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING)
 				mod = 0.5;
 
-			if (check_oprop(otmp, OPROP_OCLTW) || (u.uinsight > 0 && check_oprop(otmp, OPROP_GSSDW)))
+			if (check_oprop(otmp, OPROP_OCLTW) || (Insight > 0 && check_oprop(otmp, OPROP_GSSDW)))
 				mod = 0.5;
 
 			return mod;
@@ -2974,7 +2976,7 @@ int atr;
 		case A_CON:
 			return mod;
 		case A_INT:
-			if (u.uinsight > 0 && check_oprop(otmp, OPROP_GSSDW))
+			if (Insight > 0 && check_oprop(otmp, OPROP_GSSDW))
 				mod += 1;
 
 			if (otmp->oartifact == ART_VELKA_S_RAPIER || otmp->oartifact == ART_FRIEDE_S_SCYTHE)
@@ -3701,7 +3703,7 @@ struct obj *obj;
 		/* Not using a weapon */
 		return (P_BARE_HANDED_COMBAT);
 #ifdef CONVICT
-    if ((obj->otyp == HEAVY_IRON_BALL) && (Role_if(PM_CONVICT) || u.sealsActive&SEAL_AHAZU))
+    if ((obj->otyp == BALL) && (Role_if(PM_CONVICT) || u.sealsActive&SEAL_AHAZU))
         return objects[obj->otyp].oc_skill;
 #endif /* CONVICT */
     if ((obj->otyp == CHAIN) && (Role_if(PM_CONVICT) || u.sealsActive&SEAL_AHAZU))

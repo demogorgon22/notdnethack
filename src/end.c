@@ -80,7 +80,7 @@ extern void FDECL(nethack_exit,(int));
 static NEARDATA const char *deaths[] = {		/* the array of death */
 	"died", "betrayed", "choked", "poisoned", "starvation", "drowning", /*5*/
 	"burning", "dissolving under the heat and pressure",
-	"crushed", "turned to stone", "turned to gold", "turned to glass", "turned into slime",
+	"crushed", "turned to stone", "turned to gold", "turned to salt", "turned to glass", "turned into slime",
 	"exploded after being overwound", "turned into a weeping angel", "disintegrated",
 	"genocided", "world ended",
 	"panic", "trickery",
@@ -90,7 +90,7 @@ static NEARDATA const char *deaths[] = {		/* the array of death */
 static NEARDATA const char *ends[] = {		/* "when you..." */
 	"died", "were betrayed", "choked", "were poisoned", "starved", "drowned",
 	"burned", "dissolved in the lava",
-	"were crushed", "turned to stone", "turned to gold", "turned to glass", "turned into slime",
+	"were crushed", "turned to stone", "turned to gold", "turned to salt", "turned to glass", "turned into slime",
 	"were overwound and exploded", "turned into a weeping angel", "were disintegrated",
 	"were genocided", "world ended",
 	"panicked", "were tricked",
@@ -1164,6 +1164,18 @@ int how;
 			You("wish that hadn't happened.");
 			pline("A star flares on your right ring-finger!");
 			uright->spe--;
+		} else if(check_rot(ROT_CENT) && !(mvitals[PM_CENTIPEDE].mvflags & G_GENOD) && !HUnchanging){
+			lsvd = LSVD_MISC;
+			if (how == DISINTEGRATED) pline("A monstrous centipede crawls out of your dust!");
+			else pline("A monstrous centipede crawls out of your rotting body!");
+			struct obj *otmp, *nobj;
+			for(otmp = invent; otmp; otmp = nobj){
+				nobj = otmp->nobj;
+				obj_extract_and_unequip_self(otmp);
+				dropy(otmp);
+			}
+			polymon(PM_CENTIPEDE);
+			remove_rot(ROT_CENT);
 		} else if(check_mutation(ABHORRENT_SPORE) && !(mvitals[PM_DARK_YOUNG].mvflags & G_GENOD)){
 			lsvd = LSVD_SPOR;
 			if (how == DISINTEGRATED) pline("Your dust is consumed by the abhorrent spore!");
@@ -1348,8 +1360,10 @@ die:
 		u.ugrave_arise = (NON_PM - 1);	/* statue instead of corpse */
 	    else if (how == GOLDING)
 		u.ugrave_arise = (NON_PM - 3);	/* statue instead of corpse */
-	    else if (how == GLASSED)
+		else if (how == SALTING)
 		u.ugrave_arise = (NON_PM - 4);	/* statue instead of corpse */
+	    else if (how == GLASSED)
+		u.ugrave_arise = (NON_PM - 5);	/* statue instead of corpse */
 	    else if (u.ugrave_arise == NON_PM &&
 		     !(mvitals[u.umonnum].mvflags & G_NOCORPSE && !uandroid)) {
 		int mtyp = u.umonnum;

@@ -1342,24 +1342,24 @@ domove()
 			if(attk) do {
 				/* Streaming mercurial weapons hit an aditional target if your insight is high enough */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
-					if(mlev(&youmonst) > 20 && (u.uinsight > 20 && YOU_MERC_SPECIAL)){
+					if(mlev(&youmonst) > 20 && (Insight > 20 && YOU_MERC_SPECIAL)){
 						result |= hit_with_streaming(&youmonst, otmp, x, y, 0, attk);
 					}
 				}
 				/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && rakuyo_prop(otmp)){
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 20 && otmp && rakuyo_prop(otmp)){
 					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Chikage launch blood iff you DON'T have a primary target, if your insight is high enough to percieve the blood */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 20 && otmp && otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 20 && otmp && otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
 					result |= hit_with_cblood(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 15 && otmp && is_cclub_able(otmp)){
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 15 && otmp && is_cclub_able(otmp)){
 					result |= hit_with_cclaw(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && u.uinsight >= 22 && otmp && otmp->otyp == ISAMUSEI){
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && otmp->otyp == ISAMUSEI){
 					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Dancers hit additional targets */
@@ -2837,7 +2837,7 @@ const char *msg_override;
 			difficulty *= 6;
 			if(objects[HYPERBOREAN_DIAL].oc_name_known)
 				difficulty -= 6;
-			difficulty -= u.uinsight;
+			difficulty -= Insight;
 			difficulty -= ACURR(A_INT);
 			if(rnd(20) >= difficulty && !(u.veil && puzzle->ovar1_puzzle_steps >= 5)){
 				if(u.uhyperborean_steps < 6){

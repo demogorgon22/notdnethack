@@ -178,19 +178,19 @@ doread()
 			return MOVE_READ;
 		} else if(scroll->oartifact == ART_HOLY_MOONLIGHT_SWORD && scroll->lamplit){
 			/* Note: you can see the blade even when blind */
-			if(u.uinsight < 2) {
+			if(Insight < 2) {
 				pline("The glowing cyan blade is decorated with faint curves.");
 			}
-			else if(u.uinsight < 5) {
+			else if(Insight < 5) {
 				You("faintly see strange arches inside the cyan blade.");
 			}
-			else if(u.uinsight < 10){
+			else if(Insight < 10){
 				You("can barely see faint bright stars behind the arches inside the cyan blade.");
 			}
-			else if(u.uinsight < 20){
+			else if(Insight < 20){
 				pline("The blade is the deep black of the night sky. You don't know why you ever thought it was cyan.");
 			}
-			else if(u.uinsight < 40){
+			else if(Insight < 40){
 				pline("The distant stars wink and dance among the arches within the black night sky.");
 			}
 			else {
@@ -3624,7 +3624,7 @@ register struct obj	*sobj;
 	}
 	setworn(mkobj(CHAIN_CLASS, TRUE), W_CHAIN);
 #ifdef CONVICT
-    if (((otmp = carrying(HEAVY_IRON_BALL)) != 0) &&(otmp->oartifact ==
+    if (((otmp = carrying(BALL)) != 0) &&(otmp->oartifact ==
      ART_IRON_BALL_OF_LEVITATION)) {
         setworn(otmp, W_BALL);
         Your("%s chains itself to you!", xname(otmp));
@@ -3764,6 +3764,9 @@ char *in_buff;
 			else if (!strncmpi(bufp, "fulvous ", l = 8)) {
 				undeadtype = YELLOW_TEMPLATE;
 			}
+			else if (!strncmpi(bufp, "swollen ", l = 8)) {
+				undeadtype = SWOLLEN_TEMPLATE;
+			}
 			else if (!strncmpi(bufp, "mad_angel ", l = 10)) {
 				undeadtype = MAD_TEMPLATE;
 			}
@@ -3840,6 +3843,8 @@ char *in_buff;
 				undeadtype = MAD_TEMPLATE;
 			else if (!strncmpi(p, "witness",	7))
 				undeadtype = FRACTURED;
+			else if (!strncmpi(p, "swollen",	7))
+				undeadtype = SWOLLEN_TEMPLATE;
 			else if (!strncmpi(p, "one", 3) && ((q = rindex(bufp, ' ')) != 0))
 			{
 				*q++ = 0;

@@ -146,6 +146,7 @@ STATIC_PTR int NDECL(doclearinvissyms);
 # ifdef WIZARD
 STATIC_PTR int NDECL(wiz_bind);
 STATIC_PTR int NDECL(wiz_mutate);
+STATIC_PTR int NDECL(wiz_research);
 STATIC_PTR int NDECL(wiz_cult);
 STATIC_PTR int NDECL(wiz_mk_mapglyphdump);
 STATIC_PTR int NDECL(wiz_wish);
@@ -675,6 +676,9 @@ boolean you_abilities;
 	if (mon_abilities && is_unicorn(youracedata)){
 		add_ability('u', "Use your unicorn horn", MATTK_UHORN);
 	}
+	if (you_abilities && ((check_rot(ROT_VOMIT) && (umechanoid || u.uhs < WEAK)) || (check_rot(ROT_CLONE) && u.uen >= 45) )){
+		add_ability('U', "Use your upgrade abilities", MATTK_UPGRADE);
+	}
 	if (mon_abilities && is_vampire(youracedata) && u.ulevel > 1){
 		add_ability('V', "Raise a vampiric minion", MATTK_VAMP);
 	}
@@ -781,6 +785,10 @@ boolean you_abilities;
 	case MATTK_UHORN: {
 	    use_unicorn_horn((struct obj *)0);
 	    return MOVE_STANDARD;
+	}
+	break;
+	case MATTK_UPGRADE: {
+	    return doupgradeability();
 	}
 	break;
 	case MATTK_SHRIEK: {
@@ -1693,9 +1701,9 @@ doGithForm()
 
 
 	for (i = FIRST_GSTYLE; i <= LAST_GSTYLE; i++) {
-		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || u.uinsight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
+		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || Insight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
 			continue;
-		if (i == GSTYLE_COLD && u.uinsight < 9 && (artinstance[ART_SILVER_SKY].GithStylesSeen & 1) == 0)
+		if (i == GSTYLE_COLD && Insight < 9 && (artinstance[ART_SILVER_SKY].GithStylesSeen & 1) == 0)
 			continue;
 
 		/* knight forms are shown if unskilled but not restricted, since training involves starting from unskilled */
@@ -1709,9 +1717,9 @@ doGithForm()
 		else if (i == GSTYLE_PENETRATE)
 			block_reason = "lack of hate";
 		else if (i == GSTYLE_COLD)
-			block_reason = (u.uinsight < 9) ? "lack of knowledge" : "lack of wrath";
+			block_reason = (Insight < 9) ? "lack of knowledge" : "lack of wrath";
 		else if (i == GSTYLE_RESONANT)
-			block_reason = (u.ulevel < 30) ? "lack of skill" : ((u.uinsight < 81) ? "lack of knowledge" : "lack of mental discipline");
+			block_reason = (u.ulevel < 30) ? "lack of skill" : ((Insight < 81) ? "lack of knowledge" : "lack of mental discipline");
 		else
 			block_reason = "lack of mental discipline";
 
@@ -1857,7 +1865,7 @@ doEtechForm()
 #define AVOID_UNSAFETOUCH	0x080L
 #define GITH_FORMS			0x100L
 #define ETECH_FORMS			0x200L
-
+#define AVOID_THEFT			0x400L
 
 int
 hasfightingforms(){
@@ -1896,8 +1904,8 @@ hasfightingforms(){
 			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
 		}
 	}
-	if (u.uavoid_msplcast)
-		formmask |= AVOID_MSPLCAST;
+	if (u.uavoid_theft)
+		formmask |= AVOID_THEFT;
 	else {
 		indexnum = tohitmod = 0;
 		zero_subout(subout);
@@ -1909,7 +1917,7 @@ hasfightingforms(){
 			!is_null_attk(attk);
 			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod)
 		){
-			if(attk->aatyp == AT_MAGC) formmask |= AVOID_MSPLCAST;
+			if(attk->adtyp == AD_SEDU || attk->adtyp == AD_SITM || attk->adtyp == AD_SSEX) formmask |= AVOID_THEFT;
 		}
 	}
 	if (u.uavoid_grabattk || sticks(&youmonst))
@@ -1991,6 +1999,7 @@ dofightingform()
 #define	AVOD_TUCH	8
 #define	GITH_FORM	9
 #define	ETCH_FORM	10
+#define	AVOD_THFT   11
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
@@ -2047,6 +2056,13 @@ dofightingform()
 
 		add_menu(tmpwin, NO_GLYPH, &any, 't', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AVOID_THEFT) {
+		any.a_int = AVOD_THFT;
+		if (!u.uavoid_theft) Strcpy(buf, "Discard stolen items from monsters");
+		else Strcpy(buf, "Keep stolen items from monsters");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 
 	end_menu(tmpwin, "Adjust fighting styles:");
 
@@ -2087,12 +2103,27 @@ dofightingform()
 			return doGithForm();
 		case ETCH_FORM:
 			return doEtechForm();
+		case AVOD_THFT:
+			u.uavoid_theft = !u.uavoid_theft;
+			return MOVE_INSTANT;
 		default:
 			impossible("unknown fighting form set %d", n);
 			return MOVE_CANCELLED;
 	}
 	return MOVE_CANCELLED;
 }
+
+#undef	MONK_FORM
+#undef	LGHT_FORM
+#undef	KNIT_FORM
+#undef	AVOD_FORM
+#undef	AVOD_MSPL
+#undef	AVOD_GRAB
+#undef	AVOD_ENGL
+#undef	AVOD_TUCH
+#undef	GITH_FORM
+#undef	ETCH_FORM
+#undef	AVOD_THFT
 
 #undef MONK_FORMS
 #undef LIGHTSABER_FORMS
@@ -2102,7 +2133,7 @@ dofightingform()
 #undef AVOID_GRABATTK
 #undef AVOID_ENGLATTK
 #undef AVOID_UNSAFETOUCH
-
+#undef AVOID_THEFT
 
 int
 dounmaintain()
@@ -2270,6 +2301,26 @@ wiz_mutate()
 	}
 	else
 		pline("Unavailable command.");
+	return MOVE_CANCELLED;
+}
+
+STATIC_PTR int
+wiz_research()
+{
+	if (!wizard)
+		return MOVE_CANCELLED;
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	char inclet = 'a';
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+
 	return MOVE_CANCELLED;
 }
 
@@ -2866,7 +2917,7 @@ STATIC_PTR int wiz_setinsight()
 		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
-	change_uinsight(newval - u.uinsight);
+	change_uinsight(newval - Insight);
 	return MOVE_INSTANT;
 }
 

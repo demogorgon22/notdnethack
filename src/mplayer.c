@@ -687,7 +687,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 #ifdef PM_CONVICT
 	case PM_CONVICT:
 		if (rn2(4)) *weapon = FLAIL;
-		else if(rn2(3)) *weapon = HEAVY_IRON_BALL;
+		else if(rn2(3)) *weapon = BALL;
 		else *weapon = SPOON;
 		if(special){
 			*helm = find_vhelm();
@@ -924,8 +924,8 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 			break;
 		}
 		*armor = JACKET;
-		*helm = FEDORA;
-		*cloak = CLOAK;
+		*helm = TRICORN;
+		*cloak = CAPELET;
 		*gloves = GLOVES;
 		*boots = HIGH_BOOTS;
 	break;

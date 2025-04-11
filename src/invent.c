@@ -13,8 +13,8 @@
 STATIC_DCL void NDECL(reorder_invent);
 STATIC_DCL boolean FDECL(mergable,(struct obj *,struct obj *));
 STATIC_DCL void FDECL(invdisp_nothing, (const char *,const char *));
-STATIC_DCL boolean FDECL(worn_wield_only, (struct obj *));
-STATIC_DCL boolean FDECL(only_here, (struct obj *));
+STATIC_DCL boolean FDECL(worn_wield_only, (struct obj *, int));
+STATIC_DCL boolean FDECL(only_here, (struct obj *, int));
 #endif /* OVL1 */
 STATIC_DCL void FDECL(compactify,(char *));
 STATIC_DCL boolean FDECL(taking_off, (const char *));
@@ -28,7 +28,7 @@ static char FDECL(display_pickinv,
 static char FDECL(display_pickinv, (const char *,BOOLEAN_P, long *));
 #endif /* DUMP_LOG */
 #ifdef OVLB
-STATIC_DCL boolean FDECL(this_type_only, (struct obj *));
+STATIC_DCL boolean FDECL(this_type_only, (struct obj *, int));
 STATIC_DCL void NDECL(dounpaid);
 STATIC_DCL struct obj *FDECL(find_unpaid,(struct obj *,struct obj **));
 STATIC_DCL void FDECL(menu_identify, (int));
@@ -1390,6 +1390,7 @@ register const char *let,*word;
 		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK)
 				&& otyp != CATAPSI_VORTEX && otyp != ANTIMAGIC_RIFT
 				&& otyp != VITAL_SOULSTONE && otyp != SPIRITUAL_SOULSTONE
+				&& !(otyp == CRYSTAL && otmp->obj_material == FLESH)
 				&& !(otyp == DILITHIUM_CRYSTAL && Role_if(PM_ANACHRONONAUT) && !otmp->oartifact)
 			 )))
 		|| (!strcmp(word, "invoke") &&
@@ -1714,7 +1715,7 @@ ckvalidcat(otmp)
 register struct obj *otmp;
 {
 	/* use allow_category() from pickup.c */
-	return((int)allow_category(otmp));
+	return((int)allow_category(otmp, 0));
 }
 
 STATIC_PTR int
@@ -1735,8 +1736,13 @@ wearing_armor()
 }
 
 boolean
-is_worn(otmp)
-register struct obj *otmp;
+is_worn_no_flags(struct obj *otmp)
+{
+    return is_worn(otmp, 0);
+}
+
+boolean
+is_worn(struct obj *otmp, int qflags)
 {
     return((boolean)(!!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
 #ifdef STEED
@@ -1787,7 +1793,7 @@ unsigned *resultflags;
 	add_valid_menu_class(0);	/* reset */
 	if (taking_off(word)) {
 	    takeoff = TRUE;
-	    filter = is_worn;
+	    filter = is_worn_no_flags;
 	} else if (!strcmp(word, "identify")) {
 	    ident = TRUE;
 	    filter = not_fully_identified;
@@ -1975,7 +1981,7 @@ nextclass:
 		if(ilet == 'z') ilet = 'A'; else ilet++;
 		otmp2 = otmp->nobj;
 		if (olets && *olets && otmp->oclass != *olets) continue;
-		if (takeoff && !is_worn(otmp)) continue;
+		if (takeoff && !is_worn(otmp, 0)) continue;
 		if (ident && !not_fully_identified(otmp)) continue;
 		if (ckfn && !(*ckfn)(otmp)) continue;
 		if (!allflag) {
@@ -2080,7 +2086,7 @@ int id_limit;
 	Sprintf(buf, "What would you like to identify %s?",
 		first ? "first" : "next");
 	n = query_objlist(buf, invent, SIGNAL_NOMENU|USE_INVLET|INVORDER_SORT|SIGNAL_ESCAPE,
-		&pick_list, PICK_ANY, not_fully_identified);
+		&pick_list, PICK_ANY, not_fully_identified_dummy_flags);
 
 	if (n > 0) {
 	    if (n > id_limit) n = id_limit;
@@ -2513,6 +2519,9 @@ struct obj *obj;
 	else if (obj->otyp == ANTIMAGIC_RIFT || obj->otyp == CATAPSI_VORTEX)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Crush this flawed gem", MENU_UNSELECTED);
+	else if (obj->otyp == CRYSTAL && obj->obj_material == FLESH)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Contemplate this crysalis", MENU_UNSELECTED);
 	else if (obj->otyp == MISOTHEISTIC_PYRAMID || obj->otyp == MISOTHEISTIC_FRAGMENT)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Shatter this pyramid", MENU_UNSELECTED);
@@ -2844,7 +2853,7 @@ winid *datawin;
 	}
 
 	/* Object classes currently with no special messages here: amulets. */
-	if (olet == WEAPON_CLASS || (olet == TOOL_CLASS && oc.oc_skill) || otyp == HEAVY_IRON_BALL || olet == GEM_CLASS || has_artidmg) {
+	if (olet == WEAPON_CLASS || (olet == TOOL_CLASS && oc.oc_skill) || otyp == BALL || olet == GEM_CLASS || has_artidmg) {
 		int mask = attack_mask(obj, otyp, oartifact, &youmonst);
 		boolean otyp_is_blaster = (otyp == CARCOSAN_STING || otyp == HAND_BLASTER || otyp == ARM_BLASTER || otyp == MASS_SHADOW_PISTOL || otyp == CUTTING_LASER || otyp == RAYGUN || otyp == SHOCK_MORTAR);
 		boolean otyp_is_launcher = (((oc.oc_skill >= P_BOW && oc.oc_skill <= P_CROSSBOW) || otyp == ATLATL) && !otyp_is_blaster);
@@ -3141,7 +3150,7 @@ winid *datawin;
 			}
 			int ldamd = objects[otyp].oc_wldam.oc_damd;
 			int sdamd = objects[otyp].oc_wsdam.oc_damd;
-			if(obj->otyp == TOOTH && u.uinsight >= 20 && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, &youmonst, ETRAIT_FOCUS_FIRE)){
+			if(obj->otyp == TOOTH && Insight >= 20 && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, &youmonst, ETRAIT_FOCUS_FIRE)){
 				if(obj->ovar1_tooth_type == MAGMA_TOOTH){
 					Sprintf(buf2, "Deals +5d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
 					OBJPUTSTR(buf2);
@@ -3210,10 +3219,10 @@ winid *datawin;
 					(3 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""));
 				OBJPUTSTR(buf2);
 			}
-			if(obj->otyp == DISKOS && u.uinsight >= 15){
-				int dice = (u.uinsight >= 45) ? 3 : ((u.uinsight >= 20) ? 2 : 1);
-				int lflat = (u.uinsight >= 50) ? ldamd : 0;
-				int sflat = (u.uinsight >= 50) ? sdamd : 0;
+			if(obj->otyp == DISKOS && Insight >= 15){
+				int dice = (Insight >= 45) ? 3 : ((Insight >= 20) ? 2 : 1);
+				int lflat = (Insight >= 50) ? ldamd : 0;
+				int sflat = (Insight >= 50) ? sdamd : 0;
 
 				if(u.ualign.record < -3 && Insanity > 50){
 					lflat += ldamd*(50-u.usanity)/50;
@@ -3231,11 +3240,11 @@ winid *datawin;
 			}
 			if(mercy_blade_prop(obj) & !u.veil){
 				Sprintf(buf2, "Deals extra damage scaled by insight%s, currently %d%% extra damage.",
-					(u.uinsight >= 25) ? " and charisma" : "",
-					(min(u.uinsight, 50) + ((u.uinsight >= 25) ? min((u.uinsight-25)/2, ACURR(A_CHA)) : 0))*2);
+					(Insight >= 25) ? " and charisma" : "",
+					(min(Insight, 50) + ((Insight >= 25) ? min((Insight-25)/2, ACURR(A_CHA)) : 0))*2);
 				OBJPUTSTR(buf2);
 
-				if (u.uinsight >= 25){
+				if (Insight >= 25){
 					Sprintf(buf2, "Lowers struck targets' morale based on your charisma, currently -%d per hit, capped at -%d.",
 						ACURR(A_CHA)/5, (obj->spe + ACURR(A_CHA)));
 					OBJPUTSTR(buf2);
@@ -3247,33 +3256,33 @@ winid *datawin;
 			}
 			if(obj->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE)){
 				Sprintf(buf2, "Makes struck targets vulnerable, adding stacks equal to 10%% of damage, capped at %d (scaling inversely with insight).",
-					(int)(30*pow(.97, u.uinsight)));
+					(int)(30*pow(.97, Insight)));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == ISAMUSEI){
 				int factor = 20;
-				if(u.uinsight >= 70){
+				if(Insight >= 70){
 					factor = 4;
 				}
-				else if(u.uinsight >= 57){
+				else if(Insight >= 57){
 					factor = 5;
 				}
-				else if(u.uinsight >= 45){
+				else if(Insight >= 45){
 					factor = 6;
 				}
-				else if(u.uinsight >= 33){
+				else if(Insight >= 33){
 					factor = 8;
 				}
-				else if(u.uinsight >= 22){
+				else if(Insight >= 22){
 					factor = 10;
 				}
 				Sprintf(buf2, "Attempts to lower the target's current health by %d%% of its current value.", 100/factor);
 				OBJPUTSTR(buf2);
 			}
-			if(obj->otyp == PINCER_STAFF && u.uinsight >= 10){
+			if(obj->otyp == PINCER_STAFF && Insight >= 10){
 				Sprintf(buf2, "Deals double base damage %s%son consecutive attacks against the same target.",
 					(obj->oartifact == ART_FALLINGSTAR_MANDIBLES) ? "plus 1d12 magic damage " : "",
-					(u.uinsight >= 50) ? "and attempts to steal worn armor " : "");
+					(Insight >= 50) ? "and attempts to steal worn armor " : "");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_ESSCOOAHLIPBOOURRR){
@@ -3285,8 +3294,8 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_RUINOUS_DESCENT_OF_STARS){
-				if (u.uinsight >= 6){
-					Sprintf(buf2, "Deals +%dd6 fire damage, scaling with your insight.", min(6, u.uinsight/6));
+				if (Insight >= 6){
+					Sprintf(buf2, "Deals +%dd6 fire damage, scaling with your insight.", min(6, Insight/6));
 					OBJPUTSTR(buf2);
 				}
 				if (NightmareAware_Insanity >= 4){
@@ -3294,9 +3303,9 @@ winid *datawin;
 						ClearThoughts ? 1 : 2, min(12, NightmareAware_Insanity/4));
 					OBJPUTSTR(buf2);
 				}
-				if (u.uinsight >= 42){
+				if (Insight >= 42){
 					Sprintf(buf2, "Randomly drops falling stars on a hit, causing up to %d physical & fiery explosions centered anywhere on the level.",
-						min(6, (u.uinsight - 36)/6));
+						min(6, (Insight - 36)/6));
 					OBJPUTSTR(buf2);
 				}
 			}
@@ -3386,7 +3395,7 @@ winid *datawin;
 				poisons |= OPOISON_SLEEP;
 			if (oartifact == ART_DIRGE)
 				poisons |= OPOISON_ACID;
-			if (check_oprop(obj, OPROP_RLYHW) && u.uinsight && rnd(u.uinsight) >= 44)
+			if (check_oprop(obj, OPROP_RLYHW) && Insight && rnd(Insight) >= 44)
 				poisons |= OPOISON_ACID;
 			
 			if (poisons) {
@@ -3717,33 +3726,43 @@ winid *datawin;
 		}
 	}
 	if(objects[otyp].expert_traits){
-		buf[0] = '\0';
+		if(obj->objsize != wielder_size(&youmonst) && obj->oartifact != ART_AMALGAMATED_SKIES){
+			Sprintf(buf2, "You cannot use this item's expert traits because it's the wrong size for you.");
+			OBJPUTSTR(buf2);
+		}
+		else {
+			buf[0] = '\0';
 #define	EXPERTTRAITS(trait, string)	\
 	ADDCLASSPROP(CHECK_ETRAIT(obj, &youmonst, trait), string);
-		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful overhead blows");
-		EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
-		EXPERTTRAITS(ETRAIT_KNOCK_BACK, (objects[otyp].expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
-		EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
-		EXPERTTRAITS(ETRAIT_STUNNING_STRIKE, "can deliver powerful stunning blows");
-		EXPERTTRAITS(ETRAIT_GRAZE, "may graze foes on a near miss");
-		EXPERTTRAITS(ETRAIT_STOP_THRUST, "can harness enemy momentum to deliver powerful blows");
-		EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
-		EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
-		EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
-		EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
-		EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
-		EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
-		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
-		EXPERTTRAITS(ETRAIT_CREATE_OPENING, "creates openings for sneak attacks");
-		EXPERTTRAITS(ETRAIT_BRACED, "delivers powerful counterattacks");
-		if(buf[0] != '\0')
-			Sprintf(buf2, "Expert traits: %s.", buf);
-		else
-			Sprintf(buf2, "No expert traits unlocked.");
+			EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful overhead blows");
+			EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
+			EXPERTTRAITS(ETRAIT_KNOCK_BACK, (objects[otyp].expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
+			EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
+			EXPERTTRAITS(ETRAIT_STUNNING_STRIKE, "can deliver powerful stunning blows");
+			EXPERTTRAITS(ETRAIT_GRAZE, "may graze foes on a near miss");
+			EXPERTTRAITS(ETRAIT_STOP_THRUST, "can harness enemy momentum to deliver powerful blows");
+			EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
+			EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
+			EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
+			EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
+			EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
+			EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
+			EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
+			EXPERTTRAITS(ETRAIT_CREATE_OPENING, "creates openings for sneak attacks");
+			EXPERTTRAITS(ETRAIT_BRACED, "delivers powerful counterattacks");
+			EXPERTTRAITS(ETRAIT_BLADESONG, "delivers powerful blows when combined with songs or spells");
+			EXPERTTRAITS(ETRAIT_BLADEDANCE, "delivers powerful blows when moving and striking erratically");
+			if(buf[0] != '\0')
+				Sprintf(buf2, "Expert traits: %s.", buf);
+			else
+				Sprintf(buf2, "No expert traits unlocked.");
+			OBJPUTSTR(buf2);
+		}
+	}
+	else {
+		Sprintf(buf2, "No expert traits.");
 		OBJPUTSTR(buf2);
 	}
-	else
-		Sprintf(buf2, "No expert traits.");
 	/* other artifact weapon effects */
 	if (oartifact) {
 		register const struct artifact *oart = &artilist[oartifact];
@@ -4450,6 +4469,7 @@ winid *datawin;
 		otyp == CRYSTAL_HELM ||
 		otyp == PONTIFF_S_CROWN ||
 		otyp == FACELESS_HELM ||
+		otyp == FACELESS_HOOD ||
 		otyp == IMPERIAL_ELVEN_HELM ||
 		otyp == WHITE_FACELESS_ROBE ||
 		otyp == BLACK_FACELESS_ROBE ||
@@ -5195,9 +5215,10 @@ dounpaid()
 static int this_type;
 
 STATIC_OVL boolean
-this_type_only(obj)
-    struct obj *obj;
+this_type_only(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     return (obj->oclass == this_type);
 }
 
@@ -5823,7 +5844,7 @@ doprinuse()
 	char lets[52+1];
 
 	for (otmp = invent; otmp; otmp = otmp->nobj)
-	    if (is_worn(otmp) || tool_in_use(otmp))
+	    if (is_worn(otmp, 0) || tool_in_use(otmp))
 		lets[ct++] = obj_to_let(otmp);
 	lets[ct] = '\0';
 	if (!ct) You("are not wearing or wielding anything.");
@@ -6235,8 +6256,7 @@ const char *hdr, *txt;
 
 /* query_objlist callback: return things that could possibly be worn/wielded */
 STATIC_OVL boolean
-worn_wield_only(obj)
-struct obj *obj;
+worn_wield_only(struct obj *obj, int qflags)
 {
     return (obj->oclass == WEAPON_CLASS
 		|| obj->oclass == ARMOR_CLASS
@@ -6373,9 +6393,10 @@ register struct obj *obj;
 static coord only;
 
 STATIC_OVL boolean
-only_here(obj)
-    struct obj *obj;
+only_here(struct obj *obj, int qflags)
 {
+	if(qflags&NO_EQUIPMENT && obj->owornmask)
+		return FALSE;
     return (obj->ox == only.x && obj->oy == only.y);
 }
 

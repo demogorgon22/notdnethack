@@ -1518,7 +1518,7 @@ boolean check;
 	long int thought;
 	for (thought = 1L; thought <= u.thoughts; thought = thought << 1) {
 		if ((u.thoughts&thought) &&
-			active_glyph(thought) != was_active_glyph(thought, u.uinsight, u.usanity - delta)
+			active_glyph(thought) != was_active_glyph(thought, Insight, u.usanity - delta)
 			) {
 			change_glyph_active(thought, active_glyph(thought));
 		}
@@ -1597,7 +1597,7 @@ int delta;
 	long int thought;
 	for (thought = 1L; thought <= u.thoughts; thought = thought << 1) {
 		if ((u.thoughts&thought) &&
-			active_glyph(thought) != was_active_glyph(thought, u.uinsight-delta, u.usanity)
+			active_glyph(thought) != was_active_glyph(thought, Insight-delta, u.usanity)
 			) {
 			change_glyph_active(thought, active_glyph(thought));
 		}
@@ -1610,16 +1610,31 @@ check_insight()
 	/*ACU's full insight doesn't have negative effects*/
 	if(Role_if(PM_ANACHRONOUNBINDER)) return FALSE;
 	int insight;
-	if(u.uinsight > INSIGHT_RATE/20)
+	if(Insight > INSIGHT_RATE/20)
 		insight = INSIGHT_RATE/20;
-	else insight = u.uinsight;
+	else insight = Insight;
 	
 	return insight > rn2(INSIGHT_RATE);
 }
 
 int
-roll_generic_madness(clearable)
-boolean clearable;
+roll_impurity(boolean clearable)
+{
+	int implevel;
+	if((clearable && ClearThoughts) || TimeStop)
+		return FALSE;
+
+	implevel = 100 - (int)(((float)rand()/(float)(RAND_MAX)) * ((float)rand()/(float)(RAND_MAX)) * 100);
+	
+	//Note: Clear Thoughts plus Walking Nightmare yields partial resistance rather than complete.
+
+	if(u.uimpurity > implevel)
+		return TRUE;
+	return FALSE;
+}
+
+int
+roll_generic_madness(boolean clearable)
 {
 	int sanlevel;
 	int usan = u.usanity;
@@ -1638,8 +1653,7 @@ boolean clearable;
 }
 
 int
-roll_generic_flat_madness(clearable)
-int clearable;
+roll_generic_flat_madness(boolean clearable)
 {
 	int sanlevel;
 	int usan = u.usanity;
@@ -2311,7 +2325,7 @@ int edge;
 			return u.usanity > 50 || u.ulevel < 14;
 		break;
 		case GSTYLE_COLD:
-			return u.usanity > 50 || u.ulevel < 14 || u.uinsight < 9;
+			return u.usanity > 50 || u.ulevel < 14 || Insight < 9;
 		break;
 		case GSTYLE_DEFENSE:
 			return u.usanity < 50 || u.ulevel < 14;
@@ -2320,7 +2334,7 @@ int edge;
 			return u.usanity < 50 || u.ulevel < 14;
 		break;
 		case GSTYLE_RESONANT:
-			return u.usanity < 50 || u.ulevel < 30 || u.uinsight < 81;
+			return u.usanity < 50 || u.ulevel < 30 || Insight < 81;
 		break;
 		default:
 			impossible("Attempting to get blockage of mental edge number %d?", edge);

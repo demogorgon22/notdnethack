@@ -371,6 +371,7 @@ gotobj:
 		case TOOL_CLASS:
 		case AMULET_CLASS:
 		case RING_CLASS:
+		case BELT_CLASS:
 		case FOOD_CLASS: /* meat ring */
 		    remove_worn_item(otmp, TRUE);
 		    break;

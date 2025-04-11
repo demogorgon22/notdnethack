@@ -41,7 +41,15 @@ struct spell {
 							    spellid(spell) == SPE_RESTORE_ABILITY || spellid(spell) == SPE_REMOVE_CURSE)
 #define metal_blocks_spellcasting(otmp) (otmp && \
 	(is_metallic(otmp) || otmp->oartifact == ART_DRAGON_PLATE) && \
-	!(check_oprop(otmp, OPROP_BRIL) || otmp->otyp == HELM_OF_BRILLIANCE || (otmp->otyp == HELM_OF_TELEPATHY && base_casting_stat() == A_CHA)))
+	!(check_oprop(otmp, OPROP_BRIL) || otmp->otyp == HELM_OF_BRILLIANCE \
+	  || (otmp->otyp == HELM_OF_TELEPATHY && base_casting_stat() == A_CHA) \
+	  || (is_imperial_elven_armor(otmp) && !(check_imp_mod(otmp, IEA_TELEPAT) \
+											|| check_imp_mod(otmp, IEA_BOLTS) \
+											|| check_imp_mod(otmp, IEA_KICKING) \
+											|| check_imp_mod(otmp, IEA_DEFLECTION) \
+											) \
+	 )) \
+	)
 
 #define FIRST_LIGHT	MAXSPELL+1
 #define PART_WATER	MAXSPELL+2

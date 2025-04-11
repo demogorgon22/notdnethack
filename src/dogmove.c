@@ -130,13 +130,13 @@ boolean check_if_better;
 	    /* collect artifacts and oprop items */
 		 (otmp->oartifact
 			|| !check_oprop(otmp, OPROP_NONE)
-			|| (rakuyo_prop(otmp) && u.uinsight >= 20)
+			|| (rakuyo_prop(otmp) && Insight >= 20)
 			|| (mercy_blade_prop(otmp) && !u.veil)
-			|| (otmp->otyp == ISAMUSEI && u.uinsight >= 22)
-			|| (otmp->otyp == DISKOS && u.uinsight >= 10)
+			|| (otmp->otyp == ISAMUSEI && Insight >= 22)
+			|| (otmp->otyp == DISKOS && Insight >= 10)
 		 ) ||
 	    /* slotless non-artifact items */
-		 ((otmp->otyp == ARMOR_SALVE && u.uinsight >= 66) || otmp->otyp == PRESERVATIVE_ENGINE) ||
+		 ((otmp->otyp == ARMOR_SALVE && Insight >= 66) || otmp->otyp == PRESERVATIVE_ENGINE) ||
 	    /* chains for some */
 		 ((mtmp->mtyp == PM_CATHEZAR) && otmp->otyp == CHAIN) ||
 	    /* better weapons */

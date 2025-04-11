@@ -355,6 +355,7 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 {
 	int clrc_spell_power;
 	int wzrd_spell_power;
+	boolean youagr = (mtmp == &youmonst);
 	if(mtmp->m_id == 0){
 		clrc_spell_power = rn2(u.ulevel) * 18 / 30;
 		wzrd_spell_power = rn2(u.ulevel) * 24 / 30;
@@ -1798,6 +1799,24 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 	case PM_SHOGGOTH:
 		if(!rn2(20)) return SUMMON_MONS; 
 		else return 0;
+	case PM_TETTIGON_LEGATUS:
+	case PM_UNMASKED_TETTIGON:
+	case PM_TRANSCENDENT_TETTIGON:
+		if(!youagr && !mtmp->mpeaceful && distmin(mtmp->mux, mtmp->muy, x(mtmp), y(mtmp)) < 3 && rn2(2))
+			return MON_WARP_THROW;
+		switch(rnd(8)){
+			case 1: return PSI_BOLT;
+			case 2: return FORCE_SPHERES;
+			case 3: return MON_WARP;
+			case 4: return MON_WARP_THROW;
+			case 5: return HOLY_BOLT;
+			case 6: return PAIN_BOLT;
+			case 7: return VULNERABILITY;
+			case 8: return STUN_YOU;
+		}
+	case PM_SILVERMAN:
+	case PM_SILVERGRUB:
+		return PEST_THREADS;
 	case PM_VERIER: 
 		if(!rn2(3)) return WEAKEN_YOU;
 		else return DESTRY_ARMR;
@@ -2258,7 +2277,9 @@ const char * spellname[] =
 	"MADF_BURST",
 	"HOLY_BOLT",
 	"MIST_WOLVES",
-	//106
+	//105
+	"FORCE_SPHERES",
+	"PEST_THREADS",
 };
 
 
@@ -2479,7 +2500,7 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 	else {
 		if(magr->mrage && magr->mberserk)
 			spell_skill /= 2;
-		if(magr->mformication || magr->mscorpions)
+		if(magr->mformication || magr->mscorpions || magr->mcaterpillars)
 			spell_skill /= 2;
 		if(magr->msciaphilia && unshadowed_square(x(magr), y(magr)))
 			spell_skill /= 2;
@@ -2571,10 +2592,10 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 			magr->mux = magr->muy = 0;
 		}
 	}
-	if(result == MM_HIT && magr && !youagr && magr->mfaction == NECROMANCY_FACTION && magr->mtyp != PM_ELVEN_WRAITH && u.uinsight >= 15 && spellnum && mdef){
+	if(result == MM_HIT && magr && !youagr && magr->mfaction == NECROMANCY_FACTION && magr->mtyp != PM_ELVEN_WRAITH && Insight >= 15 && spellnum && mdef){
 		struct monst *wraith = makemon(&mons[PM_ELVEN_WRAITH], magr->mx, magr->my, MM_ESUM|MM_ADJACENTOK|NO_MINVENT);
 		if(wraith){
-			mark_mon_as_summoned(wraith, magr, u.uinsight/5, 0);
+			mark_mon_as_summoned(wraith, magr, Insight/5, 0);
 			wraith->m_insight_level = 15;
 			wraith->m_lev = magr->m_lev;
 			wraith->mpeaceful = magr->mpeaceful;
@@ -2591,7 +2612,7 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 	if(result == MM_HIT && magr && !youagr && magr->mtyp == PM_SPELLWEAVER_GODDESS_MOCKER && spellnum && mdef){
 		struct monst *wraith = makemon(&mons[PM_SILVERFIRE_SHADOW_S_WRAITH], magr->mx, magr->my, MM_ESUM|MM_ADJACENTOK|NO_MINVENT);
 		if(wraith){
-			mark_mon_as_summoned(wraith, magr, u.uinsight/5, 0);
+			mark_mon_as_summoned(wraith, magr, Insight/5, 0);
 			wraith->m_insight_level = magr->m_insight_level;
 			wraith->m_lev = max(1, magr->m_lev-6);
 			wraith->mpeaceful = magr->mpeaceful;
@@ -3716,10 +3737,10 @@ int tary;
 			if(distmin(x(magr), y(magr), x(mdef), y(mdef)) <= mlev(magr)/10+1 && !resist(mdef, '\0', 0, NOTELL)){
 				if(!youdef){
 					mdef->mcanmove = 0;
-					mdef->mfrozen = min_ints(7, max(mdef->mfrozen, u.uinsight/11));
+					mdef->mfrozen = min_ints(7, max(mdef->mfrozen, Insight/11));
 				}
 				else {
-					mdef->movement -= u.uinsight/11;
+					mdef->movement -= Insight/11;
 				}
 			}
 			if(!youdef && cansee(x(mdef),y(mdef)))
@@ -3729,7 +3750,7 @@ int tary;
 			if (Shock_res(mdef)) {
 				shieldeff(mdef->mx, mdef->my);
 			} else {
-				dmg = d(min(10, u.uinsight/11*2),6);
+				dmg = d(min(10, Insight/11*2),6);
 			}
 		}
 		return xdamagey(magr, mdef, attk, dmg);
@@ -4862,6 +4883,51 @@ int tary;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case PEST_THREADS:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("sticky threads with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int n = 0;
+			int i;
+			char * rays;
+			
+			for(i = 0; i < dmn; i++)
+				if (zap_hit(mdef, 0, TRUE))
+					n++;
+			
+			if(dmn > 1 && dmn == n)
+				n *= 2;
+
+			if (!n){
+				if (youagr || youdef || canseemon(mdef))
+					pline("Sticky threads whizz past %s!",
+					youdef ? "you" : mon_nam(mdef));
+				return MM_MISS;
+			}
+			if (n == 1)
+				rays = "a sticky thread";
+			if (n >= 2)
+				rays = "sticky threads";
+
+			if (youagr || youdef || canseemon(mdef))
+				pline("%s %s %s by %s!",
+				youdef ? "You" : Monnam(mdef), youdef ? "are" : "is",
+				dmn < n ? "torn apart" : "torn",
+				rays);
+			int ndmg;
+			for(i = 0; i < n; i++){
+				ndmg = d(n, hd_size(mdef->data)) - (youdef ? roll_udr(magr, ROLL_SLOT) : roll_mdr(mdef, magr, ROLL_SLOT));
+				if(ndmg < 1)
+					ndmg = 1;
+				dmg += ndmg;
+			}
+			dmg = reduce_dmg(mdef,dmg,TRUE,TRUE);
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
 	case MON_WARP_THROW:
 		/* needs direct target */
 		if (!foundem) {
@@ -4880,9 +4946,14 @@ int tary;
 			do{
 				dx = rn2(3) - 1;
 				dy = rn2(3) - 1;
+				//Reduce odds of being flung into an adjacent wall
+				if(!isok(x(mdef)+dx,y(mdef)+dy) || !ZAP_POS(levl[x(mdef)+dx][y(mdef)+dy].typ)){
+					dx = rn2(3) - 1;
+					dy = rn2(3) - 1;
+				}
 			} while(
 				!(dx || dy) &&
-				!(dx == x(mdef) - x(magr) && dy == y(mdef) - y(magr))
+				!(dx == x(magr) - x(mdef) && dy == y(magr) - y(mdef))
 			);
 			if(youdef){
 				hurtle(dx, dy, BOLT_LIM, FALSE, FALSE);
@@ -4927,7 +4998,7 @@ int tary;
 				Is_rogue_level(&u.uz) ||
 #endif
 				(In_endgame(&u.uz) && !Is_earthlevel(&u.uz)));
-			otmp = mksobj(iron ? HEAVY_IRON_BALL : BOULDER, MKOBJ_NOINIT);
+			otmp = mksobj(iron ? BALL : BOULDER, MKOBJ_NOINIT);
 			otmp->quan = 1;
 			otmp->owt = weight(otmp);
 			if (iron) otmp->owt += 160 * rn2(2);
@@ -5511,6 +5582,31 @@ int tary;
 					set_malign(mtmp);
 					/* all spheres are very temporary */
 					mark_mon_as_summoned(mtmp, magr, d(dmn, 3)+1, 0);
+				}
+			}
+		}
+		return MM_HIT;
+	case FORCE_SPHERES:{
+			int i = 0;
+			int n;
+			struct monst *mtmp;
+			int maketame = ((magr->mtame || youagr) ? MM_EDOG : 0);
+			int makesum = MM_ESUM;
+			for(n = (dmg+5)/6; n > 0; n--){
+				mtmp = makemon(&mons[PM_SPHERE_OF_FORCE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame|makesum);
+				if (mtmp) {
+					/* time out */
+					if(makesum)
+						mark_mon_as_summoned(mtmp, magr, mlev(magr) + rnd(mlev(magr)), 0);
+					/* can be peaceful */
+					if(magr->mpeaceful)
+						mtmp->mpeaceful = TRUE;
+					/* can be tame */
+					if (maketame) {
+						initedog(mtmp);
+					}
+					/* bonus movement */
+					mtmp->movement = 3*NORMAL_SPEED;
 				}
 			}
 		}
@@ -6467,7 +6563,7 @@ int tary;
 					dist2(tarx, tary, cmon->mx, cmon->my) <= 3 * 3 + 1
 					)
 				{
-					dmg = rnd(dmn);
+					dmg = d(dmn, dmd);
 					if (Half_spel(mdef))
 						dmg = (dmg + 1) / 2;
 					if (Magic_res(mdef))
@@ -6480,7 +6576,7 @@ int tary;
 			if (!(youagr || magr->mtame)
 				&& dist2(tarx, tary, u.ux, u.uy) <= 3 * 3 + 1)
 			{
-				dmg = rnd(dmn);
+				dmg = d(dmn, dmd);
 				if (Half_spel(mdef))
 					dmg = (dmg + 1) / 2;
 				if (Magic_res(mdef))
@@ -6737,6 +6833,7 @@ int spellnum;
 		)) ||
 		spellnum == RAISE_DEAD ||
 		spellnum == TIME_DUPLICATE ||
+		spellnum == FORCE_SPHERES ||
 		spellnum == CLONE_WIZ
 		)
 		return TRUE;
@@ -6793,6 +6890,7 @@ int spellnum;
 	case MADF_BURST:
 	case STARFALL:
 	case MON_AURA_BOLT:
+	case PEST_THREADS:
 		return TRUE;
 	default:
 		break;
@@ -7276,7 +7374,7 @@ int tary;
 		))
 		return TRUE;
 	/* Don't de-stone the player */
-	if (youdef && (Stoned || Golded) && (
+	if (youdef && (Stoned || Golded || Salted) && (
 		spellnum == ACID_RAIN
 		))
 		return TRUE;

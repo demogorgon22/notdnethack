@@ -42,6 +42,11 @@ boolean state;
 {
 	boolean weap_attack, xwep_attack;
 	mon->mcan = state;
+	if(mon->mcan && mon->mtyp == PM_UNMASKED_TETTIGON){
+		set_mon_data(mon, PM_TRANSCENDENT_TETTIGON);
+		mon->m_insight_level += 35;
+		mon->mvar1_tettigon_uncancel = TRUE;
+	}
 	set_mon_data_core(mon, mon->data);
 	weap_attack = mon_attacktype(mon, AT_WEAP) ? TRUE : FALSE;
 	xwep_attack = mon_attacktype(mon, AT_XWEP) ? TRUE : FALSE;
@@ -213,6 +218,7 @@ int newpm;
 			//mon->mvar_lucksucker = 0;
 			//mon->mvar_star_vampire_blood = 0;
 			//mon->mvar_spellweaver_count = 0;
+			//mon->mvar1_tettigon_uncancel = 0;
 			mon->mvar1 = 0;
 		break;
 	}
@@ -583,6 +589,7 @@ int template;
 		ptr->mflagsg &= ~(MG_HATESHOLY);
 		ptr->mflagsa |= (MA_MINION);
 		ptr->mflagsw |= (MW_ELDER_EYE_PLANES);
+		ptr->light_radius = max(3, ptr->light_radius);
 		break;
 	case PSEUDONATURAL:
 		/* flags */
@@ -995,6 +1002,10 @@ int template;
 
 		ptr->mmove = 15;
 		break;
+		case SWOLLEN_TEMPLATE:
+			ptr->msize = MZ_GIGANTIC;
+			ptr->geno |= (G_NOCORPSE);
+		break;
 	}
 #undef MT_ITEMS
 
@@ -1172,7 +1183,7 @@ int template;
 		if ((attk->aatyp == AT_GAZE || attk->aatyp == AT_WDGZ) && !haseyes(ptr))
 		{
 			boolean needs_magr_eyes;
-			getgazeinfo(attk->aatyp, attk->adtyp, ptr, (struct monst *) 0, (struct monst *) 0, &needs_magr_eyes, (boolean *)0, (boolean *)0);
+			getgazeinfo(attk->aatyp, attk->adtyp, ptr, (struct monst *) 0, (struct monst *) 0, &needs_magr_eyes, (boolean *)0, (boolean *)0, (boolean *)0);
 			if (needs_magr_eyes == TRUE)
 			{
 				/* remove attack */
@@ -1570,6 +1581,23 @@ int template;
 			attk->damn = 1;
 			attk->damd = 3;
 			special = TRUE;
+		}
+		/* swollen monsters's attacks are generally stronger */
+		if (template == SWOLLEN_TEMPLATE && (
+			!is_null_attk(attk))
+			)
+		{
+			int delta = ptr->msize - mons[ptr->mtyp].msize;
+			if (attk->damn < 3)
+				attk->damd += delta*2;
+			else
+				attk->damn += delta;
+
+			if(ptr->mmove){
+				ptr->mmove /= 2;
+				if(ptr->mmove < 6)
+					ptr->mmove = 6;
+			}
 		}
 	}
 #undef insert_okay
@@ -2144,7 +2172,7 @@ int atyp, dtyp;
     struct attack *a;
 
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if (a->ins_req <= u.uinsight && a->aatyp == atyp && (dtyp == AD_ANY || a->adtyp == dtyp)) 
+		if (a->ins_req <= Insight && a->aatyp == atyp && (dtyp == AD_ANY || a->adtyp == dtyp)) 
 			return a;
 	}
 
@@ -2159,7 +2187,7 @@ int dtyp;
     struct attack *a;
 
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if (a->ins_req <= u.uinsight && (dtyp == AD_ANY || a->adtyp == dtyp)) 
+		if (a->ins_req <= Insight && (dtyp == AD_ANY || a->adtyp == dtyp)) 
 			return a;
 	}
 
@@ -2672,7 +2700,7 @@ struct obj *obj;		/* aatyp == AT_WEAP, AT_SPIT */
 	    o = (mdef == &youmonst) ? invent : mdef->minvent;
 	    for ( ; o; o = o->nobj){
 			if ((o->owornmask & W_ARMH) &&
-				(o->otyp == find_vhelm() || o->otyp == CRYSTAL_HELM || o->otyp == PLASTEEL_HELM || o->otyp == PONTIFF_S_CROWN || o->otyp == FACELESS_HELM || (o->otyp == IMPERIAL_ELVEN_HELM && check_imp_mod(o, IEA_BLIND_RES)))
+				(o->otyp == find_vhelm() || o->otyp == CRYSTAL_HELM || o->otyp == PLASTEEL_HELM || o->otyp == PONTIFF_S_CROWN || o->otyp == FACELESS_HELM || o->otyp == FACELESS_HOOD || (o->otyp == IMPERIAL_ELVEN_HELM && check_imp_mod(o, IEA_BLIND_RES)))
 			) return FALSE;
 			if ((o->owornmask & W_ARMC) &&
 				(o->otyp == WHITE_FACELESS_ROBE
@@ -3199,6 +3227,7 @@ static const short grownups[][2] = {
 	{PM_DUNGEON_FERN_SPROUT, PM_DUNGEON_FERN},
 	{PM_SWAMP_FERN_SPROUT, PM_SWAMP_FERN},
 	{PM_BURNING_FERN_SPROUT, PM_BURNING_FERN},
+	{PM_SILVERGRUB, PM_SILVERMAN},
 	{NON_PM,NON_PM}
 
 };
@@ -3577,6 +3606,8 @@ struct permonst *ptr;
 		size = 4;
 	else if(ptr->mtyp == PM_ANCIENT_OF_DEATH)
 		size = 20;
+	else if(ptr->mtyp == PM_TETTIGON_LEGATUS || ptr->mtyp == PM_UNMASKED_TETTIGON || ptr->mtyp == PM_TRANSCENDENT_TETTIGON)
+		size = 16;
 	else switch(ptr->msize){
 		case MZ_TINY:
 			size = 4;

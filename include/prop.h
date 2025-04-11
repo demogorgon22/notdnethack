@@ -47,7 +47,8 @@
 #define WOUNDED_LEGS				1 + SLEEPING
 #define STONED						1 + WOUNDED_LEGS
 #define GOLDED						1 + STONED
-#define STRANGLED					1 + GOLDED
+#define SALTED						1 + GOLDED
+#define STRANGLED					1 + SALTED
 #define FROZEN_AIR					1 + STRANGLED
 #define HALLUC						1 + FROZEN_AIR
 #define HALLUC_RES					1 + HALLUC

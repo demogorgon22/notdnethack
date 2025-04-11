@@ -884,6 +884,7 @@ boolean dumping;
 	}
 	if (Stoned) you_are("turning to stone");
 	if (Golded) you_are("turning to gold");
+	if (Salted) you_are("turning to salt");
 	if (Slimed) you_are("turning into slime");
 	if (FrozenAir) you_are("suffocating in the cold night");
 	if (BloodDrown) you_are("drowning in blood");
@@ -1387,11 +1388,11 @@ resistances_enlightenment()
 	else if(u.usanity < 100)
 		putstr(en_win, 0, "You are a little touched in the head.");
 	
-	if(u.uinsight > 40)
+	if(Insight > 40)
 		putstr(en_win, 0, "You frequently see things you wish you hadn't.");
-	else if(u.uinsight > 20)
+	else if(Insight > 20)
 		putstr(en_win, 0, "You periodically see things you wish you hadn't.");
-	else if(u.uinsight > 1)
+	else if(Insight > 1)
 		putstr(en_win, 0, "You occasionally see things you wish you hadn't.");
 	
 	if(Doubt)
@@ -2563,7 +2564,7 @@ signs_mirror()
 		if(dimness(u.ux, u.uy) <= 0)
 			putstr(en_win, 0, "Your rigid features can't be seen in the dark.");
 		else if((ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE)) //face-covering mask
-			 || (uarmh && (uarmh->otyp==PLASTEEL_HELM || uarmh->otyp==PONTIFF_S_CROWN || uarmh->otyp==FACELESS_HELM || uarmh->otyp==IMPERIAL_ELVEN_HELM)) //opaque face-covering helm
+			 || (uarmh && (uarmh->otyp==PLASTEEL_HELM || uarmh->otyp==PONTIFF_S_CROWN || uarmh->otyp==FACELESS_HELM || uarmh->otyp==FACELESS_HOOD || uarmh->otyp==IMPERIAL_ELVEN_HELM)) //opaque face-covering helm
 			 || (uarmc && (uarmc->otyp==WHITE_FACELESS_ROBE || uarmc->otyp==BLACK_FACELESS_ROBE || uarmc->otyp==SMOKY_VIOLET_FACELESS_ROBE))//face-covering robe
 		) putstr(en_win, 0, "Your rigid features can't be seen through your disguise.");
 		else putstr(en_win, 0, "Your features have taken on the rigidity of a cheap disguise.");
@@ -3190,6 +3191,39 @@ research_enlightenment()
 		if(check_vampire(VAMPIRE_GAZE)){
 			putstr(en_win, 0, "    You have learned to hypnotize your prey.");
 		}
+		if(rot_count() > 0){
+			if(rot_count() < ROT_COUNT)
+				putstr(en_win, 0, " You have discovered a strange form of all-consuming rot.");
+			else
+				putstr(en_win, 0, " You have progressed your study of the cycle of rot and renewal as far as can be done in the Dungeons of Doom.");
+			if(check_rot(ROT_VOMIT)){
+				putstr(en_win, 0, "    Your guts have blossomed into parasitic caterpillars.");
+			}
+			if(check_rot(ROT_WINGS)){
+				putstr(en_win, 0, "    You fly on wings of rot.");
+			}
+			if(check_rot(ROT_CLONE)){
+				putstr(en_win, 0, "      Strange butterflies hatch from your wings.");
+			}
+			if(check_rot(ROT_TRUCE)){
+				putstr(en_win, 0, "    You no longer interest the beings of rot.");
+			}
+			if(check_rot(ROT_KIN)){
+				putstr(en_win, 0, "    You are followed by the kindred of rot.");
+			}
+			if(check_rot(ROT_FEAST)){
+				putstr(en_win, 0, "    You feast on injury and destruction.");
+			}
+			if(check_rot(ROT_CENT)){
+				putstr(en_win, 0, "    Monstrous centipedes bore through your body.");
+			}
+			if(check_rot(ROT_STING)){
+				putstr(en_win, 0, "    A monstrous scorpion stinger has torn loose from your flesh.");
+			}
+			if(check_rot(ROT_SPORES)){
+				putstr(en_win, 0, "    Puffball mushrooms errupt from your skin.");
+			}
+		}
 	}
 	if(active_glyph(LUMEN) || u.ualign.god == GOD_THE_CHOIR || u.uparasitology_research){
 		if(parasite_count() >= 6){
@@ -3213,6 +3247,9 @@ research_enlightenment()
 					sprintf(buf, " You will need to find %s parasite first, though.", parasite_count() > 0 ? "another" : "a");
 					putstr(en_win, 0, buf);
 				}
+			}
+			else if(Insight < 10){
+				putstr(en_win, 0, " You must listen beyond the veil.");
 			}
 			else {
 				putstr(en_win, 0, " You are unable to devise further surgical experiments.");

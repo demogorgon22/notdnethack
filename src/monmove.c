@@ -439,7 +439,7 @@ scaryItem(mtmp)
 struct monst *mtmp;
 {
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || (mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    is_lminion(mtmp) || mtmp->mtyp == PM_ANGEL ||
 	    is_rider(mtmp->data) || mtmp->mtyp == PM_MINOTAUR)
 		return(FALSE);
@@ -460,7 +460,7 @@ struct monst *mtmp;
   if(u.ualign.type == A_VOID) return FALSE;
   if(LOLTH_HIGH_POWER){
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || (mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    (is_rider(mtmp->data))
 	)
 		return(FALSE);
@@ -481,7 +481,8 @@ struct monst *mtmp;
   if(Infuture) return FALSE;
   if(ELBERETH_HIGH_POWER){
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || 
+		(mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    is_lminion(mtmp) || mtmp->mtyp == PM_ANGEL ||
 	    (is_rider(mtmp->data) && !(mtmp->mtyp == PM_NAZGUL)) || 
 		mtmp->mtyp == PM_MINOTAUR)
@@ -496,7 +497,7 @@ struct monst *mtmp;
   }
   else{
 	if (mtmp->isshk || mtmp->isgd || mtmp->iswiz || is_blind(mtmp) ||
-	    mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN || 
+	    mtmp->mpeaceful || (mtmp->data->mlet == S_HUMAN && !mtmp->mtemplate) || 
 	    is_lminion(mtmp) || mtmp->mtyp == PM_ANGEL ||
 	    (is_rider(mtmp->data) && !(mtmp->mtyp == PM_NAZGUL)) || 
 		mtmp->mtyp == PM_MINOTAUR)
@@ -542,8 +543,10 @@ boolean digest_meal;
 			mon->mhp -= rnd(6);
 			if(hates_silver(mon->data) && entangle_material(mon, SILVER))
 				mon->mhp -= rnd(20);
-			if(hates_iron(mon->data) && (entangle_material(mon, IRON) || entangle_material(mon, GREEN_STEEL)))
+			if(hates_iron(mon->data) && (entangle_material(mon, IRON) || entangle_material(mon, GREEN_STEEL))){
 				mon->mhp -= rnd(mon->m_lev);
+				mon->mironmarked = TRUE;
+			}
 			if(hates_unholy_mon(mon) && entangle_material(mon, GREEN_STEEL))
 				mon->mhp -= d(2,9);
 			beat = entangle_beatitude(mon, -1);
@@ -802,7 +805,7 @@ boolean fleemsg;
 			mtmp->mspec_used = 10;
 			for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 				if(tmpm != mtmp && !DEADMONSTER(tmpm)){
-					if(tmpm->mpeaceful != mtmp->mpeaceful && !resist(tmpm, 0, 0, FALSE)){
+					if(tmpm->mpeaceful != mtmp->mpeaceful && !resist(tmpm, RING_CLASS, 0, 0)){
 						tmpm->mconf = 1;
 					}
 				}
@@ -872,7 +875,7 @@ int *inrange, *nearby, *scared;
 	}
 	
 	if(mtmp->mtyp == PM_DAUGHTER_OF_BEDLAM && !rn2(20)) *scared = TRUE;
-	else if(mtmp->mtyp == PM_CARCOSAN_COURTIER && *nearby && !mtmp->mflee && (u.uinsight < 25 || mtmp->m_id%2)) *scared = TRUE;
+	else if(mtmp->mtyp == PM_CARCOSAN_COURTIER && *nearby && !mtmp->mflee && (Insight < 25 || mtmp->m_id%2)) *scared = TRUE;
 	else if(*nearby && !mtmp->mflee && fleetflee(mtmp->data) && (mtmp->data->mmove > youracedata->mmove || noattacks(mtmp->data))) *scared = TRUE;
 	
 	if(*scared) {
@@ -1011,8 +1014,13 @@ register struct monst *mtmp;
 			makemon(&mons[PM_GNOLL], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT);
 		}
 	}
+	if(mdat->mtyp == PM_INCARNATOR_MAGGOT){
+		if(!rn2(3)){ //Twice as likely when active
+			incarnator_spawn(mtmp->mx, mtmp->my, FALSE);
+		}
+	}
 	if(mdat->mtyp == PM_FORD_GUARDIAN){
-		if(!rn2(2) && distmin(mtmp->mux, mtmp->muy, mtmp->mx, mtmp->my) < 4 && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < 4 && !(mtmp->mstrategy&STRAT_WAITFORU)){
+		if(!rn2(2) && distmin(mtmp->mux, mtmp->muy, mtmp->mx, mtmp->my) < BOLT_LIM && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < BOLT_LIM && !(mtmp->mstrategy&STRAT_WAITFORU)){
 			ford_rises(mtmp);
 		}
 	}
@@ -1079,7 +1087,7 @@ register struct monst *mtmp;
 		&& !mtmp->mtame 
 		&& !Is_astralevel(&u.uz)
 		&& (near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
-		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || u.uinsight < 2 || (u.uinsight < 32 && !rn2(u.uinsight))) 
+		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
 		&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
 	){
 		int nlev;
@@ -1137,8 +1145,9 @@ register struct monst *mtmp;
 	if (mtmp->mdoubt && !rn2(300)) mtmp->mdoubt = 0;
 	if (mtmp->mwounded_legs && !rn2(60)) mtmp->mwounded_legs = 0;
 	if (mtmp->mscorpions && !rn2(20)) mtmp->mscorpions = 0;
+	if (mtmp->mcaterpillars && !rn2(20)) mtmp->mcaterpillars = 0;
 	
-	if(mtmp->msleeping && (mtmp->mformication || mtmp->mscorpions) && rn2(mtmp->m_lev)){
+	if(mtmp->msleeping && (mtmp->mformication || mtmp->mscorpions || mtmp->mcaterpillars) && rn2(mtmp->m_lev)){
 		//Awakens from the bugs. High level is good for it here.
 		mtmp->msleeping = 0;
 	}
@@ -1566,7 +1575,7 @@ register struct monst *mtmp;
 		}
 	}
 	
-	if (mtmp->mtyp == PM_ITINERANT_PRIESTESS && u.uinsight >= 40 && !straitjacketed_mon(mtmp)){
+	if (mtmp->mtyp == PM_ITINERANT_PRIESTESS && Insight >= 40 && !straitjacketed_mon(mtmp)){
 		struct monst *patient = 0;
 		int i, j, x, y, rot = rn2(3);
 		for(i = -1; i < 2; i++){
@@ -1941,7 +1950,7 @@ register struct monst *mtmp;
 					u.umadness |= MAD_DREAMS;
 				}
 				if(mdat->mtyp == PM_FOETID_ANGEL){
-					make_doubtful((long) u.uinsight,TRUE);
+					make_doubtful((long) Insight,TRUE);
 				}
 				if (mdat->mtyp == PM_ELDER_BRAIN) {
 					for (m2 = fmon; m2; m2 = nmon) {
@@ -2283,7 +2292,7 @@ int x;
 int y;
 {
 	int i;
-	for(i = 1; i < 2; i++){
+	for(i = -1; i < 2; i++){
 		if(isok(x+i,y+i) && !is_pool(x+i,y+i,FALSE) && ZAP_POS(levl[x+i][y+i].typ))
 			return TRUE;
 	}

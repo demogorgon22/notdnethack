@@ -1274,11 +1274,11 @@ struct mkroom	*croom;
 				case PM_DEMINYMPH:
 				case PM_YUKI_ONNA:
 					insight = rn2(20);
-					if(mon->mtyp != PM_PRIESTESS && rn2(20) > u.uinsight)
+					if(mon->mtyp != PM_PRIESTESS && rn2(20) > Insight)
 						goto default_case;
 					set_template(mon, MISTWEAVER);
 					set_faction(mon, GOATMOM_FACTION);
-					mon->m_insight_level = min(insight, u.uinsight);
+					mon->m_insight_level = min(insight, Insight);
 					tmpo = mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
 					if(tmpo){
 						mon->entangled_otyp = SHACKLES;

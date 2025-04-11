@@ -2087,14 +2087,14 @@ A("The Sceptre of Might",			SPEAR,				(const char *)0,
 	CONFLICT, NOFLAG
 	),
 // old-style artifact block
-// A("The Iron Ball of Liberation", HEAVY_IRON_BALL,	0,			0,
+// A("The Iron Ball of Liberation", BALL,	0,			0,
 	// (SPFX_NOGEN|SPFX_RESTR|SPFX_LUCK|SPFX_INTEL),
 		// (SPFX_SEARCH|SPFX_SEEK|SPFX_WARN), 0,
 	// NO_ATTK(),	NO_DFNS,	CARY(AD_MAGM),
 	// PHASING,	A_CHAOTIC, PM_CONVICT, NON_PM, 5000L,
 	// SPFX2_STLTH,0,0), /*Note: it had caried stealth before*/
 	
-A("The Iron Ball of Levitation",	HEAVY_IRON_BALL,	(const char *)0,
+A("The Iron Ball of Levitation",	BALL,	(const char *)0,
 	5000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, PM_CONVICT, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),

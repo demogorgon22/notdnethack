@@ -359,6 +359,7 @@ struct you {
 	Bitfield(uavoid_grabattk,1);
 	Bitfield(uavoid_englattk,1);
 	Bitfield(uavoid_unsafetouch,1);
+	Bitfield(uavoid_theft,1);
 	int umystic;	/*Monk mystic attacks active*/
 #define monk_style_active(style) (u.umystic & (1 << (style-1)))
 #define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
@@ -371,6 +372,7 @@ struct you {
 	// long laststruck;
 	long lastmoved;
 	long lastcast;
+	long bladesong;
 	
 	boolean ukinghill; /* records if you are carying the pirate treasure (and are therefor king of the hill) */
 	int protean; /* counter for the auto-polypiling power of the pirate treasure*/
@@ -472,6 +474,7 @@ struct you {
 #define MATTK_YUKI 37
 #define MATTK_LEPRE 38
 #define MATTK_KI 39
+#define MATTK_UPGRADE    	40
 
 
 
@@ -736,7 +739,7 @@ struct you {
 	int 	uinsight;	/* to record level of insight */
 	/*Insight rate calculation: 40: "high insight" 300: "Approximate per-turn WoYendor intervention rate" 5: "total number of harmful effects" */
 #define INSIGHT_RATE (40*300*5)
-#define COA_PROB	 (max(1, 10000*pow(.95,(Role_if(PM_ANACHRONOUNBINDER)?max(0,u.uinsight-100):u.uinsight))))
+#define COA_PROB	 (max(1, 10000*pow(.95,(Role_if(PM_ANACHRONOUNBINDER)?max(0,Insight-100):Insight))))
 	int 	uimpurity;	/* to record level of impurity */
 	Bitfield(uimp_meat, 4);
 	Bitfield(uimp_blood, 4);
@@ -756,7 +759,10 @@ struct you {
 	Bitfield(uimp_betrayal, 4);
 	Bitfield(uimp_kuo_toa, 4);
 	Bitfield(uimp_ibite, 4);
-	Bitfield(uimp_mind_flayers, 4); //51/+25 eve/+12 bullets?
+	Bitfield(uimp_mind_flayers, 4);
+	Bitfield(uimp_rot, 4);
+	Bitfield(uimp_poison, 4);
+	Bitfield(uimp_curse, 4); //60/+30 eve/+12 bullets?
 	int 	ureanimation_research;	/* to record progress on reanimation */
 	//Power 1: raise crazed corpses
 	//Power 2: Summon blood creatures
@@ -799,6 +805,7 @@ struct you {
 //
 #define PRESERVE_DEAD_TRUCE	   0x00000040L
 #define PRESERVE_MAX		   PRESERVE_DEAD_TRUCE
+#define PRESERVE_ROT_TRIGGER   PRESERVE_GAIN_DR
 #define check_preservation(upgrade)	(u.upreservation_upgrades&(upgrade))
 #define add_preservation(upgrade)	(u.upreservation_upgrades|=(upgrade))
 	//Path 2: Steal will
@@ -813,8 +820,23 @@ struct you {
 #define check_vampire(upgrade)	(u.uvampire_upgrades&(upgrade))
 #define add_vampire(upgrade)	(u.uvampire_upgrades|=(upgrade))
 
-	// long urot_upgrades;
+	long urot_upgrades;
 	//Path 3: New life
+#define ROT_VOMIT			   0x00000001L
+#define ROT_WINGS			   0x00000002L
+#define ROT_CLONE			   0x00000004L
+#define ROT_TRUCE			   0x00000008L
+#define ROT_KIN				   0x00000010L
+#define ROT_FEAST			   0x00000020L
+#define ROT_CENT			   0x00000040L
+#define ROT_STING			   0x00000080L
+#define ROT_SPORES			   0x00000100L
+#define ROT_MIN				   ROT_VOMIT
+#define ROT_MAX				   ROT_SPORES
+#define ROT_COUNT			   9
+#define check_rot(upgrade)	(u.urot_upgrades&(upgrade))
+#define add_rot(upgrade)	(u.urot_upgrades|=(upgrade))
+#define remove_rot(upgrade)	(u.urot_upgrades&=~(upgrade))
 	// Blood fly swarm
 	// Rot enemy
 	// Ants and fungi are peaceful
@@ -837,6 +859,7 @@ struct you {
 				u.uimpurity++;\
 		}\
 	}
+	Bitfield(silvergrubs, 1);
 
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
@@ -1107,7 +1130,7 @@ struct you {
 	boolean ufirst_know;
 	long ufirst_know_timeout;
 	long thoughts;
-#define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (u.uinsight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
+#define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (Insight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
 	long mutations[MUTATION_LISTSIZE];
 };	/* end of `struct you' */
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))

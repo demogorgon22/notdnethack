@@ -1492,7 +1492,7 @@ update_externally_granted_spells()
 	if(uarmh && uarmh->oartifact == ART_CROWN_OF_THE_PERCIPIENT){
 		for (i = 0; i < MAXSPELL; i++) {
 			if (spellid(i) != NO_SPELL) {
-				if (spl_book[i].sp_lev <= (u.uinsight*2)/11+1)
+				if (spl_book[i].sp_lev <= (Insight*2)/11+1)
 					spellext(i) = TRUE;
 			}
 		}
@@ -4984,6 +4984,7 @@ dothrowspell:
 	
 	/* gain skill for successful cast */
 	use_skill(skill, spellev(spell));
+	u.bladesong = monstermoves + spellev(spell);
 	u.lastcast = monstermoves + spellev(spell);
 	if(uwep && uwep->oartifact == ART_INFINITY_S_MIRRORED_ARC && uwep->spe > 0)
 		u.lastcast += uwep->spe;
@@ -6030,6 +6031,9 @@ int spell;
 			splcaster -= urole.spelarmr;
 	}
 
+	if(Black_crystal)
+		splcaster -= urole.spelarmr;
+
 	if(uwep){
 		int cast_bon;
 		// powerful channeling artifacts
@@ -6039,7 +6043,6 @@ int spell;
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
 			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
-			|| Black_crystal
 		) splcaster -= urole.spelarmr;
 
 		if(uwep->obj_material == MERCURIAL)
@@ -6342,7 +6345,7 @@ int spell;
 	chance = chance * (20-splcaster) / 15 - splcaster;
 	
 	if(check_mutation(SHUB_RADIANCE)){
-		int insight = u.uinsight;
+		int insight = Insight;
 		while(insight){
 			chance += 1;
 			insight /= 2;

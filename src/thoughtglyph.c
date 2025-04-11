@@ -50,7 +50,7 @@ long int thought;
 	if ((count_glyphs() >= MAX_GLYPHS) ||
 		(u.thoughts & thought) ||
 		(u.veil) ||
-		(u.uinsight < glyph_insight(thought)) ||
+		(Insight < glyph_insight(thought)) ||
 		(u.usanity > glyph_sanity(thought))
 		)
 		return FALSE;
@@ -123,7 +123,7 @@ active_glyph(long int thought)
 		return FALSE;
 	if (u.veil)
 		return FALSE;
-	if (u.uinsight >= glyph_insight(thought) && u.usanity <= glyph_sanity(thought))
+	if (Insight >= glyph_insight(thought) && u.usanity <= glyph_sanity(thought))
 		return TRUE;
 	return FALSE;
 }

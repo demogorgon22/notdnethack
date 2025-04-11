@@ -669,7 +669,7 @@ register struct monst *mtmp;
 			}
 			num = d(2,4);
 			while(num--)
-				obj = mksobj_at(HEAVY_IRON_BALL, x, y, NO_MKOBJ_FLAGS);
+				obj = mksobj_at(BALL, x, y, NO_MKOBJ_FLAGS);
 			rem_mx(mtmp, MX_ENAM);
 		    otmp = mksobj(MACE, NO_MKOBJ_FLAGS);
 			otmp = oname(otmp, artiname(ART_FIELD_MARSHAL_S_BATON));
@@ -1649,7 +1649,7 @@ register struct monst *mtmp;
 		}
     } else {
 		/* but eels have a difficult time outside */
-		if (mtmp->data->mlet == S_EEL && !Is_waterlevel(&u.uz)) {
+		if ((mtmp->data->mflagsm&MM_AQUATIC) && !Is_waterlevel(&u.uz)) {
 			/* Puddles can sustain a tiny sea creature, or lessen the burdens of a larger one */
 			if (!(inshallow && mtmp->data->msize == MZ_TINY))
 			{
@@ -1786,6 +1786,9 @@ mcalcdistress()
 	if(mtmp->mscorpions){
 		phantom_scorpions_sting(mtmp);
 	}
+	if(mtmp->mcaterpillars){
+		rot_caterpillars_bite(mtmp);
+	}
 	if(mtmp->mvermin){
 		int damage = d(10,10);
 		damage -= avg_mdr(mtmp);
@@ -1871,6 +1874,7 @@ struct monst *mtmp;
 	mtmp->mflamemarked = FALSE;
 	mtmp->mibitemarked = FALSE;
 	mtmp->myoumarked = FALSE;
+	mtmp->mironmarked = FALSE;
 	
 	/* gradually time out temporary problems */
 	if (mtmp->mblinded && !--mtmp->mblinded)
@@ -2020,7 +2024,14 @@ movemon()
 		mtmp->mprev_attk.x = 0;
 		mtmp->mprev_attk.y = 0;
 	}
-	if(mtmp->m_insight_level > u.uinsight
+	if(u.specialSealsActive&SEAL_LIVING_CRYSTAL)
+		average_dogs();
+	if(mtmp->m_insight_level > Insight && !mtmp->mcan && mtmp->mtyp == PM_TRANSCENDENT_TETTIGON){
+		set_mon_data(mtmp, PM_UNMASKED_TETTIGON);
+		mtmp->m_insight_level -= 35;
+		newsym(x(mtmp), y(mtmp));
+	}
+	if(mtmp->m_insight_level > Insight
 	  || (mtmp->mtyp == PM_WALKING_DELIRIUM && BlockableClearThoughts)
 	  || (mtmp->mtyp == PM_STRANGER && !quest_status.touched_artifact)
 	  || ((mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI) && mtmp->mvar_yellow_lifesaved)
@@ -2198,7 +2209,14 @@ movemon()
 	    if(mtmp->m_ap_type == M_AP_FURNITURE ||
 				mtmp->m_ap_type == M_AP_OBJECT)
 		    continue;
-	    if(mtmp->mundetected) continue;
+	    if(mtmp->mundetected){
+			if(mtmp->mtyp == PM_INCARNATOR_MAGGOT){
+				if(!rn2(6)){
+					incarnator_spawn(mtmp->mx, mtmp->my, FALSE);
+				}
+			}
+			continue;
+		}
 	}
 
 	if (minliquid(mtmp)) continue;
@@ -3386,7 +3404,7 @@ mfndpos(mon, poss, info, flag)
 	nowtyp = levl[x][y].typ;
 
 	nodiag = (mdat->mtyp == PM_GRID_BUG) || (mdat->mtyp == PM_BEBELITH);
-	wantpool = mdat->mlet == S_EEL;
+	wantpool = (mdat->mflagsm&MM_AQUATIC);
 	wantdry = !wantpool;
 	puddleispool = (wantpool && mdat->msize == MZ_TINY) || (wantdry && is_iron(mon));
 
@@ -3469,11 +3487,12 @@ nexttry:
 			continue;
 		if((mdat->mtyp == PM_GRUE) && isdark(mon->mx, mon->my) && !isdark(nx, ny))
 				continue;
-		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO || mdat->mtyp == PM_ARCHIPELAGO_ANCIENT) && 
+		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_KETO || 
+			mdat->mtyp == PM_ARCHIPELAGO_ANCIENT || mdat->mtyp == PM_TETTIGON_LEGATUS) && 
 			!no_upos(mon) && 
 			distmin(nx, ny, mon->mux, mon->muy) <= 3 && 
 			dist2(nx, ny, mon->mux, mon->muy) <= dist2(mon->mx, mon->my, mon->mux, mon->muy)) continue;
-		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER) && 
+		if((mdat->mtyp == PM_WATCHER_IN_THE_WATER || mdat->mtyp == PM_TETTIGON_LEGATUS) && 
 			onlineu(nx, ny) && (lined_up(mon) || !rn2(4))) continue;
 		if(witw && dist2(nx, ny, witw->mx, witw->my) > 32 && 
 			dist2(nx, ny, witw->mx, witw->my) >= dist2(mon->mx, mon->my, witw->mx, witw->my)) continue;
@@ -3918,7 +3937,13 @@ boolean actual;			/* actual attack or faction check? */
 		return 0L;
 	if(magr->mfaction == mdef->mfaction && mdef->mfaction == MOON_FACTION)
 		return 0L;
+	if(magr->mfaction == mdef->mfaction && mdef->mfaction == ROT_FACTION)
+		return 0L;
 	
+	// rot kin attack almost anything
+	if(magr->mfaction == ROT_FACTION || mdef->mfaction == ROT_FACTION) {
+		return ALLOW_M|ALLOW_TM;
+	}
 	// dreadblossoms attack almost anything
 	if(ma->mtyp == PM_DREADBLOSSOM_SWARM &&
 		!(is_fey(md) || is_plant(md))
@@ -4477,22 +4502,23 @@ struct monst *mtmp;
 	boolean messaged = FALSE;
 	int lifesavers = 0;
 	int i;
-#define LSVD_ANA 0x0001	/* anachrononaut quest */
-#define LSVD_IAS 0x0002	/* Iasoian Archon grants recovery */
-#define LSVD_HLO 0x0004	/* Halo (Blessed) */
-#define LSVD_UVU 0x0008	/* uvuuduam + prayerful thing */
-#define LSVD_ASC 0x0010	/* drained the life from another */
-#define LSVD_OBJ 0x0020	/* lifesaving items */
-#define LSVD_ILU 0x0040	/* illuminated */
-#define LSVD_TWN 0x0080	/* twin sibling */
-#define LSVD_FRC 0x0100	/* fractured kamerel */
-#define LSVD_NBW 0x0200	/* nitocris's black wraps */
-#define LSVD_YEL 0x0400	/* Cannot die unless on the Astral Plane */
-#define LSVD_PLY 0x0800	/* polypoids */
-#define LSVD_NIT 0x1000	/* Nitocris becoming a ghoul */
-#define LSVD_KAM 0x2000	/* kamerel becoming fractured */
-#define LSVD_ALA 0x4000	/* alabaster decay */
-#define LSVD_FLS 0x8000	/* God of flesh claims body */
+#define LSVD_ANA 0x00000001	/* anachrononaut quest */
+#define LSVD_IAS 0x00000002	/* Iasoian Archon grants recovery */
+#define LSVD_HLO 0x00000004	/* Halo (Blessed) */
+#define LSVD_UVU 0x00000008	/* uvuuduam + prayerful thing */
+#define LSVD_ASC 0x00000010	/* drained the life from another */
+#define LSVD_TRA 0x00000020	/* Transforms */
+#define LSVD_OBJ 0x00000040	/* lifesaving items */
+#define LSVD_ILU 0x00000080	/* illuminated */
+#define LSVD_TWN 0x00000100	/* twin sibling */
+#define LSVD_FRC 0x00000200	/* fractured kamerel */
+#define LSVD_NBW 0x00000400	/* nitocris's black wraps */
+#define LSVD_YEL 0x00000800	/* Cannot die unless on the Astral Plane */
+#define LSVD_PLY 0x00001000	/* polypoids */
+#define LSVD_NIT 0x00002000	/* Nitocris becoming a ghoul */
+#define LSVD_KAM 0x00004000	/* kamerel becoming fractured */
+#define LSVD_ALA 0x00008000	/* alabaster decay */
+#define LSVD_FLS 0x00010000	/* God of flesh claims body */
 #define LSVDLAST LSVD_FLS	/* last lifesaver */
 
 	/* set to kill */
@@ -4515,6 +4541,8 @@ struct monst *mtmp;
 		|| is_alabaster_mummy(mtmp->data)
 		)))
 		lifesavers |= LSVD_ALA;
+	if (mtmp->mtyp == PM_TETTIGON_LEGATUS)
+		lifesavers |= LSVD_TRA;
 	if (Infuture && mtmp->mpeaceful && !is_myrkalfr(mtmp) && !nonliving(mtmp->data) && !is_android(mtmp->data))
 		lifesavers |= LSVD_FLS;
 	if (has_template(mtmp, FRACTURED) && !rn2(2) && !mtmp->mcan)
@@ -4618,11 +4646,41 @@ struct monst *mtmp;
 			/* restore level, maxhp */
 			if (mtmp->m_lev < 38)
 				mtmp->m_lev = 38;
-			if (mtmp->mhpmax < 171)	/* 171 = 38x4.5 = avg(38d8) */
-				mtmp->mhpmax = 171;
+			if (mtmp->mhpmax < 38*hd_size(mtmp->data))
+				mtmp->mhpmax = 38*hd_size(mtmp->data);
 			/* set mspec_used */
 			mtmp->mspec_used = mtmp->mhpmax / 5;
 			break;
+		case LSVD_TRA:{
+			struct obj *otmp;
+			/* message */
+			if (couldsee(mtmp->mx, mtmp->my)) {
+				messaged = TRUE;
+				pline("But wait...");
+				pline("A glowing crack forms around the head!");
+			}
+			/* restore level, maxhp */
+			if (mtmp->m_lev < 16)
+				mtmp->m_lev = 16;
+			if (mtmp->mhpmax < 16*hd_size(mtmp->data))
+				mtmp->mhpmax = 16*hd_size(mtmp->data);
+			if(mtmp->mcan)
+				set_mcan(mtmp, FALSE);
+			otmp = mksobj_at(ENCOUNTER_EXOSKELETON, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
+			if(otmp){
+				otmp->quan = 1;
+				if(stoned)
+					set_material(otmp, MINERAL);
+				else if(golded)
+					set_material(otmp, GOLD);
+				else if(glassed)
+					set_material(otmp, GLASS);
+				fix_object(otmp);
+			}
+			set_mon_data(mtmp, Insight > 40 ? PM_TRANSCENDENT_TETTIGON : PM_UNMASKED_TETTIGON);
+			mtmp->m_insight_level = 5+rn2(6);
+			newsym(x(mtmp), y(mtmp));
+		}break;
 		case LSVD_ASC:{
 			struct monst *victim = random_plague_victim();
 			struct obj *sacked_victim = 0;
@@ -5345,6 +5403,8 @@ int adtyp;
 		case PM_DUNGEON_FERN_SPORE:
 		case PM_APHANACTONAN_AUDIENT:
 			return EXPL_NOXIOUS;
+		case PM_SPHERE_OF_FORCE:
+			return EXPL_GRAY;
 		case PM_SWAMP_FERN_SPORE:
 			return EXPL_MAGICAL;
 		case PM_BURNING_FERN_SPORE:
@@ -5642,6 +5702,10 @@ boolean was_swallowed;			/* digestion */
 			for(i = 0; i<18; i++) makemon(&mons[PM_HORNED_DEVIL], mon->mx, mon->my, MM_ADJACENTOK);
 			for(i = 0; i<30; i++) makemon(&mons[PM_LEMURE], mon->mx, mon->my, MM_ADJACENTOK);
 	    	return (FALSE);
+		}
+		else if(adtyp == AD_OMUD){
+			int i;
+			for(i=0; i<39; i++) incarnator_spawn(mon->mx, mon->my, TRUE);
 		}
   		else if(	( (aatyp == AT_NONE && mdat->mtyp==PM_GREAT_CTHULHU)
 					 || aatyp == AT_BOOM) 
@@ -6699,6 +6763,12 @@ xkilled(mtmp, dest)
 		if (corpse_chance(mtmp, (struct monst *)0, FALSE)){
 			corpse = make_corpse(mtmp);
 		}
+		if(mtmp->mironmarked && (
+			is_elf(mtmp->data)
+			|| is_fey(mtmp->data)
+		)){
+			u.uz.rage++;
+		}
 		if(mtmp->mibitemarked){
 			mtmp->mflamemarked = FALSE;
 			mtmp->mgoatmarked = FALSE;
@@ -7077,6 +7147,7 @@ boolean severe;			/* Powerful poison that partially overcomes poison resistance 
 				pline_The("poison was quite debilitating...");
 				printed = TRUE;
 			}
+			IMPURITY_UP(u.uimp_poison)
 		}
 		if (i <= 5) {
 			drain = -rn1(3, 3);
@@ -8447,6 +8518,41 @@ struct monst *mtmp;
 	}
 }
 
+STATIC_OVL void
+mark_item_chain_summoned(struct obj *otmp, struct monst *mon, int duration)
+{
+	for (; otmp; otmp = otmp->nobj) {
+		if(otmp->cobj)
+			mark_item_chain_summoned(otmp->cobj, mon, duration);
+		if (!get_ox(otmp, OX_ESUM)) {
+			/* add component to obj */
+			add_ox(otmp, OX_ESUM);
+			otmp->oextra_p->esum_p->summoner = mon;
+			otmp->oextra_p->esum_p->sm_id = mon->m_id;
+			otmp->oextra_p->esum_p->sm_o_id = 0;
+			otmp->oextra_p->esum_p->summonstr = 0;
+			otmp->oextra_p->esum_p->sticky = 0;
+			otmp->oextra_p->esum_p->permanent = (duration == ESUMMON_PERMANENT);
+			otmp->oextra_p->esum_p->staleptr = 0;
+			/* add timer to obj */
+			start_timer(duration, TIMER_OBJECT, DESUMMON_OBJ, (genericptr_t)otmp);
+		}
+		else {
+			/* already marked as summoned -- double-check it's the right mon */
+			if (otmp->oextra_p->esum_p->summoner != mon)
+				impossible("%s already attached to %s, cannot attach to %s",
+					xname(otmp), m_monnam(otmp->oextra_p->esum_p->summoner), m_monnam(mon));
+			else {
+				/* change duration, if applicable */
+				if (duration != ESUMMON_PERMANENT) {
+					otmp->oextra_p->esum_p->permanent = 0;
+					adjust_timer_duration(get_timer(otmp->timed, DESUMMON_OBJ), duration - ESUMMON_PERMANENT);
+				}
+			}
+		}
+	}
+}
+
 /* marks `mon` as being summoned by the summoner, which causes it to vanish after duration expires or summoner dies */
 /* its inventory at time of marking is set to vanish when `mon` dies */
 void
@@ -8495,39 +8601,7 @@ int flags;
 		}
 	}
 #endif
-	struct obj * otmp, * pobj = 0;
-	for (otmp = mon->minvent; otmp || (pobj && pobj->where == OBJ_CONTAINED); otmp = otmp->nobj) {
-		if(otmp)
-			while(otmp->cobj) {pobj = otmp; otmp = otmp->cobj;}
-		else
-			otmp = pobj->ocontainer;
-		if (!get_ox(otmp, OX_ESUM)) {
-			/* add component to obj */
-			add_ox(otmp, OX_ESUM);
-			otmp->oextra_p->esum_p->summoner = mon;
-			otmp->oextra_p->esum_p->sm_id = mon->m_id;
-			otmp->oextra_p->esum_p->sm_o_id = 0;
-			otmp->oextra_p->esum_p->summonstr = 0;
-			otmp->oextra_p->esum_p->sticky = 0;
-			otmp->oextra_p->esum_p->permanent = (duration == ESUMMON_PERMANENT);
-			otmp->oextra_p->esum_p->staleptr = 0;
-			/* add timer to obj */
-			start_timer(duration, TIMER_OBJECT, DESUMMON_OBJ, (genericptr_t)otmp);
-		}
-		else {
-			/* already marked as summoned -- double-check it's the right mon */
-			if (otmp->oextra_p->esum_p->summoner != mon)
-				impossible("%s already attached to %s, cannot attach to %s",
-					xname(otmp), m_monnam(otmp->oextra_p->esum_p->summoner), m_monnam(mon));
-			else {
-				/* change duration, if applicable */
-				if (duration != ESUMMON_PERMANENT) {
-					otmp->oextra_p->esum_p->permanent = 0;
-					adjust_timer_duration(get_timer(otmp->timed, DESUMMON_OBJ), duration - ESUMMON_PERMANENT);
-				}
-			}
-		}
-	}
+	mark_item_chain_summoned(mon->minvent, mon, duration);
 }
 
 struct monst *
@@ -10502,6 +10576,80 @@ struct monst *mdef;
 		if(m_losehp(mdef, damage, FALSE, "swarm of scorpions")); //died
 		else if (canseemon(mdef))
 			pline("%s is stung by phantom scorpions.", Monnam(mdef));
+	}
+}
+
+void
+rot_caterpillars_bite(struct monst *mdef)
+{
+	int damage = 0;
+	if(mdef == &youmonst){
+		IMPURITY_UP(u.uimp_rot)
+		if (!Sick_res(mdef)) {
+			if(!Sick) make_sick((long)rn1(ACURR(A_CON), 20), "rotting caterpillars", TRUE, SICK_NONVOMITABLE);
+			damage += (*hp(mdef))*3.3/100 + 26;
+		}
+		else {
+			damage += (*hp(mdef))*2/100 + 8;
+		}
+		You("are bitten by a swarm of parasitic caterpillars!");
+		losehp(damage, "a swarm of parasitic caterpillars", KILLED_BY);
+		if(has_blood(youracedata)){
+			Your("blood is being drained!");
+			IMPURITY_UP(u.uimp_blood)
+			if(!rn2(3) && !Drain_res(mdef)){
+				losexp("life force drain", TRUE, FALSE, FALSE);
+			}
+		}
+	}
+	else {
+		if (!Sick_res(mdef)) {
+			damage += (!rn2(10)) ? 100 : rnd(12);
+			damage += (*hp(mdef))*3.3/100 + 26;
+		}
+		else {
+			damage += (*hp(mdef))*2/100 + 8;
+		}
+		if(has_blood_mon(mdef) && !rn2(3) && !Drain_res(mdef)){
+			pline("%s suddenly seems weaker!", Monnam(mdef));
+			if(!mdef->m_lev)
+				damage += mdef->mhpmax;
+			else mdef->m_lev--;
+			mdef->mhpmax -= (hd_size(mdef->data)+1)/2;
+			mdef->mhpmax = max(mdef->mhpmax, 1);
+			mdef->mhp = min(mdef->mhpmax, mdef->mhp);
+		}
+		if(m_losehp(mdef, damage, FALSE, "swarm of parasitic caterpillars")); //died
+		else if (canseemon(mdef))
+			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
+	}
+}
+
+void
+orc_mud_stabs(struct monst *mdef)
+{
+	int damage = 0;
+	int number = rnd(3);
+	damage += d(number, 2);
+	if(mdef == &youmonst)
+		damage -= roll_udr_detail((struct monst *)0, 0x1<<rn2(5), W_ARMC, ROLL_SLOT);
+	else
+		damage -= roll_mdr_detail(mdef, (struct monst *)0, 0x1<<rn2(5), W_ARMC, ROLL_SLOT);
+
+	damage = max(damage, 1);
+
+	if (!Acid_res(mdef)) {
+		damage += d(number, 2) + d(number, 10);
+	}
+
+	if(mdef == &youmonst){
+		You("are stabbed by the writhing tarry mud!");
+		losehp(damage, "a swarm of parasitic caterpillars", KILLED_BY);
+	}
+	else {
+		if(m_losehp(mdef, damage, FALSE, "inchoate orcs")); //died
+		else if (canseemon(mdef))
+			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
 	}
 }
 

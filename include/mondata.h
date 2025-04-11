@@ -133,12 +133,13 @@
 #define species_tears_webs(ptr)		(((ptr)->mflagsm & MM_WEBRIP) != 0L)
 #define species_busts_doors(ptr)		(((ptr)->mflagsm & MM_DOORBUST) != 0L)
 #define is_suicidal(ptr)		(is_fern_spore(ptr) || \
+					(ptr)->mtyp == PM_SPHERE_OF_FORCE || \
 					(ptr)->mtyp == PM_FREEZING_SPHERE || \
 					(ptr)->mtyp == PM_FLAMING_SPHERE || \
 					(ptr)->mtyp == PM_SHOCKING_SPHERE)
 #define breathless(ptr)			(((ptr)->mflagsm & MM_BREATHLESS) != 0L)
 #define breathless_mon(mon)		(breathless((mon)->data) || mon_resistance((mon), MAGICAL_BREATHING))
-#define amphibious(ptr)			(((ptr)->mflagsm & (MM_AMPHIBIOUS | MM_BREATHLESS)) != 0L)
+#define amphibious(ptr)			(((ptr)->mflagsm & (MM_AQUATIC | MM_AMPHIBIOUS | MM_BREATHLESS)) != 0L)
 #define amphibious_mon(mon)		(amphibious((mon)->data) || mon_resistance((mon), MAGICAL_BREATHING) || mon_resistance((mon), SWIMMING))
 #define species_passes_walls(ptr)	(((ptr)->mflagsm & MM_WALLWALK) != 0L)
 #define amorphous(ptr)			(((ptr)->mflagsm & MM_AMORPHOUS) != 0L)
@@ -175,6 +176,10 @@
 #define is_whirly(ptr)		((ptr)->mlet == S_VORTEX || \
 				 (ptr)->mtyp == PM_AIR_ELEMENTAL ||\
 				 (ptr)->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES ||\
+				 (ptr)->mtyp == PM_LUMINESCENT_SWARM ||\
+				 (ptr)->mtyp == PM_DREADBLOSSOM_SWARM)
+#define is_gaseous_noequip(ptr)		((ptr)->mlet == S_VORTEX || \
+				 (ptr)->mtyp == PM_AIR_ELEMENTAL ||\
 				 (ptr)->mtyp == PM_DREADBLOSSOM_SWARM)
 #define has_passthrough_displacement(ptr)	((ptr)->mtyp == PM_WRAITHWORM ||\
 				 (ptr)->mtyp == PM_FIRST_WRAITHWORM)
@@ -205,6 +210,7 @@
 				 (ptr)->mtyp == PM_SCRAP_TITAN || \
 				 (ptr)->mtyp == PM_HELLFIRE_COLOSSUS || \
 				 (ptr)->mtyp == PM_HELLFIRE_ORB || \
+				 (ptr)->mtyp == PM_RAGE_WALKER || \
 				 (ptr)->mtyp == PM_FERRUMACH_RILMANI)
 #define is_iron_mon(mon)	(is_iron((mon)->data))
 #define is_silver(ptr)	((ptr)->mtyp == PM_ARGENACH_RILMANI || \
@@ -354,7 +360,7 @@
 								 (ptr)->mtyp == PM_UVUUDAUM || \
 								 (ptr)->mtyp == PM_MASKED_QUEEN \
 								 )
-#define controlledwidegaze(ptr)		(!((ptr)->mtyp == PM_MEDUSA || (ptr)->mtyp == PM_UVUUDAUM || (ptr)->mtyp == PM_GREAT_CTHULHU || (ptr)->mtyp == PM_OBOX_OB || (ptr)->mtyp == PM_DAGON))
+#define controlledwidegaze(ptr)		(!((ptr)->mtyp == PM_MEDUSA || (ptr)->mtyp == PM_UVUUDAUM || (ptr)->mtyp == PM_DESERT_SEER || (ptr)->mtyp == PM_GREAT_CTHULHU || (ptr)->mtyp == PM_OBOX_OB || (ptr)->mtyp == PM_DAGON))
 #define controlledwidegaze_mon(mon)		(controlledwidegaze((mon)->data) || has_template(mon, ILLUMINATED))
 #define acidic(ptr)			(((ptr)->mflagsb & MB_ACID) != 0L)
 #define poisonous(ptr)		(((ptr)->mflagsb & MB_POIS) != 0L)
@@ -660,7 +666,7 @@
 									|| (ptr)->mtyp == PM_MOON_S_CHOSEN\
 								)
 #define	is_snake_bite_mon(mon)	(is_snake_bite_mtyp((mon)->data) || has_template(mon, MOLY_TEMPLATE))
-#define	is_tailslap_mtyp(ptr)	(is_true_adult_dragon(ptr) || (ptr)->mtyp == PM_UISCERRE_ELADRIN || (ptr)->mtyp == PM_DISENCHANTER || (ptr)->mtyp == PM_GRAY_DEVOURER)
+#define	is_tailslap_mtyp(ptr)	(is_true_adult_dragon(ptr) || (ptr)->mtyp == PM_UISCERRE_ELADRIN || (ptr)->mtyp == PM_DISENCHANTER || (ptr)->mtyp == PM_GRAY_DEVOURER || (ptr)->mtyp == PM_NAMELESS_GNAWER)
 #define	is_tailslap_mon(mon)	(is_tailslap_mtyp((mon)->data))
 
 #define	is_vines_mon(mon)	((mon)->mtyp == PM_GAE_ELADRIN && (mon)->m_lev >= 20)
@@ -671,6 +677,8 @@
 							 || (ptr)->mtyp == PM_GHAELE_ELADRIN || (ptr)->mtyp == PM_LUMINOUS_CLOUD\
 							 || (ptr)->mtyp == PM_PYROCLASTIC_VORTEX)
 #define	is_storm_mon(mon)	((is_level_storm_mtyp((mon)->data) && (mon)->m_lev >= 20) || is_storm_mtyp((mon)->data))
+#define	is_chain_lash_mtyp(ptr)	((ptr)->mtyp == PM_RAGE_WALKER)
+#define	is_chain_lash_mon(mon)	(is_chain_lash_mtyp((mon)->data))
 #define	is_dancer(ptr)	((ptr)->mtyp == PM_PORO_AULON || (ptr)->mtyp == PM_SEYLL_AUZKOVYN || (ptr)->mtyp == PM_ANULO_DANCER || (ptr)->mtyp == PM_MYRKALFAR_MATRON)
 
 #define goat_monster(ptr) (In_lost_cities(&u.uz) ? lost_cities_goat_monster(ptr) : always_goat_monster(ptr))
@@ -726,6 +734,17 @@
 							   always_yellow_monster(mon->data) \
 							|| has_template(mon, YELLOW_TEMPLATE) \
 							|| has_template(mon, DREAM_LEECH) \
+							)
+
+#define rot_monster(mon)	(((mon)->data->mlet == S_FUNGUS && mindless_mon(mon)) \
+							 || (mon)->mtyp == PM_SWAMP_FERN \
+							 || (mon)->mtyp == PM_SWAMP_FERN_SPORE \
+							 || (mon)->mtyp == PM_SWAMP_FERN_SPROUT \
+							 || (mon)->mtyp == PM_SWAMP_NYMPH \
+							 || (mon)->mtyp == PM_SILVERMAN \
+							 || (mon)->mtyp == PM_SILVERGRUB \
+							 || (mon)->mtyp == PM_MAN_FLY \
+							 || has_template(mon, SWOLLEN_TEMPLATE) \
 							)
 
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
@@ -1013,45 +1032,10 @@
    monsters, we'll likely have to add a new light range field to mons[] 
    KEEP IN SYNC with MAX_RADIUS, circle_data, and circle_start[].
    Maximum allowable lightsource radius is currently 10 (30 after 3x lowlight modifier) */
-#define emits_light(ptr)	(((ptr)->mlet == S_LIGHT || \
-				  (ptr)->mtyp == PM_BRIGHT_WALKER || \
-				  (ptr)->mtyp == PM_FLAMING_SPHERE || \
-				  (ptr)->mtyp == PM_SHOCKING_SPHERE || \
-				  (ptr)->mtyp == PM_PARASITIZED_DOLL || \
-				  (ptr)->mtyp == PM_MOTE_OF_LIGHT || \
-				  (ptr)->mtyp == PM_BALL_OF_LIGHT || \
-				  (ptr)->mtyp == PM_LIGHT_ELF || \
-				  (ptr)->mtyp == PM_BLOODY_SUNSET || \
-				  (ptr)->mtyp == PM_BALL_OF_GOSSAMER_SUNLIGHT || \
-				  (ptr)->mtyp == PM_LUMINOUS_CLOUD || \
-				  (ptr)->mtyp == PM_HOOLOOVOO || \
-				  (ptr)->mtyp == PM_LIGHTNING_PARAELEMENTAL || \
-				  (ptr)->mtyp == PM_FALLEN_ANGEL || \
-				  (ptr)->mtyp == PM_ANCIENT_OF_THOUGHT || \
-				  (ptr)->mtyp == PM_DARK_WORM || \
-				  (ptr)->mtyp == PM_FIRE_VORTEX) ? 1 : \
-				 ((ptr)->mtyp == PM_FIRE_ELEMENTAL ||\
-				  (ptr)->mtyp == PM_FLAMING_ORB || \
-				  (ptr)->mtyp == PM_CANDLE_TREE || \
-				  (ptr)->mtyp == PM_PARASITIZED_KNIGHT || \
-				  (ptr)->mtyp == PM_DANCING_FLAME ||\
-				  (ptr)->mtyp == PM_COTERIE_OF_MOTES ||\
-				  (ptr)->mtyp == PM_BALL_OF_RADIANCE) ? 2 : \
-				 ((ptr)->mtyp == PM_THRONE_ARCHON ||\
-				  (ptr)->mtyp == PM_UNBODIED ||\
-				  (ptr)->mtyp == PM_BEAUTEOUS_ONE ||\
-				  (ptr)->mtyp == PM_DAO_LAO_GUI_MONK ||\
-				 (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE) ? 3 : \
-				 ((ptr)->mtyp == PM_BLESSED) ? 4 : \
-				 ((ptr)->mtyp == PM_LIGHT_ARCHON|| \
-				  (ptr)->mtyp == PM_GOD ||\
-				  (ptr)->mtyp == PM_LUCIFER) ? 7 : \
-				 ((ptr)->mtyp == PM_EDDERKOP) ? 8 : \
-				 ((ptr)->mtyp == PM_SURYA_DEVA) ? 9 : \
-				 0)
-#define emits_light_mon(mon) (has_template(mon, ILLUMINATED) ? \
-							 max(3, emits_light((mon)->data)) : \
-							 emits_light((mon)->data))
+#define emits_light(ptr)	((ptr)->light_radius)
+
+#define emits_light_mon(mon) (emits_light((mon)->data))
+
 #define Is_darklight_monster(ptr)	((ptr)->mtyp == PM_EDDERKOP\
 					|| (ptr)->mtyp == PM_DARK_WORM\
 					|| (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE\
@@ -1099,6 +1083,7 @@
 
 #define is_alienist(ptr)		(is_mind_flayer(ptr) || \
 								 (ptr)->mlet == S_UMBER ||\
+								 (ptr)->mtyp == PM_DESERT_SEER ||\
 								 (ptr)->mtyp == PM_DROW_ALIENIST ||\
 								 (ptr)->mtyp == PM_DARUTH_XAXOX ||\
 								 (ptr)->mtyp == PM_EMBRACED_DROWESS\
@@ -1119,6 +1104,9 @@
 				 || (ptr)->mtyp == PM_MAD_SEER \
 				 || (ptr)->mtyp == PM_CLAIRVOYANT_CHANGED \
 				 || (ptr)->mtyp == PM_FOETID_ANGEL \
+				 || (ptr)->mtyp == PM_TETTIGON_LEGATUS \
+				 || (ptr)->mtyp == PM_UNMASKED_TETTIGON \
+				 || (ptr)->mtyp == PM_TRANSCENDENT_TETTIGON \
 				 || ((ptr)->mtyp == PM_TWIN_SIBLING && check_mutation(TWIN_DREAMS)) \
 				)
 
@@ -1317,6 +1305,8 @@
 						 (mon)->mtyp == PM_ARIANNA || (mon)->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION || \
 						 (mon)->mtyp == PM_REBEL_RINGLEADER || (mon)->mtyp == PM_RADIANT_PYRAMID || \
 						 (mon)->mtyp == PM_SIR_ALJANOR || (mon)->mtyp == PM_ALLIANCE_VANGUARD || \
+						 (mon)->mtyp == PM_TETTIGON_LEGATUS || (mon)->mtyp == PM_UNMASKED_TETTIGON || \
+						 (mon)->mtyp == PM_TRANSCENDENT_TETTIGON ||  \
 						 ((mon)->mtyp == PM_HOD_SEPHIRAH && Role_if(PM_KNIGHT)) || \
 						 ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_KNIGHT))
 #define mon_healing_turn(mon)	((mon)->mtyp == PM_DRACAE_ELADRIN || (mon)->mtyp == PM_UNBODIED)

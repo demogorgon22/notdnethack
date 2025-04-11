@@ -177,7 +177,7 @@ int adtyp;
 	case AD_DRST:
 		return CLR_GREEN;
 	case AD_PHYS:
-		return CLR_BROWN;
+		return CLR_BRIGHT_MAGENTA;
 	case AD_WET:
 		return CLR_BLUE;
 	case AD_DISE:
@@ -2194,7 +2194,7 @@ struct obj *obj, *otmp;
 		res = !obj->dknown;
 		/* target object has now been "seen (up close)" */
 		obj->dknown = 1;
-		if (Is_container(obj) || obj->otyp == STATUE || (obj->otyp == CRYSTAL_SKULL && u.uinsight >= 20)) {
+		if (Is_container(obj) || obj->otyp == STATUE || (obj->otyp == CRYSTAL_SKULL && Insight >= 20)) {
 		    if (!obj->cobj)
 			pline("%s empty.", Tobjnam(obj, "are"));
 		    else {
@@ -2734,6 +2734,17 @@ boolean ordinary;
 		case SPE_FIRE_STORM:
 		    You("explode a fireball on top of yourself!");
 		    explode(u.ux, u.uy, AD_FIRE, WAND_CLASS, d(6,6), EXPL_FIERY, 1);
+			if(u.explosion_up){
+				int ex, ey;
+				for(int i = 0; i < u.explosion_up; i++){
+					ex = u.ux + rn2(3) - 1;
+					ey = u.uy + rn2(3) - 1;
+					if(isok(ex, ey) && ZAP_POS(levl[ex][ey].typ))
+						explode(ex, ey, AD_FIRE, WAND_CLASS, d(6,6), EXPL_FIERY, 1);
+					else
+						explode(u.ux, u.uy, AD_FIRE, WAND_CLASS, d(6,6), EXPL_FIERY, 1);
+				}
+			}
 		    break;
 		case WAN_FIRE:
 		    makeknown(WAN_FIRE);
@@ -4339,6 +4350,17 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 	/* TODO: record colours in zapdata? Color currently standardized on AD_type */
 	if (zapdata->explosive) {
 		explode(sx, sy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp), 1 + !!(youagr &&Double_spell_size));
+		if(youagr && u.explosion_up){
+			int ex, ey;
+			for(int i = 0; i < u.explosion_up; i++){
+				ex = sx + rn2(3) - 1;
+				ey = sy + rn2(3) - 1;
+				if(isok(ex, ey) && ZAP_POS(levl[ex][ey].typ))
+					explode(ex, ey, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp), 1 + !!(Double_spell_size));
+				else
+					explode(sx, sy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp), 1 + !!(Double_spell_size));
+			}
+		}
 	}
 	if (zapdata->splashing) {
 		splash(sx, sy, dx, dy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp));

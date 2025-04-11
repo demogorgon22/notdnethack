@@ -1610,6 +1610,9 @@ struct obj *otmp;
 					pline("The cold-iron sears %s!", 	//half cold-iron damage
 						mon_nam(mtmp));
 				}
+				if(hates_iron(mtmp->data) && tt == SPIKED_PIT){
+					mtmp->mironmarked = TRUE;
+				}
 				if (mtmp->mhp <= 0 ||
 					thitm(mtmp, rnd((tt == PIT) ? 6 : 10) + ((tt == SPIKED_PIT && hates_iron(mtmp->data)) ? rnd(mtmp->m_lev) : 0), FALSE))
 					trapkilled = TRUE;
@@ -2462,6 +2465,9 @@ glovecheck:		    target = which_armor(mtmp, W_ARMG);
 				if (in_sight && hates_iron(mtmp->data) && tt == SPIKED_PIT) {
 					pline("The cold-iron sears %s!",
 						mon_nam(mtmp));
+				}
+				if(hates_iron(mtmp->data) && tt == SPIKED_PIT){
+					mtmp->mironmarked = TRUE;
 				}
 				mselftouch(mtmp, "Falling, ", FALSE);
 				if (mtmp->mhp <= 0 ||

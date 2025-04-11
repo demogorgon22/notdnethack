@@ -1014,6 +1014,7 @@ boolean full;
 		else if (full && template == CORDYCEPS)			Sprintf(buf2, "%s's sporulating corpse", buf);
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s the finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
+		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "%s the swollen", buf);
 		else											Strcpy(buf2, buf);
 	}
 	else {
@@ -1047,6 +1048,7 @@ boolean full;
 		else if (full && template == CORDYCEPS)			Sprintf(buf2, "%s cordyceps", buf);
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
+		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "swollen %s", buf);
 		else											Strcpy(buf2, buf);
 	}
 
