@@ -530,7 +530,7 @@ dosounds()
 					if (resists_death(tmpm)) {
 						// if (canseemon(tmpm))
 							// pline("%s seems no deader than before.", Monnam(tmpm));
-					} else if (!(resists_magm(tmpm) || resist(tmpm, 0, 0, FALSE))) {
+					} else if (!(resists_magm(tmpm) || mm_resist(tmpm, mtmp, 0, FALSE))) {
 							tmpm->mhp = -1;
 						monkilled(tmpm, "", AD_SPEL);
 			break;
@@ -1637,7 +1637,7 @@ asGuardian:
 						if (resists_death(tmpm)) {
 							// if (canseemon(tmpm))
 								// pline("%s seems no deader than before.", Monnam(tmpm));
-						} else if (!(resisted = (resists_magm(tmpm) || resist(tmpm, 0, 0, FALSE))) &&
+						} else if (!(resisted = (resists_magm(tmpm) || mm_resist(tmpm, mtmp, 0, FALSE))) &&
 								   rn2(mtmp->m_lev) > 12) {
 								tmpm->mhp = -1;
 							monkilled(tmpm, "", AD_SPEL);
@@ -2159,7 +2159,7 @@ asGuardian:
 
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
-							if ( mtmp->mpeaceful != tmpm->mpeaceful && distmin(mtmp->mx,mtmp->my,tmpm->mx,tmpm->my) < 4 && !resist(tmpm, 0, 0, FALSE)) {
+							if ( mtmp->mpeaceful != tmpm->mpeaceful && distmin(mtmp->mx,mtmp->my,tmpm->mx,tmpm->my) < 4 && !mm_resist(tmpm, mtmp, 0, FALSE)) {
 								dmg = 0;
 								switch(u.oonaenergy){
 									case AD_FIRE:
@@ -2275,7 +2275,7 @@ asGuardian:
 					for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 						if(tmpm != mtmp && !DEADMONSTER(tmpm)){
 							if(!mindless_mon(tmpm) && tmpm->data->mmove){
-								if ( mtmp->mpeaceful != tmpm->mpeaceful && distmin(mtmp->mx,mtmp->my,tmpm->mx,tmpm->my) < 4 && !resist(tmpm, 0, 0, FALSE)) {
+								if ( mtmp->mpeaceful != tmpm->mpeaceful && distmin(mtmp->mx,mtmp->my,tmpm->mx,tmpm->my) < 4 && !mm_resist(tmpm, mtmp, 0, FALSE)) {
 									tmpm->movement -= 12;
 									tmpm->permspeed = MSLOW;
 									tmpm->mspeed = MSLOW;

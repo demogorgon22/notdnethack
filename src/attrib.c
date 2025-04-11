@@ -1675,15 +1675,14 @@ count_madnesses()
 	int count = 0;
 	int i;
 	for(i=0; i < 32; i++){
-		if(u.umadness&(0x1L<<i))
+		if(u.umadness&(0x1LL<<i))
 			count++;
 	}
 	return 0;
 }
 
 int
-roll_madness(madness)
-long int madness;
+roll_madness(long long int madness)
 {
 	int sanlevel;
 	int usan = u.usanity;
@@ -1711,8 +1710,7 @@ long int madness;
 }
 
 int
-mad_turn(madness)
-long int madness;
+mad_turn(long long int madness)
 {
 	int sanlevel;
 	int usan = u.usanity;
@@ -1737,8 +1735,7 @@ long int madness;
 }
 
 int
-flat_mad_turn(madness)
-long int madness;
+flat_mad_turn(long long int madness)
 {
 	int sanlevel;
 	int usan = u.usanity;
@@ -1761,9 +1758,7 @@ long int madness;
 }
 
 int
-mad_monster_turn(mon, madness)
-struct monst *mon;
-long int madness;
+mad_monster_turn(struct monst *mon, long long int madness)
 {
 	int sanlevel;
 	int usan = u.usanity;

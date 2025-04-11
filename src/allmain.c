@@ -1677,6 +1677,14 @@ moveloop()
 		flags.initalign = 2;
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
+	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_NONE && flags.initalign != 3){
+		flags.initalign = 3;
+		impossible("Bad alignment initializer detected and fixed. Save and reload.");
+	}
+	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_VOID && flags.initalign != 4){
+		flags.initalign = 4;
+		impossible("Bad alignment initializer detected and fixed. Save and reload.");
+	}
 	// printMons();
 	// printMonNames();
 	// printDPR();
@@ -3769,6 +3777,7 @@ newgame()
 	flags.panLgod = -1;	/* role_init() will reset this */
 	flags.panNgod = -1;	/* role_init() will reset this */
 	flags.panCgod = -1;	/* role_init() will reset this */
+	flags.panVgod = -1;	/* role_init() will reset this */
 	role_init(TRUE);		/* must be before init_dungeons(), u_init(),
 				 * and init_artifacts() */
 	
@@ -4692,6 +4701,7 @@ cthulhu_mind_blast()
 		if (DEADMONSTER(mon)) continue;
 		if (is_mind_flayer(mon->data)) continue;
 		if (mindless_mon(mon)) continue;
+		if(is_tettigon(mon->data) && rn2(20)) continue;
 		if (mon_resistance(mon,TELEPAT) || !rn2(5)){
 			mon->mhp -= d(nd,15);
 			if (mon->mhp <= 0) mondied(mon);
@@ -4855,7 +4865,7 @@ alkilith_spawn(struct monst *mon)
 				if(hates_holy_mon(mtmp) || taxes_sanity(mtmp->data))
 					continue;
 				if(!mtmp->mconf && dist2(xlocale, ylocale, mtmp->mx, mtmp->my) <= 36){
-					if(!resist(mtmp, 0, 0, FALSE)){
+					if(!mm_resist(mtmp, mon, 0, FALSE)){
 						if(canspotmon(mtmp)){
 							pline("%s staggers!", Monnam(mtmp));
 							mtmp->mconf = TRUE;

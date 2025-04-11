@@ -3725,39 +3725,33 @@ winid *datawin;
 			OBJPUTSTR(buf2);
 		}
 	}
-	if(objects[otyp].expert_traits){
-		if(obj->objsize != wielder_size(&youmonst) && obj->oartifact != ART_AMALGAMATED_SKIES){
-			Sprintf(buf2, "You cannot use this item's expert traits because it's the wrong size for you.");
-			OBJPUTSTR(buf2);
-		}
-		else {
-			buf[0] = '\0';
+	if(obj && obj->expert_traits){
+		buf[0] = '\0';
 #define	EXPERTTRAITS(trait, string)	\
 	ADDCLASSPROP(CHECK_ETRAIT(obj, &youmonst, trait), string);
-			EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful overhead blows");
-			EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
-			EXPERTTRAITS(ETRAIT_KNOCK_BACK, (objects[otyp].expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
-			EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
-			EXPERTTRAITS(ETRAIT_STUNNING_STRIKE, "can deliver powerful stunning blows");
-			EXPERTTRAITS(ETRAIT_GRAZE, "may graze foes on a near miss");
-			EXPERTTRAITS(ETRAIT_STOP_THRUST, "can harness enemy momentum to deliver powerful blows");
-			EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
-			EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
-			EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
-			EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
-			EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
-			EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
-			EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
-			EXPERTTRAITS(ETRAIT_CREATE_OPENING, "creates openings for sneak attacks");
-			EXPERTTRAITS(ETRAIT_BRACED, "delivers powerful counterattacks");
-			EXPERTTRAITS(ETRAIT_BLADESONG, "delivers powerful blows when combined with songs or spells");
-			EXPERTTRAITS(ETRAIT_BLADEDANCE, "delivers powerful blows when moving and striking erratically");
-			if(buf[0] != '\0')
-				Sprintf(buf2, "Expert traits: %s.", buf);
-			else
-				Sprintf(buf2, "No expert traits unlocked.");
-			OBJPUTSTR(buf2);
-		}
+		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful overhead blows");
+		EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
+		EXPERTTRAITS(ETRAIT_KNOCK_BACK, (obj->expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
+		EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
+		EXPERTTRAITS(ETRAIT_STUNNING_STRIKE, "can deliver powerful stunning blows");
+		EXPERTTRAITS(ETRAIT_GRAZE, "may graze foes on a near miss");
+		EXPERTTRAITS(ETRAIT_STOP_THRUST, "can harness enemy momentum to deliver powerful blows");
+		EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
+		EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
+		EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
+		EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
+		EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
+		EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
+		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
+		EXPERTTRAITS(ETRAIT_CREATE_OPENING, "creates openings for sneak attacks");
+		EXPERTTRAITS(ETRAIT_BRACED, "delivers powerful counterattacks");
+		EXPERTTRAITS(ETRAIT_BLADESONG, "delivers powerful blows when combined with songs or spells");
+		EXPERTTRAITS(ETRAIT_BLADEDANCE, "delivers powerful blows when moving and striking erratically");
+		if(buf[0] != '\0')
+			Sprintf(buf2, "Expert traits: %s.", buf);
+		else
+			Sprintf(buf2, "No expert traits unlocked.");
+		OBJPUTSTR(buf2);
 	}
 	else {
 		Sprintf(buf2, "No expert traits.");
@@ -5621,7 +5615,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 	if (obj->unpaid != otmp->unpaid ||
 		obj->ostolen != otmp->ostolen ||
 		(obj->ostolen && obj->sknown != otmp->sknown) ||
-		(obj->ovar1 != otmp->ovar1 && obj->otyp != CORPSE && obj->otyp != FORCE_BLADE) ||
+		(obj->ovar1 != otmp->ovar1 && obj->otyp != CORPSE && obj->otyp != FORCE_BLADE && obj->otyp != RAKUYO_DAGGER && obj->otyp != BLADE_OF_PITY) ||
 		(obj->oward != otmp->oward) ||
 	    obj->spe != otmp->spe || obj->dknown != otmp->dknown ||
 	    (obj->bknown != otmp->bknown && !Role_if(PM_PRIEST)) ||

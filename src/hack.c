@@ -1238,7 +1238,17 @@ domove()
 	tmpr = &levl[x][y];
 
 	/* attack monster */
-	if(mtmp) {
+	if(flags.forcefight && x==u.ux && y==u.uy){
+		if(yn("Really attack yourself?")){
+			attack2(&youmonst);
+			flags.move |= MOVE_ATTACKED;
+		}
+		else {
+			flags.move |= MOVE_CANCELLED;
+		}
+		return;
+	}
+	else if(mtmp) {
 	    nomul(0, NULL);
 	    /* only attack if we know it's there */
 	    /* or if we used the 'F' command to fight blindly */
@@ -2927,6 +2937,7 @@ register int n;
 register const char *knam;
 boolean k_format;
 {
+	u.total_damage += n;
 	if (Upolyd) {
 		u.mh -= n;
 		if (u.mhmax < u.mh) u.mh = u.mhmax;

@@ -1463,7 +1463,7 @@ int ochance, achance;	/* percent chance for ordinary objects, artifacts */
 	} else {
 		int chance = rn2(100);
 
-		return((boolean)(chance < ((obj->oartifact || is_lightsaber(obj) || is_slab(obj) || obj->blood_smithed || obj->spe >= 10) ? achance : ochance)));
+		return((boolean)(chance < ((obj->oartifact || is_lightsaber(obj) || is_imperial_elven_armor(obj) || is_slab(obj) || obj->blood_smithed || obj->spe >= 10) ? achance : ochance)));
 	}
 }
 
@@ -5755,6 +5755,85 @@ boolean burial;
 
 #endif /*OVL3*/
 #ifdef OVL2
+
+int
+mm_resist(struct monst *mdef, struct monst *magr, int damage, int tell)
+{
+	int resisted;
+	int alev, dlev;
+	boolean youagr = &youmonst == magr;
+
+#define LUCK_MODIFIER	if(Luck > 0) alev += rnd(Luck)/2; else if(Luck < 0) alev -= rnd(-1*Luck)/2;
+
+	damage -= avg_spell_mdr(mdef);
+	if(damage < 0)
+		damage = 0;
+	alev = mlev(magr);
+	/* attack level */
+	if(!mdef->mpeaceful || magr->mtame){
+		LUCK_MODIFIER
+	}
+#undef LUCK_MODIFIER
+	/* defense level */
+	dlev = (int)mdef->m_lev;
+	if(mdef->mcan)
+		dlev /= 2;
+	if (dlev > 50) dlev = 50;
+	else if (dlev < 1) dlev = 1;
+	
+	if(mdef->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
+		dlev += 1;
+
+	int mons_mr = mdef->data->mr;
+	if(mdef->mcan){
+		if(mdef->mtyp == PM_ALIDER)
+			mons_mr = 0;
+		else
+			mons_mr /= 2;
+	}
+	if(mdef->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
+		mons_mr += 10;
+
+	if(mdef->mtyp == PM_CHOKHMAH_SEPHIRAH) dlev+=u.chokhmah;
+	resisted = rn2(100 + alev - dlev) < mons_mr;
+	if (resisted) {
+	    if (tell) {
+			shieldeff(mdef->mx, mdef->my);
+			pline("%s resists!", Monnam(mdef));
+	    }
+	    damage = (damage + 1) / 2;
+	}
+
+	if(youagr && mdef->female && humanoid_torso(mdef->data) && roll_madness(MAD_SANCTITY)){
+		damage /= 4;
+	}
+	if(youagr && roll_madness(MAD_ARGENT_SHEEN)){
+		damage /= 6;
+	}
+	if(youagr && (is_spider(mdef->data) 
+		|| mdef->mtyp == PM_SPROW
+		|| mdef->mtyp == PM_DRIDER
+		|| mdef->mtyp == PM_PRIESTESS_OF_GHAUNADAUR
+		|| mdef->mtyp == PM_AVATAR_OF_LOLTH
+	) && roll_madness(MAD_ARACHNOPHOBIA)){
+		damage /= 4;
+	}
+	if(youagr && mdef->female && humanoid_upperbody(mdef->data) && roll_madness(MAD_ARACHNOPHOBIA)){
+		damage /= 2;
+	}
+	if(youagr && is_aquatic(mdef->data) && roll_madness(MAD_THALASSOPHOBIA)){
+		damage /= 10;
+	}
+	
+	if (damage) {
+	    mdef->mhp -= damage;
+	    if (mdef->mhp < 1) {
+			if(m_using) monkilled(mdef, "", AD_RBRE);
+			else killed(mdef);
+	    }
+	}
+	return(resisted);
+}
 
 int
 resist(mtmp, oclass, damage, tell)

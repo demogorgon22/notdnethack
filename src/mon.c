@@ -660,6 +660,11 @@ register struct monst *mtmp;
 		num = undead_to_corpse(mndx);
 		obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, TRUE);
 		break;
+	    case PM_ALABASTER_CACTOID:
+			obj = mkobj_at(TILE_CLASS, x, y, NO_MKOBJ_FLAGS);
+			if(obj)
+				curse(obj);
+		break;
 	    case PM_ARSENAL:
 			num = d(3,6);
 			while(num--){
@@ -1653,7 +1658,7 @@ register struct monst *mtmp;
 			/* Puddles can sustain a tiny sea creature, or lessen the burdens of a larger one */
 			if (!(inshallow && mtmp->data->msize == MZ_TINY))
 			{
-				if (mtmp->mhp > 1 && rn2(mtmp->data->msize)) mtmp->mhp--;
+				if (mtmp->mhp > 1 && rn2(1 + mtmp->data->msize)) mtmp->mhp--;
 				monflee(mtmp, 2, FALSE, FALSE);
 			}
 		}
@@ -2948,7 +2953,7 @@ mon_can_see_mon(looker, lookie)
 	boolean hardtosee;
 	boolean indark = (dimness(looker->mx, looker->my) > 0);
 	
-	if(lookie->mtyp == PM_TWIN_SIBLING && !insightful(looker->data))
+	if(lookie->mtyp == PM_TWIN_SIBLING && !insightful(looker->data) && !is_great_old_one(looker->data))
 		return FALSE;
 	
 	if(looker->mtyp == PM_DREADBLOSSOM_SWARM){
@@ -3006,6 +3011,10 @@ mon_can_see_mon(looker, lookie)
 
 	/* 1/8 chance to stumble onto adjacent targets. Ish. */
 	if(distmin(looker->mx,looker->my,lookie->mx,lookie->my) <= 1 && !rn2(8))
+		return TRUE;
+	
+	/* Monsters with sensitive ears can find enemies without stealth */
+	if(sensitive_ears(looker->data) && looker->mcanhear && !mon_resistance(lookie,STEALTH) && distmin(looker->mx,looker->my,lookie->mx,lookie->my) <= rn2(8))
 		return TRUE;
 	
 	/* R'lyehian psychic sight, see minds, blocked by water */
@@ -3162,6 +3171,10 @@ struct monst *looker;
 	if(distmin(looker->mx,looker->my,u.ux,u.uy) <= 1 && !rn2(8))
 		return TRUE;
 	
+	/* Monsters with sensitive ears can find enemies without stealth */
+	if(sensitive_ears(looker->data) && looker->mcanhear && !Stealth && distmin(looker->mx,looker->my,u.ux, u.uy) <= rn2(8))
+		return TRUE;
+
 	if(Invis && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_VILQUAR) && !resist(looker, '\0', 0, NOTELL)){
 		return FALSE;
 	}
@@ -3205,7 +3218,9 @@ struct monst *looker;
 		}
 		/* nv range auto-succeeds within its distance */
 		if (nvrange > 0
-			&& dist2(looker->mx, looker->my, u.ux, u.uy) <= nvrange * nvrange + nvrange) {
+			&& dist2(looker->mx, looker->my, u.ux, u.uy) <= nvrange * nvrange + nvrange
+			&& !(Stealth && (Role_if(PM_ROGUE) || (u.sealsActive&SEAL_ANDROMALIUS) || !rn2(8)))
+		) {
 			return TRUE;
 		}
 		/* otherwise, check sight vs how lit/dim the square is */
@@ -3404,8 +3419,8 @@ mfndpos(mon, poss, info, flag)
 	nowtyp = levl[x][y].typ;
 
 	nodiag = (mdat->mtyp == PM_GRID_BUG) || (mdat->mtyp == PM_BEBELITH);
-	wantpool = (mdat->mflagsm&MM_AQUATIC);
-	wantdry = !wantpool;
+	wantpool = !!(mdat->mflagsm&MM_AQUATIC);
+	wantdry = !(mdat->mflagsm&MM_AQUATIC);
 	puddleispool = (wantpool && mdat->msize == MZ_TINY) || (wantdry && is_iron(mon));
 
 	/* nexttry can reset some of the above booleans, but recalculates the ones below. */
@@ -5906,6 +5921,7 @@ boolean was_swallowed;			/* digestion */
 		   || mdat->mtyp == PM_PARASITIZED_COMMANDER
 		   || mdat->mtyp == PM_CRUCIFIED_ANDROID
 		   || mdat->mtyp == PM_CRUCIFIED_GYNOID
+		   || mdat->mtyp == PM_ALABASTER_CACTOID
 //		   || mdat->mtyp == PM_PINK_UNICORN
 		   )
 		return TRUE;
@@ -6543,6 +6559,9 @@ struct monst *mtmp;
 		&& (otmp->owt > max(3, mtmp->data->cwt/10) || objects[typ].oc_size > MZ_MEDIUM)
 		&& !is_divider(mtmp->data)
 	) {
+		//properly uncreate an artifact
+		if (otmp->oartifact)
+			artifact_exists(otmp, ONAME(otmp), FALSE);
 		delobj(otmp);
 		otmp = 0;
 	}
@@ -7987,7 +8006,6 @@ int mtyp;
     if (mtyp == PM_SCORPIUS) mtyp = PM_SCORPION;
 	else if(mtyp == PM_ANCIENT_NAGA) mtyp = rn2(PM_GUARDIAN_NAGA_HATCHLING - PM_RED_NAGA_HATCHLING + 1) + PM_RED_NAGA_HATCHLING;
 	else if(mtyp == PM_SERPENT_MAN_OF_YOTH) mtyp = rn2(PM_COBRA - PM_GARTER_SNAKE + 1) + PM_GARTER_SNAKE;
-	else if(mtyp == PM_HUNTING_HORROR) mtyp = PM_BABY_LONG_WORM;
 	else if(mtyp == PM_SMAUG) mtyp = PM_BABY_RED_DRAGON;
 	
     mtyp = little_to_big(mtyp, (boolean)rn2(2));
@@ -9276,7 +9294,7 @@ struct monst *mon;
 			if(hates_holy_mon(mtmp) || taxes_sanity(mtmp->data))
 				continue;
 			if(!mtmp->mconf && dist2(xlocale, ylocale, mtmp->mx, mtmp->my) <= 36){
-				if(!resist(mtmp, 0, 0, FALSE)){
+				if(!mm_resist(mtmp, mtmp, 0, FALSE)){
 					if(canspotmon(mtmp)){
 						pline("%s staggers!", Monnam(mtmp));
 						mtmp->mconf = TRUE;

@@ -3752,6 +3752,8 @@ char *hittee;			/* target's name: "you" or mon_nam(mdef) */
 			if (!rn2(5)) (void) destroy_item(mdef, WAND_CLASS, AD_ELEC);
 		}
 		if(youdefend ? !Shock_resistance : !resists_elec(mdef)){
+			if(shock_vulnerable_species(mdef))
+				dnum *= 2;
 			*dmgptr += d(dnum,4);
 		}
 	} // nvPh - shock res
@@ -4530,12 +4532,15 @@ int * truedmgptr;
 	}
 
 	if (!Shock_res(mdef)){
+		int mult = 1;
+		if(shock_vulnerable_species(mdef))
+			mult *= 2;
 		if(check_oprop(otmp, OPROP_ELECW))
-			*truedmgptr += basedmg;
+			*truedmgptr += mult*basedmg;
 		if(check_oprop(otmp, OPROP_OONA_ELECW))
-			*truedmgptr += d(1, 8);
+			*truedmgptr += d(mult*1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_ELECW))
-			*truedmgptr += d(2, 6);
+			*truedmgptr += d(mult*2, 6);
 	}
 	
 	if (!Acid_res(mdef)){
@@ -4656,7 +4661,10 @@ int * truedmgptr;
 			break;
 			case AD_ELEC:
 				if (!Shock_res(mdef)){
-					*truedmgptr += d(3,8);
+					int mult = 1;
+					if(shock_vulnerable_species(mdef))
+						mult *= 2;
+					*truedmgptr += d(mult*3,8);
 				}
 			break;
 			case AD_ACID:
@@ -4857,21 +4865,24 @@ int * truedmgptr;
 		*truedmgptr += d(2,7);
 	}
 	if(check_oprop(otmp, OPROP_ANTAW)){
+		int mult = 1;
+		if(shock_vulnerable_species(mdef))
+			mult *= 2;
 		if(!Shock_res(mdef) && magr)
-			*truedmgptr += atr_dbon(otmp, magr, A_INT);
+			*truedmgptr += mult*atr_dbon(otmp, magr, A_INT);
 
 		if(check_reanimation(ANTENNA_ERRANT)){
 			if(youdef && !Tele_blind && (Blind_telepat || !rn2(5))){
-				*truedmgptr += rnd(15) + otmp->spe;
+				*truedmgptr += mult*(rnd(15) + otmp->spe);
 			}
 			else if(!youdef && !mindless_mon(mdef) && (mon_resistance(mdef,TELEPAT) || !rn2(5))){
-				*truedmgptr += rnd(15) + otmp->spe;
+				*truedmgptr += mult*(rnd(15) + otmp->spe);
 			}
 		}
 
 		if(check_reanimation(ANTENNA_BOLT)){
 			int modifier = (youdef ? (Blind_telepat && !Tele_blind) : mon_resistance(mdef, TELEPAT)) ? 2 : 1;
-			(*truedmgptr) += modifier*(rnd(10) + otmp->spe);
+			(*truedmgptr) += mult*modifier*(rnd(10) + otmp->spe);
 		}
 	}
 	return ((*truedmgptr != original_truedmgptr) || (*plusdmgptr != original_plusdmgptr));
@@ -5212,12 +5223,16 @@ boolean direct_weapon;
 		}
 	}
 	if (otmp->otyp == SUNROD && otmp->lamplit) {
-
-		if (!Shock_res(mdef) || !Acid_res(mdef)) {
-			if (!Shock_res(mdef) && !Acid_res(mdef))
-				(*truedmgptr) += 3 * (rnd(10) + otmp->spe) / 2;
-			else
-				(*truedmgptr) += rnd(10) + otmp->spe;
+		int num = 1, den = 1;
+		if(!Shock_res(mdef) && !Acid_res(mdef)){
+			num *= 3;
+			den *= 2;
+		}
+		if(shock_vulnerable_species(mdef)){
+			num *= 2;
+		}
+		if(!Shock_res(mdef) || !Acid_res(mdef)){
+			(*truedmgptr) += num * (rnd(10) + otmp->spe) / den;
 		}
 		if (!UseInvShock_res(mdef)){
 			if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
@@ -5281,6 +5296,8 @@ boolean direct_weapon;
 	
 	if (otmp->otyp == TONITRUS && otmp->lamplit){
 		int modifier = (youdef ? (Blind_telepat && !Tele_blind) : mon_resistance(mdef, TELEPAT)) ? 2 : 1;
+		if(shock_vulnerable_species(mdef))
+			modifier += 1;
 		if (!Shock_res(mdef)) {
 			if(magr)
 				(*truedmgptr) += modifier*(rnd(10) + otmp->spe) + atr_dbon(otmp, magr, A_INT);
@@ -5299,10 +5316,14 @@ boolean direct_weapon;
 
 	if (otmp->otyp == KAMEREL_VAJRA && litsaber(otmp)) {
 		if (!Shock_res(mdef)) {
+			int num = 1;
+			if(shock_vulnerable_species(mdef)){
+				num *= 2;
+			}
 			if (otmp->where == OBJ_MINVENT && otmp->ocarry->mtyp == PM_ARA_KAMEREL)
-				*truedmgptr += d(6, 6);
+				*truedmgptr += num*d(6, 6);
 			else
-				*truedmgptr += d(2, 6);
+				*truedmgptr += num*d(2, 6);
 		}
 		if (!UseInvShock_res(mdef)) {
 			if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
@@ -5731,7 +5752,11 @@ boolean direct_weapon;
 			break;
 			case WAGE_OF_PRIDE:
 				if(!Shock_res(mdef)){
-					*truedmgptr += d(2, 9);
+					if(shock_vulnerable_species(mdef)){
+						*truedmgptr += d(4, 9);
+					}
+					else
+						*truedmgptr += d(2, 9);
 				}
 			break;
 		}
@@ -6960,7 +6985,10 @@ boolean printmessages; /* print generic elemental damage messages */
 						}
 					}
 					/* Ask the player if they want to keep the object */
-					pline("Your blade sweeps %s away from %s.", doname(otmp2), mon_nam(mdef));
+					if(otmp->oartifact == ART_REAVER)
+						pline("Reaver sweeps %s away from %s.", doname(otmp2), mon_nam(mdef));
+					else
+						pline("Your blade sweeps %s away from %s.", doname(otmp2), mon_nam(mdef));
 					if (otmp->ovara_artiTheftType == 0 && yn("Do you try to grab it for yourself?") == 'y'){
 						/* give the object to the character */
 						otmp2 = Role_if(PM_PIRATE) ?
@@ -15171,35 +15199,37 @@ do_passive_attacks()
 	if(Invulnerable)
 		return;
 
-	if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
-		if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
-			pline("Lashing tentacles erupt from your brain!");
-			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
-			morehungry(d(4,4)*get_uhungersizemod());
+	if(!u.uno_auto_attacks){
+		if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
+			if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
+				pline("Lashing tentacles erupt from your brain!");
+				losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
+				morehungry(d(4,4)*get_uhungersizemod());
+			}
+			dogoat();
 		}
-		dogoat();
-	}
-	
-	if(is_goat_tentacle_mtyp(youracedata))
-		dogoat();
-	if(u.specialSealsActive&SEAL_YOG_SOTHOTH){
-		if(!doyog(&youmonst)){
-			if(check_mutation(TWIN_MIND) && roll_generic_madness(FALSE))
-				dotwin_cast(&youmonst);
+		
+		if(is_goat_tentacle_mtyp(youracedata))
+			dogoat();
+		if(u.specialSealsActive&SEAL_YOG_SOTHOTH){
+			if(!doyog(&youmonst)){
+				if(check_mutation(TWIN_MIND) && roll_generic_madness(FALSE))
+					dotwin_cast(&youmonst);
+			}
 		}
+		if(is_snake_bite_mtyp(youracedata))
+			dosnake(&youmonst);
+		if(u.jellyfish && active_glyph(LUMEN))
+			dojellysting(&youmonst);
+		if(is_tailslap_mtyp(youracedata))
+			dotailslap(&youmonst);
+		if(uring_art(ART_STAR_EMPEROR_S_RING))
+			dostarblades(&youmonst);
+		if(check_rot(ROT_CENT))
+			dorotbite(&youmonst);
+		if(check_rot(ROT_STING))
+			dorotsting(&youmonst);
 	}
-	if(is_snake_bite_mtyp(youracedata))
-		dosnake(&youmonst);
-	if(u.jellyfish && active_glyph(LUMEN))
-		dojellysting(&youmonst);
-	if(is_tailslap_mtyp(youracedata))
-		dotailslap(&youmonst);
-	if(uring_art(ART_STAR_EMPEROR_S_RING))
-		dostarblades(&youmonst);
-	if(check_rot(ROT_CENT))
-		dorotbite(&youmonst);
-	if(check_rot(ROT_STING))
-		dorotsting(&youmonst);
 	//Note: The player never gets Eladrin vines, starblades, or storms
 	flags.mon_moving = TRUE;
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
@@ -15749,8 +15779,8 @@ struct obj **opptr;
 			if(check_oprop(sky1, prop) || check_oprop(sky2, prop))
 				add_oprop(amalgam, prop);
 		}
-		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= objects[sky1->otyp].expert_traits;
-		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= objects[sky2->otyp].expert_traits;
+		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= sky1->expert_traits;
+		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= sky2->expert_traits;
 		switch(sky1->obj_material){
 			case IRON:
 				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;

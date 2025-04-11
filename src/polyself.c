@@ -1719,12 +1719,16 @@ domindblast()
 		twinround = twin;
 		round_dice = dice;
 		u_sen = (mon_resistance(mtmp,TELEPAT) && (is_blind(mtmp) || species_blind_telepathic(mtmp->data))) || rlyehiansight(mtmp->data);
+		if(is_tettigon(mtmp->data))
+			u_sen = FALSE;
 		hit = u_sen || (mon_resistance(mtmp,TELEPAT) && rn2(2)) || !rn2(10) || (Role_if(PM_ANACHRONOUNBINDER) && !rn2(10-(int)(u.ulevel/3))) ;
 		if(!hit && twinround){
 			twinround = FALSE;
 			//reroll
 			hit = (mon_resistance(mtmp,TELEPAT) && rn2(2)) || !rn2(10);
 		}
+		if(is_tettigon(mtmp->data) && rn2(10))
+			hit = FALSE;
 		if (hit) {
 			You("lock in on %s %s.", s_suffix(mon_nam(mtmp)),
 				u_sen ? "telepathy" :

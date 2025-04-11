@@ -3210,7 +3210,7 @@ int tary;
 		if (dmg > 50)
 			dmg = 50;
 		/* calculate resistance */
-		if (Magic_res(mdef) || (!youdef && resist(mdef, 0, 0, FALSE))) {
+		if (Magic_res(mdef) || (!youdef && mm_resist(mdef, magr, 0, FALSE))) {
 			shieldeff(x(mdef), y(mdef));
 			dmg = (dmg + 1) / 2;
 		}
@@ -3262,7 +3262,7 @@ int tary;
 				dmg += dmg_base;
 		}
 		/* calculate resistance */
-		if ((!youdef && resist(mdef, 0, 0, FALSE))) {
+		if ((!youdef && mm_resist(mdef, magr, 0, FALSE))) {
 			shieldeff(x(mdef), y(mdef));
 			dmg = (dmg + 1) / 2;
 		}
@@ -3457,7 +3457,7 @@ int tary;
 		if (dmg > 60)
 			dmg = 60;
 		/* calculate resistance */
-		if (Magic_res(mdef) || (!youdef && resist(mdef, 0, 0, FALSE))) {
+		if (Magic_res(mdef) || (!youdef && mm_resist(mdef, magr, 0, FALSE))) {
 			shieldeff(x(mdef), y(mdef));
 			dmg = (dmg + 1) / 2;
 		}
@@ -4320,7 +4320,7 @@ int tary;
 					/* monster */
 					boolean resisted = FALSE;
 
-					if (!(resisted = (Magic_res(mdef) || resists_death(mdef) || resist(mdef, 0, 0, FALSE))) &&
+					if (!(resisted = (Magic_res(mdef) || resists_death(mdef) || mm_resist(mdef, magr, 0, FALSE))) &&
 						rn2(mlev(magr)) > 12
 						){
 						if (is_delouseable(mdef->data)){
@@ -4690,6 +4690,16 @@ int tary;
 				dmg = d(n * 2, 20);
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
 			}
+			else if (!Shock_res(mdef) && shock_vulnerable_species(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s shocked by %s of silver light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
+				dmg = d(n*2, 20);
+				if (!UseInvShock_res(mdef)) {
+					destroy_item(mdef, WAND_CLASS, AD_ELEC);
+					destroy_item(mdef, RING_CLASS, AD_ELEC);
+				}
+			}
 			else if (!Fire_res(mdef) && species_resists_cold(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s burned by %s of silver light!",
@@ -4787,7 +4797,17 @@ int tary;
 			return MM_MISS;
 		}
 		else {
-			if (!Fire_res(mdef) && species_resists_cold(mdef)){
+			if (!Shock_res(mdef) && shock_vulnerable_species(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s shocked by golden light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
+				dmg = d(4, 12);
+				if (!UseInvFire_res(mdef)) {
+					destroy_item(mdef, WAND_CLASS, AD_ELEC);
+					destroy_item(mdef, RING_CLASS, AD_ELEC);
+				}
+			}
+			else if (!Fire_res(mdef) && species_resists_cold(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s burned by golden light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
@@ -6120,7 +6140,7 @@ int tary;
 		}
 		else {
 			/* these three spells are very similar, and share their resist checks */
-			if (Magic_res(mdef) || (youdef ? Free_action : resist(mdef, 0, 0, FALSE))) {
+			if (Magic_res(mdef) || (youdef ? Free_action : mm_resist(mdef, magr, 0, FALSE))) {
 				shieldeff(x(mdef), y(mdef));
 
 				switch (spell)

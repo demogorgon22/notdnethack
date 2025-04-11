@@ -2338,7 +2338,7 @@ struct obj *obj;
 				score += 3;
 		case SHOCK_RES:
 			if (!species_resists_elec(mon))
-				score += 3;
+				score += shock_vulnerable_species(mon) ? 18 : 3;
 		case ACID_RES:
 			if (!species_resists_acid(mon))
 				score += 3;

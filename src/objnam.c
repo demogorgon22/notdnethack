@@ -6148,9 +6148,9 @@ typfnd:
 		{
 			*wishreturn = (NOWISH) ? WISH_DENIED : ((NOJUICE) ? WISH_OUTOFJUICE : WISH_MERCYRULE);
 			/* wish failed */
-			artifact_exists(otmp, ONAME(otmp), FALSE);	// Is this necessary?
-			obfree(otmp, (struct obj *) 0);		// Is this necessary?
-			otmp = &zeroobj;					// Is this necessary?
+			artifact_exists(otmp, ONAME(otmp), FALSE);
+			obfree(otmp, (struct obj *) 0);
+			otmp = &zeroobj;
 			return &zeroobj;
 		}
 		else {
@@ -6235,7 +6235,7 @@ typfnd:
 			consume_oeaten(otmp, -amt);
 		}
 	}
-	otmp->owt = weight(otmp);
+	fix_object(otmp);
 	if (very && otmp->otyp == BALL) otmp->owt += 160;
 
 	*wishreturn = WISH_SUCCESS;

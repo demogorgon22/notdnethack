@@ -471,6 +471,10 @@ boolean dumping;
 	if (wizard || final) {
 		Sprintf(buf, "%ld gold ", u.spawnedGold);
 		enl_msg(buf, "has been", "was", " created");
+
+		Sprintf(buf, " %ld damage from combat and mishaps", u.total_damage);
+		enl_msg("You ", "have taken", "took", buf);
+		
 		Sprintf(buf, " %d", u.ualign.record);
 		enl_msg("Your alignment ", "is", "was", buf);
 		Sprintf(buf, " %d sins", u.ualign.sins);

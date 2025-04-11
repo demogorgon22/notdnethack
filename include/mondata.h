@@ -36,6 +36,14 @@
 #define species_resists_magic(mon)	(((mon)->data->mresists & MR_MAGIC) != 0)
 #define species_reflects(mon)		(((mon)->data->mresists & MR_REFLECT) != 0)
 
+#define shock_vulnerable_species(mon)	((mon)->mtyp == PM_MIST_WOLF \
+									  || (mon)->mtyp == PM_MIST_CLOUD \
+									  || (mon)->mtyp == PM_MOON_S_CHOSEN \
+									  || (mon)->mtyp == PM_MOON_ENTITY_TONGUE \
+									  || (mon)->mtyp == PM_MOON_ENTITY_MANIPALP \
+									  || (mon)->mtyp == PM_MOON_ENTITY_EYE_CLUSTER \
+										)
+
 #define	resist_attacks(ptr)	((((ptr)->mflagsg & MG_WRESIST) != 0L))
 #define	resist_blunt(ptr)	((((ptr)->mflagsg & MG_RBLUNT) != 0L))
 #define	resist_slash(ptr)	((((ptr)->mflagsg & MG_RSLASH) != 0L))
@@ -1088,6 +1096,13 @@
 								 (ptr)->mtyp == PM_DARUTH_XAXOX ||\
 								 (ptr)->mtyp == PM_EMBRACED_DROWESS\
 								)
+
+#define is_tettigon(ptr)	((ptr)->mtyp == PM_TETTIGON_LEGATUS \
+				 || (ptr)->mtyp == PM_UNMASKED_TETTIGON \
+				 || (ptr)->mtyp == PM_TRANSCENDENT_TETTIGON \
+				)
+
+
 #define has_mind_blast_mon(mon)	((has_mind_blast((mon)->data) \
 				 || has_template(mon, DREAM_LEECH) \
 				) && !((mon)->mtyp == PM_MAD_SEER && (mon)->mspec_used)\
@@ -1424,7 +1439,7 @@
 				   (ptr)->mtyp != PM_GREAT_CTHULHU && \
 				   (ptr)->mtyp != PM_STAR_SPAWN && \
 				   !is_clockwork(ptr) && \
-				   (!nonliving(ptr) || is_vampire(ptr)))
+				   (!nonliving(ptr) || is_vampire(ptr) || (ptr)->mtyp == PM_INDEX_WOLF))
 #define has_blood_mon(mon)	(has_blood((mon)->data))
 
 /* Keep track of ferns, fern sprouts, fern spores, and other plants */

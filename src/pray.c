@@ -2635,7 +2635,6 @@ prayer_done()		/* M. Stephenson (1.0.3b) */
     return MOVE_STANDARD;
 }
 
-STATIC_OVL
 int
 turn_level(mtmp)
 struct monst *mtmp;

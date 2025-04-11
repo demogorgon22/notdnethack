@@ -1447,6 +1447,7 @@ struct monst * magr;
 			ndice = khakharadice;
 		/* calculate */
 		dmg += vd(ndice, diesize);
+		mdef->mironmarked = TRUE;
 	}
 	if (hates_holy_mon(mdef) &&
 		otmp->blessed) {

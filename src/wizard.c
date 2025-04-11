@@ -1710,7 +1710,7 @@ aglaopesong(mtmp)
 				for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 					if(tmpm != mtmp && !DEADMONSTER(tmpm)){
 						if(!mindless_mon(tmpm)){
-							if ( mtmp->mpeaceful != tmpm->mpeaceful && !resist(tmpm, 0, 0, FALSE) ) {
+							if ( mtmp->mpeaceful != tmpm->mpeaceful && !mm_resist(tmpm, mtmp, 0, FALSE) ) {
 								if (tmpm->encouraged > -1*BASE_DOG_ENCOURAGED_MAX)
 									tmpm->encouraged = max_ints(-1*BASE_DOG_ENCOURAGED_MAX, tmpm->encouraged - rnd(mtmp->m_lev/3+1));
 								if (tmpm->mflee) tmpm->mfleetim = 0;
@@ -1735,7 +1735,7 @@ aglaopesong(mtmp)
 				for(tmpm = fmon; tmpm; tmpm = tmpm->nmon){
 					if(tmpm != mtmp && !DEADMONSTER(tmpm)){
 						if(!mindless_mon(tmpm) && tmpm->data->mmove){
-							if ( mtmp->mpeaceful != tmpm->mpeaceful && !resist(tmpm, 0, 0, FALSE) ) {
+							if ( mtmp->mpeaceful != tmpm->mpeaceful && !mm_resist(tmpm, mtmp, 0, FALSE) ) {
 								tmpm->movement -= 12;
 								tmpm->permspeed = MSLOW;
 								tmpm->mspeed = MSLOW;

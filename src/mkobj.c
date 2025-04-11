@@ -1759,7 +1759,7 @@ int mkflags;
 	if (otyp == WORD_OF_KNOWLEDGE)
 	    flags.made_know = TRUE;
 	
-	otmp->owt = weight(otmp);
+	fix_object(otmp);
 	return(otmp);
 }
 
@@ -1858,7 +1858,12 @@ start_corpse_timeout(body)
 #define ROT_AGE (250L)		/* age when corpses rot away */
 
 	/* lizards, beholders, and lichen don't rot or revive */
-	if (body->corpsenm == PM_LIZARD || body->corpsenm == PM_LICHEN || body->corpsenm == PM_CROW_WINGED_HALF_DRAGON || body->corpsenm == PM_BEHOLDER || body->spe) return;
+	if (body->corpsenm == PM_LIZARD
+		|| body->corpsenm == PM_LICHEN
+		|| body->corpsenm == PM_CROW_WINGED_HALF_DRAGON
+		|| body->corpsenm == PM_BEHOLDER
+		|| body->spe
+	) return;
 	
 	if(get_ox(body, OX_EMON)) attchmon = EMON(body);
 
@@ -2901,7 +2906,11 @@ register struct obj *obj;
 				wt += mons[PM_VAMPIRE_LADY].cwt;
 		}
 	}
-	if ((Is_container(obj) && obj->otyp != MAGIC_CHEST && obj->oartifact != ART_TREASURY_OF_PROTEUS) || obj->otyp == STATUE || obj->otyp == CHURCH_BLADE || obj->otyp == CHURCH_HAMMER) {
+	if ((Is_container(obj) && obj->otyp != MAGIC_CHEST && obj->oartifact != ART_TREASURY_OF_PROTEUS)
+		|| obj->otyp == STATUE
+		|| obj->otyp == CHURCH_BLADE
+		|| obj->otyp == CHURCH_HAMMER
+	) {
 		struct obj *contents;
 		register int cwt = 0;
 
@@ -3591,11 +3600,12 @@ obj_extract_self(obj)
 	    extract_magic_chest_nobj(obj);
 	    break;
 	case OBJ_INTRAP:
+		obj_extract_self_from_trap(obj);
 		/* The only place that we should be trying to extract an object inside a
 		* trap is from within the trap code, where we have a pointer to the
 		* trap that contains the object. We should never be trying to extract
 		* an object inside a trap without that context. */
-		panic("trying to extract object from trap with no trap info");
+		// panic("trying to extract object from trap with no trap info");
 		break;
 	default:
 	    panic("obj_extract_self");

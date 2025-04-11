@@ -4036,6 +4036,31 @@ struct trap *ttmp;
 	deltrap(ttmp);
 }
 
+/* Extract an object from a trap, and leave free for future use 
+	If this resutls in an empty trap, destroy the trap.
+*/
+void
+obj_extract_self_from_trap(struct obj *obj)
+{
+	struct obj *otmp;
+	struct obj **ppointer;
+
+	struct trap *ttmp = obj->otrap;
+	
+	for (ppointer = &(ttmp->ammo), otmp = ttmp->ammo; otmp; ppointer = &(otmp->nobj), otmp = otmp->nobj) {
+		if(otmp == obj)
+			break;
+	}
+	if(!otmp)
+		panic("obj_extract_self_from_trap: obj is not contained by the trap indicated by its own otrap field");
+	extract_nobj(otmp, ppointer);
+	otmp->otrap = 0;
+	if(!ttmp->ammo){
+		newsym(ttmp->tx, ttmp->ty);
+		deltrap(ttmp);
+	}
+}
+
 void
 rloc_trap(ttmp)
 struct trap *ttmp;

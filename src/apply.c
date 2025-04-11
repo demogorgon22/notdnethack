@@ -371,7 +371,7 @@ do_present_item(obj)
 				mtmp->housealert = 1;
 				for(tm = fmon; tm; tm = tm->nmon){
 					if((is_drow(tm->data) && (mtmp->mfaction == tm->mfaction || allied_faction(mtmp->mfaction, tm->mfaction))) || 
-						((mtmp->mfaction == EDDER_SYMBOL || mtmp->mfaction == XAXOX || tm->mtyp == PM_EDDERKOP) && 
+						((mtmp->mfaction == EDDER_SYMBOL || mtmp->mfaction == XAXOX || mtmp->mtyp == PM_EDDERKOP) && 
 							(tm->mfaction == EDDER_SYMBOL || tm->mfaction == XAXOX || tm->mtyp == PM_EDDERKOP)) ||
 						((mtmp->mfaction == EILISTRAEE_SYMBOL || is_elf(mtmp->data)) && 
 							(tm->mfaction == EILISTRAEE_SYMBOL || is_elf(tm->data)))
@@ -1953,6 +1953,14 @@ struct obj *obj;
 		You("need to buy it.");
 		return MOVE_CANCELLED;
 	}
+
+	if(inv_cnt() >= 52 && (
+		obj->otyp == RAKUYO
+	)){
+		You("are carrying too much junk to successfully split your sword.");
+		return MOVE_CANCELLED;
+	}
+	
 	
 	if(obj->otyp == RAKUYO){
 		You("unlatch %s.",the(xname(obj)));
@@ -1977,7 +1985,13 @@ struct obj *obj;
 
 		dagger = hold_another_object(dagger, "You drop %s!",
 				      doname(dagger), (const char *)0); /*shouldn't merge, but may drop*/
-		if(dagger && !uswapwep && carried(dagger)){
+		if(dagger && carried(dagger)){
+			if(uswapwep){
+				dagger->ovar1_offhand_oid = uswapwep->o_id;
+			}
+			else {
+				dagger->ovar1_offhand_oid = 0;
+			}
 			setuswapwep(dagger);
 			if(!u.twoweap) dotwoweapon();
 		}
@@ -1997,6 +2011,9 @@ struct obj *obj;
 		if (uswapwep->oartifact && uswapwep->oartifact == ART_BLADE_DANCER_S_DAGGER){
 			flag_existance(ART_BLADE_DANCER_S_DAGGER, FALSE);
 		}
+		
+		
+		long oid = uswapwep->ovar1_offhand_oid;
 
 		if (u.twoweap) {
 			u.twoweap = 0;
@@ -2006,6 +2023,18 @@ struct obj *obj;
 		obj->otyp = RAKUYO;
 		fix_object(obj);
 		You("latch %s.",the(xname(obj)));
+		if(oid){
+			struct obj *offhand;
+			for(offhand = invent; offhand; offhand = offhand->nobj){
+				if(oid == offhand->o_id){
+					setuswapwep(offhand);
+					break;
+				}
+			}
+			if(!offhand){
+				Your("previous swap-weapon is no-longer close to hand");
+			}
+		}
 	}
 	return MOVE_INSTANT;
 }
@@ -2028,6 +2057,13 @@ struct obj *obj;
 		return MOVE_CANCELLED;
 	}
 	
+	if(inv_cnt() >= 52 && (
+		obj->otyp == BLADE_OF_MERCY
+	)){
+		You("are carrying too much junk to successfully split your sword.");
+		return MOVE_CANCELLED;
+	}
+	
 	if(obj->otyp == BLADE_OF_MERCY){
 		You("unlatch %s.",the(xname(obj)));
 		obj->otyp = BLADE_OF_GRACE;
@@ -2039,14 +2075,15 @@ struct obj *obj;
 		fix_object(obj);
 		fix_object(dagger);
 		
-		// if (obj->oartifact && obj->oartifact == ART_BLADE_SINGER_S_SABER){
-			// artifact_exists(dagger, artiname(ART_BLADE_DANCER_S_DAGGER), FALSE);
-			// dagger = oname(dagger, artiname(ART_BLADE_DANCER_S_DAGGER));
-		// }
-
 		dagger = hold_another_object(dagger, "You drop %s!",
 				      doname(dagger), (const char *)0); /*shouldn't merge, but may drop*/
-		if(dagger && !uswapwep && carried(dagger)){
+		if(dagger && carried(dagger)){
+			if(uswapwep){
+				dagger->ovar1_offhand_oid = uswapwep->o_id;
+			}
+			else {
+				dagger->ovar1_offhand_oid = 0;
+			}
 			setuswapwep(dagger);
 			if(!u.twoweap) dotwoweapon();
 		}
@@ -2062,6 +2099,9 @@ struct obj *obj;
 			pline("They don't fit together!");
 			return MOVE_CANCELLED;
 		}
+
+		long oid = uswapwep->ovar1_offhand_oid;
+
 		if (u.twoweap) {
 			u.twoweap = 0;
 			update_inventory();
@@ -2070,6 +2110,18 @@ struct obj *obj;
 		obj->otyp = BLADE_OF_MERCY;
 		fix_object(obj);
 		You("latch %s.",the(xname(obj)));
+		if(oid){
+			struct obj *offhand;
+			for(offhand = invent; offhand; offhand = offhand->nobj){
+				if(oid == offhand->o_id){
+					setuswapwep(offhand);
+					break;
+				}
+			}
+			if(!offhand){
+				Your("previous swap-weapon is no-longer close to hand");
+			}
+		}
 	}
 	return MOVE_INSTANT;
 }
@@ -2402,6 +2454,14 @@ use_church_weapon(struct obj *obj)
 		You("need to buy it.");
 		return MOVE_CANCELLED;
 	}
+	if(inv_cnt() >= 52 && (
+		obj->otyp == CHURCH_BLADE
+		|| obj->otyp == CHURCH_BRICK
+	)){
+		You("are carrying too much junk to successfully draw your sword.");
+		return MOVE_CANCELLED;
+	}
+	
 	struct obj *sword = 0;
 	
 	if(obj->otyp == CHURCH_BLADE){
@@ -4085,6 +4145,7 @@ int magic; /* 0=Physical, otherwise skill level */
 	    if (temp < 0) temp = -temp;
 	    if (range < temp)
 		range = temp;
+		u.lastmoved = monstermoves;
 	    (void) walk_path(&uc, &cc, hurtle_step, (genericptr_t)&range);
 
 	    /* A little Sokoban guilt... */
@@ -10783,6 +10844,7 @@ doapply()
 			bullets->cursed = obj->cursed;
 			bullets->quan = u.ulevel > 21 ? 20 : u.ulevel > 12 ? 10 : 5;
 			bullets->spe = u.uimpurity/4;
+			copy_oprop_list(bullets, obj->oproperties);
 			fix_object(bullets);
 			nightmare_mold_lose_experience();
 			*hp(&youmonst) -= 3*(*hp(&youmonst))/10;

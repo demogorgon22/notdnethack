@@ -1333,6 +1333,13 @@ static const struct def_skill Skill_Orc_Brd[] = {
     { P_NONE, 0 }
 };
 
+static const struct def_skill Skill_Elf_Brd[] = {
+    { P_DAGGER, P_EXPERT },
+    { P_BROAD_SWORD, P_EXPERT },
+    { P_TWO_WEAPON_COMBAT, P_EXPERT },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_Drow_Unarmed[] = {
     { P_BARE_HANDED_COMBAT, P_GRAND_MASTER },
     { P_NONE, 0 }
@@ -2457,6 +2464,7 @@ u_init()
 		godlist[urole.lgod].anger = 1;
 		godlist[urole.ngod].anger = 1;
 		godlist[urole.cgod].anger = 1;
+		godlist[urole.vgod].anger = 0;
 		u.usanity = 75; /* Your sanity is not so hot */
 		u.umadness |= MAD_DELUSIONS; /* Your sanity is not so hot */
 		u.udrunken = 30; /* Your sanity is not so hot (and you may have once been more powerful) */
@@ -2864,7 +2872,10 @@ u_init()
 	    }
 
 #ifdef BARD
-		if(!Role_if(PM_BARD)) skill_add(Skill_Elf_Music);
+		if(Role_if(PM_BARD)){
+			skill_add(Skill_Elf_Brd);
+		}
+		else skill_add(Skill_Elf_Music);
 #endif
 		if(Role_if(PM_ANACHRONONAUT)){
 			u.umartial = TRUE;
@@ -3075,6 +3086,12 @@ u_init()
     break;
 	case PM_VAMPIRE:
 	    /* Vampires start off with gods not as pleased, luck penalty */
+		if(!Role_if(PM_EXILE) && (u.ualign.type == godlist[urole.vgod].alignment || godlist[urole.vgod].alignment == A_NONE)){
+			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = urole.vgod;
+			if(godlist[urole.vgod].alignment == A_NONE){
+				flags.initalign = 3;
+			}
+		}
 	    knows_object(POT_BLOOD);
 	    adjalign(-5);
 		u.ualign.sins += 5;
