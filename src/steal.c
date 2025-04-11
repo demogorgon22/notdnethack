@@ -244,6 +244,8 @@ int monkey_business; /* true iff an animal is doing the thievery */
 {
 	struct obj *otmp;
 	int tmp, could_petrify, named = 0, armordelay;
+	if(!mtmp)
+		return;
 	boolean charms = (is_neuter(mtmp->data) || flags.female == mtmp->female);
 	boolean mi_only = is_chuul(mtmp->data);
 	if(mtmp->mtyp == PM_ALRUNES) charms = !charms;
