@@ -12128,7 +12128,6 @@ int vis;
 			(!(youagr ? Blind : is_blind(magr))) &&
 			(!(youdef ? Invis : mdef->minvis) || (youagr ? See_invisible(x(mdef), y(mdef)) : mon_resistance(magr, SEE_INVIS))) &&
 			(youagr ? canseemon(mdef) : youdef ? mon_can_see_you(magr) : mon_can_see_mon(magr, mdef)) &&
-			(youdef ? (Invis && !mon_resistance(magr, SEE_INVIS)) : (mdef->minvis && !mon_resistance(magr, SEE_INVIS))) &&
 			(!(youagr ? Sleeping : magr->msleeping)) &&
 			(!Gaze_res(mdef))
 		))
