@@ -6945,7 +6945,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			return result;
 		}
 	}
-	if (arti_steal(otmp)){
+	if (arti_steal(otmp) && magr != mdef && magr && mdef){
 		if (youagr){
 			if (mdef->minvent && (Role_if(PM_PIRATE) || !rn2(10))){
 				struct obj *otmp2;

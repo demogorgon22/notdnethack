@@ -3245,7 +3245,7 @@ spiriteffects(power, atme)
 								losehp(2, "leg damage from being pulled out of a bear trap",
 										KILLED_BY);
 								set_wounded_legs(side, rn1(100,50));
-								if(!Preservation){
+								if(!Preservation && !uarmf->oartifact){
 									if(bootdamage > uarmf->spe){
 										claws_destroy_arm(uarmf);
 									}else{

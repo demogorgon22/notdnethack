@@ -1411,8 +1411,8 @@ as_extra_healing:
 		}
 		if (is_vampire(youracedata) || (carnivorous(youracedata) && !herbivorous(youracedata))) {
 			pline("It smells like %s%s.", 
-					!type_is_pname(&mons[otmp->corpsenm]) ||
-					!(mons[otmp->corpsenm].geno & G_UNIQ) ||
+					(!type_is_pname(&mons[otmp->corpsenm]) &&
+					 (mons[otmp->corpsenm].geno & G_UNIQ)) ||
 					Hallucination ? 
 						"the " : 
 						"", 
@@ -3520,8 +3520,10 @@ dodip()
 	}
 	
 	potion->in_use = FALSE;		/* didn't go poof */
-	if ((obj->otyp == UNICORN_HORN || obj->oclass == GEM_CLASS) &&
-	    (mixture = mixtype(obj, potion)) != 0) {
+	if ((obj->otyp == UNICORN_HORN || (obj->oclass == GEM_CLASS && !obj->oartifact))
+		&& !potion->oartifact
+	    && (mixture = mixtype(obj, potion)) != 0
+	) {
 		char oldbuf[BUFSZ], newbuf[BUFSZ];
 		short old_otyp = potion->otyp;
 		boolean old_dknown = FALSE;
@@ -3541,7 +3543,7 @@ dodip()
 
 		/* MRKR: Gems dissolve in acid to produce new potions */
 
-			if (obj->oclass == GEM_CLASS && potion->otyp == POT_ACID) {
+		if (obj->oclass == GEM_CLASS && potion->otyp == POT_ACID) {
 
 		  struct obj *singlegem = (obj->quan > 1L ? 
 					   splitobj(obj, 1L) : obj);
