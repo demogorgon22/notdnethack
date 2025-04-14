@@ -1957,8 +1957,10 @@ domove()
 	}
 
 	if (flags.run && iflags.runmode != RUN_TPORT) {
+		static unsigned long runmoves = 0;
+		runmoves++;
 	    /* display every step or every 7th step depending upon mode */
-	    if (iflags.runmode != RUN_LEAP || !(moves % 7L)) {
+	    if (iflags.runmode != RUN_LEAP || !(runmoves % 7L)) {
 		if (flags.time) flags.botl = 1;
 		curs_on_u();
 		delay_output();
