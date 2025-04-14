@@ -880,7 +880,7 @@ struct monst *magr;
 		{
 			// couatl bite 
 			ocn = 1;
-			ocd = 2;
+			ocd = 3;
 			bonn = 2;
 			bond = 4;
 		}
