@@ -2607,7 +2607,7 @@ int typ;
     char allowall[2];
     static NEARDATA const char callable[] = {
 	SCROLL_CLASS, TILE_CLASS, POTION_CLASS, WAND_CLASS, RING_CLASS, AMULET_CLASS,
-	GEM_CLASS, SPBOOK_CLASS, ARMOR_CLASS, TOOL_CLASS, 0 };
+	GEM_CLASS, SPBOOK_CLASS, ARMOR_CLASS, BELT_CLASS, TOOL_CLASS, 0 };
 
     if (!typ) {
       any.a_void = 0;
