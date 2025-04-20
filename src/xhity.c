@@ -36,7 +36,7 @@ static const int DjemSo_counterattack[] = {  5, 10, 20 };
 static const int Shien_counterattack[]  = {  5, 10, 20 };
 static const int Soresu_counterattack[] = { 10, 15, 25 };
 /* Misc attacks */
-struct attack noattack = { 0, 0, 0, 0 };
+const struct attack noattack = { 0, 0, 0, 0 };
 struct attack basicattack  = { AT_WEAP, AD_PHYS, 1, 4 };
 struct attack grapple = { AT_HUGS, AD_PHYS, 0, 6 };	/* for grappler's grasp */
 struct attack acu_tent = { AT_TENT, AD_DRIN, 1, 4 };	/* for acu tentacles */
@@ -1706,6 +1706,7 @@ boolean fresh;
 #define PASV_ECHIDNA	9
 #define PASV_FAFNIR		10
 #define PASV_EDEN		11
+#define NOATTACK		12
 	static struct attack spiritattack[] =
 	{
 		{ AT_BUTT, AD_PHYS, 1, 9 },
@@ -1719,7 +1720,8 @@ boolean fresh;
 		{ AT_NONE, AD_SHDW, 4, 8 },
 		{ AT_NONE, AD_ACID, 1, 1 },	/* actually 1d(spiritDsize) */
 		{ AT_NONE, AD_FIRE, 1, 1 }, /* actually 1d(spiritDsize) */
-		{ AT_NONE, AD_SLVR, 1, 20 }
+		{ AT_NONE, AD_SLVR, 1, 20 },
+		{ AT_NONE, AD_PHYS, 0, 0 } /* noattack */
 	};
 	int i;					/* loop counter */
 	static int indexnum;	/* which attack index to return -- kept between calls of this function */
@@ -1831,7 +1833,7 @@ boolean fresh;
 	}
 		
 	/* Default case: no attack */
-	return &noattack;
+	return &spiritattack[NOATTACK];
 }
 
 /* getattk()
@@ -2035,7 +2037,8 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		*indexnum >= 2 &&
 		!isdark(x(magr), y(magr))
 	) {
-		return &noattack;
+		*attk = noattack;
+		return attk;
 	}
 	if(magr->mforgetful && (attk->adtyp == AD_MAGM || attk->adtyp == AD_SPEL)){
 		GETNEXT
@@ -2393,7 +2396,8 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		}
 		else if (check_subout(subout, SUBOUT_GOATSPWN)){
 			/* If spellcasting, stop after the first index */
-			return &noattack;
+			*attk = noattack;
+			return attk;
 		}
 	}
 	if(!by_the_book && attk->aatyp == AT_BKGT){
@@ -2830,11 +2834,11 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 	if (youagr && is_null_attk(attk) && !by_the_book) {
 		/* this assumes that getattk() will not be interrupted with youagr when already called with youagr */
 		if (!check_subout(subout, SUBOUT_SPIRITS)) {
-			attk = getnextspiritattack(TRUE);
+			*attk = *(getnextspiritattack(TRUE));
 			add_subout(subout, SUBOUT_SPIRITS);
 		}
 		else {
-			attk = getnextspiritattack(FALSE);
+			*attk = *(getnextspiritattack(FALSE));
 		}
 		fromlist = FALSE;
 	}
@@ -12435,7 +12439,6 @@ int vis;
 			(!(youagr ? Blind : is_blind(magr))) &&
 			(!(youdef ? Invis : mdef->minvis) || (youagr ? See_invisible(x(mdef), y(mdef)) : mon_resistance(magr, SEE_INVIS))) &&
 			(youagr ? canseemon(mdef) : youdef ? mon_can_see_you(magr) : mon_can_see_mon(magr, mdef)) &&
-			(youdef ? (Invis && !mon_resistance(magr, SEE_INVIS)) : (mdef->minvis && !mon_resistance(magr, SEE_INVIS))) &&
 			(!(youagr ? Sleeping : magr->msleeping)) &&
 			(!Gaze_res(mdef))
 		))
@@ -18539,7 +18542,8 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 					Sprintf(buf, "unwisely drained %s", pd->mname);
 					killer = buf;
 					killer_format = NO_KILLER_PREFIX;
-					newres = xdamagey(mdef, magr, &noattack, 9999);
+					struct attack na = noattack;
+					newres = xdamagey(mdef, magr, &na, 9999);
 					if (newres&MM_DEF_DIED)
 						result |= MM_AGR_DIED;	/* attacker died */
 					if (newres&MM_DEF_LSVD)
@@ -19021,8 +19025,8 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 				if (dmg < 1)
 					dmg = 1;
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
-
-				newres = xdamagey(mdef, magr, &noattack, dmg);
+				struct attack na = noattack;
+				newres = xdamagey(mdef, magr, &na, dmg);
 				if (newres&MM_DEF_DIED)
 					result |= MM_AGR_DIED;	/* attacker died */
 				if (newres&MM_DEF_LSVD)
@@ -19307,7 +19311,8 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 						dmg = 1;
 					dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
 
-					newres = xdamagey(mdef, magr, &noattack, dmg);
+					struct attack na = noattack;
+					newres = xdamagey(mdef, magr, &na, dmg);
 					if (newres&MM_DEF_DIED)
 						result |= MM_AGR_DIED;	/* attacker died */
 					if (newres&MM_DEF_LSVD)
@@ -19459,6 +19464,7 @@ struct attack * attk;		/* attack aggressor used, which is now being counterattac
 struct attack * passive;	/* specific passive attack being used */
 {
 	int i;
+	struct attack passive_buffer = noattack;
 
 	/* if not given, grab passive attack from permonst */
 	if (!passive || is_null_attk(passive))
@@ -19468,7 +19474,7 @@ struct attack * passive;	/* specific passive attack being used */
 			return;
 
 		struct permonst * pd = ((mdef == &youmonst) ? youracedata : mdef->data);
-		passive = &noattack;
+		passive = &passive_buffer;
 		for (i = 0; i < NATTK; i++) {
 			if (pd->mattk[i].aatyp == AT_NONE &&
 				!is_null_attk(&(pd->mattk[i]))) {
@@ -19477,7 +19483,7 @@ struct attack * passive;	/* specific passive attack being used */
 			}
 		}
 		/* if we failed to get a passive attack, nothing happens. */
-		if (passive == &noattack)
+		if (is_null_attk(passive))
 			return;
 	}
 	/* if not given, get otmp based on attk and magr */

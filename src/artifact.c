@@ -12612,7 +12612,6 @@ arti_invoke(obj)
 				break;
 			}
 			else if(u.dx && !u.dy) {
-				pline("%d %d", u.dx, u.dy);
 				astel_blast(u.ux+u.dx, u.uy-1, 1);
 				astel_blast(u.ux+u.dx, u.uy, 1);
 				astel_blast(u.ux+u.dx, u.uy+1, 1);

@@ -2765,12 +2765,18 @@ long timeout;	/* unused */
 				out_of /= 2;
 			out_of -= u.uimpurity;
 			out_of -= u.uimp_rot;
-			if(active_glyph(EYE_THOUGHT) && active_glyph(LUMEN))
+			if(active_glyph(EYE_THOUGHT) && active_glyph(DEFILEMENT))
 				out_of /= 3;
 			else if(active_glyph(EYE_THOUGHT))
 				out_of /= 2;
-			else if(active_glyph(LUMEN))
+			else if(active_glyph(DEFILEMENT))
 				out_of = 2*out_of/3;
+
+			if(active_glyph(LUMEN) && active_glyph(ROTTEN_EYES))
+				out_of /= 2;
+			else if(active_glyph(LUMEN) || active_glyph(ROTTEN_EYES))
+				out_of = 3*out_of/4;
+
 			if(!obj->researched)
 				out_of /= 2;
 			if(!obj->odrained)
