@@ -1016,6 +1016,8 @@ clear_level_structures()
 	level.flags.outside = 0;
 	level.flags.has_minor_spire = 0;
 	level.flags.has_kamerel_towers = 0;
+	
+	level.lastmove = monstermoves;
 
 	nroom = 0;
 	rooms[0].hx = -1;
@@ -1046,7 +1048,8 @@ makelevel()
 	oinit();	/* assign level dependent obj probabilities */
 	clear_level_structures();
 	flags.makelev_closerooms = FALSE;
-	
+	if(Infuture)
+		level.lastmove = quest_status.time_doing_quest;
 	if(Is_minetown_level(&u.uz)) livelog_write_string("entered Minetown for the first time");
 
 	{

@@ -590,6 +590,7 @@ int mode;
 	bwrite(fd,(genericptr_t) &updest,sizeof(dest_area));
 	bwrite(fd,(genericptr_t) &dndest,sizeof(dest_area));
 	bwrite(fd,(genericptr_t) &level.flags,sizeof(level.flags));
+	bwrite(fd,(genericptr_t) &level.lastmove,sizeof(level.lastmove));
 	bwrite(fd, (genericptr_t) doors, sizeof(doors));
 	bwrite(fd,(genericptr_t) &altarindex, sizeof(int));
 	bwrite(fd, (genericptr_t) altars, sizeof(altars));

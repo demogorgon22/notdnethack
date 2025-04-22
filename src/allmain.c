@@ -1565,6 +1565,59 @@ you_regen_san()
 	}
 }
 
+int
+random_frequency()
+{
+	/*Turn off random generation on axus's level if lawful*/
+	if(Is_illregrd(&u.uz) && u.ualign.type == A_LAWFUL && !u.uevent.uaxus_foe)
+		return 0;
+
+	/*Drastically reduce spawn rate if the painting is peaceful*/
+	if(In_quest(&u.uz) && Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend && u.uevent.qcompleted && u.ualign.record > 4)
+		return 210;
+
+	if(u.uevent.udemigod)
+		return 25;
+
+	if(Infuture)
+		return (!(Is_qstart(&u.uz) && !(quest_status.leader_is_dead)) ? 35 : ANA_HOME_PROB);
+
+	if(depth(&u.uz) > depth(&stronghold_level))
+		return 50;
+	
+	return 70;
+}
+
+void
+spawn_random_monster()
+{
+	if(Is_ford_level(&u.uz)){
+		if(rn2(2)){
+			int x, y, tries = 200;
+			do x = rn2(COLNO/2) + COLNO/2 + 1, y =  rn2(ROWNO-2)+1;
+			while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
+			if(tries >= 0)
+				makemon(ford_montype(1), x, y, MM_ADJACENTOK);
+		} else {
+			int x, y, tries = 200;
+			do x = rn2(COLNO/2) + 1, y =  rn2(ROWNO-2)+1;
+			while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
+			if(tries >= 0)
+				makemon(ford_montype(-1), x, y, MM_ADJACENTOK);
+		}
+	} else {
+		if(In_sokoban(&u.uz)){
+			if(u.uz.dlevel != 1 && u.uz.dlevel != 4) makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTSTRICT|MM_ADJACENTOK);
+		} else if(Infuture && Is_qstart(&u.uz) && !(quest_status.leader_is_dead)){
+			(void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			if(ANA_SPAWN_TWO) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			if(ANA_SPAWN_THREE) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			if(ANA_SPAWN_FOUR) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+		}
+		else (void) makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
+	}
+}
+
 void
 moveloop()
 {
@@ -2474,7 +2527,14 @@ karemade:
 				You("are surrounded by howling wind!");
 				dream_wolves(u.ux, u.uy);
 			}
-			//Random monster generation block
+			//The current move is the last time we checked random monsters
+			// Ana quest is in its own timeline
+			if(Role_if(PM_ANACHRONONAUT) && Infuture)
+				level.lastmove = quest_status.time_doing_quest;
+			else level.lastmove = monstermoves;
+			//One aspect always shows up right away
+			int spawn_freq = random_frequency();
+			//One aspect always shows up right away
 			if(In_mithardir_terminus(&u.uz) &&
 				mvitals[PM_ASPECT_OF_THE_SILENCE].born == 0 &&
 				((u.ufirst_light && u.ufirst_sky)
@@ -2483,40 +2543,12 @@ karemade:
 			)){
 				makemon(&mons[PM_ASPECT_OF_THE_SILENCE], 0, 0, NO_MM_FLAGS);
 			}
-		    else if(!(Is_illregrd(&u.uz) && u.ualign.type == A_LAWFUL && !u.uevent.uaxus_foe) && /*Turn off random generation on axus's level if lawful*/
-				!rn2(u.uevent.udemigod ? 25 :
-				Infuture ? (!(Is_qstart(&u.uz) && !(quest_status.leader_is_dead)) ? 35 : ANA_HOME_PROB) :
-				(In_quest(&u.uz) && Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend && u.uevent.qcompleted && u.ualign.record > 4) ? 210 : /*Drastically reduce spawn rate if the painting is peaceful*/
-			    (depth(&u.uz) > depth(&stronghold_level)) ? 50 : 70)
-			){
-				if(Is_ford_level(&u.uz)){
-					if(rn2(2)){
-						int x, y, tries = 200;
-						do x = rn2(COLNO/2) + COLNO/2 + 1, y =  rn2(ROWNO-2)+1;
-						while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
-						if(tries >= 0)
-							makemon(ford_montype(1), x, y, MM_ADJACENTOK);
-					} else {
-						int x, y, tries = 200;
-						do x = rn2(COLNO/2) + 1, y =  rn2(ROWNO-2)+1;
-						while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
-						if(tries >= 0)
-							makemon(ford_montype(-1), x, y, MM_ADJACENTOK);
-					}
-				} else {
-					if (u.uevent.invoked && xupstair && rn2(10)) {
-						(void) makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTOK);
-					} //TEAM ATTACKS
-					if(In_sokoban(&u.uz)){
-						if(u.uz.dlevel != 1 && u.uz.dlevel != 4) makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTSTRICT|MM_ADJACENTOK);
-					} else if(Infuture && Is_qstart(&u.uz) && !(quest_status.leader_is_dead)){
-						(void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-						if(ANA_SPAWN_TWO) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-						if(ANA_SPAWN_THREE) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-						if(ANA_SPAWN_FOUR) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-					}
-					else (void) makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
-				}
+			//Random monster generation block
+		    else if(spawn_freq && !rn2(spawn_freq)){
+				spawn_random_monster();
+				if (u.uevent.invoked && !Is_ford_level(&u.uz) && xupstair && rn2(10)) {
+					(void) makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTOK);
+				} //TEAM ATTACKS
 				if(!(mvitals[PM_HOUND_OF_TINDALOS].mvflags&G_GONE && !In_quest(&u.uz))
 					&& (level_difficulty()+u.ulevel)/2+5 > monstr[PM_HOUND_OF_TINDALOS]
 					&& !DimensionalLock
@@ -2857,6 +2889,9 @@ karemade:
 				if(quest_status.time_doing_quest >= UH_QUEST_TIME_4 && !Is_astralevel(&u.uz) && !u.veil){
 					quest_status.moon_close = TRUE; /*The moon draws close to the astral plane*/
 				}
+			}
+			else if(Role_if(PM_ANACHRONONAUT) && Infuture){
+				quest_status.time_doing_quest++;
 			}
 			nonce = rand();
 
