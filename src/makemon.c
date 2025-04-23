@@ -13341,7 +13341,7 @@ boolean randmonst;
 			mkmon_template = TONGUE_PUPPET;
 		}
 		/**/
-		if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
+		else if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
 			mkmon_template = SWOLLEN_TEMPLATE;
 		}
 		/* most general case at bottom -- creatures randomly being zombified */
