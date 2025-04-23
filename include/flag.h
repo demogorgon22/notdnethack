@@ -155,26 +155,25 @@ struct flag {
 	boolean	 stag;	/* turned stag during the quest, re-used to track if the Anachrononaut has completed their extra task */
 	boolean leader_backstab;		/* your leader is attacking you */
 	boolean made_bell;		/* the bell of opening has been created */
+	int spriest_level;		/* the current level has a priest of the serpent on it */
 
-	boolean spore_level;		/* the current level has a spore-spreading monster */
-	boolean slime_level;		/* the current level has a slime-spreading monster */
-	boolean walky_level;		/* the current level has a undead-raising monster */
-	boolean shade_level;		/* the current level has a shade-casting monster */
-	boolean yello_level;		/* the current level has the attention of the King in Yellow */
+	
+	Bitfield(spore_level, 1);		/* the current level has a spore-spreading monster */
+	Bitfield(slime_level, 1);		/* the current level has a slime-spreading monster */
+	Bitfield(walky_level, 1);		/* the current level has a undead-raising monster */
+	Bitfield(shade_level, 1);		/* the current level has a shade-casting monster */
+	Bitfield(yello_level, 1);		/* the current level has the attention of the King in Yellow */
+	Bitfield(goldka_level, 1);		/* the current level has a gold kamerel golem on it */
+	Bitfield(silence_level, 1);		/* the current level has an avatar of The Silence on it */
+	
+	Bitfield(made_first, 1);		/* the first word slab has been created */
+	Bitfield(made_divide, 1);		/* the dividing word slab has been created */
+	Bitfield(made_life, 1);			/* the nurturing word slab has been created */
+	Bitfield(made_know, 1);			/* the word of knowledge slab has been created */
 
-	boolean goldka_level;		/* the current level has a gold kamerel golem on it */
+	Bitfield(made_twin, 1);			/* your yog sothoth twin has been created */
 
-	boolean silence_level;		/* the current level has an avatar of The Silence on it */
-
-	boolean spriest_level;		/* the current level has a priest of the serpent on it */
-	boolean made_first;			/* the first word slab has been created */
-	boolean made_divide;		/* the dividing word slab has been created */
-	boolean made_life;			/* the nurturing word slab has been created */
-	boolean made_know;			/* the word of knowledge slab has been created */
-
-	boolean made_twin;			/* your yog sothoth twin has been created */
-
-	boolean disp_inv;			/* currently displaying inventory, use separate obuf list */
+	Bitfield(disp_inv, 1);			/* currently displaying inventory, use separate obuf list */
 
 	/* KMH, role patch -- Variables used during startup.
 	 *
