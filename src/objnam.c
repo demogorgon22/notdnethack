@@ -1076,7 +1076,7 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_LESSER_ACIDW))
 			Strcat(buf, "acrid ");
 		
-		if (check_oprop(obj, OPROP_GOATW)){
+		if (check_oprop(obj, OPROP_GOATW) && !(obj->where == OBJ_INVENT && GOAT_BAD)){
 			switch(goat_weapon_damage_turn(obj)){
 				case AD_EACD:
 					Strcat(buf, "drooling ");
@@ -1093,7 +1093,7 @@ boolean dofull;
 			}
 		}
 		
-		if (check_oprop(obj, OPROP_SOTHW)){
+		if (check_oprop(obj, OPROP_SOTHW) && !(obj->where == OBJ_INVENT && YOG_BAD)){
 			switch(soth_weapon_damage_turn(obj)){
 				case AD_STTP:
 					Strcat(buf, "starry ");

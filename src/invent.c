@@ -2760,9 +2760,9 @@ winid *datawin;
 	boolean printed_type = FALSE;
 	boolean has_artidmg = oartifact && (artilist[oartifact].adtyp || artilist[oartifact].damage || artilist[oartifact].accuracy);
 	
-	if(check_oprop(obj,OPROP_GOATW))
+	if(check_oprop(obj,OPROP_GOATW) && !(obj->where == OBJ_INVENT && GOAT_BAD))
 		goatweaponturn = goat_weapon_damage_turn(obj);
-	if(check_oprop(obj,OPROP_SOTHW))
+	if(check_oprop(obj,OPROP_SOTHW) && !(obj->where == OBJ_INVENT && YOG_BAD))
 		sothweaponturn = soth_weapon_damage_turn(obj);
 
 

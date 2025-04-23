@@ -4497,7 +4497,7 @@ int * truedmgptr;
 	if(is_undead(pd) && check_oprop(otmp, OPROP_TDTHW)){
 		*truedmgptr += basedmg + d(2,7);
 	}
-	if(check_oprop(otmp, OPROP_GOATW)){
+	if(check_oprop(otmp, OPROP_GOATW) && !(youagr && GOAT_BAD)){
 		switch(goat_weapon_damage_turn(otmp)){
 			case AD_EACD:
 				if (!Acid_res(mdef)){
@@ -4542,7 +4542,7 @@ int * truedmgptr;
 			break;
 		}
 	}
-	if(check_oprop(otmp, OPROP_SOTHW)){
+	if(check_oprop(otmp, OPROP_SOTHW) && !(youagr && YOG_BAD)){
 		switch(soth_weapon_damage_turn(otmp)){
 			// case AD_STTP:
 			// break;
@@ -4589,6 +4589,8 @@ int * truedmgptr;
 			// break;
 		}
 	}
+	//Note: silver flame oprops stay active. I forsee no balance problems from this at all.
+	
 	//Psionic does slightly buffed damage, but triggers less frequently
 	// Buffed vs. telepathic beings
 	if(youdef && !Tele_blind && (Blind_telepat || !rn2(5))){
@@ -5653,9 +5655,9 @@ boolean printmessages; /* print generic elemental damage messages */
 	if (!msgr)
 		msgr = otmp;
 	
-	if(check_oprop(otmp,OPROP_GOATW))
+	if(check_oprop(otmp,OPROP_GOATW) && !(youagr && GOAT_BAD))
 		goatweaponturn = goat_weapon_damage_turn(otmp);
-	if(check_oprop(otmp,OPROP_SOTHW))
+	if(check_oprop(otmp,OPROP_SOTHW) && !(youagr && YOG_BAD))
 		sothweaponturn = soth_weapon_damage_turn(otmp);
 	if(otmp->obj_material == MERCURIAL){
 		mercweaponslice[0] = merc_weapon_damage_slice(otmp, magr, A_INT);

@@ -3573,6 +3573,11 @@ commune_with_goat()
 		aggravate();
 		return MOVE_STANDARD;
 	}
+	if(GOAT_BAD){
+		pline("The will of %s blocks your actions.", u_gname());
+		return MOVE_STANDARD;
+	}
+
 	/* in good standing */
 	if (godlist[GOD_THE_BLACK_MOTHER].anger) {
 		You_feel("a fraction of %s %s.",
@@ -3898,8 +3903,7 @@ commune_with_silver_flame()
 		return MOVE_STANDARD;
 	}
 	/* in good standing */
-	if (godlist[GOD_THE_SILVER_FLAME].anger) {
-		//Import bad prayer effects (where she drools on you if you're prayer timeout is bad)
+	if (godlist[GOD_THE_SILVER_FLAME].anger || FLAME_BAD) {
 		You("are burned by the silver light!");
 		losehp(rnd(20), "angry silver light", KILLED_BY);
 		return MOVE_STANDARD;
@@ -4599,6 +4603,11 @@ int eatflag;
 		return;
 	}
 
+	if(eatflag != GOAT_EAT_PASSIVE && GOAT_BAD){
+		pline("The will of %s blocks your actions.", u_gname());
+		return;
+	}
+
 	if ((otmp->corpsenm == PM_ACID_BLOB
 		|| (monstermoves <= peek_at_iced_corpse_age(otmp) + 50)
 		) && mons[otmp->corpsenm].mlet != S_PLANT
@@ -4634,16 +4643,9 @@ int eatflag;
 	/* never an altar conversion*/
 	
 	/* Rider handled */
-	eat_offering(otmp, eatflag == GOAT_EAT_MARKED && !(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) && goat_seenonce, eatflag);
+	eat_offering(otmp, eatflag == GOAT_EAT_MARKED && goat_seenonce, eatflag);
 	if(eatflag == GOAT_EAT_MARKED)
 		goat_seenonce = TRUE;
-	if(eatflag != GOAT_EAT_PASSIVE && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
-		adjalign(-value);
-		godlist[u.ualign.god].anger += 1;
-		(void) adjattrib(A_WIS, -1, TRUE);
-		if (!Inhell) angrygods(u.ualign.god);
-		change_luck(-1);
-	}
 
 	/* off floor -- the only possible effect is creating Goat's Milk. You do not get credit, return early */
 	if (eatflag == GOAT_EAT_PASSIVE) {
@@ -4771,6 +4773,11 @@ yog_sothoth_drink(struct obj *otmp)
 	
 	/* Rider unimportant (corpse is not destroyed) */
 	drink_offering(otmp);
+	/* Yog accepts offerings from badly-aligned cultists, but gives no favor for them */
+	if(YOG_BAD){
+		You("are filled with contempt.");
+		return;
+	}
 	yog_credit(value, TRUE);
 }
 
@@ -4836,13 +4843,9 @@ boolean offering;
 	
 	/* Rider handled */
 	if(otmp)
-		burn_offering(otmp, !(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)));
-	if(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
-		adjalign(-value);
-		godlist[u.ualign.god].anger += 1;
-		(void) adjattrib(A_CHA, -1, TRUE);
-		if (!Inhell) angrygods(u.ualign.god);
-		change_luck(-1);
+		burn_offering(otmp, TRUE);
+	if(FLAME_BAD) {
+		value = 0;
 	}
 
 	/* anger must be paid off before credit can be built, return early */
@@ -4878,16 +4881,9 @@ void
 yog_credit(int value, boolean offered)
 {
 	//May be zero if draining a small monster etc.
-	if(!value)
+	//May be reaced with yog bad as a result of having the spirit bound while badly aligned.
+	if(!value || YOG_BAD)
 		return;
-
-	if(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
-		adjalign(-value);
-		godlist[u.ualign.god].anger += 1;
-		(void) adjattrib(A_CHA, -1, TRUE);
-		if (!Inhell) angrygods(u.ualign.god);
-		change_luck(-1);
-	}
 
 	/* anger must be paid off before credit can be built, return early */
 	if(godlist[GOD_YOG_SOTHOTH].anger) {
