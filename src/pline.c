@@ -5,6 +5,7 @@
 #define NEED_VARARGS /* Uses ... */	/* comment line for pre-compiled headers */
 #include <math.h>
 #include "hack.h"
+#include "hashmap.h"
 
 #ifdef WIZARD
 #endif

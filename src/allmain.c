@@ -10,6 +10,8 @@
 #include "hack.h"
 #include "artifact.h"
 #include "xhity.h"
+#include "hashmap.h"
+#include "hashutil.h"
 
 #ifndef NO_SIGNAL
 #include <signal.h>
@@ -67,6 +69,17 @@ int gosleep()
     } while (res && errno == EINTR);
 
     return res;
+}
+
+int
+filter_itemmap(void* const context, struct hashmap_element_s* const e)
+{
+	struct menucolor_attribs *stored = (struct menucolor_attribs *)e->data;
+	if((moves - stored->lastused) > 1000){
+		free(e->data);
+		return -1;
+	}
+	return 0;
 }
 
 STATIC_OVL void
@@ -3120,6 +3133,11 @@ karemade:
 			mercurial_repair();
 			clear_stale_fforms();
 
+			if(moves%1000){
+				extern struct hashmap_s itemmap;
+				hashmap_iterate_pairs(&itemmap, filter_itemmap, 0);
+			}
+
 		    if(!(Invulnerable)) {
 			if(Teleportation && !rn2(85) && !(
 #ifdef WIZARD
@@ -3702,6 +3720,9 @@ newgame()
 #endif
 
 	flags.ident = 1;
+
+	extern struct hashmap_s itemmap;
+	hashmap_create(32, &itemmap);
 
 	for (i = 0; i < NUMMONS; i++)
 		mvitals[i].mvflags = mons[i].geno & (G_NOCORPSE|G_SPCORPSE);

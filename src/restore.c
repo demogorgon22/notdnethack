@@ -4,6 +4,7 @@
 
 #include "hack.h"
 #include "lev.h"
+#include "hashmap.h"
 #include "tcap.h" /* for TERMLIB and ASCIIGRAPH */
 
 #if defined(MICRO)
@@ -423,6 +424,9 @@ unsigned int *stuckid, *steedid;	/* STEED */
 	has_loaded_bones = flags.end_around;
 	flags.end_around = 2;
 	if (remember_discover) discover = remember_discover;
+
+	extern struct hashmap_s itemmap;
+	hashmap_create(32, &itemmap);
 
 	role_init(FALSE);	/* Reset the initial role, race, gender, and alignment */
 	
