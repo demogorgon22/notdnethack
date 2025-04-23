@@ -1601,34 +1601,61 @@ random_frequency()
 	return 70;
 }
 
-void
+int
 spawn_random_monster()
 {
+	int difficulty = 0;
+	struct monst *mtmp = 0;
 	if(Is_ford_level(&u.uz)){
 		if(rn2(2)){
 			int x, y, tries = 200;
 			do x = rn2(COLNO/2) + COLNO/2 + 1, y =  rn2(ROWNO-2)+1;
 			while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
-			if(tries >= 0)
-				makemon(ford_montype(1), x, y, MM_ADJACENTOK);
+			if(tries >= 0){
+				mtmp = makemon(ford_montype(1), x, y, MM_ADJACENTOK);
+			}
 		} else {
 			int x, y, tries = 200;
 			do x = rn2(COLNO/2) + 1, y =  rn2(ROWNO-2)+1;
 			while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
-			if(tries >= 0)
-				makemon(ford_montype(-1), x, y, MM_ADJACENTOK);
+			if(tries >= 0){
+				mtmp = makemon(ford_montype(-1), x, y, MM_ADJACENTOK);
+			}
 		}
+		if(mtmp)
+			difficulty += monstr[mtmp->mtyp];
 	} else {
 		if(In_sokoban(&u.uz)){
-			if(u.uz.dlevel != 1 && u.uz.dlevel != 4) makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTSTRICT|MM_ADJACENTOK);
+			if(u.uz.dlevel != 1 && u.uz.dlevel != 4) mtmp = makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTSTRICT|MM_ADJACENTOK);
+			if(mtmp)
+				difficulty += monstr[mtmp->mtyp];
 		} else if(Infuture && Is_qstart(&u.uz) && !(quest_status.leader_is_dead)){
-			(void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-			if(ANA_SPAWN_TWO) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-			if(ANA_SPAWN_THREE) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-			if(ANA_SPAWN_FOUR) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			if(mtmp)
+				difficulty += monstr[mtmp->mtyp];
+			if(ANA_SPAWN_TWO){
+				mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+				if(mtmp)
+					difficulty += monstr[mtmp->mtyp];
+				if(ANA_SPAWN_THREE){
+					mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+					if(mtmp)
+						difficulty += monstr[mtmp->mtyp];
+					if(ANA_SPAWN_FOUR) {
+						mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+						if(mtmp)
+							difficulty += monstr[mtmp->mtyp];
+					}
+				}
+			}
 		}
-		else (void) makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
+		else {
+			mtmp = makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
+			if(mtmp)
+				difficulty += monstr[mtmp->mtyp];
+		}
 	}
+	return difficulty;
 }
 
 void
