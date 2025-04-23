@@ -738,9 +738,7 @@ smithing_object(struct obj *obj)
 				struct obj *ingots = mksobj(INGOT, MKOBJ_NOINIT);
 				ingots->quan = obj->owt;
 				ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = TRUE;
-				ingots->bknown = obj->bknown;
-				ingots->blessed = obj->blessed;
-				ingots->cursed = obj->cursed;
+				ingots->bknown = TRUE;
 				set_material_gm(ingots, obj->obj_material);
 				fix_object(ingots);
 				useupall(obj);
