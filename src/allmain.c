@@ -5918,6 +5918,7 @@ struct monst *mon;
 	}
 }
 
+STATIC_OVL
 void
 invisible_twin_act(mon)
 struct monst *mon;
