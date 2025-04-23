@@ -635,7 +635,16 @@ int booktype;
 		skillmin = P_EXPERT;
 		break;
 	}
-	return (related && skill >= skillmin) ? related : 0;
+	if(related && skill >= skillmin){
+		if(Role_if(PM_WIZARD)
+			|| parasite_count() >= 6
+			|| (u.sealsActive&SEAL_PAIMON)
+			|| (Role_if(PM_HEALER) && spell_skilltype(skill) == P_HEALING_SPELL)
+		){
+			return related;
+		}
+	}
+	return 0;
 #undef set_related
 }
 
@@ -4821,7 +4830,7 @@ dothrowspell:
 					}
 				}
 				else {
-					dam = d(dice, 6) + flat + rnd(u.ulevel);
+					dam = d(dice, 8) + flat + rnd(u.ulevel);
 					if(Spellboost) dam *= 2;
 					if(u.ukrau_duration) dam *= 1.5;
 					explode(u.dx, u.dy, spell_adtype(pseudo->otyp), 0, dam, color, rad);
