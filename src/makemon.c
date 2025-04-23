@@ -1523,7 +1523,8 @@ boolean greatequip;
 			otmp->oward = curhouse;
 			(void) mpickobj(mtmp, otmp);
 			/*Cloak*/
-			otmp = mksobj(CLOAK_OF_MAGIC_RESISTANCE, mkobjflags);
+			otmp = mksobj(DROVEN_CLOAK, mkobjflags);
+			add_oprop(otmp, OPROP_MAGC);
 			otmp->blessed = TRUE;
 			otmp->cursed = FALSE;
 			otmp->oerodeproof = TRUE;
