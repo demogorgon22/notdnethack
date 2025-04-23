@@ -4071,7 +4071,7 @@ int magic; /* 0=Physical, otherwise skill level */
 			if (uarmf && uarmf->otyp == find_jboots()){
 				int bootdamage = d(1,10);
 				losehp(rnd(10), "jumping out of a bear trap", KILLED_BY);
-				if(!Preservation){
+				if(!Preservation && !uarmf->oartifact){
 					set_wounded_legs(side, rn1(100,50));
 					if(bootdamage > uarmf->spe){
 						claws_destroy_arm(uarmf);
