@@ -487,6 +487,9 @@ boolean lifesave_forced;
 		} else if(u.spirit[ALIGN_SPIRIT] == spir){
 			u.spirit[ALIGN_SPIRIT]=0;
 			u.spiritT[ALIGN_SPIRIT]=0;
+		} else if(u.spirit[OTHER_SPIRIT] == spir){
+			u.spirit[OTHER_SPIRIT]=0;
+			u.spiritT[OTHER_SPIRIT]=0;
 		} else if(u.spirit[OUTER_SPIRIT] == spir){
 			u.spirit[OUTER_SPIRIT]=0;
 			u.spiritT[OUTER_SPIRIT]=0;
@@ -668,6 +671,8 @@ nh_timeout()
 			unbind(u.spirit[QUEST_SPIRIT],0);
 		if(u.spirit[ALIGN_SPIRIT] && u.spiritT[ALIGN_SPIRIT] < moves) 
 			unbind(u.spirit[ALIGN_SPIRIT],0);
+		if(u.spirit[OTHER_SPIRIT] && u.spiritT[OTHER_SPIRIT] < moves) 
+			unbind(u.spirit[OTHER_SPIRIT],0);
 		if(u.spirit[CROWN_SPIRIT] && u.spiritT[CROWN_SPIRIT] < moves) 
 			unbind(u.spirit[CROWN_SPIRIT],0);
 		if(u.spirit[GPREM_SPIRIT] && u.spiritT[GPREM_SPIRIT] < moves) 

@@ -5915,6 +5915,10 @@ int floorID;
 		set_spirit_powers(sealID);
 		return;
 	}
+	else if (floorID == YOG_SOTHOTH) {
+		spirit_type = ALIGN_SPIRIT;
+		spirit_type = OTHER_SPIRIT;
+	}
 	else if (
 		floorID == COSMOS ||
 		floorID == LIVING_CRYSTAL ||
@@ -5922,7 +5926,6 @@ int floorID;
 		floorID == MISKA ||
 		floorID == NUDZIRATH ||
 		floorID == ALIGNMENT_THING ||
-		floorID == YOG_SOTHOTH ||
 		floorID == UNKNOWN_GOD
 		) {
 		spirit_type = ALIGN_SPIRIT;
