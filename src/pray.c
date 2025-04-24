@@ -2841,8 +2841,10 @@ struct monst *mon;
 						losehp(d(6,6), "holy scripture", KILLED_BY);
 					}
 				}
-				You("panic!");
-				HPanicking += d(6,6);
+				if(!rn2(HPanicking)){
+					You("panic!");
+					HPanicking += d(6,6);
+				}
 			}
 		}
 		else if(mon->mtame && mon_healing_turn(mon)
