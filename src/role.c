@@ -1974,10 +1974,10 @@ int newgame;
 	/* Fix up the god names */
 	if (flags.pantheon == -1) {		/* new game */
 	    flags.pantheon = flags.initrole;	/* use own gods */
-	    while (!roles[flags.pantheon].lgod 	/* unless they're missing */
+	    while ((!roles[flags.pantheon].lgod || 	/* unless they're missing */
+					(!Role_if(PM_UNDEAD_HUNTER) && philosophy_index(roles[flags.pantheon].lgod)))
 			&& !(Race_if(PM_DROW) && !Role_if(PM_ANACHRONONAUT))
 			&& !(Race_if(PM_ELF) && !Role_if(PM_ANACHRONONAUT))
-			&& (!Role_if(PM_UNDEAD_HUNTER) && philosophy_index(roles[flags.pantheon].lgod))
 			&& !Role_if(PM_EXILE)
 		) flags.pantheon = randrole(0);
 	    flags.panLgod = flags.pantheon;
