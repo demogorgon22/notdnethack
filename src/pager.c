@@ -1189,6 +1189,8 @@ static const char * const bogusobjects[] = {
        "maximally subsentient emacs mode",
        "bongard diagram",                  /* Intelligence test */
 	   "pair of Joo Janta 200 Super-Chromatic Peril Sensitive Sunglasses",	/* K2 */
+
+	   "smooth-gemmed head-ch102020202020202020202020202020202020202020202",	/* my cat says "hello" */
 	   
 	   /* Movies etc. */
 	   "overloading phaser", /* Star Trek */
