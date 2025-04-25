@@ -425,8 +425,9 @@ unsigned int *stuckid, *steedid;	/* STEED */
 	flags.end_around = 2;
 	if (remember_discover) discover = remember_discover;
 
-	extern struct hashmap_s itemmap;
-	hashmap_create(32, &itemmap);
+	extern struct hashmap_s *itemmap;
+	itemmap = malloc(sizeof(struct hashmap_s));
+	hashmap_create(32, itemmap);
 
 	role_init(FALSE);	/* Reset the initial role, race, gender, and alignment */
 	

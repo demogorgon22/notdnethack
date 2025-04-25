@@ -3161,8 +3161,8 @@ karemade:
 			clear_stale_fforms();
 
 			if(moves%1000){
-				extern struct hashmap_s itemmap;
-				hashmap_iterate_pairs(&itemmap, filter_itemmap, 0);
+				extern struct hashmap_s *itemmap;
+				hashmap_iterate_pairs(itemmap, filter_itemmap, 0);
 			}
 
 		    if(!(Invulnerable)) {
@@ -3748,8 +3748,9 @@ newgame()
 
 	flags.ident = 1;
 
-	extern struct hashmap_s itemmap;
-	hashmap_create(32, &itemmap);
+	extern struct hashmap_s *itemmap;
+	itemmap = malloc(sizeof(struct hashmap_s));
+	hashmap_create(32, itemmap);
 
 	for (i = 0; i < NUMMONS; i++)
 		mvitals[i].mvflags = mons[i].geno & (G_NOCORPSE|G_SPCORPSE);

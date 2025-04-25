@@ -172,7 +172,7 @@ NEARDATA struct flag flags = DUMMY;
 NEARDATA struct instance_flags iflags = DUMMY;
 NEARDATA struct you u = DUMMY;
 
-struct hashmap_s itemmap;
+struct hashmap_s *itemmap = 0;
 
 /* objects that have been stored in a magic chest */
 NEARDATA struct obj *magic_chest_objs[10] = {0};
