@@ -1595,6 +1595,10 @@ create_polymon(obj, okind)
 	    pm_index = PM_PAPER_GOLEM;
 	    material = "paper ";
 	    break;
+	case DRAGON_HIDE:
+	    pm_index = PM_PSEUDODRAGON;
+	    material = "draconic ";
+	    break;
 	default:
 	    /* if all else fails... */
 	    pm_index = PM_STRAW_GOLEM;
