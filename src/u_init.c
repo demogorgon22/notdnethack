@@ -3471,6 +3471,9 @@ register struct trobj *trop;
 			if (obj->otyp == TINNING_KIT) {
 				obj->spe = rn1(50, 50);	/* more charges than standard generation */
 			}
+			if (obj->otyp == DISSECTION_KIT) {
+				obj->spe = rn1(50, 50);	/* more charges than standard generation */
+			}
 			if (trop->trspe != UNDEF_SPE)
 			    obj->spe = trop->trspe;
 			if (trop->trbless == OBJ_CURSED){

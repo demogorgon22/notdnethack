@@ -1309,6 +1309,7 @@ int curse_bless;
 		break;
 	    case MAGIC_MARKER:
 	    case TINNING_KIT:
+	    case DISSECTION_KIT:
 #ifdef TOURIST
 	    case EXPENSIVE_CAMERA:
 #endif

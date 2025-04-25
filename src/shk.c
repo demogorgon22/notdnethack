@@ -4541,8 +4541,9 @@ boolean altusage; /* some items have an "alternate" use with different cost */
 		if (otmp->spe > 1) tmp /= 4L;
 	} else if (otmp->oclass == SPBOOK_CLASS) {
 		tmp -= tmp / 5L;
-	} else if (otmp->otyp == CAN_OF_GREASE ||
-		   otmp->otyp == TINNING_KIT
+	} else if (otmp->otyp == CAN_OF_GREASE
+		   || otmp->otyp == TINNING_KIT
+		   || otmp->otyp == DISSECTION_KIT
 #ifdef TOURIST
 		   || otmp->otyp == EXPENSIVE_CAMERA
 #endif

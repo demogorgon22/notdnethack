@@ -14780,6 +14780,14 @@ int faction;
 				mtmp->mhpmax = .5*mtmp->mhpmax;
 				mtmp->mhp = mtmp->mhpmax;
 			}
+			if(mndx == PM_CRIMSON_MOON_LOTUS){
+				mongets(mtmp, DISSECTION_KIT, NO_MKOBJ_FLAGS);
+				// obj = mksobj_at(DISSECTION_KIT, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
+				// if(obj){
+					// bury_an_obj(obj);
+				// }
+				// obj = (struct obj *)0;
+			}
 		break;
 		case S_ZOMBIE:
 			if (mndx == PM_DREAD_SERAPH){

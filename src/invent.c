@@ -2281,6 +2281,9 @@ struct obj *obj;
 	else if (obj->otyp == TINNING_KIT)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Use this kit to tin a corpse", MENU_UNSELECTED);
+	else if (obj->otyp == DISSECTION_KIT)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Use this kit to dissect a corpse", MENU_UNSELECTED);
 	else if (obj->otyp == LEASH)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Tie a pet to this leash", MENU_UNSELECTED);

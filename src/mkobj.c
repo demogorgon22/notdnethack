@@ -1046,6 +1046,7 @@ int mkflags;
 #ifdef TOURIST
 			case EXPENSIVE_CAMERA:
 #endif
+			case DISSECTION_KIT:
 			case TINNING_KIT:
 			case MAGIC_MARKER:	otmp->spe = rn1(70, 30);
 				break;

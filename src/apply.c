@@ -58,6 +58,7 @@ STATIC_DCL void FDECL(light_cocktail, (struct obj *));
 STATIC_DCL void FDECL(light_torch, (struct obj *));
 STATIC_DCL void FDECL(use_trephination_kit, (struct obj *));
 STATIC_DCL void FDECL(use_tinning_kit, (struct obj *));
+STATIC_DCL void FDECL(use_dissection_kit, (struct obj *));
 STATIC_DCL int FDECL(use_figurine, (struct obj **));
 STATIC_DCL int FDECL(use_crystal_skull, (struct obj **));
 STATIC_DCL void FDECL(use_grease, (struct obj *));
@@ -3719,6 +3720,21 @@ doresearch()
 			pline("The corpse of an eyeless creature is unsuitable for your research.");
 			return MOVE_CANCELLED;
 		}
+		if (touch_petrifies(&mons[otmp->corpsenm])
+			&& !Stone_resistance && !uarmg) {
+			char kbuf[BUFSZ];
+
+			if (poly_when_stoned(youracedata))
+			You("dissect %s without wearing gloves.",
+				an(mons[otmp->corpsenm].mname));
+			else {
+			pline("Dissecting %s without wearing gloves is a fatal mistake...",
+				an(mons[otmp->corpsenm].mname));
+			Sprintf(kbuf, "trying to dissect %s without gloves",
+				an(mons[otmp->corpsenm].mname));
+			}
+			instapetrify(kbuf);
+		}
 
 		//San check
 		if (your_race(&mons[otmp->corpsenm]) && !is_animal(&mons[otmp->corpsenm]) && !mindless(&mons[otmp->corpsenm])) {
@@ -3950,6 +3966,8 @@ doresearch()
 			if(mvitals[otmp->corpsenm].dissected < 225)
 				mvitals[otmp->corpsenm].dissected++;
 			if(monstermoves <= peek_at_iced_corpse_age(otmp) + 3){
+				if(mvitals[otmp->corpsenm].dissected == 1)
+					u.ureanimation_research += value;
 				u.ureanimation_research += rn2(value);
 				if(mvitals[otmp->corpsenm].reanimated < 225)
 					mvitals[otmp->corpsenm].reanimated++;
@@ -4463,6 +4481,208 @@ register struct obj *obj;
 						  doname(bld), (const char *)0);
 		} else impossible("Tinning failed.");
 	}
+}
+
+STATIC_OVL void
+use_dissection_kit(struct obj *obj)
+{
+	struct obj *otmp;
+	int researchtype = 0;
+	int value = 0;
+	struct monst *mtmp;
+
+	if(IS_ALTAR(levl[u.ux][u.uy].typ)){
+		int godnum = god_at_altar(u.ux, u.uy);
+		aligntyp altaralign = (a_align(u.ux,u.uy));
+		if(!philosophy_index(godnum)){
+			pline("This is an actual holy altar and thus of limited use.");
+		}
+		else if(obj->spe < 98){
+			pline("You replenish your dissection supplies.");
+			obj->spe = 100;
+		}
+	}
+	if (obj->spe <= 0) {
+		You("seem to be out of supplies.");
+		return;
+	}
+
+	if(active_glyph(DEFILEMENT)){
+		researchtype = A_CHAOTIC;
+	}
+	else if(!(active_glyph(LUMEN) || active_glyph(ROTTEN_EYES) || philosophy_index(u.ualign.god))){
+		You("have no idea how to use one of these.");
+		return;
+	}
+
+	if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1))) return;
+
+    if (otmp->otyp != CORPSE) {
+		pline("Carful inspection reveals that this is not, in fact, a fresh corpse.");
+		return;
+	}
+	value = monstr[otmp->corpsenm] + 1;
+
+	//too old
+	if (!(otmp->corpsenm == PM_ACID_BLOB
+		|| (monstermoves <= peek_at_iced_corpse_age(otmp) + 50)
+		)
+	) {
+		pline("This corpse has decayed past the point of usefulness.");
+		return;
+	}
+
+	if (otmp->researched) {
+		pline("Someone has already disected this corpse.");
+		return;
+	}
+	
+	if (otmp->oeaten) {
+		pline("Someone has been chewing on this corpse.");
+		return;
+	}
+	
+	if (touch_petrifies(&mons[otmp->corpsenm])
+		&& !Stone_resistance && !uarmg) {
+		char kbuf[BUFSZ];
+
+		if (poly_when_stoned(youracedata))
+		You("dissect %s without wearing gloves.",
+			an(mons[otmp->corpsenm].mname));
+		else {
+		pline("Dissecting %s without wearing gloves is a fatal mistake...",
+			an(mons[otmp->corpsenm].mname));
+		Sprintf(kbuf, "trying to dissect %s without gloves",
+			an(mons[otmp->corpsenm].mname));
+		}
+		instapetrify(kbuf);
+	}
+
+	// if (mons[otmp->corpsenm].cnutrit == 0) {
+		// pline("That's too insubstantial to dissect.");
+		// return;
+	// }
+	consume_obj_charge(obj, TRUE);
+
+	//San check
+	if (your_race(&mons[otmp->corpsenm]) && !is_animal(&mons[otmp->corpsenm]) && !mindless(&mons[otmp->corpsenm])) {
+		if (is_demon(youracedata)) {
+			You("find this very satisfying.");
+			exercise(A_WIS, TRUE);
+		} else if (u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) {
+			if(save_vs_sanloss()){
+				You("find this somewhat unsettling.");
+			}
+			else {
+				You("find this unsettling.");
+				change_usanity(-rnd(10), TRUE);
+			}
+			exercise(A_WIS, FALSE);
+		}
+	} else if (get_ox(otmp, OX_EMON)
+			&& ((mtmp = get_mtraits(otmp, FALSE)) != (struct monst *)0)
+			&& mtmp->mtame
+	) {
+		// /* mtmp is a temporary pointer to a tame monster's attributes,
+		 // * not a real monster */
+		if (is_demon(youracedata)) {
+			You("find this very satisfying.");
+			exercise(A_WIS, TRUE);
+		} else if (u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) {
+			if(save_vs_sanloss()){
+				You("find this somewhat unsettling.");
+			}
+			else {
+				You("find this unsettling.");
+				change_usanity(-rnd(4), FALSE);
+			}
+			exercise(A_WIS, FALSE);
+		}
+	} else if (is_unicorn(&mons[otmp->corpsenm])) {
+		int unicalign = sgn(mons[otmp->corpsenm].maligntyp);
+
+		/* If same as you, bad luck. */
+		if (unicalign == u.ualign.type) {
+			change_luck(-rnd(13));
+		}
+	}
+
+	if(is_rider(&mons[otmp->corpsenm])){
+		revive(otmp, FALSE);
+		return;
+	}
+	else otmp->researched = TRUE;
+	//Research
+	IMPURITY_UP(u.uimp_bodies) //dead bodies are impure
+
+	if((active_glyph(DEFILEMENT) || u.ualign.god == GOD_DEFILEMENT)
+		&& has_blood(&mons[otmp->corpsenm])
+	){
+		if (otmp->odrained) {
+			pline("Someone has drained the blood from this corpse.");
+		}
+		else {
+			boolean pre_research = defile_research_ok();
+			pline("You drain and fractionate the corpse's blood, studying its impurities.");
+			IMPURITY_UP(u.uimp_blood)
+			u.udefilement_research += rnd(value);
+			otmp->odrained = TRUE;
+			otmp->oeaten = drainlevel(otmp);
+			fix_object(otmp);
+			if(pre_research != defile_research_ok()){
+				You("have devised a new experiment into the nature of defilement.");
+			}
+		}
+	}
+	if((active_glyph(LUMEN) || u.ualign.god == GOD_THE_CHOIR)
+		&& !mindless(&mons[otmp->corpsenm])
+	){
+		boolean pre_research = parasite_research_ok();
+		u.uparasitology_research += 1;
+		if(!mindless(&mons[otmp->corpsenm]) && !is_animal(&mons[otmp->corpsenm])){
+			u.uparasitology_research += rn2(value);
+			if(!rn2(10)){
+				struct obj *parasites = mksobj_at(PARASITE,u.ux,u.uy,NO_MKOBJ_FLAGS);
+				if(parasites){
+					You("discover %s in the subject's %s", parasites->quan > 1 ? "parasites" : "a parasite", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+				}
+				u.uparasitology_research += rn2(value);
+			}
+			else {
+				You("dissect the subject's %s, looking for parasites.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+			}
+		}
+		else {
+			You("dissect the subject's rudimentary %s, fruitlessly searching for parasites.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+		}
+		if(pre_research != parasite_research_ok()){
+			You("have devised a new experiment into the parasite choir.");
+		}
+	}
+	
+	if((active_glyph(ROTTEN_EYES) || u.ualign.god == GOD_THE_COLLEGE)
+		&& !mindless(&mons[otmp->corpsenm])
+	){
+		boolean pre_research = reanimation_research_ok();
+		u.ureanimation_research += 1;
+		if(mvitals[otmp->corpsenm].dissected < 225)
+			mvitals[otmp->corpsenm].dissected++;
+		if(monstermoves <= peek_at_iced_corpse_age(otmp) + 3){
+			if(mvitals[otmp->corpsenm].dissected == 1)
+				u.ureanimation_research += value;
+			u.ureanimation_research += rn2(value);
+			if(mvitals[otmp->corpsenm].reanimated < 225)
+				mvitals[otmp->corpsenm].reanimated++;
+			You("dissect the subject's %s and optical pathways.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+		}
+		else {
+			You("dissect the subject's %s and optical pathways. The effects of necrosis have already largely spoiled the sample.", ptrbodypart(&mons[otmp->corpsenm], BRAIN, 0));
+		}
+		if(pre_research != reanimation_research_ok()){
+			You("have devised a new experiment into the great animating thoughts.");
+		}
+	}
+	
 }
 
 STATIC_OVL int
@@ -10635,6 +10855,9 @@ doapply()
 	case TINNING_KIT:
 		use_tinning_kit(obj);
 		break;
+	case DISSECTION_KIT:
+		use_dissection_kit(obj);
+		break;
 	case TREPHINATION_KIT:
 		use_trephination_kit(obj);
 		break;
@@ -10739,7 +10962,10 @@ doapply()
 		if(mtmp){
 			boolean pre_research = reanimation_research_ok();
 			add_mx(mtmp, MX_ESUM);
-			u.ureanimation_research += rnd(value);
+			if(!mvitals[mtmp->mtyp].reanimated)
+				u.ureanimation_research += value + rnd(value);
+			else
+				u.ureanimation_research += rnd(value);
 			if(mvitals[mtmp->mtyp].reanimated < 225)
 				mvitals[mtmp->mtyp].reanimated++;
 			mtmp->mextra_p->esum_p->summoner = (struct monst *)0;
