@@ -426,6 +426,17 @@ get_blood_smithing_x(int oprop, struct obj **crystal, int *spellnum)
 	return FALSE;
 }
 
+boolean
+check_undead_hunter_weapon_skills()
+{
+	int skill;
+	for(skill = P_FIRST_WEAPON; skill <= P_LAST_WEAPON; skill++){
+		if(OLD_P_MAX_SKILL(skill) == P_SKILLED)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 void
 expert_undead_hunter_skill()
 {
@@ -436,7 +447,7 @@ expert_undead_hunter_skill()
 			count++;
 	}
 	if(!count)
-		return; //Apparently upgraded all skills to expert via other means
+		return; //Apparently upgraded all skills to expert
 	count = rn2(count);
 	for(skill = P_FIRST_WEAPON; skill <= P_LAST_WEAPON; skill++){
 		if(OLD_P_MAX_SKILL(skill) == P_SKILLED){

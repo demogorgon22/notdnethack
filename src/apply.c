@@ -3270,6 +3270,14 @@ reanimation_upgrade()
 	}
 
 	ch++;
+	any.a_int = 10;
+	if(check_undead_hunter_weapon_skills()){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Weapon skills", MENU_UNSELECTED);
+	}
+
+	ch++;
 	any.a_int = 5;
 	if(uwep && !check_oprop(uwep, OPROP_ANTAW)){
 		n++;
@@ -3351,6 +3359,11 @@ reanimation_upgrade()
 		add_reanimation(ANTENNA_REJECT);
 	if(n == 9)
 		add_reanimation(LAMP_PHASE);
+	if(n == 10){
+		u.antenae_upgrades += 50;
+		expert_undead_hunter_skill();
+		pline("The ancient knowledge sinks into your subconscious.");
+	}
 
 	// u.udefilement_research += rn2(defile_score());
 	u.mental_scores_down++;
