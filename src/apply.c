@@ -2454,11 +2454,12 @@ use_church_weapon(struct obj *obj)
 	}
 	if(inv_cnt() >= 52 && (
 		obj->otyp == CHURCH_BLADE
-		|| obj->otyp == CHURCH_BRICK
+		|| obj->otyp == CHURCH_HAMMER
 	)){
 		You("are carrying too much junk to successfully draw your sword.");
 		return MOVE_CANCELLED;
 	}
+	
 	
 	struct obj *sword = 0;
 	
@@ -2518,11 +2519,23 @@ use_church_sword(struct obj *obj)
 		return MOVE_CANCELLED;
 	}
 	if(sheath->otyp == CHURCH_SHEATH){
-		You("sheath the sword in the blade.");
 		sheath->otyp = CHURCH_BLADE;
+		if(bimanual(sheath,youracedata) && (obj == uwep || sheath == uwep) && uarms){
+			You("can't sheath the sword in the blade while wearing a shield.");
+			sheath->otyp = CHURCH_SHEATH;
+			return MOVE_CANCELLED;
+		}
+		else
+			You("sheath the sword in the blade.");
 	} else {
-		You("sheath the sword in the stone.");
 		sheath->otyp = CHURCH_HAMMER;
+		if(bimanual(sheath,youracedata) && (obj == uwep || sheath == uwep) && uarms){
+			You("can't sheath the sword in the stone while wearing a shield.");
+			sheath->otyp = CHURCH_BRICK;
+			return MOVE_CANCELLED;
+		}
+		else
+			You("sheath the sword in the stone.");
 	}
 	if(obj == uwep){
 		setuwep(sheath);
@@ -2555,11 +2568,23 @@ use_church_sheath(struct obj *obj)
 		return MOVE_CANCELLED;
 	}
 	if(obj->otyp == CHURCH_SHEATH){
-		You("sheath the sword in the blade.");
 		obj->otyp = CHURCH_BLADE;
+		if(bimanual(obj,youracedata) && (obj == uwep || sword == uwep) && uarms){
+			You("can't sheath the sword in the blade while wearing a shield.");
+			obj->otyp = CHURCH_SHEATH;
+			return MOVE_CANCELLED;
+		}
+		else
+			You("sheath the sword in the blade.");
 	} else {
-		You("sheath the sword in the stone.");
 		obj->otyp = CHURCH_HAMMER;
+		if(bimanual(obj,youracedata) && (obj == uwep || sword == uwep) && uarms){
+			You("can't sheath the sword in the stone while wearing a shield.");
+			obj->otyp = CHURCH_BRICK;
+			return MOVE_CANCELLED;
+		}
+		else
+			You("sheath the sword in the stone.");
 	}
 	if(sword == uwep){
 		setuwep(obj);
