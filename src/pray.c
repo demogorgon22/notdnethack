@@ -3904,11 +3904,16 @@ commune_with_silver_flame()
 		You("see a distant silver light.");
 		return MOVE_STANDARD;
 	}
+	if(FLAME_BAD){
+		pline("The will of %s blocks your actions.", u_gname());
+		return MOVE_STANDARD;
+	}
 	/* in good standing */
-	if (godlist[GOD_THE_SILVER_FLAME].anger || FLAME_BAD) {
+	if (godlist[GOD_THE_SILVER_FLAME].anger || u.ualign.type == A_CHAOTIC) {
 		You("are burned by the silver light!");
 		losehp(rnd(20), "angry silver light", KILLED_BY);
-		return MOVE_STANDARD;
+		if(godlist[GOD_THE_SILVER_FLAME].anger)
+			return MOVE_STANDARD;
 	}
 	/* must have accumulated enough cult credit */
 	if (u.silver_credit < 50) {

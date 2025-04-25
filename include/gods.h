@@ -36,7 +36,7 @@ struct crowning {
 
 #define YOG_BAD	(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID)
 #define GOAT_BAD	(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god))
-#define FLAME_BAD	(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID)
+#define FLAME_BAD	(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god))
 
 
 #endif	/* GODS_H */

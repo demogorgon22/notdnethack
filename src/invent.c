@@ -3495,19 +3495,19 @@ winid *datawin;
 			Sprintf(buf2, "Teleports away target's armor or deals double damage.");
 			OBJPUTSTR(buf2);
 		}
-		if (check_oprop(obj, OPROP_MORTW))
+		if (check_oprop(obj, OPROP_MORTW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Drains 1d2 levels from living intelligent targets.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_TDTHW))
+		if (check_oprop(obj, OPROP_TDTHW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Deals double damage plus 2d7 to undead.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_SFUWW))
+		if (check_oprop(obj, OPROP_SFUWW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Deals double disintegration damage to spiritual beings.");
 			OBJPUTSTR(buf2);
@@ -3627,19 +3627,19 @@ winid *datawin;
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_SFLMW))
+		if (check_oprop(obj, OPROP_SFLMW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Offers slain targets to the Silver Flame.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_GOATW))
+		if (check_oprop(obj, OPROP_GOATW) && !GOAT_BAD)
 		{
 			Sprintf(buf2, "Feeds slain foes to the Black Mother.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_SOTHW))
+		if (check_oprop(obj, OPROP_SOTHW) && !YOG_BAD)
 		{
 			Sprintf(buf2, "Slakes the thirst of Yog-Sothoth.");
 			OBJPUTSTR(buf2);

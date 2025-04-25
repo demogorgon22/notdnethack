@@ -4494,7 +4494,7 @@ int * truedmgptr;
 		}
 		*truedmgptr += bonus;
 	}
-	if(is_undead(pd) && check_oprop(otmp, OPROP_TDTHW)){
+	if(is_undead(pd) && check_oprop(otmp, OPROP_TDTHW) && !(youagr && FLAME_BAD)){
 		*truedmgptr += basedmg + d(2,7);
 	}
 	if(check_oprop(otmp, OPROP_GOATW) && !(youagr && GOAT_BAD)){
@@ -4731,7 +4731,7 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_LESSER_CONCW))
 			*truedmgptr += d(2, 6);
 	}
-	if(check_oprop(otmp, OPROP_SFLMW) && sflm_target(mdef)){
+	if(check_oprop(otmp, OPROP_SFLMW) && !(youagr && FLAME_BAD) && sflm_target(mdef)){
 		*truedmgptr += d(2,7);
 	}
 	if(check_oprop(otmp, OPROP_ANTAW)){
@@ -6125,7 +6125,7 @@ boolean printmessages; /* print generic elemental damage messages */
 		break;
 	}
 	
-	if(check_oprop(otmp, OPROP_SFLMW) && !youdef && sflm_target(mdef)){
+	if(check_oprop(otmp, OPROP_SFLMW) && !(youagr && FLAME_BAD) && !youdef && sflm_target(mdef)){
 		mdef->mflamemarked = TRUE;
 		if(youagr)
 			mdef->myoumarked = TRUE;
@@ -7350,7 +7350,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	/*reveal mortality*/
-	if (check_oprop(otmp, OPROP_MORTW) && !Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))){
+	if (check_oprop(otmp, OPROP_MORTW) && !(youagr && FLAME_BAD) && !Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))){
 		int dlife;
 		int i = rnd(2);
 		/* message */
@@ -7501,7 +7501,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	/* Reveal unworthy */
-	if (check_oprop(otmp, OPROP_SFUWW) && (is_minion(pd) || is_demon(pd) || (Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))))){
+	if (check_oprop(otmp, OPROP_SFUWW) && !(youagr && FLAME_BAD) && (is_minion(pd) || is_demon(pd) || (Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))))){
 		struct obj *obj;
 		int i = (basedmg+1)/2;
 		boolean printed = FALSE;
