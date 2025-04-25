@@ -447,7 +447,6 @@ chat_with_leader()
 			u.sealTimeout[DAHLVER_NAR-FIRST_SEAL] = moves + 5000;
 		} else if(Role_if(PM_ANACHRONONAUT)){
 			flags.questprogress = 1;
-			urole.lgod = GOD_ILSENSINE;
 		} else if(Role_if(PM_CONVICT)){
 			struct obj *obj;
 			obj = mksobj(BALL, NO_MKOBJ_FLAGS);

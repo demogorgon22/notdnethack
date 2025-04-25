@@ -2455,8 +2455,7 @@ int newgame;
 		//Drow noble nemesis is regular monster for anachrononauts
 		mons[PM_ELDER_BRAIN].msound = MS_SILENT;
 		mons[PM_ELDER_BRAIN].geno &= ~G_UNIQ;
-		if (flags.questprogress)
-			urole.lgod = GOD_ILSENSINE;
+		urole.lgod = GOD_ILSENSINE;
 	}
 
 	if(!Role_if(PM_CAVEMAN)){
