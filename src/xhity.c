@@ -8636,11 +8636,12 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			const char * glow = ((pa->mtyp == PM_SWORD_ARCHON || pa->mtyp == PM_BAEL) ? "faintly blue"
 				: (pa->mtyp == PM_FLAXEN_STARSHADOW || pa->mtyp == PM_FLAXEN_STAR_PHANTOM) ? "bilious yellow" 
 				: (pa->mtyp == PM_SILVERFIRE_SHADOW_S_WRAITH) ? "shadowy silver" 
+				: (pa->mtyp == PM_CHORISTER_JELLY) ? "inky shadows" 
 				: "sickly green");
 			if (youdef)
-				You("glow %s!", glow);
+				You("%s %s!", (pa->mtyp == PM_CHORISTER_JELLY) ? "radiate" : "glow", glow);
 			else
-				pline("%s glows %s!", Monnam(mdef), glow);
+				pline("%s %s %s!", Monnam(mdef), (pa->mtyp == PM_CHORISTER_JELLY) ? "radiates" : "glows", glow);
 		}
 		/* disintegrate! */
 		for (; dmg > 0; dmg--)

@@ -942,6 +942,8 @@
 #define is_longworm(ptr)	(\
 				 ((ptr)->mtyp == PM_LONG_WORM) || \
 				 ((ptr)->mtyp == PM_LONG_WORM_TAIL) || \
+				 ((ptr)->mtyp == PM_CHORISTER_JELLY) || \
+				 ((ptr)->mtyp == PM_CHORISTER_TRAIN) || \
 				 ((ptr)->mtyp == PM_HUNTING_HORROR) || \
 				 ((ptr)->mtyp == PM_HUNTING_HORROR_TAIL))
 #define is_shapechanger(ptr)	((ptr)->mtyp == PM_CHAMELEON\
@@ -1387,6 +1389,9 @@
 				   (ptr)->mtyp != PM_WEEPING_ANGEL && \
 				   (ptr)->mtyp != PM_GREAT_CTHULHU && \
 				   (ptr)->mtyp != PM_STAR_SPAWN && \
+				   (ptr)->mtyp != PM_JELLYFISH && \
+				   (ptr)->mtyp != PM_CHORISTER_JELLY && \
+				   (ptr)->mtyp != PM_CHORISTER_TRAIN && \
 				   !is_clockwork(ptr) && \
 				   (!nonliving(ptr) || is_vampire(ptr) || (ptr)->mtyp == PM_INDEX_WOLF))
 #define has_blood_mon(mon)	(has_blood((mon)->data))

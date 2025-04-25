@@ -5718,6 +5718,7 @@ typfnd:
 	if (mntmp >= LOW_PM) {
 		if (mntmp == PM_LONG_WORM_TAIL) mntmp = PM_LONG_WORM;
 		if (mntmp == PM_HUNTING_HORROR_TAIL) mntmp = PM_HUNTING_HORROR;
+		if (mntmp == PM_CHORISTER_TRAIN) mntmp = PM_CHORISTER_JELLY;
 
 		switch (typ) {
 		case TIN:

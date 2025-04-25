@@ -3666,6 +3666,9 @@ boolean revival;
 	} else if (*mtype==PM_HUNTING_HORROR_TAIL) {	/* for create_particular() */
 		*mtype = PM_HUNTING_HORROR;
 		return TRUE;
+	} else if (*mtype==PM_CHORISTER_TRAIN) {	/* for create_particular() */
+		*mtype = PM_CHORISTER_JELLY;
+		return TRUE;
 	}
 	return FALSE;
 }

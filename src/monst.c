@@ -7618,6 +7618,14 @@ is a red right hand
 	MM_SWIM|MM_AQUATIC /*MM*/, MT_CARNIVORE|MT_NOTAKE|MT_HOSTILE|MT_ANIMAL /*MT*/, 0 /*MF*/,
 	MB_SLITHY|MB_LONGHEAD|MB_OVIPAROUS|MB_THICK_HIDE|MB_NOLIMBS /*MB*/, 0 /*MG*/,
 	MA_AQUATIC /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_WHITE),
+    MON("chorister jelly", S_EEL,//
+	LVL(14, 9, 0, 0), (G_GENO|G_S_INST(44)|1),
+	DEF(NAT_AC(4)),
+	A(ATTK(AT_STNG, AD_PAIN, 6, 6), ATTK(AT_TENT, AD_DISN, 1, 4)),
+	SIZ(WT_GIGANTIC, CN_LARGE, MS_SONG, MZ_GIGANTIC), MR_POISON, MR_POISON,
+	MM_SWIM|MM_AMPHIBIOUS|MM_FLY|MM_FLOAT|MM_WALLWALK /*MM*/, MT_HOSTILE|MT_NOTAKE|MT_PEACEFUL /*MT*/, 0 /*MF*/,
+	MB_NOHEAD|MB_NOLIMBS|MB_POIS|MB_UNSOLID|MB_INSUBSTANTIAL /*MB*/, MG_NOPOLY|MG_INSIGHT|MG_SANLOSS /*MG*/,
+	MA_PRIMORDIAL|MA_AQUATIC /*MA*/,  0 /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_BRIGHT_CYAN),
     MON("kraken", S_EEL,//22
 	LVL(20, 9, 0, -10), (G_GENO|1),
 	DEF(NAT_AC(4), NAT_DR(4)),
@@ -7952,6 +7960,14 @@ is a red right hand
 	0 /*MM*/, 0 /*MT*/, 0 /*MF*/,
 	0 /*MB*/, MG_NOPOLY /*MG*/,
 	MA_PRIMORDIAL|MA_ET /*MA*/,  0 /*MV*/, MW_EYE_OF_YGG /*MW*/, 0 /*light radius*/, CLR_YELLOW),
+    MON("chorister train", S_WORM_TAIL,//1 /*Needs tile*/
+	LVL(0, 0, 0, 0), (G_NOGEN|G_NOCORPSE|G_UNIQ),
+	DEF(NAT_AC(10)),
+	A(NO_ATTK),
+	SIZ(0, 0, 0, 0), 0, 0,
+	0 /*MM*/, 0 /*MT*/, 0 /*MF*/,
+	0 /*MB*/, MG_NOPOLY /*MG*/,
+	MA_PRIMORDIAL|MA_ET /*MA*/,  0 /*MV*/, MW_EYE_OF_YGG /*MW*/, 0 /*light radius*/, CLR_BRIGHT_CYAN),
 
 	/* Note:
 	 * Worm tail must be between the normal monsters and the special
