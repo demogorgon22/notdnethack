@@ -6195,7 +6195,7 @@ struct permonst _mons2[] = {
 	MB_HUMANOID|MB_STRONG /*MB*/, MG_NOWISH|MG_NOPOLY|MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
     MON("goblin smith", S_ORC,//
-	LVL(0, 6, 0, -3), (G_NOGEN),
+	LVL(4, 6, 0, -3), (G_NOGEN),
 	DEF(NAT_AC(0)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 4)),
 	SIZ(400, 100, MS_SELL, MZ_SMALL), 0, 0,
@@ -6203,15 +6203,15 @@ struct permonst _mons2[] = {
 	MB_HUMANOID /*MB*/, MG_NOPOLY|MG_INFRAVISIBLE /*MG*/,
 	MA_ORC /*MA*/,  MV_LOWLIGHT2 /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
     MON("dwarf smith", S_HUMANOID,//
-	LVL(2, 6, 10, 4), (G_NOGEN),
+	LVL(12, 6, 10, 4), (G_NOGEN),
 	DEF(NAT_AC(0)),
-	A(ATTK(AT_WEAP, AD_PHYS, 1, 8)),
+	A(ATTK(AT_WEAP, AD_PHYS, 1, 8), ATTK(AT_XWEP, AD_PHYS, 1, 8)),
 	SIZ(WT_DWARF, CN_DWARF, MS_SELL, MZ_HUMAN), 0, 0,
 	MM_TUNNEL|MM_NEEDPICK /*MM*/, MT_PEACEFUL|MT_GREEDY|MT_JEWELS|MT_COLLECT|MT_OMNIVORE /*MT*/, MF_MARTIAL_B|MF_BAB_FULL /*MF*/,
 	MB_HUMANOID|MB_STRONG /*MB*/, MG_NOPOLY|MG_INFRAVISIBLE /*MG*/,
 	MA_DWARF /*MA*/,  MV_INFRAVISION|MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
     MON("treesinger", S_HUMAN,//
-	LVL(5, 12, 10, -6), (G_NOGEN),
+	LVL(13, 12, 10, -6), (G_NOGEN),
 	DEF(DEX_AC(2)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 4)),
 	SIZ(WT_ELF, 350, MS_SONG, MZ_HUMAN), MR_SLEEP, MR_SLEEP,
@@ -6219,7 +6219,7 @@ struct permonst _mons2[] = {
 	MB_HUMANOID /*MB*/, MG_NOPOLY|MG_INFRAVISIBLE|MG_HATESIRON|MG_TRACKER /*MG*/,
 	MA_ELF /*MA*/,  MV_LOWLIGHT3|MV_SEE_INVIS /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
     MON("mithril smith", S_HUMAN,//
-	LVL(6, 12, 10, -7), (G_NOGEN),
+	LVL(16, 12, 10, -7), (G_NOGEN),
 	DEF(DEX_AC(2), SPE_AC(1)),
 	A(ATTK(AT_WEAP, AD_PHYS, 2, 4)),
 	SIZ(WT_ELF, 350, MS_SELL, MZ_HUMAN), MR_SLEEP, MR_SLEEP,

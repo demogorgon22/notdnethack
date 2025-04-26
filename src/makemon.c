@@ -2842,6 +2842,8 @@ boolean greatequip;
 				set_material(otmp, MITHRIL);
 				otmp = mongets(mtmp, HIGH_ELVEN_WARSWORD, mkobjflags);
 				set_material(otmp, MITHRIL);
+				otmp = mongets(mtmp, SMITHING_HAMMER, mkobjflags);
+				set_material(otmp, MITHRIL);
 			}
 			else if(greatequip){
 				otmp = mongets(mtmp, ELVEN_BOOTS, mkobjflags);
@@ -4297,6 +4299,8 @@ boolean goodequip;
 			(void) mongets(mtmp, WHISTLE, mkobjflags);
 	} else if (ptr->mtyp == PM_SHOPKEEPER || ptr->mtyp == PM_HUMAN_SMITH) {
 		(void) mongets(mtmp,SKELETON_KEY, mkobjflags);
+		if(ptr->mtyp == PM_HUMAN_SMITH)
+			(void) mongets(mtmp, SMITHING_HAMMER, mkobjflags);
 		if(Infuture){
 			(void) mongets(mtmp, SHOTGUN, mkobjflags);
 			(void) mongets(mtmp, SHOTGUN_SHELL, mkobjflags);
@@ -7553,6 +7557,16 @@ int mmflags;
 			}
 			//Note: 2/3rds get confusion, this is not an error
 			(void)mongets(mtmp, rn2(3) ? POT_CONFUSION : rn2(2) ? POT_PARALYSIS : POT_HEALING, mkobjflags);
+		} else if (mm == PM_DWARF_SMITH) {
+			(void)mongets(mtmp, SHOES, mkobjflags);
+			(void)mongets(mtmp, CHAIN_MAIL, mkobjflags);
+			(void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
+			(void)mongets(mtmp, GAUNTLETS, mkobjflags);
+			(void)mongets(mtmp, DWARVISH_HELM, mkobjflags);
+			(void)mongets(mtmp, AXE, mkobjflags);
+			(void)mongets(mtmp, SMITHING_HAMMER, mkobjflags);
+			/* CM: Dwarves OUTSIDE the mines have booze. */
+			mongets(mtmp, POT_BOOZE, mkobjflags);
 		} else if (is_dwarf(ptr)) { //slightly rearanged code so more dwarves get helms -D_E
 			if(mm == PM_DWARF_KING && In_quest(&u.uz) && u.uz.dlevel == nemesis_level.dlevel && urole.neminum == PM_NECROMANCER && in_mklev){
 				otmp = mongets(mtmp, SHACKLES, mkobjflags);
