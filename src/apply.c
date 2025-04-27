@@ -11317,6 +11317,18 @@ doapply()
 		if(u.usanity < 100){
 			change_usanity((Insanity)/2, FALSE);
 		}
+		
+		//appearance changes followed by bursting into flames etc.
+		if (u.uhpmod < -18){
+			if(Blind) pline("The effigy drips with a sticky liquid!");
+			else pline("The effigy is scored by wounds!");
+		} else if (youmonst.momud){
+				pline("The effigy is covered in violent mud!");
+		} else if (youmonst.mcaterpillars){
+				pline("The effigy is covered in gnawing caterpillars!");
+		} else if (youmonst.mbleed){
+				pline("The effigy sustains a bleeding wound!");
+		}
 
 		if(u.wimage >= 10){
 			struct monst *mtmp;
@@ -11350,17 +11362,18 @@ doapply()
 			}
 		} else if (u.umummyrot){
 				pline("The effigy crumbles to dust!");
-		} else if (u.uhpmod < -18){
-			if(Blind) pline("The effigy drips with a sticky liquid!");
-			else pline("The effigy is scored by wounds!");
 		} else {
 			if(Blind) pline("The effigy bursts into flames!");
 			else pline("The effigy burns with sickly flames!");
 		}
-		
+
 		if(HDoubt){
 			make_doubtful(0L, TRUE);
 		}
+		
+		youmonst.mbleed = FALSE;
+		youmonst.momud = FALSE;
+		youmonst.mcaterpillars = FALSE;
 		
 		u.wimage = 0; //Sub-critical images are removed anyway.
 		

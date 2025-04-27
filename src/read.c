@@ -2204,8 +2204,13 @@ struct obj	*sobj;
 		} else {
 			if(!confused && u.sealsActive&SEAL_MARIONETTE){
 				unbind(SEAL_MARIONETTE,TRUE);
-			} 
-			if(!confused) u.wimage = 0;
+			}
+			if(!confused){
+				u.wimage = 0;
+				if(youmonst.mbleed)
+					Your("accursed wound closes up.");
+				youmonst.mbleed = 0;
+			}
 		    for (obj = invent; obj; obj = obj->nobj) {
 			long wornmask;
 #ifdef GOLDOBJ

@@ -2831,6 +2831,7 @@ karemade:
 				}
 				if(youmonst.mcaterpillars){
 					rot_caterpillars_bite(&youmonst);
+					pline_The("parasitic caterpillars have rotted to death!");
 					if(!rn2(20)){
 						youmonst.mcaterpillars = FALSE;
 					}
@@ -2838,6 +2839,7 @@ karemade:
 				if(youmonst.momud){
 					orc_mud_stabs(&youmonst);
 					if(!rn2(20)){
+						pline_The("writhing mud covering you has died.");
 						youmonst.momud = FALSE;
 						struct obj *daggers = mksobj(ORCISH_DAGGER, NO_MKOBJ_FLAGS);
 						curse(daggers);

@@ -147,7 +147,10 @@ enum {
 	TROUBLE_WIMAGE,
 	TROUBLE_HIT,
 	TROUBLE_STARVING,
+	TROUBLE_OMUD,
+	TROUBLE_BLEED,
 	TROUBLE_SICK,
+	TROUBLE_CATERPILLARS,
 	TROUBLE_LAVA,
 	TROUBLE_STRANGLED,
 	TROUBLE_SLIMED,
@@ -215,7 +218,10 @@ in_trouble()
 	if(Slimed) return(TROUBLE_SLIMED);
 	if(Strangled) return(TROUBLE_STRANGLED);
 	if(u.utrap && u.utraptype == TT_LAVA) return(TROUBLE_LAVA);
+	if(youmonst.mcaterpillars) return(TROUBLE_CATERPILLARS);
 	if(Sick) return(TROUBLE_SICK);
+	if(youmonst.mbleed && !Upolyd && u.uhp < 2*youmonst.mbleed) return(TROUBLE_BLEED);
+	if(youmonst.mbleed && !Upolyd && youmonst.momud) return(TROUBLE_OMUD);
 	if(u.uhs >= WEAK && !Race_if(PM_INCANTIFIER)) return(TROUBLE_STARVING);
 	if (Upolyd ? (u.mh <= 5 || u.mh*2 <= u.mhmax) :
 		(u.uhp <= 5 || u.uhp*2 <= u.uhpmax)) return TROUBLE_HIT;
@@ -421,6 +427,19 @@ register int trouble;
 				Your("%s feels content.", body_part(STOMACH));
 		    reset_uhunger();
 		    flags.botl = 1;
+		    break;
+	    case TROUBLE_CATERPILLARS:
+		    pline(".");
+		    youmonst.mcaterpillars = FALSE;
+		    make_sick(0L, (char *) 0, FALSE, SICK_ALL);
+		    break;
+	    case TROUBLE_OMUD:
+		    pline_The("writhing mud that covers you is burned away!");
+		    youmonst.momud = FALSE;
+		    break;
+	    case TROUBLE_BLEED:
+		    Your("accursed wound closes up.");
+		    youmonst.mbleed = FALSE;
 		    break;
 	    case TROUBLE_SICK:
 		    You_feel("better.");

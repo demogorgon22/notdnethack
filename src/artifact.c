@@ -9886,6 +9886,9 @@ arti_invoke(obj)
 				unbind(SEAL_MARIONETTE,TRUE);
 			} 
 			if(Confusion == 0) u.wimage = 0;
+			if(youmonst.mbleed)
+				Your("accursed wound closes up.");
+			youmonst.mbleed = 0;
 		    for (otmp = invent; otmp; otmp = otmp->nobj) {
 			long wornmask;
 #ifdef GOLDotmp
