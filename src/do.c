@@ -1820,7 +1820,7 @@ misc_levelport:
 		if(delta >= spawn_freq){
 			extern const int monstr[];
 			int count = 0;
-			int target = level_difficulty()*7;
+			int target = level_difficulty()*3;
 			for(struct monst *mtmp = fmon; mtmp && count < 10; mtmp = mtmp->nmon){
 				if(!mtmp->mpeaceful)
 					target += monstr[mtmp->mtyp];
