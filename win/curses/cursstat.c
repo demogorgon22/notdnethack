@@ -101,6 +101,7 @@ static const struct statcolor default_colors[] = {
     {"Stone", CLR_BRIGHT_MAGENTA},
     {"Slime", CLR_BRIGHT_MAGENTA},
     {"Sufct", CLR_BRIGHT_MAGENTA},
+    {"Bleed", CLR_ORANGE},
     {"Ill", CLR_BRIGHT_MAGENTA},
     {"FoodPois", CLR_BRIGHT_MAGENTA},
     /* Other status effects */
