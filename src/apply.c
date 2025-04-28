@@ -2990,6 +2990,103 @@ transfusion(struct obj *obj)
 	return MOVE_STANDARD;
 }
 
+STATIC_OVL int
+bloodclone(struct obj *obj)
+{
+	struct obj *bell = find_object_type(invent, BELL);
+	char qbuf[BUFSZ];
+	
+	if(!bell){
+		pline("You need a bell.");
+		return MOVE_CANCELLED;
+	}
+	if (is_vampire(youracedata) || (carnivorous(youracedata) && !herbivorous(youracedata))) {
+		pline("It smells like %s%s.", 
+				(!type_is_pname(&mons[obj->corpsenm]) &&
+				 (mons[obj->corpsenm].geno & G_UNIQ)) ||
+				Hallucination ? 
+					"the " : 
+					"", 
+				Hallucination ? 
+					makeplural(rndmonnam()) : 
+					mons[obj->corpsenm].geno & G_UNIQ ? 
+					mons[obj->corpsenm].mname : 
+					makeplural(mons[obj->corpsenm].mname)
+		);
+		if(!Hallucination) obj->known = TRUE;
+	}
+	Sprintf(qbuf, "Create a blood clone with %s?", the(xname(obj)));
+	if(yn(qbuf) != 'y'){
+		pline("Never mind");
+		// obj->use
+		return MOVE_CANCELLED;
+	}
+	use_bell(&bell, FALSE);
+	IMPURITY_UP(u.uimp_blood)
+	IMPURITY_UP(u.uimp_bodies)
+	int value = monstr[obj->corpsenm] + 1;
+	flags.botl = 1;
+	if(value*2 > u.uen){
+		pline("But nothing happens!");
+		u.uen = 0;
+		return MOVE_STANDARD;
+	}
+	u.uen -= value*2;
+	struct monst *clone = makemon(&mons[obj->corpsenm], u.ux, u.uy, MM_ESUM|MM_EDOG|MM_ADJACENTOK|MM_NOCOUNTBIRTH);
+	useup(obj);
+	if(clone){
+		initedog(clone);
+		struct obj *nobj;
+		for(struct obj *otmp = clone->minvent; otmp; otmp = nobj){
+			nobj = otmp->nobj;
+			if(!(otmp->oclass == WEAPON_CLASS || is_weptool(otmp) || otmp->oclass == ARMOR_CLASS)){
+				otmp->quan = 1;
+				m_useup(clone, otmp);
+			}
+		}
+		set_template(clone, BLOOD_MON);
+		mark_mon_as_summoned(clone, &youmonst, 100, 0);
+	}
+
+	return MOVE_STANDARD;
+}
+
+STATIC_OVL int
+clone_or_transfuse(struct obj *obj)
+{
+	winid tmpwin;
+	anything any;
+	any.a_void = 0;         /* zero out all bits */
+	menu_item *selected;
+	int n = 0;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+
+	any.a_int = 1;
+	n++;
+	add_menu(tmpwin, NO_GLYPH, &any , 'b', 0, ATR_NONE,
+		 "Blood clone", MENU_UNSELECTED);
+	n++;
+	add_menu(tmpwin, NO_GLYPH, &any , 't', 0, ATR_NONE,
+		 "Transfuse", MENU_UNSELECTED);
+	
+	end_menu(tmpwin, "Do what:");
+	n = select_menu(tmpwin, PICK_ONE, &selected);
+	destroy_nhwindow(tmpwin);
+	if(n <= 0){
+		return MOVE_CANCELLED;
+	}
+	n = selected[0].item.a_int;
+	free(selected);
+	if(n == 1){
+		return bloodclone(obj);
+	}
+	else {
+		return transfusion(obj);
+	}
+}
+
 int
 parasite_count()
 {
@@ -10971,6 +11068,9 @@ doapply()
 		}
 		age = peek_at_iced_corpse_age(corpse);
 		mtmp = revive(corpse, FALSE);
+		if(!mtmp)
+			return MOVE_STANDARD;
+		You("jolt the corpse, and its %s burns away in great arcs of lightning!", mbodypart(mtmp, BODY_FLESH));
 		set_template(mtmp, SPARK_SKELETON);
 		if(mtmp){
 			boolean pre_research = reanimation_research_ok();
@@ -11241,7 +11341,19 @@ doapply()
 	case PHLEBOTOMY_KIT:
 		return blood_draw(obj);
 	case POT_BLOOD:
-		return transfusion(obj);
+		if(check_reanimation(RE_CLONE_SELF)){
+			if(find_object_type(invent, PHLEBOTOMY_KIT) && find_object_type(invent, BELL)){
+				return clone_or_transfuse(obj);
+			}
+			else if(find_object_type(invent, BELL)){
+				return bloodclone(obj);
+			}
+			else {
+				return bloodclone(obj);
+			}
+		}
+		else
+			return transfusion(obj);
 	break;
 	case SHADOWLANDER_S_TORCH:
 		light_torch(obj);

@@ -755,6 +755,13 @@ int template;
 		if (ptr->mmove > 6)
 			ptr->mmove = max(6, ptr->mmove / 2);
 		break;
+	case BLOOD_MON:
+		ptr->mflagsm |= (MM_BREATHLESS);
+		ptr->mflagst &= ~(MT_PEACEFUL);
+		ptr->mflagsg |= (MG_RALL);
+		ptr->mflagsa |= (MA_UNDEAD);
+		ptr->mresists |= (MR_SLEEP | MR_POISON);
+		break;
 	case M_GREAT_WEB:
 		/* attacks only */
 		break;
@@ -1468,6 +1475,19 @@ int template;
 			attk->adtyp = AD_SHDW;
 			attk->damn = 8;
 			attk->damd = 8;
+			special = TRUE;
+		}
+		/* blood rusts blades */
+		if (template == BLOOD_MON && (
+				attk->aatyp == AT_NONE || attk->adtyp == AD_RUST
+			)
+			&& (insert_okay(special))
+		){
+			maybe_insert();
+			attk->aatyp = AT_NONE;
+			attk->adtyp = AD_RUST;
+			attk->damn = 0;
+			attk->damd = 0;
 			special = TRUE;
 		}
 		
