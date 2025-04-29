@@ -2460,7 +2460,7 @@ E int FDECL(mon_doturn, (struct monst *));
 E const char *NDECL(a_gname);
 E const char *FDECL(a_gname_at, (XCHAR_P x,XCHAR_P y));
 E const char *FDECL(align_gname, (ALIGNTYP_P));
-E const char *FDECL(gtitle, (ALIGNTYP_P));
+E const char *FDECL(gtitle, (int));
 E void FDECL(altar_wrath, (int,int));
 E int FDECL(candle_on_altar, (struct obj *));
 E void FDECL(goat_eat, (struct obj *, int));
