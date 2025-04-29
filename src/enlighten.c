@@ -3031,6 +3031,7 @@ boolean dumping;
 	CHECK_ACHIEVE(NOB_QUEST,"Rebellion crushed: completed base noble quest")
 	CHECK_ACHIEVE(MAD_QUEST,"Oh good. I'm not crazy: completed madman quest")
 	CHECK_ACHIEVE(MONK_QUEST,"You must defeat Sheng Long to stand a chance: completed monk quest")
+	CHECK_ACHIEVE(UH_QUEST,"Don't think too hard about all of this: completed hunter quest")
 	CHECK_ACHIEVE(HDR_NOB_QUEST,"Family drama: completed hedrow noble quest")
 	CHECK_ACHIEVE(HDR_SHR_QUEST,"On agency: completed hedrow shared quest")
 	CHECK_ACHIEVE(DRO_NOB_QUEST,"Foreshadowing: completed drow noble quest")

@@ -1135,6 +1135,8 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(NOB_QUEST,"base_noble_quest")
 	CHECK_ACHIEVE(MAD_QUEST,"madman_quest")
 	CHECK_ACHIEVE(MONK_QUEST,"monk_quest")
+	CHECK_ACHIEVE(UH_QUEST,"undead_hunter_quest")
+	CHECK_ACHIEVE(UH_ASC,"undead_hunter_ascension")
 	CHECK_ACHIEVE(HDR_NOB_QUEST,"hedrow_noble_quest")
 	CHECK_ACHIEVE(HDR_SHR_QUEST,"hedrow_shared_quest")
 	CHECK_ACHIEVE(DRO_NOB_QUEST,"drow_noble_quest")

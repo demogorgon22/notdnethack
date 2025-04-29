@@ -2623,6 +2623,8 @@ give_quest_trophy()
 		achieve.trophies |= MAD_QUEST;
 	else if(urole.neminum == PM_MASTER_KAEN)
 		achieve.trophies |= MONK_QUEST;
+	else if(urole.neminum == PM_INDEX_WOLF)
+		achieve.trophies |= UH_QUEST;
 	else if(urole.neminum == PM_CYCLOPS)
 		achieve.trophies |= HEA_QUEST;
 	else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
@@ -2641,6 +2643,8 @@ give_ascension_trophy()
 		achieve.trophies |= ANA_ASC;
 	else if(Role_if(PM_EXILE))
 		achieve.trophies |= BIN_ASC;
+	else if(Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && philosophy_index(u.ualign.god))
+		achieve.trophies |= UH_ASC;
 		
 	if(Race_if(PM_CLOCKWORK_AUTOMATON))
 		achieve.trophies |= CLOCK_ASC;
@@ -2650,6 +2654,7 @@ give_ascension_trophy()
 		achieve.trophies |= HALF_ASC;
 	else if(Race_if(PM_YUKI_ONNA))
 		achieve.trophies |= YUKI_ASC;
+
 	int i;
 	int keys = 0;
 	for(i = 0; i<9; i++){
