@@ -2932,7 +2932,7 @@ transfusion(struct obj *obj)
 		);
 		if(!Hallucination) obj->known = TRUE;
 	}
-	Sprintf(qbuf, "Trasfuse yourself with %s?", the(xname(obj)));
+	Sprintf(qbuf, "Transfuse yourself with %s?", the(xname(obj)));
 	if(yn(qbuf) != 'y'){
 		pline("Never mind");
 		return MOVE_CANCELLED;
@@ -2941,7 +2941,7 @@ transfusion(struct obj *obj)
 	if(your_race(&mons[obj->corpsenm])){
 		if(obj->cursed && !Race_if(PM_VAMPIRE)){
 			Your("%s stops!", body_part(HEART));
-			losehp(*hpmax(&youmonst)/3, "heat attack", KILLED_BY_AN);
+			losehp(*hpmax(&youmonst)/3, "heart attack", KILLED_BY_AN);
 			pline("When it finally beats again, it is weak and thready.");
 		}
 		else {
@@ -2967,7 +2967,7 @@ transfusion(struct obj *obj)
 		//Most likely a poor idea
 		if(obj->cursed){
 			Your("%s stops!", body_part(HEART));
-			losehp(*hpmax(&youmonst)/3, "heat attack", KILLED_BY_AN);
+			losehp(*hpmax(&youmonst)/3, "heart attack", KILLED_BY_AN);
 			pline("When it finally beats again, it is weak and thready.");
 		}
 		make_sick(100L, "bad blood", TRUE, SICK_NONVOMITABLE);
