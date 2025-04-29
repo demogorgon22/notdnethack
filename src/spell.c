@@ -4833,7 +4833,26 @@ dothrowspell:
 					dam = d(dice, 8) + flat + rnd(u.ulevel);
 					if(Spellboost) dam *= 2;
 					if(u.ukrau_duration) dam *= 1.5;
-					explode(u.dx, u.dy, spell_adtype(pseudo->otyp), 0, dam, color, rad);
+					long spell_flags = 0L;
+					int adtype = spell_adtype(pseudo->otyp);
+					if(GoatSpell && !GOAT_BAD){
+						spell_flags |= GOAT_SPELL;
+						switch(adtype){
+							case AD_FIRE:
+								adtype = AD_EFIR;
+							break;
+							case AD_COLD:
+								adtype = AD_ECLD;
+							break;
+							case AD_ELEC:
+								adtype = AD_EELC;
+							break;
+							case AD_ACID:
+								adtype = AD_EACD;
+							break;
+						}
+					}
+					explode_spell(u.dx, u.dy, adtype, 0, dam, color, rad, spell_flags);
 				}
 			}
 		}

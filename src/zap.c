@@ -84,6 +84,7 @@ int adtyp, ztyp;
 		switch (adtyp)
 		{
 		case AD_MAGM: return "magic missile";
+		case AD_PHYS: return "sothothic missile";
 		case AD_FIRE: return "fireball";
 		case AD_COLD: return "cone of cold";
 		case AD_SLEE: return "sleep ray";
@@ -3490,8 +3491,15 @@ register struct	obj	*obj;
 			switch (otyp) {
 			case SPE_MAGIC_MISSILE:
 				zapdat.single_target = TRUE;
-				if(otyp == SPE_MAGIC_MISSILE && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WRATH))
-					zapdat.damd += 2;
+				if(otyp == SPE_MAGIC_MISSILE){ 
+					if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WRATH)
+						zapdat.damd += 2;
+					if(YogSpell && !YOG_BAD){
+						zapdat.adtyp = AD_PHYS;
+						zapdat.unreflectable = ZAP_REFL_NEVER;
+						zapdat.always_hits = TRUE;
+					}
+				}
 				break;
 			case SPE_FIREBALL:
 				zapdat.explosive = TRUE;
@@ -4357,7 +4365,14 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 		}
 	}
 	if (zapdata->splashing) {
-		splash(sx, sy, dx, dy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp));
+		long special_flags = 0L;
+		if(youagr && GoatSpell && !GOAT_BAD && zapdata->adtyp == AD_ACID){
+			zapdata->adtyp = AD_EACD;
+			special_flags |= GOAT_SPELL;
+			zapdata->damn *= 2;
+			zapdata->damd += 2;
+		}
+		splash(sx, sy, dx, dy, zapdata->adtyp, 0, zapdamage(magr, (struct monst *)0, zapdata), adtyp_expl_color(zapdata->adtyp), special_flags);
 	}
 
 	/* calculate shop damage */
@@ -4405,6 +4420,7 @@ struct zapdata * zapdata;
 	case AD_PHYS:
 		if (Half_phys(mdef))
 			dmg = (dmg + 1) / 2;
+		domsg();
 		return xdamagey(magr, mdef, &attk, dmg);
 	case AD_MAGM:
 		/* check resist */

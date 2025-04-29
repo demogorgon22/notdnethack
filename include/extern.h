@@ -1015,11 +1015,12 @@ E long FDECL(rndexp, (BOOLEAN_P));
 /* ### explode.c ### */
 
 E void FDECL(explode, (int,int,int,int,int,int,int));
+E void FDECL(explode_spell, (int, int, int, int, int, int, int, long));
 E void FDECL(explode_sound, (int,int,int,int,int,int,int,int));
 E void FDECL(explode_pa, (int,int,int,int,int,int,int,struct permonst *));
 E void FDECL(explode_yours, (int,int,int,int,int,int,int,boolean));
-E void FDECL(explode_full, (int,int,int,int,int,int,int,int, BOOLEAN_P, struct permonst *));
-E void FDECL(splash, (int,int,int,int,int,int,int,int));
+E void FDECL(explode_full, (int,int,int,int,int,int,int,int, boolean, struct permonst *, long));
+E void FDECL(splash, (int,int,int,int,int,int,int,int, long));
 E long FDECL(scatter, (int, int, int, unsigned int, struct obj *, long *, struct monst *));
 E void FDECL(splatter_burning_oil, (int, int));
 E int FDECL(adtyp_expl_color, (int));

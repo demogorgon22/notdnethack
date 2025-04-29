@@ -1100,10 +1100,12 @@ doEldritchKniForm()
 	int spell_list[] = {0, SPE_FIREBALL, SPE_FIRE_STORM, SPE_CONE_OF_COLD, SPE_BLIZZARD,
 		SPE_LIGHTNING_BOLT, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, SPE_POISON_SPRAY, SPE_FINGER_OF_DEATH, 0};
 
-	for (i = 1; spell_list[i]; i++)
+	for (i = 1; spell_list[i] && !remotely_competent; i++)
 		for (j = 0; j < MAXSPELL; j++)
-			if (spellid(j) == spell_list[i] && spellknow(j) > 0)
+			if (spellid(j) == spell_list[i] && spellknow(j) > 0){
 				remotely_competent = TRUE;
+				break;
+			}
 
 	if (!remotely_competent){
 		pline("You don't know any appropriate spells!");

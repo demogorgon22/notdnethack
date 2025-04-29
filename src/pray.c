@@ -3427,6 +3427,7 @@ boolean offering;
 #define GOATBOON_DROOL	7
 #define GOATBOON_RED_WORD	8
 #define GOATBOON_MUTATE	9
+#define GOATBOON_SPELLS	10
 int
 dogoat_menu(greater_boon)
 boolean greater_boon;	/* you have shown devotion enough to ask for a greater boon */
@@ -3488,14 +3489,16 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 		Sprintf(buf, "her Bite");
 		any.a_int = GOATBOON_ACID;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+		inclet++;
 
 		Sprintf(buf, "her Hunger");
 		any.a_int = GOATBOON_DROOL;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+		inclet++;
 
 		if (!flags.made_know) {
 			Sprintf(buf, "her Knowledge");
@@ -3503,6 +3506,27 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 			add_menu(tmpwin, NO_GLYPH, &any,
 				inclet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
+		}
+		inclet++;
+
+		if(!GoatSpell){
+			int spell_list[] = {0, SPE_FIRE_STORM, SPE_BLIZZARD, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, 0};
+			boolean certified_blaster_master = FALSE;
+
+			for (int i = 1; spell_list[i] && !certified_blaster_master; i++)
+				for (int j = 0; j < MAXSPELL; j++)
+					if (spellid(j) == spell_list[i] && spellknow(j) > 0){
+						certified_blaster_master = TRUE;
+						break;
+					}
+
+			if (certified_blaster_master) {
+				Sprintf(buf, "her Presence");
+				any.a_int = GOATBOON_SPELLS;
+				add_menu(tmpwin, NO_GLYPH, &any,
+					inclet, 0, ATR_NONE, buf,
+					MENU_UNSELECTED);
+			}
 		}
 		inclet++;
 
@@ -3772,6 +3796,14 @@ commune_with_goat()
 			at_your_feet("An object");
 			u.ugifts++;
 			u.ucultsval += TIER_A;
+			break;
+
+		case GOATBOON_SPELLS:
+			cost = 40;
+			HGoatSpell |= W_UPGRADE;
+			pline("The mist grows near.");
+			u.ugifts++;
+			u.ucultsval += TIER_S;
 			break;
 
 		case GOATBOON_MUTATE:
@@ -4153,6 +4185,7 @@ commune_with_silver_flame()
 #define YOGBOON_WINDOW	7
 #define YOGBOON_TWIN	8
 #define YOGBOON_MUTATE	9
+#define YOGBOON_SPELL	10
 
 int
 doyog_menu(greater_boon)
@@ -4248,6 +4281,15 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 				MENU_UNSELECTED);
 		}
 		inclet++;
+
+		if (!YogSpell) {
+			Sprintf(buf, "the missiles of Yog-Sothoth");
+			any.a_int = YOGBOON_SPELL;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet++, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+
 	}
 	end_menu(tmpwin, "You have Yog-Sothoth's attention...");
 
@@ -4507,6 +4549,16 @@ commune_with_yog()
 			}
 			break;
 		}
+		case YOGBOON_SPELL:
+			cost = 40;
+			HYogSpell |= W_UPGRADE;
+			otmp = mksobj(SPE_MAGIC_MISSILE, MKOBJ_NOINIT);
+			dropy(otmp);
+			at_your_feet("An object");
+			u.ugifts++;
+			u.ucultsval += TIER_A;
+			break;
+
 		case YOGBOON_MUTATE:
 			cost = 0;
 			if(yog_sothoth_mutation()){
