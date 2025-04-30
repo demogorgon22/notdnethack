@@ -121,6 +121,7 @@ boolean quietly;
 #endif /* GOLDOBJ */
 	    if (otmp->in_use) {
 		if (!quietly) pline("Finishing off %s...", xname(otmp));
+		otmp->in_use = FALSE;
 		useup(otmp);
 	    }
 	}
