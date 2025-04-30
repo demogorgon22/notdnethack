@@ -194,7 +194,7 @@ NEARDATA struct permonst mons[] = {
 	MB_ANIMAL|MB_SLITHY|MB_LONGHEAD|MB_NOHANDS|MB_OVIPAROUS /*MB*/, MG_INFRAVISIBLE /*MG*/,
 	MA_HUMAN /*MA*/,  MV_NORMAL|MV_SCENT /*MV*/, 0 /*MW*/, 0 /*light radius*/, HI_SILVER),
     MON("silverman", S_ANT,//8
-	LVL(9, 14, 0, -6), (G_NOGEN),
+	LVL(9, 14, 0, -6), (G_LGROUP|5),
 	DEF(NAT_AC(7), DEX_AC(5), NAT_DR(2)),
 	A(ATTK(AT_WEAP, AD_PHYS, 1, 8), ATTK(AT_XWEP, AD_PHYS, 1, 8),
 	  ATTK(AT_BITE, AD_PHYS, 2, 4), ATTK(AT_MMGC, AD_CLRC, 0, 0)),

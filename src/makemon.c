@@ -15139,6 +15139,7 @@ int mndx;
 	if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) return TRUE;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
 	if (G_C_INST(mons[mndx].geno) > Insight) return TRUE;
+	if (mndx == PM_SILVERMAN && !u.silvergrubs) return TRUE;
 	if (Inhell)
 		return((mons[mndx].geno & (G_PLANES|G_DEPTHS)) != 0);
 	else if (In_endgame(&u.uz))

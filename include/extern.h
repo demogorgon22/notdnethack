@@ -242,6 +242,7 @@ E int FDECL(maxhp, (int));
 E int NDECL(maxen);
 E double FDECL(conplus, (int));
 E void FDECL(change_usanity, (int, boolean));
+E void FDECL(set_silvergrubs, (boolean));
 E void FDECL(change_uinsight, (int));
 E boolean NDECL(check_insight);
 E int FDECL(roll_impurity, (boolean));

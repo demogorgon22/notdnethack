@@ -1545,6 +1545,14 @@ boolean check;
 }
 
 void
+set_silvergrubs(boolean value)
+{
+	u.silvergrubs = value;
+	reset_rndmonst(NON_PM);
+}
+
+
+void
 change_uinsight(delta)
 int delta;
 {
