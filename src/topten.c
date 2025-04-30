@@ -94,9 +94,10 @@ STATIC_DCL void FDECL(nsb_unmung_line,(char*));
 /* must fit with end.c; used in rip.c */
 NEARDATA const char * const killed_by_prefix[] = {
 	"killed by ", "betrayed by ", "choked on ", "poisoned by ", "died of ", "drowned in ",
-	"burned by ", "dissolved in ", "crushed to death by ", "petrified by ",
-	"turned to slime by ", "exploded by ", "died by ", "disintegrated by ", "killed by ", 
-	"", "", "", "", ""
+	"burned by ", "dissolved in ", "crushed to death by ", "petrified by ", "turned to gold by ",
+	"turned to salt by ", "vitrified by ", "turned to slime by ", "exploded by ", "died by ",
+	"disintegrated by ", "killed by ", 	"" /*APOCALYPSE*/, "" /*PANICKED*/, "" /*TRICKED*/,
+	"" /*QUIT*/, "" /*ESCAPED*/, ""  /*ASCENDED*/
 };
 
 static winid toptenwin = WIN_ERR;
