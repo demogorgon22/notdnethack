@@ -49,7 +49,7 @@ int subout;
 		impossible("Attempting to check subout number %d?", subout);
 		return FALSE;
 	}
-	return !!(subout_list[(subout-1)/32] & (0x1L << ((subout-1)%32)));
+	return !!(subout_list[(subout-1)/16] & (0x1L << ((subout-1)%16)));
 }
 
 void
@@ -60,7 +60,7 @@ int subout;
 	if(subout >= MAX_SUBOUT || subout < 1){
 		impossible("Attempting to set subout number %d?", subout);
 	}
-	subout_list[(subout-1)/32] |= (0x1L << ((subout-1)%32));
+	subout_list[(subout-1)/16] |= (0x1L << ((subout-1)%16));
 }
 
 void
@@ -71,7 +71,7 @@ int subout;
 	if(subout >= MAX_SUBOUT || subout < 1){
 		impossible("Attempting to set subout number %d?", subout);
 	}
-	subout_list[(subout-1)/32] &= ~(0x1L << ((subout-1)%32));
+	subout_list[(subout-1)/16] &= ~(0x1L << ((subout-1)%16));
 }
 
 void
