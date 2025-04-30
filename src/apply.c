@@ -1960,6 +1960,11 @@ struct obj *obj;
 		return MOVE_CANCELLED;
 	}
 	
+	if(obj->cursed && !Weldproof){
+		pline("The swords are stuck together.");
+		return MOVE_CANCELLED;
+	}
+	
 	
 	if(obj->otyp == RAKUYO){
 		You("unlatch %s.",the(xname(obj)));
@@ -2063,6 +2068,11 @@ struct obj *obj;
 		return MOVE_CANCELLED;
 	}
 	
+	if(obj->cursed && !Weldproof){
+		pline("The swords are stuck together.");
+		return MOVE_CANCELLED;
+	}
+
 	if(obj->otyp == BLADE_OF_MERCY){
 		You("unlatch %s.",the(xname(obj)));
 		obj->otyp = BLADE_OF_GRACE;
