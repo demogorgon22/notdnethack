@@ -4930,6 +4930,21 @@ int otyp;
 }
 
 /*
+ * Finds the first item of matching otyp within the given list for which spe > 0. Does not check contained objects.
+ */
+struct obj *
+find_charged_object_type(list, otyp)
+struct obj *list;
+int otyp;
+{
+	while (list) {
+		if (list->otyp == otyp && list->spe > 0) return list;
+		list = list->nobj;
+	}
+	return (struct obj *) 0;
+}
+
+/*
  * Returns the number of items with b/u/c/unknown within the given list.  
  * This does NOT include contained objects.
  */

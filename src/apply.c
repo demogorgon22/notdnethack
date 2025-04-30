@@ -3322,7 +3322,7 @@ reanimation_ok()
 }
 
 STATIC_OVL int
-reanimation_upgrade()
+reanimation_upgrade(struct obj *research_kit)
 {
 	winid tmpwin;
 	anything any;
@@ -3462,6 +3462,8 @@ reanimation_upgrade()
 		pline("The ancient knowledge sinks into your subconscious.");
 	}
 
+	if(research_kit && research_kit->spe > 0)
+		research_kit->spe--;
 	// u.udefilement_research += rn2(defile_score());
 	u.mental_scores_down++;
 	ABASE(A_INT) -= 1;
@@ -3475,7 +3477,7 @@ reanimation_upgrade()
 }
 
 STATIC_OVL int
-defile_preserve(struct obj *obj)
+defile_preserve(struct obj *obj, struct obj *research_kit)
 {
 	You("drain some blood from your body.");
 	if(!check_preservation(PRESERVE_REDUCE_HUNGER)){
@@ -3523,11 +3525,13 @@ defile_preserve(struct obj *obj)
 
 	if(obj->spe > 0)
 		obj->spe--;
+	if(research_kit && research_kit->spe > 0)
+		research_kit->spe--;
 	return MOVE_STANDARD;
 }
 
 STATIC_OVL int
-defile_vampire(struct obj *obj)
+defile_vampire(struct obj *obj, struct obj *research_kit)
 {
 	winid tmpwin;
 	anything any;
@@ -3613,6 +3617,8 @@ defile_vampire(struct obj *obj)
 
 	if(obj->spe > 0)
 		obj->spe--;
+	if(research_kit && research_kit->spe > 0)
+		research_kit->spe--;
 	return MOVE_STANDARD;
 }
 
@@ -3624,11 +3630,12 @@ blood_draw(struct obj *obj)
 		return MOVE_CANCELLED;
 	}
 	// pline("%d out of %d", u.udefilement_research, defile_score());
+	struct obj *research_kit = 0;
 
 	if(!u.veil && defile_ok() && (
 		active_glyph(DEFILEMENT)
 		|| (u.ualign.god == GOD_DEFILEMENT && known_glyph(DEFILEMENT))
-	) && on_god_altar(GOD_DEFILEMENT)){
+	) && (on_god_altar(GOD_DEFILEMENT) || (research_kit = find_charged_object_type(invent, DISSECTION_KIT)))){
 		winid tmpwin;
 		anything any;
 		any.a_void = 0;         /* zero out all bits */
@@ -3658,9 +3665,9 @@ blood_draw(struct obj *obj)
 		n = selected[0].item.a_int;
 		free(selected);
 		if(n == 1)
-			return defile_preserve(obj);
+			return defile_preserve(obj, research_kit);
 		if(n == 2)
-			return defile_vampire(obj);
+			return defile_vampire(obj, research_kit);
 		// if(n == 3) continue
 	}
 	else if(yn("Draw your own blood?") != 'y'){
@@ -4394,6 +4401,7 @@ register struct obj *obj;
 
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
+	struct obj *research_kit = on_god_altar(GOD_THE_CHOIR) ? 0 : find_charged_object_type(invent, DISSECTION_KIT);
 
 	any.a_int = 1;
 	add_menu(tmpwin, NO_GLYPH, &any , 'b', 0, ATR_NONE,
@@ -4452,6 +4460,8 @@ register struct obj *obj;
 	ABASE(A_WIS) = max(ABASE(A_WIS)-1, ATTRMIN(A_WIS));
 	AMAX(A_WIS) = max(AMAX(A_WIS)-1, ATTRMIN(A_WIS));
 	obj->spe--;
+	if(research_kit)
+		research_kit->spe--;
 	// if (parasite->unpaid)
 		// verbalize(you_buy_it);
 	useup(parasite);
@@ -11042,11 +11052,12 @@ doapply()
 		long age;
 		corpse = floorfood("reanimate", 1);
 		if(!corpse){
+			struct obj *research_kit = 0;
 			if(!u.veil && reanimation_ok() && (
 				active_glyph(ROTTEN_EYES)
 				|| (u.ualign.god == GOD_THE_COLLEGE && known_glyph(ROTTEN_EYES))
-			) && on_god_altar(GOD_THE_COLLEGE))
-				res = reanimation_upgrade();
+			) && (on_god_altar(GOD_THE_COLLEGE) || (research_kit = find_charged_object_type(invent, DISSECTION_KIT))))
+				res = reanimation_upgrade(research_kit);
 			else
 				res = MOVE_CANCELLED;
 			break;
@@ -12096,7 +12107,7 @@ dotrephination_options()
 	if(parasite_ok() && carrying(PARASITE) && (
 		active_glyph(LUMEN)
 		|| (u.ualign.god == GOD_THE_CHOIR && known_glyph(LUMEN))
-	) && on_god_altar(GOD_THE_CHOIR)){
+	) && (on_god_altar(GOD_THE_CHOIR) || find_charged_object_type(invent, DISSECTION_KIT))){
 		Sprintf(buf, "Putting parasites in your brain");
 		any.a_int = TREPH_PARASITES;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
