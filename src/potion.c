@@ -1416,7 +1416,10 @@ as_extra_healing:
 			char buf[BUFSZ];
 			Sprintf(buf, "You feel a deep sense of kinship to %s!  Drink %s anyway?",
 				the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
-			if (yn_function(buf,ynchars,'n')=='n') return MOVE_CANCELLED;
+			if (yn_function(buf,ynchars,'n')=='n'){
+				otmp->in_use = FALSE;
+				return MOVE_CANCELLED;
+			}
 		}
 		if (is_vampire(youracedata) || (carnivorous(youracedata) && !herbivorous(youracedata))) {
 			pline("It smells like %s%s.", 
