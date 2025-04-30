@@ -3430,32 +3430,44 @@ reanimation_upgrade(struct obj *research_kit)
 	if(n == 1){
 		add_reanimation(RE_BOLT_RES);
 		HShock_resistance |= W_UPGRADE;
+		You("feel well-shielded.");
 	}
 	if(n == 2){
 		add_reanimation(RE_WATER_RES);
 		HWaterproof |= W_UPGRADE;
 		HSwimming |= W_UPGRADE;
+		You("feel very dry.");
 	}
 	if(n == 3){
 		add_reanimation(RE_CLAIR);
 		HClairvoyant |= W_UPGRADE;
+		You("feel insightful.");
 	}
 	if(n == 4)
 		add_reanimation(RE_CLONE_SELF);
 	if(n == 5){
 		if(uwep){
+			You("tune your weapon.");
 			add_oprop(uwep, OPROP_ANTAW);
 			u.antenae_upgrades++;
 		}
 	}
-	if(n == 6)
+	if(n == 6){
+		You("contact the errant thoughts.");
 		add_reanimation(ANTENNA_ERRANT);
-	if(n == 7)
+	}
+	if(n == 7){
+		You("hear the great static bolts.");
 		add_reanimation(ANTENNA_BOLT);
-	if(n == 8)
+	}
+	if(n == 8){
+		You("harness rejecting forces.");
 		add_reanimation(ANTENNA_REJECT);
-	if(n == 9)
+	}
+	if(n == 9){
+		You("hear the echoing void.");
 		add_reanimation(LAMP_PHASE);
+	}
 	if(n == 10){
 		u.antenae_upgrades += 50;
 		expert_undead_hunter_skill();
