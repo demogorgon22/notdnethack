@@ -1898,7 +1898,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		/* if the player IS polymorphed, they are limited to their polyform's attacks */
 		/* some things give the player additional weapon attacks; they can reset SUBOUT_XWEP to allow another offhand hit if unpoly'd */
 		/* stilettos and wind and fire wheels add extra damage instead */
-		if (!by_the_book && *indexnum > 0 && (u.twoweap || activeFightingForm(FFORM_SHIELD_BASH))
+		if (*indexnum > 0 && (u.twoweap || activeFightingForm(FFORM_SHIELD_BASH))
 			&& !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS))
 		) {
 			/* follow a weapon attack with an offhand attack */

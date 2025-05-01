@@ -1358,7 +1358,7 @@ domove()
 					result |= hit_with_rreject(&youmonst, otmp, x, y, 0, attk);
 				}
 				
-				if(!u.twoweap)
+				if(!u.twoweap && !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS)))
 					break;
 				attk = mon_get_attacktype(&youmonst, AT_XWEP, &attkbuff);
 				otmp = uswapwep;
