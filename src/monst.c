@@ -1309,7 +1309,7 @@ NEARDATA struct permonst mons[] = {
  * mimics
  */
     MON("small mimic", S_MIMIC,//8
-	LVL(7, 3, 0, 0), (G_GENO|2),
+	LVL(7, 9, 0, 0), (G_GENO|2),
 	DEF(NAT_AC(3)),
 	A(ATTK(AT_CLAW, AD_PHYS, 3, 4)),
 	SIZ(300, 200, MS_SILENT, MZ_SMALL), MR_ACID, 0,
@@ -1317,7 +1317,7 @@ NEARDATA struct permonst mons[] = {
 	MB_NOEYES|MB_NOHEAD|MB_NOLIMBS|MB_THICK_HIDE /*MB*/, MG_RBLUNT /*MG*/,
 	0 /*MA*/,  MV_LIFESENSE|MV_SCENT /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_BROWN),
     MON("large mimic", S_MIMIC,//9
-	LVL(8, 3, 10, 0), (G_GENO|1),
+	LVL(8, 12, 10, 0), (G_GENO|1),
 	DEF(NAT_AC(3)),
 	A(ATTK(AT_CLAW, AD_STCK, 3, 4)),
 	SIZ(600, 400, MS_SILENT, MZ_LARGE), MR_ACID, 0,
@@ -1325,7 +1325,7 @@ NEARDATA struct permonst mons[] = {
 	MB_NOEYES|MB_NOHEAD|MB_NOLIMBS|MB_THICK_HIDE|MB_STRONG /*MB*/, MG_RBLUNT /*MG*/,
 	0 /*MA*/,  MV_LIFESENSE|MV_SCENT /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, CLR_RED),
     MON("giant mimic", S_MIMIC,//11
-	LVL(9, 3, 20, 0), (G_GENO|1),
+	LVL(9, 15, 20, 0), (G_GENO|1),
 	DEF(NAT_AC(3)),
 	A(ATTK(AT_CLAW, AD_STCK, 3, 6), ATTK(AT_CLAW, AD_STCK, 3, 6)),
 	SIZ(800, 500, MS_SILENT, MZ_LARGE), MR_ACID, 0,
