@@ -1266,21 +1266,27 @@ int *color, *attr;
 				*color = tmpmc->color;
 				*attr = tmpmc->attr;
 				if(itemmap){
+					int keylen = strlen(str);
 					stored = malloc(sizeof(struct menucolor_attribs));
+					stored->key = malloc(keylen);
+					memcpy((void *)stored->key, str, keylen);
 					stored->color = tmpmc->color;
 					stored->attr = tmpmc->attr;
 					stored->lastused = moves;
 					stored->hit = TRUE;
-					hashmap_put(itemmap, str, strlen(str), stored);
+					hashmap_put(itemmap, stored->key, keylen, stored);
 				}
 				return TRUE;
 			}
 		}
 		if(itemmap){
+			int keylen = strlen(str);
 			stored = malloc(sizeof(struct menucolor_attribs));
+			stored->key = malloc(keylen);
+			memcpy((void *)stored->key, str, keylen);
 			stored->lastused = moves;
 			stored->hit = FALSE;
-			hashmap_put(itemmap, str, strlen(str), stored);
+			hashmap_put(itemmap, stored->key, keylen, stored);
 		}
 	}
     return FALSE;

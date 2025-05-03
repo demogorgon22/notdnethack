@@ -76,6 +76,7 @@ filter_itemmap(void* const context, struct hashmap_element_s* const e)
 {
 	struct menucolor_attribs *stored = (struct menucolor_attribs *)e->data;
 	if((moves - stored->lastused) > 1000){
+		free(stored->key);
 		free(e->data);
 		return -1;
 	}
