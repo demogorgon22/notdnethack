@@ -6409,8 +6409,8 @@ int spell;
 	}
 
 	//Parasitology, uh, upgrades
+	chance += (u.mm_up + u.explosion_up + u.cuckoo)*5;
 	if(active_glyph(LUMEN)){
-		chance += (u.mm_up + u.explosion_up + u.cuckoo)*5;
 		if(skill == P_ENCHANTMENT_SPELL)
 			chance += u.cuckoo*5;
 	}
