@@ -826,6 +826,10 @@ smithing_object(struct obj *obj)
 				ingots->quan = obj->owt;
 				ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = TRUE;
 				ingots->bknown = TRUE;
+				if(P_SKILL(P_SMITHING) >= P_EXPERT){
+					ingots->blessed = obj->blessed;
+					ingots->cursed = obj->cursed;
+				}
 				set_material_gm(ingots, obj->obj_material);
 				fix_object(ingots);
 				useupall(obj);
