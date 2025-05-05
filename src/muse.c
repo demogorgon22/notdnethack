@@ -2564,9 +2564,14 @@ museamnesia:
 				where_to = 0;
 		    }
 		    
-		    if (obj->oartifact && obj->oartifact == ART_GLAMDRING){
+		    if (obj->oartifact == ART_GLAMDRING){
 		    	pline("Glamdring resists being ripped out of your hands!");
 		    	where_to = 0;
+		    }
+		    
+		    if (obj->oartifact == ART_DIRGE && check_mutation(TENDRIL_HAIR)){
+				pline("Dirge holds onto your hands!");
+				where_to = 0;
 		    }
 		    
 		    if (!where_to) {

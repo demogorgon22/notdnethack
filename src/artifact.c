@@ -4859,11 +4859,7 @@ int dieroll;
 }
 
 void
-mercy_blade_conflict(mdef, magr, spe, lethal)
-struct monst *mdef;
-struct monst *magr;
-int spe;
-boolean lethal;
+weapon_conflict(struct monst *mdef, struct monst *magr, int spe, boolean lethal, boolean mercy_blade)
 {
 	int x, y, cx, cy, count = 0;
 	struct monst *target;
@@ -4924,7 +4920,7 @@ boolean lethal;
 		if(youdef){
 			int temp_encouraged = u.uencouraged;
 			if(lethal)
-				pline("The blade lodges in your %s!", body_part(SPINE));
+				pline("The blade lodges in your %s!", body_part(mercy_blade ? SPINE : BRAIN));
 			u.uencouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			flags.forcefight = TRUE;
 			xattacky(mdef, target, x(target), y(target));
@@ -4937,7 +4933,7 @@ boolean lethal;
 			long result;
 			mdef->encouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			if(lethal)
-				pline("The blade lodges in %s %s!", s_suffix(mon_nam(mdef)), mbodypart(mdef, SPINE));
+				pline("The blade lodges in %s %s!", s_suffix(mon_nam(mdef)), mbodypart(mdef, mercy_blade ? SPINE : BRAIN));
 			friendly_fire = !mm_grudge(mdef, target, FALSE);
 			result = xattacky(mdef, target, x(target), y(target));
 			if(friendly_fire && (result&(MM_DEF_DIED|MM_DEF_LSVD)) && !taxes_sanity(mdef->data) && !mindless_mon(mdef) && !resist(mdef, POTION_CLASS, 0, NOTELL)){
@@ -4960,6 +4956,18 @@ boolean lethal;
 	}
 
 	in_conflict = FALSE;
+}
+
+void
+mercy_blade_conflict(struct monst *mdef, struct monst *magr, int spe, boolean lethal)
+{
+	weapon_conflict(mdef, magr, spe, lethal, TRUE);
+}
+
+void
+mind_blade_conflict(struct monst *mdef, struct monst *magr, int spe, boolean lethal)
+{
+	weapon_conflict(mdef, magr, spe, lethal, FALSE);
 }
 
 void
@@ -14588,7 +14596,11 @@ dosymbiotic_equip()
 		dosymbiotic(&youmonst, uarm);
 	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_WHIPPING))
 		doscorpion(&youmonst, uarm);
-	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uwep) || is_bloodthirsty_artifact(uwep) ))
+	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && Insight >= 40)
+				|| is_living_artifact(uwep)
+				|| is_bloodthirsty_artifact(uwep) 
+				|| (uwep->oartifact == ART_DIRGE && check_mutation(SHUB_TENTACLES) && roll_generic_flat_madness(FALSE))
+	))
 		doliving(&youmonst, uwep);
 	if(uswapwep && ((check_oprop(uswapwep, OPROP_LIVEW) && u.twoweap && Insight >= 40) || is_living_artifact(uswapwep) || (is_bloodthirsty_artifact(uswapwep) && u.twoweap) ))
 		doliving(&youmonst, uswapwep);
@@ -14598,7 +14610,12 @@ dosymbiotic_equip()
 		doliving(&youmonst, uarm);
 	if(uarmh && ((check_oprop(uarmh, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uarmh) ))
 		doliving(&youmonst, uarmh);
-	
+	if(check_mutation(ABHORRENT_SPORE)){
+		if(uwep && uwep->oartifact == ART_DIRGE && roll_generic_flat_madness(FALSE))
+			dogoat();
+		if(uswapwep && uswapwep->oartifact == ART_DIRGE && roll_generic_flat_madness(FALSE))
+			dogoat();
+	}
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 		if(DEADMONSTER(mtmp))
 			continue;

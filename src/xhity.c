@@ -13962,6 +13962,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	boolean hittxt = FALSE;
 	boolean lethaldamage = FALSE;
 	boolean mercy_blade = FALSE;
+	boolean mind_blade = FALSE;
 
 	boolean melee = (hmoncode & HMON_WHACK);
 	boolean thrust = (hmoncode & HMON_THRUST);
@@ -14557,6 +14558,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	/* Will eventually do a mercy blade attack after all messages are printed */
 	if(valid_weapon_attack && (melee || thrust) && !recursed && mercy_blade_prop(weapon))
 		mercy_blade = TRUE;
+	if(valid_weapon_attack && (melee || thrust) && !recursed && weapon->oartifact == ART_DIRGE && youagr && check_mutation(MIND_STEALER))
+		mind_blade = TRUE;
 	/* X-hating */
 	/* note: setting holyobj/etc affects messages later, but damage happens regardless of whether holyobj/etc is set correctly here */
 	if (weapon)
@@ -16212,6 +16215,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	if(youagr && melee){
 		if(check_rot(ROT_FEAST))
 			healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
+		if(valid_weapon_attack && weapon && weapon->oartifact == ART_DIRGE && check_mutation(CRAWLING_FLESH))
+			healup(1, 0, FALSE, FALSE);
 	}
 	if (valid_weapon_attack || unarmed_punch || unarmed_kick || unarmed_butt)
 	{
@@ -17627,6 +17632,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		//Don't think this can happen, but better safe than sorry.
 		if(MIGRATINGMONSTER(mdef))
 			return MM_AGR_STOP;
+	}
+	if(mind_blade && (lethaldamage || !resist(mdef, WEAPON_CLASS, 0, TRUE))){
+		mind_blade_conflict(mdef, magr, wepspe, lethaldamage);
 	}
 	/* Deal Damage */
 	/* this can possibly kill, returning immediately */
