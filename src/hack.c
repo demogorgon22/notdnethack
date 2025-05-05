@@ -2793,8 +2793,8 @@ const char *msg_override;
 	if (*nomovemsg) pline1(nomovemsg);
 	nomovemsg = 0;
 	struct obj *puzzle = get_most_complete_puzzle();
-	if(puzzle){
-		if(u.puzzle_time && (monstermoves - u.usleep) >= u.puzzle_time){
+	if(u.puzzle_time && puzzle){
+		if((monstermoves - u.usleep) >= u.puzzle_time){
 			int difficulty = puzzle->ovar1_puzzle_steps + 1;
 			difficulty *= 6;
 			if(objects[HYPERBOREAN_DIAL].oc_name_known)
