@@ -9,6 +9,7 @@ const int shubbie_mutation_list[] = {ABHORRENT_SPORE,
 						 SHIFTING_MIND,
 						 SHUB_CLAWS,
 						 MIND_STEALER,
+						 SHUB_TENTACLES,
 						 0
 						};
 
@@ -35,6 +36,7 @@ const struct mutationtype mutationtypes[] =
 	{ TWIN_DREAMS, -1, "mind blasts", "You emit deadly dreams."},
 	// { BY_THE_SMELL, -1, "bladder of Yog-Sothoth", "A gas-filled bladder swells then vanishes. An unholy stench fills the air!"},
 	{ TWIN_SAVE, -1, "empathic link", "You feel a strong connection to your twin."},
+	{ SHUB_TENTACLES, -1, "tentacle valves", "You have valves in your skull, allowing HER to reach through your mind."},
 	{ 0 },
 };
 
