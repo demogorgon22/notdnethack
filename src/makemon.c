@@ -15769,6 +15769,7 @@ int	spc;
 	    if (mons[first].mlet == class
 			&& !(mons[first].geno & mask)
 			&& (G_C_INST(mons[first].geno) <= Insight)
+			&& (first != PM_SILVERMAN || u.silvergrubs)
 		) break;
 	if (first == SPECIAL_PM) return (struct permonst *) 0;
 
@@ -15779,6 +15780,7 @@ int	spc;
 			&& !(mons[last].geno & mask)
 			&& !is_placeholder(&mons[last])
 			&& (G_C_INST(mons[last].geno) <= Insight)
+			&& (last != PM_SILVERMAN || u.silvergrubs)
 		) {
 			/* consider it */
 			if(num && toostrong(last, maxmlev) && monstr[last] != monstr[last-1]) break;
@@ -15799,6 +15801,7 @@ int	spc;
 			&& !(mons[first].geno & mask)
 			&& !is_placeholder(&mons[first])
 			&& (G_C_INST(mons[first].geno) <= Insight)
+			&& (first != PM_SILVERMAN || u.silvergrubs)
 		) {
 			/* skew towards lower value monsters at lower exp. levels */
 			freq = (mons[first].geno & G_FREQ);
