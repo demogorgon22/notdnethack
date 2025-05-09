@@ -503,6 +503,8 @@ mkyourblood()
 {
 	struct obj *otmp = mksobj(POT_BLOOD, MKOBJ_NOINIT);
 	otmp->corpsenm = youracedata->mtyp;
+	bless(otmp);
+	fully_identify_obj(otmp);
 	return otmp;
 }
 
