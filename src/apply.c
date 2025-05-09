@@ -3484,6 +3484,8 @@ reanimation_upgrade(struct obj *research_kit)
 	if(n == 10){
 		u.antenae_upgrades += 50;
 		expert_undead_hunter_skill();
+		expert_undead_hunter_skill();
+		expert_undead_hunter_skill();
 		pline("The ancient knowledge sinks into your subconscious.");
 	}
 
