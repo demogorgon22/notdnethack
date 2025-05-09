@@ -1981,7 +1981,7 @@ int shotlimit;
 			multishot = 3; break;
 		}
 
-		if(QuickDraw){
+		if(youagr ? QuickDraw : mon_resistance(magr, QUICK_DRAW)){
 			if(multishot > 2){
 				minmulti++;
 				multishot--;
