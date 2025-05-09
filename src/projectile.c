@@ -2055,7 +2055,7 @@ int shotlimit;
 	/* Okay. */
 	if (youagr && barrage) {
 		/* Spirit power barrage maximized multishot */
-		multishot += u.ulevel / 10 + 1;
+		multishot += u.ulevel / 10 + 1 + minmulti;
 	}
 	else {
 		/* normal behaviour: randomize multishot */
