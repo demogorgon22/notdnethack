@@ -2963,6 +2963,9 @@ transfusion(struct obj *obj)
 			lesshungry((obj->odiluted ? 1 : 2) *
 				(obj->cursed ? mons[(obj)->corpsenm].cnutrit*1.5/5 : mons[(obj)->corpsenm].cnutrit/5 ));
 		}
+		else {
+			lesshungry((obj->odiluted ? 1 : 2)*50);
+		}
 		cprefx(obj->corpsenm, TRUE, TRUE);
 	}
 	else if(Race_if(PM_VAMPIRE)){
