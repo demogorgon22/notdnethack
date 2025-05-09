@@ -247,6 +247,10 @@ struct objclass {
 										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
 										|| (trait == ETRAIT_LUNGE && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
 										|| (trait == ETRAIT_STOP_THRUST && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
+										|| ((obj)->oartifact == ART_HOLY_MOONLIGHT_SWORD && (\
+												((obj)->lamplit && trait == ETRAIT_CLEAVE ) \
+												|| (mon == &youmonst && u.uinsight >= 40 && trait == ETRAIT_FOCUS_FIRE ) \
+											))\
 										|| ((obj)->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits&trait)\
 									   ) && \
 	((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
