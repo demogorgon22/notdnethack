@@ -52,7 +52,7 @@ STATIC_DCL void FDECL(mkmch, (int));
 STATIC_DCL void FDECL(mkwrk, (int));
 STATIC_DCL void FDECL(mkaph, (int));
 STATIC_DCL void FDECL(mklostitem, (int));
-STATIC_DCL void FDECL(mklawfossil, (int));
+STATIC_DCL void FDECL(mklawfossil, (int, int));
 STATIC_DCL void FDECL(mkcamp, (int));
 STATIC_DCL void NDECL(mklolthsepulcher);
 STATIC_DCL void NDECL(mkmivaultlolth);
@@ -6033,8 +6033,7 @@ int typ;
 }
 
 void
-mklawfossil(typ)
-int typ;
+mklawfossil(int typ, int pm)
 {
 	int x, y, tries = 0, good = FALSE;
 	struct obj *otmp;
@@ -6044,13 +6043,11 @@ int typ;
 		tries++;
 		if(isok(x,y) && levl[x][y].typ == typ)
 			good = TRUE;
-		else continue;
-		
-		otmp = mksobj(FOSSIL, NO_MKOBJ_FLAGS);
-		otmp->corpsenm = PM_ANCIENT_NUPPERIBO;
-		fix_object(otmp);
-		place_object(otmp, x, y);
 	}
+	otmp = mksobj(FOSSIL, NO_MKOBJ_FLAGS);
+	otmp->corpsenm = pm;
+	fix_object(otmp);
+	place_object(otmp, x, y);
 }
 
 void
@@ -6335,6 +6332,9 @@ place_law_features()
 	int n;
 	if(Is_path(&u.uz)){
 		int cutoff = (on_level(&path3_level,&u.uz) && is_june()) ? min_ints(3, rn2(9)): rn2(9);
+		if(on_level(&path1_level,&u.uz)){
+			mklawfossil(STONE, PM_VERMIURGE);
+		}
 		for(n = 4; n > 0; n--)
 			mkaph(cutoff >= n);
 		if(!rn2(10)){
@@ -6363,7 +6363,7 @@ place_law_features()
 		// if(1){
 			n = 5 - int_sqrt(rnd(24));
 			for(; n > 0; n--)
-				mklawfossil(STONE);
+				mklawfossil(STONE, PM_ANCIENT_NUPPERIBO);
 		}
 		if(!rn2(20))
 			mksobj(HYPERBOREAN_DIAL, NO_MKOBJ_FLAGS);
