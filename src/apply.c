@@ -7877,7 +7877,7 @@ use_crysalis(struct obj *obj)
 
 	ch++;
 	any.a_int = 4;
-	if(!check_rot(ROT_TRUCE)){
+	if(!check_rot(ROT_TRUCE) && check_rot(ROT_KIN)){
 		n++;
 		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
 			 "Become uninteresting to beings of rot", MENU_UNSELECTED);
