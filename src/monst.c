@@ -1896,7 +1896,7 @@ NEARDATA struct permonst mons[] = {
 	0 /*MM*/, MT_HOSTILE|MT_CARNIVORE /*MT*/, 0 /*MF*/,
 	MB_ANIMAL|MB_LONGHEAD|MB_NOHANDS|MB_OVIPAROUS|MB_POIS|MB_STRONG /*MB*/, 0 /*MG*/,
 	MA_ARACHNID /*MA*/,  MV_NORMAL /*MV*/, 0 /*MW*/, 0 /*light radius*/, CLR_BRIGHT_MAGENTA),
-    MON("spellweaver", S_SPIDER,//16 /*Needs tile*/ /*Needs encyc entry*/
+    MON("spellweaver", S_SPIDER,//16 /*Needs tile*/
 	LVL(11, 12, 33, -5), (G_NOCORPSE|G_NOHELL|G_S_INST(19)|1),
 	DEF(SPE_AC(8), SPE_DR(4)),
 	A(ATTK(AT_MAGC, AD_SPEL, 0, 0),
@@ -1916,7 +1916,7 @@ NEARDATA struct permonst mons[] = {
 	MM_AMPHIBIOUS /*MM*/, MT_OMNIVORE|MT_PEACEFUL|MT_COLLECT|MT_MAGIC /*MT*/, 0 /*MF*/,
 	MB_STRONG|MB_NOGLOVES|MB_HAS_FEET /*MB*/, MG_NOWISH|MG_NOPOLY /*MG*/,
 	MA_INSECTOID|MA_AQUATIC /*MA*/,  MV_NORMAL /*MV*/, MW_ELDER_SIGN /*MW*/, 0 /*light radius*/, HI_DOMESTIC),
-    MON("spellweaver goddess-mocker", S_SPIDER,//40 /*Needs tile*/ /*Needs encyc entry*/
+    MON("spellweaver goddess-mocker", S_SPIDER,//40 /*Needs tile*/
 	LVL(30, 12, 99, -5), (G_NOCORPSE|G_NOHELL|G_S_INST(45)|1),
 	DEF(SPE_AC(32), SPE_DR(20)),
 	A(ATTK(AT_MAGC, AD_SPEL, 0, 0),
@@ -9407,7 +9407,7 @@ is a red right hand
 	MM_BREATHLESS|MM_FLY /*MM*/, MT_STALK|MT_HOSTILE /*MT*/, 0 /*MF*/,
 	MB_HUMANOID|MB_UNSOLID /*MB*/, MG_SANLOSS|MG_NOSPELLCOOLDOWN /*MG*/,
 	MA_UNDEAD /*MA*/,  MV_LIFESENSE /*MV*/, MW_ELDER_EYE_ENERGY /*MW*/, 0 /*light radius*/, CLR_GREEN),
-    MON("incarnator maggot", S_ANT,//13 /*Needs encyc entry*/
+    MON("incarnator maggot", S_ANT,//13
 	LVL(10, 6, 0, -13), (G_GENO|G_NOGEN|G_S_INST(13)),
 	DEF(NAT_AC(26), NAT_DR(6)),
 	A(ATTK(AT_VOMT, AD_OMUD, 3, 6)),
