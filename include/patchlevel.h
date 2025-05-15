@@ -60,7 +60,7 @@
 #define EDITLEVEL	0
 
 #define COPYRIGHT_BANNER_A \
-"notdNetHack, Copyright 2017-2022"
+"notdNetHack, Copyright 2017-2025"
 
 #define COPYRIGHT_BANNER_B \
 "    Based on NetHack, Copyright 1985-2003 by Stichting Mathematisch"

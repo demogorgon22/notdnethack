@@ -52,7 +52,7 @@ int subout;
 		impossible("Attempting to check subout number %d?", subout);
 		return FALSE;
 	}
-	return !!(subout_list[(subout-1)/32] & (0x1L << ((subout-1)%32)));
+	return !!(subout_list[(subout-1)/16] & (0x1L << ((subout-1)%16)));
 }
 
 void
@@ -63,7 +63,7 @@ int subout;
 	if(subout >= MAX_SUBOUT || subout < 1){
 		impossible("Attempting to set subout number %d?", subout);
 	}
-	subout_list[(subout-1)/32] |= (0x1L << ((subout-1)%32));
+	subout_list[(subout-1)/16] |= (0x1L << ((subout-1)%16));
 }
 
 void
@@ -74,7 +74,7 @@ int subout;
 	if(subout >= MAX_SUBOUT || subout < 1){
 		impossible("Attempting to set subout number %d?", subout);
 	}
-	subout_list[(subout-1)/32] &= ~(0x1L << ((subout-1)%32));
+	subout_list[(subout-1)/16] &= ~(0x1L << ((subout-1)%16));
 }
 
 void
@@ -1907,7 +1907,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		/* if the player IS polymorphed, they are limited to their polyform's attacks */
 		/* some things give the player additional weapon attacks; they can reset SUBOUT_XWEP to allow another offhand hit if unpoly'd */
 		/* stilettos and wind and fire wheels add extra damage instead */
-		if (!by_the_book && *indexnum > 0 && (u.twoweap || activeFightingForm(FFORM_SHIELD_BASH))
+		if (*indexnum > 0 && (u.twoweap || activeFightingForm(FFORM_SHIELD_BASH))
 			&& !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS))
 		) {
 			/* follow a weapon attack with an offhand attack */
@@ -8878,11 +8878,12 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			const char * glow = ((pa->mtyp == PM_SWORD_ARCHON || pa->mtyp == PM_BAEL) ? "faintly blue"
 				: (pa->mtyp == PM_FLAXEN_STARSHADOW || pa->mtyp == PM_FLAXEN_STAR_PHANTOM) ? "bilious yellow" 
 				: (pa->mtyp == PM_SILVERFIRE_SHADOW_S_WRAITH) ? "shadowy silver" 
+				: (pa->mtyp == PM_CHORISTER_JELLY) ? "inky shadows" 
 				: "sickly green");
 			if (youdef)
-				You("glow %s!", glow);
+				You("%s %s!", (pa->mtyp == PM_CHORISTER_JELLY) ? "radiate" : "glow", glow);
 			else
-				pline("%s glows %s!", Monnam(mdef), glow);
+				pline("%s %s %s!", Monnam(mdef), (pa->mtyp == PM_CHORISTER_JELLY) ? "radiates" : "glows", glow);
 		}
 		/* disintegrate! */
 		for (; dmg > 0; dmg--)
@@ -14350,6 +14351,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	boolean hittxt = FALSE;
 	boolean lethaldamage = FALSE;
 	boolean mercy_blade = FALSE;
+	boolean mind_blade = FALSE;
 
 	boolean melee = (hmoncode & HMON_WHACK);
 	boolean thrust = (hmoncode & HMON_THRUST);
@@ -14945,6 +14947,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	/* Will eventually do a mercy blade attack after all messages are printed */
 	if(valid_weapon_attack && (melee || thrust) && !recursed && mercy_blade_prop(weapon))
 		mercy_blade = TRUE;
+	if(valid_weapon_attack && (melee || thrust) && !recursed && weapon->oartifact == ART_DIRGE && youagr && check_mutation(MIND_STEALER))
+		mind_blade = TRUE;
 	/* X-hating */
 	/* note: setting holyobj/etc affects messages later, but damage happens regardless of whether holyobj/etc is set correctly here */
 	if (weapon)
@@ -15207,6 +15211,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && Insight >= 20 && magr && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
+			poisons |= OPOISON_DIRE;
+		if (Insight >= 40 && poisonedobj->oartifact == ART_LOLTH_S_FANG)
 			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
@@ -16666,6 +16672,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	if(youagr && melee){
 		if(check_rot(ROT_FEAST))
 			healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
+		if(valid_weapon_attack && weapon && weapon->oartifact == ART_DIRGE && check_mutation(CRAWLING_FLESH))
+			healup(1, 0, FALSE, FALSE);
 	}
 	if (valid_weapon_attack || unarmed_punch || unarmed_kick || unarmed_butt)
 	{
@@ -18117,6 +18125,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		//Don't think this can happen, but better safe than sorry.
 		if(MIGRATINGMONSTER(mdef))
 			return MM_AGR_STOP;
+	}
+	if(mind_blade && (lethaldamage || !resist(mdef, WEAPON_CLASS, 0, TRUE))){
+		mind_blade_conflict(mdef, magr, wepspe, lethaldamage);
 	}
 	/* Deal Damage */
 	/* this can possibly kill, returning immediately */

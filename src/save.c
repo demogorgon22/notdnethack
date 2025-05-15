@@ -1098,6 +1098,7 @@ freedynamicdata()
 	free_youbuf();	/* You_buf,&c (pline.c) */
 	msgpline_free();
 #ifdef MENU_COLOR
+	querytype_free();
 	free_menu_coloring();
 #endif
 	tmp_at(DISP_FREEMEM, 0);	/* temporary display effects */

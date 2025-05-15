@@ -1012,8 +1012,9 @@ struct you {
 #define	GPREM_SPIRIT	6
 #define	CROWN_SPIRIT	7
 #define	ALIGN_SPIRIT	8
-#define	OUTER_SPIRIT	9
-#define	NUM_BIND_SPRITS	10
+#define	OTHER_SPIRIT	9
+#define	OUTER_SPIRIT	10
+#define	NUM_BIND_SPRITS	11
 	//Spirits in order bound:
 	long spirit[NUM_BIND_SPRITS];
 	long spiritTineA,spiritTineB;

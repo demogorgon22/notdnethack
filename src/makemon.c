@@ -1580,7 +1580,8 @@ boolean greatequip;
 			otmp->oward = curhouse;
 			(void) mpickobj(mtmp, otmp);
 			/*Cloak*/
-			otmp = mksobj(CLOAK_OF_MAGIC_RESISTANCE, mkobjflags);
+			otmp = mksobj(DROVEN_CLOAK, mkobjflags);
+			add_oprop(otmp, OPROP_MAGC);
 			otmp->blessed = TRUE;
 			otmp->cursed = FALSE;
 			otmp->oerodeproof = TRUE;
@@ -2897,6 +2898,8 @@ boolean greatequip;
 				otmp = mongets(mtmp, ELVEN_BOOTS, mkobjflags);
 				set_material(otmp, MITHRIL);
 				otmp = mongets(mtmp, HIGH_ELVEN_WARSWORD, mkobjflags);
+				set_material(otmp, MITHRIL);
+				otmp = mongets(mtmp, SMITHING_HAMMER, mkobjflags);
 				set_material(otmp, MITHRIL);
 			}
 			else if(greatequip){
@@ -4370,6 +4373,8 @@ boolean goodequip;
 			(void) mongets(mtmp, WHISTLE, mkobjflags);
 	} else if (ptr->mtyp == PM_SHOPKEEPER || ptr->mtyp == PM_HUMAN_SMITH) {
 		(void) mongets(mtmp,SKELETON_KEY, mkobjflags);
+		if(ptr->mtyp == PM_HUMAN_SMITH)
+			(void) mongets(mtmp, SMITHING_HAMMER, mkobjflags);
 		if(Infuture){
 			(void) mongets(mtmp, SHOTGUN, mkobjflags);
 			(void) mongets(mtmp, SHOTGUN_SHELL, mkobjflags);
@@ -7658,6 +7663,16 @@ int mmflags;
 			}
 			//Note: 2/3rds get confusion, this is not an error
 			(void)mongets(mtmp, rn2(3) ? POT_CONFUSION : rn2(2) ? POT_PARALYSIS : POT_HEALING, mkobjflags);
+		} else if (mm == PM_DWARF_SMITH) {
+			(void)mongets(mtmp, SHOES, mkobjflags);
+			(void)mongets(mtmp, CHAIN_MAIL, mkobjflags);
+			(void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
+			(void)mongets(mtmp, GAUNTLETS, mkobjflags);
+			(void)mongets(mtmp, DWARVISH_HELM, mkobjflags);
+			(void)mongets(mtmp, AXE, mkobjflags);
+			(void)mongets(mtmp, SMITHING_HAMMER, mkobjflags);
+			/* CM: Dwarves OUTSIDE the mines have booze. */
+			mongets(mtmp, POT_BOOZE, mkobjflags);
 		} else if (is_dwarf(ptr)) { //slightly rearanged code so more dwarves get helms -D_E
 			if(mm == PM_DWARF_KING && In_quest(&u.uz) && u.uz.dlevel == nemesis_level.dlevel && urole.neminum == PM_NECROMANCER && in_mklev){
 				otmp = mongets(mtmp, SHACKLES, mkobjflags);
@@ -13880,7 +13895,7 @@ boolean randmonst;
 			mkmon_template = TONGUE_PUPPET;
 		}
 		/**/
-		if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
+		else if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
 			mkmon_template = SWOLLEN_TEMPLATE;
 		}
 		/* most general case at bottom -- creatures randomly being zombified */
@@ -15363,6 +15378,14 @@ int faction;
 				mtmp->mhpmax = .5*mtmp->mhpmax;
 				mtmp->mhp = mtmp->mhpmax;
 			}
+			if(mndx == PM_CRIMSON_MOON_LOTUS){
+				mongets(mtmp, DISSECTION_KIT, NO_MKOBJ_FLAGS);
+				// obj = mksobj_at(DISSECTION_KIT, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
+				// if(obj){
+					// bury_an_obj(obj);
+				// }
+				// obj = (struct obj *)0;
+			}
 		break;
 		case S_ZOMBIE:
 			if (mndx == PM_DREAD_SERAPH){
@@ -15550,13 +15573,13 @@ int faction;
 		) ) mtmp->mpeaceful = mtmp->mtame = FALSE;
 	}
 #ifndef DCC30_BUG
-	if((mndx == PM_LONG_WORM || mndx == PM_HUNTING_HORROR) && 
+	if((mndx == PM_LONG_WORM || mndx == PM_HUNTING_HORROR || mndx == PM_CHORISTER_JELLY) && 
 		(mtmp->wormno = get_wormno()) != 0)
 #else
 	/* DICE 3.0 doesn't like assigning and comparing mtmp->wormno in the
 	 * same expression.
 	 */
-	if ((mndx == PM_LONG_WORM || mndx == PM_HUNTING_HORROR) &&
+	if ((mndx == PM_LONG_WORM || mndx == PM_HUNTING_HORROR || mndx == PM_CHORISTER_JELLY) &&
 		(mtmp->wormno = get_wormno(), mtmp->wormno != 0))
 #endif
 	{
@@ -15704,6 +15727,7 @@ int mndx;
 	if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) return TRUE;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
 	if (G_C_INST(mons[mndx].geno) > Insight) return TRUE;
+	if (mndx == PM_SILVERMAN && !u.silvergrubs) return TRUE;
 	if (Inhell)
 		return((mons[mndx].geno & (G_PLANES|G_DEPTHS)) != 0);
 	else if (In_endgame(&u.uz))
@@ -16345,6 +16369,7 @@ int	spc;
 	    if (mons[first].mlet == class
 			&& !(mons[first].geno & mask)
 			&& (G_C_INST(mons[first].geno) <= Insight)
+			&& (first != PM_SILVERMAN || u.silvergrubs)
 		) break;
 	if (first == SPECIAL_PM) return (struct permonst *) 0;
 
@@ -16355,6 +16380,7 @@ int	spc;
 			&& !(mons[last].geno & mask)
 			&& !is_placeholder(&mons[last])
 			&& (G_C_INST(mons[last].geno) <= Insight)
+			&& (last != PM_SILVERMAN || u.silvergrubs)
 		) {
 			/* consider it */
 			if(num && toostrong(last, maxmlev) && monstr[last] != monstr[last-1]) break;
@@ -16375,6 +16401,7 @@ int	spc;
 			&& !(mons[first].geno & mask)
 			&& !is_placeholder(&mons[first])
 			&& (G_C_INST(mons[first].geno) <= Insight)
+			&& (first != PM_SILVERMAN || u.silvergrubs)
 		) {
 			/* skew towards lower value monsters at lower exp. levels */
 			freq = (mons[first].geno & G_FREQ);

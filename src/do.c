@@ -1882,15 +1882,16 @@ misc_levelport:
 	if(spawn_freq && spawn_freq <= 70 && timeline > level.lastmove){
 		int delta = timeline - level.lastmove;
 		if(delta >= spawn_freq){
+			extern const int monstr[];
 			int count = 0;
-			for(struct monst *mtmp = fmon; mtmp && count < 10; mtmp = mtmp->nmon){
-				if(!mtmp->mpeaceful)
-					count++;
+			int target = level_difficulty()*3;
+			for(struct monst *mtmp = fmon; mtmp && count < target; mtmp = mtmp->nmon){
+				if(!mtmp->mtame)
+					count += monstr[mtmp->mtyp]/(mtmp->mpeaceful ? 2 : 1);
 			}
-			for (delta = delta/spawn_freq; delta > 0 && count < 10; delta--){
-				if(rn2(3)){
-					spawn_random_monster();
-					count++;
+			for (delta = delta/spawn_freq; delta > 0 && count < target; delta--){
+				if(rn2(3+(count*30)/target)){
+					count += spawn_random_monster();
 				}
 			}
 		}

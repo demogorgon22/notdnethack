@@ -1019,7 +1019,7 @@ int mkflags;
 				otmp->lamplit = 0;
 				otmp->age = (long)rn1(50000, 100000);
 				blessorcurse(otmp, 2);
-				{
+				if(is_gemable_lightsaber(otmp)){
 					struct obj *gem = mksobj(rn2(6) ? BLUE_FLUORITE : GREEN_FLUORITE, NO_MKOBJ_FLAGS);
 					gem->quan = 1;
 					gem->owt = weight(gem);
@@ -1056,6 +1056,7 @@ int mkflags;
 #ifdef TOURIST
 			case EXPENSIVE_CAMERA:
 #endif
+			case DISSECTION_KIT:
 			case TINNING_KIT:
 			case MAGIC_MARKER:	otmp->spe = rn1(70, 30);
 				break;

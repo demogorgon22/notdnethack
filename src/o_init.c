@@ -1563,6 +1563,7 @@ struct obj *otmp;
 	case ART_WATER_CRYSTAL:		return PURIFIED_WATER ? CLR_BRIGHT_BLUE : CLR_BLUE;
 	case ART_AIR_CRYSTAL:		return PURIFIED_WIND ?  CLR_BRIGHT_GREEN : CLR_GREEN;
 	case ART_SPELL_WARDED_WRAPPINGS_OF_:		return CLR_BLACK;
+	case ART_XIUHCOATL:			return CLR_BRIGHT_CYAN;
 	}
 	
 	//Use the set color.
@@ -1597,6 +1598,10 @@ fix_etraits(struct obj *otmp)
 		otmp->expert_traits |= ETRAIT_CLEAVE;
 	else if(otmp->oartifact == ART_GLAMDRING)
 		otmp->expert_traits |= ETRAIT_HEW;
+	else if(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD){
+		otmp->expert_traits &= ~ETRAIT_FOCUS_FIRE;
+		otmp->expert_traits |= ETRAIT_FELL;
+	}
 
 	if(otmp->oartifact == ART_RUYI_JINGU_BANG){
 		//Special abnormal size rules

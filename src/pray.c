@@ -149,7 +149,10 @@ enum {
 	TROUBLE_WIMAGE,
 	TROUBLE_HIT,
 	TROUBLE_STARVING,
+	TROUBLE_OMUD,
+	TROUBLE_BLEED,
 	TROUBLE_SICK,
+	TROUBLE_CATERPILLARS,
 	TROUBLE_LAVA,
 	TROUBLE_STRANGLED,
 	TROUBLE_SLIMED,
@@ -217,7 +220,10 @@ in_trouble()
 	if(Slimed) return(TROUBLE_SLIMED);
 	if(Strangled) return(TROUBLE_STRANGLED);
 	if(u.utrap && u.utraptype == TT_LAVA) return(TROUBLE_LAVA);
+	if(youmonst.mcaterpillars) return(TROUBLE_CATERPILLARS);
 	if(Sick) return(TROUBLE_SICK);
+	if(youmonst.mbleed && !Upolyd && u.uhp < 2*youmonst.mbleed) return(TROUBLE_BLEED);
+	if(youmonst.mbleed && !Upolyd && youmonst.momud) return(TROUBLE_OMUD);
 	if(u.uhs >= WEAK && !Race_if(PM_INCANTIFIER)) return(TROUBLE_STARVING);
 	if (Upolyd ? (u.mh <= 5 || u.mh*2 <= u.mhmax) :
 		(u.uhp <= 5 || u.uhp*2 <= u.uhpmax)) return TROUBLE_HIT;
@@ -423,6 +429,19 @@ register int trouble;
 				Your("%s feels content.", body_part(STOMACH));
 		    reset_uhunger();
 		    flags.botl = 1;
+		    break;
+	    case TROUBLE_CATERPILLARS:
+		    pline(".");
+		    youmonst.mcaterpillars = FALSE;
+		    make_sick(0L, (char *) 0, FALSE, SICK_ALL);
+		    break;
+	    case TROUBLE_OMUD:
+		    pline_The("writhing mud that covers you is burned away!");
+		    youmonst.momud = FALSE;
+		    break;
+	    case TROUBLE_BLEED:
+		    Your("accursed wound closes up.");
+		    youmonst.mbleed = FALSE;
 		    break;
 	    case TROUBLE_SICK:
 		    You_feel("better.");
@@ -1807,7 +1826,7 @@ dosacrifice()
 			if(u.ualign.record >= 20 || ACURR(A_WIS) >= 20 || u.ualign.record >= rnd(20-ACURR(A_WIS))){
 				Sprintf(buf, "You feel a deep sense of kinship to %s!  Sacrifice %s anyway?",
 					the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
-				if (yn_function(buf,ynchars,'n')=='n') return MOVE_CANCELLED;
+				if (yn(buf)=='n') return MOVE_CANCELLED;
 			}
 			if (is_demon(youracedata)) {
 				You("find the idea very satisfying.");
@@ -2885,8 +2904,10 @@ struct monst *mon;
 						losehp(d(6,6), "holy scripture", KILLED_BY);
 					}
 				}
-				You("panic!");
-				HPanicking += d(6,6);
+				if(!rn2(HPanicking)){
+					You("panic!");
+					HPanicking += d(6,6);
+				}
 			}
 		}
 		else if(mon->mtame && mon_healing_turn(mon)
@@ -3450,6 +3471,7 @@ boolean offering;
 #define GOATBOON_DROOL	7
 #define GOATBOON_RED_WORD	8
 #define GOATBOON_MUTATE	9
+#define GOATBOON_SPELLS	10
 int
 dogoat_menu(greater_boon)
 boolean greater_boon;	/* you have shown devotion enough to ask for a greater boon */
@@ -3511,14 +3533,16 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 		Sprintf(buf, "her Bite");
 		any.a_int = GOATBOON_ACID;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+		inclet++;
 
 		Sprintf(buf, "her Hunger");
 		any.a_int = GOATBOON_DROOL;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+		inclet++;
 
 		if (!flags.made_know) {
 			Sprintf(buf, "her Knowledge");
@@ -3526,6 +3550,27 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 			add_menu(tmpwin, NO_GLYPH, &any,
 				inclet, 0, ATR_NONE, buf,
 				MENU_UNSELECTED);
+		}
+		inclet++;
+
+		if(!GoatSpell){
+			int spell_list[] = {0, SPE_FIRE_STORM, SPE_BLIZZARD, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, 0};
+			boolean certified_blaster_master = FALSE;
+
+			for (int i = 1; spell_list[i] && !certified_blaster_master; i++)
+				for (int j = 0; j < MAXSPELL; j++)
+					if (spellid(j) == spell_list[i] && spellknow(j) > 0){
+						certified_blaster_master = TRUE;
+						break;
+					}
+
+			if (certified_blaster_master) {
+				Sprintf(buf, "her Presence");
+				any.a_int = GOATBOON_SPELLS;
+				add_menu(tmpwin, NO_GLYPH, &any,
+					inclet, 0, ATR_NONE, buf,
+					MENU_UNSELECTED);
+			}
 		}
 		inclet++;
 
@@ -3618,6 +3663,11 @@ commune_with_goat()
 		aggravate();
 		return MOVE_STANDARD;
 	}
+	if(GOAT_BAD){
+		pline("The will of %s blocks your actions.", u_gname());
+		return MOVE_STANDARD;
+	}
+
 	/* in good standing */
 	if (godlist[GOD_THE_BLACK_MOTHER].anger) {
 		You_feel("a fraction of %s %s.",
@@ -3793,6 +3843,14 @@ commune_with_goat()
 			u.ucultsval += TIER_A;
 			break;
 
+		case GOATBOON_SPELLS:
+			cost = 40;
+			HGoatSpell |= W_UPGRADE;
+			pline("The mist grows near.");
+			u.ugifts++;
+			u.ucultsval += TIER_S;
+			break;
+
 		case GOATBOON_MUTATE:
 			cost = 0;
 			if(shub_nugganoth_mutation()){
@@ -3942,12 +4000,16 @@ commune_with_silver_flame()
 		You("see a distant silver light.");
 		return MOVE_STANDARD;
 	}
+	if(FLAME_BAD){
+		pline("The will of %s blocks your actions.", u_gname());
+		return MOVE_STANDARD;
+	}
 	/* in good standing */
-	if (godlist[GOD_THE_SILVER_FLAME].anger) {
-		//Import bad prayer effects (where she drools on you if you're prayer timeout is bad)
+	if (godlist[GOD_THE_SILVER_FLAME].anger || u.ualign.type == A_CHAOTIC) {
 		You("are burned by the silver light!");
 		losehp(rnd(20), "angry silver light", KILLED_BY);
-		return MOVE_STANDARD;
+		if(godlist[GOD_THE_SILVER_FLAME].anger)
+			return MOVE_STANDARD;
 	}
 	/* must have accumulated enough cult credit */
 	if (u.silver_credit < 50) {
@@ -4201,6 +4263,7 @@ commune_with_silver_flame()
 #define YOGBOON_WINDOW	7
 #define YOGBOON_TWIN	8
 #define YOGBOON_MUTATE	9
+#define YOGBOON_SPELL	10
 
 int
 doyog_menu(greater_boon)
@@ -4296,6 +4359,15 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 				MENU_UNSELECTED);
 		}
 		inclet++;
+
+		if (!YogSpell) {
+			Sprintf(buf, "the missiles of Yog-Sothoth");
+			any.a_int = YOGBOON_SPELL;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet++, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+
 	}
 	end_menu(tmpwin, "You have Yog-Sothoth's attention...");
 
@@ -4555,6 +4627,16 @@ commune_with_yog()
 			}
 			break;
 		}
+		case YOGBOON_SPELL:
+			cost = 40;
+			HYogSpell |= W_UPGRADE;
+			otmp = mksobj(SPE_MAGIC_MISSILE, MKOBJ_NOINIT);
+			dropy(otmp);
+			at_your_feet("An object");
+			u.ugifts++;
+			u.ucultsval += TIER_A;
+			break;
+
 		case YOGBOON_MUTATE:
 			cost = 0;
 			if(yog_sothoth_mutation()){
@@ -4679,6 +4761,11 @@ int eatflag;
 		return;
 	}
 
+	if(eatflag != GOAT_EAT_PASSIVE && GOAT_BAD){
+		pline("The will of %s blocks your actions.", u_gname());
+		return;
+	}
+
 	if ((otmp->corpsenm == PM_ACID_BLOB
 		|| (monstermoves <= peek_at_iced_corpse_age(otmp) + 50)
 		) && mons[otmp->corpsenm].mlet != S_PLANT
@@ -4714,16 +4801,9 @@ int eatflag;
 	/* never an altar conversion*/
 	
 	/* Rider handled */
-	eat_offering(otmp, eatflag == GOAT_EAT_MARKED && !(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) && goat_seenonce, eatflag);
+	eat_offering(otmp, eatflag == GOAT_EAT_MARKED && goat_seenonce, eatflag);
 	if(eatflag == GOAT_EAT_MARKED)
 		goat_seenonce = TRUE;
-	if(eatflag != GOAT_EAT_PASSIVE && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
-		adjalign(-value);
-		godlist[u.ualign.god].anger += 1;
-		(void) adjattrib(A_WIS, -1, TRUE);
-		if (!Inhell) angrygods(u.ualign.god);
-		change_luck(-1);
-	}
 
 	/* off floor -- the only possible effect is creating Goat's Milk. You do not get credit, return early */
 	if (eatflag == GOAT_EAT_PASSIVE) {
@@ -4851,6 +4931,11 @@ yog_sothoth_drink(struct obj *otmp)
 	
 	/* Rider unimportant (corpse is not destroyed) */
 	drink_offering(otmp);
+	/* Yog accepts offerings from badly-aligned cultists, but gives no favor for them */
+	if(YOG_BAD){
+		You("are filled with contempt.");
+		return;
+	}
 	yog_credit(value, TRUE);
 }
 
@@ -4916,13 +5001,9 @@ boolean offering;
 	
 	/* Rider handled */
 	if(otmp)
-		burn_offering(otmp, !(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)));
-	if(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
-		adjalign(-value);
-		godlist[u.ualign.god].anger += 1;
-		(void) adjattrib(A_CHA, -1, TRUE);
-		if (!Inhell) angrygods(u.ualign.god);
-		change_luck(-1);
+		burn_offering(otmp, TRUE);
+	if(FLAME_BAD) {
+		value = 0;
 	}
 
 	/* anger must be paid off before credit can be built, return early */
@@ -4958,16 +5039,9 @@ void
 yog_credit(int value, boolean offered)
 {
 	//May be zero if draining a small monster etc.
-	if(!value)
+	//May be reaced with yog bad as a result of having the spirit bound while badly aligned.
+	if(!value || YOG_BAD)
 		return;
-
-	if(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god)) {
-		adjalign(-value);
-		godlist[u.ualign.god].anger += 1;
-		(void) adjattrib(A_CHA, -1, TRUE);
-		if (!Inhell) angrygods(u.ualign.god);
-		change_luck(-1);
-	}
 
 	/* anger must be paid off before credit can be built, return early */
 	if(godlist[GOD_YOG_SOTHOTH].anger) {

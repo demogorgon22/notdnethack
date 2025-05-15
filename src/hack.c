@@ -1381,7 +1381,7 @@ domove()
 					result |= hit_with_rreject(&youmonst, otmp, x, y, 0, attk);
 				}
 				
-				if(!u.twoweap)
+				if(!u.twoweap && !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS)))
 					break;
 				attk = mon_get_attacktype(&youmonst, AT_XWEP, &attkbuff);
 				otmp = uswapwep;
@@ -2843,8 +2843,8 @@ const char *msg_override;
 	if (*nomovemsg) pline1(nomovemsg);
 	nomovemsg = 0;
 	struct obj *puzzle = get_most_complete_puzzle();
-	if(puzzle){
-		if(u.puzzle_time && (monstermoves - u.usleep) >= u.puzzle_time){
+	if(u.puzzle_time && puzzle){
+		if((monstermoves - u.usleep) >= u.puzzle_time){
 			int difficulty = puzzle->ovar1_puzzle_steps + 1;
 			difficulty *= 6;
 			if(objects[HYPERBOREAN_DIAL].oc_name_known)

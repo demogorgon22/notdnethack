@@ -2009,7 +2009,7 @@ int shotlimit;
 			multishot = 3; break;
 		}
 
-		if(QuickDraw){
+		if(youagr ? QuickDraw : mon_resistance(magr, QUICK_DRAW)){
 			if(multishot > 2){
 				minmulti++;
 				multishot--;
@@ -2084,7 +2084,7 @@ int shotlimit;
 	/* Okay. */
 	if (youagr && barrage) {
 		/* Spirit power barrage maximized multishot */
-		multishot += u.ulevel / 10 + 1;
+		multishot += u.ulevel / 10 + 1 + minmulti;
 	}
 	else {
 		if (!launcher || !( launcher->oartifact == ART_LONGBOW_OF_DIANA || launcher->oartifact == ART_BELTHRONDING))
@@ -2491,7 +2491,20 @@ dofire()
 		}
 		/* Holy Moonlight Sword's magic blast -- mainhand only */
 		if (uwep && uwep->oartifact == ART_HOLY_MOONLIGHT_SWORD && uwep->lamplit && u.uen >= 25){
-			int dmg = d(2, 12) + 2 * uwep->spe;
+			int n = 2;
+			if(u.explosion_up){
+				int out = 2;
+				int count = u.explosion_up;
+				while(count >= out){
+					count -= out;
+					n++;
+					out += 1;
+				}
+				if(count > rn2(out)){
+					n++;
+				}
+			}
+			int dmg = d(n, 12) + n * uwep->spe;
 			int range = (Double_spell_size) ? 6 : 3;
 			xchar lsx, lsy, sx, sy;
 			struct monst *mon;
@@ -2505,7 +2518,7 @@ dofire()
 			flags.forcefight = 0;
 
 			if (u.uswallow){
-				explode(u.ux, u.uy, AD_MAGM, WAND_CLASS, (d(2, 12) + 2 * uwep->spe) * ((Double_spell_size) ? 3 : 2) / 2, EXPL_CYAN, 1 + !!Double_spell_size);
+				explode(u.ux, u.uy, AD_MAGM, WAND_CLASS, (d(n, 12) + n * uwep->spe) * ((Double_spell_size) ? 3 : 2) / 2, EXPL_CYAN, 1 + !!Double_spell_size);
 				return MOVE_STANDARD;
 			}
 			else {

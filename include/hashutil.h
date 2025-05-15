@@ -7,4 +7,5 @@ struct menucolor_attribs{
 	int attr;
 	char hit;
 	long lastused;
+	char *key;
 };

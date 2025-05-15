@@ -1310,6 +1310,7 @@ int curse_bless;
 		break;
 	    case MAGIC_MARKER:
 	    case TINNING_KIT:
+	    case DISSECTION_KIT:
 #ifdef TOURIST
 	    case EXPENSIVE_CAMERA:
 #endif
@@ -2212,8 +2213,13 @@ struct obj	*sobj;
 		} else {
 			if(!confused && u.sealsActive&SEAL_MARIONETTE){
 				unbind(SEAL_MARIONETTE,TRUE);
-			} 
-			if(!confused) u.wimage = 0;
+			}
+			if(!confused){
+				u.wimage = 0;
+				if(youmonst.mbleed)
+					Your("accursed wound closes up.");
+				youmonst.mbleed = 0;
+			}
 		    for (obj = invent; obj; obj = obj->nobj) {
 			long wornmask;
 #ifdef GOLDOBJ
@@ -3680,6 +3686,9 @@ boolean revival;
 		return TRUE;
 	} else if (*mtype==PM_HUNTING_HORROR_TAIL) {	/* for create_particular() */
 		*mtype = PM_HUNTING_HORROR;
+		return TRUE;
+	} else if (*mtype==PM_CHORISTER_TRAIN) {	/* for create_particular() */
+		*mtype = PM_CHORISTER_JELLY;
 		return TRUE;
 	}
 	return FALSE;

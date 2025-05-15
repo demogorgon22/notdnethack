@@ -1404,6 +1404,7 @@ TOOL(("leash"),        1,  MZ_SMALL, 0, 0, 0,  55, 12,  20, LEATHER, HI_LEATHER)
 TOOL(("stethoscope"),  1,  MZ_SMALL, 0, 0, 0,  25,  4,  75, IRON, HI_METAL),
 TOOL(("tinning kit"),  1, MZ_MEDIUM, 0, 0, 1,  15,100,  30, IRON, HI_METAL),
 TOOL(("phlebotomy kit"),  1, MZ_MEDIUM, 0, 0, 1,  5,25, 500, LEATHER, CLR_BROWN),
+TOOL(("dissection kit"),  1, MZ_MEDIUM, 0, 0, 1,  0,50, 1000, CLOTH, CLR_BLACK),
 TOOL(("bullet fabber", "white box with a yellow fiddly bit", "fiddly box"),/*Needs tile*/ /*Needs encyc entry*/
 								0, MZ_MEDIUM, 0, 1, 0,   0, 20,  30, PLASTIC, CLR_WHITE),
 TOOL(("nightmare's bullet mold", "blade-tipped mold"),/*Needs tile*/ /*Needs encyc entry*/

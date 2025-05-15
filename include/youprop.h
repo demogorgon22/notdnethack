@@ -145,6 +145,14 @@
 #define EProtItems		u.uprops[PROT_ITEMS].extrinsic
 #define ProtItems		(HProtItems || EProtItems)
 
+#define HGoatSpell		u.uprops[GOAT_SPELLS].intrinsic
+#define EGoatSpell		u.uprops[GOAT_SPELLS].extrinsic
+#define GoatSpell		(HGoatSpell || EGoatSpell)
+
+#define HYogSpell		u.uprops[YOG_SPELLS].intrinsic
+#define EYogSpell		u.uprops[YOG_SPELLS].extrinsic
+#define YogSpell		(HYogSpell || EYogSpell)
+
 #define HQuickDraw		u.uprops[QUICK_DRAW].intrinsic
 #define EQuickDraw		u.uprops[QUICK_DRAW].extrinsic
 #define QuickDraw		(HQuickDraw || EQuickDraw)

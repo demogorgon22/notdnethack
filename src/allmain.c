@@ -76,6 +76,7 @@ filter_itemmap(void* const context, struct hashmap_element_s* const e)
 {
 	struct menucolor_attribs *stored = (struct menucolor_attribs *)e->data;
 	if((moves - stored->lastused) > 1000){
+		free(stored->key);
 		free(e->data);
 		return -1;
 	}
@@ -1645,34 +1646,61 @@ random_frequency()
 	return 70;
 }
 
-void
+int
 spawn_random_monster()
 {
+	int difficulty = 0;
+	struct monst *mtmp = 0;
 	if(Is_ford_level(&u.uz)){
 		if(rn2(2)){
 			int x, y, tries = 200;
 			do x = rn2(COLNO/2) + COLNO/2 + 1, y =  rn2(ROWNO-2)+1;
 			while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
-			if(tries >= 0)
-				makemon(ford_montype(1), x, y, MM_ADJACENTOK);
+			if(tries >= 0){
+				mtmp = makemon(ford_montype(1), x, y, MM_ADJACENTOK);
+			}
 		} else {
 			int x, y, tries = 200;
 			do x = rn2(COLNO/2) + 1, y =  rn2(ROWNO-2)+1;
 			while((!isok(x,y) || !(levl[x][y].typ == SOIL || levl[x][y].typ == ROOM)) && tries-- > 0);
-			if(tries >= 0)
-				makemon(ford_montype(-1), x, y, MM_ADJACENTOK);
+			if(tries >= 0){
+				mtmp = makemon(ford_montype(-1), x, y, MM_ADJACENTOK);
+			}
 		}
+		if(mtmp)
+			difficulty += monstr[mtmp->mtyp];
 	} else {
 		if(In_sokoban(&u.uz)){
-			if(u.uz.dlevel != 1 && u.uz.dlevel != 4) makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTSTRICT|MM_ADJACENTOK);
+			if(u.uz.dlevel != 1 && u.uz.dlevel != 4) mtmp = makemon((struct permonst *)0, xupstair, yupstair, MM_ADJACENTSTRICT|MM_ADJACENTOK);
+			if(mtmp)
+				difficulty += monstr[mtmp->mtyp];
 		} else if(Infuture && Is_qstart(&u.uz) && !(quest_status.leader_is_dead)){
-			(void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-			if(ANA_SPAWN_TWO) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-			if(ANA_SPAWN_THREE) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
-			if(ANA_SPAWN_FOUR) (void) makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+			if(mtmp)
+				difficulty += monstr[mtmp->mtyp];
+			if(ANA_SPAWN_TWO){
+				mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+				if(mtmp)
+					difficulty += monstr[mtmp->mtyp];
+				if(ANA_SPAWN_THREE){
+					mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+					if(mtmp)
+						difficulty += monstr[mtmp->mtyp];
+					if(ANA_SPAWN_FOUR) {
+						mtmp = makemon((struct permonst *)0, xdnstair, ydnstair, MM_ADJACENTOK);
+						if(mtmp)
+							difficulty += monstr[mtmp->mtyp];
+					}
+				}
+			}
 		}
-		else (void) makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
+		else {
+			mtmp = makemon((struct permonst *)0, 0, 0, NO_MM_FLAGS);
+			if(mtmp)
+				difficulty += monstr[mtmp->mtyp];
+		}
 	}
+	return difficulty;
 }
 
 void
@@ -2885,6 +2913,7 @@ karemade:
 				}
 				if(youmonst.mcaterpillars){
 					rot_caterpillars_bite(&youmonst);
+					pline_The("parasitic caterpillars have rotted to death!");
 					if(!rn2(20)){
 						youmonst.mcaterpillars = FALSE;
 					}
@@ -2892,6 +2921,7 @@ karemade:
 				if(youmonst.momud){
 					orc_mud_stabs(&youmonst);
 					if(!rn2(20)){
+						pline_The("writhing mud covering you has died.");
 						youmonst.momud = FALSE;
 						struct obj *daggers = mksobj(ORCISH_DAGGER, NO_MKOBJ_FLAGS);
 						curse(daggers);
@@ -3234,8 +3264,8 @@ karemade:
 			clear_stale_fforms();
 
 			if(moves%1000){
-				extern struct hashmap_s itemmap;
-				hashmap_iterate_pairs(&itemmap, filter_itemmap, 0);
+				extern struct hashmap_s *itemmap;
+				hashmap_iterate_pairs(itemmap, filter_itemmap, 0);
 			}
 
 		    if(!(Invulnerable)) {
@@ -3821,8 +3851,9 @@ newgame()
 
 	flags.ident = 1;
 
-	extern struct hashmap_s itemmap;
-	hashmap_create(32, &itemmap);
+	extern struct hashmap_s *itemmap;
+	itemmap = malloc(sizeof(struct hashmap_s));
+	hashmap_create(32, itemmap);
 
 	for (i = 0; i < NUMMONS; i++)
 		mvitals[i].mvflags = mons[i].geno & (G_NOCORPSE|G_SPCORPSE);

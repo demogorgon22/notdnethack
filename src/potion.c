@@ -569,6 +569,9 @@ boolean force;
 				change_usanity(20, FALSE);
 			else
 				change_usanity(5, FALSE);
+			if(youmonst.mbleed)
+				Your("bleeding wound closes up.");
+			youmonst.mbleed = 0;
 		}
 	case SPE_RESTORE_ABILITY:
 		unkn++;
@@ -1149,6 +1152,9 @@ as_extra_healing:
 			u.umummyrot = 0;
 			You("stop shedding dust.");
 		}
+		if(youmonst.mbleed)
+			Your("bleeding wound closes up.");
+		youmonst.mbleed = 0;
 		(void) make_hallucinated(0L,TRUE,0L);
 		exercise(A_STR, TRUE);
 		exercise(A_CON, TRUE);
@@ -1187,6 +1193,9 @@ as_extra_healing:
 			u.umummyrot = 0;
 			You("stop shedding dust.");
 		}
+		if(youmonst.mbleed)
+			Your("bleeding wound closes up.");
+		youmonst.mbleed = 0;
 		for (int i = 0; i < A_MAX; i++) {
 			lim = AMAX(i);
 			if (i == A_STR && u.uhs >= 3) --lim;	/* WEAK */
@@ -1407,7 +1416,10 @@ as_extra_healing:
 			char buf[BUFSZ];
 			Sprintf(buf, "You feel a deep sense of kinship to %s!  Drink %s anyway?",
 				the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
-			if (yn_function(buf,ynchars,'n')=='n') return MOVE_CANCELLED;
+			if (yn_function(buf,ynchars,'n')=='n'){
+				otmp->in_use = FALSE;
+				return MOVE_CANCELLED;
+			}
 		}
 		if (is_vampire(youracedata) || (carnivorous(youracedata) && !herbivorous(youracedata))) {
 			pline("It smells like %s%s.", 

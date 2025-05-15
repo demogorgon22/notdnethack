@@ -2329,6 +2329,9 @@ struct obj *obj;
 	else if (obj->otyp == TINNING_KIT)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Use this kit to tin a corpse", MENU_UNSELECTED);
+	else if (obj->otyp == DISSECTION_KIT)
+		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+				"Use this kit to dissect a corpse", MENU_UNSELECTED);
 	else if (obj->otyp == LEASH)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Tie a pet to this leash", MENU_UNSELECTED);
@@ -2814,9 +2817,9 @@ winid *datawin;
 	boolean printed_type = FALSE;
 	boolean has_artidmg = oartifact && (artilist[oartifact].adtyp || artilist[oartifact].damage || artilist[oartifact].accuracy);
 	
-	if(check_oprop(obj,OPROP_GOATW))
+	if(check_oprop(obj,OPROP_GOATW) && !(obj->where == OBJ_INVENT && GOAT_BAD))
 		goatweaponturn = goat_weapon_damage_turn(obj);
-	if(check_oprop(obj,OPROP_SOTHW))
+	if(check_oprop(obj,OPROP_SOTHW) && !(obj->where == OBJ_INVENT && YOG_BAD))
 		sothweaponturn = soth_weapon_damage_turn(obj);
 
 
@@ -3556,19 +3559,19 @@ winid *datawin;
 			Sprintf(buf2, "Teleports away target's armor or deals double damage.");
 			OBJPUTSTR(buf2);
 		}
-		if (check_oprop(obj, OPROP_MORTW))
+		if (check_oprop(obj, OPROP_MORTW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Drains 1d2 levels from living intelligent targets.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_TDTHW))
+		if (check_oprop(obj, OPROP_TDTHW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Deals double damage plus 2d7 to undead.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_SFUWW))
+		if (check_oprop(obj, OPROP_SFUWW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Deals double disintegration damage to spiritual beings.");
 			OBJPUTSTR(buf2);
@@ -3688,19 +3691,19 @@ winid *datawin;
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_SFLMW))
+		if (check_oprop(obj, OPROP_SFLMW) && !FLAME_BAD)
 		{
 			Sprintf(buf2, "Offers slain targets to the Silver Flame.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_GOATW))
+		if (check_oprop(obj, OPROP_GOATW) && !GOAT_BAD)
 		{
 			Sprintf(buf2, "Feeds slain foes to the Black Mother.");
 			OBJPUTSTR(buf2);
 		}
 
-		if (check_oprop(obj, OPROP_SOTHW))
+		if (check_oprop(obj, OPROP_SOTHW) && !YOG_BAD)
 		{
 			Sprintf(buf2, "Slakes the thirst of Yog-Sothoth.");
 			OBJPUTSTR(buf2);
@@ -5072,6 +5075,21 @@ int otyp;
 {
 	while (list) {
 		if (list->otyp == otyp) return list;
+		list = list->nobj;
+	}
+	return (struct obj *) 0;
+}
+
+/*
+ * Finds the first item of matching otyp within the given list for which spe > 0. Does not check contained objects.
+ */
+struct obj *
+find_charged_object_type(list, otyp)
+struct obj *list;
+int otyp;
+{
+	while (list) {
+		if (list->otyp == otyp && list->spe > 0) return list;
 		list = list->nobj;
 	}
 	return (struct obj *) 0;

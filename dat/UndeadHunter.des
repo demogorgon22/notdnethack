@@ -395,6 +395,7 @@ TRAP:random,random
 MONSTER:'d',"index wolf",(10,06)
 MONSTER:'U',"Moon's Chosen",(11,04)
 OBJECT:'\\',"bed",(11,04)
+MONSTER:'{',"crimson moon-lotus",random
 
 #
 #	The "fill" levels for the quest.

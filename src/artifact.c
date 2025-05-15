@@ -4626,10 +4626,10 @@ int * truedmgptr;
 		}
 		*truedmgptr += bonus;
 	}
-	if(is_undead(pd) && check_oprop(otmp, OPROP_TDTHW)){
+	if(is_undead(pd) && check_oprop(otmp, OPROP_TDTHW) && !(youagr && FLAME_BAD)){
 		*truedmgptr += basedmg + d(2,7);
 	}
-	if(check_oprop(otmp, OPROP_GOATW)){
+	if(check_oprop(otmp, OPROP_GOATW) && !(youagr && GOAT_BAD)){
 		switch(goat_weapon_damage_turn(otmp)){
 			case AD_EACD:
 				if (!Acid_res(mdef)){
@@ -4674,7 +4674,7 @@ int * truedmgptr;
 			break;
 		}
 	}
-	if(check_oprop(otmp, OPROP_SOTHW)){
+	if(check_oprop(otmp, OPROP_SOTHW) && !(youagr && YOG_BAD)){
 		switch(soth_weapon_damage_turn(otmp)){
 			// case AD_STTP:
 			// break;
@@ -4721,6 +4721,8 @@ int * truedmgptr;
 			// break;
 		}
 	}
+	//Note: silver flame oprops stay active. I forsee no balance problems from this at all.
+	
 	//Psionic does slightly buffed damage, but triggers less frequently
 	// Buffed vs. telepathic beings
 	if(youdef && !Tele_blind && (Blind_telepat || !rn2(5))){
@@ -4861,7 +4863,7 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_LESSER_CONCW))
 			*truedmgptr += d(2, 6);
 	}
-	if(check_oprop(otmp, OPROP_SFLMW) && sflm_target(mdef)){
+	if(check_oprop(otmp, OPROP_SFLMW) && !(youagr && FLAME_BAD) && sflm_target(mdef)){
 		*truedmgptr += d(2,7);
 	}
 	if(check_oprop(otmp, OPROP_ANTAW)){
@@ -4989,11 +4991,7 @@ int dieroll;
 }
 
 void
-mercy_blade_conflict(mdef, magr, spe, lethal)
-struct monst *mdef;
-struct monst *magr;
-int spe;
-boolean lethal;
+weapon_conflict(struct monst *mdef, struct monst *magr, int spe, boolean lethal, boolean mercy_blade)
 {
 	int x, y, cx, cy, count = 0;
 	struct monst *target;
@@ -5054,7 +5052,7 @@ boolean lethal;
 		if(youdef){
 			int temp_encouraged = u.uencouraged;
 			if(lethal)
-				pline("The blade lodges in your %s!", body_part(SPINE));
+				pline("The blade lodges in your %s!", body_part(mercy_blade ? SPINE : BRAIN));
 			u.uencouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			flags.forcefight = TRUE;
 			xattacky(mdef, target, x(target), y(target));
@@ -5067,7 +5065,7 @@ boolean lethal;
 			long result;
 			mdef->encouraged = (youagr ? (Insight + ACURR(A_CHA))/5 : magr->m_lev/5) + spe;
 			if(lethal)
-				pline("The blade lodges in %s %s!", s_suffix(mon_nam(mdef)), mbodypart(mdef, SPINE));
+				pline("The blade lodges in %s %s!", s_suffix(mon_nam(mdef)), mbodypart(mdef, mercy_blade ? SPINE : BRAIN));
 			friendly_fire = !mm_grudge(mdef, target, FALSE);
 			result = xattacky(mdef, target, x(target), y(target));
 			if(friendly_fire && (result&(MM_DEF_DIED|MM_DEF_LSVD)) && !taxes_sanity(mdef->data) && !mindless_mon(mdef) && !resist(mdef, POTION_CLASS, 0, NOTELL)){
@@ -5090,6 +5088,18 @@ boolean lethal;
 	}
 
 	in_conflict = FALSE;
+}
+
+void
+mercy_blade_conflict(struct monst *mdef, struct monst *magr, int spe, boolean lethal)
+{
+	weapon_conflict(mdef, magr, spe, lethal, TRUE);
+}
+
+void
+mind_blade_conflict(struct monst *mdef, struct monst *magr, int spe, boolean lethal)
+{
+	weapon_conflict(mdef, magr, spe, lethal, FALSE);
 }
 
 void
@@ -5905,9 +5915,9 @@ boolean printmessages; /* print generic elemental damage messages */
 	if (!msgr)
 		msgr = otmp;
 	
-	if(check_oprop(otmp,OPROP_GOATW))
+	if(check_oprop(otmp,OPROP_GOATW) && !(youagr && GOAT_BAD))
 		goatweaponturn = goat_weapon_damage_turn(otmp);
-	if(check_oprop(otmp,OPROP_SOTHW))
+	if(check_oprop(otmp,OPROP_SOTHW) && !(youagr && YOG_BAD))
 		sothweaponturn = soth_weapon_damage_turn(otmp);
 	if(otmp->obj_material == MERCURIAL){
 		mercweaponslice[0] = merc_weapon_damage_slice(otmp, magr, A_INT);
@@ -6377,7 +6387,7 @@ boolean printmessages; /* print generic elemental damage messages */
 		break;
 	}
 	
-	if(check_oprop(otmp, OPROP_SFLMW) && !youdef && sflm_target(mdef)){
+	if(check_oprop(otmp, OPROP_SFLMW) && !(youagr && FLAME_BAD) && !youdef && sflm_target(mdef)){
 		mdef->mflamemarked = TRUE;
 		if(youagr)
 			mdef->myoumarked = TRUE;
@@ -7614,7 +7624,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	/*reveal mortality*/
-	if (check_oprop(otmp, OPROP_MORTW) && !Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))){
+	if (check_oprop(otmp, OPROP_MORTW) && !(youagr && FLAME_BAD) && !Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))){
 		int dlife;
 		int i = rnd(2);
 		/* message */
@@ -7765,7 +7775,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 
 	/* Reveal unworthy */
-	if (check_oprop(otmp, OPROP_SFUWW) && (is_minion(pd) || is_demon(pd) || (Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))))){
+	if (check_oprop(otmp, OPROP_SFUWW) && !(youagr && FLAME_BAD) && (is_minion(pd) || is_demon(pd) || (Drain_res(mdef) && (youdef ? Mortal_race : mortal_race(mdef))))){
 		struct obj *obj;
 		int i = (basedmg+1)/2;
 		boolean printed = FALSE;
@@ -8028,7 +8038,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 
 			while(n--) {
-				explode_full(x, y, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1, 4, FALSE, (struct permonst *) 0);
+				explode_full(x, y, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1, 4, FALSE, (struct permonst *) 0, 0L);
 				
 				x = cc.x+rnd(3)-1; y = cc.y+rnd(3)-1;
 				if (!isok(x,y)) {
@@ -10211,6 +10221,9 @@ arti_invoke(obj)
 				unbind(SEAL_MARIONETTE,TRUE);
 			} 
 			if(Confusion == 0) u.wimage = 0;
+			if(youmonst.mbleed)
+				Your("accursed wound closes up.");
+			youmonst.mbleed = 0;
 		    for (otmp = invent; otmp; otmp = otmp->nobj) {
 			long wornmask;
 #ifdef GOLDotmp
@@ -15139,7 +15152,11 @@ dosymbiotic_equip()
 		dosymbiotic(&youmonst, uarm);
 	if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_WHIPPING))
 		doscorpion(&youmonst, uarm);
-	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && Insight >= 40) || is_living_artifact(uwep) || is_bloodthirsty_artifact(uwep) ))
+	if(uwep && ((check_oprop(uwep, OPROP_LIVEW) && Insight >= 40)
+				|| is_living_artifact(uwep)
+				|| is_bloodthirsty_artifact(uwep) 
+				|| (uwep->oartifact == ART_DIRGE && check_mutation(SHUB_TENTACLES) && roll_generic_flat_madness(FALSE))
+	))
 		doliving(&youmonst, uwep);
 	if(uswapwep && ((check_oprop(uswapwep, OPROP_LIVEW) && u.twoweap && Insight >= 40) || is_living_artifact(uswapwep) || (is_bloodthirsty_artifact(uswapwep) && u.twoweap) ))
 		doliving(&youmonst, uswapwep);
@@ -15154,6 +15171,12 @@ dosymbiotic_equip()
 			doliving(&youmonst,obj);
 	}
 	
+	if(check_mutation(ABHORRENT_SPORE)){
+		if(uwep && uwep->oartifact == ART_DIRGE && roll_generic_flat_madness(FALSE))
+			dogoat();
+		if(uswapwep && uswapwep->oartifact == ART_DIRGE && roll_generic_flat_madness(FALSE))
+			dogoat();
+	}
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 		if(DEADMONSTER(mtmp))
 			continue;
@@ -15199,15 +15222,6 @@ do_passive_attacks()
 		return;
 
 	if(!u.uno_auto_attacks){
-		if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
-			if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
-				pline("Lashing tentacles erupt from your brain!");
-				losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
-				morehungry(d(4,4)*get_uhungersizemod());
-			}
-			dogoat();
-		}
-		
 		if(is_goat_tentacle_mtyp(youracedata))
 			dogoat();
 		if(u.specialSealsActive&SEAL_YOG_SOTHOTH){
@@ -15229,6 +15243,24 @@ do_passive_attacks()
 		if(check_rot(ROT_STING))
 			dorotsting(&youmonst);
 	}
+	if(check_mutation(SHUB_TENTACLES)){
+		//Note: If we have the mutation we know that we have the madness, and if we somehow don't, well...
+		//Also, only able to control the attacks if you have the mutation
+		if(!u.uno_auto_attacks && roll_generic_madness(FALSE) && adjacent_mon()){
+			if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG)
+				morehungry(d(4,4)*get_uhungersizemod());
+			dogoat();
+		}
+	}
+	else if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
+		if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
+			pline("Lashing tentacles erupt from your brain!");
+			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
+			morehungry(d(4,4)*get_uhungersizemod());
+		}
+		dogoat();
+	}
+	
 	//Note: The player never gets Eladrin vines, starblades, or storms
 	flags.mon_moving = TRUE;
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){

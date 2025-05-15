@@ -1309,10 +1309,10 @@ char *str;
 int *color, *attr;
 {
     struct menucoloring *tmpmc;
-	extern struct hashmap_s itemmap;
+	extern struct hashmap_s *itemmap;
 	struct menucolor_attribs *stored;
-	if (iflags.use_menu_color){
-		stored = (struct menucolor_attribs *)hashmap_get(&itemmap, str, strlen(str));
+	if (itemmap && iflags.use_menu_color){
+		stored = (struct menucolor_attribs *)hashmap_get(itemmap, str, strlen(str));
 		if(stored != NULL){
 			if(stored->hit){
 				*color = stored->color;
@@ -1337,19 +1337,29 @@ int *color, *attr;
 			{
 				*color = tmpmc->color;
 				*attr = tmpmc->attr;
-				stored = malloc(sizeof(struct menucolor_attribs));
-				stored->color = tmpmc->color;
-				stored->attr = tmpmc->attr;
-				stored->lastused = moves;
-				stored->hit = TRUE;
-				hashmap_put(&itemmap, str, strlen(str), stored);
+				if(itemmap){
+					int keylen = strlen(str);
+					stored = malloc(sizeof(struct menucolor_attribs));
+					stored->key = malloc(keylen);
+					memcpy((void *)stored->key, str, keylen);
+					stored->color = tmpmc->color;
+					stored->attr = tmpmc->attr;
+					stored->lastused = moves;
+					stored->hit = TRUE;
+					hashmap_put(itemmap, stored->key, keylen, stored);
+				}
 				return TRUE;
 			}
 		}
-		stored = malloc(sizeof(struct menucolor_attribs));
-		stored->lastused = moves;
-		stored->hit = FALSE;
-		hashmap_put(&itemmap, str, strlen(str), stored);
+		if(itemmap){
+			int keylen = strlen(str);
+			stored = malloc(sizeof(struct menucolor_attribs));
+			stored->key = malloc(keylen);
+			memcpy((void *)stored->key, str, keylen);
+			stored->lastused = moves;
+			stored->hit = FALSE;
+			hashmap_put(itemmap, stored->key, keylen, stored);
+		}
 	}
     return FALSE;
 }

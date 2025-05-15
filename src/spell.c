@@ -1426,7 +1426,7 @@ spiritLets(lets, respect_timeout)
 				if(u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1)) continue;
 				if(u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2)) continue;
 				if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
-					if(u.yog_sothoth_credit >= 50)
+					if(u.yog_sothoth_credit >= 50 && (u.specialSealsActive & SEAL_YOG_SOTHOTH) && !YOG_BAD)
 						Sprintf(lets, "%c", i<26 ? 'a'+(char)i : 'A'+(char)(i-26));
 				}
 				else if(spirit_powers[u.spiritPOrder[i]].owner == u.spirit[s] && (u.spiritPColdowns[u.spiritPOrder[i]] < monstermoves || !respect_timeout)){
@@ -1440,7 +1440,7 @@ spiritLets(lets, respect_timeout)
 			if(u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1)) continue;
 			if(u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2)) continue;
 			if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
-				if(u.yog_sothoth_credit >= 50)
+				if(u.yog_sothoth_credit >= 50 && (u.specialSealsActive & SEAL_YOG_SOTHOTH) && !YOG_BAD)
 					Sprintf(lets, "%c", i<26 ? 'a'+(char)i : 'A'+(char)(i-26));
 			}
 			else if(((spirit_powers[u.spiritPOrder[i]].owner & u.sealsActive &&
@@ -1505,6 +1505,11 @@ update_externally_granted_spells()
 					spellext(i) = TRUE;
 			}
 		}
+	}
+	/* Not externally granted, but it fits here anyway */
+	if (Role_if(PM_WIZARD) && u.ulevel >= 14){
+		if (urole.spelspec) exspells[n++] = urole.spelspec;
+		if (urace.spelspec) exspells[n++] = urace.spelspec;
 	}
 
 	/* mark sp_ext, and add them to the book if necessary */
@@ -4835,7 +4840,26 @@ dothrowspell:
 					dam = d(dice, 8) + flat + rnd(u.ulevel);
 					if(Spellboost) dam *= 2;
 					if(u.ukrau_duration) dam *= 1.5;
-					explode(u.dx, u.dy, spell_adtype(pseudo->otyp), 0, dam, color, rad);
+					long spell_flags = 0L;
+					int adtype = spell_adtype(pseudo->otyp);
+					if(GoatSpell && !GOAT_BAD){
+						spell_flags |= GOAT_SPELL;
+						switch(adtype){
+							case AD_FIRE:
+								adtype = AD_EFIR;
+							break;
+							case AD_COLD:
+								adtype = AD_ECLD;
+							break;
+							case AD_ELEC:
+								adtype = AD_EELC;
+							break;
+							case AD_ACID:
+								adtype = AD_EACD;
+							break;
+						}
+					}
+					explode_spell(u.dx, u.dy, adtype, 0, dam, color, rad, spell_flags);
 				}
 			}
 		}
@@ -5128,7 +5152,7 @@ int respect_timeout;
 						if (u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 						if (u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 						if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
-							if(u.yog_sothoth_credit >= 50){
+							if(u.yog_sothoth_credit >= 50 && (u.specialSealsActive & SEAL_YOG_SOTHOTH) && !YOG_BAD){
 								Sprintf1(buf, spirit_powers[u.spiritPOrder[i]].name);
 								any.a_int = u.spiritPOrder[i] + 1;	/* must be non-zero */
 								add_menu(tmpwin, NO_GLYPH, &any,
@@ -5172,7 +5196,7 @@ int respect_timeout;
 				if (u.spiritPOrder[i] == PWR_MAD_BURST && !check_mutation(YOG_GAZE_1) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 				if (u.spiritPOrder[i] == PWR_UNENDURABLE_MADNESS && !check_mutation(YOG_GAZE_2) && (action == SPELLMENU_CAST || action == SPELLMENU_DESCRIBE)) continue;
 				if(u.spiritPOrder[i] == PWR_CONTACT_YOG_SOTHOTH){
-					if(u.yog_sothoth_credit >= 50 && (u.specialSealsActive & SEAL_YOG_SOTHOTH)){
+					if(u.yog_sothoth_credit >= 50 && (u.specialSealsActive & SEAL_YOG_SOTHOTH) && !YOG_BAD){
 						Sprintf1(buf, spirit_powers[u.spiritPOrder[i]].name);
 						any.a_int = u.spiritPOrder[i] + 1;	/* must be non-zero */
 						add_menu(tmpwin, NO_GLYPH, &any,
@@ -6392,8 +6416,8 @@ int spell;
 	}
 
 	//Parasitology, uh, upgrades
+	chance += (u.mm_up + u.explosion_up + u.cuckoo)*5;
 	if(active_glyph(LUMEN)){
-		chance += (u.mm_up + u.explosion_up + u.cuckoo)*5;
 		if(skill == P_ENCHANTMENT_SPELL)
 			chance += u.cuckoo*5;
 	}
