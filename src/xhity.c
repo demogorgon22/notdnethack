@@ -14799,6 +14799,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && Insight >= 20 && magr && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
 			poisons |= OPOISON_DIRE;
+		if (Insight >= 40 && poisonedobj->oartifact == ART_LOLTH_S_FANG)
+			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
