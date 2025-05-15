@@ -14655,24 +14655,6 @@ do_passive_attacks()
 	if(Invulnerable)
 		return;
 
-	if(check_mutation(SHUB_TENTACLES)){
-		//Note: If we have the mutation we know that we have the madness, and if we somehow don't, well...
-		//Also, only able to control the attacks if you have the mutation
-		if(!u.uno_auto_attacks && roll_generic_madness(FALSE) && adjacent_mon()){
-			if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG)
-				morehungry(d(4,4)*get_uhungersizemod());
-			dogoat();
-		}
-	}
-	else if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
-		if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
-			pline("Lashing tentacles erupt from your brain!");
-			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
-			morehungry(d(4,4)*get_uhungersizemod());
-		}
-		dogoat();
-	}
-	
 	if(!u.uno_auto_attacks){
 		if(is_goat_tentacle_mtyp(youracedata))
 			dogoat();
@@ -14695,6 +14677,24 @@ do_passive_attacks()
 		if(check_rot(ROT_STING))
 			dorotsting(&youmonst);
 	}
+	if(check_mutation(SHUB_TENTACLES)){
+		//Note: If we have the mutation we know that we have the madness, and if we somehow don't, well...
+		//Also, only able to control the attacks if you have the mutation
+		if(!u.uno_auto_attacks && roll_generic_madness(FALSE) && adjacent_mon()){
+			if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG)
+				morehungry(d(4,4)*get_uhungersizemod());
+			dogoat();
+		}
+	}
+	else if(roll_madness(MAD_GOAT_RIDDEN) && adjacent_mon()){
+		if(!ClearThoughts && youracedata->mtyp != PM_DARK_YOUNG){
+			pline("Lashing tentacles erupt from your brain!");
+			losehp(max(1,(Upolyd ? ((d(4,4)*u.mh)/u.mhmax) : ((d(4,4)*u.uhp)/u.uhpmax))), "the black mother's touch", KILLED_BY);
+			morehungry(d(4,4)*get_uhungersizemod());
+		}
+		dogoat();
+	}
+	
 	//Note: The player never gets Eladrin vines, starblades, or storms
 	flags.mon_moving = TRUE;
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
