@@ -822,17 +822,44 @@ smithing_object(struct obj *obj)
 		else return;
 		switch(selection){
 			case MELT_DOWN:{
+				struct obj *on;
+				for(struct obj *o2 = obj->cobj; o2; o2 = on){
+					on = o2->nobj;
+					obj_extract_and_unequip_self(o2);
+					dropy(o2);
+				}
+				if(obj->otyp == CHURCH_HAMMER){
+					obj->otyp = CHURCH_BRICK;
+					fix_object(obj);
+				}
+				if(obj->otyp == CHURCH_BLADE){
+					obj->otyp = CHURCH_SHEATH;
+					fix_object(obj);
+				}
+				int mat1 = obj->obj_material;
+				int quan1 = obj->owt;
+				int mat2 = 0;
+				int quan2 = 0;
+				if((obj->otyp == CANE || obj->otyp == WHIP_SAW) && obj->obj_material != obj->ovar1_alt_mat){
+					mat2 = obj->ovar1_alt_mat;
+					obj->ovar1_alt_mat = obj->obj_material;
+					fix_object(obj);
+					quan1 = obj->owt/2;
+					obj->ovar1_alt_mat = mat2;
+					obj->obj_material = mat2;
+					fix_object(obj);
+					quan2 = obj->owt/2;
+				}
 				struct obj *ingots = mksobj(INGOT, MKOBJ_NOINIT);
-				ingots->quan = obj->owt;
+				ingots->quan = quan1;
 				ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = TRUE;
 				ingots->bknown = TRUE;
 				if(P_SKILL(P_SMITHING) >= P_EXPERT){
 					ingots->blessed = obj->blessed;
 					ingots->cursed = obj->cursed;
 				}
-				set_material_gm(ingots, obj->obj_material);
+				set_material_gm(ingots, mat1);
 				fix_object(ingots);
-				useupall(obj);
 				hold_another_object(ingots, u.uswallow ?
 						   "Oops!  %s out of your reach!" :
 						(Weightless ||
@@ -843,6 +870,29 @@ smithing_object(struct obj *obj)
 							   "Oops!  %s to the floor!",
 							   The(aobjnam(ingots, "slip")),
 							   (const char *)0);
+				if(quan2 > 0){
+					struct obj *ingots = mksobj(INGOT, MKOBJ_NOINIT);
+					ingots->quan = quan2;
+					ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = TRUE;
+					ingots->bknown = TRUE;
+					if(P_SKILL(P_SMITHING) >= P_EXPERT){
+						ingots->blessed = obj->blessed;
+						ingots->cursed = obj->cursed;
+					}
+					set_material_gm(ingots, mat2);
+					fix_object(ingots);
+					hold_another_object(ingots, u.uswallow ?
+							   "Oops!  %s out of your reach!" :
+							(Weightless ||
+							 Is_waterlevel(&u.uz) ||
+							 levl[u.ux][u.uy].typ < IRONBARS ||
+							 levl[u.ux][u.uy].typ >= ICE) ?
+								   "Oops!  %s away from you!" :
+								   "Oops!  %s to the floor!",
+								   The(aobjnam(ingots, "slip")),
+								   (const char *)0);
+				}
+				useupall(obj);
 				exercise(A_STR, TRUE);
 				exercise(A_STR, TRUE);
 				exercise(A_STR, TRUE);
