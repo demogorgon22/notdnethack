@@ -1249,61 +1249,73 @@ smithing_object(struct obj *obj)
 			break;
 			case EXTRACT_OPROP:{
 				int count_energy = 0;
-				long latest_oprop = 0;
-				long latest_energy = 0;
+#define MAX_ENERGY_OPROPS	5
+				long energy_oprops[MAX_ENERGY_OPROPS+1] = {0};
+				long energy_list[MAX_ENERGY_OPROPS+1] = {0};
+				char *energy_str[MAX_ENERGY_OPROPS+1] = {0};
 				if(check_oprop(obj, OPROP_FIREW) && !is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_FIREW;
+					energy_str[count_energy] = "fire";
+					energy_list[count_energy] = OPROP_FIREW;
 					count_energy++;
-					latest_oprop = OPROP_FIREW;
-					latest_energy = OPROP_FIREW;
 				}
 				else if(check_oprop(obj, OPROP_LESSER_FIREW) && is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_LESSER_FIREW;
+					energy_str[count_energy] = "fire";
+					energy_list[count_energy] = OPROP_FIREW;
 					count_energy++;
-					latest_oprop = OPROP_LESSER_FIREW;
-					latest_energy = OPROP_FIREW;
 				}
 
 				if(check_oprop(obj, OPROP_COLDW) && !is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_COLDW;
+					energy_str[count_energy] = "cold";
+					energy_list[count_energy] = OPROP_COLDW;
 					count_energy++;
-					latest_oprop = OPROP_COLDW;
-					latest_energy = OPROP_COLDW;
 				}
 				else if(check_oprop(obj, OPROP_LESSER_COLDW) && is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_LESSER_COLDW;
+					energy_str[count_energy] = "cold";
+					energy_list[count_energy] = OPROP_COLDW;
 					count_energy++;
-					latest_oprop = OPROP_LESSER_COLDW;
-					latest_energy = OPROP_COLDW;
 				}
 
 				if(check_oprop(obj, OPROP_ELECW) && !is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_ELECW;
+					energy_str[count_energy] = "electricity";
+					energy_list[count_energy] = OPROP_ELECW;
 					count_energy++;
-					latest_oprop = OPROP_ELECW;
-					latest_energy = OPROP_ELECW;
 				}
 				else if(check_oprop(obj, OPROP_LESSER_ELECW) && is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_LESSER_ELECW;
+					energy_str[count_energy] = "electricity";
+					energy_list[count_energy] = OPROP_ELECW;
 					count_energy++;
-					latest_oprop = OPROP_LESSER_ELECW;
-					latest_energy = OPROP_ELECW;
 				}
 
 				if(check_oprop(obj, OPROP_ACIDW) && !is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_ACIDW;
+					energy_str[count_energy] = "acid";
+					energy_list[count_energy] = OPROP_ACIDW;
 					count_energy++;
-					latest_oprop = OPROP_ACIDW;
-					latest_energy = OPROP_ACIDW;
 				}
 				else if(check_oprop(obj, OPROP_LESSER_ACIDW) && is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_LESSER_ACIDW;
+					energy_str[count_energy] = "acid";
+					energy_list[count_energy] = OPROP_ACIDW;
 					count_energy++;
-					latest_oprop = OPROP_LESSER_ACIDW;
-					latest_energy = OPROP_ACIDW;
 				}
 
 				if(check_oprop(obj, OPROP_MAGCW) && !is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_MAGCW;
+					energy_str[count_energy] = "magic";
+					energy_list[count_energy] = OPROP_MAGCW;
 					count_energy++;
-					latest_oprop = OPROP_MAGCW;
-					latest_energy = OPROP_MAGCW;
 				}
 				else if(check_oprop(obj, OPROP_LESSER_MAGCW) && is_full_insight_weapon(obj)){
+					energy_oprops[count_energy] = OPROP_LESSER_MAGCW;
+					energy_str[count_energy] = "magic";
+					energy_list[count_energy] = OPROP_MAGCW;
 					count_energy++;
-					latest_oprop = OPROP_LESSER_MAGCW;
-					latest_energy = OPROP_MAGCW;
 				}
 
 				// Didn't have a smith upgrade :(
@@ -1321,8 +1333,31 @@ smithing_object(struct obj *obj)
 				if(count_energy == 0)
 					break;
 				else if(count_energy > 1){
+					winid tmpwin;
+					anything any;
+					any.a_void = 0;         /* zero out all bits */
+					menu_item *selected;
+					char ch = 'a';
+					tmpwin = create_nhwindow(NHW_MENU);
+					start_menu(tmpwin);
+					for(int i = 0; i < count_energy; i++){
+						any.a_int = i;
+						add_menu(tmpwin, NO_GLYPH, &any , ch++, 0, ATR_NONE,
+							 energy_str[i], MENU_UNSELECTED);
+					}
+					end_menu(tmpwin, "Energy types:");
+					n = select_menu(tmpwin, PICK_ONE, &selected);
+					destroy_nhwindow(tmpwin);
+					if(n <= 0){
+						break;
+					}
+					count_energy = selected[0].item.a_int;
+					free(selected);
 				}
-				remove_oprop(obj, latest_oprop);
+				else {
+					count_energy = 0;
+				}
+				remove_oprop(obj, energy_oprops[count_energy]);
 				// if(latest_oprop == OPROP_HOLYW)
 					// remove_oprop(obj, OPROP_UNHYW);
 				// else if(latest_oprop == OPROP_LESSER_HOLYW)
@@ -1330,22 +1365,22 @@ smithing_object(struct obj *obj)
 				remove_oprop(obj, OPROP_INSTW);
 				remove_oprop(obj, OPROP_SMITHU);
 				struct obj *crystal = mksobj(CRYSTAL, MKOBJ_NOINIT);
-				add_oprop(crystal, latest_energy);
+				add_oprop(crystal, energy_list[count_energy]);
 
 				set_material_gm(crystal, GEMSTONE);
-				if(latest_energy == OPROP_FIREW){
+				if(energy_list[count_energy] == OPROP_FIREW){
 					set_submat(crystal, RUBY);
 				}
-				else if(latest_energy == OPROP_COLDW){
+				else if(energy_list[count_energy] == OPROP_COLDW){
 					set_submat(crystal, DIAMOND);
 				}
-				else if(latest_energy == OPROP_ELECW){
+				else if(energy_list[count_energy] == OPROP_ELECW){
 					set_submat(crystal, TOPAZ);
 				}
-				else if(latest_energy == OPROP_ACIDW){
+				else if(energy_list[count_energy] == OPROP_ACIDW){
 					set_submat(crystal, EMERALD);
 				}
-				else if(latest_energy == OPROP_MAGCW){
+				else if(energy_list[count_energy] == OPROP_MAGCW){
 					set_submat(crystal, SAPPHIRE);
 				}
 				// else if(latest_energy == OPROP_HOLYW){
