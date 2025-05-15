@@ -198,6 +198,9 @@ register struct obj *obj;
 	if(Race_if(PM_INCANTIFIER)) return incantifier_edible(obj);
 	if(magivorous(youracedata)) return incantifier_edible(obj);
 	if(uclockwork) return uclockwork_edible(obj);
+	if(obj->oclass != FOOD_CLASS && obj->oartifact)
+		return FALSE; /*Just skip all artifacts*/
+	
 	if(Role_if(PM_ANACHRONONAUT) && !(Upolyd || Race_if(PM_VAMPIRE))) 
 		return ((obj->otyp >= K_RATION && obj->otyp <= TIN) || (obj->otyp >= SLIME_MOLD && obj->otyp <= TIN && 
 			(obj->obj_material == VEGGY || obj->obj_material == FLESH))); /*Processed foods only*/
