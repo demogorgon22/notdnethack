@@ -1874,9 +1874,9 @@ misc_levelport:
 	    onquest();
 	assign_level(&u.uz0, &u.uz); /* reset u.uz0 */
 
-	//Restock
-	int spawn_freq = random_frequency();
+	//Restock -- Dummied out for now, I'm not confident this won't play horribly without further tuning
 	long timeline = monstermoves;
+	/*int spawn_freq = random_frequency();
 	if(Role_if(PM_ANACHRONONAUT) && Infuture)
 		timeline = quest_status.time_doing_quest;
 	if(spawn_freq && spawn_freq <= 70 && timeline > level.lastmove){
@@ -1895,7 +1895,7 @@ misc_levelport:
 				}
 			}
 		}
-	}
+	}*/
 	level.lastmove = timeline;
 #ifdef INSURANCE
 	save_currentstate();
