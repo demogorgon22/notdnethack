@@ -694,6 +694,10 @@ struct permonst *pa; /* permonst of the attacker (used for disease) */
 		 * call mondied, not killed, if it's not your blast
 		 */
 			int mdam = dam;
+			//Explosions deal extra damage to larger monsters
+			if(mtmp->data->msize > MZ_MEDIUM){
+				mdam = (mdam * (mtmp->data->msize))/MZ_MEDIUM;
+			}
 
 			if (resist(mtmp, olet, 0, FALSE)) {
 			    if (!silent && cansee(xi,yi))

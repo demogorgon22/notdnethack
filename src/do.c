@@ -1874,6 +1874,28 @@ misc_levelport:
 	    onquest();
 	assign_level(&u.uz0, &u.uz); /* reset u.uz0 */
 
+	//Restock
+	int spawn_freq = random_frequency();
+	long timeline = monstermoves;
+	if(Role_if(PM_ANACHRONONAUT) && Infuture)
+		timeline = quest_status.time_doing_quest;
+	if(spawn_freq && spawn_freq <= 70 && timeline > level.lastmove){
+		int delta = timeline - level.lastmove;
+		if(delta >= spawn_freq){
+			int count = 0;
+			for(struct monst *mtmp = fmon; mtmp && count < 10; mtmp = mtmp->nmon){
+				if(!mtmp->mpeaceful)
+					count++;
+			}
+			for (delta = delta/spawn_freq; delta > 0 && count < 10; delta--){
+				if(rn2(3)){
+					spawn_random_monster();
+					count++;
+				}
+			}
+		}
+	}
+	level.lastmove = timeline;
 #ifdef INSURANCE
 	save_currentstate();
 #endif

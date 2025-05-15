@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "hashmap.h"
 
 int NDECL((*afternmv));
 int NDECL((*occupation));
@@ -170,6 +171,8 @@ NEARDATA struct permonst upermonst = DUMMY;
 NEARDATA struct flag flags = DUMMY;
 NEARDATA struct instance_flags iflags = DUMMY;
 NEARDATA struct you u = DUMMY;
+
+struct hashmap_s itemmap;
 
 /* objects that have been stored in a magic chest */
 NEARDATA struct obj *magic_chest_objs[10] = {0};
