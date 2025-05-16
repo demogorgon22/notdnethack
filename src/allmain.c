@@ -4151,6 +4151,9 @@ boolean new_game;	/* false => restoring an old game */
 	if(Race_if(PM_SALAMANDER)){
 		pline("Use #monster to secrete and throw lava.");
 	} 
+	if(Race_if(PM_LEPRECHAUN)){
+		pline("Use #monster to use your leprechaun powers.");
+	} 
 	if(Role_if(PM_MONK)){
 		pline("Use #style to change your combat style.");
 	}	
