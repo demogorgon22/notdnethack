@@ -5,7 +5,7 @@ PYTHON = python3
 
 # gprof flags
 # CFLAGS = -pg
-CFLAGS = -g3 -std=gnu17
+CFLAGS = -g3
 
 # gprof flags
 # LDFLAGS += -pg -Wno-knr-promoted-parameter
