@@ -1058,7 +1058,7 @@ int oldlevel, newlevel;
 	}
 	if (Role_if(PM_WIZARD) && newlevel >= 14 && oldlevel < 14){
 		/* Actually learning the spell is handled in update_externally_granted_spells() */
-		boolean new_spell_role, new_spell_race = FALSE;
+		boolean new_spell_role = FALSE, new_spell_race = FALSE;
 		if (urole.spelspec) {
 			for (int i = 0; i < MAXSPELL; i++) {
 				if (spellid(i) == urole.spelspec && !spl_book[i].sp_know) {
