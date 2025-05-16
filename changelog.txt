@@ -180,6 +180,8 @@ Leprechaun race
 	Unarmed attacks steal gold
 	Special spell detect treasure
 	Natural fast energy regen getting a flat half a pw per turn bonus
+	#monster detect gold
+	#monster warp to gold or monster carrying gold, bypassing tele restrictions
 
 Yuki-Onna changes
 	Increase hp gain SLIGHTLY
