@@ -28,6 +28,7 @@ CPPFLAGS += -Wno-unused-label
 CPPFLAGS += -Wno-unknown-pragmas
 CPPFLAGS += -Wno-missing-braces
 CPPFLAGS += -Wno-format-overflow
+CPPFLAGS += -std=gnu17
 
 .DELETE_ON_ERROR:
 

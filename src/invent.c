@@ -1385,7 +1385,8 @@ register const char *let,*word;
 		      otyp != POWER_ARMOR &&
 			  otyp != GNOMISH_POINTY_HAT &&
 			  otmp->oartifact != ART_AEGIS &&
-			  otmp->oartifact != ART_RED_CORDS_OF_ILMATER
+			  otmp->oartifact != ART_RED_CORDS_OF_ILMATER &&
+			  otmp->oartifact != ART_GREAT_CLAWS_OF_URDLEN
 			  ) || 
 		     (otmp->oclass == GEM_CLASS && !is_graystone(otmp) && !(otmp->otyp == ROCK)
 				&& otyp != CATAPSI_VORTEX && otyp != ANTIMAGIC_RIFT
