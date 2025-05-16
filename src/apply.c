@@ -10834,7 +10834,7 @@ doapply()
 	if (carrying(DWARVISH_HELM) || carrying(LANTERN_PLATE_MAIL) ||
 		carrying(GNOMISH_POINTY_HAT) || carrying(DROVEN_CLOAK) ||
 		carrying_art(ART_AEGIS) || carrying_art(ART_RED_CORDS_OF_ILMATER) ||
-		carrying(EILISTRAN_ARMOR))
+		carrying(EILISTRAN_ARMOR) || carrying_art(ART_GREAT_CLAWS_OF_URDLEN))
 		add_class(class_list, ARMOR_CLASS);
 	if(carrying_applyable_ring()){
 		add_class(class_list, RING_CLASS);
