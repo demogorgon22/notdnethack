@@ -2631,7 +2631,7 @@ karemade:
 						}
 					}
 				}
-				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(98)+2 < Insight){
+				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(88)+12 < Insight){
 					mtmp = makemon(&mons[PM_RAGE_WALKER], 0, 0, MM_ADJACENTOK);
 					if(mtmp){
 						make_rage_walker_polts(u.uz.rage+3);
@@ -2643,14 +2643,15 @@ karemade:
 					int sphere[] = {PM_FREEZING_SPHERE, PM_FLAMING_SPHERE, PM_SHOCKING_SPHERE};
 					for(i = d(3,3); i > 0; i--) makemon(&mons[ROLL_FROM(sphere)], 0, 0, NO_MM_FLAGS);
 				}
-				else if(u.uz.rage > 0 && !rn2(u.uz.rage))
-					u.uz.rage--;
 			}
 			if(Infuture && !(Is_qstart(&u.uz) && !Race_if(PM_ANDROID)) && !rn2(35)){
 				struct monst* mtmp = makemon(&mons[PM_SEMBLANCE], rn1(COLNO-3,2), rn1(ROWNO-3,2), MM_ADJACENTOK);
 				//"Where stray illuminations from the Far Realm leak onto another plane, matter stirs at the beckoning of inexplicable urges before burning to ash."
 				if(mtmp && canseemon(mtmp)) pline("The base matter of the world stirs at the beckoning of inexplicable urges, dancing with a semblance of life.");
 			}
+			/* Rage-walker rage quickly fades. */
+			if(u.uz.rage > 0 && !rn2(u.uz.rage+9))
+				u.uz.rage--;
 
 		    /* reset summon monster block. */
 			u.summonMonster = FALSE;
