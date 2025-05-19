@@ -1672,10 +1672,7 @@ struct monst *mon;
 		mmove = max(mmove-(u.ulevel/10+1),1);
 	}
 	if(In_fog_cloud(mon)) mmove = max(mmove/3, 1);
-	if(mon->mfell > 0){
-		mmove = (mmove + mon->mfell)/mon->mfell;
-		mon->mfell = 0;
-	}
+	mon->mfell = 0;
 	return mmove;
 }
 

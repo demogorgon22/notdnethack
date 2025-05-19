@@ -16076,9 +16076,17 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 				else {
 					mdef->mfell += 1;
+					mdef->movement -= min_ints(6, mdef->movement/(mdef->mfell+1));
 					if(!mdef->mwounded_legs && !rn2(20)){
 						mdef->mwounded_legs = 1;
 						pline("%s %s is injured in the fighting!", s_suffix(Monnam(mdef)), mbodypart(mdef, LEG));
+						struct weapon_dice wdice;
+						/* grab the weapon dice from dmgval_core */
+						dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+						/* add to the tratdmg counter */
+						tratdmg += weapon_dmg_roll(&wdice, youdef);
+						if(youagr)
+							tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 					}
 				}
 			}
