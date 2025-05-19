@@ -4772,7 +4772,7 @@ printAttacks(buf, ptr)
 		"holy energy",			/*145*/
 		"unholy energy",		/*146*/
 		"level-based damage",	/*147*/
-		"severe poison",		/*148*/
+		"[[severe poison]]",	/*148*/
 		"corrupted holy energy",/*149*/
 		"magic-item-stealing",	/*150*/
 		"byakhee larvae",		/*151*/
@@ -4783,6 +4783,8 @@ printAttacks(buf, ptr)
 		"drain bonus HP",		/*156*/
 		"push",					/*157*/
 		"moon-entity lick",		/*158*/
+		"[[disease]] and [[poison]]",	/*159*/
+		"[[orc spawn]]",		/*160*/
 		// "[[ahazu abduction]]",	/**/
 		"[[stone choir]]",		/* */
 		"[[water vampire]]",	/* */
@@ -4845,7 +4847,7 @@ printAttacks(buf, ptr)
 				damageKey[((int)attk->adtyp)]
 			);
 		}
-		if(attk->lev_req > 0 || attk->ins_req > 0){
+		if(attk->lev_req > 0 || attk->ins_req > 0 || attk->san_req != 0){
 			Sprintf(eos(buf), " (");
 				if(attk->lev_req > 0){
 					Sprintf(eos(buf), "level %d+", attk->lev_req);
