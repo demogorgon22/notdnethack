@@ -2772,7 +2772,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		&& !check_subout(subout, SUBOUT_ROT_STING)
 	) {
 		attk->aatyp = AT_STNG;
-		attk->adtyp = AD_DISE;
+		attk->adtyp = AD_PFBT;
 		attk->damn = 1;
 		attk->damd = 4;
 		fromlist = FALSE;

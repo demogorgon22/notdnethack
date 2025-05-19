@@ -6885,7 +6885,7 @@ void
 dorotsting(struct monst *magr)
 {
 	struct attack * attk;
-	struct attack symbiote = { AT_STNG, AD_DISE, 1, 4 };
+	struct attack symbiote = { AT_STNG, AD_PFBT, 1, 4 };
 	dorotattack(magr, &symbiote, 1, 1);
 }
 
