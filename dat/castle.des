@@ -984,7 +984,7 @@ MONSTER:';',"shark",(10,18)
 MONSTER:';',"shark",(51,00)
 MONSTER:';',"shark",(57,18)
 # The throne room and the court monsters
-# MONSTER:'L',"master lich",(05,18),asleep,hostile
+# MONSTER:'L',"master lich",(44,12),asleep,hostile
 
 MONSTER:monster[0],random,(34,11)
 MONSTER:monster[1],random,(36,11)
