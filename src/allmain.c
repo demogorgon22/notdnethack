@@ -3985,6 +3985,15 @@ newgame()
 				otmp = oname(otmp, artilist[inher_arti].name);
 				fully_identify_obj(otmp);
 				expert_weapon_skill(weapon_type(otmp));
+				if (Race_if(PM_LEPRECHAUN)) {
+					int gold = otmp->owt * 100;
+#ifndef GOLDOBJ
+					u.ugold += gold;
+					u.ugold0 += gold;
+#else
+					u.umoney0 += gold;
+#endif
+				}
 				otmp = hold_another_object(otmp, "Oops!  %s to the floor!",
 						   The(aobjnam(otmp, "slip")), (const char *)0);
 			} else {
