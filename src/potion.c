@@ -1404,6 +1404,21 @@ as_extra_healing:
 		else
 			pline("Magical energies course through your body.");
 		}break;
+	case POT_MIDAS:
+		if (!Golded && !(Stone_resistance && youracedata->mtyp != PM_STONE_GOLEM)
+			&& !is_gold(youracedata)
+			&& !(poly_when_golded(youracedata) && polymon(PM_GOLD_GOLEM))
+			) {
+			Golded = 9;
+			delayed_killer = "the draught of Midas";
+			killer_format = KILLED_BY;
+			You("are turning to gold!");
+		} else if (uclockwork && u.clk_material != GOLD) {
+			u.clk_material = GOLD;
+			You("turn to gold.");
+		} else
+			You_feel("shiny inside.");
+		break;
 	case POT_POLYMORPH:
 		You_feel("a little %s.", Hallucination ? "normal" : "strange");
 		if (!Unchanging) polyself(FALSE);
@@ -1661,6 +1676,9 @@ boolean your_fault;
 			delayed_killer = "the draught of Midas";
 			killer_format = KILLED_BY;
 			You("are turning to gold!");
+		} else if (uclockwork && u.clk_material != GOLD) {
+			u.clk_material = GOLD;
+			You("turn to gold.");
 		} else
 			You_feel("shiny inside.");
 		break;
