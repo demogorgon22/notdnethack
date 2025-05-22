@@ -2946,10 +2946,16 @@ int atr;
 			if (check_oprop(otmp, OPROP_OCLTW) || (Insight > 0 && check_oprop(otmp, OPROP_GSSDW)))
 				mod = 0.5;
 
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod *= 0.5; //2x->1x, 1x->.5x, etc.
+
 			return mod;
 		case A_DEX:
 			if (is_rakuyo(otmp))
 				return 2; // otherwise gets caught by rapiers
+
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
 
 			if (otmp->oartifact == ART_LIFEHUNT_SCYTHE || otmp->oartifact == ART_YORSHKA_S_SPEAR ||
 				otmp->oartifact == ART_FRIEDE_S_SCYTHE)
@@ -2963,6 +2969,9 @@ int atr;
 		case A_CON:
 			return mod;
 		case A_INT:
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
+
 			if (Insight > 0 && check_oprop(otmp, OPROP_GSSDW))
 				mod += 1;
 
@@ -2977,6 +2986,9 @@ int atr;
 
 			return mod;
 		case A_WIS:
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
+
 			if (otmp->oartifact == ART_YORSHKA_S_SPEAR)
 				mod += 1;
 
@@ -2991,6 +3003,9 @@ int atr;
 
 			return mod;
 		case A_CHA:
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
+
 			if (check_oprop(otmp, OPROP_ELFLW))
 				mod += 0.5;
 			return mod;
