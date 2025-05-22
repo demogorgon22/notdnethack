@@ -4167,7 +4167,7 @@ printSanAndInsight(){
 	struct permonst *ptr;
 	rfile = fopen_datafile("MonSanAndInsight.tab", "w", SCOREPREFIX);
 	if (rfile) {
-		Sprintf(pbuf,"Number\tName\tclass\tslain insight\tseen insight\tsanity\n");
+		Sprintf(pbuf,"Number\tName\tclass\tslain insight\tseen insight\tsanity\tlocation\tto-see\n");
 		fprintf(rfile, "%s", pbuf);
 		fflush(rfile);
 		for(j=0;j<NUMMONS;j++){
@@ -4175,11 +4175,18 @@ printSanAndInsight(){
 			pbuf[0] = 0;
 			if(!taxes_sanity(&mons[j]) && !yields_insight(&mons[j]))
 				continue;
-			Sprintf(pbuf,"%d	%s	%d	%d	%d	%d\n", 
+			Sprintf(pbuf,"%d	%s	%d	%d	%d	%d	%s	%d\n", 
 					j, mons[j].mname, mons[j].mlet,
 						yields_insight(&mons[j]) ? (monstr[j]/10 > 1 ? monstr[j]/10-1 : max(1, monstr[j]/10)) : 0, 
 						(yields_insight(&mons[j]) && monstr[j]/10 > 1) ? 1 : 0, 
-						taxes_sanity(&mons[j]) ? monstr[j] : 0);
+						taxes_sanity(&mons[j]) ? monstr[j] : 0,
+						mons[j].geno&G_UNIQ ? "Unique" :
+						mons[j].geno&G_HELL ? "Hell" :
+						mons[j].geno&G_PLANES ? "Planes" :
+						mons[j].geno&G_DEPTHS ? "Depths" :
+						!(mons[j].geno&G_NOGEN) ? "Main" :
+						"",
+						(int)G_C_INST(mons[j].geno));
 			fprintf(rfile, "%s", pbuf);
 			fflush(rfile);
 		}
