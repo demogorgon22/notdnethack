@@ -405,6 +405,10 @@ boolean opening; /* True: key, pick, artikey, or card; False: key, pick, or arti
                 if (!key && !o->oartifact)  key = o;
 				if (!artikey && o->oartifact)  artikey = o;
                 break;
+            case UNIVERSAL_KEY:
+                if (!key && !o->oartifact)  key = o;
+				if (!artikey && o->oartifact)  artikey = o;
+                break;
             case LOCK_PICK:
                 if (!pick) pick = o;
                 break;
@@ -742,6 +746,7 @@ doforce()		/* try to force a chest with your weapon */
 	    }
 	} else if(uwep->otyp == LOCK_PICK ||
 	    uwep->otyp == CREDIT_CARD ||
+	    uwep->otyp == UNIVERSAL_KEY ||
 	    uwep->otyp == SKELETON_KEY) {
 	    	return pick_lock(uwep,0,0,NULL);
 	/* not a lightsaber or lockpicking device*/
