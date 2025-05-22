@@ -4230,6 +4230,7 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 	/* validate that you have at least one binding to refresh */
 	if (((u.spirit[QUEST_SPIRIT] && u.spiritT[QUEST_SPIRIT] > 0)
 		||(u.spirit[ALIGN_SPIRIT] && u.spiritT[ALIGN_SPIRIT] > 0)
+		||(u.spirit[OTHER_SPIRIT] && u.spiritT[OTHER_SPIRIT] > 0)
 		|| u.sealCounts)
 	) {
 		Sprintf(buf, "continued companionship");
@@ -4460,6 +4461,8 @@ commune_with_yog()
 				u.spiritT[QUEST_SPIRIT] = min(u.spiritT[QUEST_SPIRIT]+1000, monstermoves + 5000);
 			if(u.spiritT[ALIGN_SPIRIT] > 0)
 				u.spiritT[ALIGN_SPIRIT] = min(u.spiritT[ALIGN_SPIRIT]+1000, monstermoves + 5000);
+			if(u.spiritT[OTHER_SPIRIT] > 0)
+				u.spiritT[OTHER_SPIRIT] = min(u.spiritT[OTHER_SPIRIT]+1000, monstermoves + 5000);
 			
 		}break;
 
