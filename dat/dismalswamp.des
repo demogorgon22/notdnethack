@@ -69,6 +69,9 @@ ENDMAP
 ALTAR:(06,02),law,shrine,"Kurtulmak"
 STAIR:(72,02),down
 STAIR:(09,12),up
+
+FORGE:(03,13)
+
 REGION:(00,00,74,18),lit,"ordinary"
 #DOOR:closed,(09,03)
 DOOR: open,(63,16)
