@@ -3050,7 +3050,8 @@ int x, y;
 {
 	struct obj *gold;
 	gold = mkgold_core(amount, x, y, TRUE);
-	if(uring_art(ART_RING_OF_THROR)){
+	// Not fixing this rn so sleep tight
+	/*if(uring_art(ART_RING_OF_THROR)){
 		if(gold->quan&0x1L){//Odd piles stay odd
 			if(rn2(2))
 				gold->quan = 2*gold->quan + 1;
@@ -3060,7 +3061,7 @@ int x, y;
 		else
 			gold->quan = 2*gold->quan;
 		gold->owt = weight(gold);
-	}
+	}*/
 	return gold;
 }
 
