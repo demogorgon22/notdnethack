@@ -632,6 +632,7 @@ smithing_object(struct obj *obj)
 
 		if(is_metallic(obj) && (obj->spe <= 0 || obj->spe < smithing_bonus())
 			&& check_oprop(obj, OPROP_NONE) && !obj->oartifact && !objects[obj->otyp].oc_unique
+			&& obj->otyp != INGOT
 		){
 			n++;
 			incntlet = 'm';
