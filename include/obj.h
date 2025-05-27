@@ -1124,7 +1124,15 @@ struct obj {
 			 || (otmp)->otyp == KATAR\
 			 ))\
 			 || (otmp)->otyp == WIND_AND_FIRE_WHEELS\
+			 || is_kensei_weapon(otmp)\
 			 )
+
+#define is_kensei_weapon(otmp) (Race_if(PM_GITHZERAI) ? (otmp)->obj_material == MERCURIAL :\
+								Race_if(PM_GITHYANKI) ? check_oprop((otmp), OPROP_GSSDW) : \
+								Race_if(PM_INCANTIFIER) ? (is_lightsaber(otmp) && litsaber(otmp)) : \
+								(otmp)->otyp == artilist[u.role_variant].otyp)
+
+#define is_returning_snare(obj)	((obj)->oartifact == ART_JIN_GANG_ZUO || (obj)->oartifact == ART_KENJAKU)
 
 /* multistriking() is 0-based so that only actual multistriking weapons return multistriking!=0 */
 #define multistriking(otmp)	(!(otmp) ? 0 : \

@@ -379,6 +379,21 @@ static struct trobj Knight[] = {
 	{ 0, 0, 0, 0, 0 }
 };
 
+static struct trobj Kensei[] = {
+#define KEN_WEAPON 0
+	{ LONG_SWORD, 1, WEAPON_CLASS, 1, 1 },
+	{ ROBE, 0, ARMOR_CLASS, 1, 1 },
+	{ SEDGE_HAT, 0, ARMOR_CLASS, 1, 1 },
+	{ BLINDFOLD, 0, TOOL_CLASS, 1, 1 },
+#define KEN_BOOK		4
+	{ UNDEF_TYP, UNDEF_SPE, SPBOOK_CLASS, 1, 1 },
+	{ GLOVES, 0, ARMOR_CLASS, 1, 1 },
+	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, 1 },
+	{ APPLE, 0, FOOD_CLASS, 5, UNDEF_BLESS },
+	{ ORANGE, 0, FOOD_CLASS, 5, UNDEF_BLESS },
+	{ 0, 0, 0, 0, 0 }
+};
+
 static struct trobj Monk[] = {
 	{ GLOVES, 2, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ ROBE, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
@@ -981,18 +996,18 @@ static const struct def_skill Skill_Droid_Ana[] = {
 };
 
 // static const struct def_skill Skill_Neu_Ana[] = {
-    // { FFORM_SHII_CHO, P_EXPERT },		{ FFORM_MAKASHI,  P_EXPERT },
-    // { FFORM_SORESU, P_EXPERT },			{ FFORM_ATARU,  P_SKILLED },
-    // { FFORM_DJEM_SO, P_EXPERT },		{ FFORM_SHIEN,  P_EXPERT },
-    // { FFORM_NIMAN, P_EXPERT },			{ FFORM_JUYO,  P_BASIC },
+    // { P_SHII_CHO, P_EXPERT },		{ P_MAKASHI,  P_EXPERT },
+    // { P_SORESU, P_EXPERT },			{ P_ATARU,  P_SKILLED },
+    // { P_DJEM_SO, P_EXPERT },		{ P_SHIEN,  P_EXPERT },
+    // { P_NIMAN, P_EXPERT },			{ P_JUYO,  P_BASIC },
     // { P_NONE, 0 }
 // };
 
 // static const struct def_skill Skill_Cha_Ana[] = {
-    // { FFORM_SHII_CHO, P_EXPERT },		{ FFORM_MAKASHI,  P_EXPERT },
-    // { FFORM_SORESU, P_SKILLED },		{ FFORM_ATARU,  P_EXPERT },
-    // { FFORM_DJEM_SO, P_EXPERT },		{ FFORM_SHIEN,  P_EXPERT },
-    // { FFORM_NIMAN, P_BASIC },			{ FFORM_JUYO,  P_EXPERT },
+    // { P_SHII_CHO, P_EXPERT },		{ P_MAKASHI,  P_EXPERT },
+    // { P_SORESU, P_SKILLED },		{ P_ATARU,  P_EXPERT },
+    // { P_DJEM_SO, P_EXPERT },		{ P_SHIEN,  P_EXPERT },
+    // { P_NIMAN, P_BASIC },			{ P_JUYO,  P_EXPERT },
     // { P_NONE, 0 }
 // };
 
@@ -1269,6 +1284,38 @@ static const struct def_skill Skill_Kni_Forms[] = {
     { P_GENERIC_KNIGHT_FORM, P_EXPERT },
     { P_NONE, 0 }
 };
+
+static struct def_skill Skill_Ken[] = {
+#define KENSEI_SKILL 0
+    { P_LONG_SWORD, P_EXPERT }, { P_QUARTERSTAFF, P_EXPERT },
+    { P_SHURIKEN, P_EXPERT },		{ P_DAGGER, P_EXPERT },
+	{ P_DART, P_EXPERT },			{ P_BOOMERANG, P_EXPERT },
+    { P_ATTACK_SPELL, P_SKILLED },
+    { P_HEALING_SPELL, P_EXPERT },	{ P_DIVINATION_SPELL, P_EXPERT },
+    { P_ENCHANTMENT_SPELL, P_BASIC },{ P_CLERIC_SPELL, P_EXPERT }, 
+    { P_ESCAPE_SPELL, P_EXPERT },	{ P_MATTER_SPELL, P_BASIC },
+    { P_MARTIAL_ARTS, P_GRAND_MASTER },	{ P_TWO_WEAPON_COMBAT, P_GRAND_MASTER },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Ken_GW[] = {
+    { P_GREAT_WEP, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Ken_LS[] = {
+    { P_GENERIC_KNIGHT_FORM, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Ken_SBR[] = {
+    { P_SHII_CHO, P_EXPERT },		{ P_MAKASHI,  P_EXPERT },
+    { P_SORESU, P_EXPERT },			{ P_ATARU,  P_EXPERT },
+    { P_DJEM_SO, P_EXPERT },		{ P_SHIEN,  P_EXPERT },
+    { P_NIMAN, P_EXPERT },			{ P_JUYO,  P_EXPERT },
+    { P_NONE, 0 }
+};
+
 
 static const struct def_skill Skill_Mon[] = {
     { P_QUARTERSTAFF, P_EXPERT },    { P_SPEAR, P_BASIC },
@@ -2336,6 +2383,95 @@ u_init()
 
 		skill_add(Skill_Kni_Forms);
 		break;
+	case PM_KENSEI:
+		u.umartial = TRUE;
+		if(Race_if(PM_HUMAN)){
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			skill_add(Skill_Ken_LS);
+			u.role_variant = ART_GREEN_DESTINY;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			}
+		}
+		else if(Race_if(PM_INCANTIFIER)){
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_SBR);
+			u.role_variant = ART_EPITAPH_OF_WONGAS;
+			Kensei[KEN_WEAPON].trotyp = ROD_OF_FORCE;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			}
+		}
+		else if(Race_if(PM_ELF)){
+			Skill_Ken[KENSEI_SKILL].skill = P_SCIMITAR;
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			u.role_variant = ART_RINGIL;
+			Kensei[KEN_WEAPON].trotyp = HIGH_ELVEN_WARSWORD;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLEEP; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_EXTRA_HEALING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_HASTE_SELF; break;
+			}
+		}
+		else if(Race_if(PM_DROW)){
+			Skill_Ken[KENSEI_SKILL].skill = P_TWO_HANDED_SWORD;
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			u.role_variant = ART_ANGUIREL;
+			Kensei[KEN_WEAPON].trotyp = DROVEN_GREATSWORD;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_SLEEP; break;
+			}
+		}
+		else if(Race_if(PM_GITHYANKI)){
+			Skill_Ken[KENSEI_SKILL].skill = P_TWO_HANDED_SWORD;
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			skill_add(Skill_Ken_LS);
+			u.role_variant = ART_SILVER_SKY;
+			Kensei[KEN_WEAPON].trotyp = TWO_HANDED_SWORD;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_FORCE_BOLT; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			}
+		}
+		else if(Race_if(PM_GITHZERAI)){
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			u.role_variant = ART_SKY_REFLECTED;
+			Kensei[KEN_WEAPON].trotyp = KATANA;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			}
+		}
+		else if(Race_if(PM_YUKI_ONNA)){
+			Skill_Ken[KENSEI_SKILL].skill = P_SABER;
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			skill_add(Skill_Ken_LS);
+			u.role_variant = ART_WINTER_REAPER;
+			Kensei[KEN_WEAPON].trotyp = RAPIER;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			}
+		}
+		knows_class(WEAPON_CLASS);
+		knows_class(ARMOR_CLASS);
+		ini_inv(Kensei);
+		break;
 	case PM_MONK:
 		u.umartial = TRUE;
 		switch (rn2(90) / 30) {
@@ -3114,6 +3250,7 @@ int otyp;
 #endif  /* CONVICT */
      case PM_HEALER:		skills = Skill_H; break;
      case PM_KNIGHT:		skills = Skill_K; break;
+     case PM_KENSEI:		skills = Skill_Ken; break;
      case PM_MONK:		skills = Skill_Mon; break;
      case PM_MADMAN:		skills = Skill_Mad; break;
 	 case PM_PIRATE:		skills = Skill_Pir; break;
@@ -3156,8 +3293,44 @@ register struct trobj *trop;
 				    break;
 				}
 			}
-			obj = mksobj(otyp, NO_MKOBJ_FLAGS);
-			set_material_gm(obj, objects[otyp].oc_material);
+			if(Role_if(PM_UNDEAD_HUNTER) && otyp == LONG_SWORD){
+				obj = mksartifact(ART_HOLY_MOONLIGHT_SWORD);
+				fully_identify_obj(obj);
+			}
+			else if(Role_if(PM_KENSEI)){
+				if(Race_if(PM_GITHYANKI) && otyp == TWO_HANDED_SWORD){
+					obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+					set_material_gm(obj, SILVER);
+					add_oprop(obj, OPROP_VORPW);
+					add_oprop(obj, OPROP_GSSDW);
+				}
+				else if(Race_if(PM_GITHZERAI) && otyp == KATANA){
+					obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+					set_material_gm(obj, MERCURIAL);
+				}
+				else if(Race_if(PM_HUMAN) && otyp == LONG_SWORD){
+					obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+					set_material_gm(obj, METAL);
+				}
+				else if(Race_if(PM_YUKI_ONNA) && otyp == RAPIER){
+					obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+					set_material_gm(obj, METAL);
+					add_oprop(obj, OPROP_LESSER_COLDW);
+				}
+				else if(Race_if(PM_DROW) && otyp == DROVEN_GREATSWORD){
+					obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+					obj->oerodeproof = TRUE;
+				}
+				else {
+					//All other items :(
+					obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+					set_material_gm(obj, objects[otyp].oc_material);
+				}
+			}
+			else {
+				obj = mksobj(otyp, NO_MKOBJ_FLAGS);
+				set_material_gm(obj, objects[otyp].oc_material);
+			}
 
 			if(obj->otyp == POT_BLOOD) 
 				obj->corpsenm = Role_if(PM_UNDEAD_HUNTER) ? youracedata->mtyp : PM_HUMAN;

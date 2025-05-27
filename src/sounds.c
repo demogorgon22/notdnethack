@@ -6373,6 +6373,12 @@ int p_skill;
 		if (p_skill == P_KNI_RUNIC)
 			return TRUE;
 	}
+	if (Role_if(PM_KENSEI)){
+		if (p_skill == P_KNI_SACRED)
+			return TRUE;
+		if (p_skill == P_KNI_ELDRITCH)
+			return TRUE;
+	}
 	return FALSE;
 }
 

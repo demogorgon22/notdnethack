@@ -1236,6 +1236,14 @@ int spiritseal;
 	    pline("But it makes no sound.");
 	    learno = TRUE;	/* help player figure out why */
 
+	} else if (obj->oartifact == ART_GOKOREI) {
+		if(!obj->cursed)
+			use_unicorn_horn(obj);
+		if(obj->age < monstermoves){
+			pleased(GOD_KANNON, TRUE, FALSE);
+			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+		}
+		else obj->age += Role_if(PM_PRIEST) ? (long) d(1,20) : (long) d(3,10);
 	} else if (ordinary) {
 #ifdef	AMIGA
 	    amii_speaker( obj, "ahdhgqeqdhehaqdqfhgw", AMII_MUFFLED_VOLUME );
@@ -4138,6 +4146,9 @@ dojump()
 			dist = P_SKILL(P_MARTIAL_ARTS);
 		return jump(dist);
 	}
+	else if(!Upolyd && Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep) && P_SKILL(P_MARTIAL_ARTS)){
+		return jump(P_SKILL(P_MARTIAL_ARTS));
+	}
 	return jump(0);
 }
 
@@ -4330,7 +4341,7 @@ int magic; /* 0=Physical, otherwise skill level */
 	    teleds(cc.x, cc.y, TRUE);
 	    nomul(-1, "jumping around");
 	    nomovemsg = "";
-		if(!Role_if(PM_MONK))
+		if(!Role_if(PM_MONK) && !Role_if(PM_KENSEI))
 			morehungry(max_ints(1, rnd(25) * get_uhungersizemod()));
 	    return MOVE_STANDARD;
 	}

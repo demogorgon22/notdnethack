@@ -1602,6 +1602,9 @@ fix_etraits(struct obj *otmp)
 		otmp->expert_traits &= ~ETRAIT_FOCUS_FIRE;
 		otmp->expert_traits |= ETRAIT_FELL;
 	}
+	else if(otmp->oartifact == ART_WINTER_REAPER){
+		otmp->expert_traits |= ETRAIT_FELL|ETRAIT_BLEED|ETRAIT_CLEAVE;
+	}
 
 	if(otmp->oartifact == ART_RUYI_JINGU_BANG){
 		//Special abnormal size rules

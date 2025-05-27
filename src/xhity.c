@@ -1398,7 +1398,7 @@ int tary;
 	){
 		if (uquiver && ammo_and_launcher(uquiver, uswapwep)) {
 			/* simply fire uquiver from the launcher */
-			uthrow(uquiver, uswapwep, 0, FALSE);
+			uthrow(uquiver, uswapwep, 0, FALSE, FALSE);
 		}
 		else if (is_blaster(uswapwep)) {
 			/* simply fire blaster */
@@ -2574,6 +2574,31 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			&& ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
 			&& (prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP))) {
 		int nattacks = (u.ulevel >= 14) + (u.ulevel >= 30);
+		int attacknum = (!!check_subout(subout, SUBOUT_BARB1) + !!check_subout(subout, SUBOUT_BARB2));
+
+		if (attacknum < nattacks)
+		{
+			attk->aatyp = AT_WEAP;
+			attk->adtyp = AD_PHYS;
+			attk->damn = 1;
+			attk->damd = 4;
+			*tohitmod = -10 * (attacknum+1); //Correct off-by-one error, these are the *subout* attacks specifically
+			fromlist = FALSE;
+			if(check_subout(subout, SUBOUT_BARB1)){
+				add_subout(subout, SUBOUT_BARB2);
+			}
+			else {
+				add_subout(subout, SUBOUT_BARB1);
+			}
+			remove_subout(subout, SUBOUT_XWEP);	/* allow another followup offhand attack if twoweaponing */
+		}
+	}
+	else if (youagr && !Upolyd && Role_if(PM_KENSEI) && (*indexnum > 0)
+			&& (uwep && is_kensei_weapon(uwep))
+			&& ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
+			&& (prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP))
+			&& (u.ulevel >= 30)) {
+		int nattacks = 1;
 		int attacknum = (!!check_subout(subout, SUBOUT_BARB1) + !!check_subout(subout, SUBOUT_BARB2));
 
 		if (attacknum < nattacks)
@@ -4393,6 +4418,36 @@ int *shield_margin;
 				}
 			}
 		}
+		/* kensei accuracy bonus/penalty (player-only) (melee) */
+		if (youagr && melee && Role_if(PM_KENSEI) && !Upolyd) {
+			static boolean armmessage = TRUE;
+			static boolean urmmessage = TRUE;
+			boolean resunderwear = uarmu && uarmu->otyp == VICTORIAN_UNDERWEAR;
+			boolean resarmor = uarm && !(is_light_armor(uarm) || is_medium_armor(uarm));
+			if (resarmor || resunderwear) {
+				if(resarmor && resunderwear && armmessage && urmmessage){
+				if (armmessage) Your("armor and underwear are rather cumbersome...");
+					armmessage = FALSE;
+					urmmessage = FALSE;
+				}
+				if (resarmor && armmessage){
+					Your("armor is rather cumbersome...");
+					armmessage = FALSE;
+				}
+				else if (resunderwear && urmmessage){
+					Your("underwear is rather restrictive...");
+					urmmessage = FALSE;
+				}
+				wepn_acc -= 20; /*flat -20 for kensei in heavy armor*/
+			}
+			else {
+				if (!armmessage) armmessage = TRUE;
+				if (!urmmessage) urmmessage = TRUE;
+				if (!uwep && !uarms) {
+					wepn_acc += (u.ulevel / 3) + 2;
+				}
+			}
+		}
 		/* Some madnesses give accuracy bonus/penalty (player-only) (melee) */
 		if(youagr && melee && u.umadness){
 			/* nudist accuracy bonus/penalty */
@@ -4840,8 +4895,11 @@ boolean ranged;
 		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, -1, dieroll, vis, ranged, longslash);
 
 		/* the player exercises dexterity when hitting */
-		if (youagr)
+		if (youagr){
 			exercise(A_DEX, TRUE);
+			if(Role_if(PM_KENSEI))
+				exercise(A_WIS, TRUE);
+		}
 	}
 	else if(graze){
 		result = hmon_general(magr, mdef, attk, attk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, graze_dmg, 0, FALSE, dieroll, FALSE, vis);
@@ -14869,6 +14927,14 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				adjalign(-2); //stiffer penalty
 				change_hod(1);
 			}
+			if(Role_if(PM_KENSEI)){
+				if (sgn(u.ualign.type) > 0) {
+					adjalign(-5);
+					You("dishonorably use a poisoned weapon!");
+					u.ualign.sins++;
+					change_hod(1);
+				}
+			}
 		}
 
 		/* which poisons need resist messages, and which will take effect? */
@@ -16723,7 +16789,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			d(6, 6),
 			EXPL_FIERY, 1);
 	}
-	if(hit_slot != ROLL_SLOT && weapon && magr && is_lightsaber(weapon) && litsaber(weapon)){
+	if(hit_slot != ROLL_SLOT && weapon && magr && 
+			( (is_lightsaber(weapon) && litsaber(weapon))
+			|| weapon->oartifact == ART_GREEN_DESTINY
+			)
+	){
 		saber_damage_slot(mdef, weapon, hit_slot, lethaldamage, vis, &hittxt);
 	}
 	/* PRINT HIT MESSAGE. MAYBE. */
@@ -19567,14 +19637,17 @@ movement_combos()
 	}
 
 	/* Monk Moves */
-	if (Role_if(PM_MONK) && !Upolyd) {
+	if ((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) {
 		int moveID = check_monk_move();
 		if (moveID != 0 && perform_monk_move(moveID)) {
 			nomul(0, NULL);
 			u.uattked = TRUE;
 			did_combo = TRUE;
 			/* takes at least as long as a standard action */
-			flags.move |= MOVE_STANDARD;
+			if(moveID != DIVE_KICK || !Role_if(PM_KENSEI))
+				flags.move |= MOVE_STANDARD;
+			if(Role_if(PM_KENSEI))
+				exercise(A_INT, TRUE);
 		}
 	}
 	/* Expert Moves (lunges and knockback charges) */
@@ -19706,10 +19779,33 @@ monk_aura_bolt()
 	struct zapdata zapdat = { 0 };
 	basiczap(&zapdat, u.ualign.record < -3 ? AD_UNHY : AD_HOLY, ZAP_SPELL, (u.ulevel+2) / 3 );
 	zapdat.damd = 4;
-	if(uarmg && uarmg->oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI)
-		zapdat.damd *= 2;
 	zapdat.affects_floor = FALSE;
 	zapdat.phase_armor = TRUE;
+	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
+		struct weapon_dice wdice;
+		/* grab the weapon dice from dmgval_core */
+		dmgval_core(&wdice, FALSE, uwep, uwep->otyp, &youmonst);
+		zapdat.damd = wdice.oc_damd + wdice.bon_damd + wdice.flat*2;
+		if(uwep->oartifact){
+			if(artilist[uwep->oartifact].accuracy){
+				if(artilist[uwep->oartifact].damage)
+					zapdat.damn *= 2;
+				else
+					zapdat.damd += artilist[u.role_variant].damage;
+			}
+			if(artilist[uwep->oartifact].adtyp == AD_COLD
+			 ||artilist[uwep->oartifact].adtyp == AD_FIRE
+			 ||artilist[uwep->oartifact].adtyp == AD_ELEC
+			 ||artilist[uwep->oartifact].adtyp == AD_SLEE
+			){
+				pline("%d", artilist[uwep->oartifact].adtyp);
+				zapdat.adtyp = artilist[uwep->oartifact].adtyp;
+				zapdat.affects_floor = TRUE;
+			}
+		}
+	}
+	if(uarmg && uarmg->oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI)
+		zapdat.damd *= 2;
 	//Currently these cook off without the player's explicit say-so
 	zapdat.no_bounce = TRUE;
 	zapdat.unreflectable = ZAP_REFL_NEVER;
@@ -19867,7 +19963,19 @@ int moveID;
 	if(!monk_style_active(moveID)) return FALSE;
 	switch(moveID){
 		case DIVE_KICK:
-		if(Race_if(PM_CHIROPTERAN)){
+		if(Role_if(PM_KENSEI)){
+			if(uquiver && (
+					(objects[uquiver->otyp].oc_merge && uquiver->oclass == WEAPON_CLASS && !is_ammo(uquiver))
+					|| is_returning_snare(uquiver)
+				) && beam_monk_target()
+			){
+				pline("Throw!");
+				uthrow(uquiver, 0, 0, FALSE, TRUE);
+				nomul(0, NULL);
+				return TRUE;
+			}
+		}
+		else if(Race_if(PM_CHIROPTERAN)){
 			if((mdef = adjacent_move_target(uarmf))){
 				pline("Swoop!");
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
@@ -19901,7 +20009,14 @@ int moveID;
 		}
 		break;
 		case BIRD_KICK:
-		if(!EWounded_legs && circle_monk_target(uarmf) && near_capacity() <= SLT_ENCUMBER){
+		if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
+			if(circle_monk_target(uwep)){
+				pline("Cyclone Slash!");
+				cyclone_slash_monsters();
+				return TRUE;
+			}
+		}
+		else if(!EWounded_legs && circle_monk_target(uarmf) && near_capacity() <= SLT_ENCUMBER){
 			if(Race_if(PM_CHIROPTERAN)){
 				pline("Wing storm!");
 				wing_storm_monsters();
@@ -19914,14 +20029,45 @@ int moveID;
 		}
 		break;
 		case METODRIVE:
-		if(!uwep && !(uswapwep && u.twoweap) && inv_weight() < 0 && !u.uswallow && (mdef = adjacent_move_target(uarmg))){
-			pline("Meteor drive!");
-			monk_meteor_drive(mdef);
-			return TRUE;
+		if(Role_if(PM_KENSEI)){
+			if(uwep && is_kensei_weapon(uwep) && !u.uswallow && (mdef = adjacent_move_target(uwep))){
+				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
+				if(u.uhp*2 > u.uhpmax && u.uhp > u.ulevel){
+					pline("Judgement!");
+					mdef->mhp = max(1, mdef->mhp - u.ulevel);
+					if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE)) == 0L){
+						if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, WEAPON_CLASS, 0, TRUE)){
+							mdef->mcanmove = 0;
+							mdef->mfrozen = d(2, 3);
+						}
+					}
+					u.uhp -= u.ulevel;
+					return TRUE;
+				}
+				else {
+					int initial = mdef->mhp;
+					pline("Dawn Breaks!");
+					if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE)) == 0L){
+						if(mdef->mhp < initial)
+						healup(initial - mdef->mhp, 0, FALSE, FALSE);
+						if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, WEAPON_CLASS, 0, TRUE)){
+							set_mcan(mdef, TRUE);
+						}
+					}
+					return TRUE;
+				}
+			}
+		}
+		else {
+			if(!uwep && !(uswapwep && u.twoweap) && inv_weight() < 0 && !u.uswallow && (mdef = adjacent_move_target(uarmg))){
+				pline("Meteor drive!");
+				monk_meteor_drive(mdef);
+				return TRUE;
+			}
 		}
 		break;
 		case PUMMEL:
-		if((!uwep || is_monk_weapon(uwep)) && (!(uswapwep && u.twoweap) || is_monk_weapon(uswapwep)) && (mdef = adjacent_move_target(uarmg))){
+		if((Role_if(PM_KENSEI) || ((!uwep || is_monk_weapon(uwep)) && (!(uswapwep && u.twoweap) || is_monk_weapon(uswapwep)))) && (mdef = adjacent_move_target(uarmg))){
 			if(uwep)
 				pline("Flurry!");
 			else
@@ -19961,6 +20107,8 @@ check_monk_move()
 	}
 	//If there haven't been two inputs for some reason, return false.
 	if(!(dx1 || dy1) || !(dx2 || dy2))
+		return 0;
+	if(Role_if(PM_KENSEI) && uwep && !is_kensei_weapon(uwep))
 		return 0;
 	///Adjust first vector to first quadrent (favoring up over right)
 	//Reflect over y axis

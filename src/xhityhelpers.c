@@ -419,7 +419,7 @@ struct monst *mtmp;
 			}
 	}
 /*	attacking peaceful creatures is bad for the samurai's giri */
-	if (Role_if(PM_SAMURAI) && mtmp->mpeaceful){
+	if ((Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && mtmp->mpeaceful){
         if(!(uarmh && uarmh->oartifact && uarmh->oartifact == ART_HELM_OF_THE_NINJA)){
           You("dishonorably attack the innocent!");
           u.ualign.sins++;
@@ -1474,6 +1474,9 @@ struct monst * magr;
 		else if (otmp->oartifact == ART_VAMPIRE_KILLER)
 			dmg += 7;
 
+		if(magr && Focused_aura(magr)){
+			diesize += 4;
+		}
 #define sacred_bonus_dice ((FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_EXPERT) ? 6 : (FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_SKILLED ? 3 : 1))
 		if (activeFightingForm(FFORM_KNI_SACRED) && otmp == uwep){
 			if (((Holiness_if(HOLY_HOLINESS) || Holiness_if(NEUTRAL_HOLINESS)) && u.ualign.record >= 0) ||
@@ -1548,6 +1551,10 @@ struct monst * magr;
 		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
 		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
 
+		if(magr && Focused_aura(magr)){
+			diesize += 4;
+		}
+
 		if(otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
 			dmg += (u.uimpurity+1)/2;
 		}
@@ -1615,6 +1622,10 @@ struct monst * magr;
 			diesize = 9;
 		}
 		
+		if(magr && Focused_aura(magr)){
+			diesize += 4;
+		}
+
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* calculate */

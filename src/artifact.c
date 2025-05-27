@@ -320,6 +320,11 @@ hack_artifacts()
 			artilist[ART_CROWN_OF_THE_SAINT_KING].alignment = alignmnt;
 		}
 	}
+	if (Role_if(PM_KENSEI)) {
+	    artilist[u.role_variant].alignment = alignmnt;
+	    artilist[u.role_variant].gflags &= ~ARTG_NOGEN;
+		artilist[u.role_variant].gflags |= ARTG_GIFT;
+	}
 	if (Role_if(PM_MONK)) {
 	    artilist[ART_GRANDMASTER_S_ROBE].alignment = alignmnt;
 

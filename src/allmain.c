@@ -1144,6 +1144,10 @@ you_regen_hp()
 				perX += HEALCYCLE;
 			}
 		}
+		// Gokorei bell
+		if(Gokorei){
+			reglevel += 8;
+		}
 		
 
 		// Barbarian role bonus
@@ -1153,6 +1157,7 @@ you_regen_hp()
 		else if(!Upolyd && (
 			Role_if(PM_KNIGHT)
 			|| Role_if(PM_PIRATE)
+			|| Role_if(PM_KENSEI)
 			|| Role_if(PM_SAMURAI)
 			|| Role_if(PM_VALKYRIE)
 			|| Role_if(PM_CONVICT)
@@ -1310,9 +1315,13 @@ you_regen_pw()
 				perX += HEALCYCLE;
 			}
 		}
+		// Gokorei bell
+		if(Gokorei){
+			reglevel += 8;
+		}
 		
 		// role bonuses
-		if(Role_if(PM_MONK) && u.unull){
+		if((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && u.unull){
 			reglevel *= 2;
 			reglevel += 8;
 		}
@@ -1454,11 +1463,16 @@ san_threshhold()
 	int reglevel = ACURR(A_WIS);
 	int insight = Insight;
 
+	// Gokorei bell
+	if(Gokorei){
+		reglevel += 64;
+	}
 	// role bonuses
 	if (Role_if(PM_BARBARIAN))   reglevel += 10;
 	if (Role_if(PM_VALKYRIE)) reglevel += 9;
 	if (Role_if(PM_TOURIST))     reglevel += 8;
 	if (Role_if(PM_MONK))     reglevel += 8;
+	if (Role_if(PM_KENSEI))     reglevel += 8;
 	if (Role_if(PM_PRIEST))   reglevel += 7;
 	if (Role_if(PM_ANACHRONONAUT))   reglevel += 5;
 	if (Role_if(PM_UNDEAD_HUNTER) && u.veil)   reglevel += 5;

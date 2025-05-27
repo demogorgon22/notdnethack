@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "hack.h"
+#include "artifact.h"
 
 static NEARDATA schar delay;		/* moves left for this spell */
 static NEARDATA struct obj *book;	/* last/current book being xscribed */
@@ -6074,6 +6075,7 @@ int spell;
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
 			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
+			|| (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))
 		) splcaster -= urole.spelarmr;
 
 		if(uwep->obj_material == MERCURIAL)

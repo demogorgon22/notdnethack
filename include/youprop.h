@@ -153,6 +153,14 @@
 #define EYogSpell		u.uprops[YOG_SPELLS].extrinsic
 #define YogSpell		(HYogSpell || EYogSpell)
 
+#define HFocusAura		u.uprops[FOCUS_AURA].intrinsic
+#define EFocusAura		u.uprops[FOCUS_AURA].extrinsic
+#define FocusAura		(HFocusAura || EFocusAura)
+
+#define HGokorei		u.uprops[DIAMOND_BELL].intrinsic
+#define EGokorei		u.uprops[DIAMOND_BELL].extrinsic
+#define Gokorei		(HGokorei || EGokorei)
+
 #define HQuickDraw		u.uprops[QUICK_DRAW].intrinsic
 #define EQuickDraw		u.uprops[QUICK_DRAW].extrinsic
 #define QuickDraw		(HQuickDraw || EQuickDraw)

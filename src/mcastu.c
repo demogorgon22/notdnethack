@@ -498,6 +498,9 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
        case PM_IKSH_NA_DEVA:
            return MOTHER_S_GAZE;
 	
+       case PM_HERMIT_MASTER:
+		return MON_AURA_BOLT;
+
        case PM_GRAND_MASTER:
        case PM_MASTER_KAEN:
           return (!rn2(3) ? MON_AURA_BOLT : rn2(2) ? WEAKEN_YOU : EARTHQUAKE);

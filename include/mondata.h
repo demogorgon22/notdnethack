@@ -1260,6 +1260,7 @@
 						 (mon)->mtyp == PM_GARLAND || (mon)->mtyp == PM_DANTRAG || \
 						 ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_DOOM_KNIGHT))
 #define mon_turn_undead(mon)	((mon)->mtyp == PM_KNIGHT || (mon)->mtyp == PM_KING_ARTHUR || \
+						 (mon)->mtyp == PM_KENSEI || \
 						 (mon)->mtyp == PM_BRIGHID_ELADRIN || \
 						 (mon)->mtyp == PM_DRACAE_ELADRIN || \
 						 (mon)->mtyp == PM_LIGHT_ELF || (mon)->mtyp == PM_UNBODIED || \

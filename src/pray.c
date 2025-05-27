@@ -15,7 +15,6 @@ STATIC_PTR int NDECL(prayer_done);
 STATIC_DCL struct obj *NDECL(worst_cursed_item);
 STATIC_DCL int NDECL(in_trouble);
 STATIC_DCL void FDECL(fix_worst_trouble,(int));
-STATIC_DCL void FDECL(pleased,(ALIGNTYP_P));
 STATIC_DCL void FDECL(god_zaps_you, (int));
 STATIC_DCL void FDECL(fry_by_god, (int));
 STATIC_DCL void FDECL(consume_offering,(struct obj *));
@@ -940,9 +939,8 @@ at_your_feet(str)
 	}
 }
 
-STATIC_OVL void
-pleased(godnum)
-int godnum;
+void
+pleased(int godnum, boolean altar, boolean set_timeout)
 {
 	/* don't use p_trouble, worst trouble may get fixed while praying */
 	int trouble = in_trouble();	/* what's your worst difficulty? */
@@ -1204,12 +1202,14 @@ int godnum;
 		}
 	}
 	
-	u.ublesscnt = rnz(350);
-	kick_on_butt = u.uevent.udemigod ? 1 : 0;
+	if(set_timeout){
+		u.ublesscnt = rnz(350);
+		kick_on_butt = u.uevent.udemigod ? 1 : 0;
 #ifdef ELBERETH
-	if (u.uevent.uhand_of_elbereth) kick_on_butt++;
+		if (u.uevent.uhand_of_elbereth) kick_on_butt++;
 #endif
-	if (kick_on_butt) u.ublesscnt += kick_on_butt * rnz(1000);
+		if (kick_on_butt) u.ublesscnt += kick_on_butt * rnz(1000);
+	}
 
 	return;
 }
@@ -2355,7 +2355,10 @@ dosacrifice()
 				livelog_write_string(llog);
 		    }
 		    /* make sure we can use this weapon */
-		    unrestrict_weapon_skill(weapon_type(otmp));
+			if(Role_if(PM_KENSEI) && otmp->oartifact == u.role_variant)
+				expert_weapon_skill(weapon_type(otmp));
+			else
+				unrestrict_weapon_skill(weapon_type(otmp));
 		    discover_artifact(otmp->oartifact);
 			if(otmp->oartifact == ART_BLADE_SINGER_S_SABER){
 				unrestrict_weapon_skill(P_SABER);
@@ -2600,12 +2603,12 @@ prayer_done()		/* M. Stephenson (1.0.3b) */
 			u.ublesscnt += rnz(250);
 			change_luck(-3);
 			if(u.ualign.type != A_VOID) gods_upset(u.ualign.god);
-		} else pleased(p_god);
+		} else pleased(p_god, on_altar(), TRUE);
     } else {
 	/* coaligned */
 	if(on_altar())
 	    (void) water_prayer(TRUE);
-	pleased(p_god); /* nice */
+	pleased(p_god, on_altar(), TRUE); /* nice */
     }
     return MOVE_STANDARD;
 }
@@ -2659,7 +2662,7 @@ doturn()
 	int once, range, xlev;
 	short fast = 0;
 
-	if (!Role_if(PM_PRIEST) && !Role_if(PM_KNIGHT) && !Race_if(PM_VAMPIRE) && !(Role_if(PM_NOBLEMAN) && Race_if(PM_ELF))){
+	if (!Role_if(PM_PRIEST) && !Role_if(PM_KNIGHT) && !Role_if(PM_KENSEI) && !Race_if(PM_VAMPIRE) && !(Role_if(PM_NOBLEMAN) && Race_if(PM_ELF))){
 		/* Try to use turn undead spell. */
 		if (objects[SPE_TURN_UNDEAD].oc_name_known) {
 		    register int sp_no;

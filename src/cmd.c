@@ -640,7 +640,7 @@ boolean you_abilities;
 	if (mon_abilities && attacktype(youracedata, AT_TNKR)){
 		add_ability('t', "Tinker", MATTK_TNKR);
 	}
-	if (you_abilities && (Role_if(PM_PRIEST) || Role_if(PM_KNIGHT) || Race_if(PM_VAMPIRE) || (Role_if(PM_NOBLEMAN) && Race_if(PM_ELF)))) {
+	if (you_abilities && (Role_if(PM_PRIEST) || Role_if(PM_KNIGHT) || Role_if(PM_KENSEI) || Race_if(PM_VAMPIRE) || (Role_if(PM_NOBLEMAN) && Race_if(PM_ELF)))) {
 		add_ability('T', "Turn undead", MATTK_U_TURN_UNDEAD);
 	}
 	if (mon_abilities && is_unicorn(youracedata)){
@@ -658,7 +658,7 @@ boolean you_abilities;
 	if (Role_if(PM_MADMAN) && u.whisperturn < moves && !Catapsi && !DimensionalLock){
 		add_ability('W', "Call your whisperer", MATTK_WHISPER);
 	}
-	if (Role_if(PM_SAMURAI) && u.kiaiturn < moves && u.uencouraged < xlev_to_rank(u.ulevel)){
+	if ((Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && u.kiaiturn < moves && u.uencouraged < xlev_to_rank(u.ulevel)){
 		add_ability('K', "Kiai shout", MATTK_KI);
 	}
 	if (you_abilities && spellid(0) != NO_SPELL) {
@@ -1504,9 +1504,9 @@ hasfightingforms(){
 		formmask |= AUTO_ATTKS;
 
 	/* forms relevant due to situation/role are shown, even if you're bad at them (if applicable) */
-	if(Role_if(PM_MONK))
+	if(Role_if(PM_MONK) || Role_if(PM_KENSEI))
 		formmask |= MONK_FORMS;
-	if(Role_if(PM_KNIGHT))
+	if(Role_if(PM_KNIGHT) || Role_if(PM_KENSEI))
 		formmask |= KNIGHT_FORMS;
 	if((uwep && is_lightsaber(uwep)) || (uswapwep && is_lightsaber(uswapwep)))
 		formmask |= LIGHTSABER_FORMS;

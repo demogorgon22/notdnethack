@@ -2753,7 +2753,7 @@ donull()
 			stop_occupation();
 			(*hp) = (*hpmax);
 		}
-	} else if (!Role_if(PM_MONK) && u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) {
+	} else if (!Role_if(PM_MONK) && !Role_if(PM_KENSEI) && u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) {
 		// monks meditate & fast, increasing pw regen and lowering hunger rate while they haven't moved
 		unbind(SEAL_EURYNOME,TRUE);
 	}

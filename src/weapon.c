@@ -244,6 +244,10 @@ struct monst *magr;
 		else if(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && !otmp->lamplit)
 			tmp += rnd(20); //Quite holy
 		else tmp += 2;
+
+		if(magr && Focused_aura(magr)){
+			tmp += 4;
+		}
 	}
 	if (is_spear(otmp) &&
 	   index(kebabable, ptr->mlet)) tmp += (ptr->mtyp == PM_SMAUG) ? 20 : 2;
@@ -402,6 +406,7 @@ struct monst *magr;
 		|| oartifact == ART_INFINITY_S_MIRRORED_ARC
 		|| oartifact == ART_GREAT_CLAWS_OF_URDLEN
 		|| oartifact == ART_CLAWS_OF_THE_REVENANCER
+		|| oartifact == ART_WINTER_REAPER
 		|| (obj && check_oprop(obj, OPROP_BLADED) && !litsaber(obj))
 		|| (obj && check_oprop(obj, OPROP_RLYHW) && Insight >= 12)
 		|| (obj && !litsaber(obj) && is_streaming_merc(obj))
@@ -522,6 +527,9 @@ struct monst *magr;
 	/* set dmod, if possible*/
 	if (obj){
 		dmod = obj->objsize - MZ_MEDIUM;
+		if(magr && Focused_aura(magr)){
+			dmod += 2;
+		}
 
 		/* Use ldice for small cases as well and add 1 to ocn */
 		if(obj->oartifact == ART_DARK_CLAYMORE){
@@ -541,6 +549,14 @@ struct monst *magr;
 			dmod += 1;
 			if (obj->lamplit)
 				dmod += 2;
+		}
+		else if (obj->oartifact == ART_WINTER_REAPER){
+			if(large){
+				ocn += 1;
+			}
+			else {
+				dmod += 1;
+			}
 		}
 
 		if (obj->oartifact == ART_BLOODLETTER && artinstance[ART_BLOODLETTER].BLactive >= moves)
@@ -4202,7 +4218,7 @@ int wep_type;
 	if(wep_type == P_AXE && Race_if(PM_DWARF) && ublindf && ublindf->oartifact == ART_WAR_MASK_OF_DURIN) bonus += 5;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
-	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
+	if(weapon && weapon == uwep && (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
 		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)

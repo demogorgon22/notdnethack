@@ -281,6 +281,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		switch (Role_switch) {
 			case PM_PRIEST:
 			case PM_MONK:
+			case PM_KENSEI:
 			case PM_WIZARD: damu /= 5;
 				  break;
 			case PM_HEALER:

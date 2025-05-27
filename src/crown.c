@@ -32,6 +32,10 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_PRINCE_NEZHA,               ART_FENG_HUO_LUN,		"the Sage of Law",						dub_thee_the,							became_the	},
 {GOD_LAOZI,                      ART_JIN_GANG_ZUO,				"the Grandmaster of Balance",			"Thou shalt be the %s!",				became_the	},
 {GOD_THE_HUNSHI_SIHOU,           ART_RUYI_JINGU_BANG,			"the Glory of Eequor",					chosen("cause dismay in My Name"),		became_the	},
+	/* Kensei */
+{GOD_KANNON,               		 ART_GOKOREI,				"the Sage of Law",						dub_thee_the,							became_the	},
+{GOD_FUDO_MYOO,                  ART_KENJAKU,				"the Grandmaster of Balance",			"Thou shalt be the %s!",				became_the	},
+{GOD_SHUKONGOSHIN,               ART_SHI_PI_BU,				"the Glory of Eequor",					chosen("cause dismay in My Name"),		became_the	},
 	/* Noble (human, vampire, incant). Vampires always get Dark Lord regardless of alignment */
 {GOD_GOD_THE_FATHER,             ART_CROWN_OF_THE_SAINT_KING,	"the Saint %s",							verb_thee_the("crown"),					"received the crown of the Saint King",	CRWN_TTL_KING	},
 {GOD_MOTHER_EARTH,               ART_CROWN_OF_THE_SAINT_KING,	"the Grey Saint",						verb_thee_the("crown"),					"received the crown of the Saint King"	},

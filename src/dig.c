@@ -1525,7 +1525,7 @@ int x, y;
 		u.ualign.sins++;
 		change_hod(1);
 	    You_feel("like a despicable grave-robber!");
-	} else if (Role_if(PM_SAMURAI)) {
+	} else if (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) {
         if(!(uarmh && uarmh->oartifact && uarmh->oartifact == ART_HELM_OF_THE_NINJA)){
 		    adjalign(-sgn(u.ualign.type)*10);//stiffer penalty
 			u.ualign.sins++;

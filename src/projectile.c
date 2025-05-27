@@ -2284,7 +2284,7 @@ dothrow()
 		launcher = (struct obj *)0;
 
 	/* go to the next step */
-	result = uthrow(ammo, launcher, shotlimit, FALSE);
+	result = uthrow(ammo, launcher, shotlimit, FALSE, FALSE);
 
 	save_cm = oldsave_cm;
 	return (result);
@@ -2329,7 +2329,7 @@ ufire_blaster(struct obj *launcher, int shotlimit)
 			if (launcher->otyp == MASS_SHADOW_PISTOL)
 				ammo->ovar1_projectileSkill = -P_FIREARM;	/* special case to use FIREARM skill instead of SLING */
 
-			result = uthrow(ammo, launcher, shotlimit, TRUE);
+			result = uthrow(ammo, launcher, shotlimit, TRUE, FALSE);
 			/* and now delete the ammo object we created */
 			obfree(ammo, 0);
 		}
@@ -2392,7 +2392,7 @@ dofire()
 
 				if (uquiver && ammo_and_launcher(uquiver, launcher)) {
 					/* simply fire uquiver from the launcher */
-					result = uthrow(uquiver, launcher, shotlimit, FALSE);
+					result = uthrow(uquiver, launcher, shotlimit, FALSE, FALSE);
 				}
 				else if (is_blaster(launcher)) {
 					return ufire_blaster(launcher, shotlimit);
@@ -2403,7 +2403,7 @@ dofire()
 
 		/* Throw quivered throwing weapons */
 		if (uquiver && throwing_weapon(uquiver)) {
-			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 
 		/* Throw wielded weapon -- mainhand only */
@@ -2420,7 +2420,7 @@ dofire()
 			(!is_blaster(uwep) && uandroid)
 			// (uwep->oartifact == ART_SICKLE_MOON)
 			)) {
-			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 
 		/* Holy Moonlight Sword's magic blast -- mainhand only */
@@ -2490,7 +2490,7 @@ dofire()
 			bolt->objsize = MZ_SMALL;
 			bolt->quan = 3;		/* Make more than enough so that we are always able to manually destroy the excess */
 			fix_object(bolt);
-			result = uthrow(bolt, uwep, shotlimit, TRUE);
+			result = uthrow(bolt, uwep, shotlimit, TRUE, FALSE);
 			obfree(bolt, 0);
 			return result;
 		}
@@ -2525,7 +2525,7 @@ dofire()
 	if (!nolimbs(youracedata)) {
 		/* Throw any old garbage we have quivered */
 		if (uquiver) {
-			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 		else {
 			/* We don't have anything that should be done automatically at this point. */
@@ -2571,7 +2571,7 @@ dofire()
 
 				if (uquiver && ammo_and_launcher(uquiver, launcher)) {
 					/* simply fire uquiver from the launcher */
-					result = uthrow(uquiver, launcher, shotlimit, FALSE);
+					result = uthrow(uquiver, launcher, shotlimit, FALSE, FALSE);
 				}
 			}
 			return result;
@@ -2579,7 +2579,7 @@ dofire()
 
 		/* Throw whaterver it was we quivered */
 		if (uquiver) {
-			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 	}
 
@@ -2648,11 +2648,7 @@ struct obj * blaster;
  * call projectile().
  */
 int
-uthrow(ammo, launcher, shotlimit, forcedestroy)
-struct obj * ammo;
-struct obj * launcher;
-int shotlimit;
-boolean forcedestroy;
+uthrow(struct obj *ammo, struct obj *launcher, int shotlimit, boolean forcedestroy, boolean forcefire)
 {
 	int multishot;
 	int hurtle_dist = 0;
@@ -2660,7 +2656,7 @@ boolean forcedestroy;
 	/* ask "in what direction?" */
 	/* needs different code depending on if GOLDOBJ is enabled */
 
-	if (!getdir((char *)0)) {
+	if (!forcefire && !getdir((char *)0)) {
 #ifndef GOLDOBJ
 		if (ammo->oclass == COIN_CLASS) {
 			u.ugold += ammo->quan;
@@ -2807,7 +2803,7 @@ boolean forcedestroy;
 		HPanicking += 1+rnd(6);
 	}
 
-	if(otyp == SHURIKEN && Role_if(PM_MONK))
+	if(otyp == SHURIKEN && (Role_if(PM_MONK) || Role_if(PM_KENSEI)))
 		return MOVE_PARTIAL;	/* this might have taken time */
 	else
 		return (launcher) ? MOVE_FIRED : MOVE_STANDARD;	/* this took time */

@@ -3305,6 +3305,11 @@ boolean greatequip;
 			(void) mongets(mtmp, CHAIN_MAIL, mkobjflags);
 			(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
 			(void) mongets(mtmp, GLOVES, mkobjflags);
+		} else if (mm == PM_DISCIPLE){
+			(void) mongets(mtmp, LONG_SWORD, mkobjflags);
+			(void) mongets(mtmp, ROBE, mkobjflags);
+			(void) mongets(mtmp, GLOVES, mkobjflags);
+			(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
 		} else if (mm == PM_ABBOT){
 			otmp = mongets(mtmp, WAISTCLOTH, mkobjflags);
 			if(otmp){
@@ -4568,18 +4573,39 @@ boolean goodequip;
 				switch(rn2(3)){
 					case 0:
 						otmp = mongets(mtmp, QUARTERSTAFF, mkobjflags);
-						set_material_gm(otmp, WOOD);
+						if(otmp)
+							set_material_gm(otmp, WOOD);
 					break;
 					case 1:
 						otmp = mongets(mtmp, NUNCHAKU, mkobjflags);
-						set_material_gm(otmp, WOOD);
+						if(otmp)
+							set_material_gm(otmp, WOOD);
 					break;
 					case 2:
 						otmp = mongets(mtmp, KATAR, mkobjflags);
-						set_material_gm(otmp, MINERAL);
+						if(otmp)
+							set_material_gm(otmp, MINERAL);
 					break;
 				}
 				otmp = mongets(mtmp, SEDGE_HAT, mkobjflags);
+				if(otmp)
+					set_material_gm(otmp, MINERAL);
+			}
+			else if(Role_if(PM_KENSEI) && In_quest(&u.uz)){
+				switch(rn2(3)){
+					case 0:
+						otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
+					break;
+					case 1:
+						otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags);
+					break;
+					case 2:
+						otmp = mongets(mtmp, RAPIER, mkobjflags);
+					break;
+				}
+				if(otmp)
+					set_material_gm(otmp, MINERAL);
+				otmp = mongets(mtmp, WAR_HAT, mkobjflags);
 				set_material_gm(otmp, MINERAL);
 			}
 			else switch(rn2(3)){
@@ -4593,7 +4619,8 @@ boolean goodequip;
 					otmp = mongets(mtmp, MACE, mkobjflags);
 				break;
 			}
-			set_material_gm(otmp, MINERAL);
+			if(otmp)
+				set_material_gm(otmp, MINERAL);
 		break;
 	}
 }
@@ -11169,6 +11196,12 @@ boolean greatequip;
 						update_mon_intrinsics(mtmp, otmp, TRUE, TRUE);
 					}
 				}
+			} else if(mtmp->mtyp == PM_BLUE_EYED_FOX){
+				(void)mongets(mtmp, BROADSWORD, mkobjflags);
+				(void)mongets(mtmp, SHURIKEN, mkobjflags);
+				(void)mongets(mtmp, DART, mkobjflags);
+				(void) mongets(mtmp, DAGGER, mkobjflags);
+				(void) mongets(mtmp, DAGGER, mkobjflags);
 			} else if(mtmp->mtyp == PM_WATCHDOG_OF_THE_BOREAL_VALLEY){
 				otmp = mksobj(ARMORED_BOOTS, mkobjflags|MKOBJ_NOINIT);
 				otmp->objsize = MZ_HUGE;
