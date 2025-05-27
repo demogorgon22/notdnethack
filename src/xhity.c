@@ -19737,7 +19737,7 @@ struct obj *arm;
 }
 
 boolean
-beam_monk_target()
+beam_monk_target(int range)
 {
 	struct monst *mon;
 	int i;
@@ -19749,7 +19749,7 @@ beam_monk_target()
 			return TRUE;
 		else return FALSE;
 	}
-	for(i = 1; i < BOLT_LIM; i++){
+	for(i = 1; i < range; i++){
 		ix += u.dx;
 		iy += u.dy;
 		if(!isok(ix,iy))
@@ -19781,9 +19781,11 @@ monk_aura_bolt()
 	zapdat.damd = 4;
 	zapdat.affects_floor = FALSE;
 	zapdat.phase_armor = TRUE;
+	int range = BOLT_LIM;
 	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
 		struct weapon_dice wdice;
 		/* grab the weapon dice from dmgval_core */
+		range = 2;
 		dmgval_core(&wdice, FALSE, uwep, uwep->otyp, &youmonst);
 		zapdat.damd = wdice.oc_damd + wdice.bon_damd + wdice.flat*2;
 		if(uwep->oartifact){
@@ -19809,7 +19811,7 @@ monk_aura_bolt()
 	//Currently these cook off without the player's explicit say-so
 	zapdat.no_bounce = TRUE;
 	zapdat.unreflectable = ZAP_REFL_NEVER;
-	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, BOLT_LIM, &zapdat);
+	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, range, &zapdat);
 }
 
 void
@@ -19967,7 +19969,7 @@ int moveID;
 			if(uquiver && (
 					(objects[uquiver->otyp].oc_merge && uquiver->oclass == WEAPON_CLASS && !is_ammo(uquiver))
 					|| is_returning_snare(uquiver)
-				) && beam_monk_target()
+				) && beam_monk_target(BOLT_LIM)
 			){
 				pline("Throw!");
 				uthrow(uquiver, 0, 0, FALSE, TRUE);
@@ -20001,9 +20003,9 @@ int moveID;
 			&& (!(uswapwep && u.twoweap) || is_monk_weapon(uswapwep)) 
 			&& (u.ualign.record < -3 || u.ualign.record > 3)
 			&& !Is_spire(&u.uz) 
-			&& beam_monk_target()
+			&& beam_monk_target((Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? 3 : BOLT_LIM)
 		){
-			pline("Aura bolt!");
+			pline((Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? "Aura slash!" : "Aura bolt!");
 			monk_aura_bolt();
 			return TRUE;
 		}
