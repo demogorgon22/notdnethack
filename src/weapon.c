@@ -2937,14 +2937,14 @@ int atr;
 
 			if (is_rapier(otmp) || is_mercy_blade(otmp) || otmp->otyp == SET_OF_CROW_TALONS ||
 				(otmp->otyp == LIGHTSABER && !otmp->oartifact && otmp->ovar1_lightsaberHandle == 0))
-				mod = 0.5;
+				mod *= 0.5;
 
 			if (otmp->oartifact == ART_LIFEHUNT_SCYTHE || otmp->oartifact == ART_VELKA_S_RAPIER ||
 				otmp->oartifact == ART_FRIEDE_S_SCYTHE || otmp->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING)
-				mod = 0.5;
+				mod *= 0.5;
 
 			if (check_oprop(otmp, OPROP_OCLTW) || (Insight > 0 && check_oprop(otmp, OPROP_GSSDW)))
-				mod = 0.5;
+				mod *= 0.5;
 
 			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
 				mod *= 0.5; //2x->1x, 1x->.5x, etc.
