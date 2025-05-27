@@ -797,7 +797,24 @@ struct monst *magr;
 		}
 	}
 	/* apply dmod to ocd */
-	ocd = max(2, ocd + dmod * 2);
+	if(dmod){
+		ocd = max(2, ocd + dmod * 2);
+		if(bond){
+			bond = max(2, bond + dmod * 2);
+			if(flat){
+				flat = max(0, flat + dmod);
+			}
+		}
+		else if(flat){
+			if(flat > 1){
+				flat = max(0, flat + dmod);
+			}
+			else {
+				bond = max(0, dmod * 2);
+				flat = 0;
+			}
+		}
+	}
 
 	/* SPECIAL CASES (beyond what is defined in objects.c) START HERE */
 
