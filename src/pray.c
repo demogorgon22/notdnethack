@@ -2703,7 +2703,7 @@ doturn()
 	    aggravate();
 	    return MOVE_INSTANT;
 	}
-	if(!Race_if(PM_VAMPIRE)) pline("Calling upon %s, you chant holy scripture.", u_gname());
+	if(!Race_if(PM_VAMPIRE)) pline("Calling upon %s, you chant %sholy scripture.", u_gname(), gholiness(u.ualign.god) == UNHOLY_HOLINESS ? "un" : "");
 	else You("focus your vampiric aura!");
 	exercise(A_WIS, TRUE);
 
@@ -2739,7 +2739,7 @@ doturn()
 				if(is_undead(mtmp->data)){
 					xlev = turn_level(mtmp);
 					if (u.ulevel >= xlev && !resist(mtmp, '\0', 0, NOTELL)) {
-						if (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE || Race_if(PM_VAMPIRE)){
+						if (gholiness(u.ualign.god) == UNHOLY_HOLINESS || u.ualign.type == A_NONE || Race_if(PM_VAMPIRE)){
 							mtmp->mpeaceful = 1;
 							set_malign(mtmp);
 							if(PM_VAMPIRE){
