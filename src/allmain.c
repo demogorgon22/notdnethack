@@ -2290,7 +2290,7 @@ moveloop()
 						break;
 						case 4:
 							if(canseemon(mtmp))
-								pline("%s head splits open in a profusion of fungal growthes!", s_suffix(Monnam(mtmp)));
+								pline("%s head splits open in a profusion of fungal growths!", s_suffix(Monnam(mtmp)));
 							set_mon_data(mtmp, PM_FUNGAL_BRAIN);
 							possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
 							mon_break_armor(mtmp, FALSE);
