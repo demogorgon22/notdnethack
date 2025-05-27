@@ -2040,6 +2040,7 @@ struct obj	*sobj;
 				otmp->blessed = 1;
 			}
 			otmp->known = 1;
+			fix_object(otmp);
 			long wornmask = 0L;
 			if (is_worn && canwearobj(otmp, &wornmask, FALSE)) {
 				setworn(otmp, W_ARM);

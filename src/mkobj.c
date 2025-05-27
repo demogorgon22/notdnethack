@@ -434,7 +434,9 @@ struct obj *box;
 		    /* 2.5 x level's usual amount; weight adjusted below */
 		    otmp->quan = (long)(rnd(level_difficulty()+2) * rnd(75));
 			if(uring_art(ART_RING_OF_THROR))
-				otmp->quan *= 2;
+				otmp->quan = 2*otmp->quan + d(2,2)-3;
+			if(otmp->quan < 1)
+				otmp->quan = 1;
 		    otmp->owt = weight(otmp);
 		} else while (otmp->otyp == ROCK) {
 		    otmp->otyp = rnd_class(DILITHIUM_CRYSTAL, LOADSTONE);
@@ -3049,19 +3051,20 @@ long amount;
 int x, y;
 {
 	struct obj *gold;
+	int quan = 0;
+
+	gold = g_at(x,y);
+	if(gold)
+		quan = gold->quan;
+
 	gold = mkgold_core(amount, x, y, TRUE);
-	// Not fixing this rn so sleep tight
-	/*if(uring_art(ART_RING_OF_THROR)){
-		if(gold->quan&0x1L){//Odd piles stay odd
-			if(rn2(2))
-				gold->quan = 2*gold->quan + 1;
-			else
-				gold->quan = 2*gold->quan - 1;
-		}
-		else
-			gold->quan = 2*gold->quan;
+	if(gold && uring_art(ART_RING_OF_THROR)){
+		quan = gold->quan - quan; //Final minus initial
+		gold->quan += 2*quan + d(2,2) - 3;
+		if(gold->quan < 1)
+			gold->quan = 1;
 		gold->owt = weight(gold);
-	}*/
+	}
 	return gold;
 }
 

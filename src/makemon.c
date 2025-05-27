@@ -13626,9 +13626,9 @@ boolean greatequip;
 	if ((int) (mtmp->m_lev+2)/3 > rn2(active_glyph(ROTTEN_EYES) ? 80 : 100))
 		(void) mongets(mtmp, rnd_misc_item(mtmp), mkobjflags);
 #ifndef GOLDOBJ
-	if (likes_gold(ptr) && !mtmp->mgold && !rn2(5))
+	if (likes_gold(ptr) && !mtmp->mgold && !rn2(uring_art(ART_RING_OF_THROR) ? 3 : 5))
 		mtmp->mgold =
-		      (long) d(level_difficulty(), mtmp->minvent ? 5 : 10);
+		      (long) d(uring_art(ART_RING_OF_THROR) ? 2*level_difficulty() : level_difficulty(), mtmp->minvent ? 5 : 10);
 #else
 	if (likes_gold(ptr) && !findgold(mtmp->minvent) && !rn2(5))
 		mkmonmoney(mtmp, (long) d(level_difficulty(), mtmp->minvent ? 5 : 10));

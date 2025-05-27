@@ -7898,7 +7898,7 @@ struct obj *obj;
 }
 
 STATIC_OVL int
-use_crysalis(struct obj *obj)
+use_chrysalis(struct obj *obj)
 {
 	winid tmpwin;
 	anything any;
@@ -11718,7 +11718,7 @@ doapply()
 	break;
 	case CRYSTAL:
 		if(obj->obj_material == FLESH)
-			res = use_crysalis(obj);
+			res = use_chrysalis(obj);
 		else res = MOVE_CANCELLED;
 	break;
 	case VITAL_SOULSTONE:

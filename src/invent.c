@@ -2525,7 +2525,7 @@ struct obj *obj;
 				"Crush this flawed gem", MENU_UNSELECTED);
 	else if (obj->otyp == CRYSTAL && obj->obj_material == FLESH)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
-				"Contemplate this crysalis", MENU_UNSELECTED);
+				"Contemplate this chrysalis", MENU_UNSELECTED);
 	else if (obj->otyp == MISOTHEISTIC_PYRAMID || obj->otyp == MISOTHEISTIC_FRAGMENT)
 		add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
 				"Shatter this pyramid", MENU_UNSELECTED);

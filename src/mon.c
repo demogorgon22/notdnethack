@@ -1738,10 +1738,7 @@ struct monst *mon;
 		mmove = max(mmove-(u.ulevel/10+1),1);
 	}
 	if(In_fog_cloud(mon)) mmove = max(mmove/3, 1);
-	if(mon->mfell > 0){
-		mmove = (mmove + mon->mfell)/mon->mfell;
-		mon->mfell = 0;
-	}
+	mon->mfell = 0;
 	return mmove;
 }
 
@@ -4834,7 +4831,7 @@ struct monst *mtmp;
 				break;
 				case 2:
 					if(canseemon(mtmp))
-						pline("%s head splits open in a profusion of fungal growthes!", s_suffix(Monnam(mtmp)));
+						pline("%s head splits open in a profusion of fungal growths!", s_suffix(Monnam(mtmp)));
 					else You_hear("a wet crack.");
 					set_mon_data(mtmp, PM_FUNGAL_BRAIN);
 					possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */

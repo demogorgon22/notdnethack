@@ -6751,6 +6751,7 @@ d_weapon:
 			add_oprop(obj, OPROP_AXIO);
 	}
 	verbalize("It's done.");
+	fix_object(obj);
 	int cost = (int) obj->owt;
 	if(objects[obj->otyp].oc_magic){
 		cost += 100;
@@ -7005,6 +7006,7 @@ d_weapon:
 		}
 	}
 	verbalize("It's done.");
+	fix_object(obj);
 	int cost = (int) objects[otyp].oc_nutrition*10;
 	cost = cost*obj->owt/objects[otyp].oc_weight;
 	cost += cost/10;
@@ -7351,6 +7353,7 @@ d_weapon:
 			obj->objsize = example->objsize;
 		else
 			obj->objsize = youracedata->msize;
+		fix_object(obj);
 	}
 	// Make shadowsteel stuff fixed
 	if(mat == SHADOWSTEEL){
@@ -7373,6 +7376,7 @@ d_weapon:
 	}
 	
 	verbalize("It's done.");
+	fix_object(obj);
 	int cost = (int) obj->owt;
 	if(objects[obj->otyp].oc_magic){
 		cost += 100;

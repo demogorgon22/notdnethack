@@ -735,7 +735,7 @@ struct obj {
 #define hand_protecting(otmp)	(\
 			 is_pata(otmp) || \
 			 (otmp)->otyp == BROADSWORD || \
-			 ((otmp)->oartifact == ART_SKY_REFLECTED && artinstance[ART_SKY_REFLECTED].ZerthOtyp == SHANTA_PATA && artinstance[ART_SKY_REFLECTED].ZerthOtyp == TWINGUN_SHANTA && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BROADSWORD)\
+			 ((otmp)->oartifact == ART_AMALGAMATED_SKIES && (artinstance[ART_SKY_REFLECTED].ZerthOtyp == SHANTA_PATA || artinstance[ART_SKY_REFLECTED].ZerthOtyp == TWINGUN_SHANTA || artinstance[ART_SKY_REFLECTED].ZerthOtyp == BROADSWORD))\
 			 )
 #define is_runic_form_sword(otmp) (\
 			    otmp->otyp == LONG_SWORD \

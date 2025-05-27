@@ -240,7 +240,7 @@ struct objclass {
 #define wielder_size(mon) ((mon) == &youmonst ? youracedata->msize : (mon)->data->msize)
 #define CHECK_ETRAIT(obj, mon, trait) ( \
 										( ((obj)->expert_traits&trait  \
-											&& (trait == ETRAIT_FOCUS_FIRE || (obj)->otyp != TOOTH || !((obj)->o_e_trait&ETRAIT_FOCUS_FIRE)) \
+											&& (trait == (trait&FFORM_ETRAITS) || (obj)->otyp != TOOTH || !((obj)->o_e_trait&ETRAIT_FOCUS_FIRE)) \
 											&& !((mon) == &youmonst && objects[(obj)->otyp].oc_skill == P_LANCE && !(u.usteed || centauroid(youracedata) || animaloid(youracedata))) \
 											&& !(trait == ETRAIT_GRAZE && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL)) \
 										) \

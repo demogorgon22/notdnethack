@@ -2370,7 +2370,7 @@ moveloop()
 						break;
 						case 4:
 							if(canseemon(mtmp))
-								pline("%s head splits open in a profusion of fungal growthes!", s_suffix(Monnam(mtmp)));
+								pline("%s head splits open in a profusion of fungal growths!", s_suffix(Monnam(mtmp)));
 							set_mon_data(mtmp, PM_FUNGAL_BRAIN);
 							possibly_unwield(mtmp, FALSE);	/* might lose use of weapon */
 							mon_break_armor(mtmp, FALSE);
@@ -2711,7 +2711,7 @@ karemade:
 						}
 					}
 				}
-				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(98)+2 < Insight){
+				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(88)+12 < Insight){
 					mtmp = makemon(&mons[PM_RAGE_WALKER], 0, 0, MM_ADJACENTOK);
 					if(mtmp){
 						make_rage_walker_polts(u.uz.rage+3);
@@ -2723,14 +2723,15 @@ karemade:
 					int sphere[] = {PM_FREEZING_SPHERE, PM_FLAMING_SPHERE, PM_SHOCKING_SPHERE};
 					for(i = d(3,3); i > 0; i--) makemon(&mons[ROLL_FROM(sphere)], 0, 0, NO_MM_FLAGS);
 				}
-				else if(u.uz.rage > 0 && !rn2(u.uz.rage))
-					u.uz.rage--;
 			}
 			if(Infuture && !(Is_qstart(&u.uz) && !Race_if(PM_ANDROID)) && !rn2(35)){
 				struct monst* mtmp = makemon(&mons[PM_SEMBLANCE], rn1(COLNO-3,2), rn1(ROWNO-3,2), MM_ADJACENTOK);
 				//"Where stray illuminations from the Far Realm leak onto another plane, matter stirs at the beckoning of inexplicable urges before burning to ash."
 				if(mtmp && canseemon(mtmp)) pline("The base matter of the world stirs at the beckoning of inexplicable urges, dancing with a semblance of life.");
 			}
+			/* Rage-walker rage quickly fades. */
+			if(u.uz.rage > 0 && !rn2(u.uz.rage+9))
+				u.uz.rage--;
 
 		    /* reset summon monster block. */
 			u.summonMonster = FALSE;
@@ -4306,7 +4307,7 @@ printSanAndInsight(){
 	struct permonst *ptr;
 	rfile = fopen_datafile("MonSanAndInsight.tab", "w", SCOREPREFIX);
 	if (rfile) {
-		Sprintf(pbuf,"Number\tName\tclass\tslain insight\tseen insight\tsanity\n");
+		Sprintf(pbuf,"Number\tName\tclass\tslain insight\tseen insight\tsanity\tlocation\tto-see\n");
 		fprintf(rfile, "%s", pbuf);
 		fflush(rfile);
 		for(j=0;j<NUMMONS;j++){
@@ -4314,11 +4315,18 @@ printSanAndInsight(){
 			pbuf[0] = 0;
 			if(!taxes_sanity(&mons[j]) && !yields_insight(&mons[j]))
 				continue;
-			Sprintf(pbuf,"%d	%s	%d	%d	%d	%d\n", 
+			Sprintf(pbuf,"%d	%s	%d	%d	%d	%d	%s	%d\n", 
 					j, mons[j].mname, mons[j].mlet,
 						yields_insight(&mons[j]) ? (monstr[j]/10 > 1 ? monstr[j]/10-1 : max(1, monstr[j]/10)) : 0, 
 						(yields_insight(&mons[j]) && monstr[j]/10 > 1) ? 1 : 0, 
-						taxes_sanity(&mons[j]) ? monstr[j] : 0);
+						taxes_sanity(&mons[j]) ? monstr[j] : 0,
+						mons[j].geno&G_UNIQ ? "Unique" :
+						mons[j].geno&G_HELL ? "Hell" :
+						mons[j].geno&G_PLANES ? "Planes" :
+						mons[j].geno&G_DEPTHS ? "Depths" :
+						!(mons[j].geno&G_NOGEN) ? "Main" :
+						"",
+						(int)G_C_INST(mons[j].geno));
 			fprintf(rfile, "%s", pbuf);
 			fflush(rfile);
 		}
@@ -4744,7 +4752,7 @@ printAttacks(buf, ptr)
 				get_description_of_damage_type(attk->adtyp)
 			);
 		}
-		if(attk->lev_req > 0 || attk->ins_req > 0){
+		if(attk->lev_req > 0 || attk->ins_req > 0 || attk->san_req != 0){
 			Sprintf(eos(buf), " (");
 				if(attk->lev_req > 0){
 					Sprintf(eos(buf), "level %d+", attk->lev_req);
@@ -6782,7 +6790,7 @@ void
 dorotsting(struct monst *magr)
 {
 	struct attack * attk;
-	struct attack symbiote = { AT_STNG, AD_DISE, 1, 4 };
+	struct attack symbiote = { AT_STNG, AD_PFBT, 1, 4 };
 	dorotattack(magr, &symbiote, 1, 1);
 }
 

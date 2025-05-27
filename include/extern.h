@@ -2718,6 +2718,7 @@ E boolean FDECL(ok_align, (int, int, int, int));
 E int FDECL(pick_align, (int, int, int, int));
 E int FDECL(pick_species, (int, int, int, int));
 E void FDECL(role_init, (int));
+E int FDECL(get_vgod, (int));
 E void NDECL(rigid_role_checks);
 E void NDECL(plnamesuffix);
 E const char *FDECL(Hello, (struct monst *));

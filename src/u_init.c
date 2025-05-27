@@ -3086,9 +3086,9 @@ u_init()
     break;
 	case PM_VAMPIRE:
 	    /* Vampires start off with gods not as pleased, luck penalty */
-		if(!Role_if(PM_EXILE) && (u.ualign.type == godlist[urole.vgod].alignment || godlist[urole.vgod].alignment == A_NONE)){
-			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = urole.vgod;
-			if(godlist[urole.vgod].alignment == A_NONE){
+		if(!Role_if(PM_EXILE) && (u.ualign.type == godlist[get_vgod(flags.panVgod)].alignment || godlist[get_vgod(flags.panVgod)].alignment == A_NONE)){
+			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = get_vgod(flags.panVgod);
+			if(godlist[get_vgod(flags.panVgod)].alignment == A_NONE){
 				flags.initalign = 3;
 			}
 		}

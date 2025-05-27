@@ -203,8 +203,29 @@ struct monst *magr;
 		}
 	}
 
-/*	Put weapon specific "to hit" bonuses in below:		*/
+	/*	Put weapon specific "to hit" bonuses in below:		*/
 	tmp += objects[otmp->otyp].oc_hitbon;
+	if(youagr && u.sealsActive&SEAL_OTIAX && (
+		otmp->otyp == LOCK_PICK ||
+		otmp->otyp == CREDIT_CARD ||
+		otmp->otyp == UNIVERSAL_KEY ||
+		otmp->otyp == SKELETON_KEY
+	)){
+		tmp += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+	}
+	if(youagr && u.sealsActive&SEAL_PAIMON && otmp->oclass == SPBOOK_CLASS){
+		tmp += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+	}
+	if(youagr && u.sealsActive&SEAL_JACK && (
+		otmp->otyp == OIL_LAMP ||
+		otmp->otyp == TORCH ||
+		otmp->otyp == SHADOWLANDER_S_TORCH ||
+		otmp->otyp == SUNROD
+	)
+		&& otmp->lamplit
+	){
+		tmp += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+	}
 	
 	if (is_lightsaber(otmp) && otmp->altmode) tmp += objects[otmp->otyp].oc_hitbon;
 	//But DON'T double the to hit bonus from spe for double lightsabers in dual bladed mode. It gets harder to use, not easier.
@@ -801,7 +822,24 @@ struct monst *magr;
 		}
 	}
 	/* apply dmod to ocd */
-	ocd = max(2, ocd + dmod * 2);
+	if(dmod){
+		ocd = max(2, ocd + dmod * 2);
+		if(bond){
+			bond = max(2, bond + dmod * 2);
+			if(flat){
+				flat = max(0, flat + dmod);
+			}
+		}
+		else if(flat){
+			if(flat > 1){
+				flat = max(0, flat + dmod);
+			}
+			else {
+				bond = max(0, dmod * 2);
+				flat = 0;
+			}
+		}
+	}
 
 	/* SPECIAL CASES (beyond what is defined in objects.c) START HERE */
 
@@ -2950,19 +2988,25 @@ int atr;
 
 			if (is_rapier(otmp) || is_mercy_blade(otmp) || otmp->otyp == SET_OF_CROW_TALONS ||
 				(otmp->otyp == LIGHTSABER && !otmp->oartifact && otmp->ovar1_lightsaberHandle == 0))
-				mod = 0.5;
+				mod *= 0.5;
 
 			if (otmp->oartifact == ART_LIFEHUNT_SCYTHE || otmp->oartifact == ART_VELKA_S_RAPIER ||
 				otmp->oartifact == ART_FRIEDE_S_SCYTHE || otmp->oartifact == ART_CRUCIFIX_OF_THE_MAD_KING)
-				mod = 0.5;
+				mod *= 0.5;
 
 			if (check_oprop(otmp, OPROP_OCLTW) || (Insight > 0 && check_oprop(otmp, OPROP_GSSDW)))
-				mod = 0.5;
+				mod *= 0.5;
+
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod *= 0.5; //2x->1x, 1x->.5x, etc.
 
 			return mod;
 		case A_DEX:
 			if (is_rakuyo(otmp))
 				return 2; // otherwise gets caught by rapiers
+
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
 
 			if (otmp->oartifact == ART_LIFEHUNT_SCYTHE || otmp->oartifact == ART_YORSHKA_S_SPEAR ||
 				otmp->oartifact == ART_FRIEDE_S_SCYTHE)
@@ -2976,6 +3020,9 @@ int atr;
 		case A_CON:
 			return mod;
 		case A_INT:
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
+
 			if (Insight > 0 && check_oprop(otmp, OPROP_GSSDW))
 				mod += 1;
 
@@ -2990,6 +3037,9 @@ int atr;
 
 			return mod;
 		case A_WIS:
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
+
 			if (otmp->oartifact == ART_YORSHKA_S_SPEAR)
 				mod += 1;
 
@@ -3004,6 +3054,9 @@ int atr;
 
 			return mod;
 		case A_CHA:
+			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
+				mod = 0.5;
+
 			if (check_oprop(otmp, OPROP_ELFLW))
 				mod += 0.5;
 			return mod;
@@ -3082,6 +3135,27 @@ struct monst *mtmp;
 			if (otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
 				damage_bon += u.uimpurity/2;
 			}
+		}
+		if(youagr && u.sealsActive&SEAL_OTIAX && (
+			otmp->otyp == LOCK_PICK ||
+			otmp->otyp == CREDIT_CARD ||
+			otmp->otyp == UNIVERSAL_KEY ||
+			otmp->otyp == SKELETON_KEY
+		)){
+			damage_bon += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+		}
+		if(youagr && u.sealsActive&SEAL_PAIMON && otmp->oclass == SPBOOK_CLASS){
+			damage_bon += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+		}
+		if(youagr && u.sealsActive&SEAL_JACK && (
+			otmp->otyp == OIL_LAMP ||
+			otmp->otyp == TORCH ||
+			otmp->otyp == SHADOWLANDER_S_TORCH ||
+			otmp->otyp == SUNROD
+		)
+			&& otmp->lamplit
+		){
+			damage_bon += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
 		}
 	} else {
 		damage_bon = strbon;

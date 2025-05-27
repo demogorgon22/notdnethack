@@ -2747,7 +2747,7 @@ doturn()
 	    aggravate();
 	    return MOVE_INSTANT;
 	}
-	if(!Race_if(PM_VAMPIRE)) pline("Calling upon %s, you chant holy scripture.", u_gname());
+	if(!Race_if(PM_VAMPIRE)) pline("Calling upon %s, you chant %sholy scripture.", u_gname(), gholiness(u.ualign.god) == UNHOLY_HOLINESS ? "un" : "");
 	else You("focus your vampiric aura!");
 	exercise(A_WIS, TRUE);
 
@@ -2783,7 +2783,7 @@ doturn()
 				if(is_undead(mtmp->data)){
 					xlev = turn_level(mtmp);
 					if (u.ulevel >= xlev && !resist(mtmp, '\0', 0, NOTELL)) {
-						if (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE || Race_if(PM_VAMPIRE)){
+						if (gholiness(u.ualign.god) == UNHOLY_HOLINESS || u.ualign.type == A_NONE || Race_if(PM_VAMPIRE)){
 							mtmp->mpeaceful = 1;
 							set_malign(mtmp);
 							if(PM_VAMPIRE){
@@ -4308,6 +4308,7 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 	/* validate that you have at least one binding to refresh */
 	if (((u.spirit[QUEST_SPIRIT] && u.spiritT[QUEST_SPIRIT] > 0)
 		||(u.spirit[ALIGN_SPIRIT] && u.spiritT[ALIGN_SPIRIT] > 0)
+		||(u.spirit[OTHER_SPIRIT] && u.spiritT[OTHER_SPIRIT] > 0)
 		|| u.sealCounts)
 	) {
 		Sprintf(buf, "continued companionship");
@@ -4538,6 +4539,8 @@ commune_with_yog()
 				u.spiritT[QUEST_SPIRIT] = min(u.spiritT[QUEST_SPIRIT]+1000, monstermoves + 5000);
 			if(u.spiritT[ALIGN_SPIRIT] > 0)
 				u.spiritT[ALIGN_SPIRIT] = min(u.spiritT[ALIGN_SPIRIT]+1000, monstermoves + 5000);
+			if(u.spiritT[OTHER_SPIRIT] > 0)
+				u.spiritT[OTHER_SPIRIT] = min(u.spiritT[OTHER_SPIRIT]+1000, monstermoves + 5000);
 			
 		}break;
 

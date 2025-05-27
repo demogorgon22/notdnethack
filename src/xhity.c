@@ -2795,7 +2795,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		&& !check_subout(subout, SUBOUT_ROT_STING)
 	) {
 		attk->aatyp = AT_STNG;
-		attk->adtyp = AD_DISE;
+		attk->adtyp = AD_PFBT;
 		attk->damn = 1;
 		attk->damd = 4;
 		fromlist = FALSE;
@@ -4743,15 +4743,18 @@ boolean ranged;
 
 	/* AT_DEVA attacks shouldn't print a miss message if it is a subsequent attack that misses */
 	/* Hack this in by knowing that repeated AT_DEVA attacks have a flat_acc penalty */
-	boolean longslash = FALSE;
+	long longslash = 0;
 	if (attk->aatyp == AT_DEVA && flat_acc < 0)
 		domissmsg = FALSE;
 
 	if (hit && weapon && magr
 		&& CHECK_ETRAIT(weapon, magr, ETRAIT_LONG_SLASH)
-		&& ROLL_ETRAIT(weapon, magr, (accuracy > (dieroll + 20)), (accuracy > (dieroll + 30 - rnd(20))))
 	){
-		longslash = TRUE;
+		int longdie = dieroll;
+		while(longslash < 4 && ROLL_ETRAIT(weapon, magr, (accuracy > (longdie + 20)), (accuracy > (longdie + 40 - rnd(20))))){
+			longdie += 20;
+			longslash++;
+		}
 	}
 
 	boolean graze = FALSE;
@@ -4862,7 +4865,7 @@ boolean ranged;
 	/* if we hit... */
 	if (hit) {
 		/* DEAL THE DAMAGE */
-		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, -1, dieroll, vis, ranged, longslash ? MELEEHURT_LONGSLASH : 0L);
+		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, -1, dieroll, vis, ranged, longslash);
 
 		/* the player exercises dexterity when hitting */
 		if (youagr)
@@ -16528,9 +16531,17 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 				else {
 					mdef->mfell += 1;
+					mdef->movement -= min_ints(6, mdef->movement/(mdef->mfell+1));
 					if(!mdef->mwounded_legs && !rn2(20)){
 						mdef->mwounded_legs = 1;
 						pline("%s %s is injured in the fighting!", s_suffix(Monnam(mdef)), mbodypart(mdef, LEG));
+						struct weapon_dice wdice;
+						/* grab the weapon dice from dmgval_core */
+						dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+						/* add to the tratdmg counter */
+						tratdmg += weapon_dmg_roll(&wdice, youdef);
+						if(youagr)
+							tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 					}
 				}
 			}
@@ -16654,16 +16665,19 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				if(youagr)
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
-			if(modifier_flags&MELEEHURT_LONGSLASH){
+			if(modifier_flags&MELEEHURT_LONGSLASH_MASK){
 				struct weapon_dice wdice;
+				long longcount = modifier_flags&MELEEHURT_LONGSLASH_MASK;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
-					pline("Long slash!");
+					pline("Long slash %ldx!", longcount);
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
-				tratdmg += weapon_dmg_roll(&wdice, youdef);
-				if(youagr)
-					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+				for(; longcount > 0; longcount--){
+					tratdmg += weapon_dmg_roll(&wdice, youdef);
+					if(youagr)
+						tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+				}
 			}
 		}
 	}

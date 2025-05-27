@@ -1,7 +1,7 @@
 #ifndef XHITY_H
 #define XHITY_H
 
-#define MELEEHURT_LONGSLASH	0x00000001L
+#define MELEEHURT_LONGSLASH_MASK	0x0000000FL
 
 /* macros to unify player and monster */
 #define x(mon)				((mon)==&youmonst ? u.ux : (mon)->mx)

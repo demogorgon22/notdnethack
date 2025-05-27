@@ -1947,13 +1947,13 @@ boolean getting_obj_base_desc;
 		}
 		else if(obj->obj_material == FLESH){
 			const char *butterflies[] = {
-				"novel Hedylidae crysalis",
-				"novel Hesperiidae crysalis",
-				"novel Lycaenidae crysalis",
-				"novel Nymphalidae crysalis",
-				"novel Papilionidae crysalis",
-				"novel Pieridae crysalis",
-				"novel Riodinidae crysalis",
+				"novel Hedylidae chrysalis",
+				"novel Hesperiidae chrysalis",
+				"novel Lycaenidae chrysalis",
+				"novel Nymphalidae chrysalis",
+				"novel Papilionidae chrysalis",
+				"novel Pieridae chrysalis",
+				"novel Riodinidae chrysalis",
 			};
 			actualn = butterflies[obj->spe];
 		}
@@ -4148,7 +4148,7 @@ int wishflags;
 		return mkcolumnarcrystal(3);
 	if(!strcmpi(bp, "columnar mass"))
 		return mkcolumnarcrystal(4);
-	if(!strcmpi(bp, "crysalis")){
+	if(!strcmpi(bp, "chrysalis")){
 		struct obj *crys = mksobj(CRYSTAL, NO_MKOBJ_FLAGS);
 		set_material_gm(crys, FLESH);
 		crys->spe = rn2(7);
