@@ -203,8 +203,29 @@ struct monst *magr;
 		}
 	}
 
-/*	Put weapon specific "to hit" bonuses in below:		*/
+	/*	Put weapon specific "to hit" bonuses in below:		*/
 	tmp += objects[otmp->otyp].oc_hitbon;
+	if(youagr && u.sealsActive&SEAL_OTIAX && (
+		otmp->otyp == LOCK_PICK ||
+		otmp->otyp == CREDIT_CARD ||
+		otmp->otyp == UNIVERSAL_KEY ||
+		otmp->otyp == SKELETON_KEY
+	)){
+		tmp += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+	}
+	if(youagr && u.sealsActive&SEAL_PAIMON && otmp->oclass == SPBOOK_CLASS){
+		tmp += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+	}
+	if(youagr && u.sealsActive&SEAL_JACK && (
+		otmp->otyp == OIL_LAMP ||
+		otmp->otyp == TORCH ||
+		otmp->otyp == SHADOWLANDER_S_TORCH ||
+		otmp->otyp == SUNROD
+	)
+		&& otmp->lamplit
+	){
+		tmp += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+	}
 	
 	if (is_lightsaber(otmp) && otmp->altmode) tmp += objects[otmp->otyp].oc_hitbon;
 	//But DON'T double the to hit bonus from spe for double lightsabers in dual bladed mode. It gets harder to use, not easier.
@@ -3093,6 +3114,27 @@ struct monst *mtmp;
 			if (otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
 				damage_bon += u.uimpurity/2;
 			}
+		}
+		if(youagr && u.sealsActive&SEAL_OTIAX && (
+			otmp->otyp == LOCK_PICK ||
+			otmp->otyp == CREDIT_CARD ||
+			otmp->otyp == UNIVERSAL_KEY ||
+			otmp->otyp == SKELETON_KEY
+		)){
+			damage_bon += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+		}
+		if(youagr && u.sealsActive&SEAL_PAIMON && otmp->oclass == SPBOOK_CLASS){
+			damage_bon += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
+		}
+		if(youagr && u.sealsActive&SEAL_JACK && (
+			otmp->otyp == OIL_LAMP ||
+			otmp->otyp == TORCH ||
+			otmp->otyp == SHADOWLANDER_S_TORCH ||
+			otmp->otyp == SUNROD
+		)
+			&& otmp->lamplit
+		){
+			damage_bon += u.ulevel >= 21 ? 5 : u.ulevel >= 14 ? 2 : 1;
 		}
 	} else {
 		damage_bon = strbon;
