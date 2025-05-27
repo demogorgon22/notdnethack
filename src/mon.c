@@ -6608,7 +6608,7 @@ xkilled(mtmp, dest)
 			is_elf(mtmp->data)
 			|| is_fey(mtmp->data)
 		)){
-			u.uz.rage++;
+			level.flags.rage++;
 		}
 		if(mtmp->mibitemarked){
 			mtmp->mflamemarked = FALSE;

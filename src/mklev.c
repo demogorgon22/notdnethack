@@ -981,6 +981,7 @@ clear_level_structures()
 	level.flags.goldkamcount_peace = 0;
 	
 	level.flags.sp_lev_nroom = 0;
+	level.flags.rage = 0;
 	
 	level.flags.has_shop = 0;
 	level.flags.has_vault = 0;
@@ -1016,6 +1017,10 @@ clear_level_structures()
 	level.flags.outside = 0;
 	level.flags.has_minor_spire = 0;
 	level.flags.has_kamerel_towers = 0;
+	
+	level.flags.mirror = 0;
+	level.flags.day = 0;
+	level.flags.walkers = 0;
 	
 	level.lastmove = monstermoves;
 
