@@ -1469,7 +1469,7 @@ reshape_brand(struct obj *obj)
 	any.a_void = 0;         /* zero out all bits */
 	menu_item *selected;
 	int otyp = -1;
-	int n, i, b;
+	int n = 0, i, b;
 	char ch = 'a';
 	char buffer[BUFSZ] = {0};
 
@@ -1494,6 +1494,7 @@ reshape_brand(struct obj *obj)
 			continue;
 
 		//Add to menu
+		n++;
 		any.a_int = i;
 		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
 			 obj_descr[i].oc_name, MENU_UNSELECTED);
@@ -1505,9 +1506,15 @@ reshape_brand(struct obj *obj)
 		}
 		else ch++;
 	}
+	//No options :(
+	if(n <= 0){
+		pline("Nothing happens.");
+		return;
+	}
 	end_menu(tmpwin, "Shapes Known:");
 	n = select_menu(tmpwin, PICK_ONE, &selected);
 	destroy_nhwindow(tmpwin);
+	//Escaped menu
 	if(n <= 0){
 		return;
 	}
