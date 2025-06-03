@@ -2393,7 +2393,7 @@ u_init()
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
-			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
 			}
 		}
 		else if(Race_if(PM_INCANTIFIER)){
@@ -2404,7 +2404,7 @@ u_init()
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
-			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
 			}
 		}
 		else if(Race_if(PM_ELF)){
@@ -2427,7 +2427,7 @@ u_init()
 			Kensei[KEN_WEAPON].trotyp = DROVEN_GREATSWORD;
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
-			case 1: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
 			case 2: Kensei[KEN_BOOK].trotyp = SPE_SLEEP; break;
 			}
 		}
@@ -2441,7 +2441,7 @@ u_init()
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_FORCE_BOLT; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
-			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
 			}
 		}
 		else if(Race_if(PM_GITHZERAI)){
@@ -2452,7 +2452,7 @@ u_init()
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
-			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
 			}
 		}
 		else if(Race_if(PM_YUKI_ONNA)){
@@ -2465,7 +2465,7 @@ u_init()
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
-			case 2: Kensei[KEN_BOOK].trotyp = SPE_JUMPING; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
 			}
 		}
 		knows_class(WEAPON_CLASS);
