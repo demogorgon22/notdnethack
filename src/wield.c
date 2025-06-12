@@ -142,13 +142,21 @@ struct obj* wep;
 	confirmation = (yesno("Knowing this, do you still wish to attempt this?", TRUE) == 'y');
 	if (confirmation){
 		You("draw the Mortal Blade from its sheath... and fall to the ground, dead.");
-		killer_format = KILLED_BY;
-		killer = "drawing the blade that could not be drawn";
-		done(DIED);
+		/* Bad hack to check if you have lifesaving that triggers before this */
+		if (artinstance[ART_MORTAL_BLADE].mortalLives && !(ELifesaved || Check_iaso_lifesaving() || Check_twin_lifesaving())){
+			pline("For a moment, you smell the sweet scent of cherry blossoms.");
+			artinstance[ART_MORTAL_BLADE].mortalLives--;
+		} else {
+			killer_format = KILLED_BY;
+			killer = "drawing the blade that could not be drawn";
+			done(DIED);
+		}
 
 		/* for fun, a little conduct tracker. could just be 0/1 but why not? */
 		artinstance[wep->oartifact].drawnMortal++;
 		You("stand up, with the blade in hand.");
+		discover_artifact(ART_MORTAL_BLADE);
+		wep->known = 1;
 		return TRUE;
 	} else {
 		You("decide against such a risky maneuver.");

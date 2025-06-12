@@ -4491,9 +4491,13 @@ struct monst *mtmp;
 	/* monsters laid to rest cannot lifesave by any means, except the twin sibling & the puppet emperors,
 	 * due to potentially weird/bleh behavior. yog & the suzerain send replacements.
 	 */
-	if (mtmp->mlaidtorest)
+	if (mtmp->mlaidtorest) {
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && (lifesavers&(LSVD_NIT|LSVD_NBW|LSVD_ASC))) {
+			artinstance[ART_MORTAL_BLADE].mortalLives++;
+			pline("Red smoke flows into the blade!");
+		}
 		lifesavers &= (LSVD_YEL | LSVD_TWN);
-
+	}
 	/* quick check -- if no lifesavers, let's fail immediately */
 	if (!lifesavers) {
 		return;

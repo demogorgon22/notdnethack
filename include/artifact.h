@@ -345,7 +345,7 @@ struct artinstance{
 #define LAST_GSTYLE			GSTYLE_RESONANT
 #define ZerthOtyp	avar2
 #define CarapaceLevel avar2
-
+#define mortalLives avar2
 	long avar3;
 #define SnSd3 avar3
 #define IbiteBoons avar3

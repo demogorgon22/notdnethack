@@ -2096,6 +2096,7 @@ boolean mod;
 				}
 				if(otmp->oartifact == ART_MORTAL_BLADE){
 					artinstance[ART_MORTAL_BLADE].drawnMortal = 0;// times you've drawn the mortal blade
+					artinstance[ART_MORTAL_BLADE].mortalLives = 0;// times you've drawn the mortal blade
 				}
 				if(otmp->oartifact == ART_SODE_NO_SHIRAYUKI){
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd1 = 0;//turn on which you can reuse the first dance
@@ -2222,6 +2223,9 @@ arti_attack_prop(otmp, flag)
 struct obj *otmp;
 unsigned long flag;
 {
+	if (otmp->oartifact == ART_MORTAL_BLADE && otmp != uwep)
+		return FALSE;
+
 	const struct artifact *arti = get_artifact(otmp);
 	return((boolean)(arti && (arti->aflags & flag)));
 }
@@ -2989,6 +2993,11 @@ boolean narrow_only;
 	if (on_level(&spire_level,&u.uz))
 		return FALSE;
 
+	/* absolutely no artifact bonus effects for the mortal blade unless it's wielded,
+	   it's 'sheathed' otherwise - no cost equals no bonuses */
+	if (otmp->oartifact == ART_MORTAL_BLADE && uwep != otmp)
+		return FALSE;
+
 	/* requires some kind of offense in the artilist block */
 	if (!weap || !(weap->adtyp || weap->accuracy || weap->damage))
 		return FALSE;
@@ -3347,11 +3356,6 @@ int * truedmgptr;
 	/* The Annulus is a 2x damage artifact if it isn't a lightsaber */
 	if(otmp->oartifact == ART_ANNULUS && !is_lightsaber(otmp))
 		damd = 0;
-
-	/* absolutely no artifact bonus effects for the mortal blade unless it's wielded,
-	   it's 'sheathed' otherwise - no cost equals no bonuses */
-	if (otmp->oartifact == ART_MORTAL_BLADE && uwep != otmp)
-		return FALSE;
 
 	/* The black arrow deals 4x damage + 108, and overkills Smaug */
 	if (otmp->oartifact == ART_BLACK_ARROW) {
@@ -6540,12 +6544,13 @@ boolean printmessages; /* print generic elemental damage messages */
 	
 	if (youagr && oartifact == ART_MORTAL_BLADE)
 	{
-		/* Overall - 2x to all, 3x to mortal or undead
+		/* Overall - 2x to primordial/nonliving, 3x to everything else
 		 * To compensate for AD_DARK already being 3x to Dark_vuln,
-		 * add the +1x to all & the extra +1x to undead here
+		 * add the +1x to "things that didn't get 3x"
+		 * (dark_immune goes from 1x to 2x, non-mortal_race goes from 2x to 3x)
 		 */
 		if (!Dark_vuln(mdef)) *truedmgptr += basedmg;
-		if (is_undead(pd)) *truedmgptr += basedmg;
+		if (!is_unalive(mdef->data) && is_primordial(mdef->data)) *truedmgptr += basedmg;
 	}
 	
 	if (arti_attack_prop(otmp, ARTA_BLIND) && !resists_blnd(mdef) && !rn2(3)) {
