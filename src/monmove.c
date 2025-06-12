@@ -986,6 +986,46 @@ int mtyp;
 	}
 }
 
+int
+mvm_widegaze(struct monst *gazemon, struct monst *mtmp)
+{
+	if(DEADMONSTER(gazemon))
+		return 0;
+	if (gazemon != mtmp
+		&& mon_can_see_mon(mtmp, gazemon)
+		&& clear_path(mtmp->mx, mtmp->my, gazemon->mx, gazemon->my)
+	){
+		int i;
+		if(gazemon->mtyp == PM_MEDUSA && resists_ston(mtmp)
+		) return 0;
+		
+		if (hideablewidegaze(gazemon->data) && hiddenwidegaze(gazemon))
+			return 0;
+
+		if (controlledwidegaze(gazemon->data)
+			&& !mm_aggression(gazemon, mtmp)
+		) return 0;
+		
+		for(i = 0; i < NATTK; i++)
+			 if(gazemon->data->mattk[i].aatyp == AT_WDGZ) {
+				if((gazemon->data->mattk[i].adtyp ==  AD_CONF 
+					|| gazemon->data->mattk[i].adtyp ==  AD_WISD 
+				) && (dmgtype_fromattack(mtmp->data, AD_CONF, AT_WDGZ)
+					|| dmgtype_fromattack(mtmp->data, AD_WISD, AT_WDGZ)
+				)) continue;
+				/*
+				if(canseemon(mtmp) && canseemon(gazemon)){
+					Sprintf(buf,"%s can see", Monnam(mtmp));
+					pline("%s %s...", buf, mon_nam(gazemon));
+				}*/
+				if (xgazey(gazemon, mtmp, &gazemon->data->mattk[i], -1) & MM_DEF_DIED)
+					return 1;	/* mtmp died from seeing something */
+				break;
+			 }
+	}
+	return 0;
+}
+
 /* returns 1 if monster died moving, 0 otherwise */
 /* The whole dochugw/m_move/distfleeck/mfndpos section is serious spaghetti
  * code. --KAA
@@ -1392,40 +1432,13 @@ register struct monst *mtmp;
 
 	if(!mtmp->mblinded && !mon_resistance(mtmp, GAZE_RES)) for (gazemon = fmon; gazemon; gazemon = nxtmon){
 		nxtmon = gazemon->nmon;
-		if(DEADMONSTER(gazemon))
-			continue;
-		if (gazemon != mtmp
-			&& mon_can_see_mon(mtmp, gazemon)
-			&& clear_path(mtmp->mx, mtmp->my, gazemon->mx, gazemon->my)
-		){
-			int i;
-			if(gazemon->mtyp == PM_MEDUSA && resists_ston(mtmp)
-			) continue;
-			
-			if (hideablewidegaze(gazemon->data) && hiddenwidegaze(gazemon))
-				continue;
-
-			if (controlledwidegaze(gazemon->data)
-				&& !mm_aggression(gazemon, mtmp)
-			) continue;
-			
-			for(i = 0; i < NATTK; i++)
-				 if(gazemon->data->mattk[i].aatyp == AT_WDGZ) {
-					if((gazemon->data->mattk[i].adtyp ==  AD_CONF 
-						|| gazemon->data->mattk[i].adtyp ==  AD_WISD 
-					) && (dmgtype_fromattack(mtmp->data, AD_CONF, AT_WDGZ)
-						|| dmgtype_fromattack(mtmp->data, AD_WISD, AT_WDGZ)
-					)) continue;
-					/*
-					if(canseemon(mtmp) && canseemon(gazemon)){
-						Sprintf(buf,"%s can see", Monnam(mtmp));
-						pline("%s %s...", buf, mon_nam(gazemon));
-					}*/
-					if (xgazey(gazemon, mtmp, &gazemon->data->mattk[i], -1) & MM_DEF_DIED)
-						return (1);	/* mtmp died from seeing something */
-					break;
-				 }
-		}
+		if(mvm_widegaze(gazemon, mtmp))
+			return 1; //mon died from seeing something
+	}
+	//Everything may see mon
+	for (gazemon = fmon; gazemon; gazemon = nxtmon){
+		nxtmon = gazemon->nmon;
+		mvm_widegaze(mtmp, gazemon);
 	}
 	
 	if (mtmp->mhp <= 0) return(1); /* m_respond gaze can kill medusa */
