@@ -1139,7 +1139,7 @@ do_lepre_menu(){
 			cc.y = u.uy;
 			pline("To what gold do you wish to travel?");
 			cancelled = getpos(&cc, TRUE, "the desired target");
-			while( !(((mon = m_at(cc.x,cc.y)) && mon->mgold && tt_findadjacent(&cc, mon)) || g_at(cc.x,cc.y)) && cancelled >= 0){
+			while(cancelled >= 0 && !(((mon = m_at(cc.x,cc.y)) && mon->mgold && tt_findadjacent(&cc, mon)) || g_at(cc.x,cc.y))){
 				if(!mon || !(sensemon(mon) || (mon_visible(mon) && cansee(mon->mx,mon->my)) )) You("don't sense any gold there.");
 				else if (!tt_findadjacent(&cc, mon)) pline("Something blocks your way!");
 				cancelled = getpos(&cc, TRUE, "the desired gold");
