@@ -16121,8 +16121,14 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
 				tratdmg += weapon_dmg_roll(&wdice, youdef);
-				if(youagr)
+				if(youagr){
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					u.ustdy = max_ints(u.ustdy, weapon_dam_bonus(weapon, weapon_type(weapon))/2);
+					morehungry(1*get_uhungersizemod());
+				}
+				else {
+					magr->mstdy = max(magr->mstdy, 2);
+				}
 			}
 			if(weapon->o_e_trait == ETRAIT_FELL
 				&& CHECK_ETRAIT(weapon, magr, ETRAIT_FELL)
