@@ -873,7 +873,8 @@ carrying_readable_weapon()
 				otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD ||
 				otmp->oartifact == ART_ESSCOOAHLIPBOOURRR ||
 				otmp->oartifact == ART_RED_CORDS_OF_ILMATER ||
-				otmp->oartifact == ART_STAFF_OF_NECROMANCY
+				otmp->oartifact == ART_STAFF_OF_NECROMANCY ||
+				(otmp->oartifact == ART_MORTAL_BLADE && otmp->owornmask&W_WEP && !u.veil)
 			))
 		)
 			return TRUE;

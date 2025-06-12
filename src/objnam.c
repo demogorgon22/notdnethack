@@ -2307,7 +2307,10 @@ weapon:
 			else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit) {
 				Strcat(buf, " (lit)");
 			}
-			else if (obj->oartifact == ART_MORTAL_BLADE && obj != uwep) {
+			else if (obj->oartifact == ART_MORTAL_BLADE && obj == uwep) {
+				Strcat(buf, " (drawn)");
+			}
+			else if (obj->oartifact == ART_MORTAL_BLADE && !(obj->owornmask&W_WEP)) {
 				Strcat(buf, " (sheathed)");
 			}
 			else if (obj->otyp == TONITRUS && obj->lamplit) {

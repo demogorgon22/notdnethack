@@ -134,12 +134,12 @@ struct obj* wep;
 		if (undiscovered_artifact(wep->oartifact))
 			You_feel("a creeping doom from this blade. If you were to draw it, you're not sure you'd survive.");
 		else
-			You("know this blade - it is the blade that cannot be drawn. It is so-called as not one who has drawn it has survived.");
+			You("know this blade - it is the blade that cannot be drawn. Not one who has drawn it has survived the effort.");
 	}
 	else
 		pline("If you draw the blade again, it will surely slay you once more.");
 
-	confirmation = (yn("Knowing this, do you still wish to attempt this?") == 'y');
+	confirmation = (yesno("Knowing this, do you still wish to attempt this?", TRUE) == 'y');
 	if (confirmation){
 		You("draw the Mortal Blade from its sheath... and fall to the ground, dead.");
 		killer_format = KILLED_BY;
@@ -332,21 +332,23 @@ dowield()
 	}
 
 	/* Handle no object, or object in other slot */
-	if (wep == &zeroobj)
-		wep = (struct obj *) 0;
-	else if (wep == uswapwep){
-		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
-		return (doswapweapon());
-	} else if (wep == uquiver){
-		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
-		setuqwep((struct obj *) 0);
-	} else if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
+	if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif
 			)) {
 		You("cannot wield that!");
 		return MOVE_CANCELLED;
+	} else if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Sheathe the Mortal Blade?", TRUE) == 'n') {
+		return MOVE_INSTANT;
+	} else if (wep == &zeroobj){
+		wep = (struct obj *) 0;
+	} else if (wep == uswapwep){
+		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+		return (doswapweapon());
+	} else if (wep == uquiver){
+		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+		setuqwep((struct obj *) 0);
 	}
 
 	/* Set your new primary weapon */
@@ -382,6 +384,9 @@ doswapweapon()
 		weldmsg(uwep);
 		return MOVE_INSTANT;
 	}
+
+	if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Sheathe the Mortal Blade?", TRUE) == 'n')
+		return MOVE_INSTANT;
 
 	/* Unwield your current secondary weapon */
 	oldwep = uwep;
