@@ -19736,20 +19736,32 @@ struct obj *arm;
 	return FALSE;
 }
 
+int
+monk_aura_range()
+{
+	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
+		if(uwep->oartifact == ART_RINGIL)
+			return 3;
+		return 2;
+	}
+	return BOLT_LIM;
+}
+
 boolean
-beam_monk_target(int range)
+beam_monk_target()
 {
 	struct monst *mon;
 	int i;
 	int ix = u.ux, iy = u.uy;
 	boolean at_least_one = FALSE;
+	int range = monk_aura_range();
 	//Same rules as kicking. Whirly monsters allow moves, solid ones do not.
 	if(u.ustuck && u.uswallow){
 		if(is_whirly(u.ustuck->data))
 			return TRUE;
 		else return FALSE;
 	}
-	for(i = 1; i < range; i++){
+	for(i = 1; i <= range; i++){
 		ix += u.dx;
 		iy += u.dy;
 		if(!isok(ix,iy))
@@ -19781,11 +19793,10 @@ monk_aura_bolt()
 	zapdat.damd = 4;
 	zapdat.affects_floor = FALSE;
 	zapdat.phase_armor = TRUE;
-	int range = BOLT_LIM;
+	int range = monk_aura_range();
 	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
 		struct weapon_dice wdice;
 		/* grab the weapon dice from dmgval_core */
-		range = 2;
 		dmgval_core(&wdice, FALSE, uwep, uwep->otyp, &youmonst);
 		zapdat.damd = wdice.oc_damd + wdice.bon_damd + wdice.flat*2;
 		if(uwep->oartifact){
@@ -19795,18 +19806,20 @@ monk_aura_bolt()
 				else
 					zapdat.damd += artilist[u.role_variant].damage;
 			}
-			if(artilist[uwep->oartifact].adtyp == AD_COLD
+			if(uwep->oartifact == ART_RINGIL){
+				zapdat.adtyp = AD_STAR;
+			}
+			else if(artilist[uwep->oartifact].adtyp == AD_COLD
 			 ||artilist[uwep->oartifact].adtyp == AD_FIRE
 			 ||artilist[uwep->oartifact].adtyp == AD_ELEC
 			 ||artilist[uwep->oartifact].adtyp == AD_SLEE
 			){
-				pline("%d", artilist[uwep->oartifact].adtyp);
 				zapdat.adtyp = artilist[uwep->oartifact].adtyp;
 				zapdat.affects_floor = TRUE;
 			}
 		}
 	}
-	if(uarmg && uarmg->oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI)
+	else if(uarmg && uarmg->oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI)
 		zapdat.damd *= 2;
 	//Currently these cook off without the player's explicit say-so
 	zapdat.no_bounce = TRUE;
@@ -20003,7 +20016,7 @@ int moveID;
 			&& (!(uswapwep && u.twoweap) || is_monk_weapon(uswapwep)) 
 			&& (u.ualign.record < -3 || u.ualign.record > 3)
 			&& !Is_spire(&u.uz) 
-			&& beam_monk_target((Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? 3 : BOLT_LIM)
+			&& beam_monk_target()
 		){
 			pline((Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? "Aura slash!" : "Aura bolt!");
 			monk_aura_bolt();

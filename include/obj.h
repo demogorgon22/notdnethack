@@ -1129,6 +1129,7 @@ struct obj {
 
 #define is_kensei_weapon(otmp) (Race_if(PM_GITHZERAI) ? (otmp)->obj_material == MERCURIAL :\
 								Race_if(PM_GITHYANKI) ? check_oprop((otmp), OPROP_GSSDW) : \
+								Race_if(PM_ELF) ? (check_oprop((otmp), OPROP_WRTHW) || objects[(otmp)->otyp].oc_skill == P_SCIMITAR) : \
 								Race_if(PM_INCANTIFIER) ? (is_lightsaber(otmp) && litsaber(otmp)) : \
 								(otmp)->otyp == artilist[u.role_variant].otyp)
 
