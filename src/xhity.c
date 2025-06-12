@@ -16543,7 +16543,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					hit_slot = min_slot;
 				}
 			}
-			else if(is_lightsaber(weapon) && litsaber(weapon)){
+			else if((is_lightsaber(weapon) && litsaber(weapon)) || weapon->oartifact == ART_GREEN_DESTINY){
 				int saber_slots[] = {HEAD_DR, UPPER_TORSO_DR, ARM_DR, LEG_DR, LOWER_TORSO_DR};
 				hit_slot = ROLL_FROM(saber_slots);
 			}
