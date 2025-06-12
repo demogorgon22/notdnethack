@@ -8983,7 +8983,7 @@ struct obj *obj;
 	losexp("blood loss",TRUE,FALSE,TRUE);
 	if(u.veil){
 		You("feel reality threatening to slip away!");
-		if (yn("Are you sure you want to studying the patterns?") == 'y'){
+		if (yn("Are you sure you want to continue studying the patterns?") == 'y'){
 			pline("So be it.");
 			u.veil = FALSE;
 			change_uinsight(1);
