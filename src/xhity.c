@@ -12210,7 +12210,7 @@ int vis;
 		||
 		/* needs_mdef_eyes:   mdef must have eyes and can actively see magr */
 		(needs_magr_head && (
-			( (ahelm && FacelessHelm(ahelm)) || (acloak && FacelessCloak(acloak)) ) || /* wearing a faceless helm or cloak (cloak even if headless) */
+			( (ahelm && is_opaque(ahelm) && FacelessHelm(ahelm)) || (acloak && is_opaque(acloak) && FacelessCloak(acloak)) ) || /* wearing a faceless helm or cloak (cloak even if headless) */
 			(Gaze_res(mdef)) /* wearing the Eyes, nearly anything is safe to see */
 		))
 		){
