@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "hack.h"
+#include "artifact.h"
 
 static NEARDATA schar delay;		/* moves left for this spell */
 static NEARDATA struct obj *book;	/* last/current book being xscribed */
