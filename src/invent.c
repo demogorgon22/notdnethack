@@ -3672,7 +3672,7 @@ winid *datawin;
 		buf[0] = '\0';
 #define	EXPERTTRAITS(trait, string)	\
 	ADDCLASSPROP(CHECK_ETRAIT(obj, &youmonst, trait), string);
-		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful overhead blows");
+		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful, but strenuous, overhead blows");
 		EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
 		EXPERTTRAITS(ETRAIT_KNOCK_BACK, (obj->expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
 		EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
