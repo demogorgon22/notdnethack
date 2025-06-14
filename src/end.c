@@ -5,6 +5,7 @@
 #define NEED_VARARGS	/* comment line for pre-compiled headers */
 
 #include "hack.h"
+#include "artifact.h"
 
 #ifndef NO_SIGNAL
 #include <signal.h>
@@ -871,7 +872,7 @@ Check_twin_lifesaving()
 	return FALSE;
 }
 
-STATIC_OVL void
+void
 Use_crystal_lifesaving()
 {
 	//Use less advantageous l.s. first (the full set of 5 crystals is heavy and riskier for theft)
@@ -1139,6 +1140,10 @@ int how;
 		} else if(u.sealsActive&SEAL_JACK){
 			lsvd = LSVD_JACK;
 			unbind_lifesaving(SEAL_JACK);
+		} else if(uwep && uwep->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives){
+			lsvd = LSVD_MISC;
+			pline("The smoke emanating from the crimson blade wanes.");
+			artinstance[ART_MORTAL_BLADE].mortalLives--;
 		} else if(Check_crystal_lifesaving()){
 			lsvd = LSVD_MISC;
 			pline("Time unwinds and twists!");

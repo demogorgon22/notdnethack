@@ -162,6 +162,7 @@ struct monst {
 	Bitfield(mgoatmarked,1);/* will be eaten by the goat if you kill it this turn */ /*91*/
 	Bitfield(mflamemarked,1); /* monster was damaged by a silver flame weapon and will be sacced if they die */ /*92*/
 	Bitfield(myoumarked,1); /* monster was marked for cult sacrifice on your behalf */ /*93*/
+	Bitfield(mlaidtorest,1); /* should not come back under any circumstances (save riders), mortal blade*/
 	Bitfield(mpetitioner,1);/* already dead (shouldn't leave a corpse) */ /*94*/
 	Bitfield(mdoubt,1);/* clerical spellcasting blocked */ /*95*/
 	Bitfield(menvy,1);/* wants only others stuff */ /*96*/

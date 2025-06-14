@@ -4839,6 +4839,9 @@ boolean ranged;
 		/* DEAL THE DAMAGE */
 		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, -1, dieroll, vis, ranged, longslash);
 
+		/* if the monster didn't die as part of that attack, clear its laid to rest status */
+		if (mdef->mlaidtorest) mdef->mlaidtorest = 0;
+
 		/* the player exercises dexterity when hitting */
 		if (youagr)
 			exercise(A_DEX, TRUE);
@@ -14804,6 +14807,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_DIRE;
 		if (Insight >= 40 && poisonedobj->oartifact == ART_LOLTH_S_FANG)
 			poisons |= OPOISON_DIRE;
+		if (poisonedobj->oartifact == ART_MORTAL_BLADE && poisonedobj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
+			poisons |= OPOISON_BASIC;
+			if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+				poisons |= OPOISON_DIRE;
+		}
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
