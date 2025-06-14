@@ -689,7 +689,7 @@ A("The Mortal Blade",		TSURUGI,						"bloodstained sakura-hilted %s",
 	ATTK(AD_DARK, 20, 0), (ARTA_LAIDTOREST|ARTA_PHASING),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, NOFLAG
+	MORTAL_DRAW, NOFLAG
 	),
 
 /*//////////Other Artifacts//////////*/

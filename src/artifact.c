@@ -12508,6 +12508,72 @@ arti_invoke(obj)
 		case SCORPION_UPGRADES:
 			scorpion_upgrade_menu(obj);
 		break;
+		case MORTAL_DRAW:
+			obj->age = 0;
+			if (!(uwep && uwep == obj)) {
+				You_feel("that you should be wielding %s.", the(xname(obj)));
+				break;
+			}
+			const char all_classes[] = { ALL_CLASSES, 0 };
+			struct obj *otmp  = getobj(all_classes, "offer to the blade");
+			if (!otmp){
+				pline("Never mind.");
+				break;
+			}
+			if (otmp->owornmask & (W_ARMOR | W_ACCESSORY)){
+				You("need to take that off first.");
+				break;
+			} else if (otmp == uwep){
+				You("have no clue how you would go about doing that.");
+				break;
+			}
+
+			char buf[BUFSZ];
+			Sprintf(buf, "Offer %s to the blade?", the(xname(otmp)));
+			if (yn(buf) == 'n') break;
+
+			if (is_asc_obj(otmp) || objects[otmp->otyp].oc_unique){
+				pline("You plunge the sword down, but the blade bounces off!");
+				break;
+			}
+
+			if (item_has_property(otmp, LIFESAVED)){
+				You("plunge the blade into %s, and it crumbles to dust.", the(xname(otmp)));
+				pline("The smoke surrounding the blade thickens.");
+				artinstance[ART_MORTAL_BLADE].mortalLives++;
+			} else if (otmp->otyp == RIN_WISHES && otmp->spe > 0){
+				You("plunge the blade into %s, and it crumbles to dust.", the(xname(otmp)));
+				pline("The smoke surrounding the black thickens%s.", (otmp->spe > 1) ? " greatly" : "");
+				artinstance[ART_MORTAL_BLADE].mortalLives += otmp->spe;
+			} else if (otmp->oartifact == ART_BLACK_CRYSTAL && Check_crystal_lifesaving()){
+				You("plunge the blade straight through %s.", the(xname(otmp)));
+				Use_crystal_lifesaving();
+				if (otmp->oeroded3 == 1){
+					if (Hallucination){
+						pline("You catch a glimpse of a man in dark, horned armor. He looks friendly!");
+						change_uinsight(-1);
+					} else if (u.uinsight > 40) {
+						pline("In a flash, you see the fabric of time unspooled before your very eyes. The moment passes.");
+						change_uinsight(1);
+					} else if (u.uinsight > 5){
+						You_feel("an odd spiraling sensation for a moment, but it passes quickly.");
+						change_uinsight(1);
+					}
+				}
+				artinstance[ART_MORTAL_BLADE].mortalLives++;
+				break;
+			} else if (otmp->oartifact){
+				pline("The blade seems to pass right through!");
+				break;
+			} else {
+				pline("Nothing else happens.");
+			}
+			if (otmp->unpaid) {
+				check_unpaid(otmp);
+				bill_dummy_object(otmp);
+			}
+			delobj(otmp);
+		break;
 		default: pline("Program in disorder.  Artifact invoke property not recognized");
 		break;
 	} //end of first case:  Artifact Specials!!!!

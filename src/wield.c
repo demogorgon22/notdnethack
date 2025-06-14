@@ -143,7 +143,7 @@ struct obj* wep;
 	if (confirmation){
 		You("draw the Mortal Blade from its sheath... and fall to the ground, dead.");
 		/* Bad hack to check if you have lifesaving that triggers before this */
-		if (artinstance[ART_MORTAL_BLADE].mortalLives && !(ELifesaved || Check_iaso_lifesaving() || Check_twin_lifesaving())){
+		if (artinstance[ART_MORTAL_BLADE].mortalLives){
 			pline("For a moment, you smell the sweet scent of cherry blossoms.");
 			artinstance[ART_MORTAL_BLADE].mortalLives--;
 		} else {

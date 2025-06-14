@@ -872,7 +872,7 @@ Check_twin_lifesaving()
 	return FALSE;
 }
 
-STATIC_OVL void
+void
 Use_crystal_lifesaving()
 {
 	//Use less advantageous l.s. first (the full set of 5 crystals is heavy and riskier for theft)

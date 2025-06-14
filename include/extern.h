@@ -931,6 +931,7 @@ E void VDECL(panic, (const char *,...)) PRINTF_F(1,2);
 E const char* NDECL(get_alignment_code);
 E const char* NDECL(get_alignment_adj);
 E boolean NDECL(Check_crystal_lifesaving);
+E void NDECL(Use_crystal_lifesaving);
 E boolean NDECL(Check_iaso_lifesaving);
 E boolean NDECL(Check_twin_lifesaving);
 E void FDECL(done, (int));

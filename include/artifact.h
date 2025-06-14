@@ -472,7 +472,7 @@ extern struct artifact * artilist;
 #define AMALGUM_ART		(LAST_PROP+94)
 #define MORGOTH         (LAST_PROP+95)
 #define SCORPION_UPGRADES  (LAST_PROP+96)
-
+#define MORTAL_DRAW  (LAST_PROP+97)
 
 #define MASTERY_ARTIFACT_LEVEL 20
 
