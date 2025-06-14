@@ -407,6 +407,7 @@ struct monst *magr;
 		|| oartifact == ART_GREAT_CLAWS_OF_URDLEN
 		|| oartifact == ART_CLAWS_OF_THE_REVENANCER
 		|| oartifact == ART_WINTER_REAPER
+		|| oartifact == ART_SHADOWLOCK
 		|| (obj && check_oprop(obj, OPROP_BLADED) && !litsaber(obj))
 		|| (obj && check_oprop(obj, OPROP_RLYHW) && Insight >= 12)
 		|| (obj && !litsaber(obj) && is_streaming_merc(obj))
@@ -557,6 +558,10 @@ struct monst *magr;
 			else {
 				dmod += 1;
 			}
+		}
+		else if (obj->oartifact == ART_SHADOWLOCK){
+			ocn = 4;
+			ocd = 6;
 		}
 
 		if (obj->oartifact == ART_BLOODLETTER && artinstance[ART_BLOODLETTER].BLactive >= moves)

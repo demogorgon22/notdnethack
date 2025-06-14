@@ -6989,6 +6989,12 @@ boolean printmessages; /* print generic elemental damage messages */
 				method = VORPAL_PIERCE;
 			}
 			break;
+		case ART_SHADOWLOCK:
+			wepdesc = "blade-shadow";
+			if (dieroll == 1) {
+				method = VORPAL_PIERCE;
+			}
+			break;
 		case ART_VORPAL_BLADE:
 			wepdesc = "vorpal blade";
 			if (dieroll == 1 || pd->mtyp == PM_JABBERWOCK) {
@@ -8262,10 +8268,17 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	if (oartifact == ART_SHADOWLOCK) {
 		if (youagr) {
-			losehp(d(4,6) + otmp->spe + (Cold_resistance ? 0 : (d(2,6) + otmp->spe)), "a cold black blade", KILLED_BY);
+			int nat_dr = slot_udr(ARM_DR, (struct monst *)0, W_UPGRADE, AD_PHYS);
+			int dmg = d(4,6) + otmp->spe + (Cold_resistance ? 0 : (d(2,6) + otmp->spe));
+			dmg = max(dmg-nat_dr, 0);
+			losehp(dmg, "a cold black blade", KILLED_BY);
 			if(!Cold_resistance && !rn2(4)) (void) destroy_item(magr, POTION_CLASS, AD_COLD);
 		} else if(magr->mtyp != PM_LEVISTUS){
-			magr->mhp -= d(4,6) + otmp->spe + (resists_cold(magr) ? 0 : (d(2,6) + otmp->spe));
+			int base, armdr, nat_dr;
+			mon_slot_dr(magr, (struct monst *)0, ARM_DR, &base, &armdr, &nat_dr, 0);
+			int dmg = d(4,6) + otmp->spe + (resists_cold(magr) ? 0 : (d(2,6) + otmp->spe));
+			dmg = max(dmg-nat_dr, 0);
+			magr->mhp -= dmg;
 			if(!resists_cold(magr) && !rn2(4)) (void) destroy_item(magr, POTION_CLASS, AD_COLD);
 			// if(magr->mhp < 0){
 				// mondied(magr);
