@@ -13427,7 +13427,7 @@ int vis;
 				}
 			}
 
-			mdef->movement = max(mdef->movement - 2*dmg, -12);
+			mdef->movement = max(mdef->movement - 1*dmg, -6);
 		}
 		/* apply half damage (both) */
 		dmg = reduce_dmg(mdef,dmg,TRUE,TRUE);
