@@ -948,7 +948,7 @@ const struct Race races[] = {
 {	"Yanki-gith", "gith", "githhood", "Ynk",
 	{0, 0},
 	PM_GITHYANKI, NON_PM, PM_HUMAN_MUMMY, PM_GITHYANKI,
-	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
 	MA_REPTILIAN, MA_DRAGON, MA_FEY|MA_ELF|MA_GNOME|MA_DWARF|MA_ORC,
 	/*    Str     Int Wis Dex Con Cha */
 	{      3,      3,  3,  3,  3,  3 },
@@ -962,7 +962,7 @@ const struct Race races[] = {
 {	"Zerai-gith", "Gith", "githhood", "Zer",
 	{0, 0},
 	PM_GITHZERAI, NON_PM, PM_HUMAN_MUMMY, PM_GITHZERAI,
-	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
+	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
 	MA_REPTILIAN, MA_ELEMENTAL, MA_ORC,
 	/*    Str     Int Wis Dex Con Cha */
 	{      3,      3,  3,  3,  3,  3 },
