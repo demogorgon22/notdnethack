@@ -659,6 +659,7 @@ struct obj {
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_SHEATH) \
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_LONGSWORD) \
 				|| (Role_if(PM_SAMURAI) && typ == TSURUGI) \
+				|| (Role_if(PM_SAMURAI) && typ == ODACHI) \
 				|| typ == PARTISAN \
 				|| typ == RANSEUR \
 				|| typ == SPETUM \
