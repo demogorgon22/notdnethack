@@ -217,6 +217,16 @@ doread()
 				pline("\"Turgon aran Gondolin tortha gar a matha i vegil Glamdring gud daedheloth, dam an Glamhoth\".");
 			}
 			return MOVE_READ;
+		} else if(scroll->oartifact == ART_MORTAL_BLADE){
+			if (Blind) {
+				You_cant("see the blade!");
+				return MOVE_INSTANT;
+			} else if(Role_if(PM_SAMURAI)) {
+				pline("\"Gracious Gift of Tears\".");
+			} else {
+				pline("\"Hairui\".");
+			}
+			return MOVE_READ;
 		} else if(scroll->oartifact == ART_BOW_OF_SKADI){
 			if (Blind) {
 				You_cant("see the bow!");

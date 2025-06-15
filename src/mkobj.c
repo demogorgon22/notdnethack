@@ -1910,8 +1910,7 @@ start_corpse_timeout(body)
 			when = age;
 			break;
 		    }
-	} else if (is_fungus(&mons[body->corpsenm]) && 
-			  !is_migo(&mons[body->corpsenm])) {
+	} else if (is_fungus(&mons[body->corpsenm]) && !is_migo(&mons[body->corpsenm]) && !body->norevive) {
 		/* Fungi come back with a vengeance - if you don't eat it or
 		 * destroy it,  any live cells will quickly use the dead ones
 		 * as food and come back.
@@ -3096,8 +3095,9 @@ boolean init;
 			if (otmp->otyp == CORPSE) {
 				stop_all_timers(otmp->timed);
 				/* if the monster was cancelled, don't self-revive */
-				if (mtmp && mtmp->mcan && !is_rider(ptr))
+				if (mtmp && (mtmp->mcan || mtmp->mlaidtorest) && !is_rider(ptr)){
 					otmp->norevive = 1;
+				}
 				start_corpse_timeout(otmp);
 			}
 	    }

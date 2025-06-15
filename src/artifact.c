@@ -801,6 +801,9 @@ aligntyp alignment;
 			/* skip Callandor for non-males */
 			skip_if(m == ART_CALLANDOR && flags.initgend);
 
+			/* Skip the Mortal Blade, it's an opt-in kind of artifact */
+			skip_if(m == ART_MORTAL_BLADE);
+
 			/* skip artifacts that outright hate the player */
 			skip_if((a->aflags & ARTA_HATES) && (urace.selfmask & a->mflagsa));
 
@@ -2091,6 +2094,10 @@ boolean mod;
 				if(otmp->oartifact == ART_TENSA_ZANGETSU){
 					artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe = u.ulevel;//turns for which you can use Zangetsu safely
 				}
+				if(otmp->oartifact == ART_MORTAL_BLADE){
+					artinstance[ART_MORTAL_BLADE].drawnMortal = 0;// times you've drawn the mortal blade
+					artinstance[ART_MORTAL_BLADE].mortalLives = 0;// times you've drawn the mortal blade
+				}
 				if(otmp->oartifact == ART_SODE_NO_SHIRAYUKI){
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd1 = 0;//turn on which you can reuse the first dance
 					artinstance[ART_SODE_NO_SHIRAYUKI].SnSd2 = 0;//turn on which you can reuse the second dance
@@ -2216,6 +2223,9 @@ arti_attack_prop(otmp, flag)
 struct obj *otmp;
 unsigned long flag;
 {
+	if (otmp->oartifact == ART_MORTAL_BLADE && otmp != uwep)
+		return FALSE;
+
 	const struct artifact *arti = get_artifact(otmp);
 	return((boolean)(arti && (arti->aflags & flag)));
 }
@@ -2279,6 +2289,15 @@ struct obj *obj;
 {
     return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_RETURNING)));
 }
+
+/* used so that callers don't need to known about SPFX_ codes */
+boolean
+arti_laidtorest(obj)
+struct obj *obj;
+{
+    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_LAIDTOREST)));
+}
+
 
 /* used so that callers don't need to known about SPFX_ codes */
 boolean
@@ -2974,6 +2993,11 @@ boolean narrow_only;
 	if (on_level(&spire_level,&u.uz))
 		return FALSE;
 
+	/* absolutely no artifact bonus effects for the mortal blade unless it's wielded,
+	   it's 'sheathed' otherwise - no cost equals no bonuses */
+	if (otmp->oartifact == ART_MORTAL_BLADE && uwep != otmp)
+		return FALSE;
+
 	/* requires some kind of offense in the artilist block */
 	if (!weap || !(weap->adtyp || weap->accuracy || weap->damage))
 		return FALSE;
@@ -3332,7 +3356,7 @@ int * truedmgptr;
 	/* The Annulus is a 2x damage artifact if it isn't a lightsaber */
 	if(otmp->oartifact == ART_ANNULUS && !is_lightsaber(otmp))
 		damd = 0;
-	
+
 	/* The black arrow deals 4x damage + 108, and overkills Smaug */
 	if (otmp->oartifact == ART_BLACK_ARROW) {
 		if (goodpointers) {
@@ -3380,6 +3404,7 @@ int * truedmgptr;
 			|| (otmp->oartifact == ART_FROST_BRAND && species_resists_fire(mon) && spec_dbon_applies)
 			|| (otmp->oartifact == ART_FIRE_BRAND && species_resists_cold(mon) && spec_dbon_applies)
 			|| (attacks(AD_HOLY, otmp) && hates_holy_mon(mon) && spec_dbon_applies)
+			|| (attacks(AD_DARK, otmp) && Dark_vuln(mon) && spec_dbon_applies)
 		)
 			multiplier *= 2;
 		if(otmp->oartifact == ART_SILVER_STARLIGHT)
@@ -5851,6 +5876,10 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
+
+	if (arti_attack_prop(otmp, ARTA_LAIDTOREST)){
+		mdef->mlaidtorest = 1;
+	}
 	/* Genocide */
 	if (oartifact == ART_GENOCIDE) {
 		struct monst *tmpm, *nmon;
@@ -6513,6 +6542,16 @@ boolean printmessages; /* print generic elemental damage messages */
 		*truedmgptr += basedmg;
 	}
 	
+	if (youagr && oartifact == ART_MORTAL_BLADE)
+	{
+		/* Overall - 2x to primordial/nonliving, 3x to everything else
+		 * To compensate for AD_DARK already being 3x to Dark_vuln,
+		 * add the +1x to "things that didn't get 3x"
+		 * (dark_immune goes from 1x to 2x, non-mortal_race goes from 2x to 3x)
+		 */
+		if (!Dark_vuln(mdef)) *truedmgptr += basedmg;
+		if (!is_unalive(mdef->data) && is_primordial(mdef->data)) *truedmgptr += basedmg;
+	}
 	
 	if (arti_attack_prop(otmp, ARTA_BLIND) && !resists_blnd(mdef) && !rn2(3)) {
 		long rnd_tmp;
@@ -12481,6 +12520,72 @@ arti_invoke(obj)
 		}break;
 		case SCORPION_UPGRADES:
 			scorpion_upgrade_menu(obj);
+		break;
+		case MORTAL_DRAW:
+			obj->age = 0;
+			if (!(uwep && uwep == obj)) {
+				You_feel("that you should be wielding %s.", the(xname(obj)));
+				break;
+			}
+			const char all_classes[] = { ALL_CLASSES, 0 };
+			struct obj *otmp  = getobj(all_classes, "offer to the blade");
+			if (!otmp){
+				pline("Never mind.");
+				break;
+			}
+			if (otmp->owornmask & (W_ARMOR | W_ACCESSORY)){
+				You("need to take that off first.");
+				break;
+			} else if (otmp == uwep){
+				You("have no clue how you would go about doing that.");
+				break;
+			}
+
+			char buf[BUFSZ];
+			Sprintf(buf, "Offer %s to the blade?", the(xname(otmp)));
+			if (yn(buf) == 'n') break;
+
+			if (is_asc_obj(otmp) || objects[otmp->otyp].oc_unique){
+				pline("You plunge the sword down, but the blade bounces off!");
+				break;
+			}
+
+			if (item_has_property(otmp, LIFESAVED)){
+				You("plunge the blade into %s, and it crumbles to dust.", the(xname(otmp)));
+				pline("The smoke surrounding the blade thickens.");
+				artinstance[ART_MORTAL_BLADE].mortalLives++;
+			} else if (otmp->otyp == RIN_WISHES && otmp->spe > 0){
+				You("plunge the blade into %s, and it crumbles to dust.", the(xname(otmp)));
+				pline("The smoke surrounding the black thickens%s.", (otmp->spe > 1) ? " greatly" : "");
+				artinstance[ART_MORTAL_BLADE].mortalLives += otmp->spe;
+			} else if (otmp->oartifact == ART_BLACK_CRYSTAL && Check_crystal_lifesaving()){
+				You("plunge the blade straight through %s.", the(xname(otmp)));
+				Use_crystal_lifesaving();
+				if (otmp->oeroded3 == 1){
+					if (Hallucination){
+						pline("You catch a glimpse of a man in dark, horned armor. He looks friendly!");
+						change_uinsight(-1);
+					} else if (u.uinsight > 40) {
+						pline("In a flash, you see the fabric of time unspooled before your very eyes. The moment passes.");
+						change_uinsight(1);
+					} else if (u.uinsight > 5){
+						You_feel("an odd spiraling sensation for a moment, but it passes quickly.");
+						change_uinsight(1);
+					}
+				}
+				artinstance[ART_MORTAL_BLADE].mortalLives++;
+				break;
+			} else if (otmp->oartifact){
+				pline("The blade seems to pass right through!");
+				break;
+			} else {
+				pline("Nothing else happens.");
+			}
+			if (otmp->unpaid) {
+				check_unpaid(otmp);
+				bill_dummy_object(otmp);
+			}
+			delobj(otmp);
 		break;
 		default: pline("Program in disorder.  Artifact invoke property not recognized");
 		break;

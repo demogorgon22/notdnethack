@@ -2698,6 +2698,8 @@ boolean forcedestroy;
 		weldmsg(ammo);
 		return MOVE_STANDARD;
 	}
+	if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+		return MOVE_STANDARD;
 
 	/* blasters */
 	if (launcher && is_blaster(launcher)) {

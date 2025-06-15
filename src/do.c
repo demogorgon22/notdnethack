@@ -599,6 +599,10 @@ struct obj *obj;
 			weldmsg(obj);
 			return(0);
 		}
+
+		if (obj->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return(0);
+
 		setuwep((struct obj *)0);
 	}
 	if(obj == uquiver) {
