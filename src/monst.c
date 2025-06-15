@@ -9899,7 +9899,7 @@ is a red right hand
     MON("tettigon legatus", S_ANT,//22 /*Needs tile*/ /*Needs encyc entry*/
 	LVL(16, 8, 50, 8), (G_NOCORPSE|G_NOGEN),
 	DEF(NAT_AC(8), SPE_AC(8), NAT_DR(8), SPE_DR_HEAD(8), SPE_DR_BODY(8), SPE_DR_GLOV(4), SPE_DR_LEGS(4)),
-	A(ATTK(AT_TUCH, AD_PUSH, 5,4), ATTK(AT_MAGC, AD_PSON, 1, 15), 
+	A(ATTK(AT_TUCH, AD_PSH3, 5,4), ATTK(AT_MAGC, AD_PSON, 1, 15), 
 	  ATTK(AT_WDGZ, AD_ELEC, 4, 8)
 	),
 	SIZ(WT_SMALL, 0, MS_SILENT, MZ_MEDIUM), MR_ACID|MR_POISON|MR_STONE, 0,

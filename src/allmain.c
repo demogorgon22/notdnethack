@@ -4802,10 +4802,11 @@ printAttacks(buf, ptr)
 		"madness-fire",			/*154*/
 		"force to attack",		/*155*/
 		"drain bonus HP",		/*156*/
-		"push",					/*157*/
+		"push 1 square",		/*157*/
 		"moon-entity lick",		/*158*/
 		"[[disease]] and [[poison]]",	/*159*/
 		"[[orc spawn]]",		/*160*/
+		"push 1d3 squares",		/*161*/
 		// "[[ahazu abduction]]",	/**/
 		"[[stone choir]]",		/* */
 		"[[water vampire]]",	/* */

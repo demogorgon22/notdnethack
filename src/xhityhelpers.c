@@ -3247,7 +3247,7 @@ struct attack * attk;
 	/* try to find direction (u.dx and u.dy may be incorrect) */
 	int dx = sgn(tarx - x(magr));
 	int dy = sgn(tary - y(magr));
-	struct attack blood = {AT_WISP, AD_PUSH, 2, 6+otmp->spe*2};
+	struct attack blood = {AT_WISP, AD_PSH3, 2, 6+otmp->spe*2};
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
 		x(magr) == tarx - dx &&

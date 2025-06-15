@@ -2512,7 +2512,8 @@ get_description_of_damage_type(uchar id)
 	case AD_BYAK: return "byakhee eggs";
 	case AD_UNRV: return "unnerving";
 	case AD_DRHP: return "drains bonus HP";
-	case AD_PUSH: return "push away";
+	case AD_PSH1: return "push away 1 square";
+	case AD_PSH3: return "push away 1d3 squares";
 	case AD_LICK: return "monstrous tongue lick";
 	case AD_PFBT: return "poison and disease damage";
 	case AD_OMUD: return "inchoate orc-spawn";

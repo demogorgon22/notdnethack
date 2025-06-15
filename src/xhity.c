@@ -8008,7 +8008,8 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 
 	case AD_PULL:
-	case AD_PUSH:
+	case AD_PSH1:
+	case AD_PSH3:
 		/* print a basic hit message */
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);
@@ -8017,10 +8018,11 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		int dy = y(magr) - y(mdef);
 		int dist = 1;
 		
-		if(attk->adtyp == AD_PUSH){
+		if(attk->adtyp == AD_PSH3 || attk->adtyp == AD_PSH1){
 			dx *= -1;
 			dy *= -1;
-			dist = rnd(3);
+			if(attk->adtyp == AD_PSH3)
+				dist = rnd(3);
 		}
 		
 		if(youdef)
@@ -19926,7 +19928,7 @@ perform_expert_move()
 	struct monst *mdef;
 #define STILLVALID(mdef) (!DEADMONSTER(mdef) && mdef == m_at(u.ux + u.dx, u.uy + u.dy))
 	struct attack lungehit =	{ AT_WEAP, AD_PHYS, 0, 0 };
-	struct attack pushhit =	{ AT_WEAP, AD_PUSH, 0, 0 };
+	struct attack pushhit =	{ AT_WEAP, AD_PSH1, 0, 0 };
 	boolean messaged = FALSE;
 	if(!uwep)
 		return FALSE;
