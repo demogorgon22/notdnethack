@@ -822,6 +822,7 @@ struct obj {
 			 || objects[(otyp)].oc_class == TILE_CLASS\
 			 || (otyp) == VITAL_SOULSTONE\
 			 || (otyp) == SPIRITUAL_SOULSTONE\
+			 || (otyp) == WORM_GNAWED_SKULL\
 			 || ((otyp) >= EFFIGY && (otyp) <= DOLL_S_TEAR)\
 			 || (otyp) == HOLY_SYMBOL_OF_THE_BLACK_MOTHE\
 			 || (otyp) == FIGURINE\

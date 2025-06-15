@@ -11437,6 +11437,39 @@ doapply()
 	case CRYSTAL_SKULL:
 		res = use_crystal_skull(&obj);
 	break;
+	case WORM_GNAWED_SKULL:{
+		if(!IS_ALTAR(levl[u.ux][u.uy].typ)){
+			pline("You need a workbench.");
+			res = MOVE_CANCELLED;
+			break;
+		}
+		int godnum = god_at_altar(u.ux, u.uy);
+		aligntyp altaralign = (a_align(u.ux,u.uy));
+		if(!philosophy_index(godnum)){
+			pline("This is an actual holy altar and thus unsuitable for your use.");
+			res = MOVE_CANCELLED;
+			break;
+		}
+		else if(u.veil){
+			You("feel reality threatening to slip away!");
+			if (yn("Are you sure you want to studying the skull?") == 'y'){
+				pline("So be it.");
+				You("feel a sharp pain in your temple.");
+				u.veil = FALSE;
+				change_uinsight(10);
+				useup(obj);
+				obj = 0;
+			}
+			res = MOVE_STANDARD;
+		}
+		else {
+			pline("A glassy furred worm emerges from the skull and burrows into your brow!");
+			change_uinsight(10);
+			useup(obj);
+			obj = 0;
+			res = MOVE_STANDARD;
+		}
+	}break;
 	case EFFIGY:{
 	    struct obj *curo;
 		if (Hallucination) You_feel("the tall leather doll take up your burdens!");

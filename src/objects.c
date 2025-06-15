@@ -1403,6 +1403,7 @@ TOOL(("tin opener"),   1,   MZ_TINY, 0, 0, 0,  20,  4,  30, IRON, HI_METAL),
 TOOL(("can of grease"),1,  MZ_SMALL, 0, 0, 1,  15, 15,  20, IRON, HI_METAL),
 TOOL(("figurine"),     1,  MZ_SMALL, 0, 1, 0,  20, 50,  80, MINERAL, HI_MINERAL),
 TOOL(("crystal skull"),1,  MZ_SMALL, 0, 1, 0,   0, 59, 800, GLASS, HI_GLASS),
+TOOL(("worm-gnawed skull"),1,  MZ_SMALL, 0, 1, 0,   0, 14, 800, BONE, CLR_WHITE, O_NOWISH(1)),
 /*Keep in sync with doll mvar flags*/
 TOOL(("effigy",   (char *)0),     1,   MZ_TINY, 1, 1, 0,  20,  5,  80, LEATHER, HI_LEATHER),
 
