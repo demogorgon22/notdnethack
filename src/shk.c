@@ -6488,7 +6488,8 @@ struct monst *smith;
 	int n;
 	int oona_basic_armor[] =
 		{BUCKLER, EILISTRAN_ARMOR, HARMONIUM_BOOTS,HARMONIUM_GAUNTLETS, HARMONIUM_HELM, HARMONIUM_PLATE,  
-			HARMONIUM_SCALE_MAIL, KITE_SHIELD, WATER_WALKING_BOOTS,  
+			HARMONIUM_SCALE_MAIL, KITE_SHIELD, WATER_WALKING_BOOTS,
+			KIDNEY_BELT,
 			0
 		};
 	int oona_basic_tools[] = {BOX, PICK_AXE, LOCK_PICK, SKELETON_KEY, 0};
@@ -6503,6 +6504,7 @@ struct monst *smith;
 			HELM_OF_BRILLIANCE, HELM_OF_OPPOSITE_ALIGNMENT, HELM_OF_TELEPATHY, HELM_OF_DRAIN_RESISTANCE, 
 			SHIELD_OF_REFLECTION, 
 			SPEED_BOOTS, JUMPING_BOOTS, KICKING_BOOTS, FUMBLE_BOOTS, FLYING_BOOTS,
+			BELT_OF_POWER, BELT_OF_WEAKNESS, BELT_OF_CARRYING, BELT_OF_WEIGHT, UTILITY_BELT,
 			0
 	};
 	int oona_advanced_tools[] = { 0 };
@@ -6571,7 +6573,7 @@ d_weapon:
 			otyp = pickwep(example, oona_basic_weapons, oona_advanced_weapons, PLATINUM);
 		break;
 		case 4:{
-			const char smith_classes[] = { WEAPON_CLASS, TOOL_CLASS, ARMOR_CLASS, 0 };
+			const char smith_classes[] = { WEAPON_CLASS, TOOL_CLASS, BELT_CLASS, ARMOR_CLASS, 0 };
 			example = getobj(smith_classes, "show to the smith");
 			if(!example)
 				otyp = -1;
@@ -6579,6 +6581,7 @@ d_weapon:
 				case WEAPON_CLASS:
 					goto d_weapon;
 				case ARMOR_CLASS:
+				case BELT_CLASS:
 					goto d_armor;
 				case TOOL_CLASS:
 					goto d_tool;
@@ -6690,14 +6693,16 @@ d_weapon:
 		}
 		fix_object(obj);
 	}
-	else if(objects[otyp].oc_class == ARMOR_CLASS){
+	else if(objects[otyp].oc_class == ARMOR_CLASS || objects[otyp].oc_class == BELT_CLASS){
 		int element = 0;
-		if(yn("Size it to a particular creature?")=='y')
-			smith_resizeArmor(smith, obj);
-		else {
-			//sized for you
-			obj->objsize = youracedata->msize;
-			set_obj_shape(obj, youracedata->mflagsb);
+		if(objects[otyp].oc_class != BELT_CLASS){
+			if(yn("Size it to a particular creature?")=='y')
+				smith_resizeArmor(smith, obj);
+			else {
+				//sized for you
+				obj->objsize = youracedata->msize;
+				set_obj_shape(obj, youracedata->mflagsb);
+			}
 		}
 		any.a_void = 0;         /* zero out all bits */
 		tmpwin = create_nhwindow(NHW_MENU);
@@ -6776,11 +6781,17 @@ struct monst *smith;
 		};
 	int dracae_basic_armor[] = 
 		{ARMORED_BOOTS, BANDED_MAIL, BUCKLER, CLOAK, GAUNTLETS, PLAIN_DRESS, PLATE_MAIL,  
-			KITE_SHIELD, SPLINT_MAIL, SCALE_MAIL, WAISTCLOTH,  
+			KITE_SHIELD, SPLINT_MAIL, SCALE_MAIL, WAISTCLOTH,
+			KIDNEY_BELT,
 			0, 0, 0
 		};
 	int dracae_basic_tools[] = {BLINDFOLD, BOX, LOCK_PICK, PICK_AXE, SACK, 0, 0};
-	int dracae_advanced_armor[] = {OILSKIN_CLOAK, 0, 0, 0};
+	int dracae_advanced_armor[] = {OILSKIN_CLOAK, LEO_NEMAEUS_HIDE, CLOAK_OF_PROTECTION, CLOAK_OF_INVISIBILITY, CLOAK_OF_MAGIC_RESISTANCE, CLOAK_OF_DISPLACEMENT, 
+			BELT_OF_POWER, BELT_OF_WEAKNESS, BELT_OF_CARRYING, BELT_OF_WEIGHT, UTILITY_BELT,
+			GRAY_DRAGON_SCALE_MAIL, SILVER_DRAGON_SCALE_MAIL, SHIMMERING_DRAGON_SCALE_MAIL, WHITE_DRAGON_SCALE_MAIL, ORANGE_DRAGON_SCALE_MAIL, BLACK_DRAGON_SCALE_MAIL, BLUE_DRAGON_SCALE_MAIL, GREEN_DRAGON_SCALE_MAIL, RED_DRAGON_SCALE_MAIL, DEEP_DRAGON_SCALE_MAIL, YELLOW_DRAGON_SCALE_MAIL,
+			GRAY_DRAGON_SCALES, SILVER_DRAGON_SCALES, SHIMMERING_DRAGON_SCALES, WHITE_DRAGON_SCALES, ORANGE_DRAGON_SCALES, BLACK_DRAGON_SCALES, BLUE_DRAGON_SCALES, GREEN_DRAGON_SCALES, RED_DRAGON_SCALES, DEEP_DRAGON_SCALES, YELLOW_DRAGON_SCALES,
+			GRAY_DRAGON_SCALE_SHIELD, SILVER_DRAGON_SCALE_SHIELD, SHIMMERING_DRAGON_SCALE_SHIELD, WHITE_DRAGON_SCALE_SHIELD, ORANGE_DRAGON_SCALE_SHIELD, BLACK_DRAGON_SCALE_SHIELD, BLUE_DRAGON_SCALE_SHIELD, GREEN_DRAGON_SCALE_SHIELD, RED_DRAGON_SCALE_SHIELD, DEEP_DRAGON_SCALE_SHIELD, YELLOW_DRAGON_SCALE_SHIELD,
+			0, 0, 0};
 	int dracae_advanced_tools[] = {ARMOR_SALVE, OILSKIN_SACK, UNICORN_HORN, OIL_LAMP, CAN_OF_GREASE, LIVING_MASK, 0};
 	int empty_list[] = {0};
 	struct obj *example = 0;
@@ -6865,6 +6876,7 @@ d_weapon:
 				case WEAPON_CLASS:
 					goto d_weapon;
 				case ARMOR_CLASS:
+				case BELT_CLASS:
 					goto d_armor;
 				case TOOL_CLASS:
 					goto d_tool;
@@ -6967,6 +6979,9 @@ d_weapon:
 		}
 		fix_object(obj);
 	}
+	else if(objects[otyp].oc_material == DRAGON_HIDE){
+		set_material(obj, DRAGON_HIDE);
+	}
 	else if(hard_mat(objects[otyp].oc_material)){
 		set_material(obj, SHELL_MAT);
 	}
@@ -6976,13 +6991,15 @@ d_weapon:
 		else
 			set_material(obj, DRAGON_HIDE);
 	}
-	if(objects[otyp].oc_class == ARMOR_CLASS){
-		if(yn("Size it to a particular creature?")=='y')
-			smith_resizeArmor(smith, obj);
-		else {
-			//sized for you
-			obj->objsize = youracedata->msize;
-			set_obj_shape(obj, youracedata->mflagsb);
+	if(objects[otyp].oc_class == ARMOR_CLASS || objects[otyp].oc_class == BELT_CLASS){
+		if(objects[otyp].oc_class != BELT_CLASS){
+			if(yn("Size it to a particular creature?")=='y')
+				smith_resizeArmor(smith, obj);
+			else {
+				//sized for you
+				obj->objsize = youracedata->msize;
+				set_obj_shape(obj, youracedata->mflagsb);
+			}
 		}
 		add_oprop(obj, OPROP_HOLY);
 		if(accepts_weapon_oprops(obj)){
@@ -6995,6 +7012,9 @@ d_weapon:
 				if(has_template(smith, ILLUMINATED))
 					add_oprop(obj, OPROP_LESSER_HOLYW);
 			}
+		}
+		else if(!objects[obj->otyp].oc_magic){
+			add_oprop(obj, OPROP_ACID);
 		}
 	}
 	verbalize("It's done.");
@@ -7029,7 +7049,7 @@ struct monst *smith;
 			0
 		};
 	int treesinger_basic_tools[] = {BLINDFOLD, BOX, FLUTE, LOCK_PICK, PICK_AXE, SACK, 0, 0};
-	int treesinger_advanced_armor[] = {0};
+	int treesinger_advanced_armor[] = {KIDNEY_BELT, UTILITY_BELT};
 	int treesinger_advanced_tools[] = {0};
 	int empty_list[] = {0};
 	struct obj *example = 0;
@@ -7095,6 +7115,7 @@ d_weapon:
 				case WEAPON_CLASS:
 					goto d_weapon;
 				case ARMOR_CLASS:
+				case BELT_CLASS:
 					goto d_armor;
 				case TOOL_CLASS:
 					goto d_tool;
@@ -7246,6 +7267,7 @@ d_weapon:
 				case WEAPON_CLASS:
 					goto d_weapon;
 				case ARMOR_CLASS:
+				case BELT_CLASS:
 					goto d_armor;
 				case TOOL_CLASS:
 					goto d_tool;
@@ -7484,8 +7506,8 @@ struct monst *smith;
 							TRIDENT, TWO_HANDED_SWORD, 0 };
 	int advanced_weapons[] = {0};
 	int basic_armor[] = { ARMORED_BOOTS, BANDED_MAIL, BUCKLER, CHAIN_MAIL, HELMET, KITE_SHIELD, GAUNTLETS, PLATE_MAIL, 
-						  RING_MAIL, SCALE_MAIL, SPLINT_MAIL, TOWER_SHIELD, 0 };
-	int advanced_armor[] = {0};
+						  RING_MAIL, SCALE_MAIL, SPLINT_MAIL, TOWER_SHIELD, KIDNEY_BELT, 0 };
+	int advanced_armor[] = {UTILITY_BELT};
 	int basic_tools[] = { BOX, LOCK_PICK, MASK, OIL_LAMP, PICK_AXE, SKELETON_KEY, 0 };
 	int advanced_tools[] = {0};
 
