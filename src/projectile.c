@@ -2424,7 +2424,7 @@ dofire()
 		}
 
 		/* Holy Moonlight Sword's magic blast -- mainhand only */
-		if (uwep && uwep->oartifact == ART_HOLY_MOONLIGHT_SWORD && uwep->lamplit && u.uen >= 25){
+		if (uwep && uwep->oartifact == ART_HOLY_MOONLIGHT_SWORD && uwep->lamplit && (u.uen >= 25 || (uquiver && (uquiver->otyp == BLOOD_BULLET || uquiver->otyp == BLOOD_SPEAR)))){
 			int n = 2;
 			if(u.explosion_up){
 				int out = 2;
@@ -2442,10 +2442,20 @@ dofire()
 			int range = (Double_spell_size) ? 6 : 3;
 			xchar lsx, lsy, sx, sy;
 			struct monst *mon;
+			struct obj *bullet = 0;
 			sx = u.ux;
 			sy = u.uy;
 			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
-			losepw(25);
+			if(uquiver && uquiver->otyp == BLOOD_SPEAR){
+				bullet = splitobj(uquiver, 1L);
+				obj_extract_self(bullet);
+				bullet->was_thrown = TRUE;
+			}
+			else if(uquiver && uquiver->otyp == BLOOD_BULLET){
+				useup(uquiver);
+			}
+			else
+				losepw(25);
 			/* also swing in the direction chosen */
 			flags.forcefight = 1;
 			domove();
@@ -2463,6 +2473,10 @@ dofire()
 						mon = m_at(sx, sy);
 						if (mon){
 							explode(sx, sy, AD_MAGM, WAND_CLASS, dmg * ((Double_spell_size) ? 3 : 2) / 2, EXPL_CYAN, 1 + !!Double_spell_size);
+							if(bullet){
+								place_object(bullet, sx, sy);
+								bullet = 0;
+							}
 							break;//break loop
 						}
 						else {
@@ -2474,8 +2488,17 @@ dofire()
 					}
 					else {
 						explode(lsx, lsy, AD_MAGM, WAND_CLASS, dmg * ((Double_spell_size) ? 3 : 2) / 2, EXPL_CYAN, 1 + !!Double_spell_size);
+						if(bullet){
+							place_object(bullet, lsx, lsy);
+							bullet = 0;
+						}
 						break;//break loop
 					}
+				}
+				if(bullet){
+					place_object(bullet, sx, sy);
+					newsym(sx, sy);
+					bullet = 0;
 				}
 				return MOVE_STANDARD;
 			}
