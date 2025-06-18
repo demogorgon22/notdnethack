@@ -538,6 +538,7 @@
 #define is_demon(ptr)		(((ptr)->mflagsa & MA_DEMON) != 0L)
 #define is_law_demon(ptr)	(((ptr)->mflagsa & MA_DEMON) != 0L && is_lawful(ptr))
 #define is_cha_demon(ptr)	(((ptr)->mflagsa & MA_DEMON) != 0L && is_chaotic(ptr))
+#define is_legion_devil(mtyp)	((mtyp) == PM_LEGION_DEVIL_GRUNT || (mtyp) == PM_LEGION_DEVIL_SOLDIER || (mtyp) == PM_LEGION_DEVIL_SERGEANT || (mtyp) == PM_LEGION_DEVIL_CAPTAIN)
 #define is_ancient(ptr)		(((ptr)->mtyp >=  PM_ANCIENT_OF_BLESSINGS\
 							&& (ptr)->mtyp <= PM_ANCIENT_OF_DEATH) \
 							|| (ptr)->mtyp == PM_BAALPHEGOR \

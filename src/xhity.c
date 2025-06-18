@@ -3534,6 +3534,48 @@ int amnt;
 	return;
 }
 
+void
+apply_damage_to_x(struct monst *mdef, int dmg)
+{
+	boolean youdef = mdef == &youmonst;
+	if(dmg && !youdef && is_legion_devil(mdef->mtyp) && !mdef->mcan){
+		int pool = 0, count = 0;
+		struct monst *mtmp;
+		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+			if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
+				pool += *hp(mtmp);
+				count++;
+			}
+		}
+		if(pool > dmg){
+			pool -= dmg;
+			int remainder = (pool+count-1)/count;
+			if(dmg < 0){
+				for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+					if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
+						*hp(mtmp) = remainder;
+					}
+				}
+			}
+			for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+				if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
+					*hp(mtmp) = min(*hp(mtmp)-1, remainder);
+					if(*hp(mtmp) < 1 && mtmp != mdef){
+						*hp(mtmp) = 1;
+					}
+				}
+			}
+		}
+		else {
+			*hp(mdef) -= dmg;
+		}
+	}
+	else {
+		*hp(mdef) -= dmg;
+	}
+	if (*hp(mdef) > *hpmax(mdef))
+		*hp(mdef) = *hpmax(mdef);
+}
 
 /* xdamagey()
  * 
@@ -3578,9 +3620,7 @@ int dmg;				/* damage to deal */
 	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 		pline("(dmg = %d)", dmg);
 	/* deal damage */
-	*hp(mdef) -= dmg;
-	if (*hp(mdef) > *hpmax(mdef))
-		*hp(mdef) = *hpmax(mdef);
+	apply_damage_to_x(mdef, dmg);
 
 	/* mhitu */
 	if (youdef) {
