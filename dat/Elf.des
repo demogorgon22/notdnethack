@@ -410,6 +410,11 @@ DOOR:closed,(37,13)
 DOOR:closed,(37,16)
 DOOR:closed,(42,10)
 
+MONSTER: 'a', "incarnator maggot", (34,05)
+MONSTER: 'a', "incarnator maggot", (16,05)
+MONSTER: 'a', "incarnator maggot", (15,14)
+MONSTER: 'a', "incarnator maggot", (61,11)
+
 # Prisoners
 MONSTER: 'h', "dwarf king", (07,10), "Thror"
 MONSTER: '@', "Elvenqueen", (56,05)
