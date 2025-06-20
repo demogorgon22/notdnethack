@@ -1353,7 +1353,7 @@ domove()
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){
 					result |= hit_with_dance(&youmonst, otmp, x, y, 0, attk);
 				}
-				/* Rejection antenae hit additional targets (last) */
+				/* Rejection antennae hit additional targets (last) */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && check_oprop(otmp, OPROP_ANTAW) && check_reanimation(ANTENNA_REJECT)){
 					result |= hit_with_rreject(&youmonst, otmp, x, y, 0, attk);
 				}

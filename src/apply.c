@@ -3309,7 +3309,7 @@ reanimation_score()
 {
 	int count = reanimation_count()+1;
 	count *= 4; //TIER_B	4
-	return (count*(count+1))/2 + (u.antenae_upgrades)*4;
+	return (count*(count+1))/2 + (u.antennae_upgrades)*4;
 }
 
 boolean
@@ -3470,7 +3470,7 @@ reanimation_upgrade(struct obj *research_kit)
 		if(uwep){
 			You("tune your weapon.");
 			add_oprop(uwep, OPROP_ANTAW);
-			u.antenae_upgrades++;
+			u.antennae_upgrades++;
 		}
 	}
 	if(n == 6){
@@ -3490,7 +3490,7 @@ reanimation_upgrade(struct obj *research_kit)
 		add_reanimation(LAMP_PHASE);
 	}
 	if(n == 10){
-		u.antenae_upgrades += 50;
+		u.antennae_upgrades += 50;
 		expert_undead_hunter_skill();
 		expert_undead_hunter_skill();
 		expert_undead_hunter_skill();

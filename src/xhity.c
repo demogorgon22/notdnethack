@@ -957,7 +957,7 @@ int tary;
 					if(!ranged && !(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(magr->data)){
 						result |= hit_with_dance(magr, otmp, tarx, tary, tohitmod, attk)&(MM_AGR_DIED|MM_AGR_STOP);
 					}
-					/* Rejection antenae hit additional targets (last) */
+					/* Rejection antennae hit additional targets (last) */
 					if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && check_oprop(otmp, OPROP_ANTAW) && check_reanimation(ANTENNA_REJECT)){
 						result |= hit_with_rreject(&youmonst, otmp, tarx, tary, 0, attk);
 					}

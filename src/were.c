@@ -476,7 +476,7 @@ char *genbuf;
 				mark_mon_as_summoned(mtmp, caller, ESUMMON_PERMANENT, 0);
 			if (yours)
 				(void) tamedog(mtmp, (struct obj *) 0);
-	    }			
+	    }
 	}
 	return total;
 }
