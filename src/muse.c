@@ -3420,7 +3420,7 @@ struct monst *mon;
 	for(obj = mon->minvent; obj; obj = obj->nobj){
 		if(obj->o_id == mon->entangled_oid){
 			//Very hard to escape from the diamond snare
-			if(is_returning_snare(obj) && rn2(20))
+			if(is_returning_snare(obj) && (rn2(20) || rn2(145 - mon->m_lev) < mon->data->mr/2))
 				break;
 			if(canseemon(mon))
 				pline("%s slips loose from the entangling %s!", Monnam(mon), xname(obj));
