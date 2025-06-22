@@ -192,7 +192,6 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ SPEAR, "yari" },
 	{ SPLINT_MAIL, "dou-maru" },
 	{ TRIDENT, "magari yari" },
-	{ TWO_HANDED_SWORD, "no-dachi" },
 	{ WAR_HAMMER, "dai tsuchi" },
 	{ HARP, "koto" },
 	{0, "" }
@@ -3887,7 +3886,6 @@ struct alt_spellings {
 	{ "yari", SPEAR },
 	{ "dou-maru", SPLINT_MAIL },
 	{ "magari yari", TRIDENT },
-	{ "no-dachi", TWO_HANDED_SWORD },
 	{ "dai tsuchi", WAR_HAMMER },
 	{ "koto", HARP },
 	{ "helmet", HELMET },
