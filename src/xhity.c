@@ -14415,9 +14415,18 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		/* calculate snekdmg */
 		/* Undead Hunters are not as good as Rogues, but any additional source of sneak attack damage upgrades their natural die to a regular-strength one */
 		if(youagr && Role_if(PM_UNDEAD_HUNTER) && !Upolyd && sneak_dice == 1){
-			snekdmg = rnd(2*snekdie/3);
+			snekdie = (2*snekdie+1)/3;
 		}
-		else snekdmg = d(sneak_dice, snekdie);
+		// snekdmg = d(sneak_dice, snekdie);
+		int nd6 = snekdie/6;
+		int rem = snekdie%6;
+		if (Role_if(PM_ROGUE) && !Upolyd)
+			nd6++;
+		if(nd6)
+			snekdmg += d(sneak_dice*nd6, 6);
+		if(rem)
+			snekdmg += d(sneak_dice, rem);
+		
 		lifehunt_sneak_attacking = (weapon && weapon->oartifact == ART_LIFEHUNT_SCYTHE);
 	}
 	else {
