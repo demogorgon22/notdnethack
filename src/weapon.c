@@ -389,7 +389,7 @@ struct monst *magr;
 		else if(activeFightingForm(FFORM_POMMEL))
 			attackmask = WHACK; // only bashing
 	}
-	if (obj && magr && obj->otyp == TOOTH && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
+	if (obj && magr && (obj->otyp == TOOTH || obj->otyp == GOEDENDAG) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
 		attackmask = PIERCE; // only thrusting
 	}
 	if(obj && obj->o_e_trait == ETRAIT_HEW && magr
@@ -575,12 +575,21 @@ struct monst *magr;
 				flat = 0;
 			}
 		}
-		if (magr && obj->otyp == TOOTH && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
+		if (magr && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
+			if(obj->otyp == TOOTH){
 				ocn = 1;
 				ocd = 8;
 				bonn = 0;
 				bond = 0;
 				flat = 0;
+			}
+			else if(obj->otyp == GOEDENDAG && large){
+				ocn = 1;
+				ocd = 8;
+				bonn = 0;
+				bond = 0;
+				flat = 0;
+			}
 		}
 		if (obj->oartifact == ART_FRIEDE_S_SCYTHE)
 			dmod += 2;
@@ -2101,6 +2110,7 @@ static const NEARDATA short hwep[] = {
 	  SUNROD/*1d6/1d3*/, 
 	  SHADOWLANDER_S_TORCH/*1d6/1d3*/, 
 	  TORCH/*1d6/1d3*/, 
+	  GOEDENDAG/*1d6/1d3*/, 
 	  CLUB/*1d6/1d3*/, 
 	  PICK_AXE/*1d6/1d3*/,
 	  ELVEN_SICKLE/*1d6/1d3*/,
@@ -2249,6 +2259,7 @@ static const NEARDATA short hpwep[] = {
 	  SUNROD/*1d6/1d3*/, 
 	  SHADOWLANDER_S_TORCH/*1d6/1d3*/, 
 	  TORCH/*1d6/1d3*/, 
+	  GOEDENDAG/*1d6/1d3*/, 
 	  CLUB/*1d6/1d3*/, 
 	  PICK_AXE/*1d6/1d3*/,
 	  ELVEN_SICKLE/*1d6/1d3*/,
