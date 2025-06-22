@@ -2392,12 +2392,14 @@ dofire()
 
 				if (uquiver && ammo_and_launcher(uquiver, launcher)) {
 					/* simply fire uquiver from the launcher */
-					result = uthrow(uquiver, launcher, shotlimit, FALSE);
+					result |= uthrow(uquiver, launcher, shotlimit, FALSE);
 				}
 				else if (is_blaster(launcher)) {
-					return ufire_blaster(launcher, shotlimit);
+					result |= ufire_blaster(launcher, shotlimit);
 				}
 			}
+			if(result != MOVE_CANCELLED)
+				result &= ~MOVE_CANCELLED; //Something else got | in, remove the initial "it was cancelled" result.
 			return result;
 		}
 
