@@ -3383,12 +3383,6 @@ struct monst *owner;
 	struct obj *obj_original = obj;
 	boolean obj_destroyed = FALSE;
 	int is_lethe = lethe;
-	if(owner && ProtectItems(owner) &&
-		(obj->oclass == POTION_CLASS
-		 || obj->oclass == SCROLL_CLASS
-		 || obj->oclass == WAND_CLASS
-	))
-		return 0;
 	if(owner == &youmonst){
 		if(Waterproof) {
 			return 0;
@@ -3417,6 +3411,12 @@ struct monst *owner;
 	for (; obj; obj = otmp) {
 		otmp = here ? obj->nexthere : obj->nobj;
 
+		if(owner && ProtectItems(owner) &&
+			(obj->oclass == POTION_CLASS
+			 || obj->oclass == SCROLL_CLASS
+			 || obj->oclass == WAND_CLASS
+		))
+			continue;
 		(void) snuff_lit(obj);
 
 		if(obj->otyp == CAN_OF_GREASE && obj->spe > 0) {
