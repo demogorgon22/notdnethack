@@ -3535,16 +3535,25 @@ int amnt;
 }
 
 void
-apply_damage_to_x(struct monst *mdef, int dmg)
+apply_damage_to_x(struct monst *magr, struct monst *mdef, int dmg)
 {
 	boolean youdef = mdef == &youmonst;
+	boolean youagr = magr == &youmonst;
 	if(dmg && !youdef && is_legion_devil(mdef->mtyp) && !mdef->mcan){
 		int pool = 0, count = 0;
 		struct monst *mtmp;
 		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
-			if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
-				pool += *hp(mtmp);
-				count++;
+			if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp)){
+				if(mtmp->data->mlevel <= mdef->data->mlevel){
+					pool += *hp(mtmp);
+					count++;
+				}
+				if(magr){
+					mtmp->mux = mdef->mux;
+					mtmp->muy = mdef->muy;
+				}
+				wakeup2(mtmp, youagr);
+				mtmp->mstrategy &= ~STRAT_WAITFORU;
 			}
 		}
 		if(pool > dmg){
@@ -3561,7 +3570,12 @@ apply_damage_to_x(struct monst *mdef, int dmg)
 				if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
 					*hp(mtmp) = min(*hp(mtmp)-1, remainder);
 					if(*hp(mtmp) < 1 && mtmp != mdef){
-						*hp(mtmp) = 1;
+						if(youagr){
+							xkilled(mtmp, 0);
+						}
+						else {
+							mondied(mtmp);
+						}
 					}
 				}
 			}
@@ -3620,7 +3634,7 @@ int dmg;				/* damage to deal */
 	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 		pline("(dmg = %d)", dmg);
 	/* deal damage */
-	apply_damage_to_x(mdef, dmg);
+	apply_damage_to_x(magr, mdef, dmg);
 
 	/* mhitu */
 	if (youdef) {
