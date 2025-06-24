@@ -550,6 +550,12 @@ struct you {
 	int ugifts;			/* number of artifacts bestowed */
 	int uartisval;		/* approximate strength of artifacts bestowed and wished for */
 	int ucultsval;		/* approximate strength of wished artifacts and gifts bestowed */
+	int udroolgifted, umortalgifted, utruedeathgifted, uunworthygifted, uwindowgifted;
+#define SHUB_DROOL_TIER TIER_S
+#define FLAME_MORTAL_TIER TIER_B
+#define FLAME_DEATH_TIER TIER_A
+#define FLAME_UNWORTHY_TIER TIER_S
+#define YOG_WINDOW_TIER TIER_S
 	int ublessed, ublesscnt;	/* blessing/duration from #pray */
 	long usaccredit;		/* credit towards next gift */
 	boolean cult_atten[MAX_CULTS];	/* for having started with a cult */
@@ -696,8 +702,9 @@ struct you {
 #define	ANTENNA_BOLT	0x00000020L
 #define	ANTENNA_REJECT	0x00000040L
 #define	LAMP_PHASE		0x00000080L
-#define REANIMATION_MAX LAMP_PHASE
-#define REANIMATION_COUNT 8
+#define	RE_FLAME		0x00000100L
+#define REANIMATION_MAX RE_FLAME
+#define REANIMATION_COUNT ((u.ublood_smithing && u.silver_atten) ? 9 : 8)
 #define check_reanimation(upgrade)	(u.ureanimation_upgrades&(upgrade))
 #define add_reanimation(upgrade)	(u.ureanimation_upgrades|=(upgrade))
 	int 	uparasitology_research;	/* to record progress on parasitology */
@@ -706,6 +713,10 @@ struct you {
 	char explosion_up;
 	char jellyfish;
 	char cuckoo;
+	long uparasitology_upgrades;
+#define	PARISITE_WINDOWS	0x00000001L
+#define check_parasitology(upgrade)	(u.uparasitology_upgrades&(upgrade))
+#define add_parasitology(upgrade)	(u.uparasitology_upgrades|=(upgrade))
 	// int 	usaprobiology_research; /* to record progress on rot */
 	int 	udefilement_research; /* to record progress on defilement */
 	int mental_scores_down;
@@ -730,8 +741,9 @@ struct you {
 #define VAMPIRE_BLOOD_RIP	   0x00000004L
 #define VAMPIRE_BLOOD_SPIKES   0x00000008L
 #define VAMPIRE_GAZE		   0x00000010L
-#define VAMPIRE_MAX			   VAMPIRE_GAZE
-#define VAMPIRE_COUNT		   5
+#define VAMPIRE_SHUB		   0x00000020L
+#define VAMPIRE_MAX			   VAMPIRE_SHUB
+#define VAMPIRE_COUNT		   ((u.ublood_smithing && !check_rot(ROT_SHUB) && u.shubbie_atten) ? 6 : 5)
 #define check_vampire(upgrade)	(u.uvampire_upgrades&(upgrade))
 #define add_vampire(upgrade)	(u.uvampire_upgrades|=(upgrade))
 
@@ -746,9 +758,10 @@ struct you {
 #define ROT_CENT			   0x00000040L
 #define ROT_STING			   0x00000080L
 #define ROT_SPORES			   0x00000100L
+#define ROT_SHUB			   0x00000100L
 #define ROT_MIN				   ROT_VOMIT
-#define ROT_MAX				   ROT_SPORES
-#define ROT_COUNT			   9
+#define ROT_MAX				   ROT_SHUB
+#define ROT_COUNT			   ((u.ublood_smithing && !check_vampire(VAMPIRE_SHUB) && u.shubbie_atten) ? 10 : 9)
 #define check_rot(upgrade)	(u.urot_upgrades&(upgrade))
 #define add_rot(upgrade)	(u.urot_upgrades|=(upgrade))
 #define remove_rot(upgrade)	(u.urot_upgrades&=~(upgrade))
