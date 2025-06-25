@@ -3448,6 +3448,7 @@ reanimation_upgrade(struct obj *research_kit)
 	}
 	n = selected[0].item.a_int;
 	free(selected);
+	boolean minor_upgrade = FALSE;
 	if(n == 1){
 		add_reanimation(RE_BOLT_RES);
 		HShock_resistance |= W_UPGRADE;
@@ -3471,6 +3472,7 @@ reanimation_upgrade(struct obj *research_kit)
 			You("tune your weapon.");
 			add_oprop(uwep, OPROP_ANTAW);
 			u.antenae_upgrades++;
+			minor_upgrade = TRUE;
 		}
 	}
 	if(n == 6){
@@ -3495,6 +3497,7 @@ reanimation_upgrade(struct obj *research_kit)
 		expert_undead_hunter_skill();
 		expert_undead_hunter_skill();
 		pline("The ancient knowledge sinks into your subconscious.");
+		minor_upgrade = TRUE;
 	}
 	if(n == 11){
 		You("glimpse the source of the Silver Light!");
@@ -3515,7 +3518,8 @@ reanimation_upgrade(struct obj *research_kit)
 	if(research_kit && research_kit->spe > 0)
 		research_kit->spe--;
 	// u.udefilement_research += rn2(defile_score());
-	u.mental_scores_down++;
+	if(!minor_upgrade)
+		u.mental_scores_down++;
 	ABASE(A_INT) -= 1;
 	// check_brainlessness();
 	ABASE(A_INT) = max(ABASE(A_INT), ATTRMIN(A_INT));
