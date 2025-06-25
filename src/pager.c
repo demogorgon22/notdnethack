@@ -1051,6 +1051,7 @@ static const char * const bogusobjects[] = {
        "bec de corwin",
        "yet another poorly-differentiated polearm",
        "cursed YAPDP",
+       "basket-case broadsword",
        "can of mace",
        "evening star",
        "dawn star",
