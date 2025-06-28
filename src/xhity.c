@@ -18847,7 +18847,18 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 					}
 					break;
 				case AD_PHYS:
-					/* no message */
+					/* maybe message */
+					if (youagr) {
+						if (pd->mtyp == PM_QUIVERING_BLOB) pline("Boing! You are hit by the rebounding membrane!");
+					}
+					else if (vis) {
+						if (pd->mtyp == PM_QUIVERING_BLOB) {
+							pline("Boing! %s is hit by %s rebounding membrane!",
+								Monnam(magr),
+								(youdef ? "your" : s_suffix(mon_nam(mdef)))
+								);
+						}
+					}
 					/* damage (reduced by DR, half-phys damage, min 1) */
 					dmg -= (youagr ? roll_udr(mdef, ROLL_SLOT) : roll_mdr(magr, mdef, ROLL_SLOT));
 					if (dmg < 1)
