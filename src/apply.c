@@ -8044,6 +8044,7 @@ use_chrysalis(struct obj *obj)
 	if(n == 5){
 		add_rot(ROT_KIN);
 		You("are followed by the kin of rot.");
+		reset_rndmonst(NON_PM);
 	}
 	if(n == 6){
 		add_rot(ROT_FEAST);
