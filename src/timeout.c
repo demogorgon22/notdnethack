@@ -110,6 +110,7 @@ const struct propname {
     { DARKVISION_ONLY, "darksight-override" },
     { DIMENSION_LOCK, "dimensional lock" },
 	{ CLEAR_THOUGHTS, "clear thoughts" },
+	{ DARK_RES, "dark resistance" },
     {  0, 0 },
 };
 

@@ -1667,7 +1667,9 @@ struct obj *obj;
 	struct monst *mon;
 	boolean shackles = obj->oartifact == ART_ESSCOOAHLIPBOOURRR;
 	if(obj != uwep){
-		if (!wield_tool(obj, "staff")) return MOVE_CANCELLED;
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+		else if (!wield_tool(obj, "staff")) return MOVE_CANCELLED;
 	}
 	if(!getdir((char *)0)) {
 		return MOVE_CANCELLED;
@@ -6732,8 +6734,10 @@ struct obj *obj;
 	boolean ranged = FALSE;
 
     if (obj != uwep) {
-	if (!wield_tool(obj, "lash")) return MOVE_CANCELLED;
-	else res = MOVE_STANDARD;
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+		else if (!wield_tool(obj, "lash")) return MOVE_CANCELLED;
+		else res = MOVE_STANDARD;
     }
 	if(Straitjacketed){
 		You("can't snap a whip while your %s are bound!", makeplural(body_part(ARM)));
@@ -7023,7 +7027,9 @@ struct obj *obj;
     const char *msg_snap = "Swish!";
 
     if (obj != uwep) {
-		if (!wield_tool(obj, "nunchaku")) return MOVE_CANCELLED;
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+		else if (!wield_tool(obj, "nunchaku")) return MOVE_CANCELLED;
 		else res = Role_if(PM_MONK) ? MOVE_PARTIAL : MOVE_STANDARD;
     }
 	if(Straitjacketed){
@@ -7306,7 +7312,9 @@ coord *ccp;
 	    return MOVE_CANCELLED;
 	}
 	if (obj != uwep && obj != uarmg) {
-	    if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
+	    if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+		else if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
 	    else res = MOVE_STANDARD;
 	}
 	if(Straitjacketed){
@@ -7476,7 +7484,9 @@ use_grapple (obj)
 	    return MOVE_CANCELLED;
 	}
 	if (obj != uwep) {
-	    if (!wield_tool(obj, "cast")) return MOVE_CANCELLED;
+	    if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+		else if (!wield_tool(obj, "cast")) return MOVE_CANCELLED;
 	    else res = MOVE_STANDARD;
 	}
 	if(Straitjacketed){
@@ -7604,7 +7614,9 @@ use_crook (obj)
 	    return MOVE_CANCELLED;
 	}
 	if (obj != uwep) {
-	    if (!wield_tool(obj, "hook")) return MOVE_CANCELLED;
+	    if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+		else if (!wield_tool(obj, "hook")) return MOVE_CANCELLED;
 	    else res = MOVE_STANDARD;
 	}
 	if(Straitjacketed){
@@ -11432,7 +11444,8 @@ doapply()
   	case BEAMSWORD:
 	case DOUBLE_LIGHTSABER:
 	case ROD_OF_FORCE:
-		if (uwep != obj && !(u.twoweap && uswapwep == obj) && !wield_tool(obj, (const char *)0)) break;
+		if (uwep != obj && !(u.twoweap && uswapwep == obj) && !((uwep && uwep->oartifact == ART_MORTAL_BLADE
+			&& yesno("Release the Mortal Blade?", TRUE) == 'n') || wield_tool(obj, (const char *)0))) break;
 		/* Fall through - activate via use_lamp */
 		    
 /* MRKR: dwarvish helms are mining helmets. 

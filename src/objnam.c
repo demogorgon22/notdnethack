@@ -1382,10 +1382,12 @@ char *buf;
 			Strcat(buf, "budding ");
 	}
 	if (obj->oartifact == ART_MORTAL_BLADE && obj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
-		if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+		if (artinstance[ART_MORTAL_BLADE].mortalLives > 2)
 			Strcat(buf, "seething ");
-		else
+		else if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
 			Strcat(buf, "fuming ");
+		else
+			Strcat(buf, "smoking ");
 	}
 	if (rakuyo_prop(obj)){
 		if(Insight >= 40)
