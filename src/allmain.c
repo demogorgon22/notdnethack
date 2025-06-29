@@ -1118,6 +1118,7 @@ you_regen_hp()
 	){
 		int reglevel = maybe_polyd(youmonst.data->mlevel, u.ulevel);
 
+		reglevel -= u.ulevel*rot_count(); //Always rots based on your actual level.
 		// CON bonus (while in natural form)
 		if (!Upolyd)
 			reglevel += ((int)ACURR(A_CON) - 10);
@@ -1182,6 +1183,7 @@ you_regen_hp()
 		
 		// penalty for being itchy
 		reglevel -= u_healing_penalty();
+		reglevel -= rot_count(); //Additional flat modifier that can counteract non-level-based bonuses
 
 		// minimum 1
 		if (reglevel < 1)
@@ -1559,6 +1561,8 @@ san_threshhold()
 	
 	// penalty for being itchy
 	reglevel -= u_healing_penalty();
+	// penalty for rot upgrades
+	reglevel -= rot_count()*2;
 	
 	return reglevel;
 }
@@ -2645,11 +2649,11 @@ karemade:
 						}
 					}
 				}
-				if(u.uz.flags.walkers < 3 && rnd(100)+3 < u.uz.rage && roll_generic_flat_madness(TRUE) && rnd(88)+12 < Insight){
+				if(level.flags.walkers < 3 && rnd(100)+3 < level.flags.rage && roll_generic_flat_madness(TRUE) && rnd(88)+12 < Insight){
 					mtmp = makemon(&mons[PM_RAGE_WALKER], 0, 0, MM_ADJACENTOK);
 					if(mtmp){
-						make_rage_walker_polts(u.uz.rage+3);
-						u.uz.rage = 0;
+						make_rage_walker_polts(level.flags.rage+3);
+						level.flags.rage = 0;
 					}
 					int i;
 					int vort[] = {PM_ICE_VORTEX, PM_ENERGY_VORTEX, PM_FIRE_VORTEX};
@@ -2657,15 +2661,14 @@ karemade:
 					int sphere[] = {PM_FREEZING_SPHERE, PM_FLAMING_SPHERE, PM_SHOCKING_SPHERE};
 					for(i = d(3,3); i > 0; i--) makemon(&mons[ROLL_FROM(sphere)], 0, 0, NO_MM_FLAGS);
 				}
+				else if(level.flags.rage > 0 && !rn2(level.flags.rage))
+					level.flags.rage--;
 			}
 			if(Infuture && !(Is_qstart(&u.uz) && !Race_if(PM_ANDROID)) && !rn2(35)){
 				struct monst* mtmp = makemon(&mons[PM_SEMBLANCE], rn1(COLNO-3,2), rn1(ROWNO-3,2), MM_ADJACENTOK);
 				//"Where stray illuminations from the Far Realm leak onto another plane, matter stirs at the beckoning of inexplicable urges before burning to ash."
 				if(mtmp && canseemon(mtmp)) pline("The base matter of the world stirs at the beckoning of inexplicable urges, dancing with a semblance of life.");
 			}
-			/* Rage-walker rage quickly fades. */
-			if(u.uz.rage > 0 && !rn2(u.uz.rage+9))
-				u.uz.rage--;
 
 		    /* reset summon monster block. */
 			u.summonMonster = FALSE;
@@ -5042,7 +5045,7 @@ struct monst *mon;
 	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_MOUTH_OF_THE_GOAT)
 		goat_sacrifice(mon);
 	else if(mon->mux == u.uz.dnum && mon->muy == u.uz.dlevel && mon->mtyp == PM_RAGE_WALKER && (check_insight() || (!rn2(u.uevent.udemigod ? 25 : 50) && roll_generic_madness(TRUE))))
-		make_rage_walker_polts(u.uz.rage+3);
+		make_rage_walker_polts(level.flags.rage+3);
 	else if(mon->mtyp == PM_STRANGER)
 		palid_stranger(mon);
 	else if(mon->mtyp == PM_PUPPET_EMPEROR_XELETH || mon->mtyp == PM_PUPPET_EMPRESS_XEDALLI)

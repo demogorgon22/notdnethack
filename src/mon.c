@@ -4489,6 +4489,18 @@ struct monst *mtmp;
 	if (mvitals[monsndx(mtmp->data)].mvflags & G_GENOD && !In_quest(&u.uz))
 		lifesavers &= ~(LSVD_FRC | LSVD_NBW | LSVD_KAM | LSVD_HLO);
 
+	/* monsters laid to rest cannot lifesave by any means.
+	   yog's twin stays dead (no replacement), suzerain still shows up on astral.
+	   iffy on tettigons (armored, lifesaving is the armor cracking) and maybe ana timestream fuckery,
+	   but it works for right now
+	 */
+	if (mtmp->mlaidtorest) {
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && (lifesavers&(LSVD_NIT|LSVD_NBW|LSVD_ASC))) {
+			artinstance[ART_MORTAL_BLADE].mortalLives++;
+			pline("Red smoke flows into the blade!");
+		}
+		lifesavers = 0;
+	}
 	/* quick check -- if no lifesavers, let's fail immediately */
 	if (!lifesavers) {
 		return;
@@ -5231,7 +5243,9 @@ register struct monst *mtmp;
 		u.umadness |= MAD_REACHER;
 	}
 	if(mtmp->mtyp == PM_PUPPET_EMPEROR_XELETH || mtmp->mtyp == PM_PUPPET_EMPRESS_XEDALLI){
-		makemon(&mons[PM_SUZERAIN], 0, 0, MM_ADJACENTOK);
+		struct monst *suze = makemon(&mons[PM_SUZERAIN], 0, 0, MM_ADJACENTOK);
+		migrate_to_level(suze, ledger_no(&astral_level), MIGR_RANDOM, (coord *)0);
+		mtmp->marriving = TRUE;
 	}
 #ifdef RECORD_ACHIEVE
 	if(mtmp->mtyp == PM_LUCIFER){
@@ -6609,7 +6623,7 @@ xkilled(mtmp, dest)
 			is_elf(mtmp->data)
 			|| is_fey(mtmp->data)
 		)){
-			u.uz.rage++;
+			level.flags.rage++;
 		}
 		if(mtmp->mibitemarked){
 			mtmp->mflamemarked = FALSE;

@@ -729,9 +729,18 @@ break_armor()
 				(void) Cloak_off();
 				dropx(otmp);
 			} else {
-				Your("%s tears apart!", cloak_simple_name(otmp));
-				(void) Cloak_off();
-				useup(otmp);
+				if(otmp->otyp == MUMMY_WRAPPING || otmp->otyp == PRAYER_WARDED_WRAPPING){
+					Your("%s tears apart!", cloak_simple_name(otmp));
+					(void) Cloak_off();
+					useup(otmp);
+				}
+				else {
+					Your("%s pops open!", cloak_simple_name(otmp));
+					(void) Cloak_off();
+					if(!otmp->oeroded3)
+						otmp->oeroded3 = 1;
+					dropx(otmp);
+				}
 			}
 		}
 	}

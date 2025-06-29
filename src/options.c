@@ -54,6 +54,7 @@ static struct Bool_Opt
 #else
 	{"altmeta", (boolean *)0, TRUE, DISP_IN_GAME},
 #endif
+	{"artifact_descriptors",    &iflags.artifact_descriptors, FALSE, SET_IN_GAME},
 	{"ascii_map",     &iflags.wc_ascii_map, !PREFER_TILED, SET_IN_GAME},	/*WC*/
 #ifdef MFLOPPY
 	{"asksavedisk", &flags.asksavedisk, FALSE, SET_IN_GAME},
@@ -103,6 +104,9 @@ static struct Bool_Opt
 #else
 	{"DECgraphics", (boolean *)0, FALSE, SET_IN_FILE},
 #endif
+	{"default_template_hilite", &iflags.default_template_hilite, TRUE, SET_IN_FILE },
+	{"dnethack_dungeon_colors",    &iflags.dnethack_dungeon_colors, TRUE, SET_IN_GAME},
+	{"dnethack_start_text",    &iflags.dnethack_start_text, TRUE, DISP_IN_GAME},
 	{"eight_bit_tty", &iflags.wc_eight_bit_input, FALSE, SET_IN_GAME},	/*WC*/
 #if defined(TTY_GRAPHICS) || defined(CURSES_GRAPHICS)
 	{"extmenu", &iflags.extmenu, FALSE, SET_IN_GAME},
@@ -121,6 +125,7 @@ static struct Bool_Opt
 #else
 	{"flush", (boolean *)0, FALSE, SET_IN_FILE},
 #endif
+	{"force_artifact_names",    &iflags.force_artifact_names, TRUE, SET_IN_GAME},
 	{"fullscreen", &iflags.wc2_fullscreen, FALSE, SET_IN_FILE},
 	{"guicolor", &iflags.wc2_guicolor, TRUE, SET_IN_GAME},
 	{"help", &flags.help, TRUE, SET_IN_GAME},
@@ -136,14 +141,6 @@ static struct Bool_Opt
 #endif
 	{"hilite_hidden_stairs",    &iflags.hilite_hidden_stairs, TRUE, SET_IN_GAME},	/*WC*/
 	{"hilite_obj_piles",    &iflags.hilite_obj_piles, FALSE, SET_IN_GAME},	/*WC*/
-	{"default_template_hilite", &iflags.default_template_hilite, TRUE, SET_IN_FILE },
-	{"dnethack_start_text",    &iflags.dnethack_start_text, TRUE, DISP_IN_GAME},
-	{"artifact_descriptors",    &iflags.artifact_descriptors, FALSE, SET_IN_GAME},
-	{"force_artifact_names",    &iflags.force_artifact_names, TRUE, SET_IN_GAME},
-	{"role_obj_names",    &iflags.role_obj_names, TRUE, SET_IN_GAME},
-	{"obscure_role_obj_names",    &iflags.obscure_role_obj_names, FALSE, SET_IN_GAME},
-	{"dnethack_dungeon_colors",    &iflags.dnethack_dungeon_colors, TRUE, SET_IN_GAME},
-	{"invweight",    &iflags.invweight, TRUE, SET_IN_GAME},
 	{"hitpointbar", &iflags.hitpointbar, FALSE, SET_IN_GAME},
 	{"hp_monitor", (boolean *)0, TRUE, SET_IN_FILE}, /* For backward compat, HP monitor patch */
 	{"hp_notify", &iflags.hp_notify, FALSE, SET_IN_GAME},
@@ -157,6 +154,7 @@ static struct Bool_Opt
 #else
 	{"ignintr", (boolean *)0, FALSE, SET_IN_FILE},
 #endif
+	{"invweight",    &iflags.invweight, TRUE, SET_IN_GAME},
 	{"item_use_menu", &iflags.item_use_menu, TRUE, SET_IN_GAME},
 	{"large_font", &iflags.obsolete, FALSE, SET_IN_FILE},	/* OBSOLETE */
 	{"legacy", &flags.legacy, TRUE, DISP_IN_GAME},
@@ -203,6 +201,7 @@ static struct Bool_Opt
 	{"msg_wall_hits", &iflags.notice_walls, FALSE, SET_IN_GAME},
 	{"block_forget_map", &iflags.no_forget_map, FALSE, SET_IN_GAME},
 	{"null", &flags.null, TRUE, SET_IN_GAME},
+	{"obscure_role_obj_names",    &iflags.obscure_role_obj_names, FALSE, SET_IN_GAME},
 	{"old_C_behaviour", &iflags.old_C_behaviour, FALSE, SET_IN_GAME},
 #ifdef MAC
 	{"page_wait", &flags.page_wait, TRUE, SET_IN_GAME},
@@ -237,6 +236,7 @@ static struct Bool_Opt
 	{"rawio", (boolean *)0, FALSE, SET_IN_FILE},
 #endif
 	{"rest_on_space", &flags.rest_on_space, FALSE, SET_IN_GAME},
+	{"role_obj_names",    &iflags.role_obj_names, TRUE, SET_IN_GAME},
 	{"safe_pet", &flags.safe_dog, TRUE, SET_IN_GAME},
 #ifdef WIZARD
 	{"sanity_check", &iflags.sanity_check, FALSE, SET_IN_GAME},
@@ -2096,10 +2096,12 @@ boolean tinitial, tfrom_file;
 				ADD_REMOVE_SECTION(POKEDEX_SHOW_MV);
 			else if (!strncmpi(op, "attacks",    l= 7))
 				ADD_REMOVE_SECTION(POKEDEX_SHOW_ATTACKS);
-			else if (!strncmpi(op, "summary",    l= 7))
-				ADD_REMOVE_SECTION(POKEDEX_SHOW_CRITICAL);
 			else if (!strncmpi(op, "wards",    l= 5))
 				ADD_REMOVE_SECTION(POKEDEX_SHOW_WARDS);
+			else if (!strncmpi(op, "encyclopedia", l= 12))
+				ADD_REMOVE_SECTION(POKEDEX_SHOW_ENCYC);
+			else if (!strncmpi(op, "summary",    l= 7))
+				ADD_REMOVE_SECTION(POKEDEX_SHOW_CRITICAL);
 			else
 				badoption(opts);
 #undef ADD_REMOVE_SECTION
@@ -3648,7 +3650,7 @@ static NEARDATA const char *burdentype[] = {
 
 static NEARDATA const char *pokedexsections[] = {
 	"stats", "generation", "weight", "resists", "conveys",
-	"movement", "thinking", "biology", "mechanics", "race", "vision", "attacks"/*, "summary"*/
+	"movement", "thinking", "biology", "mechanics", "race", "vision", "attacks", "wards", "encyclopedia"/*, "summary"*/
 };
 
 static NEARDATA const char *runmodes[] = {

@@ -3494,15 +3494,17 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 		add_menu(tmpwin, NO_GLYPH, &any,
 			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
-		inclet++;
-
-		Sprintf(buf, "her Hunger");
+	}
+	inclet++;
+	if(greater_boon || ((check_vampire(VAMPIRE_SHUB) || check_rot(ROT_SHUB)) && u.udroolgifted)){
+		Sprintf(buf, "her drooling Hunger");
 		any.a_int = GOATBOON_DROOL;
 		add_menu(tmpwin, NO_GLYPH, &any,
 			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
 		inclet++;
-
+	}
+	if(greater_boon){
 		if (!flags.made_know) {
 			Sprintf(buf, "her Knowledge");
 			any.a_int = GOATBOON_RED_WORD;
@@ -3532,7 +3534,6 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 			}
 		}
 		inclet++;
-
 	}
 	end_menu(tmpwin, "You have the Goat's attention...");
 
@@ -3783,8 +3784,12 @@ commune_with_goat()
 						otmp->cobj->oerodeproof = 1;
 					}
 				}
-				u.ugifts++;
-				u.ucultsval += TIER_S;
+				if((!check_vampire(VAMPIRE_SHUB) && !check_rot(ROT_SHUB)) || !u.udroolgifted){
+					u.ugifts++;
+					u.udroolgifted++;
+					// u.ucultsval += TIER_S;
+					u.ucultsval += SHUB_DROOL_TIER;
+				}
 			}
 			else {
 				cost = 0;
@@ -3899,21 +3904,33 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 		add_menu(tmpwin, NO_GLYPH, &any,
 			inclet++, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+	}
+	else inclet+=2;
+	if(greater_boon || (check_reanimation(RE_FLAME) && u.umortalgifted)){
 		Sprintf(buf, "Focus the light to reveal mortality");
 		any.a_int = FLAMEBOON_BURN_MORTALITY;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+	}
+	inclet++;
+	if(greater_boon || (check_reanimation(RE_FLAME) && u.utruedeathgifted)){
 		Sprintf(buf, "Focus the light to reveal true death");
 		any.a_int = FLAMEBOON_BURN_UNDEATH;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+	}
+	inclet++;
+	if(greater_boon || (check_reanimation(RE_FLAME) && u.uunworthygifted)){
 		Sprintf(buf, "Focus the light to reveal the unworthy");
 		any.a_int = FLAMEBOON_BURN_SPIRIT;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+	}
+	inclet++;
+	if(greater_boon){
 		Sprintf(buf, "Focus the light to reveal righteous wrath");
 		any.a_int = FLAMEBOON_RIGHTEOUS_WRATH;
 		add_menu(tmpwin, NO_GLYPH, &any,
@@ -4086,7 +4103,11 @@ commune_with_silver_flame()
 							add_oprop(otmp->cobj, OPROP_MORTW);
 						}
 					}
-					u.ucultsval += TIER_B; /*Theory: Life drain is actually not all that powerful, but the Wizard and his summons are still affected. */
+					if(!check_reanimation(RE_FLAME) || !u.umortalgifted){
+						u.umortalgifted++;
+						// u.ucultsval += TIER_B; /*Theory: Life drain is actually not all that powerful, but the Wizard and his summons are still affected. */
+						u.ucultsval += FLAME_MORTAL_TIER; /*Theory: Life drain is actually not all that powerful, but the Wizard and his summons are still affected. */
+					}
 				}
 				else pline("Nothing happens.");
 			}
@@ -4104,7 +4125,11 @@ commune_with_silver_flame()
 							add_oprop(otmp->cobj, OPROP_TDTHW);
 						}
 					}
-					u.ucultsval += TIER_A; /*Theory: Nasty stuff like liches and pharaohs is affected, plus it deals a lot of damage to them. */
+					if(!check_reanimation(RE_FLAME) || !u.utruedeathgifted){
+						u.utruedeathgifted++;
+						// u.ucultsval += TIER_A; /*Theory: Nasty stuff like liches and pharaohs is affected, plus it deals a lot of damage to them. */
+						u.ucultsval += FLAME_DEATH_TIER; /*Theory: Nasty stuff like liches and pharaohs is affected, plus it deals a lot of damage to them. */
+					}
 				}
 				else pline("Nothing happens.");
 			}
@@ -4122,7 +4147,11 @@ commune_with_silver_flame()
 							add_oprop(otmp->cobj, OPROP_SFUWW);
 						}
 					}
-					u.ucultsval += TIER_S; /*Theory: This specifically affects the nastiest late game enemies. */
+					if(!check_reanimation(RE_FLAME) || !u.uunworthygifted){
+						u.uunworthygifted++;
+						// u.ucultsval += TIER_S; /*Theory: This specifically affects the nastiest late game enemies. */
+						u.ucultsval += FLAME_UNWORTHY_TIER; /*Theory: This specifically affects the nastiest late game enemies. */
+					}
 				}
 				else pline("Nothing happens.");
 			}
@@ -4268,15 +4297,18 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 		Sprintf(buf, "the minor stars");
 		any.a_int = YOGBOON_MAGIC;
 		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet++, 0, ATR_NONE, buf,
+			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
-
+	}
+	inclet++;
+	if(greater_boon || check_parasitology(PARISITE_WINDOWS)){
 		Sprintf(buf, "windows to other places");
 		any.a_int = YOGBOON_WINDOW;
 		add_menu(tmpwin, NO_GLYPH, &any,
 			inclet++, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
-
+	}
+	if(greater_boon){
 		if (!flags.made_twin) {
 			Sprintf(buf, "your twin sibling");
 			any.a_int = YOGBOON_TWIN;
@@ -4516,8 +4548,12 @@ commune_with_yog()
 						otmp->cobj->oerodeproof = 1;
 					}
 				}
-				u.ugifts++;
-				u.ucultsval += TIER_S;
+				if(!check_parasitology(PARISITE_WINDOWS) || !u.uwindowgifted){
+					u.ugifts++;
+					u.uwindowgifted++;
+					// u.ucultsval += TIER_S;
+					u.ucultsval += YOG_WINDOW_TIER;
+				}
 			}
 			else {
 				cost = 0;

@@ -729,6 +729,19 @@ A("Tensa Zangetsu",		TSURUGI,						"black %s",
 	SPEED_BANKAI, NOFLAG
 	),
 
+/* Kills the user (unavoidable, not intended to be avoidable) when drawn */
+/* Does 2x to all, 3x to mortal/undead (dark-vuln) */
+/* Prevents slain foes from reviving or lifesaving (without consuming "oLS!), */
+A("The Mortal Blade",		ODACHI,						"bloodstained sakura-hilted %s",
+	7770L, METAL, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, NON_PM, NON_PM, TIER_C, (ARTG_INHER),
+	NO_MONS(),
+	ATTK(AD_DARK, 20, 0), (ARTA_LAIDTOREST|ARTA_PHASING),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	MORTAL_DRAW, NOFLAG
+	),
+
 /*//////////Other Artifacts//////////*/
 
 /*Sort of intermediate between a double damage and a utility weapon,*/

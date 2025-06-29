@@ -2132,13 +2132,13 @@ wiz_cult()
 				u.specialSealsKnown |= SEAL_YOG_SOTHOTH;
 			break;
 			case SET_SHUB_FAVOR:
-				set_value("Set Shub-Nuganoth favor to what?", u.shubbie_credit);
+				set_value("Set Shub-Nugganoth favor to what?", u.shubbie_credit);
 			break;
 			case SET_SHUB_DEVOTION:
-				set_value("Set Shub-Nuganoth devotion to what?", u.shubbie_devotion);
+				set_value("Set Shub-Nugganoth devotion to what?", u.shubbie_devotion);
 			break;
 			case SET_SHUB_MUT:
-				set_value("Set Shub-Nuganoth mutagen to what?", u.shubbie_mutagen);
+				set_value("Set Shub-Nugganoth mutagen to what?", u.shubbie_mutagen);
 			break;
 			case SET_FLAM_FAVOR:
 				set_value("Set Silver Flame favor to what?", u.silver_credit);

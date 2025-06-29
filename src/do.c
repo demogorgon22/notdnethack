@@ -599,6 +599,10 @@ struct obj *obj;
 			weldmsg(obj);
 			return(0);
 		}
+
+		if (obj->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return(0);
+
 		setuwep((struct obj *)0);
 	}
 	if(obj == uquiver) {
@@ -1319,10 +1323,10 @@ int portal;
 	u.uinwater = 0;
 	u.usubwater = 0;
 	u.uundetected = 0;	/* not hidden, even if means are available */
-	u.uz.flags.mirror = 0; /*Level has a mirror on it (needed for Nudzirath) */
+	level.flags.mirror = 0; /*Level has a mirror on it (needed for Nudzirath) */
 	for(obj = fobj; obj; obj = obj->nobj){
 		if(obj->otyp == MIRROR)
-			u.uz.flags.mirror = 1;
+			level.flags.mirror = 1;
 	}
 	keepdogs(FALSE, newlevel, portal);
 	u.ux = u.uy = 0;			/* comes after keepdogs() */

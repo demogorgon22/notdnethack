@@ -56,6 +56,7 @@
 #define ARTA_KNOCKBACKX	0x04000000L /* knockback; 100% chance*/
 #define ARTA_RETURNING  0x08000000L /* returns to the hand when thrown */
 #define ARTA_SONICX		0x10000000L /* thunderblasts */
+#define ARTA_LAIDTOREST	0x20000000L /* slain monsters cannot lifesave or revive post-mortem (except riders) */
 
 #define ARTP_SEEK		0x0001L /* helps you search, ie, adds enhancement bonus to attempts -- only coded for mainhand weapons */
 #define ARTP_NOCALL		0x0002L /* prevents demons from being gated in */
@@ -327,7 +328,7 @@ struct artinstance{
 #define TwinSkiesEtraits	avar2
 #define CarapaceXP avar1
 #define FingerprintProgress avar1
-
+#define drawnMortal avar1
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2
@@ -344,7 +345,7 @@ struct artinstance{
 #define LAST_GSTYLE			GSTYLE_RESONANT
 #define ZerthOtyp	avar2
 #define CarapaceLevel avar2
-
+#define mortalLives avar2
 	long avar3;
 #define SnSd3 avar3
 #define IbiteBoons avar3
@@ -471,7 +472,7 @@ extern struct artifact * artilist;
 #define AMALGUM_ART		(LAST_PROP+94)
 #define MORGOTH         (LAST_PROP+95)
 #define SCORPION_UPGRADES  (LAST_PROP+96)
-
+#define MORTAL_DRAW  (LAST_PROP+97)
 
 #define MASTERY_ARTIFACT_LEVEL 20
 

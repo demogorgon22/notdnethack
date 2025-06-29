@@ -3435,6 +3435,14 @@ reanimation_upgrade(struct obj *research_kit)
 			 "Reveal the insubstantial world", MENU_UNSELECTED);
 	}
 
+	ch++;
+	any.a_int = 11;
+	if(u.ublood_smithing && !check_reanimation(RE_FLAME) && u.silver_atten){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Study the catoptrics of the Silver rays", MENU_UNSELECTED);
+	}
+
 	if(!n){
 		destroy_nhwindow(tmpwin);
 		return MOVE_CANCELLED;
@@ -3448,6 +3456,7 @@ reanimation_upgrade(struct obj *research_kit)
 	}
 	n = selected[0].item.a_int;
 	free(selected);
+	boolean minor_upgrade = FALSE;
 	if(n == 1){
 		add_reanimation(RE_BOLT_RES);
 		HShock_resistance |= W_UPGRADE;
@@ -3471,6 +3480,7 @@ reanimation_upgrade(struct obj *research_kit)
 			You("tune your weapon.");
 			add_oprop(uwep, OPROP_ANTAW);
 			u.antennae_upgrades++;
+			minor_upgrade = TRUE;
 		}
 	}
 	if(n == 6){
@@ -3495,12 +3505,29 @@ reanimation_upgrade(struct obj *research_kit)
 		expert_undead_hunter_skill();
 		expert_undead_hunter_skill();
 		pline("The ancient knowledge sinks into your subconscious.");
+		minor_upgrade = TRUE;
+	}
+	if(n == 11){
+		You("glimpse the source of the Silver Light!");
+		change_usanity(-15, FALSE);
+		change_usanity(-15, TRUE);
+		add_reanimation(RE_FLAME);
+		if(u.umortalgifted > 1){
+			u.ucultsval -= FLAME_MORTAL_TIER*(u.umortalgifted - 1);
+		}
+		if(u.utruedeathgifted > 1){
+			u.ucultsval -= FLAME_DEATH_TIER*(u.utruedeathgifted - 1);
+		}
+		if(u.uunworthygifted > 1){
+			u.ucultsval -= FLAME_UNWORTHY_TIER*(u.uunworthygifted - 1);
+		}
 	}
 
 	if(research_kit && research_kit->spe > 0)
 		research_kit->spe--;
 	// u.udefilement_research += rn2(defile_score());
-	u.mental_scores_down++;
+	if(!minor_upgrade)
+		u.mental_scores_down++;
 	ABASE(A_INT) -= 1;
 	// check_brainlessness();
 	ABASE(A_INT) = max(ABASE(A_INT), ATTRMIN(A_INT));
@@ -3617,6 +3644,14 @@ defile_vampire(struct obj *obj, struct obj *research_kit)
 			 "Hypnotic gaze", MENU_UNSELECTED);
 	}
 
+	ch++;
+	any.a_int = 6;
+	if(u.ublood_smithing && !check_rot(ROT_SHUB) && !check_vampire(VAMPIRE_SHUB) && u.shubbie_atten){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Partake of the blood of Shub-Nugganoth", MENU_UNSELECTED);
+	}
+
 	if(!n){
 		destroy_nhwindow(tmpwin);
 		return MOVE_CANCELLED;
@@ -3640,6 +3675,13 @@ defile_vampire(struct obj *obj, struct obj *research_kit)
 		add_vampire(VAMPIRE_BLOOD_SPIKES);
 	if(n == 5)
 		add_vampire(VAMPIRE_GAZE);
+	if(n == 6){
+		add_vampire(VAMPIRE_SHUB);
+		if(u.udroolgifted > 1){
+			u.ugifts -= (u.udroolgifted - 1);
+			u.ucultsval -= SHUB_DROOL_TIER*(u.udroolgifted - 1);
+		}
+	}
 
 	// u.udefilement_research += rn2(defile_score());
 	u.mental_scores_down++;
@@ -4461,6 +4503,12 @@ register struct obj *obj;
 	add_menu(tmpwin, NO_GLYPH, &any , 's', 0, ATR_NONE,
 		 "Sting adjacent enemies", MENU_UNSELECTED);
 
+	if(u.ublood_smithing && !check_parasitology(PARISITE_WINDOWS) && u.yog_sothoth_atten){
+		any.a_int = 6;
+		add_menu(tmpwin, NO_GLYPH, &any , 's', 0, ATR_NONE,
+			 "Embrace the visions of Yog-Sothoth", MENU_UNSELECTED);
+	}
+
 	end_menu(tmpwin, "Pick upgrade:");
 	n = select_menu(tmpwin, PICK_ONE, &selected);
 	destroy_nhwindow(tmpwin);
@@ -4489,6 +4537,14 @@ register struct obj *obj;
 	if(n == 5){
 		You("put the parasite in your medial prefrontal cortex.");
 		u.cuckoo++;
+	}
+	if(n == 6){
+		You("put the parasite in your corpus callosum.");
+		add_parasitology(PARISITE_WINDOWS);
+		if(u.uwindowgifted > 1){
+			u.ugifts -= (u.uwindowgifted - 1);
+			u.ucultsval -= YOG_WINDOW_TIER*(u.uwindowgifted - 1);
+		}
 	}
 	u.mental_scores_down++;
 	ABASE(A_INT) -= 1;
@@ -7946,6 +8002,16 @@ use_chrysalis(struct obj *obj)
 			accident_n = any.a_int;
 	}
 
+	ch++;
+	any.a_int = 10;
+	if(u.ublood_smithing && !check_rot(ROT_SHUB) && !check_vampire(VAMPIRE_SHUB) && u.shubbie_atten){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Rot of Shub-Nugganoth", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
 	if(!n){
 		destroy_nhwindow(tmpwin);
 		return MOVE_CANCELLED;
@@ -7989,6 +8055,7 @@ use_chrysalis(struct obj *obj)
 	if(n == 5){
 		add_rot(ROT_KIN);
 		You("are followed by the kin of rot.");
+		reset_rndmonst(NON_PM);
 	}
 	if(n == 6){
 		add_rot(ROT_FEAST);
@@ -8005,6 +8072,14 @@ use_chrysalis(struct obj *obj)
 	if(n == 9){
 		add_rot(ROT_SPORES);
 		pline("Puffball mushrooms errupt from your skin.");
+	}
+	if(n == 10){
+		add_rot(ROT_SHUB);
+		pline("Strange spores take root in your flesh.");
+		if(u.udroolgifted > 1){
+			u.ugifts -= (u.udroolgifted - 1);
+			u.ucultsval -= SHUB_DROOL_TIER*(u.udroolgifted - 1);
+		}
 	}
 	// u.udefilement_research += rn2(defile_score());
 	u.mental_scores_down++;
@@ -11448,6 +11523,39 @@ doapply()
 	case CRYSTAL_SKULL:
 		res = use_crystal_skull(&obj);
 	break;
+	case WORM_GNAWED_SKULL:{
+		if(!IS_ALTAR(levl[u.ux][u.uy].typ)){
+			pline("You need a workbench.");
+			res = MOVE_CANCELLED;
+			break;
+		}
+		int godnum = god_at_altar(u.ux, u.uy);
+		aligntyp altaralign = (a_align(u.ux,u.uy));
+		if(!philosophy_index(godnum)){
+			pline("This is an actual holy altar and thus unsuitable for your use.");
+			res = MOVE_CANCELLED;
+			break;
+		}
+		else if(u.veil){
+			You("feel reality threatening to slip away!");
+			if (yn("Are you sure you want to studying the skull?") == 'y'){
+				pline("So be it.");
+				You("feel a sharp pain in your temple.");
+				u.veil = FALSE;
+				change_uinsight(10);
+				useup(obj);
+				obj = 0;
+			}
+			res = MOVE_STANDARD;
+		}
+		else {
+			pline("A glassy furred worm emerges from the skull and burrows into your brow!");
+			change_uinsight(10);
+			useup(obj);
+			obj = 0;
+			res = MOVE_STANDARD;
+		}
+	}break;
 	case EFFIGY:{
 	    struct obj *curo;
 		if (Hallucination) You_feel("the tall leather doll take up your burdens!");

@@ -2953,8 +2953,9 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		(youdef && mdef && pa->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES && attk->aatyp == AT_ENGL && (u.ustuck != magr)) ||
 		/* Rend attacks only happen if the previous two attacks hit */
 		(attk->aatyp == AT_REND && 
-			(prev_res[1] == MM_MISS || prev_res[2] == MM_MISS || 
-			(magr->mtyp == PM_SARTAN_TANNIN && prev_res[3] == MM_MISS))) ||
+			(prev_res[1] == MM_MISS || prev_res[2] == MM_MISS 
+			|| (magr->mtyp == PM_SARTAN_TANNIN && prev_res[3] == MM_MISS)
+			)) ||
 		/* Hugs attacks are similar, but will still happen if magr and mdef are stuck together */
 		(attk->aatyp == AT_HUGS && (prev_res[1] == MM_MISS || prev_res[2] == MM_MISS)
 			&& !(mdef && ((youdef && u.ustuck == magr) || (youagr && u.ustuck == mdef)))) ||
@@ -4893,6 +4894,9 @@ boolean ranged;
 	if (hit) {
 		/* DEAL THE DAMAGE */
 		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, -1, dieroll, vis, ranged, longslash);
+
+		/* if the monster didn't die as part of that attack, clear its laid to rest status */
+		if (mdef->mlaidtorest) mdef->mlaidtorest = 0;
 
 		/* the player exercises dexterity when hitting */
 		if (youagr){
@@ -7127,7 +7131,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);
 		}
-		if ((notmcan && (!rn2(10) || pa->mtyp == PM_PALE_NIGHT))
+		if ((notmcan && (!rn2(10) || pa->mtyp == PM_SPIDER_SCORPION || pa->mtyp == PM_PALE_NIGHT))
 			&& !(pa->mtyp == PM_GREMLIN && !night())
 			)
 		{
@@ -7138,8 +7142,14 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					You("chuckle.");
 				}
 				else if (vis) {
-					if (Blind) You_hear("laughter.");
-					else       pline("%s chuckles.", Monnam(magr));
+					if(pa->mtyp == PM_SPIDER_SCORPION){
+						if (Blind) You_hear("chittering.");
+						else       pline("%s chitters.", Monnam(magr));
+					}
+					else {
+						if (Blind) You_hear("laughter.");
+						else       pline("%s chuckles.", Monnam(magr));
+					}
 				}
 			}
 			/* effect */
@@ -14472,9 +14482,18 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		/* calculate snekdmg */
 		/* Undead Hunters are not as good as Rogues, but any additional source of sneak attack damage upgrades their natural die to a regular-strength one */
 		if(youagr && Role_if(PM_UNDEAD_HUNTER) && !Upolyd && sneak_dice == 1){
-			snekdmg = rnd(2*snekdie/3);
+			snekdie = (2*snekdie+1)/3;
 		}
-		else snekdmg = d(sneak_dice, snekdie);
+		// snekdmg = d(sneak_dice, snekdie);
+		int nd6 = snekdie/6;
+		int rem = snekdie%6;
+		if (Role_if(PM_ROGUE) && !Upolyd)
+			nd6++;
+		if(nd6)
+			snekdmg += d(sneak_dice*nd6, 6);
+		if(rem)
+			snekdmg += d(sneak_dice, rem);
+		
 		lifehunt_sneak_attacking = (weapon && weapon->oartifact == ART_LIFEHUNT_SCYTHE);
 	}
 	else {
@@ -14581,7 +14600,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			(dieroll <= (Role_if(PM_BARBARIAN) ? 4 : 2)) &&	// good roll
 			(
 			(weapon->oclass == WEAPON_CLASS && bimanual(weapon, youracedata)) ||	// twohanded weapon OR
-			(Role_if(PM_SAMURAI) && (weapon->otyp == KATANA || weapon->otyp == CHIKAGE) && !uarms) ||			// samurai w/ a katana and no shield OR
+			(Role_if(PM_SAMURAI) && (weapon->otyp == KATANA || weapon->otyp == CHIKAGE || weapon->otyp == ODACHI) && !uarms) || // samurai w/ a katana and no shield OR
 			(weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH)	// berith bound into the Pen
 			) &&
 			(weapon_type(weapon) != P_NONE) && (P_SKILL(weapon_type(weapon)) >= P_SKILLED) &&	// must be Skilled+
@@ -14864,6 +14883,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_DIRE;
 		if (Insight >= 40 && poisonedobj->oartifact == ART_LOLTH_S_FANG)
 			poisons |= OPOISON_DIRE;
+		if (poisonedobj->oartifact == ART_MORTAL_BLADE && poisonedobj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
+			poisons |= OPOISON_BASIC;
+			if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+				poisons |= OPOISON_DIRE;
+		}
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
@@ -16302,11 +16326,18 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	/* ARTIFACT HIT BLOCK */
 	/* this must come after skills are trained, as this can kill the defender and cause a return */
-	if(youagr && melee){
-		if(check_rot(ROT_FEAST))
-			healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
-		if(valid_weapon_attack && weapon && weapon->oartifact == ART_DIRGE && check_mutation(CRAWLING_FLESH))
-			healup(1, 0, FALSE, FALSE);
+	if(melee){
+		if(youagr){
+			if(check_rot(ROT_FEAST))
+				healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
+			if(valid_weapon_attack && weapon && weapon->oartifact == ART_DIRGE && check_mutation(CRAWLING_FLESH))
+				healup(1, 0, FALSE, FALSE);
+		}
+		else if(magr && magr->mtyp == PM_SPIDER_SCORPION){
+			magr->mhp += basedmg;
+			if(magr->mhp > magr->mhpmax)
+				magr->mhp = magr->mhpmax;
+		}
 	}
 	if (valid_weapon_attack || unarmed_punch || unarmed_kick || unarmed_butt)
 	{
@@ -18894,7 +18925,18 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 					}
 					break;
 				case AD_PHYS:
-					/* no message */
+					/* maybe message */
+					if (youagr) {
+						if (pd->mtyp == PM_QUIVERING_BLOB) pline("Boing! You are hit by the rebounding membrane!");
+					}
+					else if (vis) {
+						if (pd->mtyp == PM_QUIVERING_BLOB) {
+							pline("Boing! %s is hit by %s rebounding membrane!",
+								Monnam(magr),
+								(youdef ? "your" : s_suffix(mon_nam(mdef)))
+								);
+						}
+					}
 					/* damage (reduced by DR, half-phys damage, min 1) */
 					dmg -= (youagr ? roll_udr(mdef, ROLL_SLOT) : roll_mdr(magr, mdef, ROLL_SLOT));
 					if (dmg < 1)

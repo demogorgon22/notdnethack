@@ -500,6 +500,7 @@ struct obj {
 #define	CPROP_WINGS			0x00002000L
 #define	CPROP_CLAWS			0x00004000L
 #define	CPROP_CROWN			0x00008000L
+#define	CPROP_REGEN			0x00010000L
 
 	long ovar2;		/* extra variable. Specifies: */
 #define obj_type_uses_ovar2(otmp) (\
@@ -659,6 +660,7 @@ struct obj {
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_SHEATH) \
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_LONGSWORD) \
 				|| (Role_if(PM_SAMURAI) && typ == TSURUGI) \
+				|| (Role_if(PM_SAMURAI) && typ == ODACHI) \
 				|| typ == PARTISAN \
 				|| typ == RANSEUR \
 				|| typ == SPETUM \
@@ -822,6 +824,7 @@ struct obj {
 			 || objects[(otyp)].oc_class == TILE_CLASS\
 			 || (otyp) == VITAL_SOULSTONE\
 			 || (otyp) == SPIRITUAL_SOULSTONE\
+			 || (otyp) == WORM_GNAWED_SKULL\
 			 || ((otyp) >= EFFIGY && (otyp) <= DOLL_S_TEAR)\
 			 || (otyp) == HOLY_SYMBOL_OF_THE_BLACK_MOTHE\
 			 || (otyp) == FIGURINE\

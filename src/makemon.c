@@ -14829,11 +14829,7 @@ int faction;
 			}
 			if(mndx == PM_CRIMSON_MOON_LOTUS){
 				mongets(mtmp, DISSECTION_KIT, NO_MKOBJ_FLAGS);
-				// obj = mksobj_at(DISSECTION_KIT, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
-				// if(obj){
-					// bury_an_obj(obj);
-				// }
-				// obj = (struct obj *)0;
+				mksobj_at(WORM_GNAWED_SKULL, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
 			}
 		break;
 		case S_ZOMBIE:
@@ -15173,6 +15169,7 @@ int mndx;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
 	if (G_C_INST(mons[mndx].geno) > Insight) return TRUE;
 	if (mndx == PM_SILVERMAN && !u.silvergrubs) return TRUE;
+	if (mndx == PM_SPIDER_SCORPION && !check_rot(ROT_KIN)) return TRUE;
 	if (Inhell)
 		return((mons[mndx].geno & (G_PLANES|G_DEPTHS)) != 0);
 	else if (In_endgame(&u.uz))
@@ -15803,6 +15800,7 @@ int	spc;
 			&& !(mons[first].geno & mask)
 			&& (G_C_INST(mons[first].geno) <= Insight)
 			&& (first != PM_SILVERMAN || u.silvergrubs)
+			&& (first != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
 		) break;
 	if (first == SPECIAL_PM) return (struct permonst *) 0;
 
@@ -15814,6 +15812,7 @@ int	spc;
 			&& !is_placeholder(&mons[last])
 			&& (G_C_INST(mons[last].geno) <= Insight)
 			&& (last != PM_SILVERMAN || u.silvergrubs)
+			&& (last != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
 		) {
 			/* consider it */
 			if(num && toostrong(last, maxmlev) && monstr[last] != monstr[last-1]) break;
@@ -15835,6 +15834,7 @@ int	spc;
 			&& !is_placeholder(&mons[first])
 			&& (G_C_INST(mons[first].geno) <= Insight)
 			&& (first != PM_SILVERMAN || u.silvergrubs)
+			&& (first != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
 		) {
 			/* skew towards lower value monsters at lower exp. levels */
 			freq = (mons[first].geno & G_FREQ);

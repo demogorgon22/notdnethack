@@ -192,7 +192,6 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ SPEAR, "yari" },
 	{ SPLINT_MAIL, "dou-maru" },
 	{ TRIDENT, "magari yari" },
-	{ TWO_HANDED_SWORD, "no-dachi" },
 	{ WAR_HAMMER, "dai tsuchi" },
 	{ HARP, "koto" },
 	{0, "" }
@@ -1382,6 +1381,12 @@ char *buf;
 		else
 			Strcat(buf, "budding ");
 	}
+	if (obj->oartifact == ART_MORTAL_BLADE && obj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
+		if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+			Strcat(buf, "seething ");
+		else
+			Strcat(buf, "fuming ");
+	}
 	if (rakuyo_prop(obj)){
 		if(Insight >= 40)
 			Strcat(buf, "burning ");
@@ -2306,6 +2311,9 @@ weapon:
 			}
 			else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit) {
 				Strcat(buf, " (lit)");
+			}
+			else if (obj->oartifact == ART_MORTAL_BLADE && !(obj->owornmask&W_WEP)) {
+				Strcat(buf, " (sheathed)");
 			}
 			else if (obj->otyp == TONITRUS && obj->lamplit) {
 				Strcat(buf, " (crackling)");
@@ -3878,7 +3886,6 @@ struct alt_spellings {
 	{ "yari", SPEAR },
 	{ "dou-maru", SPLINT_MAIL },
 	{ "magari yari", TRIDENT },
-	{ "no-dachi", TWO_HANDED_SWORD },
 	{ "dai tsuchi", WAR_HAMMER },
 	{ "koto", HARP },
 	{ "helmet", HELMET },
