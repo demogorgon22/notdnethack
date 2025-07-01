@@ -3074,6 +3074,10 @@ uchar aatyp;
 				arm_udr += 4 + material_def_bonus(uwep, 4, FALSE) + (uwep->spe + 1) / 2 - min((int)greatest_erosion(uwep), 4);
 		}
 	}
+	if (active_glyph(BEASTS_EMBRACE) && u.uencouraged > 0 && arm_udr > 0){
+		arm_udr = max(0, arm_udr - (u.uencouraged+1)/2);
+		// can't reduce below 0, but will zero it out otherwise
+	}
 	/* Natural DR (overriden and ignored by base_nat_udr() for halfdragons) */
 	if (!Race_if(PM_HALF_DRAGON)) {
 		switch (slot)

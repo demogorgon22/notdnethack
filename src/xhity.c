@@ -2711,14 +2711,10 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				/* replace the attack */
 				attk->aatyp = AT_CLAW;
 				attk->adtyp = AD_PHYS;
-				attk->damn = 1+u.ulevel/8; // from 1 to 4 dice, hitting 4 at xp 24+
+				// from 1 to 6 dice, 1/2/3/4/5/6 at <= 100/85/65/45/25/5 san (capping at 10)
+				attk->damn = (NightmareAware_Insanity+5)/20 + 1;
+				attk->damd = (u.ulycn >= LOW_PM) ? 8 : 4;
 				attk->offhand = 1;
-				
-				// scales inversely with sanity, sanity-based size is 0->11, 10->9, 25->6, 50->3, 75->1, 80->0
-				// total dice assuming +7 and xp30 is 4d18 / 4d10 / 4d7 at sanity 15/50/80+
-				attk->damd = max(otmp->spe, 1);
-				attk->damd += (int)((Insanity/30.0)*(Insanity/30.0) + 0.5);
-
 				/* this is applied to all acceptable attacks; no subout marker is necessary */
 			}
 		}
@@ -2728,9 +2724,8 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				attk->aatyp = AT_CLAW;
 				attk->adtyp = AD_PHYS;
 				attk->damn = 1+min(5, magr->m_lev/8); // from 1 to 6 dice, hitting 6 at xp 40+
+				attk->damd = (magr->mberserk || is_were(magr->data)) ? 8 : 4;
 				attk->offhand = 1;
-				
-				attk->damd = max(otmp->spe, 1) + magr->mberserk ? 11 : 3;
 				/* this is applied to all acceptable attacks; no subout marker is necessary */
 			}	
 		}
@@ -14299,15 +14294,16 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			sneak_dice++;
 		if (Role_if(PM_HEALER) && !Upolyd && weapon && weapon->owornmask && weapon->otyp == KNIFE)
 			sneak_dice++;
+		if (uwep && uwep->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE) && (!weapon || weapon->otyp == BESTIAL_CLAW))
+			sneak_dice++;
 	}
 	if (magr && !youagr && is_backstabber(pa))
+		sneak_dice++;
+	if (magr && !youagr && magr->mcrazed && weapon && weapon->otyp == BESTIAL_CLAW)
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_SPINESEEKER)
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_LOLTH_S_FANG)
-		sneak_dice++;
-	//Offhand attacks as well
-	if (weapon && weapon->owornmask && weapon->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE))
 		sneak_dice++;
 	if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_ANDROMALIUS)
 		sneak_dice++;
@@ -15621,6 +15617,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				unarmed_dice.oc_damn *= 2;
 			}
 		}
+		/* bestial claws grant +Insanity% base damage on unarmed attacks, stacks multiplicatively with other base damage modifiers */
+		if (uwep && uwep->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE) && roll_generic_flat_madness(TRUE)){
+			unarmed_dice.oc_damn *= 2;
+		}
 		/* calculate dice and set basedmg */
 		basedmg = weapon_dmg_roll(&unarmed_dice, FALSE);
 
@@ -15639,7 +15639,6 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		/* fighting gloves give bonus damage */
 		if (gloves && gloves->otyp == find_tgloves())
 			basedmg += ((youagr && martial_bonus()) ? 3 : 1);
-
 		
 		if (gloves) {
 			/* all gloves give their enchantment to melee damage */
@@ -16127,6 +16126,17 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 				else {
 					mdef->mbleed += bleeddmg;
+				}
+				if ((youdef || youagr) && active_glyph(BEASTS_EMBRACE)){
+					// bleeding wounds connect you to the beast inside, either dealing or taking
+					static long lastfrenzymessage = 0L;
+					if (u.uencouraged == 0 || (lastfrenzymessage+10) < monstermoves) {
+						if (u.uencouraged > 10) pline("The freshly spilled blood whips you into a frenzy!");
+						else if (u.uencouraged < 0) pline("The freshly spilled blood calms your nerves.");
+						else pline("The freshly spilled blood excites you!");
+						lastfrenzymessage = monstermoves;
+					}
+					u.uencouraged += min((bleeddmg+6)/7, 5);
 				}
 			}
 			if(CHECK_ETRAIT(weapon, magr, ETRAIT_STOP_THRUST)
