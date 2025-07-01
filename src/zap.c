@@ -5102,7 +5102,7 @@ boolean u_caused;
 	    obj2 = obj->nexthere;
 	    if (obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS ||
 			obj->otyp == SHEAF_OF_HAY) {
-		if (obj->otyp == SCR_FIRE || obj->otyp == SPE_FIREBALL  || 
+		if (obj->otyp == SCR_FIRE || obj->otyp == SPE_FIREBALL  || obj->otyp == SPE_FIRE_STORM  || 
 			obj->otyp == SCR_GOLD_SCROLL_OF_LAW || 
 			obj_resists(obj, 0, 100))
 		    continue;
