@@ -73,6 +73,9 @@ experience(mtmp, nk)	/* return # of exp points for mtmp after nk killed */
 /*	zombies give no experience (resurecting and infecting)*/
 	if(has_template(mtmp, ZOMBIFIED) && mtmp->mclone) return 0;
 
+/*	Harmless*/
+	if(mtmp->mtyp == PM_PRIEST_OF_AN_UNKNOWN_GOD) return 0;
+
 	tmp = 1 + mtmp->m_lev * mtmp->m_lev;
 
 /*	For higher ac values, give extra experience */

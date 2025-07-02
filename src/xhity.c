@@ -13692,7 +13692,7 @@ int vis;
 			}
 			if(!u.veil && !mvitals[monsndx(magr->data)].vis_insight){
 				mvitals[monsndx(magr->data)].vis_insight = TRUE;
-				uchar insight = u_insight_gain(magr);
+				uchar insight = u_insight_gain(magr)+1;
 				mvitals[monsndx(magr->data)].insight_gained += insight;
 				change_uinsight(insight);
 			}

@@ -10690,12 +10690,12 @@ orc_mud_stabs(struct monst *mdef)
 
 	if(mdef == &youmonst){
 		You("are stabbed by the writhing tarry mud!");
-		losehp(damage, "a swarm of parasitic caterpillars", KILLED_BY);
+		losehp(damage, "inchoate orcs", KILLED_BY);
 	}
 	else {
 		if(m_losehp(mdef, damage, FALSE, "inchoate orcs")); //died
 		else if (canseemon(mdef))
-			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
+			pline("%s is stabbed by the writhing tarry mud.", Monnam(mdef));
 	}
 }
 

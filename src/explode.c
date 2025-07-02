@@ -593,7 +593,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 
 		/* DS: Allow monster induced explosions also */
 		//if (type >= 0 || type <= -10) //what was this supposed to correspond to? It isn't listed by buzz() in zap.c
-		(void)zap_over_floor((xchar)xi, (xchar)yi, adtyp, WAND_CLASS, FALSE, &shopdamage);
+		(void)zap_over_floor((xchar)xi, (xchar)yi, adtyp, WAND_CLASS, yours, &shopdamage);
 		
 		mtmp = m_at(xi, yi);
 #ifdef STEED
