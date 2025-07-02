@@ -981,12 +981,18 @@ struct obj {
 						|| (o)->otyp == DEVIL_FIST \
 						)
 
-#define is_lightsaber(otmp) (is_lasersword(otmp) || \
-							 (otmp)->otyp == KAMEREL_VAJRA || \
-							 (otmp)->otyp == ROD_OF_FORCE)
-#define is_lasersword(otmp) ((otmp)->otyp == LIGHTSABER || \
-							 (otmp)->otyp == BEAMSWORD || \
-							 (otmp)->otyp == DOUBLE_LIGHTSABER)
+#define is_lightsaber_otyp(otyp)	(is_lasersword_otyp(otyp) || \
+							 (otyp) == KAMEREL_VAJRA || \
+							 (otyp) == ROD_OF_FORCE)
+
+#define is_lasersword_otyp(otyp) ((otyp) == LIGHTSABER || \
+							 (otyp) == BEAMSWORD || \
+							 (otyp) == DOUBLE_LIGHTSABER)
+
+#define is_lightsaber(otmp) (is_lightsaber_otyp((otmp)->otyp))
+
+#define is_lasersword(otmp) (is_lasersword_otyp((otmp)->otyp))
+
 #define is_gemable_lightsaber(otmp) (((otmp)->otyp == LIGHTSABER\
 							  || (otmp)->otyp == BEAMSWORD\
 							  || (otmp)->otyp == DOUBLE_LIGHTSABER)\
@@ -1130,11 +1136,20 @@ struct obj {
 			 || is_kensei_weapon(otmp)\
 			 )
 
-#define is_kensei_weapon(otmp) (Race_if(PM_GITHZERAI) ? (otmp)->obj_material == MERCURIAL :\
-								Race_if(PM_GITHYANKI) ? check_oprop((otmp), OPROP_GSSDW) : \
-								Race_if(PM_ELF) ? (check_oprop((otmp), OPROP_WRTHW) || objects[(otmp)->otyp].oc_skill == P_SCIMITAR) : \
-								Race_if(PM_INCANTIFIER) ? (is_lightsaber(otmp) && litsaber(otmp)) : \
+#define is_kensei_weapon(otmp) (u.role_variant == ART_SKY_REFLECTED ? (otmp)->obj_material == MERCURIAL :\
+								u.role_variant == ART_SILVER_SKY ? check_oprop((otmp), OPROP_GSSDW) : \
+								u.role_variant == ART_RINGIL ? (check_oprop((otmp), OPROP_WRTHW) || objects[(otmp)->otyp].oc_skill == P_SCIMITAR) : \
+								u.role_variant == ART_ANSERMEE ? (objects[(otmp)->otyp].oc_skill == P_SHORT_SWORD) : \
+								u.role_variant == ART_KISHIN_MIRROR ? (objects[(otmp)->otyp].oc_skill == P_MACE) : \
+								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp) && litsaber(otmp)) : \
 								(otmp)->otyp == artilist[u.role_variant].otyp)
+
+#define is_kensei_weapon_otyp(a_otyp)	( \
+						u.role_variant == ART_RINGIL ? (objects[(a_otyp)].oc_skill == P_SCIMITAR) : \
+						u.role_variant == ART_ANSERMEE ? (objects[(a_otyp)].oc_skill == P_SHORT_SWORD) : \
+						u.role_variant == ART_KISHIN_MIRROR ? (objects[(a_otyp)].oc_skill == P_MACE) : \
+						u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber_otyp(a_otyp)) : \
+						(a_otyp) == artilist[u.role_variant].otyp)
 
 #define is_returning_snare(obj)	((obj)->oartifact == ART_JIN_GANG_ZUO || (obj)->oartifact == ART_KENJAKU)
 

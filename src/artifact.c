@@ -774,6 +774,8 @@ aligntyp alignment;
 				skip_if(!u.ugifts && !(a->gflags & ARTG_GIFT));
 			}
 
+			/* Kensei have extreme weapon restrictions, so try to avoid handing out useless artifacts */
+			skip_if(Role_if(PM_KENSEI) && !is_kensei_safe_artifact(m));
 			/* avoid weapons for Monks */
 			skip_if(Role_if(PM_MONK) && !is_monk_safe_artifact(m) && !u.uconduct.weaphit);
 			skip_if(Role_if(PM_MONK) && !is_monk_safe_artifact(m) && rn2(20));	/* we relax this requirement before removing it */

@@ -690,6 +690,13 @@ extern struct artifact * artilist;
                 (m) == ART_MARAUDER_S_MAP\
             )
 
+#define is_kensei_safe_artifact(m) ( \
+				is_monk_safe_artifact(m) \
+				|| m == ART_FIRE_BRAND \
+				|| m == ART_FROST_BRAND \
+				|| is_kensei_weapon_otyp(artilist[m].otyp) \
+				|| u.role_variant == m \
+			)
 #define double_bonus_damage_artifact(m) (\
 	(m) == ART_LIMITED_MOON ||\
 	(m) == ART_SICKLE_OF_THUNDERBLASTS ||\
