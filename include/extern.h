@@ -133,6 +133,7 @@ E boolean FDECL(check_oprop, (struct obj *, int));
 E boolean FDECL(oprops_match, (struct obj *, struct obj *));
 E void FDECL(copy_oprop_list, (struct obj *, unsigned long int *));
 E const char *FDECL(artifact_name, (const char *,short *, int *));
+E char FDECL(is_invokable_object, (struct obj *));
 E boolean FDECL(art_already_exists, (int));
 E boolean FDECL(art_already_exists_byname, (int,const char *));
 E int FDECL(get_already_exists_byname, (int,const char *));
