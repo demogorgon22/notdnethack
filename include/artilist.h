@@ -2428,7 +2428,7 @@ A("The Eye of Jiroshin",		SOUL_LENS,				(const char *)0,
 	NO_ATTK(), NOFLAG,
 	PROPS(GAZE_RES, SEE_INVIS, FOCUS_AURA), NOFLAG,
 	PROPS(ANTIMAGIC), NOFLAG,
-	ENLIGHTENING, NOFLAG
+	PROT_FROM_SHAPE_CHANGERS, NOFLAG
 	),
 
 A("Rite of Detestation",		SCR_BLANK_PAPER,	"water-damaged scroll",
