@@ -43,13 +43,13 @@ dorotsummon()
 		if(clone){
 			initedog(clone);
 			clone = christen_monst(clone, plname);
-			if(uswapwep && u.twoweap){
+			if(uswapwep && u.twoweap && (uswapwep->oclass == WEAPON_CLASS || is_weptool(uswapwep))){
 				wep = duplicate_obj(uswapwep, FALSE);
 				if(wep){
 					mpickobj(clone, wep);
 				}
 			}
-			if(uwep){
+			if(uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep))){
 				wep = duplicate_obj(uwep, FALSE);
 				if(wep){
 					mpickobj(clone, wep);
