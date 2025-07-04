@@ -19689,19 +19689,19 @@ movement_combos()
 	/* Monk Moves */
 	if ((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) {
 		int moveID = check_monk_move();
-		if (moveID != 0 && perform_monk_move(moveID)) {
+		int move_cost = MOVE_STANDARD;
+		if (moveID != 0 && perform_monk_move(moveID, &move_cost)) {
 			nomul(0, NULL);
 			u.uattked = TRUE;
-			did_combo = TRUE;
-			/* takes at least as long as a standard action */
-			if(moveID != DIVE_KICK || !Role_if(PM_KENSEI))
-				flags.move |= MOVE_STANDARD;
+			if(move_cost != MOVE_INSTANT || (flags.move&MOVE_ATTACKED))
+				did_combo = TRUE;
+			flags.move |= move_cost;
 			if(Role_if(PM_KENSEI))
 				exercise(A_INT, TRUE);
 		}
 	}
 	/* Expert Moves (lunges and knockback charges) */
-	if((!did_combo || (uwep && is_monk_weapon(uwep))) && u.umoved && !flags.nopick && (multi >= 0)){
+	if((!did_combo || (Role_if(PM_MONK) && uwep && is_monk_weapon(uwep)) || (Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep))) && u.umoved && !flags.nopick && (multi >= 0)){
 		if (perform_expert_move()) {
 			nomul(0, NULL);
 			u.uattked = TRUE;
@@ -19712,12 +19712,14 @@ movement_combos()
 	}
 	extern coord save_d;
 	if (did_combo) {
-		/* successfully doing a combo clears prev_dir */
-		u.prev_dir.x = 0;
-		u.prev_dir.y = 0;
+		u.did_move = TRUE;
 	}
-	else if(u.dx || u.dy){
-		/* otherwise, build prev_dir */
+	else {
+		u.did_move = FALSE;
+	}
+
+	if(u.dx || u.dy){
+		/* build prev_dir */
 		u.prev_dir.x = u.dx;
 		u.prev_dir.y = u.dy;
 	}
@@ -19974,6 +19976,9 @@ perform_expert_move()
 	boolean messaged = FALSE;
 	if(!uwep)
 		return FALSE;
+	//Did a move last turn
+	if(u.did_move)
+		return FALSE;
 	if(CHECK_ETRAIT(uwep, &youmonst, ETRAIT_LUNGE)
 		&& ROLL_ETRAIT(uwep, &youmonst, TRUE, rn2(2))
 	) {
@@ -20015,8 +20020,7 @@ perform_expert_move()
  * Returns TRUE if a move goes off.
  */
 boolean
-perform_monk_move(moveID)
-int moveID;
+perform_monk_move(int moveID, int *move_cost)
 {
 	struct monst *mdef;
 #define STILLVALID(mdef) (!DEADMONSTER(mdef) && mdef == m_at(u.ux + u.dx, u.uy + u.dy))
@@ -20035,6 +20039,7 @@ int moveID;
 				) && beam_monk_target(BOLT_LIM)
 			){
 				pline("Throw!");
+				*move_cost = MOVE_MOVED;
 				uthrow(uquiver, 0, 0, FALSE, TRUE);
 				nomul(0, NULL);
 				return TRUE;
@@ -20172,6 +20177,9 @@ check_monk_move()
 	}
 	//If there haven't been two inputs for some reason, return false.
 	if(!(dx1 || dy1) || !(dx2 || dy2))
+		return 0;
+	//Did a move last turn
+	if(u.did_move)
 		return 0;
 	if(Role_if(PM_KENSEI) && uwep && !is_kensei_weapon(uwep))
 		return 0;

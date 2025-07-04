@@ -3560,7 +3560,7 @@ E int tohitval(struct monst *, struct monst *, struct attack *, struct obj *, vo
 E void FDECL(weave_black_web, (struct monst *));
 E int NDECL(android_combo);
 E void NDECL(movement_combos);
-E boolean FDECL(perform_monk_move, (int));
+E boolean FDECL(perform_monk_move, (int, int*));
 E boolean NDECL(perform_expert_move);
 E int NDECL(check_monk_move);
 E int FDECL(u_pole_pound, (struct monst *));

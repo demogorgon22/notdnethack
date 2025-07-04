@@ -299,6 +299,7 @@ struct you {
 	boolean umoved;		/* changed map location (post-move) */
 	boolean uattked;		/* attacked a target (post-move) */
 	boolean unull;		/* passed a turn (post-move) */
+	boolean did_move;	/* did a special move last turn */
 	coord prev_dir;		/* previous dirction pressed (for monk moves) */
 	int last_str_turn;	/* 0: none, 1: half turn, 2: full turn */
 				/* +: turn right, -: turn left */
