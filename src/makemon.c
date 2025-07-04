@@ -11895,7 +11895,7 @@ boolean greatequip;
 			}
 			else {
 				/*Weapon*/
-				otmp = mksobj(HIGH_ELVEN_WARSWORD, mkobjflags);
+				otmp = mksobj(!rn2(20) ? HIGH_ELVEN_WARSWORD : !rn2(4) ? ELVEN_SCIMITAR : ELVEN_BROADSWORD, mkobjflags);
 				add_oprop(otmp, OPROP_WRTHW);
 				MAYBE_MERC(otmp)
 				otmp->blessed = TRUE;
