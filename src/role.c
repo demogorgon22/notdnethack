@@ -1151,6 +1151,7 @@ validdescendant(rolenum)
 		!(roles[flags.initrole].malenum == PM_ANACHRONONAUT
 			|| roles[flags.initrole].malenum == PM_EXILE
 			|| roles[flags.initrole].malenum == PM_CAVEMAN
+			|| roles[flags.initrole].malenum == PM_KENSEI
 		));
 }
 
