@@ -945,33 +945,19 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_CHARM_MONSTER, -15
 },
-{	"Yanki-gith", "gith", "githhood", "Ynk",
+{	"Gith", "Gith", "githhood", "Gth",
 	{0, 0},
-	PM_GITHYANKI, NON_PM, PM_HUMAN_MUMMY, PM_GITHYANKI,
-	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
-	MA_REPTILIAN, MA_DRAGON, MA_FEY|MA_ELF|MA_GNOME|MA_DWARF|MA_ORC,
+	PM_GITH, NON_PM, PM_HUMAN_MUMMY, PM_GITH,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC,
+	MA_REPTILIAN, 0, 0,
 	/*    Str     Int Wis Dex Con Cha */
 	{      3,      3,  3,  3,  3,  3 },
-	{ STR18(50),  20, 16, 18, 18, 20 },
+	{ STR18(50),  20, 20, 18, 18, 20 },
 	/* Init   Lower  Higher */
 	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
 	{  1, 0,  2, 0,  2, 0 },		/* Energy */
 	NORMALNIGHTVIS,
 	SPE_FORCE_BOLT, -1000
-},
-{	"Zerai-gith", "Gith", "githhood", "Zer",
-	{0, 0},
-	PM_GITHZERAI, NON_PM, PM_HUMAN_MUMMY, PM_GITHZERAI,
-	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
-	MA_REPTILIAN, MA_ELEMENTAL, MA_ORC,
-	/*    Str     Int Wis Dex Con Cha */
-	{      3,      3,  3,  3,  3,  3 },
-	{ STR18(50),  16, 20, 18, 18, 20 },
-	/* Init   Lower  Higher */
-	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
-	{  1, 0,  2, 0,  2, 0 },		/* Energy */
-	NORMALNIGHTVIS,
-	SPE_PROTECTION, -1000
 },
 /* Array terminator */
 { 0, 0, 0, 0, 0 }};
@@ -1024,6 +1010,37 @@ struct Race android =
 	NO_NIGHTVISION
 };
 
+struct Race githyanki =
+{	"Githyanki", "githyanki", "githhood", "Ynk",
+	{0, 0},
+	PM_GITHYANKI, NON_PM, PM_HUMAN_MUMMY, PM_GITHYANKI,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
+	MA_REPTILIAN, MA_DRAGON, MA_FEY|MA_ELF|MA_GNOME|MA_DWARF|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(50),  20, 16, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_FORCE_BOLT, -1000
+};
+
+struct Race githzerai =
+{	"Githzerai", "githzerai", "githhood", "Zer",
+	{0, 0},
+	PM_GITHZERAI, NON_PM, PM_HUMAN_MUMMY, PM_GITHZERAI,
+	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
+	MA_REPTILIAN, MA_ELEMENTAL, MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(50),  16, 20, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_PROTECTION, -1000
+};
 /* Table of all genders */
 const struct Gender genders[] = {
 	{"male",	"he",	"him",	"his",	"Mal",	ROLE_MALE},
@@ -2021,6 +2038,16 @@ int newgame;
 				quest_status.leader_is_dead = TRUE;
 				flags.questprogress = 1;
 			}
+		}
+	}
+	else if(Race_if(PM_GITH)){
+		if(flags.initalign == 0){
+			//Lawful
+			urace = githyanki;
+		}
+		else if(flags.initalign == 2){
+			//Chaotice
+			urace = githzerai;
 		}
 	}
 	else if(Humanoid_half_dragon(urole.malenum)){
