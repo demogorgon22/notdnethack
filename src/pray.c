@@ -545,7 +545,10 @@ register int trouble;
 		    break;
 	    case TROUBLE_LOW_SAN:
 			Your("mind feels more steady.");
-			change_usanity(ACURR(A_WIS), FALSE);
+			if(on_altar())
+				change_usanity(100, FALSE);
+			else
+				change_usanity((50-u.usanity) + ACURR(A_WIS), FALSE);
 		    break;
 	    case TROUBLE_LYCANTHROPE:
 		    you_unwere(TRUE);
