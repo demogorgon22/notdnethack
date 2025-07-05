@@ -1526,6 +1526,22 @@ hasfightingforms(){
 			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
 		}
 	}
+	if (u.uavoid_msplcast)
+		formmask |= AVOID_MSPLCAST;
+	else {
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod)
+		){
+			if(attk->aatyp == AT_MAGC) formmask |= AVOID_MSPLCAST;
+		}
+	}
 	if (u.uavoid_theft)
 		formmask |= AVOID_THEFT;
 	else {

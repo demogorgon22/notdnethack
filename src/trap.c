@@ -3331,7 +3331,7 @@ xchar x, y;
 	     */
 	    return FALSE;
 	} else if (obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS) {
-	    if (obj->otyp == SCR_FIRE || obj->otyp == SCR_RESISTANCE || obj->otyp == SPE_FIREBALL || obj->oartifact)
+	    if (obj->otyp == SCR_FIRE || obj->otyp == SCR_RESISTANCE || obj->otyp == SPE_FIREBALL || obj->otyp == SPE_FIRE_STORM || obj->oartifact)
 			return FALSE;
 	    dindx = (obj->oclass == SCROLL_CLASS) ? 2 : 3;
 	    if (in_sight)
