@@ -871,6 +871,7 @@ int tary;
 					if (!ranged && otmp && magr
 						&& (result&MM_DEF_DIED)
 						&& CHECK_ETRAIT(otmp, magr, ETRAIT_CLEAVE)
+						&& !(otmp->o_e_trait == ETRAIT_HEW && CHECK_ETRAIT(otmp, magr, ETRAIT_HEW))
 						&& ROLL_ETRAIT(otmp, magr, TRUE, !rn2(4))
 					){
 						int subresult = 0;

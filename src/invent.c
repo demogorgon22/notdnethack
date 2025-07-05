@@ -3682,7 +3682,7 @@ winid *datawin;
 		buf[0] = '\0';
 #define	EXPERTTRAITS(trait, string)	\
 	ADDCLASSPROP(CHECK_ETRAIT(obj, &youmonst, trait), string);
-		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful, but strenuous, overhead blows");
+		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful-but-strenuous overhead blows");
 		EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
 		EXPERTTRAITS(ETRAIT_KNOCK_BACK, (obj->expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
 		EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
@@ -3692,7 +3692,7 @@ winid *datawin;
 		EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
 		EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
 		EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
-		EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
+		EXPERTTRAITS(ETRAIT_CLEAVE, (CHECK_ETRAIT(obj, &youmonst, ETRAIT_HEW) ? "cleaves through slain enemies when not using hewing strikes" : "cleaves through slain enemies"));
 		EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
 		EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
 		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
