@@ -4580,7 +4580,7 @@ int f1,f2;
 	/*Elite towers*/
 	else if(f1 >= FIRST_TOWER && f1 <= LAST_TOWER){
 		/*with all goddesses (except eilistraee) and tower xaxox*/
-		return f2 == LOLTH_SYMBOL || f2 == KIARANSALEE_SYMBOL || (f2 == PEN_A_SYMBOL && urole.neminum != PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH) || f2 == VER_TAS_SYMBOL || f2 == XAXOX || f2 == GHAUNADAUR_SYMBOL;
+		return (f1 >= FIRST_TOWER && f1 <= LAST_TOWER) || f2 == LOLTH_SYMBOL || f2 == KIARANSALEE_SYMBOL || (f2 == PEN_A_SYMBOL && urole.neminum != PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH) || f2 == VER_TAS_SYMBOL || f2 == XAXOX || f2 == GHAUNADAUR_SYMBOL;
 	}
 	/*Tower xaxox*/
 	else if(f1 == XAXOX){
