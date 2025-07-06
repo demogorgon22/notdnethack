@@ -2923,8 +2923,9 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		(youdef && mdef && pa->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES && attk->aatyp == AT_ENGL && (u.ustuck != magr)) ||
 		/* Rend attacks only happen if the previous two attacks hit */
 		(attk->aatyp == AT_REND && 
-			(prev_res[1] == MM_MISS || prev_res[2] == MM_MISS || 
-			(magr->mtyp == PM_SARTAN_TANNIN && prev_res[3] == MM_MISS))) ||
+			(prev_res[1] == MM_MISS || prev_res[2] == MM_MISS 
+			|| (magr->mtyp == PM_SARTAN_TANNIN && prev_res[3] == MM_MISS)
+			)) ||
 		/* Hugs attacks are similar, but will still happen if magr and mdef are stuck together */
 		(attk->aatyp == AT_HUGS && (prev_res[1] == MM_MISS || prev_res[2] == MM_MISS)
 			&& !(mdef && ((youdef && u.ustuck == magr) || (youagr && u.ustuck == mdef)))) ||
@@ -7067,7 +7068,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		if (vis && dohitmsg) {
 			xyhitmsg(magr, mdef, originalattk);
 		}
-		if ((notmcan && (!rn2(10) || pa->mtyp == PM_PALE_NIGHT))
+		if ((notmcan && (!rn2(10) || pa->mtyp == PM_SPIDER_SCORPION || pa->mtyp == PM_PALE_NIGHT))
 			&& !(pa->mtyp == PM_GREMLIN && !night())
 			)
 		{
@@ -7078,8 +7079,14 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					You("chuckle.");
 				}
 				else if (vis) {
-					if (Blind) You_hear("laughter.");
-					else       pline("%s chuckles.", Monnam(magr));
+					if(pa->mtyp == PM_SPIDER_SCORPION){
+						if (Blind) You_hear("chittering.");
+						else       pline("%s chitters.", Monnam(magr));
+					}
+					else {
+						if (Blind) You_hear("laughter.");
+						else       pline("%s chuckles.", Monnam(magr));
+					}
 				}
 			}
 			/* effect */
@@ -16255,11 +16262,18 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	/* ARTIFACT HIT BLOCK */
 	/* this must come after skills are trained, as this can kill the defender and cause a return */
-	if(youagr && melee){
-		if(check_rot(ROT_FEAST))
-			healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
-		if(valid_weapon_attack && weapon && weapon->oartifact == ART_DIRGE && check_mutation(CRAWLING_FLESH))
-			healup(1, 0, FALSE, FALSE);
+	if(melee){
+		if(youagr){
+			if(check_rot(ROT_FEAST))
+				healup((*hpmax(magr))*.016, 0, TRUE, FALSE);
+			if(valid_weapon_attack && weapon && weapon->oartifact == ART_DIRGE && check_mutation(CRAWLING_FLESH))
+				healup(1, 0, FALSE, FALSE);
+		}
+		else if(magr && magr->mtyp == PM_SPIDER_SCORPION){
+			magr->mhp += basedmg;
+			if(magr->mhp > magr->mhpmax)
+				magr->mhp = magr->mhpmax;
+		}
 	}
 	if (valid_weapon_attack || unarmed_punch || unarmed_kick || unarmed_butt)
 	{
@@ -18843,7 +18857,18 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 					}
 					break;
 				case AD_PHYS:
-					/* no message */
+					/* maybe message */
+					if (youagr) {
+						if (pd->mtyp == PM_QUIVERING_BLOB) pline("Boing! You are hit by the rebounding membrane!");
+					}
+					else if (vis) {
+						if (pd->mtyp == PM_QUIVERING_BLOB) {
+							pline("Boing! %s is hit by %s rebounding membrane!",
+								Monnam(magr),
+								(youdef ? "your" : s_suffix(mon_nam(mdef)))
+								);
+						}
+					}
 					/* damage (reduced by DR, half-phys damage, min 1) */
 					dmg -= (youagr ? roll_udr(mdef, ROLL_SLOT) : roll_mdr(magr, mdef, ROLL_SLOT));
 					if (dmg < 1)

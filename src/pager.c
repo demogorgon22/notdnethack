@@ -1051,6 +1051,7 @@ static const char * const bogusobjects[] = {
        "bec de corwin",
        "yet another poorly-differentiated polearm",
        "cursed YAPDP",
+       "basket-case broadsword",
        "can of mace",
        "evening star",
        "dawn star",
@@ -1469,6 +1470,7 @@ do_look(quick)
 		sym = out_str[0];
     }
 
+	char name[BUFSZ] = {0};
 	if (from_screen) {
 		cc.x = u.ux;
 		cc.y = u.uy;
@@ -1506,6 +1508,8 @@ do_look(quick)
 	    } else if (glyph_is_monster(glyph)) {
 		/* takes care of pets, detected, ridden, and regular mons */
 		sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
+		if(iflags.pokedex & POKEDEX_SHOW_ENCYC)
+			Sprintf(name, "%s", mons[glyph_to_mon(glyph)].mname);
 	    } else if (glyph_is_cloud(glyph)) {
 		sym = showsyms[S_cloud];
 	    } else if (glyph_is_swallow(glyph)) {
@@ -1546,6 +1550,8 @@ do_look(quick)
 				"lethe" : firstmatch);
 		(void)checkfile(temp_buf, pm, FALSE, (boolean)(ans == LOOK_VERBOSE), &datawin);
 	    }
+		else if(name[0] != '\0')
+			(void)checkfile(name, pm, FALSE, TRUE, &datawin);
 		display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
 	} else {

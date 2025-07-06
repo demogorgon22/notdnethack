@@ -1,0 +1,12 @@
+when:
+  event: [push, pull_request]
+
+steps:
+  - name: build
+    image: alpine
+    commands:
+      - apk update
+      - apk add ncurses-dev gcc libc-dev flex bison linux-headers make git python3 pkgconf
+      - rm include/macromagic.h
+      - make
+      - make install

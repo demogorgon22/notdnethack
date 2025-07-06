@@ -772,7 +772,22 @@ register struct monst *mtmp;
 void
 attrcurse()
 {
-	switch(rnd(10)) {
+	switch(rnd(13)) {
+	case 13 : if (HAcid_resistance & TIMEOUT) {
+			HAcid_resistance &= ~TIMEOUT;
+			You_feel("sensitive.");
+			break;
+		}
+	case 12 : if (HShock_resistance & TIMEOUT) {
+			HShock_resistance &= ~TIMEOUT;
+			You_feel("unmoored.");
+			break;
+		}
+	case 11 : if (HSleep_resistance & TIMEOUT) {
+			HSleep_resistance &= ~TIMEOUT;
+			You_feel("sleepy.");
+			break;
+		}
 	case 1 : if (HFire_resistance & TIMEOUT) {
 			HFire_resistance &= ~TIMEOUT;
 			You_feel("warmer.");

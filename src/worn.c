@@ -274,6 +274,10 @@ int otyp;
 					if(check_carapace_mod(obj, CPROP_WINGS))
 						got_prop = TRUE;
 				break;
+				case REGENERATION:
+					if(check_carapace_mod(obj, CPROP_REGEN))
+						got_prop = TRUE;
+				break;
 			}
 		}
 		// if we've got the property, add it to the array

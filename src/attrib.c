@@ -1496,7 +1496,7 @@ boolean check;
 	if(discover || wizard)
 		pline("Sanity change: %d + %d", u.usanity, delta);
 	u.usanity += delta;
-	if(!u.umadness && u.usanity < 50)
+	if(!u.umadness && u.usanity < 50 && delta < 0)
 		u.usanity = min(starting_sanity, 50);
 	else if(u.usanity < 0)
 		u.usanity = 0;

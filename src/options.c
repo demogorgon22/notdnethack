@@ -2096,10 +2096,12 @@ boolean tinitial, tfrom_file;
 				ADD_REMOVE_SECTION(POKEDEX_SHOW_MV);
 			else if (!strncmpi(op, "attacks",    l= 7))
 				ADD_REMOVE_SECTION(POKEDEX_SHOW_ATTACKS);
-			else if (!strncmpi(op, "summary",    l= 7))
-				ADD_REMOVE_SECTION(POKEDEX_SHOW_CRITICAL);
 			else if (!strncmpi(op, "wards",    l= 5))
 				ADD_REMOVE_SECTION(POKEDEX_SHOW_WARDS);
+			else if (!strncmpi(op, "encyclopedia", l= 12))
+				ADD_REMOVE_SECTION(POKEDEX_SHOW_ENCYC);
+			else if (!strncmpi(op, "summary",    l= 7))
+				ADD_REMOVE_SECTION(POKEDEX_SHOW_CRITICAL);
 			else
 				badoption(opts);
 #undef ADD_REMOVE_SECTION
@@ -3648,7 +3650,7 @@ static NEARDATA const char *burdentype[] = {
 
 static NEARDATA const char *pokedexsections[] = {
 	"stats", "generation", "weight", "resists", "conveys",
-	"movement", "thinking", "biology", "mechanics", "race", "vision", "attacks"/*, "summary"*/
+	"movement", "thinking", "biology", "mechanics", "race", "vision", "attacks", "wards", "encyclopedia"/*, "summary"*/
 };
 
 static NEARDATA const char *runmodes[] = {

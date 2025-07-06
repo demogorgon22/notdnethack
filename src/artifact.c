@@ -8842,6 +8842,15 @@ struct obj *obj;
 	}
 	inclet++;
 
+	if(!(obj->ovara_carapace&CPROP_REGEN) && mvitals[PM_SPIDER_SCORPION].seen){
+		Sprintf(buf, "Regeneration (2 points)");
+		any.a_int = CPROP_REGEN;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	inclet++;
+
 	if(!(obj->ovara_carapace&CPROP_WINGS) && mvitals[PM_VERMIURGE].seen){
 		Sprintf(buf, "Wings (2 points)");
 		any.a_int = CPROP_WINGS;
@@ -8895,6 +8904,7 @@ struct obj *obj;
 	 || picked == CPROP_IMPURITY
 	 || picked == CPROP_SWIMMING
 	 || picked == CPROP_CLAWS
+	 || picked == CPROP_REGEN
 	){
 		price = 2;
 	}
@@ -8943,6 +8953,9 @@ struct obj *obj;
 	else if(picked == CPROP_IMPURITY){
 		msg = "Red millipedes crawl over the filth coating the carapaces.";
 	}
+	else if(picked == CPROP_REGEN){
+		msg = "Fungal growths emerge from the carapace.";
+	}
 	else if(picked == CPROP_WINGS){
 		msg = "Vermiurge wings unfold from your back!";
 	}
@@ -8961,6 +8974,8 @@ struct obj *obj;
 			EFire_resistance |= W_ARM;
 		else if(picked == CPROP_ACID_RES)
 			EAcid_resistance |= W_ARM;
+		else if(picked == CPROP_REGEN)
+			ERegeneration |= W_ARM;
 		else if(picked == CPROP_DRAINRES)
 			EDrain_resistance |= W_ARM;
 		else if(picked == CPROP_SWIMMING){
