@@ -1194,7 +1194,7 @@ struct monst * mon;
 		}
 		break;
 	default:
-		takesring = !mon->female;
+		takesring = mon->female;
 		resist = (rn2(20) < ACURR(A_CHA));
 		break;
 	}
