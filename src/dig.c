@@ -1906,7 +1906,9 @@ struct obj *obj;
 
 	/* Check tool */
 	if (obj != uwep && obj != uarmg) {
-	    if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+	    else if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
 	    else res = MOVE_STANDARD;
 	}
 	if(Straitjacketed){

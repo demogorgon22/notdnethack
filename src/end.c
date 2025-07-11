@@ -1140,7 +1140,7 @@ int how;
 		} else if(u.sealsActive&SEAL_JACK){
 			lsvd = LSVD_JACK;
 			unbind_lifesaving(SEAL_JACK);
-		} else if(uwep && uwep->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives){
+		} else if(uwep && uwep->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives > 0){
 			lsvd = LSVD_MISC;
 			pline("The smoke emanating from the crimson blade wanes.");
 			artinstance[ART_MORTAL_BLADE].mortalLives--;

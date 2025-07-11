@@ -2723,6 +2723,18 @@ long wp_mask;
 			else *mask &= ~wp_mask;
 			see_monsters();
 			break;
+		case STEALTH:
+			if (on && oartifact == ART_MORTAL_BLADE && artinstance[oartifact].mortalLives < 1)
+				break;
+			else if (on) *mask |= wp_mask;
+			else *mask &= ~wp_mask;
+			break;
+		case DARK_RES:
+			if (on && oartifact == ART_MORTAL_BLADE && artinstance[oartifact].mortalLives < 2)
+				break;
+			else if (on) *mask |= wp_mask;
+			else *mask &= ~wp_mask;
+			break;
 		/* everything else (that are in uprops) */
 		default:
 			if (on) *mask |= wp_mask;
@@ -12729,6 +12741,7 @@ arti_invoke(obj)
 		break;
 		case MORTAL_DRAW:
 			obj->age = 0;
+			int old_lives = artinstance[ART_MORTAL_BLADE].mortalLives;
 			if (!(uwep && uwep == obj)) {
 				You_feel("that you should be wielding %s.", the(xname(obj)));
 				break;
@@ -12751,7 +12764,7 @@ arti_invoke(obj)
 			Sprintf(buf, "Offer %s to the blade?", the(xname(otmp)));
 			if (yn(buf) == 'n') break;
 
-			if (is_asc_obj(otmp) || objects[otmp->otyp].oc_unique){
+			if (is_asc_obj(otmp) || objects[otmp->otyp].oc_unique || get_ox(otmp, OX_ESUM)){
 				pline("You plunge the sword down, but the blade bounces off!");
 				break;
 			}
@@ -12786,6 +12799,15 @@ arti_invoke(obj)
 				break;
 			} else {
 				pline("Nothing else happens.");
+			}
+			if (old_lives < artinstance[ART_MORTAL_BLADE].mortalLives){
+				if (old_lives < 1 && artinstance[ART_MORTAL_BLADE].mortalLives >= 1) /* gained stealth */
+					pline("Wisps of smoke waft around your body.");
+				if (old_lives < 2 && artinstance[ART_MORTAL_BLADE].mortalLives >= 2) /* gained dark res */
+					pline("The wisps of smoke surrounding you curl inwards.");
+				if (old_lives < 3 && artinstance[ART_MORTAL_BLADE].mortalLives >= 3) /* gained dark res */
+					pline("Your wisps of smoke seem to expand and contract when you %s...", Breathless ? "breathe" : "hold still");
+				set_artifact_intrinsic(obj, 1, W_WEP);
 			}
 			if (otmp->unpaid) {
 				check_unpaid(otmp);

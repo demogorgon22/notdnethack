@@ -2722,8 +2722,8 @@ uthrow(struct obj *ammo, struct obj *launcher, int shotlimit, boolean forcedestr
 		weldmsg(ammo);
 		return MOVE_STANDARD;
 	}
-	if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
-		return MOVE_STANDARD;
+	if (ammo == uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+		return MOVE_CANCELLED;
 
 	/* blasters */
 	if (launcher && is_blaster(launcher)) {

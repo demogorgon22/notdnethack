@@ -11502,6 +11502,25 @@ int vis;
 		}
 		else
 			dmg = 0;
+
+		if (Dark_vuln(mdef) && can_blnd(magr, mdef, attk->aatyp, (struct obj*)0)) {
+			if (youdef) {
+				if (!Blind) {
+					make_blinded((long)dmg, FALSE);
+					if (Blind)
+						Your("senses fail you!");
+				}
+				else
+					/* keep player blind until disgorged */
+					make_blinded(Blinded + 1, FALSE);
+			}
+			else {
+				if (vis&VIS_MDEF && mdef->mcansee)
+					pline("%s can't see in there!", Monnam(mdef));
+				mdef->mcansee = 0;
+				mdef->mblinded = min(127, dmg + mdef->mblinded);
+			}
+		}
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
@@ -14423,7 +14442,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		sneak_dice++;
 	if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_ANDROMALIUS)
 		sneak_dice++;
-
+	if (weapon && weapon->owornmask && weapon->oartifact == ART_MORTAL_BLADE \
+		&& artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+		sneak_dice++;
 	/* check sneak attack conditions -- defender's conditions must allow sneak attacking */
 	if (magr &&
 		!noanatomy(pd) &&
@@ -14542,11 +14563,15 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			snekdmg += d(sneak_dice, rem);
 		
 		lifehunt_sneak_attacking = (weapon && weapon->oartifact == ART_LIFEHUNT_SCYTHE);
+
+		if (weapon == uwep && weapon && weapon->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives > 2)
+			artinstance[ART_MORTAL_BLADE].mortalBloodsmoke = TRUE;
 	}
 	else {
 		/* no sneak attack this time. We'll keep the info about what kind of sneak attack we might have made, though */
 		snekdmg = 0;
 		lifehunt_sneak_attacking = FALSE;
+		artinstance[ART_MORTAL_BLADE].mortalBloodsmoke = FALSE;
 	}
 
 	/* jousting */
@@ -14931,11 +14956,6 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			poisons |= OPOISON_DIRE;
 		if (Insight >= 40 && poisonedobj->oartifact == ART_LOLTH_S_FANG)
 			poisons |= OPOISON_DIRE;
-		if (poisonedobj->oartifact == ART_MORTAL_BLADE && poisonedobj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
-			poisons |= OPOISON_BASIC;
-			if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
-				poisons |= OPOISON_DIRE;
-		}
 		if (poisonedobj->otyp == GREATCLUB){
 			poisons |= OPOISON_BASIC;
 			//All greatclubs upgrade to filth due to your influence on the world
@@ -16982,6 +17002,13 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				else if (sneak_attack & SNEAK_OPEN)		You("strike the open %s%s", l_monnam(mdef), exclam(subtotl));
 				else									You("strike %s%s", mon_nam(mdef), exclam(subtotl));
 			}
+		}
+		if (lethaldamage && weapon && weapon == uwep && weapon->oartifact == ART_MORTAL_BLADE\
+				&& artinstance[ART_MORTAL_BLADE].mortalBloodsmoke){
+			struct region_arg cloud_data;
+			cloud_data.damage = artinstance[ART_MORTAL_BLADE].mortalLives * 3;
+			cloud_data.adtyp = AD_DARK;
+			(void) create_generic_cloud(x(mdef), y(mdef), u.ulevel/10 + 1, &cloud_data, TRUE);
 		}
 	}
 	/* jousting -- message, break lance */

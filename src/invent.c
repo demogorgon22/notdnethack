@@ -3328,8 +3328,18 @@ winid *datawin;
 				Sprintf(buf2, "Drains one charge per hit and deals less damage when uncharged.");
 				OBJPUTSTR(buf2);
 			}
+			if (obj->oartifact == ART_SPINESEEKER || obj->oartifact == ART_LOLTH_S_FANG \
+				|| (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_ANDROMALIUS) \
+				|| (obj->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE)) \
+				|| (obj->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives > 1)){
+					Sprintf(buf2, "Enables sneak attacks.");
+					OBJPUTSTR(buf2);
+			}
 			if (obj->oartifact == ART_MORTAL_BLADE){
-				Sprintf(buf2, "Slain foes will not lifesave or resurrect.");
+				if (artinstance[ART_MORTAL_BLADE].mortalLives > 2){
+					Sprintf(buf2, "Stealthy deathblows emit a cloud of darkness.");
+					OBJPUTSTR(buf2);
+				}
 			}
 		}
 		/* poison */
@@ -4276,6 +4286,12 @@ winid *datawin;
 			while (properties_art[j] && !got_prop) {
 				if (properties_art[j] == propertynames[i].prop_num)
 					got_prop = TRUE;
+				if (obj->oartifact == ART_MORTAL_BLADE){
+					if (properties_art[j] == STEALTH && artinstance[ART_MORTAL_BLADE].mortalLives < 1)
+						got_prop = FALSE;
+					if (properties_art[j] == DARK_RES && artinstance[ART_MORTAL_BLADE].mortalLives < 2)
+						got_prop = FALSE;
+				}
 				j++;
 			}
 		}
