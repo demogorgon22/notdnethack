@@ -660,8 +660,8 @@ nh_timeout()
 			}
 		}
 	}
-	if(u.spirit[ALIGN_SPIRIT] & SEAL_YOG_SOTHOTH && carrying_art(ART_SILVER_KEY))
-		u.spiritT[ALIGN_SPIRIT]++;
+	if(u.spirit[OTHER_SPIRIT] & SEAL_YOG_SOTHOTH && carrying_art(ART_SILVER_KEY))
+		u.spiritT[OTHER_SPIRIT]++;
 	if(!u.voidChime){
 		while(u.spirit[0] && u.spiritT[0] < moves) unbind(u.spirit[0],0);
 		if(u.spiritTineB && u.spiritTineTB < moves) unbind(u.spiritTineB,0);
