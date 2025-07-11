@@ -48,7 +48,7 @@ register boolean clumsy;
 	}
 	check_caitiff(mon);
 
-	result = xmeleehity(&youmonst, mon, &basickick, (struct obj **)0, -1, 1000, FALSE);
+	result = xmeleehity(&youmonst, mon, &basickick, (struct obj **)0, -1, 1000, FALSE, 0);
 	result = xpassivey(&youmonst, mon, &basickick, (struct obj *)0, -1, result, mdat, TRUE);
 
 	if (result) {
@@ -99,7 +99,7 @@ register xchar x, y;
 	if (Upolyd && attacktype(youmonst.data, AT_KICK)) {
 		/* state variable to signify we are only doing kick attacks */
 		onlykicks = TRUE;
-		xattacky(&youmonst, mon, x, y);
+		xattacky(&youmonst, mon, x, y, 0L);
 		onlykicks = FALSE;
 	    return;
 	}
@@ -373,7 +373,7 @@ cyclone_slash_monsters()
 		if(!mon || (mon->mpeaceful && !Hallucination) || DEADMONSTER(mon))
 			continue;
 		
-		xmeleehity(&youmonst, mon, &weaponhit, &uwep, (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0), 0, FALSE);
+		xmeleehity(&youmonst, mon, &weaponhit, &uwep, (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0), 0, FALSE, 0);
 	}
 	u.dx = sdx;
 	u.dy = sdy;

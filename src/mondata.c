@@ -2438,6 +2438,9 @@ resists_fire(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, FIRE_RES))
+		return FALSE;
+	
 	return (species_resists_fire(mon) || mon_resistance(mon, FIRE_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Fire_resistance));
 }
 
@@ -2446,6 +2449,9 @@ resists_cold(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, COLD_RES))
+		return FALSE;
 	
 	return (species_resists_cold(mon) || mon_resistance(mon, COLD_RES) || 
 		(has_template(mon, VAMPIRIC) && mon->m_lev > 10) ||  
@@ -2458,6 +2464,9 @@ resists_sleep(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, SLEEP_RES))
+		return FALSE;
+	
 	return (species_resists_sleep(mon) || mon_resistance(mon, SLEEP_RES) ||  
 		((mon) == u.usteed && u.sealsActive&SEAL_BERITH && Sleep_resistance) || (mon)->cham == CHAM_DREAM);
 }
@@ -2468,6 +2477,9 @@ resists_disint(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, DISINT_RES))
+		return FALSE;
+	
 	return (species_resists_disint(mon) || mon_resistance(mon, DISINT_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Disint_resistance));
 }
 
@@ -2476,6 +2488,9 @@ resists_elec(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, SHOCK_RES))
+		return FALSE;
 	
 	return (species_resists_elec(mon) || mon_resistance(mon, SHOCK_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Shock_resistance));
 }
@@ -2486,6 +2501,9 @@ resists_poison(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, POISON_RES))
+		return FALSE;
+	
 	return (species_resists_poison(mon) || mon_resistance(mon, POISON_RES) || 
 		(mon == u.usteed && u.sealsActive&SEAL_BERITH && Poison_resistance));
 }
@@ -2495,6 +2513,9 @@ resists_acid(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, ACID_RES))
+		return FALSE;
 	
 	return (species_resists_acid(mon) || mon_resistance(mon, ACID_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Acid_resistance));
 }
@@ -2535,6 +2556,9 @@ resists_ston(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, STONE_RES))
+		return FALSE;
+	
 	return (species_resists_ston(mon) || mon_resistance(mon, STONE_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Stone_resistance));
 }
 
@@ -2544,6 +2568,9 @@ resists_drain(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, DRAIN_RES))
+		return FALSE;
+	
 	return (species_resists_drain(mon) || mon_resistance(mon, DRAIN_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Drain_resistance));
 }
 
@@ -2552,6 +2579,9 @@ resists_sickness(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, SICK_RES))
+		return FALSE;
 	
 	return (species_resists_sickness(mon) || mon_resistance(mon, SICK_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Sick_resistance));
 }
@@ -2578,6 +2608,9 @@ struct monst *mon;
 {
 	if(!mon) return FALSE;
 
+	if(mon_vulnerability(mon, ANTIMAGIC))
+		return FALSE;
+	
 	return (species_resists_magic(mon) || mon_resistance(mon, ANTIMAGIC) ||  mon_resistance(mon, NULLMAGIC) ||
 		(mon == u.usteed && u.sealsActive&SEAL_BERITH && Antimagic));
 }

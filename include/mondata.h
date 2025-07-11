@@ -18,6 +18,7 @@
 #define pm_resistance(ptr,typ)	(((ptr)->mresists & (typ)) != 0)
 #define mon_intrinsic(mon,typ)	(((mon)->mintrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_extrinsic(mon,typ)	(((mon)->mextrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
+#define mon_vulnerability(mon,typ)	(((mon)->acquired_weaknesses[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_acquired_trinsic(mon,typ) (((mon)->acquired_trinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_resistance(mon,typ)	(mon_intrinsic(mon,typ) || mon_extrinsic(mon,typ) || (typ == SWIMMING && Is_waterlevel(&u.uz)) || \
 	(typ == TELEPORT && mad_monster_turn(mon, MAD_NON_EUCLID) && !(mon)->mpeaceful) || (typ == TELEPORT_CONTROL && mad_monster_turn(mon, MAD_NON_EUCLID)) || \
@@ -43,6 +44,12 @@
 									  || (mon)->mtyp == PM_MOON_ENTITY_MANIPALP \
 									  || (mon)->mtyp == PM_MOON_ENTITY_EYE_CLUSTER \
 										)
+
+#define fire_vulnerable(mon)	(species_resists_cold(mon) || mon_vulnerability(mon, FIRE_RES))
+#define cold_vulnerable(mon)	(species_resists_fire(mon) || mon_vulnerability(mon, COLD_RES))
+#define shock_vulnerable(mon)	(shock_vulnerable_species(mon) || mon_vulnerability(mon, SHOCK_RES))
+#define acid_vulnerable(mon)	(mon_vulnerability(mon, ACID_RES))
+#define magm_vulnerable(mon)	(mon_vulnerability(mon, ANTIMAGIC))
 
 #define	resist_attacks(ptr)	((((ptr)->mflagsg & MG_WRESIST) != 0L))
 #define	resist_blunt(ptr)	((((ptr)->mflagsg & MG_RBLUNT) != 0L))

@@ -439,12 +439,42 @@ A("Rhongomyniad",		LANCE,							(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
+A("The Boreal Scepter",			SQUARE_CLUB,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
 A("Green Destiny",			LONG_SWORD,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, 20,
-	A_LAWFUL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	A_NEUTRAL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
 	NO_MONS(),
 	ATTK(AD_PHYS, 8, 8), (ARTA_SHATTER|ARTA_VORPAL),
 	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Malice",			RUNESWORD,	"star-filled %s",
+	1500L, FIRMAMENT, MZ_DEFAULT, 0,
+	A_CHAOTIC, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 1, 0), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("The Seven-Star Sword",			TWO_HANDED_SWORD,	"Bin-steel shuangshou jian",
+	1500L, METAL, MZ_DEFAULT, 75,
+	A_NEUTRAL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 7, 7), NOFLAG,
+	PROPS(FIRE_RES, COLD_RES, SHOCK_RES, ACID_RES, STONE_RES), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
 	),
@@ -469,7 +499,7 @@ A("Kishin Mirror",			KAMEREL_VAJRA,	(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
-A("Epitaph of Wongas",			ROD_OF_FORCE,	(const char *)0,
+A("The Epitaph of Wongas",			ROD_OF_FORCE,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, PM_KENSEI, PM_INCANTIFIER, TIER_B, (ARTG_NOGEN),
 	NO_MONS(),
@@ -739,7 +769,7 @@ A("The Black Arrow",	ANCIENT_ARROW,					(const char *)0,
 
 /*also has a haste effect when wielded, but massively increases hunger and damages the wielder*/
 /*The invoked attack is very powerful*/
-A("Tensa Zangetsu",		TSURUGI,						"black %s",
+A("Tensa Zangetsu",		ODACHI,						"black %s",
 	4444L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, NON_PM, NON_PM, TIER_A, (ARTG_GIFT | ARTG_INHER),
 	NO_MONS(),
@@ -1561,7 +1591,7 @@ A("Werebuster",						LONG_SWORD,				(const char *)0,
 	),
 
 /*Needs encyc entry*/
-A("Masamune",						TSURUGI,				(const char *)0,
+A("Masamune",						NAGAMAKI,				(const char *)0,
 	7500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, NON_PM, TIER_C, (ARTG_NOGEN|ARTG_NOWISH),
 	NO_MONS(),
@@ -2945,7 +2975,7 @@ A("The Master Key of Thievery",		SKELETON_KEY,		(const char *)0,
 	UNTRAP, (ARTI_SPEAK)
 	),
 
-A("The Tsurugi of Muramasa",		TSURUGI,			(const char *)0,
+A("The Tsurugi of Muramasa",		NAGAMAKI,			(const char *)0,
 	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_SAMURAI, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),

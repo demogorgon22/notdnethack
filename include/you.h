@@ -343,11 +343,41 @@ struct you {
 #define monk_style_active(style) (u.umystic & (1 << (style-1)))
 #define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
 
-#define DIVE_KICK 1
-#define AURA_BOLT 2
-#define BIRD_KICK 3
-#define METODRIVE 4
-#define PUMMEL    5
+#define DIVE_KICK  1
+#define AURA_BOLT  2
+#define BIRD_KICK  3
+#define METODRIVE  4
+#define PUMMEL     5
+#define AVALANCHE  6
+#define ICICLES    7
+#define TRIPLE_F   8
+#define BLEED_S    9
+#define LANCE_T   10
+#define THROW     11
+#define HUBRIS    12
+#define CYCLONE   13
+#define KNOCKBACK 14
+#define VACUUM    15
+#define INFLICT   16
+#define SONIC_B   17
+#define BACKSTAB  18
+#define BLINDING  19
+#define MIRROR_S  20
+#define CLENSE    21
+#define SPARKS    22
+#define FLOURISH  23
+#define WHIRLWIND 24
+#define MILLWHEEL 25
+#define RISING_B  26
+#define SHOVE     27
+#define SWEEP     28
+#define CHAOS_S   29
+#define WARP_WEP  30
+#define SOUL_CUT  31
+#define BREAKER   32
+#define OVERLOAD  33
+#define SEND_AWAY 34
+
 	// long laststruck;
 	long lastmoved;
 	long lastcast;

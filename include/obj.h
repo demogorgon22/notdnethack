@@ -659,7 +659,7 @@ struct obj {
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_SHORTSWORD) \
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == CHURCH_SHEATH) \
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == HUNTER_S_LONGSWORD) \
-				|| (Role_if(PM_SAMURAI) && typ == TSURUGI) \
+				|| (Role_if(PM_SAMURAI) && typ == NAGAMAKI) \
 				|| (Role_if(PM_SAMURAI) && typ == ODACHI) \
 				|| typ == PARTISAN \
 				|| typ == RANSEUR \
@@ -1140,7 +1140,12 @@ struct obj {
 								u.role_variant == ART_SILVER_SKY ? check_oprop((otmp), OPROP_GSSDW) : \
 								u.role_variant == ART_RINGIL ? (check_oprop((otmp), OPROP_WRTHW) || objects[(otmp)->otyp].oc_skill == P_SCIMITAR) : \
 								u.role_variant == ART_ANSERMEE ? (objects[(otmp)->otyp].oc_skill == P_SHORT_SWORD) : \
+								u.role_variant == ART_BOREAL_SCEPTER ? (objects[(otmp)->otyp].oc_skill == P_CLUB) : \
+								u.role_variant == ART_MALICE ? (objects[(otmp)->otyp].oc_skill == P_BROAD_SWORD) : \
+								u.role_variant == ART_SEVEN_STAR_SWORD ? (objects[(otmp)->otyp].oc_skill == P_TWO_HANDED_SWORD) : \
 								u.role_variant == ART_KISHIN_MIRROR ? (objects[(otmp)->otyp].oc_skill == P_MACE) : \
+								u.role_variant == ART_WINTER_REAPER ? ((otmp)->otyp == RAPIER || (otmp)->otyp == SABER) : \
+								u.role_variant == ART_KIKU_ICHIMONJI ? ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI) : \
 								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp) && litsaber(otmp)) : \
 								(otmp)->otyp == artilist[u.role_variant].otyp)
 
@@ -1527,7 +1532,8 @@ struct obj {
 				)
 #define is_chupodible(otmp) ((otmp)->otyp == CORPSE && your_race(&mons[(otmp)->corpsenm]))
 
-#define is_unholy(otmp)		((otmp)->oartifact == ART_STORMBRINGER || (otmp)->oartifact == ART_DIRGE || (otmp)->cursed)
+#define is_holy(otmp)		((otmp)->oartifact == ART_SEVEN_STAR_SWORD || (otmp)->blessed)
+#define is_unholy(otmp)		((otmp)->oartifact == ART_STORMBRINGER || (otmp)->oartifact == ART_DIRGE || (otmp)->oartifact == ART_MALICE || (otmp)->cursed)
 
 /* material */
 #define is_flimsy(otmp)		((otmp)->obj_material <= LEATHER)

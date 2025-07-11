@@ -926,7 +926,7 @@ use_reach_attack()
 
 	    bhitpos = cc;
 	    check_caitiff(mtmp);
-		(void)xattacky(&youmonst, mtmp, cc.x, cc.y);
+		(void)xattacky(&youmonst, mtmp, cc.x, cc.y, 0L);
 	} else
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);

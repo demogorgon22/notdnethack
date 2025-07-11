@@ -381,6 +381,7 @@ struct monst *magr;
 		|| oartifact == ART_GREAT_CLAWS_OF_URDLEN
 		|| oartifact == ART_SHIELD_OF_THE_RESOLUTE_HEA
 		|| oartifact == ART_PREMIUM_HEART
+		|| oartifact == ART_SEVEN_STAR_SWORD
 		|| (obj && ((otyp == KAMEREL_VAJRA && !litsaber(obj))
 		|| 		   (check_oprop(obj, OPROP_SPIKED) && !litsaber(obj))
 		|| 		   (!litsaber(obj) && is_kinstealing_merc(obj))
@@ -1104,7 +1105,13 @@ struct monst *magr;
 	if (obj && otyp == KAMEREL_VAJRA)
 	{
 		if (litsaber(obj)) {
-			if (obj->where == OBJ_MINVENT && obj->ocarry->mtyp == PM_ARA_KAMEREL)
+			if(obj->oartifact == ART_KISHIN_MIRROR)
+			{
+				spe_mult = u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				ocn *= u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				flat *= u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+			}
+			else if (obj->where == OBJ_MINVENT && obj->ocarry->mtyp == PM_ARA_KAMEREL)
 			{
 				spe_mult = 3;
 				ocn *= 3;
@@ -2033,6 +2040,7 @@ static const NEARDATA short hwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
+	  SQUARE_CLUB/*3d6/1d12*/,
 	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
@@ -2043,7 +2051,7 @@ static const NEARDATA short hwep[] = {
 	  BEAST_CRUSHER,/*2d6/1d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
-	  TSURUGI/*1d16/1d8+2d6*/, 
+	  NAGAMAKI/*1d16/1d8+2d6*/, 
 	  MOON_AXE/*variable, 2d6 to 2d12*/,
 	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,
@@ -2166,6 +2174,7 @@ static const NEARDATA short hpwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
+	  SQUARE_CLUB/*3d6/1d12*/,
 	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
@@ -2176,7 +2185,7 @@ static const NEARDATA short hpwep[] = {
 	  BEAST_CRUSHER,/*2d6/1d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
-	  TSURUGI/*1d16/1d8+2d6*/, 
+	  NAGAMAKI/*1d16/1d8+2d6*/, 
 	  MOON_AXE/*variable, 2d6 to 2d12*/,
 	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,

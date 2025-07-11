@@ -654,9 +654,11 @@ boolean digest_meal;
 	}
 	/*Bleeding out*/
 	if(!DEADMONSTER(mon) && mon->mbleed > 0){
-		m_losehp(mon, mon->mbleed, FALSE, "bleeding wound");
+		m_losehp(mon, mon->mbleed, mon->mubled, "bleeding wound");
 		mon->mbleed--;
 		degenerating = TRUE;
+		if(!mon->mbleed)
+			mon->mubled = FALSE;
 	}
 
 	/*Early return to block regen*/

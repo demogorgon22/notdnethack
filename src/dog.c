@@ -1120,7 +1120,7 @@ rock:
 		obj_is_material(obj, GREEN_STEEL))
 			return(TABU);
 	    if (hates_unblessed_mon(mon) &&
-		(is_unholy(obj) || obj->blessed))
+		(is_unholy(obj) || is_holy(obj)))
 			return(TABU);
 		if (is_vampire(mon->data) &&
 		obj->otyp == POT_BLOOD && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
@@ -1165,7 +1165,7 @@ register struct obj *obj;
 		return 0;
 	if (hates_unholy_mon(mon) && obj->obj_material == GREEN_STEEL)
 		return 0;
-	if (hates_unblessed_mon(mon) && (is_unholy(obj) || obj->blessed))
+	if (hates_unblessed_mon(mon) && (is_unholy(obj) || is_holy(obj)))
 		return 0;
 
 	if(metal){

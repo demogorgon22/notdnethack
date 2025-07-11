@@ -4383,6 +4383,7 @@ winid *datawin;
 		oartifact == ART_TENTACLE_ROD ||
 		oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI ||
 		oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_ ||
+		oartifact == ART_SEVEN_STAR_SWORD ||
 		oartifact == ART_MAGICBANE)			OBJPUTSTR("Protects your inventory from being cursed.");
 
 	/* Effects based on the base description of the item -- only one will apply, so an if-else chain is appropriate */

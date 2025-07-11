@@ -6210,7 +6210,7 @@ struct monst *magr;
 		else if(symbiote.aatyp == AT_GAZE)
 			xgazey(magr, mdef, &symbiote, -1);
 		else
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 	}
 }
 
@@ -6301,7 +6301,7 @@ struct monst *magr;
 		else if(symbiote.aatyp == AT_SPIT)
 			xspity(magr, &symbiote, ax, ay);
 		else
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 	}
 }
 
@@ -6511,7 +6511,7 @@ struct monst *magr;
 		if(dist <= 2){
 			if(count_close-- > 0)
 				continue;
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 			return;
 		}
 	}
@@ -6571,7 +6571,7 @@ struct monst *magr;
 			
 			//Spiritual rapier means that touch petrifies monsters are safe to attack
 			
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 		}
 		if(!youagr)
 			mvanishobj(magr, x, y);
@@ -6660,7 +6660,7 @@ struct monst *magr;
 				continue;
 		}
 		
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 		// Nagas have 5 or 7 snake bites
 		if(--max <= 0)
 			return;
@@ -6747,7 +6747,7 @@ struct monst *magr;
 				continue;
 		}
 		attacked = TRUE;
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 	}
 	return attacked;
 }
@@ -6820,7 +6820,7 @@ struct monst *magr;
 				continue;
 		}
 		
-		xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 		// Limited stings
 		if(--max <= 0)
 			return;
@@ -6890,7 +6890,7 @@ dorotattack(struct monst *magr, struct attack * attk, int max, int mult)
 				continue;
 		}
 		
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 		// Limited attacks
 		if(--max <= 0)
 			return;
@@ -6985,7 +6985,7 @@ struct monst *magr;
 				continue;
 		}
 		
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 		// 1-8 tentacles attack
 		if(--max <= 0)
 			return;
@@ -7061,7 +7061,7 @@ struct monst *magr;
 				continue;
 		}
 		
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 		return; //Only attack one foe
 	}
 }
@@ -7135,7 +7135,7 @@ struct monst *magr;
 				continue;
 		}
 		
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 	}
 }
 
@@ -7215,7 +7215,7 @@ struct monst *magr;
 		if(mdef->mtyp == PM_PALE_NIGHT)
 			continue;
 
-		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE);
+		xmeleehity(magr, mdef, attk, (struct obj **)0, -1, 0, FALSE, 0);
 	}
 }
 
@@ -7380,7 +7380,7 @@ struct monst *magr;
 		if(mdef->mtyp == PM_PALE_NIGHT)
 			continue;
 
-		xmeleehity(magr, mdef, &attkbuff, &chain, +3, 0, FALSE);
+		xmeleehity(magr, mdef, &attkbuff, &chain, +3, 0, FALSE, 0);
 	}
 }
 

@@ -4177,7 +4177,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 				if (youdef)	nomul(0, NULL);
 
 				/* lightning blinds */
-				if (zapdata->adtyp == AD_ELEC && !resists_blnd(mdef)
+				if ((zapdata->adtyp == AD_ELEC || zapdata->blinding) && !resists_blnd(mdef)
 					&& !(youagr && u.uswallow && mdef == u.ustuck)) {
 					lightning_blind(mdef, d(zapdata->damn, 25));
 				}
@@ -4430,6 +4430,8 @@ struct zapdata * zapdata;
 			if (youdef)
 				addmsg("The missiles bounce off!");
 		}
+		else if(magm_vulnerable(mdef))
+			dmg *= 1.5;
 		domsg();
 		if (youdef && dmg > 0)
 			exercise(A_STR, FALSE);
@@ -4499,7 +4501,7 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
-		else if (species_resists_cold(mdef)) {
+		else if (fire_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4533,7 +4535,7 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
-		else if (species_resists_fire(mdef)) {
+		else if (cold_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4563,6 +4565,9 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
+		else if (shock_vulnerable(mdef)) {
+			dmg *= 2;
+		}
 		domsg();
 		golemeffects(mdef, AD_ELEC, svddmg);
 		/* damage inventory */
@@ -4585,6 +4590,9 @@ struct zapdata * zapdata;
 					addmsg("You seem unaffected.");
 				dmg = 0;
 			}
+		}
+		else if (acid_vulnerable(mdef)) {
+			dmg *= 2;
 		}
 		/* extra effects vs player */
 		if (youdef && dmg > 0) {
@@ -4612,7 +4620,10 @@ struct zapdata * zapdata;
 		else if (Fire_res(mdef)) {
 			dmg -= dmg/2;
 		}
-		else if (species_resists_cold(mdef)) {
+		else if (fire_vulnerable(mdef) && magm_vulnerable(mdef)) {
+			dmg *= 3;
+		}
+		else if (fire_vulnerable(mdef) || magm_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -5884,6 +5895,8 @@ int damage, tell;
 	dlev = (int)mtmp->m_lev;
 	if(mtmp->mcan)
 		dlev /= 2;
+	if(magm_vulnerable(mtmp))
+		dlev /= 2;
 	if (dlev > 50) dlev = 50;
 	else if (dlev < 1) dlev = 1;
 	
@@ -5897,6 +5910,8 @@ int damage, tell;
 		else
 			mons_mr /= 2;
 	}
+	if(magm_vulnerable(mtmp))
+		mons_mr /= 2;
 	if(mtmp->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
 		mons_mr += 10;
 

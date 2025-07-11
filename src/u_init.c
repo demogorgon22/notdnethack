@@ -1308,10 +1308,16 @@ static const struct def_skill Skill_Ken_LS[] = {
     { P_NONE, 0 }
 };
 
-static const struct def_skill Skill_Ken_SBR[] = {
+static const struct def_skill Skill_Ken_SBR_Standard[] = {
     { P_SHII_CHO, P_EXPERT },		{ P_MAKASHI,  P_EXPERT },
-    { P_SORESU, P_EXPERT },			{ P_ATARU,  P_EXPERT },
+    { P_SORESU, P_EXPERT },	
     { P_DJEM_SO, P_EXPERT },		{ P_SHIEN,  P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_Ken_SBR_Nonstandard[] = {
+    { P_SHII_CHO, P_EXPERT },		
+    { P_ATARU,  P_EXPERT },
     { P_NIMAN, P_EXPERT },			{ P_JUYO,  P_EXPERT },
     { P_NONE, 0 }
 };
@@ -2386,10 +2392,25 @@ u_init()
 	case PM_KENSEI:
 		u.umartial = TRUE;
 		if(Race_if(PM_HUMAN)){
-			skill_init(Skill_Ken);
-			skill_add(Skill_Ken_GW);
-			skill_add(Skill_Ken_LS);
-			u.role_variant = ART_GREEN_DESTINY;
+			if(u.ualign.type == A_LAWFUL){
+				Skill_Ken[KENSEI_SKILL].skill = P_CLUB;
+				skill_init(Skill_Ken);
+				u.role_variant = ART_BOREAL_SCEPTER;
+				Kensei[KEN_WEAPON].trotyp = MACUAHUITL;
+				skill_add(Skill_Ken_GW);
+			}
+			else if(u.ualign.type == A_NEUTRAL){
+				skill_init(Skill_Ken);
+				u.role_variant = ART_GREEN_DESTINY;
+				skill_add(Skill_Ken_GW);
+				skill_add(Skill_Ken_LS);
+			}
+			else {
+				Skill_Ken[KENSEI_SKILL].skill = P_BROAD_SWORD;
+				skill_init(Skill_Ken);
+				Kensei[KEN_WEAPON].trotyp = BROADSWORD;
+				u.role_variant = ART_MALICE;
+			}
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
@@ -2397,10 +2418,25 @@ u_init()
 			}
 		}
 		else if(Race_if(PM_INCANTIFIER)){
-			skill_init(Skill_Ken);
-			skill_add(Skill_Ken_SBR);
-			u.role_variant = ART_EPITAPH_OF_WONGAS;
-			Kensei[KEN_WEAPON].trotyp = ROD_OF_FORCE;
+			if(u.ualign.type == A_LAWFUL){
+				Skill_Ken[KENSEI_SKILL].skill = P_SHORT_SWORD;
+				skill_init(Skill_Ken);
+				u.role_variant = ART_ANSERMEE;
+				Kensei[KEN_WEAPON].trotyp = SHORT_SWORD;
+			}
+			else if(u.ualign.type == A_NEUTRAL){
+				Skill_Ken[KENSEI_SKILL].skill = P_MACE;
+				skill_init(Skill_Ken);
+				skill_add(Skill_Ken_SBR_Nonstandard);
+				u.role_variant = ART_KISHIN_MIRROR;
+				Kensei[KEN_WEAPON].trotyp = MACE;
+			}
+			else {
+				skill_init(Skill_Ken);
+				skill_add(Skill_Ken_SBR_Standard);
+				u.role_variant = ART_EPITAPH_OF_WONGAS;
+				Kensei[KEN_WEAPON].trotyp = ROD_OF_FORCE;
+			}
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
@@ -2456,12 +2492,25 @@ u_init()
 			}
 		}
 		else if(Race_if(PM_YUKI_ONNA)){
-			Skill_Ken[KENSEI_SKILL].skill = P_SABER;
-			skill_init(Skill_Ken);
+			if(u.ualign.type == A_LAWFUL){
+				skill_init(Skill_Ken);
+				u.role_variant = ART_KIKU_ICHIMONJI;
+				Kensei[KEN_WEAPON].trotyp = KATANA;
+			}
+			else if(u.ualign.type == A_NEUTRAL){
+				Skill_Ken[KENSEI_SKILL].skill = P_TWO_HANDED_SWORD;
+				skill_init(Skill_Ken);
+				u.role_variant = ART_SEVEN_STAR_SWORD;
+				Kensei[KEN_WEAPON].trotyp = NAGAMAKI;
+			}
+			else {
+				Skill_Ken[KENSEI_SKILL].skill = P_SABER;
+				skill_init(Skill_Ken);
+				skill_add(Skill_Ken_LS);
+				u.role_variant = ART_WINTER_REAPER;
+				Kensei[KEN_WEAPON].trotyp = RAPIER;
+			}
 			skill_add(Skill_Ken_GW);
-			skill_add(Skill_Ken_LS);
-			u.role_variant = ART_WINTER_REAPER;
-			Kensei[KEN_WEAPON].trotyp = RAPIER;
 			switch (rn2(90) / 30) {
 			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
 			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
@@ -2851,6 +2900,12 @@ u_init()
 			}
 		} else if(Role_if(PM_ANACHRONONAUT)){
 			u.umartial = TRUE;
+		} else if(Role_if(PM_KENSEI)){
+			/* Both are actually neutral for now */
+			/*  Need a viperwhip kit and menu for picking it */
+			u.ualign.type = A_NEUTRAL;
+			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
+			flags.initalign = 1; // 1 == neutral
 		} else if(Role_if(PM_HEALER)){
 			u.ualign.type = A_NEUTRAL;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);

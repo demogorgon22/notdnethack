@@ -30,6 +30,7 @@ STATIC_DCL int FDECL(do_present_item, (struct obj *));
 STATIC_DCL int FDECL(use_towel, (struct obj *));
 STATIC_DCL boolean FDECL(its_dead, (int,int,int *,struct obj*));
 STATIC_DCL int FDECL(use_stethoscope, (struct obj *));
+STATIC_DCL int FDECL(ansermee_scan, (struct obj *));
 STATIC_DCL void FDECL(use_whistle, (struct obj *));
 STATIC_DCL void FDECL(use_leash, (struct obj *));
 STATIC_DCL int FDECL(use_mirror, (struct obj **));
@@ -622,6 +623,79 @@ use_stethoscope(obj)
 
 	if (!its_dead(rx, ry, &res, obj))
 	    You_hear("nothing special.");	/* not You_hear()  */
+	return res;
+}
+
+STATIC_OVL int
+ansermee_scan(obj)
+	register struct obj *obj;
+{
+	struct monst *mtmp;
+	struct rm *lev;
+	int rx, ry, res;
+	boolean interference = (u.uswallow && is_whirly(u.ustuck->data) &&
+				!rn2(Role_if(PM_HEALER) ? 10 : 3));
+
+	if (nohands(youracedata)) {	/* should also check for no ears and/or deaf */
+		You("have no hands!");	/* not `body_part(HAND)' */
+		return MOVE_CANCELLED;
+	} else if (!freehand()) {
+		You("have no free %s.", body_part(HAND));
+		return MOVE_CANCELLED;
+	}
+	if (!getdir((char *)0)) return MOVE_CANCELLED;
+
+	res = MOVE_PARTIAL;
+
+#ifdef STEED
+	if (u.usteed && u.dz > 0) {
+		if (interference) {
+			pline("%s interferes.", Monnam(u.ustuck));
+			probe_monster(u.ustuck);
+		} else
+			probe_monster(u.usteed);
+		return res;
+	} else
+#endif
+	if (u.uswallow && (u.dx || u.dy || u.dz)) {
+		probe_monster(u.ustuck);
+		return res;
+	} else if (u.uswallow && interference) {
+		pline("%s interferes.", Monnam(u.ustuck));
+		probe_monster(u.ustuck);
+		return res;
+	} else if (u.dz) {
+		pline("No life signs detected.");
+		return res;
+	}
+	if (Stunned || (Confusion && !rn2(5))) confdir();
+	if (!u.dx && !u.dy) {
+		ustatusline();
+		doenlightenment();
+		return res;
+	}
+	rx = u.ux + u.dx; ry = u.uy + u.dy;
+	if (!isok(rx,ry)) {
+		pline("All readings are off the scale.");
+		return MOVE_INSTANT;
+	}
+	if ((mtmp = m_at(rx,ry)) != 0) {
+		probe_monster(mtmp);
+		if (mtmp->mundetected) {
+			mtmp->mundetected = 0;
+			if (cansee(rx,ry)) newsym(mtmp->mx,mtmp->my);
+		}
+		if (!canspotmon(mtmp))
+			map_invisible(rx,ry);
+		return res;
+	}
+	if (glyph_is_invisible(levl[rx][ry].glyph)) {
+		unmap_object(rx, ry);
+		newsym(rx, ry);
+		pline_The("invisible monster must have moved.");
+	}
+
+	pline("No life signs detected.");
 	return res;
 }
 
@@ -6872,7 +6946,7 @@ struct obj *obj;
 				wrapped_what = strcpy(buf, mon_nam(mtmp));
 			} else if (proficient) {
 				struct attack attk = {AT_WEAP, AD_PHYS, 0, 0};
-				if (ranged ? (xmeleehity(&youmonst, mtmp, &attk, &otmp, -1, 0, TRUE) != MM_AGR_DIED) : attack2(mtmp)) return MOVE_ATTACKED;
+				if (ranged ? (xmeleehity(&youmonst, mtmp, &attk, &otmp, -1, 0, TRUE, 0) != MM_AGR_DIED) : attack2(mtmp)) return MOVE_ATTACKED;
 				else pline("%s", msg_snap);
 			}
 		}
@@ -7005,7 +7079,7 @@ struct obj *obj;
 			else You("flick your whip towards %s.", mon_nam(mtmp));
 			if (proficient) {
 				struct attack attk = {AT_WEAP, AD_PHYS, 0, 0};
-				if (ranged ? (xmeleehity(&youmonst, mtmp, &attk, &otmp, -1, 0, TRUE) != MM_AGR_DIED) : attack2(mtmp)) return MOVE_ATTACKED;
+				if (ranged ? (xmeleehity(&youmonst, mtmp, &attk, &otmp, -1, 0, TRUE, 0) != MM_AGR_DIED) : attack2(mtmp)) return MOVE_ATTACKED;
 				else pline("%s", msg_snap);
 			}
 		}
@@ -10973,6 +11047,7 @@ doapply()
 	else if(obj->oartifact == ART_STAFF_OF_AESCULAPIUS) res = aesculapius_poke(obj);
 	else if(obj->oartifact == ART_ESSCOOAHLIPBOOURRR) res = aesculapius_poke(obj);
 	else if(obj->oartifact == ART_RED_CORDS_OF_ILMATER) res = ilmater_touch(obj);
+	else if(obj->oartifact == ART_ANSERMEE) res = ansermee_scan(obj);
 	else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
 		return use_rakuyo(obj);
 	}

@@ -9361,7 +9361,7 @@ struct monst *mtmp;
 				pline("Shimmering spray is drawn into the oral groove of %s.", mon_nam(mtmp));
 			}
 			damage = d(min(10, (mtmp->m_lev)/3), 6);
-			if(is_wooden(tmpm->data) || (!resists_fire(tmpm) && species_resists_cold(tmpm)))
+			if(is_wooden(tmpm->data) || (!resists_fire(tmpm) && fire_vulnerable(tmpm)))
 				damage *= 2;
 
 			if(Half_spel(tmpm)) damage = (damage+1)/2;
@@ -9411,7 +9411,7 @@ struct monst *mtmp;
 			
 			make_sick(Sick ? Sick / 2L + 1L : (long)rn1(ACURR(A_CON), 20), mtmp->data->mname, TRUE, SICK_NONVOMITABLE);
 			
-			if(is_wooden(youracedata) || (!Fire_resistance && species_resists_cold(&youmonst)))
+			if(is_wooden(youracedata) || (!Fire_resistance && fire_vulnerable(&youmonst)))
 				damage *= 2;
 			damage = reduce_dmg(&youmonst,damage,FALSE,TRUE);
 

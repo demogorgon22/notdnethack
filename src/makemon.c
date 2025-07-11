@@ -7963,7 +7963,7 @@ int mmflags;
 				// Siege Ogres etc. continue
 			}
 		if (mm == PM_OGRE_EMPEROR){
-		    (void) mongets(mtmp, TSURUGI, mkobjflags);
+		    (void) mongets(mtmp, NAGAMAKI, mkobjflags);
 			(void)mongets(mtmp, GAUNTLETS, mkobjflags);
 			(void)mongets(mtmp, BANDED_MAIL, mkobjflags);
 			(void)mongets(mtmp, WAR_HAT, mkobjflags);
@@ -11197,7 +11197,10 @@ boolean greatequip;
 					}
 				}
 			} else if(mtmp->mtyp == PM_BLUE_EYED_FOX){
-				(void)mongets(mtmp, BROADSWORD, mkobjflags);
+				int weapon[] = {ATHAME, SICKLE,  SHORT_SWORD, KHOPESH, WAKIZASHI, SCIMITAR, RAPIER, BROADSWORD, LONG_SWORD, MACUAHUITL, QUARTERSTAFF, KHAKKHARA, DOUBLE_SWORD, FLAIL, KATAR};
+				otmp = mongets(mtmp, ROLL_FROM(weapon), mkobjflags);
+				if(otmp)
+					set_material_gm(otmp, MERCURIAL);
 				(void)mongets(mtmp, SHURIKEN, mkobjflags);
 				(void)mongets(mtmp, DART, mkobjflags);
 				(void) mongets(mtmp, DAGGER, mkobjflags);

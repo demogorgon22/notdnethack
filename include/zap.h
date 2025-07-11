@@ -33,6 +33,7 @@ struct zapdata {
 	Bitfield(no_bounce, 1);		/* does not bounce off of walls */
 	Bitfield(no_hit_wall, 1);	/* stops just short of walls */
 	Bitfield(leaves_clouds, 1);	/* leaves a trail of adtyp-appropriate clouds */
+	Bitfield(blinding, 1);	/* has a blinding flash (AD_ELEC always does this) */
 };
 
 

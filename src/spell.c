@@ -6801,7 +6801,7 @@ dopseudonatural()
 		) continue;
 		
 		if(mon){
-			xmeleehity(&youmonst, mon, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(&youmonst, mon, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 		}
 	}
 }

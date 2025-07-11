@@ -1330,7 +1330,7 @@ domove()
 				/* Streaming mercurial weapons hit an aditional target if your insight is high enough */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp && is_streaming_merc(otmp)){
 					if(mlev(&youmonst) > 20 && (Insight > 20 && YOU_MERC_SPECIAL)){
-						result |= hit_with_streaming(&youmonst, otmp, x, y, 0, attk);
+						result |= hit_with_streaming(&youmonst, otmp, x, y, u.ux, u.uy, 0, attk);
 					}
 				}
 				/* Rakuyo hit additional targets, if your insight is high enough to percieve the blood */
