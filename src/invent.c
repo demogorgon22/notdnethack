@@ -2900,6 +2900,9 @@ winid *datawin;
 		/* weapon dice! */
 		/* Does not apply for launchers. */
 		/* the melee-weapon artifact launchers need obj to exist because dmgval_core needs obj to find artifact. */
+		int enc_bonus = (obj && obj->known) ? (obj->spe) : 0;
+		char* senc_bonus = (enc_bonus) ? sitoa(enc_bonus) : "";
+
 		if ((!otyp_is_launcher && !otyp_is_blaster && !artidmg_only) || (
 			(otyp == CARCOSAN_STING) ||
 			(obj && oartifact == ART_LIECLEAVER) ||
@@ -2912,7 +2915,6 @@ winid *datawin;
 			struct weapon_dice wdice[2];
 			int spe_mult = dmgval_core(&wdice[0], FALSE, obj, otyp, &youmonst);	// small dice
 			int lspe_mult = dmgval_core(&wdice[1], TRUE, obj, otyp, &youmonst);		// large dice
-			int enc_bonus = (obj) ? (obj->spe) : 0;
 			if (otyp == CRYSTAL_SWORD) enc_bonus += enc_bonus / 3;
 			if (otyp == SEISMIC_HAMMER) {
 				wdice[0].oc_damd += 3*enc_bonus;
@@ -3104,36 +3106,36 @@ winid *datawin;
 			int sdamd = objects[otyp].oc_wsdam.oc_damd;
 			if(obj->otyp == TOOTH && Insight >= 20 && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, &youmonst, ETRAIT_FOCUS_FIRE)){
 				if(obj->ovar1_tooth_type == MAGMA_TOOTH){
-					Sprintf(buf2, "Deals +5d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
+					Sprintf(buf2, "Deals +5d10%s fire damage.", senc_bonus);
 					OBJPUTSTR(buf2);
 				}
 				else if(obj->ovar1_tooth_type == VOID_TOOTH){
-					Sprintf(buf2, "Drains three levels from the target and deals +3d3%s cold damage.", (obj->spe ? sitoa(obj->spe) : ""));
+					Sprintf(buf2, "Drains three levels from the target and deals +3d3%s cold damage.", senc_bonus);
 					OBJPUTSTR(buf2);
 				}
 				else if(obj->ovar1_tooth_type == SERPENT_TOOTH){
-					Sprintf(buf2, "Injects dire poison and deals +1d8%s poison and +1d8%s acid damage.",(obj->spe ? sitoa(obj->spe) : ""),(obj->spe ? sitoa(obj->spe) : ""));
+					Sprintf(buf2, "Injects dire poison and deals +1d8%s poison and +1d8%s acid damage.", senc_bonus, senc_bonus);
 					OBJPUTSTR(buf2);
 				}
 			}
 			if(obj->otyp == TORCH){
-				Sprintf(buf2, "When lit, deals +1d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s fire damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == MAGIC_TORCH){
-				Sprintf(buf2, "When lit, deals +1d8%s fire damage.", (obj->spe ? sitoa(2*obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d8%s fire damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SHADOWLANDER_S_TORCH){
-				Sprintf(buf2, "When lit, deals +1d10%s cold damage.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s cold damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SUNROD){
-				Sprintf(buf2, "When lit, deals +1d10%s lightning and acid damage and may blind struck targets.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s lightning and acid damage and may blind struck targets.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == TONITRUS){
-				Sprintf(buf2, "When lit, deals +1d10%s lightning damage.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s lightning damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == KAMEREL_VAJRA){
@@ -3148,7 +3150,7 @@ winid *datawin;
 				Sprintf(buf2, "Uses a weapon-wielding opponent's own weapon against them, if their damage is higher.");
 				OBJPUTSTR(buf2);
 			}
-			if(obj->otyp == CRYSTAL_SWORD && obj->spe >= 3){
+			if(obj->otyp == CRYSTAL_SWORD && obj->known && obj->spe >= 3){
 				Sprintf(buf2, "Adds an extra %s to enchantment for damage calculations.", sitoa(obj->spe/3));
 				OBJPUTSTR(buf2);
 			}
@@ -3167,8 +3169,8 @@ winid *datawin;
 			}
 			if(obj->otyp == RAKUYO){
 				Sprintf(buf2, "Deals +1d%d%s base damage vs small and +1d%d%s vs large if wielded without two-weaponing, at the cost of an extra 1/4 move.", 
-					(4 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""),
-					(3 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""));
+					(4 + 2*(obj->objsize - MZ_MEDIUM)), senc_bonus,
+					(3 + 2*(obj->objsize - MZ_MEDIUM)), senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == DISKOS && Insight >= 15){
@@ -3198,7 +3200,7 @@ winid *datawin;
 
 				if (Insight >= 25){
 					Sprintf(buf2, "Lowers struck targets' morale based on your charisma, currently -%d per hit, capped at -%d.",
-						ACURR(A_CHA)/5, (obj->spe + ACURR(A_CHA)));
+						ACURR(A_CHA)/5, (enc_bonus + ACURR(A_CHA)));
 					OBJPUTSTR(buf2);
 				}
 			}
@@ -3271,11 +3273,11 @@ winid *datawin;
 			}
 			if (obj->oartifact == ART_SHADOWLOCK){
 				Sprintf(buf2, "Deals +2d6%s cold damage, but also deals 4d6%s physical and 2d6%s cold damage to the wielder every hit.",
-					(obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""));
+					senc_bonus, senc_bonus, senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_TROLLSBANE){
-				Sprintf(buf2, "Deals +2d20%s to covetous monsters.", (obj->spe ? sitoa(obj->spe*2) : ""));
+				Sprintf(buf2, "Deals +2d20%s to covetous monsters.", ((obj->spe && obj->known) ? sitoa(obj->spe*2) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_MASAMUNE){
@@ -3316,11 +3318,11 @@ winid *datawin;
 				Sprintf(buf2, "Is 1/6th faster to swing than other weapons.");
 				OBJPUTSTR(buf2);
 			}
-			if(pure_weapon(obj) && obj->spe >= 6){
+			if(pure_weapon(obj) && obj->known && obj->spe >= 6){
 				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at full health.");
 				OBJPUTSTR(buf2);
 			}
-			if(dark_weapon(obj) && obj->spe >= 6){
+			if(dark_weapon(obj) && obj->known && obj->spe >= 6){
 				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at 30%% health or lower.");
 				OBJPUTSTR(buf2);
 			}
@@ -3681,6 +3683,11 @@ winid *datawin;
 		if (check_oprop(obj, OPROP_SLIF))
 		{
 			Sprintf(buf2, "The Silver Flame will save the wearer's life.");
+			OBJPUTSTR(buf2);
+		}
+		if (check_oprop(obj, OPROP_LIFE))
+		{
+			Sprintf(buf2, "The spirit inside will save the wearer's life.");
 			OBJPUTSTR(buf2);
 		}
 		if(check_oprop(obj, OPROP_ANTAW)){

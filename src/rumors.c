@@ -451,7 +451,7 @@ register struct monst *oracl;
 				boolean cheapskate = umoney < major_cost;
 				outoracle(cheapskate, TRUE);
 				if (!cheapskate && !u.uevent.major_oracle){
-					more_experienced(major_cost / (u.uevent.major_oracle ? 25 : 10), 0);
+					more_experienced(major_cost / (u.uevent.minor_oracle ? 25 : 10), 0);
 					newexplevel();
 					/* ~100 pts if very 1st, ~40 pts if minor already done */
 					if(!u.uevent.minor_oracle) livelog_write_string("consulted the oracle for the first time");
@@ -474,13 +474,13 @@ register struct monst *oracl;
 				display_nhwindow(WIN_MESSAGE, FALSE);
 				doenlightenment();
 				pline_The("feeling subsides.");
-				if (!u.uevent.major_oracle){
-					more_experienced(enl_cost / (u.uevent.major_oracle ? 25 : 10), 0);
+				if (!u.uevent.minor_oracle){
+					more_experienced(minor_cost / (u.uevent.major_oracle ? 25 : 10), 0);
 					newexplevel();
 					/* 5 pts if very 1st, or 2 pts if major already done */
 					if(!u.uevent.major_oracle) livelog_write_string("consulted the oracle for the first time");
 				}
-				u.uevent.major_oracle = TRUE;
+				u.uevent.minor_oracle = TRUE;
 			}
 		break;
 		case SELECT_HINTS:
@@ -767,13 +767,13 @@ register struct monst *oracl;
 					break;
 				}
 
-				if (!u.uevent.major_oracle){
-					more_experienced(hint_cost / (u.uevent.major_oracle ? 25 : 10), 0);
+				if (!u.uevent.minor_oracle){
+					more_experienced(minor_cost / (u.uevent.major_oracle ? 25 : 10), 0);
 					newexplevel();
-				/* 5 pts if very 1st, or 2 pts if major already done */
+					/* 5 pts if very 1st, or 2 pts if major already done */
 					if(!u.uevent.major_oracle) livelog_write_string("consulted the oracle for the first time");
 				}
-				u.uevent.major_oracle = TRUE;
+				u.uevent.minor_oracle = TRUE;
 			}
 		break;
 		default:

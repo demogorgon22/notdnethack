@@ -2664,6 +2664,7 @@ struct obj * blaster;
 	ammo->blessed = blaster->blessed;
 	ammo->cursed = blaster->cursed;
 	ammo->spe = blaster->spe;
+	ammo->objsize = blaster->objsize;
 
 	return ammo;
 }

@@ -1001,9 +1001,11 @@ boolean dofull;
 			Strcat(buf, "disintegration-proof ");
 		if(check_oprop(obj, OPROP_BCRS) && obj->known)
 			Strcat(buf, "prayer-warded ");
-		if(check_oprop(obj, OPROP_CGLZ))
-			Strcat(buf, "glazed ");
-		
+		if(check_oprop(obj, OPROP_RWTH))
+			Strcat(buf, "justifying ");
+		if(check_oprop(obj, OPROP_RBRD))
+			Strcat(buf, "balanced ");
+
 		if (check_oprop(obj, OPROP_LESSER_ANARW) && obj->known)
 			Strcat(buf, "unruly ");
 		if (check_oprop(obj, OPROP_LESSER_CONCW) && obj->known)
@@ -1027,11 +1029,11 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_PHSEW))
 			Strcat(buf, "faded ");
 		
-		if (check_oprop(obj, OPROP_LIFE)){
+		if (check_oprop(obj, OPROP_LIFE) || check_oprop(obj, OPROP_SLIF)){
 			if(obj->known)
 				Strcat(buf, "life-saving ");
 			else if(is_helmet(obj))
-				Strcat(buf, "haloed ");
+				Strcat(buf, (check_oprop(obj, OPROP_SLIF)) ? "silver-haloed " : "haloed ");
 			else if(obj->obj_material == SILVER)
 				Strcat(buf, "gold-feather-encrusted ");
 			else
@@ -4732,6 +4734,12 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_TDTHW);
 		} else if (!strncmpi(bp, "unworthyflame ", l=14)) {
 			add_oprop_list(oprop_list, OPROP_SFUWW);
+		} else if (!strncmpi(bp, "justifying ", l=11)) {
+			add_oprop_list(oprop_list, OPROP_RWTH);
+		} else if (!strncmpi(bp, "balanced ", l=9)) {
+			add_oprop_list(oprop_list, OPROP_RBRD);
+		} else if (!strncmpi(bp, "silver-haloed ", l=14)) {
+			add_oprop_list(oprop_list, OPROP_SLIF);
 
 		} else if (!strncmpi(bp, "magicite ", l=9)) {
 			mat = GEMSTONE; gemtype = MAGICITE_CRYSTAL;

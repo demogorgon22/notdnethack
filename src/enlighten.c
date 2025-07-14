@@ -154,8 +154,10 @@ doattributes()
 			break;
 		case DOATTRIB_GENOCIDE:
 			genocide_enlightenment();
+			break;
 		case DOATTRIB_UH_RESEARCH:
 			research_enlightenment();
+			break;
 		default:
 			return MOVE_INSTANT;
 		}
@@ -3099,7 +3101,7 @@ mutations_enlightenment()
 STATIC_OVL void
 genocide_enlightenment()
 {
-        list_genocided('y', FALSE, FALSE, TRUE);
+    list_genocided('y', FALSE, FALSE, TRUE);
 }
 
 STATIC_OVL void
