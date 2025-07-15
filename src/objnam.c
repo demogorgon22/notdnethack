@@ -4738,7 +4738,7 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_RWTH);
 		} else if (!strncmpi(bp, "balanced ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_RBRD);
-		} else if (!strncmpi(bp, "silver-haloed ", l=14)) {
+		} else if (!strncmpi(bp, "silver-candled ", l=14)) {
 			add_oprop_list(oprop_list, OPROP_SLIF);
 
 		} else if (!strncmpi(bp, "magicite ", l=9)) {
