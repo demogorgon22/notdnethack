@@ -906,6 +906,7 @@ E struct obj *FDECL(floorfood, (const char *,int));
 E void NDECL(vomit);
 E int FDECL(eaten_stat, (int,struct obj *));
 E void FDECL(food_disappears, (struct obj *));
+E void FDECL(food_extracted, (struct obj *));
 E void FDECL(food_substitution, (struct obj *,struct obj *));
 E boolean FDECL(bite_monster, (struct monst *));
 E void FDECL(give_intrinsic, (int, long));

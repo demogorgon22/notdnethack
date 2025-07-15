@@ -3523,7 +3523,7 @@ struct obj *obj;
 	}
 	else obj_extract_self(obj);
 	if (obj->otyp == LEASH && obj->leashmon) o_unleash(obj);
-	if (obj->oclass == FOOD_CLASS) food_disappears(obj);
+	if (obj->oclass == FOOD_CLASS) food_extracted(obj);
 	if (obj->oclass == SPBOOK_CLASS) book_disappears(obj);
 }
 
