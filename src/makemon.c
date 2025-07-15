@@ -1309,25 +1309,51 @@ boolean greatequip;
 		(void)mongets(mtmp, HIGH_BOOTS, mkobjflags);
 	}
 	else if(ptr->mtyp == PM_PARASITIZED_KNIGHT){
-		otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(Infuture){
+			otmp = mongets(mtmp, PLASTEEL_BOOTS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
 
-		otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+			otmp = mongets(mtmp, PLASTEEL_ARMOR, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
 
-		otmp = mongets(mtmp, GAUNTLETS, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+			otmp = mongets(mtmp, PLASTEEL_GAUNTLETS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
 
-		otmp = mongets(mtmp, KITE_SHIELD, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+			otmp = mongets(mtmp, TOWER_SHIELD, mkobjflags);
+			if(otmp){
+				set_material_gm(otmp, rn2(3) ? PLASTIC : GLASS);
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
+			}
 
-		otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+			int futurekit[] = {DISKOS, VIBROBLADE, FORCE_BLADE, FORCE_SWORD, FORCE_WHIP, FORCE_PIKE, LIGHTSABER, BEAMSWORD};
+			otmp = mongets(mtmp, ROLL_FROM(futurekit), mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+		}
+		else {
+			otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, GAUNTLETS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, KITE_SHIELD, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+		}
 	}
 	else if (ptr->mtyp == PM_CROESUS) {
 		otmp = mksobj(TWO_HANDED_SWORD, mkobjflags);
