@@ -2692,11 +2692,9 @@ const char *str;
 }
 
 void
-minstapetrify(mon,byplayer)
-struct monst *mon;
-boolean byplayer;
+minstapetrify(struct monst *mon,boolean byplayer, boolean bypass_resistance)
 {
-	if (resists_ston(mon)) return;
+	if (resists_ston(mon) && !bypass_resistance) return;
 	if (poly_when_stoned(mon->data)) {
 		mon_to_stone(mon);
 		return;
@@ -2798,7 +2796,7 @@ boolean byplayer;
 			    arg ? arg : "", arg ? mon_nam(mon) : Monnam(mon),
 			    mons[mwep->corpsenm].mname);
 		}
-		minstapetrify(mon, byplayer);
+		minstapetrify(mon, byplayer, FALSE);
 	}
 }
 

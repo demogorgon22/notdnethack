@@ -1515,7 +1515,7 @@ WEPTOOL(("beamsword",  "broadsword hilt"), /*Needs encyc entry*/
 WEPTOOL(("double lightsaber",  "long grip"), /*Needs encyc entry*//*Needs tile*//*needs special case for 2handedness*/
 	DMG(D(10)), DMG(D(10)),
 	0,  MZ_SMALL, 1, 1,  0, 30,1000, -6, S|E, P_QUARTERSTAFF, PLATINUM, HI_SILVER, O_MATSPEC(IDED|UNIDED)),
-WEPTOOL(("rod of force", "rod"), /*Needs encyc entry*/
+WEPTOOL(("rod of force", "rod"),
 	DMG(D(8)), DMG(D(12)),
 	0,  MZ_SMALL, 1, 1,  0, 10,1000, 1, S|P|E, P_LONG_SWORD, IRON, CLR_BLACK, O_DIR(IMMEDIATE), O_MATSPEC(UNIDED), O_NOWISH(1), O_TRAITS(ETRAIT_GRAZE)),
 WEPTOOL(("grappling hook", "hook"),

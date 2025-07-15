@@ -706,7 +706,7 @@ register struct obj *obj;
 				       FALSE, could_slime);
 			delobj(obj);	/* corpse is digested */
 		    } else if (could_petrify) {
-			minstapetrify(u.ustuck, TRUE);
+			minstapetrify(u.ustuck, TRUE, FALSE);
 			/* Don't leave a cockatrice corpse in a statue */
 			if (!u.uswallow) delobj(obj);
 		    } else if (could_grow) {

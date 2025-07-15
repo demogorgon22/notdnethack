@@ -1170,6 +1170,19 @@
 
 #define is_indigestible(ptr)	(((ptr)->mflagsb&MB_INDIGESTIBLE) != 0)
 
+#define is_spiritual_being(mon)	(is_demon((mon)->data) || is_minion((mon)->data))
+
+#define is_organic_mon(mon)	(!(is_naturally_unalive((mon)->data) \
+							 || unsolid((mon)->data) \
+							 || is_great_old_one((mon)->data) \
+							 || ((mon)->data->mlet == S_ELEMENTAL) \
+							 || ((mon)->data->mlet == S_VORTEX && is_elemental((mon)->data)) \
+							 || ((mon)->data->mlet == S_EYE && is_elemental((mon)->data)) \
+							 || ((mon)->data->mlet == S_LIGHT && is_elemental((mon)->data)) \
+							) \
+							|| ((mon)->data->mflagsb&MB_ORGANIC) \
+							)
+
 // #define is_indigestible(ptr)	((ptr)->mtyp == PM_DANCING_BLADE ||\
 								 // (ptr)->mtyp == PM_EARTH_ELEMENTAL ||\
 								 // (ptr)->mtyp == PM_TERRACOTTA_SOLDIER ||\

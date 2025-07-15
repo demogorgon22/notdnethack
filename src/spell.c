@@ -1590,6 +1590,7 @@ int atype;
 	{
 	case AD_HOLY:
 	case AD_UNHY:
+	case AD_VORP:
 		return P_MARTIAL_ARTS;
 	case AD_MAGM:
 	case AD_FIRE:

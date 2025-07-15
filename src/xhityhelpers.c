@@ -1548,6 +1548,8 @@ struct monst * magr;
 			diesize = 20;
 		else if (otmp->oartifact == ART_SPEAR_OF_PEACE)
 			diesize = 20;
+		else if (otmp->oartifact == ART_MALICE)
+		{	dmg += otmp->spe; diesize = 12; }
 		else if (otmp->oartifact == ART_AMHIMITL)
 		{	ndice = 3; diesize = 4; }
 		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
@@ -2266,7 +2268,7 @@ int dmgtyp;
 * while voiding the return.
 */
 int
-destroy_items_sonic(struct monst *mtmp)
+destroy_items_sonic(struct monst *mtmp, boolean empowered)
 {
 	boolean youdef = mtmp == &youmonst;
 	struct permonst * data = (youdef) ? youracedata : mtmp->data;
@@ -2288,7 +2290,7 @@ destroy_items_sonic(struct monst *mtmp)
 
 	for (obj = (youdef ? invent : mtmp->minvent); obj; obj = obj2) {
 		obj2 = obj->nobj;
-		if(!is_shatterable(obj) || obj->oerodeproof) continue; /*shatterproof*/ 
+		if(!(is_shatterable(obj) || (empowered && is_hard(obj))) || obj->oerodeproof) continue; /*shatterproof*/ 
 		if (obj->oartifact) continue; /* don't destroy artifacts */
 		if (obj->in_use && obj->quan == 1) continue; /* not available */
 		dmg = dindx = 0;
@@ -2296,14 +2298,22 @@ destroy_items_sonic(struct monst *mtmp)
 
 		quan = obj->quan;
 		dmg = 2*objects[obj->otyp].oc_size;
+		if(empowered)
+			dmg += 2;
 		osym = obj->oclass;
 		charged = (osym == WAND_CLASS || osym == ARMOR_CLASS || osym == ARMOR_CLASS || objects[obj->otyp].oc_charged);
 
 		/* destroy the item, if allowed */
 		if (obj->in_use) --quan; /* one will be used up elsewhere */
 		int amt = charged ? obj->spe+1 : quan;
+		if(empowered){
+		/* approx 50% of items in the stack get destroyed */
+			for (i = cnt = 0L; i < amt; i++) {
+				if (!rn2(2)) cnt++;
+			}
+		}
 		/* approx 10% of items in the stack get destroyed */
-		for (i = cnt = 0L; i < amt; i++) {
+		else for (i = cnt = 0L; i < amt; i++) {
 			if (!rn2(10)) cnt++;
 		}
 		/* No items destroyed? Skip */
@@ -2318,7 +2328,7 @@ destroy_items_sonic(struct monst *mtmp)
 				mult,
 				(youdef) ? ((mult[0] != '\0') ? "your" : "Your") : ((mult[0] != '\0') ? s_suffix(mon_nam(mtmp)) : s_suffix(Monnam(mtmp))),
 				xname(obj),
-				(cnt > 1L) ? "shatter" : "shatters");
+				(quan > 1 && cnt > 1L) ? "shatter" : "shatters");
 		}
 
 		/* potion vapors */
@@ -2377,6 +2387,96 @@ destroy_items_sonic(struct monst *mtmp)
 		else You("panic after one of your possessions is destroyed!");
 		HPanicking += 1 + rnd(6);
 	}
+
+	/* return if anything was destroyed */
+	return (ndestroyed ? MM_HIT : MM_MISS);
+}
+
+int
+destroy_items_liquify(struct monst *mtmp, boolean empowered)
+{
+	boolean youdef = mtmp == &youmonst;
+	struct permonst * data = (youdef) ? youracedata : mtmp->data;
+	int vis = (youdef) ? TRUE : canseemon(mtmp);
+	int ndestroyed = 0;
+	int odestroyed = 0;
+	struct obj *obj, *obj2;
+	long i, cnt, quan;
+	int dindx;
+	const char *mult;
+	int osym;
+	boolean charged;
+
+	if (ProtectItems(mtmp)){
+		return MM_MISS;
+	}
+		
+
+	for (obj = (youdef ? invent : mtmp->minvent); obj; obj = obj2) {
+		obj2 = obj->nobj;
+		if(!is_organic(obj) || obj->oerodeproof) continue; /*shatterproof*/ 
+		if (obj->oartifact) continue; /* don't destroy artifacts */
+		if (obj->in_use && obj->quan == 1) continue; /* not available */
+		quan = 0L;
+
+		quan = obj->quan;
+		osym = obj->oclass;
+		charged = (osym == WAND_CLASS || osym == ARMOR_CLASS || osym == ARMOR_CLASS || objects[obj->otyp].oc_charged);
+
+		/* destroy the item, if allowed */
+		if (obj->in_use) --quan; /* one will be used up elsewhere */
+		int amt = charged ? obj->spe+1 : !objects[obj->otyp].oc_merge ? (3-obj->oeroded2) : quan;
+		if(empowered){
+			/* approx 66% of items in the stack get destroyed */
+			for (i = cnt = 0L; i < amt; i++) {
+				if (rn2(3)) cnt++;
+			}
+		}
+		/* approx 10% of items in the stack get destroyed */
+		else for (i = cnt = 0L; i < amt; i++) {
+			if (!rn2(10)) cnt++;
+		}
+		/* No items destroyed? Skip */
+		if (!cnt)
+			continue;
+		/* print message */
+		if (vis) {
+			if (cnt == quan || quan == 1)	mult = "";
+			else if (cnt > 1)				mult = "Some of ";
+			else							mult = "One of ";
+			pline("%s%s %s %s!",
+				mult,
+				(youdef) ? ((mult[0] != '\0') ? "your" : "Your") : ((mult[0] != '\0') ? s_suffix(mon_nam(mtmp)) : s_suffix(Monnam(mtmp))),
+				xname(obj),
+				(quan > 1 && cnt > 1L) ? "dissolve" : "dissolves");
+		}
+
+		/* destroy item */
+		if (charged && cnt <= obj->spe)
+			obj->spe -= cnt;
+		else if (!objects[obj->otyp].oc_merge && cnt < obj->oeroded2)
+			obj->oeroded2 -= cnt;
+		else {
+			if (obj == current_wand) current_wand = 0;	/* destroyed */
+			if(cnt > obj->quan)
+				cnt = obj->quan; /*Can be true if a charged object is being destroyed*/
+			for (i = 0; i < cnt; i++) {
+				/* use correct useup function */
+				if (youdef) useup(obj);
+				else m_useup(mtmp, obj);
+				odestroyed++;
+			}
+		}
+		ndestroyed += cnt;
+	}
+	if (ndestroyed && roll_madness(MAD_TALONS) && odestroyed){
+		if (ndestroyed > 1)
+			You("panic after some of your possessions are destroyed!");
+		else You("panic after one of your possessions is destroyed!");
+		HPanicking += 1 + rnd(6);
+	}
+	for(int i = rnd(ndestroyed); i > 0; i--)
+		water_damage((mtmp == &youmonst) ? invent : mtmp->minvent, FALSE, FALSE, FALSE, mtmp);
 
 	/* return if anything was destroyed */
 	return (ndestroyed ? MM_HIT : MM_MISS);
@@ -2695,7 +2795,7 @@ boolean vis;
 	}
 	if(!youagr){
 		if (petrifies) {
-			minstapetrify(magr, youdef); //checks stone resistance
+			minstapetrify(magr, youdef, FALSE); //checks stone resistance
 			if(magr->mhp <= 0)
 				newres |= MM_AGR_DIED;
 		}

@@ -947,9 +947,9 @@ doMysticForm()
 	Sprintf(buf,	"Known Techniques");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	if(monk_style_active(DIVE_KICK)) {
-		Sprintf(buf,	"Dive Kick (active)");
+		Sprintf(buf,	"%s (active)", move_name(forward_move()));
 	} else {
-		Sprintf(buf,	"Dive Kick (disabled)");
+		Sprintf(buf,	"%s (disabled)", move_name(forward_move()));
 	}
 	any.a_int = DIVE_KICK;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -957,9 +957,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(AURA_BOLT)) {
-		Sprintf(buf,	"Aura Bolt (active)");
+		Sprintf(buf,	"%s (active)", move_name(bent_move()));
 	} else {
-		Sprintf(buf,	"Aura Bolt (disabled)");
+		Sprintf(buf,	"%s (disabled)", move_name(bent_move()));
 	}
 	any.a_int = AURA_BOLT;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -967,9 +967,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(BIRD_KICK)) {
-		Sprintf(buf,	"Bird Kick (active)");
+		Sprintf(buf,	"%s (active)", move_name(hook_move()));
 	} else {
-		Sprintf(buf,	"Bird Kick (disabled)");
+		Sprintf(buf,	"%s (disabled)", move_name(hook_move()));
 	}
 	any.a_int = BIRD_KICK;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -977,9 +977,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(METODRIVE)) {
-		Sprintf(buf,	"Meteor Drive (active)");
+		Sprintf(buf,	"%s (active)", move_name(uturn_move()));
 	} else {
-		Sprintf(buf,	"Meteor Drive (disabled)");
+		Sprintf(buf,	"%s (disabled)", move_name(uturn_move()));
 	}
 	any.a_int = METODRIVE;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -987,9 +987,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(PUMMEL)) {
-		Sprintf(buf,	"Pummel (active)");
+		Sprintf(buf,	"%s (active)", move_name(alternated_move()));
 	} else {
-		Sprintf(buf,	"Pummel (disabled)");
+		Sprintf(buf,	"%s (disabled)", move_name(alternated_move()));
 	}
 	any.a_int = PUMMEL;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -1381,6 +1381,57 @@ doGithForm()
 }
 
 int
+doBorealFace()
+{
+	winid tmpwin;
+	int n, how, i;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+	int curskill;
+	char* block_reason;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Faces");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+
+
+	for (i = 0; i < 4; i++) {
+		boolean active = (artinstance[ART_BOREAL_SCEPTER].BorealFace & (1 << i)) != 0;
+
+		Strcpy(buf, nameOfBorealFace(i));
+
+		if (active)
+			Strcat(buf, " (active)");
+
+		any.a_int = i;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	end_menu(tmpwin, "Choose scepter face:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+
+	if(n <= 0){
+		return MOVE_CANCELLED;
+	} else {
+
+		artinstance[ART_BOREAL_SCEPTER].BorealFace = (1 << selected[0].item.a_int);
+
+		free(selected);
+		return MOVE_INSTANT;
+	}
+}
+
+int
 doEtechForm()
 {
 	winid tmpwin;
@@ -1464,18 +1515,19 @@ doEtechForm()
 	}
 }
 
-#define MONK_FORMS			0x001L
-#define LIGHTSABER_FORMS	0x002L
-#define KNIGHT_FORMS		0x004L
-#define AVOID_PASSIVES		0x008L
-#define AVOID_MSPLCAST		0x010L
-#define AVOID_GRABATTK		0x020L
-#define AVOID_ENGLATTK		0x040L
-#define AVOID_UNSAFETOUCH	0x080L
-#define GITH_FORMS			0x100L
-#define ETECH_FORMS			0x200L
-#define AVOID_THEFT			0x400L
-#define AUTO_ATTKS			0x800L
+#define MONK_FORMS			0x0001L
+#define LIGHTSABER_FORMS	0x0002L
+#define KNIGHT_FORMS		0x0004L
+#define AVOID_PASSIVES		0x0008L
+#define AVOID_MSPLCAST		0x0010L
+#define AVOID_GRABATTK		0x0020L
+#define AVOID_ENGLATTK		0x0040L
+#define AVOID_UNSAFETOUCH	0x0080L
+#define GITH_FORMS			0x0100L
+#define ETECH_FORMS			0x0200L
+#define AVOID_THEFT			0x0400L
+#define AUTO_ATTKS			0x0800L
+#define BOREAL_FORMS		0x1000L
 
 int
 hasfightingforms(){
@@ -1595,6 +1647,10 @@ hasfightingforms(){
 		formmask |= ETECH_FORMS;
 	}
 
+	if(uwep && uwep->oartifact == ART_BOREAL_SCEPTER){
+		formmask |= BOREAL_FORMS;
+	}
+
 	/* next, forms trained are shown, even if inapplicable at the moment*/
 	for (i = FIRST_LS_FFORM; i <= LAST_LS_FFORM; i++) {
 		if (FightingFormSkillLevel(i) >= P_BASIC)
@@ -1639,6 +1695,7 @@ dofightingform()
 #define	ETCH_FORM	10
 #define	AVOD_THFT   11
 #define	NO_AUTO		12
+#define	BOREAL_FORM	13
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
@@ -1659,6 +1716,10 @@ dofightingform()
 	if (formmask & ETECH_FORMS) {
 		any.a_int = ETCH_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'w', 0, ATR_NONE, "Select Weapon Form", MENU_UNSELECTED);
+	}
+	if (formmask & BOREAL_FORMS) {
+		any.a_int = BOREAL_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'b', 0, ATR_NONE, "Select Boreal Scepter Face", MENU_UNSELECTED);
 	}
 	if (formmask & AVOID_PASSIVES) {
 		any.a_int = AVOD_FORM;
@@ -1755,6 +1816,8 @@ dofightingform()
 		case AVOD_THFT:
 			u.uavoid_theft = !u.uavoid_theft;
 			return MOVE_INSTANT;
+		case BOREAL_FORM:
+			return doBorealFace();
 		default:
 			impossible("unknown fighting form set %d", n);
 			return MOVE_CANCELLED;

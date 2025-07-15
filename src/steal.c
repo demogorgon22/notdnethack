@@ -461,7 +461,7 @@ gotobj:
 			 touch_petrifies(&mons[otmp->corpsenm]));
 	(void) mpickobj(mtmp,otmp);	/* may free otmp */
 	if (could_petrify && !(mtmp->misc_worn_check & W_ARMG)) {
-	    minstapetrify(mtmp, TRUE);
+	    minstapetrify(mtmp, TRUE, FALSE);
 	}
 	if(roll_madness(MAD_TALONS)){
 		You("panic after having your property stolen!");

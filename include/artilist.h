@@ -428,7 +428,6 @@ A("Jinja Naginata",		NAGINATA,						(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
-/*Needs encyc entry*/
 A("Rhongomyniad",		LANCE,							(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_KNIGHT, NON_PM, TIER_D, (ARTG_GIFT),
@@ -446,7 +445,7 @@ A("The Boreal Scepter",			SQUARE_CLUB,	(const char *)0,
 	NO_ATTK(), NOFLAG,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
-	NOINVOKE, NOFLAG
+	BOREAL_INVOKE, NOFLAG
 	),
 
 A("Green Destiny",			LONG_SWORD,	(const char *)0,
@@ -463,7 +462,7 @@ A("Malice",			RUNESWORD,	"star-filled %s",
 	1500L, FIRMAMENT, MZ_DEFAULT, 0,
 	A_CHAOTIC, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
 	NO_MONS(),
-	ATTK(AD_PHYS, 1, 0), NOFLAG,
+	ATTK(AD_MAGM, 10, 12), NOFLAG,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
@@ -483,12 +482,13 @@ A("Ansermee",			MIRRORBLADE,	(const char *)0,
 	1500L, GLASS, MZ_LARGE, WT_DEFAULT,
 	A_LAWFUL, PM_KENSEI, PM_INCANTIFIER, TIER_B, (ARTG_NOGEN),
 	NO_MONS(),
-	ATTK(AD_MAGM, 8, 8), NOFLAG,
+	ATTK(AD_MAGM, 8, 8), (ARTA_MAGIC),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
 	),
 
+/* Needs encyc */
 A("Kishin Mirror",			KAMEREL_VAJRA,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, PM_KENSEI, PM_INCANTIFIER, TIER_B, (ARTG_NOGEN),
@@ -509,6 +509,7 @@ A("The Epitaph of Wongas",			ROD_OF_FORCE,	(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
+/* Needs encyc */
 A("Winter Reaper",			RAPIER,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_KENSEI, PM_YUKI_ONNA, TIER_B, (ARTG_NOGEN),
@@ -519,11 +520,12 @@ A("Winter Reaper",			RAPIER,	(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
+/* Needs encyc */
 A("Anguirel",			DROVEN_GREATSWORD,	(const char *)0,
 	1500L, IRON, MZ_DEFAULT, 150,
 	A_LAWFUL, PM_KENSEI, PM_DROW, TIER_B, (ARTG_NOGEN),
 	NO_MONS(),
-	ATTK(AD_FIRE, 10, 30), (ARTA_SHATTER),
+	ATTK(AD_FIRE, 10, 6), (ARTA_SHATTER),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG

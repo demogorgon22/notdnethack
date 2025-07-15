@@ -377,6 +377,12 @@ struct you {
 #define BREAKER   32
 #define OVERLOAD  33
 #define SEND_AWAY 34
+#define SCORN     35
+#define BOREAL_B  36
+#define DARK_FEAR 37
+#define CROSS     38
+#define ICHIMONJI 39
+#define MORTAL_D  40
 
 	// long laststruck;
 	long lastmoved;

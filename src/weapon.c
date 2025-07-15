@@ -565,6 +565,16 @@ struct monst *magr;
 				dmod += 1;
 			}
 		}
+		else if (obj->oartifact == ART_ANGUIREL){
+			if(large){
+				ocn = 5;
+				ocd = 6;
+			}
+			else {
+				ocn = 3;
+				ocd = 6;
+			}
+		}
 		else if (obj->oartifact == ART_SHADOWLOCK){
 			ocn = 4;
 			ocd = 6;

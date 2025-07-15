@@ -261,8 +261,8 @@ struct Role roles[] = {
 	{"Kensei",      0} },
 	GOD_KANNON, GOD_FUDO_MYOO, GOD_SHUKONGOSHIN, /* Chinese */
 	GOD_AKUMA,
-	"Ken", "the Monastery of Chan-Sune",
-	  "the Monastery of the Earth-Lord",
+	"Ken", "the mountain shrine",
+	  "the haunted castle",
 	PM_KENSEI, NON_PM, NON_PM,
 	PM_HERMIT_MASTER, PM_DISCIPLE, PM_BLUE_EYED_FOX,
 	PM_FOX, PM_ORC_CAPTAIN, S_OGRE, S_NYMPH,

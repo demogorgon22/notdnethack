@@ -516,7 +516,7 @@ OBJECT:'(',"soul-lens",place[0],blessed,0,"The Eye of Jiroshin"
 MONSTER:'d',"blue-eyed fox",place[0]
 
 # Stairs
-STAIR:(14,08,45,20), (00,00,00,00),up
+STAIR:(12,12,40,20), (22,15,27,17),up
 
 
 #

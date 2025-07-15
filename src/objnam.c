@@ -1667,6 +1667,8 @@ boolean adjective;
 		/* not quite bone, not quite stone */
 		else if (obj->otyp == WORM_TOOTH || obj->otyp == CRYSKNIFE)
 			return "enamel";
+		else if (obj->oartifact == ART_BOREAL_SCEPTER)
+			return (adjective ? "stone" : "god-quarried stone");
 		else if (obj->otyp == TOOTH)
 			return (adjective ? "fossilized" : "stone");
 		else if (obj->oartifact == ART_LASH_OF_THE_COLD_WASTE)

@@ -730,6 +730,9 @@ const char *name;
 		if (obj->oartifact == ART_RINGIL)
 			add_oprop(obj, OPROP_WRTHW);
 		
+		if (obj->oartifact == ART_ANGUIREL)
+			add_oprop(obj, OPROP_WRTHW);
+		
 		/* symbol */
 		if (obj->oartifact == ART_LOMYA)
 			obj->oward = LOLTH_SYMBOL;

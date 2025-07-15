@@ -464,6 +464,11 @@ char *genbuf;
 		case PM_ANUBAN_JACKAL:
 			typ = PM_WEREJACKAL;
 			if (genbuf) Strcpy(genbuf, "werejackal");
+		case PM_WEREFOX:
+		case PM_KITSUNE:
+			typ = rn2(6) ? PM_FOX : rn2(3) ? PM_OGRE_MAGE : rn2(3) ? PM_DAO_LAO_GUI_MONK : PM_WEREFOX;
+			if (genbuf) Strcpy(genbuf, "fox");
+			break;
 		default:
 			continue;
 	    }

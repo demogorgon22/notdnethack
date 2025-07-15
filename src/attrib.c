@@ -2138,6 +2138,12 @@ int fform;
 }
 
 boolean
+activeFace(int fform)
+{
+	return ((artinstance[ART_BOREAL_SCEPTER].BorealFace & (1 << fform)) != 0);
+}
+
+boolean
 selectedFightingForm(fform)
 int fform;
 {
@@ -2256,6 +2262,21 @@ int edge;
 		case GSTYLE_RESONANT:  return "Resonant Edge of Fellowship";
 		default:
 			impossible("bad gstyle %d", edge);
+	}
+	return "None";
+}
+
+const char *
+nameOfBorealFace(int face)
+{
+	switch (face)
+	{
+		case FFACE_EAGLE: return "The Thundering Eagle";
+		case FFACE_FISH:  return "The Flesh-dissolving Fish";
+		case FFACE_ANT:   return "The God-petrifying Ant";
+		case FFACE_MAN:    return "The Warrior and Blinding Star";
+		default:
+			impossible("bad boreal face %d", face);
 	}
 	return "None";
 }

@@ -4207,7 +4207,7 @@ int tary;
 				if (youdef)
 					instapetrify("Holy sunlight");
 				else if(!Stone_res(mdef) && !munstone(mdef, youagr))
-					minstapetrify(mdef, youagr);
+					minstapetrify(mdef, youagr, FALSE);
 				if (!Stone_res(mdef)) {
 					if (*hp(mdef) > 0)
 						return MM_DEF_LSVD;
@@ -4590,7 +4590,7 @@ int tary;
 			if (!Stone_res(mdef) &&
 				(!rn2(10) || !youdef || !have_lizard())
 				){
-				result |= xstoney(magr, mdef);
+				result |= xstoney(magr, mdef, FALSE);
 				/* print extra message for player */
 				if (youdef) {
 					if (Stoned) You_feel("less limber.");

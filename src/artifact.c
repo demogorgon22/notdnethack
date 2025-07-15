@@ -2121,6 +2121,9 @@ boolean mod;
 					artinstance[ART_SILVER_SKY].GithStyle = 0;
 					artinstance[ART_SILVER_SKY].GithStylesSeen = 0;
 				}
+				if(otmp->oartifact == ART_BOREAL_SCEPTER){
+					artinstance[ART_BOREAL_SCEPTER].BorealFace = 0x1L; //FFACE_EAGLE
+				}
 				if(otmp->oartifact == ART_SKY_REFLECTED){
 					artinstance[ART_SKY_REFLECTED].ZerthUpgrades = 0;
 					artinstance[ART_SKY_REFLECTED].ZerthOtyp = otmp->otyp;
@@ -6628,6 +6631,36 @@ boolean printmessages; /* print generic elemental damage messages */
 				artinstance[otmp->oartifact].BLactive += max(0, mlev(mdef)/10 + rn2(5));
 		}
 	}
+	if (otmp->oartifact == ART_BOREAL_SCEPTER){
+		if((dieroll < 5 || artinstance[ART_BOREAL_SCEPTER].BorealScorn) && activeFace(FFACE_EAGLE) && (vis&VIS_MAGR) && printmessages) {
+			pline_The("eagle-aspected %s %s %s!",
+				wepdesc,
+				vtense(wepdesc, "blast"),
+				hittee);
+			*messaged = TRUE;
+		}
+		else if((dieroll < 5 || artinstance[ART_BOREAL_SCEPTER].BorealScorn) && activeFace(FFACE_FISH) && is_organic_mon(mdef) && (vis&VIS_MAGR) && printmessages) {
+			pline_The("fish-aspected %s %s %s!",
+				wepdesc,
+				vtense(wepdesc, "liquify"),
+				hittee);
+			*messaged = TRUE;
+		}
+		else if((dieroll < 5 || artinstance[ART_BOREAL_SCEPTER].BorealScorn) && activeFace(FFACE_ANT) && is_spiritual_being(mdef) && (vis&VIS_MAGR) && printmessages) {
+			pline_The("ant-aspected %s %s %s!",
+				wepdesc,
+				vtense(wepdesc, "petrify"),
+				hittee);
+			*messaged = TRUE;
+		}
+		else if(activeFace(FFACE_MAN) && (vis&VIS_MAGR) && printmessages) {
+			pline_The("star-aspected %s %s %s!",
+				wepdesc,
+				vtense(wepdesc, "sear"),
+				hittee);
+			*messaged = TRUE;
+		}
+	}
 
 	if(otmp->oartifact == ART_ANSERMEE){
 		int dmg = basedmg;
@@ -6709,7 +6742,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			if (youdef)
 				instapetrify(wepdesc);
 			else
-				minstapetrify(mdef, youagr);
+				minstapetrify(mdef, youagr, FALSE);
 			if (!Stone_res(mdef)) {
 				if (*hp(mdef) > 0)
 					return MM_DEF_LSVD;
@@ -8436,6 +8469,50 @@ boolean printmessages; /* print generic elemental damage messages */
 			set_mcan(mdef, TRUE);
 		}
 	}
+	if(otmp->oartifact == ART_BOREAL_SCEPTER){
+		boolean empowered = artinstance[ART_BOREAL_SCEPTER].BorealScorn;
+		if(activeFace(FFACE_EAGLE)){
+			if(dieroll < 5 || empowered){ /* 20% (1-4) */
+				*plusdmgptr += basedmg;
+				if(rn2(2) || empowered)
+					(void) destroy_items_sonic(mdef, empowered);
+			}
+		}
+		if(activeFace(FFACE_FISH)){
+			if(dieroll < 5 || empowered){ /* 20% (1-4) */
+				if(is_organic_mon(mdef)){
+					if(is_spiritual_being(mdef))
+						*plusdmgptr += basedmg;
+					else
+						*truedmgptr += 2*basedmg;
+					water_damage((youdef) ? invent : mdef->minvent, FALSE, FALSE, FALSE, mdef);
+				}
+				if(rn2(2) || empowered)
+					(void) destroy_items_liquify(mdef, empowered);
+			}
+		}
+		if(activeFace(FFACE_ANT)){
+			if(dieroll < 5 || empowered){ /* 20% (1-4) */
+				if(is_spiritual_being(mdef))
+					*truedmgptr += 2*basedmg;
+			}
+		}
+		if(activeFace(FFACE_MAN)){
+			if(dieroll == 1 || empowered){
+				mdef->mcansee = 0;
+				if(attacktype_fordmg(pd, AT_MAGC, AD_CLRC) || attacktype_fordmg(pd, AT_MMGC, AD_CLRC)){
+					if(resist(mdef, WEAPON_CLASS, 0, NOTELL)){
+						cancel_monst(mdef, otmp, youagr, FALSE, FALSE,0);
+					}
+				}
+				else mdef->mblinded = max(mdef->mblinded, d(2,3));
+			}
+			else if(dieroll < 5){ /* 20% (1-4) */
+				mdef->mcansee = 0;
+				mdef->mblinded = max(mdef->mblinded, d(2,3));
+			}
+		}
+	}
 	/* ********************************************
 	KLUDGE ALERT AND WARNING: FROM THIS POINT ON, NON-ARTIFACTS OR ARTIFACTS THAT DID NOT TRIGGER SPEC_DBON_APPLIES WILL NOT OCCUR
 	********************************************************
@@ -9206,6 +9283,185 @@ struct obj *obj;
 	return MOVE_STANDARD;
 }
 
+void
+boreal_invoke_effect(int face, struct obj *art, struct monst *mdef)
+{
+	struct weapon_dice wdice;
+	const char *verb = (banish_kill_mon(mdef) && !has_template(mdef, SPARK_SKELETON)) ? "banished" : (mdef->mflamemarked && !Infuture) ? "burned" : nonliving(mdef->data) ? "destroyed" : "killed";
+	
+	/* grab the weapon dice from dmgval_core */
+	dmgval_core(&wdice, bigmonst(mdef->data), art, art->otyp, &youmonst);
+
+	int dmg = d(wdice.oc_damn, wdice.oc_damd) + d(wdice.bon_damn, wdice.bon_damd) + wdice.flat + art->spe;
+	dmg += d((u.ulevel+2)/3, 6);
+	
+	wakeup2(mdef, TRUE);
+	if(face == FFACE_EAGLE){
+		dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
+		if(dmg < mdef->mhp){
+			pline("%s is caught in the sonic blast!", Monnam(mdef));
+		}
+		(void) destroy_items_sonic(mdef, TRUE);
+		if(dmg >= mdef->mhp){
+			pline("%s is %s by the blast!", Monnam(mdef), verb);
+		}
+	}
+	else if(face == FFACE_FISH){
+		if(is_organic_mon(mdef)){
+			if(!is_spiritual_being(mdef))
+				dmg *= 2;
+			dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
+			if(dmg < mdef->mhp){
+				pline("%s is partly liquified!", Monnam(mdef));
+			}
+			water_damage((mdef == &youmonst) ? invent : mdef->minvent, FALSE, FALSE, FALSE, mdef);
+		}
+		else {
+			pline("%s is unharmed by the liquifying blast.", Monnam(mdef));
+			dmg = 0;
+		}
+		(void) destroy_items_liquify(mdef, TRUE);
+		if(dmg >= mdef->mhp){
+			pline("%s is liquified by the blast!", Monnam(mdef));
+		}
+	}
+	else if(face == FFACE_ANT){
+		if(is_spiritual_being(mdef)){
+			dmg *= 2;
+			dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
+			if(!resist(mdef, 0, 0, FALSE) && !resist(mdef, 0, 0, FALSE)){
+				minstapetrify(mdef, TRUE, FALSE);
+			}
+			if(!DEADMONSTER(mdef)){
+				if(*hp(mdef) <= dmg){
+					minstapetrify(mdef, TRUE, TRUE);
+					*hp(mdef) = 1;
+					dmg = 0;
+				}
+				else if(dmg < mdef->mhp){
+					pline("%s is partly petrified!", Monnam(mdef));
+				}
+			}
+		}
+		else {
+			pline("%s is unharmed by the petrifying blast.", Monnam(mdef));
+			dmg = 0;
+		}
+	}
+	else if(face == FFACE_MAN){
+		pline("%s is blinded by the blast.", Monnam(mdef));
+		mdef->mcansee = 0;
+		if(attacktype_fordmg(mdef->data, AT_MAGC, AD_CLRC) || attacktype_fordmg(mdef->data, AT_MMGC, AD_CLRC)){
+			if(resist(mdef, WEAPON_CLASS, 0, NOTELL)){
+				cancel_monst(mdef, art, TRUE, FALSE, FALSE,0);
+			}
+		}
+		else mdef->mblinded = max(mdef->mblinded, d(2,3));
+		mdef->mux = 0;
+		mdef->muy = 0;
+		mdef->mconf = TRUE;
+		dmg = 0;
+	}
+	
+	if(!DEADMONSTER(mdef)){
+		*hp(mdef) -= dmg;
+		if(mdef->mhp < 1){
+			xkilled(mdef, 0);
+		}
+	}
+}
+
+int
+do_boreal_invoke(struct obj *art)
+{
+
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	menu_item *selected;
+	char inclet = 'a';
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	*buf = '\0';
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	
+	for(int i = 0; i < 4; i++){
+		Sprintf(buf, "%s", nameOfBorealFace(i));
+		any.a_int = i+1;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			inclet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		inclet++;
+	}
+
+	end_menu(tmpwin, "Which face?");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+	int picked;
+	if(n > 0){
+		picked = selected[0].item.a_int - 1;
+		free(selected);
+	}
+	else return MOVE_CANCELLED;
+	
+	if (!getdir((char *)0)) {
+		return MOVE_CANCELLED;
+	}
+	else if(!(u.dx || u.dy)) {
+		return MOVE_CANCELLED;
+	}
+
+
+	if(picked == FFACE_EAGLE){
+		/* wake nearby monsters -- it's a loud boom */
+		wake_nearto_noisy(u.ux, u.uy, 7 * 7);
+	}
+	else {
+		wake_nearto_noisy(u.ux, u.uy, 3 * 3);
+	}
+
+	int dx, dy;
+	int x = u.ux, y = u.uy;
+	int ix, iy;
+	struct monst *mdef;
+
+	void (*rotate_fun1)(int *, int *) = rotate_minus45;
+	void (*rotate_fun2)(int *, int *) = rotate_plus45;
+	if(rn2(2)){
+		rotate_fun1 = rotate_plus45;
+		rotate_fun2 = rotate_minus45;
+	}
+
+	for(int i = 0; i < 3; i++){
+		dx = u.dx;
+		dy = u.dy;
+		rotate_fun1(&dx, &dy);
+		for(int j = 0; j < 3; j++){
+			ix = x + dx;
+			iy = y + dy;
+			rotate_fun2(&dx, &dy);
+			if(!isok(ix,iy) || !couldsee(ix,iy))
+				continue;
+			
+			mdef = m_at(ix,iy);
+			
+			if(mdef && peace_check_move(mdef)){
+				boreal_invoke_effect(picked, art, mdef);
+			}
+		}
+		x += u.dx;
+		y += u.dy;
+	}
+
+	return MOVE_PARTIAL;
+}
+
 int
 doinvoke()
 {
@@ -9806,7 +10062,7 @@ arti_invoke(obj)
 					else You("display it to %s.", mon_nam(mtmp)); //Shouldn't be used
 					
 					if (!resists_ston(mtmp) && (mtmp->mcan || rn2(100)>(mtmp->data->mr/2))){
-						minstapetrify(mtmp, youattack);
+						minstapetrify(mtmp, youattack, FALSE);
 					}
 					else {
 						monflee(mtmp, rnd(100), TRUE, TRUE);
@@ -12815,10 +13071,14 @@ arti_invoke(obj)
 			}
 			delobj(otmp);
 		break;
+		case BOREAL_INVOKE:
+			time = do_boreal_invoke(obj);
+		break;
 		default: pline("Program in disorder.  Artifact invoke property not recognized");
 		break;
 	} //end of first case:  Artifact Specials!!!!
-
+	if(time == MOVE_CANCELLED)
+		obj->age = 0;
     } else {
 	long eprop = (u.uprops[oart->inv_prop].extrinsic ^= W_ARTI),
 	     iprop = u.uprops[oart->inv_prop].intrinsic;

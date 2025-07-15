@@ -906,6 +906,7 @@ struct obj {
 #define is_farm(otmp)	((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && \
 			 objects[otmp->otyp].oc_skill == P_HARVEST)
 #define is_sickle(otmp)	((otmp)->otyp == ELVEN_SICKLE || (otmp)->otyp == SICKLE)
+#define is_katana(otmp) ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI || (otmp)->otyp == CHIKAGE)
 
 #define is_launcher(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 ((objects[otmp->otyp].oc_skill >= P_BOW && \
@@ -1145,7 +1146,7 @@ struct obj {
 								u.role_variant == ART_SEVEN_STAR_SWORD ? (objects[(otmp)->otyp].oc_skill == P_TWO_HANDED_SWORD) : \
 								u.role_variant == ART_KISHIN_MIRROR ? (objects[(otmp)->otyp].oc_skill == P_MACE) : \
 								u.role_variant == ART_WINTER_REAPER ? ((otmp)->otyp == RAPIER || (otmp)->otyp == SABER) : \
-								u.role_variant == ART_KIKU_ICHIMONJI ? ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI) : \
+								u.role_variant == ART_KIKU_ICHIMONJI ? (is_katana(otmp)) : \
 								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp) && litsaber(otmp)) : \
 								(otmp)->otyp == artilist[u.role_variant].otyp)
 
