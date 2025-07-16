@@ -724,6 +724,15 @@ const char *name;
 		if (obj->oartifact == ART_AMALGAMATED_SKIES || obj->oartifact == ART_SILVER_SKY)
 			add_oprop(obj, OPROP_GSSDW);
 		
+		if (obj->oartifact == ART_WINTER_REAPER)
+			add_oprop(obj, OPROP_LESSER_COLDW);
+		
+		if (obj->oartifact == ART_RINGIL)
+			add_oprop(obj, OPROP_WRTHW);
+		
+		if (obj->oartifact == ART_ANGUIREL)
+			add_oprop(obj, OPROP_WRTHW);
+		
 		/* symbol */
 		if (obj->oartifact == ART_LOMYA)
 			obj->oward = LOLTH_SYMBOL;

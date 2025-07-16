@@ -498,6 +498,9 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
        case PM_IKSH_NA_DEVA:
            return MOTHER_S_GAZE;
 	
+       case PM_HERMIT_MASTER:
+		return MON_AURA_BOLT;
+
        case PM_GRAND_MASTER:
        case PM_MASTER_KAEN:
           return (!rn2(3) ? MON_AURA_BOLT : rn2(2) ? WEAKEN_YOU : EARTHQUAKE);
@@ -4204,7 +4207,7 @@ int tary;
 				if (youdef)
 					instapetrify("Holy sunlight");
 				else if(!Stone_res(mdef) && !munstone(mdef, youagr))
-					minstapetrify(mdef, youagr);
+					minstapetrify(mdef, youagr, FALSE);
 				if (!Stone_res(mdef)) {
 					if (*hp(mdef) > 0)
 						return MM_DEF_LSVD;
@@ -4587,7 +4590,7 @@ int tary;
 			if (!Stone_res(mdef) &&
 				(!rn2(10) || !youdef || !have_lizard())
 				){
-				result |= xstoney(magr, mdef);
+				result |= xstoney(magr, mdef, FALSE);
 				/* print extra message for player */
 				if (youdef) {
 					if (Stoned) You_feel("less limber.");
@@ -4688,7 +4691,7 @@ int tary;
 				dmg = d(n * 2, 20);
 				dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
 			}
-			else if (!Shock_res(mdef) && shock_vulnerable_species(mdef)){
+			else if (!Shock_res(mdef) && shock_vulnerable(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s shocked by %s of silver light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
@@ -4698,7 +4701,16 @@ int tary;
 					destroy_item(mdef, RING_CLASS, AD_ELEC);
 				}
 			}
-			else if (!Fire_res(mdef) && species_resists_cold(mdef)){
+			else if (!Acid_res(mdef) && acid_vulnerable(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s burned by %s of silver light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
+				dmg = d(n*2, 20);
+				if (!UseInvAcid_res(mdef)) {
+					destroy_item(mdef, POTION_CLASS, AD_FIRE);
+				}
+			}
+			else if (!Fire_res(mdef) && fire_vulnerable(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s burned by %s of silver light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
@@ -4709,7 +4721,7 @@ int tary;
 					destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 				}
 			}
-			else if (!Cold_res(mdef) && species_resists_fire(mdef)){
+			else if (!Cold_res(mdef) && cold_vulnerable(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s frozen by %s of silver light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is", rays);
@@ -4795,7 +4807,7 @@ int tary;
 			return MM_MISS;
 		}
 		else {
-			if (!Shock_res(mdef) && shock_vulnerable_species(mdef)){
+			if (!Shock_res(mdef) && shock_vulnerable(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s shocked by golden light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
@@ -4805,7 +4817,16 @@ int tary;
 					destroy_item(mdef, RING_CLASS, AD_ELEC);
 				}
 			}
-			else if (!Fire_res(mdef) && species_resists_cold(mdef)){
+			else if (!Acid_res(mdef) && acid_vulnerable(mdef)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s burned by golden light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
+				dmg = d(4, 12);
+				if (!UseInvAcid_res(mdef)) {
+					destroy_item(mdef, POTION_CLASS, AD_FIRE);
+				}
+			}
+			else if (!Fire_res(mdef) && fire_vulnerable(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s burned by golden light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
@@ -4816,7 +4837,7 @@ int tary;
 					destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
 				}
 			}
-			else if (!Cold_res(mdef) && species_resists_fire(mdef)){
+			else if (!Cold_res(mdef) && cold_vulnerable(mdef)){
 				if (youagr || youdef || canseemon(mdef))
 					pline("%s %s frozen by golden light!",
 					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");

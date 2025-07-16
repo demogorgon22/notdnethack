@@ -1602,6 +1602,15 @@ fix_etraits(struct obj *otmp)
 		otmp->expert_traits &= ~ETRAIT_FOCUS_FIRE;
 		otmp->expert_traits |= ETRAIT_FELL;
 	}
+	else if(otmp->oartifact == ART_WINTER_REAPER){
+		otmp->expert_traits |= ETRAIT_FELL|ETRAIT_BLEED|ETRAIT_CLEAVE;
+	}
+	else if(otmp->oartifact == ART_SEVEN_STAR_SWORD){
+		otmp->expert_traits |= ETRAIT_LUNGE;
+	}
+	else if(otmp->oartifact == ART_MALICE){
+		otmp->expert_traits = ETRAIT_LUNGE|ETRAIT_GRAZE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST;
+	}
 	else if(otmp->oartifact == ART_SHADOWLOCK){
 		otmp->expert_traits = ETRAIT_FELL|ETRAIT_GRAZE|ETRAIT_STOP_THRUST|ETRAIT_LUNGE|ETRAIT_BLEED;
 	}

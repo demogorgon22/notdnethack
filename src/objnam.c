@@ -23,7 +23,7 @@ char * FDECL(xname2, (struct obj *,BOOLEAN_P));
 boolean FDECL(an_bool, (const char *));
 #endif
 
-#define useJNames (Role_if(PM_SAMURAI) || (Role_if(PM_MADMAN) && Race_if(PM_YUKI_ONNA)))
+#define useJNames (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI) || (Role_if(PM_MADMAN) && Race_if(PM_YUKI_ONNA)))
 struct Jitem {
 	int item;
 	const char *name;
@@ -165,7 +165,6 @@ STATIC_OVL char *BeamHilts[] = {
 
 STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ BATTLE_AXE, "ono" },
-	{ BROADSWORD, "ninja-to" },
 	{ ARCHAIC_PLATE_MAIL, "jodai no katchu" },
 	{ CLUB, "jo" },
 	{ CRYSTAL_PLATE_MAIL, "jade o-yoroi" },
@@ -198,7 +197,6 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 };
 
 STATIC_OVL struct Jitem Japanese_items[] = {
-	{ BROADSWORD, "ninja-to" },
 	{ CRYSTAL_PLATE_MAIL, "crystal tanko" },
 	{ PLATE_MAIL, "tanko" },
 	{ DAGGER, "kunai" },
@@ -306,8 +304,15 @@ struct obj *otmp;
 			}
 			break;
 	}
-	if(otmp->otyp == KAMEREL_VAJRA)
+	if(otmp->otyp == KAMEREL_VAJRA){
+		if(otmp->oartifact == ART_KISHIN_MIRROR){
+			if(u.ualign.record < -3)
+				return "black ash-bladed";
+			if(u.ualign.record > 3)
+				return "white sun-bladed";
+		}
 		return "lightning bladed";
+	}
 	if(gem){
 		switch(gem->oartifact){
 			case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
@@ -1001,9 +1006,11 @@ boolean dofull;
 			Strcat(buf, "disintegration-proof ");
 		if(check_oprop(obj, OPROP_BCRS) && obj->known)
 			Strcat(buf, "prayer-warded ");
-		if(check_oprop(obj, OPROP_CGLZ))
-			Strcat(buf, "glazed ");
-		
+		if(check_oprop(obj, OPROP_RWTH))
+			Strcat(buf, "justifying ");
+		if(check_oprop(obj, OPROP_RBRD))
+			Strcat(buf, "balanced ");
+
 		if (check_oprop(obj, OPROP_LESSER_ANARW) && obj->known)
 			Strcat(buf, "unruly ");
 		if (check_oprop(obj, OPROP_LESSER_CONCW) && obj->known)
@@ -1027,11 +1034,11 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_PHSEW))
 			Strcat(buf, "faded ");
 		
-		if (check_oprop(obj, OPROP_LIFE)){
+		if (check_oprop(obj, OPROP_LIFE) || check_oprop(obj, OPROP_SLIF)){
 			if(obj->known)
 				Strcat(buf, "life-saving ");
 			else if(is_helmet(obj))
-				Strcat(buf, "haloed ");
+				Strcat(buf, (check_oprop(obj, OPROP_SLIF)) ? "silver-haloed " : "haloed ");
 			else if(obj->obj_material == SILVER)
 				Strcat(buf, "gold-feather-encrusted ");
 			else
@@ -1382,10 +1389,12 @@ char *buf;
 			Strcat(buf, "budding ");
 	}
 	if (obj->oartifact == ART_MORTAL_BLADE && obj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
-		if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+		if (artinstance[ART_MORTAL_BLADE].mortalLives > 2)
 			Strcat(buf, "seething ");
-		else
+		else if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
 			Strcat(buf, "fuming ");
+		else
+			Strcat(buf, "smoking ");
 	}
 	if (rakuyo_prop(obj)){
 		if(Insight >= 40)
@@ -1665,6 +1674,8 @@ boolean adjective;
 		/* not quite bone, not quite stone */
 		else if (obj->otyp == WORM_TOOTH || obj->otyp == CRYSKNIFE)
 			return "enamel";
+		else if (obj->oartifact == ART_BOREAL_SCEPTER)
+			return (adjective ? "stone" : "god-quarried stone");
 		else if (obj->otyp == TOOTH)
 			return (adjective ? "fossilized" : "stone");
 		else if (obj->oartifact == ART_LASH_OF_THE_COLD_WASTE)
@@ -3859,7 +3870,6 @@ struct alt_spellings {
 	{ "foot locker", BOX },
 	{ "belaying pin", CLUB },
 	{ "ono", BATTLE_AXE },
-	{ "ninja-to", BROADSWORD },
 	{ "jodai no katchu", ARCHAIC_PLATE_MAIL },
 	{ "jo", CLUB },
 	{ "jade o-yoroi", CRYSTAL_PLATE_MAIL },
@@ -4728,6 +4738,12 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_TDTHW);
 		} else if (!strncmpi(bp, "unworthyflame ", l=14)) {
 			add_oprop_list(oprop_list, OPROP_SFUWW);
+		} else if (!strncmpi(bp, "justifying ", l=11)) {
+			add_oprop_list(oprop_list, OPROP_RWTH);
+		} else if (!strncmpi(bp, "balanced ", l=9)) {
+			add_oprop_list(oprop_list, OPROP_RBRD);
+		} else if (!strncmpi(bp, "silver-candled ", l=14)) {
+			add_oprop_list(oprop_list, OPROP_SLIF);
 
 		} else if (!strncmpi(bp, "magicite ", l=9)) {
 			mat = GEMSTONE; gemtype = MAGICITE_CRYSTAL;

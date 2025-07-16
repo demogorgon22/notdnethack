@@ -611,6 +611,15 @@ register struct obj *obj;
 	if (obj->timed) stop_all_timers(obj->timed);
 }
 
+/* Food has gone somewhere else, but probably hasn't decayed.
+ * So keep the timers but possibly unlist it as the victual
+ */
+void
+food_extracted(struct obj *obj)
+{
+	if (obj == victual.piece) victual.piece = (struct obj *)0;
+}
+
 /* renaming an object usually results in it having a different address;
    so the sequence start eating/opening, get interrupted, name the food,
    resume eating/opening would restart from scratch */
@@ -3977,7 +3986,7 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	if(Role_if(PM_MONK)){
 		if(u.uhs >= HUNGRY) hungermod *= 2; /* HUNGRY or hungrier */
 	}
-	if(Role_if(PM_MONK) && u.unull){
+	if((Role_if(PM_MONK) || Role_if(PM_MONK)) && u.unull){
 		hungermod *= 2;
 	}
 	

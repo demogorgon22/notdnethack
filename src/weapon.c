@@ -244,6 +244,10 @@ struct monst *magr;
 		else if(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && !otmp->lamplit)
 			tmp += rnd(20); //Quite holy
 		else tmp += 2;
+
+		if(magr && Focused_aura(magr)){
+			tmp += 4;
+		}
 	}
 	if (is_spear(otmp) &&
 	   index(kebabable, ptr->mlet)) tmp += (ptr->mtyp == PM_SMAUG) ? 20 : 2;
@@ -377,6 +381,7 @@ struct monst *magr;
 		|| oartifact == ART_GREAT_CLAWS_OF_URDLEN
 		|| oartifact == ART_SHIELD_OF_THE_RESOLUTE_HEA
 		|| oartifact == ART_PREMIUM_HEART
+		|| oartifact == ART_SEVEN_STAR_SWORD
 		|| (obj && ((otyp == KAMEREL_VAJRA && !litsaber(obj))
 		|| 		   (check_oprop(obj, OPROP_SPIKED) && !litsaber(obj))
 		|| 		   (!litsaber(obj) && is_kinstealing_merc(obj))
@@ -402,6 +407,7 @@ struct monst *magr;
 		|| oartifact == ART_INFINITY_S_MIRRORED_ARC
 		|| oartifact == ART_GREAT_CLAWS_OF_URDLEN
 		|| oartifact == ART_CLAWS_OF_THE_REVENANCER
+		|| oartifact == ART_WINTER_REAPER
 		|| oartifact == ART_SHADOWLOCK
 		|| (obj && check_oprop(obj, OPROP_BLADED) && !litsaber(obj))
 		|| (obj && check_oprop(obj, OPROP_RLYHW) && Insight >= 12)
@@ -528,6 +534,9 @@ struct monst *magr;
 	/* set dmod, if possible*/
 	if (obj){
 		dmod = obj->objsize - MZ_MEDIUM;
+		if(magr && Focused_aura(magr)){
+			dmod += 2;
+		}
 
 		/* Use ldice for small cases as well and add 1 to ocn */
 		if(obj->oartifact == ART_DARK_CLAYMORE){
@@ -547,6 +556,24 @@ struct monst *magr;
 			dmod += 1;
 			if (obj->lamplit)
 				dmod += 2;
+		}
+		else if (obj->oartifact == ART_WINTER_REAPER){
+			if(large){
+				ocn += 1;
+			}
+			else {
+				dmod += 1;
+			}
+		}
+		else if (obj->oartifact == ART_ANGUIREL){
+			if(large){
+				ocn = 5;
+				ocd = 6;
+			}
+			else {
+				ocn = 3;
+				ocd = 6;
+			}
 		}
 		else if (obj->oartifact == ART_SHADOWLOCK){
 			ocn = 4;
@@ -1088,7 +1115,13 @@ struct monst *magr;
 	if (obj && otyp == KAMEREL_VAJRA)
 	{
 		if (litsaber(obj)) {
-			if (obj->where == OBJ_MINVENT && obj->ocarry->mtyp == PM_ARA_KAMEREL)
+			if(obj->oartifact == ART_KISHIN_MIRROR)
+			{
+				spe_mult = u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				ocn *= u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				flat *= u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+			}
+			else if (obj->where == OBJ_MINVENT && obj->ocarry->mtyp == PM_ARA_KAMEREL)
 			{
 				spe_mult = 3;
 				ocn *= 3;
@@ -2017,6 +2050,7 @@ static const NEARDATA short hwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
+	  SQUARE_CLUB/*3d6/1d12*/,
 	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
@@ -2027,7 +2061,7 @@ static const NEARDATA short hwep[] = {
 	  BEAST_CRUSHER,/*2d6/1d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
-	  TSURUGI/*1d16/1d8+2d6*/, 
+	  NAGAMAKI/*1d16/1d8+2d6*/, 
 	  MOON_AXE/*variable, 2d6 to 2d12*/,
 	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,
@@ -2054,6 +2088,7 @@ static const NEARDATA short hwep[] = {
 	  DWARVISH_SPEAR/*1d9/1d9*/, 
 	  CHAKRAM/*1d9/1d9*/, 
 	  SCYTHE/*2d4*/, 
+	  NINJA_TO/*2d4/1d6+1*/, 
 	  BROADSWORD/*2d4/1d6+1*/, 
 	  MORNING_STAR/*2d4/1d6+1*/, 
 	  CROW_QUILL/*1d8/1d8*/,
@@ -2150,6 +2185,7 @@ static const NEARDATA short hpwep[] = {
 	  MIRRORBLADE/*your weapon is probably pretty darn good*/,
 	  TOOTH/*6d6/3d12+3*/,
 	  GREATCLUB/*3d6/1d12*/,
+	  SQUARE_CLUB/*3d6/1d12*/,
 	  BALL,/*1d25/1d25*/
 	  VIBROBLADE,/*2d6+3/2d8+4*/
 	  ROD_OF_FORCE/*2d8/2d12*/,
@@ -2160,7 +2196,7 @@ static const NEARDATA short hpwep[] = {
 	  BEAST_CRUSHER,/*2d6/1d12*/
 	  DROVEN_GREATSWORD/*1d18/1d30*/, 
 	  SET_OF_CROW_TALONS/*2d4/2d3/+6 study*/,
-	  TSURUGI/*1d16/1d8+2d6*/, 
+	  NAGAMAKI/*1d16/1d8+2d6*/, 
 	  MOON_AXE/*variable, 2d6 to 2d12*/,
 	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,
@@ -2195,6 +2231,7 @@ static const NEARDATA short hpwep[] = {
 	  VOULGE, /*2d4/2d4*/
 	  SCYTHE/*2d4*/, 
 	  GUISARME, /*2d4/1d8*/
+	  NINJA_TO/*2d4/1d6+1*/, 
 	  BROADSWORD/*2d4/1d6+1*/, 
 	  MORNING_STAR/*2d4/1d6+1*/, 
 	  LUCERN_HAMMER, /*2d4/1d6*/
@@ -3235,25 +3272,26 @@ int skill;
 {
     int tmp = OLD_P_SKILL(skill);
 
-    /* The more difficult the training, the more slots it takes.
-     *	unskilled -> basic	1
-     *	basic -> skilled	2
-     *	skilled -> expert	3
-     */
-    if (skill != P_BARE_HANDED_COMBAT && 
-		(skill != P_TWO_WEAPON_COMBAT || !Role_if(PM_MONK))  && 
-		skill != P_MARTIAL_ARTS  && 
-		skill != P_NIMAN
-	) return tmp;
-
-    /* Fewer slots used up for unarmed or martial.
+    /* Fewer slots used up for unarmed/martial, and additional fighting forms.
      *	unskilled -> basic	1
      *	basic -> skilled	1
      *	skilled -> expert	2
      *	expert -> master	2
      *	master -> grand master	3
      */
-    return (tmp + 1) / 2;
+    if ((skill == P_BARE_HANDED_COMBAT) ||
+		(skill == P_MARTIAL_ARTS) ||
+		(skill == P_TWO_WEAPON_COMBAT && OLD_P_MAX_SKILL(P_TWO_WEAPON_COMBAT) == P_GRAND_MASTER) ||
+		(skill >= P_FIRST_FORM && skill <= P_LAST_FORM)
+	)
+		return (tmp + 1) / 2;
+
+	/* The more difficult the training, the more slots it takes.
+     *	unskilled -> basic	1
+     *	basic -> skilled	2
+     *	skilled -> expert	3
+     */
+    return tmp;
 }
 
 /*
@@ -4231,10 +4269,10 @@ int wep_type;
 	if(wep_type == P_AXE && Race_if(PM_DWARF) && ublindf && ublindf->oartifact == ART_WAR_MASK_OF_DURIN) bonus += 5;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
-	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
+	if(weapon && weapon == uwep && (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
-		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
+		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD || is_kensei_weapon(weapon))
 	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
 	){
 		if(bonus > 0)
@@ -4463,7 +4501,8 @@ int wep_type;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
 	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
-	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) && objects[weapon->otyp].oc_skill == P_LONG_SWORD
+	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
+		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD || is_kensei_weapon(weapon))
 	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	){

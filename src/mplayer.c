@@ -351,6 +351,20 @@ char *nam;
 			sprintf(nam, "Sir %s", ROLL_FROM(masculine));
 		}
 	}break;
+	case PM_KENSEI:{
+		//Character names from Crouching Tiger Hidden Dragon and Detective Dee.
+		// Includes a duplicate
+		const char *masculine[] = {
+			"Mubai", "Xiaohou", "Taibao", "Junpei", "Junxiong", "Donglai", "Renjie"
+		};
+		const char *feminine[] = {
+			"Jiaolong", "Jen", "Xiulian","Huli", "Biyan", "Mei", "Jing'er"
+		};
+		const char *family[] = {
+			"Li","Yu","Lo","Te","Tsai","Liu","Wu", "Lu", "Pei", "Di", "Shangguan"
+		};
+		sprintf(nam, "%s %s", ROLL_FROM(family), fmlkind ? ROLL_FROM(feminine) : ROLL_FROM(masculine));
+	}break;
 	case PM_MONK:{
 		//Character names from Journey to the West, "transcribed" via Google Translate.
 		// Some include titles (or are titles)

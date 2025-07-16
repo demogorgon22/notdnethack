@@ -1988,7 +1988,7 @@ boolean your_fault;
 				pline("%s looks rather ill.", Monnam(mon));
 		}
 		if (touch_petrifies(&mons[mtyp]) && !resists_ston(mon)) {
-			minstapetrify(mon, TRUE);
+			minstapetrify(mon, TRUE, FALSE);
 		}
 	}break;
 	case POT_POLYMORPH:

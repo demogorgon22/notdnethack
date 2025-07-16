@@ -92,6 +92,7 @@ register struct monst *mon;
 					case PM_WEREWOLF:	howler = "wolf";    break;
 					case PM_WEREJACKAL: howler = "jackal";  break;
 					case PM_ANUBAN_JACKAL: howler = "jackal";  break;
+					case PM_WEREFOX: howler = "fox";  break;
 					default:		howler = (char *)0; break;
 					}
 					if (howler)
@@ -134,6 +135,8 @@ int pm;
 	    case PM_HUMAN_WERERAT:    return(PM_WERERAT);
 		case PM_ANUBITE:		  return(PM_ANUBAN_JACKAL);
 		case PM_ANUBAN_JACKAL:	  return(PM_ANUBITE);
+		case PM_KITSUNE:		  return(PM_WEREFOX);
+		case PM_WEREFOX:	      return(PM_KITSUNE);
 		case PM_MIST_WOLF:		  return(PM_MIST_CLOUD);
 		case PM_MIST_CLOUD:	      return(PM_MIST_WOLF);
 		case PM_AETHER_WOLF:	  return(PM_AETHER_CYCLONE);
@@ -252,6 +255,9 @@ int mtyp;
 	case PM_WERERAT:
 	case PM_HUMAN_WERERAT:
 		return PM_WERERAT;
+	case PM_WEREFOX:
+	case PM_KITSUNE:
+		return PM_WEREFOX;
 	}
 	impossible("Unhandled were-foo transmission %d", mtyp);
 	return PM_WEREWOLF;
@@ -384,6 +390,7 @@ struct monst *mon;
 		  && !is_eladrin(mon->data) && !is_yochlol(mon->data)
 		  && !(mon->mtyp == PM_SELKIE || mon->mtyp == PM_SEAL)
 		  && !(mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS)
+		  && !(mon->mtyp == PM_KITSUNE || mon->mtyp == PM_WEREFOX)
 		  && !is_duergar(mon)
 		) pline("%s changes into %s.", Monnam(mon),
 			is_human(&mons[pm]) ? "a human" :
@@ -457,6 +464,11 @@ char *genbuf;
 		case PM_ANUBAN_JACKAL:
 			typ = PM_WEREJACKAL;
 			if (genbuf) Strcpy(genbuf, "werejackal");
+		case PM_WEREFOX:
+		case PM_KITSUNE:
+			typ = rn2(6) ? PM_FOX : rn2(3) ? PM_OGRE_MAGE : rn2(3) ? PM_DAO_LAO_GUI_MONK : PM_WEREFOX;
+			if (genbuf) Strcpy(genbuf, "fox");
+			break;
 		default:
 			continue;
 	    }
@@ -469,7 +481,7 @@ char *genbuf;
 				mark_mon_as_summoned(mtmp, caller, ESUMMON_PERMANENT, 0);
 			if (yours)
 				(void) tamedog(mtmp, (struct obj *) 0);
-	    }			
+	    }
 	}
 	return total;
 }

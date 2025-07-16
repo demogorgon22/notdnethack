@@ -191,6 +191,7 @@ int mndx, mode;
 	case PM_NEANDERTHAL: mndx = mode ? PM_CAVEMAN   : PM_HUMAN; break;
 	case PM_ATTENDANT:   mndx = mode ? PM_HEALER    : PM_HUMAN; break;
 	case PM_PAGE:        mndx = mode ? PM_KNIGHT    : PM_HUMAN; break;
+	case PM_DISCIPLE:    mndx = mode ? PM_KENSEI    : PM_HUMAN; break;
 	case PM_ABBOT:       mndx = mode ? PM_MONK      : PM_HUMAN; break;
 	case PM_PATIENT:       mndx = mode ? PM_MADMAN      : PM_HUMAN; break;
 	case PM_ACOLYTE:     mndx = mode ? PM_PRIEST    : PM_HUMAN; break;
@@ -2500,7 +2501,7 @@ boolean devour;
 	}
 
 	if (ston) {
-		xstoney((struct monst *)0, mtmp);
+		xstoney((struct monst *)0, mtmp, FALSE);
 	    if (mtmp->mhp <= 0)
 			return 2;
 	}
@@ -9360,7 +9361,7 @@ struct monst *mtmp;
 				pline("Shimmering spray is drawn into the oral groove of %s.", mon_nam(mtmp));
 			}
 			damage = d(min(10, (mtmp->m_lev)/3), 6);
-			if(is_wooden(tmpm->data) || (!resists_fire(tmpm) && species_resists_cold(tmpm)))
+			if(is_wooden(tmpm->data) || (!resists_fire(tmpm) && fire_vulnerable(tmpm)))
 				damage *= 2;
 
 			if(Half_spel(tmpm)) damage = (damage+1)/2;
@@ -9410,7 +9411,7 @@ struct monst *mtmp;
 			
 			make_sick(Sick ? Sick / 2L + 1L : (long)rn1(ACURR(A_CON), 20), mtmp->data->mname, TRUE, SICK_NONVOMITABLE);
 			
-			if(is_wooden(youracedata) || (!Fire_resistance && species_resists_cold(&youmonst)))
+			if(is_wooden(youracedata) || (!Fire_resistance && fire_vulnerable(&youmonst)))
 				damage *= 2;
 			damage = reduce_dmg(&youmonst,damage,FALSE,TRUE);
 

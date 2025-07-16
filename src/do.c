@@ -706,7 +706,7 @@ register struct obj *obj;
 				       FALSE, could_slime);
 			delobj(obj);	/* corpse is digested */
 		    } else if (could_petrify) {
-			minstapetrify(u.ustuck, TRUE);
+			minstapetrify(u.ustuck, TRUE, FALSE);
 			/* Don't leave a cockatrice corpse in a statue */
 			if (!u.uswallow) delobj(obj);
 		    } else if (could_grow) {
@@ -2757,7 +2757,7 @@ donull()
 			stop_occupation();
 			(*hp) = (*hpmax);
 		}
-	} else if (!Role_if(PM_MONK) && u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) {
+	} else if (!Role_if(PM_MONK) && !Role_if(PM_KENSEI) && u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) {
 		// monks meditate & fast, increasing pw regen and lowering hunger rate while they haven't moved
 		unbind(SEAL_EURYNOME,TRUE);
 	}

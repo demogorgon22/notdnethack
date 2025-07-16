@@ -2966,6 +2966,75 @@ struct obj	*sobj;
 		
 	}
 	break;
+	case SCR_SECRET_ARTS:{
+		You("study a secret manual of the Wudang School.");
+		int skill = P_NONE;
+		int quivered_skill = P_NONE;
+		int offhand_skill = P_NONE;
+		if(uwep && is_weapon(uwep))
+			skill = weapon_type(uwep);
+		if(u.twoweap && uswapwep && is_weapon(uswapwep))
+			offhand_skill = weapon_type(uswapwep);
+		if(uquiver && is_weapon(uquiver))
+			quivered_skill = weapon_type(uquiver);
+		if(skill != P_NONE && OLD_P_SKILL(skill) < P_EXPERT){
+			if(OLD_P_MAX_SKILL(skill) < P_EXPERT){
+				expert_weapon_skill(skill);
+				You("have increased your potential with your %s.", xname(uwep));
+			}
+			else if(OLD_P_SKILL(skill) < P_EXPERT){
+				free_skill_up(skill);
+				You("have increased your skill with your %s.", xname(uwep));
+			}
+		}
+		else if(u.twoweap && OLD_P_SKILL(P_TWO_WEAPON_COMBAT) < P_EXPERT){
+			if(OLD_P_MAX_SKILL(P_TWO_WEAPON_COMBAT) < P_EXPERT){
+				expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+				You("have increased your potential in two-weapon combat.");
+			}
+			else if(OLD_P_SKILL(P_TWO_WEAPON_COMBAT) < P_EXPERT){
+				free_skill_up(P_TWO_WEAPON_COMBAT);
+				You("have increased your skill in two-weapon combat.");
+			}
+		}
+		else if(offhand_skill != P_NONE && OLD_P_SKILL(offhand_skill) < P_EXPERT){
+			if(OLD_P_MAX_SKILL(offhand_skill) < P_EXPERT){
+				expert_weapon_skill(offhand_skill);
+				You("have increased your potential with your %s.", xname(uswapwep));
+			}
+			else if(OLD_P_SKILL(offhand_skill) < P_EXPERT){
+				free_skill_up(offhand_skill);
+				You("have increased your skill with your %s.", xname(uswapwep));
+			}
+		}
+		else if(quivered_skill != P_NONE && OLD_P_SKILL(quivered_skill) < P_EXPERT){
+			if(OLD_P_MAX_SKILL(quivered_skill) < P_EXPERT){
+				expert_weapon_skill(quivered_skill);
+				You("have increased your potential with your %s.", xname(uquiver));
+			}
+			else if(OLD_P_SKILL(quivered_skill) < P_EXPERT){
+				free_skill_up(quivered_skill);
+				You("have increased your skill with your %s.", xname(uquiver));
+			}
+		}
+		else {
+			if(!u.umartial){
+				u.umartial = TRUE;
+				You("have learned fist arts.");
+			}
+			else if(OLD_P_MAX_SKILL(P_MARTIAL_ARTS) < P_GRAND_MASTER){
+				gm_weapon_skill(P_MARTIAL_ARTS);
+				You("have increased your potential in fist law.");
+			}
+			else if(OLD_P_SKILL(skill) < P_GRAND_MASTER){
+				free_skill_up(P_MARTIAL_ARTS);
+				You("have increased your skill in fist law.");
+			}
+			else {
+				You("find you are quite familiar with its teachings.");
+			}
+		}
+	}break;
 	case SCR_CONSECRATION:
 	if (confused) {
 		/* consecrates your weapon */

@@ -329,6 +329,11 @@ struct artinstance{
 #define CarapaceXP avar1
 #define FingerprintProgress avar1
 #define drawnMortal avar1
+#define BorealFace avar1
+#define FFACE_EAGLE		0
+#define FFACE_FISH		1
+#define FFACE_MAN		2
+#define FFACE_ANT		3
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2
@@ -346,6 +351,7 @@ struct artinstance{
 #define ZerthOtyp	avar2
 #define CarapaceLevel avar2
 #define mortalLives avar2
+#define BorealScorn avar2
 	long avar3;
 #define SnSd3 avar3
 #define IbiteBoons avar3
@@ -358,6 +364,7 @@ struct artinstance{
 #define	ZMAT_GOLD		0x00000008L
 #define	ZMAT_PLATINUM	0x00000010L
 #define	ZMAT_MITHRIL	0x00000020L
+#define mortalBloodsmoke avar3
 	long avar4;
 #define SnSd3duration avar4
 #define CarapaceAura avar4
@@ -471,8 +478,9 @@ extern struct artifact * artilist;
 #define ZERTH_ART		(LAST_PROP+93)
 #define AMALGUM_ART		(LAST_PROP+94)
 #define MORGOTH         (LAST_PROP+95)
-#define SCORPION_UPGRADES  (LAST_PROP+96)
-#define MORTAL_DRAW  (LAST_PROP+97)
+#define SCORPION_UPGRADES (LAST_PROP+96)
+#define MORTAL_DRAW     (LAST_PROP+97)
+#define BOREAL_INVOKE   (LAST_PROP+98)
 
 #define MASTERY_ARTIFACT_LEVEL 20
 
@@ -690,6 +698,13 @@ extern struct artifact * artilist;
                 (m) == ART_MARAUDER_S_MAP\
             )
 
+#define is_kensei_safe_artifact(m) ( \
+				is_monk_safe_artifact(m) \
+				|| m == ART_FIRE_BRAND \
+				|| m == ART_FROST_BRAND \
+				|| is_kensei_weapon_otyp(artilist[m].otyp) \
+				|| u.role_variant == m \
+			)
 #define double_bonus_damage_artifact(m) (\
 	(m) == ART_LIMITED_MOON ||\
 	(m) == ART_SICKLE_OF_THUNDERBLASTS ||\

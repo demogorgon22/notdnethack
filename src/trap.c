@@ -2692,11 +2692,9 @@ const char *str;
 }
 
 void
-minstapetrify(mon,byplayer)
-struct monst *mon;
-boolean byplayer;
+minstapetrify(struct monst *mon,boolean byplayer, boolean bypass_resistance)
 {
-	if (resists_ston(mon)) return;
+	if (resists_ston(mon) && !bypass_resistance) return;
 	if (poly_when_stoned(mon->data)) {
 		mon_to_stone(mon);
 		return;
@@ -2798,7 +2796,7 @@ boolean byplayer;
 			    arg ? arg : "", arg ? mon_nam(mon) : Monnam(mon),
 			    mons[mwep->corpsenm].mname);
 		}
-		minstapetrify(mon, byplayer);
+		minstapetrify(mon, byplayer, FALSE);
 	}
 }
 
@@ -5615,7 +5613,7 @@ uescape_entanglement()
 	for(obj = invent; obj; obj = obj->nobj){
 		if(obj->o_id == u.uentangled_oid){
 			//Very hard to escape from the diamond snare
-			if(obj->oartifact == ART_JIN_GANG_ZUO && rn2(20))
+			if(is_returning_snare(obj) && rn2(20))
 				break;
 			You("slip loose from the entangling %s!", xname(obj));
 			obj->spe = 0;

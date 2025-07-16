@@ -2753,7 +2753,7 @@ base_uac()
 		if(Race_if(PM_ORC)){
 			dexbonus += (u.ulevel+1)/3;
 		}
-		if(Role_if(PM_MONK) && !(uarm && arm_blocks_upper_body(uarm->otyp))){
+		if((Role_if(PM_MONK) && Role_if(PM_KENSEI)) && !(uarm && arm_blocks_upper_body(uarm->otyp))){
 			if(dexbonus < 0) dexbonus = (int)(dexbonus / 2);
 			dexbonus += max((int)( (ACURR(A_WIS)-1)/2 - 5 ),0) + (int)(u.ulevel/6 + 1);
 			if(Confusion && u.udrunken>u.ulevel) dexbonus += u.udrunken/9+1;
@@ -4653,7 +4653,7 @@ struct obj *armor;
 		 || mdef->mtyp == PM_PALE_NIGHT
 		) continue;
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 			if(DEADMONSTER(magr))
 				break; //oops!
 			if(youagr) morehungry(1);
@@ -4712,7 +4712,7 @@ struct obj *armor;
 		 || mdef->mtyp == PM_PALE_NIGHT
 		) continue;
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 			break;
 		}
 	}
@@ -4822,7 +4822,7 @@ struct obj *wep;
 			pline("The Dragonhead Shield bites %s!", mon_nam(mdef));
 		
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE, 0);
 			if(DEADMONSTER(magr))
 				break; //oops!
 			//limit of one attack for weapons
@@ -5289,7 +5289,7 @@ char etyp;
 			symbiote.damn = rnd(3) + rnd(3);
 			symbiote.damn = min(symbiote.damn, 8-lim);
 			
-			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 			if(DEADMONSTER(magr))
 				break; //oops!
 			lim+=symbiote.damn;
@@ -5463,7 +5463,7 @@ struct obj *wep;
 			if(mdef->mtyp == PM_PALE_NIGHT) continue;
 			if (magr_can_attack_mdef(magr, mdef, i, j, FALSE)){
 				wep->otyp = CLAWED_HAND;
-				xmeleehity(magr, mdef, &symbiote, &wep, -1, 0, FALSE);
+				xmeleehity(magr, mdef, &symbiote, &wep, -1, 0, FALSE, 0);
 				wep->otyp = wep->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
 				if(DEADMONSTER(magr))
 					return; //oops!
@@ -6111,7 +6111,7 @@ boolean invoked;
 					message = FALSE;
 					pline("Pointed rocks erupt from the ground around you!");
 				}
-				xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE);
+				xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE, 0);
 				if(DEADMONSTER(magr))
 					return; //oops!
 			}
@@ -6247,7 +6247,7 @@ struct obj *wep;
 		//Note: petrifying targets are safe, it's a weapon attack
 		if(mdef->mtyp == PM_PALE_NIGHT) continue;
 		if (mdef && magr_can_attack_mdef(magr, mdef, x(magr) + clockwisex[(i + j) % 8], y(magr) + clockwisey[(i + j) % 8], FALSE)){
-			xmeleehity(magr, mdef, &symbiote, &wep, -1, 0, FALSE);
+			xmeleehity(magr, mdef, &symbiote, &wep, -1, 0, FALSE, 0);
 			if(DEADMONSTER(magr))
 				break; //oops!
 			//limit of one attack for weapons

@@ -18,6 +18,7 @@
 #define pm_resistance(ptr,typ)	(((ptr)->mresists & (typ)) != 0)
 #define mon_intrinsic(mon,typ)	(((mon)->mintrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_extrinsic(mon,typ)	(((mon)->mextrinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
+#define mon_vulnerability(mon,typ)	(((mon)->acquired_weaknesses[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_acquired_trinsic(mon,typ) (((mon)->acquired_trinsics[((typ)-1)/32] & (0x1L << ((typ)-1)%32)) != 0)
 #define mon_resistance(mon,typ)	(mon_intrinsic(mon,typ) || mon_extrinsic(mon,typ) || (typ == SWIMMING && Is_waterlevel(&u.uz)) || \
 	(typ == TELEPORT && mad_monster_turn(mon, MAD_NON_EUCLID) && !(mon)->mpeaceful) || (typ == TELEPORT_CONTROL && mad_monster_turn(mon, MAD_NON_EUCLID)) || \
@@ -43,6 +44,12 @@
 									  || (mon)->mtyp == PM_MOON_ENTITY_MANIPALP \
 									  || (mon)->mtyp == PM_MOON_ENTITY_EYE_CLUSTER \
 										)
+
+#define fire_vulnerable(mon)	(species_resists_cold(mon) || mon_vulnerability(mon, FIRE_RES))
+#define cold_vulnerable(mon)	(species_resists_fire(mon) || mon_vulnerability(mon, COLD_RES))
+#define shock_vulnerable(mon)	(shock_vulnerable_species(mon) || mon_vulnerability(mon, SHOCK_RES))
+#define acid_vulnerable(mon)	(mon_vulnerability(mon, ACID_RES))
+#define magm_vulnerable(mon)	(mon_vulnerability(mon, ANTIMAGIC))
 
 #define	resist_attacks(ptr)	((((ptr)->mflagsg & MG_WRESIST) != 0L))
 #define	resist_blunt(ptr)	((((ptr)->mflagsg & MG_RBLUNT) != 0L))
@@ -355,7 +362,7 @@
 #define	can_undead(ptr)	(!nonliving(ptr) && !is_minion(ptr) && ((ptr)->mlet != S_PUDDING) &&\
 								((ptr)->mlet != S_JELLY) && ((ptr)->mlet != S_BLOB) && !is_elemental(ptr) &&\
 								!is_plant(ptr) && !is_demon(ptr) && !is_great_old_one(ptr) && !is_primordial(ptr) && !(mvitals[monsndx(ptr)].mvflags&G_NOCORPSE))
-#define is_weldproof(ptr)		(is_undead(ptr) || is_demon(ptr) || is_were(ptr) || is_great_old_one(ptr) || ptr->mtyp == PM_DAUGHTER_OF_NAUNET || ptr->mtyp == PM_PARASITIC_WALL_HUGGER)
+#define is_weldproof(ptr)		(is_undead(ptr) || is_demon(ptr) || is_were(ptr) || is_great_old_one(ptr) || is_android(ptr) || ptr->mtyp == PM_DAUGHTER_OF_NAUNET || ptr->mtyp == PM_PARASITIC_WALL_HUGGER)
 #define is_weldproof_mon(mon)		(is_weldproof((mon)->data))
 #define is_were(ptr)		(((ptr)->mflagsa & MA_WERE) != 0L)
 #define is_heladrin(ptr)		(\
@@ -531,6 +538,7 @@
 #define is_demon(ptr)		(((ptr)->mflagsa & MA_DEMON) != 0L)
 #define is_law_demon(ptr)	(((ptr)->mflagsa & MA_DEMON) != 0L && is_lawful(ptr))
 #define is_cha_demon(ptr)	(((ptr)->mflagsa & MA_DEMON) != 0L && is_chaotic(ptr))
+#define is_legion_devil(mtyp)	((mtyp) == PM_LEGION_DEVIL_GRUNT || (mtyp) == PM_LEGION_DEVIL_SOLDIER || (mtyp) == PM_LEGION_DEVIL_SERGEANT || (mtyp) == PM_LEGION_DEVIL_CAPTAIN)
 #define is_ancient(ptr)		(((ptr)->mtyp >=  PM_ANCIENT_OF_BLESSINGS\
 							&& (ptr)->mtyp <= PM_ANCIENT_OF_DEATH) \
 							|| (ptr)->mtyp == PM_BAALPHEGOR \
@@ -1132,11 +1140,11 @@
 				 (ptr)->mtyp == PM_COMMANDER \
 				)
 
-#define is_dollable(ptr)	((ptr)->mtyp == PM_ANDROID || \
-				 (ptr)->mtyp == PM_GYNOID || \
-				 (ptr)->mtyp == PM_OPERATOR || \
-				 (ptr)->mtyp == PM_COMMANDER || \
-				 (ptr)->mtyp == PM_LIVING_DOLL \
+#define is_dollable_mtyp(mtyp)	((mtyp) == PM_ANDROID || \
+				 (mtyp) == PM_GYNOID || \
+				 (mtyp) == PM_OPERATOR || \
+				 (mtyp) == PM_COMMANDER || \
+				 (mtyp) == PM_LIVING_DOLL \
 				)
 
 #define stuck_in_time(mtmp) 		(mtmp->mtyp != PM_EDDERKOP\
@@ -1161,6 +1169,19 @@
 #define is_naturally_unalive(ptr)		(((ptr)->mflagsa & MA_UNLIVING))
 
 #define is_indigestible(ptr)	(((ptr)->mflagsb&MB_INDIGESTIBLE) != 0)
+
+#define is_spiritual_being(mon)	(is_demon((mon)->data) || is_minion((mon)->data))
+
+#define is_organic_mon(mon)	(!(is_naturally_unalive((mon)->data) \
+							 || unsolid((mon)->data) \
+							 || is_great_old_one((mon)->data) \
+							 || ((mon)->data->mlet == S_ELEMENTAL) \
+							 || ((mon)->data->mlet == S_VORTEX && is_elemental((mon)->data)) \
+							 || ((mon)->data->mlet == S_EYE && is_elemental((mon)->data)) \
+							 || ((mon)->data->mlet == S_LIGHT && is_elemental((mon)->data)) \
+							) \
+							|| ((mon)->data->mflagsb&MB_ORGANIC) \
+							)
 
 // #define is_indigestible(ptr)	((ptr)->mtyp == PM_DANCING_BLADE ||\
 								 // (ptr)->mtyp == PM_EARTH_ELEMENTAL ||\
@@ -1260,6 +1281,7 @@
 						 (mon)->mtyp == PM_GARLAND || (mon)->mtyp == PM_DANTRAG || \
 						 ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_DOOM_KNIGHT))
 #define mon_turn_undead(mon)	((mon)->mtyp == PM_KNIGHT || (mon)->mtyp == PM_KING_ARTHUR || \
+						 (mon)->mtyp == PM_KENSEI || \
 						 (mon)->mtyp == PM_BRIGHID_ELADRIN || \
 						 (mon)->mtyp == PM_DRACAE_ELADRIN || \
 						 (mon)->mtyp == PM_LIGHT_ELF || (mon)->mtyp == PM_UNBODIED || \

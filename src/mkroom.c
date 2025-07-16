@@ -226,6 +226,13 @@ mklolthsepulcher()
 					levl[x+i][y+j].wall_info |= W_NONDIGGABLE;
 				}
 			}
+			for(i=-1;i<2;i++) {
+				for(j=-1;j<2;j++) {
+					levl[x+i][y+j].lit = 0;
+					levl[x+i][y+j].wall_info |= W_NONDIGGABLE;
+					levl[x+i][y+j].wall_info |= W_NONPASSWALL;
+				}
+			}
 			makemon(&mons[PM_DREAD_SERAPH], x, y, 0);
 		}
 	}

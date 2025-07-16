@@ -1590,6 +1590,7 @@ int atype;
 	{
 	case AD_HOLY:
 	case AD_UNHY:
+	case AD_VORP:
 		return P_MARTIAL_ARTS;
 	case AD_MAGM:
 	case AD_FIRE:
@@ -6075,6 +6076,7 @@ int spell;
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
 			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
+			|| (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))
 		) splcaster -= urole.spelarmr;
 
 		if(uwep->obj_material == MERCURIAL)
@@ -6800,7 +6802,7 @@ dopseudonatural()
 		) continue;
 		
 		if(mon){
-			xmeleehity(&youmonst, mon, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(&youmonst, mon, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 		}
 	}
 }

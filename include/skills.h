@@ -109,6 +109,9 @@
 #define P_LAST_H_TO_H		P_RIDING
 #define P_FIRST_H_TO_H		P_BARE_HANDED_COMBAT
 
+#define P_FIRST_FORM	P_SHII_CHO
+#define P_LAST_FORM		P_KNI_RUNIC
+
 #define P_NUM_SKILLS		(P_LAST_H_TO_H+1)
 
 /* These roles qualify for a martial arts bonus */

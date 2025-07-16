@@ -71,6 +71,26 @@ const struct innate {
 	kni_abil[] = { {	 7, &(HFast), "quick", "slow" },
 		     {	 0, 0, 0, 0 } },
 
+	ken_abil[] = { {   1, &(HFast), "", "" },
+		     {   1, &(HSleep_resistance), "", "" },
+		     {   6, &(HPoison_resistance), "healthy", "sickly" },
+		     {  10, &(HStealth), "stealthy", "noisy" },
+		     {  14, &(HSearching), "perceptive", "unaware" },
+		     {	16, &(HSee_invisible), "your vision sharpen", "your vision blur" },
+		     {  18, &(HWarning), "sensitive", "insensitive" },
+		     {  20, &(HFire_resistance), "cool", "warmer" },
+		     {  21, &(HCold_resistance), "warm", "cooler" },
+		     {  22, &(HShock_resistance), "insulated", "conductive" },
+		     {  23, &(HTeleport_control), "controlled","uncontrolled" },
+		     {  24, &(HAcid_resistance), "thick-skinned","soft-skinned" },
+		     {  25, &(HWwalking), "light on your feet","heavy" },
+		     {  26, &(HSick_resistance), "immunized","immunocompromised" },
+		     {  27, &(HDisint_resistance), "firm","less firm" },
+		     {  28, &(HStone_resistance), "limber","stiff" },
+		     {  29, &(HAntimagic), "skeptical","credulous" },
+		     {  30, &(HDrain_resistance), "above earthly concerns","not so above it all" },
+		     {   0, 0, 0, 0 } },
+
 	mon_abil[] = { {   1, &(HFast), "", "" },
 		     {   1, &(HSleep_resistance), "", "" },
 		     {   1, &(HSee_invisible), "", "" },
@@ -529,10 +549,11 @@ exerper()
 		switch (hs) {
 		    case SATIATED:	if(!is_vampire(youracedata) && !Race_if(PM_INCANTIFIER))  /* undead/magic metabolism */
 							exercise(A_DEX, FALSE);
-					if (Role_if(PM_MONK))
+					if (Role_if(PM_MONK) || Role_if(PM_KENSEI))
 					    exercise(A_WIS, FALSE);
 					break;
-		    case NOT_HUNGRY:	exercise(A_CON, TRUE); break;
+		    case NOT_HUNGRY:	exercise(A_CON, TRUE);
+					break;
 		    case WEAK:		exercise(A_STR, FALSE);
 					if (Role_if(PM_MONK))	/* fasting */
 					    exercise(A_WIS, TRUE);
@@ -546,11 +567,16 @@ exerper()
 		pline("exerper: Encumber checks");
 #endif
 		switch (near_capacity()) {
-		    case MOD_ENCUMBER:	exercise(A_STR, TRUE); break;
+		    case MOD_ENCUMBER:	exercise(A_STR, TRUE);
+					break;
 		    case HVY_ENCUMBER:	exercise(A_STR, TRUE);
-					exercise(A_DEX, FALSE); break;
+					exercise(A_DEX, FALSE); 
+					if (Role_if(PM_KENSEI))	/* over-attachment */
+					    exercise(A_WIS, FALSE);
+					break;
 		    case EXT_ENCUMBER:	exercise(A_DEX, FALSE);
-					exercise(A_CON, FALSE); break;
+					exercise(A_CON, FALSE);
+					break;
 		}
 
 	}
@@ -872,6 +898,7 @@ int oldlevel, newlevel;
 	case PM_MADMAN:        abil = mad_abil;	break;
 	case PM_HEALER:         abil = hea_abil;	break;
 	case PM_KNIGHT:         abil = kni_abil;	break;
+	case PM_KENSEI:         abil = ken_abil;	break;
 	case PM_MONK:           abil = mon_abil;	break;
 	case PM_NOBLEMAN:
 		switch (Race_switch)
@@ -924,6 +951,8 @@ int oldlevel, newlevel;
 	case PM_HUMAN:
 	case PM_DWARF:
 	case PM_GNOME:
+	case PM_GITHYANKI:
+	case PM_GITHZERAI:
 	default:                rabil = 0;		break;
 	}
 
@@ -1414,6 +1443,7 @@ struct monst *mon;
 		}
 		if ((armg && (armg->otyp == GAUNTLETS_OF_POWER || (armg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(armg, IEA_GOPOWER)))) || 
 			(belt && belt->otyp == BELT_OF_POWER) ||
+			(armc && armc->oartifact == ART_SHI_PI_BU) ||
 			(wep &&((wep->oartifact == ART_SCEPTRE_OF_MIGHT) || 
 					 (wep->oartifact == ART_PEN_OF_THE_VOID && wep->ovar1&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0) ||
 					 (oart && (oart->inv_prop == GITH_ART || oart->inv_prop == ZERTH_ART || oart->inv_prop == AMALGUM_ART) && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER) ||
@@ -2108,6 +2138,12 @@ int fform;
 }
 
 boolean
+activeFace(int fform)
+{
+	return ((artinstance[ART_BOREAL_SCEPTER].BorealFace & (1 << fform)) != 0);
+}
+
+boolean
 selectedFightingForm(fform)
 int fform;
 {
@@ -2230,6 +2266,21 @@ int edge;
 	return "None";
 }
 
+const char *
+nameOfBorealFace(int face)
+{
+	switch (face)
+	{
+		case FFACE_EAGLE: return "The Thundering Eagle";
+		case FFACE_FISH:  return "The Flesh-dissolving Fish";
+		case FFACE_ANT:   return "The God-petrifying Ant";
+		case FFACE_MAN:    return "The Warrior and Blinding Star";
+		default:
+			impossible("bad boreal face %d", face);
+	}
+	return "None";
+}
+
 void
 validateLightsaberForm()
 {
@@ -2273,10 +2324,10 @@ int fform;
 			return (uarm && (metal_blocks_spellcasting(uarm)));
 		/* requires longsword and free hand */
 		case FFORM_HALF_SWORD:
-			return !(uwep && uwep->otyp == LONG_SWORD && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
+			return !(uwep && (uwep->otyp == LONG_SWORD || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
 		/* require longsword*/
 		case FFORM_POMMEL:
-			return !(uwep && uwep->otyp == LONG_SWORD);
+			return !(uwep && (uwep->otyp == LONG_SWORD || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))));
 		/* require longsword*/
 		case FFORM_KNI_RUNIC:
 			return !(uwep && is_runic_form_sword(uwep) && FightingFormSkillLevel(fform) > P_ISRESTRICTED);

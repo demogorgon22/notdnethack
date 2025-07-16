@@ -419,7 +419,7 @@ struct monst *mtmp;
 			}
 	}
 /*	attacking peaceful creatures is bad for the samurai's giri */
-	if (Role_if(PM_SAMURAI) && mtmp->mpeaceful){
+	if ((Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && mtmp->mpeaceful){
         if(!(uarmh && uarmh->oartifact && uarmh->oartifact == ART_HELM_OF_THE_NINJA)){
           You("dishonorably attack the innocent!");
           u.ualign.sins++;
@@ -569,7 +569,7 @@ int
 mattacku(mtmp)
 register struct monst *mtmp;
 {
-	return xattacky(mtmp, &youmonst, mtmp->mux, mtmp->muy);
+	return xattacky(mtmp, &youmonst, mtmp->mux, mtmp->muy, 0L);
 }
 
 int
@@ -580,7 +580,7 @@ register struct monst *magr, *mdef;
 	if (!magr || !mdef)
 		return MM_MISS;
 
-	return xattacky(magr, mdef, mdef->mx, mdef->my);
+	return xattacky(magr, mdef, mdef->mx, mdef->my, 0L);
 }
 
 /* fightm()  -- mtmp fights some other monster
@@ -1449,7 +1449,7 @@ struct monst * magr;
 		mdef->mironmarked = TRUE;
 	}
 	if (hates_holy_mon(mdef) &&
-		otmp->blessed) {
+		is_holy(otmp)) {
 		/* default: 1d4 */
 		ndice = 1;
 		diesize = 4;
@@ -1473,7 +1473,12 @@ struct monst * magr;
 			dmg += vd(1, 10) + otmp->spe;
 		else if (otmp->oartifact == ART_VAMPIRE_KILLER)
 			dmg += 7;
+		else if (otmp->oartifact == ART_SEVEN_STAR_SWORD)
+			diesize = 20;
 
+		if(magr && Focused_aura(magr)){
+			diesize += 4;
+		}
 #define sacred_bonus_dice ((FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_EXPERT) ? 6 : (FightingFormSkillLevel(FFORM_KNI_SACRED) >= P_SKILLED ? 3 : 1))
 		if (activeFightingForm(FFORM_KNI_SACRED) && otmp == uwep){
 			if (((Holiness_if(HOLY_HOLINESS) || Holiness_if(NEUTRAL_HOLINESS)) && u.ualign.record >= 0) ||
@@ -1543,10 +1548,16 @@ struct monst * magr;
 			diesize = 20;
 		else if (otmp->oartifact == ART_SPEAR_OF_PEACE)
 			diesize = 20;
+		else if (otmp->oartifact == ART_MALICE)
+		{	dmg += otmp->spe; diesize = 12; }
 		else if (otmp->oartifact == ART_AMHIMITL)
 		{	ndice = 3; diesize = 4; }
 		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
 		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
+
+		if(magr && Focused_aura(magr)){
+			diesize += 4;
+		}
 
 		if(otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
 			dmg += (u.uimpurity+1)/2;
@@ -1590,7 +1601,7 @@ struct monst * magr;
 	}
 
 	if (hates_unblessed_mon(mdef) &&
-		!(is_unholy(otmp) || otmp->blessed)
+		!(is_unholy(otmp) || is_holy(otmp))
 	) {
 		/* default: 1d8 */
 		ndice = 1;
@@ -1615,6 +1626,10 @@ struct monst * magr;
 			diesize = 9;
 		}
 		
+		if(magr && Focused_aura(magr)){
+			diesize += 4;
+		}
+
 		if (otmp->otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* calculate */
@@ -1886,9 +1901,9 @@ struct obj * weapon;
 		if (hates_holy_mon(mdef) && (
 			(attk->adtyp == AD_ACFR) ||
 			(magr && is_holy_mon(magr)) ||
-			(otmp && otmp->blessed) ||
-			(youagr && slot == W_ARMG && uright && uright->blessed) ||
-			(youagr && slot == W_ARMG && uleft && uleft->blessed)
+			(otmp && is_holy(otmp)) ||
+			(youagr && slot == W_ARMG && uright && is_holy(uright)) ||
+			(youagr && slot == W_ARMG && uleft && is_holy(uleft))
 			))
 			return 1;
 
@@ -1903,9 +1918,9 @@ struct obj * weapon;
 
 		if (hates_unblessed_mon(mdef) && (
 			(magr && is_unblessed_mon(magr)) ||
-			(otmp && !(is_unholy(otmp) || otmp->blessed)) ||
-			(youagr && slot == W_ARMG && uright && (is_unholy(uright) || uright->blessed)) ||
-			(youagr && slot == W_ARMG && uleft && (is_unholy(uleft) || uleft->blessed))
+			(otmp && !(is_unholy(otmp) || is_holy(otmp))) ||
+			(youagr && slot == W_ARMG && uright && (is_unholy(uright) || is_holy(uright))) ||
+			(youagr && slot == W_ARMG && uleft && (is_unholy(uleft) || is_holy(uleft)))
 			))
 			return 1;
 
@@ -2029,7 +2044,7 @@ int vis;
 
 /* item destruction strings */
 const char * const destroy_strings[] = {	/* also used in trap.c */
-	"freezes and shatters", "freeze and shatter", "shattered potion",
+	"freezes and shatters", "freeze and shatter", "shattering potion",
 	"boils and explodes", "boil and explode", "boiling potion",
 	"catches fire and burns", "catch fire and burn", "burning scroll",
 	"catches fire and burns", "catch fire and burn", "burning book",
@@ -2233,6 +2248,235 @@ int dmgtyp;
 		else You("panic after one of your possessions is destroyed!");
 		HPanicking += 1 + rnd(6);
 	}
+
+	/* return if anything was destroyed */
+	return (ndestroyed ? MM_HIT : MM_MISS);
+}
+
+/* destroy_items_sonic()
+*
+* Called when item(s) are supposed to be destroyed in a defender's inventory
+*
+* Works for player and monster mtmp
+* Assumes both the defender is alive and existant when called
+*
+* Can return:
+* MM_MISS		0x00	no items destroyed
+* MM_HIT		0x01	item(s) destroyed
+*
+* Only allows lethal damage against the player, so this function can be called
+* while voiding the return.
+*/
+int
+destroy_items_sonic(struct monst *mtmp, boolean empowered)
+{
+	boolean youdef = mtmp == &youmonst;
+	struct permonst * data = (youdef) ? youracedata : mtmp->data;
+	int vis = (youdef) ? TRUE : canseemon(mtmp);
+	int ndestroyed = 0;
+	int odestroyed = 0;
+	struct obj *obj, *obj2;
+	int dmg;
+	long i, cnt, quan;
+	int dindx;
+	const char *mult;
+	int osym;
+	boolean charged;
+
+	if (ProtectItems(mtmp)){
+		return MM_MISS;
+	}
+		
+
+	for (obj = (youdef ? invent : mtmp->minvent); obj; obj = obj2) {
+		obj2 = obj->nobj;
+		if(!(is_shatterable(obj) || (empowered && is_hard(obj))) || obj->oerodeproof) continue; /*shatterproof*/ 
+		if (obj->oartifact) continue; /* don't destroy artifacts */
+		if (obj->in_use && obj->quan == 1) continue; /* not available */
+		dmg = dindx = 0;
+		quan = 0L;
+
+		quan = obj->quan;
+		dmg = 2*objects[obj->otyp].oc_size;
+		if(empowered)
+			dmg += 2;
+		osym = obj->oclass;
+		charged = (osym == WAND_CLASS || osym == ARMOR_CLASS || osym == ARMOR_CLASS || objects[obj->otyp].oc_charged);
+
+		/* destroy the item, if allowed */
+		if (obj->in_use) --quan; /* one will be used up elsewhere */
+		int amt = charged ? obj->spe+1 : quan;
+		if(empowered){
+		/* approx 50% of items in the stack get destroyed */
+			for (i = cnt = 0L; i < amt; i++) {
+				if (!rn2(2)) cnt++;
+			}
+		}
+		/* approx 10% of items in the stack get destroyed */
+		else for (i = cnt = 0L; i < amt; i++) {
+			if (!rn2(10)) cnt++;
+		}
+		/* No items destroyed? Skip */
+		if (!cnt)
+			continue;
+		/* print message */
+		if (vis) {
+			if (cnt == quan || quan == 1)	mult = "";
+			else if (cnt > 1)				mult = "Some of ";
+			else							mult = "One of ";
+			pline("%s%s %s %s!",
+				mult,
+				(youdef) ? ((mult[0] != '\0') ? "your" : "Your") : ((mult[0] != '\0') ? s_suffix(mon_nam(mtmp)) : s_suffix(Monnam(mtmp))),
+				xname(obj),
+				(quan > 1 && cnt > 1L) ? "shatter" : "shatters");
+		}
+
+		/* potion vapors */
+		if (osym == POTION_CLASS) {
+			if (!breathless(data) || haseyes(data)) {
+				if (youdef)
+					potionbreathe(obj);
+				else
+					/* no function for monster breathing potions */;
+			}
+		}
+		/* destroy item */
+		if (charged && cnt <= obj->spe)
+			obj->spe -= cnt;
+		else {
+			if (obj == current_wand) current_wand = 0;	/* destroyed */
+			if(cnt > obj->quan)
+				cnt = obj->quan; /*Can be true if a charged object is being destroyed*/
+			for (i = 0; i < cnt; i++) {
+				/* use correct useup function */
+				if (youdef) useup(obj);
+				else m_useup(mtmp, obj);
+				odestroyed++;
+			}
+		}
+		ndestroyed += cnt;
+
+		/* possibly deal damage */
+		if (dmg) {
+			/* you */
+			if (youdef) {
+				const char *how = destroy_strings[dindx * 3 + 2];
+				boolean one = (cnt == 1L || osym == WAND_CLASS);
+
+				dmg = d(cnt, dmg);
+				losehp(dmg,
+					(one ? how : (const char *)makeplural(how)),
+					(one ? KILLED_BY_AN : KILLED_BY));
+				exercise(A_STR, FALSE);
+				/* Let's not worry about properly returning if that killed you. If it did, it's moot. I think. */
+				/* at the very least, the return value from this function is being ignored often enough it doesn't matter */
+			}
+			/* monster */
+			else {
+				dmg = d(cnt, dmg);
+				/* not allowed to be lethal */
+				if (dmg >= mtmp->mhp)
+					dmg = min(0, mtmp->mhp - 1);
+				mtmp->mhp -= dmg;
+			}
+		}
+	}
+	if (ndestroyed && roll_madness(MAD_TALONS) && odestroyed){
+		if (ndestroyed > 1)
+			You("panic after some of your possessions are destroyed!");
+		else You("panic after one of your possessions is destroyed!");
+		HPanicking += 1 + rnd(6);
+	}
+
+	/* return if anything was destroyed */
+	return (ndestroyed ? MM_HIT : MM_MISS);
+}
+
+int
+destroy_items_liquify(struct monst *mtmp, boolean empowered)
+{
+	boolean youdef = mtmp == &youmonst;
+	struct permonst * data = (youdef) ? youracedata : mtmp->data;
+	int vis = (youdef) ? TRUE : canseemon(mtmp);
+	int ndestroyed = 0;
+	int odestroyed = 0;
+	struct obj *obj, *obj2;
+	long i, cnt, quan;
+	int dindx;
+	const char *mult;
+	int osym;
+	boolean charged;
+
+	if (ProtectItems(mtmp)){
+		return MM_MISS;
+	}
+		
+
+	for (obj = (youdef ? invent : mtmp->minvent); obj; obj = obj2) {
+		obj2 = obj->nobj;
+		if(!is_organic(obj) || obj->oerodeproof) continue; /*shatterproof*/ 
+		if (obj->oartifact) continue; /* don't destroy artifacts */
+		if (obj->in_use && obj->quan == 1) continue; /* not available */
+		quan = 0L;
+
+		quan = obj->quan;
+		osym = obj->oclass;
+		charged = (osym == WAND_CLASS || osym == ARMOR_CLASS || osym == ARMOR_CLASS || objects[obj->otyp].oc_charged);
+
+		/* destroy the item, if allowed */
+		if (obj->in_use) --quan; /* one will be used up elsewhere */
+		int amt = charged ? obj->spe+1 : !objects[obj->otyp].oc_merge ? (3-obj->oeroded2) : quan;
+		if(empowered){
+			/* approx 66% of items in the stack get destroyed */
+			for (i = cnt = 0L; i < amt; i++) {
+				if (rn2(3)) cnt++;
+			}
+		}
+		/* approx 10% of items in the stack get destroyed */
+		else for (i = cnt = 0L; i < amt; i++) {
+			if (!rn2(10)) cnt++;
+		}
+		/* No items destroyed? Skip */
+		if (!cnt)
+			continue;
+		/* print message */
+		if (vis) {
+			if (cnt == quan || quan == 1)	mult = "";
+			else if (cnt > 1)				mult = "Some of ";
+			else							mult = "One of ";
+			pline("%s%s %s %s!",
+				mult,
+				(youdef) ? ((mult[0] != '\0') ? "your" : "Your") : ((mult[0] != '\0') ? s_suffix(mon_nam(mtmp)) : s_suffix(Monnam(mtmp))),
+				xname(obj),
+				(quan > 1 && cnt > 1L) ? "dissolve" : "dissolves");
+		}
+
+		/* destroy item */
+		if (charged && cnt <= obj->spe)
+			obj->spe -= cnt;
+		else if (!objects[obj->otyp].oc_merge && cnt < obj->oeroded2)
+			obj->oeroded2 -= cnt;
+		else {
+			if (obj == current_wand) current_wand = 0;	/* destroyed */
+			if(cnt > obj->quan)
+				cnt = obj->quan; /*Can be true if a charged object is being destroyed*/
+			for (i = 0; i < cnt; i++) {
+				/* use correct useup function */
+				if (youdef) useup(obj);
+				else m_useup(mtmp, obj);
+				odestroyed++;
+			}
+		}
+		ndestroyed += cnt;
+	}
+	if (ndestroyed && roll_madness(MAD_TALONS) && odestroyed){
+		if (ndestroyed > 1)
+			You("panic after some of your possessions are destroyed!");
+		else You("panic after one of your possessions is destroyed!");
+		HPanicking += 1 + rnd(6);
+	}
+	for(int i = rnd(ndestroyed); i > 0; i--)
+		water_damage((mtmp == &youmonst) ? invent : mtmp->minvent, FALSE, FALSE, FALSE, mtmp);
 
 	/* return if anything was destroyed */
 	return (ndestroyed ? MM_HIT : MM_MISS);
@@ -2551,7 +2795,7 @@ boolean vis;
 	}
 	if(!youagr){
 		if (petrifies) {
-			minstapetrify(magr, youdef); //checks stone resistance
+			minstapetrify(magr, youdef, FALSE); //checks stone resistance
 			if(magr->mhp <= 0)
 				newres |= MM_AGR_DIED;
 		}
@@ -2631,6 +2875,7 @@ struct attack * attk;
 	int result = 0;
 	int merc_mult = 1;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -2664,7 +2909,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -2697,7 +2942,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -2727,7 +2972,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -2800,6 +3045,7 @@ struct attack * attk;
 	int range = 15;
 	struct obj *ammo = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -2864,6 +3110,7 @@ struct attack * attk;
 	int nx, ny;
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -2888,7 +3135,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -2916,7 +3163,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -2943,7 +3190,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -2972,7 +3219,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -2999,7 +3246,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -3032,7 +3279,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -3064,7 +3311,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -3094,6 +3341,7 @@ struct attack * attk;
 	struct attack blood = {AT_ESPR, AD_BLUD, 1, 12+otmp->spe*2};
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3118,7 +3366,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3156,6 +3404,7 @@ struct attack * attk;
 	else
 		blood.damd += otmp->spe*2;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3180,7 +3429,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3210,7 +3459,7 @@ struct attack * attk;
 					vis2 |= VIS_MDEF;
 				bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE);
+				subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE, 0);
 				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
@@ -3236,9 +3485,10 @@ struct attack * attk;
 	/* try to find direction (u.dx and u.dy may be incorrect) */
 	int dx = sgn(tarx - x(magr));
 	int dy = sgn(tary - y(magr));
-	struct attack blood = {AT_WISP, AD_PUSH, 2, 6+otmp->spe*2};
+	struct attack blood = {AT_WISP, AD_PSH3, 2, 6+otmp->spe*2};
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3263,7 +3513,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, &blood, (struct obj **)0, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3313,6 +3563,7 @@ struct attack * attk;
 	)
 		return result;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3353,7 +3604,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3366,27 +3617,21 @@ struct attack * attk;
 /* Mercurial weapons may strike behind primary target if the wielder is powerful enough */
 /////////////////////////////////////////////////////////////////////////////////////////
 int
-hit_with_cclaw_streaming(magr, otmp, tarx, tary, tohitmod, attk)
-struct monst * magr;
-struct obj * otmp;
-int tarx;
-int tary;
-int tohitmod;
-struct attack * attk;
+hit_with_cclaw_streaming(struct monst *magr, struct obj *otmp, int tarx, int tary, int ux, int uy, int tohitmod, struct attack *attk)
 {
 	int subresult = 0;
 	boolean youagr = magr == &youmonst;
 	/* try to find direction (u.dx and u.dy may be incorrect) */
-	int dx = sgn(tarx - x(magr));
-	int dy = sgn(tary - y(magr));
+	int dx = sgn(tarx - ux);
+	int dy = sgn(tary - uy);
 	int nx, ny;
 	int result = 0;
 	
 	otmp->otyp = CLAWED_HAND;
 	
 	if(!(isok(tarx - dx, tary - dy) &&
-		x(magr) == tarx - dx &&
-		y(magr) == tary - dy)
+		ux == tarx - dx &&
+		uy == tary - dy)
 	)
 		return result;
 	if (isok(tarx + 2*dx, tary + 2*dy)){
@@ -3410,7 +3655,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3436,7 +3681,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3448,27 +3693,21 @@ struct attack * attk;
 /* Mercurial weapons may strike behind primary target if the wielder is powerful enough */
 /////////////////////////////////////////////////////////////////////////////////////////
 int
-hit_with_streaming(magr, otmp, tarx, tary, tohitmod, attk)
-struct monst * magr;
-struct obj * otmp;
-int tarx;
-int tary;
-int tohitmod;
-struct attack * attk;
+hit_with_streaming(struct monst *magr, struct obj *otmp, int tarx, int tary, int ux, int uy, int tohitmod, struct attack *attk)
 {
 	int subresult = 0;
 	boolean youagr = magr == &youmonst;
 	/* try to find direction (u.dx and u.dy may be incorrect) */
-	int dx = sgn(tarx - x(magr));
-	int dy = sgn(tary - y(magr));
+	int dx = sgn(tarx - ux);
+	int dy = sgn(tary - uy);
 	int nx, ny;
 	int result = 0;
 	if(Insight >= 15 && otmp->oartifact != ART_AMALGAMATED_SKIES && is_cclub_able(otmp)){
-		return hit_with_cclaw_streaming(magr, otmp, tarx, tary, tohitmod, attk);
+		return hit_with_cclaw_streaming(magr, otmp, tarx, tary, ux, uy, tohitmod, attk);
 	}
 	if(!(isok(tarx - dx, tary - dy) &&
-		x(magr) == tarx - dx &&
-		y(magr) == tary - dy)
+		ux == tarx - dx &&
+		uy == tary - dy)
 	)
 		return result;
 
@@ -3491,7 +3730,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}
@@ -3517,7 +3756,7 @@ struct attack * attk;
 				vis2 |= VIS_MDEF;
 			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
 			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE);
+			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
 			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		}

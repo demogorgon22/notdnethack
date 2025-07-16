@@ -428,12 +428,114 @@ A("Jinja Naginata",		NAGINATA,						(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
-/*Needs encyc entry*/
 A("Rhongomyniad",		LANCE,							(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_KNIGHT, NON_PM, TIER_D, (ARTG_GIFT),
 	NO_MONS(),
 	ATTK(AD_PHYS, 3, 0), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("The Boreal Scepter",			SQUARE_CLUB,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_KENSEI, NON_PM, TIER_A, (ARTG_NOGEN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	BOREAL_INVOKE, NOFLAG
+	),
+
+A("Green Destiny",			LONG_SWORD,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, 20,
+	A_NEUTRAL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 8, 8), (ARTA_SHATTER|ARTA_VORPAL),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Malice",			RUNESWORD,	"star-filled %s",
+	1500L, FIRMAMENT, MZ_DEFAULT, 0,
+	A_CHAOTIC, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_MAGM, 10, 12), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("The Seven-Star Sword",			TWO_HANDED_SWORD,	"Bin-steel shuangshou jian",
+	1500L, METAL, MZ_DEFAULT, 75,
+	A_NEUTRAL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 7, 7), NOFLAG,
+	PROPS(FIRE_RES, COLD_RES, SHOCK_RES, ACID_RES, STONE_RES), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Ansermee",			MIRRORBLADE,	(const char *)0,
+	1500L, GLASS, MZ_LARGE, WT_DEFAULT,
+	A_LAWFUL, PM_KENSEI, PM_INCANTIFIER, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_MAGM, 8, 8), (ARTA_MAGIC),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+/* Needs encyc */
+A("Kishin Mirror",			KAMEREL_VAJRA,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_KENSEI, PM_INCANTIFIER, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(REFLECTING), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("The Epitaph of Wongas",			ROD_OF_FORCE,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_CHAOTIC, PM_KENSEI, PM_INCANTIFIER, TIER_A, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_PHYS, 1, 1), (ARTA_VORPAL),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+/* Needs encyc */
+A("Winter Reaper",			RAPIER,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_KENSEI, PM_YUKI_ONNA, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_COLD, 4, 0), (ARTA_VORPAL),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+/* Needs encyc */
+A("Anguirel",			DROVEN_GREATSWORD,	(const char *)0,
+	1500L, IRON, MZ_DEFAULT, 150,
+	A_LAWFUL, PM_KENSEI, PM_DROW, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_FIRE, 10, 6), (ARTA_SHATTER),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Ringil",			HIGH_ELVEN_WARSWORD,	(const char *)0,
+	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_KENSEI, PM_ELF, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_COLD, 18, 3), (ARTA_SHATTER),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	NOINVOKE, NOFLAG
@@ -504,10 +606,10 @@ A("Magicbane",			ATHAME,							"mystically runed %s",
  *  "no" being "of", and "Fuma-itto" being "Fuma-clan" (or so I hope...),
  *  this being a clan of ninja from the Sengoku era
  *  (there should be an accent over the u of "Fuma" and the o of "-itto").
- *  Nethack Samurai call broadswords "Ninja-to," which is the steriotypical ninja sword.
+ *  Nethack Samurai called broadswords "Ninja-to," which is the steriotypical ninja sword.
  *  Aparently, there was no such thing as an actual Ninja-to, it's something Hollywood made up!
  */
-A("Fuma-itto no Ken",	BROADSWORD,						(const char *)0,
+A("Fuma-itto no Ken",	NINJA_TO,						(const char *)0,
 	1200L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, NON_PM, TIER_D, (ARTG_GIFT|ARTG_INHER),
 	NO_MONS(),
@@ -669,7 +771,7 @@ A("The Black Arrow",	ANCIENT_ARROW,					(const char *)0,
 
 /*also has a haste effect when wielded, but massively increases hunger and damages the wielder*/
 /*The invoked attack is very powerful*/
-A("Tensa Zangetsu",		TSURUGI,						"black %s",
+A("Tensa Zangetsu",		ODACHI,						"black %s",
 	4444L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, NON_PM, NON_PM, TIER_A, (ARTG_GIFT | ARTG_INHER),
 	NO_MONS(),
@@ -687,7 +789,7 @@ A("The Mortal Blade",		ODACHI,						"bloodstained sakura-hilted %s",
 	A_LAWFUL, NON_PM, NON_PM, TIER_C, (ARTG_INHER),
 	NO_MONS(),
 	ATTK(AD_DARK, 20, 0), (ARTA_LAIDTOREST|ARTA_PHASING),
-	PROPS(), NOFLAG,
+	PROPS(STEALTH, DARK_RES), NOFLAG,
 	PROPS(), NOFLAG,
 	MORTAL_DRAW, NOFLAG
 	),
@@ -731,7 +833,7 @@ A("The Lance of Longinus",		SPEAR,					(const char *)0,
 
 A("The Silver Sky",		LONG_SWORD,					(const char *)0,
 	1500L, SILVER, MZ_MEDIUM, WT_DEFAULT,
-	A_NONE, NON_PM, PM_GITHYANKI_PIRATE, TIER_B, (ARTG_INHER),
+	A_NONE, NON_PM, PM_GITHYANKI, TIER_B, (ARTG_INHER),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 12), (ARTA_SILVER|ARTA_VORPAL),
 	PROPS(ANTIMAGIC), NOFLAG,
@@ -741,7 +843,7 @@ A("The Silver Sky",		LONG_SWORD,					(const char *)0,
 
 A("The Sky Reflected",		BROADSWORD,					(const char *)0,
 	1500L, MERCURIAL, MZ_MEDIUM, WT_DEFAULT,
-	A_NONE, NON_PM, PM_GITHYANKI_PIRATE, TIER_B, (ARTG_NAME|ARTG_NOGEN|ARTG_INHER),
+	A_NONE, PM_KENSEI, NON_PM, TIER_B, (ARTG_NAME|ARTG_NOGEN|ARTG_INHER),
 	NO_MONS(),
 	ATTK(AD_PHYS, 8, 1), NOFLAG,
 	PROPS(REFLECTING), NOFLAG,
@@ -1491,7 +1593,7 @@ A("Werebuster",						LONG_SWORD,				(const char *)0,
 	),
 
 /*Needs encyc entry*/
-A("Masamune",						TSURUGI,				(const char *)0,
+A("Masamune",						NAGAMAKI,				(const char *)0,
 	7500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, NON_PM, NON_PM, TIER_C, (ARTG_NOGEN|ARTG_NOWISH),
 	NO_MONS(),
@@ -1863,6 +1965,36 @@ A("Poseidon's Trident",				TRIDENT,				(const char *)0,
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,
 	CREATE_POOL, NOFLAG
+	),
+
+A("Gokorei",				BELL,				"%s with a five-pronged handle",
+	4500L, GEMSTONE, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, PM_KENSEI, NON_PM, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(DIAMOND_BELL), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Kenjaku",				ROPE_OF_ENTANGLING,				"five-colored %s",
+	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	NO_ATTK(), ARTA_RETURNING,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
+A("Shi pi bu",				LEO_NEMAEUS_HIDE,				"bleached %s",
+	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_CHAOTIC, PM_KENSEI, NON_PM, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(CLEAR_THOUGHTS, BLOCK_CONFUSION, HALLUC_RES, HALF_SPDAM, ANTIMAGIC), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
 	),
 
 A("Feng Huo Lun",				WIND_AND_FIRE_WHEELS,				"flaming %s",
@@ -2321,6 +2453,16 @@ A("The Eye of the Overworld",		SOUL_LENS,				(const char *)0,
 	ENLIGHTENING, NOFLAG
 	),
 
+A("The Eye of Jiroshin",		SOUL_LENS,				(const char *)0,
+	2500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NEUTRAL, PM_KENSEI, NON_PM, TIER_A, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(GAZE_RES, SEE_INVIS, FOCUS_AURA), NOFLAG,
+	PROPS(ANTIMAGIC), NOFLAG,
+	PROT_FROM_SHAPE_CHANGERS, NOFLAG
+	),
+
 A("Rite of Detestation",		SCR_BLANK_PAPER,	"water-damaged scroll",
 	2500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NONE, PM_MADMAN, NON_PM, TIER_F, (ARTG_NOGEN|ARTG_NOWISH),
@@ -2738,7 +2880,7 @@ A("The Glitterstone",				AMBER,				(const char *)0,
 
 A("Great Claws of Urdlen",			GAUNTLETS_OF_POWER,	"clawed %s",
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_CHAOTIC, NON_PM, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_INHER|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
+	A_CHAOTIC, NON_PM, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR|ARTG_FXALGN),
 	NO_MONS(),
 	ATTK(AD_PHYS, 10, 0), NOFLAG,
 	PROPS(), NOFLAG,
@@ -2835,7 +2977,7 @@ A("The Master Key of Thievery",		SKELETON_KEY,		(const char *)0,
 	UNTRAP, (ARTI_SPEAK)
 	),
 
-A("The Tsurugi of Muramasa",		TSURUGI,			(const char *)0,
+A("The Tsurugi of Muramasa",		NAGAMAKI,			(const char *)0,
 	4500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_SAMURAI, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),

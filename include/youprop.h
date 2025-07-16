@@ -153,6 +153,14 @@
 #define EYogSpell		u.uprops[YOG_SPELLS].extrinsic
 #define YogSpell		(HYogSpell || EYogSpell)
 
+#define HFocusAura		u.uprops[FOCUS_AURA].intrinsic
+#define EFocusAura		u.uprops[FOCUS_AURA].extrinsic
+#define FocusAura		(HFocusAura || EFocusAura)
+
+#define HGokorei		u.uprops[DIAMOND_BELL].intrinsic
+#define EGokorei		u.uprops[DIAMOND_BELL].extrinsic
+#define Gokorei		(HGokorei || EGokorei)
+
 #define HQuickDraw		u.uprops[QUICK_DRAW].intrinsic
 #define EQuickDraw		u.uprops[QUICK_DRAW].extrinsic
 #define QuickDraw		(HQuickDraw || EQuickDraw)
@@ -190,8 +198,11 @@
 
 #define save_vs_sanloss()	((uwep && uwep->oartifact == ART_NODENSFORK) || (rnd(30) < (ACURR(A_WIS) + (uring_art(ART_NARYA) ? narya() : 0))))
 
+#define HDark_res		u.uprops[DARK_RES].intrinsic
+#define EDark_res		u.uprops[DARK_RES].extrinsic
+#define Dark_resistant		(HDark_res || EDark_res)
 #define Mortal_race	(!nonliving(youracedata) && !is_minion(youracedata) && !is_demon(youracedata) && !is_primordial(youracedata))
-#define Dark_immune	(is_unalive(youracedata) || is_primordial(youracedata))
+#define Dark_immune	(is_unalive(youracedata) || is_primordial(youracedata) || Dark_resistant)
 
 /* Those implemented solely as timeouts (we use just intrinsic) */
 #define HStun			u.uprops[STUNNED].intrinsic
@@ -413,9 +424,7 @@
 
 #define HWeldproof	u.uprops[WELDPROOF].intrinsic
 #define EWeldproof	u.uprops[WELDPROOF].extrinsic
-#define Weldproof	(HWeldproof || EWeldproof || \
-					 is_weldproof(youracedata) || (u.ulycn >= LOW_PM) || (Race_if(PM_ANDROID))\
-					)
+#define Weldproof	(HWeldproof || EWeldproof || is_weldproof(youracedata) || (u.ulycn >= LOW_PM))
 
 /*** Appearance and behavior ***/
 #define Adornment		u.uprops[ADORNED].extrinsic
@@ -662,7 +671,7 @@
 
  /*Note: the rings only give life saving when charged, so it can't be a normal property*/
 #define ELifesaved		u.uprops[LIFESAVED].extrinsic
-#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || Check_iaso_lifesaving() || Check_twin_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0) || (check_rot(ROT_CENT) && !(mvitals[PM_CENTIPEDE].mvflags & G_GENOD) && !HUnchanging) || (check_mutation(ABHORRENT_SPORE) && !(mvitals[PM_DARK_YOUNG].mvflags & G_GENOD)))
+#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || Check_iaso_lifesaving() || Check_twin_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0) || (check_rot(ROT_CENT) && !(mvitals[PM_CENTIPEDE].mvflags & G_GENOD) && !HUnchanging) || (check_mutation(ABHORRENT_SPORE) && !(mvitals[PM_DARK_YOUNG].mvflags & G_GENOD)) || (uwep && uwep->oartifact == ART_MORTAL_BLADE))
 
 #define Necrospellboost	(u.uprops[NECROSPELLS].extrinsic)
 

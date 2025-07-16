@@ -209,6 +209,9 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		if ((thrownobj->oartifact == ART_MJOLLNIR && (youagr ? (Role_if(PM_VALKYRIE)) : magr ? (magr->mtyp == PM_VALKYRIE) : FALSE)) ||
 			(thrownobj->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && (youagr ? (Race_if(PM_DWARF)) : magr ? (is_dwarf(magr->data)) : FALSE)) ||
 			arti_returning(thrownobj) ||
+			(youagr && Role_if(PM_KENSEI) && (Race_if(PM_GITHYANKI) || Race_if(PM_GITHZERAI) )
+				&& objects[thrownobj->otyp].oc_merge && thrownobj->oclass == WEAPON_CLASS && !is_ammo(thrownobj)
+			) ||
 			check_oprop(thrownobj, OPROP_RETRW)
 		) {
 			returning = TRUE;
@@ -2284,7 +2287,7 @@ dothrow()
 		launcher = (struct obj *)0;
 
 	/* go to the next step */
-	result = uthrow(ammo, launcher, shotlimit, FALSE);
+	result = uthrow(ammo, launcher, shotlimit, FALSE, FALSE);
 
 	save_cm = oldsave_cm;
 	return (result);
@@ -2329,7 +2332,7 @@ ufire_blaster(struct obj *launcher, int shotlimit)
 			if (launcher->otyp == MASS_SHADOW_PISTOL)
 				ammo->ovar1_projectileSkill = -P_FIREARM;	/* special case to use FIREARM skill instead of SLING */
 
-			result = uthrow(ammo, launcher, shotlimit, TRUE);
+			result = uthrow(ammo, launcher, shotlimit, TRUE, FALSE);
 			/* and now delete the ammo object we created */
 			obfree(ammo, 0);
 		}
@@ -2392,7 +2395,7 @@ dofire()
 
 				if (uquiver && ammo_and_launcher(uquiver, launcher)) {
 					/* simply fire uquiver from the launcher */
-					result |= uthrow(uquiver, launcher, shotlimit, FALSE);
+					result |= uthrow(uquiver, launcher, shotlimit, FALSE, FALSE);
 				}
 				else if (is_blaster(launcher)) {
 					result |= ufire_blaster(launcher, shotlimit);
@@ -2405,7 +2408,7 @@ dofire()
 
 		/* Throw quivered throwing weapons */
 		if (uquiver && throwing_weapon(uquiver)) {
-			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 
 		/* Throw wielded weapon -- mainhand only */
@@ -2422,11 +2425,11 @@ dofire()
 			(!is_blaster(uwep) && uandroid)
 			// (uwep->oartifact == ART_SICKLE_MOON)
 			)) {
-			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uwep, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 
 		/* Holy Moonlight Sword's magic blast -- mainhand only */
-		if (uwep && uwep->oartifact == ART_HOLY_MOONLIGHT_SWORD && uwep->lamplit && u.uen >= 25){
+		if (uwep && uwep->oartifact == ART_HOLY_MOONLIGHT_SWORD && uwep->lamplit && (u.uen >= 25 || (uquiver && (uquiver->otyp == BLOOD_BULLET || uquiver->otyp == BLOOD_SPEAR)))){
 			int n = 2;
 			if(u.explosion_up){
 				int out = 2;
@@ -2444,10 +2447,20 @@ dofire()
 			int range = (Double_spell_size) ? 6 : 3;
 			xchar lsx, lsy, sx, sy;
 			struct monst *mon;
+			struct obj *bullet = 0;
 			sx = u.ux;
 			sy = u.uy;
 			if (!getdir((char *)0) || !(u.dx || u.dy)) return MOVE_CANCELLED;
-			losepw(25);
+			if(uquiver && uquiver->otyp == BLOOD_SPEAR){
+				bullet = splitobj(uquiver, 1L);
+				obj_extract_self(bullet);
+				bullet->was_thrown = TRUE;
+			}
+			else if(uquiver && uquiver->otyp == BLOOD_BULLET){
+				useup(uquiver);
+			}
+			else
+				losepw(25);
 			/* also swing in the direction chosen */
 			flags.forcefight = 1;
 			domove();
@@ -2465,6 +2478,10 @@ dofire()
 						mon = m_at(sx, sy);
 						if (mon){
 							explode(sx, sy, AD_MAGM, WAND_CLASS, dmg * ((Double_spell_size) ? 3 : 2) / 2, EXPL_CYAN, 1 + !!Double_spell_size);
+							if(bullet){
+								place_object(bullet, sx, sy);
+								bullet = 0;
+							}
 							break;//break loop
 						}
 						else {
@@ -2476,8 +2493,17 @@ dofire()
 					}
 					else {
 						explode(lsx, lsy, AD_MAGM, WAND_CLASS, dmg * ((Double_spell_size) ? 3 : 2) / 2, EXPL_CYAN, 1 + !!Double_spell_size);
+						if(bullet){
+							place_object(bullet, lsx, lsy);
+							bullet = 0;
+						}
 						break;//break loop
 					}
+				}
+				if(bullet){
+					place_object(bullet, sx, sy);
+					newsym(sx, sy);
+					bullet = 0;
 				}
 				return MOVE_STANDARD;
 			}
@@ -2492,7 +2518,7 @@ dofire()
 			bolt->objsize = MZ_SMALL;
 			bolt->quan = 3;		/* Make more than enough so that we are always able to manually destroy the excess */
 			fix_object(bolt);
-			result = uthrow(bolt, uwep, shotlimit, TRUE);
+			result = uthrow(bolt, uwep, shotlimit, TRUE, FALSE);
 			obfree(bolt, 0);
 			return result;
 		}
@@ -2527,7 +2553,7 @@ dofire()
 	if (!nolimbs(youracedata)) {
 		/* Throw any old garbage we have quivered */
 		if (uquiver) {
-			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 		else {
 			/* We don't have anything that should be done automatically at this point. */
@@ -2573,7 +2599,7 @@ dofire()
 
 				if (uquiver && ammo_and_launcher(uquiver, launcher)) {
 					/* simply fire uquiver from the launcher */
-					result = uthrow(uquiver, launcher, shotlimit, FALSE);
+					result = uthrow(uquiver, launcher, shotlimit, FALSE, FALSE);
 				}
 			}
 			return result;
@@ -2581,7 +2607,7 @@ dofire()
 
 		/* Throw whaterver it was we quivered */
 		if (uquiver) {
-			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE);
+			return uthrow(uquiver, (struct obj *)0, shotlimit, FALSE, FALSE);
 		}
 	}
 
@@ -2638,6 +2664,7 @@ struct obj * blaster;
 	ammo->blessed = blaster->blessed;
 	ammo->cursed = blaster->cursed;
 	ammo->spe = blaster->spe;
+	ammo->objsize = blaster->objsize;
 
 	return ammo;
 }
@@ -2650,11 +2677,7 @@ struct obj * blaster;
  * call projectile().
  */
 int
-uthrow(ammo, launcher, shotlimit, forcedestroy)
-struct obj * ammo;
-struct obj * launcher;
-int shotlimit;
-boolean forcedestroy;
+uthrow(struct obj *ammo, struct obj *launcher, int shotlimit, boolean forcedestroy, boolean forcefire)
 {
 	int multishot;
 	int hurtle_dist = 0;
@@ -2662,7 +2685,7 @@ boolean forcedestroy;
 	/* ask "in what direction?" */
 	/* needs different code depending on if GOLDOBJ is enabled */
 
-	if (!getdir((char *)0)) {
+	if (!forcefire && !getdir((char *)0)) {
 #ifndef GOLDOBJ
 		if (ammo->oclass == COIN_CLASS) {
 			u.ugold += ammo->quan;
@@ -2700,8 +2723,8 @@ boolean forcedestroy;
 		weldmsg(ammo);
 		return MOVE_STANDARD;
 	}
-	if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
-		return MOVE_STANDARD;
+	if (ammo == uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+		return MOVE_CANCELLED;
 
 	/* blasters */
 	if (launcher && is_blaster(launcher)) {
@@ -2811,7 +2834,7 @@ boolean forcedestroy;
 		HPanicking += 1+rnd(6);
 	}
 
-	if(otyp == SHURIKEN && Role_if(PM_MONK))
+	if(otyp == SHURIKEN && (Role_if(PM_MONK) || Role_if(PM_KENSEI)))
 		return MOVE_PARTIAL;	/* this might have taken time */
 	else
 		return (launcher) ? MOVE_FIRED : MOVE_STANDARD;	/* this took time */

@@ -847,7 +847,7 @@ boolean chatting;
 	//Template and profession adjustments
 	if(is_silent_mon(mtmp))
 		soundtype = MS_SILENT;
-	else if(is_dollable(mtmp->data) && mtmp->m_insight_level)
+	else if(is_dollable_mtyp(mtmp->mtyp) && mtmp->m_insight_level)
 		soundtype = MS_STATS;
 	else if(mtmp->ispriest)
 		soundtype = MS_PRIEST;
@@ -6373,6 +6373,12 @@ int p_skill;
 		if (p_skill == P_KNI_RUNIC)
 			return TRUE;
 	}
+	if (Role_if(PM_KENSEI)){
+		if (p_skill == P_KNI_SACRED)
+			return TRUE;
+		if (p_skill == P_KNI_ELDRITCH)
+			return TRUE;
+	}
 	return FALSE;
 }
 
@@ -7090,6 +7096,11 @@ struct monst *dollmaker;
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	
 	incntlet = 'a';
+
+	if(!dollmaker->mvar_dollTypes){
+		pline("Error recovery: this doll had no doll types recored, and has been initialized");
+		dollmaker->mvar_dollTypes = init_doll_sales();
+	}
 	
 	for(l = 0x1L, n = EFFIGY; l <= MAX_DOLL_MASK; l=(l<<1), n++){
 		if(dollmaker->mvar_dollTypes&l){
@@ -7105,7 +7116,7 @@ struct monst *dollmaker;
 		incntlet++; //Advance anyway
 	}
 	
-	if(is_dollable(dollmaker->data)){
+	if(is_dollable_mtyp(dollmaker->mtyp)){
 		Sprintf(buf, "doll tear ($%d)", 8000);
 		any.a_int = DOLL_S_TEAR;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,

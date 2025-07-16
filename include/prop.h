@@ -140,7 +140,10 @@
 #define PROT_ITEMS					1 + WITHERING_STAKE
 #define GOAT_SPELLS					1 + PROT_ITEMS
 #define YOG_SPELLS					1 + GOAT_SPELLS
-#define LAST_PROP					(YOG_SPELLS)
+#define FOCUS_AURA					1 + YOG_SPELLS
+#define DIAMOND_BELL				1 + FOCUS_AURA
+#define DARK_RES					1 + DIAMOND_BELL
+#define LAST_PROP					(DARK_RES)
 
 #define MPROP_SIZE					(LAST_PROP/32 + 1)
 

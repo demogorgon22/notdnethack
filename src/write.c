@@ -265,6 +265,12 @@ found_ward:
 	} else if (i == SPE_BOOK_OF_THE_DEAD || i == SPE_SECRETS || i == SCR_CONSECRATION) {
 		pline("No mere dungeon adventurer could write that.");
 		return 1;
+	} else if (i == SCR_SECRET_ARTS) {
+		if(Role_if(PM_KENSEI))
+			pline("Perhaps you will write that when you have a school and disciples of your own.");
+		else
+			pline("No mere dungeon adventurer could write that.");
+		return 1;
 	} else if (by_descr && paper->oclass == SPBOOK_CLASS &&
 		    !objects[i].oc_name_known) {
 		/* can't write unknown spellbooks by description */

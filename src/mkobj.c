@@ -2404,6 +2404,9 @@ int oldmat, newmat;
 		if(obj->oartifact == ART_JIN_GANG_ZUO){
 			set_submat(obj, DIAMOND);
 		}
+		else if(obj->oartifact == ART_GOKOREI){
+			set_submat(obj, DIAMOND);
+		}
 		else do{
 			set_submat(obj, MAGICITE_CRYSTAL + rn2(LAST_GEM - MAGICITE_CRYSTAL + 1));
 		} while (obj->sub_material == OBSIDIAN);
@@ -3520,7 +3523,7 @@ struct obj *obj;
 	}
 	else obj_extract_self(obj);
 	if (obj->otyp == LEASH && obj->leashmon) o_unleash(obj);
-	if (obj->oclass == FOOD_CLASS) food_disappears(obj);
+	if (obj->oclass == FOOD_CLASS) food_extracted(obj);
 	if (obj->oclass == SPBOOK_CLASS) book_disappears(obj);
 }
 

@@ -2,6 +2,11 @@
 #define XHITY_H
 
 #define MELEEHURT_LONGSLASH_MASK	0x0000000FL
+#define MELEEHURT_FORCE_BLEED		0x00000010L
+#define MELEEHURT_FORCE_CHECK_JOUST	0x00000020L
+#define MELEEHURT_SUPER_SNEAK		0x00000040L
+#define MELEEHURT_DOUBLE_DAMAGE		0x00000080L
+#define MELEEHURT_SHOVE				0x00000100L
 
 /* macros to unify player and monster */
 #define x(mon)				((mon)==&youmonst ? u.ux : (mon)->mx)
@@ -38,6 +43,7 @@
 #define Breathless_res(mon)	((mon)==&youmonst ? Breathless : breathless_mon(mon))
 #define Water_res(mon)		((mon)==&youmonst ? Waterproof : mon_resistance((mon), WATERPROOF))
 #define Gaze_res(mon)		((mon)==&youmonst ? Gaze_immune : mon_resistance((mon), GAZE_RES))
+#define Focused_aura(mon)		((mon)==&youmonst ? FocusAura : mon_resistance((mon), FOCUS_AURA))
 #define ProtectItems(mon)		((mon)==&youmonst ? ProtItems : mon_resistance((mon), PROT_ITEMS))
 #define creature_at(x,y)	(isok(x,y) ? MON_AT(x, y) ? level.monsters[x][y] : (x==u.ux && y==u.uy) ? &youmonst : (struct monst *)0 : (struct monst *)0)
 
@@ -81,4 +87,11 @@
 #define MAX_SUBOUT		22
 #define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/16+1)
 
+#define ATTKFLAG_FORCE_BLEED		0x01L
+#define ATTKFLAG_FORCE_CHECK_JOUST	0x02L
+#define ATTKFLAG_SUPER_SNEAK		0x04L
+#define ATTKFLAG_DOUBLE_DAMAGE		0x08L
+#define ATTKFLAG_SHOVE				0x10L
+
+#define XYATKFLAG_MIRROR_ATK		0x1L
 #endif

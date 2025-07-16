@@ -1049,6 +1049,9 @@ struct monst * mon;
 	if (is_spear(otmp))
 		return 1.5;
 
+	if (otmp->oartifact == ART_WINTER_REAPER)
+		return 1.5;
+
 	if (otmp->otyp == ISAMUSEI || otmp->otyp == CHIKAGE || otmp->otyp == KATANA || otmp->otyp == ODACHI
 		|| otmp->otyp == LONG_SWORD || is_vibrosword(otmp))
 		return 1.5;

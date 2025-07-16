@@ -525,7 +525,7 @@ boolean devour;
 	}
 
 	if (ston) {
-		xstoney((struct monst *)0, mtmp);
+		xstoney((struct monst *)0, mtmp, FALSE);
 	    if (mtmp->mhp <= 0)
 			return 2;
 	}
@@ -780,6 +780,10 @@ int udist;
 		    /* Don't eat if satiated.  (arbitrary) 
 				Non-mindless pets can sense if you are hungry or starving, and will eat less.
 			*/
+			if(HAS_ESMT(mtmp) && ESMT(mtmp)->smith_mtyp == PM_DRACAE_ELADRIN && ESMT(mtmp)->smith_biomass_stockpile <= 7500 && edog->hungrytime > monstermoves + DOG_SATIATED){
+				ESMT(mtmp)->smith_biomass_stockpile += edog->hungrytime - (monstermoves + DOG_SATIATED - 1);
+				edog->hungrytime = (monstermoves + DOG_SATIATED - 1);
+			}
 		    if (edog->hungrytime < monstermoves + DOG_SATIATED || 
 				(!mindless_mon(mtmp) && 
 					(

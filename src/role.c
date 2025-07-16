@@ -249,6 +249,34 @@ struct Role roles[] = {
 	{  1, 4,  1, 2,  0, 3 },10,	/* Energy */
 	10, 8,-2, 0,  9, A_WIS, SPE_TURN_UNDEAD, -1000
 },
+{	{"Kensei", 0}, {
+	{"Ikkyu",       0},
+	{"Shodan",      0},
+	{"Renshi",      0},
+	{"Kyoshi",      0},
+	{"Hachidan",    0}, 
+	{"Hanshi",      0},
+	{"Kengo",       0},
+	{"Meijin",      0},
+	{"Kensei",      0} },
+	GOD_KANNON, GOD_FUDO_MYOO, GOD_SHUKONGOSHIN, /* Chinese */
+	GOD_AKUMA,
+	"Ken", "the mountain shrine",
+	  "the haunted castle",
+	PM_KENSEI, NON_PM, NON_PM,
+	PM_HERMIT_MASTER, PM_DISCIPLE, PM_BLUE_EYED_FOX,
+	PM_FOX, PM_ORC_CAPTAIN, S_OGRE, S_NYMPH,
+	ART_EYE_OF_JIROSHIN,
+	MA_HUMAN|MA_REPTILIAN|MA_ELF|MA_FEY, ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	/* Str Int Wis Dex Con Cha */
+	{  13,  7, 13, 10, 10, 13 },
+	{  20, 10, 20, 20, 15, 15 },
+	/* Init   Lower  Higher */
+	{  8, 0,  0, 8,  0, 8 },	/* Hit points */
+	{  8, 0,  1, 2,  0, 4 },10,	/* Energy */
+	10, 8,-2, 2, 20, A_WIS, SPE_DETECT_UNSEEN, -24
+},
 {	{"Monk", 0}, {
 	{"Candidate",         0},
 	{"Novice",            0},
@@ -917,6 +945,20 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_CHARM_MONSTER, -15
 },
+{	"Gith", "Gith", "githhood", "Gth",
+	{0, 0},
+	PM_GITH, NON_PM, PM_HUMAN_MUMMY, PM_GITH,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC,
+	MA_REPTILIAN, 0, 0,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(50),  20, 20, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_FORCE_BOLT, -1000
+},
 /* Array terminator */
 { 0, 0, 0, 0, 0 }};
 
@@ -968,6 +1010,37 @@ struct Race android =
 	NO_NIGHTVISION
 };
 
+struct Race githyanki =
+{	"Githyanki", "githyanki", "githhood", "Ynk",
+	{0, 0},
+	PM_GITHYANKI, NON_PM, PM_HUMAN_MUMMY, PM_GITHYANKI,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
+	MA_REPTILIAN, MA_DRAGON, MA_FEY|MA_ELF|MA_GNOME|MA_DWARF|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(50),  20, 16, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_FORCE_BOLT, -1000
+};
+
+struct Race githzerai =
+{	"Githzerai", "githzerai", "githhood", "Zer",
+	{0, 0},
+	PM_GITHZERAI, NON_PM, PM_HUMAN_MUMMY, PM_GITHZERAI,
+	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
+	MA_REPTILIAN, MA_ELEMENTAL, MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(50),  16, 20, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_PROTECTION, -1000
+};
 /* Table of all genders */
 const struct Gender genders[] = {
 	{"male",	"he",	"him",	"his",	"Mal",	ROLE_MALE},
@@ -1078,6 +1151,7 @@ validdescendant(rolenum)
 		!(roles[flags.initrole].malenum == PM_ANACHRONONAUT
 			|| roles[flags.initrole].malenum == PM_EXILE
 			|| roles[flags.initrole].malenum == PM_CAVEMAN
+			|| roles[flags.initrole].malenum == PM_KENSEI
 		));
 }
 
@@ -1967,6 +2041,16 @@ int newgame;
 			}
 		}
 	}
+	else if(Race_if(PM_GITH)){
+		if(flags.initalign == 0){
+			//Lawful
+			urace = githyanki;
+		}
+		else if(flags.initalign == 2){
+			//Chaotice
+			urace = githzerai;
+		}
+	}
 	else if(Humanoid_half_dragon(urole.malenum)){
 		urace.attrmax[A_DEX] = 18;
 	}
@@ -2506,6 +2590,10 @@ int newgame;
 		urace.lovemask |= MA_FEY|MA_ELF;
 		urace.hatemask = MA_ORC;
 	}
+	else if(Role_if(PM_KENSEI)){
+		urace.hatemask |= (MA_FEY|MA_DEMON|MA_UNDEAD);
+		urace.lovemask &=~(MA_FEY|MA_DEMON|MA_UNDEAD);
+	}
 
 	/* Artifacts are fixed in hack_artifacts() */
 
@@ -2526,6 +2614,7 @@ struct monst *mtmp;
 	switch (Role_switch) {
 	case PM_KNIGHT:
 	    return ("Salutations"); /* Olde English */
+	case PM_KENSEI:
 	case PM_SAMURAI:
 	    return (mtmp && mtmp->mtyp == PM_SHOPKEEPER ?
 	    		"Irasshaimase" : "Konnichi wa"); /* Japanese */
@@ -2552,6 +2641,7 @@ Goodbye()
 	switch (Role_switch) {
 	case PM_KNIGHT:
 	    return ("Fare thee well");  /* Olde English */
+	case PM_KENSEI:
 	case PM_SAMURAI:
 	    return ("Sayonara");        /* Japanese */
 #ifdef TOURIST

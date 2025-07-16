@@ -4979,6 +4979,238 @@ the Planes of the Elements, to achieve this goal.
 "Go with %d, %p."
 %E
 #
+#       Kensei
+#
+#
+%Cc Ken 00001
+You find yourself in a high mountain valley, standing before a
+shrine and a shallow cave. You recognize the home of your master!
+There are far less %gp than usual,
+and something is obviously wrong.
+
+You must check on your master!
+%E
+%Cp Ken 00002
+Once again, you stand before your master's home.
+%E
+%Cp Ken 00003
+Again you darken your master's door. Your intuition hints that
+this may be the final time you come here.
+%E
+%Cp Ken 00005
+"Greetings, brave %r.  It is good to see you."
+%E
+%Cp Ken 00006
+"Ah, %p!  Surely you can help us in our hour of need."
+%E
+%Cp Ken 00007
+"Greetings, %s.  Our master has great need of your help."
+%E
+%Cp Ken 00008
+"Alas, it seems as if even %d has deserted us."
+%E
+%Cp Ken 00009
+"May %d be with you, %s."
+%E
+%Cp Ken 00010
+"Greetings, brave %r.  It is good to see you again."
+%E
+%Cp Ken 00011
+"Ah, %p!  Our deepest gratitude for all of your help."
+%E
+%Cp Ken 00012
+"Greetings, %s!  Perhaps you will take some time to spar with us?"
+%E
+%Cp Ken 00013
+"With this test behind you, may %d bring you mastery."
+%E
+%Cp Ken 00014
+"May %d be with you, %s."
+%E
+%Cc Ken 00015
+"Ah, %p, my child, come closer. My eyes are not what
+they once were. I am glad to see you returned. Ruin has come
+to our school. I would see if you truly have the makings of
+a sword saint."
+%E
+%Cp Ken 00016
+"Again, my %S, you stand before me.  Are you sufficiently honed?"
+%E
+%Cp Ken 00017
+"Once more, %p, you stand within within my home.
+Are you ready now?"
+%E
+%Cc Ken 00018
+"I would say I am disappointed in you, %p, but in truth I have
+failed you. You have not just lost your way, you have shown the
+path of the sword saint to be beyond you. I should never have
+allowed it to come to this. I recommend you cast aside your weapon.
+The path of %d would shatter you as an ill-forged blade."
+%E
+%Cc Ken 00019
+"No, alas, you are not yet ready. Return to your travels and
+hone yourself further. You stand now as a %r, return to me
+once you claim the title of %R"
+%E
+%Cc Ken 00020
+"No, no, you stray from the path, my child. Were I to put the
+true test to you, you would not have the fortitude to claim
+victory. Consider the teachings of %d and continue your
+training. Return once you have healed your ill spirit."
+%E
+%Cc Ken 00021
+"Yes, %p, it is as I hoped. You show the makings of a
+true sword saint. Sit, and I will tell you of what occurred.
+
+"Some time after you left, the school was attacked by a
+legion of fox spirits. They struck in the night and raided
+our home for treasures. Worst of all, a blue-eyed fox spirit
+stole away with %o.
+
+"The elder %g already attempted to retrieve it,
+and they have not returned. We are defenseless, and the
+loss of %o could have dire consequences.
+
+"You must travel to %i in the valley bellow,
+and find the hidden path to the canyon village that the
+%n and her bandits reside. Once you have found it,
+slay the spirit and recover %o.
+%E
+%Cp Ken 00025
+"The three-armed earth spirits have tough hides, but you are faster."
+%E
+%Cp Ken 00026
+"Remember that %n is a master of arcane and of martial art."
+%E
+%Cp Ken 00027
+"Be pure, my %S."
+%E
+%Cp Ken 00028
+"Beware, %i has dangers all its own."
+%E
+%Cp Ken 00029
+"Even I must respect the old knife ghosts of the rain. Disarm them, if you can."
+%E
+%Cp Ken 00030
+"Acquire and wear %o if you can.  It will aid you
+against %n."
+%E
+%Cp Ken 00031
+"Call upon %d when your need is greatest.  You will be answered."
+%E
+%Cp Ken 00032
+"The kitsune are shape-shifters. If you feel feverish after fighting one, drink pure water."
+%E
+%Cp Ken 00033
+"Beware the wiles of the kitsune."
+%E
+%Cp Ken 00034
+"%oC has recruited Oni mages to her service."
+%E
+%Cc Ken 00035
+You arrive at %i at last. Now, to find the secret passage
+to the bandit village.
+%E
+%Cp Ken 00036
+Again, you reach %i.
+%E
+%Cc Ken 00040
+You might not have even recognized the Hidden Village if not for
+the secret passage leading you right to it.
+
+Somewhere within, %n hides...
+%E
+%Cp Ken 00041
+Again, you arrive at the Hidden Village.
+%E
+%Cc Ken 00050
+"Ah, so the feeble old hermit sends another fledgling into my jaws?
+
+"You claim to be a sword saint? Hmph! Your training
+will not stop me from feasting upon your bones."
+%E
+%Cp Ken 00051
+"Back so soon, %r?"
+%E
+%Cp Ken 00052
+"I tire of these games. Lay down and die."
+%E
+%Cp Ken 00053
+"Return %o to me, or I will ensure
+your end is slow and painful."
+%E
+%Cp Ken 00060
+"Your weapon is as feeble as your skills are."
+%E
+%Cp Ken 00061
+"You are no match for me."
+%E
+%Cp Ken 00062
+"Perhaps I could gift you to my brothers and sisters."
+%E
+%Cp Ken 00063
+"Despair now, %r. %dC cannot help you."
+%E
+%Cp Ken 00064
+"I will eat your heart."
+%E
+%Cp Ken 00065
+"Your death will be slow and painful. That I promise!"
+%E
+%Cp Ken 00066
+"Do you have any clue how many warriors I have slain?"
+%E
+%Cp Ken 00067
+"Perhaps when I finish you, I will return for the rest of your school."
+%E
+%Cp Ken 00068
+"I feel your powers failing you, %r. You shall die now."
+%E
+%Cp Ken 00069
+"With %o, I will be unstoppable."
+%E
+%Cc Ken 00070
+As you pick up %o, you feel
+its power in your body. Your sight seems clearer,
+your arms stronger. You can tell now that the 
+piercing gaze of the Eye was a great threat
+to the fox and its disciples.
+%E
+%Cc Ken 00080
+%nC howls in pain:
+    "You may have won this day, sword-saint, but I swear
+    that I will one day have vengeance upon you!"
+    With that, the creature perishes.
+%E
+%Cc Ken 00081
+"I knew you could do it. The spirit slain and the Eye recovered.
+You have done excellently.
+
+"You have proven yourself to be well on your way to mastery.
+Take %o, that it might show you the way.
+Continue your journey, and retrieve the Amulet of Yendor.
+
+"Reach heaven through violence."
+%E
+%Cc Ken 00082
+"The Eye is a potent tool. It turns aside hostile gazes, and
+can reveal those creatures which hide their shape. 
+It will also further empower your weapon of choice.
+Take it and return to the Dungeons of Doom. It is safer in your hands
+than mine."
+%E
+%Cp Ken 00090
+"Welcome back, %p.  How is your quest for the Amulet going?"
+%E
+%Cc Ken 00091
+"You have done the impossible, my friend. The teachings of
+%d have served you well. Return to the Dungeons of
+Doom, and travel from there to the Astral Plane. There, 
+you must offer the Amulet to %d. I do not think
+I will see you again in life, but I hope
+to spar with you in the halls of the gods."
+%E
+#
 #       Monk
 #
 #

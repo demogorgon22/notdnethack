@@ -724,6 +724,18 @@ boolean on, silently;
 	return;
 }
 
+void
+update_mon_vulnerability(struct monst *mon, int which, boolean on)
+{
+    if (on) {
+		mon->acquired_weaknesses[(which-1)/32] |= (1L << (which-1)%32);
+    }
+	else { /* off */
+		mon->acquired_weaknesses[(which-1)/32] &= ~(1L << (which-1)%32);
+    }
+	return;
+}
+
 /* armor put on, taken off, grabbed, or dropped; might be magical variety */
 void
 update_mon_intrinsics(mon, obj, on, silently)

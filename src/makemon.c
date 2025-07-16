@@ -1309,25 +1309,51 @@ boolean greatequip;
 		(void)mongets(mtmp, HIGH_BOOTS, mkobjflags);
 	}
 	else if(ptr->mtyp == PM_PARASITIZED_KNIGHT){
-		otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+		if(Infuture){
+			otmp = mongets(mtmp, PLASTEEL_BOOTS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
 
-		otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+			otmp = mongets(mtmp, PLASTEEL_ARMOR, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
 
-		otmp = mongets(mtmp, GAUNTLETS, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+			otmp = mongets(mtmp, PLASTEEL_GAUNTLETS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
 
-		otmp = mongets(mtmp, KITE_SHIELD, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+			otmp = mongets(mtmp, TOWER_SHIELD, mkobjflags);
+			if(otmp){
+				set_material_gm(otmp, rn2(3) ? PLASTIC : GLASS);
+				otmp->spe = max_ints(otmp->spe, 4+rn2(3));
+			}
 
-		otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
-		if(otmp)
-			otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+			int futurekit[] = {DISKOS, VIBROBLADE, FORCE_BLADE, FORCE_SWORD, FORCE_WHIP, FORCE_PIKE, LIGHTSABER, BEAMSWORD};
+			otmp = mongets(mtmp, ROLL_FROM(futurekit), mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+		}
+		else {
+			otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, PLATE_MAIL, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, GAUNTLETS, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, KITE_SHIELD, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 2+rn2(3));
+
+			otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
+			if(otmp)
+				otmp->spe = max_ints(otmp->spe, 3+rn2(5));
+		}
 	}
 	else if (ptr->mtyp == PM_CROESUS) {
 		otmp = mksobj(TWO_HANDED_SWORD, mkobjflags);
@@ -3305,6 +3331,11 @@ boolean greatequip;
 			(void) mongets(mtmp, CHAIN_MAIL, mkobjflags);
 			(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
 			(void) mongets(mtmp, GLOVES, mkobjflags);
+		} else if (mm == PM_DISCIPLE){
+			(void) mongets(mtmp, LONG_SWORD, mkobjflags);
+			(void) mongets(mtmp, ROBE, mkobjflags);
+			(void) mongets(mtmp, GLOVES, mkobjflags);
+			(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
 		} else if (mm == PM_ABBOT){
 			otmp = mongets(mtmp, WAISTCLOTH, mkobjflags);
 			if(otmp){
@@ -3454,13 +3485,29 @@ boolean greatequip;
 			(void)mongets(mtmp, JACKET, mkobjflags);
 			(void)mongets(mtmp, LOW_BOOTS, mkobjflags);
 		} else if (mm == PM_NINJA){
-			(void)mongets(mtmp, BROADSWORD, mkobjflags);
+			(void)mongets(mtmp, NINJA_TO, mkobjflags);
 			chance = d(1,100);
 			if(chance > 95) (void)mongets(mtmp, SHURIKEN, mkobjflags);
 			else if(chance > 75) (void)mongets(mtmp, DART, mkobjflags);
 			else{ 
 				(void) mongets(mtmp, DAGGER, mkobjflags);
 				(void) mongets(mtmp, DAGGER, mkobjflags);
+			}
+			otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, GLOVES, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, LEATHER_HELM, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
 			}
 		} else if (mm == PM_ROSHI){
 			(void)mongets(mtmp, QUARTERSTAFF, mkobjflags);
@@ -4183,11 +4230,12 @@ boolean greatequip;
 			(void) mongets(mtmp, DAGGER, mkobjflags);
 			(void) mongets(mtmp, DAGGER, mkobjflags);
 			chance = d(1,100);
-			if(Role_if(PM_SAMURAI))
+			if(Role_if(PM_SAMURAI)){
 				if(chance > 95) (void)mongets(mtmp, NAGINATA, mkobjflags);
 				else if(chance > 75) (void)mongets(mtmp, KATANA, mkobjflags);
-				else if(chance > 50) (void)mongets(mtmp, BROADSWORD, mkobjflags);
-				else (void)mongets(mtmp, STILETTO, mkobjflags);
+				else if(chance > 50) (void)mongets(mtmp, NINJA_TO, mkobjflags);
+				else (void)mongets(mtmp, WAKIZASHI, mkobjflags);
+			}
 			else if(chance > 70) (void)mongets(mtmp, KATANA, mkobjflags);
 			else (void)mongets(mtmp, STILETTO, mkobjflags);
 		break;
@@ -4568,18 +4616,39 @@ boolean goodequip;
 				switch(rn2(3)){
 					case 0:
 						otmp = mongets(mtmp, QUARTERSTAFF, mkobjflags);
-						set_material_gm(otmp, WOOD);
+						if(otmp)
+							set_material_gm(otmp, WOOD);
 					break;
 					case 1:
 						otmp = mongets(mtmp, NUNCHAKU, mkobjflags);
-						set_material_gm(otmp, WOOD);
+						if(otmp)
+							set_material_gm(otmp, WOOD);
 					break;
 					case 2:
 						otmp = mongets(mtmp, KATAR, mkobjflags);
-						set_material_gm(otmp, MINERAL);
+						if(otmp)
+							set_material_gm(otmp, MINERAL);
 					break;
 				}
 				otmp = mongets(mtmp, SEDGE_HAT, mkobjflags);
+				if(otmp)
+					set_material_gm(otmp, MINERAL);
+			}
+			else if(Role_if(PM_KENSEI) && In_quest(&u.uz)){
+				switch(rn2(3)){
+					case 0:
+						otmp = mongets(mtmp, LONG_SWORD, mkobjflags);
+					break;
+					case 1:
+						otmp = mongets(mtmp, TWO_HANDED_SWORD, mkobjflags);
+					break;
+					case 2:
+						otmp = mongets(mtmp, RAPIER, mkobjflags);
+					break;
+				}
+				if(otmp)
+					set_material_gm(otmp, MINERAL);
+				otmp = mongets(mtmp, WAR_HAT, mkobjflags);
 				set_material_gm(otmp, MINERAL);
 			}
 			else switch(rn2(3)){
@@ -4593,7 +4662,8 @@ boolean goodequip;
 					otmp = mongets(mtmp, MACE, mkobjflags);
 				break;
 			}
-			set_material_gm(otmp, MINERAL);
+			if(otmp)
+				set_material_gm(otmp, MINERAL);
 		break;
 	}
 }
@@ -7936,7 +8006,7 @@ int mmflags;
 				// Siege Ogres etc. continue
 			}
 		if (mm == PM_OGRE_EMPEROR){
-		    (void) mongets(mtmp, TSURUGI, mkobjflags);
+		    (void) mongets(mtmp, NAGAMAKI, mkobjflags);
 			(void)mongets(mtmp, GAUNTLETS, mkobjflags);
 			(void)mongets(mtmp, BANDED_MAIL, mkobjflags);
 			(void)mongets(mtmp, WAR_HAT, mkobjflags);
@@ -11169,6 +11239,15 @@ boolean greatequip;
 						update_mon_intrinsics(mtmp, otmp, TRUE, TRUE);
 					}
 				}
+			} else if(mtmp->mtyp == PM_BLUE_EYED_FOX){
+				int weapon[] = {ATHAME, SICKLE,  SHORT_SWORD, KHOPESH, WAKIZASHI, SCIMITAR, RAPIER, BROADSWORD, NINJA_TO, LONG_SWORD, MACUAHUITL, QUARTERSTAFF, KHAKKHARA, DOUBLE_SWORD, FLAIL, KATAR};
+				otmp = mongets(mtmp, ROLL_FROM(weapon), mkobjflags);
+				if(otmp)
+					set_material_gm(otmp, MERCURIAL);
+				(void)mongets(mtmp, SHURIKEN, mkobjflags);
+				(void)mongets(mtmp, DART, mkobjflags);
+				(void) mongets(mtmp, DAGGER, mkobjflags);
+				(void) mongets(mtmp, DAGGER, mkobjflags);
 			} else if(mtmp->mtyp == PM_WATCHDOG_OF_THE_BOREAL_VALLEY){
 				otmp = mksobj(ARMORED_BOOTS, mkobjflags|MKOBJ_NOINIT);
 				otmp->objsize = MZ_HUGE;
@@ -11862,7 +11941,7 @@ boolean greatequip;
 			}
 			else {
 				/*Weapon*/
-				otmp = mksobj(HIGH_ELVEN_WARSWORD, mkobjflags);
+				otmp = mksobj(!rn2(20) ? HIGH_ELVEN_WARSWORD : !rn2(4) ? ELVEN_SCIMITAR : ELVEN_BROADSWORD, mkobjflags);
 				add_oprop(otmp, OPROP_WRTHW);
 				MAYBE_MERC(otmp)
 				otmp->blessed = TRUE;

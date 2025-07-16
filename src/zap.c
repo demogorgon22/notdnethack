@@ -98,6 +98,7 @@ int adtyp, ztyp;
 		case AD_HLUH: return "corrupted missile";
 		case AD_DISN: return "disintegration ray";
 		case AD_MADF: return "burst of magenta fire";
+		case AD_VORP: return "blade of slicing wind";
 		default:      impossible("unknown spell damage type in flash_type: %d", adtyp);
 			return "cube of questions";
 		}
@@ -177,6 +178,7 @@ int adtyp;
 		return CLR_MAGENTA;
 		//	return CLR_CYAN;
 	case AD_HLUH:
+	case AD_VORP:
 		return CLR_GRAY;
 		//	return NO_COLOR;
 	case AD_EFIR:
@@ -4177,7 +4179,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 				if (youdef)	nomul(0, NULL);
 
 				/* lightning blinds */
-				if (zapdata->adtyp == AD_ELEC && !resists_blnd(mdef)
+				if ((zapdata->adtyp == AD_ELEC || zapdata->blinding) && !resists_blnd(mdef)
 					&& !(youagr && u.uswallow && mdef == u.ustuck)) {
 					lightning_blind(mdef, d(zapdata->damn, 25));
 				}
@@ -4430,6 +4432,8 @@ struct zapdata * zapdata;
 			if (youdef)
 				addmsg("The missiles bounce off!");
 		}
+		else if(magm_vulnerable(mdef))
+			dmg *= 1.5;
 		domsg();
 		if (youdef && dmg > 0)
 			exercise(A_STR, FALSE);
@@ -4499,7 +4503,7 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
-		else if (species_resists_cold(mdef)) {
+		else if (fire_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4533,7 +4537,7 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
-		else if (species_resists_fire(mdef)) {
+		else if (cold_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4563,6 +4567,9 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
+		else if (shock_vulnerable(mdef)) {
+			dmg *= 2;
+		}
 		domsg();
 		golemeffects(mdef, AD_ELEC, svddmg);
 		/* damage inventory */
@@ -4585,6 +4592,9 @@ struct zapdata * zapdata;
 					addmsg("You seem unaffected.");
 				dmg = 0;
 			}
+		}
+		else if (acid_vulnerable(mdef)) {
+			dmg *= 2;
 		}
 		/* extra effects vs player */
 		if (youdef && dmg > 0) {
@@ -4612,7 +4622,10 @@ struct zapdata * zapdata;
 		else if (Fire_res(mdef)) {
 			dmg -= dmg/2;
 		}
-		else if (species_resists_cold(mdef)) {
+		else if (fire_vulnerable(mdef) && magm_vulnerable(mdef)) {
+			dmg *= 3;
+		}
+		else if (fire_vulnerable(mdef) || magm_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4811,6 +4824,42 @@ struct zapdata * zapdata;
 			}
 		}
 
+		return xdamagey(magr, mdef, &attk, dmg);
+
+	case AD_VORP:
+		struct permonst * pd = (youdef ? youracedata : mdef->data);
+		if ((rn2(20) && pd->mtyp != PM_JABBERWOCK) || (noncorporeal(pd) || amorphous(pd))){
+			domsg();
+		} else {
+			if (bigmonst(pd)){
+				dmg *= 2;
+				domsg();
+			} else if(!check_res_engine(mdef, AD_VORP)){
+				otmp = (youdef ? uarm : which_armor(mdef, W_ARM));
+				if(otmp && !arm_blocks_upper_body(otmp->otyp))
+					otmp = 0;
+
+				if (!otmp) {
+					if (canseemon(mdef))
+						pline("The blade of slicing wind bisects %s!", mon_nam(mdef));
+					Sprintf(buf, "bisected by slicing winds");
+					killer = buf;
+					killer_format = NO_KILLER_PREFIX;
+					dmg = FATAL_DAMAGE_MODIFIER;
+				}
+				else if (!((youdef && Preservation) || (!youdef && mon_resistance(mdef, PRESERVATION)))){
+					/* double damage! */
+					dmg *= 2;
+					domsg();
+					if (!otmp->oartifact){
+						if (youdef)
+							claws_destroy_arm(otmp);
+						else
+							claws_destroy_marm(mdef, otmp);
+					}
+				}
+			} else domsg();
+		}
 		return xdamagey(magr, mdef, &attk, dmg);
 
 	case AD_DEAD:
@@ -5884,6 +5933,8 @@ int damage, tell;
 	dlev = (int)mtmp->m_lev;
 	if(mtmp->mcan)
 		dlev /= 2;
+	if(magm_vulnerable(mtmp))
+		dlev /= 2;
 	if (dlev > 50) dlev = 50;
 	else if (dlev < 1) dlev = 1;
 	
@@ -5897,6 +5948,8 @@ int damage, tell;
 		else
 			mons_mr /= 2;
 	}
+	if(magm_vulnerable(mtmp))
+		mons_mr /= 2;
 	if(mtmp->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
 		mons_mr += 10;
 
