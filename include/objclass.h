@@ -253,8 +253,10 @@ struct objclass {
 												|| (mon == &youmonst && u.uinsight >= 40 && trait == ETRAIT_FOCUS_FIRE ) \
 											))\
 										|| ((obj)->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits&trait)\
-									   ) && \
-	((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
+									   ) \
+		&& ((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S)))\
+		&& !(trait != ETRAIT_FOCUS_FIRE && !carried(obj) && !mcarried(obj)) \
+	)
 #define ROLL_ETRAIT(obj, mon, echance, schance) (((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_SKILLED) : ((mon)->data->mflagsf&MF_MARTIAL_E)) ? echance : schance)
 #define FFORM_ETRAIT(obj, mon) (objects[(obj)->otyp].expert_traits&FFORM_ETRAITS && ((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
 
