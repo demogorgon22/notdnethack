@@ -3139,7 +3139,10 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == KAMEREL_VAJRA){
-				Sprintf(buf2, "When lit, deals +2d6 lightning damage, or +6d6 if wielded by an Ara Kamerel, and may blind struck targets.");
+				if(obj->oartifact == ART_KISHIN_MIRROR)
+					Sprintf(buf2, "When lit, deals bonus holy, unholy, or lightning damage, depending on your alignment record.");
+				else
+					Sprintf(buf2, "When lit, deals +2d6 lightning damage, or +6d6 if wielded by an Ara Kamerel, and may blind struck targets.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == VIPERWHIP && obj->ovar1_heads > 1){

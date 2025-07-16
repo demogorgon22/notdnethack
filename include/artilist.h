@@ -440,7 +440,7 @@ A("Rhongomyniad",		LANCE,							(const char *)0,
 
 A("The Boreal Scepter",			SQUARE_CLUB,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_LAWFUL, PM_KENSEI, NON_PM, TIER_B, (ARTG_NOGEN),
+	A_LAWFUL, PM_KENSEI, NON_PM, TIER_A, (ARTG_NOGEN),
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
 	PROPS(), NOFLAG,
@@ -501,7 +501,7 @@ A("Kishin Mirror",			KAMEREL_VAJRA,	(const char *)0,
 
 A("The Epitaph of Wongas",			ROD_OF_FORCE,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_CHAOTIC, PM_KENSEI, PM_INCANTIFIER, TIER_B, (ARTG_NOGEN),
+	A_CHAOTIC, PM_KENSEI, PM_INCANTIFIER, TIER_A, (ARTG_NOGEN),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 1), (ARTA_VORPAL),
 	PROPS(), NOFLAG,
@@ -606,10 +606,10 @@ A("Magicbane",			ATHAME,							"mystically runed %s",
  *  "no" being "of", and "Fuma-itto" being "Fuma-clan" (or so I hope...),
  *  this being a clan of ninja from the Sengoku era
  *  (there should be an accent over the u of "Fuma" and the o of "-itto").
- *  Nethack Samurai call broadswords "Ninja-to," which is the steriotypical ninja sword.
+ *  Nethack Samurai called broadswords "Ninja-to," which is the steriotypical ninja sword.
  *  Aparently, there was no such thing as an actual Ninja-to, it's something Hollywood made up!
  */
-A("Fuma-itto no Ken",	BROADSWORD,						(const char *)0,
+A("Fuma-itto no Ken",	NINJA_TO,						(const char *)0,
 	1200L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, NON_PM, TIER_D, (ARTG_GIFT|ARTG_INHER),
 	NO_MONS(),

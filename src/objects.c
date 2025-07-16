@@ -411,7 +411,10 @@ WEAPON(("isamusei", "oddly-luminous sword", "razor-thin sword"), /*Needs encyc e
 	0, 0, MZ_MEDIUM,  1, 100,500,  2, S|B, P_BROAD_SWORD, METAL, FALSE, CLR_ORANGE, O_MAGIC(1)),
 WEAPON(("broadsword", "basket-hilted sword"),
 	DMG(D(2, 4)), DMG(D(6), F(1)),
-	0, 0,  MZ_LARGE,  8, 70, 10,  0, S,   P_BROAD_SWORD, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_GRAZE)),
+	0, 0,  MZ_LARGE,  7, 70, 10,  0, S,   P_BROAD_SWORD, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_GRAZE)),
+WEAPON(("ninja-to", "ninja sword"),
+	DMG(D(2, 4)), DMG(D(6), F(1)),
+	0, 0,  MZ_LARGE,  1, 70, 10,  0, S,   P_BROAD_SWORD, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_FOCUS_FIRE|ETRAIT_CREATE_OPENING|ETRAIT_BLEED)),
 WEAPON(("elven broadsword", "runed broadsword"), /*Needs encyc entry*/
 	DMG(D(6), D(4)), DMG(D(6), F(2)),
 	0, 0,  MZ_LARGE,  4, 20, 10,  2, S,   P_BROAD_SWORD, WOOD, FALSE, HI_WOOD, O_TRAITS(ETRAIT_BLADEDANCE|ETRAIT_GRAZE|ETRAIT_BLADESONG)),
@@ -1684,7 +1687,8 @@ POTION(("blood", "blood-red"),            0, 18, 50,  CLR_RED, O_USKWN(1)),	/* e
 	SCROLL(("warding",               "RW NW PRT M HRW"),      1,  13, 300),
 	SCROLL(("antimagic",             "KARSUS"),               1,  18, 250),
 	SCROLL(("resistance",            "DESREVER TSEPMET"),     1,  34, 250),
-	SCROLL(("consecration",          "HLY HLS"),              1,   0,3000, O_NOWISH(1)),	/* unwishable/unwritable */
+	SCROLL(("consecration",          "HLY HLS"),              1,   0, 3000, O_NOWISH(1)),	/* unwishable/unwritable */
+	SCROLL(("secret arts",           "SKADOOSH"),             1,   0, 3000, O_NOWISH(1)),	/* unwishable/unwritable */
 	SCROLL(((char *)0,               "FOOBIE BLETCH"),        1,   0, 100),
 	SCROLL(((char *)0,               "TEMOV"),                1,   0, 100),
 	SCROLL(((char *)0,               "GARVEN DEH"),           1,   0, 100),

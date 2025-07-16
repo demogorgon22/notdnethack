@@ -454,6 +454,13 @@ OBJECT:random,random,random
 OBJECT:random,random,random
 OBJECT:random,random,random
 
+OBJECT:'?',"secret arts",random
+OBJECT:'?',"secret arts",random
+OBJECT:'?',"secret arts",random
+OBJECT[70%]:'?',"secret arts",random
+OBJECT[50%]:'?',"secret arts",random
+OBJECT[30%]:'?',"secret arts",random
+
 OBJECT:'!',"booze",random
 OBJECT:'!',"booze",random
 OBJECT:'!',"booze",random

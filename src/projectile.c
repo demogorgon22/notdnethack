@@ -209,7 +209,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		if ((thrownobj->oartifact == ART_MJOLLNIR && (youagr ? (Role_if(PM_VALKYRIE)) : magr ? (magr->mtyp == PM_VALKYRIE) : FALSE)) ||
 			(thrownobj->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && (youagr ? (Race_if(PM_DWARF)) : magr ? (is_dwarf(magr->data)) : FALSE)) ||
 			arti_returning(thrownobj) ||
-			(Role_if(PM_KENSEI) && (Race_if(PM_GITHYANKI) || Race_if(PM_GITHZERAI) )
+			(youagr && Role_if(PM_KENSEI) && (Race_if(PM_GITHYANKI) || Race_if(PM_GITHZERAI) )
 				&& objects[thrownobj->otyp].oc_merge && thrownobj->oclass == WEAPON_CLASS && !is_ammo(thrownobj)
 			) ||
 			check_oprop(thrownobj, OPROP_RETRW)

@@ -3485,13 +3485,29 @@ boolean greatequip;
 			(void)mongets(mtmp, JACKET, mkobjflags);
 			(void)mongets(mtmp, LOW_BOOTS, mkobjflags);
 		} else if (mm == PM_NINJA){
-			(void)mongets(mtmp, BROADSWORD, mkobjflags);
+			(void)mongets(mtmp, NINJA_TO, mkobjflags);
 			chance = d(1,100);
 			if(chance > 95) (void)mongets(mtmp, SHURIKEN, mkobjflags);
 			else if(chance > 75) (void)mongets(mtmp, DART, mkobjflags);
 			else{ 
 				(void) mongets(mtmp, DAGGER, mkobjflags);
 				(void) mongets(mtmp, DAGGER, mkobjflags);
+			}
+			otmp = mongets(mtmp, HIGH_BOOTS, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, GLOVES, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
+			}
+			otmp = mongets(mtmp, LEATHER_HELM, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_BLACK;
 			}
 		} else if (mm == PM_ROSHI){
 			(void)mongets(mtmp, QUARTERSTAFF, mkobjflags);
@@ -4214,11 +4230,12 @@ boolean greatequip;
 			(void) mongets(mtmp, DAGGER, mkobjflags);
 			(void) mongets(mtmp, DAGGER, mkobjflags);
 			chance = d(1,100);
-			if(Role_if(PM_SAMURAI))
+			if(Role_if(PM_SAMURAI)){
 				if(chance > 95) (void)mongets(mtmp, NAGINATA, mkobjflags);
 				else if(chance > 75) (void)mongets(mtmp, KATANA, mkobjflags);
-				else if(chance > 50) (void)mongets(mtmp, BROADSWORD, mkobjflags);
-				else (void)mongets(mtmp, STILETTO, mkobjflags);
+				else if(chance > 50) (void)mongets(mtmp, NINJA_TO, mkobjflags);
+				else (void)mongets(mtmp, WAKIZASHI, mkobjflags);
+			}
 			else if(chance > 70) (void)mongets(mtmp, KATANA, mkobjflags);
 			else (void)mongets(mtmp, STILETTO, mkobjflags);
 		break;
@@ -11223,7 +11240,7 @@ boolean greatequip;
 					}
 				}
 			} else if(mtmp->mtyp == PM_BLUE_EYED_FOX){
-				int weapon[] = {ATHAME, SICKLE,  SHORT_SWORD, KHOPESH, WAKIZASHI, SCIMITAR, RAPIER, BROADSWORD, LONG_SWORD, MACUAHUITL, QUARTERSTAFF, KHAKKHARA, DOUBLE_SWORD, FLAIL, KATAR};
+				int weapon[] = {ATHAME, SICKLE,  SHORT_SWORD, KHOPESH, WAKIZASHI, SCIMITAR, RAPIER, BROADSWORD, NINJA_TO, LONG_SWORD, MACUAHUITL, QUARTERSTAFF, KHAKKHARA, DOUBLE_SWORD, FLAIL, KATAR};
 				otmp = mongets(mtmp, ROLL_FROM(weapon), mkobjflags);
 				if(otmp)
 					set_material_gm(otmp, MERCURIAL);

@@ -383,6 +383,7 @@ struct you {
 #define CROSS     38
 #define ICHIMONJI 39
 #define MORTAL_D  40
+#define DRAIN_L   41
 
 	// long laststruck;
 	long lastmoved;

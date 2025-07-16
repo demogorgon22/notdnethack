@@ -515,6 +515,7 @@ static struct trobj Pirate[] = {
 static struct trobj Priest[] = {
 #define PRI_WEAPON	0
 	{ MACE, 1, WEAPON_CLASS, 1, 1 },
+#define PRI_ROBE	1
 	{ ROBE, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ BUCKLER, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ POT_WATER, 0, POTION_CLASS, 4, 1 },	/* holy water */
@@ -527,7 +528,7 @@ static struct trobj DPriest[] = {
 #define PRI_WEAPON	0
 	{ MACE, 1, WEAPON_CLASS, 1, 1 },
 	{ BULLWHIP, 2, WEAPON_CLASS, 1, UNDEF_BLESS },
-	{ ROBE, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+	{ DROVEN_PLATE_MAIL, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ BUCKLER, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
 	{ POT_WATER, 0, POTION_CLASS, 4, 1 },	/* holy water */
@@ -839,7 +840,6 @@ static struct inv_sub { short race_pm, item_otyp, subs_otyp; } inv_subs[] = {
     { PM_DROW,	CLOAK_OF_DISPLACEMENT,		DROVEN_PLATE_MAIL  },
     { PM_DROW,	CLOAK_OF_MAGIC_RESISTANCE,	DROVEN_CHAIN_MAIL  },
     { PM_DROW,	LEATHER_ARMOR,				DROVEN_CHAIN_MAIL  },
-    { PM_DROW,	ROBE,						DROVEN_PLATE_MAIL  },
     { PM_DROW,	ATHAME,						DROVEN_DAGGER	      },
     { PM_DROW,	DAGGER,						DROVEN_DAGGER	      },
     { PM_DROW,	KNIFE,						DROVEN_DAGGER	      },
@@ -2520,6 +2520,9 @@ u_init()
 		knows_class(WEAPON_CLASS);
 		knows_class(ARMOR_CLASS);
 		ini_inv(Kensei);
+		if(Race_if(PM_DROW)){
+			ini_inv(BlackTorches);
+		}
 		break;
 	case PM_MONK:
 		u.umartial = TRUE;
@@ -2620,7 +2623,14 @@ u_init()
 		if(!(flags.female) && Race_if(PM_DROW)){
 			Priest[PRI_WEAPON].trotyp = DROVEN_GREATSWORD;
 		}
-		if(flags.female && Race_if(PM_DROW)) ini_inv(DPriest);
+		if(Race_if(PM_DROW)){
+			if(flags.female)
+				ini_inv(DPriest);
+			else {
+				Priest[PRI_ROBE].trotyp = DROVEN_CHAIN_MAIL;
+				ini_inv(Priest);
+			}
+		}
 		else ini_inv(Priest);
 		if(Race_if(PM_DROW)){
 			if(flags.female){

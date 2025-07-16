@@ -5376,35 +5376,92 @@ boolean direct_weapon;
 	}
 
 	if (otmp->otyp == KAMEREL_VAJRA && litsaber(otmp)) {
-		if (!Shock_res(mdef)) {
-			int num = 1;
-			if(shock_vulnerable_species(mdef)){
-				num *= 2;
+		if(otmp->oartifact == ART_KISHIN_MIRROR && youagr){
+			int dtyp;
+			int dnum = 0;
+			if(u.ualign.record < -3){
+				dtyp = AD_UNHY;
+				dnum = (u.ualign.record+1)/-3;
+				if(dnum > 20)
+					dnum = 20;
+				if(hates_holy_mon(mdef) && !hates_unholy_mon(mdef))
+					dnum = 0;
+				else if(hates_unholy_mon(mdef))
+					dnum *= 1.5;
 			}
-			if (otmp->where == OBJ_MINVENT && otmp->ocarry->mtyp == PM_ARA_KAMEREL)
-				*truedmgptr += num*d(6, 6);
-			else
-				*truedmgptr += num*d(2, 6);
-		}
-		if (!UseInvShock_res(mdef)) {
-			if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
-			if (!rn2(3)) destroy_item(mdef, RING_CLASS, AD_ELEC);
-		}
-		if (!resists_blnd(mdef)) {
-			if (youdef) {
-				if(printmessages){
-					You("are blinded by the flashing blade!");
-					*hittxt = TRUE;
+			else if(u.ualign.record > 3){
+				dtyp = AD_HOLY;
+				dnum = (u.ualign.record-1)/3;
+				if(dnum > 20)
+					dnum = 20;
+				if(hates_unholy_mon(mdef) && !hates_holy_mon(mdef))
+					dnum = 0;
+				else if(hates_holy_mon(mdef))
+					dnum *= 1.5;
+			}
+			else {
+				dtyp = AD_ELEC;
+				if (!Shock_res(mdef)) {
+					dnum = (u.ulevel+4)/5;
+					if(shock_vulnerable(mdef)){
+						dnum *= 2;
+					}
 				}
-				make_blinded((long)d(1, 50), FALSE);
-				if (!Blind) Your1(vision_clears);
 			}
-			else if (!(youagr && u.uswallow && mdef == u.ustuck)) {
-				register unsigned rnd_tmp = rnd(50);
-				mdef->mcansee = 0;
-				if ((mdef->mblinded + rnd_tmp) > 127)
-					mdef->mblinded = 127;
-				else mdef->mblinded += rnd_tmp;
+			if(dnum){
+				if(dtyp == AD_ELEC){
+					*truedmgptr += d(dnum, 6);
+					if (!UseInvShock_res(mdef)) {
+						if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
+						if (!rn2(3)) destroy_item(mdef, RING_CLASS, AD_ELEC);
+					}
+				}
+				else
+					*truedmgptr += d(dnum, 3);
+
+				if (dtyp != AD_UNHY && !resists_blnd(mdef)) {
+					if (!(u.uswallow && mdef == u.ustuck)) {
+						int divisor = dtyp == AD_ELEC ? 6 : 12;
+						register unsigned rnd_tmp = dnum*rnd(50)/divisor;
+						mdef->mcansee = 0;
+						if ((mdef->mblinded + rnd_tmp) > 127)
+							mdef->mblinded = 127;
+						else mdef->mblinded += rnd_tmp;
+					}
+				}
+			}
+		}
+		else {
+			if (!Shock_res(mdef)) {
+				int num = 1;
+				if(shock_vulnerable(mdef)){
+					num *= 2;
+				}
+				if (otmp->where == OBJ_MINVENT && otmp->ocarry->mtyp == PM_ARA_KAMEREL)
+					*truedmgptr += num*d(6, 6);
+				else
+					*truedmgptr += num*d(2, 6);
+			}
+			if (!UseInvShock_res(mdef)) {
+				if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
+				if (!rn2(3)) destroy_item(mdef, RING_CLASS, AD_ELEC);
+			}
+			if (!resists_blnd(mdef)) {
+				if (youdef) {
+					if(printmessages){
+						You("are blinded by the flashing blade!");
+						*hittxt = TRUE;
+					}
+					make_blinded((long)d(1, 50), FALSE);
+					if (!Blind) Your1(vision_clears);
+				}
+				else if (!(youagr && u.uswallow && mdef == u.ustuck)) {
+					register unsigned rnd_tmp = rnd(50);
+					mdef->mcansee = 0;
+					if ((mdef->mblinded + rnd_tmp) > 127)
+						mdef->mblinded = 127;
+					else mdef->mblinded += rnd_tmp;
+				}
 			}
 		}
 	}

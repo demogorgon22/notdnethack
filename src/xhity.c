@@ -20164,6 +20164,8 @@ monk_aura_range()
 	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
 		if(uwep->oartifact == ART_RINGIL)
 			return 3;
+		if(uwep->oartifact == ART_SKY_RENDER)
+			return 4;
 		return 2;
 	}
 	return BOLT_LIM;
@@ -20251,7 +20253,7 @@ monk_aura_bolt()
 				if(!artilist[uwep->oartifact].damage)
 					zapdat.damn *= 2;
 				else
-					zapdat.damd += artilist[uwep->oartifact].damage;
+					zapdat.damd += (artilist[uwep->oartifact].damage+zapdat.damd-1)/zapdat.damd;
 			}
 			if(uwep->oartifact == ART_RINGIL){
 				zapdat.adtyp = AD_STAR;
@@ -20286,6 +20288,10 @@ monk_aura_bolt()
 	}
 	else if(uarmg && uarmg->oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI)
 		zapdat.damd *= 2;
+
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_WINTER_REAPER)
+		zapdat.adtyp = AD_COLD;
+
 	//Currently these cook off without the player's explicit say-so
 	zapdat.no_bounce = TRUE;
 	zapdat.unreflectable = ZAP_REFL_NEVER;
@@ -20574,6 +20580,8 @@ overload_bolt()
 				else {
 					dmg = (Magic_res(mdef) || resists_death(mdef)) ? 100 : 400;
 					dmg += d((u.ulevel+2)/3,8);
+					if(magm_vulnerable(mdef))
+						dmg *= 1.5;
 					dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
 					m_losehp(mdef, dmg, TRUE, "snarling energy");
 				}
@@ -20585,12 +20593,14 @@ overload_bolt()
 				else if(Fire_res(mdef) && Shock_res(mdef))
 					dmg /= 2;
 
+				if(fire_vulnerable(mdef))
+					dmg *= 1.5;
+				if(shock_vulnerable(mdef))
+					dmg *= 2;
 				if(dmg){
 					hit("blast of sparks", mdef, exclam(dmg));
 					dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
 					(void) resist(mdef, 0, dmg, TELL);
-					if(!DEADMONSTER(mdef))
-						mhurtle(mdef, sgn(u.dx), sgn(u.dy), (BOLT_LIM-i), TRUE);
 				}
 			}
 		}
@@ -20610,7 +20620,7 @@ struct monst *mdef;
 	boolean dodig = FALSE;
 	
 	res = xmeleehity(&youmonst, mdef, &grab, (struct obj **)0, FALSE, 0, FALSE, 0);
-	if(res&(MM_MISS|MM_DEF_DIED))
+	if(!(res&MM_HIT) || (res&(MM_AGR_STOP|MM_DEF_DIED)))
 		return;
 	
 	// if(weight > 2*weight_cap() - inv_weight()){
@@ -21087,8 +21097,9 @@ const char *
 move_name(int moveid)
 {
 	switch(moveid){
+		case 0: return "None";
 		case DIVE_KICK: return "Dive kick";
-		case AURA_BOLT: return (Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? (uwep->oartifact == ART_SKY_REFLECTED ? "Dragon flash" : "Aura slash") : "Aura bolt";
+		case AURA_BOLT: return (Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? (uwep->oartifact == ART_SKY_RENDER ? "Dragon flash" : "Aura slash") : "Aura bolt";
 		case BIRD_KICK: return "Bird kick";
 		case METODRIVE: return "Meteor drive";
 		case PUMMEL: return uwep ? "Flurry" : "Pummel";
@@ -21120,13 +21131,14 @@ move_name(int moveid)
 		case SOUL_CUT: return "Soul cut";
 		case BREAKER: return (u.uhp*2 > u.uhpmax && u.uhp > u.ulevel) ? "Judgement" : "Dawn breaks";
 		case OVERLOAD: return "Overload";
-		case SEND_AWAY: return "Away";
+		case SEND_AWAY: return "Send away";
 		case SCORN: return "Scorn";
 		case BOREAL_B: return "Boreal blast";
 		case DARK_FEAR: return "Fear below";
 		case CROSS: return "Cross slash";
 		case ICHIMONJI: return "Ichimonji";
 		case MORTAL_D: return "Mortal draw";
+		case DRAIN_L: return "Life drain";
 	}
 	return "unknown move id";
 }
@@ -21215,14 +21227,14 @@ perform_monk_move(int moveID, int *move_cost)
 
 		case LANCE_T:
 			if((mdef = adjacent_move_target(!!uwep))){
-				pline("Lance thrust!");
+				pline("%s!", move_name(moveID));
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_FORCE_CHECK_JOUST);
 			}
 		break;
 		case VACUUM:
 			if(beam_monk_target(BOLT_LIM)){
-				pline("Vacuum bolt!");
+				pline("%s!", move_name(moveID));
 				incant_vacuum_bolt();
 				return TRUE;
 			}
@@ -21246,7 +21258,7 @@ perform_monk_move(int moveID, int *move_cost)
 		}
 		else {
 			if(!EWounded_legs && (mdef = adjacent_move_target(!!uarmf)) && near_capacity() <= SLT_ENCUMBER){
-				pline("Dive kick!");
+				pline("%s!", move_name(moveID));
 				dive_kick_monster(mdef);
 				return TRUE;
 			}
@@ -21258,7 +21270,7 @@ perform_monk_move(int moveID, int *move_cost)
 			&& !Is_spire(&u.uz) 
 			&& beam_monk_target(monk_aura_range())
 		){
-			pline(uwep && is_kensei_weapon(uwep) ? "Repulsing slash!" : "Repulsing blast!");
+			pline("%s!", move_name(moveID));
 			knockback_bolt();
 		}
 		break;
@@ -21266,7 +21278,7 @@ perform_monk_move(int moveID, int *move_cost)
 		if(!Is_spire(&u.uz) 
 			&& beam_monk_target(3)
 		){
-			pline("Overload!");
+			pline("%s!", move_name(moveID));
 			overload_bolt();
 		}
 		break;
@@ -21294,7 +21306,7 @@ perform_monk_move(int moveID, int *move_cost)
 			}
 			if(mdef){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Spacewarp slash!");
+				pline("%s!", move_name(moveID));
 				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
 				if(mlev(&youmonst) > 20 && Insight > 20 && YOU_MERC_SPECIAL){
 					hit_with_streaming(&youmonst, uwep, ix, iy, ix-u.dx, iy-u.dy, 0, &weaponhit);
@@ -21306,7 +21318,7 @@ perform_monk_move(int moveID, int *move_cost)
 		break;
 		case BLINDING:
 		if(beam_monk_target(BOLT_LIM)){
-			pline("Flash scan!");
+			pline("%s!", move_name(moveID));
 			incant_ansermee_flash();
 			return TRUE;
 		}
@@ -21315,7 +21327,7 @@ perform_monk_move(int moveID, int *move_cost)
 			/* Kishin Mirror: Small lightning bolt */
 			if(uwep && uwep->oartifact == ART_KISHIN_MIRROR){
 				if(beam_monk_target(2)){
-					pline("Kishin sparks!");
+					pline("%s!", move_name(moveID));
 					incant_kishin_sparks();
 					return TRUE;
 				}
@@ -21323,7 +21335,7 @@ perform_monk_move(int moveID, int *move_cost)
 			/* Vajra: Small lightning bolt */
 			else {
 				if(beam_monk_target(2)){
-					pline("Vajra sparks!");
+					pline("%s!", move_name(moveID));
 					incant_vajra_sparks();
 					return TRUE;
 				}
@@ -21331,7 +21343,7 @@ perform_monk_move(int moveID, int *move_cost)
 		break;
 		case MIRROR_S:
 		if(!u.uswallow && (mdef = adjacent_move_target(TRUE))){
-			pline("Mirror self!");
+			pline("%s!", move_name(moveID));
 			xattacky(&youmonst, mdef, u.ux+u.dx, u.uy+u.dy, XYATKFLAG_MIRROR_ATK);
 			return TRUE;
 		}
@@ -21344,11 +21356,12 @@ perform_monk_move(int moveID, int *move_cost)
 					( uwep->oartifact == ART_KISHIN_MIRROR
 					|| uwep->oartifact == ART_MALICE
 					|| uwep->oartifact == ART_SEVEN_STAR_SWORD
+					|| u.role_variant == ART_WINTER_REAPER
 			)))
 			&& !Is_spire(&u.uz) 
 			&& beam_monk_target(monk_aura_range())
 		){
-			pline((Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? (uwep->oartifact == ART_SKY_REFLECTED ? "Dragon flash!" : "Aura slash!") : "Aura bolt!");
+			pline("%s!", move_name(moveID));
 			monk_aura_bolt();
 			return TRUE;
 		}
@@ -21369,35 +21382,35 @@ perform_monk_move(int moveID, int *move_cost)
 		break;
 		case CYCLONE:
 			if(circle_monk_target(!!uwep)){
-				pline("Cyclone slash!");
+				pline("%s!", move_name(moveID));
 				cyclone_slash_monsters();
 				return TRUE;
 			}
 		break;
 		case SWEEP:
 			if(sweep_monk_target(!!uwep)){
-				pline("Sweep!");
+				pline("%s!", move_name(moveID));
 				sweep_slash_monsters();
 				return TRUE;
 			}
 		break;
 		case BLEED_S:
 			if(forward_half_circle_monk_target(!!uwep)){
-				pline("Bloody sickle!");
+				pline("%s!", move_name(moveID));
 				bleed_slash_monsters();
 				return TRUE;
 			}
 		break;
 		case SONIC_B:
 			if(circle_monk_target(TRUE)){
-				pline("Static shriek!");
+				pline("%s!", move_name(moveID));
 				sonic_boom_monsters();
 				return TRUE;
 			}
 		break;
 		case SHOVE:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
-				pline("Shove!");
+				pline("%s!", move_name(moveID));
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_SHOVE);
 				return TRUE;
@@ -21414,7 +21427,7 @@ perform_monk_move(int moveID, int *move_cost)
 				|| (mdef->mflee && mdef->mtyp != PM_BANDERSNATCH)
 				)
 			){
-				pline("Sudden strike!");
+				pline("%s!", move_name(moveID));
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_SUPER_SNEAK);
 				return TRUE;
@@ -21423,9 +21436,9 @@ perform_monk_move(int moveID, int *move_cost)
 		case ICHIMONJI:
 			if((mdef = adjacent_move_target(!!uwep))){
 				if(is_move_clumsy() || u.ulevel < 14){
-					pline("Ichimonji!");
+					pline("%s!", move_name(moveID));
 					boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-					xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, u.ulevel < 10 ? ATTKFLAG_DOUBLE_DAMAGE : 0);
+					xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, u.ulevel < 10 ? 0 : ATTKFLAG_DOUBLE_DAMAGE);
 				}
 				else {
 					pline("Ichimonji: double!");
@@ -21439,7 +21452,7 @@ perform_monk_move(int moveID, int *move_cost)
 		break;
 		case RISING_B:
 			if((mdef = adjacent_move_target(!!uwep))){
-				pline("Rising cut!");
+				pline("%s!", move_name(moveID));
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, (u.role_variant == ART_ANGUIREL && uwep && uwep->obj_material == OBSIDIAN_MT) ? ATTKFLAG_FORCE_BLEED|ATTKFLAG_DOUBLE_DAMAGE : ATTKFLAG_DOUBLE_DAMAGE);
 				return TRUE;
@@ -21447,21 +21460,21 @@ perform_monk_move(int moveID, int *move_cost)
 		break;
 		case TRIPLE_F:
 			if(forward_arc_monk_target(!!uwep)){
-				pline("Triple thrust!");
+				pline("%s!", move_name(moveID));
 				triple_thrust_monsters();
 				return TRUE;
 			}
 		break;
 		case MORTAL_D:
 			if(extended_forward_arc_monk_target(!!uwep)){
-				pline("Mortal draw!");
+				pline("%s!", move_name(moveID));
 				mortal_draw_monsters();
 				return TRUE;
 			}
 		break;
 		case FLOURISH:
 			if(forward_arc_monk_target(!!uwep) || flags.move&MOVE_ATTACKED){
-				pline("Defensive flourish!");
+				pline("%s!", move_name(moveID));
 				if(!(flags.move&MOVE_ATTACKED) && (mdef = adjacent_move_target(TRUE))){
 					boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 					xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
@@ -21483,7 +21496,7 @@ perform_monk_move(int moveID, int *move_cost)
 					wing_storm_monsters();
 				}
 				else {
-					pline("Bird kick!");
+					pline("%s!", move_name(moveID));
 					bird_kick_monsters();
 				}
 				return TRUE;
@@ -21493,9 +21506,10 @@ perform_monk_move(int moveID, int *move_cost)
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
 				if(u.uhp*2 > u.uhpmax && u.uhp > u.ulevel){
-					pline("Judgement!");
+					pline("%s!", move_name(moveID));
 					mdef->mhp = max(1, mdef->mhp - u.ulevel);
-					if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0)) == 0L){
+					int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
+					if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 						if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, WEAPON_CLASS, 0, TRUE)){
 							mdef->mcanmove = 0;
 							mdef->mfrozen = d(2, 3);
@@ -21506,8 +21520,9 @@ perform_monk_move(int moveID, int *move_cost)
 				}
 				else {
 					int initial = mdef->mhp;
-					pline("Dawn breaks!");
-					if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0)) == 0L){
+					pline("%s!", move_name(moveID));
+					int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
+					if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 						if(mdef->mhp < initial)
 						healup(initial - mdef->mhp, 0, FALSE, FALSE);
 						if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, WEAPON_CLASS, 0, TRUE)){
@@ -21521,9 +21536,10 @@ perform_monk_move(int moveID, int *move_cost)
 		case HUBRIS:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Hubris!");
+				pline("%s!", move_name(moveID));
 				mdef->mhp = max(1, mdef->mhp - u.ulevel);
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0)) == 0L){
+				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 					u.uhp = max(1, u.uhp - u.ulevel);
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, WEAPON_CLASS, 0, TRUE)){
 						set_mcan(mdef, TRUE);
@@ -21535,8 +21551,9 @@ perform_monk_move(int moveID, int *move_cost)
 		case SEND_AWAY:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uarmg))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Away!");
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &touchhit, 0, vis, 0, FALSE, 0)) == 0L){
+				pline("Away!"); //Note, different name (Away vs. Send away)
+				int res = xmeleehity(&youmonst, mdef, &touchhit, 0, vis, 0, FALSE, 0);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, '\0', 0, TRUE)){
 						u.uhp = max(1, u.uhp - u.ulevel);
 						if (Can_rise_up(mdef->mx, mdef->my, &u.uz)) {
@@ -21568,8 +21585,9 @@ perform_monk_move(int moveID, int *move_cost)
 		case SOUL_CUT:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Soul cut!");
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0)) == 0L){
+				pline("%s!", move_name(moveID));
+				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !mindless_mon(mdef) && !(is_tettigon(mdef->data) && rn2(20))){
 						int damn = u.ulevel == 30 ? 5 : u.ulevel >= 22 ? 4 : u.ulevel >= 14 ? 3 : u.ulevel >= 10 ? 2 : 1;
 						int dmg = d(damn, 15);
@@ -21589,13 +21607,15 @@ perform_monk_move(int moveID, int *move_cost)
 		case CHAOS_S:
 			if(!u.uswallow && (mdef = adjacent_move_target(TRUE))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Anarch's strike!");
+				pline("%s!", move_name(moveID));
 				int elements[] = {AD_EFIR, AD_ECLD, AD_DISN, AD_EELC, AD_POSN, AD_EACD, AD_WET};
 				elemental.damn = (u.ulevel+2)/3;
 				for(int i = 0; i < 1 && !DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef); i++){
 					elemental.adtyp = ROLL_FROM(elements);
-					if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &elemental, (struct obj **)0, vis, 0, FALSE, 0)) != 0L)
+					int res = xmeleehity(&youmonst, mdef, &elemental, (struct obj **)0, vis, 0, FALSE, 0);
+					if(res&(MM_AGR_STOP|MM_DEF_DIED)){
 						break;
+					}
 				}
 				return TRUE;
 			}
@@ -21603,9 +21623,10 @@ perform_monk_move(int moveID, int *move_cost)
 		case AVALANCHE:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uarmg))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Avalanche!");
+				pline("%s!", move_name(moveID));
 				avalanche.damn = (u.ulevel+2)/3;
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &avalanche, (struct obj **)0, vis, 0, FALSE, 0)) == 0L){
+				int res = xmeleehity(&youmonst, mdef, &avalanche, (struct obj **)0, vis, 0, FALSE, 0);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, '\0', 0, TRUE)){
 						mdef->mcanmove = 0;
 						mdef->mfrozen = d(2, 3);
@@ -21618,8 +21639,9 @@ perform_monk_move(int moveID, int *move_cost)
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uarmg))){
 				int initial = mdef->mhp;
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Fear below!");
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, (dimness(u.ux, u.uy)  > 0) ? ATTKFLAG_DOUBLE_DAMAGE : 0)) == 0L){
+				pline("%s!", move_name(moveID));
+				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, (dimness(u.ux, u.uy)  > 0) ? ATTKFLAG_DOUBLE_DAMAGE : 0);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP))){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, '\0', 0, TRUE)){
 						monflee(mdef, d(3,3), FALSE, FALSE);
 					}
@@ -21635,10 +21657,11 @@ perform_monk_move(int moveID, int *move_cost)
 		case SCORN:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Scorn the imperfect!");
+				pline("Scorn the imperfect!"); //Note: different that move_name (Scorn vs. Scorn the imperfect)
 				if(uwep && uwep->oartifact == ART_BOREAL_SCEPTER)
 					artinstance[ART_BOREAL_SCEPTER].BorealScorn = TRUE;
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0)) == 0L){
+				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !resist(mdef, WEAPON_CLASS, 0, TRUE)){
 						mdef->movement -= d(2, 3);
 						if(mdef->movement < -12)
@@ -21652,7 +21675,7 @@ perform_monk_move(int moveID, int *move_cost)
 		case CROSS:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Cross slash!");
+				pline("%s!", move_name(moveID));
 				long one = FALSE, two = FALSE;
 				
 				one = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
@@ -21667,6 +21690,7 @@ perform_monk_move(int moveID, int *move_cost)
 				if(one&(MM_HIT) || two&(MM_HIT)){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && MON_WEP(mdef)){
 						struct obj *mwep = MON_WEP(mdef);
+						You("disarm %s!", mon_nam(mdef));
 						obj_extract_and_unequip_self(mwep);
 						if (!flooreffects(mwep, x(mdef), y(mdef), "fall")) {
 							place_object(mwep, x(mdef), y(mdef));
@@ -21681,7 +21705,7 @@ perform_monk_move(int moveID, int *move_cost)
 		case INFLICT:
 			if(!u.uswallow && (mdef = adjacent_move_target(TRUE))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Debilitate!");
+				pline("%s!", move_name(moveID));
 				if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef)){
 					struct scanstruct {
 						int damagetype;
@@ -21705,8 +21729,9 @@ perform_monk_move(int moveID, int *move_cost)
 		case CLENSE:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Cleansing strike!");
-				if(((MM_MISS|MM_AGR_STOP)&xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_FORCE_BLEED)) == 0L){
+				pline("%s!", move_name(moveID));
+				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_FORCE_BLEED);
+				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED))){
 					/* note: does not perform unturn_dead() on victims' inventories */
 					int range = BOLT_LIM + (u.ulevel / 5);	/* 5 to 11 */
 					range *= range;
@@ -21720,8 +21745,8 @@ perform_monk_move(int moveID, int *move_cost)
 						) continue;
 
 						if ((!mtmp->mpeaceful)
-							&& (u.ualign.record >= 10 && (is_undead(mtmp->data) || (is_demon(mtmp->data) && (u.ulevel > (MAXULEV/2)))))
-							&& (u.ualign.record <=-10 && (is_elemental(mtmp->data) || (is_angel(mtmp->data) && (u.ulevel > (MAXULEV/2)))))
+							&&((u.ualign.record >= 10 && (is_undead(mtmp->data) || (is_demon(mtmp->data) && (u.ulevel > (MAXULEV/2)))))
+							|| (u.ualign.record <=-10 && (is_elemental(mtmp->data) || (is_angel(mtmp->data) && (u.ulevel > (MAXULEV/2))))))
 						) {
 							mtmp->msleeping = 0;
 							if (u.ulevel >= mtmp->m_lev && !resist(mtmp, '\0', 0, NOTELL)) {
@@ -21738,8 +21763,19 @@ perform_monk_move(int moveID, int *move_cost)
 		break;
 		case METODRIVE:
 			if(!uwep && !(uswapwep && u.twoweap) && inv_weight() < 0 && !u.uswallow && (mdef = adjacent_move_target(!!uarmg))){
-				pline("Meteor drive!");
+				pline("%s!", move_name(moveID));
 				monk_meteor_drive(mdef);
+				return TRUE;
+			}
+		break;
+		case DRAIN_L:
+			//Drain life
+			if(freehand() && (mdef = adjacent_move_target(!!uarmg))){
+				pline("%s!", move_name(moveID));
+				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
+				for(int i = 0; i < 2 && STILLVALID(mdef); i++){
+					xmeleehity(&youmonst, mdef, &drainlife, (struct obj **) 0, vis, 0, FALSE, 0);
+				}
 				return TRUE;
 			}
 		break;
@@ -21757,18 +21793,7 @@ perform_monk_move(int moveID, int *move_cost)
 					// return TRUE;
 				// }
 			// }
-			if(Race_if(PM_INCANTIFIER)){
-				//Drain life
-				if(freehand() && (mdef = adjacent_move_target(!!uarmg))){
-					pline("Life drain!");
-					boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-					for(int i = 0; i < 2 && STILLVALID(mdef); i++){
-						xmeleehity(&youmonst, mdef, &drainlife, (struct obj **) 0, vis, 0, FALSE, 0);
-					}
-					return TRUE;
-				}
-			}
-			else if((!uwep || is_kensei_weapon(uwep)) && (mdef = adjacent_move_target(uwep || uarmg))){
+			if((!uwep || is_kensei_weapon(uwep)) && (mdef = adjacent_move_target(uwep || uarmg))){
 				if(uwep)
 					pline("Flurry!");
 				else
@@ -21822,6 +21847,8 @@ forward_move()
 			if(u.role_variant == ART_MALICE)
 				return FLOURISH;
 		}
+		if(u.role_variant == ART_KIKU_ICHIMONJI)
+			return THROW;
 		if(Race_if(PM_YUKI_ONNA))
 			return ICICLES;
 		else if(Race_if(PM_INCANTIFIER)){
@@ -21874,6 +21901,8 @@ hook_move()
 			return RISING_B;
 		if(u.role_variant == ART_SILVER_SKY && bimanual(uwep, youracedata))
 			return RISING_B;
+		if(uwep->oartifact == ART_MORTAL_BLADE)
+			return MORTAL_D;
 		return CYCLONE;
 	}
 	return BIRD_KICK;
@@ -21899,7 +21928,7 @@ uturn_move()
 				else
 					return CROSS;
 			}
-			else return PUMMEL;
+			else return AVALANCHE;
 		}
 		if(u.role_variant == ART_BOREAL_SCEPTER)
 			return SCORN;
@@ -21929,13 +21958,13 @@ alternated_move()
 {
 	if(Role_if(PM_KENSEI)){
 		if(!(uwep && is_kensei_weapon(uwep)))
-			return PUMMEL;
+			return Race_if(PM_INCANTIFIER) ? DRAIN_L : PUMMEL;
 		if(uwep->oartifact == ART_ANSERMEE)
 			return MIRROR_S;
 		if(uwep->oartifact == ART_SEVEN_STAR_SWORD)
 			return TRIPLE_F;
-		if(uwep->oartifact == ART_MORTAL_BLADE)
-			return MORTAL_D;
+		// if(uwep->oartifact == ART_MORTAL_BLADE)
+			// return MORTAL_D;
 		if(uwep->otyp == KAMEREL_VAJRA)
 			return FLOURISH;
 		if(uwep->otyp == HIGH_ELVEN_WARSWORD)
@@ -21944,7 +21973,7 @@ alternated_move()
 			return SWEEP;
 		if(u.role_variant == ART_BOREAL_SCEPTER)
 			return RISING_B;
-		if(u.role_variant == ART_MORTAL_BLADE)
+		if(u.role_variant == ART_KIKU_ICHIMONJI)
 			return ICHIMONJI;
 		if(u.role_variant == ART_SILVER_SKY && bimanual(uwep, youracedata))
 			return SWEEP;

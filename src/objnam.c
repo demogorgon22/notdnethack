@@ -165,7 +165,6 @@ STATIC_OVL char *BeamHilts[] = {
 
 STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ BATTLE_AXE, "ono" },
-	{ BROADSWORD, "ninja-to" },
 	{ ARCHAIC_PLATE_MAIL, "jodai no katchu" },
 	{ CLUB, "jo" },
 	{ CRYSTAL_PLATE_MAIL, "jade o-yoroi" },
@@ -198,7 +197,6 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 };
 
 STATIC_OVL struct Jitem Japanese_items[] = {
-	{ BROADSWORD, "ninja-to" },
 	{ CRYSTAL_PLATE_MAIL, "crystal tanko" },
 	{ PLATE_MAIL, "tanko" },
 	{ DAGGER, "kunai" },
@@ -306,8 +304,15 @@ struct obj *otmp;
 			}
 			break;
 	}
-	if(otmp->otyp == KAMEREL_VAJRA)
+	if(otmp->otyp == KAMEREL_VAJRA){
+		if(otmp->oartifact == ART_KISHIN_MIRROR){
+			if(u.ualign.record < -3)
+				return "black ash-bladed";
+			if(u.ualign.record > 3)
+				return "white sun-bladed";
+		}
 		return "lightning bladed";
+	}
 	if(gem){
 		switch(gem->oartifact){
 			case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
@@ -3865,7 +3870,6 @@ struct alt_spellings {
 	{ "foot locker", BOX },
 	{ "belaying pin", CLUB },
 	{ "ono", BATTLE_AXE },
-	{ "ninja-to", BROADSWORD },
 	{ "jodai no katchu", ARCHAIC_PLATE_MAIL },
 	{ "jo", CLUB },
 	{ "jade o-yoroi", CRYSTAL_PLATE_MAIL },

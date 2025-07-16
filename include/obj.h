@@ -906,7 +906,7 @@ struct obj {
 #define is_farm(otmp)	((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && \
 			 objects[otmp->otyp].oc_skill == P_HARVEST)
 #define is_sickle(otmp)	((otmp)->otyp == ELVEN_SICKLE || (otmp)->otyp == SICKLE)
-#define is_katana(otmp) ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI || (otmp)->otyp == CHIKAGE)
+#define is_katana(otmp) ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == NINJA_TO || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI || (otmp)->otyp == CHIKAGE)
 
 #define is_launcher(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 ((objects[otmp->otyp].oc_skill >= P_BOW && \
@@ -952,6 +952,8 @@ struct obj {
 				 objects[otmp->otyp].oc_skill == -P_SLING)\
 			 )
 #define is_enchantable(o) ((o)->oclass == ARMOR_CLASS || (o)->oclass == WEAPON_CLASS || is_weptool(o))
+
+#define is_weapon(o)	((o)->oclass == WEAPON_CLASS || is_weptool(o))
 #define is_weptool(o)	((o)->oclass == TOOL_CLASS && \
 			 objects[(o)->otyp].oc_skill != P_NONE)
 #define is_worn_tool(o)	((o)->otyp == BLINDFOLD || (o)->otyp == ANDROID_VISOR || \
