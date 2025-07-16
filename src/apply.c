@@ -8224,12 +8224,14 @@ use_doll_tear(obj)
 			if(!mtmp)
 				return MOVE_CANCELLED;
 			
-			if(!is_dollable(mtmp->data)){
+			if(!is_dollable_mtyp(mtmp->mtyp)){
 				pline("That's not a doll.");
 				return MOVE_CANCELLED;
 			}
 			
 			if(mtmp->m_insight_level){
+				if(wizard)
+					pline("Monster haws insight level %d", mtmp->m_insight_level);
 				pline("Nothing happens....");
 				return MOVE_CANCELLED;
 			}
@@ -8251,10 +8253,16 @@ use_doll_tear(obj)
 			return MOVE_CANCELLED;
 		}
 		
-		if(!get_ox(dollobj, OX_EMON))
+		if(get_ox(dollobj, OX_EMON))
 			mtmp = get_mtraits(dollobj, FALSE);
 
-		if(!mtmp || !is_dollable(mtmp->data)){
+		if(!mtmp || !is_dollable_mtyp(mtmp->mtyp)){
+			if(wizard){
+				if(!mtmp)
+					pline("There is no attached monster.");
+				else
+					pline("The attached monster is not dollable.");
+			}
 			pline("Nothing happens....");
 			return MOVE_CANCELLED;
 		}

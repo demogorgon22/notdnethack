@@ -1140,11 +1140,11 @@
 				 (ptr)->mtyp == PM_COMMANDER \
 				)
 
-#define is_dollable(ptr)	((ptr)->mtyp == PM_ANDROID || \
-				 (ptr)->mtyp == PM_GYNOID || \
-				 (ptr)->mtyp == PM_OPERATOR || \
-				 (ptr)->mtyp == PM_COMMANDER || \
-				 (ptr)->mtyp == PM_LIVING_DOLL \
+#define is_dollable_mtyp(mtyp)	((mtyp) == PM_ANDROID || \
+				 (mtyp) == PM_GYNOID || \
+				 (mtyp) == PM_OPERATOR || \
+				 (mtyp) == PM_COMMANDER || \
+				 (mtyp) == PM_LIVING_DOLL \
 				)
 
 #define stuck_in_time(mtmp) 		(mtmp->mtyp != PM_EDDERKOP\
