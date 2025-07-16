@@ -4325,6 +4325,7 @@ int *shield_margin;
 				case GAUNTLETS_OF_DEXTERITY:
 				case HIGH_ELVEN_GAUNTLETS:
 				case IMPERIAL_ELVEN_GAUNTLETS:
+				case HAND_WRAPS:
 					break;
 				default:
 					impossible("Unknown type of gloves (%d)", gloves->otyp);
