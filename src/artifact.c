@@ -805,8 +805,8 @@ aligntyp alignment;
 			/* avoid boots for chiropterans */
 			skip_if(Race_if(PM_CHIROPTERAN) && objects[a->otyp].oc_class == ARMOR_CLASS && objects[a->otyp].oc_armcat == ARM_BOOTS);
 
-			/* skip nameable artifacts */
-			skip_if((a->gflags & ARTG_NAME));
+			/* skip nameable artifacts, except Sky Reflected for Githzerai */
+			skip_if((a->gflags & ARTG_NAME) && !(Race_if(PM_GITHZERAI) && m == ART_SKY_REFLECTED));
 
 			/* skip Callandor for non-males */
 			skip_if(m == ART_CALLANDOR && flags.initgend);
