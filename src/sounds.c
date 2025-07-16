@@ -7096,6 +7096,11 @@ struct monst *dollmaker;
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	
 	incntlet = 'a';
+
+	if(!dollmaker->mvar_dollTypes){
+		pline("Error recovery: this doll had no doll types recored, and has been initialized");
+		dollmaker->mvar_dollTypes = init_doll_sales();
+	}
 	
 	for(l = 0x1L, n = EFFIGY; l <= MAX_DOLL_MASK; l=(l<<1), n++){
 		if(dollmaker->mvar_dollTypes&l){
