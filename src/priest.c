@@ -1008,6 +1008,14 @@ struct monst *priest;
 	ay = y = EPRI(priest)->shrpos.y;
 	troom = &rooms[roomno - ROOMOFFSET];
 
+	int godnum = god_at_altar(ax, ay);
+	if(philosophy_index(godnum)
+		|| godnum == GOD_BOKRUG__THE_WATER_LIZARD
+		|| godnum == GOD_THE_VOID
+	)
+		return;
+
+
 	if((u.ux == x && u.uy == y) || !linedup(u.ux, u.uy, x, y)) {
 	    if(IS_DOOR(levl[u.ux][u.uy].typ)) {
 
