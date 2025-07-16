@@ -2374,8 +2374,12 @@ dosacrifice()
 				u.umartial = TRUE;
 			} else if(otmp->oartifact == ART_RHONGOMYNIAD){
 				unrestrict_weapon_skill(P_RIDING);
+				if (P_SKILL(P_RIDING) < P_SKILLED) free_skill_up(P_RIDING);
+				else {
+					use_skill(P_RIDING, 60);
+					add_weapon_skill(2);
+				}
 				mksobj_at(SADDLE, u.ux, u.uy, MKOBJ_NOINIT);
-				u.umartial = TRUE;
 			} else if(otmp->oartifact == ART_GOLDEN_SWORD_OF_Y_HA_TALLA){
 				unrestrict_weapon_skill(P_WHIP);
 			} else if(otmp->oartifact == ART_HELLRIDER_S_SADDLE){

@@ -3272,25 +3272,26 @@ int skill;
 {
     int tmp = OLD_P_SKILL(skill);
 
-    /* The more difficult the training, the more slots it takes.
-     *	unskilled -> basic	1
-     *	basic -> skilled	2
-     *	skilled -> expert	3
-     */
-    if (skill != P_BARE_HANDED_COMBAT && 
-		(skill != P_TWO_WEAPON_COMBAT || !Role_if(PM_MONK))  && 
-		skill != P_MARTIAL_ARTS  && 
-		skill != P_NIMAN
-	) return tmp;
-
-    /* Fewer slots used up for unarmed or martial.
+    /* Fewer slots used up for unarmed/martial, and additional fighting forms.
      *	unskilled -> basic	1
      *	basic -> skilled	1
      *	skilled -> expert	2
      *	expert -> master	2
      *	master -> grand master	3
      */
-    return (tmp + 1) / 2;
+    if ((skill == P_BARE_HANDED_COMBAT) ||
+		(skill == P_MARTIAL_ARTS) ||
+		(skill == P_TWO_WEAPON_COMBAT && OLD_P_MAX_SKILL(P_TWO_WEAPON_COMBAT) == P_GRAND_MASTER) ||
+		(skill >= P_FIRST_FORM && skill <= P_LAST_FORM)
+	)
+		return (tmp + 1) / 2;
+
+	/* The more difficult the training, the more slots it takes.
+     *	unskilled -> basic	1
+     *	basic -> skilled	2
+     *	skilled -> expert	3
+     */
+    return tmp;
 }
 
 /*
