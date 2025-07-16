@@ -2875,6 +2875,7 @@ struct attack * attk;
 	int result = 0;
 	int merc_mult = 1;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3044,6 +3045,7 @@ struct attack * attk;
 	int range = 15;
 	struct obj *ammo = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3108,6 +3110,7 @@ struct attack * attk;
 	int nx, ny;
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3338,6 +3341,7 @@ struct attack * attk;
 	struct attack blood = {AT_ESPR, AD_BLUD, 1, 12+otmp->spe*2};
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3400,6 +3404,7 @@ struct attack * attk;
 	else
 		blood.damd += otmp->spe*2;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3483,6 +3488,7 @@ struct attack * attk;
 	struct attack blood = {AT_WISP, AD_PSH3, 2, 6+otmp->spe*2};
 	int result = 0;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)
@@ -3557,6 +3563,7 @@ struct attack * attk;
 	)
 		return result;
 	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
 		x(magr) == tarx - dx &&
 		y(magr) == tary - dy)
 	)

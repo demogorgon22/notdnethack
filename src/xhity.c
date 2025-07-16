@@ -660,6 +660,11 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 			continue;									// not allowed, don't attack
 		}
 
+		if(youagr && youdef && aatyp != AT_WEAP
+			&& adtyp != AD_FIRE && adtyp != AD_EFIR
+		)
+			continue;
+
 		/* based on the attack type... */
 		switch (aatyp)
 		{
