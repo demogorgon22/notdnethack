@@ -8528,9 +8528,17 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	if(otmp->oartifact == ART_BOREAL_SCEPTER){
 		boolean empowered = artinstance[ART_BOREAL_SCEPTER].BorealScorn;
+		struct weapon_dice wdice;
+		
+		/* grab the weapon dice from dmgval_core */
+		dmgval_core(&wdice, bigmonst(mdef->data), otmp, otmp->otyp, magr);
+
+		int wepdmg = weapon_dmg_roll(&wdice, youdef) + otmp->spe;
+		if(wepdmg < 1)
+			wepdmg = 1;
 		if(activeFace(FFACE_EAGLE)){
 			if(dieroll < 5 || empowered){ /* 20% (1-4) */
-				*plusdmgptr += basedmg;
+				*plusdmgptr += wepdmg;
 				if(rn2(2) || empowered)
 					(void) destroy_items_sonic(mdef, empowered);
 			}
@@ -8539,9 +8547,9 @@ boolean printmessages; /* print generic elemental damage messages */
 			if(dieroll < 5 || empowered){ /* 20% (1-4) */
 				if(is_organic_mon(mdef)){
 					if(is_spiritual_being(mdef))
-						*plusdmgptr += basedmg;
+						*plusdmgptr += wepdmg;
 					else
-						*truedmgptr += 2*basedmg;
+						*truedmgptr += 2*wepdmg;
 					water_damage((youdef) ? invent : mdef->minvent, FALSE, FALSE, FALSE, mdef);
 				}
 				if(rn2(2) || empowered)
@@ -8551,7 +8559,7 @@ boolean printmessages; /* print generic elemental damage messages */
 		if(activeFace(FFACE_ANT)){
 			if(dieroll < 5 || empowered){ /* 20% (1-4) */
 				if(is_spiritual_being(mdef))
-					*truedmgptr += 2*basedmg;
+					*truedmgptr += 2*wepdmg;
 			}
 		}
 		if(activeFace(FFACE_MAN)){
@@ -9349,8 +9357,10 @@ boreal_invoke_effect(int face, struct obj *art, struct monst *mdef)
 	/* grab the weapon dice from dmgval_core */
 	dmgval_core(&wdice, bigmonst(mdef->data), art, art->otyp, &youmonst);
 
-	int dmg = d(wdice.oc_damn, wdice.oc_damd) + d(wdice.bon_damn, wdice.bon_damd) + wdice.flat + art->spe;
+	int dmg = weapon_dmg_roll(&wdice, FALSE) + art->spe;
 	dmg += d((u.ulevel+2)/3, 6);
+	if(dmg < 1)
+		dmg = 1;
 	
 	wakeup2(mdef, TRUE);
 	if(face == FFACE_EAGLE){

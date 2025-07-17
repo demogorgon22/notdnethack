@@ -4882,6 +4882,8 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 		dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 		/* add to the bonsdmg counter */
 		graze_dmg = wdice.oc_damn + wdice.bon_damn + wdice.flat + weapon->spe;
+		if(graze_dmg < 1)
+			graze_dmg = 1;
 		
 		if(youagr){
 			if (flags.verbose)
@@ -4999,6 +5001,8 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 			dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 			/* add to the bonsdmg counter */
 			flatdamage = wdice.oc_damn + wdice.bon_damn + wdice.flat + weapon->spe;
+			if(flatdamage < 1)
+				flatdamage = 1;
 			modifiers |= MELEEHURT_SHOVE;
 		}
 		result = xmeleehurty_core(magr, mdef, attk, attk, weapon_p, TRUE, flatdamage, dieroll, vis, ranged, modifiers);
@@ -16627,7 +16631,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			/* grab the weapon dice from dmgval_core */
 			dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 			/* add to the elemdmg counter */
-			int shock_elemdmg = d(wdice.oc_damn, wdice.oc_damd) + d(wdice.bon_damn, wdice.bon_damd) + wdice.flat + weapon->spe;
+			int shock_elemdmg = weapon_dmg_roll(&wdice, FALSE) + weapon->spe;
+			if(shock_elemdmg < 1)
+				shock_elemdmg = 1;
 			if(!rn2(20)){
 				if(bigmonst(pd))
 					shock_elemdmg *= 2;
@@ -20336,8 +20342,10 @@ boreal_blast_effect(struct monst *mdef)
 	/* grab the weapon dice from dmgval_core */
 	dmgval_core(&wdice, bigmonst(mdef->data), uwep, uwep->otyp, &youmonst);
 
-	int dmg = d(wdice.oc_damn, wdice.oc_damd) + d(wdice.bon_damn, wdice.bon_damd) + wdice.flat + uwep->spe;
+	int dmg = weapon_dmg_roll(&wdice, FALSE) + uwep->spe;
 	dmg += d((u.ulevel+2)/3, 3);
+	if(dmg < 1)
+		dmg = 1;
 	
 	wakeup2(mdef, TRUE);
 	if(activeFace(FFACE_EAGLE)){
