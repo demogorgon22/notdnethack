@@ -4337,6 +4337,7 @@ boolean goodequip;
 		ptr->mtyp != PM_WATCHMAN &&
 		ptr->mtyp != PM_WATCH_CAPTAIN) {
 		if(!(level.flags.has_barracks || In_law(&u.uz) || in_mklev || is_undead(ptr))){
+			if (!rn2(4)) (void) mongets(mtmp, BEDROLL, mkobjflags);
 			if (!rn2(3)) (void) mongets(mtmp, K_RATION, mkobjflags);
 			if (!rn2(2)) (void) mongets(mtmp, C_RATION, mkobjflags);
 		}

@@ -7608,16 +7608,21 @@ struct mkroom *sroom;
 					}
 					chest->owt = weight(chest);
 				}
-			} else if(!rn2(20)){
-				/* the payroll and some loot */
-				struct obj *chest, *gold;
-				gold = mksobj(GOLD_PIECE, NO_MKOBJ_FLAGS);
-				gold->quan = (long) rn1(9 * level_difficulty(), level_difficulty()); //1 - 10
-				u.spawnedGold += gold->quan;
-				gold->owt = weight(gold);
-			    chest = mksobj_at((rn2(3)) ? BOX : CHEST, sx, sy, NO_MKOBJ_FLAGS);
-				add_to_container(chest, gold);
-				chest->owt = weight(chest);
+			} else {
+				if(!rn2(20)){
+					/* the payroll and some loot */
+					struct obj *chest, *gold;
+					gold = mksobj(GOLD_PIECE, NO_MKOBJ_FLAGS);
+					gold->quan = (long) rn1(9 * level_difficulty(), level_difficulty()); //1 - 10
+					u.spawnedGold += gold->quan;
+					gold->owt = weight(gold);
+					chest = mksobj_at((rn2(3)) ? BOX : CHEST, sx, sy, NO_MKOBJ_FLAGS);
+					add_to_container(chest, gold);
+					chest->owt = weight(chest);
+				}
+				else if(!rn2(3)){
+					mksobj_at(BED, sx, sy, NO_MKOBJ_FLAGS);
+				}
 			}
 			break;
 		    case COCKNEST:
