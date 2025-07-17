@@ -92,8 +92,9 @@ struct flag {
 	boolean  verbose;	/* max battle info */
 	boolean  prayconfirm;	/* confirm before praying */
 	boolean  tm_hour;	/* hour of the day (updated once per global turn) */
-	boolean  term_gone;   /* terminal is gone, abort abort abort */
+	boolean  resume_wish; /* game was exited while in wish prompt */
 
+	int  resume_wish_flags; /* flags for makewish() */
 	int move;	/* type[s] of action taken by player's last input/action */
 	int movetoprint;
 	int movetoprintcost;
@@ -284,9 +285,8 @@ struct instance_flags {
 	boolean travel1;	/* first travel step */
 	coord	travelcc;	/* coordinates for travel_cache */
 	boolean  door_opened;	/* set to true if door was opened during test_move */
-	boolean  resume_wish; /* game was exited while in wish prompt */
+	boolean  term_gone;   /* terminal is gone, abort abort abort */
 
-	int  resume_wish_flags; /* flags for makewish() */
 #ifdef QWERTZ
 	boolean  qwertz_movement; /* replace y with z for this key layout */
 #endif

@@ -233,7 +233,7 @@ curses_character_input_dialog(const char *prompt, const char *choices,
         answer = getch();
 
         if (answer == ERR) {
-			flags.term_gone = 1;
+			iflags.term_gone = 1;
             answer = def;
             break;
         }
@@ -377,7 +377,7 @@ curses_ext_cmd()
         matches = 0;
 
 		if (letter == ERR)
-            flags.term_gone = 1;
+            iflags.term_gone = 1;
 
         if (letter == '\033' || letter == ERR) {
             ret = -1;
@@ -1107,7 +1107,7 @@ menu_get_selections(WINDOW * win, nhmenu *menu, int how)
         curletter = getch();
 
         if (curletter == ERR) {
-            flags.term_gone = 1;
+            iflags.term_gone = 1;
             num_selected = -1;
             dismiss = TRUE;
         }

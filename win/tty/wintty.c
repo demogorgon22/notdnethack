@@ -2816,7 +2816,7 @@ tty_nhgetch()
     }
     if (!i) i = DOESCAPE; /* map NUL to ESC since nethack doesn't expect NUL */
 	if (i == EOF){
-		flags.term_gone = 1;
+		iflags.term_gone = 1;
 		i = DOESCAPE; /* same for EOF */
 	}
     if (ttyDisplay && ttyDisplay->toplin == 1)

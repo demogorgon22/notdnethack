@@ -148,7 +148,7 @@ curses_block(boolean require_tab)
     wrefresh(win);
     while ((ret = wgetch(win) != '\t') && require_tab){
 		if(ret == ERR){
-			flags.term_gone = 1;
+			iflags.term_gone = 1;
 		}
 	}
     if (require_tab)
@@ -460,7 +460,7 @@ curses_message_win_getline(const char *prompt, char *answer, int buffer)
             len = 0;
             break;
         case ERR: /* should not happen */
-			flags.term_gone = 1;
+			iflags.term_gone = 1;
             *answer = '\0';
             free(tmpbuf);
             free(linestarts);

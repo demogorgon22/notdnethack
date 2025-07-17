@@ -3643,8 +3643,8 @@ karemade:
 	    sanity_check();
 #endif
 
-	if (iflags.resume_wish)
-		makewish(iflags.resume_wish_flags); /* clears resume_wish */
+	if (flags.resume_wish)
+		makewish(flags.resume_wish_flags); /* clears resume_wish */
 
 #ifdef CLIPPING
 	/* just before rhack */
