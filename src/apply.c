@@ -8742,16 +8742,14 @@ do_candle_menu()
 	end_menu(tmpwin, "What creature do you wish to summon?");
 
 	how = PICK_ONE;
-	do{
-		n = select_menu(tmpwin, how, &selected);
-	} while (n <= 0);
+	n = select_menu(tmpwin, how, &selected);
 	destroy_nhwindow(tmpwin);
 	if(n > 0){
 		int picked = selected[0].item.a_int;
 		free(selected);
 		return picked;
 	}
-	return 0;
+	return MISINPUT;
 }
 
 int
