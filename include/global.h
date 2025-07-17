@@ -330,8 +330,8 @@ struct version_info {
  *	Ride
  * -- or about 190 characters
  */
-#if COLNO <= 160
-#define MAXCO 200
+#if COLNO <= 472
+#define MAXCO 512
 #else
 #define MAXCO (COLNO+40)
 #endif
