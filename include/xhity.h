@@ -7,6 +7,7 @@
 #define MELEEHURT_SUPER_SNEAK		0x00000040L
 #define MELEEHURT_DOUBLE_DAMAGE		0x00000080L
 #define MELEEHURT_SHOVE				0x00000100L
+#define MELEEHURT_SHOCKWAVE			0x00000200L
 
 /* macros to unify player and monster */
 #define x(mon)				((mon)==&youmonst ? u.ux : (mon)->mx)
@@ -92,6 +93,7 @@
 #define ATTKFLAG_SUPER_SNEAK		0x04L
 #define ATTKFLAG_DOUBLE_DAMAGE		0x08L
 #define ATTKFLAG_SHOVE				0x10L
+#define ATTKFLAG_SHOCKWAVE			0x20L
 
 #define XYATKFLAG_MIRROR_ATK		0x1L
 #endif

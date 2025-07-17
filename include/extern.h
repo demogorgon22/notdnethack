@@ -754,7 +754,7 @@ E struct obj *FDECL(drop_envy, (struct monst *));
 E void FDECL(kickdmg, (struct monst *, BOOLEAN_P));
 E void FDECL(dive_kick_monster, (struct monst *));
 E void NDECL(bird_kick_monsters);
-E void NDECL(cyclone_slash_monsters);
+E void FDECL(cyclone_slash_monsters, (boolean));
 E void NDECL(wing_storm_monsters);
 E boolean FDECL(ghitm, (struct monst *,struct obj *));
 E void FDECL(container_impact_dmg, (struct obj *));
@@ -3567,6 +3567,8 @@ E int FDECL(xpassivey, (struct monst *, struct monst *, struct attack *, struct 
 E int tohitval(struct monst *, struct monst *, struct attack *, struct obj *, void *, int, int, int *);
 E void FDECL(weave_black_web, (struct monst *));
 E int NDECL(android_combo);
+E boolean FDECL(forward_arc_monk_target, (boolean));
+E void NDECL(sakura_slash_monsters);
 E void NDECL(movement_combos);
 E const char *FDECL(move_name, (int));
 E boolean FDECL(perform_monk_move, (int, int*));

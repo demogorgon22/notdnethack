@@ -4989,7 +4989,11 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 			modifiers |= MELEEHURT_SUPER_SNEAK;
 		if(attack_flags&ATTKFLAG_DOUBLE_DAMAGE)
 			modifiers |= MELEEHURT_DOUBLE_DAMAGE;
-		if(attack_flags&ATTKFLAG_SHOVE){
+		if(attack_flags&ATTKFLAG_SHOCKWAVE && weapon){
+			flatdamage = 1;
+			modifiers |= MELEEHURT_SHOCKWAVE;
+		}
+		if(attack_flags&ATTKFLAG_SHOVE && weapon){
 			struct weapon_dice wdice;
 			/* grab the weapon dice from dmgval_core */
 			dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
@@ -5339,14 +5343,14 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			}
 		}
 		/* hit with [weapon] */
-		result = hmon_general_modifiers(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, 0, dmg, dohitmsg, dieroll, FALSE, vis, modifier_flags);
+		result = hmon_general_modifiers(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, (modifier_flags&(MELEEHURT_SHOCKWAVE|ATTKFLAG_SHOVE)) ? flatdmg : 0, dmg, dohitmsg, dieroll, FALSE, vis, modifier_flags);
 		if (weapon_p) weapon = *weapon_p;
 		if (result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
 			return result;
 		if (weapon && is_multi_hit(weapon) && weapon->ostriking) {
 			int i;
 			for (i = 0; weapon && (i < weapon->ostriking); i++) {
-				result = hmon_general_modifiers(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, 0, 0, FALSE, dieroll, TRUE, vis, modifier_flags);
+				result = hmon_general_modifiers(magr, mdef, attk, originalattk, weapon_p, (struct obj *)0, (weapon && ranged) ? HMON_THRUST : HMON_WHACK, (modifier_flags&(MELEEHURT_SHOCKWAVE|ATTKFLAG_SHOVE)) ? flatdmg : 0, 0, FALSE, dieroll, TRUE, vis, modifier_flags);
 				if (weapon_p) weapon = *weapon_p;
 				if (result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
 					return result;
@@ -16618,6 +16622,23 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 			}
 		}
+		if(modifier_flags&MELEEHURT_SHOCKWAVE && weapon){
+			struct weapon_dice wdice;
+			/* grab the weapon dice from dmgval_core */
+			dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+			/* add to the elemdmg counter */
+			int shock_elemdmg = d(wdice.oc_damn, wdice.oc_damd) + d(wdice.bon_damn, wdice.bon_damd) + wdice.flat + weapon->spe;
+			if(!rn2(20)){
+				if(bigmonst(pd))
+					shock_elemdmg *= 2;
+				else {
+					shock_elemdmg += shock_elemdmg + 400;
+					hittxt = TRUE;
+					pline("%s is cut in half by the shockwave!", Monnam(mdef));
+				}
+			}
+			elemdmg += shock_elemdmg;
+		}
 
 		/* must come after all apply_hit_effects */
 		/* priests do extra damage with all artifacts */
@@ -20893,6 +20914,47 @@ bleed_slash_monsters()
 }
 
 void
+sakura_slash_monsters()
+{
+	struct monst *mon = 0;
+	static struct attack weaponhit =	{ AT_WEAP, AD_PHYS, 0, 0 };
+	static struct attack lightning =	{ AT_WEAP, AD_EELC,10, 6 };
+	void (*rotate_fun1)(int *, int *) = rotate_minus45;
+	void (*rotate_fun2)(int *, int *) = rotate_plus45;
+	if(rn2(2)){
+		rotate_fun1 = rotate_plus45;
+		rotate_fun2 = rotate_minus45;
+	}
+
+	int dx = u.dx, dy = u.dy;
+	int i,j;
+	rotate_fun1(&dx, &dy);
+
+	for(int n = 0; n<3; n++){
+		i = u.ux+dx;
+		j = u.uy+dy;
+		rotate_fun2(&dx, &dy);
+
+		if(!isok(i,j))
+			continue;
+
+		if(u.ustuck && u.uswallow)
+			mon = u.ustuck;
+		else mon = m_at(i, j);
+		if(!mon)
+			continue;
+
+		if((touch_petrifies(mon->data)
+			|| mon->mtyp == PM_MEDUSA)
+		 && !(Stone_resistance || uwep))
+			continue;
+
+		if(peace_check_move(mon))
+			xmeleehity(&youmonst, mon, In_outdoors(&u.uz) ? &lightning :  &weaponhit, &uwep, (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0), 0, FALSE, 0);
+	}
+}
+
+void
 sweep_slash_monsters()
 {
 	struct monst *mon = 0;
@@ -21389,7 +21451,7 @@ perform_monk_move(int moveID, int *move_cost)
 		case CYCLONE:
 			if(circle_monk_target(!!uwep)){
 				pline("%s!", move_name(moveID));
-				cyclone_slash_monsters();
+				cyclone_slash_monsters(TRUE);
 				return TRUE;
 			}
 		break;

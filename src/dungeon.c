@@ -1536,6 +1536,8 @@ d_level *lev;
 			return lev->dlevel < qlocate_level.dlevel;
 		} else if(Role_if(PM_KNIGHT)){
 			return lev->dlevel < nemesis_level.dlevel;
+		} else if(Role_if(PM_KENSEI)){
+			return lev->dlevel <= qlocate_level.dlevel || lev->dlevel == nemesis_level.dlevel;
 		} else if(Role_if(PM_TOURIST)) {
 			return on_level(lev, &qlocate_level) || on_level(lev, &qstart_level);
 		}

@@ -5,6 +5,7 @@
 /* Contains code for 't' (throw) */
 
 #include "hack.h"
+#include "artifact.h"
 
 #include "xhity.h"
 
@@ -347,7 +348,26 @@ hurtle_step(arg, x, y)
     struct monst *mon;
     boolean may_pass = TRUE;
     struct trap *ttmp;
-    
+	static long last_messaged = 0L;
+	boolean spiralcloud, passage, nightjar, sakura;
+	spiralcloud = passage = nightjar = sakura = FALSE;
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_KIKU_ICHIMONJI && uwep && is_kensei_weapon(uwep)){
+		if(uwep->oartifact == ART_MORTAL_BLADE);//Nothing
+		else if(uwep->oartifact == ART_SKY_RENDER){
+			spiralcloud = TRUE;
+			passage = TRUE;
+		}
+		// else if(uwep->otyp == NINJA_TO){
+			// nightjar = TRUE;
+		// }
+		else if(u.ulevel == 30){
+			sakura = TRUE;
+		}
+		else {
+			passage = TRUE;
+		}
+	}
+
     if (!isok(x,y)) {
 	You_feel("the spirits holding you back.");
 	return FALSE;
@@ -399,15 +419,51 @@ hurtle_step(arg, x, y)
 	    }
 	}
     }
+	if(sakura){
+		u.dx = x - u.ux;
+		u.dy = y - u.uy;
+		if(forward_arc_monk_target(!!uwep)){
+			if(last_messaged < monstermoves){
+				if(In_outdoors(&u.uz))
+					pline("Lightning of Tomoe!");
+				else
+					pline("Sakura dance!");
+				last_messaged = monstermoves;
+			}
+			sakura_slash_monsters();
+		}
+	}
+
 
     if ((mon = m_at(x, y)) != 0) {
 		if((((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) || activeFightingForm(FFORM_ATARU)) && !mon->mpeaceful && canseemon(mon)){
 			u.dx = x - u.ux;
 			u.dy = y - u.uy;
 			flags.forcefight = TRUE;
+			if(spiralcloud){
+				if(last_messaged < monstermoves){
+					pline("Spiralcloud passage!");
+					last_messaged = monstermoves;
+				}
+			}
+			// else if(nightjar){
+				// if(last_messaged < monstermoves){
+					// pline("Nightjar slash!");
+					// last_messaged = monstermoves;
+				// }
+			// }
+			else if(passage){
+				if(last_messaged < monstermoves){
+					pline("Floating passage!");
+					last_messaged = monstermoves;
+				}
+			}
 			attack2(mon);
 			flags.forcefight = FALSE;
-			if(m_at(x, y) || partial_action())
+			boolean stop = m_at(x, y) || (!passage && partial_action());
+			if(spiralcloud)
+				cyclone_slash_monsters(FALSE);
+			if(stop)
 				return FALSE;
 		}
 		else {

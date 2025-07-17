@@ -347,7 +347,7 @@ wing_storm_monsters()
 }
 
 void
-cyclone_slash_monsters()
+cyclone_slash_monsters(boolean full_attack)
 {
 	struct monst *mon;
 	int sdx = u.dx;
@@ -373,7 +373,7 @@ cyclone_slash_monsters()
 		if(!mon || (mon->mpeaceful && !Hallucination) || DEADMONSTER(mon))
 			continue;
 		
-		xmeleehity(&youmonst, mon, &weaponhit, &uwep, (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0), 0, FALSE, 0);
+		xmeleehity(&youmonst, mon, &weaponhit, &uwep, (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0), 0, FALSE, full_attack ? 0 : ATTKFLAG_SHOCKWAVE);
 	}
 	u.dx = sdx;
 	u.dy = sdy;
