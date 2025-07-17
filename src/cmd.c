@@ -2260,7 +2260,7 @@ wiz_wish()	/* Unlimited wishes for debug mode by Paul Polderman */
 	    boolean save_verbose = flags.verbose;
 
 	    flags.verbose = FALSE;
-		makewish(WISH_WIZARD);
+		makewish(WISH_SINGLE_USE | WISH_WIZARD);
 	    flags.verbose = save_verbose;
 	    (void) encumber_msg();
 	} else

@@ -3643,7 +3643,7 @@ register struct obj *obj;
 				(mtmp3 && canseemon(mtmp3)) ? a_monnam(mtmp3) : "");
 		}
 		int artwishes = u.uconduct.wisharti;
-		makewish(allow_artwish()|WISH_VERBOSE);
+		makewish(WISH_SINGLE_USE | allow_artwish()|WISH_VERBOSE);
 		if (u.uconduct.wisharti > artwishes) {
 			/* made artifact wish */
 			if (mtmp2) {

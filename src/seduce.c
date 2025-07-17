@@ -2064,7 +2064,7 @@ int effect_num;
 
 		case SEDU_WISH:
 			verbalize("Tell me your greatest desire!");
-			makewish(WISH_VERBOSE);	// can not grant artifacts
+			makewish(WISH_SINGLE_USE | WISH_VERBOSE);	// can not grant artifacts
 			break;
 
 		case SEDU_BLESS:

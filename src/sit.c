@@ -278,7 +278,7 @@ dosit()
 					}
 					verbalize("You have summoned me.  I will grant one wish!");
 					int artwishes = u.uconduct.wisharti;
-					makewish(allow_artwish() | WISH_VERBOSE);
+					makewish(WISH_SINGLE_USE | allow_artwish() | WISH_VERBOSE);
 					if (u.uconduct.wisharti > artwishes) {
 						/* made artifact wish */
 						if (mtmp2) {
@@ -383,7 +383,7 @@ dosit()
 				}
 				verbalize("You have summoned me.  I will grant one wish!");
 				int artwishes = u.uconduct.wisharti;
-				makewish(allow_artwish() | WISH_VERBOSE);
+				makewish(WISH_SINGLE_USE | allow_artwish() | WISH_VERBOSE);
 				if (u.uconduct.wisharti > artwishes) {
 					/* made artifact wish */
 					if (mtmp2) {

@@ -3643,6 +3643,9 @@ karemade:
 	    sanity_check();
 #endif
 
+	if (iflags.resume_wish)
+		makewish(iflags.resume_wish_flags); /* clears resume_wish */
+
 #ifdef CLIPPING
 	/* just before rhack */
 	cliparound(u.ux, u.uy);

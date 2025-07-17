@@ -2569,7 +2569,7 @@ register struct obj *obj;
 				pline("Unfortunately, nothing happens.");
 				break;
 			}
-			makewish(0);	// does not allow artifact wishes
+			makewish(WISH_SINGLE_USE | 0);	// does not allow artifact wishes
 		break;
 		case WAN_ENLIGHTENMENT:
 			known = TRUE;
@@ -6015,9 +6015,9 @@ allow_artwish()
 	return ((n > 0) ? WISH_ARTALLOW : 0);
 }
 
+// wishflags flags to change messages / effects
 boolean
-makewish(wishflags)
-int wishflags;		// flags to change messages / effects
+makewish(int wishflags)
 {
 	char buf[BUFSZ];
 	char bufcpy[BUFSZ];
@@ -6025,10 +6025,23 @@ int wishflags;		// flags to change messages / effects
 	int tries = 0;
 	int wishreturn;
 
+	iflags.resume_wish = 0;
+	iflags.resume_wish_flags = 0;
+
 	nothing = zeroobj;  /* lint suppression; only its address matters */
 	if (flags.verbose) You("may wish for an object.");
 retry:
 	getlin("For what do you wish?", buf);
+
+	if (flags.term_gone) {
+		//Only resume single-use wishes. Otherwise, returning false preserves the wish already.
+		if(WISH_SINGLE_USE&wishflags){
+			iflags.resume_wish = 1;
+			iflags.resume_wish_flags = wishflags;
+		}
+        return FALSE; //Did not wish (yet.).
+    }
+
 	if(buf[0] == '\033') buf[0] = 0;
 	/*
 	 *  Note: if they wished for and got a non-object successfully,

@@ -60,7 +60,7 @@ dowaterdemon() /* Water demon */
 	    if (rnd(100) > (80 + level_difficulty())) {
 		pline("Grateful for %s release, %s grants you a wish!",
 		      mhis(mtmp), mhe(mtmp));
-		makewish(allow_artwish() | WISH_VERBOSE);
+		makewish(WISH_SINGLE_USE | allow_artwish() | WISH_VERBOSE);
 		mongone(mtmp);
 	    } else if (t_at(mtmp->mx, mtmp->my))
 		(void) mintrap(mtmp);
