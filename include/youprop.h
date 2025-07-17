@@ -9,6 +9,7 @@
 #include "permonst.h"
 #include "mondata.h"
 #include "pm.h"
+#include "artifact.h"
 
 
 /* KMH, intrinsics patch.
@@ -671,7 +672,7 @@
 
  /*Note: the rings only give life saving when charged, so it can't be a normal property*/
 #define ELifesaved		u.uprops[LIFESAVED].extrinsic
-#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || Check_iaso_lifesaving() || Check_twin_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0) || (check_rot(ROT_CENT) && !(mvitals[PM_CENTIPEDE].mvflags & G_GENOD) && !HUnchanging) || (check_mutation(ABHORRENT_SPORE) && !(mvitals[PM_DARK_YOUNG].mvflags & G_GENOD)) || (uwep && uwep->oartifact == ART_MORTAL_BLADE))
+#define Lifesaved		(ELifesaved || Check_crystal_lifesaving() || Check_iaso_lifesaving() || Check_twin_lifesaving() || (uleft && uleft->otyp == RIN_WISHES && uleft->spe > 0) || (uright && uright->otyp == RIN_WISHES && uright->spe > 0) || (check_rot(ROT_CENT) && !(mvitals[PM_CENTIPEDE].mvflags & G_GENOD) && !HUnchanging) || (check_mutation(ABHORRENT_SPORE) && !(mvitals[PM_DARK_YOUNG].mvflags & G_GENOD)) || (uwep && uwep->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives > 0))
 
 #define Necrospellboost	(u.uprops[NECROSPELLS].extrinsic)
 
