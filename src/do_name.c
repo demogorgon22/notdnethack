@@ -1981,6 +1981,7 @@ static const char * const bogusmons[] = {
 	"obelus",
 	"miniature blimp",
 	"lungfish",
+	"grain neutral spirit", /* Alcohol */
 
 	"hard-to-destroy reptile",
 		"shy guy",								/* SCP Foundation */
