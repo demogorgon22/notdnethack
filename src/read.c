@@ -236,13 +236,9 @@ doread()
 				You("read the Galdr of Skadi!");
 				for (i = 0; i < MAXSPELL; i++)  {
 					if (spellid(i) == SPE_CONE_OF_COLD)  {
-						if (spellknow(i) <= 1000) {
-							Your("knowledge of Cone of Cold is keener.");
-							spl_book[i].sp_know = 20000;
-							exercise(A_WIS,TRUE);       /* extra study */
-						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
-							You("know Cone of Cold quite well already.");
-						}
+						Your("knowledge of Cone of Cold is keener.");
+						spl_book[i].sp_know = 20000;
+						exercise(A_WIS,TRUE);       /* extra study */
 						break;
 					} else if (spellid(i) == NO_SPELL)  {
 						spl_book[i].sp_id = SPE_CONE_OF_COLD;
@@ -252,25 +248,20 @@ doread()
 						break;
 					}
 				}
-				if (further_study(SPE_CONE_OF_COLD))
+				if (Role_if(PM_VALKYRIE) && u.uevent.uhand_of_elbereth && P_SKILL(P_ATTACK_SPELL) >= P_SKILLED && u.ulevel >= 22)
 				{
 					for (i = 0; i < MAXSPELL; i++)  {
 						if (spellid(i) == SPE_BLIZZARD)  {
-							if (spellknow(i) <= 1000) {
-								Your("knowledge of Blizzard is keener.");
-								spl_book[i].sp_know = 20000;
-								exercise(A_WIS, TRUE);       /* extra study */
-							}
-							else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
-								You("know Blizzard quite well already.");
-							}
+							Your("knowledge of Blizzard is keener.");
+							spl_book[i].sp_know = 20000;
+							exercise(A_WIS, TRUE);       /* extra study */
 							break;
 						}
 						else if (spellid(i) == NO_SPELL)  {
 							spl_book[i].sp_id = SPE_BLIZZARD;
 							spl_book[i].sp_lev = objects[SPE_BLIZZARD].oc_level;
 							spl_book[i].sp_know = 20000;
-							You("learn to cast Frost Storm!");
+							You("learn to cast Blizzard!");
 							break;
 						}
 					}
@@ -288,13 +279,9 @@ doread()
 				You("read the secret runes!");
 				for (i = 0; i < MAXSPELL; i++){
 					if (spellid(i) == SPE_IDENTIFY)  {
-						if (spellknow(i) <= 1000) {
-							Your("knowledge of Identify is keener.");
-							spl_book[i].sp_know = 20000;
-							exercise(A_WIS,TRUE);       /* extra study */
-						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
-							You("know Identify quite well already.");
-						}
+						Your("knowledge of Identify is keener.");
+						spl_book[i].sp_know = 20000;
+						exercise(A_WIS,TRUE);       /* extra study */
 						break;
 					} else if (spellid(i) == NO_SPELL)  {
 						spl_book[i].sp_id = SPE_IDENTIFY;
@@ -317,13 +304,9 @@ doread()
 				You("read the dark secrets inscribed on the staff.");
 				for (i = 0; i < MAXSPELL; i++)  {
 					if (spellid(i) == SPE_DRAIN_LIFE)  {
-						if (spellknow(i) <= 1000) {
-							Your("knowledge of Drain Life is keener.");
-							spl_book[i].sp_know = 20000;
-							exercise(A_WIS,TRUE);       /* extra study */
-						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
-							You("know Drain Life quite well already.");
-						}
+						Your("knowledge of Drain Life is keener.");
+						spl_book[i].sp_know = 20000;
+						exercise(A_WIS,TRUE);       /* extra study */
 						break;
 					} else if (spellid(i) == NO_SPELL)  {
 						spl_book[i].sp_id = SPE_DRAIN_LIFE;
@@ -331,6 +314,23 @@ doread()
 						spl_book[i].sp_know = 20000;
 						You("learn to cast Drain Life!");
 						break;
+					}
+				}
+				if (further_study(SPE_DRAIN_LIFE)){
+					for (i = 0; i < MAXSPELL; i++)  {
+						if (spellid(i) == SPE_FINGER_OF_DEATH)  {
+							Your("knowledge of Finger of Death is keener.");
+							spl_book[i].sp_know = 20000;
+							exercise(A_WIS, TRUE);       /* extra study */
+							break;
+						}
+						else if (spellid(i) == NO_SPELL)  {
+							spl_book[i].sp_id = SPE_FINGER_OF_DEATH;
+							spl_book[i].sp_lev = objects[SPE_FINGER_OF_DEATH].oc_level;
+							spl_book[i].sp_know = 20000;
+							You("learn to cast Finger of Death!");
+							break;
+						}
 					}
 				}
 				if (i == MAXSPELL) impossible("Too many spells memorized!");
@@ -345,13 +345,9 @@ doread()
 				You("read the traceries of healing magics inscribed on the staff.");
 				for (i = 0; i < MAXSPELL; i++)  {
 					if (spellid(i) == SPE_MASS_HEALING)  {
-						if (spellknow(i) <= 1000) {
-							Your("knowledge of Mass Healing is keener.");
-							spl_book[i].sp_know = 20000;
-							exercise(A_WIS,TRUE);       /* extra study */
-						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
-							You("know Mass Healing quite well already.");
-						}
+						Your("knowledge of Mass Healing is keener.");
+						spl_book[i].sp_know = 20000;
+						exercise(A_WIS,TRUE);       /* extra study */
 						break;
 					} else if (spellid(i) == NO_SPELL)  {
 						spl_book[i].sp_id = SPE_MASS_HEALING;
@@ -373,13 +369,9 @@ doread()
 				You("read the still-visible traceries of healing magics inscribed on the shackles fusing the sword together.");
 				for (i = 0; i < MAXSPELL; i++)  {
 					if (spellid(i) == SPE_MASS_HEALING)  {
-						if (spellknow(i) <= 1000) {
-							Your("knowledge of Mass Healing is keener.");
-							spl_book[i].sp_know = 20000;
-							exercise(A_WIS,TRUE);       /* extra study */
-						} else { /* 1000 < spellknow(i) <= MAX_SPELL_STUDY */
-							You("know Mass Healing quite well already.");
-						}
+						Your("knowledge of Mass Healing is keener.");
+						spl_book[i].sp_know = 20000;
+						exercise(A_WIS,TRUE);       /* extra study */
 						break;
 					} else if (spellid(i) == NO_SPELL)  {
 						spl_book[i].sp_id = SPE_MASS_HEALING;
