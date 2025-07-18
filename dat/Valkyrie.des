@@ -57,6 +57,10 @@ OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 # valkyrie guards for the audience chamber
+OBJECT:'\\',"bedroll",(27,08)
+OBJECT:'\\',"bedroll",(27,12)
+OBJECT:'\\',"bedroll",(42,08)
+OBJECT:'\\',"bedroll",(42,12)
 OBJECT:')',"atgeir",(27,08)
 OBJECT:')',"atgeir",(27,12)
 OBJECT:')',"atgeir",(42,08)

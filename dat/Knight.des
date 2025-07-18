@@ -502,6 +502,7 @@ TRAP:random,random
 TRAP:random,random
 # Random monsters.
 MONSTER:'n',"Nimune",(50,06),hostile
+OBJECT:'\\',"expensive bed",(50,06)
 MONSTER:'i',"quasit",random,hostile
 MONSTER:'i',"quasit",random,hostile
 MONSTER:'i',"quasit",random,hostile

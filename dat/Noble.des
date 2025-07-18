@@ -63,7 +63,8 @@ OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 # Magic Chest
-OBJECT:'(',"magic chest",(21,02)
+OBJECT:'(',"magic chest",(24,05)
+OBJECT:'\\',"expensive bed",(21,02)
 
 # knight guards for the watchrooms
 MONSTER:'@',"knight",(07,04),peaceful
@@ -192,6 +193,13 @@ DOOR:closed,(38,07)
 REGION:(39,06,47,08),lit,"temple"
 ALTAR:(46,07),noncoaligned,shrine
 REGION:(39,10,47,13),lit,"morgue"
+
+OBJECT:'\\',"bedroll",(02,02)
+OBJECT:'\\',"bedroll",(09,02)
+OBJECT:'\\',"bedroll",(16,02)
+OBJECT:'\\',"bedroll",(02,13)
+OBJECT:'\\',"bedroll",(09,13)
+OBJECT:'\\',"bedroll",(16,13)
 
 # Objects
 # Notes: This will be replaced when the object is created

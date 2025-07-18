@@ -231,7 +231,6 @@ REGION:(00,00,75,20),lit,"ordinary"
 # Stairs
 STAIR:(00,02),up
 STAIR:(75,10),down
-
 # Church
 REGION:(18,01,24,07),lit,"temple"
 ALTAR:(21,02),neutral,altar,"_Velka, Goddess of Sin"
@@ -260,7 +259,7 @@ DOOR:closed,(15,13)
 
 # Magic Chest
 OBJECT:'(',"magic chest",(06,09)
-
+OBJECT:'\\',"bed",(30,03)
 
 #
 #	The "locate" level for the quest.

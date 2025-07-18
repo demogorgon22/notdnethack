@@ -1701,6 +1701,24 @@ default_case:
 				}
 			}
 		}
+		else if(u.uz.dlevel == nemesis_level.dlevel && urole.neminum == PM_DARK_ONE){
+			int mtyp;
+			struct monst *mon;
+			struct obj *tmpo;
+			int prisoners[] = {
+				PM_ELF_LADY, PM_DWARF_QUEEN, PM_GNOMISH_WIZARD, PM_ORC_SHAMAN, PM_MORDOR_SHAMAN, PM_OGRE_MAGE,
+				PM_HILL_GIANT, PM_OWLBEAR, PM_OGRE, PM_APPRENTICE, PM_HEDROW_WIZARD
+			};
+			mtyp = ROLL_FROM(prisoners);
+			mon = makemon(&mons[mtyp], otmp->ox, otmp->oy, MM_GOODEQUIP);
+			if(mon){
+				tmpo = mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+				if(tmpo){
+					mon->entangled_otyp = SHACKLES;
+					mon->entangled_oid = tmpo->o_id;
+				}
+			}
+		}
 	}
 	if(otmp->otyp == CHAIN && otmp->spe == 1 && otmp->where == OBJ_FLOOR && Is_stronghold(&u.uz)){
 		struct obj *tmpo;

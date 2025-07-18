@@ -1217,6 +1217,14 @@ long flags;
 				mtmp->entangled_oid = otmp->o_id;
 			}
 		}
+		if((mtmp->mtyp == PM_WIZARD || mtmp->mtyp == PM_ROGUE) && In_quest(&u.uz)
+			&& u.uz.dlevel == nemesis_level.dlevel && urole.neminum == PM_DARK_ONE){
+			otmp = mongets(mtmp, SHACKLES, NO_MKOBJ_FLAGS);
+			if(otmp){
+				mtmp->entangled_otyp = SHACKLES;
+				mtmp->entangled_oid = otmp->o_id;
+			}
+		}
 		if(uh_patient){
 			for(struct obj *otmp = mtmp->minvent; otmp; otmp = otmp->nobj){
 				if(otmp->otyp == STRAITJACKET){

@@ -3059,6 +3059,7 @@ MONSTER:'\'',"parasitized doll",(24,16)
 #TRAP:"magic",(24,16)
 # The alhoon has some guards
 MONSTER:'@',"werewolf",(22,16),hostile
+OBJECT:'\\',"bed",(22,16)
 MONSTER:'d',"hell hound",(24,14),hostile,asleep
 MONSTER:'P',"green slime",(24,18),hostile,asleep
 MONSTER:'Z',"skeleton",(26,16),hostile,asleep

@@ -148,6 +148,9 @@ DOOR:locked,(64,01)
 MONSTER:'@',"Eclavdra",(12,10)
 MONSTER:'@',"Gromph",(49,09)
 MONSTER:'@',"Dantrag",(48,08)
+OBJECT:'\\',"expensive bed",(49,09)
+OBJECT:'\\',"expensive bed",(48,08)
+
 # The treasure of Eclavdra
 CONTAINER:'(',"chest",(12,10)
 OBJECT:'?',"resistance",contained
