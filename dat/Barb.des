@@ -33,6 +33,7 @@ sssssssssssssssssssssssssssssssssssssPPsssPPssssssssssssssssssssssssssssssss
 ssssssssssssssssssssssssssssssssssssPPsssPPsssssssssssssssssssssssssssssssss
 ssssssssssssssssssssssssssssssssssssPPssssPPssssssssssssssssssssssssssssssss
 ENDMAP
+RANDOM_PLACES:(31,06),(28,11),(23,15),(14,14),(04,14)
 # Dungeon Description
 REGION:(00,00,75,19),lit,"ordinary"
 REGION:(09,05,11,05),unlit,"ordinary"
@@ -64,6 +65,7 @@ CONTAINER:'(',"chest",(09,05)
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
+OBJECT:'\\',"bed",place[0]
 # chieftain guards for the audience chamber
 MONSTER:'@',"chieftain",(10,05)
 MONSTER:'@',"chieftain",(10,09)

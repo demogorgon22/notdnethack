@@ -11,6 +11,8 @@
 MAZE: "Tou-strt",' '
 FLAGS: noteleport,hardfloor
 GEOMETRY:center,center
+#         1         2         3         4         5         6         7     
+#123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 .......}}....---------..-------------------------------------------------...
 ........}}...|.......|..|.-------------------------------------------...|...
@@ -69,6 +71,12 @@ DOOR:open,(09,17)
 DOOR:open,(16,17)
 DOOR:locked,(35,07)
 DOOR:locked,(36,07)
+
+# beds
+OBJECT:'\\',"bed",(07,11)
+OBJECT:'\\',"bed",(04,17)
+OBJECT:'\\',"bed",(21,17)
+
 # Monsters on siege duty.
 MONSTER: '@',"rogue",random,hostile
 MONSTER: '@',"thug",random,hostile
@@ -434,11 +442,17 @@ MONSTER:'r',random,random
 MONSTER:'r',random,random
 # ladies of the evening
 MONSTER:'&',"succubus",(02,08)
+OBJECT:'\\',"expensive bed",(02,08)
 MONSTER:'&',"succubus",(08,08)
+OBJECT:'\\',"expensive bed",(08,08)
 MONSTER:'&',"incubus",(02,14)
+OBJECT:'\\',"expensive bed",(02,14)
 MONSTER:'&',"incubus",(08,14)
+OBJECT:'\\',"expensive bed",(08,14)
 MONSTER:'&',"incubus",(02,17)
+OBJECT:'\\',"expensive bed",(02,17)
 MONSTER:'&',"incubus",(08,17)
+OBJECT:'\\',"expensive bed",(08,17)
 # Police station (with drunken prisoners)
 MONSTER:'@',"captain",(24,09),hostile
 MONSTER:'@',"lieutenant",(20,09),hostile

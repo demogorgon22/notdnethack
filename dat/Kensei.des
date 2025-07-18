@@ -49,6 +49,7 @@ ALTAR:(19,13),coaligned,altar
 DOOR:closed,(23,12)
 # The Grand Master
 MONSTER:'@',"Hermit Master",place[0]
+OBJECT:'\\',"bedroll",place[0]
 # No treasure chest!
 
 # guards for the audience chamber
@@ -107,15 +108,17 @@ MAP
 8,,T,,,,,,,,,,,,,,,,,,,,,,,T,,,TT,,,,,}},,,,T,T,,,TTT,,,,,,,,,,,,,,,,T,,,T,,,
 9,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,}},,,,,TT,,,,T,,,,,T,,,,,,,,,TT,,,,T,,,
 ENDMAP
-RANDOM_PLACES:(25,05),(30,05),(50,05),(25,14),(45,14),(50,14)
+RANDOM_PLACES:(47,05),(50,05),(45,14),(50,14)
 # Dungeon Description
 REGION:(00,00,75,19),unlit,"morgue",unfilled
 # Stairs
 STAIR:(00,17,75,19), (00,00,00,00),up
 STAIR:(10,00,64,12), (00,00,00,00),down
-
 # Magic Chest
 OBJECT:'(',"magic chest",place[0]
+OBJECT[50%]:'#',"thoroughly tattered bedroll",place[1]
+OBJECT[50%]:'#',"very tattered burnt bedroll",place[2]
+OBJECT[50%]:'#',"very burnt bedroll",place[3]
 # Doors
 DOOR:locked,(22,04)
 DOOR:locked,(22,15)

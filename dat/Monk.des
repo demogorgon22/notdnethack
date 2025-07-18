@@ -53,6 +53,7 @@ DOOR:locked,(23,12)
 DOOR:closed,(24,10)
 # The Grand Master
 MONSTER:'@',"Grand Master",(24,07)
+OBJECT:'\\',"bedroll",(24,07)
 # No treasure chest!
 
 # guards for the audience chamber

@@ -274,6 +274,7 @@ OBJECT:'`',"boulder",(54,08)
 # Quest nemesis
 MONSTER:'n',"Aglaope",(38,10),asleep
 OBJECT:'[',"water walking boots",(38,10)
+OBJECT:'\\',"expensive bed",(38,10)
 # Monsters
 MONSTER:'s',random,(33,06),hostile
 MONSTER:'S',random,(33,08),hostile

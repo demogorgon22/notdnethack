@@ -86,7 +86,6 @@ ENDMAP
 REGION:(00,00,75,19),lit,"ordinary"
 NON_DIGGABLE:(00,00,75,19)
 
-
 # Portal arrival point
 BRANCH:(00,17,75,19), (0,0,0,0)
 
@@ -116,6 +115,27 @@ DOOR:closed,(61,08)
 DOOR:closed,(61,03)
 DOOR:closed,(66,02)
 DOOR:closed,(68,00)
+
+# beds
+OBJECT:'\\',"bed",(11,00)
+OBJECT:'\\',"bed",(16,10)
+OBJECT:'\\',"bed",(19,10)
+OBJECT:'\\',"bed",(21,11)
+OBJECT:'\\',"bed",(19,12)
+OBJECT:'\\',"bed",(21,13)
+OBJECT:'\\',"bed",(24,12)
+OBJECT:'\\',"bed",(30,13)
+OBJECT:'\\',"bed",(32,13)
+OBJECT:'\\',"bed",(41,14)
+OBJECT:'\\',"bed",(45,14)
+OBJECT:'\\',"bed",(48,13)
+OBJECT:'\\',"bed",(51,13)
+OBJECT:'\\',"bed",(53,08)
+OBJECT:'\\',"bed",(59,07)
+OBJECT:'\\',"bed",(62,06)
+OBJECT:'\\',"bed",(63,04)
+OBJECT:'\\',"bed",(65,04)
+OBJECT:'\\',"bed",(70,01)
 
 FORGE:(15,02)
 MONSTER:'h',"dwarf smith",(15,02),peaceful

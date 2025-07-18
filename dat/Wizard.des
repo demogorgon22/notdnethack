@@ -10,6 +10,8 @@
 MAZE: "Wiz-strt",' '
 FLAGS: noteleport,hardfloor
 GEOMETRY:center,center
+#         1         2         3         4	       5         6         7
+#123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 eeeeeeeeeeeeeeeeeeeeeCeeeeCCeCeeeeeeeeeeeeeeeeeeeeeeeeCeeeeeeeeeeeeeeeeeeeee
@@ -58,6 +60,9 @@ CONTAINER:'(',"chest",(24,05)
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
+OBJECT:'\\',"bed",(15,06)
+OBJECT:'\\',"bed",(16,14)
+OBJECT:'\\',"bed",(32,07)
 # apprentice guards for the audience chamber
 MONSTER:'@',"apprentice",(30,07)
 MONSTER:'@',"apprentice",(24,06)
@@ -349,13 +354,14 @@ MONSTER:'B',"vampire bat",random
 MONSTER:'i',random,random,hostile
 # Captive Monsters in the dungeon
 MONSTER:'@',"rogue",(35,06),peaceful,"Pug"
-MONSTER:'Y',"owlbear",(47,06),peaceful,asleep
 MONSTER:'@',"wizard",(32,11),peaceful,asleep,"Newt"
-MONSTER:'@',"Grey-elf",(44,11),peaceful
-MONSTER:'H',"hill giant",(47,11),peaceful,asleep
-MONSTER:'G',"gnomish wizard",(38,06),peaceful
-MONSTER:'@',"prisoner",(35,11),peaceful
-MONSTER:'@',"prisoner",(41,11),peaceful,asleep
+OBJECT: '_', "chain", (38,06)
+OBJECT: '_', "chain", (47,06)
+OBJECT: '_', "chain", (35,11)
+OBJECT: '_', "chain", (41,11)
+OBJECT: '_', "chain", (44,11)
+OBJECT: '_', "chain", (47,11)
+
 
 #
 #	The "fill" levels for the quest.

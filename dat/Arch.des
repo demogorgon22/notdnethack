@@ -123,6 +123,8 @@ OBJECT:'#',"gold pharaoh mask",contained
 OBJECT:'+',random,place[0]
 OBJECT:'+',random,place[1]
 OBJECT:'+',random,place[2]
+# a bed in one of the spare rooms
+OBJECT:'\\',"bed",place[3]
 # Some acid next to the sink
 OBJECT:'!',"acid",(64,10)
 # Some armor in the top left hidden room

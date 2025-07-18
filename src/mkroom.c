@@ -3298,6 +3298,7 @@ int left;
 			if(!rn2(3))
 				mkobj_at(RANDOM_CLASS, x+rnd(2), y+rnd(2), MKOBJ_ARTIF);
 		}
+		mksobj_at(BEDROLL, x+rnd(2), y+rnd(2), NO_MKOBJ_FLAGS); // only one, they all share it
 		
 		// wallification(x, y, x+3, y+3);//Can be adjacent, do wallification after all huts placed
 		
