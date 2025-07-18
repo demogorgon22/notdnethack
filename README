@@ -16,7 +16,7 @@ For compiling on Windows:
 * Navigate (using `ls` and `cd`) to where you want to install notdnethack
 * Install git: `apt install git`
 * Download the version of dNAO you want with git: `git clone https://github.com/demogorgon22/notdnethack.git` will get you whatever is the default release branch is at the time
-* Install the following using `apt install <XXXX>`: `bison`, `build-essential`, `libncurses5-dev`, `flex`
+* Install the following using `apt install <XXXX>`: `bison`, `build-essential`, `libncurses5-dev`, `flex`, `pkg-config`
   * If you want to rebuild `include/macromagic.h` (this is only required if you modify `util/MacroMagicMarker.py` or `doc/macromagic.txt`), you also need `python3`
 * Build & install by typing `make install`
   * If you want to enable AddressSanitizer, useful for finding certain types of bugs, add `CFLAGS='-g -fsanitize=address' LDFLAGS=-fsanitize=address`
