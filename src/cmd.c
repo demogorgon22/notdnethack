@@ -3,12 +3,14 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include <ctype.h>
+#include "curses.h"
 
 #include "hack.h"
 #include "artifact.h"
 #include "lev.h"
 #include "func_tab.h"
 #include "xhity.h"
+
 /* #define DEBUG */	/* uncomment for debugging */
 
 /*
@@ -4540,6 +4542,7 @@ readchar()
 #endif
 		if(sym == 033 && !overriding){
 			overriding = TRUE;
+			timeout(10);
 		}
 		else if(overriding && sym == '[' && !bracket){
 			bracket = TRUE;
@@ -4548,6 +4551,7 @@ readchar()
 			const char *sdp;
 			if(iflags.num_pad) sdp = ndir; else sdp = sdir;	/* DICE workaround */
 			overriding = FALSE;
+			timeout(-1);
 			switch(sym){
 				case 'A':
 					//Up
@@ -4569,6 +4573,7 @@ readchar()
 		}
 		else {
 			overriding = FALSE;
+			timeout(-1);
 		}
 	} while(overriding);
 	
