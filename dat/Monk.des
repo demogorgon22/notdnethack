@@ -35,6 +35,8 @@ MAP
 8   GGGGGGGGGGGT    GGGGGGGGGGG  GGGGGGGGGGGGT                     GGGGGGGG  
 9     GGGGGG            GGGGG        GGGGGGGGGT                   GGGGGG     
 ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#          1         2         3         4         5         6         7    7
 # Dungeon Description
 REGION:(00,00,75,19),lit,"ordinary"
 REGION:(18,05,29,09),lit,"temple"
@@ -53,7 +55,6 @@ DOOR:locked,(23,12)
 DOOR:closed,(24,10)
 # The Grand Master
 MONSTER:'@',"Grand Master",(24,07)
-OBJECT:'\\',"bedroll",(24,07)
 # No treasure chest!
 
 # guards for the audience chamber
@@ -65,6 +66,18 @@ MONSTER:'@',"abbot",(27,07)
 MONSTER:'@',"abbot",(27,08)
 MONSTER:'@',"abbot",(35,10)
 MONSTER:'@',"abbot",(35,11)
+
+#Damaged sleeping chamber
+OBJECT[75%]:'\\',"bedroll",(31,14)
+OBJECT[75%]:'\\',"bedroll",(32,14)
+OBJECT[75%]:'\\',"bedroll",(33,14)
+OBJECT[75%]:'\\',"bedroll",(34,14)
+OBJECT[75%]:'\\',"bedroll",(35,14)
+OBJECT[75%]:'\\',"bedroll",(36,14)
+OBJECT[75%]:'\\',"bedroll",(37,14)
+OBJECT[75%]:'\\',"bedroll",(38,14)
+
+
 # Non diggable walls
 NON_DIGGABLE:(00,00,75,19)
 # Random traps

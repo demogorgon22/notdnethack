@@ -40,6 +40,8 @@ FOUNTAIN:(67,16)
 
 
 GEOMETRY:center,center
+#0         1         2         3         4         5         6         7     
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 0,,,,,--------,,,,,,,-----....|..|,,,,,,,,..,,,T,,,,}|,,,,,,,,,,-------------
 1,T,,,|..|...|,,,,,,,|........+..S,,,T,,,,,.,,,,,,,}--,T,,,,,,,,|.....+......
@@ -62,6 +64,8 @@ MAP
 8,,,,,,,,|.....|...--+--,...+.........------,T.,}}}},,,.,,,,,,,,--.....--,,,,
 9,,T,,,,,|.....|.......|,.,,|...........|,,,,..}}}}}}}}..,,,,,,,T--...--T,,,,
 ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7     
 
 RANDOM_PLACES:(31,00),(73,01),(41,17),(11,19),(10,02),(33,19)
 # Dungeon Description
@@ -119,12 +123,12 @@ OBJECT:'#',"+3 cursed gold flail",contained
 OBJECT:'#',"small +3 cursed gold shepherd's crook",contained
 OBJECT:'#',"gold amulet",contained
 OBJECT:'#',"gold pharaoh mask",contained
+# a victorian four-poster also shoved off in the storeroom
+CONTAINER:'\\',"expensive bed",(40,8)
 # 3 random spellbooks in some of the empty rooms
 OBJECT:'+',random,place[0]
 OBJECT:'+',random,place[1]
 OBJECT:'+',random,place[2]
-# a bed in one of the spare rooms
-OBJECT:'\\',"bed",place[3]
 # Some acid next to the sink
 OBJECT:'!',"acid",(64,10)
 # Some armor in the top left hidden room

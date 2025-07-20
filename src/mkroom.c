@@ -32,7 +32,7 @@ STATIC_DCL void NDECL(mksentinelclearing);
 STATIC_DCL void NDECL(mkfishingvillage);
 STATIC_DCL void NDECL(mkpluhomestead);
 STATIC_DCL void FDECL(mkpluroom, (int));
-STATIC_DCL void FDECL(mkelfhut, (int, int, int));
+STATIC_DCL void FDECL(mkelfhut, (int, int, int, boolean));
 STATIC_DCL void FDECL(mkruinedelfhut, (int, int));
 STATIC_DCL void FDECL(mkdrowshanty, (int));
 STATIC_DCL void FDECL(mkorccave, (int));
@@ -3242,10 +3242,7 @@ int width;
 
 STATIC_OVL
 void
-mkelfhut(background, foreground, left)
-int background;
-int foreground;
-int left;
+mkelfhut(int background, int foreground, int left, boolean quest)
 {
 	int x,y,tries=0;
 	int i,j, pathto = 0;
@@ -3298,7 +3295,12 @@ int left;
 			if(!rn2(3))
 				mkobj_at(RANDOM_CLASS, x+rnd(2), y+rnd(2), MKOBJ_ARTIF);
 		}
-		mksobj_at(BEDROLL, x+rnd(2), y+rnd(2), NO_MKOBJ_FLAGS); // only one, they all share it
+		if(quest){
+			if(!rn2(3))
+				mksobj_at(EXPENSIVE_BED, x+rnd(2), y+rnd(2), NO_MKOBJ_FLAGS);
+		}
+		else
+			mksobj_at(BEDROLL, x+rnd(2), y+rnd(2), NO_MKOBJ_FLAGS); // only one, they all share it
 		
 		// wallification(x, y, x+3, y+3);//Can be adjacent, do wallification after all huts placed
 		
@@ -6113,7 +6115,7 @@ place_elfquest_forest_features()
 	if(Is_qhome(&u.uz)){
 		int i = d(1,4);
 		for(; i > 0; i--)
-			mkelfhut(TREE, GRASS, 0);
+			mkelfhut(TREE, GRASS, 0, TRUE);
 		// i = rn2(3) ? 1 : d(1,3);
 		mkelfforge(TREE, GRASS, 0, TRUE);
 		i = 1;
@@ -6124,7 +6126,7 @@ place_elfquest_forest_features()
 	else if(u.uz.dlevel < qlocate_level.dlevel){
 		int i = rn2(4) + rn2(4);
 		for(; i > 0; i--)
-			mkelfhut(TREE, GRASS, 0);
+			mkelfhut(TREE, GRASS, 0, TRUE);
 		if(rn2(3))
 			mkelfforge(TREE, GRASS, 0, FALSE);
 		for(i=rn1(20,20); i > 0; i--)
@@ -6158,7 +6160,7 @@ place_chaos_forest_features()
 		if(!rn2(10))
 			mkelfforge(TREE, SOIL, 0, TRUE);
 		for(; i > 0; i--){
-			mkelfhut(TREE, SOIL, 0);
+			mkelfhut(TREE, SOIL, 0, FALSE);
 			if(!rn2(6))
 				mkelfforge(TREE, SOIL, 0, FALSE);
 		}
@@ -6166,7 +6168,7 @@ place_chaos_forest_features()
 	} else if(Is_ford_level(&u.uz)){
 		int i = 3 + d(2,3);
 		for(; i > 0; i--){
-			mkelfhut(TREE, SOIL, 1);
+			mkelfhut(TREE, SOIL, 1, FALSE);
 			if(!rn2(6))
 				mkelfforge(TREE, SOIL, 1, FALSE);
 		}

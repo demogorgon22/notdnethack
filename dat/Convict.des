@@ -145,7 +145,7 @@ OBJECT:'%',"pear",contained
 OBJECT:'%',"honeycomb",contained
 OBJECT:'%',"honeycomb",contained
 OBJECT:'%',"cream pie",contained
-CONTAINER:'\\',"expensive bed",(37,15)
+OBJECT:'\\',"expensive bed",(37,15)
 #Box full of crazy
 CONTAINER:'(',"chest",(37,14),cursed,6
 OBJECT:'(',"trephination kit",contained

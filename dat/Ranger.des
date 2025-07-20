@@ -230,7 +230,7 @@ NON_DIGGABLE:(00,00,75,19)
 # Objects
 OBJECT:')',"bow",place[0],blessed,0,"The Longbow of Diana"
 OBJECT:'(',"chest",place[0]
-OBJECT:'\\',"expensive bed",(49,07)
+OBJECT:'#',"thoroughly rotted expensive bed",(49,07)
 OBJECT:random,random,(36,09)
 OBJECT:random,random,(36,10)
 OBJECT:random,random,(36,11)

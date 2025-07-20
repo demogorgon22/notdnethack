@@ -19,12 +19,12 @@ MAP
 1PeePPPeeeeeeeeeeeeP-----P.PPPPP
 2PeePPPPPPPPPPPPPPPP|...|PPPeePP
 3eeeeP-----.......|--...--|PeePP
-4eeeeP|...|.|-----|.......|PeeeP
-5eeeeP--|+--|.....+...\...|PeeeP
-6eeeePPP|...+.....|.......|Peeee
+4eeeeP|...|-|-----|.......|PeeeP
+5eeeeP--|+-.|.....+...\...|PeeeP
+6eeeePPP|.|.+.....|.......|Peeee
 7eeeeeeP|.-----+--|--...--|Peeee
 8eeeeeeP|.|.........|...|PPPeeee
-9eeeeeeP|.|.........--S--PPeeeee
+9eeeeeeP|.+.........--S--PPeeeee
 0PeeeeeP|.|..........|.|PPPeeeee
 1PeeeeeP|.|----++----|-|PPPeeeee
 2PeeePPP|.|............|PPPeeeee
@@ -54,6 +54,7 @@ DOOR:closed,(14,07)
 DOOR:closed,(11,06)
 DOOR:closed,(08,05)
 DOOR:closed,(17,05)
+DOOR:closed,(09,09)
 
 # Fortuneteller
 MONSTER:'@',"old fortune teller",(12,05)
@@ -64,7 +65,7 @@ OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 # Magic Chest
 OBJECT:'(',"magic chest",(24,05)
-OBJECT:'\\',"expensive bed",(21,02)
+OBJECT:'\\',"expensive bed",(10,05)
 
 # knight guards for the watchrooms
 MONSTER:'@',"knight",(07,04),peaceful

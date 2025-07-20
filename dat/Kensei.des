@@ -49,13 +49,15 @@ ALTAR:(19,13),coaligned,altar
 DOOR:closed,(23,12)
 # The Grand Master
 MONSTER:'@',"Hermit Master",place[0]
-OBJECT:'\\',"bedroll",place[0]
 # No treasure chest!
 
 # guards for the audience chamber
 MONSTER:'@',"disciple",place[1]
+OBJECT:'\\',"bedroll",place[1]
 MONSTER:'@',"disciple",place[2]
+OBJECT:'\\',"bedroll",place[2]
 MONSTER:'@',"disciple",place[3]
+OBJECT:'\\',"bedroll",place[3]
 MONSTER:'@',"disciple",place[4]
 MONSTER:'@',"disciple",place[5]
 MONSTER:'@',"disciple",place[6]

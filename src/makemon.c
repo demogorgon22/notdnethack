@@ -9850,9 +9850,6 @@ int mmflags;
 					(void) mongets(mtmp, BOW, mkobjflags);
 					m_initthrow(mtmp, ARROW, 20, mkobjflags);
 					(void) mongets(mtmp, VICTORIAN_UNDERWEAR, mkobjflags);
-					(void) mongets(mtmp, SCR_ANTIMAGIC, mkobjflags);
-					(void) mongets(mtmp, SCR_ANTIMAGIC, mkobjflags);
-					(void) mongets(mtmp, SCR_ANTIMAGIC, mkobjflags);
 				break;
 				case PM_VLAD_THE_IMPALER:
 					(void) mongets(mtmp, SCIMITAR, mkobjflags);
