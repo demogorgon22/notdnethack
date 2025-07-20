@@ -14295,6 +14295,7 @@ read_necro(VOID_ARGS)
 	struct monst *mtmp = 0;
 	int i;
 	short booktype;
+	short fbook;
 	char splname[BUFSZ];
 
 	if (Confusion) {		/* became confused while learning */
@@ -14517,30 +14518,41 @@ read_necro(VOID_ARGS)
 				return MOVE_FINISHED_OCCUPATION;
 			break;
 		}
-		Sprintf(splname, objects[booktype].oc_name_known ?
-				"\"%s\"" : "the \"%s\" spell",
-			OBJ_NAME(objects[booktype]));
+		Sprintf(splname, objects[booktype].oc_name_known ? "\"%s\"" : "the \"%s\" spell", OBJ_NAME(objects[booktype]));
 		for (i = 0; i < MAXSPELL; i++)  {
 			if (spellid(i) == booktype)  {
-				if (spellknow(i) <= 1000) {
-					Your("knowledge of %s is keener.", splname);
-					spl_book[i].sp_know += 20000;
-					exercise(A_WIS,TRUE);
-				} else {
-					You("know %s quite well already.", splname);
-				}
-				/* make book become known even when spell is already
-				   known, in case amnesia made you forget the book */
+				Your("knowledge of %s is keener.", splname);
+				spl_book[i].sp_know = 20000;
+				exercise(A_WIS,TRUE);
 				makeknown((int)booktype);
 				break;
 			} else if (spellid(i) == NO_SPELL)  {
 				spl_book[i].sp_id = booktype;
 				spl_book[i].sp_lev = objects[booktype].oc_level;
 				spl_book[i].sp_know = 20000;
-				You(i > 0 ? "add %s to your repertoire." : "learn %s.",
-					splname);
+				You(i > 0 ? "add %s to your repertoire." : "learn %s.", splname);
 				makeknown((int)booktype);
 				break;
+			}
+		}
+		if ((fbook = further_study(booktype))){
+			Sprintf(splname, objects[booktype].oc_name_known ? "\"%s\"" : "the \"%s\" spell", OBJ_NAME(objects[fbook]));
+			for (i = 0; i < MAXSPELL; i++)  {
+				if (spellid(i) == fbook)  {
+					Your("knowledge of %s is keener.", splname);
+					spl_book[i].sp_know = 20000;
+					exercise(A_WIS, TRUE);       /* extra study */
+					makeknown((int)fbook);
+					break;
+				}
+				else if (spellid(i) == NO_SPELL)  {
+					spl_book[i].sp_id = fbook;
+					spl_book[i].sp_lev = objects[fbook].oc_level;
+					spl_book[i].sp_know = 20000;
+					You(i > 0 ? "add %s to your repertoire." : "learn %s.", splname);
+					makeknown((int)fbook);
+					break;
+				}
 			}
 		}
 		if (i == MAXSPELL) impossible("Too many spells memorized!");
@@ -14588,7 +14600,7 @@ read_necro(VOID_ARGS)
 				use_unicorn_horn(artiptr);
 			break;
 			case SELECT_SIGN:
-				if(u.wardsknown & WARD_YELLOW) You("skim the legends of Lost Carcosa");
+				if(u.wardsknown & WARD_YELLOW) You("skim the legends of Lost Carcosa.");
 				else You("read the legends of Lost Carcosa.");
 				u.wardsknown |= WARD_YELLOW;
 			break;
@@ -14598,11 +14610,11 @@ read_necro(VOID_ARGS)
 			break;
 			case SELECT_ELEMENTS:
 				if( (u.wardsknown & WARD_CTHUGHA) && (u.wardsknown & WARD_ITHAQUA) && (u.wardsknown & WARD_KARAKAL)){
-					You("page through the section on the Lords of the Elements");
+					You("page through the section on the Lords of the Elements.");
 				}else if((u.wardsknown & WARD_CTHUGHA) || (u.wardsknown & WARD_ITHAQUA) || (u.wardsknown & WARD_KARAKAL)){
-					You("refresh your memory about the Lords of the Elements");
+					You("refresh your memory about the Lords of the Elements.");
 				}else{
-					You("read about the Lords of the Elements");
+					You("read about the Lords of the Elements.");
 				}
 				u.wardsknown |= WARD_CTHUGHA|WARD_ITHAQUA|WARD_KARAKAL;
 			break;
