@@ -421,6 +421,29 @@ boolean dumping;
 	put_enl(final ? "Final Attributes:" : "Current Attributes:");
 	put_enl("");
 
+
+	char *directions[3][3] = {
+		{"NW","W","SW"},
+		{"N","","S"},
+		{"NE","E","SE"},
+	};
+	
+	if(!(u.prev_dir.x || u.prev_dir.y)){
+		Sprintf(buf, "You did not move last turn");
+	}
+	else if(!(u.prev_dir.x > -2 && u.prev_dir.x < 2 && u.prev_dir.y > -2 && u.prev_dir.y < 2)){
+		Sprintf(buf, "You moved multiple tiles last turn");
+	}
+	else {
+		Sprintf(buf, "You moved %s last turn", directions[u.prev_dir.x+1][u.prev_dir.y+1]);
+	}
+	if(u.did_move){
+		Sprintf(eos(buf), ", and aren't eligible to perform a mystic move this turn.");
+	}
+	else Sprintf(eos(buf), ".");
+	put_enl(buf);
+	
+	
 	if (u.uevent.uhand_of_elbereth) {
 	    you_are(crowning_title());
 	}
@@ -1209,6 +1232,28 @@ resistances_enlightenment()
 	en_win = create_nhwindow(NHW_MENU);
 	putstr(en_win, 0, "Current Status:");
 	putstr(en_win, 0, "");
+	
+	char *directions[3][3] = {
+		{"NW","W","SW"},
+		{"N","","S"},
+		{"NE","E","SE"},
+	};
+	
+	if(!(u.prev_dir.x || u.prev_dir.y)){
+		Sprintf(buf, "You did not move last turn");
+	}
+	else if(!(u.prev_dir.x > -2 && u.prev_dir.x < 2 && u.prev_dir.y > -2 && u.prev_dir.y < 2)){
+		Sprintf(buf, "You moved multiple tiles last turn");
+	}
+	else {
+		Sprintf(buf, "You moved %s last turn", directions[u.prev_dir.x+1][u.prev_dir.y+1]);
+	}
+	if(u.did_move){
+		Sprintf(eos(buf), ", and aren't eligible to perform a mystic move this turn.");
+	}
+	else Sprintf(eos(buf), ".");
+	putstr(en_win, 0, buf);
+	
 	
 	if(check_partial_action())
 		putstr(en_win, 0, "You have used your partial action this round.");

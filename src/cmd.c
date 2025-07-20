@@ -947,9 +947,9 @@ doMysticForm()
 	Sprintf(buf,	"Known Techniques");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	if(monk_style_active(DIVE_KICK)) {
-		Sprintf(buf,	"%s (active)", move_name(forward_move()));
+		Sprintf(buf,	"%s%s %s (active)", forward_arrow(), forward_arrow(), move_name(forward_move()));
 	} else {
-		Sprintf(buf,	"%s (disabled)", move_name(forward_move()));
+		Sprintf(buf,	"%s%s %s (disabled)", forward_arrow(), forward_arrow(), move_name(forward_move()));
 	}
 	any.a_int = DIVE_KICK;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -957,9 +957,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(AURA_BOLT)) {
-		Sprintf(buf,	"%s (active)", move_name(bent_move()));
+		Sprintf(buf,	"%s%s %s (active)", bent_arrow(), forward_arrow(), move_name(bent_move()));
 	} else {
-		Sprintf(buf,	"%s (disabled)", move_name(bent_move()));
+		Sprintf(buf,	"%s%s %s (disabled)", bent_arrow(), forward_arrow(), move_name(bent_move()));
 	}
 	any.a_int = AURA_BOLT;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -967,9 +967,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(BIRD_KICK)) {
-		Sprintf(buf,	"%s (active)", move_name(hook_move()));
+		Sprintf(buf,	"%s%s %s (active)", up_arrow(), forward_arrow(), move_name(hook_move()));
 	} else {
-		Sprintf(buf,	"%s (disabled)", move_name(hook_move()));
+		Sprintf(buf,	"%s%s %s (disabled)", up_arrow(), forward_arrow(), move_name(hook_move()));
 	}
 	any.a_int = BIRD_KICK;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -977,9 +977,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(METODRIVE)) {
-		Sprintf(buf,	"%s (active)", move_name(uturn_move()));
+		Sprintf(buf,	"%s%s %s (active)", uturn_arrow(), forward_arrow(), move_name(uturn_move()));
 	} else {
-		Sprintf(buf,	"%s (disabled)", move_name(uturn_move()));
+		Sprintf(buf,	"%s%s %s (disabled)", uturn_arrow(), forward_arrow(), move_name(uturn_move()));
 	}
 	any.a_int = METODRIVE;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,
@@ -987,9 +987,9 @@ doMysticForm()
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(PUMMEL)) {
-		Sprintf(buf,	"%s (active)", move_name(alternated_move()));
+		Sprintf(buf,	"%s%s %s (active)", backward_arrow(), forward_arrow(), move_name(alternated_move()));
 	} else {
-		Sprintf(buf,	"%s (disabled)", move_name(alternated_move()));
+		Sprintf(buf,	"%s%s %s (disabled)", backward_arrow(), forward_arrow(), move_name(alternated_move()));
 	}
 	any.a_int = PUMMEL;	/* must be non-zero */
 	add_menu(tmpwin, NO_GLYPH, &any,

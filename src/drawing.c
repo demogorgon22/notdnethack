@@ -2,6 +2,7 @@
 /* Copyright (c) NetHack Development Team 1992.			  */
 /* NetHack may be freely redistributed.  See license for details. */
 
+#include <locale.h>
 #include "hack.h"
 #include "tcap.h"
 
@@ -1323,5 +1324,54 @@ boolean is_rlevel;
     }
 }
 #endif /* REINCARNATION */
+
+boolean
+utf8_terminal()
+{
+	static char supported = -1;
+
+	if(supported < 0){
+		const char *locale = setlocale(LC_CTYPE, "");
+		if (!locale) {
+			supported = FALSE;
+		}
+		else if (strstr(locale, "UTF-8") || strstr(locale, "utf8")) {
+			supported = TRUE;
+		}
+		else supported = FALSE;
+	}
+	return supported;
+}
+
+//Note: if we're running in a utf8_terminal, assume that the arrow characters are supported.
+const char *
+forward_arrow()
+{
+	return utf8_terminal() ? "→" : ">";
+}
+
+const char *
+bent_arrow()
+{
+	return utf8_terminal() ? "↗" : "/";
+}
+
+const char *
+up_arrow()
+{
+	return utf8_terminal() ? "↑" : "^";
+}
+
+const char *
+uturn_arrow()
+{
+	return utf8_terminal() ? "↖" : "\\";
+}
+
+const char *
+backward_arrow()
+{
+	return utf8_terminal() ? "←" : "<";
+}
 
 /*drawing.c*/

@@ -790,6 +790,11 @@ E void FDECL(assign_utf8graphics_symbol, (int, glyph_t));
 #ifdef USER_DUNGEONCOLOR
 E void FDECL(assign_colors, (uchar *,int,int,int));
 #endif
+E const char * NDECL(forward_arrow);
+E const char * NDECL(bent_arrow);
+E const char * NDECL(up_arrow);
+E const char * NDECL(uturn_arrow);
+E const char * NDECL(backward_arrow);
 
 /* ### dungeon.c ### */
 
