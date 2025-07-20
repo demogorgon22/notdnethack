@@ -42,6 +42,20 @@ REGION:(18,03,26,07),lit,"throne",unfilled
 BRANCH:(62,12,70,17),(0,0,0,0)
 # Stairs
 STAIR:(29,04),down
+# Chest containing full samurai equipment
+CONTAINER:'(',"chest",(48,04)
+OBJECT:')',"katana",contained
+OBJECT:')',"wakizashi",contained
+OBJECT:')',"knife",contained
+OBJECT:')',"naginata",contained
+OBJECT:')',"yumi",contained
+OBJECT:')',"ya",contained
+OBJECT:')',"ya",contained
+OBJECT:'#',"blessed rustproof splint mail",contained
+OBJECT:'[',"armored boots",contained
+OBJECT:'[',"gauntlets",contained
+OBJECT:'[',"helmet",contained
+OBJECT:'#',"metal mask of a human",contained
 # Doors
 DOOR:locked,(10,06)
 DOOR:locked,(10,07)
