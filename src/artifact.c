@@ -706,7 +706,7 @@ aligntyp alignment;	/* target alignment, or A_NONE */
 
 			if ((arti == ART_FIRE_BRAND || arti == ART_FROST_BRAND) && u.brand_otyp == STRANGE_OBJECT) {
 				if (Role_if(PM_MONK))
-					otyp = GAUNTLETS;
+					otyp = CRYSTAL_GAUNTLETS;
 				else
 					otyp =	!rn2(3) ? LONG_SWORD :
 							!rn2(7) ? SABER :
