@@ -67,6 +67,8 @@ static const char *random_mesg[] = {
 	
 	"This too shall pass.", /* medieval Persian adage */
 	
+	"Omnes sumus peccatores", /*We are all sinners (via Lies of P) */
+
 	"Romanes Eunt Domus", /* Life of Brian */
 	
 	"stth was here", /* First ascender */
