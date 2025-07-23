@@ -3798,7 +3798,7 @@ xstoney(struct monst *magr, struct monst *mdef, boolean bypass_resistance)
 		else {
 			/* try to unstone itself */
 			if (!munstone(mdef, youagr)) {
-				minstapetrify(mdef, youagr, FALSE);
+				minstapetrify(mdef, youagr, bypass_resistance);
 			}
 			/* some monsters poly when stoned */
 			if (Stone_res(mdef)) {
