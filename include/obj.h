@@ -1067,6 +1067,7 @@ struct obj {
 						  (otmp)->otyp == MAGIC_TORCH || \
 						  (otmp)->otyp == SHADOWLANDER_S_TORCH || \
 						  (otmp)->otyp == CROW_QUILL || \
+						  (otmp)->otyp == BESTIAL_CLAW || \
 						  (otmp)->otyp == SET_OF_CROW_TALONS || \
 						  (otmp)->otyp == MOON_AXE || \
 						  (otmp)->otyp == TOOTH || \

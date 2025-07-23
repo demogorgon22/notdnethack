@@ -5570,28 +5570,20 @@ boolean direct_weapon;
 	}
 	if(otmp->otyp == BESTIAL_CLAW && !on_level(&spire_level,&u.uz)){
 		int insight_mod = 0;
-		int studystack = 0;
-		if(youagr){
-			if(active_glyph(BEASTS_EMBRACE))
-				insight_mod = 30*pow(.97,Insight);
+		int amt = min(1, (basedmg+9)/10); // 10% of base is almost always +1, or +2 at higher enchantments
+		if(youagr && active_glyph(BEASTS_EMBRACE)){
+			insight_mod = 15.0*pow(.98,Insight);
+			// breakpoints are ~doubly triangular:
+			// 0 (15), 1 (14), 4 (13), 8, 12, 16, 21, 26, 32, 38, etc
+			// 15 insight -> 11, 30 -> 8, 60 -> 4
+			// encouragement reduces armor DR elsewhere
+			amt = min(amt, insight_mod - u.uencouraged);
+			if (amt > 0 && u.uencouraged == 0) You_feel("savage!");
+			u.uencouraged += max(0, min(amt, insight_mod - u.uencouraged));
 		}
-		else if(magr){
-			if(magr->mcrazed)
-				insight_mod = 30.0*pow(.97,(yields_insight(magr->data) ? u_insight_gain(magr) : 0) + magr->m_insight_level);
-		}
-		if(youdef){
-			studystack = min((basedmg+9)/10, insight_mod - u.ustdy);
-			if(studystack > 0) u.ustdy += studystack;
-		} else if(mdef){
-			studystack = min((basedmg+9)/10, insight_mod - mdef->mstdy);
-			if(studystack > 0) mdef->mstdy += studystack;
-		}
-		if(youagr){
-			studystack = min((basedmg+19)/20, insight_mod - u.ustdy);
-			if(studystack > 0) u.ustdy += studystack;
-		} else if(magr){
-			studystack = min((basedmg+19)/20, insight_mod - magr->mstdy);
-			if(studystack > 0) magr->mstdy += studystack;
+		else if(magr && magr->mcrazed){
+			insight_mod = 15.0*pow(.98,(yields_insight(magr->data) ? u_insight_gain(magr) : 0) + magr->m_insight_level);
+			magr->encouraged += max(0, min(amt, insight_mod - magr->encouraged));
 		}
 	}
 	//Called once per blade striking

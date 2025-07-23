@@ -3212,8 +3212,8 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE)){
-				Sprintf(buf2, "Makes struck targets vulnerable, adding stacks equal to 10%% of damage, capped at %d (scaling inversely with insight).",
-					(int)(30*pow(.97, Insight)));
+				Sprintf(buf2, "Successful hits encourage you for 10%% of base damage dealt, capped at %d (scaling inversely with insight).",
+					(int)(15*pow(.98,Insight)));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == ISAMUSEI){

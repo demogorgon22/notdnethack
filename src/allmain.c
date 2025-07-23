@@ -648,7 +648,7 @@ boolean affect_game_state;
 				current_cost -= NORMAL_SPEED / 6;
 			}
 			if ((uwep && CHECK_ETRAIT(uwep, &youmonst, ETRAIT_QUICK))
-				&& (!u.twoweap || (uswapwep && CHECK_ETRAIT(uswapwep, &youmonst, ETRAIT_QUICK)))
+				&& (!u.twoweap || (uswapwep && CHECK_ETRAIT(uswapwep, &youmonst, ETRAIT_QUICK)) || (uwep->otyp == BESTIAL_CLAW && !uswapwep))
 			){
 				current_cost -= NORMAL_SPEED / ROLL_ETRAIT(uwep, &youmonst, 3, 4);
 			}
@@ -3054,7 +3054,7 @@ karemade:
 				more_experienced(u.ulevel,0);
 				newexplevel();
 			}
-			if (u.uencouraged && (!rn2(8))) {
+			if (u.uencouraged && ((active_glyph(BEASTS_EMBRACE) ? !rn2(6) : !rn2(8)))) {
 				if(u.uencouraged > 0) u.uencouraged--;
 				else u.uencouraged++;
 				if (!(u.uencouraged)) 

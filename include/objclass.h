@@ -244,6 +244,8 @@ struct objclass {
 											&& !(trait == ETRAIT_GRAZE && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL)) \
 										) \
 										|| (trait == ETRAIT_QUICK && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD))\
+										|| (trait == ETRAIT_QUICK && obj->otyp == BESTIAL_CLAW && (((mon) == &youmonst && active_glyph(BEASTS_EMBRACE) && u.uinsight < 15) || (mon)->mcrazed || is_were((mon)->data)))\
+										|| (trait == ETRAIT_LUNGE && obj->otyp == BESTIAL_CLAW && (((mon) == &youmonst && active_glyph(BEASTS_EMBRACE) && u.uinsight < 30) || (mon)->mcrazed || is_were((mon)->data)))\
 										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
 										|| (trait == ETRAIT_BLEED && obj->otyp == GOEDENDAG && ((obj)->o_e_trait&ETRAIT_FOCUS_FIRE))\
 										|| (trait == ETRAIT_LUNGE && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
