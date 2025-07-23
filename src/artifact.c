@@ -8952,6 +8952,32 @@ struct obj *obj;
 		EReflecting |= W_WEP;
 	artinstance[ART_IBITE_ARM].IbiteFavor -= 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25));
 	artinstance[ART_IBITE_ARM].IbiteBoons += TIER_C;
+	switch (picked){
+#define adj (phase_of_the_moon() == 3 || phase_of_the_moon() == 5) ? "flame-wielding" : "webbed"
+		case IPROP_WAVE:
+			pline("Water pools in the palm of the %s hand.", adj);
+			break;
+		case IPROP_REVOKE:
+			pline("The %s hand makes a grasping motion.", adj);
+			break;
+		case IPROP_DESTROY:
+			pline("The claws of the %s harden.", adj);
+			break;
+		case IPROP_TELEPORT:
+			pline("The flabby arm seems to twitch restlessly.");
+			break;
+		case IPROP_LEVELPORT:
+			pline("The flabby arm seems to flutter for a moment.");
+			break;
+		case IPROP_BRANCHPORT:
+			pline("The flabby arm seems to twist at an odd angle.");
+			break;
+		case IPROP_REFLECT:
+			pline("The water dripping from the flabby arm shimmers for a moment.");
+			break;
+		default:
+			break;
+	}
 	return MOVE_STANDARD;
 }
 
@@ -8965,6 +8991,16 @@ struct obj *obj;
 	menu_item *selected;
 	char inclet = 'a';
 	anything any;
+	if (((artinstance[ART_IBITE_ARM].IbiteUpgrades&ALL_IPROP)
+			|| (artinstance[ART_IBITE_ARM].IbiteFavor <= 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25))))
+		&& !((obj->age < monstermoves) &&
+			(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_TELEPORT ||
+			 artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_LEVELPORT ||
+			 artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_BRANCHPORT ||
+			 Insight >= 60))){
+		pline("The flabby arm flops uselessly.");
+		return MOVE_CANCELLED;
+	}
 
 	tmpwin = create_nhwindow(NHW_MENU);
 	start_menu(tmpwin);
@@ -8979,47 +9015,50 @@ struct obj *obj;
 		pline("%ld needed, %ld available", 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25)),
 	artinstance[ART_IBITE_ARM].IbiteFavor);
 	
-	if(artinstance[ART_IBITE_ARM].IbiteFavor > 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25))){
+	if(artinstance[ART_IBITE_ARM].IbiteFavor > 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25))
+	   && !(artinstance[ART_IBITE_ARM].IbiteUpgrades&ALL_IPROP)){
 		Sprintf(buf, "Strengthen the arm");
 		any.a_int = -1;
 		add_menu(tmpwin, NO_GLYPH, &any,
 			inclet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
+		inclet++;
 	}
-	inclet++;
 
-	if(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_TELEPORT && !notel_level()){
-		Sprintf(buf, "Teleport");
-		any.a_int = IPROP_TELEPORT;
-		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
+	if (obj->age < monstermoves) {
+		if(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_TELEPORT && !notel_level()){
+			Sprintf(buf, "Teleport");
+			any.a_int = IPROP_TELEPORT;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		inclet++;
+		if(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_LEVELPORT){
+			Sprintf(buf, "Level-teleport");
+			any.a_int = IPROP_LEVELPORT;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		inclet++;
+		if(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_BRANCHPORT){
+			Sprintf(buf, "Branch-teleport");
+			any.a_int = IPROP_BRANCHPORT;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		inclet++;
+		if(Insight >= 60){
+			Sprintf(buf, "Raise ibite mob");
+			any.a_int = -2;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				inclet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+		}
+		inclet++;
 	}
-	inclet++;
-	if(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_LEVELPORT){
-		Sprintf(buf, "Level-teleport");
-		any.a_int = IPROP_LEVELPORT;
-		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-	}
-	inclet++;
-	if(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_BRANCHPORT){
-		Sprintf(buf, "Branch-teleport");
-		any.a_int = IPROP_BRANCHPORT;
-		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-	}
-	inclet++;
-	if(Insight >= 60){
-		Sprintf(buf, "Raise ibite mob");
-		any.a_int = -2;
-		add_menu(tmpwin, NO_GLYPH, &any,
-			inclet, 0, ATR_NONE, buf,
-			MENU_UNSELECTED);
-	}
-	inclet++;
 
 	end_menu(tmpwin, "The Arm looks somehow attentive...");
 
@@ -9035,24 +9074,28 @@ struct obj *obj;
 
 	switch (picked) {
 		case -1:
+			obj->age = monstermoves;
 			return ibite_upgrade_menu(obj);
-
 		case IPROP_TELEPORT:
+			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 			if(tele())
 				return MOVE_STANDARD;
 			else return MOVE_CANCELLED;
 
 		case IPROP_LEVELPORT:
+			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 			if(level_tele())
 				return MOVE_STANDARD;
 			else return MOVE_CANCELLED;
 
 		case IPROP_BRANCHPORT:
+			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 			if(branch_tele())
 				return MOVE_STANDARD;
 			else return MOVE_CANCELLED;
 
 		case -2:
+			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 			doibite_ghosts(&youmonst, obj);
 			return MOVE_STANDARD;
 	}
@@ -9724,17 +9767,18 @@ arti_invoke(obj)
     if(oart->inv_prop > LAST_PROP) {
 	/* It's a special power, not "just" a property */
 	if(obj->age > monstermoves && !(
-		oart->inv_prop == FIRE_SHIKAI ||
-		oart->inv_prop == SEVENFOLD ||
-		oart->inv_prop == ANNUL ||
-		oart->inv_prop == ALTMODE || 
-		oart->inv_prop == LORDLY ||
-		oart->inv_prop == DETESTATION ||
-		oart->inv_prop == THEFT_TYPE ||
-		oart->inv_prop == GITH_ART
+		oart->inv_prop == FIRE_SHIKAI
+		|| oart->inv_prop == SEVENFOLD
+		|| oart->inv_prop == ANNUL
+		|| oart->inv_prop == ALTMODE
+		|| oart->inv_prop == LORDLY
+		|| oart->inv_prop == DETESTATION
+		|| oart->inv_prop == THEFT_TYPE
+		|| oart->inv_prop == GITH_ART
 		|| oart->inv_prop == ZERTH_ART
 		|| oart->inv_prop == AMALGUM_ART
 		|| oart->inv_prop == SCORPION_UPGRADES
+		|| oart->inv_prop == IBITE_ARM
 	)) {
 	    /* the artifact is tired :-) */
 		if(obj->oartifact == ART_FIELD_MARSHAL_S_BATON){
@@ -9752,22 +9796,23 @@ arti_invoke(obj)
 	    return MOVE_PARTIAL;
 	}
 	if(!( /* some properties can be used as often as desired, or track cooldowns in a different way */
-		oart->inv_prop == FIRE_SHIKAI ||
-		oart->inv_prop == ICE_SHIKAI ||
-		oart->inv_prop == NECRONOMICON ||
-		oart->inv_prop == SPIRITNAMES ||
-		oart->inv_prop == ALTMODE ||
-		oart->inv_prop == LORDLY ||
-		oart->inv_prop == ANNUL ||
-		oart->inv_prop == VOID_CHIME ||
-		oart->inv_prop == CHANGE_SIZE ||
-		oart->inv_prop == IMPERIAL_RING ||
-		oart->inv_prop == THEFT_TYPE ||
-		oart->inv_prop == GITH_ART ||
-		oart->inv_prop == ZERTH_ART ||
-		oart->inv_prop == AMALGUM_ART ||
-		oart->inv_prop == SCORPION_UPGRADES ||
-		oart->inv_prop == SEVENFOLD
+		oart->inv_prop == FIRE_SHIKAI
+		|| oart->inv_prop == ICE_SHIKAI
+		|| oart->inv_prop == NECRONOMICON
+		|| oart->inv_prop == SPIRITNAMES
+		|| oart->inv_prop == ALTMODE
+		|| oart->inv_prop == LORDLY
+		|| oart->inv_prop == ANNUL
+		|| oart->inv_prop == VOID_CHIME
+		|| oart->inv_prop == CHANGE_SIZE
+		|| oart->inv_prop == IMPERIAL_RING
+		|| oart->inv_prop == THEFT_TYPE
+		|| oart->inv_prop == GITH_ART
+		|| oart->inv_prop == ZERTH_ART
+		|| oart->inv_prop == AMALGUM_ART
+		|| oart->inv_prop == SCORPION_UPGRADES
+		|| oart->inv_prop == SEVENFOLD
+		|| oart->inv_prop == IBITE_ARM
 	))
 		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 
