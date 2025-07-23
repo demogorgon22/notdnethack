@@ -640,6 +640,7 @@
 									|| (ptr)->mtyp == PM_ICE_STORM \
 									|| (ptr)->mtyp == PM_THUNDER_STORM \
 									|| (ptr)->mtyp == PM_FIRE_STORM \
+									|| ((ptr)->mtyp == PM_TWIN_SIBLING && check_mutation(SHUB_TENTACLES))\
 									|| (ptr)->mtyp == PM_MOUTH_OF_THE_GOAT)
 #define	is_goat_tentacle_mon(mon)	(is_goat_tentacle_mtyp((mon)->data) || has_template(mon, MISTWEAVER))
 #define	is_snake_bite_mtyp(ptr)	((ptr)->mtyp == PM_MEDUSA \
