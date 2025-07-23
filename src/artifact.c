@@ -8950,22 +8950,22 @@ struct obj *obj;
 			pline("Water pools in the palm of the %s hand.", adj);
 			break;
 		case IPROP_REVOKE:
-			pline("The %s hand makes a grasping motion.", adj);
+			pline("The flabby fingers glimmer red and gold, like ruby rings lost in green water.", adj);
 			break;
 		case IPROP_DESTROY:
-			pline("The claws of the %s harden.", adj);
+			pline("Tufts of marsh grass grow from the arm.");
 			break;
 		case IPROP_TELEPORT:
-			pline("The flabby arm seems to twitch restlessly.");
+			pline("Green mist flows over the %s and gathers around the %s hand.", surface(u.ux, u.uy), adj);
 			break;
 		case IPROP_LEVELPORT:
-			pline("The flabby arm seems to flutter for a moment.");
+			pline("Green mist flows down from the %s and gathers around the %s hand.", ceiling(u.ux, u.uy), adj);
 			break;
 		case IPROP_BRANCHPORT:
-			pline("The flabby arm seems to twist at an odd angle.");
+			pline("Green mist gathers around the %s, and %s hand.", adj, Blind ? "for some reason your thoughts turn to the moon" : "you catch a glimpse of the distant moon");
 			break;
 		case IPROP_REFLECT:
-			pline("The water dripping from the flabby arm shimmers for a moment.");
+			pline("The flabby flesh becomes as reflective as a still pond.");
 			break;
 		default:
 			break;
