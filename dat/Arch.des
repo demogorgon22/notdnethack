@@ -9,7 +9,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Arc-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
 MAP
 0,,,,,--------,,,,,,,-----....|..|,,,,,,,,..,,,T,,,,}|,,,,,,,,,,-------------

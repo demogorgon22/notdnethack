@@ -268,7 +268,7 @@ OBJECT: '_', "chain", place[0], uncursed, 0, "Inherited"
 #
 
 MAZE:"Con-goal",' '
-FLAGS:hardfloor
+FLAGS:noteleport,hardfloor
 GEOMETRY:left,top
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
@@ -358,7 +358,7 @@ MONSTER:'@',"Warden Arianna",(31,10),hostile
 #
 
 MAZE:"Con-fila",' '
-FLAGS:hardfloor
+FLAGS:noteleport,hardfloor
 
 GEOMETRY:left,top
 #123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -463,7 +463,7 @@ OBJECT[50%]: '0', "ball", random
 
 
 MAZE:"Con-filb",' '
-FLAGS:hardfloor
+FLAGS:noteleport,hardfloor
 INIT_MAP: '.' , ' ', true, true, unlit, true
 MESSAGE: "This appears to be a prison level that is still under construction"
 NOMAP

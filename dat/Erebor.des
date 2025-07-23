@@ -441,6 +441,7 @@ MONSTER: 'T', random, random, hostile
 
 
 LEVEL: "Dna-filb"
+FLAGS:noteleport
 #
 ROOM: "ordinary" , random, random, random, random
 STAIR: random, up

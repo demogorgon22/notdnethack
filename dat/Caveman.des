@@ -9,7 +9,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Cav-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
 MAP
                                                                             
