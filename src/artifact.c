@@ -8944,7 +8944,7 @@ struct obj *obj;
 		EReflecting |= W_WEP;
 	artinstance[ART_IBITE_ARM].IbiteFavor -= 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25));
 	artinstance[ART_IBITE_ARM].IbiteBoons += TIER_C;
-	return MOVE_STANDARD;
+	return MOVE_INSTANT|MOVE_STANDARD;
 }
 
 int
@@ -13138,6 +13138,10 @@ arti_invoke(obj)
 	} //end of first case:  Artifact Specials!!!!
 	if(time == MOVE_CANCELLED)
 		obj->age = 0;
+	else if(time == (MOVE_INSTANT|MOVE_STANDARD)){
+		obj->age = 0;
+		time = MOVE_STANDARD;
+	}
     } else {
 	long eprop = (u.uprops[oart->inv_prop].extrinsic ^= W_ARTI),
 	     iprop = u.uprops[oart->inv_prop].intrinsic;
