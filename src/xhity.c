@@ -3538,27 +3538,34 @@ int amnt;
 }
 
 void
+calc_legion_pool(struct monst *mdef, int *pool_out, int *count_out)
+{
+	int pool = 0, count = 0;
+	struct monst *mtmp;
+	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+		if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp)){
+			if(mtmp->data->mlevel <= mdef->data->mlevel){
+				pool += *hp(mtmp);
+				count++;
+			}
+		}
+	}
+	//return
+	if(pool_out)
+		*pool_out = pool;
+	if(count_out)
+		*count_out = count;
+}
+
+void
 apply_damage_to_x(struct monst *magr, struct monst *mdef, int dmg)
 {
 	boolean youdef = mdef == &youmonst;
 	boolean youagr = magr == &youmonst;
 	if(dmg && !youdef && is_legion_devil(mdef->mtyp) && !mdef->mcan){
-		int pool = 0, count = 0;
+		int pool, count;
 		struct monst *mtmp;
-		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
-			if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp)){
-				if(mtmp->data->mlevel <= mdef->data->mlevel){
-					pool += *hp(mtmp);
-					count++;
-				}
-				if(magr){
-					mtmp->mux = mdef->mux;
-					mtmp->muy = mdef->muy;
-				}
-				wakeup2(mtmp, youagr);
-				mtmp->mstrategy &= ~STRAT_WAITFORU;
-			}
-		}
+		calc_legion_pool(mdef, &pool, &count);
 		if(pool > dmg){
 			pool -= dmg;
 			int remainder = (pool+count-1)/count;
@@ -3566,12 +3573,22 @@ apply_damage_to_x(struct monst *magr, struct monst *mdef, int dmg)
 				for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 					if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
 						*hp(mtmp) = remainder;
+						if(magr){
+							mtmp->mux = mdef->mux;
+							mtmp->muy = mdef->muy;
+						}
 					}
 				}
 			}
 			for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 				if(!DEADMONSTER(mtmp) && !mtmp->mcan && is_legion_devil(mtmp->mtyp) && mtmp->data->mlevel <= mdef->data->mlevel){
 					*hp(mtmp) = min(*hp(mtmp)-1, remainder);
+					if(magr){
+						mtmp->mux = mdef->mux;
+						mtmp->muy = mdef->muy;
+						wakeup2(mtmp, youagr);
+						mtmp->mstrategy &= ~STRAT_WAITFORU;
+					}
 					if(*hp(mtmp) < 1 && mtmp != mdef){
 						if(youagr){
 							xkilled(mtmp, 0);
@@ -16963,7 +16980,17 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		}
 	}
 	/* Is the damage lethal? */
-	lethaldamage = (totldmg >= *hp(mdef));
+	if(is_legion_devil(mdef->mtyp) && !mdef->mcan){
+		int pool;
+		calc_legion_pool(mdef, &pool, 0);
+		if(totldmg >= pool)
+			lethaldamage = (totldmg >= *hp(mdef));
+		else
+			lethaldamage = FALSE;
+	}
+	else {
+		lethaldamage = (totldmg >= *hp(mdef));
+	}
 
 	/* Debug mode: report sum components */
 	if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_FULLDMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef)) {
