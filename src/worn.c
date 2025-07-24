@@ -2288,6 +2288,8 @@ struct obj *obj;
 			score += 30;
 		else if (mon->mtame && mon->minvis && !See_invisible_old)
 			score += 10;
+		else if (!is_weldproof(mon->data) && obj->otyp == PRAYER_WARDED_WRAPPING)
+			score += hates_unholy_mon(mon) ? 20 : 10;
 		else if (mon->minvis)
 			score += -5;
 		break;
