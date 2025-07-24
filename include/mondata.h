@@ -1180,6 +1180,7 @@
 							 || ((mon)->data->mlet == S_VORTEX && is_elemental((mon)->data)) \
 							 || ((mon)->data->mlet == S_EYE && is_elemental((mon)->data)) \
 							 || ((mon)->data->mlet == S_LIGHT && is_elemental((mon)->data)) \
+							 || ((mon)->mtyp == PM_HOOLOOVOO) \
 							) \
 							|| ((mon)->data->mflagsb&MB_ORGANIC) \
 							)
