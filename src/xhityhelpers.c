@@ -1883,7 +1883,7 @@ struct obj * weapon;
 			(youagr && u.sealsActive&SEAL_EDEN) ||
 			(attk && attk->adtyp == AD_GLSS) ||
 			(magr && is_silver_mon(magr)) ||
-			obj_silver_searing(otmp) || obj_jade_searing(otmp) || check_oprop(otmp, OPROP_SFLMW) || otmp->opoisoned&OPOISON_SILVER ||
+			(otmp && (obj_silver_searing(otmp) || obj_jade_searing(otmp) || check_oprop(otmp, OPROP_SFLMW) || otmp->opoisoned&OPOISON_SILVER)) ||
 			(youagr && slot == W_ARMG && uright && (obj_silver_searing(uright) || obj_jade_searing(uright) || check_oprop(uright, OPROP_SFLMW))) ||
 			(youagr && slot == W_ARMG && uleft && (obj_silver_searing(uleft) || obj_jade_searing(uleft) || check_oprop(uleft, OPROP_SFLMW)))
 			))
