@@ -8950,7 +8950,7 @@ struct obj *obj;
 			pline("Water pools in the palm of the %s hand.", adj);
 			break;
 		case IPROP_REVOKE:
-			pline("The flabby fingers glimmer red and gold, like ruby rings lost in green water.", adj);
+			pline("The flabby fingers glimmer red and gold, like ruby rings lost in green water.");
 			break;
 		case IPROP_DESTROY:
 			pline("Tufts of marsh grass grow from the arm.");
