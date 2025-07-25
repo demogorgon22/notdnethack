@@ -943,9 +943,9 @@ at_your_feet(str)
 }
 
 void
-pleased(int godnum, boolean altar, boolean set_timeout)
+pleased(int godnum, boolean altar, int pray_trouble, boolean set_timeout)
 {
-	/* don't use p_trouble, worst trouble may get fixed while praying */
+	/* don't use pray_trouble, worst trouble may get fixed while praying */
 	int trouble = in_trouble();	/* what's your worst difficulty? */
 	int pat_on_head = 0, kick_on_butt;
 
@@ -957,7 +957,7 @@ pleased(int godnum, boolean altar, boolean set_timeout)
 	    Hallucination ? "full" : "satisfied");
 
 	/* not your deity */
-	if (on_altar() && p_god != u.ualign.god) {
+	if (altar && godnum != u.ualign.god) {
 		adjalign(-1);
 		return;
 	} else if (u.ualign.record < 2 && trouble <= 0) adjalign(1);
@@ -977,15 +977,15 @@ pleased(int godnum, boolean altar, boolean set_timeout)
 
 	if (!trouble && u.ualign.record >= DEVOUT) {
 	    /* if hero was in trouble, but got better, no special favor */
-	    if (p_trouble == 0) pat_on_head = 1;
+	    if (pray_trouble == 0) pat_on_head = 1;
 	} else {
-	    int action = rn1(Luck + (on_altar() ? 3 + on_shrine() : 2), 1);
+	    int action = rn1(Luck + (altar ? 3 + on_shrine() : 2), 1);
 	    /* pleased Lawful gods often send you a helpful angel if you're
 	       getting the crap beat out of you */
 	    if ((u.uhp < 5 || (u.uhp*7 < u.uhpmax)) &&
 		 u.ualign.type == A_LAWFUL && rn2(3)) lawful_god_gives_angel();
 
-	    if (!on_altar()) action = min(action, 3);
+	    if (!altar) action = min(action, 3);
 	    if (u.ualign.record < STRIDENT)
 		action = (u.ualign.record > 0 || !rnl(2)) ? 1 : 0;
 
@@ -1102,7 +1102,21 @@ pleased(int godnum, boolean altar, boolean set_timeout)
 				if (u.uhunger < get_uhungermax()*.45) u.uhunger = get_uhungermax()*.45;
 				u.uhs = NOT_HUNGRY;
 			}
+			if(u.uen < u.uenmax && !Race_if(PM_INCANTIFIER)){
+				u.uen = min(u.uenmax, u.uen+200);
+			}
+
 			if (u.uluck < 0) u.uluck = 0;
+			else change_luck(1);
+
+			for (int i = 0; i < MAXSPELL; i++)  {
+				if (spellid(i) != NO_SPELL && spl_book[i].sp_know > 0)  {
+					spl_book[i].sp_know = min(spl_book[i].sp_know + KEEN/10, KEEN);
+					exercise(A_WIS,TRUE);
+					exercise(A_INT,TRUE);
+				}
+			}
+
 			make_blinded(0L,TRUE);
 			flags.botl = 1;
 			break;
@@ -1110,53 +1124,65 @@ pleased(int godnum, boolean altar, boolean set_timeout)
 			register struct obj *otmp;
 			int any = 0;
 
-			if (Blind)
-			You_feel("the power of %s.", godname(godnum));
-			else You("are surrounded by %s aura.",
-				 an(hcolor(NH_LIGHT_BLUE)));
 			for(otmp=invent; otmp; otmp=otmp->nobj) {
 			if (otmp->cursed) {
 				uncurse(otmp);
-				if (!Blind) {
-				Your("%s %s.", aobjnam(otmp, "softly glow"),
-					 hcolor(NH_AMBER));
-				otmp->bknown = TRUE;
-				++any;
+				if(!any){
+					if (Blind)
+						You_feel("the power of %s.", godname(godnum));
+					else You("are surrounded by %s aura.",
+						 an(hcolor(NH_LIGHT_BLUE)));
 				}
+				if (!Blind) {
+					Your("%s %s.", aobjnam(otmp, "softly glow"),
+						 hcolor(NH_AMBER));
+					otmp->bknown = TRUE;
+				}
+				++any;
 			}
 			}
-			if (any) update_inventory();
-			if(u.sealsActive&SEAL_MARIONETTE) unbind(SEAL_MARIONETTE,TRUE);
-			break;
+			if (any){
+				update_inventory();
+				if(u.sealsActive&SEAL_MARIONETTE) unbind(SEAL_MARIONETTE,TRUE);
+				break;
+			}
 		}
 		case 5: {
 			const char *msg="Thou hast pleased me with thy progress, and thus I grant thee the gift of %s! Use it wisely in my name!";
 			char buf[BUFSZ];
+			buf[0] = 0;
 			if (!(HTelepat & INTRINSIC))  {
-			HTelepat |= FROMOUTSIDE;
-			Sprintf(buf, msg, "Telepathy");
-			if (Blind) see_monsters();
+				HTelepat |= FROMOUTSIDE;
+				Sprintf(buf, msg, "Telepathy");
+				if (Blind) see_monsters();
 			} else if (!(HFast & INTRINSIC))  {
-			HFast |= FROMOUTSIDE;
-			Sprintf(buf, msg, "Speed");
+				HFast |= FROMOUTSIDE;
+				Sprintf(buf, msg, "Speed");
 			} else if (!(HStealth & INTRINSIC))  {
-			HStealth |= FROMOUTSIDE;
-			Sprintf(buf, msg, "Stealth");
+				HStealth |= FROMOUTSIDE;
+				Sprintf(buf, msg, "Stealth");
 			} else if(!(u.wardsknown & WARD_HAMSA)){
 				u.wardsknown |= WARD_HAMSA;
 				Sprintf(buf, msg, "the Hamsa ward");
 			} else if(!(u.wardsknown & WARD_HEXAGRAM)){
 				u.wardsknown |= WARD_HEXAGRAM;
 				Sprintf(buf, msg, "the Hexagram ward");
-			}else {
-			if (!(HProtection & INTRINSIC))  {
-				HProtection |= FROMOUTSIDE;
-				if (!u.ublessed)  u.ublessed = rn1(3, 2);
-			} else u.ublessed++;
-			Sprintf(buf, msg, "my protection");
+			}else if(u.ublesscnt < 40){
+				if (!(HProtection & INTRINSIC))  {
+					HProtection |= FROMOUTSIDE;
+					if (!u.ublessed)  u.ublessed = rn1(3, 2);
+				} else u.ublessed++;
+				Sprintf(buf, msg, "my protection");
 			}
-			godvoice(godnum, buf);
-			break;
+			else {
+				u.uenbonus += 5;
+				calc_total_maxen();
+				Sprintf(buf, msg, "my magic");
+			}
+			if(buf[0]){
+				godvoice(godnum, buf);
+				break;
+			}
 		}
 		case 7:
 		case 8:
@@ -2610,12 +2636,12 @@ prayer_done()		/* M. Stephenson (1.0.3b) */
 			u.ublesscnt += rnz(250);
 			change_luck(-3);
 			if(u.ualign.type != A_VOID) gods_upset(u.ualign.god);
-		} else pleased(p_god, on_altar(), TRUE);
+		} else pleased(p_god, on_altar(), p_trouble, TRUE);
     } else {
 	/* coaligned */
 	if(on_altar())
 	    (void) water_prayer(TRUE);
-	pleased(p_god, on_altar(), TRUE); /* nice */
+	pleased(p_god, on_altar(), p_trouble, TRUE); /* nice */
     }
     return MOVE_STANDARD;
 }

@@ -1314,7 +1314,7 @@ int spiritseal;
 		if(!obj->cursed)
 			use_unicorn_horn(obj);
 		if(obj->age < monstermoves){
-			pleased(GOD_KANNON, TRUE, FALSE);
+			pleased(GOD_KANNON, TRUE, 0, FALSE);
 			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
 		}
 		else obj->age += Role_if(PM_PRIEST) ? (long) d(1,20) : (long) d(3,10);

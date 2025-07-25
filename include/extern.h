@@ -2470,7 +2470,7 @@ E int NDECL(dosacrifice);
 E void FDECL(at_your_feet, (const char *));
 E boolean FDECL(can_pray, (BOOLEAN_P));
 E int NDECL(dopray);
-E void FDECL(pleased,(int, boolean, boolean));
+E void FDECL(pleased,(int, boolean, int, boolean));
 E int FDECL(turn_level, (struct monst *));
 E const char *NDECL(u_gname);
 E int NDECL(doturn);
