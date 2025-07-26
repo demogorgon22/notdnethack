@@ -2977,17 +2977,17 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				if (otmp->otyp == MAGIC_WHISTLE){
 					otmp = poly_obj(otmp, WHISTLE);
 					You("drain the %s of its magic.", xname(otmp));
+					lesshungry(5*INC_BASE_NUTRITION);
 				} else {
 					curspe = otmp->spe;
 					(void) drain_item(otmp);
 					if(curspe > otmp->spe){
 						You("drain the %s%s.", xname(otmp),otmp->spe!=0 ? "":" dry");
-
+						lesshungry(5*INC_BASE_NUTRITION);
 					} else {
 						pline("The %s resists your attempt to drain its magic.", xname(otmp));
 					}
 				}
-				lesshungry(5*INC_BASE_NUTRITION);
 				flags.botl = 1;
 			break;
 			case SCROLL_CLASS:
