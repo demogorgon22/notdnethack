@@ -3582,7 +3582,7 @@ finishing off the construction of a subterranean complex.
 Off in the distance, you hear the sounds of a large, raucous gathering.
 %E
 %Cp Elf 00041
-Once again, you enter the distorted castle of the %n.
+Once again, you enter the distorted castle of %n.
 %E
 %Cc Elf 00050
 "So, %c.  %lC has sent you to recover %o.
@@ -5072,7 +5072,7 @@ and they have not returned. We are defenseless, and the
 loss of %o could have dire consequences.
 
 "You must travel to %i in the valley bellow,
-and find the hidden path to the canyon village that the
+and find the hidden path to the canyon village that
 %n and her bandits reside. Once you have found it,
 slay the spirit and recover %o.
 %E
@@ -7347,14 +7347,15 @@ the ClockwoRk PerfecTion.  But I faLtered in My task and my Wards
 were stOlen AwAy by deVils in the serVice of KurtulmaK, God of
 the KoBolds.
 
-"My CharGes were Gifted to thE %n,
+"My CharGes were Gifted to %n,
 and shortly aFter you leFt on your Quest, the cAves of your Home 
-were invadeD by the kobolDs.  The %n 
+were invadeD by the kobolDs.  %nC
 usEd %o to coLapse many of your peoPle's Mines.
 
-"The %n sitS, hAughty and arRogant, in the verY bowEls 
-of the Earth. He sends leGions of his KoBold Kin aGainst your
-comRades, and theiR blades and the faMine have claimed Many.
+"%nC sitS, hAughty and arRogant,
+in the verY bowEls of the Earth. He sends leGions of his KoBold
+Kin aGainst your comRades, and theiR blades and the faMine have
+claimed Many.
 
 "You mUst find %i, and withIn it wrest
 %o from %n.  
