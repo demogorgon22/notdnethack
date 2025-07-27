@@ -63,7 +63,7 @@ struct monst *magr;
 			if(!(mtmp = m_u_at(ix, jy)))
 				continue;
 			if(mtmp == &youmonst){
-				if(mtmp->mpeaceful)
+				if(magr->mpeaceful)
 					continue;
 				else return TRUE;
 			}
