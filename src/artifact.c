@@ -4647,6 +4647,84 @@ int * truedmgptr;
 		}
 		*truedmgptr += bonus;
 	}
+	if(check_oprop(otmp, OPROP_BYAKW)){
+		int level = Insight >= 33 ? 2 : Insight >= 11 ? 1 : 0;
+		int bonus = 0;
+		if(youagr){
+			if(u.ualign.record < 4){
+				bonus += d(level ? 3 : 2, 5);
+				if(level > 1)
+					bonus += otmp->spe;
+				if(youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))){
+					bonus *= 2;
+				}
+				if(u.ualign.record < -3){ //curse and gravity
+					if(youdef || !resist(mdef, WEAPON_CLASS, 0, TRUE)){
+						*hp(mdef) -= *hp(mdef)/5; /*Percentage based damage, will not kill*/
+					}
+					if (youdef) {
+						if (rndcurse())
+							You_feel("as if you need some help.");
+						stop_occupation();
+					}
+					else {
+						if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+							You_feel("as though %s needs some help.", mon_nam(mdef));
+					}
+				}
+			}
+			else {
+				bonus += d(level ? 2 : 1, 4);
+				if(youdef ? (hates_unblessed(youracedata)) : (hates_unblessed_mon(mdef))){
+					bonus *= 4;
+					if(level > 1)
+						bonus += 2*otmp->spe;
+				}
+			}
+		}
+		else if(magr){
+			if(!(hates_unholy_mon(magr) || is_holy_mon(magr))){
+				bonus += d(level ? 3 : 2, 5);
+				if(level > 1)
+					bonus += otmp->spe;
+				if(youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))){
+					bonus *= 2;
+				}
+				if(hates_holy_mon(magr) || is_unholy_mon(magr)){ //curse and gravity
+					if(youdef || !resist(mdef, WEAPON_CLASS, 0, TRUE)){
+						*hp(mdef) -= *hp(mdef)/5; /*Percentage based damage, will not kill*/
+					}
+					if (youdef) {
+						if (rndcurse())
+							You_feel("as if you need some help.");
+						stop_occupation();
+					}
+					else {
+						if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+							You_feel("as though %s needs some help.", mon_nam(mdef));
+					}
+				}
+			}
+			else {
+				bonus += d(level ? 2 : 1, 4);
+				if(youdef ? (hates_unblessed(youracedata)) : (hates_unblessed_mon(mdef))){
+					bonus *= 4;
+					if(level > 1)
+						bonus += 2*otmp->spe;
+				}
+			}
+		}
+		else {
+			bonus += d(level ? 2 : 1, 8);
+			if(level > 1)
+				bonus += otmp->spe;
+			if(youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))){
+				bonus *= 2;
+			}
+			bonus += d(level ? 2 : 1, 4);
+		}
+		*truedmgptr += bonus;
+	}
 	if(is_undead(pd) && check_oprop(otmp, OPROP_TDTHW) && !(youagr && FLAME_BAD)){
 		*truedmgptr += basedmg + d(2,7);
 	}
@@ -6545,6 +6623,37 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 		else suddenly = TRUE;
 	}
+	if(check_oprop(otmp, OPROP_BYAKW)){
+		static boolean suddenly = TRUE;
+		if(Insight >= 56 && 
+			!(yellow_monster(mdef) || mdef->mfaction == YELLOW_FACTION)
+		){
+			/*Note: magic blue flames, damage through fire res but still check invent fire res to see if inventory should burn*/
+			if(printmessages){
+				pline_The("%sroyal-blue-flamed %s %s %s!",
+					suddenly ? "suddenly-" : "",
+					wepdesc,
+					vtense(wepdesc,
+						is_watery(pd) ? "partly vaporize" :
+						"burn"),
+					hittee);
+				*messaged = TRUE;
+				suddenly = FALSE;
+			}
+			*plusdmgptr += d(2, 5) + otmp->spe;
+			if(!UseInvCold_res(mdef)){
+				if (!rn2(4)) (void) destroy_item(mdef, POTION_CLASS, AD_COLD);
+			}
+			if(!UseInvFire_res(mdef)){
+				if (!rn2(4)) (void) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+				if (!rn2(4)) (void) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+				if (!rn2(7)) (void) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+			}
+			if (youdef) burn_away_slime();
+			if (youdef && FrozenAir) melt_frozen_air();
+		}
+		else suddenly = TRUE;
+	}
 	if ((attacks(AD_COLD, otmp)  && !(
 			/* exceptions */
 			(oartifact && arti_struct->inv_prop == ICE_SHIKAI && artinstance[otmp->oartifact].SnSd3duration < monstermoves)
@@ -8145,9 +8254,22 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 	}
 	
-	if(check_oprop(otmp, OPROP_ELFLW) && Insight >= 33 && u.ualign.record > 3 && Insight > rn2(333)){
+	if(check_oprop(otmp, OPROP_ELFLW) && Insight >= 33 && (youagr ? u.ualign.record > 3 : magr ? (hates_unholy_mon(magr) || is_holy_mon(magr)) : FALSE) && Insight > rn2(333)){
 		/* cancel_monst handles resistance */
 		cancel_monst(mdef, otmp, youagr, FALSE, FALSE, FALSE);
+	}
+
+	if(check_oprop(otmp, OPROP_BYAKW)){
+		/* cancel_monst handles resistance */
+		if(Insight >= 33 && Insight > rn2(333))
+			cancel_monst(mdef, otmp, youagr, FALSE, FALSE, FALSE);
+		//byakhee larva
+		if(Insight >= 22){
+			struct obj *arm = some_armor(mdef);
+			if(arm){
+				add_byakhee_to_obj(arm);
+			}
+		}
 	}
 
 	//Also does the bolt (when it hits as a launcher)

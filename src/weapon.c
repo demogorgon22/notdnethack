@@ -3039,6 +3039,9 @@ int atr;
 			if (is_rakuyo(otmp))
 				return 0;
 
+			if (check_oprop(otmp, OPROP_BYAKW))
+				return 0;
+
 			if (is_rapier(otmp) || is_mercy_blade(otmp) || otmp->otyp == SET_OF_CROW_TALONS ||
 				(otmp->otyp == LIGHTSABER && !otmp->oartifact && otmp->ovar1_lightsaberHandle == 0))
 				mod *= 0.5;
@@ -3071,6 +3074,8 @@ int atr;
 
 			return mod;
 		case A_CON:
+			if (check_oprop(otmp, OPROP_BYAKW))
+				mod = bimanual_mod(otmp, mtmp);
 			return mod;
 		case A_INT:
 			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
@@ -3086,6 +3091,9 @@ int atr;
 				mod += 0.5;
 
 			if (check_oprop(otmp, OPROP_ELFLW))
+				mod += 0.5;
+
+			if (check_oprop(otmp, OPROP_BYAKW))
 				mod += 0.5;
 
 			return mod;
@@ -3105,6 +3113,9 @@ int atr;
 			if (check_oprop(otmp, OPROP_ELFLW))
 				mod += 0.5;
 
+			if (check_oprop(otmp, OPROP_BYAKW))
+				mod += 0.5;
+
 			return mod;
 		case A_CHA:
 			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
@@ -3112,6 +3123,10 @@ int atr;
 
 			if (check_oprop(otmp, OPROP_ELFLW))
 				mod += 0.5;
+
+			if (check_oprop(otmp, OPROP_BYAKW))
+				mod += 0.5;
+
 			return mod;
 		default:
 			return mod;

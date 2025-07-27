@@ -1045,11 +1045,14 @@ boolean dofull;
 				Strcat(buf, "silver-feather-encrusted ");
 		}
 		
-		if (check_oprop(obj, OPROP_WRTHW) && obj->known && !check_oprop(obj, OPROP_ELFLW))
+		if (check_oprop(obj, OPROP_WRTHW) && obj->known && !check_oprop(obj, OPROP_ELFLW) && !check_oprop(obj, OPROP_BYAKW))
 			Strcat(buf, "wrathful ");
 		
 		if (check_oprop(obj, OPROP_ELFLW))
 			Strcat(buf, Insight >= 33 ? "radiant " : Insight >= 11 ? "incandescent " : "luminous ");
+
+		if (check_oprop(obj, OPROP_BYAKW))
+			Strcat(buf, Insight >= 33 ? "bilious " : Insight >= 11 ? "tarnished " : "luminous ");
 
 		if (check_oprop(obj, OPROP_WATRW))
 			Strcat(buf, "misty ");
@@ -1765,6 +1768,8 @@ char *buf;
 	}
 force_add_material_name:
 	if (check_oprop(obj, OPROP_ELFLW))
+		return;
+	if (check_oprop(obj, OPROP_BYAKW))
 		return;
 	/* add on the adjective form of the object's material */
 	Strcat(buf, material_name(obj, TRUE));
@@ -4702,6 +4707,9 @@ int wishflags;
 
 		} else if (!strncmpi(bp, "luminous ", l=9) || !strncmpi(bp, "radiant ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_ELFLW);
+
+		} else if (!strncmpi(bp, "bilious ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_BYAKW);
 
 		} else if (!strncmpi(bp, "flaying ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_FLAYW);

@@ -2720,7 +2720,7 @@ boolean greatequip;
 			}
 			if(otmp){
 				set_material_gm(otmp, GOLD);
-				add_oprop(otmp, OPROP_ELFLW);
+				add_oprop(otmp, OPROP_BYAKW);
 				add_oprop(otmp, OPROP_WRTHW);
 			}
 		} else if(mm == PM_PUPPET_EMPEROR_XELETH || mm == PM_PUPPET_EMPRESS_XEDALLI){
@@ -2755,7 +2755,7 @@ boolean greatequip;
 			otmp = mongets(mtmp, ELVEN_SICKLE, MKOBJ_NOINIT);
 			if(otmp){
 				otmp->spe = 5;
-				add_oprop(otmp, OPROP_ELFLW);
+				add_oprop(otmp, OPROP_BYAKW);
 				add_oprop(otmp, OPROP_WRTHW);
 				curse(otmp);
 				set_material_gm(otmp, GOLD);

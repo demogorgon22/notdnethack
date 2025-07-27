@@ -16290,6 +16290,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 			}
 		}
+		//Note: Monsters get their damage bonus from their rolled damage.
 		/* misc: train player's Soresu skill if applicable */
 		if (youdef && uwep && is_lightsaber(uwep) && litsaber(uwep) && magr && melee && P_SKILL(P_SHII_CHO) >= P_BASIC &&
 			(activeFightingForm(FFORM_SHII_CHO) ||
