@@ -1393,7 +1393,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		/* make per-attack counterattacks */
 		if (dopassive_local) {
 			dopassive = TRUE;
-			if(youdef && (result&MM_HIT) && u.uspellprot && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_BALANCE){
+			if(youdef && !u.uavoid_urpassives && (result&MM_HIT) && u.uspellprot && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_BALANCE){
 				struct monst *mon;
 				for(int i = 0; i < 8; i++){
 					if(isok(x(mdef)+xdir[i], y(mdef)+ydir[i]) && (mon = m_at(x(mdef)+xdir[i], y(mdef)+ydir[i])) && !DEADMONSTER(mon) && !mon->mpeaceful)
@@ -18327,7 +18327,8 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 	/* check that magr is still alive */
 	if (DEADMONSTER(magr))
 		return result;
-
+	if (youdef && u.uavoid_urpassives)
+		return result;
 	if (vis == -1)
 		vis = getvis(magr, mdef, 0, 0);
 

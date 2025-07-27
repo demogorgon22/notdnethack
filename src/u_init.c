@@ -1797,13 +1797,14 @@ u_init()
 	(void) memset((genericptr_t)&u, 0, sizeof(u));
 	u.ustuck = (struct monst *)0;
 
-	u.uavoid_passives = 0; // don't start out using only starblades lol
-	u.uavoid_msplcast = 0; // by default, allow mspellcasting
-	u.uavoid_grabattk = 0; // by default, allow grabbing attacks
-	u.uavoid_englattk = 0; // by default, allow engulfing attacks
-	u.uavoid_unsafetouch = 1; // avoid touching potentally unsafe monsters by default
-	u.uavoid_theft = 0; // by default, allow theft attacks
-	u.umystic = ~0; //By default, all monk style attacks are active
+	u.uavoid_passives = 0;		// by default, allow passive-triggering attacks
+	u.uavoid_msplcast = 0;		// by default, allow mspellcasting
+	u.uavoid_grabattk = 0;		// by default, allow grabbing attacks
+	u.uavoid_englattk = 0;		// by default, allow engulfing attacks
+	u.uavoid_unsafetouch = 1;	// by default, avoid touching potentally unsafe monsters
+	u.uavoid_theft = 0;			// by default, allow theft attacks
+	u.uavoid_urpassives = 0;	// by default, allow passive attacks
+	u.umystic = ~0;				// by default, all monk style attacks are active
 
 	u.summonMonster = FALSE;
 	u.uleadamulet = FALSE;
