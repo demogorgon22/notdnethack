@@ -703,6 +703,7 @@ struct obj {
 				|| (Role_if(PM_ARCHEOLOGIST) && typ == ATLATL) \
 				|| (Role_if(PM_CAVEMAN) && typ == ATLATL) \
 				|| (Race_if(PM_ELF) && typ == RIN_NOTHING) \
+				|| (Role_if(PM_KENSEI) && is_kensei_weapon_otyp(typ)) \
 				|| typ == CRYSTAL_GAUNTLETS \
 			)
 
