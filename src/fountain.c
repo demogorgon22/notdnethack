@@ -1487,7 +1487,7 @@ reshape_brand(struct obj *obj)
 		))
 			continue;
 		if(objects[i].oc_class == WEAPON_CLASS || (objects[i].oc_class == TOOL_CLASS && objects[i].oc_skill != P_NONE)){
-			if(P_SKILL(objects[i].oc_skill < 0 ? -1*objects[i].oc_skill : objects[i].oc_skill) < P_SKILLED || !has_object_type(invent, i))
+			if(P_SKILL(objects[i].oc_skill < 0 ? -1*objects[i].oc_skill : objects[i].oc_skill) < P_SKILLED && !has_object_type(invent, i))
 				continue;
 		}
 		if(!brandtype(i))
