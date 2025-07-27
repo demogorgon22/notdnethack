@@ -1208,7 +1208,7 @@ A("The Scorpion Carapace",			SCALE_MAIL,			(const char *)0,
 	),
 
 A("Mirrorbright",					ROUNDSHIELD,		(const char *)0,
-	4000L, SILVER, MZ_DEFAULT, WT_DEFAULT,
+	4000L, COPPER, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, NON_PM, TIER_C, NOFLAG,
 	NO_MONS(),
 	NO_ATTK(), NOFLAG,
