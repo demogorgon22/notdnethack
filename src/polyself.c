@@ -1723,7 +1723,7 @@ domindblast()
 			continue;
 		// if (distu(mtmp->mx, mtmp->my) > BOLT_LIM * BOLT_LIM)
 			// continue;
-		if(mtmp->mpeaceful)
+		if(mtmp->mpeaceful || nonthreat(mtmp))
 			continue;
 		if(mindless_mon(mtmp))
 			continue;
@@ -1782,7 +1782,7 @@ domindblast_strong()
 		nmon = mtmp->nmon;
 		if (DEADMONSTER(mtmp))
 			continue;
-		if(mtmp->mpeaceful)
+		if(mtmp->mpeaceful || nonthreat(mtmp))
 			continue;
 		if(mindless_mon(mtmp))
 			continue;
