@@ -1781,7 +1781,7 @@ moveloop()
 			  || (mtmp->mtyp == PM_TWIN_SIBLING && (mtmp->mvar_twin_lifesaved || !(u.specialSealsActive&SEAL_YOG_SOTHOTH)))
 			){
 				if(!(mtmp->mtrapped && t_at(mtmp->mx, mtmp->my) && t_at(mtmp->mx, mtmp->my)->ttyp == VIVI_TRAP)){
-					if(mtmp->mvar1_tettigon_uncancel){
+					if(mtmp->mtyp == PM_TRANSCENDENT_TETTIGON && mtmp->mvar1_tettigon_uncancel){
 						mtmp->mvar1_tettigon_uncancel = FALSE;
 						set_mcan(mtmp, FALSE);
 					}
