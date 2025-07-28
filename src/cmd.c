@@ -1529,6 +1529,7 @@ doEtechForm()
 #define AVOID_THEFT			0x0400L
 #define AUTO_ATTKS			0x0800L
 #define BOREAL_FORMS		0x1000L
+#define AVOID_URPASSIVES	0x2000L
 
 int
 hasfightingforms(){
@@ -1577,6 +1578,22 @@ hasfightingforms(){
 			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod)
 		){
 			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
+		}
+	}
+	if (u.uavoid_urpassives)
+		formmask |= AVOID_URPASSIVES;
+	else {
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod)
+		){
+			if(attk->aatyp == AT_NONE) formmask |= AVOID_URPASSIVES;
 		}
 	}
 	if (u.uavoid_msplcast)
@@ -1697,14 +1714,11 @@ dofightingform()
 #define	AVOD_THFT   11
 #define	NO_AUTO		12
 #define	BOREAL_FORM	13
+#define	AVOD_PASV	14
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'm', 0, ATR_NONE, "Select Mystic Forms", MENU_UNSELECTED);
-	}
-	if (formmask & LIGHTSABER_FORMS) {
-		any.a_int = LGHT_FORM;
-		add_menu(tmpwin, NO_GLYPH, &any, 'l', 0, ATR_NONE, "Select Lightsaber Forms", MENU_UNSELECTED);
 	}
 	if (formmask & KNIGHT_FORMS) {
 		any.a_int = KNIT_FORM;
@@ -1714,64 +1728,74 @@ dofightingform()
 		any.a_int = GITH_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, "Select Mental Edge", MENU_UNSELECTED);
 	}
-	if (formmask & ETECH_FORMS) {
-		any.a_int = ETCH_FORM;
-		add_menu(tmpwin, NO_GLYPH, &any, 'w', 0, ATR_NONE, "Select Weapon Form", MENU_UNSELECTED);
-	}
 	if (formmask & BOREAL_FORMS) {
 		any.a_int = BOREAL_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'b', 0, ATR_NONE, "Select Boreal Scepter Face", MENU_UNSELECTED);
 	}
+	if (formmask & ETECH_FORMS) {
+		any.a_int = ETCH_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'w', 0, ATR_NONE, "Select Weapon Form", MENU_UNSELECTED);
+	}
+	if (formmask & LIGHTSABER_FORMS) {
+		any.a_int = LGHT_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'l', 0, ATR_NONE, "Select Lightsaber Forms", MENU_UNSELECTED);
+	}
+	if (formmask & AVOID_UNSAFETOUCH) {
+		any.a_int = AVOD_TUCH; // inverted, default on
+		if (!u.uavoid_unsafetouch) Strcpy(buf, "Block directly touching potentially unsafe monsters (disabled)");
+		else Strcpy(buf, "Block directly touching potentally unsafe monsters (active)");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 't', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 	if (formmask & AVOID_PASSIVES) {
-		any.a_int = AVOD_FORM;
-		if (!u.uavoid_passives) Strcpy(buf, "Only make passive-safe attacks");
-		else Strcpy(buf, "Allow passive-unsafe attacks");
+		any.a_int = AVOD_FORM; // inverted, default off
+		if (!u.uavoid_passives) Strcpy(buf, "Only make passive-safe attacks (disabled)");
+		else Strcpy(buf, "Only make passive-safe attacks (active)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'p', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AVOID_URPASSIVES) {
+		any.a_int = AVOD_PASV;
+		if (!u.uavoid_urpassives) Strcpy(buf, "Allow passive and retaliatory attacks (active)");
+		else Strcpy(buf, "Allow passive and retaliatory attacks (disabled)");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'r', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 	if (formmask & AVOID_MSPLCAST) {
 		any.a_int = AVOD_MSPL;
-		if (!u.uavoid_msplcast) Strcpy(buf, "Avoid automatically casting spells when attacking");
-		else Strcpy(buf, "Allow the automatic casting of spells when attacking");
+		if (!u.uavoid_msplcast) Strcpy(buf, "Automatically cast spells when attacking (active)");
+		else Strcpy(buf, "Automatically cast spells when attacking (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 's', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AUTO_ATTKS) {
+		any.a_int = NO_AUTO;
+		if (!u.uno_auto_attacks) Strcpy(buf, "Automatically attack nearby monsters (active)");
+		else Strcpy(buf, "Automatically attack nearby monsters (disabled)");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'a', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 	if (formmask & AVOID_GRABATTK) {
 		any.a_int = AVOD_GRAB;
-		if (!u.uavoid_grabattk) Strcpy(buf, "Avoid grabbing monsters when attacking");
-		else Strcpy(buf, "Allow grabbing monsters when attacking");
+		if (!u.uavoid_grabattk) Strcpy(buf, "Grab monsters when attacking (active)");
+		else Strcpy(buf, "Grab monsters when attacking (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'g', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
 	if (formmask & AVOID_ENGLATTK) {
 		any.a_int = AVOD_ENGL;
-		if (!u.uavoid_englattk) Strcpy(buf, "Avoid engulfing monsters when attacking");
-		else Strcpy(buf, "Allow engulfing monsters when attacking");
+		if (!u.uavoid_englattk) Strcpy(buf, "Engulf monsters when attacking (active)");
+		else Strcpy(buf, "Engulf monsters when attacking (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'e', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
-	if (formmask & AVOID_UNSAFETOUCH) {
-		any.a_int = AVOD_TUCH;
-		if (!u.uavoid_unsafetouch) Strcpy(buf, "Avoid directly touching potentially unsafe monsters");
-		else Strcpy(buf, "Allow directly touching potentally unsafe monsters");
-
-		add_menu(tmpwin, NO_GLYPH, &any, 't', 0, ATR_NONE, buf, MENU_UNSELECTED);
-	}
 	if (formmask & AVOID_THEFT) {
 		any.a_int = AVOD_THFT;
-		if (!u.uavoid_theft) Strcpy(buf, "Discard stolen items from monsters");
-		else Strcpy(buf, "Keep stolen items from monsters");
+		if (!u.uavoid_theft) Strcpy(buf, "Keep stolen items from monsters (active)");
+		else Strcpy(buf, "Keep stolen items from monsters (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
-	if (formmask & AUTO_ATTKS) {
-		any.a_int = NO_AUTO;
-		if (!u.uno_auto_attacks) Strcpy(buf, "Automatic attacks (active)");
-		else Strcpy(buf, "Automatic attacks");
-
-		add_menu(tmpwin, NO_GLYPH, &any, 'a', 0, ATR_NONE, buf, MENU_UNSELECTED);
-	}
-
 	end_menu(tmpwin, "Adjust fighting styles:");
 
 	how = PICK_ONE;
@@ -1810,6 +1834,9 @@ dofightingform()
 		case NO_AUTO:
 			u.uno_auto_attacks = !u.uno_auto_attacks;
 			return MOVE_INSTANT;
+		case AVOD_PASV:
+			u.uavoid_urpassives = !u.uavoid_urpassives;
+			return MOVE_INSTANT;
 		case GITH_FORM:
 			return doGithForm();
 		case ETCH_FORM:
@@ -1837,6 +1864,7 @@ dofightingform()
 #undef	GITH_FORM
 #undef	ETCH_FORM
 #undef	AVOD_THFT
+#undef	AVOD_PASV
 
 #undef MONK_FORMS
 #undef LIGHTSABER_FORMS
@@ -1848,6 +1876,7 @@ dofightingform()
 #undef AVOID_UNSAFETOUCH
 #undef AVOID_THEFT
 #undef AUTO_ATTKS
+#undef AVOID_URPASSIVES
 
 int
 dounmaintain()
