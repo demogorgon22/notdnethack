@@ -16866,6 +16866,14 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			attackmask |= (WHACK | SLASH | PIERCE);
 		}
 
+		if(modifier_flags&MELEEHURT_SHOVE){
+			attackmask = WHACK;
+		}
+
+		if(modifier_flags&MELEEHURT_FORCE_CHECK_JOUST){
+			attackmask = PIERCE;
+		}
+
 		/* get resistmask */
 		if (resist_blunt(pd)){
 			resistmask |= WHACK;
