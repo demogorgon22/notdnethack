@@ -1042,6 +1042,28 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 			break;
 		}
 	break;
+	case PM_PUPPET_EMPRESS_XEDALLI:
+		switch (rnd(6)) {
+			case 6:
+			return CURE_SELF;
+			break;
+			case 5:
+			return MASS_CURE_FAR;
+			break;
+			case 4:
+			return SUMMON_ALIEN;
+			break;
+			case 3:
+			return PAIN_BOLT;
+			break;
+			case 2:
+			return CRUSH_BOLT;
+			break;
+			case 1:
+			return STARFALL;
+			break;
+		}
+	break;
 	case PM_ALIDER:
 		switch (rnd(8)) {
 			case 8:
@@ -5990,7 +6012,10 @@ int tary;
 			}
 
 			do {
-				mtmp = makemon(aliens[rn2(SIZE(aliens))], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
+				if(magr && magr->mtyp == PM_PUPPET_EMPRESS_XEDALLI && rn2(25))
+					mtmp = makemon(&mons[PM_BYAKHEE], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
+				else
+					mtmp = makemon(aliens[rn2(SIZE(aliens))], tarx, tary, MM_ADJACENTOK | MM_NOCOUNTBIRTH | MM_ESUM);
 			} while (!mtmp && tries++ < 10);
 			if (mtmp) {
 				u.summonMonster = TRUE;
