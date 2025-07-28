@@ -46,6 +46,7 @@ struct Jitem {
 STATIC_DCL struct Jitem Japanese_items[];
 STATIC_DCL struct Jitem ObscureJapanese_items[];
 STATIC_OVL struct Jitem Pirate_items[];
+STATIC_OVL struct Jitem Elf_items[];
 
 #else /* OVLB */
 
@@ -226,6 +227,10 @@ STATIC_OVL struct Jitem Pirate_items[] = {
 	{ OILSKIN_SACK, "oilskin ditty bag" },
 	{ BOX, "foot locker" },
 	{ CLUB, "belaying pin" },
+	{0, "" }
+};
+STATIC_OVL struct Jitem Elf_items[] = {
+	{ HIGH_ELVEN_WARSWORD, "lhang" },
 	{0, "" }
 };
 #endif /* OVLB */
@@ -409,6 +414,8 @@ register int otyp;
 		actualn = Alternate_item_name(otyp,Japanese_items);
 	if (useJNames && iflags.obscure_role_obj_names && Alternate_item_name(otyp,ObscureJapanese_items))
 		actualn = Alternate_item_name(otyp,ObscureJapanese_items);
+	if (Race_if(PM_ELF) && iflags.role_obj_names && Alternate_item_name(otyp,Elf_items))
+		actualn = Alternate_item_name(otyp,Elf_items);
 	if (Role_if(PM_PIRATE) && iflags.role_obj_names && Alternate_item_name(otyp,Pirate_items))
 		actualn = Alternate_item_name(otyp,Pirate_items);
 
@@ -1864,6 +1871,8 @@ boolean getting_obj_base_desc;
 		actualn = Alternate_item_name(typ, ObscureJapanese_items);
 	if (Role_if(PM_PIRATE) && iflags.role_obj_names && Alternate_item_name(typ, Pirate_items))
 		actualn = Alternate_item_name(typ, Pirate_items);
+	if (Race_if(PM_ELF) && iflags.role_obj_names && Alternate_item_name(typ, Elf_items))
+		actualn = Alternate_item_name(typ, Elf_items);
 
 	if(obj->otyp == CLUB && check_oprop(obj, OPROP_CCLAW)){
 		if(Insight >= 15)
@@ -3870,6 +3879,7 @@ struct alt_spellings {
 	{ "rum", POT_BOOZE },
 	{ "sea biscuit", CRAM_RATION },
 	{ "cutlass", SCIMITAR },
+	{ "lhang", HIGH_ELVEN_WARSWORD },
 	{ "buccaneer's ditty bag", OILSKIN_SACK },
 	{ "ditty bag", SACK },
 	{ "foot locker", BOX },
@@ -5303,7 +5313,7 @@ srch:
 		i++;
 	}
 	if (actualn) {
-		struct Jitem *j[] = {Japanese_items,ObscureJapanese_items,Pirate_items};
+		struct Jitem *j[] = {Japanese_items,ObscureJapanese_items,Pirate_items,Elf_items};
 		for(i=0;i<sizeof(j)/sizeof(j[0]);i++)
 		{
 		while(j[i]->item) {
