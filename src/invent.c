@@ -2216,7 +2216,7 @@ ddoinv()
 				winid datawin = create_nhwindow(NHW_MENU);
 				putstr(datawin, ATR_NONE, doname(otmp));
 				describe_item(otmp, otmp->otyp, otmp->oartifact, &datawin);
-				checkfile(xname_bland(otmp), 0, FALSE, TRUE, &datawin);
+				checkfile(encyc_xname(otmp), 0, FALSE, TRUE, &datawin);
 				display_nhwindow(datawin, TRUE);
 				destroy_nhwindow(datawin);
 				return MOVE_INSTANT;
@@ -2717,7 +2717,7 @@ struct obj *obj;
 		winid datawin = create_nhwindow(NHW_MENU);
 		putstr(datawin, ATR_NONE, doname(obj));
 		describe_item(obj, obj->otyp, obj->oartifact, &datawin);
-		checkfile(xname_bland(obj), 0, FALSE, TRUE, &datawin);
+		checkfile(encyc_xname(obj), 0, FALSE, TRUE, &datawin);
 		display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
 		return 0;

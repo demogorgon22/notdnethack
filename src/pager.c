@@ -968,8 +968,11 @@ bad_data_file:	impossible("'data' file in wrong format");
 		return FALSE;
 	    }
 		char *encyc_header = "Encyclopedia entry:";
+		if(wizard)
+			encyc_header = "Encyclopedia entry for ";
 		putstr(*printwindow, 0, "\n");
 		putstr(*printwindow, 0, encyc_header);
+		if(wizard) putstr(*printwindow, 0, dbase_str);
 		putstr(*printwindow, 0, "\n");
 	    for (i = 0; i < entry_count; i++) {
 		if (!dlb_fgets(buf, BUFSZ, fp)) goto bad_data_file;

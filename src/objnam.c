@@ -2624,6 +2624,14 @@ boolean ignore_oquan;
 }
 
 char *
+encyc_xname(struct obj *obj)
+{
+	if(obj->known && check_oprop(obj, OPROP_GSSDW) && !obj->oartifact)
+		return "gith silver sword";
+	return xname_bland(obj);
+}
+
+char *
 xname_bland(obj)
 register struct obj *obj;
 {
