@@ -16359,7 +16359,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				int bleeddmg;
 				/* grab the weapon dice from dmgval_core */
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-				bleeddmg = ((wdice.oc_damn+wdice.oc_damd) + (wdice.bon_damn*wdice.bon_damd))/(wdice.oc_damn+wdice.bon_damn) + wdice.flat + ROLL_ETRAIT(weapon, magr, 2, 1);
+				bleeddmg = ((wdice.oc_damn*wdice.oc_damd) + (wdice.bon_damn*wdice.bon_damd))/2 + wdice.flat + ROLL_ETRAIT(weapon, magr, 2, 1);
 				/* add to the tratdmg counter */
 				tratdmg += bleeddmg;
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
