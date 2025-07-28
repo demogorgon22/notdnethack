@@ -43,7 +43,7 @@ struct attack grapple = { AT_HUGS, AD_PHYS, 0, 6 };	/* for grappler's grasp */
 boolean
 peace_check_move(struct monst *mon)
 {
-	return ((canspotmon(mon) || mon_warning(mon)) && (Hallucination || !mon->mpeaceful) && !nonthreat(mon));
+	return ((canspotmon(mon) || mon_warning(mon) || mon == u.ustuck) && (Hallucination || !mon->mpeaceful) && !nonthreat(mon));
 }
 
 
