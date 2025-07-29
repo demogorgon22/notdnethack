@@ -1654,6 +1654,7 @@ int godnum;
 	
 	for (first = 0; minions[first] != NON_PM; first++)
 	    if (!(mvitals[minions[first]].mvflags & G_GONE && !In_quest(&u.uz)) && monstr[minions[first]] > mlev-5) break;
+
 	if(minions[first] == NON_PM){ //All minions too weak, or no minions
 		if(first == 0) return;
 		else mtyp = minions[first-1];
@@ -1661,19 +1662,19 @@ int godnum;
 	else for (last = first; minions[last] != NON_PM; last++)
 	    if (!(mvitals[minions[last]].mvflags & G_GONE && !In_quest(&u.uz))) {
 			/* consider it */
-			if(monstr[minions[last]] > mlev*2) break;
-			num += min(1,mons[minions[last]].geno & G_FREQ);
+			if(monstr[minions[last]] > mlev+5) break;
+			num += max(1, min(1,mons[minions[last]].geno & G_FREQ));
 	    }
 
 	if(!num){ //All minions too strong, or gap between weak and strong minions
 		if(first == 0) return;
-		else mtyp = minions[first-1];
+		else mtyp = minions[first]; // can't be NON_PM, would have been caught earlier
 	}
 /*	Assumption:	minions are presented in ascending order of strength. */
 	else{
 		for(num = rnd(num); num > 0; first++) if (!(mvitals[minions[first]].mvflags & G_GONE && !In_quest(&u.uz))) {
 			/* skew towards lower value monsters at lower exp. levels */
-			num -= min(1, mons[minions[first]].geno & G_FREQ);
+			num -= max(1, min(1, mons[minions[first]].geno & G_FREQ));
 			if (num && adj_lev(&mons[minions[first]]) > (u.ulevel*2)) {
 				/* but not when multiple monsters are same level */
 				if (mons[first].mlevel != mons[first+1].mlevel)
