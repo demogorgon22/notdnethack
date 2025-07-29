@@ -268,6 +268,11 @@ boolean talk;
 			mon->mhp = mon->mhpmax;
 			newsym(mon->mx,mon->my);
 		}
+
+		if(godnum == GOD_XOLOTL && !has_template(mon, SKELIFIED)){
+			set_template(mon, SKELIFIED);
+			newsym(mon->mx,mon->my);
+		}
     }
 	
 	return mon;

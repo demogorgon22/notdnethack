@@ -34,9 +34,12 @@ struct crowning {
 #define philosophy_index(god_index) ((god_index) == GOD_THE_COLLEGE || (god_index) == GOD_THE_CHOIR || (god_index) == GOD_DEFILEMENT)
 #define no_altar_index(god_index) (philosophy_index(god_index) || (god_index) == GOD_THE_BLACK_MOTHER)
 
-#define YOG_BAD	(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !(artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress == 3 && (Role_if(PM_ANACHRONONAUT) || philosophy_index(u.ualign.god))))
-#define GOAT_BAD	(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god))
-#define FLAME_BAD	(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god))
+#define Amnesty (u.ugodbase[UGOD_CURRENT] == GOD_HUEHUETEOTL && (Amnesty_hand(uwep) || Amnesty_hand(uswapwep)))
+#define Amnesty_hand(obj) ((obj && obj->oartifact == ART_TECPATL_OF_HUEHUETEOTL))
+
+#define YOG_BAD	(u.ualign.type != A_NEUTRAL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !(artinstance[ART_FINGERPRINT_SHIELD].FingerprintProgress == 3 && (Role_if(PM_ANACHRONONAUT) || philosophy_index(u.ualign.god))) && !Amnesty)
+#define GOAT_BAD	(u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god) && !Amnesty)
+#define FLAME_BAD	(u.ualign.type != A_LAWFUL && u.ualign.type != A_NONE && u.ualign.type != A_VOID && !Role_if(PM_ANACHRONONAUT) && !philosophy_index(u.ualign.god) && !Amnesty)
 
 
 #endif	/* GODS_H */

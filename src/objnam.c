@@ -1571,6 +1571,8 @@ boolean adjective;
 			return "lionhide";
 		if (obj->oartifact == ART_XIUHCOATL)
 			return "serpenthide";
+		if (obj->ovar1_tooth_type == SERPENT_TOOTH)
+			return (adjective) ? "serpent-tooth" : "a serpent's tooth";
 		/* hard object made of dragonhide (or described as being dragon-bone) -> bone or tooth */
 		else if ((objects[obj->otyp].oc_material > LEATHER && objects[obj->otyp].oc_material != DRAGON_HIDE)
 			|| ((s = OBJ_DESCR(objects[obj->otyp])) != (char *)0 && !strncmp(s, "dragonbone", 10))
@@ -1692,6 +1694,8 @@ boolean adjective;
 			return "onyx";
 		else if (obj->oartifact == ART_DRAGONHEAD_SHIELD)
 			return "stone dragon scales";
+		else if (obj->oartifact == ART_FLUTE_OF_TEZCATLIPOCA)
+			return "clay";
 		else if (obj->sub_material == SUBMAT_MARBLE)
 			return "marble";
 		/* ceramic wand is handled already */
@@ -1750,11 +1754,11 @@ char *buf;
 		/*Known artifact is made from the artifact's expected material */
 		if(artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material)
 			return;
-	} else if(obj->oartifact == ART_IBITE_ARM && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
+	} else if((obj->oartifact == ART_IBITE_ARM || obj->oartifact == ART_STAR_OF_HYPERNOTUS || obj->oartifact == ART_FLUTE_OF_TEZCATLIPOCA)
+				&& artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
 		//Ibite arm descriptor includes "flabby," which is both a material and an appearance :-/
-		return;
-	} else if(obj->oartifact == ART_STAR_OF_HYPERNOTUS && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
 		//Star of Hypernotus plays "fast and loose" with the material - and the material affects the final word rather than being a prefix
+		//Flute of Tezcatlipoca include bone/clay as appearances, for english adjective ordering
 		return;
 	} else {
 		/*Special case: circlets should always show their material, but oc_showmat is tied to otyp, not appearance */
@@ -1788,7 +1792,7 @@ add_type_words(obj, buf)
 struct obj *obj;
 char *buf;
 {
-	if (obj->otyp == MASK && obj->oartifact != ART_MIRRORED_MASK){
+	if (obj->otyp == MASK && obj->oartifact != ART_MIRRORED_MASK && obj->oartifact != ART_MASK_OF_TLALOC){
 		if (obj->corpsenm != NON_PM) {
 			Strcat(buf, mons[obj->corpsenm].mname);
 			Strcat(buf, " ");

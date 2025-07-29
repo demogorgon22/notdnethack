@@ -34,8 +34,8 @@ struct Role roles[] = {
 	{"Speleologist",0},
 	{"Collector",   0},
 	{"Curator",     0} },
-	GOD_QUETZALCOATL, GOD_CAMAXTLI, GOD_HUHETOTL, /* Central American */
-	GOD_HUHETOTL,
+	GOD_QUETZALCOATL, GOD_CAMAXTLI, GOD_HUEHUETEOTL, /* Central American */
+	GOD_HUEHUETEOTL,
 	"Arc", "the College of Archeology", "the Tomb of the Toltec Kings",
 	PM_ARCHEOLOGIST, NON_PM, NON_PM,
 	PM_LORD_CARNARVON, PM_STUDENT, PM_MINION_OF_TEZCATLIPOCA,

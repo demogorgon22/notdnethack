@@ -2444,7 +2444,7 @@ struct obj * obj;
 		(obj->otyp == TALLOW_CANDLE) ||
 		(obj->otyp == WAX_CANDLE) ||
 		(obj->otyp == SUNROD) ||
-		(obj->otyp == TORCH) ||
+		(obj->otyp == TORCH && obj->oartifact != ART_TORCH_OF_XOLOTL) ||
 		(obj->otyp == SHADOWLANDER_S_TORCH)));
 }
 
@@ -2501,7 +2501,8 @@ begin_burn(obj)
 		!artifact_light(obj) && 
 		!arti_light(obj) && 
 		obj->oartifact != ART_HOLY_MOONLIGHT_SWORD &&
-		obj->oartifact != ART_ATMA_WEAPON
+		obj->oartifact != ART_ATMA_WEAPON &&
+		obj->oartifact != ART_TORCH_OF_XOLOTL
 	) return;
 	
 
@@ -2513,6 +2514,7 @@ begin_burn(obj)
 	if (obj->otyp == MAGIC_LAMP ||
 		obj->otyp == CANDLE_OF_INVOCATION ||
 		obj->otyp == MAGIC_TORCH ||
+		obj->oartifact == ART_TORCH_OF_XOLOTL ||
 		artifact_light(obj) ||
 		obj_eternal_light(obj))
 		obj->lamplit = TRUE;
@@ -2576,6 +2578,7 @@ end_burn(obj, timer_attached)
 		|| obj->otyp == POT_STARLIGHT
 		|| obj->otyp == SUNLIGHT_MAGGOT
 		|| obj->otyp == CHUNK_OF_FOSSIL_DARK
+		|| obj->oartifact == ART_TORCH_OF_XOLOTL
 		|| artifact_light(obj)
 		|| arti_light(obj)
 	) timer_attached = FALSE;

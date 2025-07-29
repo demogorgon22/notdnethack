@@ -1552,7 +1552,7 @@ struct monst * magr;
 		{	dmg += otmp->spe; diesize = 12; }
 		else if (otmp->oartifact == ART_AMHIMITL)
 		{	ndice = 3; diesize = 4; }
-		else if (otmp->oartifact == ART_TECPATL_OF_HUHETOTL) /* SCOPECREEP: add ART_TECPATL_OF_HUHETOTL to is_unholy() macro */
+		else if (otmp->oartifact == ART_TECPATL_OF_HUEHUETEOTL)
 		{	ndice = (otmp->cursed ? 4 : 2); diesize = 4; }
 
 		if(magr && Focused_aura(magr)){
