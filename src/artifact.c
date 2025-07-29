@@ -3054,6 +3054,8 @@ boolean narrow_only;
 		return !(Magic_res(mdef));
 	if(weap->name == artilist[ART_PROFANED_GREATSCYTHE].name)
 		return (!is_unalive(ptr));
+	if(weap->name == artilist[ART_TORCH_OF_XOLOTL].name)
+		return (otmp->lamplit) ? (night() ? !Drain_res(mdef) : !Shock_res(mdef)) : FALSE;
 	/* artifacts that ALSO apply to an unusual group */
 	if(weap->name == artilist[ART_GIANTSLAYER].name && bigmonst(ptr))
 		return TRUE;
@@ -3410,6 +3412,7 @@ int * truedmgptr;
 	/* determine if we will apply bonus damage */
 	if ((spec_dbon_applies && !(
 			(weap->adtyp == AD_SLEE) ||	(weap->adtyp == AD_STDY)	/* doesn't do damage */
+			 || (otmp->oartifact == ART_TORCH_OF_XOLOTL && night()) // no 'base' damage in the day
 		)) || (
 		/* alternative conditions for dealing bonus damage (ie spec_dbon_applies == FALSE) */
 		(otmp->oartifact == ART_FIRE_BRAND) ||
@@ -6364,6 +6367,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	case ART_ARYFAERN_KERYM:			wepdesc = "crackling sword-shaped void";	break;
 	case ART_RAMIEL:					wepdesc = "thundering polearm";				break;
 	case ART_MJOLLNIR:					wepdesc = "massive hammer";					break;
+	case ART_TORCH_OF_XOLOTL:			wepdesc = "crackling torch";				break;
 	case ART_IBITE_ARM:
 		//Torch effects when the moon is gibbous
 		if(otmp->otyp == CLUB)
@@ -7147,53 +7151,6 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 	}
 
-	/* the Tecpatl of Huhetotl can sacrifice low-enough-health monsters (not you, though!) */
-	if (oartifact == ART_TECPATL_OF_HUHETOTL){
-		if (!youdef) {
-			if (has_blood_mon(mdef) && !noncorporeal(pd)) {
-				if (vis & VIS_MDEF) {
-					*messaged = TRUE;
-					pline("The sacrificial blade drinks the blood of %s!", mon_nam(mdef));
-				}
-#define MAXVALUE 24
-				/* if this bonus damage would be the edge when killing, a sacrifice to the gods! */
-				int sacrifice_dmg = d(2, 4);
-				if ((mdef->mhp > currdmg)
-					&& (*truedmgptr += sacrifice_dmg)
-					&& (mdef->mhp <= currdmg)
-					)
-				{
-					killed(mdef);
-					if (DEADMONSTER(mdef)) {	//else lifesaved
-						/* only the player gets benefits from sacrificing */
-						if (youagr)
-						{
-							extern const int monstr[];
-							int value = min(monstr[monsndx(pd)] + 1, MAXVALUE);
-							if (godlist[u.ualign.god].anger) {
-								godlist[u.ualign.god].anger -= ((value * (u.ualign.type == A_CHAOTIC ? 2 : 3)) / MAXVALUE);
-								if (godlist[u.ualign.god].anger < 0) godlist[u.ualign.god].anger = 0;
-							}
-							else if (u.ualign.record < 0) {
-								if (value > MAXVALUE) value = MAXVALUE;
-								if (value > -u.ualign.record) value = -u.ualign.record;
-								adjalign(value);
-							}
-							else if (u.ublesscnt > 0) {
-								u.ublesscnt -=
-									((value * (u.ualign.type == A_CHAOTIC ? 500 : 300)) / MAXVALUE);
-								if (u.ublesscnt < 0) u.ublesscnt = 0;
-							}
-						}
-						return MM_DEF_DIED;
-					}
-					else
-						return MM_DEF_LSVD;
-				}
-
-			}
-		}
-	} 
 	/* while Plague is invoked, lethal-filth arrows cause victims to virulently explode.
 	 * Not you, though. You just die. It's simpler that way. */
 	if (oartifact == ART_PLAGUE && artinstance[ART_PLAGUE].PlagueDoOnHit && (*hp(mdef) <= currdmg + 100) && !youdef) {
@@ -7323,7 +7280,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				method = VORPAL_SMASH;
 			}
 			break;
-		case ART_TORCH_OF_ORIGINS:
+		case ART_TORCH_OF_XOLOTL:
 			wepdesc = "ancient inferno";
 			vorpaldamage = 3000;
 			if (dieroll <= 2) {
@@ -8570,6 +8527,53 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
+
+	/* the Tecpatl of Huehueteotl can sacrifice low-enough-health monsters (not you, though!) 
+	 * this block must be after all non-artifact-specific bonuses that do direct damage (e.g. cults), 
+	 * and the target must not have auto-died earlier (mostly via instakill effects, like vorpal or bright light)
+	 */
+	if (oartifact == ART_TECPATL_OF_HUEHUETEOTL){
+		if (youagr && !youdef) {
+			if (has_blood_mon(mdef) && !noncorporeal(pd)) {
+				if (vis & VIS_MDEF) {
+					*messaged = TRUE;
+					pline("The sacrificial blade drinks the blood of %s!", mon_nam(mdef));
+				}
+#define MAXVALUE 24
+				/* a sacrifice to the gods! cheats out binder spirits intentionally, stacks with cult offerings, drains corpse */
+				*truedmgptr += d(3, 4);
+				if ((mdef->mhp <= currdmg))
+				{
+					mdef->mtecpatlmarked = 1;
+					killed(mdef);
+					if (DEADMONSTER(mdef)) {
+						//else lifesaved
+						extern const int monstr[];
+						int value = min(monstr[monsndx(pd)] + 1, MAXVALUE);
+						if (godlist[u.ualign.god].anger) {
+							godlist[u.ualign.god].anger -= ((value * (u.ualign.type == A_CHAOTIC ? 2 : 3)) / MAXVALUE);
+							if (godlist[u.ualign.god].anger < 0) godlist[u.ualign.god].anger = 0;
+							if (godlist[u.ualign.god].anger == 0)
+								pline("%s seems %s.", u_gname(), Hallucination ? "cosmic (not a new fact)" : "mollified");
+						}
+						else if (u.ualign.record < 0) {
+							if (value > MAXVALUE) value = MAXVALUE;
+							if (value > -u.ualign.record) value = -u.ualign.record;
+							adjalign(value);
+						}
+						else if (u.ublesscnt > 0) {
+							u.ublesscnt -= ((value * (u.ualign.type == A_CHAOTIC ? 500 : 300)) / MAXVALUE);
+							if (u.ublesscnt < 0) u.ublesscnt = 0;
+						}
+						return MM_DEF_DIED;
+					}
+					else
+						return MM_DEF_LSVD;
+				}
+
+			}
+		}
+	} 
 	/* ********************************************
 	KLUDGE ALERT AND WARNING: FROM THIS POINT ON, NON-ARTIFACTS OR ARTIFACTS THAT DID NOT TRIGGER SPEC_DBON_APPLIES WILL NOT OCCUR
 	********************************************************
@@ -8658,6 +8662,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	if (arti_attack_prop(otmp, ARTA_DRAIN)
 		|| (otmp->oartifact == ART_ESSCOOAHLIPBOOURRR && !Drain_res(mdef))
+		|| (otmp->oartifact == ART_TORCH_OF_XOLOTL && night())
 		|| (dieroll <= 2 && youagr && otmp->oclass == SPBOOK_CLASS && (u.sealsActive&SEAL_PAIMON))
 	){
 		int dlife;
@@ -9726,8 +9731,7 @@ arti_invoke(obj)
 	int summons[10] = {0, PM_FOG_CLOUD, PM_DUST_VORTEX, PM_STALKER, 
 					  PM_ICE_VORTEX, PM_ENERGY_VORTEX, PM_STEAM_VORTEX, 
 					  PM_FIRE_VORTEX, PM_AIR_ELEMENTAL, PM_LIGHTNING_PARAELEMENTAL};
-	int windpets[9] = {0, PM_FOG_CLOUD, PM_DUST_VORTEX, PM_ICE_PARAELEMENTAL, PM_ICE_VORTEX,
-					   PM_ENERGY_VORTEX, PM_AIR_ELEMENTAL, PM_LIGHTNING_PARAELEMENTAL, PM_COUATL};
+	int windpets[4] = {0, PM_AIR_ELEMENTAL, PM_LIGHTNING_PARAELEMENTAL, PM_COUATL};
 	coord cc;
 	int n, damage, time = MOVE_STANDARD;
 	struct permonst *pm;
@@ -10470,7 +10474,7 @@ arti_invoke(obj)
            cc.x = u.ux;
            cc.y = u.uy;
            /* Cause trouble if cursed or player is wrong role */
-           if (obj->cursed || ((Role_switch == oart->role || oart->role == NON_PM) && (Race_switch == oart->race || oart->race == NON_PM))) {
+           if (!obj->cursed || ((Role_switch == oart->role || oart->role == NON_PM) && (Race_switch == oart->race || oart->race == NON_PM))) {
               You("may summon a stinking cloud.");
                pline("Where do you want to center the cloud?");
                if (getpos(&cc, TRUE, "the desired position") < 0) {
@@ -11193,7 +11197,7 @@ arti_invoke(obj)
 				return MOVE_INSTANT;
 			}
 			else while(n--) {
-				pm = &mons[windpets[d(1,8)]];
+				pm = &mons[windpets[d(1,3)]];
 				mtmp = makemon(pm, cc.x, cc.y, MM_EDOG|MM_ESUM|MM_ADJACENTOK);
 				if(mtmp){
 					initedog(mtmp);
@@ -11829,6 +11833,8 @@ arti_invoke(obj)
 						} else if (obj->cursed) {
 							if (otmp->spe > 0) otmp->spe = 0;
 						} else otmp->quan += rnd(5);
+						set_material(otmp, DRAGON_HIDE);
+						otmp->ovar1_tooth_type = SERPENT_TOOTH;
 						otmp->owt = weight(otmp);
 						otmp = hold_another_object(otmp, "Suddenly %s out.", 
 							aobjnam(otmp, "fall"), (const char *)0);

@@ -6647,6 +6647,7 @@ xkilled(mtmp, dest)
 			} else if(mtmp->mgoatmarked && !Infuture){
 				goat_eat(corpse, mtmp->myoumarked ? GOAT_EAT_MARKED : GOAT_EAT_PASSIVE); //Goat eat tries *really* hard to destroy whatever you give it.
 			} else goat_seenonce = FALSE;
+			if (corpse && mtmp->mtecpatlmarked) corpse->odrained = 1;
 			corpse = (struct obj *)0; //corpse pointer is now stale
 		}
 	}

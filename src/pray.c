@@ -962,6 +962,8 @@ pleased(int godnum, boolean altar, int pray_trouble, boolean set_timeout)
 		return;
 	} else if (u.ualign.record < 2 && trouble <= 0) adjalign(1);
 
+	if (godnum == GOD_TEZCATLIPOCA) trouble = 0; // will not help you
+
 	/* depending on your luck & align level, the god you prayed to will:
 	   - fix your worst problem if it's major.
 	   - fix all your major problems.
@@ -1812,6 +1814,7 @@ dosacrifice()
 			|| (a_align(u.ux, u.uy) == A_NONE && a_gnum(u.ux, u.uy) == GOD_NONE)))
 	 || (a_gnum(u.ux, u.uy) == GOD_THE_BLACK_MOTHER && u.shubbie_atten) //Otherwise convert altar
 	 || (a_gnum(u.ux, u.uy) == GOD_YOG_SOTHOTH && u.yog_sothoth_atten) //Otherwise convert altar
+	 || (a_gnum(u.ux, u.uy) == GOD_TEZCATLIPOCA && u.ualign.god == GOD_TEZCATLIPOCA) //Otherwise convert altar
 	 || (no_altar_index(altargod) && a_gnum(u.ux, u.uy) != GOD_THE_BLACK_MOTHER) //BM handled above, can't even convert
 	 || (Misotheism && !(otmp->otyp == AMULET_OF_YENDOR && Is_astralevel(&u.uz)))
 	){
@@ -2187,6 +2190,10 @@ dosacrifice()
 					break;
 				}
 			}
+			if (altargod == GOD_TEZCATLIPOCA){
+				pline("Your shield wavers for a moment, then turns into smoke and wafts away. You feel uneasy about this.");
+				if (uarms) useup(uarms);// should ALWAYS be itlachiayaque
+			}
 		} else {
 			//???  || u.detestation_ritual
 			if(altaralign == A_VOID){
@@ -2230,7 +2237,7 @@ dosacrifice()
 			You("sense a conference between %s and %s.",
 				u_gname(), a_gname());
 			pline("But nothing else occurs.");
-		} else if(u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD || philosophy_index(u.ualign.god)){
+		} else if(u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD || u.ualign.god == GOD_TEZCATLIPOCA || philosophy_index(u.ualign.god)){
 			You("sense %s prepare for a conflict....",
 				a_gname());
 			pline("But nothing else occurs.");
@@ -2472,20 +2479,22 @@ boolean praying;	/* false means no messages should be given */
 	alignment = u.ualign.record / 2;	/* Different alignment altar */
     else alignment = u.ualign.record;
 
-    if ((int)Luck < 0 || godlist[u.ualign.god].anger || alignment < 0)
-        p_type = 0;             /* too naughty... */
-    else if (u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD)
-		p_type = 1;		/* always too soon */
+    if ((int)Luck < 0 || godlist[u.ualign.god].anger || alignment < 0) /* too naughty... */
+        p_type = 0;
+    else if (u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD) /* always too soon */
+		p_type = 1;
+    else if (u.ualign.god == GOD_TEZCATLIPOCA) /* always too soon, unless crowning */
+		p_type = (Luck > 10 && u.ualign.record >= PIOUS && !u.uevent.uhand_of_elbereth && u.uevent.qcompleted) ? 3 : 1;
     else if ((p_trouble > 0) ? (u.ublesscnt > 200) : /* big trouble */
 		(p_trouble < 0) ? (u.ublesscnt > 100) : /* minor difficulties */
 		(u.ublesscnt > 0) /* not in trouble */
-	)
+	){
 		p_type = 1;		/* too soon... */
-    else /* alignment >= 0 */ {
-	if(on_altar() && u.ualign.god != p_god)
-	    p_type = 2;
-	else
-	    p_type = 3;
+	} else { /* alignment >= 0 */
+		if(on_altar() && u.ualign.god != p_god)
+			p_type = 2;
+		else
+			p_type = 3;
     }
 
     if (is_undead(youracedata) && (!Inhell || hell_safe_prayer(p_god)) &&
@@ -2581,34 +2590,34 @@ prayer_done()		/* M. Stephenson (1.0.3b) */
 		return MOVE_STANDARD; //I think this is meaningless?
 	}
     if(p_type == -1) {
-		godvoice(p_god,
-			 gholiness(p_god) == HOLY_HOLINESS ?
-			 "Vile creature, thou durst call upon me?" :
-			 "Walk no more, perversion of nature!");
-		You_feel("like you are falling apart.");
-	/* KMH -- Gods have mastery over unchanging */
-	/* but not racial vampirism or the helm of undeath */
-	if (!Race_if(PM_VAMPIRE) && !(HUnchanging & FROMOUTSIDE)) {
-		u.lastprayresult = PRAY_GOOD;
-		rehumanize();
-		losehp(rnd(20), "residual undead turning effect", KILLED_BY_AN);
-	} else {
-		u.lastprayresult = PRAY_BAD;
-	   /* Starting vampires are inherently vampiric */
-	   losehp(rnd(20), "undead turning effect", KILLED_BY_AN);
-	   pline("You get the idea that %s will be of %s help to you.",
-			godname(p_god),
-			gholiness(p_god) == HOLY_HOLINESS ?
-			"little" :
-			"at best sporadic");
-	}
-	exercise(A_CON, FALSE);
-	if(on_altar()){
-		(void) water_prayer(FALSE);
-		change_luck(-3);
-		gods_upset(p_god);
-	}
-	return MOVE_STANDARD;
+			godvoice(p_god,
+				gholiness(p_god) == HOLY_HOLINESS ?
+				"Vile creature, thou durst call upon me?" :
+				"Walk no more, perversion of nature!");
+			You_feel("like you are falling apart.");
+		/* KMH -- Gods have mastery over unchanging */
+		/* but not racial vampirism or the helm of undeath */
+		if (!Race_if(PM_VAMPIRE) && !(HUnchanging & FROMOUTSIDE)) {
+			u.lastprayresult = PRAY_GOOD;
+			rehumanize();
+			losehp(rnd(20), "residual undead turning effect", KILLED_BY_AN);
+		} else {
+			u.lastprayresult = PRAY_BAD;
+		/* Starting vampires are inherently vampiric */
+		losehp(rnd(20), "undead turning effect", KILLED_BY_AN);
+		pline("You get the idea that %s will be of %s help to you.",
+				godname(p_god),
+				gholiness(p_god) == HOLY_HOLINESS ?
+				"little" :
+				"at best sporadic");
+		}
+		exercise(A_CON, FALSE);
+		if(on_altar()){
+			(void) water_prayer(FALSE);
+			change_luck(-3);
+			gods_upset(p_god);
+		}
+		return MOVE_STANDARD;
     }
     if (Inhell && !hell_safe_prayer(p_god)){
 		pline("Since you are in Gehennom, %s won't help you.", godname(p_god));
@@ -2639,8 +2648,7 @@ prayer_done()		/* M. Stephenson (1.0.3b) */
 		} else pleased(p_god, on_altar(), p_trouble, TRUE);
     } else {
 	/* coaligned */
-	if(on_altar())
-	    (void) water_prayer(TRUE);
+	if(on_altar() && p_god != GOD_TEZCATLIPOCA) (void) water_prayer(TRUE);
 	pleased(p_god, on_altar(), p_trouble, TRUE); /* nice */
     }
     return MOVE_STANDARD;
@@ -4848,9 +4856,9 @@ int eatflag;
 	/* credit gain suffers diminishing returns, less harshly if you are goat-ridden */
 	int dim_return_factor = (u.umadness & MAD_GOAT_RIDDEN) ? 100 : 50;
 	int full_value = value;
-	value = max(1, value * dim_return_factor / (dim_return_factor + u.shubbie_credit));
+	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.shubbie_credit));
 	u.shubbie_credit += value;
-	u.shubbie_devotion += eatflag == GOAT_EAT_OFFERED ? full_value : value;
+	u.shubbie_devotion += (eatflag == GOAT_EAT_OFFERED) ? full_value : value;
 	if (wizard) {
 		/* debug */
 		pline("ShubbieCredit = %ld [+%d base %d], ShubbieDevotion = %ld",
@@ -5024,7 +5032,7 @@ boolean offering;
 			u.silver_devotion + max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit))
 			);
 	}
-	value = max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit));
+	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit));
 	u.silver_credit += value;
 	u.silver_devotion += value;
 	return;
@@ -5061,13 +5069,11 @@ yog_credit(int value, boolean offered)
 			u.yog_sothoth_devotion + (offered ? value : max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)))
 			);
 	}
-	//Increment devotion BEFORE diminishing returns 
-	if(offered)
-		u.yog_sothoth_devotion += value;
-	value = max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit));
+
+	int full_value = value;
+	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit));
 	u.yog_sothoth_credit += value;
-	if(!offered)
-		u.yog_sothoth_devotion += value;
+	u.yog_sothoth_devotion += (offered) ? full_value : value;
 	return;
 }
 
@@ -5611,7 +5617,8 @@ int godnum;
 		return FALSE;
 	if (godnum == GOD_VELKA__GODDESS_OF_SIN)
 		return FALSE;
-
+	if (godnum == GOD_TEZCATLIPOCA && (!Role_if(PM_ARCHEOLOGIST) || !uarms || uarms->oartifact != ART_ITLACHIAYAQUE))
+		return FALSE;
 	return TRUE;
 }
 
