@@ -3412,6 +3412,7 @@ int * truedmgptr;
 	/* determine if we will apply bonus damage */
 	if ((spec_dbon_applies && !(
 			(weap->adtyp == AD_SLEE) ||	(weap->adtyp == AD_STDY)	/* doesn't do damage */
+			 || (otmp->oartifact == ART_TORCH_OF_XOLOTL && night()) // no 'base' damage in the day
 		)) || (
 		/* alternative conditions for dealing bonus damage (ie spec_dbon_applies == FALSE) */
 		(otmp->oartifact == ART_FIRE_BRAND) ||
@@ -6444,6 +6445,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	case ART_ARYFAERN_KERYM:			wepdesc = "crackling sword-shaped void";	break;
 	case ART_RAMIEL:					wepdesc = "thundering polearm";				break;
 	case ART_MJOLLNIR:					wepdesc = "massive hammer";					break;
+	case ART_TORCH_OF_XOLOTL:			wepdesc = "crackling torch";				break;
 	case ART_IBITE_ARM:
 		//Torch effects when the moon is gibbous
 		if(otmp->otyp == CLUB)
@@ -8782,7 +8784,7 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	if (arti_attack_prop(otmp, ARTA_DRAIN)
 		|| (otmp->oartifact == ART_ESSCOOAHLIPBOOURRR && !Drain_res(mdef))
-		|| (otmp->oartifact == ART_TORCH_OF_XOLOTL)
+		|| (otmp->oartifact == ART_TORCH_OF_XOLOTL && night())
 		|| (dieroll <= 2 && youagr && otmp->oclass == SPBOOK_CLASS && (u.sealsActive&SEAL_PAIMON))
 	){
 		int dlife;
