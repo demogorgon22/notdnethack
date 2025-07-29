@@ -1338,7 +1338,7 @@ struct obj {
 				|| ((otmp)->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE))\
 				|| ((otmp)->oartifact == ART_CLEAVER && Role_if(PM_BARBARIAN))\
 				|| ((otmp)->oartifact == ART_ATLANTEAN_ROYAL_SWORD && Role_if(PM_BARBARIAN))\
-				|| ((otmp)->oartifact == ART_TECPATL_OF_HUHETOTL && Role_if(PM_ARCHEOLOGIST))\
+				|| ((otmp)->oartifact == ART_TECPATL_OF_HUEHUETEOTL && Role_if(PM_ARCHEOLOGIST))\
 				|| ((otmp)->oartifact == ART_REAVER && Role_if(PM_PIRATE))\
 				|| ((otmp)->oartifact == ART_KIKU_ICHIMONJI && Role_if(PM_SAMURAI))\
 				|| ((otmp)->oartifact == ART_JINJA_NAGINATA && Role_if(PM_SAMURAI))\
@@ -1538,7 +1538,8 @@ struct obj {
 #define is_chupodible(otmp) ((otmp)->otyp == CORPSE && your_race(&mons[(otmp)->corpsenm]))
 
 #define is_holy(otmp)		((otmp)->oartifact == ART_SEVEN_STAR_SWORD || (otmp)->blessed)
-#define is_unholy(otmp)		((otmp)->oartifact == ART_STORMBRINGER || (otmp)->oartifact == ART_DIRGE || (otmp)->oartifact == ART_MALICE || (otmp)->cursed)
+#define is_unholy(otmp)		((otmp)->oartifact == ART_STORMBRINGER || (otmp)->oartifact == ART_DIRGE || \
+							(otmp)->oartifact == ART_MALICE || (otmp)->oartifact == ART_TECPATL_OF_HUEHUETEOTL || (otmp)->cursed)
 
 /* material */
 #define is_flimsy(otmp)		((otmp)->obj_material <= LEATHER)

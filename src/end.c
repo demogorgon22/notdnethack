@@ -804,6 +804,16 @@ find_equip_life_oprop()
 	return (struct obj *) 0;
 }
 
+struct obj *
+find_lifesaving_flute()
+{
+	struct obj *otmp;
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oartifact == ART_FLUTE_OF_TEZCATLIPOCA) return otmp;
+	}
+	return (struct obj *) 0;
+}
+
 const char*
 get_alignment_code()
 {
@@ -1144,6 +1154,15 @@ int how;
 			lsvd = LSVD_MISC;
 			pline("The smoke emanating from the crimson blade wanes.");
 			artinstance[ART_MORTAL_BLADE].mortalLives--;
+		} else if((otmp = find_lifesaving_flute())){
+			Your("%s crumbles to dust.", xname(otmp));
+			if (how == CHOKING) You("vomit ...");
+			if (how == DISINTEGRATED) You("reconstitute!");
+			else if (how == OVERWOUND) You("reassemble!");
+			else You_feel("much better!");
+
+			lsvd = LSVD_MISC;
+			useup(otmp);
 		} else if(Check_crystal_lifesaving()){
 			lsvd = LSVD_MISC;
 			pline("Time unwinds and twists!");

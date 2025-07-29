@@ -48,10 +48,17 @@ GOD_V2("Quetzalcoatl",          A_LAWFUL, HOLY_HOLINESS,
 GOD_V2("Camaxtli",              A_NEUTRAL, NEUTRAL_HOLINESS,
 	MINIONS(NElemen)
 	),
-GOD_V2("Huhetotl",              A_CHAOTIC, UNHOLY_HOLINESS,
+GOD_V2("Huehueteotl",              A_CHAOTIC, UNHOLY_HOLINESS,
 	MINIONS(Cdemons)
 	),
-GOD_V2("Tezcatlipoca",          A_NONE, UNHOLY_HOLINESS,
+/* couatls are intentional, they are skelified */
+GOD_V2("Xolotl",          		A_LAWFUL, UNHOLY_HOLINESS,
+	MINIONS(PM_COUATL)
+	),
+GOD_V2("Tlaloc",              A_NEUTRAL, NEUTRAL_HOLINESS,
+	MINIONS(NElemen)
+	),
+GOD_V2("Tezcatlipoca",          A_CHAOTIC, UNHOLY_HOLINESS,
 	MINIONS(Cdemons)
 	),
 /* barbarian */

@@ -11746,7 +11746,7 @@ boolean verbose;
 		} else if (uwep && (uwep->oartifact == ART_STAFF_OF_NECROMANCY)) {
 			if(verbose) You(mal_aura, "the skeletal staff");
 			return TRUE;
-		} else if (uwep && (uwep->oartifact == ART_TECPATL_OF_HUHETOTL)) {
+		} else if (uwep && (uwep->oartifact == ART_TECPATL_OF_HUEHUETEOTL)) {
 			if(verbose) You(mal_aura, "the bloodstained dagger");
 			return TRUE;
 		} else if((uwep && (uwep->oartifact == ART_TENTACLE_ROD))
@@ -11824,7 +11824,7 @@ boolean verbose;
 			return TRUE;
 		}
 		if (MON_WEP(mon) &&
-			(MON_WEP(mon)->oartifact == ART_TECPATL_OF_HUHETOTL)) {
+			(MON_WEP(mon)->oartifact == ART_TECPATL_OF_HUEHUETEOTL)) {
 			if (visible && verbose) You(mons_item_mal_aura, s_suffix(mon_nam(mon)), "bloodstained dagger");
 			return TRUE;
 		}
