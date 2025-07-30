@@ -292,9 +292,9 @@
 #define intelligent(ptr)	(!mindless(ptr) && !is_animal(ptr))
 #define murderable_mon(mon)	((mon) && ((intelligent_mon(mon) && always_peaceful((mon)->data) && !always_hostile_mon(mon)) || (mon)->isshk || (mon)->isgd || (mon)->ispriest))
 
-#define mortal_race(mon)	(intelligent_mon(mon) || mortal_race_data((mon)->data))
+#define mortal_race(mon)	(intelligent_mon(mon) && mortal_race_data((mon)->data))
 #define mortal_race_data(ptr)	(intelligent(ptr) && !nonliving(ptr) && !is_minion(ptr) && !is_demon(ptr) && !is_primordial(ptr) && !is_great_old_one(ptr))
-#define dark_immune(mon)	(is_unalive((mon)->data) || is_primordial((mon)->data))
+#define dark_immune(mon)	(is_unalive((mon)->data) || is_primordial((mon)->data) || is_great_old_one((mon)->data))
 
 #define slithy(ptr)			((ptr)->mflagsb & MB_SLITHY)
 #define humanoid_torso(ptr)	(((ptr)->mflagsb & MB_HUMANOID) != 0)
