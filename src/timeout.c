@@ -2929,6 +2929,25 @@ long timeout;
 	}
 }
 
+void
+revert_aureate_deluge(arg, timeout)
+genericptr_t arg;
+long timeout;
+{
+	struct obj *obj = (struct obj *) arg;
+	if(check_oprop(obj, OPROP_GOLDW)){
+		if(obj->where == OBJ_INVENT){
+			pline_The("molten gold covering %s fades away.", yname(obj));
+		}
+		else if(obj->where == OBJ_FLOOR && cansee(obj->ox, obj->oy)){
+			pline_The("molten gold molten gold covering %s fades away.", the(xname(obj)));
+		}
+		remove_oprop(obj, OPROP_GOLDW);
+		fix_object(obj);
+		update_inventory();
+	}
+}
+
 
 #ifdef OVL0
 /* ------------------------------------------------------------------------- */
@@ -3026,6 +3045,7 @@ static const ttable timeout_funcs[NUM_TIME_FUNCS] = {
 	TTAB(revive_mon_pickup,	(timeout_proc)0,	"revive_mon_pickup"),
 	TTAB(revert_object,		(timeout_proc)0,	"revert_object"),
 	TTAB(revert_mercurial,	(timeout_proc)0,	"revert_mercurial"),
+	TTAB(revert_aureate_deluge,(timeout_proc)0,"revert_aureate_deluge"),
 };
 #undef TTAB
 

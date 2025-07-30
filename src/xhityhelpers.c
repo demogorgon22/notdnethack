@@ -1871,7 +1871,7 @@ struct obj * weapon;
 				|| (ward_at(x(mdef), y(mdef)) == SIGIL_OF_CTHUGHA)
 				|| (youdef && ((Race_if(PM_HALF_DRAGON) && flags.HDbreath == AD_FIRE)))
 				|| (!youdef && is_half_dragon(pd) && mdef->mvar_hdBreath == AD_FIRE)
-				|| (youdef && u.sealsActive&SEAL_FAFNIR)) &&
+				|| (youdef && u.sealsActive&SEAL_AYM)) &&
 			attk && attk->adtyp == AD_EFIR)
 			return 2;
 
@@ -3794,6 +3794,9 @@ obj_is_material(struct obj *obj, int mat)
 				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_IRON)
 					return TRUE;
 			}
+			if (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_SIMURGH){
+				return TRUE;
+			}
 		break;
 		case GREEN_STEEL:
 			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
@@ -3806,11 +3809,20 @@ obj_is_material(struct obj *obj, int mat)
 				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_SILVER)
 					return TRUE;
 			}
+			if (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_EDEN){
+				return TRUE;
+			}
 		break;
 		case GOLD:
 			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
 				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GOLD)
 					return TRUE;
+			}
+			if (check_oprop(obj, OPROP_GOLDW)){
+				return TRUE;
+			}
+			if (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_AYM){
+				return TRUE;
 			}
 		break;
 		case PLATINUM:

@@ -1192,6 +1192,12 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"Project a beam up to 5 spaces in the chosen direction. A electrical explosion centers on the first target struck. The further away the target, the less damage dealt. You gain increased AC in inverse proportion to the damage dealt." },
 	{ SEAL_ASTAROTH, "Astaroth's Shards",
 	"Fire a barrage of shuriken along random ranks. You take a little damage." },
+	{ SEAL_AYM, "Breathe Poison",
+	"Create a stinking cloud centered at the chosen location." },
+	{ SEAL_AYM, "Ruinous Strike",
+	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
+	{ SEAL_AYM, "Aureate Deluge",
+	"You cover your weapon in molten gold, dealing bonus fire damage until it cools." },
 	{ SEAL_BALAM, "Icy Glare",
 	"Deal ice damage to the first target in the indicated direction, and half damage to all targets in a ~90 degree wedge centered on the chosen direction. Blinds you for 5 turns." },
 	{ SEAL_BALAM, "Balam's Anointing",
@@ -1234,10 +1240,6 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"You create a small stack of ammunition for your currently wielded ranged weapon, and take a small amount of damage." },
 	{ SEAL_EVE, "Barrage",
 	"Fire a large number of projectiles." },
-	{ SEAL_FAFNIR, "Breathe Poison",
-	"Create a stinking cloud centered at the chosen location." },
-	{ SEAL_FAFNIR, "Ruinous Strike",
-	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
 	{ SEAL_HUGINN_MUNINN, "Raven's Talons",
 	"Permanently blinds single adjacent target, while dealing damage. Deals less damage against a blind or sightless target." },
 	{ SEAL_IRIS, "Horrid Wilting",
@@ -2975,7 +2977,7 @@ spiriteffects(power, atme)
 				return MOVE_CANCELLED;
 			}
 		break;
-		case PWR_BREATH_POISON:{
+		case PWR_BREATHE_POISON:{
 	        coord cc;
 			pline("Breathe where?");
 			cc.x = u.ux;
@@ -3031,6 +3033,24 @@ spiriteffects(power, atme)
 					setmangry(mon);
 				}
 			} else break;
+		}break;
+		case PWR_AUREATE_DELUGE:{
+	        struct obj* otmp = (struct obj*)0;
+			if (uwep && (uwep->oclass == WEAPON_CLASS || uwep->oclass == TOOL_CLASS)){
+				otmp = uwep; //use the weapon in your wielded hand
+			} else if (uarmg){
+				otmp = uarmg; //use gloves if wielded weapon is missing, but not metallic
+			} else {
+				You("need a wielded weapon, or worn gloves.");
+				return MOVE_CANCELLED;
+			}
+			if (!is_metallic(otmp)) {
+				You("need a metallic object.");
+				return MOVE_CANCELLED;
+			}
+			pline("Molten gold bubbles up from your throat, spilling over %s.", yname(otmp));
+			add_oprop(otmp, OPROP_GOLDW);
+			start_timer(7 + dsize, TIMER_OBJECT, REVERT_AUREATE, (genericptr_t)otmp);
 		}break;
 		case PWR_RAVEN_S_TALONS:{
 			int dmg;

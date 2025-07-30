@@ -1164,6 +1164,9 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_SPIKED))
 			Strcat(buf, "spiked ");
 
+		if (check_oprop(obj, OPROP_GOLDW))
+			Strcat(buf, (obj->obj_material == GOLD) ? "molten " : "aureate ");
+
 		/* note: "holy" and "unholy" properties are shown in the BUC part of the name, as they replace "blessed" and "cursed". */
 		
 		/* note: except "Holy Avenger" and "Unholy Avenger" */
@@ -1241,7 +1244,7 @@ char *buf;
 	}
 
 	if (obj->ovara_seals&SEAL_EDEN){
-		// covered in poisoned words
+		Strcat(buf, "silvered ");
 	}
 
 	if (obj->ovara_seals&SEAL_ENKI){
@@ -1259,8 +1262,8 @@ char *buf;
 		Strcat(buf, "vine-wrapped ");
 	}
 
-	if (obj->ovara_seals&SEAL_FAFNIR){
-		Strcat(buf, "ruinous ");
+	if (obj->ovara_seals&SEAL_AYM){
+		Strcat(buf, "gilded ");
 	}
 
 	if (obj->ovara_seals&SEAL_HUGINN_MUNINN){
@@ -4722,7 +4725,8 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_SPIKED);
 		} else if (!strncmpi(bp, "bladed ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_BLADED);
-
+		} else if (!strncmpi(bp, "aureate ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_GOLDW);
 		} else if (!strncmpi(bp, "blasting ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_BLAST);
 		} else if (!strncmpi(bp, "ornate ", l=7)) {

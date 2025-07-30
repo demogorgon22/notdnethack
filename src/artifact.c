@@ -2288,9 +2288,7 @@ boolean
 arti_silvered(obj)
 struct obj *obj;
 {
-    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_SILVER) || 
-									  (obj->oartifact == ART_PEN_OF_THE_VOID &&
-									   obj->ovara_seals & SEAL_EDEN) ||
+    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_SILVER) ||
 									  ((obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) && !obj->lamplit))
 			);
 }
@@ -3677,6 +3675,18 @@ voidPen_hit(struct monst *magr, struct monst *mdef, struct obj *pen, int *dmgptr
 			*dmgptr += d(dnum,4);
 		}
 	} // nvPh - shock res
+	/* gilded instead of ruinous
+	if (pen->ovara_seals&SEAL_AYM){
+		if (vis){
+			and ? Strcat(buf, " and ruinous") : Sprintf(buf, "ruinous");
+			and = TRUE;
+		}
+		if(youdefend ? is_golem(youracedata) : is_golem(mdef->data)){
+			*dmgptr += d(2*dnum,4);
+		} else if(youdefend ? nonliving(youracedata) : nonliving(mdef->data)){
+			*dmgptr += d(dnum,4);
+		}
+	} // nvPh - golem/nonliving*/
 	if (pen->ovara_seals&SEAL_BALAM) {
 	    if (vis){ 
 			and ? Strcat(buf, " yet freezing") : Sprintf(buf, "freezing");
@@ -3796,17 +3806,6 @@ voidPen_hit(struct monst *magr, struct monst *mdef, struct obj *pen, int *dmgptr
 			}
 		}
 	} // nvPh - water res
-	if (pen->ovara_seals&SEAL_FAFNIR){
-		if (vis){
-			and ? Strcat(buf, " and ruinous") : Sprintf(buf, "ruinous");
-			and = TRUE;
-		}
-		if(youdefend ? is_golem(youracedata) : is_golem(mdef->data)){
-			*dmgptr += d(2*dnum,4);
-		} else if(youdefend ? nonliving(youracedata) : nonliving(mdef->data)){
-			*dmgptr += d(dnum,4);
-		}
-	} // nvPh - golem/nonliving
 	if (pen->ovara_seals&SEAL_HUGINN_MUNINN){
 		if(youdefend){
 			if(!Blind){
@@ -4063,6 +4062,15 @@ struct obj *pen;	/* Pen of the Void */
 			return TRUE;
 		}
 	}
+	/* gilded instead of ruinous
+	if (pen->ovara_seals&SEAL_AYM){
+		if(youdefend ? is_golem(youracedata) : is_golem(mdef->data)){
+			return TRUE;
+		} else if(youdefend ? nonliving(youracedata) : nonliving(mdef->data)){
+			return TRUE;
+		}
+	}
+	*/
 	if (pen->ovara_seals&SEAL_BALAM) {
 		if(youdefend ? !Cold_resistance : !resists_cold(mdef)){
 			return TRUE;
@@ -4085,13 +4093,6 @@ struct obj *pen;	/* Pen of the Void */
 	}
 	if (pen->ovara_seals&SEAL_ECHIDNA) {
 		if(youdefend ? !Acid_resistance : !resists_acid(mdef)){
-			return TRUE;
-		}
-	}
-	if (pen->ovara_seals&SEAL_FAFNIR){
-		if(youdefend ? is_golem(youracedata) : is_golem(mdef->data)){
-			return TRUE;
-		} else if(youdefend ? nonliving(youracedata) : nonliving(mdef->data)){
 			return TRUE;
 		}
 	}
@@ -4512,6 +4513,8 @@ int * truedmgptr;
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_FIREW))
 			*truedmgptr += d(2, 6);
+		if(check_oprop(otmp, OPROP_GOLDW))
+			*truedmgptr += d(1, spiritDsize());
 	}
 	if(!Cold_res(mdef)){
 		if(check_oprop(otmp, OPROP_COLDW))
