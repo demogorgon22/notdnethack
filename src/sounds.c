@@ -4041,115 +4041,6 @@ int tx,ty;
 			}
 		} else pline("You can't feel the spirit.");
 	}break;
-	case AYM:{
-		if(u.sealTimeout[AYM-FIRST_SEAL] < moves){
-			struct obj *otmp, *next_obj;
-			struct obj *ingots = (struct obj *) 0;
-			for(otmp = level.objects[tx][ty]; otmp; otmp = next_obj){
-				if(otmp->obj_material == GOLD && check_oprop(otmp, OPROP_NONE) && !otmp->oartifact && !objects[otmp->otyp].oc_unique){
-					next_obj = otmp->nexthere;
-					if (!ingots){
-						ingots = mksobj(INGOT, MKOBJ_NOINIT);
-						ingots->quan = weight(otmp);
-						ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = ingots->bknown = TRUE;
-						set_material_gm(ingots, GOLD);
-					} else {
-						ingots->quan += weight(otmp);
-					}
-					fix_object(ingots);
-					useupf(otmp, otmp->quan);
-				}
-			}
-			if (ingots) place_object(ingots, tx, ty);
-			newsym(tx,ty);
-			//Spirit requires that her seal be drawn on a square with at least 3 * u.ulevel aum of gold, which are turned into ingots
-			if(ingots && ingots->quan >= 3 * u.ulevel){
-				if(!Blind) {
-					pline("The gold on the seal melts into a molten puddle.");
-					pline("A figure rises from the molten gold, and takes the form of a three-headed snake.");
-					pline("The snake's heads are those of a female dwarf, a lion, and a bull.");
-					pline("The dwarf head speaks to you:");
-				}
-				pline("\"I am Aym, the Monarch of Gold and Greed. I am the mother of dwarves and the mistress of wealth.\"");
-				pline("\"I accept your contribution to my hoard.\"");
-				useupf(ingots, min(ingots->quan, 6*u.ulevel)); // yes, even if you're full on slots. sucks to suck
-				if(u.sealCounts < numSlots){
-					boolean found_gold = FALSE;
-					struct obj *maybe_gold;
-					if (!Blind) pline("The molten gold flows up your arm, and you feel a burning sensation on your left hand.");
-					else pline("You feel a burning sensation on your left hand!");
-					bindspirit(ep->ward_id);
-					u.sealTimeout[AYM-FIRST_SEAL] = moves + bindingPeriod;
-	#ifndef GOLDOBJ
-					if(u.ugold != 0) found_gold = TRUE;
-	#endif
-					for (maybe_gold = invent; maybe_gold; maybe_gold = maybe_gold->nobj) {
-						if (maybe_gold->oclass == COIN_CLASS || maybe_gold->obj_material == GOLD) {
-							found_gold = TRUE;
-							break;
-						}
-					}
-					if (!found_gold){
-						pline("\"Take this, as a token of my favor.\"");
-						struct obj* goldpiece = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
-						goldpiece->quan = 1;
-						goldpiece->owt = weight(goldpiece);
-						if (!Blind) {
-							pline("She flicks a gold piece at you.");
-							if (!merge_choice(invent, goldpiece) && inv_cnt() >= 52) {
-								You("have no room for the money!");
-								dropy(goldpiece);
-							} else {
-								addinv(goldpiece);
-								flags.botl = 1;
-							}
-						}
-						else {
-							pline("You feel something small hit you in the chest!");
-							dropy(goldpiece);
-						}
-					}
-				}
-				else if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && (!u.spiritTineA || (!u.spiritTineB && quest_status.killed_nemesis && Role_if(PM_EXILE)))){
-					pline("The molten gold flows up your blade.");
-					uwep->ovara_seals |= SEAL_AYM;
-					if(!u.spiritTineA){ 
-						u.spiritTineA = SEAL_AYM;
-						u.spiritTineTA= moves + bindingPeriod;
-					}
-					else{
-						u.spiritTineB = SEAL_AYM;
-						u.spiritTineTB= moves + bindingPeriod;
-					}
-					u.sealTimeout[AYM-FIRST_SEAL] = moves + bindingPeriod;
-				}
-				else{
-					pline("\"Take this, for piquing my attention.\"");
-					struct obj* goldpiece = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
-					goldpiece->quan = 1;
-					goldpiece->owt = weight(goldpiece);
-					if (!Blind){
-						pline("She flicks a gold piece at you.");
-						if (!merge_choice(invent, goldpiece) && inv_cnt() >= 52) {
-							You("have no room for the money!");
-							dropy(goldpiece);
-						} else {
-							addinv(goldpiece);
-							flags.botl = 1;
-						}
-					}
-					else {
-						pline("You feel something small hit you in the chest!");
-						dropy(goldpiece);
-					}
-					// u.sealTimeout[AYM-FIRST_SEAL] = moves + bindingPeriod/10;
-				}
-			} else{
-				You("momentarily see heaping piles of gold in front of you, but they are gone as quickly as they came.");
-				// u.sealTimeout[AYM-FIRST_SEAL] = moves + bindingPeriod/10;
-			}
-		} else pline("You can't feel the spirit.");
-	}break;
 	case BALAM:{
 		if(u.sealTimeout[BALAM-FIRST_SEAL] < moves){
 			//Balam requires that her seal be drawn on an icy square.
@@ -4664,6 +4555,115 @@ int tx,ty;
 			} else{
 				You_hear("wind in the trees.");
 				// u.sealTimeout[EVE-FIRST_SEAL] = moves + bindingPeriod/10;
+			}
+		} else pline("You can't feel the spirit.");
+	}break;
+	case MAEGERA:{
+		if(u.sealTimeout[MAEGERA-FIRST_SEAL] < moves){
+			struct obj *otmp, *next_obj;
+			struct obj *ingots = (struct obj *) 0;
+			for(otmp = level.objects[tx][ty]; otmp; otmp = next_obj){
+				if(otmp->obj_material == GOLD && check_oprop(otmp, OPROP_NONE) && !otmp->oartifact && !objects[otmp->otyp].oc_unique){
+					next_obj = otmp->nexthere;
+					if (!ingots){
+						ingots = mksobj(INGOT, MKOBJ_NOINIT);
+						ingots->quan = weight(otmp);
+						ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = ingots->bknown = TRUE;
+						set_material_gm(ingots, GOLD);
+					} else {
+						ingots->quan += weight(otmp);
+					}
+					fix_object(ingots);
+					useupf(otmp, otmp->quan);
+				}
+			}
+			if (ingots) place_object(ingots, tx, ty);
+			newsym(tx,ty);
+			//Spirit requires that her seal be drawn on a square with at least 3 * u.ulevel aum of gold, which are turned into ingots
+			if(ingots && ingots->quan >= 3 * u.ulevel){
+				if(!Blind) {
+					pline("The gold on the seal melts into a molten puddle.");
+					pline("A figure rises from the molten gold, and takes the form of a three-headed snake.");
+					pline("The snake's heads are those of a female dwarf, a lion, and a bull.");
+					pline("The dwarf head speaks to you:");
+				}
+				pline("\"I am Aym, the Monarch of Gold and Greed. I am the mother of dwarves and the mistress of wealth.\"");
+				pline("\"I accept your contribution to my hoard.\"");
+				useupf(ingots, min(ingots->quan, 6*u.ulevel)); // yes, even if you're full on slots. sucks to suck
+				if(u.sealCounts < numSlots){
+					boolean found_gold = FALSE;
+					struct obj *maybe_gold;
+					if (!Blind) pline("The molten gold flows up your arm, and you feel a burning sensation on your left hand.");
+					else pline("You feel a burning sensation on your left hand!");
+					bindspirit(ep->ward_id);
+					u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod;
+	#ifndef GOLDOBJ
+					if(u.ugold != 0) found_gold = TRUE;
+	#endif
+					for (maybe_gold = invent; maybe_gold; maybe_gold = maybe_gold->nobj) {
+						if (maybe_gold->oclass == COIN_CLASS || maybe_gold->obj_material == GOLD) {
+							found_gold = TRUE;
+							break;
+						}
+					}
+					if (!found_gold){
+						pline("\"Take this, as a token of my favor.\"");
+						struct obj* goldpiece = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
+						goldpiece->quan = 1;
+						goldpiece->owt = weight(goldpiece);
+						if (!Blind) {
+							pline("She flicks a gold piece at you.");
+							if (!merge_choice(invent, goldpiece) && inv_cnt() >= 52) {
+								You("have no room for the money!");
+								dropy(goldpiece);
+							} else {
+								addinv(goldpiece);
+								flags.botl = 1;
+							}
+						}
+						else {
+							pline("You feel something small hit you in the chest!");
+							dropy(goldpiece);
+						}
+					}
+				}
+				else if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && (!u.spiritTineA || (!u.spiritTineB && quest_status.killed_nemesis && Role_if(PM_EXILE)))){
+					pline("The molten gold flows up your blade.");
+					uwep->ovara_seals |= SEAL_MAEGERA;
+					if(!u.spiritTineA){ 
+						u.spiritTineA = SEAL_MAEGERA;
+						u.spiritTineTA= moves + bindingPeriod;
+					}
+					else{
+						u.spiritTineB = SEAL_MAEGERA;
+						u.spiritTineTB= moves + bindingPeriod;
+					}
+					u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod;
+				}
+				else{
+					pline("\"Take this, for piquing my attention.\"");
+					struct obj* goldpiece = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
+					goldpiece->quan = 1;
+					goldpiece->owt = weight(goldpiece);
+					if (!Blind){
+						pline("She flicks a gold piece at you.");
+						if (!merge_choice(invent, goldpiece) && inv_cnt() >= 52) {
+							You("have no room for the money!");
+							dropy(goldpiece);
+						} else {
+							addinv(goldpiece);
+							flags.botl = 1;
+						}
+					}
+					else {
+						pline("You feel something small hit you in the chest!");
+						dropy(goldpiece);
+					}
+					// u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod/10;
+				}
+			} else{
+				You("momentarily see heaping piles of gold in front of you, but they are gone as quickly as they came.");
+				// u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod/10;
 			}
 		} else pline("You can't feel the spirit.");
 	}break;
@@ -5708,7 +5708,7 @@ int floorID;
 	case EVE:
 		propchain[i++] = HALF_PHDAM;
 		break;
-	case AYM:
+	case MAEGERA:
 		propchain[i++] = INFRAVISION;
 		propchain[i++] = FIRE_RES;
 		break;
@@ -5830,7 +5830,7 @@ int floorID;
 		skillchain[i++] = P_CROSSBOW;
 		skillchain[i++] = P_SHURIKEN;
 		break;
-	case AYM:
+	case MAEGERA:
 		skillchain[i++] = P_PICK_AXE;
 		skillchain[i++] = P_SMITHING;
 		break;

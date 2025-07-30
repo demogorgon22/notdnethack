@@ -1731,7 +1731,7 @@ boolean fresh;
 #define ATTK_MISKA_WOLF	7
 #define PASV_SHADOW_WEB	8
 #define PASV_ECHIDNA	9
-#define PASV_AYM		10
+#define PASV_MAEGERA	10
 #define PASV_EDEN		11
 #define NOATTACK		12
 	static struct attack spiritattack[] =
@@ -1841,12 +1841,6 @@ boolean fresh;
 		if (++curindex == indexnum)
 			return &spiritattack[PASV_SHADOW_WEB];
 	}
-	if (u.sealsActive&SEAL_AYM)
-	{
-		spiritattack[PASV_AYM].damd = spiritDsize();
-		if (++curindex == indexnum)
-			return &spiritattack[PASV_AYM];
-	}
 	if (u.sealsActive&SEAL_ECHIDNA)
 	{
 		spiritattack[PASV_ECHIDNA].damd = spiritDsize();
@@ -1857,6 +1851,12 @@ boolean fresh;
 	{
 		if (++curindex == indexnum)
 			return &spiritattack[PASV_EDEN];
+	}
+	if (u.sealsActive&SEAL_MAEGERA)
+	{
+		spiritattack[PASV_MAEGERA].damd = spiritDsize();
+		if (++curindex == indexnum)
+			return &spiritattack[PASV_MAEGERA];
 	}
 		
 	/* Default case: no attack */
@@ -5474,7 +5474,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						|| (ward_at(x(mdef), y(mdef)) == SIGIL_OF_CTHUGHA)
 						|| (youdef && ((Race_if(PM_HALF_DRAGON) && flags.HDbreath == AD_FIRE)))
 						|| (!youdef && is_half_dragon(pd) && mdef->mvar_hdBreath == AD_FIRE)
-						|| (youdef && u.sealsActive&SEAL_AYM))
+						|| (youdef && u.sealsActive&SEAL_MAEGERA))
 						dmg = 0;
 				}
 				else {	/* standard, immunity from any resistance */

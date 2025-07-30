@@ -1272,7 +1272,7 @@ char *buf;
 		Strcat(buf, "vine-wrapped ");
 	}
 
-	if (obj->ovara_seals&SEAL_AYM){
+	if (obj->ovara_seals&SEAL_MAEGERA){
 		Strcat(buf, "gilded ");
 	}
 

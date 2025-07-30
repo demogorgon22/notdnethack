@@ -2053,12 +2053,6 @@ signs_enlightenment()
 			putstr(en_win, 0, "The black liquid leaking from your eyes is soaked up by your blindfold.");
 		message = TRUE;
 	}
-	if(u.sealsActive&SEAL_AYM && !NoBInvis){ 
-		if(!(uright || uarmg)){
-			putstr(en_win, 0, "There is a ring-shaped burn scar around your right ring-finger.");
-			message = TRUE;
-		}
-	}
 	if(u.sealsActive&SEAL_BALAM && !Invis){
 		if(uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))
 			putstr(en_win, 0, "Freezing water leaks from a gash in you neck, but is hidden by your clothes.");
@@ -2172,6 +2166,12 @@ signs_enlightenment()
 	if(u.sealsActive&SEAL_JACK){
 		putstr(en_win, 0, "There is something on your back.");
 		message = TRUE;
+	}
+	if(u.sealsActive&SEAL_MAEGERA && !NoBInvis){ 
+		if(!(uright || uarmg)){
+			putstr(en_win, 0, "There is a hole burned to the bone of your right ring-finger.");
+			message = TRUE;
+		}
 	}
 	if(u.sealsActive&SEAL_MALPHAS){
 		putstr(en_win, 0, "You feel things pecking the inside of your mouth.");
@@ -2618,12 +2618,6 @@ signs_mirror()
 		}
 		message = TRUE;
 	}
-	if(u.sealsActive&SEAL_AYM && !NoBInvis){ 
-		if(!(uright || uarmg)){
-			putstr(en_win, 0, "There is a ring-shaped burn scar around your right ring-finger.");
-			message = TRUE;
-		}
-	}
 	if(u.sealsActive&SEAL_BALAM && !Invis){
 		if(uarmc || (uarm && arm_blocks_upper_body(uarm->otyp)))
 			putstr(en_win, 0, "Freezing water leaks from a gash in your neck, but is hidden by your clothes.");
@@ -2708,7 +2702,8 @@ signs_mirror()
 			putstr(en_win, 0, "Your feet are torn by thorns and stones.");
 			message = TRUE;
 		}
-	}if(u.sealsActive&SEAL_HUGINN_MUNINN && !NoBInvis){
+	}
+	if(u.sealsActive&SEAL_HUGINN_MUNINN && !NoBInvis){
 		if(!uarmh){
 			putstr(en_win, 0, "You find a raven nesting in each ear!");
 			message = TRUE;
@@ -2733,6 +2728,12 @@ signs_mirror()
 			putstr(en_win, 0, "You see a bump under your cloak on your back.");
 		}
 		message = TRUE;
+	}
+	if(u.sealsActive&SEAL_MAEGERA && !NoBInvis){ 
+		if(!(uright || uarmg)){
+			putstr(en_win, 0, "There is a hole burned to the bone of your right ring-finger.");
+			message = TRUE;
+		}
 	}
 	if(u.sealsActive&SEAL_MALPHAS && !NoBInvis){
 		if(!(ublindf && (ublindf->otyp==MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE))){

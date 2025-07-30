@@ -2059,7 +2059,7 @@ moveloop()
 			}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 			if(u.uhs == WEAK && u.sealsActive&SEAL_AHAZU) unbind(SEAL_AHAZU,TRUE);
-			if (u.sealsActive&SEAL_AYM) {
+			if (u.sealsActive&SEAL_MAEGERA) {
 				boolean found_gold = FALSE;
 				struct obj *maybe_gold;
 #ifndef GOLDOBJ
@@ -2071,7 +2071,10 @@ moveloop()
 						break;
 					}
 				}
-				if (!found_gold) unbind(SEAL_AYM, TRUE);
+				if (!found_gold) {
+					// count code goes here
+					unbind(SEAL_MAEGERA, TRUE);
+				}
 			}
 			if(u.sealsActive&SEAL_JACK && (Is_astralevel(&u.uz) || Inhell)) unbind(SEAL_JACK,TRUE);
 			if(u.sealsActive&SEAL_NABERIUS && u.udrunken < u.ulevel/3) unbind(SEAL_NABERIUS,TRUE);
@@ -3117,7 +3120,7 @@ karemade:
 						if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SPBOOK_CLASS, AD_FIRE);
 					}
 					
-					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_AYM)){
+					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_MAEGERA)){
 						Your("boiler is melting!");
 						losehp(u.ulevel, "melting from extreme heat", KILLED_BY);
 						if(u.utemp >= MELTED){

@@ -3845,11 +3845,6 @@ winid *datawin;
 			} if (obj->ovara_seals&SEAL_ASTAROTH){
 				Sprintf(buf2, "Carries the seal of Astaroth, granting +%dd4 shock damage.", acer(4, 1));
 				OBJPUTSTR(buf2);
-			} if (obj->ovara_seals&SEAL_AYM){
-				if (obj->obj_material != GOLD || (mvitals[PM_ACERERAK].died > 0))
-					Sprintf(buf2, "Carries the seal of Aym, %sgilding attacks.", acer("doubly ", ""));
-				else Sprintf(buf2, "Carries the seal of Aym, doing nothing of note.");
-				OBJPUTSTR(buf2);
 			} if (obj->ovara_seals&SEAL_BALAM){
 				Sprintf(buf2, "Carries the seal of Balam, granting +%dd4 cold damage.", acer(4, 1));
 				OBJPUTSTR(buf2);
@@ -3890,6 +3885,11 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			} if (obj->ovara_seals&SEAL_JACK){
 				Sprintf(buf2, "Carries the seal of Jack, becoming a source of %slight.", acer("bright ", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MAEGERA){
+				if (obj->obj_material != GOLD || (mvitals[PM_ACERERAK].died > 0))
+					Sprintf(buf2, "Carries the seal of Maegera, %sgilding attacks.", acer("doubly ", ""));
+				else Sprintf(buf2, "Carries the seal of Maegera, doing nothing of note.");
 				OBJPUTSTR(buf2);
 			} if (obj->ovara_seals&SEAL_MALPHAS){
 				Sprintf(buf2, "Carries the seal of Malphas, granting a %d%% chance to summon a crow on kills.", acer(10, 5));

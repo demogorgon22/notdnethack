@@ -924,20 +924,20 @@ char * sealNames[] =  {
 	"Andrealphus", /* 2 */
 	"Andromalius", /* 3 */
 	"Astaroth", /* 4 */
-	"Aym", /* 5 */
-	"Balam", /* 6 */
-	"Berith", /* 7 */
-	"Buer", /* 8 */
-	"Chupoclops", /*98 */
-	"Dantalion", /* 10 */
-	"Echidna", /* 11 */
-	"Eden", /* 12 */
-	"Enki", /* 13 */
-	"Eurynome", /* 14 */
-	"Eve", /* 15 */
-	"Huginn and Muninn", /* 16 */
-	"Iris", /* 17 */
-	"Jack", /* 18 */
+	"Balam", /* 5 */
+	"Berith", /* 6 */
+	"Buer", /* 7 */
+	"Chupoclops", /* 8 */
+	"Dantalion", /* 9 */
+	"Echidna", /* 10 */
+	"Eden", /* 11 */
+	"Enki", /* 12 */
+	"Eurynome", /* 13 */
+	"Eve", /* 14 */
+	"Huginn and Muninn", /* 15 */
+	"Iris", /* 16 */
+	"Jack", /* 17 */
+	"Maegera", /* 18 */
 	"Malphas", /* 19 */
 	"Marionette", /* 20 */
 	"Mother", /* 21 */
@@ -971,20 +971,20 @@ char * sealTitles[] =  {
 	", Marquis of Angles", /* 2 */
 	", the Repentent Rogue", /* 3 */
 	", the Broken Clockmaker", /* 4 */
-	", Monarch of Greed", /* 5 */
-	", the Last Sacrifice", /* 6 */
-	", the Red Horseman", /* 7 */
-	", who walks all places", /* 8 */
-	", Hopetrapper", /* 9 */
-	", the Star Emperor", /* 10 */
-	", Mother of Monsters", /* 11 */
-	", the First Garden", /* 12 */
-	", God of the first city", /* 13 */
-	", lonely dancer", /* 14 */
-	", the first Sinner", /* 15 */
-	", Thought and Memory", /* 16 */
-	", Friend from Afar", /* 17 */
-	" of the Lantern", /* 18 */
+	", the Last Sacrifice", /* 5 */
+	", the Red Horseman", /* 6 */
+	", who walks all places", /* 7 */
+	", Hopetrapper", /* 8 */
+	", the Star Emperor", /* 9 */
+	", Mother of Monsters", /* 10 */
+	", the First Garden", /* 11 */
+	", God of the first city", /* 12 */
+	", lonely dancer", /* 13 */
+	", the first Sinner", /* 14 */
+	", Thought and Memory", /* 15 */
+	", Friend from Afar", /* 16 */
+	" of the Lantern", /* 17 */
+	", the Dawn and Dusk", /* 18 */
 	", the Prince of Crows", /* 19 */
 	", Puppet of Screams", /* 20 */
 	", who beheld Beauty", /* 21 */

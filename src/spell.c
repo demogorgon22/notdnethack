@@ -1192,12 +1192,6 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"Project a beam up to 5 spaces in the chosen direction. A electrical explosion centers on the first target struck. The further away the target, the less damage dealt. You gain increased AC in inverse proportion to the damage dealt." },
 	{ SEAL_ASTAROTH, "Astaroth's Shards",
 	"Fire a barrage of shuriken along random ranks. You take a little damage." },
-	{ SEAL_AYM, "Breathe Poison",
-	"Create a stinking cloud centered at the chosen location." },
-	{ SEAL_AYM, "Ruinous Strike",
-	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
-	{ SEAL_AYM, "Aureate Deluge",
-	"You cover your weapon in molten gold, dealing bonus fire damage until it cools." },
 	{ SEAL_BALAM, "Icy Glare",
 	"Deal ice damage to the first target in the indicated direction, and half damage to all targets in a ~90 degree wedge centered on the chosen direction. Blinds you for 5 turns." },
 	{ SEAL_BALAM, "Balam's Anointing",
@@ -1250,6 +1244,12 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"Add some fuel to a wielded oil lamp or lightsaber." },
 	{ SEAL_JACK, "Hellfire",
 	"Create a moderately-damaging explosion of fire centered on the chosen square. Requires you to wield a lit potion of oil, oil lamp, or lightsaber." },
+	{ SEAL_MAEGERA, "Breathe Poison",
+	"Create a stinking cloud centered at the chosen location." },
+	{ SEAL_MAEGERA, "Ruinous Strike",
+	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
+	{ SEAL_MAEGERA, "Aureate Deluge",
+	"You cover your weapon in molten gold, dealing bonus fire damage until it cools." },
 	{ SEAL_MALPHAS, "Call Murder",
 	"Summon a tame crow. The crow's level is based on your level." },
 	{ SEAL_MARIONETTE, "Root Shout",
@@ -2977,7 +2977,7 @@ spiriteffects(power, atme)
 				return MOVE_CANCELLED;
 			}
 		break;
-		case PWR_BREATHE_POISON:{
+		case PWR_BREATH_POISON:{
 	        coord cc;
 			pline("Breathe where?");
 			cc.x = u.ux;
