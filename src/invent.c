@@ -2901,6 +2901,8 @@ winid *datawin;
 		/* Does not apply for launchers. */
 		/* the melee-weapon artifact launchers need obj to exist because dmgval_core needs obj to find artifact. */
 		int enc_bonus = (obj && obj->known) ? (obj->spe) : 0;
+		if (obj && obj->oartifact == ART_PEN_OF_THE_VOID && u.specialSealsActive&SEAL_UNKNOWN_GOD)
+			enc_bonus = 0;
 		char* senc_bonus = (enc_bonus) ? sitoa(enc_bonus) : "";
 
 		if ((!otyp_is_launcher && !otyp_is_blaster && !artidmg_only) || (
@@ -3005,14 +3007,14 @@ winid *datawin;
 				{
 					Sprintf(buf, "Deals double damage");
 					if (obj->ovara_seals)
-						Strcat(buf, ", and enhanced spirit bonus damage.");
+						Strcat(buf, " and has enhanced bonus effects from spirits bound into it.");
 					else
 						Strcat(buf, ".");
 				}
 				else
 				{
 					if (obj->ovara_seals)
-						Sprintf(buf, "Deals bonus damage from the spirit bound into it.");
+						Sprintf(buf, "Has bonus effects from the spirit bound into it.");
 					else
 						buf[0] = '\0';
 				}
@@ -3825,6 +3827,134 @@ winid *datawin;
 			ZERTHMATS(ZMAT_MITHRIL, "mithril");
 			Sprintf(buf2, "Amalgamated metals: %s.", buf);
 			OBJPUTSTR(buf2);
+		}
+		if (oartifact == ART_PEN_OF_THE_VOID) {
+#define acer(x, y) ((mvitals[PM_ACERERAK].died > 0) ? (x) : (y))
+			if (obj->ovara_seals&SEAL_AHAZU){
+				Sprintf(buf2, "Carries the seal of Ahazu, granting a 20%% chance to subtract 3 movement points and deal +%d4 damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_AMON){
+				Sprintf(buf2, "Carries the seal of Amon, granting +%dd4 fire damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ANDREALPHUS){
+				Sprintf(buf2, "Carries the seal of Andrealphus, allowing it to engrave special wards%s.", acer(" and burn when engraving", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ANDROMALIUS){
+				Sprintf(buf2, "Carries the seal of Andromalius, granting %ssneak attacks and preventing it from being stolen.", acer("enhanced ", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ASTAROTH){
+				Sprintf(buf2, "Carries the seal of Astaroth, granting +%dd4 shock damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_AYM){
+				if (obj->obj_material != GOLD || (mvitals[PM_ACERERAK].died > 0))
+					Sprintf(buf2, "Carries the seal of Aym, %sgilding attacks.", acer("doubly ", ""));
+				else Sprintf(buf2, "Carries the seal of Aym, doing nothing of note.");
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_BALAM){
+				Sprintf(buf2, "Carries the seal of Balam, granting +%dd4 cold damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_BERITH){
+				Sprintf(buf2, "Carries the seal of Berith, granting +%dd4 Blood Mercenary damage%s and the ability to joust.", acer(4, 1), acer(", the ability to shatter weapons,", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_BUER){
+				Sprintf(buf2, "Carries the seal of Buer, healing you by +%dd4 per hit.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_CHUPOCLOPS){
+				Sprintf(buf2, "Carries the seal of Chupoclops, granting a 10%% chance to deal +%dd4 damage and trap the target in a web.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_DANTALION){
+				Sprintf(buf2, "Carries the seal of Dantalion, granting a 10%% chance to deal +%dd4 damage and probe the target.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ECHIDNA){
+				Sprintf(buf2, "Carries the seal of Echidna, granting +%dd4 acid damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_EDEN){
+				if (obj->obj_material != SILVER || (mvitals[PM_ACERERAK].died > 0))
+					Sprintf(buf2, "Carries the seal of Eden, %ssilvering attacks.", acer("doubly ", ""));
+				else Sprintf(buf2, "Carries the seal of Eden, doing nothing of note.");
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ENKI){
+				Sprintf(buf2, "Carries the seal of Enki, granting +%dd4 water damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_EURYNOME){
+				Sprintf(buf2, "Carries the seal of Eurynome, granting a %d%% chance to counterattack.", acer(10, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_EVE){
+				Sprintf(buf2, "Carries the seal of Eve, allowing it to fire any projectile%s.", acer(" with infinite range", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_HUGINN_MUNINN){
+				Sprintf(buf2, "Carries the seal of Huginn & Muninn, granting +%dd4 damage against and blinding monsters with intact eyes.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_IRIS){
+				Sprintf(buf2, "Carries the seal of Iris, granting +%dd4 desiccation damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_JACK){
+				Sprintf(buf2, "Carries the seal of Jack, becoming a source of %slight.", acer("bright ", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MALPHAS){
+				Sprintf(buf2, "Carries the seal of Malphas, granting a %d%% chance to summon a crow on kills.", acer(10, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MARIONETTE){
+				Sprintf(buf2, "Carries the seal of Marionette, granting it the abilities of a polearm%s.", acer(" and benefitting doubly from strength", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MOTHER){
+				Sprintf(buf2, "Carries the seal of Mother, granting a %d%% chance to paralyze targets.", acer(25, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_NABERIUS){
+				Sprintf(buf2, "Carries the seal of Naberius, granting +%dd4 damage against peaceful or fleeing targets.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ORTHOS){
+				Sprintf(buf2, "Carries the seal of Orthos, granting a 10%% chance to deal +%dd8 damage and knock targets back.", acer(8, 2));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_OSE){
+				Sprintf(buf2, "Carries the seal of Ose, granting a 20%% chance to deal +%dd15 damage, but always against telepathic targets.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_OTIAX){
+				Sprintf(buf2, "Carries the seal of Otiax, granting +1%s damage and a 5%% chance of stealing items.", acer("d4", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_PAIMON){
+				Sprintf(buf2, "Carries the seal of Paimon, restoring +%d energy on hit.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_SHIRO){
+				Sprintf(buf2, "Carries the seal of Shiro, firing %s at struck targets.", acer("boulders", "rocks"));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_SIMURGH){
+				Sprintf(buf2, "Carries the seal of Simurgh, stunning targets%s.", acer(" and dealing 2d4 damage", ""));
+				if (obj->obj_material != IRON) {
+					if ((mvitals[PM_ACERERAK].died > 0))
+						Sprintf(buf2, "Carries the seal of Simurgh, stunning targets, counting as cold iron, and dealing +2d4 damage.");
+					else Sprintf(buf2, "Carries the seal of Simurgh, stunning targets and counting as cold iron");
+				} else Sprintf(buf2, "Carries the seal of Simurgh, stunning targets%s.", acer(" and dealing 2d4 damage", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_TENEBROUS){
+				Sprintf(buf2, "Carries the seal of Tenebrous, granting a %d%% chance to drain a level from targets.", acer(25, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_YMIR){
+				Sprintf(buf2, "Carries the seal of Ymir, %spoisoning it%s.", acer("direly ", ""), acer(" and setting strength to 25", ""));
+				OBJPUTSTR(buf2);
+			}
+			if (u.specialSealsActive&SEAL_COSMOS){
+				Sprintf(buf2, "Channels the presence of Cosmos, dealing +%dd4 to chaotic targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_LIVING_CRYSTAL){
+				Sprintf(buf2, "Channels the presence of Mediator, dealing +%dd4 to chaotic targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_TWO_TREES){
+				Sprintf(buf2, "Channels the presence of Telperion & Laurelin, dealing +%dd4 to chaotic targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_MISKA){
+				Sprintf(buf2, "Channels the presence of Miska, dealing +%dd4 to lawful targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_NUDZIRATH){
+				Sprintf(buf2, "Channels the presence of Nudzirath, dealing +%dd6 to lawful and chaotic targets.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_ALIGNMENT_THING){
+				Sprintf(buf2, "Channels the presence of the Alignment Thing, with a 67%% chance to deal somewhere between +%dd4 to +%dd4 extra damage.", acer(2, 1), acer(4, 2));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_UNKNOWN_GOD){
+				Sprintf(buf2, "Channels the presence of the Unknown God, not adding enchantment to damage but instead subtracting %sits enchantment from your AC.", acer("double ", ""));
+				OBJPUTSTR(buf2);
+			} 
 		}
 	}
 	if (olet == ARMOR_CLASS || olet == BELT_CLASS) {
