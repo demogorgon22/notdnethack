@@ -3050,7 +3050,7 @@ spiriteffects(power, atme)
 			}
 			pline("Molten gold bubbles up from your throat, spilling over %s.", yname(otmp));
 			add_oprop(otmp, OPROP_GOLDW);
-			start_timer(7 + dsize, TIMER_OBJECT, REVERT_AUREATE, (genericptr_t)otmp);
+			start_timer(5, TIMER_OBJECT, REVERT_AUREATE, (genericptr_t)otmp);
 		}break;
 		case PWR_RAVEN_S_TALONS:{
 			int dmg;
