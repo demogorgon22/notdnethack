@@ -1040,7 +1040,7 @@ struct monst *mon;
 		pline("base: %d, armac: %d", base, armac);
 	}
 	
-	if(is_law_demon(mon->data))
+	if(is_law_demon(mon->data) && (Inhell || u.uevent.udemigod))
 		armac *= 2;
 	base -= armac;
 	/* since arm_ac_bonus is positive, subtracting it increases AC */
@@ -1232,7 +1232,7 @@ struct monst *mon;
 				armac += arm_ac_bonus(obj);
 		}
 	}
-	if(is_law_demon(mon->data))
+	if(is_law_demon(mon->data) && (Inhell || u.uevent.udemigod))
 		armac *= 2;
 	return 10 - armac;
 }
@@ -1507,7 +1507,7 @@ int depth;
 	int adfalt[] = { UPPER_TORSO_DR|LOWER_TORSO_DR, UPPER_TORSO_DR|LOWER_TORSO_DR|LEG_DR, LEG_DR, HEAD_DR, ARM_DR, 0,     UPPER_TORSO_DR };
 	int i;
 	struct obj * curarm;
-	int dr_multiplier = is_law_demon(mon->data) ? 2 : 1;
+	int dr_multiplier = (is_law_demon(mon->data) && (Inhell || u.uevent.udemigod)) ? 2 : 1;
 	for (i = 0; i < SIZE(marmor); i++) {
 		if((curarm = which_armor(mon, marmor[i]))){
 			if(curarm->oclass == ARMOR_CLASS){
