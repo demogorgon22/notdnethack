@@ -860,10 +860,12 @@ checkfile(inp, pm, user_typed_name, without_asking, printwindow)
      * for Angel and angel, make the lookup string the same for both
      * user_typed_name and picked name.
      */
-    if (pm != (struct permonst *) 0 && !user_typed_name)
-	dbase_str = strcpy(newstr, pm->mname);
+    if (pm != (struct permonst *) 0 && !user_typed_name){
+		dbase_str = strcpy(newstr, pm->mname);
+		pline("%s", dbase_str);
+	}
     else dbase_str = strcpy(newstr, inp);
-    (void) lcase(dbase_str);
+		(void) lcase(dbase_str);
 
     if (!strncmp(dbase_str, "interior of ", 12))
 	dbase_str += 12;
@@ -1509,10 +1511,15 @@ do_look(quick)
 		if (sym == '`' && iflags.bouldersym && ((int)glyph_to_obj(glyph) == BOULDER || (int)glyph_to_obj(glyph) == MASS_OF_STUFF))
 			sym = iflags.bouldersym;
 	    } else if (glyph_is_monster(glyph)) {
-		/* takes care of pets, detected, ridden, and regular mons */
-		sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
-		if(iflags.pokedex & POKEDEX_SHOW_ENCYC)
-			Sprintf(name, "%s", mons[glyph_to_mon(glyph)].mname);
+			/* takes care of pets, detected, ridden, and regular mons */
+			sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
+			if(iflags.pokedex & POKEDEX_SHOW_ENCYC){
+				struct monst *mtmp = m_at(cc.x,cc.y);
+				if(!Hallucination && mtmp)
+					Sprintf(name, "%s", mtmp->data->mname);
+				else
+					Sprintf(name, "%s", mons[glyph_to_mon(glyph)].mname);
+			}
 	    } else if (glyph_is_cloud(glyph)) {
 		sym = showsyms[S_cloud];
 	    } else if (glyph_is_swallow(glyph)) {
