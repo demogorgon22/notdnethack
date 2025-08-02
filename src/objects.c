@@ -1312,7 +1312,7 @@ CONTAINER(("massive stone crate"),
 										1,MZ_GIGANTIC,0, 0,   0,6000,  80, MINERAL,HI_MINERAL),/*Needs tile*/
 CONTAINER(("chest"),           1,   MZ_HUGE, 0, 0,  30, 600,  16, WOOD, HI_WOOD),
 CONTAINER(("magic chest", "big chest with 10 keyholes"), /*Needs encyc entry*/
-										0,MZ_GIGANTIC,1, 0,  15,1001,7000, METAL, CLR_BRIGHT_MAGENTA),/*Needs tile*/
+										0,MZ_GIGANTIC,1, 0,  15,505,7000, METAL, CLR_BRIGHT_MAGENTA),/*Needs tile*/
 /*Needs encyc entry*/
 CONTAINER(("writing desk"),    1,   MZ_HUGE, 0, 0,   0, 600,  16, WOOD, HI_WOOD),
 /*Needs encyc entry*/
