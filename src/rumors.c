@@ -729,12 +729,15 @@ register struct monst *oracl;
 						char tbuf[BUFSZ];
 						int i;
 						d_level lev;
-						tmpwin = create_nhwindow(NHW_MENU);
-						start_menu(tmpwin);
-						any.a_void = 0;		/* zero out all bits */
-	    					for (i = 1; artilist[i].otyp; i++){
+
+						for (i = 1; artilist[i].otyp; i++){
 							if(!artinstance[i].exists)
 								continue;
+							if (arti_count == 0){
+								tmpwin = create_nhwindow(NHW_MENU);
+								start_menu(tmpwin);
+								any.a_void = 0;		/* zero out all bits */
+							}
 							Sprintf(buf, "%s", artilist[i].name);
 							any.a_int = i;	/* must be non-zero */
 							add_menu(tmpwin, NO_GLYPH, &any,
@@ -742,8 +745,10 @@ register struct monst *oracl;
 								MENU_UNSELECTED);
 							arti_count++;
 						}
-
-
+						if (arti_count == 0){
+							pline("All artifacts have yet to be born.");
+							break;
+						}
 						end_menu(tmpwin, "Know the birthplace of which artifact?");
 
 						how = PICK_ONE;
