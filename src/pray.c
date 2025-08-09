@@ -5024,18 +5024,19 @@ boolean offering;
 
 	/* credit gain suffers diminishing returns, less harshly if you have a lot of insight */
 	int dim_return_factor = max(1, Insight);
-	if (wizard) {
-		/* debug */
-		pline("FlameCredit = %ld [+%ld base %d], FlameDevotion = %ld",
-			u.silver_credit + max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit)),
-			max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit)),
-			value,
-			u.silver_devotion + max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit))
-			);
-	}
+	int full_value = value;
 	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit));
 	u.silver_credit += value;
 	u.silver_devotion += value;
+	if (wizard) {
+		/* debug */
+		pline("FlameCredit = %ld [+%d base %d], FlameDevotion = %ld",
+			u.silver_credit,
+			value,
+			full_value,
+			u.silver_devotion
+			);
+	}
 	return;
 }
 
@@ -5061,20 +5062,19 @@ yog_credit(int value, boolean offered)
 
 	/* credit gain suffers diminishing returns, less harshly if you are high level */
 	int dim_return_factor = max(1, u.ulevel);
-	if (wizard) {
-		/* debug */
-		pline("YogCredit = %ld [+%ld base %d], YogDevotion = %ld",
-			u.yog_sothoth_credit + max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)),
-			max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)),
-			value,
-			u.yog_sothoth_devotion + (offered ? value : max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)))
-			);
-	}
-
 	int full_value = value;
 	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit));
 	u.yog_sothoth_credit += value;
 	u.yog_sothoth_devotion += (offered) ? full_value : value;
+	if (wizard) {
+		/* debug */
+		pline("YogCredit = %ld [+%d base %d], YogDevotion = %ld",
+			u.yog_sothoth_credit,
+			value,
+			full_value,
+			u.yog_sothoth_devotion
+			);
+	}
 	return;
 }
 
