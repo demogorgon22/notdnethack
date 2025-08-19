@@ -1196,11 +1196,11 @@ static const struct {
 };
 
 int
-use_crystal_ball(obj)
-struct obj *obj;
+use_crystal_ball(struct obj **optr)
 {
 	char ch;
 	int oops;
+	struct obj *obj = *optr;
 
 	if (Blind) {
 	pline("Too bad you can't see %s.", the(xname(obj)));
@@ -1228,7 +1228,7 @@ struct obj *obj;
 		break;
 	case 5 : pline("%s!", Tobjnam(obj, "explode"));
 		useup(obj);
-		obj = 0;	/* it's gone */
+		*optr = obj = 0;	/* it's gone */
 		losehp(rnd(30), "exploding crystal ball", KILLED_BY_AN);
 		break;
 	}

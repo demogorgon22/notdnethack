@@ -431,7 +431,7 @@ E int FDECL(pet_detect_and_tame, (struct obj *));
 E int FDECL(pet_detect_and_heal, (struct obj *));
 E int FDECL(trap_detect, (struct obj *));
 E const char *FDECL(level_distance, (d_level *));
-E int FDECL(use_crystal_ball, (struct obj *));
+E int FDECL(use_crystal_ball, (struct obj **));
 E void NDECL(do_mapping);
 E void FDECL(do_vicinity_map, (int,int));
 E void FDECL(cvt_sdoor_to_door, (struct rm *));

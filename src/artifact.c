@@ -9891,7 +9891,7 @@ arti_invoke(obj)
 		switch (obj->otyp)
 		{
 		case CRYSTAL_BALL:
-			use_crystal_ball(obj);
+			use_crystal_ball(&obj);
 			break;
 		case RIN_WISHES:
 			(void) use_ring_of_wishes(obj);
