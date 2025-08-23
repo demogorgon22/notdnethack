@@ -4211,7 +4211,7 @@ newgame()
 			)){
 				otmp = oname(otmp, artilist[inher_arti].name);
 				fully_identify_obj(otmp);
-				expert_weapon_skill(weapon_type(otmp));
+				expert_weapon_skill(is_shield(otmp) ? P_SHIELD : weapon_type(otmp));
 				otmp = hold_another_object(otmp, "Oops!  %s to the floor!",
 						   The(aobjnam(otmp, "slip")), (const char *)0);
 			} else {
