@@ -2508,8 +2508,9 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	}
 	if (mptr->mlet == S_EYE && !is_auton(mptr))
 	    return sphere_parts[part];
-	if (mptr->mlet == S_JELLY || mptr->mlet == S_PUDDING ||
-		mptr->mlet == S_BLOB || mptr->mtyp == PM_JELLYFISH)
+	if (mptr->mlet == S_JELLY || mptr->mlet == S_PUDDING
+		|| mptr->mlet == S_BLOB || mptr->mtyp == PM_JUIBLEX
+		|| mptr->mtyp == PM_JELLYFISH)
 	    return jelly_parts[part];
 	if (mptr->mlet == S_VORTEX || mptr->mlet == S_ELEMENTAL)
 	    return vortex_parts[part];
