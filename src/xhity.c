@@ -22650,7 +22650,7 @@ boolean magical;
 		else
 			dmg = (dmg + 1) / 2;
 	}
-	if (mdef == &youmonst && u.uspellprot){
+	if ((mdef == &youmonst || mdef->mtame) && u.uspellprot){
 		if(magical && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
 			dmg = (dmg + 1) / 2;
 	}
