@@ -1283,6 +1283,7 @@ struct monst *mon;
 			if(uarm && uarm->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(uarm, CPROP_IMPURITY) && Insight >= 5)
 				base += max(0, (u.uimpurity+4)/3-3);
 		}
+		base += u.uspellprot;
 		if(Role_if(PM_HEALER))
 			base += heal_mlevel_bonus();
 
