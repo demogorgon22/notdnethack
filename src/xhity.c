@@ -21780,7 +21780,7 @@ perform_monk_move(int moveID, int *move_cost)
 		case SCORN:
 			if(!u.uswallow && (mdef = adjacent_move_target(!!uwep))){
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				pline("Scorn the imperfect!"); //Note: different that move_name (Scorn vs. Scorn the imperfect)
+				pline("Scorn the imperfect!"); //Note: different than move_name (Scorn vs. Scorn the imperfect)
 				if(uwep && uwep->oartifact == ART_BOREAL_SCEPTER)
 					artinstance[ART_BOREAL_SCEPTER].BorealScorn = TRUE;
 				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
