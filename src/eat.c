@@ -3986,7 +3986,7 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	if(Role_if(PM_MONK)){
 		if(u.uhs >= HUNGRY) hungermod *= 2; /* HUNGRY or hungrier */
 	}
-	if((Role_if(PM_MONK) || Role_if(PM_MONK)) && u.unull){
+	if((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && u.unull){
 		hungermod *= 2;
 	}
 	
