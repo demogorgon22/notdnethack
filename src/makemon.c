@@ -11243,8 +11243,11 @@ boolean greatequip;
 			} else if(mtmp->mtyp == PM_BLUE_EYED_FOX){
 				int weapon[] = {ATHAME, SICKLE,  SHORT_SWORD, KHOPESH, WAKIZASHI, SCIMITAR, RAPIER, BROADSWORD, NINJA_TO, LONG_SWORD, MACUAHUITL, QUARTERSTAFF, KHAKKHARA, DOUBLE_SWORD, FLAIL, KATAR};
 				otmp = mongets(mtmp, ROLL_FROM(weapon), mkobjflags);
-				if(otmp)
-					set_material_gm(otmp, MERCURIAL);
+				if(otmp){
+					// set_material_gm(otmp, MERCURIAL);
+					// Really most sincerely poisoned
+					otmp->opoisoned = OPOISON_FILTH|OPOISON_DIRE;
+				}
 				(void)mongets(mtmp, SHURIKEN, mkobjflags);
 				(void)mongets(mtmp, DART, mkobjflags);
 				(void) mongets(mtmp, DAGGER, mkobjflags);
