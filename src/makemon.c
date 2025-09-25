@@ -7754,6 +7754,26 @@ int mmflags;
 					otmp->oeroded3 = 1;
 				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
 				(void)mongets(mtmp, DAGGER, mkobjflags);
+			} else if(Is_arcadia(&u.uz)){
+				if (goodequip || rn2(7)) (void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
+				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
+				if (!rn2(4)) {
+					(void)mongets(mtmp, DWARVISH_SHORT_SWORD, mkobjflags);
+				} else {
+					if(!rn2(3)) (void)mongets(mtmp, DWARVISH_SPEAR, mkobjflags);
+					else (void)mongets(mtmp, DAGGER, mkobjflags);
+				}
+				if (!could_twoweap(ptr))
+					(void)mongets(mtmp, DWARVISH_ROUNDSHIELD, mkobjflags);
+				else
+					mongets(mtmp, DWARVISH_SHORT_SWORD, mkobjflags);
+				(void)mongets(mtmp, DWARVISH_HELM, mkobjflags);
+				/* CM: Dwarves OUTSIDE the mines have booze. */
+				mongets(mtmp, POT_BOOZE, mkobjflags);
+				if (goodequip || !rn2(3)){
+					if(is_prince(ptr) || (is_lord(ptr) && !rn2(3))) (void)mongets(mtmp, DWARVISH_MITHRIL_COAT, mkobjflags);
+					else (void)mongets(mtmp, CHAIN_MAIL, mkobjflags);
+				}
 			} else {
 				if (goodequip || rn2(7)) (void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
 				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
