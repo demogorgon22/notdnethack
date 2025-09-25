@@ -11632,7 +11632,7 @@ doapply()
 		}
 		else if(u.veil){
 			You("feel reality threatening to slip away!");
-			if (yn("Are you sure you want to studying the skull?") == 'y'){
+			if (yn("Are you sure you want to continue studying the skull?") == 'y'){
 				pline("So be it.");
 				You("feel a sharp pain in your temple.");
 				u.veil = FALSE;
