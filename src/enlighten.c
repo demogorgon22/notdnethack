@@ -2168,8 +2168,8 @@ signs_enlightenment()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_MAEGERA && !NoBInvis){ 
-		if(!(uright || uarmg)){
-			putstr(en_win, 0, "There is a hole burned to the bone of your right ring-finger.");
+		if(!(uleft || uarmg)){
+			putstr(en_win, 0, "There is a star-shaped hole burned to the gilded bone of your left ring-finger.");
 			message = TRUE;
 		}
 	}
@@ -2730,8 +2730,8 @@ signs_mirror()
 		message = TRUE;
 	}
 	if(u.sealsActive&SEAL_MAEGERA && !NoBInvis){ 
-		if(!(uright || uarmg)){
-			putstr(en_win, 0, "There is a hole burned to the bone of your right ring-finger.");
+		if(!(uleft || uarmg)){
+			putstr(en_win, 0, "There is a star-shaped hole burned to the gilded bone of your left ring-finger.");
 			message = TRUE;
 		}
 	}

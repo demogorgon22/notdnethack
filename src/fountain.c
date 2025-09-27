@@ -11,10 +11,8 @@
 STATIC_DCL void NDECL(dowatersnakes);
 STATIC_DCL void NDECL(dowaterdemon);
 STATIC_DCL void NDECL(dowaternymph);
-STATIC_DCL void NDECL(dolavademon);
 STATIC_PTR void FDECL(gush, (int,int,genericptr_t));
 STATIC_DCL void NDECL(dofindgem);
-STATIC_DCL void FDECL(blowupforge, (int, int));
 
 void
 floating_above(what)
@@ -70,7 +68,7 @@ dowaterdemon() /* Water demon */
 }
 
 /* Lava Demon */
-STATIC_OVL void
+void
 dolavademon()
 {
     struct monst *mtmp;

@@ -4560,75 +4560,138 @@ int tx,ty;
 	}break;
 	case MAEGERA:{
 		if(u.sealTimeout[MAEGERA-FIRST_SEAL] < moves){
-			struct obj *otmp, *next_obj;
-			struct obj *ingots = (struct obj *) 0;
-			for(otmp = level.objects[tx][ty]; otmp; otmp = next_obj){
-				if(otmp->obj_material == GOLD && check_oprop(otmp, OPROP_NONE) && !otmp->oartifact && !objects[otmp->otyp].oc_unique){
-					next_obj = otmp->nexthere;
-					if (!ingots){
-						ingots = mksobj(INGOT, MKOBJ_NOINIT);
-						ingots->quan = weight(otmp);
-						ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = ingots->bknown = TRUE;
-						set_material_gm(ingots, GOLD);
+			char ritual = FALSE;
+			boolean destroyedForge = FALSE;
+#define FORGE_RITUAL 1
+#define GOLD_RITUAL 2
+			// Forge version
+			if(IS_FORGE(levl[tx][ty].typ)){
+				//Spirit requires that her seal be drawn on a square with a (magma vent) forge
+				// Ritual disturbs the forge, possibly destroying it.
+				if(!rn2(10)){
+					pline_The("%s moves as though of its own will!", hliquid("lava"));
+					if ((mvitals[PM_FIRE_ELEMENTAL].mvflags & G_GONE)
+						|| !makemon(&mons[PM_FIRE_ELEMENTAL], tx, ty, MM_ADJACENTOK)
+					)
+						pline("But it settles down.");
+				}
+				else if (!rn2(27)){
+					if (!rn2(8))
+						dolavademon();
+					else
+						pline_The("forge violently spews lava for a moment.");
+					break;
+				}
+				else if(!rn2(26)){
+					if (Luck < 0) {
+						blowupforge(tx, ty);
+						destroyedForge = TRUE;
 					} else {
-						ingots->quan += weight(otmp);
+						pline("Molten lava surges up and splashes all over you!");
+						if(!Fire_resistance)
+							losehp(d(6, 6), "conducting a ritual at a forge", KILLED_BY);
 					}
-					fix_object(ingots);
-					useupf(otmp, otmp->quan);
+				}
+				else {
+					You_feel("a sudden flare of heat.");
+				}
+				ritual = FORGE_RITUAL;
+				
+			}
+			else {
+				struct obj *otmp, *next_obj;
+				struct obj *ingots = (struct obj *) 0;
+				for(otmp = level.objects[tx][ty]; otmp; otmp = next_obj){
+					if(otmp->obj_material == GOLD && check_oprop(otmp, OPROP_NONE) && !otmp->oartifact && !objects[otmp->otyp].oc_unique){
+						next_obj = otmp->nexthere;
+						if (!ingots){
+							ingots = mksobj(INGOT, MKOBJ_NOINIT);
+							ingots->quan = weight(otmp);
+							ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = ingots->bknown = TRUE;
+							set_material_gm(ingots, GOLD);
+						} else {
+							ingots->quan += weight(otmp);
+						}
+						fix_object(ingots);
+						useupf(otmp, otmp->quan);
+					}
+				}
+				if (ingots) place_object(ingots, tx, ty);
+				newsym(tx,ty);
+				//Spirit requires that her seal be drawn on a square with at least 3 * u.ulevel aum of gold, which are turned into ingots
+				if(ingots && ingots->quan >= 3 * u.ulevel){
+					useupf(ingots, min(ingots->quan, u.ulevel)); // yes, even if you're full on slots. sucks to suck
+					ritual = GOLD_RITUAL;
 				}
 			}
-			if (ingots) place_object(ingots, tx, ty);
-			newsym(tx,ty);
-			//Spirit requires that her seal be drawn on a square with at least 3 * u.ulevel aum of gold, which are turned into ingots
-			if(ingots && ingots->quan >= 3 * u.ulevel){
+			if(ritual){
+				boolean knowsDwarfBones = (Race_if(PM_DWARF) || Role_if(PM_ARCHEOLOGIST));
+				boolean knowsOldDwarvish = (Race_if(PM_DWARF) && (Role_if(PM_ARCHEOLOGIST) || Role_if(PM_KNIGHT) || Role_if(PM_CAVEMAN) || Role_if(PM_NOBLEMAN)));
 				if(!Blind) {
-					pline("The gold on the seal melts into a molten puddle.");
-					pline("A figure rises from the molten gold, and takes the form of a three-headed snake.");
-					pline("The snake's heads are those of a female dwarf, a lion, and a bull.");
-					pline("The dwarf head speaks to you:");
+					if(ritual == GOLD_RITUAL){
+						pline("A finger-like plume of lava rises from the center of the seal."); 
+						pline("The gold on the seal melts and twists in the heat, forming a skeletal figure.");
+						pline("From certain angles, the bones look serpentine, but from others they look %s.", knowsDwarfBones ? "dwarven" : "humanoid");
+						pline("Three skulls surmount the figure; a bull, a %s, and a %s.", Role_if(PM_ARCHEOLOGIST) ? "lion" : "feline", knowsDwarfBones ? "dwarf" : "humanoid");
+					}
+					else {// ritual == FORGE_RITUAL
+						if(destroyedForge) pline("A finger-like plume of lava rises from the ruins of the forge.");
+						else pline("A finger-like plume of lava rises from the forge."); 
+						pline("The slag embedded in the plume twists in the heat, forming a skeletal figure.");
+						pline("From certain angles, the bones look serpentine, but from others they look %s.", knowsDwarfBones ? "dwarven" : "humanoid");
+						pline("Three skulls surmount the figure; a bull, a %s, and a %s.", Role_if(PM_ARCHEOLOGIST) ? "lion" : "feline", knowsDwarfBones ? "dwarf" : "humanoid");
+					}
 				}
-				pline("\"I am Aym, the Monarch of Gold and Greed. I am the mother of dwarves and the mistress of wealth.\"");
-				pline("\"I accept your contribution to my hoard.\"");
-				useupf(ingots, min(ingots->quan, 6*u.ulevel)); // yes, even if you're full on slots. sucks to suck
 				if(u.sealCounts < numSlots){
-					boolean found_gold = FALSE;
-					struct obj *maybe_gold;
-					if (!Blind) pline("The molten gold flows up your arm, and you feel a burning sensation on your left hand.");
-					else pline("You feel a burning sensation on your left hand!");
+					if(!Blind) {
+						pline("The %s skull moves its jaws soundlessly as the ground rumbles in %s beneath you.",
+							knowsDwarfBones ? "dwarven" : "humanoid",
+							(Race_if(PM_DWARF) && Role_if(PM_CAVEMAN)) ? "Dwarvish" : knowsOldDwarvish ? "Old Dwarvish" : "an unknown language"
+						);
+						if(knowsOldDwarvish){
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("\"I give you a star, to bring the fires of Dusk to the castles of the proud,");
+							pline("\"and the light of Dawn to the new towers built on their ruin\".");
+						}
+					}
+					else {
+						if(knowsOldDwarvish) {
+							pline("The ground rumbles up at you in Old Dwarvish:");
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("\"I give you a star, to bring the fires of Dusk to the castles of the proud,");
+							pline("\"and the light of Dawn to the new towers built on their ruin\".");
+						}
+						else You_hear("rumbling in an unknown tongue.");
+					}
+
+					if(!Blind) pline("A skeletal finger of molten gold taps your left ring-finger, leaving a cloud of smoke and a sharp burning sensation!");
+					else pline("You feel a burning sensation on your left ring-finger!");
 					bindspirit(ep->ward_id);
 					u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod;
-	#ifndef GOLDOBJ
-					if(u.ugold != 0) found_gold = TRUE;
-	#endif
-					for (maybe_gold = invent; maybe_gold; maybe_gold = maybe_gold->nobj) {
-						if (maybe_gold->oclass == COIN_CLASS || maybe_gold->obj_material == GOLD) {
-							found_gold = TRUE;
-							break;
-						}
-					}
-					if (!found_gold){
-						pline("\"Take this, as a token of my favor.\"");
-						struct obj* goldpiece = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
-						goldpiece->quan = 1;
-						goldpiece->owt = weight(goldpiece);
-						if (!Blind) {
-							pline("She flicks a gold piece at you.");
-							if (!merge_choice(invent, goldpiece) && inv_cnt() >= 52) {
-								You("have no room for the money!");
-								dropy(goldpiece);
-							} else {
-								addinv(goldpiece);
-								flags.botl = 1;
-							}
-						}
-						else {
-							pline("You feel something small hit you in the chest!");
-							dropy(goldpiece);
-						}
-					}
 				}
 				else if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && (!u.spiritTineA || (!u.spiritTineB && quest_status.killed_nemesis && Role_if(PM_EXILE)))){
-					pline("The molten gold flows up your blade.");
+					if(!Blind) {
+						pline("The %s skull moves its jaws soundlessly as the ground rumbles in %s beneath you.",
+							knowsDwarfBones ? "dwarven" : "humanoid",
+							(Race_if(PM_DWARF) && Role_if(PM_CAVEMAN)) ? "Dwarvish" : knowsOldDwarvish ? "Old Dwarvish" : "an unknown language"
+						);
+						if(knowsOldDwarvish){
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("I give you a finger, to burn the castles of the proud\".");
+						}
+					}
+					else {
+						if(knowsOldDwarvish) {
+							pline("The ground rumbles up at you in Old Dwarvish:");
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("I give you a finger, to burn the castles of the proud\".");
+						}
+						else You_hear("rumbling in an unknown tongue.");
+					}
+
+					if(!Blind) pline("A skeletal finger of molten gold slices itself off on the edge of your blade!");
+
 					uwep->ovara_seals |= SEAL_MAEGERA;
 					if(!u.spiritTineA){ 
 						u.spiritTineA = SEAL_MAEGERA;
@@ -4641,24 +4704,9 @@ int tx,ty;
 					u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod;
 				}
 				else{
-					pline("\"Take this, for piquing my attention.\"");
-					struct obj* goldpiece = mksobj(GOLD_PIECE, MKOBJ_NOINIT);
-					goldpiece->quan = 1;
-					goldpiece->owt = weight(goldpiece);
-					if (!Blind){
-						pline("She flicks a gold piece at you.");
-						if (!merge_choice(invent, goldpiece) && inv_cnt() >= 52) {
-							You("have no room for the money!");
-							dropy(goldpiece);
-						} else {
-							addinv(goldpiece);
-							flags.botl = 1;
-						}
-					}
-					else {
-						pline("You feel something small hit you in the chest!");
-						dropy(goldpiece);
-					}
+					if(!Blind) pline("All three skulls roar soundlessly as the ground quakes, then the lava plume sinks back into the earth.");
+					else pline("You feel the ground quake beneath your feet!");
+					youmonst.movement -= NORMAL_SPEED;
 					// u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod/10;
 				}
 			} else{

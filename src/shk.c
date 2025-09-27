@@ -6051,7 +6051,7 @@ struct monst *mon;
 		// if(u.sealsActive&SEAL_ENKI && !Invis && !((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc)) count++;
 		if(u.sealsActive&SEAL_EURYNOME && !Invis && levl[u.ux][u.uy].lit == 0 && viz_array[u.uy][u.ux]&TEMP_LIT1 && !(viz_array[u.uy][u.ux]&TEMP_DRK3)) count++;
 		// if(u.sealsActive&SEAL_EVE && !NoBInvis && !(uarmf && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))) count++;
-		if(u.sealsActive&SEAL_MAEGERA && !NoBInvis && !(uright || uarmg)) count++;
+		if(u.sealsActive&SEAL_MAEGERA && !NoBInvis && !(uleft || uarmg)) count++;
 		if(u.sealsActive&SEAL_HUGINN_MUNINN && !NoBInvis && !uarmh) count++;
 		// if(u.sealsActive&SEAL_IRIS && !NoBInvis && !((((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc) && moves > u.irisAttack+5) || (uarmc && moves > u.irisAttack+1))) count++;
 		// if(u.sealsActive&SEAL_JACK && !NoBInvis && !uarmc) count++;
