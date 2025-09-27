@@ -2060,19 +2060,18 @@ moveloop()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 			if(u.uhs == WEAK && u.sealsActive&SEAL_AHAZU) unbind(SEAL_AHAZU,TRUE);
 			if (u.sealsActive&SEAL_MAEGERA) {
-				boolean found_gold = FALSE;
-				struct obj *maybe_gold;
+				boolean found_metal = FALSE;
+				struct obj *maybe_metal;
 #ifndef GOLDOBJ
-				if(u.ugold != 0) found_gold = TRUE;
+				if(u.ugold != 0) found_metal = TRUE;
 #endif
-				for (maybe_gold = invent; maybe_gold; maybe_gold = maybe_gold->nobj) {
-					if (maybe_gold->oclass == COIN_CLASS || maybe_gold->obj_material == GOLD) {
-						found_gold = TRUE;
+				for (maybe_metal = invent; maybe_metal; maybe_metal = maybe_metal->nobj) {
+					if (is_metallic(maybe_metal)) {
+						found_metal = TRUE;
 						break;
 					}
 				}
-				if (!found_gold) {
-					// count code goes here
+				if (!found_metal) {
 					unbind(SEAL_MAEGERA, TRUE);
 				}
 			}
