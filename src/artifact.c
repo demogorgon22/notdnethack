@@ -2288,9 +2288,7 @@ boolean
 arti_silvered(obj)
 struct obj *obj;
 {
-    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_SILVER) || 
-									  (obj->oartifact == ART_PEN_OF_THE_VOID &&
-									   obj->ovara_seals & SEAL_EDEN) ||
+    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_SILVER) ||
 									  ((obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) && !obj->lamplit))
 			);
 }
@@ -3799,7 +3797,7 @@ voidPen_hit(struct monst *magr, struct monst *mdef, struct obj *pen, int *dmgptr
 			}
 		}
 	} // nvPh - water res
-	if (pen->ovara_seals&SEAL_FAFNIR){
+	if (pen->ovara_seals&SEAL_MAEGERA){
 		if (vis){
 			and ? Strcat(buf, " and ruinous") : Sprintf(buf, "ruinous");
 			and = TRUE;
@@ -4091,7 +4089,7 @@ struct obj *pen;	/* Pen of the Void */
 			return TRUE;
 		}
 	}
-	if (pen->ovara_seals&SEAL_FAFNIR){
+	if (pen->ovara_seals&SEAL_MAEGERA){
 		if(youdefend ? is_golem(youracedata) : is_golem(mdef->data)){
 			return TRUE;
 		} else if(youdefend ? nonliving(youracedata) : nonliving(mdef->data)){
@@ -4515,6 +4513,8 @@ int * truedmgptr;
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_FIREW))
 			*truedmgptr += d(2, 6);
+		if(check_oprop(otmp, OPROP_GOLDW))
+			*truedmgptr += d(rnd(5), spiritDsize());
 	}
 	if(!Cold_res(mdef)){
 		if(check_oprop(otmp, OPROP_COLDW))

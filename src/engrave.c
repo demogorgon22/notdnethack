@@ -934,10 +934,10 @@ char * sealNames[] =  {
 	"Enki", /* 12 */
 	"Eurynome", /* 13 */
 	"Eve", /* 14 */
-	"Fafnir", /* 15 */
-	"Huginn and Muninn", /* 16 */
-	"Iris", /* 17 */
-	"Jack", /* 18 */
+	"Huginn and Muninn", /* 15 */
+	"Iris", /* 16 */
+	"Jack", /* 17 */
+	"Maegera", /* 18 */
 	"Malphas", /* 19 */
 	"Marionette", /* 20 */
 	"Mother", /* 21 */
@@ -981,10 +981,10 @@ char * sealTitles[] =  {
 	", God of the first city", /* 12 */
 	", lonely dancer", /* 13 */
 	", the first Sinner", /* 14 */
-	", Jotunn Dragon", /* 15 */
-	", Thought and Memory", /* 16 */
-	", Friend from Afar", /* 17 */
-	" of the Lantern", /* 18 */
+	", Thought and Memory", /* 15 */
+	", Friend from Afar", /* 16 */
+	" of the Lantern", /* 17 */
+	", the Dawn and Dusk", /* 18 */
 	", the Prince of Crows", /* 19 */
 	", Puppet of Screams", /* 20 */
 	", who beheld Beauty", /* 21 */

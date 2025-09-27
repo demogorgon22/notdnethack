@@ -2059,13 +2059,22 @@ moveloop()
 			}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 			if(u.uhs == WEAK && u.sealsActive&SEAL_AHAZU) unbind(SEAL_AHAZU,TRUE);
+			if (u.sealsActive&SEAL_MAEGERA) {
+				boolean found_metal = FALSE;
+				struct obj *maybe_metal;
 #ifndef GOLDOBJ
-			// if(u.sealsActive&SEAL_FAFNIR && u.ugold < u.ulevel*100) unbind(SEAL_FAFNIR,TRUE);
-			if(u.sealsActive&SEAL_FAFNIR && u.ugold == 0) unbind(SEAL_FAFNIR,TRUE);
-#else
-			// if(u.sealsActive&SEAL_FAFNIR && money_cnt(invent) < u.ulevel*100) unbind(SEAL_FAFNIR,TRUE);
-			if(u.sealsActive&SEAL_FAFNIR && money_cnt(invent) == 0) unbind(SEAL_FAFNIR,TRUE);
+				if(u.ugold != 0) found_metal = TRUE;
 #endif
+				for (maybe_metal = invent; maybe_metal; maybe_metal = maybe_metal->nobj) {
+					if (is_metallic(maybe_metal)) {
+						found_metal = TRUE;
+						break;
+					}
+				}
+				if (!found_metal) {
+					unbind(SEAL_MAEGERA, TRUE);
+				}
+			}
 			if(u.sealsActive&SEAL_JACK && (Is_astralevel(&u.uz) || Inhell)) unbind(SEAL_JACK,TRUE);
 			if(u.sealsActive&SEAL_NABERIUS && u.udrunken < u.ulevel/3) unbind(SEAL_NABERIUS,TRUE);
 			if(u.specialSealsActive&SEAL_NUMINA && u.ulevel<30) unbind(SEAL_SPECIAL|SEAL_NUMINA,TRUE);
@@ -3110,7 +3119,7 @@ karemade:
 						if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SPBOOK_CLASS, AD_FIRE);
 					}
 					
-					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_FAFNIR)){
+					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_MAEGERA)){
 						Your("boiler is melting!");
 						losehp(u.ulevel, "melting from extreme heat", KILLED_BY);
 						if(u.utemp >= MELTED){

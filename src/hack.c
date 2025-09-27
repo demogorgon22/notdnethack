@@ -3080,7 +3080,7 @@ weight_cap()
 	}
 	
 	carrcap += u.ucarinc;
-	if(u.sealsActive&SEAL_FAFNIR) carrcap *= 1+((double) u.ulevel)/100;
+	if(u.sealsActive&SEAL_MAEGERA) carrcap *= 1+((double) u.ulevel)/100;
 	if(active_glyph(COMMUNION)) carrcap *= 1.25;
 	if(active_glyph(LUMEN)) carrcap *= 1.064;
 	if(animaloid(mdat) || naoid(mdat)){

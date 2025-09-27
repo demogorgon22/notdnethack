@@ -1731,7 +1731,7 @@ boolean fresh;
 #define ATTK_MISKA_WOLF	7
 #define PASV_SHADOW_WEB	8
 #define PASV_ECHIDNA	9
-#define PASV_FAFNIR		10
+#define PASV_MAEGERA	10
 #define PASV_EDEN		11
 #define NOATTACK		12
 	static struct attack spiritattack[] =
@@ -1847,16 +1847,16 @@ boolean fresh;
 		if (++curindex == indexnum)
 			return &spiritattack[PASV_ECHIDNA];
 	}
-	if (u.sealsActive&SEAL_FAFNIR)
-	{
-		spiritattack[PASV_FAFNIR].damd = spiritDsize();
-		if (++curindex == indexnum)
-			return &spiritattack[PASV_FAFNIR];
-	}
 	if (u.sealsActive&SEAL_EDEN)
 	{
 		if (++curindex == indexnum)
 			return &spiritattack[PASV_EDEN];
+	}
+	if (u.sealsActive&SEAL_MAEGERA)
+	{
+		spiritattack[PASV_MAEGERA].damd = spiritDsize();
+		if (++curindex == indexnum)
+			return &spiritattack[PASV_MAEGERA];
 	}
 		
 	/* Default case: no attack */
@@ -5474,7 +5474,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						|| (ward_at(x(mdef), y(mdef)) == SIGIL_OF_CTHUGHA)
 						|| (youdef && ((Race_if(PM_HALF_DRAGON) && flags.HDbreath == AD_FIRE)))
 						|| (!youdef && is_half_dragon(pd) && mdef->mvar_hdBreath == AD_FIRE)
-						|| (youdef && u.sealsActive&SEAL_FAFNIR))
+						|| (youdef && u.sealsActive&SEAL_MAEGERA))
 						dmg = 0;
 				}
 				else {	/* standard, immunity from any resistance */
@@ -15042,6 +15042,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if (poisonedobj->otyp == FANG_OF_APEP)
 			poisons |= OPOISON_DIRE;
 		if (poisonedobj->otyp == TOOTH && poisonedobj->ovar1_tooth_type == SERPENT_TOOTH && Insight >= 20 && magr && poisonedobj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(poisonedobj, magr, ETRAIT_FOCUS_FIRE))
+			poisons |= OPOISON_DIRE;
+		if (poisonedobj->oartifact == ART_PEN_OF_THE_VOID && arti_poisoned(poisonedobj) && (mvitals[PM_ACERERAK].died > 0))
 			poisons |= OPOISON_DIRE;
 		if (Insight >= 40 && poisonedobj->oartifact == ART_LOLTH_S_FANG)
 			poisons |= OPOISON_DIRE;

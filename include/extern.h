@@ -1145,6 +1145,8 @@ E void FDECL(dipforge, (struct obj *));
 E void FDECL(breaksink, (int,int));
 E void NDECL(drinksink);
 #endif
+E void NDECL(dolavademon);
+E void FDECL(blowupforge, (int, int));
 
 /* ### thoughtglyph.c ### */
 

@@ -1320,7 +1320,7 @@ as_extra_healing:
 				good_for_you = TRUE;
 			    } else {
 				You("burn your %s.", body_part(FACE));
-				if(!(HFire_resistance || u.sealsActive&SEAL_FAFNIR)) losehp(d(Fire_resistance ? 1 : 3, 4),
+				if(!(HFire_resistance || u.sealsActive&SEAL_MAEGERA)) losehp(d(Fire_resistance ? 1 : 3, 4),
 				       "burning potion of oil", KILLED_BY_AN);
 			    }
 			} else if(otmp->cursed){
