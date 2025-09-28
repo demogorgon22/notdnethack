@@ -4657,7 +4657,7 @@ int tx,ty;
 					}
 					else {
 						if(knowsOldDwarvish) {
-							pline("The ground rumbles up at you in Old Dwarvish:");
+							pline("The ground rumbles up at you in %sDwarvish:", Role_if(PM_CAVEMAN) ? "" : "Old ");
 							pline("\"I am that called Maegera by the accursed Carvers.");
 							pline("\"I give you a star, to bring the fires of Dusk to the castles of the proud,");
 							pline("\"and the light of Dawn to the new towers built on their ruin\".");
@@ -4683,7 +4683,7 @@ int tx,ty;
 					}
 					else {
 						if(knowsOldDwarvish) {
-							pline("The ground rumbles up at you in Old Dwarvish:");
+							pline("The ground rumbles up at you in %sDwarvish:", Role_if(PM_CAVEMAN) ? "" : "Old ");
 							pline("\"I am that called Maegera by the accursed Carvers.");
 							pline("I give you a finger, to burn the castles of the proud\".");
 						}
@@ -5880,6 +5880,7 @@ int floorID;
 		break;
 	case MAEGERA:
 		skillchain[i++] = P_PICK_AXE;
+		skillchain[i++] = P_HAMMER;
 		skillchain[i++] = P_SMITHING;
 		break;
 	case BALAM:
@@ -5914,7 +5915,6 @@ int floorID;
 		break;
 	case ENKI:
 		skillchain[i++] = P_SHORT_SWORD;
-		skillchain[i++] = P_HAMMER;
 		skillchain[i++] = P_SLING;
 		skillchain[i++] = P_DART;
 		skillchain[i++] = P_BOOMERANG;
