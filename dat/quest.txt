@@ -9446,6 +9446,9 @@ Ilsensine in the past.
 
 "So, you know.  Good luck."
 %E
+#
+#	Alternate amulet text for Drow Healers
+#
 %Cc - 00226
 "You have it!  You have recovered the Amulet of Yendor!
 Now attend to me, little %s, and I will tell you what must be done:
@@ -9457,4 +9460,28 @@ the Astral Plane, where the High Altar of %d resides.
 When you reach the temple, sacrifice the Amulet to %d.
 
 "Thus will you fulfill your destiny."
+%E
+#
+#	Alternate legacy text for Undead Hunters
+#
+%Cc - 00227
+The black brothers tell a story:
+
+    After the Creation, the cruel god Moloch rebelled
+    against the authority of Marduk the Creator.
+    Moloch stole from Marduk the most powerful of all
+    the artifacts of the gods, the Amulet of Yendor,
+    and he hid it in the dark cavities of Gehennom, the
+    Under World, where he now lurks, and bides his time.
+
+The followers of the philosophy of %d seek to
+recover the Amulet, and unlock its secrets to gain
+deserved ascendance of gods and men.
+
+You, a newly trained %r, have been trained
+from birth in the ways of %d.  Your charge is
+to recover the Amulet for your school, or die in the
+attempt.  Your hour of truth has come.  For the sake
+of us all:  Go bravely and may the light shine between
+your eyes!
 %E
