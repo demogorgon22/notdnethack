@@ -1302,7 +1302,7 @@ neutral_montype()
 				return &mons[PM_PLUMACH_RILMANI];
 			break;
 			case 2:
-				if(chance < 5 && !toostrong(PM_ARA_KAMEREL, diff))
+				if(chance < 5 && !u.veil && !toostrong(PM_ARA_KAMEREL, diff))
 					return &mons[PM_ARA_KAMEREL];
 				if(chance < 15 && !toostrong(PM_SHARAB_KAMEREL, diff))
 					return &mons[PM_SHARAB_KAMEREL];
