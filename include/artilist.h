@@ -512,7 +512,7 @@ A("The Epitaph of Wongas",			ROD_OF_FORCE,	(const char *)0,
 /* Needs encyc */
 A("Winter Reaper",			RAPIER,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_LAWFUL, PM_KENSEI, PM_YUKI_ONNA, TIER_B, (ARTG_NOGEN),
+	A_CHAOTIC, PM_KENSEI, PM_YUKI_ONNA, TIER_B, (ARTG_NOGEN),
 	NO_MONS(),
 	ATTK(AD_COLD, 4, 0), (ARTA_VORPAL),
 	PROPS(), NOFLAG,
