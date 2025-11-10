@@ -743,6 +743,7 @@
 #define always_nuncio_monster(ptr) (\
 									   (ptr)->mtyp == PM_VOICE_IN_SCREAMS \
 									|| (ptr)->mtyp == PM_CHAIN_DEVIL \
+									|| (ptr)->mtyp == PM_INTERLOCUTOR_DEVIL \
 									|| (ptr)->mtyp == PM_CUBOID \
 									|| (ptr)->mtyp == PM_RHOMBOHEDROID \
 									|| (ptr)->mtyp == PM_WARDEN_ARIANNA \
@@ -1050,6 +1051,7 @@
 					|| (ptr)->mtyp == PM_DARK_WORM\
 					|| (ptr)->mtyp == PM_ASPECT_OF_THE_SILENCE\
 					|| (ptr)->mtyp == PM_DAO_LAO_GUI_MONK\
+					|| (ptr)->mtyp == PM_INTERLOCUTOR_DEVIL \
 					|| (ptr)->mtyp == PM_CUBOID\
 					|| (ptr)->mtyp == PM_RHOMBOHEDROID\
 					)

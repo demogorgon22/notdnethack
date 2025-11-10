@@ -5244,8 +5244,10 @@ int blind_duration;
 		if (!Blind) Your1(vision_clears);
 	}
 	else {
-		mdef->mcansee = 0;
-		mdef->mblinded = min(127, blind_duration);
+		if(mdef->mcansee){
+			mdef->mcansee = 0;
+			mdef->mblinded = min(127, blind_duration);
+		}
 	}
 	return;
 }

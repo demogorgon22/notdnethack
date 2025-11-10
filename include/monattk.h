@@ -254,11 +254,12 @@
 #define AD_PFBT		159 /* rot and poison damage */
 #define AD_OMUD		160 /* Acid and stab with bone daggers */
 #define AD_PSH3		161 /* Push target away 1d3 squares */
+#define AD_BLED		162 /* Bleeding wounds */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	162
+#define AD_DUNSTAN	163
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

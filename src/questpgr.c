@@ -570,8 +570,8 @@ qt_montype(int x, int y)
 		int qpm;
 		int progress = quest_status.time_doing_quest/CON_QUEST_INCREMENT;
 		// <7: Nemesis level hasn't changed
-		// Note: if progress < 7 is false
-		// <8: Lower filler hasn't changed
+		// Note: only here if progress < 7 is false
+		// <8: Lower filler hasn't changed (but the nuncios and preceptors are much more frequent now)
 		if(progress < 8 && u.uz.dlevel > qlocate_level.dlevel){
 			if(rn2(5)){
 				qpm = rn2(2) ? PM_QUASIT : PM_DAUGHTER_OF_BEDLAM;
@@ -584,7 +584,7 @@ qt_montype(int x, int y)
 				return (&mons[qpm]);
 			return (mkclass(S_DEMON, G_HELL));
 		}
-		// <9: Upper filler hasn't changed
+		// <9: Locate and upper filler hasn't changed (but the nuncios and preceptors are much more frequent and the sephiroth are flipping out)
 		else if(progress < 9 && u.uz.dlevel > qstart_level.dlevel){
 			if(rn2(2)){
 				if(rn2(5)){
@@ -640,7 +640,7 @@ qt_montype(int x, int y)
 					qpm = PM_DAUGHTER_OF_BEDLAM;
 				break;
 				case 4:
-					qpm = PM_LILITU;
+					qpm = PM_INTERLOCUTOR_DEVIL;
 				break;
 				case 5:
 					qpm = PM_WALKING_DELIRIUM;

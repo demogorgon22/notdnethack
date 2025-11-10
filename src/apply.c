@@ -11735,7 +11735,8 @@ doapply()
 			make_doubtful(0L, TRUE);
 		}
 		
-		youmonst.mbleed = FALSE;
+		youmonst.mbleed = 0;
+		youmonst.mubled = FALSE;
 		youmonst.momud = FALSE;
 		youmonst.mcaterpillars = FALSE;
 		

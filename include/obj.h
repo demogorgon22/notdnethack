@@ -402,6 +402,7 @@ struct obj {
 
 #define check_imp_mod(obj, prop) ((obj)->ovar1_iea_upgrades&(prop))
 #define add_imp_mod(obj, prop) ((obj)->ovar1_iea_upgrades |= (prop))
+#define remove_imp_mod(obj, prop) ((obj)->ovar1_iea_upgrades &= ~(prop))
 
 #define IEA_FIXED_ABIL	0x00000001L
 #define IEA_FAST_HEAL	0x00000002L

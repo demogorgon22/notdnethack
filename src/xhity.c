@@ -21,6 +21,7 @@ STATIC_DCL int FDECL(hmoncore, (struct monst *, struct monst *, struct attack *,
 STATIC_DCL void FDECL(add_silvered_art_sear_adjectives, (char *, struct obj*));
 STATIC_DCL int FDECL(shadow_strike, (struct monst *));
 STATIC_DCL int FDECL(xpassivehity, (struct monst *, struct monst *, struct attack *, struct attack *, struct obj *, int, int, struct permonst *, boolean));
+STATIC_DCL boolean FDECL(blacklight_tentacles_suck_x, (struct monst *, struct monst *, int, int, const char *));
 
 /* for long worms */
 extern boolean notonhead;
@@ -3208,6 +3209,7 @@ struct attack *attk;
 		boolean specify_you = FALSE;
 		const char * verb = (const char *)0;
 		const char * ending = "!";
+		const char * afterverb = "";
 		/* You X foo!	(youagr)
 		 * Foo Xs!		(youdef, !youagr)
 		 * Foo Xs bar!	()
@@ -3230,7 +3232,17 @@ struct attack *attk;
 		}
 		else switch (attk->aatyp) {
 		case AT_BEAM:
-			if (!verb) verb = "blast";
+			if (!verb) {
+				if (attk->adtyp == AD_UNRV){
+					verb = "reach";
+					afterverb = " out towards";
+					ending = " with a beam of black light!";
+					if (youdef)
+						specify_you = TRUE;
+				}
+				else
+					verb = "blast";
+			}
 			// fall through
 		case AT_LNCK:
 		case AT_BITE:
@@ -3307,10 +3319,11 @@ struct attack *attk;
 			}
 			/* print the message */
 			/* weeping angels are present tense "The weeping angel is touching foo" only if you are neither magr nor mdef */
-			pline("%s %s%s%s%s%s%s",
+			pline("%s %s%s%s%s%s%s%s",
 				(youagr ? "You" : Monnam(magr)),
 				(is_weeping(pa) && !youagr && !youdef ? "is " : ""),
 				(youagr || (is_weeping(pa) && !youdef) ? verb : makeplural(verb)),
+				afterverb,
 				(is_weeping(pa) && !youagr && !youdef ? "ing" : ""),
 				((youdef && !youagr && !specify_you) ? "" : " "),
 				((youdef && !youagr && !specify_you) ? "" : mon_nam_too(mdef, magr)),
@@ -8294,7 +8307,33 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		/* make physical attack without hitmsg */
 		alt_attk.adtyp = AD_PHYS;
 		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
-
+	case AD_BLED:
+		if(youdef ? has_blood(youracedata) : has_blood_mon(mdef)){
+			if (vis) 
+				pline("%s sustained a bleeding wound in the fighting!", youdef ? "You" : Monnam(mdef));
+			if(youdef){
+				mdef->mbleed = max(dmg, mdef->mbleed + 1);
+			}
+			else {
+				mdef->mbleed = max(dmg, mdef->mbleed + 1);
+				if(youagr)
+					mdef->mubled = TRUE;
+			}
+			if ((youdef || youagr) && active_glyph(BEASTS_EMBRACE)){
+				// bleeding wounds connect you to the beast inside, either dealing or taking
+				static long lastfrenzymessage = 0L;
+				if (u.uencouraged == 0 || (lastfrenzymessage+10) < monstermoves) {
+					if (u.uencouraged > 10) pline("The freshly spilled blood whips you into a frenzy!");
+					else if (u.uencouraged < 0) pline("The freshly spilled blood calms your nerves.");
+					else pline("The freshly spilled blood excites you!");
+					lastfrenzymessage = monstermoves;
+				}
+				u.uencouraged += min((dmg+6)/7, 5);
+			}
+		}
+		/* make physical attack without hitmsg */
+		alt_attk.adtyp = AD_PHYS;
+		return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, FALSE, dmg, dieroll, vis, ranged);
 	case AD_LICK:{
 		/* print a basic hit message */
 		if (vis && dohitmsg) {
@@ -9053,7 +9092,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					);
 			}
 			if (youdef && attk->aatyp == AT_TENT && roll_madness(MAD_HELMINTHOPHOBIA)){
-				You("panic from the squrming tentacles!");
+				You("panic from the squirming tentacles!");
 				HPanicking += 1+rnd(3);
 			}
 			/* don't do any further damage or anything, but do trigger retaliation attacks */
@@ -10505,12 +10544,28 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 	case AD_UNRV:
 		{
 			int * moral = (youdef ? &(u.uencouraged) : &(mdef->encouraged));
+			boolean tentacles = FALSE;
+			if (Insight >= 60){
+				tentacles = TRUE;
+			}
 
+			/* print a basic hit message */
+			if (vis && dohitmsg) {
+				xyhitmsg(magr, mdef, originalattk);
+			}
+
+			if (tentacles){
+				if(blacklight_tentacles_suck_x(magr, mdef, dmg, vis, "beam"))
+					return MM_HIT; /* don't do any further damage or anything, but do trigger retaliation attacks */
+			}
 			if(youdef){
 				if(Role_if(PM_CONVICT)){
 					int sanloss = -dmg;
 					if(magr->mtyp == PM_CUBOID){
-						pline("The black light fills your mind with surreal images of your capture and trial!");
+						if(tentacles)
+							pline("The fanged tentacles inject strange liquids, and your mind fills with surreal images of your capture and trial!");
+						else
+							pline("The black light fills your mind with surreal images of your capture and trial!");
 						dmg *= 1.5;
 					}
 					else if(magr->mtyp == PM_RHOMBOHEDROID){
@@ -10521,6 +10576,8 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					if(!save_vs_sanloss())
 						change_usanity(sanloss, TRUE);
 				}
+				if(tentacles)
+					pline("The fanged tentacles inject strange liquids, and your mind fills with unnerving images!");
 				else
 					pline("The black light fills your mind with unnerving images!");
 			}
@@ -13559,14 +13616,26 @@ int vis;
 
 			if (dmg > -1*(*moral)) {	// reduce message spam by only showing when study is actually increased
 				if(youdef){
-					if(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && !rn2(20)){
+					if(magr->mtyp == PM_INTERLOCUTOR_DEVIL){
+						int bodyparts[] = {ARM, EYE, FACE, FINGER, FOOT, HAND, HEAD, LEG, TOE, NOSE, EAR, TONGUE};
+						int bodypart = ROLL_FROM(bodyparts);
+						if(Insanity > 50){
+							pline("That's your %s in there! Oh %s, it's got your %s!", body_part(bodypart), u_gname(), body_part(bodypart));
+							dmg *= 1.5;
+						}
+						else
+							You("spot a piece of flesh that looks unnervingly like your %s getting ground up in the interlocutor's mechanisms!", body_part(bodypart));
+						if(!save_vs_sanloss())
+							change_usanity(-dmg, TRUE);
+					}
+					else if(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && !rn2(20)){
 						pline("...Warden Arianna!?");
 						dmg *= 1.5;
 						if(!save_vs_sanloss())
 							change_usanity(-dmg, TRUE);
 					}
 					else
-						pline("%s looks unnervingly familliar!", Monnam(magr));
+						pline("%s looks unnervingly familiar!", Monnam(magr));
 				}
 				else if(vis&VIS_MDEF){
 					pline("%s looks unnerved.", Monnam(mdef));
@@ -16533,10 +16602,12 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 			}
 			if((youdef ? has_blood(youracedata) : has_blood_mon(mdef))
-				&& ((modifier_flags&MELEEHURT_FORCE_BLEED) || (
-					CHECK_ETRAIT(weapon, magr, ETRAIT_BLEED)
-					&& ROLL_ETRAIT(weapon, magr, rn2(2), !rn2(10))
-				))
+				&& ((modifier_flags&MELEEHURT_FORCE_BLEED) 
+				    || (
+						CHECK_ETRAIT(weapon, magr, ETRAIT_BLEED)
+						&& ((weapon->oartifact == ART_LIFEHUNT_SCYTHE) ? ROLL_ETRAIT(weapon, magr, TRUE, !rn2(5)) : ROLL_ETRAIT(weapon, magr, rn2(2), !rn2(10)))
+					)
+				)
 			){
 				struct weapon_dice wdice;
 				int bleeddmg;
@@ -16550,10 +16621,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				if (vis) 
 					pline("%s sustained a bleeding wound in the fighting!", youdef ? "You" : Monnam(mdef));
 				if(youdef){
-					mdef->mbleed += bleeddmg;
+					mdef->mbleed = max(bleeddmg, mdef->mbleed + 1);
 				}
 				else {
-					mdef->mbleed += bleeddmg;
+					mdef->mbleed = max(bleeddmg, mdef->mbleed + 1);
 					if(youagr)
 						mdef->mubled = TRUE;
 				}
@@ -19051,6 +19122,107 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 					}
 				}
 				break;
+				case AD_UNRV:{
+					boolean tentacles = FALSE;
+					if(Insight >= 60)
+						tentacles = TRUE;
+					//vis will be true if youagr even if Blind
+					if (youagr){
+						if (!Blind){
+							if(tentacles)
+								pline("A bolt of black lightning leaps from the interlocutor mechanism!");
+							else
+								pline("A bolt of black lightning leaps from the interlocutor mechanism and smites you!");
+						}
+						else if(!tentacles)
+							You("are smote by a bolt of lightning!");
+						// else handled by the tentacle function
+					}
+					else if (vis){
+						// note: assumes interlocutor devil
+						if(tentacles)
+							pline("A bolt of black lightning leaps from the interlocutor mechanism!");
+						else
+							pline("A bolt of black lightning leaps from the interlocutor mechanism and smites %s!", mon_nam(magr));
+					}
+					if(blacklight_tentacles_suck_x(mdef, magr, dmg, vis, "black lightning"))
+						return result;
+					if(!tentacles){
+						int shockdmg = rn1(7,7);
+						int flashdmg = shockdmg;
+						if (Half_spel(magr))
+							flashdmg = (flashdmg + 1) / 2;
+						if (youagr && u.uvaul_duration)
+							flashdmg = (flashdmg + 1) / 2;
+						shockdmg = reduce_dmg(magr, shockdmg, FALSE, TRUE);
+						if(!Shock_res(magr)){
+							newres = xdamagey(mdef, magr, passive, shockdmg);
+							if (newres&MM_DEF_DIED)
+								result |= MM_AGR_DIED;	/* attacker died */
+							if (newres&MM_DEF_LSVD)
+								result |= MM_AGR_STOP;	/* attacker lifesaved */
+						}
+						else if(youagr)
+							ugolemeffects(AD_ELEC, shockdmg);
+						else
+							golemeffects(magr, AD_ELEC, shockdmg);
+						if(youagr){
+							shieldeff(u.ux, u.uy);
+							if(!Blind && !Blind_res){
+								You("are blinded by the antiflash!");
+								make_blinded((long)flashdmg, FALSE);
+								if (!Blind)
+									Your1(vision_clears);
+							}
+							else if(Shock_res(magr))
+								You("are unaffected by the black lightning!");
+						}
+						else if(canseemon(magr)){
+							shieldeff(x(magr), y(magr));
+							pline("%s is unaffected by the black lightning!", Monnam(magr));
+							if(magr->mcansee){
+								magr->mcansee = 0;
+								magr->mblinded = min(127, flashdmg + magr->mblinded);
+							}
+						}
+					}
+					if(youagr){
+						int ritual_type = rn2(3);
+						const char *ritual_types[] = {"religious extasies", "blasphemous rites", "occult rituals"};
+						if (tentacles)
+							pline("The fanged tentacles inject strange liquids, and your mind fills with surreal images of %s!", ritual_types[ritual_type]);
+						else
+							pline("The black lightning fills your mind with surreal images of %s!", ritual_types[ritual_type]);
+						if(!save_vs_sanloss())
+							change_usanity(-1 * dmg, TRUE);
+						if(ritual_type == 0 && base_casting_stat() == A_WIS){
+							u.uen += 10*dmg;
+							if(u.uen > u.uenmax){
+								u.uenbonus += dmg;
+								calc_total_maxen();
+								u.uen = u.uenmax;
+							}
+						}
+						else if(ritual_type == 1){
+							if(base_casting_stat() == A_WIS){
+								u.uen -= 10*dmg;
+								u.uen = max(u.uen, 0);
+								u.uenbonus -= dmg;
+								calc_total_maxen();
+								u.uen = min(u.uen, u.uenmax);
+							}
+							make_doubtful(itimeout_incr(HDoubt, dmg*20), TRUE);
+						}
+						else if(ritual_type == 2){
+							make_doubtful(itimeout_incr(HDoubt, dmg*5), TRUE);
+							// Quietly teaches yog sothoth
+							if(!(u.specialSealsKnown & SEAL_YOG_SOTHOTH)){
+								if(!rn2(20))
+									u.specialSealsKnown |= SEAL_YOG_SOTHOTH;
+							}
+						}
+					}
+				}break;
 			}
 		}
 
@@ -22872,4 +23044,103 @@ boolean magical;
 	if(mdef != &youmonst && flags.spriest_level && is_demon(mdef->data) && is_lawful_mon(mdef) && !mdef->mpeaceful)
 		dmg = (dmg + 1) / 2;
 	return dmg;
+}
+
+/* Return true if the attack is blocked */
+boolean
+blacklight_tentacles_suck_x(struct monst *magr, struct monst *mdef, int dmg, int vis, const char *description)
+{
+	struct obj *otmp;
+	boolean youdef = (mdef == &youmonst);
+	struct attack tent_attk = {AT_TENT, AD_DRIN, 0, 0}; /* tentacle attack for slips_free() */
+	if(youdef){
+		if(!Blind)
+			pline("The %s resolves into fanged tentacles!", description);
+		else {
+			pline("Fanged tentacles strike your head!");
+		}
+	}
+	else if(vis)
+		pline("The %s resolves into fanged tentacles!", description);
+	if(slips_free(magr, mdef, &tent_attk, vis)){
+		/* don't do any further damage or anything, but do trigger retaliation attacks */
+		if(youdef && roll_madness(MAD_HELMINTHOPHOBIA)){
+			You("panic from the squirming tentacles!");
+			HPanicking += 1+rnd(3);
+		}
+		return TRUE;
+	}
+	/* protected by helmets */
+	otmp = (youdef ? uarmh : which_armor(mdef, W_ARMH));
+	if (otmp && is_hard(otmp) && 
+		((FacelessHelm(otmp) && (otmp->otyp != IMPERIAL_ELVEN_HELM || check_imp_mod(otmp, IEA_BLIND_RES)))
+		|| rn2(6))
+	){
+		/* not body_part(HEAD) */
+		if(youdef){
+			Your("helmet blocks the attack to your head.");
+			pline("The tentacles' fangs tear into it!");
+			if(Preservation){
+				pline("But, no harm is done.");
+			}
+		}
+		if((youdef && Preservation) || (!youdef && mon_resistance(mdef, PRESERVATION)));/*Blocked*/
+		else if (otmp->spe > -1 * a_acdr(objects[(otmp)->otyp])){
+			damage_item(otmp);
+		}
+		else if (otmp->otyp == IMPERIAL_ELVEN_HELM && check_imp_mod(otmp, IEA_BLIND_RES)){
+			if(youdef){
+				Your("helmet's visor shatters!");
+			}
+			else if(vis){
+				pline("%s helmet's visor shatters!", s_suffix(Monnam(mdef)));
+			}
+			remove_imp_mod(otmp, IEA_BLIND_RES);
+		}
+		else if (!otmp->oartifact){
+			if(youdef)
+				claws_destroy_arm(otmp);
+			else
+				claws_destroy_marm(mdef, otmp);
+		}
+		if(youdef && roll_madness(MAD_HELMINTHOPHOBIA)){
+			You("panic from the gnawing tentacles!");
+			HPanicking += 1+rnd(4);
+		}
+		/* don't do any further damage or anything, but do trigger retaliation attacks */
+		return TRUE;
+	}
+	if (!rn2(6)){
+		dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
+		if(youdef){
+			pline("The tentacles burrow into your brain!");
+			if(roll_madness(MAD_HELMINTHOPHOBIA)){
+				You("panic from the invasive tentacles!");
+				HPanicking += 1+rnd(6);
+			}
+			if (u.sealsActive&SEAL_HUGINN_MUNINN){
+				unbind(SEAL_HUGINN_MUNINN, TRUE);
+			}
+			else {
+				(void)adjattrib(A_INT, -dmg, FALSE);
+				int i = dmg;
+				while (i--){
+					forget(6);	/* lose 6% of memory per point lost*/
+					exercise(A_WIS, FALSE);
+				}
+			}
+			if (!(uarmh && uarmh->otyp == DUNCE_CAP)) {
+				/* No such thing as mindless players... */
+				check_brainlessness();
+			}
+		}
+		else {
+			if(vis)
+				pline("The tentacles burrow into %s brain!", mon_nam(mdef));
+			mdef->mhp -= d(dmg, 10);
+			if (mdef->mhp <= 0)
+				mdef->mhp = 1;
+		}
+	}
+	return FALSE;
 }

@@ -14887,7 +14887,9 @@ int faction;
 				mtmp->mhp = mtmp->mhpmax;
 			}
 			if(!(mmflags & MM_NOGROUP)){
-			if(mndx != PM_MALKUTH_SEPHIRAH && mndx != PM_DAAT_SEPHIRAH && mndx != PM_BINAH_SEPHIRAH){
+			if(mndx == PM_YESOD_SEPHIRAH || mndx == PM_HOD_SEPHIRAH || mndx == PM_NETZACH_SEPHIRAH
+			 || mndx == PM_GEVURAH_SEPHIRAH || mndx == PM_CHOKHMAH_SEPHIRAH
+			){
 				coord mm;
 				mm.x = xdnstair;
 				mm.y = ydnstair;
