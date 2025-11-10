@@ -3175,13 +3175,18 @@ research_enlightenment()
 					putstr(en_win, 0, " Use your phlebotomy kit while standing at a workbench-altar to defilement.");
 				}
 				else {
-					putstr(en_win, 0, " You are unable to devise further experiments into the nature of defilement.");
-					if(!impurity_ok())
+					if(!impurity_ok()){
+						putstr(en_win, 0, " You are unable to devise further experiments into the nature of defilement.");
 						putstr(en_win, 0, " You must immerse yourself in the ritually unclean to make progress.");
-					else if(ABASE(A_INT) < 6)
+					}
+					else if(ABASE(A_INT) < 6){
+						putstr(en_win, 0, " You are unable to devise further experiments into the nature of defilement.");
 						putstr(en_win, 0, " You must repair the damage to your intellect to survive further self-experimentation.");
-					else
+					}
+					else {
+						putstr(en_win, 0, " You are working to devise your next experiment into the nature of defilement.");
 						putstr(en_win, 0, " You must conduct more dissections to make progress.");
+					}
 				}
 			}
 			else {
@@ -3286,11 +3291,14 @@ research_enlightenment()
 				putstr(en_win, 0, " You must listen beyond the veil.");
 			}
 			else {
-				putstr(en_win, 0, " You are unable to devise further surgical experiments.");
-				if(ABASE(A_INT) < 6)
+				if(ABASE(A_INT) < 6){
+					putstr(en_win, 0, " You are unable to devise further surgical experiments.");
 					putstr(en_win, 0, " You must repair the damage to your intellect to survive further self-experimentation.");
-				else
+				}
+				else {
+					putstr(en_win, 0, " You are working to devise your next surgical experiment.");
 					putstr(en_win, 0, " You must conduct more dissections to make progress.");
+				}
 			}
 		}
 		//Upgrade list
@@ -3335,13 +3343,18 @@ research_enlightenment()
 					putstr(en_win, 0, " Use your portable electrode while standing at a workbench-altar to the college.");
 				}
 				else {
-					putstr(en_win, 0, " You are unable to devise further Galvanic experiments.");
-					if(!reanimation_insight_ok())
+					if(!reanimation_insight_ok()){
+						putstr(en_win, 0, " You are unable to devise further Galvanic experiments.");
 						putstr(en_win, 0, " You must hunt the strange creatures of the veil to make progress.");
-					else if(ABASE(A_INT) < 6)
+					}
+					else if(ABASE(A_INT) < 6){
+						putstr(en_win, 0, " You are unable to devise further Galvanic experiments.");
 						putstr(en_win, 0, " You must repair the damage to your intellect to survive further self-experimentation.");
-					else
+					}
+					else {
+						putstr(en_win, 0, " You are working to devise your next Galvanic experiment.");
 						putstr(en_win, 0, " You must conduct more dissections and reanimations to make progress.");
+					}
 				}
 			}
 			else {
