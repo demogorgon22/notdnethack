@@ -16949,8 +16949,16 @@ struct monst *mtmp, *victim;
 			mtmp->mvar_flask_charges++;
 		}
 		if(mtmp->mhpmax < hp_threshold-hd_size(mtmp->data) || mtmp->m_lev < xp_threshold){ /*allow monsters to quickly gain hp up to around their HP limit*/
+			int hds = hd_size(mtmp->data);
 			max_increase = 1;
-			cur_increase = 1;
+			if((hds - 8) > 2){
+				hds -= 2;
+				max_increase += hds / 8;
+				// Now deal with any remainder
+				if (((mtmp->mhpmax+1)*(hds % 8)) / 8 >((mtmp->mhpmax)*(hds % 8)) / 8)
+					max_increase++;
+			}
+			cur_increase = max_increase;
 			if(mtmp->mtame){
 				if(Role_if(PM_BARD) && canseemon(mtmp)){
 					u.pethped = TRUE;
