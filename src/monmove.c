@@ -1136,13 +1136,16 @@ register struct monst *mtmp;
 
 	/* update quest status flags */
 	quest_stat_check(mtmp);
-	
 	if(mdat->mtyp == PM_CENTER_OF_ALL 
 		&& !mtmp->mtame 
 		&& !Is_astralevel(&u.uz)
-		&& (near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
-		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
-		&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
+		&& (((near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
+			&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
+			&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
+		  )
+		  || (mtmp->mhp < mtmp->mhpmax/2 && !rn2((mtmp->mhp < mtmp->mhpmax/4) ? 4 : 10))
+		  || (Insight < 32 && mtmp->mattackedu && !rn2(10))
+		)
 	){
 		int nlev;
 		d_level flev;
