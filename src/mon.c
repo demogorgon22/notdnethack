@@ -7511,7 +7511,7 @@ rescham()
 			(void) newcham(mtmp, cham_to_pm[mcham],
 				       FALSE, FALSE);
 		}
-		if(is_were(mtmp->data) && !healing_were(mtmp->data) && mtmp->data->mlet != S_HUMAN)
+		if(is_were(mtmp->data) && !healing_were(mtmp->data) && mtmp->data->mlet != S_HUMAN && !(mtmp->mtyp == PM_MIST_WOLF && u.veil))
 			new_were(mtmp);
 		if(mtmp->m_ap_type && cansee(mtmp->mx, mtmp->my) && mtmp->m_ap_type != M_AP_MONSTER) {
 			seemimic(mtmp);
@@ -7553,7 +7553,7 @@ struct monst *mon;
 	    if (mcham) {
 		mon->cham = CHAM_ORDINARY;
 		(void) newcham(mon, cham_to_pm[mcham], FALSE, FALSE);
-	    } else if (is_were(mon->data) && !healing_were(mon->data) && !is_human(mon->data)) {
+	    } else if (is_were(mon->data) && !healing_were(mon->data) && !is_human(mon->data) && !(mon->mtyp == PM_MIST_WOLF && u.veil)) {
 		new_were(mon);
 	    }
 	} else if (mon->cham == CHAM_ORDINARY) {
