@@ -488,7 +488,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 	}
 
 	/*	Special lycanthrope handling code */
-	if(youdef && !magr->cham && is_were(pa) && !ranged) {
+	if(youdef && !magr->cham && is_were(pa) && !ranged && !(magr->mtyp == PM_MIST_WOLF && u.veil)) {
 
 	    if(is_human(pa)) {
 			if(!rn2(5 - (night() * 2)) && !magr->mcan) new_were(magr);
