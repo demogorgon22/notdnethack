@@ -9742,7 +9742,7 @@ use_mist_projector(struct obj *obj)
 	struct region_arg cloud_data;
 	cloud_data.damage = 3+3*P_SKILL(P_FIREARM);
 	cloud_data.adtyp = AD_COLD;
-	(void) create_generic_cloud(u.ux, u.uy, 4+bcsign(obj), &cloud_data, TRUE);
+	(void) create_generic_cloud(u.ux, u.uy, 3+bcsign(obj), &cloud_data, TRUE);
 	pline("Whirling snow swirls out from around the %s.", xname(obj));
 	obj->spe--;
 	use_skill(P_FIREARM, 1);
