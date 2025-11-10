@@ -1010,6 +1010,12 @@ you_regen_hp()
 			}
 		}
 	}
+	if(youmonst.munburn > 0){
+		(*hp) += 7;
+		if ((*hp) > (*hpmax))
+			(*hp) = (*hpmax);
+		youmonst.munburn--;
+	}
 	if(u.uhoon_duration && (*hp) < (*hpmax)){
 		flags.botl = 1;
 		

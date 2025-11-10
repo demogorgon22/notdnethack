@@ -5028,6 +5028,13 @@ int wishflags;
 	if (strncmpi(bp, "monk's staff", 10))
 	if (strncmpi(bp, "soldier's saber", 15))
 	if (strncmpi(bp, "soldier's rapier", 16))
+	if (strncmpi(bp, "silverknight sword", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight scythe", 19)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight spear", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight armor", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight gauntlets", 22)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight helm", 17)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight boots", 18)) /*not the epynonomous monster */
 	if (strncmpi(bp, "nightmare's bullet mold", 23))
 	if (strncmpi(bp, "hunter's axe", 12))
 	if (strncmpi(bp, "hunter's long-axe", 17))
@@ -5160,6 +5167,7 @@ int wishflags;
 	   strncmpi(bp, "glamdring", 9) && 
 	   strncmpi(bp, "plasteel armor", 14) &&
 	   strncmpi(bp, "eilistran armor", 15) &&
+	   strncmpi(bp, "silverknight armor", 18) &&
 	   strncmpi(bp, "imperial elven armor", 20) &&
 	   strncmpi(bp, "armor of erebor", 15) && 
 	   strncmpi(bp, "armor of khazad-dum", 19) && 

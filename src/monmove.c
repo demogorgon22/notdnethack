@@ -523,11 +523,20 @@ boolean digest_meal;
 	
 	if(mon->mtame && u.ufirst_life && mon->mhp < mon->mhpmax)
 		mon->mhp++;
-		
+	
+	if(mon->munburn > 0){
+		mon->mhp += 7;
+		if(mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
+		mon->munburn--;
+	}
+
 	if(is_alabaster_mummy(mon->data) 
 		&& mon->mvar_syllable == SYLLABLE_OF_LIFE__HOON
 	){
 		mon->mhp += 10;
+		if(mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
 	}
 	
 	if (mon->mspec_used) mon->mspec_used--;

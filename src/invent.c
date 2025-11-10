@@ -4567,6 +4567,10 @@ winid *datawin;
 		otyp == HARMONIUM_PLATE ||
 		otyp == HARMONIUM_GAUNTLETS ||
 		otyp == HARMONIUM_HELM)					OBJPUTSTR("Slightly increased defense against non-lawfuls.");
+	else if (otyp == SILVERKNIGHT_BOOTS ||
+		otyp == SILVERKNIGHT_ARMOR ||
+		otyp == SILVERKNIGHT_GAUNTLETS ||
+		otyp == SILVERKNIGHT_HELM)					OBJPUTSTR("Increased defense against the unholy, the impure, and the rotten.");
 	else if (otyp == PLASTEEL_HELM ||
 		otyp == CRYSTAL_HELM ||
 		otyp == PONTIFF_S_CROWN ||
@@ -4577,6 +4581,11 @@ winid *datawin;
 		otyp == BLACK_FACELESS_ROBE ||
 		otyp == SMOKY_VIOLET_FACELESS_ROBE)		OBJPUTSTR("Covers the face entirely.");
 
+	if (otyp == SILVERKNIGHT_BOOTS ||
+		otyp == SILVERKNIGHT_ARMOR ||
+		otyp == SILVERKNIGHT_GAUNTLETS ||
+		otyp == SILVERKNIGHT_HELM ||
+		otyp == SILVERKNIGHT_SPEAR)					OBJPUTSTR("Slows the progression of fatal illness.");
 	buf[0] = '\0';
 	ADDCLASSPROP(oartifact, "an artifact");
 	ADDCLASSPROP((oc.oc_magic && !oartifact), "inherently magical");		// overkill to say an artifact is inherently magical, and makes it weird when one isn't

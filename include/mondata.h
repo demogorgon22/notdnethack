@@ -664,6 +664,12 @@
 #define	is_chain_lash_mtyp(ptr)	((ptr)->mtyp == PM_RAGE_WALKER)
 #define	is_chain_lash_mon(mon)	(is_chain_lash_mtyp((mon)->data))
 #define	is_dancer(ptr)	((ptr)->mtyp == PM_PORO_AULON || (ptr)->mtyp == PM_SEYLL_AUZKOVYN || (ptr)->mtyp == PM_ANULO_DANCER || (ptr)->mtyp == PM_MYRKALFAR_MATRON)
+#define is_ritually_impure(ptr)	(ptr->mtyp == PM_DEEP_ONE || ptr->mtyp == PM_DEEPER_ONE \
+			|| ptr->mtyp == PM_KUO_TOA || ptr->mtyp == PM_KUO_TOA_WHIP \
+			|| ptr->mtyp == PM_SHOGGOTH || ptr->mtyp == PM_RAGE_WALKER\
+			|| ptr->mtyp == PM_BEING_OF_IB || ptr->mtyp == PM_PRIEST_OF_IB \
+			|| is_mind_flayer(ptr) || is_were(ptr) \
+			|| ptr->mtyp == PM_BEFOULED_WRAITH)
 
 #define goat_monster(ptr) (In_lost_cities(&u.uz) ? lost_cities_goat_monster(ptr) : always_goat_monster(ptr))
 #define always_goat_monster(ptr) (\
@@ -721,15 +727,19 @@
 							)
 
 #define rot_monster(mon)	(((mon)->data->mlet == S_FUNGUS && mindless_mon(mon)) \
-							 || (mon)->mtyp == PM_SWAMP_FERN \
-							 || (mon)->mtyp == PM_SWAMP_FERN_SPORE \
-							 || (mon)->mtyp == PM_SWAMP_FERN_SPROUT \
-							 || (mon)->mtyp == PM_SWAMP_NYMPH \
-							 || (mon)->mtyp == PM_SILVERMAN \
-							 || (mon)->mtyp == PM_SILVERGRUB \
-							 || (mon)->mtyp == PM_MAN_FLY \
+							 || always_rot_monster((mon)->data) \
 							 || has_template(mon, SWOLLEN_TEMPLATE) \
 							)
+#define always_rot_monster(ptr)	(((ptr)->mlet == S_FUNGUS && mindless(ptr)) \
+								|| (ptr)->mtyp == PM_SWAMP_FERN \
+								|| (ptr)->mtyp == PM_SWAMP_FERN_SPORE \
+								|| (ptr)->mtyp == PM_SWAMP_FERN_SPROUT \
+								|| (ptr)->mtyp == PM_SWAMP_NYMPH \
+								|| (ptr)->mtyp == PM_SILVERMAN \
+								|| (ptr)->mtyp == PM_SILVERGRUB \
+								|| (ptr)->mtyp == PM_MAN_FLY \
+								)
+
 #define always_nuncio_monster(ptr) (\
 									   (ptr)->mtyp == PM_VOICE_IN_SCREAMS \
 									|| (ptr)->mtyp == PM_CHAIN_DEVIL \
@@ -932,6 +942,7 @@
 #define sflm_target_data(ptr) (!is_rider(ptr) && (is_angel(ptr) || ((ptr)->mflagsg&MG_DISPLACEMENT) || is_shapechanger(ptr) || is_chaotic(ptr)))
 
 #define melee_polearms(ptr)	((ptr)->mtyp == PM_VROCK ||\
+							 (ptr)->mtyp == PM_SILVERMAN ||\
 							 (ptr)->mtyp == PM_MEPHISTOPHELES ||\
 							 (ptr)->mtyp == PM_BAPHOMET \
 							)
@@ -1293,7 +1304,7 @@
 							 ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_HEALER))
 #define mon_undead_hunter(mon)	((mon)->mtyp == PM_UNDEAD_HUNTER || ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_UNDEAD_HUNTER))
 #define mon_knight(mon)	((mon)->mtyp == PM_KNIGHT || (mon)->mtyp == PM_KING_ARTHUR || \
-						 (mon)->mtyp == PM_CELEBORN || \
+						 (mon)->mtyp == PM_SILVERKNIGHT || (mon)->mtyp == PM_CELEBORN || \
 						 ((mon)->mtyp == PM_HOD_SEPHIRAH && Role_if(PM_KNIGHT)) || \
 						 (mon)->mtyp == PM_PAGE || ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_KNIGHT))
 #define mon_dark_knight(mon)	((mon)->mtyp == PM_DOOM_KNIGHT  || (mon)->mtyp == PM_SIR_GARLAND || \

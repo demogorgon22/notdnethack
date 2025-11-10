@@ -237,6 +237,9 @@ WEAPON(("trident"), /*Needs encyc entry*/
 WEAPON(("pincer staff", "claw-ended staff"), /*Needs encyc entry*/
 	DMG(D(6), F(2)), DMG(D(2, 6)),
 	0, 0,  MZ_HUGE,  0, 25, 800,  0, P,   P_TRIDENT, SHELL_MAT, FALSE, CLR_BRIGHT_MAGENTA, O_TRAITS(ETRAIT_STOP_THRUST)),
+WEAPON(("silverknight spear", "buckler-adorned winged spear"), /*Needs encyc entry*//*Needs tile*/
+	DMG(D(10)), DMG(D(8)),
+	0, 0,  MZ_LARGE, 0, 25,  3,  -2, P,   P_SPEAR, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_BRACED|ETRAIT_LUNGE|ETRAIT_STOP_THRUST)),
 
 /* blades */
 WEAPON(("dagger"),
@@ -421,6 +424,9 @@ WEAPON(("elven broadsword", "runed broadsword"), /*Needs encyc entry*/
 WEAPON(("long sword"), /*Needs encyc entry*/
 	DMG(D(8)), DMG(D(12)),
 	1, 0, MZ_MEDIUM, 44, 40, 15,  0, S|P, P_LONG_SWORD, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_GRAZE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
+WEAPON(("silverknight sword", "thin-bladed longsword"), /*Needs encyc entry*/
+	DMG(D(6), F(1)), DMG(D(8)),
+	0, 0, MZ_MEDIUM,  0, 40, 15,  0, S|P, P_LONG_SWORD, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_LUNGE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
 WEAPON(("crystal sword"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(2, 8)), DMG(D(2, 12)),
 	1, 0,  MZ_LARGE, 2, 120,300,  0, S|P, P_LONG_SWORD, GLASS, FALSE, HI_GLASS, O_TRAITS(ETRAIT_GRAZE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
@@ -507,6 +513,9 @@ WEAPON(("spetum", "forked polearm"),
 WEAPON(("glaive", "single-edged polearm"),
 	DMG(D(6), F(1)), DMG(D(10), F(1)),
 	0, 0,   MZ_HUGE,  7, 75,  6,  0, S,   P_POLEARMS, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_HEW)),
+WEAPON(("pest glaive", "strangly-organic polearm"),
+	DMG(D(2, 6)), DMG(D(10), F(1)),
+	0, 0,   MZ_HUGE,  0, 23,180,  0, S|P,   P_POLEARMS, SHELL_MAT, FALSE, CLR_GRAY, O_TRAITS(ETRAIT_STOP_THRUST|ETRAIT_BRACED|ETRAIT_HEW)),
 WEAPON(("naginata", "samurai-sword polearm"),
 	DMG(D(8), F(1)), DMG(D(10), F(1)),
 	0, 0,   MZ_HUGE,  1, 75, 90,  1, S,   P_POLEARMS, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_HEW)),
@@ -562,6 +571,10 @@ WEAPON(("lucern hammer", "pronged polearm"),
 WEAPON(("bec de corbin", "beaked polearm"),
 	DMG(D(8), F(2)), DMG(D(12), F(2)),
 	0, 0,   MZ_HUGE,  3, 75,  8,  0, B|P, P_POLEARMS, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_HEW|ETRAIT_STUNNING_STRIKE|ETRAIT_PENETRATE_ARMOR|ETRAIT_STOP_THRUST)),
+WEAPON(("silverknight scythe", "crescent-moon polearm"),
+	DMG(D(2, 6)), DMG(D(2, 4)),
+	0, 0,   MZ_HUGE,  0, 75,  8,  0, S, P_POLEARMS, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_FELL|ETRAIT_BLEED|ETRAIT_CLEAVE)),
+
 
 WEAPON(("scythe"), 
 	DMG(D(2, 4)), DMG(D(2, 4)), /* Vs plants: +6 to hit and double damage */
@@ -841,6 +854,8 @@ HELM(("archaic helm", "helmet"),
 		0, 0,  0, 1, 30,  12, 9, 3, 0, COPPER, HI_COPPER),
 HELM(("harmonium helm", "red-lacquered spined helm", "spined helm"),
 		0, 0,  0, 1, 45,   1, 9, 4, 0, METAL, CLR_RED),
+HELM(("silverknight helm", "barred helm"),
+		0, 0,  0, 1, 45,   1, 8, 4, 0, SILVER, HI_SILVER),
 HELM(("elven helm", "runed helm"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 1, 10,   5, 9, 3, 0, WOOD, HI_WOOD),
 HELM(("high-elven helm", "runed helm"), /*Needs encyc entry*//*Needs tile*/
@@ -951,6 +966,8 @@ SUIT(("harmonium plate", "red-lacquered bladed armor", "bladed armor"),
 	0, 0,   MZ_HUGE,  ARMSZ_HEAVY,  0,  5, 225,    1,  5, 6, 3, METAL, CLR_RED),
 SUIT(("harmonium scale mail", "red-lacquered spiked scale mail", "spiked scale mail"),
 	0, 0,  MZ_LARGE, ARMSZ_MEDIUM,  0,  5, 125,    1,  8, 3, 1, METAL, CLR_RED),
+SUIT(("silverknight armor", "filigreed armor"),
+	0, 0,   MZ_HUGE,  ARMSZ_HEAVY,  0,  5, 225,    1,  5, 6, 3, SILVER, HI_SILVER),
 SUIT(("eilistran armor", "clockwork plate armor"),
 	0, 1,  MZ_HUGE,  ARMSZ_HEAVY,  	0,  5, 250, 2000, 5, 5, 2, SILVER, HI_SILVER, O_POWER(FLYING)),
 SUIT(("plasteel armor", "hard white armor", "armor"), /*Needs encyc entry*//*Needs tile*/
@@ -1132,6 +1149,8 @@ GLOVES(("hand wraps"),
 		1, 0,  0, 1,  1,  1, 10, 0, 1, CLOTH, CLR_WHITE),
 GLOVES(("harmonium gauntlets", "red-lacquered hooked gauntlets", "hooked gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 40,  1, 9, 4, 0, METAL, CLR_RED),
+GLOVES(("silverknight gauntlets", "filigreed gauntlets"), /*Needs encyc entry*//*Needs tile*/
+		0, 0,  0, 2, 40,  1, 8, 4, 1, SILVER, HI_SILVER),
 GLOVES(("high-elven gauntlets", "runed gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 15, 50, 8, 4, 0, MITHRIL, HI_MITHRIL),
 GLOVES(("imperial elven gauntlets", "runed gauntlets"), /*Needs encyc entry*//*Needs tile*/
@@ -1162,6 +1181,8 @@ BOOTS(("archaic boots", "boots"),
 		0, 0,   0, 1, 75, 16,  8, 3, 1, COPPER, HI_COPPER,O_MATSPEC(UNIDED)),
 BOOTS(("harmonium boots", "red-lacquered boots", "boots"),
 		0, 0,   0, 1, 95,  1,  8, 4, 1, METAL, CLR_RED),
+BOOTS(("silverknight boots", "filigreed boots"), /*Needs encyc entry*//*Needs tile*/
+		0, 0,   0, 1, 95,  1,  8, 4, 1, SILVER, HI_SILVER),
 BOOTS(("plasteel boots", "hard white boots", "boots"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,   0, 2, 25, 32,  8, 3, 1, PLASTIC, CLR_WHITE),
 BOOTS(("stilettos", "high-heeled shoes"), /*Needs encyc entry*//*Needs tile*/

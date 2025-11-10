@@ -119,6 +119,7 @@ Boots_on()
 	case JUMPING_BOOTS:
 	case KICKING_BOOTS:
 	case HARMONIUM_BOOTS:
+	case SILVERKNIGHT_BOOTS:
 	case STILETTOS:
 	case WIND_AND_FIRE_WHEELS:
 		break;
@@ -240,6 +241,7 @@ Boots_off()
 	case JUMPING_BOOTS:
 	case KICKING_BOOTS:
 	case HARMONIUM_BOOTS:
+	case SILVERKNIGHT_BOOTS:
 	case STILETTOS:
 	case WIND_AND_FIRE_WHEELS:
 		break;
@@ -431,6 +433,7 @@ Helmet_on()
 	case HELM_OF_TELEPATHY:
 	case HELM_OF_DRAIN_RESISTANCE:
 	case HARMONIUM_HELM:
+	case SILVERKNIGHT_HELM:
 	case HELM_OF_BRILLIANCE:
 	case SUNLIGHT_MAGGOT:
 		break;
@@ -553,6 +556,7 @@ Helmet_off()
 	case DWARVISH_HELM:
 	case GNOMISH_POINTY_HAT:
 	case ORCISH_HELM:
+	case SILVERKNIGHT_HELM:
 	case HARMONIUM_HELM:
 	case SUNLIGHT_MAGGOT:
 	    break;
@@ -636,6 +640,7 @@ Gloves_on()
 	case IMPERIAL_ELVEN_GAUNTLETS:
 	case GAUNTLETS:
 	case HARMONIUM_GAUNTLETS:
+	case SILVERKNIGHT_GAUNTLETS:
 	case ARCHAIC_GAUNTLETS:
 	case CRYSTAL_GAUNTLETS:
 	case PLASTEEL_GAUNTLETS:
@@ -683,6 +688,7 @@ Gloves_off()
 	case IMPERIAL_ELVEN_GAUNTLETS:
 	case GAUNTLETS:
 	case HARMONIUM_GAUNTLETS:
+	case SILVERKNIGHT_GAUNTLETS:
 	case ARCHAIC_GAUNTLETS:
 	case CRYSTAL_GAUNTLETS:
 	case PLASTEEL_GAUNTLETS:
@@ -2542,16 +2548,18 @@ struct obj * otmp;
 }
 
 int
-properties_dr(arm, agralign, agrmoral)
-struct obj *arm;
-int agralign;
-int agrmoral;
+properties_dr(struct obj *arm, int agralign, int agrmoral, int agrimpure, int agrrot)
 {
 	int bonus = 0;
 	int base = arm_dr_bonus(arm);
 	if(is_harmonium_armor(arm)){
 		if(agralign == 0) bonus += 1;
 		else if(agralign < 0) bonus += 2;
+	}
+	if(is_silverknight_armor(arm)){
+		if(agrmoral < 0) bonus += 3;
+		if(agrimpure > 0) bonus += 2;
+		if(agrrot > 0) bonus += 2;
 	}
 	if(check_oprop(arm, OPROP_ANAR)){
 		if(agralign >= 0) bonus += base;
@@ -2857,6 +2865,9 @@ find_ac()
 			else
 				uac -= 1+(uwep->spe)/2;
 		}
+		if(uwep->otyp == SILVERKNIGHT_SPEAR && !uarms){
+			uac -= 1+uwep->spe+shield_skill(uwep);
+		}
 		const struct artifact *weap = get_artifact(uwep);
 		if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
 			uac -= u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe,0) : u.usanity < 90 ? 2+max(uwep->spe,0) : 5+max(uwep->spe,0);
@@ -3017,6 +3028,8 @@ uchar aatyp;
 	/* for use vs specific magr */
 	int agralign = 0;
 	int agrmoral = 0;
+	int agrimpure = 0;
+	int agrrot = 0;
 	if(magr){
 		agralign = (magr == &youmonst) ? sgn(u.ualign.type) : sgn(magr->data->maligntyp);
 		
@@ -3026,11 +3039,13 @@ uchar aatyp;
 			else if(hates_unholy(youracedata))
 				agrmoral = 1;
 		} else {
-		if(hates_holy_mon(magr))
-			agrmoral = -1;
+			if(hates_holy_mon(magr))
+				agrmoral = -1;
 			else if(hates_unholy_mon(magr))
-			agrmoral = 1;
+				agrmoral = 1;
 		}
+		agrimpure = calc_agrimpure(magr);
+		agrrot = calc_agrrot(magr);
 	}
 	
 	/* some slots may be unacceptable and must be replaced */
@@ -3052,7 +3067,7 @@ uchar aatyp;
 				if(depth && higher_depth(uarmor[i]->owornmask, depth))
 					continue;
 				arm_udr += arm_dr_bonus(uarmor[i]);
-				if (magr) arm_udr += properties_dr(uarmor[i], agralign, agrmoral);
+				if (magr) arm_udr += properties_dr(uarmor[i], agralign, agrmoral, agrimpure, agrrot);
 			}
 			else if(uarmor[i]->otyp == CLOAK_OF_PROTECTION){
 				arm_udr += arm_dr_bonus(uarmor[i])/2; //Half protection in other slots (skin depth)
@@ -6282,6 +6297,49 @@ struct obj *wep;
 	else if(wep->oartifact == ART_FALLINGSTAR_MANDIBLES)
 		doliving_fallingstar(magr, wep, FALSE);
 	else doliving_single_attack(magr, wep);
+}
+
+int
+calc_agrimpure(struct monst *magr)
+{
+	int agrimpure = 0;
+	if(magr == &youmonst){
+		if(defile_count() >= 6)
+			agrimpure = 1;
+	} else {
+		if(magr->mtraitor || magr->mferal)
+			agrimpure = 1;
+		else if(is_ritually_impure(magr->data))
+			agrimpure = 1;
+	}
+	return agrimpure;
+}
+
+int
+calc_agrrot(struct monst *magr)
+{
+	int agrrot = 0;
+	if(magr == &youmonst){
+		if(Sick)
+			agrrot = 1;
+		else if(rot_count() > 0)
+			agrrot = 1;
+		else if(always_rot_monster(youracedata))
+			agrrot = 1;
+		else if(dmgtype(youracedata, AD_DISE))
+			agrrot = 1;
+		else if(flat_mad_turn(MAD_SPORES) ||flat_mad_turn(MAD_ROTTING))
+			agrrot = 1;
+	}
+	else {
+		if(rot_monster(magr))
+			agrrot = 1;
+		else if(magr->mspores || magr->mrotting)
+			agrrot = 1;
+		else if(dmgtype(magr->data, AD_DISE))
+			agrrot = 1;
+	}
+	return agrrot;
 }
 
 #endif /* OVLB */

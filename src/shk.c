@@ -6158,6 +6158,7 @@ int mat;
 		if(is_future_otyp(example->otyp) 
 			|| ensouled_item(example) || objects[example->otyp].oc_magic
 			|| is_firearm(example) || is_harmonium_armor(example)
+			|| is_silverknight_armor(example)
 			|| Is_dragon_armor(example)
 		){
 			return 0;

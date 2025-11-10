@@ -1854,6 +1854,47 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 	case PM_SILVERMAN:
 	case PM_SILVERGRUB:
 		return PEST_THREADS;
+	case PM_SILVERKNIGHT:{
+		int healingspell = (rn2(mtmp->m_lev) > 14) ? MASS_CURE_CLOSE : CURE_SELF;
+		if(mtmp->mtame && distmin(mtmp->mx, mtmp->my, u.ux, u.uy) < 4 && *hp(&youmonst) < (*hpmax(&youmonst)/2)){
+			if(!youmonst.munburn){
+				return BURN_INTO_LIFE;
+			} else if(healingspell == MASS_CURE_CLOSE){
+				return healingspell;
+			}
+		}
+		boolean castheal = FALSE;
+		if(mtmp->mhp < (mtmp->mhpmax/2)){
+			if(!mtmp->munburn){
+				return BURN_INTO_LIFE;
+			} else {
+				castheal = TRUE;
+			}
+		}
+
+		for(struct monst *mtmp2 = fmon; mtmp2; mtmp2 = mtmp2->nmon){
+			if(mtmp2->mpeaceful == mtmp->mpeaceful && mtmp != mtmp2 && !DEADMONSTER(mtmp2) && distmin(mtmp->mx, mtmp->my, mtmp2->mx, mtmp2->my) < 4){
+				if(mtmp2->mhp < (mtmp2->mhpmax/2)){
+					if(!mtmp2->munburn && !(mtmp->munburn && healingspell == MASS_CURE_CLOSE)){
+						return BURN_INTO_LIFE;
+					} else if(healingspell == MASS_CURE_CLOSE){
+						return healingspell;
+					}
+				}
+			}
+		}
+
+		if(castheal)
+			return healingspell;
+		else {
+			switch(rn2(7)){
+				case 0: return LIGHTNING;
+				case 1: return GOD_RAY;
+				case 2: return (rn2(mtmp->m_lev) > 14) ? MASS_CURE_CLOSE : CURE_SELF;
+				default: return SUMMON_ROGUE_HALOS;
+			}
+		}
+	}
 	case PM_VERIER: 
 		if(!rn2(3)) return WEAKEN_YOU;
 		else return DESTRY_ARMR;
@@ -2357,6 +2398,8 @@ const char * spellname[] =
 	//105
 	"FORCE_SPHERES",
 	"PEST_THREADS",
+	"BURN_INTO_LIFE",
+	"SUMMON_ROGUE_HALOS",
 };
 
 /* Returns the word the monster uses when casting a psionic spell */
@@ -5566,6 +5609,39 @@ int tary;
 		}
 		return MM_HIT;
 
+	case BURN_INTO_LIFE:
+		{
+			struct monst *cmon;
+
+			/* maybe retarget spell */
+			if (magr) {
+				tarx = (int)x(magr);
+				tary = (int)y(magr);
+			}
+
+			/* go through monsters list */
+			for (cmon = fmon; cmon; cmon = cmon->nmon){
+				if ((!DEADMONSTER(cmon)) &&
+					(!mm_aggression(magr, cmon)) &&
+					(cmon->mpeaceful == (youagr || magr->mpeaceful)) &&
+					dist2(tarx, tary, cmon->mx, cmon->my) <= 3 * 3 + 1
+				) {
+					if (canseemon(cmon) && !cmon->munburn)
+						pline("%s begins burning with bright greenish-yellow flames.", Monnam(cmon));
+					cmon->munburn = 30;
+				}
+			}
+			/* include player, if yours or tame */
+			if ((youagr || magr->mtame)
+				&& dist2(tarx, tary, u.ux, u.uy) <= 3*3 + 1)
+			{
+				if(!youmonst.munburn)
+					You("begin burning with bright greenish-yellow flames.");
+				youmonst.munburn = 30;
+			}
+		}
+		return MM_HIT;
+
 	case RECOVER:
 		if (youagr) {
 			/* no player version; cast basic healing magic instead */
@@ -5785,6 +5861,32 @@ int tary;
 			int makesum = MM_ESUM;
 			for(n = (dmg+5)/6; n > 0; n--){
 				mtmp = makemon(&mons[PM_SPHERE_OF_FORCE], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame|makesum);
+				if (mtmp) {
+					/* time out */
+					if(makesum)
+						mark_mon_as_summoned(mtmp, magr, mlev(magr) + rnd(mlev(magr)), 0);
+					/* can be peaceful */
+					if(magr->mpeaceful)
+						mtmp->mpeaceful = TRUE;
+					/* can be tame */
+					if (maketame) {
+						initedog(mtmp);
+					}
+					/* bonus movement */
+					mtmp->movement = 3*NORMAL_SPEED;
+				}
+			}
+		}
+		return MM_HIT;
+
+	case SUMMON_ROGUE_HALOS:{
+			int i = 0;
+			int n;
+			struct monst *mtmp;
+			int maketame = ((magr->mtame || youagr) ? MM_EDOG : 0);
+			int makesum = MM_ESUM;
+			for(n = (dmg+20)/21; n > 0; n--){
+				mtmp = makemon(&mons[PM_ROGUE_HALO], x(magr), y(magr), MM_ADJACENTOK|MM_ADJACENTSTRICT|maketame|makesum);
 				if (mtmp) {
 					/* time out */
 					if(makesum)
@@ -7156,6 +7258,7 @@ int spellnum;
 	{
 	case CURE_SELF:
 	case MASS_CURE_CLOSE:
+	case BURN_INTO_LIFE:
 	case MASS_CURE_FAR:
 	case RECOVER:
 	case HASTE_SELF:
@@ -7180,6 +7283,7 @@ int spellnum;
 	switch (spellnum)
 	{
 	case SUMMON_SPHERE:
+	case SUMMON_ROGUE_HALOS:
 	case INSECTS:
 	case RAISE_DEAD:
 	case SUMMON_MONS:
@@ -7299,6 +7403,7 @@ int tary;
 	/* Don't cast summon spells (with some exceptions) in the Anachrononaut quest */
 	if (Infuture && is_summon_spell(spellnum) && !(
 		(spellnum == SUMMON_SPHERE) ||
+		(spellnum == SUMMON_ROGUE_HALOS) ||
 		(spellnum == TIME_DUPLICATE) ||
 		(spellnum == CLONE_WIZ)
 		))
@@ -7400,7 +7505,7 @@ int tary;
 		return TRUE;
 
 	/* don't cast mass healing with no injured allies */
-	if ((spellnum == MASS_CURE_CLOSE || spellnum == MASS_CURE_FAR))
+	if ((spellnum == MASS_CURE_CLOSE || spellnum == MASS_CURE_FAR || spellnum == BURN_INTO_LIFE))
 	{
 		boolean friendly = (youagr || magr->mtame);
 		boolean peaceful = (!friendly && magr->mpeaceful);
@@ -7421,7 +7526,7 @@ int tary;
 				return FALSE;
 		}
 		/* heal self? */
-		if (spellnum == MASS_CURE_CLOSE
+		if ((spellnum == MASS_CURE_CLOSE || spellnum == BURN_INTO_LIFE) 
 			&& (*hp(magr) < *hpmax(magr)))
 			return FALSE;
 
@@ -7479,7 +7584,7 @@ int tary;
 		|| spellnum == PUNISH || spellnum == INSECTS
 		|| spellnum == SUMMON_ANGEL || spellnum == DROP_BOULDER
 		|| spellnum == DISINT_RAY || spellnum == DISINTEGRATION
-		|| spellnum == MADF_BURST
+		|| spellnum == MADF_BURST || spellnum == SUMMON_ROGUE_HALOS
 		))
 		return TRUE;
 
@@ -7625,6 +7730,10 @@ int tary;
 		((mvitals[PM_FLAMING_SPHERE].mvflags & G_GONE) &&
 		(mvitals[PM_FREEZING_SPHERE].mvflags & G_GONE) &&
 		(mvitals[PM_SHOCKING_SPHERE].mvflags & G_GONE)))
+		return TRUE;
+
+	if (spellnum == SUMMON_ROGUE_HALOS && !In_quest(&u.uz) &&
+		(mvitals[PM_ROGUE_HALO].mvflags & G_GONE))
 		return TRUE;
 
 	return FALSE;

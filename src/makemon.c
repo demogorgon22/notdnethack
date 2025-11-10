@@ -544,6 +544,61 @@ boolean goodequip;
 }
 
 STATIC_OVL void
+ant_initweap(struct monst *mtmp, int mkobjflags, int faction, boolean goodequip)
+{
+	struct obj *otmp;
+	switch(mtmp->mtyp){
+		case PM_VALAVI:
+			if(rn2(3)){
+				mongets(mtmp, SHEPHERD_S_CROOK, mkobjflags);
+				mongets(mtmp, KNIFE, mkobjflags);
+				mongets(mtmp, KNIFE, mkobjflags);
+			} else {
+				mongets(mtmp, SCIMITAR, mkobjflags);
+				switch (rnd(3)) {
+					case 1:
+						(void) mongets(mtmp, ROUNDSHIELD, mkobjflags);
+					break;
+					case 2:
+						(void) mongets(mtmp, BUCKLER, mkobjflags);
+					break;
+					case 3:
+						(void) mongets(mtmp, SCIMITAR, mkobjflags);
+					break;
+				}
+				mongets(mtmp, SCIMITAR, mkobjflags);
+				mongets(mtmp, SCIMITAR, mkobjflags);
+			}
+		break;
+		case PM_SILVERMAN:
+			otmp = mongets(mtmp, PEST_GLAIVE, mkobjflags);
+		break;
+		case PM_SILVERKNIGHT:{
+			int set = rn2(100);
+#define SILVERKNIGHT_GETS(otyp) \
+			otmp = mongets(mtmp, otyp, mkobjflags); \
+			if(otmp) { \
+				otmp->spe = 3; \
+				bless(otmp); \
+			}
+			if(set >= 90){
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SPEAR);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SCYTHE);
+			}
+			else if(set >= 45){
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SWORD);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SPEAR);
+			}
+			else {
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SWORD);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SCYTHE);
+			}
+#undef SILVERKNIGHT_GETS
+		}break;
+	}
+}
+
+STATIC_OVL void
 giant_initweap(mtmp, mkobjflags, faction, goodequip)
 register struct monst *mtmp;
 int mkobjflags;
@@ -4844,7 +4899,8 @@ int mmflags;
 	    case S_HUMAN:
 			human_initweap(mtmp, mkobjflags, faction, goodequip, greatequip);
 		break;
-
+		case S_ANT:
+			ant_initweap(mtmp, mkobjflags, faction, goodequip);
 		break;
 		case S_GHOST:{
 			switch (mm){
@@ -11282,26 +11338,6 @@ boolean greatequip;
 					case 1: (void) mongets(mtmp, POT_EXTRA_HEALING, mkobjflags);
 					case 2: (void) mongets(mtmp, POT_HEALING, mkobjflags);
 				}
-				if(rn2(3)){
-					mongets(mtmp, SHEPHERD_S_CROOK, mkobjflags);
-					mongets(mtmp, KNIFE, mkobjflags);
-					mongets(mtmp, KNIFE, mkobjflags);
-				} else {
-					mongets(mtmp, SCIMITAR, mkobjflags);
-					switch (rnd(3)) {
-						case 1:
-							(void) mongets(mtmp, ROUNDSHIELD, mkobjflags);
-						break;
-						case 2:
-							(void) mongets(mtmp, BUCKLER, mkobjflags);
-						break;
-						case 3:
-							(void) mongets(mtmp, SCIMITAR, mkobjflags);
-						break;
-					}
-					mongets(mtmp, SCIMITAR, mkobjflags);
-					mongets(mtmp, SCIMITAR, mkobjflags);
-				}
 		    }
 			else if(ptr->mtyp == PM_LUMINESCENT_SWARM){
 				otmp = mongets(mtmp, SPEAR, mkobjflags);
@@ -11313,6 +11349,19 @@ boolean greatequip;
 					case 2: (void) mongets(mtmp, POT_HEALING, mkobjflags);
 				}
 			}
+			else if(ptr->mtyp == PM_SILVERKNIGHT){
+#define SILVERKNIGHT_GETS(otyp) \
+				otmp = mongets(mtmp, otyp, mkobjflags); \
+				if(otmp) { \
+					otmp->spe = 3; \
+					bless(otmp); \
+				}
+				SILVERKNIGHT_GETS(SILVERKNIGHT_BOOTS);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_ARMOR);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_GAUNTLETS);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_HELM);
+			}
+#undef SILVERKNIGHT_GETS
 		break;
 		case S_DOG:
 			//Escaped war-dog
@@ -15366,7 +15415,9 @@ int mndx;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
 	if (G_C_INST(mons[mndx].geno) > Insight) return TRUE;
 	if (mndx == PM_SILVERMAN && !u.silvergrubs) return TRUE;
+	if (mndx == PM_SILVERKNIGHT && !u.silvergrubs) return TRUE;
 	if (mndx == PM_SPIDER_SCORPION && !check_rot(ROT_KIN)) return TRUE;
+	if (mndx == PM_FLESH_THAT_HATES && !check_rot(ROT_KIN)) return TRUE;
 	if (Inhell)
 		return((mons[mndx].geno & (G_PLANES|G_DEPTHS)) != 0);
 	else if (In_endgame(&u.uz))
@@ -15997,7 +16048,9 @@ int	spc;
 			&& !(mons[first].geno & mask)
 			&& (G_C_INST(mons[first].geno) <= Insight)
 			&& (first != PM_SILVERMAN || u.silvergrubs)
+			&& (first != PM_SILVERKNIGHT || u.silvergrubs)
 			&& (first != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
+			&& (first != PM_FLESH_THAT_HATES || check_rot(ROT_KIN))
 		) break;
 	if (first == SPECIAL_PM) return (struct permonst *) 0;
 
@@ -16009,7 +16062,9 @@ int	spc;
 			&& !is_placeholder(&mons[last])
 			&& (G_C_INST(mons[last].geno) <= Insight)
 			&& (last != PM_SILVERMAN || u.silvergrubs)
+			&& (last != PM_SILVERKNIGHT || u.silvergrubs)
 			&& (last != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
+			&& (last != PM_FLESH_THAT_HATES || check_rot(ROT_KIN))
 		) {
 			/* consider it */
 			if(num && toostrong(last, maxmlev) && monstr[last] != monstr[last-1]) break;
@@ -16031,7 +16086,9 @@ int	spc;
 			&& !is_placeholder(&mons[first])
 			&& (G_C_INST(mons[first].geno) <= Insight)
 			&& (first != PM_SILVERMAN || u.silvergrubs)
+			&& (first != PM_SILVERKNIGHT || u.silvergrubs)
 			&& (first != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
+			&& (first != PM_FLESH_THAT_HATES || check_rot(ROT_KIN))
 		) {
 			/* skew towards lower value monsters at lower exp. levels */
 			freq = (mons[first].geno & G_FREQ);

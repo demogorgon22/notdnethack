@@ -64,7 +64,7 @@
 #define is_unholy_mon(mon)	(is_demon((mon)->data) || (mon)->mtyp == PM_DREAD_SERAPH)
 #define is_unblessed_mon(mon)	(is_auton((mon)->data) || is_rilmani((mon)->data) || is_kamerel((mon)->data))
 
-#define SUBOUT_SPELLS	 1	/* Spellcasting attack instead (Five Fiends of Chaos1 and Gae) */
+#define SUBOUT_SPELLS	 1	/* Spellcasting attack instead (Five Fiends of Chaos1 and Gae and silverknight) */
 #define SUBOUT_BAEL1	 2	/* Bael's Sword Archon attack chain */
 #define SUBOUT_BAEL2	 3	/* Bael's marilith-hands attack chain */
 #define SUBOUT_SPIRITS	 4	/* Player's bound spirits */
@@ -85,7 +85,9 @@
 #define SUBOUT_ROT_SPORES	19	/* Pasive spore attack */
 #define SUBOUT_ROT_VOMIT	20	/* Vomit rot */
 #define SUBOUT_ROT_STING	21	/* Rot stinger */
-#define MAX_SUBOUT		22
+#define SUBOUT_PUSH	22	/* Push attack */
+#define SUBOUT_VOMIT    23	/* Vomit attack */
+#define MAX_SUBOUT		24
 #define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/16+1)
 
 #define ATTKFLAG_FORCE_BLEED		0x01L

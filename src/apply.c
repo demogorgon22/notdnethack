@@ -5009,6 +5009,7 @@ use_smithing_hammer(struct obj *obj)
 			if((is_future_otyp(i) && !(Role_if(PM_UNDEAD_HUNTER) && objects[i].oc_name_known))
 				|| ensouled_otyp(i)
 				|| is_harmonium_otyp(i)
+				|| is_silverknight_otyp(i)
 			)
 				continue;
 			if(i != CHURCH_HAMMER && i != BOX && !metallic_material(objects[i].oc_material))

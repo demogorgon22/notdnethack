@@ -1517,6 +1517,11 @@ struct monst * magr;
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			diesize = 20;
 		}
+
+		if (is_silverknight_weapon(otmp)) {
+			diesize += 3;
+		}
+
 		if (is_self_righteous(otmp) && 
 			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
 		)

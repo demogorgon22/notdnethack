@@ -3938,6 +3938,12 @@ boolean actual;			/* actual attack or faction check? */
 	) {
 		return ALLOW_M|ALLOW_TM;
 	}
+	// scraps of flesh that hate attack everything except other scraps
+	if((ma->mtyp == PM_FLESH_THAT_HATES && md->mtyp != PM_FLESH_THAT_HATES) ||
+		(md->mtyp == PM_FLESH_THAT_HATES && ma->mtyp != PM_FLESH_THAT_HATES)
+	) { 
+		return ALLOW_M|ALLOW_TM;
+	}
 	// brainblossoms attack almost anything (and vice versa)
 	if(ma->mtyp == PM_BRAINBLOSSOM_PATCH &&
 		!mindless_mon(mdef) &&

@@ -219,6 +219,7 @@ struct monst {
 	
 	char mbdrown;	/* drowning in blood */
 	char mtaneggs;	/* tannin eggs */
+	char munburn;	/* silverknight buff */
 	long mwait;/* if tame, won't follow between levels (turn last ordered to wait on) */
 	int encouraged;	/* affected by Encourage song */
 	int mfell;	/* slowed by fell expert trait */

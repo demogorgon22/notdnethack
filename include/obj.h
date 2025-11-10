@@ -741,6 +741,7 @@ struct obj {
 			 )
 #define is_runic_form_sword(otmp) (\
 			    otmp->otyp == LONG_SWORD \
+			 || otmp->otyp == SILVERKNIGHT_SWORD \
 			 || otmp->otyp == RUNESWORD \
 			 || otmp->otyp == ELVEN_BROADSWORD \
 			)
@@ -1228,6 +1229,15 @@ struct obj {
 								|| (otyp) == HARMONIUM_SCALE_MAIL || (otyp) == HARMONIUM_GAUNTLETS\
 								|| (otyp) == HARMONIUM_BOOTS)
 
+#define is_silverknight_weapon(otmp)	is_silverknight_weapon_otyp((otmp)->otyp)
+
+#define is_silverknight_weapon_otyp(otyp)	((otyp) == SILVERKNIGHT_SWORD || (otyp) == SILVERKNIGHT_SPEAR\
+								|| (otyp) == SILVERKNIGHT_SCYTHE)
+
+#define is_silverknight_armor(otmp)	is_silverknight_otyp((otmp)->otyp)
+
+#define is_silverknight_otyp(otyp)	((otyp) == SILVERKNIGHT_HELM || (otyp) == SILVERKNIGHT_ARMOR\
+								|| (otyp) == SILVERKNIGHT_GAUNTLETS || (otyp) == SILVERKNIGHT_BOOTS)
 #define is_light_armor(otmp)	(((otmp)->otyp == IMPERIAL_ELVEN_ARMOR && check_imp_mod(otmp, IEA_MITHRIL)) || ((otmp)->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(otmp, CPROP_FLEXIBLE)) || objects[(otmp)->otyp].oc_dexclass == ARMSZ_LIGHT)
 #define is_medium_armor(otmp)	(objects[(otmp)->otyp].oc_dexclass == ARMSZ_MEDIUM)
 

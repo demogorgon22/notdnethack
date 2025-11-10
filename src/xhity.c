@@ -47,6 +47,12 @@ silverman_exhultation(int encouragement)
 		if(m->mtyp == PM_SILVERMAN)
 			m->encouraged = max(m->encouraged, encouragement);
 	}
+	if(youracedata->mtyp == PM_SILVERMAN){
+		pline("Something within you exults!");
+		if(encouragement > 8)
+			verbalize("Rot for the scarlet goddess!");
+		u.uencouraged = max(u.uencouraged, encouragement);
+	}
 }
 
 boolean
@@ -816,6 +822,16 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 					result = xmeleehity(magr, mdef, attk, &otmp, vis, tohitmod, ranged, 0);
 					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
 						otmp->otyp = otmp->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
+					if (pa->mtyp == PM_SILVERKNIGHT && result&MM_HIT){
+						if(youagr){
+							if(u.uencouraged < 10)
+								u.uencouraged++;
+						}
+						else {
+							if(magr->encouraged < 10)
+								magr->encouraged++;
+						}
+					}
 					/* Marionette causes an additional weapon strike to a monster behind the original target */
 					/* this can attack peaceful/tame creatures without warning */
 					if (youagr && !ranged && u.sealsActive&SEAL_MARIONETTE && (result != MM_MISS))
@@ -1560,7 +1576,7 @@ boolean ranged;
 		pline("%s flails around randomly.", Monnam(magr));
 	}
 	else if (ranged && otmp) {
-		pline("%s %s %s wildly.", Monnam(magr), otmp->otyp == AKLYS ? "throws" : "thrusts",
+		pline("%s %s %s wildly.", Monnam(magr), otmp->otyp == AKLYS ? "throws" : otmp->otyp == SILVERKNIGHT_SCYTHE ? "swings" : "thrusts",
 			obj_is_pname(otmp) ? the(xname(otmp)) : an(xname(otmp)));
 	}
 	else {
@@ -2280,6 +2296,8 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		(pa->mtyp == PM_KRAKEN__THE_FIEND_OF_WATER) ||
 		(pa->mtyp == PM_TIAMAT__THE_FIEND_OF_WIND) ||
 		(pa->mtyp == PM_CHAOS) ||
+		(pa->mtyp == PM_DOOM_KNIGHT) ||
+		(pa->mtyp == PM_SILVERKNIGHT) ||
 		(pa->mtyp == PM_CAILLEA_ELADRIN) ||
 		(pa->mtyp == PM_GAE_ELADRIN)
 		)){
@@ -2291,17 +2309,57 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 				(pa->mtyp == PM_KRAKEN__THE_FIEND_OF_WATER && rn2(100)<52) ||
 				(pa->mtyp == PM_TIAMAT__THE_FIEND_OF_WIND && !rn2(4)) ||
 				(pa->mtyp == PM_CHAOS && rn2(3)) ||
-				(pa->mtyp == PM_DOOM_KNIGHT && !magr->mcan && !magr->mspec_used && !rn2(4)) ||
+				(pa->mtyp == PM_DOOM_KNIGHT && !youagr && !magr->mcan && !magr->mspec_used && !rn2(4)) ||
+				(pa->mtyp == PM_SILVERKNIGHT && !youagr && !magr->mcan && !magr->mspec_used && 
+					((mdef && distmin(x(magr),y(magr),x(mdef),y(mdef)) > 1)
+					|| magr->mhp < magr->mhpmax/2
+					|| (*hp(&youmonst) < (*hpmax(&youmonst)/2)))
+				) ||
 				(pa->mtyp == PM_GAE_ELADRIN && !magr->mcan && !magr->mspec_used && !rn2(3)) ||
 				(pa->mtyp == PM_CAILLEA_ELADRIN && !magr->mcan && !magr->mspec_used)
-				){
+			){
 				add_subout(subout, SUBOUT_SPELLS);
 			}
+			else if(pa->mtyp == PM_SILVERKNIGHT){
+				if(!rn2(10)){
+					add_subout(subout, SUBOUT_VOMIT);
+				}
+				else if(mdef && !youagr && magr->mhp < magr->mhpmax/2 && distmin(x(magr),y(magr),x(mdef),y(mdef)) <= 1){
+					add_subout(subout, SUBOUT_PUSH);
+				}
+			}
 		}
-		/* cast only spells if SUBOUT_SPELLS; cast no spells if !SUBOUT_SPELLS */
-		if (!is_null_attk(attk) && ((attk->aatyp == AT_MAGC) == !check_subout(subout, SUBOUT_SPELLS))) {
-			/* just get the next attack */
-			GETNEXT
+		if (!is_null_attk(attk)) {
+			/* silverknight */
+			if(pa->mtyp == PM_SILVERKNIGHT){
+				if(check_subout(subout, SUBOUT_VOMIT)){
+					if((attk->aatyp != AT_VOMT)){
+						GETNEXT
+					}
+				}
+				else if(check_subout(subout, SUBOUT_PUSH)){
+					if((attk->adtyp != AD_PSH3)){
+						GETNEXT
+					}
+				}
+				else if(check_subout(subout, SUBOUT_SPELLS)){
+					if(attk->aatyp != AT_MAGC && attk->aatyp != AT_MMGC){
+						GETNEXT
+					}
+				}
+				else {
+					if(attk->aatyp == AT_VOMT || attk->adtyp == AD_PSH3
+					 || attk->aatyp == AT_MAGC || attk->aatyp == AT_MMGC
+					){
+						GETNEXT
+					}
+				}
+			}
+			/* cast only spells if SUBOUT_SPELLS; cast no spells if !SUBOUT_SPELLS */
+			else if((attk->aatyp == AT_MAGC || attk->aatyp == AT_MMGC) == !check_subout(subout, SUBOUT_SPELLS)){
+				/* just get the next attack */
+				GETNEXT
+			}
 		}
 		if(pa->mtyp == PM_CHAOS && !PURIFIED_FIRE){
 			if(attk->aatyp == AT_CLAW && attk->adtyp == AD_SQUE)
@@ -3435,7 +3493,7 @@ boolean ranged;
 			);
 	}
 	else {
-		Sprintf(buf, "%s %s %s", Monnam(magr), otmp->otyp == AKLYS ? "throws" : "thrusts",
+		Sprintf(buf, "%s %s %s", Monnam(magr), otmp->otyp == AKLYS ? "throws" : otmp->otyp == SILVERKNIGHT_SCYTHE ? "swings" : "thrusts",
 			obj_is_pname(otmp) ? the(xname(otmp)) : an(xname(otmp)));
 	}
 
@@ -4335,6 +4393,7 @@ int *shield_margin;
 			if (gloves){
 				switch (gloves->otyp) {
 				case HARMONIUM_GAUNTLETS:
+				case SILVERKNIGHT_GAUNTLETS:
 				case ORIHALCYON_GAUNTLETS:    /* metal */
 				case GAUNTLETS_OF_POWER:    /* metal */
 				case GAUNTLETS:
@@ -4659,6 +4718,9 @@ int *shield_margin;
 					)
 						*shield_margin += 3;//+1 bonus to shield size
 				}
+				else if(uwep && uwep->otyp == SILVERKNIGHT_SPEAR){
+					*shield_margin = 1 + uwep->spe + shield_skill(uwep);
+				}
 				else *shield_margin = -1;
 			}
 		}
@@ -4899,7 +4961,7 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 	if (!hit){
 		miss = TRUE;
 		/* train player's Shield skill if applicable */
-		if (youdef && uarms && (dieroll-accuracy <= shield_margin))
+		if (youdef && shield_margin > 0 && (dieroll-accuracy <= shield_margin))
 			use_skill(P_SHIELD, 1);
 	}
 
@@ -12100,6 +12162,12 @@ int vis;
 			break;
 
 			/* basic damage types */
+		case AD_HOLY:
+			if (hates_holy_mon(mdef))
+				dmg *= 2;
+			else if (hates_unholy_mon(mdef))
+				dmg = 0;
+			goto expl_common;
 		case AD_COLD:
 			if (Cold_res(mdef))
 				dmg = 0;
@@ -12258,7 +12326,7 @@ expl_common:
 			result |= MM_AGR_DIED;
 
 		/* give this message even if it was visible */
-		if (magr->mtame)
+		if (magr->mtame && !get_mx(magr, MX_ESUM))
 			You("have a melancholy feeling for a moment, then it passes.");
 	}
 	/* wake nearby monsters -- it's a loud boom */
@@ -17080,11 +17148,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	if(weapon 
 		&& (weapon->otyp == CHURCH_PICK || (weapon->otyp == CHURCH_SHORTSWORD && !(resist_pierce(pd) && !resist_slash(pd))))
 		&& (is_animal(pd) || (youdef && u.uimpurity > 10)
-			|| pd->mtyp == PM_DEEP_ONE || pd->mtyp == PM_DEEPER_ONE
-			|| pd->mtyp == PM_KUO_TOA || pd->mtyp == PM_KUO_TOA_WHIP
-			|| pd->mtyp == PM_BEING_OF_IB || pd->mtyp == PM_PRIEST_OF_IB
-			|| is_mind_flayer(pd) || is_were(pd)
-			|| pd->mtyp == PM_BEFOULED_WRAITH || mdef->mtraitor || mdef->mferal
+			|| is_ritually_impure(pd) || mdef->mtraitor || mdef->mferal
 		)
 	){
 		elemdmg *= Insight >= 40 ? 1.5 : 1.2;
@@ -18461,8 +18525,11 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 		if(is_mind_flayer(magr->data)){
 			IMPURITY_UP(u.uimp_mind_flayers)
 		}
-		if(magr->mtyp == PM_BEFOULED_WRAITH || magr->mtraitor || magr->mferal){
+		if(magr->mtyp == PM_BEFOULED_WRAITH || magr->mtyp == PM_SHOGGOTH || magr->mtraitor || magr->mferal){
 			IMPURITY_UP(u.uimp_betrayal)
+		}
+		if(magr->mtyp == PM_RAGE_WALKER){
+			IMPURITY_UP(u.uimp_murder)
 		}
 	}
 	/* check that magr is still alive */
@@ -19299,10 +19366,17 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 					/* maybe message */
 					if (youagr) {
 						if (pd->mtyp == PM_QUIVERING_BLOB) pline("Boing! You are hit by the rebounding membrane!");
+						else if (pd->mtyp == PM_FLESH_THAT_HATES) pline("You are hit by its spines of shattered bone!");
 					}
 					else if (vis) {
 						if (pd->mtyp == PM_QUIVERING_BLOB) {
 							pline("Boing! %s is hit by %s rebounding membrane!",
+								Monnam(magr),
+								(youdef ? "your" : s_suffix(mon_nam(mdef)))
+								);
+						}
+						else if (pd->mtyp == PM_FLESH_THAT_HATES) {
+							pline("%s is hit by %s spines of shattered bone!",
 								Monnam(magr),
 								(youdef ? "your" : s_suffix(mon_nam(mdef)))
 								);
@@ -22777,6 +22851,8 @@ boolean magical;
 		dmg = (dmg + 1) / 2;
 	if (mdef->mtyp == PM_CENTER_OF_ALL && Insight < 32)
 		dmg = (dmg + 1) / 2;
+	if (mdef->munburn > 0)
+		dmg = (dmg + 1) / 2;
 	if (mdef == &youmonst && u.uvaul_duration){
 		if(physical && magical)
 			dmg = (dmg + 3) / 4;
@@ -22786,6 +22862,11 @@ boolean magical;
 	if ((mdef == &youmonst || mdef->mtame) && u.uspellprot){
 		if(magical && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
 			dmg = (dmg + 1) / 2;
+	}
+	struct obj *otmp = (mdef == &youmonst ? uwep : MON_WEP(mdef));
+	if (otmp && otmp->otyp == PEST_GLAIVE){
+		if(magical)
+			dmg -= (dmg + 3) / 5;
 	}
 	/* Priests of Asmodeus */
 	if(mdef != &youmonst && flags.spriest_level && is_demon(mdef->data) && is_lawful_mon(mdef) && !mdef->mpeaceful)
