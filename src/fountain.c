@@ -1551,7 +1551,7 @@ dipforge(struct obj *obj)
 	burn_away_slime();
 	melt_frozen_air();
 	
-	boolean forgeable = (u.ublood_smithing && (!is_flammable(obj) || obj->oerodeproof)) || is_metallic(obj);
+	boolean forgeable = (u.ublood_smithing && (!is_flammable(obj) || obj->oerodeproof || obj->oartifact)) || is_metallic(obj);
 
 	if(obj->oartifact == ART_FIRE_BRAND && (P_RESTRICTED(P_SMITHING) || yn("Reshape Fire Brand?") == 'y')){
 		if(obj->owornmask&W_ARMOR){
