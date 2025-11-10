@@ -6144,9 +6144,16 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			alt_attk.adtyp = AD_SITM;
 			return xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
 		}
-		/* make physical attack */
-		alt_attk.adtyp = AD_PHYS;
-		result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		if(pa->mtyp == PM_GELATINOUS_CUBE || pa->mtyp == PM_CRYSTAL_OOZE){
+			/* make (higher-damage) acid attack */
+			alt_attk.adtyp = AD_ACID;
+			result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg+d(3 + magr->m_lev/3, 6), dieroll, vis, ranged);
+		}
+		else {
+			/* make physical attack */
+			alt_attk.adtyp = AD_PHYS;
+			result = xmeleehurty(magr, mdef, &alt_attk, originalattk, weapon_p, dohitmsg, dmg, dieroll, vis, ranged);
+		}
 		/* return early if cannot continue the attack */
 		if (result&(MM_DEF_DIED|MM_DEF_LSVD))
 			return result;
@@ -19251,7 +19258,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 										Monnam(magr), mon_nam(mdef));
 								}
 								magr->mcanmove = 0;
-								magr->mfrozen = dmg;
+								magr->mfrozen = min(dmg, 127);
 							}
 						}
 					}
