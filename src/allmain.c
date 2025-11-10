@@ -2966,8 +2966,8 @@ karemade:
 				}
 				if(youmonst.mcaterpillars){
 					rot_caterpillars_bite(&youmonst);
-					pline_The("parasitic caterpillars have rotted to death!");
 					if(!rn2(20)){
+						pline_The("parasitic caterpillars have rotted to death!");
 						youmonst.mcaterpillars = FALSE;
 					}
 				}
