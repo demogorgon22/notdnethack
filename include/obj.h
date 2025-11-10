@@ -687,6 +687,8 @@ struct obj {
 				|| typ == WAR_HAMMER \
 				|| typ == SMITHING_HAMMER \
 				|| typ == CLUB \
+				|| typ == GOEDENDAG \
+				|| typ == SQUARE_CLUB \
 				|| typ == MACUAHUITL \
 				|| typ == QUARTERSTAFF \
 				|| typ == KHAKKHARA \
