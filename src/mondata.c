@@ -552,6 +552,8 @@ int template;
 		ptr->mflagsb |= (MB_NOEYES|MB_INDIGESTIBLE);
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE);
 		ptr->mflagsa |= (MA_UNDEAD);
+		ptr->mflagsv |= MV_LIFESENSE;
+		ptr->mflagsv &= ~(MV_NORMAL|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_DARKSIGHT|MV_EXTRAMISSION|MV_CATSIGHT);
 		if(!(ptr->mflagsw&MW_EYE_OF_YGG)){
 			ptr->mflagsw |= MW_ELDER_SIGN;
 		}
@@ -564,9 +566,11 @@ int template;
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE|MG_HATESUNHOLY);
 		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
 		ptr->mflagsa |= (MA_UNDEAD | MA_VAMPIRE);
+		ptr->mflagsv |= (MV_BLOODSENSE);
 		/* resists: */
 		ptr->mresists |= (MR_SLEEP | MR_POISON);	/* individual monsters gain cold res at mlev >= 10 */
 		ptr->mflagsw |= (MW_ELDER_EYE_ENERGY);
+		ptr->msound = MS_VAMPIRE;
 		break;
 	case FLAYED:
 		ptr->mlevel = max(20, ptr->mlevel);
@@ -583,11 +587,15 @@ int template;
 		ptr->spe_ldr += 3;
 		ptr->spe_fdr += 3;
 		/* flags: */
+		ptr->mflagsb |= (MB_NOEYES);
 		ptr->mflagst |= (MT_HOSTILE | MT_STALK);
 		ptr->mflagst &= ~(MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
 		ptr->mflagsg &= ~(MG_HATESUNHOLY);
 		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
-		ptr->mflagsa |= (MA_DEMON);
+		ptr->mflagsa |= (MA_DEMON|MA_MINION);
+		ptr->mflagsv |= MV_BLOODSENSE|MV_EXTRAMISSION;
+		ptr->mflagsv &= ~(MV_NORMAL|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_DARKSIGHT|MV_CATSIGHT);
+
 		/* resists: */
 		ptr->mresists |= (MR_SLEEP | MR_POISON);	/* individual monsters gain cold res at mlev >= 10 */
 		
