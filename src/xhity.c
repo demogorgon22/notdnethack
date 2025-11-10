@@ -17091,6 +17091,20 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		specdmg *= Insight >= 40 ? 1.5 : 1.2;
 		//Unlike serration, pysical damage is also done here. Armor protects the target from the whatever-it-is being driven into their body
 		subtotl *= Insight >= 40 ? 1.5 : 1.2;
+
+		//Poison-like effect
+		if(Insight >= 60){
+			if(Poison_res(mdef)){
+				if(!rn2(20))
+					elemdmg += 200;
+			}
+			else {
+				if(!rn2(10))
+					elemdmg += 400;
+				else
+					elemdmg += rnd(10);
+			}
+		}
 	}
 	/*clawmark adjustment*/
 	if(youagr && sneak_attack && active_glyph(CLAWMARK)){
