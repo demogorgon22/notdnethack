@@ -1276,7 +1276,7 @@ int portal;
 	/* Mysterious force to shake up the uh quest*/
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
-		&& dunlev(&u.uz) < qlocate_level.dlevel
+		&& dunlev(&u.uz) >= qlocate_level.dlevel
 		&& rnd(20) < Insight && rn2(2)
 	){
 		int diff = rn2(2);	/* 0 - 1 */
