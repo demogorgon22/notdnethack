@@ -1029,6 +1029,9 @@ OBJECT[60%]: '#', "wrathful mithril sword", random
 OBJECT[60%]: '#', "wrathful mithril sword", random
 OBJECT[60%]: '#', "wrathful mithril sword", random
 
+OBJECT: '(', "unicorn horn", random
+OBJECT: '(', "unicorn horn", random, cursed, 0
+
 OBJECT:')',"elven spear", random
 OBJECT:')',"elven spear", random
 OBJECT:')',"elven spear", random
@@ -1119,7 +1122,7 @@ OBJECT:'#',"large damp high-elven warsword", contained
 OBJECT:'#',"tiny holy-weapon wrathful +3 moon axe", contained
 OBJECT:'#',"blessed fixed +3 silver long sword", contained
 OBJECT:'#',"blessed +3 mithril rapier", contained
-OBJECT:'#',"blessed wand of nothing", contained
+OBJECT:'#',"blessed wand of undead turning", contained
 OBJECT:'#',"mithril wrathful elven broadsword", contained
 OBJECT:'#',"blessed fixed +3 elven bow", contained
 
