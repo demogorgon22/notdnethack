@@ -2822,11 +2822,12 @@ struct monst *mon;
 	struct monst *mtmp, *mtmp2;
 	int once, range, xlev;
 	short fast = 0;
+	boolean boosted_turn = has_template(mon, ILLUMINATED);
 
 	if(mon_healing_turn(mon)){
 		if(canseemon(mon))
 			pline("%s shines with holy light!", Monnam(mon));
-		mon->mhp += d(10,6);
+		mon->mhp += d(10 + (boosted_turn ? 6 : 0), 6);
 		if(mon->mhp > mon->mhpmax)
 			mon->mhp = mon->mhpmax;
 	}
@@ -2840,7 +2841,7 @@ struct monst *mon;
 	}
 
 	/* note: does not perform unturn_dead() on victims' inventories */
-	range = BOLT_LIM + (mon->m_lev / 5);
+	range = BOLT_LIM + (mon->m_lev / 5) + (boosted_turn ? 2 : 0);
 	range *= range;
 	once = 0;
 	for(mtmp = fmon; mtmp; mtmp = mtmp2) {
@@ -2867,7 +2868,7 @@ struct monst *mon;
 				mtmp->mcanmove = 1;
 		    } else if (!resist(mtmp, WAND_CLASS, 0, TELL)) {
 				if(is_undead(mtmp->data)){
-					xlev = turn_level(mtmp);
+					xlev = turn_level(mtmp) + (boosted_turn ? 6 : 0);
 					if (mon->m_lev >= xlev && !resist(mtmp, WAND_CLASS, 0, NOTELL)) {
 						pline("%s is destroyed!", Monnam(mtmp));
 						grow_up(mon, mtmp);
@@ -2885,7 +2886,7 @@ struct monst *mon;
 		){
 			if(canseemon(mtmp))
 				pline("%s looks better!", Monnam(mtmp));
-			mtmp->mhp += d(10,6);
+			mtmp->mhp += d(10 + (boosted_turn ? 6 : 0), 6);
 			if(mtmp->mhp > mtmp->mhpmax)
 				mtmp->mhp = mtmp->mhpmax;
 		}
@@ -2901,11 +2902,11 @@ struct monst *mon;
 				if(is_undead(youracedata) && mon->m_lev >= xlev && rnd(u.ulevel) <= xlev){
 					if(mon_healing_turn(mon)){
 						You("are burned by the holy light!");
-						losehp(d(10,6), "holy light", KILLED_BY);
+						losehp(d(10 + (boosted_turn ? 6 : 0), 6), "holy light", KILLED_BY);
 					}
 					else {
 						You("are burned by the holy words!");
-						losehp(d(6,6), "holy scripture", KILLED_BY);
+						losehp(d(6 + (boosted_turn ? 2 : 0), boosted_turn ? 8 : 6), "holy scripture", KILLED_BY);
 					}
 				}
 				if(!rn2(HPanicking)){
@@ -2917,7 +2918,7 @@ struct monst *mon;
 		else if(mon->mtame && mon_healing_turn(mon)
 		 && !(is_undead(youracedata) || (is_demon(youracedata) && (mon->m_lev > (MAXULEV/2))))
 		){
-			healup(d(10,6), 0, FALSE, FALSE);
+			healup(d(10 + (boosted_turn ? 6 : 0), 6), 0, FALSE, FALSE);
 		}
 	}
 	return MOVE_STANDARD;
