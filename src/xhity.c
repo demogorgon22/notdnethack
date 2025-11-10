@@ -40,6 +40,15 @@ const struct attack noattack = { 0, 0, 0, 0 };
 struct attack basicattack  = { AT_WEAP, AD_PHYS, 1, 4 };
 struct attack grapple = { AT_HUGS, AD_PHYS, 0, 6 };	/* for grappler's grasp */
 
+void
+silverman_exhultation(int encouragement)
+{
+	for(struct monst *m = fmon; m; m = m->nmon){
+		if(m->mtyp == PM_SILVERMAN)
+			m->encouraged = max(m->encouraged, encouragement);
+	}
+}
+
 boolean
 peace_check_move(struct monst *mon)
 {
@@ -5848,6 +5857,8 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		/* asymetric: diseasemu prints out messages, applies sickness to player*/
 		if(originalattk->aatyp == AT_VOMT){
 			mdef->mcaterpillars = TRUE;
+			if(dmg >= mdef->mhp)
+				silverman_exhultation(16);
 		}
 		if (youdef) {
 			if (!diseasemu(pa))
@@ -5867,7 +5878,10 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					pline("%s is afflicted by disease!",
 						Monnam(mdef));
 				}
-				if(!rn2(10)) dmg += 100;
+				if(!rn2(10)){
+					silverman_exhultation(16);
+					dmg += 100;
+				}
 				if(!youagr && mdef->mhp < mdef->mhpmax/2 && ((magr->mspores && !rn2(20)) || has_template(magr, SPORE_ZOMBIE) || has_template(magr, CORDYCEPS)))
 					mdef->mspores = TRUE;
 			}
@@ -5899,6 +5913,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				exercise(A_INT, FALSE);
 				exercise(A_CON, FALSE);
 				exercise(A_DEX, FALSE);
+				silverman_exhultation(8);
 			}
 			else if (vis) {
 				pline("%s is covered in poison!",
@@ -6517,8 +6532,9 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				}
 				else {
 					/* 9/10 odds of small bonus damage */
-					if (rn2((attk->adtyp != AD_SVPN || Poison_res(mdef)) ? 10 : 5))
+					if (rn2((attk->adtyp != AD_SVPN || Poison_res(mdef)) ? 10 : 5)) {
 						mdef->mhp -= rn1(10, 6);	/* note that this is BONUS damage */
+					}
 					/* 1/10 of deadly */
 					else {
 						if (vis)
@@ -6526,6 +6542,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						if(youagr){
 							IMPURITY_UP(u.uimp_poison)
 						}
+						silverman_exhultation(8);
 						mdef->mhp = 0;
 					}
 					/* if the poison killed, deal with the maybe-dead monster and return early */
@@ -11721,10 +11738,12 @@ int vis;
 			if (youdef) {
 				pline("%s is burning your %s!", Something, makeplural(body_part(LUNG)));
 				You("cough and spit blood!");
+				silverman_exhultation(4);
 			}
 			else if (vis&VIS_MDEF) {
 				pline("%s coughs!",
 					Monnam(mdef));
+				silverman_exhultation(4);
 			}
 		}
 		else {
@@ -11753,7 +11772,10 @@ int vis;
 			if (!Sick_res(mdef)) {
 				if (vis&VIS_MDEF)
 					pline("%s is afflicted by disease!", Monnam(mdef));
-				if(!rn2(10)) dmg += 100;
+				if(!rn2(10)){
+					silverman_exhultation(16);
+					dmg += 100;
+				}
 			}
 		}
 		if(pa->mtyp == PM_JUIBLEX){
@@ -15289,24 +15311,29 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			{
 			case OPOISON_BASIC:
 				poisdmg += (major) ? (youdef ? d(3, 6) : 80) : rnd(6);
+				silverman_exhultation(8);
 				break;
 			case OPOISON_FILTH:
 				poisdmg += (major) ? (youdef ? d(3, 12) : 100) : rnd(12);
+				silverman_exhultation(16);
 				break;
 			case OPOISON_DIRE:
 				if(Poison_res(mdef))
 					poisdmg += (major) ? (youdef ? d(3, 6) : 80) : rn1(10, 6)/2;
 				else
 					poisdmg += (major) ? (youdef ? d(6, 6) : 160) : rn1(10, 6);
+				silverman_exhultation(8);
 				break;
 			case OPOISON_SLEEP:
 				/* no damage */
 				break;
 			case OPOISON_BLIND:
 				poisdmg += (major) ? 3 : rnd(3);
+				silverman_exhultation(4);
 				break;
 			case OPOISON_PARAL:
 				poisdmg += (major) ? 6 : rnd(6);
+				silverman_exhultation(8);
 				break;
 			case OPOISON_AMNES:
 				/* no damage */
@@ -19147,6 +19174,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 							if (canseemon(magr))
 								pline("%s looks very sick!", Monnam(magr));
 							*hp(magr) = (*hp(magr) + 1) / 2;
+							silverman_exhultation(16);
 						}
 					}
 				}

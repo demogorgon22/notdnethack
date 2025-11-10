@@ -755,6 +755,7 @@ struct permonst *mdat;
 		return FALSE;
 	}
 	else {
+		silverman_exhultation(16);
 		make_sick(Sick ? Sick / 2L + 1L : (long)rn1(ACURR(A_CON), 20),
 			mdat->mname, TRUE, SICK_NONVOMITABLE);
 		return TRUE;

@@ -7085,6 +7085,7 @@ boolean severe;			/* Powerful poison that partially overcomes poison resistance 
 				printed = TRUE;
 			}
 			IMPURITY_UP(u.uimp_poison)
+			silverman_exhultation(8);
 		}
 		if (i <= 5) {
 			drain = -rn1(3, 3);
@@ -10554,12 +10555,14 @@ rot_caterpillars_bite(struct monst *mdef)
 		IMPURITY_UP(u.uimp_rot)
 		if (!Sick_res(mdef)) {
 			if(!Sick) make_sick((long)rn1(ACURR(A_CON), 20), "rotting caterpillars", TRUE, SICK_NONVOMITABLE);
-			damage += (*hp(mdef))*3.3/100 + 26;
+			damage += (*hpmax(mdef))*3.3/100 + 26;
 		}
 		else {
-			damage += (*hp(mdef))*2/100 + 8;
+			damage += (*hpmax(mdef))*2/100 + 8;
 		}
 		You("are bitten by a swarm of parasitic caterpillars!");
+		if(damage >= *hp(mdef))
+			silverman_exhultation(20); //Probably about to die
 		losehp(damage, "a swarm of parasitic caterpillars", KILLED_BY);
 		if(has_blood(youracedata)){
 			Your("blood is being drained!");
@@ -10572,10 +10575,10 @@ rot_caterpillars_bite(struct monst *mdef)
 	else {
 		if (!Sick_res(mdef)) {
 			damage += (!rn2(10)) ? 100 : rnd(12);
-			damage += (*hp(mdef))*3.3/100 + 26;
+			damage += (*hpmax(mdef))*3.3/100 + 26;
 		}
 		else {
-			damage += (*hp(mdef))*2/100 + 8;
+			damage += (*hpmax(mdef))*2/100 + 8;
 		}
 		if(has_blood_mon(mdef) && !rn2(3) && !Drain_res(mdef)){
 			pline("%s suddenly seems weaker!", Monnam(mdef));
@@ -10586,7 +10589,10 @@ rot_caterpillars_bite(struct monst *mdef)
 			mdef->mhpmax = max(mdef->mhpmax, 1);
 			mdef->mhp = min(mdef->mhpmax, mdef->mhp);
 		}
-		if(m_losehp(mdef, damage, FALSE, "swarm of parasitic caterpillars")); //died
+		if(m_losehp(mdef, damage, FALSE, "swarm of parasitic caterpillars")){
+			//died
+			silverman_exhultation(20);
+		}
 		else if (canseemon(mdef))
 			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
 	}

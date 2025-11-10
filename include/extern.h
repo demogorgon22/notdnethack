@@ -3544,6 +3544,7 @@ E int FDECL(dowrite, (struct obj *));
 
 /* ### xhity.c ### */
 
+E void FDECL(silverman_exhultation, (int));
 E boolean FDECL(peace_check_move, (struct monst *));
 E void FDECL(rotate_plus45, (int *, int *));
 E void FDECL(rotate_minus45, (int *, int *));
