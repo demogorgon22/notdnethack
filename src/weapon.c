@@ -394,8 +394,13 @@ struct monst *magr;
 		else if(activeFightingForm(FFORM_POMMEL))
 			attackmask = WHACK; // only bashing
 	}
-	if (obj && magr && (obj->otyp == TOOTH || obj->otyp == GOEDENDAG) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
-		attackmask = PIERCE; // only thrusting
+	if (obj && magr){
+		if((obj->otyp == TOOTH || obj->otyp == GOEDENDAG || obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE))
+			attackmask = PIERCE; // only thrusting
+		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_HEW && CHECK_ETRAIT(obj, magr, ETRAIT_HEW))
+			attackmask = SLASH; // only slashing
+		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_STUNNING_STRIKE && CHECK_ETRAIT(obj, magr, ETRAIT_STUNNING_STRIKE))
+			attackmask = WHACK; // only bashing
 	}
 	if(obj && obj->o_e_trait == ETRAIT_HEW && magr
 		&& CHECK_ETRAIT(obj, magr, ETRAIT_HEW)
