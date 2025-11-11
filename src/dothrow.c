@@ -97,6 +97,7 @@ int shots, shotlimit;
 		shotlimit = 1;
 		if(u.dz > 0){
 			raygun->ovar1_charges -= cost;
+			use_skill(P_FIREARM, 1);
 			if(raygun->altmode == AD_DISN){
 				if (dighole(FALSE)){
 					Your("raygun disintegrated the floor!");
@@ -151,7 +152,7 @@ int shots, shotlimit;
 		} else {
 			if(Hallucination) pline1(Ronnie_ray_gun[rn2(SIZE(Ronnie_ray_gun))]);
 			raygun->ovar1_charges -= cost;
-
+			use_skill(P_FIREARM, 1);
 			struct zapdata zapdata = { 0 };
 			basiczap(&zapdata, raygun->altmode, ZAP_RAYGUN, 6);
 			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
@@ -168,7 +169,7 @@ int shots, shotlimit;
 	while(shots){
 		if(Hallucination) pline1(Ronnie_ray_gun[rn2(SIZE(Ronnie_ray_gun))]);
 		raygun->ovar1_charges -= cost;
-
+		use_skill(P_FIREARM, 1);
 		struct zapdata zapdata = { 0 };
 		basiczap(&zapdata, raygun->altmode, ZAP_RAYGUN, 6);
 		zap(&youmonst, u.ux, u.uy, u.dx, u.dy, objects[(raygun->otyp)].oc_range, &zapdata);
