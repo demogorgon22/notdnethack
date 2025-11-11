@@ -568,7 +568,7 @@ struct Role roles[] = {
 	{"Old Hunter",  0} },
 	GOD_THE_COLLEGE, GOD_THE_CHOIR, GOD_DEFILEMENT, /* Bloodborne-ish */
 	GOD_DEFILEMENT,
-	"Hnt", "the Cathedral", "the Haunted Forest",
+	"Hnt", "the Cathedral of Light", "the Haunted Forest",
 	PM_UNDEAD_HUNTER, NON_PM, NON_PM,
 	PM_VICAR_AMALIA, PM_VERGER, PM_INDEX_WOLF,
 	PM_HUMAN_WEREWOLF, PM_MIST_WOLF, S_DOG, S_VORTEX,

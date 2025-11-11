@@ -285,6 +285,87 @@ struct Align {
 extern const struct Align aligns[];	/* table of available alignments */
 
 
+enum {
+    PWR_ABDUCTION = 0,
+    PWR_FIRE_BREATH,
+    PWR_TRANSDIMENSIONAL_RAY,
+    PWR_TELEPORT,
+    PWR_JESTER_S_MIRTH,
+    PWR_THIEF_S_INSTINCTS,
+    PWR_ASTAROTH_S_ASSEMBLY,
+    PWR_ASTAROTH_S_SHARDS,
+    PWR_ICY_GLARE,
+    PWR_BALAM_S_ANOINTING,
+    PWR_BLOOD_MERCENARY,
+    PWR_SOW_DISCORD,
+    PWR_GIFT_OF_HEALING,
+    PWR_GIFT_OF_HEALTH,
+    PWR_THROW_WEBBING,
+    PWR_THOUGHT_TRAVEL,
+    PWR_DREAD_OF_DANTALION,
+    PWR_EARTH_SWALLOW,
+    PWR_ECHIDNA_S_VENOM,
+    PWR_SUCKLE_MONSTER,
+    PWR_PURIFYING_BLAST,
+    PWR_RECALL_TO_EDEN,
+    PWR_STARGATE,
+    PWR_WALKER_OF_THRESHOLDS,
+    PWR_GEYSER,
+    PWR_VENGANCE,
+    PWR_SHAPE_THE_WIND,
+    PWR_THORNS_AND_STONES,
+    PWR_BARRAGE,
+    PWR_RAVEN_S_TALONS,
+    PWR_HORRID_WILTING,
+    PWR_TURN_ANIMALS_AND_HUMANOIDS,
+    PWR_REFILL_LANTERN,
+    PWR_HELLFIRE,
+    PWR_BREATH_POISON,
+    PWR_RUINOUS_STRIKE,
+    PWR_AUREATE_DELUGE,
+    PWR_CALL_MURDER,
+    PWR_ROOT_SHOUT,
+    PWR_PULL_WIRES,
+    PWR_DISGUSTED_GAZE,
+    PWR_BLOODY_TOUNGE,
+    PWR_SILVER_TOUNGE,
+    PWR_EXHALATION_OF_THE_RIFT,
+    PWR_QUERIENT_THOUGHTS,
+    PWR_GREAT_LEAP,
+    PWR_MASTER_OF_DOORWAYS,
+    PWR_READ_SPELL,
+    PWR_BOOK_TELEPATHY,
+    PWR_UNITE_THE_EARTH_AND_SKY,
+    PWR_HOOK_IN_THE_SKY,
+    PWR_ENLIGHTENMENT,
+    PWR_DAMNING_DARKNESS,
+    PWR_TOUCH_OF_THE_VOID,
+    PWR_ECHOS_OF_THE_LAST_WORD,
+    PWR_POISON_GAZE,
+    PWR_GAP_STEP,
+    PWR_MOAN,
+    PWR_SWALLOW_SOUL,
+    PWR_EMBASSY_OF_ELEMENTS,
+    PWR_SUMMON_MONSTER,
+    PWR_PSEUDONATURAL_SURGE,
+    PWR_SILVER_DEW,
+    PWR_GOLDEN_DEW,
+    PWR_MIRROR_SHATTER,
+    PWR_MIRROR_WALK,
+    PWR_FLOWING_FORMS,
+    PWR_PHASE_STEP,
+    PWR_BLACK_BOLT,
+    PWR_WEAVE_BLACK_WEB,
+    PWR_MAD_BURST,
+    PWR_UNENDURABLE_MADNESS,
+    PWR_CONTACT_YOG_SOTHOTH,
+    PWR_IDENTIFY_INVENTORY,
+    PWR_CLAIRVOYANCE,
+    PWR_FIND_PATH,
+    PWR_GNOSIS_PREMONITION,
+    NUMBER_POWERS
+};
+
 /*** Information about the player ***/
 struct you {
 	xchar ux, uy;
@@ -902,11 +983,12 @@ struct you {
 #define SEAL_EURYNOME				0x0002000L
 	int		eurycounts;
 #define SEAL_EVE					0x0004000L
-#define SEAL_FAFNIR					0x0008000L
-#define SEAL_HUGINN_MUNINN			0x0010000L
-#define SEAL_IRIS					0x0020000L
+#define SEAL_HUGINN_MUNINN			0x0008000L
+#define SEAL_IRIS					0x0010000L
 	long	irisAttack;
-#define SEAL_JACK					0x0040000L
+#define SEAL_JACK					0x0020000L
+#define SEAL_MAEGERA				0x0040000L
+	int		maegcounts;
 #define SEAL_MALPHAS				0x0080000L
 #define SEAL_MARIONETTE				0x0100000L
 #define SEAL_MOTHER					0x0200000L
@@ -971,84 +1053,6 @@ struct you {
 	int spiritAC;
 	int spiritAttk;
 	
-#define	PWR_ABDUCTION				 0
-#define	PWR_FIRE_BREATH				 1
-#define	PWR_TRANSDIMENSIONAL_RAY	 2
-#define	PWR_TELEPORT				 3
-#define	PWR_JESTER_S_MIRTH			 4
-#define	PWR_THIEF_S_INSTINCTS		 5
-#define	PWR_ASTAROTH_S_ASSEMBLY		 6
-#define	PWR_ASTAROTH_S_SHARDS		 7
-#define	PWR_ICY_GLARE				 8
-#define	PWR_BALAM_S_ANOINTING		 9
-#define	PWR_BLOOD_MERCENARY			10
-#define	PWR_SOW_DISCORD				11
-#define	PWR_GIFT_OF_HEALING			12
-#define	PWR_GIFT_OF_HEALTH			13
-#define	PWR_THROW_WEBBING			14
-#define	PWR_THOUGHT_TRAVEL			15
-#define	PWR_DREAD_OF_DANTALION		16
-#define	PWR_EARTH_SWALLOW			17
-#define	PWR_ECHIDNA_S_VENOM			18
-#define	PWR_SUCKLE_MONSTER			19
-#define	PWR_PURIFYING_BLAST			20
-#define	PWR_RECALL_TO_EDEN			21
-#define	PWR_STARGATE				22
-#define	PWR_WALKER_OF_THRESHOLDS	23
-#define	PWR_GEYSER					24
-#define	PWR_VENGANCE				25
-#define	PWR_SHAPE_THE_WIND			26
-#define	PWR_THORNS_AND_STONES		27
-#define	PWR_BARRAGE					28
-#define	PWR_BREATH_POISON			29
-#define	PWR_RUINOUS_STRIKE			30
-#define	PWR_RAVEN_S_TALONS			31
-#define	PWR_HORRID_WILTING			32
-#define	PWR_TURN_ANIMALS_AND_HUMANOIDS	33
-#define	PWR_REFILL_LANTERN			34
-#define	PWR_HELLFIRE				35
-#define	PWR_CALL_MURDER				36
-#define	PWR_ROOT_SHOUT				37
-#define	PWR_PULL_WIRES				38
-#define	PWR_DISGUSTED_GAZE			39
-#define	PWR_BLOODY_TOUNGE			40
-#define	PWR_SILVER_TOUNGE			41
-#define	PWR_EXHALATION_OF_THE_RIFT	42
-#define	PWR_QUERIENT_THOUGHTS		43
-#define	PWR_GREAT_LEAP				44
-#define	PWR_MASTER_OF_DOORWAYS		45
-#define	PWR_READ_SPELL				46
-#define	PWR_BOOK_TELEPATHY			47
-#define	PWR_UNITE_THE_EARTH_AND_SKY	48
-#define	PWR_HOOK_IN_THE_SKY			49
-#define	PWR_ENLIGHTENMENT			50
-#define	PWR_DAMNING_DARKNESS		51
-#define	PWR_TOUCH_OF_THE_VOID		52
-#define	PWR_ECHOS_OF_THE_LAST_WORD	53
-#define	PWR_POISON_GAZE				54
-#define	PWR_GAP_STEP				55
-#define	PWR_MOAN					56
-#define	PWR_SWALLOW_SOUL			57
-#define	PWR_EMBASSY_OF_ELEMENTS		58
-#define	PWR_SUMMON_MONSTER			59
-#define	PWR_PSEUDONATURAL_SURGE		60
-#define	PWR_SILVER_DEW				61
-#define	PWR_GOLDEN_DEW				62
-#define	PWR_MIRROR_SHATTER			63
-#define	PWR_MIRROR_WALK				64
-#define	PWR_FLOWING_FORMS			65
-#define	PWR_PHASE_STEP				66
-#define	PWR_BLACK_BOLT				67
-#define	PWR_WEAVE_BLACK_WEB			68
-#define	PWR_MAD_BURST				69
-#define	PWR_UNENDURABLE_MADNESS		70
-#define	PWR_CONTACT_YOG_SOTHOTH		71
-#define	PWR_IDENTIFY_INVENTORY		72
-#define	PWR_CLAIRVOYANCE			73
-#define	PWR_FIND_PATH				74
-#define	PWR_GNOSIS_PREMONITION		75
-#define	NUMBER_POWERS				76
-
 	int spiritPOrder[52]; //# of letters in alphabet, capital and lowercase
 //	char spiritPLetters[NUMBER_POWERS];
 	long spiritPColdowns[NUMBER_POWERS];
@@ -1083,6 +1087,7 @@ struct you {
 #define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (Insight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
 	long mutations[MUTATION_LISTSIZE];
 };	/* end of `struct you' */
+
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))
 #define uandroid ((Race_if(PM_ANDROID) && !Upolyd) || (Upolyd && (youmonst.data->mtyp == PM_ANDROID || youmonst.data->mtyp == PM_GYNOID || youmonst.data->mtyp == PM_OPERATOR || youmonst.data->mtyp == PM_COMMANDER)))
 #define umechanoid (uclockwork || uandroid)

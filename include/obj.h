@@ -100,6 +100,7 @@ enum {
 	OPROP_SMITHU,
 	OPROP_ANTAW,
 	OPROP_BYAKW,
+	OPROP_GOLDW,
 	MAX_OPROP
 };
 
@@ -401,6 +402,7 @@ struct obj {
 
 #define check_imp_mod(obj, prop) ((obj)->ovar1_iea_upgrades&(prop))
 #define add_imp_mod(obj, prop) ((obj)->ovar1_iea_upgrades |= (prop))
+#define remove_imp_mod(obj, prop) ((obj)->ovar1_iea_upgrades &= ~(prop))
 
 #define IEA_FIXED_ABIL	0x00000001L
 #define IEA_FAST_HEAL	0x00000002L
@@ -686,12 +688,15 @@ struct obj {
 				|| typ == WAR_HAMMER \
 				|| typ == SMITHING_HAMMER \
 				|| typ == CLUB \
+				|| typ == GOEDENDAG \
+				|| typ == SQUARE_CLUB \
 				|| typ == MACUAHUITL \
 				|| typ == QUARTERSTAFF \
 				|| typ == KHAKKHARA \
 				|| typ == DOUBLE_SWORD \
 				|| typ == AKLYS \
 				|| typ == FLAIL \
+				|| (Role_if(PM_CONVICT) && typ == BALL) \
 				|| typ == NUNCHAKU \
 				|| (Race_if(PM_DROW) && typ == DROVEN_GREATSWORD) \
 				|| typ == KATAR \
@@ -737,6 +742,7 @@ struct obj {
 			 )
 #define is_runic_form_sword(otmp) (\
 			    otmp->otyp == LONG_SWORD \
+			 || otmp->otyp == SILVERKNIGHT_SWORD \
 			 || otmp->otyp == RUNESWORD \
 			 || otmp->otyp == ELVEN_BROADSWORD \
 			)
@@ -1224,6 +1230,15 @@ struct obj {
 								|| (otyp) == HARMONIUM_SCALE_MAIL || (otyp) == HARMONIUM_GAUNTLETS\
 								|| (otyp) == HARMONIUM_BOOTS)
 
+#define is_silverknight_weapon(otmp)	is_silverknight_weapon_otyp((otmp)->otyp)
+
+#define is_silverknight_weapon_otyp(otyp)	((otyp) == SILVERKNIGHT_SWORD || (otyp) == SILVERKNIGHT_SPEAR\
+								|| (otyp) == SILVERKNIGHT_SCYTHE)
+
+#define is_silverknight_armor(otmp)	is_silverknight_otyp((otmp)->otyp)
+
+#define is_silverknight_otyp(otyp)	((otyp) == SILVERKNIGHT_HELM || (otyp) == SILVERKNIGHT_ARMOR\
+								|| (otyp) == SILVERKNIGHT_GAUNTLETS || (otyp) == SILVERKNIGHT_BOOTS)
 #define is_light_armor(otmp)	(((otmp)->otyp == IMPERIAL_ELVEN_ARMOR && check_imp_mod(otmp, IEA_MITHRIL)) || ((otmp)->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(otmp, CPROP_FLEXIBLE)) || objects[(otmp)->otyp].oc_dexclass == ARMSZ_LIGHT)
 #define is_medium_armor(otmp)	(objects[(otmp)->otyp].oc_dexclass == ARMSZ_MEDIUM)
 

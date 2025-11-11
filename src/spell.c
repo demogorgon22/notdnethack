@@ -1234,10 +1234,6 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"You create a small stack of ammunition for your currently wielded ranged weapon, and take a small amount of damage." },
 	{ SEAL_EVE, "Barrage",
 	"Fire a large number of projectiles." },
-	{ SEAL_FAFNIR, "Breathe Poison",
-	"Create a stinking cloud centered at the chosen location." },
-	{ SEAL_FAFNIR, "Ruinous Strike",
-	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
 	{ SEAL_HUGINN_MUNINN, "Raven's Talons",
 	"Permanently blinds single adjacent target, while dealing damage. Deals less damage against a blind or sightless target." },
 	{ SEAL_IRIS, "Horrid Wilting",
@@ -1248,6 +1244,12 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"Add some fuel to a wielded oil lamp or lightsaber." },
 	{ SEAL_JACK, "Hellfire",
 	"Create a moderately-damaging explosion of fire centered on the chosen square. Requires you to wield a lit potion of oil, oil lamp, or lightsaber." },
+	{ SEAL_MAEGERA, "Breathe Poison",
+	"Create a stinking cloud centered at the chosen location." },
+	{ SEAL_MAEGERA, "Ruinous Strike",
+	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
+	{ SEAL_MAEGERA, "Aureate Deluge",
+	"You cover your weapon in molten gold, dealing bonus fire damage until it cools." },
 	{ SEAL_MALPHAS, "Call Murder",
 	"Summon a tame crow. The crow's level is based on your level." },
 	{ SEAL_MARIONETTE, "Root Shout",
@@ -3031,6 +3033,24 @@ spiriteffects(power, atme)
 					setmangry(mon);
 				}
 			} else break;
+		}break;
+		case PWR_AUREATE_DELUGE:{
+	        struct obj* otmp = (struct obj*)0;
+			if (uwep && (uwep->oclass == WEAPON_CLASS || uwep->oclass == TOOL_CLASS)){
+				otmp = uwep; //use the weapon in your wielded hand
+			} else if (uarmg){
+				otmp = uarmg; //use gloves if wielded weapon is missing, but not metallic
+			} else {
+				You("need a wielded weapon, or worn gloves.");
+				return MOVE_CANCELLED;
+			}
+			if (!is_metallic(otmp)) {
+				You("need a metallic object.");
+				return MOVE_CANCELLED;
+			}
+			pline("Molten gold bubbles up from your throat, spilling over %s.", yname(otmp));
+			add_oprop(otmp, OPROP_GOLDW);
+			start_timer(5, TIMER_OBJECT, REVERT_AUREATE, (genericptr_t)otmp);
 		}break;
 		case PWR_RAVEN_S_TALONS:{
 			int dmg;
@@ -6067,6 +6087,12 @@ int spell;
 	if(Black_crystal)
 		splcaster -= urole.spelarmr;
 
+	if(carrying_art(ART_IRON_SPOON_OF_LIBERATION) && (
+		spellid(spell) == SPE_TELEPORT_AWAY
+		|| spellid(spell) == SPE_STONE_TO_FLESH
+		|| spellid(spell) == SPE_DIG
+	))
+		splcaster -= urole.spelarmr;
 	if(uwep){
 		int cast_bon;
 		// powerful channeling artifacts
@@ -6470,6 +6496,11 @@ int spell;
 	/* Clamp to percentile */
 	if (chance > 100) chance = 100;
 	if (chance < 0) chance = 0;
+
+	if (uwep && uwep->oartifact == ART_LUCK_BLADE){
+		int c = 100-chance;
+		chance = 100 - (c*c)/100;
+	}
 
 	return chance;
 }

@@ -544,6 +544,61 @@ boolean goodequip;
 }
 
 STATIC_OVL void
+ant_initweap(struct monst *mtmp, int mkobjflags, int faction, boolean goodequip)
+{
+	struct obj *otmp;
+	switch(mtmp->mtyp){
+		case PM_VALAVI:
+			if(rn2(3)){
+				mongets(mtmp, SHEPHERD_S_CROOK, mkobjflags);
+				mongets(mtmp, KNIFE, mkobjflags);
+				mongets(mtmp, KNIFE, mkobjflags);
+			} else {
+				mongets(mtmp, SCIMITAR, mkobjflags);
+				switch (rnd(3)) {
+					case 1:
+						(void) mongets(mtmp, ROUNDSHIELD, mkobjflags);
+					break;
+					case 2:
+						(void) mongets(mtmp, BUCKLER, mkobjflags);
+					break;
+					case 3:
+						(void) mongets(mtmp, SCIMITAR, mkobjflags);
+					break;
+				}
+				mongets(mtmp, SCIMITAR, mkobjflags);
+				mongets(mtmp, SCIMITAR, mkobjflags);
+			}
+		break;
+		case PM_SILVERMAN:
+			otmp = mongets(mtmp, PEST_GLAIVE, mkobjflags);
+		break;
+		case PM_SILVERKNIGHT:{
+			int set = rn2(100);
+#define SILVERKNIGHT_GETS(otyp) \
+			otmp = mongets(mtmp, otyp, mkobjflags); \
+			if(otmp) { \
+				otmp->spe = 3; \
+				bless(otmp); \
+			}
+			if(set >= 90){
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SPEAR);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SCYTHE);
+			}
+			else if(set >= 45){
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SWORD);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SPEAR);
+			}
+			else {
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SWORD);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_SCYTHE);
+			}
+#undef SILVERKNIGHT_GETS
+		}break;
+	}
+}
+
+STATIC_OVL void
 giant_initweap(mtmp, mkobjflags, faction, goodequip)
 register struct monst *mtmp;
 int mkobjflags;
@@ -4844,7 +4899,8 @@ int mmflags;
 	    case S_HUMAN:
 			human_initweap(mtmp, mkobjflags, faction, goodequip, greatequip);
 		break;
-
+		case S_ANT:
+			ant_initweap(mtmp, mkobjflags, faction, goodequip);
 		break;
 		case S_GHOST:{
 			switch (mm){
@@ -7754,6 +7810,26 @@ int mmflags;
 					otmp->oeroded3 = 1;
 				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
 				(void)mongets(mtmp, DAGGER, mkobjflags);
+			} else if(Is_arcadia(&u.uz)){
+				if (goodequip || rn2(7)) (void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
+				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
+				if (!rn2(4)) {
+					(void)mongets(mtmp, DWARVISH_SHORT_SWORD, mkobjflags);
+				} else {
+					if(!rn2(3)) (void)mongets(mtmp, DWARVISH_SPEAR, mkobjflags);
+					else (void)mongets(mtmp, DAGGER, mkobjflags);
+				}
+				if (!could_twoweap(ptr))
+					(void)mongets(mtmp, DWARVISH_ROUNDSHIELD, mkobjflags);
+				else
+					mongets(mtmp, DWARVISH_SHORT_SWORD, mkobjflags);
+				(void)mongets(mtmp, DWARVISH_HELM, mkobjflags);
+				/* CM: Dwarves OUTSIDE the mines have booze. */
+				mongets(mtmp, POT_BOOZE, mkobjflags);
+				if (goodequip || !rn2(3)){
+					if(is_prince(ptr) || (is_lord(ptr) && !rn2(3))) (void)mongets(mtmp, DWARVISH_MITHRIL_COAT, mkobjflags);
+					else (void)mongets(mtmp, CHAIN_MAIL, mkobjflags);
+				}
 			} else {
 				if (goodequip || rn2(7)) (void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
 				if (goodequip || rn2(7)) (void)mongets(mtmp, SHOES, mkobjflags);
@@ -10469,6 +10545,38 @@ int mmflags;
 					mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 				}
 			break;
+		    case PM_CHAIN_DEVIL:
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				otmp = mksobj(CHAIN, mkobjflags|MKOBJ_NOINIT);
+				otmp->blessed = FALSE;
+				otmp->cursed = TRUE;
+				(void) mpickobj(mtmp,otmp);
+				return;
+			break;
 		    case PM_ERINYS:{
 				if(In_mordor_quest(&u.uz) 
 					&& !In_mordor_forest(&u.uz)
@@ -10625,6 +10733,53 @@ int mmflags;
 					set_material_gm(otmp, BONE);
 					fix_object(otmp);
 					(void) mpickobj(mtmp, otmp);
+				}
+				else if(In_quest(&u.uz) && Role_if(PM_CONVICT)){
+					if(rn2(2)){
+						otmp = mksobj(BALL, mkobjflags|MKOBJ_NOINIT);
+						set_material_gm(otmp, IRON);
+						mpickobj(mtmp, otmp);
+
+						otmp = mksobj(SPOON, mkobjflags|MKOBJ_NOINIT);
+						otmp->spe = 4;
+						mpickobj(mtmp, otmp);
+
+						otmp = mongets(mtmp, STRIPED_SHIRT, mkobjflags|MKOBJ_NOINIT);
+						if(otmp){
+							curse(otmp);
+							otmp->spe = 4;
+						}
+						otmp = mongets(mtmp, SHOES, mkobjflags|MKOBJ_NOINIT);
+						if(otmp){
+							curse(otmp);
+							set_material_gm(otmp, IRON);
+							otmp->spe = 4;
+						}
+					}
+					else {
+						otmp = mksobj(CLUB, mkobjflags|MKOBJ_NOINIT);
+						set_material_gm(otmp, IRON);
+						mpickobj(mtmp, otmp);
+
+						otmp = mksobj(BUCKLER, mkobjflags|MKOBJ_NOINIT);
+						curse(otmp);
+						otmp->spe = 4;
+						mpickobj(mtmp, otmp);
+
+						if (rn2(5))
+							mongets(mtmp, PLATE_MAIL, mkobjflags);
+						else if (rn2(5))
+							mongets(mtmp, (rn2(3)) ? SPLINT_MAIL : BANDED_MAIL, mkobjflags);
+						else if (rn2(5))
+							mongets(mtmp, (rn2(3)) ? RING_MAIL : STUDDED_LEATHER_ARMOR, mkobjflags);
+						else
+							mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+
+						mongets(mtmp, ARMORED_BOOTS, mkobjflags);
+						mongets(mtmp, (rn2(3)) ? GLOVES : GAUNTLETS, mkobjflags);
+						if(rn2(2))
+							mongets(mtmp, ROBE, mkobjflags);
+					}
 				}
 				else if(Inhell || goodequip){
 					int kit = rn2(6);
@@ -11183,26 +11338,6 @@ boolean greatequip;
 					case 1: (void) mongets(mtmp, POT_EXTRA_HEALING, mkobjflags);
 					case 2: (void) mongets(mtmp, POT_HEALING, mkobjflags);
 				}
-				if(rn2(3)){
-					mongets(mtmp, SHEPHERD_S_CROOK, mkobjflags);
-					mongets(mtmp, KNIFE, mkobjflags);
-					mongets(mtmp, KNIFE, mkobjflags);
-				} else {
-					mongets(mtmp, SCIMITAR, mkobjflags);
-					switch (rnd(3)) {
-						case 1:
-							(void) mongets(mtmp, ROUNDSHIELD, mkobjflags);
-						break;
-						case 2:
-							(void) mongets(mtmp, BUCKLER, mkobjflags);
-						break;
-						case 3:
-							(void) mongets(mtmp, SCIMITAR, mkobjflags);
-						break;
-					}
-					mongets(mtmp, SCIMITAR, mkobjflags);
-					mongets(mtmp, SCIMITAR, mkobjflags);
-				}
 		    }
 			else if(ptr->mtyp == PM_LUMINESCENT_SWARM){
 				otmp = mongets(mtmp, SPEAR, mkobjflags);
@@ -11214,6 +11349,19 @@ boolean greatequip;
 					case 2: (void) mongets(mtmp, POT_HEALING, mkobjflags);
 				}
 			}
+			else if(ptr->mtyp == PM_SILVERKNIGHT){
+#define SILVERKNIGHT_GETS(otyp) \
+				otmp = mongets(mtmp, otyp, mkobjflags); \
+				if(otmp) { \
+					otmp->spe = 3; \
+					bless(otmp); \
+				}
+				SILVERKNIGHT_GETS(SILVERKNIGHT_BOOTS);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_ARMOR);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_GAUNTLETS);
+				SILVERKNIGHT_GETS(SILVERKNIGHT_HELM);
+			}
+#undef SILVERKNIGHT_GETS
 		break;
 		case S_DOG:
 			//Escaped war-dog
@@ -11243,8 +11391,11 @@ boolean greatequip;
 			} else if(mtmp->mtyp == PM_BLUE_EYED_FOX){
 				int weapon[] = {ATHAME, SICKLE,  SHORT_SWORD, KHOPESH, WAKIZASHI, SCIMITAR, RAPIER, BROADSWORD, NINJA_TO, LONG_SWORD, MACUAHUITL, QUARTERSTAFF, KHAKKHARA, DOUBLE_SWORD, FLAIL, KATAR};
 				otmp = mongets(mtmp, ROLL_FROM(weapon), mkobjflags);
-				if(otmp)
-					set_material_gm(otmp, MERCURIAL);
+				if(otmp){
+					// set_material_gm(otmp, MERCURIAL);
+					// Really most sincerely poisoned
+					otmp->opoisoned = OPOISON_FILTH|OPOISON_DIRE;
+				}
 				(void)mongets(mtmp, SHURIKEN, mkobjflags);
 				(void)mongets(mtmp, DART, mkobjflags);
 				(void) mongets(mtmp, DAGGER, mkobjflags);
@@ -13439,6 +13590,27 @@ boolean randmonst;
 		else if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
 			mkmon_template = SWOLLEN_TEMPLATE;
 		}
+		/* convict worldwide apocalypse -- a very general effect */
+		else if(randmonst && (is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ) && Role_if(PM_CONVICT) && !quest_status.killed_nemesis &&
+			((In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT > 10)
+			||(!In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT > 14)
+			)
+		){
+			int chance;
+			int roll = rn2(100);
+			if(In_quest(&u.uz))
+				chance = 10*(quest_status.time_doing_quest/CON_QUEST_INCREMENT - 10);
+			else
+				chance = 100 - 100 * pow(0.97, quest_status.time_doing_quest/CON_QUEST_INCREMENT - 14);
+			if(roll < chance){
+				if(roll < chance/3)
+					mkmon_template = FLAYED;
+				else if(roll < chance/3)
+					mkmon_template = ZOMBIFIED;
+			}
+			//else no template after all. I guess the unrelenting horde of zombies in the mines gets pre-empted
+			else mkmon_template = 0;
+		}
 		/* most general case at bottom -- creatures randomly being zombified */
 		else if(randmonst && can_undead(ptr)
 #ifdef REINCARNATION
@@ -13495,6 +13667,9 @@ int faction;
 
 	if(template == MISTWEAVER)
 		return GOATMOM_FACTION;
+	
+	if(template == FLAYED)
+		return NUNCIO_FACTION;
 	
 	if(template == M_BLACK_WEB || template == M_GREAT_WEB)
 		return EDDER_SYMBOL;
@@ -13665,6 +13840,14 @@ struct monst * mon;
 		|| (mon->mtyp == PM_STAR_ELF && Role_if(PM_MADMAN))
 	)
 		out_faction = YELLOW_FACTION;
+	else if((In_quest(&u.uz) && Role_if(PM_CONVICT) && (
+			mon->mtyp == PM_DAUGHTER_OF_BEDLAM
+			|| mon->mtyp == PM_LAVA_DEMON
+			|| (quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && is_demon(mon->data) && !quest_status.killed_nemesis)
+		))
+		|| nuncio_monster(mon)
+	)
+		out_faction = NUNCIO_FACTION;
 	else if((In_mordor_quest(&u.uz) || (In_quest(&u.uz) && urole.neminum == PM_NECROMANCER)) && (is_orc(mon->data) || is_undead(mon->data)))
 		out_faction = NECROMANCY_FACTION;
 	else if(Is_knox(&u.uz)
@@ -13729,6 +13912,22 @@ int faction;
 	boolean givenpos = (x != 0 || y != 0);
 	boolean byyou = (x == u.ux && y == u.uy);
 	unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
+
+	/* Maybe rewire the quest levels */
+	if(ptr && in_mklev && In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7){
+		if(ptr->mtyp == PM_WARDEN_ARIANNA)
+			ptr = &mons[PM_VOICE_IN_SCREAMS];
+		else if(ptr->mtyp == PM_MALKUTH_SEPHIRAH){
+			ptr = &mons[PM_CUBOID];
+			givenpos = FALSE; x = y = 0;
+		}
+		else if(ptr->mtyp == PM_HOD_SEPHIRAH){
+			ptr = &mons[PM_RHOMBOHEDROID];
+			givenpos = FALSE; x = y = 0;
+		}
+		else if((is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ))
+			template = FLAYED;
+	}
 
 	/* if a monster is being randomly chosen, use its bigger spawning group */
 	if (!ptr && !(mmflags & MM_NOGROUP))
@@ -14688,7 +14887,9 @@ int faction;
 				mtmp->mhp = mtmp->mhpmax;
 			}
 			if(!(mmflags & MM_NOGROUP)){
-			if(mndx != PM_MALKUTH_SEPHIRAH && mndx != PM_DAAT_SEPHIRAH && mndx != PM_BINAH_SEPHIRAH){
+			if(mndx == PM_YESOD_SEPHIRAH || mndx == PM_HOD_SEPHIRAH || mndx == PM_NETZACH_SEPHIRAH
+			 || mndx == PM_GEVURAH_SEPHIRAH || mndx == PM_CHOKHMAH_SEPHIRAH
+			){
 				coord mm;
 				mm.x = xdnstair;
 				mm.y = ydnstair;
@@ -15216,7 +15417,9 @@ int mndx;
 	if (mvitals[mndx].mvflags & G_GONE && !In_quest(&u.uz)) return TRUE;
 	if (G_C_INST(mons[mndx].geno) > Insight) return TRUE;
 	if (mndx == PM_SILVERMAN && !u.silvergrubs) return TRUE;
+	if (mndx == PM_SILVERKNIGHT && !u.silvergrubs) return TRUE;
 	if (mndx == PM_SPIDER_SCORPION && !check_rot(ROT_KIN)) return TRUE;
+	if (mndx == PM_FLESH_THAT_HATES && !check_rot(ROT_KIN)) return TRUE;
 	if (Inhell)
 		return((mons[mndx].geno & (G_PLANES|G_DEPTHS)) != 0);
 	else if (In_endgame(&u.uz))
@@ -15847,7 +16050,9 @@ int	spc;
 			&& !(mons[first].geno & mask)
 			&& (G_C_INST(mons[first].geno) <= Insight)
 			&& (first != PM_SILVERMAN || u.silvergrubs)
+			&& (first != PM_SILVERKNIGHT || u.silvergrubs)
 			&& (first != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
+			&& (first != PM_FLESH_THAT_HATES || check_rot(ROT_KIN))
 		) break;
 	if (first == SPECIAL_PM) return (struct permonst *) 0;
 
@@ -15859,7 +16064,9 @@ int	spc;
 			&& !is_placeholder(&mons[last])
 			&& (G_C_INST(mons[last].geno) <= Insight)
 			&& (last != PM_SILVERMAN || u.silvergrubs)
+			&& (last != PM_SILVERKNIGHT || u.silvergrubs)
 			&& (last != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
+			&& (last != PM_FLESH_THAT_HATES || check_rot(ROT_KIN))
 		) {
 			/* consider it */
 			if(num && toostrong(last, maxmlev) && monstr[last] != monstr[last-1]) break;
@@ -15881,7 +16088,9 @@ int	spc;
 			&& !is_placeholder(&mons[first])
 			&& (G_C_INST(mons[first].geno) <= Insight)
 			&& (first != PM_SILVERMAN || u.silvergrubs)
+			&& (first != PM_SILVERKNIGHT || u.silvergrubs)
 			&& (first != PM_SPIDER_SCORPION || check_rot(ROT_KIN))
+			&& (first != PM_FLESH_THAT_HATES || check_rot(ROT_KIN))
 		) {
 			/* skew towards lower value monsters at lower exp. levels */
 			freq = (mons[first].geno & G_FREQ);
@@ -16363,6 +16572,11 @@ struct monst *mtmp;
 			give_mintrinsic(mtmp, FAST);
 		}
 	}
+	else if(mtmp->mtyp == PM_ARIANNA){
+		if(mtmp->m_lev >= 21){
+			give_mintrinsic(mtmp, FAST);
+		}
+	}
 	if(mon_archeologist(mtmp)){
 		give_mintrinsic(mtmp, FAST);
 		give_mintrinsic(mtmp, STEALTH);
@@ -16775,6 +16989,12 @@ struct monst *mtmp, *victim;
 				xp_threshold = mtmp->m_lev + 1;
 			if(Role_if(PM_HEALER))
 				xp_threshold += heal_mlevel_bonus();
+			if(carrying_art(ART_LUCK_BLADE)){
+				if(Luck < 0)
+					xp_threshold -= rnd(-1*Luck);
+				else if(Luck > 0)
+					xp_threshold += rnd(Luck);
+			}
 			if(uring_art(ART_LOMYA))
 				xp_threshold += lev_lomya();
 			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_PATIENCE)
@@ -16788,8 +17008,16 @@ struct monst *mtmp, *victim;
 			mtmp->mvar_flask_charges++;
 		}
 		if(mtmp->mhpmax < hp_threshold-hd_size(mtmp->data) || mtmp->m_lev < xp_threshold){ /*allow monsters to quickly gain hp up to around their HP limit*/
+			int hds = hd_size(mtmp->data);
 			max_increase = 1;
-			cur_increase = 1;
+			if((hds - 8) > 2){
+				hds -= 2;
+				max_increase += hds / 8;
+				// Now deal with any remainder
+				if (((mtmp->mhpmax+1)*(hds % 8)) / 8 >((mtmp->mhpmax)*(hds % 8)) / 8)
+					max_increase++;
+			}
+			cur_increase = max_increase;
 			if(mtmp->mtame){
 				if(Role_if(PM_BARD) && canseemon(mtmp)){
 					u.pethped = TRUE;

@@ -243,6 +243,8 @@ struct monst *magr;
 			tmp += 7; //Quite holy
 		else if(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && !otmp->lamplit)
 			tmp += rnd(20); //Quite holy
+		else if(is_silverknight_weapon(otmp))
+			tmp += 3; //Quite holy
 		else tmp += 2;
 
 		if(magr && Focused_aura(magr)){
@@ -394,8 +396,13 @@ struct monst *magr;
 		else if(activeFightingForm(FFORM_POMMEL))
 			attackmask = WHACK; // only bashing
 	}
-	if (obj && magr && (obj->otyp == TOOTH || obj->otyp == GOEDENDAG) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE)){
-		attackmask = PIERCE; // only thrusting
+	if (obj && magr){
+		if((obj->otyp == TOOTH || obj->otyp == GOEDENDAG || obj->otyp == POLEAXE || obj->oartifact == ART_STORM_CURSE) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE))
+			attackmask = PIERCE; // only thrusting
+		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_HEW && CHECK_ETRAIT(obj, magr, ETRAIT_HEW))
+			attackmask = SLASH; // only slashing
+		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_STUNNING_STRIKE && CHECK_ETRAIT(obj, magr, ETRAIT_STUNNING_STRIKE))
+			attackmask = WHACK; // only bashing
 	}
 	if(obj && obj->o_e_trait == ETRAIT_HEW && magr
 		&& CHECK_ETRAIT(obj, magr, ETRAIT_HEW)
@@ -617,6 +624,13 @@ struct monst *magr;
 				bond = 0;
 				flat = 0;
 			}
+			else if(obj->oartifact == ART_STORM_CURSE){
+				ocn = 1;
+				ocd = large ? 4 : 3;
+				bonn = 0;
+				bond = 0;
+				flat = 0;
+			}
 		}
 		if (obj->oartifact == ART_FRIEDE_S_SCYTHE)
 			dmod += 2;
@@ -721,9 +735,8 @@ struct monst *magr;
 			int wt = (int)objects[BALL].oc_weight;
 
 			if ((int)obj->owt > wt) {
-				wt = ((int)obj->owt - wt) / 160;
-				ocd += 4 * wt;
-				if (ocd > 25) ocd = 25;	/* objects[].oc_wldam */
+				wt = ((int)obj->owt - wt) / 40;
+				ocd += wt;
 			}
 		}
 		if (check_oprop(obj, OPROP_BLADED))
@@ -1712,6 +1725,7 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 				( (otmp->owt <= (30 + (mtmp->m_lev/5)*5))
 				|| (marilith && ok_mariwep(otmp, mtmp, mtmp->data, FALSE))
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CATHEZAR) 
+				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CHAIN_DEVIL) 
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_FIERNA)
 				|| (otmp->otyp == BALL && (mtmp->mtyp == PM_WARDEN_ARIANNA || mtmp->mtyp == PM_ARIANNA || mtmp->mtyp == PM_RAGE_WALKER))
 				|| (mtmp->mtyp == PM_BASTARD_OF_THE_BOREAL_VALLEY)
@@ -1800,6 +1814,8 @@ static NEARDATA const int pwep[] =
 	FORCE_PIKE,/*3d6+6/3d8+8*/
 	GOLD_BLADED_VIBROSPEAR,/*2d6+3/2d8+3*/
 	WHITE_VIBROSPEAR,/*2d6+3/2d8+3*/
+	PEST_GLAIVE, /*2d6/1d10*/
+	SILVERKNIGHT_SCYTHE, /*2d6/2d4*/
 	POLEAXE, /*1d10/2d6*/
 	HALBERD, /*1d10/2d6*/
 	DROVEN_LANCE, /*1d10/1d10*/
@@ -2080,6 +2096,7 @@ static const NEARDATA short hwep[] = {
 	  CHIKAGE/*1d10/1d12*/,
 	  KATANA/*1d10/1d12*/,
 	  CRYSKNIFE/*1d10/1d10*/, 
+	  SILVERKNIGHT_SPEAR/*1d10/1d8*/, 
 	  WHIP_SAW/*1d10/1d8*/, 
 	  BESTIAL_CLAW/*1d10/1d8*/, 
 	  SOLDIER_S_RAPIER/*1d10/1d6*/, 
@@ -2106,6 +2123,7 @@ static const NEARDATA short hwep[] = {
 	  HUNTER_S_LONGSWORD/*1d8/1d12*/,
 	  LONG_SWORD/*1d8/1d12*/,
 	  CANE/*1d8/1d10*/,
+	  SILVERKNIGHT_SWORD/*1d6+1/1d8*/,
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
 	  SCIMITAR/*1d8/1d8*/,
@@ -2201,6 +2219,8 @@ static const NEARDATA short hpwep[] = {
 	  GREAT_MACE/*1d6+2d4/1d8+4*/,
 	  HIGH_ELVEN_WARSWORD/*1d10+1d6/1d10+1d6*/,
 	  CHURCH_BLADE/*1d12+1/3d8*/, 
+	  PEST_GLAIVE, /*2d6/1d10*/
+	  SILVERKNIGHT_SCYTHE, /*2d6/2d4*/
 	  RUNESWORD/*1d10+1d4/1d10+1*/, 
 	  BATTLE_AXE/*1d8+1d4/1d6+2d4*/,
 	  TWO_HANDED_SWORD/*1d12/3d6*/, 
@@ -2218,6 +2238,7 @@ static const NEARDATA short hpwep[] = {
 	  KATANA/*1d10/1d12*/,
 	  DROVEN_LANCE, /*1d10/1d10*/
 	  CRYSKNIFE/*1d10/1d10*/, 
+	  SILVERKNIGHT_SPEAR/*1d10/1d8*/, 
 	  WHIP_SAW/*1d10/1d8*/, 
 	  BESTIAL_CLAW/*1d10/1d8*/, 
 	  SOLDIER_S_RAPIER/*1d10/1d6*/, 
@@ -2251,6 +2272,7 @@ static const NEARDATA short hpwep[] = {
 	  HUNTER_S_LONGSWORD/*1d8/1d12*/,
 	  LONG_SWORD/*1d8/1d12*/,
 	  CANE/*1d8/1d10*/,
+	  SILVERKNIGHT_SWORD/*1d6+1/1d8*/,
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
 	  ELVEN_LANCE, /*1d8/1d8*/
@@ -2383,6 +2405,8 @@ register struct monst *mtmp;
 			(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)
 			|| otmp->otyp == CHAIN || otmp->otyp == BALL
 			) &&
+			/* not worn as armor (chain devils etc) */
+			!(otmp->owornmask&W_ARMOR) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
 				|| !check_oprop(otmp, OPROP_NONE)
@@ -2462,6 +2486,8 @@ register struct monst *mtmp;
 			) &&
 			/* not already weided in main hand */
 			(otmp != MON_WEP(mtmp)) &&
+			/* not worn as armor (chain devils etc) */
+			!(otmp->owornmask&W_ARMOR) &&
 			/* an artifact or other special weapon*/
 			(otmp->oartifact
 				|| !check_oprop(otmp, OPROP_NONE)
@@ -3912,6 +3938,9 @@ struct obj *obj;
 	}
 	else if(obj->otyp == KHOPESH){
 		CHECK_ALTERNATE_SKILL(P_AXE)
+	}
+	else if(obj->otyp == SILVERKNIGHT_SCYTHE){
+		CHECK_ALTERNATE_SKILL(P_HARVEST)
 	}
 	else if(obj->otyp == BLADE_OF_MERCY || obj->otyp == BLADE_OF_GRACE){
 		if(obj->otyp == BLADE_OF_GRACE)

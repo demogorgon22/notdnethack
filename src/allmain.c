@@ -1010,6 +1010,12 @@ you_regen_hp()
 			}
 		}
 	}
+	if(youmonst.munburn > 0){
+		(*hp) += 7;
+		if ((*hp) > (*hpmax))
+			(*hp) = (*hpmax);
+		youmonst.munburn--;
+	}
 	if(u.uhoon_duration && (*hp) < (*hpmax)){
 		flags.botl = 1;
 		
@@ -2059,13 +2065,22 @@ moveloop()
 			}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 			if(u.uhs == WEAK && u.sealsActive&SEAL_AHAZU) unbind(SEAL_AHAZU,TRUE);
+			if (u.sealsActive&SEAL_MAEGERA) {
+				boolean found_metal = FALSE;
+				struct obj *maybe_metal;
 #ifndef GOLDOBJ
-			// if(u.sealsActive&SEAL_FAFNIR && u.ugold < u.ulevel*100) unbind(SEAL_FAFNIR,TRUE);
-			if(u.sealsActive&SEAL_FAFNIR && u.ugold == 0) unbind(SEAL_FAFNIR,TRUE);
-#else
-			// if(u.sealsActive&SEAL_FAFNIR && money_cnt(invent) < u.ulevel*100) unbind(SEAL_FAFNIR,TRUE);
-			if(u.sealsActive&SEAL_FAFNIR && money_cnt(invent) == 0) unbind(SEAL_FAFNIR,TRUE);
+				if(u.ugold != 0) found_metal = TRUE;
 #endif
+				for (maybe_metal = invent; maybe_metal; maybe_metal = maybe_metal->nobj) {
+					if (is_metallic(maybe_metal)) {
+						found_metal = TRUE;
+						break;
+					}
+				}
+				if (!found_metal) {
+					unbind(SEAL_MAEGERA, TRUE);
+				}
+			}
 			if(u.sealsActive&SEAL_JACK && (Is_astralevel(&u.uz) || Inhell)) unbind(SEAL_JACK,TRUE);
 			if(u.sealsActive&SEAL_NABERIUS && u.udrunken < u.ulevel/3) unbind(SEAL_NABERIUS,TRUE);
 			if(u.specialSealsActive&SEAL_NUMINA && u.ulevel<30) unbind(SEAL_SPECIAL|SEAL_NUMINA,TRUE);
@@ -2475,6 +2490,40 @@ karemade:
 					}
 				} else mtmp->movement += mcalcmove(mtmp);
 
+				/* Luck blade makes monsters fumbling */
+				if(couldsee(mtmp->mx,mtmp->my) && OffensiveLuck && u.uluck > 0 && !mtmp->mpeaceful){
+					if(mtmp->movement > 0 && !stationary(mtmp->data) && mtmp->mcanmove && !mtmp->msleeping){
+						if(!rn2(20)){
+							if(canseemon(mtmp))
+								pline("%s %s!", Monnam(mtmp), mon_resistance(mtmp,FLYING) ? "crashes" : mon_resistance(mtmp,LEVITATION) ? "rolls over in the air" : "slips");
+							mtmp->movement = 0;
+							mtmp->mcanmove = 0;
+							mtmp->mfrozen = 2;
+							if(!mtmp->mwounded_legs && !rn2(20)){
+								mtmp->mwounded_legs = 1;
+								pline("%s %s is injured!", s_suffix(Monnam(mtmp)), mbodypart(mtmp, LEG));
+								mtmp->mspeed = MSLOW;
+								mtmp->permspeed = MSLOW;
+							}
+						}
+						else mtmp->movement = max(0, mtmp->movement - 2);
+					}
+					if(MON_WEP(mtmp) && !rn2(20)){
+						if(canseemon(mtmp))
+							pline("%s fumbles %s weapon!", Monnam(mtmp), mhis(mtmp));
+						struct obj *wep = MON_WEP(mtmp);
+						obj_extract_and_unequip_self(wep);
+						mdrop_obj(mtmp,wep,FALSE);
+					}
+					else if(MON_SWEP(mtmp) && !rn2(20)){
+						if(canseemon(mtmp))
+							pline("%s fumbles %s weapon!", Monnam(mtmp), mhis(mtmp));
+						struct obj *wep = MON_SWEP(mtmp);
+						obj_extract_and_unequip_self(wep);
+						mdrop_obj(mtmp,wep,FALSE);
+					}
+				}
+
 				if(mtmp->mtyp == PM_NITOCRIS){
 					if(which_armor(mtmp, W_ARMC) && which_armor(mtmp, W_ARMC)->oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_)
 						mtmp->mspec_used = 1;
@@ -2669,6 +2718,79 @@ karemade:
 				//"Where stray illuminations from the Far Realm leak onto another plane, matter stirs at the beckoning of inexplicable urges before burning to ash."
 				if(mtmp && canseemon(mtmp)) pline("The base matter of the world stirs at the beckoning of inexplicable urges, dancing with a semblance of life.");
 			}
+			/* Apocalypse */
+			if(In_quest(&u.uz) && u.uz.dlevel < qlocate_level.dlevel && Role_if(PM_CONVICT) && !quest_status.killed_nemesis && quest_status.time_doing_quest/CON_QUEST_INCREMENT > 10
+				&& spawn_freq && !rn2(spawn_freq)
+			){
+				int x,y;
+				if(!on_level(&u.uz, &qstart_level)){
+					x = xupstair;
+					y = yupstair;
+				}
+				else {
+					x = 0;
+					y = 0;
+				}
+				struct permonst *ptr;
+				int chance = rn2(100);
+				if(chance < 3)
+					ptr = &mons[rn2(2) ? PM_ELF_LORD : PM_ELF_LADY];
+				else if(chance < 5)
+					ptr = &mons[PM_DWARF_LORD];
+				else if(chance < 10)
+					ptr = &mons[rn2(2) ? PM_NOBLEMAN : PM_NOBLEWOMAN];
+				else if(chance < 12)
+					ptr = &mons[PM_KNIGHT];
+				else if(chance < 25)
+					ptr = &mons[PM_WATCHMAN];
+				else if(chance < 30)
+					ptr = &mons[PM_SOLDIER];
+				else if(chance < 31)
+					ptr = &mons[PM_MITHRIL_SMITH];
+				else if(chance < 33)
+					ptr = &mons[PM_DWARF_SMITH];
+				else if(chance < 35)
+					ptr = &mons[PM_HUMAN_SMITH];
+				else if(chance < 40)
+					ptr = &mons[PM_SHOPKEEPER];
+				else if(chance < 60)
+					ptr = &mons[PM_PEASANT];
+				else if(chance < 70)
+					ptr = &mons[PM_GREY_ELF];
+				else if(chance < 75)
+					ptr = &mons[PM_DWARF];
+				else if(chance < 80)
+					ptr = &mons[PM_HOBBIT];
+				else if(chance < 85)
+					ptr = &mons[PM_ROGUE];
+				else if(chance < 86)
+					ptr = &mons[PM_BARBARIAN];
+				else if(chance < 90)
+					ptr = &mons[PM_BARD];
+				else if(chance < 92)
+					ptr = &mons[PM_HEALER];
+				else if(chance < 93)
+					ptr = &mons[PM_MONK];
+				else if(chance < 95)
+					ptr = &mons[rn2(2) ? PM_PRIEST : PM_PRIESTESS];
+				else if(chance < 96)
+					ptr = &mons[PM_TOURIST];
+				else if(chance < 97)
+					ptr = &mons[PM_VALKYRIE];
+				else if(chance < 98)
+					ptr = &mons[PM_HALF_DRAGON];
+				else if(chance < 99)
+					ptr = &mons[PM_ORC];
+				struct monst *mtmp = makemon(ptr, x, y, MM_ADJACENTOK);
+				if(mtmp){
+					set_template(mtmp, FLAYED);
+					if(mtmp->m_lev < mtmp->data->mlevel){
+						mtmp->m_lev = (mtmp->m_lev + mtmp->data->mlevel + 1)/2;
+						m_level_up_intrinsic(mtmp);
+					}
+				}
+			}
+			
 
 		    /* reset summon monster block. */
 			u.summonMonster = FALSE;
@@ -2850,8 +2972,8 @@ karemade:
 				}
 				if(youmonst.mcaterpillars){
 					rot_caterpillars_bite(&youmonst);
-					pline_The("parasitic caterpillars have rotted to death!");
 					if(!rn2(20)){
+						pline_The("parasitic caterpillars have rotted to death!");
 						youmonst.mcaterpillars = FALSE;
 					}
 				}
@@ -2949,6 +3071,16 @@ karemade:
 				quest_status.time_doing_quest++;
 				if(quest_status.time_doing_quest >= UH_QUEST_TIME_4 && !Is_astralevel(&u.uz) && !u.veil){
 					quest_status.moon_close = TRUE; /*The moon draws close to the astral plane*/
+				}
+			}
+			else if(Role_if(PM_CONVICT) && !quest_status.killed_nemesis && !u.uevent.qcompleted ){
+				if(quest_status.time_doing_quest/CON_QUEST_INCREMENT < 7){
+					if(!quest_status.met_nemesis || (!mtyp_on_level(PM_WARDEN_ARIANNA) && !u.uhave.questart))
+						quest_status.time_doing_quest++;
+				}
+				else {
+					if(!u.uhave.questart || monstermoves%2)
+						quest_status.time_doing_quest++;
 				}
 			}
 			else if(Role_if(PM_ANACHRONONAUT) && Infuture){
@@ -3110,7 +3242,7 @@ karemade:
 						if((u.utemp-5)*2 > rnd(10)) destroy_item(&youmonst, SPBOOK_CLASS, AD_FIRE);
 					}
 					
-					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_FAFNIR)){
+					if(u.utemp >= MELTING && !(HFire_resistance || u.sealsActive&SEAL_MAEGERA)){
 						Your("boiler is melting!");
 						losehp(u.ulevel, "melting from extreme heat", KILLED_BY);
 						if(u.utemp >= MELTED){
@@ -3859,6 +3991,8 @@ newgame()
 				com_pager(220);
 				com_pager(221);
 			}
+		} else if(Role_if(PM_UNDEAD_HUNTER)){
+			com_pager(227);
 		} else if(Race_if(PM_WORM_THAT_WALKS)){
 			if(Role_if(PM_CONVICT)){
 				com_pager(214);

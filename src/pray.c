@@ -1848,6 +1848,8 @@ dosacrifice()
 		}
 
 		if (your_race(ptr) && !is_animal(ptr) && !mindless(ptr) && u.ualign.type != A_VOID) {
+			int holiness = gholiness(altargod);
+			boolean unholy_altar = holiness == UNHOLY_HOLINESS;
 			if(u.ualign.record >= 20 || ACURR(A_WIS) >= 20 || u.ualign.record >= rnd(20-ACURR(A_WIS))){
 				Sprintf(buf, "You feel a deep sense of kinship to %s!  Sacrifice %s anyway?",
 					the(xname(otmp)), (otmp->quan == 1L) ? "it" : "one");
@@ -1856,18 +1858,18 @@ dosacrifice()
 			if (is_demon(youracedata)) {
 				You("find the idea very satisfying.");
 				exercise(A_WIS, TRUE);
-			} else if ((u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) || altaralign != A_CHAOTIC) {
+			} else if ((!Holiness_if(UNHOLY_HOLINESS) && u.ualign.type != A_NONE) || !unholy_altar) {
 				pline("You'll regret this infamous offense!");
 				exercise(A_WIS, FALSE);
 			}
 
-			if (altaralign != A_CHAOTIC && altaralign != A_NONE) {
-				/* curse the lawful/neutral altar */
+			if (!unholy_altar) {
+				/* curse the altar */
 				if(Race_if(PM_INCANTIFIER)) pline_The("altar is stained with human blood, the blood of your birth race.");
 				else pline_The("altar is stained with %s blood.", urace.adj);
 				if(!Is_astralevel(&u.uz)) {
 					a_align(u.ux, u.uy) = A_CHAOTIC;
-					a_gnum(u.ux, u.uy) = GOD_NONE;
+					a_gnum(u.ux, u.uy) = urole.vgod;
 				}
 				angry_priest();
 			} else {
@@ -1876,7 +1878,7 @@ dosacrifice()
 
 				/* Human sacrifice on a chaotic or unaligned altar */
 				/* is equivalent to demon summoning */
-				if (altaralign == A_CHAOTIC && u.ualign.type != A_CHAOTIC) {
+				if (altaralign != A_NONE && !Holiness_if(UNHOLY_HOLINESS)) {
 					pline(
 					 "The blood floods the altar, which vanishes in %s cloud!",
 					  an(hcolor(NH_BLACK)));
@@ -1887,13 +1889,14 @@ dosacrifice()
 					angry_priest();
 					demonless_msg = "cloud dissipates";
 				} else {
-					/* either you're chaotic or altar is Moloch's or both */
+					/* either you worship an "unholy" god or altar is Moloch's or both */
 					pline_The("blood covers the altar!");
 					change_luck(altaralign == A_NONE ? -2 : 2);
 					demonless_msg = "blood coagulates";
 				}
 				if ((pm = dlord((struct permonst *) 0, altaralign)) != NON_PM &&
-					(dmon = makemon(&mons[pm], u.ux, u.uy, NO_MM_FLAGS))) {
+					(dmon = makemon(&mons[pm], u.ux, u.uy, NO_MM_FLAGS))
+				) {
 					You("have summoned %s!", a_monnam(dmon));
 					if (sgn(u.ualign.type) == sgn(dmon->data->maligntyp))
 					dmon->mpeaceful = TRUE;
@@ -1902,7 +1905,7 @@ dosacrifice()
 				} else pline_The("%s.", demonless_msg);
 			}
 
-			if (u.ualign.type != A_CHAOTIC && u.ualign.type != A_NONE) {
+			if (!Holiness_if(UNHOLY_HOLINESS) && u.ualign.type != A_NONE) {
 				adjalign(-5);
 				godlist[u.ualign.god].anger += 3;
 				(void) adjattrib(A_WIS, -1, TRUE);
@@ -1932,7 +1935,7 @@ dosacrifice()
 					Sprintf(llog, "was given %s", the(artilist[uwep->oartifact].name));
 					livelog_write_string(llog);
 				}
-			}	
+			}
 			if (carried(otmp)) useup(otmp);
 			else useupf(otmp, 1L);
 	
@@ -2819,11 +2822,12 @@ struct monst *mon;
 	struct monst *mtmp, *mtmp2;
 	int once, range, xlev;
 	short fast = 0;
+	boolean boosted_turn = has_template(mon, ILLUMINATED);
 
 	if(mon_healing_turn(mon)){
 		if(canseemon(mon))
 			pline("%s shines with holy light!", Monnam(mon));
-		mon->mhp += d(10,6);
+		mon->mhp += d(10 + (boosted_turn ? 6 : 0), 6);
 		if(mon->mhp > mon->mhpmax)
 			mon->mhp = mon->mhpmax;
 	}
@@ -2837,7 +2841,7 @@ struct monst *mon;
 	}
 
 	/* note: does not perform unturn_dead() on victims' inventories */
-	range = BOLT_LIM + (mon->m_lev / 5);
+	range = BOLT_LIM + (mon->m_lev / 5) + (boosted_turn ? 2 : 0);
 	range *= range;
 	once = 0;
 	for(mtmp = fmon; mtmp; mtmp = mtmp2) {
@@ -2864,7 +2868,7 @@ struct monst *mon;
 				mtmp->mcanmove = 1;
 		    } else if (!resist(mtmp, WAND_CLASS, 0, TELL)) {
 				if(is_undead(mtmp->data)){
-					xlev = turn_level(mtmp);
+					xlev = turn_level(mtmp) + (boosted_turn ? 6 : 0);
 					if (mon->m_lev >= xlev && !resist(mtmp, WAND_CLASS, 0, NOTELL)) {
 						pline("%s is destroyed!", Monnam(mtmp));
 						grow_up(mon, mtmp);
@@ -2882,7 +2886,7 @@ struct monst *mon;
 		){
 			if(canseemon(mtmp))
 				pline("%s looks better!", Monnam(mtmp));
-			mtmp->mhp += d(10,6);
+			mtmp->mhp += d(10 + (boosted_turn ? 6 : 0), 6);
 			if(mtmp->mhp > mtmp->mhpmax)
 				mtmp->mhp = mtmp->mhpmax;
 		}
@@ -2898,11 +2902,11 @@ struct monst *mon;
 				if(is_undead(youracedata) && mon->m_lev >= xlev && rnd(u.ulevel) <= xlev){
 					if(mon_healing_turn(mon)){
 						You("are burned by the holy light!");
-						losehp(d(10,6), "holy light", KILLED_BY);
+						losehp(d(10 + (boosted_turn ? 6 : 0), 6), "holy light", KILLED_BY);
 					}
 					else {
 						You("are burned by the holy words!");
-						losehp(d(6,6), "holy scripture", KILLED_BY);
+						losehp(d(6 + (boosted_turn ? 2 : 0), boosted_turn ? 8 : 6), "holy scripture", KILLED_BY);
 					}
 				}
 				if(!rn2(HPanicking)){
@@ -2914,7 +2918,7 @@ struct monst *mon;
 		else if(mon->mtame && mon_healing_turn(mon)
 		 && !(is_undead(youracedata) || (is_demon(youracedata) && (mon->m_lev > (MAXULEV/2))))
 		){
-			healup(d(10,6), 0, FALSE, FALSE);
+			healup(d(10 + (boosted_turn ? 6 : 0), 6), 0, FALSE, FALSE);
 		}
 	}
 	return MOVE_STANDARD;
@@ -5024,18 +5028,19 @@ boolean offering;
 
 	/* credit gain suffers diminishing returns, less harshly if you have a lot of insight */
 	int dim_return_factor = max(1, Insight);
-	if (wizard) {
-		/* debug */
-		pline("FlameCredit = %ld [+%ld base %d], FlameDevotion = %ld",
-			u.silver_credit + max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit)),
-			max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit)),
-			value,
-			u.silver_devotion + max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit))
-			);
-	}
+	int full_value = value;
 	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.silver_credit));
 	u.silver_credit += value;
 	u.silver_devotion += value;
+	if (wizard) {
+		/* debug */
+		pline("FlameCredit = %ld [+%d base %d], FlameDevotion = %ld",
+			u.silver_credit,
+			value,
+			full_value,
+			u.silver_devotion
+			);
+	}
 	return;
 }
 
@@ -5061,20 +5066,19 @@ yog_credit(int value, boolean offered)
 
 	/* credit gain suffers diminishing returns, less harshly if you are high level */
 	int dim_return_factor = max(1, u.ulevel);
-	if (wizard) {
-		/* debug */
-		pline("YogCredit = %ld [+%ld base %d], YogDevotion = %ld",
-			u.yog_sothoth_credit + max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)),
-			max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)),
-			value,
-			u.yog_sothoth_devotion + (offered ? value : max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit)))
-			);
-	}
-
 	int full_value = value;
 	if (!Amnesty_hand(uwep) && !Amnesty_hand(uswapwep)) value = max(1, value * dim_return_factor / (dim_return_factor + u.yog_sothoth_credit));
 	u.yog_sothoth_credit += value;
 	u.yog_sothoth_devotion += (offered) ? full_value : value;
+	if (wizard) {
+		/* debug */
+		pline("YogCredit = %ld [+%d base %d], YogDevotion = %ld",
+			u.yog_sothoth_credit,
+			value,
+			full_value,
+			u.yog_sothoth_devotion
+			);
+	}
 	return;
 }
 

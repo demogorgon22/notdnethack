@@ -431,7 +431,7 @@ E int FDECL(pet_detect_and_tame, (struct obj *));
 E int FDECL(pet_detect_and_heal, (struct obj *));
 E int FDECL(trap_detect, (struct obj *));
 E const char *FDECL(level_distance, (d_level *));
-E int FDECL(use_crystal_ball, (struct obj *));
+E int FDECL(use_crystal_ball, (struct obj **));
 E void NDECL(do_mapping);
 E void FDECL(do_vicinity_map, (int,int));
 E void FDECL(cvt_sdoor_to_door, (struct rm *));
@@ -692,7 +692,7 @@ E int FDECL(teleport_arm, (struct obj *, struct monst *));
 E int FDECL(teleport_steal_arm, (struct monst *, struct obj *));
 E int FDECL(tent_destroy_arm, (struct obj *));
 E void FDECL(adj_abon, (struct obj *,SCHAR_P));
-E int FDECL(properties_dr, (struct obj *,int,int));
+E int FDECL(properties_dr, (struct obj *,int,int,int,int));
 E void FDECL(dosymbiotic, (struct monst *, struct obj *));
 E void FDECL(doscorpion, (struct monst *, struct obj *));
 E void FDECL(doliving, (struct monst *, struct obj *));
@@ -706,6 +706,8 @@ E void FDECL(doliving_fallingstar, (struct monst *, struct obj *, boolean));
 E void FDECL(doliving_healing_armor, (struct monst *, struct obj *, boolean));
 E void FDECL(doliving_armor_salve, (struct monst *, struct obj *));
 E void FDECL(dotsmi_theft, (struct monst *, struct monst *, struct obj *, struct obj *));
+E int FDECL(calc_agrrot, (struct monst *));
+E int FDECL(calc_agrimpure, (struct monst *));
 
 /* ### dog.c ### */
 
@@ -1145,6 +1147,8 @@ E void FDECL(dipforge, (struct obj *));
 E void FDECL(breaksink, (int,int));
 E void NDECL(drinksink);
 #endif
+E void NDECL(dolavademon);
+E void FDECL(blowupforge, (int, int));
 
 /* ### thoughtglyph.c ### */
 
@@ -1474,6 +1478,7 @@ E boolean FDECL(create_critters, (int,struct permonst *));
 E struct permonst *FDECL(rndmonst, (int, int));
 E int FDECL(rndshape, (boolean(*)(int)));
 E void FDECL(reset_rndmonst, (int));
+E struct permonst *NDECL(mkdragon);
 E struct permonst *FDECL(mkclass, (CHAR_P,int));
 E struct permonst *NDECL(mkzombie);
 E int FDECL(adj_lev, (struct permonst *));
@@ -3541,6 +3546,7 @@ E int FDECL(dowrite, (struct obj *));
 
 /* ### xhity.c ### */
 
+E void FDECL(silverman_exhultation, (int));
 E boolean FDECL(peace_check_move, (struct monst *));
 E void FDECL(rotate_plus45, (int *, int *));
 E void FDECL(rotate_minus45, (int *, int *));

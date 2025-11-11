@@ -153,6 +153,7 @@ OBJECT:')',"scalpel",contained,uncursed, 2
 OBJECT:'[',"stilettos",contained,blessed,2
 OBJECT:'[',"gentlewoman's dress",contained,blessed,2
 OBJECT:'[',"victorian underwear",contained,blessed,2
+
 OBJECT:'[',"stilettos",contained,blessed,2
 OBJECT:'[',"gentlewoman's dress",contained,blessed,2
 OBJECT:'[',"victorian underwear",contained,blessed,2
@@ -161,13 +162,14 @@ OBJECT:'[',"ruffled shirt",contained,blessed,2
 OBJECT:'[',"leather armor",contained,blessed,2
 OBJECT:'[',"buckler",contained,blessed,2
 OBJECT:'#',"+2 blessed fencing gloves",contained
+OBJECT:'$',random,contained
 # Note: in some worlds "fencing gloves" will be fumbling.
 #	Fencing tournaments must be real fun to watch in such worlds!
 
 # Police station
-MONSTER: '@',"inmate",(63,08)
+OBJECT:'_',"chain",(63,08),uncursed,+1
 MONSTER: '@',"prisoner",(64,09)
-MONSTER: '@',"inmate",(70,09)
+OBJECT:'_',"chain",(70,09),uncursed,+1
 MONSTER: '@',"prisoner",(73,08)
 MONSTER: '@',"prison guard",(62,01),asleep
 MONSTER: '@',"prison guard",(65,01),asleep
@@ -255,6 +257,7 @@ OBJECT: '_', "chain", (10,17)
 OBJECT: '_', "chain", (10,17)
 OBJECT: '0', "ball", (10,17)
 OBJECT: '_', "chain", (11,17)
+OBJECT: '#', "rusty iron tinning kit", (11,17)
 # pre-placed inherited artifact
 OBJECT: '_', "chain", place[0], uncursed, 0, "Inherited"
 
@@ -318,7 +321,7 @@ MONSTER: '&',"lava demon",(39,09),hostile,awake
 MONSTER: '&',"lava demon",(36,14),hostile,awake
 MONSTER: '&',"lava demon",(26,14),hostile,awake
 # Elite guard
-MONSTER: ''',"iron golem",(04,13),hostile
+MONSTER: ''',"chain golem",(04,13),hostile
 # Objects
 OBJECT:'(',"spoon",(31,10),blessed,0,"The Iron Spoon of Liberation"
 # OBJECT:'0',"ball",(31,10),blessed,0,"The Iron Ball of Levitation"
@@ -331,7 +334,9 @@ OBJECT:'#',"blessed +2 ornamental cope named Masked Lord's Cope",contained
 OBJECT:'[',"gentleman's suit",contained,blessed,2
 OBJECT:'[',"ruffled shirt",contained,blessed,2
 OBJECT:'[',"high boots",contained,blessed,2
-OBJECT:'[',"gloves",contained,blessed,2
+OBJECT:'[',"long gloves",contained,blessed,2
+OBJECT:'$',random,contained
+OBJECT:'$',random,contained
 OBJECT: '%', "corpse", random, "inmate", 0
 OBJECT: '%', "corpse", random, "inmate", 0
 OBJECT: '%', "corpse", random, "inmate", 0

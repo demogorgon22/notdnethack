@@ -58,7 +58,7 @@ register struct monst *mtmp;
 		!is_blind(mtmp) && m_canseeu(mtmp) && !rn2(3)) {
 
 		//ifdef CONVICT
-		if (Role_if(PM_CONVICT) && !Upolyd && !(ublindf && ublindf->otyp != LENSES)) {
+		if (Role_if(PM_CONVICT) && !Upolyd && !Disguised) {
 			verbalize("%s yells: Hey!  You are the one from the wanted poster!",
 				Amonnam(mtmp));
 			(void)angry_guards(!(flags.soundok));
@@ -523,11 +523,20 @@ boolean digest_meal;
 	
 	if(mon->mtame && u.ufirst_life && mon->mhp < mon->mhpmax)
 		mon->mhp++;
-		
+	
+	if(mon->munburn > 0){
+		mon->mhp += 7;
+		if(mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
+		mon->munburn--;
+	}
+
 	if(is_alabaster_mummy(mon->data) 
 		&& mon->mvar_syllable == SYLLABLE_OF_LIFE__HOON
 	){
 		mon->mhp += 10;
+		if(mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
 	}
 	
 	if (mon->mspec_used) mon->mspec_used--;
@@ -640,6 +649,16 @@ boolean digest_meal;
 			mon->mberserk = 1;
 		}
 		degenerating = TRUE;
+	}
+	/* Nuncio faction monsters die/fade once the nemesis is killed */
+	if(!DEADMONSTER(mon) && Role_if(PM_CONVICT) && quest_status.killed_nemesis){
+		if(has_template(mon, FLAYED)){
+			mondied(mon);
+		}
+		else if(mon->mtyp == PM_CUBOID || mon->mtyp == PM_RHOMBOHEDROID){
+			m_losehp(mon, 1, FALSE, "hemhorage");
+			degenerating = TRUE;
+		}
 	}
 	/*The Changed degenerate due to damage*/
 	if(!DEADMONSTER(mon) && mon->mhp < mon->mhpmax/2 && is_changed_mtyp(mon->mtyp)){
@@ -1126,13 +1145,16 @@ register struct monst *mtmp;
 
 	/* update quest status flags */
 	quest_stat_check(mtmp);
-	
 	if(mdat->mtyp == PM_CENTER_OF_ALL 
 		&& !mtmp->mtame 
 		&& !Is_astralevel(&u.uz)
-		&& (near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
-		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
-		&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
+		&& (((near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
+			&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
+			&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
+		  )
+		  || (mtmp->mhp < mtmp->mhpmax/2 && !rn2((mtmp->mhp < mtmp->mhpmax/4) ? 4 : 10))
+		  || (Insight < 32 && mtmp->mattackedu && !rn2(10))
+		)
 	){
 		int nlev;
 		d_level flev;

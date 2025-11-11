@@ -193,9 +193,18 @@
 
 #define Insight	(u.uinsight)
 
-#define	FacelessHelm(obj) ((obj)->otyp == PLASTEEL_HELM || (obj)->otyp == CRYSTAL_HELM || (obj)->otyp == PONTIFF_S_CROWN || (obj)->otyp == FACELESS_HELM || (obj)->otyp == FACELESS_HOOD || (obj)->otyp == IMPERIAL_ELVEN_HELM)
+#define	FacelessHelm(obj) ((obj)->otyp == PLASTEEL_HELM || (obj)->otyp == CRYSTAL_HELM || (obj)->otyp == PONTIFF_S_CROWN || (obj)->otyp == FACELESS_HELM || (obj)->otyp == FACELESS_HOOD || (obj)->otyp == SILVERKNIGHT_HELM || (obj)->otyp == IMPERIAL_ELVEN_HELM)
 #define	FacelessCloak(obj) ((obj)->otyp == WHITE_FACELESS_ROBE || (obj)->otyp == BLACK_FACELESS_ROBE || (obj)->otyp == SMOKY_VIOLET_FACELESS_ROBE)
 #define	Faceless(obj) (FacelessHelm(obj) || FacelessCloak(obj))
+
+#define Disguised	((ublindf && (ublindf->otyp == LENSES || ublindf->otyp == SUNGLASSES \
+								|| ublindf->otyp == MASK || ublindf->otyp == R_LYEHIAN_FACEPLATE \
+								|| ublindf->otyp == TOWEL \
+							) \
+					) \
+					|| (uarmh && (FacelessHelm(uarmh) || uarmh->otyp == find_vhelm()) && is_opaque(uarmh)) \
+					|| (uarmc && FacelessCloak(uarmc) && is_opaque(uarmc)) \
+				)
 
 #define save_vs_sanloss()	((uwep && uwep->oartifact == ART_NODENSFORK) || (rnd(30) < (ACURR(A_WIS) + (uring_art(ART_NARYA) ? narya() : 0))))
 
@@ -569,9 +578,16 @@
 #define EPasses_walls		u.uprops[PASSES_WALLS].extrinsic
 #define Passes_walls		(HPasses_walls || EPasses_walls || \
 				 (uclockwork && u.phasengn)|| species_passes_walls(youracedata))
-#ifdef CONVICT
 # define Phasing            u.uprops[PASSES_WALLS].intrinsic
-#endif /* CONVICT */
+
+#define HOffensiveLuck		u.uprops[OFFENSIVE_LUCK].intrinsic
+#define EOffensiveLuck		u.uprops[OFFENSIVE_LUCK].extrinsic
+#define OffensiveLuck		(HOffensiveLuck || EOffensiveLuck)
+
+#define HDefensiveLuck		u.uprops[DEFENSIVE_LUCK].intrinsic
+#define EDefensiveLuck		u.uprops[DEFENSIVE_LUCK].extrinsic
+#define DefensiveLuck		(HDefensiveLuck || EDefensiveLuck)
+
 
 /*** Physical attributes ***/
 #define HSlow_digestion		u.uprops[SLOW_DIGESTION].intrinsic

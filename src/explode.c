@@ -311,8 +311,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			else
 				str = "fireball";
 			break;
+		case AD_ECLD:
 		case AD_COLD:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "fanged blizzard";
 			else
 				str = "ball of cold";
@@ -323,7 +324,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_EELC:
 		case AD_ELEC:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "cloven-hoofed lightning";
 			else
 				str = "pillar of lightning";
@@ -332,7 +333,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_EACD:
 		case AD_ACID:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "splash of drool";
 			else
 				str = "splash of acid";
@@ -926,7 +927,6 @@ struct monst *shkp;		/* shopkeepr that owns the object (may be null) */
 	register struct obj *otmp;
 	register int tmp;
 	int farthest = 0;
-	uchar typ;
 	long qtmp;
 	boolean used_up;
 	boolean individual_object = obj ? TRUE : FALSE;
@@ -1025,12 +1025,11 @@ struct monst *shkp;		/* shopkeepr that owns the object (may be null) */
 		   if ((stmp->range-- > 0) && (!stmp->stopped)) {
 			bhitpos.x = stmp->ox + stmp->dx;
 			bhitpos.y = stmp->oy + stmp->dy;
-			typ = levl[bhitpos.x][bhitpos.y].typ;
 			if(!isok(bhitpos.x, bhitpos.y)) {
 				bhitpos.x -= stmp->dx;
 				bhitpos.y -= stmp->dy;
 				stmp->stopped = TRUE;
-			} else if(!ZAP_POS(typ) ||
+			} else if(!ZAP_POS(levl[bhitpos.x][bhitpos.y].typ) ||
 					closed_door(bhitpos.x, bhitpos.y)) {
 				bhitpos.x -= stmp->dx;
 				bhitpos.y -= stmp->dy;

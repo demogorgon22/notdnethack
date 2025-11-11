@@ -945,6 +945,8 @@ struct monst *mon;
 					base -= 6;
 			}
 		}
+		if((is_rapier(monwep) && arti_phasing(monwep)))
+			armac += mon_weapon_dam_bonus(mon->data, monwep, weapon_type(monwep));
 	}
 
 	if (helpless(mon) || mon->msuicide)
@@ -1032,6 +1034,31 @@ struct monst *mon;
 				armac += shield_ac_mon(mon, obj);
 			else
 				armac += arm_ac_bonus(obj);
+		}
+	}
+	//Weapon AC (primary only)
+	struct obj *monwep = MON_WEP(mon);
+	if(monwep){
+		if((is_rapier(monwep) && !arti_phasing(monwep)))
+			armac += mon_weapon_dam_bonus(mon->data, monwep, weapon_type(monwep));
+		if(monwep->oartifact == ART_TOBIUME)
+			armac += max(monwep->spe,0);
+		if(monwep->otyp == NAGINATA && !which_armor(mon, W_ARMS)){
+			if(monwep->oartifact == ART_JINJA_NAGINATA)
+				armac += 2+monwep->spe;
+			else
+				armac += 1+(monwep->spe)/2;
+		}
+		if(monwep->otyp == SILVERKNIGHT_SPEAR && !which_armor(mon, W_ARMS)){
+			armac += 1+monwep->spe;
+			if(mon_knight(mon) || mon_dark_knight(mon)){
+				if(mon->m_lev >= 28)
+					armac += 8;
+				else if(mon->m_lev >= 14)
+					armac += 3;
+				else
+					armac += 1;
+			}
 		}
 	}
 	if(armac > 11) armac = rnd(armac-10) + 10; /* high armor ac values act like player ac values */
@@ -1167,6 +1194,31 @@ struct monst *mon;
 				armac += shield_ac_mon(mon, obj);
 			else
 				armac += arm_ac_bonus(obj);
+		}
+	}
+	//Weapon AC (primary only)
+	struct obj *monwep = MON_WEP(mon);
+	if(monwep){
+		if((is_rapier(monwep) && !arti_phasing(monwep)))
+			armac += mon_weapon_dam_bonus(mon->data, monwep, weapon_type(monwep));
+		if(monwep->oartifact == ART_TOBIUME)
+			armac += max(monwep->spe,0);
+		if(monwep->otyp == NAGINATA && !which_armor(mon, W_ARMS)){
+			if(monwep->oartifact == ART_JINJA_NAGINATA)
+				armac += 2+monwep->spe;
+			else
+				armac += 1+(monwep->spe)/2;
+		}
+		if(monwep->otyp == SILVERKNIGHT_SPEAR && !which_armor(mon, W_ARMS)){
+			armac += 1+monwep->spe;
+			if(mon_knight(mon) || mon_dark_knight(mon)){
+				if(mon->m_lev >= 28)
+					armac += 8;
+				else if(mon->m_lev >= 14)
+					armac += 3;
+				else
+					armac += 1;
+			}
 		}
 	}
 
@@ -1470,6 +1522,8 @@ int depth;
 	/* for use vs specific magr */
 	int agralign = 0;
 	int agrmoral = 0;
+	int agrimpure = 0;
+	int agrrot = 0;
 	if(magr){
 		agralign = (magr == &youmonst) ? sgn(u.ualign.type) : sgn(magr->data->maligntyp);
 		
@@ -1484,6 +1538,8 @@ int depth;
 			else if(hates_unholy_mon(magr))
 				agrmoral = 1;
 		}
+		agrrot = calc_agrrot(magr);
+		agrimpure = calc_agrimpure(magr);
 	}
 	
 	/* some slots may be unacceptable and must be replaced */
@@ -1524,7 +1580,7 @@ int depth;
 								continue;
 						}
 						arm_mdr += arm_dr_bonus(curarm);
-						if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
+						if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
 					}
 					else if(curarm->otyp == CLOAK_OF_PROTECTION){
 						arm_mdr += arm_dr_bonus(curarm)/2;
@@ -1534,7 +1590,7 @@ int depth;
 			else if(!depth){
 				if (slot&adfalt[i]){
 					arm_mdr += arm_dr_bonus(curarm);
-					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral);
+					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
 				}
 			}
 		}
@@ -1796,12 +1852,12 @@ boolean racialexception;
 		    if (!is_shirt(obj) || obj->objsize != mon->data->msize || !shirt_match(mon->data,obj)) continue;
 		    break;
 		case W_ARMC:
-			if(mon->mtyp == PM_CATHEZAR && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
 		    if (!is_cloak(obj) || (abs(obj->objsize - mon->data->msize) > 1)) continue;
 		    break;
 		case W_ARMH:
-			if(mon->mtyp == PM_CATHEZAR && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
 		    if (!is_helmet(obj) || !helm_match(mon->data,obj) || !helm_size_fits(mon->data,obj)) continue;
 		    break;
@@ -1809,17 +1865,17 @@ boolean racialexception;
 		    if (noshield(mon->data) || (mon_offhand_attack(mon) && !creation) || !is_shield(obj)) continue;
 		    break;
 		case W_ARMG:
-			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
 				break;
 		    if (!is_gloves(obj) || obj->objsize != mon->data->msize || !can_wear_gloves(mon->data)) continue;
 		    break;
 		case W_ARMF:
-			if((mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_WARDEN_ARIANNA || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
 		    if (!is_boots(obj) || !boots_size_fits(mon->data, obj) || !can_wear_boots(mon->data)) continue;
 		    break;
 		case W_ARM:
-			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
+			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL || mon->mtyp == PM_WARDEN_ARIANNA) && obj->otyp == CHAIN)
 				break;
 		    if (!is_suit(obj) || !arm_match(mon->data, obj) || !arm_size_fits(mon->data, obj))
 				continue;

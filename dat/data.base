@@ -1049,6 +1049,17 @@ bell of opening
 	* Old Tom was the single cracked bronze bell in the University
 	bell tower.
 		[ Eric, by Terry Pratchett ]
+beast cutter
+beast crusher
+	This serrated iron club slices through the toughest of beast
+	hides, and when transformed the blade splits into sections,
+	allowing one to lash it in the fashion of a heavy flail.
+		[ Adapted from Bloodborne, by FromSoftware ]
+bestial claw
+	As flesh is flayed and blood is sprayed, the beast within
+	awakens, and in time, the wielder of this weapon surges with
+	both strength and feverish reverie.
+		[ Bloodborne, by FromSoftware ]
 bill?guisarme
 hooked polearm
 	A bladed polearm with mutliple sharpened edges and spikes,
@@ -1088,9 +1099,20 @@ black light
 	X-rays. ... Some of the UV wavelengths are colloquially called black
 	light, as it is invisible to the human eye.
 		[ Wikipedia, the free encyclopedia ]
+blade of mercy
+blade of grace
+blade of pity
+	A special trick weapon passed down among hunters of hunters. One of
+	the oldest weapons of the workshop.
+
+	Splits into two when activated. The weapon's warped blades are forged
+	with siderite, a rare mineral of the heavens. It is said the siderite
+	ore was porous and slick with a gruesome clear fluid. But why would
+	bones fall from the sky?
+		[ Adapted from Bloodborne, by FromSoftware ]
 blasphemous lurker
 	Oh Amygdala, oh Amygdala... Have mercy on the poor bastard!
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 blaster
 arm blaster
 hand blaster
@@ -1159,6 +1181,10 @@ blood bloater
 	Bloodbloaters are parthenogenic organisms, and reproduce 
 	constantly, wherever food is most plentiful.
 		[ The Fiend Folio, 3.0 ed, by James Wyatt ]
+bloodletter
+	The Bloodletter assumes its true and terrifying form after it
+	draws upon blood from the inner reaches of one's body and soul.
+		[ Bloodborne, by FromSoftware ]
 bo*shuriken
 	A thin, metal dart.
 bokrug*
@@ -1247,6 +1273,19 @@ boulder
 	ears the sea-sound of Poseidon.  Then I knew this time I
 	would do it; and so I did.
 		[ The King Must Die, by Mary Renault ]
+bowblade
+bladed bow
+	Choice weapon of Simon, one of the first Healing Church 
+	hunters.
+	
+	Simon despised firearms, and so the Church workshop had
+	this specially fashioned to his liking. The large curved blade
+	serves as a bow when transformed.
+	
+	But aside from a few close friends, Simon was scoffed at for
+	his choice of arms, for who would dare face the beasts with
+	a measly bow?
+		[ Bloodborne, by FromSoftware ]
 ~*longbow of diana
 bow
 * bow
@@ -1345,7 +1384,7 @@ bullwhip
 		[ Melusine, by Sarah Monette ]
 butterfly swarm
 	These swirling butterflies are as the Goddess of Rot's wings.
-		[ Adapted from Elden Ring, by From Software ]
+		[ Adapted from Elden Ring, by FromSoftware ]
 byakhee
 	A creature of the stars, this bat like being can be summoned
 	across the vast interstellar gulfs to serve magicians and
@@ -1428,6 +1467,15 @@ candy bar
 	so on.  And in this way, Charlie would make his ten-cent bar
 	of birthday chocolate last him for more than a month.
 		[ Charlie and the Chocolate Factory, by Roald Dahl ]
+cane
+	Sufficiently deadly as a rigid spike-tipped cane, but also
+	reveals a bladed whip when into many segments.
+	
+	Concealing the weapon inside the cane and flogging the beasts
+	with the whip is partly an act of ceremony, an attempt to
+	demonstrate to oneself that the bloodlust of the hunt will
+	never encroach upon the soul.
+		[ Adapted from Bloodborne, by FromSoftware ]
 carcosa
 lost carcosa
 	Along the shore the cloud waves break,
@@ -1628,6 +1676,21 @@ kerberos
 	playing bewitching music on his lyre, and the other time when
 	Hercules confronted him and took him to the world of the
 	living (as his twelfth and last labor).
+kyton
+chain devil
+	Kytons are humanoid, though it's hard to tell if they're human.
+	They wear chains in lieu of clothing and armor, using this
+	"apparel" as weapons. The body, arms, and legs are all tightly
+	wrapped with smaller chains. 
+
+	[T]he kyton has a nasty habit of assuming the feature of a
+	departed loved one or friend - or sometimes that of much-feared
+	enemy. Though all a berk can see is the lower part of the face,
+	he can often reconstruct the rest of it. No one's really sure
+	whether this is an illusion the creatures create, or if it's 
+	actually the dead person come to horrible  "life" in the city
+	of chains. 
+		[ Planes of Law, TSR ]
 chameleon
 	A small lizard perched on a brown stone.  Feeling threatened by
 	the approach of human beings along the path, it metamorphosed
@@ -1695,6 +1758,31 @@ chih*sung*tzu
 	their paradise on Mount Kunlun.
 		[ The Illustrated Who's Who In Mythology,
 		  by Michael Senior ]
+chikage
+	When the intricate, rippled engraving that spans a chikage's blade
+	is imbrued with blood, the sword sings in scarlet hues.
+	
+	However, the rite eats away at the wielder's very essence.
+		[ Adapted from Bloodborne, by FromSoftware ]
+church blade
+church-blade
+	The Healing Church workshop began with Ludwig, and departed from
+	old Gehrman's techniques to provide hunters with the means to hunt
+	more terrifying beasts, and perhaps things still worse.
+		[ Adapted from Bloodborne, by FromSoftware ]
+church hammer
+church-hammer
+	The Church takes a heavy-handed, merciless stance toward the plague
+	of beasts, an irony not lost upon the wielders of this most symbolic
+	weapon. The writing on the block is said to have atropaic effect.
+		[ Adapted from Bloodborne, by FromSoftware ]
+church pick
+church-pick
+	One of the old trick weapons of the Healing Church, a hunting weapon
+	formed from one of the giant picks that appear in old beast tales. 
+	There is something in the tip that, when driven deep, is deleterious
+	to beasts and the ritually impure.
+		[ Adapted from Bloodborne, by FromSoftware ]
 chromatic dragon
 	Tiamat is said to be the mother of evil dragonkind.  She is
 	extremely vain.
@@ -2433,6 +2521,10 @@ major demon
 	them difficult to deal with, even on the rare occasions when
 	they are friendly.
 	[ The Tough Guide to Fantasyland, by Diana Wynne Jones ]
+demon claw
+	A forbidden trick weapon of a type originally created by
+	heretical smiths hunted by demons and devils alike. It draws
+	power from the damned soul set into the palm.
 demonbane
 	"From the hate-scorched sky----
 	 With righteous anger in our hearts----
@@ -2443,6 +2535,10 @@ demonbane
 desert seer
 	And if you gaze long into an abyss, the abyss also gazes into you.
 		[ Beyond Good and Evil, Friedrich Nietzsche  ]
+devil fist
+	A forbidden trick weapon of a type originally created by
+	heretical smiths hunted by demons and devils alike. It draws
+	power from the damned soul clenched in the fist.
 devil*snare
 	"Stop moving!" Hermione ordered them. "I know what this is --
 	it's Devil's Snare!"
@@ -3557,7 +3653,7 @@ fingerprint shield
 	Part of the tomb of an ancient god, the Readerless Fingers relayed
 	their message through these imprints, said to be the very seeds
 	from which frenzy first sprouted.
-		[ Elden Ring, by From Software ]
+		[ Elden Ring, by FromSoftware ]
 
 	Look at the alter. Then you'll understand what I'm trying to tell.
 	Look at the big round marks, two feet wide, on each side. That's
@@ -3589,6 +3685,12 @@ flaming orb
 	life born in the Bed of Chaos, and a grievous symbol of
 	Izalith's sin.
 		[ Adapted from Dark Souls 3, by FromSoftware ]
+flesh that hates
+	A scrap of pulverized flesh that hates you. Personally.
+
+	(It hates everyone else too).
+
+	(Personally, and individually).
 floating eye
 	Floating eyes, not surprisingly, are large, floating eyeballs
 	which drift about the dungeon.  Though not dangerous in and
@@ -4570,7 +4672,7 @@ hezrou
 	among the weaker of demons, but still quite formidable.
 high priest wolf
 	As it was, clerics transformed into the most hideous beasts.
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 hippocrates
 	Greek physician, recognized as the father of medicine.  He
 	is believed to have been born on the island of Cos, to have
@@ -4636,7 +4738,7 @@ hobgoblin
 	Ludwig was certain that these playful dancing sprites offered 
 	"guidance." They could empty Ludwig of his fears at least in the 
 	midst of a hunt.
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 holy water
 	"We want a word with you," said Ligur (in a tone of voice
 	intended to imply that "word" was synonymous with "horrifically
@@ -4836,6 +4938,17 @@ hunter
 	Where is the haste that ye hurry by?
 	Brother, I go to my lair to die.
 		[ The Jungle Book, by Rudyard Kipling ]
+hunter's axe
+hunter's long axe
+	No matter their pasts, beasts are no more than beasts.
+	Some choose this axe to play the part of executioner.
+		[ Bloodborne, by FromSoftware ]
+hunter's longsword
+	A keen long sword that was drawn from the sheath of a
+	church blade.
+hunter's shortsword
+	A wieldy short sword that was concealed in the haft of a
+	church-hammer.
 hunting horror
 	And in the air about him were great viperine creatures, 
 	which had curiously distorted heads, and grotesquely great 
@@ -5049,6 +5162,11 @@ iron bars
 	Angels alone that soar above
 	  Enjoy such liberty.
 		[ To Althea from Prison, by Richard Lovelace ]
+isamusei
+	The Choir stumbled upon an epiphany, very suddenly and quite
+	by accident. Here we stand, feet planted in the earth, but
+	might the cosmos be very near us, only just above our heads?
+		[ Bloodborne, by FromSoftware ]
 ishtar
 	Ishtar (the star of heaven) is the Mesopotamian goddess of
 	fertility and war.  She is usually depicted with wings and
@@ -5939,7 +6057,7 @@ living doll
 	I am a doll, created by you humans. Would you ever think
 	to love me? Of course... I do love you. Isn't that how
 	you've made me?
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 gecko
 iguana
 lizard
@@ -7744,6 +7862,14 @@ pelias
 		[ Gd Tak `Gar (The Things Tak Wrote),
 			translated by Sir T. D. J. Pratchett,
 			available from Unseen University Press for AM$8 ]
+pest glaive
+	Wielded by the pests who emerge from scarlet mires. Noticeably
+	increases non-physical damage resistance.
+
+	Though men might recognize the keen intellect of the pests
+	evidenced by this spear's uncanny design, it will never
+	be understood by them.
+		[ Adapted from Elden Ring, by FromSoftware ]
 phantom fungus
 	A phantom fungus is a tripedal carnivorous plant that roams the
 	vast and deep underground caverns of the world. It wanders in
@@ -8220,7 +8346,7 @@ serpent man of Yoth
 			Creatures of the Dreamlands ]
 serpent priest
 	Brutally repressed rumors suggest that there is
-	more to asmodeus than he admits. The story goes
+	more to Asmodeus than he admits. The story goes
 	the true form of Asmodeus actually resides in the
 	deepest rift of Nessus called the Serpent's Coil.
 	The shape seen be all the other devils of the Nine
@@ -8882,6 +9008,17 @@ sara*the last oracle
 	It is finished.
 		[ The last Oracle of Delphi 
 			to a representative of the Emperor Theodosius ]
+saw cleaver
+razor cleaver
+	This saw, effective at drawing the blood of beasts,
+	transforms into a long cleaver that makes use of
+	centrifugal force.
+		[ Bloodborne, by FromSoftware ]
+saw spear
+long saw
+	This saw, effective at drawing the blood of beasts,
+	transforms into a medium-range spear.
+		[ Bloodborne, by FromSoftware ]
 scalpel
 	A scalpel is a very sharp knife used for surgery ... Merely
 	touching a medical scalpel with bare hands to test it will
@@ -9003,7 +9140,7 @@ veil-render
 
 	The Great Ones that inhabit the nightmare are sympathetic
 	in spirit, and often answer when called upon.
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 
 	The hole in your room is a hole in you.
 
@@ -9222,6 +9359,61 @@ silver key
 	thousand-pillared Irem.
 		[ Through the Gates of the Silver Key, 
 			H.P. Lovecraft ]
+silverknight
+	One of the legion of holy knights that rise from scarlet 
+	mires. Though eerily human, an insectoid clicking accompanies
+	its every movement.
+
+	Beware the relentless flowing attacks and terrible illness
+	of the silver knights.
+silverknight armor
+	The delicately-filigreed armor of the holy knights that
+	fight on despite the inevitable, if gradual, putrefaction
+	of their flesh. Their acceptance of their fate makes these
+	battles fiercest of all.
+		[ Adapted from Elden Ring, by FromSoftware ]
+silverknight helm
+	A delicately-filigreed helm that covers the face with close-
+	set bars. It smells as though someone was sick in it.
+silverknight gauntlets
+	A delicately-filigreed pair of gauntlets. Though clean and
+	beautiful as the day they were forged on the outside, the
+	interior is caked with indescribable filth.
+silverknight boots
+	A delicately-filigreed pair of armored boots. Though clean
+	and beautiful as the day they were forged on the outside,
+	the interior is caked with indescribable filth.
+silverknight sword
+	Piercing sword of the holy knights that rise from scarlet
+	mires. Mainly used as a backup weapon, in combination with
+	a long-handled armament.
+
+	It is particularly effective when used to strike at gaps
+	in an opponent's armor.
+		[ Adapted from Elden Ring, by FromSoftware ]
+silverknight spear
+	Spear of the holy knights that rise from scarlet mires.
+	The buckler affixed to its shaft allows for parrying,
+	but somewhat interferes with thrusting.
+silverknight scythe
+	War-scythe of the holy knights that rise from scarlet
+	mires. Its long reach allows for wide sweeping attacks,
+	but makes a backup weapon advisable.
+silverman
+	A crawling pest that emerged from scarlet mires, its
+	chitinous body makes a dry rustling sound. Attacks enemies
+	by secreting sticky threads.
+
+	"Rot for the scarlet goddess. O scarlet blossoms, flourish
+	in distant lands, and return to us, the unwanted children."
+		[ Adapted from Elden Ring, by FromSoftware ]
+silvergrub
+	Pale pests who crawl through the lands afflicted by scarlet
+	rot; the abandoned children of the goddess. Those who dwell
+	within poison know rot all too well. The death that begets
+	life, that comes to all equally. That is to say: it is the
+	cycle of rebirth put into practice.
+		[ Adapted from Elden Ring, by FromSoftware ]
 skeleton
 	A skeleton is a magically animated undead creature.  Unlike
 	shades, only a humanoid creature can be used to create a
@@ -9368,6 +9560,13 @@ captain
 	and are fierce fighters.  Because of the load of their combat
 	gear, however, one can usually run away from them, and doing
 	so is considered a wise thing.
+soldier's saber
+soldier's rapier
+	The old nobles, long-time imbibers of blood, are no strangers
+	to the sanguine plague, and the disposal of beasts was a
+	discrete task left to their servants, or knights, as they were
+	called for the sake of appearances.
+		[ Bloodborne, by FromSoftware ]
 sol valtiva
     Sutr ferr sunnan
     meo sviga laevi:
@@ -9954,6 +10153,11 @@ topaz
 	acid igneous rocks, e.g., granites and rhyolites, and in
 	metamorphic rocks, e.g., gneisses and schists.
 		[ The Columbia Encyclopedia, Sixth Edition ]
+tonitrus
+	Striking this peculiar iron morning star flail like a match
+	generates the same blue sparks that echo down from the cosmic
+	voids.
+		[ Adapted from Bloodborne, by FromSoftware ]
 touch*stone
 	"Gold is tried by a touchstone, men by gold."
 		[ Chilon (c. 560 BC) ]
@@ -10220,6 +10424,13 @@ tyr
 	search of prey.  They are tremendously strong; muscles bulge
 	beneath their thick, scaly hides and their powerful arms and
 	legs all end in great claws.
+undead hunter
+	Shrouded by night, but with steady stride.
+	Colored by blood, but always clear of mind.
+	Proud hunter of the church.
+	Beasts are a curse, and a curse is a shackle.
+	Only ye are the true blades of the church.
+		[ Bloodborne, by FromSoftware ]
 *unicorn
 unicorn horn
 	Men have always sought the elusive unicorn, for the single
@@ -10392,10 +10603,10 @@ vicar a*
 	into the depths. Remain wary of the frailty of men.
 	Their wills are weak, minds young. Were it not for
 	fear, death would go unlamented.
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 vicar wolf
 	But beware the frailty of men.
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 victorian underwear
 	The Victorian woman wore an extraordinary amount of 
 	underwear. The basic items consisted of chemise, drawers, 
@@ -10432,6 +10643,14 @@ vlad*
 	He dealt with perceived challengers to his rule by impaling
 	them upright on wooden stakes.  Visiting dignitaries who
 	failed to doff their hats had them nailed to their head.
+voice-in-screams
+nuncio
+cenobite
+	Who are you?
+
+	Explorers in the further regions of experience.
+	Demons to some. Angels to others.
+		[ Hellraiser, by Clive Barker ]
 vorpal*
 	 The Cat materialized at the far end of the bar, downed the
 	Hatter's drink, and said, "I hear the burbling, and eyes of
@@ -10864,7 +11083,7 @@ worm-gnawed skull
 	Making contact with eldritch wisdom is a blessing, for even
 	if it drives one mad, it allows one to serve a grander purpose,
 	for posterity.
-		[ Bloodborne, by From Software ]
+		[ Bloodborne, by FromSoftware ]
 wraith
 	The wraith is an evil undead spirit of a powerful human that seeks
 	to absorb human life energy. 

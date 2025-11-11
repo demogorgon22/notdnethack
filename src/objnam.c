@@ -1174,6 +1174,9 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_SPIKED))
 			Strcat(buf, "spiked ");
 
+		if (check_oprop(obj, OPROP_GOLDW))
+			Strcat(buf, (obj->obj_material == GOLD) ? "molten " : "aureate ");
+
 		/* note: "holy" and "unholy" properties are shown in the BUC part of the name, as they replace "blessed" and "cursed". */
 		
 		/* note: except "Holy Avenger" and "Unholy Avenger" */
@@ -1251,7 +1254,7 @@ char *buf;
 	}
 
 	if (obj->ovara_seals&SEAL_EDEN){
-		// covered in poisoned words
+		Strcat(buf, "silvered ");
 	}
 
 	if (obj->ovara_seals&SEAL_ENKI){
@@ -1269,8 +1272,8 @@ char *buf;
 		Strcat(buf, "vine-wrapped ");
 	}
 
-	if (obj->ovara_seals&SEAL_FAFNIR){
-		Strcat(buf, "ruinous ");
+	if (obj->ovara_seals&SEAL_MAEGERA){
+		Strcat(buf, "gilded ");
 	}
 
 	if (obj->ovara_seals&SEAL_HUGINN_MUNINN){
@@ -4752,7 +4755,8 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_SPIKED);
 		} else if (!strncmpi(bp, "bladed ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_BLADED);
-
+		} else if (!strncmpi(bp, "aureate ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_GOLDW);
 		} else if (!strncmpi(bp, "blasting ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_BLAST);
 		} else if (!strncmpi(bp, "ornate ", l=7)) {
@@ -5024,6 +5028,13 @@ int wishflags;
 	if (strncmpi(bp, "monk's staff", 10))
 	if (strncmpi(bp, "soldier's saber", 15))
 	if (strncmpi(bp, "soldier's rapier", 16))
+	if (strncmpi(bp, "silverknight sword", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight scythe", 19)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight spear", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight armor", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight gauntlets", 22)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight helm", 17)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight boots", 18)) /*not the epynonomous monster */
 	if (strncmpi(bp, "nightmare's bullet mold", 23))
 	if (strncmpi(bp, "hunter's axe", 12))
 	if (strncmpi(bp, "hunter's long-axe", 17))
@@ -5156,6 +5167,7 @@ int wishflags;
 	   strncmpi(bp, "glamdring", 9) && 
 	   strncmpi(bp, "plasteel armor", 14) &&
 	   strncmpi(bp, "eilistran armor", 15) &&
+	   strncmpi(bp, "silverknight armor", 18) &&
 	   strncmpi(bp, "imperial elven armor", 20) &&
 	   strncmpi(bp, "armor of erebor", 15) && 
 	   strncmpi(bp, "armor of khazad-dum", 19) && 

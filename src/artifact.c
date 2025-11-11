@@ -254,6 +254,21 @@ hack_artifacts()
 	if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags |= ARTG_GIFT;
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags &= ~ARTG_NOGEN;
+		artilist[ART_RED_CORDS_OF_ILMATER].role = PM_HEALER;
+	}
+	if(Role_if(PM_CONVICT)){
+		artilist[ART_ROBE_OF_CLOSED_EYES].gflags |= ARTG_GIFT;
+		artilist[ART_ROBE_OF_CLOSED_EYES].gflags &= ~ARTG_NOGEN;
+		artilist[ART_ROBE_OF_CLOSED_EYES].role = NON_PM;
+		artilist[ART_RED_CORDS_OF_ILMATER].role = PM_CONVICT;
+		//Alt first gift becomes non-specific giftable artifact
+		if(Race_if(PM_VAMPIRE)){
+			artilist[ART_LUCK_BLADE].role = NON_PM;
+		}
+		else {
+			artilist[ART_STORM_CURSE].role = NON_PM;
+			artilist[ART_STORM_CURSE].race = NON_PM;
+		}
 	}
 	
 	/* fem hlf nob, or fem hlf without a first gift, always get Lifehunt Scythe */
@@ -2288,9 +2303,7 @@ boolean
 arti_silvered(obj)
 struct obj *obj;
 {
-    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_SILVER) || 
-									  (obj->oartifact == ART_PEN_OF_THE_VOID &&
-									   obj->ovara_seals & SEAL_EDEN) ||
+    return (obj && obj->oartifact && (arti_attack_prop(obj, ARTA_SILVER) ||
 									  ((obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) && !obj->lamplit))
 			);
 }
@@ -3799,7 +3812,7 @@ voidPen_hit(struct monst *magr, struct monst *mdef, struct obj *pen, int *dmgptr
 			}
 		}
 	} // nvPh - water res
-	if (pen->ovara_seals&SEAL_FAFNIR){
+	if (pen->ovara_seals&SEAL_MAEGERA){
 		if (vis){
 			and ? Strcat(buf, " and ruinous") : Sprintf(buf, "ruinous");
 			and = TRUE;
@@ -4091,7 +4104,7 @@ struct obj *pen;	/* Pen of the Void */
 			return TRUE;
 		}
 	}
-	if (pen->ovara_seals&SEAL_FAFNIR){
+	if (pen->ovara_seals&SEAL_MAEGERA){
 		if(youdefend ? is_golem(youracedata) : is_golem(mdef->data)){
 			return TRUE;
 		} else if(youdefend ? nonliving(youracedata) : nonliving(mdef->data)){
@@ -4507,6 +4520,15 @@ int * truedmgptr;
 	int original_plusdmgptr = *plusdmgptr;
 	int original_truedmgptr = *truedmgptr;
 	const struct artifact *oart = get_artifact(otmp);
+	int mistlight_bonus = 0;
+	if(magr && magr->mtyp == PM_ARIANNA && (otmp->obj_material == SILVER || otmp->obj_material == GOLD || otmp->obj_material == PLATINUM)){
+		if(mlev(magr) >= 28)
+			mistlight_bonus += d(6, 8);
+		else if(mlev(magr) >= 21)
+			mistlight_bonus += d(3, 8);
+		else 
+			mistlight_bonus += d(1, 8);
+	}
 	
 	if(!Fire_res(mdef)){
 		if(check_oprop(otmp, OPROP_FIREW))
@@ -4515,6 +4537,8 @@ int * truedmgptr;
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_FIREW))
 			*truedmgptr += d(2, 6);
+		if(check_oprop(otmp, OPROP_GOLDW))
+			*truedmgptr += d(rnd(5), spiritDsize());
 	}
 	if(!Cold_res(mdef)){
 		if(check_oprop(otmp, OPROP_COLDW))
@@ -4542,8 +4566,10 @@ int * truedmgptr;
 		} else if (!(youdef && Waterproof) && !(!youdef && mon_resistance(mdef, WATERPROOF))){
 			int mult = (flaming(pd) || is_iron(pd)) ? 2 : 1;
 
-			if(check_oprop(otmp, OPROP_WATRW))
+			if(check_oprop(otmp, OPROP_WATRW)){
 				*truedmgptr += basedmg*mult;
+				*truedmgptr += mult*mistlight_bonus;
+			}
 			if(check_oprop(otmp, OPROP_LESSER_WATRW))
 				*truedmgptr += d(2, 6)*mult;
 		}
@@ -4574,8 +4600,10 @@ int * truedmgptr;
 		double mult = 1;
 		if(magm_vulnerable(mdef))
 			mult *= 1.5;
-		if(check_oprop(otmp, OPROP_MAGCW))
+		if(check_oprop(otmp, OPROP_MAGCW)){
 			*truedmgptr += mult*basedmg;
+			*truedmgptr += mult*mistlight_bonus;
+		}
 		if(check_oprop(otmp, OPROP_LESSER_MAGCW))
 			*truedmgptr += mult*d(3, 4);
 		
@@ -4961,16 +4989,20 @@ int * truedmgptr;
 			*truedmgptr += d(2, 6);
 	}
 	if(youdef ? (u.ualign.type != A_LAWFUL) : (sgn(mdef->data->maligntyp) <= 0)){
-		if(check_oprop(otmp, OPROP_AXIOW))
+		if(check_oprop(otmp, OPROP_AXIOW)){
 			*truedmgptr += basedmg;
+			*truedmgptr += mistlight_bonus;
+		}
 		if(check_oprop(otmp, OPROP_OONA_FIREW) || check_oprop(otmp, OPROP_OONA_COLDW) || check_oprop(otmp, OPROP_OONA_ELECW))
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_AXIOW))
 			*truedmgptr += d(2, 6);
 	}
 	if((youdef ? (hates_holy(youracedata)) : (hates_holy_mon(mdef))) && otmp->blessed){
-		if(check_oprop(otmp, OPROP_HOLYW))
+		if(check_oprop(otmp, OPROP_HOLYW)){
 			*truedmgptr += basedmg;
+			*truedmgptr += mistlight_bonus;
+		}
 		if(check_oprop(otmp, OPROP_LESSER_HOLYW))
 			*truedmgptr += d(2, 6);
 	}
@@ -7989,7 +8021,8 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
-	if(otmp->oartifact == ART_IBITE_ARM){
+	/* Artifact water damage */
+	if(otmp->oartifact == ART_IBITE_ARM || otmp->oartifact == ART_STORM_CURSE){
 		struct obj *cloak = which_armor(mdef, W_ARMC);
 
 		if (youdef && uarmc && uarmc->greased) {
@@ -8005,12 +8038,15 @@ boolean printmessages; /* print generic elemental damage messages */
 		} else if (!(youdef && Waterproof) && !(!youdef && mon_resistance(mdef, WATERPROOF))){
 			int mult = (flaming(pd) || is_iron(pd)) ? 2 : 1;
 
-			if(otmp->otyp == CLAWED_HAND && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_WAVE)
+			if(otmp->oartifact == ART_STORM_CURSE)
+				*truedmgptr += rnd(4)*mult;
+			else if(otmp->otyp == CLAWED_HAND && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_WAVE)
 				*truedmgptr += d(6, 6)*mult;
 			else
 				*truedmgptr += d(2, 4)*mult;
 		}
-		
+	}
+	if(otmp->oartifact == ART_IBITE_ARM){
 		if(is_human(pd)){
 			*truedmgptr += rnd(10);
 			if(is_mercenary(pd) || is_lord(pd) || is_prince(pd) || attacktype_fordmg(pd, AT_MAGC, AD_CLRC) || attacktype_fordmg(pd, AT_MMGC, AD_CLRC)){
@@ -9867,7 +9903,7 @@ arti_invoke(obj)
 		switch (obj->otyp)
 		{
 		case CRYSTAL_BALL:
-			use_crystal_ball(obj);
+			use_crystal_ball(&obj);
 			break;
 		case RIN_WISHES:
 			(void) use_ring_of_wishes(obj);

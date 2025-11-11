@@ -1545,7 +1545,7 @@ mineralize()
 					if (!rn2(3) && Can_dig_down(&u.uz)) add_to_buried(otmp);
 					else place_object(otmp, x, y);
 				}
-				else if ((otmp = mksobj(FOSSIL, 0)) != 0) {
+				else if ((otmp = mksobj(FOSSIL, NO_MKOBJ_FLAGS)) != 0) {
 					otmp->quan = 1L;
 					otmp->owt = weight(otmp);
 					otmp->ox = x,  otmp->oy = y;

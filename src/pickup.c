@@ -2883,11 +2883,12 @@ boolean past;
 	
 	while(howMany){
 		howMany--;
-		daughter = makemon(&mons[PM_DAUGHTER_OF_BEDLAM], box->ox, box->oy, MM_ADJACENTOK);
+		daughter = makemon(&mons[PM_DAUGHTER_OF_BEDLAM], box->ox, box->oy, MM_ADJACENTOK|NO_MINVENT);
 		if(!daughter){
 			//empty;
 			break;
 		}
+		daughter->mpeaceful = FALSE;
 		set_malign(daughter);
 		daughter->m_lev = 14;
 		daughter->mhpmax = 13*8+4;
@@ -2949,6 +2950,30 @@ boolean past;
 		}
 		m_dowear(daughter, TRUE);
 		m_level_up_intrinsic(daughter);
+	}
+	
+	if(Role_if(PM_CONVICT)){
+		daughter = makemon(&mons[PM_CHAIN_DEVIL], box->ox, box->oy, MM_ADJACENTOK);
+		if(daughter){
+			daughter->mpeaceful = FALSE;
+			daughter->female = TRUE;
+			set_malign(daughter);
+			daughter->m_lev = 14;
+			daughter->mhpmax = 13*8+4;
+			daughter->mhp = daughter->mhpmax;
+			if (!canspotmon(daughter)){
+				You("think %s brushed against your %s.", something, body_part(HAND));
+			}
+			else{
+				pline("%s climbs out of the %s!", An(daughter->data->mname), past ? "wreckage" : simple_typename(box->otyp));
+			}
+			otmp = mongets(daughter, PLAIN_DRESS, MKOBJ_NOINIT);
+			if(otmp){
+				set_material_gm(otmp, LEATHER);
+			}
+			m_dowear(daughter, TRUE);
+			m_level_up_intrinsic(daughter);
+		}
 	}
     box->owt = weight(box);
     return;

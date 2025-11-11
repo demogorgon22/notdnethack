@@ -164,15 +164,39 @@ int type;
 	long old = Sick;
 
 	if (xtime > 0L) {
+		struct obj *uarmor[] = ARMOR_SLOTS;
 	    if (Sick_resistance) return;
 		IMPURITY_UP(u.uimp_illness)
+		int silverarmor_count = 0;
+		for(int i = 0; i < SIZE(uarmor); i++) {
+			if(uarmor[i] && is_silverknight_armor(uarmor[i])){
+				silverarmor_count++;
+				if(i == 0){ //body armor is best
+					silverarmor_count++; 
+				}
+			}
+		}
+		if(uwep && uwep->otyp == SILVERKNIGHT_SPEAR)
+			silverarmor_count += 3;
+		if(uswapwep && uswapwep->otyp == SILVERKNIGHT_SPEAR)
+			silverarmor_count += 2;
+
 	    if (!old) {
-		/* newly sick */
-		if(talk) You_feel("deathly sick.");
+			/* newly sick */
+			if(talk) You_feel("deathly sick.");
+			if(silverarmor_count > 0)
+				xtime += xtime * silverarmor_count / 10;
+			if(youracedata->mtyp == PM_SILVERKNIGHT)
+				xtime *= 2;
 	    } else {
 		/* already sick */
-		if (talk) You_feel("%s worse.",
-			      xtime <= Sick/2L ? "much" : "even");
+			if(silverarmor_count > 0){
+				xtime += xtime * silverarmor_count / 10;
+				if(xtime > old-1)
+					xtime = max(1, old-1);
+			}
+			if (talk) You_feel("%s worse.",
+					xtime <= Sick/2L ? "much" : "even");
 	    }
 	    set_itimeout(&Sick, xtime);
 	    u.usick_type |= type;
@@ -1320,7 +1344,7 @@ as_extra_healing:
 				good_for_you = TRUE;
 			    } else {
 				You("burn your %s.", body_part(FACE));
-				if(!(HFire_resistance || u.sealsActive&SEAL_FAFNIR)) losehp(d(Fire_resistance ? 1 : 3, 4),
+				if(!(HFire_resistance || u.sealsActive&SEAL_MAEGERA)) losehp(d(Fire_resistance ? 1 : 3, 4),
 				       "burning potion of oil", KILLED_BY_AN);
 			    }
 			} else if(otmp->cursed){

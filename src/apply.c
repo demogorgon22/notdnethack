@@ -5009,6 +5009,7 @@ use_smithing_hammer(struct obj *obj)
 			if((is_future_otyp(i) && !(Role_if(PM_UNDEAD_HUNTER) && objects[i].oc_name_known))
 				|| ensouled_otyp(i)
 				|| is_harmonium_otyp(i)
+				|| is_silverknight_otyp(i)
 			)
 				continue;
 			if(i != CHURCH_HAMMER && i != BOX && !metallic_material(objects[i].oc_material))
@@ -9742,7 +9743,7 @@ use_mist_projector(struct obj *obj)
 	struct region_arg cloud_data;
 	cloud_data.damage = 3+3*P_SKILL(P_FIREARM);
 	cloud_data.adtyp = AD_COLD;
-	(void) create_generic_cloud(u.ux, u.uy, 4+bcsign(obj), &cloud_data, TRUE);
+	(void) create_generic_cloud(u.ux, u.uy, 3+bcsign(obj), &cloud_data, TRUE);
 	pline("Whirling snow swirls out from around the %s.", xname(obj));
 	obj->spe--;
 	use_skill(P_FIREARM, 1);
@@ -11594,7 +11595,7 @@ doapply()
 		res = use_towel(obj);
 	break;
 	case CRYSTAL_BALL:
-		res = use_crystal_ball(obj);
+		res = use_crystal_ball(&obj);
 	break;
 	case MAGIC_MARKER:
 		res = dowrite(obj);
@@ -11632,7 +11633,7 @@ doapply()
 		}
 		else if(u.veil){
 			You("feel reality threatening to slip away!");
-			if (yn("Are you sure you want to studying the skull?") == 'y'){
+			if (yn("Are you sure you want to continue studying the skull?") == 'y'){
 				pline("So be it.");
 				You("feel a sharp pain in your temple.");
 				u.veil = FALSE;
@@ -11734,7 +11735,8 @@ doapply()
 			make_doubtful(0L, TRUE);
 		}
 		
-		youmonst.mbleed = FALSE;
+		youmonst.mbleed = 0;
+		youmonst.mubled = FALSE;
 		youmonst.momud = FALSE;
 		youmonst.mcaterpillars = FALSE;
 		

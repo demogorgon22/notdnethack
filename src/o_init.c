@@ -1619,6 +1619,12 @@ fix_etraits(struct obj *otmp)
 	else if(otmp->oartifact == ART_TORCH_OF_XOLOTL){
 		otmp->expert_traits = ETRAIT_HEW|ETRAIT_STUNNING_STRIKE|ETRAIT_KNOCK_BACK; // what a club has
 	}
+	else if(otmp->oartifact == ART_LUCK_BLADE){
+		otmp->expert_traits |= ETRAIT_GRAZE;
+	}
+	else if(otmp->oartifact == ART_STORM_CURSE){
+		otmp->expert_traits |= ETRAIT_FOCUS_FIRE;
+	}
 
 	if(otmp->oartifact == ART_RUYI_JINGU_BANG){
 		//Special abnormal size rules

@@ -1268,6 +1268,7 @@ int portal;
 	 */
 	if ((!up && Is_qhome(&u.uz) && !newdungeon && !ok_to_quest() && !flags.stag)
 	&& !(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend)
+	&& !(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 10)
 	) {
 		pline("A mysterious force prevents you from descending.");
 		return;
@@ -1275,7 +1276,7 @@ int portal;
 	/* Mysterious force to shake up the uh quest*/
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
-		&& dunlev(&u.uz) < qlocate_level.dlevel
+		&& dunlev(&u.uz) >= qlocate_level.dlevel
 		&& rnd(20) < Insight && rn2(2)
 	){
 		int diff = rn2(2);	/* 0 - 1 */
@@ -1495,7 +1496,7 @@ remake:
 				}
 			}
 			/* Remove bug which crashes with levitation/punishment  KAA */
-			if (Punished && !Levitation) {
+			if (Punished && uball->oartifact != ART_IRON_BALL_OF_LEVITATION && !Levitation) {
 				pline("With great effort you climb the %s.",
 				at_ladder ? "ladder" : "stairs");
 			} else if (at_ladder)
@@ -1518,7 +1519,7 @@ remake:
 				at_ladder ? "ladder" : "stairs");
 			else if (u.dz &&
 	#ifdef CONVICT
-				(near_capacity() > UNENCUMBERED || (Punished &&
+				(near_capacity() > UNENCUMBERED || (Punished && uball->oartifact != ART_IRON_BALL_OF_LEVITATION &&
 				((uwep != uball) || ((P_SKILL(P_FLAIL) < P_BASIC))
 				|| !Role_if(PM_CONVICT)))
 				 || Fumbling)

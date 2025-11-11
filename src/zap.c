@@ -1456,7 +1456,7 @@ int ochance, achance;	/* percent chance for ordinary objects, artifacts */
 	} else {
 		int chance = rn2(100);
 
-		return((boolean)(chance < ((obj->oartifact || is_lightsaber(obj) || is_imperial_elven_armor(obj) || is_slab(obj) || obj->blood_smithed || (obj->spe >= 10 && is_enchantable(obj))) ? achance : ochance)));
+		return((boolean)(chance < ((obj->oartifact || is_lightsaber(obj) || is_imperial_elven_armor(obj) || is_slab(obj) || obj->blood_smithed || (is_enchantable(obj) && obj->spe >= 10)) ? achance : ochance)));
 	}
 }
 
@@ -5244,8 +5244,10 @@ int blind_duration;
 		if (!Blind) Your1(vision_clears);
 	}
 	else {
-		mdef->mcansee = 0;
-		mdef->mblinded = min(127, blind_duration);
+		if(mdef->mcansee){
+			mdef->mcansee = 0;
+			mdef->mblinded = min(127, blind_duration);
+		}
 	}
 	return;
 }

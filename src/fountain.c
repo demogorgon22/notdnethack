@@ -11,10 +11,8 @@
 STATIC_DCL void NDECL(dowatersnakes);
 STATIC_DCL void NDECL(dowaterdemon);
 STATIC_DCL void NDECL(dowaternymph);
-STATIC_DCL void NDECL(dolavademon);
 STATIC_PTR void FDECL(gush, (int,int,genericptr_t));
 STATIC_DCL void NDECL(dofindgem);
-STATIC_DCL void FDECL(blowupforge, (int, int));
 
 void
 floating_above(what)
@@ -70,7 +68,7 @@ dowaterdemon() /* Water demon */
 }
 
 /* Lava Demon */
-STATIC_OVL void
+void
 dolavademon()
 {
     struct monst *mtmp;
@@ -1480,13 +1478,14 @@ reshape_brand(struct obj *obj)
 			 || objects[i].oc_class == TOOL_CLASS
 			 || objects[i].oc_class == WEAPON_CLASS
 			 || objects[i].oc_class == RING_CLASS
+			 || objects[i].oc_class == BALL_CLASS
 		))
 			continue;
 		if(!(objects[i].oc_name_known
 			|| objects[i].oc_class == RING_CLASS
 		))
 			continue;
-		if(objects[i].oc_class == WEAPON_CLASS || (objects[i].oc_class == TOOL_CLASS && objects[i].oc_skill != P_NONE)){
+		if(objects[i].oc_class == WEAPON_CLASS || i == BALL || (objects[i].oc_class == TOOL_CLASS && objects[i].oc_skill != P_NONE)){
 			if(P_SKILL(objects[i].oc_skill < 0 ? -1*objects[i].oc_skill : objects[i].oc_skill) < P_SKILLED && !has_object_type(invent, i))
 				continue;
 		}
@@ -1552,7 +1551,7 @@ dipforge(struct obj *obj)
 	burn_away_slime();
 	melt_frozen_air();
 	
-	boolean forgeable = (u.ublood_smithing && (!is_flammable(obj) || obj->oerodeproof)) || is_metallic(obj);
+	boolean forgeable = (u.ublood_smithing && (!is_flammable(obj) || obj->oerodeproof || obj->oartifact)) || is_metallic(obj);
 
 	if(obj->oartifact == ART_FIRE_BRAND && (P_RESTRICTED(P_SMITHING) || yn("Reshape Fire Brand?") == 'y')){
 		if(obj->owornmask&W_ARMOR){

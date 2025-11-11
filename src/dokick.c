@@ -148,7 +148,9 @@ doit:
 			Sprintf(buffnam, "%s", Monnam(mon));
 			if(mon_resistance(mon,TELEPORT))
 				mnexto(mon);
-			else if(enexto(&mm, mon->mx, mon->my, mon->data) && abs(mm.x - mon->mx) <= 1 && abs(mm.y - mon->my) <= 1)
+			else if(enexto(&mm, mon->mx, mon->my, mon->data) && abs(mm.x - mon->mx) <= 1 && abs(mm.y - mon->my) <= 1
+				&& (!(mon->mtyp == PM_GRID_BUG || mon->mtyp == PM_BEBELITH) || !((mm.x - mon->mx) && (mm.y - mon->my)))
+			)
 				rloc_to(mon, mm.x, mm.y);
 
 		    if(mon->mx != x || mon->my != y) {

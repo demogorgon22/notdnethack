@@ -143,7 +143,9 @@
 #define FOCUS_AURA					1 + YOG_SPELLS
 #define DIAMOND_BELL				1 + FOCUS_AURA
 #define DARK_RES					1 + DIAMOND_BELL
-#define LAST_PROP					(DARK_RES)
+#define OFFENSIVE_LUCK				1 + DARK_RES
+#define DEFENSIVE_LUCK				1 + OFFENSIVE_LUCK
+#define LAST_PROP					(DEFENSIVE_LUCK)
 
 #define MPROP_SIZE					(LAST_PROP/32 + 1)
 
