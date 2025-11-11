@@ -161,7 +161,7 @@ struct obj *obj;
 											  obj->otyp != TIN && 
 											  obj->oclass != SCROLL_CLASS)
 	){
-		if(obj->spe > 0){
+		if(obj->spe > 0 && !obj->oartifact){
 			if(obj->oclass == WEAPON_CLASS) return TRUE;
 			if(obj->oclass == ARMOR_CLASS) return TRUE;
 			if(obj->oclass == TOOL_CLASS && is_weptool(obj)) return TRUE;
@@ -3610,6 +3610,10 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		return MOVE_ATE;
 	}
 	if (otmp->oclass != FOOD_CLASS) {
+		if (otmp->oartifact){
+			You("cannot eat that!");
+			return MOVE_CANCELLED;
+		}
 	    int material;
 	    victual.reqtime = 1;
 	    victual.piece = otmp;
