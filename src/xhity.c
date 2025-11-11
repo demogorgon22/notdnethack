@@ -14840,7 +14840,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			if (mdef->mopen)
 				sneak_attack |= SNEAK_OPEN;
 		}
-		if(!recursed && weapon &&
+		if(!recursed && weapon && valid_weapon_attack && 
 			 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_CREATE_OPENING) &&
 			 ROLL_ETRAIT(weapon, magr, TRUE, !rn2(10))
 		){
@@ -14960,14 +14960,14 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 #endif
 	// Knockback expert weapon trait
-	if(!recursed && weapon && weapon->o_e_trait == ETRAIT_KNOCK_BACK &&
+	if(!recursed && weapon && valid_weapon_attack && weapon->o_e_trait == ETRAIT_KNOCK_BACK &&
 		 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_KNOCK_BACK) &&
 		 ROLL_ETRAIT(weapon, magr, !rn2(5), !rn2(20))
 	){
 		staggering_strike = TRUE;
 	}
 	// Stun expert weapon trait
-	if(!recursed && weapon && weapon->o_e_trait == ETRAIT_STUNNING_STRIKE &&
+	if(!recursed && weapon && valid_weapon_attack && weapon->o_e_trait == ETRAIT_STUNNING_STRIKE &&
 		 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_STUNNING_STRIKE) &&
 		 ROLL_ETRAIT(weapon, magr, !rn2(2), !rn2(10))
 	){
@@ -16549,7 +16549,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			(activeFightingForm(FFORM_SORESU))
 			)) use_skill(P_SORESU, 1);
 		//Weapon traits
-		if(weapon && magr){
+		if(weapon && valid_weapon_attack && magr){
 			if(weapon->o_e_trait == ETRAIT_HEW
 				&& CHECK_ETRAIT(weapon, magr, ETRAIT_HEW)
 				&& (!youagr || (weapon == uwep && !u.twoweap))
@@ -16990,7 +16990,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		{
 			dr = (youdef ? roll_udr(magr, LEG_DR) : roll_mdr(mdef, magr, LEG_DR));
 		}
-		else if(weapon && magr){
+		else if(weapon && valid_weapon_attack && magr){
 			if(weapon->o_e_trait == ETRAIT_HEW && CHECK_ETRAIT(weapon, magr, ETRAIT_HEW)){
 				int hewslots[] = {HEAD_DR, UPPER_TORSO_DR, ARM_DR};
 				hit_slot = ROLL_FROM(hewslots);
