@@ -311,8 +311,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			else
 				str = "fireball";
 			break;
+		case AD_ECLD:
 		case AD_COLD:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "fanged blizzard";
 			else
 				str = "ball of cold";
@@ -323,7 +324,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_EELC:
 		case AD_ELEC:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "cloven-hoofed lightning";
 			else
 				str = "pillar of lightning";
@@ -332,7 +333,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_EACD:
 		case AD_ACID:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "splash of drool";
 			else
 				str = "splash of acid";
