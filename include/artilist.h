@@ -389,6 +389,16 @@ A("Luck Blade",			SHORT_SWORD,					"clover-inscribed %s",
 	NOINVOKE, (ARTI_LUCK)
 	),
 
+A("Storm-Curse",			CLUB,					"water-logged belaying pin",
+	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_CHAOTIC, PM_CONVICT, PM_VAMPIRE, TIER_D, (ARTG_GIFT),
+	NO_MONS(),
+	ATTK(AD_ELEC, 13, 1), NOFLAG,
+	PROPS(OFFENSIVE_LUCK), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
 A("Cleaver",			BATTLE_AXE,						(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_NEUTRAL, PM_BARBARIAN, NON_PM, TIER_B, (ARTG_GIFT),

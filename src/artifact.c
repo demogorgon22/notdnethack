@@ -261,6 +261,14 @@ hack_artifacts()
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags &= ~ARTG_NOGEN;
 		artilist[ART_ROBE_OF_CLOSED_EYES].role = NON_PM;
 		artilist[ART_RED_CORDS_OF_ILMATER].role = PM_CONVICT;
+		//Alt first gift becomes non-specific giftable artifact
+		if(Race_if(PM_VAMPIRE)){
+			artilist[ART_LUCK_BLADE].role = NON_PM;
+		}
+		else {
+			artilist[ART_STORM_CURSE].role = NON_PM;
+			artilist[ART_STORM_CURSE].race = NON_PM;
+		}
 	}
 	
 	/* fem hlf nob, or fem hlf without a first gift, always get Lifehunt Scythe */
@@ -8013,7 +8021,8 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
-	if(otmp->oartifact == ART_IBITE_ARM){
+	/* Artifact water damage */
+	if(otmp->oartifact == ART_IBITE_ARM || otmp->oartifact == ART_STORM_CURSE){
 		struct obj *cloak = which_armor(mdef, W_ARMC);
 
 		if (youdef && uarmc && uarmc->greased) {
@@ -8029,12 +8038,15 @@ boolean printmessages; /* print generic elemental damage messages */
 		} else if (!(youdef && Waterproof) && !(!youdef && mon_resistance(mdef, WATERPROOF))){
 			int mult = (flaming(pd) || is_iron(pd)) ? 2 : 1;
 
-			if(otmp->otyp == CLAWED_HAND && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_WAVE)
+			if(otmp->oartifact == ART_STORM_CURSE)
+				*truedmgptr += rnd(4)*mult;
+			else if(otmp->otyp == CLAWED_HAND && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_WAVE)
 				*truedmgptr += d(6, 6)*mult;
 			else
 				*truedmgptr += d(2, 4)*mult;
 		}
-		
+	}
+	if(otmp->oartifact == ART_IBITE_ARM){
 		if(is_human(pd)){
 			*truedmgptr += rnd(10);
 			if(is_mercenary(pd) || is_lord(pd) || is_prince(pd) || attacktype_fordmg(pd, AT_MAGC, AD_CLRC) || attacktype_fordmg(pd, AT_MMGC, AD_CLRC)){

@@ -397,7 +397,7 @@ struct monst *magr;
 			attackmask = WHACK; // only bashing
 	}
 	if (obj && magr){
-		if((obj->otyp == TOOTH || obj->otyp == GOEDENDAG || obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE))
+		if((obj->otyp == TOOTH || obj->otyp == GOEDENDAG || obj->otyp == POLEAXE || obj->oartifact == ART_STORM_CURSE) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE))
 			attackmask = PIERCE; // only thrusting
 		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_HEW && CHECK_ETRAIT(obj, magr, ETRAIT_HEW))
 			attackmask = SLASH; // only slashing
@@ -620,6 +620,13 @@ struct monst *magr;
 			else if(obj->otyp == GOEDENDAG && large){
 				ocn = 1;
 				ocd = 8;
+				bonn = 0;
+				bond = 0;
+				flat = 0;
+			}
+			else if(obj->oartifact == ART_STORM_CURSE){
+				ocn = 1;
+				ocd = large ? 4 : 3;
 				bonn = 0;
 				bond = 0;
 				flat = 0;

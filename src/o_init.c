@@ -1622,6 +1622,9 @@ fix_etraits(struct obj *otmp)
 	else if(otmp->oartifact == ART_LUCK_BLADE){
 		otmp->expert_traits |= ETRAIT_GRAZE;
 	}
+	else if(otmp->oartifact == ART_STORM_CURSE){
+		otmp->expert_traits |= ETRAIT_FOCUS_FIRE;
+	}
 
 	if(otmp->oartifact == ART_RUYI_JINGU_BANG){
 		//Special abnormal size rules

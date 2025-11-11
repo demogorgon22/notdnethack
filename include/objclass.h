@@ -239,7 +239,7 @@ struct objclass {
 #define wielder_size(mon) ((mon) == &youmonst ? youracedata->msize : (mon)->data->msize)
 #define CHECK_ETRAIT(obj, mon, trait) ( \
 										( ((obj)->expert_traits&trait  \
-											&& (trait == (trait&FFORM_ETRAITS) || ((obj)->otyp != TOOTH && (obj)->otyp != GOEDENDAG) || !((obj)->o_e_trait&ETRAIT_FOCUS_FIRE)) \
+											&& (trait == (trait&FFORM_ETRAITS) || ((obj)->otyp != TOOTH && (obj)->otyp != GOEDENDAG && (obj)->oartifact != ART_STORM_CURSE) || !((obj)->o_e_trait&ETRAIT_FOCUS_FIRE)) \
 											&& !((mon) == &youmonst && objects[(obj)->otyp].oc_skill == P_LANCE && !(u.usteed || centauroid(youracedata) || animaloid(youracedata))) \
 											&& !(trait == ETRAIT_GRAZE && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL)) \
 										) \
@@ -251,7 +251,7 @@ struct objclass {
 										|| (trait == ETRAIT_LUNGE && obj->otyp == BESTIAL_CLAW && (((mon) == &youmonst && active_glyph(BEASTS_EMBRACE) && u.uinsight < 30) || (mon)->mcrazed || is_were((mon)->data)))\
 										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
 										|| ((trait == ETRAIT_PENETRATE_ARMOR || trait == ETRAIT_CREATE_OPENING) && obj->otyp == SILVERKNIGHT_SWORD && ((obj)->o_e_trait&ETRAIT_FOCUS_FIRE))\
-										|| (trait == ETRAIT_BLEED && obj->otyp == GOEDENDAG && ((obj)->o_e_trait&ETRAIT_FOCUS_FIRE))\
+										|| (trait == ETRAIT_BLEED && (obj->otyp == GOEDENDAG || obj->oartifact == ART_STORM_CURSE) && ((obj)->o_e_trait&ETRAIT_FOCUS_FIRE))\
 										|| (trait == ETRAIT_LUNGE && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
 										|| (trait == ETRAIT_STOP_THRUST && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
 										|| ((obj)->oartifact == ART_HOLY_MOONLIGHT_SWORD && (\
