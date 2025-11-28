@@ -2504,16 +2504,21 @@ use_chikage(struct obj *obj)
 		return MOVE_CANCELLED;
 	}
 	
-	if(obj_is_material(obj, HEMARGYOS)){
+	if(obj_is_material(obj, HEMARGYOS) || check_oprop(obj, OPROP_HAEM)){
 		if (Insight < 13)
 			You("wipe the blood from your sword.");
 		else
 			You("wipe your blood from the sword.");
-		set_material_gm(obj, obj->ovar1_alt_mat);
-		set_object_color(obj);
-		obj->oeroded = access_oeroded(obj->ovar2_alt_erosion);
-		obj->oeroded2 = access_oeroded2(obj->ovar2_alt_erosion);
-		obj->oeroded3 = access_oeroded3(obj->ovar2_alt_erosion);
+		if(check_oprop(obj, OPROP_HAEM)){
+			remove_oprop(obj, OPROP_HAEM);
+		}
+		else {
+			set_material_gm(obj, obj->ovar1_alt_mat);
+			set_object_color(obj);
+			obj->oeroded = access_oeroded(obj->ovar2_alt_erosion);
+			obj->oeroded2 = access_oeroded2(obj->ovar2_alt_erosion);
+			obj->oeroded3 = access_oeroded3(obj->ovar2_alt_erosion);
+		}
 		(void) stop_timer(REVERT_OBJECT, obj->timed);
 	} else {
 		if(Insight < 27)
@@ -2523,15 +2528,20 @@ use_chikage(struct obj *obj)
 		else
 			You("sheath your sword in your shadow's %s and draw it forth bloody.", body_part(HEART));
 
-		if(obj->obj_material != obj->ovar1_alt_mat)
-			obj->ovar1_alt_mat = obj->obj_material;
+		if(obj->obj_material == MERCURIAL){
+			add_oprop(obj, OPROP_HAEM);
+		}
+		else {
+			if(obj->obj_material != obj->ovar1_alt_mat)
+				obj->ovar1_alt_mat = obj->obj_material;
+			set_material_gm(obj, HEMARGYOS);
+			obj->obj_color = CLR_RED;
+			store_oeroded(obj->ovar2_alt_erosion,obj->oeroded);
+			store_oeroded2(obj->ovar2_alt_erosion,obj->oeroded2);
+			store_oeroded3(obj->ovar2_alt_erosion,obj->oeroded3);
+			obj->oeroded = obj->oeroded2 = obj->oeroded3 = 0;
+		}
 		IMPURITY_UP(u.uimp_blood)
-		set_material_gm(obj, HEMARGYOS);
-		obj->obj_color = CLR_RED;
-		store_oeroded(obj->ovar2_alt_erosion,obj->oeroded);
-		store_oeroded2(obj->ovar2_alt_erosion,obj->oeroded2);
-		store_oeroded3(obj->ovar2_alt_erosion,obj->oeroded3);
-		obj->oeroded = obj->oeroded2 = obj->oeroded3 = 0;
 		start_timer(1, TIMER_OBJECT,
 					REVERT_OBJECT, (genericptr_t)obj);
 	}
@@ -4434,7 +4444,24 @@ int magic; /* 0=Physical, otherwise skill level */
 		    set_wounded_legs(RIGHT_SIDE, rn1(10, 11));
 		    return MOVE_STANDARD;
 		}
-
+		if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED && !Is_spire(&u.uz)){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_VILQUAR){
+				if((HInvis&TIMEOUT) < 8){
+					set_itimeout(&HInvis, 8L);
+					newsym(u.ux, u.uy);
+				}
+			}
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL){
+				if(u.uspellprot < 1){
+					u.uspellprot = 1;
+					find_ac();
+				}
+				if(u.uspellprot == 1 && u.usptime < 16)
+					u.usptime = 16;
+				if(u.uspellprot == 1 && u.uspmtime < 16)
+					u.uspmtime = 16;
+			}
+		}
 	    /*
 	     * Check the path from uc to cc, calling hurtle_step at each
 	     * location.  The final position actually reached will be
@@ -4450,7 +4477,7 @@ int magic; /* 0=Physical, otherwise skill level */
 	    if (range < temp)
 		range = temp;
 		u.lastmoved = monstermoves;
-	    (void) walk_path(&uc, &cc, hurtle_step, (genericptr_t)&range);
+	    (void) walk_path(&uc, &cc, hurtle_step, Role_if(PM_KENSEI) ? &jumping_polearm : (void *) 0, (genericptr_t)&range);
 
 	    /* A little Sokoban guilt... */
 	    if (In_sokoban(&u.uz))

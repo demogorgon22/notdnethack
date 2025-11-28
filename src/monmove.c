@@ -2102,8 +2102,7 @@ register struct monst *mtmp;
 						mtmp->mspec_used += dmg;
 				}
 				if(dmg){
-					if(mon_resistance(m2, HALF_SPDAM))
-						dmg = (dmg+1) / 2;
+					dmg = reduce_dmg(m2,dmg,FALSE,TRUE);
 					m2->mhp -= dmg;
 					if (m2->mhp <= 0)
 						monkilled(m2, "", AD_DRIN);

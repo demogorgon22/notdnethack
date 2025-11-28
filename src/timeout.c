@@ -1640,18 +1640,30 @@ long timeout;
 			if (menorah) {
 				obj->spe = 0;	/* no more candles */
 			}
-			else if (Is_candle(obj) || obj->otyp == POT_OIL
-				|| obj->otyp == SUNROD
-				) {
+			else if (Is_candle(obj) || obj->otyp == POT_OIL) {
 				/* get rid of candles and burning oil potions */
 				obj_extract_and_unequip_self(obj);
 				obfree(obj, (struct obj *)0);
 				obj = (struct obj *) 0;
 				//#ifdef FIREARMS
 			}
+			else if (obj->otyp == SUNROD) {
+				if (obj_resists(obj, 0, 100))
+				{
+					obj->otyp = MACE;
+					obj->oclass = WEAPON_CLASS;
+					obj->age = monstermoves;
+					fix_object(obj);
+				}
+				else {
+					obj_extract_and_unequip_self(obj);
+					obfree(obj, (struct obj *)0);
+					obj = (struct obj *) 0;
+				}
+			}
 			else if (obj->otyp == SHADOWLANDER_S_TORCH || obj->otyp == TORCH) {
 				/* torches may become burnt clubs */
-				if (obj_resists(obj, 0, 90))
+				if (obj_resists(obj, 10, 100))
 				{
 					obj->otyp = CLUB;
 					obj->oclass = WEAPON_CLASS;
@@ -2014,7 +2026,7 @@ long timeout;
 			end_burn(obj, FALSE);
 
 			/* torches may become burnt clubs */
-			if (obj_resists(obj, 0, 90))
+			if (obj_resists(obj, 10, 100))
 			{
 				obj->otyp = CLUB;
 				obj->oclass = WEAPON_CLASS;
@@ -2093,9 +2105,19 @@ long timeout;
 			}
 			end_burn(obj, FALSE);
 
-			obj_extract_and_unequip_self(obj);
-			obfree(obj, (struct obj *)0);
-			obj = (struct obj *) 0;
+			if (obj_resists(obj, 0, 100))
+			{
+				obj->otyp = MACE;
+				obj->oclass = WEAPON_CLASS;
+				obj->age = monstermoves;
+				fix_object(obj);
+				break;	/* don't do other torch things */
+			}
+			else {
+				obj_extract_and_unequip_self(obj);
+				obfree(obj, (struct obj *)0);
+				obj = (struct obj *) 0;
+			}
 		}
 		
 		if (obj && obj->age){
@@ -2156,7 +2178,7 @@ long timeout;
 			end_burn(obj, FALSE);
 
 			/* torches may become burnt clubs */
-			if (obj_resists(obj, 0, 90))
+			if (obj_resists(obj, 10, 100))
 			{
 				obj->otyp = CLUB;
 				obj->oclass = WEAPON_CLASS;
@@ -2887,6 +2909,10 @@ long timeout;
 			fix_object(obj);
 			update_inventory();
 		}
+		if(check_oprop(obj, OPROP_HAEM)){
+			remove_oprop(obj, OPROP_HAEM);
+			update_inventory();
+		}
 	}
 }
 
@@ -2925,6 +2951,11 @@ long timeout;
 		}
 		else if(obj->where == OBJ_FLOOR && cansee(obj->ox, obj->oy)){
 			pline("%s is tired of its rigid composition and melts back to silvery chaos.", The(xname(obj)));
+		}
+		// Chikage remains active (musta been activated while temporarily off-mat)
+		if(obj->otyp == CHIKAGE && obj->obj_material == HEMARGYOS){
+			obj->ovar1_alt_mat = MERCURIAL;
+			add_oprop(obj, OPROP_HAEM);
 		}
 		set_material_gm(obj, MERCURIAL);
 		fix_object(obj);

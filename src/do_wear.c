@@ -2702,7 +2702,7 @@ base_uac()
 				else
 					uac -= 3;
 			}
-			else if(you_merc_kinstealing(obj)){
+			else if(you_merc_kinstealing(uwep)){
 				if(u.ulevel < 10);
 				else if(u.ulevel < 18)
 					uac -= 1;

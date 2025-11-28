@@ -9,7 +9,6 @@ STATIC_DCL void FDECL(quest_art_swap, (struct obj **, struct monst *));
 STATIC_DCL void FDECL(sho_obj_return, (struct obj *, int, int));
 STATIC_DCL void FDECL(return_thrownobj, (struct monst *, struct obj *));
 STATIC_DCL void FDECL(toss_up, (struct obj *, boolean));
-STATIC_DCL int FDECL(calc_multishot, (struct monst *, struct obj *, struct obj *, int));
 STATIC_DCL int FDECL(calc_range, (struct monst *, struct obj *, struct obj *, int *));
 STATIC_DCL boolean FDECL(misthrow, (struct monst *, struct obj *, struct obj *, boolean, int *, int *, int *));
 STATIC_DCL struct obj * FDECL(blaster_ammo, (struct obj *));
@@ -205,7 +204,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 	}
 
 	/* determine if thrownobj should return (like Mjollnir) */
-	if(magr && !(hmoncode & HMON_KICKED)){
+	if(magr && !(hmoncode & HMON_KICKED) && !forcedestroy){
 		if ((thrownobj->oartifact == ART_MJOLLNIR && (youagr ? (Role_if(PM_VALKYRIE)) : magr ? (magr->mtyp == PM_VALKYRIE) : FALSE)) ||
 			(thrownobj->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && (youagr ? (Race_if(PM_DWARF)) : magr ? (is_dwarf(magr->data)) : FALSE)) ||
 			arti_returning(thrownobj) ||
@@ -1932,11 +1931,7 @@ boolean forcedestroy;
  * Assumes launcher is an appropriate launcher of ammo
  */
 int
-calc_multishot(magr, ammo, launcher, shotlimit)
-struct monst * magr;
-struct obj * ammo;
-struct obj * launcher;
-int shotlimit;
+calc_multishot(struct monst *magr, struct obj *ammo, struct obj *launcher, int shotlimit)
 {
 	boolean youagr = (magr == &youmonst);
 	int multishot = 1;

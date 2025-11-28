@@ -7464,6 +7464,39 @@ int mmflags;
 					if(!rn2(30) && !(mmflags&MM_ESUM))
 						mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 				}
+			} else if(In_quest(&u.uz) && Role_if(PM_KENSEI)){
+				otmp = mongets(mtmp, STILETTO, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, OBSIDIAN_MT);
+					add_oprop(otmp, OPROP_RLYHW);
+					otmp->spe = 4;
+					fix_object(otmp);
+				}
+				otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
+				if(otmp){
+					otmp->spe = 4;
+					set_material_gm(otmp, OBSIDIAN_MT);
+					fix_object(otmp);
+				}
+				otmp = mongets(mtmp, CRYSTAL_GAUNTLETS, mkobjflags);
+				if(otmp){
+					otmp->spe = 4;
+					set_material_gm(otmp, OBSIDIAN_MT);
+					fix_object(otmp);
+				}
+				otmp = mongets(mtmp, CRYSTAL_PLATE_MAIL, mkobjflags);
+				if(otmp){
+					otmp->spe = 4;
+					set_material_gm(otmp, OBSIDIAN_MT);
+					fix_object(otmp);
+				}
+				otmp = mongets(mtmp, CLOAK, mkobjflags);
+				if(otmp)
+					otmp->obj_color = rn2(3) ? CLR_MAGENTA : CLR_BRIGHT_MAGENTA;
+				mongets(mtmp, LEATHER_HELM, mkobjflags);
+				mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
+				if(mm == PM_MASTER_MIND_FLAYER && !(mmflags&MM_ESUM) && !rn2(30)) mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
+				else if(mm == PM_MIND_FLAYER && !(mmflags&MM_ESUM) && !rn2(90)) mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 			} else {
 				mongets(mtmp, QUARTERSTAFF, mkobjflags);
 				otmp = mongets(mtmp, CLOAK, mkobjflags);

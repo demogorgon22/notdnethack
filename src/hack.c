@@ -1351,7 +1351,7 @@ domove()
 					result |= hit_with_rblood(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Chikage launch blood iff you DON'T have a primary target, if your insight is high enough to percieve the blood */
-				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 20 && otmp && otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 20 && otmp && otmp->otyp == CHIKAGE && (otmp->obj_material == HEMARGYOS || check_oprop(otmp, OPROP_HAEM))){
 					result |= hit_with_cblood(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Club-claw insight weapons strike additional targets if your insight is high enough to perceive the claw */
@@ -1360,6 +1360,10 @@ domove()
 				}
 				/* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && otmp->otyp == ISAMUSEI){
+					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Isamusei-skies hits additional targets, if your insight is high enough to percieve the distortions */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && (otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == ISAMUSEI)){
 					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
 				}
 				/* Dancers hit additional targets */

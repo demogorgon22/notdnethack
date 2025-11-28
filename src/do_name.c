@@ -766,6 +766,23 @@ const char *name;
 		else
 			tmp = objects[obj->otyp].oc_material;
 		
+		if(obj->oartifact == ART_SKY_REFLECTED){
+			if(obj->obj_material != MERCURIAL){
+				tmp = 0;
+				start_timer(d(8,8), TIMER_OBJECT,
+							REVERT_MERC, (genericptr_t)obj);
+			}
+			if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED){
+				expert_weapon_skill(objects[obj->otyp].oc_skill);
+				if(obj->otyp == LONG_SWORD){
+					expert_weapon_skill(P_GENERIC_KNIGHT_FORM);
+				}
+				else if(is_pole(obj)){
+					expert_weapon_skill(P_RIDING);
+				}
+			}
+		}
+		
 		if(tmp)
 			set_material_gm(obj, tmp);
 		

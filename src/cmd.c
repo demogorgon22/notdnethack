@@ -996,6 +996,46 @@ doMysticForm()
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)){
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_SEEN_S){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FORCE_S){
+				Sprintf(buf,	"Dwell in the Light of Insight (active)");
+			} else {
+				Sprintf(buf,	"Dwell in the Light of Insight (disabled)");
+			}
+			any.a_int = MFORM_STREAM;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_SEEN_C){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FORCE_C){
+				Sprintf(buf,	"Dwell in the Chains of Uncertainty (active)");
+			} else {
+				Sprintf(buf,	"Dwell in the Chains of Uncertainty (disabled)");
+			}
+			any.a_int = MFORM_CHAINS;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_SEEN_K){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FORCE_K){
+				Sprintf(buf,	"Dwell in the Depths of Hate (active)");
+			} else {
+				Sprintf(buf,	"Dwell in the Depths of Hate (disabled)");
+			}
+			any.a_int = MFORM_KINSTL;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+	}
 	end_menu(tmpwin,	"Toggle mystic techniques:");
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
@@ -1005,7 +1045,20 @@ doMysticForm()
 		free(selected);
 		return MOVE_CANCELLED;
 	} else {
-		if (selected[0].item.a_int > 0)
+		if(selected[0].item.a_int == MFORM_STREAM){
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades ^= ZPROP_FORCE_S;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_C;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_K;
+		} else if(selected[0].item.a_int == MFORM_CHAINS){
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades ^= ZPROP_FORCE_C;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_S;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_K;
+		} else if(selected[0].item.a_int == MFORM_KINSTL){
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades ^= ZPROP_FORCE_K;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_S;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_C;
+		} 
+		else if (selected[0].item.a_int > 0)
 			toggle_monk_style(selected[0].item.a_int);
 		free(selected);
 		return MOVE_INSTANT;
@@ -1309,6 +1362,8 @@ doGithForm()
 	Sprintf(buf, "Known Mental Edges");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 
+	boolean allstyles = (Role_if(PM_KENSEI) && u.role_variant == ART_SILVER_SKY && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS));
+
 
 	for (i = FIRST_GSTYLE; i <= LAST_GSTYLE; i++) {
 		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || Insight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
@@ -1318,7 +1373,7 @@ doGithForm()
 
 		/* knight forms are shown if unskilled but not restricted, since training involves starting from unskilled */
 		boolean active = (artinstance[ART_SILVER_SKY].GithStyle & (1 << i)) != 0;
-		boolean blocked = blockedMentalEdge(i);
+		boolean blocked = blockedMentalEdge(i) && !allstyles;
 
 		Strcpy(buf, nameOfMentalEdge(i));
 		Strcat(buf, " (");

@@ -318,6 +318,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			else
 				str = "ball of cold";
 			break;
+		case AD_UHCD:
+				str = "blast of ice";
+			break;
 		case AD_DEAD: str = "death field";
 			break;
 		case AD_DISN: str = "disintegration field";
@@ -380,6 +383,10 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			case AD_ECLD:
 			case AD_COLD:
 				explmask = !!Cold_resistance;
+				roll_frigophobia();
+				break;
+			case AD_UHCD:
+				explmask = (Cold_resistance && hates_unholy(youracedata));
 				roll_frigophobia();
 				break;
 			case AD_DISN:
@@ -450,6 +457,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				case AD_ECLD:
 				case AD_COLD:
 					explmask |= resists_cold(mtmp);
+					break;
+				case AD_UHCD:
+					explmask |= resists_cold(mtmp) && hates_unholy_mon(mtmp);
 					break;
 				case AD_DISN:
 					explmask |= resists_disint(mtmp);
@@ -587,6 +597,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				      (adtyp == AD_MADF) ? "heartburn" :
 				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
+				      (adtyp == AD_UHCD) ? "chilly" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "irradiated by pure energy" :
 				      (adtyp == AD_EELC) ? "shocked" :
@@ -608,6 +619,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				      (adtyp == AD_MADF) ? "toasted" :
 				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
+				      (adtyp == AD_UHCD) ? "chilly" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "overwhelmed by pure energy" :
 				      (adtyp == AD_EELC) ? "shocked" :
@@ -669,6 +681,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		//Golem effects handled for elemental damage effects, now either proceed to damage or do damage from items.
 		if(area->locations[i].shielded && adtyp != AD_EFIR
 		 && adtyp != AD_ECLD && adtyp != AD_EELC && adtyp != AD_EACD
+		 && adtyp != AD_UHCD
 		){
 			mtmp->mhp -= idamnonres;
 		}
@@ -720,7 +733,17 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				mdam += rnd(20);
 			}
 
-			if (resists_cold(mtmp) && (adtyp == AD_FIRE || adtyp == AD_EFIR))
+			if(adtyp == AD_UHCD){
+				int mod = 1;
+				if(!resists_cold(mtmp)){
+					if(resists_fire(mtmp))
+						mod++;
+					if(hates_unholy_mon(mtmp))
+						mod++;
+				}
+				mdam *= mod;
+			}
+			else if (resists_cold(mtmp) && (adtyp == AD_FIRE || adtyp == AD_EFIR))
 				mdam *= 2;
 			else if (resists_fire(mtmp) && (adtyp == AD_COLD || adtyp == AD_ECLD))
 				mdam *= 2;
@@ -777,7 +800,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			You("are caught in the %s!", str);
 
 		if(uhurt == 1 && 
-			(adtyp == AD_EFIR || adtyp == AD_ECLD || adtyp == AD_EELC || adtyp == AD_EACD)
+			(adtyp == AD_EFIR || adtyp == AD_ECLD || adtyp == AD_EELC || adtyp == AD_EACD || adtyp == AD_UHCD)
 		){
 			damu /= 2;
 			uhurt = 3;
@@ -880,7 +903,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 
 	if (shopdamage) {
 		pay_for_damage((adtyp == AD_FIRE || adtyp == AD_EFIR || adtyp == AD_MADF) ? "burn away" :
-			       (adtyp == AD_COLD || adtyp == AD_ECLD) ? "shatter" :
+			       (adtyp == AD_COLD || adtyp == AD_ECLD || adtyp == AD_UHCD) ? "shatter" :
 			       adtyp == AD_DISN ? "disintegrate" : "destroy",
 			       FALSE);
 	}
@@ -1393,6 +1416,7 @@ int adtyp;
 			return EXPL_FIERY;
 		case AD_ECLD:
 		case AD_COLD:
+		case AD_UHCD:
 			return EXPL_FROSTY;
 		case AD_EELC:
 		case AD_ELEC:

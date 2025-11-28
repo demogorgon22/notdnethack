@@ -95,6 +95,10 @@ int otyp;
 {
 	int cur_prop, i, j;
 	boolean got_prop;
+	int amalg_otyp = 0;
+	if(obj && obj->oartifact == ART_AMALGAMATED_SKIES){
+		amalg_otyp = artinstance[ART_SKY_REFLECTED].ZerthOtyp;
+	}
 
 	if (obj)
 		otyp = obj->otyp;
@@ -111,6 +115,15 @@ int otyp;
 			if (obj && obj->oartifact == ART_ENFORCED_MIND && cur_prop == TELEPAT)
 				got_prop = FALSE;
 			j++;
+		}
+		// from amalgamated objclass
+		if (!got_prop && amalg_otyp) {
+			j = 0;
+			while(objects[amalg_otyp].oc_oprop[j] && !got_prop) {
+				if (objects[amalg_otyp].oc_oprop[j] == cur_prop)
+					got_prop = TRUE;
+				j++;
+			}
 		}
 
 		// from object properties

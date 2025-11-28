@@ -70,6 +70,7 @@ int adtyp, ztyp;
 		case AD_MAGM: return "magic missile";
 		case AD_FIRE: return "bolt of fire";
 		case AD_COLD: return "bolt of cold";
+		case AD_UHCD: return "bolt of ice";
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "death ray";
 		case AD_ELEC: return "lightning bolt";
@@ -87,6 +88,7 @@ int adtyp, ztyp;
 		case AD_PHYS: return "sothothic missile";
 		case AD_FIRE: return "fireball";
 		case AD_COLD: return "cone of cold";
+		case AD_UHCD: return "cone of ice";
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "finger of death";
 		case AD_ELEC: return "bolt of lightning";
@@ -114,6 +116,8 @@ int adtyp, ztyp;
 		case AD_COLD:
 		case AD_ECLD:
 			return "blast of frost";
+		case AD_UHCD: 
+			return "blast of ice";
 		case AD_SLEE: return "blast of sleep gas";
 		case AD_DISN: return "blast of disintegration";
 		case AD_EELC: 
@@ -141,6 +145,7 @@ int adtyp, ztyp;
 		case AD_MAGM: return "magic ray";
 		case AD_FIRE: return "heat ray";
 		case AD_COLD: return "cold ray";
+		case AD_UHCD: return "ice ray";
 		case AD_SLEE: return "stun ray";
 		case AD_DEAD: return "death ray";
 		case AD_DISN: return "disintegration ray";
@@ -197,6 +202,7 @@ int adtyp;
 		//	return CLR_BRIGHT_CYAN;
 	case AD_ECLD:
 	case AD_COLD:
+	case AD_UHCD:
 	case AD_EELC:
 	case AD_ELEC:
 	case AD_STAR:
@@ -4380,7 +4386,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 	/* calculate shop damage */
 	if (shopdamage) {
 		pay_for_damage(zapdata->adtyp == AD_FIRE ? "burn away" :
-			zapdata->adtyp == AD_COLD ? "shatter" :
+			(zapdata->adtyp == AD_COLD || zapdata->adtyp == AD_UHCD) ? "shatter" :
 			zapdata->adtyp == AD_DEAD ? "disintegrate" : "destroy", FALSE);
 	}
 	/* restore old bhitpos */
@@ -4538,6 +4544,34 @@ struct zapdata * zapdata;
 			}
 		}
 		else if (cold_vulnerable(mdef)) {
+			dmg *= 1.5;
+		}
+		domsg();
+		golemeffects(mdef, AD_COLD, svddmg);
+		/* damage inventory */
+		if (!UseInvCold_res(mdef)) {
+			if (!rn2(3)) (void)destroy_item(mdef, POTION_CLASS, AD_COLD);
+		}
+		/* other */
+		if (youdef) {
+			roll_frigophobia();
+		}
+		/* deal damage */
+		return xdamagey(magr, mdef, &attk, dmg);
+
+	case AD_UHCD:
+		/* check resist / weakness */
+		if (Cold_res(mdef) && hates_unholy_mon(mdef)) {
+			doshieldeff = TRUE;
+			if (youdef)
+				addmsg("You don't feel cold!");
+			dmg = 0;
+		}
+		else if(!(Cold_res(mdef) || hates_unholy_mon(mdef))) {
+			dmg *= 2;
+		}
+
+		if (!Cold_res(mdef) && cold_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -5452,7 +5486,7 @@ boolean *shopdamage;
 		    else You_hear("hissing gas.");
 	    }
 	}
-	else if(adtyp == AD_COLD && (is_pool(x,y, TRUE) || is_lava(x,y))) {
+	else if((adtyp == AD_COLD || adtyp == AD_ECLD|| adtyp == AD_UHCD) && (is_pool(x,y, TRUE) || is_lava(x,y))) {
 		boolean lava = is_lava(x,y);
 		boolean moat = (!lava && (lev->typ != POOL) &&
 				(lev->typ != WATER) &&
@@ -5543,12 +5577,15 @@ boolean *shopdamage;
 		    goto def_case;
 		switch(adtyp) {
 		case AD_FIRE:
+		case AD_EFIR:
 		case AD_MADF:
 		    new_doormask = D_NODOOR;
 		    see_txt = "The door is consumed in flames!";
 		    sense_txt = "smell smoke.";
 		    break;
 		case AD_COLD:
+		case AD_ECLD:
+		case AD_UHCD:
 		    new_doormask = D_NODOOR;
 		    see_txt = "The door freezes and shatters!";
 		    sense_txt = "feel cold.";
@@ -5559,6 +5596,7 @@ boolean *shopdamage;
 		    hear_txt = "crashing wood.";
 		    break;
 		case AD_ELEC:
+		case AD_EELC:
 		    new_doormask = D_BROKEN;
 		    see_txt = "The door splinters!";
 		    hear_txt = "crackling.";
@@ -5815,7 +5853,7 @@ mm_resist(struct monst *mdef, struct monst *magr, int damage, int tell)
 	if (dlev > 50) dlev = 50;
 	else if (dlev < 1) dlev = 1;
 	
-	if(mdef->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
+	if(mdef->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL))
 		dlev += 1;
 
 	int mons_mr = mdef->data->mr;
@@ -5825,7 +5863,7 @@ mm_resist(struct monst *mdef, struct monst *magr, int damage, int tell)
 		else
 			mons_mr /= 2;
 	}
-	if(mdef->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
+	if(mdef->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL))
 		mons_mr += 10;
 
 	if(mdef->mtyp == PM_CHOKHMAH_SEPHIRAH) dlev+=u.chokhmah;
@@ -5940,7 +5978,7 @@ int damage, tell;
 	if (dlev > 50) dlev = 50;
 	else if (dlev < 1) dlev = 1;
 	
-	if(mtmp->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
+	if(mtmp->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL))
 		dlev += 1;
 
 	int mons_mr = mtmp->data->mr;
@@ -5952,7 +5990,7 @@ int damage, tell;
 	}
 	if(magm_vulnerable(mtmp))
 		mons_mr /= 2;
-	if(mtmp->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
+	if(mtmp->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL))
 		mons_mr += 10;
 
 	if(mtmp->mtyp == PM_CHOKHMAH_SEPHIRAH) dlev+=u.chokhmah;

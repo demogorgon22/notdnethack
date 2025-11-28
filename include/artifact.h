@@ -325,6 +325,17 @@ struct artinstance{
 #define	ZPROP_BALANCE	0x00000020L
 #define	ZPROP_PATIENCE	0x00000040L
 #define	ZPROP_FOCUS		0x00000080L
+//Seen streaming/chained/kinstealing
+#define ZPROP_SEEN_S    0x00000100L
+#define ZPROP_SEEN_C    0x00000200L
+#define ZPROP_SEEN_K    0x00000400L
+#define ZPROP_SEEN_MASK  (ZPROP_SEEN_S|ZPROP_SEEN_C|ZPROP_SEEN_K)
+//Force form
+#define ZPROP_FORCE_S   0x00000800L
+#define ZPROP_FORCE_C   0x00001000L
+#define ZPROP_FORCE_K   0x00002000L
+#define ZPROP_FORCE_MASK (ZPROP_FORCE_S|ZPROP_FORCE_C|ZPROP_FORCE_K)
+
 #define TwinSkiesEtraits	avar2
 #define CarapaceXP avar1
 #define FingerprintProgress avar1

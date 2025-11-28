@@ -493,10 +493,15 @@ struct monst *magr;
 {
 	int dmod = 0;						/* die size modifier */
 	int spe_mult = 1;					/* multiplier for enchantment value */
+	int amalg_otyp = 0;
 
 	/* use the otyp of the object called, if we have one */
-	if (obj)
+	if (obj){
 		otyp = obj->otyp;
+		if(obj->oartifact == ART_AMALGAMATED_SKIES){
+			amalg_otyp = artinstance[ART_SKY_REFLECTED].ZerthOtyp;
+		}
+	}
 
 	/* in case we are dealing with a complete lack of a weapon (!obj, !otyp)
 	 * just skip everything and only initialize wdice
@@ -551,10 +556,14 @@ struct monst *magr;
 			ocd = objects[otyp].oc_wldam.oc_damd;
 		}
 
-		if(obj->otyp == CHIKAGE && obj->obj_material == HEMARGYOS){
+		if(obj->otyp == CHIKAGE && (obj->obj_material == HEMARGYOS || check_oprop(obj, OPROP_HAEM))){
 			ocn *= 2;
 			bonn *= 2;
 			flat *= 2;
+			if(magr)
+				flat += min(mlev(magr)/3, 10);
+		}
+		else if(amalg_otyp == CHIKAGE){
 			if(magr)
 				flat += min(mlev(magr)/3, 10);
 		}
@@ -3188,6 +3197,11 @@ struct obj *otmp;
 struct monst *mtmp;
 {
 	boolean youagr = mtmp == &youmonst;
+	int amalg_otyp = 0;
+	if(otmp){
+		if(otmp->oartifact == ART_AMALGAMATED_SKIES)
+			amalg_otyp = artinstance[ART_SKY_REFLECTED].ZerthOtyp;
+	}
 
 	struct obj *armg = (youagr ? uarmg : which_armor(mtmp, W_ARMG));
 	int bare_bonus = weapon_dam_bonus((struct obj *) 0, P_BARE_HANDED_COMBAT);
@@ -3218,8 +3232,11 @@ struct monst *mtmp;
 			if (otmp->oartifact == ART_IBITE_ARM){
 				if(bare_bonus > 0) damage_bon += ACURR(A_CHA)/5 + bare_bonus*2;
 			}
-			if (otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
+			if (otmp->otyp == CHIKAGE && (otmp->obj_material == HEMARGYOS || check_oprop(otmp, OPROP_HAEM))){
 				damage_bon += u.uimpurity/2;
+			}
+			else if(amalg_otyp == CHIKAGE){
+				damage_bon += u.uimpurity/3;
 			}
 		}
 		if(youagr && u.sealsActive&SEAL_OTIAX && (
@@ -4862,7 +4879,99 @@ int marinum;
 
 }
 
+unsigned long
+process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *mon, struct permonst *pa)
+{
+	boolean youagr = (mon == &youmonst);
+	// Remove traits
+	if (obj->o_e_trait&ETRAIT_FOCUS_FIRE && (otyp == TOOTH || otyp == GOEDENDAG || obj->oartifact == ART_STORM_CURSE)) {
+		//Remove everything except the fighting form traits
+		traits &= FFORM_ETRAITS;
+	}
+	if(youagr && objects[otyp].oc_skill == P_LANCE && !((youagr && u.usteed) || centauroid(pa) || animaloid(pa))) {
+		//Lances can't get expert traits when not mounted.
+		traits = 0;
+	}
+	if(youagr && otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL)) {
+		//Pommels don't graze.
+		traits &= ~ETRAIT_GRAZE;
+	}
 
+	//Add traits
+	if(youagr){
+		if(otyp == LONG_SWORD){
+			if(activeFightingForm(FFORM_HALF_SWORD))
+				traits |= ETRAIT_QUICK;
+			if(activeFightingForm(FFORM_POMMEL))
+				traits |= ETRAIT_PENETRATE_ARMOR;
+		}
+		if(is_makashi_saber(obj) && activeFightingForm(FFORM_MAKASHI)){
+			traits |= ETRAIT_LUNGE|ETRAIT_STOP_THRUST;
+		}
+	}
+	if(otyp == POLEAXE){
+		if(traits & ETRAIT_FOCUS_FIRE)
+			traits |= ETRAIT_STOP_THRUST;
+		if(traits & ETRAIT_STUNNING_STRIKE){
+			traits |= ETRAIT_KNOCK_BACK|ETRAIT_PENETRATE_ARMOR;
+		}
+	}
+	else if(otyp == BESTIAL_CLAW){
+		if(youagr){
+			if(active_glyph(BEASTS_EMBRACE) && u.uinsight < 15)
+				traits |= ETRAIT_QUICK;
+			if(active_glyph(BEASTS_EMBRACE) && u.uinsight < 30)
+				traits |= ETRAIT_LUNGE;
+		}
+		else {
+			if(mon->mcrazed || is_were(pa))
+				traits |= ETRAIT_QUICK|ETRAIT_LUNGE;
+		}
+	}
+	
+	if(obj->o_e_trait&ETRAIT_FOCUS_FIRE){
+		if(otyp == SILVERKNIGHT_SWORD){
+			traits |= ETRAIT_PENETRATE_ARMOR|ETRAIT_CREATE_OPENING;
+		}
+		else if(otyp == GOEDENDAG || obj->oartifact == ART_STORM_CURSE){
+			traits |= ETRAIT_BLEED;
+		}
+	}
+
+	return traits;
+}
+
+boolean
+check_etrait(struct obj *obj, struct monst *mon, unsigned long trait)
+{
+	boolean youagr = (mon == &youmonst);
+	struct permonst *pa = youagr ? youracedata : mon->data;
+
+	if(youagr && P_SKILL(weapon_type(obj)) < P_SKILLED)
+		return FALSE;
+	else if(!youagr && !((pa->mflagsf&MF_MARTIAL_E) || (pa->mflagsf&MF_MARTIAL_S)))
+		return FALSE;
+
+	if(trait != ETRAIT_FOCUS_FIRE && !carried(obj) && !mcarried(obj))
+		return FALSE;
+
+	int otyp = obj->otyp;
+	unsigned long traits = process_etraits(obj->expert_traits, otyp, obj, mon, pa);
+	if(obj->oartifact == ART_AMALGAMATED_SKIES)
+		traits = process_etraits(traits|artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits, artinstance[ART_SKY_REFLECTED].ZerthOtyp, obj, mon, pa);
+
+
+	if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD){
+		if(obj->lamplit)
+			traits |= ETRAIT_CLEAVE;
+		if(youagr && u.uinsight >= 40)
+			traits |= ETRAIT_FOCUS_FIRE;
+	}
+	
+	if(traits&trait)
+		return TRUE;
+	return FALSE;
+}
 #endif /* OVLB */
 
 /*weapon.c*/

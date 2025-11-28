@@ -8070,6 +8070,7 @@ int damtype, dam;
 	if (damtype == AD_ELEC || damtype == AD_EELC) heal = dam / 6;
 	else if (damtype == AD_FIRE || damtype == AD_EFIR 
 		|| damtype == AD_ECLD || damtype == AD_COLD
+		|| damtype == AD_UHCD
 	) slow = 1;
     } else if (mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_GREEN_STEEL_GOLEM || mon->mtyp == PM_CHAIN_GOLEM || mon->mtyp == PM_ARGENTUM_GOLEM) {
 	if (damtype == AD_ELEC || damtype == AD_EELC) slow = 1;

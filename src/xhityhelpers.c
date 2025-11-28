@@ -1322,10 +1322,10 @@ struct obj * obj;
 	if (is_lightsaber(obj) && litsaber(obj))
 		return FALSE;
 
-	if ((obj_is_material(obj, SILVER) || obj_is_material(obj, HEMARGYOS) || arti_silvered(obj)) ||
+	if ((obj_is_material(obj, SILVER) || obj_is_material(obj, HEMARGYOS) || check_oprop(obj, OPROP_HAEM) || arti_silvered(obj)) ||
 		(obj->oclass == RING_CLASS && obj->ohaluengr
-		&& (isEngrRing(obj->otyp) || isSignetRing(obj->otyp))
-		&& obj->oward >= LOLTH_SYMBOL && obj->oward <= LOST_HOUSE) ||
+			&& (isEngrRing(obj->otyp) || isSignetRing(obj->otyp))
+			&& obj->oward >= LOLTH_SYMBOL && obj->oward <= LOST_HOUSE) ||
 		(obj->otyp == SHURIKEN && !flags.mon_moving && uwep && uwep->oartifact == ART_SILVER_STARLIGHT)	// THIS IS BAD AND SHOULD BE DONE DIFFERENTLY
 		)
 		return TRUE;
@@ -1390,13 +1390,15 @@ struct monst * magr;
 	if (!otmp || !mdef)
 		return 0;
 
+	int amalg_otyp = (otmp->oartifact == ART_AMALGAMATED_SKIES ? artinstance[ART_SKY_REFLECTED].ZerthOtyp : 0);
+
 	if (hates_silver(pd) && !(youdef && u.sealsActive&SEAL_EDEN)
 		&& (obj_silver_searing(otmp) || obj_jade_searing(otmp))) {
 		/* default: 1d20 */
 		ndice = 1;
 		diesize = 20;
 		/* special cases */
-		if(otmp->otyp == KHAKKHARA)
+		if(otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice = khakharadice;
 		else if (otmp->oartifact == ART_PEN_OF_THE_VOID && mvitals[PM_ACERERAK].died > 0)
 			ndice = 2;
@@ -1413,7 +1415,7 @@ struct monst * magr;
 		ndice = 1;
 		diesize = 20;
 		/* special cases */
-		if(otmp->otyp == KHAKKHARA)
+		if(otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice = khakharadice;
 		else if (otmp->oartifact == ART_PEN_OF_THE_VOID && mvitals[PM_ACERERAK].died > 0)
 			ndice = 2;
@@ -1429,7 +1431,7 @@ struct monst * magr;
 		ndice = 2;
 		diesize = 9;
 		/* special cases */
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* calculate */
 		if (ndice)
@@ -1443,7 +1445,7 @@ struct monst * magr;
 		ndice = 1;
 		diesize = max(1, mlev(mdef));
 		/* special cases */
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice = khakharadice;
 		/* calculate */
 		dmg += vd(ndice, diesize);
@@ -1510,7 +1512,7 @@ struct monst * magr;
 		else if (otmp->oartifact == ART_SPEAR_OF_PEACE)
 			diesize = 20;
 
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice = khakharadice;
 		/* gold has a particular affinity to blessings and curses */
 		if ((obj_is_material(otmp, GOLD) || otmp->oartifact == ART_RUYI_JINGU_BANG) &&
@@ -1518,12 +1520,12 @@ struct monst * magr;
 			diesize = 20;
 		}
 
-		if (is_silverknight_weapon(otmp)) {
+		if (is_silverknight_weapon(otmp) || (amalg_otyp && is_silverknight_weapon_otyp(amalg_otyp))) {
 			diesize += 3;
 		}
 
-		if (is_self_righteous(otmp) && 
-			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
+		if ((is_self_righteous(otmp) || (amalg_otyp && self_righteous_otyp(amalg_otyp))) && 
+			((otmp->otyp != CHURCH_SHORTSWORD && (!amalg_otyp || amalg_otyp != CHURCH_SHORTSWORD)) || !(resist_pierce(pd) && !resist_slash(pd)))
 		)
 			diesize *= otmp->otyp == CHURCH_SHORTSWORD && Insight >= 40 ? 5 : 2.5;
 		/* calculate dice */
@@ -1565,8 +1567,11 @@ struct monst * magr;
 			diesize += 4;
 		}
 
-		if(otmp->otyp == CHIKAGE && otmp->obj_material == HEMARGYOS){
+		if(otmp->otyp == CHIKAGE && (otmp->obj_material == HEMARGYOS || check_oprop(otmp, OPROP_HAEM))){
 			dmg += (u.uimpurity+1)/2;
+		}
+		else if(amalg_otyp == CHIKAGE){
+			dmg += (u.uimpurity+4)/5;
 		}
 
 		if (activeFightingForm(FFORM_KNI_SACRED) && otmp == uwep){
@@ -1590,15 +1595,15 @@ struct monst * magr;
 			}
 		}
 #undef sacred_bonus_dice
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* gold has a particular affinity to blessings and curses */
 		if (obj_is_material(otmp, GOLD) &&
 			!(is_lightsaber(otmp) && litsaber(otmp))) {
 			ndice *= 2;
 		}
-		if (is_self_righteous(otmp) && 
-			(otmp->otyp != CHURCH_SHORTSWORD || !(resist_pierce(pd) && !resist_slash(pd)))
+		if ((is_self_righteous(otmp) || (amalg_otyp && self_righteous_otyp(amalg_otyp))) && 
+			((otmp->otyp != CHURCH_SHORTSWORD && (!amalg_otyp || amalg_otyp != CHURCH_SHORTSWORD)) || !(resist_pierce(pd) && !resist_slash(pd)))
 		)
 			diesize *= otmp->otyp == CHURCH_SHORTSWORD && Insight >= 40 ? 5 : 2.5;
 		/* calculate */
@@ -1636,7 +1641,7 @@ struct monst * magr;
 			diesize += 4;
 		}
 
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* calculate */
 		if (ndice)
@@ -1661,7 +1666,7 @@ struct monst * magr;
 
 		/* special cases */
 		
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		if (otmp->oartifact == ART_GRAYSWANDIR)
 			dmg += 9;
@@ -1713,7 +1718,7 @@ struct monst * magr;
 		
 		diesize = max(1,diesize);
 		/* special cases */
-		if (otmp->otyp == KHAKKHARA)
+		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
 			ndice *= khakharadice;
 		/* calculate */
 		if (ndice)
@@ -1914,6 +1919,7 @@ struct obj * weapon;
 			return 1;
 
 		if (hates_unholy_mon(mdef) && (
+			(attk->adtyp == AD_UHCD) ||
 			(magr && is_unholy_mon(magr)) ||
 			(otmp && obj_is_material(otmp, GREEN_STEEL)) ||
 			(otmp && is_unholy(otmp)) ||
@@ -3101,13 +3107,36 @@ struct attack * attk;
 /* Isamusei hit additional targets, if your insight is high enough to percieve the distortions */
 ///////////////////////////////////////////////////////////////////////////////
 int
-hit_with_iwarp(magr, otmp, tarx, tary, tohitmod, attk)
-struct monst * magr;
-struct obj * otmp;
-int tarx;
-int tary;
-int tohitmod;
-struct attack * attk;
+ihit(struct monst *magr, struct obj *otmp, int dx, int dy, int tohitmod, struct attack *attk)
+{
+	boolean youagr = magr == &youmonst;
+	if(!isok(x(magr)+dx, y(magr)+dy))
+		return 0;
+	struct monst *mdef = !youagr ? m_u_at(x(magr)+dx, y(magr)+dy) : 
+								u.uswallow ? u.ustuck : 
+								(dx || dy) ? m_at(x(magr)+dx, y(magr)+dy) : 
+								(struct monst *)0;
+	if(mdef 
+		&& (!DEADMONSTER(mdef))
+		&& ((youagr || mdef == &youmonst) ? couldsee(mdef->mx,mdef->my) : clear_path(magr->mx, magr->my, mdef->mx, mdef->my))
+		&& ((!youagr && mdef != &youmonst && mdef->mpeaceful != magr->mpeaceful) ||
+			(!youagr && mdef == &youmonst && !magr->mpeaceful) ||
+			(youagr && !mdef->mpeaceful))
+	){ //Can hit a worm multiple times
+		int vis = VIS_NONE;
+		if(youagr || canseemon(magr))
+			vis |= VIS_MAGR;
+		if(mdef == &youmonst || canseemon(mdef))
+			vis |= VIS_MDEF;
+		bhitpos.x = x(magr) + dx; bhitpos.y = y(magr) + dy;
+		notonhead = (bhitpos.x != x(mdef) || bhitpos.y != y(mdef));
+		return xmeleehity(magr, mdef, attk, &otmp, vis, tohitmod, TRUE, 0);
+	}
+	return 0;
+}
+
+int
+hit_with_iwarp(struct monst *magr, struct obj *otmp, int tarx, int tary, int tohitmod, struct attack *attk)
 {
 	int subresult = 0;
 	boolean youagr = magr == &youmonst;
@@ -3116,6 +3145,12 @@ struct attack * attk;
 	int dy = sgn(tary - y(magr));
 	int nx, ny;
 	int result = 0;
+	if(magr && mlev(magr) > 20 && (
+		(youagr && Insight > 20 && YOU_MERC_SPECIAL)
+		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))
+	)){
+		return hit_with_amalgamated_iwarp(magr, otmp, tarx, tary, tohitmod, attk);
+	}
 	if(!(isok(tarx - dx, tary - dy) &&
 		(dx || dy) &&
 		x(magr) == tarx - dx &&
@@ -3123,141 +3158,31 @@ struct attack * attk;
 	)
 		return result;
 
-	if (isok(tarx - 2*dx, tary - 2*dy)){
-		struct monst *mdef2 = !youagr ? m_u_at(tarx - 2*dx, tary - 2*dy) : 
-								u.uswallow ? u.ustuck : 
-								(dx || dy) ? m_at(tarx - 2*dx, tary - 2*dy) : 
-								(struct monst *)0;
-		if (mdef2 
-			&& (!DEADMONSTER(mdef2))
-			&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-			&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-				(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-				(youagr && !mdef2->mpeaceful))
-		){ //Can hit a worm multiple times
-			int vis2 = VIS_NONE;
-			if(youagr || canseemon(magr))
-				vis2 |= VIS_MAGR;
-			if(mdef2 == &youmonst || canseemon(mdef2))
-				vis2 |= VIS_MDEF;
-			bhitpos.x = tarx + dx; bhitpos.y = tary + dy;
-			notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-			subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-			/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-			result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
-		}
-	}
+	result = ihit(magr, otmp, -1*dx, -1*dy, tohitmod, attk);
+	result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 	if(Insight >= 45){
 		//90 degree rotation
 		nx = -dy;
 		ny = dx;
-		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
-			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
-									u.uswallow ? u.ustuck : 
-									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
-									(struct monst *)0;
-			if (mdef2 
-				&& (!DEADMONSTER(mdef2))
-				&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-					(youagr && !mdef2->mpeaceful))
-			) { //Can hit a worm multiple times
-				int vis2 = VIS_NONE;
-				if(youagr || canseemon(magr))
-					vis2 |= VIS_MAGR;
-				if(mdef2 == &youmonst || canseemon(mdef2))
-					vis2 |= VIS_MDEF;
-				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
-			}
-		}
+		result = ihit(magr, otmp, nx, ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		//-90 degree rotation
 		nx = dy;
 		ny = -dx;
-		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
-			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
-									u.uswallow ? u.ustuck : 
-									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
-									(struct monst *)0;
-			if (mdef2 
-				&& (!DEADMONSTER(mdef2))
-				&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-					(youagr && !mdef2->mpeaceful))
-			) { //Can hit a worm multiple times
-				int vis2 = VIS_NONE;
-				if(youagr || canseemon(magr))
-					vis2 |= VIS_MAGR;
-				if(mdef2 == &youmonst || canseemon(mdef2))
-					vis2 |= VIS_MDEF;
-				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
-			}
-		}
+		result = ihit(magr, otmp, nx, ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 	}
 	if(Insight >= 57){
 		//45 degree rotation
 		nx = sgn(dx+dy);
 		ny = sgn(dy-dx);
-		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
-			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
-									u.uswallow ? u.ustuck : 
-									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
-									(struct monst *)0;
-			if (mdef2 
-				&& (!DEADMONSTER(mdef2))
-				&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-					(youagr && !mdef2->mpeaceful))
-			) { //Can hit a worm multiple times
-				int vis2 = VIS_NONE;
-				if(youagr || canseemon(magr))
-					vis2 |= VIS_MAGR;
-				if(mdef2 == &youmonst || canseemon(mdef2))
-					vis2 |= VIS_MDEF;
-				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
-			}
-		}
+		result = ihit(magr, otmp, nx, ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		//-45 degree rotation
 		nx = sgn(dx-dy);
 		ny = sgn(dx+dy);
-		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
-			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
-									u.uswallow ? u.ustuck : 
-									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
-									(struct monst *)0;
-			if (mdef2 
-				&& (!DEADMONSTER(mdef2))
-				&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-					(youagr && !mdef2->mpeaceful))
-			) { //Can hit a worm multiple times
-				int vis2 = VIS_NONE;
-				if(youagr || canseemon(magr))
-					vis2 |= VIS_MAGR;
-				if(mdef2 == &youmonst || canseemon(mdef2))
-					vis2 |= VIS_MDEF;
-				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
-			}
-		}
+		result = ihit(magr, otmp, nx, ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 	}
 	if(Insight >= 70){
 		//135 degree rotation
@@ -3267,30 +3192,8 @@ struct attack * attk;
 		//y = x*(0.7) + y*(-0.7)
 		nx = sgn(-dx-dy);
 		ny = sgn(dx-dy);
-		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
-			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
-									u.uswallow ? u.ustuck : 
-									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
-									(struct monst *)0;
-			if (mdef2 
-				&& (!DEADMONSTER(mdef2))
-				&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-					(youagr && !mdef2->mpeaceful))
-			) { //Can hit a worm multiple times
-				int vis2 = VIS_NONE;
-				if(youagr || canseemon(magr))
-					vis2 |= VIS_MAGR;
-				if(mdef2 == &youmonst || canseemon(mdef2))
-					vis2 |= VIS_MDEF;
-				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
-			}
-		}
+		result = ihit(magr, otmp, nx, ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 		//-135 degree rotation
 		//x = xcos0 - ysin0
 		//x = x*(-0.7) - y*(-0.7)
@@ -3299,30 +3202,143 @@ struct attack * attk;
 		//-45 degree rotation
 		nx = sgn(-dx+dy);
 		ny = sgn(-dx-dy);
-		if (isok(x(magr) + nx, y(magr) + ny) && !(result&(MM_AGR_DIED|MM_AGR_STOP))){
-			struct monst *mdef2 = !youagr ? m_u_at(x(magr) + nx, y(magr) + ny) : 
-									u.uswallow ? u.ustuck : 
-									(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
-									(struct monst *)0;
-			if (mdef2 
-				&& (!DEADMONSTER(mdef2))
-				&& ((youagr || mdef2 == &youmonst) ? couldsee(mdef2->mx,mdef2->my) : clear_path(magr->mx, magr->my, mdef2->mx, mdef2->my))
-				&& ((!youagr && mdef2 != &youmonst && mdef2->mpeaceful != magr->mpeaceful) ||
-					(!youagr && mdef2 == &youmonst && !magr->mpeaceful) ||
-					(youagr && !mdef2->mpeaceful))
-			) { //Can hit a worm multiple times
-				int vis2 = VIS_NONE;
-				if(youagr || canseemon(magr))
-					vis2 |= VIS_MAGR;
-				if(mdef2 == &youmonst || canseemon(mdef2))
-					vis2 |= VIS_MDEF;
-				bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-				notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
-				subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
-				/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
-				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		result = ihit(magr, otmp, nx, ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+	}
+	return result;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Isamusei-Skies hits additional targets, if your insight is high enough to percieve the distortions */
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+int
+distance_rotate(struct monst * magr, struct obj * otmp, int agrx, int agry, int dx, int dy, int dist, int tohitmod, struct attack * attk, int rotation_steps)
+{
+	int distance_2_rotation_dx[] = {-2,-1, 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2,-2,-2};
+	int distance_2_rotation_dy[] = {-2,-2,-2,-2,-2,-1, 0, 1, 2, 2, 2, 2, 2, 1, 0,-1};
+	int distance_3_rotation_dx[] = {-3,-2,-1, 0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0,-1,-2,-3,-3,-3,-3,-3,-3};
+	int distance_3_rotation_dy[] = {-3,-3,-3,-3,-3,-3,-3,-2,-1, 0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0,-1,-2};
+	int result = 0;
+	while(dx > 1 || dy > 1 || dx < -1 || dy < -1){
+		dx /= 2;
+		dy /= 2;
+	}
+	//180 degree bar
+	int ix, iy;
+	for(int i = 0; i <= dist; i++){
+		ix = -i*dx;
+		iy = -i*dy;
+		ihit(magr, otmp, ix, iy, tohitmod, attk);
+	}
+	dx *= dist;
+	dy *= dist;
+	//Locate facing
+	int n = 0;
+	int i;
+	if(dist == 2){
+		for(int i = 0; i < SIZE(distance_2_rotation_dx); i++){
+			if(distance_2_rotation_dx[i] == dx && distance_2_rotation_dy[i] == dy){
+				n = i;
+				break;
 			}
 		}
+	}
+	else if(dist == 3){
+		for(int i = 0; i < SIZE(distance_3_rotation_dx); i++){
+			if(distance_3_rotation_dx[i] == dx && distance_3_rotation_dy[i] == dy){
+				n = i;
+				break;
+			}
+		}
+	}
+	else {
+		return 0;
+	}
+	//Rotate and attack
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	int vis2 = VIS_NONE;
+	int len = 0;
+	int *rotation_dx;
+	int *rotation_dy;
+	if(dist == 2){
+		len = SIZE(distance_2_rotation_dx);
+		rotation_dx = distance_2_rotation_dx;;
+		rotation_dy = distance_2_rotation_dy;
+	}
+	else {
+		len = SIZE(distance_3_rotation_dx);
+		rotation_dx = distance_3_rotation_dx;
+		rotation_dy = distance_3_rotation_dy;
+	}
+	struct monst *mdef2;
+	int ndx, ndy;
+	for(n = (n+1) % len, i=0; i < len; n = (n+1) % len, i++){
+		ndx = rotation_dx[n];
+		ndy = rotation_dy[n];
+		subresult = ihit(magr, otmp, ndx, ndy, tohitmod, attk);
+		/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+	}
+	return result;	
+}
+
+int
+hit_with_amalgamated_iwarp(struct monst *magr, struct obj *otmp, int tarx, int tary, int tohitmod, struct attack *attk)
+{
+	boolean youagr = magr == &youmonst;
+	int agrx = x(magr);
+	int agry = y(magr);
+	int dx = sgn(tarx - agrx);
+	int dy = sgn(tary - agry);
+	int dist = (youagr ? (Insight > 60) : (mlev(magr) > 30)) ? 3 : 2;
+	//Notes: Insight 45: 90 degree rotation
+	//       Insight 57: 45 degree rotation
+	//       Insight 70: 135 degree rotation
+	//	     Always: 180 degree rotation
+	//	   Breakpoint is therfore 70 for full circle
+	// Distance is possibly determined by monster level
+	//  Rotation is always by Insight
+	if(Insight >= 70)
+		return distance_rotate(magr, otmp, agrx, agry, dx, dy, dist, tohitmod, attk, 4);
+
+	int subresult = 0;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	int nx, ny;
+	int result = 0;
+	if(!(isok(tarx - dx, tary - dy) &&
+		(dx || dy) &&
+		x(magr) == tarx - dx &&
+		y(magr) == tary - dy)
+	)
+		return result;
+
+	result = ihit(magr, otmp, -1*dist*dx, -1*dist*dy, tohitmod, attk);
+	result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+	if(Insight >= 45){
+		//90 degree rotation
+		nx = -dy;
+		ny = dx;
+		result = ihit(magr, otmp, dist*nx, dist*ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		//-90 degree rotation
+		nx = dy;
+		ny = -dx;
+		result = ihit(magr, otmp, dist*nx, dist*ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+	}
+	if(Insight >= 57){
+		//45 degree rotation
+		nx = sgn(dx+dy);
+		ny = sgn(dy-dx);
+		result = ihit(magr, otmp, dist*nx, dist*ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+		//-45 degree rotation
+		nx = sgn(dx-dy);
+		ny = sgn(dx+dy);
+		result = ihit(magr, otmp, dist*nx, dist*ny, tohitmod, attk);
+		result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 	}
 	return result;
 }

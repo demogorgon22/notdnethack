@@ -1287,7 +1287,7 @@ static const struct def_skill Skill_Kni_Forms[] = {
 
 static struct def_skill Skill_Ken[] = {
 #define KENSEI_SKILL 0
-    { P_LONG_SWORD, P_EXPERT }, { P_QUARTERSTAFF, P_EXPERT },
+    { P_LONG_SWORD, P_EXPERT },
     { P_SHURIKEN, P_EXPERT },		{ P_DAGGER, P_EXPERT },
 	{ P_DART, P_EXPERT },			{ P_BOOMERANG, P_EXPERT },
     { P_ATTACK_SPELL, P_SKILLED },
@@ -2482,6 +2482,7 @@ u_init()
 			}
 		}
 		else if(Race_if(PM_GITHZERAI)){
+			Skill_Ken[KENSEI_SKILL].skmax = P_BASIC;
 			skill_init(Skill_Ken);
 			skill_add(Skill_Ken_GW);
 			u.role_variant = ART_SKY_REFLECTED;

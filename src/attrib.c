@@ -566,13 +566,16 @@ exerper()
 #ifdef DEBUG
 		pline("exerper: Encumber checks");
 #endif
-		switch (near_capacity()) {
+		int capacity = near_capacity();
+		if(capacity > UNENCUMBERED){
+			if (Role_if(PM_KENSEI))	/* over-attachment */
+				exercise(A_WIS, FALSE);
+		}
+		switch (capacity) {
 		    case MOD_ENCUMBER:	exercise(A_STR, TRUE);
 					break;
 		    case HVY_ENCUMBER:	exercise(A_STR, TRUE);
 					exercise(A_DEX, FALSE); 
-					if (Role_if(PM_KENSEI))	/* over-attachment */
-					    exercise(A_WIS, FALSE);
 					break;
 		    case EXT_ENCUMBER:	exercise(A_DEX, FALSE);
 					exercise(A_CON, FALSE);
@@ -1446,7 +1449,7 @@ struct monst *mon;
 			(armc && armc->oartifact == ART_SHI_PI_BU) ||
 			(wep &&((wep->oartifact == ART_SCEPTRE_OF_MIGHT) || 
 					 (wep->oartifact == ART_PEN_OF_THE_VOID && wep->ovar1&SEAL_YMIR && mvitals[PM_ACERERAK].died > 0) ||
-					 (oart && (oart->inv_prop == GITH_ART || oart->inv_prop == ZERTH_ART || oart->inv_prop == AMALGUM_ART) && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER) ||
+					 (oart && (oart->inv_prop == GITH_ART || oart->inv_prop == ZERTH_ART || oart->inv_prop == AMALGUM_ART) && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER)) ||
 					 (wep->oartifact == ART_STORMBRINGER) ||
 					 (wep->oartifact == ART_OGRESMASHER)
 			)) ||
@@ -1489,6 +1492,12 @@ struct monst *mon;
 		 */
 		if (armh && armh->otyp == DUNCE_CAP) return(6);
 		else if(is_player && u.sealsActive&SEAL_HUGINN_MUNINN) return 25;
+		if (x == A_WIS && armc && armc->oartifact == ART_SHI_PI_BU){
+			if(armc->cursed)
+				tmp -= armc->spe + 3;
+			else
+				tmp += armc->spe + 3;
+		}
 	}
 	//Clamp
 	int max = 25;

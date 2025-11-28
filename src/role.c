@@ -267,7 +267,7 @@ struct Role roles[] = {
 	PM_HERMIT_MASTER, PM_DISCIPLE, PM_BLUE_EYED_FOX,
 	PM_FOX, PM_ORC_CAPTAIN, S_OGRE, S_NYMPH,
 	ART_EYE_OF_JIROSHIN,
-	MA_HUMAN|MA_ELF|MA_FEY, ROLE_MALE|ROLE_FEMALE |
+	MA_REPTILIAN|MA_HUMAN|MA_ELF|MA_FEY, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  13,  7, 13, 10, 10, 13 },
@@ -2520,6 +2520,25 @@ int newgame;
 		}
 		if(Race_if(PM_DROW) && (Role_if(PM_PRIEST) || Role_if(PM_ROGUE) || Role_if(PM_RANGER) || Role_if(PM_WIZARD))){
 			mons[PM_HEDROW_MASTER_WIZARD].msound = MS_GUARDIAN; /*:( :(*/
+		}
+	}
+	/* Kensei quest enemy adjustments */
+	if(Role_if(PM_KENSEI)){
+		if(Race_if(PM_GITHZERAI) || Race_if(PM_GITHYANKI)){
+			urole.enemy2num = PM_MIND_FLAYER;
+		}
+		else if(u.role_variant == ART_MALICE || u.role_variant == ART_BOREAL_SCEPTER || u.role_variant == ART_ANSERMEE){
+			urole.enemy2num = PM_HUNGRY_DEAD;
+		}
+		else if(u.role_variant == ART_KIKU_ICHIMONJI){
+			urole.enemy2num = PM_SAMURAI;
+		}
+		else if(u.role_variant == ART_GREEN_DESTINY){
+			urole.enemy2num = PM_BARBARIAN;
+		}
+		else if(Race_if(PM_INCANTIFIER)){
+			urole.enemy2num = PM_MIRKWOOD_SPIDER;
+			urole.enemy2sym = S_SPIDER;
 		}
 	}
 

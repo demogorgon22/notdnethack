@@ -466,6 +466,21 @@ struct you {
 #define ICHIMONJI 39
 #define MORTAL_D  40
 #define DRAIN_L   41
+#define REPULSE   42
+#define HATRED    44
+#define COMMAND_S 45
+#define MAGE_S	  46
+#define AMALGAM_S 47
+#define PSI_AURA  48
+#define ELEMENT_A 49
+#define CHAIN_MAG 50
+#define STEAL_S   51
+#define STRONG_P  52
+#define MAX_MYSTIC_FORMS 52
+
+#define MFORM_STREAM MAX_MYSTIC_FORMS+1
+#define MFORM_CHAINS MAX_MYSTIC_FORMS+2
+#define MFORM_KINSTL MAX_MYSTIC_FORMS+3
 
 	// long laststruck;
 	long lastmoved;

@@ -495,6 +495,14 @@ mercurial_repair()
 		){
 			uequip[i]->spe++;
 		}
+		if(uequip[i] && uequip[i]->oartifact == ART_SKY_REFLECTED){
+			if(is_streaming_merc(uequip[i]))
+				artinstance[ART_SKY_REFLECTED].ZerthUpgrades |= ZPROP_SEEN_S;
+			else if(is_chained_merc(uequip[i]))
+				artinstance[ART_SKY_REFLECTED].ZerthUpgrades |= ZPROP_SEEN_C;
+			else if(is_kinstealing_merc(uequip[i]))
+				artinstance[ART_SKY_REFLECTED].ZerthUpgrades |= ZPROP_SEEN_K;
+		}
 	}
 }
 
@@ -855,9 +863,9 @@ you_calc_movement()
 	else if(!TimeStop && artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe < u.ulevel && !(moves%10)) artinstance[ART_TENSA_ZANGETSU].ZangetsuSafe++;
 	
 	int chikhp = 0;
-	if(uwep && uwep->otyp == CHIKAGE && obj_is_material(uwep, HEMARGYOS))
+	if(uwep && uwep->otyp == CHIKAGE && (obj_is_material(uwep, HEMARGYOS) || check_oprop(uwep, OPROP_HAEM)))
 		chikhp += *hpmax(&youmonst);
-	if(uswapwep && u.twoweap && uswapwep->otyp == CHIKAGE && obj_is_material(uswapwep, HEMARGYOS))
+	if(uswapwep && u.twoweap && uswapwep->otyp == CHIKAGE && (obj_is_material(uswapwep, HEMARGYOS) || check_oprop(uswapwep, OPROP_HAEM)))
 		chikhp += *hpmax(&youmonst);
 	if(chikhp > 0){
 		int hploss = 85*chikhp/1000;
