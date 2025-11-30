@@ -1274,6 +1274,7 @@ boulder
 	would do it; and so I did.
 		[ The King Must Die, by Mary Renault ]
 bowblade
+bow-blade
 bladed bow
 	Choice weapon of Simon, one of the first Healing Church 
 	hunters.
@@ -1469,7 +1470,7 @@ candy bar
 		[ Charlie and the Chocolate Factory, by Roald Dahl ]
 cane
 	Sufficiently deadly as a rigid spike-tipped cane, but also
-	reveals a bladed whip when into many segments.
+	reveals a bladed whip when split into many segments.
 	
 	Concealing the weapon inside the cane and flogging the beasts
 	with the whip is partly an act of ceremony, an attempt to
@@ -3266,6 +3267,8 @@ elshava
 ~human or elf*
 ~elf ??m*
 ~gr?y*elf
+~green*elf
+~light*elf
 *elf*
 elvenking
 elvenqueen
@@ -4381,6 +4384,16 @@ gr?y*elf
 	unlike other elves, devote much time to study and contemplation.
 	Their treatises on nature are astounding. 
 		[ Monstrous Manual, by TSR inc. ]
+green*elf
+	These names were however later replaced among the Sindar by the
+	name 'Green-elves', at least as far as the inhabitants of
+	Ossiriand were concerned; for they withdrew themselves and took
+	as little part in the strife with Morgoth as they could. This
+	name was given both because of the greenness of the land of
+	Lindon, and because the Laegrim clothed themselves in green as
+	an aid to secrecy. This term the Noldor translated into Quenya
+	Laiquendi; but it was not much used.
+		[ The Silmarillion, by J.R.R. Tolkien ]
 grid bug
 	These electronically based creatures are not native to this
 	universe.  They appear to come from a world whose laws of
@@ -5973,6 +5986,17 @@ light
 	Strange creatures formed from energy rather than matter,
 	lights are given to self-destructive behavior when battling
 	foes.
+light*elf
+	These people were called the Calaquendi or Light Elves.
+	For many Ages they lived in the Eternal Light of the Two
+	Trees, and they were ennobled by that Light, strengthened
+	in body and filled with great knowledge by the teaching of
+	the Valar and Maiar. [...] The spirits of the Calaquendi
+	were bright as the blades of their swords, and their souls
+	strong and fierce as the naked flames that seemed to shine
+	from their eyes. Before them, all but the mightiest of
+	Melkor's servants stood in awe.
+		[ A Tolkien Bestiary, by David Day ]
 *lightsaber
 	"Not as clumsy or random as a blaster; an elegant weapon,
 	for a more civilized age."
@@ -6287,6 +6311,21 @@ sceptre
 	about in armour, and sovereigns needed champions to vindicate
 	their rights.
 		[ Brewer's Concise Dictionary of Phrase and Fable ]
+madman
+madwoman
+	"In that direction," the Cat said, waving its right paw round,
+	"lives a Hatter: and in that direction," waving the other paw,
+	"lives a March Hare. Visit either you like: they're both mad."
+	
+	"But I don't want to go among mad people," Alice remarked.
+	
+	"Oh, you ca'n't help that," said the Cat: "we're all mad here.
+	I'm mad. You're mad."
+
+	"How do you know I'm mad?" said Alice.
+
+	"You must be," said the Cat, "or you wouldn't have come here."
+		[ Alice in Wonderland, by Lewis Carroll ]
 magicbane
 	A highly enchanted athame said to hold the power to channel
 	and direct magical energy. It is said by some that this
@@ -8909,6 +8948,7 @@ the drowned
 		beneath the uncaring ocean.
 ~lightsaber
 ~saber-toothed cat
+~soldier's saber
 *saber
 *sabre
 	Flashed all their sabres bare,
