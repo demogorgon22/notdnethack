@@ -1855,8 +1855,11 @@ int x, y;
 int
 freehand()
 {
-	return(!Straitjacketed && 
-		(!uwep || !welded(uwep) ||
+	if(Straitjacketed)
+		return FALSE;
+	if(youracedata->mtyp == PM_SILVERMAN)
+		return TRUE;
+	return((!uwep || !welded(uwep) ||
 	   (!bimanual(uwep,youracedata) && (!uarms || !uarms->cursed))));
 /*	if ((uwep && bimanual(uwep)) ||
 	    (uwep && uarms))
