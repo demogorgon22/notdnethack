@@ -527,6 +527,7 @@ expert_undead_hunter_skill()
 				}
 				else if(skill == P_SCIMITAR){
 					expert_weapon_skill(P_BOW);
+					expert_weapon_skill(P_QUARTERSTAFF);
 				}
 				else if(skill == P_SABER){
 					if(rn2(2)){
@@ -545,6 +546,11 @@ expert_undead_hunter_skill()
 				}
 				else if(skill == P_BOW){
 					expert_weapon_skill(P_SCIMITAR);
+					expert_weapon_skill(P_QUARTERSTAFF);
+				}
+				else if(skill == P_QUARTERSTAFF){
+					expert_weapon_skill(P_SCIMITAR);
+					expert_weapon_skill(P_BOW);
 				}
 				else if(skill == P_WHIP){
 					expert_weapon_skill(P_LONG_SWORD);
