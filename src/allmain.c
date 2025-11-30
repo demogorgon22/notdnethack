@@ -4176,34 +4176,38 @@ boolean new_game;	/* false => restoring an old game */
 	  Hello((struct monst *) 0), plname, buf, urace.adj, (flags.descendant) ? " descendant" : "",
 	  (currentgend && urole.name.f) ? urole.name.f : urole.name.m);
 	if(iflags.dnethack_start_text){
-	pline("Press Ctrl^W or type #ward to engrave a warding sign.");
-	if(Role_if(PM_PIRATE)) You("can swim! Type #swim while swimming on the surface to dive down to the bottom.");
-	else if(Role_if(PM_EXILE)){
-		pline("Press Ctrl^E or type #seal to engrave a seal of binding.");
-		pline("#chat to a fresh seal to contact the spirit beyond.");
-		pline("Press Ctrl^F or type #power to fire active spirit powers!");
-	}
-	else if(Role_if(PM_MADMAN)){
-		You("have psychic powers. Type #ability or press Shift-B to access your powers!");
-	}
-	if(Race_if(PM_DROW)){
-		if(!(Role_if(PM_HEALER) || Role_if(PM_EXILE)))
-			pline("Beware, droven armor evaporates in light!");
-		pline("Use #monster to create a patch of darkness.");
-	}
-	if(Race_if(PM_ANDROID)){
-		pline("Androids do not need to eat, but *do* need to sleep.");
-		pline("Use #monster to access your innate abilities, including sleep.");
-		pline("Use '.' to recover HP using magic energy.");
-		pline("Sleep to recover magic energy.");
-	}
-	if(Race_if(PM_CLOCKWORK_AUTOMATON)){
-		pline("Use #monster to adjust your clockspeed.");
-		You("do not heal naturally. Use '.' to attempt repairs.");
-	}
-	if(Race_if(PM_INCANTIFIER)){
-		pline("Incantifiers eat magic, not food, and do not heal naturally.");
-	}
+		pline("Press Ctrl^W or type #ward to engrave a warding sign.");
+		if(Role_if(PM_PIRATE)) You("can swim! Type #swim while swimming on the surface to dive down to the bottom.");
+		else if(Role_if(PM_EXILE)){
+			pline("Press Ctrl^E or type #seal to engrave a seal of binding.");
+			pline("#chat to a fresh seal to contact the spirit beyond.");
+			pline("Press Ctrl^F or type #power to fire active spirit powers!");
+		}
+		else if(Role_if(PM_MADMAN)){
+			You("have psychic powers. Type #ability or press Shift-B to access your powers!");
+		}
+		if(Race_if(PM_DROW)){
+			if(!(Role_if(PM_HEALER) || Role_if(PM_EXILE)))
+				pline("Beware, droven armor evaporates in light!");
+			pline("Use #monster to create a patch of darkness.");
+		}
+		if(Race_if(PM_ANDROID)){
+			pline("Androids do not need to eat, but *do* need to sleep.");
+			pline("Use #monster to access your innate abilities, including sleep.");
+			pline("Use '.' to recover HP using magic energy.");
+			pline("Sleep to recover magic energy.");
+		}
+		if(Race_if(PM_CLOCKWORK_AUTOMATON)){
+			pline("Use #monster to adjust your clockspeed.");
+			You("do not heal naturally. Use '.' to attempt repairs.");
+		}
+		if(Race_if(PM_INCANTIFIER)){
+			pline("Incantifiers eat magic, not food, and do not heal naturally.");
+		}
+		if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && !art_already_exists(ART_SKY_REFLECTED)){
+			pline("Be on the lookout for a good weapon to christen 'the Sky Reflected'.");
+			pline("(For the most straightforward experience, pick your starting weapon.)");
+		}
 	}
 }
 
