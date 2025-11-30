@@ -2643,6 +2643,20 @@ boolean vis;
 				if(youagr)
 					You("strip %s efferent wires!", hisherits(mdef));
 				mdef->mconf = 1;
+				otmp = MON_WEP(mdef);
+				if(otmp){
+					if(vis)
+						pline("%s fumbles %s weapon!", Monnam(mdef), hisherits(mdef));
+					obj_extract_and_unequip_self(otmp);
+					mdrop_obj(mdef, otmp, FALSE);
+				}
+				otmp = MON_SWEP(mdef);
+				if(otmp){
+					if(vis)
+						pline("%s fumbles %s secondary weapon!", Monnam(mdef), hisherits(mdef));
+					obj_extract_and_unequip_self(otmp);
+					mdrop_obj(mdef, otmp, FALSE);
+				}
 			}
 			extra_damage = d(dmg, 6);
 		break;
@@ -2787,10 +2801,8 @@ boolean vis;
 				otmp2 = mdef->minvent;
 				while((otmp = otmp2)){
 					otmp2 = otmp->nobj;
-					if(!(otmp->owornmask&(~(W_WEP|W_SWAPWEP)))){
-						obj_extract_self(otmp);
-						mdrop_obj(mdef, otmp, FALSE);
-					}
+					obj_extract_and_unequip_self(otmp);
+					mdrop_obj(mdef, otmp, FALSE);
 				}
 			}
 			extra_damage = d(dmg, 4);
