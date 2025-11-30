@@ -517,6 +517,16 @@ REGION:(00,00,75,20),lit,"ordinary"
 # Stairs
 STAIR:(66,10),up
 TRAP: "switch", (08,14)
+MONSTER: 'x', "man-fly", (09,15), asleep
+MONSTER: 'x', "man-fly", (09,13), asleep
+MONSTER: 'x', "man-fly", (07,15), asleep
+MONSTER: 'x', "man-fly", (07,13), asleep
+MONSTER: 'x', "man-fly", (05,15), asleep
+MONSTER: 'x', "man-fly", (05,13), asleep
+MONSTER: 'x', "man-fly", (03,15), asleep
+MONSTER: 'x', "man-fly", (03,13), asleep
+MONSTER: 'x', "man-fly", (01,15), asleep
+MONSTER: 'x', "man-fly", (01,13), asleep
 # Doors
 # Outside Doors
 NON_DIGGABLE:(00,00,75,20)
