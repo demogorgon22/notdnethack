@@ -6222,26 +6222,7 @@ struct obj *hypo;
 					newcham(mtarg, NON_PM, FALSE, FALSE);
 			break;
 			case POT_AMNESIA:
-				if(!amp->cursed){
-					if (canseemon(mtarg))
-						pline("%s looks more tranquil.", Monnam(mtarg));
-					if(!amp->blessed){
-						untame(mtarg, 1);
-						mtarg->mferal = 0;
-					}
-					mtarg->mcrazed = 0;
-					mtarg->mdisrobe = 0;
-					mtarg->mberserk = 0;
-					mtarg->mdoubt = 0;
-				} else {
-					if (canseemon(mtarg))
-						pline("%s looks angry and confused!", Monnam(mtarg));
-					untame(mtarg, 0);
-					mtarg->mcrazed = 1;
-					mtarg->mberserk = 1;
-					mtarg->mconf = 1;
-					mtarg->mferal = 0;
-				}
+				mon_forget(mtarg, 100, amp->blessed, amp->cursed, !canseemon(mtarg));
 			break;
 		}
 	} else {

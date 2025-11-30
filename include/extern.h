@@ -2610,6 +2610,7 @@ E long NDECL(random);
 E int NDECL(doread);
 E boolean FDECL(is_chargeable, (struct obj *));
 E int FDECL(recharge, (struct obj *,int));
+E void FDECL(mon_forget, (struct monst *, int, boolean, boolean, boolean));
 E void FDECL(forget, (int));
 E void FDECL(forget_objects, (int));
 E void FDECL(forget_levels, (int));

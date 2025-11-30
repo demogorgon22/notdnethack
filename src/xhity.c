@@ -9227,7 +9227,9 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				exercise(A_WIS, TRUE);
 				exercise(A_INT, TRUE);
 			}
-
+			if(mm_resist(mdef, magr, 0, NOTELL)){
+				mon_forget(mdef, dmg, FALSE, magr->mpeaceful, !(vis&VIS_MDEF));
+			}
 			/* kills if pretend-brain-eating damage would reduce hp below zero */
 			mdef->mhp -= dmg;
 			if (mdef->mhp < 1) {
@@ -17235,17 +17237,33 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 
 	/* deep dwellers resist attacks, but have a 1/10 chance of being slain outright */
-	if (pd->mtyp == PM_DEEP_DWELLER && !rn2(10)){
-		/*Brain struck.  Ouch.*/
-		if (youdef)
-			pline("Your brain-organ is struck!");
-		else if (canseemon(mdef))
-			pline("%s brain-organ is struck!", s_suffix(Monnam(mdef)));
-		*hp(mdef) = 1;
-		partly_resisted_thick_skin = FALSE;
-		resisted_weapon_attacks = FALSE;
-		resisted_attack_type = FALSE;
-		resisted_thick_skin = FALSE;
+	if (pd->mtyp == PM_DEEP_DWELLER){
+		int chance = 10;
+		if(weapon && valid_weapon_attack && weapon->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(weapon, magr, ETRAIT_FOCUS_FIRE)){
+			chance = ROLL_ETRAIT(weapon, magr, 2, 5);
+		}
+		if(!rn2(chance)){
+			/*Brain struck.  Ouch.*/
+			if (youdef){
+				pline("Your brain-organ is struck!");
+				(void)adjattrib(A_INT, -2, FALSE);
+				(void)adjattrib(A_WIS, -2, FALSE);
+				forget(25);	/* lose 25% of memory */
+				if (!(uarmh && uarmh->otyp == DUNCE_CAP)) {
+					/* No such thing as mindless players... */
+					check_brainlessness();
+				}
+			}
+			else if (canseemon(mdef)){
+				pline("%s brain-organ is struck!", s_suffix(Monnam(mdef)));
+				mon_forget(mdef, 100, FALSE, FALSE, TRUE);
+			}
+			*hp(mdef) = 1;
+			partly_resisted_thick_skin = FALSE;
+			resisted_weapon_attacks = FALSE;
+			resisted_attack_type = FALSE;
+			resisted_thick_skin = FALSE;
+		}
 	}
 
 	/* hack to enhance mm_aggression(); we don't want purple
@@ -24029,6 +24047,9 @@ blacklight_tentacles_suck_x(struct monst *magr, struct monst *mdef, int dmg, int
 			if(vis)
 				pline("The tentacles burrow into %s brain!", mon_nam(mdef));
 			mdef->mhp -= d(dmg, 10);
+			if(!mm_resist(mdef, magr, 0, NOTELL)){
+				mon_forget(mdef, 6*dmg, FALSE, TRUE, !canseemon(mdef));
+			}
 			if (mdef->mhp <= 0)
 				mdef->mhp = 1;
 		}

@@ -2474,52 +2474,7 @@ skipmsg:
 		mreadmsg(mtmp, otmp);
 		if (oseen) makeknown(SCR_AMNESIA);
 museamnesia:
-		if(!otmp->cursed){
-			if (vismon) pline("%s looks more tranquil.", Monnam(mtmp));
-			if(!otmp->blessed){
-				untame(mtmp, 1);
-				mtmp->mferal = 0;
-				mtmp->mpeaceful = TRUE;
-			}
-			mtmp->seenmadnesses = 0;
-			mtmp->mcrazed = 0;
-			mtmp->mberserk = 0;
-			mtmp->mdisrobe = 0;
-			mtmp->mdoubt = 0;
-			mtmp->mwounded_legs = 0;
-			mtmp->msanctity = 0;
-			mtmp->mgluttony = 0;
-			mtmp->mfrigophobia = 0;
-			mtmp->mcannibal = 0;
-			mtmp->mrage = 0;
-			mtmp->margent = 0;
-			mtmp->msuicide = 0;
-			mtmp->mnudist = 0;
-			mtmp->mophidio = 0;
-			mtmp->marachno = 0;
-			mtmp->mentomo = 0;
-			mtmp->mthalasso = 0;
-			mtmp->mhelmintho = 0;
-			mtmp->mparanoid = 0;
-			mtmp->mtalons = 0;
-			mtmp->mdreams = 0;
-			mtmp->msciaphilia = 0;
-			mtmp->mforgetful = 0;
-			mtmp->mapostasy = 0;
-			mtmp->mtoobig = 0;
-			mtmp->mrotting = 0;
-			mtmp->mformication = 0;
-			mtmp->mscorpions = 0;
-			mtmp->mvermin = 0;
-			mtmp->mcaterpillars = 0;
-		} else {
-			if (vismon) pline("%s looks angry and confused!", Monnam(mtmp));
-			untame(mtmp, 0);
-			mtmp->mcrazed = 1;
-			mtmp->mberserk = 1;
-			mtmp->mconf = 1;
-			mtmp->mferal = 0;
-		}
+		mon_forget(mtmp, 100, otmp->blessed, otmp->cursed, !vismon);
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
 		return 2;
