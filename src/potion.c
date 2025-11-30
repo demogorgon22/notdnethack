@@ -2927,7 +2927,14 @@ dodip()
 				}
 				bless(obj);
 				obj->bknown=1;
+				potion->bknown=1;
 				goto poof;
+			}
+			else {
+				if(potion->bknown)
+					obj->bknown=1;
+				else if(obj->bknown)
+					potion->bknown=1;
 			}
 		} else if (potion->cursed) {
 			if (obj->blessed) {
@@ -2949,7 +2956,14 @@ dodip()
 				}
 				curse(obj);
 				obj->bknown=1;
+				potion->bknown=1;
 				goto poof;
+			}
+			else {
+				if(potion->bknown)
+					obj->bknown=1;
+				else if(obj->bknown)
+					potion->bknown=1;
 			}
 		} else {
 			switch(artifact_wet(obj,TRUE)) {
