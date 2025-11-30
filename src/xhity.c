@@ -16977,9 +16977,16 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		}
 
 		/* must come after all apply_hit_effects */
-		/* priests do extra damage with all artifacts */
-		if (artif_hit && !recursed && magr && (youagr ? Role_switch : monsndx(magr->data)) == PM_PRIEST)
-			artidmg += d(1, mlev(magr));
+		if(!recursed && magr){
+			/* priests do extra damage with all artifacts */
+			if (artif_hit && (youagr ? Role_if(PM_PRIEST) : mon_priest(magr))){
+				artidmg += d(1, mlev(magr));
+			}
+			/* monks do extra damage with kicks */
+			if(unarmed_kick && (youagr ? (Role_if(PM_MONK) && !Upolyd) : mon_monk(magr))){
+				bonsdmg += d(1, mlev(magr));
+			}
+		}
 		/* madmen do extra damage with insight weapons */
 		if (valid_weapon_attack && is_insight_weapon(weapon) && !recursed && magr && (youagr ? (Role_if(PM_MADMAN) || u.sealsActive&SEAL_OSE || mvitals[PM_MOON_S_CHOSEN].died) : insightful(magr->data))){
 			if(youagr){
