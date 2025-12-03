@@ -52,6 +52,7 @@ STATIC_DCL void FDECL(palid_stranger, (struct monst *));
 STATIC_DCL void FDECL(sib_follow, (struct monst *));
 STATIC_DCL void FDECL(invisible_twin_act, (struct monst *));
 void FDECL(make_rage_walker_polts, (int));
+void FDECL(make_generic_polts, (int));
 
 #ifdef OVL0
 
@@ -2720,6 +2721,88 @@ karemade:
 				}
 				else if(level.flags.rage > 0 && !rn2(level.flags.rage))
 					level.flags.rage--;
+			}
+			// Githzerai nightmare-followed and Githyanki hunted
+			if(Role_if(PM_KENSEI) && art_already_exists(ART_AMALGAMATED_SKIES)){
+				if(spawn_freq && !rn2(spawn_freq)){
+					if(Race_if(PM_GITHYANKI)){
+						if(In_endgame(&u.uz)){
+							if(!rn2(5)){
+								makemon(&mons[rn2(3) ? PM_GITHYANKI_PIRATE : PM_GITHYANKI_KNIGHT], 0, 0, MM_BIGGROUP);
+							}
+							else if(!rn2(20)){
+								makemon(&mons[rn2(6) ? PM_MIND_FLAYER : PM_MASTER_MIND_FLAYER], 0, 0, MM_BIGGROUP);
+							}
+							else {
+								makemon((struct permonst *)0, 0, 0, MM_BIGGROUP);
+							}
+						}
+						else if(Inhell){
+							if(!rn2(20)){
+								int hell_dragons[] = {PM_RED_DRAGON, PM_WHITE_DRAGON, PM_BLACK_DRAGON, PM_BLUE_DRAGON, PM_GREEN_DRAGON, PM_YELLOW_DRAGON};
+								makemon(&mons[ROLL_FROM(hell_dragons)], 0, 0, MM_BIGGROUP);
+							}
+							else {
+								makemon((struct permonst *)0, 0, 0, MM_BIGGROUP);
+							}
+						}
+						else if(In_depths(&u.uz)){
+							if(!rn2(5)){
+								makemon(&mons[rn2(6) ? PM_MIND_FLAYER : PM_MASTER_MIND_FLAYER], 0, 0, MM_BIGGROUP);
+							}
+							else {
+								makemon((struct permonst *)0, 0, 0, MM_BIGGROUP);
+							}
+						}
+						else {
+							if(!rn2(20)){
+								makemon(&mons[rn2(10) ? PM_GITHYANKI_PIRATE : PM_GITHYANKI_KNIGHT], 0, 0, MM_BIGGROUP);
+							}
+							else if(!rn2(19)){
+								makemon(&mons[rn2(6) ? PM_MIND_FLAYER : PM_MASTER_MIND_FLAYER], 0, 0, MM_BIGGROUP);
+							}
+							else if(!rn2(5)){
+								makemon((struct permonst *)0, 0, 0, MM_BIGGROUP);
+							}
+						}
+					}
+					else if(Race_if(PM_GITHZERAI)){
+						if(In_endgame(&u.uz) || Inhell){
+							if(!rn2(50)){
+								if(!rn2(5)){
+									makemon(&mons[PM_LILITU], 0, 0, MM_BIGGROUP);
+								} else {
+									makemon(&mons[flags.female ? PM_INCUBUS : PM_SUCCUBUS], 0, 0, MM_BIGGROUP);
+								}
+							}
+							else if(!rn2(49)){
+								int plants[] = {PM_DRYAD, PM_SWAMP_NYMPH, PM_DEMINYMPH, PM_DREADBLOSSOM_SWARM, PM_ELF_LORD, PM_ELF_LADY};
+								makemon_full(&mons[ROLL_FROM(plants)], 0, 0, MM_BIGGROUP, MANITOU, -1);
+							}
+							else if(!rn2(48)){
+								int monks[] = {PM_MONK, PM_PRIEST, PM_PRIESTESS, PM_NURSE, PM_MAID, PM_BARD, PM_HEALER};
+								makemon_full(&mons[ROLL_FROM(monks)], 0, 0, MM_BIGGROUP, GUECUBU, -1);
+							}
+							else if(!rn2(47)){
+								makemon(&mons[PM_POLTERGEIST], 0, 0, MM_BIGGROUP);
+							}
+							else if(!rn2(4)){
+								makemon((struct permonst *)0, 0, 0, MM_BIGGROUP);
+							}
+						}
+						else if(In_depths(&u.uz)){
+							if(!rn2(5)){
+								makemon(&mons[rn2(6) ? PM_MIND_FLAYER : PM_MASTER_MIND_FLAYER], 0, 0, MM_BIGGROUP);
+							}
+							else {
+								makemon((struct permonst *)0, 0, 0, MM_BIGGROUP);
+							}
+						}
+					}
+				}
+				if(Race_if(PM_GITHYANKI) && check_insight()){
+					make_generic_polts(u.ulevel);
+				}
 			}
 			if(Infuture && !(Is_qstart(&u.uz) && !Race_if(PM_ANDROID)) && !rn2(35)){
 				struct monst* mtmp = makemon(&mons[PM_SEMBLANCE], rn1(COLNO-3,2), rn1(ROWNO-3,2), MM_ADJACENTOK);
@@ -7546,6 +7629,8 @@ make_rage_walker_polts(int rage)
 	while(rage > 0){
 		if(!otyp){
 			polt = makemon(&mons[PM_POLTERGEIST], 0, 0, MM_ADJACENTOK|NO_MINVENT);
+			if(!polt)
+				return;
 			otmp = mksobj(ROLL_FROM(elven_weapon_types), NO_MKOBJ_FLAGS);
 			set_material_gm(otmp, IRON);
 			rage--;
@@ -7565,6 +7650,8 @@ make_rage_walker_polts(int rage)
 			for(; otmp; otmp = otmp->nexthere){
 				if(otmp->otyp == otyp){
 					polt = makemon(&mons[PM_POLTERGEIST], otmp->ox, otmp->oy, MM_ADJACENTOK|NO_MINVENT);
+					if(!polt)
+						return;
 					obj_extract_self(otmp);
 					set_material_gm(otmp, IRON);
 					rage--;
@@ -7573,6 +7660,8 @@ make_rage_walker_polts(int rage)
 					curse(otmp);
 					mpickobj(polt, otmp);
 					m_dowear(polt, TRUE);
+					if(polt->mx != ox || polt->my != oy)
+						newsym(ox, oy);
 					created = TRUE;
 					break; //Break nexthere loop, continue location loop
 				}
@@ -7586,7 +7675,42 @@ make_rage_walker_polts(int rage)
 			else otyp = 0;
 		}
 	}
-	doredraw(); //Just moved a bunch of items
+}
+
+void
+make_generic_polts(int polts)
+{
+	struct obj *otmp, *nobj;
+	struct monst *polt;
+	int ox, oy;
+	boolean created = FALSE;
+	while(polts > 0){
+		created = FALSE;
+		for(ox = 0; ox < COLNO && polts > 0; ox++){
+		for(oy = 0; oy < ROWNO && polts > 0; oy++){
+			otmp =  level.objects[ox][oy];
+			if(!otmp)
+				continue;
+			for(; otmp; otmp = otmp->nexthere){
+				if(otmp->oclass == WEAPON_CLASS || is_weptool(otmp)){
+					polt = makemon(&mons[PM_POLTERGEIST], otmp->ox, otmp->oy, MM_ADJACENTOK|NO_MINVENT);
+					if(polt){
+						obj_extract_self(otmp);
+						polts--;
+						if(otmp->spe < 6)
+							otmp->spe = 6;
+						curse(otmp);
+						mpickobj(polt, otmp);
+						m_dowear(polt, TRUE);
+						if(polt->mx != ox || polt->my != oy)
+							newsym(ox, oy);
+						created = TRUE;
+						break; //Break nexthere loop, continue location loop
+					}
+				}
+			}
+		}}
+	}
 }
 
 #endif /* OVLB */

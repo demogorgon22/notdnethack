@@ -325,7 +325,9 @@ struct monst {
 #define SWOLLEN_TEMPLATE	33	/* giant */
 #define BLOOD_MON		34	/* blood clone */
 #define FLAYED			35	/* flayed undead */
-#define MAXTEMPLATE	FLAYED
+#define MANITOU			36	/* vampire vine infestation */
+#define GUECUBU			37	/* sleeping murderer */
+#define MAXTEMPLATE	GUECUBU
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */

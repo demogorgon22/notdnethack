@@ -3301,6 +3301,7 @@ struct attack *attk;
 						(attk->adtyp == AD_ECLD) ? " with hoarfrosted vines!" :
 						(attk->adtyp == AD_SHRD) ? " with growing vines!" :
 						(attk->adtyp == AD_POLN) ? " with flowering vines!" : 
+						(attk->adtyp == AD_VAMP) ? " with fang-mouthed vines!" : 
 						" with crawling vines!";
 					if (youdef)
 						specify_you = TRUE;
@@ -19313,11 +19314,11 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 			case AD_BARB:
 				/* message */
 				if (youagr) {
-					if (pd->mtyp == PM_RAZORVINE) You("are hit by the springing vines!");
+					if (pd->mtyp == PM_RAZORVINE || has_template(mdef, MANITOU)) You("are hit by the springing vines!");
 					else You("are hit by %s barbs!", s_suffix(mon_nam(mdef)));
 				}
 				else if (vis) {
-					if (pd->mtyp == PM_RAZORVINE) {
+					if (pd->mtyp == PM_RAZORVINE || has_template(mdef, MANITOU)) {
 						pline("%s is hit by %s springing vines!",
 							Monnam(magr),
 							(youdef ? "your" : s_suffix(mon_nam(mdef)))

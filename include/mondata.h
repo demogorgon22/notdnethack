@@ -1310,6 +1310,7 @@
 						 ((mon)->mtyp == PM_HOD_SEPHIRAH && Role_if(PM_KNIGHT)) || \
 						 (mon)->mtyp == PM_PAGE || ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_KNIGHT))
 #define mon_dark_knight(mon)	((mon)->mtyp == PM_DOOM_KNIGHT  || (mon)->mtyp == PM_SIR_GARLAND || \
+						 (mon)->mtyp == PM_GITHYANKI_KNIGHT || \
 						 (mon)->mtyp == PM_GARLAND || (mon)->mtyp == PM_DANTRAG || \
 						 ((mon)->mtyp == PM_DEMINYMPH && (mon)->mvar_deminymph_role == PM_DOOM_KNIGHT))
 #define mon_turn_undead(mon)	((mon)->mtyp == PM_KNIGHT || (mon)->mtyp == PM_KING_ARTHUR || \

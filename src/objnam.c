@@ -950,6 +950,9 @@ struct obj *obj;
 char *buf;
 boolean dofull;
 {
+	if (check_oprop(obj, OPROP_CAST) && obj->known)
+		Strcat(buf, "caster's ");
+		
 	if (check_oprop(obj, OPROP_WOOL) && !(obj->obj_material != objects[obj->otyp].oc_material && obj->obj_material == CLOTH)){
 		if (obj->obj_material == CLOTH)
 			Strcat(buf, "woolen ");
@@ -1168,6 +1171,9 @@ boolean dofull;
 
 		if (check_oprop(obj, OPROP_BRIL) && !obj->known)
 			Strcat(buf, "ornate ");
+		
+		if (check_oprop(obj, OPROP_CAST) && !obj->known)
+			Strcat(buf, "gem-set ");
 		
 		if (check_oprop(obj, OPROP_BLADED))
 			Strcat(buf, "bladed ");
@@ -4761,6 +4767,8 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_BLAST);
 		} else if (!strncmpi(bp, "ornate ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_BRIL);
+		} else if (!strncmpi(bp, "gem-set ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_CAST);
 
 		} else if (!strncmpi(bp, "glazed ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_CGLZ);

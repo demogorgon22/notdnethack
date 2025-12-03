@@ -7464,33 +7464,33 @@ int mmflags;
 					if(!rn2(30) && !(mmflags&MM_ESUM))
 						mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 				}
-			} else if(In_quest(&u.uz) && Role_if(PM_KENSEI)){
+			} else if(Role_if(PM_KENSEI) && (Race_if(PM_GITHYANKI) || Race_if(PM_GITHZERAI)) && (In_quest(&u.uz) || u.ulevel >= 14 || art_already_exists(ART_AMALGAMATED_SKIES))){
 				otmp = mongets(mtmp, STILETTO, mkobjflags);
 				if(otmp){
 					set_material_gm(otmp, OBSIDIAN_MT);
 					add_oprop(otmp, OPROP_RLYHW);
-					otmp->spe = 4;
+					otmp->spe = (mm == PM_MASTER_MIND_FLAYER) ? 6 : 4;
 					fix_object(otmp);
 				}
 				otmp = mongets(mtmp, ARMORED_BOOTS, mkobjflags);
 				if(otmp){
-					otmp->spe = 4;
+					otmp->spe = (mm == PM_MASTER_MIND_FLAYER) ? 6 : 4;
 					set_material_gm(otmp, OBSIDIAN_MT);
 					fix_object(otmp);
 				}
 				otmp = mongets(mtmp, CRYSTAL_GAUNTLETS, mkobjflags);
 				if(otmp){
-					otmp->spe = 4;
+					otmp->spe = (mm == PM_MASTER_MIND_FLAYER) ? 6 : 4;
 					set_material_gm(otmp, OBSIDIAN_MT);
 					fix_object(otmp);
 				}
 				otmp = mongets(mtmp, CRYSTAL_PLATE_MAIL, mkobjflags);
 				if(otmp){
-					otmp->spe = 4;
+					otmp->spe = (mm == PM_MASTER_MIND_FLAYER) ? 6 : 4;
 					set_material_gm(otmp, OBSIDIAN_MT);
 					fix_object(otmp);
 				}
-				otmp = mongets(mtmp, CLOAK, mkobjflags);
+				otmp = mongets(mtmp, (mm == PM_MASTER_MIND_FLAYER) ? CLOAK_OF_MAGIC_RESISTANCE : CLOAK, mkobjflags);
 				if(otmp)
 					otmp->obj_color = rn2(3) ? CLR_MAGENTA : CLR_BRIGHT_MAGENTA;
 				mongets(mtmp, LEATHER_HELM, mkobjflags);
@@ -7509,6 +7509,58 @@ int mmflags;
 				else if(mm == PM_MIND_FLAYER && !rn2(20)) mongets(mtmp, R_LYEHIAN_FACEPLATE, mkobjflags);
 				if(mm == PM_MASTER_MIND_FLAYER && !(mmflags&MM_ESUM) && !rn2(90)) mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
 				else if(mm == PM_MIND_FLAYER && !(mmflags&MM_ESUM) && !rn2(120)) mongets(mtmp, CRYSTAL_SKULL, mkobjflags);
+			}
+		} else if(mm == PM_GITHYANKI_KNIGHT){
+			mtmp->m_lev = 12;
+			mtmp->mhpmax = mtmp->m_lev*hd_size(mtmp->data)-1;
+			m_level_up_intrinsic(mtmp);
+			mtmp->mhp = mtmp->mhpmax;
+			otmp = mksobj(TWO_HANDED_SWORD, mkobjflags);
+			if(otmp){
+				set_material_gm(otmp, SILVER);
+				add_oprop(otmp, OPROP_VORPW);
+				add_oprop(otmp, OPROP_GSSDW);
+				otmp->spe = 5;
+				fix_object(otmp);
+				(void) mpickobj(mtmp, otmp);
+			}
+			if(!rn2(20)){
+				//Silver
+				otmp = mongets(mtmp, ARCHAIC_HELM, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, SILVER);
+					add_oprop(otmp, OPROP_CAST);
+					otmp->spe = 3;
+				}
+				otmp = mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, SILVER);
+					otmp->spe = 3;
+					add_oprop(otmp, OPROP_BRIL);
+					add_oprop(otmp, OPROP_LITN);
+				}
+				otmp = mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, SILVER);
+					add_oprop(otmp, OPROP_CAST);
+					otmp->spe = 3;
+				}
+				otmp = mongets(mtmp, ARCHAIC_BOOTS, mkobjflags);
+				if(otmp){
+					set_material_gm(otmp, SILVER);
+					add_oprop(otmp, OPROP_CAST);
+					otmp->spe = 3;
+				}
+			}
+			else {
+				otmp = mongets(mtmp, ARCHAIC_HELM, mkobjflags);
+				if(otmp) otmp->spe = 3;
+				otmp = mongets(mtmp, ARCHAIC_PLATE_MAIL, mkobjflags);
+				if(otmp) otmp->spe = 3;
+				otmp = mongets(mtmp, ARCHAIC_GAUNTLETS, mkobjflags);
+				if(otmp) otmp->spe = 3;
+				otmp = mongets(mtmp, ARCHAIC_BOOTS, mkobjflags);
+				if(otmp) otmp->spe = 3;
 			}
 		} else if(mm == PM_GITHYANKI_PIRATE){
 			if(!rn2(40)){
@@ -13623,6 +13675,10 @@ boolean randmonst;
 		else if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
 			mkmon_template = SWOLLEN_TEMPLATE;
 		}
+		/* Githzerai Nightmare-followed */
+		else if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && art_already_exists(ART_AMALGAMATED_SKIES) && (ptr->mlet == S_NYMPH || ptr->mlet == S_PLANT)){
+			mkmon_template = MANITOU;
+		}
 		/* convict worldwide apocalypse -- a very general effect */
 		else if(randmonst && (is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ) && Role_if(PM_CONVICT) && !quest_status.killed_nemesis &&
 			((In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT > 10)
@@ -13837,6 +13893,57 @@ int faction;
 		out_faction = LAMASHTU_FACTION;
 	}
 	return out_faction;
+}
+
+void
+makemon_set_hp(struct monst *mtmp, struct permonst *ptr)
+{
+	if (is_golem(ptr)) {
+	    mtmp->mhpmax = mtmp->mhp = golemhp(ptr->mtyp);
+		if(ptr->mtyp == PM_ZHI_REN_MONK){
+			mtmp->mhpmax += d(mtmp->m_lev, hd_size(ptr));
+			mtmp->mhp = mtmp->mhpmax;
+		}
+	} else if (rider_hp(ptr)) {
+	    /* We want low HP, but a high mlevel so they can attack well */
+	    mtmp->mhpmax = mtmp->mhp = d(10,8);
+	} else if (ptr->mtyp == PM_LICH__THE_FIEND_OF_EARTH) {
+	    mtmp->mhpmax = mtmp->mhp = 500;
+	} else if (ptr->mtyp == PM_KARY__THE_FIEND_OF_FIRE) {
+	    mtmp->mhpmax = mtmp->mhp = 700;
+	} else if (ptr->mtyp == PM_KRAKEN__THE_FIEND_OF_WATER) {
+	    mtmp->mhpmax = mtmp->mhp = 900;
+	} else if (ptr->mtyp == PM_TIAMAT__THE_FIEND_OF_WIND) {
+	    mtmp->mhpmax = mtmp->mhp = 1100;
+	} else if (ptr->mtyp == PM_CHAOS) {
+	    mtmp->mhpmax = mtmp->mhp = 2000;
+	} else if (ptr->mlevel > 49 || ptr->geno & G_UNIQ) {
+	    /* "special" fixed hp monster
+	     * the hit points are encoded in the mlevel in a somewhat strange
+	     * way to fit in the 50..127 positive range of a signed character
+	     * above the 1..49 that indicate "normal" monster levels */
+//	    mtmp->mhpmax = mtmp->mhp = 2*(ptr->mlevel - 6);
+	    mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
+	    // mtmp->m_lev = mtmp->mhp / 4;	/* approximation */
+	} else if (has_template(mtmp, PSEUDONATURAL) || has_template(mtmp, MOLY_TEMPLATE)) {
+		mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
+	} else if (is_ancient(mtmp) || is_tannin(mtmp)) {
+		mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
+	} else if (!mtmp->m_lev) {
+	    mtmp->mhpmax = mtmp->mhp = rnd(hd_size(ptr)/2);
+	} else if (is_true_adult_dragon(ptr)) {
+	    /* adult dragons */
+	    mtmp->mhpmax = mtmp->mhp = (int) (In_endgame(&u.uz) ?
+		(hd_size(ptr) * mtmp->m_lev) : (hd_size(ptr)/2 * mtmp->m_lev + d((int)mtmp->m_lev, hd_size(ptr)/2)));
+	} else {
+		if(Infuture){
+			mtmp->mhpmax = mtmp->mhp = mtmp->m_lev*hd_size(mtmp->data) - 1;
+		} else {
+		    mtmp->mhpmax = mtmp->mhp = d((int)mtmp->m_lev, hd_size(ptr));
+		    if (is_home_elemental(ptr))
+			mtmp->mhpmax = (mtmp->mhp *= 3);
+		}
+	}
 }
 
 /*
@@ -14416,52 +14523,7 @@ int faction;
 	
 	if(mtmp->mtyp == PM_CHOKHMAH_SEPHIRAH)
 		mtmp->m_lev += u.chokhmah;
-	if (is_golem(ptr)) {
-	    mtmp->mhpmax = mtmp->mhp = golemhp(mndx);
-		if(ptr->mtyp == PM_ZHI_REN_MONK){
-			mtmp->mhpmax += d(mtmp->m_lev, hd_size(ptr));
-			mtmp->mhp = mtmp->mhpmax;
-		}
-	} else if (rider_hp(ptr)) {
-	    /* We want low HP, but a high mlevel so they can attack well */
-	    mtmp->mhpmax = mtmp->mhp = d(10,8);
-	} else if (ptr->mtyp == PM_LICH__THE_FIEND_OF_EARTH) {
-	    mtmp->mhpmax = mtmp->mhp = 500;
-	} else if (ptr->mtyp == PM_KARY__THE_FIEND_OF_FIRE) {
-	    mtmp->mhpmax = mtmp->mhp = 700;
-	} else if (ptr->mtyp == PM_KRAKEN__THE_FIEND_OF_WATER) {
-	    mtmp->mhpmax = mtmp->mhp = 900;
-	} else if (ptr->mtyp == PM_TIAMAT__THE_FIEND_OF_WIND) {
-	    mtmp->mhpmax = mtmp->mhp = 1100;
-	} else if (ptr->mtyp == PM_CHAOS) {
-	    mtmp->mhpmax = mtmp->mhp = 2000;
-	} else if (ptr->mlevel > 49 || ptr->geno & G_UNIQ) {
-	    /* "special" fixed hp monster
-	     * the hit points are encoded in the mlevel in a somewhat strange
-	     * way to fit in the 50..127 positive range of a signed character
-	     * above the 1..49 that indicate "normal" monster levels */
-//	    mtmp->mhpmax = mtmp->mhp = 2*(ptr->mlevel - 6);
-	    mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
-	    // mtmp->m_lev = mtmp->mhp / 4;	/* approximation */
-	} else if (has_template(mtmp, PSEUDONATURAL) || has_template(mtmp, MOLY_TEMPLATE)) {
-		mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
-	} else if (is_ancient(mtmp) || is_tannin(mtmp)) {
-		mtmp->mhpmax = mtmp->mhp = max(4, hd_size(ptr)*(ptr->mlevel));
-	} else if (!mtmp->m_lev) {
-	    mtmp->mhpmax = mtmp->mhp = rnd(hd_size(ptr)/2);
-	} else if (is_true_adult_dragon(ptr)) {
-	    /* adult dragons */
-	    mtmp->mhpmax = mtmp->mhp = (int) (In_endgame(&u.uz) ?
-		(hd_size(ptr) * mtmp->m_lev) : (hd_size(ptr)/2 * mtmp->m_lev + d((int)mtmp->m_lev, hd_size(ptr)/2)));
-	} else {
-		if(Infuture){
-			mtmp->mhpmax = mtmp->mhp = mtmp->m_lev*hd_size(mtmp->data) - 1;
-		} else {
-		    mtmp->mhpmax = mtmp->mhp = d((int)mtmp->m_lev, hd_size(ptr));
-		    if (is_home_elemental(ptr))
-			mtmp->mhpmax = (mtmp->mhp *= 3);
-		}
-	}
+	makemon_set_hp(mtmp, ptr);
 
 	if (is_female(ptr) || ((mmflags & MM_FEMALE) && !(mmflags & MM_MALE))) mtmp->female = TRUE;
 	else if (is_male(ptr) || ((mmflags & MM_MALE) && !(mmflags & MM_FEMALE))) mtmp->female = FALSE;
@@ -14548,6 +14610,16 @@ int faction;
 		(ptr->mtyp == PM_SPROW || ptr->mtyp == PM_DRIDER || ptr->mtyp == PM_CAVE_LIZARD || ptr->mtyp == PM_LARGE_CAVE_LIZARD)
 	) mtmp->mpeaceful = TRUE;
 	else mtmp->mpeaceful = (mmflags & MM_ANGRY) ? FALSE : peace_minded(mtmp);
+
+	if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && In_endgame(&u.uz) && art_already_exists(ART_AMALGAMATED_SKIES)){
+		if(mtmp->mpeaceful){
+			mtmp->mpeaceful = FALSE;
+			set_template(mtmp, GUECUBU);
+			mtmp->m_lev += 2;
+			ptr = mtmp->data;
+			makemon_set_hp(mtmp, ptr);
+		}
+	}
 	
 	if(mtmp->mfaction <= 0)
 		makemon_set_monster_faction(mtmp);
@@ -14752,6 +14824,13 @@ int faction;
 					if (mndx == PM_DUERGAR_DEBILITATOR){
 						tmpm = makemon_full(&mons[PM_DUERGAR_STONEGUARD], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
 						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
+					}
+					if(mndx == PM_GITHYANKI_KNIGHT){
+						m_initsgrp(mtmp, mtmp->mx, mtmp->my);
+						tmpm = makemon_full(&mons[PM_GITHYANKI_PIRATE], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						if(tmpm) m_initlgrp(tmpm, mtmp->mx, mtmp->my);
+						tmpm = makemon_full(&mons[PM_RED_DRAGON], mtmp->mx, mtmp->my, MM_ADJACENTOK, template, faction);
+						if(tmpm) m_initsgrp(tmpm, mtmp->mx, mtmp->my);
 					}
 					if(Infuture){
 						if (mndx == PM_MIND_FLAYER){

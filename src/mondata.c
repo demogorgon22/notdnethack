@@ -606,6 +606,44 @@ int template;
 		else
 			ptr->mmove += 6;
 		break;
+	case MANITOU:
+		ptr->pac += 9;
+		ptr->spe_hdr += 6;
+		ptr->spe_bdr += 6;
+		ptr->spe_gdr += 6;
+		ptr->spe_ldr += 6;
+		ptr->spe_fdr += 6;
+		ptr->mflagsv |= MV_BLOODSENSE;
+		ptr->mflagsa |= MA_DEMON;
+		ptr->mflagst |= MT_HOSTILE;
+		ptr->mflagst &= ~(MT_PEACEFUL);
+		ptr->mflagsg |= MG_SANLOSS;
+		ptr->mflagsg &= ~(MG_HATESUNHOLY);
+		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
+		if(ptr->mmove < 1)
+			ptr->mmove = 12;
+		ptr->mflagsm &= ~(MM_STATIONARY);
+	break;
+	case GUECUBU:
+		ptr->pac += 9;
+		ptr->spe_hdr += 6;
+		ptr->spe_bdr += 6;
+		ptr->spe_gdr += 6;
+		ptr->spe_ldr += 6;
+		ptr->spe_fdr += 6;
+		if(!(ptr->mflagsb&MB_NOEYES)){
+			ptr->mflagsb |= MB_NOEYES; //Techically, shut eyes
+			ptr->mflagsv &= ~(MV_NORMAL|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_DARKSIGHT|MV_CATSIGHT);
+		}
+		ptr->mresists |= (MR_SLEEP);
+		ptr->mflagsv |= MV_TELEPATHIC;
+		ptr->mflagsa |= MA_DEMON;
+		ptr->mflagst |= MT_HOSTILE|MT_TRAITOR;
+		ptr->mflagst &= ~(MT_PEACEFUL|MT_MINDLESS|MT_ANIMAL|MT_DOMESTIC);
+		ptr->mflagsg &= ~(MG_HATESUNHOLY);
+		ptr->mflagsg |= (MG_HATESHOLY);
+		ptr->mlevel += 6;
+	break;
 	case ILLUMINATED:
 		/* flags: */
 		ptr->mflagsg |= (MG_HATESUNHOLY);
@@ -1565,6 +1603,24 @@ int template;
 			attk->damn++;
 			attk->damd += 2;
 		}
+		if (template == GUECUBU && !is_null_attk(attk)){
+			if(attk->adtyp == AD_PHYS){
+				attk->damn++;
+				attk->damd += 2;
+			}
+			else if(attk->damd > 0){
+				if(attk->damn < 6)
+					attk->damd += 6;
+				else
+					attk->damd += 2;
+			}
+			//Note: overrides the above for magic
+			if(attk->aatyp == AT_MAGC || attk->aatyp == AT_MMGC){
+				attk->adtyp = AD_PSON;
+				attk->damn = (attk->damn+1)/2;
+				attk->damd = 15;
+			}
+		}
 		if (template == YELLOW_TEMPLATE && (
 			end_insert_okay(special)
 			))
@@ -1656,6 +1712,31 @@ int template;
 			attk->damn = (attk->damn+1)/2;
 			attk->damd = 15;
 			special = TRUE;
+		}
+		/* Manitou vines */
+		if (template == MANITOU && (
+			end_insert_okay(special)
+			)
+		){
+			maybe_insert();
+			attk->aatyp = AT_VINE;
+			attk->adtyp = AD_VAMP;
+			attk->damn = (ptr->mlevel+1) / 3;
+			if(attk->damn > 10) attk->damn = 10;
+			attk->damd = 6;
+			special = TRUE;
+		}
+		if (template == MANITOU && (
+			(attk->aatyp == AT_NONE && attk->adtyp == AD_BARB) || insert_okay(special_2)
+			)
+		){
+			maybe_insert();
+			attk->aatyp = AT_NONE;
+			attk->adtyp = AD_BARB;
+			attk->damn = (ptr->mlevel+1) / 3;
+			if(attk->damn > 10) attk->damn = 10;
+			attk->damd = 4;
+			special_2 = TRUE;
 		}
 	}
 #undef insert_okay

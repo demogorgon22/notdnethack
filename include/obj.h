@@ -102,6 +102,9 @@ enum {
 	OPROP_BYAKW,
 	OPROP_GOLDW,
 	OPROP_HAEM,
+	OPROP_LITN,
+	OPROP_LITE,
+	OPROP_CAST,
 	MAX_OPROP
 };
 
@@ -1248,8 +1251,8 @@ struct obj {
 
 #define is_silverknight_otyp(otyp)	((otyp) == SILVERKNIGHT_HELM || (otyp) == SILVERKNIGHT_ARMOR\
 								|| (otyp) == SILVERKNIGHT_GAUNTLETS || (otyp) == SILVERKNIGHT_BOOTS)
-#define is_light_armor(otmp)	(((otmp)->otyp == IMPERIAL_ELVEN_ARMOR && check_imp_mod(otmp, IEA_MITHRIL)) || ((otmp)->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(otmp, CPROP_FLEXIBLE)) || objects[(otmp)->otyp].oc_dexclass == ARMSZ_LIGHT)
-#define is_medium_armor(otmp)	(objects[(otmp)->otyp].oc_dexclass == ARMSZ_MEDIUM)
+#define is_light_armor(otmp)	(((otmp)->otyp == IMPERIAL_ELVEN_ARMOR && check_imp_mod(otmp, IEA_MITHRIL)) || ((otmp)->oartifact == ART_SCORPION_CARAPACE && check_carapace_mod(otmp, CPROP_FLEXIBLE)) || objects[(otmp)->otyp].oc_dexclass == ARMSZ_LIGHT || check_oprop(otmp, OPROP_LITE) || (objects[(otmp)->otyp].oc_dexclass == ARMSZ_MEDIUM && check_oprop(otmp, OPROP_LITN)))
+#define is_medium_armor(otmp)	(objects[(otmp)->otyp].oc_dexclass == ARMSZ_MEDIUM || (objects[(otmp)->otyp].oc_dexclass == ARMSZ_HEAVY && check_oprop(otmp, OPROP_LITN)))
 
 #define is_elven_armor(otmp)	((otmp)->otyp == ELVEN_HELM\
 				|| (otmp)->otyp == HIGH_ELVEN_HELM\

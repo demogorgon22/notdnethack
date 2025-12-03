@@ -1998,12 +1998,15 @@ default_case:
 					default_add_2(ARCHAIC_PLATE_MAIL);
 					set_material_gm(stuff, SILVER);
 					add_oprop(stuff, OPROP_BRIL);
+					add_oprop(stuff, OPROP_LITN);
 
 					default_add_2(ARCHAIC_GAUNTLETS);
 					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_CAST);
 
 					default_add_2(ARCHAIC_BOOTS);
 					set_material_gm(stuff, SILVER);
+					add_oprop(stuff, OPROP_CAST);
 				}
 			break;
 			case PM_DWARF:

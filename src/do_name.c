@@ -1043,6 +1043,8 @@ boolean full;
 			if (!strcmp(buf, "Robert the Lifer"))		Sprintf(buf2, "Robert the Flayed");
 			else 										Sprintf(buf2, "%s the Flayed", buf);
 		}
+		else if(full && template == MANITOU)			Sprintf(buf2, "%s the Vine-strangled", buf);
+		else if(full && template == GUECUBU)			Sprintf(buf2, "%s the Dreaming", buf);
 		else											Strcpy(buf2, buf);
 	}
 	else {
@@ -1077,6 +1079,8 @@ boolean full;
 		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "swollen %s", buf);
 		else if (full && template == BLOOD_MON)			Sprintf(buf2, "blood %s", buf);
 		else if (full && template == FLAYED)			Sprintf(buf2, "flayed %s", buf);
+		else if (full && template == MANITOU)			Sprintf(buf2, "vine-strangled %s", buf);
+		else if (full && template == GUECUBU)			Sprintf(buf2, "sleepwalking %s", buf);
 		else											Strcpy(buf2, buf);
 	}
 
