@@ -57,6 +57,24 @@ register struct monst *mon;
 			}
 	    } else if (is_heladrin(mon->data)){
 			if(!Protection_from_shape_changers) new_were(mon);
+	    } else if (mon->mtyp == PM_DUERGAR_ANNIHILATOR || mon->mtyp == PM_DUERGAR_DEBILITATOR){
+			if(mon->data->mlet == S_HUMANOID){
+				if(Protection_from_shape_changers)
+					;//Do nothing
+				else if(!mon->mpeaceful && mon_can_see_you(mon)){
+					if(rn2(4)) new_were(mon);
+				}
+				else if(nearby_targets(mon)){
+					if(!rn2(4)) new_were(mon);
+				}
+			}
+			else {
+				if(Protection_from_shape_changers)
+					new_were(mon); //Revert
+				else {
+					if(!rn2(4)) new_were(mon);
+				}
+			}
 	    } else if (is_duergar(mon)){
 			if(mon->data->mlet == S_HUMANOID){
 				if(Protection_from_shape_changers)

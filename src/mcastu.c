@@ -855,6 +855,44 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 			break;
 		}
 	break;
+	case PM_DUERGAR_DEBILITATOR:
+		switch (rnd(5)) {
+			case 5:
+			return WEAKEN_STATS;
+			break;
+			case 4:
+			return PARALYZE;
+			break;
+			case 3:
+			return DESTRY_WEPN;
+			break;
+			case 2:
+			return DESTRY_ARMR;
+			break;
+			case 1:
+			return DRAIN_ENERGY;
+			break;
+		}
+	break;
+	case PM_DUERGAR_ANNIHILATOR:
+		switch (rnd(5)) {
+			case 5:
+			return DROP_BOULDER;
+			break;
+			case 4:
+			return FIRE_PILLAR;
+			break;
+			case 3:
+			return ACID_RAIN;
+			break;
+			case 2:
+			return ICE_STORM;
+			break;
+			case 1:
+			return GEYSER;
+			break;
+		}
+	break;
 	case PM_SHADOWSMITH:
 		switch(clrc_spell_power){
 			default:
