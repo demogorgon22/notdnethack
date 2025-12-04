@@ -7747,7 +7747,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						if ((uwep && !welded(uwep)) || (u.twoweap && uswapwep)){
 							if (d(1, 100) - min(ACURR(A_DEX), ACURR(A_CON)) > 0){
 								if (u.twoweap && uswapwep){//You may be twoweaponing offhand martial arts.
-									You("lose hold of your weapons.");
+									You("lose hold of your weapon%s.", (uwep && !welded(uwep)) ? "s" : "");
 									u.twoweap = FALSE;
 									otmp = uswapwep;
 									setuswapwep((struct obj *)0);
@@ -7755,17 +7755,19 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 									(void)dropy(otmp);
 								}
 								else You("lose hold of your weapon.");
-								otmp = uwep;
-								uwepgone();
-								freeinv(otmp);
-								(void)dropy(otmp);
-								if (roll_madness(MAD_TALONS)){
-									You("panic after having dropping your weapon!");
-									HPanicking += 1+rnd(6);
+								if(uwep && !welded(uwep)){
+									otmp = uwep;
+									uwepgone();
+									freeinv(otmp);
+									(void)dropy(otmp);
+									if (roll_madness(MAD_TALONS)){
+										You("panic after having dropping your weapon!");
+										HPanicking += 1+rnd(6);
+									}
 								}
 							}
 							else{
-								You("keep a tight grip on your %s!", u.twoweap ? "weapons" : "weapon");
+								You("keep a tight grip on your weapon%s!", (uwep && u.twoweap && uswapwep) ? "s" : "");
 							}
 						}
 					}
