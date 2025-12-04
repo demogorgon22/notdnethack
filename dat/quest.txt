@@ -5744,7 +5744,7 @@ done the %shood a great service and we will remember you for it."
 
 "I know that %o is a great burden and temptation, but
 I can not accept responsibilty for it again.  I have failed in that charge
-once already.  You are far more capable that I, so you must keep it.  They
+once already.  You are far more capable that I, so you must keep it.  It
 will aid you with the rest of your quest."
 
 "We hope to see you when your great quest is done. We will celebrate then."
