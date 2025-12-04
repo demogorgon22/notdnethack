@@ -1157,6 +1157,7 @@ struct obj {
 			 || (otmp)->otyp == BESTIAL_CLAW\
 			 || (otmp)->otyp == SHURIKEN\
 			 || (otmp)->otyp == KATAR\
+			 || (otmp)->otyp == SICKLE\
 			 ))\
 			 || (otmp)->otyp == WIND_AND_FIRE_WHEELS\
 			 || is_kensei_weapon(otmp)\
