@@ -4064,7 +4064,13 @@ char *in_buff;
 			}
 		}
 		else {
-			which = name_to_mon(bufp);
+			/* special groups of random monsters */
+			if(!strncmpi(bufp, "standard smith",		14)){
+				int smiths[] = {PM_GOBLIN_SMITH, PM_DWARF_SMITH, PM_HUMAN_SMITH};
+				which = ROLL_FROM(smiths);
+			}
+			else
+				which = name_to_mon(bufp);
 			if (which < LOW_PM)
 			{
 				pline("I've never heard of such monsters.");

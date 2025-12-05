@@ -198,7 +198,8 @@ REGION:(39,10,47,13),lit,"morgue"
 OBJECT:'\\',"bedroll",(02,02)
 OBJECT:'\\',"bedroll",(09,02)
 OBJECT:'\\',"bedroll",(16,02)
-OBJECT:'\\',"bedroll",(02,13)
+FORGE:(02,13)
+MONSTER:'@',"human smith",(02,13),hostile
 OBJECT:'\\',"bedroll",(09,13)
 OBJECT:'\\',"bedroll",(16,13)
 

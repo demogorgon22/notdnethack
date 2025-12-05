@@ -37,6 +37,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
@@ -85,6 +86,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
@@ -133,6 +135,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
@@ -191,6 +194,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
@@ -242,6 +246,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
@@ -289,6 +294,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
@@ -346,6 +352,7 @@ ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
 OBJECT: random, random, random
 MONSTER: random, random, random
+FORGE: random
 
 ROOM: "ordinary" , random, random, random, random
 OBJECT: random, random, random
