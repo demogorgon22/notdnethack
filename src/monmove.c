@@ -821,7 +821,7 @@ boolean fleemsg;
 		mtmp->mtrack[j].y = 0;
 	}
 
-	if(mtmp->mtyp == PM_VROCK){
+	if(mtmp->mtyp == PM_OSSIFRUGE || mtmp->mtyp == PM_VROCK){
 		struct monst *tmpm;
 		if(!(mtmp->mspec_used || mtmp->mcan)){
 			pline("%s screeches.", Monnam(mtmp));

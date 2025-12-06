@@ -16504,6 +16504,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					}
 				}
 
+				if(attk && pa->mtyp == PM_OSSIFRUGE && attk->aatyp == AT_BITE && hates_unholy_mon(mdef)){
+					bonsdmg += d(2,9); // Cursed gold
+				}
 			} else if (trap){
 				/* some traps deal increased damage */
 				if (trap->ttyp == ROLLING_BOULDER_TRAP)

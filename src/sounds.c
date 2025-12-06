@@ -2491,8 +2491,10 @@ humanoid_sound:
 	    break;
 	case MS_SEDUCE:
 #ifdef SEDUCE
-	    if (ptr->mlet != S_NYMPH &&
-		could_seduce(mtmp, &youmonst, (struct attack *)0) == 1) {
+	    if (ptr->mlet != S_NYMPH 
+			&& could_seduce(mtmp, &youmonst, (struct attack *)0) == 1
+			&& !mtmp->mpeaceful
+		 ){
 			(void) doseduce(mtmp);
 			break;
 	    }
@@ -2750,6 +2752,8 @@ static const short command_chain[][2] = {
 	{ PM_PIT_FIEND, PM_ASMODEUS }, { PM_NESSIAN_PIT_FIEND, PM_ASMODEUS },
 	
 	{ PM_MANES, PM_MARILITH }, { PM_QUASIT, PM_MARILITH }, { PM_VROCK, PM_MARILITH }, { PM_HEZROU, PM_MARILITH }, { PM_MARILITH, PM_SHAKTARI }, 
+
+	{PM_VROCK, PM_OSSIFRUGE},
 
 	{ PM_MYRMIDON_HOPLITE, PM_MYRMIDON_LOCHIAS }, { PM_MYRMIDON_LOCHIAS, PM_MYRMIDON_YPOLOCHAGOS }, { PM_MYRMIDON_YPOLOCHAGOS, PM_MYRMIDON_LOCHAGOS },
 	{ PM_GIANT_ANT, PM_FORMIAN_TASKMASTER }, { PM_FIRE_ANT, PM_FORMIAN_TASKMASTER }, { PM_SOLDIER_ANT, PM_FORMIAN_TASKMASTER },

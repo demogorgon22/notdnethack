@@ -10738,6 +10738,7 @@ int mmflags;
 				}
 			break;
 		    case PM_VROCK:
+		    case PM_OSSIFRUGE:
 					if (!rn2(2) || Inhell || goodequip) switch (rn2(12)) {
 						case 0: (void)mongets(mtmp, RANSEUR, mkobjflags); break;
 						case 1: (void)mongets(mtmp, PARTISAN, mkobjflags); break;
