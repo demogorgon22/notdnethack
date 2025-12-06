@@ -13982,7 +13982,7 @@ struct monst * mon;
 		out_faction = YELLOW_FACTION;
 	else if((In_quest(&u.uz) && Role_if(PM_CONVICT) && (
 			mon->mtyp == PM_DAUGHTER_OF_BEDLAM
-			|| mon->mtyp == PM_LAVA_DEMON
+			|| mon->mtyp == PM_AFREET
 			|| (quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && is_demon(mon->data) && !quest_status.killed_nemesis)
 		))
 		|| nuncio_monster(mon)

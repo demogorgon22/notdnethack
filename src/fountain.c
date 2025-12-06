@@ -73,8 +73,8 @@ dolavademon()
 {
     struct monst *mtmp;
 
-    if (!(mvitals[PM_LAVA_DEMON].mvflags & G_GONE)) {
-        if ((mtmp = makemon(&mons[PM_LAVA_DEMON], u.ux, u.uy,
+    if (!(mvitals[PM_AFREET].mvflags & G_GONE)) {
+        if ((mtmp = makemon(&mons[PM_AFREET], u.ux, u.uy,
                             MM_ADJACENTOK)) != 0) {
             if (!Blind)
                 You("summon %s!", a_monnam(mtmp));

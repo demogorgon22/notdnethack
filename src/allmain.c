@@ -7639,6 +7639,7 @@ make_rage_walker_polts(int rage)
 			curse(otmp);
 			mpickobj(polt, otmp);
 			m_dowear(polt, TRUE);
+			init_mon_wield_item(polt);
 			continue;
 		}
 		created = FALSE;
@@ -7660,6 +7661,7 @@ make_rage_walker_polts(int rage)
 					curse(otmp);
 					mpickobj(polt, otmp);
 					m_dowear(polt, TRUE);
+					init_mon_wield_item(polt);
 					if(polt->mx != ox || polt->my != oy)
 						newsym(ox, oy);
 					created = TRUE;
@@ -7702,6 +7704,7 @@ make_generic_polts(int polts)
 						curse(otmp);
 						mpickobj(polt, otmp);
 						m_dowear(polt, TRUE);
+						init_mon_wield_item(polt);
 						if(polt->mx != ox || polt->my != oy)
 							newsym(ox, oy);
 						created = TRUE;

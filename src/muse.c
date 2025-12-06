@@ -2087,6 +2087,7 @@ struct monst *mtmp;
 #define MUSE_MASK 15
 #define MUSE_POT_HOLY 16
 #define MUSE_SCR_DESTROY_ARMOR 17
+#define MUSE_WISH 18
 
 boolean
 find_misc(mtmp)
@@ -2112,12 +2113,31 @@ struct monst *mtmp;
 		return FALSE;
 	if (u.uswallow && stuck) return FALSE;
 
+	if(mtmp->mtyp == PM_AFREET && !mtmp->mcan && !mtmp->mspec_used && (!mtmp->mpeaceful || distmin(mtmp->mx,mtmp->my,u.ux,u.uy) > 1)){
+		if(mtmp->mvar1_afreet_lastsaw > moves - 10 && invent && !mtmp->mpeaceful){
+			m.has_misc = MUSE_WISH;
+			return TRUE;
+		}
+		//else
+		for(struct monst *mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+			if(DEADMONSTER(mtarg)) continue;
+			if(mtarg && mm_grudge(mtmp, mtarg, FALSE) && distmin(mtmp->mx,mtmp->my,mtarg->mx,mtarg->my) <= 1){
+				//too close to a hostile monster
+				m.has_misc = 0;
+				break;
+			}
+			if(mtarg->minvent && mm_grudge(mtmp, mtarg, TRUE) && mon_can_see_mon(mtmp, mtarg)){
+				m.has_misc = MUSE_WISH;
+			}
+		}
+	}
+
 	/* We arbitrarily limit to times when a player is nearby for the
 	 * same reason as Junior Pac-Man doesn't have energizers eaten until
 	 * you can see them...
 	 */
 	if(dist2(x, y, mtmp->mux, mtmp->muy) > 36 || (mtmp->mux == 0 && mtmp->muy == 0))
-		return FALSE;
+		return m.has_misc ? TRUE : FALSE;
 
 	if (!stuck && !immobile && !mtmp->cham 
 	&& (monstr[monsndx(mdat)] + (mtmp->m_lev - mdat->mlevel)) < 6 
@@ -2320,6 +2340,58 @@ struct monst *mon;
 		return Dragon_mail_to_pm(m_armr);
 	}
 	return rndmonst(0, 0);
+}
+
+int desired_items[] = {
+	AMULET_OF_LIFE_SAVING,
+	POT_GAIN_LEVEL,
+	POT_GAIN_ENERGY,
+	POT_FULL_HEALING,
+	POT_EXTRA_HEALING,
+	CRYSTAL_SKULL,
+	WAN_DRAINING,
+	WAN_DEATH,
+	POT_PARALYSIS,
+	POT_SLEEPING,
+	WAN_LIGHTNING,
+	POT_ACID,
+	FIRE_HORN,
+	WAN_FIRE,
+	FROST_HORN,
+	WAN_COLD,
+	WAN_MAGIC_MISSILE,
+	WAN_SLEEP,
+	WAN_STRIKING,
+	WAN_SPEED_MONSTER,
+	POT_SPEED,
+	WAN_MAKE_INVISIBLE,
+	POT_INVISIBILITY,
+	SCR_REMOVE_CURSE,
+	SCR_AMNESIA,
+	POT_AMNESIA,
+	POT_HEALING,
+	POT_BLINDNESS,
+	POT_CONFUSION,
+	POT_WATER,
+	WAN_POLYMORPH,
+	POT_POLYMORPH,
+	POT_GAIN_ABILITY,
+	SCR_DESTROY_ARMOR
+};
+
+struct obj *
+best_wishtarget(struct obj *current, struct obj *newwish)
+{
+	if(!current) return newwish;
+	for(int i = 0; i < SIZE(desired_items); i++){
+		if(current->otyp == desired_items[i])
+			return current;
+		if(newwish->otyp == desired_items[i])
+			return newwish;
+	}
+	if(objects[newwish->otyp].oc_cost > objects[current->otyp].oc_cost)
+		return newwish;
+	return current;
 }
 
 int
@@ -2712,6 +2784,89 @@ museamnesia:
 		m_dowear(mtmp, TRUE);
 		init_mon_wield_item(mtmp);
 		m_level_up_intrinsic(mtmp);
+	}break;
+	case MUSE_WISH:{
+		struct obj *wishobj = 0;
+		struct obj *wep = MON_WEP(mtmp);
+		struct obj *inventory = 0;
+		if(mtmp->mvar1_afreet_lastsaw <= moves + 10 && invent && !mtmp->mpeaceful){
+			//Wish for your stuff
+			if(!wep && uwep && (is_weptool(uwep) || uwep->oclass == WEAPON_CLASS)){
+				wishobj = uwep;
+			} else {
+				inventory = invent;
+			}
+		}
+		else {
+			for(struct monst *mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+				if(DEADMONSTER(mtarg)) continue;
+				if(mtarg->minvent && mm_grudge(mtmp, mtarg, TRUE) && mon_can_see_mon(mtmp, mtarg)){
+					struct obj *mwep = MON_WEP(mtarg);
+					if(!wep && mwep && (is_weptool(mwep) || mwep->oclass == WEAPON_CLASS)){
+						wishobj = mwep;
+						break;
+					} else {
+						inventory = mtarg->minvent;
+						break;
+					}
+				}
+			}
+		}
+		if(inventory){
+			//Pass one: gear
+			for(struct obj *cobj = inventory; cobj; cobj = cobj->nobj){
+				if(cobj->oartifact && cobj->oclass == WEAPON_CLASS && !(wep && wep->oartifact)){
+					wishobj = cobj;
+					break;
+				}
+				else if(cobj->oartifact && cobj->owornmask){
+					wishobj = cobj;
+					break;
+				}
+				else if(cobj->owornmask){
+					wishobj = best_wishtarget(wishobj, cobj);
+				}
+			}
+			//Pass two: anything good
+			if(!wishobj) for(struct obj *cobj = inventory; cobj; cobj = cobj->nobj){
+				if(cobj->oartifact){
+					wishobj = cobj;
+					break;
+				}
+				else {
+					wishobj = best_wishtarget(wishobj, cobj);
+				}
+			}
+		}
+		if(wishobj){
+			if(wishobj->where == OBJ_INVENT)
+				mtmp->mvar1_afreet_lastsaw -= 5;
+			if(canseemon(mtmp)){
+				if(wishobj->where == OBJ_INVENT)
+					pline("%s loudly wishes for your %s!", Monnam(mtmp), xname(wishobj));
+				else if(wishobj->where == OBJ_MINVENT)
+					pline("%s loudly wishes for %s's %s!", Monnam(mtmp), mon_nam(wishobj->ocarry), xname(wishobj));
+				else
+					pline("%s loudly wishes for %s%s!", Monnam(mtmp),
+												wishobj->quan > 1 ? "some " : "",
+												wishobj->quan == 1 ? (wishobj->oartifact ? xname(wishobj) : an(xname(wishobj))) : xname(wishobj)
+					);
+			}
+			else if(wishobj->where == OBJ_INVENT){
+				pline("Your %s vanishes!", xname(wishobj));
+			}
+			else if(wishobj->where == OBJ_MINVENT && canseemon(wishobj->ocarry)){
+				pline("%s's %s vanishes!", s_suffix(Monnam(wishobj->ocarry)), xname(wishobj));
+			}
+			
+			obj_extract_and_unequip_self(wishobj);
+			(void) mpickobj(mtmp, wishobj);
+			init_mon_wield_item(mtmp);
+			m_dowear(mtmp, TRUE);
+			mtmp->mspec_used = 10 - mtmp->m_lev;
+			if (mtmp->mspec_used < 2) mtmp->mspec_used = 2;
+
+		}
 	}break;
 	case 0: return 0; /* i.e. an exploded wand */
 	default: impossible("%s wanted to perform action %d?", Monnam(mtmp),

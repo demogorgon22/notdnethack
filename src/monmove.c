@@ -1138,10 +1138,16 @@ register struct monst *mtmp;
 	    if (res >= 0) return res;
 	}
 
+	// Note: m_canseeu checks line of signt (and also invis), mon_can_see_you checks with actual sensorium
+	boolean spotted = m_canseeu(mtmp) && mon_can_see_you(mtmp);
+
 	/* check for waitmask status change */
 	if ((mtmp->mstrategy & STRAT_WAITFORU) &&
-		(m_canseeu(mtmp) || mtmp->mhp < mtmp->mhpmax))
+		(spotted || mtmp->mhp < mtmp->mhpmax))
 	    mtmp->mstrategy &= ~STRAT_WAITFORU;
+
+	if (mtmp->mtyp == PM_AFREET && spotted)
+		mtmp->mvar1_afreet_lastsaw = moves;
 
 	/* update quest status flags */
 	quest_stat_check(mtmp);
