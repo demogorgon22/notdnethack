@@ -22453,6 +22453,8 @@ perform_monk_move(int moveID, int *move_cost)
 					zapdata.affects_floor = FALSE;
 					zapdata.no_bounce = TRUE;
 					zapdata.directly_hits = FALSE;
+					zapdata.damn = 9;
+					zapdata.damd = 9;
 					zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
 				}
 				return TRUE;
