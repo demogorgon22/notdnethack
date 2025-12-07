@@ -2371,6 +2371,8 @@ int edge;
 	}
 	if(!ok)
 		return TRUE;
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_SILVER_SKY && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
+		return FALSE;
 
 	switch(edge){
 		case GSTYLE_PENETRATE:
