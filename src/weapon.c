@@ -737,7 +737,7 @@ struct monst *magr;
 		if(magr == &youmonst && obj->oartifact){
 			const struct artifact *weap = get_artifact(obj);
 			if((weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_PENETRATE))
-				ignore_rolls += u.usanity > 50 ? 0 : u.usanity > 25 ? 1 : u.usanity > 10 ? 2 : 3;
+				ignore_rolls += EDGE_KENSEI ? 3 : u.usanity > 50 ? 0 : u.usanity > 25 ? 1 : u.usanity > 10 ? 2 : 3;
 		}
 
 		if (otyp == BALL) {

@@ -950,6 +950,7 @@ struct you {
 	int divetimer;			/* how long you can stay under water */
 	
 	int role_variant;	/*Records what variant of your role you are.*/
+#define EDGE_KENSEI (Role_if(PM_KENSEI) && u.role_variant == ART_SILVER_SKY && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
 	long	wardsknown;	/* known wards */
 #define	WARD_ELBERETH		(0x1L<<0)
 #define WARD_HEPTAGRAM		(0x1L<<1)

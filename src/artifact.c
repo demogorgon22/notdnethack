@@ -4921,17 +4921,20 @@ int * truedmgptr;
 				if(otmp->oartifact){
 					const struct artifact *weap = get_artifact(otmp);
 					if(youagr && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_RESONANT)){
+						int mod = u.usanity < 50 ? 0 : u.usanity < 75 ? 2 : u.usanity < 90 ? 5 : 8;
+						if(EDGE_KENSEI)
+							mod = 8;
 						for(struct monst *tmon = fmon; tmon; tmon = tmon->nmon){
 							if(DEADMONSTER(tmon))
 								continue;
 							if(tmon->mtame){
 								tmon->movement += 12;
-								tmon->encouraged = max_ints(u.usanity < 50 ? 0 : u.usanity < 75 ? 2 : u.usanity < 90 ? 5 : 8, tmon->encouraged);
+								tmon->encouraged = max_ints(mod, tmon->encouraged);
 							}
 							else if(near_yourteam(tmon)){
 								if(!resist(tmon, '\0', 0, NOTELL))
 									tmon->movement -= 12;
-								tmon->encouraged = min_ints(u.usanity < 50 ? 0 : u.usanity < 75 ? -2 : u.usanity < 90 ? -5 : -8, tmon->encouraged);
+								tmon->encouraged = min_ints(-mod, tmon->encouraged);
 							}
 						}
 					}
@@ -8183,12 +8186,12 @@ boolean printmessages; /* print generic elemental damage messages */
 		if((weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART)){
 			if(activeMentalEdge(GSTYLE_COLD)){
 				if(!Cold_res(mdef))
-					(*truedmgptr) += u.usanity > 50 ? 0 : u.usanity > 25 ? d(2,6) : u.usanity > 10 ? d(4,6) : d(6,6);
+					(*truedmgptr) += EDGE_KENSEI ? d(6,6) : u.usanity > 50 ? 0 : u.usanity > 25 ? d(2,6) : u.usanity > 10 ? d(4,6) : d(6,6);
 				if(hates_unholy_mon(mdef))
-					(*truedmgptr) += u.usanity > 50 ? 0 : u.usanity > 25 ? d(1,9) : u.usanity > 10 ? d(2,9) : d(3,9);
+					(*truedmgptr) += EDGE_KENSEI ? d(3,9) : u.usanity > 50 ? 0 : u.usanity > 25 ? d(1,9) : u.usanity > 10 ? d(2,9) : d(3,9);
 			}
 			if(activeMentalEdge(GSTYLE_ANTIMAGIC)){
-				int major_chance = u.usanity < 50 ? 0 : u.usanity < 75 ? 1 : u.usanity < 90 ? 2 : 5;
+				int major_chance = EDGE_KENSEI ? 5 : u.usanity < 50 ? 0 : u.usanity < 75 ? 1 : u.usanity < 90 ? 2 : 5;
 				if(youdef){
 					if(u.uen > 0){
 						u.uen -= u.usanity/10;

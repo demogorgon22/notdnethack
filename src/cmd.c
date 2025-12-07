@@ -1362,9 +1362,6 @@ doGithForm()
 	Sprintf(buf, "Known Mental Edges");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 
-	boolean allstyles = (Role_if(PM_KENSEI) && u.role_variant == ART_SILVER_SKY && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS));
-
-
 	for (i = FIRST_GSTYLE; i <= LAST_GSTYLE; i++) {
 		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || Insight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
 			continue;
@@ -1373,7 +1370,7 @@ doGithForm()
 
 		/* knight forms are shown if unskilled but not restricted, since training involves starting from unskilled */
 		boolean active = (artinstance[ART_SILVER_SKY].GithStyle & (1 << i)) != 0;
-		boolean blocked = blockedMentalEdge(i) && !allstyles;
+		boolean blocked = blockedMentalEdge(i);
 
 		Strcpy(buf, nameOfMentalEdge(i));
 		Strcat(buf, " (");

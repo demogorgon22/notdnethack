@@ -900,13 +900,13 @@ struct monst *mon;
 		if(uwep){
 			const struct artifact *weap = get_artifact(uwep);
 			if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
-				base -= u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe/2,0) : u.usanity < 90 ? 1+max(uwep->spe/2,0) : 3+max(uwep->spe/2,0);
+				base -= EDGE_KENSEI ? 3+max(uwep->spe/2,0) : u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe/2,0) : u.usanity < 90 ? 1+max(uwep->spe/2,0) : 3+max(uwep->spe/2,0);
 			}
 		}
 		if(uswapwep){
 			const struct artifact *weap = get_artifact(uswapwep);
 			if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
-				base -= u.usanity < 50 ? 0 : u.usanity < 75 ? max(uswapwep->spe/2,0) : u.usanity < 90 ? 1+max(uswapwep->spe/2,0) : 3+max(uswapwep->spe/2,0);
+				base -= EDGE_KENSEI ? 3+max(uswapwep->spe/2,0) : u.usanity < 50 ? 0 : u.usanity < 75 ? max(uswapwep->spe/2,0) : u.usanity < 90 ? 1+max(uswapwep->spe/2,0) : 3+max(uswapwep->spe/2,0);
 			}
 		}
 		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
@@ -1175,13 +1175,13 @@ struct monst *mon;
 		if(uwep){
 			const struct artifact *weap = get_artifact(uwep);
 			if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
-				base -= u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe/2,0) : u.usanity < 90 ? 1+max(uwep->spe/2,0) : 3+max(uwep->spe/2,0);
+				base -= EDGE_KENSEI ? 3+max(uwep->spe/2,0) : u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe/2,0) : u.usanity < 90 ? 1+max(uwep->spe/2,0) : 3+max(uwep->spe/2,0);
 			}
 		}
 		if(uswapwep){
 			const struct artifact *weap = get_artifact(uswapwep);
 			if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
-				base -= u.usanity < 50 ? 0 : u.usanity < 75 ? max(uswapwep->spe/2,0) : u.usanity < 90 ? 1+max(uswapwep->spe/2,0) : 3+max(uswapwep->spe/2,0);
+				base -= EDGE_KENSEI ? 3+max(uswapwep->spe/2,0) : u.usanity < 50 ? 0 : u.usanity < 75 ? max(uswapwep->spe/2,0) : u.usanity < 90 ? 1+max(uswapwep->spe/2,0) : 3+max(uswapwep->spe/2,0);
 			}
 		}
 		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
@@ -1361,13 +1361,13 @@ struct monst *mon;
 		if(uwep){
 			const struct artifact *weap = get_artifact(uwep);
 			if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
-				base += u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe/2,0) : u.usanity < 90 ? 1+max(uwep->spe/2,0) : 3+max(uwep->spe/2,0);
+				base += EDGE_KENSEI ? 3+max(uwep->spe/2,0) : u.usanity < 50 ? 0 : u.usanity < 75 ? max(uwep->spe/2,0) : u.usanity < 90 ? 1+max(uwep->spe/2,0) : 3+max(uwep->spe/2,0);
 			}
 		}
 		if(uswapwep){
 			const struct artifact *weap = get_artifact(uswapwep);
 			if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == AMALGUM_ART) && activeMentalEdge(GSTYLE_DEFENSE)){
-				base += u.usanity < 50 ? 0 : u.usanity < 75 ? max(uswapwep->spe/2,0) : u.usanity < 90 ? 1+max(uswapwep->spe/2,0) : 3+max(uswapwep->spe/2,0);
+				base += EDGE_KENSEI ? 3+max(uswapwep->spe/2,0) : u.usanity < 50 ? 0 : u.usanity < 75 ? max(uswapwep->spe/2,0) : u.usanity < 90 ? 1+max(uswapwep->spe/2,0) : 3+max(uswapwep->spe/2,0);
 			}
 		}
 	}

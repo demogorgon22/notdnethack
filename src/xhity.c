@@ -16348,7 +16348,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				if(!youdef && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER))
 					bonsdmg += 8;
 				if(!youdef && activeMentalEdge(GSTYLE_RESONANT))
-					bonsdmg += u.usanity < 50 ? 0 : u.usanity < 75 ? 2 : u.usanity < 90 ? 5 : 8;
+					bonsdmg += EDGE_KENSEI ? 8 : u.usanity < 50 ? 0 : u.usanity < 75 ? 2 : u.usanity < 90 ? 5 : 8;
 				if(!youdef && is_vampire(magr->data) && check_vampire(VAMPIRE_MASTERY))
 					bonsdmg += 5;
 			}
