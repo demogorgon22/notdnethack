@@ -6748,6 +6748,13 @@ d_weapon:
 		if(!is_harmonium_armor(obj))
 			add_oprop(obj, OPROP_AXIO);
 	}
+	else if(objects[otyp].oc_class == WEAPON_CLASS || is_weptool(obj)){
+		if(example)
+			obj->objsize = example->objsize;
+		else
+			obj->objsize = youracedata->msize;
+		fix_object(obj);
+	}
 	if(example){
 		//Note: Not an error, Oona can still do anarchic
 		if(check_oprop(example, OPROP_ANAR)){
@@ -7047,6 +7054,13 @@ d_weapon:
 			add_oprop(obj, OPROP_ACID);
 		}
 	}
+	else if(objects[otyp].oc_class == WEAPON_CLASS || is_weptool(obj)){
+		if(example)
+			obj->objsize = example->objsize;
+		else
+			obj->objsize = youracedata->msize;
+		fix_object(obj);
+	}
 	if(example){
 		if(check_oprop(example, OPROP_MAGC)){
 			add_oprop(obj, OPROP_MAGC);
@@ -7214,6 +7228,13 @@ d_weapon:
 			obj->objsize = youracedata->msize;
 			set_obj_shape(obj, youracedata->mflagsb);
 		}
+	}
+	else if(objects[otyp].oc_class == WEAPON_CLASS || is_weptool(obj)){
+		if(example)
+			obj->objsize = example->objsize;
+		else
+			obj->objsize = youracedata->msize;
+		fix_object(obj);
 	}
 	// Non-tame smiths will charge for their services
 	if(!smith->mtame){
