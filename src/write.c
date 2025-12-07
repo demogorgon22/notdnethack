@@ -308,6 +308,14 @@ found_ward:
 	actualcost = rn1(basecost/2,basecost/2);
 	curseval = bcsign(pen) + bcsign(paper);
 	exercise(A_WIS, TRUE);
+	/* oops, artifact paper */
+	if(paper->oartifact){
+		pen->spe = max(0, pen->spe - actualcost/2);
+		Your("writing rapidly fades away!");
+		pline_The("%s remains blank.", typeword);
+		obfree(new_obj, (struct obj *) 0);
+		return(1);
+	}
 	/* dry out marker */
 	if (pen->spe < actualcost) {
 		pen->spe = 0;

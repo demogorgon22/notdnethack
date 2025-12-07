@@ -763,7 +763,7 @@ doread()
 	}
 	scroll->in_use = TRUE;	/* scroll, not spellbook, now being read */
 	if(scroll->oartifact) {
-		if(Blind) {
+		if(Blind && (scroll->oartifact == ART_MARAUDER_S_MAP || scroll->oartifact == ART_RITE_OF_DETESTATION)) {
 			pline("Being blind, you cannot see %s.", the(xname(scroll)));
 			scroll->in_use = FALSE;
 			return MOVE_INSTANT;

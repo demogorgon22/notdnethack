@@ -1160,8 +1160,10 @@ register struct obj *obj;
 	/* MRKR: Cancelled *DSM reverts to scales.  */
 	/*       Suggested by Daniel Morris in RGRN */
 
-	if (obj->otyp >= GRAY_DRAGON_SCALE_MAIL &&
-	    obj->otyp <= YELLOW_DRAGON_SCALE_MAIL) {
+	if (obj->otyp >= GRAY_DRAGON_SCALE_MAIL
+	    && obj->otyp <= YELLOW_DRAGON_SCALE_MAIL
+		&& obj->oartifact != ART_DRAGON_PLATE
+	) {
 		/* dragon scale mail reverts to dragon scales */
 
 		boolean worn = (obj == uarm);
@@ -1219,6 +1221,7 @@ register struct obj *obj;
 	    if (obj->spe != ((obj->oclass == WAND_CLASS) ? -1 : 0) &&
 	       obj->otyp != WAN_CANCELLATION &&
 		 /* can't cancel cancellation */
+		 !obj->oartifact &&
 		 obj->otyp != MAGIC_LAMP &&
 		 obj->otyp != RIN_WISHES &&
 		 obj->otyp != CANDELABRUM_OF_INVOCATION) {
@@ -1250,6 +1253,8 @@ register struct obj *obj;
 	      case POTION_CLASS:
 		/* Potions of amnesia are uncancelable. */
 		if (obj->otyp == POT_AMNESIA) break;
+
+		if (obj->oartifact) break;
 
 		costly_cancel(obj);
 		if (obj->otyp == POT_SICKNESS ||
