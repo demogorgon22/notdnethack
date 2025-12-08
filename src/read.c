@@ -1355,8 +1355,8 @@ int curse_bless;
 	    case LANTERN:
 	    case LANTERN_PLATE_MAIL:
 		if (is_cursed) {
-		    if (obj->otyp == DWARVISH_HELM && obj->otyp != LANTERN_PLATE_MAIL) {
-			/* Don't affect the +/- of the helm */
+		    if (obj->otyp == DWARVISH_HELM || obj->otyp == LANTERN_PLATE_MAIL) {
+			/* Don't affect the +/- of the helm/plate */
 			obj->age = 0;
 		    }
 		    else 
