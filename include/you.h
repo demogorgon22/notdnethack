@@ -123,6 +123,17 @@ struct Role {
 
 	/*** Bitmasks ***/
 	long marace;		/* allowable races */
+#define SA_HUMAN		0x00000001L
+#define SA_ELF			0x00000002L
+#define SA_DWARF		0x00000004L
+#define SA_GNOME		0x00000008L
+#define SA_ORC			0x00000010L
+#define SA_CLOCKWORK	0x00000020L
+#define SA_HALF_DRAGON	0x00000040L
+#define SA_VAMPIRE		0x00000080L
+#define SA_CHIROPTERAN	0x00000100L
+#define SA_YUKI_ONNA	0x00000200L
+#define SA_GITH			0x00000400L
 	short allow;		/* bit mask of allowed variations */
 #define ROLE_GENDMASK	0xf000		/* allowable genders */
 #define ROLE_MALE	0x1000
@@ -217,9 +228,10 @@ struct Race {
 
 	/*** Bitmasks ***/
 	short allow;		/* bit mask of allowed variations */
-	long selfmask,		/* your own race's bit mask */
-	      lovemask,		/* bit mask of always peaceful */
-	      hatemask;		/* bit mask of always hostile */
+	long race_code,		/* your code for allowed races */
+	     selfmask,		/* your own race's bit mask */
+	     lovemask,		/* bit mask of always peaceful */
+	     hatemask;		/* bit mask of always hostile */
 
 	/*** Attributes ***/
 	xchar attrmin[A_MAX];	/* minimum allowable attribute */
