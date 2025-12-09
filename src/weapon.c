@@ -900,6 +900,7 @@ struct monst *magr;
 			}
 			else {
 				bond = max(0, dmod * 2);
+				bonn = 1;
 				flat = 0;
 			}
 		}
