@@ -361,7 +361,7 @@ jumping_polearm(genericptr_t arg, int x, int y)
 	boolean path = FALSE;
 	if(!mon)
 		return TRUE;
-	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep) && is_pole(uwep)){
+	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
 		if(u.role_variant == ART_SKY_REFLECTED || u.role_variant == ART_SILVER_SKY){
 			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER)
 				path = TRUE;
@@ -415,7 +415,7 @@ hurtle_step(arg, x, y)
 	static long last_messaged = 0L;
 	boolean spiralcloud, passage, nightjar, sakura, path;
 	spiralcloud = passage = nightjar = sakura = path = FALSE;
-	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep) && is_pole(uwep)){
+	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
 		if(u.role_variant == ART_SKY_REFLECTED || u.role_variant == ART_SILVER_SKY){
 			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER)
 				path = TRUE;
@@ -707,7 +707,7 @@ hurtle(dx, dy, range, verbose, do_nomul)
     /* this setting of cc is only correct if dx and dy are [-1,0,1] only */
     cc.x = u.ux + (dx * range);
     cc.y = u.uy + (dy * range);
-    (void) walk_path(&uc, &cc, hurtle_step, Role_if(PM_KENSEI) ? &jumping_polearm : (void *) 0, (genericptr_t)&range);
+    (void) walk_path(&uc, &cc, hurtle_step, ((Role_if(PM_KENSEI) || Role_if(PM_MONK)) && uwep && is_pole(uwep)) ? &jumping_polearm : (void *) 0, (genericptr_t)&range);
 	teleds(u.ux, u.uy, TRUE);
 }
 
