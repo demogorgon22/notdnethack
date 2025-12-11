@@ -3670,6 +3670,12 @@ register struct trobj *trop;
 			}else{
 				obj->dknown = obj->bknown = obj->rknown = obj->sknown = 1;
 				if (objects[otyp].oc_uses_known) obj->known = 1;
+				if(obj->cobj){
+					for(struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj){
+						otmp->dknown = otmp->bknown = otmp->rknown = otmp->sknown = 1;
+						if (objects[otmp->otyp].oc_uses_known) otmp->known = 1;
+					}
+				}
 				if(Role_if(PM_PIRATE) && is_iron_obj(obj)) obj->oerodeproof = 1;
 				if(Role_if(PM_SAMURAI) && obj->oclass == ARMOR_CLASS && is_iron_obj(obj)) obj->oerodeproof = 1;
 				if(Role_if(PM_SAMURAI) && obj->otyp == MASK){
