@@ -15408,7 +15408,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				change_hod(1);
 			}
 			if(Role_if(PM_KENSEI)){
-				if (sgn(u.ualign.type) > 0) {
+				if (sgn(u.ualign.type) > 0 
+				 && ((poisons & ~OPOISON_HALLU) 
+				  || (u.role_variant != ART_SILVER_SKY && u.role_variant != ART_SKY_REFLECTED)
+				 )
+				) {
 					adjalign(-5);
 					You("dishonorably use a poisoned weapon!");
 					u.ualign.sins++;
