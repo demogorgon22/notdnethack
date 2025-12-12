@@ -507,84 +507,164 @@ expert_undead_hunter_skill()
 			else {
 				expert_weapon_skill(skill);
 				if(skill == P_DAGGER){
-					expert_weapon_skill(rn2(2) ? P_SHORT_SWORD : P_SABER);
+					if(rn2(2)){
+						expert_weapon_skill(P_SHORT_SWORD);
+						knows_object(BLADE_OF_MERCY);
+						knows_object(BLADE_OF_GRACE);
+						knows_object(BLADE_OF_PITY);
+					}
+					else {
+						expert_weapon_skill(P_SABER);
+						knows_object(RAKUYO);
+						knows_object(RAKUYO_SABER);
+						knows_object(RAKUYO_DAGGER);
+					}
 					expert_weapon_skill(P_TWO_WEAPON_COMBAT);
 				}
 				else if(skill == P_SHORT_SWORD){
 					if(!rn2(3)){
 						expert_weapon_skill(P_DAGGER);
 						expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+						knows_object(BLADE_OF_MERCY);
+						knows_object(BLADE_OF_GRACE);
+						knows_object(BLADE_OF_PITY);
 					}
 					else if(rn2(2)){
 						expert_weapon_skill(P_PICK_AXE);
+						knows_object(CHURCH_SHORTSWORD);
+						knows_object(CHURCH_PICK);
 					}
 					else {
 						expert_weapon_skill(P_HAMMER);
+						knows_object(CHURCH_HAMMER);
+						knows_object(HUNTER_S_SHORTSWORD);
+						knows_object(CHURCH_BRICK);
 					}
 				}
 				else if(skill == P_TWO_HANDED_SWORD){
 					expert_weapon_skill(P_LONG_SWORD);
+					knows_object(CHURCH_BLADE);
+					knows_object(HUNTER_S_LONGSWORD);
+					knows_object(CHURCH_SHEATH);
 				}
 				else if(skill == P_SCIMITAR){
 					expert_weapon_skill(P_BOW);
 					expert_weapon_skill(P_QUARTERSTAFF);
+					knows_object(BOW_BLADE);
+					knows_object(BLADED_BOW);
 				}
 				else if(skill == P_SABER){
 					if(rn2(2)){
 						expert_weapon_skill(P_DAGGER);
 						expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+						knows_object(RAKUYO);
+						knows_object(RAKUYO_SABER);
+						knows_object(RAKUYO_DAGGER);
 					}
 					else {
 						expert_weapon_skill(P_FIREARM);
+						knows_object(SOLDIER_S_RAPIER);
+						knows_object(SOLDIER_S_SABER);
 					}
 				}
 				else if(skill == P_HAMMER){
 					expert_weapon_skill(P_SHORT_SWORD);
+					knows_object(CHURCH_HAMMER);
+					knows_object(HUNTER_S_SHORTSWORD);
+					knows_object(CHURCH_BRICK);
 				}
 				else if(skill == P_SPEAR){
 					expert_weapon_skill(P_HARVEST);
+					knows_object(SAW_SPEAR);
+					knows_object(LONG_SAW);
 				}
 				else if(skill == P_BOW){
 					expert_weapon_skill(P_SCIMITAR);
 					expert_weapon_skill(P_QUARTERSTAFF);
+					knows_object(BOW_BLADE);
+					knows_object(BLADED_BOW);
 				}
 				else if(skill == P_QUARTERSTAFF){
 					expert_weapon_skill(P_SCIMITAR);
 					expert_weapon_skill(P_BOW);
+					knows_object(BOW_BLADE);
+					knows_object(BLADED_BOW);
 				}
 				else if(skill == P_WHIP){
 					expert_weapon_skill(P_LONG_SWORD);
+					knows_object(CANE);
+					knows_object(WHIP_SAW);
 				}
 				else if(skill == P_HARVEST){
-					if(rn2(2))
+					if(rn2(2)){
 						expert_weapon_skill(P_SPEAR);
+						knows_object(SAW_SPEAR);
+						knows_object(LONG_SAW);
+					}
+					else {
+						knows_object(SAW_CLEAVER);
+						knows_object(RAZOR_CLEAVER);
+					}
 				}
 				else if(skill == P_CLUB){
-					if(rn2(2))
+					if(rn2(2)){
 						expert_weapon_skill(P_FLAIL);
+						knows_object(BEAST_CRUSHER);
+						knows_object(BEAST_CUTTER);
+					}
+					else knows_object(CLUB);
 				}
 				else if(skill == P_FLAIL){
 					expert_weapon_skill(P_CLUB);
+					knows_object(BEAST_CRUSHER);
+					knows_object(BEAST_CUTTER);
 				}
 				else if(skill == P_MACE){
-					if(rn2(2))
+					if(rn2(2)){
 						expert_weapon_skill(P_PICK_AXE);
+						knows_object(DEVIL_FIST);
+						knows_object(DEMON_CLAW);
+					}
+					else knows_object(TONITRUS);
 				}
 				else if(skill == P_PICK_AXE){
-					if(rn2(2))
+					if(rn2(2)){
 						expert_weapon_skill(P_MACE);
-					else
+						knows_object(DEVIL_FIST);
+						knows_object(DEMON_CLAW);
+					}
+					else{
 						expert_weapon_skill(P_SHORT_SWORD);
+						knows_object(CHURCH_SHORTSWORD);
+						knows_object(CHURCH_PICK);
+					}
 				}
 				else if(skill == P_FIREARM){
-					if(rn2(2))
+					if(rn2(2)){
 						expert_weapon_skill(P_BARE_HANDED_COMBAT);
-					else
+						knows_object(SHANTA_PATA);
+						knows_object(TWINGUN_SHANTA);
+					}
+					else{
 						expert_weapon_skill(P_SABER);
+						knows_object(SOLDIER_S_RAPIER);
+						knows_object(SOLDIER_S_SABER);
+					}
 				}
 				else if(skill == P_BARE_HANDED_COMBAT){
-					if(rn2(2))
+					if(rn2(2)){
 						expert_weapon_skill(P_FIREARM);
+						knows_object(SHANTA_PATA);
+						knows_object(TWINGUN_SHANTA);
+					}
+					else knows_object(BESTIAL_CLAW);
+				}
+				else if(skill == P_AXE){
+					knows_object(HUNTER_S_AXE);
+					knows_object(HUNTER_S_LONG_AXE);
+				}
+				else if(skill == P_BROAD_SWORD){
+					knows_object(ISAMUSEI);
 				}
 				return;
 			}
