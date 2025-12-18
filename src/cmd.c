@@ -932,6 +932,7 @@ use_reach_attack()
 	    pline("%s", nothing_happens);
 	return MOVE_STANDARD;
 }
+
 int
 doMysticForm()
 {
@@ -955,6 +956,7 @@ doMysticForm()
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(bent_move())) {
 		Sprintf(buf,	"%s%s %s (active)", bent_arrow(), forward_arrow(), move_name(bent_move()));
@@ -965,6 +967,7 @@ doMysticForm()
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(hook_move())) {
 		Sprintf(buf,	"%s%s %s (active)", up_arrow(), forward_arrow(), move_name(hook_move()));
@@ -975,6 +978,7 @@ doMysticForm()
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(uturn_move())) {
 		Sprintf(buf,	"%s%s %s (active)", uturn_arrow(), forward_arrow(), move_name(uturn_move()));
@@ -985,6 +989,7 @@ doMysticForm()
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 	if(monk_style_active(alternated_move())) {
 		Sprintf(buf,	"%s%s %s (active)", backward_arrow(), forward_arrow(), move_name(alternated_move()));
@@ -995,6 +1000,7 @@ doMysticForm()
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
 
 	if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)){

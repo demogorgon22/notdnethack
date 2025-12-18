@@ -434,8 +434,8 @@ struct you {
 	Bitfield(uno_auto_attacks,1);
 	Bitfield(uavoid_urpassives,1);
 	unsigned long long int umystic;	/*Monk mystic attacks active*/
-#define monk_style_active(style) (style > 0 && u.umystic & (1 << (style-1)))
-#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
+#define monk_style_active(style) (style > 0 && u.umystic & (1ULL << (style-1)))
+#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1ULL << (style-1)))
 
 #define DIVE_KICK  1
 #define AURA_BOLT  2
