@@ -530,16 +530,16 @@ struct monst *mtmp;
 
 	    if (mtmp->mtyp != PM_PESTILENCE) {
 		nomore(MUSE_POT_FULL_HEALING);
-		if(obj->otyp == POT_FULL_HEALING) {
+		if(obj->otyp == POT_FULL_HEALING && !nomouth) {
 			m.defensive = obj;
 			m.has_defense = MUSE_POT_FULL_HEALING;
 		}
 		nomore(MUSE_LIFE_FLASK);
-		if(has_sunflask(mtmp->mtyp) && mtmp->mvar_flask_charges > 0){
+		if(has_sunflask(mtmp->mtyp) && mtmp->mvar_flask_charges > 0 && !nomouth){
 			m.has_defense = MUSE_LIFE_FLASK;
 		}
 		nomore(MUSE_POT_EXTRA_HEALING);
-		if(obj->otyp == POT_EXTRA_HEALING) {
+		if(obj->otyp == POT_EXTRA_HEALING && !nomouth) {
 			m.defensive = obj;
 			m.has_defense = MUSE_POT_EXTRA_HEALING;
 		}
@@ -549,7 +549,7 @@ struct monst *mtmp;
 			m.has_defense = MUSE_WAN_CREATE_MONSTER;
 		}
 		nomore(MUSE_POT_HEALING);
-		if(obj->otyp == POT_HEALING) {
+		if(obj->otyp == POT_HEALING && !nomouth) {
 			m.defensive = obj;
 			m.has_defense = MUSE_POT_HEALING;
 		}

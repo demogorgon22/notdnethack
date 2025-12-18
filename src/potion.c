@@ -411,6 +411,11 @@ dodrink()
 	register struct obj *otmp;
 	const char *potion_descr;
 
+	if(nomouth(youracedata->mtyp)) {
+		pline("You have no mouth to drink with!");
+		return MOVE_INSTANT;
+	}
+
 	if (Strangled) {
 		pline("If you can't breathe air, how can you drink liquid?");
 		return MOVE_INSTANT;
