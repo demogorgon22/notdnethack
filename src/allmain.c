@@ -4290,8 +4290,8 @@ boolean new_game;	/* false => restoring an old game */
 			pline("Incantifiers eat magic, not food, and do not heal naturally.");
 		}
 		if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && !art_already_exists(ART_SKY_REFLECTED)){
-			pline("Be on the lookout for a good weapon to christen 'the Sky Reflected'.");
-			pline("(For the most straightforward experience, pick your starting weapon.)");
+			pline("Be on the lookout for a metal weapon to christen 'the Sky Reflected'");
+			pline("(For the most straightforward experience, pick your starting weapon).");
 		}
 	}
 }
