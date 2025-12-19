@@ -17152,7 +17152,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 
 	/* If the character is panicking, all their attacks do half damage */
-	if(Panicking){
+	if(youagr && Panicking){
 		subtotl = subtotl/2+1;
 	}
 
