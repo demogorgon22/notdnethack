@@ -1289,6 +1289,9 @@ register struct monst *mtmp;
 	/* stunned monsters get un-stunned with larger probability */
 	if (mtmp->mstun && !rn2(10)) mtmp->mstun = 0;
 
+	/* may reduce pucture-chance */
+	if (mtmp->mpunctured > 0 && rn2(2)) mtmp->mpunctured--;
+
 	/* some monsters teleport */
 	if (mon_resistance(mtmp,TELEPORT)
 		&& (mtmp->mflee || !rn2(5))

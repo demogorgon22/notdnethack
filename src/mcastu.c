@@ -5698,6 +5698,7 @@ int tary;
 			magr->msleeping = 0;
 			magr->mstun = 0;
 			magr->mconf = 0;
+			magr->mpunctured = 0;
 			if (canseemon(magr))
 				pline("%s looks recovered.", Monnam(magr));
 		}

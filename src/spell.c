@@ -2670,6 +2670,7 @@ spiriteffects(power, atme)
 					mon->msleeping = 0;
 					mon->mstun = 0;
 					mon->mconf = 0;
+					mon->mpunctured = 0;
 					if (canseemon(mon))
 						pline("%s looks recovered.", Monnam(mon));
 				}

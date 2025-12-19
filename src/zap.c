@@ -785,6 +785,7 @@ coord *cc;
 		}
 		mtmp2->mstun = 0;
 		mtmp2->mconf = 0;
+		mtmp2->mpunctured = 0;
 		replmon(mtmp,mtmp2);
 	}
 	return mtmp2;

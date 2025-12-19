@@ -1167,6 +1167,7 @@ asGuardian:
 				mtmp->mnotlaugh = 1; mtmp->mlaughing = 0;
 				mtmp->msleeping = 0;
 				mtmp->mstun = 0; mtmp->mconf = 0;
+				mtmp->mpunctured = 0;
 				untame(mtmp, 0);
 				
 				u.ustdy = mtmp->m_lev;
@@ -1569,6 +1570,7 @@ asGuardian:
 									if(tmpm->mstdy > 0) tmpm->mstdy = 0;
 									tmpm->mstun = 0;
 									tmpm->mconf = 0;
+									tmpm->mpunctured = 0;
 									tmpm->msleeping = 0;
 									tmpm->mflee = 0;
 									tmpm->mfleetim = 0;

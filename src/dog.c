@@ -670,6 +670,7 @@ long nmv;		/* number of moves */
 	if (mtmp->mtrapped && rn2(imv + 1) > 40/2) mtmp->mtrapped = 0;
 	if (mtmp->mconf    && rn2(imv + 1) > 50/2) mtmp->mconf = 0;
 	if (mtmp->mstun    && rn2(imv + 1) > 10/2) mtmp->mstun = 0;
+	if (mtmp->mpunctured && rn2(imv + 1) > 2) mtmp->mpunctured = 0;
 
 	/* might finish eating or be able to use special ability again */
 	if (imv > mtmp->meating) mtmp->meating = 0;

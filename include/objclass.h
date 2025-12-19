@@ -235,6 +235,8 @@ struct objclass {
 #define ETRAIT_BRACED			0x00010000L
 #define ETRAIT_BLADESONG		0x00020000L
 #define ETRAIT_BLADEDANCE		0x00040000L
+#define ETRAIT_PUNCTURE			0x00080000L //Escalating chance for a double-damage hit
+//
 
 #define wielder_size(mon) ((mon) == &youmonst ? youracedata->msize : (mon)->data->msize)
 #define CHECK_ETRAIT(obj, mon, trait) (check_etrait((obj), (mon), (trait)))

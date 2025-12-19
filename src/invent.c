@@ -3718,6 +3718,7 @@ winid *datawin;
 		EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
 		EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
 		EXPERTTRAITS(ETRAIT_CLEAVE, (CHECK_ETRAIT(obj, &youmonst, ETRAIT_HEW) ? "cleaves through slain enemies when not using hewing strikes" : "cleaves through slain enemies"));
+		EXPERTTRAITS(ETRAIT_PUNCTURE, "successive hits may deal increased damage");
 		EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
 		EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
 		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");

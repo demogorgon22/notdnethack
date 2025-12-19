@@ -3519,6 +3519,8 @@ karemade:
 		
 		if(u.ustdy > 0) u.ustdy -= 1;
 		if(u.ustdy < 0) u.ustdy += 1;
+		// Decrease your pucture counter
+		if(youmonst.mpunctured > 0 && rn2(2)) youmonst.mpunctured--;
 		
 		if(youmonst.mopen) youmonst.mopen--;
 		
@@ -5523,6 +5525,7 @@ struct monst *mon;
 				mtmp->mfrozen = 0;
 				mtmp->msleeping = 0;
 				mtmp->mstun = 0;
+				mtmp->mpunctured = 0;
 				mtmp->mconf = 0;
 				mtmp->mtrapped = 0;
 				mtmp->entangled_otyp = 0;
@@ -5600,6 +5603,7 @@ struct monst *mon;
 			mtmp->msleeping = 0;
 			mtmp->mstun = 0;
 			mtmp->mconf = 0;
+			mtmp->mpunctured = 0;
 			mtmp->mtrapped = 0;
 			mtmp->entangled_otyp = 0;
 			mtmp->entangled_oid = 0;
@@ -5672,6 +5676,7 @@ struct monst *mon;
 					mtmp->msleeping = 0;
 					mtmp->mstun = 0;
 					mtmp->mconf = 0;
+					mtmp->mpunctured = 0;
 					mtmp->mtrapped = 0;
 					mtmp->entangled_otyp = 0;
 					mtmp->entangled_oid = 0;
@@ -5803,6 +5808,7 @@ struct monst *mon;
 				mtmp->msleeping = 0;
 				mtmp->mstun = 0;
 				mtmp->mconf = 0;
+				mtmp->mpunctured = 0;
 				mtmp->mtrapped = 0;
 				mtmp->entangled_otyp = 0;
 				mtmp->entangled_oid = 0;

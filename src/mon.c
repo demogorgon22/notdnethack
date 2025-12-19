@@ -1787,6 +1787,7 @@ struct monst *mtmp;
 		mtmp->msleeping = 0;
 		mtmp->mstun = 0;
 		mtmp->mconf = 0;
+		mtmp->mpunctured = 0;
 		mtmp->mtrapped = 0;
 		mtmp->entangled_otyp = 0;
 		mtmp->entangled_oid = 0;

@@ -16717,6 +16717,36 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				if(youagr)
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 			}
+			if(CHECK_ETRAIT(weapon, magr, ETRAIT_PUNCTURE)){
+				int punc = ROLL_ETRAIT(weapon, magr, 2, 1);
+				mdef->mpunctured += punc;
+				if(mdef->mpunctured > rn2(10)){
+					mdef->mpunctured = 0;
+					struct weapon_dice wdice;
+					if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
+						pline("Puncture!");
+					if(youagr)
+						You("pierce %s defenses!", s_suffix(mon_nam(mdef)));
+					else if(youdef)
+						pline("%s pierces your defenses!", Monnam(magr));
+					/* grab the weapon dice from dmgval_core */
+					dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+					punc = weapon_dmg_roll(&wdice, youdef);
+					if(youagr){
+						punc += weapon_dam_bonus(weapon, weapon_type(weapon));
+					}
+					if(youdef){
+						u.ustdy = min(punc, u.ustdy + punc);
+					}
+					else {
+						mdef->mstdy = min(punc, mdef->mstdy + punc);
+						if(youagr && mdef->ustdym < punc)
+							mdef->ustdym++;
+					}
+					/* add to the tratdmg counter */
+					tratdmg += punc;
+				}
+			}
 			if(CHECK_ETRAIT(weapon, magr, ETRAIT_BLADESONG)){
 				struct weapon_dice wdice;
 				/* grab the weapon dice from dmgval_core */
@@ -17033,6 +17063,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	/* If the character is panicking, all their attacks do half damage */
 	if(Panicking){
 		subtotl = subtotl/2+1;
+	}
+
+	/* Weakened defenses also reduce outgoing damage */
+	if(magr && magr->mpunctured){
+		subtotl -= 5*magr->mpunctured;
 	}
 	
 	/* Reduce Incoming Damage */

@@ -213,7 +213,8 @@ struct monst {
 	Bitfield(mcaterpillars,1); /* monster is covered in rot scorpions */ /*148*/
 	Bitfield(momud,1); /* monster is covered in orc-mud */ /*148*/
 	Bitfield(mubled,1); /* You inflicted bleed damage on this monster and will be blamed if it dies */ /*149*/
-	Bitfield(mtecpatlmarked,1); /* You inflicted bleed damage on this monster and will be blamed if it dies */ /*150*/
+	Bitfield(mtecpatlmarked,1); /* the Tecpatl of Huehueteotl can sacrifice low-enough-health monsters */ /*150*/
+	Bitfield(mpunctured,4); /* This monster may take double damage from puncture attacks */ /*154*/
 
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
