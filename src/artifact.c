@@ -5071,6 +5071,16 @@ int dieroll;
 	int original_plusdmgptr = *plusdmgptr;
 	int original_truedmgptr = *truedmgptr;
 	
+	//X sings true (crit chance, complementary to silver swords)
+	if(otmp->obj_material == MERCURIAL && !check_oprop(otmp, OPROP_GSSDW) && min(Insight, u.usanity) > 0){
+		int chance = 1;
+		if(youagr && u.usanity > 80 && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)){
+			chance = (u.usanity-77)/4;//1, 2, 3, 4, or 5 starting at 81, 85, 89, 93, 97
+		}
+		if(rn2(20) < chance){
+			*truedmgptr += basedmg;
+		}
+	}
 	if(otmp->obj_material == MERCURIAL && magr && mlev(magr) > 20 && (
 		(youagr && Insight > 20 && YOU_MERC_SPECIAL)
 		|| (!youagr && insightful(magr->data) && is_chaotic_mon(magr))

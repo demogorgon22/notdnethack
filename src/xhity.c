@@ -8,6 +8,8 @@ extern int monstr[];
 
 #define STILLVALID(mdef) (!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && mdef == m_at(u.ux + u.dx, u.uy + u.dy))
 
+#define ZFOCUS(otmp) (otmp && (otmp->obj_material == MERCURIAL) && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS) && (BlockableClearThoughts || (u.usanity-80) > rnd(10)))
+
 STATIC_DCL void FDECL(wildmiss, (struct monst *, struct attack *, struct obj *, boolean));
 STATIC_DCL boolean FDECL(u_surprise, (struct monst *, boolean));
 STATIC_DCL struct attack * FDECL(getnextspiritattack, (boolean));
@@ -973,6 +975,36 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 									/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 									result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 								}
+								//Focus gives second cleave
+								if(mdef2 && DEADMONSTER(mdef2)
+									&& youagr && ZFOCUS(otmp) && ROLL_ETRAIT(otmp, magr, TRUE, !rn2(4))
+								){
+									//Note: i is one more than above, so reverse the sign
+									if((monstermoves+indexnum+devai+i)&1){//Odd
+										//45 degree rotation
+										nx = sgn(dx-dy);
+										ny = sgn(dx+dy);
+									} else {
+										//-45 degree rotation
+										nx = sgn(dx+dy);
+										ny = sgn(dy-dx);
+									}
+									if (isok(x(magr) + nx, y(magr) + ny))
+									{
+										mdef2 = (youagr && u.uswallow) ? u.ustuck : 
+														(nx || ny) ? m_at(x(magr) + nx, y(magr) + ny) : 
+														(struct monst *)0;
+										if (mdef2 && (mdef2 != mdef) && !DEADMONSTER(mdef2)
+											&& !((youagr && mdef2->mpeaceful) || (!youagr && magr->mpeaceful == mdef2->mpeaceful))
+										){
+											int vis2 = (VIS_MAGR | VIS_NONE) | (canseemon(mdef2) ? VIS_MDEF : 0);
+											bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
+											subresult = xmeleehity(magr, mdef2, attk, &otmp, vis2, tohitmod, TRUE, 0);
+											/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+											result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+										}
+									}
+								}
 							}
 						}
 					}
@@ -1012,7 +1044,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 										target = TRUE;
 										int vis2 = (VIS_MAGR | VIS_NONE) | (canseemon(mdef2) ? VIS_MDEF : 0);
 										bhitpos.x = x(magr) + nx; bhitpos.y = y(magr) + ny;
-										subresult = xmeleehity(magr, mdef2, &secattk, &second, vis2, tohitmod, TRUE, 0);
+										subresult = xmeleehity(magr, mdef2, &secattk, &second, vis2, tohitmod, TRUE, (youagr && (ZFOCUS(otmp) || ZFOCUS(second)) && ROLL_ETRAIT(second, magr, TRUE, !rn2(4))) ? ATTKFLAG_DOUBLE_DAMAGE : 0);
 										/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
 										result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 									}
@@ -5009,39 +5041,46 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 		&& CHECK_ETRAIT(weapon, magr, ETRAIT_GRAZE)
 		&& ROLL_ETRAIT(weapon, magr, (accuracy > (dieroll - 20)), (accuracy > (dieroll + 10 - rnd(20))))
 	){
-		struct weapon_dice wdice;
-		/* grab the weapon dice from dmgval_core */
-		dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
-		/* add to the bonsdmg counter */
-		graze_dmg = wdice.oc_damn + wdice.bon_damn + wdice.flat + weapon->spe;
-		if(graze_dmg < 1)
-			graze_dmg = 1;
-		
-		if(youagr){
-			if (flags.verbose)
-				You("graze %s.", mon_nam(mdef));
-			else
-				You("graze it.");
+		if(youagr && ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
+			hit = TRUE;
+			miss = FALSE;
+			domissmsg = FALSE;
 		}
 		else {
-			if (vis) {
-				if (!(vis&VIS_MAGR))
-					map_invisible(x(magr), y(magr));
-				if (!(vis&VIS_MDEF))
-					map_invisible(x(mdef), y(mdef));
-
-				pline("%s grazes %s.",
-					Monnam(magr),
-					mon_nam_too(mdef, magr)
-					);
+			struct weapon_dice wdice;
+			/* grab the weapon dice from dmgval_core */
+			dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
+			/* add to the bonsdmg counter */
+			graze_dmg = wdice.oc_damn + wdice.bon_damn + wdice.flat + weapon->spe;
+			if(graze_dmg < 1)
+				graze_dmg = 1;
+			
+			if(youagr){
+				if (flags.verbose)
+					You("graze %s.", mon_nam(mdef));
+				else
+					You("graze it.");
 			}
 			else {
-				noises(magr, attk);
+				if (vis) {
+					if (!(vis&VIS_MAGR))
+						map_invisible(x(magr), y(magr));
+					if (!(vis&VIS_MDEF))
+						map_invisible(x(mdef), y(mdef));
+
+					pline("%s grazes %s.",
+						Monnam(magr),
+						mon_nam_too(mdef, magr)
+						);
+				}
+				else {
+					noises(magr, attk);
+				}
 			}
+			graze = TRUE;
+			miss = FALSE;
+			domissmsg = FALSE;
 		}
-		graze = TRUE;
-		miss = FALSE;
-		domissmsg = FALSE;
 	}
 	/* print a "miss" message */
 	if (miss && domissmsg) {
@@ -14828,6 +14867,16 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_MORTAL_BLADE \
 		&& artinstance[ART_MORTAL_BLADE].mortalLives > 1)
 		sneak_dice++;
+	if(!recursed && weapon && valid_weapon_attack && mdef->mopen &&
+			youagr && ZFOCUS(weapon) &&
+			magr && CHECK_ETRAIT(weapon, magr, ETRAIT_CREATE_OPENING) &&
+			ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))
+	){
+		sneak_dice++;
+		if(ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
+			sneak_dice++;
+		}
+	}
 	/* check sneak attack conditions -- defender's conditions must allow sneak attacking */
 	if (magr &&
 		!noanatomy(pd) &&
@@ -15010,17 +15059,23 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 #endif
 	// Knockback expert weapon trait
 	if(!recursed && weapon && valid_weapon_attack && weapon->o_e_trait == ETRAIT_KNOCK_BACK &&
-		 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_KNOCK_BACK) &&
-		 ROLL_ETRAIT(weapon, magr, !rn2(5), !rn2(20))
+		 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_KNOCK_BACK)
 	){
-		staggering_strike = TRUE;
+		if((youagr && ZFOCUS(weapon)) 
+		? ROLL_ETRAIT(weapon, magr, !rn2(3), !rn2(10))
+		: ROLL_ETRAIT(weapon, magr, !rn2(5), !rn2(20))
+		)
+			staggering_strike = TRUE;
 	}
 	// Stun expert weapon trait
 	if(!recursed && weapon && valid_weapon_attack && weapon->o_e_trait == ETRAIT_STUNNING_STRIKE &&
-		 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_STUNNING_STRIKE) &&
-		 ROLL_ETRAIT(weapon, magr, !rn2(2), !rn2(10))
+		 magr && CHECK_ETRAIT(weapon, magr, ETRAIT_STUNNING_STRIKE)
 	){
-		stunning_strike = TRUE;
+		if((youagr && ZFOCUS(weapon)) 
+		? ROLL_ETRAIT(weapon, magr, rn2(4), !rn2(5))
+		: ROLL_ETRAIT(weapon, magr, !rn2(2), !rn2(10))
+		)
+			stunning_strike = TRUE;
 	}
 
 	/* staggering strike */
@@ -16617,6 +16672,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
 				tratdmg += weapon_dmg_roll(&wdice, youdef);
+				if(youagr && ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
+					tratdmg += weapon_dmg_roll(&wdice, youdef) + weapon_dam_bonus(weapon, weapon_type(weapon));
+				}
 				if(youagr){
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
 					u.ustdy = max_ints(u.ustdy, weapon_dam_bonus(weapon, weapon_type(weapon))/2);
@@ -16645,7 +16703,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				else {
 					mdef->mfell += 1;
 					mdef->movement -= min_ints(6, mdef->movement/(mdef->mfell+1));
-					if(!mdef->mwounded_legs && !rn2(20)){
+					int felldie = 20;
+					if(youagr && ZFOCUS(weapon))
+						felldie = ROLL_ETRAIT(weapon, magr, 4, 10);
+					if(!mdef->mwounded_legs && !rn2(felldie)){
 						mdef->mwounded_legs = 1;
 						pline("%s %s is injured in the fighting!", s_suffix(Monnam(mdef)), mbodypart(mdef, LEG));
 						struct weapon_dice wdice;
@@ -16658,11 +16719,19 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					}
 				}
 			}
+			int lhs = 5;
+			int s = 10;
+			int e = 2;
+			if(youagr && ZFOCUS(weapon)){
+				lhs = 3;
+				s = 6;
+				e = 3;
+			}
 			if((youdef ? has_blood(youracedata) : has_blood_mon(mdef))
 				&& ((modifier_flags&MELEEHURT_FORCE_BLEED) 
 				    || (
 						CHECK_ETRAIT(weapon, magr, ETRAIT_BLEED)
-						&& ((weapon->oartifact == ART_LIFEHUNT_SCYTHE) ? ROLL_ETRAIT(weapon, magr, TRUE, !rn2(5)) : ROLL_ETRAIT(weapon, magr, rn2(2), !rn2(10)))
+						&& ((weapon->oartifact == ART_LIFEHUNT_SCYTHE) ? ROLL_ETRAIT(weapon, magr, TRUE, !rn2(lhs)) : ROLL_ETRAIT(weapon, magr, rn2(e), !rn2(s)))
 					)
 				)
 			){
@@ -16673,6 +16742,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				bleeddmg = ((wdice.oc_damn*wdice.oc_damd) + (wdice.bon_damn*wdice.bon_damd))/2 + wdice.flat + ROLL_ETRAIT(weapon, magr, 2, 1);
 				/* add to the tratdmg counter */
 				tratdmg += bleeddmg;
+				//Focus boosts the bleed damage ONLY, not trait damage
+				if(youagr && ZFOCUS(weapon))
+					bleeddmg += ((wdice.oc_damn*wdice.oc_damd) + (wdice.bon_damn*wdice.bon_damd) + 1)/2 + ROLL_ETRAIT(weapon, magr, 6, 0);
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 					pline("Bleeding wound!");
 				if (vis) 
@@ -16714,11 +16786,17 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
 				tratdmg += weapon_dmg_roll(&wdice, youdef);
-				if(youagr)
+				if(youagr){
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					if(ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))){
+						tratdmg += weapon_dmg_roll(&wdice, youdef) + weapon_dam_bonus(weapon, weapon_type(weapon));
+					}
+				}
 			}
 			if(CHECK_ETRAIT(weapon, magr, ETRAIT_PUNCTURE)){
 				int punc = ROLL_ETRAIT(weapon, magr, 2, 1);
+				if(youagr && ZFOCUS(weapon))
+					punc *= 2;
 				mdef->mpunctured += punc;
 				if(mdef->mpunctured > rn2(10)){
 					mdef->mpunctured = 0;
@@ -16762,6 +16840,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					){
 						tratdmg += weapon_dmg_roll(&wdice, youdef);
 						tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+						if (ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))){
+							tratdmg += weapon_dmg_roll(&wdice, youdef) + weapon_dam_bonus(weapon, weapon_type(weapon));
+						}
 						if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 							pline("Blade song!");
 					}
@@ -16787,6 +16868,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 						int tmpdmg;
 						tmpdmg = weapon_dmg_roll(&wdice, youdef);
 						tmpdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+						if(ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))){
+							tmpdmg += weapon_dmg_roll(&wdice, youdef) + weapon_dam_bonus(weapon, weapon_type(weapon));
+						}
 						if(Race_if(PM_ELF))
 							tmpdmg += (ACURR(A_CHA)+1)/2;
 						tratdmg += ROLL_ETRAIT(weapon, magr, tmpdmg, (tmpdmg+2)/3);
@@ -16811,8 +16895,12 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				dmgval_core(&wdice, bigmonst(pd), weapon, weapon->otyp, magr);
 				/* add to the tratdmg counter */
 				tratdmg += weapon_dmg_roll(&wdice, youdef);
-				if(youagr)
+				if(youagr){
 					tratdmg += weapon_dam_bonus(weapon, weapon_type(weapon));
+					if(ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))){
+						tratdmg += weapon_dmg_roll(&wdice, youdef) + weapon_dam_bonus(weapon, weapon_type(weapon));
+					}
+				}
 			}
 			if(stunning_strike && has_head_mon(mdef)){
 				struct weapon_dice wdice;
@@ -16828,6 +16916,9 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			if(modifier_flags&MELEEHURT_LONGSLASH_MASK){
 				struct weapon_dice wdice;
 				long longcount = modifier_flags&MELEEHURT_LONGSLASH_MASK;
+				if(youagr && ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))){
+					longcount++;
+				}
 				if (wizard && (iflags.wizcombatdebug & WIZCOMBATDEBUG_DMG) && WIZCOMBATDEBUG_APPLIES(magr, mdef))
 					pline("Long slash %ldx!", longcount);
 				/* grab the weapon dice from dmgval_core */
@@ -17135,9 +17226,19 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		//Give skilled rangers (and others) some help vs. armor
 		if(fired && launcher && valid_weapon_attack && weapon && is_aimable(weapon, attackmask) && dr)
 			dr = max(dr-skill_damage, 0);
+		//Focus-fire plus focus helps vs. remaining armor as well
+		if(!thrown && dr && weapon && weapon->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(weapon, magr, ETRAIT_FOCUS_FIRE)
+			&& youagr && ZFOCUS(weapon) && ROLL_ETRAIT(weapon, magr, TRUE, rn2(2))
+		){
+			dr = max(dr-skill_damage, 0);
+		}
 		//Armor-penetrating weapons do 0-1x or 1-2x bonus skill damage to dr (up to +10 vs dr)
 		if(valid_weapon_attack && weapon && magr && CHECK_ETRAIT(weapon, magr, ETRAIT_PENETRATE_ARMOR) && ROLL_ETRAIT(weapon, magr, TRUE, rn2(2))){
-			dr = max_ints(dr - (ROLL_ETRAIT(weapon, magr, rnd(2), 1) * skill_damage), 0);
+			//Focus does up to +40 vs. dr
+			if(youagr && ZFOCUS(weapon))
+				dr = max_ints(dr - (ROLL_ETRAIT(weapon, magr, rn1(7,2), 2) * skill_damage), 0);
+			else
+				dr = max_ints(dr - (ROLL_ETRAIT(weapon, magr, rnd(2), 1) * skill_damage), 0);
 		}
 		
 		subtotl -= dr;
@@ -22195,7 +22296,7 @@ perform_expert_move()
 				messaged = TRUE;
 			}
 			boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-			xmeleehity(&youmonst, mdef, &lungehit, &uwep, vis, 0, FALSE, 0);
+			xmeleehity(&youmonst, mdef, &lungehit, &uwep, vis, 0, FALSE, (ZFOCUS(uwep)) ? ATTKFLAG_DOUBLE_DAMAGE : 0);
 			used_move = TRUE;
 		}
 	}
@@ -22212,7 +22313,7 @@ perform_expert_move()
 				messaged = TRUE;
 			}
 			boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-			xmeleehity(&youmonst, mdef, &pushhit, &uwep, vis, 0, FALSE, 0);
+			xmeleehity(&youmonst, mdef, &pushhit, &uwep, vis, 0, FALSE, (ZFOCUS(uwep)) ? ATTKFLAG_DOUBLE_DAMAGE : 0);
 			used_move = TRUE;
 		}
 	}
