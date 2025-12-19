@@ -2707,7 +2707,7 @@ doturn()
 	int once, range, xlev;
 	short fast = 0;
 
-	if (!Role_if(PM_PRIEST) && !Role_if(PM_KNIGHT) && !Role_if(PM_KENSEI) && !Race_if(PM_VAMPIRE) && !(Role_if(PM_NOBLEMAN) && Race_if(PM_ELF))){
+	if (!u.upriest && !Role_if(PM_KNIGHT) && !Race_if(PM_VAMPIRE) && !(Role_if(PM_NOBLEMAN) && Race_if(PM_ELF))){
 		/* Try to use turn undead spell. */
 		if (objects[SPE_TURN_UNDEAD].oc_name_known) {
 		    register int sp_no;

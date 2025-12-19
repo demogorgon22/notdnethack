@@ -637,7 +637,7 @@ int booktype;
 		break;
 	}
 	if(related && skill >= skillmin){
-		if(Role_if(PM_WIZARD)
+		if(u.uwizard
 			|| parasite_count() >= 6
 			|| (u.sealsActive&SEAL_PAIMON)
 			|| (Role_if(PM_HEALER) && spell_skilltype(skill) == P_HEALING_SPELL)
@@ -792,7 +792,7 @@ struct obj *spellbook;
 			
 			/* only wizards know if a spell is too difficult */
 			/* paimon makes you an honorary wizard */
-			if ((Role_if(PM_WIZARD) || u.sealsActive&SEAL_PAIMON) && read_ability < 20 && !confused) {
+			if ((u.uwizard || u.sealsActive&SEAL_PAIMON) && read_ability < 20 && !confused) {
 			    char qbuf[QBUFSZ];
 			    Sprintf(qbuf, "This spellbook is %sdifficult to comprehend. Continue?", (read_ability < 12 ? "very " : ""));
 			    if (yn(qbuf) != 'y') {
@@ -1692,7 +1692,7 @@ int energy;
 	 * understand quite well how to cast spells.
 	 */
 	intell = ACURR(A_INT);
-	if (!Role_if(PM_WIZARD)){
+	if (!u.uwizard){
 		if(uarmh && uarmh->oartifact == ART_APOTHEOSIS_VEIL) intell -= 4;
 		else if(u.sealsActive&SEAL_PAIMON) intell -= 6;
 		else intell -= 10;
@@ -4450,7 +4450,7 @@ int spell;
 			vision_full_recalc = 1;	/* lighting changed */
 			if(u.sealsActive&SEAL_TENEBROUS) unbind(SEAL_TENEBROUS,TRUE); /* First Word vs Last Word */
 			doredraw();
-			u.ufirst_light_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_light_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		break;
 		case PART_WATER:{
 			boolean parted = FALSE;
@@ -4507,7 +4507,7 @@ int spell;
 				//Update
 				sx += u.dx, sy += u.dy;
 			}
-			u.ufirst_sky_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_sky_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		}break;
 		case OVERGROW:
 			for(sy = 0; sy < ROWNO; sy++){
@@ -4559,7 +4559,7 @@ int spell;
 			}
 			vision_full_recalc = 1;	/* trees may have sprouted */
 			doredraw();
-			u.ufirst_life_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_life_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		break;
 		case APPLE_WORD:
 			You("speak the dreadful truth!");
@@ -4574,7 +4574,7 @@ int spell;
 					}
 				}
 			}
-			u.ufirst_know_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_know_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		break;
 		default:
 			pline("Unknown word of power!");
@@ -4763,7 +4763,7 @@ spelleffects(int spell, boolean atme, int spelltyp)
 	skill = spell_skilltype(pseudo->otyp);
 	role_skill = P_SKILL(skill);
 	if(Spellboost) role_skill++;
-	if(Role_if(PM_WIZARD)) role_skill++;
+	if(u.uwizard) role_skill++;
 	
 	n = 0;
 	switch(pseudo->otyp)  {
@@ -6121,7 +6121,7 @@ int spell;
 			cast_bon = 0;
 			if(spell_skilltype(spellid(spell)) == P_CLERIC_SPELL
 			 || spell_skilltype(spellid(spell)) == P_HEALING_SPELL
-			 || Role_if(PM_PRIEST)
+			 || u.upriest
 			 || Role_if(PM_MONK)
 			 || Role_if(PM_HEALER)
 			) cast_bon += 2;
@@ -6137,7 +6137,7 @@ int spell;
 			cast_bon = 0;
 			if(spell_skilltype(spellid(spell)) == P_CLERIC_SPELL
 			 || spell_skilltype(spellid(spell)) == P_HEALING_SPELL
-			 || Role_if(PM_PRIEST)
+			 || u.upriest
 			 || Role_if(PM_HEALER)
 			) cast_bon += 2;
 			if (uwep->oartifact || objects[uwep->otyp].oc_unique)
@@ -6226,7 +6226,7 @@ int spell;
 			splcaster -= urole.spelarmr * cast_bon / 3;
 		}
 		
-		if(Role_if(PM_WIZARD) && uwep->oclass == WAND_CLASS) {	// a tool of spellweaving
+		if(u.uwizard && uwep->oclass == WAND_CLASS) {	// a tool of spellweaving
 			cast_bon = 1;
 			if (uwep->oartifact)
 				cast_bon *= 2;

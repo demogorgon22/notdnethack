@@ -46,7 +46,7 @@ const struct worn {
 #define w_blocks(o,m) \
 		((is_mummy_wrap(o) && ((m) & W_ARMC)) ? INVIS : \
 		 (o->otyp == CORNUTHAUM && ((m) & W_ARMH) && \
-			!(Role_if(PM_WIZARD) || Race_if(PM_INCANTIFIER))) ? CLAIRVOYANT : 0)
+			!(u.uwizard || Race_if(PM_INCANTIFIER))) ? CLAIRVOYANT : 0)
 		/* note: monsters don't have clairvoyance, so your role
 		   has no significant effect on their use of w_blocks() */
 

@@ -440,7 +440,7 @@ doread()
 			return MOVE_STANDARD;
 		} else {
 			pline("The density of the pyramid increases towards the tip, painfully so, enabling it to stand tip-downwards.");
-			if(Role_if(PM_EXILE) || Role_if(PM_WIZARD) || u.specialSealsKnown&SEAL_NUDZIRATH)
+			if(Role_if(PM_EXILE) || u.uwizard || u.specialSealsKnown&SEAL_NUDZIRATH)
 				pline("The square 'roof' of the pyramid is engraved with curses to the bringers of light.");
 			else
 				pline("There are engravings on the square 'roof' of the pyramid, but you can't read them.");

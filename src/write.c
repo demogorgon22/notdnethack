@@ -294,7 +294,7 @@ found_ward:
 	/* see if there's enough ink */
 	basecost = cost(new_obj);
 	
-	if(Role_if(PM_WIZARD))
+	if(u.uwizard)
 		basecost = basecost * 4 / 5;
 
 	if(pen->spe < basecost/2)  {
@@ -368,7 +368,7 @@ found_ward:
 	//			60			83				94				109					74%
 	int target = u.ulevel*3 + ACURR(A_INT) + ACURR(A_WIS)/2 + school_skill;
 	
-	if(!Role_if(PM_WIZARD) && target > 0)
+	if(!u.uwizard && target > 0)
 		target /= 5;
 	
 	/* can't write if we don't know it - unless we're lucky */

@@ -17110,7 +17110,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		/* must come after all apply_hit_effects */
 		if(!recursed && magr){
 			/* priests do extra damage with all artifacts */
-			if (artif_hit && (youagr ? Role_if(PM_PRIEST) : mon_priest(magr))){
+			if (artif_hit && (youagr ? u.upriest : mon_priest(magr))){
 				artidmg += d(1, mlev(magr));
 			}
 			/* monks do extra damage with kicks */

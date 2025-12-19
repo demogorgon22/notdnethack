@@ -3323,7 +3323,7 @@ boolean youagr;
 	if(weap && (weap->inv_prop == GITH_ART || weap->inv_prop == ZERTH_ART || weap->inv_prop == AMALGUM_ART) && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL))
 		bonus += otmp->spe+1;
 	
-	if(youagr && Role_if(PM_PRIEST)) return bonus + weap->accuracy; //priests always get the maximum to-hit bonus.
+	if(youagr && u.upriest) return bonus + weap->accuracy; //priests always get the maximum to-hit bonus.
 	
 	if (weap && weap->accuracy && spec_applies(otmp, mon, FALSE))
 	    return bonus + rnd((int)weap->accuracy);
@@ -9290,25 +9290,25 @@ struct obj *obj;
 			obj->age = monstermoves;
 			return ibite_upgrade_menu(obj);
 		case IPROP_TELEPORT:
-			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			if(tele())
 				return MOVE_STANDARD;
 			else return MOVE_CANCELLED;
 
 		case IPROP_LEVELPORT:
-			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			if(level_tele())
 				return MOVE_STANDARD;
 			else return MOVE_CANCELLED;
 
 		case IPROP_BRANCHPORT:
-			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			if(branch_tele())
 				return MOVE_STANDARD;
 			else return MOVE_CANCELLED;
 
 		case -2:
-			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			doibite_ghosts(&youmonst, obj);
 			return MOVE_STANDARD;
 	}
@@ -10004,7 +10004,7 @@ arti_invoke(obj)
 	    You_feel("that %s %s ignoring you.",
 		     the(xname(obj)), otense(obj, "are"));
 	    /* and just got more so; patience is essential... */
-		obj->age += Role_if(PM_PRIEST) ? (long) d(1,20) : (long) d(3,10);
+		obj->age += u.upriest ? (long) d(1,20) : (long) d(3,10);
 	    return MOVE_PARTIAL;
 	}
 	if(!( /* some properties can be used as often as desired, or track cooldowns in a different way */
@@ -10026,7 +10026,7 @@ arti_invoke(obj)
 		|| oart->inv_prop == SEVENFOLD
 		|| oart->inv_prop == IBITE_ARM
 	))
-		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+		obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 
 	if(oart->inv_prop == VOID_CHIME) obj->age = monstermoves + 125L;
 
@@ -10541,7 +10541,7 @@ arti_invoke(obj)
 				    You_feel("that %s %s ignoring you.",
 					     the(xname(obj)), otense(obj, "are"));
 					/* and just got more so; patience is essential... */
-					artinstance[obj->oartifact].SnSd1 += Role_if(PM_PRIEST)||Role_if(PM_SAMURAI) ? (long) d(1,20) : (long) d(3,10);
+					artinstance[obj->oartifact].SnSd1 += u.upriest||Role_if(PM_SAMURAI) ? (long) d(1,20) : (long) d(3,10);
 				    return MOVE_PARTIAL;
 				}
 				else if(throweffect()){
@@ -10551,7 +10551,7 @@ arti_invoke(obj)
 					dmg += spell_damage_bonus();
 					dmg *= 3;
 					pline("Some no mai, Tsukishiro!");
-					artinstance[obj->oartifact].SnSd1 = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST)||Role_if(PM_SAMURAI) ? .9 : 1));
+					artinstance[obj->oartifact].SnSd1 = monstermoves + (long)(rnz(100)*(u.upriest||Role_if(PM_SAMURAI) ? .9 : 1));
 						explode(u.dx, u.dy,
 							AD_COLD, 0,
 							dmg,
@@ -10564,7 +10564,7 @@ arti_invoke(obj)
 				    You_feel("that %s %s ignoring you.",
 					     the(xname(obj)), otense(obj, "are"));
 					/* and just got more so; patience is essential... */
-					artinstance[obj->oartifact].SnSd2 += Role_if(PM_PRIEST)||Role_if(PM_SAMURAI) ? (long) d(1,20) : (long) d(3,10);
+					artinstance[obj->oartifact].SnSd2 += u.upriest||Role_if(PM_SAMURAI) ? (long) d(1,20) : (long) d(3,10);
 				    return MOVE_PARTIAL;
 				}
 				else if(getdir((char *)0) && (u.dx || u.dy)) {
@@ -10573,7 +10573,7 @@ arti_invoke(obj)
 					zapdata.flat = u.ulevel + obj->spe;
 
 					pline("Tsugi no mai, Hakuren!");
-					artinstance[obj->oartifact].SnSd2 = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST)||Role_if(PM_SAMURAI) ? .9 : 1));
+					artinstance[obj->oartifact].SnSd2 = monstermoves + (long)(rnz(100)*(u.upriest||Role_if(PM_SAMURAI) ? .9 : 1));
 					
 					zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 7 + obj->spe, &zapdata);
 				}
@@ -10584,13 +10584,13 @@ arti_invoke(obj)
 				    You_feel("that %s %s ignoring you.",
 					     the(xname(obj)), otense(obj, "are"));
 					/* and just got more so; patience is essential... */
-					artinstance[obj->oartifact].SnSd3 += Role_if(PM_PRIEST)||Role_if(PM_SAMURAI) ? (long) d(1,20) : (long) d(3,10);
+					artinstance[obj->oartifact].SnSd3 += u.upriest||Role_if(PM_SAMURAI) ? (long) d(1,20) : (long) d(3,10);
 				    return MOVE_PARTIAL;
 				}
 				else{
 					pline("San no mai, Shirafune!");
 					pline("Ice crackles around your weapon!");
-					artinstance[obj->oartifact].SnSd3 = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST)||Role_if(PM_SAMURAI) ? .9 : 1));
+					artinstance[obj->oartifact].SnSd3 = monstermoves + (long)(rnz(100)*(u.upriest||Role_if(PM_SAMURAI) ? .9 : 1));
 					obj->cursed = 0;
 					obj->blessed = 1;
 					obj->oeroded = 0;
@@ -12059,7 +12059,7 @@ arti_invoke(obj)
 						pline("What is this strange command!?");
 					break;
 				}
-				if(lordlydictum >= COMMAND_LADDER) obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1)); 
+				if(lordlydictum >= COMMAND_LADDER) obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1)); 
 			} else You_feel("that you should be wielding %s.", the(xname(obj)));;
 		break;
 		case ANNUL:
@@ -12303,8 +12303,8 @@ arti_invoke(obj)
 						pline("What is this strange function.");
 					break;
 				}
-				if(annulusFunc >= COMMAND_ANNUL) obj->ovara_timeout = monstermoves + (long)(rnz(1000)*(Role_if(PM_PRIEST) ? .8 : 1)); 
-				else if(annulusFunc >= COMMAND_BELL) obj->ovara_timeout = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1)); 
+				if(annulusFunc >= COMMAND_ANNUL) obj->ovara_timeout = monstermoves + (long)(rnz(1000)*(u.upriest ? .8 : 1)); 
+				else if(annulusFunc >= COMMAND_BELL) obj->ovara_timeout = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1)); 
 			} else You_feel("that you should be wielding %s.", the(xname(obj)));
 		break;
 		case VOID_CHIME:
@@ -13422,7 +13422,7 @@ arti_invoke(obj)
 	    /* when turning off property, determine downtime */
 	    /* arbitrary for now until we can tune this -dlc */
 //	    obj->age = monstermoves + rnz(100);
-		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .75 : 1));
+		obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .75 : 1));
 	}
 
 	if ((eprop & ~W_ARTI) ||

@@ -2343,6 +2343,7 @@ u_init()
 				initialforgotspell(SPE_CREATE_FAMILIAR);
 				initialforgotpriestspells(2);
 				skill_init(Skill_Dro_F_H);
+				u.upriest = TRUE;
 			}
 			else {
 #ifndef GOLDOBJ
@@ -2358,6 +2359,7 @@ u_init()
 				initialforgotspell(SPE_FORCE_BOLT);
 				initialforgotwizardspells(3);
 				skill_init(Skill_Dro_M_H);
+				u.uwizard = TRUE;
 			}
 			knows_object(POT_HEALING);
 			knows_object(POT_EXTRA_HEALING);
@@ -2622,6 +2624,7 @@ u_init()
 		skill_init(Skill_Pir);
 		break;
 	case PM_PRIEST:
+		u.upriest = TRUE;
 		if(!(flags.female) && Race_if(PM_DROW)){
 			Priest[PRI_WEAPON].trotyp = DROVEN_GREATSWORD;
 		}
@@ -2808,6 +2811,7 @@ u_init()
 			ini_inv(DarkWand);
 		}
 		skill_init(Skill_W);
+		u.uwizard = TRUE;
 		if(Race_if(PM_DROW) && flags.female) skill_add(Skill_DW);
 		break;
 

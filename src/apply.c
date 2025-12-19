@@ -1023,7 +1023,7 @@ struct obj **obj_p;
 		if(obj->oartifact == ART_HAND_MIRROR_OF_CTHYLLA && obj->age < moves && !Blind){
 			pline("An incomprehensible sight meets your eyes!");
 			losehp(d(15,15), "looking into Cthylla's hand-mirror", KILLED_BY);
-			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		} else if(!Blind) {
 			if (youracedata->mlet == S_VAMPIRE || Invisible) {
 				You("don't have a reflection.");
@@ -1210,7 +1210,7 @@ struct obj **obj_p;
 	} else if(obj->oartifact == ART_HAND_MIRROR_OF_CTHYLLA && obj->age < moves &&
 				(!mtmp->minvis || mon_resistance(mtmp,SEE_INVIS))
 	){
-		obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+		obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		if (vis)
 		    pline("%s is blasted by its reflection.", Monnam(mtmp));
 		monflee(mtmp, d(2,4), FALSE, FALSE);
@@ -1315,9 +1315,9 @@ int spiritseal;
 			use_unicorn_horn(obj);
 		if(obj->age < monstermoves){
 			pleased(GOD_KANNON, TRUE, 0, FALSE);
-			obj->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			obj->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		}
-		else obj->age += Role_if(PM_PRIEST) ? (long) d(1,20) : (long) d(3,10);
+		else obj->age += u.upriest ? (long) d(1,20) : (long) d(3,10);
 	} else if (ordinary) {
 #ifdef	AMIGA
 	    amii_speaker( obj, "ahdhgqeqdhehaqdqfhgw", AMII_MUFFLED_VOLUME );

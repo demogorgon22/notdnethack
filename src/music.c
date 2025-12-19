@@ -1800,7 +1800,7 @@ struct obj *instr;
 	if(instr->oartifact == ART_SILVER_STARLIGHT){
 	    if (do_spec && instr->spe > 0) {
 			if(instr->age > monstermoves) consume_obj_charge(instr, TRUE);
-			else instr->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			else instr->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			
 			You("produce soft music.");
 			put_monsters_to_sleep(u.ulevel * 5);
@@ -1814,7 +1814,7 @@ struct obj *instr;
 	} else if(instr->oartifact == ART_FLUTE_OF_TEZCATLIPOCA){
 	    if (do_spec && instr->spe > 0) {
 			if(instr->age > monstermoves) consume_obj_charge(instr, TRUE);
-			else instr->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			else instr->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			coord cc;
 			cc.x = u.ux;
 			cc.y = u.uy;

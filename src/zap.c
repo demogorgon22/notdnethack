@@ -2496,7 +2496,7 @@ register struct obj *wand;
 	if(wand->oclass == WAND_CLASS){
 		if(wand->oartifact && wand->spe < 1 && wand->age < moves){
 			wand->spe = 1;
-			wand->age = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			wand->age = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		}
 		if(wand->spe < 0 || (wand->spe == 0 && (wand->oartifact || rn2(121))))
 			return 0;

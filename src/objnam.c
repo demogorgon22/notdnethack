@@ -701,7 +701,7 @@ char *buf;
 #endif
 			&& obj->otyp != FAKE_AMULET_OF_YENDOR
 			&& obj->otyp != AMULET_OF_YENDOR
-			&& !Role_if(PM_PRIEST)))
+			&& !u.upriest))
 			Strcat(buf, "uncursed ");
 	}
 }
@@ -1940,7 +1940,7 @@ boolean getting_obj_base_desc;
 	*/
 	if (!nn && ocl->oc_uses_known && ocl->oc_unique) obj->known = 0;
 	if (!Blind) obj->dknown = TRUE;
-	if (Role_if(PM_PRIEST)) obj->bknown = TRUE;
+	if (u.upriest) obj->bknown = TRUE;
 	if (u.sealsActive&SEAL_ANDROMALIUS) obj->sknown = TRUE;
 	//if (obj_is_pname(obj)) goto nameit;
 	if (!getting_obj_base_desc) {
@@ -6132,7 +6132,7 @@ typfnd:
 				u.uconduct.wisharti++;	/* KMH, conduct */
 
 				/* characters other than priests also have their god's likelyhood to grant artifacts decreased, as well as future cult gifts made more rare */
-				if(!Role_if(PM_PRIEST)){
+				if(!u.upriest){
 					u.uartisval += arti_value(otmp);
 					u.ucultsval += arti_value(otmp);
 				}

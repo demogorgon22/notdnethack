@@ -348,7 +348,7 @@ allow_category(struct obj *obj, int qflags)
 {
 	if(qflags&NO_EQUIPMENT && obj->owornmask)
 		return FALSE;
-    if (Role_if(PM_PRIEST)) obj->bknown = TRUE;
+    if (u.upriest) obj->bknown = TRUE;
     if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0))
 	return TRUE;

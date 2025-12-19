@@ -5138,7 +5138,7 @@ count_buc(list, type)
     int count = 0;
 
     while (list) {
-	if (Role_if(PM_PRIEST)) list->bknown = TRUE;
+	if (u.upriest) list->bknown = TRUE;
 	switch(type) {
 	    case BUC_BLESSED:
 		if (list->oclass != COIN_CLASS && list->bknown && list->blessed)
@@ -5667,7 +5667,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 		(obj->ovar1 != otmp->ovar1 && obj->otyp != CORPSE && obj->otyp != FORCE_BLADE && obj->otyp != RAKUYO_DAGGER && obj->otyp != BLADE_OF_PITY) ||
 		(obj->oward != otmp->oward) ||
 	    obj->spe != otmp->spe || obj->dknown != otmp->dknown ||
-	    (obj->bknown != otmp->bknown && !Role_if(PM_PRIEST)) ||
+	    (obj->bknown != otmp->bknown && !u.upriest) ||
 	    obj->cursed != otmp->cursed || obj->blessed != otmp->blessed ||
 	    obj->no_charge != otmp->no_charge ||
 	    obj->obroken != otmp->obroken ||

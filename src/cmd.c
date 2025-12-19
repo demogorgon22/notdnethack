@@ -640,7 +640,7 @@ boolean you_abilities;
 	if (mon_abilities && attacktype(youracedata, AT_TNKR)){
 		add_ability('t', "Tinker", MATTK_TNKR);
 	}
-	if (you_abilities && (Role_if(PM_PRIEST) || Role_if(PM_KNIGHT) || Role_if(PM_KENSEI) || Race_if(PM_VAMPIRE) || (Role_if(PM_NOBLEMAN) && Race_if(PM_ELF)))) {
+	if (you_abilities && (u.upriest || Role_if(PM_KNIGHT) || Race_if(PM_VAMPIRE) || (Role_if(PM_NOBLEMAN) && Race_if(PM_ELF)))) {
 		add_ability('T', "Turn undead", MATTK_U_TURN_UNDEAD);
 	}
 	if (mon_abilities && is_unicorn(youracedata)){

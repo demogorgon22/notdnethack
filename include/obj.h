@@ -1344,8 +1344,8 @@ struct obj {
 #define is_plusten(otmp)	(arti_plusten(otmp))
 #define is_plussev_armor(otmp)	(is_elven_armor((otmp))\
 								|| arti_plussev((otmp))\
-								|| ((otmp)->otyp == CORNUTHAUM && Role_if(PM_WIZARD))\
-								|| ((otmp)->otyp == ROBE && Role_if(PM_WIZARD) && (otmp)->oartifact == ART_ROBE_OF_THE_ARCHMAGI)\
+								|| ((otmp)->otyp == CORNUTHAUM && u.uwizard)\
+								|| ((otmp)->otyp == ROBE && u.uwizard && (otmp)->oartifact == ART_ROBE_OF_THE_ARCHMAGI)\
 								|| (otmp)->otyp == CRYSTAL_HELM\
 								|| (otmp)->otyp == CRYSTAL_PLATE_MAIL\
 								|| (otmp)->otyp == CRYSTAL_SHIELD\
@@ -1374,7 +1374,7 @@ struct obj {
 				|| ((otmp)->oartifact == ART_KIKU_ICHIMONJI && Role_if(PM_SAMURAI))\
 				|| ((otmp)->oartifact == ART_JINJA_NAGINATA && Role_if(PM_SAMURAI))\
 				|| ((otmp)->oartifact == ART_SNICKERSNEE && (Role_if(PM_SAMURAI) || Role_if(PM_TOURIST) ))\
-				|| ((otmp)->oartifact == ART_MAGICBANE && Role_if(PM_WIZARD)))
+				|| ((otmp)->oartifact == ART_MAGICBANE && u.uwizard))
 				
 #define always_twoweapable_artifact(otmp) ((otmp)->oartifact == ART_STING\
 				|| (otmp)->oartifact == ART_ORCRIST\

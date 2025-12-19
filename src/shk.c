@@ -4986,7 +4986,7 @@ shk_uncurse(slang, shkp)
 
 	/* Shopkeeper responses */
 	/* KMH -- fixed bknown, curse(), bless(), uncurse() */
-	if (!obj->bknown && !Role_if(PM_PRIEST) &&
+	if (!obj->bknown && !u.upriest &&
 	    !no_cheat)
 	{
 		/* Not identified! */
