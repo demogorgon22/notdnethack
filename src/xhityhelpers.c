@@ -1688,7 +1688,8 @@ struct monst * magr;
 
 	if (hates_chaos_mon(mdef) &&
 		otmp->obj_material == MERCURIAL &&
-		((magr == &youmonst && u.ualign.type != A_LAWFUL && u.ualign.type != A_NEUTRAL) || /* Note: allows chaos, void, and none */
+		(!magr ||
+		 (magr == &youmonst && u.ualign.type != A_LAWFUL && u.ualign.type != A_NEUTRAL) || /* Note: allows chaos, void, and none */
 		 (magr != &youmonst && (magr->data->maligntyp < 0 || magr->data->maligntyp == MON_A_VOID || magr->data->maligntyp == MON_A_NONE))) &&
 		!(is_lightsaber(otmp) && litsaber(otmp))
 	) {
@@ -1843,7 +1844,7 @@ struct obj * weapon;
 			return 2;
 
 		/* Ghost that thinks it's alive and solid */
-		if (magr->mtyp == PM_BEING_OF_IB || magr->mtyp == PM_PRIEST_OF_IB)
+		if (magr && (magr->mtyp == PM_BEING_OF_IB || magr->mtyp == PM_PRIEST_OF_IB))
 			return 2;
 
 		if ((hates_silver(pd) && !(youdef && u.sealsActive&SEAL_EDEN)) && (
