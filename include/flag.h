@@ -177,6 +177,8 @@ struct flag {
 
 	Bitfield(disp_inv, 1);			/* currently displaying inventory, use separate obuf list */
 
+	Bitfield(lightsaber_max, 3);	/* maximum lightsaber skill level achieved, (assumes 0 - 6 range) */
+
 	/* KMH, role patch -- Variables used during startup.
 	 *
 	 * If the user wishes to select a role, race, gender, and/or alignment

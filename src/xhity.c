@@ -16617,6 +16617,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			/* add to the bonsdmg counter */
 			bonsdmg += skill_damage;
 
+			/* track lightsaber skill */
+			if(weapon && is_lightsaber(weapon) && litsaber(weapon)){
+				flags.lightsaber_max = max(flags.lightsaber_max, P_SKILL(P_SABER));
+			}
+
 			/* now, train skills */
 			use_skill((melee && u.twoweap) ? P_TWO_WEAPON_COMBAT : wtype, 1);
 

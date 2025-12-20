@@ -162,6 +162,7 @@ int skill;
 STATIC_DCL boolean FDECL(can_advance, (int, BOOLEAN_P));
 STATIC_DCL boolean FDECL(could_advance, (int));
 STATIC_DCL boolean FDECL(peaked_skill, (int));
+STATIC_DCL boolean FDECL(could_advance_lightsaber, (int));
 STATIC_DCL int FDECL(slots_required, (int));
 
 #ifdef OVL1
@@ -3393,6 +3394,7 @@ boolean speedy;
 				&& practice_needed_to_advance(OLD_P_SKILL(skill)) > 0
 				&& u.skills_advanced < P_SKILL_LIMIT
 				&& u.weapon_slots >= slots_required(skill)
+				&& (!is_lightsaber_skill(skill) || P_SKILL_CORE(skill, FALSE) < flags.lightsaber_max)
 			)
 		);
 }
@@ -3407,6 +3409,7 @@ int skill;
 	    P_ADVANCE(skill) >=
 		(unsigned) practice_needed_to_advance(OLD_P_SKILL(skill))
 		&& practice_needed_to_advance(OLD_P_SKILL(skill)) > 0
+		&& u.weapon_slots < slots_required(skill)
 	    && u.skills_advanced < P_SKILL_LIMIT;
 }
 
@@ -3420,6 +3423,20 @@ int skill;
 	    && P_SKILL_CORE(skill, FALSE) >= P_MAX_SKILL_CORE(skill, FALSE) && (
 	    (P_ADVANCE(skill) >=
 		(unsigned) practice_needed_to_advance(OLD_P_SKILL(skill))));
+}
+
+/* return true if this skill could be advanced if your primary skill was higher */
+STATIC_OVL boolean
+could_advance_lightsaber(skill)
+int skill;
+{
+    return !OLD_P_RESTRICTED(skill)
+	    && P_SKILL_CORE(skill, FALSE) < P_MAX_SKILL_CORE(skill, FALSE) && 
+	    P_ADVANCE(skill) >=
+		(unsigned) practice_needed_to_advance(OLD_P_SKILL(skill))
+		&& practice_needed_to_advance(OLD_P_SKILL(skill)) > 0
+	    && is_lightsaber_skill(skill)
+		&& P_SKILL_CORE(skill, FALSE) >= flags.lightsaber_max;
 }
 
 STATIC_OVL void
@@ -3483,7 +3500,7 @@ int enhance_skill(boolean want_dump)
 #endif
 {
     int pass, i, n, len, longest,
-	to_advance, eventually_advance, maxxed_cnt;
+	to_advance, eventually_advance, lightsaber_advance, maxxed_cnt;
     char buf[BUFSZ], sklnambuf[BUFSZ], maxsklnambuf[BUFSZ];
     const char *prefix;
     menu_item *selected;
@@ -3505,13 +3522,14 @@ int enhance_skill(boolean want_dump)
 
 	do {
 	    /* find longest available skill name, count those that can advance */
-	    to_advance = eventually_advance = maxxed_cnt = 0;
+	    to_advance = eventually_advance = lightsaber_advance = maxxed_cnt = 0;
 	    for (longest = 0, i = 0; i < P_NUM_SKILLS; i++) {
 			if (P_RESTRICTED(i)) continue;
 			if ((len = strlen(P_NAME(i))) > longest)
 				longest = len;
 			if (can_advance(i, speedy)) to_advance++;
 			else if (could_advance(i)) eventually_advance++;
+			else if (could_advance_lightsaber(i)) lightsaber_advance++;
 			else if (peaked_skill(i)) maxxed_cnt++;
 	    }
 
@@ -3525,7 +3543,7 @@ int enhance_skill(boolean want_dump)
 
 	    /* start with a legend if any entries will be annotated
 	       with "*" or "#" below */
-	    if (eventually_advance > 0 || maxxed_cnt > 0) {
+	    if (eventually_advance > 0 || lightsaber_advance > 0 || maxxed_cnt > 0) {
 		any.a_void = 0;
 		if (eventually_advance > 0) {
 		    Sprintf(buf,
@@ -3534,6 +3552,13 @@ int enhance_skill(boolean want_dump)
 			    (u.ulevel < MAXULEV) ?
 				"when you're more experienced" :
 				"if skill slots become available");
+		    add_menu(win, NO_GLYPH, &any, 0, 0, ATR_NONE,
+			     buf, MENU_UNSELECTED);
+		}
+		if (lightsaber_advance > 0) {
+		    Sprintf(buf,
+			    "(Skill%s flagged by \")\" may be enhanced once you have sufficient skill with an appropriate weapon.)",
+			    plur(lightsaber_advance));
 		    add_menu(win, NO_GLYPH, &any, 0, 0, ATR_NONE,
 			     buf, MENU_UNSELECTED);
 		}
@@ -3596,6 +3621,8 @@ int enhance_skill(boolean want_dump)
 		    prefix = "";	/* will be preceded by menu choice */
 		else if (could_advance(i))
 		    prefix = "  * ";
+		else if (could_advance_lightsaber(i))
+		    prefix = "  ) ";
 		else if (peaked_skill(i))
 		    prefix = "  # ";
 		else
