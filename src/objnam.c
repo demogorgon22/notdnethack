@@ -979,6 +979,9 @@ boolean dofull;
 		if (artinstance[obj->oartifact].BLactive >= moves)
 			Strcat(buf, "sanguine ");
 	}
+	if(check_oprop(obj, OPROP_HAEM)){
+		Strcat(buf, "blood-egged ");
+	}
 	
 	if (!check_oprop(obj, OPROP_NONE) && (obj->oartifact == 0 || dofull)){
 		if (check_oprop(obj, OPROP_ASECW) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_ACID))
