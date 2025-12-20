@@ -241,6 +241,7 @@ struct obj *otmp;
 #define MUSE_LIFE_FLASK 20
 #define MUSE_HEALING_SURGE 21
 #define MUSE_DANCING_SWORD 22
+#define MUSE_SELF_REPAIR 23
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -307,7 +308,20 @@ struct monst *mtmp;
 		}
 	    }
 	}
-
+	if(is_clockwork(mtmp->data) && mtmp->mhp < mtmp->mhpmax){
+		struct monst *menemy;
+		for(menemy = fmon; menemy; menemy = menemy->nmon){
+			if(DEADMONSTER(menemy)) continue;
+			if(menemy->mpeaceful == mtmp->mpeaceful) continue;
+			if(distmin(mtmp->mx,mtmp->my,menemy->mx,menemy->my) > 5) continue;
+			if(!mon_can_see_mon(mtmp,menemy)) continue;
+			break;
+		}
+		if(!menemy && rnd(mtmp->mhpmax) > mtmp->mhp){
+			m.has_defense = MUSE_SELF_REPAIR;
+			return TRUE;
+		}
+	}
 	/* It so happens there are two unrelated cases when we might want to
 	 * check specifically for healing alone.  The first is when the monster
 	 * is blind (healing cures blindness).  The second is when the monster
@@ -1029,6 +1043,15 @@ mon_tele:
 		mon_doturn(mtmp);
 		mtmp->mspec_used = 3;
 		return DEADMONSTER(mtmp) ? 1 : 2;
+	case MUSE_SELF_REPAIR:
+		if(canspotmon(mtmp)) pline("%s attempts to make repairs.", Monnam(mtmp));
+		if(!rn2(15 - mlev(mtmp)/2)){
+			mtmp->mhp += rnd(10);
+			if(mtmp->mhp > mtmp->mhpmax) mtmp->mhp = mtmp->mhpmax;
+			if(canspotmon(mtmp) && mtmp->mhp == mtmp->mhpmax)
+				pline("%s completes its repairs!", Monnam(mtmp));
+		}
+		return 2;
 	case MUSE_DANCING_SWORD:
 	{
 		struct monst * blade;
