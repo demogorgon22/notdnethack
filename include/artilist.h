@@ -530,7 +530,6 @@ A("Winter Reaper",			RAPIER,	(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
-/* Needs encyc */
 A("Anguirel",			DROVEN_GREATSWORD,	(const char *)0,
 	1500L, IRON, MZ_DEFAULT, 150,
 	A_LAWFUL, PM_KENSEI, PM_DROW, TIER_B, (ARTG_NOGEN),
