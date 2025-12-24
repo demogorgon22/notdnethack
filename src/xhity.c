@@ -21668,6 +21668,10 @@ amalgam_stars()
 		amalgam_star(PLATINUM);
 	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL)
 		amalgam_star(MITHRIL);
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_COPPER)
+		amalgam_star(COPPER);
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_LEAD)
+		amalgam_star(LEAD);
 }
 
 void

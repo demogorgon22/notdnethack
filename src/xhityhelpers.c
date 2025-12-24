@@ -3872,6 +3872,18 @@ obj_is_material(struct obj *obj, int mat)
 					return TRUE;
 			}
 		break;
+		case COPPER:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_COPPER)
+					return TRUE;
+			}
+		break;
+		case LEAD:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_LEAD)
+					return TRUE;
+			}
+		break;
 	}
 	return FALSE;
 }

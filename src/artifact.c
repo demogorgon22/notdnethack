@@ -16211,6 +16211,12 @@ struct obj **opptr;
 			case MITHRIL:
 				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
 			break;
+			case COPPER:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+			break;
+			case LEAD:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+			break;
 		}
 		switch(sky2->obj_material){
 			case IRON:
@@ -16230,6 +16236,12 @@ struct obj **opptr;
 			break;
 			case MITHRIL:
 				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+			break;
+			case COPPER:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+			break;
+			case LEAD:
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
 			break;
 		}
 		if(sky1->blessed || sky2->blessed)

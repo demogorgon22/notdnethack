@@ -375,6 +375,8 @@ struct artinstance{
 #define	ZMAT_GOLD		0x00000008L
 #define	ZMAT_PLATINUM	0x00000010L
 #define	ZMAT_MITHRIL	0x00000020L
+#define	ZMAT_COPPER	    0x00000040L
+#define	ZMAT_LEAD   	0x00000080L
 #define mortalBloodsmoke avar3
 	long avar4;
 #define SnSd3duration avar4

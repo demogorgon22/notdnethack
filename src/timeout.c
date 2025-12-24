@@ -2944,6 +2944,12 @@ long timeout;
 				case MITHRIL:
 					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
 				break;
+				case COPPER:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+				break;
+				case LEAD:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+				break;
 			}
 		}
 		if(obj->where == OBJ_INVENT){

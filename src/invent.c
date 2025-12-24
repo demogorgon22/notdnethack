@@ -3826,6 +3826,8 @@ winid *datawin;
 			ZERTHMATS(ZMAT_GOLD, "gold");
 			ZERTHMATS(ZMAT_PLATINUM, "platinum");
 			ZERTHMATS(ZMAT_MITHRIL, "mithril");
+			ZERTHMATS(ZMAT_COPPER, "copper");
+			ZERTHMATS(ZMAT_LEAD, "lead");
 			Sprintf(buf2, "Amalgamated metals: %s.", buf);
 			OBJPUTSTR(buf2);
 		}
