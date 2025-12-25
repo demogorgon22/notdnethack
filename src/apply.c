@@ -11150,7 +11150,7 @@ doapply()
 
 	if(check_capacity((char *)0)) return MOVE_CANCELLED;
 
-	if (carrying(POT_OIL) || carrying(POT_BLOOD) || uhave_usablestone() || carrying(ROCK))
+	if (carrying(POT_OIL) || carrying(POT_BLOOD) || carrying(POT_SAP) || uhave_usablestone() || carrying(ROCK))
 		Strcpy(class_list, tools_too);
 	else
 		Strcpy(class_list, tools);

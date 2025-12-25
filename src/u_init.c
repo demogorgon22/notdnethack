@@ -680,6 +680,7 @@ static struct trobj UndeadHunter[] = {
 	{ HIGH_BOOTS, 0, ARMOR_CLASS, 1, 0 },
 #define U_BULLETS		9
 	{ BLOOD_BULLET, 0, WEAPON_CLASS, 20, 0 },
+#define U_BULLET_MOLD		10
 	{ NIGHTMARE_S_BULLET_MOLD, 0, TOOL_CLASS, 1, 0 },
 	{ PHLEBOTOMY_KIT, 0, TOOL_CLASS, 1, 0 },
 	{ TORCH, 0, TOOL_CLASS, 1, 0 },
@@ -952,6 +953,8 @@ static struct inv_sub { short race_pm, item_otyp, subs_otyp; } inv_subs[] = {
     { PM_SALAMANDER,	AXE,		SPEAR    },
     { PM_SALAMANDER,	HIGH_BOOTS,		CRAM_RATION    },
     { PM_SALAMANDER,	LOW_BOOTS,		CRAM_RATION    },
+    // Ent substitutions
+    { PM_ENT,	POT_BLOOD,		POT_SAP    },
     // Vampire substitutions
     { PM_VAMPIRE,	ATHAME,				DAGGER    	  },
     { PM_VAMPIRE,	FOOD_RATION,		POT_BLOOD    	  },
@@ -2961,6 +2964,8 @@ u_init()
 				UndeadHunter[U_WEAPON].trotyp = HUNTER_S_LONG_AXE;
 				knows_object(HUNTER_S_LONG_AXE);
 				knows_object(HUNTER_S_AXE);
+				UndeadHunter[U_BULLET_MOLD].trotyp = TINNING_KIT;
+				UndeadHunter[U_BULLET_MOLD].trspe = UNDEF_SPE;
 
 		} else switch(rn2(6)){
 			case 0:
@@ -3644,6 +3649,8 @@ register struct trobj *trop;
 
 			if(obj->otyp == POT_BLOOD) 
 				obj->corpsenm = Role_if(PM_UNDEAD_HUNTER) ? youracedata->mtyp : PM_HUMAN;
+			if(obj->otyp == POT_SAP) 
+				obj->corpsenm = Role_if(PM_UNDEAD_HUNTER) ? youracedata->mtyp : PM_DUNGEON_FERN;
 			if(obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS || obj->otyp == SUNGLASSES || is_weptool(obj))
 				set_obj_size(obj, youracedata->msize);
 			if(obj->oclass == ARMOR_CLASS){

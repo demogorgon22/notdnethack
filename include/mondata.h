@@ -1472,6 +1472,7 @@
 				 (ptr)->mtyp == PM_GAS_SPORE ||         \
 				 is_elemental_sphere(ptr) ||          \
 				 is_gizmo(ptr) ||                     \
+				 is_ent(ptr) ||                     \
 				 (is_clockwork(ptr) &&                \
 					is_naturally_unalive(ptr)) ||     \
 				((ptr)->mlet == S_ELEMENTAL &&        \
