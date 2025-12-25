@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "xhity.h"
 
 
 #define is_bigfoot(x)	((x) == &mons[PM_SASQUATCH])
@@ -48,7 +49,7 @@ register boolean clumsy;
 	}
 	check_caitiff(mon);
 
-	result = xmeleehity(&youmonst, mon, &basickick, (struct obj **)0, -1, 1000, FALSE);
+	result = xmeleehity(&youmonst, mon, &basickick, (struct obj **)0, -1, 1000, FALSE, 0);
 	result = xpassivey(&youmonst, mon, &basickick, (struct obj *)0, -1, result, mdat, TRUE);
 
 	if (result) {
@@ -99,7 +100,7 @@ register xchar x, y;
 	if (Upolyd && attacktype(youmonst.data, AT_KICK)) {
 		/* state variable to signify we are only doing kick attacks */
 		onlykicks = TRUE;
-		xattacky(&youmonst, mon, x, y);
+		xattacky(&youmonst, mon, x, y, 0L);
 		onlykicks = FALSE;
 	    return;
 	}
@@ -148,7 +149,9 @@ doit:
 			Sprintf(buffnam, "%s", Monnam(mon));
 			if(mon_resistance(mon,TELEPORT))
 				mnexto(mon);
-			else if(enexto(&mm, mon->mx, mon->my, mon->data) && abs(mm.x - mon->mx) <= 1 && abs(mm.y - mon->my) <= 1)
+			else if(enexto(&mm, mon->mx, mon->my, mon->data) && abs(mm.x - mon->mx) <= 1 && abs(mm.y - mon->my) <= 1
+				&& (!(mon->mtyp == PM_GRID_BUG || mon->mtyp == PM_BEBELITH) || !((mm.x - mon->mx) && (mm.y - mon->my)))
+			)
 				rloc_to(mon, mm.x, mm.y);
 
 		    if(mon->mx != x || mon->my != y) {
@@ -341,6 +344,39 @@ wing_storm_monsters()
 			
 			mhurtle(mon, u.dx, u.dy, 4, FALSE);
 		}
+	}
+	u.dx = sdx;
+	u.dy = sdy;
+}
+
+void
+cyclone_slash_monsters(boolean full_attack)
+{
+	struct monst *mon;
+	int sdx = u.dx;
+	int sdy = u.dy;
+	static struct attack weaponhit =	{ AT_WEAP, AD_PHYS, 0, 0 };
+
+	extern const int clockwisex[8];
+	extern const int clockwisey[8];
+	int offset = rn2(8);
+	int ix, iy;
+	for(int i = 0; i < 8; i++){
+		//Necessary for any knockbacks.
+		u.dx = clockwisex[(offset+i)%8];
+		u.dy = clockwisey[(offset+i)%8];
+		ix = u.ux + u.dx;
+		iy = u.uy + u.dy;
+		if(!isok(ix, iy))
+			continue;
+		if(u.ustuck && u.uswallow)
+			mon = u.ustuck;
+		else
+			mon = m_at(ix, iy);
+		if(!mon || (mon->mpeaceful && !Hallucination) || DEADMONSTER(mon))
+			continue;
+		
+		xmeleehity(&youmonst, mon, &weaponhit, &uwep, (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0), 0, FALSE, full_attack ? 0 : ATTKFLAG_SHOCKWAVE);
 	}
 	u.dx = sdx;
 	u.dy = sdy;
@@ -738,7 +774,7 @@ int dx, dy;
 	}
 	check_caitiff(mon);
 	You("swing your tail at %s.", the(mon_nam(mon)));
-	result = xmeleehity(&youmonst, mon, &basictail, (struct obj **)0, -1, 1000, FALSE);
+	result = xmeleehity(&youmonst, mon, &basictail, (struct obj **)0, -1, 1000, FALSE, 0);
 	result = xpassivey(&youmonst, mon, &basictail, (struct obj *)0, -1, result, mdat, TRUE);
 	flags.forcefight = FALSE;
 	return MOVE_STANDARD;

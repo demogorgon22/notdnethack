@@ -59,6 +59,24 @@ register struct monst *mon;
 			}
 	    } else if (is_heladrin(mon->data) || mon->mtyp == PM_YUKI_ONNA){
 			if(!Protection_from_shape_changers) new_were(mon);
+	    } else if (mon->mtyp == PM_DUERGAR_ANNIHILATOR || mon->mtyp == PM_DUERGAR_DEBILITATOR){
+			if(mon->data->mlet == S_HUMANOID){
+				if(Protection_from_shape_changers)
+					;//Do nothing
+				else if(!mon->mpeaceful && mon_can_see_you(mon)){
+					if(rn2(4)) new_were(mon);
+				}
+				else if(nearby_targets(mon)){
+					if(!rn2(4)) new_were(mon);
+				}
+			}
+			else {
+				if(Protection_from_shape_changers)
+					new_were(mon); //Revert
+				else {
+					if(!rn2(4)) new_were(mon);
+				}
+			}
 	    } else if (is_duergar(mon)){
 			if(mon->data->mlet == S_HUMANOID){
 				if(Protection_from_shape_changers)
@@ -94,6 +112,7 @@ register struct monst *mon;
 					case PM_WEREWOLF:	howler = "wolf";    break;
 					case PM_WEREJACKAL: howler = "jackal";  break;
 					case PM_ANUBAN_JACKAL: howler = "jackal";  break;
+					case PM_WEREFOX: howler = "fox";  break;
 					default:		howler = (char *)0; break;
 					}
 					if (howler)
@@ -139,6 +158,8 @@ int pm;
 		case PM_ANUBAN_JACKAL:	  return(PM_ANUBITE);
 		case PM_YUKI_ONNA:		  return(PM_SNOW_CLOUD);
 		case PM_SNOW_CLOUD:		  return(PM_YUKI_ONNA);
+		case PM_KITSUNE:		  return(PM_WEREFOX);
+		case PM_WEREFOX:	      return(PM_KITSUNE);
 		case PM_MIST_WOLF:		  return(PM_MIST_CLOUD);
 		case PM_MIST_CLOUD:	      return(PM_MIST_WOLF);
 		case PM_AETHER_WOLF:	  return(PM_AETHER_CYCLONE);
@@ -257,6 +278,9 @@ int mtyp;
 	case PM_WERERAT:
 	case PM_HUMAN_WERERAT:
 		return PM_WERERAT;
+	case PM_WEREFOX:
+	case PM_KITSUNE:
+		return PM_WEREFOX;
 	}
 	impossible("Unhandled were-foo transmission %d", mtyp);
 	return PM_WEREWOLF;
@@ -390,6 +414,7 @@ struct monst *mon;
 		  && !(mon->mtyp == PM_YUKI_ONNA || mon->mtyp == PM_SNOW_CLOUD)
 		  && !(mon->mtyp == PM_SELKIE || mon->mtyp == PM_SEAL)
 		  && !(mon->mtyp == PM_INCUBUS || mon->mtyp == PM_SUCCUBUS)
+		  && !(mon->mtyp == PM_KITSUNE || mon->mtyp == PM_WEREFOX)
 		  && !is_duergar(mon)
 		) pline("%s changes into %s.", Monnam(mon),
 			is_human(&mons[pm]) ? "a human" :
@@ -463,6 +488,11 @@ char *genbuf;
 		case PM_ANUBAN_JACKAL:
 			typ = PM_WEREJACKAL;
 			if (genbuf) Strcpy(genbuf, "werejackal");
+		case PM_WEREFOX:
+		case PM_KITSUNE:
+			typ = rn2(6) ? PM_FOX : rn2(3) ? PM_OGRE_MAGE : rn2(3) ? PM_DAO_LAO_GUI_MONK : PM_WEREFOX;
+			if (genbuf) Strcpy(genbuf, "fox");
+			break;
 		default:
 			continue;
 	    }
@@ -475,7 +505,7 @@ char *genbuf;
 				mark_mon_as_summoned(mtmp, caller, ESUMMON_PERMANENT, 0);
 			if (yours)
 				(void) tamedog(mtmp, (struct obj *) 0);
-	    }			
+	    }
 	}
 	return total;
 }

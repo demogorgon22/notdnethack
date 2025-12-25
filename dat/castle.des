@@ -140,6 +140,8 @@ OBJECT:'=',"wishes",contained
 OBJECT:'?',"scare monster",place[0]
 # A magic chest in another tower
 OBJECT:'(',"magic chest",place[1]
+# A forge in a third tower
+FORGE:place[2]
 # The treasure of the lord
 OBJECT:'(',"chest",(37,08)
 # Traps
@@ -393,6 +395,8 @@ OBJECT:'=',"wishes",contained
 OBJECT:'?',"scare monster",place[0]
 # A magic chest in another tower
 OBJECT:'(',"magic chest",place[1]
+# A forge in a third tower
+FORGE:place[2]
 # The treasure of the lord
 OBJECT:'(',"chest",(37,09)
 # Traps
@@ -561,6 +565,8 @@ ENDMAP
 RANDOM_OBJECTS:'[',')','*','%'
 RANDOM_PLACES:(10,14),(10,18),(27,16),(28,19)
 RANDOM_MONSTERS:'L','N','E','H','M','O','R','T','X','Z'
+
+FORGE:(44,01)
 
 TELEPORT_REGION:(00,00,06,03),(00,11,74,19),down
 TELEPORT_REGION:(70,01,73,03),(21,00,69,19),up
@@ -855,6 +861,8 @@ RANDOM_OBJECTS:'[',')','*','%'
 RANDOM_PLACES:(10,06),(58,06),(58,12),(26,15)
 RANDOM_MONSTERS:'L','N','E','H','M','O','R','T','X','Z'
 
+FORGE:(28,07)
+
 TELEPORT_REGION:levregion(01,00,10,20),(10,02,59,17),down
 TELEPORT_REGION:levregion(69,00,79,20),(10,02,59,17),up
 STAIR:levregion(01,00,10,20),(0,0,62,16),up
@@ -1109,6 +1117,8 @@ ENDMAP
 RANDOM_OBJECTS:'[',')','*','%'
 RANDOM_PLACES:(17,02),(60,02),(20,14),(60,14)
 RANDOM_MONSTERS:'L','N','E','H','M','O','R','T','X','Z'
+
+FORGE:(07,07)
 
 TELEPORT_REGION:levregion(01,00,10,20),(1,1,61,15),down
 TELEPORT_REGION:levregion(69,00,79,20),(1,1,61,15),up
@@ -1446,6 +1456,8 @@ OBJECT:'=',"wishes",contained
 OBJECT:'?',"scare monster",place[0]
 # A magic chest in another tower
 OBJECT:'(',"magic chest",place[1]
+# A forge in a third tower
+FORGE:place[2]
 # The treasure of the lord
 OBJECT:'(',"chest",(44,08)
 # Traps

@@ -70,6 +70,7 @@ int adtyp, ztyp;
 		case AD_MAGM: return "magic missile";
 		case AD_FIRE: return "bolt of fire";
 		case AD_COLD: return "bolt of cold";
+		case AD_UHCD: return "bolt of ice";
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "death ray";
 		case AD_ELEC: return "lightning bolt";
@@ -88,6 +89,7 @@ int adtyp, ztyp;
 		case AD_PHYS: return "sothothic missile";
 		case AD_FIRE: return "fireball";
 		case AD_COLD: return "cone of cold";
+		case AD_UHCD: return "cone of ice";
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "finger of death";
 		case AD_ELEC: return "bolt of lightning";
@@ -100,6 +102,7 @@ int adtyp, ztyp;
 		case AD_DISN: return "disintegration ray";
 		case AD_LASR: return "laser beam";
 		case AD_MADF: return "burst of magenta fire";
+		case AD_VORP: return "blade of slicing wind";
 		default:      impossible("unknown spell damage type in flash_type: %d", adtyp);
 			return "cube of questions";
 		}
@@ -115,6 +118,8 @@ int adtyp, ztyp;
 		case AD_COLD:
 		case AD_ECLD:
 			return "blast of frost";
+		case AD_UHCD: 
+			return "blast of ice";
 		case AD_SLEE: return "blast of sleep gas";
 		case AD_DISN: return "blast of disintegration";
 		case AD_EELC: 
@@ -142,6 +147,7 @@ int adtyp, ztyp;
 		case AD_MAGM: return "magic ray";
 		case AD_FIRE: return "heat ray";
 		case AD_COLD: return "cold ray";
+		case AD_UHCD: return "ice ray";
 		case AD_SLEE: return "stun ray";
 		case AD_DEAD: return "death ray";
 		case AD_DISN: return "disintegration ray";
@@ -185,6 +191,7 @@ int adtyp;
 		return CLR_MAGENTA;
 		//	return CLR_CYAN;
 	case AD_HLUH:
+	case AD_VORP:
 		return CLR_GRAY;
 		//	return NO_COLOR;
 	case AD_EFIR:
@@ -205,6 +212,7 @@ int adtyp;
 		//	return CLR_BRIGHT_CYAN;
 	case AD_ECLD:
 	case AD_COLD:
+	case AD_UHCD:
 	case AD_EELC:
 	case AD_ELEC:
 	case AD_STAR:
@@ -787,6 +795,7 @@ coord *cc;
 		}
 		mtmp2->mstun = 0;
 		mtmp2->mconf = 0;
+		mtmp2->mpunctured = 0;
 		replmon(mtmp,mtmp2);
 	}
 	return mtmp2;
@@ -1162,8 +1171,10 @@ register struct obj *obj;
 	/* MRKR: Cancelled *DSM reverts to scales.  */
 	/*       Suggested by Daniel Morris in RGRN */
 
-	if (obj->otyp >= GRAY_DRAGON_SCALE_MAIL &&
-	    obj->otyp <= YELLOW_DRAGON_SCALE_MAIL) {
+	if (obj->otyp >= GRAY_DRAGON_SCALE_MAIL
+	    && obj->otyp <= YELLOW_DRAGON_SCALE_MAIL
+		&& obj->oartifact != ART_DRAGON_PLATE
+	) {
 		/* dragon scale mail reverts to dragon scales */
 
 		boolean worn = (obj == uarm);
@@ -1221,6 +1232,7 @@ register struct obj *obj;
 	    if (obj->spe != ((obj->oclass == WAND_CLASS) ? -1 : 0) &&
 	       obj->otyp != WAN_CANCELLATION &&
 		 /* can't cancel cancellation */
+		 !obj->oartifact &&
 		 obj->otyp != MAGIC_LAMP &&
 		 obj->otyp != RIN_WISHES &&
 		 obj->otyp != CANDELABRUM_OF_INVOCATION) {
@@ -1252,6 +1264,8 @@ register struct obj *obj;
 	      case POTION_CLASS:
 		/* Potions of amnesia are uncancelable. */
 		if (obj->otyp == POT_AMNESIA) break;
+
+		if (obj->oartifact) break;
 
 		costly_cancel(obj);
 		if (obj->otyp == POT_SICKNESS ||
@@ -1464,7 +1478,7 @@ int ochance, achance;	/* percent chance for ordinary objects, artifacts */
 	} else {
 		int chance = rn2(100);
 
-		return((boolean)(chance < ((obj->oartifact || is_lightsaber(obj) || is_imperial_elven_armor(obj) || is_slab(obj) || obj->blood_smithed || obj->spe >= 10) ? achance : ochance)));
+		return((boolean)(chance < ((obj->oartifact || is_lightsaber(obj) || is_imperial_elven_armor(obj) || is_slab(obj) || obj->blood_smithed || (is_enchantable(obj) && obj->spe >= 10)) ? achance : ochance)));
 	}
 }
 
@@ -2492,7 +2506,7 @@ register struct obj *wand;
 	if(wand->oclass == WAND_CLASS){
 		if(wand->oartifact && wand->spe < 1 && wand->age < moves){
 			wand->spe = 1;
-			wand->age = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			wand->age = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		}
 		if(wand->spe < 0 || (wand->spe == 0 && (wand->oartifact || rn2(121))))
 			return 0;
@@ -2577,7 +2591,7 @@ register struct obj *obj;
 				pline("Unfortunately, nothing happens.");
 				break;
 			}
-			makewish(0);	// does not allow artifact wishes
+			makewish(WISH_SINGLE_USE | 0);	// does not allow artifact wishes
 		break;
 		case WAN_ENLIGHTENMENT:
 			known = TRUE;
@@ -4187,7 +4201,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 				if (youdef)	nomul(0, NULL);
 
 				/* lightning blinds */
-				if (zapdata->adtyp == AD_ELEC && !resists_blnd(mdef)
+				if ((zapdata->adtyp == AD_ELEC || zapdata->blinding) && !resists_blnd(mdef)
 					&& !(youagr && u.uswallow && mdef == u.ustuck)) {
 					lightning_blind(mdef, d(zapdata->damn, 25));
 				}
@@ -4388,7 +4402,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 	/* calculate shop damage */
 	if (shopdamage) {
 		pay_for_damage(zapdata->adtyp == AD_FIRE ? "burn away" :
-			zapdata->adtyp == AD_COLD ? "shatter" :
+			(zapdata->adtyp == AD_COLD || zapdata->adtyp == AD_UHCD) ? "shatter" :
 			zapdata->adtyp == AD_DEAD ? "disintegrate" : "destroy", FALSE);
 	}
 	/* restore old bhitpos */
@@ -4440,6 +4454,8 @@ struct zapdata * zapdata;
 			if (youdef)
 				addmsg("The missiles bounce off!");
 		}
+		else if(magm_vulnerable(mdef))
+			dmg *= 1.5;
 		domsg();
 		if (youdef && dmg > 0)
 			exercise(A_STR, FALSE);
@@ -4509,7 +4525,7 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
-		else if (species_resists_cold(mdef)) {
+		else if (fire_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4543,7 +4559,35 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
-		else if (species_resists_fire(mdef)) {
+		else if (cold_vulnerable(mdef)) {
+			dmg *= 1.5;
+		}
+		domsg();
+		golemeffects(mdef, AD_COLD, svddmg);
+		/* damage inventory */
+		if (!UseInvCold_res(mdef)) {
+			if (!rn2(3)) (void)destroy_item(mdef, POTION_CLASS, AD_COLD);
+		}
+		/* other */
+		if (youdef) {
+			roll_frigophobia();
+		}
+		/* deal damage */
+		return xdamagey(magr, mdef, &attk, dmg);
+
+	case AD_UHCD:
+		/* check resist / weakness */
+		if (Cold_res(mdef) && hates_unholy_mon(mdef)) {
+			doshieldeff = TRUE;
+			if (youdef)
+				addmsg("You don't feel cold!");
+			dmg = 0;
+		}
+		else if(!(Cold_res(mdef) || hates_unholy_mon(mdef))) {
+			dmg *= 2;
+		}
+
+		if (!Cold_res(mdef) && cold_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4573,6 +4617,9 @@ struct zapdata * zapdata;
 				dmg = 0;
 			}
 		}
+		else if (shock_vulnerable(mdef)) {
+			dmg *= 2;
+		}
 		domsg();
 		golemeffects(mdef, AD_ELEC, svddmg);
 		/* damage inventory */
@@ -4595,6 +4642,9 @@ struct zapdata * zapdata;
 					addmsg("You seem unaffected.");
 				dmg = 0;
 			}
+		}
+		else if (acid_vulnerable(mdef)) {
+			dmg *= 2;
 		}
 		/* extra effects vs player */
 		if (youdef && dmg > 0) {
@@ -4622,7 +4672,10 @@ struct zapdata * zapdata;
 		else if (Fire_res(mdef)) {
 			dmg -= dmg/2;
 		}
-		else if (species_resists_cold(mdef)) {
+		else if (fire_vulnerable(mdef) && magm_vulnerable(mdef)) {
+			dmg *= 3;
+		}
+		else if (fire_vulnerable(mdef) || magm_vulnerable(mdef)) {
 			dmg *= 1.5;
 		}
 		domsg();
@@ -4844,6 +4897,42 @@ struct zapdata * zapdata;
 			}
 		}
 
+		return xdamagey(magr, mdef, &attk, dmg);
+
+	case AD_VORP:
+		struct permonst * pd = (youdef ? youracedata : mdef->data);
+		if ((rn2(20) && pd->mtyp != PM_JABBERWOCK) || (noncorporeal(pd) || amorphous(pd))){
+			domsg();
+		} else {
+			if (bigmonst(pd)){
+				dmg *= 2;
+				domsg();
+			} else if(!check_res_engine(mdef, AD_VORP)){
+				otmp = (youdef ? uarm : which_armor(mdef, W_ARM));
+				if(otmp && !arm_blocks_upper_body(otmp->otyp))
+					otmp = 0;
+
+				if (!otmp) {
+					if (canseemon(mdef))
+						pline("The blade of slicing wind bisects %s!", mon_nam(mdef));
+					Sprintf(buf, "bisected by slicing winds");
+					killer = buf;
+					killer_format = NO_KILLER_PREFIX;
+					dmg = FATAL_DAMAGE_MODIFIER;
+				}
+				else if (!((youdef && Preservation) || (!youdef && mon_resistance(mdef, PRESERVATION)))){
+					/* double damage! */
+					dmg *= 2;
+					domsg();
+					if (!otmp->oartifact){
+						if (youdef)
+							claws_destroy_arm(otmp);
+						else
+							claws_destroy_marm(mdef, otmp);
+					}
+				}
+			} else domsg();
+		}
 		return xdamagey(magr, mdef, &attk, dmg);
 
 	case AD_DEAD:
@@ -5139,7 +5228,7 @@ boolean u_caused;
 	    obj2 = obj->nexthere;
 	    if (obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS ||
 			obj->otyp == SHEAF_OF_HAY) {
-		if (obj->otyp == SCR_FIRE || obj->otyp == SPE_FIREBALL  || 
+		if (obj->otyp == SCR_FIRE || obj->otyp == SPE_FIREBALL  || obj->otyp == SPE_FIRE_STORM  || 
 			obj->otyp == SCR_GOLD_SCROLL_OF_LAW || 
 			obj_resists(obj, 0, 100))
 		    continue;
@@ -5232,8 +5321,10 @@ int blind_duration;
 		if (!Blind) Your1(vision_clears);
 	}
 	else {
-		mdef->mcansee = 0;
-		mdef->mblinded = min(127, blind_duration);
+		if(mdef->mcansee){
+			mdef->mcansee = 0;
+			mdef->mblinded = min(127, blind_duration);
+		}
 	}
 	return;
 }
@@ -5438,7 +5529,7 @@ boolean *shopdamage;
 		    else You_hear("hissing gas.");
 	    }
 	}
-	else if(adtyp == AD_COLD && (is_pool(x,y, TRUE) || is_lava(x,y))) {
+	else if((adtyp == AD_COLD || adtyp == AD_ECLD|| adtyp == AD_UHCD) && (is_pool(x,y, TRUE) || is_lava(x,y))) {
 		boolean lava = is_lava(x,y);
 		boolean moat = (!lava && (lev->typ != POOL) &&
 				(lev->typ != WATER) &&
@@ -5529,12 +5620,15 @@ boolean *shopdamage;
 		    goto def_case;
 		switch(adtyp) {
 		case AD_FIRE:
+		case AD_EFIR:
 		case AD_MADF:
 		    new_doormask = D_NODOOR;
 		    see_txt = "The door is consumed in flames!";
 		    sense_txt = "smell smoke.";
 		    break;
 		case AD_COLD:
+		case AD_ECLD:
+		case AD_UHCD:
 		    new_doormask = D_NODOOR;
 		    see_txt = "The door freezes and shatters!";
 		    sense_txt = "feel cold.";
@@ -5545,6 +5639,7 @@ boolean *shopdamage;
 		    hear_txt = "crashing wood.";
 		    break;
 		case AD_ELEC:
+		case AD_EELC:
 		    new_doormask = D_BROKEN;
 		    see_txt = "The door splinters!";
 		    hear_txt = "crackling.";
@@ -5801,7 +5896,7 @@ mm_resist(struct monst *mdef, struct monst *magr, int damage, int tell)
 	if (dlev > 50) dlev = 50;
 	else if (dlev < 1) dlev = 1;
 	
-	if(mdef->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
+	if(mdef->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL))
 		dlev += 1;
 
 	int mons_mr = mdef->data->mr;
@@ -5811,7 +5906,7 @@ mm_resist(struct monst *mdef, struct monst *magr, int damage, int tell)
 		else
 			mons_mr /= 2;
 	}
-	if(mdef->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
+	if(mdef->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL))
 		mons_mr += 10;
 
 	if(mdef->mtyp == PM_CHOKHMAH_SEPHIRAH) dlev+=u.chokhmah;
@@ -5921,10 +6016,12 @@ int damage, tell;
 	dlev = (int)mtmp->m_lev;
 	if(mtmp->mcan)
 		dlev /= 2;
+	if(magm_vulnerable(mtmp))
+		dlev /= 2;
 	if (dlev > 50) dlev = 50;
 	else if (dlev < 1) dlev = 1;
 	
-	if(mtmp->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
+	if(mtmp->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL))
 		dlev += 1;
 
 	int mons_mr = mtmp->data->mr;
@@ -5934,7 +6031,9 @@ int damage, tell;
 		else
 			mons_mr /= 2;
 	}
-	if(mtmp->mtame && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL)
+	if(magm_vulnerable(mtmp))
+		mons_mr /= 2;
+	if(mtmp->mtame && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_WILL))
 		mons_mr += 10;
 
 	if(mtmp->mtyp == PM_CHOKHMAH_SEPHIRAH) dlev+=u.chokhmah;
@@ -5999,9 +6098,9 @@ allow_artwish()
 	return ((n > 0) ? WISH_ARTALLOW : 0);
 }
 
+// wishflags flags to change messages / effects
 boolean
-makewish(wishflags)
-int wishflags;		// flags to change messages / effects
+makewish(int wishflags)
 {
 	char buf[BUFSZ];
 	char bufcpy[BUFSZ];
@@ -6009,10 +6108,23 @@ int wishflags;		// flags to change messages / effects
 	int tries = 0;
 	int wishreturn;
 
+	flags.resume_wish = 0;
+	flags.resume_wish_flags = 0;
+
 	nothing = zeroobj;  /* lint suppression; only its address matters */
 	if (flags.verbose) You("may wish for an object.");
 retry:
 	getlin("For what do you wish?", buf);
+
+	if (iflags.term_gone) {
+		//Only resume single-use wishes. Otherwise, returning false preserves the wish already.
+		if(WISH_SINGLE_USE&wishflags){
+			flags.resume_wish = 1;
+			flags.resume_wish_flags = wishflags;
+		}
+        return FALSE; //Did not wish (yet.).
+    }
+
 	if(buf[0] == '\033') buf[0] = 0;
 	/*
 	 *  Note: if they wished for and got a non-object successfully,

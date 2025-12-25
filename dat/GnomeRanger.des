@@ -10,7 +10,7 @@
 # level.
 #
 MAZE: "Gnr-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 #GEOMETRY:left,center
 ###########1#########2#########3#########4#########5#########6#########7#####
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -69,6 +69,7 @@ DOOR: closed, (59,10)
 # throne room
 MONSTER: 'G', "Ruggo the Gnome High King", (59,7)
 MONSTER: '7', "damaged arcadian avenger", (59,5)
+OBJECT:'\\',"bed",(59,5)
 
 MONSTER: 'G', "gnome comrade", (55,7)
 MONSTER: 'G', "gnome comrade", (56,7)

@@ -11,7 +11,13 @@ CFLAGS = -g3
 # LDFLAGS += -pg -Wno-knr-promoted-parameter
 LDFLAGS += -Wno-knr-promoted-parameter
 
-GAMELIBS = -lncursesw -lm
+PKG_CONFIG = pkg-config
+
+ifeq ($(shell $(PKG_CONFIG) --version >/dev/null || echo error), error)
+    $(error $(PKG_CONFIG) not found. Please install a pkg-config implementation)
+endif
+
+GAMELIBS = $(shell $(PKG_CONFIG) --libs ncursesw) -lm
 
 -include local.mk
 
@@ -49,6 +55,7 @@ install: all
 	touch $(GAMEDIR)/xlogfile
 	touch $(GAMEDIR)/livelog
 	mkdir -p $(GAMEDIR)/save
+	mkdir -p $(GAMEDIR)/dumplog
 
 ##### BINARIES #####
 
@@ -198,7 +205,7 @@ $(AUTO_C:%.c=%.d): ;
 
 QUEST_DES = Arch.des Anachrononaut.des Android.des Barb.des Bard.des Binder.des Caveman.des 	\
             Convict.des Drow.des DrowNoble.des DrowHealer.des Elf.des Erebor.des GnomeRanger.des	\
-            HalfDragonFemaleNoble.des Healer.des Hedrow.des HedrowNoble.des Knight.des \
+            HalfDragonFemaleNoble.des Healer.des Hedrow.des HedrowNoble.des Knight.des Kensei.des \
 			Monk.des Moria.des Madman.des Noble.des Pirate.des Priest.des Ranger.des Rogue.des	\
             Samurai.des Tourist.des UndeadHunter.des Valkyrie.des Wizard.des Anachronounbinder.des Salamander.des
 

@@ -58,7 +58,7 @@ register struct monst *mtmp;
 		!is_blind(mtmp) && m_canseeu(mtmp) && !rn2(3)) {
 
 		//ifdef CONVICT
-		if (Role_if(PM_CONVICT) && !Upolyd && !(ublindf && ublindf->otyp != LENSES)) {
+		if (Role_if(PM_CONVICT) && !Upolyd && !Disguised) {
 			verbalize("%s yells: Hey!  You are the one from the wanted poster!",
 				Amonnam(mtmp));
 			(void)angry_guards(!(flags.soundok));
@@ -523,11 +523,20 @@ boolean digest_meal;
 	
 	if(mon->mtame && u.ufirst_life && mon->mhp < mon->mhpmax)
 		mon->mhp++;
-		
+	
+	if(mon->munburn > 0){
+		mon->mhp += 7;
+		if(mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
+		mon->munburn--;
+	}
+
 	if(is_alabaster_mummy(mon->data) 
 		&& mon->mvar_syllable == SYLLABLE_OF_LIFE__HOON
 	){
 		mon->mhp += 10;
+		if(mon->mhp > mon->mhpmax)
+			mon->mhp = mon->mhpmax;
 	}
 	
 	if (mon->mspec_used) mon->mspec_used--;
@@ -641,6 +650,16 @@ boolean digest_meal;
 		}
 		degenerating = TRUE;
 	}
+	/* Nuncio faction monsters die/fade once the nemesis is killed */
+	if(!DEADMONSTER(mon) && Role_if(PM_CONVICT) && quest_status.killed_nemesis){
+		if(has_template(mon, FLAYED)){
+			mondied(mon);
+		}
+		else if(mon->mtyp == PM_CUBOID || mon->mtyp == PM_RHOMBOHEDROID){
+			m_losehp(mon, 1, FALSE, "hemhorage");
+			degenerating = TRUE;
+		}
+	}
 	/*The Changed degenerate due to damage*/
 	if(!DEADMONSTER(mon) && mon->mhp < mon->mhpmax/2 && is_changed_mtyp(mon->mtyp)){
 		create_gas_cloud(mon->mx+rn2(3)-1, mon->my+rn2(3)-1, rnd(3), rnd(3)+1, FALSE);
@@ -654,9 +673,11 @@ boolean digest_meal;
 	}
 	/*Bleeding out*/
 	if(!DEADMONSTER(mon) && mon->mbleed > 0){
-		m_losehp(mon, mon->mbleed, FALSE, "bleeding wound");
+		m_losehp(mon, mon->mbleed, mon->mubled, "bleeding wound");
 		mon->mbleed--;
 		degenerating = TRUE;
+		if(!mon->mbleed)
+			mon->mubled = FALSE;
 	}
 
 	/*Early return to block regen*/
@@ -801,7 +822,7 @@ boolean fleemsg;
 		mtmp->mtrack[j].y = 0;
 	}
 
-	if(mtmp->mtyp == PM_VROCK){
+	if(mtmp->mtyp == PM_OSSIFRUGE || mtmp->mtyp == PM_VROCK){
 		struct monst *tmpm;
 		if(!(mtmp->mspec_used || mtmp->mcan)){
 			pline("%s screeches.", Monnam(mtmp));
@@ -987,6 +1008,46 @@ int mtyp;
 	}
 }
 
+int
+mvm_widegaze(struct monst *gazemon, struct monst *mtmp)
+{
+	if(DEADMONSTER(gazemon))
+		return 0;
+	if (gazemon != mtmp
+		&& mon_can_see_mon(mtmp, gazemon)
+		&& clear_path(mtmp->mx, mtmp->my, gazemon->mx, gazemon->my)
+	){
+		int i;
+		if(gazemon->mtyp == PM_MEDUSA && resists_ston(mtmp)
+		) return 0;
+		
+		if (hideablewidegaze(gazemon->data) && hiddenwidegaze(gazemon))
+			return 0;
+
+		if (controlledwidegaze(gazemon->data)
+			&& !mm_aggression(gazemon, mtmp)
+		) return 0;
+		
+		for(i = 0; i < NATTK; i++)
+			 if(gazemon->data->mattk[i].aatyp == AT_WDGZ) {
+				if((gazemon->data->mattk[i].adtyp ==  AD_CONF 
+					|| gazemon->data->mattk[i].adtyp ==  AD_WISD 
+				) && (dmgtype_fromattack(mtmp->data, AD_CONF, AT_WDGZ)
+					|| dmgtype_fromattack(mtmp->data, AD_WISD, AT_WDGZ)
+				)) continue;
+				/*
+				if(canseemon(mtmp) && canseemon(gazemon)){
+					Sprintf(buf,"%s can see", Monnam(mtmp));
+					pline("%s %s...", buf, mon_nam(gazemon));
+				}*/
+				if (xgazey(gazemon, mtmp, &gazemon->data->mattk[i], -1) & MM_DEF_DIED)
+					return 1;	/* mtmp died from seeing something */
+				break;
+			 }
+	}
+	return 0;
+}
+
 /* returns 1 if monster died moving, 0 otherwise */
 /* The whole dochugw/m_move/distfleeck/mfndpos section is serious spaghetti
  * code. --KAA
@@ -1078,20 +1139,29 @@ register struct monst *mtmp;
 	    if (res >= 0) return res;
 	}
 
+	// Note: m_canseeu checks line of signt (and also invis), mon_can_see_you checks with actual sensorium
+	boolean spotted = m_canseeu(mtmp) && mon_can_see_you(mtmp);
+
 	/* check for waitmask status change */
 	if ((mtmp->mstrategy & STRAT_WAITFORU) &&
-		(m_canseeu(mtmp) || mtmp->mhp < mtmp->mhpmax))
+		(spotted || mtmp->mhp < mtmp->mhpmax))
 	    mtmp->mstrategy &= ~STRAT_WAITFORU;
+
+	if (mtmp->mtyp == PM_AFREET && spotted)
+		mtmp->mvar1_afreet_lastsaw = moves;
 
 	/* update quest status flags */
 	quest_stat_check(mtmp);
-	
 	if(mdat->mtyp == PM_CENTER_OF_ALL 
 		&& !mtmp->mtame 
 		&& !Is_astralevel(&u.uz)
-		&& (near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
-		&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
-		&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
+		&& (((near_capacity()>UNENCUMBERED || u.ulevel < 14 || mtmp->mpeaceful) 
+			&& (near_capacity()>SLT_ENCUMBER || mtmp->mpeaceful || Insight < 2 || (Insight < 32 && !rn2(Insight))) 
+			&& (near_capacity()>MOD_ENCUMBER || !rn2(4))
+		  )
+		  || (mtmp->mhp < mtmp->mhpmax/2 && !rn2((mtmp->mhp < mtmp->mhpmax/4) ? 4 : 10))
+		  || (Insight < 32 && mtmp->mattackedu && !rn2(10))
+		)
 	){
 		int nlev;
 		d_level flev;
@@ -1219,6 +1289,9 @@ register struct monst *mtmp;
 	
 	/* stunned monsters get un-stunned with larger probability */
 	if (mtmp->mstun && !rn2(10)) mtmp->mstun = 0;
+
+	/* may reduce pucture-chance */
+	if (mtmp->mpunctured > 0 && rn2(2)) mtmp->mpunctured--;
 
 	/* some monsters teleport */
 	if (mon_resistance(mtmp,TELEPORT)
@@ -1394,40 +1467,13 @@ register struct monst *mtmp;
 
 	if(!mtmp->mblinded && !mon_resistance(mtmp, GAZE_RES)) for (gazemon = fmon; gazemon; gazemon = nxtmon){
 		nxtmon = gazemon->nmon;
-		if(DEADMONSTER(gazemon))
-			continue;
-		if (gazemon != mtmp
-			&& mon_can_see_mon(mtmp, gazemon)
-			&& clear_path(mtmp->mx, mtmp->my, gazemon->mx, gazemon->my)
-		){
-			int i;
-			if(gazemon->mtyp == PM_MEDUSA && resists_ston(mtmp)
-			) continue;
-			
-			if (hideablewidegaze(gazemon->data) && hiddenwidegaze(gazemon))
-				continue;
-
-			if (controlledwidegaze(gazemon->data)
-				&& !mm_aggression(gazemon, mtmp)
-			) continue;
-			
-			for(i = 0; i < NATTK; i++)
-				 if(gazemon->data->mattk[i].aatyp == AT_WDGZ) {
-					if((gazemon->data->mattk[i].adtyp ==  AD_CONF 
-						|| gazemon->data->mattk[i].adtyp ==  AD_WISD 
-					) && (dmgtype_fromattack(mtmp->data, AD_CONF, AT_WDGZ)
-						|| dmgtype_fromattack(mtmp->data, AD_WISD, AT_WDGZ)
-					)) continue;
-					/*
-					if(canseemon(mtmp) && canseemon(gazemon)){
-						Sprintf(buf,"%s can see", Monnam(mtmp));
-						pline("%s %s...", buf, mon_nam(gazemon));
-					}*/
-					if (xgazey(gazemon, mtmp, &gazemon->data->mattk[i], -1) & MM_DEF_DIED)
-						return (1);	/* mtmp died from seeing something */
-					break;
-				 }
-		}
+		if(mvm_widegaze(gazemon, mtmp))
+			return 1; //mon died from seeing something
+	}
+	//Everything may see mon
+	for (gazemon = fmon; gazemon; gazemon = nxtmon){
+		nxtmon = gazemon->nmon;
+		mvm_widegaze(mtmp, gazemon);
 	}
 	
 	if (mtmp->mhp <= 0) return(1); /* m_respond gaze can kill medusa */
@@ -2095,8 +2141,7 @@ register struct monst *mtmp;
 						mtmp->mspec_used += dmg;
 				}
 				if(dmg){
-					if(mon_resistance(m2, HALF_SPDAM))
-						dmg = (dmg+1) / 2;
+					dmg = reduce_dmg(m2,dmg,FALSE,TRUE);
 					m2->mhp -= dmg;
 					if (m2->mhp <= 0)
 						monkilled(m2, "", AD_DRIN);

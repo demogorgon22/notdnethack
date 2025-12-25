@@ -97,6 +97,9 @@
 #define P_SHIEN			(P_SHII_CHO + 5)
 #define P_NIMAN			(P_SHII_CHO + 6)
 #define P_JUYO			(P_SHII_CHO + 7)
+#define is_lightsaber_skill(type) \
+	((type) >= P_SHII_CHO && (type) <= P_JUYO)
+
 #define P_SHIELD_BASH	(P_SHII_CHO + 8)
 #define P_GREAT_WEP 	(P_SHII_CHO + 9)
 #define P_GENERIC_KNIGHT_FORM	(P_SHII_CHO + 10)
@@ -108,6 +111,9 @@
 
 #define P_LAST_H_TO_H		P_RIDING
 #define P_FIRST_H_TO_H		P_BARE_HANDED_COMBAT
+
+#define P_FIRST_FORM	P_SHII_CHO
+#define P_LAST_FORM		P_KNI_RUNIC
 
 #define P_NUM_SKILLS		(P_LAST_H_TO_H+1)
 

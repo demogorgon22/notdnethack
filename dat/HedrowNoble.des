@@ -109,6 +109,14 @@ OBJECT:'?',"resistance",(39,00)
 OBJECT:'?',"resistance",(39,00)
 OBJECT:'%',"food ration",(39,00)
 
+OBJECT[50%]:'\\',"bed",(35,02)
+OBJECT[50%]:'\\',"bed",(44,02)
+OBJECT[50%]:'\\',"bed",(45,02)
+OBJECT[50%]:'\\',"bed",(46,02)
+OBJECT[50%]:'\\',"bed",(48,07)
+OBJECT[50%]:'\\',"bed",(29,11)
+OBJECT[50%]:'\\',"bed",(44,11)
+
 MAZE: "Nhd-loca",' '
 FLAGS: hardfloor,shortsighted
 GEOMETRY:center,center
@@ -284,7 +292,7 @@ OBJECT:')',"droven crossbow",random
 OBJECT:')',"droven crossbow",random
 
 MAZE: "Nhd-goal",' '
-FLAGS: hardfloor,shortsighted
+FLAGS: noteleport,hardfloor,shortsighted
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7     
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -450,6 +458,9 @@ MONSTER: '@', "drow matron", (63,12), hostile
 MONSTER: '@', "drow matron", (63,12), hostile
 MONSTER: '@', "drow matron", (64,12), hostile
 MONSTER: '@', "drow matron", (64,12), hostile
+
+OBJECT:'\\',"expensive bed",(61,03)
+
 
 MONSTER: '@', "A'salom", (69,16), hostile
 CONTAINER:'(',"chest",(69,17)

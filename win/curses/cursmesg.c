@@ -146,7 +146,11 @@ curses_block(boolean require_tab)
     if (require_tab)
         curses_alert_main_borders(TRUE);
     wrefresh(win);
-    while ((ret = wgetch(win) != '\t') && require_tab);
+    while ((ret = wgetch(win) != '\t') && require_tab){
+		if(ret == ERR){
+			iflags.term_gone = 1;
+		}
+	}
     if (require_tab)
         curses_alert_main_borders(FALSE);
     if (height == 1) {
@@ -456,6 +460,7 @@ curses_message_win_getline(const char *prompt, char *answer, int buffer)
             len = 0;
             break;
         case ERR: /* should not happen */
+			iflags.term_gone = 1;
             *answer = '\0';
             free(tmpbuf);
             free(linestarts);

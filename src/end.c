@@ -5,6 +5,7 @@
 #define NEED_VARARGS	/* comment line for pre-compiled headers */
 
 #include "hack.h"
+#include "artifact.h"
 
 #ifndef NO_SIGNAL
 #include <signal.h>
@@ -803,6 +804,16 @@ find_equip_life_oprop()
 	return (struct obj *) 0;
 }
 
+struct obj *
+find_lifesaving_flute()
+{
+	struct obj *otmp;
+	for(otmp = invent; otmp; otmp = otmp->nobj){
+		if(otmp->oartifact == ART_FLUTE_OF_TEZCATLIPOCA) return otmp;
+	}
+	return (struct obj *) 0;
+}
+
 const char*
 get_alignment_code()
 {
@@ -877,7 +888,7 @@ Check_twin_lifesaving()
 	return FALSE;
 }
 
-STATIC_OVL void
+void
 Use_crystal_lifesaving()
 {
 	//Use less advantageous l.s. first (the full set of 5 crystals is heavy and riskier for theft)
@@ -1151,6 +1162,19 @@ int how;
 		} else if(u.sealsActive&SEAL_JACK){
 			lsvd = LSVD_JACK;
 			unbind_lifesaving(SEAL_JACK);
+		} else if(uwep && uwep->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives > 0){
+			lsvd = LSVD_MISC;
+			pline("The smoke emanating from the crimson blade wanes.");
+			artinstance[ART_MORTAL_BLADE].mortalLives--;
+		} else if((otmp = find_lifesaving_flute())){
+			Your("%s crumbles to dust.", xname(otmp));
+			if (how == CHOKING) You("vomit ...");
+			if (how == DISINTEGRATED) You("reconstitute!");
+			else if (how == OVERWOUND) You("reassemble!");
+			else You_feel("much better!");
+
+			lsvd = LSVD_MISC;
+			useup(otmp);
 		} else if(Check_crystal_lifesaving()){
 			lsvd = LSVD_MISC;
 			pline("Time unwinds and twists!");

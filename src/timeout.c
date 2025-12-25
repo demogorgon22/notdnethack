@@ -112,6 +112,7 @@ const struct propname {
     { DIMENSION_LOCK, "dimensional lock" },
 	{ CLEAR_THOUGHTS, "clear thoughts" },
     { EXTRAMISSION, "extramission" },
+	{ DARK_RES, "dark resistance" },
     {  0, 0 },
 };
 
@@ -675,8 +676,8 @@ nh_timeout()
 			}
 		}
 	}
-	if(u.spirit[ALIGN_SPIRIT] & SEAL_YOG_SOTHOTH && carrying_art(ART_SILVER_KEY))
-		u.spiritT[ALIGN_SPIRIT]++;
+	if(u.spirit[OTHER_SPIRIT] & SEAL_YOG_SOTHOTH && carrying_art(ART_SILVER_KEY))
+		u.spiritT[OTHER_SPIRIT]++;
 	if(!u.voidChime && !Role_if(PM_ANACHRONOUNBINDER)){
 		while(u.spirit[0] && u.spiritT[0] < moves) unbind(u.spirit[0],0);
 		if(u.spiritTineB && u.spiritTineTB < moves) unbind(u.spiritTineB,0);
@@ -1654,18 +1655,30 @@ long timeout;
 			if (menorah) {
 				obj->spe = 0;	/* no more candles */
 			}
-			else if (Is_candle(obj) || obj->otyp == POT_OIL
-				|| obj->otyp == SUNROD
-				) {
+			else if (Is_candle(obj) || obj->otyp == POT_OIL) {
 				/* get rid of candles and burning oil potions */
 				obj_extract_and_unequip_self(obj);
 				obfree(obj, (struct obj *)0);
 				obj = (struct obj *) 0;
 				//#ifdef FIREARMS
 			}
+			else if (obj->otyp == SUNROD) {
+				if (obj_resists(obj, 0, 100))
+				{
+					obj->otyp = MACE;
+					obj->oclass = WEAPON_CLASS;
+					obj->age = monstermoves;
+					fix_object(obj);
+				}
+				else {
+					obj_extract_and_unequip_self(obj);
+					obfree(obj, (struct obj *)0);
+					obj = (struct obj *) 0;
+				}
+			}
 			else if (obj->otyp == SHADOWLANDER_S_TORCH || obj->otyp == TORCH) {
 				/* torches may become burnt clubs */
-				if (obj_resists(obj, 0, 90))
+				if (obj_resists(obj, 10, 100))
 				{
 					obj->otyp = CLUB;
 					obj->oclass = WEAPON_CLASS;
@@ -2028,7 +2041,7 @@ long timeout;
 			end_burn(obj, FALSE);
 
 			/* torches may become burnt clubs */
-			if (obj_resists(obj, 0, 90))
+			if (obj_resists(obj, 10, 100))
 			{
 				obj->otyp = CLUB;
 				obj->oclass = WEAPON_CLASS;
@@ -2107,9 +2120,19 @@ long timeout;
 			}
 			end_burn(obj, FALSE);
 
-			obj_extract_and_unequip_self(obj);
-			obfree(obj, (struct obj *)0);
-			obj = (struct obj *) 0;
+			if (obj_resists(obj, 0, 100))
+			{
+				obj->otyp = MACE;
+				obj->oclass = WEAPON_CLASS;
+				obj->age = monstermoves;
+				fix_object(obj);
+				break;	/* don't do other torch things */
+			}
+			else {
+				obj_extract_and_unequip_self(obj);
+				obfree(obj, (struct obj *)0);
+				obj = (struct obj *) 0;
+			}
 		}
 		
 		if (obj && obj->age){
@@ -2170,7 +2193,7 @@ long timeout;
 			end_burn(obj, FALSE);
 
 			/* torches may become burnt clubs */
-			if (obj_resists(obj, 0, 90))
+			if (obj_resists(obj, 10, 100))
 			{
 				obj->otyp = CLUB;
 				obj->oclass = WEAPON_CLASS;
@@ -2463,7 +2486,7 @@ struct obj * obj;
 		(obj->otyp == TALLOW_CANDLE) ||
 		(obj->otyp == WAX_CANDLE) ||
 		(obj->otyp == SUNROD) ||
-		(obj->otyp == TORCH) ||
+		(obj->otyp == TORCH && obj->oartifact != ART_TORCH_OF_XOLOTL) ||
 		(obj->otyp == SHADOWLANDER_S_TORCH)));
 }
 
@@ -2520,7 +2543,8 @@ begin_burn(obj)
 		!artifact_light(obj) && 
 		!arti_light(obj) && 
 		obj->oartifact != ART_HOLY_MOONLIGHT_SWORD &&
-		obj->oartifact != ART_ATMA_WEAPON
+		obj->oartifact != ART_ATMA_WEAPON &&
+		obj->oartifact != ART_TORCH_OF_XOLOTL
 	) return;
 	
 
@@ -2532,6 +2556,7 @@ begin_burn(obj)
 	if (obj->otyp == MAGIC_LAMP ||
 		obj->otyp == CANDLE_OF_INVOCATION ||
 		obj->otyp == MAGIC_TORCH ||
+		obj->oartifact == ART_TORCH_OF_XOLOTL ||
 		artifact_light(obj) ||
 		obj_eternal_light(obj))
 		obj->lamplit = TRUE;
@@ -2595,6 +2620,7 @@ end_burn(obj, timer_attached)
 		|| obj->otyp == POT_STARLIGHT
 		|| obj->otyp == SUNLIGHT_MAGGOT
 		|| obj->otyp == CHUNK_OF_FOSSIL_DARK
+		|| obj->oartifact == ART_TORCH_OF_XOLOTL
 		|| artifact_light(obj)
 		|| arti_light(obj)
 	) timer_attached = FALSE;
@@ -2903,6 +2929,10 @@ long timeout;
 			fix_object(obj);
 			update_inventory();
 		}
+		if(check_oprop(obj, OPROP_HAEM)){
+			remove_oprop(obj, OPROP_HAEM);
+			update_inventory();
+		}
 	}
 }
 
@@ -2942,7 +2972,31 @@ long timeout;
 		else if(obj->where == OBJ_FLOOR && cansee(obj->ox, obj->oy)){
 			pline("%s is tired of its rigid composition and melts back to silvery chaos.", The(xname(obj)));
 		}
+		// Chikage remains active (musta been activated while temporarily off-mat)
+		if(obj->otyp == CHIKAGE && obj->obj_material == HEMARGYOS){
+			obj->ovar1_alt_mat = MERCURIAL;
+			add_oprop(obj, OPROP_HAEM);
+		}
 		set_material_gm(obj, MERCURIAL);
+		fix_object(obj);
+		update_inventory();
+	}
+}
+
+void
+revert_aureate_deluge(arg, timeout)
+genericptr_t arg;
+long timeout;
+{
+	struct obj *obj = (struct obj *) arg;
+	if(check_oprop(obj, OPROP_GOLDW)){
+		if(obj->where == OBJ_INVENT){
+			pline_The("molten gold covering %s fades away.", yname(obj));
+		}
+		else if(obj->where == OBJ_FLOOR && cansee(obj->ox, obj->oy)){
+			pline_The("molten gold molten gold covering %s fades away.", the(xname(obj)));
+		}
+		remove_oprop(obj, OPROP_GOLDW);
 		fix_object(obj);
 		update_inventory();
 	}
@@ -3045,6 +3099,7 @@ static const ttable timeout_funcs[NUM_TIME_FUNCS] = {
 	TTAB(revive_mon_pickup,	(timeout_proc)0,	"revive_mon_pickup"),
 	TTAB(revert_object,		(timeout_proc)0,	"revert_object"),
 	TTAB(revert_mercurial,	(timeout_proc)0,	"revert_mercurial"),
+	TTAB(revert_aureate_deluge,(timeout_proc)0,"revert_aureate_deluge"),
 };
 #undef TTAB
 

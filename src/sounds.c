@@ -938,7 +938,7 @@ boolean chatting;
 	//Template and profession adjustments
 	if(is_silent_mon(mtmp))
 		soundtype = MS_SILENT;
-	else if(is_dollable(mtmp->data) && mtmp->m_insight_level)
+	else if(is_dollable_mtyp(mtmp->mtyp) && mtmp->m_insight_level)
 		soundtype = MS_STATS;
 	else if(mtmp->ispriest)
 		soundtype = MS_PRIEST;
@@ -1619,6 +1619,7 @@ asGuardian:
 				mtmp->mnotlaugh = 1; mtmp->mlaughing = 0;
 				mtmp->msleeping = 0;
 				mtmp->mstun = 0; mtmp->mconf = 0;
+				mtmp->mpunctured = 0;
 				untame(mtmp, 0);
 				
 				u.ustdy = mtmp->m_lev;
@@ -2048,6 +2049,7 @@ asGuardian:
 									if(tmpm->mstdy > 0) tmpm->mstdy = 0;
 									tmpm->mstun = 0;
 									tmpm->mconf = 0;
+									tmpm->mpunctured = 0;
 									tmpm->msleeping = 0;
 									tmpm->mflee = 0;
 									tmpm->mfleetim = 0;
@@ -2970,8 +2972,10 @@ humanoid_sound:
 	    break;
 	case MS_SEDUCE:
 #ifdef SEDUCE
-	    if (ptr->mlet != S_NYMPH &&
-		could_seduce(mtmp, &youmonst, (struct attack *)0) == 1) {
+	    if (ptr->mlet != S_NYMPH 
+			&& could_seduce(mtmp, &youmonst, (struct attack *)0) == 1
+			&& !mtmp->mpeaceful
+		 ){
 			(void) doseduce(mtmp);
 			break;
 	    }
@@ -3515,6 +3519,8 @@ static const short command_chain[][2] = {
 	{ PM_PIT_FIEND, PM_ASMODEUS }, { PM_NESSIAN_PIT_FIEND, PM_ASMODEUS },
 	
 	{ PM_MANES, PM_MARILITH }, { PM_QUASIT, PM_MARILITH }, { PM_VROCK, PM_MARILITH }, { PM_HEZROU, PM_MARILITH }, { PM_MARILITH, PM_SHAKTARI }, 
+
+	{PM_VROCK, PM_OSSIFRUGE},
 
 	{ PM_MYRMIDON_HOPLITE, PM_MYRMIDON_LOCHIAS }, { PM_MYRMIDON_LOCHIAS, PM_MYRMIDON_YPOLOCHAGOS }, { PM_MYRMIDON_YPOLOCHAGOS, PM_MYRMIDON_LOCHAGOS },
 	{ PM_GIANT_ANT, PM_FORMIAN_TASKMASTER }, { PM_FIRE_ANT, PM_FORMIAN_TASKMASTER }, { PM_SOLDIER_ANT, PM_FORMIAN_TASKMASTER },
@@ -5420,52 +5426,164 @@ int tx,ty;
 			}
 		} else pline("You can't feel the spirit.");
 	}break;
-	case FAFNIR:{
-		if(u.sealTimeout[FAFNIR-FIRST_SEAL] < moves){
-			boolean coins = FALSE;
-			struct obj *otmp;
-			for(otmp = level.objects[tx][ty]; otmp; otmp = otmp->nexthere){
-				if(otmp->oclass == COIN_CLASS && otmp->quan >= 1000*u.ulevel){
-					coins = TRUE;
-			break;
+	case MAEGERA:{
+		if(u.sealTimeout[MAEGERA-FIRST_SEAL] < moves){
+			char ritual = FALSE;
+			boolean destroyedForge = FALSE;
+#define FORGE_RITUAL 1
+#define GOLD_RITUAL 2
+			// Forge version
+			if(IS_FORGE(levl[tx][ty].typ)){
+				//Spirit requires that her seal be drawn on a square with a (magma vent) forge
+				// Ritual disturbs the forge, possibly destroying it.
+				if(!rn2(10)){
+					pline_The("%s moves as though of its own will!", hliquid("lava"));
+					if ((mvitals[PM_FIRE_ELEMENTAL].mvflags & G_GONE)
+						|| !makemon(&mons[PM_FIRE_ELEMENTAL], tx, ty, MM_ADJACENTOK)
+					)
+						pline("But it settles down.");
+				}
+				else if (!rn2(27)){
+					if (!rn2(8))
+						dolavademon();
+					else
+						pline_The("forge violently spews lava for a moment.");
+					break;
+				}
+				else if(!rn2(26)){
+					if (Luck < 0) {
+						blowupforge(tx, ty);
+						destroyedForge = TRUE;
+					} else {
+						pline("Molten lava surges up and splashes all over you!");
+						if(!Fire_resistance)
+							losehp(d(6, 6), "conducting a ritual at a forge", KILLED_BY);
+					}
+				}
+				else {
+					You_feel("a sudden flare of heat.");
+				}
+				ritual = FORGE_RITUAL;
+				
+			}
+			else {
+				struct obj *otmp, *next_obj;
+				struct obj *ingots = (struct obj *) 0;
+				for(otmp = level.objects[tx][ty]; otmp; otmp = next_obj){
+					if(otmp->obj_material == GOLD && check_oprop(otmp, OPROP_NONE) && !otmp->oartifact && !objects[otmp->otyp].oc_unique){
+						next_obj = otmp->nexthere;
+						if (!ingots){
+							ingots = mksobj(INGOT, MKOBJ_NOINIT);
+							ingots->quan = weight(otmp);
+							ingots->dknown = ingots->known = ingots->rknown = ingots->sknown = ingots->bknown = TRUE;
+							set_material_gm(ingots, GOLD);
+						} else {
+							ingots->quan += weight(otmp);
+						}
+						fix_object(ingots);
+						useupf(otmp, otmp->quan);
+					}
+				}
+				if (ingots) place_object(ingots, tx, ty);
+				newsym(tx,ty);
+				//Spirit requires that her seal be drawn on a square with at least 3 * u.ulevel aum of gold, which are turned into ingots
+				if(ingots && ingots->quan >= 3 * u.ulevel){
+					useupf(ingots, min(ingots->quan, u.ulevel)); // yes, even if you're full on slots. sucks to suck
+					ritual = GOLD_RITUAL;
 				}
 			}
-			//Spirit requires that his seal be drawn in a vault, or on a pile of 1000xyour level coins.
-			if(coins || (*in_rooms(tx,ty,VAULT) && u.uinvault)){
-				if(!Blind) You("suddenly notice a dragon %s", coins ? "buired in the coins" : "in the room.");
+			if(ritual){
+				boolean knowsDwarfBones = (Race_if(PM_DWARF) || Role_if(PM_ARCHEOLOGIST));
+				boolean knowsOldDwarvish = (Race_if(PM_DWARF) && (Role_if(PM_ARCHEOLOGIST) || Role_if(PM_KNIGHT) || Role_if(PM_CAVEMAN) || Role_if(PM_NOBLEMAN)));
+				if(!Blind) {
+					if(ritual == GOLD_RITUAL){
+						pline("A finger-like plume of lava rises from the center of the seal."); 
+						pline("The gold on the seal melts and twists in the heat, forming a skeletal figure.");
+						pline("From certain angles, the bones look serpentine, but from others they look %s.", knowsDwarfBones ? "dwarven" : "humanoid");
+						pline("Three skulls surmount the figure; a bull, a %s, and a %s.", Role_if(PM_ARCHEOLOGIST) ? "lion" : "feline", knowsDwarfBones ? "dwarf" : "humanoid");
+					}
+					else {// ritual == FORGE_RITUAL
+						if(destroyedForge) pline("A finger-like plume of lava rises from the ruins of the forge.");
+						else pline("A finger-like plume of lava rises from the forge."); 
+						pline("The slag embedded in the plume twists in the heat, forming a skeletal figure.");
+						pline("From certain angles, the bones look serpentine, but from others they look %s.", knowsDwarfBones ? "dwarven" : "humanoid");
+						pline("Three skulls surmount the figure; a bull, a %s, and a %s.", Role_if(PM_ARCHEOLOGIST) ? "lion" : "feline", knowsDwarfBones ? "dwarf" : "humanoid");
+					}
+				}
 				if(u.sealCounts < numSlots){
-					if(!Blind) pline("The dragon lunges forwards to bite you.");
-					else pline("something bites you!");
+					if(!Blind) {
+						pline("The %s skull moves its jaws soundlessly as the ground rumbles in %s beneath you.",
+							knowsDwarfBones ? "dwarven" : "humanoid",
+							(Race_if(PM_DWARF) && Role_if(PM_CAVEMAN)) ? "Dwarvish" : knowsOldDwarvish ? "Old Dwarvish" : "an unknown language"
+						);
+						if(knowsOldDwarvish){
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("\"I give you a star, to bring the fires of Dusk to the castles of the proud,");
+							pline("\"and the light of Dawn to the new towers built on their ruin\".");
+						}
+					}
+					else {
+						if(knowsOldDwarvish) {
+							pline("The ground rumbles up at you in %sDwarvish:", Role_if(PM_CAVEMAN) ? "" : "Old ");
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("\"I give you a star, to bring the fires of Dusk to the castles of the proud,");
+							pline("\"and the light of Dawn to the new towers built on their ruin\".");
+						}
+						else You_hear("rumbling in an unknown tongue.");
+					}
+
+					if(!Blind) pline("A skeletal finger of molten gold taps your left ring-finger, leaving a cloud of smoke and a sharp burning sensation!");
+					else pline("You feel a burning sensation on your left ring-finger!");
 					if(Role_if(PM_ANACHRONOUNBINDER)){
-						summon_spirit(SEAL_FAFNIR,FAFNIR,PM_FAFNIR,tx,ty);
+						summon_spirit(SEAL_MAEGERA,MAEGERA,PM_FAFNIR,tx,ty);
 						return MOVE_INSTANT;
 					}
-					Your("left finger stings!");
 					bindspirit(ep->ward_id);
-					u.sealTimeout[FAFNIR-FIRST_SEAL] = moves + bindingPeriod;
+					u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod;
 				}
 				else if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && (!u.spiritTineA || (!u.spiritTineB && quest_status.killed_nemesis && Role_if(PM_EXILE)))){
-					if(!Blind) pline("The dragon tries to steal your weapon!");
-					else pline("Something tries to steal your weapon!");
-					You("fight it off.");
-					uwep->ovara_seals |= SEAL_FAFNIR;
+					if(!Blind) {
+						pline("The %s skull moves its jaws soundlessly as the ground rumbles in %s beneath you.",
+							knowsDwarfBones ? "dwarven" : "humanoid",
+							(Race_if(PM_DWARF) && Role_if(PM_CAVEMAN)) ? "Dwarvish" : knowsOldDwarvish ? "Old Dwarvish" : "an unknown language"
+						);
+						if(knowsOldDwarvish){
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("I give you a finger, to burn the castles of the proud\".");
+						}
+					}
+					else {
+						if(knowsOldDwarvish) {
+							pline("The ground rumbles up at you in %sDwarvish:", Role_if(PM_CAVEMAN) ? "" : "Old ");
+							pline("\"I am that called Maegera by the accursed Carvers.");
+							pline("I give you a finger, to burn the castles of the proud\".");
+						}
+						else You_hear("rumbling in an unknown tongue.");
+					}
+
+					if(!Blind) pline("A skeletal finger of molten gold slices itself off on the edge of your blade!");
+
+					uwep->ovara_seals |= SEAL_MAEGERA;
 					if(!u.spiritTineA){ 
-						u.spiritTineA = SEAL_FAFNIR;
+						u.spiritTineA = SEAL_MAEGERA;
 						u.spiritTineTA= moves + bindingPeriod;
 					}
 					else{
-						u.spiritTineB = SEAL_FAFNIR;
+						u.spiritTineB = SEAL_MAEGERA;
 						u.spiritTineTB= moves + bindingPeriod;
 					}
-					u.sealTimeout[FAFNIR-FIRST_SEAL] = moves + bindingPeriod;
+					u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod;
 				}
 				else{
-					pline("It roars at you to leave it alone.");
-					// u.sealTimeout[FAFNIR-FIRST_SEAL] = moves + bindingPeriod/10;
+					if(!Blind) pline("All three skulls roar soundlessly as the ground quakes, then the lava plume sinks back into the earth.");
+					else pline("You feel the ground quake beneath your feet!");
+					youmonst.movement -= NORMAL_SPEED;
+					// u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod/10;
 				}
 			} else{
-				You_hear("the clink of coins.");
-				// u.sealTimeout[FAFNIR-FIRST_SEAL] = moves + bindingPeriod/10;
+				You("momentarily see heaping piles of gold in front of you, but they are gone as quickly as they came.");
+				// u.sealTimeout[MAEGERA-FIRST_SEAL] = moves + bindingPeriod/10;
 			}
 		} else pline("You can't feel the spirit.");
 	}break;
@@ -6582,7 +6700,7 @@ int floorID;
 	case EVE:
 		propchain[i++] = HALF_PHDAM;
 		break;
-	case FAFNIR:
+	case MAEGERA:
 		propchain[i++] = INFRAVISION;
 		propchain[i++] = FIRE_RES;
 		break;
@@ -6703,6 +6821,10 @@ int floorID;
 	case ASTAROTH:
 		skillchain[i++] = P_CROSSBOW;
 		skillchain[i++] = P_SHURIKEN;
+		break;
+	case MAEGERA:
+		skillchain[i++] = P_PICK_AXE;
+		skillchain[i++] = P_HAMMER;
 		skillchain[i++] = P_SMITHING;
 		break;
 	case BALAM:
@@ -6737,7 +6859,6 @@ int floorID;
 		break;
 	case ENKI:
 		skillchain[i++] = P_SHORT_SWORD;
-		skillchain[i++] = P_HAMMER;
 		skillchain[i++] = P_SLING;
 		skillchain[i++] = P_DART;
 		skillchain[i++] = P_BOOMERANG;
@@ -6748,9 +6869,6 @@ int floorID;
 	case EVE:
 		skillchain[i++] = P_BOW;
 		skillchain[i++] = P_HARVEST;
-		break;
-	case FAFNIR:
-		skillchain[i++] = P_PICK_AXE;
 		break;
 	case HUGINN_MUNINN:
 		skillchain[i++] = P_SPEAR;
@@ -7309,6 +7427,12 @@ int p_skill;
 		if (p_skill == P_KNI_ELDRITCH)
 			return TRUE;
 		if (p_skill == P_KNI_RUNIC)
+			return TRUE;
+	}
+	if (Role_if(PM_KENSEI)){
+		if (p_skill == P_KNI_SACRED)
+			return TRUE;
+		if (p_skill == P_KNI_ELDRITCH)
 			return TRUE;
 	}
 	return FALSE;
@@ -8028,6 +8152,11 @@ struct monst *dollmaker;
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 	
 	incntlet = 'a';
+
+	if(!dollmaker->mvar_dollTypes){
+		pline("Error recovery: this doll had no doll types recored, and has been initialized");
+		dollmaker->mvar_dollTypes = init_doll_sales();
+	}
 	
 	for(l = 0x1L, n = EFFIGY; l <= MAX_DOLL_MASK; l=(l<<1), n++){
 		if(dollmaker->mvar_dollTypes&l){
@@ -8043,7 +8172,7 @@ struct monst *dollmaker;
 		incntlet++; //Advance anyway
 	}
 	
-	if(is_dollable(dollmaker->data)){
+	if(is_dollable_mtyp(dollmaker->mtyp)){
 		Sprintf(buf, "doll tear ($%d)", 8000);
 		any.a_int = DOLL_S_TEAR;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,

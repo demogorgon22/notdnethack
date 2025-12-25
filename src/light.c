@@ -631,6 +631,8 @@ litsaber(obj)
 {
 	if(obj->oartifact == ART_INFINITY_S_MIRRORED_ARC){
 		return infinity_s_mirrored_arc_litness(obj);
+	} else if(obj->oartifact == ART_KISHIN_MIRROR){
+		return obj == uwep || (obj == uswapwep && u.twoweap);
 	} else if(obj->otyp == KAMEREL_VAJRA){
 		if(u.goldkamcount_tame || level.flags.goldkamcount_peace || level.flags.goldkamcount_hostile || flags.goldka_level)
 			return TRUE;

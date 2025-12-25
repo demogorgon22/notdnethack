@@ -67,6 +67,8 @@ static const char *random_mesg[] = {
 	
 	"This too shall pass.", /* medieval Persian adage */
 	
+	"Omnes sumus peccatores", /*We are all sinners (via Lies of P) */
+
 	"Romanes Eunt Domus", /* Life of Brian */
 
 	"porkman was here", /* First ascender */
@@ -933,10 +935,10 @@ char * sealNames[] =  {
 	"Enki", /* 12 */
 	"Eurynome", /* 13 */
 	"Eve", /* 14 */
-	"Fafnir", /* 15 */
-	"Huginn and Muninn", /* 16 */
-	"Iris", /* 17 */
-	"Jack", /* 18 */
+	"Huginn and Muninn", /* 15 */
+	"Iris", /* 16 */
+	"Jack", /* 17 */
+	"Maegera", /* 18 */
 	"Malphas", /* 19 */
 	"Marionette", /* 20 */
 	"Mother", /* 21 */
@@ -980,10 +982,10 @@ char * sealTitles[] =  {
 	", God of the first city", /* 12 */
 	", lonely dancer", /* 13 */
 	", the first Sinner", /* 14 */
-	", Jotunn Dragon", /* 15 */
-	", Thought and Memory", /* 16 */
-	", Friend from Afar", /* 17 */
-	" of the Lantern", /* 18 */
+	", Thought and Memory", /* 15 */
+	", Friend from Afar", /* 16 */
+	" of the Lantern", /* 17 */
+	", the Dawn and Dusk", /* 18 */
 	", the Prince of Crows", /* 19 */
 	", Puppet of Screams", /* 20 */
 	", who beheld Beauty", /* 21 */
@@ -1854,8 +1856,11 @@ int x, y;
 int
 freehand()
 {
-	return(!Straitjacketed && 
-		(!uwep || !welded(uwep) ||
+	if(Straitjacketed)
+		return FALSE;
+	if(youracedata->mtyp == PM_SILVERMAN)
+		return TRUE;
+	return((!uwep || !welded(uwep) ||
 	   (!bimanual(uwep,youracedata) && (!uarms || !uarms->cursed))));
 /*	if ((uwep && bimanual(uwep)) ||
 	    (uwep && uarms))
@@ -4581,7 +4586,7 @@ int f1,f2;
 	/*Elite towers*/
 	else if(f1 >= FIRST_TOWER && f1 <= LAST_TOWER){
 		/*with all goddesses (except eilistraee) and tower xaxox*/
-		return f2 == LOLTH_SYMBOL || f2 == KIARANSALEE_SYMBOL || (f2 == PEN_A_SYMBOL && urole.neminum != PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH) || f2 == VER_TAS_SYMBOL || f2 == XAXOX || f2 == GHAUNADAUR_SYMBOL;
+		return (f1 >= FIRST_TOWER && f1 <= LAST_TOWER) || f2 == LOLTH_SYMBOL || f2 == KIARANSALEE_SYMBOL || (f2 == PEN_A_SYMBOL && urole.neminum != PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH) || f2 == VER_TAS_SYMBOL || f2 == XAXOX || f2 == GHAUNADAUR_SYMBOL;
 	}
 	/*Tower xaxox*/
 	else if(f1 == XAXOX){

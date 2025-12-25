@@ -236,27 +236,13 @@ struct objclass {
 #define ETRAIT_BRACED			0x00010000L
 #define ETRAIT_BLADESONG		0x00020000L
 #define ETRAIT_BLADEDANCE		0x00040000L
+#define ETRAIT_PUNCTURE			0x00080000L //Escalating chance for a double-damage hit
+//
 
 #define wielder_size(mon) ((mon) == &youmonst ? youracedata->msize : (mon)->data->msize)
-#define CHECK_ETRAIT(obj, mon, trait) ( \
-										( ((obj)->expert_traits&trait  \
-											&& (trait == (trait&FFORM_ETRAITS) || (obj)->otyp != TOOTH || !((obj)->o_e_trait&ETRAIT_FOCUS_FIRE)) \
-											&& !((mon) == &youmonst && objects[(obj)->otyp].oc_skill == P_LANCE && !(u.usteed || centauroid(youracedata) || animaloid(youracedata))) \
-											&& !(trait == ETRAIT_GRAZE && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL)) \
-										) \
-										|| (trait == ETRAIT_QUICK && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD))\
-										|| (trait == ETRAIT_PENETRATE_ARMOR && (mon) == &youmonst && obj->otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL))\
-										|| (trait == ETRAIT_LUNGE && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
-										|| (trait == ETRAIT_STOP_THRUST && mon == &youmonst && activeFightingForm(FFORM_MAKASHI) && is_makashi_saber(obj))\
-										|| ((obj)->oartifact == ART_HOLY_MOONLIGHT_SWORD && (\
-												((obj)->lamplit && trait == ETRAIT_CLEAVE ) \
-												|| (mon == &youmonst && u.uinsight >= 40 && trait == ETRAIT_FOCUS_FIRE ) \
-											))\
-										|| ((obj)->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits&trait)\
-									   ) && \
-	((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
+#define CHECK_ETRAIT(obj, mon, trait) (check_etrait((obj), (mon), (trait)))
 #define ROLL_ETRAIT(obj, mon, echance, schance) (((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_SKILLED) : ((mon)->data->mflagsf&MF_MARTIAL_E)) ? echance : schance)
-#define FFORM_ETRAIT(obj, mon) (objects[(obj)->otyp].expert_traits&FFORM_ETRAITS && ((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
+#define FFORM_ETRAIT(obj, mon) (obj->expert_traits&FFORM_ETRAITS && ((mon) == &youmonst ? (P_SKILL(weapon_type(obj)) > P_BASIC ) : (((mon)->data->mflagsf&MF_MARTIAL_E) || ((mon)->data->mflagsf&MF_MARTIAL_S))))
 
 struct objdescr {
 	const char *oc_name;		/* actual name */

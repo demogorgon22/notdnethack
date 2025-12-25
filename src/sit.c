@@ -278,7 +278,7 @@ dosit()
 					}
 					verbalize("You have summoned me.  I will grant one wish!");
 					int artwishes = u.uconduct.wisharti;
-					makewish(allow_artwish() | WISH_VERBOSE);
+					makewish(WISH_SINGLE_USE | allow_artwish() | WISH_VERBOSE);
 					if (u.uconduct.wisharti > artwishes) {
 						/* made artifact wish */
 						if (mtmp2) {
@@ -383,7 +383,7 @@ dosit()
 				}
 				verbalize("You have summoned me.  I will grant one wish!");
 				int artwishes = u.uconduct.wisharti;
-				makewish(allow_artwish() | WISH_VERBOSE);
+				makewish(WISH_SINGLE_USE | allow_artwish() | WISH_VERBOSE);
 				if (u.uconduct.wisharti > artwishes) {
 					/* made artifact wish */
 					if (mtmp2) {
@@ -772,7 +772,22 @@ register struct monst *mtmp;
 void
 attrcurse()
 {
-	switch(rnd(10)) {
+	switch(rnd(13)) {
+	case 13 : if (HAcid_resistance & TIMEOUT) {
+			HAcid_resistance &= ~TIMEOUT;
+			You_feel("sensitive.");
+			break;
+		}
+	case 12 : if (HShock_resistance & TIMEOUT) {
+			HShock_resistance &= ~TIMEOUT;
+			You_feel("unmoored.");
+			break;
+		}
+	case 11 : if (HSleep_resistance & TIMEOUT) {
+			HSleep_resistance &= ~TIMEOUT;
+			You_feel("sleepy.");
+			break;
+		}
 	case 1 : if (HFire_resistance & TIMEOUT) {
 			HFire_resistance &= ~TIMEOUT;
 			You_feel("warmer.");

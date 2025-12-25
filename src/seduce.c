@@ -10,15 +10,9 @@ STATIC_DCL void FDECL(mayberem_common, (struct obj *, const char *, BOOLEAN_P));
 STATIC_DCL void FDECL(palemayberem, (struct obj *, const char *, BOOLEAN_P));
 STATIC_DCL boolean FDECL(sedu_helpless, (struct monst *));
 STATIC_DCL int FDECL(sedu_refuse, (struct monst *));
-STATIC_DCL boolean FDECL(sedu_roll, (struct monst *, boolean));
-STATIC_DCL void FDECL(sedu_payment, (struct monst *));
 STATIC_DCL void FDECL(sedu_undress, (struct monst *));
 STATIC_DCL void FDECL(sedu_adornment_ring, (struct monst *));
-STATIC_DCL void FDECL(sedu_knife, (struct monst *));
-STATIC_DCL void FDECL(sedu_wornout, (struct monst *, boolean));
-STATIC_DCL void FDECL(sedu_timestandsstill, (struct monst *, boolean));
-STATIC_DCL int FDECL(sedu_select_effect, (struct monst *, boolean));
-STATIC_DCL void FDECL(seduce_effect, (struct monst *, int));
+STATIC_DCL void FDECL(sedu_minion, (struct monst *));
 # endif
 
 static const char tools[] = { TOOL_CLASS, 0 };
@@ -111,8 +105,6 @@ doseduce(mon)
 struct monst * mon;
 {
 	boolean helpless;
-	boolean badeffect;
-	int effect;
 
 	/* their identity is revealed! */
 	if(mon->mappearance) {
@@ -161,120 +153,48 @@ struct monst * mon;
 	/* undress the player */
 	sedu_undress(mon);
 
-	/* roll for good/bad effect */
-	/* happens before sedu_refuse(), as a Lolth bad effect is unrefusable, but a good effect is */
-	badeffect = sedu_roll(mon, helpless);
-
 	/* if the player is still dressed, refuse */	
 	if (uarm || uarmc || (uwep && uwep->oartifact==ART_TENSA_ZANGETSU)) {
 		if (sedu_refuse(mon)) {
 			/* seducer was refused */
 			return 1;
 		}
-		else {
-			/* seducer acts against you */
-			badeffect = TRUE;
+	}
+	else if(mon->mtyp == PM_VLAD_THE_IMPALER || mon->mtyp == PM_CARMILLA){
+		struct attack vampire_bite = {AT_BITE, AD_VAMP, 1, 6, 0};
+		xmeleehity(mon, &youmonst, &vampire_bite, (struct obj **)0, -1, 0, FALSE, 0);
+	}
+	else {
+		/* perform effect */
+		int quantity = 0;
+		if (mon->mtyp == PM_GRAZ_ZT) quantity = 6;
+		else if(mon->mtyp == PM_MALCANTHET) quantity = 4;
+		else if(mon->mtyp == PM_MOTHER_LILITH) quantity = 6;
+		else if(mon->mtyp == PM_BELIAL) quantity = 4;
+		else if(mon->mtyp == PM_AVATAR_OF_LOLTH) quantity = 8;
+		else if(mon->mtyp == PM_UNEARTHLY_DROW) quantity = 1;
+		else if(mon->mtyp == PM_SUCCUBUS || mon->mtyp == PM_INCUBUS) quantity = 1;
+		if(quantity > 0){
+			if(is_lord(mon->data) || is_prince(mon->data)){
+				verbalize("Kill %s, my minion%s!", flags.female ? "her" : "him", quantity > 1 ? "s" : "");
+			}
+			else {
+				verbalize("Kill %s!", flags.female ? "her" : "him");
+			}
+		}
+		for (int i = 0; i < quantity; i++) {
+			sedu_minion(mon);
 		}
 	}
-	else if (u.ualign.type == A_CHAOTIC || u.ualign.type == A_NONE)
-		adjalign(1);
-
-	IMPURITY_UP(u.uimp_seduction)
-
-	/* select sedu effect */
-	effect = sedu_select_effect(mon, badeffect);
-
-	/* "time stands still" message, or replacement */
-	sedu_timestandsstill(mon, badeffect);
-
-	/* clockworks get a bit harder of a time with Malcanthet */
-	if (mon->mtyp == PM_MALCANTHET && !badeffect && uclockwork) {
-		/* even for a good effect, she attacks you a bit before giving her boon */
-		pline("She becomes very angry when she discovers your mechanical nature.");
-		pline("She claws at you...");
-		losehp(d(4, 4), "an angry paramour", KILLED_BY);
-		pline("...but you manage to distract her before she does serious harm.");
-	}
-
-	/* perform effect */
-	seduce_effect(mon, effect);
-	/*Some effects result in theft, some thefts result in death!*/
-	if(DEADMONSTER(mon))
-		return 1;
-
-	/* knife to the ribs -- Belial, Lilith only */
-	if (mon->mtyp == PM_BELIAL || mon->mtyp == PM_MOTHER_LILITH)
-		sedu_knife(mon);
-
-	/* handle payment -- only foocubi */
-	if (mon->mtyp == PM_SUCCUBUS || mon->mtyp == PM_INCUBUS)
-		sedu_payment(mon);
-
-	/* worn out -- set mspec used */
-	sedu_wornout(mon, badeffect);
 
 	/* possibly exit early, skipping teleport and continuing to make attacks! */
-	if (badeffect && (mon->mtyp == PM_BELIAL || mon->mtyp == PM_MOTHER_LILITH))
+	if (mon->mtyp == PM_BELIAL || mon->mtyp == PM_MOTHER_LILITH)
 		return 0;
 
 	/* teleport */
 	if (!tele_restrict(mon)) (void) rloc(mon, TRUE);
 
 	return 1;
-}
-
-/* monster that uses this is still unwritten
- * and so this hasn't been totally integrated into
- * the reworked combined seduce */
-int
-dosflseduce(mon)
-register struct monst *mon;
-{
-	boolean fem = TRUE;
-	//char qbuf[QBUFSZ];
-	boolean helpless = FALSE;
-	if (mon->mcan || mon->mspec_used) {
-		pline("%s is uninterested in you.", Monnam(mon));
-		return 0;
-	}
-
-	if (unconscious()) {
-			You("are having a horrible dream.");
-			helpless = TRUE;
-	}
-
-	if (Blind) You_feel("Something grab you...");
-	else pline("%s grabs you.", mon_nam(mon));
-
-	sedu_undress(mon);
-
-	if (uarm || uarmc || (uwep && uwep->oartifact==ART_TENSA_ZANGETSU)) {
-		verbalize("You can't resist forever!");
-		pline("She claws at you!");
-		losehp(d(4, 10), "a jilted paramour", KILLED_BY);
-		return 0;
-	}
-	if (u.ualign.type == A_CHAOTIC)
-		adjalign(1);
-	/* by this point you have discovered mon's identity, blind or not... */
-	pline("Time stands still while you and %s lie in each other's arms...",
-		noit_mon_nam(mon));
-	pline("Suddenly, %s becomes violent!",
-		noit_Monnam(mon));
-	if (helpless || (25 + rn2(100)) > (ACURR(A_CHA) + ACURR(A_STR))) {
-		int turns = d(1, 4);
-		if(!helpless) You("are taken off guard!");
-		nomul(-(turns), "knocked reeling by a violent lover");
-		nomovemsg = You_can_move_again;
-		mon->mspec_used = turns;
-		return 0;
-	} else {
-		pline("But you gain the upper hand!");
-	    mon->mcanmove = 0;
-	    mon->mfrozen = d(1,4)+1;
-	    return 3;
-	}
-	return 0;
 }
 
 int
@@ -864,26 +784,39 @@ boolean dontask;
 	if (!obj || !obj->owornmask) return;
 
 	if (!dontask) {
-		Sprintf(qbuf,"\"Shall I remove your %s, %s?\"",
-			str,
-			(!rn2(2) ? "lover" : !rn2(2) ? "dear" : "sweetheart"));
+		if(obj == uwep || obj == uswapwep){
+			Sprintf(qbuf,"\"Put away your %s, %s?\"",
+				str,
+				(!rn2(2) ? "lover" : !rn2(2) ? "dear" : "sweetheart")
+			);
+		}
+		else {
+			Sprintf(qbuf,"\"Shall I remove your %s, %s?\"",
+				str,
+				(!rn2(2) ? "lover" : !rn2(2) ? "dear" : "sweetheart")
+			);
+		}
 		if (yn(qbuf) == 'n') return;
 	} else {
 		char hairbuf[BUFSZ];
-
-		Sprintf(hairbuf, "let me run my fingers through your %s",
-			body_part(HAIR));
-		verbalize("Take off your %s; %s.", str,
-			(obj == uarm)  ? "let's get a little closer" :
-			(obj == uarmc || obj == uarms) ? "it's in the way" :
-			(obj == uarmf) ? "let me rub your feet" :
-			(obj == uarmg) ? "they're too clumsy" :
-#ifdef TOURIST
-			(obj == uarmu) ? "let me massage you" :
-#endif
-			/* obj == uarmh */
-			hairbuf);
+		if(obj == uwep || obj == uswapwep){
+			verbalize("Put away your %s before you hurt someone.", str);
+		}
+		else {
+			Sprintf(hairbuf, "let me run my fingers through your %s",
+				body_part(HAIR));
+			verbalize("Take off your %s; %s.", str,
+				(obj == uarm)  ? "let's get a little closer" :
+				(obj == uarmc || obj == uarms) ? "it's in the way" :
+				(obj == uarmf) ? "let me rub your feet" :
+				(obj == uarmg) ? "they're too clumsy" :
+				(obj == uarmu) ? "let me massage you" :
+				/* obj == uarmh */
+				hairbuf
+			);
+		}
 	}
+	IMPURITY_UP(u.uimp_seduction)
 	remove_worn_item(obj, TRUE);
 }
 
@@ -901,7 +834,15 @@ boolean helpless;
 	its_cha = rn2(40);
 	if (helpless || its_cha >= ACURR(A_CHA)) {
 		if(!obj->oartifact || !rn2(10)){
-			destroy_arm(obj);
+			if(obj == uwep || obj == uswapwep){
+				Your("%s to dust in your %s!", aobjnam(obj, "turn"), bimanual(obj, youracedata) ? makeplural(body_part(HAND)) : body_part(HAND));
+				if(obj == uwep) uwepgone();
+				else if(obj == uswapwep) uswapwepgone();
+				useup(obj);
+			}
+			else {
+				destroy_arm(obj);
+			}
 		}
 	}
 }
@@ -974,89 +915,6 @@ struct monst * mon;
 	return 1;
 }
 
-/* returns TRUE if your roll doesn't beat the monster and you should get a bad sedu effect */
-boolean
-sedu_roll(mon, helpless)
-struct monst * mon;
-boolean helpless;
-{
-	switch(mon->mtyp) {
-		case PM_AVATAR_OF_LOLTH:
-			return (helpless || rn2(120) > ACURR(A_CHA) + ACURR(A_WIS));
-		case PM_MOTHER_LILITH:
-		case PM_BELIAL:
-			return (Sterile || rn2(139) > ACURR(A_CHA) + ACURR(A_INT));
-		case PM_MALCANTHET:
-		case PM_GRAZ_ZT:
-			return (Sterile || helpless || rn2(120) > ACURR(A_CHA) + ACURR(A_CON) + ACURR(A_INT));
-		case PM_INCUBUS:
-		case PM_SUCCUBUS:
-		default:
-			return (Sterile || rn2(35) > ACURR(A_CHA) + ACURR(A_INT));
-	}
-}
-
-void
-sedu_payment(mon)
-struct monst * mon;
-{
-	if (mon->mtame) {
-		/* don't charge */
-		return;
-	}
-
-	if (rn2(20) < ACURR(A_CHA)) {
-		pline("%s demands that you pay %s, but you refuse...",
-			noit_Monnam(mon),
-			Blind ? (mon->female ? "her" : "him") : mhim(mon));
-	} else if (u.umonnum == PM_LEPRECHAUN)
-		pline("%s tries to take your money, but fails...",
-				noit_Monnam(mon));
-	else {
-#ifndef GOLDOBJ
-		long cost;
-
-		if (u.ugold > (long)LARGEST_INT - 10L)
-			cost = (long) rnd(LARGEST_INT) + 500L;
-		else
-			cost = (long) rnd((int)u.ugold + 10) + 500L;
-		if (mon->mpeaceful) {
-			cost /= 5L;
-			if (!cost) cost = 1L;
-		}
-		if (cost > u.ugold) cost = u.ugold;
-		if (!cost) verbalize("It's on the house!");
-		else {
-			pline("%s takes %ld %s for services rendered!",
-				noit_Monnam(mon), cost, currency(cost));
-			u.ugold -= cost;
-			mon->mgold += cost;
-			flags.botl = 1;
-		}
-#else
-		long cost;
-				long umoney = money_cnt(invent);
-
-		if (umoney > (long)LARGEST_INT - 10L)
-			cost = (long) rnd(LARGEST_INT) + 500L;
-		else
-			cost = (long) rnd((int)umoney + 10) + 500L;
-		if (mon->mpeaceful) {
-			cost /= 5L;
-			if (!cost) cost = 1L;
-		}
-		if (cost > umoney) cost = umoney;
-		if (!cost) verbalize("It's on the house!");
-		else { 
-			pline("%s takes %ld %s for services rendered!",
-				noit_Monnam(mon), cost, currency(cost));
-					money2mon(mon, cost);
-			flags.botl = 1;
-		}
-#endif
-	}
-}
-
 void
 sedu_undress(mon)
 struct monst * mon;
@@ -1119,6 +977,12 @@ struct monst * mon;
 				Blind ? (mon->female ? "She" : "He") : Monnam(mon));
 			break;
 		}
+		/* undress player */
+		undressfunc(uwep, "weapon", helpless);
+
+		/* undress player */
+		undressfunc(uswapwep, "backup weapon", helpless);
+
 		/* undress player */
 		undressfunc(uarmc, cloak_simple_name(uarmc), helpless);
 
@@ -1194,7 +1058,7 @@ struct monst * mon;
 		}
 		break;
 	default:
-		takesring = !mon->female;
+		takesring = mon->female;
 		resist = (rn2(20) < ACURR(A_CHA));
 		break;
 	}
@@ -1278,964 +1142,6 @@ struct monst * mon;
 			else impossible("ring replacement");
 			Ring_on(ring);
 			prinv((char *)0, ring, 0L);
-		}
-	}
-	return;
-}
-
-/* some monsters try to knife you, how rude */
-void
-sedu_knife(mon)
-struct monst * mon;
-{
-	const char * knife = uclockwork ? "knife to the gears" : "knife to the ribs";
-	if (ACURR(A_CHA) + rn1(4, 3) < 24){
-		pline("Before you can get up, %s slips a knife %s!",
-			noit_Monnam(mon), uclockwork ? "into your gears" : "between your ribs");
-		if (Half_physical_damage) losehp(rn1(5, 6), knife, KILLED_BY);
-		else losehp(rn1(10, 6), knife, KILLED_BY);
-	}
-	else{
-		pline("As you get up, %s tries to knife you, but is too distracted to do it properly!",
-		noit_Monnam(mon));
-		if (Half_physical_damage) losehp(rn1(1, 6), knife, KILLED_BY);
-		else losehp(rn1(2, 6), knife, KILLED_BY);
-	}
-	return;
-}
-
-/* sets mspecused */
-void
-sedu_wornout(mon, badeffect)
-struct monst * mon;
-boolean badeffect;
-{
-	switch(mon->mtyp)
-	{
-		case PM_BELIAL:
-		case PM_MOTHER_LILITH:
-			if (!badeffect)
-				mon->mspec_used = rnd(39) + 13;
-			else
-				mon->mspec_used = rnd(13) + 3;
-			break;
-
-		case PM_MALCANTHET:
-		case PM_GRAZ_ZT:
-			if (!badeffect)
-				mon->mspec_used = rnd(39)+13;
-			break;
-
-		case PM_AVATAR_OF_LOLTH:
-			if (!badeffect)
-				mon->mspec_used = rnd(100);
-			break;
-		default:
-			if (!badeffect)
-				mon->mspec_used = rnd(100);
-			if (!rn2(25))
-				set_mcan(mon, TRUE);
-			break;
-	}
-	return;
-}
-
-/* prints a message */
-void
-sedu_timestandsstill(mon, badeffect)
-struct monst * mon;
-boolean badeffect;
-{
-
-	/* lolth transforms */
-	if (mon->mtyp == PM_AVATAR_OF_LOLTH) {
-		if (badeffect) {
-			if (Blind) You("suddenly find yourself in the arms of a giant spider!");
-			else pline("She suddenly becomes a giant spider and seizes you with her legs!");
-		}
-		else {
-			if(Blind) pline("An elf-maid clasps herself to you!");
-			else pline("She becomes a beautiful dark-skinned elf-maid!");
-		}
-	}
-	else {
-		/* line 1 */
-		if(!uclockwork){
-			pline("Time stands still while you and %s lie in each other's arms...",
-				noit_mon_nam(mon));
-		}
-		else{
-			pline("You and %s lie down together...",
-				noit_mon_nam(mon));
-		}
-		/* line 2 */
-		if (badeffect) {
-			if (uclockwork) {
-				pline("%s looks briefly confused...",
-					noit_Monnam(mon));
-			}
-		}
-		else {
-			if (uclockwork)
-				pline("Time stands still while you and %s lie in each other's arms...",
-					noit_mon_nam(mon));
-			else
-				You("seem to have enjoyed it more than %s...",
-					noit_mon_nam(mon));
-		}
-	}
-}
-
-int
-sedu_select_effect(mon, badeffect)
-struct monst * mon;
-boolean badeffect;
-{
-	if (badeffect) {
-		switch(mon->mtyp) {
-			case PM_AVATAR_OF_LOLTH:
-				return SEDU_LOLTHATTACK;
-			case PM_MALCANTHET:
-				if(uclockwork)
-					return SEDU_DAMAGECLK;
-				switch(rn2(8)){
-					case 0: return SEDU_DRAINEN;
-					case 1: return SEDU_DUMPS;
-					case 2: return SEDU_BURDEN;
-					case 3: return SEDU_DULLSENSES;
-					case 4: return SEDU_EXHAUSTED;
-					case 5: return SEDU_CURSE;
-					case 6: return SEDU_GREMLIN;
-					case 7: return SEDU_PARALYZE;
-				}
-			case PM_GRAZ_ZT:
-				if(uclockwork)
-					return SEDU_DAMAGECLK;
-				switch(rn2(6)){
-					case 0: return SEDU_STEALSIX;
-					case 1: return SEDU_BADWEAP;
-					case 2: return SEDU_BADHAT;
-					case 3: return SEDU_BADBOOTS;
-					case 4: return SEDU_BADAMU;
-					case 5: return SEDU_PUNISH;
-				}
-			case PM_MOTHER_LILITH:
-			case PM_BELIAL:
-			case PM_INCUBUS:
-			case PM_SUCCUBUS:
-			default:
-				if(uclockwork) {
-					if (!rn2(5) && !Drain_resistance)
-						return SEDU_SUCKSOUL;
-					else
-						return SEDU_STEALONE;
-				}
-				switch(rn2(5)){
-					case 0: return SEDU_DRAINEN;
-					case 1: return SEDU_DUMPS;
-					case 2: return SEDU_DULLSENSES;
-					case 3: return SEDU_DRAINLVL;
-					case 4: return SEDU_EXHAUSTED;
-				}
-		}
-	}
-	else {
-		switch(mon->mtyp) {
-			case PM_AVATAR_OF_LOLTH:
-					switch(rn2(4)){
-						case 0: return SEDU_WISH;
-						case 1: return SEDU_BLESS;
-						case 2: return SEDU_EDUCATE;
-						case 3: return SEDU_RESTOREHP;
-					}
-			case PM_MALCANTHET:
-				if(poly_gender() == 1 && (ACURR(A_CHA) < rn2(35)))
-					return SEDU_JEALOUS;	// bad effect
-				switch(uclockwork ? rn2(4) : rn2(8)){
-					case 0: return SEDU_PROTECT;
-					case 1: return SEDU_BLESS;
-					case 2: return SEDU_LIFEFONT;
-					case 3: return SEDU_CARRYCAP;
-					case 4: return SEDU_POISRES;
-					case 5: return SEDU_ACIDRES;
-					case 6: return SEDU_SICKRES;
-					case 7: return SEDU_RAISESTATS;
-				}
-			case PM_GRAZ_ZT:
-				if(poly_gender() == 0 && (ACURR(A_CHA) < rn2(35)))
-					return SEDU_JEALOUS;	// bad effect
-				switch(rn2(6)){
-					case 0: return SEDU_WISH;
-					case 1: return SEDU_GENOCIDE;
-					case 2: return SEDU_SIXMAGICS;
-					case 3: return SEDU_SIXTRUTHS;
-					case 4: return SEDU_SIXFOLLOWERS;
-					case 5: return SEDU_LIFESAVING;
-				}
-			case PM_MOTHER_LILITH:
-			case PM_BELIAL:
-			case PM_INCUBUS:
-			case PM_SUCCUBUS:
-			default:
-				if (uclockwork) {
-					if (!rn2(5))
-						return SEDU_EDUCATE;
-					else if (u.uhunger < .5*get_uhungermax() && !Race_if(PM_INCANTIFIER))
-						return SEDU_WIND;
-					else
-						return SEDU_NOTHING;
-				}
-				switch(rn2(5)){
-					case 0: return SEDU_GAINEN;
-					case 1: return SEDU_GOODENOUGH;
-					case 2: return SEDU_REMEMBER;
-					case 3: return SEDU_EDUCATE;
-					case 4: return SEDU_RESTOREHP;
-				}
-		}
-	}
-	/* should not be reached */
-	return 0;
-}
-
-void
-seduce_effect(mon, effect_num)
-struct monst * mon;
-int effect_num;
-{
-	char qbuf[QBUFSZ];
-	struct obj *key;
-	int turns = 0;
-	char class_list[MAXOCLASSES + 2];
-	int tmp;
-	char buf[BUFSZ];
-	struct obj * optr;
-	const char * s;
-
-	boolean greater = /* lilith/belial seduce */
-		(mon->mtyp == PM_MOTHER_LILITH || mon->mtyp == PM_BELIAL);
-	boolean greatest = /* malcanthet/graz'zt seduce */
-		(mon->mtyp == PM_MALCANTHET || mon->mtyp == PM_GRAZ_ZT);
-
-	if (effect_num == 0) {
-		/* all effects, if any, were to be handled elsewhere */
-		/* probably you were a clockwork */
-		return;
-	}
-	else if (effect_num < 0)
-	{
-		switch (effect_num)
-		{
-		case SEDU_DRAINEN:
-			You_feel("drained of energy.");
-			if (u.uen > 0)
-				losepw(u.uen * 99 / 100);
-			tmp = (greater || greatest ? 90 : 10) / (Half_physical_damage ? 2 : 1);
-			u.uenbonus -= rnd(tmp);
-			exercise(A_CON, FALSE);
-			calc_total_maxen();
-			break;
-		case SEDU_DUMPS:
-			You("are down in the dumps.");
-			if (greatest) {
-				u.uhpmod -= Half_physical_damage ? 25 : 50;
-				calc_total_maxhp();
-				(void)adjattrib(A_CON, -2, TRUE);
-				(void)adjattrib(A_STR, -2, TRUE);
-				if (diseasemu(mon->data))
-					You("seem to have caught a disease!");
-			}
-			else if (greater) {
-				(void)adjattrib(A_CON, -6, TRUE);
-				(void)adjattrib(A_WIS, -3, TRUE);
-				exercise(A_CON, FALSE);
-			}
-			else {
-				(void)adjattrib(A_CON, -1, TRUE);
-				exercise(A_CON, FALSE);
-			}
-			flags.botl = 1;
-			break;
-		case SEDU_DULLSENSES:
-			s = greatest ? "mind" : "senses";
-			Your("%s %s dulled.", s, vtense(s, "are"));
-			if (greatest) {
-				if (u.sealsActive&SEAL_HUGINN_MUNINN){
-					unbind(SEAL_HUGINN_MUNINN, TRUE);
-				}
-				else {
-					(void)adjattrib(A_INT, -3, TRUE);
-					(void)adjattrib(A_WIS, -3, TRUE);
-					forget(30);
-					exercise(A_WIS, FALSE);
-					exercise(A_WIS, FALSE);
-					exercise(A_WIS, FALSE);
-				}
-			}
-			else if (greater) {
-				(void)adjattrib(A_WIS, -9, TRUE);
-				exercise(A_WIS, FALSE);
-				exercise(A_WIS, FALSE);
-				exercise(A_WIS, FALSE);
-			}
-			else {
-				(void)adjattrib(A_WIS, -1, TRUE);
-				exercise(A_WIS, FALSE);
-			}
-			flags.botl = 1;
-			break;
-		case SEDU_DRAINLVL:
-			if (!Drain_resistance) {
-				You_feel("out of shape.");
-				if (greater) {
-					losexp("overexertion", FALSE, FALSE, FALSE);
-					losexp("overexertion", FALSE, FALSE, FALSE);
-				}
-				losexp("overexertion", TRUE, FALSE, FALSE);
-			}
-			else {
-				You("have a curious feeling...");
-			}
-			break;
-		case SEDU_EXHAUSTED:
-			if (greater) {
-				if (!Drain_resistance) {
-					if (greatest)
-						losexp("exhaustion", FALSE, FALSE, FALSE);
-					losexp("exhaustion", TRUE, FALSE, FALSE);
-				}
-				exercise(A_STR, FALSE);
-				exercise(A_STR, FALSE);
-			}
-			You_feel("exhausted.");
-			exercise(A_STR, FALSE);
-			tmp = rn1(greater || greatest ? 20 : 10, 6);
-			if (Half_physical_damage) tmp = (tmp + 1) / 2;
-			losehp(tmp, "exhaustion", KILLED_BY);
-			break;
-
-
-		case SEDU_SUCKSOUL:
-			if (!Drain_resistance){
-				pline("...then tries to suck out your soul with %s!",
-					mon->mtyp == PM_AVATAR_OF_LOLTH ? "her fangs" : "a kiss");
-				losexp("stolen soul", FALSE, FALSE, FALSE);
-
-				if (mon->mtyp == PM_AVATAR_OF_LOLTH)
-					losexp("stolen soul", FALSE, FALSE, FALSE);
-
-				if (greater) {
-					losexp("stolen soul", FALSE, FALSE, FALSE);
-					losexp("stolen soul", TRUE, FALSE, FALSE);
-				}
-			}
-			break;
-
-		case SEDU_STEALONE:
-			buf[0] = '\0';
-			steal(mon, buf, FALSE, FALSE);
-			break;
-
-		case SEDU_STEALEIGHT:
-			/* flavoured for Lolth */
-			pline("...then starts picking through your things!");
-			for (tmp = 0; tmp < 8; tmp++) {
-				buf[0] = '\0';
-				steal(mon, buf, FALSE, TRUE);
-				/*Lolth is petrification immune, but if the attacker somehow dies from the theft we should return.*/
-				if(DEADMONSTER(mon))
-					return;
-			}
-			break;
-		
-		case SEDU_DAMAGECLK:
-			/* flavoured for Malcanthet and Graz'zt */
-			pline("...but %s becomes enraged when %s discovers you're mechanical!",
-				mhe(mon), mhe(mon));
-			verbalize("How dare you trick me!");
-
-			if (mon->female) {
-				pline("She attacks your keyhole with her barbed tail!");
-				losehp(d(4, 12), "an enraged demoness", KILLED_BY);
-				morehungry(d(2,12)*10);
-				pline("She claws your face!");
-				losehp(d(4, 4), "an enraged demoness", KILLED_BY);
-				(void) adjattrib(A_CHA, -1*d(2,4), TRUE);
-				}
-			else {
-				pline("He viciously bites you!");
-				losehp(d(4, 8), "an enraged demon prince", KILLED_BY);
-				(void) adjattrib(A_CHA, -1*d(1,8), TRUE);
-				pline("He drips acid into your inner workings!");
-				if(!HAcid_resistance){
-					losehp(d(6, 8), "an enraged demon prince", KILLED_BY);
-					morehungry(d(3,8));
-				}
-			}
-			AMAX(A_CHA) = ABASE(A_CHA); //stat drain is permanent!
-			break;
-
-		case SEDU_LOLTHATTACK:
-			/* all-in-one lolth bad-sedu effects */
-			if (TRUE) {
-				struct trap *ttmp2 = maketrap(u.ux, u.uy, WEB);
-				if (ttmp2) {
-					pline("She wraps you tight in her webs!");
-					dotrap(ttmp2, NOWEBMSG);
-	#ifdef STEED
-					if (u.usteed && u.utrap) {
-						/* you, not steed, are trapped */
-						dismount_steed(DISMOUNT_FELL);
-					}
-	#endif
-				}
-			}
-			if (uclockwork){
-				pline("%s pauses in momentary confusion...",
-					noit_Monnam(mon));
-				if (rn2(5) && !Drain_resistance){
-					seduce_effect(mon, SEDU_SUCKSOUL);
-				}
-				else {
-					seduce_effect(mon, SEDU_STEALEIGHT);
-				}
-			}
-			else {
-				int tmp;
-				pline("After wrapping you up, she bites into your helpless form!");
-				exercise(A_STR, FALSE);
-				tmp = d(6, 8);
-				if (Half_physical_damage) tmp = (tmp + 1) / 2;
-				losehp(tmp, "Lolth's bite", KILLED_BY);
-
-				seduce_effect(mon, rn2(2) ? SEDU_VAMP : SEDU_POISONBITE);
-			}
-			break;
-
-		case SEDU_VAMP:
-			if (has_blood(youracedata)) {
-				Your("blood is being drained!");
-				/* Get 1/20th of full corpse value
-				* Therefore 4 bites == 1 drink
-				*/
-				if (get_mx(mon, MX_EDOG))
-					EDOG(mon)->hungrytime += ((int)((youracedata)->cnutrit / 20) + 1);
-			}
-			if (!mon->mcan && !rn2(3) && !Drain_resistance) {
-				losexp("life force drain", FALSE, FALSE, FALSE);
-				losexp("life force drain", TRUE, FALSE, FALSE);
-			}
-			break;
-		case SEDU_POISONBITE:
-			pline("%s injects you with %s poison!", (mon->female ? "She" : "He"), (mon->female ? "her" : "his"));
-			if (Poison_resistance) pline_The("poison doesn't seem to affect you.");
-			else {
-				(void)adjattrib(A_CON, -4, TRUE);
-				exercise(A_CON, FALSE);
-				flags.botl = 1;
-				if (!Upolyd || Unchanging){
-					if (mon->mtyp == PM_AVATAR_OF_LOLTH)
-						killer = "the poisoned kiss of Lolth's fangs";
-					else
-						killer = "a poisoned kiss of fangs";
-					killer_format = KILLED_BY;
-					if (!u.uconduct.killer){
-						//Pcifist PCs aren't combatants so if something kills them up "killed peaceful" type impurities
-						IMPURITY_UP(u.uimp_murder)
-						IMPURITY_UP(u.uimp_bloodlust)
-					}
-					done(DIED);
-				}
-				else {
-					rehumanize();
-					change_gevurah(1); //cheated death.
-				}
-			}
-			break;
-
-		case SEDU_BURDEN:
-			Your("pack feels heavier.");
-			(void)adjattrib(A_STR, -2, TRUE);
-			u.ucarinc -= 100;
-			break;
-
-		case SEDU_CURSE:
-			verbalize("If thou art as terrible a fighter as thou art a lover, death shall find you soon.");
-			u.uacinc -= 10;
-			u.udaminc -= 10;
-			u.uhitinc -= 10;
-			break;
-
-		case SEDU_GREMLIN:
-			You_feel("robbed... but your possessions are still here...?");
-			attrcurse();
-			break;
-
-		case SEDU_PARALYZE:
-			if (Levitation || Weightless || Is_waterlevel(&u.uz))
-				You("are motionlessly suspended.");
-#ifdef STEED
-			else if (u.usteed)
-				You("are frozen in place!");
-#endif
-			else
-				You("are paralyzed!");
-			pline("She has immobilized you with her magic!");
-			nomul(-(rn1(10, 25)), "immobilized by night-terrors");
-			nomovemsg = You_can_move_again;
-			exercise(A_DEX, FALSE);
-			break;
-
-		case SEDU_STEALSIX:
-			verbalize("Surely you don't need all this junk?!");
-			for (tmp = 0; tmp < 6; tmp++) {
-				buf[0] = '\0';
-				steal(mon, buf, FALSE, FALSE);
-				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
-				if(DEADMONSTER(mon))
-					return;
-			}
-			break;
-
-		case SEDU_BADWEAP:
-			if (u.twoweap){
-				verbalize("You're going to hurt yourself with those.");
-				u.twoweap = FALSE;
-				optr = uswapwep;
-				setuswapwep((struct obj *)0);
-				freeinv(optr);
-				(void)mpickobj(mon, optr);
-
-				optr = uwep;
-				setuwep((struct obj *)0);
-				freeinv(optr);
-				(void)mpickobj(mon, optr);
-			}
-			else if (uwep && !(uwep->otyp != BAR)){
-				verbalize("You're going to hurt yourself with that.");
-				optr = uwep;
-				setuwep((struct obj *)0);
-				freeinv(optr);
-				(void)mpickobj(mon, optr);
-			}
-			if (!uwep){
-				buf[0] = '\0';
-				steal(mon, buf, FALSE, FALSE);
-				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
-				if(DEADMONSTER(mon))
-					return;
-				optr = mksobj(BAR, NO_MKOBJ_FLAGS);
-				curse(optr);
-				optr->spe = -6;
-				verbalize("This will keep you out of trouble.");
-				(void)hold_another_object(optr, u.uswallow ?
-					"Fortunately, you're out of reach! %s away." :
-					"Fortunately, you can't hold anything more! %s away.",
-					The(aobjnam(optr,
-					Weightless || u.uinwater ?
-					"slip" : "drop")),
-					(const char *)0);
-				if (carried(optr)){
-					setuwep(optr);
-				}
-			}
-			else{
-				verbalize("You're so helpless!");
-				losexp("dark speech", FALSE, TRUE, FALSE);
-			}
-			break;
-		case SEDU_BADHAT:
-			if (uarmh && uarmh->otyp != DUNCE_CAP){
-				Helmet_off();
-			}
-			if (!uarmh){
-				verbalize("This should greatly improve your intellect.");
-				buf[0] = '\0';
-				steal(mon, buf, FALSE, FALSE);
-				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
-				if(DEADMONSTER(mon))
-					return;
-				optr = mksobj(DUNCE_CAP, NO_MKOBJ_FLAGS);
-				curse(optr);
-				optr->spe = -6;
-				(void)hold_another_object(optr, u.uswallow ?
-					"Fortunately, you're out of reach! %s away." :
-					"Fortunately, you can't hold anything more! %s away.",
-					The(aobjnam(optr,
-					Weightless || u.uinwater ?
-					"slip" : "drop")),
-					(const char *)0);
-				if (carried(optr)){
-					setworn(optr, W_ARMH);
-					Helmet_on();
-				}
-			}
-			else{
-				verbalize("You're so stupid!");
-				losexp("dark speech", FALSE, TRUE, FALSE);
-			}
-
-			break;
-		case SEDU_BADBOOTS:
-			if (uarmf && uarmf->otyp != FUMBLE_BOOTS){
-				Boots_off();
-			}
-			if (!uarmf){
-				verbalize("These boots will improve your looks.");
-				buf[0] = '\0';
-				steal(mon, buf, FALSE, FALSE);
-				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
-				if(DEADMONSTER(mon))
-					return;
-				optr = mksobj(FUMBLE_BOOTS, NO_MKOBJ_FLAGS);
-				curse(optr);
-				optr->spe = -6;
-				(void)hold_another_object(optr, u.uswallow ?
-					"Fortunately, you're out of reach! %s away." :
-					"Fortunately, you can't hold anything more! %s away.",
-					The(aobjnam(optr,
-					Weightless || u.uinwater ?
-					"slip" : "drop")),
-					(const char *)0);
-				if (carried(optr)){
-					setworn(optr, W_ARMF);
-					Boots_on();
-				}
-			}
-			else{
-				verbalize("You're so clumsy!");
-				losexp("dark speech", FALSE, TRUE, FALSE);
-			}
-			break;
-		case SEDU_BADAMU:
-			if (uamul && uamul->otyp != AMULET_OF_RESTFUL_SLEEP){
-				Amulet_off();
-			}
-			if (!uamul){
-				verbalize("You need to take things more slowly.");
-				buf[0] = '\0';
-				steal(mon, buf, FALSE, FALSE);
-				/*Graz'zt is petrification immune, but if the attacker somehow dies from the theft we should return.*/
-				if(DEADMONSTER(mon))
-					return;
-				optr = mksobj(AMULET_OF_RESTFUL_SLEEP, NO_MKOBJ_FLAGS);
-				curse(optr);
-				(void)hold_another_object(optr, u.uswallow ?
-					"Fortunately, you're out of reach! %s away." :
-					"Fortunately, you can't hold anything more! %s away.",
-					The(aobjnam(optr,
-					Weightless || u.uinwater ?
-					"slip" : "drop")),
-					(const char *)0);
-				if (carried(optr)){
-					setworn(optr, W_AMUL);
-					Amulet_on();
-				}
-			}
-			else{
-				verbalize("You're so lazy!");
-				losexp("dark speech", FALSE, TRUE, FALSE);
-			}
-			break;
-		case SEDU_PUNISH:
-			punish((struct obj *)0);
-			if(Punished)
-				uball->owt = min(uball->owt+320, 1600);
-			verbalize("Stay here.");
-			break;
-		case SEDU_JEALOUS:
-			/* shared between Malcanthet and Graz'zt */
-			if (mon->female) {
-				if (rn2(2) || uarmh){
-					pline("She jealously attacks you with her barbed tail!");
-					losehp(d(4, 12), "a jealous demoness", KILLED_BY);
-				}
-				else{
-					pline("She jealously claws your face!");
-					losehp(d(4, 4), "a jealous demoness", KILLED_BY);
-					(void)adjattrib(A_CHA, -1 * d(2, 4), TRUE);
-					AMAX(A_CHA) = ABASE(A_CHA); //permanent drain!
-				}
-			}
-			else {
-				if(rn2(2) || uarmh || HAcid_resistance){
-					pline("He viciously bites you in jealousy!");
-					losehp(d(4, 8), "a jealous demon prince", KILLED_BY);
-				}
-				else{
-					pline("He jealously drips acid on your face!");
-					losehp(d(6, 8), "a jealous demon prince", KILLED_BY);
-					(void) adjattrib(A_CHA, -1*d(1,8), TRUE);
-					AMAX(A_CHA) = ABASE(A_CHA); //permanent drain!
-				}
-			}
-			break;
-		}
-	}
-	else {
-		switch (effect_num)
-		{
-		case SEDU_GAINEN:
-			You_feel("raised to your full potential.");
-			exercise(A_CON, TRUE);
-			if (greater)
-				exercise(A_CON, TRUE);
-			u.uenbonus += rnd(10) + 5;
-			calc_total_maxen();
-			u.uen = min(u.uen + 400, u.uenmax);
-			break;
-		case SEDU_GOODENOUGH:
-			You_feel("good enough to do it again.");
-			(void)adjattrib(A_CON, 1 + greater, TRUE);
-			exercise(A_CON, TRUE);
-			if (greater) {
-				exercise(A_CON, TRUE);
-				exercise(A_CON, TRUE);
-			}
-			flags.botl = 1;
-			break;
-		case SEDU_REMEMBER:
-			You("will always remember %s...", noit_mon_nam(mon));
-			(void)adjattrib(A_WIS, 1 + greater, TRUE);
-			exercise(A_WIS, TRUE);
-			if (greater) {
-				exercise(A_WIS, TRUE);
-				exercise(A_WIS, TRUE);
-			}
-			flags.botl = 1;
-			break;
-		case SEDU_EDUCATE:
-			pline("That was a very educational experience.");
-			pluslvl(FALSE);
-			exercise(A_WIS, TRUE);
-			if (greater) {
-				pluslvl(FALSE);
-				exercise(A_WIS, TRUE);
-			}
-			break;
-		case SEDU_RESTOREHP:
-			You_feel("restored to health!");
-			u.uhp = u.uhpmax;
-			if (Upolyd) u.mh = u.mhmax;
-			exercise(A_STR, TRUE);
-			if (greater) {
-				u.uenbonus += rnd(10) + 5;
-				calc_total_maxen();
-				u.uen = min(u.uen + 400, u.uenmax);
-			}
-			flags.botl = 1;
-			break;
-
-		case SEDU_WIND:
-			if (!uclockwork || Race_if(PM_INCANTIFIER)) {
-				impossible("Can't wind you!");
-				break;
-			}
-			You("persuade %s to wind your clockwork.",
-				noit_mon_nam(mon));
-			struct obj *key;
-			int turns = 0;
-
-			Strcpy(class_list, tools);
-			key = getobj(class_list, "wind with");
-			if (!key){
-				pline1(Never_mind);
-			}
-			else {
-				turns = ask_turns(mon, 0, 0);
-				if (!turns){
-					pline1(Never_mind);
-				}
-				else {
-					/* 80% to 120% of asked for, in increments of 10% */
-					turns = turns * (8 + rn2(5)) / 10;
-					lesshungry(turns * 10);
-					You("notice %s wound your clockwork %d times.", noit_mon_nam(mon), turns);
-				}
-			}
-			break;
-
-		case SEDU_NOTHING:
-			pline("%s %s happy, but confused.",
-				noit_Monnam(mon),
-				Blind ? "seems" : "looks"
-				);
-			break;
-
-		case SEDU_WISH:
-			verbalize("Tell me your greatest desire!");
-			makewish(WISH_VERBOSE);	// can not grant artifacts
-			break;
-
-		case SEDU_BLESS:
-			verbalize("Go forth and slay thy enemies with my blessing!");
-			u.udaminc += d(1, 10);
-			u.uhitinc += d(1, 10);
-			break;
-
-		case SEDU_PROTECT:
-			verbalize("Thou art wonderful! My favor shall protect you from harm!");
-			/* Well, she's mixing thous and yous in these pronouncements, */
-			/* But apparently she's ALSO overenthused enough to bless somebody who's fighting her, so... */
-			u.uacinc += d(1, 10);
-			break;
-
-		case SEDU_RAISESTATS:
-			You_feel("raised to your full potential.");
-			/* raises all stats by 2 and exercises them 3 times each */
-			for (tmp = 0; tmp < 18; tmp++) {
-				if (tmp % 3 == 0)
-					adjattrib(tmp / 3, 2, TRUE);
-				exercise(tmp / 3, TRUE);
-			}
-			flags.botl = 1;
-			break;
-
-		case SEDU_LIFEFONT:
-			verbalize("Truly thou art as a fountain of life!");
-			u.uhpmultiplier += 2;
-			u.uenmultiplier += 2;
-			break;
-
-		case SEDU_CARRYCAP:
-			You_feel("as though you could lift mountains!");
-			u.ucarinc += d(1, 4) * 50;
-			break;
-
-		case SEDU_POISRES:
-			if (!(HPoison_resistance & INTRINSIC)) {
-				You_feel("healthy.");
-				HPoison_resistance |= TIMEOUT_INF;
-			}
-			else pline("but that's about it.");
-			break;
-		case SEDU_ACIDRES:
-			if (!(HAcid_resistance & INTRINSIC)) {
-				if (Hallucination) You("like you've gone back to the basics.");
-				else Your("health seems insoluble.");
-				HAcid_resistance |= TIMEOUT_INF;
-			}
-			else pline("but that's about it.");
-			break;
-		case SEDU_SICKRES:
-			if (!(HSick_resistance & INTRINSIC) && !rn2(4)) {
-				You(Hallucination ? "feel alright." :
-					"feel healthier than you ever have before.");
-				HSick_resistance |= TIMEOUT_INF;
-			}
-			else pline("but that's about it.");
-			break;
-
-		case SEDU_GENOCIDE:
-			verbalize("Tell me, whom shall I kill?");
-			do_genocide(1);
-			break;
-
-		case SEDU_SIXMAGICS:{
-								int i, j;
-								verbalize("I grant you six magics!");
-								/* get six enchantable/chargable pieces of gear that are less than +6 */
-								struct obj * gear[] = {
-									uwep,
-									uarm,
-									uarmc,
-									uarms,
-									uswapwep,
-									uarmh,
-									uarmg,
-									uarmf,
-									uquiver,
-									uarmu,
-									uright,
-									uleft,
-									(struct obj *)0
-								};
-								int len = SIZE(gear);
-								struct obj * otmp;
-								for (i = 6; i > 0 && len > 0;) {
-									j = rn2(len);
-									otmp = gear[j];
-									if (otmp && (
-										otmp->oclass == WEAPON_CLASS ||
-										otmp->oclass == ARMOR_CLASS ||
-										(otmp->oclass == TOOL_CLASS && is_weptool(otmp)) ||
-										(otmp->oclass == RING_CLASS && objects[otmp->otyp].oc_charged && otmp->otyp != RIN_WISHES)
-										) &&
-										otmp->spe < 6) {
-										otmp->spe = 6;
-										i--;
-									}
-									else {
-										for (; j < len; j++)
-											gear[j] = gear[j + 1];
-										len--;
-									}
-								}}
-			break;
-
-		case SEDU_SIXTRUTHS:
-			verbalize("I grant you six truths!");
-			for (tmp = 0; tmp < 6; tmp++) {
-				optr = mksobj(POT_ENLIGHTENMENT, NO_MKOBJ_FLAGS);
-				bless(optr);
-				hold_another_object(optr, u.uswallow ?
-					"Oops!  %s out of your reach!" :
-					(Weightless ||
-					Is_waterlevel(&u.uz) ||
-					levl[u.ux][u.uy].typ < IRONBARS ||
-					levl[u.ux][u.uy].typ >= ICE) ?
-					"Oops!  %s away from you!" :
-					"Oops!  %s to the floor!",
-					The(aobjnam(optr,
-					Weightless || u.uinwater ?
-					"slip" : "drop")),
-					(const char *)0);
-			}
-			break;
-
-		case SEDU_SIXFOLLOWERS:
-			verbalize("I grant you six followers!");
-			for (tmp = 0; tmp < 6; tmp++) {
-				optr = mksobj(FIGURINE, NO_MKOBJ_FLAGS);
-				bless(optr);
-				hold_another_object(optr, u.uswallow ?
-					"Oops!  %s out of your reach!" :
-					(Weightless ||
-					Is_waterlevel(&u.uz) ||
-					levl[u.ux][u.uy].typ < IRONBARS ||
-					levl[u.ux][u.uy].typ >= ICE) ?
-					"Oops!  %s away from you!" :
-					"Oops!  %s to the floor!",
-					The(aobjnam(optr,
-					Weightless || u.uinwater ?
-					"slip" : "drop")),
-					(const char *)0);
-			}
-			break;
-
-		case SEDU_LIFESAVING:
-			verbalize("I grant you life!");
-			optr = mksobj(AMULET_OF_LIFE_SAVING, NO_MKOBJ_FLAGS);
-			bless(optr);
-			(void)hold_another_object(optr, u.uswallow ?
-				"Oops!  %s out of your reach!" :
-				(Weightless ||
-				Is_waterlevel(&u.uz) ||
-				levl[u.ux][u.uy].typ < IRONBARS ||
-				levl[u.ux][u.uy].typ >= ICE) ?
-				"Oops!  %s away from you!" :
-				"Oops!  %s to the floor!",
-				The(aobjnam(optr,
-				Weightless || u.uinwater ?
-				"slip" : "drop")),
-				(const char *)0);
-			if (carried(optr)){
-				if (!uamul){
-					setworn(optr, W_AMUL);
-					Amulet_on();
-				}
-			}
-			break;
 		}
 	}
 	return;
@@ -2464,7 +1370,39 @@ int *result;
 	return FALSE;
 }
 
-
+void
+sedu_minion(struct monst *mon)
+{
+	switch(mon->mtyp) {
+		case PM_MALCANTHET:{
+			int low_air_types[] = {PM_OSSIFRUGE, PM_BALROG, PM_LILITU};
+			makemon(&mons[ROLL_FROM(low_air_types)], u.ux, u.uy, MM_ADJACENTOK);
+		}break;
+		case PM_GRAZ_ZT:
+			makemon(&mons[PM_MARILITH], u.ux, u.uy, MM_ADJACENTOK);
+		break;
+		case PM_AVATAR_OF_LOLTH:
+			makemon(&mons[PM_DEMONIC_BLACK_WIDOW], u.ux, u.uy, MM_ADJACENTOK);
+		break;
+		case PM_BELIAL:
+			makemon(&mons[PM_BARBED_DEVIL], u.ux, u.uy, MM_ADJACENTOK);
+		break;
+		case PM_MOTHER_LILITH:{
+			int malblg_types[] = {PM_BLACK_DRAGON, PM_PIT_FIEND, PM_MASTER_LICH, PM_IRON_GOLEM};
+			makemon(&mons[rn2(9) ? PM_BONE_DEVIL : ROLL_FROM(malblg_types)], u.ux, u.uy, MM_ADJACENTOK);
+		}break;
+		case PM_INCUBUS:
+		case PM_SUCCUBUS:
+			makemon(&mons[PM_VROCK], u.ux, u.uy, MM_ADJACENTOK);
+		break;
+		case PM_UNEARTHLY_DROW:
+			makemon(&mons[PM_MIRKWOOD_ELDER], u.ux, u.uy, MM_ADJACENTOK);
+		break;
+		default:
+			makemon(&mons[PM_VROCK], u.ux, u.uy, MM_ADJACENTOK);
+		break;
+	}
+}
 
 #endif  /* SEDUCE */
 

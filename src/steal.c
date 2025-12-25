@@ -463,7 +463,7 @@ gotobj:
 			 touch_petrifies(&mons[otmp->corpsenm]));
 	(void) mpickobj(mtmp,otmp);	/* may free otmp */
 	if (could_petrify && !(mtmp->misc_worn_check & W_ARMG)) {
-	    minstapetrify(mtmp, TRUE);
+	    minstapetrify(mtmp, TRUE, FALSE);
 	}
 	if(roll_madness(MAD_TALONS)){
 		You("panic after having your property stolen!");
@@ -667,7 +667,7 @@ struct monst *mon;
 		else if(mon->entangled_oid == obj->o_id){
 			obj_extract_self(obj);
 			//Assumes that the only way the jin gang zuo can come into play is via crowning gift.
-			if(obj->oartifact == ART_JIN_GANG_ZUO){
+			if(is_returning_snare(obj)){
 				hold_another_object(obj, "Oops!  The returning %s slips to the floor!", "snare", (const char *)0);
 			}
 			else {
@@ -705,7 +705,7 @@ boolean is_pet;		/* If true, pet should keep wielded/worn items */
 		while((otmp = mtmp->minvent)){
 			obj_extract_and_unequip_self(otmp);
 			//Assumes that the only way the jin gang zuo can come into play is via crowning gift.
-			if(otmp->oartifact == ART_JIN_GANG_ZUO){
+			if(is_returning_snare(otmp)){
 				hold_another_object(otmp, "Oops!  The returning %s slips to the floor!", "snare", (const char *)0);
 			}
 			else {

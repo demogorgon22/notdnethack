@@ -168,12 +168,27 @@ MONSTER:'@',"knight",(04,13),peaceful
 MONSTER:'@',"knight",(45,02),peaceful
 MONSTER:'@',"knight",(45,13),peaceful
 # page guards for the audience chamber
+# place extra bedrolls because a bunch of knights etc. got eaten by the dragon outside.
 MONSTER:'@',"page",(16,06)
+OBJECT:'\\',"bedroll",(15,06)
+OBJECT:'\\',"bedroll",(16,06)
+OBJECT:'\\',"bedroll",(17,06)
 MONSTER:'@',"page",(18,06)
+OBJECT:'\\',"bedroll",(18,06)
+OBJECT:'\\',"bedroll",(19,06)
 MONSTER:'@',"page",(20,06)
+OBJECT:'\\',"bedroll",(20,06)
+OBJECT:'\\',"bedroll",(21,06)
 MONSTER:'@',"page",(16,09)
+OBJECT:'\\',"bedroll",(15,09)
+OBJECT:'\\',"bedroll",(16,09)
+OBJECT:'\\',"bedroll",(17,09)
 MONSTER:'@',"page",(18,09)
+OBJECT:'\\',"bedroll",(18,09)
+OBJECT:'\\',"bedroll",(19,09)
 MONSTER:'@',"page",(20,09)
+OBJECT:'\\',"bedroll",(20,09)
+OBJECT:'\\',"bedroll",(21,09)
 
 FORGE:(32,08)
 MONSTER:'@',"human smith",(32,08)
@@ -502,6 +517,7 @@ TRAP:random,random
 TRAP:random,random
 # Random monsters.
 MONSTER:'n',"Nimune",(50,06),hostile
+OBJECT:'\\',"expensive bed",(50,06)
 MONSTER:'i',"quasit",random,hostile
 MONSTER:'i',"quasit",random,hostile
 MONSTER:'i',"quasit",random,hostile

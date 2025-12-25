@@ -12,15 +12,11 @@ typedef struct d_flags {	/* dungeon/level type flags */
 	Bitfield(rogue_like, 1); /* is this an old-fashioned presentation? */
 	Bitfield(align, 3);	/* dungeon alignment. */
 	Bitfield(raise, 3);	/* corpse resurection type (current max 8) */
-	Bitfield(mirror, 1);	/* has at least one mirror on the ground */
-	Bitfield(day, 1);	/* Is the map currently in day mode? */
-	Bitfield(walkers, 2);	/* How many rage-walkers for this level? (0-3) */
 } d_flags;
 
 typedef struct d_level {	/* basic dungeon level element */
 	int		dnum;		/* dungeon number */
 	int		dlevel;		/* level number */
-	int		rage;		/* rage-walker rage*/
 	d_flags flags;		/* type flags */
 } d_level;
 

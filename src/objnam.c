@@ -23,7 +23,7 @@ char * FDECL(xname2, (struct obj *,BOOLEAN_P));
 boolean FDECL(an_bool, (const char *));
 #endif
 
-#define useJNames (Role_if(PM_SAMURAI) || (Role_if(PM_MADMAN) && Race_if(PM_YUKI_ONNA)))
+#define useJNames (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI) || (Role_if(PM_MADMAN) && Race_if(PM_YUKI_ONNA)))
 struct Jitem {
 	int item;
 	const char *name;
@@ -46,6 +46,7 @@ struct Jitem {
 STATIC_DCL struct Jitem Japanese_items[];
 STATIC_DCL struct Jitem ObscureJapanese_items[];
 STATIC_OVL struct Jitem Pirate_items[];
+STATIC_OVL struct Jitem Elf_items[];
 
 #else /* OVLB */
 
@@ -165,7 +166,6 @@ STATIC_OVL char *BeamHilts[] = {
 
 STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ BATTLE_AXE, "ono" },
-	{ BROADSWORD, "ninja-to" },
 	{ ARCHAIC_PLATE_MAIL, "jodai no katchu" },
 	{ CLUB, "jo" },
 	{ CRYSTAL_PLATE_MAIL, "jade o-yoroi" },
@@ -192,14 +192,12 @@ STATIC_OVL struct Jitem ObscureJapanese_items[] = {
 	{ SPEAR, "yari" },
 	{ SPLINT_MAIL, "dou-maru" },
 	{ TRIDENT, "magari yari" },
-	{ TWO_HANDED_SWORD, "no-dachi" },
 	{ WAR_HAMMER, "dai tsuchi" },
 	{ HARP, "koto" },
 	{0, "" }
 };
 
 STATIC_OVL struct Jitem Japanese_items[] = {
-	{ BROADSWORD, "ninja-to" },
 	{ CRYSTAL_PLATE_MAIL, "crystal tanko" },
 	{ PLATE_MAIL, "tanko" },
 	{ DAGGER, "kunai" },
@@ -229,6 +227,10 @@ STATIC_OVL struct Jitem Pirate_items[] = {
 	{ OILSKIN_SACK, "oilskin ditty bag" },
 	{ BOX, "foot locker" },
 	{ CLUB, "belaying pin" },
+	{0, "" }
+};
+STATIC_OVL struct Jitem Elf_items[] = {
+	{ HIGH_ELVEN_WARSWORD, "lhang" },
 	{0, "" }
 };
 #endif /* OVLB */
@@ -334,8 +336,15 @@ struct obj *otmp;
 				if(!gem || gem->oartifact != ART_ELDER_CEREBRAL_FLUID)
 					return Hallucination ? hcolor(0) : "tendrilled";
 	}
-	if(otmp->otyp == KAMEREL_VAJRA)
+	if(otmp->otyp == KAMEREL_VAJRA){
+		if(otmp->oartifact == ART_KISHIN_MIRROR){
+			if(u.ualign.record < -3)
+				return "black ash-bladed";
+			if(u.ualign.record > 3)
+				return "white sun-bladed";
+		}
 		return "lightning bladed";
+	}
 	if(gem){
 		switch(gem->oartifact){
 			case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
@@ -433,6 +442,8 @@ register int otyp;
 		actualn = Alternate_item_name(otyp,Japanese_items);
 	if (useJNames && iflags.obscure_role_obj_names && Alternate_item_name(otyp,ObscureJapanese_items))
 		actualn = Alternate_item_name(otyp,ObscureJapanese_items);
+	if (Race_if(PM_ELF) && iflags.role_obj_names && Alternate_item_name(otyp,Elf_items))
+		actualn = Alternate_item_name(otyp,Elf_items);
 	if (Role_if(PM_PIRATE) && iflags.role_obj_names && Alternate_item_name(otyp,Pirate_items))
 		actualn = Alternate_item_name(otyp,Pirate_items);
 
@@ -718,7 +729,7 @@ char *buf;
 #endif
 			&& obj->otyp != FAKE_AMULET_OF_YENDOR
 			&& obj->otyp != AMULET_OF_YENDOR
-			&& !Role_if(PM_PRIEST)))
+			&& !u.upriest))
 			Strcat(buf, "uncursed ");
 	}
 }
@@ -997,6 +1008,9 @@ struct obj *obj;
 char *buf;
 boolean dofull;
 {
+	if (check_oprop(obj, OPROP_CAST) && obj->known)
+		Strcat(buf, "caster's ");
+		
 	if (check_oprop(obj, OPROP_WOOL) && !(obj->obj_material != objects[obj->otyp].oc_material && obj->obj_material == CLOTH)){
 		if (obj->obj_material == CLOTH)
 			Strcat(buf, "woolen ");
@@ -1060,9 +1074,11 @@ boolean dofull;
 			Strcat(buf, "disintegration-proof ");
 		if(check_oprop(obj, OPROP_BCRS) && obj->known)
 			Strcat(buf, "prayer-warded ");
-		if(check_oprop(obj, OPROP_CGLZ))
-			Strcat(buf, "glazed ");
-		
+		if(check_oprop(obj, OPROP_RWTH))
+			Strcat(buf, "justifying ");
+		if(check_oprop(obj, OPROP_RBRD))
+			Strcat(buf, "balanced ");
+
 		if (check_oprop(obj, OPROP_LESSER_ANARW) && obj->known)
 			Strcat(buf, "unruly ");
 		if (check_oprop(obj, OPROP_LESSER_CONCW) && obj->known)
@@ -1086,22 +1102,25 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_PHSEW))
 			Strcat(buf, "faded ");
 		
-		if (check_oprop(obj, OPROP_LIFE)){
+		if (check_oprop(obj, OPROP_LIFE) || check_oprop(obj, OPROP_SLIF)){
 			if(obj->known)
 				Strcat(buf, "life-saving ");
 			else if(is_helmet(obj))
-				Strcat(buf, "haloed ");
+				Strcat(buf, (check_oprop(obj, OPROP_SLIF)) ? "silver-haloed " : "haloed ");
 			else if(obj->obj_material == SILVER)
 				Strcat(buf, "gold-feather-encrusted ");
 			else
 				Strcat(buf, "silver-feather-encrusted ");
 		}
 		
-		if (check_oprop(obj, OPROP_WRTHW) && obj->known && !check_oprop(obj, OPROP_ELFLW))
+		if (check_oprop(obj, OPROP_WRTHW) && obj->known && !check_oprop(obj, OPROP_ELFLW) && !check_oprop(obj, OPROP_BYAKW))
 			Strcat(buf, "wrathful ");
 		
 		if (check_oprop(obj, OPROP_ELFLW))
 			Strcat(buf, Insight >= 33 ? "radiant " : Insight >= 11 ? "incandescent " : "luminous ");
+
+		if (check_oprop(obj, OPROP_BYAKW))
+			Strcat(buf, Insight >= 33 ? "bilious " : Insight >= 11 ? "tarnished " : "luminous ");
 
 		if (check_oprop(obj, OPROP_WATRW))
 			Strcat(buf, "misty ");
@@ -1211,10 +1230,16 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_BRIL) && !obj->known)
 			Strcat(buf, "ornate ");
 		
+		if (check_oprop(obj, OPROP_CAST) && !obj->known)
+			Strcat(buf, "gem-set ");
+		
 		if (check_oprop(obj, OPROP_BLADED))
 			Strcat(buf, "bladed ");
 		if (check_oprop(obj, OPROP_SPIKED))
 			Strcat(buf, "spiked ");
+
+		if (check_oprop(obj, OPROP_GOLDW))
+			Strcat(buf, (obj->obj_material == GOLD) ? "molten " : "aureate ");
 
 		/* note: "holy" and "unholy" properties are shown in the BUC part of the name, as they replace "blessed" and "cursed". */
 		
@@ -1293,7 +1318,7 @@ char *buf;
 	}
 
 	if (obj->ovara_seals&SEAL_EDEN){
-		// covered in poisoned words
+		Strcat(buf, "silvered ");
 	}
 
 	if (obj->ovara_seals&SEAL_ENKI){
@@ -1311,8 +1336,8 @@ char *buf;
 		Strcat(buf, "vine-wrapped ");
 	}
 
-	if (obj->ovara_seals&SEAL_FAFNIR){
-		Strcat(buf, "ruinous ");
+	if (obj->ovara_seals&SEAL_MAEGERA){
+		Strcat(buf, "gilded ");
 	}
 
 	if (obj->ovara_seals&SEAL_HUGINN_MUNINN){
@@ -1439,6 +1464,14 @@ char *buf;
 			Strcat(buf, "charred ");
 		else
 			Strcat(buf, "budding ");
+	}
+	if (obj->oartifact == ART_MORTAL_BLADE && obj == uwep && artinstance[ART_MORTAL_BLADE].mortalLives){
+		if (artinstance[ART_MORTAL_BLADE].mortalLives > 2)
+			Strcat(buf, "seething ");
+		else if (artinstance[ART_MORTAL_BLADE].mortalLives > 1)
+			Strcat(buf, "fuming ");
+		else
+			Strcat(buf, "smoking ");
 	}
 	if (rakuyo_prop(obj)){
 		if(Insight >= 40)
@@ -1608,6 +1641,8 @@ boolean adjective;
 			return "lionhide";
 		if (obj->oartifact == ART_XIUHCOATL)
 			return "serpenthide";
+		if (obj->ovar1_tooth_type == SERPENT_TOOTH)
+			return (adjective) ? "serpent-tooth" : "a serpent's tooth";
 		/* hard object made of dragonhide (or described as being dragon-bone) -> bone or tooth */
 		else if ((objects[obj->otyp].oc_material > LEATHER && objects[obj->otyp].oc_material != DRAGON_HIDE)
 			|| ((s = OBJ_DESCR(objects[obj->otyp])) != (char *)0 && !strncmp(s, "dragonbone", 10))
@@ -1721,12 +1756,16 @@ boolean adjective;
 		/* not quite bone, not quite stone */
 		else if (obj->otyp == WORM_TOOTH || obj->otyp == CRYSKNIFE)
 			return "enamel";
+		else if (obj->oartifact == ART_BOREAL_SCEPTER)
+			return (adjective ? "stone" : "god-quarried stone");
 		else if (obj->otyp == TOOTH)
 			return (adjective ? "fossilized" : "stone");
 		else if (obj->oartifact == ART_LASH_OF_THE_COLD_WASTE)
 			return "onyx";
 		else if (obj->oartifact == ART_DRAGONHEAD_SHIELD)
 			return "stone dragon scales";
+		else if (obj->oartifact == ART_FLUTE_OF_TEZCATLIPOCA)
+			return "clay";
 		else if (obj->sub_material == SUBMAT_MARBLE)
 			return "marble";
 		/* ceramic wand is handled already */
@@ -1795,11 +1834,11 @@ char *buf;
 		/*Known artifact is made from the artifact's expected material */
 		if(artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material)
 			return;
-	} else if(obj->oartifact == ART_IBITE_ARM && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
+	} else if((obj->oartifact == ART_IBITE_ARM || obj->oartifact == ART_STAR_OF_HYPERNOTUS || obj->oartifact == ART_FLUTE_OF_TEZCATLIPOCA)
+				&& artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
 		//Ibite arm descriptor includes "flabby," which is both a material and an appearance :-/
-		return;
-	} else if(obj->oartifact == ART_STAR_OF_HYPERNOTUS && artilist[obj->oartifact].material && obj->obj_material == artilist[obj->oartifact].material){
 		//Star of Hypernotus plays "fast and loose" with the material - and the material affects the final word rather than being a prefix
+		//Flute of Tezcatlipoca include bone/clay as appearances, for english adjective ordering
 		return;
 	} else {
 		/*Special case: circlets should always show their material, but oc_showmat is tied to otyp, not appearance */
@@ -1821,6 +1860,8 @@ char *buf;
 force_add_material_name:
 	if (check_oprop(obj, OPROP_ELFLW))
 		return;
+	if (check_oprop(obj, OPROP_BYAKW))
+		return;
 	/* add on the adjective form of the object's material */
 	Strcat(buf, material_name(obj, TRUE));
 	Strcat(buf, " ");
@@ -1831,7 +1872,7 @@ add_type_words(obj, buf)
 struct obj *obj;
 char *buf;
 {
-	if (obj->otyp == MASK && obj->oartifact != ART_MIRRORED_MASK){
+	if (obj->otyp == MASK && obj->oartifact != ART_MIRRORED_MASK && obj->oartifact != ART_MASK_OF_TLALOC){
 		if (obj->corpsenm != NON_PM) {
 			Strcat(buf, mons[obj->corpsenm].mname);
 			Strcat(buf, " ");
@@ -1914,6 +1955,8 @@ boolean getting_obj_base_desc;
 		actualn = Alternate_item_name(typ, ObscureJapanese_items);
 	if (Role_if(PM_PIRATE) && iflags.role_obj_names && Alternate_item_name(typ, Pirate_items))
 		actualn = Alternate_item_name(typ, Pirate_items);
+	if (Race_if(PM_ELF) && iflags.role_obj_names && Alternate_item_name(typ, Elf_items))
+		actualn = Alternate_item_name(typ, Elf_items);
 
 	if(obj->otyp == CLUB && check_oprop(obj, OPROP_CCLAW)){
 		if(Insight >= 15)
@@ -1968,7 +2011,7 @@ boolean getting_obj_base_desc;
 	*/
 	if (!nn && ocl->oc_uses_known && ocl->oc_unique) obj->known = 0;
 	if (!Blind) obj->dknown = TRUE;
-	if (Role_if(PM_PRIEST)) obj->bknown = TRUE;
+	if (u.upriest) obj->bknown = TRUE;
 	if (u.sealsActive&SEAL_ANDROMALIUS) obj->sknown = TRUE;
 	//if (obj_is_pname(obj)) goto nameit;
 	if (!getting_obj_base_desc) {
@@ -2387,6 +2430,9 @@ weapon:
 			else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD && obj->lamplit) {
 				Strcat(buf, " (lit)");
 			}
+			else if (obj->oartifact == ART_MORTAL_BLADE && !(obj->owornmask&W_WEP)) {
+				Strcat(buf, " (sheathed)");
+			}
 			else if (obj->otyp == TONITRUS && obj->lamplit) {
 				Strcat(buf, " (crackling)");
 			}
@@ -2675,6 +2721,14 @@ register struct obj *obj;
 boolean ignore_oquan;
 {
 	return doxname(obj, FALSE, ignore_oquan, FALSE, FALSE);
+}
+
+char *
+encyc_xname(struct obj *obj)
+{
+	if(obj->known && check_oprop(obj, OPROP_GSSDW) && !obj->oartifact)
+		return "gith silver sword";
+	return xname_bland(obj);
 }
 
 char *
@@ -3936,12 +3990,12 @@ struct alt_spellings {
 	{ "rum", POT_BOOZE },
 	{ "sea biscuit", CRAM_RATION },
 	{ "cutlass", SCIMITAR },
+	{ "lhang", HIGH_ELVEN_WARSWORD },
 	{ "buccaneer's ditty bag", OILSKIN_SACK },
 	{ "ditty bag", SACK },
 	{ "foot locker", BOX },
 	{ "belaying pin", CLUB },
 	{ "ono", BATTLE_AXE },
-	{ "ninja-to", BROADSWORD },
 	{ "jodai no katchu", ARCHAIC_PLATE_MAIL },
 	{ "jo", CLUB },
 	{ "jade o-yoroi", CRYSTAL_PLATE_MAIL },
@@ -3968,7 +4022,6 @@ struct alt_spellings {
 	{ "yari", SPEAR },
 	{ "dou-maru", SPLINT_MAIL },
 	{ "magari yari", TRIDENT },
-	{ "no-dachi", TWO_HANDED_SWORD },
 	{ "dai tsuchi", WAR_HAMMER },
 	{ "koto", HARP },
 	{ "helmet", HELMET },
@@ -4777,6 +4830,9 @@ int wishflags;
 		} else if (!strncmpi(bp, "luminous ", l=9) || !strncmpi(bp, "radiant ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_ELFLW);
 
+		} else if (!strncmpi(bp, "bilious ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_BYAKW);
+
 		} else if (!strncmpi(bp, "flaying ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_FLAYW);
 		} else if (!strncmpi(bp, "excoriating ", l=12)) {
@@ -4796,11 +4852,14 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_SPIKED);
 		} else if (!strncmpi(bp, "bladed ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_BLADED);
-
+		} else if (!strncmpi(bp, "aureate ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_GOLDW);
 		} else if (!strncmpi(bp, "blasting ", l=9)) {
 			add_oprop_list(oprop_list, OPROP_BLAST);
 		} else if (!strncmpi(bp, "ornate ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_BRIL);
+		} else if (!strncmpi(bp, "gem-set ", l=8)) {
+			add_oprop_list(oprop_list, OPROP_CAST);
 
 		} else if (!strncmpi(bp, "glazed ", l=7)) {
 			add_oprop_list(oprop_list, OPROP_CGLZ);
@@ -4812,6 +4871,12 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_TDTHW);
 		} else if (!strncmpi(bp, "unworthyflame ", l=14)) {
 			add_oprop_list(oprop_list, OPROP_SFUWW);
+		} else if (!strncmpi(bp, "justifying ", l=11)) {
+			add_oprop_list(oprop_list, OPROP_RWTH);
+		} else if (!strncmpi(bp, "balanced ", l=9)) {
+			add_oprop_list(oprop_list, OPROP_RBRD);
+		} else if (!strncmpi(bp, "silver-candled ", l=14)) {
+			add_oprop_list(oprop_list, OPROP_SLIF);
 
 		} else if (!strncmpi(bp, "magicite ", l=9)) {
 			mat = GEMSTONE; gemtype = MAGICITE_CRYSTAL;
@@ -5069,6 +5134,13 @@ int wishflags;
 	if (strncmpi(bp, "monk's staff", 10))
 	if (strncmpi(bp, "soldier's saber", 15))
 	if (strncmpi(bp, "soldier's rapier", 16))
+	if (strncmpi(bp, "silverknight sword", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight scythe", 19)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight spear", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight armor", 18)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight gauntlets", 22)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight helm", 17)) /*not the epynonomous monster */
+	if (strncmpi(bp, "silverknight boots", 18)) /*not the epynonomous monster */
 	if (strncmpi(bp, "nightmare's bullet mold", 23))
 	if (strncmpi(bp, "hunter's axe", 12))
 	if (strncmpi(bp, "hunter's long-axe", 17))
@@ -5204,6 +5276,7 @@ int wishflags;
 	   strncmpi(bp, "kroo's ring", 11) && 
 	   strncmpi(bp, "plasteel armor", 14) &&
 	   strncmpi(bp, "eilistran armor", 15) &&
+	   strncmpi(bp, "silverknight armor", 18) &&
 	   strncmpi(bp, "imperial elven armor", 20) &&
 	   strncmpi(bp, "armor of erebor", 15) && 
 	   strncmpi(bp, "armor of khazad-dum", 19) && 
@@ -5373,7 +5446,7 @@ srch:
 		i++;
 	}
 	if (actualn) {
-		struct Jitem *j[] = {Japanese_items,ObscureJapanese_items,Pirate_items};
+		struct Jitem *j[] = {Japanese_items,ObscureJapanese_items,Pirate_items,Elf_items};
 		for(i=0;i<sizeof(j)/sizeof(j[0]);i++)
 		{
 		while(j[i]->item) {
@@ -6160,7 +6233,7 @@ typfnd:
 				u.uconduct.wisharti++;	/* KMH, conduct */
 
 				/* characters other than priests also have their god's likelyhood to grant artifacts decreased, as well as future cult gifts made more rare */
-				if(!Role_if(PM_PRIEST)){
+				if(!u.upriest){
 					u.uartisval += arti_value(otmp);
 					u.ucultsval += arti_value(otmp);
 				}

@@ -189,6 +189,7 @@
 #define MB_NOGLOVES		0x08000000L	/* can handle things but has no glove slot */
 #define MB_NOHAT		0x10000000L	/* has a head to be beheaded but has no helm slot */
 #define MB_SKELETAL		0x20000000L	/* only bones */
+#define MB_ORGANIC		0x40000000L	/* despite being MA_UNLIVING, has an organic body */
 
 #define MB_SNAKELEG	(MB_HUMANOID|MB_SLITHY)
 #define MB_CENTAUR	(MB_HUMANOID|MB_ANIMAL)
@@ -470,8 +471,10 @@
 //105
 #define FORCE_SPHERES          MIST_WOLVES+1
 #define PEST_THREADS           FORCE_SPHERES+1
+#define BURN_INTO_LIFE         PEST_THREADS+1
+#define SUMMON_ROGUE_HALOS     BURN_INTO_LIFE+1
 
-#define MON_LASTSPELL          PEST_THREADS
+#define MON_LASTSPELL          SUMMON_ROGUE_HALOS
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

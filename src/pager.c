@@ -858,10 +858,12 @@ checkfile(inp, pm, user_typed_name, without_asking, printwindow)
      * for Angel and angel, make the lookup string the same for both
      * user_typed_name and picked name.
      */
-    if (pm != (struct permonst *) 0 && !user_typed_name)
-	dbase_str = strcpy(newstr, pm->mname);
+    if (pm != (struct permonst *) 0 && !user_typed_name){
+		dbase_str = strcpy(newstr, pm->mname);
+		pline("%s", dbase_str);
+	}
     else dbase_str = strcpy(newstr, inp);
-    (void) lcase(dbase_str);
+		(void) lcase(dbase_str);
 
     if (!strncmp(dbase_str, "interior of ", 12))
 	dbase_str += 12;
@@ -966,8 +968,11 @@ bad_data_file:	impossible("'data' file in wrong format");
 		return FALSE;
 	    }
 		char *encyc_header = "Encyclopedia entry:";
+		if(wizard)
+			encyc_header = "Encyclopedia entry for ";
 		putstr(*printwindow, 0, "\n");
 		putstr(*printwindow, 0, encyc_header);
+		if(wizard) putstr(*printwindow, 0, dbase_str);
 		putstr(*printwindow, 0, "\n");
 	    for (i = 0; i < entry_count; i++) {
 		if (!dlb_fgets(buf, BUFSZ, fp)) goto bad_data_file;
@@ -1049,6 +1054,7 @@ static const char * const bogusobjects[] = {
        "bec de corwin",
        "yet another poorly-differentiated polearm",
        "cursed YAPDP",
+       "basket-case broadsword",
        "can of mace",
        "evening star",
        "dawn star",
@@ -1467,6 +1473,7 @@ do_look(quick)
 		sym = out_str[0];
     }
 
+	char name[BUFSZ] = {0};
 	if (from_screen) {
 		cc.x = u.ux;
 		cc.y = u.uy;
@@ -1502,8 +1509,15 @@ do_look(quick)
 		if (sym == '`' && iflags.bouldersym && ((int)glyph_to_obj(glyph) == BOULDER || (int)glyph_to_obj(glyph) == MASS_OF_STUFF))
 			sym = iflags.bouldersym;
 	    } else if (glyph_is_monster(glyph)) {
-		/* takes care of pets, detected, ridden, and regular mons */
-		sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
+			/* takes care of pets, detected, ridden, and regular mons */
+			sym = monsyms[(int)mons[glyph_to_mon(glyph)].mlet];
+			if(iflags.pokedex & POKEDEX_SHOW_ENCYC){
+				struct monst *mtmp = m_at(cc.x,cc.y);
+				if(!Hallucination && mtmp)
+					Sprintf(name, "%s", mtmp->data->mname);
+				else
+					Sprintf(name, "%s", mons[glyph_to_mon(glyph)].mname);
+			}
 	    } else if (glyph_is_cloud(glyph)) {
 		sym = showsyms[S_cloud];
 	    } else if (glyph_is_swallow(glyph)) {
@@ -1544,6 +1558,8 @@ do_look(quick)
 				"lethe" : firstmatch);
 		(void)checkfile(temp_buf, pm, FALSE, (boolean)(ans == LOOK_VERBOSE), &datawin);
 	    }
+		else if(name[0] != '\0')
+			(void)checkfile(name, pm, FALSE, TRUE, &datawin);
 		display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
 	} else {
@@ -2524,10 +2540,13 @@ get_description_of_damage_type(uchar id)
 	case AD_BYAK: return "byakhee eggs";
 	case AD_UNRV: return "unnerving";
 	case AD_DRHP: return "drains bonus HP";
-	case AD_PUSH: return "push away";
+	case AD_PSH1: return "push away 1 square";
+	case AD_PSH3: return "push away 1d3 squares";
 	case AD_LICK: return "monstrous tongue lick";
 	case AD_PFBT: return "poison and disease damage";
 	case AD_OMUD: return "inchoate orc-spawn";
+	case AD_BLED: return "bleeding wounds";
+	case AD_UHCD: return "unholy ice";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";

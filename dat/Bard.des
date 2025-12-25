@@ -4,7 +4,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Brd-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7     
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -293,8 +293,21 @@ OBJECT[50%]:'[',"cloak of magic resistance",random
 OBJECT[50%]:'[',"cloak of magic resistance",random
 OBJECT[50%]:'[',"cloak of magic resistance",random
 
+OBJECT[75%]:'[',"cloak of protection",random
+OBJECT[75%]:'[',"cloak of protection",random
+
 OBJECT[75%]:'[',"cloak of invisibility",random
 OBJECT[75%]:'[',"cloak of invisibility",random
+
+OBJECT[75%]:'[',"Leo Nemaeus hide",random
+OBJECT[75%]:'[',"Leo Nemaeus hide",random
+
+OBJECT[25%]:'#',"belt of power",random
+OBJECT[25%]:'#',"belt of carrying",random
+OBJECT[25%]:'#',"utility belt",random
+OBJECT[25%]:'#',"kidney belt",random
+OBJECT[25%]:'#',"kidney belt",random
+OBJECT[25%]:'#',"belt of weight",random
 
 OBJECT:'[',"gray dragon scales",random
 OBJECT[75%]:'[',"gray dragon scales",random
@@ -332,13 +345,7 @@ OBJECT[25%]:'"',"amulet of nullify magic",random
 OBJECT[25%]:'"',"amulet of reflection",random
 OBJECT[25%]:'"',"amulet of magical breathing",random
 
-OBJECT[75%]:'[',"archaic helm",random
-OBJECT[75%]:'[',"archaic plate mail",random
-OBJECT[75%]:'[',"roundshield",random
-OBJECT[75%]:'#',"bronze short sword",random
-OBJECT[75%]:'#',"bronze spear",random
-OBJECT[75%]:'[',"archaic gauntlets",random
-OBJECT[75%]:'[',"archaic boots",random
+OBJECT[75%]:')',"greatclub",random
 
 OBJECT[75%]:'[',"archaic helm",random
 OBJECT[75%]:'[',"archaic plate mail",random
@@ -347,6 +354,7 @@ OBJECT[75%]:'#',"bronze short sword",random
 OBJECT[75%]:'#',"bronze spear",random
 OBJECT[75%]:'[',"archaic gauntlets",random
 OBJECT[75%]:'[',"archaic boots",random
+OBJECT[75%]:'\\',"bedroll",random
 
 OBJECT[75%]:'[',"archaic helm",random
 OBJECT[75%]:'[',"archaic plate mail",random
@@ -355,12 +363,23 @@ OBJECT[75%]:'#',"bronze short sword",random
 OBJECT[75%]:'#',"bronze spear",random
 OBJECT[75%]:'[',"archaic gauntlets",random
 OBJECT[75%]:'[',"archaic boots",random
+OBJECT[75%]:'\\',"bedroll",random
+
+OBJECT[75%]:'[',"archaic helm",random
+OBJECT[75%]:'[',"archaic plate mail",random
+OBJECT[75%]:'[',"roundshield",random
+OBJECT[75%]:'#',"bronze short sword",random
+OBJECT[75%]:'#',"bronze spear",random
+OBJECT[75%]:'[',"archaic gauntlets",random
+OBJECT[75%]:'[',"archaic boots",random
+OBJECT[75%]:'\\',"bedroll",random
 
 OBJECT[75%]:'[',"archaic helm",random
 OBJECT[75%]:'[',"studded leather cloak",random
 OBJECT[75%]:'[',"waistcloth",random
 OBJECT[75%]:'#',"wood tower shield",random
 OBJECT[75%]:'#',"bronze spear",random
+OBJECT[75%]:'\\',"bedroll",random
 
 OBJECT[75%]:'[',"archaic helm",random
 OBJECT[75%]:'[',"cloak",random
@@ -368,6 +387,7 @@ OBJECT[75%]:'[',"waistcloth",random
 OBJECT[75%]:'#',"wood tower shield",random
 OBJECT[75%]:'#',"bronze spear",random
 OBJECT[75%]:'#',"bronze khopesh",random
+OBJECT[75%]:'\\',"bedroll",random
 
 OBJECT[75%]:'[',"archaic helm",random
 OBJECT[75%]:'[',"cloak",random
@@ -375,6 +395,7 @@ OBJECT[75%]:'[',"waistcloth",random
 OBJECT[75%]:'#',"wood tower shield",random
 OBJECT[75%]:'#',"bronze spear",random
 OBJECT[75%]:'#',"bronze khopesh",random
+OBJECT[75%]:'\\',"bedroll",random
 
 #
 #	The "fill" levels for the quest.

@@ -9,7 +9,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Ran-strt",'.'
-FLAGS: noteleport,hardfloor,arboreal
+FLAGS: hardfloor,arboreal
 INIT_MAP:',',' ',true,true,lit,false
 GEOMETRY:left,center
 ###########1#########2#########3#########4#########5#########6#########7#####
@@ -190,7 +190,7 @@ MONSTER:'s',random,random,hostile
 
 MAZE: "Ran-goal", ' '
 GEOMETRY:center,center
-#0         1         2   	   3	     4	       5		 6	       7
+#0         1         2         3         4         5         6         7
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 0}}}}}}}}}}}}}}}}}}}}}}}}.,,,,,,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTT
@@ -215,7 +215,7 @@ MAP
 9}}}}}}}}}}}}}}}}}}}}}}.,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTTTTTTTTT,,,TTTTTTTTTT
 ENDMAP
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
-#0         1         2   	   3	     4	       5		 6	       7
+#0         1         2         3         4         5         6         7
 RANDOM_PLACES:(49,07),(47,15),(57,06),(61,11)
 # Dungeon Description
 REGION:(00,00,75,19),lit,"ordinary"
@@ -230,6 +230,7 @@ NON_DIGGABLE:(00,00,75,19)
 # Objects
 OBJECT:')',"bow",place[0],blessed,0,"The Longbow of Diana"
 OBJECT:'(',"chest",place[0]
+OBJECT:'#',"thoroughly rotted expensive bed",(49,07)
 OBJECT:random,random,(36,09)
 OBJECT:random,random,(36,10)
 OBJECT:random,random,(36,11)

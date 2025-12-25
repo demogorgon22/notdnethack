@@ -2,6 +2,12 @@
 #define XHITY_H
 
 #define MELEEHURT_LONGSLASH_MASK	0x0000000FL
+#define MELEEHURT_FORCE_BLEED		0x00000010L
+#define MELEEHURT_FORCE_CHECK_JOUST	0x00000020L
+#define MELEEHURT_SUPER_SNEAK		0x00000040L
+#define MELEEHURT_DOUBLE_DAMAGE		0x00000080L
+#define MELEEHURT_SHOVE				0x00000100L
+#define MELEEHURT_SHOCKWAVE			0x00000200L
 
 /* macros to unify player and monster */
 #define x(mon)				((mon)==&youmonst ? u.ux : (mon)->mx)
@@ -38,6 +44,7 @@
 #define Breathless_res(mon)	((mon)==&youmonst ? Breathless : breathless_mon(mon))
 #define Water_res(mon)		((mon)==&youmonst ? Waterproof : mon_resistance((mon), WATERPROOF))
 #define Gaze_res(mon)		((mon)==&youmonst ? Gaze_immune : mon_resistance((mon), GAZE_RES))
+#define Focused_aura(mon)		((mon)==&youmonst ? FocusAura : mon_resistance((mon), FOCUS_AURA))
 #define ProtectItems(mon)		((mon)==&youmonst ? ProtItems : mon_resistance((mon), PROT_ITEMS))
 #define creature_at(x,y)	(isok(x,y) ? MON_AT(x, y) ? level.monsters[x][y] : (x==u.ux && y==u.uy) ? &youmonst : (struct monst *)0 : (struct monst *)0)
 
@@ -57,7 +64,7 @@
 #define is_unholy_mon(mon)	(is_demon((mon)->data) || (mon)->mtyp == PM_DREAD_SERAPH)
 #define is_unblessed_mon(mon)	(is_auton((mon)->data) || is_rilmani((mon)->data) || is_kamerel((mon)->data))
 
-#define SUBOUT_SPELLS	 1	/* Spellcasting attack instead (Five Fiends of Chaos1 and Gae) */
+#define SUBOUT_SPELLS	 1	/* Spellcasting attack instead (Five Fiends of Chaos1 and Gae and silverknight) */
 #define SUBOUT_BAEL1	 2	/* Bael's Sword Archon attack chain */
 #define SUBOUT_BAEL2	 3	/* Bael's marilith-hands attack chain */
 #define SUBOUT_SPIRITS	 4	/* Player's bound spirits */
@@ -81,7 +88,17 @@
 #define SUBOUT_ROT_SPORES	22	/* Pasive spore attack */
 #define SUBOUT_ROT_VOMIT	23	/* Vomit rot */
 #define SUBOUT_ROT_STING	24	/* Rot stinger */
-#define MAX_SUBOUT		25
+#define SUBOUT_PUSH	26	/* Push attack */
+#define SUBOUT_VOMIT    27	/* Vomit attack */
+#define MAX_SUBOUT		28
 #define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/16+1)
 
+#define ATTKFLAG_FORCE_BLEED		0x00000001L
+#define ATTKFLAG_FORCE_CHECK_JOUST	0x00000002L
+#define ATTKFLAG_SUPER_SNEAK		0x00000004L
+#define ATTKFLAG_DOUBLE_DAMAGE		0x00000008L
+#define ATTKFLAG_SHOVE				0x00000010L
+#define ATTKFLAG_SHOCKWAVE			0x00000020L
+
+#define XYATKFLAG_MIRROR_ATK		0x00000001L
 #endif

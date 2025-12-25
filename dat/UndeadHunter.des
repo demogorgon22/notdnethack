@@ -9,30 +9,30 @@
 #	and receive your quest assignment.
 #
 MAZE: "Hnt-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7  
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 0----------------------------------------------------------------------------
-1|            |-.....--.....--.....-...-                                    |
-2| |-------   |-.....--.....--..... ...-                                    |
-3| |      |   |-.....--.....--.....-...- ------------------------------------
+1|            |-.. ..--... .--.. ..-...-                                    |
+2| |-------   |-.. ..--... .--.. .. ...-                                    |
+3| |      |   |-     --    .--     -...- ------------------------------------
 4| |          |-.....--.....--.....-...- |................|     |     |     |
 5| |      |   |-.....--.....--.....----- |..------------..| - - - - - - - - |
-6| -- -----   |--- ------ ------ ---     |..|..........|..|.................|
-7|            |                          |..|          |..| --- --- ----- --|
-8|            |                        ---..|          |......|...|...|.....|
-9                                       ....|           ......|...|...|.....|
-0                                       ....|           ......|...|...|.....|
-1|            |                        ---..|          |......|...|...|.....|
-2|            |                          |..|          |..| ----- --- --- --|
-3|            |  --- ------ ------ ---   |..|..........|..|.................|
-4|            |  -.....--.....--.....-   |..------------..| - - - - - - - - |
-5|            |  -.....--.....--.....-   |................|     |     |     |
-6|            |  -.....--.....--.....-   ------------------------------------
-7|            |  -.....--.....--.....-                                      |
-8|            |  -.....--.....--.....-                                      |
+6| -- -----   |--- ------ ------ ---     |..|. ........|..|.................|
+7|            |                          |..|.         |..| --- --- ----- --|
+8|            |                        ---..|.         |......|...|...|.....|
+9                                       ....|.          ......|...|...|.....|
+0                                       ....|.          ......|...|...|.....|
+1|            |                        ---..|.         |......|...|...|.....|
+2|            |                          |..|.         |..| ----- --- --- --|
+3|            |  --- ------ ------ ---   |..|. ........|..|.................|
+4|            |  -. . .--.....--.....-   |..------------..| - - - - - - - - |
+5|            |  -    .--.    --.....-   |................|     |     |     |
+6|            |  -... .--  ...--     -   ------------------------------------
+7|            |  -... .--. ...--.. ..-                                      |
+8|            |  -... .--. ...--.. ..-                                      |
 9----------------------------------------------------------------------------
 ENDMAP
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -58,28 +58,72 @@ GEOMETRY:center,center
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 0----------------------------------------------------------------------------
-1|eeeeeeeeeeee|-#####--#####--#####-#K#-....................................|
-2|e|-------eee|-#####--#####--#####+###-....................................|
-3|e|......|eee|-#####--#####--#####-###-.------------------------------------
-4|e|......+.ee|-#####--#####--#####-###-.|................|.....|.....|.....|
-5|e|......|.ee|-#####--#####--#####-----.|..------------..|F-+-F-F-+-F-F-+-F|
-6|e--+-----.ee|---+------+------+---.....|..|..........|..|.................|
-7|eee.ee{ee.ee|..........................|..|..........|..|+---+---+-----+--|
-8|eee.{eeee.ee|........................---..|..........|......|...|...|.....|
-9......................................+....|..........+......|...|...|.....|
-0......................................+....|..........+......|...|...|.....|
-1|FFF.FFFFF.FF|........................---..|..........|......|...|...|.....|
-2|eeeeeeeeeeee|..........................|..|..........|..|+-----+---+---+--|
-3|eeeeeeeeeeee|..---+------+------+---...|..|..........|..|.................|
-4|eeeeeeeeeeee|..-#####--#####--#####-...|..------------..|F-+-F-F-+-F-F-+-F|
-5|eeeeeeeeeeee|..-#####--#####--#####-...|................|.....|.....|.....|
-6|eeeeeeeeeeee|..-#####--#####--#####-...------------------------------------
-7|eeeeeeeeeeee|..-#####--#####--#####-......................................|
-8|eeeeeeeeeeee|..-#####--#####--#####-......................................|
+1|            |-     --     --     -   -                                    |
+2| |-------   |-     --     --         -                                    |
+3| |      |   |-     --     --     -   - ------------------------------------
+4| |          |-     --     --     -   - |                |     |     |     |
+5| |      |   |-     --     --     ----- |  ------------  | - - - - - - - - |
+6| -- -----   |--- ------ ------ ---     |  |.         |  |                 |
+7|            |                          |  |.         |  | --- --- ----- --|
+8|            |                        ---  |.         |      |   |   |     |
+9                                           |.                |   |   |     |
+0                                           |.                |   |   |     |
+1|            |                        ---  |.         |      |   |   |     |
+2|            |                          |  |.         |  | ----- --- --- --|
+3|            |  --- ------ ------ ---   |  |.         |  |                 |
+4|            |  -     --     --     -   |  ------------  | - - - - - - - - |
+5|            |  -     --     --     -   |                |     |     |     |
+6|            |  -     --     --     -   ------------------------------------
+7|            |  -     --     --     -                                      |
+8|            |  -     --     --     -                                      |
 9----------------------------------------------------------------------------
 ENDMAP
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 #0         1         2         3         4         5         6         7  
+
+OBJECT[50%]:'+',random,random
+OBJECT[50%]:'+',random,random
+
+OBJECT[10%]:'#',"elf blood",random
+OBJECT[10%]:'#',"elf blood",random
+OBJECT[10%]:'#',"elf blood",random
+
+OBJECT[10%]:'#',"twin-columnar crystal",random
+OBJECT[10%]:'#',"twin-columnar crystal",random
+OBJECT[10%]:'#',"twin-columnar crystal",random
+OBJECT[10%]:'#',"twin-columnar crystal",random
+OBJECT[5%]:'#',"columnar chunk",random
+OBJECT[1%]:'#',"columnar mass",random
+
+OBJECT[10%]:'#',"chrysalis",random
+
+GEOMETRY:center,center
+#0         1         2         3         4         5         6         7     
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0----------------------------------------------------------------------------
+1|eeeeeeeeeeee|-##|##--###|#--##|##-#K#-....................................|
+2|e|-------eee|-##|##--###+#--##|##+###-....................................|
+3|e|......|eee|--+-+-------#---+-+--###-.------------------------------------
+4|e|......+.ee|-#####--#####--#####-###-.|................|.....|.....|.....|
+5|e|......|.ee|-#####--#####--#####-----.|..------------..|F-+-F-F-+-F-F-+-F|
+6|e--+-----.ee|---+------+------+---.....|..|.|........|..|.................|
+7|eee.ee{ee.ee|..........................|..|.|........|..|+---+---+-----+--|
+8|eee.{eeee.ee|........................---..|.|........|......|...|...|.....|
+9......................................+....|.S........+......|...|...|.....|
+0......................................+....|.S........+......|...|...|.....|
+1|FFF.FFFFF.FF|........................---..|.|........|......|...|...|.....|
+2|eeeeeeeeeeee|..........................|..|.|........|..|+-----+---+---+--|
+3|eeeeeeeeeeee|..---+------+------+---...|..|.|........|..|.................|
+4|eeeeeeeeeeee|..-#-#+#--#####--#####-...|..------------..|F-+-F-F-+-F-F-+-F|
+5|eeeeeeeeeeee|..-+-+-#--#--+---#####-...|................|.....|.....|.....|
+6|eeeeeeeeeeee|..-###-#--+|###---+-+--...------------------------------------
+7|eeeeeeeeeeee|..-###-#--#|###--##|##-......................................|
+8|eeeeeeeeeeee|..-###-#--#|###--##|##-......................................|
+9----------------------------------------------------------------------------
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7     
 # Dungeon Description
 REGION:(00,00,75,19),unlit,"ordinary"
 REGION:(01,12,12,18),unlit,"morgue"
@@ -119,12 +163,59 @@ DOOR:locked,(60,14)
 DOOR:locked,(66,14)
 DOOR:locked,(72,14)
 
+# Interior Doors
+DOOR:open,(16,03)
+DOOR:open,(18,03)
+
+DOOR:locked,(25,02)
+
+DOOR:open,(30,03)
+DOOR:locked,(32,03)
+
+DOOR:locked,(17,15)
+OBJECT:'(',"chest",(17,14)
+DOOR:locked,(19,15)
+DOOR:open,(20,14)
+
+DOOR:locked,(24,16)
+DOOR:open,(27,15)
+
+DOOR:locked,(32,16)
+DOOR:open,(34,16)
+
+
 ALTAR:(48,09),neutral,altar
 # High Priest
 MONSTER:'@',"Vicar Amalia",(48,10)
 # The treasure of High Priest
 # Magic Chest
 OBJECT:'(',"magic chest",(47,10)
+
+#Adapted from the Magick: Liber ABA of Aleister Crowley, Book Four, Parts I–IV
+ENGRAVING:(44,09),burn,"The Devil does not exist."
+OBJECT:'\\',"gurney",(44,09)
+ENGRAVING:(44,08),burn,"A devil who had unity would be a God."
+OBJECT:'\\',"gurney",(44,08)
+ENGRAVING:(44,07),burn,"The Devil is, historically, the God of any people that one personally dislikes."
+OBJECT:'\\',"gurney",(44,07)
+ENGRAVING:(44,06),burn,"Moloch is not the enemy of Man, but He who made Gods of our race, knowing Good and Evil; He bade 'Know Thyself!' and taught Initiation."
+OBJECT:'\\',"gurney",(44,06)
+
+#Adapted from the Panarion of Epiphanius
+#ENGRAVING:(44,10),burn,"The power <on high> emitted Mind."
+#ENGRAVING:(44,11),burn,"Mind emitted Reason."
+#ENGRAVING:(44,12),burn,"Reason emitted Prudence."
+#ENGRAVING:(44,13),burn,"Prudence emitted Power and Wisdom, and all the authorities, powers, and angels spring from Power and Wisdom. Yet the power and first principle above all these is Marduk."
+
+#Adapted from Transcendental Magic by Eliphas Levi
+ENGRAVING:(44,10),burn,"When men know how to live they will no longer die."
+OBJECT:'\\',"gurney",(44,10)
+ENGRAVING:(44,11),burn,"They will transform like the chrysalis, which becomes a splendid butterfly."
+OBJECT:'\\',"gurney",(44,11)
+ENGRAVING:(44,12),burn,"By the word of his reason man becomes the conqueror of life."
+OBJECT:'\\',"gurney",(44,12)
+ENGRAVING:(44,13),burn,"Moloch of legend is not an accursed and stricken angel; he is the angel who enlightens, who regenerates by fire."
+OBJECT:'\\',"gurney",(44,13)
 
 # guards for the audience chamber
 MONSTER:'@',"verger",(52,07)
@@ -137,27 +228,48 @@ MONSTER:'@',"verger",(53,11)
 MONSTER:'@',"verger",(53,12)
 MONSTER:'@',"nurse",(53,12),peaceful
 
-MONSTER:'@',"priest",(17,03),peaceful
-MONSTER:'@',"noblewoman",(17,02),peaceful
-MONSTER:'@',"priest",(24,03),peaceful
-MONSTER:'@',"priestess",(24,02),peaceful
-MONSTER:'@',"priest",(31,03),peaceful
-MONSTER:'@',"werewolf",(36,03)
+#North row
+MONSTER:'@',"priest",(16,02),peaceful
+MONSTER:'@',"noblewoman",(18,02),peaceful
+OBJECT:'\\',"expensive bed",(15,01)
+OBJECT:'(',"writing desk",(18,01)
 
+MONSTER:'@',"priest",(24,01),peaceful
+MONSTER:'@',"priestess",(24,02),peaceful
+OBJECT:'\\',"expensive bed",(23,01)
+
+MONSTER:'@',"priest",(30,02),peaceful
+MONSTER:'@',"werewolf",(36,03)
+OBJECT:'\\',"expensive bed",(29,01)
+
+#South row
 MONSTER:'@',"priest",(19,16),peaceful
 MONSTER:'@',"noblewoman",(19,17),peaceful
+OBJECT:'\\',"expensive bed",(18,17)
+OBJECT:'(',"writing desk",(21,17)
+OBJECT:'(',"chest",(21,18)
+
 MONSTER:'@',"priest",(26,16),peaceful
 MONSTER:'@',"noblewoman",(26,17),peaceful
-MONSTER:'@',"priestess",(33,16),peaceful
-MONSTER:'@',"nobleman",(33,17),peaceful
+OBJECT:'\\',"expensive bed",(24,18)
+
+MONSTER:'@',"priestess",(32,17),peaceful
+MONSTER:'@',"nobleman",(34,17),peaceful
+OBJECT:'\\',"expensive bed",(31,18)
 
 MONSTER:'@',"madwoman",(60,04)
+OBJECT:'\\',"bedroll",(60,04)
 MONSTER:'@',"madman",(66,04)
+OBJECT:'\\',"bedroll",(66,04)
 MONSTER:'@',"madwoman",(72,04)
+OBJECT:'\\',"bedroll",(72,04)
 
 MONSTER:'@',"madman",(60,15)
+OBJECT:'\\',"bedroll",(60,15)
 MONSTER:'@',"madwoman",(66,15)
+OBJECT:'\\',"bedroll",(66,15)
 MONSTER:'@',"noblewoman",(72,15)
+OBJECT:'\\',"bedroll",(72,15)
 
 CONTAINER:'(',"chest",(08,03)
 OBJECT:')',"pistol",contained

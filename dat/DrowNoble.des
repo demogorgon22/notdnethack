@@ -90,6 +90,14 @@ OBJECT:'%',"food ration",contained
 OBJECT:'%',"food ration",contained
 OBJECT:'%',"food ration",contained
 
+OBJECT:'\\',"bed",(35,02)
+OBJECT:'\\',"bed",(44,02)
+OBJECT:'\\',"bed",(45,02)
+OBJECT:'\\',"bed",(46,02)
+OBJECT:'\\',"bed",(48,07)
+OBJECT:'\\',"bed",(29,11)
+OBJECT:'\\',"bed",(44,11)
+
 MONSTER:'@',"shadowsmith",random
 
 MONSTER:'@',"hedrow warrior",random
@@ -557,7 +565,7 @@ MONSTER: random, random, random
 MONSTER: random, random, random
 
 MAZE:"Ndr-filb",' '
-FLAGS:shortsighted
+FLAGS:noteleport,shortsighted
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7     
 #0123456789012345678901234567890123456789012345678901234567890123456789012345

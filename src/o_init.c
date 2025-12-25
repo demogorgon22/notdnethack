@@ -1562,8 +1562,10 @@ struct obj *otmp;
 	case ART_FIRE_CRYSTAL:		return PURIFIED_FIRE ? 	CLR_ORANGE : CLR_RED;
 	case ART_WATER_CRYSTAL:		return PURIFIED_WATER ? CLR_BRIGHT_BLUE : CLR_BLUE;
 	case ART_AIR_CRYSTAL:		return PURIFIED_WIND ?  CLR_BRIGHT_GREEN : CLR_GREEN;
-	case ART_SPELL_WARDED_WRAPPINGS_OF_:		return CLR_BLACK;
+	case ART_SPELL_WARDED_WRAPPINGS_OF_:	return CLR_BLACK;
 	case ART_XIUHCOATL:			return CLR_BRIGHT_CYAN;
+	case ART_FLUTE_OF_TEZCATLIPOCA:	return CLR_BROWN;
+	case ART_MASK_OF_TLALOC:	return CLR_GREEN;
 	}
 	
 	//Use the set color.
@@ -1601,6 +1603,27 @@ fix_etraits(struct obj *otmp)
 	else if(otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD){
 		otmp->expert_traits &= ~ETRAIT_FOCUS_FIRE;
 		otmp->expert_traits |= ETRAIT_FELL;
+	}
+	else if(otmp->oartifact == ART_WINTER_REAPER){
+		otmp->expert_traits |= ETRAIT_FELL|ETRAIT_BLEED|ETRAIT_CLEAVE;
+	}
+	else if(otmp->oartifact == ART_SEVEN_STAR_SWORD){
+		otmp->expert_traits |= ETRAIT_LUNGE;
+	}
+	else if(otmp->oartifact == ART_MALICE){
+		otmp->expert_traits = ETRAIT_LUNGE|ETRAIT_GRAZE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST;
+	}
+	else if(otmp->oartifact == ART_SHADOWLOCK){
+		otmp->expert_traits = ETRAIT_FELL|ETRAIT_GRAZE|ETRAIT_STOP_THRUST|ETRAIT_LUNGE|ETRAIT_BLEED;
+	}
+	else if(otmp->oartifact == ART_TORCH_OF_XOLOTL){
+		otmp->expert_traits = ETRAIT_HEW|ETRAIT_STUNNING_STRIKE|ETRAIT_KNOCK_BACK; // what a club has
+	}
+	else if(otmp->oartifact == ART_LUCK_BLADE){
+		otmp->expert_traits |= ETRAIT_GRAZE;
+	}
+	else if(otmp->oartifact == ART_STORM_CURSE){
+		otmp->expert_traits |= ETRAIT_FOCUS_FIRE;
 	}
 
 	if(otmp->oartifact == ART_RUYI_JINGU_BANG){

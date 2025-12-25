@@ -231,7 +231,6 @@ REGION:(00,00,75,20),lit,"ordinary"
 # Stairs
 STAIR:(00,02),up
 STAIR:(75,10),down
-
 # Church
 REGION:(18,01,24,07),lit,"temple"
 ALTAR:(21,02),neutral,altar,"_Velka, Goddess of Sin"
@@ -260,7 +259,7 @@ DOOR:closed,(15,13)
 
 # Magic Chest
 OBJECT:'(',"magic chest",(06,09)
-
+OBJECT:'\\',"bed",(30,03)
 
 #
 #	The "locate" level for the quest.
@@ -518,6 +517,16 @@ REGION:(00,00,75,20),lit,"ordinary"
 # Stairs
 STAIR:(66,10),up
 TRAP: "switch", (08,14)
+MONSTER: 'x', "man-fly", (09,15), asleep
+MONSTER: 'x', "man-fly", (09,13), asleep
+MONSTER: 'x', "man-fly", (07,15), asleep
+MONSTER: 'x', "man-fly", (07,13), asleep
+MONSTER: 'x', "man-fly", (05,15), asleep
+MONSTER: 'x', "man-fly", (05,13), asleep
+MONSTER: 'x', "man-fly", (03,15), asleep
+MONSTER: 'x', "man-fly", (03,13), asleep
+MONSTER: 'x', "man-fly", (01,15), asleep
+MONSTER: 'x', "man-fly", (01,13), asleep
 # Doors
 # Outside Doors
 NON_DIGGABLE:(00,00,75,20)

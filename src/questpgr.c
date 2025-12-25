@@ -611,13 +611,102 @@ qt_montype(int x, int y)
 				return &mons[PM_BLACK_DRAGON];
 			break;
 		}
+	} else if(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7 && !quest_status.killed_nemesis){
+		// Once things go sideways down below switch handling to this block
+		int qpm;
+		int progress = quest_status.time_doing_quest/CON_QUEST_INCREMENT;
+		// <7: Nemesis level hasn't changed
+		// Note: only here if progress < 7 is false
+		// <8: Lower filler hasn't changed (but the nuncios and preceptors are much more frequent now)
+		if(progress < 8 && u.uz.dlevel > qlocate_level.dlevel){
+			if(rn2(5)){
+				qpm = rn2(2) ? PM_QUASIT : PM_DAUGHTER_OF_BEDLAM;
+				if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+					return (&mons[qpm]);
+				return (mkclass(S_IMP, G_HELL));
+			}
+			qpm = PM_CHAIN_DEVIL;
+			if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+				return (&mons[qpm]);
+			return (mkclass(S_DEMON, G_HELL));
+		}
+		// <9: Locate and upper filler hasn't changed (but the nuncios and preceptors are much more frequent and the sephiroth are flipping out)
+		else if(progress < 9 && u.uz.dlevel > qstart_level.dlevel){
+			if(rn2(2)){
+				if(rn2(5)){
+					qpm = rn2(2) ? PM_QUASIT : PM_DAUGHTER_OF_BEDLAM;
+					if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+						return (&mons[qpm]);
+					return (mkclass(S_IMP, G_HELL));
+				}
+				qpm = PM_CHAIN_DEVIL;
+				if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+					return (&mons[qpm]);
+				return (mkclass(S_DEMON, G_HELL));
+			}
+			else{
+				if(rn2(5)){
+					qpm = rn2(10) ? PM_MALKUTH_SEPHIRAH : PM_HOD_SEPHIRAH;
+					if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+						return (&mons[qpm]);
+					return (mkclass(rn2(2) ? S_HUMAN : S_RODENT, G_HELL));
+				}
+				qpm = PM_SOLDIER_ANT;
+				if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+					return (&mons[qpm]);
+				return (mkclass(S_SPIDER, G_HELL));
+			}
+		}
+		// <10: Home level hasn't changed
+		else if(progress < 10 && Is_qstart(&u.uz)){
+			if(rn2(5)){
+				qpm = rn2(10) ? PM_MALKUTH_SEPHIRAH : PM_HOD_SEPHIRAH;
+				if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+					return (&mons[qpm]);
+				return (mkclass(rn2(2) ? S_HUMAN : S_RODENT, G_HELL));
+			}
+			qpm = PM_SOLDIER_ANT;
+			if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+				return (&mons[qpm]);
+			return (mkclass(S_SPIDER, G_HELL));
+		}
+		// Level has changed
+		else {
+			switch(rn2(6)){
+				case 0:
+					qpm = PM_RHOMBOHEDROID;
+				break;
+				case 1:
+					qpm = PM_CUBOID;
+				break;
+				case 2:
+					qpm = PM_CHAIN_DEVIL;
+				break;
+				case 3:
+					qpm = PM_DAUGHTER_OF_BEDLAM;
+				break;
+				case 4:
+					qpm = PM_INTERLOCUTOR_DEVIL;
+				break;
+				case 5:
+					qpm = PM_WALKING_DELIRIUM;
+				break;
+			}
+			if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
+				return (&mons[qpm]);
+			switch(rn2(3)){
+				case 0: return rn2(2) ? &mons[PM_SCRAP_TITAN] : &mons[PM_HELLFIRE_COLOSSUS];
+				case 1: return mkclass(S_OGRE, G_NOHELL|G_HELL);
+				case 2: return mkdragon();
+			}
+		}
 	} else if(Role_if(PM_CONVICT) && ((Is_qlocate(&u.uz) && rn2(2)) || (u.uz.dlevel > qlocate_level.dlevel))){
 		int qpm;
 		if(rn2(5)){
-			qpm = PM_QUASIT;
+			qpm = rn2(2) ? PM_QUASIT : PM_ROCK_PIERCER;
 			if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
 				return (&mons[qpm]);
-			return (mkclass(S_IMP, G_HELL));
+			return (mkclass(rn2(2) ? S_PIERCER : S_IMP, G_HELL));
 		}
 		qpm = PM_DAUGHTER_OF_BEDLAM;
 		if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GONE && !In_quest(&u.uz)))
@@ -1346,7 +1435,7 @@ neutral_montype()
 				return &mons[PM_PLUMACH_RILMANI];
 			break;
 			case 2:
-				if(chance < 5 && !toostrong(PM_ARA_KAMEREL, diff))
+				if(chance < 5 && !u.veil && !toostrong(PM_ARA_KAMEREL, diff))
 					return &mons[PM_ARA_KAMEREL];
 				if(chance < 15 && !toostrong(PM_SHARAB_KAMEREL, diff))
 					return &mons[PM_SHARAB_KAMEREL];

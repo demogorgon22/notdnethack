@@ -32,6 +32,10 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_PRINCE_NEZHA,               ART_FENG_HUO_LUN,		"the Sage of Law",						dub_thee_the,							became_the	},
 {GOD_LAOZI,                      ART_JIN_GANG_ZUO,				"the Grandmaster of Balance",			"Thou shalt be the %s!",				became_the	},
 {GOD_THE_HUNSHI_SIHOU,           ART_RUYI_JINGU_BANG,			"the Glory of Eequor",					chosen("cause dismay in My Name"),		became_the	},
+	/* Kensei */
+{GOD_KANNON,               		 ART_GOKOREI,				"the Sage of Law",						dub_thee_the,							became_the	},
+{GOD_FUDO_MYOO,                  ART_KENJAKU,				"the Grandmaster of Balance",			"Thou shalt be the %s!",				became_the	},
+{GOD_SHUKONGOSHIN,               ART_SHI_PI_BU,				"the Glory of Eequor",					chosen("cause dismay in My Name"),		became_the	},
 	/* Noble (human, vampire, incant). Vampires always get Dark Lord regardless of alignment */
 {GOD_GOD_THE_FATHER,             ART_CROWN_OF_THE_SAINT_KING,	"the Saint %s",							verb_thee_the("crown"),					"received the crown of the Saint King",	CRWN_TTL_KING	},
 {GOD_MOTHER_EARTH,               ART_CROWN_OF_THE_SAINT_KING,	"the Grey Saint",						verb_thee_the("crown"),					"received the crown of the Saint King"	},
@@ -79,16 +83,19 @@ static const struct crowning hand_of_elbereth[] = {
 {GOD_HERMES,                     ART_HERMES_S_SANDALS,			"the Messenger of Hermes",				dub_thee,								became_the	},
 {GOD_POSEIDON,                   ART_POSEIDON_S_TRIDENT,		"the Glory of Poseidon",				dub_thee,								became_the	},
 	/*Archeologist*/ /* law -- warrior or high priest? */
-{GOD_QUETZALCOATL,               ART_EHECAILACOCOZCATL,			"the Warrior of Quetzalcoatl",			verb_thee_the("proclaim"),				became_the	},
+{GOD_QUETZALCOATL,               ART_EHECAILACOCOZCATL,			"the High Priest of Quetzalcoatl",		verb_thee_the("proclaim"),				became_the	},
 {GOD_CAMAXTLI,                   ART_AMHIMITL,					"the Champion of Camaxtli",				verb_thee_the("proclaim"),				became_the	},
-{GOD_HUHETOTL,                   ART_TECPATL_OF_HUHETOTL,		"the Fire-bearer of Huhetotl",			dub_thee_the,							became_the	},
+{GOD_HUEHUETEOTL,                ART_TECPATL_OF_HUEHUETEOTL,	"the Fire-bearer of Huehueteotl",		dub_thee_the,							became_the	},
+{GOD_XOLOTL,                     ART_TORCH_OF_XOLOTL,			"the Hound of Xolotl",					verb_thee_the("proclaim"),				became_the	},
+{GOD_TLALOC,                     ART_MASK_OF_TLALOC,			"the Herald of Tlaloc",					verb_thee_the("proclaim"),				became_the	},
+{GOD_TEZCATLIPOCA,               ART_FLUTE_OF_TEZCATLIPOCA,		"the Betrayer of Tezcatlipoca",			(const char *) 0,						became_the	},
 	/*Female Half Dragon Noble*/
 {GOD_GWYN__LORD_OF_SUNLIGHT,     ART_DRAGONHEAD_SHIELD,			"the Dragon-slayer of Gwyn",			dub_thee_the,							became_the	},
 {GOD_GWYNEVERE__PRINCESS_OF_SUN, ART_CRUCIFIX_OF_THE_MAD_KING,	"the Guardian of the Old Lords",		dub_thee_the,							became_the	},
 {GOD_DARK_SUN_GWYNDOLIN,         ART_RINGED_BRASS_ARMOR,		"the Darkmoon Champion",				dub_thee_the,							became_the	},
 	/* Knight -- lawful and chaotic  */
 {GOD_LUGH,                       ART_CLARENT,					"the King of the Angles",				dub_thee,								"crowned %s"	},
-{GOD_MANANNAN_MAC_LIR,                       ART_DARK_CLAYMORE,					"the Warrior of the Sea",				dub_thee,								"crowned %s"	},
+{GOD_MANANNAN_MAC_LIR,           ART_DARK_CLAYMORE,				"the Warrior of the Sea",				dub_thee,								"crowned %s"	},
 	/* Pirate -- all alignments are identical */
 {GOD_THE_LORD,                   ART_REAVER,					"the Pirate King",						(const char *)0,						became_the	},
 {GOD_THE_DEEP_BLUE_SEA,          ART_REAVER,					"the Pirate King",						(const char *)0,						became_the	},
@@ -270,6 +277,9 @@ gcrownu()
 				pline("<<You who straddle the line between our world and the void beyond,");
 				pline("  you shall be our emissary to that which gave rise to us all>>");
 				break;
+			case GOD_TEZCATLIPOCA:
+				pline("\"I accepted your betrayal. It's only fair.\"");
+				break;
 			default:
 				impossible("bad unannounced crowning %d", u.uevent.uhand_of_elbereth);
 				break;
@@ -421,11 +431,20 @@ gcrownu()
 				case ART_CLARENT:
 					expert_weapon_skill(P_BEAST_MASTERY);
 					break;
-				case ART_TECPATL_OF_HUHETOTL:
+				case ART_TECPATL_OF_HUEHUETEOTL:
 					expert_weapon_skill(P_CLERIC_SPELL);
 					break;
 				case ART_EHECAILACOCOZCATL:
 					expert_weapon_skill(P_ATTACK_SPELL);
+					break;
+				case ART_TORCH_OF_XOLOTL:
+					expert_weapon_skill(P_CLUB);
+					break;
+				case ART_MASK_OF_TLALOC:
+					expert_weapon_skill(P_HARVEST);
+					break;
+				case ART_FLUTE_OF_TEZCATLIPOCA:
+					expert_weapon_skill(P_FIREARM);
 					break;
 				case ART_HERMES_S_SANDALS:
 					expert_weapon_skill(P_LONG_SWORD);

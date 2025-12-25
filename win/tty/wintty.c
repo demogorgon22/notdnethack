@@ -2887,6 +2887,10 @@ tty_nhgetch()
 #endif
     }
     if (!i) i = DOESCAPE; /* map NUL to ESC since nethack doesn't expect NUL */
+	if (i == EOF){
+		iflags.term_gone = 1;
+		i = DOESCAPE; /* same for EOF */
+	}
     if (ttyDisplay && ttyDisplay->toplin == 1)
 	ttyDisplay->toplin = 2;
     tmp = vt_tile_current_window;

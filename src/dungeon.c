@@ -1561,12 +1561,16 @@ d_level *lev;
 		|| Role_if(PM_PIRATE) || Role_if(PM_PRIEST) || Role_if(PM_SAMURAI)
 		|| Role_if(PM_VALKYRIE) || Role_if(PM_WIZARD)){
 			return lev->dlevel <= qlocate_level.dlevel;
+		} else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
+			return FALSE;
 		} else if(Role_if(PM_HEALER) || Role_if(PM_NOBLEMAN) || Role_if(PM_UNDEAD_HUNTER)){
 			return TRUE;
 		} else if(Role_if(PM_RANGER)){
 			return lev->dlevel < qlocate_level.dlevel;
 		} else if(Role_if(PM_KNIGHT)){
 			return lev->dlevel < nemesis_level.dlevel;
+		} else if(Role_if(PM_KENSEI)){
+			return lev->dlevel <= qlocate_level.dlevel || lev->dlevel == nemesis_level.dlevel;
 		} else if(Role_if(PM_TOURIST)) {
 			return on_level(lev, &qlocate_level) || on_level(lev, &qstart_level);
 		}
@@ -1959,7 +1963,7 @@ level_difficulty()
 		|| Role_if(PM_MADMAN))
 		&& u.ulevel < 14)
 	)
-		dpth += 10;
+		dpth += 8;
 
 	return max(1, dpth);
 }

@@ -486,6 +486,7 @@ struct obj *corpse;
 		    is_keter(mptr) || 
 		    mptr->mtyp == PM_HOUND_OF_TINDALOS || 
 		    mptr->mtyp == PM_CLAIRVOYANT_CHANGED || 
+		    mptr->mtyp == PM_MOON_S_CHOSEN || 
 			(mptr->mtyp == PM_DREAD_SERAPH && !(mtmp->mstrategy & STRAT_WAITFORU)) || 
 			(mptr->mtyp == PM_WEEPING_ANGEL && angelnum > 0) || 
 			(is_drow(mptr) && mtmp->mfaction == LOST_HOUSE) ||

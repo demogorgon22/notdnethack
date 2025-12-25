@@ -1800,7 +1800,7 @@ struct obj *instr;
 	if(instr->oartifact == ART_SILVER_STARLIGHT){
 	    if (do_spec && instr->spe > 0) {
 			if(instr->age > monstermoves) consume_obj_charge(instr, TRUE);
-			else instr->age = monstermoves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			else instr->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 			
 			You("produce soft music.");
 			put_monsters_to_sleep(u.ulevel * 5);
@@ -1811,102 +1811,125 @@ struct obj *instr;
 			if (do_spec) charm_snakes(u.ulevel * 3);
 			exercise(A_DEX, TRUE);
 		}
+	} else if(instr->oartifact == ART_FLUTE_OF_TEZCATLIPOCA){
+	    if (do_spec && instr->spe > 0) {
+			if(instr->age > monstermoves) consume_obj_charge(instr, TRUE);
+			else instr->age = monstermoves + (long)(rnz(100)*(u.upriest ? .8 : 1));
+			coord cc;
+			cc.x = u.ux;
+			cc.y = u.uy;
+			/* Cause trouble if cursed or player is wrong role */
+
+			You("may summon a stinking cloud.");
+			pline("Where do you want to center the cloud?");
+			if (getpos(&cc, TRUE, "the desired position") < 0) {
+				pline1(Never_mind);
+				instr->age = 0;
+			} else if (!cansee(cc.x, cc.y) || distu(cc.x, cc.y) >= 32) {
+				You("smell rotten eggs.");
+			} else {
+				pline("A cloud of toxic smoke pours out!");
+				(void) create_gas_cloud(cc.x, cc.y, 3+bcsign(instr), 8+4*bcsign(instr), TRUE);
+			}
+	    } else {
+			pline("But no sound seems to comes out.");
+		}
 	} else switch (instr->otyp) {
-	case MAGIC_FLUTE:		/* Make monster fall asleep */
-	    if (do_spec && instr->spe > 0) {
-		consume_obj_charge(instr, TRUE);
+		case MAGIC_FLUTE:		/* Make monster fall asleep */
+			if (do_spec && instr->spe > 0) {
+			consume_obj_charge(instr, TRUE);
 
-		You("produce soft music.");
-		put_monsters_to_sleep(u.ulevel * 5);
-		exercise(A_DEX, TRUE);
-		if(uwep && uwep->oartifact == ART_SINGING_SWORD){
-			uwep->ovara_heard |= OHEARD_LETHARGY;
-		}
-		break;
-	    } /* else FALLTHRU */
-	case FLUTE:		/* May charm snakes */
-	    do_spec &= (rn2(ACURR(A_DEX)) + u.ulevel > 25);
-	    pline("%s.", Tobjnam(instr, do_spec ? "trill" : "toot"));
-		song_noise(u.ulevel * 3);
-	    if (do_spec) charm_snakes(u.ulevel * 3);
-	    exercise(A_DEX, TRUE);
-	    break;
-	case FROST_HORN:		/* Idem wand of cold */
-	case FIRE_HORN:			/* Idem wand of fire */
-	    if (do_spec && instr->spe > 0) {
-		consume_obj_charge(instr, TRUE);
+			You("produce soft music.");
+			put_monsters_to_sleep(u.ulevel * 5);
+			exercise(A_DEX, TRUE);
+			if(uwep && uwep->oartifact == ART_SINGING_SWORD){
+				uwep->ovara_heard |= OHEARD_LETHARGY;
+			}
+			break;
+			} /* else FALLTHRU */
+		case FLUTE:		/* May charm snakes */
+			do_spec &= (rn2(ACURR(A_DEX)) + u.ulevel > 25);
+			pline("%s.", Tobjnam(instr, do_spec ? "trill" : "toot"));
+			song_noise(u.ulevel * 3);
+			if (do_spec) charm_snakes(u.ulevel * 3);
+			exercise(A_DEX, TRUE);
+			break;
+		case FROST_HORN:		/* Idem wand of cold */
+		case FIRE_HORN:			/* Idem wand of fire */
+			if (do_spec && instr->spe > 0) {
+			consume_obj_charge(instr, TRUE);
 
-		if (!getdir((char *)0)) {
-		    pline("%s.", Tobjnam(instr, "vibrate"));
-		    break;
-		} else if (!u.dx && !u.dy && !u.dz) {
-		    if ((damage = zapyourself(instr, TRUE)) != 0) {
-			char buf[BUFSZ];
-			Sprintf(buf, "using a magical horn on %sself", uhim());
-			losehp(damage, buf, KILLED_BY);
-		    }
-		} else {
-			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, rn1(7, 7),
-				basiczap(0, ((instr->otyp == FROST_HORN) ? AD_COLD : AD_FIRE), ZAP_WAND, rn1(6, 6)));
-		}
-		makeknown(instr->otyp);
-		if(uwep && uwep->oartifact == ART_SINGING_SWORD){
-			if(instr->otyp == FROST_HORN) uwep->ovara_heard |= OHEARD_FROST;
-			if(instr->otyp == FIRE_HORN) uwep->ovara_heard |= OHEARD_FIRE;
-		}
-		break;
-	    } /* else FALLTHRU */
-	case TOOLED_HORN:		/* Awaken or scare monsters */
-	    You("produce a frightful, grave sound.");
-	    awaken_monsters(u.ulevel * 30);
-	    exercise(A_WIS, FALSE);
-	    break;
-	case BUGLE:			/* Awaken & attract soldiers */
-	    You("extract a loud noise from %s.", the(xname(instr)));
-	    awaken_monsters(u.ulevel * 30);
-	    awaken_soldiers();
-	    exercise(A_WIS, FALSE);
-	    break;
-	case MAGIC_HARP:		/* Charm monsters */
-	    if (do_spec && instr->spe > 0) {
-		consume_obj_charge(instr, TRUE);
+			if (!getdir((char *)0)) {
+				pline("%s.", Tobjnam(instr, "vibrate"));
+				break;
+			} else if (!u.dx && !u.dy && !u.dz) {
+				if ((damage = zapyourself(instr, TRUE)) != 0) {
+				char buf[BUFSZ];
+				Sprintf(buf, "using a magical horn on %sself", uhim());
+				losehp(damage, buf, KILLED_BY);
+				}
+			} else {
+				zap(&youmonst, u.ux, u.uy, u.dx, u.dy, rn1(7, 7),
+					basiczap(0, ((instr->otyp == FROST_HORN) ? AD_COLD : AD_FIRE), ZAP_WAND, rn1(6, 6)));
+			}
+			makeknown(instr->otyp);
+			if(uwep && uwep->oartifact == ART_SINGING_SWORD){
+				if(instr->otyp == FROST_HORN) uwep->ovara_heard |= OHEARD_FROST;
+				if(instr->otyp == FIRE_HORN) uwep->ovara_heard |= OHEARD_FIRE;
+			}
+			break;
+			} /* else FALLTHRU */
+		case TOOLED_HORN:		/* Awaken or scare monsters */
+			You("produce a frightful, grave sound.");
+			awaken_monsters(u.ulevel * 30);
+			exercise(A_WIS, FALSE);
+			break;
+		case BUGLE:			/* Awaken & attract soldiers */
+			You("extract a loud noise from %s.", the(xname(instr)));
+			awaken_monsters(u.ulevel * 30);
+			awaken_soldiers();
+			exercise(A_WIS, FALSE);
+			break;
+		case MAGIC_HARP:		/* Charm monsters */
+			if (do_spec && instr->spe > 0) {
+			consume_obj_charge(instr, TRUE);
 
-		pline("%s very attractive music.", Tobjnam(instr, "produce"));
-		charm_monsters((u.ulevel - 1) / 3 + 1);
-		exercise(A_DEX, TRUE);
-		break;
-	    } /* else FALLTHRU */
-	case HARP:		/* May calm Nymph */
-	    do_spec &= (rn2(ACURR(A_DEX)) + u.ulevel > 25);
-	    pline("%s %s.", The(xname(instr)),
-		  do_spec ? "produces a lilting melody" : "twangs");
-		song_noise(u.ulevel * 3);
-	    if (do_spec) calm_nymphs(u.ulevel * 3);
-	    exercise(A_DEX, TRUE);
-	    break;
-	case DRUM_OF_EARTHQUAKE:	/* create several pits */
-	    if (do_spec && instr->spe > 0) {
-		consume_obj_charge(instr, TRUE);
+			pline("%s very attractive music.", Tobjnam(instr, "produce"));
+			charm_monsters((u.ulevel - 1) / 3 + 1);
+			exercise(A_DEX, TRUE);
+			break;
+			} /* else FALLTHRU */
+		case HARP:		/* May calm Nymph */
+			do_spec &= (rn2(ACURR(A_DEX)) + u.ulevel > 25);
+			pline("%s %s.", The(xname(instr)),
+			do_spec ? "produces a lilting melody" : "twangs");
+			song_noise(u.ulevel * 3);
+			if (do_spec) calm_nymphs(u.ulevel * 3);
+			exercise(A_DEX, TRUE);
+			break;
+		case DRUM_OF_EARTHQUAKE:	/* create several pits */
+			if (do_spec && instr->spe > 0) {
+			consume_obj_charge(instr, TRUE);
 
-		You("produce a heavy, thunderous rolling!");
-		pline_The("entire dungeon is shaking around you!");
-               do_earthquake(u.ux, u.uy, (u.ulevel)*2 / 3 + 1, (u.ulevel) / 5 + 1, instr->cursed, &youmonst);
-		/* shake up monsters in a much larger radius... */
-		awaken_monsters(ROWNO * COLNO);
-		makeknown(DRUM_OF_EARTHQUAKE);
-		if(uwep && uwep->oartifact == ART_SINGING_SWORD){
-			uwep->ovara_heard |= OHEARD_QUAKE;
-		}
-		break;
-	    } /* else FALLTHRU */
-	case DRUM:		/* Awaken monsters */
-	    You("beat a deafening row!");
-	    awaken_monsters(u.ulevel * 40);
-	    exercise(A_WIS, FALSE);
-	    break;
-	default:
-	    impossible("What a weird instrument (%d)!", instr->otyp);
-	    break;
+			You("produce a heavy, thunderous rolling!");
+			pline_The("entire dungeon is shaking around you!");
+				do_earthquake(u.ux, u.uy, (u.ulevel)*2 / 3 + 1, (u.ulevel) / 5 + 1, instr->cursed, &youmonst);
+			/* shake up monsters in a much larger radius... */
+			awaken_monsters(ROWNO * COLNO);
+			makeknown(DRUM_OF_EARTHQUAKE);
+			if(uwep && uwep->oartifact == ART_SINGING_SWORD){
+				uwep->ovara_heard |= OHEARD_QUAKE;
+			}
+			break;
+			} /* else FALLTHRU */
+		case DRUM:		/* Awaken monsters */
+			You("beat a deafening row!");
+			awaken_monsters(u.ulevel * 40);
+			exercise(A_WIS, FALSE);
+			break;
+		default:
+			impossible("What a weird instrument (%d)!", instr->otyp);
+			break;
 	}
 	nomul(-1,"improvising a tune");
 	return 1;

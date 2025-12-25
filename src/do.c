@@ -601,6 +601,10 @@ struct obj *obj;
 			weldmsg(obj);
 			return(0);
 		}
+
+		if (obj->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return(0);
+
 		setuwep((struct obj *)0);
 	}
 	if(obj == uquiver) {
@@ -704,7 +708,7 @@ register struct obj *obj;
 				       FALSE, could_slime);
 			delobj(obj);	/* corpse is digested */
 		    } else if (could_petrify) {
-			minstapetrify(u.ustuck, TRUE);
+			minstapetrify(u.ustuck, TRUE, FALSE);
 			/* Don't leave a cockatrice corpse in a statue */
 			if (!u.uswallow) delobj(obj);
 		    } else if (could_grow) {
@@ -1320,6 +1324,7 @@ int portal;
 	 */
 	if ((!up && Is_qhome(&u.uz) && !newdungeon && !ok_to_quest() && !flags.stag)
 	&& !(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend)
+	&& !(Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 10)
 	) {
 		pline("A mysterious force prevents you from descending.");
 		return;
@@ -1335,7 +1340,7 @@ int portal;
 	/* Mysterious force to shake up the uh quest*/
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
-		&& dunlev(&u.uz) < qlocate_level.dlevel
+		&& dunlev(&u.uz) >= qlocate_level.dlevel
 		&& rnd(20) < Insight && rn2(2)
 	){
 		int diff = rn2(2);	/* 0 - 1 */
@@ -1383,10 +1388,10 @@ int portal;
 	u.uinwater = 0;
 	u.usubwater = 0;
 	u.uundetected = 0;	/* not hidden, even if means are available */
-	u.uz.flags.mirror = 0; /*Level has a mirror on it (needed for Nudzirath) */
+	level.flags.mirror = 0; /*Level has a mirror on it (needed for Nudzirath) */
 	for(obj = fobj; obj; obj = obj->nobj){
 		if(obj->otyp == MIRROR)
-			u.uz.flags.mirror = 1;
+			level.flags.mirror = 1;
 	}
 	if(!Is_nowhere(newlevel)) keepdogs(FALSE, newlevel, portal);
 	u.ux = u.uy = 0;			/* comes after keepdogs() */
@@ -1555,7 +1560,7 @@ remake:
 				}
 			}
 			/* Remove bug which crashes with levitation/punishment  KAA */
-			if (Punished && !Levitation) {
+			if (Punished && uball->oartifact != ART_IRON_BALL_OF_LEVITATION && !Levitation) {
 				pline("With great effort you climb the %s.",
 				at_ladder ? "ladder" : "stairs");
 			} else if (at_ladder)
@@ -1578,7 +1583,7 @@ remake:
 				at_ladder ? "ladder" : "stairs");
 			else if (u.dz &&
 	#ifdef CONVICT
-				(near_capacity() > UNENCUMBERED || (Punished &&
+				(near_capacity() > UNENCUMBERED || (Punished && uball->oartifact != ART_IRON_BALL_OF_LEVITATION &&
 				((uwep != uball) || ((P_SKILL(P_FLAIL) < P_BASIC))
 				|| !Role_if(PM_CONVICT)))
 				 || Fumbling)
@@ -2830,7 +2835,7 @@ donull()
 			stop_occupation();
 			(*hp) = (*hpmax);
 		}
-	} else if (!Role_if(PM_MONK) && u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) {
+	} else if (!Role_if(PM_MONK) && !Role_if(PM_KENSEI) && u.sealsActive&SEAL_EURYNOME && ++u.eurycounts>5) {
 		// monks meditate & fast, increasing pw regen and lowering hunger rate while they haven't moved
 		unbind(SEAL_EURYNOME,TRUE);
 	}

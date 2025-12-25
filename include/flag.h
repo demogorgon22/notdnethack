@@ -93,7 +93,9 @@ struct flag {
 	boolean  verbose;	/* max battle info */
 	boolean  prayconfirm;	/* confirm before praying */
 	boolean  tm_hour;	/* hour of the day (updated once per global turn) */
+	boolean  resume_wish; /* game was exited while in wish prompt */
 
+	int  resume_wish_flags; /* flags for makewish() */
 	int move;	/* type[s] of action taken by player's last input/action */
 	int movetoprint;
 	int movetoprintcost;
@@ -176,6 +178,8 @@ struct flag {
 
 	Bitfield(disp_inv, 1);			/* currently displaying inventory, use separate obuf list */
 
+	Bitfield(lightsaber_max, 3);	/* maximum lightsaber skill level achieved, (assumes 0 - 6 range) */
+
 	/* KMH, role patch -- Variables used during startup.
 	 *
 	 * If the user wishes to select a role, race, gender, and/or alignment
@@ -245,9 +249,11 @@ struct flag {
 #define POKEDEX_SHOW_MA			0x0200
 #define POKEDEX_SHOW_MV			0x0400
 #define POKEDEX_SHOW_ATTACKS	0x0800
-#define POKEDEX_SHOW_CRITICAL	0x1000
-#define POKEDEX_SHOW_WARDS		0x2000
-#define MAX_POKEDEX_SHOW	POKEDEX_SHOW_WARDS
+#define POKEDEX_SHOW_WARDS		0x1000
+#define POKEDEX_SHOW_ENCYC		0x2000
+//Critical must be last
+#define POKEDEX_SHOW_CRITICAL	0x4000
+#define MAX_POKEDEX_SHOW	POKEDEX_SHOW_CRITICAL
 #define POKEDEX_SHOW_DEFAULT	(MAX_POKEDEX_SHOW-1) | MAX_POKEDEX_SHOW
 
 struct instance_flags {
@@ -285,6 +291,8 @@ struct instance_flags {
 	boolean travel1;	/* first travel step */
 	coord	travelcc;	/* coordinates for travel_cache */
 	boolean  door_opened;	/* set to true if door was opened during test_move */
+	boolean  term_gone;   /* terminal is gone, abort abort abort */
+
 #ifdef QWERTZ
 	boolean  qwertz_movement; /* replace y with z for this key layout */
 #endif

@@ -9,30 +9,35 @@
 #	and receive your quest assignment.
 #
 MAZE: "Bar-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
+#0         1         2         3         4         5         6         7     
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
-ssssssssssssssssssssssssssssssssssPPssssssssssssssssssssssssssssssssssssssss
-sssssssssssssssssssssssssssssssssssPPsssssssssssssssssssssssssssssssssssssss
-sssssssssssssssssssssssssssssssssssPPsssssssssssssssssssssssssssssssssssssss
-ssssssssssssssssssssssssssssssssssssPPssssssssssssssssssssssssssssssssssssss
-ssssssss--------------ssssss-----ssssPPPssssssssssssssssssssssssssssssssssss
-ssssssss|...S........|ssssss+...|sssPPPsssssssssssssssssssssssssssssssssssss
-ssssssss|----........|ssssss|...|ssssPPsssssssssssssssssssssssssssssssssssss
-ssssssss|.\..........+ssssss-----sssssssssssssssssssssssssssssssssssssssssss
-ssssssss|----........|sssssssssssssssPPsssssssssssssssssssssssssssssssssssss
-ssssssss|...S........|sss-----sssssssPPPssssssssssssssssssssssssssssssssssss
-ssssssss--------------sss+...|ssssssPPPPPsssssssssssssssssssssssssssssssssss
-sssssssssssssssssssssssss|...|sssssssPPPssssssssssssssssssssssssssssssssssss
-sss-----ssssss-----ssssss-----ssssssssPPssssssssssssssssssssssssssssssssssss
-sss|...+ssssss|...+ss--+--sssssssssssssPPsssssssssssssssssssssssssssssssssss
-sss|...|ssssss|...|ss|...|ssssssssssssssPPssssssssssssssssssssssssssssssssss
-sss-----ssssss-----ss|...|sssssssssssssPPPPsssssssssssssssssssssssssssssssss
-sssssssssssssssssssss-----ssssssssssssPPssPPssssssssssssssssssssssssssssssss
-sssssssssssssssssssssssssssssssssssssPPsssPPssssssssssssssssssssssssssssssss
-ssssssssssssssssssssssssssssssssssssPPsssPPsssssssssssssssssssssssssssssssss
-ssssssssssssssssssssssssssssssssssssPPssssPPssssssssssssssssssssssssssssssss
+0ssssssssssssssssssssssssssssssssssPPssssssssssssssssssssssssssssssssssssssss
+1sssssssssssssssssssssssssssssssssssPPsssssssssssssssssssssssssssssssssssssss
+2sssssssssssssssssssssssssssssssssssPPsssssssssssssssssssssssssssssssssssssss
+3ssssssssssssssssssssssssssssssssssssPPssssssssssssssssssssssssssssssssssssss
+4ssssssss--------------ssssss-----ssssPPPssssssssssssssssssssssssssssssssssss
+5ssssssss|...S........|ssssss+...|sssPPPsssssssssssssssssssssssssssssssssssss
+6ssssssss|----........|ssssss|...|ssssPPsssssssssssssssssssssssssssssssssssss
+7ssssssss|.\..........+ssssss-----sssssssssssssssssssssssssssssssssssssssssss
+8ssssssss|----........|sssssssssssssssPPsssssssssssssssssssssssssssssssssssss
+9ssssssss|...S........|sss-----sssssssPPPssssssssssssssssssssssssssssssssssss
+0ssssssss--------------sss+...|ssssssPPPPPsssssssssssssssssssssssssssssssssss
+1sssssssssssssssssssssssss|...|sssssssPPPssssssssssssssssssssssssssssssssssss
+2sss-----ssssss-----ssssss-----ssssssssPPssssssssssssssssssssssssssssssssssss
+3sss|...+ssssss|...+ss--+--sssssssssssssPPsssssssssssssssssssssssssssssssssss
+4sss|...|ssssss|...|ss|...|ssssssssssssssPPssssssssssssssssssssssssssssssssss
+5sss-----ssssss-----ss|...|sssssssssssssPPPPsssssssssssssssssssssssssssssssss
+6sssssssssssssssssssss-----ssssssssssssPPssPPssssssssssssssssssssssssssssssss
+7sssssssssssssssssssssssssssssssssssssPPsssPPssssssssssssssssssssssssssssssss
+8ssssssssssssssssssssssssssssssssssssPPsssPPsssssssssssssssssssssssssssssssss
+9ssssssssssssssssssssssssssssssssssssPPssssPPssssssssssssssssssssssssssssssss
 ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7     
+RANDOM_PLACES:(31,06),(28,11),(23,15),(14,14),(04,14)
 # Dungeon Description
 REGION:(00,00,75,19),lit,"ordinary"
 REGION:(09,05,11,05),unlit,"ordinary"
@@ -64,6 +69,7 @@ CONTAINER:'(',"chest",(09,05)
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
+OBJECT:'\\',"bedroll",place[0]
 # chieftain guards for the audience chamber
 MONSTER:'@',"chieftain",(10,05)
 MONSTER:'@',"chieftain",(10,09)

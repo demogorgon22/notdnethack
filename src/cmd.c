@@ -670,7 +670,7 @@ boolean you_abilities;
 	if (mon_abilities && attacktype(youracedata, AT_TNKR)){
 		add_ability('t', "Tinker", MATTK_TNKR);
 	}
-	if (you_abilities && (Role_if(PM_PRIEST) || Role_if(PM_KNIGHT) || Race_if(PM_VAMPIRE) || (Role_if(PM_NOBLEMAN) && Race_if(PM_ELF)))) {
+	if (you_abilities && (u.upriest || Role_if(PM_KNIGHT) || Race_if(PM_VAMPIRE) || (Role_if(PM_NOBLEMAN) && Race_if(PM_ELF)))) {
 		add_ability('T', "Turn undead", MATTK_U_TURN_UNDEAD);
 	}
 	if (mon_abilities && is_unicorn(youracedata)){
@@ -688,7 +688,7 @@ boolean you_abilities;
 	if (Role_if(PM_MADMAN) && u.whisperturn < moves && !Catapsi && !DimensionalLock){
 		add_ability('W', "Call your whisperer", MATTK_WHISPER);
 	}
-	if (Role_if(PM_SAMURAI) && u.kiaiturn < moves && u.uencouraged < xlev_to_rank(u.ulevel)){
+	if ((Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && u.kiaiturn < moves && u.uencouraged < xlev_to_rank(u.ulevel)){
 		add_ability('K', "Kiai shout", MATTK_KI);
 	}
 	if (you_abilities && spellid(0) != NO_SPELL) {
@@ -1208,12 +1208,13 @@ use_reach_attack()
 
 	    bhitpos = cc;
 	    check_caitiff(mtmp);
-		(void)xattacky(&youmonst, mtmp, cc.x, cc.y);
+		(void)xattacky(&youmonst, mtmp, cc.x, cc.y, 0L);
 	} else
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
 	return MOVE_STANDARD;
 }
+
 int
 doMysticForm()
 {
@@ -1229,56 +1230,101 @@ doMysticForm()
 	any.a_void = 0;		/* zero out all bits */
 	Sprintf(buf,	"Known Techniques");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
-	if(monk_style_active(DIVE_KICK)) {
-		Sprintf(buf,	"Dive Kick (active)");
+	if(monk_style_active(forward_move())) {
+		Sprintf(buf,	"%s%s %s (active)", forward_arrow(), forward_arrow(), move_name(forward_move()));
 	} else {
-		Sprintf(buf,	"Dive Kick (disabled)");
+		Sprintf(buf,	"%s%s %s (disabled)", forward_arrow(), forward_arrow(), move_name(forward_move()));
 	}
-	any.a_int = DIVE_KICK;	/* must be non-zero */
+	any.a_int = forward_move();
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	if(monk_style_active(AURA_BOLT)) {
-		Sprintf(buf,	"Aura Bolt (active)");
+	if(monk_style_active(bent_move())) {
+		Sprintf(buf,	"%s%s %s (active)", bent_arrow(), forward_arrow(), move_name(bent_move()));
 	} else {
-		Sprintf(buf,	"Aura Bolt (disabled)");
+		Sprintf(buf,	"%s%s %s (disabled)", bent_arrow(), forward_arrow(), move_name(bent_move()));
 	}
-	any.a_int = AURA_BOLT;	/* must be non-zero */
+	any.a_int = bent_move();
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	if(monk_style_active(BIRD_KICK)) {
-		Sprintf(buf,	"Bird Kick (active)");
+	if(monk_style_active(hook_move())) {
+		Sprintf(buf,	"%s%s %s (active)", up_arrow(), forward_arrow(), move_name(hook_move()));
 	} else {
-		Sprintf(buf,	"Bird Kick (disabled)");
+		Sprintf(buf,	"%s%s %s (disabled)", up_arrow(), forward_arrow(), move_name(hook_move()));
 	}
-	any.a_int = BIRD_KICK;	/* must be non-zero */
+	any.a_int = hook_move();
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	if(monk_style_active(METODRIVE)) {
-		Sprintf(buf,	"Meteor Drive (active)");
+	if(monk_style_active(uturn_move())) {
+		Sprintf(buf,	"%s%s %s (active)", uturn_arrow(), forward_arrow(), move_name(uturn_move()));
 	} else {
-		Sprintf(buf,	"Meteor Drive (disabled)");
+		Sprintf(buf,	"%s%s %s (disabled)", uturn_arrow(), forward_arrow(), move_name(uturn_move()));
 	}
-	any.a_int = METODRIVE;	/* must be non-zero */
+	any.a_int = uturn_move();
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
-	if(monk_style_active(PUMMEL)) {
-		Sprintf(buf,	"Pummel (active)");
+	if(monk_style_active(alternated_move())) {
+		Sprintf(buf,	"%s%s %s (active)", backward_arrow(), forward_arrow(), move_name(alternated_move()));
 	} else {
-		Sprintf(buf,	"Pummel (disabled)");
+		Sprintf(buf,	"%s%s %s (disabled)", backward_arrow(), forward_arrow(), move_name(alternated_move()));
 	}
-	any.a_int = PUMMEL;	/* must be non-zero */
+	any.a_int = alternated_move();
 	add_menu(tmpwin, NO_GLYPH, &any,
 		incntlet, 0, ATR_NONE, buf,
 		MENU_UNSELECTED);
+
 	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)){
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_SEEN_S){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FORCE_S){
+				Sprintf(buf,	"Dwell in the Light of Insight (active)");
+			} else {
+				Sprintf(buf,	"Dwell in the Light of Insight (disabled)");
+			}
+			any.a_int = MFORM_STREAM;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_SEEN_C){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FORCE_C){
+				Sprintf(buf,	"Dwell in the Chains of Uncertainty (active)");
+			} else {
+				Sprintf(buf,	"Dwell in the Chains of Uncertainty (disabled)");
+			}
+			any.a_int = MFORM_CHAINS;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_SEEN_K){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FORCE_K){
+				Sprintf(buf,	"Dwell in the Depths of Hate (active)");
+			} else {
+				Sprintf(buf,	"Dwell in the Depths of Hate (disabled)");
+			}
+			any.a_int = MFORM_KINSTL;
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+	}
 	end_menu(tmpwin,	"Toggle mystic techniques:");
 	how = PICK_ONE;
 	n = select_menu(tmpwin, how, &selected);
@@ -1288,7 +1334,21 @@ doMysticForm()
 		free(selected);
 		return MOVE_CANCELLED;
 	} else {
-		toggle_monk_style(selected[0].item.a_int);
+		if(selected[0].item.a_int == MFORM_STREAM){
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades ^= ZPROP_FORCE_S;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_C;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_K;
+		} else if(selected[0].item.a_int == MFORM_CHAINS){
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades ^= ZPROP_FORCE_C;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_S;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_K;
+		} else if(selected[0].item.a_int == MFORM_KINSTL){
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades ^= ZPROP_FORCE_K;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_S;
+			artinstance[ART_SKY_REFLECTED].ZerthUpgrades &= ~ZPROP_FORCE_C;
+		} 
+		else if (selected[0].item.a_int > 0)
+			toggle_monk_style(selected[0].item.a_int);
 		free(selected);
 		return MOVE_INSTANT;
 	}
@@ -1701,7 +1761,6 @@ doGithForm()
 	Sprintf(buf, "Known Mental Edges");
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
 
-
 	for (i = FIRST_GSTYLE; i <= LAST_GSTYLE; i++) {
 		if (i == GSTYLE_RESONANT && (u.ulevel < 30 || Insight < 81) && (artinstance[ART_SILVER_SKY].GithStylesSeen & 2) == 0)
 			continue;
@@ -1767,6 +1826,57 @@ doGithForm()
 
 		if (selected[0].item.a_int == GSTYLE_RESONANT) artinstance[ART_SILVER_SKY].GithStylesSeen |= 2;
 		if (selected[0].item.a_int == GSTYLE_COLD) artinstance[ART_SILVER_SKY].GithStylesSeen |= 1;
+
+		free(selected);
+		return MOVE_INSTANT;
+	}
+}
+
+int
+doBorealFace()
+{
+	winid tmpwin;
+	int n, how, i;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+	int curskill;
+	char* block_reason;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Faces");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+
+
+	for (i = 0; i < 4; i++) {
+		boolean active = (artinstance[ART_BOREAL_SCEPTER].BorealFace & (1 << i)) != 0;
+
+		Strcpy(buf, nameOfBorealFace(i));
+
+		if (active)
+			Strcat(buf, " (active)");
+
+		any.a_int = i;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	end_menu(tmpwin, "Choose scepter face:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+
+	if(n <= 0){
+		return MOVE_CANCELLED;
+	} else {
+
+		artinstance[ART_BOREAL_SCEPTER].BorealFace = (1 << selected[0].item.a_int);
 
 		free(selected);
 		return MOVE_INSTANT;
@@ -1857,18 +1967,20 @@ doEtechForm()
 	}
 }
 
-#define MONK_FORMS			0x001L
-#define LIGHTSABER_FORMS	0x002L
-#define KNIGHT_FORMS		0x004L
-#define AVOID_PASSIVES		0x008L
-#define AVOID_MSPLCAST		0x010L
-#define AVOID_GRABATTK		0x020L
-#define AVOID_ENGLATTK		0x040L
-#define AVOID_UNSAFETOUCH	0x080L
-#define GITH_FORMS			0x100L
-#define ETECH_FORMS			0x200L
-#define AVOID_THEFT			0x400L
-#define AUTO_ATTKS			0x800L
+#define MONK_FORMS			0x0001L
+#define LIGHTSABER_FORMS	0x0002L
+#define KNIGHT_FORMS		0x0004L
+#define AVOID_PASSIVES		0x0008L
+#define AVOID_MSPLCAST		0x0010L
+#define AVOID_GRABATTK		0x0020L
+#define AVOID_ENGLATTK		0x0040L
+#define AVOID_UNSAFETOUCH	0x0080L
+#define GITH_FORMS			0x0100L
+#define ETECH_FORMS			0x0200L
+#define AVOID_THEFT			0x0400L
+#define AUTO_ATTKS			0x0800L
+#define BOREAL_FORMS		0x1000L
+#define AVOID_URPASSIVES	0x2000L
 
 int
 hasfightingforms(){
@@ -1897,9 +2009,9 @@ hasfightingforms(){
 		formmask |= AUTO_ATTKS;
 
 	/* forms relevant due to situation/role are shown, even if you're bad at them (if applicable) */
-	if(Role_if(PM_MONK))
+	if(Role_if(PM_MONK) || Role_if(PM_KENSEI))
 		formmask |= MONK_FORMS;
-	if(Role_if(PM_KNIGHT))
+	if(Role_if(PM_KNIGHT) || Role_if(PM_KENSEI))
 		formmask |= KNIGHT_FORMS;
 	if((uwep && is_lightsaber(uwep)) || (uswapwep && is_lightsaber(uswapwep)))
 		formmask |= LIGHTSABER_FORMS;
@@ -1917,6 +2029,38 @@ hasfightingforms(){
 			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod)
 		){
 			if(no_contact_attk(attk)) formmask |= AVOID_PASSIVES;
+		}
+	}
+	if (u.uavoid_urpassives)
+		formmask |= AVOID_URPASSIVES;
+	else {
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk, FALSE, subout, &tohitmod)
+		){
+			if(attk->aatyp == AT_NONE) formmask |= AVOID_URPASSIVES;
+		}
+	}
+	if (u.uavoid_msplcast)
+		formmask |= AVOID_MSPLCAST;
+	else {
+		indexnum = tohitmod = 0;
+		zero_subout(subout);
+		res[0] = MM_MISS;
+		res[1] = MM_MISS;
+		res[2] = MM_MISS;
+		res[3] = MM_MISS;
+		for(attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod);
+			!is_null_attk(attk);
+			attk = getattk(&youmonst, (struct monst *) 0, res, &indexnum, &prev_attk2, FALSE, subout, &tohitmod)
+		){
+			if(attk->aatyp == AT_MAGC) formmask |= AVOID_MSPLCAST;
 		}
 	}
 	if (u.uavoid_theft)
@@ -1972,6 +2116,10 @@ hasfightingforms(){
 		formmask |= ETECH_FORMS;
 	}
 
+	if(uwep && uwep->oartifact == ART_BOREAL_SCEPTER){
+		formmask |= BOREAL_FORMS;
+	}
+
 	/* next, forms trained are shown, even if inapplicable at the moment*/
 	for (i = FIRST_LS_FFORM; i <= LAST_LS_FFORM; i++) {
 		if (FightingFormSkillLevel(i) >= P_BASIC)
@@ -2016,14 +2164,12 @@ dofightingform()
 #define	ETCH_FORM	10
 #define	AVOD_THFT   11
 #define	NO_AUTO		12
+#define	BOREAL_FORM	13
+#define	AVOD_PASV	14
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'm', 0, ATR_NONE, "Select Mystic Forms", MENU_UNSELECTED);
-	}
-	if (formmask & LIGHTSABER_FORMS) {
-		any.a_int = LGHT_FORM;
-		add_menu(tmpwin, NO_GLYPH, &any, 'l', 0, ATR_NONE, "Select Lightsaber Forms", MENU_UNSELECTED);
 	}
 	if (formmask & KNIGHT_FORMS) {
 		any.a_int = KNIT_FORM;
@@ -2033,60 +2179,74 @@ dofightingform()
 		any.a_int = GITH_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, "Select Mental Edge", MENU_UNSELECTED);
 	}
+	if (formmask & BOREAL_FORMS) {
+		any.a_int = BOREAL_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'b', 0, ATR_NONE, "Select Boreal Scepter Face", MENU_UNSELECTED);
+	}
 	if (formmask & ETECH_FORMS) {
 		any.a_int = ETCH_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'w', 0, ATR_NONE, "Select Weapon Form", MENU_UNSELECTED);
 	}
+	if (formmask & LIGHTSABER_FORMS) {
+		any.a_int = LGHT_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'l', 0, ATR_NONE, "Select Lightsaber Forms", MENU_UNSELECTED);
+	}
+	if (formmask & AVOID_UNSAFETOUCH) {
+		any.a_int = AVOD_TUCH; // inverted, default on
+		if (!u.uavoid_unsafetouch) Strcpy(buf, "Block directly touching potentially unsafe monsters (disabled)");
+		else Strcpy(buf, "Block directly touching potentally unsafe monsters (active)");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 't', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 	if (formmask & AVOID_PASSIVES) {
-		any.a_int = AVOD_FORM;
-		if (!u.uavoid_passives) Strcpy(buf, "Only make passive-safe attacks");
-		else Strcpy(buf, "Allow passive-unsafe attacks");
+		any.a_int = AVOD_FORM; // inverted, default off
+		if (!u.uavoid_passives) Strcpy(buf, "Only make passive-safe attacks (disabled)");
+		else Strcpy(buf, "Only make passive-safe attacks (active)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'p', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AVOID_URPASSIVES) {
+		any.a_int = AVOD_PASV;
+		if (!u.uavoid_urpassives) Strcpy(buf, "Allow passive and retaliatory attacks (active)");
+		else Strcpy(buf, "Allow passive and retaliatory attacks (disabled)");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'r', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 	if (formmask & AVOID_MSPLCAST) {
 		any.a_int = AVOD_MSPL;
-		if (!u.uavoid_msplcast) Strcpy(buf, "Avoid automatically casting spells when attacking");
-		else Strcpy(buf, "Allow the automatic casting of spells when attacking");
+		if (!u.uavoid_msplcast) Strcpy(buf, "Automatically cast spells when attacking (active)");
+		else Strcpy(buf, "Automatically cast spells when attacking (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 's', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
+	if (formmask & AUTO_ATTKS) {
+		any.a_int = NO_AUTO;
+		if (!u.uno_auto_attacks) Strcpy(buf, "Automatically attack nearby monsters (active)");
+		else Strcpy(buf, "Automatically attack nearby monsters (disabled)");
+
+		add_menu(tmpwin, NO_GLYPH, &any, 'a', 0, ATR_NONE, buf, MENU_UNSELECTED);
+	}
 	if (formmask & AVOID_GRABATTK) {
 		any.a_int = AVOD_GRAB;
-		if (!u.uavoid_grabattk) Strcpy(buf, "Avoid grabbing monsters when attacking");
-		else Strcpy(buf, "Allow grabbing monsters when attacking");
+		if (!u.uavoid_grabattk) Strcpy(buf, "Grab monsters when attacking (active)");
+		else Strcpy(buf, "Grab monsters when attacking (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'g', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
 	if (formmask & AVOID_ENGLATTK) {
 		any.a_int = AVOD_ENGL;
-		if (!u.uavoid_englattk) Strcpy(buf, "Avoid engulfing monsters when attacking");
-		else Strcpy(buf, "Allow engulfing monsters when attacking");
+		if (!u.uavoid_englattk) Strcpy(buf, "Engulf monsters when attacking (active)");
+		else Strcpy(buf, "Engulf monsters when attacking (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'e', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
-	if (formmask & AVOID_UNSAFETOUCH) {
-		any.a_int = AVOD_TUCH;
-		if (!u.uavoid_unsafetouch) Strcpy(buf, "Avoid directly touching potentially unsafe monsters");
-		else Strcpy(buf, "Allow directly touching potentally unsafe monsters");
-
-		add_menu(tmpwin, NO_GLYPH, &any, 't', 0, ATR_NONE, buf, MENU_UNSELECTED);
-	}
 	if (formmask & AVOID_THEFT) {
 		any.a_int = AVOD_THFT;
-		if (!u.uavoid_theft) Strcpy(buf, "Discard stolen items from monsters");
-		else Strcpy(buf, "Keep stolen items from monsters");
+		if (!u.uavoid_theft) Strcpy(buf, "Keep stolen items from monsters (active)");
+		else Strcpy(buf, "Keep stolen items from monsters (disabled)");
 
 		add_menu(tmpwin, NO_GLYPH, &any, 'h', 0, ATR_NONE, buf, MENU_UNSELECTED);
 	}
-	if (formmask & AUTO_ATTKS) {
-		any.a_int = NO_AUTO;
-		if (!u.uno_auto_attacks) Strcpy(buf, "Automatic attacks (active)");
-		else Strcpy(buf, "Automatic attacks");
-
-		add_menu(tmpwin, NO_GLYPH, &any, 'a', 0, ATR_NONE, buf, MENU_UNSELECTED);
-	}
-
 	end_menu(tmpwin, "Adjust fighting styles:");
 
 	how = PICK_ONE;
@@ -2125,6 +2285,9 @@ dofightingform()
 		case NO_AUTO:
 			u.uno_auto_attacks = !u.uno_auto_attacks;
 			return MOVE_INSTANT;
+		case AVOD_PASV:
+			u.uavoid_urpassives = !u.uavoid_urpassives;
+			return MOVE_INSTANT;
 		case GITH_FORM:
 			return doGithForm();
 		case ETCH_FORM:
@@ -2132,6 +2295,8 @@ dofightingform()
 		case AVOD_THFT:
 			u.uavoid_theft = !u.uavoid_theft;
 			return MOVE_INSTANT;
+		case BOREAL_FORM:
+			return doBorealFace();
 		default:
 			impossible("unknown fighting form set %d", n);
 			return MOVE_CANCELLED;
@@ -2150,6 +2315,7 @@ dofightingform()
 #undef	GITH_FORM
 #undef	ETCH_FORM
 #undef	AVOD_THFT
+#undef	AVOD_PASV
 
 #undef MONK_FORMS
 #undef LIGHTSABER_FORMS
@@ -2161,6 +2327,7 @@ dofightingform()
 #undef AVOID_UNSAFETOUCH
 #undef AVOID_THEFT
 #undef AUTO_ATTKS
+#undef AVOID_URPASSIVES
 
 int
 dounmaintain()
@@ -2525,13 +2692,13 @@ wiz_cult()
 				u.specialSealsKnown |= SEAL_YOG_SOTHOTH;
 			break;
 			case SET_SHUB_FAVOR:
-				set_value("Set Shub-Nuganoth favor to what?", u.shubbie_credit);
+				set_value("Set Shub-Nugganoth favor to what?", u.shubbie_credit);
 			break;
 			case SET_SHUB_DEVOTION:
-				set_value("Set Shub-Nuganoth devotion to what?", u.shubbie_devotion);
+				set_value("Set Shub-Nugganoth devotion to what?", u.shubbie_devotion);
 			break;
 			case SET_SHUB_MUT:
-				set_value("Set Shub-Nuganoth mutagen to what?", u.shubbie_mutagen);
+				set_value("Set Shub-Nugganoth mutagen to what?", u.shubbie_mutagen);
 			break;
 			case SET_FLAM_FAVOR:
 				set_value("Set Silver Flame favor to what?", u.silver_credit);
@@ -2574,7 +2741,7 @@ wiz_wish()	/* Unlimited wishes for debug mode by Paul Polderman */
 	    boolean save_verbose = flags.verbose;
 
 	    flags.verbose = FALSE;
-		makewish(WISH_WIZARD);
+		makewish(WISH_SINGLE_USE | WISH_WIZARD);
 	    flags.verbose = save_verbose;
 	    (void) encumber_msg();
 	} else
@@ -4759,7 +4926,7 @@ parse()
 	flags.move = MOVE_DEFAULT;
 	flush_screen(1); /* Flush screen buffer. Put the cursor on the hero. */
 
-	if (!iflags.num_pad || (foo = readchar()) == 'n'){
+	if (!iflags.num_pad || (foo = readchar()) == 'n')
 	    for (;;) {
 		foo = readchar();
 		if (foo >= '0' && foo <= '9') {
@@ -4775,7 +4942,6 @@ parse()
 		    if (!multi && foo == '0') prezero = TRUE;
 		} else break;	/* not a digit */
 	    }
-	}
 
 	if (foo == DOESCAPE) {   /* esc cancels count (TH) */
 	    clear_nhwindow(WIN_MESSAGE);
@@ -4840,55 +5006,19 @@ readchar()
 {
 	register int sym;
 	int x = u.ux, y = u.uy, mod = 0;
-	boolean overriding = FALSE;
-	boolean bracket = FALSE;
-	
-	if (iflags.debug_fuzzer)
-			return randomkey();
 
-	do {
-		if ( *readchar_queue )
-			sym = *readchar_queue++;
-		else
+	if (iflags.debug_fuzzer)
+	        return randomkey();
+
+	if ( *readchar_queue )
+	    sym = *readchar_queue++;
+	else
 #ifdef REDO
-			sym = in_doagain ? Getchar() : nh_poskey(&x, &y, &mod);
+	    sym = in_doagain ? Getchar() : nh_poskey(&x, &y, &mod);
 #else
-			sym = Getchar();
+	    sym = Getchar();
 #endif
-		if(sym == 033 && !overriding){
-			overriding = TRUE;
-		}
-		else if(overriding && sym == '[' && !bracket){
-			bracket = TRUE;
-		}
-		else if(overriding && bracket){
-			const char *sdp;
-			if(iflags.num_pad) sdp = ndir; else sdp = sdir;	/* DICE workaround */
-			overriding = FALSE;
-			switch(sym){
-				case 'A':
-					//Up
-					sym = sdp[2];
-				break;
-				case 'B':
-					//Down
-					sym = sdp[6];
-				break;
-				case 'C':
-					//Right
-					sym = sdp[4];
-				break;
-				case 'D':
-					//Left
-					sym = sdp[0];
-				break;
-			}
-		}
-		else {
-			overriding = FALSE;
-		}
-	} while(overriding);
-	
+
 #ifdef UNIX
 # ifdef NR_OF_EOFS
 	if (sym == EOF) {

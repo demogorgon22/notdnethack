@@ -837,6 +837,7 @@ parse_escape_sequence(void)
             if ((ret != ERR) && (ret >= 112) && (ret <= 121)) {
                 ret = ret - 112 + '0';  /* Convert to number */
             } else {
+				// iflags.term_gone = 1; //Seems wrong?
                 ret = '\033';   /* Escape */
             }
         }

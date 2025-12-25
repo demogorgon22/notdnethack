@@ -9,7 +9,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Arc-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
 MAP
 0,,,,,--------,,,,,,,-----....|..|,,,,,,,,..,,,T,,,,}|,,,,,,,,,,-------------
@@ -40,6 +40,8 @@ FOUNTAIN:(67,16)
 
 
 GEOMETRY:center,center
+#0         1         2         3         4         5         6         7     
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
 MAP
 0,,,,,--------,,,,,,,-----....|..|,,,,,,,,..,,,T,,,,}|,,,,,,,,,,-------------
 1,T,,,|..|...|,,,,,,,|........+..S,,,T,,,,,.,,,,,,,}--,T,,,,,,,,|.....+......
@@ -62,6 +64,8 @@ MAP
 8,,,,,,,,|.....|...--+--,...+.........------,T.,}}}},,,.,,,,,,,,--.....--,,,,
 9,,T,,,,,|.....|.......|,.,,|...........|,,,,..}}}}}}}}..,,,,,,,T--...--T,,,,
 ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7     
 
 RANDOM_PLACES:(31,00),(73,01),(41,17),(11,19),(10,02),(33,19)
 # Dungeon Description
@@ -119,6 +123,8 @@ OBJECT:'#',"+3 cursed gold flail",contained
 OBJECT:'#',"small +3 cursed gold shepherd's crook",contained
 OBJECT:'#',"gold amulet",contained
 OBJECT:'#',"gold pharaoh mask",contained
+# a victorian four-poster also shoved off in the storeroom
+CONTAINER:'\\',"expensive bed",(40,8)
 # 3 random spellbooks in some of the empty rooms
 OBJECT:'+',random,place[0]
 OBJECT:'+',random,place[1]
@@ -142,39 +148,6 @@ MONSTER:'m',"large mimic",(64,04)
 
 MAZE: "Arc-loca",' '
 FLAGS: nommap
-
-GEOMETRY: center,center
-MAP
-0,TT,,,,T,,T,,,T,,,T,,,,T,,,,TTT,,,,..|.--T.....--. -------------------------
-1,TT,,TT,,T,,TT,TT,T,T,T,T,,T,,,TT-.....|....--....HS.|.....|.........|.|.|.|
-2,T,,T,,T,T,,,T,,T,T,,TTTTT,TT,TT,..T......|....-.. |.S.|...S..--S--..|.....|
-3TTTT,,,TTT,T,T,,,,T,,,T,,T,TT,TT,,...|..----T..    ---.|...|.--...--S|.....|
-4,T,,,,T,,,,TTT,,,,,T,,,,,T,,,,,,,|...|......  ------.---S--|.|.....|.S.....|
-5,T,T,T,T,,T,T,,TT,TTT,T,T,,TTT,TT,-------  H  |..S.....|...|.|.....S.|.|.|.|
-6,T,,TT,TT,,,T,,T,,,,,T,,TT,,T,,T,......|.  ##HS..---...|--S-S--...--.---S-S|
-7,,,TT,,T,,T,,T,T,,TT,,TT,,,,T,TT,.........    ----.|...|......-S-S-......S.|
-8,,,,,TT,,TT,,T,,,,,T,,,,,TT,,,,........|.......S#S.|...|......|.|.|S-...--S|
-9,T,,T,T,,,T,,,,T,TT,,TT,TTT,T,,T,......|.....    -----S-......|.|...S...S..|
-0,T,,TT,,,TTT,,,,TTTT,,,,T,TT,T,T,......   ....----..|..S.--S---.-------S-..|
-1,,,,,,T,,TT,,,T,T,,T,,TT,T,T,,,,T-----  .  .. |.....|S-----..|..S.....|.|..|
-2,T,TT,TT,,,TT,,TT,TT,,TT,,,TT,,,T...... .   .HS.....|..|..--S--------S-S-S-|
-3TT,,,,,TT,TTT,T,,,,T,TT,,TT,,,,T..---...   |  |.....S..|.....S..S...|...|# |
-4TT,,,,TT,,,TT,,TT,,TTT,T,,,TTTT,,.|........|..----..|-S|..-----S--.---.--##|
-5,TTT,T,T,T,,,T,,,TT,T,,,TTT,T,T,,....T.|.......  ----..|---......|..|...| #|
-6,T,,,,,,,,TTTTT,,,,,,,T,T,,,T,TT|,..|..|...|....   |...|.|.......S.--...--#|
-7,,TT,TTTTT,T,TT,TTTTT,,,,T,T,,,T...T|..|...|......HS...|.S.......S.|.....S#|
-8,,T,T,,,,,,,,,TT,,TT,TT,,,TTTT,,---....|.....      -----.|.......S.|.....| |
-9,,T,T,,TTT,TT,,T,,TTTT,,,,,T,TT,,...T...T   HH#####S....--......------------
-ENDMAP
-
-RANDOM_PLACES:(40,11),(67,01),(61,17),(56,01),(73,10),(59,08)
-
-OBJECT[10%]:')',"macuahuitl",place[0],uncursed,0,"The Macuahuitl of Quetzalcoatl"
-OBJECT[10%]:'(',"mask",place[1],uncursed,0,"The Mask of Tlaloc"
-#OBJECT[10%]:'[',"orcish shield",place[2],uncursed,0,"The Shield of the All-Seeing"
-#OBJECT[10%]:'[',"elven shield",place[3],uncursed,0,"The Shield of Yggdrasil"
-#OBJECT[10%]:')',"sickle",place[4],uncursed,0,"Gaia's Fate"
-OBJECT:'$',random,place[5]
 
 GEOMETRY:center,center
 MAP
@@ -207,11 +180,9 @@ REGION:(00,00,75,19),unlit,"ordinary"
 
 # Stair is relatively unobstructed
 STAIR:(00,10),up
-# Three altars are randomly split across 5 places
+# One altar is placed in one of 5 places
 ALTAR:place[0],align[0],altar
-ALTAR:place[1],align[1],altar
-ALTAR:place[2],align[2],altar
-# A stair and a mummy trap in the others
+# A stair and a mummy trap in others
 STAIR:place[3],down
 TRAP:"mummy trap",place[4]
 OBJECT:'(',random,place[4]
@@ -450,7 +421,7 @@ STAIR:(38,10),up
 # Non diggable walls
 NON_DIGGABLE:(00,00,75,19)
 # The altar of Tezcatlipoca.  Unattended.
-ALTAR:place[0],noalign,altar,"Tezcatlipoca"
+ALTAR:place[0],chaos,altar,"Tezcatlipoca"
 # Magic chest in another alcove
 OBJECT:'(',"magic chest",place[1]
 # Objects

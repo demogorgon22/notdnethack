@@ -123,6 +123,21 @@ struct Role {
 
 	/*** Bitmasks ***/
 	long marace;		/* allowable races */
+#define SA_HUMAN		0x00000001L
+#define SA_ELF			0x00000002L
+#define SA_DWARF		0x00000004L
+#define SA_GNOME		0x00000008L
+#define SA_ORC			0x00000010L
+#define SA_CLOCKWORK	0x00000020L
+#define SA_HALF_DRAGON	0x00000040L
+#define SA_VAMPIRE		0x00000080L
+#define SA_CHIROPTERAN	0x00000100L
+#define SA_YUKI_ONNA	0x00000200L
+#define SA_GITH			0x00000400L
+#define SA_SALAMANDER		0x00000800L
+#define SA_ETHEREALOID		0x00001000L
+#define SA_ENT			0x00002000L
+#define SA_LEPRECHAUN		0x00004000L
 	short allow;		/* bit mask of allowed variations */
 #define ROLE_GENDMASK	0xf000		/* allowable genders */
 #define ROLE_MALE	0x1000
@@ -223,9 +238,10 @@ struct Race {
 
 	/*** Bitmasks ***/
 	short allow;		/* bit mask of allowed variations */
-	long selfmask,		/* your own race's bit mask */
-	      lovemask,		/* bit mask of always peaceful */
-	      hatemask;		/* bit mask of always hostile */
+	long race_code,		/* your code for allowed races */
+	     selfmask,		/* your own race's bit mask */
+	     lovemask,		/* bit mask of always peaceful */
+	     hatemask;		/* bit mask of always hostile */
 
 	/*** Attributes ***/
 	xchar attrmin[A_MAX];	/* minimum allowable attribute */
@@ -307,6 +323,87 @@ extern const struct Species species[];	/* table of available species */
 #define DRAGON_SPECIES 2
 #define CLK_SPECIES 3
 
+enum {
+    PWR_ABDUCTION = 0,
+    PWR_FIRE_BREATH,
+    PWR_TRANSDIMENSIONAL_RAY,
+    PWR_TELEPORT,
+    PWR_JESTER_S_MIRTH,
+    PWR_THIEF_S_INSTINCTS,
+    PWR_ASTAROTH_S_ASSEMBLY,
+    PWR_ASTAROTH_S_SHARDS,
+    PWR_ICY_GLARE,
+    PWR_BALAM_S_ANOINTING,
+    PWR_BLOOD_MERCENARY,
+    PWR_SOW_DISCORD,
+    PWR_GIFT_OF_HEALING,
+    PWR_GIFT_OF_HEALTH,
+    PWR_THROW_WEBBING,
+    PWR_THOUGHT_TRAVEL,
+    PWR_DREAD_OF_DANTALION,
+    PWR_EARTH_SWALLOW,
+    PWR_ECHIDNA_S_VENOM,
+    PWR_SUCKLE_MONSTER,
+    PWR_PURIFYING_BLAST,
+    PWR_RECALL_TO_EDEN,
+    PWR_STARGATE,
+    PWR_WALKER_OF_THRESHOLDS,
+    PWR_GEYSER,
+    PWR_VENGANCE,
+    PWR_SHAPE_THE_WIND,
+    PWR_THORNS_AND_STONES,
+    PWR_BARRAGE,
+    PWR_RAVEN_S_TALONS,
+    PWR_HORRID_WILTING,
+    PWR_TURN_ANIMALS_AND_HUMANOIDS,
+    PWR_REFILL_LANTERN,
+    PWR_HELLFIRE,
+    PWR_BREATH_POISON,
+    PWR_RUINOUS_STRIKE,
+    PWR_AUREATE_DELUGE,
+    PWR_CALL_MURDER,
+    PWR_ROOT_SHOUT,
+    PWR_PULL_WIRES,
+    PWR_DISGUSTED_GAZE,
+    PWR_BLOODY_TOUNGE,
+    PWR_SILVER_TOUNGE,
+    PWR_EXHALATION_OF_THE_RIFT,
+    PWR_QUERIENT_THOUGHTS,
+    PWR_GREAT_LEAP,
+    PWR_MASTER_OF_DOORWAYS,
+    PWR_READ_SPELL,
+    PWR_BOOK_TELEPATHY,
+    PWR_UNITE_THE_EARTH_AND_SKY,
+    PWR_HOOK_IN_THE_SKY,
+    PWR_ENLIGHTENMENT,
+    PWR_DAMNING_DARKNESS,
+    PWR_TOUCH_OF_THE_VOID,
+    PWR_ECHOS_OF_THE_LAST_WORD,
+    PWR_POISON_GAZE,
+    PWR_GAP_STEP,
+    PWR_MOAN,
+    PWR_SWALLOW_SOUL,
+    PWR_EMBASSY_OF_ELEMENTS,
+    PWR_SUMMON_MONSTER,
+    PWR_PSEUDONATURAL_SURGE,
+    PWR_SILVER_DEW,
+    PWR_GOLDEN_DEW,
+    PWR_MIRROR_SHATTER,
+    PWR_MIRROR_WALK,
+    PWR_FLOWING_FORMS,
+    PWR_PHASE_STEP,
+    PWR_BLACK_BOLT,
+    PWR_WEAVE_BLACK_WEB,
+    PWR_MAD_BURST,
+    PWR_UNENDURABLE_MADNESS,
+    PWR_CONTACT_YOG_SOTHOTH,
+    PWR_IDENTIFY_INVENTORY,
+    PWR_CLAIRVOYANCE,
+    PWR_FIND_PATH,
+    PWR_GNOSIS_PREMONITION,
+    NUMBER_POWERS
+};
+
 /*** Information about the player ***/
 struct you {
 	xchar ux, uy;
@@ -321,6 +418,7 @@ struct you {
 	boolean umoved;		/* changed map location (post-move) */
 	boolean uattked;		/* attacked a target (post-move) */
 	boolean unull;		/* passed a turn (post-move) */
+	boolean did_move;	/* did a special move last turn */
 	coord prev_dir;		/* previous dirction pressed (for monk moves) */
 	int last_str_turn;	/* 0: none, 1: half turn, 2: full turn */
 				/* +: turn right, -: turn left */
@@ -362,15 +460,68 @@ struct you {
 	Bitfield(uavoid_unsafetouch,1);
 	Bitfield(uavoid_theft,1);
 	Bitfield(uno_auto_attacks,1);
-	int umystic;	/*Monk mystic attacks active*/
-#define monk_style_active(style) (u.umystic & (1 << (style-1)))
-#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1 << (style-1)))
+	Bitfield(uavoid_urpassives,1);
+	unsigned long long int umystic;	/*Monk mystic attacks active*/
+#define monk_style_active(style) (style > 0 && u.umystic & (1ULL << (style-1)))
+#define toggle_monk_style(style) (u.umystic  = u.umystic ^ (1ULL << (style-1)))
 
-#define DIVE_KICK 1
-#define AURA_BOLT 2
-#define BIRD_KICK 3
-#define METODRIVE 4
-#define PUMMEL    5
+#define DIVE_KICK  1
+#define AURA_BOLT  2
+#define BIRD_KICK  3
+#define METODRIVE  4
+#define PUMMEL     5
+#define AVALANCHE  6
+#define ICICLES    7
+#define TRIPLE_F   8
+#define BLEED_S    9
+#define LANCE_T   10
+#define THROW     11
+#define HUBRIS    12
+#define CYCLONE   13
+#define KNOCKBACK 14
+#define VACUUM    15
+#define INFLICT   16
+#define SONIC_B   17
+#define BACKSTAB  18
+#define BLINDING  19
+#define MIRROR_S  20
+#define CLENSE    21
+#define SPARKS    22
+#define FLOURISH  23
+#define WHIRLWIND 24
+#define MILLWHEEL 25
+#define RISING_B  26
+#define SHOVE     27
+#define SWEEP     28
+#define CHAOS_S   29
+#define WARP_WEP  30
+#define SOUL_CUT  31
+#define BREAKER   32
+#define OVERLOAD  33
+#define SEND_AWAY 34
+#define SCORN     35
+#define BOREAL_B  36
+#define DARK_FEAR 37
+#define CROSS     38
+#define ICHIMONJI 39
+#define MORTAL_D  40
+#define DRAIN_L   41
+#define REPULSE   42
+#define HATRED    44
+#define COMMAND_S 45
+#define MAGE_S	  46
+#define AMALGAM_S 47
+#define PSI_AURA  48
+#define ELEMENT_A 49
+#define CHAIN_MAG 50
+#define STEAL_S   51
+#define STRONG_P  52
+#define MAX_MYSTIC_FORMS 52
+
+#define MFORM_STREAM MAX_MYSTIC_FORMS+1
+#define MFORM_CHAINS MAX_MYSTIC_FORMS+2
+#define MFORM_KINSTL MAX_MYSTIC_FORMS+3
+
 	// long laststruck;
 	long lastmoved;
 	long lastcast;
@@ -565,7 +716,9 @@ struct you {
 #define HI_RITUAL_DONE	(RITUAL_HI_CHAOS|RITUAL_HI_NEUTRAL|RITUAL_HI_LAW)
 	Bitfield(peaceful_pets,1);	/* pets don't attack peaceful monsters */
 	Bitfield(uiearepairs,1);	/* Knows how to repair Imperial Elven Armor */
-	/* 11 free bits */
+	Bitfield(upriest,1);	/* Knows some priestly skills */
+	Bitfield(uwizard,1);	/* Knows some arcane secrets */
+	/* 9 free bits */
 	
 	int oonaenergy;				/* Record the energy type used by Oona in your game. (Worm that Walks switches?) */
 	int brand_otyp;				/* Record the otyp of Fire and Frost Brand in this game */
@@ -617,6 +770,12 @@ struct you {
 	int ugifts;			/* number of artifacts bestowed */
 	int uartisval;		/* approximate strength of artifacts bestowed and wished for */
 	int ucultsval;		/* approximate strength of wished artifacts and gifts bestowed */
+	int udroolgifted, umortalgifted, utruedeathgifted, uunworthygifted, uwindowgifted;
+#define SHUB_DROOL_TIER TIER_S
+#define FLAME_MORTAL_TIER TIER_B
+#define FLAME_DEATH_TIER TIER_A
+#define FLAME_UNWORTHY_TIER TIER_S
+#define YOG_WINDOW_TIER TIER_S
 	int ublessed, ublesscnt;	/* blessing/duration from #pray */
 	long usaccredit;		/* credit towards next gift */
 	boolean cult_atten[MAX_CULTS];	/* for having started with a cult */
@@ -771,7 +930,7 @@ struct you {
 	//Power 2: Summon blood creatures
 	//Power 3: Upgrades?
 	long ureanimation_upgrades;
-	int antenae_upgrades;
+	int antennae_upgrades;
 // #define ANTENNA_BOLT	0x0001L
 // #define ANTENNA_ERRANT 	0x0002L
 // #define ANTENNA_BOIL 	0x0004L
@@ -784,8 +943,9 @@ struct you {
 #define	ANTENNA_BOLT	0x00000020L
 #define	ANTENNA_REJECT	0x00000040L
 #define	LAMP_PHASE		0x00000080L
-#define REANIMATION_MAX LAMP_PHASE
-#define REANIMATION_COUNT 8
+#define	RE_FLAME		0x00000100L
+#define REANIMATION_MAX RE_FLAME
+#define REANIMATION_COUNT ((u.ublood_smithing && u.silver_atten) ? 9 : 8)
 #define check_reanimation(upgrade)	(u.ureanimation_upgrades&(upgrade))
 #define add_reanimation(upgrade)	(u.ureanimation_upgrades|=(upgrade))
 	int 	uparasitology_research;	/* to record progress on parasitology */
@@ -794,6 +954,10 @@ struct you {
 	char explosion_up;
 	char jellyfish;
 	char cuckoo;
+	long uparasitology_upgrades;
+#define	PARISITE_WINDOWS	0x00000001L
+#define check_parasitology(upgrade)	(u.uparasitology_upgrades&(upgrade))
+#define add_parasitology(upgrade)	(u.uparasitology_upgrades|=(upgrade))
 	// int 	usaprobiology_research; /* to record progress on rot */
 	int 	udefilement_research; /* to record progress on defilement */
 	int mental_scores_down;
@@ -818,8 +982,9 @@ struct you {
 #define VAMPIRE_BLOOD_RIP	   0x00000004L
 #define VAMPIRE_BLOOD_SPIKES   0x00000008L
 #define VAMPIRE_GAZE		   0x00000010L
-#define VAMPIRE_MAX			   VAMPIRE_GAZE
-#define VAMPIRE_COUNT		   5
+#define VAMPIRE_SHUB		   0x00000020L
+#define VAMPIRE_MAX			   VAMPIRE_SHUB
+#define VAMPIRE_COUNT		   ((u.ublood_smithing && !check_rot(ROT_SHUB) && u.shubbie_atten) ? 6 : 5)
 #define check_vampire(upgrade)	(u.uvampire_upgrades&(upgrade))
 #define add_vampire(upgrade)	(u.uvampire_upgrades|=(upgrade))
 
@@ -834,9 +999,10 @@ struct you {
 #define ROT_CENT			   0x00000040L
 #define ROT_STING			   0x00000080L
 #define ROT_SPORES			   0x00000100L
+#define ROT_SHUB			   0x00000100L
 #define ROT_MIN				   ROT_VOMIT
-#define ROT_MAX				   ROT_SPORES
-#define ROT_COUNT			   9
+#define ROT_MAX				   ROT_SHUB
+#define ROT_COUNT			   ((u.ublood_smithing && !check_vampire(VAMPIRE_SHUB) && u.shubbie_atten) ? 10 : 9)
 #define check_rot(upgrade)	(u.urot_upgrades&(upgrade))
 #define add_rot(upgrade)	(u.urot_upgrades|=(upgrade))
 #define remove_rot(upgrade)	(u.urot_upgrades&=~(upgrade))
@@ -907,6 +1073,7 @@ struct you {
 #define SPIRIT_PUNCH_LVL	10
 #define FLICKER_PUNCH_LVL	8
 #define ABSORPTIVE_PUNCH_LVL	2
+#define EDGE_KENSEI (Role_if(PM_KENSEI) && u.role_variant == ART_SILVER_SKY && artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_FOCUS)
 	long	wardsknown;	/* known wards */
 #define	WARD_ELBERETH		(0x1L<<0)
 #define WARD_HEPTAGRAM		(0x1L<<1)
@@ -955,11 +1122,12 @@ struct you {
 #define SEAL_EURYNOME				0x0002000L
 	int		eurycounts;
 #define SEAL_EVE					0x0004000L
-#define SEAL_FAFNIR					0x0008000L
-#define SEAL_HUGINN_MUNINN			0x0010000L
-#define SEAL_IRIS					0x0020000L
+#define SEAL_HUGINN_MUNINN			0x0008000L
+#define SEAL_IRIS					0x0010000L
 	long	irisAttack;
-#define SEAL_JACK					0x0040000L
+#define SEAL_JACK					0x0020000L
+#define SEAL_MAEGERA				0x0040000L
+	int		maegcounts;
 #define SEAL_MALPHAS				0x0080000L
 #define SEAL_MARIONETTE				0x0100000L
 #define SEAL_MOTHER					0x0200000L
@@ -1025,84 +1193,6 @@ struct you {
 	int spiritAC;
 	int spiritAttk;
 	
-#define	PWR_ABDUCTION				 0
-#define	PWR_FIRE_BREATH				 1
-#define	PWR_TRANSDIMENSIONAL_RAY	 2
-#define	PWR_TELEPORT				 3
-#define	PWR_JESTER_S_MIRTH			 4
-#define	PWR_THIEF_S_INSTINCTS		 5
-#define	PWR_ASTAROTH_S_ASSEMBLY		 6
-#define	PWR_ASTAROTH_S_SHARDS		 7
-#define	PWR_ICY_GLARE				 8
-#define	PWR_BALAM_S_ANOINTING		 9
-#define	PWR_BLOOD_MERCENARY			10
-#define	PWR_SOW_DISCORD				11
-#define	PWR_GIFT_OF_HEALING			12
-#define	PWR_GIFT_OF_HEALTH			13
-#define	PWR_THROW_WEBBING			14
-#define	PWR_THOUGHT_TRAVEL			15
-#define	PWR_DREAD_OF_DANTALION		16
-#define	PWR_EARTH_SWALLOW			17
-#define	PWR_ECHIDNA_S_VENOM			18
-#define	PWR_SUCKLE_MONSTER			19
-#define	PWR_PURIFYING_BLAST			20
-#define	PWR_RECALL_TO_EDEN			21
-#define	PWR_STARGATE				22
-#define	PWR_WALKER_OF_THRESHOLDS	23
-#define	PWR_GEYSER					24
-#define	PWR_VENGANCE				25
-#define	PWR_SHAPE_THE_WIND			26
-#define	PWR_THORNS_AND_STONES		27
-#define	PWR_BARRAGE					28
-#define	PWR_BREATH_POISON			29
-#define	PWR_RUINOUS_STRIKE			30
-#define	PWR_RAVEN_S_TALONS			31
-#define	PWR_HORRID_WILTING			32
-#define	PWR_TURN_ANIMALS_AND_HUMANOIDS	33
-#define	PWR_REFILL_LANTERN			34
-#define	PWR_HELLFIRE				35
-#define	PWR_CALL_MURDER				36
-#define	PWR_ROOT_SHOUT				37
-#define	PWR_PULL_WIRES				38
-#define	PWR_DISGUSTED_GAZE			39
-#define	PWR_BLOODY_TOUNGE			40
-#define	PWR_SILVER_TOUNGE			41
-#define	PWR_EXHALATION_OF_THE_RIFT	42
-#define	PWR_QUERIENT_THOUGHTS		43
-#define	PWR_GREAT_LEAP				44
-#define	PWR_MASTER_OF_DOORWAYS		45
-#define	PWR_READ_SPELL				46
-#define	PWR_BOOK_TELEPATHY			47
-#define	PWR_UNITE_THE_EARTH_AND_SKY	48
-#define	PWR_HOOK_IN_THE_SKY			49
-#define	PWR_ENLIGHTENMENT			50
-#define	PWR_DAMNING_DARKNESS		51
-#define	PWR_TOUCH_OF_THE_VOID		52
-#define	PWR_ECHOS_OF_THE_LAST_WORD	53
-#define	PWR_POISON_GAZE				54
-#define	PWR_GAP_STEP				55
-#define	PWR_MOAN					56
-#define	PWR_SWALLOW_SOUL			57
-#define	PWR_EMBASSY_OF_ELEMENTS		58
-#define	PWR_SUMMON_MONSTER			59
-#define	PWR_PSEUDONATURAL_SURGE		60
-#define	PWR_SILVER_DEW				61
-#define	PWR_GOLDEN_DEW				62
-#define	PWR_MIRROR_SHATTER			63
-#define	PWR_MIRROR_WALK				64
-#define	PWR_FLOWING_FORMS			65
-#define	PWR_PHASE_STEP				66
-#define	PWR_BLACK_BOLT				67
-#define	PWR_WEAVE_BLACK_WEB			68
-#define	PWR_MAD_BURST				69
-#define	PWR_UNENDURABLE_MADNESS		70
-#define	PWR_CONTACT_YOG_SOTHOTH		71
-#define	PWR_IDENTIFY_INVENTORY		72
-#define	PWR_CLAIRVOYANCE			73
-#define	PWR_FIND_PATH				74
-#define	PWR_GNOSIS_PREMONITION		75
-#define	NUMBER_POWERS				76
-
 	int spiritPOrder[52]; //# of letters in alphabet, capital and lowercase
 //	char spiritPLetters[NUMBER_POWERS];
 	long spiritPColdowns[NUMBER_POWERS];
@@ -1137,11 +1227,12 @@ struct you {
 #define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (Insight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
 	long mutations[MUTATION_LISTSIZE];
 };	/* end of `struct you' */
+
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))
 #define uandroid ((Race_if(PM_ANDROID) && !Upolyd) || (Upolyd && (youmonst.data->mtyp == PM_ANDROID || youmonst.data->mtyp == PM_GYNOID || youmonst.data->mtyp == PM_OPERATOR || youmonst.data->mtyp == PM_COMMANDER)))
 #define umechanoid (uclockwork || uandroid)
 //BAB
-#define BASE_ATTACK_BONUS(wep)	((Role_if(PM_BARBARIAN) || Role_if(PM_ANACHRONOUNBINDER) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_ANACHRONONAUT) || \
+#define BASE_ATTACK_BONUS(wep)	((Role_if(PM_BARBARIAN) || Role_if(PM_ANACHRONOUNBINDER) || Role_if(PM_CONVICT) || Role_if(PM_KNIGHT) || Role_if(PM_KENSEI) || Role_if(PM_ANACHRONONAUT) || \
 								Role_if(PM_PIRATE) || Role_if(PM_UNDEAD_HUNTER) || Role_if(PM_SAMURAI) || Role_if(PM_VALKYRIE) || (u.sealsActive&SEAL_BERITH) || \
 								(!wep && (martial_bonus() || (u.sealsActive&SEAL_EURYNOME))) || \
 								(Role_if(PM_MONK) && wep && is_monk_weapon(wep)) || \

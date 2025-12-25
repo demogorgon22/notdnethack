@@ -71,6 +71,7 @@ struct monst {
 	unsigned long int mintrinsics[MPROP_SIZE];
 	unsigned long int mextrinsics[MPROP_SIZE];
 	unsigned long int acquired_trinsics[MPROP_SIZE];
+	unsigned long int acquired_weaknesses[MPROP_SIZE];
 	int mspec_used;		/* monster's special ability attack timeout */
 	int mstdy;		/* to record extra damage to be delt due to having been studied */
 	int ustdym;		/* to record extra damage to be delt by you due to having been studied by you*/
@@ -162,6 +163,7 @@ struct monst {
 	Bitfield(mgoatmarked,1);/* will be eaten by the goat if you kill it this turn */ /*91*/
 	Bitfield(mflamemarked,1); /* monster was damaged by a silver flame weapon and will be sacced if they die */ /*92*/
 	Bitfield(myoumarked,1); /* monster was marked for cult sacrifice on your behalf */ /*93*/
+	Bitfield(mlaidtorest,1); /* should not come back under any circumstances (save riders), mortal blade*/
 	Bitfield(mpetitioner,1);/* already dead (shouldn't leave a corpse) */ /*94*/
 	Bitfield(mdoubt,1);/* clerical spellcasting blocked */ /*95*/
 	Bitfield(menvy,1);/* wants only others stuff */ /*96*/
@@ -210,11 +212,15 @@ struct monst {
 	Bitfield(mironmarked,1);/* recently hit by an iron weapon (elves/fey/rage-walker) */ /*147*/
 	Bitfield(mcaterpillars,1); /* monster is covered in rot scorpions */ /*148*/
 	Bitfield(momud,1); /* monster is covered in orc-mud */ /*148*/
+	Bitfield(mubled,1); /* You inflicted bleed damage on this monster and will be blamed if it dies */ /*149*/
+	Bitfield(mtecpatlmarked,1); /* the Tecpatl of Huehueteotl can sacrifice low-enough-health monsters */ /*150*/
+	Bitfield(mpunctured,4); /* This monster may take double damage from puncture attacks */ /*154*/
 
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
 	char mbdrown;	/* drowning in blood */
 	char mtaneggs;	/* tannin eggs */
+	char munburn;	/* silverknight buff */
 	long mwait;/* if tame, won't follow between levels (turn last ordered to wait on) */
 	int encouraged;	/* affected by Encourage song */
 	int mfell;	/* slowed by fell expert trait */
@@ -283,6 +289,7 @@ struct monst {
 #define	CITY_FACTION		FACTION_PADDING+13	/* Undead Hunter city faction */
 #define	MOON_FACTION		FACTION_PADDING+14	/* Undead Hunter lycanthrope faction */
 #define	ROT_FACTION			FACTION_PADDING+15	/* Rot monster faction */
+#define	NUNCIO_FACTION		FACTION_PADDING+16	/* Nuncio from the far reaches */
 
 /* template applied to monster to create a new-ish monster */
 	int mtemplate;
@@ -320,7 +327,10 @@ struct monst {
 #define	WHISPERING		32	/* Voidified */
 #define SWOLLEN_TEMPLATE	33	/* giant */
 #define BLOOD_MON		34	/* blood clone */
-#define MAXTEMPLATE	BLOOD_MON
+#define FLAYED			35	/* flayed undead */
+#define MANITOU			36	/* vampire vine infestation */
+#define GUECUBU			37	/* sleeping murderer */
+#define MAXTEMPLATE	GUECUBU
 
 //define	HALF_DEMON	FACTION_PADDING+1	/* half-demon  ??? */
 //define	HALF_DEVIL	FACTION_PADDING+2	/* half-devil  ??? */
@@ -378,6 +388,7 @@ struct monst {
 #define	mvar_elfwraith_target	mvar1
 #define	mvar_spellweaver_count	mvar1
 #define	mvar1_tettigon_uncancel	mvar1
+#define	mvar1_afreet_lastsaw	mvar1
 	long mvar2;
 #define	mvar_dracaePregTimer	mvar2
 #define	mvar_spList_2	mvar2

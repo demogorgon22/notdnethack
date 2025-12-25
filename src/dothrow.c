@@ -5,6 +5,7 @@
 /* Contains code for 't' (throw) */
 
 #include "hack.h"
+#include "artifact.h"
 
 #include "xhity.h"
 
@@ -96,6 +97,7 @@ int shots, shotlimit;
 		shotlimit = 1;
 		if(u.dz > 0){
 			raygun->ovar1_charges -= cost;
+			use_skill(P_FIREARM, 1);
 			if(raygun->altmode == AD_DISN){
 				if (dighole(FALSE)){
 					Your("raygun disintegrated the floor!");
@@ -150,7 +152,7 @@ int shots, shotlimit;
 		} else {
 			if(Hallucination) pline1(Ronnie_ray_gun[rn2(SIZE(Ronnie_ray_gun))]);
 			raygun->ovar1_charges -= cost;
-
+			use_skill(P_FIREARM, 1);
 			struct zapdata zapdata = { 0 };
 			basiczap(&zapdata, raygun->altmode, ZAP_RAYGUN, 6);
 			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
@@ -167,7 +169,7 @@ int shots, shotlimit;
 	while(shots){
 		if(Hallucination) pline1(Ronnie_ray_gun[rn2(SIZE(Ronnie_ray_gun))]);
 		raygun->ovar1_charges -= cost;
-
+		use_skill(P_FIREARM, 1);
 		struct zapdata zapdata = { 0 };
 		basiczap(&zapdata, raygun->altmode, ZAP_RAYGUN, 6);
 		zap(&youmonst, u.ux, u.uy, u.dx, u.dy, objects[(raygun->otyp)].oc_range, &zapdata);
@@ -333,13 +335,9 @@ autoquiver()
  * before the failed callback.
  */
 boolean
-walk_path(src_cc, dest_cc, check_proc, arg)
-    coord *src_cc;
-    coord *dest_cc;
-    boolean FDECL((*check_proc), (genericptr_t, int, int));
-    genericptr_t arg;
+walk_path(coord *src_cc, coord *dest_cc, boolean FDECL((*check_proc), (genericptr_t, int, int)), boolean FDECL((*leading_proc), (genericptr_t, int, int)), genericptr_t arg)
 {
-    int x, y, dx, dy, x_change, y_change, err, i, prev_x, prev_y;
+    int x, y, dx, dy, x_change, y_change, err, i, prev_x, prev_y, next_x, next_y, next_err;
     boolean keep_going = TRUE;
 
     /* Use Bresenham's Line Algorithm to walk from src to dest */
@@ -361,33 +359,65 @@ walk_path(src_cc, dest_cc, check_proc, arg)
 
     i = err = 0;
     if (dx < dy) {
-	while (i++ < dy) {
-	    prev_x = x;
-	    prev_y = y;
-	    y += y_change;
-	    err += dx;
-	    if (err >= dy) {
-		x += x_change;
-		err -= dy;
-	    }
-	/* check for early exit condition */
-	if (!(keep_going = (*check_proc)(arg, x, y)))
-	    break;
-	}
+		next_y = y + y_change;
+		next_x = x;
+		next_err = dx;//dx < dy
+		while (i++ < dy) {
+			prev_x = x;
+			prev_y = y;
+			y += y_change;
+			err += dx;
+			if (err >= dy) {
+				x += x_change;
+				err -= dy;
+			}
+			next_y += y_change;
+			next_err += dx;
+			if( next_err >= dy ){
+				next_x += x_change;
+				next_err -= dy;
+			}
+			/* call leading proc if there is one */
+			if(isok(next_x, next_y) && leading_proc){
+				keep_going = (*leading_proc)(arg, next_x, next_y);
+				if(!keep_going) break;
+			}
+			/* check for early exit condition */
+			if (!(keep_going = (*check_proc)(arg, x, y)))
+				break;
+		}
     } else {
-	while (i++ < dx) {
-	    prev_x = x;
-	    prev_y = y;
-	    x += x_change;
-	    err += dy;
-	    if (err >= dx) {
-		y += y_change;
-		err -= dx;
-	    }
-	/* check for early exit condition */
-	if (!(keep_going = (*check_proc)(arg, x, y)))
-	    break;
-	}
+		next_x = x + x_change;
+		next_y = y;
+		next_err = dy;
+		if(next_err >= dx){
+			next_y += y_change;
+			next_err -= dx;
+		}
+		while (i++ < dx) {
+			prev_x = x;
+			prev_y = y;
+			x += x_change;
+			err += dy;
+			if (err >= dx) {
+				y += y_change;
+				err -= dx;
+			}
+			next_x += x_change;
+			next_err += dy;
+			if( next_err >= dx ){
+				next_y += y_change;
+				next_err -= dx;
+			}
+			/* call leading proc if there is one */
+			if(isok(next_x, next_y) && leading_proc){
+				keep_going = (*leading_proc)(arg, next_x, next_y);
+				if(!keep_going) break;
+			}
+			/* check for early exit condition */
+			if (!(keep_going = (*check_proc)(arg, x, y)))
+				break;
+		}
     }
 
     if (keep_going)
@@ -396,6 +426,41 @@ walk_path(src_cc, dest_cc, check_proc, arg)
     dest_cc->x = prev_x;
     dest_cc->y = prev_y;
     return FALSE;
+}
+/*
+ * Recieves the same arguments as huntle_step; used to perform kensei 
+ * polearm jumping attacks.
+ */
+
+boolean
+jumping_polearm(genericptr_t arg, int x, int y)
+{
+	struct monst *mon = m_at(x, y);
+	static long last_messaged = 0L;
+	boolean path = FALSE;
+	if(!mon)
+		return TRUE;
+	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
+		if(u.role_variant == ART_SKY_REFLECTED || u.role_variant == ART_SILVER_SKY){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER)
+				path = TRUE;
+		}
+	}
+	if(((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) && !mon->mpeaceful && canseemon(mon)){
+		u.dx = x - u.ux;
+		u.dy = y - u.uy;
+		if(path){
+			if(last_messaged < monstermoves){
+				pline("Path of One!");
+				exercise(A_STR, TRUE); //Almost entirely useless, since we have 25 str due to Power of One. But Hey.
+				exercise(A_CHA, TRUE);
+				last_messaged = monstermoves;
+			}
+		}
+		if(path || !partial_action())
+			u_pole_pound(mon);
+	}
+	return TRUE; //Note: We'd only stop if we died, and if we die we don't reach here.
 }
 
 /*
@@ -426,7 +491,32 @@ hurtle_step(arg, x, y)
     struct monst *mon;
     boolean may_pass = TRUE;
     struct trap *ttmp;
-    
+	static long last_messaged = 0L;
+	boolean spiralcloud, passage, nightjar, sakura, path;
+	spiralcloud = passage = nightjar = sakura = path = FALSE;
+	if(Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)){
+		if(u.role_variant == ART_SKY_REFLECTED || u.role_variant == ART_SILVER_SKY){
+			if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_POWER)
+				path = TRUE;
+		}
+		else if(u.role_variant == ART_KIKU_ICHIMONJI){
+			if(uwep->oartifact == ART_MORTAL_BLADE);//Nothing
+			else if(uwep->oartifact == ART_SKY_RENDER){
+				spiralcloud = TRUE;
+				passage = TRUE;
+			}
+			else if(uwep->otyp == NINJA_TO){
+				nightjar = TRUE;
+			}
+			else if(u.ulevel == 30){
+				sakura = TRUE;
+			}
+			else {
+				passage = TRUE;
+			}
+		}
+	}
+
     if (!isok(x,y)) {
 	You_feel("the spirits holding you back.");
 	return FALSE;
@@ -478,16 +568,79 @@ hurtle_step(arg, x, y)
 	    }
 	}
     }
+	if(sakura){
+		u.dx = x - u.ux;
+		u.dy = y - u.uy;
+		if(forward_arc_monk_target(!!uwep)){
+			if(last_messaged < monstermoves){
+				if(In_outdoors(&u.uz) && !Is_spire(&u.uz))
+					pline("Lightning of Tomoe!");
+				else
+					pline("Sakura dance!");
+				last_messaged = monstermoves;
+			}
+			sakura_slash_monsters();
+		}
+	}
+
 
     if ((mon = m_at(x, y)) != 0) {
-		if(((Role_if(PM_MONK) && !Upolyd) || activeFightingForm(FFORM_ATARU)) && !mon->mpeaceful && canseemon(mon)){
+		if((((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) || activeFightingForm(FFORM_ATARU)) && !mon->mpeaceful && canseemon(mon)){
 			u.dx = x - u.ux;
 			u.dy = y - u.uy;
 			flags.forcefight = TRUE;
+			if(spiralcloud){
+				if(last_messaged < monstermoves){
+					pline("Spiralcloud passage!");
+					exercise(A_CON, TRUE);
+					last_messaged = monstermoves;
+				}
+			}
+			else if(nightjar){
+				if(last_messaged < monstermoves){
+					pline("Nightjar slash!");
+					exercise(A_DEX, TRUE);
+					last_messaged = monstermoves;
+				}
+			}
+			else if(passage){
+				if(last_messaged < monstermoves){
+					pline("Floating passage!");
+					exercise(A_DEX, TRUE);
+					last_messaged = monstermoves;
+				}
+			}
+			else if(path){
+				if(last_messaged < monstermoves){
+					pline("Path of One!");
+					exercise(A_STR, TRUE); //Almost entirely useless, since we have 25 str due to Power of One. But Hey.
+					exercise(A_CHA, TRUE);
+					last_messaged = monstermoves;
+				}
+			}
 			attack2(mon);
 			flags.forcefight = FALSE;
-			if(m_at(x, y) || partial_action())
+			boolean stop = m_at(x, y) || (!passage && !path && partial_action());
+			if(stop && m_at(x, y) && nightjar){
+				mon = m_at(x, y);
+				u.dx = x - u.ux;
+				u.dy = y - u.uy;
+				int gx = x + u.dx;
+				int gy = y + u.dy;
+				if(isok(gx, gy) && teleok(gx,gy,FALSE) && !m_at(gx,gy)){
+					static struct attack weaponhit =	{ AT_WEAP, AD_PHYS, 0, 0 };
+					boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mon) ? VIS_MDEF : 0);
+					pline("Nightjar abduction!");
+					exercise(A_CHA, TRUE);
+					teleds(gx, gy, TRUE);
+					xmeleehity(&youmonst, mon, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_SUPER_SNEAK);
+				}
+			}
+			if(spiralcloud)
+				cyclone_slash_monsters(FALSE);
+			if(stop)
 				return FALSE;
+			exercise(A_INT, TRUE); // for using a special technique, for standard jumps only affects the first monster
 		}
 		else {
 			You("bump into %s.", a_monnam(mon));
@@ -633,7 +786,7 @@ hurtle(dx, dy, range, verbose, do_nomul)
     /* this setting of cc is only correct if dx and dy are [-1,0,1] only */
     cc.x = u.ux + (dx * range);
     cc.y = u.uy + (dy * range);
-    (void) walk_path(&uc, &cc, hurtle_step, (genericptr_t)&range);
+    (void) walk_path(&uc, &cc, hurtle_step, ((Role_if(PM_KENSEI) || Role_if(PM_MONK)) && uwep && is_pole(uwep)) ? &jumping_polearm : (void *) 0, (genericptr_t)&range);
 	teleds(u.ux, u.uy, TRUE);
 }
 
@@ -673,7 +826,7 @@ mhurtle(mon, dx, dy, range, huge)
 	mc.y = mon->my;
 	cc.x = mon->mx + (dx * range);
 	cc.y = mon->my + (dy * range);
-	(void) walk_path(&mc, &cc, mhurtle_step, (genericptr_t)mon);
+	(void) walk_path(&mc, &cc, mhurtle_step, (void *) 0, (genericptr_t)mon);
 	return;
 }
 

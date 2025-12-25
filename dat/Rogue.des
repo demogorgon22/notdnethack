@@ -8,7 +8,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Rog-strt",' '
-FLAGS: noteleport, hardfloor, nommap
+FLAGS: hardfloor, nommap
 GEOMETRY:center,center
 #         1         2         3         4         5         6         7
 #123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -46,6 +46,20 @@ MONSTER:'m',"large mimic", place[2], m_feature "staircase down"
 MONSTER:'m',"small mimic", place[3], m_feature "staircase down"
 # Magic Chest
 OBJECT:'(',"magic chest",random
+OBJECT[50%]:'\\',"bedroll",(01,01)
+OBJECT[50%]:'\\',"bedroll",(01,10)
+OBJECT[50%]:'\\',"bedroll",(12,07)
+OBJECT[50%]:'\\',"bedroll",(74,01)
+OBJECT[50%]:'\\',"bedroll",(47,03)
+OBJECT[50%]:'\\',"bedroll",(50,12)
+OBJECT[50%]:'\\',"bedroll",(71,19)
+OBJECT[50%]:'\\',"bedroll",(43,14)
+OBJECT[50%]:'\\',"bedroll",(62,19)
+OBJECT[50%]:'\\',"bedroll",(21,19)
+OBJECT[50%]:'\\',"bedroll",(22,11)
+OBJECT[50%]:'\\',"bedroll",(24,11)
+OBJECT[50%]:'\\',"bedroll",(44,09)
+
 # Portal arrival point
 BRANCH:(19,09,19,09),(0,0,0,0)
 # Doors (secret)

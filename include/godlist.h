@@ -48,10 +48,17 @@ GOD_V2("Quetzalcoatl",          A_LAWFUL, HOLY_HOLINESS,
 GOD_V2("Camaxtli",              A_NEUTRAL, NEUTRAL_HOLINESS,
 	MINIONS(NElemen)
 	),
-GOD_V2("Huhetotl",              A_CHAOTIC, UNHOLY_HOLINESS,
+GOD_V2("Huehueteotl",              A_CHAOTIC, UNHOLY_HOLINESS,
 	MINIONS(Cdemons)
 	),
-GOD_V2("Tezcatlipoca",          A_NONE, UNHOLY_HOLINESS,
+/* couatls are intentional, they are skelified */
+GOD_V2("Xolotl",          		A_LAWFUL, UNHOLY_HOLINESS,
+	MINIONS(PM_COUATL)
+	),
+GOD_V2("Tlaloc",              A_NEUTRAL, NEUTRAL_HOLINESS,
+	MINIONS(NElemen)
+	),
+GOD_V2("Tezcatlipoca",          A_CHAOTIC, UNHOLY_HOLINESS,
 	MINIONS(Cdemons)
 	),
 /* barbarian */
@@ -82,7 +89,7 @@ GOD_V2("Ilmater",               A_LAWFUL, HOLY_HOLINESS,
 	MINIONS(Langels)
 	),
 GOD_V2("Grumbar",               A_NEUTRAL, NEUTRAL_HOLINESS,
-	MINIONS(NElemen)
+	MINIONS(PM_STONE_GIANT, PM_HILL_GIANT, PM_EARTH_ELEMENTAL, PM_ORC_OF_THE_AGES_OF_STARS, NON_PM)
 	),
 GOD_V2("_Tymora",               A_CHAOTIC, HOLY_HOLINESS,
 	MINIONS(Cangels)
@@ -123,6 +130,19 @@ GOD_V2("Manannan Mac Lir",      A_CHAOTIC, HOLY_HOLINESS,
 	),
 GOD_V2("Balar",      A_CHAOTIC, UNHOLY_HOLINESS,
 	MINIONS(PM_ZOMBIE, PM_STONE_GIANT, PM_HILL_GIANT, PM_FIRE_GIANT, PM_VAMPIRE, PM_FROST_GIANT, PM_STORM_GIANT, PM_VAMPIRE_LORD, PM_BALROG)
+	),
+/* Kenshi, Japanese Buddhist */
+GOD_V2("_Kannon",          A_LAWFUL, HOLY_HOLINESS,
+	MINIONS(PM_JUSTICE_ARCHON,PM_MOVANIC_DEVA,PM_SWORD_ARCHON,PM_MAHADEVA)
+	),
+GOD_V2("Fudo Myoo",                 A_NEUTRAL, HOLY_HOLINESS,
+	MINIONS(PM_ROPE_GOLEM,PM_FIRE_ELEMENTAL,PM_IRON_GOLEM,PM_LIGHT_ARCHON)
+	),
+GOD_V2("Shukongoshin",      A_CHAOTIC, HOLY_HOLINESS,
+	MINIONS(PM_ENERGY_VORTEX,PM_LIGHTNING_PARAELEMENTAL,PM_SON_OF_TYPHON,PM_MORTAI,PM_GUG)
+	),
+GOD_V2("Akuma",               A_CHAOTIC, UNHOLY_HOLINESS,
+	MINIONS(PM_NAIAD,PM_OREAD,PM_FIRE_VORTEX, PM_FIRE_ELEMENTAL, PM_WALKING_DELIRIUM, PM_PIT_FIEND, PM_BALROG, PM_SHAYATEEN)
 	),
 /* monk, Chinese (specifically, Journey to the West, chosen for crowning gifts) */
 GOD_V2("Prince Nezha",          A_LAWFUL, HOLY_HOLINESS,

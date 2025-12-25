@@ -1525,7 +1525,7 @@ int x, y;
 		u.ualign.sins++;
 		change_hod(1);
 	    You_feel("like a despicable grave-robber!");
-	} else if (Role_if(PM_SAMURAI)) {
+	} else if (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) {
         if(!(uarmh && uarmh->oartifact && uarmh->oartifact == ART_HELM_OF_THE_NINJA)){
 		    adjalign(-sgn(u.ualign.type)*10);//stiffer penalty
 			u.ualign.sins++;
@@ -1906,7 +1906,9 @@ struct obj *obj;
 
 	/* Check tool */
 	if (obj != uwep && obj != uarmg) {
-	    if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
+		if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Release the Mortal Blade?", TRUE) == 'n')
+			return MOVE_CANCELLED;
+	    else if (!wield_tool(obj, "swing")) return MOVE_CANCELLED;
 	    else res = MOVE_STANDARD;
 	}
 	if(Straitjacketed){

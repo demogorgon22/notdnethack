@@ -138,7 +138,7 @@ boolean check_if_better;
 	    /* slotless non-artifact items */
 		 ((otmp->otyp == ARMOR_SALVE && Insight >= 66) || otmp->otyp == PRESERVATIVE_ENGINE) ||
 	    /* chains for some */
-		 ((mtmp->mtyp == PM_CATHEZAR) && otmp->otyp == CHAIN) ||
+		 ((mtmp->mtyp == PM_CATHEZAR || mtmp->mtyp == PM_CHAIN_DEVIL) && otmp->otyp == CHAIN) ||
 	    /* better weapons */
 	     (is_armed_mon(mtmp) &&
 	      (otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && 
@@ -525,7 +525,7 @@ boolean devour;
 	}
 
 	if (ston) {
-		xstoney((struct monst *)0, mtmp);
+		xstoney((struct monst *)0, mtmp, FALSE);
 	    if (mtmp->mhp <= 0)
 			return 2;
 	}
@@ -780,6 +780,10 @@ int udist;
 		    /* Don't eat if satiated.  (arbitrary) 
 				Non-mindless pets can sense if you are hungry or starving, and will eat less.
 			*/
+			if(HAS_ESMT(mtmp) && ESMT(mtmp)->smith_mtyp == PM_DRACAE_ELADRIN && ESMT(mtmp)->smith_biomass_stockpile <= 7500 && edog->hungrytime > monstermoves + DOG_SATIATED){
+				ESMT(mtmp)->smith_biomass_stockpile += edog->hungrytime - (monstermoves + DOG_SATIATED - 1);
+				edog->hungrytime = (monstermoves + DOG_SATIATED - 1);
+			}
 		    if (edog->hungrytime < monstermoves + DOG_SATIATED || 
 				(!mindless_mon(mtmp) && 
 					(
@@ -817,17 +821,36 @@ int udist;
 	return 0;
 }
 
+/* set explosive pet's goal -- gtyp, gx, gy
+ * technically could return -1/0/1 (dog's desire to approach player) or -2 (abort move)
+ * but currently only returns 0 (if no target found) or 1 (target found)
+ */
+STATIC_OVL int
+pet_sphere_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr)
+{
+	int appr = 0;
+	int gx, gy;
+	struct monst *m2 = (struct monst *)0;
+	int distminbest = BOLT_LIM;
+	for(m2=fmon; m2; m2 = m2->nmon){
+		if(!m2->mtame && !m2->mpeaceful && distmin(mtmp->mx,mtmp->my,m2->mx,m2->my) < distminbest){
+			distminbest = distmin(mtmp->mx,mtmp->my,m2->mx,m2->my);
+			gx = m2->mx;
+			gy = m2->my;
+			appr = 1;
+		}
+	}
+	return appr;
+}
+
 /* set dog's goal -- gtyp, gx, gy
  * returns -1/0/1 (dog's desire to approach player) or -2 (abort move)
  */
 STATIC_OVL int
-dog_goal(mtmp, edog, after, udist, whappr)
-register struct monst *mtmp;
-struct edog *edog;
-int after, udist, whappr;
+dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr)
 {
 	register int omx, omy;
-	boolean in_masters_sight, dog_has_minvent;
+	boolean in_masters_sight, dog_has_minvent, explosive = mon_attacktype(mtmp, AT_EXPL) ? TRUE : FALSE;
 	register struct obj *obj;
 	xchar otyp;
 	int appr;
@@ -848,6 +871,8 @@ int after, udist, whappr;
 	    gtyp = APPORT;
 	    gx = u.ux;
 	    gy = u.uy;
+	} else if(explosive){
+		return pet_sphere_goal(mtmp, edog, after, udist, whappr);
 	} else if(distu(mtmp->mx,mtmp->my) > 5 || (!in_masters_sight && distu(mtmp->mx,mtmp->my) > 2) ){
 	    gtyp = UNDEF;
 	} else {

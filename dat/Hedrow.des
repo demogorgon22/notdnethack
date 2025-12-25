@@ -144,10 +144,58 @@ DOOR:locked,(60,01)
 DOOR:locked,(62,01)
 DOOR:locked,(64,01)
 
+#Lower barracks: 19,17 to 38,18
+OBJECT[33%]:'\\',"bed",(19,17)
+OBJECT[33%]:'\\',"bed",(21,17)
+OBJECT[33%]:'\\',"bed",(23,17)
+OBJECT[33%]:'\\',"bed",(25,17)
+OBJECT[33%]:'\\',"bed",(27,17)
+OBJECT[33%]:'\\',"bed",(29,17)
+OBJECT[33%]:'\\',"bed",(31,17)
+OBJECT[33%]:'\\',"bed",(33,17)
+OBJECT[33%]:'\\',"bed",(35,17)
+OBJECT[33%]:'\\',"bed",(37,17)
+
+OBJECT[33%]:'\\',"bed",(20,18)
+OBJECT[33%]:'\\',"bed",(22,18)
+OBJECT[33%]:'\\',"bed",(24,18)
+OBJECT[33%]:'\\',"bed",(26,18)
+OBJECT[33%]:'\\',"bed",(28,18)
+OBJECT[33%]:'\\',"bed",(30,18)
+OBJECT[33%]:'\\',"bed",(32,18)
+OBJECT[33%]:'\\',"bed",(34,18)
+OBJECT[33%]:'\\',"bed",(36,18)
+OBJECT[33%]:'\\',"bed",(38,18)
+
+#Upper barracks: 19,01 to 38,02
+OBJECT[33%]:'\\',"bed",(19,01)
+OBJECT[33%]:'\\',"bed",(21,01)
+OBJECT[33%]:'\\',"bed",(23,01)
+OBJECT[33%]:'\\',"bed",(25,01)
+OBJECT[33%]:'\\',"bed",(27,01)
+OBJECT[33%]:'\\',"bed",(29,01)
+OBJECT[33%]:'\\',"bed",(31,01)
+OBJECT[33%]:'\\',"bed",(33,01)
+OBJECT[33%]:'\\',"bed",(35,01)
+OBJECT[33%]:'\\',"bed",(37,01)
+
+OBJECT[33%]:'\\',"bed",(20,02)
+OBJECT[33%]:'\\',"bed",(22,02)
+OBJECT[33%]:'\\',"bed",(24,02)
+OBJECT[33%]:'\\',"bed",(26,02)
+OBJECT[33%]:'\\',"bed",(28,02)
+OBJECT[33%]:'\\',"bed",(30,02)
+OBJECT[33%]:'\\',"bed",(32,02)
+OBJECT[33%]:'\\',"bed",(34,02)
+OBJECT[33%]:'\\',"bed",(36,02)
+OBJECT[33%]:'\\',"bed",(38,02)
+
+
 # High Priestess of Lolth
 MONSTER:'@',"Eclavdra",(12,10)
 MONSTER:'@',"Gromph",(49,09)
 MONSTER:'@',"Dantrag",(48,08)
+
 # The treasure of Eclavdra
 CONTAINER:'(',"chest",(12,10)
 OBJECT:'?',"resistance",contained
@@ -388,7 +436,7 @@ TRAP: "web", random
 #
 
 MAZE: "Hdr-goal", ' '
-FLAGS: shortsighted,hardfloor
+FLAGS: noteleport,shortsighted,hardfloor
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7     
 #0123456789012345678901234567890123456789012345678901234567890123456789012345

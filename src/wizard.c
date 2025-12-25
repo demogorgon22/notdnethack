@@ -940,7 +940,7 @@ u_recognize_stars()
 	if(Role_if(PM_ARCHEOLOGIST) || Role_if(PM_PIRATE) || Role_if(PM_CAVEMAN) || Role_if(PM_BARBARIAN))
 		return ACURR(A_INT) > 11;
 	// Celestial roles and those that CAN navigate by the stars (asuming that they live above ground).
-	if(Role_if(PM_WIZARD) || Role_if(PM_PRIEST) || Role_if(PM_RANGER))
+	if(u.uwizard || u.upriest || Role_if(PM_RANGER))
 		return (Race_if(PM_DROW) || Race_if(PM_DWARF) || Race_if(PM_GNOME)) ? ACURR(A_INT) > 18 : ACURR(A_INT) > 13;
 	// Anas
 	if(Role_if(PM_ANACHRONONAUT) || Role_if(PM_UNDEAD_HUNTER))
@@ -1682,6 +1682,7 @@ aglaopesong(mtmp)
 								if(tmpm->mstdy > 0) tmpm->mstdy = 0;
 								tmpm->mstun = 0;
 								tmpm->mconf = 0;
+								tmpm->mpunctured = 0;
 								tmpm->msleeping = 0;
 								tmpm->mflee = 0;
 								tmpm->mfleetim = 0;

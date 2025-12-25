@@ -31,7 +31,7 @@ LEVALIGN:	neutral
 CHAINBRANCH:	"Lokoban" "oracle" + (1, 0) up
 CHAINLEVEL:	"qstlb" "none" "oracle" + (6, 2)
 CHAINBRANCH:	"The Quest" "qstlb" + (0, 0) portal
-RNDLEVEL:	"bigrm" "B" @ (10, 10) 75 5
+RNDLEVEL:	"bigrm" "B" @ (10, 10) 75 6
 RNDLEVEL:	"bgrmb" "G" @ (15, 10) 50 4
 BRANCH:		"Fort Ludios" @ (14, 8) portal
 

@@ -38,7 +38,6 @@ ENDMAP
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 #0         1         2         3         4         5         6         7     
 # Dungeon Description
-
 # Portal arrival point
 BRANCH:(40,01,40,01),(0,0,0,0)
 # Stairs
@@ -83,6 +82,19 @@ CONTAINER:'(',"chest",(03,01)
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
+# they're sleeping rooms now
+OBJECT:'\\',"bed",(10,01)
+OBJECT:'\\',"bed",(14,01)
+OBJECT:'\\',"bed",(20,01)
+OBJECT:'\\',"bed",(10,09)
+OBJECT:'\\',"bed",(14,09)
+OBJECT:'\\',"bed",(20,09)
+OBJECT:'\\',"expensive bed",(02,11)
+OBJECT:'\\',"expensive bed",(06,11)
+OBJECT:'\\',"bed",(02,17)
+OBJECT:'\\',"bed",(06,17)
+OBJECT:'\\',"bed",(19,12)
+OBJECT:'\\',"bed",(19,16)
 # guards for the audience chamber
 MONSTER:'@',"drow matron-mother",(01,02)
 MONSTER:'@',"drow matron-mother",(01,03)

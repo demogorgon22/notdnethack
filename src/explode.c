@@ -288,6 +288,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		switch (Role_switch) {
 			case PM_PRIEST:
 			case PM_MONK:
+			case PM_KENSEI:
 			case PM_WIZARD: damu /= 5;
 				  break;
 			case PM_HEALER:
@@ -317,11 +318,15 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			else
 				str = "fireball";
 			break;
+		case AD_ECLD:
 		case AD_COLD:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "fanged blizzard";
 			else
 				str = "ball of cold";
+			break;
+		case AD_UHCD:
+				str = "blast of ice";
 			break;
 		case AD_DEAD: str = "death field";
 			break;
@@ -329,7 +334,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_EELC:
 		case AD_ELEC:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "cloven-hoofed lightning";
 			else
 				str = "pillar of lightning";
@@ -338,7 +343,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_EACD:
 		case AD_ACID:
-			 if(special_flags&GOAT_SPELL)
+			if(special_flags&GOAT_SPELL)
 				str = "splash of drool";
 			else
 				str = "splash of acid";
@@ -385,6 +390,10 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			case AD_ECLD:
 			case AD_COLD:
 				explmask = !!Cold_resistance;
+				roll_frigophobia();
+				break;
+			case AD_UHCD:
+				explmask = (Cold_resistance && hates_unholy(youracedata));
 				roll_frigophobia();
 				break;
 			case AD_DISN:
@@ -455,6 +464,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				case AD_ECLD:
 				case AD_COLD:
 					explmask |= resists_cold(mtmp);
+					break;
+				case AD_UHCD:
+					explmask |= resists_cold(mtmp) && hates_unholy_mon(mtmp);
 					break;
 				case AD_DISN:
 					explmask |= resists_disint(mtmp);
@@ -611,6 +623,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				      (adtyp == AD_MADF) ? "heartburn" :
 				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
+				      (adtyp == AD_UHCD) ? "chilly" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "irradiated by pure energy" :
 				      (adtyp == AD_EELC) ? "shocked" :
@@ -632,6 +645,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				      (adtyp == AD_MADF) ? "toasted" :
 				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
+				      (adtyp == AD_UHCD) ? "chilly" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "overwhelmed by pure energy" :
 				      (adtyp == AD_EELC) ? "shocked" :
@@ -694,6 +708,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		//Golem effects handled for elemental damage effects, now either proceed to damage or do damage from items.
 		if(area->locations[i].shielded && adtyp != AD_EFIR
 		 && adtyp != AD_ECLD && adtyp != AD_EELC && adtyp != AD_EACD
+		 && adtyp != AD_UHCD
 		){
 			mtmp->mhp -= idamnonres;
 		}
@@ -745,7 +760,17 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				mdam += rnd(20);
 			}
 
-			if (resists_cold(mtmp) && (adtyp == AD_FIRE || adtyp == AD_EFIR))
+			if(adtyp == AD_UHCD){
+				int mod = 1;
+				if(!resists_cold(mtmp)){
+					if(resists_fire(mtmp))
+						mod++;
+					if(hates_unholy_mon(mtmp))
+						mod++;
+				}
+				mdam *= mod;
+			}
+			else if (resists_cold(mtmp) && (adtyp == AD_FIRE || adtyp == AD_EFIR))
 				mdam *= 2;
 			else if (resists_fire(mtmp) && (adtyp == AD_COLD || adtyp == AD_ECLD))
 				mdam *= 2;
@@ -802,7 +827,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			You("are caught in the %s!", str);
 
 		if(uhurt == 1 && 
-			(adtyp == AD_EFIR || adtyp == AD_ECLD || adtyp == AD_EELC || adtyp == AD_EACD)
+			(adtyp == AD_EFIR || adtyp == AD_ECLD || adtyp == AD_EELC || adtyp == AD_EACD || adtyp == AD_UHCD)
 		){
 			damu /= 2;
 			uhurt = 3;
@@ -905,7 +930,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 
 	if (shopdamage) {
 		pay_for_damage((adtyp == AD_FIRE || adtyp == AD_EFIR || adtyp == AD_MADF) ? "burn away" :
-			       (adtyp == AD_COLD || adtyp == AD_ECLD) ? "shatter" :
+			       (adtyp == AD_COLD || adtyp == AD_ECLD || adtyp == AD_UHCD) ? "shatter" :
 			       adtyp == AD_DISN ? "disintegrate" : "destroy",
 			       FALSE);
 	}
@@ -952,7 +977,6 @@ struct monst *shkp;		/* shopkeepr that owns the object (may be null) */
 	register struct obj *otmp;
 	register int tmp;
 	int farthest = 0;
-	uchar typ;
 	long qtmp;
 	boolean used_up;
 	boolean individual_object = obj ? TRUE : FALSE;
@@ -1051,12 +1075,11 @@ struct monst *shkp;		/* shopkeepr that owns the object (may be null) */
 		   if ((stmp->range-- > 0) && (!stmp->stopped)) {
 			bhitpos.x = stmp->ox + stmp->dx;
 			bhitpos.y = stmp->oy + stmp->dy;
-			typ = levl[bhitpos.x][bhitpos.y].typ;
 			if(!isok(bhitpos.x, bhitpos.y)) {
 				bhitpos.x -= stmp->dx;
 				bhitpos.y -= stmp->dy;
 				stmp->stopped = TRUE;
-			} else if(!ZAP_POS(typ) ||
+			} else if(!ZAP_POS(levl[bhitpos.x][bhitpos.y].typ) ||
 					closed_door(bhitpos.x, bhitpos.y)) {
 				bhitpos.x -= stmp->dx;
 				bhitpos.y -= stmp->dy;
@@ -1420,6 +1443,7 @@ int adtyp;
 			return EXPL_FIERY;
 		case AD_ECLD:
 		case AD_COLD:
+		case AD_UHCD:
 			return EXPL_FROSTY;
 		case AD_EELC:
 		case AD_ELEC:

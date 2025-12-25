@@ -63,6 +63,7 @@ getlin_hook_proc hook;
 		Sprintf(toplines, "%s ", query);
 		Strcat(toplines, obufp);
 		if((c = Getchar()) == EOF) {
+			iflags.term_gone = 1;
 #ifndef NEWAUTOCOMP
 			*bufp = 0;
 #endif /* not NEWAUTOCOMP */

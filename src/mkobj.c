@@ -1934,8 +1934,7 @@ start_corpse_timeout(body)
 			when = age;
 			break;
 		    }
-	} else if (is_fungus(&mons[body->corpsenm]) && 
-			  !is_migo(&mons[body->corpsenm])) {
+	} else if (is_fungus(&mons[body->corpsenm]) && !is_migo(&mons[body->corpsenm]) && !body->norevive) {
 		/* Fungi come back with a vengeance - if you don't eat it or
 		 * destroy it,  any live cells will quickly use the dead ones
 		 * as food and come back.
@@ -2251,6 +2250,10 @@ struct obj* obj;
 	case HARMONIUM_SCALE_MAIL:
 	case HARMONIUM_GAUNTLETS:
 	case HARMONIUM_BOOTS:
+	case SILVERKNIGHT_HELM:
+	case SILVERKNIGHT_ARMOR:
+	case SILVERKNIGHT_GAUNTLETS:
+	case SILVERKNIGHT_BOOTS:
 	case ELVEN_MITHRIL_COAT:
 	case DWARVISH_MITHRIL_COAT:
 	case BROKEN_ANDROID:
@@ -2428,6 +2431,9 @@ int oldmat, newmat;
 	/* set random gemstone type for valid gemstone objects */
 	if (newmat == GEMSTONE && obj->oclass != GEM_CLASS && (obj->sub_material < MAGICITE_CRYSTAL || obj->sub_material > LAST_GEM || oldmat != GEMSTONE)) {
 		if(obj->oartifact == ART_JIN_GANG_ZUO){
+			set_submat(obj, DIAMOND);
+		}
+		else if(obj->oartifact == ART_GOKOREI){
 			set_submat(obj, DIAMOND);
 		}
 		else do{
@@ -3126,8 +3132,9 @@ boolean init;
 			if (otmp->otyp == CORPSE) {
 				stop_all_timers(otmp->timed);
 				/* if the monster was cancelled, don't self-revive */
-				if (mtmp && mtmp->mcan && !is_rider(ptr))
+				if (mtmp && (mtmp->mcan || mtmp->mlaidtorest) && !is_rider(ptr)){
 					otmp->norevive = 1;
+				}
 				start_corpse_timeout(otmp);
 			}
 	    }
@@ -3550,7 +3557,7 @@ struct obj *obj;
 	}
 	else obj_extract_self(obj);
 	if (obj->otyp == LEASH && obj->leashmon) o_unleash(obj);
-	if (obj->oclass == FOOD_CLASS) food_disappears(obj);
+	if (obj->oclass == FOOD_CLASS) food_extracted(obj);
 	if (obj->oclass == SPBOOK_CLASS) book_disappears(obj);
 }
 

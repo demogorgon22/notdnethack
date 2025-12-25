@@ -637,7 +637,7 @@ int booktype;
 		break;
 	}
 	if(related && skill >= skillmin){
-		if(Role_if(PM_WIZARD)
+		if(u.uwizard
 			|| parasite_count() >= 6
 			|| (u.sealsActive&SEAL_PAIMON)
 			|| (Role_if(PM_HEALER) && spell_skilltype(skill) == P_HEALING_SPELL)
@@ -792,7 +792,7 @@ struct obj *spellbook;
 			
 			/* only wizards know if a spell is too difficult */
 			/* paimon makes you an honorary wizard */
-			if ((Role_if(PM_WIZARD) || u.sealsActive&SEAL_PAIMON) && read_ability < 20 && !confused) {
+			if ((u.uwizard || u.sealsActive&SEAL_PAIMON) && read_ability < 20 && !confused) {
 			    char qbuf[QBUFSZ];
 			    Sprintf(qbuf, "This spellbook is %sdifficult to comprehend. Continue?", (read_ability < 12 ? "very " : ""));
 			    if (yn(qbuf) != 'y') {
@@ -1234,10 +1234,6 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"You create a small stack of ammunition for your currently wielded ranged weapon, and take a small amount of damage." },
 	{ SEAL_EVE, "Barrage",
 	"Fire a large number of projectiles." },
-	{ SEAL_FAFNIR, "Breathe Poison",
-	"Create a stinking cloud centered at the chosen location." },
-	{ SEAL_FAFNIR, "Ruinous Strike",
-	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
 	{ SEAL_HUGINN_MUNINN, "Raven's Talons",
 	"Permanently blinds single adjacent target, while dealing damage. Deals less damage against a blind or sightless target." },
 	{ SEAL_IRIS, "Horrid Wilting",
@@ -1248,6 +1244,12 @@ static const struct spirit_power spirit_powers[NUMBER_POWERS] = {
 	"Add some fuel to a wielded oil lamp or lightsaber." },
 	{ SEAL_JACK, "Hellfire",
 	"Create a moderately-damaging explosion of fire centered on the chosen square. Requires you to wield a lit potion of oil, oil lamp, or lightsaber." },
+	{ SEAL_MAEGERA, "Breathe Poison",
+	"Create a stinking cloud centered at the chosen location." },
+	{ SEAL_MAEGERA, "Ruinous Strike",
+	"You dig out and untraps target adjacent square, or moderately damages target adjacent nonliving creature, or destroys target adjacent golem." },
+	{ SEAL_MAEGERA, "Aureate Deluge",
+	"You cover your weapon in molten gold, dealing bonus fire damage until it cools." },
 	{ SEAL_MALPHAS, "Call Murder",
 	"Summon a tame crow. The crow's level is based on your level." },
 	{ SEAL_MARIONETTE, "Root Shout",
@@ -1591,6 +1593,7 @@ int atype;
 	{
 	case AD_HOLY:
 	case AD_UNHY:
+	case AD_VORP:
 		return P_MARTIAL_ARTS;
 	case AD_MAGM:
 	case AD_FIRE:
@@ -1690,7 +1693,7 @@ int energy;
 	 * understand quite well how to cast spells.
 	 */
 	intell = ACURR(A_INT);
-	if (!Role_if(PM_WIZARD)){
+	if (!u.uwizard){
 		if(uarmh && uarmh->oartifact == ART_APOTHEOSIS_VEIL) intell -= 4;
 		else if(u.sealsActive&SEAL_PAIMON) intell -= 6;
 		else intell -= 10;
@@ -2669,6 +2672,7 @@ spiriteffects(power, atme)
 					mon->msleeping = 0;
 					mon->mstun = 0;
 					mon->mconf = 0;
+					mon->mpunctured = 0;
 					if (canseemon(mon))
 						pline("%s looks recovered.", Monnam(mon));
 				}
@@ -3032,6 +3036,24 @@ spiriteffects(power, atme)
 					setmangry(mon);
 				}
 			} else break;
+		}break;
+		case PWR_AUREATE_DELUGE:{
+	        struct obj* otmp = (struct obj*)0;
+			if (uwep && (uwep->oclass == WEAPON_CLASS || uwep->oclass == TOOL_CLASS)){
+				otmp = uwep; //use the weapon in your wielded hand
+			} else if (uarmg){
+				otmp = uarmg; //use gloves if wielded weapon is missing, but not metallic
+			} else {
+				You("need a wielded weapon, or worn gloves.");
+				return MOVE_CANCELLED;
+			}
+			if (!is_metallic(otmp)) {
+				You("need a metallic object.");
+				return MOVE_CANCELLED;
+			}
+			pline("Molten gold bubbles up from your throat, spilling over %s.", yname(otmp));
+			add_oprop(otmp, OPROP_GOLDW);
+			start_timer(5, TIMER_OBJECT, REVERT_AUREATE, (genericptr_t)otmp);
 		}break;
 		case PWR_RAVEN_S_TALONS:{
 			int dmg;
@@ -4430,7 +4452,7 @@ int spell;
 			vision_full_recalc = 1;	/* lighting changed */
 			if(u.sealsActive&SEAL_TENEBROUS) unbind(SEAL_TENEBROUS,TRUE); /* First Word vs Last Word */
 			doredraw();
-			u.ufirst_light_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_light_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		break;
 		case PART_WATER:{
 			boolean parted = FALSE;
@@ -4487,7 +4509,7 @@ int spell;
 				//Update
 				sx += u.dx, sy += u.dy;
 			}
-			u.ufirst_sky_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_sky_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		}break;
 		case OVERGROW:
 			for(sy = 0; sy < ROWNO; sy++){
@@ -4539,7 +4561,7 @@ int spell;
 			}
 			vision_full_recalc = 1;	/* trees may have sprouted */
 			doredraw();
-			u.ufirst_life_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_life_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		break;
 		case APPLE_WORD:
 			You("speak the dreadful truth!");
@@ -4554,7 +4576,7 @@ int spell;
 					}
 				}
 			}
-			u.ufirst_know_timeout = moves + (long)(rnz(100)*(Role_if(PM_PRIEST) ? .8 : 1));
+			u.ufirst_know_timeout = moves + (long)(rnz(100)*(u.upriest ? .8 : 1));
 		break;
 		default:
 			pline("Unknown word of power!");
@@ -4743,7 +4765,7 @@ spelleffects(int spell, boolean atme, int spelltyp)
 	skill = spell_skilltype(pseudo->otyp);
 	role_skill = P_SKILL(skill);
 	if(Spellboost) role_skill++;
-	if(Role_if(PM_WIZARD)) role_skill++;
+	if(u.uwizard) role_skill++;
 	
 	n = 0;
 	switch(pseudo->otyp)  {
@@ -6068,6 +6090,12 @@ int spell;
 	if(Black_crystal)
 		splcaster -= urole.spelarmr;
 
+	if(carrying_art(ART_IRON_SPOON_OF_LIBERATION) && (
+		spellid(spell) == SPE_TELEPORT_AWAY
+		|| spellid(spell) == SPE_STONE_TO_FLESH
+		|| spellid(spell) == SPE_DIG
+	))
+		splcaster -= urole.spelarmr;
 	if(uwep){
 		int cast_bon;
 		// powerful channeling artifacts
@@ -6077,6 +6105,7 @@ int spell;
 			|| uwep->oartifact == ART_PROFANED_GREATSCYTHE
 			|| uwep->oartifact == ART_GARNET_ROD
 			|| (Role_if(PM_KNIGHT) && uwep->oartifact == ART_MAGIC_MIRROR_OF_MERLIN)
+			|| (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))
 		) splcaster -= urole.spelarmr;
 
 		if(uwep->obj_material == MERCURIAL)
@@ -6094,7 +6123,7 @@ int spell;
 			cast_bon = 0;
 			if(spell_skilltype(spellid(spell)) == P_CLERIC_SPELL
 			 || spell_skilltype(spellid(spell)) == P_HEALING_SPELL
-			 || Role_if(PM_PRIEST)
+			 || u.upriest
 			 || Role_if(PM_MONK)
 			 || Role_if(PM_HEALER)
 			) cast_bon += 2;
@@ -6110,7 +6139,7 @@ int spell;
 			cast_bon = 0;
 			if(spell_skilltype(spellid(spell)) == P_CLERIC_SPELL
 			 || spell_skilltype(spellid(spell)) == P_HEALING_SPELL
-			 || Role_if(PM_PRIEST)
+			 || u.upriest
 			 || Role_if(PM_HEALER)
 			) cast_bon += 2;
 			if (uwep->oartifact || objects[uwep->otyp].oc_unique)
@@ -6199,7 +6228,7 @@ int spell;
 			splcaster -= urole.spelarmr * cast_bon / 3;
 		}
 		
-		if(Role_if(PM_WIZARD) && uwep->oclass == WAND_CLASS) {	// a tool of spellweaving
+		if(u.uwizard && uwep->oclass == WAND_CLASS) {	// a tool of spellweaving
 			cast_bon = 1;
 			if (uwep->oartifact)
 				cast_bon *= 2;
@@ -6470,6 +6499,11 @@ int spell;
 	/* Clamp to percentile */
 	if (chance > 100) chance = 100;
 	if (chance < 0) chance = 0;
+
+	if (uwep && uwep->oartifact == ART_LUCK_BLADE){
+		int c = 100-chance;
+		chance = 100 - (c*c)/100;
+	}
 
 	return chance;
 }
@@ -6802,7 +6836,7 @@ dopseudonatural()
 		) continue;
 		
 		if(mon){
-			xmeleehity(&youmonst, mon, &symbiote, (struct obj **)0, -1, 0, FALSE);
+			xmeleehity(&youmonst, mon, &symbiote, (struct obj **)0, -1, 0, FALSE, 0);
 		}
 	}
 }

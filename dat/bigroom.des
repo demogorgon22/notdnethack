@@ -440,6 +440,127 @@ MONSTER:random,random,random
 MONSTER:random,random,random
 MONSTER:random,random,random
 
+#	Forge with random smith
+
+MAZE:"bigrm-6",' '
+FLAGS:shortsighted
+GEOMETRY:center,center
+#0         1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0---------------------------------------------------------------------------
+1|.........................................................................|
+2|.........................................................................|
+3|.........................................................................|
+4|.........................................................................|
+5|.........................................................................|
+6|................................-.-----.-................................|
+7|..................................|   |..................................|
+8|..................................|   |..................................|
+9|..................................|   |..................................|
+0|................................-.-- --.-................................|
+1|.........................................................................|
+2|...................................|.|...................................|
+3|.........................................................................|
+4|...................................|.|...................................|
+5|.........................................................................|
+6|...................................|.|...................................|
+7---------------------------------------------------------------------------
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7
+# Dungeon Description
+
+# Objects
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+# Random monsters.
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+MONSTER:random,random,random
+
+GEOMETRY:center,center
+#0         1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0---------------------------------------------------------------------------
+1|.........................................................................|
+2|.........................................................................|
+3|.........................................................................|
+4|.........................................................................|
+5|.........................................................................|
+6|................................-.-----.-................................|
+7|..................................|...|..................................|
+8|..................................|...|..................................|
+9|..................................|...|..................................|
+0|................................-.--+--.-................................|
+1|.........................................................................|
+2|...................................|.|...................................|
+3|.........................................................................|
+4|...................................|.|...................................|
+5|.........................................................................|
+6|...................................|.|...................................|
+7---------------------------------------------------------------------------
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#0         1         2         3         4         5         6         7
+# Dungeon Description
+
+# Stairs
+STAIR:(00,00,74,16),(36,07,38,09),up
+STAIR:(00,00,74,16),(36,07,38,09),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,74,17)
+REGION:(29,01,45,16),lit,"ordinary"
+DOOR:closed,(37,10)
+
+FORGE:(37,08)
+MONSTER:'#',"standard smith",(37,08), peaceful
 
 MAZE:"bgrmb-1",' '
 FLAGS:shortsighted

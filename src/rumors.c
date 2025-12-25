@@ -451,7 +451,7 @@ register struct monst *oracl;
 				boolean cheapskate = umoney < major_cost;
 				outoracle(cheapskate, TRUE);
 				if (!cheapskate && !u.uevent.major_oracle){
-					more_experienced(major_cost / (u.uevent.major_oracle ? 25 : 10), 0);
+					more_experienced(major_cost / (u.uevent.minor_oracle ? 25 : 10), 0);
 					newexplevel();
 					/* ~100 pts if very 1st, ~40 pts if minor already done */
 					if(!u.uevent.minor_oracle) livelog_write_string("consulted the oracle for the first time");
@@ -474,13 +474,13 @@ register struct monst *oracl;
 				display_nhwindow(WIN_MESSAGE, FALSE);
 				doenlightenment();
 				pline_The("feeling subsides.");
-				if (!u.uevent.major_oracle){
-					more_experienced(enl_cost / (u.uevent.major_oracle ? 25 : 10), 0);
+				if (!u.uevent.minor_oracle){
+					more_experienced(minor_cost / (u.uevent.major_oracle ? 25 : 10), 0);
 					newexplevel();
 					/* 5 pts if very 1st, or 2 pts if major already done */
 					if(!u.uevent.major_oracle) livelog_write_string("consulted the oracle for the first time");
 				}
-				u.uevent.major_oracle = TRUE;
+				u.uevent.minor_oracle = TRUE;
 			}
 		break;
 		case SELECT_HINTS:
@@ -729,12 +729,15 @@ register struct monst *oracl;
 						char tbuf[BUFSZ];
 						int i;
 						d_level lev;
-						tmpwin = create_nhwindow(NHW_MENU);
-						start_menu(tmpwin);
-						any.a_void = 0;		/* zero out all bits */
-	    					for (i = 1; artilist[i].otyp; i++){
+
+						for (i = 1; artilist[i].otyp; i++){
 							if(!artinstance[i].exists)
 								continue;
+							if (arti_count == 0){
+								tmpwin = create_nhwindow(NHW_MENU);
+								start_menu(tmpwin);
+								any.a_void = 0;		/* zero out all bits */
+							}
 							Sprintf(buf, "%s", artilist[i].name);
 							any.a_int = i;	/* must be non-zero */
 							add_menu(tmpwin, NO_GLYPH, &any,
@@ -742,8 +745,10 @@ register struct monst *oracl;
 								MENU_UNSELECTED);
 							arti_count++;
 						}
-
-
+						if (arti_count == 0){
+							pline("All artifacts have yet to be born.");
+							break;
+						}
 						end_menu(tmpwin, "Know the birthplace of which artifact?");
 
 						how = PICK_ONE;
@@ -767,13 +772,13 @@ register struct monst *oracl;
 					break;
 				}
 
-				if (!u.uevent.major_oracle){
-					more_experienced(hint_cost / (u.uevent.major_oracle ? 25 : 10), 0);
+				if (!u.uevent.minor_oracle){
+					more_experienced(minor_cost / (u.uevent.major_oracle ? 25 : 10), 0);
 					newexplevel();
-				/* 5 pts if very 1st, or 2 pts if major already done */
+					/* 5 pts if very 1st, or 2 pts if major already done */
 					if(!u.uevent.major_oracle) livelog_write_string("consulted the oracle for the first time");
 				}
-				u.uevent.major_oracle = TRUE;
+				u.uevent.minor_oracle = TRUE;
 			}
 		break;
 		default:

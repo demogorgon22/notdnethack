@@ -727,9 +727,18 @@ break_armor()
 				(void) Cloak_off();
 				dropx(otmp);
 			} else {
-				Your("%s tears apart!", cloak_simple_name(otmp));
-				(void) Cloak_off();
-				useup(otmp);
+				if(otmp->otyp == MUMMY_WRAPPING || otmp->otyp == PRAYER_WARDED_WRAPPING){
+					Your("%s tears apart!", cloak_simple_name(otmp));
+					(void) Cloak_off();
+					useup(otmp);
+				}
+				else {
+					Your("%s pops open!", cloak_simple_name(otmp));
+					(void) Cloak_off();
+					if(!otmp->oeroded3)
+						otmp->oeroded3 = 1;
+					dropx(otmp);
+				}
 			}
 		}
 	}
@@ -1676,6 +1685,19 @@ dohide()
 	return MOVE_STANDARD;
 }
 
+void
+u_psi_blast_effects(struct monst *mdef, int damage, int dice)
+{
+	if(dice >= 3){
+		mdef->mstdy = max(damage, mdef->mstdy);
+		mdef->encouraged = min(-1*damage, mdef->encouraged);
+	}
+	if(dice >= 5){
+		mdef->mstun = 1;
+		mdef->mconf = 1;
+	}
+}
+
 int
 domindblast()
 {
@@ -1712,7 +1734,7 @@ domindblast()
 			continue;
 		// if (distu(mtmp->mx, mtmp->my) > BOLT_LIM * BOLT_LIM)
 			// continue;
-		if(mtmp->mpeaceful)
+		if(mtmp->mpeaceful || nonthreat(mtmp))
 			continue;
 		if(mindless_mon(mtmp))
 			continue;
@@ -1738,20 +1760,13 @@ domindblast()
 				round_dice += twin_dice;
 
 			mfdmg = Role_if(PM_ANACHRONOUNBINDER)?d(round_dice,15)*(int)(u.ulevel/6):d(round_dice,15);
+			mfdmg = reduce_dmg(mtmp,mfdmg,FALSE,TRUE);
 			mtmp->mhp -= mfdmg;
 			mtmp->mstrategy &= ~STRAT_WAITFORU;
 			if (mtmp->mhp <= 0)
 				killed(mtmp);
 			else {
-				
-				if(round_dice >= 3){
-					mtmp->mstdy = max(mfdmg, mtmp->mstdy);
-					mtmp->encouraged = min(-1*mfdmg, mtmp->encouraged);
-				}
-				if(round_dice >= 5){
-					mtmp->mstun = 1;
-					mtmp->mconf = 1;
-				}
+				u_psi_blast_effects(mtmp, mfdmg, round_dice);
 			}
 		}
 	}
@@ -1771,7 +1786,7 @@ domindblast_strong()
 		nmon = mtmp->nmon;
 		if (DEADMONSTER(mtmp))
 			continue;
-		if(mtmp->mpeaceful)
+		if(mtmp->mpeaceful || nonthreat(mtmp))
 			continue;
 		if(mindless_mon(mtmp))
 			continue;
@@ -2497,8 +2512,9 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	}
 	if (mptr->mlet == S_EYE && !is_auton(mptr))
 	    return sphere_parts[part];
-	if (mptr->mlet == S_JELLY || mptr->mlet == S_PUDDING ||
-		mptr->mlet == S_BLOB || mptr->mtyp == PM_JELLYFISH)
+	if (mptr->mlet == S_JELLY || mptr->mlet == S_PUDDING
+		|| mptr->mlet == S_BLOB || mptr->mtyp == PM_JUIBLEX
+		|| mptr->mtyp == PM_JELLYFISH)
 	    return jelly_parts[part];
 	if (mptr->mlet == S_VORTEX || mptr->mlet == S_ELEMENTAL)
 	    return vortex_parts[part];

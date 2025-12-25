@@ -68,6 +68,17 @@ MAP
 ENDMAP
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
 #0         1         2         3         4         5         6         7    
+OBJECT:'\\',"bed",(54,02)
+OBJECT:'\\',"bed",(57,02)
+OBJECT:'\\',"bed",(61,02)
+OBJECT:'\\',"bed",(65,02)
+OBJECT:'\\',"bed",(54,15)
+OBJECT:'\\',"bed",(37,17)
+OBJECT:'\\',"bed",(41,17)
+OBJECT:'\\',"bed",(44,17)
+OBJECT:'\\',"bed",(54,17)
+
+OBJECT:'\\',"expensive bed",(61,12)
 
 # Dungeon Description
 REGION:(00,00,75,19),lit,"ordinary"
@@ -205,7 +216,26 @@ STAIR:(37,01),down
 DOOR:locked,(09,04),1
 
 FORGE:(15,02)
-
+# beds
+OBJECT:'#',"thoroughly burnt bed",(11,00)
+OBJECT:'#',"thoroughly burnt bed",(16,10)
+OBJECT:'#',"thoroughly burnt bed",(19,10)
+OBJECT:'#',"thoroughly burnt bed",(21,11)
+OBJECT:'#',"thoroughly burnt bed",(19,12)
+OBJECT:'#',"thoroughly burnt bed",(21,13)
+OBJECT:'#',"thoroughly burnt bed",(24,12)
+OBJECT:'#',"thoroughly burnt bed",(30,13)
+OBJECT:'#',"thoroughly burnt bed",(32,13)
+OBJECT:'#',"thoroughly burnt bed",(41,14)
+OBJECT:'#',"thoroughly burnt bed",(45,14)
+OBJECT:'#',"thoroughly burnt bed",(48,13)
+OBJECT:'#',"thoroughly burnt bed",(51,13)
+OBJECT:'#',"thoroughly burnt bed",(53,08)
+OBJECT:'#',"thoroughly burnt bed",(59,07)
+OBJECT:'#',"thoroughly burnt bed",(62,06)
+OBJECT:'#',"thoroughly burnt bed",(63,04)
+OBJECT:'#',"thoroughly burnt bed",(65,04)
+OBJECT:'#',"thoroughly burnt bed",(70,01)
 # Boulders
 OBJECT:'`',"boulder",(38,11)
 OBJECT:'`',"boulder",(36,12)
@@ -411,6 +441,7 @@ MONSTER: 'T', random, random, hostile
 
 
 LEVEL: "Dna-filb"
+FLAGS:noteleport
 #
 ROOM: "ordinary" , random, random, random, random
 STAIR: random, up

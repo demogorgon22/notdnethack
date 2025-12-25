@@ -121,6 +121,51 @@ register struct obj *obj;
         }
 }
 
+boolean
+wield_mortal_blade(wep)
+struct obj* wep;
+{
+	boolean confirmation = FALSE;
+	char qbuf[QBUFSZ];
+
+	if (wep->oartifact != ART_MORTAL_BLADE) return TRUE;
+
+	if (artinstance[wep->oartifact].drawnMortal == 0){
+		if (undiscovered_artifact(wep->oartifact))
+			You_feel("a creeping doom from this blade. If you were to draw it, you're not sure you'd survive.");
+		else
+			You("know this blade - it is the blade that cannot be drawn. Not one who has drawn it has survived the effort.");
+	}
+	else
+		pline("If you draw the blade again, it will surely slay you once more.");
+
+	confirmation = (yesno("Knowing this, do you still wish to attempt this?", TRUE) == 'y');
+	if (confirmation){
+		You("draw the Mortal Blade from its sheath... and fall to the ground, dead.");
+		/* Bad hack to check if you have lifesaving that triggers before this */
+		if (artinstance[ART_MORTAL_BLADE].mortalLives){
+			pline("For a moment, you smell the sweet scent of cherry blossoms.");
+			artinstance[ART_MORTAL_BLADE].mortalLives--;
+		} else {
+			killer_format = KILLED_BY;
+			killer = "drawing the blade that could not be drawn";
+			done(DIED);
+		}
+
+		/* for fun, a little conduct tracker. could just be 0/1 but why not? */
+		artinstance[wep->oartifact].drawnMortal++;
+		You("stand up, with the blade in hand.");
+		discover_artifact(ART_MORTAL_BLADE);
+		wep->known = 1;
+		return TRUE;
+	} else {
+		You("decide against such a risky maneuver.");
+		return FALSE;
+	}
+
+	return confirmation; /* redundant */
+}
+
 STATIC_OVL int
 ready_weapon(wep, quietly)
 struct obj *wep;
@@ -159,6 +204,8 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 	    pline("Only a Shogun, or a bearer of the Amulet of Yendor, is truly worthy of wielding this sword.");
 	    res++;	/* takes a turn even though it doesn't get wielded */
 	} else if (wep->oartifact && !touch_artifact(wep, &youmonst, FALSE)) {
+	    res++;	/* takes a turn even though it doesn't get wielded */
+	} else if (wep->oartifact == ART_MORTAL_BLADE && !wield_mortal_blade(wep)) {
 	    res++;	/* takes a turn even though it doesn't get wielded */
 	} else {
 	    /* Weapon WILL be wielded after this point */
@@ -293,21 +340,23 @@ dowield()
 	}
 
 	/* Handle no object, or object in other slot */
-	if (wep == &zeroobj)
-		wep = (struct obj *) 0;
-	else if (wep == uswapwep){
-		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
-		return (doswapweapon());
-	} else if (wep == uquiver){
-		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
-		setuqwep((struct obj *) 0);
-	} else if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
+	if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif
 			)) {
 		You("cannot wield that!");
 		return MOVE_CANCELLED;
+	} else if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Sheathe the Mortal Blade?", TRUE) == 'n') {
+		return MOVE_INSTANT;
+	} else if (wep == &zeroobj){
+		wep = (struct obj *) 0;
+	} else if (wep == uswapwep){
+		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+		return (doswapweapon());
+	} else if (wep == uquiver){
+		if(wep->ostolen && u.sealsActive&SEAL_ANDROMALIUS) unbind(SEAL_ANDROMALIUS, TRUE);
+		setuqwep((struct obj *) 0);
 	}
 
 	/* Set your new primary weapon */
@@ -343,6 +392,9 @@ doswapweapon()
 		weldmsg(uwep);
 		return MOVE_INSTANT;
 	}
+
+	if (uwep && uwep->oartifact == ART_MORTAL_BLADE && yesno("Sheathe the Mortal Blade?", TRUE) == 'n')
+		return MOVE_INSTANT;
 
 	/* Unwield your current secondary weapon */
 	oldwep = uwep;
@@ -449,7 +501,8 @@ long slot;
 {
 	switch (slot) {
 	case W_WEP:
-		ready_weapon(obj, TRUE);
+		if (obj->oartifact != ART_MORTAL_BLADE)
+			ready_weapon(obj, TRUE);
 		break;
 	case W_SWAPWEP:
 		setuswapwep(obj);
@@ -1019,7 +1072,11 @@ struct monst * mon;
 	if (is_spear(otmp))
 		return 1.5;
 
-	if (otmp->otyp == ISAMUSEI || otmp->otyp == CHIKAGE || otmp->otyp == KATANA || otmp->otyp == LONG_SWORD || is_vibrosword(otmp))
+	if (otmp->oartifact == ART_WINTER_REAPER)
+		return 1.5;
+
+	if (otmp->otyp == ISAMUSEI || otmp->otyp == CHIKAGE || otmp->otyp == KATANA || otmp->otyp == ODACHI
+		|| otmp->otyp == LONG_SWORD || is_vibrosword(otmp))
 		return 1.5;
 	
 	return 1;

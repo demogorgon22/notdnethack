@@ -164,15 +164,39 @@ int type;
 	long old = Sick;
 
 	if (xtime > 0L) {
+		struct obj *uarmor[] = ARMOR_SLOTS;
 	    if (Sick_resistance) return;
 		IMPURITY_UP(u.uimp_illness)
+		int silverarmor_count = 0;
+		for(int i = 0; i < SIZE(uarmor); i++) {
+			if(uarmor[i] && is_silverknight_armor(uarmor[i])){
+				silverarmor_count++;
+				if(i == 0){ //body armor is best
+					silverarmor_count++; 
+				}
+			}
+		}
+		if(uwep && uwep->otyp == SILVERKNIGHT_SPEAR)
+			silverarmor_count += 3;
+		if(uswapwep && uswapwep->otyp == SILVERKNIGHT_SPEAR)
+			silverarmor_count += 2;
+
 	    if (!old) {
-		/* newly sick */
-		if(talk) You_feel("deathly sick.");
+			/* newly sick */
+			if(talk) You_feel("deathly sick.");
+			if(silverarmor_count > 0)
+				xtime += xtime * silverarmor_count / 10;
+			if(youracedata->mtyp == PM_SILVERKNIGHT)
+				xtime *= 2;
 	    } else {
 		/* already sick */
-		if (talk) You_feel("%s worse.",
-			      xtime <= Sick/2L ? "much" : "even");
+			if(silverarmor_count > 0){
+				xtime += xtime * silverarmor_count / 10;
+				if(xtime > old-1)
+					xtime = max(1, old-1);
+			}
+			if (talk) You_feel("%s worse.",
+					xtime <= Sick/2L ? "much" : "even");
 	    }
 	    set_itimeout(&Sick, xtime);
 	    u.usick_type |= type;
@@ -387,6 +411,11 @@ dodrink()
 {
 	register struct obj *otmp;
 	const char *potion_descr;
+
+	if(nomouth(youracedata->mtyp)) {
+		pline("You have no mouth to drink with!");
+		return MOVE_INSTANT;
+	}
 
 	if (Strangled) {
 		pline("If you can't breathe air, how can you drink liquid?");
@@ -1332,7 +1361,7 @@ as_extra_healing:
 				good_for_you = TRUE;
 			    } else {
 				You("burn your %s.", body_part(FACE));
-				if(!(HFire_resistance || u.sealsActive&SEAL_FAFNIR)) losehp(d(Fire_resistance ? 1 : 3, 4),
+				if(!(HFire_resistance || u.sealsActive&SEAL_MAEGERA)) losehp(d(Fire_resistance ? 1 : 3, 4),
 				       "burning potion of oil", KILLED_BY_AN);
 			    }
 			} else if(otmp->cursed){
@@ -2006,7 +2035,7 @@ boolean your_fault;
 				pline("%s looks rather ill.", Monnam(mon));
 		}
 		if (touch_petrifies(&mons[mtyp]) && !resists_ston(mon)) {
-			minstapetrify(mon, TRUE);
+			minstapetrify(mon, TRUE, FALSE);
 		}
 	}break;
 	case POT_POLYMORPH:
@@ -2959,7 +2988,14 @@ dodip()
 				}
 				bless(obj);
 				obj->bknown=1;
+				potion->bknown=1;
 				goto poof;
+			}
+			else {
+				if(potion->bknown)
+					obj->bknown=1;
+				else if(obj->bknown)
+					potion->bknown=1;
 			}
 		} else if (potion->cursed) {
 			if (obj->blessed) {
@@ -2981,7 +3017,14 @@ dodip()
 				}
 				curse(obj);
 				obj->bknown=1;
+				potion->bknown=1;
 				goto poof;
+			}
+			else {
+				if(potion->bknown)
+					obj->bknown=1;
+				else if(obj->bknown)
+					potion->bknown=1;
 			}
 		} else {
 			switch(artifact_wet(obj,TRUE)) {
@@ -3227,7 +3270,6 @@ dodip()
 				Sprintf(buf, "One of %s", the(xname(potion)));
 			else
 				Strcpy(buf, The(xname(potion)));
-			obj->opoisoned = 0;
 			if(obj->otyp != VIPERWHIP) obj->opoisoned = 0;
 			if(obj->otyp == VIPERWHIP) pline("%s is drawn up into %s.",
 				  buf, the(xname(obj)));
@@ -3245,7 +3287,6 @@ dodip()
 				Sprintf(buf, "One of %s", the(xname(potion)));
 			else
 				Strcpy(buf, The(xname(potion)));
-			obj->opoisoned = 0;
 			if(obj->otyp != VIPERWHIP) obj->opoisoned = 0;
 			if(obj->otyp == VIPERWHIP) pline("%s is drawn up into %s.",
 				  buf, the(xname(obj)));
@@ -3263,7 +3304,6 @@ dodip()
 				Sprintf(buf, "One of %s", the(xname(potion)));
 			else
 				Strcpy(buf, The(xname(potion)));
-			obj->opoisoned = 0;
 			if(obj->otyp != VIPERWHIP) obj->opoisoned = 0;
 			if(obj->otyp == VIPERWHIP) pline("%s is drawn up into %s.",
 				  buf, the(xname(obj)));
@@ -3284,7 +3324,6 @@ dodip()
 				Sprintf(buf, "One of %s", the(xname(potion)));
 			else
 				Strcpy(buf, The(xname(potion)));
-			obj->opoisoned = 0;
 			if(obj->otyp != VIPERWHIP) obj->opoisoned = 0;
 			if(obj->otyp == VIPERWHIP) pline("%s is drawn up into %s.",
 				  buf, the(xname(obj)));
@@ -3703,7 +3742,7 @@ register struct obj *obj;
 				(mtmp3 && canseemon(mtmp3)) ? a_monnam(mtmp3) : "");
 		}
 		int artwishes = u.uconduct.wisharti;
-		makewish(allow_artwish()|WISH_VERBOSE);
+		makewish(WISH_SINGLE_USE | allow_artwish()|WISH_VERBOSE);
 		if (u.uconduct.wisharti > artwishes) {
 			/* made artifact wish */
 			if (mtmp2) {

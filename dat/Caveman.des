@@ -9,7 +9,7 @@
 #	and receive your quest assignment.
 #
 MAZE: "Cav-strt",' '
-FLAGS: noteleport,hardfloor
+FLAGS: hardfloor
 GEOMETRY:center,center
 MAP
                                                                             
@@ -55,8 +55,11 @@ OBJECT:'#',"blessed obsidian trephination kit",(36,02)
 # Shaman Karnov
 MONSTER:'@',"Shaman Karnov",(35,02)
 # The treasure of Shaman Karnov
-OBJECT:'(',"chest",(34,02)
-# no scrolls, cavemen cannot write
+CONTAINER:'(',"chest",(34,02)
+OBJECT:'*',"vital soulstone",contained
+OBJECT:'*',"vital soulstone",contained
+OBJECT:'*',"vital soulstone",contained
+# no scrolls, cavemen cannot write. some rocks that made him feel good instead
 # neanderthal guards for the audience chamber
 MONSTER:'@',"neanderthal",(20,03)
 MONSTER:'@',"neanderthal",(20,02)

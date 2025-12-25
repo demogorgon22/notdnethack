@@ -265,6 +265,12 @@ found_ward:
 	} else if (i == SPE_BOOK_OF_THE_DEAD || i == SPE_SECRETS || i == SCR_CONSECRATION) {
 		pline("No mere dungeon adventurer could write that.");
 		return 1;
+	} else if (i == SCR_SECRET_ARTS) {
+		if(Role_if(PM_KENSEI))
+			pline("Perhaps you will write that when you have a school and disciples of your own.");
+		else
+			pline("No mere dungeon adventurer could write that.");
+		return 1;
 	} else if (by_descr && paper->oclass == SPBOOK_CLASS &&
 		    !objects[i].oc_name_known) {
 		/* can't write unknown spellbooks by description */
@@ -288,7 +294,7 @@ found_ward:
 	/* see if there's enough ink */
 	basecost = cost(new_obj);
 	
-	if(Role_if(PM_WIZARD))
+	if(u.uwizard)
 		basecost = basecost * 4 / 5;
 
 	if(pen->spe < basecost/2)  {
@@ -302,6 +308,14 @@ found_ward:
 	actualcost = rn1(basecost/2,basecost/2);
 	curseval = bcsign(pen) + bcsign(paper);
 	exercise(A_WIS, TRUE);
+	/* oops, artifact paper */
+	if(paper->oartifact){
+		pen->spe = max(0, pen->spe - actualcost/2);
+		Your("writing rapidly fades away!");
+		pline_The("%s remains blank.", typeword);
+		obfree(new_obj, (struct obj *) 0);
+		return(1);
+	}
 	/* dry out marker */
 	if (pen->spe < actualcost) {
 		pen->spe = 0;
@@ -354,7 +368,7 @@ found_ward:
 	//			60			83				94				109					74%
 	int target = u.ulevel*3 + ACURR(A_INT) + ACURR(A_WIS)/2 + school_skill;
 	
-	if(!Role_if(PM_WIZARD) && target > 0)
+	if(!u.uwizard && target > 0)
 		target /= 5;
 	
 	/* can't write if we don't know it - unless we're lucky */

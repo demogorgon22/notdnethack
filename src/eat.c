@@ -161,7 +161,7 @@ struct obj *obj;
 											  obj->otyp != TIN && 
 											  obj->oclass != SCROLL_CLASS)
 	){
-		if(obj->spe > 0){
+		if(obj->spe > 0 && !obj->oartifact){
 			if(obj->oclass == WEAPON_CLASS) return TRUE;
 			if(obj->oclass == ARMOR_CLASS) return TRUE;
 			if(obj->oclass == TOOL_CLASS && is_weptool(obj)) return TRUE;
@@ -566,6 +566,15 @@ register struct obj *obj;
 {
 	if (obj == victual.piece) victual.piece = (struct obj *)0;
 	if (obj->timed) stop_all_timers(obj->timed);
+}
+
+/* Food has gone somewhere else, but probably hasn't decayed.
+ * So keep the timers but possibly unlist it as the victual
+ */
+void
+food_extracted(struct obj *obj)
+{
+	if (obj == victual.piece) victual.piece = (struct obj *)0;
 }
 
 /* renaming an object usually results in it having a different address;
@@ -2941,17 +2950,17 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 				if (otmp->otyp == MAGIC_WHISTLE){
 					otmp = poly_obj(otmp, WHISTLE);
 					You("drain the %s of its magic.", xname(otmp));
+					lesshungry(5*INC_BASE_NUTRITION);
 				} else {
 					curspe = otmp->spe;
 					(void) drain_item(otmp);
 					if(curspe > otmp->spe){
 						You("drain the %s%s.", xname(otmp),otmp->spe!=0 ? "":" dry");
-
+						lesshungry(5*INC_BASE_NUTRITION);
 					} else {
 						pline("The %s resists your attempt to drain its magic.", xname(otmp));
 					}
 				}
-				lesshungry(5*INC_BASE_NUTRITION);
 				flags.botl = 1;
 			break;
 			case SCROLL_CLASS:
@@ -3574,6 +3583,10 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		return MOVE_ATE;
 	}
 	if (otmp->oclass != FOOD_CLASS) {
+		if (otmp->oartifact){
+			You("cannot eat that!");
+			return MOVE_CANCELLED;
+		}
 	    int material;
 	    victual.reqtime = 1;
 	    victual.piece = otmp;
@@ -3951,7 +3964,7 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	if(Role_if(PM_MONK)){
 		if(u.uhs >= HUNGRY) hungermod *= 2; /* HUNGRY or hungrier */
 	}
-	if(Role_if(PM_MONK) && u.unull){
+	if((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && u.unull){
 		hungermod *= 2;
 	}
 	

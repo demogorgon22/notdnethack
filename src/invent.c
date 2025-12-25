@@ -894,7 +894,8 @@ carrying_readable_weapon()
 				otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD ||
 				otmp->oartifact == ART_ESSCOOAHLIPBOOURRR ||
 				otmp->oartifact == ART_RED_CORDS_OF_ILMATER ||
-				otmp->oartifact == ART_STAFF_OF_NECROMANCY
+				otmp->oartifact == ART_STAFF_OF_NECROMANCY ||
+				(otmp->oartifact == ART_MORTAL_BLADE && otmp->owornmask&W_WEP && !u.veil)
 			))
 		)
 			return TRUE;
@@ -2252,7 +2253,7 @@ ddoinv()
 				winid datawin = create_nhwindow(NHW_MENU);
 				putstr(datawin, ATR_NONE, doname(otmp));
 				describe_item(otmp, otmp->otyp, otmp->oartifact, &datawin);
-				checkfile(xname_bland(otmp), 0, FALSE, TRUE, &datawin);
+				checkfile(encyc_xname(otmp), 0, FALSE, TRUE, &datawin);
 				display_nhwindow(datawin, TRUE);
 				destroy_nhwindow(datawin);
 				return MOVE_INSTANT;
@@ -2759,7 +2760,7 @@ struct obj *obj;
 		winid datawin = create_nhwindow(NHW_MENU);
 		putstr(datawin, ATR_NONE, doname(obj));
 		describe_item(obj, obj->otyp, obj->oartifact, &datawin);
-		checkfile(xname_bland(obj), 0, FALSE, TRUE, &datawin);
+		checkfile(encyc_xname(obj), 0, FALSE, TRUE, &datawin);
 		display_nhwindow(datawin, TRUE);
 		destroy_nhwindow(datawin);
 		return 0;
@@ -2818,6 +2819,9 @@ winid *datawin;
 	if(check_oprop(obj,OPROP_SOTHW) && !(obj->where == OBJ_INVENT && YOG_BAD))
 		sothweaponturn = soth_weapon_damage_turn(obj);
 
+	/* mortal blade has no bonus dmg when sheathed */
+	if (obj && oartifact == ART_MORTAL_BLADE && obj != uwep)
+		has_artidmg = FALSE;
 
 #define OBJPUTSTR(str) putstr(*datawin, ATR_NONE, str)
 #define ADDCLASSPROP(cond, str)         \
@@ -2945,6 +2949,11 @@ winid *datawin;
 		/* weapon dice! */
 		/* Does not apply for launchers. */
 		/* the melee-weapon artifact launchers need obj to exist because dmgval_core needs obj to find artifact. */
+		int enc_bonus = (obj && obj->known) ? (obj->spe) : 0;
+		if (obj && obj->oartifact == ART_PEN_OF_THE_VOID && u.specialSealsActive&SEAL_UNKNOWN_GOD)
+			enc_bonus = 0;
+		char* senc_bonus = (enc_bonus) ? sitoa(enc_bonus) : "";
+
 		if ((!otyp_is_launcher && !otyp_is_blaster && !artidmg_only) || (
 			(otyp == CARCOSAN_STING) ||
 			(obj && oartifact == ART_LIECLEAVER) ||
@@ -2957,7 +2966,6 @@ winid *datawin;
 			struct weapon_dice wdice[2];
 			int spe_mult = dmgval_core(&wdice[0], FALSE, obj, otyp, &youmonst);	// small dice
 			int lspe_mult = dmgval_core(&wdice[1], TRUE, obj, otyp, &youmonst);		// large dice
-			int enc_bonus = (obj) ? (obj->spe) : 0;
 			if (otyp == CRYSTAL_SWORD) enc_bonus += enc_bonus / 3;
 			if (otyp == SEISMIC_HAMMER) {
 				wdice[0].oc_damd += 3*enc_bonus;
@@ -3048,14 +3056,14 @@ winid *datawin;
 				{
 					Sprintf(buf, "Deals double damage");
 					if (obj->ovara_seals)
-						Strcat(buf, ", and enhanced spirit bonus damage.");
+						Strcat(buf, " and has enhanced bonus effects from spirits bound into it.");
 					else
 						Strcat(buf, ".");
 				}
 				else
 				{
 					if (obj->ovara_seals)
-						Sprintf(buf, "Deals bonus damage from the spirit bound into it.");
+						Sprintf(buf, "Has bonus effects from the spirit bound into it.");
 					else
 						buf[0] = '\0';
 				}
@@ -3064,12 +3072,18 @@ winid *datawin;
 			case ART_PROFANED_GREATSCYTHE:
 				Strcat(buf, "damage to living and undead.");
 				break;
+			case ART_TORCH_OF_XOLOTL:
+				Strcat(buf, "shock damage during the day and drains foes during the night, but only when lit.");
+				break;
 			case ART_GIANTSLAYER:
 				Strcat(buf, "damage to large creatures.");
 				break;
 			case ART_FALLINGSTAR_MANDIBLES:
 				Strcat(buf, "magic damage, doubled against those who came from the stars.");
 				break;
+			case ART_MORTAL_BLADE:
+				Strcat(buf, "damage to all, and triple to those that live or live again.");
+			break;
 			default:
 				switch (oart->adtyp) {
 					case AD_FIRE: Strcat(buf, "fire damage"); break;
@@ -3151,40 +3165,43 @@ winid *datawin;
 			int sdamd = objects[otyp].oc_wsdam.oc_damd;
 			if(obj->otyp == TOOTH && Insight >= 20 && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, &youmonst, ETRAIT_FOCUS_FIRE)){
 				if(obj->ovar1_tooth_type == MAGMA_TOOTH){
-					Sprintf(buf2, "Deals +5d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
+					Sprintf(buf2, "Deals +5d10%s fire damage.", senc_bonus);
 					OBJPUTSTR(buf2);
 				}
 				else if(obj->ovar1_tooth_type == VOID_TOOTH){
-					Sprintf(buf2, "Drains three levels from the target and deals +3d3%s cold damage.", (obj->spe ? sitoa(obj->spe) : ""));
+					Sprintf(buf2, "Drains three levels from the target and deals +3d3%s cold damage.", senc_bonus);
 					OBJPUTSTR(buf2);
 				}
 				else if(obj->ovar1_tooth_type == SERPENT_TOOTH){
-					Sprintf(buf2, "Injects dire poison and deals +1d8%s poison and +1d8%s acid damage.",(obj->spe ? sitoa(obj->spe) : ""),(obj->spe ? sitoa(obj->spe) : ""));
+					Sprintf(buf2, "Injects dire poison and deals +1d8%s poison and +1d8%s acid damage.", senc_bonus, senc_bonus);
 					OBJPUTSTR(buf2);
 				}
 			}
 			if(obj->otyp == TORCH){
-				Sprintf(buf2, "When lit, deals +1d10%s fire damage.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s fire damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == MAGIC_TORCH){
-				Sprintf(buf2, "When lit, deals +1d8%s fire damage.", (obj->spe ? sitoa(2*obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d8%s fire damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SHADOWLANDER_S_TORCH){
-				Sprintf(buf2, "When lit, deals +1d10%s cold damage.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s cold damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == SUNROD){
-				Sprintf(buf2, "When lit, deals +1d10%s lightning and acid damage and may blind struck targets.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s lightning and acid damage and may blind struck targets.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == TONITRUS){
-				Sprintf(buf2, "When lit, deals +1d10%s lightning damage.", (obj->spe ? sitoa(obj->spe) : ""));
+				Sprintf(buf2, "When lit, deals +1d10%s lightning damage.", senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == KAMEREL_VAJRA){
-				Sprintf(buf2, "When lit, deals +2d6 lightning damage, or +6d6 if wielded by an Ara Kamerel, and may blind struck targets.");
+				if(obj->oartifact == ART_KISHIN_MIRROR)
+					Sprintf(buf2, "When lit, deals bonus holy, unholy, or lightning damage, depending on your alignment record.");
+				else
+					Sprintf(buf2, "When lit, deals +2d6 lightning damage, or +6d6 if wielded by an Ara Kamerel, and may blind struck targets.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == VIPERWHIP && obj->ovar1_heads > 1){
@@ -3195,7 +3212,7 @@ winid *datawin;
 				Sprintf(buf2, "Uses a weapon-wielding opponent's own weapon against them, if their damage is higher.");
 				OBJPUTSTR(buf2);
 			}
-			if(obj->otyp == CRYSTAL_SWORD && obj->spe >= 3){
+			if(obj->otyp == CRYSTAL_SWORD && obj->known && obj->spe >= 3){
 				Sprintf(buf2, "Adds an extra %s to enchantment for damage calculations.", sitoa(obj->spe/3));
 				OBJPUTSTR(buf2);
 			}
@@ -3214,8 +3231,8 @@ winid *datawin;
 			}
 			if(obj->otyp == RAKUYO){
 				Sprintf(buf2, "Deals +1d%d%s base damage vs small and +1d%d%s vs large if wielded without two-weaponing, at the cost of an extra 1/4 move.", 
-					(4 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""),
-					(3 + 2*(obj->objsize - MZ_MEDIUM)), (obj->spe ? sitoa(obj->spe) : ""));
+					(4 + 2*(obj->objsize - MZ_MEDIUM)), senc_bonus,
+					(3 + 2*(obj->objsize - MZ_MEDIUM)), senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == DISKOS && Insight >= 15){
@@ -3245,7 +3262,7 @@ winid *datawin;
 
 				if (Insight >= 25){
 					Sprintf(buf2, "Lowers struck targets' morale based on your charisma, currently -%d per hit, capped at -%d.",
-						ACURR(A_CHA)/5, (obj->spe + ACURR(A_CHA)));
+						ACURR(A_CHA)/5, (enc_bonus + ACURR(A_CHA)));
 					OBJPUTSTR(buf2);
 				}
 			}
@@ -3254,8 +3271,8 @@ winid *datawin;
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE)){
-				Sprintf(buf2, "Makes struck targets vulnerable, adding stacks equal to 10%% of damage, capped at %d (scaling inversely with insight).",
-					(int)(30*pow(.97, Insight)));
+				Sprintf(buf2, "Successful hits encourage you for 10%% of base damage dealt, capped at %d (scaling inversely with insight).",
+					(int)(15*pow(.98,Insight)));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->otyp == ISAMUSEI){
@@ -3318,11 +3335,11 @@ winid *datawin;
 			}
 			if (obj->oartifact == ART_SHADOWLOCK){
 				Sprintf(buf2, "Deals +2d6%s cold damage, but also deals 4d6%s physical and 2d6%s cold damage to the wielder every hit.",
-					(obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""), (obj->spe ? sitoa(obj->spe) : ""));
+					senc_bonus, senc_bonus, senc_bonus);
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_TROLLSBANE){
-				Sprintf(buf2, "Deals +2d20%s to covetous monsters.", (obj->spe ? sitoa(obj->spe*2) : ""));
+				Sprintf(buf2, "Deals +2d20%s to covetous monsters.", ((obj->spe && obj->known) ? sitoa(obj->spe*2) : ""));
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_MASAMUNE){
@@ -3342,8 +3359,8 @@ winid *datawin;
 				Sprintf(buf2, "Hamstrings giants & other boulder-throwers, reducing their speed by 6 movement points.");
 				OBJPUTSTR(buf2);
 			}
-			if(obj->oartifact == ART_TECPATL_OF_HUHETOTL){
-				Sprintf(buf2, "Drinks the blood of targets that have any, dealing +2d4 damage and potentially sacrificing slain foes.");
+			if(obj->oartifact == ART_TECPATL_OF_HUEHUETEOTL){
+				Sprintf(buf2, "Drinks the blood of targets that have any, dealing +4d4 damage and potentially sacrificing slain foes.");
 				OBJPUTSTR(buf2);
 			}
 			if(obj->oartifact == ART_PLAGUE && monstermoves < artinstance[ART_PLAGUE].PlagueDuration){
@@ -3367,17 +3384,30 @@ winid *datawin;
 				Sprintf(buf2, "Is 1/6th faster to swing than other weapons.");
 				OBJPUTSTR(buf2);
 			}
-			if(pure_weapon(obj) && obj->spe >= 6){
+			if(pure_weapon(obj) && obj->known && obj->spe >= 6){
 				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at full health.");
 				OBJPUTSTR(buf2);
 			}
-			if(dark_weapon(obj) && obj->spe >= 6){
+			if(dark_weapon(obj) && obj->known && obj->spe >= 6){
 				Sprintf(buf2, "Deals 20%% extra damage to all targets when the wielder is at 30%% health or lower.");
 				OBJPUTSTR(buf2);
 			}
 			if(is_vibroweapon(obj)){
 				Sprintf(buf2, "Drains one charge per hit and deals less damage when uncharged.");
 				OBJPUTSTR(buf2);
+			}
+			if (obj->oartifact == ART_SPINESEEKER || obj->oartifact == ART_LOLTH_S_FANG \
+				|| (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_ANDROMALIUS) \
+				|| (obj->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE)) \
+				|| (obj->oartifact == ART_MORTAL_BLADE && artinstance[ART_MORTAL_BLADE].mortalLives > 1)){
+					Sprintf(buf2, "Enables sneak attacks.");
+					OBJPUTSTR(buf2);
+			}
+			if (obj->oartifact == ART_MORTAL_BLADE){
+				if (artinstance[ART_MORTAL_BLADE].mortalLives > 2){
+					Sprintf(buf2, "Stealthy deathblows emit a cloud of darkness.");
+					OBJPUTSTR(buf2);
+				}
 			}
 		}
 		/* poison */
@@ -3719,6 +3749,11 @@ winid *datawin;
 			Sprintf(buf2, "The Silver Flame will save the wearer's life.");
 			OBJPUTSTR(buf2);
 		}
+		if (check_oprop(obj, OPROP_LIFE))
+		{
+			Sprintf(buf2, "The spirit inside will save the wearer's life.");
+			OBJPUTSTR(buf2);
+		}
 		if(check_oprop(obj, OPROP_ANTAW)){
 			Sprintf(buf2, "Conducts arcane forces.");
 			OBJPUTSTR(buf2);
@@ -3728,7 +3763,7 @@ winid *datawin;
 		buf[0] = '\0';
 #define	EXPERTTRAITS(trait, string)	\
 	ADDCLASSPROP(CHECK_ETRAIT(obj, &youmonst, trait), string);
-		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful overhead blows");
+		EXPERTTRAITS(ETRAIT_HEW, "can deliver powerful-but-strenuous overhead blows");
 		EXPERTTRAITS(ETRAIT_FELL, "can disrupt enemy movement");
 		EXPERTTRAITS(ETRAIT_KNOCK_BACK, (obj->expert_traits&ETRAIT_KNOCK_BACK_CHARGE) ? "can charge and knock enemies back" : "can knock enemies back");
 		EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
@@ -3738,7 +3773,8 @@ winid *datawin;
 		EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
 		EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
 		EXPERTTRAITS(ETRAIT_BLEED, "may deliver bleeding wounds");
-		EXPERTTRAITS(ETRAIT_CLEAVE, "cleaves through slain enemies");
+		EXPERTTRAITS(ETRAIT_CLEAVE, (CHECK_ETRAIT(obj, &youmonst, ETRAIT_HEW) ? "cleaves through slain enemies when not using hewing strikes" : "cleaves through slain enemies"));
+		EXPERTTRAITS(ETRAIT_PUNCTURE, "successive hits may deal increased damage");
 		EXPERTTRAITS(ETRAIT_LUNGE, "can be used for lunging attacks");
 		EXPERTTRAITS(ETRAIT_QUICK, "strikes quickly");
 		EXPERTTRAITS(ETRAIT_SECOND, "when wielded in the off-hand strikes a second foe after killing the first");
@@ -3811,6 +3847,7 @@ winid *datawin;
 
 		buf[0] = '\0';
 		ADDCLASSPROP((oart->aflags&ARTA_RETURNING), "returns when thrown");
+		ADDCLASSPROP((oart->aflags&ARTA_LAIDTOREST), "lays foes to rest");
 		ADDCLASSPROP((oart->aflags&ARTA_HASTE), "hastens the wielder's attacks");
 		if (buf[0] != '\0')
 		{
@@ -3847,6 +3884,134 @@ winid *datawin;
 			ZERTHMATS(ZMAT_MITHRIL, "mithril");
 			Sprintf(buf2, "Amalgamated metals: %s.", buf);
 			OBJPUTSTR(buf2);
+		}
+		if (oartifact == ART_PEN_OF_THE_VOID) {
+#define acer(x, y) ((mvitals[PM_ACERERAK].died > 0) ? (x) : (y))
+			if (obj->ovara_seals&SEAL_AHAZU){
+				Sprintf(buf2, "Carries the seal of Ahazu, granting a 20%% chance to subtract 3 movement points and deal +%d4 damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_AMON){
+				Sprintf(buf2, "Carries the seal of Amon, granting +%dd4 fire damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ANDREALPHUS){
+				Sprintf(buf2, "Carries the seal of Andrealphus, allowing it to engrave special wards%s.", acer(" and burn when engraving", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ANDROMALIUS){
+				Sprintf(buf2, "Carries the seal of Andromalius, granting %ssneak attacks and preventing it from being stolen.", acer("enhanced ", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ASTAROTH){
+				Sprintf(buf2, "Carries the seal of Astaroth, granting +%dd4 shock damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_BALAM){
+				Sprintf(buf2, "Carries the seal of Balam, granting +%dd4 cold damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_BERITH){
+				Sprintf(buf2, "Carries the seal of Berith, granting +%dd4 Blood Mercenary damage%s and the ability to joust.", acer(4, 1), acer(", the ability to shatter weapons,", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_BUER){
+				Sprintf(buf2, "Carries the seal of Buer, healing you by +%dd4 per hit.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_CHUPOCLOPS){
+				Sprintf(buf2, "Carries the seal of Chupoclops, granting a 10%% chance to deal +%dd4 damage and trap the target in a web.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_DANTALION){
+				Sprintf(buf2, "Carries the seal of Dantalion, granting a 10%% chance to deal +%dd4 damage and probe the target.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ECHIDNA){
+				Sprintf(buf2, "Carries the seal of Echidna, granting +%dd4 acid damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_EDEN){
+				if (obj->obj_material != SILVER || (mvitals[PM_ACERERAK].died > 0))
+					Sprintf(buf2, "Carries the seal of Eden, %ssilvering attacks.", acer("doubly ", ""));
+				else Sprintf(buf2, "Carries the seal of Eden, doing nothing of note.");
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ENKI){
+				Sprintf(buf2, "Carries the seal of Enki, granting +%dd4 water damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_EURYNOME){
+				Sprintf(buf2, "Carries the seal of Eurynome, granting a %d%% chance to counterattack.", acer(10, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_EVE){
+				Sprintf(buf2, "Carries the seal of Eve, allowing it to fire any projectile%s.", acer(" with infinite range", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_HUGINN_MUNINN){
+				Sprintf(buf2, "Carries the seal of Huginn & Muninn, granting +%dd4 damage against and blinding monsters with intact eyes.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_IRIS){
+				Sprintf(buf2, "Carries the seal of Iris, granting +%dd4 desiccation damage.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_JACK){
+				Sprintf(buf2, "Carries the seal of Jack, becoming a source of %slight.", acer("bright ", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MAEGERA){
+				if (obj->obj_material != GOLD || (mvitals[PM_ACERERAK].died > 0))
+					Sprintf(buf2, "Carries the seal of Maegera, %sgilding attacks.", acer("doubly ", ""));
+				else Sprintf(buf2, "Carries the seal of Maegera, doing nothing of note.");
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MALPHAS){
+				Sprintf(buf2, "Carries the seal of Malphas, granting a %d%% chance to summon a crow on kills.", acer(10, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MARIONETTE){
+				Sprintf(buf2, "Carries the seal of Marionette, granting it the abilities of a polearm%s.", acer(" and benefitting doubly from strength", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_MOTHER){
+				Sprintf(buf2, "Carries the seal of Mother, granting a %d%% chance to paralyze targets.", acer(25, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_NABERIUS){
+				Sprintf(buf2, "Carries the seal of Naberius, granting +%dd4 damage against peaceful or fleeing targets.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_ORTHOS){
+				Sprintf(buf2, "Carries the seal of Orthos, granting a 10%% chance to deal +%dd8 damage and knock targets back.", acer(8, 2));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_OSE){
+				Sprintf(buf2, "Carries the seal of Ose, granting a 20%% chance to deal +%dd15 damage, but always against telepathic targets.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_OTIAX){
+				Sprintf(buf2, "Carries the seal of Otiax, granting +1%s damage and a 5%% chance of stealing items.", acer("d4", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_PAIMON){
+				Sprintf(buf2, "Carries the seal of Paimon, restoring +%d energy on hit.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_SHIRO){
+				Sprintf(buf2, "Carries the seal of Shiro, firing %s at struck targets.", acer("boulders", "rocks"));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_SIMURGH){
+				Sprintf(buf2, "Carries the seal of Simurgh, stunning targets%s.", acer(" and dealing 2d4 damage", ""));
+				if (obj->obj_material != IRON) {
+					if ((mvitals[PM_ACERERAK].died > 0))
+						Sprintf(buf2, "Carries the seal of Simurgh, stunning targets, counting as cold iron, and dealing +2d4 damage.");
+					else Sprintf(buf2, "Carries the seal of Simurgh, stunning targets and counting as cold iron");
+				} else Sprintf(buf2, "Carries the seal of Simurgh, stunning targets%s.", acer(" and dealing 2d4 damage", ""));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_TENEBROUS){
+				Sprintf(buf2, "Carries the seal of Tenebrous, granting a %d%% chance to drain a level from targets.", acer(25, 5));
+				OBJPUTSTR(buf2);
+			} if (obj->ovara_seals&SEAL_YMIR){
+				Sprintf(buf2, "Carries the seal of Ymir, %spoisoning it%s.", acer("direly ", ""), acer(" and setting strength to 25", ""));
+				OBJPUTSTR(buf2);
+			}
+			if (u.specialSealsActive&SEAL_COSMOS){
+				Sprintf(buf2, "Channels the presence of Cosmos, dealing +%dd4 to chaotic targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_LIVING_CRYSTAL){
+				Sprintf(buf2, "Channels the presence of Mediator, dealing +%dd4 to chaotic targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_TWO_TREES){
+				Sprintf(buf2, "Channels the presence of Telperion & Laurelin, dealing +%dd4 to chaotic targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_MISKA){
+				Sprintf(buf2, "Channels the presence of Miska, dealing +%dd4 to lawful targets and +%dd4 to neutral targets.", acer(8, 2), acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_NUDZIRATH){
+				Sprintf(buf2, "Channels the presence of Nudzirath, dealing +%dd6 to lawful and chaotic targets.", acer(4, 1));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_ALIGNMENT_THING){
+				Sprintf(buf2, "Channels the presence of the Alignment Thing, with a 67%% chance to deal somewhere between +%dd4 to +%dd4 extra damage.", acer(2, 1), acer(4, 2));
+				OBJPUTSTR(buf2);
+			} if (u.specialSealsActive&SEAL_UNKNOWN_GOD){
+				Sprintf(buf2, "Channels the presence of the Unknown God, not adding enchantment to damage but instead subtracting %sits enchantment from your AC.", acer("double ", ""));
+				OBJPUTSTR(buf2);
+			} 
 		}
 	}
 	if (olet == ARMOR_CLASS || olet == BELT_CLASS) {
@@ -4326,6 +4491,12 @@ winid *datawin;
 			while (properties_art[j] && !got_prop) {
 				if (properties_art[j] == propertynames[i].prop_num)
 					got_prop = TRUE;
+				if (obj->oartifact == ART_MORTAL_BLADE){
+					if (properties_art[j] == STEALTH && artinstance[ART_MORTAL_BLADE].mortalLives < 1)
+						got_prop = FALSE;
+					if (properties_art[j] == DARK_RES && artinstance[ART_MORTAL_BLADE].mortalLives < 2)
+						got_prop = FALSE;
+				}
 				j++;
 			}
 		}
@@ -4434,6 +4605,7 @@ winid *datawin;
 		oartifact == ART_TENTACLE_ROD ||
 		oartifact == ART_WRAPPINGS_OF_THE_SACRED_FI ||
 		oartifact == ART_SPELL_WARDED_WRAPPINGS_OF_ ||
+		oartifact == ART_SEVEN_STAR_SWORD ||
 		oartifact == ART_MAGICBANE)			OBJPUTSTR("Protects your inventory from being cursed.");
 
 	/* Effects based on the base description of the item -- only one will apply, so an if-else chain is appropriate */
@@ -4458,6 +4630,10 @@ winid *datawin;
 		otyp == HARMONIUM_PLATE ||
 		otyp == HARMONIUM_GAUNTLETS ||
 		otyp == HARMONIUM_HELM)					OBJPUTSTR("Slightly increased defense against non-lawfuls.");
+	else if (otyp == SILVERKNIGHT_BOOTS ||
+		otyp == SILVERKNIGHT_ARMOR ||
+		otyp == SILVERKNIGHT_GAUNTLETS ||
+		otyp == SILVERKNIGHT_HELM)					OBJPUTSTR("Increased defense against the unholy, the impure, and the rotten.");
 	else if (otyp == PLASTEEL_HELM ||
 		otyp == CRYSTAL_HELM ||
 		otyp == PONTIFF_S_CROWN ||
@@ -4468,6 +4644,11 @@ winid *datawin;
 		otyp == BLACK_FACELESS_ROBE ||
 		otyp == SMOKY_VIOLET_FACELESS_ROBE)		OBJPUTSTR("Covers the face entirely.");
 
+	if (otyp == SILVERKNIGHT_BOOTS ||
+		otyp == SILVERKNIGHT_ARMOR ||
+		otyp == SILVERKNIGHT_GAUNTLETS ||
+		otyp == SILVERKNIGHT_HELM ||
+		otyp == SILVERKNIGHT_SPEAR)					OBJPUTSTR("Slows the progression of fatal illness.");
 	buf[0] = '\0';
 	ADDCLASSPROP(oartifact, "an artifact");
 	ADDCLASSPROP((oc.oc_magic && !oartifact), "inherently magical");		// overkill to say an artifact is inherently magical, and makes it weird when one isn't
@@ -5103,7 +5284,7 @@ count_buc(list, type)
     int count = 0;
 
     while (list) {
-	if (Role_if(PM_PRIEST)) list->bknown = TRUE;
+	if (u.upriest) list->bknown = TRUE;
 	switch(type) {
 	    case BUC_BLESSED:
 		if (list->oclass != COIN_CLASS && list->bknown && list->blessed)
@@ -5632,7 +5813,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 		(obj->ovar1 != otmp->ovar1 && obj->otyp != CORPSE && obj->otyp != FORCE_BLADE && obj->otyp != RAKUYO_DAGGER && obj->otyp != BLADE_OF_PITY) ||
 		(obj->oward != otmp->oward) ||
 	    obj->spe != otmp->spe || obj->dknown != otmp->dknown ||
-	    (obj->bknown != otmp->bknown && !Role_if(PM_PRIEST)) ||
+	    (obj->bknown != otmp->bknown && !u.upriest) ||
 	    obj->cursed != otmp->cursed || obj->blessed != otmp->blessed ||
 	    obj->no_charge != otmp->no_charge ||
 	    obj->obroken != otmp->obroken ||

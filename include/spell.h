@@ -44,6 +44,7 @@ struct spell {
 #define metal_blocks_spellcasting(otmp) (otmp && \
 	(is_metallic(otmp) || otmp->oartifact == ART_DRAGON_PLATE) && \
 	!(check_oprop(otmp, OPROP_BRIL) || otmp->otyp == HELM_OF_BRILLIANCE \
+	  || check_oprop(otmp, OPROP_CAST) || check_oprop(otmp, OPROP_BLAST) \
 	  || (otmp->otyp == HELM_OF_TELEPATHY && base_casting_stat() == A_CHA) \
 	  || (is_imperial_elven_armor(otmp) && !(check_imp_mod(otmp, IEA_TELEPAT) \
 											|| check_imp_mod(otmp, IEA_BOLTS) \

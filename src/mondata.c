@@ -567,6 +567,8 @@ int template;
 		ptr->mflagsb |= (MB_NOEYES|MB_INDIGESTIBLE);
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE);
 		ptr->mflagsa |= (MA_UNDEAD);
+		ptr->mflagsv |= MV_LIFESENSE;
+		ptr->mflagsv &= ~(MV_NORMAL|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_DARKSIGHT|MV_EXTRAMISSION|MV_CATSIGHT);
 		if(!(ptr->mflagsw&MW_EYE_OF_YGG)){
 			ptr->mflagsw |= MW_ELDER_SIGN;
 		}
@@ -579,10 +581,84 @@ int template;
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE|MG_HATESUNHOLY);
 		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
 		ptr->mflagsa |= (MA_UNDEAD | MA_VAMPIRE);
+		ptr->mflagsv |= (MV_BLOODSENSE);
 		/* resists: */
 		ptr->mresists |= (MR_SLEEP | MR_POISON);	/* individual monsters gain cold res at mlev >= 10 */
 		ptr->mflagsw |= (MW_ELDER_EYE_ENERGY);
+		ptr->msound = MS_VAMPIRE;
 		break;
+	case FLAYED:
+		ptr->mlevel = max(20, ptr->mlevel);
+		ptr->nac += 6;
+		ptr->pac += 3;
+		ptr->hdr += 6;
+		ptr->bdr += 6;
+		ptr->gdr += 6;
+		ptr->ldr += 6;
+		ptr->fdr += 6;
+		ptr->spe_hdr += 3;
+		ptr->spe_bdr += 3;
+		ptr->spe_gdr += 3;
+		ptr->spe_ldr += 3;
+		ptr->spe_fdr += 3;
+		/* flags: */
+		ptr->mflagsb |= (MB_NOEYES);
+		ptr->mflagst |= (MT_HOSTILE | MT_STALK);
+		ptr->mflagst &= ~(MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
+		ptr->mflagsg &= ~(MG_HATESUNHOLY);
+		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
+		ptr->mflagsa |= (MA_DEMON|MA_MINION);
+		ptr->mflagsv |= MV_BLOODSENSE|MV_EXTRAMISSION;
+		ptr->mflagsv &= ~(MV_NORMAL|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_DARKSIGHT|MV_CATSIGHT);
+
+		/* resists: */
+		ptr->mresists |= (MR_SLEEP | MR_POISON);	/* individual monsters gain cold res at mlev >= 10 */
+		
+		ptr->msound = (ptr->msound == MS_SILENT) ? MS_SILENT : MS_SCREAM;
+
+		if (ptr->mmove < 6)
+			ptr->mmove = 12;
+		else
+			ptr->mmove += 6;
+		break;
+	case MANITOU:
+		ptr->pac += 9;
+		ptr->spe_hdr += 6;
+		ptr->spe_bdr += 6;
+		ptr->spe_gdr += 6;
+		ptr->spe_ldr += 6;
+		ptr->spe_fdr += 6;
+		ptr->mflagsv |= MV_BLOODSENSE;
+		ptr->mflagsa |= MA_DEMON;
+		ptr->mflagst |= MT_HOSTILE;
+		ptr->mflagst &= ~(MT_PEACEFUL);
+		ptr->mflagsg |= MG_SANLOSS;
+		ptr->mflagsg &= ~(MG_HATESUNHOLY);
+		ptr->mflagsg |= (MG_REGEN|MG_HATESHOLY|MG_HATESSILVER);
+		if(ptr->mmove < 1)
+			ptr->mmove = 12;
+		ptr->mflagsm &= ~(MM_STATIONARY);
+	break;
+	case GUECUBU:
+		ptr->pac += 9;
+		ptr->spe_hdr += 6;
+		ptr->spe_bdr += 6;
+		ptr->spe_gdr += 6;
+		ptr->spe_ldr += 6;
+		ptr->spe_fdr += 6;
+		if(!(ptr->mflagsb&MB_NOEYES)){
+			ptr->mflagsb |= MB_NOEYES; //Techically, shut eyes
+			ptr->mflagsv &= ~(MV_NORMAL|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_DARKSIGHT|MV_CATSIGHT);
+		}
+		ptr->mresists |= (MR_SLEEP);
+		ptr->mflagsv |= MV_TELEPATHIC;
+		ptr->mflagsa |= MA_DEMON;
+		ptr->mflagst |= MT_HOSTILE|MT_TRAITOR;
+		ptr->mflagst &= ~(MT_PEACEFUL|MT_MINDLESS|MT_ANIMAL|MT_DOMESTIC);
+		ptr->mflagsg &= ~(MG_HATESUNHOLY);
+		ptr->mflagsg |= (MG_HATESHOLY);
+		ptr->mlevel += 6;
+	break;
 	case ILLUMINATED:
 		/* flags: */
 		ptr->mflagsg |= (MG_HATESUNHOLY);
@@ -1542,6 +1618,24 @@ int template;
 			attk->damn++;
 			attk->damd += 2;
 		}
+		if (template == GUECUBU && !is_null_attk(attk)){
+			if(attk->adtyp == AD_PHYS){
+				attk->damn++;
+				attk->damd += 2;
+			}
+			else if(attk->damd > 0){
+				if(attk->damn < 6)
+					attk->damd += 6;
+				else
+					attk->damd += 2;
+			}
+			//Note: overrides the above for magic
+			if(attk->aatyp == AT_MAGC || attk->aatyp == AT_MMGC){
+				attk->adtyp = AD_PSON;
+				attk->damn = (attk->damn+1)/2;
+				attk->damd = 15;
+			}
+		}
 		if (template == YELLOW_TEMPLATE && (
 			end_insert_okay(special)
 			))
@@ -1618,6 +1712,46 @@ int template;
 				if(ptr->mmove < 6)
 					ptr->mmove = 6;
 			}
+		}
+		/* flayed are psychic */
+		if (template == FLAYED && (
+			(attk->aatyp == AT_MAGC
+			|| attk->aatyp == AT_MMGC
+			)
+			|| insert_okay(special)
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_MAGC;
+			attk->adtyp = AD_PSON;
+			attk->damn = (attk->damn+1)/2;
+			attk->damd = 15;
+			special = TRUE;
+		}
+		/* Manitou vines */
+		if (template == MANITOU && (
+			end_insert_okay(special)
+			)
+		){
+			maybe_insert();
+			attk->aatyp = AT_VINE;
+			attk->adtyp = AD_VAMP;
+			attk->damn = (ptr->mlevel+1) / 3;
+			if(attk->damn > 10) attk->damn = 10;
+			attk->damd = 6;
+			special = TRUE;
+		}
+		if (template == MANITOU && (
+			(attk->aatyp == AT_NONE && attk->adtyp == AD_BARB) || insert_okay(special_2)
+			)
+		){
+			maybe_insert();
+			attk->aatyp = AT_NONE;
+			attk->adtyp = AD_BARB;
+			attk->damn = (ptr->mlevel+1) / 3;
+			if(attk->damn > 10) attk->damn = 10;
+			attk->damd = 4;
+			special_2 = TRUE;
 		}
 	}
 #undef insert_okay
@@ -1713,6 +1847,9 @@ int mtyp;
 	case CORDYCEPS:
 	case SPORE_ZOMBIE:
 		return can_undead(ptr);
+	case FLAYED:
+		/* makes minimal sense for flaying */
+		return !is_naturally_unalive(ptr) && !thick_skinned(ptr);
 	}
 	/* default fall through -- allow all */
 	return TRUE;
@@ -2454,6 +2591,9 @@ resists_fire(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, FIRE_RES))
+		return FALSE;
+	
 	return (species_resists_fire(mon) || mon_resistance(mon, FIRE_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Fire_resistance));
 }
 
@@ -2462,6 +2602,9 @@ resists_cold(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, COLD_RES))
+		return FALSE;
 	
 	return (species_resists_cold(mon) || mon_resistance(mon, COLD_RES) || 
 		(has_template(mon, VAMPIRIC) && mon->m_lev > 10) ||  
@@ -2474,6 +2617,9 @@ resists_sleep(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, SLEEP_RES))
+		return FALSE;
+	
 	return (species_resists_sleep(mon) || mon_resistance(mon, SLEEP_RES) ||  
 		((mon) == u.usteed && u.sealsActive&SEAL_BERITH && Sleep_resistance) || (mon)->cham == CHAM_DREAM);
 }
@@ -2484,6 +2630,9 @@ resists_disint(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, DISINT_RES))
+		return FALSE;
+	
 	return (species_resists_disint(mon) || mon_resistance(mon, DISINT_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Disint_resistance));
 }
 
@@ -2492,6 +2641,9 @@ resists_elec(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, SHOCK_RES))
+		return FALSE;
 	
 	return (species_resists_elec(mon) || mon_resistance(mon, SHOCK_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Shock_resistance));
 }
@@ -2502,6 +2654,9 @@ resists_poison(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, POISON_RES))
+		return FALSE;
+	
 	return (species_resists_poison(mon) || mon_resistance(mon, POISON_RES) || 
 		(mon == u.usteed && u.sealsActive&SEAL_BERITH && Poison_resistance));
 }
@@ -2511,6 +2666,9 @@ resists_acid(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, ACID_RES))
+		return FALSE;
 	
 	return (species_resists_acid(mon) || mon_resistance(mon, ACID_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Acid_resistance));
 }
@@ -2551,6 +2709,9 @@ resists_ston(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, STONE_RES))
+		return FALSE;
+	
 	return (species_resists_ston(mon) || mon_resistance(mon, STONE_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Stone_resistance));
 }
 
@@ -2560,6 +2721,9 @@ resists_drain(mon)
 {
 	if(!mon) return FALSE;
 	
+	if(mon_vulnerability(mon, DRAIN_RES))
+		return FALSE;
+	
 	return (species_resists_drain(mon) || mon_resistance(mon, DRAIN_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Drain_resistance));
 }
 
@@ -2568,6 +2732,9 @@ resists_sickness(mon)
 	struct monst *mon;
 {
 	if(!mon) return FALSE;
+	
+	if(mon_vulnerability(mon, SICK_RES))
+		return FALSE;
 	
 	return (species_resists_sickness(mon) || mon_resistance(mon, SICK_RES) || (mon == u.usteed && u.sealsActive&SEAL_BERITH && Sick_resistance));
 }
@@ -2594,6 +2761,9 @@ struct monst *mon;
 {
 	if(!mon) return FALSE;
 
+	if(mon_vulnerability(mon, ANTIMAGIC))
+		return FALSE;
+	
 	return (species_resists_magic(mon) || mon_resistance(mon, ANTIMAGIC) ||  mon_resistance(mon, NULLMAGIC) ||
 		(mon == u.usteed && u.sealsActive&SEAL_BERITH && Antimagic));
 }
