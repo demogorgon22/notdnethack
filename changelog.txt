@@ -324,6 +324,8 @@ Madman changes
 Undead Hunter changes
 	Ent Undead Hunter
 		Starts with a hunter's long-axe (this guy is up to no good)
+		Starts with a sapburner, a weaker flamethrower that can be refueled by dipping it in a sap potion
+		Uses sap instead of blood
 Kensei changes
 	Salamander Kensei
 		Uses tridents as kensei weapon
@@ -537,3 +539,4 @@ General changes
 		The Oracle can now be consulted for a list of generated artifacts, and you can query an artifact's birthplace.
 	Starting spellbooks, potions, and wands for less than medium sized players are scaled down to player size.	
 	Blessed scrolls of enchant armor and weapon no longer roll a die and always* give max enchants
+	Plants have sap instead of blood, yielding sap potiong from tinning that can be consumed for nutrition
