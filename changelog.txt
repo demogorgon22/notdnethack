@@ -321,6 +321,14 @@ Madman changes
 			Expert spear skill
 			Expert trident skill
 			Spearhead Tattoo
+Kensei changes
+	Salamander Kensei
+		Uses tridents as kensei weapon
+		Piercing Flame
+			Large obsidian 2x fire dmg vorpal trident
+		Aura bolts override with fire always
+		Efreet on the quest
+			
 Anachrononaut changes
 	Ana quest 
 		Now a random power armor on ground zero, good luck.
