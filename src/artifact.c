@@ -10101,6 +10101,8 @@ do_invoke_menu(){
 	for(otmp = invent; otmp; otmp = otmp->nobj){
 		oart = (struct artifact *) 0;
 		if(is_invokable_object(otmp)){
+			if(otmp->oartifact)
+				oart = get_artifact(otmp);
 			if(oart && invoke_on_cooldown(otmp, oart)){
 				cooldown = otmp->age - monstermoves;
 				if(is_lightsaber(otmp) && otmp->cobj && otmp->oartifact == otmp->cobj->oartifact)
