@@ -1719,6 +1719,9 @@ struct obj * obj;
 		case POT_BLOOD:
 			new_otyp = POT_BLOOD;
 			break;
+		case POT_SAP:
+			new_otyp = POT_SAP;
+			break;
 		case EGG:
 			if (obj->spe)
 				new_otyp = EGG;
@@ -1778,6 +1781,10 @@ struct obj * obj;
 		struct obj * dummy = mksobj(POT_BLOOD, NO_MKOBJ_FLAGS);
 		otmp->corpsenm = dummy->corpsenm;
 		delobj(dummy);
+	}
+	/* potions of sap get a default sap type (and were guaranteed to turn into sap) */
+	if (obj->otyp == POT_SAP) {
+		otmp->corpsenm = PM_DUNGEON_FERN;
 	}
 #ifdef MAIL
 	/* scrolls of mail have spe=1 (and were guaranteed to turn into mail) */

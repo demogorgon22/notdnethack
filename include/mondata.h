@@ -1502,11 +1502,16 @@
 				   (ptr)->mtyp != PM_CHORISTER_JELLY && \
 				   (ptr)->mtyp != PM_CHORISTER_TRAIN && \
 				   !is_gizmo(ptr) &&                     \
+				   !is_ent(ptr) &&                       \
 				   !(is_clockwork(ptr) &&                \
 					 is_naturally_unalive(ptr)) &&     \
 				   (!nonliving(ptr) || is_vampire(ptr) || (ptr)->mtyp == PM_INDEX_WOLF))
 
 #define has_blood_mon(mon)	(has_blood((mon)->data))
+
+/* For sap potions - plant-based monsters */
+#define has_sap(ptr)		((ptr)->mlet == S_PLANT || (ptr)->mtyp == PM_WOOD_TROLL || is_ent(ptr))
+#define has_sap_mon(mon)	(has_sap((mon)->data))
 
 /* Keep track of ferns, fern sprouts, fern spores, and other plants */
 

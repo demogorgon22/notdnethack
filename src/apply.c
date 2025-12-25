@@ -3106,6 +3106,49 @@ transfusion(struct obj *obj)
 }
 
 STATIC_OVL int
+sap_transfusion(struct obj *obj)
+{
+	struct obj *phleb_kit = find_object_type(invent, PHLEBOTOMY_KIT);
+	char qbuf[BUFSZ];
+	
+	if(!phleb_kit){
+		pline("Sorry, I don't know how to use that.");
+		return MOVE_CANCELLED;
+	}
+	Sprintf(qbuf, "Transfuse yourself with %s?", the(xname(obj)));
+	if(yn(qbuf) != 'y'){
+		pline("Never mind");
+		return MOVE_CANCELLED;
+	}
+	if(your_race(&mons[obj->corpsenm])){
+		if(obj->cursed){
+			pline("The sap clogs your vessels!");
+			losehp(*hpmax(&youmonst)/3, "sap clot", KILLED_BY_AN);
+		}
+		else {
+			You_feel("invigorated.");
+			healup((4*(*hpmax(&youmonst))+9)/10, 0, obj->blessed, FALSE);
+			exercise(A_CON, TRUE);
+		}
+		lesshungry((obj->odiluted ? 1 : 2)*50);
+		cprefx(obj->corpsenm, TRUE, TRUE);
+	}
+	else {
+		You_feel("invigorated.");
+		healup(d(2,8), 0, obj->blessed, FALSE);
+		lesshungry((obj->odiluted ? 1 : 2) *
+			(obj->cursed ? mons[(obj)->corpsenm].cnutrit*1.5/5 : mons[(obj)->corpsenm].cnutrit/5 ));
+		exercise(A_CON, TRUE);
+		cprefx(obj->corpsenm, TRUE, FALSE);
+	}
+	cpostfx(obj->corpsenm, FALSE, FALSE, FALSE);
+	useup(obj);
+	if(phleb_kit->spe < 15)
+		phleb_kit->spe++;
+	return MOVE_STANDARD;
+}
+
+STATIC_OVL int
 bloodclone(struct obj *obj)
 {
 	struct obj *bell = find_object_type(invent, BELL);
@@ -3849,23 +3892,28 @@ blood_draw(struct obj *obj)
 		pline("You're too injured!");
 		return MOVE_CANCELLED;
 	}
-	struct obj *blood = mksobj(POT_BLOOD, MKOBJ_NOINIT);
-	blood->corpsenm = youracedata->mtyp;
+	struct obj *fluid;
+	if(has_sap(youracedata)){
+		fluid = mksobj(POT_SAP, MKOBJ_NOINIT);
+	} else {
+		fluid = mksobj(POT_BLOOD, MKOBJ_NOINIT);
+	}
+	fluid->corpsenm = youracedata->mtyp;
 	if(u.uhs > NOT_HUNGRY)
-		blood->odiluted = TRUE;
-	losehp((*hpmax(&youmonst))/2, "bad blood draw", KILLED_BY_AN);
+		fluid->odiluted = TRUE;
+	losehp((*hpmax(&youmonst))/2, has_sap(youracedata) ? "bad sap draw" : "bad blood draw", KILLED_BY_AN);
 	nightmare_mold_lose_experience();
-	morehungry((blood->odiluted ? 1 : 2) * (mons[(blood)->corpsenm].cnutrit/5 ));
+	morehungry((fluid->odiluted ? 1 : 2) * (mons[(fluid)->corpsenm].cnutrit/5 ));
 	exercise(A_CON, FALSE);
 	IMPURITY_UP(u.uimp_blood)
 
 	if(obj->spe > 0)
 		obj->spe--;
-	blood->cursed = obj->cursed;
-	blood->blessed = obj->blessed;
-	blood->bknown = obj->bknown;
-	blood->known = TRUE;
-	blood = hold_another_object(blood, "You drop %s!", doname(blood), (const char *)0);
+	fluid->cursed = obj->cursed;
+	fluid->blessed = obj->blessed;
+	fluid->bknown = obj->bknown;
+	fluid->known = TRUE;
+	fluid = hold_another_object(fluid, "You drop %s!", doname(fluid), (const char *)0);
 	if(uwep && (uwep->otyp == TWINGUN_SHANTA || uwep->otyp == SHANTA_PATA)){
 		if(uwep->ovar1_last_blooded > moves - 10)
 			uwep->ovar1_last_blooded += 10;
@@ -4730,7 +4778,7 @@ STATIC_OVL void
 use_tinning_kit(obj)
 register struct obj *obj;
 {
-	register struct obj *corpse, *can=0, *bld=0;
+	register struct obj *corpse, *can=0, *bld=0, *sap=0;
 
 	/* This takes only 1 move.  If this is to be changed to take many
 	 * moves, we've got to deal with decaying corpses...
@@ -4787,7 +4835,15 @@ register struct obj *obj;
 			can->owt = weight(can);
 			can->known = 1;
 			can->spe = -1;  /* Mark tinned tins. No spinach allowed... */
-			if(has_blood(&mons[corpse->corpsenm]) && !corpse->odrained){
+			if(has_sap(&mons[corpse->corpsenm]) && !corpse->odrained){
+				if ((sap = mksobj(POT_SAP, MKOBJ_NOINIT)) != 0) {
+					sap->corpsenm = corpse->corpsenm;
+					sap->cursed = obj->cursed;
+					sap->blessed = obj->blessed;
+					sap->known = 1;
+				}
+			}
+			else if(has_blood(&mons[corpse->corpsenm]) && !corpse->odrained){
 				if ((bld = mksobj(POT_BLOOD, MKOBJ_NOINIT)) != 0) {
 					bld->corpsenm = corpse->corpsenm;
 					bld->cursed = obj->cursed;
@@ -4808,6 +4864,8 @@ register struct obj *obj;
 						  doname(can), (const char *)0);
 			if(bld) bld = hold_another_object(bld, "You make, but cannot pick up, %s.",
 						  doname(bld), (const char *)0);
+			if(sap) sap = hold_another_object(sap, "You make, but cannot pick up, %s.",
+						  doname(sap), (const char *)0);
 		} else impossible("Tinning failed.");
 	}
 }
@@ -11661,6 +11719,14 @@ doapply()
 	break;
 	case PHLEBOTOMY_KIT:
 		return blood_draw(obj);
+	case POT_SAP:
+		if(has_sap(youracedata))
+			return sap_transfusion(obj);
+		else {
+			pline("Sorry, I don't know how to use that.");
+			return MOVE_CANCELLED;
+		}
+	break;
 	case POT_BLOOD:
 		if(check_reanimation(RE_CLONE_SELF)){
 			if(find_object_type(invent, PHLEBOTOMY_KIT) && find_object_type(invent, BELL)){

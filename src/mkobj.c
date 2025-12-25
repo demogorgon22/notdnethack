@@ -1374,6 +1374,9 @@ int mkflags;
 				}
 				blessorcurse(otmp, 10);
 			}
+			if (otmp->otyp == POT_SAP){
+				otmp->corpsenm = PM_DUNGEON_FERN;
+			}
 			if (otmp->otyp == POT_OIL)
 				otmp->age = MAX_OIL_IN_FLASK;	/* amount of oil */
 			/* fall through */

@@ -343,6 +343,10 @@ struct obj *obj;
 		/* 1/5th multiplier applied in dog_eat */
 		nutrit = ((obj->odiluted ? 1 : 2) *
 					(obj->blessed ? mons[(obj)->corpsenm].cnutrit*3/2 : mons[(obj)->corpsenm].cnutrit ));
+	} else if (obj->otyp == POT_SAP) {
+		/* 1/5th multiplier applied in dog_eat */
+		nutrit = ((obj->odiluted ? 1 : 2) *
+					(obj->cursed ? mons[(obj)->corpsenm].cnutrit*3/2 : mons[(obj)->corpsenm].cnutrit ));
 	} else {
 	    /* Unusual pet such as gelatinous cube eating odd stuff.
 	     * meating made consistent with wild monsters in mon.c.
@@ -382,7 +386,7 @@ boolean devour;
 	poly = polyfodder(obj) && !resists_poly(mtmp->data);
 	grow = mlevelgain(obj);
 	heal = mhealup(obj);
-	ston = (obj->otyp == CORPSE || obj->otyp == EGG || obj->otyp == TIN || obj->otyp == POT_BLOOD) && obj->corpsenm >= LOW_PM && touch_petrifies(&mons[obj->corpsenm]) && !Stone_res(mtmp);
+	ston = (obj->otyp == CORPSE || obj->otyp == EGG || obj->otyp == TIN || obj->otyp == POT_BLOOD || obj->otyp == POT_SAP) && obj->corpsenm >= LOW_PM && touch_petrifies(&mons[obj->corpsenm]) && !Stone_res(mtmp);
 	
 	if(obj->otyp == CORPSE){
 		mtyp = obj->corpsenm;

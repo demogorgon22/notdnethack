@@ -197,7 +197,7 @@ shuffle_all()
 			int j = last-1;
 
 			if (oclass == POTION_CLASS)
-			    j -= 8;  /* primordial waters, goat's milk, space mead, midas, water, starlight, amnesia, and blood have fixed descriptions */
+			    j -= 9;  /* primordial waters, goat's milk, space mead, midas, water, starlight, amnesia, blood, and sap have fixed descriptions */
 			if (oclass == RING_CLASS)
 				first += 2;	/* three wishes and nothing have fixed descriptions */
 			if (oclass == WAND_CLASS)

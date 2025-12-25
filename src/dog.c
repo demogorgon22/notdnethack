@@ -1143,6 +1143,9 @@ rock:
 		if (is_vampire(mon->data) &&
 		obj->otyp == POT_BLOOD && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
 			return DOGFOOD;
+		if (herbi && !carni &&
+		obj->otyp == POT_SAP && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
+			return DOGFOOD;
 	    if (herbi && !carni && (obj->otyp == SHEAF_OF_HAY || obj->otyp == SEDGE_HAT))
 			return CADAVER;
 	    if ((mon->mtyp == PM_GELATINOUS_CUBE || mon->mtyp == PM_ANCIENT_OF_CORRUPTION) && is_organic(obj))
@@ -1267,6 +1270,9 @@ rock:
 	default:
 		if (is_vampire(mon->data) &&
 		obj->otyp == POT_BLOOD && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
+			return 1;
+		if (herbi && !carni &&
+		obj->otyp == POT_SAP && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
 			return 1;
 	    if (herbi && !carni && (obj->otyp == SHEAF_OF_HAY || obj->otyp == SEDGE_HAT))
 			return 1;

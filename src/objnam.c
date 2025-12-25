@@ -2099,6 +2099,8 @@ boolean getting_obj_base_desc;
 						Sprintf(eos(buf), "%s %s", obj->blessed ? "holy" : "unholy", actualn);
 					else if (typ == POT_BLOOD && (obj->known || is_vampire(youracedata)))
 						Sprintf(eos(buf), "%s %s", mons[obj->corpsenm].mname, actualn);
+					else if (typ == POT_SAP && (obj->known || herbivorous(youracedata)))
+						Sprintf(eos(buf), "%s %s", mons[obj->corpsenm].mname, actualn);
 					else if (typ == SCR_WARD) {
 						if (u.wardsknown & get_wardID(obj->oward))	Strcat(buf, wardDecode[obj->oward]);
 						else										Strcat(buf, "an unknown ward");
@@ -5080,6 +5082,7 @@ int wishflags;
 	if (strncmpi(bp, "lump of ", 8) || !strstri(bp, " jelly"))
 	if (strncmpi(bp, "shard of ", 9) || !strstri(bp, " glyph"))
 	if (strncmpi(bp, "potion of ", 10) || !strstri(bp, " blood"))
+	if (strncmpi(bp, "potion of ", 10) || !strstri(bp, " sap"))
 	{
 	    if ((p = strstri(bp, " of ")) != 0
 		&& (mntmp = name_to_mon(p+4)) >= LOW_PM)
@@ -5090,6 +5093,13 @@ int wishflags;
 	/* strip off "potion of ", so the corpse type code can then handle "foo blood" */
 	if (!(strncmpi(bp, "potion of ", 10) || !strstri(bp, " blood"))) {
 		bp += 10;
+	}
+
+	/* we actually do need corpsenm for potions of sap */
+	/* strip off "potion of ", so the corpse type code can then handle "foo sap" */
+	if (!(strncmpi(bp, "potion of ", 10) || !strstri(bp, " sap"))) {
+		bp += 10;
+		oclass = POTION_CLASS;
 	}
 
 	/* Find corpse type w/o "of" (red dragon scale mail, yeti corpse) */
@@ -5904,6 +5914,16 @@ typfnd:
 				   !(mvitals[mntmp].mvflags & G_NON_GEN_CORPSE) &&
 				   mons[mntmp].cnutrit != 0 &&
 				   !(typ==POT_BLOOD && !has_blood(&mons[mntmp]))) {
+			    otmp->corpsenm = mntmp;
+			}
+			break;
+		case POT_SAP:
+			if (dead_species(mntmp, FALSE)) {
+			    otmp->corpsenm = NON_PM;	/* it's empty */
+			} else if (!(mons[mntmp].geno & G_UNIQ) &&
+				   !(mvitals[mntmp].mvflags & G_NON_GEN_CORPSE) &&
+				   mons[mntmp].cnutrit != 0 &&
+				   has_sap(&mons[mntmp])) {
 			    otmp->corpsenm = mntmp;
 			}
 			break;

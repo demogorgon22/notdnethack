@@ -1363,11 +1363,12 @@ register const char *let,*word;
 				  || otyp == LIFELESS_DOLL) /* Note: Joke */
 			 ) ||
 		     (otmp->oclass == POTION_CLASS &&
-		     ((otyp != POT_OIL && otyp != POT_BLOOD &&
+		     ((otyp != POT_OIL && otyp != POT_BLOOD && otyp != POT_SAP &&
 			   otyp != POT_WATER) || !otmp->dknown
 		      || (otyp == POT_OIL && !objects[POT_OIL].oc_name_known)
 		      || (otyp == POT_WATER && !objects[POT_WATER].oc_name_known)
 		      || (otyp == POT_BLOOD && !(phlebot_kit && objects[POT_BLOOD].oc_name_known))
+		      || (otyp == POT_SAP && !objects[POT_SAP].oc_name_known)
 			 )
 			  ) ||
 		     (otmp->oclass == FOOD_CLASS &&
@@ -4841,6 +4842,9 @@ munge_objnames(obj, buffer)
   else if (obj->otyp == POT_BLOOD) {
 	  Strcpy(buffer, "potion of blood");
   }
+  else if (obj->otyp == POT_SAP) {
+	  Strcpy(buffer, "potion of sap");
+  }
   else {
 	  Strcpy(buffer, cxname2(obj));
   }
@@ -4869,6 +4873,16 @@ sortloot_cmp(obj1, obj2)
 
   /* Sort potions of blood by the corpse they represent */
   if (obj1->otyp == POT_BLOOD && obj2->otyp == POT_BLOOD) {
+	  const char *corpse_name1 = obj1->corpsenm == NON_PM
+		  ? "" : mons[obj1->corpsenm].mname;
+	  const char *corpse_name2 = obj2->corpsenm == NON_PM
+		  ? "" : mons[obj2->corpsenm].mname;
+	  name_cmp = strcmpi(corpse_name1, corpse_name2);
+	  if (name_cmp) return name_cmp;
+  }
+
+  /* Sort potions of sap by the corpse they represent */
+  if (obj1->otyp == POT_SAP && obj2->otyp == POT_SAP) {
 	  const char *corpse_name1 = obj1->corpsenm == NON_PM
 		  ? "" : mons[obj1->corpsenm].mname;
 	  const char *corpse_name2 = obj2->corpsenm == NON_PM
@@ -5845,7 +5859,7 @@ mergable_traits(otmp, obj)	/* returns TRUE if obj  & otmp can be merged */
 	  obj->odrained != otmp->odrained || obj->orotten != otmp->orotten))
 	    return(FALSE);
 
-	if (obj->otyp == CORPSE || obj->otyp == EYEBALL || obj->otyp == EGG || obj->otyp == TIN || obj->otyp == POT_BLOOD) {
+	if (obj->otyp == CORPSE || obj->otyp == EYEBALL || obj->otyp == EGG || obj->otyp == TIN || obj->otyp == POT_BLOOD || obj->otyp == POT_SAP) {
 		if (obj->corpsenm != otmp->corpsenm)
 				return FALSE;
 	}
