@@ -294,7 +294,7 @@ struct Role roles[] = {
 	PM_HERMIT_MASTER, PM_DISCIPLE, PM_BLUE_EYED_FOX,
 	PM_FOX, PM_ORC_CAPTAIN, S_OGRE, S_NYMPH,
 	ART_EYE_OF_JIROSHIN,
-	SA_GITH|SA_HUMAN|SA_ELF|SA_YUKI_ONNA, ROLE_MALE|ROLE_FEMALE |
+	SA_GITH|SA_HUMAN|SA_ELF|SA_YUKI_ONNA|SA_SALAMANDER, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  13,  7, 13, 10, 10, 13 },
@@ -2826,6 +2826,9 @@ int newgame;
 		}
 		else if(u.role_variant == ART_GREEN_DESTINY){
 			urole.enemy2num = PM_BARBARIAN;
+		}
+		else if(u.role_variant == ART_PIERCING_FLAME){
+			urole.enemy2num = PM_EFREET;
 		}
 		else if(Race_if(PM_INCANTIFIER)){
 			urole.enemy2num = PM_MIRKWOOD_SPIDER;

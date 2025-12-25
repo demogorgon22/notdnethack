@@ -2661,6 +2661,18 @@ u_init()
 			case 2: Kensei[KEN_BOOK].trotyp = SPE_HASTE_SELF; break;
 			}
 		}
+		else if(Race_if(PM_SALAMANDER)){
+			Skill_Ken[KENSEI_SKILL].skill = P_TRIDENT;
+			skill_init(Skill_Ken);
+			skill_add(Skill_Ken_GW);
+			u.role_variant = ART_PIERCING_FLAME;
+			Kensei[KEN_WEAPON].trotyp = TRIDENT;
+			switch (rn2(90) / 30) {
+			case 0: Kensei[KEN_BOOK].trotyp = SPE_SLOW_MONSTER; break;
+			case 1: Kensei[KEN_BOOK].trotyp = SPE_PROTECTION; break;
+			case 2: Kensei[KEN_BOOK].trotyp = SPE_INVISIBILITY; break;
+			}
+		}
 		else if(Race_if(PM_DROW)){
 			Skill_Ken[KENSEI_SKILL].skill = P_TWO_HANDED_SWORD;
 			skill_init(Skill_Ken);

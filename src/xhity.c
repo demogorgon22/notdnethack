@@ -21584,6 +21584,8 @@ monk_aura_bolt()
 
 	if(Role_if(PM_KENSEI) && u.role_variant == ART_WINTER_REAPER)
 		zapdat.adtyp = AD_COLD;
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_PIERCING_FLAME)
+		zapdat.adtyp = AD_FIRE;
 
 	//Currently these cook off without the player's explicit say-so
 	zapdat.no_bounce = TRUE;
@@ -23254,6 +23256,7 @@ perform_monk_move(int moveID, int *move_cost)
 					|| uwep->oartifact == ART_MALICE
 					|| uwep->oartifact == ART_SEVEN_STAR_SWORD
 					|| u.role_variant == ART_WINTER_REAPER
+					|| u.role_variant == ART_PIERCING_FLAME
 			)))
 			&& !Is_spire(&u.uz) 
 			&& beam_monk_target(monk_aura_range())

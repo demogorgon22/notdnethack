@@ -551,6 +551,16 @@ A("Ringil",			HIGH_ELVEN_WARSWORD,	(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
+A("Piercing Flame",			TRIDENT,	(const char *)0,
+	1500L, OBSIDIAN_MT, MZ_LARGE, WT_DEFAULT,
+	A_CHAOTIC, PM_KENSEI, PM_SALAMANDER, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	ATTK(AD_FIRE, 6, 0), (ARTA_VORPAL),
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
 /*Needs encyc entry*/
 A("The Rod of Lordly Might",		MACE,				(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_SPECIAL,

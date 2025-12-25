@@ -732,6 +732,9 @@ const char *name;
 		if (obj->oartifact == ART_RINGIL)
 			add_oprop(obj, OPROP_WRTHW);
 		
+		if (obj->oartifact == ART_PIERCING_FLAME)
+			add_oprop(obj, OPROP_UNHYW);
+		
 		if (obj->oartifact == ART_ANGUIREL)
 			add_oprop(obj, OPROP_WRTHW);
 		

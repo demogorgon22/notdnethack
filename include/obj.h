@@ -1187,6 +1187,7 @@ struct obj {
 								u.role_variant == ART_RINGIL ? (check_oprop((otmp), OPROP_WRTHW) || objects[(otmp)->otyp].oc_skill == P_SCIMITAR) : \
 								u.role_variant == ART_ANSERMEE ? (objects[(otmp)->otyp].oc_skill == P_SHORT_SWORD) : \
 								u.role_variant == ART_BOREAL_SCEPTER ? (objects[(otmp)->otyp].oc_skill == P_CLUB) : \
+								u.role_variant == ART_PIERCING_FLAME ? (objects[(otmp)->otyp].oc_skill == P_TRIDENT) : \
 								u.role_variant == ART_MALICE ? (objects[(otmp)->otyp].oc_skill == P_BROAD_SWORD) : \
 								u.role_variant == ART_SEVEN_STAR_SWORD ? (objects[(otmp)->otyp].oc_skill == P_TWO_HANDED_SWORD) : \
 								u.role_variant == ART_KISHIN_MIRROR ? (objects[(otmp)->otyp].oc_skill == P_MACE) : \
@@ -1199,6 +1200,7 @@ struct obj {
 						u.role_variant == ART_RINGIL ? (objects[(a_otyp)].oc_skill == P_SCIMITAR) : \
 						u.role_variant == ART_ANSERMEE ? (objects[(a_otyp)].oc_skill == P_SHORT_SWORD) : \
 						u.role_variant == ART_KISHIN_MIRROR ? (objects[(a_otyp)].oc_skill == P_MACE) : \
+						u.role_variant == ART_PIERCING_FLAME ? (objects[(a_otyp)].oc_skill == P_TRIDENT) : \
 						u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber_otyp(a_otyp)) : \
 						(a_otyp) == artilist[u.role_variant].otyp)
 
