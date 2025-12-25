@@ -1218,7 +1218,6 @@ use_reach_attack()
 int
 doMysticForm()
 {
-	doMabilForm();
 	winid tmpwin;
 	int n, how;
 	char buf[BUFSZ];
@@ -1981,6 +1980,7 @@ doEtechForm()
 #define AUTO_ATTKS			0x0800L
 #define BOREAL_FORMS		0x1000L
 #define AVOID_URPASSIVES	0x2000L
+#define MABIL_FORMS			0x4000L
 
 int
 hasfightingforms(){
@@ -2011,6 +2011,8 @@ hasfightingforms(){
 	/* forms relevant due to situation/role are shown, even if you're bad at them (if applicable) */
 	if(Role_if(PM_MONK) || Role_if(PM_KENSEI))
 		formmask |= MONK_FORMS;
+	if(Role_if(PM_MONK))
+		formmask |= MABIL_FORMS;
 	if(Role_if(PM_KNIGHT) || Role_if(PM_KENSEI))
 		formmask |= KNIGHT_FORMS;
 	if((uwep && is_lightsaber(uwep)) || (uswapwep && is_lightsaber(uswapwep)))
@@ -2166,10 +2168,15 @@ dofightingform()
 #define	NO_AUTO		12
 #define	BOREAL_FORM	13
 #define	AVOD_PASV	14
+#define	MABIL_FORM	15
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'm', 0, ATR_NONE, "Select Mystic Forms", MENU_UNSELECTED);
+	}
+	if (formmask & MABIL_FORMS) {
+		any.a_int = MABIL_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'M', 0, ATR_NONE, "Select Monk Abilities", MENU_UNSELECTED);
 	}
 	if (formmask & KNIGHT_FORMS) {
 		any.a_int = KNIT_FORM;
@@ -2263,6 +2270,8 @@ dofightingform()
 	switch (n){
 		case MONK_FORM:
 			return doMysticForm();
+		case MABIL_FORM:
+			return doMabilForm();
 		case LGHT_FORM:
 			return doLightsaberForm();
 		case KNIT_FORM:
@@ -2316,6 +2325,7 @@ dofightingform()
 #undef	ETCH_FORM
 #undef	AVOD_THFT
 #undef	AVOD_PASV
+#undef	MABIL_FORM
 
 #undef MONK_FORMS
 #undef LIGHTSABER_FORMS
@@ -2328,6 +2338,7 @@ dofightingform()
 #undef AVOID_THEFT
 #undef AUTO_ATTKS
 #undef AVOID_URPASSIVES
+#undef MABIL_FORMS
 
 int
 dounmaintain()
