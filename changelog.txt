@@ -321,6 +321,9 @@ Madman changes
 			Expert spear skill
 			Expert trident skill
 			Spearhead Tattoo
+Undead Hunter changes
+	Ent Undead Hunter
+		Starts with a hunter's long-axe (this guy is up to no good)
 Kensei changes
 	Salamander Kensei
 		Uses tridents as kensei weapon

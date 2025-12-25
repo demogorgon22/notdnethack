@@ -2957,8 +2957,12 @@ u_init()
 			}
 			UndeadHunter[U_BULLETS].trspe = 1;
 			UndeadHunter[U_JACKET].trotyp = flags.female ? GENTLEWOMAN_S_DRESS : GENTLEMAN_S_SUIT;
-		}
-		else switch(rn2(6)){
+		} else if(Race_if(PM_ENT)){
+				UndeadHunter[U_WEAPON].trotyp = HUNTER_S_LONG_AXE;
+				knows_object(HUNTER_S_LONG_AXE);
+				knows_object(HUNTER_S_AXE);
+
+		} else switch(rn2(6)){
 			case 0:
 				//UndeadHunter[U_WEAPON].trotyp = CANE;
 			break;
