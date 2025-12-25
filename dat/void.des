@@ -250,7 +250,7 @@ NON_DIGGABLE:(00,00,54,19)
 TELEPORT_REGION:(00,00,02,02),(0,0,0,0)
 NON_PASSWALL:(00,00,54,19)
 
-MONSTER:'D',"Fafnir",random
+MONSTER:'Z',"Maegera",random
 MONSTER:'B',"Huginn",random
 MONSTER:'B',"Muninn",random
 MONSTER:'h',"Iris",random
