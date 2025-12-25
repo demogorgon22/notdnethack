@@ -217,6 +217,7 @@
 				 (ptr)->mtyp == PM_AURUMACH_RILMANI || \
 				 (ptr)->mtyp == PM_ARA_KAMEREL || \
 				 (ptr)->mtyp == PM_ACERERAK || \
+				 (ptr)->mtyp == PM_MAEGERA || \
 				 (ptr)->mtyp == PM_RADIANT_PYRAMID)
 #define is_iron(ptr)	((ptr)->mtyp == PM_IRON_PIERCER || \
 				 (ptr)->mtyp == PM_IRON_GOLEM || \
@@ -547,7 +548,7 @@
 				 ))
 #define is_dragon(ptr)		(((ptr)->mflagsa & MA_DRAGON) != 0L)
 #define is_true_adult_dragon(ptr)		((monsndx(ptr) >= PM_GRAY_DRAGON && monsndx(ptr) <= PM_YELLOW_DRAGON) || \
-								(ptr)->mtyp == PM_EDEN || (ptr)->mtyp == PM_FAFNIR || \
+								(ptr)->mtyp == PM_EDEN || \
 								(ptr)->mtyp == PM_PLATINUM_DRAGON || (ptr)->mtyp == PM_CHROMATIC_DRAGON || (ptr)->mtyp == PM_IXOTH || (ptr)->mtyp == PM_SMAUG)
 #define is_true_dragon(ptr)		((monsndx(ptr) >= PM_BABY_GRAY_DRAGON && monsndx(ptr) <= PM_BABY_YELLOW_DRAGON) || is_true_adult_dragon(ptr))
 #define is_pseudodragon(ptr)	(monsndx(ptr) >= PM_TINY_PSEUDODRAGON && monsndx(ptr) <= PM_GIGANTIC_PSEUDODRAGON)
@@ -1094,6 +1095,7 @@
 /*	[note: the light ranges above were reduced to 1 for performance...] */
 #define likes_lava(ptr)		( \
 			(ptr)->mtyp == PM_FIRE_ELEMENTAL || \
+			(ptr)->mtyp == PM_MAEGERA || \
 			(ptr)->mtyp == PM_LAVA_LEPRECHAUN || \
 			is_salamander(ptr) \
 			)

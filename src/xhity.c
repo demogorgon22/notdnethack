@@ -8971,7 +8971,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						Strcpy(buf, Monnam(magr));
 						pline("%s steals some gold from %s.", buf, mon_nam(mdef));
 					}
-					if (!tele_restrict(magr) && magr->mtyp != PM_FAFNIR) {
+					if (!tele_restrict(magr)) {
 						(void)rloc(magr, TRUE);
 						result |= MM_AGR_STOP;
 						if (vis && !canspotmon(magr))

@@ -13705,7 +13705,7 @@ boolean greatequip;
 			(void) mongets(mtmp, APPLE, mkobjflags);
 			(void) mongets(mtmp, LEO_NEMAEUS_HIDE, mkobjflags);
 			break;
-		case PM_FAFNIR:{
+		case PM_MAEGERA:{
 			struct obj *otmp;
 			otmp = mksobj(PICK_AXE, mkobjflags);
 			otmp = oname(otmp, artiname(ART_RUINOUS_STRIKE));

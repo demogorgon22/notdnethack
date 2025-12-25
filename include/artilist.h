@@ -3306,7 +3306,7 @@ A("Eurynome's Dancing Shoes",			SPEED_BOOTS,		(const char *)0,
 	),
 
 A("Ruinous Strike",				PICK_AXE,		(const char *)0,
-	9999L, DRAGON_HIDE, MZ_DEFAULT, WT_DEFAULT,
+	9999L, GOLD, MZ_DEFAULT, 35,
 	A_NONE, NON_PM, NON_PM, TIER_B, (ARTG_NOGEN|ARTG_NOWISH|ARTG_NOCNT),
 	NO_MONS(),
 	ATTK(AD_FIRE, 1, 0), NOFLAG,

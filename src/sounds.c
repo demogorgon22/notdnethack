@@ -5536,7 +5536,7 @@ int tx,ty;
 					if(!Blind) pline("A skeletal finger of molten gold taps your left ring-finger, leaving a cloud of smoke and a sharp burning sensation!");
 					else pline("You feel a burning sensation on your left ring-finger!");
 					if(Role_if(PM_ANACHRONOUNBINDER)){
-						summon_spirit(SEAL_MAEGERA,MAEGERA,PM_FAFNIR,tx,ty);
+						summon_spirit(SEAL_MAEGERA,MAEGERA,PM_MAEGERA,tx,ty);
 						return MOVE_INSTANT;
 					}
 					bindspirit(ep->ward_id);

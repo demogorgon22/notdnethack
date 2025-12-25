@@ -59,11 +59,9 @@ register struct monst *mtmp;
 	    Your("purse feels lighter.");
 		IMPURITY_UP(u.uimp_theft)
 	    mtmp->mgold += tmp;
-	if(mtmp->mtyp != PM_FAFNIR){
-		if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
-		mtmp->mavenge = 1;
-		monflee(mtmp, 0, FALSE, FALSE);
-	}
+	    if (!tele_restrict(mtmp)) (void) rloc(mtmp, TRUE);
+	    mtmp->mavenge = 1;
+	    monflee(mtmp, 0, FALSE, FALSE);
 	    flags.botl = 1;
 	}
 }
