@@ -2358,6 +2358,15 @@ ufire_blaster(struct obj *launcher, int shotlimit)
 				obfree(ammo, 0);
 				ammo = (struct obj *)0;
 				break;
+			case SAPBURNER:
+				/* create fake ammo in order to calculate multishot correctly */
+				ammo = blaster_ammo(launcher);
+				if (getdir((char *)0))
+					result = zap_sapburner(launcher, calc_multishot(&youmonst, ammo, launcher, shotlimit), shotlimit);
+				/* destroy ammo and don't go through uthrow */
+				obfree(ammo, 0);
+				ammo = (struct obj *)0;
+				break;
 			case SHOCK_MORTAR:
 				ammo = blaster_ammo(launcher);
 				cc.x = u.ux;
@@ -2736,6 +2745,7 @@ struct obj * blaster;
 		break;
 	case RAYGUN:
 	case FLAMETHROWER:
+	case SAPBURNER:
 	case SHOCK_MORTAR:
 		/* create fake ammo in order to calculate multishot correctly */
 		ammo = mksobj(LASER_BEAM, MKOBJ_NOINIT);
@@ -3778,6 +3788,7 @@ int tary;
 						break;
 					case RAYGUN:
 					case FLAMETHROWER:
+					case SAPBURNER:
 					case SHOCK_MORTAR:
 						// TODO: monster raygun function
 						//if (!getdir((char *)0))

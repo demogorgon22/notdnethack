@@ -871,6 +871,9 @@ int mkflags;
 				add_to_container(otmp, stone);
 				container_weight(otmp);
 			}
+			else if (otmp->otyp == SAPBURNER){
+				otmp->ovar1_charges = 80L + rnd(20);
+			}
 			else if (is_blaster(otmp)){ //Rayguns and mass-shadow pistols are also blasters, so this has to go under that case
 				otmp->ovar1_charges = 80L + rnd(20);
 				if (otmp->otyp == ARM_BLASTER) otmp->altmode = WP_MODE_SINGLE;

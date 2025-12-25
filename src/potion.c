@@ -3677,6 +3677,15 @@ dodip()
 	    useup(potion);
 	    return MOVE_STANDARD;
 	}
+
+	/* Sapburner recharge with sap potion */
+	if(obj->otyp == SAPBURNER && potion->otyp == POT_SAP){
+		pline("You fill %s with sap.", the(xname(obj)));
+		obj->ovar1 = 80L + rnd(20);
+		useup(potion);
+		return MOVE_STANDARD;
+	}
+
     more_dips:
 
 	if((obj->otyp == SUNROD)

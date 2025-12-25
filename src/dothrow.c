@@ -198,7 +198,8 @@ int shots, shotlimit;
 		You("pull the trigger, but nothing happens.");
 		return MOVE_STANDARD;
 	}
-	
+	use_skill(P_FIREARM, cost);
+
 	if(!u.dx && !u.dy){
 		if(u.dz > 0){
 			obj->ovar1 -= cost;
@@ -237,6 +238,59 @@ int shots, shotlimit;
 }
 
 int
+zap_sapburner(obj, shots, shotlimit)
+struct obj *obj;
+int shots, shotlimit;
+{
+	int cost = 1;
+	
+	if(obj->ovar1 < cost){
+		shots = 0;
+	}
+	
+	if(shots <= 0){
+		You("pull the trigger, but nothing happens.");
+		return MOVE_STANDARD;
+	}
+	use_skill(P_FIREARM, cost);
+	
+	if(!u.dx && !u.dy){
+		if(u.dz > 0){
+			obj->ovar1 -= cost;
+			if(!Blind)
+				pline("Burning sap splatters on the %s!", surface(u.ux, u.uy));
+			else You("smell burning sap.");
+			return MOVE_FIRED;
+		} else {
+			obj->ovar1 -= cost;
+			struct zapdata zapdata = { 0 };
+			basiczap(&zapdata, AD_FIRE, ZAP_SAPBURNER, 3+shots);
+			zapdata.splashing = TRUE;
+			zapdata.unreflectable = ZAP_REFL_NEVER;
+			zapdata.no_bounce = TRUE;
+			zapdata.affects_floor = FALSE;
+			zapdata.directly_hits = FALSE;
+			zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
+			return MOVE_FIRED;
+		}
+	}
+	
+	obj->ovar1 -= cost;
+
+	struct zapdata zapdata = { 0 };
+	basiczap(&zapdata, AD_FIRE, ZAP_SAPBURNER, 3+shots);
+	zapdata.splashing = TRUE;
+	zapdata.unreflectable = ZAP_REFL_NEVER;
+	zapdata.no_bounce = TRUE;
+	zapdata.affects_floor = FALSE;
+	zapdata.directly_hits = FALSE;
+	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 1, &zapdata);
+	zap(&youmonst, u.ux, u.uy, u.dx, u.dy, 3, &zapdata);
+
+	return MOVE_FIRED;
+}
+
+int
 zap_mortar(struct obj *obj, int shots, int shotlimit, coord *cc)
 {
 	int cost = 1;
@@ -251,6 +305,7 @@ zap_mortar(struct obj *obj, int shots, int shotlimit, coord *cc)
 		return MOVE_STANDARD;
 	}
 
+	use_skill(P_FIREARM, cost);
 		
 	obj->ovar1 -= cost;
 	radius += shots;

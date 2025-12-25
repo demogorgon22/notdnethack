@@ -160,6 +160,12 @@ int adtyp, ztyp;
 			default:      impossible("unknown flamethrower damage type in flash_type: %d", adtyp);
 			return "stream of bad gas prices";
 		}
+	case ZAP_SAPBURNER:
+		switch(adtyp){
+			case AD_FIRE: return "stream of burning sap";
+			default:      impossible("unknown sapburner damage type in flash_type: %d", adtyp);
+			return "stream of sticky goo";
+		}
 	default:
 		impossible("unknown ztyp in flash_type: %d", ztyp);
 	}

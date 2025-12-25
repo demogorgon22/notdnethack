@@ -2964,8 +2964,12 @@ u_init()
 				UndeadHunter[U_WEAPON].trotyp = HUNTER_S_LONG_AXE;
 				knows_object(HUNTER_S_LONG_AXE);
 				knows_object(HUNTER_S_AXE);
+				UndeadHunter[U_GUN].trotyp = SAPBURNER;
+				knows_object(SAPBURNER);
 				UndeadHunter[U_BULLET_MOLD].trotyp = TINNING_KIT;
 				UndeadHunter[U_BULLET_MOLD].trspe = UNDEF_SPE;
+				UndeadHunter[U_BULLETS].trotyp = EUCALYPTUS_LEAF;
+				UndeadHunter[U_BULLETS].trquan = 3;
 
 		} else switch(rn2(6)){
 			case 0:

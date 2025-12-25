@@ -723,6 +723,7 @@ GUN(("carcosan sting", "curved dagger"),              0,   MZ_SMALL, 0,  10, 500
 GUN(("mass-shadow pistol",  "rectangular device"),                0,  MZ_MEDIUM, 0,   4, 4500, 10,  1,  0,WP_BLASTER, PLASTIC, P_FIREARM, CLR_GRAY, O_MAGIC(1)), /*Needs tile*/
 GUN(("cutting laser","hard tan lozenge", "hard lozenge"),         0,   MZ_SMALL, 0,   1, 1000,  3, -1,  3,WP_BLASTER, PLASTIC, P_FIREARM, CLR_YELLOW, O_MAGIC(1)), /*Needs tile*/
 GUN(("flamethrower","tank with long tube"),         0,   MZ_MEDIUM, 0,   45, 3000,  15, 1,  0, WP_BLASTER, METAL, P_FIREARM, CLR_ORANGE, O_MAGIC(1)), /*Needs tile*/
+GUN(("sapburner","gourd with nozzle"),              0,   MZ_MEDIUM, 0,   30, 1500,  10, 1,  0, WP_BLASTER, WOOD, P_FIREARM, CLR_BROWN), /*Needs tile*/
 
 GUN(("raygun", "hard handle ending in glassy disks"), 0,  MZ_MEDIUM, 0,   8, 3000, 15,  1,  0,WP_BLASTER, PLASTIC, P_FIREARM, CLR_BRIGHT_CYAN, O_MAGIC(1)), /*Needs tile*/
 GUN(("soldier's saber", "gun saber"),               0,   MZ_MEDIUM, 0,   40,  100, 15,  1,  0, WP_BULLET, METAL, P_FIREARM, HI_METAL), /*Needs tile*/

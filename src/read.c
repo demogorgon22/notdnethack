@@ -1555,6 +1555,9 @@ int curse_bless;
 		    p_glow1(obj);
 		}
 		break;
+	    case SAPBURNER:
+		pline("The %s doesn't respond to magical charging.", xname(obj));
+		break;
 	    default:
 		goto not_chargable;
 		/*NOTREACHED*/
