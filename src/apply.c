@@ -4821,7 +4821,7 @@ register struct obj *obj;
 		return;
 	}
 	consume_obj_charge(obj, TRUE);
-	if((has_blood(&mons[corpse->corpsenm]) && !corpse->odrained)
+	if(((has_blood(&mons[corpse->corpsenm]) || has_sap(&mons[corpse->corpsenm])) && !corpse->odrained)
 		|| !(Race_if(PM_VAMPIRE) || Race_if(PM_INCANTIFIER) || Race_if(PM_ETHEREALOID) || 
 			umechanoid)
 		|| yn("This corpse does not have blood. Tin it?") == 'y'
