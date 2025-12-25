@@ -9511,7 +9511,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				exercise(A_WIS, TRUE);
 				exercise(A_INT, TRUE);
 			}
-			if(mm_resist(mdef, magr, 0, NOTELL)){
+			if(mm_resist(mdef, magr, 0, NOTELL) && !Role_if(PM_ANACHRONOUNBINDER)){
 				mon_forget(mdef, dmg, FALSE, magr->mpeaceful, !(vis&VIS_MDEF));
 			}
 			/* kills if pretend-brain-eating damage would reduce hp below zero */
