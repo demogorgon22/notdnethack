@@ -188,7 +188,8 @@ static const struct icp droven_materials[] = {
 	{900, 0 }, /* use base material */
 	{ 45, MITHRIL },
 	{ 45, SILVER },
-	{ 10, SHADOWSTEEL }, /* shadowsteel was intended to be quite bad for weapons, at least given the techniques the drow know */
+	{  9, GOLD }, /* shadowsteel was intended to be quite bad for weapons, at least given the techniques the drow know */
+	{  1, GREEN_STEEL },
 	{  0, 0 }
 };
 

@@ -6634,7 +6634,7 @@ int material;
 	boolean marm_blocks_ub = FALSE;
 	boolean hasgloves = !!which_armor(mon, W_ARMG);
 	boolean hasshirt = !!which_armor(mon, W_ARMU);
-	boolean hasarm = !!which_armor(mon, W_ARMU);
+	boolean hasarm = !!which_armor(mon, W_ARM);
 
 	curarm = which_armor(mon, W_ARMU);
 	if(curarm && curarm->obj_material == material)

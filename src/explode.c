@@ -389,7 +389,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				roll_frigophobia();
 				break;
 			case AD_UHCD:
-				explmask = (Cold_resistance && hates_unholy(youracedata));
+				explmask = (Cold_resistance && hates_holy(youracedata));
 				roll_frigophobia();
 				break;
 			case AD_GMLD:
@@ -465,7 +465,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 					explmask |= resists_cold(mtmp);
 					break;
 				case AD_UHCD:
-					explmask |= resists_cold(mtmp) && hates_unholy_mon(mtmp);
+					explmask |= resists_cold(mtmp) && hates_holy_mon(mtmp);
+					break;
 				case AD_GMLD:
 					explmask |= (acidic(mtmp->data) || is_gray_mold(mtmp->data));
 					break;
@@ -746,7 +747,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			if(adtyp == AD_UHCD){
 				int mod = 1;
 				if(!resists_cold(mtmp)){
-					if(resists_fire(mtmp))
+					if(cold_vulnerable(mtmp))
 						mod++;
 					if(hates_unholy_mon(mtmp))
 						mod++;
