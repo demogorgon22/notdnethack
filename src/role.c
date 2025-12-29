@@ -2068,7 +2068,7 @@ int newgame;
 			urace = githzerai;
 		}
 	}
-	else if(Humanoid_half_dragon(urole.malenum)){
+	if(Race_if(PM_HALF_DRAGON) && Humanoid_half_dragon(urole.malenum)){
 		urace.attrmax[A_DEX] = 18;
 	}
 
