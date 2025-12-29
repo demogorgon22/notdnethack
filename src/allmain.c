@@ -5117,6 +5117,9 @@ printAttacks(buf, ptr)
 		"[[disease]] and [[poison]]",	/*159*/
 		"[[orc spawn]]",		/*160*/
 		"push 1d3 squares",		/*161*/
+		"[[bleeding wound]]s",		/*162*/
+		"[[unholy ice]]",		/*163*/
+		"[[gray mold]]",			/*164*/
 		// "[[ahazu abduction]]",	/**/
 		"[[stone choir]]",		/* */
 		"[[water vampire]]",	/* */

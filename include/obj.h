@@ -235,6 +235,7 @@ struct obj {
 	/* 15 free bits in this field, I think -CM */
 	Bitfield(researched,1);	/* already disected */
 	Bitfield(blood_smithed,1);	/* improved by blood smithing */
+	Bitfield(improved_mat,1);	/* improved over base material (used for shadowsteel weapons) */
 	
 	int obj_material;		/*Object material (from lookup table)*/
 	int sub_material;		/*Sub-material*/
