@@ -4665,7 +4665,6 @@ int tx,ty;
 						);
 						if(knowsOldDwarvish){
 							pline("\"I am that called Maegera by the accursed Carvers.");
-							pline("\"I am that called Maegera by the accursed Carvers.");
 							pline("\"I give you a star, to bring the fires of Dusk to the castles of the proud,");
 							pline("\"and the light of Dawn to the new towers built on their ruin\".");
 						}
