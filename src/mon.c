@@ -4050,11 +4050,13 @@ boolean actual;			/* actual attack or faction check? */
 		if(!(magr->mpeaceful && mdef->mpeaceful && is_undead(youracedata))){
 			if(mm_undead(magr) && 
 				(!is_witch_mon(mdef) && mdef->mtyp != PM_WITCH_S_FAMILIAR && !mdef->mpetitioner && !mm_undead(mdef) && !mindless_mon(mdef) && mdef->mfaction != NECROMANCY_FACTION && mdef->mfaction != YELLOW_FACTION)
+				&& !(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && In_quest(&u.uz) && is_mind_flayer(magr->data) && has_template(mdef, MINDLESS))
 			){
 				return ALLOW_M|ALLOW_TM;
 			}
 			if((!is_witch_mon(magr) && magr->mtyp != PM_WITCH_S_FAMILIAR && !magr->mpetitioner && !mm_undead(magr) && !mindless_mon(magr) && magr->mfaction != NECROMANCY_FACTION && magr->mfaction != YELLOW_FACTION)
 				&& mm_undead(mdef)
+				&& !(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && In_quest(&u.uz) && is_mind_flayer(mdef->data) && has_template(magr, MINDLESS))
 			){
 				return ALLOW_M|ALLOW_TM;
 			}
