@@ -1159,6 +1159,13 @@ doEldritchKniForm()
 	int curskill = FightingFormSkillLevel(FFORM_KNI_ELDRITCH);;
 	int spell_list[] = {0, SPE_FIREBALL, SPE_FIRE_STORM, SPE_CONE_OF_COLD, SPE_BLIZZARD,
 		SPE_LIGHTNING_BOLT, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, SPE_POISON_SPRAY, SPE_FINGER_OF_DEATH, 0};
+	
+	if(Role_if(PM_KENSEI) && u.role_variant == ART_WINTER_REAPER){
+		spell_list[1] = SPE_CONE_OF_COLD;
+		spell_list[2] = SPE_BLIZZARD;
+		spell_list[3] = SPE_FINGER_OF_DEATH;
+		spell_list[4] = 0;
+	}
 
 	for (i = 1; spell_list[i] && !remotely_competent; i++)
 		for (j = 0; j < MAXSPELL; j++)

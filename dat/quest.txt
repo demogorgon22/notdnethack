@@ -5415,7 +5415,7 @@ against %n."
 "Beware the wiles of the kitsune."
 %E
 %Cp Ken 00034
-"%oC has recruited Oni mages to her service."
+"%nC has recruited Oni mages to her service."
 %E
 %Cc Ken 00035
 You arrive at %i at last. Now, to find the secret passage

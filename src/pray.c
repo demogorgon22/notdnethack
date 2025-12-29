@@ -146,6 +146,7 @@ enum {
 	TROUBLE_WIMAGE,
 	TROUBLE_HIT,
 	TROUBLE_STARVING,
+	TROUBLE_GRAY_MOLD,
 	TROUBLE_OMUD,
 	TROUBLE_BLEED,
 	TROUBLE_SICK,
@@ -176,6 +177,7 @@ enum {
 #define TROUBLE_HALLUCINATION	  (-15)
 #define TROUBLE_ENERGYMOD	      (-16)
 #define TROUBLE_LOW_SAN	      	  (-17)
+#define TROUBLE_SMALL_MOLD     	  (-18)
 
 /* We could force rehumanize of polyselfed people, but we can't tell
    unintentional shape changes from the other kind. Oh well.
@@ -221,6 +223,7 @@ in_trouble()
 	if(Sick) return(TROUBLE_SICK);
 	if(youmonst.mbleed && !Upolyd && u.uhp < 2*youmonst.mbleed) return(TROUBLE_BLEED);
 	if(youmonst.mbleed && !Upolyd && youmonst.momud) return(TROUBLE_OMUD);
+	if(youmonst.mgmld_throat || youmonst.mgmld_skin >= 500) return(TROUBLE_GRAY_MOLD);
 	if(u.uhs >= WEAK && !Race_if(PM_INCANTIFIER)) return(TROUBLE_STARVING);
 	if (Upolyd ? (u.mh <= 5 || u.mh*2 <= u.mhmax) :
 		(u.uhp <= 5 || u.uhp*2 <= u.uhpmax)) return TROUBLE_HIT;
@@ -293,6 +296,7 @@ in_trouble()
 	if(HStun) return (TROUBLE_STUNNED);
 	if(HConfusion) return (TROUBLE_CONFUSED);
 	if(Hallucination) return(TROUBLE_HALLUCINATION);
+	if(youmonst.mgmld_skin)  return(TROUBLE_SMALL_MOLD); /* any in the throat was a major trouble, as were large patches on the skin */
 	return(0);
 }
 
@@ -385,6 +389,12 @@ register int trouble;
 		    flags.botl = 1;
 		    delayed_killer = 0;
 		    break;
+		case TROUBLE_GRAY_MOLD:
+		case TROUBLE_SMALL_MOLD:
+		    You_feel("much better.");
+		    youmonst.mgmld_throat = 0;
+		    youmonst.mgmld_skin = 0;
+		    break;
 	    case TROUBLE_BLOOD_DROWN:
 		    pline_The("blood vanishes from your lungs.");
 		    BloodDrown = 0;
@@ -404,8 +414,9 @@ register int trouble;
 		    }
 			if(HStrangled){
 				HStrangled = 0;
-				Your("throat opens up!");
+				Your("%s opens up!", body_part(WINDPIPE));
 			}
+			youmonst.mgmld_throat = 0;
 			if(!Strangled) You("can breathe again.");
 		    flags.botl = 1;
 		    break;

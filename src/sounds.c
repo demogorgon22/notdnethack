@@ -24,12 +24,14 @@
 #define		NURSE_FIX_SLIME			6
 #define		NURSE_FIX_STERILE		7
 #define		NURSE_BRAIN_SURGERY		8
+#define		NURSE_FIX_MOLD			9
 
 #define		RENDER_FIX_MORGUL		1
 #define		RENDER_FIX_SICKNESS		2
 #define		RENDER_FIX_SLIME		3
 #define		RENDER_BRAIN_SURGERY	4
 #define		RENDER_THOUGHT			5
+#define		RENDER_FIX_MOLD			6
 
 //Match order of constants
 const int nurseprices[] = {
@@ -42,6 +44,7 @@ const int nurseprices[] = {
 	2000,//6 same as healing
 	1000,//7 restore ability
 	6000,//8 20x trephination kit cost
+	2000,//9 40x booze
 };
 
 #ifdef OVLB
@@ -1574,6 +1577,8 @@ asGuardian:
 									tmpm->msleeping = 0;
 									tmpm->mflee = 0;
 									tmpm->mfleetim = 0;
+									tmpm->mgmld_throat = 0;
+									tmpm->mgmld_skin = 0;
 								}
 							}
 						}
@@ -1581,6 +1586,8 @@ asGuardian:
 					if(mtmp->mtame && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && !Invulnerable){
 						healup(u.ulevel, 0, FALSE, FALSE);
 						use_unicorn_horn((struct obj *)0);
+						youmonst.mgmld_skin = max(0, youmonst.mgmld_skin - 50);
+						youmonst.mgmld_throat = max(0, youmonst.mgmld_throat - 50);
 					}
 					if(distmin(mtmp->mx,mtmp->my,u.ux,u.uy) < 5 && uwep && uwep->oartifact == ART_SINGING_SWORD){
 						uwep->ovara_heard |= OHEARD_HEALING;
@@ -1929,6 +1936,8 @@ asGuardian:
 				u.umorgul > 0
 				|| Sick
 				|| Slimed
+				|| youmonst.mgmld_skin
+				|| youmonst.mgmld_throat
 				|| u.thoughts
 				|| (count_glyphs() < MAX_GLYPHS && !u.render_thought)
 			 )
@@ -3013,7 +3022,7 @@ int dz;
 		pline("As %s, you cannot speak.", an(youracedata->mname));
 		return MOVE_CANCELLED;
     }
-    if (Strangled) {
+    if (Strangled_cant_speak) {
 		You_cant("speak.  You're choking!");
 		return MOVE_CANCELLED;
     }
@@ -6494,10 +6503,24 @@ int p_skill;
 	if (Role_if(PM_KENSEI)){
 		if (p_skill == P_KNI_SACRED)
 			return TRUE;
-		if (p_skill == P_KNI_ELDRITCH)
+		if (p_skill == P_KNI_ELDRITCH && u.role_variant == ART_WINTER_REAPER)
 			return TRUE;
 	}
 	return FALSE;
+}
+
+void
+unlockRoleSkill(int p_skill)
+{
+	if (Role_if(PM_KNIGHT)){
+		expert_weapon_skill(p_skill);
+	}
+	if (Role_if(PM_KENSEI)){
+		// if (p_skill == P_KNI_SACRED)
+		// 	skilled_weapon_skill(p_skill);
+		// else expert_weapon_skill(p_skill);
+		expert_weapon_skill(p_skill);
+	}
 }
 
 boolean
@@ -6848,6 +6871,14 @@ donursemenu()
 			MENU_UNSELECTED);
 	}
 	incntlet++; //Advance anyway
+	if(youmonst.mgmld_skin || youmonst.mgmld_throat){
+		Sprintf(buf, "Cure gray mold infection ($%d)", nurseprices[NURSE_FIX_MOLD]);
+		any.a_int = NURSE_FIX_MOLD;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
 	if(Sterile){
 		Sprintf(buf, "Fertility treatment ($%d)", nurseprices[NURSE_FIX_STERILE]);
 		any.a_int = NURSE_FIX_STERILE;	/* must be non-zero */
@@ -6975,6 +7006,26 @@ struct monst *nurse;
 			pline("%s burns away the slimy growths.", Monnam(nurse));
 			Slimed = 0L;
 		break;
+		case NURSE_FIX_MOLD:
+			pline("%s gives you a shot of booze.", Monnam(nurse));
+			if(!Race_if(PM_INCANTIFIER) && !umechanoid) u.uhunger += 150;
+			youmonst.mgmld_skin = 0;
+			youmonst.mgmld_throat = 0;
+			if(u.udrunken < u.ulevel*3){
+				u.udrunken++;
+				change_usanity(5, FALSE);
+			} else {
+				if(u.usanity < 50){
+					change_usanity(min(5, 50 - u.usanity), FALSE);
+				}
+			}
+			check_drunkard_trophy();
+			make_confused(itimeout_incr(HConfusion, d(3,8)), FALSE);
+			healup(u.ulevel, 0, FALSE, FALSE);
+			You("pass out.");
+			multi = -rnd(15);
+			nomovemsg = "You awake with a headache.";
+		break;
 		case NURSE_FIX_STERILE:
 			pline("%s doses you with fertility medicine.", Monnam(nurse));
 			HSterile = 0L;
@@ -7075,6 +7126,14 @@ dorendermenu()
 			MENU_UNSELECTED);
 	}
 	incntlet++; //Advance anyway
+	if(youmonst.mgmld_skin || youmonst.mgmld_throat){
+		Sprintf(buf, "Remove gray mold growths");
+		any.a_int = RENDER_FIX_MOLD;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	incntlet++; //Advance anyway
 	if(u.thoughts){
 		Sprintf(buf, "Extract thought");
 		any.a_int = RENDER_BRAIN_SURGERY;	/* must be non-zero */
@@ -7142,6 +7201,11 @@ struct monst *render;
 		case RENDER_FIX_SLIME:
 			pline("%s picks off the slimy growths.", Monnam(render));
 			Slimed = 0L;
+		break;
+		case RENDER_FIX_MOLD:
+			pline("%s picks off the gray mold growths.", Monnam(render));
+			youmonst.mgmld_skin = 0;
+			youmonst.mgmld_throat = 0;
 		break;
 		case RENDER_BRAIN_SURGERY:{
 			int otyp;

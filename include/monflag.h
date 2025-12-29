@@ -466,8 +466,9 @@
 #define PEST_THREADS           FORCE_SPHERES+1
 #define BURN_INTO_LIFE         PEST_THREADS+1
 #define SUMMON_ROGUE_HALOS     BURN_INTO_LIFE+1
+#define PANIC_BOLT             SUMMON_ROGUE_HALOS+1
 
-#define MON_LASTSPELL          SUMMON_ROGUE_HALOS
+#define MON_LASTSPELL          PANIC_BOLT
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1

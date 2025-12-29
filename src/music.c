@@ -1171,6 +1171,8 @@ int distance;
 				mtmp->mspec_used = 0;
 				mtmp->mcrazed = 0;
 				mtmp->mdisrobe = 0;
+				mtmp->mgmld_throat = 0;
+				mtmp->mgmld_skin = 0;
 				if(get_mx(mtmp, MX_EDOG) && EDOG(mtmp)->apport < 10) EDOG(mtmp)->apport++;
 				if(mtmp->permspeed == 0) mon_adjust_speed(mtmp, 1, (struct obj *) 0, TRUE);
 			case P_SKILLED:

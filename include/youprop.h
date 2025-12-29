@@ -116,6 +116,8 @@
 #define EStrangled		u.uprops[STRANGLED].extrinsic
 #define Strangled		(HStrangled || EStrangled)
 
+#define Strangled_cant_speak	(HStrangled || (EStrangled && !separate_respiration(youracedata)))
+
 #define Drowning		(Underwater && !Breathless && !amphibious(youracedata))
 
 #define HChastity		u.uprops[CHASTITY].intrinsic

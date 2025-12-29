@@ -3363,6 +3363,7 @@ get_premium_heart_multiplier()
 	if (Babble) multiplier++;
 	if (Screaming) multiplier++;
 	if (FaintingFits) multiplier++;
+	if (youmonst.mgmld_skin || youmonst.mgmld_throat) multiplier++;
 
 	return multiplier;
 }
@@ -3462,6 +3463,8 @@ int * truedmgptr;
 			multiplier *= 2;
 		if(otmp->oartifact == ART_SILVER_STARLIGHT)
 			multiplier *= 4;
+		if(otmp->oartifact == ART_ANSERMEE && otmp->spe > 0)
+			damd += 2*otmp->spe;
 		/* lightsabers add 3dX damage (but do not multiply multiplicative bonus damage) */
 		if (damd && (is_lightsaber(otmp) && litsaber(otmp)))
 			multiplier *= 3;
@@ -3760,7 +3763,7 @@ voidPen_hit(struct monst *magr, struct monst *mdef, struct obj *pen, int *dmgptr
 			*dmgptr += d(dnum,4);
 		if(dieroll < 3){
 			if(youdefend) aggravate();
-			else probe_monster(mdef);
+			else mdef->mprobed = 1;
 		}
 	} // nvPh - !mindless
 	if (pen->ovara_seals&SEAL_ECHIDNA) {
@@ -4360,8 +4363,8 @@ Mb_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
     case MB_INDEX_PROBE:
 	if (youattack && (mb->spe == 0 || !rn2(3 * abs(mb->spe)))) {
 	    pline_The("%s is insightful.", verb);
-	    /* pre-damage status */
-	    probe_monster(mdef);
+	    /* post-damage status */
+	    mdef->mprobed = 1;
 	}
 	break;
     }
@@ -4416,10 +4419,13 @@ Am_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 	    do_stun = FALSE, do_confuse, result;
     int attack_indx, probing_dieroll = MB_MAX_DIEROLL,
 		dsize=8, dnum=1;
+	int bonus_dmg = 0;
 
+	if(mb->spe > 0)
+		dsize += 2*mb->spe;
     result = FALSE;		/* no message given yet */
 
-    /* the most severe effects are less likely at higher enchantment */
+    /* the most severe effects are more likely at higher enchantment */
 	probing_dieroll += (mb->spe / 3);
 
 	if(dieroll <= probing_dieroll/8){
@@ -4431,9 +4437,13 @@ Am_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 				bud_metroid(mdef);
 		}
 		else {
-			*dmgptr += (Magic_res(mdef) || resists_death(mdef)) ? 100 : 400;
-			*dmgptr += d(4*dnum,dsize);
+			bonus_dmg += (Magic_res(mdef) || resists_death(mdef)) ? 100 : 400;
+			bonus_dmg += d(4*dnum,dsize);
 			dieroll = 1000;
+			if(magm_vulnerable(mdef))
+				bonus_dmg *= 2;
+				
+			*dmgptr += bonus_dmg;
 		}
 	}
 	else{
@@ -4449,14 +4459,14 @@ Am_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 	}
 
 	if(dieroll <= probing_dieroll/2){
-		*dmgptr += d(dnum,dsize);
+		*dmgptr += d(dnum,dsize) * (magm_vulnerable(mdef) ? 2 : 1);
 		do_stun = TRUE;
 	}
 	if(dieroll <= probing_dieroll/4){
 		pline_The("%s overload and %s %s with sparks!",
 			  type, vtense(type, "blast"), hittee);
 		if(Shock_res(mdef)){
-			*dmgptr += d(8,8);
+			*dmgptr += d(8,8) * (shock_vulnerable(mdef) ? 2 : 1);
 			if (!UseInvShock_res(mdef)){
 				if (!rn2(3)) destroy_item(mdef, WAND_CLASS, AD_ELEC);
 				if (!rn2(3)) destroy_item(mdef, RING_CLASS, AD_ELEC);
@@ -4464,10 +4474,10 @@ Am_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 		}
 	}
 	if(dieroll <= probing_dieroll){
-		*dmgptr += d(dnum,dsize);
+		*dmgptr += d(dnum,dsize) * (magm_vulnerable(mdef) ? 2 : 1);
 		if(youattack){
 			pline_The("scan is insightful.");
-			probe_monster(mdef);
+			mdef->mprobed = 1;
 		}
 	}
 
@@ -4494,7 +4504,7 @@ Am_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 			char buf[BUFSZ];
 
 			buf[0] = '\0';
-			// if (do_stun) Strcat(buf, "stunned");
+			if (do_stun) Strcat(buf, "stunned");
 			if (do_stun && do_confuse) Strcat(buf, " and ");
 			if (do_confuse) Strcat(buf, "confused");
 			pline("%s %s %s%c", hittee, vtense(hittee, "are"),
@@ -6934,7 +6944,7 @@ boolean printmessages; /* print generic elemental damage messages */
 				hittee);
 			*messaged = TRUE;
 		}
-		else if((dieroll < 5 || artinstance[ART_BOREAL_SCEPTER].BorealScorn) && activeFace(FFACE_FISH) && is_organic_mon(mdef) && (vis&VIS_MAGR) && printmessages) {
+		else if((dieroll < 5 || artinstance[ART_BOREAL_SCEPTER].BorealScorn) && activeFace(FFACE_FISH) && is_organic_monst(mdef->data) && (vis&VIS_MAGR) && printmessages) {
 			pline_The("fish-aspected %s %s %s!",
 				wepdesc,
 				vtense(wepdesc, "liquify"),
@@ -8710,7 +8720,7 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 		if(activeFace(FFACE_FISH)){
 			if(dieroll < 5 || empowered){ /* 20% (1-4) */
-				if(is_organic_mon(mdef)){
+				if(is_organic_monst(mdef->data)){
 					if(is_spiritual_being(mdef))
 						*plusdmgptr += wepdmg;
 					else
@@ -9630,7 +9640,7 @@ boreal_invoke_effect(int face, struct obj *art, struct monst *mdef)
 		}
 	}
 	else if(face == FFACE_FISH){
-		if(is_organic_mon(mdef)){
+		if(is_organic_monst(mdef->data)){
 			if(!is_spiritual_being(mdef))
 				dmg *= 2;
 			dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);

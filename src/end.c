@@ -464,6 +464,8 @@ register struct monst *mtmp;
 			u.ugrave_arise = PM_ANCIENT_OF_CORRUPTION;
 		else if (mtmp->mtyp == PM_BAALPHEGOR || has_template(mtmp, CRYSTALFIED))
 			u.ugrave_arise = PM_BAALPHEGOR;
+		else if (youmonst.mgmld_skin || youmonst.mgmld_throat)
+			u.ugrave_arise = base_casting_stat() == A_WIS ? PM_VEGEPYGMY_SHAMAN : PM_VEGEPYGMY;
 	} else if(uandroid){
 		if (mtmp->mtyp == PM_BROKEN_SHADOW)
 			u.ugrave_arise = PM_BROKEN_SHADOW;

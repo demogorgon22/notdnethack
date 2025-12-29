@@ -1922,8 +1922,7 @@ struct obj * weapon;
 		if (hates_unholy_mon(mdef) && (
 			(attk->adtyp == AD_UHCD) ||
 			(magr && is_unholy_mon(magr)) ||
-			(otmp && obj_is_material(otmp, GREEN_STEEL)) ||
-			(otmp && is_unholy(otmp)) ||
+			(otmp && (obj_is_material(otmp, GREEN_STEEL) || is_unholy(otmp))) ||
 			(youagr && slot == W_ARMG && uright && is_unholy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_unholy(uleft))
 			))

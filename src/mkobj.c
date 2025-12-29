@@ -1827,6 +1827,7 @@ start_corpse_timeout(body)
 	long age;
 	int chance;
 	struct monst *attchmon = 0;
+	struct permonst *ptr = 0;
 
 #define TAINT_AGE (50L)		/* age when corpses go bad */
 #define TROLL_REVIVE_CHANCE 37	/* 1/37 chance for 50 turns ~ 75% chance */
@@ -1845,6 +1846,10 @@ start_corpse_timeout(body)
 	) return;
 	
 	if(get_ox(body, OX_EMON)) attchmon = EMON(body);
+	ptr = attchmon ? &mons[attchmon->mtyp] : &mons[body->corpsenm];
+	if(attchmon && attchmon->mtemplate)
+		ptr = permonst_of(ptr->mtyp, attchmon->mtemplate);
+
 
 	action = ROT_CORPSE;		/* default action: rot away */
 	rot_adjust = in_mklev ? 25 : 10;	/* give some variation */
@@ -1856,11 +1861,11 @@ start_corpse_timeout(body)
 	when += (long)(rnz(rot_adjust) - rot_adjust);
 	
 //	pline("corpse type: %d, %c",mons[body->corpsenm].mlet,def_monsyms[mons[body->corpsenm].mlet]);
-	if(is_migo(&mons[body->corpsenm]) || body->corpsenm == PM_DEEP_DWELLER){
+	if(is_migo(ptr) || body->corpsenm == PM_DEEP_DWELLER){
 		when = when/10 + 1;
 	}
 
-	if (is_rider(&mons[body->corpsenm])
+	if (is_rider(ptr)
 		|| (uwep && uwep->oartifact == ART_SINGING_SWORD && uwep->osinging == OSING_LIFE && attchmon && attchmon->mtame)
 		) {
 		/*
@@ -1910,7 +1915,7 @@ start_corpse_timeout(body)
 			when = age;
 			break;
 		    }
-	} else if (is_fungus(&mons[body->corpsenm]) && !is_migo(&mons[body->corpsenm]) && !body->norevive) {
+	} else if (is_fungus(ptr) && !is_migo(ptr) && !body->norevive) {
 		/* Fungi come back with a vengeance - if you don't eat it or
 		 * destroy it,  any live cells will quickly use the dead ones
 		 * as food and come back.
@@ -1924,6 +1929,19 @@ start_corpse_timeout(body)
 		    }
 	}
 	
+	chance = (ptr->mtyp == PM_RUSTY_GRAY_MOLD || ptr->mtyp == PM_GRAY_FUNGAL_TOWER) ? 0 :
+			 (ptr->mtyp == PM_VEGEPYGMY_SHAMAN || ptr->mtyp == PM_VEGEPYGMY) ? FULL_MOLDY_CHANCE : 
+			 (attchmon && (attchmon->mgmld_skin || attchmon->mgmld_skin)) ? FULL_MOLDY_CHANCE : 
+			 (In_quest(&u.uz) && Role_if(PM_KENSEI) && u.role_variant == ART_ANSERMEE) ? HALF_MOLDY_CHANCE : 
+			 0;
+	if(action == ROT_CORPSE && chance){
+		for (age = TAINT_AGE + 1; age <= ROT_AGE; age++)
+			if (!rn2(chance)) {    /* "revives" as a zombie */
+				action = GRAY_MOLDY_CORPSE;
+				when = age;
+				break;
+			}
+	}
 	if (action == ROT_CORPSE && !acidic(&mons[body->corpsenm])){
 		/* Corpses get moldy
 		 */

@@ -1489,7 +1489,14 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		(result & MM_AGR_STOP) ||									/* attacker stopped for some other reason */
 		is_null_attk(attk)											/* no more attacks */
 		));
-
+	/*Resolve any outstanding probes*/
+	for(struct monst *probmon = fmon; probmon; probmon = probmon->nmon){
+		if(probmon->mprobed){
+			if(!DEADMONSTER(probmon))
+				probe_monster(probmon);
+			probmon->mprobed = FALSE;
+		}
+	}
 	/*4b: PC's ranged offhand */
 	if(youagr && u.twoweap && (!Upolyd || could_twoweap(youracedata)) && (!uwep || !is_launcher(uwep) || is_melee_launcher(uwep))
 		&& uswapwep && is_launcher(uswapwep)
@@ -5424,6 +5431,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		case AD_ACID:
 		case AD_PSON:
 		case AD_DISE:
+		case AD_GMLD:
 		case AD_POSN:
 		case AD_DARK:
 		case AD_LUCK:
@@ -6012,6 +6020,27 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		return xdamagey(magr, mdef, attk, dmg);
 		/* Only poison damage
 		 * Not to be confused with a poisonous attack that adds poison bonus damage to a physical strike */
+	case AD_GMLD:
+		/* print a basic hit message */
+		if (vis && dohitmsg) {
+			xyhitmsg(magr, mdef, originalattk);
+		}
+		if(is_gray_mold(pd))
+			return MM_HIT;
+
+		int nspores = (damn && damd) ? d(damn, damd) : 1;
+		if(!is_organic_monst(pd))
+			return xdamagey(magr, mdef, attk, 0);
+		if(youdef || vis&VIS_MDEF){
+			if(nspores == 1)
+				pline("A gray mold spore has taken root in %s %s!", youdef ? "your" : s_suffix(mon_nam(mdef)), youdef ? body_part(BODY_SKIN) : mbodypart(mdef, BODY_SKIN));
+			else
+				pline("Gray mold spores have taken root in %s %s!", youdef ? "your" : s_suffix(mon_nam(mdef)), youdef ? body_part(BODY_SKIN) : mbodypart(mdef, BODY_SKIN));
+			if(youdef) exercise(A_CON, FALSE);
+		}
+		mdef->mgmld_skin += nspores;
+		/*Deals no damage*/
+		return MM_HIT;
 	case AD_POSN:
 		/* print a basic hit message */
 		if (vis && dohitmsg) {
@@ -11124,6 +11153,25 @@ int vis;
 	int fulldmg = dmg;
 	static char buf[BUFSZ]; /* Used to hold variable messages to be displayed later */
 	struct obj * otmp;
+	struct obj *towel = 0;
+	struct obj *dust_mask = 0;
+	struct obj *isolation_suit = 0;
+	if(youdef){
+		if(uarmh && uarmh->otyp == SHEMAGH)
+			dust_mask = uarmh;
+		if(ublindf && ublindf->otyp == TOWEL)
+			towel = ublindf;
+		if(uarmu && uarmu->otyp == BODYGLOVE)
+			isolation_suit = uarmu;
+	}
+	else {
+		if (which_armor(mdef, W_ARMH) && which_armor(mdef, W_ARMH)->otyp == SHEMAGH)
+			dust_mask = which_armor(mdef, W_ARMH);
+		if (which_armor(mdef, W_TOOL) && which_armor(mdef, W_TOOL)->otyp == TOWEL)
+			towel = which_armor(mdef, W_TOOL);
+		if (which_armor(mdef, W_ARMU) && which_armor(mdef, W_ARMU)->otyp == BODYGLOVE)
+			isolation_suit = which_armor(mdef, W_ARMU);
+	}
 
 	/* apply half-phys */
 	dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
@@ -11432,11 +11480,12 @@ int vis;
 	case AD_BLND:
 		if (can_blnd(magr, mdef, attk->aatyp, (struct obj*)0)) {
 			if (youdef) {
+				struct obj *otmp = dust_mask ? dust_mask : towel;
 			
-				if (uarmh && uarmh->otyp == SHEMAGH && magr && 
+				if (otmp && magr && 
 					(magr->mtyp == PM_DUST_VORTEX || magr->mtyp == PM_SINGING_SAND || magr->mtyp == PM_PYROCLASTIC_VORTEX))
 				{
-					pline("The %s protects you from the dust!", simple_typename(uarmh->otyp));
+					pline("The %s protects you from the dust!", simple_typename(otmp->otyp));
 				} else if (!Blind) {
 					You_cant("see in here!");
 					make_blinded((long)dmg, FALSE);
@@ -11448,9 +11497,9 @@ int vis;
 					make_blinded(Blinded + 1, FALSE);
 			}
 			else {
-				struct obj *otmp = which_armor(mdef, W_ARMH);
+				struct obj *otmp = dust_mask ? dust_mask : towel;
 				
-				if (otmp && otmp->otyp == SHEMAGH && magr && (magr->mtyp == PM_DUST_VORTEX || magr->mtyp == PM_SINGING_SAND)){
+				if (otmp && magr && (magr->mtyp == PM_DUST_VORTEX || magr->mtyp == PM_SINGING_SAND)){
 					if (vis&VIS_MDEF)
 						pline("The %s protects %s from the dust!", simple_typename(otmp->otyp), Monnam(mdef));
 				} else {
@@ -11934,6 +11983,11 @@ int vis;
 		/* unbreathing provides total immunity */
 		if (youdef ? Breathless : breathless_mon(mdef))
 			break;
+		if(towel){
+			if (youdef)
+				pline("The %s wards off the noxious fumes!", simple_typename(towel->otyp));
+			break;
+		}
 		/* apply resistance */
 		if (Poison_res(mdef)) {
 			dmg = 0;
@@ -11969,6 +12023,46 @@ int vis;
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
+	case AD_GMLD:{
+		boolean breathless = youdef ? Breathless : breathless_mon(mdef);
+		if(youdef){
+			if(is_gray_mold(youracedata)){
+				if(!Blind)
+					You("are surrounded by a clould of drifting gray spores.");
+				healup(dmg, 0, FALSE, FALSE);
+				return MM_MISS;
+			}
+			else if(!is_organic_monst(youracedata)){
+				if(!Blind)
+					You("are surrounded by a clould of drifting gray spores.");
+				return MM_MISS;
+			}
+			else if(!(breathless || dust_mask || towel || isolation_suit))
+				You("cough and gag in the cloud of gray spores!");
+			pline("%s in your %s!", dmg > 1 ? "Some spores take root" : "A spore takes root", body_part(BODY_SKIN));
+		}
+		else {
+			if(is_gray_mold(pd)){
+				if (vis&VIS_MDEF)
+					pline("%s looks healthier.", Monnam(mdef));
+				mdef->mhp = min(*hpmax(mdef), *hp(mdef) + dmg);
+				return MM_HIT;
+			}
+			else if(!is_organic_monst(pd)){
+				return MM_MISS;
+			}
+			else if(vis&VIS_MDEF && !(breathless || dust_mask || towel || isolation_suit))
+				pline("%s coughs.", Monnam(mdef));
+			if (vis&VIS_MDEF && distu(mdef->mx, mdef->my) <= 2)
+				pline("%s in %s %s!", dmg > 1 ? "Some spores take root" : "A spore takes root",
+					s_suffix(mon_nam(mdef)),
+					mbodypart(mdef, BODY_SKIN));
+		}
+		if (!(breathless || dust_mask || towel || isolation_suit))
+			mdef->mgmld_throat += dmg;
+		mdef->mgmld_skin += dmg;
+		return MM_HIT;
+	}break;
 	case AD_DISE:	/* damage/effect ? */
 		if (youdef) {
 			diseasemu(pa);
@@ -11994,24 +12088,24 @@ int vis;
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
-		case AD_PYCL:{	/* Immediately recurse and return */
-			struct attack alt_attk = *attk;
-			switch(rnd(4)){
-				case 1:
-					alt_attk.adtyp = AD_FIRE;
-				break;
-				case 2:
-					alt_attk.adtyp = AD_PHYS;
-				break;
-				case 3:
-					alt_attk.adtyp = AD_DRST;
-				break;
-				case 4:
-					alt_attk.adtyp = AD_BLND;
-				break;
-			}
-			return xengulfhurty(magr, mdef, &alt_attk, vis);
-		}break;
+	case AD_PYCL:{	/* Immediately recurse and return */
+		struct attack alt_attk = *attk;
+		switch(rnd(4)){
+			case 1:
+				alt_attk.adtyp = AD_FIRE;
+			break;
+			case 2:
+				alt_attk.adtyp = AD_PHYS;
+			break;
+			case 3:
+				alt_attk.adtyp = AD_DRST;
+			break;
+			case 4:
+				alt_attk.adtyp = AD_BLND;
+			break;
+		}
+		return xengulfhurty(magr, mdef, &alt_attk, vis);
+	}break;
 	}
 	return result;
 }
@@ -14843,12 +14937,24 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			sneak_dice++;
 		if (Role_if(PM_HEALER) && !Upolyd && weapon && weapon->owornmask && weapon->otyp == KNIFE)
 			sneak_dice++;
+		if (weapon && weapon->owornmask && Role_if(PM_KENSEI) && u.role_variant == ART_ANSERMEE && is_kensei_weapon(weapon))
+			sneak_dice++;
 		//In Amalg skies only give extra sneak to offhand unarmed attack.
 		if (uwep &&
 			(uwep->otyp == BESTIAL_CLAW || (uwep->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BESTIAL_CLAW)) &&
 			active_glyph(BEASTS_EMBRACE) && (!weapon || weapon->otyp == BESTIAL_CLAW)
 		)
 			sneak_dice++;
+		if(weapon && mdef->mopen &&
+				ZFOCUS(weapon) &&
+				magr && CHECK_ETRAIT(weapon, magr, ETRAIT_CREATE_OPENING) &&
+				ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))
+		){
+			sneak_dice++;
+			if(ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
+				sneak_dice++;
+			}
+		}
 	}
 	if (modifier_flags&MELEEHURT_SUPER_SNEAK)
 		sneak_dice++;
@@ -14860,23 +14966,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_LOLTH_S_FANG)
 		sneak_dice++;
-	if (weapon && weapon->owornmask && Role_if(PM_KENSEI) && u.role_variant == ART_ANSERMEE && is_kensei_weapon(weapon))
-		sneak_dice++;
 	if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_ANDROMALIUS)
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_MORTAL_BLADE \
 		&& artinstance[ART_MORTAL_BLADE].mortalLives > 1)
 		sneak_dice++;
-	if(!recursed && weapon && valid_weapon_attack && mdef->mopen &&
-			youagr && ZFOCUS(weapon) &&
-			magr && CHECK_ETRAIT(weapon, magr, ETRAIT_CREATE_OPENING) &&
-			ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))
-	){
-		sneak_dice++;
-		if(ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
-			sneak_dice++;
-		}
-	}
 	/* check sneak attack conditions -- defender's conditions must allow sneak attacking */
 	if (magr &&
 		!noanatomy(pd) &&
@@ -16619,7 +16713,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 			/* track lightsaber skill */
 			if(weapon && is_lightsaber(weapon) && litsaber(weapon)){
-				flags.lightsaber_max = max(flags.lightsaber_max, P_SKILL(P_SABER));
+				flags.lightsaber_max = max(flags.lightsaber_max, P_SKILL(weapon_type(weapon)));
 			}
 
 			/* now, train skills */
@@ -16634,7 +16728,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					if ((activeFightingForm(FFORM_SHII_CHO) ||
 						(activeFightingForm(FFORM_MAKASHI))
 						) &&
-						!uarms && !u.twoweap && wtype == P_SABER
+						!uarms && !u.twoweap && (wtype == P_SABER || wtype == P_LONG_SWORD)
 						) use_skill(P_MAKASHI, 1);
 					if ((activeFightingForm(FFORM_SHII_CHO) ||
 						(activeFightingForm(FFORM_ATARU))
@@ -19153,6 +19247,25 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 	/* set permonst pointers */
 	struct permonst * pa = youagr ? youracedata : magr->data;
 	int maketame = ((youdef || mdef->mtame) ? MM_EDOG : 0);
+	struct obj *dust_mask = NULL;
+	struct obj *towel = NULL;
+	struct obj *isolation_suit = NULL;
+	if(youagr){
+		if(uarmh && uarmh->otyp == SHEMAGH)
+			dust_mask = uarmh;
+		if(ublindf && ublindf->otyp == TOWEL)
+			towel = ublindf;
+		if(uarmu && uarmu->otyp == BODYGLOVE)
+			isolation_suit = uarmu;
+	}
+	else {
+		if (which_armor(magr, W_ARMH) && which_armor(magr, W_ARMH)->otyp == SHEMAGH)
+			dust_mask = which_armor(magr, W_ARMH);
+		if (which_armor(magr, W_TOOL) && which_armor(magr, W_TOOL)->otyp == TOWEL)
+			towel = which_armor(magr, W_TOOL);
+		if (which_armor(magr, W_ARMU) && which_armor(magr, W_ARMU)->otyp == BODYGLOVE)
+			isolation_suit = which_armor(magr, W_ARMU);
+	}
 
 
 	/* Get damage of passive */
@@ -19651,6 +19764,8 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 									pline("A cloud of spores is released!");
 								if (!youdef)
 									mdef->mspec_used = 1;
+								if (towel || dust_mask)
+									break;
 							}
 							else break;
 						}
@@ -19669,6 +19784,33 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 						}
 					}
 				}
+				break;
+				case AD_GMLD:
+					if ((youdef || !mdef->mcan) && !is_gray_mold(youagr ? youracedata : magr->data)) {
+						if(!rn2(4) || (!youdef && DEADMONSTER(mdef))){
+							if (canseemon(mdef))
+								pline("A cloud of gray spores is released!");
+							if(youagr ? !is_organic_monst(youracedata) : !is_organic_monst(magr->data))
+								break;
+							boolean breathless = youagr ? Breathless : breathless_mon(magr);
+							if(youagr){
+								if(!(breathless || dust_mask || towel || isolation_suit))
+									You("cough and gag.");
+								pline("%s in your %s!", dmg > 1 ? "Some spores take root" : "A spore takes root", body_part(BODY_SKIN));
+							}
+							else {
+								if(vis&VIS_MAGR && !(breathless || dust_mask || towel || isolation_suit))
+									pline("%s coughs.", Monnam(magr));
+								if (vis&VIS_MAGR && distu(magr->mx, magr->my) <= 2)
+									pline("%s in %s %s!", dmg > 1 ? "Some spores take root" : "A spore takes root",
+										s_suffix(mon_nam(magr)),
+										mbodypart(magr, BODY_SKIN));
+							}
+							if (!(breathless || dust_mask || towel || isolation_suit))
+								magr->mgmld_throat += dmg;
+							magr->mgmld_skin += dmg;
+						}
+					}
 				break;
 			}
 
@@ -21198,7 +21340,7 @@ boreal_blast_effect(struct monst *mdef)
 		}
 	}
 	else if(activeFace(FFACE_FISH)){
-		if(is_organic_mon(mdef)){
+		if(is_organic_monst(mdef->data)){
 			if(!is_spiritual_being(mdef))
 				dmg *= 2;
 			dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
@@ -22103,9 +22245,19 @@ get_whirlwind_position(int direction, int *nx, int *ny)
 		*ny = u.uy+sgn(u.dx-u.dy);
 		break;
 	case 3:
+		/* 45 degree rotation */
+		*nx = u.ux+sgn(u.dx+u.dy);
+		*ny = u.uy+sgn(-u.dx+u.dy);
+		break;
+	case 4:
 		/* -135 degree rotation */
 		*nx = u.ux+sgn(-u.dx+u.dy);
 		*ny = u.uy+sgn(-u.dx-u.dy);
+		break;
+	case 5:
+		/* -45 degree rotation */
+		*nx = u.ux+sgn(u.dx-u.dy);
+		*ny = u.uy+sgn(u.dx+u.dy);
 		break;
 	}
 }
@@ -22124,7 +22276,7 @@ kensei_elf_whirlwind(int *move_cost)
 	
 	*move_cost = MOVE_INSTANT;
 	
-	for(int i = 0; i < 4; i++){
+	for(int i = 0; i < 6; i++){
 		get_whirlwind_position(i, &nx, &ny);
 		
 		if(isok(nx, ny) && (mdef = m_at(nx, ny)) && peace_check_move(mdef)){
@@ -22660,6 +22812,7 @@ perform_monk_move(int moveID, int *move_cost)
 		){
 			pline("%s!", move_name(moveID));
 			knockback_bolt();
+			return TRUE;
 		}
 		break;
 		case OVERLOAD:
@@ -22668,6 +22821,7 @@ perform_monk_move(int moveID, int *move_cost)
 		){
 			pline("%s!", move_name(moveID));
 			overload_bolt();
+			return TRUE;
 		}
 		break;
 		case WARP_WEP:

@@ -3378,7 +3378,15 @@ char mithril;
 				// if(!rn2(3)) mkobj_at((rn2(2) ? WEAPON_CLASS : rn2(2) ? TOOL_CLASS : ARMOR_CLASS), x+i, y+j, NO_MKOBJ_FLAGS);
 			}
 		}
-		if(mithril){
+		if(Role_if(PM_KENSEI) && In_quest(&u.uz) && in_mklev){
+			levl[x+(size)/2][y+(size)/2].typ = mithril ? FORGE : TREE;
+			makemon_full(&mons[mithril ? PM_MITHRIL_SMITH : PM_TREESINGER],
+				x+(size)/2, y+(size)/2,
+				NO_MM_FLAGS,
+				SKELIFIED,
+				NECROMANCY_FACTION);
+		}
+		else if(mithril){
 			levl[x+(size)/2][y+(size)/2].typ = FORGE;
 			makemon(&mons[PM_MITHRIL_SMITH], x+(size)/2, y+(size)/2, NO_MM_FLAGS);
 		}
@@ -6107,6 +6115,16 @@ place_lolth_vaults()
 	//Vault
 	num = rnd(6);
 	for(i = 0; i < num; i++) mkvaultlolth();
+}
+
+void
+place_elfhaunt_forest_features()
+{
+	mkelfforge(TREE, SOIL, 0, TRUE);
+	int i = 1 + d(3,4);
+	for(; i > 0; i--)
+		mkwraithclearing(0);
+	wallification(1,0,COLNO-1,ROWNO-1);
 }
 
 void

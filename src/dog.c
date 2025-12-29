@@ -476,6 +476,7 @@ boolean with_you;
 	mtmp->mtrack[0].x = mtmp->mtrack[0].y = 0;
 	mtmp->mtrack[1].x = mtmp->mtrack[1].y = 0;
 
+	mtmp->mprobed = 0;
 #ifdef STEED
 	if (mtmp == u.usteed)
 	    return;	/* don't place steed on the map */

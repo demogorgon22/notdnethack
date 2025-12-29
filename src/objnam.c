@@ -4120,6 +4120,69 @@ int wishflags;
 		crys->spe = rn2(7);
 		return crys;
 	}
+	if(!strcmpi(bp, "futureweapon")){
+		int futureweaps[] = {
+			VIBROBLADE,
+			WHITE_VIBROSWORD,
+			GOLD_BLADED_VIBROSWORD,
+			RED_EYED_VIBROSWORD,
+			SEISMIC_HAMMER,
+			FORCE_PIKE,
+			DOUBLE_FORCE_BLADE,
+			FORCE_BLADE,
+			FORCE_SWORD,
+			WHITE_VIBROSPEAR,
+			GOLD_BLADED_VIBROSPEAR,
+			SHORT_SWORD
+		};
+		int pick = ROLL_FROM(futureweaps);
+		struct obj *otmp = mksobj(pick, NO_MKOBJ_FLAGS);
+		if(pick == SHORT_SWORD){
+			otmp->objsize = MZ_LARGE;
+			set_material_gm(otmp, SILVER);
+			fix_object(otmp);
+		}
+		return otmp;
+	}
+	if(!strcmpi(bp, "futurearmor")){
+		int futurearmor[] = {
+			FLACK_HELMET,
+			PLASTEEL_HELM,
+			PLASTEEL_ARMOR,
+			JUMPSUIT,
+			BODYGLOVE,
+			PLASTEEL_GAUNTLETS,
+			PLASTEEL_BOOTS,
+			TOWER_SHIELD,
+			CLOAK_OF_MAGIC_RESISTANCE,
+		};
+		int pick = ROLL_FROM(futurearmor);
+		struct obj *otmp = mksobj(pick, NO_MKOBJ_FLAGS);
+		if(pick == TOWER_SHIELD){
+			set_material_gm(otmp, PLASTIC);
+			fix_object(otmp);
+		}
+		return otmp;
+	}
+	if(!strcmpi(bp, "futuremisc")){
+		int futuremisc[] = {
+			BULLET_FABBER,
+			MAGIC_MARKER,
+			TINNING_KIT,
+			SPE_ACID_SPLASH,
+			SPE_LIGHTNING_BOLT,
+			SPE_POISON_SPRAY,
+			ARM_BLASTER,
+			HAND_BLASTER,
+			RAYGUN,
+			CUTTING_LASER,
+			HYPOSPRAY_AMPULE,
+			BROKEN_ANDROID,
+			BROKEN_GYNOID
+		};
+		int pick = ROLL_FROM(futuremisc);
+		return mksobj(pick, NO_MKOBJ_FLAGS);
+	}
 
 	for(;;) {
 		register int l;

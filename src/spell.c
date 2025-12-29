@@ -6473,7 +6473,7 @@ int spell;
 		chance = 100;
 	
 	//
-	if(casting_stat != A_CHA && (Babble || Screaming || Strangled || FrozenAir || BloodDrown || Drowning)){
+	if(casting_stat != A_CHA && (Babble || Screaming || Strangled_cant_speak || FrozenAir || BloodDrown || Drowning)){
 		chance = 0;
 	}
 	// these effects totally block the spell-choosing menu, but need to be handled here too for quivered spells

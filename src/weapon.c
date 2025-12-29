@@ -3626,7 +3626,7 @@ int enhance_skill(boolean want_dump)
 		else if (peaked_skill(i))
 		    prefix = "  # ";
 		else
-		    prefix = (to_advance + eventually_advance +
+		    prefix = (to_advance + eventually_advance + lightsaber_advance +
 				maxxed_cnt > 0) ? "    " : "";
 		(void) skill_level_name(i, sklnambuf);
 		(void) max_skill_level_name(i, maxsklnambuf);
@@ -4358,10 +4358,10 @@ int wep_type;
 	if(wep_type == P_AXE && Race_if(PM_DWARF) && ublindf && ublindf->oartifact == ART_WAR_MASK_OF_DURIN) bonus += 5;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
-	if(weapon && weapon == uwep && (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
+	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
-		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD || is_kensei_weapon(weapon))
+		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
 	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
 	){
 		if(bonus > 0)
@@ -4591,7 +4591,7 @@ int wep_type;
 	
 	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
-		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD || is_kensei_weapon(weapon))
+		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
 	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	){
@@ -4976,6 +4976,8 @@ check_etrait(struct obj *obj, struct monst *mon, unsigned long trait)
 	struct permonst *pa = youagr ? youracedata : mon->data;
 
 	if(youagr && P_SKILL(weapon_type(obj)) < P_SKILLED)
+		return FALSE;
+	else if(is_lightsaber(obj) && !litsaber(obj))
 		return FALSE;
 	else if(!youagr && !((pa->mflagsf&MF_MARTIAL_E) || (pa->mflagsf&MF_MARTIAL_S)))
 		return FALSE;

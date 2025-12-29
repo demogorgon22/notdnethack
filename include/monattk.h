@@ -256,11 +256,12 @@
 #define AD_PSH3		161 /* Push target away 1d3 squares */
 #define AD_BLED		162 /* Bleeding wounds */
 #define AD_UHCD		163 /* Unholy cold */
+#define AD_GMLD		164 /* Gray mold spores */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	164
+#define AD_DUNSTAN	165
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

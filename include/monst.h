@@ -215,6 +215,7 @@ struct monst {
 	Bitfield(mubled,1); /* You inflicted bleed damage on this monster and will be blamed if it dies */ /*149*/
 	Bitfield(mtecpatlmarked,1); /* the Tecpatl of Huehueteotl can sacrifice low-enough-health monsters */ /*150*/
 	Bitfield(mpunctured,4); /* This monster may take double damage from puncture attacks */ /*154*/
+	Bitfield(mprobed,1); /* monster has been probed by Magicbane et al, will display at end of attack if it lives */ /*155*/
 
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
@@ -225,6 +226,8 @@ struct monst {
 	int encouraged;	/* affected by Encourage song */
 	int mfell;	/* slowed by fell expert trait */
 	int mbleed; /* bleed damage per round */
+	int mgmld_skin; /* mold spores in skin */
+	int mgmld_throat; /* mold spores in throat */
 	coord mprev_dir;		/* previous movement direction (stop thrust etc) */
 	coord mprev_attk;	/* previous attack direction (braced etc) */
 	long mlast_movement;/* turn on which it most recently moved (clear stop thrust) */

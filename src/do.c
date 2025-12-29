@@ -2108,6 +2108,7 @@ int different;
     Strcpy(cname, corpse_xname(corpse, TRUE));
     mcarry = (where == OBJ_MINVENT) ? corpse->ocarry : 0;
 	int ox, oy;
+	int pm = corpse->corpsenm;
 	if(where == OBJ_FLOOR){
 		ox = corpse->ox;
 		oy = corpse->oy;
@@ -2121,6 +2122,10 @@ int different;
 		if (container_where == OBJ_MINVENT && mtmp2) mcarry = mtmp2;
     }
     mtmp = revive(corpse, FALSE);      /* corpse is gone if successful && quan == 1 */
+	mtmp->mprobed = 0;
+	if(different == GROW_MOLD && mtmp && mtmp->mtyp != pm){
+		set_mon_data(mtmp, pm);
+	}
 
     if (mtmp) {
 	/*
@@ -2424,6 +2429,105 @@ long timeout;
 				body->quan++;
 			oldquan = body->quan;
 			if (revive_corpse(body, (pmtype == PM_BRAINBLOSSOM_PATCH) ? GROW_BBLOOM : GROW_MOLD)) {
+				if (oldquan != 1) {		/* Corpse still valid */
+					body->corpsenm = oldtyp;
+					if (body->where == OBJ_INVENT) {
+						useup(body);
+						oldquan--;
+					}
+				}
+				if (oldquan == 1)
+				body = (struct obj *)0;	/* Corpse gone */
+			}
+		}
+	}
+
+	/* If revive_corpse succeeds, it handles the reviving corpse.
+	 * If there was more than one corpse, or the revive failed,
+	 * set the remaining corpse(s) to rot away normally.
+	 * Revive_corpse handles genocides
+	 */
+	if (body) {
+		body->corpsenm = oldtyp; /* Fixup corpse after (attempted) revival */
+		body->owt = weight(body);
+		(void) start_timer(250L - (monstermoves-peek_at_iced_corpse_age(body)),
+			TIMER_OBJECT, ROT_CORPSE, arg);
+	}
+}
+
+/* Revive the corpse as a gray mold via a timeout. */
+/*ARGSUSED*/
+void
+gray_moldy_corpse(arg, timeout)
+genericptr_t arg;
+long timeout;
+{
+	int pmtype, oldtyp, oldquan;
+	struct obj *body = (struct obj *) arg;
+
+	/* Turn the corpse into a mold corpse if molds are available */
+	oldtyp = body->corpsenm;
+
+	struct monst *attchmon = 0;
+	if(get_ox(body, OX_EMON)) attchmon = EMON(body);
+	struct permonst *ptr = attchmon ? &mons[attchmon->mtyp] : &mons[body->corpsenm];
+	if(attchmon && attchmon->mtemplate)
+		ptr = permonst_of(ptr->mtyp, attchmon->mtemplate);
+	boolean magical = is_magical(ptr);
+	boolean regrow = FALSE;
+	if(ptr->mtyp == PM_VEGEPYGMY_SHAMAN){
+		pmtype = rn2(10) ? PM_VEGEPYGMY_SHAMAN : PM_RUSTY_GRAY_MOLD;
+		regrow = pmtype == PM_VEGEPYGMY_SHAMAN;
+	}
+	else if(ptr->mtyp == PM_VEGEPYGMY){
+		pmtype = rn2(10) ? PM_VEGEPYGMY : PM_VEGEPYGMY_SHAMAN;
+		regrow = pmtype == PM_VEGEPYGMY;
+	}
+	else if(magical){
+		pmtype = PM_VEGEPYGMY_SHAMAN;
+	}
+	else {
+		pmtype = PM_VEGEPYGMY;
+	}
+
+	/* [ALI] Molds don't grow in adverse conditions.  If it ever
+	 * becomes possible for molds to grow in containers we should
+	 * check for iceboxes here as well.
+	 */
+	if ((
+			(body->where == OBJ_FLOOR || body->where==OBJ_BURIED) &&
+			(is_lava(body->ox, body->oy) ||
+				is_ice(body->ox, body->oy))
+		) || (
+			(body->where == OBJ_CONTAINED && body->ocontainer->otyp == ICE_BOX)
+		)
+	) pmtype = -1;
+
+	if (pmtype != -1) {
+		if(couldsee(body->ox, body->oy) && distmin(body->ox, body->oy, u.ux, u.uy) <= BOLT_LIM){
+			IMPURITY_UP(u.uimp_rot)
+		}
+		/* We don't want special case revivals */
+		if (cant_create(&pmtype, TRUE))
+			pmtype = -1; /* cantcreate might have changed it so change it back */
+		else {
+				body->corpsenm = pmtype;
+
+			/* oeaten isn't used for hp calc here, and zeroing it 
+			 * prevents eaten_stat() from worrying when you've eaten more
+			 * from the corpse than the newly grown mold's nutrition
+			 * value.
+			 */
+			body->oeaten = 0;
+
+			/* [ALI] If we allow revive_corpse() to get rid of revived
+			 * corpses from hero's inventory then we run into problems
+			 * with unpaid corpses.
+			 */
+			if (body->where == OBJ_INVENT)
+				body->quan++;
+			oldquan = body->quan;
+			if (revive_corpse(body, (regrow) ? REVIVE_MOLD : GROW_MOLD)) {
 				if (oldquan != 1) {		/* Corpse still valid */
 					body->corpsenm = oldtyp;
 					if (body->where == OBJ_INVENT) {

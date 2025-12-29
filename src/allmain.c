@@ -2232,6 +2232,15 @@ moveloop()
 					if(DEADMONSTER(mtmp))
 						continue;
 				}
+				if(mtmp->mtyp == PM_RUSTY_GRAY_MOLD && !rn2(70)){
+					makemon(&mons[PM_VEGEPYGMY], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
+				}
+				if(mtmp->mtyp == PM_GRAY_FUNGAL_TOWER){
+					if(!rn2(50))
+						makemon(&mons[PM_VEGEPYGMY_SHAMAN], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
+					if(!rn2(25))
+						makemon(&mons[PM_VEGEPYGMY], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
+				}
 				/*Monsters may have to skip turn*/
 				if(noactions(mtmp)){
 					/* Monsters in a essence trap can't move */
@@ -3082,6 +3091,62 @@ karemade:
 						place_object(daggers, u.ux, u.uy);
 					}
 				}
+				if(youmonst.mgmld_skin || youmonst.mgmld_throat){
+					const char *throatpart = body_part(WINDPIPE);
+					const char *mouthpart = body_part(THROAT);
+					boolean shared = !separate_respiration(youracedata);
+					if(throatpart[0] == '\0'){
+						//No specific "thoat" (anymore?)
+						youmonst.mgmld_skin += youmonst.mgmld_throat;
+						youmonst.mgmld_throat = 0;
+					}
+					int skin_dmg = youmonst.mgmld_skin/1000;
+					int skin_remain = youmonst.mgmld_skin%1000;
+					int throat_dmg = youmonst.mgmld_throat/100;
+					int throat_remain = youmonst.mgmld_throat%100;
+					if(rn2(1000) < skin_remain) skin_dmg++;
+					if(rn2(100) < throat_remain) throat_dmg++;
+					if(throat_dmg > 0){
+						int oldthroat = youmonst.mgmld_throat;
+						youmonst.mgmld_throat += rn2(throat_dmg+1);
+						IMPURITY_UP(u.uimp_illness)
+						IMPURITY_UP(u.uimp_rot)
+						if(youmonst.mgmld_throat >= 400 && oldthroat < 400){
+							You("can no longer breathe through your %s!", throatpart);
+						}
+						else if(youmonst.mgmld_throat >= 300 && oldthroat < 300){
+							pline("You can barely breathe through the obstruction in your %s!", throatpart);
+						}
+						else if(youmonst.mgmld_throat >= 200 && oldthroat < 200 && shared){
+							pline("The obstruction in your %s makes it difficult to swallow!", mouthpart);
+						}
+						else if(youmonst.mgmld_throat >= 100 && oldthroat < 100){
+							You("feel an obstruction in your %s!", throatpart);
+						}
+						else if(youmonst.mgmld_throat > oldthroat){
+							Your("sore %s continues to worsen.", throatpart);
+						}
+						else {
+							Your("%s aches.", throatpart);
+						}
+					}
+					if(skin_dmg > 0){
+						int oldskin = youmonst.mgmld_skin;
+						youmonst.mgmld_skin += rn2(skin_dmg+1);
+						IMPURITY_UP(u.uimp_rot)
+						if(Blind)
+							pline("Your %s itches badly.", body_part(BODY_SKIN));
+						else if(youmonst.mgmld_skin > oldskin)
+							pline_The("gray mold on your %s is spreading rapidly!", body_part(BODY_SKIN));
+						else
+							pline("The gray mold patch%s on your %s leak%s %s.", youmonst.mgmld_skin > 1 ? "es" : "", body_part(BODY_SKIN), youmonst.mgmld_skin > 1 ? "" : "s", body_part(BLOOD)); 
+					}
+					if(youmonst.mgmld_throat >= 400){
+						delayed_killer = "moldy throat";
+						HStrangled += 1L;
+					}
+					losehp(skin_dmg + throat_dmg, "mold infection", KILLED_BY);
+				}
 			}
 			
 			if(!rn2(8) && !flaming(youracedata) && roll_madness(MAD_COLD_NIGHT)){
@@ -3690,7 +3755,7 @@ karemade:
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
 		}
-		if (Screaming && !Strangled && !BloodDrown && !FrozenAir && !is_deaf(mtmp)){
+		if (Screaming && !Strangled_cant_speak && !BloodDrown && !FrozenAir && !is_deaf(mtmp)){
 			//quite noisy
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
@@ -3704,13 +3769,13 @@ karemade:
 			}
 		}
 		//Noise radius dependent on your lung capacity
-		else if (Babble && !Strangled && !FrozenAir && !is_deaf(mtmp) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < (ACURR(A_CON)/3)){
+		else if (Babble && !Strangled_cant_speak && !FrozenAir && !is_deaf(mtmp) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < (ACURR(A_CON)/3)){
 			//quite noisy
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
 		}
 	}
-	if (Screaming && !Strangled && !BloodDrown && !FrozenAir){
+	if (Screaming && !Strangled_cant_speak && !BloodDrown && !FrozenAir){
 		//quite noisy
 		song_noise(ACURR(A_CON)*ACURR(A_CON));
 	}
@@ -4025,7 +4090,7 @@ newgame()
 	
 	hack_artifacts();	/* recall after u_init() to fix up role specific artifacts */
 	hack_objects();
-
+	role_edit();		/* after u_init() so that role_variant is set */
 #ifndef NO_SIGNAL
 	(void) signal(SIGINT, (SIG_RET_TYPE) done1);
 #endif

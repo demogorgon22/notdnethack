@@ -321,6 +321,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		case AD_UHCD:
 				str = "blast of ice";
 			break;
+		case AD_GMLD:
+				str = "blast of spores";
+			break;
 		case AD_DEAD: str = "death field";
 			break;
 		case AD_DISN: str = "disintegration field";
@@ -388,6 +391,9 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			case AD_UHCD:
 				explmask = (Cold_resistance && hates_unholy(youracedata));
 				roll_frigophobia();
+				break;
+			case AD_GMLD:
+				explmask = (acidic(youracedata) || is_gray_mold(youracedata));
 				break;
 			case AD_DISN:
 				explmask = !!Disint_resistance;
@@ -460,6 +466,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 					break;
 				case AD_UHCD:
 					explmask |= resists_cold(mtmp) && hates_unholy_mon(mtmp);
+				case AD_GMLD:
+					explmask |= (acidic(mtmp->data) || is_gray_mold(mtmp->data));
 					break;
 				case AD_DISN:
 					explmask |= resists_disint(mtmp);
@@ -598,6 +606,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
 				      (adtyp == AD_UHCD) ? "chilly" :
+				      (adtyp == AD_GMLD) ? "a little gray" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "irradiated by pure energy" :
 				      (adtyp == AD_EELC) ? "shocked" :
@@ -620,6 +629,7 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				      (adtyp == AD_ECLD) ? "chilly" :
 				      (adtyp == AD_COLD) ? "chilly" :
 				      (adtyp == AD_UHCD) ? "chilly" :
+				      (adtyp == AD_GMLD) ? "gray" :
 				      (adtyp == AD_DISN) ? "perforated" :
 					  (adtyp == AD_DEAD) ? "overwhelmed by pure energy" :
 				      (adtyp == AD_EELC) ? "shocked" :
@@ -743,11 +753,17 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				}
 				mdam *= mod;
 			}
-			else if (resists_cold(mtmp) && (adtyp == AD_FIRE || adtyp == AD_EFIR))
+			else if (fire_vulnerable(mtmp) && (adtyp == AD_FIRE || adtyp == AD_EFIR))
 				mdam *= 2;
-			else if (resists_fire(mtmp) && (adtyp == AD_COLD || adtyp == AD_ECLD))
+			else if (cold_vulnerable(mtmp) && (adtyp == AD_COLD || adtyp == AD_ECLD))
 				mdam *= 2;
-			else if (resists_cold(mtmp) && !resists_fire(mtmp) && adtyp == AD_MADF)
+			else if (shock_vulnerable(mtmp) && (adtyp == AD_ELEC || adtyp == AD_EELC))
+				mdam *= 2;
+			else if (acid_vulnerable(mtmp) && (adtyp == AD_ACID || adtyp == AD_EACD))
+				mdam *= 2;
+			else if (fire_vulnerable(mtmp) && adtyp == AD_MADF)
+				mdam *= 2;
+			else if (magm_vulnerable(mtmp) && adtyp == AD_MAGM)
 				mdam *= 2;
 			else if (Dark_vuln(mtmp) && adtyp == AD_DARK)
 				mdam *= 2;
@@ -1435,6 +1451,8 @@ int adtyp;
 			return EXPL_WET;
 		case AD_BLUD:
 			return EXPL_RED;
+		case AD_GMLD:
+			return EXPL_GRAY;
 		default:
 			impossible("unhandled explosion color for attack damage type %d", adtyp);
 			return EXPL_MAGICAL;

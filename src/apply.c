@@ -8371,6 +8371,8 @@ use_doll(obj)
 			}
 			healup(0, 0, TRUE, FALSE);
 			if (Stoned || Golded || Salted) fix_petrification();
+			youmonst.mgmld_skin = 0;
+			youmonst.mgmld_throat = 0;
 			res = MOVE_STANDARD;
 			pline("You feel very healthy.");
 			give_intrinsic(GOOD_HEALTH, 100L);

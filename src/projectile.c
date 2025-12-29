@@ -3137,7 +3137,7 @@ int tary;
 			typ = random_breaths[rn2(SIZE(random_breaths))];
 	}
 	/* if cancelled, (or the player is strangled) can't use breath attack */
-	if (youagr ? Strangled : magr->mcan) {
+	if (youagr ? Strangled_cant_speak : magr->mcan) {
 		if (youagr) {
 			You_cant("breathe.  Sorry.");
 			return FALSE;	/* took no time */

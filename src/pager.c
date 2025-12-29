@@ -2535,6 +2535,7 @@ get_description_of_damage_type(uchar id)
 	case AD_OMUD: return "inchoate orc-spawn";
 	case AD_BLED: return "bleeding wounds";
 	case AD_UHCD: return "unholy ice";
+	case AD_GMLD: return "gray mold spores";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";

@@ -1732,6 +1732,34 @@ mcalcdistress()
 		if(damage > 0)
 			m_losehp(mtmp, damage, FALSE, "swarming vermin");
 	}
+	if(mtmp->mgmld_skin || mtmp->mgmld_throat){
+		const char *throatpart = mbodypart(mtmp, WINDPIPE);
+		if(throatpart[0] == '\0'){
+			//No specific "thoat" (anymore?)
+			mtmp->mgmld_skin += mtmp->mgmld_throat;
+			mtmp->mgmld_throat = 0;
+		}
+		if(!is_organic_monst(mtmp->data) || is_gray_mold(mtmp->data)){
+			mtmp->mgmld_skin = mtmp->mgmld_throat = 0;
+		}
+		if(mtmp->mtyp == PM_HERMIT_MASTER){
+			mtmp->mgmld_skin = mtmp->mgmld_throat = 0;
+			if(canseemon(mtmp)) pline("%s powerful spirit kills the mold infection!", s_suffix(Monnam(mtmp)));
+		}
+		int skin_dmg = mtmp->mgmld_skin/1000;
+		int skin_remain = mtmp->mgmld_skin%1000;
+		int throat_dmg = mtmp->mgmld_throat/100;
+		int throat_remain = mtmp->mgmld_throat%100;
+		if(rn2(1000) < skin_remain) skin_dmg++;
+		if(rn2(100) < throat_remain) throat_dmg++;
+		if(skin_dmg > 0){
+			mtmp->mgmld_skin += rn2(skin_dmg+1);
+		}
+		if(throat_dmg > 0){
+			mtmp->mgmld_throat += rn2(throat_dmg+1);
+		}
+		m_losehp(mtmp, skin_dmg + throat_dmg, FALSE, "mold infection");
+	}
 
 	timeout_problems(mtmp);
 	
@@ -1879,6 +1907,7 @@ struct monst *mtmp;
 	mtmp->mibitemarked = FALSE;
 	mtmp->myoumarked = FALSE;
 	mtmp->mironmarked = FALSE;
+	mtmp->mprobed = FALSE;
 	
 	/* gradually time out temporary problems */
 	if (mtmp->mblinded && !--mtmp->mblinded)
@@ -5069,6 +5098,7 @@ register struct monst *mtmp;
 	/* we did not lifesave */
 	mtmp->deadmonster |= DEADMONSTER_DEAD;
 	mtmp->mbdrown = 0;
+	mtmp->mprobed = 0;
 	//Special messages (Nyarlathotep)
 	if(canseemon(mtmp) && (mtmp->mtyp == PM_GOOD_NEIGHBOR || mtmp->mtyp == PM_HMNYW_PHARAOH)){
 		int nyar_form = rn2(SIZE(nyar_description));
@@ -5914,6 +5944,27 @@ struct monst *mon;
 	}
 }
 
+void
+gray_mold_dies(struct monst *mdef)
+{
+	if(mdef != &youmonst && DEADMONSTER(mdef)){
+		struct attack *mattk;
+		struct region_arg cloud_data;
+		mattk = attacktype_fordmg(mdef->data, AT_NONE, AD_GMLD);
+		int nd = 1;
+		int ds = 1;
+		if(mattk){
+			if(mattk->damn) nd = (int)mattk->damn;
+			if(mattk->damd) ds = (int)mattk->damd;
+		}
+		int dmg = d(nd, ds);
+		cloud_data.damage = dmg;
+		cloud_data.adtyp = AD_GMLD;
+		int size = 1 + (int)sqrt((double)dmg);
+		(void) create_generic_cloud(x(mdef), y(mdef), size, &cloud_data, TRUE);
+	}
+}
+
 /* drop (perhaps) a cadaver and remove monster */
 void
 mondied(mdef)
@@ -5923,6 +5974,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;	/* lifesaved */
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	if (corpse_chance(mdef, (struct monst *)0, FALSE) &&
 	    (accessible(mdef->mx, mdef->my) || is_pool(mdef->mx, mdef->my, FALSE)))
@@ -5936,6 +5988,7 @@ register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
@@ -5964,6 +6017,7 @@ register struct monst *mdef;
 {
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
@@ -6026,6 +6080,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -6122,6 +6177,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -6258,6 +6314,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -6410,6 +6467,9 @@ int how;
 	    You("have a sad feeling for a moment, then it passes.");
 	if (is_fern_spore(mdef->data)) {
 		spore_dies(mdef);
+	}
+	if (attacktype_fordmg(mdef->data, AT_NONE, AD_GMLD)){
+		gray_mold_dies(mdef);
 	}
 }
 
@@ -6637,12 +6697,16 @@ xkilled(mtmp, dest)
 	/* we did not lifesave */
 	mtmp->deadmonster |= DEADMONSTER_DEAD;
 	mtmp->mbdrown = 0;
+	mtmp->mprobed = 0;
 
 	mdat = mtmp->data; /* note: mondead can change mtmp->data */
 	mndx = monsndx(mdat);
 
 	if (is_fern_spore(mdat)) {
 		spore_dies(mtmp);
+	}
+	if (attacktype_fordmg(mtmp->data, AT_NONE, AD_GMLD)){
+		gray_mold_dies(mtmp);
 	}
 	if (stoned) {
 		stoned = FALSE;
@@ -8059,38 +8123,42 @@ golemeffects(mon, damtype, dam)
 struct monst *mon;
 int damtype, dam;
 {
-    int heal = 0, slow = 0;
+	int heal = 0, slow = 0;
 
 	/* intercept player */
 	if (mon == &youmonst) {
 		ugolemeffects(damtype, dam);
 		return;
 	}
-
-    if (mon->mtyp == PM_FLESH_GOLEM) {
-	if (damtype == AD_ELEC || damtype == AD_EELC) heal = dam / 6;
-	else if (damtype == AD_FIRE || damtype == AD_EFIR 
-		|| damtype == AD_ECLD || damtype == AD_COLD
-		|| damtype == AD_UHCD
-	) slow = 1;
-    } else if (mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_GREEN_STEEL_GOLEM || mon->mtyp == PM_CHAIN_GOLEM || mon->mtyp == PM_ARGENTUM_GOLEM) {
-	if (damtype == AD_ELEC || damtype == AD_EELC) slow = 1;
-	else if (damtype == AD_FIRE || damtype == AD_EFIR) heal = dam;
-    } else {
-	return;
-    }
-    if (slow) {
-	if (mon->mspeed != MSLOW)
-	    mon_adjust_speed(mon, -1, (struct obj *)0, TRUE);
-    }
-    if (heal) {
-	if (mon->mhp < mon->mhpmax) {
-	    mon->mhp += dam;
-	    if (mon->mhp > mon->mhpmax) mon->mhp = mon->mhpmax;
-	    if (cansee(mon->mx, mon->my))
-		pline("%s seems healthier.", Monnam(mon));
+	if (damtype == AD_GMLD && is_gray_mold(mon->data)) {
+		heal = dam;
 	}
-    }
+	else if (mon->mtyp == PM_FLESH_GOLEM) {
+		if (damtype == AD_ELEC || damtype == AD_EELC) heal = dam / 6;
+		else if (damtype == AD_FIRE || damtype == AD_EFIR 
+			|| damtype == AD_ECLD || damtype == AD_COLD
+			|| damtype == AD_UHCD
+		) slow = 1;
+	}
+	else if (mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_GREEN_STEEL_GOLEM || mon->mtyp == PM_CHAIN_GOLEM || mon->mtyp == PM_ARGENTUM_GOLEM) {
+		if (damtype == AD_ELEC || damtype == AD_EELC) slow = 1;
+		else if (damtype == AD_FIRE || damtype == AD_EFIR) heal = dam;
+	}
+	else {
+		return;
+	}
+	if (slow) {
+		if (mon->mspeed != MSLOW)
+			mon_adjust_speed(mon, -1, (struct obj *)0, TRUE);
+		}
+	if (heal) {
+		if (mon->mhp < mon->mhpmax) {
+			mon->mhp += dam;
+			if (mon->mhp > mon->mhpmax) mon->mhp = mon->mhpmax;
+			if (cansee(mon->mx, mon->my))
+			pline("%s seems healthier.", Monnam(mon));
+		}
+	}
 }
 
 /* metroid is hit by a death ray and splits off more metroids */
