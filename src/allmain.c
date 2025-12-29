@@ -3028,6 +3028,7 @@ karemade:
 			){
 				make_hallucinated(itimeout_incr(HHallucination, 100), TRUE, 0L);
 				IMPURITY_UP(u.uimp_rot)
+				IMPURITY_UP(u.uimp_illness)
 				if(roll_madness(MAD_SPORES)){//Second roll for more severe symptoms
 					make_stunned(itimeout_incr(HStun, 100), TRUE);
 					make_confused(itimeout_incr(HConfusion, 100), FALSE);
@@ -3049,6 +3050,7 @@ karemade:
 			if(has_blood(youracedata) && u.usanity < 50 && roll_madness(MAD_FRENZY)){
 				int *hp = (Upolyd) ? (&u.mh) : (&u.uhp);
 				Your("%s leaps through your %s!", body_part(BLOOD), body_part(BODY_SKIN));
+				IMPURITY_UP(u.uimp_blood)
 				//reduce current HP by 30% (round up, guranteed nonfatal)
 				if(ACURR(A_CON) > 3)
 					(void)adjattrib(A_CON, -1, FALSE);
@@ -3072,13 +3074,17 @@ karemade:
 				}
 				if(youmonst.mcaterpillars){
 					rot_caterpillars_bite(&youmonst);
+					IMPURITY_UP(u.uimp_illness)
+					IMPURITY_UP(u.uimp_rot)
 					if(!rn2(20)){
 						pline_The("parasitic caterpillars have rotted to death!");
 						youmonst.mcaterpillars = FALSE;
+						IMPURITY_UP(u.uimp_bodies)
 					}
 				}
 				if(youmonst.momud){
 					orc_mud_stabs(&youmonst);
+					IMPURITY_UP(u.uimp_dirtiness)
 					if(!rn2(20)){
 						pline_The("writhing mud covering you has died.");
 						youmonst.momud = FALSE;
@@ -3089,6 +3095,8 @@ karemade:
 						set_obj_size(daggers, MZ_TINY);
 						set_material_gm(daggers, BONE);
 						place_object(daggers, u.ux, u.uy);
+						IMPURITY_UP(u.uimp_bodies)
+						IMPURITY_UP(u.uimp_rot)
 					}
 				}
 				if(youmonst.mgmld_skin || youmonst.mgmld_throat){
