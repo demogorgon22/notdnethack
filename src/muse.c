@@ -310,8 +310,11 @@ struct monst *mtmp;
 	    }
 	}
 	if(is_clockwork(mtmp->data) && mtmp->mhp < mtmp->mhpmax){
-		struct monst *menemy;
-		for(menemy = fmon; menemy; menemy = menemy->nmon){
+		struct monst *menemy = NULL;
+		if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) <= 5){
+			menemy = &youmonst;
+		}
+		if(!menemy) for(menemy = fmon; menemy; menemy = menemy->nmon){
 			if(DEADMONSTER(menemy)) continue;
 			if(menemy->mpeaceful == mtmp->mpeaceful) continue;
 			if(distmin(mtmp->mx,mtmp->my,menemy->mx,menemy->my) > 5) continue;
