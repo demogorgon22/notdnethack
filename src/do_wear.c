@@ -2380,7 +2380,7 @@ struct obj * otmp;
 	if (otmp->otyp == find_gcirclet()) def /= 2;
 
 	// add enchantment
-	if (otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
+	if (!Is_spire(&u.uz) && otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
 	{
 		int spemult = 1; // out of 2
 		// shields get full enchantment to AC
@@ -2402,7 +2402,7 @@ struct obj * otmp;
 	}
 
 	// artifact bonus def
-	switch (otmp->oartifact)
+	if(!Is_spire(&u.uz)) switch (otmp->oartifact)
 	{
 	case ART_STEEL_SCALES_OF_KURTULMAK:
 		def += objects[otmp->otyp].a_ac;
@@ -2489,7 +2489,7 @@ struct obj * otmp;
 
 
 	// add enchantment
-	if (otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
+	if (!Is_spire(&u.uz) && otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
 	{
 		int spemult = 1; // out of 2
 		// shields get no enchantment to DR
@@ -2506,7 +2506,7 @@ struct obj * otmp;
 	}
 
 	// artifact bonus def
-	switch (otmp->oartifact)
+	if(!Is_spire(&u.uz)) switch (otmp->oartifact)
 	{
 	case ART_STEEL_SCALES_OF_KURTULMAK:
 		def += objects[otmp->otyp].a_dr;

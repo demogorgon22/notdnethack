@@ -1657,9 +1657,9 @@ struct monst *magr;
 
 
 	/* enchantment damage */
-	if ((otmp->oclass == WEAPON_CLASS) || is_weptool(otmp)
+	if (!Is_spire(&u.uz) && ((otmp->oclass == WEAPON_CLASS) || is_weptool(otmp)
 		|| (otmp->otyp >= LUCKSTONE && otmp->otyp <= ROCK && otmp->ovar1_projectileSkill == -P_FIREARM)
-		|| (is_shield(otmp) && magr == &youmonst && activeFightingForm(FFORM_SHIELD_BASH))
+		|| (is_shield(otmp) && magr == &youmonst && activeFightingForm(FFORM_SHIELD_BASH)))
 	){
 		int dambon = otmp->spe;
 		/* player orcs can use their level as their weapon's enchantment */

@@ -1821,6 +1821,11 @@ dosacrifice()
 		return MOVE_CANCELLED;
 	}
 	
+	if(Is_spire(&u.uz)){
+		pline("The gods have no power here.");
+		return MOVE_CANCELLED;
+	}
+	
 	if((u.ualign.god == GOD_BOKRUG__THE_WATER_LIZARD 
 		&& (a_gnum(u.ux, u.uy) == GOD_BOKRUG__THE_WATER_LIZARD 
 			|| (a_align(u.ux, u.uy) == A_NONE && a_gnum(u.ux, u.uy) == GOD_NONE)))
@@ -2545,8 +2550,13 @@ dopray()
 		pline("While you are devoted to your philosophy, there is nothing in it that could answer a prayer.");
 		return MOVE_CANCELLED;
 	}
+	
+	if(Is_spire(&u.uz)){
+		pline("The gods have no power here.");
+		return MOVE_CANCELLED;
+	}
 
-    /* Confirm accidental slips of Alt-P */
+	/* Confirm accidental slips of Alt-P */
     if (flags.prayconfirm)
 	if (yn("Are you sure you want to pray?") == 'n')
 	    return MOVE_CANCELLED;
@@ -2734,6 +2744,11 @@ doturn()
 		You("don't know how to turn undead!");
 		return MOVE_CANCELLED;
 	}
+	if(Is_spire(&u.uz)){
+		pline("The gods have no power here.");
+		return MOVE_CANCELLED;
+	}
+	
 	if(Misotheism){
 		pline("Nothing happens!");
 		return MOVE_CANCELLED;

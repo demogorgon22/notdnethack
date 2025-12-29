@@ -786,7 +786,9 @@ doread()
 		}
 	  }
 	}
-	if(!seffects(scroll))  {
+	if(Is_spire(&u.uz) && objects[scroll->otyp].oc_magic)
+	    pline("Nothing happens.");
+	else if(!seffects(scroll))  {
 		if(!objects[scroll->otyp].oc_name_known) {
 		    if(known) {
 			makeknown(scroll->otyp);
