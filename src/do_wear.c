@@ -954,7 +954,7 @@ Armor_off()
 {
 	boolean checkweight = FALSE;
     takeoff_mask &= ~W_ARM;
-	if(arti_lighten(uarmu, FALSE)) checkweight = TRUE;
+	if(arti_lighten(uarm, FALSE)) checkweight = TRUE;
 
 	if(!uarm) {
 		impossible("Armor_off called with no uarm");
