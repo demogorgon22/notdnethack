@@ -7352,6 +7352,13 @@ struct obj *pole;
 			's', 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
 	}
+	if(pole->otyp == SILVERKNIGHT_SCYTHE){
+		Sprintf(buf, "(send forth rogue halo)");
+		any.a_int = N_POLEDIRS+2;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'r', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
 
 	/* add an option to target manually */
 	Sprintf(buf, "(some location)");
@@ -7371,6 +7378,26 @@ struct obj *pole;
 		return picked;
 	}
 	return 0;
+}
+
+void
+use_silverknight_scythe_at(int x, int y)
+{
+	struct monst *halo;
+	if(u.uen >= 10){
+		u.uen -= 10;
+		pline("You swing the Silverknight Scythe and a rogue halo flies forth!");
+		halo = makemon(&mons[PM_ROGUE_HALO], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
+		if(halo){
+			halo->mpeaceful = TRUE;
+			initedog(halo);
+			mark_mon_as_summoned(halo, &youmonst, u.ulevel + rnd(u.ulevel), 0);
+			halo->movement = 3*NORMAL_SPEED;
+		}
+	}
+	else {
+		pline("Nothing happens.");
+	}
 }
 
 static const char
@@ -7426,9 +7453,11 @@ coord *ccp;
 			ccp->x = 0; ccp->y = 0;
 			return res;	/* user pressed ESC */
 		}
-		if((obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE) && ccp->x == u.ux && ccp->y == u.uy){
-			ccp->x = 0; ccp->y = 0;
-			return use_hunter_axe(obj);
+		if(ccp->x == u.ux && ccp->y == u.uy){
+			if(obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE){
+				ccp->x = 0; ccp->y = 0;
+				return use_hunter_axe(obj);
+			}
 		}
 	}
 	else {
@@ -7440,7 +7469,14 @@ coord *ccp;
 			}
 			else if(i == N_POLEDIRS+1){
 				ccp->x = 0; ccp->y = 0;
-				return use_hunter_axe(obj);
+				if(obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE)
+					return use_hunter_axe(obj);
+				if(obj->otyp == SILVERKNIGHT_SCYTHE){
+					use_silverknight_scythe_at(u.ux, u.uy);
+					return MOVE_ATTACKED;
+				}
+				impossible("Unhandled special polearm action.");
+				return res; //Should never reach here
 			}
 			else {
 				/* use standard targeting; save retval to return */
@@ -7517,6 +7553,8 @@ use_pole(obj)
 		   if(!rn2(3)) mksobj_at(SHEAF_OF_HAY,cc.x,cc.y,NO_MKOBJ_FLAGS);
 		   You("cut away the grass!");
 		   newsym(cc.x,cc.y);
+	} else if(obj->otyp == SILVERKNIGHT_SCYTHE){
+		use_silverknight_scythe_at(cc.x,cc.y);
 	} else {
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
