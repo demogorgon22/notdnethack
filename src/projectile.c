@@ -3385,6 +3385,7 @@ int n;	/* number to try to fire */
 		ammo_type = SPIKE;
 		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		set_material_gm(qvr, SHADOWSTEEL);
+		qvr->improved_mat = TRUE;
 		qvr->quan = 1;
 		qvr->spe = 8;
 		qvr->opoisoned = (OPOISON_BASIC | OPOISON_BLIND);

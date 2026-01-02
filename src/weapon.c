@@ -866,17 +866,24 @@ struct monst *magr;
 						if (is_slashing(obj) || is_stabbing(obj))
 							dmod -= mod;
 						break;
-					/* glass and obsidian have sharp edges and points 
-					 * shadowsteel ??? but gameplay-wise, droven weapons
-					 *   made out of this troublesome-to-maintain material
-					 *   shouldn't be weaker than their obsidian counterparts
-					 */
+					/* glass and obsidian have sharp edges and points */
 					case GLASS:
 					case OBSIDIAN_MT:
-					case SHADOWSTEEL:
 					case GREEN_STEEL:
 						if (is_slashing(obj) || is_stabbing(obj))
 							dmod += mod;
+						break;
+					case SHADOWSTEEL:
+						if(obj->improved_mat){
+							if (is_slashing(obj) || is_stabbing(obj))
+								dmod += mod;
+						}
+						else {
+							if (is_slashing(obj) || is_stabbing(obj))
+								dmod -= mod;
+							else
+								dmod -= 2*mod;
+						}
 						break;
 					/* dragon teeth are good at piercing */
 					case DRAGON_HIDE:
