@@ -4331,6 +4331,11 @@ mkpluvillage()
 			levl[x][y+3].typ = TLCORNER;
 			levl[x][y+3].lit = 1;
 			
+			for(i=0;i<=sizebig1;i++){
+				for(j=3;j<=4+3;j++){
+					levl[x+i][y+j].roomno = NO_ROOM;
+				}
+			}
 			switch(rn2(8)){
 				case 0: //Random store
 					for(i=1;i<sizebig1;i++){
@@ -4530,6 +4535,11 @@ mkpluvillage()
 			levl[x+sizetot+1-sizebig2][y+3].typ = TLCORNER;
 			levl[x+sizetot+1-sizebig2][y+3].lit = 1;		
 			
+			for(i=sizetot-sizebig2+1;i<=sizetot+1;i++){
+				for(j=3;j<=4+3;j++){
+					levl[x+i][y+j].roomno = NO_ROOM;
+				}
+			}
 			switch(rn2(8)){
 				case 0: //Shop
 					for(i=sizetot+1-sizebig2+1;i<sizetot+1;i++){
