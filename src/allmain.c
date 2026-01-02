@@ -29,6 +29,7 @@ STATIC_DCL void NDECL(printMonNames);
 STATIC_DCL void NDECL(printDPR);
 STATIC_DCL void NDECL(printBodies);
 STATIC_DCL void NDECL(printSanAndInsight);
+STATIC_DCL void NDECL(printEtraits);
 STATIC_DCL void FDECL(printAttacks, (char *,struct permonst *));
 STATIC_DCL void FDECL(resFlags, (char *,unsigned int));
 STATIC_DCL int FDECL(find_preset_inherited, (char *));
@@ -1776,6 +1777,7 @@ moveloop()
 	// printDPR();
 	// printBodies();
 	// printSanAndInsight();
+	// printEtraits();
     for(;;) {/////////////////////////MAIN LOOP/////////////////////////////////
 	if (!iflags.debug_fuzzer) gosleep();
     hpDiff = u.uhp;
@@ -4516,6 +4518,59 @@ printSanAndInsight(){
 		}
 	}
 	fclose(rfile);
+}
+
+STATIC_DCL
+void
+printEtraits()
+{
+	FILE *rfile;
+	register int i, j;
+	char pbuf[BUFSZ];
+	rfile = fopen_datafile("WeaponExpertTraits.tab", "w", SCOREPREFIX);
+	if (rfile) {
+		Sprintf(pbuf,"Name\ttrait\n");
+		fprintf(rfile, "%s", pbuf);
+		fflush(rfile);
+		struct etraitkey{
+			int etrait;
+			const char *name;
+		} etraitkeys[] = {
+			{ETRAIT_HEW, "Hew"},
+			{ETRAIT_FELL, "Fell"},
+			{ETRAIT_KNOCK_BACK, "Knock Back"},
+			{ETRAIT_FOCUS_FIRE, "Target Weakpoints"},
+			{ETRAIT_STUNNING_STRIKE, "Stunning Strike"},
+			{ETRAIT_KNOCK_BACK_CHARGE, "Knock Back Charge"},
+			{ETRAIT_GRAZE, "Graze"},
+			{ETRAIT_STOP_THRUST, "Stop Thrust"},
+			{ETRAIT_PENETRATE_ARMOR, "Penetrate Armor"},
+			{ETRAIT_LONG_SLASH, "Long Slash"},
+			{ETRAIT_BLEED, "Bleed"},
+			{ETRAIT_CLEAVE, "Cleave"},
+			{ETRAIT_LUNGE, "Lunge"},
+			{ETRAIT_QUICK, "Quick"},
+			{ETRAIT_SECOND, "Second"},
+			{ETRAIT_CREATE_OPENING, "Create Opening"},
+			{ETRAIT_BRACED, "Braced"},
+			{ETRAIT_BLADESONG, "Bladesong"},
+			{ETRAIT_BLADEDANCE, "Bladedance"},
+			{ETRAIT_PUNCTURE, "Puncture"},
+			{0,0}
+		};
+		for(i=0;i<NUM_OBJECTS;i++){
+			if(objects[i].expert_traits){
+				for(j=0; etraitkeys[j].etrait; j++){
+					if(objects[i].expert_traits & etraitkeys[j].etrait){
+						Sprintf(pbuf,"%s\t%s\n", obj_descr[(objects[i].oc_name_idx)].oc_name, etraitkeys[j].name);
+						fprintf(rfile, "%s", pbuf);
+						fflush(rfile);
+					}
+				}
+			}
+		}
+		fclose(rfile);
+	}
 }
 
 STATIC_DCL
