@@ -4434,7 +4434,7 @@ winid *datawin;
 			while (properties_art[j] && !got_prop) {
 				if (properties_art[j] == propertynames[i].prop_num)
 					got_prop = TRUE;
-				if (obj->oartifact == ART_MORTAL_BLADE){
+				if (obj && obj->oartifact == ART_MORTAL_BLADE){
 					if (properties_art[j] == STEALTH && artinstance[ART_MORTAL_BLADE].mortalLives < 1)
 						got_prop = FALSE;
 					if (properties_art[j] == DARK_RES && artinstance[ART_MORTAL_BLADE].mortalLives < 2)
