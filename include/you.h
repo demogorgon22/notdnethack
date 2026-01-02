@@ -833,6 +833,7 @@ struct you {
 	Bitfield(uimp_rot, 4);
 	Bitfield(uimp_poison, 4);
 	Bitfield(uimp_curse, 4); //60/+30 eve/+12 bullets?
+	Bitfield(uimp_rot_monk, 4);
 	int 	ureanimation_research;	/* to record progress on reanimation */
 	//Power 1: raise crazed corpses
 	//Power 2: Summon blood creatures

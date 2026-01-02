@@ -2622,6 +2622,9 @@ spiriteffects(power, atme)
 				if (HConfusion) make_confused(0L, TRUE);
 				if (HStun) make_stunned(0L, TRUE);
 				if (Wounded_legs) HWounded_legs = 1L;
+				youmonst.mgmld_skin = 0;
+				youmonst.mgmld_throat = 0;
+				youmonst.mbleed = 0;
 
 
 				/* collect attribute troubles */

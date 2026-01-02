@@ -7549,17 +7549,18 @@ boolean printmessages; /* print generic elemental damage messages */
 			wepdesc = buf;
 			if (dieroll == 1)
 			{
+				int mask = attack_mask(msgr, 0, 0, magr);
 				if(check_oprop(otmp,OPROP_GSSDW) && has_head_mon(mdef))
 					method = VORPAL_BEHEAD;
 				else if (otmp->otyp == STAKE && is_vampire(mdef->data) && !naoid(mdef->data))
 					method = VORPAL_PIERCE;
-				else if (is_slashing(msgr) && is_stabbing(msgr))
+				else if ((mask&(SLASH|PIERCE)) == (SLASH|PIERCE))
 					method = VORPAL_BEHEAD;
-				else if (is_slashing(msgr))
+				else if (mask&SLASH)
 					method = VORPAL_BISECT;
-				else if (is_stabbing(msgr))
+				else if (mask&PIERCE)
 					method = VORPAL_PIERCE;
-				else if (is_bludgeon(msgr))
+				else if (mask&WHACK)
 					method = VORPAL_SMASH;
 			}
 			break;

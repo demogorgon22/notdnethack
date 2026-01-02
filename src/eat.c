@@ -206,7 +206,7 @@ register struct obj *obj;
 			(obj->obj_material == VEGGY || obj->obj_material == FLESH))); /*Processed foods only*/
 	
 	if (metallivorous(youracedata) && is_metallic(obj) &&
-	    (youracedata->mtyp != PM_RUST_MONSTER || is_rustprone(obj)))
+	    (!(youracedata->mtyp == PM_RUST_MONSTER && is_gray_mold(youracedata)) || is_rustprone(obj)))
 		return TRUE;
 	if ((u.umonnum == PM_GELATINOUS_CUBE || u.umonnum == PM_ANCIENT_OF_CORRUPTION) && is_organic(obj) &&
 		/* [g.cubes can eat containers and retain all contents

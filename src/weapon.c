@@ -329,8 +329,10 @@ struct monst *magr;
 		otyp = obj->otyp;
 		oartifact = obj->oartifact;
 	}
-	
-	if(otyp && (
+	if(obj && is_lightsaber(obj) && !litsaber(obj)){
+		attackmask = WHACK;
+	}
+	else if(otyp && (
 		objects[otyp].oc_class == WEAPON_CLASS
 		|| (objects[otyp].oc_class == TOOL_CLASS && objects[otyp].oc_skill != P_NONE)
 	)){
@@ -2395,8 +2397,10 @@ register struct monst *mtmp;
 	boolean marilith = mon_attacktype(mtmp, AT_MARI) ? TRUE : FALSE; //Marilith arms don't suffer weight limits, so also don't impose them on the offhand arm.
 
 	/* needs to be capable of wielding a weapon in the mainhand */
-	if (!mon_attacktype(mtmp, AT_WEAP) &&
-		!mon_attacktype(mtmp, AT_DEVA))
+	if (!mon_attacktype(mtmp, AT_WEAP)
+		&& !mon_attacktype(mtmp, AT_DEVA)
+		&& !mon_attacktype(mtmp, AT_JUGL)
+	)
 		return (struct obj *)0;
 
 	/* if using an artifact or oprop weapon keep using it. */
@@ -2611,8 +2615,10 @@ boolean polyspot;
 		mon->weapon_check = NO_WEAPON_WANTED;
 
 	/* monster can no longer wield any mainhand weapons */
-	if (!mon_attacktype(mon, AT_WEAP) &&
-		!mon_attacktype(mon, AT_DEVA)) {
+	if (!mon_attacktype(mon, AT_WEAP)
+	 && !mon_attacktype(mon, AT_DEVA)
+	 && !mon_attacktype(mon, AT_JUGL)
+	) {
 		if (mw_tmp) {
 			setmnotwielded(mon, mw_tmp);
 			MON_NOWEP(mon);
@@ -2929,9 +2935,11 @@ register struct monst *mon;
 	struct obj *msw_tmp = MON_SWEP(mon);
 	int toreturn = 0;
 	
-	if (!mon_attacktype(mon, AT_WEAP) &&
-		!mon_attacktype(mon, AT_DEVA) &&
-		!mon_attacktype(mon, AT_XWEP)) return;
+	if (!mon_attacktype(mon, AT_WEAP)
+		&& !mon_attacktype(mon, AT_DEVA)
+		&& !mon_attacktype(mon, AT_JUGL)
+		&& !mon_attacktype(mon, AT_XWEP)
+	) return;
 
 	if(needspick(mon->data)){
 		obj = m_carrying(mon, DWARVISH_MATTOCK);

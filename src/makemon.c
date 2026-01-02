@@ -3638,6 +3638,17 @@ boolean greatequip;
 			(void)mongets(mtmp, CLOAK, mkobjflags);
 			(void)mongets(mtmp, LOW_BOOTS, mkobjflags);
 		}
+		else if(mm == PM_DANCING_DUELIST){
+			int weaponchoices[] = {KATANA, SCIMITAR, LONG_SWORD, SABER};
+			int choice = ROLL_FROM(weaponchoices);
+			for(int i = rnd(3)+2; i > 0; i--){
+				otmp = mongets(mtmp, choice, mkobjflags);
+				if(otmp){
+					otmp->cursed = FALSE;
+					if(otmp->spe < 1) otmp->spe = 1;
+				}
+			}
+		}
 	} else if(mm >= PM_LORD_CARNARVON && mm <= PM_NEFERET_THE_GREEN){
 		if(mm == PM_LORD_CARNARVON){
 			otmp = mksobj(PISTOL, mkobjflags|MKOBJ_NOINIT);
@@ -4613,6 +4624,18 @@ boolean goodequip;
 				otmp = mksobj(BEAST_S_EMBRACE_GLYPH, mkobjflags);
 				(void) mpickobj(mtmp, otmp);
 			}
+		}
+	}
+	else if(ptr->mtyp == PM_DANCING_DUELIST){
+		if(mtmp->female && rn2(2)){
+			mongets(mtmp, STILETTOS, mkobjflags);
+			otmp = mongets(mtmp, PLAIN_DRESS, mkobjflags);
+			if(otmp) otmp->obj_color = CLR_GREEN;
+		} else {
+			otmp = mongets(mtmp, LOW_BOOTS, mkobjflags);
+			if(otmp) otmp->obj_color = CLR_GREEN;
+			otmp = mongets(mtmp, LEATHER_ARMOR, mkobjflags);
+			if(otmp) otmp->obj_color = CLR_GREEN;
 		}
 	}
 }
@@ -12409,6 +12432,13 @@ boolean greatequip;
 			(void) mpickobj(mtmp, otmp);
 		} else if(ptr->mtyp == PM_PHARAOH || ptr->mtyp == PM_PRIEST_MUMMY){
 			(void)mongets(mtmp, PRAYER_WARDED_WRAPPING, mkobjflags);
+		} else if(ptr->mtyp == PM_ROTTING_MONK){
+			otmp = mksobj(ROBE, mkobjflags);
+			if(otmp){
+				otmp->obj_color = CLR_ORANGE;
+				otmp->oeroded2 = 3;
+				(void) mpickobj(mtmp, otmp);
+			}
 		} else {
 			(void)mongets(mtmp, ptr->mtyp == PM_DROW_MUMMY ? DROVEN_CLOAK : MUMMY_WRAPPING, mkobjflags);
 		}
@@ -14915,6 +14945,12 @@ int faction;
 				mtmp->mhp = mtmp->mhpmax;
 			}
 		break;
+		case S_MUMMY:
+			if(mndx == PM_ROTTING_MONK){
+				mtmp->mhpmax = hd_size(mtmp->data)*mtmp->m_lev*3;
+				mtmp->mhp = mtmp->mhpmax;
+			}
+		break;
 		case S_HUMANOID:
 			if(!(mmflags & MM_NOGROUP)){
 				if(mmflags & MM_BIGGROUP){
@@ -17194,6 +17230,7 @@ struct monst *mtmp, *victim;
 			ptr->mtyp == PM_MOTHERING_MASS ||
 			ptr->mtyp == PM_BOLG ||
 			ptr->mtyp == PM_PRIEST_OF_GHAUNADAUR ||
+			ptr->mtyp == PM_ROTTING_MONK ||
 			ptr->mtyp == PM_SHOGGOTH
 		) hp_threshold *= 3;
 	    else if (ptr->mtyp == PM_CHROMATIC_DRAGON || ptr->mtyp == PM_PLATINUM_DRAGON) hp_threshold *= 1.5;

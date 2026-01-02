@@ -742,8 +742,12 @@ boolean digest_meal;
 					mon->mhp += 1;
 			}
 		}
-		if(mon_resistance(mon,REGENERATION))
-			mon->mhp+=1;
+		if(mon_resistance(mon,REGENERATION)){
+			if(mon->mtyp == PM_ROTTING_MONK && !mon->mcan)
+				mon->mhp+=10;
+			else
+				mon->mhp+=1;
+		}
 		if(mon->mtyp == PM_TWIN_SIBLING && check_mutation(CRAWLING_FLESH))
 			mon->mhp+=1;
 		struct obj *arm = which_armor(mon, W_ARM);
@@ -2235,6 +2239,13 @@ register struct monst *mtmp;
 			if(!(mon_ranged_gazeonly) && (res & MM_HIT))
 				return 0; /* that was our move for the round */
 		}
+		else if(mtmp->mtyp == PM_ROTTING_MONK && !rn2(4) && distmin(mtmp->mux,mtmp->muy,u.ux,u.uy) < 3){
+			struct monst *cricket = makemon(&mons[PM_CRICKET_OF_CORRUPTION], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_ADJACENTSTRICT);
+			if(cricket){
+				pline("%s vomits up a huge cricket!", Monnam(mtmp));
+			}
+			return 0; /* that was our move for the round */
+		}
 	}
 
 /*	Now the actual movement phase	*/
@@ -2337,11 +2348,15 @@ register struct monst *mtmp;
 		}
 	}
 /*	Now, attack the player if possible - one attack set per monst	*/
+	int result = 0;
 
 	if (!mtmp->mpeaceful || mtmp->mberserk ||
-	    (Conflict && !resist(mtmp, RING_CLASS, 0, 0))) {
-	    if(inrange && !noattacks(mdat) && u.uhp > 0 && !scared && tmp != 3)
-			if((mattacku(mtmp)&MM_AGR_DIED)) return(1); /* monster died (e.g. exploded) */
+	    (Conflict && !resist(mtmp, RING_CLASS, 0, 0))
+	) {
+	    if(inrange && !noattacks(mdat) && u.uhp > 0 && !scared && tmp != 3){
+			result = mattacku(mtmp);
+			if((result & MM_AGR_DIED)) return(1); /* monster died (e.g. exploded) */
+		}
 	}
 	/* special speeches for quest monsters */
 	if (!mtmp->msleeping && mtmp->mcanmove && mtmp->mnotlaugh && !mtmp->mequipping && nearby)

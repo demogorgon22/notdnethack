@@ -1174,7 +1174,7 @@ struct obj {
 								u.role_variant == ART_KISHIN_MIRROR ? (objects[(otmp)->otyp].oc_skill == P_MACE) : \
 								u.role_variant == ART_WINTER_REAPER ? ((otmp)->otyp == RAPIER || (otmp)->otyp == SABER) : \
 								u.role_variant == ART_KIKU_ICHIMONJI ? (is_katana_ish(otmp)) : \
-								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp) && litsaber(otmp)) : \
+								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp)) : \
 								(otmp)->otyp == artilist[u.role_variant].otyp)
 
 #define is_kensei_weapon_otyp(a_otyp)	( \

@@ -2625,7 +2625,10 @@ role_edit()
 		if(Race_if(PM_GITHZERAI) || Race_if(PM_GITHYANKI)){
 			urole.enemy2num = PM_MIND_FLAYER;
 		}
-		else if(u.role_variant == ART_MALICE || u.role_variant == ART_BOREAL_SCEPTER){
+		else if(u.role_variant == ART_MALICE){
+			urole.enemy2num = PM_HUNGRY_DEAD;
+		}
+		else if(u.role_variant == ART_BOREAL_SCEPTER){
 			urole.enemy2num = PM_HUNGRY_DEAD;
 		}
 		else if(u.role_variant == ART_ANSERMEE){

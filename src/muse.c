@@ -2999,7 +2999,7 @@ struct obj *obj;
 	if(mon->mtyp == PM_CHAIN_DEVIL && obj->otyp == CHAIN)
 		return TRUE;
 	if(obj->oclass == WEAPON_CLASS || is_weptool(obj))
-		return mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA);
+		return mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA) || mon_attacktype(mon, AT_JUGL);
 	if(obj->oclass == AMULET_CLASS)
 		return can_wear_amulet(mon->data) && is_museable_amulet(obj->otyp);
 	else if(is_shirt(obj))

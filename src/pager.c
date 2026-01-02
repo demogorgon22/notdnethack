@@ -2339,6 +2339,7 @@ get_description_of_attack_type(uchar id)
 	case AT_ESPR: return "floating spiritual blade";
 	case AT_BEAM: return "ranged beam";
 	case AT_DEVA: return "million-arm weapon";
+	case AT_JUGL: return "weapon-juggler's strike";
 	case AT_5SQR: return "long reach touch";
 	case AT_WDGZ: return "passive gaze";
 	case AT_BKGT: return "hungry mist";
@@ -2536,6 +2537,7 @@ get_description_of_damage_type(uchar id)
 	case AD_BLED: return "bleeding wounds";
 	case AD_UHCD: return "unholy ice";
 	case AD_GMLD: return "gray mold spores";
+	case AD_SONC: return "sonic blast";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2550,6 +2552,7 @@ get_description_of_damage_prefix(uchar aatyp, uchar adtyp)
 	case AT_WEAP:
 	case AT_XWEP:
 	case AT_DEVA:
+	case AT_JUGL:
 		switch (adtyp)
 		{
 		case AD_PHYS:
@@ -2558,12 +2561,12 @@ get_description_of_damage_prefix(uchar aatyp, uchar adtyp)
 		case AD_COLD:
 		case AD_ELEC:
 		case AD_ACID:
-			return "physical + 4d6 ";
+			return "physical +  ";
 		case AD_EFIR:
 		case AD_ECLD:
 		case AD_EELC:
 		case AD_EACD:
-			return "physical + 3d7 ";
+			return "physical +  ";
 		default:
 			return "physical + ";
 		}

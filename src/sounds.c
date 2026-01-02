@@ -6502,7 +6502,7 @@ int p_skill;
 	if (Role_if(PM_KENSEI)){
 		if (p_skill == P_KNI_SACRED)
 			return TRUE;
-		if (p_skill == P_KNI_ELDRITCH && u.role_variant == ART_WINTER_REAPER)
+		if (p_skill == P_KNI_ELDRITCH && (u.role_variant == ART_WINTER_REAPER || u.role_variant == ART_KIKU_ICHIMONJI))
 			return TRUE;
 	}
 	return FALSE;

@@ -2320,7 +2320,7 @@ meatmetal(mtmp)
 	/* Eats topmost metal object if it is there */
 	for (otmp = level.objects[mtmp->mx][mtmp->my];
 						otmp; otmp = otmp->nexthere) {
-	    if (mtmp->mtyp == PM_RUST_MONSTER && !is_rustprone(otmp))
+	    if ((mtmp->mtyp == PM_RUST_MONSTER || is_gray_mold(mtmp->data)) && !is_rustprone(otmp))
 		continue;
 	    if (is_metallic(otmp) && !obj_resists(otmp, 0, 100) &&
 			touch_artifact(otmp, mtmp, FALSE) && !(otmp->otyp == MAGIC_CHEST && otmp->obolted)
@@ -5475,6 +5475,13 @@ boolean was_swallowed;			/* digestion */
 	if(Role_if(PM_ANACHRONONAUT) && (mon->mpeaceful || (has_lifesigns(mon) && mon->mvar_lifesigns)) && In_quest(&u.uz) && Is_qstart(&u.uz)){
 		if(!cansee(mon->mx,mon->my)) map_invisible(mon->mx, mon->my);
 	}
+
+	/* Riders, but can be laid to rest*/
+	if(mdat->mtyp == PM_ROTTING_MONK){
+		if(mon->mlaidtorest) return FALSE;
+		return TRUE;
+	}
+
 	/* bypass anything about templates, etc. just always make a corpse*/
 	if (is_rider(mdat)) return TRUE;
 

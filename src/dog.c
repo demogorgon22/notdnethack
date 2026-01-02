@@ -1175,7 +1175,7 @@ register struct obj *obj;
 			return 0;
 	    if (hates_iron(mon->data) && is_iron_obj(obj))
 			return 0;
-		if(mon->mtyp == PM_RUST_MONSTER)
+		if(mon->mtyp == PM_RUST_MONSTER || is_gray_mold(mon->data))
 			return is_rustprone(obj);
 		else return is_metallic(obj);
 	}

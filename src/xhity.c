@@ -707,13 +707,14 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		case AT_XWEP:	// no ranged (is done concurrently with AT_WEAP for offhanded blasters); offhand
 		case AT_MARI:	// no ranged; from inventory
 		case AT_HODS:	// no ranged; opponent's mainhand weapon
+		case AT_JUGL:	// mainhand; can attack many times, juggles in different weapons with each attack
 
 			/* there are cases where we can't attack at all */
 			/* 1: Wielding a weapon */
 			if (!youagr &&												// monster attacking
-				(aatyp == AT_WEAP || aatyp == AT_DEVA) &&				// using a primary weapon attack
+				(aatyp == AT_WEAP || aatyp == AT_DEVA || aatyp == AT_JUGL) && // using a primary weapon attack
 				(magr->weapon_check == NEED_WEAPON || !MON_WEP(magr))	// needs a weapon
-				){
+			){
 				/* what ranged weapon options do we have? */
 				otmp = select_rwep(magr);
 
@@ -768,7 +769,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 			}
 
 			/* get correct weapon */
-			if (aatyp == AT_WEAP || aatyp == AT_DEVA) {
+			if (aatyp == AT_WEAP || aatyp == AT_DEVA || aatyp == AT_JUGL) {
 				/* mainhand */
 				otmp = (youagr) ? uwep : MON_WEP(magr);
 			}
@@ -821,8 +822,8 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 				/* print message for magr swinging weapon (m only in function) */
 				if (vis)
 					xswingsy(magr, mdef, otmp, ranged);
-				/* do{}while(); loop for AT_DEVA */
-				boolean devaloop = (aatyp == AT_DEVA);
+				/* do{}while(); loop for AT_DEVA and  AT_JUGL */
+				boolean attackloop = (aatyp == AT_DEVA) || (aatyp == AT_JUGL);
 				do {
 					bhitpos.x = tarx; bhitpos.y = tary;
 					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
@@ -1061,14 +1062,30 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 						result |= hit_with_rreject(&youmonst, otmp, tarx, tary, 0, attk);
 					}
 					/* AT_DEVA considerations -- either stop looping or decrease to-hit */
-					if (devaloop) {
+					if (aatyp == AT_DEVA) {
 						if (result == MM_MISS || result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
-							devaloop = FALSE;
+							attackloop = FALSE;
 						else
 							tohitmod -= 4;	/* reduce accuracy on repeated AT_DEVA attacks */
 					}
+					else if(aatyp == AT_JUGL){
+						if (result == MM_MISS || result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
+							attackloop = FALSE;
+						else {
+							otmp = get_mariwep(magr, pa, devai);
+							if(otmp){
+								setmnotwielded(magr, MON_WEP(magr));
+								/* wield the new object*/
+								magr->weapon_check = NEED_WEAPON;
+								setmwielded(magr, otmp, W_WEP);
+							}
+							else
+								attackloop = FALSE;
+						}
+						tohitmod -= 4;	/* reduce accuracy on repeated AT_JUGL attacks */
+					}
 					devai++;
-				} while (devaloop);
+				} while (attackloop);
 
 				if (!ranged)
 					dopassive_local = TRUE;
@@ -3389,7 +3406,7 @@ struct attack *attk;
 		case AT_OBIT:
 			pline("%s %s bites %s!",
 				(youagr ? "Your" : s_suffix(Monnam(magr))),
-				(attk->adtyp == AD_MAGM ? "skirt" : magr->mtyp == PM_MEDUSA ? "hair" : magr->mtyp == PM_MOON_S_CHOSEN ? "cranial wolfpack" : magr->mtyp == PM_HYGIEIAN_ARCHON ? "snake" : magr->mtyp == PM_ANCIENT_NAGA ? "canopy" : attk->adtyp == AD_DISE ? "centipede" : "snake head"),
+				(attk->adtyp == AD_MAGM ? "skirt" : magr->mtyp == PM_MEDUSA ? "hair" : magr->mtyp == PM_MOON_S_CHOSEN ? "cranial wolfpack" : magr->mtyp == PM_HYGIEIAN_ARCHON ? "snake" : magr->mtyp == PM_ROTTING_MONK ? "centipede" : magr->mtyp == PM_ANCIENT_NAGA ? "canopy" : attk->adtyp == AD_DISE ? "centipede" : "snake head"),
 				((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr))
 				);
 			break;
@@ -4933,6 +4950,7 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 		/* various weapon attacks */
 	case AT_WEAP:
 	case AT_DEVA:
+	case AT_JUGL:
 	case AT_XWEP:
 	case AT_MARI:
 	case AT_HODS:
@@ -5435,6 +5453,11 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		case AD_POSN:
 		case AD_DARK:
 		case AD_LUCK:
+		case AD_SONC:
+			if(attk->adtyp == AD_SONC && attk->aatyp == AT_HITS){
+				// don't split sonic blast attacks
+				break;
+			}
 			/* make a 0 damage physical attack 
 			 * This prints hitmsg and applies on-hit effects of any weapon
 			 */
@@ -6041,6 +6064,62 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		mdef->mgmld_skin += nspores;
 		/*Deals no damage*/
 		return MM_HIT;
+	case AD_SONC:
+		if(!youagr && magr->mcan){
+			if(vis && dohitmsg && originalattk->aatyp == AT_HITS)
+				pline("%s emits a weak chirp.", Monnam(magr));
+			return MM_MISS;
+		}
+		if(originalattk->aatyp == AT_HITS){
+			struct monst *cmdef;
+			int cent_x = x(magr);
+			int cent_y = y(magr);
+
+			extern const int clockwisex[8];
+			extern const int clockwisey[8];
+			int offset = rn2(8);
+			int ix, iy;
+
+			if(youagr)
+				pline("You emit a sonic blast!");
+			else
+				pline("%s emits a sonic blast!", Monnam(magr));
+			for(int i = 0; i < 8; i++){
+				ix = cent_x + clockwisex[(offset+i)%8];
+				iy = cent_y + clockwisey[(offset+i)%8];
+				if(!isok(ix, iy))
+					continue;
+				if(youagr && u.ustuck && u.uswallow)
+					cmdef = u.ustuck;
+				else
+					cmdef = m_u_at(ix, iy);
+				if(!cmdef || DEADMONSTER(cmdef))
+					continue;
+				
+				if(youagr)
+					pline("%s is caught in your blast!", Monnam(cmdef));
+				else if(cmdef == &youmonst)
+					pline("You are caught in the blast!");
+				else if(canseemon(cmdef))
+					pline("%s is caught in the blast!", Monnam(cmdef));
+				/*We'll say sonic damage is physical*/
+				dmg = reduce_dmg(cmdef,dmg,TRUE,FALSE);
+				if(dmg){
+					(void) destroy_items_sonic(cmdef, FALSE);
+					(void) xdamagey(magr, cmdef, attk, dmg);
+				}
+			}
+			return MM_HIT;
+		}
+		else {
+			/* print a basic hit message */
+			if (vis && dohitmsg) {
+				xyhitmsg(magr, mdef, originalattk);
+			}
+			(void) destroy_items_sonic(mdef, FALSE);
+			dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
+			return xdamagey(magr, mdef, attk, dmg);
+		}
 	case AD_POSN:
 		/* print a basic hit message */
 		if (vis && dohitmsg) {
@@ -9479,7 +9558,19 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 							);
 					}
 					else {
-						pline("%s swing%s %s around %s!",
+						if(pa->mtyp == PM_ROTTING_MONK){
+							pline("%s giant centipede swings itself around %s!",
+								(youagr ? "Your" : s_suffix(Monnam(mtmp))),
+								(youagr ? mon_nam(mtmp) : "you")
+								);
+						}
+						else if(pa->mtyp == PM_HYGIEIAN_ARCHON){
+							pline("%s snake swings itself around %s!",
+								(youagr ? "Your" : s_suffix(Monnam(mtmp))),
+								(youagr ? mon_nam(mtmp) : "you")
+								);
+						}
+						else pline("%s swing%s %s around %s!",
 							(youagr ? "You" : Monnam(mtmp)),
 							(youagr ? "" : "s"),
 							(youagr ? "yourself" : "itself"),
@@ -9575,10 +9666,22 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				/* Gentle squeeze. Restore 1d3 points of sanity. Just kidding. */
 				else {
 					dmg = 0;
-					pline("%s is %s.",
-						Monnam(mtmp),
-						(youagr ? "wrapped up in you" : "wrapped tight around you")
-						);
+					if(pa->mtyp == PM_ROTTING_MONK){
+						pline("%s %s.",
+							youagr ? Monnam(mtmp) : s_suffix(Monnam(mtmp)),
+							(youagr ? "is wrapped up in your centipede" : "centipede is wrapped tight around you")
+							);
+					}
+					else if(pa->mtyp == PM_HYGIEIAN_ARCHON){
+						pline("%s %s.",
+							youagr ? Monnam(mtmp) : s_suffix(Monnam(mtmp)),
+							(youagr ? "is wrapped up in your snake" : "snake is wrapped tight around you")
+							);
+					}
+					else pline("%s is %s.",
+							Monnam(mtmp),
+							(youagr ? "wrapped up in you" : "wrapped tight around you")
+							);
 				}
 			}
 			/* nothing really happens */
@@ -18901,6 +19004,9 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 		if(has_template(magr, ZOMBIFIED) || has_template(magr, SKELIFIED)){
 			IMPURITY_UP(u.uimp_bodies)
 		}
+		if(magr->mtyp == PM_ROTTING_MONK){
+			IMPURITY_UP(u.uimp_rot_monk)
+		}
 		if(magr->mtyp == PM_DEEP_ONE
 		|| magr->mtyp == PM_DEEPER_ONE
 		|| (rn2(2) && magr->mtyp == PM_DEEPEST_ONE)
@@ -22377,7 +22483,7 @@ move_name(int moveid)
 		case DIVE_KICK: return "Dive kick";
 		case AURA_BOLT: return (Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? (uwep->oartifact == ART_SKY_RENDER ? "Dragon flash" : "Aura slash") : "Aura bolt";
 		case BIRD_KICK: return "Bird kick";
-		case STRONG_P: return "Roundhouse punch";
+		case STRONG_P: return uwep ? "Roundhouse strike" : "Roundhouse punch";
 		case METODRIVE: return "Meteor drive";
 		case PUMMEL: return uwep ? "Flurry" : "Pummel";
 		case AVALANCHE: return "Avalanche";
@@ -23106,7 +23212,7 @@ perform_monk_move(int moveID, int *move_cost)
 			if((mdef = adjacent_move_target(!!uarmg))){
 				pline("%s!", move_name(moveID));
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_SHOVE|ATTKFLAG_DOUBLE_DAMAGE);
+				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_DOUBLE_DAMAGE);
 				return TRUE;
 			}
 		break;
@@ -23545,6 +23651,8 @@ bent_move()
 {
 	if(Role_if(PM_KENSEI)){
 		if(uwep && is_kensei_weapon(uwep)){
+			if(is_lightsaber(uwep) && !litsaber(uwep))
+				return DRAIN_L;
 			if(u.role_variant == ART_SKY_REFLECTED){
 				if(Insight > 10){
 					if(is_streaming_merc(uwep))
@@ -23579,6 +23687,8 @@ hook_move()
 {
 	if(Role_if(PM_KENSEI)){
 		if(!(uwep && is_kensei_weapon(uwep)))
+			return STRONG_P;
+		if(is_lightsaber(uwep) && !litsaber(uwep))
 			return STRONG_P;
 		if(uwep->oartifact == ART_ANSERMEE)
 			return SONIC_B;

@@ -1150,6 +1150,7 @@ int template;
 			attk->aatyp == AT_TNKR ||
 			attk->aatyp == AT_BEAM ||
 			attk->aatyp == AT_DEVA ||
+			attk->aatyp == AT_JUGL ||
 			attk->aatyp == AT_5SQR ||
 			attk->aatyp == AT_5SBT ||
 			attk->aatyp == AT_WDGZ ||
@@ -1221,7 +1222,7 @@ int template;
 
 		/* some templates alter attacks */
 		if (template == CONSTELLATION){
-			if(attk->aatyp == AT_SRPR || attk->aatyp == AT_WEAP){
+			if(attk->aatyp == AT_SRPR || attk->aatyp == AT_WEAP || attk->aatyp == AT_JUGL){
 				attk->aatyp = AT_SRPR;
 				attk->adtyp = AD_STAR;
 				attk->damn = 4;
@@ -1267,6 +1268,7 @@ int template;
 			(
 			attk->aatyp == AT_HODS ||
 			attk->aatyp == AT_DEVA ||
+			attk->aatyp == AT_JUGL ||
 			attk->aatyp == AT_SRPR ||
 			attk->aatyp == AT_XSPR ||
 			attk->aatyp == AT_MSPR ||
@@ -2001,7 +2003,7 @@ int level_bonus;
 			horrorattacks++;
 
 			/* possibly make more identical attacks */
-			while (!rn2(3) && horrorattacks<6 && attkptr->aatyp != AT_DEVA && attkptr->aatyp != AT_DSPR) {
+			while (!rn2(3) && horrorattacks<6 && attkptr->aatyp != AT_DEVA && attkptr->aatyp != AT_JUGL && attkptr->aatyp != AT_DSPR) {
 				attkptr = &horror->mattk[horrorattacks];
 				*attkptr = *(attkptr - 1);
 
@@ -2485,7 +2487,7 @@ boolean
 cantwield(mon)
 struct monst *mon;
 {
-	if(mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_DEVA))
+	if(mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_DEVA) || mon_attacktype(mon, AT_JUGL))
 		return FALSE;
 
     return TRUE;
@@ -2501,7 +2503,7 @@ struct permonst *ptr;
 		return FALSE;
 	
     for (a = &ptr->mattk[0]; a < &ptr->mattk[NATTK]; a++){
-		if (a->aatyp == AT_WEAP || a->aatyp == AT_DEVA || a->polywep) 
+		if (a->aatyp == AT_WEAP || a->aatyp == AT_DEVA || a->aatyp == AT_JUGL || a->polywep) 
 			return FALSE;
 	}
 	

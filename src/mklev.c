@@ -1081,6 +1081,12 @@ makelevel()
 				Sprintf(fillname, "%s-locg", urole.filecode);
 			else if(u.role_variant == ART_WINTER_REAPER)
 				Sprintf(fillname, "%s-loch", urole.filecode);
+			else if(u.role_variant == ART_BOREAL_SCEPTER)
+				Sprintf(fillname, "%s-loci", urole.filecode);
+			else if(u.role_variant == ART_MALICE)
+				Sprintf(fillname, "%s-locj", urole.filecode);
+			else if(u.role_variant == ART_KIKU_ICHIMONJI)
+				Sprintf(fillname, "%s-lock", urole.filecode);
 			else 
 				Sprintf(fillname, "%s-loca", urole.filecode);
 			makemaz(fillname);

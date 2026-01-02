@@ -792,7 +792,7 @@ mpoisons_subj(mtmp, mattk)
 struct monst *mtmp;
 struct attack *mattk;
 {
-	if (mattk->aatyp == AT_WEAP || mattk->aatyp == AT_XWEP || mattk->aatyp == AT_DEVA || mattk->aatyp == AT_MARI) {
+	if (mattk->aatyp == AT_WEAP || mattk->aatyp == AT_XWEP || mattk->aatyp == AT_DEVA || mattk->aatyp == AT_JUGL || mattk->aatyp == AT_MARI) {
 		struct obj *mwep = (mtmp == &youmonst) ? uwep : MON_WEP(mtmp);
 		/* "Foo's attack was poisoned." is pretty lame, but at least
 		it's better than "sting" when not a stinging attack... */
@@ -1073,6 +1073,7 @@ int aatyp;
 	case AT_XWEP:
 	case AT_MARI:
 	case AT_DEVA:
+	case AT_JUGL:
 		w_mask = W_ARMG;	/* caller needs to check for weapon */
 		break;
 	case AT_KICK:
@@ -1141,6 +1142,7 @@ int aatyp;
 		break;
 	case AT_HODS:
 	case AT_DEVA:
+	case AT_JUGL:
 	case AT_REND:
 	case AT_WEAP:
 	case AT_XWEP:
@@ -3592,6 +3594,7 @@ struct attack * attk;
 	 && attk->aatyp != AT_DSPR
 	 && attk->aatyp != AT_ESPR
 	 && attk->aatyp != AT_DEVA
+	 && attk->aatyp != AT_JUGL
 	 && attk->aatyp != AT_5SQR
 	 && attk->aatyp != AT_VINE
 	 && attk->aatyp != AT_TAIL
