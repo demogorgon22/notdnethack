@@ -918,6 +918,10 @@ int
 inhishop(mtmp)
 register struct monst *mtmp;
 {
+	if(!HAS_ESHK(mtmp)) {
+		impossible("inhishop: mon %s has no ESHK struct?", mon_nam(mtmp));
+		return(FALSE);
+	}
 	return(index(in_rooms(mtmp->mx, mtmp->my, SHOPBASE),
 		     ESHK(mtmp)->shoproom) &&
 		on_level(&(ESHK(mtmp)->shoplevel), &u.uz));
