@@ -14271,8 +14271,6 @@ int faction;
 			//That failed, return to the default way of handling things
 			ptr = (struct permonst *)0;
 			x = y = 0;
-		} else if(is_mplayer(ptr) && !(mmflags & MM_EDOG)){
-			return mk_mplayer(ptr, x, y, NO_MM_FLAGS);
 		}
 	}
 	
@@ -14293,9 +14291,6 @@ int faction;
 			);
 		if(tryct >= 400){
 			return((struct monst *)0);
-		}
-		if(ptr && is_mplayer(ptr) && !(mmflags & MM_EDOG)){
-			return mk_mplayer(ptr, x, y, NO_MM_FLAGS);
 		}
 	} else if (byyou && !in_mklev) {
 		coord bypos;
@@ -14391,7 +14386,17 @@ int faction;
 	/* determine faction -- since this does not affect ptr (and therefore location),
 	 * it can just be done at the very end */
 	out_faction = makemon_get_permonst_faction(ptr, x, y, out_template, faction);
-
+	static char in_makemon_full = FALSE;
+	if(ptr && is_mplayer(ptr) && !(mmflags & MM_EDOG) && !in_makemon_full){
+		in_makemon_full = TRUE;
+		struct monst *mtmp = mk_mplayer(ptr, x, y, mmflags);
+		in_makemon_full = FALSE;
+		if(mtmp){
+			set_faction(mtmp, out_faction);
+			set_template(mtmp, out_template);
+			return mtmp;
+		}
+	}
 	return makemon_core(ptr, x, y, mmflags, out_template, out_faction);
 }
 
