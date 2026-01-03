@@ -3501,7 +3501,7 @@ u_init()
 				HAntimagic |= (FROMRACE|FROMOUTSIDE);
 				break;
 			case AD_COLD:
-				HAntimagic |= (FROMRACE|FROMOUTSIDE);
+				HCold_resistance |= (FROMRACE|FROMOUTSIDE);
 				break;
 			case AD_FIRE:
 				HFire_resistance |= (FROMRACE|FROMOUTSIDE);
