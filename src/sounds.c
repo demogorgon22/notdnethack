@@ -6932,7 +6932,7 @@ struct monst *nurse;
 		if (*inbuf == '\033') count = 1;
 		else count = atoi(inbuf);
 		if(count == 0){
-			pline("Never mind.");
+			pline1(Never_mind);
 			return FALSE;
 		}
 		if(count < 0)
@@ -7342,7 +7342,7 @@ struct monst *dollmaker;
 		if (*inbuf == '\033') count = 1;
 		else count = atoi(inbuf);
 		if(count == 0){
-			pline("Never mind.");
+			pline1(Never_mind);
 			return FALSE;
 		}
 		if(count < 0)

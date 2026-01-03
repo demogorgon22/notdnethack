@@ -858,7 +858,7 @@ domountattk()
 	}
 	
 	if(!getdir("Attack in what direction?")){
-		pline("never mind");
+		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
 	
