@@ -13342,7 +13342,7 @@ arti_invoke(obj)
 			const char all_classes[] = { ALL_CLASSES, 0 };
 			struct obj *otmp  = getobj(all_classes, "offer to the blade");
 			if (!otmp){
-				pline("Never mind.");
+				pline1(Never_mind);
 				break;
 			}
 			if (otmp->owornmask & (W_ARMOR | W_ACCESSORY)){

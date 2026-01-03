@@ -6180,7 +6180,7 @@ doorganize(void) /* inventory organizer by Del Lamb */
 		Sprintf(qbuf, "Adjust letter to what [%s]?", buf);
 		let = yn_function(qbuf, (char *)0, '\0');
 		if (index(quitchars, let)) {
-			pline("%s", Never_mind);
+			pline1(Never_mind);
 			goto cleansplit;
 		}
 		if (let == '@' || !letter(let)) {

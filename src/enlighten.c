@@ -387,7 +387,7 @@ minimal_enlightenment()
 	}
 
 	//Role-specific info goes here (currently just undead-hunter research.
-	if (Role_if(PM_UNDEAD_HUNTER)) {
+	if (Role_if(PM_UNDEAD_HUNTER) || active_glyph(DEFILEMENT) || active_glyph(LUMEN) || active_glyph(ROTTEN_EYES)) {
 		Sprintf(buf, "Research progress.");
 		any.a_int = DOATTRIB_UH_RESEARCH;
 		add_menu(tmpwin, NO_GLYPH, &any,
