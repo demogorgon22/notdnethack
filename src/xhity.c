@@ -14460,6 +14460,59 @@ int vis;
 	return result;
 }
 
+void
+apply_lightsaber_crystal_effects(struct monst *magr, struct monst *mdef, struct obj *crystal, struct obj *weapon, int basedmg, int *plusdmgptr, int *truedmgptr)
+{
+	struct weapon_dice wdice;
+	/* grab the weapon dice from dmgval_core */
+	dmgval_core(&wdice, bigmonst(mdef->data), weapon, weapon->otyp, magr);
+	if(check_oprop(crystal, OPROP_FIREW)){
+		if (resists_fire(mdef)) {
+			*truedmgptr += 0;
+		} else if(cold_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_COLDW)){
+		if (resists_cold(mdef)) {
+			*truedmgptr += 0;
+		} else if(fire_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_ELECW)){
+		if (resists_elec(mdef)) {
+			*truedmgptr += 0;
+		} else if(shock_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_ACIDW)){
+		if (resists_acid(mdef)) {
+			*truedmgptr += 0;
+		} else if(acid_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_MAGCW)){
+		if (resists_magm(mdef)) {
+			*truedmgptr += 0;
+		} else if(magm_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+}
+
 int
 apply_hit_effects(magr, mdef, otmp, msgr, basedmg, plusdmgptr, truedmgptr, dieroll, hittxt, printmessages, direct_weapon)
 struct monst * magr;
@@ -17184,6 +17237,22 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					u.uconduct.weaphit--;
 				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_STOP)))
 					return returnvalue;
+				if (is_lightsaber(otmp) && litsaber(otmp) && otmp->cobj
+					&& !(otmp->cobj->oartifact && otmp->cobj->oartifact == otmp->oartifact)
+				) {
+					if (otmp->cobj->otyp == CRYSTAL){
+						apply_lightsaber_crystal_effects(magr, mdef, otmp->cobj, weapon, basedmg, &artidmg, &elemdmg);
+					}
+					else {
+						returnvalue = apply_hit_effects(magr, mdef, otmp->cobj, weapon, basedmg, &artidmg, &elemdmg, dieroll, &hittxt, FALSE, FALSE);
+						if (returnvalue == MM_MISS && youagr && (melee || thrust))
+							u.uconduct.weaphit--;
+						if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_STOP)))
+							return returnvalue;
+						if (otmp->cobj->oartifact)
+							artif_hit = TRUE;
+					}
+				}
 				if (otmp->oartifact)
 					artif_hit = TRUE;
 			}

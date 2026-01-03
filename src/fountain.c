@@ -702,7 +702,12 @@ smithing_object(struct obj *obj)
 	int selection;
 	boolean upgradeable = obj->oclass == WEAPON_CLASS || is_weptool(obj) || obj->oclass == ARMOR_CLASS || obj->otyp == KIDNEY_BELT || (obj->oclass == RING_CLASS && is_chargeable(obj));
 	boolean opropable = (obj->oclass == WEAPON_CLASS || is_weptool(obj) || obj->otyp == NIGHTMARE_S_BULLET_MOLD) && !is_ammo(obj);
-	boolean upgrade_gem_required; 
+	boolean upgrade_gem_required;
+
+	if(is_lasersword_otyp(obj->otyp)){
+		pline("This device seems pretty indestructible; and, though clearly magical in nature, it is far too advanced for you to improve.");
+		return;
+	}
 
 	while(TRUE){
 		tmpwin = create_nhwindow(NHW_MENU);

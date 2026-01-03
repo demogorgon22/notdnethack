@@ -1026,6 +1026,7 @@ struct obj {
 #define valid_focus_gem(otmp) ((otmp)->oclass == GEM_CLASS && ((otmp)->otyp < LUCKSTONE \
 								|| (otmp)->otyp == CHUNK_OF_FOSSIL_DARK \
 								|| (otmp)->otyp == CATAPSI_VORTEX \
+								|| ((otmp)->otyp == CRYSTAL && (otmp)->obj_material == GEMSTONE) \
 								|| (otmp)->otyp == ANTIMAGIC_RIFT))
 #define is_vibroweapon(otmp) (force_weapon(otmp) || \
 							  is_vibrosword(otmp) || \

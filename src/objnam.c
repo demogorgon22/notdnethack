@@ -102,9 +102,11 @@ NEARDATA struct colorTextClr LightsaberColor[] = {
 	{"",CLR_RED},						/*spiritual soulstone*/
 	{"",CLR_RED},						/*mithril*/
 	{"black",CLR_BLACK},				/*fossil dark*/
-	{"",CLR_WHITE},						/*salt*/
+	{"flat white",CLR_WHITE},			/*salt*/
 	{"",CLR_RED},						/*silver slingstone*/
 	{"",CLR_RED},						/*rock*/
+	{"",CLR_RED},						/*ingot*/
+	{"",CLR_RED},						/*misc crystal*/
 	{"coruscating black",CLR_BLACK},	/*antimagic rift*/
 	{"coruscating tornado",CLR_GRAY}	/*catapsi vortex*/
 };
@@ -319,13 +321,19 @@ struct obj *otmp;
 		return "lightning bladed";
 	}
 	if(gem){
+		int gemtype = gem->otyp;
+		if(gemtype == CRYSTAL)
+			gemtype = gem->sub_material;
+		int offset = gemtype - MAGICITE_CRYSTAL;
+		if(offset < 0 || offset >= SIZE(LightsaberColor))
+			return "BSoD-blue";
 		switch(gem->oartifact){
 			case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
 			case ART_FLUORITE_OCTAHEDRON: return Hallucination ? hcolor(0) : "burning cobalt";
 			case ART_HEART_OF_AHRIMAN: return Hallucination ? hcolor(0) : "pulsing and shimmering ruby";
 			case ART_GLITTERSTONE: return Hallucination ? hcolor(0) : "glittering gold";
 			
-			default: return Hallucination ? hcolor(0) : LightsaberColor[((int)gem->otyp) - MAGICITE_CRYSTAL].colorText;
+			default: return Hallucination ? hcolor(0) : LightsaberColor[offset].colorText;
 		}
 	}
 	return "404";
@@ -335,6 +343,15 @@ int
 lightsaber_colorCLR(otmp)
 struct obj *otmp;
 {
+	int offset = 0;
+	if(otmp->cobj){
+		int gemtype = otmp->cobj->otyp;
+		if(gemtype == CRYSTAL)
+			gemtype = otmp->cobj->sub_material;
+		offset = gemtype - MAGICITE_CRYSTAL;
+		if(offset < 0 || offset >= SIZE(LightsaberColor))
+			return CLR_BLUE;
+	}
 	if(otmp->oartifact) switch(otmp->oartifact){
 		case ART_ANNULUS: return CLR_BLUE;
 		case ART_INFINITY_S_MIRRORED_ARC:
@@ -365,11 +382,11 @@ struct obj *otmp;
 		case ART_HEART_OF_AHRIMAN: return rn2(3) ? CLR_RED : CLR_YELLOW;
 		case ART_GLITTERSTONE: return rn2(3) ? CLR_YELLOW : CLR_WHITE;
 		
-		default: return otmp->cobj ? LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorClr : otmp->obj_color;
+		default: return otmp->cobj ? LightsaberColor[offset].colorClr : otmp->obj_color;
 	}
 	if(otmp->otyp == KAMEREL_VAJRA)
 		return CLR_WHITE;
-	return otmp->cobj ? LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorClr : otmp->obj_color;
+	return otmp->cobj ? LightsaberColor[offset].colorClr : otmp->obj_color;
 }
 
 char *
@@ -1194,6 +1211,10 @@ boolean dofull;
 			Strcat(buf, "Unholy ");
 		if (obj->oartifact == ART_AVENGER && obj->blessed && !undiscovered_artifact(obj->oartifact))
 			Strcat(buf, "Holy ");
+	}
+	/* Recurse for lightsaber gem */
+	if(is_lightsaber(obj) && litsaber(obj) && obj->cobj){
+		add_properties_words(obj->cobj, buf, dofull);
 	}
 }
 
