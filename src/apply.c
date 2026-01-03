@@ -3038,7 +3038,7 @@ transfusion(struct obj *obj)
 	}
 	Sprintf(qbuf, "Transfuse yourself with %s?", the(xname(obj)));
 	if(yn(qbuf) != 'y'){
-		pline("Never mind");
+		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
 	IMPURITY_UP(u.uimp_blood)
@@ -3124,7 +3124,7 @@ bloodclone(struct obj *obj)
 	}
 	Sprintf(qbuf, "Create a blood clone with %s?", the(xname(obj)));
 	if(yn(qbuf) != 'y'){
-		pline("Never mind");
+		pline1(Never_mind);
 		// obj->use
 		return MOVE_CANCELLED;
 	}
@@ -3834,7 +3834,7 @@ blood_draw(struct obj *obj)
 		// if(n == 3) continue
 	}
 	else if(yn("Draw your own blood?") != 'y'){
-		pline("Never mind");
+		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
 	if(*hp(&youmonst) <= (*hpmax(&youmonst))/2){
@@ -4879,6 +4879,7 @@ use_dissection_kit(struct obj *obj)
 		// pline("That's too insubstantial to dissect.");
 		// return;
 	// }
+	splitobj(otmp, otmp->quan - 1L);
 	consume_obj_charge(obj, TRUE);
 
 	//San check
@@ -10690,7 +10691,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_HELM:
 			upitm = getobj(imperial_repairs, "repair the helm with");
 			if(!upitm || !helm_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10737,7 +10738,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_GAUNTLETS:
 			upitm = getobj(imperial_repairs, "repair the gauntlets with");
 			if(!upitm || !gauntlets_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10777,7 +10778,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_ARMOR:
 			upitm = getobj(imperial_repairs, "repair the armor with");
 			if(!upitm || !armor_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10840,7 +10841,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_BOOTS:
 			upitm = getobj(imperial_repairs, "repair the boots with");
 			if(!upitm || !boots_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10905,7 +10906,7 @@ struct obj **optr;
 				case WOOD_STOVE:
 					comp = getobj(tools, "upgrade your stove with");
 					if(!comp || comp->otyp != TINNING_KIT){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("use the components in the upgrade kit and the tinning kit to install a wood-burning stove.");
@@ -10925,7 +10926,7 @@ struct obj **optr;
 				case EFFICIENT_SWITCH:
 					comp = getobj(tools, "upgrade your switch with");
 					if(!comp || comp->otyp != CROSSBOW){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("use the components in the upgrade kit and the crossbow to upgrade the switch on your clock.");
@@ -10940,7 +10941,7 @@ struct obj **optr;
 					if(!comp ||
 						!((comp->otyp == ARCHAIC_PLATE_MAIL || comp->otyp == PLATE_MAIL) &&
 						(comp->obj_material == COPPER))){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("use the components in the upgrade kit to reinforce your armor with bronze plates.");
@@ -10953,7 +10954,7 @@ struct obj **optr;
 				case PHASE_ENGINE:
 					comp = getobj(all_classes, "build a phase engine with");
 					if(!comp || comp->otyp != SUBETHAIC_COMPONENT){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the subethaic component and build a phase engine.");
@@ -10966,7 +10967,7 @@ struct obj **optr;
 				case MAGIC_FURNACE:
 					comp = getobj(tools, "build a magic furnace with");
 					if(!comp || comp->otyp != WAN_DRAINING){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the wand and build a magic furnace.");
@@ -10979,7 +10980,7 @@ struct obj **optr;
 				case HELLFIRE_FURNACE:
 					comp = getobj(all_classes, "build a hellfire furnace with");
 					if(!comp || comp->otyp != HELLFIRE_COMPONENT){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the hellfire component and build a hellfire furnace.");
@@ -10992,7 +10993,7 @@ struct obj **optr;
 				case SCRAP_MAW:
 					comp = getobj(tools, "build a scrap maw with");
 					if(!comp || comp->otyp != SCRAP){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the scrap and build a scrap maw.");
@@ -11004,11 +11005,6 @@ struct obj **optr;
 				break;
 				case HIGH_TENSION:
 					// Maybe one day a spring pistol or something
-					// comp = getobj(tools, "build a scrap maw with");
-					// if(!comp || comp->otyp != SCRAP){
-						// pline("Never mind.");
-						// return MOVE_CANCELLED;
-					// }
 					You("use the components in the upgrade kit to increase the maximum tension in your mainspring.");
 					u.uhungermax += DEFAULT_HMAX; // 2000 per, capped at 9 kits for 20,000 max
 					if(u.uhungermax >= DEFAULT_HMAX*10) u.clockworkUpgrades |= upgrade;

@@ -795,7 +795,7 @@ register struct monst *priest;
 			Strcpy(class_list, tools);
 			key = getobj(class_list, "wind with");
 			if (!key){
-				pline(Never_mind);
+				pline1(Never_mind);
 				return;
 			}
 			start_clockwinding(key, priest, 10);
