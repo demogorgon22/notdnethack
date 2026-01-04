@@ -1952,6 +1952,7 @@ E boolean FDECL(can_equip, (struct monst *, struct obj *));
 E void FDECL(phantom_scorpions_sting, (struct monst *));
 E void FDECL(rot_caterpillars_bite, (struct monst *));
 E void FDECL(orc_mud_stabs, (struct monst *));
+E void FDECL(adjust_etrait_stance, (struct monst *));
 
 /* ### monst.c ### */
 
@@ -3425,6 +3426,7 @@ E const char * FDECL(P_NAME, (int));
 E int NDECL(aeshbon);
 E boolean FDECL(ok_mariwep, (struct obj *, struct monst *, struct permonst *, boolean));
 E struct obj * FDECL(get_mariwep, (struct monst *, struct permonst *, int));
+E unsigned long FDECL(process_etraits, (unsigned long, int, struct obj *, struct monst *, struct permonst *));
 E boolean FDECL(check_etrait, (struct obj *, struct monst *, unsigned long));
 
 /* ### were.c ### */

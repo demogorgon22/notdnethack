@@ -2246,6 +2246,11 @@ register struct monst *mtmp;
 			}
 			return 0; /* that was our move for the round */
 		}
+		// Possibly adjust stance
+		if(MON_WEP(mtmp) && !mtmp->mconf && !mtmp->mberserk && m_martial_skill(mtmp->data) == P_EXPERT){
+			adjust_etrait_stance(mtmp);
+		}
+
 	}
 
 /*	Now the actual movement phase	*/

@@ -1297,6 +1297,11 @@ register int after;	/* this is extra fast monster movement */
 		}
 	}
 
+	// Possibly adjust stance
+	if(MON_WEP(mtmp) && !mtmp->mconf && !mtmp->mberserk && m_martial_skill(mtmp->data) == P_EXPERT && !mtarget_adjacent(mtmp)){
+		adjust_etrait_stance(mtmp);
+	}
+
 	if (!nohands(mtmp->data) && !verysmall(mtmp->data)) {
 		allowflags |= OPENDOOR;
 		if (m_carrying(mtmp, SKELETON_KEY)||m_carrying(mtmp, UNIVERSAL_KEY)) allowflags |= UNLOCKDOOR;

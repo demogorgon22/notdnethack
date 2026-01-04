@@ -10711,6 +10711,63 @@ orc_mud_stabs(struct monst *mdef)
 	}
 }
 
+void
+adjust_etrait_stance(struct monst *mon)
+{
+	struct obj *weap = MON_WEP(mon);
+	if(weap->o_e_trait && rn2(100))
+		return; //Don't change too often
+	int otyp = weap->otyp;
+	unsigned long traits = process_etraits(weap->expert_traits, otyp, weap, mon, mon->data);
+	if(weap->oartifact == ART_AMALGAMATED_SKIES)
+		traits = process_etraits(traits|artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits, artinstance[ART_SKY_REFLECTED].ZerthOtyp, weap, mon, mon->data);
+	//Only care about fighting forms
+	traits &= FFORM_ETRAITS;
+	if(traits == weap->o_e_trait)
+		return; //No change
+	//count raised bits
+	int n = __builtin_popcountl(traits); 
+	n = rnd(n);
+	unsigned long newtrait = 0;
+	for(int i = 0; i < sizeof(unsigned long)*8; i++){
+		if(traits & (0x1<<i)){
+			n--;
+			if(n == 0){
+				newtrait = (0x1<<i);
+				break;
+			}
+		}
+	}
+	if(newtrait == weap->o_e_trait)
+		return; //No change
+	weap->o_e_trait = newtrait;
+	const char *traitname;
+	switch(newtrait){
+		case ETRAIT_HEW:
+			traitname = "hewing";
+		break;
+		case ETRAIT_FELL:
+			traitname = "sweaping";
+		break;
+		case ETRAIT_KNOCK_BACK:
+			traitname = "high-impact";
+		break;
+		case ETRAIT_FOCUS_FIRE:
+			traitname = "opportunistic";
+		break;
+		case ETRAIT_STUNNING_STRIKE:
+			traitname = "crushing";
+		break;
+		default:
+			traitname = "new";
+		break;
+	}
+		 
+	if(canseemon(mon)){
+		pline("%s adopts %s fighting style.", Monnam(mon), an(traitname));
+	}
+}
+
 #endif /* OVLB */
 
 /*mon.c*/
