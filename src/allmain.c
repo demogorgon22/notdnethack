@@ -4346,8 +4346,24 @@ boolean new_game;	/* false => restoring an old game */
 		else if(Role_if(PM_MADMAN)){
 			You("have psychic powers. Type #ability or press Shift-B to access your powers!");
 		}
+		else if(Role_if(PM_MONK)){
+			You("can trigger special moves by moving or attacking!");
+			pline("Use #style to view and disable/re-enable your special moves.");
+		}
+		else if(Role_if(PM_KENSEI)){
+			if(Race_if(PM_GITHZERAI) && !art_already_exists(ART_SKY_REFLECTED)){
+				pline("Be on the lookout for a metal weapon to christen 'the Sky Reflected'");
+				pline("(For the most straightforward experience, pick your starting weapon).");
+			}
+			You("can trigger special moves by moving or attacking!");
+			pline("Use #style to view and disable/re-enable your special moves.");
+			pline("Also use #style to use your specialized weapon styles.");
+		}
+		else if(Role_if(PM_KNIGHT)){
+			pline("Use #style to use your specialized sword-and-shield styles.");
+		}
 		if(Race_if(PM_DROW)){
-			if(!(Role_if(PM_HEALER) || Role_if(PM_EXILE)))
+			if(!(Role_if(PM_HEALER) || Role_if(PM_EXILE) || Role_if(PM_KENSEI)))
 				pline("Beware, droven armor evaporates in light!");
 			pline("Use #monster to create a patch of darkness.");
 		}
@@ -4363,10 +4379,6 @@ boolean new_game;	/* false => restoring an old game */
 		}
 		if(Race_if(PM_INCANTIFIER)){
 			pline("Incantifiers eat magic, not food, and do not heal naturally.");
-		}
-		if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && !art_already_exists(ART_SKY_REFLECTED)){
-			pline("Be on the lookout for a metal weapon to christen 'the Sky Reflected'");
-			pline("(For the most straightforward experience, pick your starting weapon).");
 		}
 	}
 }
