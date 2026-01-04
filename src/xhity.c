@@ -55,7 +55,7 @@ silverman_exhultation(int encouragement)
 		if(m->mtyp == PM_SILVERMAN)
 			m->encouraged = max(m->encouraged, encouragement);
 	}
-	if(youracedata->mtyp == PM_SILVERMAN){
+	if(youracedata->mtyp == PM_SILVERMAN || check_rot(ROT_EXHULT)){
 		pline("Something within you exults!");
 		if(encouragement > 8)
 			verbalize("Rot for the scarlet goddess!");
@@ -831,7 +831,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 					result = xmeleehity(magr, mdef, attk, &otmp, vis, tohitmod, ranged, 0);
 					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
 						otmp->otyp = otmp->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
-					if (pa->mtyp == PM_SILVERKNIGHT && result&MM_HIT){
+					if ((pa->mtyp == PM_SILVERKNIGHT || (youagr && check_rot(ROT_WINGSWORD))) && result&MM_HIT){
 						if(youagr){
 							if(u.uencouraged < 10)
 								u.uencouraged++;
@@ -1529,6 +1529,10 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		}
 		if(DEADMONSTER(mdef))
 			allres |= MM_DEF_DIED;
+	}
+	/* PC's Rot Cricket's sonic attack */
+	if(youagr && check_rot(ROT_CRICKET) && !rn2(4)){
+		doliving_cricket(&youmonst);
 	}
 	/* make per-round counterattacks -- note that these cannot use otmp or attk, as those are per-attack */
 	if (dopassive)

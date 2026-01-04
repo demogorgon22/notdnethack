@@ -908,9 +908,13 @@ struct you {
 #define ROT_CENT			   0x00000040L
 #define ROT_STING			   0x00000080L
 #define ROT_SPORES			   0x00000100L
-#define ROT_SHUB			   0x00000100L
+#define ROT_SHUB			   0x00000200L
+#define ROT_EXHULT			   0x00000400L
+#define ROT_WINGSWORD		   0x00000800L
+#define ROT_CRICKET			   0x00001000L
+#define ROT_FORAGE			   0x00002000L
 #define ROT_MIN				   ROT_VOMIT
-#define ROT_MAX				   ROT_SHUB
+#define ROT_MAX				   ROT_FORAGE
 #define ROT_COUNT			   ((u.ublood_smithing && !check_vampire(VAMPIRE_SHUB) && u.shubbie_atten) ? 10 : 9)
 #define check_rot(upgrade)	(u.urot_upgrades&(upgrade))
 #define add_rot(upgrade)	(u.urot_upgrades|=(upgrade))

@@ -6769,11 +6769,15 @@ xkilled(mtmp, dest)
 					&& !(has_template(mtmp, CORDYCEPS))
 					&& !(is_auton(mtmp->data))
 		) {
+			int n = 1;
+			if(check_rot(ROT_FORAGE) && !rn2(out_of)) n += 1;
 			/*Death Drop*/
-			otmp = mk_death_drop_obj(mtmp);
-			if(otmp){
-				place_object(otmp, x, y);
-				redisp = TRUE;
+			for(; n > 0; n--){
+				otmp = mk_death_drop_obj(mtmp);
+				if(otmp){
+					place_object(otmp, x, y);
+					redisp = TRUE;
+				}
 			}
 		}
 		/* Whether or not it always makes a corpse is, in theory,

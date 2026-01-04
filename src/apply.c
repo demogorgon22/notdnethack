@@ -8146,6 +8146,45 @@ use_chrysalis(struct obj *obj)
 			accident_n = any.a_int;
 	}
 
+	ch++;
+	any.a_int = 11;
+	if(!check_rot(ROT_EXHULT)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Exhultation of Rot", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 12;
+	if(!check_rot(ROT_WINGSWORD)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Wings of ruin", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 13;
+	if(!check_rot(ROT_CRICKET)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Chorus of destruction", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 14;
+	if(check_rot(ROT_KIN) && !check_rot(ROT_FORAGE)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Gifts of the forager brood", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
 	if(!n){
 		destroy_nhwindow(tmpwin);
 		return MOVE_CANCELLED;
@@ -8214,6 +8253,25 @@ use_chrysalis(struct obj *obj)
 			u.ugifts -= (u.udroolgifted - 1);
 			u.ucultsval -= SHUB_DROOL_TIER*(u.udroolgifted - 1);
 		}
+	}
+	if(n == 11){
+		add_rot(ROT_EXHULT);
+		pline("You feel something stir in your breast.");
+	}
+	if(n == 12){
+		add_rot(ROT_WINGSWORD);
+		if(!Blind)
+			pline("Insect wings sprout from the %s of your sword %s!", !strcmpi(body_part(BODY_SKIN), "skin") ? "flesh" : body_part(BODY_SKIN), body_part(ARM));
+		else
+			Your("sword arm tickles.");
+	}
+	if(n == 13){
+		add_rot(ROT_CRICKET);
+		pline("Cricket wings tear free from the %s of your %s and %s!", !strcmpi(body_part(BODY_SKIN), "skin") ? "flesh" : body_part(BODY_SKIN), makeplural(body_part(ARM)), makeplural(body_part(LEG)));
+	}
+	if(n == 14){
+		add_rot(ROT_FORAGE);
+		pline("...the bugs on the %s are bowing to you in humble greeting.", surface(u.ux, u.uy));
 	}
 	// u.udefilement_research += rn2(defile_score());
 	u.mental_scores_down++;

@@ -6148,6 +6148,36 @@ boolean invoked;
 }
 
 void
+doliving_cricket(struct monst *magr)
+{
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	int i, j;
+	struct monst *mdef;
+	struct attack symbiote = { AT_HITS, AD_SONC, mlev(magr)/10+1, 4};
+	for(i = x(magr)-1; i <= x(magr)+1; i++)
+		for(j = y(magr)-1; j <= y(magr)+1; j++){
+			if(!isok(i,j))
+				continue;
+			if(i == x(magr) && j == y(magr))
+				continue;
+			mdef = m_u_at(i,j);
+			youdef = (mdef == &youmonst);
+			if(!mdef || DEADMONSTER(mdef))
+				continue;
+			if(youagr && mdef->mpeaceful)
+				continue;
+			if(!youagr && ((youdef && magr->mpeaceful) || (mdef->mpeaceful == magr->mpeaceful)))
+				continue;
+			if(!youdef && nonthreat(mdef))
+				continue;
+			if(mdef->mtyp == PM_PALE_NIGHT) continue;
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE, 0); //Hits all adjacent targets
+			return; //only one proc per round to hit all adjacent targets
+	}
+}
+
+void
 doliving_healing_armor(magr, wep, invoked)
 struct monst *magr;
 struct obj *wep;
