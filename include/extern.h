@@ -1506,6 +1506,7 @@ E boolean FDECL(mon_can_see_you, (struct monst *));
 E boolean FDECL(mon_can_see_mon, (struct monst *, struct monst *));
 E int FDECL(permonst_max_lev,(struct permonst *));
 E int FDECL(mon_max_lev,(struct monst *));
+E int FDECL(default_strongmonst_strength, (int));
 
 /* ### mapglyph.c ### */
 
@@ -3389,6 +3390,7 @@ E void FDECL(init_mon_wield_item, (struct monst *));
 E int NDECL(str_abon);
 E int NDECL(abon);
 E float FDECL(atr_dbon, (struct obj *, struct monst *, int));
+E int FDECL(strscore_dbon, (int));
 E int FDECL(str_dbon, (struct monst *));
 E int FDECL(dbon, (struct obj *, struct monst *));
 E void NDECL(reset_skills);

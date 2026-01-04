@@ -2576,7 +2576,7 @@ get_description_of_damage_prefix(uchar aatyp, uchar adtyp)
 }
 
 char *
-get_description_of_attack(struct attack *mattk, char * main_temp_buf)
+get_description_of_attack(struct attack *mattk, char *main_temp_buf, struct monst *mtmp)
 {
 	if (!(mattk->damn + mattk->damd + mattk->aatyp + mattk->adtyp)) {
 		main_temp_buf[0] = '\0';
@@ -2586,6 +2586,23 @@ get_description_of_attack(struct attack *mattk, char * main_temp_buf)
 	char temp_buf[BUFSZ] = "";
 	if (mattk->damn + mattk->damd) {
 		sprintf(main_temp_buf, "%dd%d", mattk->damn, mattk->damd);
+		if(strongmonst(mtmp->data) || throws_rocks(mtmp->data)) {
+			int strength;
+			if(throws_rocks(mtmp->data)){
+				strength = STR19(25);
+			}
+			else {
+				strength = default_strongmonst_strength(mtmp->data->msize);
+			}
+			strength = strscore_dbon(strength);
+			if(strength > 0)
+				sprintf(temp_buf, "+%d", strength);
+			else if(strength < 0)
+				sprintf(temp_buf, "%d", strength);
+			else
+				temp_buf[0] = '\0';
+			strcat(main_temp_buf, temp_buf);
+		}
 #ifndef USE_TILES
 		strcat(main_temp_buf, ",");
 #endif
@@ -2760,7 +2777,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 				attk = getattk(mtmp, (struct monst *)0, res, &indexnum, &prev_attk, TRUE, subout, &tohitmod);
 
 				main_temp_buf[0] = '\0';
-				get_description_of_attack(attk, temp_buf);
+				get_description_of_attack(attk, temp_buf, mtmp);
 				if (temp_buf[0] == '\0') {
 					if (indexnum == 0) {
 #ifndef USE_TILES

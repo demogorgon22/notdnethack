@@ -3186,13 +3186,9 @@ int atr;
 }
 
 int
-str_dbon(mtmp)
-struct monst *mtmp;
+strscore_dbon(int str)
 {
-	int str, strbon;
-	boolean youagr = mtmp == &youmonst;
-
-	str = acurr(A_STR, (youagr) ? ((struct monst *) 0) : mtmp);
+	int strbon;
 
 	if (str < 6) 				strbon = str - 6;
 	else if (str < 16)			strbon= 0;
@@ -3206,6 +3202,18 @@ struct monst *mtmp;
 	else 						strbon = 8;		/* equal to 25 */
 
 	return strbon;
+}
+
+int
+str_dbon(mtmp)
+struct monst *mtmp;
+{
+	int str;
+	boolean youagr = mtmp == &youmonst;
+
+	str = acurr(A_STR, (youagr) ? ((struct monst *) 0) : mtmp);
+
+	return strscore_dbon(str);
 }
 
 int
@@ -3240,6 +3248,7 @@ struct monst *mtmp;
 
 	if (otmp){
 		damage_bon = (int)(strbon * atr_dbon(otmp, mtmp, A_STR));
+		//A_STR = 0, A_INT = 1
 		for (int i = A_INT; i < A_MAX; i++){
 			stat = acurr(i, (youagr) ? ((struct monst *) 0) : mtmp);
 			statbon = (stat == 25) ? 8 : ((stat-10)/2);

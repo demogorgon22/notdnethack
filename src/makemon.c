@@ -14489,7 +14489,9 @@ int faction;
 	set_mon_data(mtmp, mndx);
 
 	ABASE_MON(A_STR, mtmp) = 7 + d(1,6);
-	if (strongmonst(mtmp->data)) ABASE_MON(A_STR, mtmp) = STR19(18);
+	if (strongmonst(mtmp->data)){
+		ABASE_MON(A_STR, mtmp) = default_strongmonst_strength(mtmp->data->msize);
+	}
 	if (throws_rocks(mtmp->data)) ABASE_MON(A_STR, mtmp) = STR19(25);
 
 	ABASE_MON(A_DEX, mtmp) = 7 + d(1,6);
@@ -18185,4 +18187,20 @@ struct monst *mon;
 }
 #endif /* OVLB */
 
+int
+default_strongmonst_strength(int msize)
+{
+	if(msize == MZ_TINY)
+		return 14;
+	else if(msize == MZ_SMALL)
+		return 16;
+	else if(msize == MZ_MEDIUM)
+		return 18;
+	else if(msize == MZ_LARGE)
+		return STR18(25);
+	else if(msize == MZ_HUGE)
+		return STR18(75);
+	else /* MZ_GIGANTIC */
+		return STR19(18);
+}
 /*makemon.c*/
