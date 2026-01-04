@@ -1469,13 +1469,18 @@ register struct monst *mtmp;
 
 	if(!mtmp->mblinded && !mon_resistance(mtmp, GAZE_RES)) for (gazemon = fmon; gazemon; gazemon = nxtmon){
 		nxtmon = gazemon->nmon;
+		if(!attacktype(gazemon->data, AT_WDGZ)) continue;
 		if(mvm_widegaze(gazemon, mtmp))
 			return 1; //mon died from seeing something
 	}
 	//Everything may see mon
-	for (gazemon = fmon; gazemon; gazemon = nxtmon){
-		nxtmon = gazemon->nmon;
-		mvm_widegaze(mtmp, gazemon);
+	if(attacktype(mdat, AT_WDGZ)){
+		for (gazemon = fmon; gazemon; gazemon = nxtmon){
+			nxtmon = gazemon->nmon;
+			if(DEADMONSTER(gazemon))
+				continue;
+			mvm_widegaze(mtmp, gazemon);
+		}
 	}
 	
 	if (mtmp->mhp <= 0) return(1); /* m_respond gaze can kill medusa */
