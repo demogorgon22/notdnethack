@@ -770,7 +770,7 @@ aligntyp alignment;
 	if (Role_if(PM_PIRATE))
 		return (artinstance[ART_MARAUDER_S_MAP].exists ? 0 : ART_MARAUDER_S_MAP);
 
-	for (attempts = 1; (!n || (!rn2(n - 1) && u.ugifts)); attempts++) {
+	for (attempts = 1; (!n || (!rn2(n - 1) && u.ugifts && attempts > 2)); attempts++) {
 		n = 0;
 		for (m = 1, a = artilist + 1; a->otyp; a++, m++)
 		{
