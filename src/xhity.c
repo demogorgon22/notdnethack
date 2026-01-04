@@ -17052,7 +17052,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				int punc = ROLL_ETRAIT(weapon, magr, 2, 1);
 				if(youagr && ZFOCUS(weapon))
 					punc *= 2;
-				mdef->mpunctured += punc;
+				mdef->mpunctured = min(mdef->mpunctured + punc, 15); //Note: mpunctured is 4 bits, max 15
 				if(mdef->mpunctured > rn2(10)){
 					mdef->mpunctured = 0;
 					struct weapon_dice wdice;
