@@ -1168,7 +1168,7 @@ long flags;
 			init_mon_wield_item(mtmp);
 			m_level_up_intrinsic(mtmp);
 		}
-		if(!uh_patient){
+		if(!uh_patient && (in_mklev || !rn2(20) || special)){
 #define In_plat_tower (dungeon_topology.alt_tower && (Is_arcadiatower2(&u.uz) || Is_arcadiatower3(&u.uz) || Is_arcadiadonjon(&u.uz)))
 			quan = In_plat_tower ? 1 : rnd(3);
 			while(quan--)
