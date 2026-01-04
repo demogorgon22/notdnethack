@@ -2055,6 +2055,8 @@ E struct permonst * FDECL(find_mask, (struct monst *));
 E int FDECL(mbhitm, (struct monst *,struct obj *));
 #endif
 E int FDECL(use_offensive, (struct monst *));
+E boolean FDECL(find_artifact, (struct monst *));
+E int FDECL(use_artifact, (struct monst *));
 E int FDECL(rnd_offensive_item, (struct monst *));
 E boolean FDECL(is_attack_wand, (int));
 E int FDECL(rnd_attack_wand, (struct monst *));

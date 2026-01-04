@@ -37,7 +37,8 @@ static struct musable {
 	struct obj *offensive;
 	struct obj *defensive;
 	struct obj *misc;
-	int has_offense, has_defense, has_misc;
+	struct obj *artifact;
+	int has_offense, has_defense, has_misc, has_artifact;
 	/* =0, no capability; otherwise, different numbers.
 	 * If it's an object, the object is also set (it's 0 otherwise).
 	 */
@@ -137,7 +138,7 @@ struct obj *obj;
 		return 1;
 	    }
 	    else mon->mhp -= dam;
-	    m.has_defense = m.has_offense = m.has_misc = 0;
+	    m.has_defense = m.has_offense = m.has_misc = m.has_artifact = 0;
 	    /* Only one needed to be set to 0 but the others are harmless */
 	}
 	return 0;
@@ -242,6 +243,8 @@ struct obj *otmp;
 #define MUSE_HEALING_SURGE 21
 #define MUSE_DANCING_SWORD 22
 #define MUSE_SELF_REPAIR 23
+#define MUSE_ROD_HEAL 24
+#define MUSE_ROD_RECOVER 25
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -298,6 +301,35 @@ struct monst *mtmp;
 			m.has_defense = MUSE_UNICORN_HORN;
 			return TRUE;
 	    }
+	}
+	if(mtmp->mtyp == PM_OONA){
+		boolean recover = FALSE;
+		if(!mtmp->mnotlaugh || !mtmp->mcansee || mtmp->mberserk || !mtmp->mcanmove || mtmp->mstdy > 20 || mtmp->mstun || mtmp->mconf || mtmp->msleeping || mtmp->mbleed || mtmp->mgmld_throat || mtmp->mgmld_skin)
+			recover = TRUE;
+		else {
+			register struct obj *otmp;
+			for (otmp = mtmp->minvent;
+					otmp; otmp = otmp->nobj)
+			{
+				if (otmp->cursed && 
+					(otmp->otyp == LOADSTONE ||
+					otmp->owornmask))
+				{
+					recover = TRUE;
+					break;
+				} 
+			}
+		}
+		if(recover){
+			for(obj = mtmp->minvent; obj; obj = obj->nobj)
+				if (obj->oartifact == ART_ROD_OF_SEVEN_PARTS && obj->spe >= 3)
+					break;
+			if (obj) {
+				m.defensive = obj;
+				m.has_defense = MUSE_ROD_RECOVER;
+				return TRUE;
+			}
+		}
 	}
 
 	if (mtmp->mconf) {
@@ -565,6 +597,11 @@ struct monst *mtmp;
 		if(!spire && obj->otyp == WAN_CREATE_MONSTER && obj->spe > 0) {
 			m.defensive = obj;
 			m.has_defense = MUSE_WAN_CREATE_MONSTER;
+		}
+		nomore(MUSE_ROD_HEAL);
+		if(mtmp->mtyp == PM_OONA && obj->oartifact == ART_ROD_OF_SEVEN_PARTS && obj->spe > -7) {
+			m.defensive = obj;
+			m.has_defense = MUSE_ROD_HEAL;
 		}
 		nomore(MUSE_POT_HEALING);
 		if(obj->otyp == POT_HEALING && !nomouth) {
@@ -962,6 +999,62 @@ mon_tele:
 		newsym(trapx, trapy);
 
 		goto mon_tele;
+	case MUSE_ROD_HEAL:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Coelum!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Coelum!");
+		otmp->spe--;
+		mtmp->mhp += d(1+mlev(mtmp)/3,4) + mlev(mtmp);
+		if (mtmp->mhp > mtmp->mhpmax) mtmp->mhp = mtmp->mhpmax;
+		return 2;
+	case MUSE_ROD_RECOVER:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Lex Rex!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Lex Rex!");
+		otmp->spe -= 3;
+		set_mcan(mtmp, FALSE);
+		mtmp->mspec_used = 0;
+		if(!mtmp->mnotlaugh){
+			mtmp->mnotlaugh = 1;
+			mtmp->mlaughing = 0;
+		}
+		if(!mtmp->mcansee){
+			mtmp->mcansee = 1;
+			mtmp->mblinded = 0;
+		}
+		mtmp->mberserk = 0;
+		if(!mtmp->mcanmove){
+			mtmp->mcanmove = 1;
+			mtmp->mfrozen = 0;
+		}
+		if(mtmp->mstdy > 0) mtmp->mstdy = 0;
+		mtmp->mstun = 0;
+		mtmp->mconf = 0;
+		mtmp->mpunctured = 0;
+		mtmp->msleeping = 0;
+		mtmp->mflee = 0;
+		mtmp->mfleetim = 0;
+		mtmp->mbleed = 0;
+		mtmp->mgmld_throat = 0;
+		mtmp->mgmld_skin = 0;
+		boolean blessed = mlev(mtmp) > 13;
+		for (struct obj *obj = mtmp->minvent; obj; obj = obj->nobj)
+		{
+#ifdef GOLDOBJ
+		/* gold isn't subject to cursing and blessing */
+		if (obj->oclass == COIN_CLASS) continue;
+#endif
+			if (blessed ||
+				(obj->owornmask || obj->otyp == LOADSTONE)
+			) {
+				uncurse(obj);
+				if (obj == MON_WEP(mtmp))
+					mtmp->weapon_check = NEED_WEAPON;
+			}
+		}
+		return 2;
 	case MUSE_POT_HEALING:
 		mquaffmsg(mtmp, otmp);
 		i = d(6 + 2 * bcsign(otmp), 4)+mlev(mtmp);
@@ -2116,6 +2209,8 @@ struct monst *mtmp;
 #define MUSE_POT_HOLY 16
 #define MUSE_SCR_DESTROY_ARMOR 17
 #define MUSE_WISH 18
+#define MUSE_ROD_SEE_INVIS 19
+#define MUSE_ROD_FLYING 20
 
 boolean
 find_misc(mtmp)
@@ -2290,7 +2385,7 @@ struct monst *mtmp;
 		nomore(MUSE_SCR_REMOVE_CURSE);
 		if(!spire && obj->otyp == SCR_REMOVE_CURSE && !is_weldproof_mon(mtmp))
 		{
-                        register struct obj *otmp;
+			register struct obj *otmp;
 			for (otmp = mtmp->minvent;
 			     otmp; otmp = otmp->nobj)
 			{
@@ -2346,6 +2441,16 @@ struct monst *mtmp;
 		if(!nomouth && mon_insane(mtmp) && (obj->otyp == POT_AMNESIA)) {
 			m.misc = obj;
 			m.has_misc = MUSE_POT_AMNESIA;
+		}
+		if(mtmp->mtyp == PM_OONA && obj->oartifact == ART_ROD_OF_SEVEN_PARTS && (obj->spe == 7 || obj->spe >= mlev(mtmp)/3)) {
+			if(!mon_resistance(mtmp, SEE_INVIS)) {
+				m.misc = obj;
+				m.has_misc = MUSE_ROD_SEE_INVIS;
+			}
+			else if(!mon_resistance(mtmp, FLYING)) {
+				m.misc = obj;
+				m.has_misc = MUSE_ROD_FLYING;
+			}
 		}
 	}
 	return((boolean)(!!m.has_misc));
@@ -2740,7 +2845,7 @@ museamnesia:
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
-	    return 0;
+	    return 2;
 	case MUSE_POT_HOLY:
 		{
 		    register struct obj *obj;
@@ -2771,7 +2876,7 @@ museamnesia:
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
-	    return 0;
+	    return 2;
 	case MUSE_SCR_DESTROY_ARMOR:{
 		struct obj *obj;
 		obj = which_armor(mtmp, W_ARM);
@@ -2800,7 +2905,7 @@ museamnesia:
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
-	    return 0;
+	    return 2;
 	}
 	case MUSE_MASK:{
 		int pm = otmp->corpsenm;
@@ -2894,13 +2999,180 @@ museamnesia:
 			m_dowear(mtmp, TRUE);
 			mtmp->mspec_used = 10 - mtmp->m_lev;
 			if (mtmp->mspec_used < 2) mtmp->mspec_used = 2;
-
+			return 2;
 		}
 	}break;
+	case MUSE_ROD_SEE_INVIS:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Ecce!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Ecce!");
+		otmp->spe -= 2;
+		give_mintrinsic(mtmp, SEE_INVIS);
+		return 2;
+	case MUSE_ROD_FLYING:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Rex!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Rex!");
+		otmp->spe -= 3;
+		give_mintrinsic(mtmp, FLYING);
+		return 2;
 	case 0: return 0; /* i.e. an exploded wand */
 	default: impossible("%s wanted to perform action %d?", Monnam(mtmp),
 			m.has_misc);
 		break;
+	}
+	return 0;
+}
+
+int
+valid_rosp_e_target(struct monst *mtmp, struct monst *mtarg)
+{
+	struct monst *subtarg;
+	boolean subtarg_resists;
+	boolean target_found;
+	int numtargets = 0;
+	if(mtmp != mtarg && mtmp->mpeaceful != mtarg->mpeaceful && distmin(mtmp->mx, mtmp->my, mtarg->mx, mtarg->my) <= BOLT_LIM
+		&& !(Fire_res(mtarg) && Shock_res(mtarg) && Cold_res(mtarg))
+		&& mon_can_see_mon(mtmp, mtarg)
+	){
+		target_found = TRUE;
+		int ix, iy, i, j;
+		for(i = -2; i <= 2; i++){
+			for(j = -2; j <= 2; j++){
+				ix = mtarg->mx + i;
+				iy = mtarg->my + j;
+				if(isok(ix, iy)){
+					subtarg = m_u_at(ix, iy);
+					if(subtarg){
+						subtarg_resists = (Fire_res(subtarg) && Shock_res(subtarg) && Cold_res(subtarg));
+						if(subtarg == &youmonst && mtmp->mpeaceful && !subtarg_resists){
+							target_found = FALSE;
+							i = j = 3; //break out of both loops
+						}
+						else if(mtmp->mpeaceful == subtarg->mpeaceful && !subtarg_resists){
+							target_found = FALSE;
+							i = j = 3; //break out of both loops
+						}
+						else if(!subtarg_resists){
+							numtargets++;
+						}
+					}
+				}
+			}
+		}
+		if(target_found)
+			return numtargets + 1;
+	}
+	return 0;
+}	
+
+boolean
+has_rosp_e_target(struct monst *mtmp)
+{
+	struct monst *mtarg;
+	int targets = 0;
+	int tlevel = mlev(mtmp);
+	if (mtmp->mtame)
+		tlevel = min(u.ulevel, tlevel);
+	for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+		if(DEADMONSTER(mtarg)) continue;
+		targets = valid_rosp_e_target(mtmp, mtarg);
+		if(targets && (targets > 3 || mlev(mtarg)+targets > tlevel))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+int
+explode_rod_of_seven_parts(struct monst *mtmp, struct obj *otmp)
+{
+	struct monst *mtarg;
+	int numtargets = 0;
+	int best_numtargets = 0;
+	struct monst *best_target = NULL;
+	/* Find best target */
+	for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+		if(DEADMONSTER(mtarg)) continue;
+		numtargets = valid_rosp_e_target(mtmp, mtarg);
+		if(numtargets && (!best_target || numtargets > best_numtargets || (numtargets == best_numtargets && mlev(mtarg) > mlev(best_target)))){
+			best_numtargets = numtargets;
+			best_target = mtarg;
+		}
+	}
+	if(best_target){
+		const int elements[4] = {AD_PHYS, AD_FIRE, AD_COLD, AD_ELEC};
+		const int explType[4] = {0, EXPL_FIERY, EXPL_FROSTY, EXPL_MAGICAL};
+		struct obj *wep = MON_WEP(mtmp);
+		if(wep != otmp){
+			setmnotwielded(mtmp, wep);
+			/* wield the new object*/
+			mtmp->weapon_check = NEED_WEAPON;
+			setmwielded(mtmp, otmp, W_WEP);
+		}
+		if(canseemon(mtmp))
+			pline("%s raises %s and shouts \"Ruat Coelum!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Ruat Coelum!");
+		int dmg = mlev(mtmp)/2 + 1;
+		int nd = max(otmp->spe, 1);
+		int dx = 0, dy = 0;
+		int n = mlev(mtmp)/5 + 1;
+		int tx = best_target->mx;
+		int ty = best_target->my;
+		int type;
+		while(n-- > 0){
+			type = rnd(3);
+			explode(tx+dx, ty+dy, elements[type], 0, d(nd, 8)+dmg, explType[type], 1);
+			dx = rn2(3)-1;
+			dy = rn2(3)-1;
+			if(!isok(tx+dx, ty+dy) || IS_STWALL(levl[tx+dx][ty+dy].typ)){
+				dx = dy = 0;
+			}
+		}
+		otmp->spe -= 1;
+		return DEADMONSTER(mtmp) ? 1 : 2;
+	}
+	return 0;
+}
+
+#define MUSE_ROD_EXPLODE  1
+
+boolean
+find_artifact(struct monst *mtmp)
+{
+	m.artifact = (struct obj *)0;
+	m.has_artifact = 0;
+	if(mtmp->mtyp == PM_OONA){
+		struct obj *otmp;
+		for(otmp = mtmp->minvent; otmp; otmp = otmp->nobj){
+			if(otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
+				break;
+		}
+		if(otmp){
+			if(otmp->spe > 0 && (otmp->spe == 7 || otmp->spe >= mlev(mtmp)/3)){
+				if(has_rosp_e_target(mtmp)){
+					m.artifact = otmp;
+					m.has_artifact = MUSE_ROD_EXPLODE;
+					return TRUE;
+				}
+			}
+		}
+	}
+	return FALSE;
+}
+
+int
+use_artifact(struct monst *mtmp)
+{
+	switch(m.has_artifact) {
+		case MUSE_ROD_EXPLODE:
+			return explode_rod_of_seven_parts(mtmp, m.artifact);
+		default:
+			impossible("%s wanted to perform artifact action %d?", Monnam(mtmp),
+			m.has_artifact);
+			break;
 	}
 	return 0;
 }

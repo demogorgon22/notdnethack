@@ -1256,7 +1256,13 @@ register int after;	/* this is extra fast monster movement */
  * We haven't moved yet, so search for monsters to attack from a
  * distance and attack them if it's plausible.
  */
-	if (find_offensive(mtmp))
+	if (find_artifact(mtmp))
+	{
+	    int ret = use_artifact(mtmp);
+	    if (ret == 1) return 2; /* died */
+	    if (ret == 2) return 1; /* did something */
+	}
+	else if (find_offensive(mtmp))
 	{
 	    int ret = use_offensive(mtmp);
 	    if (ret == 1) return 2; /* died */

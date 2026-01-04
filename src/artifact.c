@@ -11222,6 +11222,7 @@ arti_invoke(obj)
 						strcmp(buf, "Ruat Coelum!") == 0 ){//Ruat Coelum:  Heaven Falls.  Attack spell.  One charge.
 				if( (obj->spe > 0) && throweffect()){
 					int dmg;
+					int nd = max(obj->spe, 1);
 					dmg = u.ulevel/2 + 1;
 					if(u.ukrau_duration) dmg *= 1.5;
 					dmg += spell_damage_bonus();
@@ -11232,7 +11233,7 @@ arti_invoke(obj)
 						int type = d(1,3);
 						explode(u.dx, u.dy,
 							elements[type], 0,
-							 dmg,
+							 d(nd, 8) + dmg,
 							explType[type], 1);
 						u.dx = cc.x+rnd(3)-2; u.dy = cc.y+rnd(3)-2;
 						if (!isok(u.dx,u.dy) || !cansee(u.dx,u.dy) ||
@@ -11302,6 +11303,18 @@ arti_invoke(obj)
 						Slimed = 0;
 					 /* flags.botl = 1; -- healup() handles this */
 					}
+					if(youmonst.mbleed){
+						Your("accursed wound closes up.");
+						youmonst.mbleed = 0;
+					}
+					if(youmonst.mgmld_throat){
+						Your("%s feels better.", body_part(THROAT));
+						youmonst.mgmld_throat = 0;
+					}
+					if(youmonst.mgmld_skin){
+						pline_The("gray mold disappears!");
+						youmonst.mgmld_skin = 0;
+					}
 					healup(u.ulevel, 0, TRUE, TRUE);
 					obfree(pseudo, (struct obj *)0);	/* now, get rid of it */
 					obj->spe--; obj->spe--; obj->spe--; // lose three charge
@@ -11361,6 +11374,18 @@ arti_invoke(obj)
 						pline_The("slime disappears!");
 						Slimed = 0;
 					 /* flags.botl = 1; -- healup() handles this */
+					}
+					if(youmonst.mbleed){
+						Your("accursed wound closes up.");
+						youmonst.mbleed = 0;
+					}
+					if(youmonst.mgmld_throat){
+						Your("%s feels better.", body_part(THROAT));
+						youmonst.mgmld_throat = 0;
+					}
+					if(youmonst.mgmld_skin){
+						pline_The("gray mold disappears!");
+						youmonst.mgmld_skin = 0;
 					}
 					healup(maybe_polyd(u.mhmax - u.mh, u.uhpmax - u.uhp), 0, TRUE, TRUE); //heal spell
 					if(!DimensionalLock) while(n--) {
