@@ -11004,13 +11004,13 @@ arti_invoke(obj)
 		else dancer = 1;
 		
 		pline("You enter a %strance, giving you an edge in battle.", (dancer==2) ? "deep ":"");
-		// heal you up to half of your lost hp, modified by enchantment
-		int healamt = (maybe_polyd(u.mhmax - u.mh, u.uhpmax - u.uhp) + 1) / ((dancer == 2) ? 2 : 4);
-		healamt = max(0, healamt * (obj->spe/10));
-		healup(healamt, 0, FALSE, FALSE);
 
 		// make you very fast for a limited time
 		incr_itimeout(&HFast, rn1(u.ulevel, 50*dancer));
+
+		// triggers bladesong as an <enchantment> level spell
+		if (obj->spe > 0)
+			u.bladesong = monstermoves + obj->spe*dancer/2;
 		
 		// give you some protection
 		int l = u.ulevel;

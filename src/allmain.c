@@ -675,13 +675,13 @@ boolean affect_game_state;
 			}
 
 			/* some artifacts are faster */
-			// note - you don't have to actually be two-weaponing, and that's intentional,
-			// but you must have another ARTA_HASTE wep offhanded (and there's only 2 so)
+			/* similar/identical to ARTA_HASTE, but does not require skill */
 			if (uwep && uwep->oartifact && arti_attack_prop(uwep, ARTA_HASTE)){
-				current_cost -= NORMAL_SPEED / 3;
+				current_cost -= NORMAL_SPEED / 4;
 				if (uswapwep && uswapwep->oartifact && arti_attack_prop(uwep, ARTA_HASTE))
-					current_cost -= NORMAL_SPEED / 6;
+					current_cost -= NORMAL_SPEED / 12;
 			}
+
 			break;
 
 		case MOVE_QUAFFED:
