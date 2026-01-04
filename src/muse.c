@@ -3074,6 +3074,8 @@ has_rosp_e_target(struct monst *mtmp)
 	struct monst *mtarg;
 	int targets = 0;
 	int tlevel = mlev(mtmp);
+	if(!mtmp->mpeaceful && valid_rosp_e_target(mtmp, &youmonst))
+		return TRUE;
 	if (mtmp->mtame)
 		tlevel = min(u.ulevel, tlevel);
 	for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
@@ -3093,7 +3095,9 @@ explode_rod_of_seven_parts(struct monst *mtmp, struct obj *otmp)
 	int best_numtargets = 0;
 	struct monst *best_target = NULL;
 	/* Find best target */
-	for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+	if(!mtmp->mpeaceful && valid_rosp_e_target(mtmp, &youmonst))
+		best_target = &youmonst;
+	else for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
 		if(DEADMONSTER(mtarg)) continue;
 		numtargets = valid_rosp_e_target(mtmp, mtarg);
 		if(numtargets && (!best_target || numtargets > best_numtargets || (numtargets == best_numtargets && mlev(mtarg) > mlev(best_target)))){
@@ -3119,8 +3123,8 @@ explode_rod_of_seven_parts(struct monst *mtmp, struct obj *otmp)
 		int nd = max(otmp->spe, 1);
 		int dx = 0, dy = 0;
 		int n = mlev(mtmp)/5 + 1;
-		int tx = best_target->mx;
-		int ty = best_target->my;
+		int tx = x(best_target);
+		int ty = y(best_target);
 		int type;
 		while(n-- > 0){
 			type = rnd(3);
