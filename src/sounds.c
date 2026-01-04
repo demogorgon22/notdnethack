@@ -3633,7 +3633,7 @@ int tx,ty;
 			else{
 				Your("mind's eye is blinded by a flame blasting through an altar.");
 				losexp("shredding of the soul",TRUE,TRUE,TRUE);
-				if(in_rooms(curx, cury, TEMPLE)){
+				if(*in_rooms(curx, cury, TEMPLE)){
 //					struct monst *priest = findpriest(roomno);
 					//invoking Amon inside a temple angers the resident deity
 					altar_wrath(curx, cury);
