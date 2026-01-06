@@ -4653,7 +4653,10 @@ commune_with_yog()
 		}
 		case YOGBOON_REVIVE:{
 			struct monst *twin = mtyp_on_migrating(PM_TWIN_SIBLING);
+			cost = 10;
 			if(twin){
+				if(twin->mvar_twin_lifesaved)
+					cost = 50;
 				twin->mvar_twin_lifesaved = FALSE;
 				twin->mwait = 0;
 				twin->mux = u.uz.dnum;
