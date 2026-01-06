@@ -1004,13 +1004,15 @@ smithing_object(struct obj *obj)
 			case ENCHANT_OBJ:
 				if(!upgrade_gem_required){
 					obj->spe++;
-					morehungry(5*INC_BASE_NUTRITION);
+					if(Race_if(PM_INCANTIFIER))
+						morehungry(5*INC_BASE_NUTRITION);
 					flags.botl = 1;
 					if(obj->otyp == CHURCH_HAMMER || obj->otyp == CHURCH_BLADE){
 						if(obj->cobj && obj->spe > obj->cobj->spe){
 							/*Note: base obj already incremented*/
 							obj->cobj->spe++;
-							morehungry(5*INC_BASE_NUTRITION);
+							if(Race_if(PM_INCANTIFIER))
+								morehungry(5*INC_BASE_NUTRITION);
 						}
 					}
 					You("successfully improve your %s.", xname(obj));
