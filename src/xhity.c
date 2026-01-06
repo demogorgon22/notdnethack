@@ -17995,7 +17995,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					);
 			}
 		}
-		else {
+		else if(youdef){
 			You("%s from %s powerful %s%s!",
 				makeplural(stagger(mdef, "stagger")),
 				s_suffix(mon_nam(magr)),
@@ -18014,7 +18014,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					);
 			}
 		}
-		else {
+		else if(youdef){
 			You("are stunned by %s powerful %s%s!",
 				s_suffix(mon_nam(magr)),
 				((weapon && weapon->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD) ? "blow" : "strike"),
