@@ -2199,7 +2199,6 @@ int different;
 		if (container_where == OBJ_MINVENT && mtmp2) mcarry = mtmp2;
     }
     mtmp = revive(corpse, FALSE);      /* corpse is gone if successful && quan == 1 */
-	mtmp->mprobed = 0;
 	if(different == GROW_MOLD && mtmp && mtmp->mtyp != pm){
 		set_mon_data(mtmp, pm);
 	}
@@ -2209,6 +2208,7 @@ int different;
 	 * [ALI] Override revive's HP calculation. The HP that a mold starts
 	 * with do not depend on the HP of the monster whose corpse it grew on.
 	 */
+	mtmp->mprobed = 0;
 	if (different)
 	    mtmp->mhp = mtmp->mhpmax;
 	else if(has_sunflask(mtmp->mtyp))
