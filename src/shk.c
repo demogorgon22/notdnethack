@@ -7745,7 +7745,7 @@ struct monst *smith;
 			smth->smith_silver_stockpile = u.uz.dlevel > 14 ? 500 : 0;
 		break;
 		case PM_MITHRIL_SMITH:
-			smth->smith_silver_stockpile = 303;
+			smth->smith_mithril_stockpile = 303;
 		break;
 		case PM_TREESINGER:
 			//Nothing
@@ -7758,7 +7758,6 @@ struct monst *smith;
 		break;
 		default:
 			impossible("bad smith");
-			// generic_smithy(smith);
 		break;
 	}
 }
