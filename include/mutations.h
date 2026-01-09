@@ -36,6 +36,9 @@
 #define BRAIN 27
 #define CREAK 28
 #define CRACK 29
+#define THROAT 30
+#define WINDPIPE 31
+#define WINGS_BP 32
 
 struct mutationtype {
 	int mutation;

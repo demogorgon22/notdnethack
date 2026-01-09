@@ -71,6 +71,7 @@ int adtyp, ztyp;
 		case AD_FIRE: return "bolt of fire";
 		case AD_COLD: return "bolt of cold";
 		case AD_UHCD: return "bolt of ice";
+		case AD_GMLD: return "stream of gray spores";
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "death ray";
 		case AD_ELEC: return "lightning bolt";
@@ -90,6 +91,7 @@ int adtyp, ztyp;
 		case AD_FIRE: return "fireball";
 		case AD_COLD: return "cone of cold";
 		case AD_UHCD: return "cone of ice";
+		case AD_GMLD: return "cone of gray spores";
 		case AD_SLEE: return "sleep ray";
 		case AD_DEAD: return "finger of death";
 		case AD_ELEC: return "bolt of lightning";
@@ -120,6 +122,8 @@ int adtyp, ztyp;
 			return "blast of frost";
 		case AD_UHCD: 
 			return "blast of ice";
+		case AD_GMLD: 
+			return "blast of gray spores";
 		case AD_SLEE: return "blast of sleep gas";
 		case AD_DISN: return "blast of disintegration";
 		case AD_EELC: 
@@ -198,6 +202,7 @@ int adtyp;
 		//	return CLR_CYAN;
 	case AD_HLUH:
 	case AD_VORP:
+	case AD_GMLD:
 		return CLR_GRAY;
 		//	return NO_COLOR;
 	case AD_EFIR:
@@ -460,6 +465,10 @@ struct obj *otmp;
 					}
 				}
 			}
+		}
+		if(otyp == SPE_FULL_HEALING){
+			mtmp->mgmld_skin = 0;
+			mtmp->mgmld_throat = 0;
 		}
 	    if (mtmp->mtyp != PM_PESTILENCE) {
 			char hurtmonbuf[BUFSZ];
@@ -2997,6 +3006,14 @@ boolean ordinary;
 				Slimed = 0;
 			 /* flags.botl = 1; -- healup() handles this */
 			}
+			if (youmonst.mgmld_skin) {
+				pline("The gray mold on your skin vanishes!");
+				youmonst.mgmld_skin = 0;
+			}
+			if (youmonst.mgmld_throat) {
+				pline("You feel better!");
+				youmonst.mgmld_throat = 0;
+			}
 			healup(50*P_SKILL(P_HEALING_SPELL), 0, TRUE, TRUE);
 			break;
 		case SPE_HEALING:
@@ -3545,6 +3562,7 @@ register struct	obj	*obj;
 				zapdat.affects_floor = FALSE;
 				zapdat.no_hit_wall = TRUE;
 				zapdat.damn *= 1.5;
+				zapdat.damn = max(zapdat.damn, 6);
 				break;
 			case SPE_ACID_SPLASH:
 				range = 1;
@@ -4445,6 +4463,26 @@ struct zapdata * zapdata;
 	boolean doshieldeff = FALSE;
 	const char * fltxt = flash_type(zapdata->adtyp, zapdata->ztyp);
 
+	struct obj *towel = 0;
+	struct obj *dust_mask = 0;
+	struct obj *isolation_suit = 0;
+	if(youdef){
+		if(uarmh && uarmh->otyp == SHEMAGH)
+			dust_mask = uarmh;
+		if(ublindf && ublindf->otyp == TOWEL)
+			towel = ublindf;
+		if(uarmu && uarmu->otyp == BODYGLOVE)
+			isolation_suit = uarmu;
+	}
+	else {
+		if (which_armor(mdef, W_ARMH) && which_armor(mdef, W_ARMH)->otyp == SHEMAGH)
+			dust_mask = which_armor(mdef, W_ARMH);
+		if (which_armor(mdef, W_TOOL) && which_armor(mdef, W_TOOL)->otyp == TOWEL)
+			towel = which_armor(mdef, W_TOOL);
+		if (which_armor(mdef, W_ARMU) && which_armor(mdef, W_ARMU)->otyp == BODYGLOVE)
+			isolation_suit = which_armor(mdef, W_ARMU);
+	}
+
 	/* macros to help put messages in the right place  */
 #define addmsg(...) do{if(!havemsg){Sprintf(buf, __VA_ARGS__);havemsg=TRUE;}else{Strcat(buf, " "); Sprintf(eos(buf), __VA_ARGS__);}}while(0)
 #define domsg() do{if((youagr || youdef || canseemon(mdef)) && dmg<*hp(mdef))\
@@ -4912,7 +4950,7 @@ struct zapdata * zapdata;
 
 		return xdamagey(magr, mdef, &attk, dmg);
 
-	case AD_VORP:
+	case AD_VORP:{
 		struct permonst * pd = (youdef ? youracedata : mdef->data);
 		if ((rn2(20) && pd->mtyp != PM_JABBERWOCK) || (noncorporeal(pd) || amorphous(pd))){
 			domsg();
@@ -4947,7 +4985,7 @@ struct zapdata * zapdata;
 			} else domsg();
 		}
 		return xdamagey(magr, mdef, &attk, dmg);
-
+	}
 	case AD_DEAD:
 		/* some creatures have special interactions with death beams */
 		if (is_metroid(mdef->data)) {
@@ -5154,7 +5192,36 @@ struct zapdata * zapdata;
 		}
 
 		return xdamagey(magr, mdef, &attk, dmg);
-
+	case AD_GMLD:{
+		domsg();
+		boolean breathless = youdef ? Breathless : breathless_mon(mdef);
+		if(youdef){
+			if(is_gray_mold(youracedata)){
+				healup(dmg, 0, FALSE, FALSE);
+				return MM_MISS;
+			}
+			else if(!is_organic_monst(youracedata)){
+				return MM_MISS;
+			}
+			else if(!(breathless || dust_mask || towel || isolation_suit))
+				You("cough and gag in the cloud of gray spores!");
+			pline("%s in your %s!", dmg > 1 ? "Some spores take root" : "A spore takes root", body_part(BODY_SKIN));
+		}
+		else {
+			if(is_gray_mold(mdef->data)){
+				mdef->mhp = min(*hpmax(mdef), *hp(mdef) + dmg);
+				return MM_HIT;
+			}
+			else if(!is_organic_monst(mdef->data)){
+				return MM_MISS;
+			}
+		}
+		if (!(breathless || dust_mask || towel || isolation_suit))
+			mdef->mgmld_throat += dmg;
+		mdef->mgmld_skin += dmg;
+		return xdamagey(magr, mdef, &attk, 0);
+	}
+	break;
 	default:
 		impossible("unhandled zap damage type %d", zapdata->adtyp);
 		break;
@@ -5617,6 +5684,12 @@ boolean *shopdamage;
 			// (void) create_gas_cloud(x, y, 1, 8, rn1(20, 5), yours);
 		}
 	}
+	else if(adtyp == AD_GMLD && levl[x][y].typ == IRONBARS) {
+	    if (cansee(x, y))
+		pline_The("iron bars are covered in gray mold!");
+		dissolve_bars(x, y);
+		makemon(&mons[PM_RUSTY_GRAY_MOLD], x, y, MM_NOCOUNTBIRTH);
+	}
 	else if (adtyp == AD_ACID && levl[x][y].typ == IRONBARS && (flags.drgn_brth || !rn2(5))) {
 	    if (cansee(x, y))
 		pline_The("iron bars are dissolved!");
@@ -5657,6 +5730,11 @@ boolean *shopdamage;
 		    see_txt = "The door splinters!";
 		    hear_txt = "crackling.";
 		    break;
+		case AD_GMLD:
+		    new_doormask = D_NODOOR;
+		    see_txt = "The door swells with gray mold!";
+		    hear_txt = "crumbling wood.";
+		break;
 		default:
 		def_case:
 		    if(cansee(x,y)) {
@@ -5682,6 +5760,8 @@ boolean *shopdamage;
 		    } else if (hear_txt) {
 			if (flags.soundok) You_hear1(hear_txt);
 		    }
+			if(adtyp == AD_GMLD)
+				makemon(&mons[PM_RUSTY_GRAY_MOLD], x, y, MM_NOCOUNTBIRTH);
 		    if (picking_at(x, y)) {
 			stop_occupation();
 			reset_pick();

@@ -329,8 +329,10 @@ struct monst *magr;
 		otyp = obj->otyp;
 		oartifact = obj->oartifact;
 	}
-	
-	if(otyp && (
+	if(obj && is_lightsaber(obj) && !litsaber(obj)){
+		attackmask = WHACK;
+	}
+	else if(otyp && (
 		objects[otyp].oc_class == WEAPON_CLASS
 		|| (objects[otyp].oc_class == TOOL_CLASS && objects[otyp].oc_skill != P_NONE)
 	)){
@@ -868,17 +870,24 @@ struct monst *magr;
 						if (is_slashing(obj) || is_stabbing(obj))
 							dmod -= mod;
 						break;
-					/* glass and obsidian have sharp edges and points 
-					 * shadowsteel ??? but gameplay-wise, droven weapons
-					 *   made out of this troublesome-to-maintain material
-					 *   shouldn't be weaker than their obsidian counterparts
-					 */
+					/* glass and obsidian have sharp edges and points */
 					case GLASS:
 					case OBSIDIAN_MT:
-					case SHADOWSTEEL:
 					case GREEN_STEEL:
 						if (is_slashing(obj) || is_stabbing(obj))
 							dmod += mod;
+						break;
+					case SHADOWSTEEL:
+						if(obj->improved_mat){
+							if (is_slashing(obj) || is_stabbing(obj))
+								dmod += mod;
+						}
+						else {
+							if (is_slashing(obj) || is_stabbing(obj))
+								dmod -= mod;
+							else
+								dmod -= 2*mod;
+						}
 						break;
 					/* dragon teeth are good at piercing */
 					case DRAGON_HIDE:
@@ -1665,9 +1674,9 @@ struct monst *magr;
 
 
 	/* enchantment damage */
-	if ((otmp->oclass == WEAPON_CLASS) || is_weptool(otmp)
+	if (!Is_spire(&u.uz) && ((otmp->oclass == WEAPON_CLASS) || is_weptool(otmp)
 		|| (otmp->otyp >= LUCKSTONE && otmp->otyp <= ROCK && otmp->ovar1_projectileSkill == -P_FIREARM)
-		|| (is_shield(otmp) && magr == &youmonst && activeFightingForm(FFORM_SHIELD_BASH))
+		|| (is_shield(otmp) && magr == &youmonst && activeFightingForm(FFORM_SHIELD_BASH)))
 	){
 		int dambon = otmp->spe;
 		/* player orcs can use their level as their weapon's enchantment */
@@ -2408,8 +2417,10 @@ register struct monst *mtmp;
 	boolean marilith = mon_attacktype(mtmp, AT_MARI) ? TRUE : FALSE; //Marilith arms don't suffer weight limits, so also don't impose them on the offhand arm.
 
 	/* needs to be capable of wielding a weapon in the mainhand */
-	if (!mon_attacktype(mtmp, AT_WEAP) &&
-		!mon_attacktype(mtmp, AT_DEVA))
+	if (!mon_attacktype(mtmp, AT_WEAP)
+		&& !mon_attacktype(mtmp, AT_DEVA)
+		&& !mon_attacktype(mtmp, AT_JUGL)
+	)
 		return (struct obj *)0;
 
 	/* if using an artifact or oprop weapon keep using it. */
@@ -2624,8 +2635,10 @@ boolean polyspot;
 		mon->weapon_check = NO_WEAPON_WANTED;
 
 	/* monster can no longer wield any mainhand weapons */
-	if (!mon_attacktype(mon, AT_WEAP) &&
-		!mon_attacktype(mon, AT_DEVA)) {
+	if (!mon_attacktype(mon, AT_WEAP)
+	 && !mon_attacktype(mon, AT_DEVA)
+	 && !mon_attacktype(mon, AT_JUGL)
+	) {
 		if (mw_tmp) {
 			setmnotwielded(mon, mw_tmp);
 			MON_NOWEP(mon);
@@ -2942,9 +2955,11 @@ register struct monst *mon;
 	struct obj *msw_tmp = MON_SWEP(mon);
 	int toreturn = 0;
 	
-	if (!mon_attacktype(mon, AT_WEAP) &&
-		!mon_attacktype(mon, AT_DEVA) &&
-		!mon_attacktype(mon, AT_XWEP)) return;
+	if (!mon_attacktype(mon, AT_WEAP)
+		&& !mon_attacktype(mon, AT_DEVA)
+		&& !mon_attacktype(mon, AT_JUGL)
+		&& !mon_attacktype(mon, AT_XWEP)
+	) return;
 
 	if(needspick(mon->data)){
 		obj = m_carrying(mon, DWARVISH_MATTOCK);
@@ -3184,13 +3199,9 @@ int atr;
 }
 
 int
-str_dbon(mtmp)
-struct monst *mtmp;
+strscore_dbon(int str)
 {
-	int str, strbon;
-	boolean youagr = mtmp == &youmonst;
-
-	str = acurr(A_STR, (youagr) ? ((struct monst *) 0) : mtmp);
+	int strbon;
 
 	if (str < 6) 				strbon = str - 6;
 	else if (str < 16)			strbon= 0;
@@ -3204,6 +3215,18 @@ struct monst *mtmp;
 	else 						strbon = 8;		/* equal to 25 */
 
 	return strbon;
+}
+
+int
+str_dbon(mtmp)
+struct monst *mtmp;
+{
+	int str;
+	boolean youagr = mtmp == &youmonst;
+
+	str = acurr(A_STR, (youagr) ? ((struct monst *) 0) : mtmp);
+
+	return strscore_dbon(str);
 }
 
 int
@@ -3246,6 +3269,7 @@ struct monst *mtmp;
 
 	if (otmp){
 		damage_bon = (int)(strbon * atr_dbon(otmp, mtmp, A_STR));
+		//A_STR = 0, A_INT = 1
 		for (int i = A_INT; i < A_MAX; i++){
 			stat = acurr(i, (youagr) ? ((struct monst *) 0) : mtmp);
 			statbon = (stat == 25) ? 8 : ((stat-10)/2);
@@ -3647,7 +3671,7 @@ int enhance_skill(boolean want_dump)
 		else if (peaked_skill(i))
 		    prefix = "  # ";
 		else
-		    prefix = (to_advance + eventually_advance +
+		    prefix = (to_advance + eventually_advance + lightsaber_advance +
 				maxxed_cnt > 0) ? "    " : "";
 		(void) skill_level_name(i, sklnambuf);
 		(void) max_skill_level_name(i, maxsklnambuf);
@@ -4373,10 +4397,10 @@ int wep_type;
 	if(wep_type == P_AXE && Race_if(PM_DWARF) && ublindf && ublindf->oartifact == ART_WAR_MASK_OF_DURIN) bonus += 5;
 	if(uwep && uwep->oartifact == ART_PEN_OF_THE_VOID && type != P_TWO_WEAPON_COMBAT) bonus = max(bonus,0);
 	
-	if(weapon && weapon == uwep && (Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
+	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
-		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD || is_kensei_weapon(weapon))
+		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
 	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
 	){
 		if(bonus > 0)
@@ -4607,7 +4631,7 @@ int wep_type;
 	
 	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
-		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD || is_kensei_weapon(weapon))
+		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
 	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	){
@@ -4992,6 +5016,8 @@ check_etrait(struct obj *obj, struct monst *mon, unsigned long trait)
 	struct permonst *pa = youagr ? youracedata : mon->data;
 
 	if(youagr && P_SKILL(weapon_type(obj)) < P_SKILLED)
+		return FALSE;
+	else if(is_lightsaber(obj) && !litsaber(obj))
 		return FALSE;
 	else if(!youagr && !((pa->mflagsf&MF_MARTIAL_E) || (pa->mflagsf&MF_MARTIAL_S)))
 		return FALSE;

@@ -399,7 +399,7 @@ minimal_enlightenment()
 	}
 
 	//Role-specific info goes here (currently just undead-hunter research.
-	if (Role_if(PM_UNDEAD_HUNTER)) {
+	if (Role_if(PM_UNDEAD_HUNTER) || active_glyph(DEFILEMENT) || active_glyph(LUMEN) || active_glyph(ROTTEN_EYES)) {
 		Sprintf(buf, "Research progress.");
 		any.a_int = DOATTRIB_UH_RESEARCH;
 		add_menu(tmpwin, NO_GLYPH, &any,
@@ -3191,11 +3191,16 @@ research_enlightenment()
 	int i;
 	en_win = create_nhwindow(NHW_MENU);
 	if(active_glyph(DEFILEMENT) || u.ualign.god == GOD_DEFILEMENT || u.udefilement_research){
-		if(defile_count() >= 6){
-			putstr(en_win, 0, "You have made a great breakthrough in the philosophy of defilement!");
+		if(Role_if(PM_UNDEAD_HUNTER)){
+			if(defile_count() >= 6){
+				putstr(en_win, 0, "You have made a great breakthrough in the philosophy of defilement!");
+			}
+			else {
+				putstr(en_win, 0, "You still have much to learn of defilement.");
+			}
 		}
 		else {
-			putstr(en_win, 0, "You still have much to learn of defilement.");
+			putstr(en_win, 0, "You have learned something of defilement.");
 		}
 		if(!(active_glyph(DEFILEMENT) || (u.ualign.god == GOD_DEFILEMENT && known_glyph(DEFILEMENT)))){
 			putstr(en_win, 0, " Though, you are not currently a serious student of that philosophy.");
@@ -3297,14 +3302,31 @@ research_enlightenment()
 			if(check_rot(ROT_SPORES)){
 				putstr(en_win, 0, "    Puffball mushrooms errupt from your skin.");
 			}
+			if(check_rot(ROT_EXHULT)){
+				putstr(en_win, 0, "    Something in your breast exults the Order of Rot.");
+			}
+			if(check_rot(ROT_WINGSWORD)){
+				putstr(en_win, 0, "    Insect wings sprout from the flesh of your sword arm.");
+			}
+			if(check_rot(ROT_CRICKET)){
+				putstr(en_win, 0, "    Ruinously-chirping cricket wings sprout from your arms and legs.");
+			}
+			if(check_rot(ROT_FORAGE)){
+				putstr(en_win, 0, "    The bugs on the floor bring you gifts.");
+			}
 		}
 	}
 	if(active_glyph(LUMEN) || u.ualign.god == GOD_THE_CHOIR || u.uparasitology_research){
-		if(parasite_count() >= 6){
-			putstr(en_win, 0, "You have made a breakthrough in the philosophy of the choir!");
+		if(Role_if(PM_UNDEAD_HUNTER)){
+			if(parasite_count() >= 6){
+				putstr(en_win, 0, "You have made a breakthrough in the philosophy of the choir!");
+			}
+			else {
+				putstr(en_win, 0, "You still have much to learn of parasitology.");
+			}
 		}
 		else {
-			putstr(en_win, 0, "You still have much to learn of parasitology.");
+			putstr(en_win, 0, "You have learned something of parasitology.");
 		}
 		if(!(active_glyph(LUMEN) || (u.ualign.god == GOD_THE_CHOIR && known_glyph(LUMEN)))){
 			putstr(en_win, 0, " Though, you are not currently a serious student of that philosophy.");
@@ -3359,11 +3381,16 @@ research_enlightenment()
 		}
 	}
 	if(active_glyph(ROTTEN_EYES) || u.ualign.god == GOD_THE_COLLEGE || u.ureanimation_research){
-		if(reanimation_count() >= 6){
-			putstr(en_win, 0, "You have made a breakthrough in the philosophy of the college!");
+		if(Role_if(PM_UNDEAD_HUNTER)){
+			if(reanimation_count() >= 6){
+				putstr(en_win, 0, "You have made a breakthrough in the philosophy of the college!");
+			}
+			else {
+				putstr(en_win, 0, "You still have much to learn of reanimation.");
+			}
 		}
 		else {
-			putstr(en_win, 0, "You still have much to learn of reanimation.");
+			putstr(en_win, 0, "You have learned something of reanimation.");
 		}
 		if(!(active_glyph(ROTTEN_EYES) || (u.ualign.god == GOD_THE_COLLEGE && known_glyph(ROTTEN_EYES)))){
 			putstr(en_win, 0, " Though, you are not currently a serious student of that philosophy.");

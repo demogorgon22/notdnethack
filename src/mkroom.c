@@ -3378,7 +3378,15 @@ char mithril;
 				// if(!rn2(3)) mkobj_at((rn2(2) ? WEAPON_CLASS : rn2(2) ? TOOL_CLASS : ARMOR_CLASS), x+i, y+j, NO_MKOBJ_FLAGS);
 			}
 		}
-		if(mithril){
+		if(Role_if(PM_KENSEI) && In_quest(&u.uz) && in_mklev){
+			levl[x+(size)/2][y+(size)/2].typ = mithril ? FORGE : TREE;
+			makemon_full(&mons[mithril ? PM_MITHRIL_SMITH : PM_TREESINGER],
+				x+(size)/2, y+(size)/2,
+				NO_MM_FLAGS,
+				SKELIFIED,
+				NECROMANCY_FACTION);
+		}
+		else if(mithril){
 			levl[x+(size)/2][y+(size)/2].typ = FORGE;
 			makemon(&mons[PM_MITHRIL_SMITH], x+(size)/2, y+(size)/2, NO_MM_FLAGS);
 		}
@@ -4323,6 +4331,11 @@ mkpluvillage()
 			levl[x][y+3].typ = TLCORNER;
 			levl[x][y+3].lit = 1;
 			
+			for(i=0;i<=sizebig1;i++){
+				for(j=3;j<=4+3;j++){
+					levl[x+i][y+j].roomno = NO_ROOM;
+				}
+			}
 			switch(rn2(8)){
 				case 0: //Random store
 					for(i=1;i<sizebig1;i++){
@@ -4522,6 +4535,11 @@ mkpluvillage()
 			levl[x+sizetot+1-sizebig2][y+3].typ = TLCORNER;
 			levl[x+sizetot+1-sizebig2][y+3].lit = 1;		
 			
+			for(i=sizetot-sizebig2+1;i<=sizetot+1;i++){
+				for(j=3;j<=4+3;j++){
+					levl[x+i][y+j].roomno = NO_ROOM;
+				}
+			}
 			switch(rn2(8)){
 				case 0: //Shop
 					for(i=sizetot+1-sizebig2+1;i<sizetot+1;i++){
@@ -6315,6 +6333,16 @@ place_lolth_vaults()
 	//Vault
 	num = rnd(6);
 	for(i = 0; i < num; i++) mkvaultlolth();
+}
+
+void
+place_elfhaunt_forest_features()
+{
+	mkelfforge(TREE, SOIL, 0, TRUE);
+	int i = 1 + d(3,4);
+	for(; i > 0; i--)
+		mkwraithclearing(0);
+	wallification(1,0,COLNO-1,ROWNO-1);
 }
 
 void

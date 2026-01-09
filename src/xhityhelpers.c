@@ -792,7 +792,7 @@ mpoisons_subj(mtmp, mattk)
 struct monst *mtmp;
 struct attack *mattk;
 {
-	if (mattk->aatyp == AT_WEAP || mattk->aatyp == AT_XWEP || mattk->aatyp == AT_DEVA || mattk->aatyp == AT_MARI) {
+	if (mattk->aatyp == AT_WEAP || mattk->aatyp == AT_XWEP || mattk->aatyp == AT_DEVA || mattk->aatyp == AT_JUGL || mattk->aatyp == AT_MARI) {
 		struct obj *mwep = (mtmp == &youmonst) ? uwep : MON_WEP(mtmp);
 		/* "Foo's attack was poisoned." is pretty lame, but at least
 		it's better than "sting" when not a stinging attack... */
@@ -1073,6 +1073,7 @@ int aatyp;
 	case AT_XWEP:
 	case AT_MARI:
 	case AT_DEVA:
+	case AT_JUGL:
 		w_mask = W_ARMG;	/* caller needs to check for weapon */
 		break;
 	case AT_KICK:
@@ -1141,6 +1142,7 @@ int aatyp;
 		break;
 	case AT_HODS:
 	case AT_DEVA:
+	case AT_JUGL:
 	case AT_REND:
 	case AT_WEAP:
 	case AT_XWEP:
@@ -1924,8 +1926,7 @@ struct obj * weapon;
 		if (hates_unholy_mon(mdef) && (
 			(attk->adtyp == AD_UHCD) ||
 			(magr && is_unholy_mon(magr)) ||
-			(otmp && obj_is_material(otmp, GREEN_STEEL)) ||
-			(otmp && is_unholy(otmp)) ||
+			(otmp && (obj_is_material(otmp, GREEN_STEEL) || is_unholy(otmp))) ||
 			(youagr && slot == W_ARMG && uright && is_unholy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_unholy(uleft))
 			))
@@ -3620,6 +3621,7 @@ struct attack * attk;
 	 && attk->aatyp != AT_DSPR
 	 && attk->aatyp != AT_ESPR
 	 && attk->aatyp != AT_DEVA
+	 && attk->aatyp != AT_JUGL
 	 && attk->aatyp != AT_5SQR
 	 && attk->aatyp != AT_VINE
 	 && attk->aatyp != AT_TAIL
@@ -3896,6 +3898,18 @@ obj_is_material(struct obj *obj, int mat)
 		case MITHRIL:
 			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
 				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL)
+					return TRUE;
+			}
+		break;
+		case COPPER:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_COPPER)
+					return TRUE;
+			}
+		break;
+		case LEAD:
+			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
+				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_LEAD)
 					return TRUE;
 			}
 		break;

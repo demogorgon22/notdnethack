@@ -58,7 +58,7 @@ silverman_exhultation(int encouragement)
 		if(m->mtyp == PM_SILVERMAN)
 			m->encouraged = max(m->encouraged, encouragement);
 	}
-	if(youracedata->mtyp == PM_SILVERMAN){
+	if(youracedata->mtyp == PM_SILVERMAN || check_rot(ROT_EXHULT)){
 		pline("Something within you exults!");
 		if(encouragement > 8)
 			verbalize("Rot for the scarlet goddess!");
@@ -713,13 +713,14 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		case AT_XWEP:	// no ranged (is done concurrently with AT_WEAP for offhanded blasters); offhand
 		case AT_MARI:	// no ranged; from inventory
 		case AT_HODS:	// no ranged; opponent's mainhand weapon
+		case AT_JUGL:	// mainhand; can attack many times, juggles in different weapons with each attack
 
 			/* there are cases where we can't attack at all */
 			/* 1: Wielding a weapon */
 			if (!youagr &&												// monster attacking
-				(aatyp == AT_WEAP || aatyp == AT_DEVA) &&				// using a primary weapon attack
+				(aatyp == AT_WEAP || aatyp == AT_DEVA || aatyp == AT_JUGL) && // using a primary weapon attack
 				(magr->weapon_check == NEED_WEAPON || !MON_WEP(magr))	// needs a weapon
-				){
+			){
 				/* what ranged weapon options do we have? */
 				otmp = select_rwep(magr);
 
@@ -774,7 +775,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 			}
 
 			/* get correct weapon */
-			if (aatyp == AT_WEAP || aatyp == AT_DEVA) {
+			if (aatyp == AT_WEAP || aatyp == AT_DEVA || aatyp == AT_JUGL) {
 				/* mainhand */
 				otmp = (youagr) ? uwep : MON_WEP(magr);
 			}
@@ -827,8 +828,8 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 				/* print message for magr swinging weapon (m only in function) */
 				if (vis)
 					xswingsy(magr, mdef, otmp, ranged);
-				/* do{}while(); loop for AT_DEVA */
-				boolean devaloop = (aatyp == AT_DEVA);
+				/* do{}while(); loop for AT_DEVA and  AT_JUGL */
+				boolean attackloop = (aatyp == AT_DEVA) || (aatyp == AT_JUGL);
 				do {
 					bhitpos.x = tarx; bhitpos.y = tary;
 					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
@@ -836,7 +837,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 					result = xmeleehity(magr, mdef, attk, &otmp, vis, tohitmod, ranged, 0);
 					if(ranged && otmp && is_cclub_able(otmp) && Insight >= 15)
 						otmp->otyp = otmp->oartifact == ART_AMALGAMATED_SKIES ? TWO_HANDED_SWORD : CLUB;
-					if (pa->mtyp == PM_SILVERKNIGHT && result&MM_HIT){
+					if ((pa->mtyp == PM_SILVERKNIGHT || (youagr && check_rot(ROT_WINGSWORD))) && result&MM_HIT){
 						if(youagr){
 							if(u.uencouraged < 10)
 								u.uencouraged++;
@@ -1067,14 +1068,30 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 						result |= hit_with_rreject(&youmonst, otmp, tarx, tary, 0, attk);
 					}
 					/* AT_DEVA considerations -- either stop looping or decrease to-hit */
-					if (devaloop) {
+					if (aatyp == AT_DEVA) {
 						if (result == MM_MISS || result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
-							devaloop = FALSE;
+							attackloop = FALSE;
 						else
 							tohitmod -= 4;	/* reduce accuracy on repeated AT_DEVA attacks */
 					}
+					else if(aatyp == AT_JUGL){
+						if (result == MM_MISS || result&(MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_DIED|MM_AGR_STOP))
+							attackloop = FALSE;
+						else {
+							otmp = get_mariwep(magr, pa, devai);
+							if(otmp){
+								setmnotwielded(magr, MON_WEP(magr));
+								/* wield the new object*/
+								magr->weapon_check = NEED_WEAPON;
+								setmwielded(magr, otmp, W_WEP);
+							}
+							else
+								attackloop = FALSE;
+						}
+						tohitmod -= 4;	/* reduce accuracy on repeated AT_JUGL attacks */
+					}
 					devai++;
-				} while (devaloop);
+				} while (attackloop);
 
 				if (!ranged)
 					dopassive_local = TRUE;
@@ -1495,7 +1512,14 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		(result & MM_AGR_STOP) ||									/* attacker stopped for some other reason */
 		is_null_attk(attk)											/* no more attacks */
 		));
-
+	/*Resolve any outstanding probes*/
+	for(struct monst *probmon = fmon; probmon; probmon = probmon->nmon){
+		if(probmon->mprobed){
+			if(!DEADMONSTER(probmon))
+				probe_monster(probmon);
+			probmon->mprobed = FALSE;
+		}
+	}
 	/*4b: PC's ranged offhand */
 	if(youagr && u.twoweap && (!Upolyd || could_twoweap(youracedata)) && (!uwep || !is_launcher(uwep) || is_melee_launcher(uwep))
 		&& uswapwep && is_launcher(uswapwep)
@@ -1511,6 +1535,10 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 		}
 		if(DEADMONSTER(mdef))
 			allres |= MM_DEF_DIED;
+	}
+	/* PC's Rot Cricket's sonic attack */
+	if(youagr && check_rot(ROT_CRICKET) && !rn2(4)){
+		doliving_cricket(&youmonst);
 	}
 	/* make per-round counterattacks -- note that these cannot use otmp or attk, as those are per-attack */
 	if (dopassive)
@@ -3405,7 +3433,7 @@ struct attack *attk;
 		case AT_OBIT:
 			pline("%s %s bites %s!",
 				(youagr ? "Your" : s_suffix(Monnam(magr))),
-				(attk->adtyp == AD_MAGM ? "skirt" : magr->mtyp == PM_MEDUSA ? "hair" : magr->mtyp == PM_MOON_S_CHOSEN ? "cranial wolfpack" : magr->mtyp == PM_HYGIEIAN_ARCHON ? "snake" : magr->mtyp == PM_ANCIENT_NAGA ? "canopy" : attk->adtyp == AD_DISE ? "centipede" : "snake head"),
+				(attk->adtyp == AD_MAGM ? "skirt" : magr->mtyp == PM_MEDUSA ? "hair" : magr->mtyp == PM_MOON_S_CHOSEN ? "cranial wolfpack" : magr->mtyp == PM_HYGIEIAN_ARCHON ? "snake" : magr->mtyp == PM_ROTTING_MONK ? "centipede" : magr->mtyp == PM_ANCIENT_NAGA ? "canopy" : attk->adtyp == AD_DISE ? "centipede" : "snake head"),
 				((youdef && !youagr) ? "you" : mon_nam_too(mdef, magr))
 				);
 			break;
@@ -4954,6 +4982,7 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 		/* various weapon attacks */
 	case AT_WEAP:
 	case AT_DEVA:
+	case AT_JUGL:
 	case AT_XWEP:
 	case AT_MARI:
 	case AT_HODS:
@@ -5452,9 +5481,15 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		case AD_ACID:
 		case AD_PSON:
 		case AD_DISE:
+		case AD_GMLD:
 		case AD_POSN:
 		case AD_DARK:
 		case AD_LUCK:
+		case AD_SONC:
+			if(attk->adtyp == AD_SONC && attk->aatyp == AT_HITS){
+				// don't split sonic blast attacks
+				break;
+			}
 			/* make a 0 damage physical attack 
 			 * This prints hitmsg and applies on-hit effects of any weapon
 			 */
@@ -6040,6 +6075,83 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 		return xdamagey(magr, mdef, attk, dmg);
 		/* Only poison damage
 		 * Not to be confused with a poisonous attack that adds poison bonus damage to a physical strike */
+	case AD_GMLD:
+		/* print a basic hit message */
+		if (vis && dohitmsg) {
+			xyhitmsg(magr, mdef, originalattk);
+		}
+		if(is_gray_mold(pd))
+			return MM_HIT;
+
+		int nspores = (damn && damd) ? d(damn, damd) : 1;
+		if(!is_organic_monst(pd))
+			return xdamagey(magr, mdef, attk, 0);
+		if(youdef || vis&VIS_MDEF){
+			if(nspores == 1)
+				pline("A gray mold spore has taken root in %s %s!", youdef ? "your" : s_suffix(mon_nam(mdef)), youdef ? body_part(BODY_SKIN) : mbodypart(mdef, BODY_SKIN));
+			else
+				pline("Gray mold spores have taken root in %s %s!", youdef ? "your" : s_suffix(mon_nam(mdef)), youdef ? body_part(BODY_SKIN) : mbodypart(mdef, BODY_SKIN));
+			if(youdef) exercise(A_CON, FALSE);
+		}
+		mdef->mgmld_skin += nspores;
+		/*Deals no damage*/
+		return MM_HIT;
+	case AD_SONC:
+		if(!youagr && magr->mcan){
+			if(vis && dohitmsg && originalattk->aatyp == AT_HITS)
+				pline("%s emits a weak chirp.", Monnam(magr));
+			return MM_MISS;
+		}
+		if(originalattk->aatyp == AT_HITS){
+			struct monst *cmdef;
+			int cent_x = x(magr);
+			int cent_y = y(magr);
+
+			extern const int clockwisex[8];
+			extern const int clockwisey[8];
+			int offset = rn2(8);
+			int ix, iy;
+
+			if(youagr)
+				pline("You emit a sonic blast!");
+			else
+				pline("%s emits a sonic blast!", Monnam(magr));
+			for(int i = 0; i < 8; i++){
+				ix = cent_x + clockwisex[(offset+i)%8];
+				iy = cent_y + clockwisey[(offset+i)%8];
+				if(!isok(ix, iy))
+					continue;
+				if(youagr && u.ustuck && u.uswallow)
+					cmdef = u.ustuck;
+				else
+					cmdef = m_u_at(ix, iy);
+				if(!cmdef || DEADMONSTER(cmdef))
+					continue;
+				
+				if(youagr)
+					pline("%s is caught in your blast!", Monnam(cmdef));
+				else if(cmdef == &youmonst)
+					pline("You are caught in the blast!");
+				else if(canseemon(cmdef))
+					pline("%s is caught in the blast!", Monnam(cmdef));
+				/*We'll say sonic damage is physical*/
+				dmg = reduce_dmg(cmdef,dmg,TRUE,FALSE);
+				if(dmg){
+					(void) destroy_items_sonic(cmdef, FALSE);
+					(void) xdamagey(magr, cmdef, attk, dmg);
+				}
+			}
+			return MM_HIT;
+		}
+		else {
+			/* print a basic hit message */
+			if (vis && dohitmsg) {
+				xyhitmsg(magr, mdef, originalattk);
+			}
+			(void) destroy_items_sonic(mdef, FALSE);
+			dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
+			return xdamagey(magr, mdef, attk, dmg);
+		}
 	case AD_POSN:
 		/* print a basic hit message */
 		if (vis && dohitmsg) {
@@ -9692,7 +9804,19 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 							);
 					}
 					else {
-						pline("%s swing%s %s around %s!",
+						if(pa->mtyp == PM_ROTTING_MONK){
+							pline("%s giant centipede swings itself around %s!",
+								(youagr ? "Your" : s_suffix(Monnam(mtmp))),
+								(youagr ? mon_nam(mtmp) : "you")
+								);
+						}
+						else if(pa->mtyp == PM_HYGIEIAN_ARCHON){
+							pline("%s snake swings itself around %s!",
+								(youagr ? "Your" : s_suffix(Monnam(mtmp))),
+								(youagr ? mon_nam(mtmp) : "you")
+								);
+						}
+						else pline("%s swing%s %s around %s!",
 							(youagr ? "You" : Monnam(mtmp)),
 							(youagr ? "" : "s"),
 							(youagr ? "yourself" : "itself"),
@@ -9788,10 +9912,22 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				/* Gentle squeeze. Restore 1d3 points of sanity. Just kidding. */
 				else {
 					dmg = 0;
-					pline("%s is %s.",
-						Monnam(mtmp),
-						(youagr ? "wrapped up in you" : "wrapped tight around you")
-						);
+					if(pa->mtyp == PM_ROTTING_MONK){
+						pline("%s %s.",
+							youagr ? Monnam(mtmp) : s_suffix(Monnam(mtmp)),
+							(youagr ? "is wrapped up in your centipede" : "centipede is wrapped tight around you")
+							);
+					}
+					else if(pa->mtyp == PM_HYGIEIAN_ARCHON){
+						pline("%s %s.",
+							youagr ? Monnam(mtmp) : s_suffix(Monnam(mtmp)),
+							(youagr ? "is wrapped up in your snake" : "snake is wrapped tight around you")
+							);
+					}
+					else pline("%s is %s.",
+							Monnam(mtmp),
+							(youagr ? "wrapped up in you" : "wrapped tight around you")
+							);
 				}
 			}
 			/* nothing really happens */
@@ -11400,6 +11536,25 @@ int vis;
 	int fulldmg = dmg;
 	static char buf[BUFSZ]; /* Used to hold variable messages to be displayed later */
 	struct obj * otmp;
+	struct obj *towel = 0;
+	struct obj *dust_mask = 0;
+	struct obj *isolation_suit = 0;
+	if(youdef){
+		if(uarmh && uarmh->otyp == SHEMAGH)
+			dust_mask = uarmh;
+		if(ublindf && ublindf->otyp == TOWEL)
+			towel = ublindf;
+		if(uarmu && uarmu->otyp == BODYGLOVE)
+			isolation_suit = uarmu;
+	}
+	else {
+		if (which_armor(mdef, W_ARMH) && which_armor(mdef, W_ARMH)->otyp == SHEMAGH)
+			dust_mask = which_armor(mdef, W_ARMH);
+		if (which_armor(mdef, W_TOOL) && which_armor(mdef, W_TOOL)->otyp == TOWEL)
+			towel = which_armor(mdef, W_TOOL);
+		if (which_armor(mdef, W_ARMU) && which_armor(mdef, W_ARMU)->otyp == BODYGLOVE)
+			isolation_suit = which_armor(mdef, W_ARMU);
+	}
 
 	/* apply half-phys */
 	dmg = reduce_dmg(mdef,dmg,TRUE,FALSE);
@@ -11708,11 +11863,12 @@ int vis;
 	case AD_BLND:
 		if (can_blnd(magr, mdef, attk->aatyp, (struct obj*)0)) {
 			if (youdef) {
+				struct obj *otmp = dust_mask ? dust_mask : towel;
 			
-				if (uarmh && uarmh->otyp == SHEMAGH && magr && 
+				if (otmp && magr && 
 					(magr->mtyp == PM_DUST_VORTEX || magr->mtyp == PM_SINGING_SAND || magr->mtyp == PM_PYROCLASTIC_VORTEX))
 				{
-					pline("The %s protects you from the dust!", simple_typename(uarmh->otyp));
+					pline("The %s protects you from the dust!", simple_typename(otmp->otyp));
 				} else if (!Blind) {
 					You_cant("see in here!");
 					make_blinded((long)dmg, FALSE);
@@ -11724,9 +11880,9 @@ int vis;
 					make_blinded(Blinded + 1, FALSE);
 			}
 			else {
-				struct obj *otmp = which_armor(mdef, W_ARMH);
+				struct obj *otmp = dust_mask ? dust_mask : towel;
 				
-				if (otmp && otmp->otyp == SHEMAGH && magr && (magr->mtyp == PM_DUST_VORTEX || magr->mtyp == PM_SINGING_SAND)){
+				if (otmp && magr && (magr->mtyp == PM_DUST_VORTEX || magr->mtyp == PM_SINGING_SAND)){
 					if (vis&VIS_MDEF)
 						pline("The %s protects %s from the dust!", simple_typename(otmp->otyp), Monnam(mdef));
 				} else {
@@ -12218,6 +12374,11 @@ int vis;
 		/* unbreathing provides total immunity */
 		if (youdef ? Breathless : breathless_mon(mdef))
 			break;
+		if(towel){
+			if (youdef)
+				pline("The %s wards off the noxious fumes!", simple_typename(towel->otyp));
+			break;
+		}
 		/* apply resistance */
 		if (Poison_res(mdef)) {
 			dmg = 0;
@@ -12253,6 +12414,46 @@ int vis;
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
+	case AD_GMLD:{
+		boolean breathless = youdef ? Breathless : breathless_mon(mdef);
+		if(youdef){
+			if(is_gray_mold(youracedata)){
+				if(!Blind)
+					You("are surrounded by a clould of drifting gray spores.");
+				healup(dmg, 0, FALSE, FALSE);
+				return MM_MISS;
+			}
+			else if(!is_organic_monst(youracedata)){
+				if(!Blind)
+					You("are surrounded by a clould of drifting gray spores.");
+				return MM_MISS;
+			}
+			else if(!(breathless || dust_mask || towel || isolation_suit))
+				You("cough and gag in the cloud of gray spores!");
+			pline("%s in your %s!", dmg > 1 ? "Some spores take root" : "A spore takes root", body_part(BODY_SKIN));
+		}
+		else {
+			if(is_gray_mold(pd)){
+				if (vis&VIS_MDEF)
+					pline("%s looks healthier.", Monnam(mdef));
+				mdef->mhp = min(*hpmax(mdef), *hp(mdef) + dmg);
+				return MM_HIT;
+			}
+			else if(!is_organic_monst(pd)){
+				return MM_MISS;
+			}
+			else if(vis&VIS_MDEF && !(breathless || dust_mask || towel || isolation_suit))
+				pline("%s coughs.", Monnam(mdef));
+			if (vis&VIS_MDEF && distu(mdef->mx, mdef->my) <= 2)
+				pline("%s in %s %s!", dmg > 1 ? "Some spores take root" : "A spore takes root",
+					s_suffix(mon_nam(mdef)),
+					mbodypart(mdef, BODY_SKIN));
+		}
+		if (!(breathless || dust_mask || towel || isolation_suit))
+			mdef->mgmld_throat += dmg;
+		mdef->mgmld_skin += dmg;
+		return MM_HIT;
+	}break;
 	case AD_DISE:	/* damage/effect ? */
 		if (youdef) {
 			diseasemu(pa);
@@ -12278,24 +12479,24 @@ int vis;
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
-		case AD_PYCL:{	/* Immediately recurse and return */
-			struct attack alt_attk = *attk;
-			switch(rnd(4)){
-				case 1:
-					alt_attk.adtyp = AD_FIRE;
-				break;
-				case 2:
-					alt_attk.adtyp = AD_PHYS;
-				break;
-				case 3:
-					alt_attk.adtyp = AD_DRST;
-				break;
-				case 4:
-					alt_attk.adtyp = AD_BLND;
-				break;
-			}
-			return xengulfhurty(magr, mdef, &alt_attk, vis);
-		}break;
+	case AD_PYCL:{	/* Immediately recurse and return */
+		struct attack alt_attk = *attk;
+		switch(rnd(4)){
+			case 1:
+				alt_attk.adtyp = AD_FIRE;
+			break;
+			case 2:
+				alt_attk.adtyp = AD_PHYS;
+			break;
+			case 3:
+				alt_attk.adtyp = AD_DRST;
+			break;
+			case 4:
+				alt_attk.adtyp = AD_BLND;
+			break;
+		}
+		return xengulfhurty(magr, mdef, &alt_attk, vis);
+	}break;
 	}
 	return result;
 }
@@ -14652,6 +14853,59 @@ int vis;
 	return result;
 }
 
+void
+apply_lightsaber_crystal_effects(struct monst *magr, struct monst *mdef, struct obj *crystal, struct obj *weapon, int basedmg, int *plusdmgptr, int *truedmgptr)
+{
+	struct weapon_dice wdice;
+	/* grab the weapon dice from dmgval_core */
+	dmgval_core(&wdice, bigmonst(mdef->data), weapon, weapon->otyp, magr);
+	if(check_oprop(crystal, OPROP_FIREW)){
+		if (resists_fire(mdef)) {
+			*truedmgptr += 0;
+		} else if(cold_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_COLDW)){
+		if (resists_cold(mdef)) {
+			*truedmgptr += 0;
+		} else if(fire_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_ELECW)){
+		if (resists_elec(mdef)) {
+			*truedmgptr += 0;
+		} else if(shock_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_ACIDW)){
+		if (resists_acid(mdef)) {
+			*truedmgptr += 0;
+		} else if(acid_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+	if(check_oprop(crystal, OPROP_MAGCW)){
+		if (resists_magm(mdef)) {
+			*truedmgptr += 0;
+		} else if(magm_vulnerable(mdef)) {
+			*truedmgptr += d(wdice.oc_damn,wdice.oc_damd);
+		} else {
+			*truedmgptr += rnd(wdice.oc_damd);
+		}
+	}
+}
+
 int
 apply_hit_effects(magr, mdef, otmp, msgr, basedmg, plusdmgptr, truedmgptr, dieroll, hittxt, printmessages, direct_weapon)
 struct monst * magr;
@@ -15232,12 +15486,24 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			sneak_dice++;
 		if (Role_if(PM_HEALER) && !Upolyd && weapon && weapon->owornmask && weapon->otyp == KNIFE)
 			sneak_dice++;
+		if (weapon && weapon->owornmask && Role_if(PM_KENSEI) && u.role_variant == ART_ANSERMEE && is_kensei_weapon(weapon))
+			sneak_dice++;
 		//In Amalg skies only give extra sneak to offhand unarmed attack.
 		if (uwep &&
 			(uwep->otyp == BESTIAL_CLAW || (uwep->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BESTIAL_CLAW)) &&
 			active_glyph(BEASTS_EMBRACE) && (!weapon || weapon->otyp == BESTIAL_CLAW)
 		)
 			sneak_dice++;
+		if(weapon && mdef->mopen &&
+				ZFOCUS(weapon) &&
+				magr && CHECK_ETRAIT(weapon, magr, ETRAIT_CREATE_OPENING) &&
+				ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))
+		){
+			sneak_dice++;
+			if(ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
+				sneak_dice++;
+			}
+		}
 	}
 	if (modifier_flags&MELEEHURT_SUPER_SNEAK)
 		sneak_dice++;
@@ -15249,23 +15515,11 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_LOLTH_S_FANG)
 		sneak_dice++;
-	if (weapon && weapon->owornmask && Role_if(PM_KENSEI) && u.role_variant == ART_ANSERMEE && is_kensei_weapon(weapon))
-		sneak_dice++;
 	if (weapon && weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_ANDROMALIUS)
 		sneak_dice++;
 	if (weapon && weapon->owornmask && weapon->oartifact == ART_MORTAL_BLADE \
 		&& artinstance[ART_MORTAL_BLADE].mortalLives > 1)
 		sneak_dice++;
-	if(!recursed && weapon && valid_weapon_attack && mdef->mopen &&
-			youagr && ZFOCUS(weapon) &&
-			magr && CHECK_ETRAIT(weapon, magr, ETRAIT_CREATE_OPENING) &&
-			ROLL_ETRAIT(weapon, magr, TRUE, !rn2(4))
-	){
-		sneak_dice++;
-		if(ROLL_ETRAIT(weapon, magr, !rn2(4), !rn2(20))){
-			sneak_dice++;
-		}
-	}
 	/* check sneak attack conditions -- defender's conditions must allow sneak attacking */
 	if (magr &&
 		!noanatomy(pd) &&
@@ -17074,7 +17328,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 			/* track lightsaber skill */
 			if(weapon && is_lightsaber(weapon) && litsaber(weapon)){
-				flags.lightsaber_max = max(flags.lightsaber_max, P_SKILL(P_SABER));
+				flags.lightsaber_max = max(flags.lightsaber_max, P_SKILL(weapon_type(weapon)));
 			}
 
 			/* now, train skills */
@@ -17089,7 +17343,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					if ((activeFightingForm(FFORM_SHII_CHO) ||
 						(activeFightingForm(FFORM_MAKASHI))
 						) &&
-						!uarms && !u.twoweap && wtype == P_SABER
+						!uarms && !u.twoweap && (wtype == P_SABER || wtype == P_LONG_SWORD)
 						) use_skill(P_MAKASHI, 1);
 					if ((activeFightingForm(FFORM_SHII_CHO) ||
 						(activeFightingForm(FFORM_ATARU))
@@ -17257,7 +17511,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				int punc = ROLL_ETRAIT(weapon, magr, 2, 1);
 				if(youagr && ZFOCUS(weapon))
 					punc *= 2;
-				mdef->mpunctured += punc;
+				mdef->mpunctured = min(mdef->mpunctured + punc, 15); //Note: mpunctured is 4 bits, max 15
 				if(mdef->mpunctured > rn2(10)){
 					mdef->mpunctured = 0;
 					struct weapon_dice wdice;
@@ -17442,6 +17696,22 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					u.uconduct.weaphit--;
 				if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_STOP)))
 					return returnvalue;
+				if (is_lightsaber(otmp) && litsaber(otmp) && otmp->cobj
+					&& !(otmp->cobj->oartifact && otmp->cobj->oartifact == otmp->oartifact)
+				) {
+					if (otmp->cobj->otyp == CRYSTAL){
+						apply_lightsaber_crystal_effects(magr, mdef, otmp->cobj, weapon, basedmg, &artidmg, &elemdmg);
+					}
+					else {
+						returnvalue = apply_hit_effects(magr, mdef, otmp->cobj, weapon, basedmg, &artidmg, &elemdmg, dieroll, &hittxt, FALSE, FALSE);
+						if (returnvalue == MM_MISS && youagr && (melee || thrust))
+							u.uconduct.weaphit--;
+						if (returnvalue == MM_MISS || (returnvalue & (MM_DEF_DIED|MM_DEF_LSVD|MM_AGR_STOP)))
+							return returnvalue;
+						if (otmp->cobj->oartifact)
+							artif_hit = TRUE;
+					}
+				}
 				if (otmp->oartifact)
 					artif_hit = TRUE;
 			}
@@ -18216,7 +18486,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					);
 			}
 		}
-		else {
+		else if(youdef){
 			You("%s from %s powerful %s%s!",
 				makeplural(stagger(mdef, "stagger")),
 				s_suffix(mon_nam(magr)),
@@ -18235,7 +18505,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					);
 			}
 		}
-		else {
+		else if(youdef){
 			You("are stunned by %s powerful %s%s!",
 				s_suffix(mon_nam(magr)),
 				((weapon && weapon->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD) ? "blow" : "strike"),
@@ -19298,6 +19568,9 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 		if(has_template(magr, ZOMBIFIED) || has_template(magr, SKELIFIED)){
 			IMPURITY_UP(u.uimp_bodies)
 		}
+		if(magr->mtyp == PM_ROTTING_MONK){
+			IMPURITY_UP(u.uimp_rot_monk)
+		}
 		if(magr->mtyp == PM_DEEP_ONE
 		|| magr->mtyp == PM_DEEPER_ONE
 		|| (rn2(2) && magr->mtyp == PM_DEEPEST_ONE)
@@ -19644,6 +19917,25 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 	/* set permonst pointers */
 	struct permonst * pa = youagr ? youracedata : magr->data;
 	int maketame = ((youdef || mdef->mtame) ? MM_EDOG : 0);
+	struct obj *dust_mask = NULL;
+	struct obj *towel = NULL;
+	struct obj *isolation_suit = NULL;
+	if(youagr){
+		if(uarmh && uarmh->otyp == SHEMAGH)
+			dust_mask = uarmh;
+		if(ublindf && ublindf->otyp == TOWEL)
+			towel = ublindf;
+		if(uarmu && uarmu->otyp == BODYGLOVE)
+			isolation_suit = uarmu;
+	}
+	else {
+		if (which_armor(magr, W_ARMH) && which_armor(magr, W_ARMH)->otyp == SHEMAGH)
+			dust_mask = which_armor(magr, W_ARMH);
+		if (which_armor(magr, W_TOOL) && which_armor(magr, W_TOOL)->otyp == TOWEL)
+			towel = which_armor(magr, W_TOOL);
+		if (which_armor(magr, W_ARMU) && which_armor(magr, W_ARMU)->otyp == BODYGLOVE)
+			isolation_suit = which_armor(magr, W_ARMU);
+	}
 
 
 	/* Get damage of passive */
@@ -20164,6 +20456,8 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 									pline("A cloud of spores is released!");
 								if (!youdef)
 									mdef->mspec_used = 1;
+								if (towel || dust_mask)
+									break;
 							}
 							else break;
 						}
@@ -20182,6 +20476,33 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 						}
 					}
 				}
+				break;
+				case AD_GMLD:
+					if ((youdef || !mdef->mcan) && !is_gray_mold(youagr ? youracedata : magr->data)) {
+						if(!rn2(4) || (!youdef && DEADMONSTER(mdef))){
+							if (canseemon(mdef))
+								pline("A cloud of gray spores is released!");
+							if(youagr ? !is_organic_monst(youracedata) : !is_organic_monst(magr->data))
+								break;
+							boolean breathless = youagr ? Breathless : breathless_mon(magr);
+							if(youagr){
+								if(!(breathless || dust_mask || towel || isolation_suit))
+									You("cough and gag.");
+								pline("%s in your %s!", dmg > 1 ? "Some spores take root" : "A spore takes root", body_part(BODY_SKIN));
+							}
+							else {
+								if(vis&VIS_MAGR && !(breathless || dust_mask || towel || isolation_suit))
+									pline("%s coughs.", Monnam(magr));
+								if (vis&VIS_MAGR && distu(magr->mx, magr->my) <= 2)
+									pline("%s in %s %s!", dmg > 1 ? "Some spores take root" : "A spore takes root",
+										s_suffix(mon_nam(magr)),
+										mbodypart(magr, BODY_SKIN));
+							}
+							if (!(breathless || dust_mask || towel || isolation_suit))
+								magr->mgmld_throat += dmg;
+							magr->mgmld_skin += dmg;
+						}
+					}
 				break;
 			}
 
@@ -21713,7 +22034,7 @@ boreal_blast_effect(struct monst *mdef)
 		}
 	}
 	else if(activeFace(FFACE_FISH)){
-		if(is_organic_mon(mdef)){
+		if(is_organic_monst(mdef->data)){
 			if(!is_spiritual_being(mdef))
 				dmg *= 2;
 			dmg = reduce_dmg(mdef,dmg,FALSE,TRUE);
@@ -22183,6 +22504,10 @@ amalgam_stars()
 		amalgam_star(PLATINUM);
 	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL)
 		amalgam_star(MITHRIL);
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_COPPER)
+		amalgam_star(COPPER);
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_LEAD)
+		amalgam_star(LEAD);
 }
 
 void
@@ -22614,9 +22939,19 @@ get_whirlwind_position(int direction, int *nx, int *ny)
 		*ny = u.uy+sgn(u.dx-u.dy);
 		break;
 	case 3:
+		/* 45 degree rotation */
+		*nx = u.ux+sgn(u.dx+u.dy);
+		*ny = u.uy+sgn(-u.dx+u.dy);
+		break;
+	case 4:
 		/* -135 degree rotation */
 		*nx = u.ux+sgn(-u.dx+u.dy);
 		*ny = u.uy+sgn(-u.dx-u.dy);
+		break;
+	case 5:
+		/* -45 degree rotation */
+		*nx = u.ux+sgn(u.dx-u.dy);
+		*ny = u.uy+sgn(u.dx+u.dy);
 		break;
 	}
 }
@@ -22635,7 +22970,7 @@ kensei_elf_whirlwind(int *move_cost)
 	
 	*move_cost = MOVE_INSTANT;
 	
-	for(int i = 0; i < 4; i++){
+	for(int i = 0; i < 6; i++){
 		get_whirlwind_position(i, &nx, &ny);
 		
 		if(isok(nx, ny) && (mdef = m_at(nx, ny)) && peace_check_move(mdef)){
@@ -22736,7 +23071,7 @@ move_name(int moveid)
 		case DIVE_KICK: return "Dive kick";
 		case AURA_BOLT: return (Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep)) ? (uwep->oartifact == ART_SKY_RENDER ? "Dragon flash" : "Aura slash") : "Aura bolt";
 		case BIRD_KICK: return "Bird kick";
-		case STRONG_P: return "Roundhouse punch";
+		case STRONG_P: return uwep ? "Roundhouse strike" : "Roundhouse punch";
 		case METODRIVE: return "Meteor drive";
 		case PUMMEL: return uwep ? "Flurry" : "Pummel";
 		case AVALANCHE: return "Avalanche";
@@ -23171,6 +23506,7 @@ perform_monk_move(int moveID, int *move_cost)
 		){
 			pline("%s!", move_name(moveID));
 			knockback_bolt();
+			return TRUE;
 		}
 		break;
 		case OVERLOAD:
@@ -23179,6 +23515,7 @@ perform_monk_move(int moveID, int *move_cost)
 		){
 			pline("%s!", move_name(moveID));
 			overload_bolt();
+			return TRUE;
 		}
 		break;
 		case WARP_WEP:
@@ -23464,7 +23801,7 @@ perform_monk_move(int moveID, int *move_cost)
 			if((mdef = adjacent_move_target(!!uarmg))){
 				pline("%s!", move_name(moveID));
 				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
-				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_SHOVE|ATTKFLAG_DOUBLE_DAMAGE);
+				xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, ATTKFLAG_DOUBLE_DAMAGE);
 				return TRUE;
 			}
 		break;
@@ -23903,6 +24240,8 @@ bent_move()
 {
 	if(Role_if(PM_KENSEI)){
 		if(uwep && is_kensei_weapon(uwep)){
+			if(is_lightsaber(uwep) && !litsaber(uwep))
+				return DRAIN_L;
 			if(u.role_variant == ART_SKY_REFLECTED){
 				if(Insight > 10){
 					if(is_streaming_merc(uwep))
@@ -23937,6 +24276,8 @@ hook_move()
 {
 	if(Role_if(PM_KENSEI)){
 		if(!(uwep && is_kensei_weapon(uwep)))
+			return STRONG_P;
+		if(is_lightsaber(uwep) && !litsaber(uwep))
 			return STRONG_P;
 		if(uwep->oartifact == ART_ANSERMEE)
 			return SONIC_B;

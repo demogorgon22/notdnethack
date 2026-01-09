@@ -45,10 +45,16 @@
 									  || (mon)->mtyp == PM_MOON_ENTITY_EYE_CLUSTER \
 										)
 
+#define acid_vulnerable_species(mon)	((mon)->mtyp == PM_RUSTY_GRAY_MOLD \
+									  || (mon)->mtyp == PM_GRAY_FUNGAL_TOWER \
+									  || (mon)->mtyp == PM_VEGEPYGMY \
+									  || (mon)->mtyp == PM_VEGEPYGMY_SHAMAN \
+										)
+
 #define fire_vulnerable(mon)	(species_resists_cold(mon) || mon_vulnerability(mon, FIRE_RES))
 #define cold_vulnerable(mon)	(species_resists_fire(mon) || mon_vulnerability(mon, COLD_RES))
 #define shock_vulnerable(mon)	(shock_vulnerable_species(mon) || mon_vulnerability(mon, SHOCK_RES))
-#define acid_vulnerable(mon)	(mon_vulnerability(mon, ACID_RES))
+#define acid_vulnerable(mon)	(acid_vulnerable_species(mon) || mon_vulnerability(mon, ACID_RES))
 #define magm_vulnerable(mon)	(mon_vulnerability(mon, ANTIMAGIC))
 
 #define	resist_attacks(ptr)	((((ptr)->mflagsg & MG_WRESIST) != 0L))
@@ -365,8 +371,8 @@
 #define species_controls_teleports(ptr)	(((ptr)->mflagsm & MM_TPORT_CNTRL) != 0L)
 #define species_is_telepathic(ptr)		(((ptr)->mflagsv & MV_TELEPATHIC) != 0L)
 #define species_blind_telepathic(ptr)	(!haseyes(ptr) || !((ptr)->mflagsv&(MV_NORMAL|MV_INFRAVISION|MV_DARKSIGHT|MV_LOWLIGHT2|MV_LOWLIGHT3|MV_CATSIGHT|MV_EXTRAMISSION)))
-#define is_armed(ptr)		(attacktype(ptr, AT_WEAP) || attacktype(ptr, AT_XWEP) || attacktype(ptr, AT_MARI) || attacktype(ptr, AT_DEVA))
-#define is_armed_mon(mon)	(mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA))
+#define is_armed(ptr)		(attacktype(ptr, AT_WEAP) || attacktype(ptr, AT_XWEP) || attacktype(ptr, AT_MARI) || attacktype(ptr, AT_DEVA) || attacktype(ptr, AT_JUGL))
+#define is_armed_mon(mon)	(mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA) || mon_attacktype(mon, AT_JUGL))
 #define crpsdanger(ptr)		(acidic(ptr) || poisonous(ptr) ||\
 							 freezing(ptr) || burning(ptr))
 #define hideablewidegaze(ptr)	((ptr)->mtyp == PM_MEDUSA || \
@@ -485,6 +491,10 @@
 							 (ptr)->mtyp == PM_MIGO_SOLDIER ||\
 							 (ptr)->mtyp == PM_MIGO_PHILOSOPHER ||\
 							 (ptr)->mtyp == PM_MIGO_QUEEN)
+#define is_gray_mold(ptr)	((ptr)->mtyp == PM_RUSTY_GRAY_MOLD ||\
+							 (ptr)->mtyp == PM_VEGEPYGMY ||\
+							 (ptr)->mtyp == PM_VEGEPYGMY_SHAMAN ||\
+							 (ptr)->mtyp == PM_GRAY_FUNGAL_TOWER)
 #define your_race(ptr)		(((ptr)->mflagsa & urace.selfmask) != 0L)
 #define is_andromaliable(ptr)	(is_elf(ptr) || is_drow(ptr) || is_dwarf(ptr) || is_gnome(ptr) || is_orc(ptr) || is_human(ptr) || (ptr)->mtyp == PM_HOBBIT || \
 								 (ptr)->mtyp == PM_MONKEY || (ptr)->mtyp == PM_APE || (ptr)->mtyp == PM_YETI || \
@@ -684,6 +694,7 @@
 #define	is_snake_bite_mtyp(ptr)	((ptr)->mtyp == PM_MEDUSA \
 									|| (ptr)->mtyp == PM_ANCIENT_NAGA\
 									|| (ptr)->mtyp == PM_MOON_S_CHOSEN\
+									|| (ptr)->mtyp == PM_ROTTING_MONK\
 								)
 #define	is_snake_bite_mon(mon)	(is_snake_bite_mtyp((mon)->data) || has_template(mon, MOLY_TEMPLATE))
 #define	is_tailslap_mtyp(ptr)	(is_true_adult_dragon(ptr) || (ptr)->mtyp == PM_UISCERRE_ELADRIN || (ptr)->mtyp == PM_DISENCHANTER || (ptr)->mtyp == PM_GRAY_DEVOURER || (ptr)->mtyp == PM_NAMELESS_GNAWER)
@@ -1257,16 +1268,16 @@
 
 #define is_spiritual_being(mon)	(is_demon((mon)->data) || is_minion((mon)->data))
 
-#define is_organic_mon(mon)	(!(is_naturally_unalive((mon)->data) \
-							 || unsolid((mon)->data) \
-							 || is_great_old_one((mon)->data) \
-							 || ((mon)->data->mlet == S_ELEMENTAL) \
-							 || ((mon)->data->mlet == S_VORTEX && is_elemental((mon)->data)) \
-							 || ((mon)->data->mlet == S_EYE && is_elemental((mon)->data)) \
-							 || ((mon)->data->mlet == S_LIGHT && is_elemental((mon)->data)) \
-							 || ((mon)->mtyp == PM_HOOLOOVOO) \
+#define is_organic_monst(ptr)	(!(is_naturally_unalive(ptr) \
+							 || unsolid(ptr) \
+							 || is_great_old_one(ptr) \
+							 || ((ptr)->mlet == S_ELEMENTAL) \
+							 || ((ptr)->mlet == S_VORTEX && is_elemental(ptr)) \
+							 || ((ptr)->mlet == S_EYE && is_elemental(ptr)) \
+							 || ((ptr)->mlet == S_LIGHT && is_elemental(ptr)) \
+							 || ((ptr)->mtyp == PM_HOOLOOVOO) \
 							) \
-							|| ((mon)->data->mflagsb&MB_ORGANIC) \
+							|| ((ptr)->mflagsb&MB_ORGANIC) \
 							)
 
 // #define is_indigestible(ptr)	((ptr)->mtyp == PM_DANCING_BLADE ||\

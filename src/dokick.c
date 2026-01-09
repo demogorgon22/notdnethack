@@ -143,7 +143,7 @@ doit:
 			xpassivey(&youmonst, mon, &basickick, (struct obj *)0, -1, MM_MISS, mon->data, TRUE);
 			mon->movement -= 6; //Note, may end up with up to -6 move points
 		    return;
-		} else if(!rn2(martial() ? 50 : clumsy ? 3 : 4) && (clumsy || !bigmonst(mon->data)) && mon->movement >= 0){
+		} else if(!rn2(martial() ? 50 : clumsy ? 3 : 4) && (clumsy || !bigmonst(mon->data)) && mon->movement >= 6){
 			coord mm;
 			char buffnam[BUFSZ];
 			Sprintf(buffnam, "%s", Monnam(mon));

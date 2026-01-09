@@ -1444,6 +1444,7 @@ boolean forcedestroy;			/* TRUE if projectile should be forced to be destroyed a
 			(void)mpickobj(mdef, thrownobj);
 			if ((mon_attacktype(mdef, AT_WEAP) ||
 				mon_attacktype(mdef, AT_DEVA) ||
+				mon_attacktype(mdef, AT_JUGL) ||
 				mon_attacktype(mdef, AT_XWEP)
 				) &&
 				mdef->weapon_check == NEED_WEAPON) {
@@ -3236,7 +3237,7 @@ int tary;
 			typ = random_breaths[rn2(SIZE(random_breaths))];
 	}
 	/* if cancelled, (or the player is strangled) can't use breath attack */
-	if (youagr ? Strangled : magr->mcan) {
+	if (youagr ? Strangled_cant_speak : magr->mcan) {
 		if (youagr) {
 			You_cant("breathe.  Sorry.");
 			return FALSE;	/* took no time */
@@ -3489,6 +3490,7 @@ int n;	/* number to try to fire */
 		ammo_type = SPIKE;
 		qvr = mksobj(ammo_type, MKOBJ_NOINIT);
 		set_material_gm(qvr, SHADOWSTEEL);
+		qvr->improved_mat = TRUE;
 		qvr->quan = 1;
 		qvr->spe = 8;
 		qvr->opoisoned = (OPOISON_BASIC | OPOISON_BLIND);

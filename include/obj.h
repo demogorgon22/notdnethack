@@ -232,9 +232,10 @@ struct obj {
 	Bitfield(nomerge,1);	/* temporarily block from merging */
 	Bitfield(forceconf,1);	/* when set on a scroll, forces the confusion effect. Meant for use with pseudo objects, isn't checked while merging */
 	Bitfield(ohaluengr,1);	/* engraving on item isn't a "real" ward */
-	/* 15 free bits in this field, I think -CM */
 	Bitfield(researched,1);	/* already disected */
 	Bitfield(blood_smithed,1);	/* improved by blood smithing */
+	Bitfield(improved_mat,1);	/* improved over base material (used for shadowsteel weapons) */
+	/* 12 free bits in this field, I think -CM */
 	
 	int obj_material;		/*Object material (from lookup table)*/
 	int sub_material;		/*Sub-material*/
@@ -937,7 +938,7 @@ struct obj {
 #define is_farm(otmp)	((otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && \
 			 objects[otmp->otyp].oc_skill == P_HARVEST)
 #define is_sickle(otmp)	((otmp)->otyp == ELVEN_SICKLE || (otmp)->otyp == SICKLE)
-#define is_katana(otmp) ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == NINJA_TO || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI || (otmp)->otyp == CHIKAGE)
+#define is_katana_ish(otmp) ((otmp)->otyp == WAKIZASHI || (otmp)->otyp == NINJA_TO || (otmp)->otyp == KATANA || (otmp)->otyp == ODACHI || (otmp)->otyp == NAGAMAKI || (otmp)->otyp == CHIKAGE)
 
 #define is_launcher(otmp)	(otmp->oclass == WEAPON_CLASS && \
 			 ((objects[otmp->otyp].oc_skill >= P_BOW && \
@@ -1042,6 +1043,7 @@ struct obj {
 #define valid_focus_gem(otmp) ((otmp)->oclass == GEM_CLASS && ((otmp)->otyp < LUCKSTONE \
 								|| (otmp)->otyp == CHUNK_OF_FOSSIL_DARK \
 								|| (otmp)->otyp == CATAPSI_VORTEX \
+								|| ((otmp)->otyp == CRYSTAL && (otmp)->obj_material == GEMSTONE) \
 								|| (otmp)->otyp == ANTIMAGIC_RIFT))
 #define is_vibroweapon(otmp) (force_weapon(otmp) || \
 							  is_vibrosword(otmp) || \
@@ -1185,15 +1187,15 @@ struct obj {
 #define is_kensei_weapon(otmp) (u.role_variant == ART_SKY_REFLECTED ? (otmp)->obj_material == MERCURIAL :\
 								u.role_variant == ART_SILVER_SKY ? check_oprop((otmp), OPROP_GSSDW) : \
 								u.role_variant == ART_RINGIL ? (check_oprop((otmp), OPROP_WRTHW) || objects[(otmp)->otyp].oc_skill == P_SCIMITAR) : \
-								u.role_variant == ART_ANSERMEE ? (objects[(otmp)->otyp].oc_skill == P_SHORT_SWORD) : \
+								u.role_variant == ART_ANSERMEE ? (objects[(otmp)->otyp].oc_skill == P_SHORT_SWORD || (!is_lightsaber(otmp) && is_future_otyp((otmp)->otyp))): \
 								u.role_variant == ART_BOREAL_SCEPTER ? (objects[(otmp)->otyp].oc_skill == P_CLUB) : \
 								u.role_variant == ART_PIERCING_FLAME ? (objects[(otmp)->otyp].oc_skill == P_TRIDENT) : \
 								u.role_variant == ART_MALICE ? (objects[(otmp)->otyp].oc_skill == P_BROAD_SWORD) : \
 								u.role_variant == ART_SEVEN_STAR_SWORD ? (objects[(otmp)->otyp].oc_skill == P_TWO_HANDED_SWORD) : \
 								u.role_variant == ART_KISHIN_MIRROR ? (objects[(otmp)->otyp].oc_skill == P_MACE) : \
 								u.role_variant == ART_WINTER_REAPER ? ((otmp)->otyp == RAPIER || (otmp)->otyp == SABER) : \
-								u.role_variant == ART_KIKU_ICHIMONJI ? (is_katana(otmp)) : \
-								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp) && litsaber(otmp)) : \
+								u.role_variant == ART_KIKU_ICHIMONJI ? (is_katana_ish(otmp)) : \
+								u.role_variant == ART_EPITAPH_OF_WONGAS ? (is_lightsaber(otmp)) : \
 								(otmp)->otyp == artilist[u.role_variant].otyp)
 
 #define is_kensei_weapon_otyp(a_otyp)	( \
@@ -1594,7 +1596,8 @@ struct obj {
 
 #define is_holy(otmp)		((otmp)->oartifact == ART_SEVEN_STAR_SWORD || (otmp)->blessed)
 #define is_unholy(otmp)		((otmp)->oartifact == ART_STORMBRINGER || (otmp)->oartifact == ART_DIRGE || \
-							(otmp)->oartifact == ART_MALICE || (otmp)->oartifact == ART_TECPATL_OF_HUEHUETEOTL || (otmp)->cursed)
+							(otmp)->oartifact == ART_MALICE || (otmp)->oartifact == ART_TECPATL_OF_HUEHUETEOTL || \
+							(otmp)->oartifact == ART_ANGUIREL || (otmp)->cursed)
 
 /* material */
 #define is_flimsy(otmp)		((otmp)->obj_material <= LEATHER)

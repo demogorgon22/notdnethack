@@ -206,7 +206,7 @@ register struct obj *obj;
 			(obj->obj_material == VEGGY || obj->obj_material == FLESH))); /*Processed foods only*/
 	
 	if (metallivorous(youracedata) && is_metallic(obj) &&
-	    (youracedata->mtyp != PM_RUST_MONSTER || is_rustprone(obj)))
+	    (!(youracedata->mtyp == PM_RUST_MONSTER && is_gray_mold(youracedata)) || is_rustprone(obj)))
 		return TRUE;
 	if ((u.umonnum == PM_GELATINOUS_CUBE || u.umonnum == PM_ANCIENT_OF_CORRUPTION) && is_organic(obj) &&
 		/* [g.cubes can eat containers and retain all contents
@@ -770,8 +770,25 @@ BOOLEAN_P bld, nobadeffects;
 			victual.piece = (struct obj *)0;
 		    return;
 		}
-		if (acidic(&mons[pm]) && (Stoned || Golded || Salted))
+		if(is_gray_mold(&mons[pm])){
+			if(!nobadeffects){
+				struct attack *mattk = attacktype_fordmg(&mons[pm], AT_NONE, AD_GMLD);
+				int spores = 1;
+				if(mattk) spores = mattk->damn * mattk->damd;
+				You("feel a tickling in your %s.", body_part(THROAT));
+				if(!separate_respiration(&mons[pm])){
+					youmonst.mgmld_skin += spores;
+				}
+				else {
+					youmonst.mgmld_throat += spores;
+				}
+			}
+		}
+		if (acidic(&mons[pm]) && (Stoned || Golded || Salted)){
 		    fix_petrification();
+			youmonst.mgmld_skin = 0;
+			youmonst.mgmld_throat = 0;
+		}
 		break;
 	}
 }
@@ -817,8 +834,11 @@ struct monst *mon;
 	    }
 	    /* Fall through */
 	default:
-	    if (acidic(mon->data) && (Stoned || Golded || Salted))
-		fix_petrification();
+	    if (acidic(mon->data) && (Stoned || Golded || Salted)){
+			fix_petrification();
+			youmonst.mgmld_skin = 0;
+			youmonst.mgmld_throat = 0;
+	    }
 	    break;
     }
     return FALSE;
@@ -2757,9 +2777,15 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		else etype = clockwork_eat_menu(TRUE,TRUE);
 	}
 	
-	if (Strangled) {
-		pline("If you can't breathe air, how can you consume solids?");
-		return MOVE_CANCELLED;
+	if(!separate_respiration(youracedata)){
+		if (Strangled) {
+			pline("If you can't breathe air, how can you consume solids?");
+			return MOVE_CANCELLED;
+		}
+		else if(youmonst.mgmld_throat >= 300){
+			pline("You can't swallow past the obstruction in your throat!");
+			return MOVE_CANCELLED;
+		}
 	}
 
 	if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){

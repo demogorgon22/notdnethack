@@ -5,7 +5,7 @@
 #
 #	The "start" level for the quest.
 #
-#	Here you meet your (besieged) class leader, the Grand Master
+#	Here you meet your (besieged) class leader, the Hermit Master,
 #	and receive your quest assignment.
 #
 MAZE: "Ken-strt",' '
@@ -80,8 +80,8 @@ MONSTER: 'd',"werefox",(11,17)
 #
 #	The "locate" level for the quest.
 #
-#	Here you have to locate the Monastery of the Earth-Lord to
-#	go further towards your assigned quest.
+#	Here you have to locate the "secret passage" in this haunted castle to
+#	proceed with your quest.
 #
 
 MAZE: "Ken-loca",' '
@@ -233,6 +233,2220 @@ MONSTER:'#',"samurai zombie",(32,05),hostile
 MONSTER:'#',"samurai zombie",(32,14),hostile
 MONSTER:'#',"samurai zombie",(33,14),hostile
 MONSTER:'#',"samurai zombie",(34,14),hostile
+
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+#
+#	The "locate" level for Githzerai kensei.
+#
+#	The haunted castle had an adamantine fortress dropped on it at some
+#	point in the past.  You just locate the "secret passage" as normal.
+#
+
+MAZE: "Ken-locb",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT}}TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTT,,,,,,,,,,,,,,TT,T,,,TT,,,,,,,,,e}},t,,,tttTtttTTTTTTTTTTTTTTTTTTTTTTTTTT
+2TT,,,,,,---,-,,,,,,,Tt,,teeeeeeeeeee}w}eeeeeeeeeee,,,,,TTTTTTTT-----TTTTTTTT
+3,,,,,,,,|.,T,,,,,T,,,teeeeeeeeeeeeeew}}}eeeeeeeeeeeeeee,,,,,,,,eTTTeT,,,,,,,
+4,,,,,,,,|.e,---TTT,,-eeeeeeeeeeeee-----}}}eeeeeeeeeeeee-,,},,---eTT|TT,,TTT,
+5,,,,,,,,|-|...|,TT,,|eeeeeeeeeee---   ---}}eeeeeeeeeeee|,,,,,|..t|-T,T,,,,,T
+6,,,,,,,,,,|...--T----eeeeeeeeee|-       -|}eeeeeeeeeeee-------...|,,,,,,,,,T
+7,,,,,,,,,,|-|..eee...eeeeeeeeee|         |}}eeeeeeeeeee........|-|,,,,,,,,,T
+8,,,TT,,,,,,,|..------eeeeeeeee||         ||}}eeeeeeeeee------..|,,,,,,TT,,,,
+9,,,,TT,,,,,,|..+.....eeeeeeeee|           |}}eeeeeeeeee.....+..|,,,,,,TT,,,,
+0,,TT,T,,,,,,|..+.....eeeeeeeee|           |}}eeeeeeeeee.....+..|,,,,,,,,,,,,
+1,,T,,,,,,,,,|..------eeeeeeeee|           |}}eeeeeeeeee------..|,,,,,,,T,,,,
+2,,,,,,,,,,|-|........eeeeeeeee||         ||}}eeeeeeeeee........|-|,,,T,T,,,,
+3,,,,T,,,,,|...-------eeeeeeeeee|         |}}}eeeeeeeeee-------...|,,,,TT,,,,
+4,,,,TT,,|-|...|,,,,,|eeeeeeeeee|-       -|}}eeeeeeeeeee|T,,,,|...|-|,,,,,,,,
+5,TT,TT,,|...---,,},,-eeeeeeeeeee---   ---}}eeeeeeeeeeee-,T},,---...|,,,,,,,,
+6T,,,,,,,|...|,,,,TT,,eeeeeeeeeeeee-----}}}eeeeeeeeeeeee,,,,,,,,|...|,TT,,TTT
+7,T,,,,,,-----,,,,,TTteeeeeettteeeee}}}}}}eeeeeeeeeeeee,,,,TTT,,-----TT,,T,,,
+8,,T,,,,,,,,,,,,,,,,,,,,,eeteeetteeee}}eeeeeeeeeeeee,,,,,,,,,,,,,,,,,T,,,T,,,
+9,,,,,,,,,,,,,,,,,,,,,,,,,eeeeeeeeeee}}eeeeeeeee,,,,,,,,,T,,,,,,,,,TT,,,,T,,,
+ENDMAP
+# Magic Chest
+OBJECT:'(',"magic chest",random
+OBJECT[50%]:'#',"thoroughly tattered bedroll",random
+OBJECT[50%]:'#',"very tattered burnt bedroll",random
+OBJECT[50%]:'#',"very burnt bedroll",random
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+#
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+
+# Random monsters.
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'d',random,random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+#	"guards" for the central courtyard.
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                                                            
+1                                                                            
+2        --- -                                                  -----        
+3        |                                                                   
+4        |   ---     -             -----                -     ---   |        
+5        |-|   |     |           ---...---              |     |   |-         
+6          |   -- ----          |-.......-|             -------   |          
+7          |-|                  |.........|                     |-|          
+8            |  ------         ||...###...||            ------  |            
+9            |                 |...#####...|                    |            
+0            |                 |...#####...|                    |            
+1            |  ------         |...#####...|            ------  |            
+2          |-|                 ||...###...||                    |-|          
+3          |   -------          |.........|             -------   |          
+4        |-|   |     |          |-.......-|             |     |   |-|        
+5        |   ---     -           ---...---              -     ---   |        
+6        |   |                     -----                        |   |        
+7        -----                                                  -----        
+8                                                                            
+9                                                                            
+ENDMAP
+
+OBJECT:'#',"mercurial sword",random
+OBJECT[75%]:'#',"mercurial sword",random
+OBJECT[10%]:'#',"mercurial sword",random
+OBJECT:'#',"mercurial melee",random
+OBJECT[75%]:'#',"mercurial melee",random
+OBJECT[10%]:'#',"mercurial melee",random
+OBJECT:'#',"mercurial melee",random
+OBJECT[75%]:'#',"mercurial melee",random
+OBJECT[10%]:'#',"mercurial melee",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT}}TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTT,,,,,,,,,,,,,,TT,T,,,TT,,,,,,,,,e}},t,,,tttTtttTTTTTTTTTTTTTTTTTTTTTTTTTT
+2TT,,,,,,---,-,,,,,,,Tt,,teeeeeeeeeee}w}eeeeeeeeeee,,,,,TTTTTTTT-----TTTTTTTT
+3,,,,,,,,|.,T,,,,,T,,,teeeeeeeeeeeeeew}}}eeeeeeeeeeeeeee,,,,,,,,eTTTeT,,,,,,,
+4,,,,,,,,|.e,---TTT,,-eeeeeeeeeeeee-----}}}eeeeeeeeeeeee-,,},,---eTT|TT,,TTT,
+5,,,,,,,,|-|...|,TT,,|eeeeeeeeeee---...---}}eeeeeeeeeeee|,,,,,|..t|-T,T,,,,,T
+6,,,,,,,,,,|...--T----eeeeeeeeee|-.......-|}eeeeeeeeeeee-------...|,,,,,,,,,T
+7,,,,,,,,,,|-|..eee...eeeeeeeeee|.........|}}eeeeeeeeeee........|-|,,,,,,,,,T
+8,,,TT,,,,,,,|..------eeeeeeeee||...###...||}}eeeeeeeeee------..|,,,,,,TT,,,,
+9,,,,TT,,,,,,|..+.....eeeeeeeee|...#####...|}}eeeeeeeeee.....+..|,,,,,,TT,,,,
+0,,TT,T,,,,,,|..+.....eeeeeeeee|...#####...|}}eeeeeeeeee.....+..|,,,,,,,,,,,,
+1,,T,,,,,,,,,|..------eeeeeeeee|...#####...|}}eeeeeeeeee------..|,,,,,,,T,,,,
+2,,,,,,,,,,|-|........eeeeeeeee||...###...||}}eeeeeeeeee........|-|,,,T,T,,,,
+3,,,,T,,,,,|...-------eeeeeeeeee|.........|}}}eeeeeeeeee-------...|,,,,TT,,,,
+4,,,,TT,,|-|...|,,,,,|eeeeeeeeee|-.......-|}}eeeeeeeeeee|T,,,,|...|-|,,,,,,,,
+5,TT,TT,,|...---,,},,-eeeeeeeeeee---...---}}eeeeeeeeeeee-,T},,---...|,,,,,,,,
+6T,,,,,,,|...|,,,,TT,,eeeeeeeeeeeee-----}}}eeeeeeeeeeeee,,,,,,,,|...|,TT,,TTT
+7,T,,,,,,-----,,,,,TTteeeeeettteeeee}}}}}}eeeeeeeeeeeee,,,,TTT,,-----TT,,T,,,
+8,,T,,,,,,,,,,,,,,,,,,,,,eeteeetteeee}}eeeeeeeeeeeee,,,,,,,,,,,,,,,,,T,,,T,,,
+9,,,,,,,,,,,,,,,,,,,,,,,,,eeeeeeeeeee}}eeeeeeeee,,,,,,,,,T,,,,,,,,,TT,,,,T,,,
+ENDMAP
+
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+
+#
+#	The "locate" level for Githyanki kensei.
+#
+#   A Githyanki outpost that has been destroyed by mindflayers.
+#
+
+MAZE: "Ken-locc",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TT                                                                         T
+1TT                                                                        TT
+2TT                                                                       TTT
+3,,                                                                       ,,T
+4,,,                                                                    ,,,,T
+5,,,                                                                   ,,,,TT
+6,,,,                                                                 ,,,,,TT
+7,,,,                                                                ,,,,,,,T
+8,,,,,,                                                             ,,,,,,,,T
+9TTT,,,,                                                            ,,,,,,,TT
+0,TTTT,,,                                                          ,,,,,,,TTT
+1,,,TTTT,,                                                       ,,,,,,,,,TTT
+2,,,,,,,,,                                                    ,,,,,,,,,,,,TTT
+3,,,,T,,,,,,                                               ,,, ,,,,,,,,,,,,,T
+4,,,TTT,,,,,,,                                           ,,,,,,,,,,,,,,,,,,,T
+5,TTTTTT,,,,,,,,,                                       ,,,,,,,,,  ,,,,,,,,,T
+6,TTTTTTT,,,,,   ,                                   ,,,,   ,,,,   ,,,,,,,,,T
+7T,TTTTTTTT,,, ,,,  e                            ,,,,,,,,,    ,,  ,,,,,,,,TTT
+8,TTTTTT,,,,,,, , ,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,    ,,,,,,,,,,,TTTTT
+9,,TT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTTTT
+ENDMAP
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+# Random monsters.
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'d',random,random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TT           |---|                 |---|                                   T
+1TT       |---|...|    |---     |---|...-----        |--|    -----         TT
+2TT       |...|...| |---..|     |...|...|...|        |..+#   |...----     TTT
+3         |...|...| |..|..+#####+...|...|...+#####|--|..|# ##+...|..|       T
+4         |...--+--#+..|--|#    |...|-+-|...|    #+..---|### |...|..|       T
+5         --+-  #  #---|..+#|-------- # ---------#|..|   #   -----+--      TT
+6           ###########|..|#|...|...| # |...|...|#---|---#---|..|##        TT
+7            #  #  #  #---|#+...|...+###+...|...+#|..|..+#|..|..|#          T
+8            # -+--+--#### #|...|...|###|...|...|#+..|..|#+..|+--#          T
+9TTT         # |..|..|+--# #---------###---------#---|---#----####          T
+0 TTTT       # |..|..|..|######################################           TTT
+1            # ------|..|---#--------###--+---+---+--+-                   TTT
+2            #####|..---|..|#|..|...+###|...|...|..|..|                   TTT
+3                #+..|..|..|#+..|...|###|...|...|..|..|                     T
+4                 ---|..|-+-#|..|...|###|...|...|------                     T
+5                    --+- # #--------###---------                           T
+6                      ######        H#H                                    T
+7                                    HHH                                  TTT
+8                                                                       TTTTT
+9                                                                     TTTTTTT
+ENDMAP
+
+# Magic Chest
+OBJECT:'(',"magic chest",random
+OBJECT[50%]:'#',"thoroughly tattered bedroll",random
+OBJECT[50%]:'#',"very tattered burnt bedroll",random
+OBJECT[50%]:'#',"very burnt bedroll",random
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT:'#',"vorpal flowing silver two-handed sword",random
+OBJECT[75%]:'#',"vorpal flowing silver two-handed sword",random
+OBJECT[75%]:'#',"vorpal flowing silver two-handed sword",random
+OBJECT[10%]:'#',"vorpal flowing silver two-handed sword",random
+OBJECT[10%]:'#',"vorpal flowing silver two-handed sword",random
+
+OBJECT:'#',"vorpal flowing silver long sword",random
+OBJECT[75%]:'#',"vorpal flowing silver long sword",random
+OBJECT[10%]:'#',"vorpal flowing silver long sword",random
+
+OBJECT[75%]:'#',"vorpal flowing silver katana",random
+OBJECT[75%]:'#',"vorpal flowing silver katana",random
+OBJECT[75%]:'#',"vorpal flowing silver katana",random
+
+OBJECT[75%]:'#',"vorpal flowing silver nagamaki",random
+OBJECT[75%]:'#',"vorpal flowing silver nagamaki",random
+OBJECT[75%]:'#',"vorpal flowing silver nagamaki",random
+
+#
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+MONSTER: 'h',"master mind flayer",random
+MONSTER: 'h',"mind flayer",random
+MONSTER: 'h',"mind flayer",random
+MONSTER: 'h',"mind flayer",random
+MONSTER: 'h',"mind flayer",random
+MONSTER: 'h',"mind flayer",random
+MONSTER: 'h',"mind flayer",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TT           |---|                 |---|                                   T
+1TT       |---|...|    |---     |---|...-----        |--|    -----         TT
+2TT       |...|...| |---..|     |...|...|...|        |..+#   |...----     TTT
+3,,       |...|...| |..|..+#####+...|...|...+#####|--|..|# ##+...|..|     ,,T
+4,,,      |...--+--#+..|--|#    |...|-+-|...|    #+..---|### |...|..|   ,,,,T
+5,,,      --+-  #  #---|..+#|-------- # ---------#|..|   #   -----+--  ,,,,TT
+6,,,,       ###########|..|#|...|...| # |...|...|#---|---#---|..|##   ,,,,,TT
+7,,,,        #  #  #  #---|#+...|...+###+...|...+#|..|..+#|..|..|#   ,,,,,,,T
+8,,,,,,      # -+--+--#### #|...|...|###|...|...|#+..|..|#+..|+--#  ,,,,,,,,T
+9TTT,,,,     # |..|..|+--# #---------###---------#---|---#----####  ,,,,,,,TT
+0,TTTT,,,    # |..|..|..|######################################    ,,,,,,,TTT
+1,,,TTTT,,   # ------|..|---#--------###--+---+---+--+-          ,,,,,,,,,TTT
+2,,,,,,,,,   #####|..---|..|#|..|...+###|...|...|..|..|       ,,,,,,,,,,,,TTT
+3,,,,T,,,,,,     #+..|..|..|#+..|...|###|...|...|..|..|    ,,, ,,,,,,,,,,,,,T
+4,,,TTT,,,,,,,    ---|..|-+-#|..|...|###|...|...|------  ,,,,,,,,,,,,,,,,,,,T
+5,TTTTTT,,,,,,,,,    --+- # #--------###---------       ,,,,,,,,,  ,,,,,,,,,T
+6,TTTTTTT,,,,,   ,     ######        H#H             ,,,,   ,,,,   ,,,,,,,,,T
+7T,TTTTTTTT,,, ,,,  e                HHH         ,,,,,,,,,    ,,  ,,,,,,,,TTT
+8,TTTTTT,,,,,,, , ,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,    ,,,,,,,,,,,TTTTT
+9,,TT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTTTT
+ENDMAP
+
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+
+#Walls are diggable
+
+#
+#	The "locate" level for Drow kensei.
+#
+#   An abandoned drow fortress destroyed by unknown attackers.
+#
+
+MAZE: "Ken-locd",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                               |-----------------------                  T
+1          ....                 |#|......|...|...|#+...|         T T T   TT
+2        .|+-F|.         |------|#+..\...|...|...|#|...|        TTTTTT  TTT
+3########.F.|.+.         |########|......|...|...|#|...|                  T
+4        .|-|-|.        |-+-----|+-------|...|...|#|...|                  T
+5        .+.|.F.        |...|...|........|-+---+-|#-----         T T T   TT
+6        .-F-+|.#####   |...|...+........+#########|...+####     T T T   TT
+7        .......    #   |...|...|........|-+---+-|#|...|                  T
+8    #########      ####|-F+|...|........|...|...|#|...|                  T
+9          #           #+...|---|........|...|...|#+...+##       T T T   TT
+0          #            |...|...|........|...|...------|        TTTTTT  TTT
+1          #            |...|...+........|-------|...|            TTTT  TTT
+2          #            |...|...|........+.......+...|              TT  TTT
+3          #            |...|-+-|-+----+-|-+---+-|...|                    T
+4                       |.......|....|...|...|...|...+##                  T
+5                       |.......|....|...|...|...----|                    T
+6                       eeeeeeeeeeeeeeeeeeeeeeeeee                        T
+7                       e       e        e                              TTT
+8                                                                     TTTTT
+9                                                                   TTTTTTT
+ENDMAP
+# Magic Chest
+OBJECT:'(',"magic chest",random
+OBJECT[50%]:'#',"thoroughly tattered bedroll",random
+OBJECT[50%]:'#',"very tattered burnt bedroll",random
+OBJECT[50%]:'#',"very burnt bedroll",random
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+#
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+#
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+#	"guards" for the central courtyard.
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+MONSTER:'#',"hedrow warrior zombie",random,hostile
+
+MONSTER:'Z',"hedrow zombie",random,hostile
+MONSTER:'Z',"hedrow zombie",random,hostile
+MONSTER:'Z',"hedrow zombie",random,hostile
+
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                                                         T
+1                                                                T T,T,, TT
+2                                                              ,TTTTTT,,TTT
+3                                                              ,,,,,,,,,,,T
+4,                                                            ,,,,,,,,,,,,T
+5,                                                           ,,,,T,T,T,,,TT
+6,,                                                         ,,,,,T,T,T,,,TT
+7,,                                                        ,,,,,,,,,,,,,,,T
+8,,,,                                                      ,,,,,,,,,,,,,,,T
+9,,,,,                                                    ,,,,,,,T,T,T,,,TT
+0,,,,,,                                                   ,,,,,,TTTTTT,,TTT
+1,,,,,,,                                                  ,,,,,,,,TTTT,,TTT
+1,,,,,,,                                                  ,,,,,,,,TTTT,,TTT
+2,,,,,,,                                                 ,,,,,,,,,,,TT,,TTT
+3,,,,,,,,,                                               ,,,,,,,,,,,,,,,,,T
+4,,,,,,,,,,,                                            ,,,,,,,,,,,,,,,,,,T
+5,,,,,,,,,,,,,,                                         ,,,,,,,,,,,,,,,,,,T
+6,,,,,,,,,,,,,,,                                       ,,,,,,,,,,,,,,,,,,,T
+7,,,,,,,,,,,,,,,         ,,,,,,, ,,,,,,,, ,,,,,,,,,,  ,,,,,,,,,,,,,,,,,,TTT
+8,,,,,,,,,,,,,,,,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTT
+9,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTTTT
+ENDMAP
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+# Random monsters.
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"ninja skeleton",random,hostile
+MONSTER:'d',random,random
+MONSTER:'#',"wolf zombie",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                               |-----------------------                  T
+1          ....                 |#|......|...|...|#+...|         T T,T,, TT
+2        .|+-F|.         |------|#+..\...|...|...|#|...|       ,TTTTTT,,TTT
+3########.F.|.+.         |########|......|...|...|#|...|       ,,,,,,,,,,,T
+4,       .|-|-|.        |-+-----|+-------|...|...|#|...|      ,,,,,,,,,,,,T
+5,       .+.|.F.        |...|...|........|-+---+-|#-----     ,,,,T,T,T,,,TT
+6,,      .-F-+|.#####   |...|...+........+#########|...+####,,,,,T,T,T,,,TT
+7,,      .......    #   |...|...|........|-+---+-|#|...|   ,,,,,,,,,,,,,,,T
+8,,,,#########      ####|-F+|...|........|...|...|#|...|   ,,,,,,,,,,,,,,,T
+9,,,,,     #           #+...|---|........|...|...|#+...+##,,,,,,,T,T,T,,,TT
+0,,,,,,    #            |...|...|........|...|...------|  ,,,,,,TTTTTT,,TTT
+1,,,,,,,   #            |...|...+........|-------|...|    ,,,,,,,,TTTT,,TTT
+2,,,,,,,   #            |...|...|........+.......+...|   ,,,,,,,,,,,TT,,TTT
+3,,,,,,,,, #            |...|-+-|-+----+-|-+---+-|...|   ,,,,,,,,,,,,,,,,,T
+4,,,,,,,,,,,            |.......|....|...|...|...|...+##,,,,,,,,,,,,,,,,,,T
+5,,,,,,,,,,,,,,         |.......|....|...|...|...----|  ,,,,,,,,,,,,,,,,,,T
+6,,,,,,,,,,,,,,,        eeeeeeeeeeeeeeeeeeeeeeeeee     ,,,,,,,,,,,,,,,,,,,T
+7,,,,,,,,,,,,,,,  e     e,,,,,,,e,,,,,,,,e,,,,,,,,,,  ,,,,,,,,,,,,,,,,,,TTT
+8,,,,,,,,,,,,,,,,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTT
+9,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TTTTTTT
+ENDMAP
+
+# Dungeon Description
+REGION:(00,00,73,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,73,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+
+#Walls are diggable
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+
+#
+#	The "locate" level for elf kensei.
+#
+#   An elven fortress-grove overrun by orcs.
+#
+
+MAZE: "Ken-loce",' '
+FLAGS: hardfloor
+
+GEOMETRY:center,center 
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                                                            
+1                                                                            
+2                                                                            
+3                                                                            
+4                                                                            
+5                              PPPPPPP}PPPPPPP                               
+6                            PPP|---- - ----|PPP                             
+7                           PP|-- ......... --|PP                            
+8                           P|- .. ....... .. -|P                            
+9                           P| ............... |P                            
+0                           }|........\........|}                            
+1                           P| ............... |P                            
+2                           P|- .. ....... .. -|P                            
+3                           PP|-- ......... --|PP                            
+4                            PPP|---- - ----|PPP                             
+5                              PPPPPPP}PPPPPPP                               
+6                                                                            
+7                                                                            
+8                                                                            
+9                                                                            
+ENDMAP
+
+MONSTER:'O', "great goblin",(37,10),hostile
+MONSTER:'O', "ogre mage",random,hostile
+MONSTER:'O', "ogre mage",random,hostile
+MONSTER:'O', "ogre mage",random,hostile
+
+MONSTER:'o', "hobgoblin",random,hostile
+MONSTER:'o', "hobgoblin",random,hostile
+MONSTER:'o', "hobgoblin",random,hostile
+MONSTER:'o', "hobgoblin",random,hostile
+MONSTER:'o', "hobgoblin",random,hostile
+MONSTER:'o', "hobgoblin",random,hostile
+
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+MONSTER:'o', "goblin",random,hostile
+
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT: '#', "wrathful metal elven scimitar", random
+OBJECT: '#', "wrathful silver melee", random
+OBJECT: '#', "wrathful mithril elven lance", random
+OBJECT[80%]: '#', "wrathful mithril sword", random
+OBJECT[60%]: '#', "wrathful silver sword", random
+OBJECT[80%]: '#', "wrathful mithril sword", random
+OBJECT[60%]: '#', "wrathful silver sword", random
+OBJECT[80%]: '#', "wrathful mithril sword", random
+OBJECT[60%]: '#', "wrathful silver sword", random
+OBJECT[80%]: '#', "wrathful mithril sword", random
+OBJECT[60%]: '#', "wrathful silver sword", random
+
+OBJECT[20%]: '#', "wrathful mithril melee", random
+OBJECT[20%]: '#', "wrathful silver melee", random
+
+OBJECT:'*',"chunk of unrefined mithril",random
+OBJECT[50%]:'*',"chunk of unrefined mithril",random
+OBJECT[10%]:'*',"chunk of unrefined mithril",random
+#
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+
+GEOMETRY:center,center 
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTTTTTTeeeeeTeeeTTTTeeeTTTeeeeTTTTTTTTTeeeTTTTeTTeeeTTTTeeeeeeTTTTTeTeeeeeeT
+2TTeeeeeeeeTTeeeeeeTTeeTTeeeeeeeeeeeeeeeeeeeeeeeeeTeeeTTTTeeeeeeTTeeeteeTeeeT
+3TTeeeTTeeeeTeeeteeeeeeeeeeeettttttttttttttttttteeeeeeTTTTeeeTeeTeeeteeeTTeeT
+4TeeTTTeeeeeeeteeTeeeTteeeetteeeeeeeeeeeeeeeeeeetteeTeTTTTeeTTeeteeeeeeeeeeTT
+5TeeeTeeeeeTTTeeeTTTeeTeeeteeeePPPPPPP}PPPPPPPeeeeteeTTTTTeeTTTeeeeeTTTeeeTTT
+6TTeeeTTeeTTTTTeeeTTeeeeeeteePPP|---- - ----|PPPeeteeeTTTeeeTTTeeeTTTTTTTTTTT
+7TTTeeeTTeTTTTTTeeeeTeeeeetePP|--           --|PPeteeeeTeeeTTTTeeTTTeeeeTTTTT
+8TTeteeeTeTTTTTeTeeeeeteeeteP|-               -|PeteeeeeeeeTTTTTeeeeeeeeeeeTT
+9TTeeTeTeeTTTTTeeeeeTTeeeeteP|                 |PeteeTeeeeeTTTTTeeeeeeeeeeeeT
+0TeeeTeeeeeTTTeeeeeeTeeeeete}|                 |}eteeTTeeeTTTTTeeeeeeeeeeeeeT
+1TeeTTTTTTeeeTeeeeTTTeTeeeteP|                 |PetetTTeeeTTTTTTeeeeeeeeeeeeT
+2TeTTTTTTTTeeeeeeeeTeeTeeeteP|-               -|PeteteeeeeTTTTeTTTeeeeeeeeeTT
+3TeTTTTTTTTTeeTeeeeeeeeteetePP|--           --|PPeteeeeeeTTTTTeeeTTTTeeeeTTTT
+4TeTTTTTTTTTeeTTeeeeeeeeeeteePPP|---- - ----|PPPeeteeeeTTTTTTeeeeeTeeTTTeeeTT
+5TTTTTTTTTTTTeeeTTeeeeteeeteeeePPPPPPP}PPPPPPPeeeeteeTTTTTTTTTTTeeteeeeeeeeTT
+6TTTTTTTTTTTTeeeTeeeTTTTeeetteeeeeeeeeeeeeeeeeeetteeeTTTTTTTTTTTeteeeeeeeeeeT
+7TTTTTTTTTTTTeTeeeTeTTTTTeeeettttttttttttttttttteeeeeTTTTTTTTTTTeTeeeTTeeeeTT
+8TTTTTTTTTTTTTeTTTTTTTTTeTTeeeeeeeeeeeeeeeeeeeeeeeTTeTTTTTTTTTTTTTTTTTTTTeTTT
+9TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+ENDMAP
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+# Random monsters.
+MONSTER:'#',"elvenking skeleton",random,hostile
+MONSTER:'#',"elvenqueen skeleton",random,hostile
+
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'#',"zombified large dog",random
+MONSTER:'#',"High-elf skeleton",random,hostile
+MONSTER:'d',random,random
+MONSTER:'#',"zombified large dog",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'W',"barrow wight",random
+MONSTER:'W',"barrow wight",random
+MONSTER:'W',"barrow wight",random
+
+MONSTER:'W',"barrow wight",random
+MONSTER:'W',"barrow wight",random
+MONSTER:'W',"barrow wight",random
+
+GEOMETRY:center,center 
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTTTTTTeeeeeTeeeTTTTeeeTTTeeeeTTTTTTTTTeeeTTTTeTTeeeTTTTeeeeeeTTTTTeTeeeeeeT
+2TTeeeeeeeeTTeeeeeeTTeeTTeeeeeeeeeeeeeeeeeeeeeeeeeTeeeTTTTeeeeeeTTeeeteeTeeeT
+3TTeeeTTeeeeTeeeteeeeeeeeeeeettttttttttttttttttteeeeeeTTTTeeeTeeTeeeteeeTTeeT
+4TeeTTTeeeeeeeteeTeeeTteeeetteeeeeeeeeeeeeeeeeeetteeTeTTTTeeTTeeteeeeeeeeeeTT
+5TeeeTeeeeeTTTeeeTTTeeTeeeteeeePPPPPPP}PPPPPPPeeeeteeTTTTTeeTTTeeeeeTTTeeeTTT
+6TTeeeTTeeTTTTTeeeTTeeeeeeteePPP|-----------|PPPeeteeeTTTeeeTTTeeeTTTTTTTTTTT
+7TTTeeeTTeTTTTTTeeeeTeeeeetePP|-- ......... --|PPeteeeeTeeeTTTTeeTTTeeeeTTTTT
+8TTeteeeTeTTTTTeTeeeeeteeeteP|- .. ....... .. -|PeteeeeeeeeTTTTTeeeeeeeeeeeTT
+9TTeeTeTeeTTTTTeeeeeTTeeeeteP| ............... |PeteeTeeeeeTTTTTeeeeeeeeeeeeT
+0TeeeTeeeeeTTTeeeeeeTeeeeete}|........\........|}eteeTTeeeTTTTTeeeeeeeeeeeeeT
+1TeeTTTTTTeeeTeeeeTTTeTeeeteP| ............... |PetetTTeeeTTTTTTeeeeeeeeeeeeT
+2TeTTTTTTTTeeeeeeeeTeeTeeeteP|- .. ....... .. -|PeteteeeeeTTTTeTTTeeeeeeeeeTT
+3TeTTTTTTTTTeeTeeeeeeeeteetePP|-- ......... --|PPeteeeeeeTTTTTeeeTTTTeeeeTTTT
+4TeTTTTTTTTTeeTTeeeeeeeeeeteePPP|-----------|PPPeeteeeeTTTTTTeeeeeTeeTTTeeeTT
+5TTTTTTTTTTTTeeeTTeeeeteeeteeeePPPPPPP}PPPPPPPeeeeteeTTTTTTTTTTTeeteeeeeeeeTT
+6TTTTTTTTTTTTeeeTeeeTTTTeeetteeeeeeeeeeeeeeeeeeetteeeTTTTTTTTTTTeteeeeeeeeeeT
+7TTTTTTTTTTTTeTeeeTeTTTTTeeeettttttttttttttttttteeeeeTTTTTTTTTTTeTeeeTTeeeeTT
+8TTTTTTTTTTTTTeTTTTTTTTTeTTeeeeeeeeeeeeeeeeeeeeeeeTTeTTTTTTTTTTTTTTTTTTTTeTTT
+9TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+ENDMAP
+
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+
+# Non diggable walls
+NON_DIGGABLE:(28,06,46,14)
+
+DRAWBRIDGE:(37,05),south,closed
+DRAWBRIDGE:(27,10),east,closed
+DRAWBRIDGE:(47,10),west,closed
+DRAWBRIDGE:(37,15),north,closed
+
+#
+#    The "locate" level for ansermee incantifier kensei.
+#
+#   A ruined castle overrun by alien mold.
+#
+
+MAZE: "Ken-locf",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT}}TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTT,,,,,,,,,,,,,,TT,T,,,TT,,,,,,,,,,}},T,,,TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+2TT,,,,,,---,-,,,,,,,TT,,T,,,,,,,,,,,}},T,,,TTTTTTTTTTTTTTTTTTTT-----TTTTTTTT
+3,,,,,,,,|.,T,,,,,T,,,T,,,,,,,,,,,,,,}}T,,,,,,,,,,,,,,,,,,,,,,,,eTTTeT,,,,,,,
+4,,,,,,,,|.e,---TTT,,--+-------------}}---------------+--,,},,---eTT|TT,,TTT,
+5,,,,,,,,|-|...|,TT,,|...|....|....|,}},|....|....|.|...|,,,,,|..t|-T,T,,,,,T
+6,,,,,,,,,,|...--T----...|....|....|,}},|....|....S.|...-------...|,,,,,,,,,T
+7,,,,,,,,,,|-|..eee....------+----+-+}}-----+-+--------.........|-|,,,,,,,,,T
+8,,,TT,,,,,,,|..--------.|}........e,}},,e.........}|.--------..|,,,,,,TT,,,,
+9,,,,TT,,,,,,|..+........+.....e..ee,}}},ee.........+........+..|,,,,,,TT,,,,
+0,,TT,T,,,,,,|..+........+......eeee,,}},ee.........+........+..|,,,,,,,,,,,,
+1,,T,,,,,,,,,|..--------.|}........ee,}},e.........}|.--------..|,,,,,,,T,,,,
+2,,,,,,,,,,|-|.........--------+-+----}}-+-+----+------.........|-|,,,T,T,,,,
+3,,,,T,,,,,|...-------...|.S....|....|}},e|....|....|...-------...|,,,,TT,,,,
+4,,,,TT,,|-|...|,,,,,|...|.|....|....|}},e|....|....|...|T,,,,|...|-|,,,,,,,,
+5,TT,TT,,|...---,,},,--+--------------}}--------------+--,T},,---...|,,,,,,,,
+6T,,,,,,,|...|,,,,TT,,,,,,,,,,,,,,,,,,}},,,,,,,,,,,,,,,,,,,,,,,,|...|,TT,,TTT
+7,T,,,,,,-----,,,,,TTT,,,,,,TTT,,,,,,,}},,,,,T,,,,,T,,,,,,,TTT,,-----TT,,T,,,
+8,,T,,,,,,,,,,,,,,,,,,,,,,,T,,,TT,,,,,}},,,,T,T,,,TTT,,,,,,,,,,,,,,,,T,,,T,,,
+9,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,}},,,,,TT,,,,T,,,,,T,,,,,,,,,TT,,,,T,,,
+ENDMAP
+RANDOM_PLACES:(47,05),(50,05),(45,14),(50,14)
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+# Magic Chest
+OBJECT:'(',"magic chest",place[0]
+OBJECT[50%]:'#',"thoroughly tattered bedroll",place[1]
+OBJECT[50%]:'#',"very tattered burnt bedroll",place[2]
+OBJECT[50%]:'#',"very burnt bedroll",place[3]
+# Doors
+DOOR:locked,(22,04)
+DOOR:locked,(22,15)
+DOOR:locked,(53,04)
+DOOR:locked,(53,15)
+DOOR:locked,(49,06)
+DOOR:locked,(26,13)
+DOOR:locked,(28,07)
+DOOR:locked,(30,12)
+DOOR:locked,(33,07)
+DOOR:locked,(32,12)
+DOOR:locked,(35,07)
+DOOR:locked,(40,12)
+DOOR:locked,(43,07)
+DOOR:locked,(42,12)
+DOOR:locked,(45,07)
+DOOR:locked,(47,12)
+DOOR:closed,(15,09)
+DOOR:closed,(15,10)
+DOOR:closed,(24,09)
+DOOR:closed,(24,10)
+DOOR:closed,(51,09)
+DOOR:closed,(51,10)
+DOOR:closed,(60,09)
+DOOR:closed,(60,10)
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+# Objects
+OBJECT:'*',"dilithium crystal",(25,05)
+OBJECT[75%]:'*',"dilithium crystal",(26,05)
+OBJECT[75%]:'*',"dilithium crystal",(27,05)
+OBJECT[75%]:'*',"dilithium crystal",(28,05)
+OBJECT[75%]:'*',"dilithium crystal",(25,06)
+OBJECT[75%]:'*',"dilithium crystal",(26,06)
+OBJECT[75%]:'*',"dilithium crystal",(27,06)
+OBJECT[75%]:'*',"dilithium crystal",(28,06)
+#
+OBJECT:'#',"futurearmor",(40,05)
+OBJECT[75%]:'#',"futurearmor",(41,05)
+OBJECT[75%]:'#',"futurearmor",(42,05)
+OBJECT[75%]:'#',"futurearmor",(43,05)
+OBJECT[75%]:'#',"futurearmor",(40,06)
+OBJECT[75%]:'#',"futurearmor",(41,06)
+OBJECT[75%]:'#',"futurearmor",(42,06)
+OBJECT[75%]:'#',"futurearmor",(43,06)
+#
+OBJECT:'#',"futureweapon",(27,13)
+OBJECT[75%]:'#',"futureweapon",(28,13)
+OBJECT[75%]:'#',"futureweapon",(29,13)
+OBJECT[75%]:'#',"futureweapon",(30,13)
+OBJECT[75%]:'#',"futureweapon",(27,14)
+OBJECT[75%]:'#',"futureweapon",(28,14)
+OBJECT[75%]:'#',"futureweapon",(29,14)
+OBJECT[75%]:'#',"futureweapon",(30,14)
+#
+OBJECT:'#',"futuremisc",(37,13)
+OBJECT[75%]:'#',"futuremisc",(38,13)
+OBJECT[75%]:'#',"futuremisc",(39,13)
+OBJECT[75%]:'#',"futuremisc",(40,13)
+OBJECT[75%]:'#',"futuremisc",(37,14)
+OBJECT[75%]:'#',"futuremisc",(38,14)
+OBJECT[75%]:'#',"futuremisc",(39,14)
+OBJECT[75%]:'#',"futuremisc",(40,14)
+#
+OBJECT:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+OBJECT[75%]:'(',"power pack",random
+#
+OBJECT:'(',"hypospray",random
+OBJECT:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+OBJECT[75%]:'(',"hypospray ampule",random
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+# Random monsters.
+MONSTER:'g',"vegepygmy",(15,05),hostile
+MONSTER:'g',"vegepygmy",(18,05),hostile
+MONSTER:'g',"vegepygmy",(18,04)
+MONSTER:'g',"vegepygmy",(18,05)
+MONSTER:'g',"vegepygmy",(19,05),hostile
+MONSTER:'g',"vegepygmy",(15,14)
+MONSTER:'g',"vegepygmy",(16,14)
+MONSTER:'g',"vegepygmy",(17,14),hostile
+MONSTER:'g',"vegepygmy",(18,14),hostile
+MONSTER:'g',"vegepygmy",(56,05)
+MONSTER:'g',"vegepygmy",(57,05),hostile
+MONSTER:'g',"vegepygmy",(58,05)
+MONSTER:'g',"vegepygmy",(59,05)
+MONSTER:'g',"vegepygmy",(57,14),hostile
+MONSTER:'g',"vegepygmy",(57,14)
+MONSTER:'g',"vegepygmy",(58,14),hostile
+MONSTER:random,random,(59,14)
+MONSTER:'g',"vegepygmy",(60,14)
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+#	"guards" for the central courtyard.
+MONSTER:'F',"gray fungal tower",(30,05),hostile
+MONSTER:'F',"gray fungal tower",(31,05),hostile
+MONSTER:'F',"gray fungal tower",(32,05),hostile
+MONSTER:'F',"gray fungal tower",(32,14),hostile
+MONSTER:'F',"gray fungal tower",(33,14),hostile
+MONSTER:'F',"gray fungal tower",(34,14),hostile
+
+MONSTER:'F',"rusty-gray mold",random
+MONSTER:'F',"rusty-gray mold",random
+MONSTER:'F',"rusty-gray mold",random
+MONSTER:'F',"rusty-gray mold",random
+MONSTER:'F',"rusty-gray mold",random
+MONSTER:'F',"rusty-gray mold",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'g', "vegepygmy shaman",random
+MONSTER: 'g', "vegepygmy shaman",random
+MONSTER: 'g', "vegepygmy shaman",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+#
+#    The "locate" level for wongas incantifier kensei.
+#
+#   An abandoned Tharizdun temple with an army of monsters living around it.
+#
+
+MAZE: "Ken-locg",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                                                            
+1      ##     ###                                                            
+2      ###    ###                                                            
+3        #    ###                                                            
+4      # #     H                                                             
+5     ####    ###                                                            
+6     ## ######w###     ##                                                   
+7             ####H##    H#                                                  
+8               #H  H##H  H##                                                
+9                ####  ######                                                
+0                 #        #                                                 
+1                 # w                                                        
+2                 ####                                                       
+3                 #####                                                      
+4                  ###                                                       
+5                   #                                                        
+6                                                                            
+7                                                                            
+8                                                                            
+9                                                                            
+ENDMAP
+MONSTER:'o',"hill orc",random
+MONSTER:'o',"hill orc",random
+MONSTER:'o',"hill orc",random
+
+MONSTER:'o',"hill orc",random
+MONSTER:'o',"hill orc",random
+MONSTER:'o',"hill orc",random
+
+MONSTER:'o',"hill orc",random
+MONSTER:'o',"hill orc",random
+MONSTER:'o',"hill orc",random
+
+MONSTER:'o',"orc shaman",random
+MONSTER:'o',"orc shaman",random
+MONSTER:'o',"orc shaman",random
+
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random
+OBJECT:random,random,random 
+OBJECT:random,random,random
+OBJECT:random,random,random 
+OBJECT:random,random,random
+OBJECT:random,random,random 
+
+MONSTER:'o',"orc-captain",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                          -----------------------                           
+1                          |#F....|...|...|....F#|                           
+2                          |-|....|...|...|....|-|                           
+3                          |#F..-+--+---+--+-..F#|                           
+4                          --|--|           |--|--                           
+5                            |..|           +..|                             
+6                            |..+           |..|                             
+7                            |--|           |--|                             
+8                            |..+           |..|                             
+9                            Sw.|           +..|                             
+0                            |--|           |--|                             
+1                            |..|           +..|                             
+2                            |..+           |..|                             
+3                           |---|           |---|                            
+4                           |...+           +...|                            
+5                           |...---+-+++-+---...|                            
+6                           |...|...|   |...|...|                            
+7                           |---|...|   |...|---|                            
+8                               -----   -----                                
+9                                                                            
+ENDMAP
+
+OBJECT:'?',"blank paper",random
+OBJECT:'?',"blank paper",random
+OBJECT:'?',"blank paper",random
+OBJECT:'?',"blank paper",random
+OBJECT:'?',"blank paper",random
+
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+
+OBJECT:'+',"blank paper",random
+OBJECT:'+',"blank paper",random
+
+OBJECT[75%]:'+',random,random
+OBJECT[75%]:'+',random,random
+
+OBJECT[75%]:'/',random,random
+OBJECT[75%]:'/',random,random
+OBJECT[75%]:'/',random,random
+OBJECT[75%]:'/',random,random
+
+OBJECT[75%]:'(',"torch",random
+OBJECT[75%]:'(',"torch",random
+OBJECT[75%]:'(',"torch",random
+OBJECT[75%]:'(',"torch",random
+OBJECT[75%]:'(',"torch",random
+OBJECT[75%]:'(',"torch",random
+
+OBJECT[75%]:'(',"shadowlander's torch",random
+OBJECT[75%]:'(',"shadowlander's torch",random
+OBJECT[75%]:'(',"shadowlander's torch",random
+OBJECT[75%]:'(',"shadowlander's torch",random
+
+OBJECT[75%]:'[',"white faceless robe",random
+OBJECT[75%]:'[',"white faceless robe",random
+OBJECT[75%]:'[',"white faceless robe",random
+OBJECT[75%]:'[',"white faceless robe",random
+OBJECT[75%]:'[',"white faceless robe",random
+OBJECT[75%]:'[',"white faceless robe",random
+
+OBJECT[75%]:'[',"black faceless robe",random
+OBJECT[75%]:'[',"black faceless robe",random
+OBJECT[75%]:'[',"black faceless robe",random
+OBJECT[75%]:'[',"black faceless robe",random
+
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                          -----------------------                           
+1      ##     ###          |#F....|...|...|....F#|                         T 
+2      ###    ###          |-|....|...|...|....|-|                        TT 
+3ee      #    ###          |#F..-+--+---+--+-..F#|                        ee 
+4eee   # #     H           --|--|###########|--|--                      eeee 
+5eeeH#####    ###            |..|###########+..|                       eeee  
+6eeeeH## ######w###     ##   |..+##|--S--|##|..|                      eeeee  
+7eeee         ####H##    H#  |--|##|.....|##|--|                     eeeeeee 
+8eeeeee         #H  H##H  H##|..+##|.....|##|..|     ###            eeeeeeee 
+9   eeee         ####  #####wSw.|##|.....|##+..|    #####           eeeeeee  
+0e    eee         #        # |--|##|.....|##|--|    #####          eeeeeee   
+1eee    ee        # w        |..|##|.....|##+..|    #####        eeeeeeeee   
+2eeeeeeeee        ####       |..+##|-----|##|..|    #####     eeeeeeee   H   
+3eeee eeeeee      #####     |---|###########|---|    ###   eeeeeeeeeee   ### 
+4eee   eeeeeee     ###      |...+###########+...|    ### eeeeeeeeeeeee   ### 
+5e  ### eeeeeeeee   #       |...---+-+++-+---...|     # eeeeeeeee  ee    ### 
+6e ####  eeeee   e          |...|...|H#H|...|...|    eeeeeeeeeee   ee    ### 
+7  ####    eee eee  e       |---|...|SSS|...|---|eeeeeeeeeeeeeee  eee    #   
+8e    H eeeeeee e e  eeeeeeeeeee-----eee-----eeeeeeeeeeeeeeeeeeeeeeee  ##    
+9ee  eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#      
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#          1         2         3         4         5         6         7
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Non diggable walls
+NON_DIGGABLE:(26,00,48,04)
+NON_DIGGABLE:(28,05,46,12)
+NON_DIGGABLE:(27,13,47,18)
+
+ALTAR:(37,09), noalign, altar, "the Dread Fracture"
+MONSTER:'#',"fractured lich", (37,09), hostile
+OBJECT:'[',"smoky violet faceless robe",(37,09),uncursed,5
+OBJECT:'(',"misotheistic pyramid", (37,09)
+OBJECT:'(',"misotheistic pyramid", (37,09)
+OBJECT:'(',"misotheistic pyramid", (37,09)
+
+OBJECT:'*',"antimagic rift", (37,09)
+OBJECT:'*',"antimagic rift", (37,09)
+OBJECT:'*',"antimagic rift", (37,09)
+
+OBJECT:'*',"black opal", (37,09)
+OBJECT:'*',"black opal", (37,09)
+OBJECT:'*',"black opal", (37,09)
+
+DOOR:closed,(32,03)
+DOOR:closed,(35,03)
+DOOR:closed,(39,03)
+DOOR:closed,(42,03)
+
+DOOR:closed,(31,06)
+DOOR:closed,(31,08)
+DOOR:closed,(31,12)
+DOOR:closed,(31,14)
+
+DOOR:closed,(34,15)
+DOOR:closed,(36,15)
+DOOR:closed,(37,15)
+DOOR:closed,(38,15)
+DOOR:closed,(40,15)
+
+DOOR:closed,(43,14)
+DOOR:closed,(43,11)
+DOOR:closed,(43,09)
+DOOR:closed,(43,05)
+
+MONSTER:'n',"swamp nymph",(73,03),hostile
+
+MONSTER:'h',"gnoll",(02,17),hostile
+MONSTER:'h',"gnoll",(03,16),hostile
+MONSTER:'h',"gnoll",(04,17),hostile
+MONSTER:'h',"gnoll",(05,16),hostile
+
+MONSTER:'o',"goblin",(02,16),hostile
+MONSTER:'o',"goblin",(03,17),hostile
+MONSTER:'o',"goblin",(04,16),hostile
+MONSTER:'o',"goblin",(05,17),hostile
+
+MONSTER:'H',"hill giant",(51,09),hostile
+MONSTER:'H',"hill giant",(55,09),hostile
+MONSTER:'H',"fire giant",(53,08),hostile
+MONSTER:'O',"ogre mage",(51,11),hostile
+MONSTER:'O',"ogre mage",(55,11),hostile
+
+MONSTER:'o',"hobgoblin",(72,13),hostile
+MONSTER:'h',"gnoll",(72,14),hostile
+MONSTER:'o',"hobgoblin",(72,15),hostile
+MONSTER:'h',"gnoll",(72,16),hostile
+
+MONSTER:'h',"gnoll",(73,13),hostile
+MONSTER:'o',"goblin",(73,14),hostile
+MONSTER:'h',"gnoll",(73,15),hostile
+MONSTER:'o',"goblin",(73,16),hostile
+
+MONSTER:'o',"goblin",(74,13),hostile
+MONSTER:'h',"gnoll",(74,14),hostile
+MONSTER:'o',"goblin",(74,15),hostile
+MONSTER:'h',"gnoll",(74,16),hostile
+
+#Stairs
+STAIR:(10,17,67,19), (27,17,47,18),up
+STAIR:(10,00,48,09), (00,00,00,00),down
+
+
+#
+#   The "locate" level for winter-reaper yuki-onna kensei.
+#
+#   A frozen ruined castle that would be quite haunted from the point of view of other people.
+#
+MAZE: "Ken-loch",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTIITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTTeeeeeeeeeeeeeeTTeTeeeTTeeeeeeeeeeIIeTeeeTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+2TTeeeeee---e-eeeeeeeTTeeTeeeeeeeeeeeIIeTeeeTTTTTTTTTTTTTTTTTTTT-----TTTTTTTT
+3eeeeeeee|.eTeeeeeTeeeTeeeeeeeeeeeeeeIITeeeeeeeeeeeeeeeeeeeeeeeeeTTTeTeeeeeee
+4eeeeeeee|.ee---TTTee--+-------------II---------------+--eeIee---eTT|TTeeTTTe
+5eeeeeeee|-|...|eTTee|...|....|....|eIIe|....|....|.|...|eeeee|..t|-TeTeeeeeT
+6eeeeeeeeee|...--T----...|....|....|eIIe|....|....S.|...-------...|eeeeeeeeeT
+7eeeeeeeeee|-|..eee....------+----+-+II-----+-+--------.........|-|eeeeeeeeeT
+8eeeTTeeeeeee|..--------.|I........eeIIeee.........I|.--------..|eeeeeeTTeeee
+9eeeeTTeeeeee|..+........+.....e..eeeIIIeee.........+........+..|eeeeeeTTeeee
+0eeTTeTeeeeee|..+........+......eeeeeeIIeee.........+........+..|eeeeeeeeeeee
+1eeTeeeeeeeee|..--------.|I........eeeIIee.........I|.--------..|eeeeeeeTeeee
+2eeeeeeeeee|-|.........--------+-+----II-+-+----+------.........|-|eeeTeTeeee
+3eeeeTeeeee|...-------...|.S....|....|IIee|....|....|...-------...|eeeeTTeeee
+4eeeeTTee|-|...|eeeee|...|.|....|....|IIee|....|....|...|Teeee|...|-|eeeeeeee
+5eTTeTTee|...---eeIee--+--------------II--------------+--eTIee---...|eeeeeeee
+6Teeeeeee|...|eeeeTTeeeeeeeeeeeeeeeeeeIIeeeeeeeeeeeeeeeeeeeeeeee|...|eTTeeTTT
+7eTeeeeee-----eeeeeTTTeeeeeeTTTeeeeeeeIIeeeeeTeeeeeTeeeeeeeTTTee-----TTeeTeee
+8eeTeeeeeeeeeeeeeeeeeeeeeeeTeeeTTeeeeeIIeeeeTeTeeeTTTeeeeeeeeeeeeeeeeTeeeTeee
+9eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeIIeeeeeTTeeeeTeeeeeTeeeeeeeeeTTeeeeTeee
+ENDMAP
+
+RANDOM_PLACES:(47,05),(50,05),(45,14),(50,14)
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+# Magic Chest
+OBJECT:'(',"magic chest",place[0]
+OBJECT[50%]:'#',"thoroughly tattered bedroll",place[1]
+OBJECT[50%]:'#',"very tattered burnt bedroll",place[2]
+OBJECT[50%]:'#',"very burnt bedroll",place[3]
+# Doors
+DOOR:locked,(22,04)
+DOOR:locked,(22,15)
+DOOR:locked,(53,04)
+DOOR:locked,(53,15)
+DOOR:locked,(49,06)
+DOOR:locked,(26,13)
+DOOR:locked,(28,07)
+DOOR:locked,(30,12)
+DOOR:locked,(33,07)
+DOOR:locked,(32,12)
+DOOR:locked,(35,07)
+DOOR:locked,(40,12)
+DOOR:locked,(43,07)
+DOOR:locked,(42,12)
+DOOR:locked,(45,07)
+DOOR:locked,(47,12)
+DOOR:closed,(15,09)
+DOOR:closed,(15,10)
+DOOR:closed,(24,09)
+DOOR:closed,(24,10)
+DOOR:closed,(51,09)
+DOOR:closed,(51,10)
+DOOR:closed,(60,09)
+DOOR:closed,(60,10)
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+# Objects
+OBJECT[75%]:'*',random,(25,05)
+OBJECT[75%]:'*',random,(26,05)
+OBJECT[75%]:'*',random,(27,05)
+OBJECT[75%]:'*',random,(28,05)
+OBJECT[75%]:'*',random,(25,06)
+OBJECT[75%]:'*',random,(26,06)
+OBJECT[75%]:'*',random,(27,06)
+OBJECT[75%]:'*',random,(28,06)
+#
+OBJECT[75%]:'[',random,(40,05)
+OBJECT[75%]:'[',random,(41,05)
+OBJECT[75%]:'[',random,(42,05)
+OBJECT[75%]:'[',random,(43,05)
+OBJECT[75%]:'[',random,(40,06)
+OBJECT[75%]:'[',random,(41,06)
+OBJECT[75%]:'[',random,(42,06)
+OBJECT[75%]:'[',random,(43,06)
+#
+OBJECT[75%]:')',random,(27,13)
+OBJECT[75%]:')',random,(28,13)
+OBJECT[75%]:')',random,(29,13)
+OBJECT[75%]:')',random,(30,13)
+OBJECT[75%]:')',random,(27,14)
+OBJECT[75%]:')',random,(28,14)
+OBJECT[75%]:')',random,(29,14)
+OBJECT[75%]:')',random,(30,14)
+#
+OBJECT[75%]:'(',random,(37,13)
+OBJECT[75%]:'(',random,(38,13)
+OBJECT[75%]:'(',random,(39,13)
+OBJECT[75%]:'(',random,(40,13)
+OBJECT[75%]:'(',random,(37,14)
+OBJECT[75%]:'(',random,(38,14)
+OBJECT[75%]:'(',random,(39,14)
+OBJECT[75%]:'(',random,(40,14)
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+MONSTER:'n',"yuki-onna",random,peaceful
+
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+#
+#   The "locate" level for boreal scepter human kensei.
+#
+#   A haunted fortress prison/madhouse, watched over by mad duelist-priests.
+#
+
+MAZE: "Ken-loci",' '
+FLAGS: hardfloor
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                         -------------------                                
+1       eeeee eee    eeeee                   ee   eee    eeeeee     e eeeeee 
+2  eeeeeeee  eeeeee  eeeee                   eeeee eee    eeeeee  eee ee eee 
+3  eee  eeee eee eeeeeeeee                    eeeeeeee    eee ee eee eee  ee 
+4 ee   eeeeeee ee eee  eee -              --   ee ee e    ee  ee eeeeeeeeee  
+5 eee eeeee   eee   ee eee     ---- ----     e eee ee     ee   eeeee   eee   
+6  eee-----    eee  eeeeee      e     e      eeeee eee   eee   eee  -----    
+7   e-     -    eeee eeeee -               - eeeee eeee eee    ee  -     -   
+8  e           e eeeee eee                   ee  e eeeeeeee     eee       e  
+9  ee       eeeeeeee  e ee                   ee  e ee eeeeeeeeeeeee       ee 
+0 eee         eeeeee ee ee -               - eeeee ee  eee     eeee       ee 
+1 ee -     -e eeee   e eee                   eee e e   eee      eee-     -ee 
+2 e  e-----eeeeeeee ee eee      e     e      e e e e eeeee    e   ee-----ee  
+3   eeeeeee ee eeeeeeeeeee -   ---- ----   - ee  e eeeeee   e eee    eeee    
+4   eeeeeee ee  eeeeeee ee                   eeeee eeee     eeeeee ee   eee  
+5  eeeeeeeee eee  eeee  ee                   eeeee eeee    ee  eee eeeeeeee  
+6   eeeeeee  eee eee   eee                -- e  e eeee      e  ee eeeeeeeeee 
+7     eee    e eee e   eee                     eeeeee       e   e eee  eeee  
+8             e        eee------------------- eeee  e        eeeeee      e   
+9                       eeeeeeeeeeeeeeeeeeeeeeeee                            
+ENDMAP
+
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTT-------------------TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+1TTTTTTTeeeeeTeeeTTTTeeeee|...|..|..|..|..|.|eeTTTeeeTTTTeeeeeeTTTTTeTeeeeeeT
+2TTeeeeeeeeTTeeeeeeTTeeeee|.|+|F+|+F|F+|+F|.+eeeeeTeeeTTTTeeeeeeTTeeeteeTeeeT
+3TTeeeTTeeeeTeeeteeeeeeeee|.F#############..|TeeeeeeeeTTTTeeeTeeTeeeteeeTTeeT
+4TeeTTTeeeeeeeteeTeeeTteee|-|#############--|TTeeTeeTeTTTTeeTTeeteeeeeeeeeeTT
+5TeeeTeeeeeTTTeeeTTTeeTeee|.F##----+----##+.|eTeeeTeeTTTTTeeTTTeeeeeTTTeeeTTT
+6TTeee-----TTTTeeeTTeeeeee|.+##|eF,,,+e|##F.|eeeeeTeeeTTTeeeTTTeeeTT-----TTTT
+7TTTe-|...|-TTTTeeeeTeeeee|-|##|+F,,,FF|##|-|eeeeeTeeeeTeeeTTTTeeTT-|...|-TTT
+8TTet|.....|TTTeTeeeeeteee|.+##|,,tPPT,|##F.|eeTTeTeeeeeeeeTTTTTeee|.....|eTT
+9TTee|.....+eeeeeeeeTTeTee|.F##+,TPPt,,+##+.|eeTTeTeeTeeeeeeeeeeeee+.....|eeT
+0Teee|.....|TTeeeeeeTeeTee|-|##|,,PPP,,|##|-|eeeeeTeeTTeeeTTTTTeeee|.....|eeT
+1TeeT-|...|-eTeeeeTTTeTeee|.F##|FFT,,F+|##+.|eeeTeTetTTeeeTTTTTTeee-|...|-eeT
+2TeTTe-----eeeeeeeeTeeTeee|.+##|e+,,TFe|##F.|eTeTeTeteeeeeTTTTeTTTee-----eeTT
+3TTTeeeeeeeTeeTeeeeeeeeeee|-|##----+----##|-|eeTTeTeeeeeeTTTeTeeeTTTTeeeeTTTT
+4TTTeeeeeeeTeeTTeeeeeeeTee|..#############F.|eeeeeTeeeeTTTTTeeeeeeTeeTTTeeeTT
+5TTeeeeeeeeeTeeeTTeeeetTee|..#############+.|eeeeeTeeeeTTTTeeTTeeeteeeeeeeeTT
+6TTTeeeeeeeTTeeeTeeeTTTeee+...|+F|F+|+F|F+--|eTTeTeeeeTTTTTTeTTeeteeeeeeeeeeT
+7TTTTTeeeTTTTeTeeeTeTTTeeeF...|..|..|..|....|TTeeeeeeTTTTTTTeTTTeTeeeTTeeeeTT
+8TTTTTTTTTTTTTeTTTTTTTTeee-------------------TeeeeTTeTTTTTTTTeeeeeeTTTTTTeTTT
+9TTTTTTTTTTTTTTTTTTTTTTTeeeeeeeeeeeeeeeeeeeeeeeeeTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+ENDMAP
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+#          1         2         3         4         5         6         7
+RANDOM_PLACES:(09,07),(69,09)
+
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+# Magic Chest
+OBJECT:'(',"magic chest",place[0]
+MONSTER:'@',"dancing duelist",place[0],hostile
+MONSTER:'@',"dancing duelist",place[1],hostile
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(26,11)
+MONSTER[50%]:'#',"zombified madman",(26,11),hostile
+DOOR:closed,(27,12)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(26,09)
+MONSTER[50%]:'#',"zombified madwoman",(26,09),hostile
+DOOR:locked,(27,08)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(26,05)
+MONSTER[50%]:'#',"zombified nobleman",(26,05),hostile
+DOOR:closed,(27,06)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(26,03)
+MONSTER[50%]:'#',"zombified noblewoman",(26,03),hostile
+DOOR:locked,(28,02)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(30,01)
+MONSTER[50%]:'#',"zombified madman",(30,01),hostile
+DOOR:closed,(31,02)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(34,01)
+MONSTER[50%]:'#',"zombified madwoman",(34,01),hostile
+DOOR:locked,(33,02)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(36,01)
+MONSTER[50%]:'#',"zombified convict",(36,01),hostile
+DOOR:closed,(37,02)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(40,01)
+MONSTER[50%]:'#',"zombified convict",(40,01),hostile
+DOOR:locked,(39,02)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(42,06)
+MONSTER[50%]:'#',"zombified madwoman",(42,06),hostile
+DOOR:closed,(41,05)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(42,08)
+MONSTER[50%]:'#',"zombified madman",(42,08),hostile
+DOOR:locked,(41,09)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(42,12)
+MONSTER[50%]:'#',"zombified priestess",(42,12),hostile
+DOOR:closed,(41,11)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(42,14)
+MONSTER[50%]:'#',"zombified priest",(42,14),hostile
+DOOR:locked,(41,15)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(31,17)
+MONSTER[50%]:'#',"zombified madman",(31,17),hostile
+DOOR:closed,(30,16)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(33,17)
+MONSTER[50%]:'#',"zombified madwoman",(33,17),hostile
+DOOR:locked,(34,16)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(37,17)
+MONSTER[50%]:'#',"zombified pirate",(37,17),hostile
+DOOR:closed,(36,16)
+OBJECT[50%]:'#',"thoroughly rotted bedroll",(39,17)
+MONSTER[50%]:'#',"zombified pirate",(39,17),hostile
+DOOR:locked,(40,16)
+
+MONSTER:'@',"dancing duelist",(34,12),hostile
+MONSTER:'@',"dancing duelist",(34,07),hostile
+
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+#
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+
+#
+#   The "locate" level for malice human kensei.
+#
+#   A crashed walking fortress filled with the hungry dead.
+#
+
+MAZE: "Ken-locj",' '
+FLAGS: hardfloor
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                                           |-----------|    
+1                                                           |...........|    
+2                                                           |...........|    
+3                                                           |--+-----+--|    
+4                                                            |         |     
+5                                                         |--|  -----  |--|  
+6                                                         |..+ |-...-| |..|  
+7                                                         |..| |.....| +..|  
+8                                                         |--| |..\..| |--|  
+9                                                         |..+ |.....| +..|  
+0                                                         S..| |-...-| |..|  
+1                                                         |--|  --+--  |--|  
+2                                                            |         |     
+3                                                           |-+--+-+--+-|    
+4                                                           |..|..|..|..|    
+5                                                           |..|..|..|..|    
+6                                                           |--|--|--|--|    
+7                                                                            
+8                                                                            
+9                                                                            
+ENDMAP
+OBJECT:'(',"magic chest",random
+OBJECT[50%]:'#',"thoroughly tattered bedroll",random
+OBJECT[50%]:'#',"very tattered rotted bedroll",random
+OBJECT[50%]:'#',"very rotted bedroll",random
+
+MONSTER:'Z',"hungry dead",(60,02)
+MONSTER:'Z',"hungry dead",(61,01)
+MONSTER:'Z',"hungry dead",(62,01)
+MONSTER:'Z',"hungry dead",(63,01)
+MONSTER:'Z',"hungry dead",(64,01)
+MONSTER:'Z',"hungry dead",(65,01)
+MONSTER:'Z',"hungry dead",(66,01)
+MONSTER:'Z',"hungry dead",(67,01)
+MONSTER:'Z',"hungry dead",(68,01)
+MONSTER:'Z',"hungry dead",(69,01)
+MONSTER:'Z',"hungry dead",(70,02)
+
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'(',random,random
+OBJECT[75%]:'/',random,random
+OBJECT[75%]:'/',random,random
+OBJECT[75%]:'/',random,random
+OBJECT[75%]:'/',random,random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                                           |-----------|    
+1    ,,,,            ,,,,,,            ,,,,,,,,,,,,,,,,,,   |           |    
+2   ,,,,,,        ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |           |    
+3 ,,,,,,,, ,,,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |-- ----- --|    
+4 ,,,,,,,,  ,,   ,  ,,,,,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |         |     
+5 ,,,,,,,,, ,,,,, , ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|--|  -----  |--|  
+6 ,,,,,,,,,,,,,,, , ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|    |-   -| |  |  
+7 ,,,,,,,,,,,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|  | |     |    |  
+8 ,,,  ,,,,,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|--| |     | |--|  
+9 ,,,,  ,,,,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|    |     |    |  
+0 ,,  , ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,S  | |-   -| |  |  
+1 ,, ,,,,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|--|  -- --  |--|  
+2 ,,,,,,,,, , ,,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |         |     
+3 ,,,, ,,,,,  ,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |- -- - -- -|    
+4 ,,,,  ,,,,,,,,,,, ,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |  |  |  |  |    
+5 ,  ,  ,,,,,,,   , ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |  |  |  |  |    
+6  ,,,,,,,,  , ,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,  |--|--|--|--|    
+7 , ,,,,,,  ,, ,,,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   
+8 ,, ,,,,, ,,, ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,    
+9                                                                            
+ENDMAP
+
+# Random monsters.
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'#',"wolf zombie",random
+MONSTER:'#',"orc captain skeleton",random,hostile
+MONSTER:'d',random,random
+MONSTER:'#',"wolf zombie",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+
+#	"guards" for the central courtyard.
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT  |-----------|  }}
+1TTTT,,,,TTTTTTTTTTTT,,,,,,TTTTTTTTTTTT,,,,,,,,,,,,,,,,,,   |...........|   }
+2TTT,,,,,,TTTTTTTT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |...........|   }
+3T,,,,,,,,T,,,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |--+-----+--|   }
+4T,,,,,,,,TT,,TTT,TT,,,,,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |#########|   }}
+5T,,,,,,,,,T,,,,,T,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|--|##-----##|--|}}
+6T,,,,,,,,,,,,,,,T,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|..+#|-...-|#|..|}}
+7T,,,,,,,,,,,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|..|#|.....|#+..|}}
+8T,,,TT,,,,,TT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|--|#|..\..|#|--|}}
+9T,,,,TT,,,,TT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|..+#|.....|#+..|}}
+0T,,TT,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,S..|#|-...-|#|..|}}
+1T,,T,,,,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,|--|##--+--##|--|}}
+2T,,,,,,,,,T,T,,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |#########|   }}
+3T,,,,T,,,,,TT,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |-+--+-+--+-|   }
+4T,,,,TT,,,,,,,,,,,T,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |..|..|..|..|   }
+5T,TT,TT,,,,,,,TTT,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   |..|..|..|..|   }
+6TT,,,,,,,,TT,T,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,  |--|--|--|--|  }}
+7T,T,,,,,,TT,,T,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,}}}
+8T,,T,,,,,T,,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,}}}T
+9TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+ENDMAP
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,00,10,19), (00,00,00,00),up
+STAIR:(57,00,72,16), (00,00,00,00),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+
+#
+#   The "locate" level for "katana" yuki-onna kensei.
+#
+#   A corrupt fortress-monastery filled with undead monks.
+#
+
+MAZE: "Ken-lock",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0                                               --------------|              
+1                     w w########    ...   e..ee+##|#######S##|              
+2                    w ww############...... ..ee|##|##...##|##|              
+3                  ##   w########    ...    ..--|##|##...##|##|--   .....    
+4,,,       }}}}}}  #              }}       }..--|##|##...##|##|--.  .---.    
+5,,,,,   ,,,,,,}}}e.ee}}}}}}}}}}}}}}}}}}}}}}..|..#############..|....+#|.eee 
+6,,,,,,,,,,,,,,,}}e.eee},,,,,,,,,,,,,}},,,,}..|..###--+++--###..|.  .---.  e 
+7,,,,,,,,,,,T,,,}}}eee}},T,,,,,,,,,,,}},,,,}..-------.....-------.  .....  e 
+8,,,TT,,,,,,,,,,,}}e.e}},,,,,,,,,,,,,}},,,,}......................         e 
+9,,,,TTTT,,,,,,,,}.....},,,,,,,,,,,T,}}},,,}...................... }}   }} e}
+0,,TT,T,,,,,,,,,}}.-+-.}},,,,TT,,,,,,,}},,,}}...}}}}}.....}}}}}...},,,,,,,}w,
+1,,T,,,,,,,,,,,,}}.|#|.}},,,,T,T,,,,,,}},,,,}}}}}}}}}.....}}}}}}}}},,,,,,,,,,
+2,,,,,,,,,,,,,,,}}.---.}},,,,,T,,,,,,,}},,,,,,,,,,,}}}}}}}}},,,,,,,,,,,,,,,,,
+3,,,,T,,,--+--,,,}.....},,,,,,,,,,,,,,}},,,,T,,,,,,,,,,,,,,,,,,,--+--,,,,,,,,
+4,,,,TT,,|...|,,,}}}}}}},,,,,,,,,,,,,,}},,,,,,,,T,,,,,,,,,,,,,,,|...|,,,,,,,,
+5,TT,TT,,|...|,,,,}}}},,,,,,,,,,,,T,,,}},,,,,,,,,,,,,,,,,,,,,,,,|...|,,,,,,,,
+6T,,,,,,,|...|,,,,TT,,,,,,,,,,,,,,,,,,}},T,,,,,,,,,,,,,,,,,,,,,,|...|,TT,,TTT
+7,T,,,,,,-----,,,,,TTT,,,,,,TTT,,,,,,,}},,,,,T,,,,,T,,,,,,,TTT,,-----TT,,T,,,
+8,,T,,,,,,,,,,,,,,,,,,,,,,,T,,,TT,,,,,}},,,,T,T,,,TTT,,,,,,,,,,,,,,,,T,,,T,,,
+9,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,}},,,,,TT,,,,T,,,,,T,,,,,,,,,TT,,,,T,,,
+ENDMAP
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Altar
+ALTAR:(54,02),noalign,altar
+OBJECT:'#',"katanakenseisword",(54,02)
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,63,12), (00,00,00,00),down
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+
+MONSTER:'M',"rotting monk",(46,05),hostile
+MONSTER:'M',"rotting monk",(46,06),hostile
+MONSTER:'M',"rotting monk",(47,06),hostile
+
+MONSTER:'M',"rotting monk",(62,06),hostile
+MONSTER:'M',"rotting monk",(60,01),hostile
+MONSTER:'M',"rotting monk",(59,02),hostile
+
+OBJECT:'?',"secret arts",(19,11)
+
+DOOR:closed,(19,10)
+DOOR:locked,(47,01)
+DOOR:locked,(53,06)
+DOOR:locked,(54,06)
+DOOR:locked,(55,06)
+DOOR:closed,(68,05)
+DOOR:closed,(10,13)
+DOOR:closed,(65,13)
+
+
+
+OBJECT:'`',"statue",(54,01),"Mahadeva",0
+OBJECT:'`',"statue",(52,02),"monk",0
+OBJECT:'`',"statue",(52,03),"monk",0
+OBJECT:'`',"statue",(52,04),"monk",0
+OBJECT:'`',"statue",(51,02),"monk",0
+OBJECT:'`',"statue",(51,03),"monk",0
+OBJECT:'`',"statue",(51,04),"monk",0
+OBJECT:'`',"statue",(56,02),"monk",0
+OBJECT:'`',"statue",(56,03),"monk",0
+OBJECT:'`',"statue",(56,04),"monk",0
+OBJECT:'`',"statue",(57,02),"monk",0
+OBJECT:'`',"statue",(57,03),"monk",0
+OBJECT:'`',"statue",(57,04),"monk",0
+
+OBJECT:'`',"statue",(36,01),"monk",0
+OBJECT:'`',"statue",(37,01),"monk",0
+OBJECT:'`',"statue",(38,01),"monk",0
+OBJECT:'`',"statue",(36,03),"monk",0
+OBJECT:'`',"statue",(37,03),"monk",0
+OBJECT:'`',"statue",(38,03),"monk",0
+
+OBJECT:'(',"magic chest",random
+
+# Objects
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+OBJECT[75%]:'*',random,random
+#
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+OBJECT[75%]:'[',random,random
+#
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+OBJECT[75%]:')',random,random
+#
+OBJECT[75%]:'+',random,random
+OBJECT[75%]:'+',random,random
+OBJECT[75%]:'+',random,random
+OBJECT[75%]:'+',random,random
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+OBJECT[75%]:'?',random,random
+
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+
+# Random monsters.
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'#',"zombified monk",random,hostile
+MONSTER:'d',random,random
+MONSTER:'#',"monkey skeleton",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+
+#	"guards" for the central courtyard.
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
+MONSTER:'#',"samurai zombie",random,hostile
 
 MONSTER:'#',"ogre zombie",random
 MONSTER:'#',"ogre zombie",random

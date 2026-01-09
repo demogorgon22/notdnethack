@@ -918,6 +918,10 @@ int
 inhishop(mtmp)
 register struct monst *mtmp;
 {
+	if(!HAS_ESHK(mtmp)) {
+		impossible("inhishop: mon %s has no ESHK struct?", mon_nam(mtmp));
+		return(FALSE);
+	}
 	return(index(in_rooms(mtmp->mx, mtmp->my, SHOPBASE),
 		     ESHK(mtmp)->shoproom) &&
 		on_level(&(ESHK(mtmp)->shoplevel), &u.uz));
@@ -2536,7 +2540,7 @@ register boolean unpaid_only;
 	    }
 
 	    if (Has_contents(otmp))
-		    price += contained_cost(otmp, shkp, price, usell, unpaid_only);
+		    price += contained_cost(otmp, shkp, 0L, usell, unpaid_only);
 	}
 
 	return(price);
@@ -2823,7 +2827,7 @@ register boolean ininv, dummy, silent;
 		    goto speak;
 		}
 	    } else {
-		cltmp += contained_cost(obj, shkp, cltmp, FALSE, FALSE);
+		cltmp += contained_cost(obj, shkp, 0L, FALSE, FALSE);
 		gltmp += contained_gold(obj);
 	    }
 
@@ -3149,7 +3153,7 @@ xchar x, y;
 	}
 	if(container) {
 		/* find the price of content before subfrombill */
-		cltmp += contained_cost(obj, shkp, cltmp, TRUE, FALSE);
+		cltmp += contained_cost(obj, shkp, 0L, TRUE, FALSE);
 		/* find the value of contained gold */
 		gltmp += contained_gold(obj);
 		cgold = (gltmp > 0L);

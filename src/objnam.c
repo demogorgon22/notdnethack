@@ -102,9 +102,11 @@ NEARDATA struct colorTextClr LightsaberColor[] = {
 	{"",CLR_RED},						/*spiritual soulstone*/
 	{"",CLR_RED},						/*mithril*/
 	{"black",CLR_BLACK},				/*fossil dark*/
-	{"",CLR_WHITE},						/*salt*/
+	{"flat white",CLR_WHITE},			/*salt*/
 	{"",CLR_RED},						/*silver slingstone*/
 	{"",CLR_RED},						/*rock*/
+	{"",CLR_RED},						/*ingot*/
+	{"",CLR_RED},						/*misc crystal*/
 	{"coruscating black",CLR_BLACK},	/*antimagic rift*/
 	{"coruscating tornado",CLR_GRAY}	/*catapsi vortex*/
 };
@@ -346,6 +348,12 @@ struct obj *otmp;
 		return "lightning bladed";
 	}
 	if(gem){
+		int gemtype = gem->otyp;
+		if(gemtype == CRYSTAL)
+			gemtype = gem->sub_material;
+		int offset = gemtype - MAGICITE_CRYSTAL;
+		if(offset < 0 || offset >= SIZE(LightsaberColor))
+			return "BSoD-blue";
 		switch(gem->oartifact){
 			case ART_ARKENSTONE: return Hallucination ? hcolor(0) : "rainbow-glinting sparking white";
 			case ART_FLUORITE_OCTAHEDRON: return Hallucination ? hcolor(0) : "burning cobalt";
@@ -353,7 +361,7 @@ struct obj *otmp;
 			case ART_GLITTERSTONE: return Hallucination ? hcolor(0) : "glittering gold";
 			case ART_ELDER_CEREBRAL_FLUID: return Hallucination ? hcolor(0) : "tentacled";
 			
-			default: return Hallucination ? hcolor(0) : LightsaberColor[((int)gem->otyp) - MAGICITE_CRYSTAL].colorText;
+			default: return Hallucination ? hcolor(0) : LightsaberColor[offset].colorText;
 		}
 	}
 	return "bladeless";
@@ -363,6 +371,15 @@ int
 lightsaber_colorCLR(otmp)
 struct obj *otmp;
 {
+	int offset = 0;
+	if(otmp->cobj){
+		int gemtype = otmp->cobj->otyp;
+		if(gemtype == CRYSTAL)
+			gemtype = otmp->cobj->sub_material;
+		offset = gemtype - MAGICITE_CRYSTAL;
+		if(offset < 0 || offset >= SIZE(LightsaberColor))
+			return CLR_BLUE;
+	}
 	if(otmp->oartifact) switch(otmp->oartifact){
 		case ART_ANNULUS: return CLR_BLUE;
 		case ART_INFINITY_S_MIRRORED_ARC:
@@ -393,11 +410,11 @@ struct obj *otmp;
 		case ART_HEART_OF_AHRIMAN: return rn2(3) ? CLR_RED : CLR_YELLOW;
 		case ART_GLITTERSTONE: return rn2(3) ? CLR_YELLOW : CLR_WHITE;
 		
-		default: return otmp->cobj ? LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorClr : otmp->obj_color;
+		default: return otmp->cobj ? LightsaberColor[offset].colorClr : otmp->obj_color;
 	}
 	if(otmp->otyp == KAMEREL_VAJRA)
 		return CLR_WHITE;
-	return otmp->cobj ? LightsaberColor[((int)otmp->cobj->otyp) - MAGICITE_CRYSTAL].colorClr : otmp->obj_color;
+	return otmp->cobj ? LightsaberColor[offset].colorClr : otmp->obj_color;
 }
 
 char *
@@ -1037,6 +1054,9 @@ boolean dofull;
 		if (artinstance[obj->oartifact].BLactive >= moves)
 			Strcat(buf, "sanguine ");
 	}
+	if(check_oprop(obj, OPROP_HAEM)){
+		Strcat(buf, "blood-egged ");
+	}
 	
 	if (!check_oprop(obj, OPROP_NONE) && (obj->oartifact == 0 || dofull)){
 		if (check_oprop(obj, OPROP_ASECW) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_ACID))
@@ -1249,6 +1269,10 @@ boolean dofull;
 			Strcat(buf, "Unholy ");
 		if (obj->oartifact == ART_AVENGER && obj->blessed && !undiscovered_artifact(obj->oartifact))
 			Strcat(buf, "Holy ");
+	}
+	/* Recurse for lightsaber gem */
+	if(is_lightsaber(obj) && litsaber(obj) && obj->cobj){
+		add_properties_words(obj->cobj, buf, dofull);
 	}
 }
 
@@ -4194,6 +4218,82 @@ int wishflags;
 			return mkjewel();
 		if(!strcmpi(bp, "my blood"))
 			return mkyourblood();
+		if(!strcmpi(bp, "futureweapon")){
+			int futureweaps[] = {
+				VIBROBLADE,
+				WHITE_VIBROSWORD,
+				GOLD_BLADED_VIBROSWORD,
+				RED_EYED_VIBROSWORD,
+				SEISMIC_HAMMER,
+				FORCE_PIKE,
+				DOUBLE_FORCE_BLADE,
+				FORCE_BLADE,
+				FORCE_SWORD,
+				WHITE_VIBROSPEAR,
+				GOLD_BLADED_VIBROSPEAR,
+				SHORT_SWORD
+			};
+			int pick = ROLL_FROM(futureweaps);
+			struct obj *otmp = mksobj(pick, NO_MKOBJ_FLAGS);
+			if(pick == SHORT_SWORD){
+				otmp->objsize = MZ_LARGE;
+				set_material_gm(otmp, SILVER);
+				fix_object(otmp);
+			}
+			return otmp;
+		}
+		if(!strcmpi(bp, "futurearmor")){
+			int futurearmor[] = {
+				FLACK_HELMET,
+				PLASTEEL_HELM,
+				PLASTEEL_ARMOR,
+				JUMPSUIT,
+				BODYGLOVE,
+				PLASTEEL_GAUNTLETS,
+				PLASTEEL_BOOTS,
+				TOWER_SHIELD,
+				CLOAK_OF_MAGIC_RESISTANCE,
+			};
+			int pick = ROLL_FROM(futurearmor);
+			struct obj *otmp = mksobj(pick, NO_MKOBJ_FLAGS);
+			if(pick == TOWER_SHIELD){
+				set_material_gm(otmp, PLASTIC);
+				fix_object(otmp);
+			}
+			return otmp;
+		}
+		if(!strcmpi(bp, "futuremisc")){
+			int futuremisc[] = {
+				BULLET_FABBER,
+				MAGIC_MARKER,
+				TINNING_KIT,
+				SPE_ACID_SPLASH,
+				SPE_LIGHTNING_BOLT,
+				SPE_POISON_SPRAY,
+				ARM_BLASTER,
+				HAND_BLASTER,
+				RAYGUN,
+				CUTTING_LASER,
+				HYPOSPRAY_AMPULE,
+				BROKEN_ANDROID,
+				BROKEN_GYNOID
+			};
+			int pick = ROLL_FROM(futuremisc);
+			return mksobj(pick, NO_MKOBJ_FLAGS);
+		}
+
+		if(!strcmpi(bp, "katanakenseisword")){
+			struct obj *otmp = mksartifact(rn2(2) ? ART_SKY_RENDER : ART_MORTAL_BLADE);
+			if(otmp){
+				bless(otmp);
+				otmp->oerodeproof = 1;
+				if(otmp->spe < 1)
+					otmp->spe = 1;
+				return otmp;
+			}
+			//else
+			return &zeroobj;
+		}
 	}
 	if(!strcmpi(bp, "columnar crystal rod"))
 		return mkcolumnarcrystal(1);

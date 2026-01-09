@@ -493,6 +493,7 @@ boolean with_you;
 	mtmp->mtrack[0].x = mtmp->mtrack[0].y = 0;
 	mtmp->mtrack[1].x = mtmp->mtrack[1].y = 0;
 
+	mtmp->mprobed = 0;
 #ifdef STEED
 	if (mtmp == u.usteed)
 	    return;	/* don't place steed on the map */
@@ -1194,7 +1195,7 @@ register struct obj *obj;
 			return 0;
 	    if (hates_iron(mon->data) && is_iron_obj(obj))
 			return 0;
-		if(mon->mtyp == PM_RUST_MONSTER)
+		if(mon->mtyp == PM_RUST_MONSTER || is_gray_mold(mon->data))
 			return is_rustprone(obj);
 		else return is_metallic(obj);
 	}

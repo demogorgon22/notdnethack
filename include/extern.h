@@ -571,6 +571,7 @@ E void FDECL(slimy_corpse, (genericptr_t, long));
 E void FDECL(shady_corpse, (genericptr_t, long));
 E void FDECL(zombie_corpse, (genericptr_t, long));
 E void FDECL(yellow_corpse, (genericptr_t, long));
+E void FDECL(gray_moldy_corpse, (genericptr_t, long));
 E int NDECL(donull);
 E int NDECL(dowipe);
 E void FDECL(set_wounded_legs, (long,int));
@@ -711,6 +712,7 @@ E void FDECL(doliving_ringed_armor, (struct monst *, struct obj *, boolean));
 E void FDECL(doliving_ibite_arm, (struct monst *, struct obj *, boolean));
 E void FDECL(doibite_ghosts, (struct monst *, struct obj *));
 E void FDECL(doliving_fallingstar, (struct monst *, struct obj *, boolean));
+E void FDECL(doliving_cricket, (struct monst *));
 E void FDECL(doliving_healing_armor, (struct monst *, struct obj *, boolean));
 E void FDECL(doliving_armor_salve, (struct monst *, struct obj *));
 E void FDECL(dotsmi_theft, (struct monst *, struct monst *, struct obj *, struct obj *));
@@ -1517,6 +1519,7 @@ E boolean FDECL(mon_can_see_you, (struct monst *));
 E boolean FDECL(mon_can_see_mon, (struct monst *, struct monst *));
 E int FDECL(permonst_max_lev,(struct permonst *));
 E int FDECL(mon_max_lev,(struct monst *));
+E int FDECL(default_strongmonst_strength, (int));
 
 /* ### mapglyph.c ### */
 
@@ -1724,6 +1727,7 @@ E void FDECL(mkhellvaultitem_cnt,(struct obj *, int, boolean));
 E void NDECL(place_lolth_vaults);
 E void NDECL(place_chaos_forest_features);
 E void NDECL(place_elfquest_forest_features);
+E void NDECL(place_elfhaunt_forest_features);
 E void NDECL(place_haunted_forest_features);
 E void NDECL(place_drow_healer_features);
 E void NDECL(place_law_features);
@@ -1963,6 +1967,7 @@ E boolean FDECL(can_equip, (struct monst *, struct obj *));
 E void FDECL(phantom_scorpions_sting, (struct monst *));
 E void FDECL(rot_caterpillars_bite, (struct monst *));
 E void FDECL(orc_mud_stabs, (struct monst *));
+E void FDECL(adjust_etrait_stance, (struct monst *));
 
 /* ### monst.c ### */
 
@@ -2065,6 +2070,8 @@ E struct permonst * FDECL(find_mask, (struct monst *));
 E int FDECL(mbhitm, (struct monst *,struct obj *));
 #endif
 E int FDECL(use_offensive, (struct monst *));
+E boolean FDECL(find_artifact, (struct monst *));
+E int FDECL(use_artifact, (struct monst *));
 E int FDECL(rnd_offensive_item, (struct monst *));
 E boolean FDECL(is_attack_wand, (int));
 E int FDECL(rnd_attack_wand, (struct monst *));
@@ -2456,6 +2463,7 @@ E void FDECL(skinback, (BOOLEAN_P));
 E const char *FDECL(mbodypart, (struct monst *,int));
 E const char *FDECL(ptrbodypart, (struct permonst *,int, struct monst *));
 E const char *FDECL(body_part, (int));
+E boolean FDECL(separate_respiration, (struct permonst *));
 E int NDECL(poly_gender);
 E void FDECL(ugolemeffects, (int,int));
 
@@ -2743,6 +2751,7 @@ E int FDECL(pick_gend, (int, int, int, int));
 E boolean FDECL(ok_align, (int, int, int, int));
 E int FDECL(pick_align, (int, int, int, int));
 E int FDECL(pick_species, (int, int, int, int));
+E void NDECL(role_edit);
 E void FDECL(role_init, (int));
 E int FDECL(get_vgod, (int));
 E void NDECL(rigid_role_checks);
@@ -2940,6 +2949,7 @@ E int FDECL(P_SKILL_CORE, (int, boolean));
 E int FDECL(P_RESTRICTED, (int));
 E boolean FDECL(spiritSkill, (int));
 E boolean FDECL(roleSkill, (int));
+E void FDECL(unlockRoleSkill, (int));
 E int FDECL(domonnoise,(struct monst *, BOOLEAN_P));
 #ifdef USER_SOUNDS
 E int FDECL(add_sound_mapping, (const char *));
@@ -3414,6 +3424,7 @@ E void FDECL(init_mon_wield_item, (struct monst *));
 E int NDECL(str_abon);
 E int NDECL(abon);
 E float FDECL(atr_dbon, (struct obj *, struct monst *, int));
+E int FDECL(strscore_dbon, (int));
 E int FDECL(str_dbon, (struct monst *));
 E int FDECL(dbon, (struct obj *, struct monst *));
 E void NDECL(reset_skills);
@@ -3448,6 +3459,7 @@ E const char * FDECL(P_NAME, (int));
 E int NDECL(aeshbon);
 E boolean FDECL(ok_mariwep, (struct obj *, struct monst *, struct permonst *, boolean));
 E struct obj * FDECL(get_mariwep, (struct monst *, struct permonst *, int));
+E unsigned long FDECL(process_etraits, (unsigned long, int, struct obj *, struct monst *, struct permonst *));
 E boolean FDECL(check_etrait, (struct obj *, struct monst *, unsigned long));
 
 /* ### were.c ### */

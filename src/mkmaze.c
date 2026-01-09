@@ -618,6 +618,9 @@ fixup_special()
 	if(In_quest(&u.uz) && urole.neminum == PM_NECROMANCER){
 		place_elfquest_forest_features();
 	}
+	if(In_quest(&u.uz) && Role_if(PM_KENSEI) && u.role_variant == ART_RINGIL && Is_qlocate(&u.uz)){
+		place_elfhaunt_forest_features();
+	}
 	/* NEUTRAL QUEST: various features */
 	if (In_outlands(&u.uz)){
 		if (!(u.uz.dlevel == spire_level.dlevel || Is_gatetown(&u.uz) || Is_sumall(&u.uz)))

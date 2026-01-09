@@ -727,7 +727,7 @@ nh_timeout()
 	}
 	if(Strangled || FrozenAir || BloodDrown){
 		if(BloodDrown){
-			pline("Your lungs are full of blood!");
+			pline("Your %s are full of blood!", makeplural(body_part(LUNG)));
 			water_damage(invent, FALSE, FALSE, WD_BLOOD, &youmonst);
 		}
 		if(Breathless);//Do nothing
@@ -749,7 +749,7 @@ nh_timeout()
 		else if(u.divetimer > (ACURR(A_CON))/3) u.divetimer--;
 	}
 
-	if((Babble || Screaming) && !Strangled && !FrozenAir && !BloodDrown && u.divetimer > 1)
+	if((Babble || Screaming) && !Strangled_cant_speak && !FrozenAir && !BloodDrown && u.divetimer > 1)
 		u.divetimer--;
 
 	if(u.divetimer<=0){
@@ -1000,7 +1000,7 @@ nh_timeout()
 			(void) float_down(I_SPECIAL|TIMEOUT, 0L);
 			break;
 		case STRANGLED:
-			if(!Breathless && !Strangled) Your("throat opens up!");
+			if(!Breathless && !Strangled) Your("%s opens up!", body_part(WINDPIPE));
 		break;
 		case FUMBLING:
 			/* call this only when a move took place.  */
@@ -2964,6 +2964,12 @@ long timeout;
 				case MITHRIL:
 					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
 				break;
+				case COPPER:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+				break;
+				case LEAD:
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+				break;
 			}
 		}
 		if(obj->where == OBJ_INVENT){
@@ -3100,6 +3106,7 @@ static const ttable timeout_funcs[NUM_TIME_FUNCS] = {
 	TTAB(revert_object,		(timeout_proc)0,	"revert_object"),
 	TTAB(revert_mercurial,	(timeout_proc)0,	"revert_mercurial"),
 	TTAB(revert_aureate_deluge,(timeout_proc)0,"revert_aureate_deluge"),
+	TTAB(gray_moldy_corpse,(timeout_proc)0,"gray_moldy_corpse"),
 };
 #undef TTAB
 
@@ -3704,6 +3711,7 @@ struct obj * otmp;
 	(void) stop_timer(ZOMBIE_CORPSE, otmp->timed);
 	(void) stop_timer(SHADY_CORPSE, otmp->timed);
 	(void) stop_timer(YELLOW_CORPSE, otmp->timed);
+	(void) stop_timer(GRAY_MOLDY_CORPSE, otmp->timed);
 }
 
 #endif /* OVL0 */

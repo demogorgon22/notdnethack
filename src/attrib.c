@@ -1083,7 +1083,7 @@ int oldlevel, newlevel;
 		for (int i = 0; i < P_NUM_SKILLS; i++) {
 			if (roleSkill(i)){
 				message = TRUE;
-				expert_weapon_skill(i);
+				unlockRoleSkill(i);
 			}
 		}
 		if (message) You_feel("like you've unlocked new potential!");

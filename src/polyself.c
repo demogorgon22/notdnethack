@@ -1021,7 +1021,7 @@ doelementalbreath()
 	struct monst *mon = 0;
 	int type;
 	
-	if (Strangled) {
+	if (Strangled_cant_speak) {
 	    You_cant("breathe.  Sorry.");
 	    return MOVE_CANCELLED;
 	}
@@ -2132,7 +2132,7 @@ const char *
 ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 {
 	static NEARDATA const char
-	*humanoid_parts[] = { 
+	*humanoid_parts[] = {
 		"arm",			"eye",		"face",			"finger",
 		"fingertip",	"foot",		"hand",			"handed", 
 		"head", 		"leg",		"light headed", "neck",
@@ -2140,7 +2140,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung",			"nose", 	"stomach",		"heart",
 		"skin",			"flesh",	"beat",			"bones",
 		"ear", 			"ears",		"tongue",		"brain",
-		"creak",		"crack"},
+		"creak",		"crack",	"throat",		"throat",
+		"wing"},
 	*uvuudaum_parts[] = { 
 		"arm",			"eye",		"headspike",	"finger",
 		"fingertip",	"hand",		"hand",			"handed", 
@@ -2149,7 +2150,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"pore",			"pore", 	"stomach",		"heart",
 		"skin",			"flesh",	"beat",			"bones",
 		"clairaudience", "clairaudience","fingertip","brain",
-		"creak",	"crack"},
+		"creak",	"crack",	"",		"",
+		"wing"},
 	*clockwork_parts[] = { 
 		"arm", 			"photoreceptor",	"face",			"grasping digit",
 		"digit-tip",	"foot",				"manipulator",	"manipulatored",
@@ -2158,7 +2160,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"gear",			"chemoreceptor",	"keyhole",		"mainspring",
 		"foil skin",	"brass structure",	"tick",			"armature",
 		"phonoreceptor","phonoreceptors",	"spring",		"card deck",
-		"creak",		"bend"},
+		"creak",		"bend",				"fuel intake",	"air duct",		
+		"wing"},
 	*doll_parts[] = { 
 		"arm", 			"glass eye",		"face",			"finger",
 		"fingertip",	"foot",				"hand",			"handed",
@@ -2167,7 +2170,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lip",			"nose",				"wood",			"wood",
 		"painted skin",	"wood",				"...it doesn't sound like much", "wood",
 		"ear",			"ears",				"cloth tongue",	"seawater",
-		"creak",		"crack"},
+		"creak",		"crack",			"throat",		"throat",
+		"wing"},
 	*android_parts[] = { 
 		"arm", 			"photoreceptor",	"face",			"finger",
 		"fingertip",	"foot",				"hand",			"handed",
@@ -2176,7 +2180,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"vocal pump",	"chemoreceptor",	"black box",	"heart",
 		"cosmetic layer","plasteel",		"pump",			"armature",
 		"phonoreceptor","phonoreceptors",	"wire",			"CPU housing",
-		"flex",			"crack"},
+		"flex",			"crack",			"throat",		"throat",		
+		"wing"},
 	*assessor_parts[] = {
 		"arm", 			"eye", 				"central eye", 	"grasping digit",
 		"digit-tip",	"foot",				"manipulator",	"manipulatored",
@@ -2185,7 +2190,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"valve",		"olfactory nerve",	"gearbox",		"eternal core",
 		"armor",		"brass structure",	"tick",			"armature",
 		"phonoreceptor","phonoreceptors",	"tongue",		"brain",
-		"creak",		"bend"},
+		"creak",		"bend",				"",				"duct",		
+		"wing"},
 	*audient_parts[] = {
 		"distal limb",	"photoreceptor",	"front",		"articulated distal spike",
 		"spike-tip",	"ventral needle",	"distal spike",	"spiked",
@@ -2194,7 +2200,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"gear",			"gill",				"hyphal network","eternal core",
 		"armor",		"brass structure",	"tick",			"armature",
 		"phonoreceptor horn","phonoreceptor horn","hypha",	"stolon",
-		"creak",	"bend"},
+		"creak",	"bend",					"",				"",		
+		"wing"},
 	*jelly_parts[] = {
 		"pseudopod",		"dark spot",		"front",		"pseudopod extension",
 		"pseudopod extremity","pseudopod root", "grasp", 		"grasped", 
@@ -2203,7 +2210,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"tiny cilia",		"chemosensor",		"vacuoles",		"cytoskeletal structure",
 		"membrane",			"cortex",			"shift",		"cytoskeletal filaments",
 		"membrane",			"membrane",			"pseudopod",	"nucleus",
-		"creak",			"crack" },
+		"creak",			"crack",			"",				"",
+		"wing"},
 	*animal_parts[] = {
 		"forelimb", 		"eye", 				"face", 		"foreclaw",
 		"claw tip",			"rear claw", 		"foreclaw", 	"clawed", 
@@ -2212,7 +2220,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 			"nose", 			"stomach",		"heart",
 		"skin",				"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",			"crack" },
+		"creak",			"crack",			"throat",		"throat",
+		"wing"},
 	*insect_parts[] = { 
 		"forelimb",			"compound eye",		"face",			"foreclaw",
 		"claw tip",			"rear claw", 		"foreclaw", 	"clawed", 
@@ -2221,7 +2230,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"spriacle", 		"antenna", 			"stomach",		"dorsal vessel",
 		"exoskeleton",		"chitin",			"pulse",		"apodeme",
 		"tympanum",			"tympana",			"haustellum",	"brain",
-		"creak",		"tear" },
+		"creak",		"tear",					"throat",		"spiracles",
+		"wing"},
 	*bird_parts[] = { 
 		"wing", 			"eye", 				"face", 		"wing", 
 		"wing tip",			"foot", 			"wing", 		"winged", 
@@ -2230,7 +2240,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 			"bill", 			"stomach",		"heart",
 		"skin",				"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",			"crack" },
+		"creak",			"crack",			"throat",		"throat",
+		"wing"},
 	*horse_parts[] = {
 		"foreleg", 			"eye", 				"face", 		"forehoof",
 		"hoof tip",			"rear hoof", 		"foreclaw", 	"hooved", 
@@ -2239,7 +2250,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 			"nose", 			"stomach",		"heart",
 		"skin",				"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",			"crack"},
+		"creak",			"crack",			"throat",		"throat",
+		"wing"},
 	*sphere_parts[] = { 
 		"appendage", 		"optic nerve", 		"body", 		"tentacle", 
 		"tentacle tip", 	"lower appendage",	"tentacle",		"tentacled",
@@ -2248,7 +2260,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"retina",			"olfactory nerve",	"interior",		"core",
 		"surface",			"subsurface layers","pulse",		"auras",
 		"tympanic membrane","tympanic membranes","tentacle",	"brain",
-		"flicker",			"blink out"},
+		"flicker",			"blink out",		"",				"",
+		"wing"},
 	*spore_parts[] = { 
 		"stalk", 			"visual area", 		"front", 		"stalk", 
 		"stalk tip", 		"stalk",			"stalk",		"stalked",
@@ -2257,7 +2270,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lip",				"lip",				"interior",		"spores",
 		"annulus",			"flesh",			"...they don't sound like much","cells",
 		"tympanic area",	"tympanic area",	"hypha",		"spore",
-		"flex",				"crack"},
+		"flex",				"crack",			"",				"",
+		"wing"},
 	*fungus_parts[] = {
 		"mycelium", 		"visual area", 		"front", 					"hypha",
 		"hypha", 			"root", 			"strand", 					"stranded",
@@ -2266,7 +2280,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"gill", 			"gill", 			"interior",					"hyphal network",
 		"cuticle",			"flesh",			"...it doesn't sound like much","hyphae",
 		"tympanic area",	"tympanic area",	"hypha",					"stolon",
-		"stretch",					"tear" },
+		"stretch",					"tear",		"",							"",
+		"wing"},
 	*tree_parts[] = { 
 		"limb", 	"visual area",	"front",						"leaf",
 		"leaftip",	"taproot",		"twig",							"twigged",
@@ -2275,7 +2290,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"stoma", 	"stoma",		"xylem",						"phloem",
 		"bark", 	"sapwood",		"...it doesn't sound like much","wood",
 		"tympanic area","tympanic area","tendril",					"apical meristem",
-		"creak",	"crack" },
+		"creak",	"crack",		"",								"stomata",
+		"wing"},
 	*vipertree_parts[] = { 
 		"coil", 	"eye",			"face",				"mouth",
 		"fang",		"taproot",		"viper head",		"headed",
@@ -2284,7 +2300,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 	"nose",			"stomach",			"heart",
 		"scales", 	"sapwood",		"beat",				"wood",
 		"ear",		"ears",			"forked tongue",	"apical brain",
-		"creak",	"crack" },
+		"creak",	"crack",		"throat",			"throat",
+		"wing"},
 	*blackflower_parts[] = {
 		"arm",			"blank eye",	"face",			"finger",
 		"fingertip",	"petal"			"hand",			"handed", 
@@ -2293,7 +2310,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung",			"nose", 		"stomach",		"heart",
 		"skin",			"flesh",		"beat",			"bones",
 		"ear",			"ears",			"tongue",		"brain",
-		"creak",		"crack" },
+		"creak",		"crack",		"throat",		"throat",
+		"wing"},
 	*plant_parts[] = {
 		"shoot", 		"visual area",	"front",						"leaf",
 		"leaftip",		"lateral root",	"twig",							"twigged",
@@ -2302,7 +2320,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"stoma", 		"stoma",		"xylem",						"phloem",
 		"epidermis",	"flesh",		"...it doesn't sound like much","stem",
 		"tympanic area","tympanic area","tendril",						"apical bud",
-		"stretch",		"tear" },
+		"stretch",		"tear",			"",								"stomata",
+		"wing"},
 	*mandrake_parts[] = { 
 		"arm-root", 	"eye spot",		"root-face",					"arm-root tip",
 		"arm-root hair","leg-root tip",	"arm-root end",					"rooted",
@@ -2311,7 +2330,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"stoma", 		"nose spots",	"xylem",						"phloem",
 		"epidermis",	"flesh",		"...it doesn't sound like much","stem",
 		"ear spot",		"ear spots",	"tendril",						"apical bud",
-		"stretch",		"tear" },
+		"stretch",		"tear",			"",								"stomata",
+		"wing"},
 	*willow_parts[] = { 
 		"limb", 	"visual area",	"front",						"leaf",
 		"leaftip",	"taproot",		"twig",							"twigged",
@@ -2320,7 +2340,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"stoma", 	"stoma",		"xylem",						"phloem",
 		"bark", 	"flesh",		"...it doesn't sound like much","wood",
 		"tympanic area","tympanic area","tendril",					"brain",
-		"creak",	"crack" },
+		"creak",	"crack",		"throat",						"throat",
+		"wing"},
 	*birch_parts[] = { 
 		"limb", 		"eye",			"face",			"thorn",
 		"thorn-tip",	"crawling-root","scaffold",		"scaffolded",
@@ -2329,7 +2350,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 		"nose",			"stomach",		"heart",
 		"bark", 		"sapwood",		"beat",			"wood",
 		"ear",			"ears",			"tongue",		"brain",
-		"creak",		"crack" },
+		"creak",		"crack",		"throat",		"throat",
+		"wing"},
 	*vortex_parts[] = {
 		"region",			"eye",				"front",		"minor current",
 		"minor current",	"lower current",	"swirl",		"swirled",
@@ -2338,7 +2360,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"center",			"leading edge", 	"interior",		"core",
 		"vaporous currents","subsurface currents","pulse",		"currents",
 		"vapor",			"vapor",			"swirl",		"core",
-		"weaken",		"falter" },
+		"weaken",		"falter",			"",					"",
+		"wing"},
 	*snake_parts[] = {
 		"vestigial limb", 	"eye",				"face",			"large scale",
 		"large scale tip",	"rear region",		"scale gap",	"scale gapped",
@@ -2347,7 +2370,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung",				"forked tongue",	"stomach",		"heart",
 		"scales",			"flesh",			"beat",			"bones",
 		"ear",				"ears",				"forked tongue","brain",
-		"creak",		"crack" },
+		"creak",		"crack",			"throat",		"throat",
+		"wing"},
 	*naunet_parts[] = {
 		"watery tentacles", "eye",				"face",			"tentacle",
 		"tentacle tip",		"rear region",		"tentacle",		"tentacled",
@@ -2356,7 +2380,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"foamy depths",		"forked tongue",	"hungry depths","swirling depths",
 		"watery surface",	"waters",			"flow",			"waters",
 		"ear",				"ears",				"forked tongue","brain",
-		"bubble",		"boil" },
+		"bubble",		"boil",			"",		"",
+		"wing"},
 	*fish_parts[] = {
 		"fin",				"eye",				"premaxillary",	"pelvic axillary",
 		"pelvic fin",		"anal fin",			"pectoral fin", "finned",
@@ -2365,7 +2390,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"gill",				"nostril",			"stomach",		"heart",
 		"scales",			"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",		"crack" },
+		"creak",		"crack",			"throat",		"gillslits",
+		"wing"},
 	*snakeleg_humanoid_parts[] = {
 		"arm",				"eye",				"face",			"finger",
 		"fingertip",		"serpentine lower body","hand",		"handed", 
@@ -2374,7 +2400,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung",				"nose", 			"stomach",		"heart",
 		"scales",			"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",		"crack" },
+		"creak",		"crack",			"throat",			"throat",
+		"wing"},
 	*dracae_parts[] = {
 		"arm",				"eye",				"face",			"finger",
 		"claw tip",			"gooey proleg",		"hand",			"handed", 
@@ -2383,7 +2410,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"spongiform jelly",	"chemopores", 		"vacuoles",		"heart",
 		"mucous membrane",	"protoplasm",		"beat",			"cytoskeletal filaments",
 		"tympanic membrane","tympanic membranes","tongue",		"brain",
-		"creak",		"crack" },
+		"creak",		"crack",			"oral groove",		"",
+		"wing"},
 	*centauroid_parts[] = {
 		"arm", 				"eye", 				"face", 		"finger",
 		"fingertip", 		"hoof", 			"hand", 		"handed",
@@ -2392,7 +2420,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"lung", 			"nose", 			"stomach",		"heart",
 		"skin",				"flesh",			"beat",			"bones",
 		"ear",				"ears",				"tongue",		"brain",
-		"creak",		"crack" },
+		"creak",		"crack",				"throat",		"throat",
+		"wing"},
 	*luminous_parts[] = {
 		"arm", 				"eye", 				"face", 		"finger",
 		"fingertip", 		"leg spike", 		"claw", 		"clawed",
@@ -2401,7 +2430,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"swarm center", 	"swarm antenna", 	"interior",		"vital core",
 		"outer swarm",		"swarm currents",	"pulse",		"latice",
 		"swarm tympanum",	"swarm tympana",	"swarm haustellum",	"ego core",
-		"weaken",		"falter" };
+		"weaken",		"falter",				"",				"",		
+		"wing"};
 	/* claw attacks are overloaded in mons[]; most humanoids with
 	   such attacks should still reference hands rather than claws */
 	static const char not_claws[] = {
@@ -2562,6 +2592,18 @@ int part;
 #endif /* OVL1 */
 #ifdef OVL0
 
+boolean
+separate_respiration(struct permonst *mptr)
+{
+	const char *throat = ptrbodypart(mptr, THROAT, (struct monst *)0);
+	const char *airway = ptrbodypart(mptr, WINDPIPE, (struct monst *)0);
+	if(throat[0] == '\0' || airway[0] == '\0')
+		return TRUE;
+	if(strcmp(throat, airway) != 0)
+		return TRUE;
+	return FALSE;
+}
+
 int
 poly_gender()
 {
@@ -2580,11 +2622,13 @@ ugolemeffects(damtype, dam)
 int damtype, dam;
 {
 	int heal = 0;
+	if (damtype == AD_GMLD && is_gray_mold(youracedata))
+		heal = dam;
 	/* We won't bother with "slow"/"haste" since players do not
 	 * have a monster-specific slow/haste so there is no way to
 	 * restore the old velocity once they are back to human.
 	 */
-	if (u.umonnum != PM_FLESH_GOLEM
+	else if (u.umonnum != PM_FLESH_GOLEM
 	 && u.umonnum != PM_IRON_GOLEM
 	 && u.umonnum != PM_GREEN_STEEL_GOLEM
 	 && u.umonnum != PM_CHAIN_GOLEM

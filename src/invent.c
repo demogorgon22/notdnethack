@@ -1155,7 +1155,9 @@ register const char *let,*word;
 	/* Equivalent of an "ugly check" for gold */
 	if (usegold && !strcmp(word, "eat") &&
 	    (!metallivorous(youracedata)
-	     || youracedata->mtyp == PM_RUST_MONSTER))
+	     || youracedata->mtyp == PM_RUST_MONSTER
+		 || is_gray_mold(youracedata)
+	))
 #ifndef GOLDOBJ
 		usegold = allowgold = FALSE;
 #else
@@ -3883,6 +3885,8 @@ winid *datawin;
 			ZERTHMATS(ZMAT_GOLD, "gold");
 			ZERTHMATS(ZMAT_PLATINUM, "platinum");
 			ZERTHMATS(ZMAT_MITHRIL, "mithril");
+			ZERTHMATS(ZMAT_COPPER, "copper");
+			ZERTHMATS(ZMAT_LEAD, "lead");
 			Sprintf(buf2, "Amalgamated metals: %s.", buf);
 			OBJPUTSTR(buf2);
 		}
@@ -6337,7 +6341,7 @@ doorganize(void) /* inventory organizer by Del Lamb */
 		Sprintf(qbuf, "Adjust letter to what [%s]?", buf);
 		let = yn_function(qbuf, (char *)0, '\0');
 		if (index(quitchars, let)) {
-			pline("%s", Never_mind);
+			pline1(Never_mind);
 			goto cleansplit;
 		}
 		if (let == '@' || !letter(let)) {
@@ -6793,7 +6797,7 @@ int material;
 	boolean marm_blocks_ub = FALSE;
 	boolean hasgloves = !!which_armor(mon, W_ARMG);
 	boolean hasshirt = !!which_armor(mon, W_ARMU);
-	boolean hasarm = !!which_armor(mon, W_ARMU);
+	boolean hasarm = !!which_armor(mon, W_ARM);
 
 	curarm = which_armor(mon, W_ARMU);
 	if(curarm && curarm->obj_material == material)

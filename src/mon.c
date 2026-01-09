@@ -1799,6 +1799,34 @@ mcalcdistress()
 		if(damage > 0)
 			m_losehp(mtmp, damage, FALSE, "swarming vermin");
 	}
+	if(mtmp->mgmld_skin || mtmp->mgmld_throat){
+		const char *throatpart = mbodypart(mtmp, WINDPIPE);
+		if(throatpart[0] == '\0'){
+			//No specific "thoat" (anymore?)
+			mtmp->mgmld_skin += mtmp->mgmld_throat;
+			mtmp->mgmld_throat = 0;
+		}
+		if(!is_organic_monst(mtmp->data) || is_gray_mold(mtmp->data)){
+			mtmp->mgmld_skin = mtmp->mgmld_throat = 0;
+		}
+		if(mtmp->mtyp == PM_HERMIT_MASTER){
+			mtmp->mgmld_skin = mtmp->mgmld_throat = 0;
+			if(canseemon(mtmp)) pline("%s powerful spirit kills the mold infection!", s_suffix(Monnam(mtmp)));
+		}
+		int skin_dmg = mtmp->mgmld_skin/1000;
+		int skin_remain = mtmp->mgmld_skin%1000;
+		int throat_dmg = mtmp->mgmld_throat/100;
+		int throat_remain = mtmp->mgmld_throat%100;
+		if(rn2(1000) < skin_remain) skin_dmg++;
+		if(rn2(100) < throat_remain) throat_dmg++;
+		if(skin_dmg > 0){
+			mtmp->mgmld_skin += rn2(skin_dmg+1);
+		}
+		if(throat_dmg > 0){
+			mtmp->mgmld_throat += rn2(throat_dmg+1);
+		}
+		m_losehp(mtmp, skin_dmg + throat_dmg, FALSE, "mold infection");
+	}
 
 	timeout_problems(mtmp);
 	
@@ -1946,6 +1974,7 @@ struct monst *mtmp;
 	mtmp->mibitemarked = FALSE;
 	mtmp->myoumarked = FALSE;
 	mtmp->mironmarked = FALSE;
+	mtmp->mprobed = FALSE;
 	
 	/* gradually time out temporary problems */
 	if (mtmp->mblinded && !--mtmp->mblinded)
@@ -2359,7 +2388,7 @@ meatmetal(mtmp)
 	/* Eats topmost metal object if it is there */
 	for (otmp = level.objects[mtmp->mx][mtmp->my];
 						otmp; otmp = otmp->nexthere) {
-	    if (mtmp->mtyp == PM_RUST_MONSTER && !is_rustprone(otmp))
+	    if ((mtmp->mtyp == PM_RUST_MONSTER || is_gray_mold(mtmp->data)) && !is_rustprone(otmp))
 		continue;
 	    if (is_metallic(otmp) && !obj_resists(otmp, 0, 100) &&
 			touch_artifact(otmp, mtmp, FALSE) && !(otmp->otyp == MAGIC_CHEST && otmp->obolted)
@@ -4123,11 +4152,13 @@ boolean actual;			/* actual attack or faction check? */
 		if(!(magr->mpeaceful && mdef->mpeaceful && is_undead(youracedata))){
 			if(mm_undead(magr) && 
 				(!is_witch_mon(mdef) && mdef->mtyp != PM_WITCH_S_FAMILIAR && !mdef->mpetitioner && !mm_undead(mdef) && !mindless_mon(mdef) && mdef->mfaction != NECROMANCY_FACTION && mdef->mfaction != YELLOW_FACTION)
+				&& !(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && In_quest(&u.uz) && is_mind_flayer(magr->data) && has_template(mdef, MINDLESS))
 			){
 				return ALLOW_M|ALLOW_TM;
 			}
 			if((!is_witch_mon(magr) && magr->mtyp != PM_WITCH_S_FAMILIAR && !magr->mpetitioner && !mm_undead(magr) && !mindless_mon(magr) && magr->mfaction != NECROMANCY_FACTION && magr->mfaction != YELLOW_FACTION)
 				&& mm_undead(mdef)
+				&& !(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && In_quest(&u.uz) && is_mind_flayer(mdef->data) && has_template(magr, MINDLESS))
 			){
 				return ALLOW_M|ALLOW_TM;
 			}
@@ -5171,6 +5202,7 @@ register struct monst *mtmp;
 	/* we did not lifesave */
 	mtmp->deadmonster |= DEADMONSTER_DEAD;
 	mtmp->mbdrown = 0;
+	mtmp->mprobed = 0;
 	//Special messages (Nyarlathotep)
 	if(canseemon(mtmp) && (mtmp->mtyp == PM_GOOD_NEIGHBOR || mtmp->mtyp == PM_HMNYW_PHARAOH)){
 		int nyar_form = rn2(SIZE(nyar_description));
@@ -5549,6 +5581,13 @@ boolean was_swallowed;			/* digestion */
 	if(Role_if(PM_ANACHRONONAUT) && (mon->mpeaceful || (has_lifesigns(mon) && mon->mvar_lifesigns)) && In_quest(&u.uz) && Is_qstart(&u.uz)){
 		if(!cansee(mon->mx,mon->my)) map_invisible(mon->mx, mon->my);
 	}
+
+	/* Riders, but can be laid to rest*/
+	if(mdat->mtyp == PM_ROTTING_MONK){
+		if(mon->mlaidtorest) return FALSE;
+		return TRUE;
+	}
+
 	/* bypass anything about templates, etc. just always make a corpse*/
 	if (is_rider(mdat) && mdat->mtyp != PM_JACK) return TRUE;
 
@@ -6087,6 +6126,27 @@ struct monst *mon;
 	}
 }
 
+void
+gray_mold_dies(struct monst *mdef)
+{
+	if(mdef != &youmonst && DEADMONSTER(mdef)){
+		struct attack *mattk;
+		struct region_arg cloud_data;
+		mattk = attacktype_fordmg(mdef->data, AT_NONE, AD_GMLD);
+		int nd = 1;
+		int ds = 1;
+		if(mattk){
+			if(mattk->damn) nd = (int)mattk->damn;
+			if(mattk->damd) ds = (int)mattk->damd;
+		}
+		int dmg = d(nd, ds);
+		cloud_data.damage = dmg;
+		cloud_data.adtyp = AD_GMLD;
+		int size = 1 + (int)sqrt((double)dmg);
+		(void) create_generic_cloud(x(mdef), y(mdef), size, &cloud_data, TRUE);
+	}
+}
+
 /* drop (perhaps) a cadaver and remove monster */
 void
 mondied(mdef)
@@ -6096,6 +6156,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;	/* lifesaved */
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	if (corpse_chance(mdef, (struct monst *)0, FALSE) &&
 	    (accessible(mdef->mx, mdef->my) || is_pool(mdef->mx, mdef->my, FALSE)))
@@ -6110,6 +6171,7 @@ register struct monst *mdef;
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
 	check_spirit_unbind(mdef->mtyp);
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
@@ -6139,6 +6201,7 @@ register struct monst *mdef;
 	mdef->mhp = 0;	/* can skip some inventory bookkeeping */
 	check_spirit_unbind(mdef->mtyp);
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 #ifdef STEED
 	/* Player is thrown from his steed when it disappears */
@@ -6201,6 +6264,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -6297,6 +6361,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -6433,6 +6498,7 @@ register struct monst *mdef;
 	if (mdef->mhp > 0) return;
 	/* we did not lifesave */
 	mdef->deadmonster |= DEADMONSTER_DEAD;
+	mdef->mprobed = 0;
 
 	mdef->mtrapped = 0;	/* (see m_detach) */
 
@@ -6585,6 +6651,9 @@ int how;
 	    You("have a sad feeling for a moment, then it passes.");
 	if (is_fern_spore(mdef->data)) {
 		spore_dies(mdef);
+	}
+	if (attacktype_fordmg(mdef->data, AT_NONE, AD_GMLD)){
+		gray_mold_dies(mdef);
 	}
 }
 
@@ -6812,12 +6881,16 @@ xkilled(mtmp, dest)
 	/* we did not lifesave */
 	mtmp->deadmonster |= DEADMONSTER_DEAD;
 	mtmp->mbdrown = 0;
+	mtmp->mprobed = 0;
 
 	mdat = mtmp->data; /* note: mondead can change mtmp->data */
 	mndx = monsndx(mdat);
 
 	if (is_fern_spore(mdat)) {
 		spore_dies(mtmp);
+	}
+	if (attacktype_fordmg(mtmp->data, AT_NONE, AD_GMLD)){
+		gray_mold_dies(mtmp);
 	}
 	if (stoned) {
 		stoned = FALSE;
@@ -6871,11 +6944,15 @@ xkilled(mtmp, dest)
 					&& !(has_template(mtmp, CORDYCEPS))
 					&& !(is_auton(mtmp->data))
 		) {
+			int n = 1;
+			if(check_rot(ROT_FORAGE) && !rn2(out_of)) n += 1;
 			/*Death Drop*/
-			otmp = mk_death_drop_obj(mtmp);
-			if(otmp){
-				place_object(otmp, x, y);
-				redisp = TRUE;
+			for(; n > 0; n--){
+				otmp = mk_death_drop_obj(mtmp);
+				if(otmp){
+					place_object(otmp, x, y);
+					redisp = TRUE;
+				}
 			}
 		}
 		/* Whether or not it always makes a corpse is, in theory,
@@ -8239,38 +8316,42 @@ golemeffects(mon, damtype, dam)
 struct monst *mon;
 int damtype, dam;
 {
-    int heal = 0, slow = 0;
+	int heal = 0, slow = 0;
 
 	/* intercept player */
 	if (mon == &youmonst) {
 		ugolemeffects(damtype, dam);
 		return;
 	}
-
-    if (mon->mtyp == PM_FLESH_GOLEM) {
-	if (damtype == AD_ELEC || damtype == AD_EELC) heal = dam / 6;
-	else if (damtype == AD_FIRE || damtype == AD_EFIR 
-		|| damtype == AD_ECLD || damtype == AD_COLD
-		|| damtype == AD_UHCD
-	) slow = 1;
-    } else if (mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_GREEN_STEEL_GOLEM || mon->mtyp == PM_CHAIN_GOLEM || mon->mtyp == PM_ARGENTUM_GOLEM) {
-	if (damtype == AD_ELEC || damtype == AD_EELC) slow = 1;
-	else if (damtype == AD_FIRE || damtype == AD_EFIR) heal = dam;
-    } else {
-	return;
-    }
-    if (slow) {
-	if (mon->mspeed != MSLOW)
-	    mon_adjust_speed(mon, -1, (struct obj *)0, TRUE);
-    }
-    if (heal) {
-	if (mon->mhp < mon->mhpmax) {
-	    mon->mhp += dam;
-	    if (mon->mhp > mon->mhpmax) mon->mhp = mon->mhpmax;
-	    if (cansee(mon->mx, mon->my))
-		pline("%s seems healthier.", Monnam(mon));
+	if (damtype == AD_GMLD && is_gray_mold(mon->data)) {
+		heal = dam;
 	}
-    }
+	else if (mon->mtyp == PM_FLESH_GOLEM) {
+		if (damtype == AD_ELEC || damtype == AD_EELC) heal = dam / 6;
+		else if (damtype == AD_FIRE || damtype == AD_EFIR 
+			|| damtype == AD_ECLD || damtype == AD_COLD
+			|| damtype == AD_UHCD
+		) slow = 1;
+	}
+	else if (mon->mtyp == PM_IRON_GOLEM || mon->mtyp == PM_GREEN_STEEL_GOLEM || mon->mtyp == PM_CHAIN_GOLEM || mon->mtyp == PM_ARGENTUM_GOLEM) {
+		if (damtype == AD_ELEC || damtype == AD_EELC) slow = 1;
+		else if (damtype == AD_FIRE || damtype == AD_EFIR) heal = dam;
+	}
+	else {
+		return;
+	}
+	if (slow) {
+		if (mon->mspeed != MSLOW)
+			mon_adjust_speed(mon, -1, (struct obj *)0, TRUE);
+		}
+	if (heal) {
+		if (mon->mhp < mon->mhpmax) {
+			mon->mhp += dam;
+			if (mon->mhp > mon->mhpmax) mon->mhp = mon->mhpmax;
+			if (cansee(mon->mx, mon->my))
+			pline("%s seems healthier.", Monnam(mon));
+		}
+	}
 }
 
 /* metroid is hit by a death ray and splits off more metroids */
@@ -10811,6 +10892,63 @@ orc_mud_stabs(struct monst *mdef)
 		if(m_losehp(mdef, damage, FALSE, "inchoate orcs")); //died
 		else if (canseemon(mdef))
 			pline("%s is stabbed by the writhing tarry mud.", Monnam(mdef));
+	}
+}
+
+void
+adjust_etrait_stance(struct monst *mon)
+{
+	struct obj *weap = MON_WEP(mon);
+	if(weap->o_e_trait && rn2(100))
+		return; //Don't change too often
+	int otyp = weap->otyp;
+	unsigned long traits = process_etraits(weap->expert_traits, otyp, weap, mon, mon->data);
+	if(weap->oartifact == ART_AMALGAMATED_SKIES)
+		traits = process_etraits(traits|artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits, artinstance[ART_SKY_REFLECTED].ZerthOtyp, weap, mon, mon->data);
+	//Only care about fighting forms
+	traits &= FFORM_ETRAITS;
+	if(traits == weap->o_e_trait)
+		return; //No change
+	//count raised bits
+	int n = __builtin_popcountl(traits); 
+	n = rnd(n);
+	unsigned long newtrait = 0;
+	for(int i = 0; i < sizeof(unsigned long)*8; i++){
+		if(traits & (0x1<<i)){
+			n--;
+			if(n == 0){
+				newtrait = (0x1<<i);
+				break;
+			}
+		}
+	}
+	if(newtrait == weap->o_e_trait)
+		return; //No change
+	weap->o_e_trait = newtrait;
+	const char *traitname;
+	switch(newtrait){
+		case ETRAIT_HEW:
+			traitname = "hewing";
+		break;
+		case ETRAIT_FELL:
+			traitname = "sweaping";
+		break;
+		case ETRAIT_KNOCK_BACK:
+			traitname = "high-impact";
+		break;
+		case ETRAIT_FOCUS_FIRE:
+			traitname = "opportunistic";
+		break;
+		case ETRAIT_STUNNING_STRIKE:
+			traitname = "crushing";
+		break;
+		default:
+			traitname = "new";
+		break;
+	}
+		 
+	if(canseemon(mon)){
+		pline("%s adopts %s fighting style.", Monnam(mon), an(traitname));
 	}
 }
 

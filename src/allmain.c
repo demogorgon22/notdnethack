@@ -29,6 +29,7 @@ STATIC_DCL void NDECL(printMonNames);
 STATIC_DCL void NDECL(printDPR);
 STATIC_DCL void NDECL(printBodies);
 STATIC_DCL void NDECL(printSanAndInsight);
+STATIC_DCL void NDECL(printEtraits);
 STATIC_DCL void FDECL(printAttacks, (char *,struct permonst *));
 STATIC_DCL void FDECL(resFlags, (char *,unsigned int));
 STATIC_DCL int FDECL(find_preset_inherited, (char *));
@@ -677,13 +678,13 @@ boolean affect_game_state;
 			}
 
 			/* some artifacts are faster */
-			// note - you don't have to actually be two-weaponing, and that's intentional,
-			// but you must have another ARTA_HASTE wep offhanded (and there's only 2 so)
+			/* similar/identical to ARTA_HASTE, but does not require skill */
 			if (uwep && uwep->oartifact && arti_attack_prop(uwep, ARTA_HASTE)){
-				current_cost -= NORMAL_SPEED / 3;
+				current_cost -= NORMAL_SPEED / 4;
 				if (uswapwep && uswapwep->oartifact && arti_attack_prop(uwep, ARTA_HASTE))
-					current_cost -= NORMAL_SPEED / 6;
+					current_cost -= NORMAL_SPEED / 12;
 			}
+
 			break;
 
 		case MOVE_QUAFFED:
@@ -1820,6 +1821,7 @@ moveloop()
 	// printDPR();
 	// printBodies();
 	// printSanAndInsight();
+	// printEtraits();
     for(;;) {/////////////////////////MAIN LOOP/////////////////////////////////
 	if (!iflags.debug_fuzzer) gosleep();
     hpDiff = u.uhp;
@@ -2311,6 +2313,15 @@ moveloop()
 					//grow up can kill monster.
 					if(DEADMONSTER(mtmp))
 						continue;
+				}
+				if(mtmp->mtyp == PM_RUSTY_GRAY_MOLD && !rn2(70)){
+					makemon(&mons[PM_VEGEPYGMY], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
+				}
+				if(mtmp->mtyp == PM_GRAY_FUNGAL_TOWER){
+					if(!rn2(50))
+						makemon(&mons[PM_VEGEPYGMY_SHAMAN], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
+					if(!rn2(25))
+						makemon(&mons[PM_VEGEPYGMY], mtmp->mx, mtmp->my, NO_MINVENT|MM_ADJACENTOK|MM_ADJACENTSTRICT|MM_NOCOUNTBIRTH);
 				}
 				/*Monsters may have to skip turn*/
 				if(noactions(mtmp)){
@@ -3100,6 +3111,7 @@ karemade:
 			){
 				make_hallucinated(itimeout_incr(HHallucination, 100), TRUE, 0L);
 				IMPURITY_UP(u.uimp_rot)
+				IMPURITY_UP(u.uimp_illness)
 				if(roll_madness(MAD_SPORES)){//Second roll for more severe symptoms
 					make_stunned(itimeout_incr(HStun, 100), TRUE);
 					make_confused(itimeout_incr(HConfusion, 100), FALSE);
@@ -3121,6 +3133,7 @@ karemade:
 			if(has_blood(youracedata) && u.usanity < 50 && roll_madness(MAD_FRENZY)){
 				int *hp = (Upolyd) ? (&u.mh) : (&u.uhp);
 				Your("%s leaps through your %s!", body_part(BLOOD), body_part(BODY_SKIN));
+				IMPURITY_UP(u.uimp_blood)
 				//reduce current HP by 30% (round up, guranteed nonfatal)
 				if(ACURR(A_CON) > 3)
 					(void)adjattrib(A_CON, -1, FALSE);
@@ -3144,13 +3157,17 @@ karemade:
 				}
 				if(youmonst.mcaterpillars){
 					rot_caterpillars_bite(&youmonst);
+					IMPURITY_UP(u.uimp_illness)
+					IMPURITY_UP(u.uimp_rot)
 					if(!rn2(20)){
 						pline_The("parasitic caterpillars have rotted to death!");
 						youmonst.mcaterpillars = FALSE;
+						IMPURITY_UP(u.uimp_bodies)
 					}
 				}
 				if(youmonst.momud){
 					orc_mud_stabs(&youmonst);
+					IMPURITY_UP(u.uimp_dirtiness)
 					if(!rn2(20)){
 						pline_The("writhing mud covering you has died.");
 						youmonst.momud = FALSE;
@@ -3161,7 +3178,65 @@ karemade:
 						set_obj_size(daggers, MZ_TINY);
 						set_material_gm(daggers, BONE);
 						place_object(daggers, u.ux, u.uy);
+						IMPURITY_UP(u.uimp_bodies)
+						IMPURITY_UP(u.uimp_rot)
 					}
+				}
+				if(youmonst.mgmld_skin || youmonst.mgmld_throat){
+					const char *throatpart = body_part(WINDPIPE);
+					const char *mouthpart = body_part(THROAT);
+					boolean shared = !separate_respiration(youracedata);
+					if(throatpart[0] == '\0'){
+						//No specific "thoat" (anymore?)
+						youmonst.mgmld_skin += youmonst.mgmld_throat;
+						youmonst.mgmld_throat = 0;
+					}
+					int skin_dmg = youmonst.mgmld_skin/1000;
+					int skin_remain = youmonst.mgmld_skin%1000;
+					int throat_dmg = youmonst.mgmld_throat/100;
+					int throat_remain = youmonst.mgmld_throat%100;
+					if(rn2(1000) < skin_remain) skin_dmg++;
+					if(rn2(100) < throat_remain) throat_dmg++;
+					if(throat_dmg > 0){
+						int oldthroat = youmonst.mgmld_throat;
+						youmonst.mgmld_throat += rn2(throat_dmg+1);
+						IMPURITY_UP(u.uimp_illness)
+						IMPURITY_UP(u.uimp_rot)
+						if(youmonst.mgmld_throat >= 400 && oldthroat < 400){
+							You("can no longer breathe through your %s!", throatpart);
+						}
+						else if(youmonst.mgmld_throat >= 300 && oldthroat < 300){
+							pline("You can barely breathe through the obstruction in your %s!", throatpart);
+						}
+						else if(youmonst.mgmld_throat >= 200 && oldthroat < 200 && shared){
+							pline("The obstruction in your %s makes it difficult to swallow!", mouthpart);
+						}
+						else if(youmonst.mgmld_throat >= 100 && oldthroat < 100){
+							You("feel an obstruction in your %s!", throatpart);
+						}
+						else if(youmonst.mgmld_throat > oldthroat){
+							Your("sore %s continues to worsen.", throatpart);
+						}
+						else {
+							Your("%s aches.", throatpart);
+						}
+					}
+					if(skin_dmg > 0){
+						int oldskin = youmonst.mgmld_skin;
+						youmonst.mgmld_skin += rn2(skin_dmg+1);
+						IMPURITY_UP(u.uimp_rot)
+						if(Blind)
+							pline("Your %s itches badly.", body_part(BODY_SKIN));
+						else if(youmonst.mgmld_skin > oldskin)
+							pline_The("gray mold on your %s is spreading rapidly!", body_part(BODY_SKIN));
+						else
+							pline("The gray mold patch%s on your %s leak%s %s.", youmonst.mgmld_skin > 1 ? "es" : "", body_part(BODY_SKIN), youmonst.mgmld_skin > 1 ? "" : "s", body_part(BLOOD)); 
+					}
+					if(youmonst.mgmld_throat >= 400){
+						delayed_killer = "moldy throat";
+						HStrangled += 1L;
+					}
+					losehp(skin_dmg + throat_dmg, "mold infection", KILLED_BY);
 				}
 			}
 			
@@ -3790,7 +3865,7 @@ karemade:
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
 		}
-		if (Screaming && !Strangled && !BloodDrown && !FrozenAir && !is_deaf(mtmp)){
+		if (Screaming && !Strangled_cant_speak && !BloodDrown && !FrozenAir && !is_deaf(mtmp)){
 			//quite noisy
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
@@ -3804,13 +3879,13 @@ karemade:
 			}
 		}
 		//Noise radius dependent on your lung capacity
-		else if (Babble && !Strangled && !FrozenAir && !is_deaf(mtmp) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < (ACURR(A_CON)/3)){
+		else if (Babble && !Strangled_cant_speak && !FrozenAir && !is_deaf(mtmp) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < (ACURR(A_CON)/3)){
 			//quite noisy
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
 		}
 	}
-	if (Screaming && !Strangled && !BloodDrown && !FrozenAir){
+	if (Screaming && !Strangled_cant_speak && !BloodDrown && !FrozenAir){
 		//quite noisy
 		song_noise(ACURR(A_CON)*ACURR(A_CON));
 	}
@@ -4125,7 +4200,7 @@ newgame()
 	
 	hack_artifacts();	/* recall after u_init() to fix up role specific artifacts */
 	hack_objects();
-
+	role_edit();		/* after u_init() so that role_variant is set */
 #ifndef NO_SIGNAL
 	(void) signal(SIGINT, (SIG_RET_TYPE) done1);
 #endif
@@ -4390,8 +4465,24 @@ boolean new_game;	/* false => restoring an old game */
 		else if(Role_if(PM_MADMAN)){
 			You("have psychic powers. Type #ability or press Shift-B to access your powers!");
 		}
+		else if(Role_if(PM_MONK)){
+			You("can trigger special moves by moving or attacking!");
+			pline("Use #style to view and disable/re-enable your special moves.");
+		}
+		else if(Role_if(PM_KENSEI)){
+			if(Race_if(PM_GITHZERAI) && !art_already_exists(ART_SKY_REFLECTED)){
+				pline("Be on the lookout for a metal weapon to christen 'the Sky Reflected'");
+				pline("(For the most straightforward experience, pick your starting weapon).");
+			}
+			You("can trigger special moves by moving or attacking!");
+			pline("Use #style to view and disable/re-enable your special moves.");
+			pline("Also use #style to use your specialized weapon styles.");
+		}
+		else if(Role_if(PM_KNIGHT)){
+			pline("Use #style to use your specialized sword-and-shield styles.");
+		}
 		if(Race_if(PM_DROW)){
-			if(!(Role_if(PM_HEALER) || Role_if(PM_EXILE)))
+			if(!(Role_if(PM_HEALER) || Role_if(PM_EXILE) || Role_if(PM_KENSEI)))
 				pline("Beware, droven armor evaporates in light!");
 			pline("Use #monster to create a patch of darkness.");
 		}
@@ -4407,10 +4498,6 @@ boolean new_game;	/* false => restoring an old game */
 		}
 		if(Race_if(PM_INCANTIFIER)){
 			pline("Incantifiers eat magic, not food, and do not heal naturally.");
-		}
-		if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && !art_already_exists(ART_SKY_REFLECTED)){
-			pline("Be on the lookout for a metal weapon to christen 'the Sky Reflected'");
-			pline("(For the most straightforward experience, pick your starting weapon).");
 		}
 		if(Role_if(PM_ANACHRONOUNBINDER)){
 			pline("Use #monster to use your psychic powers.");
@@ -4583,6 +4670,59 @@ printSanAndInsight(){
 		}
 	}
 	fclose(rfile);
+}
+
+STATIC_DCL
+void
+printEtraits()
+{
+	FILE *rfile;
+	register int i, j;
+	char pbuf[BUFSZ];
+	rfile = fopen_datafile("WeaponExpertTraits.tab", "w", SCOREPREFIX);
+	if (rfile) {
+		Sprintf(pbuf,"Name\ttrait\n");
+		fprintf(rfile, "%s", pbuf);
+		fflush(rfile);
+		struct etraitkey{
+			int etrait;
+			const char *name;
+		} etraitkeys[] = {
+			{ETRAIT_HEW, "Hew"},
+			{ETRAIT_FELL, "Fell"},
+			{ETRAIT_KNOCK_BACK, "Knock Back"},
+			{ETRAIT_FOCUS_FIRE, "Target Weakpoints"},
+			{ETRAIT_STUNNING_STRIKE, "Stunning Strike"},
+			{ETRAIT_KNOCK_BACK_CHARGE, "Knock Back Charge"},
+			{ETRAIT_GRAZE, "Graze"},
+			{ETRAIT_STOP_THRUST, "Stop Thrust"},
+			{ETRAIT_PENETRATE_ARMOR, "Penetrate Armor"},
+			{ETRAIT_LONG_SLASH, "Long Slash"},
+			{ETRAIT_BLEED, "Bleed"},
+			{ETRAIT_CLEAVE, "Cleave"},
+			{ETRAIT_LUNGE, "Lunge"},
+			{ETRAIT_QUICK, "Quick"},
+			{ETRAIT_SECOND, "Second"},
+			{ETRAIT_CREATE_OPENING, "Create Opening"},
+			{ETRAIT_BRACED, "Braced"},
+			{ETRAIT_BLADESONG, "Bladesong"},
+			{ETRAIT_BLADEDANCE, "Bladedance"},
+			{ETRAIT_PUNCTURE, "Puncture"},
+			{0,0}
+		};
+		for(i=0;i<NUM_OBJECTS;i++){
+			if(objects[i].expert_traits){
+				for(j=0; etraitkeys[j].etrait; j++){
+					if(objects[i].expert_traits & etraitkeys[j].etrait){
+						Sprintf(pbuf,"%s\t%s\n", obj_descr[(objects[i].oc_name_idx)].oc_name, etraitkeys[j].name);
+						fprintf(rfile, "%s", pbuf);
+						fflush(rfile);
+					}
+				}
+			}
+		}
+		fclose(rfile);
+	}
 }
 
 STATIC_DCL

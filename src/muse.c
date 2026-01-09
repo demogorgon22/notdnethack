@@ -37,7 +37,8 @@ static struct musable {
 	struct obj *offensive;
 	struct obj *defensive;
 	struct obj *misc;
-	int has_offense, has_defense, has_misc;
+	struct obj *artifact;
+	int has_offense, has_defense, has_misc, has_artifact;
 	/* =0, no capability; otherwise, different numbers.
 	 * If it's an object, the object is also set (it's 0 otherwise).
 	 */
@@ -137,7 +138,7 @@ struct obj *obj;
 		return 1;
 	    }
 	    else mon->mhp -= dam;
-	    m.has_defense = m.has_offense = m.has_misc = 0;
+	    m.has_defense = m.has_offense = m.has_misc = m.has_artifact = 0;
 	    /* Only one needed to be set to 0 but the others are harmless */
 	}
 	return 0;
@@ -241,6 +242,9 @@ struct obj *otmp;
 #define MUSE_LIFE_FLASK 20
 #define MUSE_HEALING_SURGE 21
 #define MUSE_DANCING_SWORD 22
+#define MUSE_SELF_REPAIR 23
+#define MUSE_ROD_HEAL 24
+#define MUSE_ROD_RECOVER 25
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -267,8 +271,9 @@ struct monst *mtmp;
 			|| ((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) && FacelessHelm(which_armor(mtmp, W_ARMH)))
 			|| ((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC)
 				&& FacelessCloak(which_armor(mtmp, W_ARMC)));
+	boolean spire = Is_spire(&u.uz);
 
-	if (is_animal(mtmp->data) && mindless_muse_mon(mtmp))
+	if (is_animal(mtmp->data) || mindless_muse_mon(mtmp))
 		return FALSE;
 	if(dist2(x, y, mtmp->mux, mtmp->muy) > 25 || (mtmp->mux == 0 && mtmp->muy == 0))
 		return FALSE;
@@ -297,6 +302,35 @@ struct monst *mtmp;
 			return TRUE;
 	    }
 	}
+	if(mtmp->mtyp == PM_OONA){
+		boolean recover = FALSE;
+		if(!mtmp->mnotlaugh || !mtmp->mcansee || mtmp->mberserk || !mtmp->mcanmove || mtmp->mstdy > 20 || mtmp->mstun || mtmp->mconf || mtmp->msleeping || mtmp->mbleed || mtmp->mgmld_throat || mtmp->mgmld_skin)
+			recover = TRUE;
+		else {
+			register struct obj *otmp;
+			for (otmp = mtmp->minvent;
+					otmp; otmp = otmp->nobj)
+			{
+				if (otmp->cursed && 
+					(otmp->otyp == LOADSTONE ||
+					otmp->owornmask))
+				{
+					recover = TRUE;
+					break;
+				} 
+			}
+		}
+		if(recover){
+			for(obj = mtmp->minvent; obj; obj = obj->nobj)
+				if (obj->oartifact == ART_ROD_OF_SEVEN_PARTS && obj->spe >= 3)
+					break;
+			if (obj) {
+				m.defensive = obj;
+				m.has_defense = MUSE_ROD_RECOVER;
+				return TRUE;
+			}
+		}
+	}
 
 	if (mtmp->mconf) {
 	    for(obj = mtmp->minvent; obj; obj = obj->nobj) {
@@ -307,7 +341,23 @@ struct monst *mtmp;
 		}
 	    }
 	}
-
+	if(is_clockwork(mtmp->data) && mtmp->mhp < mtmp->mhpmax){
+		struct monst *menemy = NULL;
+		if(!mtmp->mpeaceful && distmin(mtmp->mx,mtmp->my,u.ux,u.uy) <= 5){
+			menemy = &youmonst;
+		}
+		if(!menemy) for(menemy = fmon; menemy; menemy = menemy->nmon){
+			if(DEADMONSTER(menemy)) continue;
+			if(menemy->mpeaceful == mtmp->mpeaceful) continue;
+			if(distmin(mtmp->mx,mtmp->my,menemy->mx,menemy->my) > 5) continue;
+			if(!mon_can_see_mon(mtmp,menemy)) continue;
+			break;
+		}
+		if(!menemy && rnd(mtmp->mhpmax) > mtmp->mhp){
+			m.has_defense = MUSE_SELF_REPAIR;
+			return TRUE;
+		}
+	}
 	/* It so happens there are two unrelated cases when we might want to
 	 * check specifically for healing alone.  The first is when the monster
 	 * is blind (healing cures blindness).  The second is when the monster
@@ -336,7 +386,7 @@ struct monst *mtmp;
 	}
 
 	fraction = u.ulevel < 10 ? 5 : u.ulevel < 14 ? 4 : 3;
-	if(mon_healing_turn(mtmp) && !mtmp->mspec_used && !mtmp->mcan){
+	if(!spire && mon_healing_turn(mtmp) && !mtmp->mspec_used && !mtmp->mcan){
 		int range = BOLT_LIM + (mtmp->m_lev / 5);
 		range *= range;
 		for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
@@ -351,7 +401,7 @@ struct monst *mtmp;
 		    return TRUE;
 		}
 	}
-	if(mtmp->mtyp == PM_SURYA_DEVA && mtmp->summonpwr == 0){
+	if(!spire && mtmp->mtyp == PM_SURYA_DEVA && mtmp->summonpwr == 0){
 		for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
 			if(DEADMONSTER(mtarg)) continue;
 			if(distmin(mtmp->mx,mtmp->my, mtarg->mx,mtarg->my) > 8) continue;
@@ -483,7 +533,7 @@ struct monst *mtmp;
 
 		/* nomore(MUSE_WAN_DIGGING); */
 		if (m.has_defense == MUSE_WAN_DIGGING) break;
-		if (obj->otyp == WAN_DIGGING && obj->spe > 0 && !stuck && !t
+		if (!spire && obj->otyp == WAN_DIGGING && obj->spe > 0 && !stuck && !t
 		    && !mtmp->isshk && !mtmp->isgd && !mtmp->ispriest
 		    && !mon_resistance(mtmp,LEVITATION)
 		    /* monsters digging in Sokoban can ruin things */
@@ -499,7 +549,7 @@ struct monst *mtmp;
 		}
 		nomore(MUSE_WAN_TELEPORTATION_SELF);
 		nomore(MUSE_WAN_TELEPORTATION);
-		if(obj->otyp == WAN_TELEPORTATION && obj->spe > 0) {
+		if(!spire && obj->otyp == WAN_TELEPORTATION && obj->spe > 0) {
 		    /* use the TELEP_TRAP bit to determine if they know
 		     * about noteleport on this level or not.  Avoids
 		     * ineffective re-use of teleportation.  This does
@@ -515,7 +565,7 @@ struct monst *mtmp;
 		    }
 		}
 		nomore(MUSE_SCR_TELEPORTATION);
-		if(obj->otyp == SCR_TELEPORTATION && !is_blind(mtmp)
+		if(!spire && obj->otyp == SCR_TELEPORTATION && !is_blind(mtmp)
 		   && haseyes(mtmp->data) && !is_weeping(mtmp->data)
 		   && (!obj->cursed ||
 		       (!(mtmp->isshk && inhishop(mtmp))
@@ -544,9 +594,14 @@ struct monst *mtmp;
 			m.has_defense = MUSE_POT_EXTRA_HEALING;
 		}
 		nomore(MUSE_WAN_CREATE_MONSTER);
-		if(obj->otyp == WAN_CREATE_MONSTER && obj->spe > 0) {
+		if(!spire && obj->otyp == WAN_CREATE_MONSTER && obj->spe > 0) {
 			m.defensive = obj;
 			m.has_defense = MUSE_WAN_CREATE_MONSTER;
+		}
+		nomore(MUSE_ROD_HEAL);
+		if(mtmp->mtyp == PM_OONA && obj->oartifact == ART_ROD_OF_SEVEN_PARTS && obj->spe > -7) {
+			m.defensive = obj;
+			m.has_defense = MUSE_ROD_HEAL;
 		}
 		nomore(MUSE_POT_HEALING);
 		if(obj->otyp == POT_HEALING && !nomouth) {
@@ -560,13 +615,13 @@ struct monst *mtmp;
 			m.has_defense = MUSE_POT_FULL_HEALING;
 		}
 		nomore(MUSE_WAN_CREATE_MONSTER);
-		if (obj->otyp == WAN_CREATE_MONSTER && obj->spe > 0) {
+		if (!spire && obj->otyp == WAN_CREATE_MONSTER && obj->spe > 0) {
 			m.defensive = obj;
 			m.has_defense = MUSE_WAN_CREATE_MONSTER;
 		}
 	    }
 		nomore(MUSE_SCR_CREATE_MONSTER);
-		if(obj->otyp == SCR_CREATE_MONSTER && !is_weeping(mtmp->data)) {
+		if(!spire && obj->otyp == SCR_CREATE_MONSTER && !is_weeping(mtmp->data)) {
 			m.defensive = obj;
 			m.has_defense = MUSE_SCR_CREATE_MONSTER;
 		}
@@ -944,6 +999,62 @@ mon_tele:
 		newsym(trapx, trapy);
 
 		goto mon_tele;
+	case MUSE_ROD_HEAL:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Coelum!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Coelum!");
+		otmp->spe--;
+		mtmp->mhp += d(1+mlev(mtmp)/3,4) + mlev(mtmp);
+		if (mtmp->mhp > mtmp->mhpmax) mtmp->mhp = mtmp->mhpmax;
+		return 2;
+	case MUSE_ROD_RECOVER:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Lex Rex!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Lex Rex!");
+		otmp->spe -= 3;
+		set_mcan(mtmp, FALSE);
+		mtmp->mspec_used = 0;
+		if(!mtmp->mnotlaugh){
+			mtmp->mnotlaugh = 1;
+			mtmp->mlaughing = 0;
+		}
+		if(!mtmp->mcansee){
+			mtmp->mcansee = 1;
+			mtmp->mblinded = 0;
+		}
+		mtmp->mberserk = 0;
+		if(!mtmp->mcanmove){
+			mtmp->mcanmove = 1;
+			mtmp->mfrozen = 0;
+		}
+		if(mtmp->mstdy > 0) mtmp->mstdy = 0;
+		mtmp->mstun = 0;
+		mtmp->mconf = 0;
+		mtmp->mpunctured = 0;
+		mtmp->msleeping = 0;
+		mtmp->mflee = 0;
+		mtmp->mfleetim = 0;
+		mtmp->mbleed = 0;
+		mtmp->mgmld_throat = 0;
+		mtmp->mgmld_skin = 0;
+		boolean blessed = mlev(mtmp) > 13;
+		for (struct obj *obj = mtmp->minvent; obj; obj = obj->nobj)
+		{
+#ifdef GOLDOBJ
+		/* gold isn't subject to cursing and blessing */
+		if (obj->oclass == COIN_CLASS) continue;
+#endif
+			if (blessed ||
+				(obj->owornmask || obj->otyp == LOADSTONE)
+			) {
+				uncurse(obj);
+				if (obj == MON_WEP(mtmp))
+					mtmp->weapon_check = NEED_WEAPON;
+			}
+		}
+		return 2;
 	case MUSE_POT_HEALING:
 		mquaffmsg(mtmp, otmp);
 		i = d(6 + 2 * bcsign(otmp), 4)+mlev(mtmp);
@@ -1029,6 +1140,15 @@ mon_tele:
 		mon_doturn(mtmp);
 		mtmp->mspec_used = 3;
 		return DEADMONSTER(mtmp) ? 1 : 2;
+	case MUSE_SELF_REPAIR:
+		if(canspotmon(mtmp)) pline("%s attempts to make repairs.", Monnam(mtmp));
+		if(!rn2(15 - mlev(mtmp)/2)){
+			mtmp->mhp += rnd(10);
+			if(mtmp->mhp > mtmp->mhpmax) mtmp->mhp = mtmp->mhpmax;
+			if(canspotmon(mtmp) && mtmp->mhp == mtmp->mhpmax)
+				pline("%s completes its repairs!", Monnam(mtmp));
+		}
+		return 2;
 	case MUSE_DANCING_SWORD:
 	{
 		struct monst * blade;
@@ -1180,6 +1300,7 @@ struct monst *mtmp;
 	boolean ranged_stuff = FALSE; 
 	boolean reflection_skip = FALSE; 
 	struct obj *helmet = which_armor(mtmp, W_ARMH);
+	boolean spire = Is_spire(&u.uz);
 
 	struct monst *target = mfind_target(mtmp, TRUE, FALSE);
 	
@@ -1210,7 +1331,7 @@ struct monst *mtmp;
 
 	if (!ranged_stuff) return FALSE;
 
-	if(mon_turn_undead(mtmp) && !mtmp->mspec_used && !mtmp->mcan && (!Inhell || mon_healing_turn(mtmp))){
+	if(!spire && mon_turn_undead(mtmp) && !mtmp->mspec_used && !mtmp->mcan && (!Inhell || mon_healing_turn(mtmp))){
 		struct monst *target2 = mfind_target(mtmp, FALSE, FALSE); 
 		if((target && is_undead(target->data))
 		 || (target2 && is_undead(target2->data))
@@ -1222,7 +1343,7 @@ struct monst *mtmp;
 
 #define nomore(x) if(m.has_offense==x) continue;
 	for(obj=mtmp->minvent; obj; obj=obj->nobj) {
-		if(mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
+		if(!spire && mon_valkyrie(mtmp) && obj->oartifact == ART_MJOLLNIR && !obj->cursed && mtmp->misc_worn_check & W_ARMG) {
 			struct obj *otmp;
 			for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
 				if (otmp->owornmask & W_ARMG && (otmp->otyp == GAUNTLETS_OF_POWER || (otmp->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(otmp, IEA_GOPOWER)))){
@@ -1234,18 +1355,18 @@ struct monst *mtmp;
 			if(m.has_offense==MUSE_MJOLLNIR) break;
 		}
 		nomore(MUSE_CRYSTAL_SKULL);
-		if(obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj) && !get_ox(obj, OX_ESUM)) {
+		if(!spire && obj->otyp == CRYSTAL_SKULL && obj->age < monstermoves && is_mind_flayer(mtmp->data) && !obj_summon_out(obj) && !get_ox(obj, OX_ESUM)) {
 			m.offensive = obj;
 			m.has_offense = MUSE_CRYSTAL_SKULL;
 		}
 		nomore(MUSE_MIST_PROJECTOR);
-		if(obj->otyp == MIST_PROJECTOR && obj->spe > 0 && resists_cold(mtmp)) {
+		if(!spire && obj->otyp == MIST_PROJECTOR && obj->spe > 0 && resists_cold(mtmp)) {
 			m.offensive = obj;
 			m.has_offense = MUSE_MIST_PROJECTOR;
 		}
 		nomore(MUSE_MON_TURN_UNDEAD);
 		nomore(MUSE_WAN_DEATH);
-		if (!reflection_skip) {
+		if (!spire && !reflection_skip) {
 		    if(obj->otyp == WAN_DEATH && obj->spe > 0) {
 			m.offensive = obj;
 			m.has_offense = MUSE_WAN_DEATH;
@@ -1294,12 +1415,12 @@ struct monst *mtmp;
 			// m.has_offense = MUSE_POT_STONE_BLOOD;
 		// }
 		nomore(MUSE_WAN_DRAINING);
-		if(obj->otyp == WAN_DRAINING && obj->spe > 0) {
+		if(!spire && obj->otyp == WAN_DRAINING && obj->spe > 0) {
 			m.offensive = obj;
 			m.has_offense = MUSE_WAN_DRAINING;
 		}
 		nomore(MUSE_WAN_STRIKING);
-		if(obj->otyp == WAN_STRIKING && obj->spe > 0) {
+		if(!spire && obj->otyp == WAN_STRIKING && obj->spe > 0) {
 			m.offensive = obj;
 			m.has_offense = MUSE_WAN_STRIKING;
 		}
@@ -1341,7 +1462,7 @@ struct monst *mtmp;
 		 * are in wand range
 		 */
 		nomore(MUSE_SCR_EARTH);
-		if (obj->otyp == SCR_EARTH
+		if (!spire && obj->otyp == SCR_EARTH
 		       && ((helmet && is_hard(helmet)) ||
 				mtmp->mconf || amorphous(mtmp->data) ||
 				mon_resistance(mtmp,PASSES_WALLS) ||
@@ -1357,7 +1478,7 @@ struct monst *mtmp;
 		    m.has_offense = MUSE_SCR_EARTH;
 		}
 		nomore(MUSE_WAN_CANCELLATION);
-		if (obj->otyp == WAN_CANCELLATION && obj->spe > 0) {
+		if (!spire && obj->otyp == WAN_CANCELLATION && obj->spe > 0) {
 			m.offensive   = obj;
 			m.has_offense = MUSE_WAN_CANCELLATION;
 		}
@@ -2088,6 +2209,8 @@ struct monst *mtmp;
 #define MUSE_POT_HOLY 16
 #define MUSE_SCR_DESTROY_ARMOR 17
 #define MUSE_WISH 18
+#define MUSE_ROD_SEE_INVIS 19
+#define MUSE_ROD_FLYING 20
 
 boolean
 find_misc(mtmp)
@@ -2104,6 +2227,7 @@ struct monst *mtmp;
 			|| ((mtmp->misc_worn_check & W_ARMH) && which_armor(mtmp, W_ARMH) && FacelessHelm(which_armor(mtmp, W_ARMH)))
 			|| ((mtmp->misc_worn_check & W_ARMC) && which_armor(mtmp, W_ARMC)
 				&& FacelessCloak(which_armor(mtmp, W_ARMC)));
+	boolean spire = Is_spire(&u.uz);
 
 	if(mtmp->mtalons) return FALSE;
 	
@@ -2113,7 +2237,7 @@ struct monst *mtmp;
 		return FALSE;
 	if (u.uswallow && stuck) return FALSE;
 
-	if(mtmp->mtyp == PM_AFREET && !mtmp->mcan && !mtmp->mspec_used && (!mtmp->mpeaceful || distmin(mtmp->mx,mtmp->my,u.ux,u.uy) > 1)){
+	if(!spire && mtmp->mtyp == PM_AFREET && !mtmp->mcan && !mtmp->mspec_used && (!mtmp->mpeaceful || distmin(mtmp->mx,mtmp->my,u.ux,u.uy) > 1)){
 		if(mtmp->mvar1_afreet_lastsaw > moves - 10 && invent && !mtmp->mpeaceful){
 			m.has_misc = MUSE_WISH;
 			return TRUE;
@@ -2216,7 +2340,7 @@ struct monst *mtmp;
 		 * invisible unless you can see them.  Not really right, but...
 		 */
 		nomore(MUSE_WAN_MAKE_INVISIBLE);
-		if(obj->otyp == WAN_MAKE_INVISIBLE && obj->spe > 0 &&
+		if(!spire && obj->otyp == WAN_MAKE_INVISIBLE && obj->spe > 0 &&
 		    !mtmp->minvis && !mtmp->invis_blkd &&
 			(!mtmp->mpeaceful || See_invisible(mtmp->mx, mtmp->my)) &&
 		    (!mon_attacktype(mtmp, AT_GAZE) || mtmp->mcan)) {
@@ -2232,7 +2356,7 @@ struct monst *mtmp;
 			m.has_misc = MUSE_POT_INVISIBILITY;
 		}
 		nomore(MUSE_WAN_SPEED_MONSTER);
-		if(obj->otyp == WAN_SPEED_MONSTER && obj->spe > 0
+		if(!spire && obj->otyp == WAN_SPEED_MONSTER && obj->spe > 0
 				&& mtmp->mspeed != MFAST && !mtmp->isgd) {
 			m.misc = obj;
 			m.has_misc = MUSE_WAN_SPEED_MONSTER;
@@ -2245,7 +2369,7 @@ struct monst *mtmp;
 			m.has_misc = MUSE_POT_SPEED;
 		}
 		nomore(MUSE_WAN_POLYMORPH);
-		if(obj->otyp == WAN_POLYMORPH && obj->spe > 0 && !mtmp->cham
+		if(!spire && obj->otyp == WAN_POLYMORPH && obj->spe > 0 && !mtmp->cham
 				&& monstr[monsndx(mdat)] < 6 && !resists_poly(mtmp->data)
 		) {
 			m.misc = obj;
@@ -2259,9 +2383,9 @@ struct monst *mtmp;
 			m.has_misc = MUSE_POT_POLYMORPH;
 		}
 		nomore(MUSE_SCR_REMOVE_CURSE);
-		if(obj->otyp == SCR_REMOVE_CURSE && !is_weldproof_mon(mtmp))
+		if(!spire && obj->otyp == SCR_REMOVE_CURSE && !is_weldproof_mon(mtmp))
 		{
-                        register struct obj *otmp;
+			register struct obj *otmp;
 			for (otmp = mtmp->minvent;
 			     otmp; otmp = otmp->nobj)
 			{
@@ -2298,7 +2422,7 @@ struct monst *mtmp;
 			}
 		}
 		nomore(MUSE_SCR_DESTROY_ARMOR);
-		if(obj->otyp == SCR_DESTROY_ARMOR)
+		if(!spire && obj->otyp == SCR_DESTROY_ARMOR)
 		{
 			register struct obj *otmp;
 			otmp = which_armor(mtmp, W_ARM);
@@ -2310,13 +2434,23 @@ struct monst *mtmp;
 		}
 		nomore(MUSE_SCR_AMNESIA);
 		nomore(MUSE_POT_AMNESIA);
-		if(mon_insane(mtmp) && (obj->otyp == SCR_AMNESIA)) {
+		if(!spire && mon_insane(mtmp) && (obj->otyp == SCR_AMNESIA)) {
 			m.misc = obj;
 			m.has_misc = MUSE_SCR_AMNESIA;
 		}
 		if(!nomouth && mon_insane(mtmp) && (obj->otyp == POT_AMNESIA)) {
 			m.misc = obj;
 			m.has_misc = MUSE_POT_AMNESIA;
+		}
+		if(mtmp->mtyp == PM_OONA && obj->oartifact == ART_ROD_OF_SEVEN_PARTS && (obj->spe == 7 || obj->spe >= mlev(mtmp)/3)) {
+			if(!mon_resistance(mtmp, SEE_INVIS)) {
+				m.misc = obj;
+				m.has_misc = MUSE_ROD_SEE_INVIS;
+			}
+			else if(!mon_resistance(mtmp, FLYING)) {
+				m.misc = obj;
+				m.has_misc = MUSE_ROD_FLYING;
+			}
 		}
 	}
 	return((boolean)(!!m.has_misc));
@@ -2711,7 +2845,7 @@ museamnesia:
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
-	    return 0;
+	    return 2;
 	case MUSE_POT_HOLY:
 		{
 		    register struct obj *obj;
@@ -2742,7 +2876,7 @@ museamnesia:
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
-	    return 0;
+	    return 2;
 	case MUSE_SCR_DESTROY_ARMOR:{
 		struct obj *obj;
 		obj = which_armor(mtmp, W_ARM);
@@ -2771,7 +2905,7 @@ museamnesia:
 		}
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
-	    return 0;
+	    return 2;
 	}
 	case MUSE_MASK:{
 		int pm = otmp->corpsenm;
@@ -2865,13 +2999,184 @@ museamnesia:
 			m_dowear(mtmp, TRUE);
 			mtmp->mspec_used = 10 - mtmp->m_lev;
 			if (mtmp->mspec_used < 2) mtmp->mspec_used = 2;
-
+			return 2;
 		}
 	}break;
+	case MUSE_ROD_SEE_INVIS:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Ecce!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Ecce!");
+		otmp->spe -= 2;
+		give_mintrinsic(mtmp, SEE_INVIS);
+		return 2;
+	case MUSE_ROD_FLYING:
+		if(canspotmon(mtmp))
+			pline("%s raises %s and shouts \"Rex!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Rex!");
+		otmp->spe -= 3;
+		give_mintrinsic(mtmp, FLYING);
+		return 2;
 	case 0: return 0; /* i.e. an exploded wand */
 	default: impossible("%s wanted to perform action %d?", Monnam(mtmp),
 			m.has_misc);
 		break;
+	}
+	return 0;
+}
+
+int
+valid_rosp_e_target(struct monst *mtmp, struct monst *mtarg)
+{
+	struct monst *subtarg;
+	boolean subtarg_resists;
+	boolean target_found;
+	int numtargets = 0;
+	if(mtmp != mtarg && mtmp->mpeaceful != mtarg->mpeaceful && distmin(mtmp->mx, mtmp->my, mtarg->mx, mtarg->my) <= BOLT_LIM
+		&& !(Fire_res(mtarg) && Shock_res(mtarg) && Cold_res(mtarg))
+		&& mon_can_see_mon(mtmp, mtarg)
+	){
+		target_found = TRUE;
+		int ix, iy, i, j;
+		for(i = -2; i <= 2; i++){
+			for(j = -2; j <= 2; j++){
+				ix = mtarg->mx + i;
+				iy = mtarg->my + j;
+				if(isok(ix, iy)){
+					subtarg = m_u_at(ix, iy);
+					if(subtarg){
+						subtarg_resists = (Fire_res(subtarg) && Shock_res(subtarg) && Cold_res(subtarg));
+						if(subtarg == &youmonst && mtmp->mpeaceful && !subtarg_resists){
+							target_found = FALSE;
+							i = j = 3; //break out of both loops
+						}
+						else if(mtmp->mpeaceful == subtarg->mpeaceful && !subtarg_resists){
+							target_found = FALSE;
+							i = j = 3; //break out of both loops
+						}
+						else if(!subtarg_resists){
+							numtargets++;
+						}
+					}
+				}
+			}
+		}
+		if(target_found)
+			return numtargets + 1;
+	}
+	return 0;
+}	
+
+boolean
+has_rosp_e_target(struct monst *mtmp)
+{
+	struct monst *mtarg;
+	int targets = 0;
+	int tlevel = mlev(mtmp);
+	if(!mtmp->mpeaceful && valid_rosp_e_target(mtmp, &youmonst))
+		return TRUE;
+	if (mtmp->mtame)
+		tlevel = min(u.ulevel, tlevel);
+	for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+		if(DEADMONSTER(mtarg)) continue;
+		targets = valid_rosp_e_target(mtmp, mtarg);
+		if(targets && (targets > 3 || mlev(mtarg)+targets > tlevel))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+int
+explode_rod_of_seven_parts(struct monst *mtmp, struct obj *otmp)
+{
+	struct monst *mtarg;
+	int numtargets = 0;
+	int best_numtargets = 0;
+	struct monst *best_target = NULL;
+	/* Find best target */
+	if(!mtmp->mpeaceful && valid_rosp_e_target(mtmp, &youmonst))
+		best_target = &youmonst;
+	else for(mtarg = fmon; mtarg; mtarg = mtarg->nmon){
+		if(DEADMONSTER(mtarg)) continue;
+		numtargets = valid_rosp_e_target(mtmp, mtarg);
+		if(numtargets && (!best_target || numtargets > best_numtargets || (numtargets == best_numtargets && mlev(mtarg) > mlev(best_target)))){
+			best_numtargets = numtargets;
+			best_target = mtarg;
+		}
+	}
+	if(best_target){
+		const int elements[4] = {AD_PHYS, AD_FIRE, AD_COLD, AD_ELEC};
+		const int explType[4] = {0, EXPL_FIERY, EXPL_FROSTY, EXPL_MAGICAL};
+		struct obj *wep = MON_WEP(mtmp);
+		if(wep != otmp){
+			setmnotwielded(mtmp, wep);
+			/* wield the new object*/
+			mtmp->weapon_check = NEED_WEAPON;
+			setmwielded(mtmp, otmp, W_WEP);
+		}
+		if(canseemon(mtmp))
+			pline("%s raises %s and shouts \"Ruat Coelum!\"", Monnam(mtmp), the(xname(otmp)));
+		else if(flags.soundok)
+			verbalize("Ruat Coelum!");
+		int dmg = mlev(mtmp)/2 + 1;
+		int nd = max(otmp->spe, 1);
+		int dx = 0, dy = 0;
+		int n = mlev(mtmp)/5 + 1;
+		int tx = x(best_target);
+		int ty = y(best_target);
+		int type;
+		while(n-- > 0){
+			type = rnd(3);
+			explode(tx+dx, ty+dy, elements[type], 0, d(nd, 8)+dmg, explType[type], 1);
+			dx = rn2(3)-1;
+			dy = rn2(3)-1;
+			if(!isok(tx+dx, ty+dy) || IS_STWALL(levl[tx+dx][ty+dy].typ)){
+				dx = dy = 0;
+			}
+		}
+		otmp->spe -= 1;
+		return DEADMONSTER(mtmp) ? 1 : 2;
+	}
+	return 0;
+}
+
+#define MUSE_ROD_EXPLODE  1
+
+boolean
+find_artifact(struct monst *mtmp)
+{
+	m.artifact = (struct obj *)0;
+	m.has_artifact = 0;
+	if(mtmp->mtyp == PM_OONA){
+		struct obj *otmp;
+		for(otmp = mtmp->minvent; otmp; otmp = otmp->nobj){
+			if(otmp->oartifact == ART_ROD_OF_SEVEN_PARTS)
+				break;
+		}
+		if(otmp){
+			if(otmp->spe > 0 && (otmp->spe == 7 || otmp->spe >= mlev(mtmp)/3)){
+				if(has_rosp_e_target(mtmp)){
+					m.artifact = otmp;
+					m.has_artifact = MUSE_ROD_EXPLODE;
+					return TRUE;
+				}
+			}
+		}
+	}
+	return FALSE;
+}
+
+int
+use_artifact(struct monst *mtmp)
+{
+	switch(m.has_artifact) {
+		case MUSE_ROD_EXPLODE:
+			return explode_rod_of_seven_parts(mtmp, m.artifact);
+		default:
+			impossible("%s wanted to perform artifact action %d?", Monnam(mtmp),
+			m.has_artifact);
+			break;
 	}
 	return 0;
 }
@@ -2970,7 +3275,7 @@ struct obj *obj;
 	if(mon->mtyp == PM_CHAIN_DEVIL && obj->otyp == CHAIN)
 		return TRUE;
 	if(obj->oclass == WEAPON_CLASS || is_weptool(obj))
-		return mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA);
+		return mon_attacktype(mon, AT_WEAP) || mon_attacktype(mon, AT_XWEP) || mon_attacktype(mon, AT_MARI) || mon_attacktype(mon, AT_DEVA) || mon_attacktype(mon, AT_JUGL);
 	if(obj->oclass == AMULET_CLASS)
 		return can_wear_amulet(mon->data) && is_museable_amulet(obj->otyp);
 	else if(is_shirt(obj))

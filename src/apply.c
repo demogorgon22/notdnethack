@@ -3046,7 +3046,7 @@ transfusion(struct obj *obj)
 	}
 	Sprintf(qbuf, "Transfuse yourself with %s?", the(xname(obj)));
 	if(yn(qbuf) != 'y'){
-		pline("Never mind");
+		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
 	IMPURITY_UP(u.uimp_blood)
@@ -3175,7 +3175,7 @@ bloodclone(struct obj *obj)
 	}
 	Sprintf(qbuf, "Create a blood clone with %s?", the(xname(obj)));
 	if(yn(qbuf) != 'y'){
-		pline("Never mind");
+		pline1(Never_mind);
 		// obj->use
 		return MOVE_CANCELLED;
 	}
@@ -3885,7 +3885,7 @@ blood_draw(struct obj *obj)
 		// if(n == 3) continue
 	}
 	else if(yn("Draw your own blood?") != 'y'){
-		pline("Never mind");
+		pline1(Never_mind);
 		return MOVE_CANCELLED;
 	}
 	if(*hp(&youmonst) <= (*hpmax(&youmonst))/2){
@@ -4949,6 +4949,7 @@ use_dissection_kit(struct obj *obj)
 		// pline("That's too insubstantial to dissect.");
 		// return;
 	// }
+	splitobj(otmp, otmp->quan - 1L);
 	consume_obj_charge(obj, TRUE);
 
 	//San check
@@ -7480,6 +7481,13 @@ struct obj *pole;
 			's', 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
 	}
+	if(pole->otyp == SILVERKNIGHT_SCYTHE){
+		Sprintf(buf, "(send forth rogue halo)");
+		any.a_int = N_POLEDIRS+2;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'r', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
 
 	/* add an option to target manually */
 	Sprintf(buf, "(some location)");
@@ -7499,6 +7507,26 @@ struct obj *pole;
 		return picked;
 	}
 	return 0;
+}
+
+void
+use_silverknight_scythe_at(int x, int y)
+{
+	struct monst *halo;
+	if(u.uen >= 10){
+		u.uen -= 10;
+		pline("You swing the Silverknight Scythe and a rogue halo flies forth!");
+		halo = makemon(&mons[PM_ROGUE_HALO], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
+		if(halo){
+			halo->mpeaceful = TRUE;
+			initedog(halo);
+			mark_mon_as_summoned(halo, &youmonst, u.ulevel + rnd(u.ulevel), 0);
+			halo->movement = 3*NORMAL_SPEED;
+		}
+	}
+	else {
+		pline("Nothing happens.");
+	}
 }
 
 static const char
@@ -7554,9 +7582,11 @@ coord *ccp;
 			ccp->x = 0; ccp->y = 0;
 			return res;	/* user pressed ESC */
 		}
-		if((obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE) && ccp->x == u.ux && ccp->y == u.uy){
-			ccp->x = 0; ccp->y = 0;
-			return use_hunter_axe(obj);
+		if(ccp->x == u.ux && ccp->y == u.uy){
+			if(obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE){
+				ccp->x = 0; ccp->y = 0;
+				return use_hunter_axe(obj);
+			}
 		}
 	}
 	else {
@@ -7568,7 +7598,14 @@ coord *ccp;
 			}
 			else if(i == N_POLEDIRS+1){
 				ccp->x = 0; ccp->y = 0;
-				return use_hunter_axe(obj);
+				if(obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE)
+					return use_hunter_axe(obj);
+				if(obj->otyp == SILVERKNIGHT_SCYTHE){
+					use_silverknight_scythe_at(u.ux, u.uy);
+					return MOVE_ATTACKED;
+				}
+				impossible("Unhandled special polearm action.");
+				return res; //Should never reach here
 			}
 			else {
 				/* use standard targeting; save retval to return */
@@ -7645,6 +7682,8 @@ use_pole(obj)
 		   if(!rn2(3)) mksobj_at(SHEAF_OF_HAY,cc.x,cc.y,NO_MKOBJ_FLAGS);
 		   You("cut away the grass!");
 		   newsym(cc.x,cc.y);
+	} else if(obj->otyp == SILVERKNIGHT_SCYTHE){
+		use_silverknight_scythe_at(cc.x,cc.y);
 	} else {
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
@@ -8235,6 +8274,45 @@ use_chrysalis(struct obj *obj)
 			accident_n = any.a_int;
 	}
 
+	ch++;
+	any.a_int = 11;
+	if(!check_rot(ROT_EXHULT)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Exhultation of Rot", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 12;
+	if(!check_rot(ROT_WINGSWORD)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Wings of ruin", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 13;
+	if(!check_rot(ROT_CRICKET)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Chorus of destruction", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
+
+	ch++;
+	any.a_int = 14;
+	if(check_rot(ROT_KIN) && !check_rot(ROT_FORAGE)){
+		n++;
+		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
+			 "Gifts of the forager brood", MENU_UNSELECTED);
+		if(!rn2(n))
+			accident_n = any.a_int;
+	}
 	if(!n){
 		destroy_nhwindow(tmpwin);
 		return MOVE_CANCELLED;
@@ -8303,6 +8381,25 @@ use_chrysalis(struct obj *obj)
 			u.ugifts -= (u.udroolgifted - 1);
 			u.ucultsval -= SHUB_DROOL_TIER*(u.udroolgifted - 1);
 		}
+	}
+	if(n == 11){
+		add_rot(ROT_EXHULT);
+		pline("You feel something stir in your breast.");
+	}
+	if(n == 12){
+		add_rot(ROT_WINGSWORD);
+		if(!Blind)
+			pline("Insect wings sprout from the %s of your sword %s!", !strcmpi(body_part(BODY_SKIN), "skin") ? "flesh" : body_part(BODY_SKIN), body_part(ARM));
+		else
+			Your("sword arm tickles.");
+	}
+	if(n == 13){
+		add_rot(ROT_CRICKET);
+		pline("Cricket wings tear free from the %s of your %s and %s!", !strcmpi(body_part(BODY_SKIN), "skin") ? "flesh" : body_part(BODY_SKIN), makeplural(body_part(ARM)), makeplural(body_part(LEG)));
+	}
+	if(n == 14){
+		add_rot(ROT_FORAGE);
+		pline("...the bugs on the %s are bowing to you in humble greeting.", surface(u.ux, u.uy));
 	}
 	// u.udefilement_research += rn2(defile_score());
 	u.mental_scores_down++;
@@ -8499,6 +8596,8 @@ use_doll(obj)
 			}
 			healup(0, 0, TRUE, FALSE);
 			if (Stoned || Golded || Salted) fix_petrification();
+			youmonst.mgmld_skin = 0;
+			youmonst.mgmld_throat = 0;
 			res = MOVE_STANDARD;
 			pline("You feel very healthy.");
 			give_intrinsic(GOOD_HEALTH, 100L);
@@ -10789,7 +10888,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_HELM:
 			upitm = getobj(imperial_repairs, "repair the helm with");
 			if(!upitm || !helm_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10836,7 +10935,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_GAUNTLETS:
 			upitm = getobj(imperial_repairs, "repair the gauntlets with");
 			if(!upitm || !gauntlets_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10876,7 +10975,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_ARMOR:
 			upitm = getobj(imperial_repairs, "repair the armor with");
 			if(!upitm || !armor_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -10939,7 +11038,7 @@ upgradeImpArmor()
 		case IMPERIAL_ELVEN_BOOTS:
 			upitm = getobj(imperial_repairs, "repair the boots with");
 			if(!upitm || !boots_upgrade_obj(upitm)){
-				pline("Never mind.");
+				pline1(Never_mind);
 				return MOVE_CANCELLED;
 			}
 			if(upitm->owornmask){
@@ -11004,7 +11103,7 @@ struct obj **optr;
 				case WOOD_STOVE:
 					comp = getobj(tools, "upgrade your stove with");
 					if(!comp || comp->otyp != TINNING_KIT){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("use the components in the upgrade kit and the tinning kit to install a wood-burning stove.");
@@ -11024,7 +11123,7 @@ struct obj **optr;
 				case EFFICIENT_SWITCH:
 					comp = getobj(tools, "upgrade your switch with");
 					if(!comp || comp->otyp != CROSSBOW){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("use the components in the upgrade kit and the crossbow to upgrade the switch on your clock.");
@@ -11039,7 +11138,7 @@ struct obj **optr;
 					if(!comp ||
 						!((comp->otyp == ARCHAIC_PLATE_MAIL || comp->otyp == PLATE_MAIL) &&
 						(comp->obj_material == COPPER))){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("use the components in the upgrade kit to reinforce your armor with bronze plates.");
@@ -11052,7 +11151,7 @@ struct obj **optr;
 				case PHASE_ENGINE:
 					comp = getobj(all_classes, "build a phase engine with");
 					if(!comp || comp->otyp != SUBETHAIC_COMPONENT){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the subethaic component and build a phase engine.");
@@ -11065,7 +11164,7 @@ struct obj **optr;
 				case MAGIC_FURNACE:
 					comp = getobj(tools, "build a magic furnace with");
 					if(!comp || comp->otyp != WAN_DRAINING){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the wand and build a magic furnace.");
@@ -11078,7 +11177,7 @@ struct obj **optr;
 				case HELLFIRE_FURNACE:
 					comp = getobj(all_classes, "build a hellfire furnace with");
 					if(!comp || comp->otyp != HELLFIRE_COMPONENT){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the hellfire component and build a hellfire furnace.");
@@ -11091,7 +11190,7 @@ struct obj **optr;
 				case SCRAP_MAW:
 					comp = getobj(tools, "build a scrap maw with");
 					if(!comp || comp->otyp != SCRAP){
-						pline("Never mind.");
+						pline1(Never_mind);
 						return MOVE_CANCELLED;
 					}
 					You("combine the components in the upgrade kit with the scrap and build a scrap maw.");
@@ -11103,11 +11202,6 @@ struct obj **optr;
 				break;
 				case HIGH_TENSION:
 					// Maybe one day a spring pistol or something
-					// comp = getobj(tools, "build a scrap maw with");
-					// if(!comp || comp->otyp != SCRAP){
-						// pline("Never mind.");
-						// return MOVE_CANCELLED;
-					// }
 					You("use the components in the upgrade kit to increase the maximum tension in your mainspring.");
 					u.uhungermax += DEFAULT_HMAX; // 2000 per, capped at 9 kits for 20,000 max
 					if(u.uhungermax >= DEFAULT_HMAX*10) u.clockworkUpgrades |= upgrade;

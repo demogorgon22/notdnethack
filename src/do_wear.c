@@ -964,7 +964,7 @@ Armor_off()
 {
 	boolean checkweight = FALSE;
     takeoff_mask &= ~W_ARM;
-	if(arti_lighten(uarmu, FALSE)) checkweight = TRUE;
+	if(arti_lighten(uarm, FALSE)) checkweight = TRUE;
 
 	if(!uarm) {
 		impossible("Armor_off called with no uarm");
@@ -2406,7 +2406,7 @@ struct obj * otmp;
 	if (otmp->otyp == find_gcirclet()) def /= 2;
 
 	// add enchantment
-	if (otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
+	if (!Is_spire(&u.uz) && otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
 	{
 		int spemult = 1; // out of 2
 		// shields get full enchantment to AC
@@ -2429,7 +2429,7 @@ struct obj * otmp;
 	if(otmp->otyp == POWER_ARMOR && otmp->lamplit && !otmp->obroken)
 		def += 8;
 	// artifact bonus def
-	switch (otmp->oartifact)
+	if(!Is_spire(&u.uz)) switch (otmp->oartifact)
 	{
 	case ART_STEEL_SCALES_OF_KURTULMAK:
 		def += objects[otmp->otyp].a_ac;
@@ -2516,7 +2516,7 @@ struct obj * otmp;
 
 
 	// add enchantment
-	if (otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
+	if (!Is_spire(&u.uz) && otmp->spe && (!is_belt(otmp) || otmp->otyp == KIDNEY_BELT))
 	{
 		int spemult = 1; // out of 2
 		// shields get no enchantment to DR
@@ -2535,7 +2535,7 @@ struct obj * otmp;
 		def += 8;
 
 	// artifact bonus def
-	switch (otmp->oartifact)
+	if(!Is_spire(&u.uz)) switch (otmp->oartifact)
 	{
 	case ART_STEEL_SCALES_OF_KURTULMAK:
 		def += objects[otmp->otyp].a_dr;
@@ -6187,6 +6187,36 @@ boolean invoked;
 				return;
 			}
 		}
+}
+
+void
+doliving_cricket(struct monst *magr)
+{
+	boolean youagr = (magr == &youmonst);
+	boolean youdef;
+	int i, j;
+	struct monst *mdef;
+	struct attack symbiote = { AT_HITS, AD_SONC, mlev(magr)/10+1, 4};
+	for(i = x(magr)-1; i <= x(magr)+1; i++)
+		for(j = y(magr)-1; j <= y(magr)+1; j++){
+			if(!isok(i,j))
+				continue;
+			if(i == x(magr) && j == y(magr))
+				continue;
+			mdef = m_u_at(i,j);
+			youdef = (mdef == &youmonst);
+			if(!mdef || DEADMONSTER(mdef))
+				continue;
+			if(youagr && mdef->mpeaceful)
+				continue;
+			if(!youagr && ((youdef && magr->mpeaceful) || (mdef->mpeaceful == magr->mpeaceful)))
+				continue;
+			if(!youdef && nonthreat(mdef))
+				continue;
+			if(mdef->mtyp == PM_PALE_NIGHT) continue;
+			xmeleehity(magr, mdef, &symbiote, (struct obj **)0, 0, 0, FALSE, 0); //Hits all adjacent targets
+			return; //only one proc per round to hit all adjacent targets
+	}
 }
 
 void

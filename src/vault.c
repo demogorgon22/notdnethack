@@ -262,7 +262,7 @@ fnd:
         return;
     }
 #endif /* CONVICT */
-	if (Strangled || is_silent(youracedata) || multi < 0) {
+	if (Strangled_cant_speak || is_silent(youracedata) || multi < 0) {
 	    /* [we ought to record whether this this message has already
 	       been given in order to vary it upon repeat visits, but
 	       discarding the monster and its egd data renders that hard] */

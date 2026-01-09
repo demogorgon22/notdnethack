@@ -2337,6 +2337,7 @@ get_description_of_attack_type(uchar id)
 	case AT_ESPR: return "floating spiritual blade";
 	case AT_BEAM: return "ranged beam";
 	case AT_DEVA: return "million-arm weapon";
+	case AT_JUGL: return "weapon-juggler's strike";
 	case AT_5SQR: return "long reach touch";
 	case AT_WDGZ: return "passive gaze";
 	case AT_BKGT: return "hungry mist";
@@ -2547,6 +2548,8 @@ get_description_of_damage_type(uchar id)
 	case AD_OMUD: return "inchoate orc-spawn";
 	case AD_BLED: return "bleeding wounds";
 	case AD_UHCD: return "unholy ice";
+	case AD_GMLD: return "gray mold spores";
+	case AD_SONC: return "sonic blast";
 	default:
 			impossible("bug in get_description_of_damage_type(%d)", id);
 			return "<MISSING DESCRIPTION, THIS IS A BUG>";
@@ -2561,6 +2564,7 @@ get_description_of_damage_prefix(uchar aatyp, uchar adtyp)
 	case AT_WEAP:
 	case AT_XWEP:
 	case AT_DEVA:
+	case AT_JUGL:
 		switch (adtyp)
 		{
 		case AD_PHYS:
@@ -2569,12 +2573,12 @@ get_description_of_damage_prefix(uchar aatyp, uchar adtyp)
 		case AD_COLD:
 		case AD_ELEC:
 		case AD_ACID:
-			return "physical + 4d6 ";
+			return "physical +  ";
 		case AD_EFIR:
 		case AD_ECLD:
 		case AD_EELC:
 		case AD_EACD:
-			return "physical + 3d7 ";
+			return "physical +  ";
 		default:
 			return "physical + ";
 		}
@@ -2584,7 +2588,7 @@ get_description_of_damage_prefix(uchar aatyp, uchar adtyp)
 }
 
 char *
-get_description_of_attack(struct attack *mattk, char * main_temp_buf)
+get_description_of_attack(struct attack *mattk, char *main_temp_buf, struct monst *mtmp)
 {
 	if (!(mattk->damn + mattk->damd + mattk->aatyp + mattk->adtyp)) {
 		main_temp_buf[0] = '\0';
@@ -2594,6 +2598,23 @@ get_description_of_attack(struct attack *mattk, char * main_temp_buf)
 	char temp_buf[BUFSZ] = "";
 	if (mattk->damn + mattk->damd) {
 		sprintf(main_temp_buf, "%dd%d", mattk->damn, mattk->damd);
+		if(strongmonst(mtmp->data) || throws_rocks(mtmp->data)) {
+			int strength;
+			if(throws_rocks(mtmp->data)){
+				strength = STR19(25);
+			}
+			else {
+				strength = default_strongmonst_strength(mtmp->data->msize);
+			}
+			strength = strscore_dbon(strength);
+			if(strength > 0)
+				sprintf(temp_buf, "+%d", strength);
+			else if(strength < 0)
+				sprintf(temp_buf, "%d", strength);
+			else
+				temp_buf[0] = '\0';
+			strcat(main_temp_buf, temp_buf);
+		}
 #ifndef USE_TILES
 		strcat(main_temp_buf, ",");
 #endif
@@ -2768,7 +2789,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 				attk = getattk(mtmp, (struct monst *)0, res, &indexnum, &prev_attk, TRUE, subout, &tohitmod);
 
 				main_temp_buf[0] = '\0';
-				get_description_of_attack(attk, temp_buf);
+				get_description_of_attack(attk, temp_buf, mtmp);
 				if (temp_buf[0] == '\0') {
 					if (indexnum == 0) {
 #ifndef USE_TILES

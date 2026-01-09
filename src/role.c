@@ -2813,29 +2813,6 @@ int newgame;
 			mons[PM_HEDROW_MASTER_WIZARD].msound = MS_GUARDIAN; /*:( :(*/
 		}
 	}
-	/* Kensei quest enemy adjustments */
-	if(Role_if(PM_KENSEI)){
-		if(Race_if(PM_GITHZERAI) || Race_if(PM_GITHYANKI)){
-			urole.enemy2num = PM_MIND_FLAYER;
-		}
-		else if(u.role_variant == ART_MALICE || u.role_variant == ART_BOREAL_SCEPTER || u.role_variant == ART_ANSERMEE){
-			urole.enemy2num = PM_HUNGRY_DEAD;
-		}
-		else if(u.role_variant == ART_KIKU_ICHIMONJI){
-			urole.enemy2num = PM_SAMURAI;
-		}
-		else if(u.role_variant == ART_GREEN_DESTINY){
-			urole.enemy2num = PM_BARBARIAN;
-		}
-		else if(u.role_variant == ART_PIERCING_FLAME){
-			urole.enemy2num = PM_EFREET;
-		}
-		else if(Race_if(PM_INCANTIFIER)){
-			urole.enemy2num = PM_MIRKWOOD_SPIDER;
-			urole.enemy2sym = S_SPIDER;
-		}
-	}
-
 	/* Fix up the quest nemesis */
 	if (urole.neminum != NON_PM
 		 && !(Race_if(PM_DWARF) && (Role_if(PM_KNIGHT) || Role_if(PM_NOBLEMAN)))
@@ -2912,6 +2889,42 @@ int newgame;
 
 	/* Success! */
 	return;
+}
+
+void
+role_edit()
+{
+	/* Kensei quest enemy adjustments */
+	if(Role_if(PM_KENSEI)){
+		if(Race_if(PM_GITHZERAI) || Race_if(PM_GITHYANKI)){
+			urole.enemy2num = PM_MIND_FLAYER;
+		}
+		else if(u.role_variant == ART_MALICE){
+			urole.enemy2num = PM_HUNGRY_DEAD;
+		}
+		else if(u.role_variant == ART_BOREAL_SCEPTER){
+			urole.enemy2num = PM_HUNGRY_DEAD;
+		}
+		else if(u.role_variant == ART_ANSERMEE){
+			urole.enemy2num = PM_VEGEPYGMY_SHAMAN;
+		}
+		else if(u.role_variant == ART_KIKU_ICHIMONJI){
+			urole.enemy2num = PM_SAMURAI;
+		}
+		else if(u.role_variant == ART_GREEN_DESTINY){
+			urole.enemy2num = PM_NINJA;
+		}
+		else if(u.role_variant == ART_PIERCING_FLAME){
+			urole.enemy2num = PM_EFREET;
+		}
+		else if(u.role_variant == ART_RINGIL){
+			urole.enemy1sym = S_WRAITH;
+		}
+		else if(Race_if(PM_INCANTIFIER)){
+			urole.enemy2num = PM_MIRKWOOD_SPIDER;
+			urole.enemy2sym = S_SPIDER;
+		}
+	}
 }
 
 int

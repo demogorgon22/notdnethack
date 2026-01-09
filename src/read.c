@@ -221,7 +221,7 @@ doread()
 			if (Blind) {
 				You_cant("see the blade!");
 				return MOVE_INSTANT;
-			} else if(Role_if(PM_SAMURAI)) {
+			} else if(Role_if(PM_SAMURAI) || Role_if(PM_KENSEI)) {
 				pline("\"Gracious Gift of Tears\".");
 			} else {
 				pline("\"Hairui\".");
@@ -705,10 +705,10 @@ doread()
 		else
 			impossible("You can't read that book for some reason?");
 	    return MOVE_INSTANT;
-	} else if ((Babble || Strangled || Drowning || mad_turn(MAD_TOO_BIG))
+	} else if ((Babble || Strangled_cant_speak || Drowning || mad_turn(MAD_TOO_BIG))
 		&& (scroll->oclass == SCROLL_CLASS || (scroll->oclass == TILE_CLASS && objects[scroll->otyp].oc_magic))
 	){
-		if(Strangled)
+		if(Strangled_cant_speak)
 			You_cant("read that aloud, you can't breathe!");
 		else if(Drowning)
 			You_cant("read that aloud, you're drowning!");
@@ -786,7 +786,9 @@ doread()
 		}
 	  }
 	}
-	if(!seffects(scroll))  {
+	if(Is_spire(&u.uz) && objects[scroll->otyp].oc_magic)
+	    pline("Nothing happens.");
+	else if(!seffects(scroll))  {
 		if(!objects[scroll->otyp].oc_name_known) {
 		    if(known) {
 			makeknown(scroll->otyp);

@@ -154,7 +154,7 @@ struct monst * mon;
 	sedu_undress(mon);
 
 	/* if the player is still dressed, refuse */	
-	if (uarm || uarmc || (uwep && uwep->oartifact==ART_TENSA_ZANGETSU)) {
+	if (uarm || uarmc || uwep || (u.umartial && uarmg) || (Role_if(PM_MONK) && uarmf)) {
 		if (sedu_refuse(mon)) {
 			/* seducer was refused */
 			return 1;

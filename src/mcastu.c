@@ -31,7 +31,7 @@ boolean undirected;
 	boolean youagr = (magr == &youmonst);
 	boolean youdef = (mdef == &youmonst);
 
-	if (magr->mtyp == PM_HOUND_OF_TINDALOS)
+	if (magr->mtyp == PM_HOUND_OF_TINDALOS || magr->mtyp == PM_GRAY_FUNGAL_TOWER)
 		return;
 
 	if (youagr) {
@@ -839,6 +839,25 @@ choose_magic_special(struct monst *mtmp, unsigned int type, int i)
 				return NAIL_TO_THE_SKY;
 			break;
 		}
+	break;
+	case PM_GRAY_FUNGAL_TOWER:
+		if(rn2(4))
+			return LIGHTNING;
+		else if(rn2(2))
+			return PSI_BOLT;
+		else {
+			switch(rn2(4)){
+				case 0: return SAN_BOLT;
+				case 1: return BABBLE_BOLT;
+				case 2: return PAIN_BOLT;
+				case 3: return PANIC_BOLT;
+			}
+		}
+	break;
+	case PM_VEGEPYGMY_SHAMAN:
+		if(rn2(4))
+			return SUMMON_SPHERE;
+		else return PSI_BOLT;
 	break;
 	case PM_DWARF_CLERIC:
 	case PM_DWARF_QUEEN:
@@ -2441,6 +2460,7 @@ const char * spellname[] =
 	"PEST_THREADS",
 	"BURN_INTO_LIFE",
 	"SUMMON_ROGUE_HALOS",
+	"PANIC_BOLT",
 };
 
 /* Returns the word the monster uses when casting a psionic spell */
@@ -2638,7 +2658,12 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 		!is_aoe_attack_spell(spellnum)) {
 		/* message */
 		if ((youagr || canspotmon(magr)) && magr->mtyp != PM_HOUND_OF_TINDALOS)	{
-			if(attk->adtyp == AD_PSON){
+			if(magr->mtyp == PM_GRAY_FUNGAL_TOWER){
+				if(canspotmon(magr))
+					pline("Lightning crackles around %s, but nothing else occurs.",
+						mon_nam(magr));
+			}
+			else if(attk->adtyp == AD_PSON){
 				const char *verb = psionic_word(magr);
 				pline("%s %s.",
 					youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
@@ -2770,7 +2795,12 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 			&& spellnum != MON_RED_WORD
 			&& spellnum != HYPNOTIC_COLORS
 		) {
-			if(attk->adtyp == AD_PSON){
+			if(magr->mtyp == PM_GRAY_FUNGAL_TOWER){
+				if(canspotmon(magr))
+					pline("Lightning crackles around %s.",
+						mon_nam(magr));
+			}
+			else if(attk->adtyp == AD_PSON){
 				const char *verb = psionic_word(magr);
 				pline("%s %s.",
 					youagr ? "You" : canspotmon(magr) ? Monnam(magr) : "Something",
@@ -3479,6 +3509,7 @@ int tary;
 	case BABBLE_BOLT:
 	case CRUSH_BOLT:
 	case HOLY_BOLT:
+	case PANIC_BOLT:
 		/* needs direct target */
 		if (!foundem) {
 			impossible("No mdef for mind-bolt");
@@ -3486,6 +3517,16 @@ int tary;
 		}
 		if ((!youdef && mindless_mon(mdef)) || Catapsi) {
 			return MM_MISS;
+		}
+		if(youdef && magr && magr->mtyp == PM_GRAY_FUNGAL_TOWER && !u.veil){
+			pline("Alien thoughts intrude on your consciousness!");
+			if(mvitals[PM_GRAY_FUNGAL_TOWER].insight_gained < 5){ //One for each vegepygmy, one for the mold, 2 for the tower
+				if(mvitals[PM_GRAY_FUNGAL_TOWER].insight_gained == 0 || !rn2(mvitals[PM_GRAY_FUNGAL_TOWER].insight_gained+1)){
+					mvitals[PM_GRAY_FUNGAL_TOWER].insight_gained++;
+					change_uinsight(1);
+				}
+			}
+			make_confused(itimeout_incr(HConfusion, 100), TRUE);
 		}
 		dmg = (dmg + 1) / 2;
 		if (dmg > 75)
@@ -3682,6 +3723,15 @@ int tary;
 						mdef->mblinded = min(dmg-75, 127);
 					}
 				}
+			}
+		}
+		else if(spell == PANIC_BOLT){
+			if (youdef) {
+				pline("A wave of panic overwhelms you!");
+				HPanicking += dmg;
+			}
+			else {
+				monflee(mdef, 0, TRUE, TRUE);
 			}
 		}
 		/* deal damage */
@@ -5872,8 +5922,10 @@ int tary;
 			if (DimensionalLock) return MM_MISS;
 			/* full uvm / mvm / mvu allowed */
 			int sphere;
+			if(magr && magr->mtyp == PM_VEGEPYGMY_SHAMAN)
+				sphere = PM_SHOCKING_SPHERE;
 			/* For a change, let's not assume the spheres are together. : ) */
-			switch (rn2(3)) {
+			else switch (rn2(3)) {
 				case 0: sphere = PM_FLAMING_SPHERE; break;
 				case 1: sphere = PM_FREEZING_SPHERE; break;
 				case 2: sphere = PM_SHOCKING_SPHERE; break;
