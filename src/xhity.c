@@ -24368,7 +24368,7 @@ uturn_move()
 			return SOUL_CUT;
 		}
 		//Default (No metodrive)
-		return (uwep && is_kensei_weapon(uwep)) ? BREAKER : 0;
+		return BREAKER;
 	}
 	return METODRIVE;
 }
