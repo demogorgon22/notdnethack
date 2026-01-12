@@ -516,7 +516,8 @@ struct you {
 #define CHAIN_MAG 50
 #define STEAL_S   51
 #define STRONG_P  52
-#define MAX_MYSTIC_FORMS 52
+#define OBSIDIAN_WIND  53
+#define MAX_MYSTIC_FORMS 53
 
 #define MFORM_STREAM MAX_MYSTIC_FORMS+1
 #define MFORM_CHAINS MAX_MYSTIC_FORMS+2

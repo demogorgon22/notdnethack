@@ -23041,6 +23041,11 @@ kensei_throwing_move(int *move_cost)
 		uthrow(uquiver, 0, 0, FALSE, TRUE);
 		nomul(0, NULL);
 		return TRUE;
+	} else if(Race_if(PM_SALAMANDER) && !Upolyd && beam_monk_target(BOLT_LIM)){
+		pline("Throw!");
+		*move_cost = MOVE_MOVED;
+		xspity(&youmonst, attacktype_fordmg(youracedata, AT_SPIT, AD_ANY), 0, 0);
+		return TRUE;
 	}
 	return FALSE;
 }
@@ -23119,6 +23124,7 @@ move_name(int moveid)
 		case ELEMENT_A: return "Elemental slash";
 		case CHAIN_MAG: return "Chain magic";
 		case STEAL_S: return "Talon strike";
+		case OBSIDIAN_WIND: return "Obsidian wind";
 	}
 	return "unknown move id";
 }
@@ -23408,6 +23414,7 @@ perform_monk_move(int moveID, int *move_cost)
 	static struct attack bitehit =	{ AT_BITE, AD_PHYS, 1, 6 };
 	static struct attack drainlife = { AT_TUCH, AD_DRLI, 1, 1 };
 	static struct attack avalanche = { AT_CLAW, AD_ECLD, 1, 6 };
+	static struct attack obsidian_wind = { AT_CLAW, AD_PHYS, 1, 6 };
 	static struct attack elemental = { AT_HITS, AD_COLD, 1, 3 };
 	static struct attack touchhit = { AT_TUCH, AD_PHYS, 1, 1 };
 	static struct attack repulsehit = { AT_HITS, AD_PSH1, 1, 8 };
@@ -24133,6 +24140,15 @@ perform_monk_move(int moveID, int *move_cost)
 				return TRUE;
 			}
 		break;
+		case OBSIDIAN_WIND:
+			if(!u.uswallow && (mdef = adjacent_move_target(!!uarmg))){
+				boolean vis = (VIS_MAGR | VIS_NONE) | (canseemon(mdef) ? VIS_MDEF : 0);
+				pline("%s!", move_name(moveID));
+				obsidian_wind.damn = (u.ulevel+2)/3;
+				xmeleehity(&youmonst, mdef, &obsidian_wind, (struct obj **)0, vis, 0, FALSE, ATTKFLAG_FORCE_BLEED);
+				return TRUE;
+			}
+		break;
 		case PUMMEL:
 		if(Role_if(PM_KENSEI)){
 			// This is bad actually
@@ -24366,6 +24382,9 @@ uturn_move()
 		}
 		if(Race_if(PM_GITHYANKI)){
 			return SOUL_CUT;
+		}
+		if(Race_if(PM_SALAMANDER)){
+			return OBSIDIAN_WIND;
 		}
 		//Default (No metodrive)
 		return BREAKER;
