@@ -587,11 +587,11 @@ struct monst *magr;
 		else if (obj->oartifact == ART_ANGUIREL){
 			if(large){
 				ocn = 5;
-				ocd = 6;
+				ocd = 8; // Will be adjusted to d6 when the material change is processed.
 			}
 			else {
 				ocn = 3;
-				ocd = 6;
+				ocd = 8; // Will be adjusted to d6 when the material change is processed.
 			}
 		}
 		else if (obj->oartifact == ART_SHADOWLOCK){
