@@ -5187,6 +5187,7 @@ printAttacks(buf, ptr)
 		"[[bleeding wound]]s",		/*162*/
 		"[[unholy ice]]",		/*163*/
 		"[[gray mold]]",			/*164*/
+		"[[sonic]]",			/*165*/
 		// "[[ahazu abduction]]",	/**/
 		"[[stone choir]]",		/* */
 		"[[water vampire]]",	/* */
