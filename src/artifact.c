@@ -839,8 +839,8 @@ aligntyp alignment;
 			/* skip cross-aligned artifacts */
 			skip_if(a->alignment != A_NONE && a->alignment != alignment);
 
-			/* skip race-favoring intel artifacts (they blast but don't evade) */
-			skip_if(a->gflags & ARTG_MAJOR && a->race != NON_PM && !Race_if(a->race));
+			/* skip race-favoring intel artifacts (they blast but don't evade), unless your current HP is high enough to survive a max-rolled blast */
+			skip_if(a->gflags & ARTG_MAJOR && a->race != NON_PM && !Race_if(a->race) && *hp(&youmonst) < 45);
 
 			/* if we made it through that gauntlet, we're good */
 			eligible[n++] = m;
