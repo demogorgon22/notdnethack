@@ -16283,6 +16283,7 @@ struct obj **opptr;
 				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
 			break;
 		}
+		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
 		if(sky1->blessed || sky2->blessed)
 			bless(amalgam);
 		else if(sky1->cursed || sky2->cursed)

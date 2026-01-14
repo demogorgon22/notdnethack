@@ -3819,11 +3819,10 @@ winid *datawin;
 				Sprintf(buf2, "No mantras known.");
 			OBJPUTSTR(buf2);
 			buf[0] = '\0';
-			if(oartifact == ART_AMALGAMATED_SKIES)
-				ADDCLASSPROP(TRUE, "silver");
 			ADDCLASSPROP(TRUE, "iron");
 #define	ZERTHMATS(prop, string)	\
 	ADDCLASSPROP(artinstance[ART_SKY_REFLECTED].ZerthMaterials&prop, string);
+			ZERTHMATS(ZMAT_SILVER, "silver");
 			ZERTHMATS(ZMAT_GREEN, "green steel");
 			ZERTHMATS(ZMAT_GOLD, "gold");
 			ZERTHMATS(ZMAT_PLATINUM, "platinum");
