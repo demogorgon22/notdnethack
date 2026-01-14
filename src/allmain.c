@@ -497,7 +497,7 @@ mercurial_repair()
 		){
 			uequip[i]->spe++;
 		}
-		if(uequip[i] && uequip[i]->oartifact == ART_SKY_REFLECTED){
+		if(uequip[i]){
 			if(is_streaming_merc(uequip[i]))
 				artinstance[ART_SKY_REFLECTED].ZerthUpgrades |= ZPROP_SEEN_S;
 			else if(is_chained_merc(uequip[i]))
