@@ -2830,7 +2830,7 @@ uthrow(struct obj *ammo, struct obj *launcher, int shotlimit, boolean forcedestr
 		HPanicking += 1+rnd(6);
 	}
 
-	if(otyp == SHURIKEN && (Role_if(PM_MONK) || Role_if(PM_KENSEI)))
+	if(otyp == SHURIKEN && (Role_if(PM_MONK)))
 		return MOVE_PARTIAL;	/* this might have taken time */
 	else
 		return (launcher) ? MOVE_FIRED : MOVE_STANDARD;	/* this took time */
