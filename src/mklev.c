@@ -1052,6 +1052,7 @@ makelevel()
 	struct monst *tmonst;	/* always put a web with a spider */
 	branch *branchp;
 	int room_threshold;
+	boolean magic_chest = FALSE;
 
 	if(wiz1_level.dlevel == 0) init_dungeons();
 	oinit();	/* assign level dependent obj probabilities */
@@ -1388,6 +1389,12 @@ skip0:
 		 */
 		if(!rn2(nroom * 5 / 2))
 		    (void) mksobj_at((rn2(3)) ? BOX : CHEST, somex(croom), somey(croom), NO_MKOBJ_FLAGS);
+
+		//About a 10% chance of a magic chest per level
+		if(!rn2(nroom * 10) && !magic_chest){
+		    (void) mksobj_at(MAGIC_CHEST, somex(croom), somey(croom), NO_MKOBJ_FLAGS);
+			magic_chest = TRUE;
+		}
 
 		/* maybe make some graffiti */
 		if(!rn2(27 + 3 * abs(depth(&u.uz)))) {

@@ -114,6 +114,8 @@ OBJECT:random,random,random
 OBJECT:random,random,random
 OBJECT:random,random,random
 
+OBJECT: '(',"magic chest", random
+
 #STAIR: levregion(01,01,74,19), up
 #STAIR: levregion(01,01,74,19), down
 

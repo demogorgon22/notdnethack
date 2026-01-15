@@ -414,6 +414,8 @@ MONSTER:'S',"first wraithworm",(07,06) [skipcheck]
 
 PORTAL:(07,00,12,12),(00,00,00,00),"cat3"
 
+OBJECT: '(',"magic chest", random
+
 MAZE: "cat3",' '
 FLAGS: shortsighted,hardfloor
 

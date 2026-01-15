@@ -2553,6 +2553,8 @@ TRAP:"hole",(73,16)
 TRAP:"hole",(72,17)
 TRAP:"hole",(70,18)
 
+OBJECT:'(',"magic chest",(74,10)
+
 REGION:(00,00,46,19),lit,"ordinary"
 REGION:(47,00,75,19),unlit,"ordinary"
 REGION:(01,07,03,09),lit,"ordinary"
