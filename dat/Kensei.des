@@ -2626,7 +2626,8 @@ MONSTER:'#',"ninja skeleton",(57,14),hostile
 MONSTER:'#',"wolf zombie",(57,14)
 MONSTER:'#',"ninja skeleton",(58,14),hostile
 MONSTER:'d',random,(59,14)
-MONSTER:'#',"wolf zombie",(60,14)
+MONSTER:'&',"efreet guardian",(60,14),hostile
+OBJECT: '#', "obsidian fixed loyal flaming shuriken", (60,14)
 MONSTER:'W',"wraith",random
 MONSTER:'W',"wraith",random
 MONSTER:'W',"wraith",random
@@ -2637,19 +2638,19 @@ MONSTER:'W',"wraith",random
 MONSTER:'W',"wraith",random
 MONSTER:'W',"wraith",random
 #	"guards" for the central courtyard.
-MONSTER:'#',"samurai zombie",(30,05),hostile
-MONSTER:'#',"samurai zombie",(31,05),hostile
-MONSTER:'#',"samurai zombie",(32,05),hostile
-MONSTER:'#',"samurai zombie",(32,14),hostile
-MONSTER:'#',"samurai zombie",(33,14),hostile
-MONSTER:'#',"samurai zombie",(34,14),hostile
+MONSTER:'&',"efreet merchant",(30,05),hostile
+MONSTER:'&',"efreet merchant",(31,05),hostile
+MONSTER:'&',"efreet merchant",(32,05),hostile
+MONSTER:'&',"efreet merchant",(32,14),hostile
+MONSTER:'&',"efreet merchant",(33,14),hostile
+MONSTER:'&',"efreet merchant",(34,14),hostile
 
-MONSTER:'#',"ogre zombie",random
-MONSTER:'#',"ogre zombie",random
-MONSTER:'#',"ogre zombie",random
-MONSTER:'#',"ogre zombie",random
-MONSTER:'#',"ogre zombie",random
-MONSTER:'#',"ogre zombie",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
+MONSTER:'&',"efreet",random
 
 MONSTER:'Z',"dao lao gui monk",random
 MONSTER:'Z',"dao lao gui monk",random

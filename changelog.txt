@@ -333,6 +333,8 @@ Kensei changes
 			Large obsidian 2x fire dmg vorpal trident
 		Aura bolts override with fire always
 		Efreet on the quest
+		Weird lava split efreet infested locate castle
+			Did the sands perhaps swallow an excellent shuriken?
 			
 Anachrononaut changes
 	Ana quest 
