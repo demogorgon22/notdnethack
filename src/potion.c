@@ -1473,7 +1473,8 @@ as_extra_healing:
 			exercise(A_CON, FALSE);
 		}
 		if (Stoned || Golded || Salted) fix_petrification();
-
+		youmonst.mgmld_throat = 0;
+		youmonst.mgmld_skin = 0;
 		int num;
 		num = rnd(5) + 5 * otmp->blessed + 1;
 		if(otmp->cursed)
@@ -3436,7 +3437,7 @@ dodip()
 			if(obj->otyp != VIPERWHIP) obj->opoisoned = 0;
 			if(obj->otyp == VIPERWHIP) pline("%s is drawn up into %s.",
 				  buf, the(xname(obj)));
-			else pline("%s forms a coating on %s.",
+			else pline("%s forms an acidic coating on %s.",
 				  buf, the(xname(obj)));
 			if(obj->otyp == VIPERWHIP){
 				if(obj->opoisonchrgs && obj->opoisoned == OPOISON_ACID) obj->opoisonchrgs += 2;

@@ -1032,6 +1032,8 @@ OBJECT[60%]: '#', "wrathful mithril sword", random
 OBJECT: '(', "unicorn horn", random
 OBJECT: '(', "unicorn horn", random, cursed, 0
 
+OBJECT: '(', "magic chest", random
+
 OBJECT:')',"elven spear", random
 OBJECT:')',"elven spear", random
 OBJECT:')',"elven spear", random

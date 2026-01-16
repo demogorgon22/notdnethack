@@ -232,7 +232,7 @@ struct obj {
 	Bitfield(nomerge,1);	/* temporarily block from merging */
 	Bitfield(forceconf,1);	/* when set on a scroll, forces the confusion effect. Meant for use with pseudo objects, isn't checked while merging */
 	Bitfield(ohaluengr,1);	/* engraving on item isn't a "real" ward */
-	Bitfield(researched,1);	/* already disected */
+	Bitfield(researched,1);	/* already dissected */
 	Bitfield(blood_smithed,1);	/* improved by blood smithing */
 	Bitfield(improved_mat,1);	/* improved over base material (used for shadowsteel weapons) */
 	/* 12 free bits in this field, I think -CM */

@@ -10931,7 +10931,7 @@ adjust_etrait_stance(struct monst *mon)
 			traitname = "hewing";
 		break;
 		case ETRAIT_FELL:
-			traitname = "sweaping";
+			traitname = "sweeping";
 		break;
 		case ETRAIT_KNOCK_BACK:
 			traitname = "high-impact";
