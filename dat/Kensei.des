@@ -2489,6 +2489,202 @@ MONSTER: 'd',"werefox",random
 MONSTER: 'd',"werefox",random
 
 #
+#   The "locate" level for salamander kensei.
+#
+#   Fallen castle an efreet guardian has moved into.
+#
+
+MAZE: "Ken-locl",' '
+FLAGS: hardfloor
+GEOMETRY:center,center
+#          1         2         3         4         5         6         7 
+#0123456789012345678901234567890123456789012345678901234567890123456789012345
+MAP
+0LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+1LLLssssssssssssssLLsLsssLLssssssssssLLsLsssLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+2LLssssss---s-sssssssLLssLsssssssssssLLsLsssLLLLLLLLLLLLLLLLLLLL-----LLLLLLLL
+3ssssssss|.sLsssssLsssLssssssssssssssLLLsssssssssssssssssssssssseLLLeLsssssss
+4ssssssss|.es---LLLss--+-------------LL---------------+--ss}ss---eLL|LLssLLLs
+5ssssssss|-|...|sLLss|...|....|....|sLLs|....|....|.|...|sssss|..t|-LsLsssssL
+6ssssssssss|...--L----...|....|....|sLLs|....|....S.|...-------...|sssssssssL
+7ssssssssss|-|..eee....------+----+-+LL-----+-+--------.........|-|sssssssssL
+8sssLLsssssss|..--------.|}........esLLsse.........}|.--------..|ssssssLLssss
+9ssssLLssssss|..+........+.....e..eesLLLsee.........+........+..|ssssssLLssss
+0ssLLsLssssss|..+........+......eeeessLLsee.........+........+..|ssssssssssss
+1ssLsssssssss|..--------.|}........eesLLse.........}|.--------..|sssssssLssss
+2ssssssssss|-|.........--------+-+----LL-+-+----+------.........|-|sssLsLssss
+3ssssLsssss|...-------...|.S....|....|LLse|....|....|...-------...|ssssLLssss
+4ssssLLss|-|...|sssss|...|.|....|....|LLse|....|....|...|Lssss|...|-|ssssssss
+5sLLsLLss|...---ss}ss--+--------------LL--------------+--sL}ss---...|ssssssss
+6Lsssssss|...|ssssLLssssssssssssssssssLLssssssssssssssssssssssss|...|sLLssLLL
+7sLssssss-----sssssLLLssssssLLLsssssssLLsssssLsssssLsssssssLLLss-----LLssLsss
+8ssLsssssssssssssssssssssssLsssLLsssssLLssssLsLsssLLLssssssssssssssssLsssLsss
+9sssssssssssssssssssssssssssssssssssssLLsssssLLssssLsssssLsssssssssLLssssLsss
+ENDMAP
+RANDOM_PLACES:(47,05),(50,05),(45,14),(50,14)
+# Dungeon Description
+REGION:(00,00,75,19),unlit,"morgue",unfilled
+# Stairs
+STAIR:(00,17,75,19), (00,00,00,00),up
+STAIR:(10,00,64,12), (00,00,00,00),down
+# Magic Chest
+OBJECT:'(',"magic chest",place[0]
+OBJECT[50%]:'#',"thoroughly tattered bedroll",place[1]
+OBJECT[50%]:'#',"very tattered burnt bedroll",place[2]
+OBJECT[50%]:'#',"very burnt bedroll",place[3]
+# Doors
+DOOR:locked,(22,04)
+DOOR:locked,(22,15)
+DOOR:locked,(53,04)
+DOOR:locked,(53,15)
+DOOR:locked,(49,06)
+DOOR:locked,(26,13)
+DOOR:locked,(28,07)
+DOOR:locked,(30,12)
+DOOR:locked,(33,07)
+DOOR:locked,(32,12)
+DOOR:locked,(35,07)
+DOOR:locked,(40,12)
+DOOR:locked,(43,07)
+DOOR:locked,(42,12)
+DOOR:locked,(45,07)
+DOOR:locked,(47,12)
+DOOR:closed,(15,09)
+DOOR:closed,(15,10)
+DOOR:closed,(24,09)
+DOOR:closed,(24,10)
+DOOR:closed,(51,09)
+DOOR:closed,(51,10)
+DOOR:closed,(60,09)
+DOOR:closed,(60,10)
+# Non diggable walls
+NON_DIGGABLE:(00,00,75,19)
+# Objects
+OBJECT[75%]:'*',random,(25,05)
+OBJECT[75%]:'*',random,(26,05)
+OBJECT[75%]:'*',random,(27,05)
+OBJECT[75%]:'*',random,(28,05)
+OBJECT[75%]:'*',random,(25,06)
+OBJECT[75%]:'*',random,(26,06)
+OBJECT[75%]:'*',random,(27,06)
+OBJECT[75%]:'*',random,(28,06)
+#
+OBJECT[75%]:'[',random,(40,05)
+OBJECT[75%]:'[',random,(41,05)
+OBJECT[75%]:'[',random,(42,05)
+OBJECT[75%]:'[',random,(43,05)
+OBJECT[75%]:'[',random,(40,06)
+OBJECT[75%]:'[',random,(41,06)
+OBJECT[75%]:'[',random,(42,06)
+OBJECT[75%]:'[',random,(43,06)
+#
+OBJECT[75%]:')',random,(27,13)
+OBJECT[75%]:')',random,(28,13)
+OBJECT[75%]:')',random,(29,13)
+OBJECT[75%]:')',random,(30,13)
+OBJECT[75%]:')',random,(27,14)
+OBJECT[75%]:')',random,(28,14)
+OBJECT[75%]:')',random,(29,14)
+OBJECT[75%]:')',random,(30,14)
+#
+OBJECT[75%]:'(',random,(37,13)
+OBJECT[75%]:'(',random,(38,13)
+OBJECT[75%]:'(',random,(39,13)
+OBJECT[75%]:'(',random,(40,13)
+OBJECT[75%]:'(',random,(37,14)
+OBJECT[75%]:'(',random,(38,14)
+OBJECT[75%]:'(',random,(39,14)
+OBJECT[75%]:'(',random,(40,14)
+# Random traps
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+TRAP:random,random
+# Random monsters.
+MONSTER:'#',"ninja skeleton",(15,05),hostile
+MONSTER:'#',"ninja skeleton",(18,05),hostile
+MONSTER:'#',"wolf zombie",(18,04)
+MONSTER:'#',"wolf zombie",(18,05)
+MONSTER:'#',"ninja skeleton",(19,05),hostile
+MONSTER:'#',"wolf zombie",(15,14)
+MONSTER:'#',"wolf zombie",(16,14)
+MONSTER:'#',"ninja skeleton",(17,14),hostile
+MONSTER:'#',"ninja skeleton",(18,14),hostile
+MONSTER:'#',"wolf zombie",(56,05)
+MONSTER:'#',"ninja skeleton",(57,05),hostile
+MONSTER:'#',"wolf zombie",(58,05)
+MONSTER:'#',"wolf zombie",(59,05)
+MONSTER:'#',"ninja skeleton",(57,14),hostile
+MONSTER:'#',"wolf zombie",(57,14)
+MONSTER:'#',"ninja skeleton",(58,14),hostile
+MONSTER:'d',random,(59,14)
+MONSTER:'#',"wolf zombie",(60,14)
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+MONSTER:'W',"wraith",random
+#	"guards" for the central courtyard.
+MONSTER:'#',"samurai zombie",(30,05),hostile
+MONSTER:'#',"samurai zombie",(31,05),hostile
+MONSTER:'#',"samurai zombie",(32,05),hostile
+MONSTER:'#',"samurai zombie",(32,14),hostile
+MONSTER:'#',"samurai zombie",(33,14),hostile
+MONSTER:'#',"samurai zombie",(34,14),hostile
+
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+MONSTER:'#',"ogre zombie",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+MONSTER:'Z',"dao lao gui monk",random
+
+# Random monsters.
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: random,random,random
+MONSTER: 'E',"terracotta soldier",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'E',"earth elemental",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'O', "ogre mage",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+MONSTER: 'd',"werefox",random
+
+#
 #	The "goal" level for the quest.
 #
 #	Here you meet Master Kaen, your nemesis monster.  You have to

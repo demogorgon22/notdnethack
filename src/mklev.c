@@ -1088,6 +1088,8 @@ makelevel()
 				Sprintf(fillname, "%s-locj", urole.filecode);
 			else if(u.role_variant == ART_KIKU_ICHIMONJI)
 				Sprintf(fillname, "%s-lock", urole.filecode);
+			else if(u.role_variant == ART_PIERCING_FLAME)
+				Sprintf(fillname, "%s-locl", urole.filecode);
 			else 
 				Sprintf(fillname, "%s-loca", urole.filecode);
 			makemaz(fillname);
