@@ -1461,7 +1461,8 @@ as_extra_healing:
 			exercise(A_CON, FALSE);
 		}
 		if (Stoned || Golded || Salted) fix_petrification();
-
+		youmonst.mgmld_throat = 0;
+		youmonst.mgmld_skin = 0;
 		int num;
 		num = rnd(5) + 5 * otmp->blessed + 1;
 		if(otmp->cursed)
