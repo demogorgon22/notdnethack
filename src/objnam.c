@@ -873,7 +873,7 @@ boolean dofull;
 			else if (obj->oeaten)
 				Strcat(buf, "partly eaten ");
 			if (obj->researched)
-				Strcat(buf, "disected ");
+				Strcat(buf, "dissected ");
 
 #if 0	/* corpses don't tell if they're stale either */
 			if (obj->otyp == EGG && obj->known && stale_egg(obj))

@@ -3974,7 +3974,7 @@ doresearch()
 		}
 
 		if (otmp->researched) {
-			pline("Someone has already disected this corpse.");
+			pline("Someone has already dissected this corpse.");
 			return MOVE_CANCELLED;
 		}
 		
@@ -4850,7 +4850,7 @@ use_dissection_kit(struct obj *obj)
 	}
 
 	if (otmp->researched) {
-		pline("Someone has already disected this corpse.");
+		pline("Someone has already dissected this corpse.");
 		return;
 	}
 	
