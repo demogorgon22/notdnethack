@@ -3,7 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 /* NetHack 3.4.3, dNethack version 3.15.1 */
-#define VERSION_MAJOR	2025
+#define VERSION_MAJOR	2026
 /* Started at 3.4.3, for the nethack version. Incremented straight 
    to 3.6 with the advent of the Noble role, counting the initial
    release as 3.5 (with Pirate already in, I think?).
@@ -15,7 +15,7 @@
    Incremented to 3.11 with the introduction Anachrononauts.
    Incremented to 3.12 with the introduction Magic chests, scrolls of antimagic, resistance, and consecration, YARevison to chaos quest, beter resistance-from-diet, and lightsaber forms.
 */
-#define VERSION_MINOR	5
+#define VERSION_MINOR	1
 /*
  * PATCHLEVEL is updated for each release.
  *
@@ -54,7 +54,7 @@
  * 3.24.0: Undead Hunter role, expert weapon skill traits, belts and belt slot, explosions and wizard tweaks and cult spellcasting, smithing (primarily blood smithing), dungeon restocking, more insight monsters, more ways to get Yog Sothoth, Oracle artifact birthplaces, pommeling style, Dirge interacts with impurity and shubbie, sword-and-pistol handling, HP and healing potion rebalance, Spire restricts artifacts and wands, midas potions, migo mist projectors and generalized clouds, misc minor buffs and bugfixes
  * 3.25.0: Kensei role, Convict quest revision, minor  Archeologist quest revision, Fafnir reworked into Maegera, seducer rework, DroHea tweak (priestess/wizard bonuses), signature artifact prototype (oona can use rosp), various fixes and tweaks.
  */
-#define PATCHLEVEL	15
+#define PATCHLEVEL	16
 /*
  * Incrementing EDITLEVEL can be used to force invalidation of old bones
  * and save files.
@@ -62,7 +62,7 @@
 #define EDITLEVEL	0
 
 #define COPYRIGHT_BANNER_A \
-"notdNetHack, Copyright 2017-2025"
+"notdNetHack, Copyright 2017-2026"
 
 #define COPYRIGHT_BANNER_B \
 "    Based on NetHack, Copyright 1985-2003 by Stichting Mathematisch"
