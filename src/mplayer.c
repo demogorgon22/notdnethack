@@ -746,6 +746,27 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		*gloves = GAUNTLETS;
 		*boots = ARMORED_BOOTS;
 	break;
+	case PM_KENSEI:
+		*helm = WAR_HAT;
+		*gloves = GLOVES;
+		*armor = BANDED_MAIL;
+		*boots = HIGH_BOOTS;
+		*cloak = ROBE;
+		switch(rnd(4)){
+			case 1:
+				*weapon = rn2(2) ? KATANA : LONG_SWORD;
+			break;
+			case 2:
+				*weapon = rn2(2) ? NAGAMAKI : TWO_HANDED_SWORD;
+			break;
+			case 3:
+				*weapon = SQUARE_CLUB;
+			break;
+			case 4:
+				*weapon = rn2(2) ? NINJA_TO : BROADSWORD;
+			break;
+		}
+	break;
 	case PM_MONK:
 		*helm = SEDGE_HAT;
 		*gloves = GLOVES;
