@@ -2881,7 +2881,7 @@ karemade:
 					ptr = &mons[PM_VALKYRIE];
 				else if(chance < 98)
 					ptr = &mons[PM_HALF_DRAGON];
-				else if(chance < 99)
+				else
 					ptr = &mons[PM_ORC];
 				struct monst *mtmp = makemon(ptr, x, y, MM_ADJACENTOK);
 				if(mtmp){
