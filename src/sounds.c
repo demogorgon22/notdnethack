@@ -3602,7 +3602,7 @@ int tx,ty;
 			}//end search
 			
 			if(!altarfound){
-				pline("A golden flame roars suddenly to life within the seal, throwning the world into a stark relief of hard-edged shadows and brilliant light.");
+				pline("A golden flame roars suddenly to life within the seal, throwing the world into a stark relief of hard-edged shadows and brilliant light.");
 				if(u.sealCounts < numSlots){
 					pline("No sooner are the shadows born than they rise up against their creator, smothering the flame under a tide of darkness.");
 					pline("Even as it dies, a voice speaks from the blood-red flame:");
