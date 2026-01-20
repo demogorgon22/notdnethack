@@ -4553,7 +4553,7 @@ int *shield_margin;
 	}
 	/* Smaug is vulnerable to stabbings */
 	if (pd->mtyp == PM_SMAUG && fired && weapon && launcher &&
-		is_stabbing(weapon) && is_ammo(weapon))
+		attack_mask(weapon, 0, 0, magr) & PIERCE && is_ammo(weapon))
 	{
 		vdef_acc += 20;
 	}
