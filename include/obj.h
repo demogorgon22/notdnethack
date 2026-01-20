@@ -1126,18 +1126,6 @@ struct obj {
 			objects[otmp->otyp].oc_dtyp != WHACK)\
 			|| otmp->otyp == BEARTRAP)
 #define uslinging()	(uwep && objects[uwep->otyp].oc_skill == P_SLING)
-#define is_bludgeon(otmp)	(otmp->oclass == SPBOOK_CLASS || \
-			otmp->oclass == WAND_CLASS || \
-			(objects[otmp->otyp].oc_dtyp & WHACK)) //Whack == 1
-#define is_stabbing(otmp)	(otmp->oclass != SPBOOK_CLASS && \
-			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dtyp & PIERCE)) //Pierce == 2
-#define is_slashing(otmp)	(otmp->oclass != SPBOOK_CLASS && \
-			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dtyp & SLASH)) //Slash == 4
-#define is_blasting(otmp)	(otmp->oclass != SPBOOK_CLASS && \
-			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dtyp & EXPLOSION))
 //#ifdef FIREARMS
 #define is_blaster(otmp) \
 			((otmp)->oclass == WEAPON_CLASS && \

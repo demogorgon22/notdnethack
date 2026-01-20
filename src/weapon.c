@@ -855,31 +855,31 @@ struct monst *magr;
 					 *   and is _better_ than a standard iron mace */
 					case GOLD:
 					case PLATINUM:
-						if (is_bludgeon(obj))
+						if (attack_mask(obj, 0, 0, magr) & WHACK)
 							dmod += mod;
 						break;
 					/* lead is heavy but bad at cutting (gold and silver should be too, but magic, basically)
 					 */
 					case LEAD:
-						if (is_bludgeon(obj))
+						if (attack_mask(obj, 0, 0, magr) & WHACK)
 							dmod += mod;
-						if (is_slashing(obj) || is_stabbing(obj))
+						if (attack_mask(obj, 0, 0, magr) & (SLASH|PIERCE))
 							dmod -= mod;
 						break;
 					/* glass and obsidian have sharp edges and points */
 					case GLASS:
 					case OBSIDIAN_MT:
 					case GREEN_STEEL:
-						if (is_slashing(obj) || is_stabbing(obj))
+						if (attack_mask(obj, 0, 0, magr) & (SLASH|PIERCE))
 							dmod += mod;
 						break;
 					case SHADOWSTEEL:
 						if(obj->improved_mat){
-							if (is_slashing(obj) || is_stabbing(obj))
+							if (attack_mask(obj, 0, 0, magr) & (SLASH|PIERCE))
 								dmod += mod;
 						}
 						else {
-							if (is_slashing(obj) || is_stabbing(obj))
+							if (attack_mask(obj, 0, 0, magr) & (SLASH|PIERCE))
 								dmod -= mod;
 							else
 								dmod -= 2*mod;
@@ -887,7 +887,7 @@ struct monst *magr;
 						break;
 					/* dragon teeth are good at piercing */
 					case DRAGON_HIDE:
-						if (is_stabbing(obj))
+						if (attack_mask(obj, 0, 0, magr) & PIERCE)
 							dmod += mod;
 						break;
 					}
@@ -1682,7 +1682,7 @@ struct monst *magr;
 			tmp = 0;
 	}
 	/* Smaug gets stabbed */
-	if(is_stabbing(otmp) && ptr->mtyp == PM_SMAUG)
+	if((attack_mask(otmp, 0, 0, magr) & PIERCE) && ptr->mtyp == PM_SMAUG)
 		tmp += rnd(20);
 	/* axes deal more damage to wooden foes */
 	if (is_axe(otmp) && is_wooden(ptr))
@@ -1708,7 +1708,7 @@ struct monst *magr;
 		   so always subtract erosion even for blunt weapons. */
 		/* Rust weapons may now shatter when used, so don't subtract
 		   damage for blunt anymore */
-		if(!is_bludgeon(otmp)) tmp -= greatest_erosion(otmp);
+		if(!(attack_mask(otmp, 0, 0, magr) & WHACK)) tmp -= greatest_erosion(otmp);
 		if (tmp < 1) tmp = 1;
 	}
 	
@@ -1762,7 +1762,7 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 			if (!obest ||
 				(dmgval(otmp, 0 /*zeromonst*/, SPEC_HYPO, mtmp) > dmgval(obest, 0 /*zeromonst*/, SPEC_HYPO, mtmp))
 				/*
-				(is_bludgeon(otmp) ? 
+				((attack_mask(otmp, 0, 0, mtmp) & WHACK) ? 
 					(otmp->spe - greatest_erosion(otmp) > obest->spe - greatest_erosion(obest)):
 					(otmp->spe > obest->spe)
 				)
