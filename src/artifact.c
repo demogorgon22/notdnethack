@@ -11877,64 +11877,82 @@ arti_invoke(obj)
 					/*These effects can be used at any time*/
 					case COMMAND_RAPIER:
 						uwep->otyp = RAPIER;
+						fix_object(uwep);
 					break;
 					case COMMAND_AXE:
 						uwep->otyp = AXE;
+						fix_object(uwep);
 					break;
 					case COMMAND_MACE:
 						uwep->otyp = MACE;
+						fix_object(uwep);
 					break;
 					case COMMAND_SPEAR:
 						uwep->otyp = SPEAR;
+						fix_object(uwep);
 					break;
 					case COMMAND_LANCE:
 						uwep->otyp = LANCE;
+						fix_object(uwep);
 					break;
 					/* Sceptre of Lolth*/
 					case COMMAND_D_GREAT:
 						uwep->otyp = DROVEN_GREATSWORD;
+						fix_object(uwep);
 					break;
 					case COMMAND_MOON_AXE:
 						uwep->otyp = MOON_AXE;
 						uwep->ovar1_moonPhase = ECLIPSE_MOON;
+						fix_object(uwep);
 					break;
 					case COMMAND_KHAKKHARA:
 						uwep->otyp = KHAKKHARA;
+						fix_object(uwep);
 					break;
 					case COMMAND_DROVEN_SPEAR:
 						uwep->otyp = DROVEN_SPEAR;
+						fix_object(uwep);
 					break;
 					case COMMAND_D_LANCE:
 						uwep->otyp = DROVEN_LANCE;
+						fix_object(uwep);
 					break;
 					/* Rod of the Elvish Lords*/
 					case COMMAND_E_SWORD:
 						uwep->otyp = ELVEN_BROADSWORD;
+						fix_object(uwep);
 					break;
 					case COMMAND_E_SICKLE:
 						uwep->otyp = ELVEN_SICKLE;
+						fix_object(uwep);
 					break;
 					case COMMAND_E_MACE:
 						uwep->otyp = ELVEN_MACE;
+						fix_object(uwep);
 					break;
 					case COMMAND_E_SPEAR:
 						uwep->otyp = ELVEN_SPEAR;
+						fix_object(uwep);
 					break;
 					case COMMAND_E_LANCE:
 						uwep->otyp = ELVEN_LANCE;
+						fix_object(uwep);
 					break;
 					case COMMAND_SCIMITAR:
 						uwep->otyp = SCIMITAR;
+						fix_object(uwep);
 					break;
 					case COMMAND_WHIP:
 						uwep->otyp = BULLWHIP;
 						if(uwep->oartifact == ART_XIUHCOATL && uwep->obj_material == WOOD)
 							set_material_gm(uwep, artilist[uwep->oartifact].material);
+						fix_object(uwep);
 					break;
 					case COMMAND_ATLATL:
 						uwep->otyp = ATLATL;
 						if(uwep->oartifact == ART_XIUHCOATL && uwep->obj_material == artilist[uwep->oartifact].material)
 							set_material_gm(uwep, WOOD);
+						fix_object(uwep);
 					break;
 					/*These effects are limited by timeout*/
 					case COMMAND_LADDER:
@@ -12113,6 +12131,7 @@ arti_invoke(obj)
 						uwep->oclass = TOOL_CLASS;
 						uwep->altmode = FALSE;
 						uwep->otyp = LIGHTSABER;
+						fix_object(uwep);
 					break;
 					// case COMMAND_ARM:
 						// if(uwep->lamplit) lightsaber_deactivate(uwep,TRUE);
@@ -12127,24 +12146,28 @@ arti_invoke(obj)
 						uwep->oclass = RING_CLASS;
 						uwep->altmode = FALSE;
 						uwep->otyp = find_sring();
+						fix_object(uwep);
 					break;
 					case COMMAND_KHAKKHARA:
 						if(uwep->lamplit) lightsaber_deactivate(uwep,TRUE);
 						uwep->oclass = WEAPON_CLASS;
 						uwep->altmode = FALSE;
 						uwep->otyp = KHAKKHARA;
+						fix_object(uwep);
 					break;
 					case COMMAND_BFG:
 						if(uwep->lamplit) lightsaber_deactivate(uwep,TRUE);
 						uwep->oclass = WEAPON_CLASS;
 						uwep->altmode = WP_MODE_BURST;
 						uwep->otyp = BFG;
+						fix_object(uwep);
 					break;
 					case COMMAND_ANNULUS:
 						if(uwep->lamplit) lightsaber_deactivate(uwep,TRUE);
 						uwep->oclass = WEAPON_CLASS;
 						uwep->altmode = FALSE;
 						uwep->otyp = CHAKRAM;
+						fix_object(uwep);
 					break;
 					/*These effects are limited by timeout*/
 					case COMMAND_BELL:{
@@ -13350,6 +13373,7 @@ arti_invoke(obj)
 			      new_otyp == RIN_NOTHING ? "boring" : "interesting");
 			if (worn_left || worn_right) Ring_off(obj);
 			obj->otyp = new_otyp;
+			fix_object(obj);
 			if (worn_left || worn_right) {
 				setworn(obj, worn_left ? LEFT_RING : RIGHT_RING);
 				Ring_on(obj);
