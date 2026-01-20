@@ -4555,7 +4555,7 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_LESSER_FIREW))
 			*truedmgptr += d(2, 6);
 		if(check_oprop(otmp, OPROP_GOLDW))
-			*truedmgptr += d(rnd(5), spiritDsize());
+			*truedmgptr += d(5, spiritDsize());
 	}
 	if(!Cold_res(mdef)){
 		if(check_oprop(otmp, OPROP_COLDW))
