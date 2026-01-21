@@ -15331,7 +15331,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	if (jousting) {
 		/* calculate bonus jousting damage */
-		jostdmg += d(2, (weapon == uwep) ? 10 : 2);
+		jostdmg += d(2, (!youagr || weapon == uwep) ? 10 : 2);
 	}
 #endif
 	// Knockback expert weapon trait
