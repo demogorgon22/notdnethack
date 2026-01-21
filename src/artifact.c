@@ -10160,6 +10160,9 @@ arti_invoke(obj)
 		if(u.usteed && mon_has_amulet(u.usteed)){
 			dismount_steed(DISMOUNT_VANISHED);
 		}
+		if(u.urider && mon_has_amulet(u.urider)){
+			rider_dismounts_you(DISMOUNT_VANISHED);
+		}
 		if(!Blind) You("are sucked into the scroll!");
 		else You_feel("weightless for a moment.");
 		

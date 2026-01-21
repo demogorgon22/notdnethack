@@ -1910,6 +1910,8 @@ gotit:
 	}
 	if(u.dz > 0)
 		mtmp = u.usteed;
+	else if(u.dz < 0)
+		mtmp = u.urider;
 	else
 		mtmp = m_at(cc.x, cc.y);
 	if (mtmp) {
@@ -2078,6 +2080,10 @@ dopetequip()
 #ifdef STEED
 	if(mtmp == u.usteed){
 		You_cant("change the equipment of something you're riding!");
+		return MOVE_CANCELLED;
+	}
+	if(mtmp == u.urider){
+		You_cant("change the equipment of your rider!");
 		return MOVE_CANCELLED;
 	}
 #endif	/* STEED */
@@ -4434,6 +4440,11 @@ tiphat()
 				pline("%s doesn't notice.", Monnam(u.usteed));
 			else
 				(void) domonnoise(u.usteed, TRUE);
+		} else if(u.urider && u.dz < 0) {
+			if (!u.urider->mcanmove || u.urider->msleeping)
+				pline("%s doesn't notice.", Monnam(u.urider));
+			else
+				(void) domonnoise(u.urider, TRUE);
 		} else if (u.dz) {
 			pline("There's no one %s there.", (u.dz < 0) ? "up" : "down");
 		} else {

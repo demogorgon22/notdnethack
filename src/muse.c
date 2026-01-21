@@ -1548,7 +1548,7 @@ register struct monst *magr;
 			tmp = d(2,12);
 			hit("wand", mtmp, exclam(tmp));
 			(void) resist(mtmp, otmp->otyp == ROD_OF_FORCE ? WAND_CLASS : otmp->oclass, tmp, TELL);
-			if(otmp->otyp == ROD_OF_FORCE && !DEADMONSTER(mtmp) && u.usteed != mtmp){
+			if(otmp->otyp == ROD_OF_FORCE && !DEADMONSTER(mtmp) && u.usteed != mtmp && u.urider != mtmp){
 				mhurtle(mtmp, sgn(magr->mx - mtmp->mx), sgn(magr->my - mtmp->my), BOLT_LIM, FALSE);
 			}
 			if (cansee(mtmp->mx, mtmp->my) && zap_oseen)

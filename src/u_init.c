@@ -2183,7 +2183,7 @@ u_init()
 		if (Race_if(PM_DROW)) Bard[BARD_CLOAK].trotyp = DROVEN_CHAIN_MAIL;
 		Bard[BARD_BOOZE].trquan = rn1(2, 5);
 		ini_inv(Bard);
-		if(Race_if(PM_DROW)){
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			BlackTorches[0].trquan = 6;
 			ini_inv(BlackTorches);
 		}
@@ -2220,7 +2220,7 @@ u_init()
 			}
 			ini_inv(Binder_Vam);
 			skill_init(Skill_N_Vampire);
-		} else if(Race_if(PM_DROW)){
+		} else if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			if(flags.female){
 				ini_inv(Binder_Drow);
 				knows_object(FLINT);
@@ -2325,7 +2325,7 @@ u_init()
 
         break;
 	case PM_HEALER:
-		if(Race_if(PM_DROW)){
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			if(flags.initgend){
 #ifndef GOLDOBJ
 				// u.ugold = u.ugold0 = rn1(500, 501);
@@ -2524,7 +2524,7 @@ u_init()
 		knows_class(WEAPON_CLASS);
 		knows_class(ARMOR_CLASS);
 		ini_inv(Kensei);
-		if(Race_if(PM_DROW)){
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			ini_inv(BlackTorches);
 		}
 		break;
@@ -2601,14 +2601,14 @@ u_init()
 #else
 		u.umoney0 = rnd(300);
 #endif
-		if(Race_if(PM_DROW)) Pirate[PIR_KNIVES].trotyp = DROVEN_CROSSBOW;
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)) Pirate[PIR_KNIVES].trotyp = DROVEN_CROSSBOW;
 		else Pirate[PIR_KNIVES].trquan = rn1(3, 4);
 		if(!rn2(4)) Pirate[PIR_SNACK].trotyp = KELP_FROND;
 		Pirate[PIR_SNACK].trquan += rn2(4);
 		Pirate[PIR_BULLETS].trquan += rn2(Pirate[PIR_BULLETS].trquan/2);
 		if(rn2(100)<50)	Pirate[PIR_JEWELRY].trotyp = RIN_ADORNMENT;
 		ini_inv(Pirate);
-		if(Race_if(PM_DROW)){
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			struct obj *otmp;
 			otmp = mksobj(CROSSBOW_BOLT, NO_MKOBJ_FLAGS);
 			otmp->quan = rn1(12, 16);
@@ -2668,7 +2668,7 @@ u_init()
 		Ranger[RAN_ZERO_ARROWS].trquan = rn1(10, 30);
 		ini_inv(Ranger);
 		skill_init(Skill_Ran);
-		if(Race_if(PM_DROW)){
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			ini_inv(BlackTorches);
 		}
 		break;
@@ -2799,12 +2799,12 @@ u_init()
 		skill_init(Skill_V);
 		break;
 	case PM_WIZARD:
-		if(flags.female && Race_if(PM_DROW)){
+		if(flags.female && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
 			Wizard[W_WEAPON].trotyp = KHAKKHARA;
 			ini_inv(MRGloves);
 		}
 		ini_inv(Wizard);
-		if(Race_if(PM_DROW)){
+		if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 			if(flags.female){
 				ini_inv(ExtraBook);
 			}
@@ -2812,7 +2812,7 @@ u_init()
 		}
 		skill_init(Skill_W);
 		u.uwizard = TRUE;
-		if(Race_if(PM_DROW) && flags.female) skill_add(Skill_DW);
+		if((Race_if(PM_DROW) || Race_if(PM_DRIDER)) && flags.female) skill_add(Skill_DW);
 		break;
 
 	default:	/* impossible */
@@ -3410,12 +3410,12 @@ register struct trobj *trop;
 			if(obj->oclass == ARMOR_CLASS){
 				set_obj_shape(obj, youracedata->mflagsb);
 			}
-			if(obj->otyp == BULLWHIP && Race_if(PM_DROW) && flags.initgend){
+			if(obj->otyp == BULLWHIP && (Race_if(PM_DROW) || Race_if(PM_DRIDER)) && flags.initgend){
 				obj->otyp = VIPERWHIP;
 				set_material_gm(obj, SILVER);
 				obj->ovar1_heads = 1;
 			}
-			if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+			if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
 				if(obj->otyp == SCALPEL){
 					set_material_gm(obj, OBSIDIAN_MT);
 				}
@@ -3433,7 +3433,7 @@ register struct trobj *trop;
 					obj->obj_color = CLR_BLUE;
 				}
 			}
-			if(obj->otyp == SLIME_MOLD && Race_if(PM_DROW)){
+			if(obj->otyp == SLIME_MOLD && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
 				obj->spe = fruitadd("mushroom cake");
 			}
 			if(obj->otyp == HEAVY_MACHINE_GUN && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
@@ -3513,7 +3513,7 @@ register struct trobj *trop;
 		 * one will immediately read it and use the iron ball as a
 		 * weapon.)
 		 */
-			if((Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && trop->trclass == RING_CLASS) obj = mksobj(find_signet_ring(), NO_MKOBJ_FLAGS);
+			if((Race_if(PM_DROW) || Race_if(PM_MYRKALFR) || Race_if(PM_DRIDER)) && trop->trclass == RING_CLASS) obj = mksobj(find_signet_ring(), NO_MKOBJ_FLAGS);
 			else obj = mkobj(trop->trclass, FALSE);
 			otyp = obj->otyp;
 			set_material_gm(obj, objects[otyp].oc_material);
@@ -3639,7 +3639,7 @@ register struct trobj *trop;
 					} else if(obj->oclass == ARMOR_CLASS){
 						obj->oeroded3 = 1;
 					}
-				} else if(Race_if(PM_DROW)){
+				} else if(Race_if(PM_DROW) || Race_if(PM_DRIDER)){
 					obj->dknown = obj->rknown = obj->sknown = 1;
 					if(flags.female){
 						if(obj->otyp == PLAIN_DRESS){
@@ -3684,7 +3684,7 @@ register struct trobj *trop;
 				if(Role_if(PM_SAMURAI) && obj->oclass == ARMOR_CLASS && is_iron_obj(obj)) obj->oerodeproof = 1;
 				if(Role_if(PM_SAMURAI) && obj->otyp == MASK){
 					if(hates_iron(youracedata)){
-						set_material_gm(obj, Race_if(PM_DROW) ? OBSIDIAN_MT : MITHRIL);
+						set_material_gm(obj, (Race_if(PM_DROW) || Race_if(PM_DRIDER)) ? OBSIDIAN_MT : MITHRIL);
 					} else {
 						set_material_gm(obj, IRON);
 					}
@@ -3755,7 +3755,7 @@ register struct trobj *trop;
 				&& !is_ammo(obj)
 			){
 				if(is_iron_obj(obj)){
-					set_material_gm(obj, Race_if(PM_DROW) ? OBSIDIAN_MT : MITHRIL);
+					set_material_gm(obj, (Race_if(PM_DROW) || Race_if(PM_DRIDER)) ? OBSIDIAN_MT : MITHRIL);
 				}
 			}
 			if(Role_if(PM_NOBLEMAN) && flags.initgend && Race_if(PM_HALF_DRAGON)){
@@ -3764,7 +3764,7 @@ register struct trobj *trop;
 					obj->obj_color = CLR_WHITE;
 				}
 			}
-			if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+			if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
 				if(obj->oclass == SPBOOK_CLASS){
 					add_oprop(obj, OPROP_TACTB);
 				}

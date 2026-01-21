@@ -593,15 +593,24 @@ int	mntmp;
 #ifdef STEED
 	if (u.usteed) {
 	    if (touch_petrifies(u.usteed->data) &&
-	    		!Stone_resistance && rnl(100) >= 33) {
-	    	char buf[BUFSZ];
+	    		!Stone_resistance
+		) {
+			if(rnl(100) >= 33) {
+				char buf[BUFSZ];
 
-	    	pline("No longer petrifying-resistant, you touch %s.",
-	    			mon_nam(u.usteed));
-	    	Sprintf(buf, "riding %s", an(u.usteed->data->mname));
-	    	instapetrify(buf);
+				pline("No longer petrifying-resistant, you touch %s.",
+						mon_nam(u.usteed));
+				Sprintf(buf, "riding %s", an(u.usteed->data->mname));
+				instapetrify(buf);
+			}
+			dismount_steed(DISMOUNT_POLY);
  	    }
-	    if (!can_ride(u.usteed)) dismount_steed(DISMOUNT_POLY);
+	    else if (!can_ride(u.usteed)) dismount_steed(DISMOUNT_POLY);
+	}
+	if(u.urider){
+		if(!generic_saddle(youracedata)){
+			rider_dismounts_you(DISMOUNT_POLY);
+		}
 	}
 #endif
 
@@ -704,6 +713,15 @@ break_armor()
 {
     register struct obj *otmp;
 #define special_armor(a) (a->oartifact || is_imperial_elven_armor(a))
+	if((otmp = usaddle) != 0) {
+		if(!generic_saddle(youracedata)){
+			if (donning(otmp)) cancel_don();
+			Your("saddle falls off!");
+			Saddle_off();
+			dropx(otmp);
+			rider_dismounts_you(DISMOUNT_POLY);
+		}
+	}
 	if ((otmp = uarm) != 0) {
 		if(!arm_size_fits(youracedata,otmp) || !arm_match(youracedata,otmp) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();

@@ -36,6 +36,7 @@ const struct worn {
 	{ W_QUIVER, &uquiver },
 	{ W_AMUL, &uamul },
 	{ W_BELT, &ubelt },
+	{ W_SADDLE, &usaddle },
 	{ W_TOOL, &ublindf },
 	{ W_BALL, &uball },
 	{ W_CHAIN, &uchain },

@@ -1326,6 +1326,10 @@ int x, y;
 #ifdef STEED
 	/* ridden steed always shares hero's location */
 	if (u.usteed) u.usteed->mx = u.ux, u.usteed->my = u.uy;
+	if (u.urider) {
+	    u.urider->mx = u.ux;
+	    u.urider->my = u.uy;
+	}
 #endif
 }
 

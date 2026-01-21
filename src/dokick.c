@@ -96,7 +96,9 @@ register xchar x, y;
 	 * normally, getting all your attacks _including_ all your kicks.
 	 * If you have >1 kick attack, you get all of them.
 	 */
-	if (Upolyd && attacktype(youmonst.data, AT_KICK)) {
+	if ((Upolyd && attacktype(youmonst.data, AT_KICK))
+		|| (!Upolyd && (Race_if(PM_CENTAUR) || Race_if(PM_DRIDER)))
+	) {
 		/* state variable to signify we are only doing kick attacks */
 		onlykicks = TRUE;
 		xattacky(&youmonst, mon, x, y, 0L);

@@ -553,6 +553,13 @@ use_stethoscope(obj)
 		} else
 			mstatusline(u.usteed);
 		return res;
+	} else if (u.urider && u.dz < 0) {
+		if (interference) {
+			pline("%s interferes.", Monnam(u.ustuck));
+			mstatusline(u.ustuck);
+		} else
+			mstatusline(u.urider);
+		return res;
 	} else
 #endif
 	if (u.uswallow && (u.dx || u.dy || u.dz)) {
@@ -654,6 +661,13 @@ ansermee_scan(obj)
 			probe_monster(u.ustuck);
 		} else
 			probe_monster(u.usteed);
+		return res;
+	} else if(u.urider && u.dz < 0) {
+		if (interference) {
+			pline("%s interferes.", Monnam(u.ustuck));
+			probe_monster(u.ustuck);
+		} else
+			probe_monster(u.urider);
 		return res;
 	} else
 #endif
@@ -834,6 +848,11 @@ struct obj *obj;
 		    spotmon = 1;
 		    goto got_target;
 		}
+		else if (u.urider && u.dz < 0) {
+		    mtmp = u.urider;
+		    spotmon = 1;
+		    goto got_target;
+		}
 #endif
 		pline("Leash yourself?  Very funny...");
 		return;
@@ -931,6 +950,7 @@ next_to_u()
 #ifdef STEED
 	/* no pack mules for the Amulet */
 	if (u.usteed && mon_has_amulet(u.usteed)) return FALSE;
+	if (u.urider && mon_has_amulet(u.urider)) return FALSE;
 #endif
 	return(TRUE);
 }
@@ -1688,7 +1708,9 @@ struct obj *obj;
 		}
 	}
 	else if(u.dz < 0){
-		if(u.uswallow)
+		if(u.urider)
+			mon = u.urider;
+		else if(u.uswallow)
 			mon = u.ustuck;
 		else {
 			You("don't see anything up there to touch with your cords.");
@@ -1767,7 +1789,9 @@ struct obj *obj;
 		}
 	}
 	else if(u.dz < 0){
-		if(u.uswallow)
+		if(u.urider)
+			mon = u.urider;
+		else if(u.uswallow)
 			mon = u.ustuck;
 		else {
 			if(shackles)
@@ -10653,6 +10677,7 @@ resizeArmor()
 
 #ifdef STEED
     if (u.usteed && u.dz > 0) ptr = u.usteed->data;
+    else if (u.urider && u.dz < 0) ptr = u.urider->data;
 	else 
 #endif
 	if(u.dz){

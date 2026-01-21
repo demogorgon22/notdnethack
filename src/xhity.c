@@ -583,6 +583,11 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 			return result;
 		}
 	}
+	else if (youdef && u.urider && !missedyou) {
+		if (magr == u.urider)
+			/* Your rider won't attack you */
+			return MM_MISS;
+	}
 #endif
 
 	/* set monster attacking flag */
@@ -653,6 +658,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 			(youdef
 #ifdef STEED
 			|| mdef == u.usteed
+			|| mdef == u.urider
 #endif
 			) ? (!missedyou && (tarx != u.ux || tary != u.uy))
 			: (!missedother && m_at(tarx, tary) != mdef && !(youagr && u.uswallow && mdef == u.ustuck))
@@ -2012,6 +2018,9 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		if (!is_null_attk(attk) && !(
 			(*indexnum == 0) ||												/* first attack, HOPEFULLY a weapon attack! */
 			(Race_if(PM_YUKI_ONNA) && (!uwep || attk->aatyp == AT_NONE)) ||	/* yuki-onna get their additional attacks when unarmed, and their passive always */
+			(Race_if(PM_FORMIAN) && !uwep) ||	/* formians bite when unarmed */
+			(Race_if(PM_CENTAUR) && onlykicks) ||	/* centaurs kick with their kicks */
+			(Race_if(PM_DRIDER) && (!uwep || onlykicks)) ||	/* driders kick when unarmed and when kicking */
 			(Race_if(PM_VAMPIRE)) ||
 			(Race_if(PM_CHIROPTERAN))
 		)){
@@ -8981,6 +8990,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				if (vis && !canspotmon(mdef)
 #ifdef STEED
 					&& mdef != u.usteed
+					&& mdef != u.urider
 #endif
 					)
 					pline("%s suddenly disappears!", mdef_Monnam);
@@ -9056,6 +9066,10 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					if (u.usteed == mdef) {
 						pline("%s vanishes from underneath you.", Monnam(mdef));
 						dismount_steed(DISMOUNT_VANISHED);
+					}
+					else if (u.urider == mdef) {
+						pline("%s vanishes from your saddle.", Monnam(mdef));
+						rider_dismounts_you(DISMOUNT_VANISHED);
 					}
 					else {
 #endif
@@ -11017,6 +11031,8 @@ int vis;
 	/* don't attempt to eat your steed out from under you */
 	if (mdef == u.usteed)
 		mdef = &youmonst;
+	if (mdef == u.urider)
+		mdef = &youmonst;
 	
 	boolean youagr = (magr == &youmonst);
 	boolean youdef = (mdef == &youmonst);
@@ -11066,6 +11082,10 @@ int vis;
 				pline("%s lunges forward and plucks you off %s!",
 					Monnam(magr), mon_nam(u.usteed));
 				dismount_steed(DISMOUNT_ENGULFED);
+			}
+			else if(u.urider){
+				pline("%s engulfs you!", Monnam(magr));
+				rider_dismounts_you(DISMOUNT_ENGULFED);
 			}
 			else
 #endif
@@ -11215,6 +11235,7 @@ int vis;
 		if (!stationary_mon(magr) && result&MM_DEF_DIED
 #ifdef STEED
 			&& !(mdef == u.usteed)
+			&& !(mdef == u.urider)
 #endif
 			) {
 			/* sanity check */
@@ -15065,7 +15086,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if (magr && (youagr ? Race_if(PM_GNOME) : is_gnome(pa)))
 			precision_mult += 1;
 		/* drow get bonus +1 mult for droven crossbows */
-		if (magr && (youagr ? Race_if(PM_DROW) : is_drow(pa)) &&
+		if (magr && (youagr ? (Race_if(PM_DROW) || Race_if(PM_DRIDER)) : is_drow(pa)) &&
 			(launcher->otyp == DROVEN_CROSSBOW))
 			precision_mult += 1;
 

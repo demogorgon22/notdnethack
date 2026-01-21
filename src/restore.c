@@ -27,8 +27,8 @@ STATIC_DCL struct monst *FDECL(restmonchn, (int,BOOLEAN_P));
 STATIC_DCL struct fruit *FDECL(loadfruitchn, (int));
 STATIC_DCL void FDECL(freefruitchn, (struct fruit *));
 STATIC_DCL void FDECL(ghostfruit, (struct obj *));
-STATIC_DCL boolean FDECL(restgamestate, (int, unsigned int *, unsigned int *));
-STATIC_DCL void FDECL(restlevelstate, (unsigned int, unsigned int));
+STATIC_DCL boolean FDECL(restgamestate, (int, unsigned int *, unsigned int *, unsigned int *));
+STATIC_DCL void FDECL(restlevelstate, (unsigned int, unsigned int, unsigned int));
 STATIC_DCL int FDECL(restlevelfile, (int,int));
 STATIC_DCL void FDECL(reset_oattached_mids, (BOOLEAN_P));
 
@@ -398,9 +398,7 @@ register struct obj *otmp;
 
 STATIC_OVL
 boolean
-restgamestate(fd, stuckid, steedid)
-register int fd;
-unsigned int *stuckid, *steedid;	/* STEED */
+restgamestate(int fd, unsigned int *stuckid, unsigned int *steedid, unsigned int *riderid)
 {
 	/* discover is actually flags.explore */
 	boolean remember_discover = discover;
@@ -549,6 +547,8 @@ unsigned int *stuckid, *steedid;	/* STEED */
 #ifdef STEED
 	if (u.usteed)
 		mread(fd, (genericptr_t) steedid, sizeof (*steedid));
+	if (u.urider)
+		mread(fd, (genericptr_t) riderid, sizeof (*riderid));
 #endif
 	mread(fd, (genericptr_t) pl_character, sizeof pl_character);
 
@@ -579,8 +579,7 @@ unsigned int *stuckid, *steedid;	/* STEED */
  * don't dereference a wild u.ustuck when saving the game state, for instance)
  */
 STATIC_OVL void
-restlevelstate(stuckid, steedid)
-unsigned int stuckid, steedid;	/* STEED */
+restlevelstate(unsigned int stuckid, unsigned int steedid, unsigned int riderid)
 {
 	register struct monst *mtmp;
 
@@ -603,6 +602,17 @@ unsigned int stuckid, steedid;	/* STEED */
 			u.usteed = 0;
 		} else {
 			u.usteed = mtmp;
+			remove_monster(mtmp->mx, mtmp->my);
+		}
+	}
+	if (riderid) {
+		for (mtmp = fmon; mtmp; mtmp = mtmp->nmon)
+			if (mtmp->m_id == riderid) break;
+		if (!mtmp){
+			pline("Error recovery: Cannot find the monster urider.");
+			u.urider = 0;
+		} else {
+			u.urider = mtmp;
 			remove_monster(mtmp->mx, mtmp->my);
 		}
 	}
@@ -676,7 +686,7 @@ int
 dorecover(fd)
 register int fd;
 {
-	unsigned int stuckid = 0, steedid = 0;	/* not a register */
+	unsigned int stuckid = 0, steedid = 0, riderid = 0;	/* not a register */
 	int ltmp;
 	int rtmp;
 	struct obj *otmp;
@@ -687,7 +697,7 @@ register int fd;
 
 	restoring = TRUE;
 	getlev(fd, 0, (int)0, FALSE);
-	if (!restgamestate(fd, &stuckid, &steedid)) {
+	if (!restgamestate(fd, &stuckid, &steedid, &riderid)) {
 		display_nhwindow(WIN_MESSAGE, TRUE);
 		savelev(-1, 0, FREE_SAVE);	/* discard current level */
 		(void) close(fd);
@@ -695,7 +705,7 @@ register int fd;
 		restoring = FALSE;
 		return(0);
 	}
-	restlevelstate(stuckid, steedid);
+	restlevelstate(stuckid, steedid, riderid);
 #ifdef INSURANCE
 	savestateinlock();
 #endif
@@ -710,6 +720,7 @@ register int fd;
 	u.ustuck = (struct monst *)0;
 #ifdef STEED
 	u.usteed = (struct monst *)0;
+	u.urider = (struct monst *)0;
 #endif
 
 #ifdef MICRO
@@ -778,7 +789,7 @@ register int fd;
 #ifdef USE_TILES
 	substitute_tiles(&u.uz);
 #endif
-	restlevelstate(stuckid, steedid);
+	restlevelstate(stuckid, steedid, riderid);
 #ifdef MFLOPPY
 	gameDiskPrompt();
 #endif

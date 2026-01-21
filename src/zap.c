@@ -295,7 +295,7 @@ struct obj *otmp;
 			
 			hit(zap_type_text, mtmp, exclam(dmg));
 			(void) resist(mtmp, otmp->otyp == ROD_OF_FORCE ? WAND_CLASS : otmp->oclass, dmg, TELL);
-			if(otyp == ROD_OF_FORCE && !DEADMONSTER(mtmp) && u.usteed != mtmp){
+			if(otyp == ROD_OF_FORCE && !DEADMONSTER(mtmp) && u.usteed != mtmp && u.urider != mtmp){
 				mhurtle(mtmp, sgn(mtmp->mx - u.ux), sgn(mtmp->my - u.uy), BOLT_LIM, FALSE);
 			}
 		} else if(!flags.mon_moving || cansee(mtmp->mx, mtmp->my)) miss(zap_type_text, mtmp);
@@ -2557,7 +2557,7 @@ register struct obj *obj;
 			if (!Blind) known = TRUE;
 		break;
 		case SPE_LIGHT:
-			if(!Race_if(PM_DROW)){
+			if(!Race_if(PM_DROW) && !Race_if(PM_DRIDER)){
 				litroom(!(obj->cursed),obj);
 				if(!(obj->cursed) && u.sealsActive&SEAL_TENEBROUS) unbind(SEAL_TENEBROUS,TRUE);
 			} else {
@@ -4132,6 +4132,7 @@ struct zapdata * zapdata;	/* lots of flags and data about the zap */
 			if (mdef) {
 #ifdef STEED
 				if (u.usteed && !rn2(3) && mdef == &youmonst) mdef = u.usteed;
+				if (u.urider && !rn2(3) && mdef == &youmonst) mdef = u.urider;
 #endif
 				youdef = (mdef == &youmonst);
 

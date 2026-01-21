@@ -1571,8 +1571,11 @@ remake:
 				/* falling off steed has its own losehp() call */
 				if (u.usteed)
 					dismount_steed(DISMOUNT_FELL);
-				else
+				else {
 					losehp(rnd(3), "falling downstairs", KILLED_BY);
+					if(u.urider)
+						rider_dismounts_you(DISMOUNT_FELL);
+				}
 
 				selftouch("Falling, you");
 			} else if (u.dz && at_ladder)
@@ -1620,6 +1623,7 @@ misc_levelport:
 	if ((mtmp = m_at(u.ux, u.uy)) != 0
 #ifdef STEED
 		&& mtmp != u.usteed
+		&& mtmp != u.urider
 #endif
 		) {
 	    /* There's a monster at your target destination; it might be one

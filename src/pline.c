@@ -618,6 +618,7 @@ register struct monst *mtmp;
 				", holding you");
 #ifdef STEED
 	if (mtmp == u.usteed)	  Strcat(info, ", carrying you");
+	if (mtmp == u.urider)	  Strcat(info, ", riding you");
 #endif
 
 	/* avoid "Status of the invisible newt ..., invisible" */

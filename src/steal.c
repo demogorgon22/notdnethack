@@ -210,6 +210,11 @@ boolean unchain_ball;	/* whether to unpunish or just unwield */
 	    Amulet_off();
 	} else if (obj->owornmask & W_BELT) {
 	    Belt_off();
+	} else if (obj->owornmask & W_SADDLE) {
+	    Saddle_off();
+		if(u.urider){
+			rider_dismounts_you(DISMOUNT_FELL);
+		}
 	} else if (obj->owornmask & W_RING) {
 	    Ring_gone(obj);
 	} else if (obj->owornmask & W_TOOL) {
@@ -366,7 +371,7 @@ gotobj:
 	/* you're going to notice the theft... */
 	stop_occupation();
 
-	if((otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL))){
+	if((otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL | W_SADDLE))){
 		switch(otmp->oclass) {
 		case TOOL_CLASS:
 		case AMULET_CLASS:

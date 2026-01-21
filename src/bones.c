@@ -493,6 +493,7 @@ struct obj *corpse;
 	}
 #ifdef STEED
 	if (u.usteed) dismount_steed(DISMOUNT_BONES);
+	if (u.urider) rider_dismounts_you(DISMOUNT_BONES);
 #endif
 	dmonsfree();		/* discard dead or gone monsters */
 

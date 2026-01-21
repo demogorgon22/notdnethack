@@ -7562,7 +7562,7 @@ int tary;
 	/* don't cast red word if target is already disrobed/disrobing */
 	if (spellnum == MON_RED_WORD
 		&& (youdef ? 
-			(u.ufirst_know || !(uarmh || uarmc || uarm || ubelt || uarmu || uarmg || uarmf || uamul || ublindf || uleft || uright))
+			(u.ufirst_know || !(uarmh || uarmc || uarm || ubelt || usaddle || uarmu || uarmg || uarmf || uamul || ublindf || uleft || uright))
 			: (!(mdef->misc_worn_check&(W_ARMOR|W_AMUL|W_BELT|W_TOOL)) || mdef->mdisrobe)
 			)
 	)

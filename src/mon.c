@@ -1480,6 +1480,8 @@ register struct monst *mtmp;
 	/* (but not water-walking or swimming) */
 	if (mtmp == u.usteed && (Flying || Levitation) && !is_3dwater(mtmp->mx,mtmp->my))
 		return (0);
+	if (mtmp == u.urider && !is_3dwater(mtmp->mx,mtmp->my))
+		return (0);
 #endif
 
 	/* Frost Treads freeze water and lava */
@@ -3334,6 +3336,7 @@ struct obj *otmp;
 #ifdef STEED
 	/* Steeds don't pick up stuff (to avoid shop abuse) */
 	if (mtmp == u.usteed) return (FALSE);
+	if (mtmp == u.urider) return (FALSE);
 #endif
 	if (mtmp->isshk) return(TRUE); /* no limit */
 	if ((mtmp->mpeaceful && mtmp->mtyp != PM_MAID && !(Infuture && mtmp->mfaction == QUEST_FACTION)) && !mtmp->mtame) return(FALSE);
@@ -3788,7 +3791,7 @@ boolean actual;			/* actual attack or faction check? */
 		return 0L;
 	}
 	// Don't focus-down steeds
-	if (actual && mdef == u.usteed) {
+	if (actual && (mdef == u.usteed || mdef == u.urider)) {
 		return 0L;
 	}
 	// Berserked creatures are effectively always conflicted, and aren't careful about anything unnecessary
@@ -3899,7 +3902,7 @@ boolean actual;			/* actual attack or faction check? */
 	if (magr->mtame && !mdef->mpeaceful && (!actual || magr->mhp > magr->mhpmax/2 || banish_kill_mon(magr)) && !magr->mflee)
 	    return ALLOW_M|ALLOW_TM;
 	// and vice versa, with some limitations that will help your pet survive
-	if (mdef->mtame && !magr->mpeaceful && (!actual || mdef->mhp > mdef->mhpmax/2 || banish_kill_mon(mdef)) && !mdef->meating && mdef != u.usteed && !mdef->mflee)
+	if (mdef->mtame && !magr->mpeaceful && (!actual || mdef->mhp > mdef->mhpmax/2 || banish_kill_mon(mdef)) && !mdef->meating && mdef != u.usteed && mdef != u.urider && !mdef->mflee)
 	    return ALLOW_M|ALLOW_TM;
 #endif /* ATTACK_PETS */
 
@@ -4285,6 +4288,7 @@ register struct monst *mtmp, *mtmp2;
     /* finish adding its replacement */
 #ifdef STEED
     if (mtmp == u.usteed) ; else	/* don't place steed onto the map */
+	if (mtmp == u.urider) ; else
 #endif
     place_monster(mtmp2, mtmp2->mx, mtmp2->my);
     if (mtmp2->wormno)	    /* update level.monsters[wseg->wx][wseg->wy] */
@@ -4300,6 +4304,7 @@ register struct monst *mtmp, *mtmp2;
     if (u.ustuck == mtmp) u.ustuck = mtmp2;
 #ifdef STEED
     if (u.usteed == mtmp) u.usteed = mtmp2;
+	if (u.urider == mtmp) u.urider = mtmp2;
 #endif
     if (mtmp2->isshk) replshk(mtmp2);
 
@@ -5117,6 +5122,8 @@ register struct monst *mtmp;
 	/* Player is thrown from his steed when it dies */
 	if (mtmp == u.usteed)
 		dismount_steed(DISMOUNT_GENERIC);
+	if (mtmp == u.urider)
+		rider_dismounts_you(DISMOUNT_GENERIC);
 #endif
 
 	mptr = mtmp->data;		/* save this for m_detach() */
@@ -6003,6 +6010,8 @@ register struct monst *mdef;
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
 		dismount_steed(DISMOUNT_GENERIC);
+	if (mdef == u.urider)
+		rider_dismounts_you(DISMOUNT_GENERIC);
 #endif
 	/* cease occupation if the monster was associated */
 	if(mdef->moccupation) stop_occupation();
@@ -6032,6 +6041,8 @@ register struct monst *mdef;
 	/* Player is thrown from his steed when it disappears */
 	if (mdef == u.usteed)
 		dismount_steed(DISMOUNT_GENERIC);
+	if (mdef == u.urider)
+		rider_dismounts_you(DISMOUNT_GENERIC);
 #endif
 
 	/* cease occupation if the monster was associated */
@@ -6978,6 +6989,12 @@ mnexto(mtmp)	/* Make monster mtmp next to you (if possible) */
 		mtmp->my = u.uy;
 		return;
 	}
+	if (mtmp == u.urider) {
+		/* Keep your rider in sync with you instead */
+		mtmp->mx = u.ux;
+		mtmp->my = u.uy;
+		return;
+	}
 #endif
 
 	if(!enexto(&mm, u.ux, u.uy, mtmp->data)) return;
@@ -6994,6 +7011,12 @@ monline(mtmp)	/* Make monster mtmp next to you (if possible) */
 #ifdef STEED
 	if (mtmp == u.usteed) {
 		/* Keep your steed in sync with you instead */
+		mtmp->mx = u.ux;
+		mtmp->my = u.uy;
+		return;
+	}
+	if (mtmp == u.urider) {
+		/* Keep your rider in sync with you instead */
 		mtmp->mx = u.ux;
 		mtmp->my = u.uy;
 		return;
@@ -7018,6 +7041,12 @@ mofflin(mtmp)	/* Make monster mtmp near to you (if possible) */
 		mtmp->my = u.uy;
 		return;
 	}
+	if (mtmp == u.urider) {
+		/* Keep your rider in sync with you instead */
+		mtmp->mx = u.ux;
+		mtmp->my = u.uy;
+		return;
+	}
 #endif
 
 	if(!eofflin(&mm, u.ux, u.uy, mtmp->data)) return;
@@ -7034,6 +7063,12 @@ mofflin_close(mtmp)	/* Make monster mtmp near to you (if possible) */
 #ifdef STEED
 	if (mtmp == u.usteed) {
 		/* Keep your steed in sync with you instead */
+		mtmp->mx = u.ux;
+		mtmp->my = u.uy;
+		return;
+	}
+	if (mtmp == u.urider) {
+		/* Keep your rider in sync with you instead */
 		mtmp->mx = u.ux;
 		mtmp->my = u.uy;
 		return;

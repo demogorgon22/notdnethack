@@ -341,6 +341,8 @@ worst_cursed_item()
 	otmp = uamul;
     } else if (ubelt && ubelt->cursed) {		/* belt */
 	otmp = ubelt;
+    } else if (usaddle && usaddle->cursed) {	/* saddle */
+	otmp = usaddle;
     } else if (uleft && uleft->cursed) {		/* left ring */
 	otmp = uleft;
     } else if (uright && uright->cursed) {		/* right ring */
@@ -3279,6 +3281,7 @@ int godnum;
 				else if (uswapwep && not_fully_identified(uswapwep)) identify(uswapwep);
 				else if (uamul && not_fully_identified(uamul)) identify(uamul);
 				else if (ubelt && not_fully_identified(ubelt)) identify(ubelt);
+				else if (usaddle && not_fully_identified(usaddle)) identify(usaddle);
 				else if (uleft && not_fully_identified(uleft)) identify(uleft);
 				else if (uright && not_fully_identified(uright)) identify(uright);
 				else if (uarmc && not_fully_identified(uarmc)) identify(uarmc);
@@ -3382,6 +3385,8 @@ int godnum;
 				else if (uarmg && wrongbuc(uarmg)) otmp = uarmg;
 				/* then shield due to two handed weapons and spells */
 				else if (uarms && wrongbuc(uarms)) otmp = uarms;
+				/* then saddle due to body armor */
+				else if (usaddle && wrongbuc(usaddle)) otmp = usaddle;
 				/* then cloak due to body armor */
 				else if (uarmc && wrongbuc(uarmc)) otmp = uarmc;
 				else if (ubelt && wrongbuc(ubelt)) otmp = uarmc;

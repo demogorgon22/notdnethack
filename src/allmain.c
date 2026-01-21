@@ -3492,6 +3492,7 @@ karemade:
 				 (u.uhave.amulet || On_W_tower_level(&u.uz)
 #ifdef STEED
 				  || (u.usteed && mon_has_amulet(u.usteed))
+				  || (u.urider && mon_has_amulet(u.urider))
 #endif
 				 )
 #ifdef WIZARD

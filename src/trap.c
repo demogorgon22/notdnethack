@@ -3629,7 +3629,7 @@ boolean *lostsome;
 			  obj == uamul || obj == uleft || obj == uright ||
 			  obj == ublindf || obj == uarm || obj == uarmc ||
 			  obj == uarmg || obj == ubelt || obj == uarmf ||
-			  obj == uarmu ||
+			  obj == uarmu || obj == usaddle ||
 			  (obj->cursed && !Weldproof && (obj == uarmh || obj == uarms)) ||
 			  welded(obj)))
 			otmp = obj;
@@ -5412,6 +5412,7 @@ boolean initialize;
 					else if(obj == ublindf) Blindf_off(obj);
 					else if(obj == uamul) Amulet_off();
 					else if(obj == ubelt) Belt_off();
+					else if(obj == usaddle) Saddle_off();
 					else if(obj == uwep) uwepgone();
 					else if (obj == uquiver) uqwepgone();
 					else if (obj == uswapwep) uswapwepgone();

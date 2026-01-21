@@ -438,6 +438,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 #ifdef STEED
 		if (!mtmp && xi == u.ux && yi == u.uy)
 			mtmp = u.usteed;
+		if (!mtmp && xi == u.ux && yi == u.uy)
+			mtmp = u.urider;
 #endif
 		if (mtmp) {
 		    if (mtmp->mhp < 1) explmask = 2;
@@ -594,6 +596,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 #ifdef STEED
 		if (!mtmp && xi == u.ux && yi == u.uy)
 			mtmp = u.usteed;
+		if (!mtmp && xi == u.ux && yi == u.uy)
+			mtmp = u.urider;
 #endif
 		if (!mtmp) continue;
 		if (DEADMONSTER(mtmp)) continue;
@@ -1279,7 +1283,9 @@ boolean isyou;
     mon = m_at(x, y);
 #ifdef STEED
     if (!mon && x == u.ux && y == u.uy)
-	mon = u.usteed;
+		mon = u.usteed;
+	if (!mon && x == u.ux && y == u.uy)
+		mon = u.urider;
 #endif
     if (mon && !DEADMONSTER(mon)) {
 		if (resists_fire(mon)) {

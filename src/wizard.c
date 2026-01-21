@@ -941,13 +941,13 @@ u_recognize_stars()
 		return ACURR(A_INT) > 11;
 	// Celestial roles and those that CAN navigate by the stars (asuming that they live above ground).
 	if(u.uwizard || u.upriest || Role_if(PM_RANGER))
-		return (Race_if(PM_DROW) || Race_if(PM_DWARF) || Race_if(PM_GNOME)) ? ACURR(A_INT) > 18 : ACURR(A_INT) > 13;
+		return (Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DWARF) || Race_if(PM_GNOME)) ? ACURR(A_INT) > 18 : ACURR(A_INT) > 13;
 	// Anas
 	if(Role_if(PM_ANACHRONONAUT) || Role_if(PM_UNDEAD_HUNTER))
 		return ACURR(A_INT) > 13;
 
 	// Catch all
-	return (Race_if(PM_DROW) || Race_if(PM_DWARF) || Race_if(PM_GNOME)) ? FALSE : ACURR(A_INT) > 15;
+	return (Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DWARF) || Race_if(PM_GNOME)) ? FALSE : ACURR(A_INT) > 15;
 }
 
 /* The king smites you in one of a variety of ways */

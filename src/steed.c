@@ -47,7 +47,7 @@ can_saddle(mtmp, otmp)
 	return ((index(steeds, ptr->mlet) ||
 				(Race_if(PM_ORC) && index(orc_steeds, ptr->mlet)) ||
 				(Role_if(PM_VALKYRIE) && index(valk_steeds, ptr->mlet)) ||
-				((Race_if(PM_DROW) || Race_if(PM_MYRKALFR)) && index(drow_steeds, ptr->mlet)) ||
+				((Race_if(PM_DROW) || Race_if(PM_MYRKALFR) || Race_if(PM_DRIDER)) && index(drow_steeds, ptr->mlet)) ||
 				(Race_if(PM_VAMPIRE) && is_vampire(ptr)) ||
 				(ptr->mtyp == PM_BYAKHEE)
 			) && 
@@ -58,6 +58,17 @@ can_saddle(mtmp, otmp)
 			);
 }
 
+boolean
+generic_saddle(struct permonst *ptr)
+{
+	return ((index(steeds, ptr->mlet) ||
+				(ptr->mtyp == PM_BYAKHEE)
+			) && 
+			(ptr->msize >= MZ_MEDIUM) &&
+			!(humanoid(ptr) && ptr->mtyp != PM_SPROW) &&
+			!amorphous(ptr) && !is_gaseous_noequip(ptr)
+	);
+}
 
 int
 use_saddle(otmp)
@@ -197,6 +208,9 @@ doride()
 
 	if (u.usteed)
 	    dismount_steed(DISMOUNT_BYCHOICE);
+	else if (u.urider)
+	    rider_dismounts_you(DISMOUNT_BYCHOICE);
+	
 	else if (getdir((char *)0) && isok(u.ux+u.dx, u.uy+u.dy)) {
 #ifdef WIZARD
 	if (wizard && yn("Force the mount to succeed?") == 'y')
@@ -206,6 +220,66 @@ doride()
 	} else
 	    return MOVE_CANCELLED;
 	return MOVE_STANDARD;
+}
+
+boolean
+rider_mounts_you(struct monst *mtmp)
+{
+	if(u.uswallow || u.ustuck){
+		You("are stuck here for now.");
+		return FALSE;
+	}
+	if(!humanoid(mtmp->data) || verysmall(mtmp->data) || mtmp->data->msize > youracedata->msize || slithy(mtmp->data)){
+		pline("%s won't fit on a saddle.", Monnam(mtmp));
+		return FALSE;
+	}
+	if(!usaddle){
+		You("are not saddled.");
+		return FALSE;
+	}
+	if(!is_silent(youracedata)){
+		You("direct %s to hop on your back.", mon_nam(mtmp));
+	}
+	else {
+		You("inticate to %s to hop on your back.", mon_nam(mtmp));
+	}
+	if(touch_petrifies(mtmp->data) && !Stone_resistance){
+		char kbuf[BUFSZ];
+		
+		You("touch %s.", mon_nam(mtmp));
+		Sprintf(kbuf, "attempting to have %s ride you", an(mtmp->data->mname));
+		instapetrify(kbuf);
+		return FALSE;
+	}
+	if(!mtmp->mpeaceful){
+		pline("%s continues trying to kill you.", Monnam(mtmp));
+		return FALSE;
+	}
+	if(!mtmp->mtame){
+		pline("%s ignores you.", Monnam(mtmp));
+		return FALSE;
+	}
+	if(mtmp->mtrapped){
+	    struct trap *t = t_at(mtmp->mx, mtmp->my);
+		
+	    You_cant("have %s ride you while %s's trapped in %s.",
+		     mon_nam(mtmp), mhe(mtmp),
+		    t ? an(defsyms[trap_to_defsym(t->ttyp)].explanation) : "something");
+	    return (FALSE);
+	}
+	if(Underwater && amphibious_mon(mtmp)){
+		You_cant("have %s ride you while underwater.", mon_nam(mtmp));
+		return FALSE;
+	}
+	pline("%s mounts.", Monnam(mtmp));
+	u.urider = mtmp;
+	int x = mtmp->mx;
+	int y = mtmp->my;
+	remove_monster(x, y);
+	newsym(x, y);
+	mtmp->mx = u.ux;
+	mtmp->my = u.uy;
+	return TRUE;
 }
 
 
@@ -225,6 +299,15 @@ mount_steed(mtmp, force)
 	if (u.usteed) {
 	    You("are already riding %s.", mon_nam(u.usteed));
 	    return (FALSE);
+	}
+
+	if (u.urider) {
+	    You("are already being ridden by %s.", mon_nam(u.urider));
+	    return (FALSE);
+	}
+
+	if (generic_saddle(youracedata) && usaddle) {
+		return rider_mounts_you(mtmp);
 	}
 
 	/* Is the player in the right form? */
@@ -253,7 +336,7 @@ mount_steed(mtmp, force)
 	}
 
 	if (Upolyd && (!humanoid(youracedata) || verysmall(youracedata) ||
-			bigmonst(youracedata) || slithy(youracedata))) {
+			youracedata->msize > mtmp->data->msize || slithy(youracedata))) {
 	    You("won't fit on a saddle.");
 	    return (FALSE);
 	}
@@ -552,7 +635,7 @@ dismount_steed(reason)
 		break;
 	    case DISMOUNT_BYCHOICE:
 	    default:
-		if (otmp && otmp->cursed) {
+		if (otmp && otmp->cursed && !Weldproof) {
 		    You("can't.  The saddle %s cursed.",
 			otmp->bknown ? "is" : "seems to be");
 		    otmp->bknown = TRUE;
@@ -671,6 +754,82 @@ dismount_steed(reason)
 }
 
 void
+rider_dismounts_you(int reason)
+{
+	struct monst *mtmp = u.urider;
+	coord cc;
+	const char *verb = "fell";
+
+	mtmp = u.urider;		/* make a copy of rider pointer */
+	/* Sanity check */
+	if (!mtmp)		/* Just return silently */
+	    return;
+
+	boolean have_spot = enexto(&cc, u.ux, u.uy, mtmp->data);
+
+	/* Check the reason for dismounting */
+	switch(reason){
+		case DISMOUNT_THROWN:
+			verb = "thrown";
+		case DISMOUNT_FELL:
+			pline("%s %s off of you!", Monnam(mtmp), verb);
+		case DISMOUNT_VANISHED:
+			break;
+		case DISMOUNT_POLY:
+			You("can no longer be ridden by %s.", mon_nam(u.urider));
+			break;
+		case DISMOUNT_ENGULFED:
+			/* caller displays message */
+			break;
+		case DISMOUNT_BONES:
+			/* hero has just died... */
+			break;
+		case DISMOUNT_GENERIC:
+			/* no messages, just make it so */
+			break;
+		case DISMOUNT_BYCHOICE:
+		default:{
+			boolean welded = usaddle && usaddle->cursed && !is_weldproof_mon(u.urider);
+			boolean failed = welded || !have_spot;
+			if(is_silent(youracedata)) {
+				You("%sshake off %s.", failed ? "try to " : "", mon_nam(mtmp));
+			} else {
+				You("direct %s to dismount.", mon_nam(mtmp));
+			}
+			if(welded){
+				pline("But the saddle %s cursed!",
+					usaddle->bknown ? "is" : "seems to be");
+				usaddle->bknown = TRUE;
+				return;
+			}
+			if(!have_spot){
+				pline("But there isn't anywhere for %s to stand.", mon_nam(mtmp));
+				return;
+			}
+		}
+	}
+	/* Release the rider */
+	u.urider = 0;
+
+	if(reason == DISMOUNT_BONES){
+		if(have_spot)
+			rloc_to(mtmp, cc.x, cc.y);
+		else
+			(void) rloc(mtmp, FALSE);
+		return;
+	}
+	if(!DEADMONSTER(mtmp) || MIGRATINGMONSTER(mtmp)){
+		if(have_spot)
+			rloc_to(mtmp, cc.x, cc.y);
+		else
+			(void) rloc(mtmp, FALSE);
+		if(mtmp->mx == u.ux && mtmp->my == u.uy){
+			mondied(mtmp);
+		}
+	}
+}
+
+void
 place_monster(mon, x, y)
 struct monst *mon;
 int x, y;
@@ -679,11 +838,11 @@ int x, y;
 		mon->deadmonster = 0;
 		pline("Bad deadmonster state detected (and fixed)");
 	}
-    if (mon == u.usteed ||
+    if (mon == u.usteed || mon == u.urider ||
 	    /* special case is for convoluted vault guard handling */
 	    (DEADMONSTER(mon) && !(mon->isgd && x == 0 && y == 0))) {
 	impossible("placing %s onto map?",
-		   (mon == u.usteed) ? "steed" : "defunct monster");
+		   (mon == u.usteed) ? "steed" : (mon == u.urider) ? "rider" : "defunct monster");
 	return;
     }
     mon->mx = x, mon->my = y;

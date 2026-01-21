@@ -649,6 +649,7 @@ dog_died:
 			if (mtmp->mleashed
 #ifdef STEED
 				&& mtmp != u.usteed
+				&& mtmp != u.urider
 #endif
 		    ) Your("leash goes slack.");
 			else if (cansee(mtmp->mx, mtmp->my))
@@ -845,6 +846,7 @@ pet_sphere_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int
 
 /* set dog's goal -- gtyp, gx, gy
  * returns -1/0/1 (dog's desire to approach player) or -2 (abort move)
+ * or -3 (can't move but can act)
  */
 STATIC_OVL int
 dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr)
@@ -1021,6 +1023,8 @@ dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr
 	} else if(edog) {
 	    edog->ogoal.x = 0;
 	}
+	if (mtmp == u.urider)
+		return (-3);
 	return appr;
 }
 
@@ -1179,7 +1183,7 @@ register int after;	/* this is extra fast monster movement */
 	} else
 #endif
 	/* maybe we tamed him while being swallowed --jgm */
-	if (!udist) return(0);
+	if (!udist && mtmp != u.urider) return(0);
 
 	if (!rn2(850) && betrayed(mtmp)) return 1;
 
@@ -1398,7 +1402,7 @@ register int after;	/* this is extra fast monster movement */
 
 		/* dog eschews cursed objects, but likes dog food */
 		/* (minion isn't interested; `cursemsg' stays FALSE) */
-		if (has_edog)
+		if (has_edog && appr != -3)
 		for (obj = level.objects[nx][ny]; obj; obj = obj->nexthere) {
 		    if (obj->cursed) cursemsg[i] = TRUE;
 		    else if ((otyp = dogfood(mtmp, obj)) < MANFOOD &&
@@ -1442,6 +1446,7 @@ register int after;	/* this is extra fast monster movement */
 	nxti:	;
 	}
 newdogpos:
+	if(appr == -3) return(0); /* didn't find anything to do that wasn't moving */
 	if (nix != omx || niy != omy) {
 		struct obj *mw_tmp;
 

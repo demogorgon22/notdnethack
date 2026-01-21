@@ -416,6 +416,8 @@ do_mname()
 #ifdef STEED
 	    if (u.usteed && canspotmon(u.usteed))
 		mtmp = u.usteed;
+	    else if (u.urider && canspotmon(u.urider))
+		mtmp = u.urider;
 	    else {
 #endif
 		pline("This %s creature is called %s and cannot be renamed.",
@@ -1191,6 +1193,7 @@ boolean called;
 	    !program_state.gameover &&
 #ifdef STEED
 	    mtmp != u.usteed &&
+	    mtmp != u.urider &&
 #endif
 	    !(u.uswallow && mtmp == u.ustuck) &&
 	    !(suppress & SUPPRESS_IT);
@@ -1638,6 +1641,7 @@ struct monst *mtmp;
 #ifdef STEED
 			    /* "saddled" is redundant when mounted */
 			    || mtmp == u.usteed
+			    || mtmp == u.urider
 #endif
 			    ) ? SUPPRESS_SADDLE : 0;
 

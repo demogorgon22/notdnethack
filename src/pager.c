@@ -533,6 +533,9 @@ lookat(x, y, buf, monbuf, shapebuff)
 	    /* assert((sizeof buf >= strlen(buf)+strlen(steedbuf)+1); */
 	    Strcat(buf, steedbuf);
 	}
+	if (u.urider) {
+	    Strcat(buf, ", mounted on you");
+	}
 #endif
 	/* When you see yourself normally, no explanation is appended
 	   (even if you could also see yourself via other means).

@@ -652,6 +652,8 @@ E void NDECL(Amulet_off);
 E void NDECL(Amulet_on);
 E void NDECL(Belt_off);
 E void NDECL(Belt_on);
+E void NDECL(Saddle_off);
+E void NDECL(Saddle_on);
 E void FDECL(Ring_on, (struct obj *));
 E void FDECL(Ring_off, (struct obj *));
 E void FDECL(Ring_gone, (struct obj *));
@@ -3023,6 +3025,7 @@ E struct obj *FDECL(findgold, (struct obj *));
 #ifdef STEED
 E void NDECL(rider_cant_reach);
 E boolean FDECL(can_saddle, (struct monst *, struct obj *));
+E boolean FDECL(generic_saddle, (struct permonst *));
 E int FDECL(use_saddle, (struct obj *));
 E boolean FDECL(can_ride, (struct monst *));
 E int NDECL(doride);
@@ -3030,6 +3033,7 @@ E boolean FDECL(mount_steed, (struct monst *, BOOLEAN_P));
 E void NDECL(exercise_steed);
 E void NDECL(kick_steed);
 E void FDECL(dismount_steed, (int));
+E void FDECL(rider_dismounts_you, (int));
 E void FDECL(place_monster, (struct monst *,int,int));
 #endif
 

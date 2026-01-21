@@ -221,6 +221,7 @@ struct prop {
 #define WORN_BOOTS	W_ARMF
 #define WORN_AMUL	W_AMUL
 #define WORN_BELT	W_BELT
+#define WORN_SADDLE	W_SADDLE
 #define WORN_BLINDF	W_TOOL
 #ifdef TOURIST
 #define WORN_SHIRT	W_ARMU

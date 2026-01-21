@@ -3069,6 +3069,8 @@ int dz;
 #ifdef STEED
     if (u.usteed && u.dz > 0)
 	return (domonnoise(u.usteed, TRUE)) ? MOVE_STANDARD : MOVE_INSTANT;
+	else if (u.urider && u.dz < 0)
+	return (domonnoise(u.urider, TRUE)) ? MOVE_STANDARD : MOVE_INSTANT;
 #endif
 	if (u.dz) {
 		struct engr *ep = get_head_engr();

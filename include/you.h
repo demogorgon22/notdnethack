@@ -134,6 +134,9 @@ struct Role {
 #define SA_CHIROPTERAN	0x00000100L
 #define SA_YUKI_ONNA	0x00000200L
 #define SA_GITH			0x00000400L
+#define SA_FORMIAN		0x00000800L
+#define SA_CENTAUR		0x00001000L
+#define SA_DRIDER		0x00002000L
 	short allow;		/* bit mask of allowed variations */
 #define ROLE_GENDMASK	0xf000		/* allowable genders */
 #define ROLE_MALE	0x1000
@@ -218,6 +221,7 @@ struct Race {
 	const char *adj;	/* adjective ("human", "elven") */
 	const char *coll;	/* collective ("humanity", "elvenkind") */
 	const char *filecode;	/* code for filenames */
+	char lettercode;	/* code for the start menues */
 	struct RoleName individual; /* individual as a noun ("man", "elf") */
 
 	/*** Indices of important monsters and objects ***/
@@ -954,6 +958,7 @@ struct you {
 	boolean pethped;
 #ifdef STEED
 	struct monst *usteed;
+	struct monst *urider;
 	long ugallop;
 	int urideturns;
 #endif

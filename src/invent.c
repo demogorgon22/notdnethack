@@ -1107,6 +1107,7 @@ register const char *let,*word;
 	long cnt;
 	boolean prezero = FALSE;
 	long dummymask;
+	boolean saddleable = generic_saddle(youracedata);
 
 	if(nextgetobj) return getnextgetobj();
 
@@ -1205,7 +1206,9 @@ register const char *let,*word;
 		    ((otmp->oclass == FOOD_CLASS && otmp->otyp != MEAT_RING) ||
 		    (otmp->oclass == TOOL_CLASS &&
 		     otyp != BLINDFOLD && otyp != MASK && otyp != R_LYEHIAN_FACEPLATE && 
-			 otyp != TOWEL && otyp != ANDROID_VISOR && otyp != LIVING_MASK && otyp != LENSES && otyp != SUNGLASSES && otyp != SOUL_LENS) ||
+			 otyp != TOWEL && otyp != ANDROID_VISOR && otyp != LIVING_MASK && otyp != LENSES && otyp != SUNGLASSES && otyp != SOUL_LENS &&
+			 !(otyp == SADDLE && saddleable)
+			) ||
 			 (otmp->oclass == CHAIN_CLASS)
 			))
 		|| (!strcmp(word, "wield") &&
@@ -6610,6 +6613,9 @@ u_clothing_discomfort()
 	if(ubelt){
 		count++;
 	}
+	if(usaddle){
+		count++;
+	}
 	if(uleft) count++;
 	if(uright) count++;
 	if(ublindf){
@@ -6793,6 +6799,8 @@ int material;
 		count++;
 	if(ubelt && ubelt->obj_material == material && !uarmu && !uarm)
 		count++;
+	if(usaddle && usaddle->obj_material == material && !uarmu && !uarm && !uarmc)
+		count++;
 	if(u.uentangled_oid && !uarmu && !uarm && !(uarm && arm_blocks_upper_body(uarm->otyp)) && entangle_material(&youmonst, material))
 		count++;
 	if(ublindf && ublindf->obj_material == material)
@@ -6837,6 +6845,8 @@ int bcu;
 	if(uamul && bcu(uamul) == bcu && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)))
 		count++;
 	if(ubelt && bcu(ubelt) == bcu && !uarmu && !uarm)
+		count++;
+	if(usaddle && bcu(usaddle) == bcu && !uarmu && !uarm && !uarmc)
 		count++;
 	if(u.uentangled_oid && !uarmu && !(uarm && arm_blocks_upper_body(uarm->otyp)) && !uarmc && entangle_beatitude(&youmonst, bcu))
 		count++;

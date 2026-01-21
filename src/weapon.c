@@ -4778,7 +4778,7 @@ const struct def_skill *class_skill;
 	  OLD_P_SKILL(P_DART) = P_BASIC;
 	  OLD_P_SKILL(P_DAGGER) = P_BASIC;
 	}
-	if (Role_if(PM_HEALER) && Race_if(PM_DROW)){
+	if (Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
 	  OLD_P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
 	  OLD_P_SKILL(P_BEAST_MASTERY) = P_BASIC;
 	  OLD_P_SKILL(P_DIVINATION_SPELL) = P_BASIC;

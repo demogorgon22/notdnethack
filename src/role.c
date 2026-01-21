@@ -41,7 +41,7 @@ struct Role roles[] = {
 	PM_LORD_CARNARVON, PM_STUDENT, PM_MINION_OF_TEZCATLIPOCA,
 	NON_PM, PM_HUMAN_MUMMY, S_SNAKE, S_MUMMY,
 	ART_ITLACHIAYAQUE,
-	MA_HUMAN|SA_DWARF|SA_GNOME|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON, ROLE_MALE|ROLE_FEMALE |
+	MA_HUMAN|SA_DWARF|SA_GNOME|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON|SA_FORMIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 10, 10,  7,  7,  7 },
@@ -103,7 +103,7 @@ struct Role roles[] = {
 	PM_PELIAS, PM_CHIEFTAIN, PM_THOTH_AMON,
 	PM_OGRE, PM_TROLL, S_OGRE, S_TROLL,
 	ART_HEART_OF_AHRIMAN,
-	SA_HUMAN|SA_ORC|SA_VAMPIRE|SA_HALF_DRAGON, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_ORC|SA_VAMPIRE|SA_HALF_DRAGON|SA_CENTAUR, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  16,  7,  7, 15, 16,  6 },
@@ -130,7 +130,7 @@ struct Role roles[] = {
 	PM_STRANGE_CORPSE, PM_PEASANT, PM_ACERERAK,
 	PM_SKELETON, PM_LICH, S_HUMAN, S_HUMANOID,
 	ART_PEN_OF_THE_VOID,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ELF|SA_ORC|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ELF|SA_ORC|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA|SA_FORMIAN|SA_DRIDER, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  6,  6,  6,  6,  6,  6 },
@@ -157,7 +157,7 @@ struct Role roles[] = {
 	PM_SHAMAN_KARNOV, PM_NEANDERTHAL, PM_CHROMATIC_DRAGON,
 	PM_BUGBEAR, PM_HILL_GIANT, S_HUMANOID, S_GIANT,
 	ART_SCEPTRE_OF_MIGHT,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_HALF_DRAGON|SA_CHIROPTERAN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_DWARF|SA_GNOME|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_FORMIAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7,  8,  6 },
@@ -186,7 +186,7 @@ struct Role roles[] = {
 	PM_SOLDIER_ANT, PM_MALKUTH_SEPHIRAH, S_RODENT, S_SPIDER,
 	ART_IRON_SPOON_OF_LIBERATION,
 	// ART_IRON_BALL_OF_LIBERATION,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ORC|SA_ELF|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ORC|SA_ELF|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA|SA_DRIDER, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7, 13,  6 },
@@ -214,7 +214,7 @@ struct Role roles[] = {
 	PM_HIPPOCRATES, PM_ATTENDANT, PM_CYCLOPS,
 	PM_GIANT_RAT, PM_SNAKE, S_RODENT, S_YETI,
 	ART_STAFF_OF_AESCULAPIUS,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_YUKI_ONNA, ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
+	SA_HUMAN|SA_ELF|SA_GNOME|SA_YUKI_ONNA|SA_CENTAUR|SA_DRIDER, ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 13, 11,  7, 11, 16 },
 	{   5, 30, 20, 15, 25, 5 },
@@ -240,7 +240,7 @@ struct Role roles[] = {
 	PM_KING_ARTHUR, PM_PAGE, PM_NIMUNE,
 	PM_QUASIT, PM_ELF_LORD, S_IMP, S_NYMPH, /*demons and fairies*/
 	ART_MAGIC_MIRROR_OF_MERLIN,
-	SA_DWARF|SA_HUMAN|SA_CLOCKWORK|SA_HALF_DRAGON, ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
+	SA_DWARF|SA_HUMAN|SA_CLOCKWORK|SA_HALF_DRAGON|SA_CENTAUR, ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
 	/* Str Int Wis Dex Con Cha */
 	{  13,  7, 14,  8, 10, 17 },
 	{  30, 15, 15, 10, 20, 10 },
@@ -463,7 +463,7 @@ struct Role roles[] = {
 	PM_ORION, PM_HUNTER, PM_SCORPIUS,
 	PM_FOREST_CENTAUR, PM_SCORPION, S_CENTAUR, S_SPIDER,
 	ART_LONGBOW_OF_DIANA,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_HALF_DRAGON|SA_CHIROPTERAN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_CENTAUR, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  13, 13, 13,  9, 13,  7 },
@@ -545,7 +545,7 @@ struct Role roles[] = {
 	PM_PINDAR, PM_RHYMER, PM_AGLAOPE,
 	PM_SNAKE, PM_WHITE_UNICORN, S_SNAKE, S_UNICORN,
 	ART_LYRE_OF_ORPHEUS,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_CLOCKWORK|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_VAMPIRE, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_CLOCKWORK|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_VAMPIRE|SA_CENTAUR, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7,  7, 10,  6, 10 },
@@ -600,7 +600,7 @@ struct Role roles[] = {
 	PM_NORN, PM_WARRIOR, PM_LORD_SURTUR,
 	PM_FIRE_ANT, PM_FIRE_GIANT, S_ANT, S_GIANT,
 	ART_ORB_OF_FATE,
-	SA_HUMAN|SA_DWARF|SA_YUKI_ONNA, ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL,
+	SA_HUMAN|SA_DWARF|SA_YUKI_ONNA|SA_FORMIAN, ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  12,  10, 12, 10, 10, 12 },
 	{  18,  14, 16, 18, 20, 14 },
@@ -775,7 +775,7 @@ struct Role urole =
 
 /* Table of all races */
 const struct Race races[] = {
-{	"human", "human", "humanity", "Hum",
+{	"human", "human", "humanity", "Hum", 'h',
 	{"man", "woman"},
 	PM_HUMAN, NON_PM, PM_HUMAN_MUMMY, PM_HUMAN,
 	ROLE_MALE|ROLE_FEMALE |
@@ -791,7 +791,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_ABJURATION, -20
 },
-{	"clockwork automaton", "automatic", "clockwork-kind", "Clk",
+{	"clockwork automaton", "automatic", "clockwork-kind", "Clk", 'c',
 	{0, 0},
 	PM_CLOCKWORK_AUTOMATON, NON_PM, NON_PM, NON_PM,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL,
@@ -806,7 +806,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_WIZARD_LOCK, -1000
 },
-{	"Chiropteran", "Chiropteric", "Chiropteran-hood", "Bat",
+{	"chiropteran", "chiropteric", "chiropteran-hood", "Bat", 'C',
 	{0, 0},
 	PM_CHIROPTERAN, NON_PM, PM_CHIROPTERAN_MUMMY, PM_CHIROPTERAN,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -821,7 +821,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_MAGIC_MAPPING, -15
 },
-{	"dwarf", "dwarven", "dwarvenkind", "Dwa",
+{	"dwarf", "dwarven", "dwarvenkind", "Dwa", 'd',
 	{0, 0},
 	PM_DWARF, NON_PM, PM_DWARF_MUMMY, PM_DWARF,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
@@ -836,7 +836,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_DIG, -15
 },
-{	"Drow", "droven", "drovenkind", "Dro",
+{	"drow", "droven", "drovenkind", "Dro", 'D',
 	{"hedrow", "drow"},
 	PM_DROW, NON_PM, PM_DROW_MUMMY, PM_HEDROW_ZOMBIE,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -851,7 +851,7 @@ const struct Race races[] = {
 	NO_NIGHTVISION,
 	SPE_SLEEP, -5
 },
-{	"elf", "elven", "elvenkind", "Elf",
+{	"elf", "elven", "elvenkind", "Elf", 'e',
 	{"elf", "elf-maid"},
 	PM_ELF, NON_PM, PM_ELF_MUMMY, PM_ELF,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -866,7 +866,7 @@ const struct Race races[] = {
 	NIGHTVISION3,
 	SPE_REMOVE_CURSE, -10
 },
-{	"gnome", "gnomish", "gnomehood", "Gno",
+{	"gnome", "gnomish", "gnomehood", "Gno", 'g',
 	{0, 0},
 	PM_GNOME, NON_PM, PM_GNOME_MUMMY, PM_GNOME,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
@@ -881,7 +881,7 @@ const struct Race races[] = {
 	NIGHTVISION2,
 	SPE_INVISIBILITY, -10
 },
-{	"Half-dragon", "Half-dragon", "Half-dragonhood", "Hlf",
+{	"half-dragon", "half-dragon", "half-dragonhood", "Hlf", 'H',
 	{0, 0},
 	PM_HALF_DRAGON, NON_PM, PM_HALF_DRAGON_MUMMY, PM_HALF_DRAGON,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -896,7 +896,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_DETECT_TREASURE, -10
 },
-{	"incantifier", "incantifier", "wanterkind", "Inc",
+{	"incantifier", "incantifier", "wanterkind", "Inc", 'i',
 	{0, 0},
 	PM_INCANTIFIER, NON_PM, PM_HUMAN_MUMMY, PM_HUMAN,
 	ROLE_MALE|ROLE_FEMALE |
@@ -912,7 +912,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS
 	//Note: Bonus to all spells.
 },
-{	"orc", "orcish", "orcdom", "Orc",
+{	"orc", "orcish", "orcdom", "Orc", 'o',
 	{0, 0},
 	PM_ORC, NON_PM, PM_ORC_MUMMY, PM_ORC,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -927,7 +927,7 @@ const struct Race races[] = {
 	NIGHTVISION2,
 	SPE_CANCELLATION, -15
 },
-{	"vampire", "vampiric", "vampirehood", "Vam",
+{	"vampire", "vampiric", "vampirehood", "Vam", 'v',
 	{"vampire", "vampiress"},
 	PM_VAMPIRE, NON_PM, PM_HUMAN_MUMMY, PM_HUMAN,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -942,7 +942,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_DRAIN_LIFE, -5
 },
-{	"yuki-onna", "yuki-onnic", "feyhood", "Swn",
+{	"yuki-onna", "yuki-onnic", "feyhood", "Swn", 'y',
 	{0, 0},
 	PM_YUKI_ONNA, NON_PM, PM_HUMAN_MUMMY, PM_YUKI_ONNA,
 	ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -957,7 +957,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_CHARM_MONSTER, -15
 },
-{	"Gith", "Gith", "githhood", "Gth",
+{	"gith", "gith", "githhood", "Gth", 'G',
 	{0, 0},
 	PM_GITH, NON_PM, PM_HUMAN_MUMMY, PM_GITH,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC,
@@ -972,15 +972,62 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_FORCE_BOLT, -1000
 },
+{	"formian", "formian", "formianhood", "For", 'f',
+	{0, 0},
+	PM_FORMIAN, NON_PM, PM_FORMIAN_MUMMY, PM_FORMIAN,
+	ROLE_FEMALE | ROLE_LAWFUL,
+	SA_FORMIAN,
+	MA_INSECTOID, MA_INSECTOID, MA_DWARF|MA_GNOME|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{STR18(100),  16, 18, 18, 18, 15 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  0, 2,  0, 1 },	/* Energy */
+	NORMALNIGHTVIS,
+	SPE_DIG, -10
+},
+{	"centaur", "centaur", "centaurhood", "Cen", 't',
+	{0, 0},
+	PM_CENTAUR, NON_PM, PM_CENTAUR_MUMMY, PM_CENTAUR,
+	ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_CENTAUR,
+	MA_DEMIHUMAN, MA_ANIMAL, MA_HUMAN|MA_ELF|MA_DWARF|MA_GNOME|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(100), 18, 18, 18, 18, 18 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_HASTE_SELF, -20
+},
+{	"drider", "dridic", "driderhood", "Dri", 'r',
+	{0, 0},
+	PM_DRIDER, NON_PM, PM_DRIDER_MUMMY, PM_DRIDER,
+	ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_DRIDER,
+	MA_ELF, 0, MA_FEY|MA_ELF|MA_ORC|MA_DROW,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(100), 20, 18, 20, 16, 20 },
+	/* Init   Lower  Higher */
+	{  4, 0,  0, 4,  0, 1 },	/* Hit points */
+	{  4, 0,  0, 4,  0, 2 },	/* Energy */
+	NO_NIGHTVISION,
+	SPE_SLEEP, -5
+},
 /* Array terminator */
-{ 0, 0, 0, 0, 0 }};
+{ 0 }};
 
 
 /* The player's race, created at runtime from initial
  * choices.  This may be munged in role_init().
  */
 struct Race urace =
-{	"something", "undefined", "something", "Xxx",
+{	"something", "undefined", "something", "Xxx", 0,
 	{0, 0},
 	NON_PM, NON_PM, NON_PM, NON_PM,
 	0, 0, 0, 0, 0,
@@ -994,7 +1041,7 @@ struct Race urace =
 };
 
 struct Race myrkalfr = 
-{	"myrkalfr", "myrkalfar", "myrkalfrkind", "Dro",
+{	"myrkalfr", "myrkalfar", "myrkalfrkind", "Dro", 0,
 	{"myrkalfr", "myrkalfr"},
 	PM_MYRKALFR, NON_PM, PM_DROW_MUMMY, PM_HEDROW_ZOMBIE,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -1010,7 +1057,7 @@ struct Race myrkalfr =
 };
 
 struct Race android = 
-{	"android", "android", "android-kind", "And",
+{	"android", "android", "android-kind", "And", 0,
 	{"android", "gynoid"},
 	PM_ANDROID, PM_GYNOID, PM_MUMMIFIED_ANDROID, PM_FLAYED_ANDROID,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
@@ -1026,7 +1073,7 @@ struct Race android =
 };
 
 struct Race githyanki =
-{	"Githyanki", "githyanki", "githhood", "Ynk",
+{	"Githyanki", "githyanki", "githhood", "Ynk", 0,
 	{0, 0},
 	PM_GITHYANKI, NON_PM, PM_HUMAN_MUMMY, PM_GITHYANKI,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
@@ -1043,7 +1090,7 @@ struct Race githyanki =
 };
 
 struct Race githzerai =
-{	"Githzerai", "githzerai", "githhood", "Zer",
+{	"Githzerai", "githzerai", "githhood", "Zer", 0,
 	{0, 0},
 	PM_GITHZERAI, NON_PM, PM_HUMAN_MUMMY, PM_GITHZERAI,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -2252,7 +2299,7 @@ int newgame;
 				}
 			}
 		}
-	} else if(Race_if(PM_DROW) && Role_if(PM_HEALER)){
+	} else if((Race_if(PM_DROW) || Race_if(PM_DRIDER)) && Role_if(PM_HEALER)){
 		urole.filecode = "Dhl";
 		urole.lgod = GOD_ILMATER;
 		urole.ngod = GOD_PEN_A;
@@ -2602,7 +2649,7 @@ int newgame;
         urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
         urace.lovemask = 0; /* Pariahs of their race */
 	}
-	else if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+	else if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
 		urace.lovemask |= MA_FEY|MA_ELF;
 		urace.hatemask = MA_ORC;
 	}

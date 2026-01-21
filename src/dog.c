@@ -81,6 +81,22 @@ pet_type()
 		else 
 			return (rn2(3) ? PM_CAVE_SPIDER : PM_BABY_CAVE_LIZARD);
 	}
+	else if(Race_if(PM_DRIDER)){
+		if (Role_if(PM_HEALER)){
+			return (PM_KNIGHT);
+		}
+		return (PM_GIANT_SPIDER);
+	}
+	else if(Race_if(PM_FORMIAN)){
+		return (PM_GIANT_ANT);
+	}
+	else if(Race_if(PM_CENTAUR)){
+		if (preferred_pet == 'c' || preferred_pet == 'f')
+			return (PM_KITTEN);
+		else if (preferred_pet == 'd')
+			return (PM_LITTLE_DOG);
+		return (rn2(2) ? PM_KITTEN : PM_LITTLE_DOG);
+	}
 	else if(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend){
 		return (PM_UNDEAD_KNIGHT);
 		// if(flags.initgend) 
@@ -478,7 +494,7 @@ boolean with_you;
 
 	mtmp->mprobed = 0;
 #ifdef STEED
-	if (mtmp == u.usteed)
+	if (mtmp == u.usteed || mtmp == u.urider)
 	    return;	/* don't place steed on the map */
 #endif
 	if (with_you) {
@@ -794,6 +810,7 @@ boolean portal;
 			) ||
 #ifdef STEED
 			(mtmp == u.usteed) ||
+			(mtmp == u.urider) ||
 #endif
 		/* the wiz will level t-port from anywhere to chase
 		   the amulet; if you don't have it, will chase you
@@ -807,12 +824,13 @@ boolean portal;
 		    /* eg if level teleport or new trap, steed has no control
 		       to avoid following */
 		    || (mtmp == u.usteed)
+		    || (mtmp == u.urider)
 #endif
 		    )
 		/* monster won't follow if it hasn't noticed you yet */
 		&& !(mtmp->mstrategy & STRAT_WAITFORU)) {
 			stay_behind = FALSE;
-			if (mtmp->mtame && mtmp->mwait && u.usteed != mtmp && (mtmp->mwait+100 > monstermoves)) {
+			if (mtmp->mtame && mtmp->mwait && u.usteed != mtmp && u.urider != mtmp && (mtmp->mwait+100 > monstermoves)) {
 				if (canspotmon(mtmp))
 					pline("%s obediently waits for you to return.", Monnam(mtmp));
 				stay_behind = TRUE;
@@ -837,10 +855,13 @@ boolean portal;
 				stay_behind = TRUE;
 			}
 #ifdef STEED
-			// if (mtmp == u.usteed) stay_behind = FALSE;
 			if (mtmp == u.usteed && stay_behind) {
 			    pline("%s vanishes from underneath you.", Monnam(mtmp));
 				dismount_steed(DISMOUNT_VANISHED);
+			}
+			if (mtmp == u.urider && stay_behind) {
+			    pline("%s vanishes from your saddle.", Monnam(mtmp));
+				rider_dismounts_you(DISMOUNT_VANISHED);
 			}
 #endif
 			if (stay_behind) {
@@ -1563,6 +1584,9 @@ boolean be_peaceful;
 	mtmp->mpeaceful = be_peaceful;
 	if (u.usteed == mtmp) {
 		dismount_steed(DISMOUNT_THROWN);
+	}
+	if (u.urider == mtmp) {
+		rider_dismounts_you(DISMOUNT_THROWN);
 	}
 	newsym(mtmp->mx, mtmp->my);
 	return;

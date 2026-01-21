@@ -38,8 +38,8 @@ static NEARDATA const char c_armor[]  = "armor",
 			   c_that_[]  = "that";
 
 static NEARDATA const long takeoff_order[] = { WORN_BLINDF, W_WEP,
-	WORN_SHIELD, WORN_GLOVES, LEFT_RING, RIGHT_RING, WORN_CLOAK,
-	WORN_HELMET, WORN_AMUL, WORN_BELT, WORN_ARMOR,
+	WORN_SHIELD, WORN_GLOVES, LEFT_RING, RIGHT_RING, WORN_SADDLE,
+	WORN_CLOAK, WORN_HELMET, WORN_AMUL, WORN_BELT, WORN_ARMOR,
 #ifdef TOURIST
 	WORN_SHIRT,
 #endif
@@ -1476,6 +1476,31 @@ Belt_off()
 	setworn((struct obj *)0, W_BELT);
 }
 
+void
+Saddle_on()
+{
+	if (!usaddle) return;
+	if(check_oprop(usaddle, OPROP_CURS)){
+		if (Blind)
+		pline("%s for a moment.", Tobjnam(usaddle, "vibrate"));
+		else
+		pline("%s %s for a moment.",
+			  Tobjnam(usaddle, "glow"), hcolor(NH_BLACK));
+		curse(usaddle);
+	}
+}
+
+void
+Saddle_off()
+{
+	takeoff_mask &= ~W_SADDLE;
+	if(!usaddle){
+		impossible("Saddle_off() was called, but no saddle is worn.");
+		return;
+	}
+	setworn((struct obj *)0, W_SADDLE);
+}
+
 /* called in main to set intrinsics of worn start-up items */
 void
 set_wear()
@@ -1642,6 +1667,7 @@ doremring()
 	MOREACC(uamul);
 	MOREACC(ublindf);
 	MOREACC(ubelt);
+	MOREACC(usaddle);
 
 	if(!Accessories) {
 		pline("Not wearing any accessories.%s", (iflags.cmdassist &&
@@ -1683,6 +1709,9 @@ doremring()
 		off_msg(otmp);
 	} else if (otmp == ublindf) {
 		Blindf_off(otmp);	/* does its own off_msg */
+	} else if (otmp == usaddle) {
+		Saddle_off();
+		off_msg(otmp);
 	} else {
 		impossible("removing strange accessory?");
 	}
@@ -1949,6 +1978,9 @@ boolean noisy;
 		} else if (ubelt && ubelt->cursed && !Weldproof) {
 			if (noisy) already_wearing("a belt");
 			err++;
+		} else if (usaddle && usaddle->cursed && !Weldproof) {
+			if (noisy) already_wearing("a saddle");
+			err++;
 		} else if(youracedata->msize != otmp->objsize){
 			if (noisy)
 			pline_The("%s is the wrong size for you.", c_shirt);
@@ -1962,6 +1994,9 @@ boolean noisy;
 	} else if (is_cloak(otmp)) {
 		if (uarmc) {
 			if (noisy) already_wearing(an(cloak_simple_name(uarmc)));
+			err++;
+		} else if (usaddle && usaddle->cursed && !Weldproof) {
+			if (noisy) already_wearing("a saddle");
 			err++;
 		} else if(abs(otmp->objsize - youracedata->msize) > 1){
 			if (noisy)
@@ -1978,6 +2013,9 @@ boolean noisy;
 			err++;
 		} else if (ubelt && ubelt->cursed && !Weldproof) {
 			if (noisy) already_wearing("a belt");
+			err++;
+		} else if (usaddle && usaddle->cursed && !Weldproof) {
+			if (noisy) already_wearing("a saddle");
 			err++;
 		} else if(!arm_size_fits(youracedata,otmp)){
 			if (noisy)
@@ -2101,15 +2139,27 @@ doputon()
 		You("have no free %s to put on accessories with!", body_part(HAND));
 		return MOVE_CANCELLED;
 	}
-
-	if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf) {
-		Your("%s%s are full, and you're already wearing a belt, an amulet, and %s.",
-			humanoid(youracedata) ? "ring-" : "",
-			makeplural(body_part(FINGER)),
-			(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
-			: (ublindf->otyp==SOUL_LENS) ? "a lens"
-			: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
-		return MOVE_CANCELLED;
+	if(generic_saddle(youracedata)){
+		if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf && usaddle) {
+			Your("%s%s are full, and you're already wearing a saddle, a belt, an amulet, and %s.",
+				humanoid(youracedata) ? "ring-" : "",
+				makeplural(body_part(FINGER)),
+				(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
+				: (ublindf->otyp==SOUL_LENS) ? "a lens"
+				: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
+			return MOVE_CANCELLED;
+		}
+	}
+	else {
+		if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf) {
+			Your("%s%s are full, and you're already wearing a belt, an amulet, and %s.",
+				humanoid(youracedata) ? "ring-" : "",
+				makeplural(body_part(FINGER)),
+				(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
+				: (ublindf->otyp==SOUL_LENS) ? "a lens"
+				: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
+			return MOVE_CANCELLED;
+		}
 	}
 	otmp = getobj(accessories, "put on");
 	if(!otmp) return MOVE_CANCELLED;
@@ -2206,6 +2256,19 @@ doputon()
 		    return MOVE_STANDARD;
 		setworn(otmp, W_BELT);
 		Belt_on();
+	} else if(otmp->otyp == SADDLE) {
+		if(usaddle) {
+			already_wearing("a saddle");
+			return MOVE_CANCELLED;
+		}
+		if(!generic_saddle(youracedata)){
+			You_cant("wear that!");
+			return MOVE_CANCELLED;
+		}
+		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
+		    return MOVE_STANDARD;
+		setworn(otmp, W_SADDLE);
+		Saddle_on();
 	} else {	/* it's a blindfold, towel, or lenses */
 		if (ublindf) {
 			if (ublindf->otyp == TOWEL)
@@ -3521,6 +3584,7 @@ register struct obj *otmp;
 	else if(otmp == uright) takeoff_mask |= RIGHT_RING;
 	else if(otmp == uamul) takeoff_mask |= WORN_AMUL;
 	else if(otmp == ubelt) takeoff_mask |= WORN_BELT;
+	else if(otmp == usaddle) takeoff_mask |= WORN_SADDLE;
 	else if(otmp == ublindf) takeoff_mask |= WORN_BLINDF;
 	else if(otmp == uwep) takeoff_mask |= W_WEP;
 	else if(otmp == uswapwep) takeoff_mask |= W_SWAPWEP;
@@ -3580,6 +3644,9 @@ do_takeoff()
 	} else if (taking_off == WORN_BELT) {
 	  otmp = ubelt;
 	  if(!cursed(otmp)) Belt_off();
+	} else if (taking_off == WORN_SADDLE) {
+	  otmp = usaddle;
+	  if(!cursed(otmp)) Saddle_off();
 	} else if (taking_off == LEFT_RING) {
 	  otmp = uleft;
 	  if(!cursed(otmp)) Ring_off(uleft);
@@ -3701,7 +3768,7 @@ doddoremarm()
 	set_occupation(take_off, disrobing, 0);
 	return MOVE_INSTANT;
     } else if (!uwep && !uswapwep && !uquiver && !uamul && !ubelt && !ublindf &&
-		!uleft && !uright && !wearing_armor()) {
+		!usaddle && !uleft && !uright && !wearing_armor()) {
 	You("are not wearing anything.");
 	return MOVE_CANCELLED;
     }

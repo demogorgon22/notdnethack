@@ -6327,6 +6327,7 @@ smith_resizeArmor(struct monst *smith, struct obj *otmp)
 
 #ifdef STEED
 		if (u.usteed && u.dz > 0) ptr = u.usteed->data;
+		else if (u.urider && u.dz < 0) ptr = u.urider->data;
 		else 
 #endif
 		if(u.dz){

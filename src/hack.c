@@ -1673,6 +1673,11 @@ domove()
 		/* If you try to ride into water while riding a non-flying steed, you'll fall off.  */
 		(!u.usteed || (amphibious_mon(u.usteed) && mon_resistance(u.usteed, FLYING)));
 
+		//Don't drown your rider
+		if(safe_inwater && u.urider && !amphibious_mon(u.urider)){
+			safe_inwater = FALSE;
+		}
+
 		/* wwalking has to be visible, to prevent identifying via a message prompt
 		 * assumes that HWWalking is known always - i.e. level-up (monk) or similar where it messages
 		 * checks extrinsic from carry/invoke artifacts as well, but not worn :( those are W_WORN not W_ART(I)
@@ -1683,7 +1688,7 @@ domove()
 	    boolean safe_3dwater = safe_inwater && Breathless;
 	    boolean safe_water = safe_inwater || safe_air || (!u.usteed && visible_ww);
 	    boolean safe_lava = safe_air ||	(!u.usteed &&
-			(likes_lava(youracedata) || (lava_vis_ww)));
+			((likes_lava(youracedata) && !u.urider) || (lava_vis_ww)));
 
 	    if ((!safe_air && !safe_air_level && levl[x][y].typ == AIR && levl[u.ux][u.uy].typ != AIR) ||
 			(!safe_water && is_pool(x, y, FALSE) && !is_pool(u.ux, u.uy, FALSE)) ||
@@ -1741,6 +1746,10 @@ domove()
 		u.usteed->mx = u.ux;
 		u.usteed->my = u.uy;
 		exercise_steed();
+	}
+	if (u.urider) {
+		u.urider->mx = u.ux;
+		u.urider->my = u.uy;
 	}
 #endif
 
@@ -3186,6 +3195,23 @@ inv_weight()
 			wt += objwt;
 			otmp = otmp->nobj;
 		}
+	}
+	if(u.urider){
+		boolean rnymph = u.urider->data->mlet == S_NYMPH;
+		int rwtmod = mlev(u.urider)*5;
+		otmp = u.urider->minvent;
+		int subtotal = 0;
+		while (otmp){
+			if(otmp->oartifact) otmp->owt = weight(otmp);
+			objwt = otmp->owt;
+			if(rnymph)
+				objwt = max(0, objwt - rwtmod);
+			subtotal += objwt;
+			otmp = otmp->nobj;
+		}
+		if(nymph)
+			subtotal = max(0, subtotal - wtmod);
+		wt += subtotal;
 	}
 	
 	wc = weight_cap();

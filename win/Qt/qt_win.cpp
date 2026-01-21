@@ -915,9 +915,9 @@ public:
     NhPSListViewRace( QListView* parent, int id ) :
 	NhPSListViewItem(parent,
 #ifdef QT_CHOOSE_RACE_FIRST // Capitalize - looks better
-	    QString(QChar(races[id].noun[0])).upper()+QString(races[id].noun+1)
+	    QString(QChar(races[id].lettercode)).upper()+QString(races[id].noun+1)
 #else
-	    QString(QChar(races[id].noun[0])+QString(races[id].noun+1))
+	    QString(QChar(races[id].lettercode)+QString(races[id].noun+1))
 #endif
 	)
     {

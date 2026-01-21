@@ -1511,6 +1511,7 @@ register struct monst *mtmp;
 		&& !(noactions(mtmp))
 		&& !(mtmp->mpeaceful && !mtmp->mtame) /*Don't telespam the player if peaceful*/
 		&& !(mtmp == u.usteed) /*Steeds can't use tactics*/
+		&& !(mtmp == u.urider)
 	) (void) tactics(mtmp);
 	
 	if(mdat->mtyp == PM_GREAT_CTHULHU && !rn2(20)){
