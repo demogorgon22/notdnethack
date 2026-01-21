@@ -299,7 +299,7 @@ nothing_to_steal:
 #endif
 				)
 		tmp += ((otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) ? 5 : 1);
+			(W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL)) ? 5 : 1);
 	if (!tmp) goto nothing_to_steal;
 	tmp = rn2(tmp);
 	for(otmp = invent; otmp; otmp = otmp->nobj)
@@ -311,7 +311,7 @@ nothing_to_steal:
 #endif
 			)
 		if((tmp -= ((otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) ? 5 : 1)) < 0)
+			(W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL)) ? 5 : 1)) < 0)
 			break;
 	if(!otmp) {
 		impossible("Steal fails!");
@@ -371,7 +371,7 @@ gotobj:
 	/* you're going to notice the theft... */
 	stop_occupation();
 
-	if((otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL | W_SADDLE))){
+	if((otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL))){
 		switch(otmp->oclass) {
 		case TOOL_CLASS:
 		case AMULET_CLASS:

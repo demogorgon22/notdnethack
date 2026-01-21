@@ -238,6 +238,14 @@ register struct obj *obj;
 	if (carnivorous(youracedata) && (obj->obj_material == FLESH)) 
 		return TRUE;
 	
+	if (obligate_carnivore(youracedata)){
+		if(obj->otyp == CORPSE) return !vegan(&mons[obj->corpsenm]);
+	}
+	if (obligate_herbivore(youracedata)){
+		if(obj->otyp == CORPSE) return vegetarian(&mons[obj->corpsenm]);
+		else if(obj->otyp == TIN) return TRUE;
+		else return (obj->oclass == FOOD_CLASS && obj->obj_material == VEGGY);
+	}
      /* return((boolean)(!!index(comestibles, obj->oclass))); */
 	return (boolean)(obj->oclass == FOOD_CLASS && (obj->obj_material == VEGGY || obj->obj_material == FLESH || obj->otyp == TIN));
 }

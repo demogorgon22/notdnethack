@@ -1179,14 +1179,15 @@ register const char *let,*word;
 
 		/* ugly check: remove inappropriate things */
 		if ((taking_off(word) &&
-		    (!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT))
-		     || (otmp==uarm && uarmc && arm_blocks_upper_body(uarm->otyp))
+		    (!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_TOOL | W_BELT))
+		     || (otmp==uarmc && usaddle)
+		     || (otmp==uarm && ((uarmc && arm_blocks_upper_body(uarm->otyp)) || usaddle))
 #ifdef TOURIST
-		     || (otmp==uarmu && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc))
+		     || (otmp==uarmu && ((uarm && arm_blocks_upper_body(uarm->otyp)) || uarmc || usaddle))
 #endif
 		    ))
 		|| (putting_on(word) &&
-		     (otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)))
+		     (otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL)))
 							/* already worn */
 #if 0	/* 3.4.1 -- include currently wielded weapon among the choices */
 		|| (!strcmp(word, "wield") &&
@@ -1709,7 +1710,7 @@ is_worn_no_flags(struct obj *otmp)
 boolean
 is_worn(struct obj *otmp, int qflags)
 {
-    return((boolean)(!!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
+    return((boolean)(!!(otmp->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL |
 #ifdef STEED
 			W_SADDLE |
 #endif
@@ -2606,7 +2607,7 @@ struct obj *obj;
 	add_menu(win, NO_GLYPH, &any, 't', 0, ATR_NONE,
 			"Throw this item", MENU_UNSELECTED);
 	/* T: unequip worn item */
-	if ((obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT))) {
+	if ((obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_TOOL | W_BELT))) {
 	    if ((obj->owornmask & (W_ARMOR)))
 		any.a_void = (genericptr_t)dotakeoff;
 	    if ((obj->owornmask & (W_RING | W_AMUL | W_TOOL | W_BELT)))
@@ -2638,7 +2639,7 @@ struct obj *obj;
 		add_menu(win, NO_GLYPH, &any, 'w', 0, ATR_NONE,
 				"Hold this item in your hands", MENU_UNSELECTED);
 	/* W: Equip this item */
-	if (!(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT))) {
+	if (!(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_TOOL | W_BELT))) {
 	    any.a_void = (genericptr_t)dowear;
 	    if (obj->oclass == ARMOR_CLASS)
 		add_menu(win, NO_GLYPH, &any, 'W', 0, ATR_NONE,

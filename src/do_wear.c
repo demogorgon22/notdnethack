@@ -1682,7 +1682,7 @@ doremring()
 #endif
 	    ) otmp = getobj(accessories, "remove");
 	if(!otmp) return MOVE_CANCELLED;
-	if(!(otmp->owornmask & (W_RING | W_AMUL | W_TOOL | W_BELT))) {
+	if(!(otmp->owornmask & (W_RING | W_AMUL | W_SADDLE | W_TOOL | W_BELT))) {
 		You("are not wearing that.");
 		return MOVE_CANCELLED;
 	}

@@ -358,7 +358,9 @@
 #define hallucinogenic(ptr)		(((ptr)->mflagsb & MB_HALUC) != 0L)
 #define inediate(ptr)		(!(carnivorous(ptr) || herbivorous(ptr) || metallivorous(ptr) || magivorous(ptr) || is_vampire(ptr)))
 #define carnivorous(ptr)	(((ptr)->mflagst & MT_CARNIVORE) != 0L)
+#define obligate_carnivore(ptr)	(((ptr)->mflagst & MT_FOODMASK) == MT_CARNIVORE)
 #define herbivorous(ptr)	(((ptr)->mflagst & MT_HERBIVORE) != 0L)
+#define obligate_herbivore(ptr)	(((ptr)->mflagst & MT_FOODMASK) == MT_HERBIVORE)
 #define metallivorous(ptr)	(((ptr)->mflagst & MT_METALLIVORE) != 0L)
 #define magivorous(ptr)		(((ptr)->mflagst & MT_MAGIVORE) != 0L)
 #define polyok(ptr)			((((ptr)->mflagsg & MG_NOPOLY) == 0L) && (G_C_INST((ptr)->geno) <= u.uinsight) && !((((ptr)->mflagsg&MG_FUTURE_WISH) != 0L) && !Role_if(PM_TOURIST)))
@@ -952,6 +954,8 @@
 
 #define sflm_target(mon) (!is_rider((mon)->data) && (is_angel((mon)->data) || ((mon) == &youmonst ? Displaced : mon_resistance(mon, DISPLACED)) || is_shapechanger((mon)->data) || is_chaotic_mon(mon)))
 #define sflm_target_data(ptr) (!is_rider(ptr) && (is_angel(ptr) || ((ptr)->mflagsg&MG_DISPLACEMENT) || is_shapechanger(ptr) || is_chaotic(ptr)))
+
+#define melee_polearms_mon(mon)	(melee_polearms((mon)->data) || mon == u.urider)
 
 #define melee_polearms(ptr)	((ptr)->mtyp == PM_VROCK ||\
 							 (ptr)->mtyp == PM_OSSIFRUGE ||\

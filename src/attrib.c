@@ -236,6 +236,15 @@ const struct innate {
 		     {	 0, 0, 0, 0 } },
 
 	inc_abil[] = { {	1, &(HAntimagic), "", "" },
+		     {	 0, 0, 0, 0 } },
+	
+	frm_abil[] = { 
+			 {   3, &(HFire_resistance), "heat resistant", "less heat resistant" },
+			 {	 5, &(HPoison_resistance), "healthy", "sickly" },
+			 {   9, &(HAcid_resistance), "thick-skinned","soft-skinned" },
+		     {	 0, 0, 0, 0 } },
+
+	cen_abil[] = { {	14, &(HJumping), "you feel light on your feet", "you feel heavier" },
 		     {	 0, 0, 0, 0 } };
 
 #define	next_check u.exerchkturn
@@ -944,6 +953,7 @@ int oldlevel, newlevel;
 	case PM_ELF:            rabil = elf_abil;	break;
 	case PM_DROW:           rabil = elf_abil;	break;
 	case PM_MYRKALFR:       rabil = elf_abil;	break;
+	case PM_DRIDER:         rabil = elf_abil;	break;
 	case PM_ORC:            rabil = orc_abil;	break;
 	case PM_CLOCKWORK_AUTOMATON:rabil = clk_abil;	break;
 	case PM_ANDROID:		rabil = and_abil;	break;
@@ -951,6 +961,8 @@ int oldlevel, newlevel;
 	case PM_VAMPIRE:		rabil = vam_abil;	break;
 	case PM_HALF_DRAGON:	rabil = hlf_abil;	break;
 	case PM_YUKI_ONNA:		rabil = yki_abil;	break;
+	case PM_CENTAUR:		rabil = cen_abil;	break;
+	case PM_FORMIAN:	    rabil = frm_abil;	break;
 	case PM_HUMAN:
 	case PM_DWARF:
 	case PM_GNOME:

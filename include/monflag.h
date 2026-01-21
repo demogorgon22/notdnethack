@@ -139,6 +139,7 @@
 #define MT_DETACHED		0x10000000L	/* detached from purpose/subsumed but intelligent, mindless but with muse roughly */
 
 #define MT_OMNIVORE		(MT_CARNIVORE|MT_HERBIVORE)	/* eats both */
+#define MT_FOODMASK         (MT_CARNIVORE|MT_HERBIVORE|MT_OMNIVORE|MT_METALLIVORE|MT_MAGIVORE)	/* any food type */
 #define MT_MAID		(MT_MAGIC|MT_COLLECT|MT_JEWELS|MT_GREEDY)	/* tiddies up the dungeon */
 #define MT_WANTSALL		(MT_WANTSAMUL|MT_WANTSBELL|MT_WANTSBOOK|MT_WANTSCAND|MT_WANTSARTI)	/* wants any major artifact */
 #define MT_COVETOUS		MT_WANTSALL		/* wants something */

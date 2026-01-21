@@ -726,7 +726,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 
 				/* pick appropriate weapon based on range to target */
 				if (dist2(x(magr), y(magr), tarx, tary) <
-					((otmp && is_bad_melee_pole(otmp) && !melee_polearms(pa)) ? 3 : m_pole_range(magr)))	// if we have a polearm, use it longer range
+					((otmp && is_bad_melee_pole(otmp) && !melee_polearms_mon(magr)) ? 3 : m_pole_range(magr)))	// if we have a polearm, use it longer range
 				{
 					/* melee range */
 					magr->combat_mode = HNDHND_MODE;
@@ -14996,6 +14996,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			(youagr && u.usteed) ||
 #endif
 			(pa && melee_polearms(pa)) ||
+			(magr && melee_polearms_mon(magr)) ||
 			weapon->otyp == AKLYS ||
 			check_oprop(weapon, OPROP_CCLAW)
 			) &&
@@ -15283,24 +15284,25 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 	/* jousting */
 #ifdef STEED
-	if (youagr && melee && !recursed) {	/* do not joust in multihits */
-		if ((u.usteed || centauroid(youracedata) || animaloid(youracedata) || (modifier_flags&MELEEHURT_FORCE_CHECK_JOUST)) && weapon &&
+	if (melee && !recursed) {	/* do not joust in multihits */
+		if (((youagr && u.usteed) || (magr == u.urider) || centauroid(pa) || animaloid(pa) || (modifier_flags&MELEEHURT_FORCE_CHECK_JOUST)) 
+		    && weapon &&
 			(weapon_type(weapon) == P_LANCE ||
-			(weapon->oartifact == ART_ROD_OF_SEVEN_PARTS) ||
-			(weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH) ||
-			(modifier_flags&MELEEHURT_FORCE_CHECK_JOUST) ||
-			(weapon->oartifact == ART_SKY_REFLECTED && objects[(artinstance[ART_SKY_REFLECTED].ZerthOtyp)].oc_skill == P_LANCE)
+			 (weapon->oartifact == ART_ROD_OF_SEVEN_PARTS) ||
+			 (weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH) ||
+			 (modifier_flags&MELEEHURT_FORCE_CHECK_JOUST) ||
+			 (weapon->oartifact == ART_SKY_REFLECTED && objects[(artinstance[ART_SKY_REFLECTED].ZerthOtyp)].oc_skill == P_LANCE)
 			) &&
 			mdef != u.ustuck &&
-			!Fumbling &&
-			!Stunned &&
+			!(youagr ? Fumbling : mon_resistance(magr, FUMBLING)) &&
+			!(youagr ? Stunned : (magr->mconf || magr->mstun)) &&
 			(weapon == uwep || (weapon == uswapwep && u.twoweap)))
 		{
 			/* if using two weapons, use worse of lance and two-weapon skills */
 			jousting = 0;
 			int joust_dieroll;
-			int skill_rating = P_SKILL(weapon_type(weapon));	/* lance skill */
-			if (u.twoweap && P_SKILL(P_TWO_WEAPON_COMBAT) < skill_rating)
+			int skill_rating = youagr ? P_SKILL(weapon_type(weapon)) : m_martial_skill(pa);	/* lance skill */
+			if (youagr && u.twoweap && P_SKILL(P_TWO_WEAPON_COMBAT) < skill_rating)
 				skill_rating = P_SKILL(P_TWO_WEAPON_COMBAT);
 			if (skill_rating == P_ISRESTRICTED)
 				skill_rating = P_UNSKILLED; /* 0=>1 */
@@ -17964,7 +17966,20 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			}
 		}
 		else {
-			impossible("Monsters jousting? Someone forgot to fully implement this...");
+			if(vis) pline("%s jousts %s%s",
+				Monnam(magr),
+				mon_nam(mdef),
+				canseemon(mdef) ? exclam(subtotl) : ".");
+			if(jousting < 0) {
+				if (vis) pline("%s %s shatters on impact!",
+					s_suffix(Monnam(magr)),
+					xname(weapon));
+				destroy_one_magr_weapon = TRUE;
+				/* useup() will be called later */
+			}
+			if(lethaldamage && u.urider == magr){
+				more_experienced(experience(mdef, 0), 0);
+			}
 		}
 	}
 	if (modifier_flags&MELEEHURT_SHOVE) {

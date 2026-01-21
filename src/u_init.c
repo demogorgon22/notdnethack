@@ -3355,6 +3355,11 @@ register struct trobj *trop;
 	while (trop->trclass) {
 		if (trop->trotyp != UNDEF_TYP) {
 			otyp = (int)trop->trotyp;
+			if (youracedata->mflagsb&MB_CENTAUR && objects[otyp].oc_class == ARMOR_CLASS && objects[otyp].oc_armcat == ARM_BOOTS) {
+				/* centaurs can't wear boots */
+				trop++;
+				continue;
+			}
 			if (urace.malenum != PM_HUMAN) {
 			    /* substitute specific items for generic ones */
 			    for (i = 0; inv_subs[i].race_pm != NON_PM; ++i)

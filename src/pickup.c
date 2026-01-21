@@ -389,7 +389,7 @@ boolean
 is_worn_by_type(struct obj *otmp, int qflags)
 {
 	return((boolean)(!!(otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
+			(W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
 	        && (index(valid_menu_classes, otmp->oclass) != (char *)0));
 }
 
@@ -963,7 +963,7 @@ int how;			/* type of query */
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if (curr->oclass == *pack) {
 		   if ((qflags & WORN_TYPES) &&
-		   		!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
+		   		!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL |
 		    	W_WEP | W_SWAPWEP | W_QUIVER)))
 			 continue;
 		   if (!collected_type_name) {
@@ -1063,7 +1063,7 @@ int qflags;
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if (curr->oclass == *pack) {
 		   if ((qflags & WORN_TYPES) &&
-		    	!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
+		    	!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL |
 		    	W_WEP | W_SWAPWEP | W_QUIVER)))
 			 continue;
 		   if (!counted_category) {
@@ -2248,7 +2248,7 @@ register struct obj *obj;
 	) {
 		pline("The artifact isn't interested in taking %s.", the(xname(obj)));
 		return 0;
-	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) {
+	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL)) {
 		Norep("You cannot %s %s you are wearing.",
 			Icebox ? "refrigerate" : "stash", something);
 		return 0;

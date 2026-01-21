@@ -2459,7 +2459,7 @@ register struct monst *mtmp;
 	if(is_giant(mtmp->data))	/* giants just love to use clubs */
 		Oselect(CLUB, W_WEP, marilith);
 	
-	if(melee_polearms(mtmp->data)){
+	if(melee_polearms_mon(mtmp)){
 		for (i = 0; i < SIZE(hpwep); i++) {
 			if (hpwep[i] == CORPSE && !((mtmp->misc_worn_check & W_ARMG) || resists_ston(mtmp)))
 				continue;
@@ -4880,7 +4880,7 @@ boolean youagr;
 			&& (!youagr || otmp->owt <= max_offhand_weight())// not too heavy
 			&& (!(otmp->cursed) || (youagr && Weldproof) || (!youagr && is_weldproof_mon(magr)))
 			&& (!youagr || (otmp != uwep && (!u.twoweap || otmp != uswapwep)))	// not wielded already (player)
-			&& !(is_ammo(otmp) || (is_bad_melee_pole(otmp) && !melee_polearms(pa)) || is_missile(otmp))	// not unsuitable for melee (ammo, polearm, missile)
+			&& !(is_ammo(otmp) || (is_bad_melee_pole(otmp) && !melee_polearms_mon(magr)) || is_missile(otmp))	// not unsuitable for melee (ammo, polearm, missile)
 			&& !otmp->owornmask);												// not worn
 }
 

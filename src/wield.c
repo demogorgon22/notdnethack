@@ -340,7 +340,7 @@ dowield()
 	}
 
 	/* Handle no object, or object in other slot */
-	if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
+	if (wep->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif
@@ -463,7 +463,7 @@ dowieldquiver()
 		pline("%s already being used as a weapon!",
 		      !is_plural(uwep) ? "That is" : "They are");
 		return MOVE_CANCELLED;
-	} else if (newquiver->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL
+	} else if (newquiver->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL
 #ifdef STEED
 			| W_SADDLE
 #endif

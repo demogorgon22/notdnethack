@@ -759,7 +759,7 @@ you_calc_movement()
 		|| Race_if(PM_ORC)
 		|| (Race_if(PM_HALF_DRAGON) && Humanoid_half_dragon(urole.malenum))
 	)) moveamt = 12;
-	else moveamt = youmonst.data->mmove;
+	else moveamt = youracedata->mmove;
 	if(Race_if(PM_HALF_DRAGON) && flags.HDbreath == AD_ELEC && u.ulevel >= 15)
 		moveamt += 3;
 	if(uarmf && !Flying && !Levitation){
