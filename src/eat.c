@@ -822,7 +822,7 @@ BOOLEAN_P bld, nobadeffects;
 		    return;
 		}
 		if(is_gray_mold(&mons[pm])){
-			if(!nobadeffects){
+			if(!nobadeffects && !acidic(youracedata)){
 				struct attack *mattk = attacktype_fordmg(&mons[pm], AT_NONE, AD_GMLD);
 				int spores = 1;
 				if(mattk) spores = mattk->damn * mattk->damd;

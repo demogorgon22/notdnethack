@@ -1734,6 +1734,11 @@ mcalcdistress()
 		if(damage > 0)
 			m_losehp(mtmp, damage, FALSE, "swarming vermin");
 	}
+	if(acidic(mtmp->data) || !is_organic_monst(mtmp->data)){
+		// I think checking it wastes just as much time as blindly setting it.
+		mtmp->mgmld_skin = 0;
+		mtmp->mgmld_throat = 0;
+	}
 	if(mtmp->mgmld_skin || mtmp->mgmld_throat){
 		const char *throatpart = mbodypart(mtmp, WINDPIPE);
 		if(throatpart[0] == '\0'){

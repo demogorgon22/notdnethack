@@ -12151,7 +12151,8 @@ int vis;
 		/* deal damage */
 		result = xdamagey(magr, mdef, attk, dmg);
 		break;
-	case AD_GMLD:{
+	case AD_GMLD:
+	if(!acidic(youdef ? youracedata : mdef->data)){
 		boolean breathless = youdef ? Breathless : breathless_mon(mdef);
 		if(youdef){
 			if(is_gray_mold(youracedata)){
@@ -20001,7 +20002,7 @@ boolean endofchain;			/* if the passive is occuring at the end of aggressor's at
 				}
 				break;
 				case AD_GMLD:
-					if ((youdef || !mdef->mcan) && !is_gray_mold(youagr ? youracedata : magr->data)) {
+					if ((youdef || !mdef->mcan) && !is_gray_mold(youagr ? youracedata : magr->data) && !acidic(youagr ? youracedata : magr->data)) {
 						if(!rn2(4) || (!youdef && DEADMONSTER(mdef))){
 							if (canseemon(mdef))
 								pline("A cloud of gray spores is released!");

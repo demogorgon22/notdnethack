@@ -3079,7 +3079,7 @@ karemade:
 					IMPURITY_UP(u.uimp_illness)
 					IMPURITY_UP(u.uimp_rot)
 					if(!rn2(20)){
-						pline_The("parasitic caterpillars have rotted to death!");
+						pline_The("parasitic caterpillars have %s!", rn2(20) ? "rotted to death" : !rn2(3) ? "metamorphosed into a rainbow of butterflies" : rn2(2) ? "metamorphosed into a flock of crimson lepidopterans" : "metamorphosed into a swarm of pale moths");
 						youmonst.mcaterpillars = FALSE;
 						IMPURITY_UP(u.uimp_bodies)
 					}
@@ -3100,6 +3100,11 @@ karemade:
 						IMPURITY_UP(u.uimp_bodies)
 						IMPURITY_UP(u.uimp_rot)
 					}
+				}
+				if(acidic(youracedata) || !is_organic_monst(youracedata)){
+					// I think checking it wastes just as much time as blindly setting it.
+					youmonst.mgmld_skin = 0;
+					youmonst.mgmld_throat = 0;
 				}
 				if(youmonst.mgmld_skin || youmonst.mgmld_throat){
 					const char *throatpart = body_part(WINDPIPE);
