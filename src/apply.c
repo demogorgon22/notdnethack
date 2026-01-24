@@ -3716,7 +3716,7 @@ defile_vampire(struct obj *obj, struct obj *research_kit)
 	start_menu(tmpwin);
 
 	any.a_int = 1;
-	if(!check_vampire(VAMPIRE_THRALLS)){
+	if(!check_vampire(VAMPIRE_THRALLS) && Race_if(PM_VAMPIRE)){
 		n++;
 		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
 			 "Better control your spawn", MENU_UNSELECTED);
@@ -3724,7 +3724,7 @@ defile_vampire(struct obj *obj, struct obj *research_kit)
 
 	ch++;
 	any.a_int = 2;
-	if(!check_vampire(VAMPIRE_MASTERY)){
+	if(!check_vampire(VAMPIRE_MASTERY) && Race_if(PM_VAMPIRE)){
 		n++;
 		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
 			 "Improve your spawns' attacks", MENU_UNSELECTED);
@@ -3835,7 +3835,7 @@ blood_draw(struct obj *obj)
 		any.a_int = 1;
 		add_menu(tmpwin, NO_GLYPH, &any , 'b', 0, ATR_NONE,
 			 "Exsanguinate yourself", MENU_UNSELECTED);
-		if(Race_if(PM_VAMPIRE)){
+		if(Race_if(PM_VAMPIRE) || (Role_if(PM_UNDEAD_HUNTER) && Race_if(PM_AASIMAR))){
 			any.a_int = 2;
 			add_menu(tmpwin, NO_GLYPH, &any , 'c', 0, ATR_NONE,
 				 "Distill your blood", MENU_UNSELECTED);

@@ -3126,7 +3126,12 @@ mutations_enlightenment()
 	int i;
 	en_win = create_nhwindow(NHW_MENU);
 	extern const struct mutationtype mutationtypes[];
-
+	for(i= 0; mutationtypes[i].mutation; i++){
+		if(u.next_tiefling_mutation == mutationtypes[i].mutation){
+			putstr(en_win, 0, mutationtypes[i].start_forming);
+			break;
+		}
+	}
 	for(i= 0; mutationtypes[i].mutation; i++){
 		if(check_mutation(mutationtypes[i].mutation)
 			&& (mutationtypes[i].mutation != YOG_GAZE_1 || u.specialSealsActive&SEAL_YOG_SOTHOTH)

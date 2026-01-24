@@ -219,6 +219,15 @@ struct flag {
 	int	 panCgod;	/* deity selection for binder character */
 	int	 panVgod;	/* deity selection for binder character */
 	int  HDbreath;	/* half-dragon breath weapon type*/
+	int tiefling_level[7]; /* tiefling mutation levels*/
+	int aasimar_type; /* aasimar type*/
+#define AASIMAR_TYPE_NONE		0
+#define AASIMAR_TYPE_ARCHON		1
+#define AASIMAR_TYPE_DEVA		2
+#define AASIMAR_TYPE_ELADRIN	3
+#define AASIMAR_TYPE_SERAPH		4
+#define AASIMAR_TYPE_PRIMINAL	5
+#define AASIMAR_TYPE_CLOUDFACE	6
 };
 
 /*

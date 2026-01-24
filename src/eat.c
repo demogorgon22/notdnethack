@@ -731,7 +731,7 @@ boolean allowmsg;
 			}
 			HAggravate_monster |= TIMEOUT_INF;
 			change_luck(-rn1(4,2));		/* -5..-2 */
-		} else if (Role_if(PM_CAVEMAN)) {
+		} else if (Role_if(PM_CAVEMAN) || Race_if(PM_SILVERMAN) || Race_if(PM_SILVERKNIGHT)) {
 			adjalign(sgn(u.ualign.type));
 			You("honor the dead.");
 		} else {

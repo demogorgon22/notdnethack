@@ -2270,6 +2270,7 @@ humanoid_sound:
 					Sprintf(msgbuff, talkabt, !rn2(4) ? "birth and death" : !rn2(3) ? "the changing seasons of life" : rn2(10) ? (!rn2(4) ? "the stars beyond the rains of spring" : !rn2(3) ? "the stars above the green summer canopy" : !rn2(4) ? "stars among the autumn leaves" : "stars seen past the barren branches") : "secret rebirths");
 					pline_msg = msgbuff;
 				break;
+				case PM_FORMIAN:
 				case PM_FORMIAN_CRUSHER:
 				case PM_FORMIAN_TASKMASTER:
 					pline_msg = "chitters.";

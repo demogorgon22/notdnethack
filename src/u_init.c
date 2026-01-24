@@ -379,6 +379,11 @@ static struct trobj Knight[] = {
 	{ 0, 0, 0, 0, 0 }
 };
 
+static struct trobj SilverKnight[] = {
+	{ 0, 1, WEAPON_CLASS, 1, 1 },
+	{ 0, 0, 0, 0, 0 }
+};
+
 static struct trobj Kensei[] = {
 #define KEN_WEAPON 0
 	{ LONG_SWORD, 1, WEAPON_CLASS, 1, 1 },
@@ -764,6 +769,11 @@ static struct trobj Orc_Brd_equip[] = {
 	{ ORCISH_HELM, 0, WEAPON_CLASS, 1, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
+static struct trobj Pest_equip[] = {
+	{ PEST_GLAIVE, 0, WEAPON_CLASS, 1, 0 },
+	{ 0, 0, 0, 0, 0 }
+};
+
 #ifdef TOURIST
 static struct trobj Leash[] = {
 	{ LEASH, 0, TOOL_CLASS, 1, 0 },
@@ -1088,6 +1098,11 @@ static const struct def_skill Skill_N_Vampire[] = {
     { P_NONE, 0 }
 };
 
+static const struct def_skill Skill_N_Silverman[] = {
+	{ P_POLEARMS, P_BASIC },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_C[] = {
     { P_DAGGER, P_BASIC },		{ P_KNIFE,  P_SKILLED },
     { P_AXE, P_SKILLED },		{ P_PICK_AXE, P_BASIC },
@@ -1275,6 +1290,30 @@ static const struct def_skill Skill_K[] = {
     { P_TWO_WEAPON_COMBAT, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_BEAST_MASTERY, P_SKILLED },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_SilKnight[] = {
+    { P_DAGGER, P_EXPERT },		{ P_KNIFE, P_BASIC },
+    { P_AXE, P_BASIC },			{ P_PICK_AXE, P_BASIC },
+    { P_SHORT_SWORD, P_SKILLED },	{ P_BROAD_SWORD, P_SKILLED },
+    { P_LONG_SWORD, P_EXPERT },	{ P_TWO_HANDED_SWORD, P_SKILLED },
+    { P_SCIMITAR, P_BASIC },		{ P_SABER, P_SKILLED },
+    { P_CLUB, P_BASIC },		{ P_MACE, P_SKILLED },
+    { P_MORNING_STAR, P_SKILLED },	{ P_FLAIL, P_BASIC },
+    { P_HAMMER, P_BASIC },		{ P_POLEARMS, P_EXPERT },
+    { P_SPEAR, P_SKILLED },    { P_TRIDENT, P_BASIC },
+	{ P_HARVEST, P_EXPERT },
+    { P_LANCE, P_BASIC },		{ P_BOW, P_BASIC },	
+    { P_CROSSBOW, P_SKILLED },	{ P_SHIELD, P_EXPERT },
+	{ P_ATTACK_SPELL, P_SKILLED },
+    { P_HEALING_SPELL, P_SKILLED },	{ P_CLERIC_SPELL, P_SKILLED },
+#ifdef STEED
+    { P_RIDING, P_BASIC },
+#endif
+    { P_TWO_WEAPON_COMBAT, P_BASIC },
+    { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_BEAST_MASTERY, P_EXPERT },
     { P_NONE, 0 }
 };
 
@@ -1556,6 +1595,24 @@ static const struct def_skill Skill_R[] = {
 #ifdef STEED
     { P_RIDING, P_BASIC },
 #endif
+    { P_TWO_WEAPON_COMBAT, P_EXPERT },
+    { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_R_Silverman[] = {
+    { P_DAGGER, P_SKILLED },		{ P_KNIFE,  P_EXPERT },
+    { P_SHORT_SWORD, P_EXPERT },	{ P_BROAD_SWORD, P_SKILLED },
+    { P_LONG_SWORD, P_SKILLED },	{ P_TWO_HANDED_SWORD, P_BASIC },
+    { P_SCIMITAR, P_SKILLED },		{ P_SABER, P_SKILLED },
+    { P_CLUB, P_SKILLED },		{ P_MACE, P_SKILLED },
+    { P_MORNING_STAR, P_BASIC },	{ P_FLAIL, P_BASIC },
+    { P_HAMMER, P_BASIC },		{ P_POLEARMS, P_EXPERT },
+    { P_SPEAR, P_BASIC },		{ P_CROSSBOW, P_SKILLED },
+    { P_DART, P_SKILLED },		{ P_SHURIKEN, P_SKILLED },
+    { P_DIVINATION_SPELL, P_SKILLED },	{ P_ESCAPE_SPELL, P_SKILLED },
+    { P_MATTER_SPELL, P_SKILLED },
+    { P_WAND_POWER, P_EXPERT },
     { P_TWO_WEAPON_COMBAT, P_EXPERT },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_NONE, 0 }
@@ -2239,6 +2296,8 @@ u_init()
 			ini_inv(Binder_Elf);
 			knows_object(FLINT);
 			skill_init(Skill_N_Elf);
+		} else if(Race_if(PM_SILVERMAN)){
+			skill_init(Skill_N_Silverman);
 		} else {
 			ini_inv(Binder);
 			knows_object(SHEPHERD_S_CROOK);
@@ -2377,6 +2436,10 @@ u_init()
 		break;
 	case PM_KNIGHT:
 		if(Race_if(PM_DWARF)) ini_inv(DwarfNoble);
+		else if(Race_if(PM_SILVERKNIGHT)){
+			SilverKnight[0].trotyp = !rn2(3) ? SILVERKNIGHT_SCYTHE : rn2(2) ? SILVERKNIGHT_SPEAR : SILVERKNIGHT_SWORD;
+			ini_inv(SilverKnight);
+		}
 		else if(Race_if(PM_HALF_DRAGON)){
 			Knight[K_APPLES].trquan = rn1(9, 5);
 			Knight[K_CARROTS].trquan = 1;
@@ -2388,6 +2451,7 @@ u_init()
 		 * -- idea from wooledge@skybridge.scl.cwru.edu */
 		HJumping |= FROMOUTSIDE;
 		if(Race_if(PM_DWARF)) skill_init(Skill_DwaNob);
+		else if(Race_if(PM_SILVERKNIGHT)) skill_init(Skill_SilKnight);
 		else skill_init(Skill_K);
 
 		skill_add(Skill_Kni_Forms);
@@ -2682,7 +2746,10 @@ u_init()
 		ini_inv(Rogue);
 		ini_inv(Blindfold);
 		knows_object(SACK);
-		skill_init(Skill_R);
+		if(Race_if(PM_SILVERMAN))
+			skill_init(Skill_R_Silverman);
+		else
+			skill_init(Skill_R);
 		break;
 	case PM_SAMURAI:
 		u.umartial = TRUE;
@@ -2715,7 +2782,7 @@ u_init()
 		break;
 #endif
 	case PM_UNDEAD_HUNTER:
-		if(Race_if(PM_VAMPIRE)){
+		if(Race_if(PM_VAMPIRE) || Race_if(PM_AASIMAR)){
 			switch(rn2(5)){
 			case 0:
 				//UndeadHunter[U_WEAPON].trotyp = CANE;
@@ -2893,9 +2960,10 @@ u_init()
 	break;
 
 	case PM_MYRKALFR:
+	case PM_DRIDER:
 	case PM_DROW:{
 		struct obj* pobj;
-		
+		if(Role_if(PM_SAMURAI)) break; // Samurai driders are Jorogumo/culturally different from drow. 
 	    /*
 	     * All drow get signet rings. Pirates and wizards get them through their
 		 * class equipment
@@ -3093,6 +3161,13 @@ u_init()
 	    knows_object(POT_OBJECT_DETECTION);
 		skill_up(Skill_Y);
 	    break;
+	case PM_SILVERMAN:
+	    knows_object(PEST_GLAIVE);
+		ini_inv(Pest_equip);
+	    break;
+	case PM_TIEFLING:
+	    init_natural_mutations();
+	    break;
 	default:
 		break;
 	}
@@ -3289,6 +3364,16 @@ u_init()
 			break;
 		}
 	}
+	else if(Race_if(PM_AASIMAR)){
+		flags.aasimar_type = rn2(3);
+	}
+	else if(Race_if(PM_TIEFLING)){
+		// int mutation_levels[] = {3,10,14,18,22,26};
+		int mutation_levels[] = {3,7,11,15,19,23,27};
+		for(int i=0; i<SIZE(mutation_levels); i++){
+			flags.tiefling_level[i] = mutation_levels[i];
+		}
+	}
 	/* Fix up the alignment quest nemesi */
 	mons[PM_OONA].mcolor = (u.oonaenergy == AD_FIRE) ? CLR_RED 
 						 : (u.oonaenergy == AD_COLD) ? CLR_CYAN 
@@ -3355,8 +3440,13 @@ register struct trobj *trop;
 	while (trop->trclass) {
 		if (trop->trotyp != UNDEF_TYP) {
 			otyp = (int)trop->trotyp;
-			if (youracedata->mflagsb&MB_CENTAUR && objects[otyp].oc_class == ARMOR_CLASS && objects[otyp].oc_armcat == ARM_BOOTS) {
+			if (((youracedata->mflagsb&MB_CENTAUR) == MB_CENTAUR) && objects[otyp].oc_class == ARMOR_CLASS && objects[otyp].oc_armcat == ARM_BOOTS) {
 				/* centaurs can't wear boots */
+				trop++;
+				continue;
+			}
+			if(Race_if(PM_SILVERMAN) && otyp != PEST_GLAIVE){
+				/* silvermen only start with the pest glaive */
 				trop++;
 				continue;
 			}
@@ -3445,7 +3535,7 @@ register struct trobj *trop;
 				set_material_gm(obj, MITHRIL);
 			}
 			if(Role_if(PM_UNDEAD_HUNTER)){
-				if(Race_if(PM_VAMPIRE) && obj->otyp != HIGH_BOOTS){
+				if((Race_if(PM_VAMPIRE) || Race_if(PM_AASIMAR)) && obj->otyp != HIGH_BOOTS){
 					if(obj->obj_material == LEATHER || obj->otyp == TRICORN){
 						set_material_gm(obj, CLOTH);
 						if(obj->otyp == GLOVES)
@@ -3744,7 +3834,8 @@ register struct trobj *trop;
 			if(hates_holy(youracedata)){
 				if(obj->blessed){
 					obj->blessed = 0;
-					obj->cursed = 1;
+					if(Weldproof)
+						obj->cursed = 1;
 				}
 			}
 			if(hates_silver(youracedata) 

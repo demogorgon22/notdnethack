@@ -2252,6 +2252,16 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"tympanum",			"tympana",			"haustellum",	"brain",
 		"creak",		"tear",					"throat",		"spiracles",
 		"wing"},
+	*silverknight_parts[] = { 
+		"arm",				"eye",				"face",			"finger-claw",
+		"claw tip",			"foot", 			"hand", 		"handed", 
+		"head", 			"leg",				"light headed", "neck", 
+		"notochord", 		"toe-claw",			"setae", 		"haemolymph", 
+		"spriacle", 		"antenna", 			"stomach",		"dorsal vessel",
+		"skin",				"flesh",			"pulse",		"bones",
+		"tympanum",			"tympana",			"haustellum",	"brain",
+		"creak",			"crack",			"throat",		"spiracles",
+		"wing"},
 	*bird_parts[] = { 
 		"wing", 			"eye", 				"face", 		"wing", 
 		"wing tip",			"foot", 			"wing", 		"winged", 
@@ -2545,6 +2555,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	    return uvuudaum_parts[part];
 	if (mptr->mtyp == PM_DRACAE_ELADRIN)
 	    return dracae_parts[part];
+	if (mptr->mtyp == PM_SILVERKNIGHT)
+	    return silverknight_parts[part];
 	if (mptr->mtyp == PM_LUMINESCENT_SWARM)
 	    return luminous_parts[part];
 

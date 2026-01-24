@@ -2094,6 +2094,8 @@ E int FDECL(resist_song, (struct monst *, int, struct obj *));
 /* ### mutation.c ### */
 E void FDECL(confer_mutation, (int));
 E boolean NDECL(any_mutation);
+E void NDECL(init_natural_mutations);
+E void NDECL(check_natural_mutations);
 
 /* ### nhlan.c ### */
 #ifdef LAN_FEATURES

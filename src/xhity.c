@@ -2021,6 +2021,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			(Race_if(PM_FORMIAN) && !uwep) ||	/* formians bite when unarmed */
 			(Race_if(PM_CENTAUR) && onlykicks) ||	/* centaurs kick with their kicks */
 			(Race_if(PM_DRIDER) && (!uwep || onlykicks)) ||	/* driders kick when unarmed and when kicking */
+			(Race_if(PM_SILVERKNIGHT)) ||
 			(Race_if(PM_VAMPIRE)) ||
 			(Race_if(PM_CHIROPTERAN))
 		)){

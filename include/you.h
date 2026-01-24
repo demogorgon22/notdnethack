@@ -137,6 +137,9 @@ struct Role {
 #define SA_FORMIAN		0x00000800L
 #define SA_CENTAUR		0x00001000L
 #define SA_DRIDER		0x00002000L
+#define SA_SILVERMAN	0x00004000L
+#define SA_TIEFLING		0x00008000L
+#define SA_AASIMAR		0x00010000L
 	short allow;		/* bit mask of allowed variations */
 #define ROLE_GENDMASK	0xf000		/* allowable genders */
 #define ROLE_MALE	0x1000
@@ -186,7 +189,7 @@ extern struct Role urole;
 #define Role_switch	(urole.malenum)
 /* also used to see if you're allowed to eat cats and dogs */
 #define CANNIBAL_ALLOWED() (Role_if(PM_CAVEMAN) || Race_if(PM_ORC) || \
-		Race_if(PM_VAMPIRE))
+		Race_if(PM_VAMPIRE) || Race_if(PM_SILVERMAN) || Race_if(PM_SILVERKNIGHT))
 
 
 /* used during initialization for race, gender, and alignment
@@ -1126,6 +1129,8 @@ struct you {
 	long thoughts;
 #define MAX_GLYPHS (((Role_if(PM_MADMAN) && u.uevent.qcompleted && (Insight >= 20 || u.render_thought)) || Role_if(PM_UNDEAD_HUNTER)) ? 4 : 3)
 	long mutations[MUTATION_LISTSIZE];
+	int next_tiefling_mutation;
+	int next_mutation_level;
 };	/* end of `struct you' */
 
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))

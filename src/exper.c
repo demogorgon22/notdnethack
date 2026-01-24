@@ -487,6 +487,7 @@ boolean incr;	/* true iff via incremental experience growth */
 	    pline("Welcome to experience level %d.", u.ulevel);
 	    adjabil(u.ulevel - 1, u.ulevel);	/* give new intrinsics */
 	    reset_rndmonst(NON_PM);		/* new monster selection */
+		check_natural_mutations();
 	}
 	else {
 		num = newhp();
