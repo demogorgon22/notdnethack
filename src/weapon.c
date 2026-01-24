@@ -393,7 +393,7 @@ struct monst *magr;
 		))){
 		attackmask |= PIERCE;
 	}
-	if (youagr && otyp == LONG_SWORD){
+	if (youagr && obj && is_knight_sword(obj)){
 		if(activeFightingForm(FFORM_HALF_SWORD))
 			attackmask = PIERCE; // only thrusting
 		else if(activeFightingForm(FFORM_POMMEL))
@@ -4023,12 +4023,6 @@ struct obj *obj;
 	else if(obj->otyp == SHANTA_PATA){
 		CHECK_ALTERNATE_SKILL(P_LONG_SWORD)
 	}
-	else if(obj->otyp == DEMON_CLAW){
-		CHECK_ALTERNATE_SKILL(P_AXE)
-	}
-	else if(obj->otyp == DEVIL_FIST){
-		CHECK_ALTERNATE_SKILL(P_AXE)
-	}
 	else if(obj->otyp >= LUCKSTONE && obj->otyp <= ROCK && obj->ovar1_projectileSkill){
 		type = (int)obj->ovar1_projectileSkill;
 	}
@@ -4944,14 +4938,14 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 		//Lances can't get expert traits when not mounted.
 		traits = 0;
 	}
-	if(youagr && otyp == LONG_SWORD && activeFightingForm(FFORM_POMMEL)) {
+	if(youagr && is_knight_sword(obj) && activeFightingForm(FFORM_POMMEL)) {
 		//Pommels don't graze.
 		traits &= ~ETRAIT_GRAZE;
 	}
 
 	//Add traits
 	if(youagr){
-		if(otyp == LONG_SWORD){
+		if(is_knight_sword(obj)){
 			if(activeFightingForm(FFORM_HALF_SWORD))
 				traits |= ETRAIT_QUICK;
 			if(activeFightingForm(FFORM_POMMEL))

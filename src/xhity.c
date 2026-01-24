@@ -4240,7 +4240,7 @@ int *shield_margin;
 				base_acc = -5;
 			} else warnpanic = 0L;
 
-			if(weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)){
+			if(weapon && is_knight_sword(weapon) && activeFightingForm(FFORM_HALF_SWORD)){
 				base_acc += 2; //Dagger bonus
 			}
 		}
@@ -4772,7 +4772,7 @@ int *shield_margin;
 	if ((youagr && u.sealsActive&SEAL_CHUPOCLOPS && (melee || thrust)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
 		(weapon && (arti_phasing(weapon) || (is_lightsaber(weapon) && litsaber(weapon)))) ||
-		(melee && youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
+		(melee && youagr && weapon && is_knight_sword(weapon) && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(melee && attk->aatyp == AT_TUCH) ||
 		(melee && attk->aatyp == AT_VINE) ||
 		(melee && attk->aatyp == AT_VOMT) ||
@@ -16646,7 +16646,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	phase_armor = (
 		(weapon && arti_phasing(weapon)) ||
 		(youagr && u.sealsActive&SEAL_CHUPOCLOPS) ||
-		(youagr && weapon && weapon->otyp == LONG_SWORD && activeFightingForm(FFORM_HALF_SWORD)) ||
+		(youagr && weapon && is_knight_sword(weapon) && activeFightingForm(FFORM_HALF_SWORD)) ||
 		(!youagr && magr && mad_monster_turn(magr, MAD_NON_EUCLID)) ||
 		(originalattk && spirit_rapier_at(originalattk->aatyp) && originalattk->adtyp != AD_BLUD && originalattk->adtyp != AD_WET) ||
 		(swordofblood) /* this touch adtyp is only conditionally phasing */
@@ -23816,7 +23816,7 @@ hook_move()
 		if(u.role_variant == ART_ANGUIREL)
 			return RISING_B;
 		if(u.role_variant == ART_SILVER_SKY){
-			if(uwep && uwep->otyp == LONG_SWORD){
+			if(uwep && is_knight_sword(uwep)){
 				if(activeFightingForm(FFORM_POMMEL) || activeFightingForm(FFORM_HALF_SWORD))
 					return BACKSTAB;
 			}
@@ -23824,7 +23824,7 @@ hook_move()
 				return RISING_B;
 		}
 		if(u.role_variant == ART_SKY_REFLECTED){
-			if(uwep && uwep->otyp == LONG_SWORD){
+			if(uwep && is_knight_sword(uwep)){
 				if(activeFightingForm(FFORM_POMMEL) || activeFightingForm(FFORM_HALF_SWORD))
 					return BACKSTAB;
 			}

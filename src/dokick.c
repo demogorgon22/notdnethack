@@ -768,7 +768,7 @@ int dx, dy;
 	boolean no_kick = FALSE;
 	char buf[BUFSZ];
 
-	if (nolimbs(youracedata) || slithy(youracedata)) {
+	if ((nolimbs(youracedata) || slithy(youracedata)) && !humanoid_feet(youracedata)) {
 		You("have no legs to kick with.");
 		no_kick = TRUE;
 	} else if (verysmall(youracedata)) {

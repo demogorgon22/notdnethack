@@ -2345,10 +2345,10 @@ int fform;
 			return (uarm && (metal_blocks_spellcasting(uarm)));
 		/* requires longsword and free hand */
 		case FFORM_HALF_SWORD:
-			return !(uwep && (uwep->otyp == LONG_SWORD || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
+			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
 		/* require longsword*/
 		case FFORM_POMMEL:
-			return !(uwep && (uwep->otyp == LONG_SWORD || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))));
+			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))));
 		/* require longsword*/
 		case FFORM_KNI_RUNIC:
 			return !(uwep && is_runic_form_sword(uwep) && FightingFormSkillLevel(fform) > P_ISRESTRICTED);

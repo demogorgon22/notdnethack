@@ -751,6 +751,10 @@ struct obj {
 			 || otmp->otyp == RUNESWORD \
 			 || otmp->otyp == ELVEN_BROADSWORD \
 			)
+#define is_knight_sword(otmp) (\
+			    otmp->otyp == LONG_SWORD \
+			 || otmp->otyp == SILVERKNIGHT_SWORD \
+			)
 #define is_rapier(otmp)	(otmp->oclass == WEAPON_CLASS && (\
 			 otmp->otyp == RAPIER || \
 			 otmp->otyp == RAKUYO || \

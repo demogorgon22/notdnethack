@@ -4310,7 +4310,7 @@ int magic; /* 0=Physical, otherwise skill level */
 {
 	coord cc;
 
-	if (!magic && (nolimbs(youracedata) || slithy(youracedata))) {
+	if (!magic && (nolimbs(youracedata) || slithy(youracedata)) && !humanoid_feet(youracedata)) {
 		/* normally (nolimbs || slithy) implies !Jumping,
 		   but that isn't necessarily the case for knights */
 		You_cant("jump; you have no legs!");

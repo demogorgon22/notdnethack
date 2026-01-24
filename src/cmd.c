@@ -1344,7 +1344,7 @@ doKnightForm()
 	if(n <= 0){
 		return MOVE_CANCELLED;
 	} else if ((selected[0].item.a_int == FFORM_HALF_SWORD || activeFightingForm(FFORM_HALF_SWORD)) &&
-				(!freehand() || (uwep && uwep->otyp == LONG_SWORD && welded(uwep)))){
+				(!freehand() || (uwep && is_knight_sword(uwep) && welded(uwep)))){
 		free(selected);
 		pline("You need a free hand to adjust your grip!");
 		return MOVE_CANCELLED;

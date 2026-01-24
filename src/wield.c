@@ -1089,7 +1089,7 @@ struct permonst * ptr;
 		return FALSE;
 
 	/* half-sword style requires both hands on the sword, regardless of size */
-	if (ptr == youracedata && otmp->otyp == LONG_SWORD && selectedFightingForm(FFORM_HALF_SWORD))
+	if (ptr == youracedata && is_knight_sword(otmp) && selectedFightingForm(FFORM_HALF_SWORD))
 		return TRUE;
 
 	/* get object size */

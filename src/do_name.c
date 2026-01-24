@@ -776,7 +776,7 @@ const char *name;
 			}
 			if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED){
 				expert_weapon_skill(objects[obj->otyp].oc_skill);
-				if(obj->otyp == LONG_SWORD){
+				if(is_knight_sword(obj)){
 					expert_weapon_skill(P_GENERIC_KNIGHT_FORM);
 				}
 				else if(is_pole(obj)){
