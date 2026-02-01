@@ -1083,6 +1083,10 @@ you_regen_hp()
 		blockRegen = TRUE;
 	}
 
+	if (check_mutation(TT_LIZARD_TAIL) && !blockRegen){
+		perX += HEALCYCLE;
+	}
+
 	// regeneration 'trinsic
 	if (Regeneration){
 		perX += HEALCYCLE;
@@ -3600,6 +3604,11 @@ karemade:
 		
 		if(u.ustdy > 0) u.ustdy -= 1;
 		if(u.ustdy < 0) u.ustdy += 1;
+		// Wizegaze attacks
+		if(check_mutation(TT_MANY_ODD_EYES))
+			perform_wizegaze_attacks();
+		if(!Upolyd && TIEFLING_AURAS)
+			mutation_auras();
 		// Decrease your pucture counter
 		if(youmonst.mpunctured > 0 && rn2(2)) youmonst.mpunctured--;
 		
@@ -3638,6 +3647,9 @@ karemade:
 					if(viz_array[j][i]&COULD_SEE)
 						echo_location(i, j);
 			see_monsters();
+		}
+		if(check_mutation(TT_DISCOVERY_1) || check_mutation(TT_DISCOVERY_2)){
+			findit();
 		}
 		if(u.utrap && u.utraptype == TT_LAVA) {
 			if(!is_lava(u.ux,u.uy))
@@ -7216,8 +7228,8 @@ struct monst *magr;
 	return;
 }
 
-STATIC_OVL void
-dorotattack(struct monst *magr, struct attack * attk, int max, int mult)
+void
+dogenericattack(struct monst *magr, struct attack * attk, int max, int mult)
 {
 	struct monst *mdef;
 	extern const int clockwisex[8];
@@ -7291,7 +7303,7 @@ dorotbite(struct monst *magr)
 {
 	struct attack * attk;
 	struct attack symbiote = { AT_OBIT, AD_DISE, 1, 3 };
-	dorotattack(magr, &symbiote, 1, 1);
+	dogenericattack(magr, &symbiote, 1, 1);
 }
 
 void
@@ -7299,7 +7311,16 @@ dorotsting(struct monst *magr)
 {
 	struct attack * attk;
 	struct attack symbiote = { AT_STNG, AD_PFBT, 1, 4 };
-	dorotattack(magr, &symbiote, 1, 1);
+	dogenericattack(magr, &symbiote, 1, 1);
+}
+
+void
+dotiefling(struct monst *magr)
+{
+	if(magr == &youmonst)
+		mutation_autoattacks();
+	else
+		impossible("dotiefling called for monster");
 }
 
 void

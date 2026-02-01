@@ -1750,7 +1750,7 @@ result:
 				exercise(A_WIS, TRUE);
 				obj->bknown = TRUE;
 			}
-			if(obj != uwep && uwep && is_hammer(uwep) && !bimanual(uwep, youracedata)){
+			if(obj != uwep && uwep && is_hammer(uwep) && !bimanual_mon(uwep, &youmonst)){
 				smithing_object(obj);
 			}
 		}
@@ -1778,7 +1778,7 @@ result:
 
 			if (is_metallic(obj)
 				&& obj != uwep && uwep && is_hammer(uwep)
-				&& !bimanual(uwep, youracedata) && Luck >= rnd(20)
+				&& !bimanual_mon(uwep, &youmonst) && Luck >= rnd(20)
 			) {
 				if (greatest_erosion(obj) > 0) {
 					if (!Blind)

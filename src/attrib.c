@@ -238,6 +238,14 @@ const struct innate {
 	inc_abil[] = { {	1, &(HAntimagic), "", "" },
 		     {	 0, 0, 0, 0 } },
 	
+	aasi_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+		     {	 0, 0, 0, 0 } },
+
+	tief_abil[] = { 
+			 {	 1, &(HPoison_resistance), "", "" },
+		     {	 0, 0, 0, 0 } },
+
 	frm_abil[] = { 
 			 {   3, &(HFire_resistance), "heat resistant", "less heat resistant" },
 			 {	 5, &(HPoison_resistance), "healthy", "sickly" },
@@ -963,6 +971,8 @@ int oldlevel, newlevel;
 	case PM_YUKI_ONNA:		rabil = yki_abil;	break;
 	case PM_CENTAUR:		rabil = cen_abil;	break;
 	case PM_FORMIAN:	    rabil = frm_abil;	break;
+	case PM_TIEFLING:		rabil = tief_abil;	break;
+	case PM_AASIMAR:		rabil = aasi_abil;	break;
 	case PM_HUMAN:
 	case PM_DWARF:
 	case PM_GNOME:
@@ -2345,7 +2355,7 @@ int fform;
 			return (uarm && (metal_blocks_spellcasting(uarm)));
 		/* requires longsword and free hand */
 		case FFORM_HALF_SWORD:
-			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
+			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual_mon(uwep, &youmonst)));
 		/* require longsword*/
 		case FFORM_POMMEL:
 			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))));
@@ -2357,7 +2367,7 @@ int fform;
 			return (!uarms);
 		/* requires two-handed weapon */
 		case FFORM_GREAT_WEP:
-			return !(uwep && (bimanual(uwep, youracedata) || bimanual_mod(uwep, &youmonst) > 1));
+			return !(uwep && (bimanual_mon(uwep, &youmonst) || bimanual_mod(uwep, &youmonst) > 1));
 		default:
 			impossible("Attempting to get blockage of fighting form number %d?", fform);
 			break;

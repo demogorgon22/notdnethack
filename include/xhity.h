@@ -87,8 +87,30 @@
 #define SUBOUT_ROT_STING	21	/* Rot stinger */
 #define SUBOUT_PUSH	22	/* Push attack */
 #define SUBOUT_VOMIT    23	/* Vomit attack */
-#define MAX_SUBOUT		24
-#define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/16+1)
+#define SUBOUT_T_SPORES	24	/* Tiefling spores counterattack */
+#define SUBOUT_T_FLAMES	25	/* Tiefling flames counterattack */
+#define SUBOUT_T_COLD	26	/* Tiefling cold counterattack */
+#define SUBOUT_T_ACID	27	/* Tiefling acid counterattack */
+#define SUBOUT_T_POISON	28	/* Tiefling poison counterattack */
+#define SUBOUT_T_BITE   29	/* Tiefling snake fangs attack */
+#define SUBOUT_T_VAMPIRE 30	/* Tiefling vampire fangs attack */
+#define SUBOUT_T_SPIDER 31	/* Tiefling spider fangs attack */
+#define SUBOUT_T_COLD_TOUCH 32	/* Tiefling cold touch attack */
+#define SUBOUT_T_DRAIN_TOUCH 33	/* Tiefling drain touch attack */
+#define SUBOUT_T_FIRE_TOUCH 34	/* Tiefling fire touch attack */
+#define SUBOUT_T_SHOCK_TOUCH 35	/* Tiefling shock touch attack */
+#define SUBOUT_T_RAMS_HORNS    36	/* Tiefling horns attack */
+#define SUBOUT_T_DEMON_HORNS  37	/* Tiefling demon horn attack */
+#define SUBOUT_T_NIGHTHORN 38	/* Tiefling nightmare horn attack */
+#define SUBOUT_T_ANTLERS   39	/* Tiefling antlers attack */
+#define SUBOUT_T_BULL_HORNS 40	/* Tiefling bull horns attack */
+#define SUBOUT_T_PARALYSIS_PASSIVE 41	/* Tiefling paralysis passive attack */
+#define SUBOUT_T_THORN_HAIR	42	/* Tiefling thorn hair attack */
+#define SUBOUT_T_SCORPION_TAIL	43	/* Tiefling scorpion tail attack */
+#define SUBOUT_T_SEDUCE_STEAL    44	/* Tiefling seduction/item-stealing attack */
+#define SUBOUT_T_SEDUCE_DISARM  45	/* Tiefling seduction/disarming attack */
+#define MAX_SUBOUT		45
+#define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/(sizeof(int)*8)+1)
 
 #define ATTKFLAG_FORCE_BLEED		0x00000001L
 #define ATTKFLAG_FORCE_CHECK_JOUST	0x00000002L

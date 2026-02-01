@@ -433,13 +433,13 @@ In_fog_cloud(mon)
 	if(mon == &youmonst){
 		for (i = 0; i < n_regions; i++) {
 			/* Check if player is inside region */
-			if (regions[i]->arg.adtyp == AD_SLOW && hero_inside(regions[i]))
+			if ((regions[i]->arg.adtyp == AD_SLOW || regions[i]->arg.adtyp == AD_SLWC) && hero_inside(regions[i]))
 			    return TRUE;
 		}
 	} else {
 		for (i = 0; i < n_regions; i++) {
 			/* Check if player is inside region */
-			if (regions[i]->arg.adtyp == AD_SLOW && inside_region(regions[i], mon->mx, mon->my)){
+			if ((regions[i]->arg.adtyp == AD_SLOW || regions[i]->arg.adtyp == AD_SLWC) && inside_region(regions[i], mon->mx, mon->my)){
 			    return TRUE;
 			}
 		}
@@ -519,7 +519,7 @@ xchar x, y;
 {
 	int i;
     for (i = 0; i < n_regions; i++) {
-		if (regions[i]->arg.adtyp == AD_SLOW &&
+		if ((regions[i]->arg.adtyp == AD_SLOW || regions[i]->arg.adtyp == AD_SLWC) &&
 			inside_region(regions[i], x, y)
 		) {
 			return TRUE;
@@ -1006,14 +1006,26 @@ genericptr_t p2;
     /* If not a specially handled type, do generic handling */
     mdef = p2 ? (struct monst *) p2: &youmonst;
     boolean youdef = (mdef == &youmonst);
+	int mndx = monsndx(mdef->data);
 	if (youdef && Invulnerable)
 		return FALSE;
+	if(heros_fault(reg) && !youdef) setmangry(mdef);
     attk.aatyp = AT_ENGL;
     attk.adtyp = cloud_data->adtyp;
     attk.damn = cloud_data->damage;
     attk.damd = 1;
     vis = getvis((struct monst *) 0, mdef, 0, 0);
     result = xengulfhurty((struct monst *) 0, mdef, &attk, vis);
+	if(!youdef && DEADMONSTER(mdef)) {
+		if(heros_fault(reg)){
+			/* give experience points */
+			if (mvitals[mndx].killed < 255)
+				mvitals[mndx].killed++; /*The kills the player specifically has been responsible for*/
+			int tmp = experience(mdef, (int)mvitals[mndx].killed);
+			more_experienced(tmp, 0);
+			newexplevel();		/* will decide if you go up */
+		}
+	}
     return result & MM_DEF_DIED;
 }
 

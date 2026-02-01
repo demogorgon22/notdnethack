@@ -2727,7 +2727,7 @@ museamnesia:
 
 		    Strcpy(the_weapon, the(xname(obj)));
 		    hand = body_part(HAND);
-		    if (bimanual(obj,youracedata)) hand = makeplural(hand);
+		    if (bimanual_mon(obj,&youmonst)) hand = makeplural(hand);
 
 		    if (vismon){
 				pline("%s flicks a whip towards your %s!", Monnam(mtmp), hand);

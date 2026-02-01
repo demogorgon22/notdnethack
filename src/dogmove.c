@@ -62,8 +62,8 @@ register struct obj *otmp;
         return FALSE;
     
     if (is_shield(otmp) && (
-			((mtmp == &youmonst) ? (uwep && bimanual(uwep,youracedata)) 
-							: (MON_WEP(mtmp) && bimanual(MON_WEP(mtmp),mtmp->data)))
+			((mtmp == &youmonst) ? (uwep && bimanual_mon(uwep,&youmonst)) 
+							: (MON_WEP(mtmp) && bimanual_mon(MON_WEP(mtmp),mtmp)))
 			|| mon_offhand_attack(mtmp)
 		)
 	)

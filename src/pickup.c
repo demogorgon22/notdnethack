@@ -349,6 +349,7 @@ allow_category(struct obj *obj, int qflags)
 	if(qflags&NO_EQUIPMENT && obj->owornmask)
 		return FALSE;
     if (u.upriest) obj->bknown = TRUE;
+	if (check_mutation(TT_HATEFUL_VISION) && obj->cursed) obj->bknown = TRUE;
     if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0))
 	return TRUE;

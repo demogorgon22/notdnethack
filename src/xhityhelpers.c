@@ -3801,7 +3801,57 @@ hit_with_streaming(struct monst *magr, struct obj *otmp, int tarx, int tary, int
 	}
 	return result;
 }
-
+////////////////////////////////////////////////////////////////////////////////////
+/* Snake tongue bites target adjacent to original target, or the original target */
+//////////////////////////////////////////////////////////////////////////////////
+int
+hit_with_tonguesnake(struct monst *magr, int tarx, int tary, int tohitmod)
+{
+	int subresult = 0;
+	boolean youagr = magr == &youmonst;
+	/* try to find direction (u.dx and u.dy may be incorrect) */
+	struct monst *m[9] = {0};
+	int count = 0;
+	struct monst *mdef2;
+	
+	for(int i = -1; i <= 1; i++){
+		for(int j = -1; j <= 1; j++){
+			if(!isok(tarx + i, tary + j))
+				continue;
+			mdef2 = !youagr ? m_u_at(tarx + i, tary + j) : 
+									u.uswallow ? u.ustuck : 
+									m_at(tarx + i, tary + j);
+			if (!mdef2 || DEADMONSTER(mdef2))
+				continue;
+			if(youagr && mdef2->mpeaceful)
+				continue;
+			if(!youagr && mdef2 == &youmonst && magr->mpeaceful)
+				continue;
+			if(!youagr && mdef2 != &youmonst && mdef2->mpeaceful == magr->mpeaceful)
+				continue;
+			if(touch_petrifies(mdef2->data) && !resists_ston(magr))
+				continue;
+			if(mdef2->mtyp == PM_PALE_NIGHT)
+				continue;
+			m[count++] = mdef2;
+		}
+	}
+	if(count == 0)
+		return 0;
+	int target = rn2(count);
+	mdef2 = m[target];
+	int vis2 = VIS_NONE;
+	if(youagr || canseemon(magr))
+		vis2 |= VIS_MAGR;
+	if(mdef2 == &youmonst || canseemon(mdef2))
+		vis2 |= VIS_MDEF;
+	bhitpos.x = x(mdef2); bhitpos.y = y(mdef2);
+	notonhead = (bhitpos.x != x(mdef2) || bhitpos.y != y(mdef2));
+	struct attack snake = {AT_OBIT, AD_DRST, 1, 6};
+	subresult = xmeleehity(magr, mdef2, &snake, (struct obj **)0, vis2, tohitmod, TRUE, 0);
+	/* handle MM_AGR_DIED and MM_AGR_STOP by adding them to the overall result, ignore other outcomes */
+	return subresult&(MM_AGR_DIED|MM_AGR_STOP);
+}
 
 boolean
 is_serration_vulnerable(struct monst *mon){

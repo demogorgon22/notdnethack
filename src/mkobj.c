@@ -2052,7 +2052,7 @@ register struct obj *otmp;
 	otmp->blessed = 0;
 	otmp->cursed = 1;
 	/* welded two-handed weapon interferes with some armor removal */
-	if (otmp == uwep && bimanual(uwep,youracedata)) reset_remarm();
+	if (otmp == uwep && bimanual_mon(uwep,&youmonst)) reset_remarm();
 	/* rules at top of wield.c state that twoweapon cannot be done
 	   with cursed alternate weapon */
 	if (otmp == uswapwep && u.twoweap && !Weldproof)

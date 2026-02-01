@@ -572,6 +572,7 @@ struct you {
 #define MATTK_WHISPER    	30
 #define MATTK_KI    		31
 #define MATTK_UPGRADE    	32
+#define MATTK_MUTATION    	33
 
 	struct attribs	macurr,		/* for monster attribs */
 			mamax;		/* for monster attribs */

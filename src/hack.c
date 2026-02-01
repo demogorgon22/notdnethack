@@ -744,6 +744,7 @@ int mode;
 		&& !(uarmc && (uarmc->otyp == OILSKIN_CLOAK || uarmc->greased))
 		&& !(!uarmc && uarm && uarm->greased)
 		&& !(!uarmc && !uarm && uarmu && uarmu->greased)
+		&& !check_mutation(TT_SLIPPERY_SKIN)
 	) {
 	    if (mode == DO_MOVE)
 #ifdef CONVICT
@@ -1365,6 +1366,10 @@ domove()
 				/* Isamusei-skies hits additional targets, if your insight is high enough to percieve the distortions */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && (otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == ISAMUSEI)){
 					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
+				}
+				/* Snakemouth Tieflings hit additional targets */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && check_mutation(TT_SERPENT)){
+					result |= hit_with_tonguesnake(&youmonst, x, y, 0);
 				}
 				/* Dancers hit additional targets */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){

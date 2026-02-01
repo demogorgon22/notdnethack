@@ -15686,6 +15686,8 @@ do_passive_attacks()
 			dorotbite(&youmonst);
 		if(check_rot(ROT_STING))
 			dorotsting(&youmonst);
+		if(!Upolyd && TIEFLING_AUTOATTACKS)
+			dotiefling(&youmonst);
 	}
 	if(check_mutation(SHUB_TENTACLES)){
 		//Note: If we have the mutation we know that we have the madness, and if we somehow don't, well...

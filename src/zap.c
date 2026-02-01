@@ -212,6 +212,8 @@ int adtyp;
 	case AD_ELEC:
 	case AD_STAR:
 	case AD_HOLY:
+	case AD_SMOK:
+	case AD_SLWC:
 		return CLR_WHITE;
 	case AD_DRLI:
 		return CLR_MAGENTA;
@@ -5114,7 +5116,7 @@ struct zapdata * zapdata;
 			((otmp = youdef ? uarmc : which_armor(mdef, W_ARMC)) && otmp->obj_material != GOLD) ||
 			((otmp = youdef ? uarm  : which_armor(mdef, W_ARM )) && otmp->obj_material != GOLD) ||
 			((otmp = youdef ? uarmu : which_armor(mdef, W_ARMU)) && otmp->obj_material != GOLD && objects[otmp->otyp].a_can > 0)
-			) {
+		) {
 			set_material(otmp, GOLD);
 		}
 		else {

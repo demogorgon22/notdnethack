@@ -1,6 +1,8 @@
 #include "hack.h"
 #include "mutations.h"
 
+STATIC_DCL void mutation_effects(int);
+
 /* mutation lists */
 const int shubbie_mutation_list[] = {ABHORRENT_SPORE,
 						 CRAWLING_FLESH,
@@ -42,7 +44,7 @@ const struct mutationtype mutationtypes[] =
 	{ TT_POISON_CLOUD, SMELL_TRAIT, "stinking clouds", "You can emit stinking clouds.", "corpse stench", "You stink like a rotting corpse."},
 	{ TT_FIRE_BLAST_1, SMELL_TRAIT, "fiery blasts", "You can emit fiery blasts.", "sulferous smell", "You stink of sulfur."},
 	{ TT_FIRE_BLAST_2, SMELL_TRAIT, "firey blasts", "You can emit fiery blasts.", "ashy smell", "You smell of ash and burnt flesh."},
-	{ TT_COLD_BLAST, SMELL_TRAIT, "icy blasts", "You can emit icy blasts.", "frosty smell", "You emit a crip odor that unpleasantly stings the nostrils."},
+	{ TT_COLD_BLAST, SMELL_TRAIT, "icy blasts", "You can emit icy blasts.", "frosty smell", "You emit an unpleasantly crisp odor that stings the nostrils."},
 	{ TT_ACID_BLAST, SMELL_TRAIT, "acidic blasts", "You can emit acidic blasts.", "pungent smell", "You emit a pungent, corrosive odor."},
 	// Branch from small scales
 	{ TT_NA_SCALES, BODY_SKIN, "brittle scales", "Your skin is covered in hard yet brittle scales.", "small scales", "Your skin is covered in small scales."},
@@ -63,11 +65,11 @@ const struct mutationtype mutationtypes[] =
 	{ TT_BLINDING_VENOM, MOUTH_TRAIT, "blinding venom", "You can spit a blinding venom.", "bulging cheeks", "Your cheeks bulge slightly."},
 	// Branch from cloudy breath
 	{ TT_SMOKE, WINDPIPE, "smoke breath", "You can exhale a cloud of noxious smoke.", "cloudy breath", "Your breath hangs in the air like white clouds."},
-	{ TT_COLD_CLOUD, WINDPIPE, "cold breath", "You can a cloud of freezing mist.", "cloudy breath", "Your breath hangs in the air like white clouds."},
+	{ TT_COLD_CLOUD, WINDPIPE, "cold breath", "You can exhale a cloud of freezing mist.", "cloudy breath", "Your breath hangs in the air like white clouds."},
 	// Eye traits
 	// Branch from writing in eyes
-	{ TT_HATEFUL_VISION, EYE, "hateful vision", "You can see curses and the weaknesses of others.", "black writing", "The white of your eyes is covered in tiny black script."},
-	{ TT_ODD_EYES_1, EYE, "odd eyes", "Your gaze can demoralize foes.", "black writing", "The white of your eyes is covered in tiny black script."},
+	{ TT_HATEFUL_VISION, EYE, "hateful vision", "You can see curses and the weaknesses of the holy.", "black writing", "The white of your eyes is covered in tiny black script."},
+	{ TT_ODD_EYES_1, EYE, "odd eyes", "Your curse-graven gaze can demoralize foes.", "black writing", "The white of your eyes is covered in tiny black script."},
 	// Branch from blank white eyes
 	{ TT_INFRAVISION_1, EYE, "infravision", "You can see heat signatures.", "blank white eyes", "Your eyes are blank and white."},
 	{ TT_EXTRAMISSION_1, EYE, "extramission", "You can see in the dark and light.", "blank white eyes", "Your eyes are blank and white."},
@@ -75,12 +77,12 @@ const struct mutationtype mutationtypes[] =
 	// Branch from extra eyes
 	{ TT_BEHOLDER, EYE, "beholder eyes", "You have extra eyes that emit baleful rays.", "extra eyes", "You have many extra eyes."},
 	{ TT_DISCOVERY_1, EYE, "vigilant eyes", "You have extra eyes that can spot hidden things.", "extra eyes", "You have many extra eyes."},
-	{ TT_ODD_EYES_3, EYE, "odd eyes", "Your multitudinous gaze can demoralize foes.", "extra eyes", "You have many extra eyes."},
+	{ TT_MANY_ODD_EYES, EYE, "odd eyes", "Your multitudinous gaze can demoralize foes.", "extra eyes", "You have many extra eyes."},
 	// Branch from glowing eyes
 	{ TT_LIGHT, EYE, "light emission", "Your burning eyes light up your surroundings.", "glowing eyes", "Your eyes glow faintly."},
 	{ TT_EXTRAMISSION_2, EYE, "extramission", "You can see in the dark and light.", "glowing eyes", "Your eyes glow faintly."},
 	{ TT_DISCOVERY_2, EYE, "keen eyes", "You can spot hidden things.", "glowing eyes", "Your eyes glow faintly."},
-	{ TT_ODD_EYES_4, EYE, "odd eyes", "Your burning gaze can demoralize foes.", "glowing eyes", "Your eyes glow faintly."},
+	{ TT_ODD_EYES_3, EYE, "odd eyes", "Your burning gaze can demoralize foes.", "glowing eyes", "Your eyes glow faintly."},
 	// Branch from one large eye
 	{ TT_PARALYSIS_GAZE, EYE, "paralysis gaze", "You can paralyze foes with your gaze.", "large eye", "You have one large eye instead of two."},
 	{ TT_CANCEL_GAZE, EYE, "cancellation gaze", "You can cancel foes with your gaze.", "large eye", "You have one large eye instead of two."},
@@ -102,6 +104,7 @@ const struct mutationtype mutationtypes[] =
 	{ TT_HOOKED_CLAWS, FINGER, "hooked claws", "Your claws are hooked like a bird of prey's.", "small claws", "You have small claws."},
 	{ TT_TALONS, FINGER, "talons", "Your have long talons.", "small claws", "You have small claws."},
 	// Shadow traits
+	{ TT_SHADOW_PAIN, SHADOW_TRAIT, "pain shadow", "Your tortured shadow inflicts agony on foes.", "tortured shadow", "Your shadow writhes and twitches as though in agony."},
 	{ TT_SHADOW_SHRED, SHADOW_TRAIT, "shredding shadow", "Your tortured shadow lashes out at foes.", "tortured shadow", "Your shadow writhes and twitches as though in agony."},
 	{ TT_WANDERING_SHADOW, SHADOW_TRAIT, "summon shade", "Your shadow can fight alongside you.", "wandering shadow", "Your shadow sometimes wanders away from you."},
 	{ TT_SHADOW_CASTER, SHADOW_TRAIT, "shadow casting", "Your shadow can cast spells at foes.", "gesticulating shadow", "Your shadow makes hateful gestures quite on its own."},
@@ -119,7 +122,7 @@ const struct mutationtype mutationtypes[] =
 	{ TT_FLAMING_HAIR, HAIR, "fiery aura", "Your blazing hair burns nearby foes.", "fiery hair", "Your hair blazes with fire."},
 	{ TT_FROSTY_HAIR, HAIR, "icy aura", "Your icy hair freezes nearby foes.", "frosty hair", "Your hair is covered in frost."},
 	{ TT_BLINDING_HAIR, HAIR, "blinding aura", "Your attackers are blinded by your crystalline hair.", "shimmering hair", "Your hair shimmers with a crystalline sheen."},
-	{ TT_BITING_HAIR, HAIR, "biting hair", "Your hair bites at nearby foes.", "writhing hair", "Your hair writhes like a ball of leaches."},
+	{ TT_BITING_HAIR, HAIR, "biting hair", "Your hair bites at nearby foes.", "writhing hair", "Your hair writhes like a ball of leeches."},
 	// Horn traits
 	{ TT_RAMS_HORN, HORN_TRAIT, "ram's horns", "You have sturdy ram's horns.", "small horns", "You have small horns."},
 	{ TT_DEMON_HORN, HORN_TRAIT, "demon horns", "You have wicked demon horns.", "small horns", "You have small horns."},
@@ -163,6 +166,8 @@ int mutation;
 	}
 	else add_mutation(mutation);
 	
+	mutation_effects(mutation);
+
 	if(mutation <= LAST_CULT_MUTATION || !Upolyd) for (i = 0; mutationtypes[i].mutation; i++){
 		if(mutation == mutationtypes[i].mutation){
 			pline("%s", mutationtypes[i].description);
@@ -185,6 +190,7 @@ any_mutation()
 		return TRUE;
 	return FALSE;
 }
+
 void
 init_natural_mutations()
 {
@@ -264,6 +270,379 @@ check_natural_mutations()
 				pline("%s", mutationtypes[j].start_forming);
 				break;
 			}
+		}
+	}
+}
+
+#define MUT_ABILITY_POISON_CLOUD	1
+#define MUT_ABILITY_FIRE_BLAST	2
+#define MUT_ABILITY_ICE_BLAST	3
+#define MUT_ABILITY_ACID_BLAST	4
+#define MUT_ABILITY_SMOKE		5
+#define MUT_ABILITY_COLD_CLOUD	6
+#define MUT_ABILITY_FROG_CROAK	7
+#define MUT_ABILITY_SIREN_SONG	8
+int
+domutation()
+{
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+	boolean atleastone = FALSE;
+	
+	if(u.uen < 20) {
+		pline("You don't have enough energy to use a mutation ability.");
+		return 0;
+	}
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	
+
+#define add_ability(letter, string, value) \
+	do { \
+	Sprintf(buf, (string)); any.a_int = (value); atleastone = TRUE; \
+	add_menu(tmpwin, NO_GLYPH, &any, (letter), 0, ATR_NONE, buf, MENU_UNSELECTED); \
+	} while (0)
+
+	
+	Sprintf(buf, "Abilities");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	if(check_mutation(TT_POISON_CLOUD)) {
+		add_ability('P', "Emit stinking cloud", MUT_ABILITY_POISON_CLOUD);
+	}
+	if(!Upolyd && (has_mutation(TT_FIRE_BLAST_1) || has_mutation(TT_FIRE_BLAST_2))) {
+		add_ability('F', "Emit fire blast", MUT_ABILITY_FIRE_BLAST);
+	}
+	if(!Upolyd && has_mutation(TT_COLD_BLAST)) {
+		add_ability('I', "Emit ice blast", MUT_ABILITY_ICE_BLAST);
+	}
+	if(!Upolyd && has_mutation(TT_ACID_BLAST)) {
+		add_ability('A', "Emit acid blast", MUT_ABILITY_ACID_BLAST);
+	}
+	if(!Upolyd && has_mutation(TT_SMOKE)) {
+		add_ability('O', "Emit smoke cloud", MUT_ABILITY_SMOKE);
+	}
+	if(!Upolyd && has_mutation(TT_COLD_CLOUD)) {
+		add_ability('E', "Emit freezing cloud", MUT_ABILITY_COLD_CLOUD);
+	}
+	if(!Upolyd && has_mutation(TT_FROG_CROAK)) {
+		add_ability('C', "Emit a sonic blast", MUT_ABILITY_FROG_CROAK);
+	}
+	if(!Upolyd && has_mutation(TT_SIREN_SONG)) {
+		add_ability('S', "Emit a siren song", MUT_ABILITY_SIREN_SONG);
+	}
+	if (!atleastone) {
+		pline("You don't have any special abilities to use.");
+		destroy_nhwindow(tmpwin);
+		return 0;
+	}
+	end_menu(tmpwin, "Choose an ability to use:");
+	n = select_menu(tmpwin, PICK_ONE, &selected);
+	destroy_nhwindow(tmpwin);
+	if (n <= 0) {
+		return MOVE_CANCELLED;
+	}
+	how = selected[0].item.a_int;
+	free(selected);
+	flags.botl = 1;
+	int type = -1;
+	int color = -1;
+	switch (how) {
+		case MUT_ABILITY_FROG_CROAK:{
+			struct monst *mtmp;
+			for(int i = -1; i < 2; i++){
+				for(int j = -1; j < 2; j++){
+					if(i == 0 && j == 0) continue;
+					if(isok(u.ux+i, u.uy+j)){
+						mtmp = m_at(u.ux+i, u.uy+j);
+						if(!mtmp) continue;
+						if(mtmp->mpeaceful) continue;
+						if(nonthreat(mtmp)) continue;
+						if(mtmp->mtyp == PM_PALE_NIGHT) continue;
+						u.uen -= 20;
+						struct attack attk = {AT_HITS, AD_SONC, (u.ulevel+2)/3, 6};
+						xmeleehity(&youmonst, mtmp, &attk, (struct obj **)0, 0, 0, FALSE, 0); //Hits all adjacent targets
+						i = 2; //Break outer loop
+						break;
+					}
+				}
+			}
+		}break;
+		case MUT_ABILITY_SIREN_SONG:{
+			u.uen -= 20;
+			You("sing a hypnotic siren song!");
+			if(ACURR(A_CHA) == 25)
+				u.bladesong = monstermoves + 8 + 5;
+			else
+				u.bladesong = monstermoves + (ACURR(A_CHA) - 10)/2 + 5;
+			int dx, dy;
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+				if(distmin(u.ux, u.uy, mtmp->mx, mtmp->my) > BOLT_LIM) continue;
+				if(mtmp->mpeaceful) continue;
+				if(nonthreat(mtmp)) continue;
+				if(is_deaf(mtmp)) continue;
+				if(!resist(mtmp, SPBOOK_CLASS, 0, NOTELL)){
+					dx = sgn(u.ux - mtmp->mx);
+					dy = sgn(u.uy - mtmp->my);
+					if(canseemon(mtmp))
+						pline("%s stumbles towards you!", Monnam(mtmp));
+					mhurtle(mtmp, dx, dy, 1, TRUE);
+				}
+			}
+		}break;
+		case MUT_ABILITY_POISON_CLOUD:
+			if(type < 0){
+				type = AD_POSN;
+				color = EXPL_NOXIOUS;
+			}
+		case MUT_ABILITY_FIRE_BLAST:
+			if(type < 0){
+				type = AD_FIRE;
+				color = EXPL_FIERY;
+			}
+		case MUT_ABILITY_SMOKE:
+			if(type < 0){
+				type = AD_SMOK;
+				color = EXPL_FIERY;
+			}
+		case MUT_ABILITY_ICE_BLAST:
+			if(type < 0){
+				type = AD_COLD;
+				color = EXPL_FROSTY;
+			}
+		case MUT_ABILITY_COLD_CLOUD:
+			if(type < 0){
+				type = AD_SLWC;
+				color = EXPL_FROSTY;
+			}
+		case MUT_ABILITY_ACID_BLAST:{
+			if(type < 0){
+				type = AD_ACID;
+				color = EXPL_LIME;
+			}
+			int x, y;
+			if(!throweffect())
+				return MOVE_CANCELLED;
+			if (distmin(u.ux, u.uy, u.dx, u.dy) > 4) {
+				pline("Too far!");
+				return MOVE_CANCELLED;
+			}
+			u.uen -= 20;
+			if(type == AD_POSN){
+				(void) create_gas_cloud(u.dx, u.dy, 3, (u.ulevel*3+5)/6, TRUE);
+			}
+			else if(type == AD_SMOK || type == AD_SLWC){
+				struct region_arg cloud_data;
+				if(type == AD_SMOK)
+					cloud_data.damage = 2+u.ulevel;
+				else
+					cloud_data.damage = 2+(u.ulevel+5)/6;
+				cloud_data.adtyp = type;
+				(void) create_generic_cloud(u.dx, u.dy, 3, &cloud_data, TRUE);
+			}
+			else {
+				explode(u.dx, u.dy, type, 0, d((u.ulevel + 2)/3, 6), color, 1);
+			}
+		}
+		break;
+		default:
+			pline("Unknown mutation ability %d.", how);
+			return MOVE_CANCELLED;
+	}
+	return MOVE_STANDARD;
+}
+
+STATIC_DCL
+void
+mutation_effects(int mutation)
+{
+	if(mutation == TT_INFRAVISION_1){
+		HInfravision |= W_UPGRADE;
+		doredraw();
+	}
+	else if(mutation == TT_EXTRAMISSION_1 || mutation == TT_EXTRAMISSION_2){
+		HExtramission |= W_UPGRADE;
+		doredraw();
+	}
+	else if(mutation == TT_ECHOLOCATION){
+		HEcholocation |= W_UPGRADE;
+		doredraw();
+	}
+	else if(mutation == TT_MAGIC_BREATHING){
+		HMagical_breathing |= W_UPGRADE;
+	}
+	else if(mutation == TT_LIGHT){
+		del_light_source((&youmonst)->light);
+		new_light_source(LS_MONSTER, (genericptr_t)&youmonst, uemit_light());
+		HLowlightsight |= W_UPGRADE;
+		doredraw();
+	}
+	else if(mutation == TT_WEBS){
+		HSwimming |= W_UPGRADE;
+	}
+	else if(mutation == TT_WINGS_1 || mutation == TT_WINGS_2 || mutation == TT_WINGS_3 ||
+			mutation == TT_WINGS_4 || mutation == TT_WINGS_5
+	){
+		HFlying |= W_UPGRADE;
+	}
+}
+
+//Note: amulets are stealable worn items
+#define W_UNSTEALABLE (W_AMUL | W_TOOL | W_RING | W_BELT | W_SWAPWEP | W_WEP | W_ARMOR | W_SADDLE)
+
+boolean
+has_stealable_item(struct monst *mon)
+{
+	for(struct obj *obj = mon->minvent; obj; obj = obj->nobj){
+		if(obj->owornmask & W_UNSTEALABLE)
+			continue;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void
+steal_from_monster(struct monst *mon)
+{
+	int stealable_count = 0;
+	struct obj *obj;
+	for(obj = mon->minvent; obj; obj = obj->nobj){
+		if(obj->owornmask & W_UNSTEALABLE)
+			continue;
+		stealable_count++;
+	}
+	if(stealable_count < 1) return;
+	stealable_count = rn2(stealable_count);
+	for(obj = mon->minvent; obj; obj = obj->nobj){
+		if(obj->owornmask & W_UNSTEALABLE)
+			continue;
+		if(stealable_count > 0){
+			stealable_count--;
+			continue;
+		}
+		//Steal this item
+		if(canseemon(mon))
+			pline("Your tail steals %s from %s!", doname(obj), mon_nam(mon));
+		obj_extract_self(obj);
+		hold_another_object(obj, "You drop %s!", doname(obj), FALSE);
+		break;
+	}
+}
+
+void
+mutation_autoattacks()
+{
+	if(check_mutation(TT_LASHING_TAIL)){
+		struct attack attack = {AT_TAIL, AD_PHYS, 1, 2+(u.ulevel/3)};
+		dogenericattack(&youmonst, &attack, 1, 1);
+	}
+	if(check_mutation(TT_SNAKE_TAIL)){
+		struct attack attack = {AT_OBIT, AD_DRST, 1, 6};
+		dogenericattack(&youmonst, &attack, 1, 1);
+	}
+	if(check_mutation(TT_THIEVING_TAIL)){
+		int x, y;
+		for(int i = -1; i <= 1; i++){
+			for(int j = -1; j <= 1; j++){
+				if(i == 0 && j == 0) continue;
+				x = u.ux + i;
+				y = u.uy + j;
+				if(!isok(x, y)) continue;
+				struct monst *mtmp = m_at(x, y);
+				if(!mtmp) continue;
+				if(mtmp->mpeaceful) continue;
+				if(nonthreat(mtmp)) continue;
+				if(!has_stealable_item(mtmp)) continue;
+				if(!rn2(8)) continue;
+				steal_from_monster(mtmp);
+				i = 2; //Break outer loop
+				break;
+			}
+		}
+	}
+	if(check_mutation(TT_SHADOW_PAIN)){
+		struct attack attack = {AT_ESPR, AD_PAIN, 1, 1+(u.ulevel/6)};
+		dogenericattack(&youmonst, &attack, 8, 1);
+	}
+	if(check_mutation(TT_SHADOW_SHRED)){
+		struct attack attack = {AT_ESPR, AD_SHRD, 1, 1+(u.ulevel/6)};
+		dogenericattack(&youmonst, &attack, 8, 1);
+	}
+	if(check_mutation(TT_BITING_HAIR)){
+		struct attack attack = {AT_OBIT, AD_VAMP, 1, 4};
+		int mult = (u.ulevel+9)/10;
+		dogenericattack(&youmonst, &attack, 8*mult, mult);
+	}
+	if(check_mutation(TT_SHADOW_CASTER)){
+		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+			if(DEADMONSTER(mtmp)) continue;
+			if(distmin(u.ux, u.uy, mtmp->mx, mtmp->my) > BOLT_LIM) continue;
+			if(!couldsee(mtmp->mx, mtmp->my)) continue;
+			if(mtmp->mpeaceful || nonthreat(mtmp)) continue; //A wizard did it
+			if(rn2(10) != 0) continue; //10% chance to cast
+			int spell;
+			switch(rn2(5)){
+				case 0: spell = PARALYZE; break;
+				case 1: spell = DESTRY_WEPN; break;
+				case 2: spell = DESTRY_ARMR; break;
+				case 3: spell = OPEN_WOUNDS; break;
+				default: spell = PSI_BOLT; break;
+			}
+			struct attack attack = {AT_MAGC, AD_SPEL, 0, 6};
+			cast_spell(&youmonst, mtmp, &attack, spell, mtmp->mx, mtmp->my);
+			break;
+		}
+		
+	}
+}
+
+void
+mutation_auras()
+{
+	// (has_mutation(TT_TEARS_OF_BLOOD) \
+	//  || has_mutation(TT_FLAMING_HAIR) \
+	//  || has_mutation(TT_FROSTY_HAIR) \
+	// )
+	if(check_mutation(TT_TEARS_OF_BLOOD)){
+		int dmg = (u.ulevel+9)/10;
+		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+			if(DEADMONSTER(mtmp)) continue;
+			if(!mon_can_see_you(mtmp)) continue;
+			if(distmin(u.ux, u.uy, mtmp->mx, mtmp->my) > BOLT_LIM) continue;
+			if(!has_blood_mon(mtmp) || eyecount(mtmp->data) < 1) continue;
+			if(mtmp->mtyp == PM_FLOATING_EYE)
+				mtmp->mhp = max(mtmp->mhp - dmg*2, 1);
+			else
+				mtmp->mhp = max(mtmp->mhp - dmg, 1);
+		}
+	}
+	if(check_mutation(TT_FLAMING_HAIR)){
+		int dmg = d((u.ulevel+2)/3, 4);
+		
+		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+			if(DEADMONSTER(mtmp)) continue;
+			if(!couldsee(mtmp->mx, mtmp->my)) continue;
+			if(mtmp->mpeaceful || nonthreat(mtmp)) continue; //A wizard did it
+			if(resists_fire(mtmp)) continue;
+			if(dmg - distu(mtmp->mx, mtmp->my) < 1) continue;
+			m_losehp(mtmp, dmg - distu(mtmp->mx, mtmp->my), TRUE, "fiery aura");
+		}
+	}
+	if(check_mutation(TT_FROSTY_HAIR)){
+		int dmg = d((u.ulevel+2)/3, 4);
+		
+		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+			if(DEADMONSTER(mtmp)) continue;
+			if(!couldsee(mtmp->mx, mtmp->my)) continue;
+			if(mtmp->mpeaceful || nonthreat(mtmp)) continue; //A wizard did it
+			if(resists_cold(mtmp)) continue;
+			if(dmg - distu(mtmp->mx, mtmp->my) < 1) continue;
+			m_losehp(mtmp, dmg - distu(mtmp->mx, mtmp->my), TRUE, "frosty aura");
 		}
 	}
 }

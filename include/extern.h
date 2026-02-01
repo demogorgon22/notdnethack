@@ -35,8 +35,10 @@ E time_t NDECL(get_realtime);
 E void NDECL(dogoat);
 E void FDECL(dogoat_mon, (struct monst *));
 E void FDECL(dojellysting, (struct monst *));
+E void FDECL(dogenericattack, (struct monst *, struct attack *, int, int));
 E void FDECL(dorotbite, (struct monst *));
 E void FDECL(dorotsting, (struct monst *));
+E void FDECL(dotiefling, (struct monst *));
 E boolean FDECL(doyog, (struct monst *));
 E void FDECL(dotwin_cast, (struct monst *));
 E void FDECL(dochaos_mon, (struct monst *));
@@ -2096,6 +2098,9 @@ E void FDECL(confer_mutation, (int));
 E boolean NDECL(any_mutation);
 E void NDECL(init_natural_mutations);
 E void NDECL(check_natural_mutations);
+E int NDECL(domutation);
+E void NDECL(mutation_autoattacks);
+E void NDECL(mutation_auras);
 
 /* ### nhlan.c ### */
 #ifdef LAN_FEATURES
@@ -2426,6 +2431,7 @@ E int FDECL(polymon, (int));
 E void NDECL(rehumanize);
 E int FDECL(dobreathe, (struct permonst *));
 E int NDECL(domakewhisperer);
+E int NDECL(dosummonshade);
 E int NDECL(dokiai);
 E int NDECL(doelementalbreath);
 E int NDECL(dospit);
@@ -2435,7 +2441,7 @@ E int NDECL(dosummon);
 E int NDECL(dodemonpet);
 E int NDECL(dovampminion);
 E int NDECL(dotinker);
-E int NDECL(dogaze);
+E int FDECL(dogaze, (struct monst *));
 E int NDECL(dohide);
 E void FDECL(u_psi_blast_effects, (struct monst *, int, int));
 E int NDECL(domindblast);
@@ -3472,7 +3478,8 @@ E int FDECL(chwepon, (struct obj *,int));
 E int FDECL(welded, (struct obj *));
 E void FDECL(weldmsg, (struct obj *));
 E double FDECL(bimanual_mod, (struct obj *, struct monst *));
-E boolean FDECL(bimanual, (struct obj *, struct permonst *));
+E boolean FDECL(bimanual, (struct obj *, struct permonst *, boolean, boolean));
+E boolean FDECL(bimanual_mon, (struct obj *, struct monst *));
 
 /* ### windows.c ### */
 
@@ -3608,6 +3615,8 @@ E void NDECL(movement_combos);
 E const char *FDECL(move_name, (int));
 E boolean FDECL(perform_monk_move, (int, int*));
 E boolean NDECL(perform_expert_move);
+E void NDECL(perform_gaze_attacks);
+E void NDECL(perform_wizegaze_attacks);
 E int NDECL(forward_move);
 E int NDECL(bent_move);
 E int NDECL(hook_move);
@@ -3663,6 +3672,7 @@ E int FDECL(hit_with_cblood, (struct monst *,struct obj *, int, int, int, struct
 E int FDECL(hit_with_rreject, (struct monst *,struct obj *, int, int, int, struct attack *));
 E int FDECL(hit_with_dance, (struct monst *,struct obj *, int, int, int, struct attack *));
 E int FDECL(hit_with_streaming, (struct monst *,struct obj *, int, int, int, int, int, struct attack *));
+E int FDECL(hit_with_tonguesnake, (struct monst *, int, int, int));
 E boolean FDECL(is_serration_vulnerable, (struct monst *));
 E boolean FDECL(obj_is_material, (struct obj *, int));
 E int FDECL(weapon_skill_type, (struct obj *, struct obj *, boolean));

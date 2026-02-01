@@ -570,7 +570,7 @@ boolean you_abilities;
 			add_ability('a', "Use your armor's breath weapon", MATTK_DSCALE);
 		}
 	}
-	if (mon_abilities && (is_were(youracedata) || gates_in_help(youracedata))){
+	if (mon_abilities && (is_were(youracedata) || gates_in_help(youracedata) || check_mutation(TT_WANDERING_SHADOW))){
 		/* shared letter; assumes a polyform will only be one or the other */
 		add_ability('A', "Summon aid", MATTK_SUMM);
 	}
@@ -595,8 +595,11 @@ boolean you_abilities;
 	if (you_abilities && hasfightingforms() > 0) {	/* I can't wait until fighting forms are mainstream */
 		add_ability('F', "Pick a fighting form", MATTK_U_STYLE);
 	}
-	if (mon_abilities && (attacktype(youracedata, AT_GAZE) || (!Upolyd && check_vampire(VAMPIRE_GAZE)))){
+	if (mon_abilities && (attacktype(youracedata, AT_GAZE) || (!Upolyd && check_vampire(VAMPIRE_GAZE)) || (!Upolyd && TIEFLING_GAZE))) {
 		add_ability('g', "Gaze at something", MATTK_GAZE);
+	}
+	if (mon_abilities && (Race_if(PM_TIEFLING) && !Upolyd && MISC_TIEFLING_ABILITY)){
+		add_ability('G', "Tiefling abilities", MATTK_MUTATION);
 	}
 	if (mon_abilities && is_hider(youracedata)){
 		add_ability('h', "Hide", MATTK_HIDE);
@@ -628,7 +631,7 @@ boolean you_abilities;
 	if (mon_abilities && u.umonnum == PM_GREMLIN){
 		add_ability('R', "Replicate yourself", MATTK_REPL);
 	}
-	if (mon_abilities && attacktype(youracedata, AT_SPIT)){
+	if (mon_abilities && (attacktype(youracedata, AT_SPIT) || check_mutation(TT_BLINDING_VENOM))){
 		add_ability('s', "Spit", MATTK_SPIT);
 	}
 	if (mon_abilities && (youracedata->msound == MS_SHRIEK || youracedata->msound == MS_SHOG)){ //player can't speak elder thing.
@@ -652,7 +655,7 @@ boolean you_abilities;
 	if (mon_abilities && is_vampire(youracedata) && u.ulevel > 1){
 		add_ability('V', "Raise a vampiric minion", MATTK_VAMP);
 	}
-	if (mon_abilities && webmaker(youracedata)){
+	if (mon_abilities && (webmaker(youracedata) || check_mutation(TT_WEBS))){
 		add_ability('w', "Spin a web", MATTK_WEBS);
 	}
 	if (Role_if(PM_MADMAN) && u.whisperturn < moves && !Catapsi && !DimensionalLock){
@@ -728,15 +731,16 @@ boolean you_abilities;
 //	                   &youracedata->mattk[attackindex(youracedata, 
 //			                         AT_MAGC,AD_ANY)]);
 	case MATTK_REMV: return doremove();
-	case MATTK_GAZE: return dogaze();
+	case MATTK_GAZE: return dogaze(NULL);
 	case MATTK_TNKR: return dotinker();
-	case MATTK_SUMM: return (is_were(youracedata) ? dosummon() : dodemonpet());
+	case MATTK_SUMM: return (check_mutation(TT_WANDERING_SHADOW) ? dosummonshade() : is_were(youracedata) ? dosummon() : dodemonpet());
 	case MATTK_VAMP: return dovampminion();
 	case MATTK_WEBS: return dospinweb();
 	case MATTK_HIDE: return dohide();
 	case MATTK_MIND: return domindblast();
 	case MATTK_CLOCK: return doclockspeed();
 	case MATTK_DROID: return doandroid();
+	case MATTK_MUTATION: return domutation();
 	case MATTK_DARK: return dodarken();
 	case MATTK_REPL: {
 	    if(IS_FOUNTAIN(levl[u.ux][u.uy].typ)) {
@@ -2095,6 +2099,8 @@ wiz_mutate()
 				MENU_UNSELECTED);
 			if(inclet == 'z')
 				inclet = 'A';
+			else if(inclet == 'Z')
+				inclet = 'a';
 			else
 				inclet++;
 		}

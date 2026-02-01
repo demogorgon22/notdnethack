@@ -2839,7 +2839,7 @@ winid *datawin;
 			if (oc.oc_skill > 0) {
 				if (obj) {
 					Sprintf(buf, "%s-handed %s%s%s.", 
-						((obj ? bimanual(obj, youracedata) : oc.oc_bimanual) ? "Two" : "One"),
+						((obj ? bimanual_mon(obj, &youmonst) : oc.oc_bimanual) ? "Two" : "One"),
 						(otyp_is_blaster || otyp_is_launcher) ? "" : buf2,
 						(otyp_is_blaster ? "blaster" : otyp_is_launcher ? "launcher" : "weapon"),
 						((obj && is_weptool(obj)) && !otyp_is_launcher ? "-tool" : "")
@@ -5143,9 +5143,11 @@ count_buc(list, type)
     int type;
 {
     int count = 0;
+	boolean knows_curses = check_mutation(TT_HATEFUL_VISION);
 
     while (list) {
 	if (u.upriest) list->bknown = TRUE;
+	if (list->cursed && knows_curses) list->bknown = TRUE;
 	switch(type) {
 	    case BUC_BLESSED:
 		if (list->oclass != COIN_CLASS && list->bknown && list->blessed)

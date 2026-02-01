@@ -6807,7 +6807,7 @@ int tary;
 			struct obj *otmp = (youdef ? uwep : MON_WEP(mdef));
 			const char *hands;
 			boolean dofailmsg = FALSE;
-			hands = bimanual(otmp, mdef->data) ? makeplural(mbodypart(mdef, HAND)) : mbodypart(mdef, HAND);
+			hands = bimanual_mon(otmp, mdef) ? makeplural(mbodypart(mdef, HAND)) : mbodypart(mdef, HAND);
 			if (otmp && otmp->oclass == WEAPON_CLASS && !Magic_res(mdef) && !otmp->oartifact && rn2(4)) {
 				if (otmp->spe > -7){
 					otmp->spe -= (youdef ? 1 : rnd(7));	/* it's a bother to you, but not much to monsters */

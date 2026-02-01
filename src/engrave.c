@@ -1860,12 +1860,7 @@ freehand()
 	if(youracedata->mtyp == PM_SILVERMAN)
 		return TRUE;
 	return((!uwep || !welded(uwep) ||
-	   (!bimanual(uwep,youracedata) && (!uarms || !uarms->cursed))));
-/*	if ((uwep && bimanual(uwep)) ||
-	    (uwep && uarms))
-		return(0);
-	else
-		return(1);*/
+	   (!bimanual_mon(uwep,&youmonst) && (!uarms || !uarms->cursed))));
 }
 
 static NEARDATA const char styluses[] =

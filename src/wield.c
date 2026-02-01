@@ -195,7 +195,7 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 		mons[wep->corpsenm].mname, makeplural(body_part(HAND)));
 	    Sprintf(kbuf, "%s corpse", an(mons[wep->corpsenm].mname));
 	    instapetrify(kbuf);
-	} else if (uarms && bimanual(wep,youracedata)){
+	} else if (uarms && bimanual_mon(wep,&youmonst)){
 		char* term = is_sword(wep) ? "sword" : wep->otyp == BATTLE_AXE ? "axe" : "weapon";
 	    You("cannot wield %s in both hands while wearing a shield.", an(term));
 	} else if (wep->otyp == ARM_BLASTER && uarmg && is_metallic(uarmg))
@@ -217,7 +217,7 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 		else tmp = "";
 		pline("%s%s %s to your %s!", tmp, aobjnam(wep, "weld"),
 			(wep->quan == 1L) ? "itself" : "themselves", /* a3 */
-			bimanual(wep,youracedata) ?
+			bimanual_mon(wep,&youmonst) ?
 				(const char *)makeplural(body_part(HAND))
 				: body_part(HAND));
 		wep->bknown = TRUE;
@@ -544,7 +544,7 @@ const char *verb;	/* "rub",&c */
 	if (flags.verbose) {
 	    const char *hand = body_part(HAND);
 
-	    if (bimanual(uwep,youracedata)) hand = makeplural(hand);
+	    if (bimanual_mon(uwep,&youmonst)) hand = makeplural(hand);
 	    if (strstri(what, "pair of ") != 0) more_than_1 = FALSE;
 	    pline(
 	     "Since your weapon is welded to your %s, you cannot %s %s %s.",
@@ -565,7 +565,7 @@ const char *verb;	/* "rub",&c */
 	return FALSE;
     }
     /* check shield */
-    if (uarms && bimanual(obj,youracedata)) {
+    if (uarms && bimanual_mon(obj,&youmonst)) {
 	You("cannot %s a two-handed %s while wearing a shield.",
 	    verb, (obj->oclass == WEAPON_CLASS) ? "weapon" : "tool");
 	return FALSE;
@@ -621,13 +621,13 @@ test_twoweapon()
 	/* not twohanded */
 	else if ((
 		/* twohanded (can be paired with punches) */
-		(uwep && bimanual(uwep,youracedata) && !((martial_bonus() || u.umaniac) && !uswapwep)) || 
-		(uswapwep && bimanual(uswapwep,youracedata) && !((martial_bonus() || u.umaniac) && !uwep))
+		(uwep && bimanual_mon(uwep,&youmonst) && !((martial_bonus() || u.umaniac) && !uswapwep)) || 
+		(uswapwep && bimanual_mon(uswapwep,&youmonst) && !((martial_bonus() || u.umaniac) && !uwep))
 		) &&
 		/* Exception: Friede's Scythe can be offhanded with the (twohanded) Profaned Greatscythe or Lifehunt Scythe (or other farm implement). */
 		!(uwep && uswapwep && is_farm(uwep) && uswapwep->oartifact == ART_FRIEDE_S_SCYTHE)
 	) {
-		otmp = bimanual(uwep,youracedata) ? uwep : uswapwep;
+		otmp = bimanual_mon(uwep,&youmonst) ? uwep : uswapwep;
 		if(otmp) pline("%s isn't one-handed.", Yname2(otmp));
 		else You_cant("fight two-handed while wielding this.");
 	}
@@ -996,7 +996,7 @@ register struct obj *obj;
 	savewornmask = obj->owornmask;
 	Your("%s %s welded to your %s!",
 		xname(obj), otense(obj, "are"),
-		bimanual(obj,youracedata) ? (const char *)makeplural(body_part(HAND))
+		bimanual_mon(obj,&youmonst) ? (const char *)makeplural(body_part(HAND))
 				: body_part(HAND));
 	obj->owornmask = savewornmask;
 }
@@ -1030,7 +1030,7 @@ struct monst * mon;
 	if ((youagr && u.twoweap) || (!youagr && swapwep))
 		return 1;
 
-	if (bimanual(otmp, (youagr ? youracedata : mon->data)))
+	if (bimanual(otmp, (youagr ? youracedata : mon->data), TRUE, youagr))
 		return 2;
 
 	if (otmp->oartifact==ART_PEN_OF_THE_VOID && otmp->ovara_seals&SEAL_MARIONETTE && mvitals[PM_ACERERAK].died > 0)
@@ -1060,9 +1060,7 @@ struct monst * mon;
 }
 
 boolean
-bimanual(otmp, ptr)
-struct obj * otmp;
-struct permonst * ptr;
+bimanual(struct obj * otmp, struct permonst * ptr, boolean base_only, boolean yours)
 {
 	int wielder_size;	/* uses standard MZ_ values */
 	int eff_size;		/* uses standard MZ_ values */
@@ -1077,7 +1075,7 @@ struct permonst * ptr;
 	/* get wielder's size -- optional, will assume medium (human) */
 	wielder_size = (ptr ? ptr->msize : MZ_MEDIUM);
 	
-	if (ptr == youracedata){
+	if (yours) {
 		if (Role_if(PM_CAVEMAN))
 			wielder_size += 1;
 		if (u.sealsActive&SEAL_YMIR)
@@ -1085,11 +1083,11 @@ struct permonst * ptr;
 	}
 
 	/* Some creatures are specifically always able to wield any weapon in one hand */
-	if (ptr && always_one_hand_mtyp(ptr))
+	if (ptr && always_one_hand_mtyp(ptr) && !base_only)
 		return FALSE;
 
 	/* half-sword style requires both hands on the sword, regardless of size */
-	if (ptr == youracedata && is_knight_sword(otmp) && selectedFightingForm(FFORM_HALF_SWORD))
+	if (yours && is_knight_sword(otmp) && selectedFightingForm(FFORM_HALF_SWORD))
 		return TRUE;
 
 	/* get object size */
@@ -1115,6 +1113,14 @@ struct permonst * ptr;
 
 	/* bimanual rule: Needs two hands if [object's size] > [wielder's size] by 1 full size */
 	return (eff_size > wielder_size);
+}
+
+boolean
+bimanual_mon(struct obj * otmp, struct monst * mon)
+{
+	if(mon == &youmonst && check_mutation(TT_PREHENSILE_TAIL))
+		return FALSE;
+	return bimanual(otmp, mon->data, FALSE, mon == &youmonst);
 }
 
 /*wield.c*/

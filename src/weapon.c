@@ -258,6 +258,23 @@ struct monst *magr;
 	if (is_farm(otmp) &&
 	    ptr->mlet == S_PLANT) tmp += 6;
 
+	if(youagr && check_mutation(TT_CLOCKWORK_EYES) && mon && canseemon_eyes(mon)){
+		if(is_chaotic_mon(magr))
+			tmp += rnd(4);
+		else if(is_lawful_mon(magr))
+			tmp += rnd(20);
+		else
+			tmp += rnd(10);
+	}
+	else if(mon == &youmonst && check_mutation(TT_CLOCKWORK_EYES) && magr && canseemon_eyes(magr)){
+		if(is_chaotic_mon(magr))
+			tmp -= rnd(4);
+		else if(is_lawful_mon(magr))
+			tmp -= rnd(20);
+		else
+			tmp -= rnd(10);
+	}
+
 	/* trident is highly effective against swimmers */
 	if (otmp->otyp == TRIDENT && species_swims(ptr)) {
 	   if (is_pool(mon->mx, mon->my, FALSE)) tmp += 4;
@@ -733,7 +750,7 @@ struct monst *magr;
 		} else if (obj->oartifact == ART_FINGERPRINT_SHIELD) {
 				ocn = 2;
 				ocd = 4;
-		} else if (magr == &youmonst && activeFightingForm(FFORM_GREAT_WEP) && (bimanual(obj, youracedata) || bimanual_mod(obj, &youmonst) > 1)) {
+		} else if (magr == &youmonst && activeFightingForm(FFORM_GREAT_WEP) && (bimanual_mon(obj, &youmonst) || bimanual_mod(obj, &youmonst) > 1)) {
 			ignore_rolls = max(0, FightingFormSkillLevel(FFORM_GREAT_WEP) - 1); // 0-3 for unskilled-expert
 		}
 		
@@ -1739,9 +1756,9 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 			/* never untouchable artifacts */
 		    (!otmp->oartifact || touch_artifact(otmp, mtmp, 0)) &&
 			/* never unsuitable for mainhand wielding */
-			(spot!=W_WEP || (!bimanual(otmp, mtmp->data) || ((mtmp->misc_worn_check & W_ARMS) == 0 && !MON_SWEP(mtmp) && strongmonst(mtmp->data)))) &&
+			(spot!=W_WEP || (!bimanual_mon(otmp, mtmp) || ((mtmp->misc_worn_check & W_ARMS) == 0 && !MON_SWEP(mtmp) && strongmonst(mtmp->data)))) &&
 			/* never unsuitable for offhand wielding */
-			(spot!=W_SWAPWEP || (!(otmp->owornmask & (W_WEP)) && (!otmp->cursed || is_weldproof_mon(mtmp)) && !bimanual(otmp, mtmp->data) && (mtmp->misc_worn_check & W_ARMS) == 0 && 
+			(spot!=W_SWAPWEP || (!(otmp->owornmask & (W_WEP)) && (!otmp->cursed || is_weldproof_mon(mtmp)) && !bimanual_mon(otmp, mtmp) && (mtmp->misc_worn_check & W_ARMS) == 0 && 
 				( (otmp->owt <= (30 + (mtmp->m_lev/5)*5))
 				|| (marilith && ok_mariwep(otmp, mtmp, mtmp->data, FALSE))
 				|| (otmp->otyp == CHAIN && mtmp->mtyp == PM_CATHEZAR) 
@@ -1882,7 +1899,7 @@ struct obj *otmp;
 		if(wep->otyp == HAND_BLASTER) return ((otmp->otyp == ARM_BLASTER || otmp->otyp == CARCOSAN_STING) && otmp->ovar1_charges > 0);
     }
     
-    if (((strongmonst(mtmp->data) && (mtmp->misc_worn_check & W_ARMS) == 0) || !bimanual(otmp,mtmp->data)) && 
+    if (((strongmonst(mtmp->data) && (mtmp->misc_worn_check & W_ARMS) == 0) || !bimanual_mon(otmp,mtmp)) && 
 		(mtmp->misc_worn_check & W_ARMG || otmp->obj_material != SILVER || !hates_silver(mtmp->data)) &&
 		(mtmp->misc_worn_check & W_ARMG || otmp->obj_material != IRON	|| !hates_iron(mtmp->data)) &&
 		(mtmp->misc_worn_check & W_ARMG || !is_unholy(otmp)				|| !hates_unholy_mon(mtmp)) &&
@@ -2447,7 +2464,7 @@ register struct monst *mtmp;
 			/* never untouchable artifacts */
 			(touch_artifact(otmp, mtmp, 0)) &&
 			/* never too-large for available hands */
-			(!bimanual(otmp, mtmp->data) || ((mtmp->misc_worn_check & W_ARMS) == 0 && strongmonst(mtmp->data))) &&
+			(!bimanual_mon(otmp, mtmp) || ((mtmp->misc_worn_check & W_ARMS) == 0 && strongmonst(mtmp->data))) &&
 			/* never a hated weapon */
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || otmp->obj_material != IRON) &&
@@ -2528,7 +2545,7 @@ register struct monst *mtmp;
 			/* never untouchable artifacts */
 			(touch_artifact(otmp, mtmp, 0)) &&
 			/* never too-large for available hands */
-			(!bimanual(otmp, mtmp->data)) &&
+			(!bimanual_mon(otmp, mtmp)) &&
 			/* never a hated weapon */
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || !is_iron_obj(otmp)) &&
@@ -2759,7 +2776,7 @@ register struct monst *mon;
 					char welded_buf[BUFSZ];
 					const char *mon_hand = mbodypart(mon, HAND);
 
-					if (bimanual(mw_tmp, mon->data)) mon_hand = makeplural(mon_hand);
+					if (bimanual_mon(mw_tmp, mon)) mon_hand = makeplural(mon_hand);
 					Sprintf(welded_buf, "%s welded to %s %s",
 						otense(mw_tmp, "are"),
 						mhis(mon), mon_hand);
@@ -2804,7 +2821,7 @@ register struct monst *mon;
 	/* possibly wield an off-hand weapon */
 	if (old_weapon_check == NEED_HTH_WEAPON || old_weapon_check == NEED_RANGED_WEAPON)
 	{
-		if (could_twoweap_mon(mon) && !which_armor(mon, W_ARMS) && !bimanual(MON_WEP(mon), mon->data))
+		if (could_twoweap_mon(mon) && !which_armor(mon, W_ARMS) && !bimanual_mon(MON_WEP(mon), mon))
 		{
 			sobj = select_shwep(mon);
 			/* quick-and-dirty select_srwep() for blasters and guns */
@@ -2950,7 +2967,7 @@ register struct monst *mon;
 
 	if(needspick(mon->data)){
 		obj = m_carrying(mon, DWARVISH_MATTOCK);
-		if (!obj || bimanual(obj, mon->data))
+		if (!obj || bimanual_mon(obj, mon))
 			obj = m_carrying(mon, PICK_AXE);
 	}
 	if(!obj){
@@ -2973,7 +2990,7 @@ register struct monst *mon;
 		    mon_ignite_lightsaber(obj, mon);
 		toreturn = 1;
 	}
-	if (could_twoweap_mon(mon) && !which_armor(mon, W_ARMS) && !bimanual(obj, mon->data))
+	if (could_twoweap_mon(mon) && !which_armor(mon, W_ARMS) && !bimanual_mon(obj, mon))
 	{
 		sobj = select_shwep(mon);
 		if (sobj && sobj != &zeroobj) {
@@ -4380,7 +4397,7 @@ int wep_type;
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
 		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
-	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
+	  && (bimanual_mon(weapon, &youmonst) || bimanual_mod(weapon, &youmonst) > 1)
 	){
 		if(bonus > 0)
 			bonus *= 2;
@@ -4610,7 +4627,7 @@ int wep_type;
 	if(weapon && weapon == uwep && Role_if(PM_SAMURAI) && !Upolyd && !u.twoweap && !u.usteed && !u.ustuck
 	  && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)) 
 		&& (objects[weapon->otyp].oc_skill == P_LONG_SWORD || objects[weapon->otyp].oc_skill == P_TWO_HANDED_SWORD)
-	  && (bimanual(weapon, youracedata) || bimanual_mod(weapon, &youmonst) > 1)
+	  && (bimanual_mon(weapon, &youmonst) || bimanual_mod(weapon, &youmonst) > 1)
 	  && ((u.dx == u.prev_dir.x && u.dy == u.prev_dir.y) || (u.dx == -1*u.prev_dir.x && u.dy == -1*u.prev_dir.y)) 
 	){
 		if(bonus > 0)
@@ -4869,7 +4886,7 @@ boolean youagr;
 			|| (otmp->otyp == CHAIN && pa->mtyp == PM_CATHEZAR)
 			)																	// valid weapon
 			&& !(otmp->oartifact && !always_twoweapable_artifact(otmp))			// ok artifact
-			&& (!bimanual(otmp, pa) || pa->mtyp == PM_GYNOID || pa->mtyp == PM_PARASITIZED_GYNOID)// not two-handed
+			&& (!bimanual_mon(otmp, magr) || pa->mtyp == PM_GYNOID || pa->mtyp == PM_PARASITIZED_GYNOID)// not two-handed
 			&& (youagr || (otmp != MON_WEP(magr) && otmp != MON_SWEP(magr)))	// not wielded already (monster)
 			&& (!youagr || otmp->owt <= max_offhand_weight())// not too heavy
 			&& (!(otmp->cursed) || (youagr && Weldproof) || (!youagr && is_weldproof_mon(magr)))

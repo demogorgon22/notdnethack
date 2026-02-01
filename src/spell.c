@@ -6365,6 +6365,11 @@ int spell;
 	skill = P_SKILL(spell_skilltype(spellid(spell)));
 	skill = max(skill,P_UNSKILLED) - 1;	/* unskilled => 0 */
 	difficulty= (spellev(spell)-1) * 4 - ((skill * 6) + (u.ulevel/3) + 1);
+	if(check_mutation(TT_EXTRA_FINGERS)){
+		splcaster -= urole.spelarmr;
+		difficulty -= 3;
+	}
+
 
 	if(difficulty > 0) {
 		/* Player is too low level or unskilled. */

@@ -1807,7 +1807,7 @@ boolean creation;
 	   hobbits, gnomes, and kobolds to wear cloaks */
 	m_dowear_type(mon, W_ARMC, creation, FALSE);
 	m_dowear_type(mon, W_ARMH, creation, FALSE);
-	if (!MON_WEP(mon) || !bimanual(MON_WEP(mon),mon->data))
+	if (!MON_WEP(mon) || !bimanual_mon(MON_WEP(mon),mon))
 	    m_dowear_type(mon, W_ARMS, creation, FALSE);
 	m_dowear_type(mon, W_ARMG, creation, FALSE);
 	m_dowear_type(mon, W_ARMF, creation, FALSE);
@@ -2267,7 +2267,7 @@ boolean polyspot;
 		}
 	}
 	if ((otmp = which_armor(mon, W_ARMS)) != 0) {
-		if(nohands(mon->data) || nolimbs(mon->data) || bimanual(MON_WEP(mon),mon->data) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
+		if(nohands(mon->data) || nolimbs(mon->data) || bimanual_mon(MON_WEP(mon),mon) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
 			if (vis)
 				pline("%s can no longer hold %s shield!", Monnam(mon), ppronoun);
 			else

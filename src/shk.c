@@ -4990,7 +4990,7 @@ shk_uncurse(slang, shkp)
 
 	/* Shopkeeper responses */
 	/* KMH -- fixed bknown, curse(), bless(), uncurse() */
-	if (!obj->bknown && !u.upriest &&
+	if (!obj->bknown && !u.upriest && !check_mutation(TT_HATEFUL_VISION) &&
 	    !no_cheat)
 	{
 		/* Not identified! */

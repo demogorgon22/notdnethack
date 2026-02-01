@@ -1965,6 +1965,7 @@ boolean getting_obj_base_desc;
 	if (!nn && ocl->oc_uses_known && ocl->oc_unique) obj->known = 0;
 	if (!Blind) obj->dknown = TRUE;
 	if (u.upriest) obj->bknown = TRUE;
+	else if (check_mutation(TT_HATEFUL_VISION) && obj->cursed) obj->bknown = TRUE;
 	if (u.sealsActive&SEAL_ANDROMALIUS) obj->sknown = TRUE;
 	//if (obj_is_pname(obj)) goto nameit;
 	if (!getting_obj_base_desc) {
@@ -2602,7 +2603,7 @@ weapon:
 			else {
 				const char *hand_s = obj->where == OBJ_MINVENT ? mbodypart(obj->ocarry, HAND) : body_part(HAND);
 
-				if ((bimanual(obj, obj->where == OBJ_MINVENT ? obj->ocarry->data : youracedata)
+				if ((bimanual_mon(obj, obj->where == OBJ_MINVENT ? obj->ocarry : &youmonst)
 				 && !(obj->where != OBJ_MINVENT && u.twoweap && (obj->oartifact == ART_PROFANED_GREATSCYTHE || obj->oartifact == ART_LIFEHUNT_SCYTHE)))
 					|| (u.twoweap && (obj->otyp == STILETTOS || obj->otyp == WIND_AND_FIRE_WHEELS))
 				)

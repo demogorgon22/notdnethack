@@ -1095,7 +1095,7 @@ unsigned trflags;
 				    body_part(ARM));
 			if (rust_dmg(uarms, "shield", 1, TRUE, &youmonst, FALSE))
 			    break;
-			if (u.twoweap || (uwep && bimanual(uwep,youracedata)))
+			if (u.twoweap || (uwep && bimanual_mon(uwep,&youmonst)))
 			    erode_obj(u.twoweap ? uswapwep : uwep, FALSE, TRUE);
 glovecheck:		(void) rust_dmg(uarmg, "gauntlets", 1, TRUE, &youmonst, FALSE);
 			/* Not "metal gauntlets" since it gets called
@@ -1331,7 +1331,7 @@ glovecheck:		(void) rust_dmg(uarmg, "gauntlets", 1, TRUE, &youmonst, FALSE);
 			    a_your[trap->madeby_u]);
 		    break;
 		}
-		if (webmaker(youracedata) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK)) {
+		if (webmaker(youracedata) || check_mutation(TT_WEBS) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK)) {
 		    if (webmsgok)
 		    	pline(trap->madeby_u ? "You take a walk on your web."
 					 : "There is a spider web here.");
@@ -2270,7 +2270,7 @@ struct monst *mtmp;
 			    if (rust_dmg(target, "shield", 1, TRUE, mtmp, FALSE))
 				break;
 			    target = MON_WEP(mtmp);
-			    if (target && bimanual(target,mtmp->data))
+			    if (target && bimanual_mon(target, mtmp))
 				erode_obj(target, FALSE, TRUE);
 glovecheck:		    target = which_armor(mtmp, W_ARMG);
 			    (void) rust_dmg(target, "gauntlets", 1, TRUE, mtmp, FALSE);
@@ -3957,14 +3957,14 @@ dountrap()	/* disarm a trap */
 	    pline("You're too strained to do that.");
 	    return MOVE_CANCELLED;
 	}
-	if (((nohands(youracedata) || !freehand()) && !(webmaker(youracedata) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK))) || !youracedata->mmove) {
+	if (((nohands(youracedata) || !freehand()) && !(webmaker(youracedata) || check_mutation(TT_WEBS) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK))) || !youracedata->mmove) {
 	    pline("And just how do you expect to do that?");
 	    return MOVE_CANCELLED;
 	} else if (u.ustuck && sticks(&youmonst)) {
 	    pline("You'll have to let go of %s first.", mon_nam(u.ustuck));
 	    return MOVE_CANCELLED;
 	}
-	if (u.ustuck || (welded(uwep) && bimanual(uwep,youracedata))) {
+	if (u.ustuck || (welded(uwep) && bimanual_mon(uwep,&youmonst))) {
 	    Your("%s seem to be too busy for that.",
 		 makeplural(body_part(HAND)));
 	    return MOVE_CANCELLED;
@@ -3982,7 +3982,7 @@ struct trap *ttmp;
 	int chance = 3;
 
 	/* Only spiders know how to deal with webs reliably */
-	if (ttmp->ttyp == WEB && !(webmaker(youracedata) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK)))
+	if (ttmp->ttyp == WEB && !(webmaker(youracedata) || check_mutation(TT_WEBS) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK)))
 	 	chance = 30;
 	if (Confusion || Hallucination) chance++;
 	if (Blind) chance++;
@@ -4145,7 +4145,7 @@ boolean force_failure;
 			    if (mtmp->mtame) abuse_dog(mtmp);
 			    if ((mtmp->mhp -= rnd(4)) <= 0) killed(mtmp);
 			} else if (ttype == WEB) {
-			    if (!(webmaker(youracedata) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK))) {
+			    if (!(webmaker(youracedata) || check_mutation(TT_WEBS) || u.sealsActive&SEAL_CHUPOCLOPS || (uarm && uarm->oartifact==ART_SPIDERSILK))) {
 				struct trap *ttmp2 = maketrap(u.ux, u.uy, WEB);
 				if (ttmp2) {
 				    pline_The("webbing sticks to you. You're caught too!");
@@ -5601,7 +5601,7 @@ uescape_entanglement()
 		return TRUE;
 	}
 	obj = outermost_armor(&youmonst);
-	if(obj && (obj->greased || obj->otyp == OILSKIN_CLOAK));//Slip free
+	if(obj && (obj->greased || obj->otyp == OILSKIN_CLOAK || check_mutation(TT_SLIPPERY_SKIN)));//Slip free
 	else if(u.uentangled_otyp == ROPE_OF_ENTANGLING){
 		if(escapecheck <= rn2(20*ATTRSCALE)+rn2(20*ATTRSCALE))
 			return FALSE;

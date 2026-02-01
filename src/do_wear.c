@@ -1848,7 +1848,7 @@ boolean noisy;
 		return 0;
     }
 
-    if (welded(uwep) && bimanual(uwep,youracedata) &&
+    if (welded(uwep) && bimanual_mon(uwep,&youmonst) &&
 	    (is_suit(otmp)
 			|| is_shirt(otmp)
 	)) {
@@ -1904,7 +1904,7 @@ boolean noisy;
 		if (uarms) {
 			if (noisy) already_wearing(an(c_shield));
 			err++;
-		} else if (uwep && bimanual(uwep,youracedata)) {
+		} else if (uwep && bimanual_mon(uwep,&youmonst)) {
 			const char *term = is_sword(uwep) ? c_sword : (uwep->otyp == BATTLE_AXE) ? c_axe : c_weapon;
 			if (noisy) 
 			You("cannot wear a shield while wielding %s in both hands.", an(term));
@@ -2215,7 +2215,7 @@ doputon()
 		    You("cannot remove your gloves to put on the ring.");
 			return MOVE_CANCELLED;
 		}
-		if (welded(uwep) && bimanual(uwep,youracedata)) {
+		if (welded(uwep) && bimanual_mon(uwep,&youmonst)) {
 			/* welded will set bknown */
 	    You("cannot free your weapon hands to put on the ring.");
 			return MOVE_CANCELLED;
@@ -2787,6 +2787,7 @@ base_uac()
 	if(uleft && uleft->otyp == RIN_PROTECTION) uac -= uleft->spe;
 	if(uright && uright->otyp == RIN_PROTECTION) uac -= uright->spe;
 	if (HProtection & INTRINSIC) uac -= (u.ublessed+1)/2;
+	if(check_mutation(TT_NA_AURA)) uac -= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
 	uac -= u.uacinc;
 	uac -= u.spiritAC;
 	if(u.uuur_duration)
@@ -2960,6 +2961,8 @@ find_ac()
 	else if(u.specialSealsActive&SEAL_DAHLVER_NAR && Upolyd) uac -=  min(u.ulevel/2,(u.mhmax - u.mh)/10);
 	if(uclockwork) uac -= (u.clockworkUpgrades&ARMOR_PLATING) ? 5 : 2; /*armor bonus for automata*/
 	if(uandroid) uac -= 6; /*armor bonus for androids*/
+	if(check_mutation(TT_NA_SCALES)) uac -= u.ulevel >= 30 ? 6 : (u.ulevel >= 14 ? 3 : 1);
+	if(check_mutation(TT_SCALES) || check_mutation(TT_CHITIN)) uac -= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
 	if (uac < -128) uac = -128;	/* u.uac is an schar */
 	if(uac != u.uac){
 		u.uac = uac;
@@ -3004,6 +3007,8 @@ int base_nat_udr()
 	if(u.specialSealsActive&SEAL_COSMOS) udr += (spiritDsize()+1)/2;
 	if(u.sealsActive&SEAL_ECHIDNA) udr += max((ACURR(A_CON)-9)/4, 0);
 	if(uclockwork && u.clockworkUpgrades&ARMOR_PLATING) udr += 4; /*armor bonus for automata (stacks with the 1 natural DR)*/
+	if(check_mutation(TT_DR_SCALES)) udr += u.ulevel >= 30 ? 9 : (u.ulevel >= 14 ? 6 : 3); /*natural armor scales*/
+	if(check_mutation(TT_SCALES) || check_mutation(TT_CHITIN)) udr += u.ulevel >= 30 ? 6 : u.ulevel >= 14 ? 3 : 1;
 	
 	if (udr > 127) udr = 127;	/* u.uac is an schar */
 	return udr;
@@ -3036,6 +3041,8 @@ int base_udr()
 			udr -= (discomfort * delta)/100;
 		}
 	}
+
+	if(check_mutation(TT_DR_AURA)) udr += u.ulevel >= 30 ? 6 : (u.ulevel >= 14 ? 3 : 1);
 
 	if (udr > 127) udr = 127;
 	if (udr < 0) udr = 0;
@@ -3296,7 +3303,7 @@ glibr()
 	const char *otherwep = 0;
 
 	leftfall = (uleft && !uleft->cursed && !Weldproof &&
-		    (!uwep || !welded(uwep) || !bimanual(uwep,youracedata)));
+		    (!uwep || !welded(uwep) || !bimanual_mon(uwep,&youmonst)));
 	rightfall = (uright && !uright->cursed && !Weldproof && (!welded(uwep)));
 	if (!uarmg && (leftfall || rightfall) && !nolimbs(youracedata)) {
 		/* changed so cursed rings don't fall off, GAN 10/30/86 */
@@ -3455,7 +3462,7 @@ int otyp;
 	if (nolimbs(youracedata) &&
 		uamul && uamul->otyp == AMULET_OF_UNCHANGING && uamul->cursed && !Weldproof)
 	    return uamul;
-	if (welded(uwep) && (ring == uright || bimanual(uwep,youracedata))) return uwep;
+	if (welded(uwep) && (ring == uright || bimanual_mon(uwep,&youmonst))) return uwep;
 	if (uarmg && uarmg->cursed && !Weldproof) return uarmg;
 	if (ring->cursed && !Weldproof) return ring;
     }
@@ -3494,7 +3501,7 @@ register struct obj *otmp;
 		return 0;
 	    }
 	    why = 0;	/* the item which prevents ring removal */
-	    if (welded(uwep) && (otmp == uright || bimanual(uwep,youracedata))) {
+	    if (welded(uwep) && (otmp == uright || bimanual_mon(uwep,&youmonst))) {
 		Sprintf(buf, "free a weapon %s", body_part(HAND));
 		why = uwep;
 	    } else if (uarmg && uarmg->cursed && !Weldproof) {
@@ -3543,7 +3550,7 @@ register struct obj *otmp;
 	    } else if (otmp == uarmu && uarm && arm_blocks_upper_body(uarm->otyp) && uarm->cursed && !Weldproof) {
 			Sprintf(buf, "remove your %s", c_suit);
 			why = uarm;
-	    } else if (welded(uwep) && bimanual(uwep,youracedata)) {
+	    } else if (welded(uwep) && bimanual_mon(uwep,&youmonst)) {
 			Sprintf(buf, "release your %s",
 				is_sword(uwep) ? c_sword :
 				(uwep->otyp == BATTLE_AXE) ? c_axe : c_weapon);

@@ -2649,7 +2649,7 @@ use_church_sword(struct obj *obj)
 	}
 	if(sheath->otyp == CHURCH_SHEATH){
 		sheath->otyp = CHURCH_BLADE;
-		if(bimanual(sheath,youracedata) && (obj == uwep || sheath == uwep) && uarms){
+		if(bimanual_mon(sheath,&youmonst) && (obj == uwep || sheath == uwep) && uarms){
 			You("can't sheath the sword in the blade while wearing a shield.");
 			sheath->otyp = CHURCH_SHEATH;
 			return MOVE_CANCELLED;
@@ -2658,7 +2658,7 @@ use_church_sword(struct obj *obj)
 			You("sheath the sword in the blade.");
 	} else {
 		sheath->otyp = CHURCH_HAMMER;
-		if(bimanual(sheath,youracedata) && (obj == uwep || sheath == uwep) && uarms){
+		if(bimanual_mon(sheath,&youmonst) && (obj == uwep || sheath == uwep) && uarms){
 			You("can't sheath the sword in the stone while wearing a shield.");
 			sheath->otyp = CHURCH_BRICK;
 			return MOVE_CANCELLED;
@@ -2698,7 +2698,7 @@ use_church_sheath(struct obj *obj)
 	}
 	if(obj->otyp == CHURCH_SHEATH){
 		obj->otyp = CHURCH_BLADE;
-		if(bimanual(obj,youracedata) && (obj == uwep || sword == uwep) && uarms){
+		if(bimanual_mon(obj,&youmonst) && (obj == uwep || sword == uwep) && uarms){
 			You("can't sheath the sword in the blade while wearing a shield.");
 			obj->otyp = CHURCH_SHEATH;
 			return MOVE_CANCELLED;
@@ -2707,7 +2707,7 @@ use_church_sheath(struct obj *obj)
 			You("sheath the sword in the blade.");
 	} else {
 		obj->otyp = CHURCH_HAMMER;
-		if(bimanual(obj,youracedata) && (obj == uwep || sword == uwep) && uarms){
+		if(bimanual_mon(obj,&youmonst) && (obj == uwep || sword == uwep) && uarms){
 			You("can't sheath the sword in the stone while wearing a shield.");
 			obj->otyp = CHURCH_BRICK;
 			return MOVE_CANCELLED;
@@ -2858,7 +2858,7 @@ struct obj *obj;
 		} else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) {
 			int biman;
 			obj->lamplit = 1; //Check if the HMS will be two handed
-			biman = bimanual(obj,youracedata);
+			biman = bimanual_mon(obj,&youmonst);
 			obj->lamplit = 0;
 			if(biman && uarms){
 				You_cant("invoke %s while wearing a shield!", yname(obj));
@@ -7036,7 +7036,7 @@ struct obj *obj;
 			Strcpy(onambuf, cxname(otmp));
 			if (gotit) {
 			mon_hand = mbodypart(mtmp, HAND);
-			if (bimanual(otmp,mtmp->data)) mon_hand = makeplural(mon_hand);
+			if (bimanual_mon(otmp,mtmp)) mon_hand = makeplural(mon_hand);
 			} else
 			mon_hand = 0;	/* lint suppression */
 
@@ -7230,7 +7230,7 @@ struct obj *obj;
 			Strcpy(onambuf, cxname(otmp));
 			if (gotit) {
 				mon_hand = mbodypart(mtmp, HAND);
-				if (bimanual(otmp,mtmp->data)) mon_hand = makeplural(mon_hand);
+				if (bimanual_mon(otmp,mtmp)) mon_hand = makeplural(mon_hand);
 			} else
 			mon_hand = 0;	/* lint suppression */
 

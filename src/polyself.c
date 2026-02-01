@@ -267,7 +267,7 @@ boolean forcecontrol;
 		return;
 	    }
 	}
-	old_light = Upolyd ? emits_light(youmonst.data) : 0;
+	old_light = uemit_light();
 
 	if (Polymorph_control || forcecontrol) {
 		do {
@@ -369,7 +369,7 @@ boolean forcecontrol;
 	if (!uarmg) selftouch("No longer petrification-resistant, you");
 
  made_change:
-	new_light = Upolyd ? emits_light(youmonst.data) : 0;
+	new_light = uemit_light();
 	if (old_light != new_light) {
 	    del_light_source((&youmonst)->light);
 	    if (new_light == 1) ++new_light;  /* otherwise it's undetectable */
@@ -816,7 +816,7 @@ break_armor()
 		}
 	}
 	if ((otmp = uarms) != 0) {
-		if(nohands(youracedata) || nolimbs(youracedata) || bimanual(uwep,youracedata) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
+		if(nohands(youracedata) || nolimbs(youracedata) || bimanual_mon(uwep,&youmonst) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();
 			You("can no longer hold your shield!");
 			(void) Shield_off();
@@ -889,6 +889,9 @@ rehumanize()
 	del_light_source((&youmonst)->light);
 
 	polyman("return to %s form!", urace.adj);
+
+	if(uemit_light())
+		new_light_source(LS_MONSTER, (genericptr_t)&youmonst, uemit_light());
 
 	if (u.uhp < 1) {
 	    char kbuf[256];
@@ -1015,6 +1018,49 @@ domakewhisperer()
 }
 
 int
+dosummonshade()
+{
+	struct monst *mtmp;
+	int duration;
+	if (u.uen < u.ulevel) {
+	    You("concentrate but lack the energy to maintain doing so.");
+	    return MOVE_CANCELLED;
+	}
+
+	duration = ACURR(A_CHA) + u.ulevel;
+
+	if(Insight >= 20)
+		duration += ACURR(A_CHA);
+	
+	losepw(u.ulevel);
+	flags.botl = 1;
+
+	mtmp = makemon(&mons[PM_SHADE], u.ux, u.uy, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
+	if(!mtmp) return MOVE_CANCELLED; /* pets were genocided */
+
+	mark_mon_as_summoned(mtmp, &youmonst, duration, 0);
+
+	if(mtmp->m_lev < u.ulevel) {
+		for(int i = u.ulevel - mtmp->m_lev; i > 0; i--){
+			grow_up(mtmp, (struct monst *) 0);
+			//Technically might grow into a genocided form.
+			if(DEADMONSTER(mtmp))
+				return MOVE_CANCELLED;
+		}
+	}
+	mtmp->mspec_used = 0;
+	if(mtmp->m_lev) mtmp->mhpmax = hd_size(mtmp->data)*(mtmp->m_lev-1)+rnd(hd_size(mtmp->data));
+	mtmp->mhp = mtmp->mhpmax;
+
+	initedog(mtmp);
+	EDOG(mtmp)->loyal = TRUE;
+	EDOG(mtmp)->waspeaceful = TRUE;
+	mtmp->mpeacetime = 0;
+
+	return MOVE_STANDARD;
+}
+
+int
 dokiai()
 {
 	const char *petname;
@@ -1094,7 +1140,13 @@ dospit()
 	if (!getdir((char *)0))
 		return MOVE_CANCELLED;
 	else {
-		xspity(&youmonst, attacktype_fordmg(youracedata, AT_SPIT, AD_ANY), 0, 0);
+		if(check_mutation(TT_BLINDING_VENOM)){
+			struct attack spt = { AT_SPIT, AD_BLND, 0, 0 };
+			xspity(&youmonst, &spt, 0, 0);
+		}
+		else {
+			xspity(&youmonst, attacktype_fordmg(youracedata, AT_SPIT, AD_ANY), 0, 0);
+		}
 	}
 	return MOVE_STANDARD;
 }
@@ -1372,40 +1424,81 @@ dotinker()
 }
 
 int
-dogaze()
+dogaze(struct monst *mtmp)
 {
-	register struct monst *mtmp;
+	boolean pre_targeted = mtmp != NULL;
+	boolean attack_gazes = !pre_targeted || (u.uattked && (attacktype(youracedata, AT_GAZE) || (!Upolyd && check_vampire(VAMPIRE_GAZE)) || (!Upolyd && TIEFLING_GAZE)) );
 	int result = 0;
 
 	if (Blind) {
-		You_cant("see anything to gaze at.");
+		if(!pre_targeted) You_cant("see anything to gaze at.");
 		return MOVE_CANCELLED;
 	}
-	if (u.uen < 15) {
-		You("lack the energy to use your special gaze!");
-		return MOVE_CANCELLED;
-	}
-	if (!throwgaze()) {
+	if (!pre_targeted && !throwgaze()) {
 		/* player cancelled targetting or picked a not-allowed location */
 		return MOVE_CANCELLED;
 	}
 	else {
-		losepw(15);
-		flags.botl = 1;
-
-		if ((mtmp = m_at(u.dx, u.dy)) && canseemon(mtmp)) {
+		if ((pre_targeted || (mtmp = m_at(u.dx, u.dy))) && canseemon(mtmp)) {
 			struct attack *a;
 
-			for (a = &youracedata->mattk[0]; a < &youracedata->mattk[NATTK]; a++){
-				if (a->aatyp == AT_GAZE) 
+			if(attack_gazes) for (a = &youracedata->mattk[0]; a < &youracedata->mattk[NATTK] && !DEADMONSTER(mtmp); a++){
+				if (a->aatyp == AT_GAZE || a->aatyp == AT_WDGZ)
 					result |= xgazey(&youmonst, mtmp, a, -1);
+				if(DEADMONSTER(mtmp)){
+					return MOVE_STANDARD;
+				}
 			}
-			if(!Upolyd && check_vampire(VAMPIRE_GAZE)){
+			if(attack_gazes && !Upolyd && check_vampire(VAMPIRE_GAZE)){
 				struct attack gaze = {AT_GAZE, AD_PLYS, 1, 4};
 				result |= xgazey(&youmonst, mtmp, &gaze, -1);
 			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(hates_unholy_mon(mtmp) && check_mutation(TT_HATEFUL_VISION)){
+				struct attack gaze = {AT_GAZE, AD_STDY, 1, 9};
+				result |= xgazey(&youmonst, mtmp, &gaze, -1);
+			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(check_mutation(TT_CANCEL_GAZE)){
+				struct attack gaze = {AT_GAZE, AD_CNCL, 2, 6};
+				result |= xgazey(&youmonst, mtmp, &gaze, -1);
+			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(attack_gazes && check_mutation(TT_BEHOLDER)){
+				struct attack gaze = {AT_GAZE, AD_RGAZ, 4, 6};
+				for(int i = 0; i < 3; i++){
+					result |= xgazey(&youmonst, mtmp, &gaze, -1);
+					if(DEADMONSTER(mtmp)){
+						return MOVE_STANDARD;
+					}
+				}
+			}
+			if(attack_gazes && check_mutation(TT_MESMERIZING_GAZE) && !mindless_mon(mtmp)){
+				int dx = u.ux - mtmp->mx;
+				int dy = u.uy - mtmp->my;
+				if(canseemon(mtmp))
+					pline("%s stumbles towards you, mesmerized.", Monnam(mtmp));
+				mhurtle(mtmp, sgn(dx), sgn(dy), 1, TRUE);
+				result |= MM_HIT;
+			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(!mindless_mon(mtmp) && (check_mutation(TT_ODD_EYES_1) || check_mutation(TT_ODD_EYES_2) || check_mutation(TT_ODD_EYES_3) || check_mutation(TT_MANY_ODD_EYES))){
+				if(mtmp->encouraged > -6){
+					mtmp->encouraged--;
+					//pline("%s seems less confident than before.", Monnam(mtmp));
+					result |= MM_HIT;
+				}
+			}
 
-			if (!result) {
+			if (!pre_targeted && !result) {
 				pline("%s seemed not to notice.", Monnam(mtmp));
 			}
 

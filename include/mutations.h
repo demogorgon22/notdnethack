@@ -99,7 +99,7 @@ struct mutationtype {
 #define TT_ODD_EYES_1		LAST_CULT_MUTATION+20
 #define TT_ODD_EYES_2		LAST_CULT_MUTATION+21
 #define TT_ODD_EYES_3		LAST_CULT_MUTATION+22
-#define TT_ODD_EYES_4		LAST_CULT_MUTATION+23
+#define TT_MANY_ODD_EYES	LAST_CULT_MUTATION+23
 #define TT_INFRAVISION_1	LAST_CULT_MUTATION+24
 #define TT_EXTRAMISSION_1	LAST_CULT_MUTATION+25
 #define TT_EXTRAMISSION_2	LAST_CULT_MUTATION+26
@@ -119,7 +119,7 @@ struct mutationtype {
 #define TT_SHOCK_TOUCH		LAST_CULT_MUTATION+40
 #define TT_EXTRA_FINGERS	LAST_CULT_MUTATION+41
 #define TT_WEBS				LAST_CULT_MUTATION+42
-#define TT_SHADOW_SHREDS	LAST_CULT_MUTATION+43
+#define TT_SHADOW_PAIN		LAST_CULT_MUTATION+43
 #define TT_SHADOW_SHRED		LAST_CULT_MUTATION+44
 #define TT_WANDERING_SHADOW	LAST_CULT_MUTATION+45
 #define TT_SHADOW_CASTER	LAST_CULT_MUTATION+46
@@ -170,7 +170,56 @@ struct mutationtype {
 #define add_mutation(mut) (u.mutations[(mut-1)/32] |= (0x1L << ((mut-1)%32)))
 #define remove_mutation(mut) (u.mutations[(mut-1)/32] &= ~(0x1L << ((mut-1)%32)))
 
+#define MISC_TIEFLING_ABILITY \
+	(has_mutation(TT_POISON_CLOUD) || \
+	 has_mutation(TT_FIRE_BLAST_1) || \
+	 has_mutation(TT_FIRE_BLAST_2) || \
+	 has_mutation(TT_COLD_BLAST) || \
+	 has_mutation(TT_ACID_BLAST) || \
+	 has_mutation(TT_SMOKE) || \
+	 has_mutation(TT_COLD_CLOUD) || \
+	 has_mutation(TT_SIREN_SONG) || \
+	 has_mutation(TT_FROG_CROAK))
 
+#define TIEFLING_GAZE \
+	(\
+	 has_mutation(TT_HATEFUL_VISION) || \
+	 has_mutation(TT_ODD_EYES_1) || \
+	 has_mutation(TT_ODD_EYES_2) || \
+	 has_mutation(TT_ODD_EYES_3) || \
+	 has_mutation(TT_BEHOLDER) || \
+	 has_mutation(TT_CANCEL_GAZE) || \
+	 has_mutation(TT_MESMERIZING_GAZE))
+
+#define TIEFLING_AUTOGAZE \
+	(has_mutation(TT_ODD_EYES_1) || \
+	 has_mutation(TT_ODD_EYES_2) || \
+	 has_mutation(TT_ODD_EYES_3) || \
+	 has_mutation(TT_CANCEL_GAZE) || \
+	 has_mutation(TT_HATEFUL_VISION))
+
+#define TIEFLING_AUTOATTACKS \
+	(has_mutation(TT_LASHING_TAIL) \
+	 || has_mutation(TT_SNAKE_TAIL) \
+	 || has_mutation(TT_THIEVING_TAIL) \
+	 || has_mutation(TT_SHADOW_CASTER) \
+	 || has_mutation(TT_SHADOW_PAIN) \
+	 || has_mutation(TT_SHADOW_SHRED) \
+	 || has_mutation(TT_BITING_HAIR) \
+	)
+
+#define TIEFLING_AURAS \
+	(has_mutation(TT_TEARS_OF_BLOOD) \
+	 || has_mutation(TT_FLAMING_HAIR) \
+	 || has_mutation(TT_FROSTY_HAIR) \
+	)
+
+#define TIEFLING_CLAWS \
+	(has_mutation(TT_RAZOR_CLAWS) \
+	 || has_mutation(TT_HARD_CLAWS) \
+	 || has_mutation(TT_HOOKED_CLAWS) \
+	 || has_mutation(TT_TALONS) \
+	)
 
 
 #endif /* MUTATION_H */
