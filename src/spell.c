@@ -2677,6 +2677,9 @@ spiriteffects(power, atme)
 					mon->mstun = 0;
 					mon->mconf = 0;
 					mon->mpunctured = 0;
+					mon->mgmld_skin = 0;
+					mon->mgmld_throat = 0;
+					mon->mbleed = 0;
 					if (canseemon(mon))
 						pline("%s looks recovered.", Monnam(mon));
 				}
