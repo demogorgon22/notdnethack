@@ -1167,9 +1167,9 @@ struct monst *magr;
 		if (litsaber(obj)) {
 			if(obj->oartifact == ART_KISHIN_MIRROR)
 			{
-				spe_mult = u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
-				ocn *= u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
-				flat *= u.ulevel == 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				spe_mult = u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				ocn *= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+				flat *= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
 			}
 			else if (obj->where == OBJ_MINVENT && obj->ocarry->mtyp == PM_ARA_KAMEREL)
 			{

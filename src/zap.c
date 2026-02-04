@@ -285,7 +285,7 @@ struct obj *otmp;
 			if (!flags.mon_moving && otyp == SPE_FORCE_BOLT){
 				if(uwep && uwep->oartifact == ART_ANNULUS && uwep->otyp == CHAKRAM)
 					dmg += d((u.ulevel+1)/2, 12);
-				if(u.ulevel == 30 && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_PATIENCE))
+				if(u.ulevel >= 30 && (artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_PATIENCE))
 					dmg += d(10, 12);
 			}
 			if(dbldam) dmg *= 2;

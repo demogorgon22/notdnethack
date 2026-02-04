@@ -5700,7 +5700,7 @@ int tx,ty;
 	case NUMINA:{
 		//Spirit requires that its seal be drawn by a level 30 Binder.
 		//There is no binding period.
-		if(u.ulevel == 30 && Role_if(PM_EXILE)){
+		if(u.ulevel >= 30 && Role_if(PM_EXILE)){
 			int skill;
 			You_hear("a tumultuous babble of voices.");
 			pline("So insistent are they that even the uninitiated can hear,");
@@ -6021,7 +6021,7 @@ int floorID;
 
 	/* special cases: Numina, Council of Elements */
 	if (floorID == NUMINA) {
-		if (u.ulevel == 30 && Role_if(PM_EXILE)){
+		if (u.ulevel >= 30 && Role_if(PM_EXILE)){
 			int skill;
 			for (skill = 0; skill < P_NUM_SKILLS; skill++) {
 				if (OLD_P_SKILL(skill) < P_UNSKILLED) OLD_P_SKILL(skill) = P_UNSKILLED;

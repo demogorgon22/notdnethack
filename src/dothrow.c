@@ -429,7 +429,7 @@ hurtle_step(arg, x, y)
 			else if(uwep->otyp == NINJA_TO){
 				nightjar = TRUE;
 			}
-			else if(u.ulevel == 30){
+			else if(u.ulevel >= 30){
 				sakura = TRUE;
 			}
 			else {

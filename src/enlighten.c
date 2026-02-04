@@ -601,7 +601,7 @@ boolean dumping;
 		if(!u.spirit[OTHER_SPIRIT] && u.specialSealsKnown&(SEAL_YOG_SOTHOTH)){
 			you_are("able to bind with an other god");
 		}
-		if(!u.spirit[OUTER_SPIRIT] && u.ulevel == 30 && Role_if(PM_EXILE)){
+		if(!u.spirit[OUTER_SPIRIT] && u.ulevel >= 30 && Role_if(PM_EXILE)){
 			you_are("able to bind with the Numina");
 		}
 		if(u.sealCounts < numSlots){

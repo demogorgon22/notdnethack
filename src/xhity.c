@@ -23904,7 +23904,7 @@ perform_monk_move(int moveID, int *move_cost)
 				int res = xmeleehity(&youmonst, mdef, &weaponhit, &uwep, vis, 0, FALSE, 0);
 				if((res&MM_HIT) && !(res&(MM_AGR_STOP|MM_DEF_DIED)) && !Is_spire(&u.uz)){
 					if(!DEADMONSTER(mdef) && !MIGRATINGMONSTER(mdef) && !mindless_mon(mdef) && !(is_tettigon(mdef->data) && rn2(20))){
-						int damn = u.ulevel == 30 ? 5 : u.ulevel >= 22 ? 4 : u.ulevel >= 14 ? 3 : u.ulevel >= 10 ? 2 : 1;
+						int damn = u.ulevel >= 30 ? 5 : u.ulevel >= 22 ? 4 : u.ulevel >= 14 ? 3 : u.ulevel >= 10 ? 2 : 1;
 						int dmg = d(damn, 15);
 						if(is_mind_flayer(mdef->data))
 							dmg *= 2;

@@ -3844,7 +3844,7 @@ const char * prompt;
 			}
 		}
 		/* Numina */
-		if (Role_if(PM_EXILE) && u.ulevel == 30){
+		if (Role_if(PM_EXILE) && u.ulevel >= 30){
 			if ((u.specialSealsActive&SEAL_NUMINA)){
 				Sprintf(buf, "%s (active)",
 					sealNames[NUMINA - FIRST_SEAL]
