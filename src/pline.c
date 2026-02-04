@@ -577,6 +577,15 @@ register struct monst *mtmp;
 	else if (mtmp->mtraitor)  Strcat(info, ", traitor");
 	else if (mtmp->mferal)  Strcat(info, ", feral");
 	if (mtmp->meating)	  Strcat(info, ", eating");
+	if (mtmp->mgmld_skin || mtmp->mgmld_throat){
+		if(mtmp->mgmld_skin && mtmp->mgmld_throat)
+			Strcat(info, ", infected skin and throat");
+		else if(mtmp->mgmld_skin)
+			Strcat(info, ", infected skin");
+		else
+			Strcat(info, ", infected throat");
+	}
+	if (mtmp->mbleed)	  Strcat(info, ", bleeding out");
 	if (mtmp->mcan)		  Strcat(info, ", cancelled");
 	if (mtmp->mconf)	  Strcat(info, ", confused");
 	if (mtmp->mcrazed)	  Strcat(info, ", crazed");
