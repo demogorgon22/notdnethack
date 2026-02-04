@@ -2211,6 +2211,8 @@ struct monst *mtmp;
 #define MUSE_WISH 18
 #define MUSE_ROD_SEE_INVIS 19
 #define MUSE_ROD_FLYING 20
+#define MUSE_POT_ACID_DEFENSIVE 21
+#define MUSE_POT_BOOZE 22
 
 boolean
 find_misc(mtmp)
@@ -2381,6 +2383,16 @@ struct monst *mtmp;
 		) {
 			m.misc = obj;
 			m.has_misc = MUSE_POT_POLYMORPH;
+		}
+		nomore(MUSE_POT_BOOZE);
+		if(!nomouth && obj->otyp == POT_BOOZE && (mtmp->mgmld_skin || mtmp->mgmld_throat)) {
+			m.misc = obj;
+			m.has_misc = MUSE_POT_BOOZE;
+		}
+		nomore(MUSE_POT_ACID_DEFENSIVE);
+		if(!nomouth && obj->otyp == POT_ACID && (mtmp->mgmld_skin || mtmp->mgmld_throat)) {
+			m.misc = obj;
+			m.has_misc = MUSE_POT_ACID_DEFENSIVE;
 		}
 		nomore(MUSE_SCR_REMOVE_CURSE);
 		if(!spire && obj->otyp == SCR_REMOVE_CURSE && !is_weldproof_mon(mtmp))
@@ -2672,6 +2684,60 @@ skipmsg:
 		if (!otmp->oartifact)
 			m_useup(mtmp, otmp);
 		return 2;
+	case MUSE_POT_BOOZE:{
+		boolean separate = separate_respiration(mtmp->data);
+		mquaffmsg(mtmp, otmp);
+		if(otmp->cursed){
+			if(vismon)
+				pline("%s vomits and passes out.", Monnam(mtmp));
+			mtmp->mconf = TRUE;
+			if (get_mx(mtmp, MX_EDOG)) {
+				struct edog *edog = EDOG(mtmp);
+
+				if (edog->hungrytime > monstermoves + 20)
+					edog->hungrytime -= 20;
+			}
+			mtmp->mgmld_skin = 0;
+			mtmp->mgmld_throat = 0;
+			if (oseen) makeknown(POT_BOOZE);
+		}
+		else if(otmp->blessed){
+			mtmp->mgmld_skin = max(0, mtmp->mgmld_skin - 50);
+			if(separate)
+				mtmp->mgmld_throat = max(0, mtmp->mgmld_throat - 50);
+			else
+				mtmp->mgmld_throat = 0;
+		}
+		else {
+			if(vismon)
+				pline("%s staggers drunkenly.", Monnam(mtmp));
+			mtmp->mconf = TRUE;
+			mtmp->mgmld_skin = max(0, mtmp->mgmld_skin - 100);
+			if(separate)
+				mtmp->mgmld_throat = max(0, mtmp->mgmld_throat - 100);
+			else
+				mtmp->mgmld_throat = 0;
+			if (oseen) makeknown(POT_BOOZE);
+		}
+		if (!otmp->oartifact)
+			m_useup(mtmp, otmp);
+		return 2;
+	}break;
+	case MUSE_POT_ACID_DEFENSIVE:
+		mquaffmsg(mtmp, otmp);
+		if(!resists_acid(mtmp)){
+			if(vismon){
+				pline("%s %s in pain!", Monnam(mtmp),
+					is_silent_mon(mtmp) ? "writhes" : "screams");
+			}
+			mtmp->mhp -= d(otmp->cursed ? 2 : 1, otmp->blessed ? 4 : 8);
+			if (mtmp->mhp <= 0)
+				mtmp->mhp = 1;
+			if(oseen) makeknown(POT_ACID);
+		}
+		mtmp->mgmld_skin = 0;
+		mtmp->mgmld_throat = 0;
+	break;
 	case MUSE_POT_AMNESIA:
 		mquaffmsg(mtmp, otmp);
 		if (oseen) makeknown(POT_AMNESIA);
