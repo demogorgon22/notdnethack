@@ -2343,7 +2343,7 @@ destroy_items_sonic(struct monst *mtmp, boolean empowered)
 				mult,
 				(youdef) ? ((mult[0] != '\0') ? "your" : "Your") : ((mult[0] != '\0') ? s_suffix(mon_nam(mtmp)) : s_suffix(Monnam(mtmp))),
 				xname(obj),
-				(quan > 1 && cnt > 1L) ? "shatter" : "shatters");
+				(charged && cnt <= obj->spe) ? (quan > 1 ? "crack" : "cracks") : (quan > 1 && cnt > 1L) ? "shatter" : "shatters");
 		}
 
 		/* potion vapors */
