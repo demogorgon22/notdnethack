@@ -12165,9 +12165,11 @@ int vis;
 					s_suffix(mon_nam(mdef)),
 					mbodypart(mdef, BODY_SKIN));
 		}
-		if (!(breathless || dust_mask || towel || isolation_suit))
-			mdef->mgmld_throat += dmg;
-		mdef->mgmld_skin += dmg;
+		if(!isolation_suit){
+			if (!(breathless || dust_mask || towel))
+				mdef->mgmld_throat += dmg;
+			mdef->mgmld_skin += dmg;
+		}
 		return MM_HIT;
 	}break;
 	case AD_DISE:	/* damage/effect ? */
