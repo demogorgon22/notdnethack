@@ -14181,19 +14181,21 @@ int faction;
 	unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
 
 	/* Maybe rewire the quest levels */
-	if(ptr && in_mklev && In_quest(&u.uz) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7){
+	if(ptr && in_mklev && In_quest(&u.uz) && Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7){
 		if(ptr->mtyp == PM_WARDEN_ARIANNA)
 			ptr = &mons[PM_VOICE_IN_SCREAMS];
-		else if(ptr->mtyp == PM_MALKUTH_SEPHIRAH){
-			ptr = &mons[PM_CUBOID];
-			givenpos = FALSE; x = y = 0;
+		else if(quest_status.time_doing_quest/CON_QUEST_INCREMENT >= (Is_nemesis(&u.uz) ? 7 : u.uz.dlevel >= qlocate_level.dlevel ? 8 : Is_qstart(&u.uz) ? 10 : 9)){
+			if(ptr->mtyp == PM_MALKUTH_SEPHIRAH){
+				ptr = &mons[PM_CUBOID];
+				givenpos = FALSE; x = y = 0;
+			}
+			else if(ptr->mtyp == PM_HOD_SEPHIRAH){
+				ptr = &mons[PM_RHOMBOHEDROID];
+				givenpos = FALSE; x = y = 0;
+			}
+			else if((is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ))
+				template = FLAYED;
 		}
-		else if(ptr->mtyp == PM_HOD_SEPHIRAH){
-			ptr = &mons[PM_RHOMBOHEDROID];
-			givenpos = FALSE; x = y = 0;
-		}
-		else if((is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ))
-			template = FLAYED;
 	}
 
 	/* if a monster is being randomly chosen, use its bigger spawning group */
