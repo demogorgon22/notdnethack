@@ -1150,7 +1150,7 @@ struct obj {
 			 || (otmp)->otyp == SICKLE\
 			 ))\
 			 || (otmp)->otyp == WIND_AND_FIRE_WHEELS\
-			 || is_kensei_weapon(otmp)\
+			 || (Role_if(PM_KENSEI) && is_kensei_weapon(otmp))\
 			 )
 
 #define is_kensei_weapon(otmp) (u.role_variant == ART_SKY_REFLECTED ? (otmp)->obj_material == MERCURIAL :\
