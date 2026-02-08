@@ -9797,8 +9797,9 @@ void
 salve_effect(otmp)
 struct obj *otmp;
 {
+	#define ASALVE_SPE_INCREMENT 4
 	int oerodedLevel = 3;//3, 2, 1
-	int speLevel = -5; //-5, -1, +3
+	int speLevel = ASALVE_MAX_SPE-ASALVE_SPE_INCREMENT*2; //-5, -1, +3
 	
 	for(int i = 0; i < 3; i++){
 		if(otmp->oeroded >= oerodedLevel){
@@ -9814,11 +9815,16 @@ struct obj *otmp;
 			return;
 		}
 		else if(is_enchantable(otmp) && otmp->spe <= speLevel){
-			otmp->spe = min(3, otmp->spe+2);
+			int initSpe = otmp->spe;
+			otmp->spe = min(ASALVE_MAX_SPE, otmp->spe+2);
+			int delta = otmp->spe - initSpe;
+			if(delta && otmp->oclass == ARMOR_CLASS && otmp->owornmask){
+				adj_abon(otmp, delta);
+			}
 			return;
 		}
 		oerodedLevel--;
-		speLevel += 4;
+		speLevel += ASALVE_SPE_INCREMENT;
 	}
 }
 

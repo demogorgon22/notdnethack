@@ -1627,8 +1627,10 @@ struct obj {
 /* helpers, simple enough to be macros */
 #define is_plural(o)	((o)->quan > 1)
 
+#define ASALVE_MAX_SPE	3
+
 #define salve_target(otmp)	(\
-			((otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && otmp->spe < 0)\
+			((otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && otmp->spe < ASALVE_MAX_SPE)\
 			|| otmp->oeroded > 0\
 			|| otmp->oeroded2 > 0\
 			|| otmp->oeroded3 > 0\

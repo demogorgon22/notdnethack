@@ -1570,10 +1570,10 @@ register struct monst *mtmp;
 	    // && !uarmu && !uarm && !uarmh && !uarms && !uarmg && !uarmc && !uarmf){
 		struct monst *patient = 0;
 		int i, j, x, y, rot = rn2(3);
-		for(i = -1; i < 2; i++){
-			for(j = -1; j < 2; j++){
-				x = mtmp->mx+(i+rot)%3;
-				y = mtmp->my+(j+rot)%3;
+		for(i = 0; i < 3; i++){
+			for(j = 0; j < 3; j++){
+				x = mtmp->mx+(i+rot)%3-1;
+				y = mtmp->my+(j+rot)%3-1;
 				if(mtmp->mx == x && mtmp->my == y)
 					continue;
 				if(!isok(x, y))
@@ -1606,10 +1606,10 @@ register struct monst *mtmp;
 	if (mtmp->mtyp == PM_ITINERANT_PRIESTESS && Insight >= 40 && !straitjacketed_mon(mtmp)){
 		struct monst *patient = 0;
 		int i, j, x, y, rot = rn2(3);
-		for(i = -1; i < 2; i++){
-			for(j = -1; j < 2; j++){
-				x = mtmp->mx+(i);
-				y = mtmp->my+(j);
+		for(i = 0; i < 3; i++){
+			for(j = 0; j < 3; j++){
+				x = mtmp->mx+(i+rot)%3-1;
+				y = mtmp->my+(j+rot)%3-1;
 				if(mtmp->mx == x && mtmp->my == y)
 					continue;
 				if(!isok(x, y))
@@ -1640,10 +1640,10 @@ register struct monst *mtmp;
 	if(mtmp->mtyp == PM_OPERATOR || mtmp->mtyp == PM_PARASITIZED_OPERATOR){
 		struct monst *repairee = 0;
 		int i, j, x, y, rot = rn2(3);
-		for(i = -1; i < 2; i++){
-			for(j = -1; j < 2; j++){
-				x = mtmp->mx+(i+rot)%3;
-				y = mtmp->my+(j+rot)%3;
+		for(i = 0; i < 3; i++){
+			for(j = 0; j < 3; j++){
+				x = mtmp->mx+(i+rot)%3-1;
+				y = mtmp->my+(j+rot)%3-1;
 				if(!isok(x, y))
 					continue;
 				repairee = m_u_at(x,y);

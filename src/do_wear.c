@@ -2761,10 +2761,16 @@ base_uac()
 		if(Race_if(PM_ORC)){
 			dexbonus += (u.ulevel+1)/3;
 		}
-		if((Role_if(PM_MONK) && Role_if(PM_KENSEI)) && !(uarm && arm_blocks_upper_body(uarm->otyp))){
-			if(dexbonus < 0) dexbonus = (int)(dexbonus / 2);
-			dexbonus += max((int)( (ACURR(A_WIS)-1)/2 - 5 ),0) + (int)(u.ulevel/6 + 1);
-			if(Confusion && u.udrunken>u.ulevel) dexbonus += u.udrunken/9+1;
+		if(!(uarm && arm_blocks_upper_body(uarm->otyp))){
+			if(Role_if(PM_MONK)){
+				if(dexbonus < 0) dexbonus = (int)(dexbonus / 2);
+				dexbonus += max((int)( (ACURR(A_WIS)-1)/2 - 5 ),0) + (int)(u.ulevel/6 + 1);
+				if(Confusion && u.udrunken>u.ulevel) dexbonus += u.udrunken/9+1;
+			}
+			if(Role_if(PM_KENSEI)){
+				if(dexbonus < 0) dexbonus = (int)(dexbonus / 2);
+				dexbonus += max((int)( (ACURR(A_WIS)-1)/2 - 5 ),0) + (int)(u.ulevel/8 + 1);
+			}
 		}
 		
 		if (uarmh && uarmh->oartifact == ART_ENFORCED_MIND){

@@ -1573,8 +1573,8 @@ remake:
 					dismount_steed(DISMOUNT_FELL);
 				else
 					losehp(rnd(3), "falling downstairs", KILLED_BY);
-
-				selftouch("Falling, you");
+				if(!Flying)
+					selftouch("Falling, you");
 			} else if (u.dz && at_ladder)
 				You("climb down the ladder.");
 	    }
@@ -1600,7 +1600,8 @@ misc_levelport:
 				LR_DOWNTELE, (d_level *) 0);
 	    if (falling) {
 		if (Punished) ballfall();
-		selftouch("Falling, you");
+		if(!Flying)
+			selftouch("Falling, you");
 	    }
 	}
 

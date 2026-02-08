@@ -982,7 +982,7 @@ domakewhisperer()
 	}
 	mtmp->mspec_used = 0;
 
-	if(mtmp->m_lev) mtmp->mhpmax = 8*(mtmp->m_lev-1)+rnd(8);
+	if(mtmp->m_lev) mtmp->mhpmax = hd_size(mtmp->data)*(mtmp->m_lev-1)+rnd(hd_size(mtmp->data));
 	mtmp->mhp = mtmp->mhpmax;
 
 	petname = whisperername;
