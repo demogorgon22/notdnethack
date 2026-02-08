@@ -196,11 +196,12 @@ init_natural_mutations()
 {
 	if(!Race_if(PM_TIEFLING)) return;
 	int mutation_blacklist[] = {TT_TEARS_OF_BLOOD, TT_BLINDING_HAIR, TT_WINGS_1, TT_WINGS_2, TT_WINGS_3, TT_WINGS_4, TT_WINGS_5, TT_MAGIC_BREATHING };
-	int possible_mutations[LAST_MUTATION];
+	int possible_mutations[LAST_TIEFLING_TRAIT];
 	int possible_count = 0;
 	for(int j = 0; mutationtypes[j].mutation; j++){
 		int mut = mutationtypes[j].mutation;
 		if(mut <= LAST_CULT_MUTATION) continue;
+		if(mut > LAST_TIEFLING_TRAIT) continue;
 		boolean blacklisted = FALSE;
 		for(int k = 0; k < sizeof(mutation_blacklist)/sizeof(int); k++){
 			if(mut == mutation_blacklist[k]){
@@ -240,15 +241,15 @@ check_natural_mutations()
 		int i = mutationtypes[j].mutation;
 		if(i > LAST_CULT_MUTATION && has_mutation(i) && mutationtypes[j].bodypart >= 0){
 			type_used[mutationtypes[j].bodypart] = 1;
-			break;
 		}
 	}
 	// Pick a new mutation
-	int possible_mutations[LAST_MUTATION];
+	int possible_mutations[LAST_TIEFLING_TRAIT];
 	int possible_count = 0;
 	for(int j = 0; mutationtypes[j].mutation; j++){
 		int mut = mutationtypes[j].mutation;
 		if(mut <= LAST_CULT_MUTATION) continue;
+		if(mut > LAST_TIEFLING_TRAIT) continue;
 		if(type_used[mutationtypes[j].bodypart]) continue;
 		if(has_mutation(mut)) continue;
 		possible_mutations[possible_count++] = mut;
@@ -526,10 +527,17 @@ steal_from_monster(struct monst *mon)
 			continue;
 		}
 		//Steal this item
-		if(canseemon(mon))
-			pline("Your tail steals %s from %s!", doname(obj), mon_nam(mon));
 		obj_extract_self(obj);
-		hold_another_object(obj, "You drop %s!", doname(obj), FALSE);
+		if(near_capacity() < calc_capacity(obj->owt) || u.uavoid_theft){
+		if(canseemon(mon))
+			pline("Your tail steals %s from %s and drops it to the %s!", doname(obj), mon_nam(mon), surface(u.ux, u.uy));
+			dropy(obj);
+		}
+		else {
+			if(canseemon(mon))
+				pline("Your tail steals %s from %s!", doname(obj), mon_nam(mon));
+			hold_another_object(obj, "You drop %s!", doname(obj), FALSE);
+		}
 		break;
 	}
 }

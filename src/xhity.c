@@ -8960,8 +8960,6 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			return result;
 
 		if (youdef) {
-			static int engagering1 = 0;
-			static int engagering4 = 0;
 			boolean engring = FALSE;
 
 			/* spaghetti code alert: many paths of code in here return early */
@@ -23169,7 +23167,11 @@ perform_gaze_attacks()
 		mdef = m_at(nx, ny);
 		if(!mdef)
 			continue;
-		if(!mdef->mpeaceful && canseemon(mdef)){
+		if(!mdef->mpeaceful && canseemon(mdef)
+		 && (mdef->mtyp != PM_FLOATING_EYE || !mdef->mcansee || Free_action
+			|| (distmin(u.ux, u.uy, mdef->mx, mdef->my) <= 1 && u.uattked)
+		  )
+		){
 			dogaze(mdef);
 			break;
 		}
@@ -23184,7 +23186,9 @@ perform_wizegaze_attacks()
 	for(mdef = fmon; mdef; mdef = mdef->nmon){
 		if(DEADMONSTER(mdef))
 			continue;
-		if(!mdef->mpeaceful && canseemon(mdef) && distmin(u.ux, u.uy, mdef->mx, mdef->my) <= BOLT_LIM){
+		if(!mdef->mpeaceful && canseemon(mdef) && distmin(u.ux, u.uy, mdef->mx, mdef->my) <= BOLT_LIM
+		 && (mdef->mtyp != PM_FLOATING_EYE || !mdef->mcansee || Free_action)
+		){
 			dogaze(mdef);
 		}
 	}

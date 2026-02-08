@@ -4991,6 +4991,10 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 				traits |= ETRAIT_QUICK|ETRAIT_LUNGE;
 		}
 	}
+
+	if(check_oprop(obj, OPROP_SECNW)){
+		traits |= ETRAIT_SECOND;
+	}
 	
 	if(obj->o_e_trait&ETRAIT_FOCUS_FIRE){
 		if(otyp == SILVERKNIGHT_SWORD){

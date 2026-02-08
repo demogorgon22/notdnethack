@@ -2161,6 +2161,96 @@ default_case:
 				stuff->obj_color = CLR_ORANGE;
 				add_to_container(otmp, stuff);
 			break;
+			case PM_TIEFLING:
+				if(flags.initgend){
+					default_add_2(TOOTH);
+					stuff->objsize = MZ_TINY;
+					stuff->ovar1_tooth_type = SERPENT_TOOTH;
+					add_oprop(stuff, OPROP_PSIOW);
+					add_oprop(stuff, OPROP_SECNW);
+					fix_object(stuff);
+
+					default_add_2(TOOTH);
+					stuff->objsize = MZ_TINY;
+					stuff->ovar1_tooth_type = MAGMA_TOOTH;
+					add_oprop(stuff, OPROP_PSIOW);
+					add_oprop(stuff, OPROP_SECNW);
+					fix_object(stuff);
+
+					default_add_2(TOOTH);
+					stuff->objsize = MZ_TINY;
+					stuff->ovar1_tooth_type = VOID_TOOTH;
+					add_oprop(stuff, OPROP_PSIOW);
+					add_oprop(stuff, OPROP_SECNW);
+					fix_object(stuff);
+
+					default_add(ARMOR_SALVE);
+
+					stuff = mksobj(GENTLEWOMAN_S_DRESS, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_WHITE;
+					stuff->spe = 2;
+					stuff->oeroded2 = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(VICTORIAN_UNDERWEAR, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_BLACK;
+					stuff->spe = 2;
+					stuff->oeroded2 = 3;
+					add_to_container(otmp, stuff);
+				}
+				else {
+					int fist_coin = 0;
+					default_add_2(DEVIL_FIST);
+					set_material_gm(stuff, GREEN_STEEL);
+					if(stuff->cobj)
+						fist_coin = stuff->cobj->otyp;
+					add_oprop(stuff, OPROP_FIRE);
+					add_oprop(stuff, OPROP_COLD);
+					add_oprop(stuff, OPROP_OCLTW);
+
+					stuff = mksobj(GENTLEMAN_S_SUIT, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_BLACK;
+					stuff->spe = 2;
+					stuff->oeroded3 = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(RUFFLED_SHIRT, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_RED;
+					stuff->spe = 2;
+					stuff->oeroded3 = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(PRESERVATIVE_ENGINE, MKOBJ_NOINIT);
+					stuff->spe = 0;
+					add_to_container(otmp, stuff);
+
+					int coins[] = {WAGE_OF_ENVY, WAGE_OF_GLUTTONY, WAGE_OF_GREED, WAGE_OF_LUST, WAGE_OF_PRIDE, WAGE_OF_SLOTH, WAGE_OF_WRATH};
+					//shuffle
+					int tmp, j, i;
+					for(i = SIZE(coins) - 1; i > 0; i--){
+						j = rn2(i + 1);
+						tmp = coins[j];
+						coins[j] = coins[i];
+						coins[i] = tmp;
+					}
+					i = 2;
+					j = -1;
+					while (i > 0){
+						j++;
+						if(coins[j] == fist_coin)
+							continue;
+						stuff = mksobj(coins[j], NO_MKOBJ_FLAGS);
+						stuff->quan = 1L;
+						fix_object(stuff);
+						add_to_container(otmp, stuff);
+						i--;
+					}
+				}
+			break;
 		}
 		if(urace.malenum == PM_GNOME){
 			int stars[] = {PM_YELLOW_LIGHT, PM_YELLOW_LIGHT, PM_BLACK_LIGHT, PM_MOTE_OF_LIGHT, PM_TINY_BEING_OF_LIGHT};

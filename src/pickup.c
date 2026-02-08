@@ -3199,6 +3199,14 @@ boolean past;
 			free_skill_up(P_SHORT_SWORD);
 			expert_weapon_skill(P_TWO_WEAPON_COMBAT);
 		break;
+		case PM_TIEFLING:
+			if(flags.initgend){
+				expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+			}
+			else {
+				expert_weapon_skill(P_MACE);
+			}
+		break;
 	}
 	if(Insight >= 10){
 		open_crazy_box(box, past);
