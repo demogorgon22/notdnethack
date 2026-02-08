@@ -1576,8 +1576,8 @@ remake:
 					if(u.urider)
 						rider_dismounts_you(DISMOUNT_FELL);
 				}
-
-				selftouch("Falling, you");
+				if(!Flying)
+					selftouch("Falling, you");
 			} else if (u.dz && at_ladder)
 				You("climb down the ladder.");
 	    }
@@ -1603,7 +1603,8 @@ misc_levelport:
 				LR_DOWNTELE, (d_level *) 0);
 	    if (falling) {
 		if (Punished) ballfall();
-		selftouch("Falling, you");
+		if(!Flying)
+			selftouch("Falling, you");
 	    }
 	}
 
