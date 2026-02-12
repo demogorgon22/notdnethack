@@ -5144,10 +5144,13 @@ count_buc(list, type)
 {
     int count = 0;
 	boolean knows_curses = check_mutation(TT_HATEFUL_VISION);
+	boolean knows_blessings = Race_if(PM_AASIMAR) && u.ulevel >= 7;
 
     while (list) {
 	if (u.upriest) list->bknown = TRUE;
-	if (list->cursed && knows_curses) list->bknown = TRUE;
+	else if (list->cursed && knows_curses) list->bknown = TRUE;
+	else if (list->blessed && knows_blessings) list->bknown = TRUE;
+
 	switch(type) {
 	    case BUC_BLESSED:
 		if (list->oclass != COIN_CLASS && list->bknown && list->blessed)

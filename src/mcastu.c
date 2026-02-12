@@ -2458,6 +2458,9 @@ const char * spellname[] =
 	"BURN_INTO_LIFE",
 	"SUMMON_ROGUE_HALOS",
 	"PANIC_BOLT",
+	//110
+	"SANDSTORM",
+	"MOON_BEAM",
 };
 
 /* Returns the word the monster uses when casting a psionic spell */
@@ -4474,6 +4477,63 @@ int tary;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case SANDSTORM:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("sandstorm with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int pdmg = (dmg + 1)/2;	/* physical */
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("Pebbles pummel %s from all sides!",
+					youdef ? "you" : mon_nam(mdef));
+			}
+			if(youdef){
+				IMPURITY_UP(u.uimp_disaster)
+			}
+
+			/* calculate physical damage */
+			pdmg = reduce_dmg(mdef,pdmg,TRUE,FALSE);
+			/* apply average DR */
+			pdmg -= max(0, (youdef ? u.udr : avg_mdr(mdef)));
+			if (pdmg < 1)
+				pdmg = 1;
+			/* maybe blind the target */
+			struct obj *protection = NULL;
+			if(youdef){
+				if(uarmh && uarmh->otyp == SHEMAGH)
+					protection = uarmh;
+				else if(ublindf && ublindf->otyp == TOWEL)
+					protection = ublindf;
+			}
+			else {
+				if (which_armor(mdef, W_ARMH) && which_armor(mdef, W_ARMH)->otyp == SHEMAGH)
+					protection = which_armor(mdef, W_ARMH);
+				if (which_armor(mdef, W_TOOL) && which_armor(mdef, W_TOOL)->otyp == TOWEL)
+					protection = which_armor(mdef, W_TOOL);
+			}
+			if(protection){
+				if(youdef)
+					pline("Your %s protects you from the sand!", OBJ_DESCR(objects[protection->otyp]));
+			}
+			else if (!resists_blnd(mdef) && dmg > 1) {
+				if(youdef){
+					pline("%s is blinded by the sand!", Monnam(mdef));
+					make_blinded((long)dmg/2, FALSE);
+					if (!Blind) Your1(vision_clears);
+				}
+				else {
+					mdef->mcansee = 0;
+					mdef->mblinded = min(mdef->mblinded + dmg/2, 127);
+				}
+			}
+			/* sum damage components to override dmg */
+			dmg = pdmg;
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
 	case GOD_RAY:
 		if (!foundem) {
 			impossible("god ray with no mdef?");
@@ -4528,6 +4588,51 @@ int tary;
 
 			/* sum damage components to override dmg */
 			dmg = hdmg + ldmg;
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
+	case MOON_BEAM:
+		if (!foundem) {
+			impossible("moon beam with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int hdmg = d(4,7);	/* holy damage */
+			int cdmg = d(2,7);	/* cold damage */
+			int sdmg = d(1,20);	/* silver damage */
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("Cold moonlight shines down on %s from above!",
+					youdef ? "you" : mon_nam(mdef));
+			}
+
+			if (hates_silver(mdef->data)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s seared by the silver light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
+				sdmg = reduce_dmg(mdef,sdmg,TRUE,FALSE);
+			}
+			else sdmg = 0;
+
+			if(hates_holy_mon(mdef)){
+				hdmg = reduce_dmg(mdef,hdmg,FALSE,TRUE);
+			}
+			else hdmg = 0;
+
+			/* calculate cold damage */
+			if (Cold_res(mdef)) {
+				shieldeff(x(mdef), y(mdef));
+				cdmg = 0;
+			}
+			else {
+				cdmg = reduce_dmg(mdef,cdmg,FALSE,TRUE);
+			}
+			if (!UseInvCold_res(mdef)) {
+				destroy_item(mdef, POTION_CLASS, AD_COLD);
+			}
+
+			/* sum damage components to override dmg */
+			dmg = hdmg + cdmg + sdmg;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
@@ -7279,7 +7384,9 @@ int spellnum;
 	case HAIL_FLURY:
 	case ICE_STORM:
 	case PYRO_STORM:
+	case SANDSTORM:
 	case GOD_RAY:
+	case MOON_BEAM:
 	case DEATH_TOUCH:
 	case PLAGUE:
 	case FILTH:

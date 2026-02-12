@@ -2835,12 +2835,31 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 #pragma GCC diagnostic pop
 	if ((is_null_attk(attk) || (attk->aatyp != AT_WEAP && attk->aatyp != AT_XWEP))
 		&& (prevattacknull || prev_attack.aatyp == AT_WEAP || prev_attack.aatyp == AT_XWEP || prev_attack.aatyp == AT_MARI)
-		&& !(check_subout(subout, SUBOUT_MARIARM1) && check_subout(subout, SUBOUT_MARIARM2))
 	){
-		struct obj * otmp = (youagr ? uarm : which_armor(magr, W_ARM));
+		struct obj * otmp;
 		
-		if(!otmp);//Nothing
-		else if (otmp->otyp == EILISTRAN_ARMOR 
+		if(youagr && !Upolyd && flags.aasimar_type == AASIMAR_TYPE_DEVA
+			&& ((u.ulevel >= 14 && !(check_subout(subout, SUBOUT_A_MAR_1) && check_subout(subout, SUBOUT_A_MAR_2)))
+			 || (u.ulevel >= 28 && !(check_subout(subout, SUBOUT_A_MAR_3) && check_subout(subout, SUBOUT_A_MAR_4)))
+		    )
+		){
+			attk->aatyp = AT_MARI;
+			attk->adtyp = AD_PHYS;
+			attk->damn = 2;
+			attk->damd = 8;
+			fromlist = FALSE;
+			if(!check_subout(subout, SUBOUT_A_MAR_1))
+				add_subout(subout, SUBOUT_A_MAR_1);
+			else if(!check_subout(subout, SUBOUT_A_MAR_2))
+				add_subout(subout, SUBOUT_A_MAR_2);
+			else if(!check_subout(subout, SUBOUT_A_MAR_3))
+				add_subout(subout, SUBOUT_A_MAR_3);
+			else
+				add_subout(subout, SUBOUT_A_MAR_4);
+		}
+		else if (!(check_subout(subout, SUBOUT_MARIARM1) && check_subout(subout, SUBOUT_MARIARM2))
+			&& (otmp = (youagr ? uarm : which_armor(magr, W_ARM)))
+			&& otmp->otyp == EILISTRAN_ARMOR 
 			&& otmp->altmode == EIL_MODE_ON
 			&& otmp->ovar1_eilistran_charges > 0
 		){

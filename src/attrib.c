@@ -242,6 +242,31 @@ const struct innate {
 			 {	 1, &(HShock_resistance), "", "" },
 		     {	 0, 0, 0, 0 } },
 
+	aasi_archon_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HFlying), "your aura form into wings", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_deva_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura form into arms", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_storm_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura destabilize", "your aura stabilize" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_coure_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura form into blades of starlight", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_gae_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura form into reaching vines", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
 	tief_abil[] = { 
 			 {	 1, &(HPoison_resistance), "", "" },
 		     {	 0, 0, 0, 0 } },
@@ -972,7 +997,22 @@ int oldlevel, newlevel;
 	case PM_CENTAUR:		rabil = cen_abil;	break;
 	case PM_FORMIAN:	    rabil = frm_abil;	break;
 	case PM_TIEFLING:		rabil = tief_abil;	break;
-	case PM_AASIMAR:		rabil = aasi_abil;	break;
+	case PM_AASIMAR:
+		if(flags.aasimar_type == AASIMAR_TYPE_ARCHON || flags.aasimar_type == AASIMAR_TYPE_SERAPH)
+			rabil = aasi_archon_abil;
+		else if(flags.aasimar_type == AASIMAR_TYPE_DEVA)
+			rabil = aasi_deva_abil;
+		else if(flags.aasimar_type == AASIMAR_TYPE_ELADRIN){
+			if (storm_aasimar(flags.aasimar_subtype))
+				rabil = aasi_storm_abil;
+			else if (flags.aasimar_subtype == AASIMAR_SUBTYPE_COURE)
+				rabil = aasi_coure_abil;
+			else if (flags.aasimar_subtype == AASIMAR_SUBTYPE_GAE)
+				rabil = aasi_gae_abil;
+		}
+		else
+			rabil = aasi_abil;
+	break;
 	case PM_HUMAN:
 	case PM_DWARF:
 	case PM_GNOME:

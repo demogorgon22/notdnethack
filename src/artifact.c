@@ -15682,6 +15682,12 @@ do_passive_attacks()
 			dotailslap(&youmonst);
 		if(uring_art(ART_STAR_EMPEROR_S_RING))
 			dostarblades(&youmonst);
+		if(flags.aasimar_subtype == AASIMAR_SUBTYPE_COURE && u.ulevel >= 14 && rn1(17, 13) < u.ulevel)
+			dostarblades(&youmonst);
+		if(storm_aasimar(flags.aasimar_subtype) && u.ulevel >= 14 && rn1(17, 13) < u.ulevel)
+			dostorm(&youmonst);
+		if(flags.aasimar_subtype == AASIMAR_SUBTYPE_GAE && u.ulevel >= 14 && rn1(17, 13) < u.ulevel)
+			dovines(&youmonst);
 		if(check_rot(ROT_CENT))
 			dorotbite(&youmonst);
 		if(check_rot(ROT_STING))

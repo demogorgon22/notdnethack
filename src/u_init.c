@@ -2202,7 +2202,7 @@ u_init()
 		if(Race_if(PM_DWARF)){
 			u.ualign.type = A_CHAOTIC;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-			flags.initalign = 2; // 2 == chaotic
+			flags.initalign = INITALIGN_CHAOTIC;
 		}
 		if(Race_if(PM_ANDROID)){
 			skill_init(Skill_Droid_Ana);
@@ -2247,7 +2247,7 @@ u_init()
 		if(Race_if(PM_CLOCKWORK_AUTOMATON)){
 			u.ualign.type = A_LAWFUL;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-			flags.initalign = 0; // 0 == lawful
+			flags.initalign = INITALIGN_LAWFUL;
 		}
 		/* This depends on the order in objects.c */
 		for (i = WHISTLE; i <= DRUM_OF_EARTHQUAKE; i++)
@@ -2311,7 +2311,7 @@ u_init()
 		/* Override racial alignment */
 		u.ualign.type = A_VOID;
 		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = GOD_THE_VOID;
-		flags.initalign = 4; // 4 == VOID
+		flags.initalign = INITALIGN_VOID;
 		u.hod += 10;  /*One transgression is all it takes*/
 		u.gevurah += 5; /*One resurection or two rehumanizations is all it takes*/
 		u.daat += 8;
@@ -2337,7 +2337,7 @@ u_init()
     	/* Override racial alignment */
 		u.ualign.type = A_CHAOTIC;
 		u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-		flags.initalign = 2; // 2 == chaotic
+		flags.initalign = INITALIGN_CHAOTIC;
         break;
 #endif	/* CONVICT */
 	case PM_MADMAN:
@@ -2939,7 +2939,7 @@ u_init()
 		if(Role_if(PM_HEALER)){
 			u.ualign.type = A_NEUTRAL;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-			flags.initalign = 1; // 1 == neutral
+			flags.initalign = INITALIGN_NEUTRAL;
 		}
 	    /* Elves can recognize all elvish objects */
 		if(!Role_if(PM_MADMAN)){ /*Madmen have been amnesticized*/
@@ -2980,7 +2980,7 @@ u_init()
 				/* Males are neutral */
 				u.ualign.type = A_NEUTRAL;
 				u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-				flags.initalign = 1; // 1 == neutral
+				flags.initalign = INITALIGN_NEUTRAL;
 			}
 		} else if(Role_if(PM_ANACHRONONAUT)){
 			u.umartial = TRUE;
@@ -2989,11 +2989,11 @@ u_init()
 			/*  Need a viperwhip kit and menu for picking it */
 			u.ualign.type = A_NEUTRAL;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-			flags.initalign = 1; // 1 == neutral
+			flags.initalign = INITALIGN_NEUTRAL;
 		} else if(Role_if(PM_HEALER)){
 			u.ualign.type = A_NEUTRAL;
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-			flags.initalign = 1; // 1 == neutral
+			flags.initalign = INITALIGN_NEUTRAL;
 			change_luck(-10);
 		} else if(!Role_if(PM_EXILE) && !Role_if(PM_CONVICT)){
 			if(!Role_if(PM_MADMAN))
@@ -3002,7 +3002,7 @@ u_init()
 				/* Males are neutral */
 				u.ualign.type = A_NEUTRAL;
 				u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = align_to_god(u.ualign.type);
-				flags.initalign = 1; // 1 == neutral
+				flags.initalign = INITALIGN_NEUTRAL;
 			}
 		}
 	    /* Drow can recognize all droven objects */
@@ -3365,7 +3365,14 @@ u_init()
 		}
 	}
 	else if(Race_if(PM_AASIMAR)){
-		flags.aasimar_type = rn2(3);
+			flags.aasimar_type = rnd(3);
+			if(flags.aasimar_type == AASIMAR_TYPE_ELADRIN){
+				if(rn2(7))
+					flags.aasimar_subtype = rnd(6);
+				else {
+					
+				}
+			}
 	}
 	else if(Race_if(PM_TIEFLING)){
 		// int mutation_levels[] = {3,10,14,18,22,26};

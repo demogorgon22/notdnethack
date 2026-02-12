@@ -654,3 +654,22 @@ mutation_auras()
 		}
 	}
 }
+
+int
+uemit_light()
+{
+	int radius = check_mutation(TT_LIGHT) ? 2 : 0;
+	radius = max(radius, emits_light(youracedata));
+	if(u.ulevel >= 7){
+		if(flags.aasimar_type == AASIMAR_TYPE_ARCHON){
+			radius = max(radius, u.ulevel/7);
+		}
+		else if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+			radius = max(radius, u.ulevel/4);
+		}
+		else if(flags.aasimar_type == AASIMAR_TYPE_DEVA){
+			radius = 1;
+		}
+	}
+	return radius;
+}

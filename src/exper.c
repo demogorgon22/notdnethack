@@ -281,6 +281,7 @@ boolean force; /* attack ignores drain resistance */
 boolean expdrain; /* attack drains exp as well */
 {
 	register int num;
+	int old_light = 0;
 
 #ifdef WIZARD
 	/* override life-drain resistance when handling an explicit
@@ -293,7 +294,13 @@ boolean expdrain; /* attack drains exp as well */
 
 	if (u.ulevel > 1) {
 		if(verbose) pline("%s level %d.", Goodbye(), u.ulevel);
+		//Light handling: record old intrinsic light radius
+		if(!Upolyd) old_light = uemit_light();
 		u.ulevel--;
+		if(!Upolyd && old_light != uemit_light()){
+			del_light_source((&youmonst)->light);
+			if(uemit_light()) new_light_source(LS_MONSTER, (genericptr_t)&youmonst, uemit_light());
+		}
 		/* remove intrinsic abilities */
 		adjabil(u.ulevel + 1, u.ulevel);
 		reset_rndmonst(NON_PM);	/* new monster selection */
@@ -466,6 +473,7 @@ boolean incr;	/* true iff via incremental experience growth */
 		}
 	}
 	if (u.ulevel < MAXULEV) {
+		int old_light = 0;
 		num = newhp();
 		u.uhprolled += num;
 		u.uhp += num + conplus(ACURR(A_CON));
@@ -482,7 +490,15 @@ boolean incr;	/* true iff via incremental experience growth */
 	    } else {
 		u.uexp = newuexp(u.ulevel);
 	    }
+		//Light handling: record old intrinsic
+		if(!Upolyd) old_light = uemit_light();
+		//Increment level
 	    ++u.ulevel;
+		//Light handling: check new intrinsic light radius
+		if(!Upolyd && old_light != uemit_light()){
+			del_light_source((&youmonst)->light);
+			if(uemit_light()) new_light_source(LS_MONSTER, (genericptr_t)&youmonst, uemit_light());
+		}
 	    if (u.ulevelmax < u.ulevel) u.ulevelmax = u.ulevel;
 	    pline("Welcome to experience level %d.", u.ulevel);
 	    adjabil(u.ulevel - 1, u.ulevel);	/* give new intrinsics */

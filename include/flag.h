@@ -209,6 +209,11 @@ struct flag {
 	int	 initrace;	/* starting race      (index into races[])   */
 	int	 initgend;	/* starting gender    (index into genders[]) */
 	int	 initalign;	/* starting alignment (index into aligns[])  */
+#define INITALIGN_LAWFUL	0
+#define INITALIGN_NEUTRAL	1
+#define INITALIGN_CHAOTIC	2
+#define INITALIGN_EVIL		3
+#define INITALIGN_VOID		4
 	int	 descendant;	/* start as descendant */
 	int	 chaosvar;	/* Set chaos variant */
 	int	 randomall;	/* randomly assign everything not specified */
@@ -228,8 +233,32 @@ struct flag {
 #define AASIMAR_TYPE_SERAPH		4
 #define AASIMAR_TYPE_PRIMINAL	5
 #define AASIMAR_TYPE_CLOUDFACE	6
-};
+	int aasimar_subtype;
+#define AASIMAR_SUBTYPE_COURE		1
+#define AASIMAR_SUBTYPE_NOVIERE		2
+#define AASIMAR_SUBTYPE_BRALANI		3
+#define AASIMAR_SUBTYPE_FIRRE		4
+#define AASIMAR_SUBTYPE_SHIERE		5
+#define AASIMAR_SUBTYPE_GHAELE		6
+#define AASIMAR_SUBTYPE_TULANI		7
+#define AASIMAR_SUBTYPE_GAE			8
+#define AASIMAR_SUBTYPE_BRIGHID		9
+#define AASIMAR_SUBTYPE_UISCERRE	10
+#define AASIMAR_SUBTYPE_CAILLEA		11
 
+// #define AASIMAR_SUBTYPE_DRACAE		12
+// #define AASIMAR_SUBTYPE_POLYP		13
+};
+#define storm_aasimar(subtype) ((subtype) == AASIMAR_SUBTYPE_NOVIERE  \
+							|| (subtype) == AASIMAR_SUBTYPE_BRALANI \
+							|| (subtype) == AASIMAR_SUBTYPE_FIRRE \
+							|| (subtype) == AASIMAR_SUBTYPE_SHIERE \
+							|| (subtype) == AASIMAR_SUBTYPE_GHAELE \
+							|| (subtype) == AASIMAR_SUBTYPE_BRIGHID \
+							|| (subtype) == AASIMAR_SUBTYPE_UISCERRE \
+							|| (subtype) == AASIMAR_SUBTYPE_CAILLEA \
+							|| (subtype) == AASIMAR_SUBTYPE_TULANI \
+						)
 /*
  * Flags that are set each time the game is started.
  * These are not saved with the game.

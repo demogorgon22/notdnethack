@@ -2101,6 +2101,7 @@ E void NDECL(check_natural_mutations);
 E int NDECL(domutation);
 E void NDECL(mutation_autoattacks);
 E void NDECL(mutation_auras);
+E int NDECL(uemit_light);
 
 /* ### nhlan.c ### */
 #ifdef LAN_FEATURES

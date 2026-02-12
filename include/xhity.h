@@ -109,7 +109,12 @@
 #define SUBOUT_T_SCORPION_TAIL	43	/* Tiefling scorpion tail attack */
 #define SUBOUT_T_SEDUCE_STEAL    44	/* Tiefling seduction/item-stealing attack */
 #define SUBOUT_T_SEDUCE_DISARM  45	/* Tiefling seduction/disarming attack */
-#define MAX_SUBOUT		45
+#define SUBOUT_A_MAR_1  46	/* Aasimar extra arm 1 */
+#define SUBOUT_A_MAR_2  47	/* Aasimar extra arm 2 */
+#define SUBOUT_A_MAR_3  48	/* Aasimar extra arm 3 */
+#define SUBOUT_A_MAR_4  49	/* Aasimar extra arm 4 */
+#define SUBOUT_A_EXTRA_A  50	/* Bralani extra attack */
+#define MAX_SUBOUT		50
 #define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/(sizeof(int)*8)+1)
 
 #define ATTKFLAG_FORCE_BLEED		0x00000001L

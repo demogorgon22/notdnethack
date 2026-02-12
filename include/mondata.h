@@ -1060,8 +1060,6 @@
    monsters, we'll likely have to add a new light range field to mons[] 
    KEEP IN SYNC with MAX_RADIUS, circle_data, and circle_start[].
    Maximum allowable lightsource radius is currently 10 (30 after 3x lowlight modifier) */
-#define uemit_light()	max(check_mutation(TT_LIGHT) ? 2 : 0, emits_light(youracedata))
-
 #define emits_light(ptr)	((ptr)->light_radius)
 
 #define emits_light_mon(mon) (emits_light((mon)->data))

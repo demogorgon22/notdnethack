@@ -2171,11 +2171,11 @@ int newgame;
 		}
 	}
 	else if(Race_if(PM_GITH)){
-		if(flags.initalign == 0){
+		if(flags.initalign == INITALIGN_LAWFUL){
 			//Lawful
 			urace = githyanki;
 		}
-		else if(flags.initalign == 2){
+		else if(flags.initalign == INITALIGN_CHAOTIC){
 			//Chaotice
 			urace = githzerai;
 		}

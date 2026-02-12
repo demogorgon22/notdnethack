@@ -1376,7 +1376,7 @@ struct monst * mdef;
 struct obj * otmp;
 struct monst * magr;
 {
-	//boolean youagr = (magr == &youmonst);
+	boolean youagr = (magr == &youmonst);
 	boolean youdef = (mdef == &youmonst);
 	//struct permonst * pa = youagr ? youracedata : magr->data;
 	struct permonst * pd = youdef ? youracedata : mdef->data;
@@ -1506,6 +1506,15 @@ struct monst * magr;
 			}
 		}
 
+		/* aasimar auras */
+		if(youagr && flags.aasimar_type == AASIMAR_TYPE_ARCHON && u.ulevel >= 7 && u.ualign.record >= 0){
+			if(u.ulevel >= 21)
+				dmg += vd(7, 7);
+			else if(u.ulevel >= 14)
+				dmg += vd(3, 7);
+			else
+				dmg += vd(1, 7);
+		}
 		/* special cases that do affect dice */
 		if (otmp->oartifact == ART_AMHIMITL)
 			ndice = 3;
@@ -1595,6 +1604,15 @@ struct monst * magr;
 				else 
 					dmg += vd(1, 8);
 			}
+		}
+		/* aasimar auras */
+		if(youagr && flags.aasimar_type == AASIMAR_TYPE_ARCHON && u.ulevel >= 7 && u.ualign.record < 0){
+			if(u.ulevel >= 21)
+				dmg += vd(6, 9);
+			else if(u.ulevel >= 14)
+				dmg += vd(3, 9);
+			else
+				dmg += vd(1, 9);
 		}
 #undef sacred_bonus_dice
 		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)

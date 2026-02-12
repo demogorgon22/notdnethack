@@ -1965,7 +1965,8 @@ boolean getting_obj_base_desc;
 	if (!nn && ocl->oc_uses_known && ocl->oc_unique) obj->known = 0;
 	if (!Blind) obj->dknown = TRUE;
 	if (u.upriest) obj->bknown = TRUE;
-	else if (check_mutation(TT_HATEFUL_VISION) && obj->cursed) obj->bknown = TRUE;
+	else if (obj->cursed && check_mutation(TT_HATEFUL_VISION)) obj->bknown = TRUE;
+	else if (obj->blessed && Race_if(PM_AASIMAR) && u.ulevel >= 7) obj->bknown = TRUE;
 	if (u.sealsActive&SEAL_ANDROMALIUS) obj->sknown = TRUE;
 	//if (obj_is_pname(obj)) goto nameit;
 	if (!getting_obj_base_desc) {

@@ -349,8 +349,10 @@ allow_category(struct obj *obj, int qflags)
 	if(qflags&NO_EQUIPMENT && obj->owornmask)
 		return FALSE;
     if (u.upriest) obj->bknown = TRUE;
-	if (check_mutation(TT_HATEFUL_VISION) && obj->cursed) obj->bknown = TRUE;
-    if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
+	else if (obj->cursed && check_mutation(TT_HATEFUL_VISION)) obj->bknown = TRUE;
+	else if (obj->blessed && Race_if(PM_AASIMAR) && u.ulevel >= 7) obj->bknown = TRUE;
+
+	if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0))
 	return TRUE;
     else if (((index(valid_menu_classes,'U') != (char *)0) &&
@@ -3117,7 +3119,7 @@ boolean past;
 					u.ualign.type = A_LAWFUL;
 				}
 				You("have a sudden sense of returning to an old direction.");
-				flags.initalign = 0;
+				flags.initalign = INITALIGN_LAWFUL;
 				flags.botl = TRUE;
 				change_luck(-3);
 				u.ublesscnt += 300;

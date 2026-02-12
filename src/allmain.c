@@ -1757,23 +1757,23 @@ moveloop()
     prev_hp_notify = uhp();
 
 	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_LAWFUL && flags.initalign != 0){
-		flags.initalign = 0;
+		flags.initalign = INITALIGN_LAWFUL;
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
 	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_NEUTRAL && flags.initalign != 1){
-		flags.initalign = 1;
+		flags.initalign = INITALIGN_NEUTRAL;
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
 	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_CHAOTIC && flags.initalign != 2){
-		flags.initalign = 2;
+		flags.initalign = INITALIGN_CHAOTIC;
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
 	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_NONE && flags.initalign != 3){
-		flags.initalign = 3;
+		flags.initalign = INITALIGN_EVIL;
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
 	if(galign(u.ugodbase[UGOD_ORIGINAL]) == A_VOID && flags.initalign != 4){
-		flags.initalign = 4;
+		flags.initalign = INITALIGN_VOID;
 		impossible("Bad alignment initializer detected and fixed. Save and reload.");
 	}
 	// printMons();
@@ -7494,8 +7494,16 @@ struct monst *magr;
 	
 	// get attack from statblock
 	attk = mon_get_attacktype(magr, AT_VINE, &attkbuff);
-	if(!attk)
-		return;
+	if(!attk){
+		if(flags.aasimar_subtype == AASIMAR_SUBTYPE_GAE){
+			attkbuff.aatyp = AT_VINE;
+			attkbuff.adtyp = AD_SESN;
+			attkbuff.damn = 4;
+			attkbuff.damd = 4;
+			attk = &attkbuff;
+		}
+		else return;
+	}
 	
 	//Attack one foe
 	for(j=8;j>=1;j--){
@@ -7574,6 +7582,13 @@ struct monst *magr;
 		attkbuff.damd = 4;
 		attk = &attkbuff;
 	}
+	if(!attk && youagr && flags.aasimar_subtype == AASIMAR_SUBTYPE_COURE){
+		attkbuff.aatyp = AT_ESPR;
+		attkbuff.adtyp = AD_STAR;
+		attkbuff.damn = 4;
+		attkbuff.damd = 4;
+		attk = &attkbuff;
+	}
 	if(!attk)
 		return;
 	// count attacks in statblock (assumes that all of these attacks are equals! If this is not true, this will need to be adjusted)
@@ -7639,6 +7654,7 @@ struct monst *magr;
 	int spellnum = 0;
 	int range = magr->mtyp == PM_DAO_LAO_GUI_MONK ? 2 : BOLT_LIM;
 	boolean frequency_decrease = TRUE;
+	boolean dropoff = FALSE;
 	
 	pa = youagr ? youracedata : magr->data;
 
@@ -7664,6 +7680,42 @@ struct monst *magr;
 	else if(pa->mtyp == PM_DAO_LAO_GUI_MONK){
 		spellnum = rn2(3) ? RAIN : rn2(3) ? LIGHTNING : HAIL_FLURY;
 		frequency_decrease = FALSE;
+	}
+	else if(youagr && flags.aasimar_subtype){
+		dropoff = TRUE;
+		switch(flags.aasimar_subtype){
+			//Coure starblades
+			case AASIMAR_SUBTYPE_NOVIERE:
+				spellnum = rn2(3) ? GEYSER : HAIL_FLURY;
+			break;
+			case AASIMAR_SUBTYPE_BRALANI:
+				spellnum = rn2(3) ? SANDSTORM : HAIL_FLURY;
+			break;
+			case AASIMAR_SUBTYPE_FIRRE:
+				spellnum = rn2(3) ? FIRE_PILLAR : LIGHTNING;
+			break;
+			case AASIMAR_SUBTYPE_SHIERE:
+				spellnum = rn2(3) ? MOON_BEAM : HAIL_FLURY;
+			break;
+			case AASIMAR_SUBTYPE_GHAELE:
+				spellnum = rn2(3) ? LIGHTNING : HAIL_FLURY;
+			break;
+			case AASIMAR_SUBTYPE_TULANI:
+				spellnum = !rn2(3) ? LIGHTNING : rn2(2) ? ICE_STORM : FIRE_PILLAR;
+			break;
+			// case AASIMAR_SUBTYPE_GAE:
+			// Vines instead
+			// break;
+			case AASIMAR_SUBTYPE_BRIGHID:
+				spellnum = rn2(3) ? PYRO_STORM : GOD_RAY;
+			break;
+			case AASIMAR_SUBTYPE_UISCERRE:
+				spellnum = GEYSER;
+			break;
+			case AASIMAR_SUBTYPE_CAILLEA:
+				spellnum = rn2(3) ? ICE_STORM : STARFALL;
+			break;
+		}
 	}
 	else {
 		spellnum = ACID_RAIN;
@@ -7691,6 +7743,9 @@ struct monst *magr;
 			continue;
 
 		if(onscary(mdef->mx, mdef->my, magr))
+			continue;
+
+		if(dropoff && dist2(x(magr), y(magr), x(mdef), y(mdef)) > rn1(BOLT_LIM*BOLT_LIM,2))
 			continue;
 
 		if(!rn2(4) || (frequency_decrease && mlev(magr) < 30 && rn2(31-mlev(magr)))) //Storm attacks grow more likely as the moster grows more powerful.

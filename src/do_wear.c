@@ -2788,6 +2788,9 @@ base_uac()
 	if(uright && uright->otyp == RIN_PROTECTION) uac -= uright->spe;
 	if (HProtection & INTRINSIC) uac -= (u.ublessed+1)/2;
 	if(check_mutation(TT_NA_AURA)) uac -= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+	if(flags.aasimar_type){
+		uac -= u.ulevel >= 21 ? 3 : u.ulevel >= 7 ? 2 : 1;
+	}
 	uac -= u.uacinc;
 	uac -= u.spiritAC;
 	if(u.uuur_duration)
@@ -3178,6 +3181,25 @@ uchar aatyp;
 		case HEAD_DR:        nat_udr += youracedata->hdr; break;
 		case LEG_DR:         nat_udr += youracedata->fdr; break;
 		case ARM_DR:         nat_udr += youracedata->gdr; break;
+		}
+	}
+	/* Aasimar holy auras */
+	if(flags.aasimar_type && u.ulevel >= 7){
+		switch(flags.aasimar_type){
+			case AASIMAR_TYPE_ARCHON:
+			case AASIMAR_TYPE_SERAPH:
+				if(slot == HEAD_DR)
+					bas_udr += u.ulevel >= 21 ? 7 : 3;
+			break;
+			case AASIMAR_TYPE_DEVA:
+				if(slot == UPPER_TORSO_DR)
+					bas_udr += u.ulevel >= 24 ? 4 : 2;
+				else if(slot&(HEAD_DR|LOWER_TORSO_DR))
+					bas_udr += u.ulevel >= 24 ? 2 : 1;
+			break;
+			case AASIMAR_TYPE_ELADRIN:
+				bas_udr += u.ulevel >= 30 ? 3 : 1;
+			break;
 		}
 	}
 	/* Wearing the Shard from Morgoth's Crown adds +3 magical DR to arms and head (in addition to its +3 to all slots) */

@@ -468,8 +468,11 @@
 #define BURN_INTO_LIFE         PEST_THREADS+1
 #define SUMMON_ROGUE_HALOS     BURN_INTO_LIFE+1
 #define PANIC_BOLT             SUMMON_ROGUE_HALOS+1
+//110
+#define SANDSTORM              PANIC_BOLT+1
+#define MOON_BEAM              SANDSTORM+1
 
-#define MON_LASTSPELL          PANIC_BOLT
+#define MON_LASTSPELL          MOON_BEAM
 //Not yet implemented
 // #define MON_FIRE               STRANGLE+1
 // #define MON_BLIZZARD           MON_FIRAGA+1
