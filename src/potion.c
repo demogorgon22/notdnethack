@@ -274,7 +274,7 @@ boolean talk;
 		if (!haseyes(youracedata)) {
 		    strange_feeling((struct obj *)0, (char *)0);
 		} else if (Blindfolded) {
-		    Strcpy(buf, body_part(EYE));
+		    Strcpy(buf, body_part(EYE_BP));
 		    eyecnt = eyecount(youracedata);
 		    Your(eyemsg, (eyecnt == 1) ? buf : makeplural(buf),
 			 (eyecnt == 1) ? "itches" : "itch");
@@ -300,7 +300,7 @@ boolean talk;
 		if (!haseyes(youracedata)) {
 		    strange_feeling((struct obj *)0, (char *)0);
 		} else if (Blindfolded) {
-		    Strcpy(buf, body_part(EYE));
+		    Strcpy(buf, body_part(EYE_BP));
 		    eyecnt = eyecount(youracedata);
 		    Your(eyemsg, (eyecnt == 1) ? buf : makeplural(buf),
 			 (eyecnt == 1) ? "twitches" : "twitch");
@@ -352,7 +352,7 @@ long mask;	/* nonzero if resistance status should change by mask */
 		    char buf[BUFSZ];
 		    int eyecnt = eyecount(youracedata);
 
-		    Strcpy(buf, body_part(EYE));
+		    Strcpy(buf, body_part(EYE_BP));
 		    Your(eyemsg, (eyecnt == 1) ? buf : makeplural(buf),
 			 (eyecnt == 1) ? "itches" : "itch");
 		} else {	/* Grayswandir */
@@ -2167,7 +2167,7 @@ register struct obj *obj;
 		    else if (haseyes(youracedata)) {
 			int numeyes = eyecount(youracedata);
 			Your("%s sting%s!",
-			     (numeyes == 1) ? body_part(EYE) : makeplural(body_part(EYE)),
+			     (numeyes == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)),
 			     (numeyes == 1) ? "s" : "");
 		    }
 		    break;

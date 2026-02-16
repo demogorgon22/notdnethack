@@ -14376,7 +14376,7 @@ int vis;
 			if (dmg > -1*(*moral)) {	// reduce message spam by only showing when study is actually increased
 				if(youdef){
 					if(magr->mtyp == PM_INTERLOCUTOR_DEVIL){
-						int bodyparts[] = {ARM, EYE, FACE, FINGER, FOOT, HAND, HEAD, LEG, TOE, NOSE, EAR, TONGUE};
+						int bodyparts[] = {ARM, EYE_BP, FACE, FINGER, FOOT, HAND, HEAD, LEG, TOE, NOSE, EAR, TONGUE};
 						int bodypart = ROLL_FROM(bodyparts);
 						if(Insanity > 50){
 							pline("That's your %s in there! Oh %s, it's got your %s!", body_part(bodypart), u_gname(), body_part(bodypart));
@@ -16805,8 +16805,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 							/* venom in the eyes */
 							if (!Blind) pline_The("venom blinds you.");
 							else Your("%s sting%s.",
-								(num_eyes == 1) ? body_part(EYE) :
-								makeplural(body_part(EYE)),
+								(num_eyes == 1) ? body_part(EYE_BP) :
+								makeplural(body_part(EYE_BP)),
 								(num_eyes == 1) ? "s" : "");
 						}
 						u.ucreamed += blindinc;
@@ -19769,7 +19769,7 @@ boolean endofchain;			/* if the attacker has finished their attack chain */
 		if(shield && shield->oartifact == ART_MIRRORBRIGHT && magr != mdef){
 			if(youagr){
 				if(canseemon(mdef)){
-					pline("The bright-copper shield shines in your %s!", makeplural(body_part(EYE)));
+					pline("The bright-copper shield shines in your %s!", makeplural(body_part(EYE_BP)));
 					make_confused(HConfusion + d(3, 3), FALSE);
 					change_usanity(-1, TRUE);
 				}

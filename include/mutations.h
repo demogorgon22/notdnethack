@@ -7,7 +7,7 @@
 
 /* Macros for messages referring to hands, eyes, feet, etc... */
 #define ARM 0
-#define EYE 1
+#define EYE_BP 1
 #define FACE 2
 #define FINGER 3
 #define FINGERTIP 4
@@ -222,5 +222,10 @@ struct mutationtype {
 	 || has_mutation(TT_TALONS) \
 	)
 
+#define KNOWS_CURSES (check_mutation(TT_HATEFUL_VISION) || u.seraph_eyes >= SE_CURSES)
+#define KNOWS_BLESSINGS (Race_if(PM_AASIMAR) && u.ulevel >= 7)
+#define KNOWS_BUC (u.upriest || (KNOWS_CURSES && KNOWS_BLESSINGS))
+
+#define KNOWS_MAGIC (Race_if(PM_INCANTIFIER) || u.seraph_eyes >= SE_MAGIC)
 
 #endif /* MUTATION_H */

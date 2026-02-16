@@ -482,6 +482,18 @@ new_angle(lev, sv, row, col)
 
 #endif
 
+int
+regular_dimness(int x,int y)
+{
+	return	dimness(x,y);
+}
+
+int
+seraph_dimness(int x,int y)
+{
+	return 3 + TEMP_DRKVAL(viz_array[y][x]) - TEMP_LITVAL(viz_array[y][x]);
+}
+	
 
 /*
  * vision_recalc()
@@ -554,6 +566,8 @@ vision_recalc(control)
 	boolean darksight = FALSE;
 	int i, j;
 	int nv_range;
+	int (*dimness_func)(int,int) = regular_dimness;
+	if(flags.aasimar_type == AASIMAR_TYPE_SERAPH && u.seraph_eyes < SE_SUN) dimness_func = seraph_dimness;
 	
     vision_full_recalc = 0;			/* reset flag */
     if (in_mklev || !iflags.vision_inited) return;
@@ -582,7 +596,7 @@ vision_recalc(control)
 #endif
     else {
 		/* determine night vision range */
-		indark = (dimness(u.ux, u.uy) > 0);
+		indark = (dimness_func(u.ux, u.uy) > 0);
 		darksight = ((Catsight && indark) || (Darksight));
 		if (Blind || LightBlind) nv_range = 0;
 		else if (Elfsight) nv_range = 3;
@@ -692,7 +706,7 @@ vision_recalc(control)
     temp_array = viz_array;
     viz_array = next_array;
 	/* determine night vision range */
-	indark = (dimness(u.ux, u.uy) > 0);
+	indark = (dimness_func(u.ux, u.uy) > 0);
 	darksight = ((Catsight && indark) || (Darksight));
 	if (Blind || LightBlind) nv_range = 0;
 	else if (Elfsight) nv_range = 3;
@@ -756,8 +770,8 @@ vision_recalc(control)
 			||
 			/* or able to see despite/because of dimness */
 			(!darksight 
-				? (dimness(col, row) < nv_range + !nv_range)	/* +!nvrange -> so normal vision with nv=0 can see in normally lit */
-				: (dimness(col, row) > -nv_range)
+				? (dimness_func(col, row) < nv_range + !nv_range)	/* +!nvrange -> so normal vision with nv=0 can see in normally lit */
+				: (dimness_func(col, row) > -nv_range)
 			)
 			||
 			/* or darksight mapping terrain */
@@ -783,8 +797,8 @@ vision_recalc(control)
 				||
 				/* or able to see adjacent square despite/because of dimness */
 				(!darksight 
-					? (dimness(col+dx, row+dy) < nv_range + !nv_range)
-					: (dimness(col+dx, row+dy) > -nv_range)
+					? (dimness_func(col+dx, row+dy) < nv_range + !nv_range)
+					: (dimness_func(col+dx, row+dy) > -nv_range)
 				)
 				||
 				/* or with darksight we can see this kind of terrain anyways */

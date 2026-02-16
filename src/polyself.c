@@ -2573,7 +2573,7 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	if (mptr->mtyp == PM_JELLYFISH && (part == ARM || part == FINGER ||
 	    part == HAND || part == FOOT || part == TOE))
 	    return "tentacle";
-	if (mptr->mtyp == PM_FLOATING_EYE && part == EYE)
+	if (mptr->mtyp == PM_FLOATING_EYE && part == EYE_BP)
 	    return "cornea";
 	if (mptr->mtyp == PM_SUNFLOWER || mptr->mtyp == PM_MIRRORED_MOONFLOWER){
 		if(part == HEAD)
@@ -2601,7 +2601,7 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 				return "nightmarish flesh mass";
 			if(part == FACE)
 				return "gnawing mouths";
-			if(part == EYE)
+			if(part == EYE_BP)
 				return "winking eye";
 			if(part == BLOOD)
 				return "seething blood";
@@ -2612,7 +2612,7 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 				return "skin";
 			if(part == EARS)
 				return "skin";
-			if(part == EYE)
+			if(part == EYE_BP)
 				return "eye";
 		}
 	}

@@ -3648,7 +3648,7 @@ karemade:
 						echo_location(i, j);
 			see_monsters();
 		}
-		if(check_mutation(TT_DISCOVERY_1) || check_mutation(TT_DISCOVERY_2)){
+		if(check_mutation(TT_DISCOVERY_1) || check_mutation(TT_DISCOVERY_2) || u.seraph_eyes >= SE_HIDDEN){
 			findit();
 		}
 		if(u.utrap && u.utraptype == TT_LAVA) {
@@ -4143,6 +4143,8 @@ newgame()
 	(void) makedog();
 	if(Race_if(PM_ANDROID))
 		scatter_weapons();
+	if(flags.aasimar_type == AASIMAR_TYPE_SERAPH)
+		scatter_eyes();
 	docrt();
 	if (Role_if(PM_CONVICT) || (Role_if(PM_MADMAN) && Race_if(PM_VAMPIRE))) {
 		setworn(mkobj(CHAIN_CLASS, TRUE), W_CHAIN);

@@ -631,7 +631,7 @@ decurse:
 	    case TROUBLE_BLIND:
 		{
 		    int num_eyes = eyecount(youracedata);
-		    const char *eye = body_part(EYE);
+		    const char *eye = body_part(EYE_BP);
 
 		    Your("%s feel%s better.",
 			 (num_eyes == 1) ? eye : makeplural(eye),
@@ -873,7 +873,7 @@ int godnum;
 			break;
 		case 9:
 		case 10:
-			Sprintf(buf, "Let thy senses fail and thine %s be sewn shut!", makeplural(body_part(EYE)));
+			Sprintf(buf, "Let thy senses fail and thine %s be sewn shut!", makeplural(body_part(EYE_BP)));
 			godvoice(godnum, buf);
 			HStumbleBlind += rn1(80, 150);
 			break;

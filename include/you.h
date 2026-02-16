@@ -1132,6 +1132,14 @@ struct you {
 	long mutations[MUTATION_LISTSIZE];
 	int next_tiefling_mutation;
 	int next_mutation_level;
+	char seraph_eyes;
+#define SE_SUN 1
+#define SE_INVIS 2
+#define SE_HIDDEN 3
+#define SE_CURSES 4
+#define SE_MAGIC 5
+#define SE_ALL 6
+#define SE_FUTURE 7
 };	/* end of `struct you' */
 
 #define uclockwork ((Race_if(PM_CLOCKWORK_AUTOMATON) && !Upolyd) || (Upolyd && youmonst.data->mtyp == PM_CLOCKWORK_AUTOMATON))

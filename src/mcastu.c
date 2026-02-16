@@ -4228,7 +4228,7 @@ int tary;
 				/* blind defender (player only?) */
 				if (youdef && !resists_blnd(&youmonst) && rn2(2)) {
 					pline_The("acid gets into your %s!", eyecount(youracedata) == 1 ?
-						body_part(EYE) : makeplural(body_part(EYE)));
+						body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 					make_blinded((long)rnd(Acid_resistance ? 10 : 50), FALSE);
 					if (!Blind) Your1(vision_clears);
 				}
@@ -6731,7 +6731,7 @@ int tary;
 					if (attk->adtyp == AD_CLRC)
 						pline("Scales cover your %s!",
 						(num_eyes == 1) ?
-						body_part(EYE) : makeplural(body_part(EYE)));
+						body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 					else if (Hallucination)
 						pline("Oh, bummer!  Everything is dark!  Help!");
 					else pline("A cloud of darkness falls upon you.");

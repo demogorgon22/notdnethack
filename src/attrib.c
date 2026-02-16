@@ -1453,6 +1453,8 @@ struct monst *mon;
 	if(is_player){
 		if (x == A_STR && override_str)
 			return override_str;
+		if(x == A_DEX && u.seraph_eyes >= SE_FUTURE && tmp > 10)
+			tmp += (tmp - 10);
 		if(u.ufirst_light)
 			tmp++;
 		if(u.ufirst_sky)

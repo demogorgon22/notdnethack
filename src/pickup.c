@@ -348,9 +348,9 @@ allow_category(struct obj *obj, int qflags)
 {
 	if(qflags&NO_EQUIPMENT && obj->owornmask)
 		return FALSE;
-    if (u.upriest) obj->bknown = TRUE;
-	else if (obj->cursed && check_mutation(TT_HATEFUL_VISION)) obj->bknown = TRUE;
-	else if (obj->blessed && Race_if(PM_AASIMAR) && u.ulevel >= 7) obj->bknown = TRUE;
+    if (KNOWS_BUC) obj->bknown = TRUE;
+	else if (obj->cursed && KNOWS_CURSES) obj->bknown = TRUE;
+	else if (obj->blessed && KNOWS_BLESSINGS) obj->bknown = TRUE;
 
 	if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0))
@@ -3207,6 +3207,16 @@ boolean past;
 			}
 			else {
 				expert_weapon_skill(P_MACE);
+			}
+		break;
+		case PM_AASIMAR:
+			if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+				expert_weapon_skill(P_LONG_SWORD);
+				free_skill_up(P_LONG_SWORD);
+				expert_weapon_skill(P_BOW);
+				free_skill_up(P_BOW);
+				expert_weapon_skill(P_SHIELD);
+				skilled_weapon_skill(P_BEAST_MASTERY);
 			}
 		break;
 	}

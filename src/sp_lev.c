@@ -2251,6 +2251,42 @@ default_case:
 					}
 				}
 			break;
+			case PM_AASIMAR:
+				if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+					stuff = mksobj(ROBE, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_WOOL);
+					stuff->obj_color = CLR_WHITE;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(CRYSTAL_SWORD, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					set_material_gm(stuff, GEMSTONE);
+					set_submat(stuff, DIAMOND);
+					add_oprop(stuff, OPROP_HOLYW);
+					add_oprop(stuff, OPROP_UNHYW);
+					add_oprop(stuff, OPROP_FIREW);
+					add_oprop(stuff, OPROP_LIVEW);
+					add_oprop(stuff, OPROP_INSTW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(BOW, MKOBJ_NOINIT);
+					stuff->spe = 0;
+					set_material_gm(stuff, PLATINUM);
+					add_oprop(stuff, OPROP_AAMOW);
+					add_oprop(stuff, OPROP_HOLYW);
+					add_oprop(stuff, OPROP_UNHYW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(EYE, NO_MKOBJ_FLAGS);
+					fully_identify_obj(stuff);
+					stuff->ovar1_your_eye = TRUE;
+					set_material_gm(stuff, GEMSTONE);
+					set_submat(stuff, DIAMOND);
+					add_to_container(otmp, stuff);
+				}
+			break;
 		}
 		if(urace.malenum == PM_GNOME){
 			int stars[] = {PM_YELLOW_LIGHT, PM_YELLOW_LIGHT, PM_BLACK_LIGHT, PM_MOTE_OF_LIGHT, PM_TINY_BEING_OF_LIGHT};

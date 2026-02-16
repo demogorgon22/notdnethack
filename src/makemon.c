@@ -3489,6 +3489,14 @@ boolean greatequip;
 				if(is_rottable(otmp))
 					otmp->oeroded2 = 1;
 			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+				otmp = mksobj_at(EYE, mtmp->mx, mtmp->my, NO_MKOBJ_FLAGS);
+				otmp->quan = 1;
+				fully_identify_obj(otmp);
+				otmp->ovar1_your_eye = TRUE;
+				set_material_gm(otmp, GEMSTONE);
+				set_submat(otmp, DIAMOND);
+			}
 		} else if (mm == PM_PATIENT){
 			otmp = mongets(mtmp, STRAITJACKET, mkobjflags);
 			if(otmp) curse(otmp);
@@ -4151,6 +4159,15 @@ boolean greatequip;
 		if(otmp) otmp->obj_color = CLR_YELLOW;
 		otmp = mongets(mtmp, LOW_BOOTS, mkobjflags);
 		if(otmp) otmp->obj_color = CLR_YELLOW;
+		if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+			otmp = mksobj(EYE, NO_MKOBJ_FLAGS);
+			otmp->quan = 1;
+			fully_identify_obj(otmp);
+			otmp->ovar1_your_eye = TRUE;
+			set_material_gm(otmp, GEMSTONE);
+			set_submat(otmp, DIAMOND);
+			(void) mpickobj(mtmp, otmp);
+		}
 	} else if (mm == PM_ASHIKAGA_TAKAUJI) {
 			otmp = mksobj(HELMET, mkobjflags|MKOBJ_NOINIT);
 			otmp->spe = 4;

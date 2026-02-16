@@ -2506,16 +2506,27 @@ dofire()
 		}
 
 		/* Rogue Gear Spirits' auto-generated ammo -- mainhand only */
-		if (uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep))) && uwep->oartifact == ART_ROGUE_GEAR_SPIRITS){
+		if (uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep))) && uwep->oartifact == ART_ROGUE_GEAR_SPIRITS && !Is_spire(&u.uz)){
 			struct obj *bolt = mksobj(CROSSBOW_BOLT, MKOBJ_NOINIT);
 			bolt->spe = min(0, uwep->spe);
 			bolt->blessed = uwep->blessed;
 			bolt->cursed = uwep->cursed;
 			bolt->objsize = MZ_SMALL;
-			bolt->quan = 3;		/* Make more than enough so that we are always able to manually destroy the excess */
+			bolt->quan = 10;		/* Make more than enough so that we are always able to manually destroy the excess */
 			fix_object(bolt);
 			result = uthrow(bolt, uwep, shotlimit, TRUE, FALSE);
 			obfree(bolt, 0);
+			return result;
+		}
+		if (uwep && (!uquiver || (is_ammo(uquiver) && !ammo_and_launcher(uquiver, uwep))) && check_oprop(uwep, OPROP_AAMOW) && !Is_spire(&u.uz)){
+			struct obj *arrow = mksobj(SILVER_ARROW, MKOBJ_NOINIT);
+			arrow->spe = min(7, uwep->spe);
+			arrow->blessed = uwep->blessed;
+			arrow->cursed = uwep->cursed;
+			arrow->quan = 30;		/* Make more than enough so that we are always able to manually destroy the excess */
+			fix_object(arrow);
+			result = uthrow(arrow, uwep, shotlimit, TRUE, FALSE);
+			obfree(arrow, 0);
 			return result;
 		}
 	}/* !notake */

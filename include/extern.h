@@ -2102,6 +2102,7 @@ E int NDECL(domutation);
 E void NDECL(mutation_autoattacks);
 E void NDECL(mutation_auras);
 E int NDECL(uemit_light);
+E void NDECL(recover_seraph_eye);
 
 /* ### nhlan.c ### */
 #ifdef LAN_FEATURES
@@ -3210,6 +3211,7 @@ E void NDECL(u_init);
 E void FDECL(knows_object,(int) );
 E void FDECL(know_random_obj,(int));
 E void NDECL(scatter_weapons);
+E void NDECL(scatter_eyes);
 
 /* ### unixmain.c ### */
 

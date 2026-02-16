@@ -5021,7 +5021,7 @@ struct zapdata * zapdata;
 				addmsg("%s body reintegrates before your %s!",
 					s_suffix(Monnam(mdef)),
 					(eyecount(youracedata) == 1) ?
-					body_part(EYE) : makeplural(body_part(EYE)));
+					body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				addmsg("%s resurrects!", Monnam(mdef));
 			}
 			mdef->mhp = mdef->mhpmax;

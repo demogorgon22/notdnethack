@@ -3147,7 +3147,7 @@ u_init()
 		if(!Role_if(PM_EXILE) && (u.ualign.type == godlist[get_vgod(flags.panVgod)].alignment || godlist[get_vgod(flags.panVgod)].alignment == A_NONE)){
 			u.ualign.god = u.ugodbase[UGOD_CURRENT] = u.ugodbase[UGOD_ORIGINAL] = get_vgod(flags.panVgod);
 			if(godlist[get_vgod(flags.panVgod)].alignment == A_NONE){
-				flags.initalign = 3;
+				flags.initalign = INITALIGN_EVIL;
 			}
 		}
 	    knows_object(POT_BLOOD);
@@ -3365,6 +3365,18 @@ u_init()
 		}
 	}
 	else if(Race_if(PM_AASIMAR)){
+		if(Role_if(PM_MADMAN)){
+			if(flags.initalign == INITALIGN_LAWFUL){
+				flags.aasimar_type = AASIMAR_TYPE_SERAPH;
+			}
+			else if(flags.initalign == INITALIGN_NEUTRAL){
+				flags.aasimar_type = AASIMAR_TYPE_PRIMINAL;
+			}
+			else { // == INITALIGN_CHAOTIC
+				flags.aasimar_type = AASIMAR_TYPE_CLOUDFACE;
+			}
+		}
+		else {
 			flags.aasimar_type = rnd(3);
 			if(flags.aasimar_type == AASIMAR_TYPE_ELADRIN){
 				if(rn2(7))
@@ -3373,6 +3385,7 @@ u_init()
 					
 				}
 			}
+		}
 	}
 	else if(Race_if(PM_TIEFLING)){
 		// int mutation_levels[] = {3,10,14,18,22,26};
@@ -4175,6 +4188,22 @@ scatter_weapons(){
 		// obj->ox = sanctum_level.dnum;
 		// obj->oy = sanctum_level.dlevel - 1; /* vs level, bottom of the accesible part of hell */
 	// }
+}
+
+void
+scatter_eyes()
+{
+	struct obj *obj;
+	for(int i = 0; i < 4; i++){
+		obj = mksobj(EYE, NO_MKOBJ_FLAGS);
+		fully_identify_obj(obj);
+		obj->ovar1_your_eye = TRUE;
+		set_material_gm(obj, GEMSTONE);
+		set_submat(obj, DIAMOND);
+		add_to_migration(obj);
+		obj->ox = quest_dnum;
+		obj->oy = rn2(nemesis_level.dlevel - qlocate_level.dlevel) + qlocate_level.dlevel;
+	}
 }
 
 /*u_init.c*/

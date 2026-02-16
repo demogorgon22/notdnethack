@@ -383,6 +383,13 @@ struct obj *obj;
 	if (obj->where != OBJ_FREE)
 	    panic("addinv: obj not free");
 	obj->no_charge = 0;	/* not meaningful for invent */
+	if(obj->otyp == EYE && obj->ovar1_your_eye && flags.aasimar_type == AASIMAR_TYPE_SERAPH) {
+		if(u.seraph_eyes < 7){
+			recover_seraph_eye();
+			set_material_gm(obj, GLASS);
+		}
+		obj->ovar1_your_eye = 0;
+	}
 
 	addinv_core1(obj);
 #ifndef GOLDOBJ
@@ -5143,11 +5150,12 @@ count_buc(list, type)
     int type;
 {
     int count = 0;
-	boolean knows_curses = check_mutation(TT_HATEFUL_VISION);
-	boolean knows_blessings = Race_if(PM_AASIMAR) && u.ulevel >= 7;
+	boolean knows_curses = KNOWS_CURSES;
+	boolean knows_blessings = KNOWS_BLESSINGS;
+	boolean knows_buc = KNOWS_BUC;
 
     while (list) {
-	if (u.upriest) list->bknown = TRUE;
+	if (knows_buc) list->bknown = TRUE;
 	else if (list->cursed && knows_curses) list->bknown = TRUE;
 	else if (list->blessed && knows_blessings) list->bknown = TRUE;
 

@@ -194,7 +194,7 @@ doread()
 				pline("The distant stars wink and dance among the arches within the black night sky.");
 			}
 			else {
-				pline("Tiny spirits of light dance in and out of the blade's sky and the black night of your %s.", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				pline("Tiny spirits of light dance in and out of the blade's sky and the black night of your %s.", (eyecount(youracedata) == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				maybe_give_thought(GUIDANCE);
 			}
 			return MOVE_READ;
@@ -923,7 +923,7 @@ struct obj *scroll;
 				int objcount = 2 + rn2(3) + rn2(5);
 				You("can't understand what they say...");
 				pline("Suddenly, the glyphs glow in rainbow hues and escape from the fracturing disk!");
-				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				know_random_obj(objcount);
 				if(!u.udisks || !rn2(u.udisks)){
 					change_uinsight(1);
@@ -953,7 +953,7 @@ struct obj *scroll;
 				boolean seals = FALSE, wards = FALSE, combat = FALSE;
 				You("can't understand what it says...");
 				pline("Suddenly, the glyphs glow in impossible hues and escape from the fracturing disk!");
-				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				//ID
 				effectcount = 4 + rn2(5) + rn2(9);
 				xp += d(effectcount,100);

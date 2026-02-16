@@ -106,6 +106,7 @@ enum {
 	OPROP_LITE,
 	OPROP_CAST,
 	OPROP_SECNW,
+	OPROP_AAMOW,
 	MAX_OPROP
 };
 
@@ -359,6 +360,7 @@ struct obj {
 #define ovar1_alt_mat ovar1
 #define ovar1_last_blooded ovar1
 #define ovar1_tooth_type ovar1
+#define ovar1_your_eye ovar1
 #define SERPENT_TOOTH	1
 #define MAGMA_TOOTH		2
 #define VOID_TOOTH		3

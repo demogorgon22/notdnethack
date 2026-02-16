@@ -258,7 +258,7 @@ struct monst *magr;
 	if (is_farm(otmp) &&
 	    ptr->mlet == S_PLANT) tmp += 6;
 
-	if(youagr && check_mutation(TT_CLOCKWORK_EYES) && mon && canseemon_eyes(mon)){
+	if(youagr && (check_mutation(TT_CLOCKWORK_EYES) || u.seraph_eyes >= SE_FUTURE) && mon && canseemon_eyes(mon)){
 		if(is_chaotic_mon(magr))
 			tmp += rnd(4);
 		else if(is_lawful_mon(magr))
@@ -266,7 +266,7 @@ struct monst *magr;
 		else
 			tmp += rnd(10);
 	}
-	else if(mon == &youmonst && check_mutation(TT_CLOCKWORK_EYES) && magr && canseemon_eyes(magr)){
+	else if(mon == &youmonst && (check_mutation(TT_CLOCKWORK_EYES) || u.seraph_eyes >= SE_FUTURE) && magr && canseemon_eyes(magr)){
 		if(is_chaotic_mon(magr))
 			tmp -= rnd(4);
 		else if(is_lawful_mon(magr))
@@ -885,6 +885,7 @@ struct monst *magr;
 						break;
 					/* glass and obsidian have sharp edges and points */
 					case GLASS:
+					case GEMSTONE:
 					case OBSIDIAN_MT:
 					case GREEN_STEEL:
 						if (attack_mask(obj, 0, 0, magr) & (SLASH|PIERCE))
@@ -4403,7 +4404,8 @@ int wep_type;
 			bonus *= 2;
 		else bonus++;
 	}
-
+	if(u.seraph_eyes >= SE_FUTURE)
+		bonus *= 2;
     return bonus;
 }
 
@@ -4634,7 +4636,8 @@ int wep_type;
 			bonus *= 2;
 		else bonus++;
 	}
-
+	if(u.seraph_eyes >= SE_FUTURE)
+		bonus *= 2;
 	return bonus;
 }
 
@@ -4643,24 +4646,28 @@ shield_skill(shield)
 struct obj *shield;
 {
 	int size_adjust = get_your_shield_size();
+	int bonus = 0;
 	if(size_adjust < 0)
 		size_adjust = 0;
 	else size_adjust += 1;
 	if(weight(shield) > (int)objects[BUCKLER].oc_weight*size_adjust){
 		switch(P_SKILL(P_SHIELD)){
-			case P_BASIC:	return 1;
-			case P_SKILLED:	return activeFightingForm(FFORM_SHIELD_BASH) ? 2 : 3;
-			case P_EXPERT:	return activeFightingForm(FFORM_SHIELD_BASH) ? 5 : 8;
-			default: return 0;
+			case P_BASIC:	bonus = 1; break;
+			case P_SKILLED:	bonus = activeFightingForm(FFORM_SHIELD_BASH) ? 2 : 3; break;
+			case P_EXPERT:	bonus = activeFightingForm(FFORM_SHIELD_BASH) ? 5 : 8; break;
+			default: bonus = 0; break;
 		}
 	}
 	else {
 		switch(P_SKILL(P_SHIELD)){
-			case P_SKILLED:	return 1;
-			case P_EXPERT:	return activeFightingForm(FFORM_SHIELD_BASH) ? 2 : 3;
-			default: return 0;
+			case P_SKILLED:	bonus = 1; break;
+			case P_EXPERT:	bonus = activeFightingForm(FFORM_SHIELD_BASH) ? 2 : 3; break;
+			default: bonus = 0; break;
 		}
 	}
+	if(u.seraph_eyes >= SE_FUTURE)
+		bonus *= 2;
+	return bonus;
 }
 
 /*

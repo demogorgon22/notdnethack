@@ -1655,7 +1655,7 @@ boolean was_dead;
 				Monnam(mtmp),
 				mtmp->mpeaceful ? "seems unable" :
 					    "refuses",
-				body_part(EYE));
+				body_part(EYE_BP));
 		else 
 			pline("%s avoids your gaze.",
 				Monnam(mtmp));

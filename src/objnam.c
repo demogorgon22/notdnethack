@@ -1379,7 +1379,7 @@ char *buf;
 		(obj->oclass == TOOL_CLASS && is_weptool(obj)) ||
 		(obj->oclass == RING_CLASS && objects[obj->otyp].oc_charged && obj->otyp != RIN_WISHES)
 		)
-		if (obj->known || Race_if(PM_INCANTIFIER)) {
+		if (obj->known || KNOWS_MAGIC) {
 			Strcat(buf, sitoa(obj->spe));
 			Strcat(buf, " ");
 		}
@@ -1684,7 +1684,7 @@ boolean adjective;
 			return OBJ_DESCR(objects[obj->otyp]);
 		/* items made out of specific gemstones */
 		else if ((obj->oclass == GEM_CLASS) || obj->sub_material) {
-			int gemtype = (obj->oclass == GEM_CLASS) ? obj->otyp : obj->sub_material;
+			int gemtype = (obj->oclass == GEM_CLASS && obj->otyp != EYE) ? obj->otyp : obj->sub_material;
 			if(obj->otyp == CRYSTAL && obj->sub_material)
 				gemtype = obj->sub_material;
 
@@ -1964,9 +1964,9 @@ boolean getting_obj_base_desc;
 	*/
 	if (!nn && ocl->oc_uses_known && ocl->oc_unique) obj->known = 0;
 	if (!Blind) obj->dknown = TRUE;
-	if (u.upriest) obj->bknown = TRUE;
-	else if (obj->cursed && check_mutation(TT_HATEFUL_VISION)) obj->bknown = TRUE;
-	else if (obj->blessed && Race_if(PM_AASIMAR) && u.ulevel >= 7) obj->bknown = TRUE;
+	if (KNOWS_BUC) obj->bknown = TRUE;
+	else if (obj->cursed && KNOWS_CURSES) obj->bknown = TRUE;
+	else if (obj->blessed && KNOWS_BLESSINGS) obj->bknown = TRUE;
 	if (u.sealsActive&SEAL_ANDROMALIUS) obj->sknown = TRUE;
 	//if (obj_is_pname(obj)) goto nameit;
 	if (!getting_obj_base_desc) {
@@ -2241,6 +2241,12 @@ boolean getting_obj_base_desc;
 		else
 			Strcat(buf, " of brilliance");
 	}
+	if(check_oprop(obj, OPROP_AAMOW) && obj->known){
+		if(strstr(buf, " of "))
+			Strcat(buf, " and light");
+		else
+			Strcat(buf, " of light");
+	}
 	
 	if (!(obj->oartifact && undiscovered_artifact(obj->oartifact) && oart->desc)
 		|| (iflags.force_artifact_names && !getting_obj_base_desc && obj->oartifact != ART_FLUORITE_OCTAHEDRON)) {
@@ -2507,7 +2513,7 @@ weapon:
 				}
 				else Sprintf(eos(buf), " (%d:%d)", (int)obj->recharged, obj->spe);
 			}
-			else if (obj->spe <= 0 && Race_if(PM_INCANTIFIER))
+			else if (obj->spe <= 0 && KNOWS_MAGIC)
 				Sprintf(eos(buf), " (empty)");
 			break;
 		case POTION_CLASS:

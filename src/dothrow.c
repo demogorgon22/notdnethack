@@ -982,8 +982,8 @@ boolean from_invent;
 					else {
 					    int numeyes = eyecount(youracedata);
 					    Your("%s water%s.",
-						 (numeyes == 1) ? body_part(EYE) :
-							makeplural(body_part(EYE)),
+						 (numeyes == 1) ? body_part(EYE_BP) :
+							makeplural(body_part(EYE_BP)),
 						 (numeyes == 1) ? "s" : "");
 					}
 				}

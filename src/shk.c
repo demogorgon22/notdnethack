@@ -5013,7 +5013,7 @@ shk_uncurse(slang, shkp)
 		if (!rn2(4))
 		{
 		    pline("Distracted by your blood-shot %s, the shopkeeper",
-			makeplural(body_part(EYE)));
+			makeplural(body_part(EYE_BP)));
 		    pline("accidentally blesses the item!");
 		    bless(obj);
 		}

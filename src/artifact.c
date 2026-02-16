@@ -8487,7 +8487,7 @@ boolean printmessages; /* print generic elemental damage messages */
 					if(youdef){
 						int numeyes = eyecount(youracedata);
 						Your("%s sting%s!",
-							 (numeyes == 1) ? body_part(EYE) : makeplural(body_part(EYE)),
+							 (numeyes == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)),
 							 (numeyes == 1) ? "s" : "");
 						make_blinded(basedmg, FALSE);
 					}

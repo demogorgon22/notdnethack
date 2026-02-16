@@ -2303,6 +2303,10 @@ humanoid_sound:
 							verbl_msg = "I was able to find the armor you talked about. Do you... still remember it?";
 							quest_status.fakeleader_greet_2 = TRUE;
 						}
+						else if(flags.aasimar_type == AASIMAR_TYPE_SERAPH && !quest_status.fakeleader_greet_2){
+							verbl_msg = "I was able to find one of the eyes you were searching for.";
+							quest_status.fakeleader_greet_2 = TRUE;
+						}
 						else {
 							verbl_msg = "Have you talked to that strange woman in the observation ward?";
 						}

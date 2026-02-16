@@ -32,8 +32,8 @@ const struct mutationtype mutationtypes[] =
 	{ SHIFTING_MIND, -1, "shifting mind", "Your mind has shifted."},
 	{ SHUB_CLAWS, HAND, "pointed claws", "Your fingernails can fuse into your fingers and transform into long claws."},
 	{ MIND_STEALER, TONGUE, "mind-stealing tongue", "Your long thin tongue can slip into others' thoughts."},
-	{ YOG_GAZE_1, EYE, "eyes of Yog-Sothoth", "Your eyes burn with magenta fire."},
-	{ YOG_GAZE_2, EYE, "frenzy of Yog-Sothoth", "Your eyes blaze with magenta fire."},
+	{ YOG_GAZE_1, EYE_BP, "eyes of Yog-Sothoth", "Your eyes burn with magenta fire."},
+	{ YOG_GAZE_2, EYE_BP, "frenzy of Yog-Sothoth", "Your eyes blaze with magenta fire."},
 	{ TWIN_MIND, -1, "chanting tentacles", "Your waist-tentacles chant strange spells."},
 	{ TWIN_DREAMS, -1, "mind blasts", "You emit deadly dreams."},
 	// { BY_THE_SMELL, -1, "bladder of Yog-Sothoth", "A gas-filled bladder swells then vanishes. An unholy stench fills the air!"},
@@ -68,29 +68,29 @@ const struct mutationtype mutationtypes[] =
 	{ TT_COLD_CLOUD, WINDPIPE, "cold breath", "You can exhale a cloud of freezing mist.", "cloudy breath", "Your breath hangs in the air like white clouds."},
 	// Eye traits
 	// Branch from writing in eyes
-	{ TT_HATEFUL_VISION, EYE, "hateful vision", "You can see curses and the weaknesses of the holy.", "black writing", "The white of your eyes is covered in tiny black script."},
-	{ TT_ODD_EYES_1, EYE, "odd eyes", "Your curse-graven gaze can demoralize foes.", "black writing", "The white of your eyes is covered in tiny black script."},
+	{ TT_HATEFUL_VISION, EYE_BP, "hateful vision", "You can see curses and the weaknesses of the holy.", "black writing", "The white of your eyes is covered in tiny black script."},
+	{ TT_ODD_EYES_1, EYE_BP, "odd eyes", "Your curse-graven gaze can demoralize foes.", "black writing", "The white of your eyes is covered in tiny black script."},
 	// Branch from blank white eyes
-	{ TT_INFRAVISION_1, EYE, "infravision", "You can see heat signatures.", "blank white eyes", "Your eyes are blank and white."},
-	{ TT_EXTRAMISSION_1, EYE, "extramission", "You can see in the dark and light.", "blank white eyes", "Your eyes are blank and white."},
-	{ TT_ODD_EYES_2, EYE, "odd eyes", "Your blank gaze can demoralize foes.", "milky eyes", "Your eyes are blank and white."},
+	{ TT_INFRAVISION_1, EYE_BP, "infravision", "You can see heat signatures.", "blank white eyes", "Your eyes are blank and white."},
+	{ TT_EXTRAMISSION_1, EYE_BP, "extramission", "You can see in the dark and light.", "blank white eyes", "Your eyes are blank and white."},
+	{ TT_ODD_EYES_2, EYE_BP, "odd eyes", "Your blank gaze can demoralize foes.", "milky eyes", "Your eyes are blank and white."},
 	// Branch from extra eyes
-	{ TT_BEHOLDER, EYE, "beholder eyes", "You have extra eyes that emit baleful rays.", "extra eyes", "You have many extra eyes."},
-	{ TT_DISCOVERY_1, EYE, "vigilant eyes", "You have extra eyes that can spot hidden things.", "extra eyes", "You have many extra eyes."},
-	{ TT_MANY_ODD_EYES, EYE, "odd eyes", "Your multitudinous gaze can demoralize foes.", "extra eyes", "You have many extra eyes."},
+	{ TT_BEHOLDER, EYE_BP, "beholder eyes", "You have extra eyes that emit baleful rays.", "extra eyes", "You have many extra eyes."},
+	{ TT_DISCOVERY_1, EYE_BP, "vigilant eyes", "You have extra eyes that can spot hidden things.", "extra eyes", "You have many extra eyes."},
+	{ TT_MANY_ODD_EYES, EYE_BP, "odd eyes", "Your multitudinous gaze can demoralize foes.", "extra eyes", "You have many extra eyes."},
 	// Branch from glowing eyes
-	{ TT_LIGHT, EYE, "light emission", "Your burning eyes light up your surroundings.", "glowing eyes", "Your eyes glow faintly."},
-	{ TT_EXTRAMISSION_2, EYE, "extramission", "You can see in the dark and light.", "glowing eyes", "Your eyes glow faintly."},
-	{ TT_DISCOVERY_2, EYE, "keen eyes", "You can spot hidden things.", "glowing eyes", "Your eyes glow faintly."},
-	{ TT_ODD_EYES_3, EYE, "odd eyes", "Your burning gaze can demoralize foes.", "glowing eyes", "Your eyes glow faintly."},
+	{ TT_LIGHT, EYE_BP, "light emission", "Your burning eyes light up your surroundings.", "glowing eyes", "Your eyes glow faintly."},
+	{ TT_EXTRAMISSION_2, EYE_BP, "extramission", "You can see in the dark and light.", "glowing eyes", "Your eyes glow faintly."},
+	{ TT_DISCOVERY_2, EYE_BP, "keen eyes", "You can spot hidden things.", "glowing eyes", "Your eyes glow faintly."},
+	{ TT_ODD_EYES_3, EYE_BP, "odd eyes", "Your burning gaze can demoralize foes.", "glowing eyes", "Your eyes glow faintly."},
 	// Branch from one large eye
-	{ TT_PARALYSIS_GAZE, EYE, "paralysis gaze", "You can paralyze foes with your gaze.", "large eye", "You have one large eye instead of two."},
-	{ TT_CANCEL_GAZE, EYE, "cancellation gaze", "You can cancel foes with your gaze.", "large eye", "You have one large eye instead of two."},
-	{ TT_PROBING_GAZE, EYE, "probing gaze", "You can examine foes with your gaze.", "large eye", "You have one large eye instead of two."},
+	{ TT_PARALYSIS_GAZE, EYE_BP, "paralysis gaze", "You can paralyze foes with your gaze.", "large eye", "You have one large eye instead of two."},
+	{ TT_CANCEL_GAZE, EYE_BP, "cancellation gaze", "You can cancel foes with your gaze.", "large eye", "You have one large eye instead of two."},
+	{ TT_PROBING_GAZE, EYE_BP, "probing gaze", "You can examine foes with your gaze.", "large eye", "You have one large eye instead of two."},
 	// Misc eye mutations
-	{ TT_MESMERIZING_GAZE, EYE, "mesmerizing gaze", "You can mesmerize foes with your gaze.", "swirling irises", "Your irises swirl hypnotically."},
-	{ TT_CLOCKWORK_EYES, EYE, "foresight", "Your clockwork eyes can see an instant into the future.", "clockwork eyes", "You have spinning clockwork instead of eyes."},
-	{ TT_TEARS_OF_BLOOD, EYE, "tears of blood", "Your foes weep blood in your presence.", "bleeding eyes", "Your eyes weep blood."},
+	{ TT_MESMERIZING_GAZE, EYE_BP, "mesmerizing gaze", "You can mesmerize foes with your gaze.", "swirling irises", "Your irises swirl hypnotically."},
+	{ TT_CLOCKWORK_EYES, EYE_BP, "foresight", "Your clockwork eyes can see an instant into the future.", "clockwork eyes", "You have spinning clockwork instead of eyes."},
+	{ TT_TEARS_OF_BLOOD, EYE_BP, "tears of blood", "Your foes weep blood in your presence.", "bleeding eyes", "Your eyes weep blood."},
 	// Finger traits
 	{ TT_COLD_TOUCH, FINGER, "cold touch", "You have a cold touch attack.", "cold fingers", "Your fingers feel cold to the touch."},
 	{ TT_DRAIN_TOUCH, FINGER, "drain touch", "You have a life-draining touch attack.", "cold fingers", "Your fingers feel cold to the touch."},
@@ -672,4 +672,37 @@ uemit_light()
 		}
 	}
 	return radius;
+}
+
+void
+recover_seraph_eye()
+{
+	u.seraph_eyes++;
+	if(u.seraph_eyes == SE_SUN){
+		pline("You have recovered the first of your stolen eyes, regaining the ability to see the light of sun and moon.");
+		doredraw();
+	}
+	else if(u.seraph_eyes == SE_INVIS){
+		pline("You have regained the ability to see invisible creatures.");
+		HSee_invisible |= W_UPGRADE;
+		see_monsters();
+	}
+	else if(u.seraph_eyes == SE_HIDDEN){
+		pline("You have regained the ability to see hidden things.");
+		findit();
+	}
+	else if(u.seraph_eyes == SE_CURSES){
+		pline("You have regained the ability to see evil wherever it hides.");
+	}
+	else if(u.seraph_eyes == SE_MAGIC){
+		pline("You have regained the ability to see magical auras.");
+	}
+	else if(u.seraph_eyes == SE_ALL){
+		pline("You have regained the ability to see in all conditions.");
+		HExtramission |= W_UPGRADE;
+		doredraw();
+	}
+	else if(u.seraph_eyes == SE_FUTURE){
+		pline("You have reclaimed your final eye, allowing you to see an instant into the future.");
+	}
 }
