@@ -633,7 +633,7 @@ fightm(mtmp)		/* have monsters fight each other */
 		if(monnear(mtmp,mon->mx,mon->my)) {
 		    if (!conflict && !mm_aggression(mtmp, mon))
 		    	continue;
-		    if(!u.uswallow && (mtmp == u.ustuck)) {
+		    if(!u.uswallow && (mtmp == u.ustuck) && !sticks(&youmonst)) {
 			if(!rn2(4)) {
 			    pline("%s releases you!", Monnam(mtmp));
 			    u.ustuck = 0;

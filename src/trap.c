@@ -953,7 +953,7 @@ unsigned trflags;
 	    case BEAR_TRAP:
 		if(Levitation || Flying) break;
 		seetrap(trap);
-		if(amorphous(youracedata) || is_whirly(youracedata) ||
+		if(amorphous_mon(&youmonst) || is_whirly(youracedata) ||
 						    unsolid(youracedata)) {
 		    pline("%s %s closes harmlessly through you.",
 			    A_Your[trap->madeby_u],
@@ -1005,7 +1005,7 @@ unsigned trflags;
 
 	    case FLESH_HOOK:
 		seetrap(trap);
-		if(amorphous(youracedata) || is_whirly(youracedata) ||
+		if(amorphous_mon(&youmonst) || is_whirly(youracedata) ||
 						    unsolid(youracedata)) {
 		    pline("%s %s passes harmlessly through you.",
 			    A_Your[trap->madeby_u],
@@ -1312,7 +1312,7 @@ glovecheck:		(void) rust_dmg(uarmg, "gauntlets", 1, TRUE, &youmonst, FALSE);
 
 	    case WEB: /* Our luckless player has stumbled into a web. */
 		seetrap(trap);
-		if (amorphous(youracedata) || is_whirly(youracedata) ||
+		if (amorphous_mon(&youmonst) || is_whirly(youracedata) ||
 						    unsolid(youracedata)) {
 		    if (acidic(youracedata) || u.umonnum == PM_GELATINOUS_CUBE ||
 			u.umonnum == PM_FIRE_ELEMENTAL) {
@@ -2196,7 +2196,7 @@ struct monst *mtmp;
 
 		case BEAR_TRAP:
 			if(mptr->msize > MZ_SMALL &&
-				!amorphous(mptr) && !mon_resistance(mtmp,FLYING) &&
+				!amorphous_mon(mtmp) && !mon_resistance(mtmp,FLYING) &&
 				!is_whirly(mptr) && !unsolid(mptr)) {
 			    mtmp->mtrapped = 1;
 			    if(in_sight) {
@@ -2216,7 +2216,7 @@ struct monst *mtmp;
 			break;
 
 		case FLESH_HOOK:
-			if(	!amorphous(mptr) &&
+			if(	!amorphous_mon(mtmp) &&
 				!is_whirly(mptr) && !unsolid(mptr)) {
 			    mtmp->mtrapped = 1;
 			    if(in_sight) {
@@ -2500,7 +2500,7 @@ glovecheck:		    target = which_armor(mtmp, W_ARMG);
 		case WEB:
 			/* Monster in a web. */
 			if (webmaker(mptr) || (Is_lolth_level(&u.uz) && !mtmp->mpeaceful)) break;
-			if (amorphous(mptr) || is_whirly(mptr) || unsolid(mptr)){
+			if (amorphous_mon(mtmp) || is_whirly(mptr) || unsolid(mptr)){
 			    if(acidic(mptr) ||
 			       mptr->mtyp == PM_GELATINOUS_CUBE ||
 			       mptr->mtyp == PM_FIRE_ELEMENTAL) {

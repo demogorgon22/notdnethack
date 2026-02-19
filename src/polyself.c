@@ -676,14 +676,14 @@ int	mntmp;
 	    u.utrap = 0;
 	    pline_The("lava now feels soothing.");
 	}
-	if (amorphous(youmonst.data) || is_whirly(youmonst.data) || unsolid(youmonst.data)) {
+	if (amorphous_mon(&youmonst) || is_whirly(youmonst.data) || unsolid(youmonst.data)) {
 	    if (Punished) {
 		You("slip out of the iron chain.");
 		unpunish();
 	    }
 	}
 	if (u.utrap && (u.utraptype == TT_WEB || u.utraptype == TT_SALIVA || u.utraptype == TT_BEARTRAP || u.utraptype == TT_FLESH_HOOK) &&
-		(amorphous(youmonst.data) || is_whirly(youmonst.data) || unsolid(youmonst.data) ||
+		(amorphous_mon(&youmonst) || is_whirly(youmonst.data) || unsolid(youmonst.data) ||
 		  (youmonst.data->msize <= MZ_SMALL && u.utraptype == TT_BEARTRAP))) {
 	    You("are no longer stuck in the %s.",
 		    u.utraptype == TT_WEB ? "web" : u.utraptype == TT_SALIVA ? "gooey saliva" :u.utraptype == TT_FLESH_HOOK ? "flesh hook" : "bear trap");

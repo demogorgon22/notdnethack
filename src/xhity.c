@@ -3026,6 +3026,16 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			fromlist = FALSE;
 			add_subout(subout, SUBOUT_T_SHOCK_TOUCH);
 		}
+		if (is_null_attk(attk) && youagr && check_mutation(AAT_PRIMINAL)
+			&& !check_subout(subout, SUBOUT_A_ACID_TOUCH)
+		) {
+			attk->aatyp = AT_TUCH;
+			attk->adtyp = AD_ACID;
+			attk->damn = (u.ulevel+6)/7;
+			attk->damd = 7;
+			fromlist = FALSE;
+			add_subout(subout, SUBOUT_A_ACID_TOUCH);
+		}
 	}
 	if (is_null_attk(attk) && youagr && check_mutation(TT_SNAKE_FANGS)
 		&& !check_subout(subout, SUBOUT_T_BITE)
@@ -3220,6 +3230,17 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		add_subout(subout, SUBOUT_ROT_VOMIT);
 	}
 
+	if (is_null_attk(attk) && youagr && check_mutation(AAT_PRIMINAL)
+		&& !check_subout(subout, SUBOUT_A_SUCK)
+		&& !(uarm && is_hard(uarm) && arm_blocks_lower_body(uarm->otyp) && arm_blocks_upper_body(uarm->otyp))
+	) {
+		attk->aatyp = AT_HUGS;
+		attk->adtyp = AD_SUCK;
+		attk->damn = 3;
+		attk->damd = 7;
+		fromlist = FALSE;
+		add_subout(subout, SUBOUT_A_SUCK);
+	}
 	/* players can get a whole host of spirit attacks */
 	if (youagr && is_null_attk(attk) && !by_the_book) {
 		/* this assumes that getattk() will not be interrupted with youagr when already called with youagr */
@@ -7916,7 +7937,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 
 		/* spec is true if vorpal */
 		if (spec){
-			if (noncorporeal(pd) || amorphous(pd)) {
+			if (noncorporeal(pd) || amorphous_mon(mdef)) {
 				if (vis) {
 					pline("%s slice%s through %s %s.",
 						(youagr ? "You" : Monnam(magr)),
@@ -8076,7 +8097,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			else {
 				/* Demogorgon tries to kill */
 				if (pa->mtyp == PM_DEMOGORGON || pa->mtyp == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH) {
-					if (noncorporeal(pd) || amorphous(pd)) {
+					if (noncorporeal(pd) || amorphous_mon(mdef)) {
 						/* custom hit message */
 						if (vis && dohitmsg) {
 							pline("%s %s to rip %s apart!",
@@ -8270,7 +8291,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 
 	case AD_SUCK:
 		/* does nothing at all to noncorporeal or amoprhous creatures */
-		if (noncorporeal(pd) || amorphous(pd))
+		if (noncorporeal(pd) || amorphous_mon(mdef))
 		{
 			/* no hitmessage, either */
 			return MM_MISS;
@@ -8520,7 +8541,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				dmg *= 2;
 			}
 			/* so is having a pass-through head */
-			else if (noncorporeal(pd) || amorphous(pd)) {
+			else if (noncorporeal(pd) || amorphous_mon(mdef)) {
 				/* message */
 				if (vis) {
 					pline("%s %s through %s %s.",
@@ -8690,7 +8711,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 			xyhitmsg(magr, mdef, originalattk);
 		}
 		if (!t_at(x(mdef), y(mdef)) 
-			&& !(amorphous(pd) || is_whirly(pd) || unsolid(pd))
+			&& !(amorphous_mon(mdef) || is_whirly(pd) || unsolid(pd))
 			&& levl[x(magr)][y(magr)].typ != AIR
 		) {
 			struct trap *ttmp2 = maketrap(x(mdef), y(mdef), FLESH_HOOK);

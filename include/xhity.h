@@ -113,8 +113,9 @@
 #define SUBOUT_A_MAR_2  47	/* Aasimar extra arm 2 */
 #define SUBOUT_A_MAR_3  48	/* Aasimar extra arm 3 */
 #define SUBOUT_A_MAR_4  49	/* Aasimar extra arm 4 */
-#define SUBOUT_A_EXTRA_A  50	/* Bralani extra attack */
-#define MAX_SUBOUT		50
+#define SUBOUT_A_ACID_TOUCH 50	/* Aasimar acidic touch attack */
+#define SUBOUT_A_SUCK  51	/* Aasimar priminal sucking attack */
+#define MAX_SUBOUT		51
 #define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/(sizeof(int)*8)+1)
 
 #define ATTKFLAG_FORCE_BLEED		0x00000001L

@@ -131,6 +131,7 @@
 #define amphibious_mon(mon)		(amphibious((mon)->data) || mon_resistance((mon), MAGICAL_BREATHING) || mon_resistance((mon), SWIMMING))
 #define species_passes_walls(ptr)	(((ptr)->mflagsm & MM_WALLWALK) != 0L)
 #define amorphous(ptr)			(((ptr)->mflagsm & MM_AMORPHOUS) != 0L)
+#define amorphous_mon(mon)		((mon) == &youmonst ? (amorphous(youracedata) || check_mutation(AAT_PRIMINAL)) : amorphous((mon)->data))
 #define noncorporeal(ptr)		((ptr)->mlet == S_GHOST || (ptr)->mlet == S_SHADE)
 #define insubstantial(ptr)		(((ptr)->mflagsb & MB_INSUBSTANTIAL) != 0L)
 #define tunnels(ptr)			(((ptr)->mflagsm & MM_TUNNEL) != 0L)

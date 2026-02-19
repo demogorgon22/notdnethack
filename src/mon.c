@@ -3485,7 +3485,7 @@ nexttry:
 			if (artifact_door(nx, ny) ?
 				(levl[nx][ny].doormask & D_CLOSED && !(flag & OPENDOOR))
 				  || levl[nx][ny].doormask & D_LOCKED :
-				!amorphous(mdat) &&
+				!amorphous_mon(mon) &&
 			   ((levl[nx][ny].doormask & D_CLOSED && !(flag & OPENDOOR)) ||
 			(levl[nx][ny].doormask & D_LOCKED && !(flag & UNLOCKDOOR))) &&
 			   !thrudoor) continue;
@@ -3618,7 +3618,7 @@ nexttry:
 		}
 		if (nx != x && ny != y && bad_rock(mon, x, ny)
 			    && bad_rock(mon, nx, y)
-			    && ((bigmonst(mdat) && !amorphous(mdat)) || (curr_mon_load(mon) > 600)))
+			    && ((bigmonst(mdat) && !amorphous_mon(mon)) || (curr_mon_load(mon) > 600)))
 			continue;
 		/* The monster avoids a particular type of trap if it's familiar
 		 * with the trap type.  Pets get ALLOW_TRAPS and checking is
@@ -3649,13 +3649,13 @@ nexttry:
 				    !resists_sleep(mon))
 				&& (ttmp->ttyp != BEAR_TRAP ||
 				    (mdat->msize > MZ_SMALL &&
-				     !amorphous(mdat) && !mon_resistance(mon,FLYING)))
+				     !amorphous_mon(mon) && !mon_resistance(mon,FLYING)))
 				&& (ttmp->ttyp != FLESH_HOOK ||
-				    !amorphous(mdat))
+				    !amorphous_mon(mon))
 				&& (ttmp->ttyp != FIRE_TRAP ||
 				    !resists_fire(mon) || (!no_upos(mon) && distmin(mon->mx, mon->my, mon->mux, mon->muy) > 2)) /*Cuts down on plane of fire message spam*/
 				&& (ttmp->ttyp != SQKY_BOARD || !mon_resistance(mon,FLYING))
-				&& (ttmp->ttyp != WEB || (!amorphous(mdat) &&
+				&& (ttmp->ttyp != WEB || (!amorphous_mon(mon) &&
 				    !(webmaker(mdat) || (Is_lolth_level(&u.uz) && !mon->mpeaceful)) && !(
 						species_tears_webs(mdat) ||
 						(mon->wormno && count_wsegs(mon) > 5)
@@ -7947,7 +7947,7 @@ boolean msg;		/* "The oldmon turns into a newmon!" */
 		if(u.uswallow) {
 			if(!attacktype(mdat,AT_ENGL)) {
 				/* Does mdat care? */
-				if (!noncorporeal(mdat) && !amorphous(mdat) &&
+				if (!noncorporeal(mdat) && !amorphous_mon(mtmp) &&
 				    !is_whirly(mdat) &&
 				    (mdat->mtyp != PM_YELLOW_LIGHT)) {
 					You("break out of %s%s!", mon_nam(mtmp),

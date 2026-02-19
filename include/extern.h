@@ -2174,6 +2174,7 @@ E int NDECL(find_ruby_ring);
 E int NDECL(find_pearl_ring);
 E int NDECL(find_ivory_ring);
 E int NDECL(find_emerald_ring);
+E int NDECL(find_wooden_ring);
 E int NDECL(find_droven_ring);
 E boolean FDECL(isEngrRing, (int));
 E boolean FDECL(isSignetRing, (int));

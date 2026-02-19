@@ -152,6 +152,8 @@ const struct mutationtype mutationtypes[] =
 	{ TT_ATTRACTIVE_2, APPEARANCE_TRAIT, "disarming appearance", "You can seduce others into disarming themselves.", "attractive appearance", "You are supernaturally attractive."},
 	// Misc non-bodypart mutations
 	{ TT_MAGIC_BREATHING, -1, "magic breathing", "You don't need to breathe.", "drowned appearance", "You look like a drowned corpse."},
+	// Aasimar mutations
+	{ AAT_PRIMINAL, -1, "gelatinous form", "Your rubbery form allows you to slip through tight spaces and sprout sucking pseudopods from your chest or stomach."},
 	// End marker
 	{ 0 },
 };

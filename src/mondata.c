@@ -2938,7 +2938,7 @@ struct monst *mon;
 {
 	struct permonst *mptr = mon->data;
 
-    return (boolean) (mon_resistance(mon,PASSES_WALLS) || amorphous(mptr) ||
+    return (boolean) (mon_resistance(mon,PASSES_WALLS) || amorphous_mon(mon) ||
 		      is_whirly(mptr) || verysmall(mptr) ||
 			  dmgtype(mptr, AD_CORR) || (dmgtype(mptr, AD_RUST) && mptr->mtyp != PM_NAIAD ) ||
 		      (slithy(mptr) && !bigmonst(mptr)));
@@ -2972,6 +2972,8 @@ struct monst * mtmp;
 {
 	register struct permonst * ptr = (mtmp == &youmonst) ? youracedata : mtmp->data;
 	/* monsters that can intrinsically do so */
+	if (mtmp == &youmonst && check_mutation(AAT_PRIMINAL))
+		return TRUE;
 	if (dmgtype(ptr, AD_STCK) || dmgtype(ptr, AD_WRAP) || attacktype(ptr, AT_HUGS))
 		return TRUE;
 	/* or if wearing the Grappler's Grasp */
@@ -3491,7 +3493,7 @@ const char *def;
 		(mon_resistance(mon,FLYING) && ptr->msize <= MZ_SMALL) ? flys[capitalize] :
 		(mon_resistance(mon,FLYING) && ptr->msize > MZ_SMALL)  ? flyl[capitalize] :
 		slithy(ptr)     ? slither[capitalize] :
-		amorphous(ptr)  ? ooze[capitalize] :
+		amorphous_mon(mon)  ? ooze[capitalize] :
 		!ptr->mmove	? immobile[capitalize] :
 		nolimbs(ptr)    ? crawl[capitalize] :
 		def
@@ -3511,7 +3513,7 @@ const char *def;
 		(mon_resistance(mon,FLYING) && ptr->msize <= MZ_SMALL) ? flys[capitalize] :
 		(mon_resistance(mon,FLYING) && ptr->msize > MZ_SMALL)  ? flyl[capitalize] :
 		slithy(ptr)     ? slither[capitalize] :
-		amorphous(ptr)  ? ooze[capitalize] :
+		amorphous_mon(mon)  ? ooze[capitalize] :
 		!ptr->mmove	? immobile[capitalize] :
 		nolimbs(ptr)    ? crawl[capitalize] :
 		def

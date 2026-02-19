@@ -3207,6 +3207,12 @@ boolean past;
 			}
 			else {
 				expert_weapon_skill(P_MACE);
+				//Read through and grant expert skill for any weapons
+				for(otmp = box->cobj; otmp; otmp = otmp->nobj){
+					if(is_weapon(otmp)){
+						expert_weapon_skill(objects[otmp->otyp].oc_skill);
+					}
+				}
 			}
 		break;
 		case PM_AASIMAR:
@@ -3217,6 +3223,18 @@ boolean past;
 				free_skill_up(P_BOW);
 				expert_weapon_skill(P_SHIELD);
 				skilled_weapon_skill(P_BEAST_MASTERY);
+			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_PRIMINAL){
+				expert_weapon_skill(P_QUARTERSTAFF);
+				free_skill_up(P_QUARTERSTAFF);
+				pline("You suddenly remember that you are gelatinous!");
+				pline("Oh, and you've got a tail.");
+				add_mutation(AAT_PRIMINAL);
+				add_mutation(TT_THIEVING_TAIL);
+				skilled_weapon_skill(P_BEAST_MASTERY);
+				gm_weapon_skill(P_BARE_HANDED_COMBAT);
+				gm_weapon_skill(P_TWO_WEAPON_COMBAT);
+				u.umartial = TRUE;
 			}
 		break;
 	}

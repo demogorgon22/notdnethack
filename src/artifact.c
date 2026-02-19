@@ -7464,7 +7464,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			vorpaldamage *= 2;	/* very very lethal */
 			if (dieroll <= 2) {
 				if (bigmonst(pd) && has_head_mon(mdef) && !(youagr && u.uswallow)) {
-					if (noncorporeal(pd) || amorphous(pd)) {
+					if (noncorporeal(pd) || amorphous_mon(mdef)) {
 						method = VORPAL_SHEAR;
 						wepdesc = "shearing wind";
 					}
@@ -7628,11 +7628,11 @@ boolean printmessages; /* print generic elemental damage messages */
 				}
 			}
 			/* apply other damage modifiers */
-			if (method == VORPAL_BEHEAD && (noncorporeal(pd) || amorphous(pd)))
+			if (method == VORPAL_BEHEAD && (noncorporeal(pd) || amorphous_mon(mdef)))
 				vorpaldamage = 0;
 			if ((method == VORPAL_BISECT) && (bigmonst(pd) || notonhead))
 				vorpaldamage = basedmg;
-			if ((method == VORPAL_PIERCE) && (!has_blood_mon(mdef) || !(pd->mflagsb&MB_BODYTYPEMASK) || noncorporeal(pd) || amorphous(pd)))
+			if ((method == VORPAL_PIERCE) && (!has_blood_mon(mdef) || !(pd->mflagsb&MB_BODYTYPEMASK) || noncorporeal(pd) || amorphous_mon(mdef)))
 				vorpaldamage = basedmg;
 
 			/* Are we sufficiently lethal for a vorpal kill? */
@@ -7706,7 +7706,7 @@ boolean printmessages; /* print generic elemental damage messages */
 						else
 							pline("%s slices %s %s %s%s",
 								The(wepdesc),
-								((noncorporeal(pd) || amorphous(pd)) ? "through" : "into"),
+								((noncorporeal(pd) || amorphous_mon(mdef)) ? "through" : "into"),
 								(youdef ? "your" : s_suffix(mon_nam(mdef))),
 								mbodypart(mdef, NECK),
 								((vorpaldamage > 0) ? "!" : ".")

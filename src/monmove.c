@@ -3221,7 +3221,7 @@ postmov:
 		    struct rm *here = &levl[mtmp->mx][mtmp->my];
 		    boolean btrapped = (here->doormask & D_TRAPPED);
 
-		    if(here->doormask & (D_LOCKED|D_CLOSED) && amorphous(ptr)) {
+		    if(here->doormask & (D_LOCKED|D_CLOSED) && amorphous_mon(mtmp)) {
 			if (flags.verbose && canseemon(mtmp))
 			    pline("%s %s under the door.", Monnam(mtmp),
 				  (ptr->mtyp == PM_FOG_CLOUD ||
@@ -3550,7 +3550,7 @@ struct monst *mtmp;
 {
 	struct obj *chain, *obj;
 
-	if (!amorphous(mtmp->data)) return FALSE;
+	if (!amorphous_mon(mtmp)) return FALSE;
 	if (mtmp == &youmonst) {
 #ifndef GOLDOBJ
 		if (u.ugold > 100L) return FALSE;

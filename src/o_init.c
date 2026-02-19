@@ -973,6 +973,20 @@ find_emerald_ring()
 	return 0;
 }
 
+int
+find_wooden_ring()
+{
+	static int i = -1;
+	register const char *s;
+	if (i != -1) return i;
+
+	if ((i = find_otyp_of_desc("wooden", 0, RIN_ADORNMENT, RIN_PROTECTION_FROM_SHAPE_CHAN, 0)) != -1)
+		return i;
+	else
+		impossible("could not find wooden ring");
+	return 0;
+}
+
 /* test if a ring is an engravable ring */
 boolean
 isEngrRing(otyp)

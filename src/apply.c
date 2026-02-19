@@ -4301,6 +4301,12 @@ dojump()
 	else if(!Upolyd && Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep) && P_SKILL(P_MARTIAL_ARTS)){
 		return jump(P_SKILL(P_MARTIAL_ARTS));
 	}
+	else if(check_mutation(AAT_PRIMINAL) && uwep && (uwep->otyp == QUARTERSTAFF || uwep->otyp == KHAKKHARA)){
+		int dist = min(P_SKILL(P_QUARTERSTAFF), P_SKILL(P_MARTIAL_ARTS));
+		if(dist >= P_EXPERT)
+			dist = P_SKILL(P_MARTIAL_ARTS);
+		return jump(dist);
+	}
 	return jump(0);
 }
 

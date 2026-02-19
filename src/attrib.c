@@ -86,7 +86,7 @@ const struct innate {
 		     {  25, &(HWwalking), "light on your feet","heavy" },
 		     {  26, &(HSick_resistance), "immunized","immunocompromised" },
 		     {  27, &(HDisint_resistance), "firm","less firm" },
-		     {  28, &(HStone_resistance), "limber","stiff" },
+		     {  28, &(HStone_resistance), "","stiff" },
 		     {  29, &(HAntimagic), "skeptical","credulous" },
 		     {  30, &(HDrain_resistance), "above earthly concerns","not so above it all" },
 		     {   0, 0, 0, 0 } },
@@ -106,7 +106,7 @@ const struct innate {
 		     {  21, &(HWwalking), "light on your feet","heavy" },
 		     {  23, &(HSick_resistance), "immunized","immunocompromised" },
 		     {  25, &(HDisint_resistance), "firm","less firm" },
-		     {  27, &(HStone_resistance), "limber","stiff" },
+		     {  27, &(HStone_resistance), "","stiff" },
 		     {  29, &(HAntimagic), "skeptical","credulous" },
 		     {  30, &(HDrain_resistance), "above earthly concerns","not so above it all" },
 		     {   0, 0, 0, 0 } },
@@ -207,7 +207,7 @@ const struct innate {
 			  {	15, &(HNo_prop), "bigger and and stronger", "smaller and weaker" },
 			  {	 0, 0, 0, 0 } },
 
-	hlf_acid_abil[] = { {	15, &(HStone_resistance), "limber", "stiff" },
+	hlf_acid_abil[] = { {	15, &(HStone_resistance), "", "stiff" },
 			  {	 0, 0, 0, 0 } },
 
 	hlf_slee_abil[] = { {	15, &(HFree_action), "freed", "a loss of freedom" },
@@ -265,6 +265,12 @@ const struct innate {
 	aasi_gae_abil[] = { 
 			 {	 1, &(HShock_resistance), "", "" },
 			 {	14, &(HNo_prop), "your aura form into reaching vines", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_prim_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {   7, &(HAcid_resistance), "thick-skinned","soft-skinned" },
+			 {	14, &(HStone_resistance), "", "stiff" },
 		     {	 0, 0, 0, 0 } },
 
 	tief_abil[] = { 
@@ -1010,6 +1016,8 @@ int oldlevel, newlevel;
 			else if (flags.aasimar_subtype == AASIMAR_SUBTYPE_GAE)
 				rabil = aasi_gae_abil;
 		}
+		else if(flags.aasimar_type == AASIMAR_TYPE_PRIMINAL)
+			rabil = aasi_prim_abil;
 		else
 			rabil = aasi_abil;
 	break;

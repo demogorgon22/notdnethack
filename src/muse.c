@@ -1464,7 +1464,7 @@ struct monst *mtmp;
 		nomore(MUSE_SCR_EARTH);
 		if (!spire && obj->otyp == SCR_EARTH
 		       && ((helmet && is_hard(helmet)) ||
-				mtmp->mconf || amorphous(mtmp->data) ||
+				mtmp->mconf || amorphous_mon(mtmp) ||
 				mon_resistance(mtmp,PASSES_WALLS) ||
 				noncorporeal(mtmp->data) ||
 				unsolid(mtmp->data) || !rn2(10))
@@ -1863,7 +1863,7 @@ struct monst *mtmp;
 
 	    	    	    /* Find the monster here (might be same as mtmp) */
 	    	    	    mtmp2 = m_at(x, y);
-	    	    	    if (mtmp2 && !amorphous(mtmp2->data) &&
+	    	    	    if (mtmp2 && !amorphous_mon(mtmp2) &&
 	    	    	    		!mon_resistance(mtmp2,PASSES_WALLS) &&
 	    	    	    		!noncorporeal(mtmp2->data) &&
 	    	    	    		!unsolid(mtmp2->data)) {
@@ -1920,7 +1920,7 @@ struct monst *mtmp;
 		    if (!otmp2) goto xxx_noobj;  /* Shouldn't happen */
 		    otmp2->quan = confused ? rn1(5,2) : 1;
 		    otmp2->owt = weight(otmp2);
-		    if (!amorphous(youracedata) &&
+		    if (!amorphous_mon(&youmonst) &&
 			    !Passes_walls &&
 			    !noncorporeal(youracedata) &&
 			    !unsolid(youracedata)) {
@@ -2046,7 +2046,7 @@ struct monst *mtmp;
 		case 0: {
 		    struct obj *helmet = which_armor(mtmp, W_ARMH);
 
-		    if ((helmet && is_hard(helmet)) || amorphous(pm) || species_passes_walls(pm) || noncorporeal(pm) || unsolid(pm))
+		    if ((helmet && is_hard(helmet)) || amorphous_mon(mtmp) || species_passes_walls(pm) || noncorporeal(pm) || unsolid(pm))
 			return SCR_EARTH;
 		} /* fall through */
 		case 1: return WAN_MAGIC_MISSILE;

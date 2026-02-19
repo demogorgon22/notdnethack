@@ -3200,6 +3200,15 @@ uchar aatyp;
 			case AASIMAR_TYPE_ELADRIN:
 				bas_udr += u.ulevel >= 30 ? 3 : 1;
 			break;
+			case AASIMAR_TYPE_PRIMINAL:
+				if(slot == UPPER_TORSO_DR)
+					bas_udr += u.ulevel >= 24 ? 4 : 2;
+				else if(slot&(HEAD_DR|LOWER_TORSO_DR))
+					bas_udr += u.ulevel >= 24 ? 2 : 1;
+				nat_udr += u.ulevel/10;
+				if(check_mutation(AAT_PRIMINAL))
+					nat_udr += (u.ulevel+5)/10 + 1;
+			break;
 		}
 	}
 	/* Wearing the Shard from Morgoth's Crown adds +3 magical DR to arms and head (in addition to its +3 to all slots) */

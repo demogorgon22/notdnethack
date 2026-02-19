@@ -670,7 +670,7 @@ int mode;
 	    /* ALI - artifact doors from slash'em */
 	    if (artifact_door(x, y)) {
 		if (mode == DO_MOVE) {
-		    if (amorphous(youracedata))
+		    if (amorphous_mon(&youmonst))
 			You("try to ooze under the door, but the gap is too small.");
 		    else if (tunnels(youracedata) && !needspick(youracedata))
 			You("hurt your teeth on the re-enforced door.");
@@ -691,7 +691,7 @@ int mode;
 		if (mode == DO_MOVE && still_chewing(x,y)) return FALSE;
 	    } else {
 		if (mode == DO_MOVE) {
-		    if (amorphous(youracedata))
+		    if (amorphous_mon(&youmonst))
 			You("try to ooze under the door, but can't squeeze your possessions through.");
 			if (iflags.autoopen && !flags.run && !Confusion && !Stunned && !Fumbling) {
 				iflags.door_opened = !(doopen_indir(x, y) & (MOVE_CANCELLED|MOVE_INSTANT));
@@ -735,12 +735,13 @@ int mode;
 		You("cannot pass that way.");
 	    return FALSE;
 	}
-	if (bigmonst(youracedata) && !(u.sealsActive&SEAL_ANDREALPHUS) && !amorphous(youracedata)) {
+	if (bigmonst(youracedata) && !(u.sealsActive&SEAL_ANDREALPHUS) && !amorphous_mon(&youmonst)) {
 	    if (mode == DO_MOVE)
 		Your("body is too large to fit through.");
 	    return FALSE;
 	}
 	if (invent && (inv_weight() + weight_cap() > 600) && !(u.sealsActive&SEAL_ANDREALPHUS)
+		&& !amorphous_mon(&youmonst)
 		&& !(uarmc && (uarmc->otyp == OILSKIN_CLOAK || uarmc->greased))
 		&& !(!uarmc && uarm && uarm->greased)
 		&& !(!uarmc && !uarm && uarmu && uarmu->greased)

@@ -2286,6 +2286,35 @@ default_case:
 					set_submat(stuff, DIAMOND);
 					add_to_container(otmp, stuff);
 				}
+				else if(flags.aasimar_type == AASIMAR_TYPE_PRIMINAL){
+					stuff = mksobj(QUARTERSTAFF, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_HOLYW);
+					add_oprop(stuff, OPROP_UNHYW);
+					add_oprop(stuff, OPROP_CONCW);
+					add_oprop(stuff, OPROP_LIVEW);
+					add_oprop(stuff, OPROP_INSTW);
+					add_to_container(otmp, stuff);
+
+					int typ = find_wooden_ring();
+					if(typ == RIN_POLYMORPH)
+						typ = RIN_NOTHING;
+					stuff = mksobj(typ, MKOBJ_NOINIT);
+					set_material_gm(stuff, WOOD);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_HEAL);
+					add_oprop(stuff, OPROP_LIFE);
+					add_oprop(stuff, OPROP_ELECW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(ROBE, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_HOLY);
+					add_oprop(stuff, OPROP_UNHY);
+					add_oprop(stuff, OPROP_CONC);
+					set_material_gm(stuff, DRAGON_HIDE);
+					add_to_container(otmp, stuff);
+				}
 			break;
 		}
 		if(urace.malenum == PM_GNOME){

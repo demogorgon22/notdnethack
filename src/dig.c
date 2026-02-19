@@ -3011,13 +3011,13 @@ escape_tomb()
 	} else if(u.uburied) { /* still buried after 'port attempt */
 		boolean good;
 
-		if(amorphous(youracedata) || Passes_walls ||
+		if(amorphous_mon(&youmonst) || Passes_walls ||
 		   noncorporeal(youracedata) || unsolid(youracedata) ||
 		   (tunnels(youracedata) && !needspick(youracedata))) {
 
 		    You("%s up through the %s.",
 			(tunnels(youracedata) && !needspick(youracedata)) ?
-			 "try to tunnel" : (amorphous(youracedata)) ?
+			 "try to tunnel" : (amorphous_mon(&youmonst)) ?
 			 "ooze" : "phase", surface(u.ux, u.uy));
 
 		    if(tunnels(youracedata) && !needspick(youracedata))

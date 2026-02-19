@@ -7913,7 +7913,7 @@ int tary;
 		))
 		return TRUE;
 	/* various conditions where webs won't be effective */
-	if ((amorphous(mdef->data) || is_whirly(mdef->data) || flaming(mdef->data) || unsolid(mdef->data) ||
+	if ((amorphous_mon(mdef) || is_whirly(mdef->data) || flaming(mdef->data) || unsolid(mdef->data) ||
 		(youdef && uwep && uwep->oartifact == ART_STING) || (youdef ? (ACURR(A_STR) >= 18) : strongmonst(mdef->data))) && (
 		spellnum == MAKE_WEB
 		))

@@ -2667,7 +2667,7 @@ struct obj	*sobj;
 
 	    	    	    /* Find the monster here (won't be player) */
 	    	    	    mtmp = m_at(x, y);
-	    	    	    if (mtmp && !amorphous(mtmp->data) &&
+	    	    	    if (mtmp && !amorphous_mon(mtmp) &&
 	    	    	    		!mon_resistance(mtmp,PASSES_WALLS) &&
 	    	    	    		!noncorporeal(mtmp->data) &&
 	    	    	    		!unsolid(mtmp->data)) {
@@ -2718,7 +2718,7 @@ struct obj	*sobj;
 		    if (!otmp2) break;
 		    otmp2->quan = confused ? rn1(5,2) : 1;
 		    otmp2->owt = weight(otmp2);
-		    if (!amorphous(youracedata) &&
+		    if (!amorphous_mon(&youmonst) &&
 				!Passes_walls &&
 				!noncorporeal(youracedata) &&
 				!unsolid(youracedata)) {
@@ -3737,7 +3737,7 @@ register struct obj	*sobj;
 		}
 		return;
 	}
-	if (amorphous(youracedata) || is_whirly(youracedata) || unsolid(youracedata)) {
+	if (amorphous_mon(&youmonst) || is_whirly(youracedata) || unsolid(youracedata)) {
 		pline("A ball and chain appears, then falls away.");
 		dropy(mkobj(BALL_CLASS, TRUE));
 		return;

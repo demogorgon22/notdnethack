@@ -4909,7 +4909,7 @@ struct zapdata * zapdata;
 
 	case AD_VORP:{
 		struct permonst * pd = (youdef ? youracedata : mdef->data);
-		if ((rn2(20) && pd->mtyp != PM_JABBERWOCK) || (noncorporeal(pd) || amorphous(pd))){
+		if ((rn2(20) && pd->mtyp != PM_JABBERWOCK) || (noncorporeal(pd) || amorphous_mon(mdef))){
 			domsg();
 		} else {
 			if (bigmonst(pd)){
