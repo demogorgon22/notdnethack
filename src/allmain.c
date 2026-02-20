@@ -4384,7 +4384,7 @@ boolean new_game;	/* false => restoring an old game */
 			You("do not heal naturally. Use '.' to attempt repairs.");
 		}
 		if(Race_if(PM_INCANTIFIER)){
-			pline("Incantifiers eat magic, not food, and do not heal naturally.");
+			pline("Incantifiers eat magic, not food.");
 		}
 	}
 }
