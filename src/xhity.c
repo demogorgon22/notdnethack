@@ -15995,14 +15995,20 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			(otmp->known && (check_oprop(otmp, OPROP_HOLYW) || check_oprop(otmp, OPROP_LESSER_HOLYW) || check_oprop(otmp, OPROP_HOLY))) && /* message requires a particularly holy object */
 			otmp->blessed) {
 			holyobj |= slot;
+			if(otmp->blessed && youdef)
+				otmp->bknown = TRUE;
 		}
 		if (hates_unholy_mon(mdef) &&
 			is_unholy(otmp)) {
 			unholyobj |= slot;
+			if(otmp->cursed && youdef)
+				otmp->bknown = TRUE;
 		}
 		if (hates_unblessed_mon(mdef) &&
 			!(is_unholy(otmp) || otmp->blessed)) {
 			unblessedobj |= slot;
+			if(!otmp->blessed && !otmp->cursed && youdef)
+				otmp->bknown = TRUE;
 		}
 		/* unusual case: wooden objects carved with the Veioistafur stave deal bonus damage to sea creatures */
 		if (otmp->obj_material == WOOD && otmp->otyp != MOON_AXE &&
@@ -16102,14 +16108,20 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 						(otmp->known && (check_oprop(otmp, OPROP_HOLYW) || check_oprop(otmp, OPROP_LESSER_HOLYW) || check_oprop(otmp, OPROP_HOLY))) && /* message requires a particularly holy object */
 						otmp->blessed) {
 						holyobj |= rslot;
+						if(otmp->blessed && youdef)
+							otmp->bknown = TRUE;
 					}
 					if (hates_unholy_mon(mdef) &&
 						is_unholy(otmp)) {
 						unholyobj |= rslot;
+						if(otmp->cursed && youdef)
+							otmp->bknown = TRUE;
 					}
 					if (hates_unblessed_mon(mdef) &&
 						!(is_unholy(otmp) || otmp->blessed)) {
 						unblessedobj |= rslot;
+						if(!otmp->blessed && !otmp->cursed && youdef)
+							otmp->bknown = TRUE;
 					}
 					/* calculate sear damage */
 					seardmg += hatesobjdmg(mdef, otmp, magr);
