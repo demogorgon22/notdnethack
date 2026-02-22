@@ -4225,7 +4225,7 @@ newgame()
 			)){
 				otmp = oname(otmp, artilist[inher_arti].name);
 				fully_identify_obj(otmp);
-				expert_weapon_skill(weapon_type(otmp));
+				expert_weapon_skill(is_shield(otmp) ? P_SHIELD : weapon_type(otmp));
 				otmp = hold_another_object(otmp, "Oops!  %s to the floor!",
 						   The(aobjnam(otmp, "slip")), (const char *)0);
 			} else {
@@ -4398,7 +4398,7 @@ boolean new_game;	/* false => restoring an old game */
 			You("do not heal naturally. Use '.' to attempt repairs.");
 		}
 		if(Race_if(PM_INCANTIFIER)){
-			pline("Incantifiers eat magic, not food, and do not heal naturally.");
+			pline("Incantifiers eat magic, not food.");
 		}
 	}
 }
