@@ -5002,7 +5002,12 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 	if(check_oprop(obj, OPROP_SECNW)){
 		traits |= ETRAIT_SECOND;
 	}
-	
+	if(check_oprop(obj, OPROP_RLYHW) && (mon->mtyp == PM_LADY_CONSTANCE || is_mind_flayer(mon->data) || (youagr && u.sealsActive&SEAL_OSE))){
+		if(Insight >= 12)
+			traits |= ETRAIT_GRAZE;
+		if(Insight >= 24)
+			traits |= ETRAIT_CLEAVE;
+	}
 	if(obj->o_e_trait&ETRAIT_FOCUS_FIRE){
 		if(otyp == SILVERKNIGHT_SWORD){
 			traits |= ETRAIT_PENETRATE_ARMOR|ETRAIT_CREATE_OPENING;
