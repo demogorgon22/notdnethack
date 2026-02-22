@@ -5317,7 +5317,10 @@ xmeleehity(struct monst *magr, struct monst *mdef, struct attack *attk, struct o
 		if (attk->aatyp == AT_HITS && !miss) {
 			hit = TRUE;
 		}
-		if ((accuracy > dieroll || (dieroll == 1 && accuracy > -10)) && !miss) {
+		else if(!Upolyd && onlykicks) {
+			hit = TRUE;
+		}
+		else if ((accuracy > dieroll || (dieroll == 1 && accuracy > -10)) && !miss) {
 			hit = TRUE;
 		}
 		break;
