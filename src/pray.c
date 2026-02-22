@@ -135,6 +135,8 @@ static int p_type;
 enum {
 	TROUBLE_CURSED_BLINDFOLD = 1,
 	TROUBLE_EXTREME_SANITY,
+	TROUBLE_EXTREME_HPMOD,
+	TROUBLE_EXTREME_ENMOD,
 	TROUBLE_UNUSEABLE_HANDS,
 	TROUBLE_CURSED_LEVITATION,
 	TROUBLE_STUCK_IN_WALL,
@@ -262,6 +264,8 @@ in_trouble()
 	}
 	if(Role_if(PM_BARD) && welded(uwep))
 		return TROUBLE_UNUSEABLE_HANDS;
+	if(u.uhpbonus < 0 && u.uhpmax < u.uhprolled/2) return(TROUBLE_EXTREME_HPMOD);
+	if(u.uenbonus < 0 && u.uenmax < u.uenrolled/2) return(TROUBLE_EXTREME_ENMOD);
 	if(u.usanity < 10) return(TROUBLE_EXTREME_SANITY);
 	if(Blindfolded && ublindf->cursed) return(TROUBLE_CURSED_BLINDFOLD);
 
@@ -547,11 +551,13 @@ register int trouble;
 		    u.umummyrot = 0;
 		    break;
 	    case TROUBLE_HPMOD:
+	    case TROUBLE_EXTREME_HPMOD:
 			You_feel("restored to health.");
 		    u.uhpmod = max(u.uhpmod, 0);
 		    calc_total_maxhp();
 		    break;
 	    case TROUBLE_ENERGYMOD:
+	    case TROUBLE_EXTREME_ENMOD:
 			You_feel("charged up.");
 		    u.uenbonus = max(u.uenbonus, 0);
 		    calc_total_maxen();
