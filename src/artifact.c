@@ -9197,7 +9197,7 @@ struct obj *obj;
 			pline("Green mist flows down from the %s and gathers around the %s hand.", ceiling(u.ux, u.uy), adj);
 			break;
 		case IPROP_BRANCHPORT:
-			pline("Green mist gathers around the %s, and %s hand.", adj, Blind ? "for some reason your thoughts turn to the moon" : "you catch a glimpse of the distant moon");
+			pline("Green mist gathers around the %s hand, and %s.", adj, Blind ? "for some reason your thoughts turn to the moon" : "you catch a glimpse of the distant moon");
 			break;
 		case IPROP_REFLECT:
 			pline("The flabby flesh becomes as reflective as a still pond.");
