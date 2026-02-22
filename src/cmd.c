@@ -1629,6 +1629,8 @@ hasfightingforms(){
 		|| uring_art(ART_STAR_EMPEROR_S_RING)
 		|| check_rot(ROT_CENT)
 		|| check_rot(ROT_STING)
+		|| (!Upolyd && (TIEFLING_AUTOATTACKS || storm_aasimar(flags.aasimar_subtype)))
+		//Tiefling and aasimar
 	)
 		formmask |= AUTO_ATTKS;
 
