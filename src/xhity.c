@@ -14381,6 +14381,14 @@ int vis;
 				//else no message
 				/* add to study */
 				*study = dmg;
+				if(is_auton(magr->data) && youdef){
+					for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+						if(is_auton(mtmp->data) && !mtmp->mpeaceful){
+							mtmp->mux = x(mdef);
+							mtmp->muy = y(mdef);
+						}
+					}
+				}
 			}
 		}
 		else if (vis&VIS_MDEF) {	/* how can you study something if you can't see it? */
