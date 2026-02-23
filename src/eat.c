@@ -4101,10 +4101,10 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	}
 	if (moves % 2) {	/* odd turns */
 	    /* Regeneration uses up food, unless due to an artifact */
-	    if ( (HRegeneration && uhp() < uhpmax()) || ((ERegeneration & (~W_ART)) &&
-				(ERegeneration != W_WEP || !uwep->oartifact) &&
-				(ERegeneration != W_ARMS || !uarms->oartifact) 
-				))
+		long effmask = ERegeneration & (~W_ART);
+		if(uwep && uwep->oartifact) effmask &= ~W_WEP;
+		if(uarms && uarms->oartifact) effmask &= ~W_ARMS;
+	    if ((HRegeneration && uhp() < uhpmax()) || effmask)
 			(Race_if(PM_INCANTIFIER) ? u.uen-- : u.uhunger--);
 	    if (near_capacity() > SLT_ENCUMBER) (Race_if(PM_INCANTIFIER) ? u.uen-- : u.uhunger--);
 	} else {		/* even turns */
