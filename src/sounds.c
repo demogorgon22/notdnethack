@@ -3289,7 +3289,7 @@ const char *prompt;
 			'g', 0, ATR_NONE, tat_to_name(TAT_HOURGLASS),
 			MENU_UNSELECTED);
 	}
-	if(!(u.utats & TAT_FALCHION) && (uwep && is_slashing(uwep))){
+	if(!(u.utats & TAT_FALCHION) && (uwep && (attack_mask(uwep, 0, 0, &youmonst) & SLASH))){
 		any.a_int = TAT_FALCHION;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
 			'f', 0, ATR_NONE, tat_to_name(TAT_FALCHION),
