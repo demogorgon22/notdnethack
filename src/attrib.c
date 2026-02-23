@@ -1846,7 +1846,7 @@ mad_turn(long long int madness)
 	if(!(u.umadness&madness))
 		return 0;
 	
-	sanlevel = max_ints(1,(int)(((float)hashed/ULONG_MAX) * ((float)hash(hashed)/ULONG_MAX) * 100));
+	sanlevel = max_ints(1,(int)(((float)hashed/(float)ULONG_MAX) * ((float)hash(hashed)/(float)ULONG_MAX) * 100));
 	
 	//Note: Clear Thoughts plus Walking Nightmare yields partial resistance rather than complete.
 	if(madness != MAD_GOAT_RIDDEN && madness != MAD_CANNIBALISM)
@@ -1894,7 +1894,7 @@ mad_monster_turn(struct monst *mon, long long int madness)
 	if(!(u.umadness&madness))
 		return 0;
 	
-	sanlevel = max_ints(1,(int)(((float)hashed/ULONG_MAX) * ((float)hash(hashed)/ULONG_MAX) * 100));
+	sanlevel = max_ints(1,(int)(((float)hashed/(float)ULONG_MAX) * ((float)hash(hashed)/(float)ULONG_MAX) * 100));
 	
 	//Note: Clear Thoughts plus Walking Nightmare yields partial resistance rather than complete.
 	if(madness != MAD_GOAT_RIDDEN)
