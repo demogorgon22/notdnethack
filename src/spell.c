@@ -640,7 +640,7 @@ int booktype;
 		if(u.uwizard
 			|| parasite_count() >= 6
 			|| (u.sealsActive&SEAL_PAIMON)
-			|| (Role_if(PM_HEALER) && spell_skilltype(skill) == P_HEALING_SPELL)
+			|| (Role_if(PM_HEALER) && spell_skilltype(related) == P_HEALING_SPELL)
 		){
 			return related;
 		}
