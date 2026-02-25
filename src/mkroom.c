@@ -7432,7 +7432,7 @@ struct mkroom *sroom;
 				PM_DROW_MATRON,
 				PM_EMBRACED_DROWESS
 			};
-			if(In_quest(&u.uz) && Role_if(PM_HEALER) && Race_if(PM_DROW)){
+			if(In_quest(&u.uz) && urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
 				ctype = !rn2(3) ? PM_DROW_MATRON : rn2(2) ? PM_Y_CULTIST_PATRON : PM_EMBRACED_DROWESS;
 			}
 			else {

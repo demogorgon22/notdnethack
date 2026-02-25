@@ -1767,7 +1767,7 @@ misc_levelport:
 				pline("Your help is urgently needed at Archer Asylum!  Look for a ...ic transporter.");
 				pline("You couldn't quite make out that last message.");
 			}
-		} else if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+		} else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
 			if(u.uevent.qcalled){
 				You("again sense Sister T'eirastra pleading for help.");
 			}

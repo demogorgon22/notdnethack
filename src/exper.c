@@ -208,7 +208,7 @@ more_experienced(exp, rexp)
 	}
 	if(flags.descendant && flags.beginner){
 		if(Role_if(PM_CONVICT)
-		|| (Role_if(PM_HEALER) && Race_if(PM_DROW))
+		|| (urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
 		|| Role_if(PM_MADMAN)
 		){
 			exp = (exp+1)/2;

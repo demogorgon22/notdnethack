@@ -1118,12 +1118,12 @@ makelevel()
 				// pline("%s",fillname);
 				makemaz(fillname);
 			}
-			else if(Role_if(PM_HEALER) && Race_if(PM_DROW) && qstart_level.dnum == u.uz.dnum && qstart_level.dlevel == (u.uz.dlevel-1)){
+			else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && qstart_level.dnum == u.uz.dnum && qstart_level.dlevel == (u.uz.dlevel-1)){
 				Sprintf(fillname, "%s-secn", urole.filecode);
 				// pline("%s",fillname);
 				makemaz(fillname);
 			}
-			else if(Role_if(PM_HEALER) && Race_if(PM_DROW) && qstart_level.dnum == u.uz.dnum && qlocate_level.dlevel == (u.uz.dlevel-1)){
+			else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH && qstart_level.dnum == u.uz.dnum && qlocate_level.dlevel == (u.uz.dlevel-1)){
 				Sprintf(fillname, "%s-flor", urole.filecode);
 				// pline("%s",fillname);
 				makemaz(fillname);

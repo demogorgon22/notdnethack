@@ -251,7 +251,7 @@ hack_artifacts()
 		}
 	}
 	
-	if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+	if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags |= ARTG_GIFT;
 		artilist[ART_ROBE_OF_CLOSED_EYES].gflags &= ~ARTG_NOGEN;
 		artilist[ART_RED_CORDS_OF_ILMATER].role = PM_HEALER;

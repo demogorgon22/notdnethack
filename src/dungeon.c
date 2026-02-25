@@ -1926,7 +1926,7 @@ level_difficulty()
 	
 	if(flags.descendant && !(
 		(Role_if(PM_CONVICT)
-		|| (Role_if(PM_HEALER) && Race_if(PM_DROW))
+		|| (urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
 		|| Role_if(PM_MADMAN))
 		&& u.ulevel < 14)
 	)
