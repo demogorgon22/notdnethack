@@ -1479,7 +1479,9 @@ dogaze(struct monst *mtmp)
 					}
 				}
 			}
-			if(attack_gazes && check_mutation(TT_MESMERIZING_GAZE) && !mindless_mon(mtmp)){
+			if(attack_gazes && check_mutation(TT_MESMERIZING_GAZE) && !mindless_mon(mtmp) && !resist(mtmp, 0, 0, FALSE)
+				&& m_canseeu(mtmp)
+			){
 				int dx = u.ux - mtmp->mx;
 				int dy = u.uy - mtmp->my;
 				if(canseemon(mtmp))
