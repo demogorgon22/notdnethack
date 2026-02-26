@@ -4221,7 +4221,7 @@ newgame()
 			/* please do not have any artifacts where the otyp in artilist is not the same as the practical otyp after onaming */
 			discover_artifact(inher_arti);
 			if (!(Role_if(PM_CONVICT)
-				|| (Role_if(PM_HEALER) && Race_if(PM_DROW))
+				|| (urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
 			)){
 				otmp = oname(otmp, artilist[inher_arti].name);
 				fully_identify_obj(otmp);
