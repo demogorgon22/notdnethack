@@ -18277,6 +18277,10 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	if(youagr && sneak_attack && active_glyph(CLAWMARK)){
 		specdmg += 3*(subtotl + seardmg + elemdmg + poisdmg + specdmg)/10;
 	}
+	/* Stormbringer is effective against large targets */
+	if(otmp && otmp->oartifact == ART_STORMBRINGER && (!youdef || Upolyd) && hd_size(mdef->data) > 8){
+		specdmg += (subtotl + seardmg + elemdmg + poisdmg + specdmg) * ((float)hd_size(mdef->data)) / 8;
+	}
 
 	/* Final sum of damage */
 	totldmg = subtotl + seardmg + elemdmg + poisdmg + specdmg;

@@ -1568,11 +1568,6 @@ struct monst *magr;
 		/* don't re-add the weapon dice */
 		add_dice = FALSE;
 		break;
-	case ART_STORMBRINGER:
-		if(mon && (mon != &youmonst || Upolyd) && hd_size(mon->data) > 8){
-			tmp *= ((float)hd_size(mon->data)) / 8;
-		}
-		break;
 	}
 
 	/* add the main weapon dice */
