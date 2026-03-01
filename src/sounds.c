@@ -4391,7 +4391,7 @@ int tx,ty;
 			}//end search
 			
 			if(!altarfound){
-				pline("A golden flame roars suddenly to life within the seal, throwning the world into a stark relief of hard-edged shadows and brilliant light.");
+				pline("A golden flame roars suddenly to life within the seal, throwing the world into a stark relief of hard-edged shadows and brilliant light.");
 				if(u.sealCounts < numSlots){
 					if(Role_if(PM_ANACHRONOUNBINDER)){
 						pline("Amon, the shadow before the altar, stands before you.");

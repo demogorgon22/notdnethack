@@ -1252,7 +1252,7 @@ domove()
 
 	/* attack monster */
 	if(flags.forcefight && x==u.ux && y==u.uy){
-		if(yn("Really attack yourself?")){
+		if(yn("Really attack yourself?") == 'y'){
 			attack2(&youmonst);
 			flags.move |= MOVE_ATTACKED;
 		}

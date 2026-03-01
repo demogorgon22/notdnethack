@@ -1145,18 +1145,6 @@ struct obj {
 			objects[otmp->otyp].oc_dtyp != WHACK)\
 			|| otmp->otyp == BEARTRAP)
 #define uslinging()	(uwep && objects[uwep->otyp].oc_skill == P_SLING)
-#define is_bludgeon(otmp)	(otmp->oclass == SPBOOK_CLASS || \
-			otmp->oclass == WAND_CLASS || \
-			(objects[otmp->otyp].oc_dtyp & WHACK)) //Whack == 1
-#define is_stabbing(otmp)	(otmp->oclass != SPBOOK_CLASS && \
-			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dtyp & PIERCE)) //Pierce == 2
-#define is_slashing(otmp)	(otmp->oclass != SPBOOK_CLASS && \
-			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dtyp & SLASH)) //Slash == 4
-#define is_blasting(otmp)	(otmp->oclass != SPBOOK_CLASS && \
-			otmp->oclass != WAND_CLASS && \
-			(objects[otmp->otyp].oc_dtyp & EXPLOSION))
 //#ifdef FIREARMS
 #define is_blaster(otmp) \
 			((otmp)->oclass == WEAPON_CLASS && \
@@ -1181,7 +1169,7 @@ struct obj {
 			 || (otmp)->otyp == SICKLE\
 			 ))\
 			 || (otmp)->otyp == WIND_AND_FIRE_WHEELS\
-			 || is_kensei_weapon(otmp)\
+			 || (Role_if(PM_KENSEI) && is_kensei_weapon(otmp))\
 			 )
 
 #define is_kensei_weapon(otmp) (u.role_variant == ART_SKY_REFLECTED ? (otmp)->obj_material == MERCURIAL :\
@@ -1668,8 +1656,10 @@ struct obj {
 /* helpers, simple enough to be macros */
 #define is_plural(o)	((o)->quan > 1)
 
+#define ASALVE_MAX_SPE	3
+
 #define salve_target(otmp)	(\
-			((otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && otmp->spe < 0)\
+			((otmp->oclass == ARMOR_CLASS || otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) && otmp->spe < ASALVE_MAX_SPE)\
 			|| otmp->oeroded > 0\
 			|| otmp->oeroded2 > 0\
 			|| otmp->oeroded3 > 0\

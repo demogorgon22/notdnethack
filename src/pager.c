@@ -1418,7 +1418,7 @@ do_look(quick)
 	short otyp = STRANGE_OBJECT;	/* to pass to artifact_name */
 	int oartifact;					/* to pass to artifact_name */
 	int i, ans = 0;
-	coord   cc;			/* screen pos of unknown glyph */
+	coord   cc = {0};			/* screen pos of unknown glyph */
 	boolean force_defsyms = FALSE;	/* force using glyphs from defsyms[].sym */
 	boolean save_verbose = flags.verbose;
 

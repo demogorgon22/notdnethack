@@ -992,6 +992,7 @@
 #define melee_polearms(ptr)	((ptr)->mtyp == PM_VROCK ||\
 							 (ptr)->mtyp == PM_OSSIFRUGE ||\
 							 (ptr)->mtyp == PM_SILVERMAN ||\
+							 ((ptr)->mflagsb&MB_CENTAUR) ||\
 							 (ptr)->mtyp == PM_MEPHISTOPHELES ||\
 							 (ptr)->mtyp == PM_BAPHOMET \
 							)

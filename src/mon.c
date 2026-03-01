@@ -7030,6 +7030,7 @@ cleanup:
 	if (is_unicorn(mdat) &&
 		!always_hostile(mdat) &&
 		sgn(u.ualign.type) == sgn(mdat->maligntyp) && 
+		u.ualign.type != A_NONE &&
 		u.ualign.type != A_VOID
 	) {
 		change_luck(-5);

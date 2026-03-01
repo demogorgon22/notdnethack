@@ -759,6 +759,27 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		*gloves = GAUNTLETS;
 		*boots = ARMORED_BOOTS;
 	break;
+	case PM_KENSEI:
+		*helm = WAR_HAT;
+		*gloves = GLOVES;
+		*armor = BANDED_MAIL;
+		*boots = HIGH_BOOTS;
+		*cloak = ROBE;
+		switch(rnd(4)){
+			case 1:
+				*weapon = rn2(2) ? KATANA : LONG_SWORD;
+			break;
+			case 2:
+				*weapon = rn2(2) ? NAGAMAKI : TWO_HANDED_SWORD;
+			break;
+			case 3:
+				*weapon = SQUARE_CLUB;
+			break;
+			case 4:
+				*weapon = rn2(2) ? NINJA_TO : BROADSWORD;
+			break;
+		}
+	break;
 	case PM_MONK:
 		*helm = SEDGE_HAT;
 		*gloves = GLOVES;
@@ -998,6 +1019,7 @@ long flags;
 {
 	boolean special = (flags&MM_GOODEQUIP) == MM_GOODEQUIP;
 	boolean endgame = (flags&MM_ENDGEQUIP) == MM_ENDGEQUIP;
+	boolean noequip = (flags&NO_MINVENT) == NO_MINVENT;
 	struct monst *mtmp;
 	char nam[PL_NSIZ] = {0};
 
@@ -1025,7 +1047,8 @@ long flags;
 			|| ((mtmp->mtyp == PM_NOBLEMAN || mtmp->mtyp == PM_NOBLEWOMAN) && mtmp->mx > 57));
 		//Default to nothing
 		weapon = secweapon = rweapon = rwammo = armor = shirt = cloak = helm = boots = gloves = shield = tool = STRANGE_OBJECT;
-		if(uh_patient){
+		if(noequip); //Nothing
+		else if(uh_patient){
 			armor = STRAITJACKET;
 		}
 		else init_mplayer_gear(ptr, mtmp->female, special, &weapon, &secweapon, &rweapon, &rwammo, &armor, &shirt, &cloak, &helm, &boots, &gloves, &shield, &tool);
@@ -1036,7 +1059,7 @@ long flags;
 			give_mintrinsic(mtmp, POISON_RES);
 		}
 		
-		if(endgame){
+		if(endgame && !noequip){
 			static int sweptyp[] = {
 				CRYSKNIFE, MOON_AXE, BATTLE_AXE, HIGH_ELVEN_WARSWORD,
 				SABER, CRYSTAL_SWORD, TWO_HANDED_SWORD,
@@ -1062,7 +1085,8 @@ long flags;
 	        get_mplname(mtmp, nam, endgame);
 	        mtmp = christen_monst(mtmp, nam);
 			/* that's why they are "stuck" in the endgame :-) */
-			(void)mongets(mtmp, FAKE_AMULET_OF_YENDOR, NO_MKOBJ_FLAGS);
+			if(!noequip)
+				(void)mongets(mtmp, FAKE_AMULET_OF_YENDOR, NO_MKOBJ_FLAGS);
 	    }
 	    mtmp->mpeaceful = 0;
 	    set_malign(mtmp); /* peaceful may have changed again */
@@ -1138,7 +1162,7 @@ long flags;
 			(void) mpickobj(mtmp, otmp);
 		}
 
-	    if(special) {
+	    if(special && !noequip){
 			if (!rn2(10))
 				(void) mongets(mtmp, rn2(3) ? LUCKSTONE : LOADSTONE, NO_MKOBJ_FLAGS);
 			mk_mplayer_armor(mtmp, armor);
@@ -1181,7 +1205,7 @@ long flags;
 			init_mon_wield_item(mtmp);
 			m_level_up_intrinsic(mtmp);
 		}
-		if(!uh_patient && (in_mklev || !rn2(20) || special)){
+		if(!uh_patient && !noequip && (in_mklev || !rn2(20) || special)){
 #define In_plat_tower (dungeon_topology.alt_tower && (Is_arcadiatower2(&u.uz) || Is_arcadiatower3(&u.uz) || Is_arcadiadonjon(&u.uz)))
 			quan = In_plat_tower ? 1 : rnd(3);
 			while(quan--)
@@ -1195,8 +1219,8 @@ long flags;
 #undef In_plat_tower
 		}
 
-		if((special && (mtmp->mtyp == PM_MADMAN || mtmp->mtyp == PM_MADWOMAN))
-			|| (Role_if(PM_MADMAN) && In_quest(&u.uz) && (mtmp->mtyp == PM_NOBLEMAN || mtmp->mtyp == PM_NOBLEWOMAN || mtmp->mtyp == PM_HEALER))
+		if((special && !noequip && (mtmp->mtyp == PM_MADMAN || mtmp->mtyp == PM_MADWOMAN))
+			|| (Role_if(PM_MADMAN) && !noequip && In_quest(&u.uz) && (mtmp->mtyp == PM_NOBLEMAN || mtmp->mtyp == PM_NOBLEWOMAN || mtmp->mtyp == PM_HEALER))
 		){
 			if(mtmp->mtyp == PM_HEALER && in_mklev)
 				mongets(mtmp, TREPHINATION_KIT, NO_MKOBJ_FLAGS);
@@ -1209,7 +1233,7 @@ long flags;
 			}
 		}
 
-		if(Role_if(PM_MADMAN) && In_quest(&u.uz) && mtmp->mtyp == PM_ITINERANT_PRIESTESS){
+		if(Role_if(PM_MADMAN) && !noequip && In_quest(&u.uz) && mtmp->mtyp == PM_ITINERANT_PRIESTESS){
 			mtmp->m_lev = 10;
 			mtmp->mhpmax = d(10, 4) + 40;
 			mtmp->mhp = mtmp->mhpmax;
@@ -1231,7 +1255,8 @@ long flags;
 			}
 		}
 		if((mtmp->mtyp == PM_WIZARD || mtmp->mtyp == PM_ROGUE) && In_quest(&u.uz)
-			&& u.uz.dlevel == nemesis_level.dlevel && urole.neminum == PM_DARK_ONE){
+			&& u.uz.dlevel == nemesis_level.dlevel && urole.neminum == PM_DARK_ONE
+		){
 			otmp = mongets(mtmp, SHACKLES, NO_MKOBJ_FLAGS);
 			if(otmp){
 				mtmp->entangled_otyp = SHACKLES;

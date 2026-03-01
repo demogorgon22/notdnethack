@@ -5192,7 +5192,8 @@ struct zapdata * zapdata;
 		}
 
 		return xdamagey(magr, mdef, &attk, dmg);
-	case AD_GMLD:{
+	case AD_GMLD:
+	if(!acidic(youdef ? youracedata : mdef->data) && !isolation_suit){
 		domsg();
 		boolean breathless = youdef ? Breathless : breathless_mon(mdef);
 		if(youdef){
