@@ -1302,7 +1302,7 @@ static const struct def_skill Skill_SilKnight[] = {
     { P_CLUB, P_BASIC },		{ P_MACE, P_SKILLED },
     { P_MORNING_STAR, P_SKILLED },	{ P_FLAIL, P_BASIC },
     { P_HAMMER, P_BASIC },		{ P_POLEARMS, P_EXPERT },
-    { P_SPEAR, P_SKILLED },    { P_TRIDENT, P_BASIC },
+    { P_SPEAR, P_EXPERT },    { P_TRIDENT, P_BASIC },
 	{ P_HARVEST, P_EXPERT },
     { P_LANCE, P_BASIC },		{ P_BOW, P_BASIC },	
     { P_CROSSBOW, P_SKILLED },	{ P_SHIELD, P_EXPERT },
@@ -2439,6 +2439,9 @@ u_init()
 		else if(Race_if(PM_SILVERKNIGHT)){
 			SilverKnight[0].trotyp = !rn2(3) ? SILVERKNIGHT_SCYTHE : rn2(2) ? SILVERKNIGHT_SPEAR : SILVERKNIGHT_SWORD;
 			ini_inv(SilverKnight);
+			u.silverknight_mire = TRUE;
+			add_rot(ROT_KIN);
+			set_silvergrubs(TRUE);
 		}
 		else if(Race_if(PM_HALF_DRAGON)){
 			Knight[K_APPLES].trquan = rn1(9, 5);

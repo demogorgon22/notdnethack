@@ -450,7 +450,7 @@ choke(food)	/* To a full belly all food is bad. (It.) */
 
 	exercise(A_CON, FALSE);
 
-	if ((Breathless || (!Strangled && !rn2(20))) && !Race_if(PM_INCANTIFIER) && !magivorous(youracedata)) {
+	if ((Breathless || separate_respiration(youracedata) || (!Strangled && !rn2(20))) && !Race_if(PM_INCANTIFIER) && !magivorous(youracedata)) {
 		/* choking by eating AoS doesn't involve stuffing yourself */
 		if (food && food->otyp == AMULET_OF_STRANGULATION) {
 			You("choke, but recover your composure.");

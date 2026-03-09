@@ -697,8 +697,9 @@ E int FDECL(saber_destroys_marm, (struct monst *, struct obj *));
 E int FDECL(teleport_arm, (struct obj *, struct monst *));
 E int FDECL(teleport_steal_arm, (struct monst *, struct obj *));
 E int FDECL(tent_destroy_arm, (struct obj *));
-E void FDECL(adj_abon, (struct obj *,SCHAR_P));
+E void FDECL(adj_abon, (struct obj *,schar));
 E int FDECL(properties_dr, (struct obj *,int,int,int,int));
+E int FDECL(properties_ac, (struct obj *,int,int,int,int));
 E void FDECL(dosymbiotic, (struct monst *, struct obj *));
 E void FDECL(doscorpion, (struct monst *, struct obj *));
 E void FDECL(doliving, (struct monst *, struct obj *));
@@ -715,6 +716,7 @@ E void FDECL(doliving_armor_salve, (struct monst *, struct obj *));
 E void FDECL(dotsmi_theft, (struct monst *, struct monst *, struct obj *, struct obj *));
 E int FDECL(calc_agrrot, (struct monst *));
 E int FDECL(calc_agrimpure, (struct monst *));
+E int FDECL(calc_agrmoral, (struct monst *));
 
 /* ### dog.c ### */
 
@@ -1507,6 +1509,7 @@ E void FDECL(mkmonmoney, (struct monst *, long));
 E int FDECL(bagotricks, (struct obj *, boolean, int *));
 E long NDECL(init_doll_sales);
 E boolean FDECL(propagate, (int, BOOLEAN_P,BOOLEAN_P));
+E void FDECL(makemon_set_hp, (struct monst *, struct permonst *));
 E boolean FDECL(mon_can_see_you, (struct monst *));
 E boolean FDECL(mon_can_see_mon, (struct monst *, struct monst *));
 E int FDECL(permonst_max_lev,(struct permonst *));
@@ -3676,6 +3679,7 @@ E int FDECL(hit_with_cblood, (struct monst *,struct obj *, int, int, int, struct
 E int FDECL(hit_with_rreject, (struct monst *,struct obj *, int, int, int, struct attack *));
 E int FDECL(hit_with_dance, (struct monst *,struct obj *, int, int, int, struct attack *));
 E int FDECL(hit_with_streaming, (struct monst *,struct obj *, int, int, int, int, int, struct attack *));
+E int FDECL(hit_with_holyspear, (struct monst *,struct obj *, int, int, int, struct attack *));
 E int FDECL(hit_with_tonguesnake, (struct monst *, int, int, int));
 E boolean FDECL(is_serration_vulnerable, (struct monst *));
 E boolean FDECL(obj_is_material, (struct obj *, int));

@@ -1427,7 +1427,7 @@ TOOL(("nightmare's bullet mold", "blade-tipped mold"),/*Needs tile*/ /*Needs enc
 								0, MZ_SMALL, 0, 1, 0,   0, 15, 300, IRON, HI_METAL),
 TOOL(("portable electrode", "ball-topped spike"),/*Needs tile*/ /*Needs encyc entry*/
 								0, MZ_SMALL, 0, 1, 0,   0, 15, 300, IRON, HI_METAL),
-TOOL(("upgrade kit"),  1, MZ_MEDIUM, 0, 0, 0,  40,100,  30, COPPER, HI_COPPER),/*Needs encyc entry*//*Needs tile*/
+TOOL(("upgrade kit"),  1, MZ_MEDIUM, 0, 0, 0,  40, 20,  30, COPPER, HI_COPPER),/*Needs encyc entry*//*Needs tile*/
 TOOL(("power pack", "little white cube", "little cube"), /*Needs encyc entry*//*Needs tile*/
 								0,   MZ_TINY, 1, 1, 0,   0,  1,  300, PLASTIC, CLR_WHITE),
 TOOL(("trephination kit"),  /*Needs encyc entry*/

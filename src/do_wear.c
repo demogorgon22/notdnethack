@@ -94,6 +94,9 @@ Boots_on()
     long oldprop;
     long oldprop_spd;
     if (!uarmf) return 0;
+	int otyp = uarmf->otyp;
+	if(otyp == SILVERKNIGHT_BOOTS && uarmf->ovar1_silverknight_otyp)
+		otyp = uarmf->ovar1_silverknight_otyp;
 	adj_abon(uarmf, uarmf->spe);
  	if(uarmf->otyp == STILETTOS) {
 		if(!Flying && !Levitation) pline("%s are stylish, but not very practical to fight in.", The(xname(uarmf)));
@@ -104,10 +107,10 @@ Boots_on()
 	else if(uarmf->otyp == WIND_AND_FIRE_WHEELS){
 		if(!Flying && !Levitation) pline("You've heard myths of a god riding these through the sky, but this doesn't seem very practical.");
 	}
-	oldprop = (u.uprops[objects[uarmf->otyp].oc_oprop[0]].extrinsic & ~WORN_BOOTS);
+	oldprop = (u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_BOOTS);
 	oldprop_spd = (u.uprops[FAST].extrinsic & ~WORN_BOOTS);
 
-    switch(uarmf->otyp) {
+    switch(otyp) {
 	case LOW_BOOTS:
 	case SHOES:
 	case ARMORED_BOOTS:
@@ -159,7 +162,7 @@ Boots_on()
 			spoteffects(FALSE);
 		}
 		break;
-	default: impossible(unknown_type, c_boots, uarmf->otyp);
+	default: impossible(unknown_type, c_boots, otyp);
     }
 	if(check_oprop(uarmf, OPROP_CURS)){
 		if (Blind)
@@ -176,6 +179,8 @@ int
 Boots_off()
 {
     int otyp = uarmf->otyp;
+	if(otyp == SILVERKNIGHT_BOOTS && uarmf->ovar1_silverknight_otyp)
+		otyp = uarmf->ovar1_silverknight_otyp;
     long oldprop = u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_BOOTS;
     long oldprop_spd = u.uprops[FAST].extrinsic & WORN_BOOTS;
 
@@ -629,11 +634,14 @@ Gloves_on()
 {
     long oldprop;
     if (!uarmg) return 0;
+	int otyp = uarmg->otyp;
+	if(otyp == SILVERKNIGHT_GAUNTLETS && uarmg->ovar1_silverknight_otyp)
+		otyp = uarmg->ovar1_silverknight_otyp;
     oldprop =
-	u.uprops[objects[uarmg->otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
+	u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
 
 	adj_abon(uarmg, uarmg->spe);
-    switch(uarmg->otyp) {
+    switch(otyp) {
 	case GLOVES:
 	case LONG_GLOVES:
 	case HIGH_ELVEN_GAUNTLETS:
@@ -657,7 +665,7 @@ Gloves_on()
 		break;
 	case GAUNTLETS_OF_DEXTERITY:
 		break;
-	default: impossible(unknown_type, c_gloves, uarmg->otyp);
+	default: impossible(unknown_type, c_gloves, otyp);
     }
 
 	if(check_oprop(uarmg, OPROP_CURS)){
@@ -675,13 +683,16 @@ Gloves_on()
 int
 Gloves_off()
 {
+	int otyp = uarmg->otyp;
+	if(otyp == SILVERKNIGHT_GAUNTLETS && uarmg->ovar1_silverknight_otyp)
+		otyp = uarmg->ovar1_silverknight_otyp;
     long oldprop =
-	u.uprops[objects[uarmg->otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
+	u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
 
 	if (!cancelled_don) adj_abon(uarmg, -uarmg->spe);
     takeoff_mask &= ~W_ARMG;
 
-    switch(uarmg->otyp) {
+    switch(otyp) {
 	case GLOVES:
 	case LONG_GLOVES:
 	case HIGH_ELVEN_GAUNTLETS:
@@ -705,7 +716,7 @@ Gloves_off()
 	    break;
 	case GAUNTLETS_OF_DEXTERITY:
 	    break;
-	default: impossible(unknown_type, c_gloves, uarmg->otyp);
+	default: impossible(unknown_type, c_gloves, otyp);
     }
     setworn((struct obj *)0, W_ARMG);
     cancelled_don = FALSE;
@@ -1462,6 +1473,9 @@ Belt_on()
 			  Tobjnam(ubelt, "glow"), hcolor(NH_BLACK));
 		curse(ubelt);
 	}
+	if(ubelt->otyp == BELT_OF_POWER || ubelt->otyp == BELT_OF_WEAKNESS){
+		flags.botl = 1;
+	}
 }
 
 void
@@ -1473,7 +1487,13 @@ Belt_off()
 		impossible("Belt_off() was called, but no belt is worn.");
 		return;
 	}
+	int a_pre = ACURR(A_STR);
+	int typ = ubelt->otyp;
 	setworn((struct obj *)0, W_BELT);
+	if(a_pre != ACURR(A_STR)){
+		makeknown(typ);
+		flags.botl = 1;
+	}
 }
 
 void
@@ -2254,7 +2274,10 @@ doputon()
 		}
 		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
 		    return MOVE_STANDARD;
+		int a_pre = ACURR(A_STR);
 		setworn(otmp, W_BELT);
+		if(a_pre != ACURR(A_STR))
+			makeknown(otmp->otyp);
 		Belt_on();
 	} else if(otmp->otyp == SADDLE) {
 		if(usaddle) {
@@ -2645,6 +2668,18 @@ properties_dr(struct obj *arm, int agralign, int agrmoral, int agrimpure, int ag
 		else if(agrmoral < 0) bonus -= base/2+1;
 	}
 	return bonus;
+}
+
+int
+properties_ac(struct obj *arm, int agralign, int agrmoral, int agrimpure, int agrrot)
+{
+	int mod = 0;
+	if(is_silverknight_armor(arm)){
+		if(agrmoral < 0 && arm->blessed) mod -= 3;
+		if(agrrot > 0) mod -= 2;
+		if(agrimpure > 0) mod -= 1;
+	}
+	return mod;
 }
 
 #ifdef OVL0
@@ -4652,12 +4687,13 @@ struct obj *atmp;
 }
 
 void
-adj_abon(otmp, delta)
-register struct obj *otmp;
-register schar delta;
+adj_abon(struct obj *otmp, schar delta)
 {
+	int otyp = otmp->otyp;
+	if(is_silverknight_armor(otmp) && otmp->ovar1_silverknight_otyp)
+		otyp = otmp->ovar1_silverknight_otyp;
 	if (uarmh && uarmh == otmp) {
-		if(otmp->otyp == HELM_OF_BRILLIANCE){
+		if(otyp == HELM_OF_BRILLIANCE){
 			if (delta) {
 				makeknown(otmp->otyp);
 				ABON(A_INT) += (delta);
@@ -4665,8 +4701,8 @@ register schar delta;
 				flags.botl = 1;
 			}
 		}
-		if (otmp->otyp == find_gcirclet() || otmp->oartifact == ART_CROWN_OF_THE_PERCIPIENT
-		 || otmp->otyp == TOP_HAT || otmp->otyp == ESCOFFION || otmp->otyp == HENNIN
+		if (otyp == find_gcirclet() || otmp->oartifact == ART_CROWN_OF_THE_PERCIPIENT
+		 || otyp == TOP_HAT || otyp == ESCOFFION || otyp == HENNIN
 		){
 			if (delta) {
 				ABON(A_CHA) += (delta);
@@ -4675,7 +4711,7 @@ register schar delta;
 		}
 	}
 	if (uarmc && uarmc == otmp) {
-		if(otmp->otyp == SMOKY_VIOLET_FACELESS_ROBE){
+		if(otyp == SMOKY_VIOLET_FACELESS_ROBE){
 			if (delta) {
 				ABON(A_CON) += (delta);
 				ABON(A_CHA) += (delta);
@@ -4684,13 +4720,13 @@ register schar delta;
 		}
 	}
 	if(uarm && uarm == otmp){
-		if(otmp->otyp == CONSORT_S_SUIT){
+		if(otyp == CONSORT_S_SUIT){
 			if (delta) {
 				ABON(A_CHA) += (delta);
 				flags.botl = 1;
 			}
 		}
-		if(otmp->otyp == GENTLEWOMAN_S_DRESS || otmp->otyp == GENTLEMAN_S_SUIT){
+		if(otyp == GENTLEWOMAN_S_DRESS || otyp == GENTLEMAN_S_SUIT){
 			if (delta) {
 				ABON(A_CHA) += delta;
 				flags.botl = 1;
@@ -4698,7 +4734,7 @@ register schar delta;
 		}
 	}
 	if(uarmu && uarmu == otmp){
-		if(otmp->otyp == VICTORIAN_UNDERWEAR){
+		if(otyp == VICTORIAN_UNDERWEAR){
 			if (delta) {
 				ABON(A_CHA) += delta;
 				flags.botl = 1;
@@ -4716,7 +4752,7 @@ register schar delta;
 				flags.botl = 1;
 			}
 		}
-		if(otmp->otyp == GAUNTLETS_OF_DEXTERITY){
+		if(otyp == GAUNTLETS_OF_DEXTERITY){
 			if (delta) {
 				makeknown(otmp->otyp);
 				ABON(A_DEX) += (delta);
@@ -4725,11 +4761,11 @@ register schar delta;
 		}
 	}
 	if((otmp->owornmask & W_ARMOR) && otmp->where == OBJ_INVENT && check_oprop(otmp, OPROP_BRIL)){
-		if(!is_cha_otyp(otmp->otyp)){
+		if(!is_cha_otyp(otyp)){
 			ABON(A_CHA) += delta;
 			flags.botl = 1;
 		}
-		if(otmp->otyp != HELM_OF_BRILLIANCE){
+		if(otyp != HELM_OF_BRILLIANCE){
 			ABON(A_INT) += delta;
 			ABON(A_WIS) += delta;
 			flags.botl = 1;
@@ -6483,6 +6519,23 @@ calc_agrrot(struct monst *magr)
 	return agrrot;
 }
 
+int
+calc_agrmoral(struct monst *magr)
+{
+	int agrmoral = 0;
+	if(magr == &youmonst){
+		if(hates_holy(youracedata))
+			agrmoral = -1;
+		else if(hates_unholy(youracedata))
+			agrmoral = 1;
+	} else {
+		if(hates_holy_mon(magr))
+			agrmoral = -1;
+		else if(hates_unholy_mon(magr))
+			agrmoral = 1;
+	}
+	return agrmoral;
+}	
 #endif /* OVLB */
 
 /*do_wear.c*/

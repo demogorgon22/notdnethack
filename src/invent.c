@@ -4422,12 +4422,15 @@ winid *datawin;
 	int properties_art_carried[LAST_PROP];
 	get_art_property_list(properties_art_carried, oartifact, TRUE);
 
+	struct objclass props_oc = oc;
+	if(obj && is_silverknight_armor(obj) && obj->ovar1_silverknight_otyp)
+		props_oc = objects[obj->ovar1_silverknight_otyp];
 	for (i = 0; propertynames[i].prop_name; i++) {
 		boolean got_prop = FALSE, while_carried = FALSE;
 		int j = 0;
 
-		while(oc.oc_oprop[j] && !got_prop) {
-			if (oc.oc_oprop[j] == propertynames[i].prop_num)
+		while(props_oc.oc_oprop[j] && !got_prop) {
+			if (props_oc.oc_oprop[j] == propertynames[i].prop_num)
 				got_prop = TRUE;
 			j++;
 		}

@@ -3318,7 +3318,8 @@ karemade:
 						make_blinded((long)rnd(4), FALSE);
 					if (!Poison_resistance) {
 						pline("%s is burning your %s!", Something, makeplural(body_part(LUNG)));
-						You("cough and spit blood!");
+						if(!separate_respiration(youracedata))
+							You("cough and spit %s!", body_part(BLOOD));
 						losehp(d(3,8) + ((Amphibious && !flaming(youracedata)) ? 0 : rnd(6)), "stinking cloud", KILLED_BY_AN);
 					} else if (!(Amphibious && !flaming(youracedata))){
 						You("are laden with moisture and %s",
@@ -3456,7 +3457,7 @@ karemade:
 			}
 
 			// Ymir's stat regeneration
-			if (u.sealsActive&SEAL_YMIR && (wtcap < MOD_ENCUMBER || !u.umoved || Regeneration)){
+			if ((u.sealsActive&SEAL_YMIR || active_glyph(ROTTED_RUNE)) && (wtcap < MOD_ENCUMBER || !u.umoved || Regeneration)){
 				if ((u.ulevel > 9 && !(moves % 3)) ||
 					(u.ulevel <= 9 && !(moves % ((MAXULEV + 12) / (u.ulevel + 2) + 1)))
 					){
@@ -4236,6 +4237,25 @@ newgame()
 				delobj(otmp);
 			}
 		}
+	}
+	if(Race_if(PM_SILVERKNIGHT)){
+		struct obj *otmp;
+#define MKSNSTITEM(otyp) otmp = mksobj_at(otyp, u.ux, u.uy, MKOBJ_NOINIT); otmp->mired = 1; otmp->blessed = 1; otmp->spe = 1; fully_identify_obj(otmp);
+		MKSNSTITEM(SILVERKNIGHT_ARMOR);
+		MKSNSTITEM(SILVERKNIGHT_BOOTS);
+		MKSNSTITEM(SILVERKNIGHT_GAUNTLETS);
+		MKSNSTITEM(SILVERKNIGHT_HELM);
+		if(!has_object_type(invent, SILVERKNIGHT_SWORD)){
+			MKSNSTITEM(SILVERKNIGHT_SWORD);
+		}
+		if(!has_object_type(invent, SILVERKNIGHT_SCYTHE)){
+			MKSNSTITEM(SILVERKNIGHT_SCYTHE);
+		}
+		if(!has_object_type(invent, SILVERKNIGHT_SPEAR)){
+			MKSNSTITEM(SILVERKNIGHT_SPEAR);
+		}
+		bury_objs(u.ux, u.uy);
+#undef MKSNSTITEM
 	}
 
 #ifdef INSURANCE

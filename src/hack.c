@@ -1368,6 +1368,21 @@ domove()
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && (otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == ISAMUSEI)){
 					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
 				}
+				/* Silverknight spears hit additional targets */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp
+					&& u.uen >= 12 &&
+					(otmp->otyp == SILVERKNIGHT_SPEAR ||
+					 (otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == SILVERKNIGHT_SPEAR)
+					)
+					&& P_SKILL(weapon_type(otmp)) >= P_EXPERT
+				){
+					int subresult = hit_with_holyspear(&youmonst, otmp, x, y, 0, attk);
+					if(subresult&MM_HIT){
+						u.uen -= 12;
+						flags.botl = TRUE;
+					}
+					result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+				}
 				/* Snakemouth Tieflings hit additional targets */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && check_mutation(TT_SERPENT)){
 					result |= hit_with_tonguesnake(&youmonst, x, y, 0);
@@ -3143,6 +3158,7 @@ inv_weight()
 	int wt = 0;
 	int objwt;
 	boolean nymph = youracedata->mlet == S_NYMPH;
+	boolean silverknight = Race_if(PM_SILVERKNIGHT) || youracedata->mtyp == PM_SILVERKNIGHT;
 	int wtmod = mlev(&youmonst)*5;
 
 #ifndef GOLDOBJ
@@ -3177,6 +3193,8 @@ inv_weight()
 				objwt = otmp->owt;
 				if(nymph)
 					objwt = max(0, objwt - wtmod);
+				if(silverknight && otmp->obj_material == SILVER)
+					objwt = max(0, objwt - wtmod);
 				wt += objwt;
 			}
 		}
@@ -3204,6 +3222,7 @@ inv_weight()
 	}
 	if(u.urider){
 		boolean rnymph = u.urider->data->mlet == S_NYMPH;
+		boolean rsilverknight = u.urider->data->mtyp == PM_SILVERKNIGHT;
 		int rwtmod = mlev(u.urider)*5;
 		otmp = u.urider->minvent;
 		int subtotal = 0;
@@ -3211,6 +3230,8 @@ inv_weight()
 			if(otmp->oartifact) otmp->owt = weight(otmp);
 			objwt = otmp->owt;
 			if(rnymph)
+				objwt = max(0, objwt - rwtmod);
+			if(rsilverknight && otmp->obj_material == SILVER)
 				objwt = max(0, objwt - rwtmod);
 			subtotal += objwt;
 			otmp = otmp->nobj;

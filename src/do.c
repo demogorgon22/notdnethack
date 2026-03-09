@@ -1273,6 +1273,21 @@ int portal;
 		pline("A mysterious force prevents you from descending.");
 		return;
 	}
+	if(u.silverknight_mire && u.uz.dnum == oracle_level.dnum && newdungeon){
+		if (newlevel->dnum != qstart_level.dnum) {
+			pline("A mysterious force prevents you from %s.", portal ? "leaving" : up ? "climbing" : "descending");
+			return;
+		}
+		else {
+			// Escaped the mire
+			for(struct obj *otmp = invent; otmp; otmp = otmp->nobj){
+				otmp->mired = 0;
+			}
+			u.silverknight_mire = FALSE;
+			remove_rot(ROT_KIN);
+			set_silvergrubs(FALSE);
+		}
+	}
 	/* Mysterious force to shake up the uh quest*/
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
@@ -1410,6 +1425,23 @@ remake:
 			more_experienced(u.ulevel*dungeon_depth,0);
 			newexplevel();
 		}
+		if(u.silverknight_mire){
+			int i,j;
+			struct obj *otmp, *nobj;
+			for(i=0; i<COLNO; i++){
+				for(j=0; j<ROWNO; j++){
+					if(levl[i][j].typ > LAVAPOOL){
+						for(otmp = level.objects[i][j]; otmp; otmp = nobj){
+							nobj = otmp->nexthere;
+							if(!is_organic(otmp)){
+								bury_an_obj(otmp);
+								otmp->mired = 1;
+							}
+						}
+					}
+				}
+			}
+		}
 	} else {
 		/* returning to previously visited level; reload it */
 		fd = open_levelfile(new_ledger, whynot);
@@ -1426,6 +1458,40 @@ remake:
 		getlev(fd, hackpid, new_ledger, FALSE);
 		(void) close(fd);
 		oinit(); /* reassign level dependent obj probabilities (Pat Rankin)*/
+		if(!u.silverknight_mire){
+			struct obj *nobj;
+			for(struct obj *obj = level.buriedobjlist; obj; obj = nobj){
+				nobj = obj->nobj;
+				if(obj->mired){
+					obj_extract_self(obj);
+					place_object(obj, obj->ox, obj->oy);
+					obj->oeroded = 0;
+					obj->oeroded2 = 0;
+					obj->mired = 0;
+				}
+			}
+			struct monst* mtmp, *nmon;
+			for(mtmp = fmon; mtmp; mtmp = nmon){
+				nmon = mtmp->nmon;
+				if(mtmp->mmired){
+					mtmp->mmired = 0;
+					if(has_template(mtmp, SWOLLEN_TEMPLATE)){
+						set_template(mtmp, 0);
+						makemon_set_hp(mtmp, mtmp->data);
+					}
+					else if(mtmp->mtyp == PM_SILVERMAN
+						|| mtmp->mtyp == PM_SILVERKNIGHT
+						|| mtmp->mtyp == PM_SILVERGRUB
+						|| mtmp->mtyp == PM_MAN_FLY
+						|| mtmp->mtyp == PM_SPIDER_SCORPION
+						|| mtmp->mtyp == PM_FLESH_THAT_HATES
+					){
+						if(!mtmp->mtame)
+							mongone(mtmp);
+					}
+				}
+			}
+		}
 	}
 	/* do this prior to level-change pline messages */
 	vision_reset();		/* clear old level's line-of-sight */

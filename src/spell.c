@@ -898,7 +898,8 @@ run_maintained_spells()
 
 		/* We can't use spellname() but need to use OBJ_NAME directly, because
 		   amnesia can delete any trace of spell index... */
-		if (!knows_spell || spellknow(spell_index) <= 0 || Confusion) {
+		update_externally_granted_spells();
+		if (!knows_spell || spellknow(spell_index) <= 0 || spellext(spell_index) || Confusion) {
 			pline("You can no longer maintain %s.",
 				  OBJ_NAME(objects[spell]));
 			spell_unmaintain(spell);

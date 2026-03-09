@@ -750,6 +750,24 @@ int mkflags;
 	else if(otmp->otyp == TOOTH){
 		otmp->ovar1_tooth_type = rnd(MAX_TOOTH);
 	}
+	if(u.silverknight_mire){
+		if(is_rustprone(otmp))
+			otmp->oeroded = 3;
+		else if(is_corrodeable(otmp))
+			otmp->oeroded = 3;
+		else if(is_rottable(otmp) && is_flammable(otmp)){
+			if(rn2(4))
+				otmp->oeroded2 = 3;
+			else otmp->oeroded = 3;
+		}
+		else if(is_flammable(otmp))
+			otmp->oeroded = 3;
+		else if(is_rottable(otmp))
+			otmp->oeroded2 = 3;
+		if(otmp->oeroded || otmp->oeroded2){
+			otmp->mired = 1;
+		}
+	}
 	
 	set_object_color(otmp);
 	

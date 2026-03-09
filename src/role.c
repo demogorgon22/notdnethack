@@ -1155,7 +1155,7 @@ struct Race githzerai =
 };
 
 struct Race silverknight = 
-{	"silverknight", "silverknight", "silverknight-kind", "And", 0,
+{	"silverknight", "silverknight", "silverknight-kind", "Skn", 0,
 	{0, 0},
 	PM_SILVERKNIGHT, NON_PM, PM_SILVERKNIGHT, PM_SILVERKNIGHT,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
@@ -2169,6 +2169,9 @@ int newgame;
 				flags.questprogress = 1;
 			}
 		}
+	}
+	else if(Role_if(PM_KNIGHT) && Race_if(PM_SILVERMAN)){
+		urace = silverknight;
 	}
 	else if(Race_if(PM_GITH)){
 		if(flags.initalign == INITALIGN_LAWFUL){

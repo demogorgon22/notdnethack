@@ -7845,6 +7845,7 @@ int mmflags;
 			//Note: 2/3rds get confusion, this is not an error
 			(void)mongets(mtmp, rn2(3) ? POT_CONFUSION : rn2(2) ? POT_PARALYSIS : POT_HEALING, mkobjflags);
 		} else if (mm == PM_DWARF_SMITH) {
+#define RESET_OBJ_STATE(otmp) if(otmp){ otmp->oeroded = 0; otmp->oeroded2 = 0; }
 			(void)mongets(mtmp, SHOES, mkobjflags);
 			(void)mongets(mtmp, CHAIN_MAIL, mkobjflags);
 			(void)mongets(mtmp, DWARVISH_CLOAK, mkobjflags);
@@ -7880,6 +7881,7 @@ int mmflags;
 					mtmp->mhp = mtmp->mhpmax = mtmp->m_lev*hd_size(mtmp->data) - 1;
 					otmp = mksobj(ARM_BLASTER, mkobjflags);
 					if(otmp){
+						RESET_OBJ_STATE(otmp);
 						otmp->spe = 0;
 						otmp->ovar1_charges = d(5,10);
 						otmp->recharged = 4;
@@ -7888,12 +7890,14 @@ int mmflags;
 					
 					otmp = mksobj(DISKOS, mkobjflags);
 					if(otmp){
+						RESET_OBJ_STATE(otmp);
 						otmp->spe = rn1(4,4);
 						(void) mpickobj(mtmp, otmp);
 					}
 
 					otmp = mongets(mtmp, PISTOL, mkobjflags);
 					if(otmp){
+						RESET_OBJ_STATE(otmp);
 						otmp->spe = 7;
 						// add_oprop(otmp, OPROP_BLADED);
 						otmp = mksobj(SILVER_BULLET, mkobjflags);
@@ -7907,6 +7911,7 @@ int mmflags;
 
 					otmp = mksobj(BUCKLER, mkobjflags);
 					if(otmp){
+						RESET_OBJ_STATE(otmp);
 						otmp->spe = rn1(2,2);
 						set_material_gm(otmp, PLASTIC);
 						otmp->obj_color = CLR_GRAY;
@@ -8013,6 +8018,7 @@ int mmflags;
 				if (In_mines_quest(&u.uz) && !Is_minetown_level(&u.uz)) {
 				/* MRKR: Dwarves in dark mines have their lamps on. */
 					otmp = mksobj(DWARVISH_HELM, mkobjflags);
+					RESET_OBJ_STATE(otmp);
 					(void) mpickobj(mtmp, otmp);
 					if (!levl[mtmp->mx][mtmp->my].lit) {
 						begin_burn(otmp);
@@ -13812,8 +13818,19 @@ boolean randmonst;
 			mkmon_template = TONGUE_PUPPET;
 		}
 		/**/
-		else if(check_preservation(PRESERVE_ROT_TRIGGER) && (mindless(ptr) || is_animal(ptr)) && (u.silvergrubs || !rn2(100))){
+		else if((check_preservation(PRESERVE_ROT_TRIGGER) || check_rot(ROT_KIN) || Race_if(PM_SILVERMAN) || (Race_if(PM_SILVERKNIGHT) && In_quest(&u.uz)))
+				&& (mindless(ptr) || is_animal(ptr)) && !is_elemental(ptr)
+				&& !unsolid(ptr) && (u.silvergrubs || !rn2(100))
+		){
 			mkmon_template = SWOLLEN_TEMPLATE;
+			if(check_rot(ROT_KIN)){
+				if(!u.silvergrubs && !rn2(4)){
+					set_silvergrubs(TRUE);
+				}
+				else if(u.silvergrubs && !u.silverknight_mire && !rn2(20)){
+					set_silvergrubs(FALSE);
+				}
+			}
 		}
 		/* Githzerai Nightmare-followed */
 		else if(Role_if(PM_KENSEI) && Race_if(PM_GITHZERAI) && art_already_exists(ART_AMALGAMATED_SKIES) && (ptr->mlet == S_NYMPH || ptr->mlet == S_PLANT)){
@@ -13849,6 +13866,8 @@ boolean randmonst;
 		){
 			if(In_mines(&u.uz)){
 				if(Race_if(PM_GNOME) && Role_if(PM_RANGER) && rn2(10) <= 5){
+					mkmon_template = ZOMBIFIED;
+				} else if(u.silverknight_mire && !rn2(8)){
 					mkmon_template = ZOMBIFIED;
 				} else if(!rn2(10)){
 					mkmon_template = ZOMBIFIED;
@@ -15640,6 +15659,9 @@ int faction;
 
 	if (!in_mklev)
 	    newsym(mtmp->mx,mtmp->my);	/* make sure the mon shows up */
+
+	if (u.silverknight_mire)
+		mtmp->mmired = TRUE;
 
 	return(mtmp);
 }
@@ -17588,6 +17610,16 @@ int mkobjflags;
 		if (is_mplayer(mtmp->data) && is_sword(otmp)) {
 			otmp->spe = (3 + rn2(4));
 		}
+		if (is_dwarf(mtmp->data)) {
+			otmp->oeroded = 0;
+			otmp->oeroded2 = 0;
+			if(mtmp->mtyp == PM_DWARF_SMITH || mtmp->mtyp == PM_DWARF_KING || mtmp->mtyp == PM_DWARF_QUEEN){
+				if(otmp->cursed){
+					otmp->cursed = FALSE;
+					otmp->spe = max(-1*otmp->spe, otmp->spe);
+				}
+			}
+		}
 		fix_object(otmp);
 
 		if (otmp->otyp == CANDELABRUM_OF_INVOCATION) {
@@ -17767,6 +17799,8 @@ peace_minded(struct monst *mon)
 	if(is_undead(mon->data) && mindless_mon(mon) && check_preservation(PRESERVE_DEAD_TRUCE)) return TRUE;
 	
 	if(rot_monster(mon) && check_rot(ROT_TRUCE)) return TRUE;
+
+	if(mon->mtyp == PM_SILVERKNIGHT && Race_if(PM_SILVERKNIGHT) && u.ualign.record > 0) return TRUE;
 	
 	if(Race_if(PM_DROW) && 
 		((ual == A_CHAOTIC && (!Role_if(PM_NOBLEMAN) || flags.initgend)) || (ual == A_NEUTRAL && !flags.initgend)) && /*Males can be neutral or chaotic, but a chaotic male nobleman converted to a different god*/

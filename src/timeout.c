@@ -1293,7 +1293,7 @@ long timeout;
 
 	mon = mon2 = (struct monst *)0;
 	mtyp = big_to_little(egg->corpsenm);
-	if(u.silvergrubs && !rn2(20)){
+	if(u.silvergrubs && !u.silverknight_mire && !rn2(20)){
 		set_silvergrubs(FALSE);
 	}
 	if(check_rot(ROT_KIN) && (u.silvergrubs || !rn2(100)) && !(mvitals[PM_MAN_FLY].mvflags&G_GONE && !In_quest(&u.uz))){

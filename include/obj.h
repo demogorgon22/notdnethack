@@ -237,6 +237,7 @@ struct obj {
 	Bitfield(researched,1);	/* already dissected */
 	Bitfield(blood_smithed,1);	/* improved by blood smithing */
 	Bitfield(improved_mat,1);	/* improved over base material (used for shadowsteel weapons) */
+	Bitfield(mired,1);	/* created in the mire and may repair itself during level loading */
 	/* 12 free bits in this field, I think -CM */
 	
 	int obj_material;		/*Object material (from lookup table)*/
@@ -360,12 +361,13 @@ struct obj {
 #define ovar1_alt_mat ovar1
 #define ovar1_last_blooded ovar1
 #define ovar1_tooth_type ovar1
-#define ovar1_your_eye ovar1
 #define SERPENT_TOOTH	1
 #define MAGMA_TOOTH		2
 #define VOID_TOOTH		3
 #define MAX_TOOTH		VOID_TOOTH
 #define ovar1_offhand_oid ovar1
+#define ovar1_your_eye ovar1
+#define ovar1_silverknight_otyp ovar1
 	/* Number of viperwhip heads */
 	/* Moon axe phase */
 	/* Acid venom non-1d6 damage */
@@ -376,30 +378,6 @@ struct obj {
 	/* Engraving for rings */
 	/* doll's tear */
 	/* Upgrades made to imperial elven armor */
-#define obj_type_uses_ovar1(otmp) (\
-	   (otmp)->otyp == VIPERWHIP \
-	|| (otmp)->otyp == MOON_AXE \
-	|| (otmp)->otyp == ACID_VENOM \
-	|| (otmp)->otyp == MASK \
-	|| is_blaster((otmp)) \
-	|| (otmp)->otyp == RAYGUN \
-	|| (otmp)->otyp == SEISMIC_HAMMER \
-	|| is_vibroweapon((otmp)) \
-	|| (otmp)->otyp == LIGHTSABER \
-	|| (otmp)->otyp == BEAMSWORD \
-	|| (otmp)->otyp == DOUBLE_LIGHTSABER \
-	|| (otmp)->otyp == HYPOSPRAY_AMPULE \
-	|| (otmp)->oclass == RING_CLASS \
-	|| (otmp)->otyp == DOLL_S_TEAR \
-	|| (otmp)->otyp == PINCER_STAFF \
-	|| (otmp)->otyp == CANE \
-	|| (otmp)->otyp == WHIP_SAW \
-	|| (otmp)->otyp == CHIKAGE \
-	|| (otmp)->otyp == TOOTH \
-	|| is_imperial_elven_armor(otmp) \
-	|| (otmp)->otyp == RAKUYO_DAGGER \
-	|| (otmp)->otyp == BLADE_OF_PITY \
-	)
 #define ECLIPSE_MOON	0
 #define CRESCENT_MOON	1
 #define HALF_MOON		2
@@ -465,18 +443,6 @@ struct obj {
 	/* Life/Death for the scalpel of life and death */
 	/* Theft type for stealing artifacts (reaver (scimitar) and avarice (shortsword) */
 	/* Misc data for the artifact spellbooks */
-#define obj_art_uses_ovar_art(otmp) (\
-	   (otmp)->oartifact == ART_SINGING_SWORD \
-	|| (otmp)->oartifact == ART_PEN_OF_THE_VOID \
-	|| (otmp)->oartifact == ART_GAUNTLETS_OF_THE_BERSERKER \
-	|| (otmp)->oartifact == ART_SCALPEL_OF_LIFE_AND_DEATH \
-	|| (otmp)->oartifact == ART_REAVER \
-	|| (otmp)->oartifact == ART_AVARICE \
-	|| (otmp)->oartifact == ART_NECRONOMICON \
-	|| (otmp)->oartifact == ART_BOOK_OF_LOST_NAMES \
-	|| (otmp)->oartifact == ART_BOOK_OF_INFINITE_SPELLS \
-	|| (otmp)->oartifact == ART_SCORPION_CARAPACE \
-	)
 #define OHEARD_FEAR		0x00000001L
 #define OHEARD_HEALING	0x00000002L
 #define OHEARD_RALLY	0x00000004L

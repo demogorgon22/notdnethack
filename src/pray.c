@@ -3601,9 +3601,10 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 			int spell_list[] = {0, SPE_FIRE_STORM, SPE_BLIZZARD, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, 0};
 			boolean certified_blaster_master = FALSE;
 
+			update_externally_granted_spells();
 			for (int i = 1; spell_list[i] && !certified_blaster_master; i++)
 				for (int j = 0; j < MAXSPELL; j++)
-					if (spellid(j) == spell_list[i] && spellknow(j) > 0){
+					if (spellid(j) == spell_list[i] && (spellknow(j) > 0 || spellext(j))){
 						certified_blaster_master = TRUE;
 						break;
 					}

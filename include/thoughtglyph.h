@@ -39,7 +39,8 @@ struct thoughtglyph {
 #define	DEFILEMENT						0x0000000000200000L
 #define	LUMEN							0x0000000000400000L
 #define	ROTTEN_EYES						0x0000000000800000L
-#define	SIGHT							0x0000000001000000L
+#define	ROTTED_RUNE						0x0000000001000000L
+#define	SIGHT							0x0000000002000000L
 
 #define FIRST_GLYPH	ANTI_CLOCKWISE_METAMORPHOSIS_G
 static struct thoughtglyph thoughtglyphs[] =
@@ -115,6 +116,9 @@ static struct thoughtglyph thoughtglyphs[] =
 
 	{ VACUOUS_GLYPH, NON_PM, ROTTEN_EYES,
 	27, 100, "Great jolts of lightning rot your brain into milky mushy eyes." },
+
+	{ 0, NON_PM, ROTTED_RUNE,
+	0, 100, "A holy rune is writ upon your mind's eye yet rots to nothing in the next instant." },
 
 	{ ORRERY_GLYPH, PM_GROTESQUE_PEEPER, SIGHT,
 	16, 100, "Your brain blinks open. There is an eye within an eye within an eye within an...." },

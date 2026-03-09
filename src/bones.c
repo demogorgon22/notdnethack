@@ -361,6 +361,8 @@ int y;
 		} else if(u.thoughts & BEASTS_EMBRACE){
 			u.thoughts &= ~BEASTS_EMBRACE;
 			otmp = mksobj(BEAST_S_EMBRACE_GLYPH, MKOBJ_NOINIT);
+		} else if(u.thoughts & ROTTED_RUNE){
+			u.thoughts &= ~ROTTED_RUNE;
 		} else if(u.thoughts & SIGHT){
 			u.thoughts &= ~SIGHT;
 			otmp = mksobj(ORRERY_GLYPH, MKOBJ_NOINIT);

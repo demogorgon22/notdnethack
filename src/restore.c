@@ -247,7 +247,13 @@ boolean ghostly, frozen;
 			otmp3->ocontainer = otmp;
 		}
 		if (otmp->bypass) otmp->bypass = 0;
-
+		//Handle damaged mired objects here
+		if(!u.silverknight_mire && otmp->mired){
+			otmp->oeroded = 0;
+			otmp->oeroded2 = 0;
+			if(otmp->where != OBJ_BURIED)
+				otmp->mired = 0;
+		}
 		otmp2 = otmp;
 	}
 	if(first && otmp2->nobj){

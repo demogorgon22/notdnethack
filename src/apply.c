@@ -17,6 +17,8 @@ static const char apply_armor[] = { ARMOR_CLASS, 0 };
 static const char imperial_repairs[] = { AMULET_CLASS, ARMOR_CLASS, RING_CLASS, WAND_CLASS, 0 };
 static const char apply_corpse[] = { FOOD_CLASS, 0 };
 static const char chain_class[] = { CHAIN_CLASS, 0 };
+static const char spellbook_class[] = { SPBOOK_CLASS, 0 };
+static const char weapon_class[] = { WEAPON_CLASS, 0 };
 static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 
 #define TREPH_THOUGHTS 1
@@ -7421,7 +7423,7 @@ struct obj *pole;
 }
 
 void
-use_silverknight_scythe_at(int x, int y)
+use_silverknight_scythe_at(int x, int y, struct obj *wep)
 {
 	struct monst *halo;
 	if(u.uen >= 10){
@@ -7430,9 +7432,21 @@ use_silverknight_scythe_at(int x, int y)
 		halo = makemon(&mons[PM_ROGUE_HALO], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
 		if(halo){
 			halo->mpeaceful = TRUE;
+			if(halo->m_lev < u.ulevel)
+				halo->m_lev = u.ulevel;
 			initedog(halo);
 			mark_mon_as_summoned(halo, &youmonst, u.ulevel + rnd(u.ulevel), 0);
 			halo->movement = 3*NORMAL_SPEED;
+			if(check_oprop(wep, OPROP_FIREW))
+				halo->mvar1_halo_sec_element = AD_FIRE;
+			else if(check_oprop(wep, OPROP_COLDW))
+				halo->mvar1_halo_sec_element = AD_COLD;
+			else if(check_oprop(wep, OPROP_ELECW))
+				halo->mvar1_halo_sec_element = AD_ELEC;
+			else if(check_oprop(wep, OPROP_ACIDW))
+				halo->mvar1_halo_sec_element = AD_ACID;
+			else if(check_oprop(wep, OPROP_MAGCW))
+				halo->mvar1_halo_sec_element = AD_MAGM;
 		}
 	}
 	else {
@@ -7512,7 +7526,7 @@ coord *ccp;
 				if(obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE)
 					return use_hunter_axe(obj);
 				if(obj->otyp == SILVERKNIGHT_SCYTHE){
-					use_silverknight_scythe_at(u.ux, u.uy);
+					use_silverknight_scythe_at(u.ux, u.uy, obj);
 					return MOVE_ATTACKED;
 				}
 				impossible("Unhandled special polearm action.");
@@ -7594,7 +7608,7 @@ use_pole(obj)
 		   You("cut away the grass!");
 		   newsym(cc.x,cc.y);
 	} else if(obj->otyp == SILVERKNIGHT_SCYTHE){
-		use_silverknight_scythe_at(cc.x,cc.y);
+		use_silverknight_scythe_at(cc.x,cc.y,obj);
 	} else {
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
@@ -10640,6 +10654,117 @@ upgradeMenu()
 	return 0;
 }
 
+STATIC_OVL int
+doUpgradeClockwork()
+{
+	struct obj *comp;
+	long upgrade = upgradeMenu();
+	// Create an array with all classes explicitly listed in it, 1-MAXOCLASSES :(
+	char all_classes[MAXOCLASSES] = {0};
+	for(int i = 1; i < MAXOCLASSES; i++)
+		all_classes[i-1] = i;
+	switch(upgrade){
+		case OIL_STOVE:
+			You("use the components in the upgrade kit to install an oil stove.");
+			u.clockworkUpgrades |= upgrade;
+			return MOVE_STANDARD;
+		break;
+		case WOOD_STOVE:
+			comp = getobj(tools, "upgrade your stove with");
+			if(!comp || comp->otyp != TINNING_KIT){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("use the components in the upgrade kit and the tinning kit to install a wood-burning stove.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case FAST_SWITCH:
+			You("use the components in the upgrade kit to install a fast switch on your clock.");
+			u.clockworkUpgrades |= upgrade;
+			return MOVE_STANDARD;
+		break;
+		case EFFICIENT_SWITCH:
+			comp = getobj(tools, "upgrade your switch with");
+			if(!comp || comp->otyp != CROSSBOW){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("use the components in the upgrade kit and the crossbow to upgrade the switch on your clock.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case ARMOR_PLATING:
+			comp = getobj(apply_armor, "upgrade your armor with");
+			if(!comp ||
+				!((comp->otyp == ARCHAIC_PLATE_MAIL || comp->otyp == PLATE_MAIL) &&
+				(comp->obj_material == COPPER))){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("use the components in the upgrade kit to reinforce your armor with bronze plates.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case PHASE_ENGINE:
+			comp = getobj(all_classes, "build a phase engine with");
+			if(!comp || comp->otyp != SUBETHAIC_COMPONENT){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the subethaic component and build a phase engine.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case MAGIC_FURNACE:
+			comp = getobj(tools, "build a magic furnace with");
+			if(!comp || comp->otyp != WAN_DRAINING){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the wand and build a magic furnace.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case HELLFIRE_FURNACE:
+			comp = getobj(all_classes, "build a hellfire furnace with");
+			if(!comp || comp->otyp != HELLFIRE_COMPONENT){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the hellfire component and build a hellfire furnace.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case SCRAP_MAW:
+			comp = getobj(tools, "build a scrap maw with");
+			if(!comp || comp->otyp != SCRAP){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the scrap and build a scrap maw.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case HIGH_TENSION:
+			// Maybe one day a spring pistol or something
+			You("use the components in the upgrade kit to increase the maximum tension in your mainspring.");
+			u.uhungermax += DEFAULT_HMAX; // 2000 per, capped at 9 kits for 20,000 max
+			if(u.uhungermax >= DEFAULT_HMAX*10) u.clockworkUpgrades |= upgrade;
+			// useup(comp);
+			return MOVE_STANDARD;
+		break;
+	}
+	return MOVE_CANCELLED;
+}
+
 boolean
 set_obj_shape(obj, shape)
 struct obj *obj;
@@ -10986,157 +11111,399 @@ upgradeImpArmor()
 	}
 }
 
-STATIC_OVL int
-doUseUpgradeKit(optr)
-struct obj **optr;
+STATIC_OVL boolean
+carrying_silverknight_runeable()
 {
-	struct obj *obj = *optr;
-	struct obj *comp;
-	// Create an array with all classes explicitly listed in it, 1-MAXOCLASSES :(
-	char all_classes[MAXOCLASSES] = {0};
-	for(int i = 1; i < MAXOCLASSES; i++)
-		all_classes[i-1] = i;
-	if(uclockwork){
-		if (yn("Make an upgrade to yourself?") == 'y'){
-			long upgrade = upgradeMenu();
-			switch(upgrade){
-				case OIL_STOVE:
-					You("use the components in the upgrade kit to install an oil stove.");
-					u.clockworkUpgrades |= upgrade;
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case WOOD_STOVE:
-					comp = getobj(tools, "upgrade your stove with");
-					if(!comp || comp->otyp != TINNING_KIT){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("use the components in the upgrade kit and the tinning kit to install a wood-burning stove.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case FAST_SWITCH:
-					You("use the components in the upgrade kit to install a fast switch on your clock.");
-					u.clockworkUpgrades |= upgrade;
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case EFFICIENT_SWITCH:
-					comp = getobj(tools, "upgrade your switch with");
-					if(!comp || comp->otyp != CROSSBOW){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("use the components in the upgrade kit and the crossbow to upgrade the switch on your clock.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case ARMOR_PLATING:
-					comp = getobj(apply_armor, "upgrade your armor with");
-					if(!comp ||
-						!((comp->otyp == ARCHAIC_PLATE_MAIL || comp->otyp == PLATE_MAIL) &&
-						(comp->obj_material == COPPER))){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("use the components in the upgrade kit to reinforce your armor with bronze plates.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case PHASE_ENGINE:
-					comp = getobj(all_classes, "build a phase engine with");
-					if(!comp || comp->otyp != SUBETHAIC_COMPONENT){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the subethaic component and build a phase engine.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case MAGIC_FURNACE:
-					comp = getobj(tools, "build a magic furnace with");
-					if(!comp || comp->otyp != WAN_DRAINING){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the wand and build a magic furnace.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case HELLFIRE_FURNACE:
-					comp = getobj(all_classes, "build a hellfire furnace with");
-					if(!comp || comp->otyp != HELLFIRE_COMPONENT){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the hellfire component and build a hellfire furnace.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case SCRAP_MAW:
-					comp = getobj(tools, "build a scrap maw with");
-					if(!comp || comp->otyp != SCRAP){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the scrap and build a scrap maw.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case HIGH_TENSION:
-					// Maybe one day a spring pistol or something
-					You("use the components in the upgrade kit to increase the maximum tension in your mainspring.");
-					u.uhungermax += DEFAULT_HMAX; // 2000 per, capped at 9 kits for 20,000 max
-					if(u.uhungermax >= DEFAULT_HMAX*10) u.clockworkUpgrades |= upgrade;
-					// useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-			}
+	struct obj *obj;
+	for(obj = invent; obj; obj = obj->nobj){
+		if(is_silverknight_armor(obj))
+			return TRUE;
+		if(is_silverknight_weapon(obj) && !check_oprop(obj, OPROP_NONE)){
+			if(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW))
+				return TRUE;
 		}
 	}
-	else if(u.uiearepairs && carrying_imperial_elven_armor()){
-		if (yn("Repair your imperial armor?") == 'y'){
+	return FALSE;
+}
+
+STATIC_OVL boolean
+carrying_silverknight_weapon()
+{
+	struct obj *obj;
+	for(obj = invent; obj; obj = obj->nobj){
+		if(is_silverknight_weapon(obj)){
+			if(!(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW)))
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+STATIC_OVL int
+mergeSilverknightRunes()
+{
+	struct obj *upitm;
+	struct obj *obj = getobj(apply_armor, "merge runes into");
+	if(!obj){
+		return MOVE_CANCELLED;
+	}
+	if(is_silverknight_armor(obj)){
+		if(obj->owornmask){
+			You("will need to take that off to merge into it.");
+			return MOVE_CANCELLED;
+		}
+		upitm = getobj(apply_armor, "use as the rune source");
+		if(!upitm){
+			return MOVE_CANCELLED;
+		}
+		if(upitm == obj){
+			pline("That would be an interesting metaphysical experiment.");
+			return MOVE_CANCELLED;
+		}
+		if(!objects[upitm->otyp].oc_oprop[0]){
+			pline("That doesn't have any runes to be extracted.");
+			return MOVE_CANCELLED;
+		}
+		if(upitm->owornmask){
+			pline("You're still using that.");
+			return MOVE_CANCELLED;
+		}
+		if(objects[upitm->otyp].oc_armcat != objects[obj->otyp].oc_armcat){
+			pline("Those aren't worn in the same way.");
+			return MOVE_CANCELLED;
+		}
+		if(upitm->oartifact){
+			pline("It resists the attempt!");
+			return MOVE_CANCELLED;
+		}
+		if(obj->ovar1_silverknight_otyp == upitm->otyp){
+			pline("The runes on that item are identical to the ones on the armor.");
+			return MOVE_CANCELLED;
+		}
+		char buf[BUFSZ];
+		Sprintf(buf, "Merge runes from the %s onto %s? This will destroy the source item", doname(upitm), doname(obj));
+		if(obj->ovar1_silverknight_otyp){
+			Sprintf(eos(buf), " and overwrite the existing %s runes on %s.", obj_descr[objects[obj->ovar1_silverknight_otyp].oc_name_idx].oc_name, doname(obj));
+		}
+		else {
+			Sprintf(eos(buf), ".");
+		}
+		if(yn(buf) == 'y'){
+			obj->ovar1_silverknight_otyp = upitm->otyp;
+			useup(upitm);
+			return MOVE_STANDARD;
+		}
+		return MOVE_CANCELLED;
+	}
+	else if(is_silverknight_weapon(obj)){
+		if(!(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW))){
+			pline("That weapon isn't missing any runes.");
+			return MOVE_CANCELLED;
+		}
+		upitm = getobj(spellbook_class, "rune source");
+		if(!upitm){
+			return MOVE_CANCELLED;
+		}
+		if(upitm->oartifact){
+			pline("It resists the attempt!");
+			return MOVE_CANCELLED;
+		}
+		if(check_oprop(obj, OPROP_FIREW) && (upitm->otyp == SPE_FIREBALL || upitm->otyp == SPE_FIRE_STORM)){
+			if(yn("Merge fire runes from the spellbook onto the weapon? This will destroy the spellbook and remove the flaming property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_FIREW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+		else if(check_oprop(obj, OPROP_COLDW) && (upitm->otyp == SPE_BLIZZARD || upitm->otyp == SPE_CONE_OF_COLD)){
+			if(yn("Merge cold runes from the spellbook onto the weapon? This will destroy the spellbook and remove the freezing property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_COLDW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+		else if(check_oprop(obj, OPROP_ELECW) && (upitm->otyp == SPE_LIGHTNING_BOLT || upitm->otyp == SPE_LIGHTNING_STORM)){
+			if(yn("Merge electric runes from the spellbook onto the weapon? This will destroy the spellbook and remove the shocking property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_ELECW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+		else if(check_oprop(obj, OPROP_ACIDW) && (upitm->otyp == SPE_ACID_SPLASH)){
+			if(yn("Merge acid runes from the spellbook onto the weapon? This will destroy the spellbook and remove the sizzling property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_ACIDW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+	}
+	else {
+		pline("That doesn't look like a piece of silver knight equipment.");
+		return MOVE_CANCELLED;
+	}
+	return MOVE_CANCELLED;
+}
+
+STATIC_OVL int
+extractSilverknightRunes()
+{
+	struct obj *upitm;
+	struct obj *obj = getobj(weapon_class, "item to remove runes from");
+	if(!obj){
+		return MOVE_CANCELLED;
+	}
+	if(!is_silverknight_weapon(obj)){
+		pline("That doesn't look like a silver knight weapon.");
+		return MOVE_CANCELLED;
+	}
+	if(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW)){
+		pline("That weapon has already had some of its runes removed.");
+		return MOVE_CANCELLED;
+	}
+	upitm = getobj(spellbook_class, "store the extracted runes in");
+	if(!upitm){
+		return MOVE_CANCELLED;
+	}
+	if(upitm->oartifact){
+		pline("It resists the attempt!");
+		return MOVE_CANCELLED;
+	}
+	if(upitm->otyp != SPE_BLANK_PAPER){
+		pline("That book isn't blank.");
+		return MOVE_CANCELLED;
+	}
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	
+	Sprintf(buf, "Which runes do you want to extract?");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	
+	Sprintf(buf, "Fire runes");
+	any.a_int = OPROP_FIREW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Cold runes");
+	any.a_int = OPROP_COLDW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Electric runes");
+	any.a_int = OPROP_ELECW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Acid runes");
+	any.a_int = OPROP_ACIDW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Magic runes");
+	any.a_int = OPROP_MAGCW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	end_menu(tmpwin, "Choose runes to extract:");
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	long picked = 0;
+	destroy_nhwindow(tmpwin);
+	if(n > 0){
+		picked = selected[0].item.a_int;
+		free(selected);
+	}
+	else {
+		return MOVE_CANCELLED;
+	}
+
+	switch(picked){
+		case OPROP_FIREW:
+			add_oprop(obj, OPROP_FIREW);
+			pline("You extract the runes that regulate fire from the weapon and store them in the spellbook.");
+			pline("%s bursts into flame!", The(xname(obj)));
+			poly_obj(upitm, SPE_FIREBALL);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_COLDW:
+			add_oprop(obj, OPROP_COLDW);
+			pline("You extract the runes that regulate cold from the weapon and store them in the spellbook.");
+			pline("%s freezes!", The(xname(obj)));
+			poly_obj(upitm, SPE_CONE_OF_COLD);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_ELECW:
+			add_oprop(obj, OPROP_ELECW);
+			pline("You extract the runes that regulate electricity from the weapon and store them in the spellbook.");
+			pline("%s crackles with electricity!", The(xname(obj)));
+			poly_obj(upitm, SPE_LIGHTNING_BOLT);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_ACIDW:
+			add_oprop(obj, OPROP_ACIDW);
+			pline("You extract the runes that regulate acid from the weapon and store them in the spellbook.");
+			pline("%s sizzles!", The(xname(obj)));
+			poly_obj(upitm, SPE_ACID_SPLASH);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_MAGCW:
+			add_oprop(obj, OPROP_MAGCW);
+			pline("You extract the runes that regulate magic from the weapon and store them in the spellbook.");
+			pline("%s sparkles with magical energy!", The(xname(obj)));
+			poly_obj(upitm, SPE_MAGIC_MISSILE);
+			return MOVE_STANDARD;
+		break;
+	}
+
+	return MOVE_CANCELLED;
+}
+
+STATIC_OVL int
+doUseUpgradeKit(struct obj **optr)
+{
+	struct obj *obj = *optr;
+	int upgradeTypes = 0;
+	int chosenUpgrade = -1; //default to resize armor
+#define UPGRADE_CLOCKWORK 0x1
+#define UPGRADE_IMP_ARMOR 0x2
+#define UPGRADE_SILVERKNIGHT_ARMOR 0x4
+#define UPGRADE_SILVERKNIGHT_WEAPON 0x8
+	if(uclockwork){
+		upgradeTypes |= UPGRADE_CLOCKWORK;
+	}
+	if(u.uiearepairs && carrying_imperial_elven_armor()){
+		upgradeTypes |= UPGRADE_IMP_ARMOR;
+	}
+	if(Race_if(PM_SILVERKNIGHT) && u.uevent.qcompleted){
+		if(carrying_silverknight_runeable())
+			upgradeTypes |= UPGRADE_SILVERKNIGHT_ARMOR;
+		if(carrying_silverknight_weapon())
+			upgradeTypes |= UPGRADE_SILVERKNIGHT_WEAPON;
+	}
+	// If the item can be used for something other than just resizing armor, ask what the player wants to do.
+	if(upgradeTypes){
+		winid tmpwin;
+		int n, how;
+		char buf[BUFSZ];
+		char incntlet = 'a';
+		menu_item *selected;
+		anything any;
+
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		any.a_void = 0;		/* zero out all bits */
+		
+		Sprintf(buf, "Upgrade types");
+		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		if(upgradeTypes&UPGRADE_CLOCKWORK){
+			Sprintf(buf, "Upgrade your clockwork");
+			any.a_int = UPGRADE_CLOCKWORK;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(upgradeTypes&UPGRADE_IMP_ARMOR){
+			Sprintf(buf, "Repair imperial armor");
+			any.a_int = UPGRADE_IMP_ARMOR;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(upgradeTypes&UPGRADE_SILVERKNIGHT_ARMOR){
+			Sprintf(buf, "Merge runes into silver knight equipment");
+			any.a_int = UPGRADE_SILVERKNIGHT_ARMOR;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(upgradeTypes&UPGRADE_SILVERKNIGHT_WEAPON){
+			Sprintf(buf, "Extract runes from silver knight weapons");
+			any.a_int = UPGRADE_SILVERKNIGHT_WEAPON;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		Sprintf(buf, "Resize armor");
+		any.a_int = -1;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		end_menu(tmpwin, "Choose upgrade:");
+		how = PICK_ONE;
+		n = select_menu(tmpwin, how, &selected);
+		destroy_nhwindow(tmpwin);
+		if(n > 0){
+			chosenUpgrade = selected[0].item.a_int;
+			free(selected);
+		}
+	}
+	switch(chosenUpgrade){
+		default:
+			if (resizeArmor() != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_CLOCKWORK:
+			if (doUpgradeClockwork(optr) != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_IMP_ARMOR:
 			if (upgradeImpArmor() != MOVE_CANCELLED){
 				useup(obj);
 				*optr = 0;
 				return MOVE_STANDARD;
 			}
-		}
-	}
-	if (yn("Resize a piece of armor?") == 'y'){
-		if (resizeArmor() != MOVE_CANCELLED){
-			useup(obj);
-			*optr = 0;
-			return MOVE_STANDARD;
-		}
-		else
-			return MOVE_CANCELLED;
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_SILVERKNIGHT_ARMOR:
+			if (mergeSilverknightRunes() != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_SILVERKNIGHT_WEAPON:
+			if (extractSilverknightRunes() != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
 	}
 	return MOVE_CANCELLED;
 }

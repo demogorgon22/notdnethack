@@ -1102,7 +1102,7 @@ int oldlevel, newlevel;
 		int skillslots;
 	    if (newlevel > oldlevel){
 			skillslots = newlevel - oldlevel;
-			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID)){
+			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID) || Race_if(PM_SILVERKNIGHT)){
 				if(!(skillslots%2)) skillslots *= 1.5;
 				else if(!(newlevel%2)) skillslots = skillslots*1.5 + 1;
 				else skillslots *= 1.5;
@@ -1111,7 +1111,7 @@ int oldlevel, newlevel;
 		}
 	    else{
 			skillslots = oldlevel - newlevel;
-			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID)){
+			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID) || Race_if(PM_SILVERKNIGHT)){
 				if(!(skillslots%2)) skillslots *= 1.5;
 				else if(!(oldlevel%2)) skillslots = skillslots*1.5 + 1;
 				else skillslots *= 1.5;
@@ -1516,7 +1516,10 @@ struct monst *mon;
 			tmp += u.ulevel/3;
 			if(tmp > 18) tmp = STR19(tmp);
 		}
-		if ((armg && (armg->otyp == GAUNTLETS_OF_POWER || (armg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(armg, IEA_GOPOWER)))) || 
+		if ((armg && (armg->otyp == GAUNTLETS_OF_POWER 
+					 || (armg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(armg, IEA_GOPOWER))
+					 || (armg->otyp == SILVERKNIGHT_GAUNTLETS && armg->ovar1_silverknight_otyp == GAUNTLETS_OF_POWER)
+			)) || 
 			(belt && belt->otyp == BELT_OF_POWER) ||
 			(armc && armc->oartifact == ART_SHI_PI_BU) ||
 			(wep &&((wep->oartifact == ART_SCEPTRE_OF_MIGHT) || 

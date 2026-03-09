@@ -216,6 +216,7 @@ struct monst {
 	Bitfield(mtecpatlmarked,1); /* the Tecpatl of Huehueteotl can sacrifice low-enough-health monsters */ /*150*/
 	Bitfield(mpunctured,4); /* This monster may take double damage from puncture attacks */ /*154*/
 	Bitfield(mprobed,1); /* monster has been probed by Magicbane et al, will display at end of attack if it lives */ /*155*/
+	Bitfield(mmired,1); /* monster was created in the mire */ /*156*/
 
 	unsigned long long int 	seenmadnesses;	/* monster has seen these madnesses */
 	
@@ -390,6 +391,7 @@ struct monst {
 #define	mvar_spellweaver_count	mvar1
 #define	mvar1_tettigon_uncancel	mvar1
 #define	mvar1_afreet_lastsaw	mvar1
+#define mvar1_halo_sec_element	mvar1
 	long mvar2;
 #define	mvar_dracaePregTimer	mvar2
 #define	mvar_spList_2	mvar2

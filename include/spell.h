@@ -51,7 +51,9 @@ struct spell {
 											|| check_imp_mod(otmp, IEA_KICKING) \
 											|| check_imp_mod(otmp, IEA_DEFLECTION) \
 											) \
-	 )) \
+										) \
+	  || (Race_if(PM_SILVERKNIGHT) && otmp->obj_material == SILVER) \
+	 ) \
 	)
 
 #define FIRST_LIGHT	MAXSPELL+1

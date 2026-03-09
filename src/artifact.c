@@ -4538,6 +4538,9 @@ int * truedmgptr;
 	int original_truedmgptr = *truedmgptr;
 	const struct artifact *oart = get_artifact(otmp);
 	int mistlight_bonus = 0;
+	int silverknight_bonus = 1;
+	if(is_silverknight_weapon(otmp))
+		silverknight_bonus = 2;
 	if(magr && magr->mtyp == PM_ARIANNA && (otmp->obj_material == SILVER || otmp->obj_material == GOLD || otmp->obj_material == PLATINUM)){
 		if(mlev(magr) >= 28)
 			mistlight_bonus += d(6, 8);
@@ -4549,7 +4552,7 @@ int * truedmgptr;
 	
 	if(!Fire_res(mdef)){
 		if(check_oprop(otmp, OPROP_FIREW))
-			*truedmgptr += basedmg;
+			*truedmgptr += silverknight_bonus*basedmg;
 		if(check_oprop(otmp, OPROP_OONA_FIREW))
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_FIREW))
@@ -4559,7 +4562,7 @@ int * truedmgptr;
 	}
 	if(!Cold_res(mdef)){
 		if(check_oprop(otmp, OPROP_COLDW))
-			*truedmgptr += basedmg;
+			*truedmgptr += silverknight_bonus*basedmg;
 		if(check_oprop(otmp, OPROP_OONA_COLDW))
 			*truedmgptr += d(1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_COLDW))
@@ -4597,7 +4600,7 @@ int * truedmgptr;
 		if(shock_vulnerable(mdef))
 			mult *= 2;
 		if(check_oprop(otmp, OPROP_ELECW))
-			*truedmgptr += mult*basedmg;
+			*truedmgptr += silverknight_bonus*mult*basedmg;
 		if(check_oprop(otmp, OPROP_OONA_ELECW))
 			*truedmgptr += d(mult*1, 8);
 		if(check_oprop(otmp, OPROP_LESSER_ELECW))
@@ -4609,7 +4612,7 @@ int * truedmgptr;
 		if(acid_vulnerable(mdef))
 			mult *= 2;
 		if(check_oprop(otmp, OPROP_ACIDW))
-			*truedmgptr += mult*basedmg;
+			*truedmgptr += silverknight_bonus*mult*basedmg;
 		if(check_oprop(otmp, OPROP_LESSER_ACIDW))
 			*truedmgptr += d(mult*2, 6);
 	}
@@ -4618,7 +4621,7 @@ int * truedmgptr;
 		if(magm_vulnerable(mdef))
 			mult *= 1.5;
 		if(check_oprop(otmp, OPROP_MAGCW)){
-			*truedmgptr += mult*basedmg;
+			*truedmgptr += silverknight_bonus*mult*basedmg;
 			*truedmgptr += mult*mistlight_bonus;
 		}
 		if(check_oprop(otmp, OPROP_LESSER_MAGCW))

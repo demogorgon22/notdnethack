@@ -101,8 +101,11 @@ int otyp;
 		amalg_otyp = artinstance[ART_SKY_REFLECTED].ZerthOtyp;
 	}
 
-	if (obj)
+	if (obj){
 		otyp = obj->otyp;
+		if (is_silverknight_armor(obj) && obj->ovar1_silverknight_otyp)
+			otyp = obj->ovar1_silverknight_otyp;
+	}
 
 	i = 0;
 	for (cur_prop = 1; cur_prop <= LAST_PROP; cur_prop++)
@@ -1540,18 +1543,7 @@ int depth;
 	int agrrot = 0;
 	if(magr){
 		agralign = (magr == &youmonst) ? sgn(u.ualign.type) : sgn(magr->data->maligntyp);
-		
-		if(magr == &youmonst){
-			if(hates_holy(youracedata))
-				agrmoral = -1;
-			else if(hates_unholy(youracedata))
-				agrmoral = 1;
-		} else {
-			if(hates_holy_mon(magr))
-				agrmoral = -1;
-			else if(hates_unholy_mon(magr))
-				agrmoral = 1;
-		}
+		agrmoral = calc_agrmoral(magr);
 		agrrot = calc_agrrot(magr);
 		agrimpure = calc_agrimpure(magr);
 	}
@@ -1585,20 +1577,18 @@ int depth;
 	for (i = 0; i < SIZE(marmor); i++) {
 		if((curarm = which_armor(mon, marmor[i]))){
 			if(curarm->oclass == ARMOR_CLASS){
-				if (curarm){
-					if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
-						if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+				if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
+					if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+						continue;
+					if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
+						if(!full_body_match(mon->data, curarm))
 							continue;
-						if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
-							if(!full_body_match(mon->data, curarm))
-								continue;
-						}
-						arm_mdr += arm_dr_bonus(curarm);
-						if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
 					}
-					else if(curarm->otyp == CLOAK_OF_PROTECTION){
-						arm_mdr += arm_dr_bonus(curarm)/2;
-					}
+					arm_mdr += arm_dr_bonus(curarm);
+					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
+				}
+				else if(curarm->otyp == CLOAK_OF_PROTECTION){
+					arm_mdr += arm_dr_bonus(curarm)/2;
 				}
 			}
 			else if(!depth){

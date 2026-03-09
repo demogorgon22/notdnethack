@@ -258,6 +258,13 @@ struct monst *magr;
 	if (is_farm(otmp) &&
 	    ptr->mlet == S_PLANT) tmp += 6;
 
+	if (is_silverknight_weapon(otmp)){
+		if(calc_agrrot(mon) > 0)
+			tmp += 2;
+		if(calc_agrimpure(mon) > 0)
+			tmp += 2;
+	}
+
 	if(youagr && (check_mutation(TT_CLOCKWORK_EYES) || u.seraph_eyes >= SE_FUTURE) && mon && canseemon_eyes(mon)){
 		if(is_chaotic_mon(magr))
 			tmp += rnd(4);
@@ -3104,7 +3111,7 @@ int atr;
 			if (is_rakuyo(otmp))
 				return 0;
 
-			if (check_oprop(otmp, OPROP_BYAKW))
+			if (check_oprop(otmp, OPROP_BYAKW) || is_silverknight_weapon(otmp))
 				return 0;
 
 			if (is_rapier(otmp) || is_mercy_blade(otmp) || otmp->otyp == SET_OF_CROW_TALONS ||
@@ -3129,6 +3136,13 @@ int atr;
 			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
 				mod = 0.5;
 
+			if(otmp->otyp == SILVERKNIGHT_SWORD)
+				mod += 0.5;
+
+			if(is_silverknight_weapon(otmp) && check_oprop(otmp, OPROP_ELECW))
+				mod += 1;
+				
+
 			if (otmp->oartifact == ART_LIFEHUNT_SCYTHE || otmp->oartifact == ART_YORSHKA_S_SPEAR ||
 				otmp->oartifact == ART_FRIEDE_S_SCYTHE)
 				mod += 2;
@@ -3139,12 +3153,15 @@ int atr;
 
 			return mod;
 		case A_CON:
-			if (check_oprop(otmp, OPROP_BYAKW))
+			if (check_oprop(otmp, OPROP_BYAKW) || is_silverknight_weapon(otmp))
 				mod = bimanual_mod(otmp, mtmp);
 			return mod;
 		case A_INT:
 			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
 				mod = 0.5;
+
+			if(is_silverknight_weapon(otmp) && (check_oprop(otmp, OPROP_MAGCW) || check_oprop(otmp, OPROP_COLDW)))
+				mod += 1;
 
 			if (Insight > 0 && check_oprop(otmp, OPROP_GSSDW))
 				mod += 1;
@@ -3165,6 +3182,12 @@ int atr;
 		case A_WIS:
 			if (otmp->oartifact == ART_HOLY_MOONLIGHT_SWORD && otmp->lamplit)
 				mod = 0.5;
+
+			if(otmp->otyp == SILVERKNIGHT_SPEAR || otmp->otyp == SILVERKNIGHT_SCYTHE)
+				mod += .5;
+
+			if(is_silverknight_weapon(otmp) && check_oprop(otmp, OPROP_FIREW))
+				mod += 1;
 
 			if (otmp->oartifact == ART_YORSHKA_S_SPEAR)
 				mod += 1;
@@ -3191,6 +3214,9 @@ int atr;
 
 			if (check_oprop(otmp, OPROP_BYAKW))
 				mod += 0.5;
+
+			if(is_silverknight_weapon(otmp) && (check_oprop(otmp, OPROP_VORPW) || check_oprop(otmp, OPROP_ACIDW) || check_oprop(otmp, OPROP_PSECW) || check_oprop(otmp, OPROP_OCLTW)))
+				mod += 1;
 
 			return mod;
 		default:
@@ -4957,22 +4983,31 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 		//Lances can't get expert traits when not mounted.
 		traits = 0;
 	}
-	if(youagr && is_knight_sword(obj) && activeFightingForm(FFORM_POMMEL)) {
-		//Pommels don't graze.
-		traits &= ~ETRAIT_GRAZE;
-	}
 
 	//Add traits
 	if(youagr){
 		if(is_knight_sword(obj)){
-			if(activeFightingForm(FFORM_HALF_SWORD))
+			if(activeFightingForm(FFORM_HALF_SWORD)){
 				traits |= ETRAIT_QUICK;
-			if(activeFightingForm(FFORM_POMMEL))
+				traits &= ~(ETRAIT_LUNGE|ETRAIT_GRAZE);
+			}
+			if(activeFightingForm(FFORM_POMMEL)){
 				traits |= ETRAIT_PENETRATE_ARMOR;
+				traits &= ~(ETRAIT_LUNGE|ETRAIT_GRAZE|ETRAIT_STOP_THRUST);
+			}
 		}
 		if(is_makashi_saber(obj) && activeFightingForm(FFORM_MAKASHI)){
 			traits |= ETRAIT_LUNGE|ETRAIT_STOP_THRUST;
 		}
+		if(obj->otyp == SILVERKNIGHT_SWORD && !check_oprop(obj, OPROP_NONE)){
+			if((check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_ACIDW)) && (obj->where != OBJ_INVENT || (!activeFightingForm(FFORM_POMMEL) && !activeFightingForm(FFORM_HALF_SWORD))))
+				traits |= ETRAIT_CLEAVE;
+			else if(check_oprop(obj, OPROP_ELECW) && (obj->where != OBJ_INVENT || !activeFightingForm(FFORM_HALF_SWORD)))
+				traits |= ETRAIT_HEW;
+			 else if(check_oprop(obj, OPROP_COLDW))
+				traits |= ETRAIT_FELL;
+			 else if(check_oprop(obj, OPROP_MAGCW) && (obj->where != OBJ_INVENT || !activeFightingForm(FFORM_POMMEL)))
+				traits |= ETRAIT_PUNCTURE;
 	}
 	if(otyp == POLEAXE){
 		if(traits & ETRAIT_FOCUS_FIRE)

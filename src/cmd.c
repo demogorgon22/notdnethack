@@ -1177,9 +1177,10 @@ doEldritchKniForm()
 		}
 	}
 
+	update_externally_granted_spells();
 	for (i = 1; spell_list[i] && !remotely_competent; i++)
 		for (j = 0; j < MAXSPELL; j++)
-			if (spellid(j) == spell_list[i] && spellknow(j) > 0){
+			if (spellid(j) == spell_list[i] && (spellknow(j) > 0 || spellext(j))){
 				remotely_competent = TRUE;
 				break;
 			}
@@ -1201,7 +1202,7 @@ doEldritchKniForm()
 			if (spellid(spell_id) == spell_list[i])
 				break;
 
-		if (spell_id >= MAXSPELL || spellknow(spell_id) <= 0)
+		if (spell_id >= MAXSPELL || (spellknow(spell_id) <= 0 && !spellext(spell_id)))
 			continue;
 
 		success_odds = percent_success(spell_id);

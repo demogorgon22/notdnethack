@@ -240,7 +240,7 @@ makedog()
 	int   pettype;
 	static int petname_used = 0;
 
-	if (preferred_pet == 'n' || Role_if(PM_ANACHRONONAUT) || Role_if(PM_UNDEAD_HUNTER)) return((struct monst *) 0);
+	if (preferred_pet == 'n' || Role_if(PM_ANACHRONONAUT) || Role_if(PM_UNDEAD_HUNTER) || u.silverknight_mire) return((struct monst *) 0);
 
 	pettype = pet_type();
 	if (pettype == PM_LITTLE_DOG)
@@ -348,7 +348,8 @@ makedog()
 			return((struct monst *) 0);
 	}
 	
-	if(mtmp->m_lev) mtmp->mhpmax = 8*(mtmp->m_lev-1)+rnd(8);
+	if(mtmp->m_lev) mtmp->mhpmax = hd_size(mtmp->data)*(mtmp->m_lev-1)+rnd(hd_size(mtmp->data))+1;
+	else mtmp->mhpmax = (hd_size(mtmp->data)+1)/2;
 	mtmp->mhp = mtmp->mhpmax;
 
 #ifdef STEED
