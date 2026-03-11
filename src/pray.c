@@ -227,12 +227,12 @@ in_trouble()
 	if(u.uhs >= WEAK && !Race_if(PM_INCANTIFIER)) return(TROUBLE_STARVING);
 	if (Upolyd ? (u.mh <= 5 || u.mh*2 <= u.mhmax) :
 		(u.uhp <= 5 || u.uhp*2 <= u.uhpmax)) return TROUBLE_HIT;
-	if(u.wimage >= 10 && on_altar()) return(TROUBLE_WIMAGE);
-	if(u.umorgul && on_altar()) return(TROUBLE_MORGUL);
-	if(u.umummyrot && on_altar()) return(TROUBLE_MROT);
-	if(u.uhpmod < -18 && on_altar()) return(TROUBLE_HPMOD);
-	if(u.uenbonus < -18 && on_altar()) return(TROUBLE_ENERGYMOD);
-	if((u.usanity < 100 && on_altar()) || u.usanity < 50) return(TROUBLE_LOW_SAN);
+	if(u.wimage >= 10 && altar_prayer()) return(TROUBLE_WIMAGE);
+	if(u.umorgul && altar_prayer()) return(TROUBLE_MORGUL);
+	if(u.umummyrot && altar_prayer()) return(TROUBLE_MROT);
+	if(u.uhpmod < -18 && altar_prayer()) return(TROUBLE_HPMOD);
+	if(u.uenbonus < -18 && altar_prayer()) return(TROUBLE_ENERGYMOD);
+	if((u.usanity < 100 && altar_prayer()) || u.usanity < 50) return(TROUBLE_LOW_SAN);
 	if(u.ulycn >= LOW_PM) return(TROUBLE_LYCANTHROPE);
 	if(near_capacity() >= EXT_ENCUMBER && AMAX(A_STR)-ABASE(A_STR) > 3)
 		return(TROUBLE_COLLAPSING);
@@ -556,7 +556,7 @@ register int trouble;
 		    break;
 	    case TROUBLE_LOW_SAN:
 			Your("mind feels more steady.");
-			if(on_altar())
+			if(altar_prayer())
 				change_usanity(100, FALSE);
 			else
 				change_usanity((50-u.usanity) + ACURR(A_WIS), FALSE);
