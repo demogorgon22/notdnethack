@@ -4217,7 +4217,7 @@ newgame()
 			} else {
 				//Create without creating
 				otmp->oartifact = inher_arti;
-				expert_weapon_skill(weapon_type(otmp));
+				expert_weapon_skill(is_shield(otmp) ? P_SHIELD : weapon_type(otmp));
 				otmp->oartifact = 0;
 				delobj(otmp);
 			}
