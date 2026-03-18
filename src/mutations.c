@@ -618,7 +618,7 @@ mutation_auras()
 	//  || has_mutation(TT_FLAMING_HAIR) \
 	//  || has_mutation(TT_FROSTY_HAIR) \
 	// )
-	if(check_mutation(TT_TEARS_OF_BLOOD)){
+	if(check_mutation(TT_TEARS_OF_BLOOD) && !u.uswallow){
 		int dmg = (u.ulevel+9)/10;
 		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 			if(DEADMONSTER(mtmp)) continue;
@@ -632,7 +632,7 @@ mutation_auras()
 		}
 	}
 	if(check_mutation(TT_FLAMING_HAIR)){
-		int dmg = d((u.ulevel+2)/3, 4);
+		int dmg = d(u.ulevel/10+1, 4);
 		
 		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 			if(DEADMONSTER(mtmp)) continue;
@@ -640,11 +640,15 @@ mutation_auras()
 			if(mtmp->mpeaceful || nonthreat(mtmp)) continue; //A wizard did it
 			if(resists_fire(mtmp)) continue;
 			if(dmg - distu(mtmp->mx, mtmp->my) < 1) continue;
-			m_losehp(mtmp, dmg - distu(mtmp->mx, mtmp->my), TRUE, "fiery aura");
+			if(u.uswallow){
+				if(u.ustuck == mtmp)
+					m_losehp(mtmp, 8*dmg, TRUE, "fiery hair");
+			}
+			else m_losehp(mtmp, dmg - distu(mtmp->mx, mtmp->my), TRUE, "fiery aura");
 		}
 	}
 	if(check_mutation(TT_FROSTY_HAIR)){
-		int dmg = d((u.ulevel+2)/3, 4);
+		int dmg = d(u.ulevel/10+1, 4);
 		
 		for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon){
 			if(DEADMONSTER(mtmp)) continue;
@@ -652,7 +656,11 @@ mutation_auras()
 			if(mtmp->mpeaceful || nonthreat(mtmp)) continue; //A wizard did it
 			if(resists_cold(mtmp)) continue;
 			if(dmg - distu(mtmp->mx, mtmp->my) < 1) continue;
-			m_losehp(mtmp, dmg - distu(mtmp->mx, mtmp->my), TRUE, "frosty aura");
+			if(u.uswallow){
+				if(u.ustuck == mtmp)
+					m_losehp(mtmp, 8*dmg, TRUE, "frosty aura");
+			}
+			else m_losehp(mtmp, dmg - distu(mtmp->mx, mtmp->my), TRUE, "frosty aura");
 		}
 	}
 }
