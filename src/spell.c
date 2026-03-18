@@ -4875,6 +4875,7 @@ dothrowspell:
 					int adtype = spell_adtype(pseudo->otyp);
 					if(GoatSpell && !GOAT_BAD){
 						spell_flags |= GOAT_SPELL;
+						dam += d(dice, 4);
 						switch(adtype){
 							case AD_FIRE:
 								adtype = AD_EFIR;
