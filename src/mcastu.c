@@ -2724,7 +2724,10 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 		else if(!youdef && !(mdef && mdef->mdoubt))
 			force_fail = TRUE;
 	}
-	
+	/* Niche interaction, can't call in an elf soul */
+	if(!youagr && magr->mfaction == NECROMANCY_FACTION && magr->mtyp != PM_ELVEN_WRAITH && DimensionalLock){
+		force_fail = TRUE;
+	}
 	spell_skill = mlev(magr) * 2;
 	if(youagr){
 		int delta = NightmareAware_Insanity;
