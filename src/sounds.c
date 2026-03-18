@@ -2176,7 +2176,10 @@ humanoid_sound:
 					break;
 					case 16:
 						//SCP-2771: Border Duty
-						pline_msg = "points impatiently forward with index and middle finger extended.";
+						if(ptr->mtyp == PM_ITINERANT_PRIESTESS)
+							pline_msg = "points impatiently forward with index and middle finger extended.";
+						else
+							verbl_msg = "Ia! Shub-Nugganoth!";
 					break;
 				}
 			}
