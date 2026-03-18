@@ -90,6 +90,17 @@
 		(aatyp) == AT_TENT\
 		|| (aatyp) == AT_WISP\
 	)
+
+#define is_poison_ad(adtyp)	(\
+		(adtyp) == AD_DRST \
+		|| (adtyp) == AD_DRDX \
+		|| (adtyp) == AD_DRCO \
+		|| (adtyp) == AD_EDRC \
+		|| (adtyp) == AD_PFBT \
+		|| (adtyp) == AD_SVPN \
+		|| (adtyp) == AD_POSN \
+		|| (adtyp) == AD_DISE \
+	)
 /*	Add new damage types below.
  *
  *	Note that 1-10 correspond to the types of attack used in buzz().

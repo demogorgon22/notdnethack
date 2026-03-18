@@ -1070,6 +1070,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 						(otmp->otyp == SILVERKNIGHT_SPEAR ||
 						(otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == SILVERKNIGHT_SPEAR)
 						)
+						&& P_SKILL(weapon_type(otmp)) >= P_SKILLED
 						&& ROLL_ETRAIT(otmp, magr, !rn2(4), !rn2(20))
 					){
 						result |= hit_with_holyspear(magr, otmp, tarx, tary, 0, attk);
@@ -5118,6 +5119,10 @@ int *shield_margin;
 				}
 				else *shield_margin = -1;
 				if(magr && ((uwep && uwep->otyp == SILVERKNIGHT_SPEAR) || (u.twoweap && uswapwep && uswapwep->otyp == SILVERKNIGHT_SPEAR))){
+					if(attk && is_poison_ad(attk->aatyp)){
+						*shield_margin += 3;
+						defn_acc -= 3;
+					}
 					if(calc_agrrot(magr) > 0){
 						*shield_margin += 2;
 						defn_acc -= 2;
