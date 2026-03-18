@@ -18619,6 +18619,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			}
 			if(lethaldamage && u.urider == magr){
 				more_experienced(experience(mdef, 0), 0);
+				newexplevel();
 			}
 		}
 	}
