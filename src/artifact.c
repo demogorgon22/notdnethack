@@ -189,6 +189,12 @@ hack_artifacts()
 		artilist[ART_GLAMDRING].gflags &= ~(ARTG_NOGEN);
 		artilist[ART_GLAMDRING].role = PM_KNIGHT;
 	}
+	else if(Race_if(PM_SILVERKNIGHT)){
+		artilist[ART_EXCALIBUR].role = NON_PM;
+		artilist[ART_RHONGOMYNIAD].role = NON_PM;
+		artilist[ART_GREAT_RUNE_OF_ROT].gflags &= ~(ARTG_NOGEN);
+		artilist[ART_GREAT_RUNE_OF_ROT].role = PM_KNIGHT;
+	}
 	artilist[ART_MANTLE_OF_HEAVEN].otyp = find_cope();
 	artilist[ART_VESTMENT_OF_HELL].otyp = find_opera_cloak();
 	artilist[ART_CROWN_OF_THE_SAINT_KING].otyp = find_gcirclet();

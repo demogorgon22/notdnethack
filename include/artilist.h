@@ -448,6 +448,16 @@ A("Rhongomyniad",		LANCE,							(const char *)0,
 	NOINVOKE, NOFLAG
 	),
 
+A("The Great Rune of Rot",		ROT_GLYPH,							(const char *)0,
+	4000L, GOLD, MZ_DEFAULT, WT_DEFAULT,
+	A_LAWFUL, NON_PM, PM_SILVERKNIGHT, TIER_B, (ARTG_NOGEN),
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(), NOFLAG,
+	PROPS(), NOFLAG,
+	NOINVOKE, NOFLAG
+	),
+
 A("The Boreal Scepter",			SQUARE_CLUB,	(const char *)0,
 	1500L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_KENSEI, NON_PM, TIER_A, (ARTG_NOGEN),

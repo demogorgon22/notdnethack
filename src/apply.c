@@ -12803,6 +12803,15 @@ dotrephination_menu()
 		incntlet++;
 	}
 	
+	if (u.thoughts&ROTTED_RUNE){
+		Sprintf(buf, "Extract the rotten rune");
+		any.a_int = ROT_GLYPH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet++;
+	}
+	
 	if (u.thoughts&SIGHT){
 		Sprintf(buf, "Extract the recursive eye");
 		any.a_int = ORRERY_GLYPH;	/* must be non-zero */
