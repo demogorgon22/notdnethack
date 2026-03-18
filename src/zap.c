@@ -32,6 +32,7 @@ STATIC_DCL int FDECL(zapdamage, (struct monst *, struct monst *, struct zapdata 
 STATIC_DCL int FDECL(zhit, (struct monst *, struct monst *, struct zapdata *));
 #ifdef STEED
 STATIC_DCL boolean FDECL(zap_steed, (struct obj *));
+STATIC_DCL boolean FDECL(zap_rider, (struct obj *));
 #endif
 
 #ifdef OVL0
@@ -508,6 +509,7 @@ struct obj *otmp;
 				if(xp){
 					more_experienced(xp, 0);
 					newexplevel();
+					mtmp->mtame++;
 				}
 			}
 			if (mtmp->mtame || mtmp->mpeaceful) {
@@ -3143,6 +3145,68 @@ struct obj *obj;	/* wand or spell */
 	}
 	return steedhit;
 }
+
+/* you've zapped a wand upwards while being riden
+ * Return TRUE if the rider was hit by the wand.
+ * Return FALSE if the rider was not hit by the wand.
+ */
+STATIC_OVL boolean
+zap_rider(obj)
+struct obj *obj;	/* wand or spell */
+{
+	int riderhit = FALSE;
+	
+	switch (obj->otyp) {
+
+	   /*
+	    * Wands that are allowed to hit the rider
+	    * Carefully test the results of any that are
+	    * moved here from the bottom section.
+	    */
+		case WAN_PROBING:
+		    probe_monster(u.urider);
+		    makeknown(WAN_PROBING);
+		    riderhit = TRUE;
+		    break;
+		case WAN_TELEPORTATION:
+		case SPE_TELEPORT_AWAY:
+		    /* you go together */
+		    tele();
+		    if(Teleport_control || !couldsee(u.ux0, u.uy0) ||
+			(distu(u.ux0, u.uy0) >= 16))
+				makeknown(obj->otyp);
+		    riderhit = TRUE;
+		    break;
+
+		/* Default processing via bhitm() for these */
+		case WAN_MAKE_INVISIBLE:
+		case WAN_CANCELLATION:
+		case SPE_CANCELLATION:
+		case WAN_POLYMORPH:
+		case SPE_POLYMORPH:
+		case WAN_STRIKING:
+		case SPE_FORCE_BOLT:
+		case ROD_OF_FORCE:
+		case WAN_SLOW_MONSTER:
+		case SPE_SLOW_MONSTER:
+		case WAN_SPEED_MONSTER:
+		case SPE_HEALING:
+		case SPE_EXTRA_HEALING:
+		case SPE_FULL_HEALING:
+		case WAN_DRAINING:
+		case SPE_DRAIN_LIFE:
+		case WAN_OPENING:
+		case SPE_KNOCK:
+		    (void) bhitm(u.urider, obj);
+		    riderhit = TRUE;
+		    break;
+
+		default:
+		    riderhit = FALSE;
+		    break;
+	}
+	return riderhit;
+}
 #endif
 
 #endif /*OVL0*/
@@ -3447,6 +3511,9 @@ register struct	obj	*obj;
 #ifdef STEED
 	if (u.usteed && (objects[otyp].oc_dir != NODIR) &&
 	    !u.dx && !u.dy && (u.dz > 0) && zap_steed(obj)) {
+		disclose = TRUE;
+	} else if (u.urider && (objects[otyp].oc_dir != NODIR) &&
+	    !u.dx && !u.dy && (u.dz < 0) && zap_rider(obj)) {
 		disclose = TRUE;
 	} else
 #endif
