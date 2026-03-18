@@ -761,7 +761,8 @@ doread()
 	if(scroll->oclass == SPBOOK_CLASS) {
 	    return(study_book(scroll));
 	}
-	scroll->in_use = TRUE;	/* scroll, not spellbook, now being read */
+	if(!scroll->oartifact)
+		scroll->in_use = TRUE;	/* scroll, not spellbook, now being read */
 	if(scroll->oartifact) {
 		if(Blind && (scroll->oartifact == ART_MARAUDER_S_MAP || scroll->oartifact == ART_RITE_OF_DETESTATION)) {
 			pline("Being blind, you cannot see %s.", the(xname(scroll)));
@@ -786,8 +787,10 @@ doread()
 		}
 	  }
 	}
-	if(Is_spire(&u.uz) && objects[scroll->otyp].oc_magic)
+	if(Is_spire(&u.uz) && objects[scroll->otyp].oc_magic){
+		scroll->in_use = FALSE;
 	    pline("Nothing happens.");
+	}
 	else if(!seffects(scroll))  {
 		if(!objects[scroll->otyp].oc_name_known) {
 		    if(known) {
