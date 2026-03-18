@@ -6615,7 +6615,7 @@ int tary;
 		}
 		else {
 			/* these three spells are very similar, and share their resist checks */
-			if (Magic_res(mdef) || (youdef ? Free_action : mm_resist(mdef, magr, 0, FALSE))) {
+			if (Magic_res(mdef) || (youdef ? Free_action : (mon_resistance(mdef, FREE_ACTION) || mm_resist(mdef, magr, 0, FALSE)))) {
 				shieldeff(x(mdef), y(mdef));
 
 				switch (spell)
