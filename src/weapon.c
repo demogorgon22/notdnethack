@@ -427,11 +427,15 @@ struct monst *magr;
 			attackmask = WHACK; // only bashing
 	}
 	if (obj && magr){
-		if((obj->otyp == TOOTH || obj->otyp == GOEDENDAG || obj->otyp == POLEAXE || obj->oartifact == ART_STORM_CURSE) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE))
+		if((obj->otyp == TOOTH || obj->otyp == GOEDENDAG || obj->otyp == POLEAXE || obj->oartifact == ART_STORM_CURSE || obj->oartifact == ART_YORSHKA_S_SPEAR) && obj->o_e_trait&ETRAIT_FOCUS_FIRE && CHECK_ETRAIT(obj, magr, ETRAIT_FOCUS_FIRE))
 			attackmask = PIERCE; // only thrusting
-		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_HEW && CHECK_ETRAIT(obj, magr, ETRAIT_HEW))
+		else if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_HEW && CHECK_ETRAIT(obj, magr, ETRAIT_HEW))
 			attackmask = SLASH; // only slashing
-		if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_STUNNING_STRIKE && CHECK_ETRAIT(obj, magr, ETRAIT_STUNNING_STRIKE))
+		else if((obj->otyp == POLEAXE) && obj->o_e_trait&ETRAIT_STUNNING_STRIKE && CHECK_ETRAIT(obj, magr, ETRAIT_STUNNING_STRIKE))
+			attackmask = WHACK; // only bashing
+		else if((obj->oartifact == ART_YORSHKA_S_SPEAR) && obj->o_e_trait&ETRAIT_STUNNING_STRIKE && CHECK_ETRAIT(obj, magr, ETRAIT_STUNNING_STRIKE))
+			attackmask = WHACK; // only bashing
+		else if((obj->oartifact == ART_YORSHKA_S_SPEAR) && obj->o_e_trait&ETRAIT_HEW && CHECK_ETRAIT(obj, magr, ETRAIT_HEW))
 			attackmask = WHACK; // only bashing
 	}
 	if(obj && obj->o_e_trait == ETRAIT_HEW && magr
@@ -5011,12 +5015,13 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 				traits |= ETRAIT_FELL;
 			 else if(check_oprop(obj, OPROP_MAGCW) && (obj->where != OBJ_INVENT || !activeFightingForm(FFORM_POMMEL)))
 				traits |= ETRAIT_PUNCTURE;
+		}
 	}
 	if(otyp == POLEAXE){
-		if(traits & ETRAIT_FOCUS_FIRE)
+		if(obj->o_e_trait & ETRAIT_FOCUS_FIRE)
 			traits |= ETRAIT_STOP_THRUST;
-		if(traits & ETRAIT_STUNNING_STRIKE){
-			traits |= ETRAIT_KNOCK_BACK|ETRAIT_PENETRATE_ARMOR;
+		if(obj->o_e_trait & (ETRAIT_STUNNING_STRIKE|ETRAIT_HEW)){
+			traits |= ETRAIT_PENETRATE_ARMOR;
 		}
 	}
 	else if(otyp == BESTIAL_CLAW){
@@ -5030,6 +5035,17 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 			if(mon->mcrazed || is_were(pa))
 				traits |= ETRAIT_QUICK|ETRAIT_LUNGE;
 		}
+	}
+
+	if(obj->oartifact == ART_YORSHKA_S_SPEAR){
+		if(obj->o_e_trait & ETRAIT_FOCUS_FIRE)
+			traits |= ETRAIT_STOP_THRUST|ETRAIT_BRACED|ETRAIT_PUNCTURE;
+		else if(obj->o_e_trait & ETRAIT_HEW)
+			traits |= ETRAIT_PENETRATE_ARMOR;
+		else if(obj->o_e_trait & ETRAIT_STUNNING_STRIKE)
+			traits |= ETRAIT_CLEAVE|ETRAIT_PENETRATE_ARMOR;
+		else
+			traits |= ETRAIT_STOP_THRUST|ETRAIT_LUNGE|ETRAIT_PUNCTURE;
 	}
 
 	if(check_oprop(obj, OPROP_SECNW)){

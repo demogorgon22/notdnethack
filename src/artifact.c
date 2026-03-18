@@ -4237,12 +4237,12 @@ Mb_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 				} else {
 					*dmgptr += *dmgptr;
 				}
-				if(u.ustdy >= 10){
+				if(youmonst.mbleed >= 4){
 					u_slow_down();
 				}
-				if(u.ustdy >= 20){
+				if(youmonst.mbleed >= 9){
 					*dmgptr += d(12,6);
-					u.ustdy -= 20;
+					youmonst.mbleed -= 9;
 				}
 			}
 		} else {
@@ -4252,15 +4252,15 @@ Mb_hit(struct monst *magr, struct monst *mdef, struct obj *mb, int *dmgptr, int 
 				} else {
 					*dmgptr += *dmgptr;
 				}
-				if(mdef->mstdy >= 10){
+				if(mdef->mbleed >= 4){
 					if(mdef->mspeed != MSLOW)
 						pline("%s slows down!", Monnam(mdef));
 					mdef->mspeed = MSLOW;
 					mdef->permspeed = MSLOW;
 				}
-				if(mdef->mstdy >= 20){
+				if(mdef->mbleed >= 9){
 					*dmgptr += d(12,6);
-					mdef->mstdy -= 20;
+					mdef->mbleed -= 9;
 				}
 			}
 		}
@@ -8865,14 +8865,8 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
-	if (oartifact == ART_PROFANED_GREATSCYTHE || oartifact == ART_FRIEDE_S_SCYTHE) {
-		if (youagr) {
-			mdef->mstdy += (basedmg) / 4 + 1;
-		} else if (youdef) {
-			u.ustdy += (basedmg) / 4 + 1;
-		} else { /* m vs m */
-			mdef->mstdy += (basedmg) / 4 + 1;
-		}
+	if (oartifact == ART_FRIEDE_S_SCYTHE) {
+		mdef->mbleed += (basedmg) / 8 + 1;
 	}
 	if (oartifact == ART_SHADOWLOCK) {
 		if (youagr) {
