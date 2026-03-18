@@ -4608,6 +4608,7 @@ printEtraits()
 			{ETRAIT_BLADESONG, "Bladesong"},
 			{ETRAIT_BLADEDANCE, "Bladedance"},
 			{ETRAIT_PUNCTURE, "Puncture"},
+			{ETRAIT_STRIKING, "Striking"},
 			{0,0}
 		};
 		for(i=0;i<NUM_OBJECTS;i++){

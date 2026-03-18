@@ -206,6 +206,9 @@ struct monst *magr;
 
 	/*	Put weapon specific "to hit" bonuses in below:		*/
 	tmp += objects[otmp->otyp].oc_hitbon;
+	if(magr && CHECK_ETRAIT(otmp, magr, ETRAIT_STRIKING)){
+		tmp += ROLL_ETRAIT(otmp, magr, 5, 2);
+	}
 	if(youagr && u.sealsActive&SEAL_OTIAX && (
 		otmp->otyp == LOCK_PICK ||
 		otmp->otyp == CREDIT_CARD ||
@@ -704,7 +707,7 @@ struct monst *magr;
 		else if (otyp == BLADED_BOW)
 		{
 			ocn = 1;
-			ocd = 8;
+			ocd = (large ? 8 : 10);;
 		}
 		else if (otyp == TWINGUN_SHANTA)
 		{

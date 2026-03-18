@@ -3429,6 +3429,9 @@ winid *datawin;
 			
 			if(size_penalty < 0) size_penalty = 0;
 			hitbon -= size_penalty * 4;
+			if(CHECK_ETRAIT(obj, &youmonst, ETRAIT_STRIKING)){
+				hitbon += ROLL_ETRAIT(obj, &youmonst, 5, 2);
+			}
 		} 
 		
 		if (hitbon != 0)
@@ -3726,6 +3729,7 @@ winid *datawin;
 		EXPERTTRAITS(ETRAIT_FOCUS_FIRE, "can target gaps in enemy armor");
 		EXPERTTRAITS(ETRAIT_STUNNING_STRIKE, "can deliver powerful stunning blows");
 		EXPERTTRAITS(ETRAIT_GRAZE, "may graze foes on a near miss");
+		EXPERTTRAITS(ETRAIT_STRIKING, "skilled users can strike more accurately");
 		EXPERTTRAITS(ETRAIT_STOP_THRUST, "can harness enemy momentum to deliver powerful blows");
 		EXPERTTRAITS(ETRAIT_PENETRATE_ARMOR, "penetrates enemy armor");
 		EXPERTTRAITS(ETRAIT_LONG_SLASH, "deals extra damage against lightly-armored enemies");
