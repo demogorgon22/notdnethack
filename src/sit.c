@@ -124,14 +124,14 @@ dosit()
 	    else if (obj->otyp == BERGONIC_CHAIR){
 			return sit_bergonic(obj);
 		}
-	    else if (obj->otyp == EXPENSIVE_BED || obj->otyp == BED || obj->otyp == BEDROLL || obj->otyp == GURNEY){
+	    else if (obj->otyp == EXPENSIVE_BED || obj->otyp == BED || obj->otyp == BEDROLL || obj->otyp == GURNEY || obj->otyp == TOWEL){
 			if(obj->otyp == EXPENSIVE_BED){
 				You("climb into the bed.");
 			}
 			else {
-				You("sit on the %s.", obj->otyp == BED ? "bed" : obj->otyp == BEDROLL ? "bedroll" : obj->otyp == GURNEY ? "gurney" : "unidentified bedlike object");
+				You("sit on the %s.", obj->otyp == BED ? "bed" : obj->otyp == BEDROLL ? "bedroll" : obj->otyp == GURNEY ? "gurney" : obj->otyp == TOWEL ? "towel" : "unidentified bedlike object");
 			}
-			if((u.nextsleep <= monstermoves && !(obj->otyp == BEDROLL && obj->nexthere)) || obj->otyp == EXPENSIVE_BED){
+			if((u.nextsleep <= monstermoves && !((obj->otyp == BEDROLL || obj->otyp == TOWEL) && obj->nexthere)) || obj->otyp == EXPENSIVE_BED){
 				if(yn("Take a nap?") == 'y'){
 					u.nextsleep = moves+rnz(100)+180;
 					u.lastslept = moves;
@@ -139,7 +139,7 @@ dosit()
 				}
 			}
 			else {
-				if(obj->otyp == BEDROLL && obj->nexthere)
+				if((obj->otyp == BEDROLL || obj->otyp == TOWEL) && obj->nexthere)
 					pline("It's not very comfortable...");
 				else
 					pline("It's %scomfortable, but you're not tired.", obj->otyp == BED ? "" : "reasonably ");

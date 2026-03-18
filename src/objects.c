@@ -1409,12 +1409,12 @@ TOOL(("living mask", "gilled jellyfish"),  /*Needs encyc entry*/
 TOOL(("lenses"),		1,   MZ_TINY, 0, 0, 0,   5,  3,  80, GLASS, HI_GLASS), /*Needs encyc entry*/
 TOOL(("sunglasses", "mirrored lenses"),/*Needs encyc entry*/
 					   0,   MZ_TINY, 0, 0, 0,   0,  3, 240, GLASS, CLR_BROWN, O_POWER(BLIND_RES)), /*Needs encyc entry*/
-TOOL(("blindfold"),    1,   MZ_TINY, 0, 0, 0,  45,  2,  20, CLOTH, CLR_GRAY),
+TOOL(("blindfold"),    1,   MZ_TINY, 0, 0, 0,  60,  2,  20, CLOTH, CLR_GRAY),
 TOOL(("android visor", "black blindfold", "blindfold"), /*Needs encyc entry*/
 								0,   MZ_TINY, 0, 0, 0,   0,  2,  40, CLOTH, CLR_BLACK),
 TOOL(("soul-lens", "smooth-gemmed head-chain"),		0,   MZ_TINY, 0, 1, 0,   0,  3, 333, GLASS, HI_GOLD), /*Needs encyc entry*/
-TOOL(("towel"),        1,   MZ_TINY, 0, 0, 0,  45,  2,  50, CLOTH, CLR_MAGENTA),
-TOOL(("saddle"),       1,  MZ_LARGE, 0, 0, 0,   5,200, 150, LEATHER, HI_LEATHER),
+TOOL(("towel"),        1,   MZ_TINY, 0, 0, 0,  15,  2,  50, CLOTH, CLR_MAGENTA),
+TOOL(("saddle"),       1,  MZ_LARGE, 0, 0, 0,  15,200, 150, LEATHER, HI_LEATHER),
 TOOL(("leash"),        1,  MZ_SMALL, 0, 0, 0,  55, 12,  20, LEATHER, HI_LEATHER),
 /*Needs encyc entry*/
 TOOL(("stethoscope"),  1,  MZ_SMALL, 0, 0, 0,  25,  4,  75, IRON, HI_METAL),
@@ -1517,7 +1517,7 @@ WEPTOOL(("seismic hammer", "dull metallic hammer"),/*Needs encyc entry*/
  */
 TORCH(("torch"),/*Needs encyc entry*/
 	DMG(D(3)), DMG(D(2)),
-	1,  MZ_SMALL, 0, 0, 15, 10,   5,  0, B,   P_CLUB, WOOD, HI_WOOD),
+	1,  MZ_SMALL, 0, 0, 20, 10,   5,  0, B,   P_CLUB, WOOD, HI_WOOD),
 TORCH(("magic torch", "torch"),/*Needs encyc entry*/
 	DMG(D(6)), DMG(D(3)),
 	0,  MZ_SMALL, 1, 0,  0, 10, 500,  1, B,   P_CLUB, BONE, CLR_WHITE, O_MATSPEC(UNIDED)),

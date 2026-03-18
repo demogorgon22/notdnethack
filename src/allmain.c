@@ -1151,9 +1151,9 @@ you_regen_hp()
 			// To be comfortable, a bed must be "on top" of any pile of items in the square.
 			struct obj *bed = level.objects[u.ux][u.uy]; 
 			// on a bed
-			if(bed && bed->oclass == BED_CLASS){
+			if(bed && (bed->oclass == BED_CLASS || bed->otyp == TOWEL)){
 				// A bedroll must be the only object in the square, other beds can have stuff tucked under them
-				if((bed->otyp == BEDROLL && !bed->nexthere) || bed->otyp == GURNEY)
+				if(((bed->otyp == BEDROLL || bed->otyp == TOWEL) && !bed->nexthere) || bed->otyp == GURNEY)
 					reglevel *= 1.5;
 				else if(bed->otyp == BED)
 					reglevel *= 2;
@@ -1323,9 +1323,9 @@ you_regen_pw()
 			// To be comfortable, a bed must be "on top" of any pile of items in the square.
 			struct obj *bed = level.objects[u.ux][u.uy]; 
 			// on a bed
-			if(bed && bed->oclass == BED_CLASS){
+			if(bed && (bed->oclass == BED_CLASS || bed->otyp == TOWEL)){
 				// A bedroll must be the only object in the square, other beds can have stuff tucked under them
-				if((bed->otyp == BEDROLL && !bed->nexthere) || bed->otyp == GURNEY)
+				if(((bed->otyp == BEDROLL || bed->otyp == TOWEL) && !bed->nexthere) || bed->otyp == GURNEY)
 					reglevel *= 3;
 				else if(bed->otyp == BED)
 					reglevel *= 4;
