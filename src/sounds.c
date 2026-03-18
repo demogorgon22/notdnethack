@@ -676,6 +676,17 @@ struct monst *mtmp;
 	    yelp_verb = "cough";
 		yelp_modifier = " paroxysmally";
 	    break;
+	case MS_CUSS:
+	    yelp_verb = "curse";
+		break;
+	case MS_HUMANOID:
+	case MS_GUARDIAN:
+	case MS_SELL:
+	case MS_ORACLE:
+	case MS_SONG:
+		yelp_verb = "yelp";
+		break;
+	
     }
     if (yelp_verb) {
 	pline("%s %s%s!", Monnam(mtmp), vtense((char *)0, yelp_verb), yelp_modifier ? yelp_modifier : "");
