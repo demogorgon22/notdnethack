@@ -1078,7 +1078,7 @@ bimanual(struct obj * otmp, struct permonst * ptr, boolean base_only, boolean yo
 	/* get wielder's size -- optional, will assume medium (human) */
 	wielder_size = (ptr ? ptr->msize : MZ_MEDIUM);
 	
-	if (yours) {
+	if (yours && !base_only) {
 		if (Role_if(PM_CAVEMAN))
 			wielder_size += 1;
 		if (u.sealsActive&SEAL_YMIR)
