@@ -958,7 +958,7 @@ const struct Race races[] = {
 	NO_NIGHTVISION,
 	SPE_SLEEP, -5
 },
-{	"centaur", "centaur", "centaurhood", "Cen", 't',
+{	"centaur", "centaur", "centaurhood", "Cen", 'u',
 	{0, 0},
 	PM_CENTAUR, NON_PM, PM_CENTAUR_MUMMY, PM_CENTAUR,
 	ROLE_MALE|ROLE_FEMALE |
