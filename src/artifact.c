@@ -71,6 +71,7 @@ STATIC_DCL boolean FDECL(Am_hit, (struct monst *magr,struct monst *mdef,
 STATIC_DCL boolean FDECL(voidPen_hit, (struct monst *magr,struct monst *mdef,
 				  struct obj *,int *,int,boolean,char *));
 STATIC_DCL boolean FDECL(narrow_voidPen_hit, (struct monst *mdef, struct obj *));
+STATIC_DCL void FDECL(pg_bullwhip_hit, (struct monst *magr, struct monst *mdef, struct obj *));
 
 #ifndef OVLB
 STATIC_DCL int spec_dbon_applies;
@@ -1172,10 +1173,10 @@ struct obj *otmp;	/* existing object */
 				add_oprop(otmp, OPROP_RETRW);
 			}
 			if(!rn2(20)){
-				add_oprop(otmp, OPROP_ASECW);
+				add_oprop(otmp, OPROP_SECR_ACID);
 			}
 			else if(!rn2(20)){
-				add_oprop(otmp, OPROP_PSECW);
+				add_oprop(otmp, OPROP_SECR_POSN);
 			}
 		}
 	}
@@ -1304,7 +1305,7 @@ struct obj *otmp;	/* existing object */
 			add_oprop(otmp, OPROP_LIVEW);
 		}
 		if(!rn2(20)){
-			add_oprop(otmp, OPROP_ASECW);
+			add_oprop(otmp, OPROP_SECR_ACID);
 		}
 	}
 	/* ring props (stack with weapon) */
@@ -1729,10 +1730,10 @@ struct obj *otmp;	/* existing object */
 			add_oprop(otmp, OPROP_RETRW);
 		}
 		if(!rn2(20)){
-			add_oprop(otmp, OPROP_ASECW);
+			add_oprop(otmp, OPROP_SECR_ACID);
 		}
 		else if(!rn2(20)){
-			add_oprop(otmp, OPROP_PSECW);
+			add_oprop(otmp, OPROP_SECR_POSN);
 		}
 	}
 	return otmp;
@@ -4539,7 +4540,7 @@ int * truedmgptr;
 	const struct artifact *oart = get_artifact(otmp);
 	int mistlight_bonus = 0;
 	int silverknight_bonus = 1;
-	if(is_silverknight_weapon(otmp))
+	if(is_silverknight_weapon(otmp) || otmp->otyp == PEST_GLAIVE)
 		silverknight_bonus = 2;
 	if(magr && magr->mtyp == PM_ARIANNA && (otmp->obj_material == SILVER || otmp->obj_material == GOLD || otmp->obj_material == PLATINUM)){
 		if(mlev(magr) >= 28)
@@ -5369,6 +5370,175 @@ struct monst *magr;
 	in_conflict = FALSE;
 }
 
+STATIC_OVL void
+pg_bullwhip_hit(magr, mdef, otmp)
+struct monst *magr;
+struct monst *mdef;
+struct obj *otmp;
+{
+	boolean youagr = (magr == &youmonst);
+	boolean youdef = (mdef == &youmonst);
+	boolean vismagr = canseemon(magr);
+	int proficient = (youagr ? P_SKILL(P_POLEARMS) : m_martial_skill(magr->data)) - P_UNSKILLED;
+	if (proficient < 0) proficient = 0;
+	if (proficient > 3) proficient = 3;
+
+	if (youagr && !youdef) {
+		/* player attacks monster: try to disarm it */
+		struct obj *mwep = rn2(3) ? MON_WEP(mdef) : MON_SWEP(mdef);
+		if (!mwep) return;
+
+		char onambuf[BUFSZ];
+		const char *mon_hand = mbodypart(mdef, HAND);
+		boolean gotit = proficient && (!Fumbling || !rn2(10));
+
+		if (bimanual_mon(mwep, mdef)) mon_hand = makeplural(mon_hand);
+		Strcpy(onambuf, cxname(mwep));
+
+		You("wrap the glaive's antennae around %s %s.",
+		    s_suffix(mon_nam(mdef)), onambuf);
+
+		if (gotit && mwep->cursed && !is_weldproof_mon(mdef)) {
+			pline("%s welded to %s %s%c",
+			    (mwep->quan == 1L) ? "It is" : "They are",
+			    mhis(mdef), mon_hand,
+			    !mwep->bknown ? '!' : '.');
+			mwep->bknown = 1;
+			gotit = FALSE;
+		}
+		if (gotit) {
+			obj_extract_self(mwep);
+			possibly_unwield(mdef, FALSE);
+			setmnotwielded(mdef, mwep);
+			IMPURITY_UP(u.uimp_theft)
+			switch (rn2(proficient + 1)) {
+			case 2:
+				You("yank %s %s to the %s!",
+				    s_suffix(mon_nam(mdef)), onambuf,
+				    surface(u.ux, u.uy));
+				place_object(mwep, u.ux, u.uy);
+				stackobj(mwep);
+				break;
+			case 3:
+				You("snatch %s %s!", s_suffix(mon_nam(mdef)), onambuf);
+				mwep = hold_another_object(mwep, "You drop %s!",
+				    doname(mwep), (const char *)0);
+				break;
+			default:
+				You("yank %s from %s %s!",
+				    the(onambuf), s_suffix(mon_nam(mdef)), mon_hand);
+				obj_no_longer_held(mwep);
+				place_object(mwep, mdef->mx, mdef->my);
+				stackobj(mwep);
+				break;
+			}
+		} else {
+			pline("The antennae slip free.");
+		}
+		wakeup(mdef, TRUE);
+
+	} else if (!youagr && youdef) {
+		/* monster attacks player: MUSE_BULLWHIP-style disarm */
+		boolean gotit = proficient && !rn2(5 - proficient);
+		if (!gotit) return;
+		if (!uwep) return;
+
+		struct obj *obj = uwep;
+		const char *The_antennae = vismagr ? "The glaive's antennae" : "Antennae";
+		const char *the_antennae = vismagr ? "the glaive's antennae" : "antennae";
+		const char *hand = body_part(HAND);
+		char the_weapon[BUFSZ];
+		int where_to;
+
+		if (bimanual_mon(obj, &youmonst)) hand = makeplural(hand);
+		Strcpy(the_weapon, the(xname(obj)));
+
+		if (vismagr)
+			pline("%s lashes %s towards your %s!", Monnam(magr), the_antennae, hand);
+
+		if (obj->otyp == BALL) {
+			pline("%s fail%s to wrap around %s.", The_antennae,
+			    vismagr ? "" : "s", the_weapon);
+			return;
+		}
+
+		if (obj->oartifact)
+			pline("%s wrap%s around your wielded %s!", The_antennae,
+			    vismagr ? "" : "s", the_weapon);
+		else
+			pline("%s wrap%s around %s you're wielding!", The_antennae,
+			    vismagr ? "" : "s", the_weapon);
+
+		where_to = rn2(proficient + 2);	/* 0 = slip; 1..3 = outcomes */
+		if (where_to > 3) where_to = 3;
+
+		if (welded(obj)) {
+			pline("%s welded to your %s%c",
+			    !is_plural(obj) ? "It is" : "They are",
+			    hand, !obj->bknown ? '!' : '.');
+			where_to = 0;
+		}
+		if (obj->oartifact == ART_GLAMDRING) {
+			pline("Glamdring resists being ripped out of your hands!");
+			where_to = 0;
+		}
+		if (obj->oartifact == ART_DIRGE && check_mutation(TENDRIL_HAIR)) {
+			pline("Dirge holds onto your hands!");
+			where_to = 0;
+		}
+		if (!where_to) {
+			pline_The("antennae slip free.");
+			return;
+		}
+		/* material aversions redirect to floor under player */
+		if (where_to == 3) {
+			if (hates_silver(magr->data) && obj_is_material(obj, SILVER))
+				where_to = 2;
+			else if (hates_iron(magr->data) && is_iron_obj(obj))
+				where_to = 2;
+			else if (hates_unholy_mon(magr) && obj_is_material(obj, GREEN_STEEL))
+				where_to = 2;
+			else if (hates_unholy_mon(magr) && is_unholy(obj))
+				where_to = 2;
+			else if (hates_unblessed_mon(magr) && !is_unholy(obj) && !obj->blessed)
+				where_to = 2;
+			else if (hates_holy_mon(magr) && obj->blessed)
+				where_to = 2;
+		}
+		freeinv(obj);
+		uwepgone();
+		switch (where_to) {
+		case 1:	/* floor under monster */
+			pline("%s yanks %s from your %s!", Monnam(magr), the_weapon, hand);
+			place_object(obj, magr->mx, magr->my);
+			break;
+		case 2:	/* floor under player */
+			pline("%s yanks %s to the %s!", Monnam(magr),
+			    the_weapon, surface(u.ux, u.uy));
+			dropy(obj);
+			break;
+		case 3:	/* into monster's inventory */
+			pline("%s snatches %s!", Monnam(magr), the_weapon);
+			(void) mpickobj(magr, obj);
+			break;
+		}
+
+	} else if (!youagr && !youdef) {
+		/* monster vs monster: simplified disarm */
+		struct obj *mwep = rn2(3) ? MON_WEP(mdef) : MON_SWEP(mdef);
+		if (!mwep) return;
+		if (proficient && !rn2(2)) {
+			obj_extract_self(mwep);
+			possibly_unwield(mdef, FALSE);
+			setmnotwielded(mdef, mwep);
+			obj_no_longer_held(mwep);
+			place_object(mwep, mdef->mx, mdef->my);
+			stackobj(mwep);
+		}
+		wakeup(mdef, TRUE);
+	}
+}
+
 /*  */
 void
 otyp_hit(magr, mdef, otmp, basedmg, plusdmgptr, truedmgptr, dieroll, hittxt, printmessages, direct_weapon)
@@ -6106,6 +6276,10 @@ boolean direct_weapon;
 			break;
 		}
 	}
+
+	/* PG_BULLWHIP: pest glaive antennae attempt to disarm the defender */
+	if (otmp->otyp == PEST_GLAIVE && (otmp->ovar1_pestglaive_props & PG_BULLWHIP) && mdef)
+		pg_bullwhip_hit(magr, mdef, otmp);
 }
 
 /* returns MM_style hitdata now, and is used for both artifacts and weapon properties */
@@ -15779,30 +15953,29 @@ living_items()
 		if (obj->otyp == STATUE && (obj->spe&STATUE_FACELESS)){
 			whisper++;
 		}
-		/* acidify self-acidifying objects */ 
-		if (check_oprop(obj, OPROP_ASECW)){
-			if ((!(obj->opoisoned&OPOISON_ACID) ||
-				((obj->otyp == VIPERWHIP || obj->otyp == find_signet_ring()) && obj->opoisonchrgs < 3)
-				) && !rn2(40)
-				){
-				obj->opoisoned |= OPOISON_ACID;
-				if ((obj->otyp == VIPERWHIP || obj->otyp == find_signet_ring()) && obj->opoisonchrgs < 3){
-					obj->opoisonchrgs++;
-				}
-			}
+#define SECR_TICK(oprop, opoison) \
+		if (check_oprop(obj, oprop)){ \
+			if ((!(obj->opoisoned&(opoison)) || \
+				((obj->otyp == VIPERWHIP || obj->otyp == find_signet_ring()) && obj->opoisonchrgs < 3) \
+				) && !rn2(40) \
+				){ \
+				obj->opoisoned |= (opoison); \
+				if ((obj->otyp == VIPERWHIP || obj->otyp == find_signet_ring()) && obj->opoisonchrgs < 3){ \
+					obj->opoisonchrgs++; \
+				} \
+			} \
 		}
-		/* poison self-poisoning objects */
-		if (check_oprop(obj, OPROP_PSECW)){
-			if ((!(obj->opoisoned&OPOISON_BASIC) ||
-				((obj->otyp == VIPERWHIP || obj->otyp == find_signet_ring()) && obj->opoisonchrgs < 3)
-				) && !rn2(40)
-				){
-				obj->opoisoned |= OPOISON_BASIC;
-				if ((obj->otyp == VIPERWHIP || obj->otyp == find_signet_ring()) && obj->opoisonchrgs < 3){
-					obj->opoisonchrgs++;
-				}
-			}
-		}
+		SECR_TICK(OPROP_SECR_ACID, OPOISON_ACID)
+		SECR_TICK(OPROP_SECR_POSN, OPOISON_BASIC)
+		SECR_TICK(OPROP_SECR_FLTH, OPOISON_FILTH)
+		SECR_TICK(OPROP_SECR_SLEP, OPOISON_SLEEP)
+		SECR_TICK(OPROP_SECR_BLND, OPOISON_BLIND)
+		SECR_TICK(OPROP_SECR_PARL, OPOISON_PARAL)
+		SECR_TICK(OPROP_SECR_AMNS, OPOISON_AMNES)
+		SECR_TICK(OPROP_SECR_SLVR, OPOISON_SILVER)
+		SECR_TICK(OPROP_SECR_HLLU, OPOISON_HALLU)
+		SECR_TICK(OPROP_SECR_DIRE, OPOISON_DIRE)
+#undef SECR_TICK
 		/* grease self-greasing objects */
 		if (check_oprop(obj, OPROP_GRES) && !obj->greased && !rn2(40)){
 			obj->greased = TRUE;

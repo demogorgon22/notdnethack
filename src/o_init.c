@@ -1605,6 +1605,9 @@ void
 fix_etraits(struct obj *otmp)
 {
 	otmp->expert_traits = objects[otmp->otyp].expert_traits;
+	if(otmp->otyp == PEST_GLAIVE){
+		otmp->expert_traits |= otmp->ovar2_pg_etraits;
+	}
 	//Extra artifact traits
 	if(otmp->oartifact == ART_BLADE_SINGER_S_SABER)
 		otmp->expert_traits |= ETRAIT_BLADESONG;

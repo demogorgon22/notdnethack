@@ -146,10 +146,10 @@ dig_typ(otmp, x, y)
 struct obj *otmp;
 xchar x, y;
 {
-	boolean ispick = is_pick(otmp),
+	boolean ispick = is_pick(otmp) || (otmp->otyp == PEST_GLAIVE && (otmp->ovar1_pestglaive_props & PG_MATTOCK)),
 		is_saber = is_lightsaber(otmp),
 		is_seismic = (otmp->otyp == SEISMIC_HAMMER && otmp->ovar1_charges > 0),
-		is_axe = is_axe(otmp);
+		is_axe = is_axe(otmp) || (otmp->otyp == PEST_GLAIVE && (otmp->ovar1_pestglaive_props & PG_AXE));
 
 	return ((ispick||is_saber||is_seismic) && sobj_at(STATUE, x, y) ? DIGTYP_STATUE :
 		(ispick||is_saber||is_seismic) && sobj_at(BOULDER, x, y) ? DIGTYP_BOULDER :
@@ -243,27 +243,40 @@ dig()
 {
 	register xchar dpx = digging.pos.x, dpy = digging.pos.y;
 	register struct rm *lev = &levl[dpx][dpy];
-	register boolean ispick = ((uwep && ((is_pick(uwep) || (is_lightsaber(uwep) && litsaber(uwep))) || (uwep->otyp == SEISMIC_HAMMER))) || (uarmg && is_pick(uarmg)));
+	boolean is_pg_mattock = (uwep && uwep->otyp == PEST_GLAIVE && (uwep->ovar1_pestglaive_props & PG_MATTOCK));
+	boolean is_pg_axe = (uwep && uwep->otyp == PEST_GLAIVE && (uwep->ovar1_pestglaive_props & PG_AXE));
+	register boolean ispick = ((uwep && ((is_pick(uwep) || (is_lightsaber(uwep) && litsaber(uwep))) || (uwep->otyp == SEISMIC_HAMMER) || is_pg_mattock)) || (uarmg && is_pick(uarmg)));
 	int bonus;
-	struct obj *digitem = ((uwep && ((is_pick(uwep) || (is_lightsaber(uwep) && litsaber(uwep))) || (uwep->otyp == SEISMIC_HAMMER)))) ? uwep : 
-		(uwep && is_axe(uwep) && IS_TREES(lev->typ)) ? uwep :
+	struct obj *digitem = ((uwep && ((is_pick(uwep) || (is_lightsaber(uwep) && litsaber(uwep))) || (uwep->otyp == SEISMIC_HAMMER) || is_pg_mattock))) ? uwep :
+		((uwep && is_axe(uwep)) || (uwep && is_pg_axe)) && IS_TREES(lev->typ) ? uwep :
 		(uarmg && is_pick(uarmg)) ? uarmg : uwep;
 	const char *verb =
-	    (!uwep || is_pick(uwep)) ? "dig into" :
+	    (!uwep || is_pick(uwep) || is_pg_mattock) ? "dig into" :
 		    is_lightsaber(uwep) ? "cut through" :
 		    (uwep->otyp == SEISMIC_HAMMER) ? "smash through" :
 		    "chop through";
 	/* perhaps a nymph stole your pick-axe while you were busy digging */
 	/* or perhaps you teleported away */
 	/* WAC allow lightsabers */
-	if (u.uswallow || !(ispick || (digitem && is_axe(digitem))) ||
+	int pg_maxrange = 0;
+	if (is_pg_mattock || is_pg_axe) {
+		int pg_typ = uwep_skill_type();
+		int pg_skill = P_SKILL(pg_typ);
+		pg_maxrange = (pg_typ == P_NONE || pg_skill <= P_BASIC) ? 4 :
+		              (pg_skill == P_SKILLED) ? 5 : 8;
+	}
+	if (u.uswallow || !(ispick || (digitem && is_axe(digitem)) || is_pg_axe) ||
 	    !on_level(&digging.level, &u.uz) ||
-	    ((digging.down ? (dpx != u.ux || dpy != u.uy)
-			   : (distu(dpx,dpy) > 2)))
+	    ((digging.down ? (is_pg_mattock ? distu(dpx,dpy) > 2
+	                                    : (dpx != u.ux || dpy != u.uy))
+			   : ((is_pg_mattock || is_pg_axe) ? distu(dpx,dpy) > pg_maxrange
+			                                   : distu(dpx,dpy) > 2)))
 	) return MOVE_CANCELLED;
-	
+
 	if (digging.down) {
-		if(!dig_check(BY_YOU, TRUE, u.ux, u.uy)) return MOVE_CANCELLED;
+		int digx = is_pg_mattock ? dpx : u.ux;
+		int digy = is_pg_mattock ? dpy : u.uy;
+		if(!dig_check(BY_YOU, TRUE, digx, digy)) return MOVE_CANCELLED;
 	} else { /* !digging.down */
 		if (IS_TREES(lev->typ) && !may_dig(dpx,dpy) &&
 			dig_typ(digitem, dpx, dpy) == DIGTYP_TREE
@@ -342,7 +355,7 @@ dig()
 		register struct trap *ttmp;
 
 		if (digging.effort > 250) {
-		    (void) dighole(FALSE);
+		    (void) (is_pg_mattock ? dighole_at(dpx, dpy, FALSE) : dighole(FALSE));
 		    (void) memset((genericptr_t)&digging, 0, sizeof digging);
 		    return MOVE_FINISHED_OCCUPATION;	/* done with digging */
 		}
@@ -359,7 +372,7 @@ dig()
 		    angry_priest();
 		}
 
-		if (dighole(TRUE)) {	/* make pit at <u.ux,u.uy> */
+		if (is_pg_mattock ? dighole_at(dpx, dpy, TRUE) : dighole(TRUE)) {
 		    digging.level.dnum = 0;
 		    digging.level.dlevel = -1;
 		}
@@ -986,29 +999,30 @@ struct monst	*madeby;
 
 /* return TRUE if digging succeeded, FALSE otherwise */
 boolean
-dighole(pit_only)
+dighole_at(x, y, pit_only)
+int x, y;
 boolean pit_only;
 {
-	register struct trap *ttmp = t_at(u.ux, u.uy);
-	struct rm *lev = &levl[u.ux][u.uy];
+	register struct trap *ttmp = t_at(x, y);
+	struct rm *lev = &levl[x][y];
 	struct obj *boulder_here;
 	schar typ;
 	boolean nohole = !Can_dig_down(&u.uz);
 
 	if ((ttmp && (ttmp->ttyp == MAGIC_PORTAL || nohole)) ||
 	   /* ALI - artifact doors from slash'em */
-	   (IS_DOOR(levl[u.ux][u.uy].typ) && artifact_door(u.ux, u.uy)) ||
+	   (IS_DOOR(lev->typ) && artifact_door(x, y)) ||
 	   (IS_ROCK(lev->typ) && lev->typ != SDOOR &&
 	    (lev->wall_info & W_NONDIGGABLE) != 0)) {
-		pline_The("%s here is too hard to dig in.", surface(u.ux,u.uy));
+		pline_The("%s here is too hard to dig in.", surface(x, y));
 
-	} else if (is_pool(u.ux, u.uy, TRUE) || is_lava(u.ux, u.uy)) {
+	} else if (is_pool(x, y, TRUE) || is_lava(x, y)) {
 		pline_The("%s sloshes furiously for a moment, then subsides.",
-			is_lava(u.ux, u.uy) ? "lava" : "water");
+			is_lava(x, y) ? "lava" : "water");
 		wake_nearby();	/* splashing */
 
 	} else if (lev->typ == DRAWBRIDGE_DOWN ||
-		   (is_drawbridge_wall(u.ux, u.uy) >= 0)) {
+		   (is_drawbridge_wall(x, y) >= 0)) {
 		/* drawbridge_down is the platform crossing the moat when the
 		   bridge is extended; drawbridge_wall is the open "doorway" or
 		   closed "door" where the portcullis/mechanism is located */
@@ -1016,14 +1030,14 @@ boolean pit_only;
 		    pline_The("drawbridge seems too hard to dig through.");
 		    return FALSE;
 		} else {
-		    int x = u.ux, y = u.uy;
+		    int bx = x, by = y;
 		    /* if under the portcullis, the bridge is adjacent */
-		    (void) find_drawbridge(&x, &y);
-		    destroy_drawbridge(x, y);
+		    (void) find_drawbridge(&bx, &by);
+		    destroy_drawbridge(bx, by);
 		    return TRUE;
 		}
 
-	} else if ((boulder_here = boulder_at(u.ux, u.uy)) != 0) {
+	} else if ((boulder_here = boulder_at(x, y)) != 0) {
 		if (ttmp && (ttmp->ttyp == PIT || ttmp->ttyp == SPIKED_PIT) &&
 		    rn2(2)) {
 			pline_The("%s settles into the pit.", xname(boulder_here) );
@@ -1040,25 +1054,23 @@ boolean pit_only;
 		return TRUE;
 
 	} else if (IS_GRAVE(lev->typ)) {
-	    digactualhole(u.ux, u.uy, BY_YOU, PIT, FALSE, TRUE);
-	    dig_up_grave(u.ux, u.uy);
+	    digactualhole(x, y, BY_YOU, PIT, FALSE, TRUE);
+	    dig_up_grave(x, y);
 	    return TRUE;
 	} else if (IS_SEAL(lev->typ)) {
-	    // digactualhole(u.ux, u.uy, BY_YOU, PIT, FALSE, TRUE);
-	    break_seal(u.ux, u.uy);
+	    break_seal(x, y);
 	    return TRUE;
 	} else if (lev->typ == DRAWBRIDGE_UP) {
 		/* must be floor or ice, other cases handled above */
 		/* dig "pit" and let fluid flow in (if possible) */
-		typ = fillholetyp(u.ux,u.uy);
+		typ = fillholetyp(x, y);
 
 		if (typ == ROOM) {
 			/*
 			 * We can't dig a hole here since that will destroy
 			 * the drawbridge.  The following is a cop-out. --dlc
 			 */
-			pline_The("%s here is too hard to dig in.",
-			      surface(u.ux, u.uy));
+			pline_The("%s here is too hard to dig in.", surface(x, y));
 			return FALSE;
 		}
 
@@ -1068,7 +1080,7 @@ boolean pit_only;
  liquid_flow:
 		if (ttmp) (void) delfloortrap(ttmp);
 		/* if any objects were frozen here, they're released now */
-		unearth_objs(u.ux, u.uy);
+		unearth_objs(x, y);
 
 		pline("As you dig, the hole fills with %s!",
 		      typ == LAVAPOOL ? "lava" : "water");
@@ -1088,7 +1100,7 @@ boolean pit_only;
 		pline_The("altar is too hard to break apart.");
 
 	} else {
-		typ = fillholetyp(u.ux,u.uy);
+		typ = fillholetyp(x, y);
 
 		if (typ != ROOM) {
 			lev->typ = typ;
@@ -1097,14 +1109,21 @@ boolean pit_only;
 
 		/* finally we get to make a hole */
 		if (nohole || pit_only)
-			digactualhole(u.ux, u.uy, BY_YOU, PIT, FALSE, TRUE);
+			digactualhole(x, y, BY_YOU, PIT, FALSE, TRUE);
 		else
-			digactualhole(u.ux, u.uy, BY_YOU, HOLE, FALSE, TRUE);
+			digactualhole(x, y, BY_YOU, HOLE, FALSE, TRUE);
 
 		return TRUE;
 	}
 
 	return FALSE;
+}
+
+boolean
+dighole(pit_only)
+boolean pit_only;
+{
+	return dighole_at(u.ux, u.uy, pit_only);
 }
 
 STATIC_DCL
@@ -1888,6 +1907,110 @@ int x, y;
 	levl[x][y].horizontal = FALSE;
 	levl[x][y].vaulttype = 0;
 	levl[x][y].typ = ROOM;
+}
+
+/* Set up the digging occupation for a pest glaive with PG_MATTOCK.
+ * rx, ry is the polearm-targeted square (already range-validated by pick_polearm_target).
+ * Returns TRUE if digging was initiated, FALSE if the square is undiggable.
+ */
+boolean
+pg_mattock_dig(rx, ry)
+int rx, ry;
+{
+	static const char * const d_action[] = {
+		"swinging", "digging", "chipping the statue", "hitting the boulder",
+		"chipping the crate", "chipping the mass", "hitting the door",
+		"cutting down the tree", "chopping the bars", "hitting the drawbridge"
+	};
+	int dig_target = dig_typ(uwep, rx, ry);
+
+	if (dig_target == DIGTYP_UNDIGGABLE)
+		return FALSE;
+
+	did_dig_msg = FALSE;
+	digging.quiet = FALSE;
+	if (digging.pos.x != rx || digging.pos.y != ry ||
+	    !on_level(&digging.level, &u.uz) || digging.down) {
+		digging.down = digging.chew = FALSE;
+		digging.warned = FALSE;
+		digging.pos.x = rx;
+		digging.pos.y = ry;
+		assign_level(&digging.level, &u.uz);
+		digging.effort = 0;
+		You("start %s.", d_action[dig_target]);
+	} else {
+		You("%s %s.", digging.chew ? "begin" : "continue", d_action[dig_target]);
+		digging.chew = FALSE;
+	}
+	set_occupation(dig, "digging", 0);
+	return TRUE;
+}
+
+/* Set up the dig-down occupation for a pest glaive with PG_MATTOCK aimed at
+ * an adjacent empty floor square.  Creates a hole at (rx, ry), like a
+ * pickaxe pointed downward but at an adjacent position.
+ * Returns TRUE if digging was initiated.
+ */
+boolean
+pg_mattock_digdown(rx, ry)
+int rx, ry;
+{
+	/* Walls, raw rock, water, ironbars, etc. block the downward swing. */
+	if (!ACCESSIBLE(levl[rx][ry].typ)) {
+		pline("There isn't room to swing the glaive in that direction.");
+		return TRUE;
+	}
+	if (!dig_check(BY_YOU, TRUE, rx, ry))
+		return FALSE;
+	did_dig_msg = FALSE;
+	digging.quiet = FALSE;
+	if (digging.pos.x != rx || digging.pos.y != ry ||
+	    !on_level(&digging.level, &u.uz) || !digging.down
+	) {
+		digging.chew = FALSE;
+		digging.down = TRUE;
+		digging.warned = FALSE;
+		digging.pos.x = rx;
+		digging.pos.y = ry;
+		assign_level(&digging.level, &u.uz);
+		digging.effort = 0;
+		You("start digging diagonally downward.");
+		if (*u.ushops) shopdig(0);
+	} else
+		You("continue digging diagonally downward.");
+	set_occupation(dig, "digging", 0);
+	return TRUE;
+}
+
+boolean
+pg_axe_chop(rx, ry)
+int rx, ry;
+{
+	if (!IS_TREES(levl[rx][ry].typ))
+		return FALSE;
+
+	int dig_target = dig_typ(uwep, rx, ry);
+	if (dig_target != DIGTYP_TREE)
+		return FALSE;
+
+	did_dig_msg = FALSE;
+	digging.quiet = FALSE;
+	if (digging.pos.x != rx || digging.pos.y != ry ||
+	    !on_level(&digging.level, &u.uz) || digging.down
+	) {
+		digging.down = digging.chew = FALSE;
+		digging.warned = FALSE;
+		digging.pos.x = rx;
+		digging.pos.y = ry;
+		assign_level(&digging.level, &u.uz);
+		digging.effort = 0;
+		You("start cutting down the tree.");
+	} else {
+		You("%s cutting down the tree.", digging.chew ? "begin" : "continue");
+		digging.chew = FALSE;
+	}
+	set_occupation(dig, "chopping", 0);
+	return TRUE;
 }
 
 int

@@ -498,14 +498,16 @@ boolean td;	/* td == TRUE : trap door or hole */
 	else if(Levitation || u.ustuck || !Can_fall_thru(&u.uz)
 	   || Flying || is_clinger(youracedata)
 	   || (Role_if(PM_ARCHEOLOGIST) && uwep && 
-			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP || uwep->otyp == WHIP_SAW))
+			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP || uwep->otyp == WHIP_SAW || (uwep->otyp == PEST_GLAIVE && (uwep->ovar1_pestglaive_props & PG_BULLWHIP))))
 	   || (Inhell && !u.uevent.invoked &&
 					newlevel == (dunlevs_in_dungeon(&u.uz) - 1))/*seal off sanctum and square level until the invocation is performed*/
 		) {
-		if (Role_if(PM_ARCHEOLOGIST) && uwep && 
-			(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP || uwep->otyp == WHIP_SAW)
-		)            
-		pline("But thanks to your trusty whip ...");
+		if (Role_if(PM_ARCHEOLOGIST) && uwep){
+			if(uwep->otyp == BULLWHIP || uwep->otyp == VIPERWHIP || uwep->otyp == FORCE_WHIP || uwep->otyp == WHIP_SAW)
+				pline("But thanks to your trusty whip ...");
+			else if (uwep->otyp == PEST_GLAIVE && (uwep->ovar1_pestglaive_props & PG_BULLWHIP))
+				pline("But thanks to your trusty pest glaive ...");
+		}
 	    dont_fall = "don't fall in.";
 	} else if (youracedata->msize >= MZ_HUGE) {
 	    dont_fall = "don't fit through.";

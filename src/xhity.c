@@ -57,9 +57,11 @@ silverman_exhultation(int encouragement)
 			m->encouraged = max(m->encouraged, encouragement);
 	}
 	if(youracedata->mtyp == PM_SILVERMAN || check_rot(ROT_EXHULT)){
-		pline("Something within you exults!");
-		if(encouragement > 8)
-			verbalize("Rot for the scarlet goddess!");
+		if((encouragement - u.uencouraged) > encouragement/2){
+			pline("Something within you exults!");
+			if(encouragement > 8)
+				verbalize("Rot for the scarlet goddess!");
+		}
 		u.uencouraged = max(u.uencouraged, encouragement);
 	}
 }
@@ -15885,6 +15887,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if (((youagr && u.usteed) || (magr == u.urider) || centauroid(pa) || animaloid(pa) || (modifier_flags&MELEEHURT_FORCE_CHECK_JOUST)) 
 		    && weapon &&
 			(weapon_type(weapon) == P_LANCE ||
+			 (weapon->otyp == PEST_GLAIVE && (weapon->ovar1_pestglaive_props & PG_JOUST)) ||
 			 (weapon->oartifact == ART_ROD_OF_SEVEN_PARTS) ||
 			 (weapon->oartifact == ART_PEN_OF_THE_VOID && weapon->ovara_seals&SEAL_BERITH) ||
 			 (modifier_flags&MELEEHURT_FORCE_CHECK_JOUST) ||
@@ -15906,7 +15909,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 			/* odds to joust are expert:80%, skilled:60%, basic:40%, unskilled:20% */
 			if ((joust_dieroll = rn2(5)) < skill_rating) {
-				if (!unsolid(pd) && !obj_resists(weapon, 0, 100)){
+				if (!unsolid(pd) && !obj_resists(weapon, 0, 100) && weapon->otyp != PEST_GLAIVE){
 					if (weapon->otyp == DROVEN_LANCE && rnl(40) == (40 - 1))
 						jousting = -1;	/* hit that breaks lance */
 					else if (joust_dieroll == 0){ /* Droven lances are especially brittle */
@@ -19369,6 +19372,30 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 						pline("The coating on your %s has worn off.", xname(otmp));
 					}
 					otmp->opoisoned &= ~(poisons_wipedoff);
+				}
+			}
+			/* pest glaive may learn to re-secrete a wiped-off coating */
+			if (otmp->otyp == PEST_GLAIVE) {
+				static const struct { int opoison; int oprop; } secr_map[] = {
+					{ OPOISON_BASIC,  OPROP_SECR_POSN },
+					{ OPOISON_FILTH,  OPROP_SECR_FLTH },
+					{ OPOISON_SLEEP,  OPROP_SECR_SLEP },
+					{ OPOISON_BLIND,  OPROP_SECR_BLND },
+					{ OPOISON_PARAL,  OPROP_SECR_PARL },
+					{ OPOISON_ACID,   OPROP_SECR_ACID },
+					{ OPOISON_SILVER, OPROP_SECR_SLVR },
+					{ OPOISON_HALLU,  OPROP_SECR_HLLU },
+					{ OPOISON_DIRE,   OPROP_SECR_DIRE },
+					{ 0, 0 }
+				};
+				int si;
+				for (si = 0; secr_map[si].opoison; si++) {
+					if ((poisons_wipedoff & secr_map[si].opoison) &&
+					    !check_oprop(otmp, secr_map[si].oprop) &&
+					    !rn2(20)
+					){
+						add_oprop(otmp, secr_map[si].oprop);
+					}
 				}
 			}
 		}

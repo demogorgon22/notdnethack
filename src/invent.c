@@ -3753,6 +3753,44 @@ winid *datawin;
 		Sprintf(buf2, "No expert traits.");
 		OBJPUTSTR(buf2);
 	}
+	if (obj && obj->otyp == PEST_GLAIVE && obj->known) {
+		buf[0] = '\0';
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_POSN), "poison");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_ACID), "acid");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_FLTH), "filth");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_SLEP), "soporific");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_BLND), "blinding stain");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_PARL), "paralytic venom");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_AMNS), "lethe toxin");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_SLVR), "starwater");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_HLLU), "hallucinogen");
+		ADDCLASSPROP(check_oprop(obj, OPROP_SECR_DIRE), "god venom");
+		if (buf[0]) {
+			Sprintf(buf2, "Secretes: %s.", buf);
+			OBJPUTSTR(buf2);
+		}
+		buf[0] = '\0';
+		ADDCLASSPROP(check_oprop(obj, OPROP_FIRE), "fire resistance");
+		ADDCLASSPROP(check_oprop(obj, OPROP_COLD), "cold resistance");
+		ADDCLASSPROP(check_oprop(obj, OPROP_ELEC), "shock resistance");
+		ADDCLASSPROP(check_oprop(obj, OPROP_ACID), "acid resistance");
+		if (buf[0]) {
+			Sprintf(buf2, "Confers while wielded: %s.", buf);
+			OBJPUTSTR(buf2);
+		}
+		buf[0] = '\0';
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_HANDPROTECT), "protects the wielder's hands");
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_BULLWHIP), "performs whip tricks");
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_MATTOCK), "can dig");
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_JOUST), "can joust");
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_AXE), "can cut trees");
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_CROOK), "has a shepherd's crook");
+		ADDCLASSPROP((obj->ovar1_pestglaive_props&PG_SPEARTHROWER), "can launch spears");
+		if (buf[0]) {
+			Sprintf(buf2, "Additional traits: %s.", buf);
+			OBJPUTSTR(buf2);
+		}
+	}
 	/* other artifact weapon effects */
 	if (oartifact) {
 		register const struct artifact *oart = &artilist[oartifact];
@@ -3973,7 +4011,7 @@ winid *datawin;
 			} if (u.specialSealsActive&SEAL_UNKNOWN_GOD){
 				Sprintf(buf2, "Channels the presence of the Unknown God, not adding enchantment to damage but instead subtracting %sits enchantment from your AC.", acer("double ", ""));
 				OBJPUTSTR(buf2);
-			} 
+			}
 		}
 	}
 	if (olet == ARMOR_CLASS || olet == BELT_CLASS) {

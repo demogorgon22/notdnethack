@@ -19,6 +19,7 @@ static const char apply_corpse[] = { FOOD_CLASS, 0 };
 static const char chain_class[] = { CHAIN_CLASS, 0 };
 static const char spellbook_class[] = { SPBOOK_CLASS, 0 };
 static const char weapon_class[] = { WEAPON_CLASS, 0 };
+static const char consume_classes[] = { WEAPON_CLASS, FOOD_CLASS, SPBOOK_CLASS, 0 };
 static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 
 #define TREPH_THOUGHTS 1
@@ -51,6 +52,10 @@ STATIC_DCL int FDECL(use_soldier_rapier, (struct obj *));
 STATIC_DCL int FDECL(use_bow_blade, (struct obj *));
 STATIC_DCL int FDECL(use_threaded_cane, (struct obj *));
 STATIC_DCL int FDECL(use_chikage, (struct obj *));
+STATIC_DCL struct obj *NDECL(pg_floor_corpse);
+STATIC_DCL boolean FDECL(pg_spellbook_feed, (struct obj *, struct obj *));
+STATIC_DCL boolean FDECL(pg_bullwhip_snag, (struct obj *, int, int));
+STATIC_DCL int FDECL(use_pest_glaive, (struct obj *));
 STATIC_DCL int FDECL(use_church_weapon, (struct obj *));
 STATIC_DCL int FDECL(use_church_sword, (struct obj *));
 STATIC_DCL int FDECL(use_church_sheath, (struct obj *));
@@ -7324,6 +7329,429 @@ struct obj *obj;
 }
 
 
+/* Check floor at hero's position for corpses to feed to the pest glaive.
+ * Prompts for each corpse found.  Returns the chosen corpse, or NULL if
+ * the player pressed 'q' (cancel) or no floor corpse was selected.
+ * If no floor corpse is offered or all are declined with 'n', falls through
+ * to getobj so the player can choose from inventory.
+ */
+STATIC_OVL struct obj *
+pg_floor_corpse()
+{
+	struct obj *otmp;
+	char qbuf[QBUFSZ];
+	char c;
+
+	if (can_reach_floor()) {
+		for (otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp->nexthere) {
+			if (otmp->otyp != CORPSE)
+				continue;
+			Sprintf(qbuf, "There %s %s here; feed %s to the glaive?",
+				otense(otmp, "are"),
+				doname(otmp),
+				(otmp->quan == 1L) ? "it" : "one");
+			c = yn(qbuf);
+			if (c == 'y')
+				return otmp;
+			if (c == 'q')
+				return (struct obj *)0;
+		}
+	}
+
+	return getobj(consume_classes, "feed to the glaive");
+}
+
+/* Returns TRUE if the spellbook was consumed, FALSE if repelled (left intact). */
+STATIC_OVL boolean
+pg_spellbook_feed(obj, consumed)
+struct obj *obj;
+struct obj *consumed;
+{
+	static const struct {
+		int otyp;
+		int oprop;
+		const char *adjective;
+	} spe_map[] = {
+		{ SPE_FIREBALL,       OPROP_FIREW, "flaming"  },
+		{ SPE_FIRE_STORM,     OPROP_FIREW, "flaming"  },
+		{ SPE_CONE_OF_COLD,   OPROP_COLDW, "freezing" },
+		{ SPE_BLIZZARD,       OPROP_COLDW, "freezing" },
+		{ SPE_LIGHTNING_BOLT, OPROP_ELECW, "shocking" },
+		{ SPE_LIGHTNING_STORM,OPROP_ELECW, "shocking" },
+		{ SPE_ACID_SPLASH,    OPROP_ACIDW, "sizzling" },
+		{ 0, 0, (const char *)0 }
+	};
+	int si;
+	int new_oprop = 0;
+	const char *new_adj = (const char *)0;
+
+	/* Blank paper: consumed silently */
+	if (consumed->otyp == SPE_BLANK_PAPER) {
+		pline("The glaive's feeding-%s engulf %s, leaving nothing behind.",
+		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		    the(xname(consumed)));
+		return TRUE;
+	}
+
+	/* Identify which (if any) energy spellbook this is */
+	for (si = 0; spe_map[si].otyp; si++) {
+		if (consumed->otyp == spe_map[si].otyp) {
+			new_oprop = spe_map[si].oprop;
+			new_adj   = spe_map[si].adjective;
+			break;
+		}
+	}
+
+	/* Ineligible spellbook: repel without consuming */
+	if (!new_oprop) {
+		pline("The glaive's feeding-%s recoil from %s with a crackle of magical energy!",
+		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		    the(xname(consumed)));
+		return FALSE;
+	}
+
+	/* Already has this exact energy quality - nothing to do */
+	if (check_oprop(obj, new_oprop)) {
+		pline("The glaive already resonates with that energy.");
+		return FALSE;
+	}
+
+	/* Count how many of the 4 energy oprops are already present */
+	int held_count = 0;
+	int held_oprops[4];
+	const char *held_adjs[4];
+	for (si = 0; spe_map[si].otyp; si++) {
+		if (check_oprop(obj, spe_map[si].oprop)) {
+			held_oprops[held_count] = spe_map[si].oprop;
+			held_adjs[held_count]   = spe_map[si].adjective;
+			held_count++;
+		}
+	}
+
+	if (held_count == 0) {
+		/* No existing energy quality - just absorb */
+		pline("The glaive extends its feeding-%s and devours %s.",
+		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		    the(xname(consumed)));
+		add_oprop(obj, new_oprop);
+		pline("It becomes %s.", new_adj);
+	} else if (held_count == 1) {
+		/* One existing - confirm replacement */
+		char qbuf[QBUFSZ];
+		Sprintf(qbuf, "Replace %s with %s?", held_adjs[0], new_adj);
+		if (yn(qbuf) != 'y') {
+			pline("You pull the spellbook away.");
+			return FALSE;
+		}
+		pline("The glaive extends its feeding-%s and devours %s.",
+		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		    the(xname(consumed)));
+		remove_oprop(obj, held_oprops[0]);
+		add_oprop(obj, new_oprop);
+		pline("It becomes %s.", new_adj);
+	} else {
+		/* Two or more - let player choose which to remove */
+		char mbuf[BUFSZ];
+		winid tmpwin;
+		menu_item *selected;
+		int n, mi, choice;
+		anything any;
+
+		Sprintf(mbuf, "Which quality should the glaive lose to become %s?", new_adj);
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		for (mi = 0; mi < held_count; mi++) {
+			any.a_int = mi + 1;
+			add_menu(tmpwin, NO_GLYPH, &any,
+			    'a' + mi, 0, ATR_NONE,
+			    held_adjs[mi], MENU_UNSELECTED);
+		}
+		any.a_int = -1;
+		add_menu(tmpwin, NO_GLYPH, &any,
+		    'z', 0, ATR_NONE, "Cancel", MENU_UNSELECTED);
+		end_menu(tmpwin, mbuf);
+		selected = (menu_item *)0;
+		n = select_menu(tmpwin, PICK_ONE, &selected);
+		destroy_nhwindow(tmpwin);
+		if (n <= 0 || selected[0].item.a_int == -1) {
+			if (n > 0) free(selected);
+			pline("You pull the spellbook away.");
+			return FALSE;
+		}
+		choice = selected[0].item.a_int - 1;
+		free(selected);
+		pline("The glaive extends its feeding-%s and devours %s.",
+		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		    the(xname(consumed)));
+		remove_oprop(obj, held_oprops[choice]);
+		add_oprop(obj, new_oprop);
+		pline("It becomes %s.", new_adj);
+	}
+
+	return TRUE;
+}
+
+/* Attempt to snag the top floor item at (rx, ry) with the pest glaive's
+ * tendrils (PG_BULLWHIP).  Returns TRUE if the action was attempted (whether
+ * or not the item was successfully retrieved), FALSE if there was nothing
+ * to snag.
+ */
+STATIC_OVL boolean
+pg_bullwhip_snag(obj, rx, ry)
+struct obj *obj;
+int rx, ry;
+{
+	struct obj *otmp = level.objects[rx][ry];
+	int proficient;
+
+	if (!otmp)
+		return FALSE;
+
+	proficient = P_SKILL(P_POLEARMS) - P_UNSKILLED;
+	if (ACURR(A_DEX) >= 14)
+		proficient += (ACURR(A_DEX) - 11) / 3;
+	if (Fumbling)
+		proficient--;
+	if (proficient > 3) proficient = 3;
+	if (proficient < 0) proficient = 0;
+
+	if (!proficient) {
+		pline("The glaive's antennae snap at %s but slip free.",
+		    the(xname(otmp)));
+		return TRUE;
+	}
+
+	if (costly_spot(rx, ry)) {
+		pline("The glaive's antennae can't drag shop merchandise away.");
+		return TRUE;
+	}
+
+	You("snag %s with the glaive's antennae.", an(singular(otmp, xname)));
+	obj_extract_self(otmp);
+	newsym(rx, ry);
+	place_object(otmp, u.ux, u.uy);
+	stackobj(otmp);
+	if (rnl(100) >= 16 || pickup_object(otmp, 1L, TRUE) < 1)
+		pline("It slips free.");
+	return TRUE;
+}
+
+STATIC_OVL int
+use_pest_glaive(obj)
+struct obj *obj;
+{
+	struct obj *consumed;
+	int i;
+	boolean gained_something = FALSE;
+	boolean already_extended = FALSE;
+	boolean couldve_changed = FALSE;
+
+	consumed = pg_floor_corpse();
+	if (!consumed) return MOVE_CANCELLED;
+
+	if (consumed->unpaid) {
+		You("need to pay for that first.");
+		return MOVE_CANCELLED;
+	}
+	if (consumed == obj) {
+		pline("The glaive won't eat itself.");
+		return MOVE_CANCELLED;
+	}
+	if (consumed->oartifact || is_full_insight_weapon(consumed) || objects[consumed->otyp].oc_unique) {
+		pline("It resists the attempt!");
+		return MOVE_CANCELLED;
+	}
+	if (!check_oprop(consumed, 0)) {
+		pline("It resists the attempt!");
+		return MOVE_CANCELLED;
+	}
+
+	if (consumed->oclass == FOOD_CLASS) {
+		if(consumed->otyp != CORPSE){
+			pline("The glaive extends its feeding-%s but then recoils in disgust from %s!",
+			    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+			    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+			    the(xname(consumed)));
+			return MOVE_CANCELLED;
+		}
+		/* corpse path: absorb energy-resistance oprops */
+		static const struct { int mr_flag; int oprop; } eres_map[] = {
+			{ MR_FIRE, OPROP_FIRE },
+			{ MR_COLD, OPROP_COLD },
+			{ MR_ELEC, OPROP_ELEC },
+			{ MR_ACID, OPROP_ACID },
+			{ 0, 0 }
+		};
+		struct permonst *ptr = &mons[consumed->corpsenm];
+		int mi;
+
+		pline("The glaive extends its feeding-%s and devours %s.",
+		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		    the(xname(consumed)));
+
+		for (mi = 0; eres_map[mi].mr_flag; mi++) {
+			if ((ptr->mconveys & eres_map[mi].mr_flag) &&
+			    !check_oprop(obj, eres_map[mi].oprop)
+			) {
+				couldve_changed = TRUE;
+				if(!rn2(10) && ptr->mlevel > rn2(15)){
+					add_oprop(obj, eres_map[mi].oprop);
+					gained_something = TRUE;
+				}
+			}
+		}
+
+	} else if (consumed->oclass == SPBOOK_CLASS) {
+		/* spellbook path: delegate entirely to pg_spellbook_feed */
+		boolean eaten = pg_spellbook_feed(obj, consumed);
+		if (eaten) {
+			if (consumed->where == OBJ_FLOOR)
+				useupf(consumed, 1L);
+			else
+				useup(consumed);
+			fix_object(obj);
+		}
+		return MOVE_STANDARD;
+	} else if(consumed->oclass == WEAPON_CLASS || is_weptool(consumed)) {
+		static const long etrait_list[] = {
+			ETRAIT_HEW, ETRAIT_FELL, ETRAIT_KNOCK_BACK, ETRAIT_FOCUS_FIRE,
+			ETRAIT_STUNNING_STRIKE, ETRAIT_KNOCK_BACK_CHARGE, ETRAIT_GRAZE,
+			ETRAIT_STOP_THRUST, ETRAIT_PENETRATE_ARMOR, ETRAIT_LONG_SLASH,
+			ETRAIT_BLEED, ETRAIT_CLEAVE, ETRAIT_LUNGE,
+			ETRAIT_SECOND, ETRAIT_CREATE_OPENING, ETRAIT_BRACED,
+			ETRAIT_BLADESONG, ETRAIT_BLADEDANCE, ETRAIT_PUNCTURE,
+			ETRAIT_STRIKING, 0L
+		};
+		if (!is_organic(consumed) &&
+		    consumed->oeroded == 0 &&
+		    consumed->oeroded2 == 0
+		) {
+			if(!is_rustprone(consumed) || !(is_pool(u.ux, u.uy, TRUE) || IS_FOUNTAIN(levl[u.ux][u.uy].typ)) || consumed->oerodeproof){
+				pline("The glaive cannot eat %s.", is_metallic(consumed) ? "unblemished metal" : "such things");
+				return MOVE_CANCELLED;
+			}
+			else {
+				pline("The glaive extends its feeding-%s sucks up some water in preparation for its meal.",
+					!rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+					!rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae");
+				already_extended = TRUE;
+			}
+		}
+
+		if(!already_extended){
+			pline("The glaive extends its feeding-%s and devours %s.",
+				!rn2(5) ? "probosces" : !rn2(4) ? "roots" :
+				!rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+				the(xname(consumed)));
+			already_extended = TRUE;
+		}
+		else pline("The glaive devours %s.", the(xname(consumed)));
+
+		for (i = 0; etrait_list[i]; i++) {
+			if ((consumed->expert_traits & etrait_list[i]) 
+				&& !(obj->ovar2_pg_etraits & etrait_list[i])
+			) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar2_pg_etraits |= etrait_list[i];
+					gained_something = TRUE;
+				}
+			}
+		}
+
+		if (hand_protecting(consumed) && !(obj->ovar1_pestglaive_props & PG_HANDPROTECT)) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_HANDPROTECT;
+				gained_something = TRUE;
+			}
+		}
+
+		if ((consumed->otyp == BULLWHIP || consumed->otyp == VIPERWHIP ||
+		     consumed->otyp == WHIP_SAW || consumed->otyp == FORCE_WHIP) &&
+		    !(obj->ovar1_pestglaive_props & PG_BULLWHIP)
+		) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_BULLWHIP;
+				gained_something = TRUE;
+			}
+		}
+
+		if ((consumed->otyp == DWARVISH_MATTOCK || consumed->otyp == PICK_AXE) && !(obj->ovar1_pestglaive_props & PG_MATTOCK)) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_MATTOCK;
+				gained_something = TRUE;
+			}
+		}
+
+		if (objects[consumed->otyp].oc_skill == P_LANCE && !(obj->ovar1_pestglaive_props & PG_JOUST)) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_JOUST;
+				gained_something = TRUE;
+			}
+		}
+
+		if (is_axe(consumed) && !(obj->ovar1_pestglaive_props & PG_AXE)) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_AXE;
+				gained_something = TRUE;
+			}
+		}
+
+		if (has_crook(consumed) && !(obj->ovar1_pestglaive_props & PG_CROOK)) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_CROOK;
+				gained_something = TRUE;
+			}
+		}
+
+		if (consumed->otyp == ATLATL && !(obj->ovar1_pestglaive_props & PG_SPEARTHROWER)) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->ovar1_pestglaive_props |= PG_SPEARTHROWER;
+				gained_something = TRUE;
+			}
+		}
+
+		if (consumed->spe > obj->spe) {
+			couldve_changed = TRUE;
+			if(!rn2(20)){
+				obj->spe++;
+				gained_something = TRUE;
+			}
+		}
+	}
+	else {
+		pline("The glaive seems uninterested in %s!", the(xname(consumed)));
+		return MOVE_CANCELLED;
+	}
+
+	if (gained_something)
+		pline("It seems changed.");
+	else if(couldve_changed)
+		pline("It savors the flavor.");
+	else
+		pline("It found the meal bland.");
+
+	if (consumed->where == OBJ_FLOOR)
+		useupf(consumed, 1L);
+	else
+		useup(consumed);
+	fix_object(obj);
+	return MOVE_STANDARD;
+}
+
 //Used to coordinate polearm_menu and targeting code
 const int pole_dy[16] = {-2,-2,-2,-1, 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2};
 const int pole_dx[16] = { 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2,-2,-2,-2,-1};
@@ -7399,6 +7827,13 @@ struct obj *pole;
 		any.a_int = N_POLEDIRS+2;
 		add_menu(tmpwin, NO_GLYPH, &any,
 			'r', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
+	if(pole->otyp == PEST_GLAIVE && Race_if(PM_SILVERMAN)){
+		Sprintf(buf, "(feed weapon)");
+		any.a_int = N_POLEDIRS+2;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'f', 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
 	}
 
@@ -7512,6 +7947,12 @@ coord *ccp;
 				ccp->x = 0; ccp->y = 0;
 				return use_hunter_axe(obj);
 			}
+			else if(obj->otyp == PEST_GLAIVE && Race_if(PM_SILVERMAN)){
+				return use_pest_glaive(obj);
+			}
+			else if(obj->otyp == SILVERKNIGHT_SCYTHE){
+				return MOVE_ATTACKED;
+			}
 		}
 	}
 	else {
@@ -7528,6 +7969,9 @@ coord *ccp;
 				if(obj->otyp == SILVERKNIGHT_SCYTHE){
 					use_silverknight_scythe_at(u.ux, u.uy, obj);
 					return MOVE_ATTACKED;
+				}
+				if(obj->otyp == PEST_GLAIVE){
+					return use_pest_glaive(obj);
 				}
 				impossible("Unhandled special polearm action.");
 				return res; //Should never reach here
@@ -7564,9 +8008,16 @@ coord *ccp;
 		ccp->x = 0; ccp->y = 0;
 	    return (res);
 	} else if (distu(ccp->x, ccp->y) < min_range) {
-	    pline("Too close!");
-		ccp->x = 0; ccp->y = 0;
-	    return (res);
+		if (obj->otyp == PEST_GLAIVE
+		    && (obj->ovar1_pestglaive_props & PG_MATTOCK)
+		    && !m_at(ccp->x, ccp->y)
+		) {
+			/* Adjacent empty square: pass through for dig-down handling */
+		} else {
+		    pline("Too close!");
+			ccp->x = 0; ccp->y = 0;
+		    return (res);
+		}
 	} else if (!cansee(ccp->x, ccp->y) &&
 		   (mtmp == (struct monst *)0 ||
 		    !canseemon(mtmp))) {
@@ -7609,6 +8060,21 @@ use_pole(obj)
 		   newsym(cc.x,cc.y);
 	} else if(obj->otyp == SILVERKNIGHT_SCYTHE){
 		use_silverknight_scythe_at(cc.x,cc.y,obj);
+	} else if(obj->otyp == PEST_GLAIVE && obj->ovar1_pestglaive_props) {
+		boolean handled = FALSE;
+		/* Adjacent empty square (bypassed "too close"): dig down into floor */
+		if (!handled && (obj->ovar1_pestglaive_props & PG_MATTOCK) && distu(cc.x, cc.y) < 4)
+			handled = pg_mattock_digdown(cc.x, cc.y);
+		/* In-range empty square: snag floor item */
+		if (!handled && (obj->ovar1_pestglaive_props & PG_BULLWHIP))
+			handled = pg_bullwhip_snag(obj, cc.x, cc.y);
+		/* In-range: dig or chop terrain */
+		if (!handled && (obj->ovar1_pestglaive_props & PG_MATTOCK))
+			handled = pg_mattock_dig(cc.x, cc.y);
+		if (!handled && (obj->ovar1_pestglaive_props & PG_AXE))
+			handled = pg_axe_chop(cc.x, cc.y);
+		if (!handled)
+			pline("%s", nothing_happens);
 	} else {
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
@@ -12520,6 +12986,10 @@ doapply()
 	break;
 	default:
 		/* Pole-weapons can strike at a distance */
+		if (obj->otyp == PEST_GLAIVE && (obj->ovar1_pestglaive_props & PG_CROOK)) {
+			res = use_crook(obj);
+			break;
+		}
 		if (is_pole(obj)) {
 			res = use_pole(obj);
 			break;

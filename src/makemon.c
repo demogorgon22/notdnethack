@@ -3866,7 +3866,7 @@ boolean greatequip;
 				set_material_gm(otmp, IRON);
 				otmp->obj_color = CLR_BLACK;
 				add_oprop(otmp, OPROP_LIVEW);
-				add_oprop(otmp, OPROP_PSECW);
+				add_oprop(otmp, OPROP_SECR_POSN);
 			}
 			otmp = mongets(mtmp, CHAIN, mkobjflags|MKOBJ_NOINIT);
 			if(otmp){
@@ -3874,7 +3874,7 @@ boolean greatequip;
 				set_material_gm(otmp, IRON);
 				otmp->obj_color = CLR_BLACK;
 				add_oprop(otmp, OPROP_LIVEW);
-				add_oprop(otmp, OPROP_PSECW);
+				add_oprop(otmp, OPROP_SECR_POSN);
 			}
 		} else if (mm == PM_MAYOR_CUMMERBUND){
 			int spe2;
@@ -8614,7 +8614,7 @@ int mmflags;
 					otmp->opoisonchrgs = 3;
 					set_material_gm(otmp, BONE);
 					if(special){
-						add_oprop(otmp, OPROP_ASECW);
+						add_oprop(otmp, OPROP_SECR_ACID);
 						add_oprop(otmp, OPROP_LIVEW);
 					}
 					(void) mpickobj(mtmp, otmp);
@@ -9041,7 +9041,7 @@ int mmflags;
 
 								otmp = mksobj(rn2(10) ? STILETTO : TWO_HANDED_SWORD, mkobjflags|MKOBJ_ARTIF);
 								if(!rn2(10))
-									add_oprop(otmp, rn2(5) ? OPROP_PSECW : rn2(4) ? OPROP_ASECW : OPROP_LIVEW);
+									add_oprop(otmp, rn2(5) ? OPROP_SECR_POSN : rn2(4) ? OPROP_SECR_ACID : OPROP_LIVEW);
 								set_material_gm(otmp, BONE);
 								MAYBE_MERC(otmp)
 								fix_object(otmp);
@@ -9075,7 +9075,7 @@ int mmflags;
 								if(!rn2(20))
 									add_oprop(otmp, OPROP_LIVEW);
 								if(!rn2(10))
-									add_oprop(otmp, OPROP_ASECW);
+									add_oprop(otmp, OPROP_SECR_ACID);
 								if(!rn2(20))
 									add_oprop(otmp, OPROP_GOATW);
 								MAYBE_MERC(otmp)
@@ -13817,7 +13817,21 @@ boolean randmonst;
 		else if(randmonst && (is_animal(ptr) || mortal_race_data(ptr)) && !(ptr->geno & G_UNIQ) && Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && Is_astralevel(&u.uz)){
 			mkmon_template = TONGUE_PUPPET;
 		}
-		/**/
+		/* rotting zombies in the deep dungeon */
+		else if((check_preservation(PRESERVE_ROT_TRIGGER) || check_rot(ROT_KIN) || (Race_if(PM_SILVERKNIGHT) && In_quest(&u.uz)))
+				&& can_undead(ptr) && level_difficulty() > 13 && !rn2(u.silvergrubs ? 10 : 100)
+		){
+			mkmon_template = ROT_ZOMBIE;
+			if(check_rot(ROT_KIN)){
+				if(!u.silvergrubs && !rn2(4)){
+					set_silvergrubs(TRUE);
+				}
+				else if(u.silvergrubs && !u.silverknight_mire && !rn2(20)){
+					set_silvergrubs(FALSE);
+				}
+			}
+		}
+		/* giant monsters swollen with rot */
 		else if((check_preservation(PRESERVE_ROT_TRIGGER) || check_rot(ROT_KIN) || Race_if(PM_SILVERMAN) || (Race_if(PM_SILVERKNIGHT) && In_quest(&u.uz)))
 				&& (mindless(ptr) || is_animal(ptr)) && !is_elemental(ptr)
 				&& !unsolid(ptr) && (u.silvergrubs || !rn2(100))

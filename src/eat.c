@@ -722,7 +722,7 @@ maybe_cannibal(pm, allowmsg)
 int pm;
 boolean allowmsg;
 {
-	if(your_race(&mons[pm]) && !is_animal(&mons[pm]) && !mindless(&mons[pm])){
+	if((your_race(&mons[pm]) || Race_if(PM_SILVERMAN)) && !is_animal(&mons[pm]) && !mindless(&mons[pm])){
 		if (!CANNIBAL_ALLOWED()) {
 			if (allowmsg) {
 				if (Upolyd)

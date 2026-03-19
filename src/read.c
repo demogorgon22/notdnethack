@@ -3893,6 +3893,9 @@ char *in_buff;
 			else if (!strncmpi(bufp, "swollen ", l = 8)) {
 				undeadtype = SWOLLEN_TEMPLATE;
 			}
+			else if (!strncmpi(bufp, "rotten ", l = 7)) {
+				undeadtype = ROT_ZOMBIE;
+			}
 			else if (!strncmpi(bufp, "mad_angel ", l = 10)) {
 				undeadtype = MAD_TEMPLATE;
 			}
@@ -3971,6 +3974,8 @@ char *in_buff;
 				undeadtype = FRACTURED;
 			else if (!strncmpi(p, "swollen",	7))
 				undeadtype = SWOLLEN_TEMPLATE;
+			else if (!strncmpi(p, "rotten",	6))
+				undeadtype = ROT_ZOMBIE;
 			else if (!strncmpi(p, "one", 3) && ((q = rindex(bufp, ' ')) != 0))
 			{
 				*q++ = 0;

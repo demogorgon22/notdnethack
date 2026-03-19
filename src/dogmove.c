@@ -1197,7 +1197,7 @@ register int after;	/* this is extra fast monster movement */
 	    if (j == 2) return 2;		/* died */
 	    else if (j == 1) goto newdogpos;	/* eating something */
 
-	    whappr = (monstermoves - EDOG(mtmp)->whistletime < 5) || (uwep && uwep->otyp == SHEPHERD_S_CROOK);
+	    whappr = (monstermoves - EDOG(mtmp)->whistletime < 5) || has_crook(uwep);
 	} else
 	    whappr = 0;
 
