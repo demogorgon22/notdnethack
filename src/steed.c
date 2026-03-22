@@ -241,7 +241,7 @@ rider_mounts_you(struct monst *mtmp)
 		You("direct %s to hop on your back.", mon_nam(mtmp));
 	}
 	else {
-		You("inticate to %s to hop on your back.", mon_nam(mtmp));
+		You("indicate to %s to hop on your back.", mon_nam(mtmp));
 	}
 	if(touch_petrifies(mtmp->data) && !Stone_resistance){
 		char kbuf[BUFSZ];
