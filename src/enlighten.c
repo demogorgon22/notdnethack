@@ -941,7 +941,7 @@ boolean dumping;
 	if (See_invisible(u.ux,u.uy)) enl_msg(You_, "see", "saw", " invisible");
 	if (Blind_telepat) you_are("telepathic");
 	if (Warning) you_are("warned");
-	if (Warn_of_mon && (flags.warntypem||flags.warntypet||flags.warntypeb||flags.warntypeg||flags.warntypea||flags.warntypev||flags.montype)) {
+	if (Warn_of_mon && (flags.warntypem||flags.warntypet||flags.warntypeb||flags.warntypec||flags.warntypeg||flags.warntypea||flags.warntypev||flags.montype)) {
 		if(flags.warntypea & MA_ANIMAL) you_are("aware of the presence of animals");
 		if(flags.warntypea & MA_ARACHNID) you_are("aware of the presence of arachnids");
 		if(flags.warntypea & MA_AVIAN) you_are("aware of the presence of birds");

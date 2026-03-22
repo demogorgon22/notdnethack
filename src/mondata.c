@@ -445,7 +445,7 @@ int template;
 		ptr->mflagsm |= (MM_BREATHLESS);
 		if(ptr->mflagsm&MM_NEEDPICK)
 			ptr->mflagsm &= ~(MM_TUNNEL|MM_NEEDPICK);
-		ptr->mflagsb |= (MB_SKELETAL);
+		ptr->mflagsc |= (MC_SKELETAL);
 		ptr->mflagst |= (MT_MINDLESS | MT_HOSTILE | MT_STALK);
 		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL | MT_HERBIVORE | MT_CARNIVORE | MT_METALLIVORE | MT_MAGIVORE);
 		ptr->mflagsg |= (MG_RPIERCE | MG_RSLASH);
@@ -485,7 +485,7 @@ int template;
 		ptr->mflagsg |= (MG_RPIERCE | MG_RSLASH);
 		ptr->mflagsg &= ~(MG_RBLUNT | MG_INFRAVISIBLE);
 		ptr->mflagsa |= (MA_UNDEAD);
-		ptr->mflagsb |= (MB_INDIGESTIBLE);
+		ptr->mflagsc |= (MC_INDIGESTIBLE);
 
 		/*Crystal dead have no free will*/
 		ptr->maligntyp = 20;
@@ -549,7 +549,8 @@ int template;
 		ptr->mflagsm |= (MM_BREATHLESS);
 		ptr->mflagst |= (MT_HOSTILE | MT_STALK);
 		ptr->mflagst &= ~(MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
-		ptr->mflagsb |= (MB_NOEYES|MB_INDIGESTIBLE);
+		ptr->mflagsb |= (MB_NOEYES);
+		ptr->mflagsc |= (MC_INDIGESTIBLE);
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE);
 		ptr->mflagsa |= (MA_UNDEAD);
 		ptr->mflagsv |= MV_LIFESENSE;
@@ -684,7 +685,7 @@ int template;
 		if(!(ptr->mflagsw&MW_EYE_OF_YGG)){
 			ptr->mflagsw |= MW_ELDER_SIGN;
 		}
-		ptr->mflagsb |= MB_ACID|MB_POIS;
+		ptr->mflagsc |= MC_ACID|MC_POIS;
 		ptr->mlevel *= 1.5;
 		break;
 	case TOMB_HERD:
@@ -698,8 +699,10 @@ int template;
 		ptr->mflagst |= (MT_HOSTILE|MT_ANIMAL|MT_CARNIVORE|MT_TRAITOR);
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE|MG_RBLUNT);
 		ptr->mflagsg |= (MG_VBLUNT|MG_SANLOSS);
-		ptr->mflagsb &= ~(MB_UNSOLID|MB_OVIPAROUS|MB_ACID|MB_POIS|MB_POIS|MB_TOSTY|MB_HALUC|MB_INSUBSTANTIAL);
-		ptr->mflagsb |= (MB_INDIGESTIBLE|MB_THICK_HIDE|MB_STRONG);
+		ptr->mflagsb &= ~(MB_OVIPAROUS);
+		ptr->mflagsc &= ~(MC_UNSOLID|MC_ACID|MC_POIS|MC_TOSTY|MC_HALUC|MC_INSUBSTANTIAL);
+		ptr->mflagsb |= (MB_STRONG);
+		ptr->mflagsc |= (MC_INDIGESTIBLE|MC_THICK_HIDE);
 
 		if(!(ptr->mflagsw&MW_EYE_OF_YGG)){
 			ptr->mflagsw |= MW_ELDER_SIGN;
@@ -850,7 +853,8 @@ int template;
 		ptr->mflagsg |= (MG_VSLASH|MG_REGEN|MG_SANLOSS);
 		ptr->mflagsg &= ~(MG_RBLUNT|MG_PNAME);
 		ptr->mflagsa |= (MA_PRIMORDIAL|MA_AQUATIC);
-		ptr->mflagsb |= (MB_NOLIMBS|MB_ACID|MB_POIS|MB_STRONG);
+		ptr->mflagsb |= (MB_NOLIMBS|MB_STRONG);
+		ptr->mflagsc |= (MC_ACID|MC_POIS);
 		/*Slime remnants have no skill*/
 		/*Note: The actual effect of this is to zero out mflagsf, but flags are removed explicitly for futureproofing reasons.*/
 		ptr->mflagsf &= ~(MF_MARTIAL_B|MF_MARTIAL_S|MF_MARTIAL_E);
@@ -1022,7 +1026,7 @@ int template;
 			ptr->mflagsm |= MM_FLY|MM_BREATHLESS|MM_FLOAT;
 			ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_CARNIVORE | MT_HERBIVORE | MT_TRAITOR);
 			ptr->mflagst |= MT_WANDER|MT_STALK|MT_HOSTILE|MT_DETACHED;
-			ptr->mflagsb |= MB_UNSOLID|MB_INSUBSTANTIAL;
+			ptr->mflagsc |= MC_UNSOLID|MC_INSUBSTANTIAL;
 			ptr->mflagsg &= ~(MG_PNAME);
 			ptr->mflagsg |= MG_NASTY|MG_HATESUNHOLY;
 			ptr->mflagsa = MA_ET;
@@ -2184,6 +2188,7 @@ int level_bonus;
 		horror->mflagsm = 0;
 		horror->mflagst = 0;
 		horror->mflagsb = 0;
+		horror->mflagsc = 0;
 		horror->mflagsg = 0;
 		horror->mflagsa = 0;
 		horror->mflagsv = 0;
@@ -2198,6 +2203,9 @@ int level_bonus;
 			horror->mflagsb |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
+			horror->mflagsc |= (1L << rn2(33));
+		}
+		for (i = 0; i < rnd(17); i++) {
 			horror->mflagsg |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
@@ -2207,7 +2215,7 @@ int level_bonus;
 			horror->mflagsv |= (1L << rn2(33));
 		}
 
-		// horror->mflagsb &= ~MB_UNSOLID;			/* no ghosts */
+		// horror->mflagsc &= ~MC_UNSOLID;			/* no ghosts */
 		// horror->mflagsm &= ~MM_WALLWALK;			/* no wall-walkers */
 
 		horror->mflagsg |= MG_NOPOLY;		/* Don't let the player be one of these yet. */

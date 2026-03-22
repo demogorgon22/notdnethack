@@ -701,6 +701,7 @@ initoptions()
 	flags.warntypem = 0L;
 	flags.warntypet = 0L;
 	flags.warntypeb = 0L;
+	flags.warntypec = 0L;
 	flags.warntypeg = 0L;
 	flags.warntypea = 0L;
 	flags.warntypev = 0L;

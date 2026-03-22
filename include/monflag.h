@@ -163,30 +163,19 @@
 #define MB_HUMANOID		0x00000010L	/* has humanoid head/arms/torso */
 #define MB_ANIMAL		0x00000020L	/* has animal body */
 #define MB_SLITHY		0x00000040L	/* has serpent body */
-#define MB_UNSOLID		0x00000080L	/* has no solid or liquid body */
-#define MB_THICK_HIDE	0x00000100L	/* has thick hide or scales */
-#define MB_OVIPAROUS	0x00000200L	/* can lay eggs */
-#define MB_ACID			0x00000400L	/* acidic to eat */
-#define MB_POIS			0x00000800L	/* poisonous to eat */
-#define MB_CHILL		0x00001000L	/* cold to eat */
-#define MB_TOSTY		0x00002000L	/* hot to eat */
-#define MB_HALUC		0x00004000L	/* hallucinogenic */
-#define MB_MALE			0x00008000L	/* always male */
-#define MB_FEMALE		0x00010000L	/* always female */
-#define MB_NEUTER		0x00020000L	/* neither male nor female */
-#define MB_STRONG		0x00040000L	/* strong (or big) monster */
-#define MB_WINGS		0x00080000L	/* has wings */
-#define MB_LONGHEAD		0x00100000L	/* has 'long' (animal) head */
-#define MB_LONGNECK		0x00200000L	/* has 'long' (snakelike) head and neck */
-#define MB_NOFEET		0x00400000L	/* no feet to wear boots */
-#define MB_HAS_FEET		0x00800000L	/* does have humanoid feet, even though it has a non-humanoid body plan */
-#define MB_CAN_AMULET	0x01000000L	/* can wear an amulet even if it has no head */
-#define MB_INDIGESTIBLE	0x02000000L	/* immune to purple worms */
-#define MB_INSUBSTANTIAL	0x04000000L	/* Weapons pass through the monster */
-#define MB_NOGLOVES		0x08000000L	/* can handle things but has no glove slot */
-#define MB_NOHAT		0x10000000L	/* has a head to be beheaded but has no helm slot */
-#define MB_SKELETAL		0x20000000L	/* only bones */
-#define MB_ORGANIC		0x40000000L	/* despite being MA_UNLIVING, has an organic body */
+#define MB_OVIPAROUS	       0x00000080L	/* can lay eggs */
+#define MB_MALE		0x00000100L	/* always male */
+#define MB_FEMALE		0x00000200L	/* always female */
+#define MB_NEUTER		0x00000400L	/* neither male nor female */
+#define MB_STRONG		0x00000800L	/* strong (or big) monster */
+#define MB_WINGS		0x00001000L	/* has wings */
+#define MB_LONGHEAD		0x00002000L	/* has 'long' (animal) head */
+#define MB_LONGNECK		0x00004000L	/* has 'long' (snakelike) head and neck */
+#define MB_NOFEET		0x00008000L	/* no feet to wear boots */
+#define MB_HAS_FEET		0x00010000L	/* does have humanoid feet, even though it has a non-humanoid body plan */
+#define MB_CAN_AMULET	0x00020000L	/* can wear an amulet even if it has no head */
+#define MB_NOGLOVES		0x00040000L	/* can handle things but has no glove slot */
+#define MB_NOHAT		0x00080000L	/* has a head to be beheaded but has no helm slot */
 
 #define MB_SNAKELEG	(MB_HUMANOID|MB_SLITHY)
 #define MB_CENTAUR	(MB_HUMANOID|MB_ANIMAL)
@@ -194,7 +183,18 @@
 #define MB_BODYTYPEMASK	(MB_HUMANOID|MB_ANIMAL|MB_SLITHY)
 #define MB_HEADMODIMASK	(MB_LONGHEAD|MB_LONGNECK)
 
-
+//Monster body Composition
+#define MC_UNSOLID		0x00000001L	/* has no solid or liquid body */
+#define MC_ACID		0x00000002L	/* acidic to eat */
+#define MC_POIS		0x00000004L	/* poisonous to eat */
+#define MC_CHILL		0x00000008L	/* cold to eat */
+#define MC_TOSTY		0x00000010L	/* hot to eat */
+#define MC_HALUC		0x00000020L	/* hallucinogenic */
+#define MC_INDIGESTIBLE	0x00000040L	/* immune to purple worms */
+#define MC_INSUBSTANTIAL	0x00000080L	/* Weapons pass through the monster */
+#define MC_SKELETAL		0x00000100L	/* only bones */
+#define MC_ORGANIC		0x00000200L	/* despite being MA_UNLIVING, has an organic body */
+#define MC_THICK_HIDE	0x00000400L	/* has thick hide or scales */
 
 //Monster Vision types and other sensorium details
 #define MV_NORMAL		0x00000001L		/* can't see more than 1 square in the dark */

@@ -2609,7 +2609,7 @@ long wp_mask;
 	int oartifact = otmp->oartifact;
 	uchar dtyp;
 	long spfx, spfx2, spfx3, wpfx;
-	long exist_warntypem = 0, exist_warntypet = 0, exist_warntypeb = 0, exist_warntypeg = 0, exist_warntypea = 0, exist_warntypev = 0;
+	long exist_warntypem = 0, exist_warntypet = 0, exist_warntypeb = 0, exist_warntypec = 0, exist_warntypeg = 0, exist_warntypea = 0, exist_warntypev = 0;
 	long long exist_montype = 0;
 	boolean exist_nonspecwarn;
 	int i, j;
@@ -2665,6 +2665,7 @@ long wp_mask;
 						exist_warntypet |= spec_mt(obj->oartifact);
 						exist_warntypet |= spec_mf(obj->oartifact);
 						exist_warntypeb |= spec_mb(obj->oartifact);
+						exist_warntypec |= spec_mc(obj->oartifact);
 						exist_warntypeg |= spec_mg(obj->oartifact);
 						exist_warntypea |= spec_ma(obj->oartifact);
 						exist_warntypev |= spec_mv(obj->oartifact);
@@ -2698,6 +2699,7 @@ long wp_mask;
 			if (spec_mt(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypet |= spec_mt(oartifact);} else {flags.warntypet &= ~(spec_mt(oartifact)&(~exist_warntypet)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mf(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypet |= spec_mf(oartifact);} else {flags.warntypet &= ~(spec_mf(oartifact)&(~exist_warntypet)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mb(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypeb |= spec_mb(oartifact);} else {flags.warntypeb &= ~(spec_mb(oartifact)&(~exist_warntypeb)); *mask &= (~wp_mask)|W_ART;}}
+			if (spec_mc(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypec |= spec_mc(oartifact);} else {flags.warntypec &= ~(spec_mc(oartifact)&(~exist_warntypec)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mg(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypeg |= spec_mg(oartifact);} else {flags.warntypeg &= ~(spec_mg(oartifact)&(~exist_warntypeg)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_ma(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypea |= spec_ma(oartifact);} else {flags.warntypea &= ~(spec_ma(oartifact)&(~exist_warntypea)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mv(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypev |= spec_mv(oartifact);} else {flags.warntypev &= ~(spec_mv(oartifact)&(~exist_warntypev)); *mask &= (~wp_mask)|W_ART;}}
@@ -2716,7 +2718,7 @@ long wp_mask;
 			see_monsters();	// it should be fine to run a vision update even if there wasn't a change
 
 			/* if there are no specific warnings remaining, toggle off the extrinsic entirely */
-			if (!(flags.warntypem || flags.warntypet || flags.warntypeb || flags.warntypeg || flags.warntypea || flags.warntypev || flags.montype))
+			if (!(flags.warntypem || flags.warntypet || flags.warntypeb || flags.warntypec || flags.warntypeg || flags.warntypea || flags.warntypev || flags.montype))
 				*mask = 0L;
 			break;
 		/* hallucination */
@@ -3175,6 +3177,10 @@ boolean narrow_only;
 		if (weap->mflagsb != 0L && ((ptr->mflagsb & weap->mflagsb) != 0L)) {
 			return TRUE;
 		}
+		/* composition */
+		if (weap->mflagsc != 0L && ((ptr->mflagsc & weap->mflagsc) != 0L)) {
+			return TRUE;
+		}
 		/* game mechanics */
 		if (weap->mflagsg != 0L && ((ptr->mflagsg & weap->mflagsg) != 0L)) {
 			return TRUE;
@@ -3256,6 +3262,17 @@ int oartifact;
 	register const struct artifact *artifact = &artilist[oartifact];
 	if (artifact && artifact->mflagsb)
 		return artifact->mflagsb;
+	return 0L;
+}
+
+/* return the MC flags of monster that an artifact's special attacks apply against */
+long
+spec_mc(oartifact)
+int oartifact;
+{
+	register const struct artifact *artifact = &artilist[oartifact];
+	if (artifact && artifact->mflagsc)
+		return artifact->mflagsc;
 	return 0L;
 }
 

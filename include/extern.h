@@ -199,6 +199,7 @@ E long FDECL(spec_mm, (int));
 E long FDECL(spec_mt, (int));
 E long FDECL(spec_mf, (int));
 E long FDECL(spec_mb, (int));
+E long FDECL(spec_mc, (int));
 E long FDECL(spec_mg, (int));
 E long FDECL(spec_ma, (int));
 E long FDECL(spec_mv, (int));

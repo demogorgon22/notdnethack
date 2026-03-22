@@ -133,7 +133,7 @@
 #define amorphous(ptr)			(((ptr)->mflagsm & MM_AMORPHOUS) != 0L)
 #define amorphous_mon(mon)		((mon) == &youmonst ? (amorphous(youracedata) || check_mutation(AAT_PRIMINAL)) : amorphous((mon)->data))
 #define noncorporeal(ptr)		((ptr)->mlet == S_GHOST || (ptr)->mlet == S_SHADE)
-#define insubstantial(ptr)		(((ptr)->mflagsb & MB_INSUBSTANTIAL) != 0L)
+#define insubstantial(ptr)		(((ptr)->mflagsc & MC_INSUBSTANTIAL) != 0L)
 #define tunnels(ptr)			(((ptr)->mflagsm & MM_TUNNEL) != 0L)
 #define needspick(ptr)			(((ptr)->mflagsm & MM_NEEDPICK) != 0L)
 #define is_underswimmer(ptr)	((ptr)->mlet == S_EEL || (ptr)->mtyp == PM_CRYSTAL_OOZE)
@@ -260,7 +260,7 @@
 						 ((ptr)->mtyp == PM_GHOUL_QUEEN_NITOCRIS) || \
 						 ((ptr)->mtyp == PM_PHARAOH) \
 						)
-#define skeleton_innards(ptr)	(((ptr)->mflagsb&MB_SKELETAL) != 0)
+#define skeleton_innards(ptr)	(((ptr)->mflagsc&MC_SKELETAL) != 0)
 #define no_innards(ptr)	((ptr)->mlet == S_VORTEX || \
 						 (ptr)->mlet == S_LIGHT || \
 						 (ptr)->mlet == S_ELEMENTAL || \
@@ -291,7 +291,7 @@
 								)
 #define is_silent(ptr)		((ptr)->msound == MS_SILENT)
 #define is_silent_mon(mon)	(is_silent((mon)->data))
-#define unsolid(ptr)		(((ptr)->mflagsb & MB_UNSOLID) != 0L)
+#define unsolid(ptr)		(((ptr)->mflagsc & MC_UNSOLID) != 0L)
 #define mindless(ptr)		(((ptr)->mflagst & MT_MINDLESS) != 0L || ((ptr)->mflagst & MT_DETACHED) != 0L || on_level(&valley_level, &u.uz))
 #define mindless_mon(mon)		(mon && mindless((mon)->data))
 #define detached_from_purpose(ptr) (((ptr)->mflagst & MT_DETACHED) != 0)
@@ -329,7 +329,7 @@
 #define is_arachnid(ptr)		(((ptr)->mflagsa & MA_ARACHNID) != 0L)
 #define is_aquatic(ptr)		(((ptr)->mflagsa & MA_AQUATIC) != 0L)
 #define is_wooden(ptr)		((ptr)->mtyp == PM_WOOD_GOLEM || (ptr)->mtyp == PM_LIVING_LECTERN || is_plant(ptr))
-#define thick_skinned(ptr)	(((ptr)->mflagsb & MB_THICK_HIDE) != 0L)
+#define thick_skinned(ptr)	(((ptr)->mflagsc & MC_THICK_HIDE) != 0L)
 #define lays_eggs(ptr)		(((ptr)->mflagsb & MB_OVIPAROUS) != 0L)
 #define species_regenerates(ptr)		(((ptr)->mflagsg & MG_REGEN) != 0L)
 #define species_perceives(ptr)			(((ptr)->mflagsv & MV_SEE_INVIS) != 0L)
@@ -352,11 +352,11 @@
 								 )
 #define controlledwidegaze(ptr)		(!((ptr)->mtyp == PM_MEDUSA || (ptr)->mtyp == PM_UVUUDAUM || (ptr)->mtyp == PM_DESERT_SEER || (ptr)->mtyp == PM_GREAT_CTHULHU || (ptr)->mtyp == PM_OBOX_OB || (ptr)->mtyp == PM_DAGON))
 #define controlledwidegaze_mon(mon)		(controlledwidegaze((mon)->data) || has_template(mon, ILLUMINATED))
-#define acidic(ptr)			(((ptr)->mflagsb & MB_ACID) != 0L)
-#define poisonous(ptr)		(((ptr)->mflagsb & MB_POIS) != 0L)
-#define freezing(ptr)		(((ptr)->mflagsb & MB_CHILL) != 0L)
-#define burning(ptr)		(((ptr)->mflagsb & MB_TOSTY) != 0L)
-#define hallucinogenic(ptr)		(((ptr)->mflagsb & MB_HALUC) != 0L)
+#define acidic(ptr)			(((ptr)->mflagsc & MC_ACID) != 0L)
+#define poisonous(ptr)		(((ptr)->mflagsc & MC_POIS) != 0L)
+#define freezing(ptr)		(((ptr)->mflagsc & MC_CHILL) != 0L)
+#define burning(ptr)		(((ptr)->mflagsc & MC_TOSTY) != 0L)
+#define hallucinogenic(ptr)		(((ptr)->mflagsc & MC_HALUC) != 0L)
 #define inediate(ptr)		(!(carnivorous(ptr) || herbivorous(ptr) || metallivorous(ptr) || magivorous(ptr) || is_vampire(ptr)))
 #define carnivorous(ptr)	(((ptr)->mflagst & MT_CARNIVORE) != 0L)
 #define obligate_carnivore(ptr)	(((ptr)->mflagst & MT_FOODMASK) == MT_CARNIVORE)
@@ -1219,7 +1219,7 @@
 
 #define is_naturally_unalive(ptr)		(((ptr)->mflagsa & MA_UNLIVING))
 
-#define is_indigestible(ptr)	(((ptr)->mflagsb&MB_INDIGESTIBLE) != 0)
+#define is_indigestible(ptr)	(((ptr)->mflagsc&MC_INDIGESTIBLE) != 0)
 
 #define is_spiritual_being(mon)	(is_demon((mon)->data) || is_minion((mon)->data))
 
@@ -1232,7 +1232,7 @@
 							 || ((ptr)->mlet == S_LIGHT && is_elemental(ptr)) \
 							 || ((ptr)->mtyp == PM_HOOLOOVOO) \
 							) \
-							|| ((ptr)->mflagsb&MB_ORGANIC) \
+							|| ((ptr)->mflagsc&MC_ORGANIC) \
 							)
 
 // #define is_indigestible(ptr)	((ptr)->mtyp == PM_DANCING_BLADE ||\
