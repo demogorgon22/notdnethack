@@ -2974,7 +2974,7 @@ struct attack * attk;
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
 		}
-		if(otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
+		if(isok(x(magr) + nx, y(magr) + ny) && otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
 			do_digging_impact(magr, otmp, x(magr) + nx, y(magr) + ny);
 		}
 		//-45 degree rotation
@@ -3004,7 +3004,7 @@ struct attack * attk;
 				result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
 			}
 		}
-		if(otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
+		if(isok(x(magr) + nx, y(magr) + ny) && otmp->oartifact == ART_IBITE_ARM && artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_DESTROY){
 			do_digging_impact(magr, otmp, x(magr) + nx, y(magr) + ny);
 		}
 	}
