@@ -348,6 +348,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 			break;
 		case AD_PHYS: str = (olet != TOOL_CLASS ? olet != WEAPON_CLASS ? "blast" : "flying shards of obsidian" : "flying shards of mirror");
 			break;
+		case AD_STAR: str = "blast of stardust";
+			break;
 		case AD_DISE: str = "cloud of spores";
 			break;
 		case AD_DARK: str = "blast of darkness";
@@ -371,7 +373,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		yi = area->locations[i].y;
 		if (xi == u.ux && yi == u.uy) {
 		    switch(adtyp) {
-			case AD_PHYS:                        
+			case AD_PHYS:
+			case AD_STAR:
 				break;
 			case AD_MAGM:
 				explmask = !!Antimagic;
@@ -451,6 +454,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 					   mtmp->mtyp == PM_BURNING_FERN ||
 					   mtmp->mtyp == PM_CHAOS
 					) explmask |= TRUE;
+					break;
+				case AD_STAR:
 					break;
 				case AD_MAGM:
 					explmask |= resists_magm(mtmp);
@@ -774,6 +779,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 				mdam *= 2;
 			else if (has_blood_mon(mtmp) && adtyp == AD_BLUD)
 				mdam += mlev(mtmp);
+			else if (hates_silver(mtmp->data) && mdam/3 > 0 && adtyp == AD_STAR)
+				mdam += d(mdam/3, 20);
 			if(yours && adtyp == AD_BLUD)
 				mdam += u.uimpurity/2;
 			if(adtyp == AD_WET){
@@ -825,6 +832,10 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		){
 			damu /= 2;
 			uhurt = 3;
+		}
+		if(hates_silver(youracedata) && damu/3 > 0 && adtyp == AD_STAR){
+			You("are seared by the %s!", str);
+			damu += d(damu/3, 20);
 		}
 
 		if(hates_silver(youracedata) && silver){
@@ -1434,6 +1445,8 @@ int adtyp;
 	switch(adtyp){
 		case AD_PHYS:
 			return EXPL_MUDDY;
+		case AD_STAR:
+			return EXPL_FROSTY;
 		case AD_EFIR:
 		case AD_FIRE:
 			return EXPL_FIERY;

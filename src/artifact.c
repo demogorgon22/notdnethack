@@ -8260,18 +8260,23 @@ boolean printmessages; /* print generic elemental damage messages */
 	}
 	
 	if(arti_struct && arti_struct->inv_prop == FALLING_STARS){
-		if(!Fire_res(mdef)){
+		if(!Fire_res(mdef) && Insight >= 6){
+			int fire_damage;
 			if(Insight >= 36){
-				*truedmgptr += d(6,6);
+				fire_damage = d(6,6);
 			}
-			else if(Insight >= 6){
-				*truedmgptr += d(Insight/6,6);
+			else {
+				fire_damage = d(Insight/6,6);
 			}
-		}
-		if (!UseInvFire_res(mdef) && Insight >= 6){
-			if (rn2(3)) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
-			if (rn2(3) && Insight >= 12) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
-			if (rn2(3) && Insight >= 18) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			if(fire_vulnerable(mdef))
+				fire_damage *= 1.5;
+			*truedmgptr += fire_damage;
+			
+			if (!UseInvFire_res(mdef)){
+				if (rn2(3)) destroy_item(mdef, SCROLL_CLASS, AD_FIRE);
+				if (rn2(3) && Insight >= 12) destroy_item(mdef, SPBOOK_CLASS, AD_FIRE);
+				if (rn2(3) && Insight >= 18) destroy_item(mdef, POTION_CLASS, AD_FIRE);
+			}
 		}
 		if(NightmareAware_Insanity >= 4){
 			int n = ClearThoughts ? 1 : 2;
@@ -8302,7 +8307,7 @@ boolean printmessages; /* print generic elemental damage messages */
 			else
 				n = (Insight - 36)/6;
 			n=rnd(n)+1;
-			explode_yours(x, y, AD_PHYS, 0, d(6,6), EXPL_MUDDY, 1, FALSE);
+			explode_yours(x, y, AD_STAR, 0, d(6,6), EXPL_FROSTY, 1, FALSE);
 			if (cansee(x, y)){
 				if (Hallucination || Insight > 96) pline("Another Star Falls.");
 				else pline("A star falls from the %s!", (In_outdoors(&u.uz) ? "sky" : ceiling(x, y)));
@@ -8311,7 +8316,10 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 
 			while(n--) {
-				explode_full(x, y, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1, 4, FALSE, (struct permonst *) 0, 0L);
+				if(rn2(2))
+					explode_full(x, y, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1, 4, FALSE, (struct permonst *) 0, 0L);
+				else
+					explode_full(x, y, AD_PHYS, 0, d(6,6), EXPL_MUDDY, 1, 4, FALSE, (struct permonst *) 0, 0L);
 				
 				x = cc.x+rnd(3)-1; y = cc.y+rnd(3)-1;
 				if (!isok(x,y)) {
@@ -10949,7 +10957,7 @@ arti_invoke(obj)
 			}
 			cc.x=x;cc.y=y; // spell drifts slightly between iterations
 			n=rnd(8)+1;
-			explode(x, y, AD_PHYS, 0, d(6,6), EXPL_MUDDY, 1);
+			explode(x, y, AD_STAR, 0, d(6,6), EXPL_FROSTY, 1);
 			while(n--) {
 				if (rn2(2)) explode_sound(x, y, AD_FIRE, 0, d(6,6), EXPL_FIERY, 1, 4);
 				else 		explode_sound(x, y, AD_PHYS, 0, d(6,6), EXPL_MUDDY, 1, 4);
