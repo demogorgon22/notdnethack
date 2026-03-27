@@ -19,7 +19,7 @@ static const char apply_corpse[] = { FOOD_CLASS, 0 };
 static const char chain_class[] = { CHAIN_CLASS, 0 };
 static const char spellbook_class[] = { SPBOOK_CLASS, 0 };
 static const char weapon_class[] = { WEAPON_CLASS, 0 };
-static const char consume_classes[] = { WEAPON_CLASS, FOOD_CLASS, SPBOOK_CLASS, 0 };
+static const char consume_classes[] = { WEAPON_CLASS, FOOD_CLASS, SPBOOK_CLASS, TOOL_CLASS, 0 };
 static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 
 #define TREPH_THOUGHTS 1

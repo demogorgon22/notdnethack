@@ -870,6 +870,8 @@ boolean you_abilities;
 		memset(&fake_attk, 0, sizeof(fake_attk));
 		fake_attk.aatyp = AT_MMGC;
 		fake_attk.adtyp = AD_CLRC;
+		u.lastcast = monstermoves + 3;
+		u.bladesong = monstermoves + 3;
 		cast_spell(&youmonst, mtmp, &fake_attk, PEST_THREADS, cc.x, cc.y);
 		return MOVE_CASTSPELL;
 	}
