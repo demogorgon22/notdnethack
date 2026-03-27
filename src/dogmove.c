@@ -830,9 +830,9 @@ STATIC_OVL int
 pet_sphere_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr)
 {
 	int appr = 0;
-	int gx, gy;
 	struct monst *m2 = (struct monst *)0;
 	int distminbest = BOLT_LIM;
+	gtyp = UNDEF;
 	for(m2=fmon; m2; m2 = m2->nmon){
 		if(!m2->mtame && !m2->mpeaceful && distmin(mtmp->mx,mtmp->my,m2->mx,m2->my) < distminbest){
 			distminbest = distmin(mtmp->mx,mtmp->my,m2->mx,m2->my);
