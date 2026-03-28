@@ -3658,7 +3658,7 @@ E long FDECL(attk_protection, (int));
 E long FDECL(attk_equip_slot, (struct monst *, int));
 E boolean FDECL(badtouch, (struct monst *, struct monst *, struct attack *, struct obj *));
 E boolean FDECL(safe_attack, (struct monst *, struct monst *, struct attack *, struct obj *, struct permonst *, struct permonst *));
-E int NDECL(beastmastery);
+E int FDECL(beastmastery, (struct monst *));
 E int NDECL(narya);
 E int NDECL(mountedCombat);
 E boolean FDECL(obj_silver_searing, (struct obj *));

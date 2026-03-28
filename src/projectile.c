@@ -3237,6 +3237,10 @@ int tary;
 	/* handled in dobreathe for the player */
 	if (is_half_dragon(pa) && typ == AD_FIRE && pa->mlevel >= 14)
 		zapdata.damn += 2;
+	
+	if (pa->mlet == S_DRAGON && magr->mtame && Dragon_trainer) {
+		zapdata.damn += 2;
+	}
 
 	if(jacket){
 		zapdata.damn = zapdata.damn/2+1;

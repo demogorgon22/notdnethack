@@ -665,6 +665,10 @@
 #define EWithering_stake	u.uprops[WITHERING_STAKE].extrinsic
 #define Withering_stake	(HWithering_stake || EWithering_stake)
 
+#define HDragon_trainer	u.uprops[DRAGON_TRAINER].intrinsic
+#define EDragon_trainer	u.uprops[DRAGON_TRAINER].extrinsic
+#define Dragon_trainer	(HDragon_trainer || EDragon_trainer)
+
 #define HSterile	u.uprops[STERILE].intrinsic
 #define ESterile	u.uprops[STERILE].extrinsic
 #define Sterile		((HSterile || ESterile) && !GoodHealth)

@@ -10,7 +10,7 @@ void FDECL(mon_block_extrinsic, (struct monst *, struct obj *, int, boolean, boo
 boolean FDECL(mon_gets_extrinsic, (struct monst *, int, struct obj *));
 STATIC_DCL void FDECL(update_mon_intrinsic, (struct monst *,struct obj *,int,BOOLEAN_P,BOOLEAN_P));
 STATIC_DCL void FDECL(m_dowear_type, (struct monst *,long, BOOLEAN_P, BOOLEAN_P));
-STATIC_DCL int NDECL(def_beastmastery);
+STATIC_DCL int FDECL(def_beastmastery, (struct monst *));
 STATIC_DCL int NDECL(def_vilya);
 STATIC_DCL int NDECL(def_narya);
 STATIC_DCL int NDECL(def_lomya);
@@ -887,9 +887,9 @@ struct monst *mon;
 		base -= 10;
 	
 	if (mon->mtame){
-		base -= rnd(def_beastmastery());
+		base -= rnd(def_beastmastery(mon));
 		if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(mon->data))
-			base -= rnd(def_beastmastery()); // the duster doubles for tame animals
+			base -= rnd(def_beastmastery(mon)); // the duster doubles for tame animals
 		
 		if(u.usteed && mon==u.usteed) base -= rnd(def_mountedCombat());
 		
@@ -1161,14 +1161,14 @@ struct monst *mon;
 		base -= 10;
 	
 	if(mon->mtame){
-		base -= def_beastmastery();
+		base -= def_beastmastery(mon);
 		if(u.specialSealsActive&SEAL_COSMOS) base -= spiritDsize();
 		if(u.usteed && mon==u.usteed) base -= def_mountedCombat();
 		
 		if(is_vampire(mon->data) && check_vampire(VAMPIRE_MASTERY)) base -= 5;
 
 		if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(mon->data))
-			base -= def_beastmastery(); // the duster doubles for tame animals
+			base -= def_beastmastery(mon); // the duster doubles for tame animals
 
 		if(uring_art(ART_VILYA))
 			base -= def_vilya();
@@ -2798,16 +2798,19 @@ long timeout;
 }
 
 STATIC_OVL int
-def_beastmastery()
+def_beastmastery(struct monst *mon)
 {
-	int bm;
-	switch (P_SKILL(P_BEAST_MASTERY)) {
+	int bm = P_SKILL(P_BEAST_MASTERY);
+	if(mon && is_dragon(mon->data) && Dragon_trainer)
+		bm += 1;
+	switch (bm) {
 		case P_ISRESTRICTED: bm =  0; break;
 		case P_UNSKILLED:    bm =  0; break;
 		case P_BASIC:        bm =  2; break;
 		case P_SKILLED:      bm =  5; break;
 		case P_EXPERT:       bm = 10; break;
-		default: impossible(">Expert beast mastery unhandled"); bm = 10; break;
+		case P_MASTER:       bm = 15; break;
+		default: impossible(">Master beast mastery unhandled"); bm = 15; break;
 	}
 	if((uwep && uwep->oartifact == ART_CLARENT) || (uswapwep && uswapwep->oartifact == ART_CLARENT))
 		bm *= 2;

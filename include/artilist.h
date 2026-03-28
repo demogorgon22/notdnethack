@@ -1216,6 +1216,16 @@ A("The Scorpion Carapace",			SCALE_MAIL,			(const char *)0,
 	SCORPION_UPGRADES, (ARTI_PLUSSEV)
 	),
 
+A("Prismatic Dragon Scales",			SHIMMERING_DRAGON_SCALE_MAIL,		(const char *)0,
+	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
+	A_NONE, NON_PM, NON_PM, TIER_A, NOFLAG,
+	NO_MONS(),
+	NO_ATTK(), NOFLAG,
+	PROPS(DRAGON_TRAINER), NOFLAG,
+	PROPS(), NOFLAG,
+	PRISMATIC, NOFLAG
+	),
+
 A("Mirrorbright",					ROUNDSHIELD,		(const char *)0,
 	4000L, COPPER, MZ_DEFAULT, WT_DEFAULT,
 	A_CHAOTIC, NON_PM, NON_PM, TIER_C, NOFLAG,
@@ -3898,18 +3908,6 @@ A("The Hat of the Giant Killer",		GNOMISH_POINTY_HAT,			(const char *)0,
 	PROPS(HALF_PHDAM), NOFLAG,
 	PROPS(WARN_OF_MON), NOFLAG,
 	NOINVOKE, (ARTI_PLUSSEV)
-	),
-
-/* Half-Dragon */
-/* TODO pet dragons +1 beast mastery */
-A("The Prismatic Dragon Plate",			PLATE_MAIL,		(const char *)0,
-	0L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
-	A_NONE, NON_PM, PM_HALF_DRAGON, NO_TIER, (ARTG_NOGEN|ARTG_NOWISH),
-	NO_MONS(),
-	NO_ATTK(), NOFLAG,
-	PROPS(HALF_PHDAM), NOFLAG,
-	PROPS(), NOFLAG,
-	PRISMATIC, (ARTI_PLUSSEV)
 	),
 
 /* Human */

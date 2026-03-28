@@ -1265,16 +1265,20 @@ struct permonst * pd;
  * returns the accuracy bonus a pet/mount gets from the player's skill
  */
 int
-beastmastery()
+beastmastery(struct monst *mon)
 {
-	int bm;
-	switch (P_SKILL(P_BEAST_MASTERY)) {
+	int bm = P_SKILL(P_BEAST_MASTERY);
+	if(mon && is_dragon(mon->data) && Dragon_trainer)
+		bm++;
+
+	switch (bm) {
 	case P_ISRESTRICTED: bm = 0; break;
 	case P_UNSKILLED:    bm = 0; break;
 	case P_BASIC:        bm = 2; break;
 	case P_SKILLED:      bm = 5; break;
 	case P_EXPERT:       bm = 10; break;
-	default: impossible(">Expert beast mastery unhandled"); bm = 10; break;
+	case P_MASTER:       bm = 15; break;
+	default: impossible(">Master beast mastery unhandled"); bm = 15; break;
 	}
 	if ((uwep && uwep->oartifact == ART_CLARENT) || (uswapwep && uswapwep->oartifact == ART_CLARENT))
 		bm *= 2;

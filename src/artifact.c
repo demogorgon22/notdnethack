@@ -12746,46 +12746,49 @@ arti_invoke(obj)
           } else You_feel("like you should be wielding %s.", The(xname(obj)));
         } break;
         case PRISMATIC:{
-          if(uarm && uarm == obj){
-            int prismaticFunc  = doprismaticmenu("Choose a new color for your armor:", obj);
-            setnotworn(obj);
-            switch(prismaticFunc){
-                case COMMAND_GRAY:
-                  obj->otyp = GRAY_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_SILVER:
-                  obj->otyp = SILVER_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_SHIMMERING:
-                  obj->otyp = SHIMMERING_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_RED:
-                  obj->otyp = RED_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_WHITE:
-                  obj->otyp = WHITE_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_ORANGE:
-                  obj->otyp = ORANGE_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_BLACK:
-                  obj->otyp = BLACK_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_BLUE:
-                  obj->otyp = BLUE_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_GREEN:
-                  obj->otyp = GREEN_DRAGON_SCALE_MAIL;
-                  break;
-                case COMMAND_YELLOW:
-                  obj->otyp = YELLOW_DRAGON_SCALE_MAIL;
-                  break;
-                case 0:
-                  break;
-            }
-            setworn(obj, W_ARM);
-            obj->owt = weight(obj);
-          } else You_feel("like you should be wearing %s.", The(xname(obj)));
+			long worn = obj->owornmask;
+			boolean armor = Is_dragon_mail(obj);
+			boolean shield = Is_dragon_shield(obj);
+			int prismaticFunc  = doprismaticmenu(armor ? "Choose a new color for your armor:" : shield ? "Choose a new color for your shield:" : "Choose a new color for your scales:", obj);
+			if(worn)
+				setnotworn(obj);
+			switch(prismaticFunc){
+				case COMMAND_GRAY:
+					obj->otyp = armor ? GRAY_DRAGON_SCALE_MAIL : shield ? GRAY_DRAGON_SCALE_SHIELD : GRAY_DRAGON_SCALES;
+					break;
+				case COMMAND_SILVER:
+					obj->otyp = armor ? SILVER_DRAGON_SCALE_MAIL : shield ? SILVER_DRAGON_SCALE_SHIELD : SILVER_DRAGON_SCALES;
+					break;
+				case COMMAND_SHIMMERING:
+					obj->otyp = armor ? SHIMMERING_DRAGON_SCALE_MAIL : shield ? SHIMMERING_DRAGON_SCALE_SHIELD : SHIMMERING_DRAGON_SCALES;
+					break;
+				case COMMAND_RED:
+					obj->otyp = armor ? RED_DRAGON_SCALE_MAIL : shield ? RED_DRAGON_SCALE_SHIELD : RED_DRAGON_SCALES;
+					break;
+				case COMMAND_WHITE:
+					obj->otyp = armor ? WHITE_DRAGON_SCALE_MAIL : shield ? WHITE_DRAGON_SCALE_SHIELD : WHITE_DRAGON_SCALES;
+					break;
+				case COMMAND_ORANGE:
+					obj->otyp = armor ? ORANGE_DRAGON_SCALE_MAIL : shield ? ORANGE_DRAGON_SCALE_SHIELD : ORANGE_DRAGON_SCALES;
+					break;
+				case COMMAND_BLACK:
+					obj->otyp = armor ? BLACK_DRAGON_SCALE_MAIL : shield ? BLACK_DRAGON_SCALE_SHIELD : BLACK_DRAGON_SCALES;
+					break;
+				case COMMAND_BLUE:
+					obj->otyp = armor ? BLUE_DRAGON_SCALE_MAIL : shield ? BLUE_DRAGON_SCALE_SHIELD : BLUE_DRAGON_SCALES;
+					break;
+				case COMMAND_GREEN:
+					obj->otyp = armor ? GREEN_DRAGON_SCALE_MAIL : shield ? GREEN_DRAGON_SCALE_SHIELD : GREEN_DRAGON_SCALES;
+					break;
+				case COMMAND_YELLOW:
+					obj->otyp = armor ? YELLOW_DRAGON_SCALE_MAIL : shield ? YELLOW_DRAGON_SCALE_SHIELD : YELLOW_DRAGON_SCALES;
+					break;
+				case 0:
+					break;
+			}
+			if(worn)
+				setworn(obj, worn);
+			obj->owt = weight(obj);
         } break;
         case SUMMON_VAMP:{
           if(uamul && uamul == obj){
@@ -14364,9 +14367,7 @@ struct obj *obj;
 }
 
 int
-doprismaticmenu(prompt, obj)
-const char *prompt;
-struct obj *obj;
+doprismaticmenu(const char *prompt, struct obj *obj)
 {
 	winid tmpwin;
 	int n, how;
@@ -14378,7 +14379,7 @@ struct obj *obj;
 	start_menu(tmpwin);
 	any.a_void = 0;		/* zero out all bits */
 
-	Sprintf(buf, "Choose a new color for your armor:");
+	Sprintf(buf, "%s", prompt);
 	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
     if(mvitals[PM_GRAY_DRAGON].seen || mvitals[PM_BABY_GRAY_DRAGON].seen){
       Sprintf(buf, "Gray");

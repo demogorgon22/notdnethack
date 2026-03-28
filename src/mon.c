@@ -1636,7 +1636,8 @@ struct monst *mon;
 		else if(uwep->osinging == OSING_LETHARGY && !mon->mtame)
 			mmove -= 2;
 	}
-	
+	if(mon->data->mlet == S_DRAGON && mon->mtame && Dragon_trainer)
+		mmove += 4;
 	if(mon->mtyp == PM_CHOKHMAH_SEPHIRAH)
 		mmove += u.chokhmah;
 	if(mon->mtyp == PM_BANDERSNATCH && mon->mflee)

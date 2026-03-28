@@ -4708,9 +4708,9 @@ int *shield_margin;
 #endif
 			/* All of your pets get a skill-based boost */
 			if (magr->mtame){
-				bons_acc += beastmastery();
+				bons_acc += beastmastery(magr);
 				if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(magr->data))
-					bons_acc += beastmastery(); // double for the beastmaster's duster
+					bons_acc += beastmastery(magr); // double for the beastmaster's duster
 				if(artinstance[ART_SKY_REFLECTED].ZerthUpgrades&ZPROP_STEEL)
 					bons_acc += 1;
 				if(is_vampire(magr->data) && check_vampire(VAMPIRE_MASTERY))

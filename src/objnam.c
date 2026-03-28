@@ -2436,27 +2436,59 @@ weapon:
 				if (Is_dragon_mail(obj)) Sprintf(eos(buf), " (mail)");
 				if (Is_dragon_scales(obj)) Sprintf(eos(buf), " (scales)");
 			}
-			if (obj->oartifact == ART_PRISMATIC_DRAGON_PLATE){
-				if (GRAY_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (gray)");
-				if (SILVER_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (silver)");
-				if (SHIMMERING_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (shimmering)");
-				if (RED_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (red)");
-				if (WHITE_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (white)");
-				if (ORANGE_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (orange)");
-				if (BLACK_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (black)");
-				if (BLUE_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (blue)");
-				if (GREEN_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (green)");
-				if (YELLOW_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (yellow)");
+			if (obj->oartifact == ART_PRISMATIC_DRAGON_SCALES){
+				switch (obj->otyp){
+						case GRAY_DRAGON_SCALE_SHIELD:
+						case GRAY_DRAGON_SCALE_MAIL:
+						case GRAY_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (gray)");
+						break;
+						case SILVER_DRAGON_SCALE_SHIELD:
+						case SILVER_DRAGON_SCALE_MAIL:
+						case SILVER_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (silver)");
+						break;
+						case SHIMMERING_DRAGON_SCALE_SHIELD:
+						case SHIMMERING_DRAGON_SCALE_MAIL:
+						case SHIMMERING_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (shimmering)");
+						break;
+						case RED_DRAGON_SCALE_SHIELD:
+						case RED_DRAGON_SCALE_MAIL:
+						case RED_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (red)");
+						break;
+						case WHITE_DRAGON_SCALE_SHIELD:
+						case WHITE_DRAGON_SCALE_MAIL:
+						case WHITE_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (white)");
+						break;
+						case ORANGE_DRAGON_SCALE_SHIELD:
+						case ORANGE_DRAGON_SCALE_MAIL:
+						case ORANGE_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (orange)");
+						break;
+						case BLACK_DRAGON_SCALE_SHIELD:
+						case BLACK_DRAGON_SCALE_MAIL:
+						case BLACK_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (black)");
+						break;
+						case BLUE_DRAGON_SCALE_SHIELD:
+						case BLUE_DRAGON_SCALE_MAIL:
+						case BLUE_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (blue)");
+						break;
+						case GREEN_DRAGON_SCALE_SHIELD:
+						case GREEN_DRAGON_SCALE_MAIL:
+						case GREEN_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (green)");
+						break;
+						case YELLOW_DRAGON_SCALE_SHIELD:
+						case YELLOW_DRAGON_SCALE_MAIL:
+						case YELLOW_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (yellow)");
+						break;
+				}
 			}
 			break;
 		case TOOL_CLASS:

@@ -541,7 +541,6 @@ extern struct artifact * artilist;
             // art_already_exists(ART_NENYA) ||\
             // art_already_exists(ART_VILYA) ||\
             // art_already_exists(ART_HAT_OF_THE_GIANT_KILLER) ||\
-            // art_already_exists(ART_PRISMATIC_DRAGON_PLATE) ||\
             // art_already_exists(ART_FOOTPRINTS_IN_THE_LABYRINT) ||\
             // art_already_exists(ART_TRAPPINGS_OF_THE_GRAVE)\
 // )
@@ -651,24 +650,14 @@ extern struct artifact * artilist;
             || ((a) == &artilist[ART_FORGE_HAMMER_OF_THE_ARTIFI] && (Role_if(PM_WIZARD) || Pantheon_if(PM_WIZARD)) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
                 !has_named_mastery_artifact())\
             /* Drow */\
-            || ((a) == &artilist[ART_LOMYA] && Race_if(PM_DROW) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
             /* Dwarf */\
             || ((a) == &artilist[ART_BULWARK_OF_THE_DWARVEN_DEF] && Race_if(PM_DWARF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
                 !has_named_mastery_artifact())\
             /* Elf */\
-            || ((a) == &artilist[ART_NARYA] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
-            || ((a) == &artilist[ART_NENYA] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
-            || ((a) == &artilist[ART_VILYA] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
             /* Gnome */\
-            || ((a) == &artilist[ART_HAT_OF_THE_GIANT_KILLER] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
+            || ((a) == &artilist[ART_HAT_OF_THE_GIANT_KILLER] && Race_if(PM_GNOME) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
                 !has_named_mastery_artifact())\
             /* Half-Dragon */\
-            || ((a) == &artilist[ART_PRISMATIC_DRAGON_PLATE] && Race_if(PM_HALF_DRAGON) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
             /* Human */\
             /* Incantifier */\
             || ((a) == &artilist[ART_FOOTPRINTS_IN_THE_LABYRINT] && Race_if(PM_INCANTIFIER) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
