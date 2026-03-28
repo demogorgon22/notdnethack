@@ -819,6 +819,9 @@ boolean dofull;
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == (MB_HUMANOID | MB_SLITHY)) Strcat(buf, "snakeleg ");
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == (MB_ANIMAL | MB_SLITHY)) Strcat(buf, "snakeback ");
 		}
+		if ((obj->bodytypeflag&MB_HORNS) != 0){
+			Strcat(buf, "slotted ");
+		}
 		if ((obj->bodytypeflag&MB_HEADMODIMASK) != 0){
 			if ((obj->bodytypeflag&MB_HEADMODIMASK) == MB_LONGHEAD) Strcat(buf, "barded ");
 			else if ((obj->bodytypeflag&MB_HEADMODIMASK) == MB_LONGNECK) Strcat(buf, "snakeneck ");
@@ -1195,9 +1198,9 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_CAST) && !obj->known)
 			Strcat(buf, "gem-set ");
 		
-		if (check_oprop(obj, OPROP_BLADED))
+		if (check_omod(obj, OMOD_BLADED))
 			Strcat(buf, "bladed ");
-		if (check_oprop(obj, OPROP_SPIKED))
+		if (check_omod(obj, OMOD_SPIKED))
 			Strcat(buf, "spiked ");
 
 		if (check_oprop(obj, OPROP_GOLDW))
@@ -4079,6 +4082,7 @@ int wishflags;
 	int objsize = (from_user ? youracedata->msize : MZ_MEDIUM);
 	long bodytype = 0L;
 	unsigned long int oprop_list[OPROP_LISTSIZE] = {0};
+	unsigned long int omod_list[OMOD_LISTSIZE] = {0};
 	char oclass;
 	char *un, *dn, *actualn;
 	const char *name=0;
@@ -4866,9 +4870,9 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_INSTW);
 
 		} else if (!strncmpi(bp, "spiked ", l=7)) {
-			add_oprop_list(oprop_list, OPROP_SPIKED);
+			add_omod_list(omod_list, OMOD_SPIKED);
 		} else if (!strncmpi(bp, "bladed ", l=7)) {
-			add_oprop_list(oprop_list, OPROP_BLADED);
+			add_omod_list(omod_list, OMOD_BLADED);
 		} else if (!strncmpi(bp, "aureate ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_GOLDW);
 		} else if (!strncmpi(bp, "blasting ", l=9)) {
@@ -6170,6 +6174,7 @@ typfnd:
 	{
 		if (wizwish){		// wizard mode will give you what you ask for, even if it breaks things
 			copy_oprop_list(otmp, oprop_list);
+			copy_omod_list(otmp, omod_list);
 		}
 		// else
 		// {	// limit granted properties to what is realistic for the item class

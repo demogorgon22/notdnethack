@@ -76,8 +76,6 @@ enum {
 	OPROP_OCLTW,
 	OPROP_RETRW,
 	OPROP_RAKUW,
-	OPROP_SPIKED,
-	OPROP_BLADED,
 	OPROP_SOTHW,
 	OPROP_SFLMW,
 	OPROP_GSSDW,
@@ -105,12 +103,28 @@ enum {
 	OPROP_LITN,
 	OPROP_LITE,
 	OPROP_CAST,
-	OPROP_SECNW,
 	OPROP_AAMOW,
 	MAX_OPROP
 };
 
 #define OPROP_LISTSIZE	((MAX_OPROP-1)/32 + 1)
+
+/* Non-magical object modification flags (OMOD_).
+ * Unlike oprops, monsters do not consider weapons with these traits to be
+ * superior and will not preferentially wield them. */
+enum {
+	OMOD_NONE = 0,
+	OMOD_BLADED,
+	OMOD_SPIKED,
+	OMOD_SECONDSTRIKE,
+	MAX_OMOD
+};
+
+#define OMOD_LISTSIZE	((MAX_OMOD-1)/32 + 1)
+
+#define add_omod(obj,flag)    ((obj)->omodifications[((flag)-1)/32] |= (1L << (((flag)-1)%32)))
+#define remove_omod(obj,flag) ((obj)->omodifications[((flag)-1)/32] &= ~(1L << (((flag)-1)%32)))
+#define check_omod(obj,flag)  (((obj)->omodifications[((flag)-1)/32] & (1L << (((flag)-1)%32))) != 0L)
 
 struct obj {
 	struct obj *nobj;
@@ -292,7 +306,8 @@ struct obj {
 #define OPOISON_DIRE	0x200 /* Strong poison */
 #define NUM_POISONS		10	/* number of specifiable poison coatings */
 
-	unsigned long int oproperties[OPROP_LISTSIZE];/* special properties */
+	unsigned long int oproperties[OPROP_LISTSIZE];	/* special properties */
+	unsigned long int omodifications[OMOD_LISTSIZE];/* non-magical modifications (OMOD_) */
 
 	unsigned oeaten;	/* nutrition left in food, if partly eaten */
 	long age;		/* creation date */
@@ -939,8 +954,8 @@ struct obj {
 				otmp->otyp == SOLDIER_S_SABER  || \
 				otmp->otyp == BLADED_BOW  || \
 				otmp->otyp == TWINGUN_SHANTA  || \
-				check_oprop(otmp, OPROP_BLADED) || \
-				check_oprop(otmp, OPROP_SPIKED))
+				check_omod(otmp, OMOD_BLADED) || \
+				check_omod(otmp, OMOD_SPIKED))
 #define is_ammo(otmp)	((otmp->oclass == WEAPON_CLASS || \
 			 otmp->oclass == GEM_CLASS) && \
 			 ((objects[otmp->otyp].oc_skill >= -P_CROSSBOW && \

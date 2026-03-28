@@ -8018,8 +8018,8 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					case AT_BUTT:
 						pline("%s %s catch%s on %s armor!",
 							(youagr ? "Your" : s_suffix(Monnam(magr))),
-							(num_horns(pa) == 0 ? "head" : num_horns(pa) == 1 ? "horn" : "horns"),
-							(num_horns(pa) == 1 ? "es" : ""),
+							(!has_horns_mon(magr) ? "head" : num_horns(magr) == 1 ? "horn" : "horns"),
+							((!has_horns_mon(magr) || num_horns(magr) == 1) ? "es" : ""),
 							(youdef ? "your" : s_suffix(mon_nam(mdef)))
 							);
 						break;
@@ -15463,8 +15463,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		}
 		if (/* valid weapon */
 			(valid_weapon(weapon)
-				|| check_oprop(weapon, OPROP_BLADED)
-				|| check_oprop(weapon, OPROP_SPIKED)
+				|| check_omod(weapon, OMOD_BLADED)
+				|| check_omod(weapon, OMOD_SPIKED)
 				|| weapon->oartifact == ART_WAND_OF_ORCUS
 				|| weapon->otyp == WIND_AND_FIRE_WHEELS
 			) &&

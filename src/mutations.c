@@ -493,6 +493,13 @@ mutation_effects(int mutation)
 	){
 		HFlying |= W_UPGRADE;
 	}
+	if(is_horn_mut(mutation) && check_mutation(mutation)){
+		if(uarmh && !helm_match(&youmonst, uarmh)){
+			Your("%s no longer fits!", xname(uarmh));
+			if (donning(uarmh)) cancel_don();
+			(void) Helmet_off();
+		}
+	}
 }
 
 //Note: amulets are stealable worn items

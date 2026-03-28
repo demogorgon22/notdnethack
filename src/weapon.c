@@ -405,7 +405,7 @@ struct monst *magr;
 		|| oartifact == ART_PREMIUM_HEART
 		|| oartifact == ART_SEVEN_STAR_SWORD
 		|| (obj && ((otyp == KAMEREL_VAJRA && !litsaber(obj))
-		|| 		   (check_oprop(obj, OPROP_SPIKED) && !litsaber(obj))
+		|| 		   (check_omod(obj, OMOD_SPIKED) && !litsaber(obj))
 		|| 		   (!litsaber(obj) && is_kinstealing_merc(obj))
 		))){
 		attackmask |= PIERCE;
@@ -436,7 +436,7 @@ struct monst *magr;
 		|| oartifact == ART_CLAWS_OF_THE_REVENANCER
 		|| oartifact == ART_WINTER_REAPER
 		|| oartifact == ART_SHADOWLOCK
-		|| (obj && check_oprop(obj, OPROP_BLADED) && !litsaber(obj))
+		|| (obj && check_omod(obj, OMOD_BLADED) && !litsaber(obj))
 		|| (obj && check_oprop(obj, OPROP_RLYHW) && Insight >= 12)
 		|| (obj && !litsaber(obj) && is_streaming_merc(obj))
 		){
@@ -768,9 +768,9 @@ struct monst *magr;
 				ocd += wt;
 			}
 		}
-		if (check_oprop(obj, OPROP_BLADED))
+		if (check_omod(obj, OMOD_BLADED))
 			ocd = max(ocd, 2*(objects[obj->otyp].oc_size + 1));
-		if (check_oprop(obj, OPROP_SPIKED))
+		if (check_omod(obj, OMOD_SPIKED))
 			ocd = max(ocd, (objects[obj->otyp].oc_size + 2));
 		/* material-based dmod modifiers */
 		if(!(is_lightsaber(obj) && litsaber(obj))){
@@ -4998,8 +4998,8 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 				traits |= ETRAIT_QUICK|ETRAIT_LUNGE;
 		}
 	}
-
-	if(check_oprop(obj, OPROP_SECNW)){
+	
+	if(check_omod(obj, OMOD_SECONDSTRIKE)){
 		traits |= ETRAIT_SECOND;
 	}
 	if(check_oprop(obj, OPROP_RLYHW) && (mon->mtyp == PM_LADY_CONSTANCE || is_mind_flayer(mon->data) || (youagr && u.sealsActive&SEAL_OSE))){

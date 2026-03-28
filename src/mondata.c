@@ -2994,52 +2994,22 @@ struct monst * mtmp;
 
 /* number of horns this type of monster has on its head */
 int
-num_horns(ptr)
-struct permonst *ptr;
+num_horns(struct monst *mon)
 {
-    switch (monsndx(ptr)) {
+	if(mon == &youmonst){
+		if (check_mutation(TT_UNICORN_HORN)) return 1;
+	}
+    switch (monsndx(mon->data)) {
 	case PM_DRACAE_ELADRIN:
 	case PM_FIERNA:
 	case PM_GRAZ_ZT:
 	return 6;
+	case PM_MUSIMON:
+	return 6;
 	case PM_TRICERATOPS:
 	return 3;
-	case PM_LAMB:
-	case PM_ROTHE:
-	case PM_SHEEP:
-	case PM_DIRE_SHEEP:
-    case PM_HORNED_DEVIL:	/* ? "more than one" */
-    case PM_MINOTAUR:
-    case PM_MINOTAUR_PRIESTESS:
-    case PM_SMALL_GOAT_SPAWN:
-    case PM_GOAT_SPAWN:
-    case PM_GIANT_GOAT_SPAWN:
-    case PM_BLESSED:
-    case PM_BAPHOMET:
-    case PM_MALCANTHET:
-    case PM_ORCUS:
-    case PM_BALROG:
-    case PM_DURIN_S_BANE:
-    case PM_LUNGORTHIN:
-    case PM_LEGION_DEVIL_GRUNT:
-    case PM_LEGION_DEVIL_SOLDIER:
-    case PM_LEGION_DEVIL_SERGEANT:
-    case PM_LEGION_DEVIL_CAPTAIN:
-    case PM_GOOD_NEIGHBOR:
-    case PM_PIT_FIEND:
-    case PM_NESSIAN_PIT_FIEND:
-    case PM_BAEL:
-    case PM_DISPATER:
-    case PM_MAMMON:
-    case PM_GREEN_PIT_FIEND:
-    case PM_BELIAL:
-    case PM_MOLEK:
-    case PM_MEPHISTOPHELES:
-    case PM_BAALPHEGOR:
-    case PM_ASMODEUS:
-    case PM_VERIER:
-    case PM_GLASYA:
-	return 2;
+    // case PM_HORNED_DEVIL:	/* ? "more than one" */
+	case PM_TITANOTHERE:
     case PM_WHITE_UNICORN:
     case PM_GRAY_UNICORN:
     case PM_BLACK_UNICORN:
@@ -3047,10 +3017,9 @@ struct permonst *ptr;
     case PM_KI_RIN:
     case PM_ANCIENT_OF_CORRUPTION:
 	return 1;
-    default:
-	break;
     }
-    return 0;
+    // default:
+	return 2;
 }
 
 struct attack *

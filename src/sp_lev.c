@@ -1965,11 +1965,11 @@ default_case:
 					stuff = mksobj(gauntlettypes[rn2(SIZE(gauntlettypes))], MKOBJ_NOINIT);
 					size_items_to_pc(stuff);
 					if(index < SPEAR){
-						add_oprop(stuff, OPROP_SPIKED);
+						add_omod(stuff, OMOD_SPIKED);
 						stuff->spe = 2;
 					}
 					else {
-						add_oprop(stuff, OPROP_BLADED);
+						add_omod(stuff, OMOD_BLADED);
 						stuff->spe = 2;
 					}
 					add_to_container(otmp, stuff);
@@ -1977,7 +1977,7 @@ default_case:
 					//Spiked boots
 					stuff = mksobj(boottypes[rn2(SIZE(boottypes))], MKOBJ_NOINIT);
 					size_items_to_pc(stuff);
-					add_oprop(stuff, OPROP_SPIKED);
+					add_omod(stuff, OMOD_SPIKED);
 					stuff->spe = 2;
 					add_to_container(otmp, stuff);
 				}
@@ -2167,21 +2167,21 @@ default_case:
 					stuff->objsize = MZ_TINY;
 					stuff->ovar1_tooth_type = SERPENT_TOOTH;
 					add_oprop(stuff, OPROP_PSIOW);
-					add_oprop(stuff, OPROP_SECNW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
 					fix_object(stuff);
 
 					default_add_2(TOOTH);
 					stuff->objsize = MZ_TINY;
 					stuff->ovar1_tooth_type = MAGMA_TOOTH;
 					add_oprop(stuff, OPROP_PSIOW);
-					add_oprop(stuff, OPROP_SECNW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
 					fix_object(stuff);
 
 					default_add_2(TOOTH);
 					stuff->objsize = MZ_TINY;
 					stuff->ovar1_tooth_type = VOID_TOOTH;
 					add_oprop(stuff, OPROP_PSIOW);
-					add_oprop(stuff, OPROP_SECNW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
 					fix_object(stuff);
 
 					default_add(ARMOR_SALVE);

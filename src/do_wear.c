@@ -1867,7 +1867,7 @@ boolean noisy;
 		if (uarmh) {
 			if (noisy) already_wearing(an(c_helmet));
 			err++;
-		} else if (!helm_match(youracedata, otmp)){
+		} else if (!helm_match(&youmonst, otmp)){
 			/* (flimsy exception matches polyself handling), you can even just set a hat on top of your body (no head requried)*/
 			boolean hat = is_hat(otmp);
 			if(!has_head_mon(&youmonst) && !hat){
@@ -1878,14 +1878,14 @@ boolean noisy;
 				if (noisy)
 				You("can't wear a helm or hat.");
 				err++;
-			} else if(!helm_match(youracedata,otmp) && !hat){
+			} else if(!helm_match(&youmonst,otmp) && !hat){
 				if (noisy)
 				pline_The("%s is the wrong shape for your head.", c_helmet);
 				err++;
-			} else if(has_horns(youracedata) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp))){
+			} else if(has_horns_mon(&youmonst) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp) || (otmp->bodytypeflag&MB_HORNS) != 0)){
 				if (noisy)
 				pline_The("%s won't fit over your horn%s.",
-					  c_helmet, plur(num_horns(youracedata)));
+					  c_helmet, plur(num_horns(&youmonst)));
 				err++;
 			} else {
 				if (noisy)
@@ -2337,7 +2337,7 @@ doputon()
 int arm_total_bonus(otmp)
 struct obj * otmp;
 {
-	return arm_ac_bonus(otmp) + arm_dr_bonus(otmp);
+	return arm_ac_bonus(otmp) + arm_dr_bonus(otmp, 0);
 }
 
 int
@@ -2510,8 +2510,7 @@ struct obj * otmp;
 }
 
 int
-arm_dr_bonus(otmp)
-struct obj * otmp;
+arm_dr_bonus(struct obj * otmp, int slot)
 {
 	/* no armor, no defense! */
 	if (!otmp)
@@ -2611,10 +2610,10 @@ struct obj * otmp;
 }
 
 int
-properties_dr(struct obj *arm, int agralign, int agrmoral, int agrimpure, int agrrot)
+properties_dr(struct obj *arm, int slot, int agralign, int agrmoral, int agrimpure, int agrrot)
 {
 	int bonus = 0;
-	int base = arm_dr_bonus(arm);
+	int base = arm_dr_bonus(arm, slot);
 	if(is_harmonium_armor(arm)){
 		if(agralign == 0) bonus += 1;
 		else if(agralign < 0) bonus += 2;
@@ -3145,11 +3144,14 @@ uchar aatyp;
 			if((objects[uarmor[i]->otyp].oc_dtyp & slot)) {
 				if(depth && higher_depth(uarmor[i]->owornmask, depth))
 					continue;
-				arm_udr += arm_dr_bonus(uarmor[i]);
-				if (magr) arm_udr += properties_dr(uarmor[i], agralign, agrmoral, agrimpure, agrrot);
+				arm_udr += arm_dr_bonus(uarmor[i], slot);
+				if (magr) arm_udr += properties_dr(uarmor[i], slot, agralign, agrmoral, agrimpure, agrrot);
+				if (slot == HEAD_DR && uarmor[i]->bodytypeflag&MB_HORNS && !has_horns_mon(&youmonst)){
+					arm_udr -= 1;
+				}
 			}
 			else if(uarmor[i]->otyp == CLOAK_OF_PROTECTION){
-				arm_udr += arm_dr_bonus(uarmor[i])/2; //Half protection in other slots (skin depth)
+				arm_udr += arm_dr_bonus(uarmor[i], slot)/2; //Half protection in other slots (skin depth)
 			}
 		}
 	}

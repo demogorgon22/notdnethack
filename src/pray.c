@@ -5389,7 +5389,7 @@ int sanctum;   /* is it the seat of the high priest? */
 							otmp->cursed = TRUE;
 							otmp->oerodeproof = TRUE;
 							otmp->spe = 5;
-							add_oprop(otmp, OPROP_BLADED);
+							add_omod(otmp, OMOD_BLADED);
 							set_material_gm(otmp, OBSIDIAN_MT);
 						}
 						m_dowear(priest, TRUE);

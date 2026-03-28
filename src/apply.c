@@ -10666,8 +10666,9 @@ long shape;
 		else if((obj->bodytypeflag&MB_BODYTYPEMASK) == 0)
 				obj->bodytypeflag = MB_HUMANOID;
 	}
-	else if (is_helmet(obj) && !is_hat(obj))
-		obj->bodytypeflag = shape&MB_HEADMODIMASK;
+	else if (is_helmet(obj) && !is_hat(obj)){
+		obj->bodytypeflag = shape&(MB_HEADMODIMASK|MB_HORNS);
+	}
 	if(obj->bodytypeflag != starting_shape)
 		return TRUE;
 	return FALSE;

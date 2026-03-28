@@ -1585,26 +1585,30 @@ int depth;
 	for (i = 0; i < SIZE(marmor); i++) {
 		if((curarm = which_armor(mon, marmor[i]))){
 			if(curarm->oclass == ARMOR_CLASS){
-				if (curarm){
-					if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
-						if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+				if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
+					if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+						continue;
+					if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
+						if(!full_body_match(mon->data, curarm))
 							continue;
-						if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
-							if(!full_body_match(mon->data, curarm))
-								continue;
-						}
-						arm_mdr += arm_dr_bonus(curarm);
-						if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
 					}
-					else if(curarm->otyp == CLOAK_OF_PROTECTION){
-						arm_mdr += arm_dr_bonus(curarm)/2;
+					arm_mdr += arm_dr_bonus(curarm, slot);
+					if (magr) arm_mdr += properties_dr(curarm, slot, agralign, agrmoral, agrimpure, agrrot);
+					if (slot == HEAD_DR && curarm->bodytypeflag&MB_HORNS && !has_horns_mon(mon)){
+						arm_mdr -= 1;
 					}
+				}
+				else if(curarm->otyp == CLOAK_OF_PROTECTION){
+					arm_mdr += arm_dr_bonus(curarm, slot)/2;
 				}
 			}
 			else if(!depth){
 				if (slot&adfalt[i]){
-					arm_mdr += arm_dr_bonus(curarm);
-					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
+					arm_mdr += arm_dr_bonus(curarm, slot);
+					if (magr) arm_mdr += properties_dr(curarm, slot, agralign, agrmoral, agrimpure, agrrot);
+					if (slot == HEAD_DR && curarm->bodytypeflag&MB_HORNS && !has_horns_mon(mon)){
+						arm_mdr -= 1;
+					}
 				}
 			}
 		}
@@ -1873,7 +1877,7 @@ boolean racialexception;
 		case W_ARMH:
 			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
-		    if (!is_helmet(obj) || !helm_match(mon->data,obj) || !helm_size_fits(mon->data,obj)) continue;
+		    if (!is_helmet(obj) || !helm_match(mon,obj) || !helm_size_fits(mon->data,obj)) continue;
 		    break;
 		case W_ARMS:
 		    if (noshield(mon->data) || (mon_offhand_attack(mon) && !creation) || !is_shield(obj)) continue;
@@ -2278,7 +2282,7 @@ boolean polyspot;
 	}
 	if ((otmp = which_armor(mon, W_ARMH)) != 0 &&
 		/* flimsy test for horns matches polyself handling */
-		(!helm_match(mon->data, otmp) || !helm_size_fits(mon->data, otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data) )
+		(!helm_match(mon, otmp) || !helm_size_fits(mon->data, otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data) )
 	) {
 		if (vis)
 			pline("%s helmet falls to the %s!",

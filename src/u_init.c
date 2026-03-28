@@ -3569,7 +3569,7 @@ register struct trobj *trop;
 			}
 			if(obj->otyp == RIFLE && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
-				add_oprop(obj, OPROP_BLADED);
+				add_omod(obj, OMOD_BLADED);
 			}
 			if(obj->otyp == PLAIN_DRESS && Role_if(PM_ANACHRONONAUT) && Race_if(PM_ANDROID)){
 				set_material_gm(obj, LEATHER);

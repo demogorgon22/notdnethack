@@ -3465,7 +3465,7 @@ struct monst *mon;
 				addArmorMenuOption
 			} else if(is_cloak(otmp) && !(mon->misc_worn_check&W_ARMC) && (abs(otmp->objsize - mon->data->msize) <= 1)){
 				addArmorMenuOption
-			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon->data,otmp) && helm_size_fits(mon->data,otmp)){
+			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon,otmp) && helm_size_fits(mon->data,otmp)){
 				addArmorMenuOption
 			} else if(is_shield(otmp) && !(mon->misc_worn_check&W_ARMS) && !noshield(mon->data)){
 				addArmorMenuOption

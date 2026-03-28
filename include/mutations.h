@@ -223,6 +223,14 @@ struct mutationtype {
 	 || has_mutation(TT_TALONS) \
 	)
 
+#define is_horn_mut(mut) \
+	(mut == TT_RAMS_HORN \
+	 || mut == TT_DEMON_HORN \
+	 || mut == TT_UNICORN_HORN \
+	 || mut == TT_ANTLERS \
+	 || mut == TT_BULL_HORNS \
+	)
+
 #define KNOWS_CURSES (check_mutation(TT_HATEFUL_VISION) || u.seraph_eyes >= SE_CURSES)
 #define KNOWS_BLESSINGS (Race_if(PM_AASIMAR) && u.ulevel >= 7)
 #define KNOWS_BUC (u.upriest || (KNOWS_CURSES && KNOWS_BLESSINGS))

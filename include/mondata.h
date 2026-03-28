@@ -161,7 +161,8 @@
 #define notake(ptr)		(((ptr)->mflagst & MT_NOTAKE) != 0L)
 #define has_head(ptr)		(((ptr)->mflagsb & MB_NOHEAD) == 0L)
 #define has_head_mon(mon) ((mon == &youmonst) ? (has_head(youracedata)) : (has_head((mon)->data)))
-#define has_horns(ptr)		(num_horns(ptr) > 0)
+#define has_horns(ptr)		(((ptr)->mflagsb & MB_HORNS) != 0L)
+#define has_horns_mon(mon) ((mon == &youmonst) ? (has_horns(youracedata)) : (has_horns((mon)->data)))
 #define is_whirly(ptr)		((ptr)->mlet == S_VORTEX || \
 				 (ptr)->mtyp == PM_AIR_ELEMENTAL ||\
 				 (ptr)->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES ||\
@@ -933,8 +934,8 @@
 								full_body_match(ptr,obj))
 #define upper_body_match(ptr,obj)	(((ptr->mflagsb&MB_HUMANOID) && (obj->bodytypeflag&MB_HUMANOID)) || \
 		(((ptr->mflagsb&MB_BODYTYPEMASK) != 0) && ((ptr->mflagsb&MB_BODYTYPEMASK) == (obj->bodytypeflag&MB_BODYTYPEMASK))))
-#define helm_match(ptr,obj)	((!has_horns(ptr) || obj->otyp == find_gcirclet() || is_flimsy(obj)) && !nohat(ptr) && \
-						(is_hat(obj) || (has_head(ptr) && (ptr->mflagsb&MB_HEADMODIMASK) == (obj->bodytypeflag&MB_HEADMODIMASK))))
+#define helm_match(mon,obj)	((!has_horns_mon(mon) || obj->otyp == find_gcirclet() || is_flimsy(obj) || (obj->bodytypeflag&MB_HORNS) != 0) && !nohat((mon)->data) && \
+						(is_hat(obj) || (has_head_mon(mon) && ((mon)->data->mflagsb&MB_HEADMODIMASK) == (obj->bodytypeflag&MB_HEADMODIMASK))))
 /*Note: No-modifier helms are "normal"*/
 #define helm_size_fits(ptr,obj)	((ptr->mtyp == PM_MOON_S_CHOSEN ? obj->objsize == MZ_GIGANTIC : obj->objsize == ptr->msize) || (is_hat(obj) && obj->objsize <= (ptr->msize+1)))
 

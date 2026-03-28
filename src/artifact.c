@@ -1031,6 +1031,30 @@ unsigned long int *oprop_list;
 	}
 }
 
+void
+add_omod_list(omod_list, omod)
+unsigned long int *omod_list;
+int omod;
+{
+	if (!omod)
+		return;
+
+	if (omod >= MAX_OMOD || omod < 0)
+		impossible("Attempting to add omod number %d to a wish list?", omod);
+
+	omod_list[(omod-1)/32] |= (0x1L << ((omod-1)%32));
+}
+
+void
+copy_omod_list(obj, omod_list)
+struct obj *obj;
+unsigned long int *omod_list;
+{
+	int i;
+	for (i = 0; i < OMOD_LISTSIZE; i++)
+		obj->omodifications[i] |= omod_list[i];
+}
+
 /*
  * Make a special-but-non-artifact weapon based on otmp
  */
@@ -1267,7 +1291,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp)){
 			if(!rn2(7)){
-				add_oprop(otmp, OPROP_BLADED);
+				add_omod(otmp, OMOD_BLADED);
 			}
 		}
 	}
@@ -1407,7 +1431,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp)){
 			if(!rn2(7)){
-				add_oprop(otmp, OPROP_BLADED);
+				add_omod(otmp, OMOD_BLADED);
 			}
 		}
 	}
@@ -1527,7 +1551,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp) || is_boots(otmp)){
 			if(!rn2(4)){
-				add_oprop(otmp, rn2(2) ? OPROP_BLADED : OPROP_SPIKED);
+				add_omod(otmp, rn2(2) ? OMOD_BLADED : OMOD_SPIKED);
 			}
 		}
 	}
@@ -1646,7 +1670,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp) || is_boots(otmp)){
 			if(!rn2(2)){
-				add_oprop(otmp, rn2(4) ? OPROP_SPIKED : OPROP_BLADED);
+				add_omod(otmp, rn2(4) ? OMOD_SPIKED : OMOD_BLADED);
 			}
 		}
 	}
@@ -1679,7 +1703,7 @@ struct obj *otmp;	/* existing object */
 			break;
 		}
 		if(!rn2(10)){
-			add_oprop(otmp, rn2(4) ? OPROP_SPIKED : OPROP_BLADED);
+			add_omod(otmp, rn2(4) ? OMOD_SPIKED : OMOD_BLADED);
 		}
 	}
 	/* ring props (stack with weapon) */
