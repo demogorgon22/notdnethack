@@ -841,6 +841,32 @@ pet_sphere_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int
 			appr = 1;
 		}
 	}
+	if(!appr){
+		/* No enemies in range: fly away from player in a roughly straight line */
+		int fdx = mtmp->mx - u.ux;
+		int fdy = mtmp->my - u.uy;
+		if(fdx == 0 && fdy == 0){
+			gx = mtmp->mx;
+			gy = mtmp->my;
+		} else {
+			int adx = abs(fdx), ady = abs(fdy);
+			int sdx = sgn(fdx), sdy = sgn(fdy);
+			if(adx != 0 && ady != 0 && adx != ady){
+				/* Not perfectly aligned: choose between the two nearest 8-directions */
+				if(adx > ady){
+					if(rn2(adx) >= ady) sdy = 0;
+				} else {
+					if(rn2(ady) >= adx) sdx = 0;
+				}
+			}
+			gx = mtmp->mx;
+			gy = mtmp->my;
+			while(isok(gx + sdx, gy + sdy)){
+				gx += sdx;
+				gy += sdy;
+			}
+		}
+	}
 	return appr;
 }
 
