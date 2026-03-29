@@ -727,17 +727,17 @@ aligntyp alignment;	/* target alignment, or A_NONE */
 			if ((arti == ART_FIRE_BRAND || arti == ART_FROST_BRAND) && u.brand_otyp == STRANGE_OBJECT) {
 				if (Role_if(PM_MONK))
 					otyp = CRYSTAL_GAUNTLETS;
-				else
-					otyp =	!rn2(3) ? LONG_SWORD :
-							!rn2(7) ? SABER :
-							!rn2(6) ? SCIMITAR :
-							!rn2(5) ? GAUNTLETS :
-							!rn2(4) ? BROADSWORD :
-							!rn2(3) ? AXE :
-							!rn2(2) ? KHOPESH :
-							!rn2(4) ? WAKIZASHI :
-							!rn2(2) ? SHORT_SWORD :
-									  ATHAME;
+				else {
+					int tries = 0;
+#define MAX_TRIES_FOR_BRAND_TYPE 100
+					do{
+						if(tries < MAX_TRIES_FOR_BRAND_TYPE)
+							otyp = rn2(FLINTLOCK - DART) + DART;
+						else
+							otyp = LONG_SWORD;
+						tries++;
+					} while(!brandtype(otyp) && tries <= MAX_TRIES_FOR_BRAND_TYPE);
+				}
 			}
 			otmp = mksobj(otyp, NO_MKOBJ_FLAGS);
 		}
