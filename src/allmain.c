@@ -8019,6 +8019,12 @@ make_generic_polts(int polts)
 				}
 			}
 		}}
+		/* If we scanned the entire map and found no eligible weapons,
+		   break out to prevent infinite loop */
+		if (!created) {
+			/* No eligible weapons left on the map */
+			break;
+		}
 	}
 }
 
