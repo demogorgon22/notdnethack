@@ -3230,7 +3230,7 @@ boolean past;
 				pline("You suddenly remember that you are gelatinous!");
 				pline("Oh, and you've got a tail.");
 				add_mutation(AAT_PRIMINAL);
-				add_mutation(TT_THIEVING_TAIL);
+				add_mutation(AAT_PRIMINAL_TAIL);
 				skilled_weapon_skill(P_BEAST_MASTERY);
 				gm_weapon_skill(P_BARE_HANDED_COMBAT);
 				gm_weapon_skill(P_TWO_WEAPON_COMBAT);

@@ -155,6 +155,7 @@ const struct mutationtype mutationtypes[] =
 	{ TT_MAGIC_BREATHING, -1, "magic breathing", "You don't need to breathe.", "drowned appearance", "You look like a drowned corpse."},
 	// Aasimar mutations
 	{ AAT_PRIMINAL, -1, "gelatinous form", "Your rubbery form allows you to slip through tight spaces and sprout sucking pseudopods from your chest or stomach."},
+	{ AAT_PRIMINAL_TAIL, TAIL_TRAIT, "prehensile thieving tail", "You have a thieving, prehensile tail."},
 	// End marker
 	{ 0 },
 };
@@ -563,7 +564,7 @@ mutation_autoattacks()
 		struct attack attack = {AT_OBIT, AD_DRST, 1, 6};
 		dogenericattack(&youmonst, &attack, 1, 1);
 	}
-	if(check_mutation(TT_THIEVING_TAIL)){
+	if(check_mutation(TT_THIEVING_TAIL) || check_mutation(AAT_PRIMINAL_TAIL)){
 		int x, y;
 		for(int i = -1; i <= 1; i++){
 			for(int j = -1; j <= 1; j++){

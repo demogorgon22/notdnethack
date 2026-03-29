@@ -1118,7 +1118,7 @@ bimanual(struct obj * otmp, struct permonst * ptr, boolean base_only, boolean yo
 boolean
 bimanual_mon(struct obj * otmp, struct monst * mon)
 {
-	if(mon == &youmonst && check_mutation(TT_PREHENSILE_TAIL))
+	if(mon == &youmonst && (check_mutation(TT_PREHENSILE_TAIL) || check_mutation(AAT_PRIMINAL_TAIL)))
 		return FALSE;
 	return bimanual(otmp, mon->data, FALSE, mon == &youmonst);
 }

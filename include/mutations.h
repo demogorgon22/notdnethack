@@ -163,7 +163,8 @@ struct mutationtype {
 #define TT_ATTRACTIVE_2		LAST_CULT_MUTATION+84
 #define LAST_TIEFLING_TRAIT		TT_ATTRACTIVE_2
 #define AAT_PRIMINAL			LAST_TIEFLING_TRAIT+1
-#define	LAST_MUTATION		AAT_PRIMINAL
+#define AAT_PRIMINAL_TAIL		LAST_TIEFLING_TRAIT+2
+#define	LAST_MUTATION		AAT_PRIMINAL_TAIL
 
 #define MUTATION_LISTSIZE	((LAST_MUTATION-1)/32 + 1)
 
@@ -204,6 +205,7 @@ struct mutationtype {
 	(has_mutation(TT_LASHING_TAIL) \
 	 || has_mutation(TT_SNAKE_TAIL) \
 	 || has_mutation(TT_THIEVING_TAIL) \
+	 || has_mutation(AAT_PRIMINAL_TAIL) \
 	 || has_mutation(TT_SHADOW_CASTER) \
 	 || has_mutation(TT_SHADOW_PAIN) \
 	 || has_mutation(TT_SHADOW_SHRED) \
