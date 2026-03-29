@@ -1475,7 +1475,7 @@ remake:
 				nmon = mtmp->nmon;
 				if(mtmp->mmired){
 					mtmp->mmired = 0;
-					if(has_template(mtmp, SWOLLEN_TEMPLATE)){
+					if(has_template(mtmp, SWOLLEN_TEMPLATE) || has_template(mtmp, ROT_ZOMBIE)){
 						set_template(mtmp, 0);
 						makemon_set_hp(mtmp, mtmp->data);
 					}

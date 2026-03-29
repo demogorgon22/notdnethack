@@ -466,7 +466,7 @@
 							 (ptr)->mtyp == PM_VEGEPYGMY ||\
 							 (ptr)->mtyp == PM_VEGEPYGMY_SHAMAN ||\
 							 (ptr)->mtyp == PM_GRAY_FUNGAL_TOWER)
-#define your_race(ptr)		(((ptr)->mflagsa & urace.selfmask) != 0L)
+#define your_race(ptr)		((((ptr)->mflagsa & urace.selfmask) != 0L) || (ptr)->mtyp == urace.malenum || (ptr)->mtyp == urace.femalenum)
 #define is_andromaliable(ptr)	(is_elf(ptr) || is_drow(ptr) || is_dwarf(ptr) || is_gnome(ptr) || is_orc(ptr) || is_human(ptr) || (ptr)->mtyp == PM_HOBBIT || \
 								 (ptr)->mtyp == PM_MONKEY || (ptr)->mtyp == PM_APE || (ptr)->mtyp == PM_YETI || \
 								 (ptr)->mtyp == PM_CARNIVOROUS_APE || (ptr)->mtyp == PM_SASQUATCH\
@@ -746,6 +746,7 @@
 #define rot_monster(mon)	(((mon)->data->mlet == S_FUNGUS && mindless_mon(mon)) \
 							 || always_rot_monster((mon)->data) \
 							 || has_template(mon, SWOLLEN_TEMPLATE) \
+							 || has_template(mon, ROT_ZOMBIE) \
 							)
 #define always_rot_monster(ptr)	(((ptr)->mlet == S_FUNGUS && mindless(ptr)) \
 								|| (ptr)->mtyp == PM_SWAMP_FERN \

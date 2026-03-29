@@ -70,8 +70,16 @@ enum {
 	OPROP_WRTHW,
 	OPROP_CCLAW,
 	OPROP_LIVEW,
-	OPROP_ASECW,
-	OPROP_PSECW,
+	OPROP_SECR_ACID,
+	OPROP_SECR_POSN,
+	OPROP_SECR_FLTH,
+	OPROP_SECR_SLEP,
+	OPROP_SECR_BLND,
+	OPROP_SECR_PARL,
+	OPROP_SECR_AMNS,
+	OPROP_SECR_SLVR,
+	OPROP_SECR_HLLU,
+	OPROP_SECR_DIRE,
 	OPROP_GOATW,
 	OPROP_OCLTW,
 	OPROP_RETRW,
@@ -384,6 +392,17 @@ struct obj {
 #define ovar1_offhand_oid ovar1
 #define ovar1_your_eye ovar1
 #define ovar1_silverknight_otyp ovar1
+#define ovar1_pestglaive_props ovar1
+#define PG_HANDPROTECT	0x00000001L
+#define PG_BULLWHIP		0x00000002L
+#define PG_MATTOCK		0x00000004L
+#define PG_JOUST		0x00000008L
+#define PG_AXE			0x00000010L
+#define PG_CROOK		0x00000020L
+#define PG_SPEARTHROWER	0x00000040L
+/* True if obj has shepherd's crook traits */
+#define has_crook(obj) ((obj) && ((obj)->otyp == SHEPHERD_S_CROOK || \
+    ((obj)->otyp == PEST_GLAIVE && ((obj)->ovar1_pestglaive_props & PG_CROOK))))
 	/* Number of viperwhip heads */
 	/* Moon axe phase */
 	/* Acid venom non-1d6 damage */
@@ -496,11 +515,6 @@ struct obj {
 #define	CPROP_REGEN			0x00010000L
 
 	long ovar2;		/* extra variable. Specifies: */
-#define obj_type_uses_ovar2(otmp) (\
-	   (otmp)->otyp == CANE \
-	|| (otmp)->otyp == WHIP_SAW \
-	|| (otmp)->otyp == CHIKAGE \
-	)
 #define ovar2_alt_erosion ovar2
 #define store_oeroded(field, value) ((field) = ((field)&~(0x3L))|(value))
 #define store_oeroded2(field, value) ((field) = ((field)&~(0x3L<<2))|((value)<<2))
@@ -508,7 +522,7 @@ struct obj {
 #define access_oeroded(field) ((field)&(0x3L))
 #define access_oeroded2(field) (((field)&(0x3L<<2))>>2)
 #define access_oeroded3(field) (((field)&(0x3L<<4))>>4)
-
+#define ovar2_pg_etraits ovar2
 	schar gifted; /*gifted is of type aligntyp.  For some reason aligntyp isn't being seen at compile*/
 	
 	struct mask_properties *mp;
@@ -728,6 +742,7 @@ struct obj {
 #define hand_protecting(otmp)	(\
 			 is_pata(otmp) || \
 			 (otmp)->otyp == BROADSWORD || \
+			 ((otmp)->otyp == PEST_GLAIVE && ((otmp)->ovar1_pestglaive_props & PG_HANDPROTECT)) || \
 			 ((otmp)->oartifact == ART_AMALGAMATED_SKIES && (artinstance[ART_SKY_REFLECTED].ZerthOtyp == SHANTA_PATA || artinstance[ART_SKY_REFLECTED].ZerthOtyp == TWINGUN_SHANTA || artinstance[ART_SKY_REFLECTED].ZerthOtyp == BROADSWORD))\
 			 )
 #define is_runic_form_sword(otmp) (\
@@ -761,6 +776,7 @@ struct obj {
 			 otmp->otyp == TOOTH || \
 			 otmp->otyp == CHURCH_SHORTSWORD || \
 			 otmp->otyp == CHURCH_PICK || \
+			 otmp->otyp == PEST_GLAIVE || \
 			 check_oprop(otmp,OPROP_GSSDW) || \
 			 check_oprop(otmp,OPROP_INSTW) || \
 			 check_oprop(otmp,OPROP_ELFLW) || \
@@ -941,6 +957,7 @@ struct obj {
 			   (ltmp->oartifact == ART_PEN_OF_THE_VOID && ltmp->ovara_seals&SEAL_EVE) ||\
 			   (ltmp->otyp == MASS_SHADOW_PISTOL && ltmp->cobj && (otmp->otyp == ltmp->cobj->otyp)) ||\
 			   (ltmp->otyp == ATLATL && is_spear(otmp)) ||\
+			   (ltmp->otyp == PEST_GLAIVE && (ltmp->ovar1_pestglaive_props & PG_SPEARTHROWER) && is_spear(otmp)) ||\
 			   (ltmp->otyp == BLADED_BOW && (otmp->otyp == BLOOD_BULLET || otmp->otyp == BLOOD_SPEAR)) ||\
 			   (\
 			    (otmp->objsize == (ltmp)->objsize || objects[(ltmp)->otyp].oc_skill == P_SLING || (ltmp)->oartifact == ART_ROGUE_GEAR_SPIRITS) &&\
@@ -1093,7 +1110,8 @@ struct obj {
 						  (otyp) == TWINGUN_SHANTA || \
 						  (otyp) == DEVIL_FIST || \
 						  (otyp) == DEMON_CLAW || \
-						  (otyp) == KAMEREL_VAJRA)
+						  (otyp) == KAMEREL_VAJRA || \
+						  (otyp) == PEST_GLAIVE)
 #define spec_prop_material(otmp)	(otmp->obj_material == MERCURIAL)
 #define is_multigen(otmp)	((otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill >= -P_SHURIKEN && \

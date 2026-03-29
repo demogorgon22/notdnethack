@@ -1040,6 +1040,7 @@ boolean full;
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s the finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
 		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "%s the swollen", buf);
+		else if (full && template == ROT_ZOMBIE)		Sprintf(buf2, "%s the rotten", buf);
 		else if (full && template == BLOOD_MON)	Sprintf(buf2, "%s the bloody", buf);
 		else if (full && template == FLAYED){
 			if (!strcmp(buf, "Robert the Lifer"))		Sprintf(buf2, "Robert the Flayed");
@@ -1079,6 +1080,7 @@ boolean full;
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
 		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "swollen %s", buf);
+		else if (full && template == ROT_ZOMBIE)		Sprintf(buf2, "rotting %s zombie", buf);
 		else if (full && template == BLOOD_MON)			Sprintf(buf2, "blood %s", buf);
 		else if (full && template == FLAYED)			Sprintf(buf2, "flayed %s", buf);
 		else if (full && template == MANITOU)			Sprintf(buf2, "vine-strangled %s", buf);

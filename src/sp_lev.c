@@ -2047,7 +2047,7 @@ default_case:
 
 					default_add(DROVEN_GREATSWORD);
 					set_material_gm(stuff, SILVER);
-					add_oprop(stuff, OPROP_ASECW);
+					add_oprop(stuff, OPROP_SECR_ACID);
 
 					default_add(CLOAK);
 					set_material_gm(stuff, CLOTH);

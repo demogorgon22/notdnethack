@@ -399,6 +399,7 @@ int template;
 	switch (template)
 	{
 	case ZOMBIFIED:
+	case ROT_ZOMBIE:
 		/* flags: */
 		ptr->mflagsm |= (MM_BREATHLESS);
 		if(ptr->mflagsm&MM_NEEDPICK)
@@ -407,6 +408,9 @@ int template;
 		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL | MT_HERBIVORE);
 		ptr->mflagsg |= (MG_RPIERCE | MG_RBLUNT);
 		ptr->mflagsg &= ~(MG_RSLASH | MG_INFRAVISIBLE);
+		if(template == ROT_ZOMBIE){
+			ptr->mflagsg |= MG_REGEN;
+		}
 		ptr->mflagsa |= (MA_UNDEAD);
 		ptr->mflagsw |= (MW_ELDER_EYE_ENERGY);
 		
@@ -432,6 +436,10 @@ int template;
 		ptr->fdr += 2;
 		/* resists: */
 		ptr->mresists |= (MR_COLD | MR_SLEEP | MR_POISON);
+		if(template == ROT_ZOMBIE){
+			ptr->mresists |= MR_SICK;
+			ptr->mresists &= ~MR_FIRE;
+		}
 		/* misc: */
 		ptr->msound = MS_SILENT;
 		/* speed: 0.50x, min 6 */
@@ -1095,7 +1103,7 @@ int template;
 		insert = FALSE;
 
 		/* some templates completely skip specific attacks */
-		while ((template == ZOMBIFIED || template == SKELIFIED || template == SPORE_ZOMBIE || template == SPARK_SKELETON) &&
+		while ((template == ZOMBIFIED || template == ROT_ZOMBIE || template == SKELIFIED || template == SPORE_ZOMBIE || template == SPARK_SKELETON) &&
 			(
 			attk->lev_req > ptr->mlevel ||
 			attk->aatyp == AT_SPIT ||
@@ -1296,7 +1304,7 @@ int template;
 #define end_insert_okay(specvar) (!(specvar) && (is_null_attk(attk) || attk->aatyp == AT_NONE) && (insert = TRUE))
 #define maybe_insert() if(insert) {for(j=NATTK-i-1;j>0;j--)attk[j]=attk[j-1];*attk=noattack;insert=FALSE;}
 		/* zombies/skeletons get a melee attack if they don't have any (likely due to disallowed aatyp) */
-		if ((template == ZOMBIFIED || template == SPORE_ZOMBIE || template == SKELIFIED || template == SPARK_SKELETON || template == MINDLESS) && (
+		if ((template == ZOMBIFIED || template == ROT_ZOMBIE || template == SPORE_ZOMBIE || template == SKELIFIED || template == SPARK_SKELETON || template == MINDLESS) && (
 			i == 0 && (!nolimbs(ptr) || has_head(ptr)) && (
 			is_null_attk(attk) ||
 			(attk->aatyp == AT_NONE || attk->aatyp == AT_BOOM)
@@ -1305,7 +1313,7 @@ int template;
 		){
 			maybe_insert();
 			attk->aatyp = !nolimbs(ptr) ? AT_CLAW : AT_BITE;
-			attk->adtyp = AD_PHYS;
+			attk->adtyp = template == ROT_ZOMBIE ? AD_DISE : AD_PHYS;
 			attk->damn = ptr->mlevel / 10 + (template == ZOMBIFIED ? 1 : 2);
 			attk->damd = max(ptr->msize * 2, 4);
 		}
@@ -1359,6 +1367,19 @@ int template;
 			attk->damd = 4;
 			special = TRUE;
 		}
+		/* rot zombies get an acid vomit attack */
+		if ((template == ROT_ZOMBIE) && !nomouth(ptr->mtyp) && (
+			insert_okay(special)
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_VOMT;
+			attk->adtyp = AD_ACID;
+			attk->damn = max(1, min(10, ptr->mlevel / 3));
+			attk->damd = 6;
+			special = TRUE;
+		}
+		
 		/* fractured turn their claws into glass shards */
 		if (template == FRACTURED && (
 			(attk->aatyp == AT_CLAW && (
@@ -1375,6 +1396,17 @@ int template;
 			attk->damn = max(ptr->mlevel / 10 + 1, attk->damn);
 			attk->damd = max(ptr->msize * 2, max(attk->damd, 4));
 			special = TRUE;
+		}
+		/* Any bites that rot zombies have are diseased */
+		if (template == ROT_ZOMBIE && (
+			attk->aatyp == AT_BITE
+			|| attk->aatyp == AT_OBIT
+			|| attk->aatyp == AT_LNCK
+			)
+		){
+			attk->adtyp = AD_DISE;
+			attk->damn = max(1, attk->damn);
+			attk->damd = max(4, max(ptr->msize * 2, attk->damd));
 		}
 		/* vampires' bites are vampiric: pt 1: other bites */
 		if (template == VAMPIRIC && (

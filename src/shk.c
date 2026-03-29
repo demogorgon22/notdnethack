@@ -7091,11 +7091,35 @@ d_weapon:
 		if(check_oprop(example, OPROP_LIVEW)){
 			add_oprop(obj, OPROP_LIVEW);
 		}
-		if(check_oprop(example, OPROP_ASECW)){
-			add_oprop(obj, OPROP_ASECW);
+		if(check_oprop(example, OPROP_SECR_ACID)){
+			add_oprop(obj, OPROP_SECR_ACID);
 		}
-		if(check_oprop(example, OPROP_PSECW)){
-			add_oprop(obj, OPROP_PSECW);
+		if(check_oprop(example, OPROP_SECR_POSN)){
+			add_oprop(obj, OPROP_SECR_POSN);
+		}
+		if(check_oprop(example, OPROP_SECR_FLTH)){
+			add_oprop(obj, OPROP_SECR_FLTH);
+		}
+		if(check_oprop(example, OPROP_SECR_SLEP)){
+			add_oprop(obj, OPROP_SECR_SLEP);
+		}
+		if(check_oprop(example, OPROP_SECR_BLND)){
+			add_oprop(obj, OPROP_SECR_BLND);
+		}
+		if(check_oprop(example, OPROP_SECR_PARL)){
+			add_oprop(obj, OPROP_SECR_PARL);
+		}
+		if(check_oprop(example, OPROP_SECR_AMNS)){
+			add_oprop(obj, OPROP_SECR_AMNS);
+		}
+		if(check_oprop(example, OPROP_SECR_SLVR)){
+			add_oprop(obj, OPROP_SECR_SLVR);
+		}
+		if(check_oprop(example, OPROP_SECR_HLLU)){
+			add_oprop(obj, OPROP_SECR_HLLU);
+		}
+		if(check_oprop(example, OPROP_SECR_DIRE)){
+			add_oprop(obj, OPROP_SECR_DIRE);
 		}
 		if(check_omod(example, OMOD_SPIKED)){
 			add_omod(obj, OMOD_SPIKED);
@@ -7513,7 +7537,10 @@ d_weapon:
 				OPROP_MAGCW, OPROP_LESSER_MAGCW, OPROP_ANARW, OPROP_LESSER_ANARW,
 				OPROP_UNHYW, OPROP_LESSER_UNHYW, OPROP_WATRW, OPROP_LESSER_WATRW,
 				OPROP_PSIOW, OPROP_LESSER_PSIOW, OPROP_DRANW, OPROP_MORGW, OPROP_LESSER_MORGW,
-				OPROP_WRTHW, OPROP_CCLAW, OPROP_LIVEW, OPROP_ASECW, OPROP_PSECW,
+				OPROP_WRTHW, OPROP_CCLAW, OPROP_LIVEW,
+				OPROP_SECR_ACID, OPROP_SECR_POSN, OPROP_SECR_FLTH, OPROP_SECR_SLEP,
+				OPROP_SECR_BLND, OPROP_SECR_PARL, OPROP_SECR_AMNS, OPROP_SECR_SLVR,
+				OPROP_SECR_HLLU, OPROP_SECR_DIRE,
 				OPROP_OCLTW, OPROP_RETRW, OPROP_ANTAW
 			};
 

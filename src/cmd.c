@@ -667,6 +667,12 @@ boolean you_abilities;
 	if (you_abilities && spellid(0) != NO_SPELL) {
 		add_ability('z', "Cast spells", MATTK_U_SPELLS);
 	}
+	if (mon_abilities && youracedata->mtyp == PM_SILVERMAN && u.uen >= 19 && uwep && uwep->otyp == PEST_GLAIVE) {
+		add_ability('P', "Launch pest threads", MATTK_SILVERMAN_THREADS);
+	}
+	if (mon_abilities && Race_if(PM_SILVERMAN) && !Upolyd && u.ulevel >= 14 && !carrying(PEST_GLAIVE) && u.uhunger >= 600) {
+		add_ability('P', "Create a pest glaive", MATTK_SILVERMAN_GLAIVE);
+	}
 	if (mon_abilities && attacktype(youracedata, AT_MAGC)){
 		add_ability('Z', "Cast a monster spell", MATTK_MAGIC);
 	}
@@ -839,6 +845,53 @@ boolean you_abilities;
 	}
 	break;
 	case MATTK_REACH: return use_reach_attack();
+	break;
+	case MATTK_SILVERMAN_THREADS: {
+		struct attack fake_attk;
+		struct monst *mtmp;
+		coord cc;
+
+		if (u.uen < 19) {
+			pline("You don't have enough energy.");
+			return MOVE_CANCELLED;
+		}
+		cc.x = u.ux; cc.y = u.uy;
+		pline("Where do you want to strike?");
+		if (getpos(&cc, TRUE, "the target") < 0)
+			return MOVE_CANCELLED;
+		mtmp = m_at(cc.x, cc.y);
+		if (!mtmp) {
+			pline("Sticky threads whizz through empty air.");
+			return MOVE_STANDARD;
+		}
+		u.uen -= 19;
+		morehungry(19*2);
+		flags.botl = 1;
+		memset(&fake_attk, 0, sizeof(fake_attk));
+		fake_attk.aatyp = AT_MMGC;
+		fake_attk.adtyp = AD_CLRC;
+		u.lastcast = monstermoves + 3;
+		u.bladesong = monstermoves + 3;
+		cast_spell(&youmonst, mtmp, &fake_attk, PEST_THREADS, cc.x, cc.y);
+		return MOVE_CASTSPELL;
+	}
+	break;
+	case MATTK_SILVERMAN_GLAIVE: {
+		struct obj *otmp;
+
+		pline("You employ the secret arts of your kind, creating an uncanny shell glaive.");
+		losexp("drawing a pest glaive", FALSE, TRUE, TRUE);
+		morehungry(500);
+		flags.botl = 1;
+		otmp = mksobj(PEST_GLAIVE, NO_MKOBJ_FLAGS);
+		otmp->cursed = FALSE;
+		otmp->blessed = FALSE;
+		otmp->spe = 0;
+		fix_object(otmp);
+		otmp = hold_another_object(otmp, "The glaive falls to the %s!",
+		    surface(u.ux, u.uy), (const char *)0);
+		return MOVE_STANDARD;
+	}
 	break;
 	}
 	return MOVE_CANCELLED;

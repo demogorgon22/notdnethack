@@ -1006,12 +1006,30 @@ boolean dofull;
 	}
 	
 	if (!check_oprop(obj, OPROP_NONE) && (obj->oartifact == 0 || dofull)){
-		if (check_oprop(obj, OPROP_ASECW) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_ACID))
-			Insight < 10 ? Strcat(buf, "self-acidifying ") : Strcat(buf, "acid-secreting ");
-		if (check_oprop(obj, OPROP_PSECW) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_BASIC))
-			Insight < 10 ? Strcat(buf, "self-poisoning ") : Strcat(buf, "poison-secreting ");
-		if (check_oprop(obj, OPROP_GRES) && (obj->known || Insight >= 10) && !(obj->greased))
-			Insight < 10 ? Strcat(buf, "self-greasing ") : Strcat(buf, "grease-secreting ");
+		if (obj->otyp != PEST_GLAIVE){
+			if (check_oprop(obj, OPROP_SECR_ACID) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_ACID))
+				Insight < 10 ? Strcat(buf, "self-acidifying ") : Strcat(buf, "acid-secreting ");
+			if (check_oprop(obj, OPROP_SECR_POSN) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_BASIC))
+				Insight < 10 ? Strcat(buf, "self-poisoning ") : Strcat(buf, "poison-secreting ");
+			if (check_oprop(obj, OPROP_SECR_FLTH) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_FILTH))
+				Insight < 10 ? Strcat(buf, "self-fouling ") : Strcat(buf, "filth-secreting ");
+			if (check_oprop(obj, OPROP_SECR_SLEP) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_SLEEP))
+				Insight < 10 ? Strcat(buf, "self-drugging ") : Strcat(buf, "soporific-secreting ");
+			if (check_oprop(obj, OPROP_SECR_BLND) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_BLIND))
+				Insight < 10 ? Strcat(buf, "self-staining ") : Strcat(buf, "stain-secreting ");
+			if (check_oprop(obj, OPROP_SECR_PARL) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_PARAL))
+				Insight < 10 ? Strcat(buf, "self-envenoming ") : Strcat(buf, "paralytic-secreting ");
+			if (check_oprop(obj, OPROP_SECR_AMNS) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_AMNES))
+				Insight < 10 ? Strcat(buf, "self-rusting ") : Strcat(buf, "lethe-secreting ");
+			if (check_oprop(obj, OPROP_SECR_SLVR) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_SILVER))
+				Insight < 10 ? Strcat(buf, "self-silvering ") : Strcat(buf, "starwater-secreting ");
+			if (check_oprop(obj, OPROP_SECR_HLLU) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_HALLU))
+				Insight < 10 ? Strcat(buf, "hallucinogenic ") : Strcat(buf, "hallucinogen-secreting ");
+			if (check_oprop(obj, OPROP_SECR_DIRE) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_DIRE))
+				Insight < 10 ? Strcat(buf, "godpoisoning ") : Strcat(buf, "god-venom-secreting ");
+			if (check_oprop(obj, OPROP_GRES) && (obj->known || Insight >= 10) && !(obj->greased))
+				Insight < 10 ? Strcat(buf, "self-greasing ") : Strcat(buf, "grease-secreting ");
+		}
 		if (check_oprop(obj, OPROP_HEAL) && (obj->known || Insight >= 21))
 			Insight < 21 ? Strcat(buf, "healing ") : check_oprop(obj, OPROP_UNHY) ? Strcat(buf, "angel-imprisoning ") : Strcat(buf, "angel-haunted ");
 		if (check_oprop(obj, OPROP_RETRW) && (obj->known || Insight >= 10))
@@ -1029,14 +1047,16 @@ boolean dofull;
 			Strcat(buf, "magic-resistant ");
 		if(check_oprop(obj, OPROP_REFL))
 			Strcat(buf, "reflective ");
-		if(check_oprop(obj, OPROP_FIRE) && obj->known)
-			Strcat(buf, "flameproof ");
-		if(check_oprop(obj, OPROP_COLD) && obj->known)
-			Strcat(buf, "coldproof ");
-		if(check_oprop(obj, OPROP_ELEC) && obj->known)
-			Strcat(buf, "voltproof ");
-		if(check_oprop(obj, OPROP_ACID) && obj->known)
-			Strcat(buf, "acidproof ");
+		if(obj->otyp != PEST_GLAIVE){
+			if(check_oprop(obj, OPROP_FIRE) && obj->known)
+				Strcat(buf, "flameproof ");
+			if(check_oprop(obj, OPROP_COLD) && obj->known)
+				Strcat(buf, "coldproof ");
+			if(check_oprop(obj, OPROP_ELEC) && obj->known)
+				Strcat(buf, "voltproof ");
+			if(check_oprop(obj, OPROP_ACID) && obj->known)
+				Strcat(buf, "acidproof ");
+		}
 		if(check_oprop(obj, OPROP_DISN) && obj->known)
 			Strcat(buf, "disintegration-proof ");
 		if(check_oprop(obj, OPROP_BCRS) && obj->known)
@@ -4736,10 +4756,34 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_REFL);
 
 		} else if (!strncmpi(bp, "self-acidifying ", l=16) || !strncmpi(bp, "acid-secreting ", l=15)) {
-			add_oprop_list(oprop_list, OPROP_ASECW);
+			add_oprop_list(oprop_list, OPROP_SECR_ACID);
 
-		} else if (!strncmpi(bp, "self-poisoning ", l=15) || !strncmpi(bp, "poison-secreting ", l=17) ) {
-			add_oprop_list(oprop_list, OPROP_PSECW);
+		} else if (!strncmpi(bp, "self-poisoning ", l=15) || !strncmpi(bp, "poison-secreting ", l=17)) {
+			add_oprop_list(oprop_list, OPROP_SECR_POSN);
+
+		} else if (!strncmpi(bp, "self-fouling ", l=13) || !strncmpi(bp, "filth-secreting ", l=16)) {
+			add_oprop_list(oprop_list, OPROP_SECR_FLTH);
+
+		} else if (!strncmpi(bp, "self-drugging ", l=15) || !strncmpi(bp, "soporific-secreting ", l=20)) {
+			add_oprop_list(oprop_list, OPROP_SECR_SLEP);
+
+		} else if (!strncmpi(bp, "self-staining ", l=14) || !strncmpi(bp, "stain-secreting ", l=20)) {
+			add_oprop_list(oprop_list, OPROP_SECR_BLND);
+
+		} else if (!strncmpi(bp, "self-envenoming ", l=16) || !strncmpi(bp, "paralytic-secreting ", l=20)) {
+			add_oprop_list(oprop_list, OPROP_SECR_PARL);
+
+		} else if (!strncmpi(bp, "self-rusting ", l=14) || !strncmpi(bp, "lethe-secreting ", l=18)) {
+			add_oprop_list(oprop_list, OPROP_SECR_AMNS);
+
+		} else if (!strncmpi(bp, "self-silvering ", l=15) || !strncmpi(bp, "starwater-secreting ", l=25)) {
+			add_oprop_list(oprop_list, OPROP_SECR_SLVR);
+
+		} else if (!strncmpi(bp, "hallucinogenic ", l=20) || !strncmpi(bp, "hallucinogen-secreting ", l=23)) {
+			add_oprop_list(oprop_list, OPROP_SECR_HLLU);
+
+		} else if (!strncmpi(bp, "godpoisoning ", l=14) || !strncmpi(bp, "god-venom-secreting ", l=21)) {
+			add_oprop_list(oprop_list, OPROP_SECR_DIRE);
 
 		} else if (!strncmpi(bp, "self-greasing ", l=14) || !strncmpi(bp, "grease-secreting ", l=17)) {
 			add_oprop_list(oprop_list, OPROP_GRES);

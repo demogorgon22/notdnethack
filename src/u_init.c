@@ -927,7 +927,32 @@ static const struct def_skill Skill_A[] = {
     { P_BOOMERANG, P_EXPERT },		{ P_WHIP, P_EXPERT },
     { P_UNICORN_HORN, P_SKILLED },	{ P_HARVEST, P_BASIC },
     { P_ATTACK_SPELL, P_BASIC },	{ P_HEALING_SPELL, P_BASIC },
-    { P_DIVINATION_SPELL, P_EXPERT},	{ P_MATTER_SPELL, P_BASIC},
+    { P_DIVINATION_SPELL, P_EXPERT},	{ P_MATTER_SPELL, P_SKILLED},
+#ifdef STEED
+    { P_RIDING, P_BASIC },
+#endif
+    { P_SHIELD, P_BASIC },
+    { P_WAND_POWER, P_SKILLED },
+    { P_TWO_WEAPON_COMBAT, P_BASIC },
+    { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_NONE, 0 }
+};
+
+static const struct def_skill Skill_A_Silverman[] = {
+    { P_DAGGER, P_BASIC },		{ P_KNIFE,  P_BASIC },
+    { P_PICK_AXE, P_EXPERT },		{ P_SHORT_SWORD, P_BASIC },
+    { P_SCIMITAR, P_SKILLED },		{ P_SABER, P_EXPERT },
+    { P_SPEAR, P_EXPERT },
+    { P_CLUB, P_SKILLED },		{ P_QUARTERSTAFF, P_SKILLED },
+//#ifdef FIREARMS
+    { P_FIREARM, P_SKILLED },
+//#endif
+	{ P_POLEARMS, P_EXPERT },
+    { P_SLING, P_SKILLED },		{ P_DART, P_BASIC },
+    { P_BOOMERANG, P_SKILLED },		{ P_WHIP, P_EXPERT },
+    { P_UNICORN_HORN, P_SKILLED },	{ P_HARVEST, P_BASIC },
+    { P_ATTACK_SPELL, P_BASIC },	{ P_HEALING_SPELL, P_BASIC },
+    { P_DIVINATION_SPELL, P_EXPERT},	{ P_MATTER_SPELL, P_SKILLED},
 #ifdef STEED
     { P_RIDING, P_BASIC },
 #endif
@@ -2129,7 +2154,10 @@ u_init()
 		// else if(!rn2(10)) ini_inv(Magicmarker);
 		knows_object(SACK);
 		knows_object(TOUCHSTONE);
-		skill_init(Skill_A);
+		if(Race_if(PM_SILVERMAN))
+			skill_init(Skill_A_Silverman);
+		else
+			skill_init(Skill_A);
 	break;
 	case PM_ANACHRONONAUT:
 		u.veil = FALSE;
@@ -3172,10 +3200,25 @@ u_init()
 	    knows_object(POT_OBJECT_DETECTION);
 		skill_up(Skill_Y);
 	    break;
-	case PM_SILVERMAN:
+	case PM_SILVERMAN:{
 	    knows_object(PEST_GLAIVE);
 		ini_inv(Pest_equip);
-	    break;
+		struct obj *glaive = NULL;
+		struct obj *aobj = NULL;
+		for (struct obj *otmp = invent; otmp; otmp = otmp->nobj) {
+			if(otmp->otyp == PEST_GLAIVE){
+				if(otmp->invlet == 'a')
+					break;
+				glaive = otmp;
+			}
+			else if(otmp->invlet == 'a')
+				aobj = otmp;
+		}
+		if(glaive && aobj){
+			aobj->invlet = glaive->invlet;
+			glaive->invlet = 'a';
+		}
+	}break;
 	case PM_TIEFLING:
 	    init_natural_mutations();
 	    break;
@@ -3476,8 +3519,8 @@ register struct trobj *trop;
 				trop++;
 				continue;
 			}
-			if(Race_if(PM_SILVERMAN) && otyp != PEST_GLAIVE){
-				/* silvermen only start with the pest glaive */
+			if(Race_if(PM_SILVERMAN) && otyp != PEST_GLAIVE && otyp != FEDORA){
+				/* silvermen only start with the pest glaive, or a nice hat if an archaeologist */
 				trop++;
 				continue;
 			}
@@ -3613,7 +3656,13 @@ register struct trobj *trop;
 			if(obj->otyp == GNOMISH_POINTY_HAT && Race_if(PM_GNOME)){
 				obj->objsize = MZ_MEDIUM;
 			}
-			
+			/* Some Silvermen start with upgraded glaives */
+			if(obj->otyp == PEST_GLAIVE){
+				if(Role_if(PM_ARCHEOLOGIST))
+					obj->ovar1_pestglaive_props |= (PG_BULLWHIP|PG_MATTOCK);
+				else if(Role_if(PM_EXILE))
+					obj->ovar1_pestglaive_props |= PG_CROOK;
+			}
 			/* Don't start with +0 or negative rings */
 			if (objects[obj->otyp].oc_charged && obj->spe <= 0)
 				obj->spe = rne(3);

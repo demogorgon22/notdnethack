@@ -3044,6 +3044,7 @@ weight_cap()
 	struct obj *underarmor = uarmu;
 	struct obj *boots = uarmf;
 	struct obj *belt = ubelt;
+	struct obj *weapon = uwep;
 	
 	/*If mounted your steed is doing the carrying, use its data instead*/
 	if(u.usteed && u.usteed->data){
@@ -3055,6 +3056,7 @@ weight_cap()
 		underarmor = which_armor(u.usteed, W_ARMU);
 		boots = which_armor(u.usteed, W_ARMF);
 		belt = which_armor(u.usteed, W_BELT);
+		weapon = MON_WEP(u.usteed);
 		
 		carrcap = 25L*(mstr + mcon) + 50L;
 		mdat = u.usteed->data;
@@ -3097,6 +3099,7 @@ weight_cap()
 		}
 		
 		if (boots && boots->otyp == find_hboots()) carrcap += maxcap/10;
+		if (weapon && weapon->otyp == PEST_GLAIVE && mdat->mtyp == PM_SILVERMAN) carrcap += maxcap/5;
 
 		if (boots && check_oprop(boots, OPROP_RBRD)
 			&& u.ualign.record >= 20 && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NEUTRAL

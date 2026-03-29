@@ -347,6 +347,9 @@ makedog()
 		if(DEADMONSTER(mtmp))
 			return((struct monst *) 0);
 	}
+	if(Race_if(PM_SILVERMAN)){
+		set_template(mtmp, ROT_ZOMBIE);
+	}
 	
 	if(mtmp->m_lev) mtmp->mhpmax = hd_size(mtmp->data)*(mtmp->m_lev-1)+rnd(hd_size(mtmp->data))+1;
 	else mtmp->mhpmax = (hd_size(mtmp->data)+1)/2;
@@ -774,7 +777,7 @@ boolean portal;
 	int follow_dist;
 	if(pet_dist < 1)
 		pet_dist = 1;
-	if(uwep && uwep->otyp == SHEPHERD_S_CROOK)
+	if(has_crook(uwep))
 		pet_dist++;
 	if(u.specialSealsActive&SEAL_COSMOS ||
 		(uarmh && uarmh->oartifact == ART_CROWN_OF_THE_SAINT_KING) ||

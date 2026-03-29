@@ -189,7 +189,7 @@ extern struct Role urole;
 #define Role_switch	(urole.malenum)
 /* also used to see if you're allowed to eat cats and dogs */
 #define CANNIBAL_ALLOWED() (Role_if(PM_CAVEMAN) || Race_if(PM_ORC) || \
-		Race_if(PM_VAMPIRE) || Race_if(PM_SILVERMAN) || Race_if(PM_SILVERKNIGHT))
+		Race_if(PM_VAMPIRE) || Race_if(PM_SILVERMAN))
 
 
 /* used during initialization for race, gender, and alignment
@@ -573,6 +573,8 @@ struct you {
 #define MATTK_KI    		31
 #define MATTK_UPGRADE    	32
 #define MATTK_MUTATION    	33
+#define MATTK_SILVERMAN_THREADS	34
+#define MATTK_SILVERMAN_GLAIVE	35
 
 	struct attribs	macurr,		/* for monster attribs */
 			mamax;		/* for monster attribs */
