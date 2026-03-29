@@ -1763,6 +1763,7 @@ POTION(("blood", "blood-red"),            0, 18, 50,  CLR_RED, O_USKWN(1)),	/* e
 	BONE_TILE(("defilement glyph",  "broken-fingered handprint"),   0),		// DEFILEMENT
 	BONE_TILE(("weed glyph",  "set of wavy weedy lines"),   0),				// LUMEN
 	BONE_TILE(("vacuous glyph",  "mass of wobbly circles"),   0),				// ROTTEN_EYES
+	BONE_TILE(("rot glyph",  "rough circle and off-center cross"),   0),				// ROTTED_RUNE
 	BONE_TILE(("orrery glyph",  "set of nested dotted circles"),   0),		// SIGHT
 #undef BONE_TILE
 #define GOLD_DISK(names, clr, wt, sz,...) OBJECT( \

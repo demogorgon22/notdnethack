@@ -712,7 +712,7 @@ STATIC_OVL void
 break_armor()
 {
     register struct obj *otmp;
-#define special_armor(a) (a->oartifact || is_imperial_elven_armor(a))
+#define special_armor(a) (a->oartifact || is_imperial_elven_armor(a) || is_silverknight_armor(a))
 	if((otmp = usaddle) != 0) {
 		if(!generic_saddle(youracedata)){
 			if (donning(otmp)) cancel_don();
