@@ -2228,6 +2228,12 @@ activeFace(int fform)
 }
 
 boolean
+activeRune(int fform)
+{
+	return ((artinstance[ART_STORMBRINGER].StormRune & (1 << fform)) != 0);
+}
+
+boolean
 selectedFightingForm(fform)
 int fform;
 {
@@ -2361,6 +2367,20 @@ nameOfBorealFace(int face)
 		case FFACE_MAN:    return "The Warrior and Blinding Star";
 		default:
 			impossible("bad boreal face %d", face);
+	}
+	return "None";
+}
+
+const char *
+nameOfStormRune(int rune)
+{
+	switch (rune)
+	{
+		case FRUNE_HARVEST: return flags.female ? "Harvestwoman's Rune" : "Harvestman's Rune";
+		case FRUNE_HUNT:    return "Hunter's Rune";
+		case FRUNE_CHAOS:   return "Rune of Dark Chaos";
+		default:
+			impossible("bad storm rune %d", rune);
 	}
 	return "None";
 }

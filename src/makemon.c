@@ -17250,6 +17250,9 @@ struct monst *mtmp, *victim;
 			change_uinsight(insight);
 			// change_usanity(u_sanity_gain(victim), FALSE); //Isn't as reasuring as doing it yourself
 		}
+		if(MON_WEP(mtmp) && MON_WEP(mtmp)->oartifact == ART_STORMBRINGER && activeRune(FRUNE_HARVEST)){
+			mtmp->encouraged = max(mtmp->encouraged+1, min(victim->m_lev, mtmp->encouraged+3));
+		}
 		// mtmp killed a mummy and suffers from its curse.
 		if(attacktype_fordmg(victim->data, AT_NONE, AD_MROT)){
 			mummy_curses_x(victim, mtmp);

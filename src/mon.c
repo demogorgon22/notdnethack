@@ -6687,6 +6687,9 @@ xkilled(mtmp, dest)
 		}
 	}
 
+	if(uwep && uwep->oartifact == ART_STORMBRINGER && activeRune(FRUNE_HARVEST)){
+		u.uencouraged = max(u.uencouraged+1, min(mtmp->m_lev, u.uencouraged+3));
+	}
 	// You killed a mummy and suffer from its curse.
 	if(!mtmp->mcan && attacktype_fordmg(mtmp->data, AT_NONE, AD_MROT)){
 		mummy_curses_x(mtmp, &youmonst);

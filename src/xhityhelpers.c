@@ -1557,8 +1557,11 @@ struct monst * magr;
 		ndice = 1;
 		diesize = 9;
 		/* special cases */
-		if (otmp->oartifact == ART_STORMBRINGER)
+		if (otmp->oartifact == ART_STORMBRINGER){
 			ndice = 4; //Extra unholy (4d9 vs excal's 3d7)
+			if(activeRune(FRUNE_CHAOS))
+				dmg += vd(1, 8); //Evil chaos energy
+		}
 		else if (otmp->oartifact == ART_GODHANDS)
 			dmg += 9;
 		else if (otmp->oartifact == ART_DIRGE){
@@ -1715,53 +1718,58 @@ struct monst * magr;
 		}
 	}
 
-	if (hates_chaos_mon(mdef) &&
-		otmp->obj_material == MERCURIAL &&
-		(!magr ||
-		 (magr == &youmonst && u.ualign.type != A_LAWFUL && u.ualign.type != A_NEUTRAL) || /* Note: allows chaos, void, and none */
-		 (magr != &youmonst && (magr->data->maligntyp < 0 || magr->data->maligntyp == MON_A_VOID || magr->data->maligntyp == MON_A_NONE))) &&
-		!(is_lightsaber(otmp) && litsaber(otmp))
-	) {
-		ndice = 1;
-		diesize = youdef ? u.ualign.record : mdef->data->maligntyp == 0 ? 5 : abs(mdef->data->maligntyp);
+	if (hates_chaos_mon(mdef)){
+		if(otmp->oartifact == ART_STORMBRINGER){
+			if(activeRune(FRUNE_CHAOS))
+				dmg += vd(2, 8); //Evil chaos energy
+		}
+		if(otmp->obj_material == MERCURIAL &&
+			(!magr ||
+			(magr == &youmonst && u.ualign.type != A_LAWFUL && u.ualign.type != A_NEUTRAL) || /* Note: allows chaos, void, and none */
+			(magr != &youmonst && (magr->data->maligntyp < 0 || magr->data->maligntyp == MON_A_VOID || magr->data->maligntyp == MON_A_NONE))) &&
+			!(is_lightsaber(otmp) && litsaber(otmp))
+		) {
+			ndice = 1;
+			diesize = youdef ? u.ualign.record : mdef->data->maligntyp == 0 ? 5 : abs(mdef->data->maligntyp);
 #define MIN_OF(x,y) x = min(x,y)
-		MIN_OF(diesize, mlev(magr));
-		if(magr == &youmonst){
-			MIN_OF(diesize, u.ualign.record);
-			MIN_OF(diesize, ACURR(A_INT));
-			MIN_OF(diesize, ACURR(A_WIS));
-			MIN_OF(diesize, ACURR(A_CHA));
-		}
-		else if(magr){
-			MIN_OF(diesize, abs(magr->data->maligntyp));
-			//Placeholder, cap the die size high
-			// MIN_OF(diesize, ACURR_MON(magr, A_INT));
-			// MIN_OF(diesize, ACURR_MON(magr, A_WIS));
-			// MIN_OF(diesize, ACURR_MON(magr, A_CHA));
-			MIN_OF(diesize, 25);
-		}
-		else {
-			//Raw chaos, cap the die size high.
-			MIN_OF(diesize, 30);
-		}
+			MIN_OF(diesize, mlev(magr));
+			if(magr == &youmonst){
+				MIN_OF(diesize, u.ualign.record);
+				MIN_OF(diesize, ACURR(A_INT));
+				MIN_OF(diesize, ACURR(A_WIS));
+				MIN_OF(diesize, ACURR(A_CHA));
+			}
+			else if(magr){
+				MIN_OF(diesize, abs(magr->data->maligntyp));
+				//Placeholder, cap the die size high
+				// MIN_OF(diesize, ACURR_MON(magr, A_INT));
+				// MIN_OF(diesize, ACURR_MON(magr, A_WIS));
+				// MIN_OF(diesize, ACURR_MON(magr, A_CHA));
+				MIN_OF(diesize, 25);
+			}
+			else {
+				//Raw chaos, cap the die size high.
+				MIN_OF(diesize, 30);
+			}
 #undef MIN_OF
-		
-		diesize = max(1,diesize);
-		/* special cases */
-		if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
-			ndice *= khakharadice;
-		/* calculate */
-		if (ndice)
-			dmg += vd(ndice, diesize);
-		//wields chaotic energies
-		if(otmp->where == OBJ_MINVENT){
-			if(magr && (magr->mtyp == PM_ALRUNES) && MON_WEP(magr) == otmp && mlev(magr) >= 14){
-				if(mlev(magr) >= 28)
-					dmg += vd(6, 8);
-				else if(mlev(magr) >= 21)
-					dmg += vd(3, 8);
-				else 
-					dmg += vd(1, 8);
+			
+			diesize = max(1,diesize);
+			/* special cases */
+			if (otmp->otyp == KHAKKHARA || amalg_otyp == KHAKKHARA)
+				ndice *= khakharadice;
+			/* calculate */
+			if (ndice)
+				dmg += vd(ndice, diesize);
+			//wields chaotic energies
+			if(otmp->where == OBJ_MINVENT){
+				if(magr && (magr->mtyp == PM_ALRUNES) && MON_WEP(magr) == otmp && mlev(magr) >= 14){
+					if(mlev(magr) >= 28)
+						dmg += vd(6, 8);
+					else if(mlev(magr) >= 21)
+						dmg += vd(3, 8);
+					else 
+						dmg += vd(1, 8);
+				}
 			}
 		}
 	}

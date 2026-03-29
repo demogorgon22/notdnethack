@@ -346,6 +346,10 @@ struct artinstance{
 #define FFACE_FISH		1
 #define FFACE_MAN		2
 #define FFACE_ANT		3
+#define StormRune avar1
+#define FRUNE_HARVEST	0
+#define FRUNE_HUNT      1
+#define FRUNE_CHAOS     2
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2

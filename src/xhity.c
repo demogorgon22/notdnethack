@@ -18418,7 +18418,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 	}
 	/* Stormbringer is effective against large targets */
 	if(otmp && otmp->oartifact == ART_STORMBRINGER && (!youdef || Upolyd) && hd_size(mdef->data) > 8){
-		specdmg += (subtotl + seardmg + elemdmg + poisdmg + specdmg) * ((float)hd_size(mdef->data)) / 8;
+		specdmg += (subtotl + seardmg + elemdmg + poisdmg + specdmg) * ((float)hd_size(mdef->data) - 8) / 8;
 	}
 
 	/* Final sum of damage */

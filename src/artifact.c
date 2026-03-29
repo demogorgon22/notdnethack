@@ -8995,6 +8995,21 @@ boolean printmessages; /* print generic elemental damage messages */
 			}
 		}
 	}
+	if(oartifact == ART_STORMBRINGER && activeRune(FRUNE_HUNT)){
+		int * stdy = (youdef ? &(u.ustdy) : &(mdef->mstdy));
+		(*stdy) += basedmg;
+	}
+	/* Stormbringer chaos storm */
+	if (oartifact == ART_STORMBRINGER && !Shock_res(mdef) && activeRune(FRUNE_CHAOS)) {
+		if(dieroll <= 2){
+			if(shock_vulnerable(mdef))
+				*plusdmgptr += 2*basedmg;
+			else *plusdmgptr += basedmg;
+		}
+		if(shock_vulnerable(mdef))
+			*plusdmgptr += d(2,8);
+		else *plusdmgptr += d(1,8);
+	}
 
 	/* the Tecpatl of Huehueteotl can sacrifice low-enough-health monsters (not you, though!) 
 	 * this block must be after all non-artifact-specific bonuses that do direct damage (e.g. cults), 
@@ -9171,8 +9186,15 @@ boolean printmessages; /* print generic elemental damage messages */
 				dlife = *hpmax(mdef);
 				*hpmax(mdef) -= min_ints(rnd(hd_size(mdef->data)), *hpmax(mdef));
 				if (*hpmax(mdef) == 0 || mlev(mdef) == 0) {
-					if (youagr && oartifact == ART_STORMBRINGER && dieroll <= 2 && !is_silent_mon(mdef))
-						pline("%s cries out in pain and despair and terror.", Monnam(mdef));
+					if (oartifact == ART_STORMBRINGER && dieroll <= 2){
+						if(youagr && !is_silent_mon(mdef))	
+							pline("%s cries out in pain and despair and terror.", Monnam(mdef));
+						if (activeRune(FRUNE_HARVEST)){
+							if (youagr)
+								u.uencouraged++;
+							else magr->encouraged++;
+						}
+					}
 					*hp(mdef) = 1;
 					*hpmax(mdef) = 1;
 					leveldrain = 0;	/* end leveldrain loop */

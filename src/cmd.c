@@ -1562,6 +1562,52 @@ doBorealFace()
 }
 
 int
+doStormRune()
+{
+	winid tmpwin;
+	int n, how, i;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+
+	Sprintf(buf, "Runes");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+
+	for (i = 0; i < 3; i++) {
+		boolean active = (artinstance[ART_STORMBRINGER].StormRune & (1 << i)) != 0;
+
+		Strcpy(buf, nameOfStormRune(i));
+
+		if (active)
+			Strcat(buf, " (active)");
+
+		any.a_int = i;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	}
+	end_menu(tmpwin, "Choose storm rune:");
+
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	destroy_nhwindow(tmpwin);
+
+	if (n <= 0) {
+		return MOVE_CANCELLED;
+	} else {
+		artinstance[ART_STORMBRINGER].StormRune = (1 << selected[0].item.a_int);
+		free(selected);
+		return MOVE_INSTANT;
+	}
+}
+
+int
 doEtechForm()
 {
 	winid tmpwin;
@@ -1659,6 +1705,7 @@ doEtechForm()
 #define AUTO_ATTKS			0x0800L
 #define BOREAL_FORMS		0x1000L
 #define AVOID_URPASSIVES	0x2000L
+#define STORM_FORMS			0x4000L
 
 int
 hasfightingforms(){
@@ -1800,6 +1847,10 @@ hasfightingforms(){
 		formmask |= BOREAL_FORMS;
 	}
 
+	if(uwep && uwep->oartifact == ART_STORMBRINGER){
+		formmask |= STORM_FORMS;
+	}
+
 	/* next, forms trained are shown, even if inapplicable at the moment*/
 	for (i = FIRST_LS_FFORM; i <= LAST_LS_FFORM; i++) {
 		if (FightingFormSkillLevel(i) >= P_BASIC)
@@ -1846,6 +1897,7 @@ dofightingform()
 #define	NO_AUTO		12
 #define	BOREAL_FORM	13
 #define	AVOD_PASV	14
+#define	STORM_FORM	15
 
 	if (formmask & MONK_FORMS) {
 		any.a_int = MONK_FORM;
@@ -1862,6 +1914,10 @@ dofightingform()
 	if (formmask & BOREAL_FORMS) {
 		any.a_int = BOREAL_FORM;
 		add_menu(tmpwin, NO_GLYPH, &any, 'b', 0, ATR_NONE, "Select Boreal Scepter Face", MENU_UNSELECTED);
+	}
+	if (formmask & STORM_FORMS) {
+		any.a_int = STORM_FORM;
+		add_menu(tmpwin, NO_GLYPH, &any, 'n', 0, ATR_NONE, "Select Stormbringer Rune", MENU_UNSELECTED);
 	}
 	if (formmask & ETECH_FORMS) {
 		any.a_int = ETCH_FORM;
@@ -1977,6 +2033,8 @@ dofightingform()
 			return MOVE_INSTANT;
 		case BOREAL_FORM:
 			return doBorealFace();
+		case STORM_FORM:
+			return doStormRune();
 		default:
 			impossible("unknown fighting form set %d", n);
 			return MOVE_CANCELLED;
@@ -1996,6 +2054,7 @@ dofightingform()
 #undef	ETCH_FORM
 #undef	AVOD_THFT
 #undef	AVOD_PASV
+#undef	STORM_FORM
 
 #undef MONK_FORMS
 #undef LIGHTSABER_FORMS
