@@ -842,7 +842,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		}
 	break;
 	case PM_PIRATE:
-		*weapon = SCIMITAR;
+		*weapon = CUTLASS;
 		*armor = JACKET;
 		*shield = BUCKLER;
 		*rweapon = FLINTLOCK;

@@ -503,7 +503,7 @@ static struct trobj HDNobleM[] = {
 	{ 0, 0, 0, 0, 0 }
 };
 static struct trobj Pirate[] = {
-	{ SCIMITAR, 0, WEAPON_CLASS, 1, UNDEF_BLESS },
+	{ CUTLASS, 0, WEAPON_CLASS, 1, UNDEF_BLESS },
 	{ FLINTLOCK, 0, WEAPON_CLASS, 1, 0 },
 #define PIR_KNIVES	2
 	{ KNIFE, 0, WEAPON_CLASS, 1, 0 },

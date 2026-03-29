@@ -3555,7 +3555,7 @@ boolean greatequip;
 			(void) mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 			(void) mongets(mtmp, HIGH_BOOTS, mkobjflags);
 		} else if (mm == PM_PIRATE_BROTHER){
-			(void)mongets(mtmp, SCIMITAR, mkobjflags);
+			(void)mongets(mtmp, CUTLASS, mkobjflags);
 			(void)mongets(mtmp, LEATHER_ARMOR, mkobjflags);
 			(void)mongets(mtmp, HIGH_BOOTS, mkobjflags);
 			(void)mongets(mtmp, FLINTLOCK, mkobjflags);
@@ -3647,7 +3647,7 @@ boolean greatequip;
 			(void)mongets(mtmp, LOW_BOOTS, mkobjflags);
 		}
 		else if(mm == PM_DANCING_DUELIST){
-			int weaponchoices[] = {KATANA, SCIMITAR, LONG_SWORD, SABER};
+			int weaponchoices[] = {KATANA, SCIMITAR, CUTLASS, LONG_SWORD, SABER};
 			int choice = ROLL_FROM(weaponchoices);
 			for(int i = rnd(3)+2; i > 0; i--){
 				otmp = mongets(mtmp, choice, mkobjflags);
@@ -3878,7 +3878,7 @@ boolean greatequip;
 			}
 		} else if (mm == PM_MAYOR_CUMMERBUND){
 			int spe2;
-			otmp = mksobj(SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+			otmp = mksobj(CUTLASS, mkobjflags|MKOBJ_NOINIT);
 			curse(otmp);
 			otmp->oerodeproof = TRUE;
 			spe2 = d(1,3);
@@ -4999,7 +4999,7 @@ int mmflags;
 			break;
 			case PM_BLACKBEARD_S_GHOST:{
 				int spe2;
-				otmp = mksobj(SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mksobj(CUTLASS, mkobjflags|MKOBJ_NOINIT);
 				curse(otmp);
 				otmp->oerodeproof = TRUE;
 				otmp->oeroded = 1;
@@ -7180,7 +7180,7 @@ int mmflags;
 						
 						(void)mongets(mtmp, BULLET, mkobjflags);
 						
-						otmp = mksobj(SCIMITAR, mkobjflags);
+						otmp = mksobj(CUTLASS, mkobjflags);
 						otmp->oeroded = 3;
 						(void) mpickobj(mtmp, otmp);
 					break;
@@ -9549,7 +9549,7 @@ int mmflags;
 					//Pirate
 					case 9:
 						mtmp->mvar_deminymph_role = PM_PIRATE;
-						otmp = mksobj(SCIMITAR, mkobjflags|MKOBJ_ARTIF);
+						otmp = mksobj(CUTLASS, mkobjflags|MKOBJ_ARTIF);
 						otmp->spe = 0+rn2(4);
 						MAYBE_MERC(otmp)
 						(void) mpickobj(mtmp, otmp);
@@ -10649,7 +10649,7 @@ int mmflags;
 			(void) mongets(mtmp, SPEAR, mkobjflags);
 			(void) mongets(mtmp, SPEAR, mkobjflags);
 		} else if(mm == PM_SKELETAL_PIRATE){
-				otmp = rn2(2) ? mksobj(SCIMITAR, mkobjflags|MKOBJ_NOINIT) : mksobj(KNIFE, mkobjflags|MKOBJ_NOINIT);
+				otmp = rn2(2) ? mksobj(CUTLASS, mkobjflags|MKOBJ_NOINIT) : mksobj(KNIFE, mkobjflags|MKOBJ_NOINIT);
 				// curse(otmp);
 				if(otmp && is_rustprone(otmp))
 					otmp->oeroded = 1;
@@ -10692,7 +10692,7 @@ int mmflags;
 		if(mm>=PM_FIERNA) return; //Lords handled above, no random cursed stuff!
 		switch (mm) {
 			case PM_DAMNED_PIRATE:
-				otmp = mksobj(SCIMITAR, mkobjflags|MKOBJ_NOINIT);
+				otmp = mksobj(CUTLASS, mkobjflags|MKOBJ_NOINIT);
 				curse(otmp);
 				(void) mpickobj(mtmp, otmp);
 				

@@ -224,7 +224,6 @@ STATIC_OVL struct Jitem Japanese_items[] = {
 STATIC_OVL struct Jitem Pirate_items[] = {
 	{ POT_BOOZE, "rum" },
 	{ CRAM_RATION, "sea biscuit" },
-	{ SCIMITAR, "cutlass" },
 	{ SACK, "ditty bag" },
 	{ OILSKIN_SACK, "oilskin ditty bag" },
 	{ BOX, "foot locker" },
@@ -3988,7 +3987,6 @@ struct alt_spellings {
 //#endif
 	{ "rum", POT_BOOZE },
 	{ "sea biscuit", CRAM_RATION },
-	{ "cutlass", SCIMITAR },
 	{ "lhang", HIGH_ELVEN_WARSWORD },
 	{ "buccaneer's ditty bag", OILSKIN_SACK },
 	{ "ditty bag", SACK },

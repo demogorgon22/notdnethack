@@ -705,6 +705,7 @@ struct obj {
 				|| (Race_if(PM_DROW) && typ == DROVEN_GREATSWORD) \
 				|| typ == KATAR \
 				|| (Role_if(PM_PIRATE) && typ == FLINTLOCK) \
+				|| (Role_if(PM_PIRATE) && typ == CUTLASS) \
 				|| (Role_if(PM_UNDEAD_HUNTER) && typ == PISTOL) \
 				|| (Role_if(PM_MADMAN) && Insight > 30 && typ == CARCOSAN_STING) \
 				|| typ == BOW \
@@ -743,6 +744,7 @@ struct obj {
 			 is_pata(otmp) || \
 			 (otmp)->otyp == BROADSWORD || \
 			 ((otmp)->otyp == PEST_GLAIVE && ((otmp)->ovar1_pestglaive_props & PG_HANDPROTECT)) || \
+			 (otmp)->otyp == CUTLASS || \
 			 ((otmp)->oartifact == ART_AMALGAMATED_SKIES && (artinstance[ART_SKY_REFLECTED].ZerthOtyp == SHANTA_PATA || artinstance[ART_SKY_REFLECTED].ZerthOtyp == TWINGUN_SHANTA || artinstance[ART_SKY_REFLECTED].ZerthOtyp == BROADSWORD))\
 			 )
 #define is_runic_form_sword(otmp) (\

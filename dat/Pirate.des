@@ -300,15 +300,15 @@ OBJECT:random,random,random
 OBJECT:random,random,random
 OBJECT:random,random,random
 
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
-OBJECT:')',"scimitar",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
+OBJECT:')',"cutlass",random
 
 
 GEOMETRY:center,center
@@ -603,11 +603,11 @@ OBJECT:'$',random,(36,08)
 OBJECT:'$',random,(36,09)
 OBJECT:'$',random,(37,08)
 
-OBJECT:')',"scimitar",(35,08)
-OBJECT:')',"scimitar",(36,07)
-OBJECT:')',"scimitar",(36,08)
-OBJECT:')',"scimitar",(36,09)
-OBJECT:')',"scimitar",(37,08)
+OBJECT:')',"cutlass",(35,08)
+OBJECT:')',"cutlass",(36,07)
+OBJECT:')',"cutlass",(36,08)
+OBJECT:')',"cutlass",(36,09)
+OBJECT:')',"cutlass",(37,08)
 
 OBJECT:'(',random,random
 OBJECT:'(',random,random
