@@ -958,6 +958,7 @@ struct monst *magr;
 
 	/* SPECIAL CASES (beyond what is defined in objects.c) START HERE */
 
+	boolean octet = FALSE;
 	/* Artifacts and other fun things that need obj to exist and apply for both small and large (mostly?) */
 	if (obj)
 	{
@@ -984,6 +985,7 @@ struct monst *magr;
 		{
 			ocn = obj->quan;				// 1 die per octahedron
 			ocd = 8;						// They are eight-sided dice
+			octet = TRUE;
 		}
 		else if (obj->oartifact == ART_GIANTSLAYER)
 		{
@@ -1055,6 +1057,10 @@ struct monst *magr;
 				ocd = max(6 + 2 * dmod, 2);
 				flat += 2;
 			}
+		}
+		if(litsaber(obj) && obj->cobj && obj->cobj->oartifact == ART_FLUORITE_OCTAHEDRON){
+			ocd = 8;
+			octet = TRUE;
 		}
 	}
 
@@ -1245,7 +1251,7 @@ struct monst *magr;
 		}
 	}
 	/* lightsabers with the Fluorite Octet socketed */
-	if (obj && obj->oartifact == ART_FLUORITE_OCTAHEDRON && litsaber(obj)) {
+	if (obj && litsaber(obj) && octet) {
 		/* Fluorite Octet overrides the number of dice -- only 1 per blade, not 3 */
 		ocn /= 3;
 		/* but keep spe_mult */
