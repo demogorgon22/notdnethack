@@ -9472,7 +9472,7 @@ struct obj *obj;
 	menu_item *selected;
 	char inclet = 'a';
 	anything any;
-	if (((artinstance[ART_IBITE_ARM].IbiteUpgrades&ALL_IPROP)
+	if ((!(artinstance[ART_IBITE_ARM].IbiteUpgrades^ALL_IPROP)
 			|| (artinstance[ART_IBITE_ARM].IbiteFavor <= 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25))))
 		&& !((obj->age < monstermoves) &&
 			(artinstance[ART_IBITE_ARM].IbiteUpgrades&IPROP_TELEPORT ||
@@ -9497,7 +9497,7 @@ struct obj *obj;
 	artinstance[ART_IBITE_ARM].IbiteFavor);
 	
 	if(artinstance[ART_IBITE_ARM].IbiteFavor > 25*(10 + (artinstance[ART_IBITE_ARM].IbiteBoons * artinstance[ART_IBITE_ARM].IbiteBoons * 2 / 25))
-	   && !(artinstance[ART_IBITE_ARM].IbiteUpgrades&ALL_IPROP)){
+	   && artinstance[ART_IBITE_ARM].IbiteUpgrades^ALL_IPROP){
 		Sprintf(buf, "Strengthen the arm");
 		any.a_int = -1;
 		add_menu(tmpwin, NO_GLYPH, &any,
