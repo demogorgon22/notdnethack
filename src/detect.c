@@ -12,9 +12,7 @@
 
 extern boolean known;	/* from read.c */
 
-STATIC_DCL void FDECL(do_dknown_of, (struct obj *));
 STATIC_DCL boolean FDECL(check_map_spot, (int,int,CHAR_P,unsigned));
-STATIC_DCL boolean FDECL(clear_stale_map, (CHAR_P,unsigned));
 STATIC_DCL void FDECL(sense_trap, (struct trap *,XCHAR_P,XCHAR_P,int));
 STATIC_DCL void FDECL(show_map_spot, (int,int));
 STATIC_PTR void FDECL(findone,(int,int,genericptr_t));
@@ -85,9 +83,8 @@ struct obj* obj;
 	return (struct obj *) 0;
 }
 
-STATIC_OVL void
-do_dknown_of(obj)
-struct obj *obj;
+void
+do_dknown_of(struct obj *obj)
 {
 	struct obj *otmp;
 
@@ -165,10 +162,8 @@ unsigned material;
    reappear after the detection has completed.  Return true if noticeable
    change occurs.
  */
-STATIC_OVL boolean
-clear_stale_map(oclass, material)
-register char oclass;
-unsigned material;
+boolean
+clear_stale_map(char oclass, unsigned material, boolean redraw)
 {
 	register int zx, zy;
 	register boolean change_made = FALSE;
@@ -177,6 +172,7 @@ unsigned material;
 		for (zy = 0; zy < ROWNO; zy++)
 		if (check_map_spot(zx, zy, oclass,material)) {
 			unmap_object(zx, zy);
+			if(redraw) newsym(zx, zy);
 			change_made = TRUE;
 		}
 
@@ -196,7 +192,7 @@ register struct obj *sobj;
 	boolean stale;
 
 	known = stale = clear_stale_map(COIN_CLASS,
-				(unsigned)(sobj->blessed ? GOLD : 0));
+				(unsigned)(sobj->blessed ? GOLD : 0), FALSE);
 
 	/* look for gold carried by monsters (might be in a container) */
 	for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
@@ -330,7 +326,7 @@ register struct obj	*sobj;
 	const char *what = confused ? something : "food";
 	int uw = u.uinwater, usw = u.usubwater;
 
-	stale = clear_stale_map(oclass, 0);
+	stale = clear_stale_map(oclass, 0, FALSE);
 
 	for (obj = fobj; obj; obj = obj->nobj)
 	if (o_in(obj, oclass)) {
@@ -503,7 +499,7 @@ int		class;		/* an object class, 0 for all */
 	}
 	}
 
-	if (!clear_stale_map(!class ? ALL_CLASSES : class, 0) && !ct) {
+	if (!clear_stale_map(!class ? ALL_CLASSES : class, 0, FALSE) && !ct) {
 	if (!ctu) {
 		if (detector){
 			if(detector->otyp == SENSOR_PACK)
@@ -675,7 +671,7 @@ struct obj	*detector;	/* object doing the detecting */
 		}
 	}
 
-	if (!clear_stale_map(ALL_CLASSES, 0) && !ct) {
+	if (!clear_stale_map(ALL_CLASSES, 0, FALSE) && !ct) {
 		Role_if(PM_PIRATE) ? strange_feeling(detector, "Ye feel a lack o' something.") : strange_feeling(detector, "You feel a lack of something.");
 		return 1;
 	}
@@ -793,7 +789,7 @@ boolean blessed;	/* do blessed detecting */
 		}
 	}
 
-	if (!clear_stale_map(ALL_CLASSES, 0) && !ct) {
+	if (!clear_stale_map(ALL_CLASSES, 0, FALSE) && !ct) {
 		strange_feeling((struct obj *) 0, "You feel a lack of something.");
 		return 1;
 	}

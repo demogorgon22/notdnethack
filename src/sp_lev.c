@@ -2315,6 +2315,24 @@ default_case:
 					set_material_gm(stuff, DRAGON_HIDE);
 					add_to_container(otmp, stuff);
 				}
+				else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE){
+					default_add_2(HOODED_CAPELET);
+					if(stuff)
+						stuff->obj_color = CLR_ORANGE;
+					default_add_2(ELVEN_TOGA);
+					if(stuff){
+						stuff->obj_color = CLR_ORANGE;
+						add_omod(stuff, OMOD_SHOULDER_BARING);
+					}
+					default_add_2(GLOVES);
+					default_add_2(ELVEN_BOOTS);
+					default_add(MAGIC_HARP);
+					default_add(BUGLE);
+					default_add(SPE_CAUSE_FEAR);
+					default_add(SPE_EXTRA_HEALING);
+					default_add(SPE_TELEPORT_AWAY);
+					default_add(SPE_CHARM_MONSTER);
+				}
 			break;
 		}
 		if(urace.malenum == PM_GNOME){

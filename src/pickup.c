@@ -3236,6 +3236,12 @@ boolean past;
 				gm_weapon_skill(P_TWO_WEAPON_COMBAT);
 				u.umartial = TRUE;
 			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE){
+				expert_weapon_skill(P_BEAST_MASTERY);
+				free_skill_up(P_BEAST_MASTERY);
+				expert_weapon_skill(P_MUSICALIZE);
+				free_skill_up(P_MUSICALIZE);
+			}
 		break;
 	}
 	if(Insight >= 10){

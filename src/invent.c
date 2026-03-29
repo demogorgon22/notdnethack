@@ -6571,6 +6571,28 @@ u_healing_penalty()
 }
 
 int
+u_breath_penalty()
+{
+	int count = 0;
+	if(flags.aasimar_type != AASIMAR_TYPE_CLOUDFACE || Upolyd)
+		return 0;
+	if(uarm && arm_blocks_upper_body(uarm->otyp) && !check_omod(uarm, OMOD_SHOULDER_BARING))
+		count++;
+	if(uarmu && (uarmu->otyp == BODYGLOVE || uarmu->otyp == VICTORIAN_UNDERWEAR) && !check_omod(uarmu, OMOD_SHOULDER_BARING))
+		count++;
+	if(uarmc && (uarmc->otyp == MUMMY_WRAPPING
+			|| uarmc->otyp == PRAYER_WARDED_WRAPPING
+			|| uarmc->otyp == WHITE_FACELESS_ROBE
+			|| uarmc->otyp == BLACK_FACELESS_ROBE
+			|| uarmc->otyp == SMOKY_VIOLET_FACELESS_ROBE
+			|| uarmc->otyp == ROBE
+		)
+	)
+		count++;
+	return count;
+}
+
+int
 u_clothing_discomfort()
 {
 	int count = 0;

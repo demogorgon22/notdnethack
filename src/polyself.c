@@ -1497,6 +1497,21 @@ dogaze(struct monst *mtmp)
 					result |= MM_HIT;
 				}
 			}
+			if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
+				if(!((nonliving(mtmp->data) && !is_android(mtmp->data)) 
+				  || has_template(mtmp, TOMB_HERD) /*not a statue-piloting thingy */
+				  || is_primordial(mtmp->data)
+				  || is_alienist(mtmp->data)
+				  || is_great_old_one(mtmp->data)
+				  || mtmp->encouraged < -1*Insight/7
+				  || (uarmh && FacelessHelm(uarmh))
+				  || (uarmc && FacelessCloak(uarmc))
+				 )
+				){
+					mtmp->encouraged--;
+					result |= MM_HIT;
+				}
+			}
 
 			if (!pre_targeted && !result) {
 				pline("%s seemed not to notice.", Monnam(mtmp));

@@ -1,3 +1,4 @@
+#include <math.h>
 #include "hack.h"
 #include "mutations.h"
 
@@ -721,5 +722,183 @@ recover_seraph_eye()
 	}
 	else if(u.seraph_eyes == SE_FUTURE){
 		pline("You have reclaimed your final eye, allowing you to see an instant into the future.");
+	}
+}
+
+STATIC_DCL void
+mumbling_mouths_detect()
+{
+	int x, y;
+	struct obj *obj, *otmp;
+	struct monst *mtmp;
+
+	/* Identify appearance of carried items */
+	for (obj = invent; obj; obj = obj->nobj)
+		do_dknown_of(obj);
+
+	/* Clear remembered object glyphs that no longer reflect reality */
+	clear_stale_map(ALL_CLASSES, 0, TRUE);
+
+	/* Buried objects */
+	if (!Is_paradise(&u.uz)) {
+		for (obj = level.buriedobjlist; obj; obj = obj->nobj) {
+			do_dknown_of(obj);
+			map_object(obj, 1);
+		}
+	}
+
+	/* Floor objects: show only the top of each pile */
+	for (x = 1; x < COLNO; x++)
+		for (y = 0; y < ROWNO; y++)
+			for (obj = level.objects[x][y]; obj; obj = obj->nexthere) {
+				do_dknown_of(obj);
+				if (obj == level.objects[x][y])
+					map_object(obj, 1);
+			}
+
+	/* Objects in monster inventories: show at the monster's location */
+	for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+		if (DEADMONSTER(mtmp)) continue;
+		for (obj = mtmp->minvent; obj; obj = obj->nobj) {
+			do_dknown_of(obj);
+			if (obj == mtmp->minvent) {
+				otmp = obj;
+				otmp->ox = mtmp->mx;
+				otmp->oy = mtmp->my;
+				map_object(otmp, 1);
+			}
+		}
+	}
+
+	newsym(u.ux, u.uy);
+}
+
+STATIC_DCL void
+mumbling_mouths_turn()
+{
+	struct monst *mtmp, *mtmp2;
+	int range, once;
+
+	range = BOLT_LIM + (u.ulevel / 5);
+	range *= range;
+	once = 0;
+
+	for (mtmp = fmon; mtmp; mtmp = mtmp2) {
+		mtmp2 = mtmp->nmon;
+
+		if (DEADMONSTER(mtmp)) continue;
+		if (!couldsee(mtmp->mx, mtmp->my) ||
+			distu(mtmp->mx, mtmp->my) > range
+		) continue;
+
+		if (!mtmp->mpeaceful &&
+			(is_undead(mtmp->data) ||
+			 (is_demon(mtmp->data) && (u.ulevel > (MAXULEV/2))))
+		) {
+			mtmp->msleeping = 0;
+			if (!Confusion && !resist(mtmp, '\0', 0, TELL)) {
+				// if (!once++) {
+				// 	Your("mouths whisper a ward against the unholy.");
+				// }
+				monflee(mtmp, 0, FALSE, TRUE);
+			}
+		}
+	}
+}
+
+void
+mumbling_mouths()
+{
+	int chance = 3000;
+	if(u.uinsight < 7) chance *= 3;
+	else if(u.uinsight < 14) chance *= 2.333;
+	else if(u.uinsight < 21) chance *= 1.667;
+	if(u_breath_penalty()) chance *= 3*u_breath_penalty();
+	chance = chance * pow(0.9, u.ulevel-1);
+	if(rn2(chance)) return;
+	if(u.uinsight < 21)
+		You("suddenly whisper an involuntary prayer!");
+	else
+		Your("mumbling mouths whisper a prayer with startling clarity!");
+	switch(rn2(20)){
+		//divination effects
+		case 0:
+			if(!level.flags.nommap){
+				do_mapping();
+				break;
+			}
+		case 1:
+			do_vicinity_map(u.ux,u.uy);
+			break;
+		case 2:
+			mumbling_mouths_detect();
+			break;
+		//healing effects
+		case 3:{
+			struct obj *pseudo;
+			pseudo = mksobj(SPE_MASS_HEALING, MKOBJ_NOINIT);
+			pseudo->blessed = pseudo->cursed = 0;
+			pseudo->quan = 20L;			/* do not let useup get it */
+			cast_mass_healing(pseudo);
+			obfree(pseudo, (struct obj *)0);
+			break;
+		}
+		case 4:
+			healing_zap(&youmonst, SPE_EXTRA_HEALING, SPBOOK_CLASS, (boolean *)0, (boolean *)0, FALSE);
+			break;
+		case 5:
+			healing_zap(&youmonst, SPE_FULL_HEALING, SPBOOK_CLASS, (boolean *)0, (boolean *)0, FALSE);
+			break;
+		//clerical effects
+		case 6:
+			mumbling_mouths_turn();
+			break;
+		case 7:
+			cast_protection();
+			break;
+		case 8:
+			cast_abjuration();
+			break;
+		//prayer effects
+		case 9:{
+			int trouble = in_trouble();
+			if(trouble > 0) fix_worst_trouble(trouble);
+			break;
+		}
+		case 10:{
+			int trouble = in_trouble();
+			if(trouble != 0) fix_worst_trouble(trouble);
+			break;
+		}
+		case 11:
+			golden_glow();
+			break;
+		case 12:
+			prayer_benefit_intrinsic(0, TRUE);
+			break;
+		//sac effects
+		case 13:
+			god_benefit_boost_ability();
+			break;
+		case 14:
+			god_benefit_enchant_item();
+			break;
+		case 15:
+			god_benefit_identify_item();
+			break;
+		case 16:
+			god_benefit_give_intrinsic();
+			break;
+		case 17:
+			god_benefit_repair_item();
+			break;
+		case 18:
+			god_benefit_fix_buc();
+			break;
+		//luck effect
+		case 19:
+			if (u.uluck < 0) u.uluck = 0;
+			change_luck(Insight >= 21 ? 7 : 3);
+			break;
 	}
 }

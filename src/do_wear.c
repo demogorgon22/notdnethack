@@ -599,8 +599,8 @@ Helmet_off()
 	if (Blind) {
 		if (was_blind) {
 			/* "still cannot see" needs the helmet to possibly have been the cause of your blindness */
-			if (((otmp->otyp == CRYSTAL_HELM || otmp->otyp == FACELESS_HOOD) && is_opaque(otmp)) ||
-				(otmp->otyp == PLASTEEL_HELM && is_opaque(otmp) && otmp->obj_material != objects[otmp->otyp].oc_material))
+			if (((otmp->otyp == CRYSTAL_HELM) && is_opaque(otmp)) ||
+				((otmp->otyp == PLASTEEL_HELM || otmp->otyp == FACELESS_HOOD) && is_opaque(otmp) && otmp->obj_material != objects[otmp->otyp].oc_material))
 				You("still cannot see.");
 		}
 		else {
@@ -2548,6 +2548,10 @@ arm_dr_bonus(struct obj * otmp, int slot)
 	if (otmp->otyp == find_gcirclet()) def /= 2;
 	// combat boots
 	if (otmp->otyp == find_cboots()) def += 1;
+	// bares the shoulders
+	if (slot && slot == UPPER_TORSO_DR && check_omod(otmp, OMOD_SHOULDER_BARING)){
+		def = (def+3)/4;
+	}
 
 
 	// add enchantment
@@ -3201,6 +3205,12 @@ uchar aatyp;
 			break;
 			case AASIMAR_TYPE_ELADRIN:
 				bas_udr += u.ulevel >= 30 ? 3 : 1;
+			break;
+			case AASIMAR_TYPE_CLOUDFACE:
+				if(slot == HEAD_DR)
+					bas_udr += u.ulevel >= 21 ? 7 : 3;
+				if(u.uinsight >= 21 && slot&(UPPER_TORSO_DR|ARM_DR))
+					bas_udr += 3;
 			break;
 			case AASIMAR_TYPE_PRIMINAL:
 				if(slot == UPPER_TORSO_DR)

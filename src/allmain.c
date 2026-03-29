@@ -1372,6 +1372,7 @@ you_regen_pw()
 			reglevel += 12;
 		// penalty for being itchy
 		reglevel -= u_healing_penalty();
+		reglevel -= u_breath_penalty();
 		// penalty from spell protection interfering with natural pw regeneration
 		if (u.uspellprot > 0)
 			reglevel -= 10 + 2 * u.uspellprot;
@@ -1581,6 +1582,7 @@ san_threshhold()
 	
 	// penalty for being itchy
 	reglevel -= u_healing_penalty();
+	reglevel -= u_breath_penalty();
 	// penalty for rot upgrades
 	reglevel -= rot_count()*2;
 	
@@ -1712,6 +1714,7 @@ moveloop()
 	int tx,ty;
 	static boolean oldBlind = 0, oldLightBlind = 0;
 	int healing_penalty = 0;
+	int breath_penalty = 0;
     int hpDiff, movecost;
 	static int oldsanity = 100;
 
@@ -2012,6 +2015,29 @@ moveloop()
 						You_feel("%s.", (u_healing_penalty()) ? "pretty" : "beautiful");
 					}
 					healing_penalty = u_healing_penalty();
+					break;
+			}
+			switch (((u_breath_penalty() - breath_penalty) > 0) - ((u_breath_penalty() - breath_penalty) < 0))
+			{
+			case 0:
+					break;
+			case 1:
+					if (!Hallucination) {
+						You("%s.", (breath_penalty) ? "are having more trouble breathing" : "are having trouble breathing");
+					}
+					else {
+						You_feel("%s.", (breath_penalty) ? "more wrapped up" : "wrapped up");
+					}
+					breath_penalty = u_breath_penalty();
+					break;
+			case -1:
+					if (!Hallucination) {
+						You("%s.", (u_breath_penalty()) ? "can breathe more easily" : "can breathe easily");
+					}
+					else {
+						You_feel("%s.", (u_breath_penalty()) ? "some wiggle room" : "free as the wind");
+					}
+					breath_penalty = u_breath_penalty();
 					break;
 			}
 			/*
@@ -3487,6 +3513,8 @@ karemade:
 			clothes_bite_you();
 			mercurial_repair();
 			clear_stale_fforms();
+			if(Mumbling_Mouths)
+				mumbling_mouths();
 
 			if(moves%1000){
 				extern struct hashmap_s *itemmap;
@@ -3605,7 +3633,7 @@ karemade:
 		if(u.ustdy > 0) u.ustdy -= 1;
 		if(u.ustdy < 0) u.ustdy += 1;
 		// Wizegaze attacks
-		if(check_mutation(TT_MANY_ODD_EYES))
+		if(check_mutation(TT_MANY_ODD_EYES) || (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd))
 			perform_wizegaze_attacks();
 		if(!Upolyd && TIEFLING_AURAS)
 			mutation_auras();
@@ -3797,7 +3825,7 @@ karemade:
 			}
 		}
 		//Noise radius dependent on your lung capacity
-		else if (Babble && !Strangled_cant_speak && !FrozenAir && !is_deaf(mtmp) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < (ACURR(A_CON)/3)){
+		else if ((Babble || Mumbling_Mouths) && !Strangled_cant_speak && !FrozenAir && !is_deaf(mtmp) && distmin(u.ux, u.uy, mtmp->mx, mtmp->my) < (ACURR(A_CON)/3)){
 			//quite noisy
 			mtmp->mux = u.ux;
 			mtmp->muy = u.uy;
@@ -3845,7 +3873,30 @@ karemade:
 			healing_penalty = u_healing_penalty();
 			break;
 		}
-		
+		switch (((u_breath_penalty() - breath_penalty) > 0) - ((u_breath_penalty() - breath_penalty) < 0))
+		{
+		case 0:
+			break;
+		case 1:
+			if (!Hallucination) {
+				You("%s.", (breath_penalty) ? "are having more trouble breathing" : "are having trouble breathing");
+			}
+			else {
+				You_feel("%s.", (breath_penalty) ? "more wrapped up" : "wrapped up");
+			}
+			breath_penalty = u_breath_penalty();
+			break;
+		case -1:
+			if (!Hallucination) {
+				You("%s.", (u_breath_penalty()) ? "can breathe more easily" : "can breathe easily");
+			}
+			else {
+				You_feel("%s.", (u_breath_penalty()) ? "some wiggle room" : "free as the wind");
+			}
+			breath_penalty = u_breath_penalty();
+			break;
+		}
+
 		if (!oldBlind ^ !Blind) {  /* one or the other but not both */
 			see_monsters();
 			flags.botl = 1;

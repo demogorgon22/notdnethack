@@ -104,6 +104,8 @@
 
 #define is_alabaster_mummy(ptr)	((ptr)->mtyp == PM_ALABASTER_MUMMY)
 
+#define is_alabaster_elf(ptr)	((ptr)->mtyp == PM_ALABASTER_ELF || (ptr)->mtyp == PM_ALABASTER_ELF_ELDER || (ptr)->mtyp == PM_DESERT_SEER)
+
 #define is_lminion(mon)		(is_minion((mon)->data) && is_lawful_mon(mon))
 
 #define is_nminion(mon)		(is_minion((mon)->data) && is_neutral_mon(mon))

@@ -427,6 +427,8 @@ E void NDECL(decl_init);
 E struct obj *FDECL(o_in, (struct obj*,CHAR_P));
 E struct obj *FDECL(o_material, (struct obj*,unsigned));
 E struct obj *FDECL(o_artifact, (struct obj*));
+E void FDECL(do_dknown_of, (struct obj *));
+E boolean FDECL(clear_stale_map, (char,unsigned, boolean));
 E int FDECL(gold_detect, (struct obj *));
 E int FDECL(food_detect, (struct obj *));
 E int FDECL(object_detect, (struct obj *,int));
@@ -1366,6 +1368,7 @@ E int FDECL(sortloot_cmp, (struct obj *, struct obj *));
 #endif
 E int FDECL(mon_healing_penalty, (struct monst *));
 E int NDECL(u_healing_penalty);
+E int NDECL(u_breath_penalty);
 E int NDECL(u_clothing_discomfort);
 E struct obj * FDECL(outermost_armor, (struct monst *));
 E struct obj * NDECL(get_most_complete_puzzle);
@@ -2106,6 +2109,7 @@ E void NDECL(mutation_autoattacks);
 E void NDECL(mutation_auras);
 E int NDECL(uemit_light);
 E void NDECL(recover_seraph_eye);
+E void NDECL(mumbling_mouths);
 
 /* ### nhlan.c ### */
 #ifdef LAN_FEATURES
@@ -2493,6 +2497,8 @@ E const char *NDECL(bottlename);
 #ifdef USE_TRAMPOLI
 E int NDECL(prayer_done);
 #endif
+E int NDECL(in_trouble);
+E void FDECL(fix_worst_trouble,(int));
 E void FDECL(godvoice,(int,const char*));
 E void FDECL(gods_angry,(int));
 E void FDECL(gods_upset,(int));
@@ -2503,6 +2509,7 @@ E int NDECL(dosacrifice);
 E void FDECL(at_your_feet, (const char *));
 E boolean FDECL(can_pray, (BOOLEAN_P));
 E int NDECL(dopray);
+E void NDECL(golden_glow);
 E void FDECL(pleased,(int, boolean, int, boolean));
 E int FDECL(turn_level, (struct monst *));
 E const char *NDECL(u_gname);
@@ -2540,6 +2547,13 @@ E struct monst * FDECL(god_priest, (int, int, int, int));
 E int FDECL(god_at_altar, (int, int));
 E boolean FDECL(gods_are_friendly, (int, int));
 E boolean FDECL(god_accepts_you, (int));
+E void NDECL(god_benefit_boost_ability);
+E void NDECL(god_benefit_enchant_item);
+E void NDECL(god_benefit_identify_item);
+E void NDECL(god_benefit_give_intrinsic);
+E boolean FDECL(prayer_benefit_intrinsic, (int, boolean));
+E void NDECL(god_benefit_repair_item);
+E void NDECL(god_benefit_fix_buc);
 
 /* ### priest.c ### */
 
@@ -2977,6 +2991,7 @@ E void FDECL(book_substitution, (struct obj *,struct obj *));
 E void NDECL(age_spells);
 E void FDECL(damage_spells, (int));
 E int NDECL(docast);
+E void FDECL(cast_mass_healing, (struct obj *));
 E boolean FDECL(tt_findadjacent, (coord *, struct monst *));
 E int NDECL(spiritDsize);
 E int NDECL(dospirit);
@@ -2984,6 +2999,8 @@ E int FDECL(spell_skill_from_adtype, (int));
 E int FDECL(spell_adtype, (int));
 E const char *FDECL(spelltypemnemonic, (int));
 E int FDECL(spell_skilltype, (int));
+E void NDECL(cast_protection);
+E void NDECL(cast_abjuration);
 E int FDECL(spiriteffects, (int,BOOLEAN_P));
 E int FDECL(nudzirath_hit_pile, (struct obj *, struct obj *));
 E int FDECL(nudzirath_hit_mon, (struct monst *, struct obj *));
@@ -3691,6 +3708,7 @@ E int FDECL(zap_glyph_color, (int));
 E int FDECL(wand_adtype, (int));
 E int FDECL(zap_hit, (struct monst *,int, BOOLEAN_P));
 E int FDECL(bhitm, (struct monst *,struct obj *));
+E struct monst *FDECL(healing_zap, (struct monst *,int, char, boolean *,boolean *,boolean));
 E void FDECL(probe_monster, (struct monst *));
 E boolean FDECL(get_obj_location, (struct obj *,xchar *,xchar *,int));
 E boolean FDECL(get_mon_location, (struct monst *,xchar *,xchar *,int));

@@ -812,6 +812,8 @@ boolean dofull;
 			Strcat(buf, "carved ");
 		break;
 	case ARMOR_CLASS:
+		if (obj->bodytypeflag&(MB_HUMANOID|MB_ANIMAL) && check_omod(obj, OMOD_SHOULDER_BARING))
+			Strcat(buf, "shoulder-baring ");
 		if ((obj->bodytypeflag&MB_BODYTYPEMASK) != MB_HUMANOID){
 			if ((obj->bodytypeflag&MB_BODYTYPEMASK) == MB_ANIMAL) Strcat(buf, "barded ");
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == MB_SLITHY) is_shirt(obj) ? Strcat(buf, "tubular ") : Strcat(buf, "segmented ");
@@ -4869,6 +4871,8 @@ int wishflags;
 		} else if (!strncmpi(bp, "insightful ", l=11)) {
 			add_oprop_list(oprop_list, OPROP_INSTW);
 
+		} else if (!strncmpi(bp, "shoulder-baring ", l=16)) {
+			add_omod_list(omod_list, OMOD_SHOULDER_BARING);
 		} else if (!strncmpi(bp, "spiked ", l=7)) {
 			add_omod_list(omod_list, OMOD_SPIKED);
 		} else if (!strncmpi(bp, "bladed ", l=7)) {

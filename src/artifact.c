@@ -19,7 +19,7 @@ extern boolean lifehunt_sneak_attacking;
 extern struct attack grapple;
 
 //duplicates of other functions, created due to problems with the linker
-STATIC_DCL void NDECL(cast_protection);
+STATIC_DCL void NDECL(artifact_protection);
 STATIC_DCL void FDECL(awaken_monsters,(int));
 
 STATIC_DCL void FDECL(do_item_blast, (int));
@@ -3512,6 +3512,12 @@ int * truedmgptr;
 		/* lightsabers add 3dX damage (but do not multiply multiplicative bonus damage) */
 		if (damd && (is_lightsaber(otmp) && litsaber(otmp)))
 			multiplier *= 3;
+		if (otmp->where == OBJ_CONTAINED && otmp->ocontainer && is_lightsaber(otmp->ocontainer) && !damd){
+			struct weapon_dice wdice;
+			/* grab the weapon dice from dmgval_core */
+			dmgval_core(&wdice, bigmonst(mon->data), otmp->ocontainer, otmp->ocontainer->otyp, (struct monst *) 0);
+			damd = wdice.oc_damd;
+		}
 		/* The profaned flame should do half damage to fire resistant things */
 		if(otmp->oartifact == ART_PROFANED_GREATSCYTHE && Fire_res(mon)){
 			damd = (damd + 1) / 2;
@@ -10350,7 +10356,7 @@ arti_invoke(obj)
 			}
 			else if(u.dz < 0){
 				pline("Silence Wall!");
-				cast_protection();
+				artifact_protection();
 			}
 			else if(u.dz > 0 ){
 				if (yesno("Are you sure you want to bring down the Silence Glaive?", iflags.paranoid_quit) == 'y') {
@@ -11392,7 +11398,7 @@ arti_invoke(obj)
 				if( (obj->spe > 6) ){
 					exercise(A_WIS, TRUE);
 					n=u.ulevel/5 + 1;
-					cast_protection();
+					artifact_protection();
 					if(!DimensionalLock) while(n--) {
 						pm = &mons[summons[d(1,7)]];
 						mtmp = makemon(pm, u.ux, u.uy, MM_ESUM|MM_EDOG|MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH);
@@ -12558,8 +12564,8 @@ arti_invoke(obj)
         } break;
         case PROTECT: {
           if(uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_DIVINE_DI){
-            cast_protection();
-            if(!u.ublesscnt) cast_protection();
+            artifact_protection();
+            if(!u.ublesscnt) artifact_protection();
           } else You_feel("that you should be wearing %s", the(xname(obj)));
         } break;
         case TRAP_DET: {
@@ -15519,7 +15525,7 @@ throweffect()
 }
 
 STATIC_OVL void
-cast_protection()
+artifact_protection()
 {
 	int loglev = 0;
 	int l = u.ulevel;

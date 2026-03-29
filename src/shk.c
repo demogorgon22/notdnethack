@@ -6786,6 +6786,9 @@ d_weapon:
 		if(check_omod(example, OMOD_BLADED)){
 			add_omod(obj, OMOD_BLADED);
 		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
+		}
 	}
 	verbalize("It's done.");
 	fix_object(obj);
@@ -7100,6 +7103,9 @@ d_weapon:
 		if(check_omod(example, OMOD_BLADED)){
 			add_omod(obj, OMOD_BLADED);
 		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
+		}
 	}
 	verbalize("It's done.");
 	fix_object(obj);
@@ -7271,6 +7277,9 @@ d_weapon:
 		}
 		if(check_omod(example, OMOD_BLADED)){
 			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7547,6 +7556,9 @@ d_weapon:
 		}
 		if(check_omod(example, OMOD_BLADED)){
 			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");

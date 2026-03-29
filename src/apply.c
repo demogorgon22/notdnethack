@@ -10747,6 +10747,15 @@ resizeArmor()
 		changed = TRUE;
 	}
 
+	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd
+		&& ptr == youracedata
+		&& arm_blocks_upper_body(otmp->otyp)
+		&& !check_omod(otmp, OMOD_SHOULDER_BARING)
+	){
+		add_omod(otmp, OMOD_SHOULDER_BARING);
+		changed = TRUE;
+	}
+
 	fix_object(otmp);
 
 	if(!changed){

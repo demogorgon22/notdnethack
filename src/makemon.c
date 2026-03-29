@@ -17833,6 +17833,10 @@ peace_minded(struct monst *mon)
 	}
 	if (mndx==PM_APOLLYON && u.ualign.record >= 0 && sgn(mal) == sgn(ual)) return TRUE;
 	if (mndx==PM_OONA && u.ualign.record >= 20 && u.ualign.sins < 10 && sgn(mal) == sgn(ual)) return TRUE;
+
+	if ((is_eladrin(mon->data) || mon->mtyp == PM_LILLEND) && u.ualign.record >= 20 && flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE) return TRUE;
+	
+	if (is_alabaster_elf(mon->data) && flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE) return TRUE;
 	
 	//Always hostility, with exception for vampireness and law quest insects
 	if (always_hostile(mon->data) && 

@@ -2825,7 +2825,18 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		}
 	}
 
-	if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){
+	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
+		if(uarmg && ((uarmg->cursed && !Weldproof) || !freehand())){
+			if(u.uinsight < 21){
+				You("can't eat while wearing gloves.");
+			} else {
+				pline("The mouths on your palms are covered by your gloves.");
+			}
+			display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
+			return MOVE_CANCELLED;
+		}
+	}
+	else if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){
 		pline("The %s covers your whole face.", xname(uarmh));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return MOVE_CANCELLED;

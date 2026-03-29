@@ -6771,7 +6771,7 @@ xkilled(mtmp, dest)
 			out_of = 3;
 		else if(active_glyph(LUMEN))
 			out_of = 4;
-		if (!rn2(out_of) && !(mvitals[mndx].mvflags & G_NOCORPSE)
+		if (!(mvitals[mndx].mvflags & G_NOCORPSE)
 					&& mdat->mlet != S_KETER
 					&& mdat->mlet != S_PLANT
 					&& !(get_mx(mtmp, MX_ESUM))
@@ -6785,14 +6785,27 @@ xkilled(mtmp, dest)
 					&& !(has_template(mtmp, CORDYCEPS))
 					&& !(is_auton(mtmp->data))
 		) {
-			int n = 1;
+			int n = 0;
+			if(!rn2(out_of)) n += 1;
 			if(check_rot(ROT_FORAGE) && !rn2(out_of)) n += 1;
 			/*Death Drop*/
-			for(; n > 0; n--){
-				otmp = mk_death_drop_obj(mtmp);
-				if(otmp){
-					place_object(otmp, x, y);
-					redisp = TRUE;
+			if(n > 0) {
+				for(; n > 0; n--){
+					otmp = mk_death_drop_obj(mtmp);
+					if(otmp){
+						place_object(otmp, x, y);
+						redisp = TRUE;
+					}
+				}
+			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && mtmp->data->cwt/10 >= 50){
+				out_of *= 3;
+				if(!rn2(out_of)){
+					otmp = mkobj(SPBOOK_CLASS, NO_MKOBJ_FLAGS);
+					if(otmp){
+						place_object(otmp, x, y);
+						redisp = TRUE;
+					}
 				}
 			}
 		}
