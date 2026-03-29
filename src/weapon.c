@@ -3418,6 +3418,9 @@ int skill;
 {
     int tmp = OLD_P_SKILL(skill);
 
+	if(skill == P_NIMAN)
+		return 1;
+
     /* Fewer slots used up for unarmed/martial, and additional fighting forms.
      *	unskilled -> basic	1
      *	basic -> skilled	1
