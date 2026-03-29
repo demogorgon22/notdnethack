@@ -129,6 +129,7 @@ struct flag {
 	unsigned long warntypem; /* warn_of_mon monster type MM */
 	unsigned long warntypet; /* warn_of_mon monster type MT */
 	unsigned long warntypeb; /* warn_of_mon monster type MB */
+	unsigned long warntypec; /* warn_of_mon monster type MC */
 	unsigned long warntypeg; /* warn_of_mon monster type MG */
 	unsigned long warntypea; /* warn_of_mon monster type MA */
 	unsigned long warntypev; /* warn_of_mon monster type MV */

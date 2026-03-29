@@ -1965,11 +1965,11 @@ default_case:
 					stuff = mksobj(gauntlettypes[rn2(SIZE(gauntlettypes))], MKOBJ_NOINIT);
 					size_items_to_pc(stuff);
 					if(index < SPEAR){
-						add_oprop(stuff, OPROP_SPIKED);
+						add_omod(stuff, OMOD_SPIKED);
 						stuff->spe = 2;
 					}
 					else {
-						add_oprop(stuff, OPROP_BLADED);
+						add_omod(stuff, OMOD_BLADED);
 						stuff->spe = 2;
 					}
 					add_to_container(otmp, stuff);
@@ -1977,7 +1977,7 @@ default_case:
 					//Spiked boots
 					stuff = mksobj(boottypes[rn2(SIZE(boottypes))], MKOBJ_NOINIT);
 					size_items_to_pc(stuff);
-					add_oprop(stuff, OPROP_SPIKED);
+					add_omod(stuff, OMOD_SPIKED);
 					stuff->spe = 2;
 					add_to_container(otmp, stuff);
 				}
@@ -2167,21 +2167,21 @@ default_case:
 					stuff->objsize = MZ_TINY;
 					stuff->ovar1_tooth_type = SERPENT_TOOTH;
 					add_oprop(stuff, OPROP_PSIOW);
-					add_oprop(stuff, OPROP_SECNW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
 					fix_object(stuff);
 
 					default_add_2(TOOTH);
 					stuff->objsize = MZ_TINY;
 					stuff->ovar1_tooth_type = MAGMA_TOOTH;
 					add_oprop(stuff, OPROP_PSIOW);
-					add_oprop(stuff, OPROP_SECNW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
 					fix_object(stuff);
 
 					default_add_2(TOOTH);
 					stuff->objsize = MZ_TINY;
 					stuff->ovar1_tooth_type = VOID_TOOTH;
 					add_oprop(stuff, OPROP_PSIOW);
-					add_oprop(stuff, OPROP_SECNW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
 					fix_object(stuff);
 
 					default_add(ARMOR_SALVE);
@@ -2314,6 +2314,24 @@ default_case:
 					add_oprop(stuff, OPROP_CONC);
 					set_material_gm(stuff, DRAGON_HIDE);
 					add_to_container(otmp, stuff);
+				}
+				else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE){
+					default_add_2(HOODED_CAPELET);
+					if(stuff)
+						stuff->obj_color = CLR_ORANGE;
+					default_add_2(ELVEN_TOGA);
+					if(stuff){
+						stuff->obj_color = CLR_ORANGE;
+						add_omod(stuff, OMOD_SHOULDER_BARING);
+					}
+					default_add_2(GLOVES);
+					default_add_2(ELVEN_BOOTS);
+					default_add(MAGIC_HARP);
+					default_add(BUGLE);
+					default_add(SPE_CAUSE_FEAR);
+					default_add(SPE_EXTRA_HEALING);
+					default_add(SPE_TELEPORT_AWAY);
+					default_add(SPE_CHARM_MONSTER);
 				}
 			break;
 		}

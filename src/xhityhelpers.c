@@ -4226,9 +4226,9 @@ weapon_skill_type(struct obj *weapon, struct obj *launcher, boolean fired)
 	else if (!valid_weapon(weapon) || is_launcher(weapon)){
 		if(is_melee_launcher(weapon))
 			wtype = weapon_type(weapon);
-		else if (weapon && check_oprop(weapon, OPROP_BLADED))
+		else if (weapon && check_omod(weapon, OMOD_BLADED))
 			wtype = P_AXE;
-		else if (weapon && check_oprop(weapon, OPROP_SPIKED))
+		else if (weapon && check_omod(weapon, OMOD_SPIKED))
 			wtype = P_SPEAR;
 		else wtype = P_CLUB;
 	}

@@ -10,19 +10,20 @@
 #define PROPS(...) {FIRST_TEN(dummy, ##__VA_ARGS__, 0,0,0,0,0,0,0,0,0,0)}
 #define FIRST_TEN(dummy, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, ...) a1, a2, a3, a4, a5, a6, a7, a8, a9, a10
 
-#define NO_MONS()									 0,   0,   0,   0,   0,   0,   0,   0,   0
+#define NO_MONS()									 0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 //#define MONS(mt, mfm, mft, mfb, mfg, mfr, mfv, mfw)		mt, mfm, mft, mff, mfb, mfg, mfr, mfv, mfw
 
-#define MONS(...) SET09(0,0,0,0,0,0,0,0,0, __VA_ARGS__)
+#define MONS(...) SET10(0,0,0,0,0,0,0,0,0,0, __VA_ARGS__)
 #define vsMSYM(x) C01((x))
 #define vsMM(x)   C02((x))
 #define vsMT(x)   C03((x))
 #define vsMF(x)   C04((x))
 #define vsMB(x)   C05((x))
-#define vsMG(x)   C06((x))
-#define vsMA(x)   C07((x))
-#define vsMV(x)   C08((x))
-#define vsMW(x)   C09((x))
+#define vsMC(x)   C06((x))
+#define vsMG(x)   C07((x))
+#define vsMA(x)   C08((x))
+#define vsMV(x)   C09((x))
+#define vsMW(x)   C10((x))
 
 #define NO_ATTK()									    0,   0,   0
 #define ATTK(adtyp, acc, dam)						adtyp, acc, dam
@@ -1855,7 +1856,7 @@ ARTIFACT_BOOK("The Book of Infinite Spells", INFINITESPELLS),
 A("Clarent",						LONG_SWORD,				(const char *)0,
 	4000L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, PM_KNIGHT, NON_PM, TIER_C, (ARTG_NOGEN|ARTG_NOWISH|ARTG_FXALGN),
-	MONS(vsMB(MB_THICK_HIDE)),
+	MONS(vsMC(MC_THICK_HIDE)),
 	ATTK(AD_PHYS, 10, 20), (ARTA_HATES),
 	PROPS(), NOFLAG,
 	PROPS(), NOFLAG,

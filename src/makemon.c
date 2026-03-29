@@ -1799,7 +1799,7 @@ boolean greatequip;
 			otmp->cursed = TRUE;
 			otmp->oerodeproof = TRUE;
 			otmp->spe = 5;
-			add_oprop(otmp, OPROP_BLADED);
+			add_omod(otmp, OMOD_BLADED);
 			set_material_gm(otmp, OBSIDIAN_MT);
 			(void) mpickobj(mtmp, otmp);
 		} else if(mm == PM_HEDROW_MASTER_WIZARD){
@@ -4127,7 +4127,7 @@ boolean greatequip;
 				otmp = mksobj(KHAKKHARA, mkobjflags|MKOBJ_NOINIT);
 				otmp->spe = 4;
 				set_material_gm(otmp, IRON);
-				add_oprop(otmp, OPROP_BLADED);
+				add_omod(otmp, OMOD_BLADED);
 				add_oprop(otmp, OPROP_UNHYW);
 				add_oprop(otmp, OPROP_HOLYW);
 				(void) mpickobj(mtmp,otmp);
@@ -4136,7 +4136,7 @@ boolean greatequip;
 				otmp = mksobj(QUARTERSTAFF, mkobjflags|MKOBJ_NOINIT);
 				otmp->spe = 4;
 				set_material_gm(otmp, IRON);
-				add_oprop(otmp, OPROP_SPIKED);
+				add_omod(otmp, OMOD_SPIKED);
 				add_oprop(otmp, OPROP_LESSER_UNHYW);
 				add_oprop(otmp, OPROP_LESSER_HOLYW);
 				(void) mpickobj(mtmp,otmp);
@@ -4675,7 +4675,7 @@ boolean goodequip;
 			if(!rn2(4))
 				otmp->spe += rnd(4); 
 			if(!rn2(10)){
-				add_oprop(otmp, rn2(2) ? OPROP_BLADED : OPROP_SPIKED);
+				add_omod(otmp, rn2(2) ? OMOD_BLADED : OMOD_SPIKED);
 			}
 
 			if(!rn2(50)){
@@ -4706,7 +4706,7 @@ boolean goodequip;
 			if(!rn2(4))
 				otmp->spe += rnd(4); 
 			if(!rn2(10)){
-				add_oprop(otmp, rn2(2) ? OPROP_BLADED : OPROP_SPIKED);
+				add_omod(otmp, rn2(2) ? OMOD_BLADED : OMOD_SPIKED);
 			}
 
 			if(!rn2(50)){
@@ -7899,7 +7899,7 @@ int mmflags;
 					if(otmp){
 						RESET_OBJ_STATE(otmp);
 						otmp->spe = 7;
-						// add_oprop(otmp, OPROP_BLADED);
+						add_omod(otmp, OMOD_BLADED);
 						otmp = mksobj(SILVER_BULLET, mkobjflags);
 						if(otmp){
 							otmp->quan += rn1(100,100);
@@ -7956,7 +7956,7 @@ int mmflags;
 					if(is_prince(ptr) || (is_lord(ptr) && !rn2(3))){
 						otmp = mongets(mtmp, RIFLE, mkobjflags);
 						if(otmp)
-							add_oprop(otmp, OPROP_BLADED);
+							add_omod(otmp, OMOD_BLADED);
 						(void)mongets(mtmp, DWARVISH_MATTOCK, mkobjflags);
 					}
 					else if (!rn2(4)) {
@@ -9503,7 +9503,7 @@ int mmflags;
 								otmp = mongets(mtmp, KHAKKHARA, mkobjflags);
 								if(otmp){
 									set_material_gm(otmp, OBSIDIAN_MT);
-									add_oprop(otmp, OPROP_BLADED);
+									add_omod(otmp, OMOD_BLADED);
 									otmp->spe = 2+rn2(3);
 									otmp->oerodeproof = TRUE;
 								}
@@ -11802,7 +11802,7 @@ boolean greatequip;
 #define RAGE_WALKER_ITEM(otyp)	\
 			otmp = mksobj(otyp, NO_MKOBJ_FLAGS); \
 			otmp->spe = 3; \
-			add_oprop(otmp, OPROP_SPIKED); \
+			add_omod(otmp, OMOD_SPIKED); \
 			set_material_gm(otmp, IRON); \
 			curse(otmp); \
 			(void) mpickobj(mtmp, otmp);
@@ -12632,7 +12632,7 @@ boolean greatequip;
 				} else if(!rn2(6)){
 					otmp = mksobj(QUARTERSTAFF, mkobjflags|MKOBJ_ARTIF);
 					if(!rn2(10)){
-						add_oprop(otmp, OPROP_SPIKED);
+						add_omod(otmp, OMOD_SPIKED);
 					}
 					if(!rn2(10))
 						set_material_gm(otmp, METAL);
@@ -17867,6 +17867,10 @@ peace_minded(struct monst *mon)
 	}
 	if (mndx==PM_APOLLYON && u.ualign.record >= 0 && sgn(mal) == sgn(ual)) return TRUE;
 	if (mndx==PM_OONA && u.ualign.record >= 20 && u.ualign.sins < 10 && sgn(mal) == sgn(ual)) return TRUE;
+
+	if ((is_eladrin(mon->data) || mon->mtyp == PM_LILLEND) && u.ualign.record >= 20 && flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE) return TRUE;
+	
+	if (is_alabaster_elf(mon->data) && flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE) return TRUE;
 	
 	//Always hostility, with exception for vampireness and law quest insects
 	if (always_hostile(mon->data) && 

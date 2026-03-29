@@ -58,7 +58,7 @@ register struct obj *otmp;
     if (is_cloak(otmp) && ((abs(otmp->objsize - mtmp->data->msize) > 1)))
         return FALSE;
 
-    if (is_helmet(otmp) && !(helm_match(mtmp->data, otmp) && helm_size_fits(mtmp->data, otmp)))
+    if (is_helmet(otmp) && !(helm_match(mtmp, otmp) && helm_size_fits(mtmp->data, otmp)))
         return FALSE;
     
     if (is_shield(otmp) && (
@@ -78,7 +78,8 @@ register struct obj *otmp;
     if (is_helmet(otmp) &&
         !is_flimsy(otmp) &&
         otmp->otyp != find_gcirclet() &&
-	num_horns(mtmp->data) > 0)
+		has_horns_mon(mtmp)
+	)
 	return FALSE;
 
     obj = (mtmp == &youmonst) ? invent : mtmp->minvent;

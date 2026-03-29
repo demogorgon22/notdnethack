@@ -8053,8 +8053,8 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 					case AT_BUTT:
 						pline("%s %s catch%s on %s armor!",
 							(youagr ? "Your" : s_suffix(Monnam(magr))),
-							(num_horns(pa) == 0 ? "head" : num_horns(pa) == 1 ? "horn" : "horns"),
-							(num_horns(pa) == 1 ? "es" : ""),
+							(!has_horns_mon(magr) ? "head" : num_horns(magr) == 1 ? "horn" : "horns"),
+							((!has_horns_mon(magr) || num_horns(magr) == 1) ? "es" : ""),
 							(youdef ? "your" : s_suffix(mon_nam(mdef)))
 							);
 						break;
@@ -15575,8 +15575,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		}
 		if (/* valid weapon */
 			(valid_weapon(weapon)
-				|| check_oprop(weapon, OPROP_BLADED)
-				|| check_oprop(weapon, OPROP_SPIKED)
+				|| check_omod(weapon, OMOD_BLADED)
+				|| check_omod(weapon, OMOD_SPIKED)
 				|| weapon->oartifact == ART_WAND_OF_ORCUS
 				|| weapon->otyp == WIND_AND_FIRE_WHEELS
 			) &&
@@ -17106,6 +17106,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if (uwep && uwep->otyp == BESTIAL_CLAW && active_glyph(BEASTS_EMBRACE) && roll_generic_flat_madness(TRUE)){
 			unarmed_dice.oc_damn *= 2;
 		}
+		if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd && !uarmg)
+			unarmed_dice.oc_damd = max(unarmed_dice.oc_damd, 8);
 		/* calculate dice and set basedmg */
 		basedmg = weapon_dmg_roll(&unarmed_dice, FALSE);
 
@@ -18212,16 +18214,17 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				)
 				attackmask |= SLASH;
 
-			if (youagr && check_mutation(SHUB_CLAWS))
-				attackmask |= SLASH|PIERCE;
-
 			if (youagr) {
+				if (check_mutation(SHUB_CLAWS))
+					attackmask |= SLASH|PIERCE;
 				if (check_mutation(TT_RAZOR_CLAWS))
 					attackmask |= SLASH;
 				if (check_mutation(TT_HOOKED_CLAWS))
 					attackmask = SLASH|PIERCE;
 				if (check_mutation(TT_TALONS))
 					attackmask |= PIERCE;
+				if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd && !uarmg)
+					attackmask = SLASH|PIERCE|WHACK;
 			}
 
 			if (/* claw attacks are slashing (even while wearing gloves?) */

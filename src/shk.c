@@ -6780,11 +6780,14 @@ d_weapon:
 		if(check_oprop(example, OPROP_WRTHW)){
 			add_oprop(obj, OPROP_WRTHW);
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7094,11 +7097,14 @@ d_weapon:
 		if(check_oprop(example, OPROP_PSECW)){
 			add_oprop(obj, OPROP_PSECW);
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7266,11 +7272,14 @@ d_weapon:
 		if(check_oprop(example, OPROP_LESSER_ANARW)){
 			add_oprop(obj, OPROP_LESSER_ANARW);
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7542,11 +7551,14 @@ d_weapon:
 				add_oprop(obj, OPROP_LESSER_FIREW);
 			}
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");

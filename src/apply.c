@@ -10791,8 +10791,9 @@ long shape;
 		else if((obj->bodytypeflag&MB_BODYTYPEMASK) == 0)
 				obj->bodytypeflag = MB_HUMANOID;
 	}
-	else if (is_helmet(obj) && !is_hat(obj))
-		obj->bodytypeflag = shape&MB_HEADMODIMASK;
+	else if (is_helmet(obj) && !is_hat(obj)){
+		obj->bodytypeflag = shape&(MB_HEADMODIMASK|MB_HORNS);
+	}
 	if(obj->bodytypeflag != starting_shape)
 		return TRUE;
 	return FALSE;
@@ -10868,6 +10869,15 @@ resizeArmor()
 	// change size (AFTER shape, because this may be aborted during that step.
 	if(otmp->objsize != ptr->msize){
 		otmp->objsize = ptr->msize;
+		changed = TRUE;
+	}
+
+	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd
+		&& ptr == youracedata
+		&& arm_blocks_upper_body(otmp->otyp)
+		&& !check_omod(otmp, OMOD_SHOULDER_BARING)
+	){
+		add_omod(otmp, OMOD_SHOULDER_BARING);
 		changed = TRUE;
 	}
 

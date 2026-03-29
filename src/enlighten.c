@@ -906,6 +906,10 @@ boolean dumping;
 	}
 	if (Fumbling) enl_msg("You fumble", "", "d", "");
 	if(u_healing_penalty()) enl_msg("You heal", "", "ed", " slowly due to your equipment");
+	if(u_breath_penalty()){
+		if(u.uinsight < 21) enl_msg("Your shoulders ", "are", "were", " smothered by your clothing");
+		else enl_msg("The mouths on your shoulders ", "are", "were", " covered by your clothing, making it hard to breathe");
+	}
 	if (Wounded_legs
 #ifdef STEED
 	    && !u.usteed
@@ -946,7 +950,7 @@ boolean dumping;
 	if (See_invisible(u.ux,u.uy)) enl_msg(You_, "see", "saw", " invisible");
 	if (Blind_telepat) you_are("telepathic");
 	if (Warning) you_are("warned");
-	if (Warn_of_mon && (flags.warntypem||flags.warntypet||flags.warntypeb||flags.warntypeg||flags.warntypea||flags.warntypev||flags.montype)) {
+	if (Warn_of_mon && (flags.warntypem||flags.warntypet||flags.warntypeb||flags.warntypec||flags.warntypeg||flags.warntypea||flags.warntypev||flags.montype)) {
 		if(flags.warntypea & MA_ANIMAL) you_are("aware of the presence of animals");
 		if(flags.warntypea & MA_ARACHNID) you_are("aware of the presence of arachnids");
 		if(flags.warntypea & MA_AVIAN) you_are("aware of the presence of birds");
@@ -1599,6 +1603,7 @@ resistances_enlightenment()
 		putstr(en_win, 0, buf);
 	}
 	if(u_healing_penalty()) putstr(en_win, 0, "You feel itchy.");
+	if(u_breath_penalty()) putstr(en_win, 0, "You can't breathe well.");
 	if (Wounded_legs
 #ifdef STEED
 	    && !u.usteed

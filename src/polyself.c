@@ -781,10 +781,10 @@ break_armor()
     }
 	if ((otmp = uarmh) != 0){
 		boolean hat = is_hat(otmp);
-		if((!helm_match(youracedata, uarmh) && !hat)
+		if((!helm_match(&youmonst, uarmh) && !hat)
 			|| (!has_head_mon(&youmonst) && !hat)
 			|| !helm_size_fits(youracedata, uarmh)
-			|| (has_horns(youracedata) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp)))
+			|| (has_horns_mon(&youmonst) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp) || (otmp->bodytypeflag&MB_HORNS) != 0))
 			|| is_gaseous_noequip(youracedata)
 			|| noncorporeal(youracedata)
 		) {
@@ -792,12 +792,12 @@ break_armor()
 			Your("helmet falls to the %s!", surface(u.ux, u.uy));
 			(void) Helmet_off();
 			dropx(otmp);
-	    } else if (is_flimsy(otmp) && !donning(otmp) && has_horns(youracedata)) {
+	    } else if (is_flimsy(otmp) && !donning(otmp) && has_horns_mon(&youmonst) && !(otmp->bodytypeflag&MB_HORNS) && otmp->otyp != find_gcirclet()) {
 			char hornbuf[BUFSZ], yourbuf[BUFSZ];
-			/* Future possiblities: This could damage/destroy helmet */
-			Sprintf(hornbuf, "horn%s", plur(num_horns(youracedata)));
+			Sprintf(hornbuf, "horn%s", plur(num_horns(&youmonst)));
 			Your("%s %s through %s %s.", hornbuf, vtense(hornbuf, uarmh->otyp == find_gcirclet() ? "pass" : "pierce"),
 				 shk_your(yourbuf, otmp), xname(otmp));
+			otmp->bodytypeflag |= MB_HORNS; /*Has horn-holes now!*/
 		}
     }
 	if ((otmp = uarmg) != 0) {
@@ -1496,6 +1496,21 @@ dogaze(struct monst *mtmp)
 				if(mtmp->encouraged > -6){
 					mtmp->encouraged--;
 					//pline("%s seems less confident than before.", Monnam(mtmp));
+					result |= MM_HIT;
+				}
+			}
+			if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
+				if(!((nonliving(mtmp->data) && !is_android(mtmp->data)) 
+				  || has_template(mtmp, TOMB_HERD) /*not a statue-piloting thingy */
+				  || is_primordial(mtmp->data)
+				  || is_alienist(mtmp->data)
+				  || is_great_old_one(mtmp->data)
+				  || mtmp->encouraged < -1*Insight/7
+				  || (uarmh && FacelessHelm(uarmh))
+				  || (uarmc && FacelessCloak(uarmc))
+				 )
+				){
+					mtmp->encouraged--;
 					result |= MM_HIT;
 				}
 			}

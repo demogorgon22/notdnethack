@@ -19,7 +19,7 @@ extern boolean lifehunt_sneak_attacking;
 extern struct attack grapple;
 
 //duplicates of other functions, created due to problems with the linker
-STATIC_DCL void NDECL(cast_protection);
+STATIC_DCL void NDECL(artifact_protection);
 STATIC_DCL void FDECL(awaken_monsters,(int));
 
 STATIC_DCL void FDECL(do_item_blast, (int));
@@ -1031,6 +1031,30 @@ unsigned long int *oprop_list;
 	}
 }
 
+void
+add_omod_list(omod_list, omod)
+unsigned long int *omod_list;
+int omod;
+{
+	if (!omod)
+		return;
+
+	if (omod >= MAX_OMOD || omod < 0)
+		impossible("Attempting to add omod number %d to a wish list?", omod);
+
+	omod_list[(omod-1)/32] |= (0x1L << ((omod-1)%32));
+}
+
+void
+copy_omod_list(obj, omod_list)
+struct obj *obj;
+unsigned long int *omod_list;
+{
+	int i;
+	for (i = 0; i < OMOD_LISTSIZE; i++)
+		obj->omodifications[i] |= omod_list[i];
+}
+
 /*
  * Make a special-but-non-artifact weapon based on otmp
  */
@@ -1267,7 +1291,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp)){
 			if(!rn2(7)){
-				add_oprop(otmp, OPROP_BLADED);
+				add_omod(otmp, OMOD_BLADED);
 			}
 		}
 	}
@@ -1407,7 +1431,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp)){
 			if(!rn2(7)){
-				add_oprop(otmp, OPROP_BLADED);
+				add_omod(otmp, OMOD_BLADED);
 			}
 		}
 	}
@@ -1527,7 +1551,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp) || is_boots(otmp)){
 			if(!rn2(4)){
-				add_oprop(otmp, rn2(2) ? OPROP_BLADED : OPROP_SPIKED);
+				add_omod(otmp, rn2(2) ? OMOD_BLADED : OMOD_SPIKED);
 			}
 		}
 	}
@@ -1646,7 +1670,7 @@ struct obj *otmp;	/* existing object */
 		}
 		if(is_gloves(otmp) || is_boots(otmp)){
 			if(!rn2(2)){
-				add_oprop(otmp, rn2(4) ? OPROP_SPIKED : OPROP_BLADED);
+				add_omod(otmp, rn2(4) ? OMOD_SPIKED : OMOD_BLADED);
 			}
 		}
 	}
@@ -1679,7 +1703,7 @@ struct obj *otmp;	/* existing object */
 			break;
 		}
 		if(!rn2(10)){
-			add_oprop(otmp, rn2(4) ? OPROP_SPIKED : OPROP_BLADED);
+			add_omod(otmp, rn2(4) ? OMOD_SPIKED : OMOD_BLADED);
 		}
 	}
 	/* ring props (stack with weapon) */
@@ -2609,7 +2633,7 @@ long wp_mask;
 	int oartifact = otmp->oartifact;
 	uchar dtyp;
 	long spfx, spfx2, spfx3, wpfx;
-	long exist_warntypem = 0, exist_warntypet = 0, exist_warntypeb = 0, exist_warntypeg = 0, exist_warntypea = 0, exist_warntypev = 0;
+	long exist_warntypem = 0, exist_warntypet = 0, exist_warntypeb = 0, exist_warntypec = 0, exist_warntypeg = 0, exist_warntypea = 0, exist_warntypev = 0;
 	long long exist_montype = 0;
 	boolean exist_nonspecwarn;
 	int i, j;
@@ -2665,6 +2689,7 @@ long wp_mask;
 						exist_warntypet |= spec_mt(obj->oartifact);
 						exist_warntypet |= spec_mf(obj->oartifact);
 						exist_warntypeb |= spec_mb(obj->oartifact);
+						exist_warntypec |= spec_mc(obj->oartifact);
 						exist_warntypeg |= spec_mg(obj->oartifact);
 						exist_warntypea |= spec_ma(obj->oartifact);
 						exist_warntypev |= spec_mv(obj->oartifact);
@@ -2698,6 +2723,7 @@ long wp_mask;
 			if (spec_mt(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypet |= spec_mt(oartifact);} else {flags.warntypet &= ~(spec_mt(oartifact)&(~exist_warntypet)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mf(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypet |= spec_mf(oartifact);} else {flags.warntypet &= ~(spec_mf(oartifact)&(~exist_warntypet)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mb(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypeb |= spec_mb(oartifact);} else {flags.warntypeb &= ~(spec_mb(oartifact)&(~exist_warntypeb)); *mask &= (~wp_mask)|W_ART;}}
+			if (spec_mc(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypec |= spec_mc(oartifact);} else {flags.warntypec &= ~(spec_mc(oartifact)&(~exist_warntypec)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mg(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypeg |= spec_mg(oartifact);} else {flags.warntypeg &= ~(spec_mg(oartifact)&(~exist_warntypeg)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_ma(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypea |= spec_ma(oartifact);} else {flags.warntypea &= ~(spec_ma(oartifact)&(~exist_warntypea)); *mask &= (~wp_mask)|W_ART;}}
 			if (spec_mv(oartifact)) {if(on) {*mask |= wp_mask; flags.warntypev |= spec_mv(oartifact);} else {flags.warntypev &= ~(spec_mv(oartifact)&(~exist_warntypev)); *mask &= (~wp_mask)|W_ART;}}
@@ -2716,7 +2742,7 @@ long wp_mask;
 			see_monsters();	// it should be fine to run a vision update even if there wasn't a change
 
 			/* if there are no specific warnings remaining, toggle off the extrinsic entirely */
-			if (!(flags.warntypem || flags.warntypet || flags.warntypeb || flags.warntypeg || flags.warntypea || flags.warntypev || flags.montype))
+			if (!(flags.warntypem || flags.warntypet || flags.warntypeb || flags.warntypec || flags.warntypeg || flags.warntypea || flags.warntypev || flags.montype))
 				*mask = 0L;
 			break;
 		/* hallucination */
@@ -3175,6 +3201,10 @@ boolean narrow_only;
 		if (weap->mflagsb != 0L && ((ptr->mflagsb & weap->mflagsb) != 0L)) {
 			return TRUE;
 		}
+		/* composition */
+		if (weap->mflagsc != 0L && ((ptr->mflagsc & weap->mflagsc) != 0L)) {
+			return TRUE;
+		}
 		/* game mechanics */
 		if (weap->mflagsg != 0L && ((ptr->mflagsg & weap->mflagsg) != 0L)) {
 			return TRUE;
@@ -3256,6 +3286,17 @@ int oartifact;
 	register const struct artifact *artifact = &artilist[oartifact];
 	if (artifact && artifact->mflagsb)
 		return artifact->mflagsb;
+	return 0L;
+}
+
+/* return the MC flags of monster that an artifact's special attacks apply against */
+long
+spec_mc(oartifact)
+int oartifact;
+{
+	register const struct artifact *artifact = &artilist[oartifact];
+	if (artifact && artifact->mflagsc)
+		return artifact->mflagsc;
 	return 0L;
 }
 
@@ -3471,6 +3512,12 @@ int * truedmgptr;
 		/* lightsabers add 3dX damage (but do not multiply multiplicative bonus damage) */
 		if (damd && (is_lightsaber(otmp) && litsaber(otmp)))
 			multiplier *= 3;
+		if (otmp->where == OBJ_CONTAINED && otmp->ocontainer && is_lightsaber(otmp->ocontainer) && !damd){
+			struct weapon_dice wdice;
+			/* grab the weapon dice from dmgval_core */
+			dmgval_core(&wdice, bigmonst(mon->data), otmp->ocontainer, otmp->ocontainer->otyp, (struct monst *) 0);
+			damd = wdice.oc_damd;
+		}
 		/* The profaned flame should do half damage to fire resistant things */
 		if(otmp->oartifact == ART_PROFANED_GREATSCYTHE && Fire_res(mon)){
 			damd = (damd + 1) / 2;
@@ -10314,7 +10361,7 @@ arti_invoke(obj)
 			}
 			else if(u.dz < 0){
 				pline("Silence Wall!");
-				cast_protection();
+				artifact_protection();
 			}
 			else if(u.dz > 0 ){
 				if (yesno("Are you sure you want to bring down the Silence Glaive?", iflags.paranoid_quit) == 'y') {
@@ -11356,7 +11403,7 @@ arti_invoke(obj)
 				if( (obj->spe > 6) ){
 					exercise(A_WIS, TRUE);
 					n=u.ulevel/5 + 1;
-					cast_protection();
+					artifact_protection();
 					if(!DimensionalLock) while(n--) {
 						pm = &mons[summons[d(1,7)]];
 						mtmp = makemon(pm, u.ux, u.uy, MM_ESUM|MM_EDOG|MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH);
@@ -12522,8 +12569,8 @@ arti_invoke(obj)
         } break;
         case PROTECT: {
           if(uarmg && uarmg->oartifact == ART_GAUNTLETS_OF_THE_DIVINE_DI){
-            cast_protection();
-            if(!u.ublesscnt) cast_protection();
+            artifact_protection();
+            if(!u.ublesscnt) artifact_protection();
           } else You_feel("that you should be wearing %s", the(xname(obj)));
         } break;
         case TRAP_DET: {
@@ -15484,7 +15531,7 @@ throweffect()
 }
 
 STATIC_OVL void
-cast_protection()
+artifact_protection()
 {
 	int loglev = 0;
 	int l = u.ulevel;

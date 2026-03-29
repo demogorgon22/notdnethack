@@ -3230,11 +3230,17 @@ boolean past;
 				pline("You suddenly remember that you are gelatinous!");
 				pline("Oh, and you've got a tail.");
 				add_mutation(AAT_PRIMINAL);
-				add_mutation(TT_THIEVING_TAIL);
+				add_mutation(AAT_PRIMINAL_TAIL);
 				skilled_weapon_skill(P_BEAST_MASTERY);
 				gm_weapon_skill(P_BARE_HANDED_COMBAT);
 				gm_weapon_skill(P_TWO_WEAPON_COMBAT);
 				u.umartial = TRUE;
+			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE){
+				expert_weapon_skill(P_BEAST_MASTERY);
+				free_skill_up(P_BEAST_MASTERY);
+				expert_weapon_skill(P_MUSICALIZE);
+				free_skill_up(P_MUSICALIZE);
 			}
 		break;
 	}
@@ -3465,7 +3471,7 @@ struct monst *mon;
 				addArmorMenuOption
 			} else if(is_cloak(otmp) && !(mon->misc_worn_check&W_ARMC) && (abs(otmp->objsize - mon->data->msize) <= 1)){
 				addArmorMenuOption
-			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon->data,otmp) && helm_size_fits(mon->data,otmp)){
+			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon,otmp) && helm_size_fits(mon->data,otmp)){
 				addArmorMenuOption
 			} else if(is_shield(otmp) && !(mon->misc_worn_check&W_ARMS) && !noshield(mon->data)){
 				addArmorMenuOption

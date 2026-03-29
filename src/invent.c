@@ -4008,10 +4008,10 @@ winid *datawin;
 		if (obj && obj->known) {// calculate the actual AC and DR this armor gives
 			if(is_shield(obj) && obj->objsize != youracedata->msize){
 				Sprintf(buf, "Is worth %d AC (%d to you, due to its size) and %d DR.",
-					arm_ac_bonus(obj), max(0, arm_ac_bonus(obj) + (obj->objsize - youracedata->msize)), arm_dr_bonus(obj));
+					arm_ac_bonus(obj), max(0, arm_ac_bonus(obj) + (obj->objsize - youracedata->msize)), arm_dr_bonus(obj, 0));
 			} else {
 				Sprintf(buf, "Is worth %d AC and %d DR.",
-					arm_ac_bonus(obj), arm_dr_bonus(obj));
+					arm_ac_bonus(obj), arm_dr_bonus(obj, 0));
 			}
 		}
 		else {// say what the base stats are
@@ -6575,6 +6575,28 @@ u_healing_penalty()
 		penalty += (u_clothing_discomfort() * delta)/10;
 	}
 	return penalty;
+}
+
+int
+u_breath_penalty()
+{
+	int count = 0;
+	if(flags.aasimar_type != AASIMAR_TYPE_CLOUDFACE || Upolyd)
+		return 0;
+	if(uarm && arm_blocks_upper_body(uarm->otyp) && !check_omod(uarm, OMOD_SHOULDER_BARING))
+		count++;
+	if(uarmu && (uarmu->otyp == BODYGLOVE || uarmu->otyp == VICTORIAN_UNDERWEAR) && !check_omod(uarmu, OMOD_SHOULDER_BARING))
+		count++;
+	if(uarmc && (uarmc->otyp == MUMMY_WRAPPING
+			|| uarmc->otyp == PRAYER_WARDED_WRAPPING
+			|| uarmc->otyp == WHITE_FACELESS_ROBE
+			|| uarmc->otyp == BLACK_FACELESS_ROBE
+			|| uarmc->otyp == SMOKY_VIOLET_FACELESS_ROBE
+			|| uarmc->otyp == ROBE
+		)
+	)
+		count++;
+	return count;
 }
 
 int

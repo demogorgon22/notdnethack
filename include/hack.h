@@ -163,6 +163,8 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 						(flags.warntypet & (mon)->data->mflagst)) || \
 					(Warn_of_mon && flags.warntypeb && \
 						(flags.warntypeb & (mon)->data->mflagsb)) || \
+					(Warn_of_mon && flags.warntypec && \
+						(flags.warntypec & (mon)->data->mflagsc)) || \
 					(Warn_of_mon && flags.warntypeg && \
 						(flags.warntypeg & (mon)->data->mflagsg)) || \
 					(Warn_of_mon && flags.warntypea && \

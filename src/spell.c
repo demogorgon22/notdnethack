@@ -32,9 +32,6 @@ STATIC_DCL int FDECL(dospiritmenu, (int, int *, int));
 STATIC_DCL boolean FDECL(dospellmenu, (int,int *));
 STATIC_DCL void FDECL(describe_spell, (int));
 STATIC_DCL int NDECL(throwspell);
-STATIC_DCL void NDECL(cast_protection);
-STATIC_DCL void NDECL(cast_abjuration);
-STATIC_DCL void FDECL(cast_mass_healing, (struct obj *));
 STATIC_DCL boolean FDECL(sightwedge, (int,int, int,int, int,int));
 STATIC_DCL void FDECL(spell_backfire, (int));
 STATIC_DCL int FDECL(spellhunger, (int));
@@ -1718,7 +1715,7 @@ int booktype;
 	return (objects[booktype].oc_skill);
 }
 
-STATIC_OVL void
+void
 cast_protection()
 {
 	int loglev = 0;
@@ -1788,7 +1785,7 @@ cast_protection()
  * If they fail, they are immediately dispelled.
  * If they suceeed, non-permanent summons' durations are halved.
  */
-STATIC_OVL void
+void
 cast_abjuration()
 {
 	struct monst * mtmp;
@@ -1843,9 +1840,8 @@ genericptr_t arg;
 		bhitm(mtmp, (struct obj *)arg);
 }
 
-STATIC_OVL void
-cast_mass_healing(otmp)
-struct obj * otmp;
+void
+cast_mass_healing(struct obj * otmp)
 {
 	int radius = 2 + P_SKILL(P_HEALING_SPELL) + !!Spellboost;
 	do_clear_area(u.ux, u.uy, radius, cast_extra_healing_at, (genericptr_t)otmp);

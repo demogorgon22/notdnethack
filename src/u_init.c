@@ -427,6 +427,11 @@ static struct trobj Ironmask[] = {
 	{ RIN_SLOW_DIGESTION, 0, RING_CLASS, 1, OBJ_CURSED },
 	{ 0, 0, 0, 0, 0 }
 };
+
+static struct trobj Hood[] = {
+	{ FACELESS_HOOD, 0, ARMOR_CLASS, 1, OBJ_CURSED },
+	{ 0, 0, 0, 0, 0 }
+};
 static struct trobj Noble[] = {
 	{ RAPIER, 2, WEAPON_CLASS, 1, UNDEF_BLESS },
 #define NOB_SHIRT	1
@@ -2347,6 +2352,9 @@ u_init()
 		if(Race_if(PM_VAMPIRE)){
 			ini_inv(Ironmask);
 		}
+		if(Race_if(PM_AASIMAR) && flags.initalign == INITALIGN_CHAOTIC){
+			ini_inv(Hood);
+		}
         knows_object(SKELETON_KEY);
         knows_object(POT_BOOZE);
         knows_object(POT_SLEEPING);
@@ -3572,7 +3580,7 @@ register struct trobj *trop;
 			}
 			if(obj->otyp == RIFLE && Role_if(PM_ANACHRONONAUT) && Race_if(PM_DWARF)){
 				set_material_gm(obj, MITHRIL);
-				add_oprop(obj, OPROP_BLADED);
+				add_omod(obj, OMOD_BLADED);
 			}
 			if(obj->otyp == PLAIN_DRESS && Role_if(PM_ANACHRONONAUT) && Race_if(PM_ANDROID)){
 				set_material_gm(obj, LEATHER);

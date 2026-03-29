@@ -3349,7 +3349,7 @@ struct obj *obj;
 	else if(is_cloak(obj))
 		return abs(obj->objsize - mon->data->msize) <= 1;
 	else if(is_helmet(obj))
-		return helm_match(mon->data, obj) && helm_size_fits(mon->data,obj);
+		return helm_match(mon, obj) && helm_size_fits(mon->data,obj);
 	else if(is_shield(obj) && !mon_offhand_attack(mon))
 		return !noshield(mon->data);
 	else if(is_gloves(obj))
