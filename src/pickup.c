@@ -3001,7 +3001,7 @@ boolean past;
 	if (flags.descendant){
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(otmp->oartifact == u.inherited){
-				expert_weapon_skill(weapon_type(otmp));
+				expert_weapon_skill(is_shield(otmp) ? P_SHIELD : weapon_type(otmp));
 				discover_artifact(u.inherited);
 				break;
 			}
