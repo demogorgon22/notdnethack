@@ -69,6 +69,7 @@ doread()
 			&& !(scroll->oclass == SCROLL_CLASS)
 			&& !(scroll->oclass == SPBOOK_CLASS)
 			&& !(scroll->oclass == AMULET_CLASS)
+			&& !(scroll->oclass == TILE_CLASS)
 			&& !arti_mandala(scroll)
 			&& !scroll->oward
 			&& scroll->oartifact != ART_ROD_OF_THE_ELVISH_LORDS
