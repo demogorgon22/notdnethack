@@ -24823,7 +24823,7 @@ struct monst * mdef;
 			if(!isok(nx, ny))
 				continue;
 			mdef = m_at(nx, ny);
-			if(mdef){
+			if(mdef && !DEADMONSTER(mdef) && !mdef->mpeaceful && couldsee(mdef->mx, mdef->my) && !nonthreat(mdef)){
 				subres = xmeleehity(&youmonst, mdef, &basicattack, &uwep, vis, 0, TRUE, 0);
 				res |= subres&(MM_AGR_DIED|MM_AGR_STOP);
 				break;
