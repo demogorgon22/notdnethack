@@ -16166,7 +16166,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				uuvuglory |= W_SKIN;
 				seardmg += d(4, 9);
 			}
-			else if(is_holy_mon(magr)) {
+			else if(is_holy_mon(magr) || (youagr && !Upolyd && TIEFLING_FALLEN)) {
 				holyobj |= W_SKIN;
 				seardmg += d(3, 7);
 			} 
@@ -16176,7 +16176,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				uuvuglory |= W_SKIN;
 				seardmg += d(3, 7);
 			} 
-			else if(is_unholy_mon(magr)) {
+			else if(is_unholy_mon(magr) || (youagr && !Upolyd && TIEFLING_FALLEN)) {
 				unholyobj |= W_SKIN;
 				seardmg += d(4, 9);
 			}
@@ -18905,6 +18905,13 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			{
 				Strcat(buf, "cold-iron claws and silver skin");
 			}
+			else if (!silverobj && !jadeobj && !ironobj && !grnstlobj && !Upolyd && youagr && TIEFLING_FALLEN) {
+				if(has_mutation(TT_FALLEN_SCARS)){
+					Strcat(buf, "golden scars");
+					plural = TRUE;
+				}
+				else Strcat(buf, "aura");
+			}
 			else {
 				if (silverobj & slot)
 					Strcat(buf, "silver ");
@@ -18917,6 +18924,8 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				Strcat(buf, 
 					(youagr && u.sealsActive&SEAL_SIMURGH) ? "claws"
 					: (youagr ? body_part(BODY_SKIN) : mbodypart(magr, BODY_SKIN)));
+				if (youagr && u.sealsActive&SEAL_SIMURGH)
+					plural = TRUE;
 			}
 		}
 		/* weapon */

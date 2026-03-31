@@ -161,7 +161,10 @@ struct mutationtype {
 #define TT_MAGIC_BREATHING	LAST_CULT_MUTATION+82
 #define TT_ATTRACTIVE_1		LAST_CULT_MUTATION+83
 #define TT_ATTRACTIVE_2		LAST_CULT_MUTATION+84
-#define LAST_TIEFLING_TRAIT		TT_ATTRACTIVE_2
+#define TT_FALLEN_ATTRACTIVE	LAST_CULT_MUTATION+85
+#define TT_FALLEN_AURA		LAST_CULT_MUTATION+86
+#define TT_FALLEN_SCARS		LAST_CULT_MUTATION+87
+#define LAST_TIEFLING_TRAIT		TT_FALLEN_SCARS
 #define AAT_PRIMINAL			LAST_TIEFLING_TRAIT+1
 #define AAT_PRIMINAL_TAIL		LAST_TIEFLING_TRAIT+2
 #define	LAST_MUTATION		AAT_PRIMINAL_TAIL
@@ -225,6 +228,12 @@ struct mutationtype {
 	 || has_mutation(TT_TALONS) \
 	)
 
+#define TIEFLING_FALLEN \
+	(has_mutation(TT_FALLEN_ATTRACTIVE) \
+	 || has_mutation(TT_FALLEN_AURA) \
+	 || has_mutation(TT_FALLEN_SCARS) \
+	)
+
 #define is_horn_mut(mut) \
 	(mut == TT_RAMS_HORN \
 	 || mut == TT_DEMON_HORN \
@@ -233,6 +242,11 @@ struct mutationtype {
 	 || mut == TT_BULL_HORNS \
 	)
 
+#define is_holy_mut(mut) \
+	(mut == TT_FALLEN_ATTRACTIVE \
+	 || mut == TT_FALLEN_AURA \
+	 || mut == TT_FALLEN_SCARS \
+	)
 #define KNOWS_CURSES (check_mutation(TT_HATEFUL_VISION) || u.seraph_eyes >= SE_CURSES)
 #define KNOWS_BLESSINGS (Race_if(PM_AASIMAR) && u.ulevel >= 7)
 #define KNOWS_BUC (u.upriest || (KNOWS_CURSES && KNOWS_BLESSINGS))

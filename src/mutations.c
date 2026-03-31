@@ -148,9 +148,12 @@ const struct mutationtype mutationtypes[] =
 	// Aura traits
 	{ TT_NA_AURA, AURA_TRAIT, "unsetling aura", "Your unsettling aura turns away blows.", "unsettling aura", "You have an unsettling aura."},
 	{ TT_DR_AURA, AURA_TRAIT, "resistant aura", "Your unsettling aura resists blows.", "unsettling aura", "You have an unsettling aura."},
+	{ TT_FALLEN_AURA, AURA_TRAIT, "fallen aura", "Your fallen aura sears both holy and unholy beings.", "unsettling aura", "You have an unsettling aura."},
 	// Appearance traits
 	{ TT_ATTRACTIVE_1, APPEARANCE_TRAIT, "charming appearance", "You can charm others into giving you gifts.", "attractive appearance", "You are supernaturally attractive."},
 	{ TT_ATTRACTIVE_2, APPEARANCE_TRAIT, "disarming appearance", "You can seduce others into disarming themselves.", "attractive appearance", "You are supernaturally attractive."},
+	{ TT_FALLEN_ATTRACTIVE, APPEARANCE_TRAIT, "fallen heritage", "The beauty of your fallen ancestry sears both holy and unholy beings.", "attractive appearance", "You are supernaturally attractive."},
+	{ TT_FALLEN_SCARS, APPEARANCE_TRAIT, "golden scars", "Your golden scars sear both holy and unholy beings.", "chain-scars", "Your arms and legs bear scars as though from burning chains." },
 	// Misc non-bodypart mutations
 	{ TT_MAGIC_BREATHING, -1, "magic breathing", "You don't need to breathe.", "drowned appearance", "You look like a drowned corpse."},
 	// Aasimar mutations
@@ -239,12 +242,16 @@ check_natural_mutations()
 	}
 	if(!new_mutation) return;
 	int type_used[MUTATION_TYPE_SIZE];
+	boolean fallen_used = FALSE;
 	memset(type_used, 0, sizeof(type_used));
 	// Mark existing mutation types as used
 	for(int j = 0; mutationtypes[j].mutation; j++){
 		int i = mutationtypes[j].mutation;
 		if(i > LAST_CULT_MUTATION && has_mutation(i) && mutationtypes[j].bodypart >= 0){
 			type_used[mutationtypes[j].bodypart] = 1;
+		}
+		if(is_holy_mut(i) && has_mutation(i)){
+			fallen_used = TRUE;
 		}
 	}
 	// Pick a new mutation
@@ -256,6 +263,7 @@ check_natural_mutations()
 		if(mut > LAST_TIEFLING_TRAIT) continue;
 		if(type_used[mutationtypes[j].bodypart]) continue;
 		if(has_mutation(mut)) continue;
+		if(fallen_used && is_holy_mut(mut)) continue;
 		possible_mutations[possible_count++] = mut;
 	}
 	if(possible_count < 1){
