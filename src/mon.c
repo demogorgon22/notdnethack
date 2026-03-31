@@ -164,6 +164,11 @@ int mndx;
 	case PM_GIANT_MUMMY:	mndx = PM_GIANT;  break;
 	// case PM_ETTIN_ZOMBIE:
 	case PM_ETTIN_MUMMY:	mndx = PM_ETTIN;  break;
+	case PM_CENTAUR_MUMMY:	mndx = PM_CENTAUR;  break;
+	case PM_FORMIAN_MUMMY:	mndx = PM_FORMIAN;  break;
+	case PM_DRIDER_MUMMY:	mndx = PM_DRIDER;  break;
+	case PM_TIEFLING_MUMMY:	mndx = PM_TIEFLING;  break;
+	case PM_AASIMAR_MUMMY:	mndx = PM_AASIMAR;  break;
 	case PM_ALABASTER_MUMMY: mndx = PM_ALABASTER_ELF_ELDER;  break;
 	default:  break;
 	}
@@ -575,6 +580,11 @@ register struct monst *mtmp;
 	    case PM_HALF_DRAGON_MUMMY:
 	    case PM_GIANT_MUMMY:
 	    case PM_ETTIN_MUMMY:
+	    case PM_CENTAUR_MUMMY:
+	    case PM_FORMIAN_MUMMY:
+	    case PM_DRIDER_MUMMY:
+	    case PM_TIEFLING_MUMMY:
+	    case PM_AASIMAR_MUMMY:
 	    // case PM_KOBOLD_ZOMBIE:
 	    // case PM_DWARF_ZOMBIE:
 	    // case PM_GNOME_ZOMBIE:
