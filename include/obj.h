@@ -1567,11 +1567,14 @@ struct obj {
 				)
 #define is_chupodible(otmp) ((otmp)->otyp == CORPSE && your_race(&mons[(otmp)->corpsenm]))
 
-#define is_holy(otmp)		((otmp)->oartifact == ART_SEVEN_STAR_SWORD || (otmp)->blessed)
+#define is_holy(otmp)		((otmp)->oartifact == ART_SEVEN_STAR_SWORD || \
+							((otmp)->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD && artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness&GDCB_BLESSED) || \
+							(otmp)->blessed)
 #define is_unholy(otmp)		((otmp)->oartifact == ART_STORMBRINGER || (otmp)->oartifact == ART_DIRGE || \
 							(otmp)->oartifact == ART_MALICE || (otmp)->oartifact == ART_TECPATL_OF_HUEHUETEOTL || \
+							((otmp)->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD && artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness&GDCB_CURSED) || \
 							(otmp)->oartifact == ART_ANGUIREL || (otmp)->cursed)
-
+#define is_unblessed(otmp)	(!(is_holy(otmp) || is_unholy(otmp)) || ((otmp)->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD && artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness&GDCB_UNBLESSED))
 /* material */
 #define is_flimsy(otmp)		((otmp)->obj_material <= LEATHER)
 #define is_wood(otmp)		((otmp)->obj_material == WOOD)

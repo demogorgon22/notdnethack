@@ -2927,28 +2927,28 @@ long timeout;
 		if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
 			switch(obj->obj_material){
 				case IRON:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_IRON;
 				break;
 				case GREEN_STEEL:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GREEN;
 				break;
 				case SILVER:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_SILVER;
 				break;
 				case GOLD:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GOLD;
 				break;
 				case PLATINUM:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_PLATINUM;
 				break;
 				case MITHRIL:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_MITHRIL;
 				break;
 				case COPPER:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_COPPER;
 				break;
 				case LEAD:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_LEAD;
 				break;
 			}
 		}

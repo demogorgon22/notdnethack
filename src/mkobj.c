@@ -2930,6 +2930,7 @@ register struct obj *obj;
 		|| obj->otyp == STATUE
 		|| obj->otyp == CHURCH_BLADE
 		|| obj->otyp == CHURCH_HAMMER
+		|| obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD
 	) {
 		struct obj *contents;
 		register int cwt = 0;

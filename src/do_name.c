@@ -829,6 +829,17 @@ const char *name;
 		if (obj->oartifact == ART_SCOURGE_OF_LOLTH)
 			obj->ovar1_heads = 8;
 
+		/* GDCB starts pre-loaded with iron ballast */
+		if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD) {
+			struct obj *ingots = mksobj(INGOT, MKOBJ_NOINIT);
+			ingots->quan = 75L;
+			set_material_gm(ingots, IRON);
+			fix_object(ingots);
+			add_to_container(obj, ingots);
+			artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBMaterials   |= AMAT_IRON;
+			artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness |= GDCB_UNBLESSED;
+		}
+
 		fix_object(obj);
 
 	    /* can't dual-wield with artifact as secondary weapon */

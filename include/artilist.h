@@ -693,7 +693,7 @@ A("Fire Brand",			LONG_SWORD,						"ember-runed %s",
 	),
 
 A("The Green Dragon Crescent Blade",		NAGINATA,	(const char *)0,
-	1200L, MT_DEFAULT, MZ_DEFAULT, WT_SPECIAL,
+	1200L, MT_DEFAULT, MZ_DEFAULT, WT_DEFAULT,
 	A_LAWFUL, NON_PM, NON_PM, TIER_D, (ARTG_GIFT),
 	NO_MONS(),
 	ATTK(AD_PHYS, 1, 25), NOFLAG,

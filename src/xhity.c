@@ -16093,7 +16093,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 			if (obj_jade_searing(otmp))
 				jadeobj |= slot;
 		}
-		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_IRON;
 		if (hates_iron(pd) &&
 			obj_is_material(otmp, IRON) &&
 			!(youdef && u.sealsActive&SEAL_EDEN) &&
@@ -16108,7 +16108,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		
 		if (hates_holy_mon(mdef) &&
 			(otmp->known && (check_oprop(otmp, OPROP_HOLYW) || check_oprop(otmp, OPROP_LESSER_HOLYW) || check_oprop(otmp, OPROP_HOLY))) && /* message requires a particularly holy object */
-			otmp->blessed) {
+			is_holy(otmp)) {
 			holyobj |= slot;
 			if(otmp->blessed && youdef)
 				otmp->bknown = TRUE;
@@ -16120,7 +16120,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				otmp->bknown = TRUE;
 		}
 		if (hates_unblessed_mon(mdef) &&
-			!(is_unholy(otmp) || otmp->blessed)) {
+			is_unblessed(otmp)) {
 			unblessedobj |= slot;
 			if(!otmp->blessed && !otmp->cursed && youdef)
 				otmp->bknown = TRUE;
@@ -16221,7 +16221,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 					}
 					if (hates_holy_mon(mdef) &&
 						(otmp->known && (check_oprop(otmp, OPROP_HOLYW) || check_oprop(otmp, OPROP_LESSER_HOLYW) || check_oprop(otmp, OPROP_HOLY))) && /* message requires a particularly holy object */
-						otmp->blessed) {
+						is_holy(otmp)) {
 						holyobj |= rslot;
 						if(otmp->blessed && youdef)
 							otmp->bknown = TRUE;
@@ -16233,7 +16233,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 							otmp->bknown = TRUE;
 					}
 					if (hates_unblessed_mon(mdef) &&
-						!(is_unholy(otmp) || otmp->blessed)) {
+						is_unblessed(otmp)) {
 						unblessedobj |= rslot;
 						if(!otmp->blessed && !otmp->cursed && youdef)
 							otmp->bknown = TRUE;
@@ -22700,21 +22700,21 @@ amalgam_stars()
 {
 	if(!uwep)
 		return; //should be unreachable
-	if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_IRON)
+	if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_IRON)
 		amalgam_star(IRON);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GREEN)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_GREEN)
 		amalgam_star(GREEN_STEEL);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_SILVER)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_SILVER)
 		amalgam_star(SILVER);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GOLD)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_GOLD)
 		amalgam_star(GOLD);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_PLATINUM)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_PLATINUM)
 		amalgam_star(PLATINUM);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_MITHRIL)
 		amalgam_star(MITHRIL);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_COPPER)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_COPPER)
 		amalgam_star(COPPER);
-	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_LEAD)
+	if(beam_monk_target(8) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_LEAD)
 		amalgam_star(LEAD);
 }
 

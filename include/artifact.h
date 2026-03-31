@@ -350,6 +350,10 @@ struct artinstance{
 #define FRUNE_HARVEST	0
 #define FRUNE_HUNT      1
 #define FRUNE_CHAOS     2
+#define GDCBBlessedness avar1
+#define GDCB_BLESSED	0x00000001L
+#define GDCB_CURSED		0x00000002L
+#define GDCB_UNBLESSED	0x00000004L
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2
@@ -374,14 +378,15 @@ struct artinstance{
 #define CarapacePoints avar3
 #define GithStylesSeen avar3
 #define ZerthMaterials avar3
-#define	ZMAT_IRON		0x00000001L
-#define	ZMAT_GREEN		0x00000002L
-#define	ZMAT_SILVER		0x00000004L
-#define	ZMAT_GOLD		0x00000008L
-#define	ZMAT_PLATINUM	0x00000010L
-#define	ZMAT_MITHRIL	0x00000020L
-#define	ZMAT_COPPER	    0x00000040L
-#define	ZMAT_LEAD   	0x00000080L
+#define GDCBMaterials avar3
+#define	AMAT_IRON		0x00000001L
+#define	AMAT_GREEN		0x00000002L
+#define	AMAT_SILVER		0x00000004L
+#define	AMAT_GOLD		0x00000008L
+#define	AMAT_PLATINUM	0x00000010L
+#define	AMAT_MITHRIL	0x00000020L
+#define	AMAT_COPPER	    0x00000040L
+#define	AMAT_LEAD   	0x00000080L
 #define mortalBloodsmoke avar3
 	long avar4;
 #define SnSd3duration avar4

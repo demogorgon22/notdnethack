@@ -2548,9 +2548,6 @@ struct obj *obj;
 		case ART_GOLDEN_SWORD_OF_Y_HA_TALLA:
 			wt = 2*objects[SCIMITAR].oc_weight;
 			break;
-		case ART_GREEN_DRAGON_CRESCENT_BLAD:
-			wt = 2*objects[NAGINATA].oc_weight;
-			break;
 		case ART_AEGIS:
 			wt = objects[CLOAK].oc_weight;
 			break;
@@ -2577,7 +2574,7 @@ struct obj *obj;
 		wt = artiweight;
 	}
 
-	if((obj->oartifact == ART_AMALGAMATED_SKIES || obj->oartifact == ART_SKY_REFLECTED) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL){
+	if((obj->oartifact == ART_AMALGAMATED_SKIES || obj->oartifact == ART_SKY_REFLECTED) && artinstance[ART_SKY_REFLECTED].ZerthMaterials&AMAT_MITHRIL){
 		wt = (wt+1)/2;//Note: Iron to mithril, not merc to mithril
 	}
 
@@ -5075,7 +5072,7 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_LESSER_AXIOW))
 			*truedmgptr += d(2, 6);
 	}
-	if((youdef ? (hates_holy(youracedata)) : (hates_holy_mon(mdef))) && otmp->blessed){
+	if((youdef ? (hates_holy(youracedata)) : (hates_holy_mon(mdef))) && is_holy(otmp)){
 		if(check_oprop(otmp, OPROP_HOLYW)){
 			*truedmgptr += basedmg;
 			*truedmgptr += mistlight_bonus;
@@ -5083,13 +5080,13 @@ int * truedmgptr;
 		if(check_oprop(otmp, OPROP_LESSER_HOLYW))
 			*truedmgptr += d(2, 6);
 	}
-	if((youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))) && otmp->cursed){
+	if((youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))) && is_unholy(otmp)){
 		if(check_oprop(otmp, OPROP_UNHYW))
 			*truedmgptr += basedmg;
 		if(check_oprop(otmp, OPROP_LESSER_UNHYW))
 			*truedmgptr += d(2, 6);
 	}
-	if((youdef ? (hates_unblessed(youracedata)) : (hates_unblessed_mon(mdef))) && !otmp->cursed && !otmp->blessed){
+	if((youdef ? (hates_unblessed(youracedata)) : (hates_unblessed_mon(mdef))) && is_unblessed(otmp)){
 		if(check_oprop(otmp, OPROP_CONCW))
 			*truedmgptr += basedmg;
 		if(check_oprop(otmp, OPROP_LESSER_CONCW))
@@ -5553,9 +5550,9 @@ struct obj *otmp;
 				where_to = 2;
 			else if (hates_unholy_mon(magr) && is_unholy(obj))
 				where_to = 2;
-			else if (hates_unblessed_mon(magr) && !is_unholy(obj) && !obj->blessed)
+			else if (hates_unblessed_mon(magr) && is_unblessed(obj))
 				where_to = 2;
-			else if (hates_holy_mon(magr) && obj->blessed)
+			else if (hates_holy_mon(magr) && is_holy(obj))
 				where_to = 2;
 		}
 		freeinv(obj);
@@ -16522,57 +16519,57 @@ struct obj **opptr;
 		artinstance[ART_AMALGAMATED_SKIES].TwinSkiesEtraits |= sky2->expert_traits;
 		switch(sky1->obj_material){
 			case IRON:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_IRON;
 			break;
 			case GREEN_STEEL:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GREEN;
 			break;
 			case SILVER:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_SILVER;
 			break;
 			case GOLD:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GOLD;
 			break;
 			case PLATINUM:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_PLATINUM;
 			break;
 			case MITHRIL:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_MITHRIL;
 			break;
 			case COPPER:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_COPPER;
 			break;
 			case LEAD:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_LEAD;
 			break;
 		}
 		switch(sky2->obj_material){
 			case IRON:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_IRON;
 			break;
 			case GREEN_STEEL:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GREEN;
 			break;
 			case SILVER:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_SILVER;
 			break;
 			case GOLD:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GOLD;
 			break;
 			case PLATINUM:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_PLATINUM;
 			break;
 			case MITHRIL:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_MITHRIL;
 			break;
 			case COPPER:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_COPPER;
 			break;
 			case LEAD:
-				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+				artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_LEAD;
 			break;
 		}
-		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+		artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_SILVER;
 		if(sky1->blessed || sky2->blessed)
 			bless(amalgam);
 		else if(sky1->cursed || sky2->cursed)

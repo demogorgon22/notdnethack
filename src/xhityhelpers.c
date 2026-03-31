@@ -1644,7 +1644,7 @@ struct monst * magr;
 	}
 
 	if (hates_unblessed_mon(mdef) &&
-		!(is_unholy(otmp) || is_holy(otmp))
+		is_unblessed(otmp)
 	) {
 		/* default: 1d8 */
 		ndice = 1;
@@ -1967,9 +1967,9 @@ struct obj * weapon;
 
 		if (hates_unblessed_mon(mdef) && (
 			(magr && is_unblessed_mon(magr)) ||
-			(otmp && !(is_unholy(otmp) || is_holy(otmp))) ||
-			(youagr && slot == W_ARMG && uright && (is_unholy(uright) || is_holy(uright))) ||
-			(youagr && slot == W_ARMG && uleft && (is_unholy(uleft) || is_holy(uleft)))
+			(otmp && is_unblessed(otmp)) ||
+			(youagr && slot == W_ARMG && uright && is_unblessed(uright)) ||
+			(youagr && slot == W_ARMG && uleft && is_unblessed(uleft))
 			))
 			return 1;
 
@@ -4135,36 +4135,34 @@ obj_is_material(struct obj *obj, int mat)
 {
 	if(obj->obj_material == mat)
 		return TRUE;
+	long artmat = 0L;
+	if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES)
+		artmat = artinstance[ART_SKY_REFLECTED].ZerthMaterials;
+	else if(obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD)
+		artmat = artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBMaterials;
 	switch(mat){
 		case IRON:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_IRON)
-					return TRUE;
-			}
+			if(artmat&AMAT_IRON)
+				return TRUE;
 			if (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_SIMURGH){
 				return TRUE;
 			}
 		break;
 		case GREEN_STEEL:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GREEN)
-					return TRUE;
-			}
+			if(artmat&AMAT_GREEN)
+				return TRUE;
 		break;
 		case SILVER:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_SILVER)
-					return TRUE;
-			}
+			if(artmat&AMAT_SILVER)
+				return TRUE;
 			if (obj->oartifact == ART_PEN_OF_THE_VOID && obj->ovara_seals&SEAL_EDEN){
 				return TRUE;
 			}
 		break;
 		case GOLD:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_GOLD)
-					return TRUE;
-			}
+			if(artmat&AMAT_GOLD)
+				return TRUE;
+
 			if (check_oprop(obj, OPROP_GOLDW)){
 				return TRUE;
 			}
@@ -4173,28 +4171,20 @@ obj_is_material(struct obj *obj, int mat)
 			}
 		break;
 		case PLATINUM:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_PLATINUM)
-					return TRUE;
-			}
+			if(artmat&AMAT_PLATINUM)
+				return TRUE;
 		break;
 		case MITHRIL:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_MITHRIL)
-					return TRUE;
-			}
+			if(artmat&AMAT_MITHRIL)
+				return TRUE;
 		break;
 		case COPPER:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_COPPER)
-					return TRUE;
-			}
+			if(artmat&AMAT_COPPER)
+				return TRUE;
 		break;
 		case LEAD:
-			if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
-				if(artinstance[ART_SKY_REFLECTED].ZerthMaterials&ZMAT_LEAD)
-					return TRUE;
-			}
+			if(artmat&AMAT_LEAD)
+				return TRUE;
 		break;
 	}
 	return FALSE;

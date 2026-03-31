@@ -396,7 +396,7 @@ struct monst *magr;
 
 	/* catch special cases */
 	if (   oartifact == ART_YORSHKA_S_SPEAR
-		|| oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD
+		|| (oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD && obj && obj->cobj)
 		|| oartifact == ART_INFINITY_S_MIRRORED_ARC
 		|| (obj && otyp == KAMEREL_VAJRA && !litsaber(obj))
 		){
@@ -1024,7 +1024,7 @@ struct monst *magr;
 			int wt = (int)objects[NAGINATA].oc_weight;
 			if ((int)obj->owt > wt) {
 				bonn = 1;
-				bond = max(12 + 2 * dmod, 2) * ((int)obj->owt - wt) / wt;	// this appears to be a constant +1d12, since I can't find any way to change its weight.
+				bond = max(12 + 2 * dmod, 2) * ((int)obj->owt - wt) / wt;
 			}
 		}
 		else if (obj->oartifact == ART_GOLDEN_SWORD_OF_Y_HA_TALLA && otyp == BULLWHIP)
@@ -1798,7 +1798,7 @@ oselect(struct monst *mtmp, int x, int spot, boolean marilith)
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data)   || otmp->obj_material != IRON) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp)) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
+			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || !is_unblessed(otmp))
 		){
 			if (!obest ||
 				(dmgval(otmp, 0 /*zeromonst*/, SPEC_HYPO, mtmp) > dmgval(obest, 0 /*zeromonst*/, SPEC_HYPO, mtmp))
@@ -1927,7 +1927,7 @@ struct obj *otmp;
 		(mtmp->misc_worn_check & W_ARMG || otmp->obj_material != SILVER || !hates_silver(mtmp->data)) &&
 		(mtmp->misc_worn_check & W_ARMG || otmp->obj_material != IRON	|| !hates_iron(mtmp->data)) &&
 		(mtmp->misc_worn_check & W_ARMG || !is_unholy(otmp)				|| !hates_unholy_mon(mtmp)) &&
-		(mtmp->misc_worn_check & W_ARMG || (is_unholy(otmp) || otmp->blessed) || !hates_unblessed_mon(mtmp))
+		(mtmp->misc_worn_check & W_ARMG || !is_unblessed(otmp)			|| !hates_unblessed_mon(mtmp))
 	){
         for (i = 0; i < SIZE(pwep); i++)
         {
@@ -2495,7 +2495,7 @@ register struct monst *mtmp;
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || otmp->obj_material != IRON) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !is_unholy(otmp)) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
+			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || !is_unblessed(otmp))
 			) return otmp;
 	}
 
@@ -2576,7 +2576,7 @@ register struct monst *mtmp;
 			(mtmp->misc_worn_check & W_ARMG || !hates_silver(mtmp->data) || otmp->obj_material != SILVER) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_iron(mtmp->data) || !is_iron_obj(otmp)) &&
 			(mtmp->misc_worn_check & W_ARMG || !hates_unholy_mon(mtmp) || !(is_unholy(otmp) && otmp->obj_material == GREEN_STEEL)) &&
-			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || (is_unholy(otmp) || otmp->blessed))
+			(mtmp->misc_worn_check & W_ARMG || !hates_unblessed_mon(mtmp) || !is_unblessed(otmp))
 			) return otmp;
 	}
 
@@ -5093,6 +5093,23 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 		}
 		else if(otyp == GOEDENDAG || obj->oartifact == ART_STORM_CURSE){
 			traits |= ETRAIT_BLEED;
+		}
+	}
+	if(obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD){
+		if(obj->owt >= 150)
+			traits |= ETRAIT_CLEAVE;
+		if(obj->owt >= 175)
+			traits |= ETRAIT_PENETRATE_ARMOR;
+		if(obj->owt >= 200)
+			traits |= ETRAIT_KNOCK_BACK;
+		if(obj->owt >= 225)
+			traits |= ETRAIT_FELL;
+		if(obj->owt >= 250)
+			traits |= ETRAIT_KNOCK_BACK_CHARGE;
+		if(obj_is_material(obj, MITHRIL)){
+			traits |= ETRAIT_BLADESONG;
+			if(obj->owt <= 100)
+				traits |= ETRAIT_BLADEDANCE;
 		}
 	}
 

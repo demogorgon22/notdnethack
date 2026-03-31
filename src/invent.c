@@ -3875,13 +3875,13 @@ winid *datawin;
 			ADDCLASSPROP(TRUE, "iron");
 #define	ZERTHMATS(prop, string)	\
 	ADDCLASSPROP(artinstance[ART_SKY_REFLECTED].ZerthMaterials&prop, string);
-			ZERTHMATS(ZMAT_SILVER, "silver");
-			ZERTHMATS(ZMAT_GREEN, "green steel");
-			ZERTHMATS(ZMAT_GOLD, "gold");
-			ZERTHMATS(ZMAT_PLATINUM, "platinum");
-			ZERTHMATS(ZMAT_MITHRIL, "mithril");
-			ZERTHMATS(ZMAT_COPPER, "copper");
-			ZERTHMATS(ZMAT_LEAD, "lead");
+			ZERTHMATS(AMAT_SILVER, "silver");
+			ZERTHMATS(AMAT_GREEN, "green steel");
+			ZERTHMATS(AMAT_GOLD, "gold");
+			ZERTHMATS(AMAT_PLATINUM, "platinum");
+			ZERTHMATS(AMAT_MITHRIL, "mithril");
+			ZERTHMATS(AMAT_COPPER, "copper");
+			ZERTHMATS(AMAT_LEAD, "lead");
 			Sprintf(buf2, "Amalgamated metals: %s.", buf);
 			OBJPUTSTR(buf2);
 		}
