@@ -4191,8 +4191,9 @@ register char *cmd;
 			do_walk = TRUE;
 		} else if(cmd[1] == '<'
 			&& ((uwep && uwep->otyp == BREAKING_WHEEL && uwep->ovar1_wheelspeed > 0)
-				|| (uswapwep && u.twoweap && uswapwep->otyp == BREAKING_WHEEL && uswapwep->ovar1_wheelspeed > 0))
+				|| (uswapwep && u.twoweap && uswapwep->otyp == BREAKING_WHEEL && uswapwep->ovar1_wheelspeed > 0)
 				|| (uquiver && uquiver->otyp == BREAKING_WHEEL && uquiver->ovar1_wheelspeed > 0)
+			)
 		){
 			struct obj *wheel = (uwep && uwep->otyp == BREAKING_WHEEL && uwep->ovar1_wheelspeed > 0) ? uwep : 
 				(uswapwep && u.twoweap && uswapwep->otyp == BREAKING_WHEEL && uswapwep->ovar1_wheelspeed > 0) ? uswapwep : 
