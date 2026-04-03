@@ -5058,9 +5058,9 @@ process_etraits(unsigned long traits, int otyp, struct obj *obj, struct monst *m
 	}
 	else if(otyp == BESTIAL_CLAW){
 		if(youagr){
-			if(active_glyph(BEASTS_EMBRACE) && u.uinsight < 15)
+			if(active_glyph(BEASTS_EMBRACE) && Insight < 15)
 				traits |= ETRAIT_QUICK;
-			if(active_glyph(BEASTS_EMBRACE) && u.uinsight < 30)
+			if(active_glyph(BEASTS_EMBRACE) && Insight < 30)
 				traits |= ETRAIT_LUNGE;
 		}
 		else {
@@ -5143,7 +5143,7 @@ check_etrait(struct obj *obj, struct monst *mon, unsigned long trait)
 	if(obj->oartifact == ART_HOLY_MOONLIGHT_SWORD){
 		if(obj->lamplit)
 			traits |= ETRAIT_CLEAVE;
-		if(youagr && u.uinsight >= 40)
+		if(youagr && Insight >= 40)
 			traits |= ETRAIT_FOCUS_FIRE;
 	}
 	

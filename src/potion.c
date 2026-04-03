@@ -643,7 +643,7 @@ boolean force;
 		if(otmp->cursed){
 			if(u.usanity > 0)
 				change_usanity(-1, TRUE);
-			if(u.uinsight > 0)
+			if(Insight > 0)
 				change_uinsight(-1);
 			exercise(A_WIS, FALSE);
 			exercise(A_INT, FALSE);

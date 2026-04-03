@@ -18230,7 +18230,7 @@ struct permonst *ptr;
 	if(ptr->mtyp == PM_SECRET_WHISPERER || ptr->mtyp == PM_TRUTH_SEER 
 	|| ptr->mtyp == PM_DREAM_EATER || ptr->mtyp == PM_VEIL_RENDER
 	)
-		lev_limit = min(45, u.uinsight);
+		lev_limit = min(45, Insight);
 
 	if (lev_limit_30(ptr)) lev_limit = 30;	/* same as player */
 	else if (lev_limit_45(ptr)) lev_limit = 45;

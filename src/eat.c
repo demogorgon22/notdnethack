@@ -2827,7 +2827,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 
 	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
 		if(uarmg && ((uarmg->cursed && !Weldproof) || !freehand())){
-			if(u.uinsight < 21){
+			if(Insight < 21){
 				You("can't eat while wearing gloves.");
 			} else {
 				pline("The mouths on your palms are covered by your gloves.");

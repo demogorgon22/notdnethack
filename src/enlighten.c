@@ -907,7 +907,7 @@ boolean dumping;
 	if (Fumbling) enl_msg("You fumble", "", "d", "");
 	if(u_healing_penalty()) enl_msg("You heal", "", "ed", " slowly due to your equipment");
 	if(u_breath_penalty()){
-		if(u.uinsight < 21) enl_msg("Your shoulders ", "are", "were", " smothered by your clothing");
+		if(Insight < 21) enl_msg("Your shoulders ", "are", "were", " smothered by your clothing");
 		else enl_msg("The mouths on your shoulders ", "are", "were", " covered by your clothing, making it hard to breathe");
 	}
 	if (Wounded_legs

@@ -13713,10 +13713,10 @@ arti_invoke(obj)
 					if (Hallucination){
 						pline("You catch a glimpse of a man in dark, horned armor. He looks friendly!");
 						change_uinsight(-1);
-					} else if (u.uinsight > 40) {
+					} else if (Insight > 40) {
 						pline("In a flash, you see the fabric of time unspooled before your very eyes. The moment passes.");
 						change_uinsight(1);
-					} else if (u.uinsight > 5){
+					} else if (Insight > 5){
 						You_feel("an odd spiraling sensation for a moment, but it passes quickly.");
 						change_uinsight(1);
 					}

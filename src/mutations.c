@@ -819,13 +819,13 @@ void
 mumbling_mouths()
 {
 	int chance = 3000;
-	if(u.uinsight < 7) chance *= 3;
-	else if(u.uinsight < 14) chance *= 2.333;
-	else if(u.uinsight < 21) chance *= 1.667;
+	if(Insight < 7) chance *= 3;
+	else if(Insight < 14) chance *= 2.333;
+	else if(Insight < 21) chance *= 1.667;
 	if(u_breath_penalty()) chance *= 3*u_breath_penalty();
 	chance = chance * pow(0.9, u.ulevel-1);
 	if(rn2(chance)) return;
-	if(u.uinsight < 21)
+	if(Insight < 21)
 		You("suddenly whisper an involuntary prayer!");
 	else
 		Your("mumbling mouths whisper a prayer with startling clarity!");

@@ -3244,7 +3244,7 @@ uchar aatyp;
 			case AASIMAR_TYPE_CLOUDFACE:
 				if(slot == HEAD_DR)
 					bas_udr += u.ulevel >= 21 ? 7 : 3;
-				if(u.uinsight >= 21 && slot&(UPPER_TORSO_DR|ARM_DR))
+				if(Insight >= 21 && slot&(UPPER_TORSO_DR|ARM_DR))
 					bas_udr += 3;
 			break;
 			case AASIMAR_TYPE_PRIMINAL:

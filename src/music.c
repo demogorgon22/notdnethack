@@ -699,7 +699,7 @@ struct obj * instr;
 	if(Mumbling_Mouths){
 		static long lastmessage = 0;
 		if(monstermoves > lastmessage + 10 && showmsg){
-			if(u.uinsight < 21)
+			if(Insight < 21)
 				Your("voice seems to harmonize with itself!");
 			else
 				Your("mouths leave off their mumbling and lift their voices in perfect harmony!");
