@@ -883,6 +883,29 @@ you_calc_movement()
 		stop_occupation();
 		nomul(0, NULL);
 	}
+
+	int wheelspeed = 0;
+	if(uwep && uwep->otyp == BREAKING_WHEEL)
+		wheelspeed += uwep->ovar1_wheelspeed;
+	if(uswapwep && u.twoweap && uswapwep->otyp == BREAKING_WHEEL)
+		wheelspeed += uswapwep->ovar1_wheelspeed;
+	if(uquiver && uquiver->otyp == BREAKING_WHEEL)
+		wheelspeed += uquiver->ovar1_wheelspeed;
+	if(wheelspeed > 0){
+		int halvings = 0;
+		if(Antimagic)
+			halvings++;
+		if(hates_holy(youracedata) && !hates_unholy(youracedata))
+			halvings++;
+		int drain = wheelspeed * max(0, 2 - halvings) / 2;
+		if(hates_unholy(youracedata) && !hates_holy(youracedata))
+			drain = drain * 3 / 2;
+		if(drain > 0){
+			losehp(drain, "the breaking wheel", KILLED_BY);
+			stop_occupation();
+			nomul(0, NULL);
+		}
+	}
 	
 	if (u.usleep && u.usleep < monstermoves && roll_madness(MAD_FORMICATION)) {
 		multi = -1;

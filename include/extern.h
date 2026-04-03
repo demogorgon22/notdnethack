@@ -1060,6 +1060,7 @@ E void FDECL(explode_sound, (int,int,int,int,int,int,int,int));
 E void FDECL(explode_pa, (int,int,int,int,int,int,int,struct permonst *));
 E void FDECL(explode_yours, (int,int,int,int,int,int,int,boolean));
 E void FDECL(explode_full, (int,int,int,int,int,int,int,int, boolean, struct permonst *, long));
+E void FDECL(explode_full_nocenter, (int,int,int,int,int,int,int,int, boolean, struct permonst *, long));
 E void FDECL(splash, (int,int,int,int,int,int,int,int, long));
 E long FDECL(scatter, (int, int, int, unsigned int, struct obj *, long *, struct monst *));
 E void FDECL(splatter_burning_oil, (int, int));
@@ -2934,7 +2935,7 @@ E void NDECL(take_gold);
 E int NDECL(dosit);
 E int FDECL(sit_bergonic, (struct obj *));
 E boolean NDECL(rndcurse);
-E boolean FDECL(mrndcurse, (struct monst *));
+E boolean FDECL(mrndcurse, (struct monst *, boolean));
 E void NDECL(attrcurse);
 
 /* ### sounds.c ### */

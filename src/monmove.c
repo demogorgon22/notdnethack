@@ -680,6 +680,30 @@ boolean digest_meal;
 			mon->mubled = FALSE;
 	}
 
+	/*Breaking wheel damages its wielder*/
+	if(!DEADMONSTER(mon)){
+		int wheel_drain = 0;
+		if(MON_WEP(mon) && MON_WEP(mon)->otyp == BREAKING_WHEEL)
+			wheel_drain += MON_WEP(mon)->ovar1_wheelspeed;
+		if(MON_SWEP(mon) && MON_SWEP(mon)->otyp == BREAKING_WHEEL)
+			wheel_drain += MON_SWEP(mon)->ovar1_wheelspeed;
+		if(wheel_drain > 0){
+			int halvings = 0;
+			if(Magic_res(mon) || resist(mon, WEAPON_CLASS, 0, NOTELL))
+				halvings++;
+			if(hates_holy_mon(mon) && !hates_unholy_mon(mon))
+				halvings++;
+			wheel_drain = wheel_drain * max(0, 2 - halvings) / 2;
+			if(hates_unholy_mon(mon) && !hates_holy_mon(mon))
+				wheel_drain = wheel_drain * 3 / 2;
+			if(wheel_drain > 0){
+				if(m_losehp(mon, wheel_drain, FALSE, "the breaking wheel"))
+					return;
+				degenerating = TRUE;
+			}
+		}
+	}
+
 	/*Early return to block regen*/
 	if(degenerating)
 		return;

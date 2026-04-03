@@ -4189,6 +4189,21 @@ register char *cmd;
 			u.dy = 0;
 			flags.forcefight = 1;
 			do_walk = TRUE;
+		} else if(cmd[1] == '<'
+			&& ((uwep && uwep->otyp == BREAKING_WHEEL && uwep->ovar1_wheelspeed > 0)
+				|| (uswapwep && u.twoweap && uswapwep->otyp == BREAKING_WHEEL && uswapwep->ovar1_wheelspeed > 0))
+				|| (uquiver && uquiver->otyp == BREAKING_WHEEL && uquiver->ovar1_wheelspeed > 0)
+		){
+			struct obj *wheel = (uwep && uwep->otyp == BREAKING_WHEEL && uwep->ovar1_wheelspeed > 0) ? uwep : 
+				(uswapwep && u.twoweap && uswapwep->otyp == BREAKING_WHEEL && uswapwep->ovar1_wheelspeed > 0) ? uswapwep : 
+				uquiver;
+			int speed = wheel->ovar1_wheelspeed;
+			(void) stop_timer(SLOW_WHEEL, wheel->timed);
+			wheel->ovar1_wheelspeed = 0;
+			update_inventory();
+			explode_full_nocenter(u.ux, u.uy, AD_DARK, 0, d(speed, 6)+wheel->spe, EXPL_MAGENTA, 1, 0, TRUE, (struct permonst *)0, 0L);
+			flags.move = MOVE_STANDARD;
+			return;
 	    } else
 		prefix_seen = TRUE;
 	} else if (*cmd == DONOPICKUP) {

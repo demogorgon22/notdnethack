@@ -607,12 +607,12 @@ expert_undead_hunter_skill()
 					}
 				}
 				else if(skill == P_CLUB){
-					if(rn2(2)){
+					if(!rn2(3)){
 						expert_weapon_skill(P_FLAIL);
 						knows_object(BEAST_CRUSHER);
 						knows_object(BEAST_CUTTER);
 					}
-					else knows_object(CLUB);
+					else knows_object(rn2(2) ? BREAKING_WHEEL : CLUB);
 				}
 				else if(skill == P_FLAIL){
 					expert_weapon_skill(P_CLUB);

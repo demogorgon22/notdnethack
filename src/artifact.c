@@ -4770,7 +4770,7 @@ int * truedmgptr;
 						stop_occupation();
 					}
 					else {
-						if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+						if (mrndcurse(mdef, FALSE) && (youagr || canseemon(mdef)))
 							You_feel("as though %s needs some help.", mon_nam(mdef));
 					}
 				}
@@ -4802,7 +4802,7 @@ int * truedmgptr;
 						stop_occupation();
 					}
 					else {
-						if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+						if (mrndcurse(mdef, FALSE) && (youagr || canseemon(mdef)))
 							You_feel("as though %s needs some help.", mon_nam(mdef));
 					}
 				}
@@ -5638,6 +5638,33 @@ boolean direct_weapon;
 		}
 		if (!UseInvCold_res(mdef)){
 			if (!rn2(3)) destroy_item(mdef, POTION_CLASS, AD_COLD);
+		}
+	}
+	if ((otmp->otyp == BREAKING_WHEEL && otmp->ovar1_wheelspeed > 0) || amalg_otyp == BREAKING_WHEEL){
+		int extra = 0;
+		if(otmp->otyp == BREAKING_WHEEL)
+			extra = basedmg * otmp->ovar1_wheelspeed / 2;
+		else if(magr)
+			extra = Magic_res(magr) && hates_holy_mon(magr) && !hates_unholy_mon(magr) ? 4 : Magic_res(magr) || (hates_holy_mon(magr) && !hates_unholy_mon(magr)) ? 1 : 0;
+		int halvings = 0;
+		if (youagr){
+			extra += u.uimpurity * otmp->ovar1_wheelspeed / 4;
+			extra += (ACURR(A_CHA)-9) / 2;
+		}
+		if (Magic_res(mdef) || (!youdef && resist(mdef, WEAPON_CLASS, 0, NOTELL)))
+			halvings++;
+		if (hates_holy_mon(mdef) && !hates_unholy_mon(mdef))
+			halvings++;
+		extra = extra * max(0, 2 - halvings) / 2;
+		if (hates_unholy_mon(mdef) && !hates_holy_mon(mdef))
+			extra = extra * 3 / 2;
+		(*truedmgptr) += extra;
+		if (rn2(4) > otmp->ovar1_wheelspeed) {
+			if (youdef){
+				if (rndcurse())
+					You_feel("as if you need some help.");
+			}
+			else mrndcurse(mdef, TRUE);
 		}
 	}
 	if ((otmp->otyp == SUNROD && otmp->lamplit) || amalg_otyp == SUNROD) {

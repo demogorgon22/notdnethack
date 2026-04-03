@@ -61,6 +61,24 @@ ExplodeRegion *reg;
     reg->nlocations++;
 }
 
+STATIC_DCL void
+remove_location_from_explode_region(x, y, reg)
+xchar x, y;
+ExplodeRegion *reg;
+{
+    int i;
+    for(i = 0; i < reg->nlocations; i++) {
+        if(reg->locations[i].x == x && reg->locations[i].y == y) {
+            reg->nlocations--;
+            if(i < reg->nlocations)
+                (void) memmove((genericptr_t)&reg->locations[i],
+                    (genericptr_t)&reg->locations[i+1],
+                    (reg->nlocations - i) * sizeof(ExplodeLocation));
+            return;
+        }
+    }
+}
+
 STATIC_DCL int
 compare_explode_location(loc1, loc2)
 ExplodeLocation *loc1, *loc2;
@@ -219,6 +237,31 @@ explode_full(int x, int y, int adtyp, int olet, int dam, int color, int radius, 
 		do_clear_area(x, y, radius, add_location_to_explode_region, (genericptr_t)(area));
 	}
 
+	do_explode(x, y, area, adtyp, olet, dam, color, dest, yours, pa, special_flags);
+	free_explode_region(area);
+}
+
+void
+explode_full_nocenter(int x, int y, int adtyp, int olet, int dam, int color, int radius, int dest, boolean yours, struct permonst *pa, long special_flags)
+{
+	ExplodeRegion *area;
+	if (radius == 0)
+		return;
+	area = create_explode_region();
+	if (radius == 1)
+	{	// can use simple method of creating explosions
+		int i, j;
+		for (i = -1; i <= 1; i++)
+		for (j = -1; j <= 1; j++)
+			if (isok(x + i, y + j))
+				add_location_to_explode_region(x + i, y + j, area);
+	}
+	else
+	{	// use circles
+		do_clear_area(x, y, radius, add_location_to_explode_region, (genericptr_t)(area));
+	}
+
+	remove_location_from_explode_region(x, y, area);
 	do_explode(x, y, area, adtyp, olet, dam, color, dest, yours, pa, special_flags);
 	free_explode_region(area);
 }

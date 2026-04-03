@@ -5885,7 +5885,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 				stop_occupation();
 			}
 			else {
-				if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+				if (mrndcurse(mdef, FALSE) && (youagr || canseemon(mdef)))
 					You_feel("as though %s needs some help.", mon_nam(mdef));
 			}
 		}
@@ -18066,6 +18066,12 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		&& (check_oprop(weapon, OPROP_FIREW) || check_oprop(weapon, OPROP_COLDW) || check_oprop(weapon, OPROP_ELECW) || check_oprop(weapon, OPROP_ACIDW) || check_oprop(weapon, OPROP_MAGCW))
 	)
 		basedmg /= 2;
+	if(valid_weapon_attack && weapon && (
+		(weapon->otyp == BREAKING_WHEEL && weapon->ovar1_wheelspeed > 0) ||
+		(weapon->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BREAKING_WHEEL && magr && (Magic_res(magr) || (hates_holy_mon(magr) && !hates_unholy_mon(magr))))
+	)){
+		basedmg = basedmg * 2 / 3;
+	}
 
 	/* Sum reduceable damage */
 	subtotl = basedmg

@@ -294,6 +294,14 @@ static const struct icp brick_materials[] = {
 	{  0, 0 }
 };
 
+static const struct icp breaking_materials[] = {
+	{700, 0 }, /* use base material */
+	{150, IRON },//850
+	{100, LEAD },//950
+	{ 50, GREEN_STEEL },//1000
+	{  0, 0 }
+};
+
 static const struct icp special_materials[] = {
 	{250, 0 }, /* use base material */
 	{250, SILVER },
@@ -2333,6 +2341,8 @@ struct obj* obj;
 	case DEVIL_FIST:
 	case DEMON_CLAW:
 		return fiend_materials;
+	case BREAKING_WHEEL:
+		return breaking_materials;
 	default:
 		break;
 	}

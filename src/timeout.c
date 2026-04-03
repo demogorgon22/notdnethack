@@ -2988,6 +2988,26 @@ long timeout;
 	}
 }
 
+void
+slow_wheel(arg, timeout)
+genericptr_t arg;
+long timeout;
+{
+	struct obj *obj = (struct obj *) arg;
+	if(obj->ovar1_wheelspeed > 0){
+		obj->ovar1_wheelspeed--;
+		if(obj == uwep || (obj == uswapwep && u.twoweap) || obj == uquiver){
+			if(obj->ovar1_wheelspeed == 0)
+				pline("%s slows to a stop.", The(xname(obj)));
+			else
+				pline("%s slows down.", The(xname(obj)));
+		}
+		update_inventory();
+		if(obj->ovar1_wheelspeed > 0)
+			start_timer(20L, TIMER_OBJECT, SLOW_WHEEL, (genericptr_t)obj);
+	}
+}
+
 
 #ifdef OVL0
 /* ------------------------------------------------------------------------- */
@@ -3087,6 +3107,7 @@ static const ttable timeout_funcs[NUM_TIME_FUNCS] = {
 	TTAB(revert_mercurial,	(timeout_proc)0,	"revert_mercurial"),
 	TTAB(revert_aureate_deluge,(timeout_proc)0,"revert_aureate_deluge"),
 	TTAB(gray_moldy_corpse,(timeout_proc)0,"gray_moldy_corpse"),
+	TTAB(slow_wheel,		(timeout_proc)0,	"slow_wheel"),
 };
 #undef TTAB
 

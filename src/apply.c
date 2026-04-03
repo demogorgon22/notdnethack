@@ -52,6 +52,7 @@ STATIC_DCL int FDECL(use_soldier_rapier, (struct obj *));
 STATIC_DCL int FDECL(use_bow_blade, (struct obj *));
 STATIC_DCL int FDECL(use_threaded_cane, (struct obj *));
 STATIC_DCL int FDECL(use_chikage, (struct obj *));
+STATIC_DCL int FDECL(use_breaking_wheel, (struct obj *));
 STATIC_DCL struct obj *NDECL(pg_floor_corpse);
 STATIC_DCL boolean FDECL(pg_spellbook_feed, (struct obj *, struct obj *));
 STATIC_DCL boolean FDECL(pg_bullwhip_snag, (struct obj *, int, int));
@@ -2579,6 +2580,26 @@ use_chikage(struct obj *obj)
 	fix_object(obj);
 	update_inventory();
 	return MOVE_INSTANT;
+}
+
+int
+use_breaking_wheel(struct obj *obj)
+{
+	(void) stop_timer(SLOW_WHEEL, obj->timed);
+
+	if(obj->ovar1_wheelspeed < 4)
+		obj->ovar1_wheelspeed++;
+
+	switch(obj->ovar1_wheelspeed){
+	case 1: You("begin spinning the wheel."); break;
+	case 2: You("spin the wheel faster."); break;
+	case 3: You("spin the wheel even faster."); break;
+	case 4: You("keep the wheel spinning at full speed."); break;
+	}
+
+	start_timer(20L, TIMER_OBJECT, SLOW_WHEEL, (genericptr_t)obj);
+	update_inventory();
+	return MOVE_PARTIAL;
 }
 
 int
@@ -12058,7 +12079,9 @@ doapply()
 	else if(obj->oartifact == ART_ESSCOOAHLIPBOOURRR) res = aesculapius_poke(obj);
 	else if(obj->oartifact == ART_RED_CORDS_OF_ILMATER) res = ilmater_touch(obj);
 	else if(obj->oartifact == ART_ANSERMEE) res = ansermee_scan(obj);
-	else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
+	else if(obj->otyp == BREAKING_WHEEL){
+		return use_breaking_wheel(obj);
+	} else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
 		return use_rakuyo(obj);
 	}
 	else if(obj->otyp == BLADE_OF_MERCY || obj->otyp == BLADE_OF_GRACE){

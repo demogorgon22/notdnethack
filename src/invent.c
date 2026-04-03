@@ -3225,6 +3225,27 @@ winid *datawin;
 					OBJPUTSTR(buf2);
 				}
 			}
+			if(obj->otyp == BREAKING_WHEEL){
+				if(obj->ovar1_wheelspeed){
+					int extra = 50*obj->ovar1_wheelspeed;
+					int flat = (ACURR(A_CHA)-9)/2 + (u.uimpurity * obj->ovar1_wheelspeed / 4);
+					Sprintf(buf2, "Deals +%d%% + %d unholy magic damage", extra, flat);
+					if(obj == uwep || (obj == uswapwep && u.twoweap) || uquiver){
+						int recoil = obj->ovar1_wheelspeed;
+						if(hates_holy(youracedata) && !hates_unholy(youracedata) && Antimagic)
+							recoil = 0;
+						else if((hates_holy(youracedata) && !hates_unholy(youracedata)) || Antimagic)
+							recoil /= 2;
+						if(recoil)
+							Sprintf(eos(buf2), ", but causes %d damage per turn to you", recoil);
+					}
+					Strcat(buf2, ".");
+					OBJPUTSTR(buf2);
+					Sprintf(buf2, "Physical damage is reduced by 1/3rd.");
+					OBJPUTSTR(buf2);
+				}
+			}
+				
 			if(obj->otyp == CROW_QUILL || obj->otyp == SET_OF_CROW_TALONS){
 				Sprintf(buf2, "Makes struck targets vulnerable, adding %d stacks per hit.", (obj->otyp == CROW_QUILL) ? 4 : 3);
 				OBJPUTSTR(buf2);

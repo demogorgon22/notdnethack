@@ -11,6 +11,7 @@ STATIC_DCL void FDECL(return_thrownobj, (struct monst *, struct obj *));
 STATIC_DCL void FDECL(toss_up, (struct obj *, boolean));
 STATIC_DCL int FDECL(calc_range, (struct monst *, struct obj *, struct obj *, int *));
 STATIC_DCL boolean FDECL(misthrow, (struct monst *, struct obj *, struct obj *, boolean, int *, int *, int *));
+STATIC_DCL boolean FDECL(wheel_bounce_target, (struct monst *, int, int, int, int, int *, int *));
 STATIC_DCL struct obj * FDECL(blaster_ammo, (struct obj *));
 
 /* grab some functions from dothrow.c */
@@ -72,6 +73,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 	struct obj * thrownobj;				/* singular fired/thrown object */
 	boolean onlyone;					/* if ammo only consists of thrownobj */
 	boolean returning = FALSE;			/* TRUE if projectile should magically return to magr (like Mjollnir) */
+	boolean is_wheel;					/* TRUE if thrownobj is a spinning breaking wheel */
 	struct monst * mdef = (struct monst *)0;
 	int result = 0;
 	int range = initrange;
@@ -143,6 +145,7 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			onlyone = TRUE;
 		}
 	}
+	is_wheel = (thrownobj->otyp == BREAKING_WHEEL && thrownobj->ovar1_wheelspeed > 0) || (thrownobj->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BREAKING_WHEEL);
 
 	/* clean up where it came from */
 	switch (thrownobj->where)
@@ -211,7 +214,8 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			(youagr && Role_if(PM_KENSEI) && (Race_if(PM_GITHYANKI) || Race_if(PM_GITHZERAI) )
 				&& objects[thrownobj->otyp].oc_merge && thrownobj->oclass == WEAPON_CLASS && !is_ammo(thrownobj)
 			) ||
-			check_oprop(thrownobj, OPROP_RETRW)
+			check_oprop(thrownobj, OPROP_RETRW) ||
+			(youagr && is_wheel && Insight >= 20)
 		) {
 			returning = TRUE;
 			if(uandroid && youagr && impaired){
@@ -435,6 +439,15 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 				if (result)
 					break;	/* stop on hit; keep going on miss */
 			}
+			else if (youagr && is_wheel && Insight >= 40) {
+				int new_dx, new_dy;
+				if (wheel_bounce_target(mdef, bhitpos.x, bhitpos.y, dx, dy, &new_dx, &new_dy)) {
+					dx = new_dx;
+					dy = new_dy;
+					goto move_projectile;
+				}
+				break;
+			}
 			else
 				break;	/* stop on hit or miss */
 		}
@@ -457,6 +470,9 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			range = 0;
 		}
 
+		/* save range before potential wall stops; used to restore on bounce */
+		int saved_range = range;
+
 		/* space ahead has wall and no monster */
 		if (!isok(bhitpos.x + dx, bhitpos.y + dy) ||
 			((!ZAP_POS(levl[bhitpos.x + dx][bhitpos.y + dy].typ) || closed_door(bhitpos.x + dx, bhitpos.y + dy)) &&
@@ -464,12 +480,22 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 		{
 			do_digging_projectile(magr, thrownobj, dx, dy);
 			range = 0;
+			if (youagr && thrownobj && is_wheel && Insight >= 40) {
+				int new_dx, new_dy;
+				if (wheel_bounce_target((struct monst *)0, bhitpos.x, bhitpos.y,
+					dx, dy, &new_dx, &new_dy)
+				) {
+					dx = new_dx; dy = new_dy;
+					range = saved_range;
+					goto move_projectile;
+				}
+			}
 		}
 		/* space ahead has iron bars and no monster */
 		/* 1/5 chance for 'small' objects (see hits_bars), unless if launched from right beside the iron bars */
 		if (isok(bhitpos.x + dx, bhitpos.y + dy) &&
 		    levl[bhitpos.x + dx][bhitpos.y + dy].typ == IRONBARS &&
-			!m_at(bhitpos.x + dx, bhitpos.y + dy) && 
+			!m_at(bhitpos.x + dx, bhitpos.y + dy) &&
 			hits_bars(
 				/* object fired   */ thrownobj_p,
 				/* current coords */ bhitpos.x, bhitpos.y,
@@ -479,6 +505,16 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			if (thrownobj)
 				do_digging_projectile(magr, thrownobj, dx, dy);
 			range = 0;
+			if (youagr && thrownobj && is_wheel && Insight >= 40) {
+				int new_dx, new_dy;
+				if (wheel_bounce_target((struct monst *)0, bhitpos.x, bhitpos.y,
+					dx, dy, &new_dx, &new_dy)
+				) {
+					dx = new_dx; dy = new_dy;
+					range = saved_range;
+					goto move_projectile;
+				}
+			}
 		}
 
 		/* limit range of iron balls so hero won't make an invalid move */
@@ -2222,6 +2258,8 @@ int * hurtle_dist;
 		range = (range + 1) / 2;	/* it's heavy */
 	else if (ammo == uball && u.utrap && u.utraptype == TT_INFLOOR)
 		range = 1;
+	if (ammo->otyp == BREAKING_WHEEL && ammo->ovar1_wheelspeed > 0)
+		range *= ammo->ovar1_wheelspeed;
 
 	if (Underwater) {
 		if (range > 1)
@@ -2418,6 +2456,8 @@ dofire()
 			(uwep->oartifact == ART_MJOLLNIR && Role_if(PM_VALKYRIE) && ACURR(A_STR) == STR19(25)) ||
 			(uwep->oartifact == ART_ANNULUS && (uwep->otyp == CHAKRAM || uwep->otyp == LIGHTSABER)) ||
 			(uwep->oartifact == ART_AXE_OF_THE_DWARVISH_LORDS && Race_if(PM_DWARF) && ACURR(A_STR) == STR19(25)) ||
+			(uwep->otyp == BREAKING_WHEEL && uwep->ovar1_wheelspeed > 0 && Insight >= 20) ||
+			(uwep->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BREAKING_WHEEL && Insight >= 20) ||
 			(!is_blaster(uwep) && uandroid)
 			// (uwep->oartifact == ART_SICKLE_MOON)
 			)) {
@@ -3784,8 +3824,63 @@ boolean forcedestroy;
 	return result;
 }
 
+/* wheel_bounce_target()
+ *
+ * After a spinning breaking wheel hits mdef at (bhitx, bhity), find a
+ * valid second target to bounce toward.  Checks all 8 directions except
+ * straight back toward the thrower (-cur_dx, -cur_dy).  Skips the player,
+ * the original target, peaceful monsters, tame monsters, and nonthreat
+ * monsters.  Counts all valid targets and picks one at random.
+ * Returns TRUE and sets *new_dx/*new_dy if a target was found.
+ */
+STATIC_OVL boolean
+wheel_bounce_target(struct monst *mdef, int bhitx, int bhity,
+    int cur_dx, int cur_dy, int *new_dx, int *new_dy)
+{
+    int i, x, y;
+    int candidates[8];
+    int ncan = 0;
+
+    for (i = 0; i < 8; i++) {
+        int ddx = xdir[i];
+        int ddy = ydir[i];
+
+        /* skip the direction straight back toward the thrower */
+        if (ddx == -cur_dx && ddy == -cur_dy)
+            continue;
+
+        /* scan along this direction for the first creature or obstacle */
+        x = bhitx + ddx;
+        y = bhity + ddy;
+        while (isok(x, y) && ZAP_POS(levl[x][y].typ) && !closed_door(x, y)) {
+            struct monst *mtmp = m_u_at(x, y);
+            if (mtmp) {
+                /* first creature found: add as candidate only if hostile */
+                if (mtmp != &youmonst
+                    && mtmp != mdef
+                    && !mtmp->mpeaceful
+                    && !nonthreat(mtmp)
+                ) {
+                    candidates[ncan++] = i;
+                }
+                break;  /* stop scanning this direction regardless */
+            }
+            x += ddx;
+            y += ddy;
+        }
+    }
+
+    if (ncan == 0)
+        return FALSE;
+
+    int chosen = candidates[rn2(ncan)];
+    *new_dx = xdir[chosen];
+    *new_dy = ydir[chosen];
+    return TRUE;
+}
+
 /* return_ammo()
- * 
+ *
  * returns arg (obj) to player's inventory
  */
 void

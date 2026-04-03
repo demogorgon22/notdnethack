@@ -708,8 +708,7 @@ rndcurse()			/* curse a few inventory items at random! */
 
 /* returns TRUE if the caller should print a message */
 boolean
-mrndcurse(mtmp)			/* curse a few inventory items at random! */
-register struct monst *mtmp;
+mrndcurse(struct monst *mtmp, boolean silent)			/* curse a few inventory items at random! */
 {
 	int	nobj = 0;
 	int	cnt, onum;
@@ -717,7 +716,7 @@ register struct monst *mtmp;
 	static const char mal_aura[] = "feel a malignant aura surround %s.";
 
 	boolean resists = resist(mtmp, 0, 0, FALSE);
-	boolean visible = canseemon(mtmp);
+	boolean visible = !silent && canseemon(mtmp);
 	
 	if(Curse_res(mtmp, TRUE))
 		return FALSE;

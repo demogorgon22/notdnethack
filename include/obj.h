@@ -400,6 +400,8 @@ struct obj {
 #define PG_AXE			0x00000010L
 #define PG_CROOK		0x00000020L
 #define PG_SPEARTHROWER	0x00000040L
+#define ovar1_wheelspeed ovar1
+
 /* True if obj has shepherd's crook traits */
 #define has_crook(obj) ((obj) && ((obj)->otyp == SHEPHERD_S_CROOK || \
     ((obj)->otyp == PEST_GLAIVE && ((obj)->ovar1_pestglaive_props & PG_CROOK))))
@@ -799,6 +801,7 @@ struct obj {
 			 mercy_blade_prop(otmp) || \
 			 otmp->otyp == ISAMUSEI ||\
 			 otmp->otyp == DISKOS ||\
+			 otmp->otyp == BREAKING_WHEEL ||\
 			 otmp->otyp == BESTIAL_CLAW)
 
 #define	is_cclub_able(otmp)	(((otmp)->otyp == CLUB || (otmp)->oartifact == ART_AMALGAMATED_SKIES) && check_oprop(otmp, OPROP_CCLAW))
@@ -1008,7 +1011,9 @@ struct obj {
 						|| (otyp) == CHURCH_SHORTSWORD \
 						|| (otyp) == DEVIL_FIST \
 						)
-#define is_self_righteous(o)	(self_righteous_otyp((o)->otyp))
+#define is_self_righteous(o)	(self_righteous_otyp((o)->otyp) \
+						|| ((o)->otyp == BREAKING_WHEEL && (o)->ovar1_wheelspeed == 0) \
+						)
 
 #define is_lightsaber_otyp(otyp)	(is_lasersword_otyp(otyp) || \
 							 (otyp) == KAMEREL_VAJRA || \
@@ -1113,7 +1118,8 @@ struct obj {
 						  (otyp) == DEVIL_FIST || \
 						  (otyp) == DEMON_CLAW || \
 						  (otyp) == KAMEREL_VAJRA || \
-						  (otyp) == PEST_GLAIVE)
+						  (otyp) == PEST_GLAIVE || \
+						  (otyp) == BREAKING_WHEEL)
 #define spec_prop_material(otmp)	(otmp->obj_material == MERCURIAL)
 #define is_multigen(otmp)	((otmp->oclass == WEAPON_CLASS && \
 			 objects[otmp->otyp].oc_skill >= -P_SHURIKEN && \

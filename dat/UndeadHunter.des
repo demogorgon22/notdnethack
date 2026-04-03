@@ -290,6 +290,7 @@ OBJECT[50%]:')',"blade of mercy",contained
 OBJECT[50%]:')',"chikage",contained
 OBJECT[50%]:')',"shanta-pata",contained
 OBJECT[50%]:')',"bow-blade",contained
+OBJECT[50%]:')',"breaking wheel",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
 OBJECT:'?',"resistance",contained
@@ -349,6 +350,7 @@ ENDMAP
 #0         1         2         3         4         5         6         7     
 
 ALTAR:(02,02),chaos,altar
+OBJECT[50%]:')',"breaking wheel",(02,02)
 
 MONSTER:'@',"peasant",random,peaceful
 MONSTER:'@',"peasant",random,peaceful

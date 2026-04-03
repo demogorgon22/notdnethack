@@ -7100,7 +7100,7 @@ int tary;
 				stop_occupation();
 			}
 			else {
-				if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+				if (mrndcurse(mdef, FALSE) && (youagr || canseemon(mdef)))
 					You_feel("as though %s needs some help.", mon_nam(mdef));
 			}
 		}
