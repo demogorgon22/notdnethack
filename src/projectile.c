@@ -145,6 +145,20 @@ boolean impaired;				/* TRUE if throwing/firing slipped OR magr is confused/stun
 			onlyone = TRUE;
 		}
 	}
+
+	/* quality-of-life: auto-spin a stationary breaking wheel when thrown by a
+	 * magic-resistant or unholy PC with enough insight to benefit from it */
+	if (youagr
+		&& thrownobj->otyp == BREAKING_WHEEL
+		&& thrownobj->ovar1_wheelspeed == 0
+		&& Insight >= 20
+		&& (Antimagic || hates_unholy(youracedata))
+	) {
+		thrownobj->ovar1_wheelspeed = 1;
+		start_timer(20L, TIMER_OBJECT, SLOW_WHEEL, (genericptr_t)thrownobj);
+		update_inventory();
+	}
+
 	is_wheel = (thrownobj->otyp == BREAKING_WHEEL && thrownobj->ovar1_wheelspeed > 0) || (thrownobj->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == BREAKING_WHEEL);
 
 	/* clean up where it came from */
