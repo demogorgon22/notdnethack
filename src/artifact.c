@@ -5648,7 +5648,6 @@ boolean direct_weapon;
 			extra = Magic_res(magr) && hates_holy_mon(magr) && !hates_unholy_mon(magr) ? 4 : Magic_res(magr) || (hates_holy_mon(magr) && !hates_unholy_mon(magr)) ? 1 : 0;
 		int halvings = 0;
 		if (youagr){
-			extra += u.uimpurity * otmp->ovar1_wheelspeed / 4;
 			extra += (ACURR(A_CHA)-9) / 2;
 		}
 		if (Magic_res(mdef) || (!youdef && resist(mdef, WEAPON_CLASS, 0, NOTELL)))

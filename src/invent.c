@@ -3228,7 +3228,7 @@ winid *datawin;
 			if(obj->otyp == BREAKING_WHEEL){
 				if(obj->ovar1_wheelspeed){
 					int extra = 50*obj->ovar1_wheelspeed;
-					int flat = (ACURR(A_CHA)-9)/2 + (u.uimpurity * obj->ovar1_wheelspeed / 4);
+					int flat = (ACURR(A_CHA)-9)/2;
 					Sprintf(buf2, "Deals +%d%% + %d unholy magic damage", extra, flat);
 					if(obj == uwep || (obj == uswapwep && u.twoweap) || uquiver){
 						int recoil = obj->ovar1_wheelspeed;
