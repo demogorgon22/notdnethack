@@ -2587,15 +2587,16 @@ use_breaking_wheel(struct obj *obj)
 {
 	(void) stop_timer(SLOW_WHEEL, obj->timed);
 
+	switch(obj->ovar1_wheelspeed){
+	case 0: You("begin spinning the wheel."); break;
+	case 1: You("spin the wheel faster."); break;
+	case 2: You("spin the wheel even faster."); break;
+	case 3: You("spin the wheel up to full speed."); break;
+	case 4: You("keep the wheel spinning at full speed."); break;
+	}
 	if(obj->ovar1_wheelspeed < 4)
 		obj->ovar1_wheelspeed++;
 
-	switch(obj->ovar1_wheelspeed){
-	case 1: You("begin spinning the wheel."); break;
-	case 2: You("spin the wheel faster."); break;
-	case 3: You("spin the wheel even faster."); break;
-	case 4: You("keep the wheel spinning at full speed."); break;
-	}
 
 	start_timer(20L, TIMER_OBJECT, SLOW_WHEEL, (genericptr_t)obj);
 	update_inventory();
