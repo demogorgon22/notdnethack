@@ -78,6 +78,18 @@ OBJECT[50%]: '(', "shadowlander's torch", random
 OBJECT[50%]: '(', "shadowlander's torch", random
 OBJECT[50%]: '(', "shadowlander's torch", random
 
+OBJECT:'#',"barded chain mail",random
+OBJECT:'#',"barded chain mail",random
+OBJECT:'#',"barded chain mail",random
+
+OBJECT:'#',"barded helmet",random
+OBJECT:'#',"barded helmet",random
+OBJECT:'#',"barded helmet",random
+
+OBJECT:'(',"saddle",random
+OBJECT:'(',"saddle",random
+OBJECT:'(',"saddle",random
+
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7        
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
