@@ -15883,7 +15883,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 
 	/* jousting */
 #ifdef STEED
-	if (melee && !recursed) {	/* do not joust in multihits */
+	if (melee && !recursed && magr) {	/* do not joust in multihits */
 		if (((youagr && u.usteed) || (magr == u.urider) || centauroid(pa) || animaloid(pa) || (modifier_flags&MELEEHURT_FORCE_CHECK_JOUST)) 
 		    && weapon &&
 			(weapon_type(weapon) == P_LANCE ||
