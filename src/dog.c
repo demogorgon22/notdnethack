@@ -299,6 +299,7 @@ makedog()
 				return((struct monst *) 0);
 		}
 		mtmp->mspec_used = 0;
+		u.whisperturn = ACURR(A_CHA) + 1 + 14;
 	}
 	
 	if(mtmp->m_lev < mtmp->data->mlevel) mtmp->m_lev = mtmp->data->mlevel;
@@ -306,7 +307,7 @@ makedog()
 	if(pettype == PM_KNIGHT){
 		struct obj *obj;
 		mtmp->m_lev = 1;
-		mon_adjust_speed(mtmp, -1, (struct obj *) 0, FALSE);
+		remove_mintrinsic(mtmp, FAST);
 		obj = mongets(mtmp, CRAM_RATION, MKOBJ_NOINIT);
 		if(obj){
 			obj->quan = 3;
