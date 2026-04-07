@@ -861,7 +861,7 @@ boolean you_abilities;
 			return MOVE_CANCELLED;
 		mtmp = m_at(cc.x, cc.y);
 		if (!mtmp) {
-			pline("Sticky threads whizz through empty air.");
+			pline("Sticky threads whizz through empty %s.", Underwater ? "water" : "air");
 			return MOVE_STANDARD;
 		}
 		u.uen -= 19;
