@@ -229,6 +229,10 @@ rider_mounts_you(struct monst *mtmp)
 		You("are stuck here for now.");
 		return FALSE;
 	}
+	if(!mtmp){
+		pline("You're already being ridden by a patch of empty %s.", Underwater ? "water" : "air");
+		return FALSE;
+	}
 	if(!humanoid(mtmp->data) || verysmall(mtmp->data) || mtmp->data->msize > youracedata->msize || slithy(mtmp->data)){
 		pline("%s won't fit on a saddle.", Monnam(mtmp));
 		return FALSE;
