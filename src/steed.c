@@ -277,6 +277,14 @@ rider_mounts_you(struct monst *mtmp)
 	}
 	pline("%s mounts.", Monnam(mtmp));
 	u.urider = mtmp;
+	if(mon_resistance(mtmp, FLYING)) {
+		boolean was_flying = Flying;
+		EFlying |= W_RIDER;
+		if(!was_flying && Flying) {
+			float_up();
+			spoteffects(FALSE);
+		}
+	}
 	int x = mtmp->mx;
 	int y = mtmp->my;
 	remove_monster(x, y);
@@ -813,6 +821,10 @@ rider_dismounts_you(int reason)
 		}
 	}
 	/* Release the rider */
+	boolean was_flying = Flying;
+	EFlying &= ~W_RIDER;
+	if(was_flying && !Flying)
+		(void) float_down(0L, 0L);
 	u.urider = 0;
 
 	if(reason == DISMOUNT_BONES){

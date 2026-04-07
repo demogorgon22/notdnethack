@@ -11469,6 +11469,12 @@ int vis;
 #endif
 				pline("%s engulfs you!", Monnam(magr));
 
+			if (!u.ustuck){
+				/*magr dropped you, possibly due to grabbing you out from under a flying rider*/
+				stop_occupation();
+				reset_occupations();
+				return MM_MISS;
+			}
 			if (pluck) {
 				/* move player -- this must come after dismount_steed */
 				u.ux = x(magr);

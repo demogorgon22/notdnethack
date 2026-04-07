@@ -764,6 +764,9 @@ boolean on, silently;
 	if (DEADMONSTER(mon))
 		silently = TRUE;
 
+#ifdef STEED
+	boolean rider_was_flying = (mon == u.urider) && mon_resistance(mon, FLYING);
+#endif
 	int unseen = !canseemon(mon);
     int which;
     long all_worn = ~0L; /* clang lint */
@@ -804,6 +807,22 @@ boolean on, silently;
 #ifdef STEED
 	if (!on && mon == u.usteed && obj->otyp == SADDLE)
 	    dismount_steed(DISMOUNT_FELL);
+	if (mon == u.urider) {
+		boolean rider_now_flying = mon_resistance(mon, FLYING);
+		if (!rider_was_flying && rider_now_flying) {
+			boolean was_flying = Flying;
+			EFlying |= W_RIDER;
+			if (!was_flying && Flying) {
+				float_up();
+				spoteffects(FALSE);
+			}
+		} else if (rider_was_flying && !rider_now_flying) {
+			boolean was_flying = Flying;
+			EFlying &= ~W_RIDER;
+			if (was_flying && !Flying)
+				(void) float_down(0L, 0L);
+		}
+	}
 #endif
 
     /* if couldn't see it but now can, or vice versa, update display */
