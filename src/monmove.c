@@ -3310,7 +3310,7 @@ postmov:
 			    add_damage(mtmp->mx, mtmp->my, 0L);
 		    }
 		} else if (levl[mtmp->mx][mtmp->my].typ == IRONBARS && !Is_illregrd(&u.uz)) {
-		    if ( (dmgtype(ptr,AD_RUST) && ptr->mtyp != PM_NAIAD) || dmgtype(ptr,AD_CORR)) {
+		    if ( (dmgtype(ptr,AD_RUST) && ptr->mtyp != PM_NAIAD) || dmgtype(ptr,AD_CORR) || ptr->mtyp == PM_GELATINOUS_CUBE) {
 				if (canseemon(mtmp)) {
 					pline("%s eats through the iron bars.", 
 					Monnam(mtmp)); 
