@@ -7115,7 +7115,7 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						mdef->mhp -= rn1(10, 6);	/* note that this is BONUS damage */
 					}
 					/* 1/10 of deadly */
-					else {
+					else if(mdef->mhp < dmg+80){
 						if (vis)
 							pline_The("poison was deadly...");
 						if(youagr){
@@ -7123,6 +7123,10 @@ xmeleehurty_core(struct monst *magr, struct monst *mdef, struct attack *attk, st
 						}
 						silverman_exhultation(8);
 						mdef->mhp = 0;
+					}
+					else {
+						mdef->mhp -= 80;
+						silverman_exhultation(8);
 					}
 					/* if the poison killed, deal with the maybe-dead monster and return early */
 					if (mdef->mhp < 1) {
