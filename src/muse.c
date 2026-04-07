@@ -1759,7 +1759,7 @@ struct monst *mtmp;
 					 mtmp->mtyp == PM_MIGO_PHILOSOPHER ? 2 :
 					 mtmp->mtyp == PM_MIGO_SOLDIER ? 1 : 0);
 		cloud_data.adtyp = AD_COLD;
-		(void) create_generic_cloud(mtmp->mx+tbx, mtmp->my+tby, 3+bcsign(otmp), &cloud_data, TRUE);
+		(void) create_generic_cloud(mtmp->mx+tbx, mtmp->my+tby, 3+bcsign(otmp), &cloud_data, FALSE);
 		if (cansee(mtmp->mx, mtmp->my))
 			You("see whirling snow swirl out from around %s %s.",
 			    s_suffix(mon_nam(mtmp)), xname(otmp));
