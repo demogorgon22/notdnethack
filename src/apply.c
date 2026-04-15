@@ -7351,6 +7351,35 @@ struct obj *obj;
 }
 
 
+/* Return a descriptive word for the pest glaive's appendages for the given
+ * activity (one of the PGD_* constants).  The word is chosen deterministically
+ * from obj->o_id so it stays consistent across messages in the same turn.
+ */
+const char *
+pg_appendage_name(struct obj *obj, int activity)
+{
+	switch(activity) {
+	case PGD_FEEDING:
+		switch(hash((unsigned long)obj->o_id+activity) % 6){
+			case 0: return "probosces";
+			case 1: return "roots";
+			case 2: return "feeding-tentacles";
+			case 3: return "tongues";
+			case 4: return "pedipalps";
+			default: return "hyphae";
+		}
+	case PGD_SNAGGING:
+		switch(hash((unsigned long)obj->o_id+activity) % 5){
+			case 0: return "antennae";
+			case 1: return "feelers";
+			case 2: return "grasping-tentacles";
+			case 3: return "eyestalks";
+			default: return "tendrils";
+		}
+	}
+	return "appendages";
+}
+
 /* Check floor at hero's position for corpses to feed to the pest glaive.
  * Prompts for each corpse found.  Returns the chosen corpse, or NULL if
  * the player pressed 'q' (cancel) or no floor corpse was selected.
@@ -7454,9 +7483,8 @@ struct obj *consumed;
 
 	if (held_count == 0) {
 		/* No existing energy quality - just absorb */
-		pline("The glaive extends its feeding-%s and devours %s.",
-		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		pline("The glaive extends its %s and devours %s.",
+		    pg_appendage_name(obj, PGD_FEEDING),
 		    the(xname(consumed)));
 		add_oprop(obj, new_oprop);
 		pline("It becomes %s.", new_adj);
@@ -7468,9 +7496,8 @@ struct obj *consumed;
 			pline("You pull the spellbook away.");
 			return FALSE;
 		}
-		pline("The glaive extends its feeding-%s and devours %s.",
-		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		pline("The glaive extends its %s and devours %s.",
+		    pg_appendage_name(obj, PGD_FEEDING),
 		    the(xname(consumed)));
 		remove_oprop(obj, held_oprops[0]);
 		add_oprop(obj, new_oprop);
@@ -7506,9 +7533,8 @@ struct obj *consumed;
 		}
 		choice = selected[0].item.a_int - 1;
 		free(selected);
-		pline("The glaive extends its feeding-%s and devours %s.",
-		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		pline("The glaive extends its %s and devours %s.",
+		    pg_appendage_name(obj, PGD_FEEDING),
 		    the(xname(consumed)));
 		remove_oprop(obj, held_oprops[choice]);
 		add_oprop(obj, new_oprop);
@@ -7543,17 +7569,19 @@ int rx, ry;
 	if (proficient < 0) proficient = 0;
 
 	if (!proficient) {
-		pline("The glaive's antennae snap at %s but slip free.",
-		    the(xname(otmp)));
+		pline("The glaive's %s snap at %s but slip free.",
+		    pg_appendage_name(obj, PGD_SNAGGING), the(xname(otmp)));
 		return TRUE;
 	}
 
 	if (costly_spot(rx, ry)) {
-		pline("The glaive's antennae can't drag shop merchandise away.");
+		pline("The glaive's %s can't drag shop merchandise away.",
+		    pg_appendage_name(obj, PGD_SNAGGING));
 		return TRUE;
 	}
 
-	You("snag %s with the glaive's antennae.", an(singular(otmp, xname)));
+	You("snag %s with the glaive's %s.", an(singular(otmp, xname)),
+	    pg_appendage_name(obj, PGD_SNAGGING));
 	obj_extract_self(otmp);
 	newsym(rx, ry);
 	place_object(otmp, u.ux, u.uy);
@@ -7595,9 +7623,8 @@ struct obj *obj;
 
 	if (consumed->oclass == FOOD_CLASS) {
 		if(consumed->otyp != CORPSE){
-			pline("The glaive extends its feeding-%s but then recoils in disgust from %s!",
-			    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-			    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+			pline("The glaive extends its %s but then recoils in disgust from %s!",
+			    pg_appendage_name(obj, PGD_FEEDING),
 			    the(xname(consumed)));
 			return MOVE_CANCELLED;
 		}
@@ -7612,9 +7639,8 @@ struct obj *obj;
 		struct permonst *ptr = &mons[consumed->corpsenm];
 		int mi;
 
-		pline("The glaive extends its feeding-%s and devours %s.",
-		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		pline("The glaive extends its %s and devours %s.",
+		    pg_appendage_name(obj, PGD_FEEDING),
 		    the(xname(consumed)));
 
 		for (mi = 0; eres_map[mi].mr_flag; mi++) {
@@ -7659,9 +7685,8 @@ struct obj *obj;
 				return MOVE_CANCELLED;
 			}
 			else {
-				pline("The glaive extends its feeding-%s sucks up some water in preparation for its meal.",
-					!rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-					!rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae");
+				pline("The glaive extends its %s and sucks up some water in preparation for its meal.",
+					pg_appendage_name(obj, PGD_FEEDING));
 				already_extended = TRUE;
 			}
 		}

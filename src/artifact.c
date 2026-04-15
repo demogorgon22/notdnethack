@@ -5445,7 +5445,8 @@ struct obj *otmp;
 		if (bimanual_mon(mwep, mdef)) mon_hand = makeplural(mon_hand);
 		Strcpy(onambuf, cxname(mwep));
 
-		You("wrap the glaive's antennae around %s %s.",
+		You("wrap the glaive's %s around %s %s.",
+		    pg_appendage_name(otmp, PGD_SNAGGING),
 		    s_suffix(mon_nam(mdef)), onambuf);
 
 		if (gotit && mwep->cursed && !is_weldproof_mon(mdef)) {
@@ -5483,7 +5484,7 @@ struct obj *otmp;
 				break;
 			}
 		} else {
-			pline("The antennae slip free.");
+			pline("The %s slip free.", pg_appendage_name(otmp, PGD_SNAGGING));
 		}
 		wakeup(mdef, TRUE);
 
@@ -5494,8 +5495,16 @@ struct obj *otmp;
 		if (!uwep) return;
 
 		struct obj *obj = uwep;
-		const char *The_antennae = vismagr ? "The glaive's antennae" : "Antennae";
-		const char *the_antennae = vismagr ? "the glaive's antennae" : "antennae";
+		const char *appname = pg_appendage_name(otmp, PGD_SNAGGING);
+		char The_antennae[BUFSZ], the_antennae[BUFSZ];
+		if (vismagr) {
+			Sprintf(The_antennae, "The glaive's %s", appname);
+			Sprintf(the_antennae, "the glaive's %s", appname);
+		} else {
+			Sprintf(the_antennae, "%s", appname);
+			Sprintf(The_antennae, "%s", appname);
+			The_antennae[0] = highc(The_antennae[0]);
+		}
 		const char *hand = body_part(HAND);
 		char the_weapon[BUFSZ];
 		int where_to;
@@ -5537,7 +5546,7 @@ struct obj *otmp;
 			where_to = 0;
 		}
 		if (!where_to) {
-			pline_The("antennae slip free.");
+			pline("The %s slip free.", appname);
 			return;
 		}
 		/* material aversions redirect to floor under player */

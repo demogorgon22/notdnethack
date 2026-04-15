@@ -400,6 +400,9 @@ struct obj {
 #define PG_AXE			0x00000010L
 #define PG_CROOK		0x00000020L
 #define PG_SPEARTHROWER	0x00000040L
+/* pg_appendage_name() activity constants */
+#define PGD_FEEDING	0
+#define PGD_SNAGGING	1
 #define ovar1_wheelspeed ovar1
 
 /* True if obj has shepherd's crook traits */

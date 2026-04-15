@@ -107,6 +107,7 @@ E int FDECL(check_res_engine, (struct monst *, int));
 E void FDECL(add_class, (char *, char));
 E boolean FDECL(set_obj_shape, (struct obj *, long));
 E void FDECL(salve_effect, (struct obj *));
+E const char *FDECL(pg_appendage_name, (struct obj *, int));
 
 /* ### artifact.c ### */
 
