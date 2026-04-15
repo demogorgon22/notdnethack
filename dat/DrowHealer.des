@@ -235,6 +235,7 @@ OBJECT:')',random,contained
 MONSTER:'@',"Sister T'eirastra",(42,11),peaceful
 CONTAINER:'(',"sack",(42,11)
 OBJECT:'#',"tactile spellbook",contained
+OBJECT:'#',"tactile spellbook of healing",contained
 OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile scroll",contained
 # Guards for the audience chamber
@@ -1329,6 +1330,7 @@ OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile detect treasure",contained
+OBJECT:'#',"tactile spellbook of extra healing",contained
 OBJECT:'#',"tactile spellbook",contained
 OBJECT:'#',"tactile spellbook",contained
 OBJECT:'#',"tactile spellbook",contained

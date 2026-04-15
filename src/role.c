@@ -1170,6 +1170,23 @@ struct Race silverknight =
 	NO_NIGHTVISION
 };
 
+struct Race drow_tiefling =
+{	"dark fey'ri", "dark fey'ri", "dark fey'rihood", "Dfk", 0,
+	{0, 0},
+	PM_DARK_FEY_RI, NON_PM, PM_DARK_FEY_RI_MUMMY, PM_DARK_FEY_RI,
+	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
+	SA_ELF,
+	MA_ELF, 0, MA_FEY|MA_ELF|MA_ORC,
+	/*  Str      Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ 	  15,     20, 16, 20, 16, 20 },
+	/* Init   Lower  Higher */
+	{  6, 0,  0, 6,  1, 0 },	/* Hit points */
+	{  6, 0,  0, 6,  0, 4 },		/* Energy */
+	NO_NIGHTVISION,
+	SPE_SLEEP, -5
+};
+
 /* Table of all genders */
 const struct Gender genders[] = {
 	{"male",	"he",	"him",	"his",	"Mal",	ROLE_MALE},
@@ -2173,6 +2190,9 @@ int newgame;
 	else if(Role_if(PM_KNIGHT) && Race_if(PM_SILVERMAN)){
 		urace = silverknight;
 	}
+	else if(Role_if(PM_HEALER) && Race_if(PM_TIEFLING)){
+		urace = drow_tiefling;
+	}
 	else if(Race_if(PM_GITH)){
 		if(flags.initalign == INITALIGN_LAWFUL){
 			//Lawful
@@ -2183,6 +2203,7 @@ int newgame;
 			urace = githzerai;
 		}
 	}
+
 	if(Race_if(PM_HALF_DRAGON) && Humanoid_half_dragon(urole.malenum)){
 		urace.attrmax[A_DEX] = 18;
 	}
@@ -2367,7 +2388,7 @@ int newgame;
 				}
 			}
 		}
-	} else if((Race_if(PM_DROW) || Race_if(PM_DRIDER)) && Role_if(PM_HEALER)){
+	} else if((Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DARK_FEY_RI)) && Role_if(PM_HEALER)){
 		urole.filecode = "Dhl";
 		urole.lgod = GOD_ILMATER;
 		urole.ngod = GOD_PEN_A;
@@ -2717,7 +2738,7 @@ int newgame;
         urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
         urace.lovemask = 0; /* Pariahs of their race */
 	}
-	else if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER))){
+	else if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DARK_FEY_RI))){
 		urace.lovemask |= MA_FEY|MA_ELF;
 		urace.hatemask = MA_ORC;
 	}

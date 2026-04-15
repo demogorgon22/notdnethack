@@ -201,7 +201,7 @@ any_mutation()
 void
 init_natural_mutations()
 {
-	if(!Race_if(PM_TIEFLING)) return;
+	if(!Race_if(PM_TIEFLING) && !Race_if(PM_DARK_FEY_RI)) return;
 	int mutation_blacklist[] = {TT_TEARS_OF_BLOOD, TT_BLINDING_HAIR, TT_WINGS_1, TT_WINGS_2, TT_WINGS_3, TT_WINGS_4, TT_WINGS_5, TT_MAGIC_BREATHING };
 	int possible_mutations[LAST_TIEFLING_TRAIT];
 	int possible_count = 0;
@@ -227,7 +227,7 @@ init_natural_mutations()
 void
 check_natural_mutations()
 {
-	if(!Race_if(PM_TIEFLING)) return;
+	if(!Race_if(PM_TIEFLING) && !Race_if(PM_DARK_FEY_RI)) return;
 	if(u.next_tiefling_mutation && u.ulevel >= u.next_mutation_level){
 		confer_mutation(u.next_tiefling_mutation);
 		u.next_tiefling_mutation = 0;

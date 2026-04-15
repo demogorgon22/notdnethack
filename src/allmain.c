@@ -1220,6 +1220,8 @@ you_regen_hp()
 			reglevel += 7;
 		if (Race_if(PM_DROW) && !Upolyd)
 			reglevel += flags.female ? 4 : 8; //Note: blessing of Lolth
+		if (Race_if(PM_DARK_FEY_RI) && !Upolyd)
+			reglevel += 3; // Reduced elvish blessings
 		// Healer role bonus
 		if (Role_if(PM_HEALER) && !Upolyd)
 			reglevel += 10;
@@ -1391,6 +1393,8 @@ you_regen_pw()
 			reglevel += 7;
 		if (Race_if(PM_DROW) && !Upolyd)
 			reglevel += flags.female ? 8 : 4;//Note: blessing of Lolth
+		if (Race_if(PM_DARK_FEY_RI) && !Upolyd)
+			reglevel += 3;  // Reduced elvish blessings
 		if (Race_if(PM_GNOME) && !Upolyd)
 			reglevel += 12;
 		// penalty for being itchy

@@ -277,6 +277,11 @@ const struct innate {
 			 {	 1, &(HPoison_resistance), "", "" },
 		     {	 0, 0, 0, 0 } },
 
+	tief_drow_abil[] = { 
+			 {	 1, &(HPoison_resistance), "", "" },
+			 {	4, &(HSleep_resistance), "awake", "tired" },
+		     {	 0, 0, 0, 0 } },
+
 	frm_abil[] = { 
 			 {   3, &(HFire_resistance), "heat resistant", "less heat resistant" },
 			 {	 5, &(HPoison_resistance), "healthy", "sickly" },
@@ -1002,6 +1007,7 @@ int oldlevel, newlevel;
 	case PM_YUKI_ONNA:		rabil = yki_abil;	break;
 	case PM_CENTAUR:		rabil = cen_abil;	break;
 	case PM_FORMIAN:	    rabil = frm_abil;	break;
+	case PM_DARK_FEY_RI:	rabil = tief_drow_abil;	break;
 	case PM_TIEFLING:		rabil = tief_abil;	break;
 	case PM_AASIMAR:
 		if(flags.aasimar_type == AASIMAR_TYPE_ARCHON || flags.aasimar_type == AASIMAR_TYPE_SERAPH)

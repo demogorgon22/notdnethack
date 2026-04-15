@@ -376,7 +376,7 @@
 #define	can_undead(ptr)	(!nonliving(ptr) && !is_minion(ptr) && ((ptr)->mlet != S_PUDDING) &&\
 								((ptr)->mlet != S_JELLY) && ((ptr)->mlet != S_BLOB) && !is_elemental(ptr) &&\
 								!is_plant(ptr) && !is_demon(ptr) && !is_great_old_one(ptr) && !is_primordial(ptr) && !(mvitals[monsndx(ptr)].mvflags&G_NOCORPSE))
-#define is_weldproof(ptr)		(is_undead(ptr) || (is_demon(ptr) && ptr->mtyp != PM_TIEFLING) || is_were(ptr) || is_great_old_one(ptr) || is_android(ptr) || ptr->mtyp == PM_DAUGHTER_OF_NAUNET || ptr->mtyp == PM_PARASITIC_WALL_HUGGER)
+#define is_weldproof(ptr)		(is_undead(ptr) || (is_demon(ptr) && !is_tiefling_mtyp((ptr)->mtyp)) || is_were(ptr) || is_great_old_one(ptr) || is_android(ptr) || ptr->mtyp == PM_DAUGHTER_OF_NAUNET || ptr->mtyp == PM_PARASITIC_WALL_HUGGER)
 #define is_weldproof_mon(mon)		(is_weldproof((mon)->data))
 #define is_were(ptr)		(((ptr)->mflagsa & MA_WERE) != 0L)
 #define is_heladrin(ptr)		(\
@@ -455,6 +455,7 @@
 #define is_kobold(ptr)		((ptr)->mlet == S_KOBOLD)
 #define is_ettin(ptr)		((ptr)->mtyp == PM_ETTIN)
 #define is_human(ptr)		(((ptr)->mflagsa & MA_HUMAN) != 0L)
+#define is_tiefling_mtyp(mtyp)	((mtyp) == PM_TIEFLING || (mtyp) == PM_DARK_FEY_RI)
 #define is_untamable(ptr)	(((ptr)->mflagsg & MG_NOTAME) != 0L)
 #define is_unwishable(ptr)	((((ptr)->mflagsg & MG_NOWISH) != 0L) || (G_C_INST((ptr)->geno) > u.uinsight) || ((((ptr)->mflagsg&MG_FUTURE_WISH) != 0L) && !Role_if(PM_TOURIST)))
 #define is_fungus(ptr)		((ptr)->mlet == S_FUNGUS)
@@ -774,7 +775,7 @@
 
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
 								&& !is_auton(ptr) \
-								&& (ptr)->mtyp != PM_TIEFLING \
+								&& !is_tiefling_mtyp((ptr)->mtyp) \
 								&& (ptr)->mtyp != PM_AASIMAR \
 								&& (ptr)->mtyp != PM_OONA \
 								&& (ptr)->mtyp != PM_CHAOS \

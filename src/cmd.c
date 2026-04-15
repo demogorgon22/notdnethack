@@ -598,7 +598,7 @@ boolean you_abilities;
 	if (mon_abilities && (attacktype(youracedata, AT_GAZE) || (!Upolyd && check_vampire(VAMPIRE_GAZE)) || (!Upolyd && TIEFLING_GAZE))) {
 		add_ability('g', "Gaze at something", MATTK_GAZE);
 	}
-	if (mon_abilities && (Race_if(PM_TIEFLING) && !Upolyd && MISC_TIEFLING_ABILITY)){
+	if (mon_abilities && (!Upolyd && MISC_TIEFLING_ABILITY)){
 		add_ability('G', "Tiefling abilities", MATTK_MUTATION);
 	}
 	if (mon_abilities && is_hider(youracedata)){

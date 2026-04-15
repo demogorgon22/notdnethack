@@ -87,6 +87,17 @@ pet_type()
 		}
 		return (PM_GIANT_SPIDER);
 	}
+	else if(Race_if(PM_DARK_FEY_RI)){
+		if (Role_if(PM_HEALER)){
+			return (PM_KNIGHT);
+		}
+		if(preferred_pet == 's')
+			return (PM_CAVE_SPIDER);
+		else if(preferred_pet == ':')
+			return (PM_BABY_CAVE_LIZARD);
+		else 
+			return (rn2(3) ? PM_CAVE_SPIDER : PM_BABY_CAVE_LIZARD);
+	}
 	else if(Race_if(PM_FORMIAN)){
 		return (PM_GIANT_ANT);
 	}
