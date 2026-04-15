@@ -798,8 +798,11 @@ int udist;
 		    return dog_eat(mtmp, obj, omx, omy, FALSE);
 		}
 
-		if(can_carry(mtmp, obj) && !obj->cursed &&
-			could_reach_item(mtmp, obj->ox, obj->oy)) {
+		if(can_carry(mtmp, obj)
+			&& !mtmp->mnopickup
+			&& (!obj->cursed || is_weldproof_mon(mtmp)) 
+			&& could_reach_item(mtmp, obj->ox, obj->oy)
+		) {
 	        boolean can_use = could_use_item(mtmp, obj, TRUE);
 	        if (can_use ||
 		        (!droppables && rn2(20) < edog->apport+3)) {
@@ -929,9 +932,10 @@ dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr
 		    if (otyp > gtyp || otyp == UNDEF)
 			continue;
 		    /* avoid cursed items unless starving */
-		    if (cursed_object_at(nx, ny) &&
-			    !(edog->mhpmax_penalty && otyp < MANFOOD))
-			continue;
+		    if ((!is_weldproof_mon(mtmp) && cursed_object_at(nx, ny))
+			    && !(edog->mhpmax_penalty && otyp < MANFOOD)
+			)
+				continue;
 		    /* skip completely unreacheable goals */
 		    if (!could_reach_item(mtmp, nx, ny) ||
 		        !can_reach_location(mtmp, mtmp->mx, mtmp->my, nx, ny))
@@ -1359,7 +1363,7 @@ register int after;	/* this is extra fast monster movement */
 	for (i = 0; i < cnt; i++) {
 		nx = poss[i].x; ny = poss[i].y;
 		if (MON_AT(nx,ny) && !(info[i] & ALLOW_M)) continue;
-		if (cursed_object_at(nx, ny)) continue;
+		if (!is_weldproof_mon(mtmp) && cursed_object_at(nx, ny)) continue;
 		uncursedcnt++;
 	}
 
@@ -1431,7 +1435,7 @@ register int after;	/* this is extra fast monster movement */
 		/* (minion isn't interested; `cursemsg' stays FALSE) */
 		if (has_edog && appr != -3)
 		for (obj = level.objects[nx][ny]; obj; obj = obj->nexthere) {
-		    if (obj->cursed) cursemsg[i] = TRUE;
+		    if (!is_weldproof_mon(mtmp) && obj->cursed) cursemsg[i] = TRUE;
 		    else if ((otyp = dogfood(mtmp, obj)) < MANFOOD &&
 			     (otyp < ACCFOOD
 			     || EDOG(mtmp)->hungrytime <= monstermoves)

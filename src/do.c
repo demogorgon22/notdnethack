@@ -3138,6 +3138,156 @@ dopassive()
 }
 
 
+/* ---- #pets helpers ---- */
+
+#define PETORD_MOVEMENT	1	/* follow/wait toggle */
+#define PETORD_COMBAT	2	/* aggressive/passive toggle */
+#define PETORD_PICKUP	3	/* pickup/nopickup toggle */
+
+/* Phase 1: ask what behavior type to adjust.
+ * Returns PETORD_* on success, 0 on cancel. */
+static int
+pets_pick_order()
+{
+	winid win;
+	menu_item *sel = (menu_item *)0;
+	anything any;
+	int n, order;
+
+	win = create_nhwindow(NHW_MENU);
+	start_menu(win);
+	any.a_void = 0;
+
+	any.a_int = PETORD_MOVEMENT;
+	add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+		"Movement behavior (follow / wait)", MENU_UNSELECTED);
+
+	any.a_int = PETORD_COMBAT;
+	add_menu(win, NO_GLYPH, &any, 'b', 0, ATR_NONE,
+		"Combat behavior (aggressive / passive)", MENU_UNSELECTED);
+
+	any.a_int = PETORD_PICKUP;
+	add_menu(win, NO_GLYPH, &any, 'c', 0, ATR_NONE,
+		"Pickup behavior (pick up items / leave items)", MENU_UNSELECTED);
+
+	end_menu(win, "Adjust which pet behavior?");
+	n = select_menu(win, PICK_ONE, &sel);
+	destroy_nhwindow(win);
+
+	order = (n > 0) ? sel[0].item.a_int : 0;
+	if (n > 0) free((genericptr_t)sel);
+	return order;
+}
+
+/* Return the pet index among tame monsters (1-based), for menu accelerator
+ * selection.  Uses a-z then A-Z. */
+static char
+pets_menu_letter(int idx)
+{
+	if (idx < 26) return (char)('a' + idx);
+	if (idx < 52) return (char)('A' + idx - 26);
+	return 0;
+}
+
+/* Phase 2: show a toggle-style loop for the given behavior.
+ * Keeps redisplaying the menu until the player presses ESC. */
+static void
+pets_behavior_toggle(order)
+int order;
+{
+	struct monst *mtmp;
+	winid win;
+	menu_item *sel = (menu_item *)0;
+	anything any;
+	int n, idx;
+	char buf[BUFSZ];
+	const char *hdr;
+	boolean done = FALSE;
+
+	hdr = (order == PETORD_MOVEMENT) ?
+		"Toggle follow/wait for each pet (ESC when done):" :
+		(order == PETORD_COMBAT) ?
+		"Toggle aggressive/passive for each pet (ESC when done):" :
+		"Toggle item pickup for each pet (ESC when done):";
+
+	while (!done) {
+		win = create_nhwindow(NHW_MENU);
+		start_menu(win);
+		any.a_void = 0;
+		idx = 0;
+		for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+			if (!mtmp->mtame) continue;
+			if (order == PETORD_MOVEMENT)
+				Sprintf(buf, "%-30s [%s]", mon_nam(mtmp),
+					mtmp->mwait ? "waiting"    : "following");
+			else if (order == PETORD_COMBAT)
+				Sprintf(buf, "%-30s [%s]", mon_nam(mtmp),
+					mtmp->mpassive ? "passive" : "aggressive");
+			else
+				Sprintf(buf, "%-30s [%s]", mon_nam(mtmp),
+					mtmp->mnopickup ? "leaves items" : "picks up items");
+			any.a_void = (genericptr_t)mtmp;
+			add_menu(win, pet_to_glyph(mtmp), &any,
+				pets_menu_letter(idx), 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			idx++;
+		}
+		end_menu(win, hdr);
+		n = select_menu(win, PICK_ONE, &sel);
+		destroy_nhwindow(win);
+
+		if (n > 0) {
+			mtmp = (struct monst *)sel[0].item.a_void;
+			free((genericptr_t)sel);
+			sel = (menu_item *)0;
+			if (mtmp && mtmp->mtame) {
+				if (order == PETORD_MOVEMENT) {
+					mtmp->mwait = mtmp->mwait ? 0 : monstermoves;
+				} else if (order == PETORD_COMBAT) {
+					mtmp->mpassive = !mtmp->mpassive;
+				} else {
+					mtmp->mnopickup = !mtmp->mnopickup;
+				}
+			}
+		} else {
+			if (n == 0 && sel) free((genericptr_t)sel);
+			done = TRUE;
+		}
+	}
+}
+
+/* #pets extended command: unified menu-based pet management.
+ * Phase 1 picks the behavior type; phase 2 is a toggle loop over all pets. */
+int
+dopets()
+{
+	int order;
+
+	{
+		struct monst *mtmp2;
+		boolean has_pet = FALSE;
+		for (mtmp2 = fmon; mtmp2; mtmp2 = mtmp2->nmon)
+			if (mtmp2->mtame) { has_pet = TRUE; break; }
+		if (!has_pet) {
+			You("have no pets.");
+			return MOVE_INSTANT;
+		}
+	}
+
+	order = pets_pick_order();
+	if (!order) return MOVE_CANCELLED;
+
+	pets_behavior_toggle(order);
+	return MOVE_INSTANT;
+}
+
+#undef PETORD_MOVEMENT
+#undef PETORD_COMBAT
+#undef PETORD_PICKUP
+
+/* ---- end #pets helpers ---- */
+
+
 int
 dodropall()
 {

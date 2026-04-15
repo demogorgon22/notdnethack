@@ -37,6 +37,7 @@ extern int NDECL(dojump); /**/
 extern int NDECL(docome); /**/
 extern int NDECL(dodropall); /**/
 extern int NDECL(dopassive); /**/
+extern int NDECL(dopets); /**/
 extern int NDECL(doextlist); /**/
 extern int NDECL(doattack); /**/
 extern int NDECL(dodrop); /**/
@@ -3123,6 +3124,7 @@ struct ext_func_tab extcmdlist[] = {
 	{"name", "name an item or type of object", do_naming_ddocall, IFBURIED, AUTOCOMPLETE},
 	{"nameold", "name an item or type of object (vanilla)", ddocall, IFBURIED},
 	{"passive", "order pets to never attack foes", dopassive, IFBURIED, AUTOCOMPLETE},
+	{"pets", "manage pet behaviors via menu", dopets, IFBURIED, AUTOCOMPLETE},
 	{"offer", "offer a sacrifice to the gods", dosacrifice, !IFBURIED, AUTOCOMPLETE},
 	{"overview", "give an overview of dungeon", dooverview, !IFBURIED, AUTOCOMPLETE},
 	{"pray", "pray to the gods for help", dopray, IFBURIED, AUTOCOMPLETE},

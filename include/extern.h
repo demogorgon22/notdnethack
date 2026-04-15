@@ -587,6 +587,7 @@ E int NDECL(dowait);
 E int NDECL(docome);
 E int NDECL(doattack);
 E int NDECL(dopassive);
+E int NDECL(dopets);
 E int NDECL(dodownboy);
 E int NDECL(dosickem);
 E int NDECL(dodropall);
