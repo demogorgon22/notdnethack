@@ -54,7 +54,7 @@ STATIC_DCL int FDECL(use_threaded_cane, (struct obj *));
 STATIC_DCL int FDECL(use_chikage, (struct obj *));
 STATIC_DCL int FDECL(use_breaking_wheel, (struct obj *));
 STATIC_DCL struct obj *NDECL(pg_floor_corpse);
-STATIC_DCL boolean FDECL(pg_spellbook_feed, (struct obj *, struct obj *));
+STATIC_DCL boolean FDECL(pg_spellbook_feed, (struct obj *, struct obj *, boolean));
 STATIC_DCL boolean FDECL(pg_bullwhip_snag, (struct obj *, int, int));
 STATIC_DCL int FDECL(use_pest_glaive, (struct obj *));
 STATIC_DCL int FDECL(use_church_weapon, (struct obj *));
@@ -7414,9 +7414,7 @@ pg_floor_corpse()
 
 /* Returns TRUE if the spellbook was consumed, FALSE if repelled (left intact). */
 STATIC_OVL boolean
-pg_spellbook_feed(obj, consumed)
-struct obj *obj;
-struct obj *consumed;
+pg_spellbook_feed(struct obj *obj, struct obj *consumed, boolean already_extended)
 {
 	static const struct {
 		int otyp;
@@ -7438,9 +7436,8 @@ struct obj *consumed;
 
 	/* Blank paper: consumed silently */
 	if (consumed->otyp == SPE_BLANK_PAPER) {
-		pline("The glaive's feeding-%s engulf %s, leaving nothing behind.",
-		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		pline("The glaive's %s engulf %s, leaving nothing behind.",
+		    pg_appendage_name(obj, PGD_FEEDING),
 		    the(xname(consumed)));
 		return TRUE;
 	}
@@ -7456,9 +7453,8 @@ struct obj *consumed;
 
 	/* Ineligible spellbook: repel without consuming */
 	if (!new_oprop) {
-		pline("The glaive's feeding-%s recoil from %s with a crackle of magical energy!",
-		    !rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-		    !rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
+		pline("The glaive's %s recoil from %s with a crackle of magical energy!",
+		    pg_appendage_name(obj, PGD_FEEDING),
 		    the(xname(consumed)));
 		return FALSE;
 	}
@@ -7483,9 +7479,12 @@ struct obj *consumed;
 
 	if (held_count == 0) {
 		/* No existing energy quality - just absorb */
-		pline("The glaive extends its %s and devours %s.",
-		    pg_appendage_name(obj, PGD_FEEDING),
-		    the(xname(consumed)));
+		if (!already_extended)
+			pline("The glaive extends its %s and devours %s.",
+			    pg_appendage_name(obj, PGD_FEEDING),
+			    the(xname(consumed)));
+		else
+			pline("The glaive devours %s.", the(xname(consumed)));
 		add_oprop(obj, new_oprop);
 		pline("It becomes %s.", new_adj);
 	} else if (held_count == 1) {
@@ -7496,9 +7495,12 @@ struct obj *consumed;
 			pline("You pull the spellbook away.");
 			return FALSE;
 		}
-		pline("The glaive extends its %s and devours %s.",
-		    pg_appendage_name(obj, PGD_FEEDING),
-		    the(xname(consumed)));
+		if (!already_extended)
+			pline("The glaive extends its %s and devours %s.",
+			    pg_appendage_name(obj, PGD_FEEDING),
+			    the(xname(consumed)));
+		else
+			pline("The glaive devours %s.", the(xname(consumed)));
 		remove_oprop(obj, held_oprops[0]);
 		add_oprop(obj, new_oprop);
 		pline("It becomes %s.", new_adj);
@@ -7533,9 +7535,12 @@ struct obj *consumed;
 		}
 		choice = selected[0].item.a_int - 1;
 		free(selected);
-		pline("The glaive extends its %s and devours %s.",
-		    pg_appendage_name(obj, PGD_FEEDING),
-		    the(xname(consumed)));
+		if (!already_extended)
+			pline("The glaive extends its %s and devours %s.",
+			    pg_appendage_name(obj, PGD_FEEDING),
+			    the(xname(consumed)));
+		else
+			pline("The glaive devours %s.", the(xname(consumed)));
 		remove_oprop(obj, held_oprops[choice]);
 		add_oprop(obj, new_oprop);
 		pline("It becomes %s.", new_adj);
@@ -7550,9 +7555,7 @@ struct obj *consumed;
  * to snag.
  */
 STATIC_OVL boolean
-pg_bullwhip_snag(obj, rx, ry)
-struct obj *obj;
-int rx, ry;
+pg_bullwhip_snag(struct obj *obj, int rx, int ry)
 {
 	struct obj *otmp = level.objects[rx][ry];
 	int proficient;
@@ -7592,211 +7595,230 @@ int rx, ry;
 }
 
 STATIC_OVL int
-use_pest_glaive(obj)
-struct obj *obj;
+use_pest_glaive(struct obj *obj)
 {
 	struct obj *consumed;
 	int i;
 	boolean gained_something = FALSE;
 	boolean already_extended = FALSE;
 	boolean couldve_changed = FALSE;
+	boolean fed_anything = FALSE;
 
-	consumed = pg_floor_corpse();
-	if (!consumed) return MOVE_CANCELLED;
+	for (;;) {
+		consumed = pg_floor_corpse();
+		if (!consumed) break;
 
-	if (consumed->unpaid) {
-		You("need to pay for that first.");
-		return MOVE_CANCELLED;
-	}
-	if (consumed == obj) {
-		pline("The glaive won't eat itself.");
-		return MOVE_CANCELLED;
-	}
-	if (consumed->oartifact || is_full_insight_weapon(consumed) || objects[consumed->otyp].oc_unique) {
-		pline("It resists the attempt!");
-		return MOVE_CANCELLED;
-	}
-	if (!check_oprop(consumed, 0)) {
-		pline("It resists the attempt!");
-		return MOVE_CANCELLED;
-	}
+		gained_something = FALSE;
+		couldve_changed = FALSE;
 
-	if (consumed->oclass == FOOD_CLASS) {
-		if(consumed->otyp != CORPSE){
-			pline("The glaive extends its %s but then recoils in disgust from %s!",
-			    pg_appendage_name(obj, PGD_FEEDING),
-			    the(xname(consumed)));
-			return MOVE_CANCELLED;
+		if (consumed->unpaid) {
+			You("need to pay for that first.");
+			break;
 		}
-		/* corpse path: absorb energy-resistance oprops */
-		static const struct { int mr_flag; int oprop; } eres_map[] = {
-			{ MR_FIRE, OPROP_FIRE },
-			{ MR_COLD, OPROP_COLD },
-			{ MR_ELEC, OPROP_ELEC },
-			{ MR_ACID, OPROP_ACID },
-			{ 0, 0 }
-		};
-		struct permonst *ptr = &mons[consumed->corpsenm];
-		int mi;
+		if (consumed == obj) {
+			pline("The glaive won't eat itself.");
+			break;
+		}
+		if (consumed->oartifact || is_full_insight_weapon(consumed) || objects[consumed->otyp].oc_unique) {
+			pline("It resists the attempt!");
+			break;
+		}
+		if (!check_oprop(consumed, 0)) {
+			pline("It resists the attempt!");
+			break;
+		}
 
-		pline("The glaive extends its %s and devours %s.",
-		    pg_appendage_name(obj, PGD_FEEDING),
-		    the(xname(consumed)));
+		if (consumed->oclass == FOOD_CLASS) {
+			if(consumed->otyp != CORPSE){
+				if (!already_extended)
+					pline("The glaive extends its %s but then recoils in disgust from %s!",
+					    pg_appendage_name(obj, PGD_FEEDING),
+					    the(xname(consumed)));
+				else
+					pline("The glaive's %s recoil in disgust from %s!",
+					    pg_appendage_name(obj, PGD_FEEDING),
+					    the(xname(consumed)));
+				break;
+			}
+			/* corpse path: absorb energy-resistance oprops */
+			static const struct { int mr_flag; int oprop; } eres_map[] = {
+				{ MR_FIRE, OPROP_FIRE },
+				{ MR_COLD, OPROP_COLD },
+				{ MR_ELEC, OPROP_ELEC },
+				{ MR_ACID, OPROP_ACID },
+				{ 0, 0 }
+			};
+			struct permonst *ptr = &mons[consumed->corpsenm];
+			int mi;
 
-		for (mi = 0; eres_map[mi].mr_flag; mi++) {
-			if ((ptr->mconveys & eres_map[mi].mr_flag) &&
-			    !check_oprop(obj, eres_map[mi].oprop)
+			if (!already_extended) {
+				pline("The glaive extends its %s and devours %s.",
+				    pg_appendage_name(obj, PGD_FEEDING),
+				    the(xname(consumed)));
+				already_extended = TRUE;
+			} else {
+				pline("The glaive devours %s.", the(xname(consumed)));
+			}
+
+			for (mi = 0; eres_map[mi].mr_flag; mi++) {
+				if ((ptr->mconveys & eres_map[mi].mr_flag) &&
+				    !check_oprop(obj, eres_map[mi].oprop)
+				) {
+					couldve_changed = TRUE;
+					if(!rn2(10) && ptr->mlevel > rn2(15)){
+						add_oprop(obj, eres_map[mi].oprop);
+						gained_something = TRUE;
+					}
+				}
+			}
+
+		} else if (consumed->oclass == SPBOOK_CLASS) {
+			/* spellbook path: delegate entirely to pg_spellbook_feed */
+			boolean eaten = pg_spellbook_feed(obj, consumed, already_extended);
+			if (eaten) {
+				if (consumed->where == OBJ_FLOOR)
+					useupf(consumed, 1L);
+				else
+					useup(consumed);
+				fix_object(obj);
+				fed_anything = TRUE;
+				already_extended = TRUE;
+			}
+			continue;
+		} else if(consumed->oclass == WEAPON_CLASS || is_weptool(consumed)) {
+			static const long etrait_list[] = {
+				ETRAIT_HEW, ETRAIT_FELL, ETRAIT_KNOCK_BACK, ETRAIT_FOCUS_FIRE,
+				ETRAIT_STUNNING_STRIKE, ETRAIT_KNOCK_BACK_CHARGE, ETRAIT_GRAZE,
+				ETRAIT_STOP_THRUST, ETRAIT_PENETRATE_ARMOR, ETRAIT_LONG_SLASH,
+				ETRAIT_BLEED, ETRAIT_CLEAVE, ETRAIT_LUNGE,
+				ETRAIT_SECOND, ETRAIT_CREATE_OPENING, ETRAIT_BRACED,
+				ETRAIT_BLADESONG, ETRAIT_BLADEDANCE, ETRAIT_PUNCTURE,
+				ETRAIT_STRIKING, 0L
+			};
+			if (!is_organic(consumed) &&
+			    consumed->oeroded == 0 &&
+			    consumed->oeroded2 == 0
 			) {
+				if(!is_rustprone(consumed) || !(is_pool(u.ux, u.uy, TRUE) || IS_FOUNTAIN(levl[u.ux][u.uy].typ)) || consumed->oerodeproof){
+					pline("The glaive cannot eat %s.", is_metallic(consumed) ? "unblemished metal" : "such things");
+					break;
+				}
+				else {
+					if(!already_extended)
+						pline("The glaive extends its %s and sucks up some water in preparation for its meal.",
+							pg_appendage_name(obj, PGD_FEEDING));
+					already_extended = TRUE;
+				}
+			}
+
+			if(!already_extended){
+				pline("The glaive extends its %s and devours %s.",
+					pg_appendage_name(obj, PGD_FEEDING),
+					the(xname(consumed)));
+				already_extended = TRUE;
+			}
+			else pline("The glaive devours %s.", the(xname(consumed)));
+
+			for (i = 0; etrait_list[i]; i++) {
+				if ((consumed->expert_traits & etrait_list[i])
+					&& !(obj->ovar2_pg_etraits & etrait_list[i])
+				) {
+					couldve_changed = TRUE;
+					if(!rn2(20)){
+						obj->ovar2_pg_etraits |= etrait_list[i];
+						gained_something = TRUE;
+					}
+				}
+			}
+
+			if (hand_protecting(consumed) && !(obj->ovar1_pestglaive_props & PG_HANDPROTECT)) {
 				couldve_changed = TRUE;
-				if(!rn2(10) && ptr->mlevel > rn2(15)){
-					add_oprop(obj, eres_map[mi].oprop);
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_HANDPROTECT;
 					gained_something = TRUE;
 				}
 			}
-		}
 
-	} else if (consumed->oclass == SPBOOK_CLASS) {
-		/* spellbook path: delegate entirely to pg_spellbook_feed */
-		boolean eaten = pg_spellbook_feed(obj, consumed);
-		if (eaten) {
-			if (consumed->where == OBJ_FLOOR)
-				useupf(consumed, 1L);
-			else
-				useup(consumed);
-			fix_object(obj);
-		}
-		return MOVE_STANDARD;
-	} else if(consumed->oclass == WEAPON_CLASS || is_weptool(consumed)) {
-		static const long etrait_list[] = {
-			ETRAIT_HEW, ETRAIT_FELL, ETRAIT_KNOCK_BACK, ETRAIT_FOCUS_FIRE,
-			ETRAIT_STUNNING_STRIKE, ETRAIT_KNOCK_BACK_CHARGE, ETRAIT_GRAZE,
-			ETRAIT_STOP_THRUST, ETRAIT_PENETRATE_ARMOR, ETRAIT_LONG_SLASH,
-			ETRAIT_BLEED, ETRAIT_CLEAVE, ETRAIT_LUNGE,
-			ETRAIT_SECOND, ETRAIT_CREATE_OPENING, ETRAIT_BRACED,
-			ETRAIT_BLADESONG, ETRAIT_BLADEDANCE, ETRAIT_PUNCTURE,
-			ETRAIT_STRIKING, 0L
-		};
-		if (!is_organic(consumed) &&
-		    consumed->oeroded == 0 &&
-		    consumed->oeroded2 == 0
-		) {
-			if(!is_rustprone(consumed) || !(is_pool(u.ux, u.uy, TRUE) || IS_FOUNTAIN(levl[u.ux][u.uy].typ)) || consumed->oerodeproof){
-				pline("The glaive cannot eat %s.", is_metallic(consumed) ? "unblemished metal" : "such things");
-				return MOVE_CANCELLED;
-			}
-			else {
-				pline("The glaive extends its %s and sucks up some water in preparation for its meal.",
-					pg_appendage_name(obj, PGD_FEEDING));
-				already_extended = TRUE;
-			}
-		}
-
-		if(!already_extended){
-			pline("The glaive extends its feeding-%s and devours %s.",
-				!rn2(5) ? "probosces" : !rn2(4) ? "roots" :
-				!rn2(3) ? "tentacles" : rn2(2) ? "tongues" : "hyphae",
-				the(xname(consumed)));
-			already_extended = TRUE;
-		}
-		else pline("The glaive devours %s.", the(xname(consumed)));
-
-		for (i = 0; etrait_list[i]; i++) {
-			if ((consumed->expert_traits & etrait_list[i]) 
-				&& !(obj->ovar2_pg_etraits & etrait_list[i])
+			if ((consumed->otyp == BULLWHIP || consumed->otyp == VIPERWHIP ||
+			     consumed->otyp == WHIP_SAW || consumed->otyp == FORCE_WHIP) &&
+			    !(obj->ovar1_pestglaive_props & PG_BULLWHIP)
 			) {
 				couldve_changed = TRUE;
 				if(!rn2(20)){
-					obj->ovar2_pg_etraits |= etrait_list[i];
+					obj->ovar1_pestglaive_props |= PG_BULLWHIP;
+					gained_something = TRUE;
+				}
+			}
+
+			if ((consumed->otyp == DWARVISH_MATTOCK || consumed->otyp == PICK_AXE) && !(obj->ovar1_pestglaive_props & PG_MATTOCK)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_MATTOCK;
+					gained_something = TRUE;
+				}
+			}
+
+			if (objects[consumed->otyp].oc_skill == P_LANCE && !(obj->ovar1_pestglaive_props & PG_JOUST)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_JOUST;
+					gained_something = TRUE;
+				}
+			}
+
+			if (is_axe(consumed) && !(obj->ovar1_pestglaive_props & PG_AXE)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_AXE;
+					gained_something = TRUE;
+				}
+			}
+
+			if (has_crook(consumed) && !(obj->ovar1_pestglaive_props & PG_CROOK)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_CROOK;
+					gained_something = TRUE;
+				}
+			}
+
+			if (consumed->otyp == ATLATL && !(obj->ovar1_pestglaive_props & PG_SPEARTHROWER)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_SPEARTHROWER;
+					gained_something = TRUE;
+				}
+			}
+
+			if (consumed->spe > obj->spe) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->spe++;
 					gained_something = TRUE;
 				}
 			}
 		}
-
-		if (hand_protecting(consumed) && !(obj->ovar1_pestglaive_props & PG_HANDPROTECT)) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_HANDPROTECT;
-				gained_something = TRUE;
-			}
+		else {
+			pline("The glaive seems uninterested in %s!", the(xname(consumed)));
+			break;
 		}
 
-		if ((consumed->otyp == BULLWHIP || consumed->otyp == VIPERWHIP ||
-		     consumed->otyp == WHIP_SAW || consumed->otyp == FORCE_WHIP) &&
-		    !(obj->ovar1_pestglaive_props & PG_BULLWHIP)
-		) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_BULLWHIP;
-				gained_something = TRUE;
-			}
-		}
+		if (gained_something)
+			pline("It seems changed.");
+		else if(couldve_changed)
+			pline("It savors the flavor.");
+		else
+			pline("It found the meal bland.");
 
-		if ((consumed->otyp == DWARVISH_MATTOCK || consumed->otyp == PICK_AXE) && !(obj->ovar1_pestglaive_props & PG_MATTOCK)) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_MATTOCK;
-				gained_something = TRUE;
-			}
-		}
-
-		if (objects[consumed->otyp].oc_skill == P_LANCE && !(obj->ovar1_pestglaive_props & PG_JOUST)) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_JOUST;
-				gained_something = TRUE;
-			}
-		}
-
-		if (is_axe(consumed) && !(obj->ovar1_pestglaive_props & PG_AXE)) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_AXE;
-				gained_something = TRUE;
-			}
-		}
-
-		if (has_crook(consumed) && !(obj->ovar1_pestglaive_props & PG_CROOK)) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_CROOK;
-				gained_something = TRUE;
-			}
-		}
-
-		if (consumed->otyp == ATLATL && !(obj->ovar1_pestglaive_props & PG_SPEARTHROWER)) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->ovar1_pestglaive_props |= PG_SPEARTHROWER;
-				gained_something = TRUE;
-			}
-		}
-
-		if (consumed->spe > obj->spe) {
-			couldve_changed = TRUE;
-			if(!rn2(20)){
-				obj->spe++;
-				gained_something = TRUE;
-			}
-		}
-	}
-	else {
-		pline("The glaive seems uninterested in %s!", the(xname(consumed)));
-		return MOVE_CANCELLED;
+		if (consumed->where == OBJ_FLOOR)
+			useupf(consumed, 1L);
+		else
+			useup(consumed);
+		fix_object(obj);
+		fed_anything = TRUE;
 	}
 
-	if (gained_something)
-		pline("It seems changed.");
-	else if(couldve_changed)
-		pline("It savors the flavor.");
-	else
-		pline("It found the meal bland.");
-
-	if (consumed->where == OBJ_FLOOR)
-		useupf(consumed, 1L);
-	else
-		useup(consumed);
-	fix_object(obj);
-	return MOVE_STANDARD;
+	return fed_anything ? MOVE_STANDARD : MOVE_CANCELLED;
 }
 
 //Used to coordinate polearm_menu and targeting code
