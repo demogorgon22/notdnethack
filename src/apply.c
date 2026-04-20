@@ -7865,8 +7865,8 @@ struct obj *pole;
 		cx = u.ux + pole_dx[i];
 		cy = u.uy + pole_dy[i];
 		if(isok(cx, cy) && (mtmp = m_at(cx, cy)) 
-			&& canseemon(mtmp)
-			&& couldsee(cx, cy)
+			&& canspotmon(mtmp)
+			&& cansee(cx, cy)
 			&& distu(cx, cy) <= max_range
 			&& !(mtmp->mappearance && mtmp->m_ap_type != M_AP_MONSTER && !sensemon(mtmp))
 			&& !(flags.peacesafe_polearms && mtmp->mpeaceful && !Hallucination)
