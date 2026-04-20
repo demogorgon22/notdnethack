@@ -390,6 +390,8 @@ do_explode(int x, int y, ExplodeRegion *area, int adtyp, int olet, int dam, int 
 		case AD_SLIM: str = "spout of acidic slime";
 			break;
 		case AD_PHYS: str = (olet != TOOL_CLASS ? olet != WEAPON_CLASS ? "blast" : "flying shards of obsidian" : "flying shards of mirror");
+			if(olet == TOOL_CLASS)
+				silver = TRUE;
 			break;
 		case AD_STAR: str = "blast of stardust";
 			break;
