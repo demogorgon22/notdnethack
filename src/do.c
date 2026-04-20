@@ -1283,6 +1283,15 @@ int portal;
 			for(struct obj *otmp = invent; otmp; otmp = otmp->nobj){
 				otmp->mired = 0;
 			}
+			for(int i = 0; i < 10; i++){
+				for(struct obj *otmp = magic_chest_objs[i]; otmp; otmp = otmp->nobj){
+					if(otmp->mired){
+						otmp->oeroded = 0;
+						otmp->oeroded2 = 0;
+						otmp->mired = 0;
+					}
+				}
+			}
 			u.silverknight_mire = FALSE;
 			remove_rot(ROT_KIN);
 			set_silvergrubs(FALSE);
