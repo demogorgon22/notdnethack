@@ -17353,6 +17353,12 @@ struct monst *mtmp, *victim;
 				if (((mtmp->mhpmax+1)*(hds % 8)) / 8 >((mtmp->mhpmax)*(hds % 8)) / 8)
 					max_increase++;
 			}
+			if(mtmp->mhpmax < hp_threshold-hd_size(mtmp->data)){
+				max_increase = max_increase * ((P_SKILL(P_BEAST_MASTERY) >= P_BASIC) ? (P_SKILL(P_BEAST_MASTERY) - P_UNSKILLED + 1) : 1);
+				if(mtmp->mhpmax + max_increase > hp_threshold - hd_size(mtmp->data))
+					max_increase = hp_threshold - hd_size(mtmp->data) - mtmp->mhpmax;
+				if(max_increase < 1) max_increase = 1; //Should be impossible.
+			}
 			cur_increase = max_increase;
 			if(mtmp->mtame){
 				if(Role_if(PM_BARD) && canseemon(mtmp)){
