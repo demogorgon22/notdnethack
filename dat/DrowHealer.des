@@ -523,7 +523,12 @@ OBJECT:'%',"corpse",contained,"aoa droplet",0
 OBJECT:'%',"corpse",contained,"aoa droplet",0
 OBJECT:'%',"corpse",contained,"aoa droplet",0
 OBJECT:'%',"corpse",contained,"aoa droplet",0
-OBJECT:'(',"writing desk",(02,10)
+CONTAINER:'(',"writing desk",(02,10)
+OBJECT:'+',"charm monster",contained
+OBJECT:'+',"sleep",contained
+OBJECT:'?',"taming",contained
+OBJECT:'?',"taming",contained
+OBJECT:'?',"taming",contained
 
 MONSTER: '#', "zombified hedrow blademaster", (10,09)
 MONSTER: '#', "zombified drow captain", (11,09)
