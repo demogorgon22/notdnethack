@@ -610,6 +610,15 @@ boolean affect_game_state;
 
 			/* these only apply if you didn't attack this action */
 			if (!u.uattked) {
+				if(u.dash){
+					current_cost = 0;
+					if(affect_game_state){
+						morehungry(3);
+						u.dash_cooldown = TRUE;
+						u.dash = FALSE;
+					}
+					break;
+				}
 				if(uwep && uwep->oartifact == ART_TENSA_ZANGETSU && !flags.beginner){
 					MOVECOST(NORMAL_SPEED/12);
 				} else if(uwep && uwep->oartifact == ART_SODE_NO_SHIRAYUKI && u.ulevel >= 14){
@@ -3432,6 +3441,7 @@ karemade:
 		    nh_timeout();
 		    run_regions();
 		    run_maintained_spells();
+			u.dash_cooldown = FALSE;
 			
 			move_gliders();
 

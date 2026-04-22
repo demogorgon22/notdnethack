@@ -3361,6 +3361,25 @@ dosickem()
 	return MOVE_INSTANT;
 }
 
+int
+dodash()
+{
+	if (u.dash_cooldown) {
+		if (u.usteed)
+			pline("%s is not ready to dash again yet.", Monnam(u.usteed));
+		else
+			You("are not ready to dash again yet.");
+		return MOVE_CANCELLED;
+	}
+	u.dash = !u.dash;
+	if (u.usteed)
+		pline(u.dash ? "%s breaks into a dash." : "%s slows to a normal pace.",
+		      Monnam(u.usteed));
+	else
+		You(u.dash ? "prepare to dash." : "relax your stance.");
+	return MOVE_INSTANT;
+}
+
 #endif /* OVLB */
 
 /*do.c*/

@@ -23,7 +23,8 @@
 #define BL_MASK_UHOLD    (BL_MASK_HELD << 1)
 #define BL_MASK_LYCN     (BL_MASK_UHOLD << 1)
 #define BL_MASK_INVL     (BL_MASK_LYCN << 1)
-#define BL_MASK_LEV      (BL_MASK_INVL << 1)
+#define BL_MASK_DASH     (BL_MASK_INVL << 1)
+#define BL_MASK_LEV      (BL_MASK_DASH << 1)
 #define BL_MASK_FLY      (BL_MASK_LEV << 1)
 #define BL_MASK_RIDE     (BL_MASK_FLY << 1)
 #define BL_MASK_TIMESTOP (BL_MASK_RIDE << 1)
@@ -32,7 +33,7 @@
 #define BL_MASK_MISO     (BL_MASK_DEADMAGC << 1)
 #define BL_MASK_CATAPSI  (BL_MASK_MISO << 1)
 #define BL_MASK_DIMLOCK  (BL_MASK_CATAPSI << 1)
-//Note:28
+//Note:29
 
 struct status_effect {
 	long long mask;
@@ -67,6 +68,7 @@ static const struct status_effect status_effects[] = {
 	{ BL_MASK_UHOLD,    "UHold",    "UHld",  "UHd" },
 	{ BL_MASK_LYCN,     "Lycn",     "Lyc",   "Ly"  },
 	{ BL_MASK_INVL,     "Invl",     "Invl",  "In"  },
+	{ BL_MASK_DASH,     "Dash",     "Dash",  "Dh"  },
 	{ BL_MASK_LEV,      "Lev",      "Lev",   "Lv"  },
 	{ BL_MASK_FLY,      "Fly",      "Fly",   "Fl"  },
 	{ BL_MASK_RIDE,     "Ride",     "Rid",   "Rd"  },

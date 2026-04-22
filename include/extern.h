@@ -591,6 +591,7 @@ E int NDECL(dopassive);
 E int NDECL(dopets);
 E int NDECL(dodownboy);
 E int NDECL(dosickem);
+E int NDECL(dodash);
 E int NDECL(dodropall);
 E int FDECL(drop, (struct obj *));
 

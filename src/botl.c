@@ -110,6 +110,8 @@ long long get_status_mask() {
 		mask |= BL_MASK_LYCN;
 	if(Invulnerable)
 		mask |= BL_MASK_INVL;
+	if(u.dash)
+		mask |= BL_MASK_DASH;
 	if(Levitation)
 		mask |= BL_MASK_LEV;
 	else if(Flying)

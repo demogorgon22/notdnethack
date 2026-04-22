@@ -37,6 +37,7 @@ extern int NDECL(dojump); /**/
 extern int NDECL(docome); /**/
 extern int NDECL(dodropall); /**/
 extern int NDECL(dopassive); /**/
+extern int NDECL(dodash); /**/
 extern int NDECL(dopets); /**/
 extern int NDECL(doextlist); /**/
 extern int NDECL(doattack); /**/
@@ -3107,6 +3108,7 @@ struct ext_func_tab extcmdlist[] = {
 	{"annotate", "annotate current dungeon level", donamelevel, IFBURIED, AUTOCOMPLETE},
 	{"attack", "order pets to battle foes", doattack, IFBURIED, AUTOCOMPLETE},
 	{"chat", "talk to someone", dotalk, IFBURIED, AUTOCOMPLETE},	/* converse? */
+	{"dash", "toggle dash", dodash, IFBURIED, AUTOCOMPLETE},
 	{"combo", "use an android combo based on your weapon", android_combo, !IFBURIED},
 	{"come", "order pets to come", docome, !IFBURIED, AUTOCOMPLETE},
 	{"conduct", "list which challenges you have adhered to", doconduct, IFBURIED, AUTOCOMPLETE},
@@ -3320,6 +3322,7 @@ init_bind_list(void)
 	bind_key(M('m'), "monster" );
 	bind_key('N',    "name" );
 	/*       'n' prefixes a count if number_pad is on */
+	bind_key(C('n'), "dash" );
 	bind_key(M('n'), "name" );
 	bind_key(M('N'), "name" ); /* if number_pad is on */
 	bind_key('o',    "open" );

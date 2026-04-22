@@ -953,6 +953,8 @@ struct you {
 	}
 	Bitfield(silvergrubs, 1);
 	Bitfield(silverknight_mire, 1);
+	Bitfield(dash, 1);
+	Bitfield(dash_cooldown, 1);
 
 	uchar 	wimage;		/* to record if you have the image of a Weeping Angel in your mind */
 	int 	umorgul;	/* to record the number of morgul wounds */
