@@ -69,6 +69,7 @@ doread()
 			&& !(scroll->oclass == SCROLL_CLASS)
 			&& !(scroll->oclass == SPBOOK_CLASS)
 			&& !(scroll->oclass == AMULET_CLASS)
+			&& !(scroll->oclass == TILE_CLASS)
 			&& !arti_mandala(scroll)
 			&& !scroll->oward
 			&& scroll->oartifact != ART_ROD_OF_THE_ELVISH_LORDS
@@ -1023,6 +1024,16 @@ struct obj *scroll;
 		}
 	} else if(scroll->otyp >= ANTI_CLOCKWISE_METAMORPHOSIS_G && scroll->otyp <= ORRERY_GLYPH) {
 		thought = otyp_to_thought(scroll->otyp);
+
+		if(scroll->oartifact == ART_GREAT_RUNE_OF_ROT && u.veil){
+			You("feel reality threatening to slip away!");
+			if (yn("Are you sure you want to keep reading?") != 'y'){
+				return MOVE_CANCELLED;
+			}
+			else pline("So be it.");
+			u.veil = FALSE;
+			change_uinsight(1);
+		}
 
 		/* maybe_give_thought checks requirements, returns FALSE if it didn't work */
 		if (!maybe_give_thought(thought))
