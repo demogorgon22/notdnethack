@@ -295,7 +295,7 @@ healing_zap(struct monst *mtmp, int type, char class, boolean *wake, boolean *re
 			char qbuf[BUFSZ];
 			Sprintf(qbuf, "Turn %s away from your party?", mhim(mtmp));
 			if(yn(qbuf) != 'y'){
-				struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+				struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED);
 				if(newmon){
 					mtmp = newmon;
 					newsym(mtmp->mx, mtmp->my);
@@ -5533,13 +5533,12 @@ struct monst *mon;
 	if(mon->mtyp == PM_LIVING_DOLL){
 		mon->mpeaceful = 1;
 	} else {
-		mtmp = tamedog(mon,(struct obj *) 0);
+		mtmp = tamedog_core(mon,(struct obj *) 0, TD_ENHANCED|TD_LOYAL);
 		if(mtmp){
 			mon = mtmp;
 			mon->mtame = 10;
 			mon->mpeaceful = 1;
 			mon->mcrazed = 1;
-			EDOG(mon)->loyal = TRUE;
 			EDOG(mon)->waspeaceful = TRUE;
 			mon->mpeacetime = 0;
 			newsym(mon->mx, mon->my);

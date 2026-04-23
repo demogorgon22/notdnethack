@@ -633,20 +633,21 @@ int *fail_reason;
 		|| statue->spe&STATUE_LOYAL)
 	){
 		struct monst *newmon;
-		newmon = tamedog(mon, (struct obj *)0);
+		boolean loyal = (In_quest(&u.uz) && Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON ||
+																   mon->mtyp == PM_PANAKEIAN_ARCHON ||
+																   mon->mtyp == PM_HYGIEIAN_ARCHON ||
+																   mon->mtyp == PM_IKSH_NA_DEVA
+																)
+						)
+						|| (statue->spe&STATUE_LOYAL);
+		newmon = tamedog_core(mon, (struct obj *)0, TD_ENHANCED|(loyal ? TD_LOYAL : 0));
 		if(newmon) mon = newmon;
 
 		if(canspotmon(mon) && mon->mtame)
 			grateful = TRUE;
 
-		if((In_quest(&u.uz) && Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON || mon->mtyp == PM_PANAKEIAN_ARCHON || mon->mtyp == PM_HYGIEIAN_ARCHON || mon->mtyp == PM_IKSH_NA_DEVA))
-			|| (statue->spe&STATUE_LOYAL)
-		){
-			if(Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON || mon->mtyp == PM_PANAKEIAN_ARCHON || mon->mtyp == PM_HYGIEIAN_ARCHON || mon->mtyp == PM_IKSH_NA_DEVA))
-				set_template(mon, PLAGUE_TEMPLATE);
-			if(get_mx(mon, MX_EDOG))
-				EDOG(mon)->loyal = TRUE;
-		}
+		if(Role_if(PM_HEALER) && (mon->mtyp == PM_IASOIAN_ARCHON || mon->mtyp == PM_PANAKEIAN_ARCHON || mon->mtyp == PM_HYGIEIAN_ARCHON || mon->mtyp == PM_IKSH_NA_DEVA))
+			set_template(mon, PLAGUE_TEMPLATE);
 	}
 
 	/* in case statue is wielded and hero zaps stone-to-flesh at self */
@@ -4188,7 +4189,7 @@ struct monst *mtmp;
 			struct monst *newmon;
 			if(canspotmon(mtmp))
 				pline("%s is incredibly grateful!", Monnam(mtmp));
-			newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+			newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED);
 			if(newmon){
 				mtmp = newmon;
 				newsym(mtmp->mx, mtmp->my);
@@ -4266,7 +4267,7 @@ struct monst * mtmp;
 	else if ((luck_tame || rnd(20) < ACURR(A_CHA)) && !(is_animal(mtmp->data) || mindless_mon(mtmp))){
 		struct monst *newmon;
 		pline("%s is very grateful!", Monnam(mtmp));
-		newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+		newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED);
 		if (newmon) mtmp = newmon;
 		if (!mtmp->mtame)
 			pline("But, apparently not grateful enough to join you.");
@@ -4592,14 +4593,11 @@ struct obj *tool;
 		if(Role_if(PM_HEALER) || u.sealsActive&SEAL_BUER){
 			You("teleport the fang out of %s heart, treating the wound after you do.", s_suffix(mon_nam(mtmp)));
 			set_template(mtmp, 0);
-			struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+			struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED|TD_LOYAL);
 			if(newmon){
 				mtmp = newmon;
 				newsym(mtmp->mx, mtmp->my);
 				pline("%s comes to %s senses, and is incredibly grateful for the aid!", Monnam(mtmp), mhis(mtmp));
-				if(get_mx(mtmp, MX_EDOG)){
-					EDOG(mtmp)->loyal = 1;
-				}
 			}
 		}
 		else if(mtmp->mhp > (dmg = d(10,4))){
@@ -4613,14 +4611,11 @@ struct obj *tool;
 				set_malign(mtmp);
 			}
 			else {
-				struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+				struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED|TD_LOYAL);
 				if(newmon){
 					mtmp = newmon;
 					newsym(mtmp->mx, mtmp->my);
 					pline("%s comes to %s senses, and is incredibly grateful for the aid!", Monnam(mtmp), mhis(mtmp));
-					if(get_mx(mtmp, MX_EDOG)){
-						EDOG(mtmp)->loyal = 1;
-					}
 				}
 			}
 		}
@@ -4638,14 +4633,11 @@ struct obj *tool;
 		if(Role_if(PM_HEALER) || u.sealsActive&SEAL_BUER){
 			You("extract the fang from %s heart, treating the wound as you do.", s_suffix(mon_nam(mtmp)));
 			set_template(mtmp, 0);
-			struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+			struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED|TD_LOYAL);
 			if(newmon){
 				mtmp = newmon;
 				newsym(mtmp->mx, mtmp->my);
 				pline("%s comes to %s senses, and is incredibly grateful for the aid!", Monnam(mtmp), mhis(mtmp));
-				if(get_mx(mtmp, MX_EDOG)){
-					EDOG(mtmp)->loyal = 1;
-				}
 			}
 		}
 		else if(mtmp->mhp > (dmg = d(20,4))){
@@ -4659,14 +4651,11 @@ struct obj *tool;
 				set_malign(mtmp);
 			}
 			else {
-				struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TRUE);
+				struct monst *newmon = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED|TD_LOYAL);
 				if(newmon){
 					mtmp = newmon;
 					newsym(mtmp->mx, mtmp->my);
 					pline("%s comes to %s senses, and is incredibly grateful for the aid!", Monnam(mtmp), mhis(mtmp));
-					if(get_mx(mtmp, MX_EDOG)){
-						EDOG(mtmp)->loyal = 1;
-					}
 				}
 			}
 		}

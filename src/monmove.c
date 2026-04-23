@@ -1139,7 +1139,7 @@ register struct monst *mtmp;
 				familliar->mvar_witchID = (long)mtmp->m_id;
 				familliar->mpeaceful = mtmp->mpeaceful;
 				if(mtmp->mtame){
-					familliar = tamedog_core(familliar, (struct obj *)0, TRUE);
+					familliar = tamedog_core(familliar, (struct obj *)0, TD_ENHANCED);
 				}
 				//Stop running
 				if(mtmp->mflee && mtmp->mhp > mtmp->mhpmax/2){
@@ -1862,16 +1862,13 @@ register struct monst *mtmp;
 							if((!armor || !arm_blocks_upper_body(armor->otyp)) && (!under || !arm_blocks_upper_body(under->otyp)) && helpless_still(tmon)){
 								pline("%s extracts the fang from %s heart!", Monnam(mtmp), s_suffix(mon_nam(tmon)));
 								set_template(tmon, 0);
-								struct monst *newmon = tamedog_core(tmon, (struct obj *)0, TRUE);
+								struct monst *newmon = tamedog_core(tmon, (struct obj *)0, TD_ENHANCED|TD_LOYAL);
 								if(newmon){
 									tmon = newmon;
 									newsym(tmon->mx, tmon->my);
 									tmon->mpeaceful = mtmp->mpeaceful;
 									if(mtmp->mtame){
 										pline("%s comes to %s senses, and is incredibly grateful for the aid!", Monnam(tmon), mhis(tmon));
-										if(get_mx(tmon, MX_EDOG)){
-											EDOG(tmon)->loyal = 1;
-										}
 									}
 								}
 							}

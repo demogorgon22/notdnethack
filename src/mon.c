@@ -2238,10 +2238,7 @@ movemon()
 		else if(mtmp->mpeaceful && !mtmp->mtame){
 			if(canspotmon(mtmp))
 				pline("%s looks friendly...", Amonnam(mtmp));
-			mtmp = tamedog_core(mtmp, (struct obj *)0, TRUE);
-			if(mtmp && get_mx(mtmp, MX_EDOG)){
-				EDOG(mtmp)->loyal = TRUE;
-			}
+			mtmp = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED|TD_LOYAL);
 		}
 	}
 	if(mtmp->mtyp == PM_DREAD_SERAPH && 

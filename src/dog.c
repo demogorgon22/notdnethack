@@ -1440,11 +1440,10 @@ struct obj *obj;
 }
 
 struct monst *
-tamedog_core(mtmp, obj, enhanced)
-struct monst *mtmp;
-struct obj *obj;
-int enhanced;
+tamedog_core(struct monst *mtmp, struct obj *obj, int td_flags)
 {
+	boolean enhanced = td_flags & TD_ENHANCED;
+	boolean loyal = td_flags & TD_LOYAL;
 	struct monst *curmon, *weakdog = (struct monst *) 0;
 	/* The Wiz, Medusa and the quest nemeses aren't even made peaceful. || mtmp->mtyp == PM_MEDUSA */
 	if (is_untamable(mtmp->data) || mtmp->notame || mtmp->iswiz
@@ -1555,7 +1554,7 @@ int enhanced;
 	    return((struct monst *)0);
 
 	/* before officially taming the target, check how many pets there are and untame one if there are too many */
-	if(!(obj && obj->oclass == SCROLL_CLASS && Confusion)){
+	if(!(obj && obj->oclass == SCROLL_CLASS && Confusion) && !loyal){
 		enough_dogs(1);
 	}
 #ifdef RECORD_ACHIEVE
@@ -1566,6 +1565,10 @@ int enhanced;
 	/* add the pet component */
 	add_mx(mtmp, MX_EDOG);
 	initedog(mtmp);
+	if(loyal && get_mx(mtmp, MX_EDOG)){
+		struct edog *edog = EDOG(mtmp);
+		edog->loyal = 1;
+	}
 	if(obj && obj->otyp == SPE_CHARM_MONSTER){
 		mtmp->mpeacetime = 1;
 	}

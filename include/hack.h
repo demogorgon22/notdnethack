@@ -236,6 +236,10 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 #define MKOBJ_SUMMON	0x04	/* attach ox_esum struct to obj */
 #define MKOBJ_GOODEQUIP	0x08	/* attach ox_esum struct to obj */
 
+/* flags to control tamedog_core() */
+#define TD_ENHANCED	0x01	/* tame many normally untamable monsters */
+#define TD_LOYAL	0x02	/* pet should be loyal */
+
 /* special mhpmax value when loading bones monster to flag as extinct or genocided */
 #define DEFUNCT_MONSTER	(-100)
 

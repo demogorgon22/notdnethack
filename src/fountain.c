@@ -86,7 +86,7 @@ dolavademon()
             if (rnd(100) > (80 + level_difficulty())) {
                 pline("Freed from the depths of Gehennom, %s offers to aid you in your quest!",
                       mhe(mtmp));
-                (void) tamedog_core(mtmp, (struct obj *) 0, TRUE);
+                (void) tamedog_core(mtmp, (struct obj *) 0, TD_ENHANCED);
             } else if (t_at(mtmp->mx, mtmp->my))
                 (void) mintrap(mtmp);
         }

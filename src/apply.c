@@ -1914,7 +1914,7 @@ struct obj *obj;
 				char qbuf[BUFSZ];
 				Sprintf(qbuf, "Turn %s away from your party?", mhim(mon));
 				if(yn(qbuf) != 'y'){
-					struct monst *newmon = tamedog_core(mon, (struct obj *)0, TRUE);
+					struct monst *newmon = tamedog_core(mon, (struct obj *)0, TD_ENHANCED);
 					if(newmon){
 						mon = newmon;
 						newsym(mon->mx, mon->my);
@@ -5753,7 +5753,7 @@ coord *cc;
 		}
 		m_level_up_intrinsic(mtmp);
 		if(master == &youmonst || master->mtame){
-			mtmp = tamedog_core(mtmp, (struct obj *)0, TRUE);
+			mtmp = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED);
 			if(mtmp && get_mx(mtmp, MX_EDOG)){
 				EDOG(mtmp)->dominated = TRUE;
 				EDOG(mtmp)->hungrytime = monstermoves + 4500;
@@ -12376,7 +12376,7 @@ doapply()
 				mtmp->mtame = FALSE;
 			}
 			else {
-				tamedog_core(mtmp, (struct obj *) 0, TRUE);
+				tamedog_core(mtmp, (struct obj *) 0, TD_ENHANCED);
 			}
 			if(pre_research != reanimation_research_ok()){
 				You("have devised a new experiment into the great animating thoughts.");
