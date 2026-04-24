@@ -3419,16 +3419,12 @@ get_premium_heart_multiplier()
 /* special damage bonus */
 /* returns FALSE if no bonus damage was applicable */
 boolean
-spec_dbon(otmp, mon, basedmg, plusdmgptr, truedmgptr)
-struct obj *otmp;
-struct monst *mon;
-int basedmg;
-int * plusdmgptr;
-int * truedmgptr;
+spec_dbon(struct obj *otmp, struct monst *mon, int basedmg, int *plusdmgptr, int *truedmgptr, struct monst *magr)
 {
 	const struct artifact *weap = get_artifact(otmp);
 	int damd = (int)weap->damage;
 	boolean goodpointers = (plusdmgptr && truedmgptr);
+	boolean youagr = (magr == &youmonst);
 	
 	/* check that we were given an artifact */
 	if (!weap)
@@ -3521,6 +3517,11 @@ int * truedmgptr;
 			/* grab the weapon dice from dmgval_core */
 			dmgval_core(&wdice, bigmonst(mon->data), otmp->ocontainer, otmp->ocontainer->otyp, (struct monst *) 0);
 			damd = wdice.oc_damd;
+		}
+		/* The rotted rune boosts holy attacks after crowning */
+		if(youagr && (attacks(AD_HOLY, otmp) && active_glyph(ROTTED_RUNE) && u.uevent.uhand_of_elbereth)){
+			damd = (damd * 3) / 2;
+			dmgtomulti = (dmgtomulti * 3) / 2;
 		}
 		/* The profaned flame should do half damage to fire resistant things */
 		if(otmp->oartifact == ART_PROFANED_GREATSCYTHE && Fire_res(mon)){
@@ -5073,12 +5074,18 @@ int * truedmgptr;
 			*truedmgptr += d(2, 6);
 	}
 	if((youdef ? (hates_holy(youracedata)) : (hates_holy_mon(mdef))) && is_holy(otmp)){
+		int holydmg = 0;
 		if(check_oprop(otmp, OPROP_HOLYW)){
-			*truedmgptr += basedmg;
-			*truedmgptr += mistlight_bonus;
+			holydmg += basedmg;
+			holydmg += mistlight_bonus;
 		}
 		if(check_oprop(otmp, OPROP_LESSER_HOLYW))
-			*truedmgptr += d(2, 6);
+			holydmg += d(2, 6);
+		/* The rotted rune boosts holy attacks after crowning */
+		if(youagr && active_glyph(ROTTED_RUNE) && u.uevent.uhand_of_elbereth){
+			holydmg = (holydmg * 3) / 2;
+		}
+		*truedmgptr += holydmg;
 	}
 	if((youdef ? (hates_unholy(youracedata)) : (hates_unholy_mon(mdef))) && is_unholy(otmp)){
 		if(check_oprop(otmp, OPROP_UNHYW))
@@ -6422,7 +6429,7 @@ boolean printmessages; /* print generic elemental damage messages */
 
 	/* apply spec_dbon to appropriate damage pointers */
 	if (oartifact)
-		spec_dbon(otmp, mdef, basedmg, plusdmgptr, truedmgptr);
+		spec_dbon(otmp, mdef, basedmg, plusdmgptr, truedmgptr, magr);
 	if (!check_oprop(otmp, OPROP_NONE))
 		oproperty_dbon(otmp, magr, mdef, basedmg, plusdmgptr, truedmgptr);
 	if (otmp->obj_material == MERCURIAL)

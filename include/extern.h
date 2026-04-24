@@ -178,7 +178,7 @@ E boolean FDECL(restrict_name, (struct obj *,const char *));
 E void FDECL(set_artifact_intrinsic, (struct obj *,BOOLEAN_P,long));
 E int FDECL(touch_artifact, (struct obj *,struct monst *, int));
 E int FDECL(spec_abon, (struct obj *,struct monst *, boolean));
-E boolean FDECL(spec_dbon, (struct obj *,struct monst *,int,int*,int*));
+E boolean FDECL(spec_dbon, (struct obj *,struct monst *,int,int*,int*,struct monst *));
 E boolean FDECL(oproperty_dbon, (struct obj *, struct monst *, struct monst *, int, int*, int*));
 E boolean FDECL(material_dbon, (struct obj *, struct monst *, struct monst *, int, int*, int*, int));
 E void FDECL(mercy_blade_conflict, (struct monst *, struct monst *, int, boolean));
