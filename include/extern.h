@@ -934,7 +934,7 @@ E void NDECL(violated_vegetarian);
 E void NDECL(sync_hunger);
 #endif
 E void FDECL(newuhs, (BOOLEAN_P));
-E struct obj *FDECL(floorfood, (const char *,int));
+E struct obj *FDECL(floorfood, (const char *,int,boolean));
 E void NDECL(vomit);
 E int FDECL(eaten_stat, (int,struct obj *));
 E void FDECL(food_disappears, (struct obj *));

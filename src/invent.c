@@ -1257,6 +1257,7 @@ register const char *let,*word;
 		    (otyp != CORPSE &&
 		     otyp != SEVERED_HAND &&                    
 		     otyp != EYEBALL &&	/* KMH -- fixed */
+		     otyp != EFFIGY &&
 		     otyp != AMULET_OF_YENDOR && otyp != FAKE_AMULET_OF_YENDOR))
 		|| (!strcmp(word, "research") &&
 		    ((otyp != CORPSE &&
@@ -1624,6 +1625,7 @@ register const char *let,*word;
 #ifdef GOLDOBJ
 	   && !(usegold && otmp->oclass == COIN_CLASS)
 #endif
+	   && !(!strcmp(word, "sacrifice") && otmp->otyp == EFFIGY)
 	   ) {
 		silly_thing(word, otmp);
 		return((struct obj *)0);

@@ -4012,7 +4012,7 @@ doresearch()
     if (In_endgame(&u.uz)) {
 		if (!(otmp = getobj(sacrifice_types, "research"))) return MOVE_CANCELLED;
 	} else {
-		if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1))) return MOVE_CANCELLED;
+		if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1, FALSE))) return MOVE_CANCELLED;
     }
     if (otmp->otyp == CORPSE) {
 		value = monstr[otmp->corpsenm] + 1;
@@ -4786,7 +4786,7 @@ register struct obj *obj;
 		You("seem to be out of tins.");
 		return;
 	}
-	if (!(corpse = floorfood("tin", 2))) return;
+	if (!(corpse = floorfood("tin", 2, FALSE))) return;
 	if (corpse->otyp == CORPSE && corpse->oeaten && !(has_blood(&mons[corpse->corpsenm]) && corpse->odrained && corpse->oeaten == drainlevel(corpse))) {
 		You("cannot tin %s which is partly eaten.",something);
 		return;
@@ -4891,7 +4891,7 @@ use_dissection_kit(struct obj *obj)
 		return;
 	}
 
-	if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1))) return;
+	if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1, FALSE))) return;
 
     if (otmp->otyp != CORPSE) {
 		pline("Carful inspection reveals that this is not, in fact, a fresh corpse.");
@@ -12319,7 +12319,7 @@ doapply()
 		struct obj *corpse;
 		struct monst *mtmp;
 		long age;
-		corpse = floorfood("reanimate", 1);
+		corpse = floorfood("reanimate", 1, FALSE);
 		if(!corpse){
 			struct obj *research_kit = 0;
 			if(!u.veil && reanimation_ok() && (

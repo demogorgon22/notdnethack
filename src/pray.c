@@ -1361,7 +1361,7 @@ int godnum;
 	angrygods(godnum);
 }
 
-static NEARDATA const char sacrifice_types[] = { FOOD_CLASS, AMULET_CLASS, 0 };
+static NEARDATA const char sacrifice_types[] = { FOOD_CLASS, AMULET_CLASS, TOOL_CLASS, 0 };
 
 STATIC_OVL void
 eat_offering(otmp, silently, eatflag)
@@ -1614,11 +1614,11 @@ register struct obj *otmp;
 	Your("sacrifice disappears!");
     else Your("sacrifice is consumed in a %s!",
 	      u.ualign.type == A_LAWFUL ? "flash of light" : "burst of flame");
-	if(u.sealsActive&SEAL_BALAM){
+	if(u.sealsActive&SEAL_BALAM && otmp->otyp == CORPSE){
 		struct permonst *ptr = &mons[otmp->corpsenm];
 		if(!(is_animal(ptr) || nohands(ptr))) unbind(SEAL_BALAM,TRUE);
 	}
-	if(u.sealsActive&SEAL_YMIR){
+	if(u.sealsActive&SEAL_YMIR && otmp->otyp == CORPSE){
 		struct permonst *ptr = &mons[otmp->corpsenm];
 		if(is_giant(ptr)) unbind(SEAL_YMIR,TRUE);
 	}
@@ -1760,7 +1760,7 @@ dosacrifice()
     if (In_endgame(&u.uz)) {
 		if (!(otmp = getobj(sacrifice_types, "sacrifice"))) return MOVE_CANCELLED;
 	} else {
-		if (!(otmp = floorfood("sacrifice", yog_altar_at(u.ux, u.uy) ? 3 : 1))) return MOVE_CANCELLED;
+		if (!(otmp = floorfood("sacrifice", yog_altar_at(u.ux, u.uy) ? 3 : 1, TRUE))) return MOVE_CANCELLED;
     }
     /*
       Was based on nutritional value and aging behavior (< 50 moves).
@@ -1973,6 +1973,21 @@ dosacrifice()
 			} else value += 3;
 		}
     } /* corpse */
+	else if(otmp->otyp == EFFIGY){
+		if (yn_function("Really offer yourself in effigy?",ynchars,'n')=='n') return MOVE_CANCELLED;
+		if (u.ualign.type == altaralign) {
+			/* it's a very good action */
+			if (u.ualign.record < ALIGNLIM)
+				You_feel("appropriately %s.", align_str(u.ualign.type));
+			else You_feel("you are thoroughly on the right path.");
+			adjalign(5);
+			value = u.ulevel + 3;
+		} else {
+			/* your god gets angry and it's a conversion */
+			u.ualign.record = min(-1,u.ualign.record-20);
+			value = 1;
+		}
+	}
 
     if (otmp->otyp == AMULET_OF_YENDOR) {
 		if (!Is_astralevel(&u.uz)) {
@@ -4869,6 +4884,11 @@ int eatflag;
 
 	if(otmp->otyp == AMULET_OF_YENDOR){
 		pline("The Amulet proves inedible.");
+		return;
+	}
+
+	if(otmp->otyp == EFFIGY){
+		pline("The effigy proves inedible.");
 		return;
 	}
 

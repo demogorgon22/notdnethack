@@ -55,6 +55,8 @@ STATIC_DCL boolean force_save_hs;
 
 STATIC_OVL NEARDATA const char comestibles[] = { FOOD_CLASS, 0 };
 
+STATIC_OVL NEARDATA const char offerables[] = { FOOD_CLASS, TOOL_CLASS, 0 };
+
 /* Gold must come first for getobj(). */
 STATIC_OVL NEARDATA const char allobj[] = {
 	COIN_CLASS, WEAPON_CLASS, ARMOR_CLASS, POTION_CLASS, SCROLL_CLASS, TILE_CLASS,
@@ -2863,7 +2865,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		}
 	}
 	
-	if (!(otmp = floorfood("eat", 0))) return MOVE_CANCELLED;
+	if (!(otmp = floorfood("eat", 0, FALSE))) return MOVE_CANCELLED;
 	if (check_capacity((char *)0)) return MOVE_CANCELLED;
 	
 
@@ -4691,10 +4693,9 @@ boolean incr;
 /* Returns an object representing food.  Object may be either on floor or
  * in inventory.
  */
+//	int corpsecheck; /* 0, no check, 1, corpses, 2, tinnable corpses, 3, corpses with blood */
 struct obj *
-floorfood(verb,corpsecheck)	/* get food from floor or pack */
-	const char *verb;
-	int corpsecheck; /* 0, no check, 1, corpses, 2, tinnable corpses, 3, corpses with blood */
+floorfood(const char *verb, int corpsecheck, boolean offering)	/* get food from floor or pack */
 {
 	register struct obj *otmp;
 	char qbuf[QBUFSZ];
@@ -4776,12 +4777,14 @@ floorfood(verb,corpsecheck)	/* get food from floor or pack */
 	 * "ugly checks" and we need to check for inedible items.
 	 */
 	otmp = getobj(feeding ? (const char *)allobj :
+				  offering ? (const char *)offerables :
 				(const char *)comestibles, verb);
-	if (corpsecheck && otmp)
+	if (corpsecheck && otmp && !(offering && otmp->otyp == EFFIGY)){
 	    if (otmp->otyp != CORPSE || (corpsecheck == 2 && !tinnable(otmp))) {
-		You_cant("%s that!", verb);
-		return (struct obj *)0;
+			You_cant("%s that!", verb);
+			return (struct obj *)0;
 	    }
+	}
 	return otmp;
 }
 
