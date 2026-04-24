@@ -227,8 +227,13 @@ check_iksh_na_mutations()
 		u.next_mutation_level = 14;
 	} else if(just_completed == 14){
 		static const int exclude[] = {
+			//Bad flavor
 			TT_HATEFUL_VISION, TT_ODD_EYES_1,
-			TT_CLOCKWORK_EYES, TT_TEARS_OF_BLOOD
+			TT_CLOCKWORK_EYES, TT_TEARS_OF_BLOOD,
+			//Bad effect
+			TT_LIGHT,
+			//Not a second single-eye mutation
+			TT_PARALYSIS_GAZE, TT_CANCEL_GAZE, TT_PROBING_GAZE,
 		};
 		/* identical-effect groups: if any member is held, exclude all members */
 		static const int odd_eyes_grp[] = {

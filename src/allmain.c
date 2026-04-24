@@ -3715,7 +3715,8 @@ karemade:
 			see_monsters();
 		}
 		if(check_mutation(TT_DISCOVERY_1) || check_mutation(TT_DISCOVERY_2) || u.seraph_eyes >= SE_HIDDEN){
-			findit();
+			if(!Blind && !LightBlind)
+				findit();
 		}
 		if(u.utrap && u.utraptype == TT_LAVA) {
 			if(!is_lava(u.ux,u.uy))
