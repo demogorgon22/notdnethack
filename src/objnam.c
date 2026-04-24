@@ -1637,7 +1637,7 @@ boolean adjective;
 			return "lionhide";
 		if (obj->oartifact == ART_XIUHCOATL)
 			return "serpenthide";
-		if (obj->ovar1_tooth_type == SERPENT_TOOTH)
+		if ((obj->otyp == TOOTH || obj->otyp == JAVELIN) && obj->ovar1_tooth_type == SERPENT_TOOTH)
 			return (adjective) ? "serpent-tooth" : "a serpent's tooth";
 		/* hard object made of dragonhide (or described as being dragon-bone) -> bone or tooth */
 		else if ((objects[obj->otyp].oc_material > LEATHER && objects[obj->otyp].oc_material != DRAGON_HIDE)
