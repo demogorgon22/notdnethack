@@ -15696,7 +15696,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 		if (magr && (youagr ? Race_if(PM_GNOME) : is_gnome(pa)))
 			precision_mult += 1;
 		/* drow get bonus +1 mult for droven crossbows */
-		if (magr && (youagr ? (Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DARK_FEY_RI)) : is_drow(pa)) &&
+		if (magr && (youagr ? (RACE_IF_DROW) : is_drow(pa)) &&
 			(launcher->otyp == DROVEN_CROSSBOW))
 			precision_mult += 1;
 

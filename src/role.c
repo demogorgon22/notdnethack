@@ -1187,6 +1187,23 @@ struct Race drow_tiefling =
 	SPE_SLEEP, -5
 };
 
+struct Race aasimar_drow =
+{	"dokkimar", "dokkimar", "dokkimarhood", "Dok", 0,
+	{0, 0},
+	PM_DOKKIMAR, NON_PM, PM_DOKKIMAR_MUMMY, PM_DOKKIMAR,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_AASIMAR,
+	MA_ELF|MA_MINION, 0, MA_DEMON|MA_ORC,
+	/*  Str      Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ 	 STR18(100), 20, 20, 20, 12, 20 },
+	/* Init   Lower  Higher */
+	{  6, 0,  0, 6,  1, 0 },	/* Hit points */
+	{  6, 0,  0, 6,  0, 4 },		/* Energy */
+	NO_NIGHTVISION,
+	SPE_ABJURATION, -20
+};
+
 /* Table of all genders */
 const struct Gender genders[] = {
 	{"male",	"he",	"him",	"his",	"Mal",	ROLE_MALE},
@@ -2193,6 +2210,9 @@ int newgame;
 	else if(Role_if(PM_HEALER) && Race_if(PM_TIEFLING)){
 		urace = drow_tiefling;
 	}
+	else if(Role_if(PM_HEALER) && Race_if(PM_AASIMAR)){
+		urace = aasimar_drow;
+	}
 	else if(Race_if(PM_GITH)){
 		if(flags.initalign == INITALIGN_LAWFUL){
 			//Lawful
@@ -2388,7 +2408,7 @@ int newgame;
 				}
 			}
 		}
-	} else if((Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DARK_FEY_RI)) && Role_if(PM_HEALER)){
+	} else if((RACE_IF_DROW) && Role_if(PM_HEALER)){
 		urole.filecode = "Dhl";
 		urole.lgod = GOD_ILMATER;
 		urole.ngod = GOD_PEN_A;
@@ -2738,7 +2758,7 @@ int newgame;
         urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
         urace.lovemask = 0; /* Pariahs of their race */
 	}
-	else if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DARK_FEY_RI))){
+	else if(Role_if(PM_HEALER) && (RACE_IF_DROW)){
 		urace.lovemask |= MA_FEY|MA_ELF;
 		urace.hatemask = MA_ORC;
 	}

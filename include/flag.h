@@ -234,6 +234,7 @@ struct flag {
 #define AASIMAR_TYPE_SERAPH		4
 #define AASIMAR_TYPE_PRIMINAL	5
 #define AASIMAR_TYPE_CLOUDFACE	6
+#define AASIMAR_TYPE_IKSH_NA	7
 	int aasimar_subtype;
 #define AASIMAR_SUBTYPE_COURE		1
 #define AASIMAR_SUBTYPE_NOVIERE		2

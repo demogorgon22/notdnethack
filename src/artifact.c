@@ -15973,6 +15973,8 @@ do_passive_attacks()
 			dostarblades(&youmonst);
 		if(storm_aasimar(flags.aasimar_subtype) && u.ulevel >= 14 && rn1(17, 13) < u.ulevel)
 			dostorm(&youmonst);
+		if(Race_if(PM_DOKKIMAR) && Insight >= 11 && (rn2(30)+rn2(30)) < u.ulevel)
+			doikshna_gaze(&youmonst);
 		if(flags.aasimar_subtype == AASIMAR_SUBTYPE_GAE && u.ulevel >= 14 && rn1(17, 13) < u.ulevel)
 			dovines(&youmonst);
 		if(check_rot(ROT_CENT))

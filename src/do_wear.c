@@ -3241,6 +3241,9 @@ uchar aatyp;
 			case AASIMAR_TYPE_ELADRIN:
 				bas_udr += u.ulevel >= 30 ? 3 : 1;
 			break;
+			case AASIMAR_TYPE_IKSH_NA:
+				bas_udr += u.ulevel >= 30 ? 2 : 1;
+			break;
 			case AASIMAR_TYPE_CLOUDFACE:
 				if(slot == HEAD_DR)
 					bas_udr += u.ulevel >= 21 ? 7 : 3;

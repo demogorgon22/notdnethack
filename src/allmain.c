@@ -1229,7 +1229,7 @@ you_regen_hp()
 			reglevel += 7;
 		if (Race_if(PM_DROW) && !Upolyd)
 			reglevel += flags.female ? 4 : 8; //Note: blessing of Lolth
-		if (Race_if(PM_DARK_FEY_RI) && !Upolyd)
+		if ((Race_if(PM_DARK_FEY_RI) || Race_if(PM_DOKKIMAR)) && !Upolyd)
 			reglevel += 3; // Reduced elvish blessings
 		// Healer role bonus
 		if (Role_if(PM_HEALER) && !Upolyd)
@@ -1402,7 +1402,7 @@ you_regen_pw()
 			reglevel += 7;
 		if (Race_if(PM_DROW) && !Upolyd)
 			reglevel += flags.female ? 8 : 4;//Note: blessing of Lolth
-		if (Race_if(PM_DARK_FEY_RI) && !Upolyd)
+		if ((Race_if(PM_DARK_FEY_RI) || Race_if(PM_DOKKIMAR)) && !Upolyd)
 			reglevel += 3;  // Reduced elvish blessings
 		if (Race_if(PM_GNOME) && !Upolyd)
 			reglevel += 12;
@@ -7873,6 +7873,33 @@ struct monst *magr;
 		cast_spell(magr, &youmonst, &attkbuff, spellnum, u.ux, u.uy);
 	}
 
+}
+
+void
+doikshna_gaze(magr)
+struct monst *magr;
+{
+	struct monst *mdef = 0, *mtmp;
+	boolean youagr = (magr == &youmonst);
+	struct attack attkbuff = {AT_MAGC, AD_CLRC, 0, 6};
+	int range = BOLT_LIM;
+	int best_dist = range + 1;
+
+	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon){
+		if(DEADMONSTER(mtmp)) continue;
+		if(!mtmp->mcanmove) continue;
+		if(youagr && mtmp->mpeaceful) continue;
+		if(!youagr && ((mtmp->mpeaceful == magr->mpeaceful) || (!!mtmp->mtame == !!magr->mtame))) continue;
+		if(youagr && !canspotmon(mtmp)) continue;
+		if(!youagr && !mon_can_see_mon(magr, mtmp)) continue;
+		int d = distmin(x(magr), y(magr), x(mtmp), y(mtmp));
+		if(d <= range && d < best_dist){
+			best_dist = d;
+			mdef = mtmp;
+		}
+	}
+	if(!mdef) return;
+	cast_spell(magr, mdef, &attkbuff, MOTHER_S_GAZE, x(mdef), y(mdef));
 }
 
 void

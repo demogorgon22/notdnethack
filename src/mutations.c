@@ -74,7 +74,7 @@ const struct mutationtype mutationtypes[] =
 	// Branch from blank white eyes
 	{ TT_INFRAVISION_1, EYE_BP, "infravision", "You can see heat signatures.", "blank white eyes", "Your eyes are blank and white."},
 	{ TT_EXTRAMISSION_1, EYE_BP, "extramission", "You can see in the dark and light.", "blank white eyes", "Your eyes are blank and white."},
-	{ TT_ODD_EYES_2, EYE_BP, "odd eyes", "Your blank gaze can demoralize foes.", "milky eyes", "Your eyes are blank and white."},
+	{ TT_ODD_EYES_2, EYE_BP, "odd eyes", "Your blank gaze can demoralize foes.", "blank white eyes", "Your eyes are blank and white."},
 	// Branch from extra eyes
 	{ TT_BEHOLDER, EYE_BP, "beholder eyes", "You have extra eyes that emit baleful rays.", "extra eyes", "You have many extra eyes."},
 	{ TT_DISCOVERY_1, EYE_BP, "vigilant eyes", "You have extra eyes that can spot hidden things.", "extra eyes", "You have many extra eyes."},
@@ -199,8 +199,107 @@ any_mutation()
 }
 
 void
+init_iksh_na_mutations()
+{
+	static const int large_eye[] = {
+		TT_PARALYSIS_GAZE, TT_CANCEL_GAZE, TT_PROBING_GAZE
+	};
+	u.next_tiefling_mutation = ROLL_FROM(large_eye);
+	u.next_mutation_level = 7;
+}
+
+void
+check_iksh_na_mutations()
+{
+	int just_completed = u.next_mutation_level;
+	if(u.next_tiefling_mutation && u.ulevel >= just_completed){
+		confer_mutation(u.next_tiefling_mutation);
+		u.next_tiefling_mutation = 0;
+	} else {
+		return;
+	}
+	int chosen = 0;
+	if(just_completed == 7){
+		static const int extra_eye[] = {
+			TT_BEHOLDER, TT_DISCOVERY_1, TT_MANY_ODD_EYES
+		};
+		chosen = ROLL_FROM(extra_eye);
+		u.next_mutation_level = 14;
+	} else if(just_completed == 14){
+		static const int exclude[] = {
+			TT_HATEFUL_VISION, TT_ODD_EYES_1,
+			TT_CLOCKWORK_EYES, TT_TEARS_OF_BLOOD
+		};
+		/* identical-effect groups: if any member is held, exclude all members */
+		static const int odd_eyes_grp[] = {
+			TT_ODD_EYES_1, TT_ODD_EYES_2, TT_ODD_EYES_3, TT_MANY_ODD_EYES
+		};
+		static const int extramission_grp[] = { TT_EXTRAMISSION_1, TT_EXTRAMISSION_2 };
+		static const int discovery_grp[]    = { TT_DISCOVERY_1, TT_DISCOVERY_2 };
+		boolean has_odd_eyes = FALSE, has_extramission = FALSE, has_discovery = FALSE;
+		for(int k = 0; k < SIZE(odd_eyes_grp); k++)
+			if(has_mutation(odd_eyes_grp[k])){ has_odd_eyes = TRUE; break; }
+		for(int k = 0; k < SIZE(extramission_grp); k++)
+			if(has_mutation(extramission_grp[k])){ has_extramission = TRUE; break; }
+		for(int k = 0; k < SIZE(discovery_grp); k++)
+			if(has_mutation(discovery_grp[k])){ has_discovery = TRUE; break; }
+		int pool[32]; int count = 0;
+		for(int j = 0; mutationtypes[j].mutation; j++){
+			int mut = mutationtypes[j].mutation;
+			if(mutationtypes[j].bodypart != EYE_BP) continue;
+			if(mut <= LAST_CULT_MUTATION) continue;
+			if(has_mutation(mut)) continue;
+			boolean skip = FALSE;
+			for(int k = 0; k < SIZE(exclude); k++)
+				if(mut == exclude[k]){ skip = TRUE; break; }
+			if(skip) continue;
+			if(has_odd_eyes){
+				boolean in_grp = FALSE;
+				for(int k = 0; k < SIZE(odd_eyes_grp); k++)
+					if(mut == odd_eyes_grp[k]){ in_grp = TRUE; break; }
+				if(in_grp) continue;
+			}
+			if(has_extramission){
+				boolean in_grp = FALSE;
+				for(int k = 0; k < SIZE(extramission_grp); k++)
+					if(mut == extramission_grp[k]){ in_grp = TRUE; break; }
+				if(in_grp) continue;
+			}
+			if(has_discovery){
+				boolean in_grp = FALSE;
+				for(int k = 0; k < SIZE(discovery_grp); k++)
+					if(mut == discovery_grp[k]){ in_grp = TRUE; break; }
+				if(in_grp) continue;
+			}
+			pool[count++] = mut;
+		}
+		if(count > 0){
+			chosen = pool[rn2(count)];
+			u.next_mutation_level = 21;
+		}
+	}
+	/* just_completed == 21: sequence complete, chosen stays 0 */
+	if(chosen){
+		u.next_tiefling_mutation = chosen;
+		if(!Upolyd){
+			for(int j = 0; mutationtypes[j].mutation; j++){
+				if(mutationtypes[j].mutation == chosen){
+					pline("%s", mutationtypes[j].start_forming);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void
 init_natural_mutations()
 {
+	if(Race_if(PM_DOKKIMAR)
+		|| (Race_if(PM_AASIMAR) && flags.aasimar_type == AASIMAR_TYPE_IKSH_NA)){
+		init_iksh_na_mutations();
+		return;
+	}
 	if(!Race_if(PM_TIEFLING) && !Race_if(PM_DARK_FEY_RI)) return;
 	int mutation_blacklist[] = {TT_TEARS_OF_BLOOD, TT_BLINDING_HAIR, TT_WINGS_1, TT_WINGS_2, TT_WINGS_3, TT_WINGS_4, TT_WINGS_5, TT_MAGIC_BREATHING };
 	int possible_mutations[LAST_TIEFLING_TRAIT];
@@ -227,6 +326,11 @@ init_natural_mutations()
 void
 check_natural_mutations()
 {
+	if(Race_if(PM_DOKKIMAR)
+		|| (Race_if(PM_AASIMAR) && flags.aasimar_type == AASIMAR_TYPE_IKSH_NA)){
+		check_iksh_na_mutations();
+		return;
+	}
 	if(!Race_if(PM_TIEFLING) && !Race_if(PM_DARK_FEY_RI)) return;
 	if(u.next_tiefling_mutation && u.ulevel >= u.next_mutation_level){
 		confer_mutation(u.next_tiefling_mutation);

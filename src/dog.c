@@ -87,7 +87,7 @@ pet_type()
 		}
 		return (PM_GIANT_SPIDER);
 	}
-	else if(Race_if(PM_DARK_FEY_RI)){
+	else if(Race_if(PM_DARK_FEY_RI) || Race_if(PM_DOKKIMAR)){
 		if (Role_if(PM_HEALER)){
 			return (PM_KNIGHT);
 		}
@@ -95,7 +95,7 @@ pet_type()
 			return (PM_CAVE_SPIDER);
 		else if(preferred_pet == ':')
 			return (PM_BABY_CAVE_LIZARD);
-		else 
+		else
 			return (rn2(3) ? PM_CAVE_SPIDER : PM_BABY_CAVE_LIZARD);
 	}
 	else if(Race_if(PM_FORMIAN)){

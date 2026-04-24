@@ -4264,7 +4264,7 @@ dlb *fd;
 		prevstair.y = y;
 	}
 	
-	if(Role_if(PM_HEALER) && (Race_if(PM_DROW) || Race_if(PM_DRIDER) || Race_if(PM_DARK_FEY_RI))){
+	if(Role_if(PM_HEALER) && (RACE_IF_DROW)){
 		//Up stair
 		if(u.uz.dlevel > 1 && u.uz.dlevel <= 4){
 			if(dungeons[u.uz.dnum].connect_side[u.uz.dlevel-2] == CON_UNSPECIFIED){

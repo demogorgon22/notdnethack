@@ -456,6 +456,7 @@
 #define is_ettin(ptr)		((ptr)->mtyp == PM_ETTIN)
 #define is_human(ptr)		(((ptr)->mflagsa & MA_HUMAN) != 0L)
 #define is_tiefling_mtyp(mtyp)	((mtyp) == PM_TIEFLING || (mtyp) == PM_DARK_FEY_RI)
+#define is_aasimar_mtyp(mtyp)	((mtyp) == PM_AASIMAR || (mtyp) == PM_DOKKIMAR)
 #define is_untamable(ptr)	(((ptr)->mflagsg & MG_NOTAME) != 0L)
 #define is_unwishable(ptr)	((((ptr)->mflagsg & MG_NOWISH) != 0L) || (G_C_INST((ptr)->geno) > u.uinsight) || ((((ptr)->mflagsg&MG_FUTURE_WISH) != 0L) && !Role_if(PM_TOURIST)))
 #define is_fungus(ptr)		((ptr)->mlet == S_FUNGUS)
@@ -776,7 +777,7 @@
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
 								&& !is_auton(ptr) \
 								&& !is_tiefling_mtyp((ptr)->mtyp) \
-								&& (ptr)->mtyp != PM_AASIMAR \
+								&& !is_aasimar_mtyp((ptr)->mtyp) \
 								&& (ptr)->mtyp != PM_OONA \
 								&& (ptr)->mtyp != PM_CHAOS \
 								&& (ptr)->mtyp != PM_KARY__THE_FIEND_OF_FIRE \
