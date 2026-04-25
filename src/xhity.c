@@ -1457,6 +1457,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 				continue;
 			/* do the tinkering */
 			xtinkery(magr, mdef, attk, vis);
+			mon_ranged_gazeonly = FALSE;
 			/* increment number of attacks made */
 			attacksmade++;
 			break;
@@ -1480,6 +1481,7 @@ xattacky(struct monst *magr, struct monst *mdef, int tarx, int tary, long modifi
 				wakeup2(mdef, youagr);
 				/* increment number of attacks made */
 				attacksmade++;
+				mon_ranged_gazeonly = FALSE;
 				/* Asmodeus randomly stops his casting early? */
 				if (pa->mtyp == PM_ASMODEUS && !rn2(3))
 					result |= MM_AGR_STOP;
