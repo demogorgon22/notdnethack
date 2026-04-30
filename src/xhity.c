@@ -2063,7 +2063,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 			&& !(uwep && (uwep->otyp == STILETTOS || uwep->otyp == WIND_AND_FIRE_WHEELS))
 		) {
 			/* follow a weapon attack with an offhand attack */
-			if (prev_attack.aatyp == AT_WEAP && attk->aatyp != AT_XWEP
+			if ((prev_attack.aatyp == AT_WEAP || prev_attack.polywep) && attk->aatyp != AT_XWEP
 				&& !check_subout(subout, SUBOUT_XWEP)
 			) {
 				fromlist = FALSE;
@@ -2107,18 +2107,29 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 		}
 		if (attk->aatyp == AT_WEAP && check_mutation(TT_ATTRACTIVE_1) && !uwep && !(u.twoweap && uswapwep) && !check_subout(subout, SUBOUT_T_SEDUCE_STEAL)){
 			/* replace first unarmed weapon attack with a seduction steal attack */
-			attk->aatyp = AT_CLAW;
-			attk->adtyp = AD_SEDU;
-			attk->damn = 0;
-			attk->damd = 0;
+			if(mdef && mdef->minvent){
+				attk->aatyp = AT_CLAW;
+				attk->adtyp = AD_SEDU;
+				attk->damn = 0;
+				attk->damd = 0;
+				attk->polywep = TRUE;
+			}
 			add_subout(subout, SUBOUT_T_SEDUCE_STEAL);
 		}
-		if (attk->aatyp == AT_WEAP && check_mutation(TT_ATTRACTIVE_2) && !uwep && !(u.twoweap && uswapwep) && !check_subout(subout, SUBOUT_T_SEDUCE_DISARM)){
+		if (attk->aatyp == AT_WEAP && check_mutation(TT_ATTRACTIVE_2) && mdef && !uwep && !(u.twoweap && uswapwep) && !check_subout(subout, SUBOUT_T_SEDUCE_DISARM)){
 			/* replace second unarmed weapon attack with a seduction disarm attack */
+			int oldtyp = attk->adtyp;
 			attk->aatyp = AT_CLAW;
 			attk->adtyp = AD_SSEX;
-			attk->damn = 0;
-			attk->damd = 0;
+			if(could_seduce(magr, mdef, attk) == 1){
+				attk->damn = 0;
+				attk->damd = 0;
+			}
+			else {
+				attk->aatyp = AT_WEAP;
+				attk->adtyp = oldtyp;
+				attk->polywep = TRUE;
+			}
 			add_subout(subout, SUBOUT_T_SEDUCE_DISARM);
 		}
 	}
