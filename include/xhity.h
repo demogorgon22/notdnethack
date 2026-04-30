@@ -58,12 +58,6 @@
 #define ATTACKCHECK_ATTACK		0x01	/* attack normally */
 #define ATTACKCHECK_BLDTHRST	0x02	/* attack against the player's will */
 
-/* TODO: put these in their specified header files */
-/* mondata.h */
-#define is_holy_mon(mon)	(is_angel((mon)->data) || has_template(mon, ILLUMINATED) || (mon)->mtyp == PM_DREAD_SERAPH)
-#define is_unholy_mon(mon)	(is_demon((mon)->data) || (mon)->mtyp == PM_DREAD_SERAPH)
-#define is_unblessed_mon(mon)	(is_auton((mon)->data) || is_rilmani((mon)->data) || is_kamerel((mon)->data))
-
 #define SUBOUT_SPELLS	 1	/* Spellcasting attack instead (Five Fiends of Chaos1 and Gae and silverknight) */
 #define SUBOUT_BAEL1	 2	/* Bael's Sword Archon attack chain */
 #define SUBOUT_BAEL2	 3	/* Bael's marilith-hands attack chain */

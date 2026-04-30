@@ -944,6 +944,18 @@
 /*Note: No-modifier helms are "normal"*/
 #define helm_size_fits(ptr,obj)	((ptr->mtyp == PM_MOON_S_CHOSEN ? obj->objsize == MZ_GIGANTIC : obj->objsize == ptr->msize) || (is_hat(obj) && obj->objsize <= (ptr->msize+1)))
 
+#define is_holy_mon(mon)	((mon == &youmonst) ? is_holy_ptr(youracedata) : is_holy_monster(mon))
+#define is_unholy_mon(mon)	((mon == &youmonst) ? is_unholy_ptr(youracedata) : is_unholy_monster(mon))
+#define is_unblessed_mon(mon)	((mon == &youmonst) ? is_unblessed_ptr(youracedata) : is_unblessed_monster(mon))
+
+#define is_holy_monster(mon)	(is_angel((mon)->data) || has_template(mon, ILLUMINATED) || (mon)->mtyp == PM_DREAD_SERAPH || is_aasimar_mtyp((mon)->mtyp))
+#define is_unholy_monster(mon)	(is_demon((mon)->data) || (mon)->mtyp == PM_DREAD_SERAPH)
+#define is_unblessed_monster(mon)	(is_auton((mon)->data) || is_rilmani((mon)->data) || is_kamerel((mon)->data))
+
+#define is_holy_ptr(ptr)	(is_angel((ptr)) || (ptr)->mtyp == PM_DREAD_SERAPH || is_aasimar_mtyp((ptr)->mtyp))
+#define is_unholy_ptr(ptr)	(is_demon((ptr)) || (ptr)->mtyp == PM_DREAD_SERAPH)
+#define is_unblessed_ptr(ptr)	(is_auton((ptr)) || is_rilmani((ptr)) || is_kamerel((ptr)))
+
 #define hates_holy_mon(mon)	((mon) == &youmonst ? hates_holy(youracedata) : hates_holy((mon)->data))
 #define hates_holy(ptr)		(is_demon(ptr) || (is_undead(ptr) && ptr->mtyp != PM_DREAD_SERAPH) || (((ptr)->mflagsg&MG_HATESHOLY) != 0))
 #define hates_unholy(ptr)	((ptr->mflagsg&MG_HATESUNHOLY) != 0)
