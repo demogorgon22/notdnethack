@@ -1953,7 +1953,7 @@ struct obj * weapon;
 
 		if (hates_holy_mon(mdef) && (
 			(attk->adtyp == AD_ACFR) ||
-			(magr && is_holy_mon(magr)) ||
+			(magr && (is_holy_mon(magr) || magr->mtyp == PM_UVUUDAUM)) ||
 			(otmp && is_holy(otmp)) ||
 			(youagr && slot == W_ARMG && uright && is_holy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_holy(uleft))
@@ -1962,7 +1962,7 @@ struct obj * weapon;
 
 		if (hates_unholy_mon(mdef) && (
 			(attk->adtyp == AD_UHCD) ||
-			(magr && is_unholy_mon(magr)) ||
+			(magr && (is_unholy_mon(magr) || magr->mtyp == PM_UVUUDAUM)) ||
 			(otmp && (obj_is_material(otmp, GREEN_STEEL) || is_unholy(otmp))) ||
 			(youagr && slot == W_ARMG && uright && is_unholy(uright)) ||
 			(youagr && slot == W_ARMG && uleft && is_unholy(uleft))
