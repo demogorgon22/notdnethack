@@ -2924,6 +2924,8 @@ give_quest_trophy()
 		achieve.trophies |= MAD_QUEST;
 	else if(urole.neminum == PM_MASTER_KAEN)
 		achieve.trophies |= MONK_QUEST;
+	else if(urole.neminum == PM_BLUE_EYED_FOX)
+		achieve.trophies |= KEN_QUEST;
 	else if(urole.neminum == PM_INDEX_WOLF)
 		achieve.trophies |= UH_QUEST;
 	else if(urole.neminum == PM_CYCLOPS)
@@ -2955,6 +2957,16 @@ give_ascension_trophy()
 		achieve.trophies |= HALF_ASC;
 	else if(Race_if(PM_YUKI_ONNA))
 		achieve.trophies |= YUKI_ASC;
+	else if(Race_if(PM_CENTAUR) || Race_if(PM_FORMIAN) || Race_if(PM_DRIDER))
+		achieve.trophies |= CEN_ASC;
+	else if(Race_if(PM_TIEFLING) || Race_if(PM_DARK_FEY_RI))
+		achieve.trophies |= TIE_ASC;
+	else if(Race_if(PM_AASIMAR) || Race_if(PM_DOKKIMAR))
+		achieve.trophies |= AAS_ASC;
+	else if(Race_if(PM_SILVERMAN))
+		achieve.trophies |= SIL_ASC;
+	else if(Race_if(PM_SILVERKNIGHT))
+		achieve.trophies |= SKN_ASC;
 
 	int i;
 	int keys = 0;

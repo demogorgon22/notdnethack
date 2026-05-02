@@ -776,7 +776,13 @@ struct u_achieve {
 #define	IEA_UPGRADES	0x1LL << 52
 #define	UH_QUEST		0x1LL << 53
 #define	UH_ASC			0x1LL << 54
-#define ACHIEVE_NUMBER	53
+#define	KEN_QUEST		0x1LL << 55
+#define CEN_ASC			0x1LL << 56
+#define TIE_ASC			0x1LL << 57
+#define AAS_ASC			0x1LL << 58
+#define SIL_ASC			0x1LL << 59
+#define SKN_ASC			0x1LL << 60
+#define ACHIEVE_NUMBER	61
 };
 
 E struct u_achieve achieve;
