@@ -2873,7 +2873,7 @@ long prop;
 		}
 	}
 	if(count >= 15){
-		achieve.trophies |= IEA_UPGRADES;
+		set_trophy(IEA_UPGRADES);
 	}
 }
 
@@ -2881,60 +2881,60 @@ void
 give_quest_trophy()
 {
 	if(urole.neminum == PM_MINION_OF_TEZCATLIPOCA)
-		achieve.trophies |= ARC_QUEST;
+		set_trophy(ARC_QUEST);
 	else if(urole.neminum == PM_CHROMATIC_DRAGON)
-		achieve.trophies |= CAV_QUEST;
+		set_trophy(CAV_QUEST);
 	else if(urole.neminum == PM_WARDEN_ARIANNA)
-		achieve.trophies |= CON_QUEST;
+		set_trophy(CON_QUEST);
 	else if(urole.neminum == PM_NECROMANCER)
-		achieve.trophies |= ELF_SHR_QUEST;
+		set_trophy(ELF_SHR_QUEST);
 	else if(flags.initgend && (urole.neminum == PM_SEYLL_AUZKOVYN || urole.neminum == PM_ECLAVDRA))
-		achieve.trophies |= DRO_SHR_QUEST;
+		set_trophy(DRO_SHR_QUEST);
 	else if(!flags.initgend && (urole.neminum == PM_DARUTH_XAXOX || urole.neminum == PM_ECLAVDRA))
-		achieve.trophies |= HDR_SHR_QUEST;
+		set_trophy(HDR_SHR_QUEST);
 	else if(urole.neminum == PM_NIMUNE)
-		achieve.trophies |= KNI_QUEST;
+		set_trophy(KNI_QUEST);
 	else if(Role_if(PM_ANACHRONONAUT)){
 		if(Race_if(PM_ANDROID))
-			achieve.trophies |= AND_QUEST;
+			set_trophy(AND_QUEST);
 		else
-			achieve.trophies |= ANA_QUEST;
+			set_trophy(ANA_QUEST);
 	}
 	else if(urole.neminum == PM_ACERERAK)
-		achieve.trophies |= BIN_QUEST;
+		set_trophy(BIN_QUEST);
 	else if(urole.neminum == PM_REBEL_RINGLEADER)
-		achieve.trophies |= NOB_QUEST;
+		set_trophy(NOB_QUEST);
 	else if(urole.neminum == PM_DURIN_S_BANE)
-		achieve.trophies |= DWA_NOB_QUEST;
+		set_trophy(DWA_NOB_QUEST);
 	else if(urole.neminum == PM_BOLG)
-		achieve.trophies |= DWA_KNI_QUEST;
+		set_trophy(DWA_KNI_QUEST);
 	else if(urole.neminum == PM_ELDER_BRAIN)
-		achieve.trophies |= DRO_NOB_QUEST;
+		set_trophy(DRO_NOB_QUEST);
 	else if(urole.neminum == PM_A_SALOM)
-		achieve.trophies |= HDR_NOB_QUEST;
+		set_trophy(HDR_NOB_QUEST);
 	else if(urole.neminum == PM_BASTARD_OF_THE_BOREAL_VALLEY)
-		achieve.trophies |= FEM_DRA_NOB_QUEST;
+		set_trophy(FEM_DRA_NOB_QUEST);
 	else if(urole.neminum == PM_BLACKBEARD_S_GHOST)
-		achieve.trophies |= PIR_QUEST;
+		set_trophy(PIR_QUEST);
 	else if(urole.neminum == PM_AGLAOPE)
-		achieve.trophies |= BRD_QUEST;
+		set_trophy(BRD_QUEST);
 	else if(urole.neminum == PM_GREAT_HIGH_SHAMAN_OF_KURTULMAK)
-		achieve.trophies |= GNO_RAN_QUEST;
+		set_trophy(GNO_RAN_QUEST);
 	else if(urole.neminum == PM_DOCTOR_ARCHER)
-		achieve.trophies |= MAD_QUEST;
+		set_trophy(MAD_QUEST);
 	else if(urole.neminum == PM_MASTER_KAEN)
-		achieve.trophies |= MONK_QUEST;
+		set_trophy(MONK_QUEST);
 	else if(urole.neminum == PM_BLUE_EYED_FOX)
-		achieve.trophies |= KEN_QUEST;
+		set_trophy(KEN_QUEST);
 	else if(urole.neminum == PM_INDEX_WOLF)
-		achieve.trophies |= UH_QUEST;
+		set_trophy(UH_QUEST);
 	else if(urole.neminum == PM_CYCLOPS)
-		achieve.trophies |= HEA_QUEST;
+		set_trophy(HEA_QUEST);
 	else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
-		achieve.trophies |= DRO_HEA_QUEST;
+		set_trophy(DRO_HEA_QUEST);
 	
 	if(quest_status.second_thoughts)
-		achieve.trophies |= SECOND_THOUGHTS;
+		set_trophy(SECOND_THOUGHTS);
 }
 #endif
 
@@ -2943,30 +2943,30 @@ void
 give_ascension_trophy()
 {
 	if(Role_if(PM_ANACHRONONAUT) && flags.questprogress == 2)
-		achieve.trophies |= ANA_ASC;
+		set_trophy(ANA_ASC);
 	else if(Role_if(PM_EXILE))
-		achieve.trophies |= BIN_ASC;
+		set_trophy(BIN_ASC);
 	else if(Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && philosophy_index(u.ualign.god))
-		achieve.trophies |= UH_ASC;
+		set_trophy(UH_ASC);
 		
 	if(Race_if(PM_CLOCKWORK_AUTOMATON))
-		achieve.trophies |= CLOCK_ASC;
+		set_trophy(CLOCK_ASC);
 	else if(Race_if(PM_CHIROPTERAN))
-		achieve.trophies |= CHIRO_ASC;
+		set_trophy(CHIRO_ASC);
 	else if(Race_if(PM_HALF_DRAGON))
-		achieve.trophies |= HALF_ASC;
+		set_trophy(HALF_ASC);
 	else if(Race_if(PM_YUKI_ONNA))
-		achieve.trophies |= YUKI_ASC;
+		set_trophy(YUKI_ASC);
 	else if(Race_if(PM_CENTAUR) || Race_if(PM_FORMIAN) || Race_if(PM_DRIDER))
-		achieve.trophies |= CEN_ASC;
+		set_trophy(CEN_ASC);
 	else if(Race_if(PM_TIEFLING) || Race_if(PM_DARK_FEY_RI))
-		achieve.trophies |= TIE_ASC;
+		set_trophy(TIE_ASC);
 	else if(Race_if(PM_AASIMAR) || Race_if(PM_DOKKIMAR))
-		achieve.trophies |= AAS_ASC;
+		set_trophy(AAS_ASC);
 	else if(Race_if(PM_SILVERMAN))
-		achieve.trophies |= SIL_ASC;
+		set_trophy(SIL_ASC);
 	else if(Race_if(PM_SILVERKNIGHT))
-		achieve.trophies |= SKN_ASC;
+		set_trophy(SKN_ASC);
 
 	int i;
 	int keys = 0;
@@ -2975,7 +2975,7 @@ give_ascension_trophy()
 			keys++;
 	}
 	if(keys <= 2)
-		achieve.trophies |= SPEED_PHASE;
+		set_trophy(SPEED_PHASE);
 	
 	//There were some bugs with these, which *should* be fixed, but check all of them anyway.
 	check_mithardir_trophy();
@@ -2990,7 +2990,7 @@ give_ascension_trophy()
 void
 give_lamashtu_trophy()
 {
-	achieve.trophies |= LAMASHTU_KILL;
+	set_trophy(LAMASHTU_KILL);
 }
 #endif
 
@@ -2998,7 +2998,7 @@ give_lamashtu_trophy()
 void
 give_baalphegor_trophy()
 {
-	achieve.trophies |= BAALPHEGOR_KILL;
+	set_trophy(BAALPHEGOR_KILL);
 }
 #endif
 
@@ -3006,7 +3006,7 @@ give_baalphegor_trophy()
 void
 give_angel_vault_trophy()
 {
-	achieve.trophies |= ANGEL_VAULT;
+	set_trophy(ANGEL_VAULT);
 }
 #endif
 
@@ -3014,7 +3014,7 @@ give_angel_vault_trophy()
 void
 give_ancient_vault_trophy()
 {
-	achieve.trophies |= ANCIENT_VAULT;
+	set_trophy(ANCIENT_VAULT);
 }
 #endif
 
@@ -3022,7 +3022,7 @@ give_ancient_vault_trophy()
 void
 give_tannin_vault_trophy()
 {
-	achieve.trophies |= TANNINIM_VAULT;
+	set_trophy(TANNINIM_VAULT);
 }
 #endif
 
@@ -3030,7 +3030,7 @@ give_tannin_vault_trophy()
 void
 give_devil_vault_trophy()
 {
-	achieve.trophies |= DEVIL_VAULT;
+	set_trophy(DEVIL_VAULT);
 }
 #endif
 
@@ -3038,7 +3038,7 @@ give_devil_vault_trophy()
 void
 give_demon_vault_trophy()
 {
-	achieve.trophies |= DEMON_VAULT;
+	set_trophy(DEMON_VAULT);
 }
 #endif
 
@@ -3083,7 +3083,7 @@ int hv_id;
 void
 give_castle_trophy()
 {
-	achieve.trophies |= CASTLE_WISH;
+	set_trophy(CASTLE_WISH);
 }
 #endif
 
@@ -3091,7 +3091,7 @@ give_castle_trophy()
 void
 give_ugwish_trophy()
 {
-	achieve.trophies |= UNKNOWN_WISH;
+	set_trophy(UNKNOWN_WISH);
 }
 #endif
 
@@ -3099,7 +3099,7 @@ give_ugwish_trophy()
 void
 give_law_trophy()
 {
-	achieve.trophies |= LAW_QUEST;
+	set_trophy(LAW_QUEST);
 }
 #endif
 
@@ -3107,7 +3107,7 @@ give_law_trophy()
 void
 give_neutral_trophy()
 {
-	achieve.trophies |= NEU_QUEST;
+	set_trophy(NEU_QUEST);
 }
 #endif
 
@@ -3116,7 +3116,7 @@ void
 give_chaos_temple_trophy()
 {
 	if(chaos_dvariant == TEMPLE_OF_CHAOS)
-		achieve.trophies |= CHA_QUEST;
+		set_trophy(CHA_QUEST);
 }
 #endif
 
@@ -3126,7 +3126,7 @@ check_mithardir_trophy()
 {
 	if(chaos_dvariant == MITHARDIR){
 		if(u.ufirst_light && u.ufirst_sky && u.ufirst_life)
-			achieve.trophies |= MITH_QUEST;
+			set_trophy(MITH_QUEST);
 	}
 }
 #endif
@@ -3136,7 +3136,7 @@ void
 give_mordor_trophy()
 {
 	if(chaos_dvariant == MORDOR)
-		achieve.trophies |= MORD_QUEST;
+		set_trophy(MORD_QUEST);
 }
 #endif
 
@@ -3147,7 +3147,7 @@ check_illumian_trophy()
 	int syls;
 	syls = u.uaesh + u.ukrau + u.uhoon + u.uuur + u.unaen + u.uvaul;
 	if(u.ufirst_light && u.ufirst_sky && u.ufirst_life && u.ufirst_know && syls >= 30 && u.sealsUsed&SEAL_TENEBROUS)
-		achieve.trophies |= ILLUMIAN;
+		set_trophy(ILLUMIAN);
 }
 #endif
 
@@ -3155,7 +3155,7 @@ check_illumian_trophy()
 void
 give_rescue_trophy()
 {
-	achieve.trophies |= RESCUE;
+	set_trophy(RESCUE);
 }
 #endif
 
@@ -3165,7 +3165,7 @@ check_loadout_trophy()
 {
 	long allupgrades = (OIL_STOVE|WOOD_STOVE|FAST_SWITCH|EFFICIENT_SWITCH|ARMOR_PLATING|PHASE_ENGINE|MAGIC_FURNACE|HELLFIRE_FURNACE|SCRAP_MAW);
 	if((u.clockworkUpgrades&allupgrades) == allupgrades)
-		achieve.trophies |= FULL_LOADOUT;
+		set_trophy(FULL_LOADOUT);
 }
 #endif
 
@@ -3173,7 +3173,7 @@ check_loadout_trophy()
 void
 give_nightmare_hunter_trophy()
 {
-	achieve.trophies |= NIGHTMAREHUNTER;
+	set_trophy(NIGHTMAREHUNTER);
 }
 #endif
 
@@ -3188,7 +3188,7 @@ check_madman_trophy()
 			count++;
 	}
 	if(count >= 6)
-		achieve.trophies |= QUITE_MAD;
+		set_trophy(QUITE_MAD);
 }
 #endif
 
@@ -3197,7 +3197,7 @@ void
 check_drunkard_trophy()
 {
 	if(u.udrunken >= 90)
-		achieve.trophies |= TOTAL_DRUNK;
+		set_trophy(TOTAL_DRUNK);
 }
 #endif
 
@@ -3205,7 +3205,7 @@ check_drunkard_trophy()
 void
 give_bokrug_trophy()
 {
-	achieve.trophies |= BOKRUG_QUEST;
+	set_trophy(BOKRUG_QUEST);
 }
 #endif
 

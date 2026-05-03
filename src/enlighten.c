@@ -3070,7 +3070,7 @@ boolean dumping;
 	}
 	if(is_june()){
 #define	CHECK_ACHIEVE(aflag, string) \
-	if(achieve.trophies&aflag){\
+	if(check_trophy(aflag)){\
 		put_enl(string);\
 	}
 		put_enl("");

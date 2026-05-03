@@ -719,73 +719,76 @@ struct u_achieve {
 		Bitfield(killed_lucifer,1);		/* Bragging rights */
 		Bitfield(killed_asmodeus,1);		/* Bragging rights */
 		Bitfield(killed_demogorgon,1);		/* Bragging rights */
-		unsigned long long	trophies;	/* Flags for Junethack trophies */
-		unsigned long iea_flags;	/* IEA flags for Junethack trophy */
-#define	ARC_QUEST		0x1LL << 0
-#define	CAV_QUEST		0x1LL << 1
-#define	CON_QUEST		0x1LL << 2
-#define	KNI_QUEST		0x1LL << 3
-#define	ANA_QUEST		0x1LL << 4
-#define	AND_QUEST		0x1LL << 5
-#define	ANA_ASC			0x1LL << 6
-#define	BIN_QUEST		0x1LL << 7
-#define	BIN_ASC			0x1LL << 8
-#define	PIR_QUEST		0x1LL << 9
-#define	BRD_QUEST		0x1LL << 10
-#define	NOB_QUEST		0x1LL << 11
-#define	HDR_NOB_QUEST	0x1LL << 12
-#define	HDR_SHR_QUEST	0x1LL << 13
-#define	DRO_NOB_QUEST	0x1LL << 14
-#define	DRO_SHR_QUEST	0x1LL << 15
-#define	DWA_NOB_QUEST	0x1LL << 16
-#define	DWA_KNI_QUEST	0x1LL << 17
-#define	GNO_RAN_QUEST	0x1LL << 18
-#define	ELF_SHR_QUEST	0x1LL << 19
-#define	CLOCK_ASC		0x1LL << 20
-#define	CHIRO_ASC		0x1LL << 21
-#define	YUKI_ASC		0x1LL << 22
-#define	HALF_ASC		0x1LL << 23
-#define	LAW_QUEST		0x1LL << 24
-#define	NEU_QUEST		0x1LL << 25
-#define	CHA_QUEST		0x1LL << 26
-#define	MITH_QUEST		0x1LL << 27
-#define	MORD_QUEST		0x1LL << 28
-#define	SECOND_THOUGHTS	0x1LL << 29
-#define	ILLUMIAN		0x1LL << 30
-#define	RESCUE			0x1LL << 31
-#define	FULL_LOADOUT	0x1LL << 32
-#define	NIGHTMAREHUNTER	0x1LL << 33
-#define	SPEED_PHASE		0x1LL << 34
-#define	QUITE_MAD		0x1LL << 35
-#define	TOTAL_DRUNK		0x1LL << 36
-#define	MAD_QUEST		0x1LL << 37
-#define	LAMASHTU_KILL	0x1LL << 38
-#define	BAALPHEGOR_KILL	0x1LL << 39
-#define	ANGEL_VAULT		0x1LL << 40
-#define	ANCIENT_VAULT	0x1LL << 41
-#define	TANNINIM_VAULT	0x1LL << 42
-#define	CASTLE_WISH		0x1LL << 43
-#define	UNKNOWN_WISH	0x1LL << 44
-#define	FEM_DRA_NOB_QUEST	0x1LL << 45
-#define	DEVIL_VAULT		0x1LL << 46
-#define	DEMON_VAULT		0x1LL << 47
-#define	BOKRUG_QUEST	0x1LL << 48
-#define	HEA_QUEST		0x1LL << 49
-#define	DRO_HEA_QUEST	0x1LL << 50
-#define	MONK_QUEST		0x1LL << 51
-#define	IEA_UPGRADES	0x1LL << 52
-#define	UH_QUEST		0x1LL << 53
-#define	UH_ASC			0x1LL << 54
-#define	KEN_QUEST		0x1LL << 55
-#define CEN_ASC			0x1LL << 56
-#define TIE_ASC			0x1LL << 57
-#define AAS_ASC			0x1LL << 58
-#define SIL_ASC			0x1LL << 59
-#define SKN_ASC			0x1LL << 60
+#define	ARC_QUEST		0
+#define	CAV_QUEST		1
+#define	CON_QUEST		2
+#define	KNI_QUEST		3
+#define	ANA_QUEST		4
+#define	AND_QUEST		5
+#define	ANA_ASC			6
+#define	BIN_QUEST		7
+#define	BIN_ASC			8
+#define	PIR_QUEST		9
+#define	BRD_QUEST		10
+#define	NOB_QUEST		11
+#define	HDR_NOB_QUEST	12
+#define	HDR_SHR_QUEST	13
+#define	DRO_NOB_QUEST	14
+#define	DRO_SHR_QUEST	15
+#define	DWA_NOB_QUEST	16
+#define	DWA_KNI_QUEST	17
+#define	GNO_RAN_QUEST	18
+#define	ELF_SHR_QUEST	19
+#define	CLOCK_ASC		20
+#define	CHIRO_ASC		21
+#define	YUKI_ASC		22
+#define	HALF_ASC		23
+#define	LAW_QUEST		24
+#define	NEU_QUEST		25
+#define	CHA_QUEST		26
+#define	MITH_QUEST		27
+#define	MORD_QUEST		28
+#define	SECOND_THOUGHTS	29
+#define	ILLUMIAN		30
+#define	RESCUE			31
+#define	FULL_LOADOUT	32
+#define	NIGHTMAREHUNTER	33
+#define	SPEED_PHASE		34
+#define	QUITE_MAD		35
+#define	TOTAL_DRUNK		36
+#define	MAD_QUEST		37
+#define	LAMASHTU_KILL	38
+#define	BAALPHEGOR_KILL	39
+#define	ANGEL_VAULT		40
+#define	ANCIENT_VAULT	41
+#define	TANNINIM_VAULT	42
+#define	CASTLE_WISH		43
+#define	UNKNOWN_WISH	44
+#define	FEM_DRA_NOB_QUEST	45
+#define	DEVIL_VAULT		46
+#define	DEMON_VAULT		47
+#define	BOKRUG_QUEST	48
+#define	HEA_QUEST		49
+#define	DRO_HEA_QUEST	50
+#define	MONK_QUEST		51
+#define	IEA_UPGRADES	52
+#define	UH_QUEST		53
+#define	UH_ASC			54
+#define	KEN_QUEST		55
+#define CEN_ASC			56
+#define TIE_ASC			57
+#define AAS_ASC			58
+#define SIL_ASC			59
+#define SKN_ASC			60
 #define ACHIEVE_NUMBER	61
+#define TROPHY_LISTSIZE	((ACHIEVE_NUMBER-1)/32 + 1)
+		unsigned int	trophies[TROPHY_LISTSIZE];	/* Flags for Junethack trophies */
+		unsigned long iea_flags;	/* IEA flags for Junethack trophy */
 };
 
 E struct u_achieve achieve;
+#define set_trophy(flag)   (achieve.trophies[(flag)/32] |= (1U << ((flag)%32)))
+#define check_trophy(flag) (!!(achieve.trophies[(flag)/32] & (1U << ((flag)%32))))
 #endif
 
 #if defined(RECORD_REALTIME) || defined(REALTIME_ON_BOTL)

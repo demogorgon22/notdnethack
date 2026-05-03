@@ -1110,7 +1110,7 @@ encodeachieve(void)
 
 #ifdef RECORD_ACHIEVE
 #define	CHECK_ACHIEVE(aflag, string) \
-	if(achieve.trophies&aflag){\
+	if(check_trophy(aflag)){\
 		Sprintf(eos(achieveXbuff), "%s%s", seperator, string);\
 		seperator[0] = ',';\
 	}
