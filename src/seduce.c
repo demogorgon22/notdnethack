@@ -188,6 +188,10 @@ struct monst * mon;
 		for (int i = 0; i < quantity; i++) {
 			sedu_minion(mon);
 		}
+		if(mon->mtyp == PM_SUCCUBUS || mon->mtyp == PM_INCUBUS)
+			mon->mspec_used = rnd(100);
+		else
+			mon->mspec_used = rnd(10);
 	}
 
 	/* possibly exit early, skipping teleport and continuing to make attacks! */
