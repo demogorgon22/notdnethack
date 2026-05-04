@@ -927,7 +927,7 @@ sedu_undress(mon)
 struct monst * mon;
 {
 	/* check no-clothes case */
-	if (!uarm && !uarmc && !uarmf && !uarmg && !uarms && !uarmh
+	if (!uarm && !uarmc && !uarmf && !uarmg && !uarms && !uarmh && !uwep && !uswapwep
 #ifdef TOURIST
 		&& !uarmu
 #endif
