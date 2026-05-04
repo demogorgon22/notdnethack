@@ -2188,6 +2188,7 @@ static const NEARDATA short hwep[] = {
 	  SILVERKNIGHT_SWORD/*1d6+1/1d8*/,
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
+	  ATGEIR/*2d4/1d12*/,
 	  SCIMITAR/*1d8/1d12*/,
 	  CHURCH_SHORTSWORD/*1d8/1d7*/, 
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
@@ -2340,6 +2341,7 @@ static const NEARDATA short hpwep[] = {
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
 	  ELVEN_LANCE, /*1d8/1d8*/
+	  ATGEIR/*2d4/1d12*/,
 	  SCIMITAR/*1d8/1d12*/,
 	  CHURCH_SHORTSWORD/*1d8/1d7*/, 
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
