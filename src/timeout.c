@@ -1308,7 +1308,7 @@ long timeout;
 
 	mon = mon2 = (struct monst *)0;
 	mtyp = big_to_little(egg->corpsenm);
-	if(u.silvergrubs && !rn2(20)){
+	if(u.silvergrubs && !u.silverknight_mire && !rn2(20)){
 		set_silvergrubs(FALSE);
 	}
 	if(check_rot(ROT_KIN) && (u.silvergrubs || !rn2(100)) && !(mvitals[PM_MAN_FLY].mvflags&G_GONE && !In_quest(&u.uz))){
@@ -2947,28 +2947,28 @@ long timeout;
 		if(obj->oartifact == ART_SKY_REFLECTED || obj->oartifact == ART_AMALGAMATED_SKIES){
 			switch(obj->obj_material){
 				case IRON:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_IRON;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_IRON;
 				break;
 				case GREEN_STEEL:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GREEN;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GREEN;
 				break;
 				case SILVER:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_SILVER;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_SILVER;
 				break;
 				case GOLD:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_GOLD;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_GOLD;
 				break;
 				case PLATINUM:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_PLATINUM;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_PLATINUM;
 				break;
 				case MITHRIL:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_MITHRIL;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_MITHRIL;
 				break;
 				case COPPER:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_COPPER;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_COPPER;
 				break;
 				case LEAD:
-					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= ZMAT_LEAD;
+					artinstance[ART_SKY_REFLECTED].ZerthMaterials |= AMAT_LEAD;
 				break;
 			}
 		}
@@ -3005,6 +3005,26 @@ long timeout;
 		remove_oprop(obj, OPROP_GOLDW);
 		fix_object(obj);
 		update_inventory();
+	}
+}
+
+void
+slow_wheel(arg, timeout)
+genericptr_t arg;
+long timeout;
+{
+	struct obj *obj = (struct obj *) arg;
+	if(obj->ovar1_wheelspeed > 0){
+		obj->ovar1_wheelspeed--;
+		if(obj == uwep || (obj == uswapwep && u.twoweap) || obj == uquiver){
+			if(obj->ovar1_wheelspeed == 0)
+				pline("%s slows to a stop.", The(xname(obj)));
+			else
+				pline("%s slows down.", The(xname(obj)));
+		}
+		update_inventory();
+		if(obj->ovar1_wheelspeed > 0)
+			start_timer(20L, TIMER_OBJECT, SLOW_WHEEL, (genericptr_t)obj);
 	}
 }
 
@@ -3107,6 +3127,7 @@ static const ttable timeout_funcs[NUM_TIME_FUNCS] = {
 	TTAB(revert_mercurial,	(timeout_proc)0,	"revert_mercurial"),
 	TTAB(revert_aureate_deluge,(timeout_proc)0,"revert_aureate_deluge"),
 	TTAB(gray_moldy_corpse,(timeout_proc)0,"gray_moldy_corpse"),
+	TTAB(slow_wheel,		(timeout_proc)0,	"slow_wheel"),
 };
 #undef TTAB
 

@@ -51,7 +51,8 @@ typedef void FDECL((*timeout_proc), (genericptr_t, long));
 #define REVERT_MERC		19
 #define REVERT_AUREATE	20
 #define GRAY_MOLDY_CORPSE	21
-#define NUM_TIME_FUNCS	22
+#define SLOW_WHEEL		22
+#define NUM_TIME_FUNCS	23
 
 /* used in timeout.c */
 typedef struct timer {

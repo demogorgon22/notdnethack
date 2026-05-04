@@ -31,7 +31,8 @@ struct attack *mattk;
 	boolean youagr = &youmonst == magr;
 	boolean youdef = &youmonst == mdef;
 	xchar genagr, gendef;
-	
+	boolean tiefling = (youagr && (check_mutation(TT_ATTRACTIVE_1) || check_mutation(TT_ATTRACTIVE_2)));
+	boolean tiefling_nymph = (youagr && check_mutation(TT_ATTRACTIVE_1));
 	if(youdef || youagr){
 		if(Chastity) return 0;
 		
@@ -74,11 +75,13 @@ struct attack *mattk;
 		return 1;
 	
 	if(pagr->mlet == S_NYMPH || pagr->mtyp == PM_INCUBUS || pagr->mtyp == PM_SUCCUBUS
-			|| pagr->mtyp == PM_CARMILLA || pagr->mtyp == PM_VLAD_THE_IMPALER || pagr->mtyp == PM_LEVISTUS){
+			|| pagr->mtyp == PM_CARMILLA || pagr->mtyp == PM_VLAD_THE_IMPALER || pagr->mtyp == PM_LEVISTUS
+			|| tiefling
+	){
 		if(genagr == 1 - gendef)
 			return 1;
 		else
-			return (pagr->mlet == S_NYMPH || pagr->mtyp == PM_LEVISTUS) ? 2 : 0;
+			return (tiefling_nymph || pagr->mlet == S_NYMPH || pagr->mtyp == PM_LEVISTUS) ? 2 : 0;
 	}
 	else if(pagr->mtyp == PM_MOTHER_LILITH || pagr->mtyp == PM_BELIAL){
 		if(genagr == 1 - gendef) return 1;
@@ -835,7 +838,7 @@ boolean helpless;
 	if (helpless || its_cha >= ACURR(A_CHA)) {
 		if(!obj->oartifact || !rn2(10)){
 			if(obj == uwep || obj == uswapwep){
-				Your("%s to dust in your %s!", aobjnam(obj, "turn"), bimanual(obj, youracedata) ? makeplural(body_part(HAND)) : body_part(HAND));
+				Your("%s to dust in your %s!", aobjnam(obj, "turn"), bimanual_mon(obj, &youmonst) ? makeplural(body_part(HAND)) : body_part(HAND));
 				if(obj == uwep) uwepgone();
 				else if(obj == uswapwep) uswapwepgone();
 				useup(obj);

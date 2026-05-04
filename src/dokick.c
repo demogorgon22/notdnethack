@@ -97,7 +97,9 @@ register xchar x, y;
 	 * normally, getting all your attacks _including_ all your kicks.
 	 * If you have >1 kick attack, you get all of them.
 	 */
-	if (Upolyd && attacktype(youmonst.data, AT_KICK)) {
+	if ((Upolyd && attacktype(youmonst.data, AT_KICK))
+		|| (!Upolyd && (Race_if(PM_CENTAUR) || Race_if(PM_DRIDER)))
+	) {
 		/* state variable to signify we are only doing kick attacks */
 		onlykicks = TRUE;
 		xattacky(&youmonst, mon, x, y, 0L);
@@ -797,7 +799,7 @@ int dx, dy;
 	boolean no_kick = FALSE;
 	char buf[BUFSZ];
 
-	if (nolimbs(youracedata) || slithy(youracedata)) {
+	if ((nolimbs(youracedata) || slithy(youracedata)) && !humanoid_feet(youracedata)) {
 		You("have no legs to kick with.");
 		no_kick = TRUE;
 #ifdef STEED

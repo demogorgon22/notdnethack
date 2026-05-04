@@ -681,6 +681,15 @@ int how;
 		HStrangled &= ~TIMEOUT;
 		delayed_killer = 0;
 	}
+
+	youmonst.mgmld_skin = 0;
+	youmonst.mgmld_throat = 0;
+	youmonst.mcaterpillars = 0;
+	youmonst.momud = 0;
+	youmonst.mbleed = 0;
+	u.umadness &= ~MAD_SCORPIONS;
+	u.umadness &= ~MAD_FRENZY;
+
 	make_invulnerable(HSanctuary + 1, TRUE);
 	nomovemsg = "You survived that attempt on your life.";
 	flags.move |= MOVE_INSTANT;

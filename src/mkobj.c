@@ -294,6 +294,14 @@ static const struct icp brick_materials[] = {
 	{  0, 0 }
 };
 
+static const struct icp breaking_materials[] = {
+	{700, 0 }, /* use base material */
+	{150, IRON },//850
+	{100, LEAD },//950
+	{ 50, GREEN_STEEL },//1000
+	{  0, 0 }
+};
+
 static const struct icp special_materials[] = {
 	{250, 0 }, /* use base material */
 	{250, SILVER },
@@ -749,6 +757,24 @@ int mkflags;
 	}
 	else if(otmp->otyp == TOOTH){
 		otmp->ovar1_tooth_type = rnd(MAX_TOOTH);
+	}
+	if(u.silverknight_mire){
+		if(is_rustprone(otmp))
+			otmp->oeroded = 3;
+		else if(is_corrodeable(otmp))
+			otmp->oeroded = 3;
+		else if(is_rottable(otmp) && is_flammable(otmp)){
+			if(rn2(4))
+				otmp->oeroded2 = 3;
+			else otmp->oeroded = 3;
+		}
+		else if(is_flammable(otmp))
+			otmp->oeroded = 3;
+		else if(is_rottable(otmp))
+			otmp->oeroded2 = 3;
+		if(otmp->oeroded || otmp->oeroded2){
+			otmp->mired = 1;
+		}
 	}
 	
 	set_object_color(otmp);
@@ -2082,7 +2108,7 @@ register struct obj *otmp;
 	otmp->blessed = 0;
 	otmp->cursed = 1;
 	/* welded two-handed weapon interferes with some armor removal */
-	if (otmp == uwep && bimanual(uwep,youracedata)) reset_remarm();
+	if (otmp == uwep && bimanual_mon(uwep,&youmonst)) reset_remarm();
 	/* rules at top of wield.c state that twoweapon cannot be done
 	   with cursed alternate weapon */
 	if (otmp == uswapwep && u.twoweap && !Weldproof)
@@ -2346,6 +2372,8 @@ struct obj* obj;
 	case DEVIL_FIST:
 	case DEMON_CLAW:
 		return fiend_materials;
+	case BREAKING_WHEEL:
+		return breaking_materials;
 	default:
 		break;
 	}
@@ -2638,10 +2666,11 @@ int mat;
 			else						obj->otyp = ELVEN_HELM;
 		break;
 		/* helmets */
+		case DROVEN_HELM:
+			if (mat == SHADOWSTEEL || mat == MITHRIL) break;	/* irreversible, shadowsteel */
 		case HELMET:
 		case LEATHER_HELM:
 		case ARCHAIC_HELM:
-		case DROVEN_HELM:
 //		case PLASTEEL_HELM:				/* has a unique function of shape -- needs a generic version? */
 //		case CRYSTAL_HELM:				/* has a unique function of shape -- needs a generic version? */
 			if (mat == LEATHER)			obj->otyp = LEATHER_HELM;
@@ -2699,11 +2728,13 @@ int mat;
 			else if (mat >= WOOD)		obj->otyp = SHOES;
 			else						obj->otyp = LOW_BOOTS;
 			break;
-		/* chain mail */
-		case CHAIN_MAIL:
-		case DROVEN_CHAIN_MAIL:			/* irreversible, shadowsteel */
+		/* chain mails */
+		case DROVEN_CHAIN_MAIL:
+			if (mat == SHADOWSTEEL) break;	/* irreversible, shadowsteel OR mithril */
 		case DWARVISH_MITHRIL_COAT:		/* irreversible, mithril */
-		case ELVEN_MITHRIL_COAT:		/* irreversible, mithril */
+		case ELVEN_MITHRIL_COAT:
+			if (mat == MITHRIL) break;	/* irreversible, mithril */
+		case CHAIN_MAIL:
 			obj->otyp = CHAIN_MAIL;
 		break;
 		/* scale mail */
@@ -2732,9 +2763,10 @@ int mat;
 				||   mat == OBSIDIAN_MT	
 				||   mat == GEMSTONE)	break;	// remain as crystal plate
 			else;// fall through to general plate mail
+		case DROVEN_PLATE_MAIL:			/* irreversible, shadowsteel OR mithril */
+			if (mat == SHADOWSTEEL || mat == MITHRIL) break;
 		case PLATE_MAIL:
 		case PLASTEEL_ARMOR:			/* irreversible, plastic */
-		case DROVEN_PLATE_MAIL:			/* irreversible, shadowsteel */
 			obj->otyp = PLATE_MAIL;
 		break;
 		/* long swords */
@@ -2944,6 +2976,7 @@ register struct obj *obj;
 		|| obj->otyp == STATUE
 		|| obj->otyp == CHURCH_BLADE
 		|| obj->otyp == CHURCH_HAMMER
+		|| obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD
 	) {
 		struct obj *contents;
 		register int cwt = 0;

@@ -136,6 +136,7 @@
 		|| species == ENT_LOCUST || species == ENT_MAGNOLIA || species == ENT_OAK || species == ENT_REDWOOD))
 
 #define is_spry_ent(ptr, species) (is_ent(ptr) && (species == ENT_CYPRESS || species == ENT_FIR || species == ENT_POPLAR || species == ENT_SPRUCE || species == ENT_DOGWOOD || species == ENT_ELM))
+#define is_alabaster_elf(ptr)	((ptr)->mtyp == PM_ALABASTER_ELF || (ptr)->mtyp == PM_ALABASTER_ELF_ELDER || (ptr)->mtyp == PM_DESERT_SEER)
 
 #define is_lminion(mon)		(is_minion((mon)->data) && is_lawful_mon(mon))
 
@@ -164,8 +165,9 @@
 #define amphibious_mon(mon)		(amphibious((mon)->data) || mon_resistance((mon), MAGICAL_BREATHING) || mon_resistance((mon), SWIMMING))
 #define species_passes_walls(ptr)	(((ptr)->mflagsm & MM_WALLWALK) != 0L)
 #define amorphous(ptr)			(((ptr)->mflagsm & MM_AMORPHOUS) != 0L)
+#define amorphous_mon(mon)		((mon) == &youmonst ? (amorphous(youracedata) || check_mutation(AAT_PRIMINAL)) : amorphous((mon)->data))
 #define noncorporeal(ptr)		((ptr)->mlet == S_GHOST || (ptr)->mlet == S_SHADE)
-#define insubstantial(ptr)		(((ptr)->mflagsb & MB_INSUBSTANTIAL) != 0L)
+#define insubstantial(ptr)		(((ptr)->mflagsc & MC_INSUBSTANTIAL) != 0L)
 #define tunnels(ptr)			(((ptr)->mflagsm & MM_TUNNEL) != 0L)
 #define needspick(ptr)			(((ptr)->mflagsm & MM_NEEDPICK) != 0L)
 #define is_underswimmer(ptr)	((ptr)->mlet == S_EEL || (ptr)->mtyp == PM_CRYSTAL_OOZE)
@@ -193,7 +195,8 @@
 #define notake(ptr)		(((ptr)->mflagst & MT_NOTAKE) != 0L)
 #define has_head(ptr)		(((ptr)->mflagsb & MB_NOHEAD) == 0L)
 #define has_head_mon(mon) ((mon == &youmonst) ? (has_head(youracedata)) : (has_head((mon)->data)))
-#define has_horns(ptr)		(num_horns(ptr) > 0)
+#define has_horns(ptr)		(((ptr)->mflagsb & MB_HORNS) != 0L)
+#define has_horns_mon(mon) ((mon == &youmonst) ? (has_horns(youracedata)) : (has_horns((mon)->data)))
 #define is_whirly(ptr)		((ptr)->mlet == S_VORTEX || \
 				 (ptr)->mtyp == PM_AIR_ELEMENTAL ||\
 				 (ptr)->mtyp == PM_ILLURIEN_OF_THE_MYRIAD_GLIMPSES ||\
@@ -294,7 +297,7 @@
 						 ((ptr)->mtyp == PM_GHOUL_QUEEN_NITOCRIS) || \
 						 ((ptr)->mtyp == PM_PHARAOH) \
 						)
-#define skeleton_innards(ptr)	(((ptr)->mflagsb&MB_SKELETAL) != 0)
+#define skeleton_innards(ptr)	(((ptr)->mflagsc&MC_SKELETAL) != 0)
 #define no_innards(ptr)	((ptr)->mlet == S_VORTEX || \
 						 (ptr)->mlet == S_LIGHT || \
 						 (ptr)->mlet == S_ELEMENTAL || \
@@ -325,7 +328,7 @@
 								)
 #define is_silent(ptr)		((ptr)->msound == MS_SILENT)
 #define is_silent_mon(mon)	(is_silent((mon)->data))
-#define unsolid(ptr)		(((ptr)->mflagsb & MB_UNSOLID) != 0L)
+#define unsolid(ptr)		(((ptr)->mflagsc & MC_UNSOLID) != 0L)
 #define mindless(ptr)		(((ptr)->mflagst & MT_MINDLESS) != 0L || ((ptr)->mflagst & MT_DETACHED) != 0L || on_level(&valley_level, &u.uz))
 #define mindless_mon(mon)		(mon && mindless((mon)->data))
 #define detached_from_purpose(ptr) (((ptr)->mflagst & MT_DETACHED) != 0)
@@ -363,7 +366,7 @@
 #define is_arachnid(ptr)		(((ptr)->mflagsa & MA_ARACHNID) != 0L)
 #define is_aquatic(ptr)		(((ptr)->mflagsa & MA_AQUATIC) != 0L)
 #define is_wooden(ptr)		((ptr)->mtyp == PM_WOOD_GOLEM || (ptr)->mtyp == PM_LIVING_LECTERN || is_plant(ptr))
-#define thick_skinned(ptr)	(((ptr)->mflagsb & MB_THICK_HIDE) != 0L)
+#define thick_skinned(ptr)	(((ptr)->mflagsc & MC_THICK_HIDE) != 0L)
 #define lays_eggs(ptr)		(((ptr)->mflagsb & MB_OVIPAROUS) != 0L)
 #define species_regenerates(ptr)		(((ptr)->mflagsg & MG_REGEN) != 0L)
 #define species_perceives(ptr)			(((ptr)->mflagsv & MV_SEE_INVIS) != 0L)
@@ -386,14 +389,16 @@
 								 )
 #define controlledwidegaze(ptr)		(!((ptr)->mtyp == PM_MEDUSA || (ptr)->mtyp == PM_UVUUDAUM || (ptr)->mtyp == PM_DESERT_SEER || (ptr)->mtyp == PM_GREAT_CTHULHU || (ptr)->mtyp == PM_OBOX_OB || (ptr)->mtyp == PM_DAGON))
 #define controlledwidegaze_mon(mon)		(controlledwidegaze((mon)->data) || has_template(mon, ILLUMINATED))
-#define acidic(ptr)			(((ptr)->mflagsb & MB_ACID) != 0L)
-#define poisonous(ptr)		(((ptr)->mflagsb & MB_POIS) != 0L)
-#define freezing(ptr)		(((ptr)->mflagsb & MB_CHILL) != 0L)
-#define burning(ptr)		(((ptr)->mflagsb & MB_TOSTY) != 0L)
-#define hallucinogenic(ptr)		(((ptr)->mflagsb & MB_HALUC) != 0L)
+#define acidic(ptr)			(((ptr)->mflagsc & MC_ACID) != 0L)
+#define poisonous(ptr)		(((ptr)->mflagsc & MC_POIS) != 0L)
+#define freezing(ptr)		(((ptr)->mflagsc & MC_CHILL) != 0L)
+#define burning(ptr)		(((ptr)->mflagsc & MC_TOSTY) != 0L)
+#define hallucinogenic(ptr)		(((ptr)->mflagsc & MC_HALUC) != 0L)
 #define inediate(ptr)		(!(carnivorous(ptr) || herbivorous(ptr) || metallivorous(ptr) || magivorous(ptr) || is_vampire(ptr)))
 #define carnivorous(ptr)	(((ptr)->mflagst & MT_CARNIVORE) != 0L)
+#define obligate_carnivore(ptr)	(((ptr)->mflagst & MT_FOODMASK) == MT_CARNIVORE)
 #define herbivorous(ptr)	(((ptr)->mflagst & MT_HERBIVORE) != 0L)
+#define obligate_herbivore(ptr)	(((ptr)->mflagst & MT_FOODMASK) == MT_HERBIVORE)
 #define metallivorous(ptr)	(((ptr)->mflagst & MT_METALLIVORE) != 0L)
 #define magivorous(ptr)		(((ptr)->mflagst & MT_MAGIVORE) != 0L)
 #define polyok(ptr)			((((ptr)->mflagsg & MG_NOPOLY) == 0L) && (G_C_INST((ptr)->geno) <= u.uinsight) && !((((ptr)->mflagsg&MG_FUTURE_WISH) != 0L) && !Role_if(PM_TOURIST)))
@@ -405,7 +410,7 @@
 #define	can_undead(ptr)	(!nonliving(ptr) && !is_minion(ptr) && ((ptr)->mlet != S_PUDDING) &&\
 								((ptr)->mlet != S_JELLY) && ((ptr)->mlet != S_BLOB) && !is_elemental(ptr) &&\
 								!is_plant(ptr) && !is_demon(ptr) && !is_great_old_one(ptr) && !is_primordial(ptr) && !(mvitals[monsndx(ptr)].mvflags&G_NOCORPSE))
-#define is_weldproof(ptr)		(is_undead(ptr) || is_demon(ptr) || is_were(ptr) || is_great_old_one(ptr) || is_android(ptr) || ptr->mtyp == PM_DAUGHTER_OF_NAUNET || ptr->mtyp == PM_PARASITIC_WALL_HUGGER)
+#define is_weldproof(ptr)		(is_undead(ptr) || (is_demon(ptr) && !is_tiefling_mtyp((ptr)->mtyp)) || is_were(ptr) || is_great_old_one(ptr) || is_android(ptr) || ptr->mtyp == PM_DAUGHTER_OF_NAUNET || ptr->mtyp == PM_PARASITIC_WALL_HUGGER)
 #define is_weldproof_mon(mon)		(is_weldproof((mon)->data))
 #define is_were(ptr)		(((ptr)->mflagsa & MA_WERE) != 0L)
 #define is_heladrin(ptr)		(\
@@ -484,6 +489,8 @@
 #define is_kobold(ptr)		((ptr)->mlet == S_KOBOLD)
 #define is_ettin(ptr)		((ptr)->mtyp == PM_ETTIN)
 #define is_human(ptr)		(((ptr)->mflagsa & MA_HUMAN) != 0L)
+#define is_tiefling_mtyp(mtyp)	((mtyp) == PM_TIEFLING || (mtyp) == PM_DARK_FEY_RI)
+#define is_aasimar_mtyp(mtyp)	((mtyp) == PM_AASIMAR || (mtyp) == PM_DOKKIMAR)
 #define is_untamable(ptr)	(((ptr)->mflagsg & MG_NOTAME) != 0L)
 #define is_unwishable(ptr)	((((ptr)->mflagsg & MG_NOWISH) != 0L) || (G_C_INST((ptr)->geno) > u.uinsight) || ((((ptr)->mflagsg&MG_FUTURE_WISH) != 0L) && !Role_if(PM_TOURIST)))
 #define is_fungus(ptr)		((ptr)->mlet == S_FUNGUS)
@@ -495,7 +502,7 @@
 							 (ptr)->mtyp == PM_VEGEPYGMY ||\
 							 (ptr)->mtyp == PM_VEGEPYGMY_SHAMAN ||\
 							 (ptr)->mtyp == PM_GRAY_FUNGAL_TOWER)
-#define your_race(ptr)		(((ptr)->mflagsa & urace.selfmask) != 0L)
+#define your_race(ptr)		((((ptr)->mflagsa & urace.selfmask) != 0L) || (ptr)->mtyp == urace.malenum || (ptr)->mtyp == urace.femalenum)
 #define is_andromaliable(ptr)	(is_elf(ptr) || is_drow(ptr) || is_dwarf(ptr) || is_gnome(ptr) || is_orc(ptr) || is_human(ptr) || (ptr)->mtyp == PM_HOBBIT || \
 								 (ptr)->mtyp == PM_MONKEY || (ptr)->mtyp == PM_APE || (ptr)->mtyp == PM_YETI || \
 								 (ptr)->mtyp == PM_CARNIVOROUS_APE || (ptr)->mtyp == PM_SASQUATCH\
@@ -776,6 +783,7 @@
 #define rot_monster(mon)	(((mon)->data->mlet == S_FUNGUS && mindless_mon(mon)) \
 							 || always_rot_monster((mon)->data) \
 							 || has_template(mon, SWOLLEN_TEMPLATE) \
+							 || has_template(mon, ROT_ZOMBIE) \
 							)
 #define always_rot_monster(ptr)	(((ptr)->mlet == S_FUNGUS && mindless(ptr)) \
 								|| (ptr)->mtyp == PM_SWAMP_FERN \
@@ -803,6 +811,8 @@
 
 #define gates_in_help(ptr)	((is_demon((ptr)) || is_minion((ptr))) \
 								&& !is_auton(ptr) \
+								&& !is_tiefling_mtyp((ptr)->mtyp) \
+								&& !is_aasimar_mtyp((ptr)->mtyp) \
 								&& (ptr)->mtyp != PM_OONA \
 								&& (ptr)->mtyp != PM_CHAOS \
 								&& (ptr)->mtyp != PM_KARY__THE_FIEND_OF_FIRE \
@@ -964,10 +974,22 @@
 								full_body_match(ptr,obj))
 #define upper_body_match(ptr,obj)	(((ptr->mflagsb&MB_HUMANOID) && (obj->bodytypeflag&MB_HUMANOID)) || \
 		(((ptr->mflagsb&MB_BODYTYPEMASK) != 0) && ((ptr->mflagsb&MB_BODYTYPEMASK) == (obj->bodytypeflag&MB_BODYTYPEMASK))))
-#define helm_match(ptr,obj)	((!has_horns(ptr) || obj->otyp == find_gcirclet() || is_flimsy(obj)) && !nohat(ptr) && \
-						(is_hat(obj) || (has_head(ptr) && (ptr->mflagsb&MB_HEADMODIMASK) == (obj->bodytypeflag&MB_HEADMODIMASK))))
+#define helm_match(mon,obj)	((!has_horns_mon(mon) || obj->otyp == find_gcirclet() || is_flimsy(obj) || (obj->bodytypeflag&MB_HORNS) != 0) && !nohat((mon)->data) && \
+						(is_hat(obj) || (has_head_mon(mon) && ((mon)->data->mflagsb&MB_HEADMODIMASK) == (obj->bodytypeflag&MB_HEADMODIMASK))))
 /*Note: No-modifier helms are "normal"*/
 #define helm_size_fits(ptr,obj)	((ptr->mtyp == PM_MOON_S_CHOSEN ? obj->objsize == MZ_GIGANTIC : obj->objsize == ptr->msize) || (is_hat(obj) && obj->objsize <= (ptr->msize+1)))
+
+#define is_holy_mon(mon)	((mon == &youmonst) ? is_holy_ptr(youracedata) : is_holy_monster(mon))
+#define is_unholy_mon(mon)	((mon == &youmonst) ? is_unholy_ptr(youracedata) : is_unholy_monster(mon))
+#define is_unblessed_mon(mon)	((mon == &youmonst) ? is_unblessed_ptr(youracedata) : is_unblessed_monster(mon))
+
+#define is_holy_monster(mon)	(is_angel((mon)->data) || has_template(mon, ILLUMINATED) || (mon)->mtyp == PM_DREAD_SERAPH || is_aasimar_mtyp((mon)->mtyp))
+#define is_unholy_monster(mon)	(is_demon((mon)->data) || (mon)->mtyp == PM_DREAD_SERAPH)
+#define is_unblessed_monster(mon)	(is_auton((mon)->data) || is_rilmani((mon)->data) || is_kamerel((mon)->data))
+
+#define is_holy_ptr(ptr)	(is_angel((ptr)) || (ptr)->mtyp == PM_DREAD_SERAPH || is_aasimar_mtyp((ptr)->mtyp))
+#define is_unholy_ptr(ptr)	(is_demon((ptr)) || (ptr)->mtyp == PM_DREAD_SERAPH)
+#define is_unblessed_ptr(ptr)	(is_auton((ptr)) || is_rilmani((ptr)) || is_kamerel((ptr)))
 
 #define hates_holy_mon(mon)	((mon) == &youmonst ? hates_holy(youracedata) : hates_holy((mon)->data))
 #define hates_holy(ptr)		(is_demon(ptr) || (is_undead(ptr) && ptr->mtyp != PM_DREAD_SERAPH) || (((ptr)->mflagsg&MG_HATESHOLY) != 0))
@@ -989,10 +1011,12 @@
 #define sflm_target(mon) (!is_rider((mon)->data) && (is_angel((mon)->data) || ((mon) == &youmonst ? Displaced : mon_resistance(mon, DISPLACED)) || is_shapechanger((mon)->data) || is_chaotic_mon(mon)))
 #define sflm_target_data(ptr) (!is_rider(ptr) && (is_angel(ptr) || ((ptr)->mflagsg&MG_DISPLACEMENT) || is_shapechanger(ptr) || is_chaotic(ptr)))
 
+#define melee_polearms_mon(mon)	(melee_polearms((mon)->data) || mon == u.urider)
+
 #define melee_polearms(ptr)	((ptr)->mtyp == PM_VROCK ||\
 							 (ptr)->mtyp == PM_OSSIFRUGE ||\
 							 (ptr)->mtyp == PM_SILVERMAN ||\
-							 ((ptr)->mflagsb&MB_CENTAUR) ||\
+							 (((ptr)->mflagsb&MB_CENTAUR) == MB_CENTAUR) ||\
 							 (ptr)->mtyp == PM_MEPHISTOPHELES ||\
 							 (ptr)->mtyp == PM_BAPHOMET \
 							)
@@ -1265,7 +1289,7 @@
 
 #define is_naturally_unalive(ptr)		(((ptr)->mflagsa & MA_UNLIVING))
 
-#define is_indigestible(ptr)	(((ptr)->mflagsb&MB_INDIGESTIBLE) != 0)
+#define is_indigestible(ptr)	(((ptr)->mflagsc&MC_INDIGESTIBLE) != 0)
 
 #define is_spiritual_being(mon)	(is_demon((mon)->data) || is_minion((mon)->data))
 
@@ -1278,7 +1302,7 @@
 							 || ((ptr)->mlet == S_LIGHT && is_elemental(ptr)) \
 							 || ((ptr)->mtyp == PM_HOOLOOVOO) \
 							) \
-							|| ((ptr)->mflagsb&MB_ORGANIC) \
+							|| ((ptr)->mflagsc&MC_ORGANIC) \
 							)
 
 // #define is_indigestible(ptr)	((ptr)->mtyp == PM_DANCING_BLADE ||\

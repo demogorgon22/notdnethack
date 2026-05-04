@@ -69,6 +69,7 @@ doread()
 			&& !(scroll->oclass == SCROLL_CLASS)
 			&& !(scroll->oclass == SPBOOK_CLASS)
 			&& !(scroll->oclass == AMULET_CLASS)
+			&& !(scroll->oclass == TILE_CLASS)
 			&& !arti_mandala(scroll)
 			&& !scroll->oward
 			&& scroll->oartifact != ART_ROD_OF_THE_ELVISH_LORDS
@@ -194,7 +195,7 @@ doread()
 				pline("The distant stars wink and dance among the arches within the black night sky.");
 			}
 			else {
-				pline("Tiny spirits of light dance in and out of the blade's sky and the black night of your %s.", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				pline("Tiny spirits of light dance in and out of the blade's sky and the black night of your %s.", (eyecount(youracedata) == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				maybe_give_thought(GUIDANCE);
 			}
 			return MOVE_READ;
@@ -761,7 +762,8 @@ doread()
 	if(scroll->oclass == SPBOOK_CLASS) {
 	    return(study_book(scroll));
 	}
-	scroll->in_use = TRUE;	/* scroll, not spellbook, now being read */
+	if(!scroll->oartifact)
+		scroll->in_use = TRUE;	/* scroll, not spellbook, now being read */
 	if(scroll->oartifact) {
 		if(Blind && (scroll->oartifact == ART_MARAUDER_S_MAP || scroll->oartifact == ART_RITE_OF_DETESTATION)) {
 			pline("Being blind, you cannot see %s.", the(xname(scroll)));
@@ -786,8 +788,10 @@ doread()
 		}
 	  }
 	}
-	if(Is_spire(&u.uz) && objects[scroll->otyp].oc_magic)
+	if(Is_spire(&u.uz) && objects[scroll->otyp].oc_magic){
+		scroll->in_use = FALSE;
 	    pline("Nothing happens.");
+	}
 	else if(!seffects(scroll))  {
 		if(!objects[scroll->otyp].oc_name_known) {
 		    if(known) {
@@ -923,7 +927,7 @@ struct obj *scroll;
 				int objcount = 2 + rn2(3) + rn2(5);
 				You("can't understand what they say...");
 				pline("Suddenly, the glyphs glow in rainbow hues and escape from the fracturing disk!");
-				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				know_random_obj(objcount);
 				if(!u.udisks || !rn2(u.udisks)){
 					change_uinsight(1);
@@ -953,7 +957,7 @@ struct obj *scroll;
 				boolean seals = FALSE, wards = FALSE, combat = FALSE;
 				You("can't understand what it says...");
 				pline("Suddenly, the glyphs glow in impossible hues and escape from the fracturing disk!");
-				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE) : makeplural(body_part(EYE)));
+				pline("Some of the glyphs get trapped in your %s!", (eyecount(youracedata) == 1) ? body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 				//ID
 				effectcount = 4 + rn2(5) + rn2(9);
 				xp += d(effectcount,100);
@@ -1020,6 +1024,16 @@ struct obj *scroll;
 		}
 	} else if(scroll->otyp >= ANTI_CLOCKWISE_METAMORPHOSIS_G && scroll->otyp <= ORRERY_GLYPH) {
 		thought = otyp_to_thought(scroll->otyp);
+
+		if(scroll->oartifact == ART_GREAT_RUNE_OF_ROT && u.veil){
+			You("feel reality threatening to slip away!");
+			if (yn("Are you sure you want to keep reading?") != 'y'){
+				return MOVE_CANCELLED;
+			}
+			else pline("So be it.");
+			u.veil = FALSE;
+			change_uinsight(1);
+		}
 
 		/* maybe_give_thought checks requirements, returns FALSE if it didn't work */
 		if (!maybe_give_thought(thought))
@@ -2679,7 +2693,7 @@ struct obj	*sobj;
 
 	    	    	    /* Find the monster here (won't be player) */
 	    	    	    mtmp = m_at(x, y);
-	    	    	    if (mtmp && !amorphous(mtmp->data) &&
+	    	    	    if (mtmp && !amorphous_mon(mtmp) &&
 	    	    	    		!mon_resistance(mtmp,PASSES_WALLS) &&
 	    	    	    		!noncorporeal(mtmp->data) &&
 	    	    	    		!unsolid(mtmp->data)) {
@@ -2730,7 +2744,7 @@ struct obj	*sobj;
 		    if (!otmp2) break;
 		    otmp2->quan = confused ? rn1(5,2) : 1;
 		    otmp2->owt = weight(otmp2);
-		    if (!amorphous(youracedata) &&
+		    if (!amorphous_mon(&youmonst) &&
 				!Passes_walls &&
 				!noncorporeal(youracedata) &&
 				!unsolid(youracedata)) {
@@ -3755,7 +3769,7 @@ register struct obj	*sobj;
 		}
 		return;
 	}
-	if (amorphous(youracedata) || is_whirly(youracedata) || unsolid(youracedata)) {
+	if (amorphous_mon(&youmonst) || is_whirly(youracedata) || unsolid(youracedata)) {
 		pline("A ball and chain appears, then falls away.");
 		dropy(mkobj(BALL_CLASS, TRUE));
 		return;
@@ -3908,6 +3922,9 @@ char *in_buff;
 			else if (!strncmpi(bufp, "swollen ", l = 8)) {
 				undeadtype = SWOLLEN_TEMPLATE;
 			}
+			else if (!strncmpi(bufp, "rotten ", l = 7)) {
+				undeadtype = ROT_ZOMBIE;
+			}
 			else if (!strncmpi(bufp, "mad_angel ", l = 10)) {
 				undeadtype = MAD_TEMPLATE;
 			}
@@ -3986,6 +4003,8 @@ char *in_buff;
 				undeadtype = FRACTURED;
 			else if (!strncmpi(p, "swollen",	7))
 				undeadtype = SWOLLEN_TEMPLATE;
+			else if (!strncmpi(p, "rotten",	6))
+				undeadtype = ROT_ZOMBIE;
 			else if (!strncmpi(p, "one", 3) && ((q = rindex(bufp, ' ')) != 0))
 			{
 				*q++ = 0;

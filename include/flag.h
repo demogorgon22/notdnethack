@@ -130,6 +130,7 @@ struct flag {
 	unsigned long warntypem; /* warn_of_mon monster type MM */
 	unsigned long warntypet; /* warn_of_mon monster type MT */
 	unsigned long warntypeb; /* warn_of_mon monster type MB */
+	unsigned long warntypec; /* warn_of_mon monster type MC */
 	unsigned long warntypeg; /* warn_of_mon monster type MG */
 	unsigned long warntypea; /* warn_of_mon monster type MA */
 	unsigned long warntypev; /* warn_of_mon monster type MV */
@@ -211,6 +212,11 @@ struct flag {
 	int	 initgend;	/* starting gender    (index into genders[]) */
 	int	 initalign;	/* starting alignment (index into aligns[])  */
 	int	 initspecies;	/* starting species (index into species[])  */
+#define INITALIGN_LAWFUL	0
+#define INITALIGN_NEUTRAL	1
+#define INITALIGN_CHAOTIC	2
+#define INITALIGN_EVIL		3
+#define INITALIGN_VOID		4
 	int	 descendant;	/* start as descendant */
 	int	 chaosvar;	/* Set chaos variant */
 	int	 randomall;	/* randomly assign everything not specified */
@@ -222,8 +228,42 @@ struct flag {
 	int	 panVgod;	/* deity selection for binder character */
 	int  HDbreath;	/* half-dragon breath weapon type*/
 	int altrace;
-};
+	int tiefling_level[7]; /* tiefling mutation levels*/
+	int aasimar_type; /* aasimar type*/
+#define AASIMAR_TYPE_NONE		0
+#define AASIMAR_TYPE_ARCHON		1
+#define AASIMAR_TYPE_DEVA		2
+#define AASIMAR_TYPE_ELADRIN	3
+#define AASIMAR_TYPE_SERAPH		4
+#define AASIMAR_TYPE_PRIMINAL	5
+#define AASIMAR_TYPE_CLOUDFACE	6
+#define AASIMAR_TYPE_IKSH_NA	7
+	int aasimar_subtype;
+#define AASIMAR_SUBTYPE_COURE		1
+#define AASIMAR_SUBTYPE_NOVIERE		2
+#define AASIMAR_SUBTYPE_BRALANI		3
+#define AASIMAR_SUBTYPE_FIRRE		4
+#define AASIMAR_SUBTYPE_SHIERE		5
+#define AASIMAR_SUBTYPE_GHAELE		6
+#define AASIMAR_SUBTYPE_TULANI		7
+#define AASIMAR_SUBTYPE_GAE			8
+#define AASIMAR_SUBTYPE_BRIGHID		9
+#define AASIMAR_SUBTYPE_UISCERRE	10
+#define AASIMAR_SUBTYPE_CAILLEA		11
 
+// #define AASIMAR_SUBTYPE_DRACAE		12
+// #define AASIMAR_SUBTYPE_POLYP		13
+};
+#define storm_aasimar(subtype) ((subtype) == AASIMAR_SUBTYPE_NOVIERE  \
+							|| (subtype) == AASIMAR_SUBTYPE_BRALANI \
+							|| (subtype) == AASIMAR_SUBTYPE_FIRRE \
+							|| (subtype) == AASIMAR_SUBTYPE_SHIERE \
+							|| (subtype) == AASIMAR_SUBTYPE_GHAELE \
+							|| (subtype) == AASIMAR_SUBTYPE_BRIGHID \
+							|| (subtype) == AASIMAR_SUBTYPE_UISCERRE \
+							|| (subtype) == AASIMAR_SUBTYPE_CAILLEA \
+							|| (subtype) == AASIMAR_SUBTYPE_TULANI \
+						)
 /*
  * Flags that are set each time the game is started.
  * These are not saved with the game.

@@ -224,7 +224,6 @@ STATIC_OVL struct Jitem Japanese_items[] = {
 STATIC_OVL struct Jitem Pirate_items[] = {
 	{ POT_BOOZE, "rum" },
 	{ CRAM_RATION, "sea biscuit" },
-	{ SCIMITAR, "cutlass" },
 	{ SACK, "ditty bag" },
 	{ OILSKIN_SACK, "oilskin ditty bag" },
 	{ BOX, "foot locker" },
@@ -866,12 +865,17 @@ boolean dofull;
 			Strcat(buf, "carved ");
 		break;
 	case ARMOR_CLASS:
+		if (obj->bodytypeflag&(MB_HUMANOID|MB_ANIMAL) && check_omod(obj, OMOD_SHOULDER_BARING))
+			Strcat(buf, "shoulder-baring ");
 		if ((obj->bodytypeflag&MB_BODYTYPEMASK) != MB_HUMANOID){
 			if ((obj->bodytypeflag&MB_BODYTYPEMASK) == MB_ANIMAL) Strcat(buf, "barded ");
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == MB_SLITHY) is_shirt(obj) ? Strcat(buf, "tubular ") : Strcat(buf, "segmented ");
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == (MB_HUMANOID | MB_ANIMAL)) Strcat(buf, "centaur ");
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == (MB_HUMANOID | MB_SLITHY)) Strcat(buf, "snakeleg ");
 			else if ((obj->bodytypeflag&MB_BODYTYPEMASK) == (MB_ANIMAL | MB_SLITHY)) Strcat(buf, "snakeback ");
+		}
+		if ((obj->bodytypeflag&MB_HORNS) != 0){
+			Strcat(buf, "slotted ");
 		}
 		if ((obj->bodytypeflag&MB_HEADMODIMASK) != 0){
 			if ((obj->bodytypeflag&MB_HEADMODIMASK) == MB_LONGHEAD) Strcat(buf, "barded ");
@@ -1059,12 +1063,30 @@ boolean dofull;
 	}
 	
 	if (!check_oprop(obj, OPROP_NONE) && (obj->oartifact == 0 || dofull)){
-		if (check_oprop(obj, OPROP_ASECW) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_ACID))
-			Insight < 10 ? Strcat(buf, "self-acidifying ") : Strcat(buf, "acid-secreting ");
-		if (check_oprop(obj, OPROP_PSECW) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_BASIC))
-			Insight < 10 ? Strcat(buf, "self-poisoning ") : Strcat(buf, "poison-secreting ");
-		if (check_oprop(obj, OPROP_GRES) && (obj->known || Insight >= 10) && !(obj->greased))
-			Insight < 10 ? Strcat(buf, "self-greasing ") : Strcat(buf, "grease-secreting ");
+		if (obj->otyp != PEST_GLAIVE){
+			if (check_oprop(obj, OPROP_SECR_ACID) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_ACID))
+				Insight < 10 ? Strcat(buf, "self-acidifying ") : Strcat(buf, "acid-secreting ");
+			if (check_oprop(obj, OPROP_SECR_POSN) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_BASIC))
+				Insight < 10 ? Strcat(buf, "self-poisoning ") : Strcat(buf, "poison-secreting ");
+			if (check_oprop(obj, OPROP_SECR_FLTH) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_FILTH))
+				Insight < 10 ? Strcat(buf, "self-fouling ") : Strcat(buf, "filth-secreting ");
+			if (check_oprop(obj, OPROP_SECR_SLEP) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_SLEEP))
+				Insight < 10 ? Strcat(buf, "self-drugging ") : Strcat(buf, "soporific-secreting ");
+			if (check_oprop(obj, OPROP_SECR_BLND) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_BLIND))
+				Insight < 10 ? Strcat(buf, "self-staining ") : Strcat(buf, "stain-secreting ");
+			if (check_oprop(obj, OPROP_SECR_PARL) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_PARAL))
+				Insight < 10 ? Strcat(buf, "self-envenoming ") : Strcat(buf, "paralytic-secreting ");
+			if (check_oprop(obj, OPROP_SECR_AMNS) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_AMNES))
+				Insight < 10 ? Strcat(buf, "self-rusting ") : Strcat(buf, "lethe-secreting ");
+			if (check_oprop(obj, OPROP_SECR_SLVR) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_SILVER))
+				Insight < 10 ? Strcat(buf, "self-silvering ") : Strcat(buf, "starwater-secreting ");
+			if (check_oprop(obj, OPROP_SECR_HLLU) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_HALLU))
+				Insight < 10 ? Strcat(buf, "hallucinogenic ") : Strcat(buf, "hallucinogen-secreting ");
+			if (check_oprop(obj, OPROP_SECR_DIRE) && (obj->known || Insight >= 10) && !(obj->opoisoned&OPOISON_DIRE))
+				Insight < 10 ? Strcat(buf, "godpoisoning ") : Strcat(buf, "god-venom-secreting ");
+			if (check_oprop(obj, OPROP_GRES) && (obj->known || Insight >= 10) && !(obj->greased))
+				Insight < 10 ? Strcat(buf, "self-greasing ") : Strcat(buf, "grease-secreting ");
+		}
 		if (check_oprop(obj, OPROP_HEAL) && (obj->known || Insight >= 21))
 			Insight < 21 ? Strcat(buf, "healing ") : check_oprop(obj, OPROP_UNHY) ? Strcat(buf, "angel-imprisoning ") : Strcat(buf, "angel-haunted ");
 		if (check_oprop(obj, OPROP_RETRW) && (obj->known || Insight >= 10))
@@ -1082,14 +1104,16 @@ boolean dofull;
 			Strcat(buf, "magic-resistant ");
 		if(check_oprop(obj, OPROP_REFL))
 			Strcat(buf, "reflective ");
-		if(check_oprop(obj, OPROP_FIRE) && obj->known)
-			Strcat(buf, "flameproof ");
-		if(check_oprop(obj, OPROP_COLD) && obj->known)
-			Strcat(buf, "coldproof ");
-		if(check_oprop(obj, OPROP_ELEC) && obj->known)
-			Strcat(buf, "voltproof ");
-		if(check_oprop(obj, OPROP_ACID) && obj->known)
-			Strcat(buf, "acidproof ");
+		if(obj->otyp != PEST_GLAIVE){
+			if(check_oprop(obj, OPROP_FIRE) && obj->known)
+				Strcat(buf, "flameproof ");
+			if(check_oprop(obj, OPROP_COLD) && obj->known)
+				Strcat(buf, "coldproof ");
+			if(check_oprop(obj, OPROP_ELEC) && obj->known)
+				Strcat(buf, "voltproof ");
+			if(check_oprop(obj, OPROP_ACID) && obj->known)
+				Strcat(buf, "acidproof ");
+		}
 		if(check_oprop(obj, OPROP_DISN) && obj->known)
 			Strcat(buf, "disintegration-proof ");
 		if(check_oprop(obj, OPROP_BCRS) && obj->known)
@@ -1253,9 +1277,9 @@ boolean dofull;
 		if (check_oprop(obj, OPROP_CAST) && !obj->known)
 			Strcat(buf, "gem-set ");
 		
-		if (check_oprop(obj, OPROP_BLADED))
+		if (check_omod(obj, OMOD_BLADED))
 			Strcat(buf, "bladed ");
-		if (check_oprop(obj, OPROP_SPIKED))
+		if (check_omod(obj, OMOD_SPIKED))
 			Strcat(buf, "spiked ");
 
 		if (check_oprop(obj, OPROP_GOLDW))
@@ -1437,7 +1461,7 @@ char *buf;
 		(obj->oclass == TOOL_CLASS && is_weptool(obj)) ||
 		(obj->oclass == RING_CLASS && objects[obj->otyp].oc_charged && obj->otyp != RIN_WISHES)
 		)
-		if (obj->known || Race_if(PM_INCANTIFIER)) {
+		if (obj->known || KNOWS_MAGIC) {
 			Strcat(buf, sitoa(obj->spe));
 			Strcat(buf, " ");
 		}
@@ -1544,6 +1568,15 @@ char *buf;
 	if(obj->otyp == SHANTA_PATA || obj->otyp == TWINGUN_SHANTA){
 		if (obj->ovar1_last_blooded > moves - 10)
 			Strcat(buf, "bloodied ");
+	}
+
+	if(obj->otyp == BREAKING_WHEEL){
+		if(obj->ovar1_wheelspeed > 0)
+				Strcat(buf, "spinning ");
+		if(Insight >= 40)
+			Strcat(buf, "skeleton-haunted ");
+		else if(Insight >= 20)
+			Strcat(buf, "haunted ");
 	}
 
 	if (obj->otyp == HOLY_SYMBOL_OF_THE_BLACK_MOTHE){
@@ -1665,7 +1698,7 @@ boolean adjective;
 			return "lionhide";
 		if (obj->oartifact == ART_XIUHCOATL)
 			return "serpenthide";
-		if (obj->ovar1_tooth_type == SERPENT_TOOTH)
+		if ((obj->otyp == TOOTH || obj->otyp == JAVELIN) && obj->ovar1_tooth_type == SERPENT_TOOTH)
 			return (adjective) ? "serpent-tooth" : "a serpent's tooth";
 		/* hard object made of dragonhide (or described as being dragon-bone) -> bone or tooth */
 		else if ((objects[obj->otyp].oc_material > LEATHER && objects[obj->otyp].oc_material != DRAGON_HIDE)
@@ -1745,7 +1778,7 @@ boolean adjective;
 			return OBJ_DESCR(objects[obj->otyp]);
 		/* items made out of specific gemstones */
 		else if ((obj->oclass == GEM_CLASS) || obj->sub_material) {
-			int gemtype = (obj->oclass == GEM_CLASS) ? obj->otyp : obj->sub_material;
+			int gemtype = (obj->oclass == GEM_CLASS && obj->otyp != EYE) ? obj->otyp : obj->sub_material;
 			if(obj->otyp == CRYSTAL && obj->sub_material)
 				gemtype = obj->sub_material;
 
@@ -2035,7 +2068,9 @@ boolean getting_obj_base_desc;
 	*/
 	if (!nn && ocl->oc_uses_known && ocl->oc_unique) obj->known = 0;
 	if (!Blind) obj->dknown = TRUE;
-	if (u.upriest) obj->bknown = TRUE;
+	if (KNOWS_BUC) obj->bknown = TRUE;
+	else if (obj->cursed && KNOWS_CURSES) obj->bknown = TRUE;
+	else if (obj->blessed && KNOWS_BLESSINGS) obj->bknown = TRUE;
 	if (u.sealsActive&SEAL_ANDROMALIUS) obj->sknown = TRUE;
 	//if (obj_is_pname(obj)) goto nameit;
 	if (!getting_obj_base_desc) {
@@ -2318,6 +2353,12 @@ boolean getting_obj_base_desc;
 		else
 			Strcat(buf, " of brilliance");
 	}
+	if(check_oprop(obj, OPROP_AAMOW) && obj->known){
+		if(strstr(buf, " of "))
+			Strcat(buf, " and light");
+		else
+			Strcat(buf, " of light");
+	}
 	
 	if (!(obj->oartifact && undiscovered_artifact(obj->oartifact) && oart->desc)
 		|| (iflags.force_artifact_names && !getting_obj_base_desc && obj->oartifact != ART_FLUORITE_OCTAHEDRON)) {
@@ -2517,27 +2558,59 @@ weapon:
 				if (Is_dragon_mail(obj)) Sprintf(eos(buf), " (mail)");
 				if (Is_dragon_scales(obj)) Sprintf(eos(buf), " (scales)");
 			}
-			if (obj->oartifact == ART_PRISMATIC_DRAGON_PLATE){
-				if (GRAY_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (gray)");
-				if (SILVER_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (silver)");
-				if (SHIMMERING_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (shimmering)");
-				if (RED_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (red)");
-				if (WHITE_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (white)");
-				if (ORANGE_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (orange)");
-				if (BLACK_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (black)");
-				if (BLUE_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (blue)");
-				if (GREEN_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (green)");
-				if (YELLOW_DRAGON_SCALE_MAIL == obj->otyp)
-					Sprintf(eos(buf), " (yellow)");
+			if (obj->oartifact == ART_PRISMATIC_DRAGON_SCALES){
+				switch (obj->otyp){
+						case GRAY_DRAGON_SCALE_SHIELD:
+						case GRAY_DRAGON_SCALE_MAIL:
+						case GRAY_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (gray)");
+						break;
+						case SILVER_DRAGON_SCALE_SHIELD:
+						case SILVER_DRAGON_SCALE_MAIL:
+						case SILVER_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (silver)");
+						break;
+						case SHIMMERING_DRAGON_SCALE_SHIELD:
+						case SHIMMERING_DRAGON_SCALE_MAIL:
+						case SHIMMERING_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (shimmering)");
+						break;
+						case RED_DRAGON_SCALE_SHIELD:
+						case RED_DRAGON_SCALE_MAIL:
+						case RED_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (red)");
+						break;
+						case WHITE_DRAGON_SCALE_SHIELD:
+						case WHITE_DRAGON_SCALE_MAIL:
+						case WHITE_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (white)");
+						break;
+						case ORANGE_DRAGON_SCALE_SHIELD:
+						case ORANGE_DRAGON_SCALE_MAIL:
+						case ORANGE_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (orange)");
+						break;
+						case BLACK_DRAGON_SCALE_SHIELD:
+						case BLACK_DRAGON_SCALE_MAIL:
+						case BLACK_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (black)");
+						break;
+						case BLUE_DRAGON_SCALE_SHIELD:
+						case BLUE_DRAGON_SCALE_MAIL:
+						case BLUE_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (blue)");
+						break;
+						case GREEN_DRAGON_SCALE_SHIELD:
+						case GREEN_DRAGON_SCALE_MAIL:
+						case GREEN_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (green)");
+						break;
+						case YELLOW_DRAGON_SCALE_SHIELD:
+						case YELLOW_DRAGON_SCALE_MAIL:
+						case YELLOW_DRAGON_SCALES:
+							 Sprintf(eos(buf), " (yellow)");
+						break;
+				}
 			}
 			break;
 		case TOOL_CLASS:
@@ -2594,7 +2667,7 @@ weapon:
 				}
 				else Sprintf(eos(buf), " (%d:%d)", (int)obj->recharged, obj->spe);
 			}
-			else if (obj->spe <= 0 && Race_if(PM_INCANTIFIER))
+			else if (obj->spe <= 0 && KNOWS_MAGIC)
 				Sprintf(eos(buf), " (empty)");
 			break;
 		case POTION_CLASS:
@@ -2691,7 +2764,7 @@ weapon:
 			else {
 				const char *hand_s = obj->where == OBJ_MINVENT ? mbodypart(obj->ocarry, HAND) : body_part(HAND);
 
-				if ((bimanual(obj, obj->where == OBJ_MINVENT ? obj->ocarry->data : youracedata)
+				if ((bimanual_mon(obj, obj->where == OBJ_MINVENT ? obj->ocarry : &youmonst)
 				 && !(obj->where != OBJ_MINVENT && u.twoweap && (obj->oartifact == ART_PROFANED_GREATSCYTHE || obj->oartifact == ART_LIFEHUNT_SCYTHE)))
 					|| (u.twoweap && (obj->otyp == STILETTOS || obj->otyp == WIND_AND_FIRE_WHEELS))
 				)
@@ -4015,7 +4088,6 @@ struct alt_spellings {
 //#endif
 	{ "rum", POT_BOOZE },
 	{ "sea biscuit", CRAM_RATION },
-	{ "cutlass", SCIMITAR },
 	{ "lhang", HIGH_ELVEN_WARSWORD },
 	{ "buccaneer's ditty bag", OILSKIN_SACK },
 	{ "ditty bag", SACK },
@@ -4163,6 +4235,7 @@ int wishflags;
 	int objsize = (from_user ? youracedata->msize : MZ_MEDIUM);
 	long bodytype = 0L;
 	unsigned long int oprop_list[OPROP_LISTSIZE] = {0};
+	unsigned long int omod_list[OMOD_LISTSIZE] = {0};
 	char oclass;
 	char *un, *dn, *actualn;
 	const char *name=0;
@@ -4783,10 +4856,34 @@ int wishflags;
 			add_oprop_list(oprop_list, OPROP_REFL);
 
 		} else if (!strncmpi(bp, "self-acidifying ", l=16) || !strncmpi(bp, "acid-secreting ", l=15)) {
-			add_oprop_list(oprop_list, OPROP_ASECW);
+			add_oprop_list(oprop_list, OPROP_SECR_ACID);
 
-		} else if (!strncmpi(bp, "self-poisoning ", l=15) || !strncmpi(bp, "poison-secreting ", l=17) ) {
-			add_oprop_list(oprop_list, OPROP_PSECW);
+		} else if (!strncmpi(bp, "self-poisoning ", l=15) || !strncmpi(bp, "poison-secreting ", l=17)) {
+			add_oprop_list(oprop_list, OPROP_SECR_POSN);
+
+		} else if (!strncmpi(bp, "self-fouling ", l=13) || !strncmpi(bp, "filth-secreting ", l=16)) {
+			add_oprop_list(oprop_list, OPROP_SECR_FLTH);
+
+		} else if (!strncmpi(bp, "self-drugging ", l=15) || !strncmpi(bp, "soporific-secreting ", l=20)) {
+			add_oprop_list(oprop_list, OPROP_SECR_SLEP);
+
+		} else if (!strncmpi(bp, "self-staining ", l=14) || !strncmpi(bp, "stain-secreting ", l=20)) {
+			add_oprop_list(oprop_list, OPROP_SECR_BLND);
+
+		} else if (!strncmpi(bp, "self-envenoming ", l=16) || !strncmpi(bp, "paralytic-secreting ", l=20)) {
+			add_oprop_list(oprop_list, OPROP_SECR_PARL);
+
+		} else if (!strncmpi(bp, "self-rusting ", l=14) || !strncmpi(bp, "lethe-secreting ", l=18)) {
+			add_oprop_list(oprop_list, OPROP_SECR_AMNS);
+
+		} else if (!strncmpi(bp, "self-silvering ", l=15) || !strncmpi(bp, "starwater-secreting ", l=25)) {
+			add_oprop_list(oprop_list, OPROP_SECR_SLVR);
+
+		} else if (!strncmpi(bp, "hallucinogenic ", l=20) || !strncmpi(bp, "hallucinogen-secreting ", l=23)) {
+			add_oprop_list(oprop_list, OPROP_SECR_HLLU);
+
+		} else if (!strncmpi(bp, "godpoisoning ", l=14) || !strncmpi(bp, "god-venom-secreting ", l=21)) {
+			add_oprop_list(oprop_list, OPROP_SECR_DIRE);
 
 		} else if (!strncmpi(bp, "self-greasing ", l=14) || !strncmpi(bp, "grease-secreting ", l=17)) {
 			add_oprop_list(oprop_list, OPROP_GRES);
@@ -4950,10 +5047,12 @@ int wishflags;
 		} else if (!strncmpi(bp, "insightful ", l=11)) {
 			add_oprop_list(oprop_list, OPROP_INSTW);
 
+		} else if (!strncmpi(bp, "shoulder-baring ", l=16)) {
+			add_omod_list(omod_list, OMOD_SHOULDER_BARING);
 		} else if (!strncmpi(bp, "spiked ", l=7)) {
-			add_oprop_list(oprop_list, OPROP_SPIKED);
+			add_omod_list(omod_list, OMOD_SPIKED);
 		} else if (!strncmpi(bp, "bladed ", l=7)) {
-			add_oprop_list(oprop_list, OPROP_BLADED);
+			add_omod_list(omod_list, OMOD_BLADED);
 		} else if (!strncmpi(bp, "aureate ", l=8)) {
 			add_oprop_list(oprop_list, OPROP_GOLDW);
 		} else if (!strncmpi(bp, "blasting ", l=9)) {
@@ -6283,6 +6382,7 @@ typfnd:
 	{
 		if (wizwish){		// wizard mode will give you what you ask for, even if it breaks things
 			copy_oprop_list(otmp, oprop_list);
+			copy_omod_list(otmp, omod_list);
 		}
 		// else
 		// {	// limit granted properties to what is realistic for the item class

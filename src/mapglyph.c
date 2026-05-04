@@ -200,7 +200,23 @@ unsigned int *obgcolor;
 #endif
 		/* Special colours for special dungeon areas */
 		if(iflags.use_color && iflags.dnethack_dungeon_colors){
-			if(In_sokoban(&u.uz)){
+			if(u.silverknight_mire){
+				if(offset >= S_vwall && offset <= S_trwall){
+					color = CLR_ORANGE;
+				}
+				else if(offset >= S_water){
+					color = CLR_RED;
+				}
+				else if(offset == S_litroom){
+					if((x+3*y)%10)
+						color = CLR_RED;
+					else
+						color = CLR_GRAY;
+				}
+				else if(offset == S_water || offset == S_pool){
+					color = CLR_RED;
+				}
+			} else if(In_sokoban(&u.uz)){
 				if(offset >= S_vwall && offset <= S_trwall){
 					color = CLR_BRIGHT_BLUE;
 				}

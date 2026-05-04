@@ -276,6 +276,7 @@ struct artifact {
 	unsigned long mflagst;	/* Monster Thoughts and behavior boolean bitflags */
     unsigned long mflagsf;	/* Monster Fighting skills boolean bitflags */
 	unsigned long mflagsb;	/* Monster Body plan boolean bitflags */
+    unsigned long mflagsc;	/* Monster body Composition boolean bitflags */
 	unsigned long mflagsg;	/* Monster Game mechanics and bookkeeping boolean bitflags */
 	unsigned long mflagsa;	/* Monster rAce boolean bitflags */
 	unsigned long mflagsv;	/* Monster Vision boolean bitflags */
@@ -352,6 +353,14 @@ struct artinstance{
 #define FFACE_FISH		1
 #define FFACE_MAN		2
 #define FFACE_ANT		3
+#define StormRune avar1
+#define FRUNE_HARVEST	0
+#define FRUNE_HUNT      1
+#define FRUNE_CHAOS     2
+#define GDCBBlessedness avar1
+#define GDCB_BLESSED	0x00000001L
+#define GDCB_CURSED		0x00000002L
+#define GDCB_UNBLESSED	0x00000004L
 	long avar2;
 #define SnSd2 avar2
 #define RoSPflights avar2
@@ -376,14 +385,15 @@ struct artinstance{
 #define CarapacePoints avar3
 #define GithStylesSeen avar3
 #define ZerthMaterials avar3
-#define	ZMAT_IRON		0x00000001L
-#define	ZMAT_GREEN		0x00000002L
-#define	ZMAT_SILVER		0x00000004L
-#define	ZMAT_GOLD		0x00000008L
-#define	ZMAT_PLATINUM	0x00000010L
-#define	ZMAT_MITHRIL	0x00000020L
-#define	ZMAT_COPPER	    0x00000040L
-#define	ZMAT_LEAD   	0x00000080L
+#define GDCBMaterials avar3
+#define	AMAT_IRON		0x00000001L
+#define	AMAT_GREEN		0x00000002L
+#define	AMAT_SILVER		0x00000004L
+#define	AMAT_GOLD		0x00000008L
+#define	AMAT_PLATINUM	0x00000010L
+#define	AMAT_MITHRIL	0x00000020L
+#define	AMAT_COPPER	    0x00000040L
+#define	AMAT_LEAD   	0x00000080L
 #define mortalBloodsmoke avar3
 	long avar4;
 #define SnSd3duration avar4
@@ -552,7 +562,6 @@ extern struct artifact * artilist;
             // art_already_exists(ART_NENYA) ||\
             // art_already_exists(ART_VILYA) ||\
             // art_already_exists(ART_HAT_OF_THE_GIANT_KILLER) ||\
-            // art_already_exists(ART_PRISMATIC_DRAGON_PLATE) ||\
             // art_already_exists(ART_FOOTPRINTS_IN_THE_LABYRINT) ||\
             // art_already_exists(ART_TRAPPINGS_OF_THE_GRAVE)\
 // )
@@ -667,24 +676,14 @@ extern struct artifact * artilist;
             || ((a) == &artilist[ART_FORGE_HAMMER_OF_THE_ARTIFI] && (Role_if(PM_WIZARD) || Pantheon_if(PM_WIZARD)) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
                 !has_named_mastery_artifact())\
             /* Drow */\
-            || ((a) == &artilist[ART_LOMYA] && Race_if(PM_DROW) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
             /* Dwarf */\
             || ((a) == &artilist[ART_BULWARK_OF_THE_DWARVEN_DEF] && Race_if(PM_DWARF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
                 !has_named_mastery_artifact())\
             /* Elf */\
-            || ((a) == &artilist[ART_NARYA] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
-            || ((a) == &artilist[ART_NENYA] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
-            || ((a) == &artilist[ART_VILYA] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
             /* Gnome */\
-            || ((a) == &artilist[ART_HAT_OF_THE_GIANT_KILLER] && Race_if(PM_ELF) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
+            || ((a) == &artilist[ART_HAT_OF_THE_GIANT_KILLER] && Race_if(PM_GNOME) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
                 !has_named_mastery_artifact())\
             /* Half-Dragon */\
-            || ((a) == &artilist[ART_PRISMATIC_DRAGON_PLATE] && Race_if(PM_HALF_DRAGON) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\
-                !has_named_mastery_artifact())\
             /* Human */\
             /* Incantifier */\
             || ((a) == &artilist[ART_FOOTPRINTS_IN_THE_LABYRINT] && Race_if(PM_INCANTIFIER) && u.ulevel >= MASTERY_ARTIFACT_LEVEL &&\

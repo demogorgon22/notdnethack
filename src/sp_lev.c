@@ -1966,11 +1966,11 @@ default_case:
 					stuff = mksobj(gauntlettypes[rn2(SIZE(gauntlettypes))], MKOBJ_NOINIT);
 					size_items_to_pc(stuff);
 					if(index < SPEAR){
-						add_oprop(stuff, OPROP_SPIKED);
+						add_omod(stuff, OMOD_SPIKED);
 						stuff->spe = 2;
 					}
 					else {
-						add_oprop(stuff, OPROP_BLADED);
+						add_omod(stuff, OMOD_BLADED);
 						stuff->spe = 2;
 					}
 					add_to_container(otmp, stuff);
@@ -1978,7 +1978,7 @@ default_case:
 					//Spiked boots
 					stuff = mksobj(boottypes[rn2(SIZE(boottypes))], MKOBJ_NOINIT);
 					size_items_to_pc(stuff);
-					add_oprop(stuff, OPROP_SPIKED);
+					add_omod(stuff, OMOD_SPIKED);
 					stuff->spe = 2;
 					add_to_container(otmp, stuff);
 				}
@@ -2027,7 +2027,7 @@ default_case:
 					add_to_container(otmp, stuff);
 					stuff = mksobj(RED_DRAGON_SCALE_MAIL, mkobjflags);
 					size_items_to_pc(stuff);
-					add_oprop(stuff, OPROP_SPIKED);
+					add_omod(stuff, OMOD_SPIKED);
 					stuff->spe = 3;
 					stuff->cursed = FALSE;
 					add_to_container(otmp, stuff);
@@ -2071,7 +2071,7 @@ default_case:
 
 					default_add(DROVEN_GREATSWORD);
 					set_material_gm(stuff, SILVER);
-					add_oprop(stuff, OPROP_ASECW);
+					add_oprop(stuff, OPROP_SECR_ACID);
 
 					default_add(CLOAK);
 					set_material_gm(stuff, CLOTH);
@@ -2185,6 +2185,179 @@ default_case:
 				size_items_to_pc(stuff);
 				stuff->obj_color = CLR_ORANGE;
 				add_to_container(otmp, stuff);
+			break;
+			case PM_TIEFLING:
+				if(flags.initgend){
+					default_add_2(TOOTH);
+					stuff->objsize = MZ_TINY;
+					stuff->ovar1_tooth_type = SERPENT_TOOTH;
+					add_oprop(stuff, OPROP_PSIOW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
+					fix_object(stuff);
+
+					default_add_2(TOOTH);
+					stuff->objsize = MZ_TINY;
+					stuff->ovar1_tooth_type = MAGMA_TOOTH;
+					add_oprop(stuff, OPROP_PSIOW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
+					fix_object(stuff);
+
+					default_add_2(TOOTH);
+					stuff->objsize = MZ_TINY;
+					stuff->ovar1_tooth_type = VOID_TOOTH;
+					add_oprop(stuff, OPROP_PSIOW);
+					add_omod(stuff, OMOD_SECONDSTRIKE);
+					fix_object(stuff);
+
+					default_add(ARMOR_SALVE);
+
+					stuff = mksobj(GENTLEWOMAN_S_DRESS, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_WHITE;
+					stuff->spe = 2;
+					stuff->oeroded2 = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(VICTORIAN_UNDERWEAR, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_BLACK;
+					stuff->spe = 2;
+					stuff->oeroded2 = 3;
+					add_to_container(otmp, stuff);
+				}
+				else {
+					int fist_coin = 0;
+					default_add_2(DEVIL_FIST);
+					set_material_gm(stuff, GREEN_STEEL);
+					if(stuff->cobj)
+						fist_coin = stuff->cobj->otyp;
+					add_oprop(stuff, OPROP_FIRE);
+					add_oprop(stuff, OPROP_COLD);
+					add_oprop(stuff, OPROP_OCLTW);
+
+					stuff = mksobj(GENTLEMAN_S_SUIT, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_BLACK;
+					stuff->spe = 2;
+					stuff->oeroded3 = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(RUFFLED_SHIRT, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->obj_color = CLR_RED;
+					stuff->spe = 2;
+					stuff->oeroded3 = 3;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(PRESERVATIVE_ENGINE, MKOBJ_NOINIT);
+					stuff->spe = 0;
+					add_to_container(otmp, stuff);
+
+					int coins[] = {WAGE_OF_ENVY, WAGE_OF_GLUTTONY, WAGE_OF_GREED, WAGE_OF_LUST, WAGE_OF_PRIDE, WAGE_OF_SLOTH, WAGE_OF_WRATH};
+					//shuffle
+					int tmp, j, i;
+					for(i = SIZE(coins) - 1; i > 0; i--){
+						j = rn2(i + 1);
+						tmp = coins[j];
+						coins[j] = coins[i];
+						coins[i] = tmp;
+					}
+					i = 2;
+					j = -1;
+					while (i > 0){
+						j++;
+						if(coins[j] == fist_coin)
+							continue;
+						stuff = mksobj(coins[j], NO_MKOBJ_FLAGS);
+						stuff->quan = 1L;
+						fix_object(stuff);
+						add_to_container(otmp, stuff);
+						i--;
+					}
+				}
+			break;
+			case PM_AASIMAR:
+				if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+					stuff = mksobj(ROBE, MKOBJ_NOINIT);
+					size_items_to_pc(stuff);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_WOOL);
+					stuff->obj_color = CLR_WHITE;
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(CRYSTAL_SWORD, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					set_material_gm(stuff, GEMSTONE);
+					set_submat(stuff, DIAMOND);
+					add_oprop(stuff, OPROP_HOLYW);
+					add_oprop(stuff, OPROP_UNHYW);
+					add_oprop(stuff, OPROP_FIREW);
+					add_oprop(stuff, OPROP_LIVEW);
+					add_oprop(stuff, OPROP_INSTW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(BOW, MKOBJ_NOINIT);
+					stuff->spe = 0;
+					set_material_gm(stuff, PLATINUM);
+					add_oprop(stuff, OPROP_AAMOW);
+					add_oprop(stuff, OPROP_HOLYW);
+					add_oprop(stuff, OPROP_UNHYW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(EYE, NO_MKOBJ_FLAGS);
+					fully_identify_obj(stuff);
+					stuff->ovar1_your_eye = TRUE;
+					set_material_gm(stuff, GEMSTONE);
+					set_submat(stuff, DIAMOND);
+					add_to_container(otmp, stuff);
+				}
+				else if(flags.aasimar_type == AASIMAR_TYPE_PRIMINAL){
+					stuff = mksobj(QUARTERSTAFF, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_HOLYW);
+					add_oprop(stuff, OPROP_UNHYW);
+					add_oprop(stuff, OPROP_CONCW);
+					add_oprop(stuff, OPROP_LIVEW);
+					add_oprop(stuff, OPROP_INSTW);
+					add_to_container(otmp, stuff);
+
+					int typ = find_wooden_ring();
+					if(typ == RIN_POLYMORPH)
+						typ = RIN_NOTHING;
+					stuff = mksobj(typ, MKOBJ_NOINIT);
+					set_material_gm(stuff, WOOD);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_HEAL);
+					add_oprop(stuff, OPROP_LIFE);
+					add_oprop(stuff, OPROP_ELECW);
+					add_to_container(otmp, stuff);
+
+					stuff = mksobj(ROBE, MKOBJ_NOINIT);
+					stuff->spe = 2;
+					add_oprop(stuff, OPROP_HOLY);
+					add_oprop(stuff, OPROP_UNHY);
+					add_oprop(stuff, OPROP_CONC);
+					set_material_gm(stuff, DRAGON_HIDE);
+					add_to_container(otmp, stuff);
+				}
+				else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE){
+					default_add_2(HOODED_CAPELET);
+					if(stuff)
+						stuff->obj_color = CLR_ORANGE;
+					default_add_2(ELVEN_TOGA);
+					if(stuff){
+						stuff->obj_color = CLR_ORANGE;
+						add_omod(stuff, OMOD_SHOULDER_BARING);
+					}
+					default_add_2(GLOVES);
+					default_add_2(ELVEN_BOOTS);
+					default_add(MAGIC_HARP);
+					default_add(BUGLE);
+					default_add(SPE_CAUSE_FEAR);
+					default_add(SPE_EXTRA_HEALING);
+					default_add(SPE_TELEPORT_AWAY);
+					default_add(SPE_CHARM_MONSTER);
+				}
 			break;
 		}
 		if(urace.malenum == PM_GNOME){
@@ -4119,7 +4292,7 @@ dlb *fd;
 		prevstair.y = y;
 	}
 	
-	if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+	if(Role_if(PM_HEALER) && (RACE_IF_DROW)){
 		//Up stair
 		if(u.uz.dlevel > 1 && u.uz.dlevel <= 4){
 			if(dungeons[u.uz.dnum].connect_side[u.uz.dlevel-2] == CON_UNSPECIFIED){

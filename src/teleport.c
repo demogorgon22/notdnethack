@@ -36,6 +36,7 @@ unsigned gpflags;
 	if (mtmp != &youmonst && x == u.ux && y == u.uy
 #ifdef STEED
 			&& (!u.usteed || mtmp != u.usteed)
+			&& (!u.urider || mtmp != u.urider)
 #endif
 			)
 		return FALSE;
@@ -607,6 +608,10 @@ boolean allow_drag;
 		u.usteed->mx = nux;
 		u.usteed->my = nuy;
 	}
+	if (u.urider) {
+		u.urider->mx = nux;
+		u.urider->my = nuy;
+	}
 #endif
 	/*
 	 *  Make sure the hero disappears from the old location.  This will
@@ -668,7 +673,7 @@ boolean force_it;
 	register struct obj *otmp;
 
 #ifdef STEED
-	if (mtmp == u.usteed)
+	if (mtmp == u.usteed || mtmp == u.urider)
 		return (FALSE);
 #endif
 
@@ -718,6 +723,7 @@ tele()
 	 (u.uhave.amulet || On_W_tower_level(&u.uz)
 #ifdef STEED
 	  || (u.usteed && mon_has_amulet(u.usteed))
+	  || (u.urider && mon_has_amulet(u.urider))
 #endif
 	 )
 #ifdef WIZARD
@@ -739,10 +745,11 @@ tele()
 #ifdef STEED
 		    char buf[BUFSZ];
 		    if (u.usteed) Sprintf(buf," and %s", mon_nam(u.usteed));
+			if (u.urider) Sprintf(buf," and %s", mon_nam(u.urider));
 #endif
 		    pline("To what position do you%s want to be teleported?",
 #ifdef STEED
-				u.usteed ? buf :
+				(u.usteed || u.urider) ? buf :
 #endif
 			   "");
 		    cc.x = u.ux;
@@ -1253,6 +1260,9 @@ branch_tele()
 	if(u.usteed && mon_has_amulet(u.usteed)){
 		dismount_steed(DISMOUNT_VANISHED);
 	}
+	if(u.urider && mon_has_amulet(u.urider)){
+		rider_dismounts_you(DISMOUNT_VANISHED);
+	}
 	if(!Blind) You("are surrounded by a shimmering sphere!");
 	else You_feel("weightless for a moment.");
 	goto_level(&newlev, FALSE, FALSE, FALSE);
@@ -1552,7 +1562,7 @@ boolean suppress_impossible;
 	register int x, y, trycount;
 
 #ifdef STEED
-	if (mtmp == u.usteed) {
+	if (mtmp == u.usteed || mtmp == u.urider) {
 	    tele();
 	    return TRUE;
 	}

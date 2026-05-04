@@ -13,8 +13,6 @@ extern void you_aggravate(struct monst *);
 
 STATIC_PTR int NDECL(prayer_done);
 STATIC_DCL struct obj *NDECL(worst_cursed_item);
-STATIC_DCL int NDECL(in_trouble);
-STATIC_DCL void FDECL(fix_worst_trouble,(int));
 STATIC_DCL void FDECL(god_zaps_you, (int));
 STATIC_DCL void FDECL(fry_by_god, (int));
 STATIC_DCL void FDECL(consume_offering,(struct obj *));
@@ -137,6 +135,8 @@ static int p_type;
 enum {
 	TROUBLE_CURSED_BLINDFOLD = 1,
 	TROUBLE_EXTREME_SANITY,
+	TROUBLE_EXTREME_HPMOD,
+	TROUBLE_EXTREME_ENMOD,
 	TROUBLE_UNUSEABLE_HANDS,
 	TROUBLE_CURSED_LEVITATION,
 	TROUBLE_STUCK_IN_WALL,
@@ -196,7 +196,7 @@ This could get as bizarre as noting surrounding opponents, (or hostile dogs),
 but that's really hard.
  */
 
-STATIC_OVL int
+int
 in_trouble()
 {
 	struct obj *otmp;
@@ -229,12 +229,12 @@ in_trouble()
 	if(u.uhs >= WEAK && !Race_if(PM_INCANTIFIER)) return(TROUBLE_STARVING);
 	if (Upolyd ? (u.mh <= 5 || u.mh*2 <= u.mhmax) :
 		(u.uhp <= 5 || u.uhp*2 <= u.uhpmax)) return TROUBLE_HIT;
-	if(u.wimage >= 10 && on_altar()) return(TROUBLE_WIMAGE);
-	if(u.umorgul && on_altar()) return(TROUBLE_MORGUL);
-	if(u.umummyrot && on_altar()) return(TROUBLE_MROT);
-	if(u.uhpmod < -18 && on_altar()) return(TROUBLE_HPMOD);
-	if(u.uenbonus < -18 && on_altar()) return(TROUBLE_ENERGYMOD);
-	if((u.usanity < 100 && on_altar()) || u.usanity < 50) return(TROUBLE_LOW_SAN);
+	if(u.wimage >= 10 && altar_prayer()) return(TROUBLE_WIMAGE);
+	if(u.umorgul && altar_prayer()) return(TROUBLE_MORGUL);
+	if(u.umummyrot && altar_prayer()) return(TROUBLE_MROT);
+	if(u.uhpmod < -18 && altar_prayer()) return(TROUBLE_HPMOD);
+	if(u.uenbonus < -18 && altar_prayer()) return(TROUBLE_ENERGYMOD);
+	if((u.usanity < 100 && altar_prayer()) || u.usanity < 50) return(TROUBLE_LOW_SAN);
 	if(u.ulycn >= LOW_PM) return(TROUBLE_LYCANTHROPE);
 	if(near_capacity() >= EXT_ENCUMBER && AMAX(A_STR)-ABASE(A_STR) > 3)
 		return(TROUBLE_COLLAPSING);
@@ -264,6 +264,8 @@ in_trouble()
 	}
 	if(Role_if(PM_BARD) && welded(uwep))
 		return TROUBLE_UNUSEABLE_HANDS;
+	if(u.uhpbonus < 0 && u.uhpmax < u.uhprolled/2) return(TROUBLE_EXTREME_HPMOD);
+	if(u.uenbonus < 0 && u.uenmax < u.uenrolled/2) return(TROUBLE_EXTREME_ENMOD);
 	if(u.usanity < 10) return(TROUBLE_EXTREME_SANITY);
 	if(Blindfolded && ublindf->cursed) return(TROUBLE_CURSED_BLINDFOLD);
 
@@ -318,7 +320,7 @@ worst_cursed_item()
 		return (struct obj *)0;
     /* weapon takes precedence if it is interfering
        with taking off a ring or putting on a shield */
-    if (welded(uwep) && (uright || bimanual(uwep,youracedata))) {	/* weapon */
+    if (welded(uwep) && (uright || bimanual_mon(uwep,&youmonst))) {	/* weapon */
 	otmp = uwep;
     /* gloves come next, due to rings */
     } else if (uarmg && uarmg->cursed) {		/* gloves */
@@ -343,6 +345,8 @@ worst_cursed_item()
 	otmp = uamul;
     } else if (ubelt && ubelt->cursed) {		/* belt */
 	otmp = ubelt;
+    } else if (usaddle && usaddle->cursed) {	/* saddle */
+	otmp = usaddle;
     } else if (uleft && uleft->cursed) {		/* left ring */
 	otmp = uleft;
     } else if (uright && uright->cursed) {		/* right ring */
@@ -366,7 +370,7 @@ worst_cursed_item()
     return otmp;
 }
 
-STATIC_OVL void
+void
 fix_worst_trouble(trouble)
 register int trouble;
 {
@@ -547,18 +551,20 @@ register int trouble;
 		    u.umummyrot = 0;
 		    break;
 	    case TROUBLE_HPMOD:
+	    case TROUBLE_EXTREME_HPMOD:
 			You_feel("restored to health.");
 		    u.uhpmod = max(u.uhpmod, 0);
 		    calc_total_maxhp();
 		    break;
 	    case TROUBLE_ENERGYMOD:
+	    case TROUBLE_EXTREME_ENMOD:
 			You_feel("charged up.");
 		    u.uenbonus = max(u.uenbonus, 0);
 		    calc_total_maxen();
 		    break;
 	    case TROUBLE_LOW_SAN:
 			Your("mind feels more steady.");
-			if(on_altar())
+			if(altar_prayer())
 				change_usanity(100, FALSE);
 			else
 				change_usanity((50-u.usanity) + ACURR(A_WIS), FALSE);
@@ -631,7 +637,7 @@ decurse:
 	    case TROUBLE_BLIND:
 		{
 		    int num_eyes = eyecount(youracedata);
-		    const char *eye = body_part(EYE);
+		    const char *eye = body_part(EYE_BP);
 
 		    Your("%s feel%s better.",
 			 (num_eyes == 1) ? eye : makeplural(eye),
@@ -873,7 +879,7 @@ int godnum;
 			break;
 		case 9:
 		case 10:
-			Sprintf(buf, "Let thy senses fail and thine %s be sewn shut!", makeplural(body_part(EYE)));
+			Sprintf(buf, "Let thy senses fail and thine %s be sewn shut!", makeplural(body_part(EYE_BP)));
 			godvoice(godnum, buf);
 			HStumbleBlind += rn1(80, 150);
 			break;
@@ -953,6 +959,49 @@ at_your_feet(str)
 		  Levitation ? "beneath" : "at",
 		  makeplural(body_part(FOOT)));
 	}
+}
+
+void
+golden_glow()
+{
+	if (!Blind)
+	You("are surrounded by %s glow.", an(hcolor(NH_GOLDEN)));
+	/* if any levels have been lost (and not yet regained),
+		treat this effect like blessed full healing */
+	if (u.ulevel < u.ulevelmax) {
+		// u.ulevelmax -= 1;	/* see potion.c */
+		pluslvl(FALSE);
+	} else {
+		u.uhpbonus += 5;
+		calc_total_maxhp();
+	}
+	u.uhp = u.uhpmax;
+	if (Upolyd) u.mh = u.mhmax;
+	ABASE(A_STR) = AMAX(A_STR);
+	if(Race_if(PM_INCANTIFIER)){
+		if (u.uen < u.uenmax*.45) u.uen += 400;
+		newuhs(TRUE);
+	} else {
+		if (u.uhunger < get_uhungermax()*.45) u.uhunger = get_uhungermax()*.45;
+		u.uhs = NOT_HUNGRY;
+	}
+	if(u.uen < u.uenmax && !Race_if(PM_INCANTIFIER)){
+		u.uen = min(u.uenmax, u.uen+200);
+	}
+
+	if (u.uluck < 0) u.uluck = 0;
+	else change_luck(1);
+
+	for (int i = 0; i < MAXSPELL; i++)  {
+		if (spellid(i) != NO_SPELL && spl_book[i].sp_know > 0)  {
+			spl_book[i].sp_know = min(spl_book[i].sp_know + KEEN/10, KEEN);
+			exercise(A_WIS,TRUE);
+			exercise(A_INT,TRUE);
+		}
+	}
+
+	make_blinded(0L,TRUE);
+	flags.botl = 1;
 }
 
 void
@@ -1096,44 +1145,7 @@ pleased(int godnum, boolean altar, int pray_trouble, boolean set_timeout)
 			}
 			/* Otherwise, falls into next case */
 		case 2:
-			if (!Blind)
-			You("are surrounded by %s glow.", an(hcolor(NH_GOLDEN)));
-			/* if any levels have been lost (and not yet regained),
-			   treat this effect like blessed full healing */
-			if (u.ulevel < u.ulevelmax) {
-				// u.ulevelmax -= 1;	/* see potion.c */
-				pluslvl(FALSE);
-			} else {
-				u.uhpbonus += 5;
-				calc_total_maxhp();
-			}
-			u.uhp = u.uhpmax;
-			if (Upolyd) u.mh = u.mhmax;
-			ABASE(A_STR) = AMAX(A_STR);
-			if(Race_if(PM_INCANTIFIER)){
-				if (u.uen < u.uenmax*.45) u.uen += 400;
-				newuhs(TRUE);
-			} else {
-				if (u.uhunger < get_uhungermax()*.45) u.uhunger = get_uhungermax()*.45;
-				u.uhs = NOT_HUNGRY;
-			}
-			if(u.uen < u.uenmax && !Race_if(PM_INCANTIFIER)){
-				u.uen = min(u.uenmax, u.uen+200);
-			}
-
-			if (u.uluck < 0) u.uluck = 0;
-			else change_luck(1);
-
-			for (int i = 0; i < MAXSPELL; i++)  {
-				if (spellid(i) != NO_SPELL && spl_book[i].sp_know > 0)  {
-					spl_book[i].sp_know = min(spl_book[i].sp_know + KEEN/10, KEEN);
-					exercise(A_WIS,TRUE);
-					exercise(A_INT,TRUE);
-				}
-			}
-
-			make_blinded(0L,TRUE);
-			flags.botl = 1;
+			golden_glow();
 			break;
 		case 4: {
 			register struct obj *otmp;
@@ -1163,41 +1175,7 @@ pleased(int godnum, boolean altar, int pray_trouble, boolean set_timeout)
 			}
 		}
 		case 5: {
-			const char *msg="Thou hast pleased me with thy progress, and thus I grant thee the gift of %s! Use it wisely in my name!";
-			char buf[BUFSZ];
-			buf[0] = 0;
-			if (!(HTelepat & INTRINSIC))  {
-				HTelepat |= FROMOUTSIDE;
-				Sprintf(buf, msg, "Telepathy");
-				if (Blind) see_monsters();
-			} else if (!(HFast & INTRINSIC))  {
-				HFast |= FROMOUTSIDE;
-				Sprintf(buf, msg, "Speed");
-			} else if (!(HStealth & INTRINSIC))  {
-				HStealth |= FROMOUTSIDE;
-				Sprintf(buf, msg, "Stealth");
-			} else if(!(u.wardsknown & WARD_HAMSA)){
-				u.wardsknown |= WARD_HAMSA;
-				Sprintf(buf, msg, "the Hamsa ward");
-			} else if(!(u.wardsknown & WARD_HEXAGRAM)){
-				u.wardsknown |= WARD_HEXAGRAM;
-				Sprintf(buf, msg, "the Hexagram ward");
-			}else if(u.ublesscnt < 40){
-				if (!(HProtection & INTRINSIC))  {
-					HProtection |= FROMOUTSIDE;
-					if (!u.ublessed)  u.ublessed = rn1(3, 2);
-				} else u.ublessed++;
-				Sprintf(buf, msg, "my protection");
-			}
-			else {
-				u.uenbonus += 5;
-				calc_total_maxen();
-				Sprintf(buf, msg, "my magic");
-			}
-			if(buf[0]){
-				godvoice(godnum, buf);
-				break;
-			}
+			if(prayer_benefit_intrinsic(godnum, FALSE)) break;
 		}
 		case 7:
 		case 8:
@@ -1385,7 +1363,7 @@ int godnum;
 	angrygods(godnum);
 }
 
-static NEARDATA const char sacrifice_types[] = { FOOD_CLASS, AMULET_CLASS, 0 };
+static NEARDATA const char sacrifice_types[] = { FOOD_CLASS, AMULET_CLASS, TOOL_CLASS, 0 };
 
 STATIC_OVL void
 eat_offering(otmp, silently, eatflag)
@@ -1638,11 +1616,11 @@ register struct obj *otmp;
 	Your("sacrifice disappears!");
     else Your("sacrifice is consumed in a %s!",
 	      u.ualign.type == A_LAWFUL ? "flash of light" : "burst of flame");
-	if(u.sealsActive&SEAL_BALAM){
+	if(u.sealsActive&SEAL_BALAM && otmp->otyp == CORPSE){
 		struct permonst *ptr = &mons[otmp->corpsenm];
 		if(!(is_animal(ptr) || nohands(ptr))) unbind(SEAL_BALAM,TRUE);
 	}
-	if(u.sealsActive&SEAL_YMIR){
+	if(u.sealsActive&SEAL_YMIR && otmp->otyp == CORPSE){
 		struct permonst *ptr = &mons[otmp->corpsenm];
 		if(is_giant(ptr)) unbind(SEAL_YMIR,TRUE);
 	}
@@ -1782,9 +1760,9 @@ dosacrifice()
 	}
 	
     if (In_endgame(&u.uz) || In_void(&u.uz)) {
-	if (!(otmp = getobj(sacrifice_types, "sacrifice"))) return MOVE_CANCELLED;
-    } else {
-	if (!(otmp = floorfood("sacrifice", yog_altar_at(u.ux, u.uy) ? 3 : 1))) return MOVE_CANCELLED;
+		if (!(otmp = getobj(sacrifice_types, "sacrifice"))) return MOVE_CANCELLED;
+	} else {
+		if (!(otmp = floorfood("sacrifice", yog_altar_at(u.ux, u.uy) ? 3 : 1, TRUE))) return MOVE_CANCELLED;
     }
     /*
       Was based on nutritional value and aging behavior (< 50 moves).
@@ -2003,6 +1981,21 @@ dosacrifice()
 			} else value += 3;
 		}
     } /* corpse */
+	else if(otmp->otyp == EFFIGY){
+		if (yn_function("Really offer yourself in effigy?",ynchars,'n')=='n') return MOVE_CANCELLED;
+		if (u.ualign.type == altaralign) {
+			/* it's a very good action */
+			if (u.ualign.record < ALIGNLIM)
+				You_feel("appropriately %s.", align_str(u.ualign.type));
+			else You_feel("you are thoroughly on the right path.");
+			adjalign(5);
+			value = u.ulevel + 3;
+		} else {
+			/* your god gets angry and it's a conversion */
+			u.ualign.record = min(-1,u.ualign.record-20);
+			value = 1;
+		}
+	}
 
     if (otmp->otyp == AMULET_OF_YENDOR) {
 		if (!Is_astralevel(&u.uz)) {
@@ -2516,7 +2509,7 @@ boolean praying;	/* false means no messages should be given */
     p_god = on_altar() ? (god_at_altar(u.ux,u.uy)) : u.ualign.god;
     p_trouble = in_trouble();
 
-    if (is_demon(youracedata) && (galign(p_god) == A_LAWFUL || galign(p_god) == A_NEUTRAL)) {
+    if (is_demon(youracedata) && (!Race_if(PM_TIEFLING) && !Race_if(PM_DARK_FEY_RI)) && (galign(p_god) == A_LAWFUL || galign(p_god) == A_NEUTRAL)) {
 	if (praying)
 	    pline_The("very idea of praying to a %s god is repugnant to you.",
 		  godlist[p_god].alignment ? "lawful" : "neutral");
@@ -3252,8 +3245,278 @@ struct obj *candle;
   return (p_type > 2 ? 1 : p_type - 1);
 }
 
-/* Give away something */
 void
+god_benefit_boost_ability(void)
+{
+	int i, ii, lim;
+
+	i = rn2(A_MAX);
+	for (ii = 0; ii < A_MAX; ii++) {
+		lim = AMAX(i);
+		if (i == A_STR && u.uhs >= 3) --lim;
+		if (ABASE(i) < lim) {
+			ABASE(i) = lim;
+			pline("Wow! You feel good!");
+			break;
+		}
+		if (++i >= A_MAX) i = 0;
+	}
+
+	if (ii == A_MAX){
+		i = rn2(A_MAX);
+		for (ii = A_MAX; ii > 0; ii--) {
+			if (adjattrib(i, 1, (ii == 1) ? 0 : -1))
+				break;
+			i = (i+1)%6;
+		}
+	}
+	flags.botl = 1;
+}
+
+void
+god_benefit_enchant_item(void)
+{
+	register struct obj *otmp = (struct obj *)0;
+
+	/* select object to enchant */
+	if (uwep && uwep->spe < 5 && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep)))
+		otmp = uwep;
+	else if (uswapwep && uswapwep->spe < 5 && (uswapwep->oclass == WEAPON_CLASS || is_weptool(uswapwep)))
+		otmp = uswapwep;
+	else if (martial_bonus() && uarmg && (uarmg->oartifact || !uwep) && uarmg->spe < 5)
+		otmp = uarmg;
+	else if (martial_bonus() && uarmf && (uarmf->oartifact || !uwep) && uarmf->spe < 5)
+		otmp = uarmf;
+	else if (uleft && uleft->otyp != RIN_WISHES && objects[uleft->otyp].oc_charged && uleft->spe < 5)
+		otmp = uleft;
+	else if (uright && uright->otyp != RIN_WISHES && objects[uright->otyp].oc_charged && uright->spe < 5)
+		otmp = uright;
+	/* enchant it */
+	if (otmp) {
+		otmp->spe++;
+		if (!Blind) {
+			Your("%s %s %s for a moment.",
+				xname(otmp),
+				vtense(xname(otmp), "glow"),
+				hcolor(otmp->oclass == ARMOR_CLASS ? NH_SILVER :
+					otmp->oclass == RING_CLASS ? NH_WHITE : NH_BLUE)
+				);
+		}
+	}
+}
+
+void
+god_benefit_identify_item(void)
+{
+	register struct obj *otmp;
+
+	if (uwep && not_fully_identified(uwep)) identify(uwep);
+	else if (uswapwep && not_fully_identified(uswapwep)) identify(uswapwep);
+	else if (uamul && not_fully_identified(uamul)) identify(uamul);
+	else if (ubelt && not_fully_identified(ubelt)) identify(ubelt);
+	else if (usaddle && not_fully_identified(usaddle)) identify(usaddle);
+	else if (uleft && not_fully_identified(uleft)) identify(uleft);
+	else if (uright && not_fully_identified(uright)) identify(uright);
+	else if (uarmc && not_fully_identified(uarmc)) identify(uarmc);
+	else if (uarm && not_fully_identified(uarm)) identify(uarm);
+	else if (uarmu && not_fully_identified(uarmu)) identify(uarmu);
+	else if (uarmh && not_fully_identified(uarmh)) identify(uarmh);
+	else if (uarmg && not_fully_identified(uarmg)) identify(uarmf);
+	else if (uarmf && not_fully_identified(uarmf)) identify(uarmf);
+	else if (uarms && not_fully_identified(uarms)) identify(uarms);
+	else {
+		for(otmp=invent; otmp; otmp=otmp->nobj)
+		if (not_fully_identified(otmp)){
+			identify(otmp);
+			break;
+		}
+	}
+}
+
+void
+god_benefit_give_intrinsic(void)
+{
+	/* give an intrinsic for 500-1500 turns, first of pois/slee/fire/cold/shock */
+	int timeout = rn1(1000, 500);
+
+	if(!(HPoison_resistance & INTRINSIC)) {
+		You_feel(Poison_resistance ? "especially healthy." : "healthy.");
+		HPoison_resistance |= FROMOUTSIDE;
+		return;
+	}
+
+	if(!(HSleep_resistance)) {
+		You_feel("wide awake.");
+		give_intrinsic(SLEEP_RES, timeout);
+	}
+
+	if(!(HFire_resistance)) {
+		You(Hallucination ? "be chillin'." : "feel a momentary chill.");
+		give_intrinsic(FIRE_RES, timeout);
+	}
+
+	if(!(HCold_resistance)) {
+		You_feel("full of hot air.");
+		give_intrinsic(COLD_RES, timeout);
+	}
+
+	if(!(HShock_resistance)) {
+		if (Hallucination)
+			rn2(2) ? You_feel("grounded in reality.") : Your("health currently feels amplified!");
+		else You_feel("well grounded.");
+
+		give_intrinsic(SHOCK_RES, timeout);
+	}
+}
+
+boolean
+prayer_benefit_intrinsic(int godnum, boolean silently)
+{
+	const char *msg="Thou hast pleased me with thy progress, and thus I grant thee the gift of %s! Use it wisely in my name!";
+	char buf[BUFSZ];
+	buf[0] = 0;
+	if (!(HTelepat & INTRINSIC))  {
+		HTelepat |= FROMOUTSIDE;
+		Sprintf(buf, msg, "Telepathy");
+		if (Blind) see_monsters();
+	} else if (!(HFast & INTRINSIC))  {
+		HFast |= FROMOUTSIDE;
+		Sprintf(buf, msg, "Speed");
+	} else if (!(HStealth & INTRINSIC))  {
+		HStealth |= FROMOUTSIDE;
+		Sprintf(buf, msg, "Stealth");
+	} else if(!(u.wardsknown & WARD_HAMSA)){
+		u.wardsknown |= WARD_HAMSA;
+		Sprintf(buf, msg, "the Hamsa ward");
+	} else if(!(u.wardsknown & WARD_HEXAGRAM)){
+		u.wardsknown |= WARD_HEXAGRAM;
+		Sprintf(buf, msg, "the Hexagram ward");
+	}else if(u.ublesscnt < 40){
+		if (!(HProtection & INTRINSIC))  {
+			HProtection |= FROMOUTSIDE;
+			if (!u.ublessed)  u.ublessed = rn1(3, 2);
+		} else u.ublessed++;
+		Sprintf(buf, msg, "my protection");
+	}
+	else {
+		u.uenbonus += 5;
+		calc_total_maxen();
+		Sprintf(buf, msg, "my magic");
+	}
+	if(buf[0]){
+		if (!silently) godvoice(godnum, buf);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void
+god_benefit_repair_item(void)
+{
+	register struct obj *otmp = (struct obj *)0;
+	int i;
+
+	/* select most damaged item */
+	for (i = 3; i >= 0 && !otmp; i--){
+#define select_item_to_repair_or_erodeproof(item) \
+(item && ((i > 0) ? (item->oeroded == i || item->oeroded == i) : (!item->oerodeproof))) otmp = item
+
+		if      select_item_to_repair_or_erodeproof(uwep);
+		else if select_item_to_repair_or_erodeproof(uswapwep);
+		else if select_item_to_repair_or_erodeproof(uarmc);
+		else if select_item_to_repair_or_erodeproof(uarm);
+		else if select_item_to_repair_or_erodeproof(uarmu);
+		else if select_item_to_repair_or_erodeproof(uarmh);
+		else if select_item_to_repair_or_erodeproof(uarmg);
+		else if select_item_to_repair_or_erodeproof(uarmf);
+		else if select_item_to_repair_or_erodeproof(uarms);
+#undef select_item_to_repair_or_erodeproof
+	}
+	/* repair by 1 level, or make erodeproof */
+	if (otmp) {
+		otmp->rknown = TRUE;
+		if (otmp->oeroded > 0){
+			otmp->oeroded--;
+		} else if (otmp->oeroded2 > 0){
+			otmp->oeroded2--;
+		} else if (!otmp->oeroded && !otmp->oeroded2 && !otmp->oerodeproof) {
+			otmp->oerodeproof = TRUE;
+		}
+		/* message */
+		if (!Blind) {
+			Your("%s %s %s!",
+				xname(otmp),
+				vtense(xname(otmp), "look"),
+				(otmp->oeroded || otmp->oeroded2) ? "better" :
+					(!otmp->oerodeproof) ? "as good as new" :
+					"better than ever"
+				);
+		}
+	}
+}
+
+void
+god_benefit_fix_buc(void)
+{
+	register struct obj *otmp = (struct obj *)0;
+
+#define wrongbuc(obj) ((hates_unholy(youracedata) && hates_holy(youracedata)) ? \
+					(obj->blessed || obj->cursed) : \
+					(hates_unblessed(youracedata) ? !(obj->blessed || obj->cursed) : \
+					(hates_unholy(youracedata) ? !obj->blessed : \
+					(hates_holy(youracedata) ? (Weldproof ? !obj->cursed : obj->blessed) : \
+					!obj->blessed))))
+
+	/* weapon takes precedence if it interferes with taking off a ring or shield */
+	if (uwep && wrongbuc(uwep)) otmp = uwep;
+	else if (uswapwep && wrongbuc(uswapwep)) otmp = uswapwep;
+	/* gloves come next, due to rings */
+	else if (uarmg && wrongbuc(uarmg)) otmp = uarmg;
+	/* then shield due to two handed weapons and spells */
+	else if (uarms && wrongbuc(uarms)) otmp = uarms;
+	/* then saddle due to body armor */
+	else if (usaddle && wrongbuc(usaddle)) otmp = usaddle;
+	/* then cloak due to body armor */
+	else if (uarmc && wrongbuc(uarmc)) otmp = uarmc;
+	else if (ubelt && wrongbuc(ubelt)) otmp = uarmc;
+	else if (uarm && wrongbuc(uarm)) otmp = uarm;
+	else if (uarmh && wrongbuc(uarmh)) otmp = uarmh;
+	else if (uarmf && wrongbuc(uarmf)) otmp = uarmf;
+	else if (uarmu && wrongbuc(uarmu)) otmp = uarmu;
+	else if (uamul && wrongbuc(uamul)) otmp = uamul;
+	else if (uleft && wrongbuc(uleft))  otmp = uleft;
+	else if (uright && wrongbuc(uright)) otmp = uright;
+	else {
+		for(otmp=invent; otmp; otmp=otmp->nobj)
+		if (wrongbuc(otmp)) break;
+	}
+	if (!otmp)
+		return;	/* no item found */
+	if (hates_unholy(youracedata) && hates_holy(youracedata)){
+		uncurse(otmp);
+		unbless(otmp);
+	}
+	else if (hates_holy(youracedata)){
+		if(Weldproof)
+			curse(otmp);
+		else
+			unbless(otmp);
+	}
+	else if (hates_unholy(youracedata))
+		bless(otmp);
+	else
+		bless(otmp);
+
+	otmp->bknown = TRUE;
+	if (!Blind)
+		Your("%s %s.", aobjnam(otmp, "softly glow"),
+					hcolor(otmp->blessed ? NH_LIGHT_BLUE :
+					(otmp->cursed ? NH_BLACK : NH_AMBER)));
+#undef wrongbuc
+}
+
+/* Give away something */
+static void
 god_gives_benefit(godnum)
 int godnum;
 {
@@ -3268,197 +3531,22 @@ int godnum;
 	else {
 		switch (rn2(6)) {
 			case 0: // randomly increment an ability score
-				i = rn2(A_MAX);
-				for (ii = 0; ii < A_MAX; ii++) {
-					lim = AMAX(i);
-					if (i == A_STR && u.uhs >= 3) --lim;
-					if (ABASE(i) < lim) {
-						ABASE(i) = lim;
-						pline("Wow! You feel good!");
-						break;
-					}
-					if (++i >= A_MAX) i = 0;
-				}
-				
-				if (ii == A_MAX){
-					i = rn2(A_MAX);
-					for (ii = A_MAX; ii > 0; ii--) {
-						if (adjattrib(i, 1, (ii == 1) ? 0 : -1))
-							break;
-						i = (i+1)%6;
-					}
-				}
-				flags.botl = 1;
+				god_benefit_boost_ability();
 				break;
 			case 1: // increase weapon enchantment
-				otmp = (struct obj *)0;
-				/* select object to enchant */
-				if (uwep && uwep->spe < 5 && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep)))
-					otmp = uwep;
-				else if (uswapwep && uswapwep->spe < 5 && (uswapwep->oclass == WEAPON_CLASS || is_weptool(uswapwep)))
-					otmp = uswapwep;
-				else if (martial_bonus() && uarmg && (uarmg->oartifact || !uwep) && uarmg->spe < 5)
-					otmp = uarmg;
-				else if (martial_bonus() && uarmf && (uarmf->oartifact || !uwep) && uarmf->spe < 5)
-					otmp = uarmf;
-				else if (uleft && uleft->otyp != RIN_WISHES && objects[uleft->otyp].oc_charged && uleft->spe < 5)
-					otmp = uleft;
-				else if (uright && uright->otyp != RIN_WISHES && objects[uright->otyp].oc_charged && uright->spe < 5)
-					otmp = uright;
-				/* enchant it */
-				if (otmp) {
-					otmp->spe++;
-					if (!Blind) {
-						Your("%s %s %s for a moment.",
-							xname(otmp),
-							vtense(xname(otmp), "glow"),
-							hcolor(otmp->oclass == ARMOR_CLASS ? NH_SILVER :
-								otmp->oclass == RING_CLASS ? NH_WHITE : NH_BLUE)
-							);
-					}
-				}
+				god_benefit_enchant_item();
 				break;
 			case 2: // identify an item
-				if (uwep && not_fully_identified(uwep)) identify(uwep);
-				else if (uswapwep && not_fully_identified(uswapwep)) identify(uswapwep);
-				else if (uamul && not_fully_identified(uamul)) identify(uamul);
-				else if (ubelt && not_fully_identified(ubelt)) identify(ubelt);
-				else if (uleft && not_fully_identified(uleft)) identify(uleft);
-				else if (uright && not_fully_identified(uright)) identify(uright);
-				else if (uarmc && not_fully_identified(uarmc)) identify(uarmc);
-				else if (uarm && not_fully_identified(uarm)) identify(uarm);
-				else if (uarmu && not_fully_identified(uarmu)) identify(uarmu);
-				else if (uarmh && not_fully_identified(uarmh)) identify(uarmh);
-				else if (uarmg && not_fully_identified(uarmg)) identify(uarmf);
-				else if (uarmf && not_fully_identified(uarmf)) identify(uarmf);
-				else if (uarms && not_fully_identified(uarms)) identify(uarms);
-				else {
-					for(otmp=invent; otmp; otmp=otmp->nobj)
-					if (not_fully_identified(otmp)){
-						identify(otmp);
-						break;
-					}
-				}
+				god_benefit_identify_item();
 				break;
 			case 3: // give an intrinsic for 500-1500 turns, first of pois/slee/fire/cold/shock
-				timeout = rn1(1000, 500);
-
-				if(!(HPoison_resistance & INTRINSIC)) {
-					You_feel(Poison_resistance ? "especially healthy." : "healthy.");
-					HPoison_resistance |= FROMOUTSIDE;
-					break;
-				}
-				
-				if(!(HSleep_resistance)) {
-					You_feel("wide awake.");				
-					give_intrinsic(SLEEP_RES, timeout);
-				}
-				
-				if(!(HFire_resistance)) {
-					You(Hallucination ? "be chillin'." : "feel a momentary chill.");				
-					give_intrinsic(FIRE_RES, timeout);
-				}
-
-				if(!(HCold_resistance)) {
-					You_feel("full of hot air.");
-					give_intrinsic(COLD_RES, timeout);
-				}
-						
-				if(!(HShock_resistance)) {
-					if (Hallucination)
-						rn2(2) ? You_feel("grounded in reality.") : Your("health currently feels amplified!");
-					else You_feel("well grounded.");
-					
-					give_intrinsic(SHOCK_RES, timeout);
-				}
+				god_benefit_give_intrinsic();
 				break;
 			case 4: // repair an item, or make one rustproof
-				otmp = (struct obj *)0;
-				/* select most damaged item */
-				for (i = 3; i >= 0 && !otmp; i--){
-#define select_item_to_repair_or_erodeproof(item) \
-(item && ((i > 0) ? (item->oeroded == i || item->oeroded == i) : (!item->oerodeproof))) otmp = item
-
-					if      select_item_to_repair_or_erodeproof(uwep);
-					else if select_item_to_repair_or_erodeproof(uswapwep);
-					else if select_item_to_repair_or_erodeproof(uarmc);
-					else if select_item_to_repair_or_erodeproof(uarm);
-					else if select_item_to_repair_or_erodeproof(uarmu);
-					else if select_item_to_repair_or_erodeproof(uarmh);
-					else if select_item_to_repair_or_erodeproof(uarmg);
-					else if select_item_to_repair_or_erodeproof(uarmf);
-					else if select_item_to_repair_or_erodeproof(uarms);
-#undef select_item_to_repair_or_erodeproof
-				}
-				/* repair by 1 level, or make erodeproof */
-				if (otmp) {
-					otmp->rknown = TRUE;
-					if (otmp->oeroded > 0){
-						otmp->oeroded--;
-					} else if (otmp->oeroded2 > 0){
-						otmp->oeroded2--;
-					} else if (!otmp->oeroded && !otmp->oeroded2 && !otmp->oerodeproof) {
-						otmp->oerodeproof = TRUE;
-					}
-					/* message */
-					if (!Blind) {
-						Your("%s %s %s!",
-							xname(otmp),
-							vtense(xname(otmp), "look"),
-							(otmp->oeroded || otmp->oeroded2) ? "better" :
-								(!otmp->oerodeproof) ? "as good as new" :
-								"better than ever"
-							);
-					}
-				}
+				god_benefit_repair_item();
 				break;
 			case 5: // bless/curse an item
-#define wrongbuc(obj) ((hates_unholy(youracedata) && hates_holy(youracedata)) ? \
-						(obj->blessed || obj->cursed) : \
-						(hates_unblessed(youracedata) ? (obj->blessed || obj->cursed) : \
-						(hates_unholy(youracedata) ? !obj->blessed : \
-						(hates_holy(youracedata) ? !obj->cursed : !obj->blessed))))
-
-				/* weapon takes precedence if it interferes with taking off a ring or shield */				
-				if (uwep && wrongbuc(uwep)) otmp = uwep;
-				else if (uswapwep && wrongbuc(uswapwep)) otmp = uswapwep;
-				/* gloves come next, due to rings */
-				else if (uarmg && wrongbuc(uarmg)) otmp = uarmg;
-				/* then shield due to two handed weapons and spells */
-				else if (uarms && wrongbuc(uarms)) otmp = uarms;
-				/* then cloak due to body armor */
-				else if (uarmc && wrongbuc(uarmc)) otmp = uarmc;
-				else if (ubelt && wrongbuc(ubelt)) otmp = uarmc;
-				else if (uarm && wrongbuc(uarm)) otmp = uarm;
-				else if (uarmh && wrongbuc(uarmh)) otmp = uarmh;
-				else if (uarmf && wrongbuc(uarmf)) otmp = uarmf;
-				else if (uarmu && wrongbuc(uarmu)) otmp = uarmu;
-				else if (uamul && wrongbuc(uamul)) otmp = uamul;
-				else if (uleft && wrongbuc(uleft))  otmp = uleft;
-				else if (uright && wrongbuc(uright)) otmp = uright;
-				else {
-					for(otmp=invent; otmp; otmp=otmp->nobj)
-					if (wrongbuc(otmp)) break;
-				}
-				if (!otmp)
-					break;	/* no item found */
-				if (hates_unholy(youracedata) && hates_holy(youracedata)){
-					uncurse(otmp);
-					unbless(otmp);
-				}
-				else if (hates_holy(youracedata))
-					curse(otmp);
-				else if (hates_unholy(youracedata))
-					bless(otmp);
-				else
-					bless(otmp);
-			
-				otmp->bknown = TRUE;
-				if (!Blind)
-					Your("%s %s.", what ? what : (const char *) aobjnam(otmp, "softly glow"), 
-								hcolor(otmp->blessed ? NH_LIGHT_BLUE : \
-								(otmp->cursed ? NH_BLACK : NH_AMBER)));
-#undef wrongbuc
+				god_benefit_fix_buc();
 				break;
 			default: impossible("bad god_gives_benefit benefit?");
 		}
@@ -3634,9 +3722,10 @@ boolean greater_boon;	/* you have shown devotion enough to ask for a greater boo
 			int spell_list[] = {0, SPE_FIRE_STORM, SPE_BLIZZARD, SPE_LIGHTNING_STORM, SPE_ACID_SPLASH, 0};
 			boolean certified_blaster_master = FALSE;
 
+			update_externally_granted_spells();
 			for (int i = 1; spell_list[i] && !certified_blaster_master; i++)
 				for (int j = 0; j < MAXSPELL; j++)
-					if (spellid(j) == spell_list[i] && spellknow(j) > 0){
+					if (spellid(j) == spell_list[i] && (spellknow(j) > 0 || spellext(j))){
 						certified_blaster_master = TRUE;
 						break;
 					}
@@ -4878,6 +4967,11 @@ int eatflag;
 		return;
 	}
 
+	if(otmp->otyp == EFFIGY){
+		pline("The effigy proves inedible.");
+		return;
+	}
+
 	if(eatflag != GOAT_EAT_PASSIVE && GOAT_BAD){
 		pline("The will of %s blocks your actions.", u_gname());
 		return;
@@ -5461,7 +5555,7 @@ int sanctum;   /* is it the seat of the high priest? */
 							otmp->cursed = TRUE;
 							otmp->oerodeproof = TRUE;
 							otmp->spe = 5;
-							add_oprop(otmp, OPROP_BLADED);
+							add_omod(otmp, OMOD_BLADED);
 							set_material_gm(otmp, OBSIDIAN_MT);
 						}
 						m_dowear(priest, TRUE);

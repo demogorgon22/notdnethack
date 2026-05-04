@@ -2461,6 +2461,9 @@ const char * spellname[] =
 	"BURN_INTO_LIFE",
 	"SUMMON_ROGUE_HALOS",
 	"PANIC_BOLT",
+	//110
+	"SANDSTORM",
+	"MOON_BEAM",
 };
 
 /* Returns the word the monster uses when casting a psionic spell */
@@ -2724,7 +2727,10 @@ xcasty(struct monst *magr, struct monst *mdef, struct attack *attk, int tarx, in
 		else if(!youdef && !(mdef && mdef->mdoubt))
 			force_fail = TRUE;
 	}
-	
+	/* Niche interaction, can't call in an elf soul */
+	if(!youagr && magr->mfaction == NECROMANCY_FACTION && magr->mtyp != PM_ELVEN_WRAITH && DimensionalLock){
+		force_fail = TRUE;
+	}
 	spell_skill = mlev(magr) * 2;
 	if(youagr){
 		int delta = NightmareAware_Insanity;
@@ -4227,7 +4233,7 @@ int tary;
 				/* blind defender (player only?) */
 				if (youdef && !resists_blnd(&youmonst) && rn2(2)) {
 					pline_The("acid gets into your %s!", eyecount(youracedata) == 1 ?
-						body_part(EYE) : makeplural(body_part(EYE)));
+						body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 					make_blinded((long)rnd(Acid_resistance ? 10 : 50), FALSE);
 					if (!Blind) Your1(vision_clears);
 				}
@@ -4476,6 +4482,63 @@ int tary;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
+	case SANDSTORM:
+		/* needs direct target */
+		if (!foundem) {
+			impossible("sandstorm with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int pdmg = (dmg + 1)/2;	/* physical */
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("Pebbles pummel %s from all sides!",
+					youdef ? "you" : mon_nam(mdef));
+			}
+			if(youdef){
+				IMPURITY_UP(u.uimp_disaster)
+			}
+
+			/* calculate physical damage */
+			pdmg = reduce_dmg(mdef,pdmg,TRUE,FALSE);
+			/* apply average DR */
+			pdmg -= max(0, (youdef ? u.udr : avg_mdr(mdef)));
+			if (pdmg < 1)
+				pdmg = 1;
+			/* maybe blind the target */
+			struct obj *protection = NULL;
+			if(youdef){
+				if(uarmh && uarmh->otyp == SHEMAGH)
+					protection = uarmh;
+				else if(ublindf && ublindf->otyp == TOWEL)
+					protection = ublindf;
+			}
+			else {
+				if (which_armor(mdef, W_ARMH) && which_armor(mdef, W_ARMH)->otyp == SHEMAGH)
+					protection = which_armor(mdef, W_ARMH);
+				if (which_armor(mdef, W_TOOL) && which_armor(mdef, W_TOOL)->otyp == TOWEL)
+					protection = which_armor(mdef, W_TOOL);
+			}
+			if(protection){
+				if(youdef)
+					pline("Your %s protects you from the sand!", OBJ_DESCR(objects[protection->otyp]));
+			}
+			else if (!resists_blnd(mdef) && dmg > 1) {
+				if(youdef){
+					pline("%s is blinded by the sand!", Monnam(mdef));
+					make_blinded((long)dmg/2, FALSE);
+					if (!Blind) Your1(vision_clears);
+				}
+				else {
+					mdef->mcansee = 0;
+					mdef->mblinded = min(mdef->mblinded + dmg/2, 127);
+				}
+			}
+			/* sum damage components to override dmg */
+			dmg = pdmg;
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
 	case GOD_RAY:
 		if (!foundem) {
 			impossible("god ray with no mdef?");
@@ -4530,6 +4593,51 @@ int tary;
 
 			/* sum damage components to override dmg */
 			dmg = hdmg + ldmg;
+		}
+		return xdamagey(magr, mdef, attk, dmg);
+
+	case MOON_BEAM:
+		if (!foundem) {
+			impossible("moon beam with no mdef?");
+			return MM_MISS;
+		}
+		else {
+			int hdmg = d(4,7);	/* holy damage */
+			int cdmg = d(2,7);	/* cold damage */
+			int sdmg = d(1,20);	/* silver damage */
+			/* message */
+			if (youagr || youdef || canseemon(mdef)) {
+				pline("Cold moonlight shines down on %s from above!",
+					youdef ? "you" : mon_nam(mdef));
+			}
+
+			if (hates_silver(mdef->data)){
+				if (youagr || youdef || canseemon(mdef))
+					pline("%s %s seared by the silver light!",
+					youdef ? "You" : Monnam(mdef), youdef ? "are" : "is");
+				sdmg = reduce_dmg(mdef,sdmg,TRUE,FALSE);
+			}
+			else sdmg = 0;
+
+			if(hates_holy_mon(mdef)){
+				hdmg = reduce_dmg(mdef,hdmg,FALSE,TRUE);
+			}
+			else hdmg = 0;
+
+			/* calculate cold damage */
+			if (Cold_res(mdef)) {
+				shieldeff(x(mdef), y(mdef));
+				cdmg = 0;
+			}
+			else {
+				cdmg = reduce_dmg(mdef,cdmg,FALSE,TRUE);
+			}
+			if (!UseInvCold_res(mdef)) {
+				destroy_item(mdef, POTION_CLASS, AD_COLD);
+			}
+
+			/* sum damage components to override dmg */
+			dmg = hdmg + cdmg + sdmg;
 		}
 		return xdamagey(magr, mdef, attk, dmg);
 
@@ -6514,7 +6622,7 @@ int tary;
 		}
 		else {
 			/* these three spells are very similar, and share their resist checks */
-			if (Magic_res(mdef) || (youdef ? Free_action : mm_resist(mdef, magr, 0, FALSE))) {
+			if (Magic_res(mdef) || (youdef ? Free_action : (mon_resistance(mdef, FREE_ACTION) || mm_resist(mdef, magr, 0, FALSE)))) {
 				shieldeff(x(mdef), y(mdef));
 
 				switch (spell)
@@ -6633,7 +6741,7 @@ int tary;
 					if (attk->adtyp == AD_CLRC)
 						pline("Scales cover your %s!",
 						(num_eyes == 1) ?
-						body_part(EYE) : makeplural(body_part(EYE)));
+						body_part(EYE_BP) : makeplural(body_part(EYE_BP)));
 					else if (Hallucination)
 						pline("Oh, bummer!  Everything is dark!  Help!");
 					else pline("A cloud of darkness falls upon you.");
@@ -6814,7 +6922,7 @@ int tary;
 			struct obj *otmp = (youdef ? uwep : MON_WEP(mdef));
 			const char *hands;
 			boolean dofailmsg = FALSE;
-			hands = bimanual(otmp, mdef->data) ? makeplural(mbodypart(mdef, HAND)) : mbodypart(mdef, HAND);
+			hands = bimanual_mon(otmp, mdef) ? makeplural(mbodypart(mdef, HAND)) : mbodypart(mdef, HAND);
 			if (otmp && otmp->oclass == WEAPON_CLASS && !Magic_res(mdef) && !otmp->oartifact && rn2(4)) {
 				if (otmp->spe > -7){
 					otmp->spe -= (youdef ? 1 : rnd(7));	/* it's a bother to you, but not much to monsters */
@@ -6999,7 +7107,7 @@ int tary;
 				stop_occupation();
 			}
 			else {
-				if (mrndcurse(mdef) && (youagr || canseemon(mdef)))
+				if (mrndcurse(mdef, FALSE) && (youagr || canseemon(mdef)))
 					You_feel("as though %s needs some help.", mon_nam(mdef));
 			}
 		}
@@ -7286,7 +7394,9 @@ int spellnum;
 	case HAIL_FLURY:
 	case ICE_STORM:
 	case PYRO_STORM:
+	case SANDSTORM:
 	case GOD_RAY:
+	case MOON_BEAM:
 	case DEATH_TOUCH:
 	case PLAGUE:
 	case FILTH:
@@ -7570,7 +7680,7 @@ int tary;
 	/* don't cast red word if target is already disrobed/disrobing */
 	if (spellnum == MON_RED_WORD
 		&& (youdef ? 
-			(u.ufirst_know || !(uarmh || uarmc || uarm || ubelt || uarmu || uarmg || uarmf || uamul || ublindf || uleft || uright))
+			(u.ufirst_know || !(uarmh || uarmc || uarm || ubelt || usaddle || uarmu || uarmg || uarmf || uamul || ublindf || uleft || uright))
 			: (!(mdef->misc_worn_check&(W_ARMOR|W_AMUL|W_BELT|W_TOOL)) || mdef->mdisrobe)
 			)
 	)
@@ -7814,7 +7924,7 @@ int tary;
 		))
 		return TRUE;
 	/* various conditions where webs won't be effective */
-	if ((amorphous(mdef->data) || is_whirly(mdef->data) || flaming(mdef->data) || unsolid(mdef->data) ||
+	if ((amorphous_mon(mdef) || is_whirly(mdef->data) || flaming(mdef->data) || unsolid(mdef->data) ||
 		(youdef && uwep && uwep->oartifact == ART_STING) || (youdef ? (ACURR(A_STR) >= 18) : strongmonst(mdef->data))) && (
 		spellnum == MAKE_WEB
 		))

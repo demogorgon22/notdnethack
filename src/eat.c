@@ -55,6 +55,8 @@ STATIC_DCL boolean force_save_hs;
 
 STATIC_OVL NEARDATA const char comestibles[] = { FOOD_CLASS, 0 };
 
+STATIC_OVL NEARDATA const char offerables[] = { FOOD_CLASS, TOOL_CLASS, 0 };
+
 /* Gold must come first for getobj(). */
 STATIC_OVL NEARDATA const char allobj[] = {
 	COIN_CLASS, WEAPON_CLASS, ARMOR_CLASS, POTION_CLASS, SCROLL_CLASS, TILE_CLASS,
@@ -239,6 +241,14 @@ register struct obj *obj;
 	if (carnivorous(youracedata) && (obj->obj_material == FLESH)) 
 		return TRUE;
 	
+	if (obligate_carnivore(youracedata)){
+		if(obj->otyp == CORPSE) return !vegan(&mons[obj->corpsenm]);
+	}
+	if (obligate_herbivore(youracedata)){
+		if(obj->otyp == CORPSE) return vegetarian(&mons[obj->corpsenm]);
+		else if(obj->otyp == TIN) return TRUE;
+		else return (obj->oclass == FOOD_CLASS && obj->obj_material == VEGGY);
+	}
      /* return((boolean)(!!index(comestibles, obj->oclass))); */
 	return (boolean)(obj->oclass == FOOD_CLASS && (obj->obj_material == VEGGY || obj->obj_material == FLESH || obj->otyp == TIN));
 }
@@ -443,14 +453,14 @@ choke(food)	/* To a full belly all food is bad. (It.) */
 
 	exercise(A_CON, FALSE);
 
-	if (!Race_if(PM_INCANTIFIER) && !magivorous(youracedata)) {
+	if ((Breathless || separate_respiration(youracedata) || (!Strangled && !rn2(20))) && !Race_if(PM_INCANTIFIER) && !magivorous(youracedata)) {
 		/* choking by eating AoS doesn't involve stuffing yourself */
 		if (food && food->otyp == AMULET_OF_STRANGULATION) {
 			You("choke, but recover your composure.");
 			return;
 		}
 		You("stuff yourself and then vomit voluminously.");
-	} else {
+	} else if(Race_if(PM_INCANTIFIER) || magivorous(youracedata)){
 		You("absorb too much energy and then vomit up a rainbow!");
 	}
 	morehungry(1000*get_uhungersizemod());	/* you just got *very* sick! */
@@ -671,7 +681,7 @@ maybe_cannibal(pm, allowmsg)
 int pm;
 boolean allowmsg;
 {
-	if(your_race(&mons[pm]) && !is_animal(&mons[pm]) && !mindless(&mons[pm])){
+	if((your_race(&mons[pm]) || Race_if(PM_SILVERMAN)) && !is_animal(&mons[pm]) && !mindless(&mons[pm])){
 		if (!CANNIBAL_ALLOWED()) {
 			if (allowmsg) {
 				if (Upolyd)
@@ -680,7 +690,7 @@ boolean allowmsg;
 			}
 			HAggravate_monster |= TIMEOUT_INF;
 			change_luck(-rn1(4,2));		/* -5..-2 */
-		} else if (Role_if(PM_CAVEMAN)) {
+		} else if (Role_if(PM_CAVEMAN) || Race_if(PM_SILVERMAN) || Race_if(PM_SILVERKNIGHT)) {
 			adjalign(sgn(u.ualign.type));
 			You("honor the dead.");
 		} else {
@@ -771,7 +781,7 @@ BOOLEAN_P bld, nobadeffects;
 		    return;
 		}
 		if(is_gray_mold(&mons[pm])){
-			if(!nobadeffects){
+			if(!nobadeffects && !acidic(youracedata)){
 				struct attack *mattk = attacktype_fordmg(&mons[pm], AT_NONE, AD_GMLD);
 				int spores = 1;
 				if(mattk) spores = mattk->damn * mattk->damd;
@@ -2788,7 +2798,18 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		}
 	}
 
-	if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){
+	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
+		if(uarmg && ((uarmg->cursed && !Weldproof) || !freehand())){
+			if(Insight < 21){
+				You("can't eat while wearing gloves.");
+			} else {
+				pline("The mouths on your palms are covered by your gloves.");
+			}
+			display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
+			return MOVE_CANCELLED;
+		}
+	}
+	else if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){
 		pline("The %s covers your whole face.", xname(uarmh));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return MOVE_CANCELLED;
@@ -2815,7 +2836,7 @@ doeat()		/* generic "eat" command funtion (see cmd.c) */
 		}
 	}
 	
-	if (!(otmp = floorfood("eat", 0))) return MOVE_CANCELLED;
+	if (!(otmp = floorfood("eat", 0, FALSE))) return MOVE_CANCELLED;
 	if (check_capacity((char *)0)) return MOVE_CANCELLED;
 	
 
@@ -4065,10 +4086,10 @@ gethungry()	/* as time goes by - called by moveloop() and domove() */
 	}
 	if (moves % 2) {	/* odd turns */
 	    /* Regeneration uses up food, unless due to an artifact */
-	    if ( (HRegeneration && uhp() < uhpmax()) || ((ERegeneration & (~W_ART)) &&
-				(ERegeneration != W_WEP || !uwep->oartifact) &&
-				(ERegeneration != W_ARMS || !uarms->oartifact) 
-				))
+		long effmask = ERegeneration & (~W_ART);
+		if(uwep && uwep->oartifact) effmask &= ~W_WEP;
+		if(uarms && uarms->oartifact) effmask &= ~W_ARMS;
+	    if ((HRegeneration && uhp() < uhpmax()) || effmask)
 			(Race_if(PM_INCANTIFIER) ? u.uen-- : u.uhunger--);
 	    if (near_capacity() > SLT_ENCUMBER) (Race_if(PM_INCANTIFIER) ? u.uen-- : u.uhunger--);
 	} else {		/* even turns */
@@ -4647,10 +4668,9 @@ boolean incr;
 /* Returns an object representing food.  Object may be either on floor or
  * in inventory.
  */
+//	int corpsecheck; /* 0, no check, 1, corpses, 2, tinnable corpses, 3, corpses with blood */
 struct obj *
-floorfood(verb,corpsecheck)	/* get food from floor or pack */
-	const char *verb;
-	int corpsecheck; /* 0, no check, 1, corpses, 2, tinnable corpses, 3, corpses with blood */
+floorfood(const char *verb, int corpsecheck, boolean offering)	/* get food from floor or pack */
 {
 	register struct obj *otmp;
 	char qbuf[QBUFSZ];
@@ -4732,12 +4752,14 @@ floorfood(verb,corpsecheck)	/* get food from floor or pack */
 	 * "ugly checks" and we need to check for inedible items.
 	 */
 	otmp = getobj(feeding ? (const char *)allobj :
+				  offering ? (const char *)offerables :
 				(const char *)comestibles, verb);
-	if (corpsecheck && otmp)
+	if (corpsecheck && otmp && !(offering && otmp->otyp == EFFIGY)){
 	    if (otmp->otyp != CORPSE || (corpsecheck == 2 && !tinnable(otmp))) {
-		You_cant("%s that!", verb);
-		return (struct obj *)0;
+			You_cant("%s that!", verb);
+			return (struct obj *)0;
 	    }
+	}
 	return otmp;
 }
 

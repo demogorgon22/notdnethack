@@ -90,6 +90,17 @@
 		(aatyp) == AT_TENT\
 		|| (aatyp) == AT_WISP\
 	)
+
+#define is_poison_ad(adtyp)	(\
+		(adtyp) == AD_DRST \
+		|| (adtyp) == AD_DRDX \
+		|| (adtyp) == AD_DRCO \
+		|| (adtyp) == AD_EDRC \
+		|| (adtyp) == AD_PFBT \
+		|| (adtyp) == AD_SVPN \
+		|| (adtyp) == AD_POSN \
+		|| (adtyp) == AD_DISE \
+	)
 /*	Add new damage types below.
  *
  *	Note that 1-10 correspond to the types of attack used in buzz().
@@ -273,11 +284,13 @@
 #define AD_UHCD		178 /* Unholy cold */
 #define AD_GMLD		179 /* Gray mold spores */
 #define AD_SONC		180 /* Sonic attack */
+#define AD_SMOK		181 /* Smoke attack */
+#define AD_SLWC		182 /* Slowing cold attack */
 
 //#define AD_AHAZU	116 /*  */
 //Amon is a headbutt (AT_BUTT/AD_PHYS)
 //Chupoclops is a poisonous bite (AT_BITE/AD_DRST)
-#define AD_DUNSTAN	181
+#define AD_DUNSTAN	183
 #define AD_IRIS		AD_DUNSTAN+1
 #define AD_NABERIUS	AD_DUNSTAN+2
 #define AD_OTIAX	AD_DUNSTAN+3

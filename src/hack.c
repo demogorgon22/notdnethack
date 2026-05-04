@@ -672,7 +672,7 @@ int mode;
 	    /* ALI - artifact doors from slash'em */
 	    if (artifact_door(x, y)) {
 		if (mode == DO_MOVE) {
-		    if (amorphous(youracedata))
+		    if (amorphous_mon(&youmonst))
 			You("try to ooze under the door, but the gap is too small.");
 		    else if (tunnels(youracedata) && !needspick(youracedata))
 			You("hurt your teeth on the re-enforced door.");
@@ -693,7 +693,7 @@ int mode;
 		if (mode == DO_MOVE && still_chewing(x,y)) return FALSE;
 	    } else {
 		if (mode == DO_MOVE) {
-		    if (amorphous(youracedata))
+		    if (amorphous_mon(&youmonst))
 			You("try to ooze under the door, but can't squeeze your possessions through.");
 			if (iflags.autoopen && !flags.run && !Confusion && !Stunned && !Fumbling) {
 				iflags.door_opened = !(doopen_indir(x, y) & (MOVE_CANCELLED|MOVE_INSTANT));
@@ -737,7 +737,7 @@ int mode;
 		You("cannot pass that way.");
 	    return FALSE;
 	}
-	if (bigmonst(youracedata) && !(u.sealsActive&SEAL_ANDREALPHUS) && !amorphous(youracedata)) {
+	if (bigmonst(youracedata) && !(u.sealsActive&SEAL_ANDREALPHUS) && !amorphous_mon(&youmonst)) {
 	    if (mode == DO_MOVE)
 		Your("body is too large to fit through.");
 	    return FALSE;
@@ -748,9 +748,11 @@ int mode;
 	    return FALSE;
 	}
 	if (invent && (inv_weight() + weight_cap() > 600) && !(u.sealsActive&SEAL_ANDREALPHUS)
+		&& !amorphous_mon(&youmonst)
 		&& !(uarmc && (uarmc->otyp == OILSKIN_CLOAK || uarmc->greased))
 		&& !(!uarmc && uarm && uarm->greased)
 		&& !(!uarmc && !uarm && uarmu && uarmu->greased)
+		&& !check_mutation(TT_SLIPPERY_SKIN)
 	) {
 	    if (mode == DO_MOVE)
 #ifdef CONVICT
@@ -1389,6 +1391,25 @@ domove()
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && Insight >= 22 && otmp && (otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == ISAMUSEI)){
 					result |= hit_with_iwarp(&youmonst, otmp, x, y, 0, attk);
 				}
+				/* Silverknight spears hit additional targets */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && otmp
+					&& u.uen >= 12 &&
+					(otmp->otyp == SILVERKNIGHT_SPEAR ||
+					 (otmp->oartifact == ART_AMALGAMATED_SKIES && artinstance[ART_SKY_REFLECTED].ZerthOtyp == SILVERKNIGHT_SPEAR)
+					)
+					&& P_SKILL(weapon_type(otmp)) >= P_EXPERT
+				){
+					int subresult = hit_with_holyspear(&youmonst, otmp, x, y, 0, attk);
+					if(subresult&MM_HIT){
+						u.uen -= 12;
+						flags.botl = TRUE;
+					}
+					result |= subresult&(MM_AGR_DIED|MM_AGR_STOP);
+				}
+				/* Snakemouth Tieflings hit additional targets */
+				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && check_mutation(TT_SERPENT)){
+					result |= hit_with_tonguesnake(&youmonst, x, y, 0);
+				}
 				/* Dancers hit additional targets */
 				if(!(result&(MM_AGR_DIED|MM_AGR_STOP)) && is_dancer(&youmonst)){
 					result |= hit_with_dance(&youmonst, otmp, x, y, 0, attk);
@@ -1696,6 +1717,11 @@ domove()
 		/* If you try to ride into water while riding a non-flying steed, you'll fall off.  */
 		(!u.usteed || (amphibious_mon(u.usteed) && mon_resistance(u.usteed, FLYING)));
 
+		//Don't drown your rider
+		if(safe_inwater && u.urider && !amphibious_mon(u.urider)){
+			safe_inwater = FALSE;
+		}
+
 		/* wwalking has to be visible, to prevent identifying via a message prompt
 		 * assumes that HWWalking is known always - i.e. level-up (monk) or similar where it messages
 		 * checks extrinsic from carry/invoke artifacts as well, but not worn :( those are W_WORN not W_ART(I)
@@ -1706,7 +1732,7 @@ domove()
 	    boolean safe_3dwater = safe_inwater && Breathless;
 	    boolean safe_water = safe_inwater || safe_air || (!u.usteed && visible_ww);
 	    boolean safe_lava = safe_air ||	(!u.usteed &&
-			(likes_lava(youracedata) || (lava_vis_ww)));
+			((likes_lava(youracedata) && !u.urider) || (lava_vis_ww)));
 
 	    if ((!safe_air && !safe_air_level && levl[x][y].typ == AIR && levl[u.ux][u.uy].typ != AIR) ||
 			(!safe_water && is_pool(x, y, FALSE) && !is_pool(u.ux, u.uy, FALSE)) ||
@@ -1764,6 +1790,10 @@ domove()
 		u.usteed->mx = u.ux;
 		u.usteed->my = u.uy;
 		exercise_steed();
+	}
+	if (u.urider) {
+		u.urider->mx = u.ux;
+		u.urider->my = u.uy;
 	}
 #endif
 
@@ -3064,6 +3094,7 @@ weight_cap()
 	struct obj *underarmor = uarmu;
 	struct obj *boots = uarmf;
 	struct obj *belt = ubelt;
+	struct obj *weapon = uwep;
 	
 	/*If mounted your steed is doing the carrying, use its data instead*/
 	if(u.usteed && u.usteed->data){
@@ -3075,6 +3106,7 @@ weight_cap()
 		underarmor = which_armor(u.usteed, W_ARMU);
 		boots = which_armor(u.usteed, W_ARMF);
 		belt = which_armor(u.usteed, W_BELT);
+		weapon = MON_WEP(u.usteed);
 		
 		carrcap = 25L*(mstr + mcon) + 50L;
 		mdat = u.usteed->data;
@@ -3119,6 +3151,7 @@ weight_cap()
 		}
 		
 		if (boots && boots->otyp == find_hboots()) carrcap += maxcap/10;
+		if (weapon && weapon->otyp == PEST_GLAIVE && mdat->mtyp == PM_SILVERMAN) carrcap += maxcap/5;
 
 		if (boots && check_oprop(boots, OPROP_RBRD)
 			&& u.ualign.record >= 20 && u.ualign.type != A_CHAOTIC && u.ualign.type != A_NEUTRAL
@@ -3180,6 +3213,7 @@ inv_weight()
 	int wt = 0;
 	int objwt;
 	boolean nymph = youracedata->mlet == S_NYMPH;
+	boolean silverknight = Race_if(PM_SILVERKNIGHT) || youracedata->mtyp == PM_SILVERKNIGHT;
 	int wtmod = mlev(&youmonst)*5;
 
 #ifndef GOLDOBJ
@@ -3214,6 +3248,8 @@ inv_weight()
 				objwt = otmp->owt;
 				if(nymph)
 					objwt = max(0, objwt - wtmod);
+				if(silverknight && otmp->obj_material == SILVER)
+					objwt = max(0, objwt - wtmod);
 				wt += objwt;
 			}
 		}
@@ -3240,6 +3276,26 @@ inv_weight()
 			wt += objwt;
 			otmp = otmp->nobj;
 		}
+	}
+	if(u.urider){
+		boolean rnymph = u.urider->data->mlet == S_NYMPH;
+		boolean rsilverknight = u.urider->data->mtyp == PM_SILVERKNIGHT;
+		int rwtmod = mlev(u.urider)*5;
+		otmp = u.urider->minvent;
+		int subtotal = 0;
+		while (otmp){
+			if(otmp->oartifact) otmp->owt = weight(otmp);
+			objwt = otmp->owt;
+			if(rnymph)
+				objwt = max(0, objwt - rwtmod);
+			if(rsilverknight && otmp->obj_material == SILVER)
+				objwt = max(0, objwt - rwtmod);
+			subtotal += objwt;
+			otmp = otmp->nobj;
+		}
+		if(nymph)
+			subtotal = max(0, subtotal - wtmod);
+		wt += subtotal;
 	}
 	
 	wc = weight_cap();

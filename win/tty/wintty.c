@@ -537,8 +537,7 @@ give_up:	/* Quit */
 			if (ok_race(flags.initrole, i, flags.initgend,
 							flags.initalign)) {
 			    any.a_int = i+1;	/* must be non-zero */
-			    char selector = races[i].noun[0];
-			    add_menu(win, NO_GLYPH, &any, selector,
+			    add_menu(win, NO_GLYPH, &any, races[i].lettercode,
 				0, ATR_NONE, races[i].noun, MENU_UNSELECTED);
 			}
 		    any.a_int = pick_race(flags.initrole, flags.initgend,

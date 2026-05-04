@@ -4998,7 +4998,7 @@ shk_uncurse(slang, shkp)
 
 	/* Shopkeeper responses */
 	/* KMH -- fixed bknown, curse(), bless(), uncurse() */
-	if (!obj->bknown && !u.upriest &&
+	if (!obj->bknown && !u.upriest && !check_mutation(TT_HATEFUL_VISION) &&
 	    !no_cheat)
 	{
 		/* Not identified! */
@@ -5021,7 +5021,7 @@ shk_uncurse(slang, shkp)
 		if (!rn2(4))
 		{
 		    pline("Distracted by your blood-shot %s, the shopkeeper",
-			makeplural(body_part(EYE)));
+			makeplural(body_part(EYE_BP)));
 		    pline("accidentally blesses the item!");
 		    bless(obj);
 		}
@@ -6335,6 +6335,7 @@ smith_resizeArmor(struct monst *smith, struct obj *otmp)
 
 #ifdef STEED
 		if (u.usteed && u.dz > 0) ptr = u.usteed->data;
+		else if (u.urider && u.dz < 0) ptr = u.urider->data;
 		else 
 #endif
 		if(u.dz){
@@ -6508,7 +6509,7 @@ struct monst *smith;
 	int oona_basic_tools[] = {BOX, PICK_AXE, LOCK_PICK, SKELETON_KEY, 0};
 	int oona_basic_weapons[] = {ARROW, ATLATL, AXE, BATTLE_AXE, BOW, BROADSWORD, BULLWHIP, 
 			CLUB, CROSSBOW, CROSSBOW_BOLT, DAGGER, DART, FLAIL, GLAIVE, JAVELIN, 
-			KNIFE, LANCE, LONG_SWORD, MACE, SABER, SCIMITAR, SCYTHE, SICKLE, 
+			KNIFE, LANCE, LONG_SWORD, MACE, SABER, CUTLASS, SCIMITAR, SCYTHE, SICKLE, 
 			SHORT_SWORD, SPEAR, STILETTO, RAPIER, TRIDENT, TWO_HANDED_SWORD, 
 			QUARTERSTAFF,
 			0
@@ -6787,11 +6788,14 @@ d_weapon:
 		if(check_oprop(example, OPROP_WRTHW)){
 			add_oprop(obj, OPROP_WRTHW);
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -6822,7 +6826,7 @@ struct monst *smith;
 	int n;
 	int dracae_basic_weapons[] = {ARROW, ATLATL, AXE, BATTLE_AXE, BOW, BROADSWORD, BULLWHIP, CLUB, CROSSBOW, CROSSBOW_BOLT, DAGGER, DART, 
 			FLAIL, GLAIVE, JAVELIN, KNIFE, LANCE, LONG_SWORD, MACE, 
-			RAPIER, SABER, SCIMITAR, SCYTHE, SHORT_SWORD, SICKLE, SPEAR, STILETTO, TRIDENT, TWO_HANDED_SWORD,
+			RAPIER, SABER, CUTLASS, SCIMITAR, SCYTHE, SHORT_SWORD, SICKLE, SPEAR, STILETTO, TRIDENT, TWO_HANDED_SWORD,
 			QUARTERSTAFF,
 			0
 		};
@@ -7095,17 +7099,44 @@ d_weapon:
 		if(check_oprop(example, OPROP_LIVEW)){
 			add_oprop(obj, OPROP_LIVEW);
 		}
-		if(check_oprop(example, OPROP_ASECW)){
-			add_oprop(obj, OPROP_ASECW);
+		if(check_oprop(example, OPROP_SECR_ACID)){
+			add_oprop(obj, OPROP_SECR_ACID);
 		}
-		if(check_oprop(example, OPROP_PSECW)){
-			add_oprop(obj, OPROP_PSECW);
+		if(check_oprop(example, OPROP_SECR_POSN)){
+			add_oprop(obj, OPROP_SECR_POSN);
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_oprop(example, OPROP_SECR_FLTH)){
+			add_oprop(obj, OPROP_SECR_FLTH);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_oprop(example, OPROP_SECR_SLEP)){
+			add_oprop(obj, OPROP_SECR_SLEP);
+		}
+		if(check_oprop(example, OPROP_SECR_BLND)){
+			add_oprop(obj, OPROP_SECR_BLND);
+		}
+		if(check_oprop(example, OPROP_SECR_PARL)){
+			add_oprop(obj, OPROP_SECR_PARL);
+		}
+		if(check_oprop(example, OPROP_SECR_AMNS)){
+			add_oprop(obj, OPROP_SECR_AMNS);
+		}
+		if(check_oprop(example, OPROP_SECR_SLVR)){
+			add_oprop(obj, OPROP_SECR_SLVR);
+		}
+		if(check_oprop(example, OPROP_SECR_HLLU)){
+			add_oprop(obj, OPROP_SECR_HLLU);
+		}
+		if(check_oprop(example, OPROP_SECR_DIRE)){
+			add_oprop(obj, OPROP_SECR_DIRE);
+		}
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
+		}
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7273,11 +7304,14 @@ d_weapon:
 		if(check_oprop(example, OPROP_LESSER_ANARW)){
 			add_oprop(obj, OPROP_LESSER_ANARW);
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7511,7 +7545,10 @@ d_weapon:
 				OPROP_MAGCW, OPROP_LESSER_MAGCW, OPROP_ANARW, OPROP_LESSER_ANARW,
 				OPROP_UNHYW, OPROP_LESSER_UNHYW, OPROP_WATRW, OPROP_LESSER_WATRW,
 				OPROP_PSIOW, OPROP_LESSER_PSIOW, OPROP_DRANW, OPROP_MORGW, OPROP_LESSER_MORGW,
-				OPROP_WRTHW, OPROP_CCLAW, OPROP_LIVEW, OPROP_ASECW, OPROP_PSECW,
+				OPROP_WRTHW, OPROP_CCLAW, OPROP_LIVEW,
+				OPROP_SECR_ACID, OPROP_SECR_POSN, OPROP_SECR_FLTH, OPROP_SECR_SLEP,
+				OPROP_SECR_BLND, OPROP_SECR_PARL, OPROP_SECR_AMNS, OPROP_SECR_SLVR,
+				OPROP_SECR_HLLU, OPROP_SECR_DIRE,
 				OPROP_OCLTW, OPROP_RETRW, OPROP_ANTAW
 			};
 
@@ -7549,11 +7586,14 @@ d_weapon:
 				add_oprop(obj, OPROP_LESSER_FIREW);
 			}
 		}
-		if(check_oprop(example, OPROP_SPIKED)){
-			add_oprop(obj, OPROP_SPIKED);
+		if(check_omod(example, OMOD_SPIKED)){
+			add_omod(obj, OMOD_SPIKED);
 		}
-		if(check_oprop(example, OPROP_BLADED)){
-			add_oprop(obj, OPROP_BLADED);
+		if(check_omod(example, OMOD_BLADED)){
+			add_omod(obj, OMOD_BLADED);
+		}
+		if(check_omod(example, OMOD_SHOULDER_BARING)){
+			add_omod(obj, OMOD_SHOULDER_BARING);
 		}
 	}
 	verbalize("It's done.");
@@ -7669,7 +7709,7 @@ human_smithy(smith)
 struct monst *smith;
 {
 	int basic_weapons[] = { ARROW, AXE, BOW, BROADSWORD, CROSSBOW, CROSSBOW_BOLT, DAGGER, FLAIL, GLAIVE, JAVELIN, LANCE, 
-							LONG_SWORD, MACE, RAPIER, SCIMITAR, SCYTHE, SHORT_SWORD, SICKLE, SPEAR,
+							LONG_SWORD, MACE, RAPIER, CUTLASS, SCIMITAR, SCYTHE, SHORT_SWORD, SICKLE, SPEAR,
 							TRIDENT, TWO_HANDED_SWORD, SMITHING_HAMMER, 0 };
 	int advanced_weapons[] = {0};
 	int basic_armor[] = { ARMORED_BOOTS, BANDED_MAIL, BUCKLER, CHAIN_MAIL, HELMET, KITE_SHIELD, GAUNTLETS, PLATE_MAIL, 

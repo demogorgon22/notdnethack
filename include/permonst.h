@@ -107,6 +107,7 @@ struct permonst {
 					mflagst,		/* Monster Thoughts and behavior boolean bitflags */
 					mflagsf,		/* Monster Fighting skills bitflags */
 					mflagsb,		/* Monster Body plan boolean bitflags */
+					mflagsc,		/* Monster body Composition boolean bitflags */
 					mflagsg,		/* Monster Game mechanics and bookkeeping boolean bitflags */
 					mflagsa,		/* Monster rAce boolean bitflags */
 					mflagsv,		/* Monster Vision boolean bitflags */

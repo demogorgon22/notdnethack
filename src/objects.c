@@ -239,7 +239,7 @@ WEAPON(("pincer staff", "claw-ended staff"), /*Needs encyc entry*/
 	0, 0,  MZ_HUGE,  0, 25, 800,  0, P,   P_TRIDENT, SHELL_MAT, FALSE, CLR_BRIGHT_MAGENTA, O_TRAITS(ETRAIT_STOP_THRUST)),
 WEAPON(("silverknight spear", "buckler-adorned winged spear"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(10)), DMG(D(8)),
-	0, 0,  MZ_LARGE, 0, 25,  3,  -2, P,   P_SPEAR, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_PUNCTURE|ETRAIT_BRACED|ETRAIT_STOP_THRUST)),
+	0, 0,  MZ_LARGE, 0, 25, 75, -2, P,   P_SPEAR, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_PUNCTURE|ETRAIT_BRACED|ETRAIT_STOP_THRUST)),
 
 /* blades */
 WEAPON(("dagger"),
@@ -373,17 +373,20 @@ WEAPON(("hunter's shortsword"),
 	1, 0,  MZ_SMALL,  0, 30, 20,  2, S|P,   P_SHORT_SWORD, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_FOCUS_FIRE|ETRAIT_CREATE_OPENING|ETRAIT_QUICK)),
 
 WEAPON(("scimitar", "curved sword"),
-	DMG(D(8)), DMG(D(8)),
-	0, 0, MZ_MEDIUM, 13, 40, 15,  0, S,   P_SCIMITAR, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH)),
+	DMG(D(12)), DMG(D(8)),
+	0, 0, MZ_MEDIUM, 13, 40, 15,  0, S,   P_SCIMITAR, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH|ETRAIT_STRIKING)),
 WEAPON(("elven scimitar", "runed curved sword"),
-	DMG(D(6), F(2)), DMG(D(6), F(1)),
-	0, 0, MZ_MEDIUM,  0, 12, 15,  2, S,   P_SCIMITAR, WOOD, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH|ETRAIT_BLADEDANCE)),
+	DMG(D(8), F(3)), DMG(D(6), F(1)),
+	0, 0, MZ_MEDIUM,  0, 12, 15,  2, S,   P_SCIMITAR, WOOD, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH|ETRAIT_STRIKING|ETRAIT_BLADEDANCE)),
+WEAPON(("cutlass", "enclosed-handguard curved sword"),
+	DMG(D(10)), DMG(D(8)),
+	0, 0, MZ_MEDIUM,  0, 40, 15,  0, S,   P_SCIMITAR, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH)),
 WEAPON(("high-elven warsword", "runed curved sword"), /*Needs encyc entry*/
 	DMG(D(10), D(6)), DMG(D(10), D(6)),
 	0, 0, MZ_HUGE,    1, 75,150,  2, S,   P_SCIMITAR, MITHRIL, UNIDED, HI_MITHRIL, O_TRAITS(ETRAIT_HEW|ETRAIT_FELL|ETRAIT_CLEAVE|ETRAIT_LONG_SLASH|ETRAIT_BLADESONG|ETRAIT_BLADEDANCE)),
 
 WEAPON(("bow-blade", "recurved sword"),
-	DMG(D(8)), DMG(D(8)),
+	DMG(D(10)), DMG(D(8)),
 	0, 0,  MZ_MEDIUM, 1, 60, 75, 1, P|S,   P_SCIMITAR, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_LONG_SLASH)),
 
 WEAPON(("rapier"), /*Needs encyc entry*/
@@ -426,7 +429,7 @@ WEAPON(("long sword"), /*Needs encyc entry*/
 	1, 0, MZ_MEDIUM, 44, 40, 15,  0, S|P, P_LONG_SWORD, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_GRAZE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
 WEAPON(("silverknight sword", "thin-bladed longsword"), /*Needs encyc entry*/
 	DMG(D(6), F(1)), DMG(D(8)),
-	0, 0, MZ_MEDIUM,  0, 40, 15,  0, S|P, P_LONG_SWORD, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_LUNGE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
+	0, 0, MZ_MEDIUM,  0, 40, 75,  0, S|P, P_LONG_SWORD, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_LUNGE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
 WEAPON(("crystal sword"), /*Needs encyc entry*//*Needs tile*/
 	DMG(D(2, 8)), DMG(D(2, 12)),
 	1, 0,  MZ_LARGE, 2, 120,300,  0, S|P, P_LONG_SWORD, GLASS, FALSE, HI_GLASS, O_TRAITS(ETRAIT_GRAZE|ETRAIT_FOCUS_FIRE|ETRAIT_STOP_THRUST)),
@@ -518,7 +521,7 @@ WEAPON(("glaive", "single-edged polearm"),
 	0, 0,   MZ_HUGE,  7, 75,  6,  0, S,   P_POLEARMS, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_HEW)),
 WEAPON(("pest glaive", "strangly-organic polearm"),
 	DMG(D(2, 6)), DMG(D(10), F(1)),
-	0, 0,   MZ_HUGE,  0, 23,180,  0, S|P,   P_POLEARMS, SHELL_MAT, FALSE, CLR_GRAY, O_TRAITS(ETRAIT_STOP_THRUST|ETRAIT_BRACED|ETRAIT_HEW)),
+	0, 0,   MZ_HUGE,  0, 23,180,  0, S|P,   P_POLEARMS, SHELL_MAT, FALSE, CLR_GRAY),
 WEAPON(("naginata", "samurai-sword polearm"),
 	DMG(D(8), F(1)), DMG(D(10), F(1)),
 	0, 0,   MZ_HUGE,  1, 75, 90,  1, S,   P_POLEARMS, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_HEW)),
@@ -579,7 +582,7 @@ WEAPON(("bec de corbin", "beaked polearm"),
 	0, 0,   MZ_HUGE,  3, 75,  8,  0, B|P, P_POLEARMS, IRON, FALSE, HI_METAL, O_TRAITS(ETRAIT_HEW|ETRAIT_STUNNING_STRIKE|ETRAIT_PENETRATE_ARMOR|ETRAIT_STOP_THRUST)),
 WEAPON(("silverknight scythe", "crescent-moon polearm"),
 	DMG(D(2, 6)), DMG(D(2, 4)),
-	0, 0,   MZ_HUGE,  0, 75,  8,  0, S, P_POLEARMS, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_FELL|ETRAIT_BLEED|ETRAIT_CLEAVE)),
+	0, 0,   MZ_HUGE,  0, 75, 80,  0, S, P_POLEARMS, SILVER, FALSE, HI_SILVER, O_TRAITS(ETRAIT_FELL|ETRAIT_BLEED|ETRAIT_CLEAVE)),
 
 
 WEAPON(("scythe"), 
@@ -635,8 +638,8 @@ WEAPON(("macuahuitl", "obsidian-edged club"), /*Needs encyc entry*/
 	DMG(D(8)), DMG(D(6)),
 	0, 0, MZ_MEDIUM,  0, 40, 10,  0, B|S, P_CLUB, WOOD, FALSE, HI_WOOD, O_TRAITS(ETRAIT_HEW|ETRAIT_GRAZE|ETRAIT_STUNNING_STRIKE)),
 WEAPON(("breaking wheel", "wagon wheel"), /*Needs encyc entry*/
-	DMG(D(6)), DMG(D(3)),
-	0, 0, MZ_HUGE,    1, 150,  500,  0, B,   P_NONE, WOOD, FALSE, HI_WOOD, O_TRAITS(ETRAIT_KNOCK_BACK|ETRAIT_KNOCK_BACK_CHARGE)),
+	DMG(D(3,6)), DMG(D(3,3)),
+	0, 0, MZ_HUGE,    1, 150,  500,  -5, B,   P_CLUB, WOOD, FALSE, HI_WOOD, O_MAGIC(1), O_TRAITS(ETRAIT_KNOCK_BACK|ETRAIT_KNOCK_BACK_CHARGE)),
 WEAPON(("quarterstaff", "staff"),
 	DMG(D(6)), DMG(D(6)),
 	0, 0,   MZ_HUGE,  9, 40,  5,  0, B,   P_QUARTERSTAFF, WOOD, FALSE, HI_WOOD, O_TRAITS(ETRAIT_HEW|ETRAIT_FELL|ETRAIT_STUNNING_STRIKE|ETRAIT_KNOCK_BACK|ETRAIT_KNOCK_BACK_CHARGE)),
@@ -981,7 +984,7 @@ SUIT(("harmonium scale mail", "red-lacquered spiked scale mail", "spiked scale m
 SUIT(("power armor", "strange metal armor", "armored suit"), /*Needs encyc entry*//*Needs tile*/
 	0, 0,   MZ_HUGE, ARMSZ_HEAVY, 0,  3, 500,  5000,  7, 3, 3, METAL, CLR_MAGENTA),
 SUIT(("silverknight armor", "filigreed armor"),
-	0, 0,   MZ_HUGE,  ARMSZ_HEAVY,  0,  5, 225,    1,  5, 6, 3, SILVER, HI_SILVER),
+	0, 0,   MZ_HUGE,  ARMSZ_HEAVY,  0,  5, 225,  3000,  5, 6, 3, SILVER, HI_SILVER),
 SUIT(("eilistran armor", "clockwork plate armor"),
 	0, 1,  MZ_HUGE,  ARMSZ_HEAVY,  	0,  5, 250, 2000, 5, 5, 2, SILVER, HI_SILVER, O_POWER(FLYING)),
 SUIT(("plasteel armor", "hard white armor", "armor"), /*Needs encyc entry*//*Needs tile*/
@@ -1166,7 +1169,7 @@ GLOVES(("hand wraps"),
 GLOVES(("harmonium gauntlets", "red-lacquered hooked gauntlets", "hooked gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 40,  1, 9, 4, 0, METAL, CLR_RED),
 GLOVES(("silverknight gauntlets", "filigreed gauntlets"), /*Needs encyc entry*//*Needs tile*/
-		0, 0,  0, 2, 40,  1, 8, 4, 1, SILVER, HI_SILVER),
+		0, 0,  0, 2, 40, 50, 8, 4, 1, SILVER, HI_SILVER),
 GLOVES(("high-elven gauntlets", "runed gauntlets"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,  0, 2, 15, 50, 8, 4, 0, MITHRIL, HI_MITHRIL),
 GLOVES(("imperial elven gauntlets", "runed gauntlets"), /*Needs encyc entry*//*Needs tile*/
@@ -1198,7 +1201,7 @@ BOOTS(("archaic boots", "boots"),
 BOOTS(("harmonium boots", "red-lacquered boots", "boots"),
 		0, 0,   0, 1, 95,  1,  8, 4, 1, METAL, CLR_RED),
 BOOTS(("silverknight boots", "filigreed boots"), /*Needs encyc entry*//*Needs tile*/
-		0, 0,   0, 1, 95,  1,  8, 4, 1, SILVER, HI_SILVER),
+		0, 0,   0, 1, 95, 80,  8, 4, 1, SILVER, HI_SILVER),
 BOOTS(("plasteel boots", "hard white boots", "boots"), /*Needs encyc entry*//*Needs tile*/
 		0, 0,   0, 2, 25, 32,  8, 3, 1, PLASTIC, CLR_WHITE),
 BOOTS(("stilettos", "high-heeled shoes"), /*Needs encyc entry*//*Needs tile*/
@@ -1427,12 +1430,12 @@ TOOL(("living mask", "gilled jellyfish"),  /*Needs encyc entry*/
 TOOL(("lenses"),		1,   MZ_TINY, 0, 0, 0,   5,  3,  80, GLASS, HI_GLASS), /*Needs encyc entry*/
 TOOL(("sunglasses", "mirrored lenses"),/*Needs encyc entry*/
 					   0,   MZ_TINY, 0, 0, 0,   0,  3, 240, GLASS, CLR_BROWN, O_POWER(BLIND_RES)), /*Needs encyc entry*/
-TOOL(("blindfold"),    1,   MZ_TINY, 0, 0, 0,  45,  2,  20, CLOTH, CLR_GRAY),
+TOOL(("blindfold"),    1,   MZ_TINY, 0, 0, 0,  60,  2,  20, CLOTH, CLR_GRAY),
 TOOL(("android visor", "black blindfold", "blindfold"), /*Needs encyc entry*/
 								0,   MZ_TINY, 0, 0, 0,   0,  2,  40, CLOTH, CLR_BLACK),
 TOOL(("soul-lens", "smooth-gemmed head-chain"),		0,   MZ_TINY, 0, 1, 0,   0,  3, 333, GLASS, HI_GOLD), /*Needs encyc entry*/
-TOOL(("towel"),        1,   MZ_TINY, 0, 0, 0,  45,  2,  50, CLOTH, CLR_MAGENTA),
-TOOL(("saddle"),       1,  MZ_LARGE, 0, 0, 0,   5,200, 150, LEATHER, HI_LEATHER),
+TOOL(("towel"),        1,   MZ_TINY, 0, 0, 0,  15,  2,  50, CLOTH, CLR_MAGENTA),
+TOOL(("saddle"),       1,  MZ_LARGE, 0, 0, 0,  15,200, 150, LEATHER, HI_LEATHER),
 TOOL(("leash"),        1,  MZ_SMALL, 0, 0, 0,  55, 12,  20, LEATHER, HI_LEATHER),
 /*Needs encyc entry*/
 TOOL(("stethoscope"),  1,  MZ_SMALL, 0, 0, 0,  25,  4,  75, IRON, HI_METAL),
@@ -1445,7 +1448,7 @@ TOOL(("nightmare's bullet mold", "blade-tipped mold"),/*Needs tile*/ /*Needs enc
 								0, MZ_SMALL, 0, 1, 0,   0, 15, 300, IRON, HI_METAL),
 TOOL(("portable electrode", "ball-topped spike"),/*Needs tile*/ /*Needs encyc entry*/
 								0, MZ_SMALL, 0, 1, 0,   0, 15, 300, IRON, HI_METAL),
-TOOL(("upgrade kit"),  1, MZ_MEDIUM, 0, 0, 0,  40,100,  30, COPPER, HI_COPPER),/*Needs encyc entry*//*Needs tile*/
+TOOL(("upgrade kit"),  1, MZ_MEDIUM, 0, 0, 0,  40, 20,  30, COPPER, HI_COPPER),/*Needs encyc entry*//*Needs tile*/
 TOOL(("power pack", "little white cube", "little cube"), /*Needs encyc entry*//*Needs tile*/
 								0,   MZ_TINY, 1, 1, 0,   0,  1,  300, PLASTIC, CLR_WHITE),
 TOOL(("trephination kit"),  /*Needs encyc entry*/
@@ -1536,7 +1539,7 @@ WEPTOOL(("seismic hammer", "dull metallic hammer"),/*Needs encyc entry*/
  */
 TORCH(("torch"),/*Needs encyc entry*/
 	DMG(D(3)), DMG(D(2)),
-	1,  MZ_SMALL, 0, 0, 15, 10,   5,  0, B,   P_CLUB, WOOD, HI_WOOD),
+	1,  MZ_SMALL, 0, 0, 20, 10,   5,  0, B,   P_CLUB, WOOD, HI_WOOD),
 TORCH(("magic torch", "torch"),/*Needs encyc entry*/
 	DMG(D(6)), DMG(D(3)),
 	0,  MZ_SMALL, 1, 0,  0, 10, 500,  1, B,   P_CLUB, BONE, CLR_WHITE, O_MATSPEC(UNIDED)),
@@ -1784,6 +1787,7 @@ POTION(("sap", "amber"),                  0, 0,  50,  CLR_BROWN, O_USKWN(1)),	/*
 	BONE_TILE(("defilement glyph",  "broken-fingered handprint"),   0),		// DEFILEMENT
 	BONE_TILE(("weed glyph",  "set of wavy weedy lines"),   0),				// LUMEN
 	BONE_TILE(("vacuous glyph",  "mass of wobbly circles"),   0),				// ROTTEN_EYES
+	BONE_TILE(("rot glyph",  "rough circle and off-center cross"),   0),				// ROTTED_RUNE
 	BONE_TILE(("orrery glyph",  "set of nested dotted circles"),   0),		// SIGHT
 #undef BONE_TILE
 #define GOLD_DISK(names, clr, wt, sz,...) OBJECT( \
@@ -2004,9 +2008,11 @@ ROCK(("silver slingstone", "silver"),
 							0,  0,   1, 10, 6, 6, 2, 0,  0, 5, SILVER, HI_SILVER),/*Needs tile*/
 ROCK(("rock"),		1,100,   1, 0, 6, 6, 0, 0, 10, 7, MINERAL, CLR_GRAY),
 
-ROCK(("ingot"),		1,  0,   1, 0, 8, 8, -1, 0, 10, 4.5, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED)),
+ROCK(("ingot"),		1,  0,   1, 0, 8, 8, -1, 0, 10, 4, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED)),
 
-ROCK(("crystal"),		1,  0,   1, 0, 6, 6, 0, 0, 10, 4.5, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED),  O_DTYPE(SLASH|PIERCE)),
+ROCK(("crystal"),		1,  0,   1, 0, 6, 6, 0, 0, 10, 5, IRON, HI_METAL, O_MATSPEC(IDED|UNIDED),  O_DTYPE(SLASH|PIERCE)),
+
+ROCK(("eye"),		1,  0,   1, 0, 1, 1, 0, 0, 10, 5.5, GLASS, HI_GLASS, O_MATSPEC(IDED|UNIDED), O_MERGE(0)),
 
 GEM(("antimagic rift", "black-flawed white"),  0,  1, 4500, 15,  6, GEMSTONE, CLR_BLACK),
 GEM(("catapsi vortex",  "gray-flawed white"),  0,  1, 4500, 15,  6, GEMSTONE, CLR_GRAY),

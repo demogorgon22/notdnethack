@@ -1178,7 +1178,7 @@ chaos2_montype()
 				return &mons[PM_INCARNATOR_MAGGOT]; \
 		}\
 		if(check_insight()){ \
-			if(G_C_INST(mons[PM_NAMELESS_GNAWER].geno) < u.uinsight && !toostrong(PM_NAMELESS_GNAWER, diff+5)) \
+			if(G_C_INST(mons[PM_NAMELESS_GNAWER].geno) < Insight && !toostrong(PM_NAMELESS_GNAWER, diff+5)) \
 				return &mons[PM_NAMELESS_GNAWER]; \
 		} \
 }

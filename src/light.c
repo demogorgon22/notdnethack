@@ -471,7 +471,7 @@ uswallow_indark()
 			tlit = TRUE;
 	}
 	/* being a creature that emits light counts as a temp ls */
-	if (emits_light(youracedata)) {
+	if (uemit_light()) {
 		if (Is_darklight_monster(youracedata))
 			tdark = TRUE;
 		else

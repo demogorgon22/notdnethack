@@ -670,7 +670,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		}
 		*helm = HELMET;
 		*armor = CHAIN_MAIL;
-		*boots = GLOVES;
+		*gloves = GLOVES;
 		*boots = HIGH_BOOTS;
 		*tool = TORCH;
 	}break;
@@ -855,7 +855,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 		}
 	break;
 	case PM_PIRATE:
-		*weapon = SCIMITAR;
+		*weapon = CUTLASS;
 		*armor = JACKET;
 		*shield = BUCKLER;
 		*rweapon = FLINTLOCK;
@@ -910,7 +910,7 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 	break;
 #endif
 	case PM_UNDEAD_HUNTER:
-		switch(rn2(rn2(15))){
+		switch(rn2(15)){
 			case 0:
 				*weapon = WHIP_SAW;
 			break;
@@ -1005,7 +1005,6 @@ int *weapon, *secweapon, *rweapon, *rwammo, *armor, *shirt, *cloak, *helm, *boot
 	default:
 		pline("Received %d.",monsndx(ptr));
 		impossible("bad mplayer monster");
-		weapon = 0;
 		break;
 	}
 }

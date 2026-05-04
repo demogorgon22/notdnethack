@@ -163,6 +163,8 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 						(flags.warntypet & (mon)->data->mflagst)) || \
 					(Warn_of_mon && flags.warntypeb && \
 						(flags.warntypeb & (mon)->data->mflagsb)) || \
+					(Warn_of_mon && flags.warntypec && \
+						(flags.warntypec & (mon)->data->mflagsc)) || \
 					(Warn_of_mon && flags.warntypeg && \
 						(flags.warntypeg & (mon)->data->mflagsg)) || \
 					(Warn_of_mon && flags.warntypea && \
@@ -233,6 +235,10 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 #define MKOBJ_NOINIT	0x02	/* skip standard initialization of the object, like randomized enchantment and material */
 #define MKOBJ_SUMMON	0x04	/* attach ox_esum struct to obj */
 #define MKOBJ_GOODEQUIP	0x08	/* attach ox_esum struct to obj */
+
+/* flags to control tamedog_core() */
+#define TD_ENHANCED	0x01	/* tame many normally untamable monsters */
+#define TD_LOYAL	0x02	/* pet should be loyal */
 
 /* special mhpmax value when loading bones monster to flag as extinct or genocided */
 #define DEFUNCT_MONSTER	(-100)
@@ -377,6 +383,7 @@ NEARDATA extern coord bhitpos;	/* place where throw or zap hits or stops */
 
 #define ugod_is_angry() (u.ualign.record < 0)
 #define on_altar()	(IS_ALTAR(levl[u.ux][u.uy].typ) || goat_mouth_at(u.ux, u.uy) || bokrug_idol_at(u.ux, u.uy) || yog_altar_at(u.ux, u.uy))
+#define altar_prayer() (on_altar() || Gokorei)
 #define on_shrine()	(IS_ALTAR(levl[u.ux][u.uy].typ) && altars[levl[u.ux][u.uy].altar_num].shrine)
 #define on_god_altar(god)	(IS_ALTAR(levl[u.ux][u.uy].typ) && god_at_altar(u.ux,u.uy) == (god))
 

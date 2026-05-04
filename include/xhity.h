@@ -58,12 +58,6 @@
 #define ATTACKCHECK_ATTACK		0x01	/* attack normally */
 #define ATTACKCHECK_BLDTHRST	0x02	/* attack against the player's will */
 
-/* TODO: put these in their specified header files */
-/* mondata.h */
-#define is_holy_mon(mon)	(is_angel((mon)->data) || has_template(mon, ILLUMINATED) || (mon)->mtyp == PM_DREAD_SERAPH)
-#define is_unholy_mon(mon)	(is_demon((mon)->data) || (mon)->mtyp == PM_DREAD_SERAPH)
-#define is_unblessed_mon(mon)	(is_auton((mon)->data) || is_rilmani((mon)->data) || is_kamerel((mon)->data))
-
 #define SUBOUT_SPELLS	 1	/* Spellcasting attack instead (Five Fiends of Chaos1 and Gae and silverknight) */
 #define SUBOUT_BAEL1	 2	/* Bael's Sword Archon attack chain */
 #define SUBOUT_BAEL2	 3	/* Bael's marilith-hands attack chain */
@@ -82,16 +76,44 @@
 #define SUBOUT_V_CLAWS1	16	/* Extra vermiurge claws 1 */
 #define SUBOUT_V_CLAWS2	17	/* Extra vermiurge claws 2 */
 #define SUBOUT_BRAINSUCK	18	/* Brain suckers */
-#define SUBOUT_ACU	19	/* ACU tentacle attack */
-#define SUBOUT_SALA1	20	/* Sala tuch attack */
-#define SUBOUT_SALA2	21	/* Sala hug attack */
-#define SUBOUT_ROT_SPORES	22	/* Pasive spore attack */
-#define SUBOUT_ROT_VOMIT	23	/* Vomit rot */
-#define SUBOUT_ROT_STING	24	/* Rot stinger */
-#define SUBOUT_PUSH	26	/* Push attack */
-#define SUBOUT_VOMIT    27	/* Vomit attack */
-#define MAX_SUBOUT		28
-#define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/16+1)
+#define SUBOUT_ROT_SPORES	19	/* Pasive spore attack */
+#define SUBOUT_ROT_VOMIT	20	/* Vomit rot */
+#define SUBOUT_ROT_STING	21	/* Rot stinger */
+#define SUBOUT_PUSH	22	/* Push attack */
+#define SUBOUT_VOMIT    23	/* Vomit attack */
+#define SUBOUT_T_SPORES	24	/* Tiefling spores counterattack */
+#define SUBOUT_T_FLAMES	25	/* Tiefling flames counterattack */
+#define SUBOUT_T_COLD	26	/* Tiefling cold counterattack */
+#define SUBOUT_T_ACID	27	/* Tiefling acid counterattack */
+#define SUBOUT_T_POISON	28	/* Tiefling poison counterattack */
+#define SUBOUT_T_BITE   29	/* Tiefling snake fangs attack */
+#define SUBOUT_T_VAMPIRE 30	/* Tiefling vampire fangs attack */
+#define SUBOUT_T_SPIDER 31	/* Tiefling spider fangs attack */
+#define SUBOUT_T_COLD_TOUCH 32	/* Tiefling cold touch attack */
+#define SUBOUT_T_DRAIN_TOUCH 33	/* Tiefling drain touch attack */
+#define SUBOUT_T_FIRE_TOUCH 34	/* Tiefling fire touch attack */
+#define SUBOUT_T_SHOCK_TOUCH 35	/* Tiefling shock touch attack */
+#define SUBOUT_T_RAMS_HORNS    36	/* Tiefling horns attack */
+#define SUBOUT_T_DEMON_HORNS  37	/* Tiefling demon horn attack */
+#define SUBOUT_T_NIGHTHORN 38	/* Tiefling nightmare horn attack */
+#define SUBOUT_T_ANTLERS   39	/* Tiefling antlers attack */
+#define SUBOUT_T_BULL_HORNS 40	/* Tiefling bull horns attack */
+#define SUBOUT_T_PARALYSIS_PASSIVE 41	/* Tiefling paralysis passive attack */
+#define SUBOUT_T_THORN_HAIR	42	/* Tiefling thorn hair attack */
+#define SUBOUT_T_SCORPION_TAIL	43	/* Tiefling scorpion tail attack */
+#define SUBOUT_T_SEDUCE_STEAL    44	/* Tiefling seduction/item-stealing attack */
+#define SUBOUT_T_SEDUCE_DISARM  45	/* Tiefling seduction/disarming attack */
+#define SUBOUT_A_MAR_1  46	/* Aasimar extra arm 1 */
+#define SUBOUT_A_MAR_2  47	/* Aasimar extra arm 2 */
+#define SUBOUT_A_MAR_3  48	/* Aasimar extra arm 3 */
+#define SUBOUT_A_MAR_4  49	/* Aasimar extra arm 4 */
+#define SUBOUT_A_ACID_TOUCH 50	/* Aasimar acidic touch attack */
+#define SUBOUT_A_SUCK  51	/* Aasimar priminal sucking attack */
+#define SUBOUT_ACU	52	/* ACU tentacle attack */
+#define SUBOUT_SALA1	53	/* Sala tuch attack */
+#define SUBOUT_SALA2	54	/* Sala hug attack */
+#define MAX_SUBOUT		54
+#define SUBOUT_ARRAY_SIZE (MAX_SUBOUT/(sizeof(int)*8)+1)
 
 #define ATTKFLAG_FORCE_BLEED		0x00000001L
 #define ATTKFLAG_FORCE_CHECK_JOUST	0x00000002L

@@ -86,7 +86,7 @@ dolavademon()
             if (rnd(100) > (80 + level_difficulty())) {
                 pline("Freed from the depths of Gehennom, %s offers to aid you in your quest!",
                       mhe(mtmp));
-                (void) tamedog_core(mtmp, (struct obj *) 0, TRUE);
+                (void) tamedog_core(mtmp, (struct obj *) 0, TD_ENHANCED);
             } else if (t_at(mtmp->mx, mtmp->my))
                 (void) mintrap(mtmp);
         }
@@ -607,12 +607,12 @@ expert_undead_hunter_skill()
 					}
 				}
 				else if(skill == P_CLUB){
-					if(rn2(2)){
+					if(!rn2(3)){
 						expert_weapon_skill(P_FLAIL);
 						knows_object(BEAST_CRUSHER);
 						knows_object(BEAST_CUTTER);
 					}
-					else knows_object(CLUB);
+					else knows_object(rn2(2) ? BREAKING_WHEEL : CLUB);
 				}
 				else if(skill == P_FLAIL){
 					expert_weapon_skill(P_CLUB);
@@ -1639,6 +1639,198 @@ reshape_brand(struct obj *obj)
 	fix_object(obj);
 }
 
+static long
+bless_to_gdcb(struct obj *ingot)
+{
+	if (ingot->blessed) return GDCB_BLESSED;
+	if (ingot->cursed)  return GDCB_CURSED;
+	return GDCB_UNBLESSED;
+}
+
+static long
+mat_to_amat(int mat)
+{
+	switch (mat) {
+	case IRON:        return AMAT_IRON;
+	case GREEN_STEEL: return AMAT_GREEN;
+	case SILVER:      return AMAT_SILVER;
+	case GOLD:        return AMAT_GOLD;
+	case PLATINUM:    return AMAT_PLATINUM;
+	case MITHRIL:     return AMAT_MITHRIL;
+	case COPPER:      return AMAT_COPPER;
+	case LEAD:        return AMAT_LEAD;
+	default:          return 0L;
+	}
+}
+
+/* Build a PICK_ANY menu from a chain of ingot objects.
+ * If filter_inv is TRUE, skip non-metallic non-ingot items (for inventory chains).
+ * Returns the select_menu result; *selected_out is set on nsel > 0.
+ */
+static int
+pick_ingots_menu(struct obj *chain, boolean filter_inv, const char *title,
+                 menu_item **selected_out)
+{
+	winid win;
+	anything any;
+	struct obj *o;
+	char letter = 'a';
+	int n = 0;
+
+	win = create_nhwindow(NHW_MENU);
+	start_menu(win);
+	any.a_void = 0;
+	for (o = chain; o; o = o->nobj) {
+		if (filter_inv && (o->otyp != INGOT || !is_metallic(o)))
+			continue;
+		any.a_obj = o;
+		add_menu(win, NO_GLYPH, &any, letter++, 0, ATR_NONE,
+			doname(o), MENU_UNSELECTED);
+		n++;
+	}
+	if (n == 0) {
+		destroy_nhwindow(win);
+		*selected_out = NULL;
+		return 0;
+	}
+	end_menu(win, title);
+	n = select_menu(win, PICK_ANY, selected_out);
+	destroy_nhwindow(win);
+	return n;
+}
+
+static void
+gdcb_manage_ingots(struct obj *blade)
+{
+	winid tmpwin;
+	menu_item *selected;
+	anything any;
+	int n, nsel, i;
+	struct obj *o, *src, *ingot;
+	boolean has_inv_ingots, has_blade_ingots;
+	char letter;
+
+	if (!uwep || !is_hammer(uwep)) {
+		pline("You need a smithing hammer to work on the blade.");
+		return;
+	}
+
+	while (TRUE) {
+		has_inv_ingots = FALSE;
+		for (o = invent; o; o = o->nobj)
+			if (o->otyp == INGOT && is_metallic(o)) { has_inv_ingots = TRUE; break; }
+		has_blade_ingots = (blade->cobj != NULL);
+
+		if (!has_inv_ingots && !has_blade_ingots) {
+			pline("You have no ingots to load, and the blade carries none.");
+			break;
+		}
+
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		any.a_void = 0;
+		n = 0;
+		letter = 'a';
+
+		if (has_inv_ingots) {
+			n++;
+			any.a_int = 1;
+			add_menu(tmpwin, NO_GLYPH, &any, letter++, 0, ATR_NONE,
+				"Weld ingots onto the blade", MENU_UNSELECTED);
+		}
+		if (has_blade_ingots) {
+			n++;
+			any.a_int = 2;
+			add_menu(tmpwin, NO_GLYPH, &any, letter++, 0, ATR_NONE,
+				"Pry ingots off the blade", MENU_UNSELECTED);
+		}
+
+		end_menu(tmpwin, "Green Dragon Crescent Blade - adjust ballast:");
+		nsel = select_menu(tmpwin, PICK_ONE, &selected);
+		destroy_nhwindow(tmpwin);
+		if (nsel <= 0)
+			break;
+
+		int action = selected[0].item.a_int;
+		free((genericptr_t)selected);
+
+		if (action == 1) {
+			nsel = pick_ingots_menu(invent, TRUE,
+				"Weld onto blade (enter count, or select all):", &selected);
+			if (nsel > 0) {
+				for (i = 0; i < nsel; i++) {
+					src = selected[i].item.a_obj;
+					long qty = (selected[i].count > 0) ? selected[i].count : src->quan;
+					if (qty > src->quan) qty = src->quan;
+					int loaded_mat = src->obj_material;
+					if (qty >= src->quan) {
+						obj_extract_self(src);
+						ingot = src;
+					} else {
+						ingot = splitobj(src, qty);
+						obj_extract_self(ingot);
+					}
+					/* save flags before add_to_container, which may merge and free ingot */
+					long loaded_bless = bless_to_gdcb(ingot);
+					/* add_to_container merges same-material stacks and updates blade->owt */
+					add_to_container(blade, ingot);
+					artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBMaterials    |= mat_to_amat(loaded_mat);
+					artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness  |= loaded_bless;
+					pline("You weld %s onto the blade.", doname(ingot));
+				}
+				free((genericptr_t)selected);
+				update_inventory();
+			}
+		} else {
+			nsel = pick_ingots_menu(blade->cobj, FALSE,
+				"Pry from blade (enter count, or select all):", &selected);
+			if (nsel > 0) {
+				for (i = 0; i < nsel; i++) {
+					src = selected[i].item.a_obj;
+					long qty = (selected[i].count > 0) ? selected[i].count : src->quan;
+					if (qty > src->quan) qty = src->quan;
+					int unloaded_mat = src->obj_material;
+					if (qty >= src->quan) {
+						obj_extract_self(src);
+						ingot = src;
+					} else {
+						ingot = splitobj(src, qty);
+						obj_extract_self(ingot);
+					}
+					fix_object(blade);
+					long unloaded_bless = bless_to_gdcb(ingot);
+					/* Clear the AMAT flag if no ingot of this material remains */
+					long amat = mat_to_amat(unloaded_mat);
+					if (amat) {
+						boolean still_present = FALSE;
+						struct obj *c;
+						for (c = blade->cobj; c; c = c->nobj)
+							if (c->otyp == INGOT && c->obj_material == unloaded_mat)
+								{ still_present = TRUE; break; }
+						if (!still_present)
+							artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBMaterials &= ~amat;
+					}
+					/* Clear the blessedness flag if no ingot of this state remains */
+					{
+						boolean still_present = FALSE;
+						struct obj *c;
+						for (c = blade->cobj; c; c = c->nobj)
+							if (c->otyp == INGOT && bless_to_gdcb(c) == unloaded_bless)
+								{ still_present = TRUE; break; }
+						if (!still_present)
+							artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness &= ~unloaded_bless;
+					}
+					pline("You pry %s off the blade.", doname(ingot));
+					hold_another_object(ingot, "Oops!  %s to the floor!",
+						The(aobjnam(ingot, "slip")), (const char *)0);
+				}
+				free((genericptr_t)selected);
+				update_inventory();
+			}
+		}
+	}
+}
+
 void
 dipforge(struct obj *obj)
 {
@@ -1658,6 +1850,10 @@ dipforge(struct obj *obj)
 			return;
 		}
 		reshape_brand(obj);
+		return;
+	}
+	if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD) {
+		gdcb_manage_ingots(obj);
 		return;
 	}
 	/* Dipping something you're still wearing into a forge filled with
@@ -1750,7 +1946,7 @@ result:
 				exercise(A_WIS, TRUE);
 				obj->bknown = TRUE;
 			}
-			if(obj != uwep && uwep && is_hammer(uwep) && !bimanual(uwep, youracedata)){
+			if(obj != uwep && uwep && is_hammer(uwep) && !bimanual_mon(uwep, &youmonst)){
 				smithing_object(obj);
 			}
 		}
@@ -1778,7 +1974,7 @@ result:
 
 			if (is_metallic(obj)
 				&& obj != uwep && uwep && is_hammer(uwep)
-				&& !bimanual(uwep, youracedata) && Luck >= rnd(20)
+				&& !bimanual_mon(uwep, &youmonst) && Luck >= rnd(20)
 			) {
 				if (greatest_erosion(obj) > 0) {
 					if (!Blind)
@@ -2029,6 +2225,7 @@ register struct obj *obj;
 	/* (quantity could be > 1 if merged daggers got polymorphed) */
 	if (obj->otyp == LONG_SWORD && obj->quan == 1L
 	    && u.ulevel >= 5 && !rn2(6)
+	    && !Race_if(PM_SILVERKNIGHT)
 	    && !obj->oartifact
 	    && !art_already_exists(ART_EXCALIBUR)) {
 

@@ -265,7 +265,7 @@ boolean forcecontrol;
 		return;
 	    }
 	}
-	old_light = Upolyd ? emits_light(youmonst.data) : 0;
+	old_light = uemit_light();
 
 	if (Polymorph_control || forcecontrol) {
 		do {
@@ -367,7 +367,7 @@ boolean forcecontrol;
 	if (!uarmg) selftouch("No longer petrification-resistant, you");
 
  made_change:
-	new_light = Upolyd ? emits_light(youmonst.data) : 0;
+	new_light = uemit_light();
 	if (old_light != new_light) {
 	    del_light_source((&youmonst)->light);
 	    if (new_light == 1) ++new_light;  /* otherwise it's undetectable */
@@ -591,15 +591,24 @@ int	mntmp;
 #ifdef STEED
 	if (u.usteed) {
 	    if (touch_petrifies(u.usteed->data) &&
-	    		!Stone_resistance && rnl(100) >= 33) {
-	    	char buf[BUFSZ];
+	    		!Stone_resistance
+		) {
+			if(rnl(100) >= 33) {
+				char buf[BUFSZ];
 
-	    	pline("No longer petrifying-resistant, you touch %s.",
-	    			mon_nam(u.usteed));
-	    	Sprintf(buf, "riding %s", an(u.usteed->data->mname));
-	    	instapetrify(buf);
+				pline("No longer petrifying-resistant, you touch %s.",
+						mon_nam(u.usteed));
+				Sprintf(buf, "riding %s", an(u.usteed->data->mname));
+				instapetrify(buf);
+			}
+			dismount_steed(DISMOUNT_POLY);
  	    }
-	    if (!can_ride(u.usteed)) dismount_steed(DISMOUNT_POLY);
+	    else if (!can_ride(u.usteed)) dismount_steed(DISMOUNT_POLY);
+	}
+	if(u.urider){
+		if(!generic_saddle(youracedata)){
+			rider_dismounts_you(DISMOUNT_POLY);
+		}
 	}
 #endif
 
@@ -665,14 +674,14 @@ int	mntmp;
 	    u.utrap = 0;
 	    pline_The("lava now feels soothing.");
 	}
-	if (amorphous(youmonst.data) || is_whirly(youmonst.data) || unsolid(youmonst.data)) {
+	if (amorphous_mon(&youmonst) || is_whirly(youmonst.data) || unsolid(youmonst.data)) {
 	    if (Punished) {
 		You("slip out of the iron chain.");
 		unpunish();
 	    }
 	}
 	if (u.utrap && (u.utraptype == TT_WEB || u.utraptype == TT_SALIVA || u.utraptype == TT_BEARTRAP || u.utraptype == TT_FLESH_HOOK) &&
-		(amorphous(youmonst.data) || is_whirly(youmonst.data) || unsolid(youmonst.data) ||
+		(amorphous_mon(&youmonst) || is_whirly(youmonst.data) || unsolid(youmonst.data) ||
 		  (youmonst.data->msize <= MZ_SMALL && u.utraptype == TT_BEARTRAP))) {
 	    You("are no longer stuck in the %s.",
 		    u.utraptype == TT_WEB ? "web" : u.utraptype == TT_SALIVA ? "gooey saliva" :u.utraptype == TT_FLESH_HOOK ? "flesh hook" : "bear trap");
@@ -701,7 +710,16 @@ void
 break_armor()
 {
     register struct obj *otmp;
-#define special_armor(a) (a->oartifact || is_imperial_elven_armor(a))
+#define special_armor(a) (a->oartifact || is_imperial_elven_armor(a) || is_silverknight_armor(a))
+	if((otmp = usaddle) != 0) {
+		if(!generic_saddle(youracedata)){
+			if (donning(otmp)) cancel_don();
+			Your("saddle falls off!");
+			Saddle_off();
+			dropx(otmp);
+			rider_dismounts_you(DISMOUNT_POLY);
+		}
+	}
 	if ((otmp = uarm) != 0) {
 		if(!arm_size_fits(youracedata,otmp) || !arm_match(youracedata,otmp) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();
@@ -761,10 +779,10 @@ break_armor()
     }
 	if ((otmp = uarmh) != 0){
 		boolean hat = is_hat(otmp);
-		if((!helm_match(youracedata, uarmh) && !hat)
+		if((!helm_match(&youmonst, uarmh) && !hat)
 			|| (!has_head_mon(&youmonst) && !hat)
 			|| !helm_size_fits(youracedata, uarmh)
-			|| (has_horns(youracedata) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp)))
+			|| (has_horns_mon(&youmonst) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp) || (otmp->bodytypeflag&MB_HORNS) != 0))
 			|| is_gaseous_noequip(youracedata)
 			|| noncorporeal(youracedata)
 		) {
@@ -772,12 +790,12 @@ break_armor()
 			Your("helmet falls to the %s!", surface(u.ux, u.uy));
 			(void) Helmet_off();
 			dropx(otmp);
-	    } else if (is_flimsy(otmp) && !donning(otmp) && has_horns(youracedata)) {
+	    } else if (is_flimsy(otmp) && !donning(otmp) && has_horns_mon(&youmonst) && !(otmp->bodytypeflag&MB_HORNS) && otmp->otyp != find_gcirclet()) {
 			char hornbuf[BUFSZ], yourbuf[BUFSZ];
-			/* Future possiblities: This could damage/destroy helmet */
-			Sprintf(hornbuf, "horn%s", plur(num_horns(youracedata)));
+			Sprintf(hornbuf, "horn%s", plur(num_horns(&youmonst)));
 			Your("%s %s through %s %s.", hornbuf, vtense(hornbuf, uarmh->otyp == find_gcirclet() ? "pass" : "pierce"),
 				 shk_your(yourbuf, otmp), xname(otmp));
+			otmp->bodytypeflag |= MB_HORNS; /*Has horn-holes now!*/
 		}
     }
 	if ((otmp = uarmg) != 0) {
@@ -796,7 +814,7 @@ break_armor()
 		}
 	}
 	if ((otmp = uarms) != 0) {
-		if(nohands(youracedata) || nolimbs(youracedata) || bimanual(uwep,youracedata) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
+		if(nohands(youracedata) || nolimbs(youracedata) || bimanual_mon(uwep,&youmonst) || is_gaseous_noequip(youracedata) || noncorporeal(youracedata)){
 			if (donning(otmp)) cancel_don();
 			You("can no longer hold your shield!");
 			(void) Shield_off();
@@ -869,6 +887,9 @@ rehumanize()
 	del_light_source((&youmonst)->light);
 
 	polyman("return to %s form!", urace.adj);
+
+	if(uemit_light())
+		new_light_source(LS_MONSTER, (genericptr_t)&youmonst, uemit_light());
 
 	if (u.uhp < 1) {
 	    char kbuf[256];
@@ -995,6 +1016,49 @@ domakewhisperer()
 }
 
 int
+dosummonshade()
+{
+	struct monst *mtmp;
+	int duration;
+	if (u.uen < u.ulevel) {
+	    You("concentrate but lack the energy to maintain doing so.");
+	    return MOVE_CANCELLED;
+	}
+
+	duration = ACURR(A_CHA) + u.ulevel;
+
+	if(Insight >= 20)
+		duration += ACURR(A_CHA);
+	
+	losepw(u.ulevel);
+	flags.botl = 1;
+
+	mtmp = makemon(&mons[PM_SHADE], u.ux, u.uy, MM_ADJACENTOK|NO_MINVENT|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
+	if(!mtmp) return MOVE_CANCELLED; /* pets were genocided */
+
+	mark_mon_as_summoned(mtmp, &youmonst, duration, 0);
+
+	if(mtmp->m_lev < u.ulevel) {
+		for(int i = u.ulevel - mtmp->m_lev; i > 0; i--){
+			grow_up(mtmp, (struct monst *) 0);
+			//Technically might grow into a genocided form.
+			if(DEADMONSTER(mtmp))
+				return MOVE_CANCELLED;
+		}
+	}
+	mtmp->mspec_used = 0;
+	if(mtmp->m_lev) mtmp->mhpmax = hd_size(mtmp->data)*(mtmp->m_lev-1)+rnd(hd_size(mtmp->data));
+	mtmp->mhp = mtmp->mhpmax;
+
+	initedog(mtmp);
+	EDOG(mtmp)->loyal = TRUE;
+	EDOG(mtmp)->waspeaceful = TRUE;
+	mtmp->mpeacetime = 0;
+
+	return MOVE_STANDARD;
+}
+
+int
 dokiai()
 {
 	const char *petname;
@@ -1074,7 +1138,13 @@ dospit()
 	if (!getdir((char *)0))
 		return MOVE_CANCELLED;
 	else {
-		xspity(&youmonst, attacktype_fordmg(youracedata, AT_SPIT, AD_ANY), 0, 0);
+		if(check_mutation(TT_BLINDING_VENOM)){
+			struct attack spt = { AT_SPIT, AD_BLND, 0, 0 };
+			xspity(&youmonst, &spt, 0, 0);
+		}
+		else {
+			xspity(&youmonst, attacktype_fordmg(youracedata, AT_SPIT, AD_ANY), 0, 0);
+		}
 	}
 	return MOVE_STANDARD;
 }
@@ -1309,7 +1379,7 @@ dovampminion()
 		struct monst * mtmp = revive(corpse, FALSE);
 		if (mtmp) {
 			set_template(mtmp, VAMPIRIC);
-			tamedog_core(mtmp, (struct obj *)0, TRUE);
+			tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED);
 			losexp("donating blood", TRUE, TRUE, FALSE);
 		}
 		else {
@@ -1352,40 +1422,98 @@ dotinker()
 }
 
 int
-dogaze()
+dogaze(struct monst *mtmp)
 {
-	register struct monst *mtmp;
+	boolean pre_targeted = mtmp != NULL;
+	boolean attack_gazes = !pre_targeted || (u.uattked && (attacktype(youracedata, AT_GAZE) || (!Upolyd && check_vampire(VAMPIRE_GAZE)) || (!Upolyd && TIEFLING_GAZE)) );
 	int result = 0;
 
 	if (Blind) {
-		You_cant("see anything to gaze at.");
+		if(!pre_targeted) You_cant("see anything to gaze at.");
 		return MOVE_CANCELLED;
 	}
-	if (u.uen < 15) {
-		You("lack the energy to use your special gaze!");
-		return MOVE_CANCELLED;
-	}
-	if (!throwgaze()) {
+	if (!pre_targeted && !throwgaze()) {
 		/* player cancelled targetting or picked a not-allowed location */
 		return MOVE_CANCELLED;
 	}
 	else {
-		losepw(15);
-		flags.botl = 1;
-
-		if ((mtmp = m_at(u.dx, u.dy)) && canseemon(mtmp)) {
+		if ((pre_targeted || (mtmp = m_at(u.dx, u.dy))) && canseemon(mtmp)) {
 			struct attack *a;
 
-			for (a = &youracedata->mattk[0]; a < &youracedata->mattk[NATTK]; a++){
-				if (a->aatyp == AT_GAZE) 
+			if(attack_gazes) for (a = &youracedata->mattk[0]; a < &youracedata->mattk[NATTK] && !DEADMONSTER(mtmp); a++){
+				if (a->aatyp == AT_GAZE || a->aatyp == AT_WDGZ)
 					result |= xgazey(&youmonst, mtmp, a, -1);
+				if(DEADMONSTER(mtmp)){
+					return MOVE_STANDARD;
+				}
 			}
-			if(!Upolyd && check_vampire(VAMPIRE_GAZE)){
+			if(attack_gazes && !Upolyd && check_vampire(VAMPIRE_GAZE)){
 				struct attack gaze = {AT_GAZE, AD_PLYS, 1, 4};
 				result |= xgazey(&youmonst, mtmp, &gaze, -1);
 			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(hates_unholy_mon(mtmp) && check_mutation(TT_HATEFUL_VISION)){
+				struct attack gaze = {AT_GAZE, AD_STDY, 1, 9};
+				result |= xgazey(&youmonst, mtmp, &gaze, -1);
+			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(check_mutation(TT_CANCEL_GAZE)){
+				struct attack gaze = {AT_GAZE, AD_CNCL, 2, 6};
+				result |= xgazey(&youmonst, mtmp, &gaze, -1);
+			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(attack_gazes && check_mutation(TT_BEHOLDER)){
+				struct attack gaze = {AT_GAZE, AD_RGAZ, 4, 6};
+				for(int i = 0; i < 3; i++){
+					result |= xgazey(&youmonst, mtmp, &gaze, -1);
+					if(DEADMONSTER(mtmp)){
+						return MOVE_STANDARD;
+					}
+				}
+			}
+			if(attack_gazes && check_mutation(TT_MESMERIZING_GAZE) && !mindless_mon(mtmp) && !resist(mtmp, 0, 0, FALSE)
+				&& m_canseeu(mtmp)
+			){
+				int dx = u.ux - mtmp->mx;
+				int dy = u.uy - mtmp->my;
+				if(canseemon(mtmp))
+					pline("%s stumbles towards you, mesmerized.", Monnam(mtmp));
+				mhurtle(mtmp, sgn(dx), sgn(dy), 1, TRUE);
+				result |= MM_HIT;
+			}
+			if(DEADMONSTER(mtmp)){
+				return MOVE_STANDARD;
+			}
+			if(!mindless_mon(mtmp) && (check_mutation(TT_ODD_EYES_1) || check_mutation(TT_ODD_EYES_2) || check_mutation(TT_ODD_EYES_3) || check_mutation(TT_MANY_ODD_EYES))){
+				if(mtmp->encouraged > -6){
+					mtmp->encouraged--;
+					//pline("%s seems less confident than before.", Monnam(mtmp));
+					result |= MM_HIT;
+				}
+			}
+			if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
+				if(!((nonliving(mtmp->data) && !is_android(mtmp->data)) 
+				  || has_template(mtmp, TOMB_HERD) /*not a statue-piloting thingy */
+				  || is_primordial(mtmp->data)
+				  || is_alienist(mtmp->data)
+				  || is_great_old_one(mtmp->data)
+				  || mtmp->encouraged < -1*Insight/7
+				  || (uarmh && FacelessHelm(uarmh))
+				  || (uarmc && FacelessCloak(uarmc))
+				 )
+				){
+					mtmp->encouraged--;
+					result |= MM_HIT;
+				}
+			}
 
-			if (!result) {
+			if (!pre_targeted && !result) {
 				pline("%s seemed not to notice.", Monnam(mtmp));
 			}
 
@@ -2232,6 +2360,16 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 		"tympanum",			"tympana",			"haustellum",	"brain",
 		"creak",		"tear",					"throat",		"spiracles",
 		"wing"},
+	*silverknight_parts[] = { 
+		"arm",				"eye",				"face",			"finger-claw",
+		"claw tip",			"foot", 			"hand", 		"handed", 
+		"head", 			"leg",				"light headed", "neck", 
+		"notochord", 		"toe-claw",			"setae", 		"haemolymph", 
+		"spriacle", 		"antenna", 			"stomach",		"dorsal vessel",
+		"skin",				"flesh",			"pulse",		"bones",
+		"tympanum",			"tympana",			"haustellum",	"brain",
+		"creak",			"crack",			"throat",		"spiracles",
+		"wing"},
 	*bird_parts[] = { 
 		"wing", 			"eye", 				"face", 		"wing", 
 		"wing tip",			"foot", 			"wing", 		"winged", 
@@ -2450,7 +2588,7 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	if (mptr->mtyp == PM_JELLYFISH && (part == ARM || part == FINGER ||
 	    part == HAND || part == FOOT || part == TOE))
 	    return "tentacle";
-	if (mptr->mtyp == PM_FLOATING_EYE && part == EYE)
+	if (mptr->mtyp == PM_FLOATING_EYE && part == EYE_BP)
 	    return "cornea";
 	if (mptr->mtyp == PM_SUNFLOWER || mptr->mtyp == PM_MIRRORED_MOONFLOWER){
 		if(part == HEAD)
@@ -2478,7 +2616,7 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 				return "nightmarish flesh mass";
 			if(part == FACE)
 				return "gnawing mouths";
-			if(part == EYE)
+			if(part == EYE_BP)
 				return "winking eye";
 			if(part == BLOOD)
 				return "seething blood";
@@ -2489,7 +2627,7 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 				return "skin";
 			if(part == EARS)
 				return "skin";
-			if(part == EYE)
+			if(part == EYE_BP)
 				return "eye";
 		}
 	}
@@ -2525,6 +2663,8 @@ ptrbodypart(struct permonst *mptr, int part, struct monst *mon)
 	    return uvuudaum_parts[part];
 	if (mptr->mtyp == PM_DRACAE_ELADRIN)
 	    return dracae_parts[part];
+	if (mptr->mtyp == PM_SILVERKNIGHT)
+	    return silverknight_parts[part];
 	if (mptr->mtyp == PM_LUMINESCENT_SWARM)
 	    return luminous_parts[part];
 

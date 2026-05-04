@@ -683,6 +683,17 @@ struct monst *mtmp;
 	    yelp_verb = "cough";
 		yelp_modifier = " paroxysmally";
 	    break;
+	case MS_CUSS:
+	    yelp_verb = "curse";
+		break;
+	case MS_HUMANOID:
+	case MS_GUARDIAN:
+	case MS_SELL:
+	case MS_ORACLE:
+	case MS_SONG:
+		yelp_verb = "yelp";
+		break;
+	
     }
     if (yelp_verb) {
 	pline("%s %s%s!", Monnam(mtmp), vtense((char *)0, yelp_verb), yelp_modifier ? yelp_modifier : "");
@@ -2655,7 +2666,10 @@ humanoid_sound:
 					break;
 					case 16:
 						//SCP-2771: Border Duty
-						pline_msg = "points impatiently forward with index and middle finger extended.";
+						if(ptr->mtyp == PM_ITINERANT_PRIESTESS)
+							pline_msg = "points impatiently forward with index and middle finger extended.";
+						else
+							verbl_msg = "Ia! Shub-Nugganoth!";
 					break;
 				}
 			}
@@ -2749,6 +2763,7 @@ humanoid_sound:
 					Sprintf(msgbuff, talkabt, !rn2(4) ? "birth and death" : !rn2(3) ? "the changing seasons of life" : rn2(10) ? (!rn2(4) ? "the stars beyond the rains of spring" : !rn2(3) ? "the stars above the green summer canopy" : !rn2(4) ? "stars among the autumn leaves" : "stars seen past the barren branches") : "secret rebirths");
 					pline_msg = msgbuff;
 				break;
+				case PM_FORMIAN:
 				case PM_FORMIAN_CRUSHER:
 				case PM_FORMIAN_TASKMASTER:
 					pline_msg = "chitters.";
@@ -2779,6 +2794,10 @@ humanoid_sound:
 						}
 						else if(Race_if(PM_ELF) && !quest_status.fakeleader_greet_2){
 							verbl_msg = "I was able to find the armor you talked about. Do you... still remember it?";
+							quest_status.fakeleader_greet_2 = TRUE;
+						}
+						else if(flags.aasimar_type == AASIMAR_TYPE_SERAPH && !quest_status.fakeleader_greet_2){
+							verbl_msg = "I was able to find one of the eyes you were searching for.";
 							quest_status.fakeleader_greet_2 = TRUE;
 						}
 						else {
@@ -3834,6 +3853,8 @@ int dz;
 #ifdef STEED
     if (u.usteed && u.dz > 0)
 	return (domonnoise(u.usteed, TRUE)) ? MOVE_STANDARD : MOVE_INSTANT;
+	else if (u.urider && u.dz < 0)
+	return (domonnoise(u.urider, TRUE)) ? MOVE_STANDARD : MOVE_INSTANT;
 #endif
 	if (u.dz) {
 		struct engr *ep = get_head_engr();
@@ -6635,7 +6656,7 @@ int tx,ty;
 	case NUMINA:{
 		//Spirit requires that its seal be drawn by a level 30 Binder.
 		//There is no binding period.
-		if(u.ulevel == 30 && Role_if(PM_EXILE)){
+		if(u.ulevel >= 30 && Role_if(PM_EXILE)){
 			int skill;
 			You_hear("a tumultuous babble of voices.");
 			pline("So insistent are they that even the uninitiated can hear,");
@@ -6956,7 +6977,7 @@ int floorID;
 
 	/* special cases: Numina, Council of Elements */
 	if (floorID == NUMINA) {
-		if (u.ulevel == 30 && Role_if(PM_EXILE)){
+		if (u.ulevel >= 30 && Role_if(PM_EXILE)){
 			int skill;
 			for (skill = 0; skill < P_NUM_SKILLS; skill++) {
 				if (OLD_P_SKILL(skill) < P_UNSKILLED) OLD_P_SKILL(skill) = P_UNSKILLED;

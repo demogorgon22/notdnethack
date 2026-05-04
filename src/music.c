@@ -696,6 +696,17 @@ struct obj * instr;
 		alev = P_SKILL(P_MUSICALIZE) - P_UNSKILLED + 1;
 		alev = ( (alev * ACURR(A_CHA)) + ACURR(A_DEX) ) / 3;
 	}
+	if(Mumbling_Mouths){
+		static long lastmessage = 0;
+		if(monstermoves > lastmessage + 10 && showmsg){
+			if(Insight < 21)
+				Your("voice seems to harmonize with itself!");
+			else
+				Your("mouths leave off their mumbling and lift their voices in perfect harmony!");
+		}
+		lastmessage = monstermoves;
+		alev += ( (6 * ACURR(A_CHA)) + ACURR(A_WIS) ) / 3;
+	}
 	// blessed/cursed instruments make it a little easier/harder to 'cast' the song
 	alev += bcsign(instr)*5;
 	// account for pets that can sing with the bard's song

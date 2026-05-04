@@ -38,8 +38,8 @@ static NEARDATA const char c_armor[]  = "armor",
 			   c_that_[]  = "that";
 
 static NEARDATA const long takeoff_order[] = { WORN_BLINDF, W_WEP,
-	WORN_SHIELD, WORN_GLOVES, LEFT_RING, RIGHT_RING, WORN_CLOAK,
-	WORN_HELMET, WORN_AMUL, WORN_BELT, WORN_ARMOR,
+	WORN_SHIELD, WORN_GLOVES, LEFT_RING, RIGHT_RING, WORN_SADDLE,
+	WORN_CLOAK, WORN_HELMET, WORN_AMUL, WORN_BELT, WORN_ARMOR,
 #ifdef TOURIST
 	WORN_SHIRT,
 #endif
@@ -94,6 +94,9 @@ Boots_on()
     long oldprop;
     long oldprop_spd;
     if (!uarmf) return 0;
+	int otyp = uarmf->otyp;
+	if(otyp == SILVERKNIGHT_BOOTS && uarmf->ovar1_silverknight_otyp)
+		otyp = uarmf->ovar1_silverknight_otyp;
 	adj_abon(uarmf, uarmf->spe);
  	if(uarmf->otyp == STILETTOS) {
 		if(!Flying && !Levitation) pline("%s are stylish, but not very practical to fight in.", The(xname(uarmf)));
@@ -104,10 +107,10 @@ Boots_on()
 	else if(uarmf->otyp == WIND_AND_FIRE_WHEELS){
 		if(!Flying && !Levitation) pline("You've heard myths of a god riding these through the sky, but this doesn't seem very practical.");
 	}
-	oldprop = (u.uprops[objects[uarmf->otyp].oc_oprop[0]].extrinsic & ~WORN_BOOTS);
+	oldprop = (u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_BOOTS);
 	oldprop_spd = (u.uprops[FAST].extrinsic & ~WORN_BOOTS);
 
-    switch(uarmf->otyp) {
+    switch(otyp) {
 	case LOW_BOOTS:
 	case SHOES:
 	case ARMORED_BOOTS:
@@ -159,7 +162,7 @@ Boots_on()
 			spoteffects(FALSE);
 		}
 		break;
-	default: impossible(unknown_type, c_boots, uarmf->otyp);
+	default: impossible(unknown_type, c_boots, otyp);
     }
 	if(check_oprop(uarmf, OPROP_CURS)){
 		if (Blind)
@@ -176,6 +179,8 @@ int
 Boots_off()
 {
     int otyp = uarmf->otyp;
+	if(otyp == SILVERKNIGHT_BOOTS && uarmf->ovar1_silverknight_otyp)
+		otyp = uarmf->ovar1_silverknight_otyp;
     long oldprop = u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_BOOTS;
     long oldprop_spd = u.uprops[FAST].extrinsic & WORN_BOOTS;
 
@@ -607,8 +612,8 @@ Helmet_off()
 	if (Blind) {
 		if (was_blind) {
 			/* "still cannot see" needs the helmet to possibly have been the cause of your blindness */
-			if (((otmp->otyp == CRYSTAL_HELM || otmp->otyp == FACELESS_HOOD) && is_opaque(otmp)) ||
-				(otmp->otyp == PLASTEEL_HELM && is_opaque(otmp) && otmp->obj_material != objects[otmp->otyp].oc_material))
+			if (((otmp->otyp == CRYSTAL_HELM) && is_opaque(otmp)) ||
+				((otmp->otyp == PLASTEEL_HELM || otmp->otyp == FACELESS_HOOD) && is_opaque(otmp) && otmp->obj_material != objects[otmp->otyp].oc_material))
 				You("still cannot see.");
 		}
 		else {
@@ -637,11 +642,14 @@ Gloves_on()
 {
     long oldprop;
     if (!uarmg) return 0;
+	int otyp = uarmg->otyp;
+	if(otyp == SILVERKNIGHT_GAUNTLETS && uarmg->ovar1_silverknight_otyp)
+		otyp = uarmg->ovar1_silverknight_otyp;
     oldprop =
-	u.uprops[objects[uarmg->otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
+	u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
 
 	adj_abon(uarmg, uarmg->spe);
-    switch(uarmg->otyp) {
+    switch(otyp) {
 	case GLOVES:
 	case LONG_GLOVES:
 	case HIGH_ELVEN_GAUNTLETS:
@@ -666,7 +674,7 @@ Gloves_on()
 		break;
 	case GAUNTLETS_OF_DEXTERITY:
 		break;
-	default: impossible(unknown_type, c_gloves, uarmg->otyp);
+	default: impossible(unknown_type, c_gloves, otyp);
     }
 
 	if(check_oprop(uarmg, OPROP_CURS)){
@@ -684,13 +692,16 @@ Gloves_on()
 int
 Gloves_off()
 {
+	int otyp = uarmg->otyp;
+	if(otyp == SILVERKNIGHT_GAUNTLETS && uarmg->ovar1_silverknight_otyp)
+		otyp = uarmg->ovar1_silverknight_otyp;
     long oldprop =
-	u.uprops[objects[uarmg->otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
+	u.uprops[objects[otyp].oc_oprop[0]].extrinsic & ~WORN_GLOVES;
 
 	if (!cancelled_don) adj_abon(uarmg, -uarmg->spe);
     takeoff_mask &= ~W_ARMG;
 
-    switch(uarmg->otyp) {
+    switch(otyp) {
 	case GLOVES:
 	case LONG_GLOVES:
 	case HIGH_ELVEN_GAUNTLETS:
@@ -715,7 +726,7 @@ Gloves_off()
 	    break;
 	case GAUNTLETS_OF_DEXTERITY:
 	    break;
-	default: impossible(unknown_type, c_gloves, uarmg->otyp);
+	default: impossible(unknown_type, c_gloves, otyp);
     }
     setworn((struct obj *)0, W_ARMG);
     cancelled_don = FALSE;
@@ -1487,6 +1498,9 @@ Belt_on()
 			  Tobjnam(ubelt, "glow"), hcolor(NH_BLACK));
 		curse(ubelt);
 	}
+	if(ubelt->otyp == BELT_OF_POWER || ubelt->otyp == BELT_OF_WEAKNESS){
+		flags.botl = 1;
+	}
 }
 
 void
@@ -1498,7 +1512,38 @@ Belt_off()
 		impossible("Belt_off() was called, but no belt is worn.");
 		return;
 	}
+	int a_pre = ACURR(A_STR);
+	int typ = ubelt->otyp;
 	setworn((struct obj *)0, W_BELT);
+	if(a_pre != ACURR(A_STR)){
+		makeknown(typ);
+		flags.botl = 1;
+	}
+}
+
+void
+Saddle_on()
+{
+	if (!usaddle) return;
+	if(check_oprop(usaddle, OPROP_CURS)){
+		if (Blind)
+		pline("%s for a moment.", Tobjnam(usaddle, "vibrate"));
+		else
+		pline("%s %s for a moment.",
+			  Tobjnam(usaddle, "glow"), hcolor(NH_BLACK));
+		curse(usaddle);
+	}
+}
+
+void
+Saddle_off()
+{
+	takeoff_mask &= ~W_SADDLE;
+	if(!usaddle){
+		impossible("Saddle_off() was called, but no saddle is worn.");
+		return;
+	}
+	setworn((struct obj *)0, W_SADDLE);
 }
 
 /* called in main to set intrinsics of worn start-up items */
@@ -1667,6 +1712,7 @@ doremring()
 	MOREACC(uamul);
 	MOREACC(ublindf);
 	MOREACC(ubelt);
+	MOREACC(usaddle);
 
 	if(!Accessories) {
 		pline("Not wearing any accessories.%s", (iflags.cmdassist &&
@@ -1681,7 +1727,7 @@ doremring()
 #endif
 	    ) otmp = getobj(accessories, "remove");
 	if(!otmp) return MOVE_CANCELLED;
-	if(!(otmp->owornmask & (W_RING | W_AMUL | W_TOOL | W_BELT))) {
+	if(!(otmp->owornmask & (W_RING | W_AMUL | W_SADDLE | W_TOOL | W_BELT))) {
 		You("are not wearing that.");
 		return MOVE_CANCELLED;
 	}
@@ -1708,6 +1754,9 @@ doremring()
 		off_msg(otmp);
 	} else if (otmp == ublindf) {
 		Blindf_off(otmp);	/* does its own off_msg */
+	} else if (otmp == usaddle) {
+		Saddle_off();
+		off_msg(otmp);
 	} else {
 		impossible("removing strange accessory?");
 	}
@@ -1844,7 +1893,7 @@ boolean noisy;
 		return 0;
     }
 
-    if (welded(uwep) && bimanual(uwep,youracedata) &&
+    if (welded(uwep) && bimanual_mon(uwep,&youmonst) &&
 	    (is_suit(otmp)
 			|| is_shirt(otmp)
 	)) {
@@ -1863,7 +1912,7 @@ boolean noisy;
 		if (uarmh) {
 			if (noisy) already_wearing(an(c_helmet));
 			err++;
-		} else if (!helm_match(youracedata, otmp)){
+		} else if (!helm_match(&youmonst, otmp)){
 			/* (flimsy exception matches polyself handling), you can even just set a hat on top of your body (no head requried)*/
 			boolean hat = is_hat(otmp);
 			if(!has_head_mon(&youmonst) && !hat){
@@ -1874,14 +1923,14 @@ boolean noisy;
 				if (noisy)
 				You("can't wear a helm or hat.");
 				err++;
-			} else if(!helm_match(youracedata,otmp) && !hat){
+			} else if(!helm_match(&youmonst,otmp) && !hat){
 				if (noisy)
 				pline_The("%s is the wrong shape for your head.", c_helmet);
 				err++;
-			} else if(has_horns(youracedata) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp))){
+			} else if(has_horns_mon(&youmonst) && !(otmp->otyp == find_gcirclet() || is_flimsy(otmp) || (otmp->bodytypeflag&MB_HORNS) != 0)){
 				if (noisy)
 				pline_The("%s won't fit over your horn%s.",
-					  c_helmet, plur(num_horns(youracedata)));
+					  c_helmet, plur(num_horns(&youmonst)));
 				err++;
 			} else {
 				if (noisy)
@@ -1900,7 +1949,7 @@ boolean noisy;
 		if (uarms) {
 			if (noisy) already_wearing(an(c_shield));
 			err++;
-		} else if (uwep && bimanual(uwep,youracedata)) {
+		} else if (uwep && bimanual_mon(uwep,&youmonst)) {
 			const char *term = is_sword(uwep) ? c_sword : (uwep->otyp == BATTLE_AXE) ? c_axe : c_weapon;
 			if (noisy) 
 			You("cannot wear a shield while wielding %s in both hands.", an(term));
@@ -1974,6 +2023,9 @@ boolean noisy;
 		} else if (ubelt && ubelt->cursed && !Weldproof) {
 			if (noisy) already_wearing("a belt");
 			err++;
+		} else if (usaddle && usaddle->cursed && !Weldproof) {
+			if (noisy) already_wearing("a saddle");
+			err++;
 		} else if(youracedata->msize != otmp->objsize){
 			if (noisy)
 			pline_The("%s is the wrong size for you.", c_shirt);
@@ -1987,6 +2039,9 @@ boolean noisy;
 	} else if (is_cloak(otmp)) {
 		if (uarmc) {
 			if (noisy) already_wearing(an(cloak_simple_name(uarmc)));
+			err++;
+		} else if (usaddle && usaddle->cursed && !Weldproof) {
+			if (noisy) already_wearing("a saddle");
 			err++;
 		} else if(abs(otmp->objsize - youracedata->msize) > 1){
 			if (noisy)
@@ -2003,6 +2058,9 @@ boolean noisy;
 			err++;
 		} else if (ubelt && ubelt->cursed && !Weldproof) {
 			if (noisy) already_wearing("a belt");
+			err++;
+		} else if (usaddle && usaddle->cursed && !Weldproof) {
+			if (noisy) already_wearing("a saddle");
 			err++;
 		} else if(!arm_size_fits(youracedata,otmp)){
 			if (noisy)
@@ -2126,15 +2184,27 @@ doputon()
 		You("have no free %s to put on accessories with!", body_part(HAND));
 		return MOVE_CANCELLED;
 	}
-
-	if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf) {
-		Your("%s%s are full, and you're already wearing a belt, an amulet, and %s.",
-			humanoid(youracedata) ? "ring-" : "",
-			makeplural(body_part(FINGER)),
-			(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
-			: (ublindf->otyp==SOUL_LENS) ? "a lens"
-			: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
-		return MOVE_CANCELLED;
+	if(generic_saddle(youracedata)){
+		if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf && usaddle) {
+			Your("%s%s are full, and you're already wearing a saddle, a belt, an amulet, and %s.",
+				humanoid(youracedata) ? "ring-" : "",
+				makeplural(body_part(FINGER)),
+				(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
+				: (ublindf->otyp==SOUL_LENS) ? "a lens"
+				: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
+			return MOVE_CANCELLED;
+		}
+	}
+	else {
+		if(uleft && (uright || (uarmg && uarmg->oartifact == ART_CLAWS_OF_THE_REVENANCER)) && uamul && ubelt && ublindf) {
+			Your("%s%s are full, and you're already wearing a belt, an amulet, and %s.",
+				humanoid(youracedata) ? "ring-" : "",
+				makeplural(body_part(FINGER)),
+				(ublindf->otyp==LENSES || ublindf->otyp==SUNGLASSES) ? "some lenses"
+				: (ublindf->otyp==SOUL_LENS) ? "a lens"
+				: (ublindf->otyp==MASK || ublindf->otyp==LIVING_MASK || ublindf->otyp==R_LYEHIAN_FACEPLATE) ? "a mask" : "a blindfold");
+			return MOVE_CANCELLED;
+		}
 	}
 	otmp = getobj(accessories, "put on");
 	if(!otmp) return MOVE_CANCELLED;
@@ -2190,7 +2260,7 @@ doputon()
 		    You("cannot remove your gloves to put on the ring.");
 			return MOVE_CANCELLED;
 		}
-		if (welded(uwep) && bimanual(uwep,youracedata)) {
+		if (welded(uwep) && bimanual_mon(uwep,&youmonst)) {
 			/* welded will set bknown */
 	    You("cannot free your weapon hands to put on the ring.");
 			return MOVE_CANCELLED;
@@ -2229,8 +2299,24 @@ doputon()
 		}
 		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
 		    return MOVE_STANDARD;
+		int a_pre = ACURR(A_STR);
 		setworn(otmp, W_BELT);
+		if(a_pre != ACURR(A_STR))
+			makeknown(otmp->otyp);
 		Belt_on();
+	} else if(otmp->otyp == SADDLE) {
+		if(usaddle) {
+			already_wearing("a saddle");
+			return MOVE_CANCELLED;
+		}
+		if(!generic_saddle(youracedata)){
+			You_cant("wear that!");
+			return MOVE_CANCELLED;
+		}
+		if (otmp->oartifact && !touch_artifact(otmp, &youmonst, FALSE))
+		    return MOVE_STANDARD;
+		setworn(otmp, W_SADDLE);
+		Saddle_on();
 	} else {	/* it's a blindfold, towel, or lenses */
 		if (ublindf) {
 			if (ublindf->otyp == TOWEL)
@@ -2300,7 +2386,7 @@ doputon()
 int arm_total_bonus(otmp)
 struct obj * otmp;
 {
-	return arm_ac_bonus(otmp) + arm_dr_bonus(otmp);
+	return arm_ac_bonus(otmp) + arm_dr_bonus(otmp, 0);
 }
 
 int
@@ -2474,8 +2560,7 @@ struct obj * otmp;
 }
 
 int
-arm_dr_bonus(otmp)
-struct obj * otmp;
+arm_dr_bonus(struct obj * otmp, int slot)
 {
 	/* no armor, no defense! */
 	if (!otmp)
@@ -2513,6 +2598,10 @@ struct obj * otmp;
 	if (otmp->otyp == find_gcirclet()) def /= 2;
 	// combat boots
 	if (otmp->otyp == find_cboots()) def += 1;
+	// bares the shoulders
+	if (slot && slot == UPPER_TORSO_DR && check_omod(otmp, OMOD_SHOULDER_BARING)){
+		def = (def+3)/4;
+	}
 
 
 	// add enchantment
@@ -2577,10 +2666,10 @@ struct obj * otmp;
 }
 
 int
-properties_dr(struct obj *arm, int agralign, int agrmoral, int agrimpure, int agrrot)
+properties_dr(struct obj *arm, int slot, int agralign, int agrmoral, int agrimpure, int agrrot)
 {
 	int bonus = 0;
-	int base = arm_dr_bonus(arm);
+	int base = arm_dr_bonus(arm, slot);
 	if(is_harmonium_armor(arm)){
 		if(agralign == 0) bonus += 1;
 		else if(agralign < 0) bonus += 2;
@@ -2611,6 +2700,18 @@ properties_dr(struct obj *arm, int agralign, int agrmoral, int agrimpure, int ag
 		else if(agrmoral < 0) bonus -= base/2+1;
 	}
 	return bonus;
+}
+
+int
+properties_ac(struct obj *arm, int agralign, int agrmoral, int agrimpure, int agrrot)
+{
+	int mod = 0;
+	if(is_silverknight_armor(arm)){
+		if(agrmoral < 0 && arm->blessed) mod -= 3;
+		if(agrrot > 0) mod -= 2;
+		if(agrimpure > 0) mod -= 1;
+	}
+	return mod;
 }
 
 #ifdef OVL0
@@ -2757,6 +2858,10 @@ base_uac()
 	if(Race_if(PM_ETHEREALOID)) uac -= u.ulevel;	
 	if(Race_if(PM_SNOW_CLOUD) && !Upolyd) uac -= u.ulevel;	
 	if(u.utats & TAT_BULWARK) uac -= 1;
+	if(check_mutation(TT_NA_AURA)) uac -= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
+	if(flags.aasimar_type){
+		uac -= u.ulevel >= 21 ? 3 : u.ulevel >= 7 ? 2 : 1;
+	}
 	uac -= u.uacinc;
 	uac -= u.spiritAC;
 	if(u.uuur_duration)
@@ -2938,6 +3043,8 @@ find_ac()
 	if(uclockwork) uac -= (u.clockworkUpgrades&ARMOR_PLATING) ? 5 : 2; /*armor bonus for automata*/
 	if(uclockwork && u.clk_material == MITHRIL) uac -= 3;
 	if(uandroid) uac -= 6; /*armor bonus for androids*/
+	if(check_mutation(TT_NA_SCALES)) uac -= u.ulevel >= 30 ? 6 : (u.ulevel >= 14 ? 3 : 1);
+	if(check_mutation(TT_SCALES) || check_mutation(TT_CHITIN)) uac -= u.ulevel >= 30 ? 3 : u.ulevel >= 14 ? 2 : 1;
 	if (uac < -128) uac = -128;	/* u.uac is an schar */
 	if(uac != u.uac){
 		u.uac = uac;
@@ -2989,6 +3096,9 @@ int base_nat_udr()
 	if(uclockwork && u.clockworkUpgrades&ARMOR_PLATING) udr += 4; /*armor bonus for automata (stacks with the 1 natural DR)*/
 	if(uclockwork && u.clk_material == MITHRIL) udr += 3;
 
+	if(check_mutation(TT_DR_SCALES)) udr += u.ulevel >= 30 ? 9 : (u.ulevel >= 14 ? 6 : 3); /*natural armor scales*/
+	if(check_mutation(TT_SCALES) || check_mutation(TT_CHITIN)) udr += u.ulevel >= 30 ? 6 : u.ulevel >= 14 ? 3 : 1;
+	
 	if (udr > 127) udr = 127;	/* u.uac is an schar */
 	return udr;
 }
@@ -3021,6 +3131,8 @@ int base_udr()
 			udr -= (discomfort * delta)/100;
 		}
 	}
+
+	if(check_mutation(TT_DR_AURA)) udr += u.ulevel >= 30 ? 6 : (u.ulevel >= 14 ? 3 : 1);
 
 	if (udr > 127) udr = 127;
 	if (udr < 0) udr = 0;
@@ -3114,11 +3226,14 @@ uchar aatyp;
 			if((objects[uarmor[i]->otyp].oc_dtyp & slot)) {
 				if(depth && higher_depth(uarmor[i]->owornmask, depth))
 					continue;
-				arm_udr += arm_dr_bonus(uarmor[i]);
-				if (magr) arm_udr += properties_dr(uarmor[i], agralign, agrmoral, agrimpure, agrrot);
+				arm_udr += arm_dr_bonus(uarmor[i], slot);
+				if (magr) arm_udr += properties_dr(uarmor[i], slot, agralign, agrmoral, agrimpure, agrrot);
+				if (slot == HEAD_DR && uarmor[i]->bodytypeflag&MB_HORNS && !has_horns_mon(&youmonst)){
+					arm_udr -= 1;
+				}
 			}
 			else if(uarmor[i]->otyp == CLOAK_OF_PROTECTION){
-				arm_udr += arm_dr_bonus(uarmor[i])/2; //Half protection in other slots (skin depth)
+				arm_udr += arm_dr_bonus(uarmor[i], slot)/2; //Half protection in other slots (skin depth)
 			}
 		}
 	}
@@ -3150,6 +3265,43 @@ uchar aatyp;
 		case HEAD_DR:        nat_udr += youracedata->hdr; break;
 		case LEG_DR:         nat_udr += youracedata->fdr; break;
 		case ARM_DR:         nat_udr += youracedata->gdr; break;
+		}
+	}
+	/* Aasimar holy auras */
+	if(flags.aasimar_type && u.ulevel >= 7){
+		switch(flags.aasimar_type){
+			case AASIMAR_TYPE_ARCHON:
+			case AASIMAR_TYPE_SERAPH:
+				if(slot == HEAD_DR)
+					bas_udr += u.ulevel >= 21 ? 7 : 3;
+			break;
+			case AASIMAR_TYPE_DEVA:
+				if(slot == UPPER_TORSO_DR)
+					bas_udr += u.ulevel >= 24 ? 4 : 2;
+				else if(slot&(HEAD_DR|LOWER_TORSO_DR))
+					bas_udr += u.ulevel >= 24 ? 2 : 1;
+			break;
+			case AASIMAR_TYPE_ELADRIN:
+				bas_udr += u.ulevel >= 30 ? 3 : 1;
+			break;
+			case AASIMAR_TYPE_IKSH_NA:
+				bas_udr += u.ulevel >= 30 ? 2 : 1;
+			break;
+			case AASIMAR_TYPE_CLOUDFACE:
+				if(slot == HEAD_DR)
+					bas_udr += u.ulevel >= 21 ? 7 : 3;
+				if(Insight >= 21 && slot&(UPPER_TORSO_DR|ARM_DR))
+					bas_udr += 3;
+			break;
+			case AASIMAR_TYPE_PRIMINAL:
+				if(slot == UPPER_TORSO_DR)
+					bas_udr += u.ulevel >= 24 ? 4 : 2;
+				else if(slot&(HEAD_DR|LOWER_TORSO_DR))
+					bas_udr += u.ulevel >= 24 ? 2 : 1;
+				nat_udr += u.ulevel/10;
+				if(check_mutation(AAT_PRIMINAL))
+					nat_udr += (u.ulevel+5)/10 + 1;
+			break;
 		}
 	}
 	/* Wearing the Shard from Morgoth's Crown adds +3 magical DR to arms and head (in addition to its +3 to all slots) */
@@ -3281,7 +3433,7 @@ glibr()
 	const char *otherwep = 0;
 
 	leftfall = (uleft && !uleft->cursed && !Weldproof &&
-		    (!uwep || !welded(uwep) || !bimanual(uwep,youracedata)));
+		    (!uwep || !welded(uwep) || !bimanual_mon(uwep,&youmonst)));
 	rightfall = (uright && !uright->cursed && !Weldproof && (!welded(uwep)));
 	if (!uarmg && (leftfall || rightfall) && !nolimbs(youracedata)) {
 		/* changed so cursed rings don't fall off, GAN 10/30/86 */
@@ -3440,7 +3592,7 @@ int otyp;
 	if (nolimbs(youracedata) &&
 		uamul && uamul->otyp == AMULET_OF_UNCHANGING && uamul->cursed && !Weldproof)
 	    return uamul;
-	if (welded(uwep) && (ring == uright || bimanual(uwep,youracedata))) return uwep;
+	if (welded(uwep) && (ring == uright || bimanual_mon(uwep,&youmonst))) return uwep;
 	if (uarmg && uarmg->cursed && !Weldproof) return uarmg;
 	if (ring->cursed && !Weldproof) return ring;
     }
@@ -3479,7 +3631,7 @@ register struct obj *otmp;
 		return 0;
 	    }
 	    why = 0;	/* the item which prevents ring removal */
-	    if (welded(uwep) && (otmp == uright || bimanual(uwep,youracedata))) {
+	    if (welded(uwep) && (otmp == uright || bimanual_mon(uwep,&youmonst))) {
 		Sprintf(buf, "free a weapon %s", body_part(HAND));
 		why = uwep;
 	    } else if (uarmg && uarmg->cursed && !Weldproof) {
@@ -3528,7 +3680,7 @@ register struct obj *otmp;
 	    } else if (otmp == uarmu && uarm && arm_blocks_upper_body(uarm->otyp) && uarm->cursed && !Weldproof) {
 			Sprintf(buf, "remove your %s", c_suit);
 			why = uarm;
-	    } else if (welded(uwep) && bimanual(uwep,youracedata)) {
+	    } else if (welded(uwep) && bimanual_mon(uwep,&youmonst)) {
 			Sprintf(buf, "release your %s",
 				is_sword(uwep) ? c_sword :
 				(uwep->otyp == BATTLE_AXE) ? c_axe : c_weapon);
@@ -3569,6 +3721,7 @@ register struct obj *otmp;
 	else if(otmp == uright) takeoff_mask |= RIGHT_RING;
 	else if(otmp == uamul) takeoff_mask |= WORN_AMUL;
 	else if(otmp == ubelt) takeoff_mask |= WORN_BELT;
+	else if(otmp == usaddle) takeoff_mask |= WORN_SADDLE;
 	else if(otmp == ublindf) takeoff_mask |= WORN_BLINDF;
 	else if(otmp == uwep) takeoff_mask |= W_WEP;
 	else if(otmp == uswapwep) takeoff_mask |= W_SWAPWEP;
@@ -3628,6 +3781,9 @@ do_takeoff()
 	} else if (taking_off == WORN_BELT) {
 	  otmp = ubelt;
 	  if(!cursed(otmp)) Belt_off();
+	} else if (taking_off == WORN_SADDLE) {
+	  otmp = usaddle;
+	  if(!cursed(otmp)) Saddle_off();
 	} else if (taking_off == LEFT_RING) {
 	  otmp = uleft;
 	  if(!cursed(otmp)) Ring_off(uleft);
@@ -3749,7 +3905,7 @@ doddoremarm()
 	set_occupation(take_off, disrobing, 0);
 	return MOVE_INSTANT;
     } else if (!uwep && !uswapwep && !uquiver && !uamul && !ubelt && !ublindf &&
-		!uleft && !uright && !wearing_armor()) {
+		!usaddle && !uleft && !uright && !wearing_armor()) {
 	You("are not wearing anything.");
 	return MOVE_CANCELLED;
     }
@@ -4589,12 +4745,13 @@ struct obj *atmp;
 }
 
 void
-adj_abon(otmp, delta)
-register struct obj *otmp;
-register schar delta;
+adj_abon(struct obj *otmp, schar delta)
 {
+	int otyp = otmp->otyp;
+	if(is_silverknight_armor(otmp) && otmp->ovar1_silverknight_otyp)
+		otyp = otmp->ovar1_silverknight_otyp;
 	if (uarmh && uarmh == otmp) {
-		if(otmp->otyp == HELM_OF_BRILLIANCE){
+		if(otyp == HELM_OF_BRILLIANCE){
 			if (delta) {
 				makeknown(otmp->otyp);
 				ABON(A_INT) += (delta);
@@ -4602,8 +4759,8 @@ register schar delta;
 				flags.botl = 1;
 			}
 		}
-		if (otmp->otyp == find_gcirclet() || otmp->oartifact == ART_CROWN_OF_THE_PERCIPIENT
-		 || otmp->otyp == TOP_HAT || otmp->otyp == ESCOFFION || otmp->otyp == HENNIN
+		if (otyp == find_gcirclet() || otmp->oartifact == ART_CROWN_OF_THE_PERCIPIENT
+		 || otyp == TOP_HAT || otyp == ESCOFFION || otyp == HENNIN
 		){
 			if (delta) {
 				ABON(A_CHA) += (delta);
@@ -4612,7 +4769,7 @@ register schar delta;
 		}
 	}
 	if (uarmc && uarmc == otmp) {
-		if(otmp->otyp == SMOKY_VIOLET_FACELESS_ROBE){
+		if(otyp == SMOKY_VIOLET_FACELESS_ROBE){
 			if (delta) {
 				ABON(A_CON) += (delta);
 				ABON(A_CHA) += (delta);
@@ -4621,13 +4778,13 @@ register schar delta;
 		}
 	}
 	if(uarm && uarm == otmp){
-		if(otmp->otyp == CONSORT_S_SUIT){
+		if(otyp == CONSORT_S_SUIT){
 			if (delta) {
 				ABON(A_CHA) += (delta);
 				flags.botl = 1;
 			}
 		}
-		if(otmp->otyp == GENTLEWOMAN_S_DRESS || otmp->otyp == GENTLEMAN_S_SUIT){
+		if(otyp == GENTLEWOMAN_S_DRESS || otyp == GENTLEMAN_S_SUIT){
 			if (delta) {
 				ABON(A_CHA) += delta;
 				flags.botl = 1;
@@ -4635,7 +4792,7 @@ register schar delta;
 		}
 	}
 	if(uarmu && uarmu == otmp){
-		if(otmp->otyp == VICTORIAN_UNDERWEAR){
+		if(otyp == VICTORIAN_UNDERWEAR){
 			if (delta) {
 				ABON(A_CHA) += delta;
 				flags.botl = 1;
@@ -4653,7 +4810,7 @@ register schar delta;
 				flags.botl = 1;
 			}
 		}
-		if(otmp->otyp == GAUNTLETS_OF_DEXTERITY){
+		if(otyp == GAUNTLETS_OF_DEXTERITY){
 			if (delta) {
 				makeknown(otmp->otyp);
 				ABON(A_DEX) += (delta);
@@ -4662,11 +4819,11 @@ register schar delta;
 		}
 	}
 	if((otmp->owornmask & W_ARMOR) && otmp->where == OBJ_INVENT && check_oprop(otmp, OPROP_BRIL)){
-		if(!is_cha_otyp(otmp->otyp)){
+		if(!is_cha_otyp(otyp)){
 			ABON(A_CHA) += delta;
 			flags.botl = 1;
 		}
-		if(otmp->otyp != HELM_OF_BRILLIANCE){
+		if(otyp != HELM_OF_BRILLIANCE){
 			ABON(A_INT) += delta;
 			ABON(A_WIS) += delta;
 			flags.botl = 1;
@@ -5822,7 +5979,8 @@ struct obj *artifact;
 	int ox = 0, oy = 0;
 	for(obj = inventory; obj; obj = nobj){
 		nobj = obj->where == OBJ_FLOOR ? obj->nexthere : obj->nobj;
-		if(is_magic_obj(obj) && !is_asc_obj(obj) && (n > 0 || !rn2(5))){
+		if(is_magic_obj(obj) && !is_asc_obj(obj) && !(obj->otyp == MAGIC_CHEST && obj->obolted) \
+				&& (n > 0 || !rn2(5))){
 			n--;
 			taken++;
 			if((obj->owornmask&W_WEP) || ((obj->owornmask&W_SWAPWEP) && (!youdef || u.twoweap)))
@@ -6513,6 +6671,23 @@ calc_agrrot(struct monst *magr)
 	return agrrot;
 }
 
+int
+calc_agrmoral(struct monst *magr)
+{
+	int agrmoral = 0;
+	if(magr == &youmonst){
+		if(hates_holy(youracedata))
+			agrmoral = -1;
+		else if(hates_unholy(youracedata))
+			agrmoral = 1;
+	} else {
+		if(hates_holy_mon(magr))
+			agrmoral = -1;
+		else if(hates_unholy_mon(magr))
+			agrmoral = 1;
+	}
+	return agrmoral;
+}	
 #endif /* OVLB */
 
 /*do_wear.c*/

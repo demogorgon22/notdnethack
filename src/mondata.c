@@ -399,6 +399,7 @@ int template;
 	switch (template)
 	{
 	case ZOMBIFIED:
+	case ROT_ZOMBIE:
 		/* flags: */
 		ptr->mflagsm |= (MM_BREATHLESS);
 		if(ptr->mflagsm&MM_NEEDPICK)
@@ -407,6 +408,9 @@ int template;
 		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL | MT_HERBIVORE);
 		ptr->mflagsg |= (MG_RPIERCE | MG_RBLUNT);
 		ptr->mflagsg &= ~(MG_RSLASH | MG_INFRAVISIBLE);
+		if(template == ROT_ZOMBIE){
+			ptr->mflagsg |= MG_REGEN;
+		}
 		ptr->mflagsa |= (MA_UNDEAD);
 		ptr->mflagsw |= (MW_ELDER_EYE_ENERGY);
 		
@@ -432,6 +436,10 @@ int template;
 		ptr->fdr += 2;
 		/* resists: */
 		ptr->mresists |= (MR_COLD | MR_SLEEP | MR_POISON);
+		if(template == ROT_ZOMBIE){
+			ptr->mresists |= MR_SICK;
+			ptr->mresists &= ~MR_FIRE;
+		}
 		/* misc: */
 		ptr->msound = MS_SILENT;
 		/* speed: 0.50x, min 6 */
@@ -445,7 +453,7 @@ int template;
 		ptr->mflagsm |= (MM_BREATHLESS);
 		if(ptr->mflagsm&MM_NEEDPICK)
 			ptr->mflagsm &= ~(MM_TUNNEL|MM_NEEDPICK);
-		ptr->mflagsb |= (MB_SKELETAL);
+		ptr->mflagsc |= (MC_SKELETAL);
 		ptr->mflagst |= (MT_MINDLESS | MT_HOSTILE | MT_STALK);
 		ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL | MT_HERBIVORE | MT_CARNIVORE | MT_METALLIVORE | MT_MAGIVORE);
 		ptr->mflagsg |= (MG_RPIERCE | MG_RSLASH);
@@ -485,7 +493,7 @@ int template;
 		ptr->mflagsg |= (MG_RPIERCE | MG_RSLASH);
 		ptr->mflagsg &= ~(MG_RBLUNT | MG_INFRAVISIBLE);
 		ptr->mflagsa |= (MA_UNDEAD);
-		ptr->mflagsb |= (MB_INDIGESTIBLE);
+		ptr->mflagsc |= (MC_INDIGESTIBLE);
 
 		/*Crystal dead have no free will*/
 		ptr->maligntyp = 20;
@@ -564,7 +572,8 @@ int template;
 		ptr->mflagsm |= (MM_BREATHLESS);
 		ptr->mflagst |= (MT_HOSTILE | MT_STALK);
 		ptr->mflagst &= ~(MT_PEACEFUL | MT_ITEMS | MT_HIDE | MT_CONCEAL);
-		ptr->mflagsb |= (MB_NOEYES|MB_INDIGESTIBLE);
+		ptr->mflagsb |= (MB_NOEYES);
+		ptr->mflagsc |= (MC_INDIGESTIBLE);
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE);
 		ptr->mflagsa |= (MA_UNDEAD);
 		ptr->mflagsv |= MV_LIFESENSE;
@@ -699,7 +708,7 @@ int template;
 		if(!(ptr->mflagsw&MW_EYE_OF_YGG)){
 			ptr->mflagsw |= MW_ELDER_SIGN;
 		}
-		ptr->mflagsb |= MB_ACID|MB_POIS;
+		ptr->mflagsc |= MC_ACID|MC_POIS;
 		ptr->mlevel *= 1.5;
 		break;
 	case TOMB_HERD:
@@ -713,8 +722,10 @@ int template;
 		ptr->mflagst |= (MT_HOSTILE|MT_ANIMAL|MT_CARNIVORE|MT_TRAITOR);
 		ptr->mflagsg &= ~(MG_INFRAVISIBLE|MG_RBLUNT);
 		ptr->mflagsg |= (MG_VBLUNT|MG_SANLOSS);
-		ptr->mflagsb &= ~(MB_UNSOLID|MB_OVIPAROUS|MB_ACID|MB_POIS|MB_POIS|MB_TOSTY|MB_HALUC|MB_INSUBSTANTIAL);
-		ptr->mflagsb |= (MB_INDIGESTIBLE|MB_THICK_HIDE|MB_STRONG);
+		ptr->mflagsb &= ~(MB_OVIPAROUS);
+		ptr->mflagsc &= ~(MC_UNSOLID|MC_ACID|MC_POIS|MC_TOSTY|MC_HALUC|MC_INSUBSTANTIAL);
+		ptr->mflagsb |= (MB_STRONG);
+		ptr->mflagsc |= (MC_INDIGESTIBLE|MC_THICK_HIDE);
 
 		if(!(ptr->mflagsw&MW_EYE_OF_YGG)){
 			ptr->mflagsw |= MW_ELDER_SIGN;
@@ -865,7 +876,8 @@ int template;
 		ptr->mflagsg |= (MG_VSLASH|MG_REGEN|MG_SANLOSS);
 		ptr->mflagsg &= ~(MG_RBLUNT|MG_PNAME);
 		ptr->mflagsa |= (MA_PRIMORDIAL|MA_AQUATIC);
-		ptr->mflagsb |= (MB_NOLIMBS|MB_ACID|MB_POIS|MB_STRONG);
+		ptr->mflagsb |= (MB_NOLIMBS|MB_STRONG);
+		ptr->mflagsc |= (MC_ACID|MC_POIS);
 		/*Slime remnants have no skill*/
 		/*Note: The actual effect of this is to zero out mflagsf, but flags are removed explicitly for futureproofing reasons.*/
 		ptr->mflagsf &= ~(MF_MARTIAL_B|MF_MARTIAL_S|MF_MARTIAL_E);
@@ -1037,7 +1049,7 @@ int template;
 			ptr->mflagsm |= MM_FLY|MM_BREATHLESS|MM_FLOAT;
 			ptr->mflagst &= ~(MT_ANIMAL | MT_PEACEFUL | MT_CARNIVORE | MT_HERBIVORE | MT_TRAITOR);
 			ptr->mflagst |= MT_WANDER|MT_STALK|MT_HOSTILE|MT_DETACHED;
-			ptr->mflagsb |= MB_UNSOLID|MB_INSUBSTANTIAL;
+			ptr->mflagsc |= MC_UNSOLID|MC_INSUBSTANTIAL;
 			ptr->mflagsg &= ~(MG_PNAME);
 			ptr->mflagsg |= MG_NASTY|MG_HATESUNHOLY;
 			ptr->mflagsa = MA_ET;
@@ -1106,7 +1118,7 @@ int template;
 		insert = FALSE;
 
 		/* some templates completely skip specific attacks */
-		while ((template == ZOMBIFIED || template == SKELIFIED || template == SPORE_ZOMBIE || template == SPARK_SKELETON) &&
+		while ((template == ZOMBIFIED || template == ROT_ZOMBIE || template == SKELIFIED || template == SPORE_ZOMBIE || template == SPARK_SKELETON) &&
 			(
 			attk->lev_req > ptr->mlevel ||
 			attk->aatyp == AT_SPIT ||
@@ -1307,7 +1319,7 @@ int template;
 #define end_insert_okay(specvar) (!(specvar) && (is_null_attk(attk) || attk->aatyp == AT_NONE) && (insert = TRUE))
 #define maybe_insert() if(insert) {for(j=NATTK-i-1;j>0;j--)attk[j]=attk[j-1];*attk=noattack;insert=FALSE;}
 		/* zombies/skeletons get a melee attack if they don't have any (likely due to disallowed aatyp) */
-		if ((template == ZOMBIFIED || template == SPORE_ZOMBIE || template == SKELIFIED || template == SPARK_SKELETON || template == MINDLESS) && (
+		if ((template == ZOMBIFIED || template == ROT_ZOMBIE || template == SPORE_ZOMBIE || template == SKELIFIED || template == SPARK_SKELETON || template == MINDLESS) && (
 			i == 0 && (!nolimbs(ptr) || has_head(ptr)) && (
 			is_null_attk(attk) ||
 			(attk->aatyp == AT_NONE || attk->aatyp == AT_BOOM)
@@ -1316,7 +1328,7 @@ int template;
 		){
 			maybe_insert();
 			attk->aatyp = !nolimbs(ptr) ? AT_CLAW : AT_BITE;
-			attk->adtyp = AD_PHYS;
+			attk->adtyp = template == ROT_ZOMBIE ? AD_DISE : AD_PHYS;
 			attk->damn = ptr->mlevel / 10 + (template == ZOMBIFIED ? 1 : 2);
 			attk->damd = max(ptr->msize * 2, 4);
 		}
@@ -1370,6 +1382,19 @@ int template;
 			attk->damd = 4;
 			special = TRUE;
 		}
+		/* rot zombies get an acid vomit attack */
+		if ((template == ROT_ZOMBIE) && !nomouth(ptr->mtyp) && (
+			insert_okay(special)
+			))
+		{
+			maybe_insert();
+			attk->aatyp = AT_VOMT;
+			attk->adtyp = AD_ACID;
+			attk->damn = max(1, min(10, ptr->mlevel / 3));
+			attk->damd = 6;
+			special = TRUE;
+		}
+		
 		/* fractured turn their claws into glass shards */
 		if (template == FRACTURED && (
 			(attk->aatyp == AT_CLAW && (
@@ -1386,6 +1411,17 @@ int template;
 			attk->damn = max(ptr->mlevel / 10 + 1, attk->damn);
 			attk->damd = max(ptr->msize * 2, max(attk->damd, 4));
 			special = TRUE;
+		}
+		/* Any bites that rot zombies have are diseased */
+		if (template == ROT_ZOMBIE && (
+			attk->aatyp == AT_BITE
+			|| attk->aatyp == AT_OBIT
+			|| attk->aatyp == AT_LNCK
+			)
+		){
+			attk->adtyp = AD_DISE;
+			attk->damn = max(1, attk->damn);
+			attk->damd = max(4, max(ptr->msize * 2, attk->damd));
 		}
 		/* vampires' bites are vampiric: pt 1: other bites */
 		if (template == VAMPIRIC && (
@@ -2199,6 +2235,7 @@ int level_bonus;
 		horror->mflagsm = 0;
 		horror->mflagst = 0;
 		horror->mflagsb = 0;
+		horror->mflagsc = 0;
 		horror->mflagsg = 0;
 		horror->mflagsa = 0;
 		horror->mflagsv = 0;
@@ -2213,6 +2250,9 @@ int level_bonus;
 			horror->mflagsb |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
+			horror->mflagsc |= (1L << rn2(33));
+		}
+		for (i = 0; i < rnd(17); i++) {
 			horror->mflagsg |= (1L << rn2(33));
 		}
 		for (i = 0; i < rnd(17); i++) {
@@ -2222,7 +2262,7 @@ int level_bonus;
 			horror->mflagsv |= (1L << rn2(33));
 		}
 
-		// horror->mflagsb &= ~MB_UNSOLID;			/* no ghosts */
+		// horror->mflagsc &= ~MC_UNSOLID;			/* no ghosts */
 		// horror->mflagsm &= ~MM_WALLWALK;			/* no wall-walkers */
 
 		horror->mflagsg |= MG_NOPOLY;		/* Don't let the player be one of these yet. */
@@ -2954,7 +2994,7 @@ struct monst *mon;
 {
 	struct permonst *mptr = mon->data;
 
-    return (boolean) (mon_resistance(mon,PASSES_WALLS) || amorphous(mptr) ||
+    return (boolean) (mon_resistance(mon,PASSES_WALLS) || amorphous_mon(mon) ||
 		      is_whirly(mptr) || verysmall(mptr) ||
 			  dmgtype(mptr, AD_CORR) || (dmgtype(mptr, AD_RUST) && mptr->mtyp != PM_NAIAD ) ||
 		      (slithy(mptr) && !bigmonst(mptr)));
@@ -2988,6 +3028,8 @@ struct monst * mtmp;
 {
 	register struct permonst * ptr = (mtmp == &youmonst) ? youracedata : mtmp->data;
 	/* monsters that can intrinsically do so */
+	if (mtmp == &youmonst && check_mutation(AAT_PRIMINAL))
+		return TRUE;
 	if (dmgtype(ptr, AD_STCK) || dmgtype(ptr, AD_WRAP) || attacktype(ptr, AT_HUGS))
 		return TRUE;
 	/* or if wearing the Grappler's Grasp */
@@ -3000,52 +3042,22 @@ struct monst * mtmp;
 
 /* number of horns this type of monster has on its head */
 int
-num_horns(ptr)
-struct permonst *ptr;
+num_horns(struct monst *mon)
 {
-    switch (monsndx(ptr)) {
+	if(mon == &youmonst){
+		if (check_mutation(TT_UNICORN_HORN)) return 1;
+	}
+    switch (monsndx(mon->data)) {
 	case PM_DRACAE_ELADRIN:
 	case PM_FIERNA:
 	case PM_GRAZ_ZT:
 	return 6;
+	case PM_MUSIMON:
+	return 6;
 	case PM_TRICERATOPS:
 	return 3;
-	case PM_LAMB:
-	case PM_ROTHE:
-	case PM_SHEEP:
-	case PM_DIRE_SHEEP:
-    case PM_HORNED_DEVIL:	/* ? "more than one" */
-    case PM_MINOTAUR:
-    case PM_MINOTAUR_PRIESTESS:
-    case PM_SMALL_GOAT_SPAWN:
-    case PM_GOAT_SPAWN:
-    case PM_GIANT_GOAT_SPAWN:
-    case PM_BLESSED:
-    case PM_BAPHOMET:
-    case PM_MALCANTHET:
-    case PM_ORCUS:
-    case PM_BALROG:
-    case PM_DURIN_S_BANE:
-    case PM_LUNGORTHIN:
-    case PM_LEGION_DEVIL_GRUNT:
-    case PM_LEGION_DEVIL_SOLDIER:
-    case PM_LEGION_DEVIL_SERGEANT:
-    case PM_LEGION_DEVIL_CAPTAIN:
-    case PM_GOOD_NEIGHBOR:
-    case PM_PIT_FIEND:
-    case PM_NESSIAN_PIT_FIEND:
-    case PM_BAEL:
-    case PM_DISPATER:
-    case PM_MAMMON:
-    case PM_GREEN_PIT_FIEND:
-    case PM_BELIAL:
-    case PM_MOLEK:
-    case PM_MEPHISTOPHELES:
-    case PM_BAALPHEGOR:
-    case PM_ASMODEUS:
-    case PM_VERIER:
-    case PM_GLASYA:
-	return 2;
+    // case PM_HORNED_DEVIL:	/* ? "more than one" */
+	case PM_TITANOTHERE:
     case PM_WHITE_UNICORN:
     case PM_GRAY_UNICORN:
     case PM_BLACK_UNICORN:
@@ -3053,10 +3065,9 @@ struct permonst *ptr;
     case PM_KI_RIN:
     case PM_ANCIENT_OF_CORRUPTION:
 	return 1;
-    default:
-	break;
     }
-    return 0;
+    // default:
+	return 2;
 }
 
 struct attack *
@@ -3508,7 +3519,7 @@ const char *def;
 		(mon_resistance(mon,FLYING) && ptr->msize <= MZ_SMALL) ? flys[capitalize] :
 		(mon_resistance(mon,FLYING) && ptr->msize > MZ_SMALL)  ? flyl[capitalize] :
 		slithy(ptr)     ? slither[capitalize] :
-		amorphous(ptr)  ? ooze[capitalize] :
+		amorphous_mon(mon)  ? ooze[capitalize] :
 		!ptr->mmove	? immobile[capitalize] :
 		nolimbs(ptr)    ? crawl[capitalize] :
 		def
@@ -3528,7 +3539,7 @@ const char *def;
 		(mon_resistance(mon,FLYING) && ptr->msize <= MZ_SMALL) ? flys[capitalize] :
 		(mon_resistance(mon,FLYING) && ptr->msize > MZ_SMALL)  ? flyl[capitalize] :
 		slithy(ptr)     ? slither[capitalize] :
-		amorphous(ptr)  ? ooze[capitalize] :
+		amorphous_mon(mon)  ? ooze[capitalize] :
 		!ptr->mmove	? immobile[capitalize] :
 		nolimbs(ptr)    ? crawl[capitalize] :
 		def

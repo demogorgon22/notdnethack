@@ -58,12 +58,12 @@ register struct obj *otmp;
     if (is_cloak(otmp) && ((abs(otmp->objsize - mtmp->data->msize) > 1)))
         return FALSE;
 
-    if (is_helmet(otmp) && !(helm_match(mtmp->data, otmp) && helm_size_fits(mtmp->data, otmp)))
+    if (is_helmet(otmp) && !(helm_match(mtmp, otmp) && helm_size_fits(mtmp->data, otmp)))
         return FALSE;
     
     if (is_shield(otmp) && (
-			((mtmp == &youmonst) ? (uwep && bimanual(uwep,youracedata)) 
-							: (MON_WEP(mtmp) && bimanual(MON_WEP(mtmp),mtmp->data)))
+			((mtmp == &youmonst) ? (uwep && bimanual_mon(uwep,&youmonst)) 
+							: (MON_WEP(mtmp) && bimanual_mon(MON_WEP(mtmp),mtmp)))
 			|| mon_offhand_attack(mtmp)
 		)
 	)
@@ -78,7 +78,8 @@ register struct obj *otmp;
     if (is_helmet(otmp) &&
         !is_flimsy(otmp) &&
         otmp->otyp != find_gcirclet() &&
-	num_horns(mtmp->data) > 0)
+		has_horns_mon(mtmp)
+	)
 	return FALSE;
 
     obj = (mtmp == &youmonst) ? invent : mtmp->minvent;
@@ -653,6 +654,7 @@ dog_died:
 			if (mtmp->mleashed
 #ifdef STEED
 				&& mtmp != u.usteed
+				&& mtmp != u.urider
 #endif
 		    ) Your("leash goes slack.");
 			else if (cansee(mtmp->mx, mtmp->my))
@@ -800,8 +802,11 @@ int udist;
 		    return dog_eat(mtmp, obj, omx, omy, FALSE);
 		}
 
-		if(can_carry(mtmp, obj) && !obj->cursed &&
-			could_reach_item(mtmp, obj->ox, obj->oy)) {
+		if(can_carry(mtmp, obj)
+			&& !mtmp->mnopickup
+			&& (!obj->cursed || is_weldproof_mon(mtmp)) 
+			&& could_reach_item(mtmp, obj->ox, obj->oy)
+		) {
 	        boolean can_use = could_use_item(mtmp, obj, TRUE);
 	        if (can_use ||
 		        (!droppables && rn2(20) < edog->apport+3)) {
@@ -833,9 +838,9 @@ STATIC_OVL int
 pet_sphere_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr)
 {
 	int appr = 0;
-	int gx, gy;
 	struct monst *m2 = (struct monst *)0;
 	int distminbest = BOLT_LIM;
+	gtyp = UNDEF;
 	for(m2=fmon; m2; m2 = m2->nmon){
 		if(!m2->mtame && !m2->mpeaceful && distmin(mtmp->mx,mtmp->my,m2->mx,m2->my) < distminbest){
 			distminbest = distmin(mtmp->mx,mtmp->my,m2->mx,m2->my);
@@ -844,11 +849,38 @@ pet_sphere_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int
 			appr = 1;
 		}
 	}
+	if(!appr){
+		/* No enemies in range: fly away from player in a roughly straight line */
+		int fdx = mtmp->mx - u.ux;
+		int fdy = mtmp->my - u.uy;
+		if(fdx == 0 && fdy == 0){
+			gx = mtmp->mx;
+			gy = mtmp->my;
+		} else {
+			int adx = abs(fdx), ady = abs(fdy);
+			int sdx = sgn(fdx), sdy = sgn(fdy);
+			if(adx != 0 && ady != 0 && adx != ady){
+				/* Not perfectly aligned: choose between the two nearest 8-directions */
+				if(adx > ady){
+					if(rn2(adx) >= ady) sdy = 0;
+				} else {
+					if(rn2(ady) >= adx) sdx = 0;
+				}
+			}
+			gx = mtmp->mx;
+			gy = mtmp->my;
+			while(isok(gx + sdx, gy + sdy)){
+				gx += sdx;
+				gy += sdy;
+			}
+		}
+	}
 	return appr;
 }
 
 /* set dog's goal -- gtyp, gx, gy
  * returns -1/0/1 (dog's desire to approach player) or -2 (abort move)
+ * or -3 (can't move but can act)
  */
 STATIC_OVL int
 dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr)
@@ -904,9 +936,10 @@ dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr
 		    if (otyp > gtyp || otyp == UNDEF)
 			continue;
 		    /* avoid cursed items unless starving */
-		    if (cursed_object_at(nx, ny) &&
-			    !(edog->mhpmax_penalty && otyp < MANFOOD))
-			continue;
+		    if ((!is_weldproof_mon(mtmp) && cursed_object_at(nx, ny))
+			    && !(edog->mhpmax_penalty && otyp < MANFOOD)
+			)
+				continue;
 		    /* skip completely unreacheable goals */
 		    if (!could_reach_item(mtmp, nx, ny) ||
 		        !can_reach_location(mtmp, mtmp->mx, mtmp->my, nx, ny))
@@ -1025,6 +1058,8 @@ dog_goal(struct monst *mtmp, struct edog *edog, int after, int udist, int whappr
 	} else if(edog) {
 	    edog->ogoal.x = 0;
 	}
+	if (mtmp == u.urider)
+		return (-3);
 	return appr;
 }
 
@@ -1183,7 +1218,7 @@ register int after;	/* this is extra fast monster movement */
 	} else
 #endif
 	/* maybe we tamed him while being swallowed --jgm */
-	if (!udist) return(0);
+	if (!udist && mtmp != u.urider) return(0);
 
 	if (!rn2(850) && betrayed(mtmp)) return 1;
 
@@ -1197,7 +1232,7 @@ register int after;	/* this is extra fast monster movement */
 	    if (j == 2) return 2;		/* died */
 	    else if (j == 1) goto newdogpos;	/* eating something */
 
-	    whappr = (monstermoves - EDOG(mtmp)->whistletime < 5) || (uwep && uwep->otyp == SHEPHERD_S_CROOK);
+	    whappr = (monstermoves - EDOG(mtmp)->whistletime < 5) || has_crook(uwep);
 	} else
 	    whappr = 0;
 
@@ -1332,7 +1367,7 @@ register int after;	/* this is extra fast monster movement */
 	for (i = 0; i < cnt; i++) {
 		nx = poss[i].x; ny = poss[i].y;
 		if (MON_AT(nx,ny) && !(info[i] & ALLOW_M)) continue;
-		if (cursed_object_at(nx, ny)) continue;
+		if (!is_weldproof_mon(mtmp) && cursed_object_at(nx, ny)) continue;
 		uncursedcnt++;
 	}
 
@@ -1402,9 +1437,9 @@ register int after;	/* this is extra fast monster movement */
 
 		/* dog eschews cursed objects, but likes dog food */
 		/* (minion isn't interested; `cursemsg' stays FALSE) */
-		if (has_edog)
+		if (has_edog && appr != -3)
 		for (obj = level.objects[nx][ny]; obj; obj = obj->nexthere) {
-		    if (obj->cursed) cursemsg[i] = TRUE;
+		    if (!is_weldproof_mon(mtmp) && obj->cursed) cursemsg[i] = TRUE;
 		    else if ((otyp = dogfood(mtmp, obj)) < MANFOOD &&
 			     (otyp < ACCFOOD
 			     || EDOG(mtmp)->hungrytime <= monstermoves)
@@ -1446,6 +1481,7 @@ register int after;	/* this is extra fast monster movement */
 	nxti:	;
 	}
 newdogpos:
+	if(appr == -3) return(0); /* didn't find anything to do that wasn't moving */
 	if (nix != omx || niy != omy) {
 		struct obj *mw_tmp;
 

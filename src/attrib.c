@@ -94,7 +94,7 @@ const struct innate {
 		     {  25, &(HWwalking), "light on your feet","heavy" },
 		     {  26, &(HSick_resistance), "immunized","immunocompromised" },
 		     {  27, &(HDisint_resistance), "firm","less firm" },
-		     {  28, &(HStone_resistance), "limber","stiff" },
+		     {  28, &(HStone_resistance), "","stiff" },
 		     {  29, &(HAntimagic), "skeptical","credulous" },
 		     {  30, &(HDrain_resistance), "above earthly concerns","not so above it all" },
 		     {   0, 0, 0, 0 } },
@@ -119,7 +119,7 @@ const struct innate {
 		     {  21, &(HWwalking), "light on your feet","heavy" },
 		     {  23, &(HSick_resistance), "immunized","immunocompromised" },
 		     {  25, &(HDisint_resistance), "firm","less firm" },
-		     {  27, &(HStone_resistance), "limber","stiff" },
+		     {  27, &(HStone_resistance), "","stiff" },
 		     {  29, &(HAntimagic), "skeptical","credulous" },
 		     {  30, &(HDrain_resistance), "above earthly concerns","not so above it all" },
 		     {   0, 0, 0, 0 } },
@@ -231,7 +231,7 @@ const struct innate {
 			  {	15, &(HNo_prop), "bigger and and stronger", "smaller and weaker" },
 			  {	 0, 0, 0, 0 } },
 
-	hlf_acid_abil[] = { {	15, &(HStone_resistance), "limber", "stiff" },
+	hlf_acid_abil[] = { {	15, &(HStone_resistance), "", "stiff" },
 			  {	 0, 0, 0, 0 } },
 
 	hlf_slee_abil[] = { {	15, &(HFree_action), "freed", "a loss of freedom" },
@@ -260,6 +260,64 @@ const struct innate {
 		     {	 0, 0, 0, 0 } },
 
 	inc_abil[] = { {	1, &(HAntimagic), "", "" },
+		     {	 0, 0, 0, 0 } },
+	
+	aasi_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_archon_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HFlying), "your aura form into wings", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_deva_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura form into arms", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_storm_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura destabilize", "your aura stabilize" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_coure_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura form into blades of starlight", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_gae_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	14, &(HNo_prop), "your aura form into reaching vines", "your aura lose cohesion" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_prim_abil[] = { 
+			 {	 1, &(HShock_resistance), "", "" },
+			 {   7, &(HAcid_resistance), "thick-skinned","soft-skinned" },
+			 {	14, &(HStone_resistance), "", "stiff" },
+		     {	 0, 0, 0, 0 } },
+
+	tief_abil[] = { 
+			 {	 1, &(HPoison_resistance), "", "" },
+		     {	 0, 0, 0, 0 } },
+
+	tief_drow_abil[] = {
+			 {	 1, &(HPoison_resistance), "", "" },
+			 {	4, &(HSleep_resistance), "awake", "tired" },
+		     {	 0, 0, 0, 0 } },
+
+	aasi_drow_abil[] = {
+			 {	 1, &(HShock_resistance), "", "" },
+			 {	 4, &(HSleep_resistance), "awake", "tired" },
+		     {	 0, 0, 0, 0 } },
+
+	frm_abil[] = { 
+			 {   3, &(HFire_resistance), "heat resistant", "less heat resistant" },
+			 {	 5, &(HPoison_resistance), "healthy", "sickly" },
+			 {   9, &(HAcid_resistance), "thick-skinned","soft-skinned" },
+		     {	 0, 0, 0, 0 } },
+
+	cen_abil[] = { {	14, &(HJumping), "you feel light on your feet", "you feel heavier" },
 		     {	 0, 0, 0, 0 } };
 
 #define	next_check u.exerchkturn
@@ -973,6 +1031,7 @@ int oldlevel, newlevel;
 	case PM_LEPRECHAUN:            rabil = lep_abil;	break;
 	case PM_DROW:           rabil = elf_abil;	break;
 	case PM_MYRKALFR:       rabil = elf_abil;	break;
+	case PM_DRIDER:         rabil = elf_abil;	break;
 	case PM_ORC:            rabil = orc_abil;	break;
 	case PM_CLOCKWORK_AUTOMATON:rabil = clk_abil;	break;
 	case PM_ANDROID:		rabil = and_abil;	break;
@@ -980,6 +1039,29 @@ int oldlevel, newlevel;
 	case PM_VAMPIRE:		rabil = vam_abil;	break;
 	case PM_HALF_DRAGON:	rabil = hlf_abil;	break;
 	case PM_YUKI_ONNA:		rabil = yki_abil;	break;
+	case PM_CENTAUR:		rabil = cen_abil;	break;
+	case PM_FORMIAN:	    rabil = frm_abil;	break;
+	case PM_DARK_FEY_RI:	rabil = tief_drow_abil;	break;
+	case PM_DOKKIMAR:		rabil = aasi_drow_abil;	break;
+	case PM_TIEFLING:		rabil = tief_abil;	break;
+	case PM_AASIMAR:
+		if(flags.aasimar_type == AASIMAR_TYPE_ARCHON || flags.aasimar_type == AASIMAR_TYPE_SERAPH)
+			rabil = aasi_archon_abil;
+		else if(flags.aasimar_type == AASIMAR_TYPE_DEVA)
+			rabil = aasi_deva_abil;
+		else if(flags.aasimar_type == AASIMAR_TYPE_ELADRIN){
+			if (storm_aasimar(flags.aasimar_subtype))
+				rabil = aasi_storm_abil;
+			else if (flags.aasimar_subtype == AASIMAR_SUBTYPE_COURE)
+				rabil = aasi_coure_abil;
+			else if (flags.aasimar_subtype == AASIMAR_SUBTYPE_GAE)
+				rabil = aasi_gae_abil;
+		}
+		else if(flags.aasimar_type == AASIMAR_TYPE_PRIMINAL)
+			rabil = aasi_prim_abil;
+		else
+			rabil = aasi_abil;
+	break;
 	case PM_HUMAN:
 	case PM_DWARF:
 	case PM_GNOME:
@@ -1061,7 +1143,7 @@ int oldlevel, newlevel;
 		int skillslots;
 	    if (newlevel > oldlevel){
 			skillslots = newlevel - oldlevel;
-			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID)){
+			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID) || Race_if(PM_SILVERKNIGHT)){
 				if(!(skillslots%2)) skillslots *= 1.5;
 				else if(!(newlevel%2)) skillslots = skillslots*1.5 + 1;
 				else skillslots *= 1.5;
@@ -1070,7 +1152,7 @@ int oldlevel, newlevel;
 		}
 	    else{
 			skillslots = oldlevel - newlevel;
-			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID)){
+			if(Race_if(PM_HUMAN) || Race_if(PM_ANDROID) || Race_if(PM_SILVERKNIGHT)){
 				if(!(skillslots%2)) skillslots *= 1.5;
 				else if(!(oldlevel%2)) skillslots = skillslots*1.5 + 1;
 				else skillslots *= 1.5;
@@ -1420,6 +1502,8 @@ struct monst *mon;
 	if(is_player){
 		if (x == A_STR && override_str)
 			return override_str;
+		if(x == A_DEX && u.seraph_eyes >= SE_FUTURE && tmp > 10)
+			tmp += (tmp - 10);
 		if(u.ufirst_light)
 			tmp++;
 		if(u.ufirst_sky)
@@ -1473,7 +1557,10 @@ struct monst *mon;
 			tmp += u.ulevel/3;
 			if(tmp > 18) tmp = STR19(tmp);
 		}
-		if ((armg && (armg->otyp == GAUNTLETS_OF_POWER || (armg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(armg, IEA_GOPOWER)))) || 
+		if ((armg && (armg->otyp == GAUNTLETS_OF_POWER 
+					 || (armg->otyp == IMPERIAL_ELVEN_GAUNTLETS && check_imp_mod(armg, IEA_GOPOWER))
+					 || (armg->otyp == SILVERKNIGHT_GAUNTLETS && armg->ovar1_silverknight_otyp == GAUNTLETS_OF_POWER)
+			)) || 
 			(belt && belt->otyp == BELT_OF_POWER) ||
 			(armc && armc->oartifact == ART_SHI_PI_BU) ||
 			(wep &&((wep->oartifact == ART_SCEPTRE_OF_MIGHT) || 
@@ -2189,6 +2276,12 @@ activeFace(int fform)
 }
 
 boolean
+activeRune(int fform)
+{
+	return ((artinstance[ART_STORMBRINGER].StormRune & (1 << fform)) != 0);
+}
+
+boolean
 selectedFightingForm(fform)
 int fform;
 {
@@ -2326,6 +2419,20 @@ nameOfBorealFace(int face)
 	return "None";
 }
 
+const char *
+nameOfStormRune(int rune)
+{
+	switch (rune)
+	{
+		case FRUNE_HARVEST: return flags.female ? "Harvestwoman's Rune" : "Harvestman's Rune";
+		case FRUNE_HUNT:    return "Hunter's Rune";
+		case FRUNE_CHAOS:   return "Rune of Dark Chaos";
+		default:
+			impossible("bad storm rune %d", rune);
+	}
+	return "None";
+}
+
 void
 validateLightsaberForm()
 {
@@ -2369,10 +2476,10 @@ int fform;
 			return (uarm && (metal_blocks_spellcasting(uarm)));
 		/* requires longsword and free hand */
 		case FFORM_HALF_SWORD:
-			return !(uwep && (uwep->otyp == LONG_SWORD || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual(uwep, youracedata)));
+			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))) && !uarms && !(u.twoweap && !bimanual_mon(uwep, &youmonst)));
 		/* require longsword*/
 		case FFORM_POMMEL:
-			return !(uwep && (uwep->otyp == LONG_SWORD || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))));
+			return !(uwep && (is_knight_sword(uwep) || (Role_if(PM_KENSEI) && is_kensei_weapon(uwep))));
 		/* require longsword*/
 		case FFORM_KNI_RUNIC:
 			return !(uwep && is_runic_form_sword(uwep) && FightingFormSkillLevel(fform) > P_ISRESTRICTED);
@@ -2381,7 +2488,7 @@ int fform;
 			return (!uarms);
 		/* requires two-handed weapon */
 		case FFORM_GREAT_WEP:
-			return !(uwep && (bimanual(uwep, youracedata) || bimanual_mod(uwep, &youmonst) > 1));
+			return !(uwep && (bimanual_mon(uwep, &youmonst) || bimanual_mod(uwep, &youmonst) > 1));
 		default:
 			impossible("Attempting to get blockage of fighting form number %d?", fform);
 			break;

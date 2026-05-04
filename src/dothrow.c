@@ -501,7 +501,7 @@ jumping_polearm(genericptr_t arg, int x, int y)
 				path = TRUE;
 		}
 	}
-	if(((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) && !mon->mpeaceful && canseemon(mon)){
+	if(((Role_if(PM_MONK) || Role_if(PM_KENSEI) || has_mutation(AAT_PRIMINAL)) && !Upolyd) && !mon->mpeaceful && canseemon(mon)){
 		u.dx = x - u.ux;
 		u.dy = y - u.uy;
 		if(path){
@@ -563,7 +563,7 @@ hurtle_step(arg, x, y)
 			else if(uwep->otyp == NINJA_TO){
 				nightjar = TRUE;
 			}
-			else if(u.ulevel == 30){
+			else if(u.ulevel >= 30){
 				sakura = TRUE;
 			}
 			else {
@@ -640,7 +640,7 @@ hurtle_step(arg, x, y)
 
 
     if ((mon = m_at(x, y)) != 0) {
-		if((((Role_if(PM_MONK) || Role_if(PM_KENSEI)) && !Upolyd) || activeFightingForm(FFORM_ATARU)) && !mon->mpeaceful && canseemon(mon)){
+		if((((Role_if(PM_MONK) || Role_if(PM_KENSEI) || has_mutation(AAT_PRIMINAL)) && !Upolyd) || activeFightingForm(FFORM_ATARU)) && !mon->mpeaceful && canseemon(mon)){
 			u.dx = x - u.ux;
 			u.dy = y - u.uy;
 			flags.forcefight = TRUE;
@@ -841,7 +841,7 @@ hurtle(dx, dy, range, verbose, do_nomul)
     /* this setting of cc is only correct if dx and dy are [-1,0,1] only */
     cc.x = u.ux + (dx * range);
     cc.y = u.uy + (dy * range);
-    (void) walk_path(&uc, &cc, hurtle_step, ((Role_if(PM_KENSEI) || Role_if(PM_MONK)) && uwep && is_pole(uwep)) ? &jumping_polearm : (void *) 0, (genericptr_t)&range);
+    (void) walk_path(&uc, &cc, hurtle_step, ((Role_if(PM_KENSEI) || Role_if(PM_MONK) || has_mutation(AAT_PRIMINAL)) && uwep && is_pole(uwep)) ? &jumping_polearm : (void *) 0, (genericptr_t)&range);
 	teleds(u.ux, u.uy, TRUE);
 }
 
@@ -1116,8 +1116,8 @@ boolean from_invent;
 					else {
 					    int numeyes = eyecount(youracedata);
 					    Your("%s water%s.",
-						 (numeyes == 1) ? body_part(EYE) :
-							makeplural(body_part(EYE)),
+						 (numeyes == 1) ? body_part(EYE_BP) :
+							makeplural(body_part(EYE_BP)),
 						 (numeyes == 1) ? "s" : "");
 					}
 				}

@@ -431,7 +431,7 @@ MAP
 6               CAAAAAAAAA|--S-|AAAAAAA|-S--|AAFF...FFAC                     
 7               CAAAAAAAA-|....|-AAAAA-|....|-FF.....FFC                     
 8               CAAAAAAAA|......|AAAAA|......|F.......FC                     
-9               CAAAAAAAAF......|AAAAA|......S........FC                     
+9               CAAAAAAAAF......|AAAAAF......S........FC                     
 0               CAAAAAAAA|......|AAAAA|......|F.......FC                     
 1               CAAAAAAAA-|....|-AAAAA-|....|-FF.....FFC                     
 2               CAAAAAAAAA|--S-|AAAAAAA|-S--|AAFF...FFAC                     
@@ -463,7 +463,7 @@ MAP
 6               CAAAAAAAAA|--S-|AAAAAAA|-S--|AAFF...FFAC                     
 7               CAAAAAAAA-|....|-AAAAA-|....|-FF.....FFC                     
 8               CAAAAAAAA|......|AAAAA|......|F.......FC                     
-9               CAAAAAAAAF......|AAAAA|......S........FC                     
+9               CAAAAAAAAF......|AAAAAF......S........FC                     
 0               CAAAAAAAA|......|AAAAA|......|F.......FC                     
 1               CAAAAAAAA-|....|-AAAAA-|....|-FF.....FFC                     
 2               CAAAAAAAAA|--S-|AAAAAAA|-S--|AAFF...FFAC                     
@@ -688,13 +688,13 @@ MAP
 3               |AAAAAAAA----------#----------AAAAAAAAA|                     
 4               |AAAAAAAA|...|...|-S-|...|...|AAAAAAAAA|                     
 5               |AAAAAAAAF...|...+###+...|...FAAAAAAAAA|                     
-6               |AAAAAAAA|...|...-----...|...|AA-----AA|                     
+6               |AAAAAAAA|...|...--F--...|...|AA-----AA|                     
 7               |AAAAAAAA---+--+--AAA--+--+---A-------A|                     
 8               |AAAAAAAAA|-#-|#|AAAAA|#|-#-|AA||###||A|                     
-9               |AAAAAAAAAF###S#|AAAAA|#S###FAA||###||A|                     
+9               |AAAAAAAAAF###S#FAAAAAF#S###FAA||###||A|                     
 0               |AAAAAAAAA|-#-|#|AAAAA|#|-#-|AA||###||A|                     
 1               |AAAAAAAA---+--+--AAA--+--+---A-------A|                     
-2               |AAAAAAAA|...|...-----...|...|AA-----AA|                     
+2               |AAAAAAAA|...|...--F--...|...|AA-----AA|                     
 3               |AAAAAAAAF...|...+###+...|...FAAAAAAAAA|                     
 4               |AAAAAAAA|...|...|-S-|...|...|AAAAAAAAA|                     
 5               |AAAAAAAA----------#----------AAAAAAAAA|                     

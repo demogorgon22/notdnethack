@@ -28,7 +28,10 @@ STATIC_DCL void FDECL(prisoner_speaks, (struct monst *));
 STATIC_OVL void
 on_start()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if(!Qstat(first_start)) {
 		qt_pager(QT_FIRSTTIME + variant);
 		Qstat(first_start) = TRUE;
@@ -43,7 +46,10 @@ on_start()
 STATIC_OVL void
 on_locate()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if(!Qstat(first_locate)) {
 		qt_pager(QT_FIRSTLOCATE + variant);
 		Qstat(first_locate) = TRUE;
@@ -54,7 +60,10 @@ on_locate()
 STATIC_OVL void
 on_goal()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if (Qstat(killed_nemesis)) {
 		return;
 	} else if (!Qstat(made_goal)) {
@@ -81,7 +90,10 @@ onquest()
 void
 nemdead()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if(!Qstat(killed_nemesis)) {
 	    Qstat(killed_nemesis) = TRUE;
 #ifdef RECORD_ACHIEVE
@@ -101,7 +113,10 @@ nemdead()
 void
 artitouch()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if(!Qstat(touched_artifact)) {
 	    Qstat(touched_artifact) = TRUE;
 #ifdef RECORD_ACHIEVE
@@ -251,7 +266,10 @@ finish_quest(obj)
 struct obj *obj;	/* quest artifact; possibly null if carrying Amulet */
 {
 	struct obj *otmp;
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	
 	if (u.uhave.amulet) {	/* unlikely but not impossible */
 	    qt_pager(QT_HASAMULET + variant);
@@ -297,6 +315,8 @@ struct obj *obj;	/* quest artifact; possibly null if carrying Amulet */
 
 	if (obj) {
 	    if(!Role_if(PM_EXILE)) u.uevent.qcompleted = 1;	/* you did it! */
+		if(Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			add_rot(ROT_KIN);
 	    /* behave as if leader imparts sufficient info about the
 	       quest artifact */
 	    fully_identify_obj(obj);
@@ -307,7 +327,10 @@ struct obj *obj;	/* quest artifact; possibly null if carrying Amulet */
 STATIC_OVL void
 chat_with_leader_uh()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 /*	It is possible for you to get the amulet without completing
  *	the quest.  If so, try to induce the player to quest.
  */
@@ -382,7 +405,10 @@ source of this scourge, and Lay it to Rest.\"");
 STATIC_OVL void
 chat_with_leader()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 /*	Rule 0:	Cheater checks.		No -C_ANG			*/
 	// if(u.uhave.questart && !Qstat(met_nemesis))
 	    // Qstat(cheater) = TRUE;
@@ -508,7 +534,10 @@ void
 leader_speaks(mtmp)
 	register struct monst *mtmp;
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	/* maybe you attacked leader? */
 	if(!mtmp->mpeaceful) {
 		if(!Role_if(PM_EXILE)){
@@ -538,7 +567,10 @@ leader_speaks(mtmp)
 STATIC_OVL void
 chat_with_nemesis()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 /*	The nemesis will do most of the talking, but... */
 	qt_pager(rn1(10, QT_DISCOURAGE + variant));
 	// if(!Qstat(met_nemesis)) Qstat(met_nemesis++);
@@ -547,7 +579,10 @@ chat_with_nemesis()
 void
 nemesis_speaks()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if(!Qstat(in_battle)) {
 	  if(u.uhave.questart && 
 		(Qstat(met_nemesis) || 
@@ -598,7 +633,10 @@ nemesis_speaks()
 STATIC_OVL void
 chat_with_guardian_uh()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	if (u.uevent.qrecalled){
 		if(mvitals[PM_MOON_S_CHOSEN].died){
 			qt_pager(rn1(5, QT_GUARDTALK2 + variant));
@@ -632,7 +670,10 @@ chat_with_guardian_uh()
 STATIC_OVL void
 chat_with_guardian()
 {
-	int variant = flags.stag || (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7) ? QT_VARIANT : 0;
+	int variant = flags.stag 
+				|| (Role_if(PM_CONVICT) && quest_status.time_doing_quest/CON_QUEST_INCREMENT >= 7)
+				|| (Race_if(PM_SILVERKNIGHT) && Role_if(PM_KNIGHT))
+			? QT_VARIANT : 0;
 	/*	These guys/gals really don't have much to say... */
 	if (Role_if(PM_UNDEAD_HUNTER))
 		chat_with_guardian_uh();

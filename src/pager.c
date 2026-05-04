@@ -22,7 +22,7 @@ STATIC_DCL char * get_weakness_description_of_monster_type(struct monst *, char 
 STATIC_DCL char * get_conveys_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mm_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mt_description_of_monster_type(struct monst *, char *);
-STATIC_DCL char * get_mb_description_of_monster_type(struct monst *, char *);
+STATIC_DCL char * get_mb_and_mc_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_ma_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mv_description_of_monster_type(struct monst *, char *);
 STATIC_DCL char * get_mg_description_of_monster_type(struct monst *, char *);
@@ -150,7 +150,8 @@ object_from_map(glyph, x, y, obj_p)
 #define MG_FLAG 5
 #define MA_FLAG 6
 #define MF_FLAG 7
-#define MSYM	8
+#define MC_FLAG 8
+#define MSYM	9
 
 char *
 flag_to_word(flag, category)
@@ -222,14 +223,7 @@ flag_to_word(flag, category)
 			case MB_HUMANOID: return "are humanoid";
 			case MB_ANIMAL: return "are animals";
 			case MB_SLITHY: return "are slithery";
-			case MB_UNSOLID: return "are unsolid";
-			case MB_THICK_HIDE: return "have a thick hide";
 			case MB_OVIPAROUS: return "are oviparous";
-			case MB_ACID: return "are acidic";
-			case MB_POIS: return "are poisonous";
-			case MB_CHILL: return "are cold to the touch";
-			case MB_TOSTY: return "are hot to the touch";
-			case MB_HALUC: return "are hallucinogenic to eat";
 			case MB_MALE: return "are always male";
 			case MB_FEMALE: return "are always female";
 			case MB_NEUTER: return "are always gender-neutral";
@@ -240,12 +234,24 @@ flag_to_word(flag, category)
 			case MB_NOFEET: return "have no feet";
 			case MB_HAS_FEET: return "have feet";
 			case MB_CAN_AMULET: return "can wear an amulet";
-			case MB_INDIGESTIBLE: return "are indigestible";
-			case MB_INSUBSTANTIAL: return "are insubstantial";
 			case MB_NOGLOVES: return "cannot wear gloves";
 			case MB_NOHAT: return "cannot wear hats";
 			case MB_SNAKELEG: return "have snake-like legs";
 			case MB_CENTAUR: return "have centaur-like legs";
+		}
+	case MC_FLAG:
+		switch (flag){
+			case MC_UNSOLID: return "are unsolid";
+			case MC_ACID: return "are acidic";
+			case MC_POIS: return "are poisonous";
+			case MC_CHILL: return "are cold to the touch";
+			case MC_TOSTY: return "are hot to the touch";
+			case MC_HALUC: return "are hallucinogenic to eat";
+			case MC_INDIGESTIBLE: return "are indigestible";
+			case MC_INSUBSTANTIAL: return "are insubstantial";
+			case MC_SKELETAL: return "are nothing but bones";
+			case MC_ORGANIC: return "are made of organic materials";
+			case MC_THICK_HIDE: return "have a thick hide";
 		}
 	case MV_FLAG:
 		switch (flag){
@@ -377,7 +383,7 @@ warned_monster_reasons(mon, wbuf)
 
 #define wflag_and_mflag(wflag, mflag) (((mflag & i) > 0) && ((wflag & i) > 0))
 
-	for (unsigned long i = MA_UNDEAD; i <= MA_XORN; i = i << 1){
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
 		if (!wflag_and_mflag(flags.warntypea, ma_flags) \
 			|| ((ma_flags & MA_UNDEAD) > 0 && u.sealsActive&SEAL_ACERERAK)) continue;
 
@@ -427,34 +433,40 @@ warned_monster_reasons(mon, wbuf)
 	}
 	else Strcat(buf, "monsters that ");
 
-	for (unsigned long i = MM_FLY; i <= MM_DOORBUST; i = i << 1){
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
 		if (!wflag_and_mflag(flags.warntypem, mon->data->mflagsm)) continue;
 		Strcat(buf, flag_to_word(i, MM_FLAG));
 		Strcat(buf, ", ");
 		if (!has_other) has_other = TRUE;
 	}
 
-	for (unsigned long i = MT_WANTSAMUL; i <= MT_BOLD; i = i << 1){
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
 		if (!wflag_and_mflag(flags.warntypet, mon->data->mflagst)) continue;
 		Strcat(buf, flag_to_word(i, MT_FLAG));
 		Strcat(buf, ", ");
 		if (!has_other) has_other = TRUE;
 	}
 
-	for (unsigned long i = MB_NOEYES; i <= MB_NOHAT; i = i << 1){
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
 		if (!wflag_and_mflag(flags.warntypeb, mon->data->mflagsb)) continue;
 		Strcat(buf, flag_to_word(i, MB_FLAG));
 		Strcat(buf, ", ");
 	}
 
-	for (unsigned long i = MV_NORMAL; i <= MV_EARTHSENSE; i = i << 1){
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
+		if (!wflag_and_mflag(flags.warntypec, mon->data->mflagsc)) continue;
+		Strcat(buf, flag_to_word(i, MC_FLAG));
+		Strcat(buf, ", ");
+	}
+
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
 		if (!wflag_and_mflag(flags.warntypev, mon->data->mflagsv)) continue;
 		Strcat(buf, flag_to_word(i, MV_FLAG));
 		Strcat(buf, ", ");
 		if (!has_other) has_other = TRUE;
 	}
 
-	for (unsigned long i = MG_REGEN; i <= MG_HATESUNBLESSED; i = i << 1){
+	for (unsigned long i = 1UL; i != 0; i <<= 1){
 		if (!wflag_and_mflag(flags.warntypeg, mon->data->mflagsg)) continue;
 		Strcat(buf, flag_to_word(i, MG_FLAG));
 		Strcat(buf, ", ");
@@ -482,6 +494,7 @@ warned_monster_reasons(mon, wbuf)
 #undef MM_FLAG
 #undef MT_FLAG
 #undef MB_FLAG
+#undef MC_FLAG
 #undef MV_FLAG
 #undef MG_FLAG
 #undef MA_FLAG
@@ -530,6 +543,9 @@ lookat(x, y, buf, monbuf, shapebuff)
 	    Sprintf(steedbuf, ", mounted on %s", y_monnam(u.usteed));
 	    /* assert((sizeof buf >= strlen(buf)+strlen(steedbuf)+1); */
 	    Strcat(buf, steedbuf);
+	}
+	if (u.urider) {
+	    Strcat(buf, ", mounted on you");
 	}
 #endif
 	/* When you see yourself normally, no explanation is appended
@@ -1811,7 +1827,7 @@ do_look_letter(sym, from_screen, quick, force_defsyms, cc, out_str, firstmatch)
 			temp_buf[0] = '\0';
 			get_description_of_monster_type(mtmp, temp_buf);
 			(void)strncat(out_str, temp_buf, LONGBUFSZ - strlen(out_str) - 1);
-			if(uarmh && uarmh->oartifact == ART_ALL_SEEING_EYE_OF_THE_FLY){
+			if(check_mutation(TT_PROBING_GAZE) || (uarmh && uarmh->oartifact == ART_ALL_SEEING_EYE_OF_THE_FLY)){
 				probe_monster(mtmp);
 			}
 		}
@@ -2068,7 +2084,7 @@ get_mt_description_of_monster_type(struct monst * mtmp, char * description)
 	return description;
 }
 char *
-get_mb_description_of_monster_type(struct monst * mtmp, char * description)
+get_mb_and_mc_description_of_monster_type(struct monst * mtmp, char * description)
 {
 	struct permonst * ptr = mtmp->data;
 	strcat(description, "Body: ");
@@ -2096,9 +2112,15 @@ get_mb_description_of_monster_type(struct monst * mtmp, char * description)
 	many = append(description, burning(ptr)				, "burning to eat"			, many);
 	many = append(description, hallucinogenic(ptr)		, "hallucinogenic to eat"	, many);
 	many = append(description, is_deadly(ptr)			, "deadly to eat"			, many);
-	many = append(description, is_male(ptr)				, "always male"				, many);
-	many = append(description, is_female(ptr)			, "always female"			, many);
-	many = append(description, is_neuter(ptr)			, "neuter"					, many);
+	if(is_male(ptr) || is_female(ptr) || is_neuter(ptr)){
+		many = append(description, is_male(ptr)			, "always male"				, many);
+		many = append(description, is_female(ptr)		, "always female"			, many);
+		many = append(description, is_neuter(ptr)		, "neuter"					, many);
+	}
+	else if(your_race(ptr) || (humanoid_torso(ptr) && humanoid_torso(youracedata))){
+		many = append(description, !mtmp->female		, "male"					, many);
+		many = append(description, mtmp->female			, "female"					, many);
+	}	
 	many = append(description, strongmonst(ptr)			, "strong"					, many);
 	many = append(description, infravisible(ptr)		, "infravisible"			, many);
 	many = append(description, humanoid(ptr)			, "humanoid"				, many);
@@ -2747,7 +2769,7 @@ get_description_of_monster_type(struct monst * mtmp, char * description)
 		if (iflags.pokedex & POKEDEX_SHOW_MB){
 			temp_buf[0] = '\0';
 			strcat(description, "\n");
-			strcat(description, get_mb_description_of_monster_type(mtmp, temp_buf));
+			strcat(description, get_mb_and_mc_description_of_monster_type(mtmp, temp_buf));
 		}
 		if (iflags.pokedex & POKEDEX_SHOW_MV){
 			temp_buf[0] = '\0';

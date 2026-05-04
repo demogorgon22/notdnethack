@@ -56,7 +56,7 @@ extern const struct text_color_option *text_colors;
 #endif
 
 /* need to preserve these during save to avoid accessing freed memory */
-static unsigned ustuck_id = 0, usteed_id = 0;
+static unsigned ustuck_id = 0, usteed_id = 0, urider_id = 0;
 
 int
 dosave()
@@ -235,6 +235,7 @@ dosave0()
 	ustuck_id = (u.ustuck ? u.ustuck->m_id : 0);
 #ifdef STEED
 	usteed_id = (u.usteed ? u.usteed->m_id : 0);
+	urider_id = (u.urider ? u.urider->m_id : 0);
 #endif
 	savelev(fd, ledger_no(&u.uz), WRITE_SAVE | FREE_SAVE);
 	savegamestate(fd, WRITE_SAVE | FREE_SAVE);
@@ -252,6 +253,7 @@ dosave0()
 	u.ustuck = (struct monst *)0;
 #ifdef STEED
 	u.usteed = (struct monst *)0;
+	u.urider = (struct monst *)0;
 #endif
 
 	for(ltmp = (int)1; ltmp <= maxledgerno(); ltmp++) {
@@ -370,6 +372,8 @@ register int fd, mode;
 #ifdef STEED
 	if(usteed_id)
 	    bwrite(fd, (genericptr_t) &usteed_id, sizeof usteed_id);
+	if(urider_id)
+	    bwrite(fd, (genericptr_t) &urider_id, sizeof urider_id);
 #endif
 	bwrite(fd, (genericptr_t) pl_character, sizeof pl_character);
 	bwrite(fd, (genericptr_t) pl_fruit, sizeof pl_fruit);
@@ -453,6 +457,7 @@ savestateinlock()
 		    ustuck_id = (u.ustuck ? u.ustuck->m_id : 0);
 #ifdef STEED
 		    usteed_id = (u.usteed ? u.usteed->m_id : 0);
+			urider_id = (u.urider ? u.urider->m_id : 0);
 #endif
 		    savegamestate(fd, WRITE_SAVE);
 		}

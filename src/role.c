@@ -41,7 +41,7 @@ struct Role roles[] = {
 	PM_LORD_CARNARVON, PM_STUDENT, PM_MINION_OF_TEZCATLIPOCA,
 	NON_PM, PM_HUMAN_MUMMY, S_SNAKE, S_MUMMY,
 	ART_ITLACHIAYAQUE,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_DWARF|SA_GNOME|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON|SA_FORMIAN|SA_SILVERMAN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 10, 10,  7,  7,  7 },
@@ -103,7 +103,7 @@ struct Role roles[] = {
 	PM_PELIAS, PM_CHIEFTAIN, PM_THOTH_AMON,
 	PM_OGRE, PM_TROLL, S_OGRE, S_TROLL,
 	ART_HEART_OF_AHRIMAN,
-	SA_HUMAN|SA_ORC|SA_VAMPIRE|SA_HALF_DRAGON|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ORC|SA_VAMPIRE|SA_HALF_DRAGON|SA_CENTAUR|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  16,  7,  7, 15, 16,  6 },
@@ -130,7 +130,7 @@ struct Role roles[] = {
 	PM_STRANGE_CORPSE, PM_PEASANT, PM_ACERERAK,
 	PM_SKELETON, PM_LICH, S_HUMAN, S_HUMANOID,
 	ART_PEN_OF_THE_VOID,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ELF|SA_ORC|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_DWARF|SA_GNOME|SA_ELF|SA_ORC|SA_CLOCKWORK|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA|SA_FORMIAN|SA_DRIDER|SA_CENTAUR|SA_SILVERMAN|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  6,  6,  6,  6,  6,  6 },
@@ -157,7 +157,7 @@ struct Role roles[] = {
 	PM_SHAMAN_KARNOV, PM_NEANDERTHAL, PM_CHROMATIC_DRAGON,
 	PM_BUGBEAR, PM_HILL_GIANT, S_HUMANOID, S_GIANT,
 	ART_SCEPTRE_OF_MIGHT,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_DWARF|SA_GNOME|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_FORMIAN|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7,  8,  6 },
@@ -186,7 +186,7 @@ struct Role roles[] = {
 	PM_SOLDIER_ANT, PM_MALKUTH_SEPHIRAH, S_RODENT, S_SPIDER,
 	ART_IRON_SPOON_OF_LIBERATION,
 	// ART_IRON_BALL_OF_LIBERATION,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ORC|SA_ELF|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA|SA_SALAMANDER|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_DWARF|SA_GNOME|SA_ORC|SA_ELF|SA_VAMPIRE|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_YUKI_ONNA|SA_DRIDER|SA_SALAMANDER|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  7,  7, 13,  6 },
@@ -214,7 +214,7 @@ struct Role roles[] = {
 	PM_HIPPOCRATES, PM_ATTENDANT, PM_CYCLOPS,
 	PM_GIANT_RAT, PM_SNAKE, S_RODENT, S_YETI,
 	ART_STAFF_OF_AESCULAPIUS,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_YUKI_ONNA|SA_ETHEREALOID|SA_ENT, ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ELF|SA_GNOME|SA_YUKI_ONNA|SA_CENTAUR|SA_DRIDER|SA_ETHEREALOID|SA_ENT, ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 13, 11,  7, 11, 16 },
 	{   5, 30, 20, 15, 25, 5 },
@@ -267,7 +267,7 @@ struct Role roles[] = {
 	PM_KING_ARTHUR, PM_PAGE, PM_NIMUNE,
 	PM_QUASIT, PM_ELF_LORD, S_IMP, S_NYMPH, /*demons and fairies*/
 	ART_MAGIC_MIRROR_OF_MERLIN,
-	SA_DWARF|SA_HUMAN|SA_CLOCKWORK|SA_HALF_DRAGON, ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
+	SA_DWARF|SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_CLOCKWORK|SA_HALF_DRAGON|SA_CENTAUR|SA_SILVERMAN, ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
 	/* Str Int Wis Dex Con Cha */
 	{  13,  7, 14,  8, 10, 17 },
 	{  30, 15, 15, 10, 20, 10 },
@@ -322,7 +322,7 @@ struct Role roles[] = {
 	PM_GRAND_MASTER, PM_ABBOT, PM_MASTER_KAEN,
 	NON_PM, NON_PM, NON_PM, NON_PM,
 	ART_EYE_OF_THE_OVERWORLD,
-	SA_HUMAN|SA_CLOCKWORK|SA_CHIROPTERAN|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_ETHEREALOID, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_CLOCKWORK|SA_CHIROPTERAN|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_ETHEREALOID, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7,  8,  8,  7,  7 },
@@ -350,7 +350,7 @@ struct Role roles[] = {
 	PM_ENORMOUS_RAT, PM_CONTAMINATED_PATIENT, S_RODENT, S_WORM,
 	//Switches to PM_LARGE_CAT, PM_CONTAMINATED_PATIENT, S_WORM, S_BAT from locate level onwards
 	ART_STAR_OF_HYPERNOTUS,
-	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ORC|SA_ELF|SA_VAMPIRE|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_SALAMANDER, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_DWARF|SA_GNOME|SA_ORC|SA_ELF|SA_VAMPIRE|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_TIEFLING|SA_AASIMAR|SA_SALAMANDER, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 10, 3, 10,  7, 10 },
@@ -407,7 +407,7 @@ struct Role roles[] = {
 	PM_ARCH_PRIEST, PM_ACOLYTE, PM_LEGION,
 	PM_LEGIONNAIRE, PM_BLACK_PUDDING, S_ZOMBIE, S_PUDDING,
 	ART_MITRE_OF_HOLINESS,
-	SA_HUMAN|SA_ELF|SA_CLOCKWORK|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_SALAMANDER|SA_ENT, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ELF|SA_CLOCKWORK|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_SALAMANDER|SA_ENT, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7, 10,  7,  7,  7 },
@@ -434,7 +434,7 @@ struct Role roles[] = {
 	PM_MAYOR_CUMMERBUND, PM_PIRATE_BROTHER, PM_BLACKBEARD_S_GHOST,
 	PM_SKELETAL_PIRATE, PM_SOLDIER, S_RODENT, S_ELEMENTAL, /* Ghost pirates, soldiers, rats in the food stores, and the occasional storm*/
 	ART_TREASURY_OF_PROTEUS,
-	SA_HUMAN|SA_ELF|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ELF|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  7, 7,  10, 10,  7 },
@@ -463,7 +463,7 @@ struct Role roles[] = {
 	PM_MASTER_OF_THIEVES, PM_THUG, PM_MASTER_ASSASSIN,
 	PM_LEPRECHAUN, PM_GUARDIAN_NAGA, S_NYMPH, S_NAGA,
 	ART_MASTER_KEY_OF_THIEVERY,
-	SA_HUMAN|SA_ORC|SA_VAMPIRE|SA_ELF|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_SALAMANDER|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_ORC|SA_VAMPIRE|SA_ELF|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_SILVERMAN|SA_SALAMANDER|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7,  7, 10,  7,  6 },
@@ -490,7 +490,7 @@ struct Role roles[] = {
 	PM_ORION, PM_HUNTER, PM_SCORPIUS,
 	PM_FOREST_CENTAUR, PM_SCORPION, S_CENTAUR, S_SPIDER,
 	ART_LONGBOW_OF_DIANA,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_SALAMANDER|SA_ENT, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ELF|SA_GNOME|SA_ORC|SA_HALF_DRAGON|SA_CHIROPTERAN|SA_CENTAUR|SA_SALAMANDER|SA_ENT, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{  13, 13, 13,  9, 13,  7 },
@@ -517,7 +517,7 @@ struct Role roles[] = {
 	PM_LORD_SATO, PM_ROSHI, PM_ASHIKAGA_TAKAUJI,
 	PM_WOLF, PM_STALKER, S_DOG, S_ELEMENTAL,
 	ART_TSURUGI_OF_MURAMASA,
-	SA_HUMAN|SA_CLOCKWORK|SA_HALF_DRAGON|SA_YUKI_ONNA, ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
+	SA_HUMAN|SA_TIEFLING|SA_CLOCKWORK|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_DRIDER, ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
 	/* Str Int Wis Dex Con Cha */
 	{  10,  8,  7, 10, 17,  6 },
 	{  30, 10,  8, 30, 14,  8 },
@@ -572,7 +572,7 @@ struct Role roles[] = {
 	PM_PINDAR, PM_RHYMER, PM_AGLAOPE,
 	PM_SNAKE, PM_WHITE_UNICORN, S_SNAKE, S_UNICORN,
 	ART_LYRE_OF_ORPHEUS,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_CLOCKWORK|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_VAMPIRE|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ELF|SA_GNOME|SA_ORC|SA_CLOCKWORK|SA_HALF_DRAGON|SA_YUKI_ONNA|SA_VAMPIRE|SA_CENTAUR|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7,  7,  7, 10,  6, 10 },
@@ -600,7 +600,7 @@ struct Role roles[] = {
 	PM_VICAR_AMALIA, PM_VERGER, PM_INDEX_WOLF,
 	PM_HUMAN_WEREWOLF, PM_MIST_WOLF, S_DOG, S_VORTEX,
 	ART_STAKE_OF_WITHERING,
-	SA_HUMAN|SA_VAMPIRE|SA_ORC|SA_YUKI_ONNA|SA_ENT, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_VAMPIRE|SA_ORC|SA_YUKI_ONNA|SA_ENT, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 10, 10,  7,  7,  7 },
@@ -627,7 +627,7 @@ struct Role roles[] = {
 	PM_NORN, PM_WARRIOR, PM_LORD_SURTUR,
 	PM_FIRE_ANT, PM_FIRE_GIANT, S_ANT, S_GIANT,
 	ART_ORB_OF_FATE,
-	SA_HUMAN|SA_DWARF|SA_YUKI_ONNA, ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL,
+	SA_HUMAN|SA_DWARF|SA_AASIMAR|SA_YUKI_ONNA|SA_FORMIAN, ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL,
 	/* Str Int Wis Dex Con Cha */
 	{  12,  10, 12, 10, 10, 12 },
 	{  18,  14, 16, 18, 20, 14 },
@@ -653,7 +653,7 @@ struct Role roles[] = {
 	PM_NEFERET_THE_GREEN, PM_APPRENTICE, PM_DARK_ONE,
 	PM_VAMPIRE_BAT, PM_XORN, S_BAT, S_WRAITH,
 	ART_EYE_OF_THE_AETHIOPICA,
-	SA_HUMAN|SA_ELF|SA_GNOME|SA_ORC|SA_VAMPIRE|SA_HALF_DRAGON|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
+	SA_HUMAN|SA_TIEFLING|SA_AASIMAR|SA_ELF|SA_GNOME|SA_ORC|SA_VAMPIRE|SA_HALF_DRAGON|SA_SALAMANDER|SA_ETHEREALOID|SA_ENT|SA_LEPRECHAUN, ROLE_MALE|ROLE_FEMALE |
 	  ROLE_NEUTRAL|ROLE_CHAOTIC,
 	/* Str Int Wis Dex Con Cha */
 	{   7, 10,  7,  7,  7,  7 },
@@ -667,7 +667,7 @@ struct Role roles[] = {
 {{0, 0}}
 };
 
-const struct Role WtWrole = {	
+const struct Role WtWrole = {
 	{"Worm that Walks", 0}, {
 	{"",      0},
 	{"",0},
@@ -802,7 +802,7 @@ struct Role urole =
 
 /* Table of all races */
 const struct Race races[] = {
-{	"human", "human", "humanity", "Hum",
+{	"human", "human", "humanity", "Hum", 'h',
 	{"man", "woman"},
 	PM_HUMAN, NON_PM, PM_HUMAN_MUMMY, PM_HUMAN,
 	ROLE_MALE|ROLE_FEMALE |
@@ -818,7 +818,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_ABJURATION, -20
 },
-{	"clockwork automaton", "automatic", "clockwork-kind", "Clk",
+{	"clockwork automaton", "automatic", "clockwork-kind", "Clk", 'c',
 	{0, 0},
 	PM_CLOCKWORK_AUTOMATON, NON_PM, NON_PM, NON_PM,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL,
@@ -833,7 +833,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_WIZARD_LOCK, -1000
 },
-{	"Chiropteran", "Chiropteric", "Chiropteran-hood", "Bat",
+{	"chiropteran", "chiropteric", "chiropteran-hood", "Bat", 'C',
 	{0, 0},
 	PM_CHIROPTERAN, NON_PM, PM_CHIROPTERAN_MUMMY, PM_CHIROPTERAN,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -848,7 +848,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_MAGIC_MAPPING, -15
 },
-{	"dwarf", "dwarven", "dwarvenkind", "Dwa",
+{	"dwarf", "dwarven", "dwarvenkind", "Dwa", 'd',
 	{0, 0},
 	PM_DWARF, NON_PM, PM_DWARF_MUMMY, PM_DWARF,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
@@ -863,7 +863,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_DIG, -15
 },
-{	"Drow", "droven", "drovenkind", "Dro",
+{	"drow", "droven", "drovenkind", "Dro", 'D',
 	{"hedrow", "drow"},
 	PM_DROW, NON_PM, PM_DROW_MUMMY, PM_HEDROW_ZOMBIE,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -878,7 +878,7 @@ const struct Race races[] = {
 	NO_NIGHTVISION,
 	SPE_SLEEP, -5
 },
-{	"elf", "elven", "elvenkind", "Elf",
+{	"elf", "elven", "elvenkind", "Elf", 'e',
 	{"elf", "elf-maid"},
 	PM_ELF, NON_PM, PM_ELF_MUMMY, PM_ELF,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -893,7 +893,7 @@ const struct Race races[] = {
 	NIGHTVISION3,
 	SPE_REMOVE_CURSE, -10
 },
-{	"Etherealoid", "etherealoidic", "etherealoid-kind", "Eth",
+{	"Etherealoid", "etherealoidic", "etherealoid-kind", "Eth", 'E',
 	{0,0},
 	PM_ETHEREALOID, NON_PM, NON_PM, NON_PM,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
@@ -908,7 +908,22 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_HASTE_SELF, -10
 },
-{	"gnome", "gnomish", "gnomehood", "Gno",
+{	"formian", "formian", "formianhood", "For", 'f',
+	{0, 0},
+	PM_FORMIAN, NON_PM, PM_FORMIAN_MUMMY, PM_FORMIAN,
+	ROLE_FEMALE | ROLE_LAWFUL,
+	SA_FORMIAN,
+	MA_INSECTOID, MA_INSECTOID, MA_DWARF|MA_GNOME|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{STR18(100),  16, 18, 18, 18, 15 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  0, 2,  0, 1 },	/* Energy */
+	NORMALNIGHTVIS,
+	SPE_DIG, -10
+},
+{	"gnome", "gnomish", "gnomehood", "Gno", 'g',
 	{0, 0},
 	PM_GNOME, NON_PM, PM_GNOME_MUMMY, PM_GNOME,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
@@ -923,7 +938,7 @@ const struct Race races[] = {
 	NIGHTVISION2,
 	SPE_INVISIBILITY, -10
 },
-{	"Half-dragon", "Half-dragon", "Half-dragonhood", "Hlf",
+{	"half-dragon", "half-dragon", "half-dragonhood", "Hlf", 'H',
 	{0, 0},
 	PM_HALF_DRAGON, NON_PM, PM_HALF_DRAGON_MUMMY, PM_HALF_DRAGON,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -938,7 +953,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_DETECT_TREASURE, -10
 },
-{	"incantifier", "incantifier", "wanterkind", "Inc",
+{	"incantifier", "incantifier", "wanterkind", "Inc", 'i',
 	{0, 0},
 	PM_INCANTIFIER, NON_PM, PM_HUMAN_MUMMY, PM_HUMAN,
 	ROLE_MALE|ROLE_FEMALE |
@@ -954,7 +969,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS
 	//Note: Bonus to all spells.
 },
-{	"leprechaun", "leprechaunic", "leprechaundum", "Lep",
+{	"leprechaun", "leprechaunic", "leprechaundum", "Lep", 'l',
 	{0, 0},
 	PM_LEPRECHAUN, NON_PM, PM_HUMAN_MUMMY, PM_LEPRECHAUN,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -969,7 +984,7 @@ const struct Race races[] = {
 	NIGHTVISION2, 
 	SPE_DETECT_TREASURE, -10
 },
-{	"orc", "orcish", "orcdom", "Orc",
+{	"orc", "orcish", "orcdom", "Orc", 'o',
 	{0, 0},
 	PM_ORC, NON_PM, PM_ORC_MUMMY, PM_ORC,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -984,7 +999,7 @@ const struct Race races[] = {
 	NIGHTVISION2,
 	SPE_CANCELLATION, -15
 },
-{	"salamander", "salamandic", "sala-broship", "Sal",
+{	"salamander", "salamandic", "sala-broship", "Sal", 's',
 	{0, 0},
 	PM_SALAMANDER, NON_PM, PM_HUMAN_MUMMY, PM_SALAMANDER,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL |ROLE_CHAOTIC,
@@ -999,7 +1014,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS, 
 	SPE_FIREBALL, -10
 },
-{	"treant", "treantic", "treant-kind", "Ent",
+{	"treant", "treantic", "treant-kind", "Ent", 'E',
 	{0, 0},
 	PM_ENT, NON_PM, PM_GIANT_MUMMY, PM_ENT,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL,
@@ -1014,7 +1029,55 @@ const struct Race races[] = {
 	NIGHTVISION2,
 	SPE_RESTORE_ABILITY, -10
 },
-{	"vampire", "vampiric", "vampirehood", "Vam",
+{	"drider", "dridic", "driderhood", "Dri", 'r',
+	{0, 0},
+	PM_DRIDER, NON_PM, PM_DRIDER_MUMMY, PM_DRIDER,
+	ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_DRIDER,
+	MA_ELF, 0, MA_FEY|MA_ELF|MA_ORC|MA_DROW,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(100), 20, 18, 20, 16, 20 },
+	/* Init   Lower  Higher */
+	{  4, 0,  0, 4,  0, 1 },	/* Hit points */
+	{  4, 0,  0, 4,  0, 2 },	/* Energy */
+	NO_NIGHTVISION,
+	SPE_SLEEP, -5
+},
+{	"centaur", "centaur", "centaurhood", "Cen", 'u',
+	{0, 0},
+	PM_CENTAUR, NON_PM, PM_CENTAUR_MUMMY, PM_CENTAUR,
+	ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_CENTAUR,
+	MA_DEMIHUMAN, MA_ANIMAL, MA_HUMAN|MA_ELF|MA_DWARF|MA_GNOME|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(100), 18, 18, 18, 18, 18 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_HASTE_SELF, -20
+},
+{	"tiefling", "tiefling", "tieflinghood", "Tie", 'T',
+	{0, 0},
+	PM_TIEFLING, NON_PM, PM_TIEFLING_MUMMY, PM_TIEFLING,
+	ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_TIEFLING,
+	MA_HUMAN, 0, MA_GNOME|MA_ORC|MA_DWARF,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ 	  16,     20, 16, 18, 18, 20 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_ABJURATION, -20
+},
+{	"vampire", "vampiric", "vampirehood", "Vam", 'v',
 	{"vampire", "vampiress"},
 	PM_VAMPIRE, NON_PM, PM_HUMAN_MUMMY, PM_HUMAN,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -1029,7 +1092,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_DRAIN_LIFE, -5
 },
-{	"yuki-onna", "yuki-onnic", "feyhood", "Swn",
+{	"yuki-onna", "yuki-onnic", "feyhood", "Swn", 'y',
 	{0, 0},
 	PM_YUKI_ONNA, NON_PM, PM_HUMAN_MUMMY, PM_YUKI_ONNA,
 	ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC|ROLE_NEUTRAL,
@@ -1044,7 +1107,7 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_CHARM_MONSTER, -15
 },
-{	"Gith", "Gith", "githhood", "Gth",
+{	"gith", "gith", "githhood", "Gth", 'G',
 	{0, 0},
 	PM_GITH, NON_PM, PM_HUMAN_MUMMY, PM_GITH,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_CHAOTIC,
@@ -1059,15 +1122,47 @@ const struct Race races[] = {
 	NORMALNIGHTVIS,
 	SPE_FORCE_BOLT, -1000
 },
+{	"silverfish", "silverish", "silverhood", "Sil", 'a',
+	{"silverman", "silverwoman"},
+	PM_SILVERMAN, NON_PM, PM_SILVERMAN, PM_SILVERMAN,
+	ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_SILVERMAN,
+	0, 0, ~0, /* Everyone */
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR18(100), 18, 18, 18, 18, 18 },
+	/* Init   Lower  Higher */
+	{  12,0,  2, 4,  0, 2 },	/* Hit points */
+	{  1, 0,  0, 1,  0, 1 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_TURN_UNDEAD, -20
+},
+{	"aasimar", "aasimaran", "aasimarhood", "Aas", 'A',
+	{0, 0},
+	PM_AASIMAR, NON_PM, PM_AASIMAR_MUMMY, PM_AASIMAR,
+	ROLE_MALE|ROLE_FEMALE |
+	  ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_AASIMAR,
+	MA_MINION, MA_GNOME|MA_DWARF|MA_ELF|MA_HUMAN, MA_DROW|MA_ELEMENTAL|MA_ORC,
+	/*    Str     Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ STR19(20),  18, 20, 18, 14, 18 },
+	/* Init   Lower  Higher */
+	{  2, 0,  0, 4,  1, 0 },	/* Hit points */
+	{  1, 0,  2, 0,  2, 0 },		/* Energy */
+	NORMALNIGHTVIS,
+	SPE_ABJURATION, -20
+},
 /* Array terminator */
-{ 0, 0, 0, 0, 0 }};
+{ 0 }};
 
 
 /* The player's race, created at runtime from initial
  * choices.  This may be munged in role_init().
  */
 struct Race urace =
-{	"something", "undefined", "something", "Xxx",
+{	"something", "undefined", "something", "Xxx", 0,
 	{0, 0},
 	NON_PM, NON_PM, NON_PM, NON_PM,
 	0, 0, 0, 0, 0,
@@ -1081,7 +1176,7 @@ struct Race urace =
 };
 
 struct Race myrkalfr = 
-{	"myrkalfr", "myrkalfar", "myrkalfrkind", "Dro",
+{	"myrkalfr", "myrkalfar", "myrkalfrkind", "Dro", 0,
 	{"myrkalfr", "myrkalfr"},
 	PM_MYRKALFR, NON_PM, PM_DROW_MUMMY, PM_HEDROW_ZOMBIE,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -1097,7 +1192,7 @@ struct Race myrkalfr =
 };
 
 struct Race android = 
-{	"android", "android", "android-kind", "And",
+{	"android", "android", "android-kind", "And", 0,
 	{"android", "gynoid"},
 	PM_ANDROID, PM_GYNOID, PM_MUMMIFIED_ANDROID, PM_FLAYED_ANDROID,
 	ROLE_MALE|ROLE_FEMALE | ROLE_NEUTRAL,
@@ -1113,7 +1208,7 @@ struct Race android =
 };
 
 struct Race githyanki =
-{	"Githyanki", "githyanki", "githhood", "Ynk",
+{	"Githyanki", "githyanki", "githhood", "Ynk", 0,
 	{0, 0},
 	PM_GITHYANKI, NON_PM, PM_HUMAN_MUMMY, PM_GITHYANKI,
 	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL,
@@ -1130,7 +1225,7 @@ struct Race githyanki =
 };
 
 struct Race githzerai =
-{	"Githzerai", "githzerai", "githhood", "Zer",
+{	"Githzerai", "githzerai", "githhood", "Zer", 0,
 	{0, 0},
 	PM_GITHZERAI, NON_PM, PM_HUMAN_MUMMY, PM_GITHZERAI,
 	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
@@ -1145,6 +1240,57 @@ struct Race githzerai =
 	NORMALNIGHTVIS,
 	SPE_PROTECTION, -1000
 };
+
+struct Race silverknight = 
+{	"silverknight", "silverknight", "silverknight-kind", "Skn", 0,
+	{0, 0},
+	PM_SILVERKNIGHT, NON_PM, PM_SILVERKNIGHT, PM_SILVERKNIGHT,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_SILVERMAN,
+	0, 0, ~0, /* Everyone */
+	/*  Str    Int Wis Dex Con Cha */
+	{    3,     3,  3,  3,  3,  3 },
+	{ STR18(100), 18, 18, 18, 18, 18 },
+	/* Init   Lower  Higher */
+	{  2, 0,  1, 3,  1, 0 },	/* Hit points */
+	{  1, 0,  1, 0,  1, 0 },	/* Energy */
+	NO_NIGHTVISION
+};
+
+struct Race drow_tiefling =
+{	"dark fey'ri", "dark fey'ri", "dark fey'rihood", "Dfk", 0,
+	{0, 0},
+	PM_DARK_FEY_RI, NON_PM, PM_DARK_FEY_RI_MUMMY, PM_DARK_FEY_RI,
+	ROLE_MALE|ROLE_FEMALE | ROLE_CHAOTIC,
+	SA_ELF,
+	MA_ELF, 0, MA_FEY|MA_ELF|MA_ORC,
+	/*  Str      Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ 	  15,     20, 16, 20, 16, 20 },
+	/* Init   Lower  Higher */
+	{  6, 0,  0, 6,  1, 0 },	/* Hit points */
+	{  6, 0,  0, 6,  0, 4 },		/* Energy */
+	NO_NIGHTVISION,
+	SPE_SLEEP, -5
+};
+
+struct Race aasimar_drow =
+{	"dokkimar", "dokkimar", "dokkimarhood", "Dok", 0,
+	{0, 0},
+	PM_DOKKIMAR, NON_PM, PM_DOKKIMAR_MUMMY, PM_DOKKIMAR,
+	ROLE_MALE|ROLE_FEMALE | ROLE_LAWFUL|ROLE_NEUTRAL|ROLE_CHAOTIC,
+	SA_AASIMAR,
+	MA_ELF|MA_MINION, 0, MA_DEMON|MA_ORC,
+	/*  Str      Int Wis Dex Con Cha */
+	{      3,      3,  3,  3,  3,  3 },
+	{ 	 STR18(100), 20, 20, 20, 12, 20 },
+	/* Init   Lower  Higher */
+	{  6, 0,  0, 6,  1, 0 },	/* Hit points */
+	{  6, 0,  0, 6,  0, 4 },		/* Energy */
+	NO_NIGHTVISION,
+	SPE_ABJURATION, -20
+};
+
 /* Table of all genders */
 const struct Gender genders[] = {
 	{"male",	"he",	"him",	"his",	"Mal",	ROLE_MALE},
@@ -2309,16 +2455,26 @@ int newgame;
 			}
 		}
 	}
-	if(Race_if(PM_GITH)){
-		if(flags.initalign == 0){
+	else if(Role_if(PM_KNIGHT) && Race_if(PM_SILVERMAN)){
+		urace = silverknight;
+	}
+	else if(Role_if(PM_HEALER) && Race_if(PM_TIEFLING)){
+		urace = drow_tiefling;
+	}
+	else if(Role_if(PM_HEALER) && Race_if(PM_AASIMAR)){
+		urace = aasimar_drow;
+	}
+	else if(Race_if(PM_GITH)){
+		if(flags.initalign == INITALIGN_LAWFUL){
 			//Lawful
 			urace = githyanki;
 		}
-		else if(flags.initalign == 2){
+		else if(flags.initalign == INITALIGN_CHAOTIC){
 			//Chaotice
 			urace = githzerai;
 		}
 	}
+
 	if(Race_if(PM_HALF_DRAGON) && Humanoid_half_dragon(urole.malenum)){
 		urace.attrmax[A_DEX] = 18;
 	}
@@ -2505,7 +2661,7 @@ int newgame;
 				}
 			}
 		}
-	} else if(Race_if(PM_DROW) && Role_if(PM_HEALER)){
+	} else if((RACE_IF_DROW) && Role_if(PM_HEALER)){
 		urole.filecode = "Dhl";
 		urole.lgod = GOD_ILMATER;
 		urole.ngod = GOD_PEN_A;
@@ -2876,7 +3032,7 @@ int newgame;
         urace.hatemask |= urace.lovemask;   /* Hated by the race's allies */
         urace.lovemask = 0; /* Pariahs of their race */
 	}
-	else if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+	else if(Role_if(PM_HEALER) && (RACE_IF_DROW)){
 		urace.lovemask |= MA_FEY|MA_ELF;
 		urace.hatemask = MA_ORC;
 	}
@@ -2994,7 +3150,7 @@ long prop;
 		}
 	}
 	if(count >= 15){
-		achieve.trophies |= IEA_UPGRADES;
+		set_trophy(IEA_UPGRADES);
 	}
 }
 
@@ -3002,58 +3158,60 @@ void
 give_quest_trophy()
 {
 	if(urole.neminum == PM_MINION_OF_TEZCATLIPOCA)
-		achieve.trophies |= ARC_QUEST;
+		set_trophy(ARC_QUEST);
 	else if(urole.neminum == PM_CHROMATIC_DRAGON)
-		achieve.trophies |= CAV_QUEST;
+		set_trophy(CAV_QUEST);
 	else if(urole.neminum == PM_WARDEN_ARIANNA)
-		achieve.trophies |= CON_QUEST;
+		set_trophy(CON_QUEST);
 	else if(urole.neminum == PM_NECROMANCER)
-		achieve.trophies |= ELF_SHR_QUEST;
+		set_trophy(ELF_SHR_QUEST);
 	else if(flags.initgend && (urole.neminum == PM_SEYLL_AUZKOVYN || urole.neminum == PM_ECLAVDRA))
-		achieve.trophies |= DRO_SHR_QUEST;
+		set_trophy(DRO_SHR_QUEST);
 	else if(!flags.initgend && (urole.neminum == PM_DARUTH_XAXOX || urole.neminum == PM_ECLAVDRA))
-		achieve.trophies |= HDR_SHR_QUEST;
+		set_trophy(HDR_SHR_QUEST);
 	else if(urole.neminum == PM_NIMUNE)
-		achieve.trophies |= KNI_QUEST;
+		set_trophy(KNI_QUEST);
 	else if(Role_if(PM_ANACHRONONAUT)){
 		if(Race_if(PM_ANDROID))
-			achieve.trophies |= AND_QUEST;
+			set_trophy(AND_QUEST);
 		else
-			achieve.trophies |= ANA_QUEST;
+			set_trophy(ANA_QUEST);
 	}
 	else if(urole.neminum == PM_ACERERAK)
-		achieve.trophies |= BIN_QUEST;
+		set_trophy(BIN_QUEST);
 	else if(urole.neminum == PM_REBEL_RINGLEADER)
-		achieve.trophies |= NOB_QUEST;
+		set_trophy(NOB_QUEST);
 	else if(urole.neminum == PM_DURIN_S_BANE)
-		achieve.trophies |= DWA_NOB_QUEST;
+		set_trophy(DWA_NOB_QUEST);
 	else if(urole.neminum == PM_BOLG)
-		achieve.trophies |= DWA_KNI_QUEST;
+		set_trophy(DWA_KNI_QUEST);
 	else if(urole.neminum == PM_ELDER_BRAIN)
-		achieve.trophies |= DRO_NOB_QUEST;
+		set_trophy(DRO_NOB_QUEST);
 	else if(urole.neminum == PM_A_SALOM)
-		achieve.trophies |= HDR_NOB_QUEST;
+		set_trophy(HDR_NOB_QUEST);
 	else if(urole.neminum == PM_BASTARD_OF_THE_BOREAL_VALLEY)
-		achieve.trophies |= FEM_DRA_NOB_QUEST;
+		set_trophy(FEM_DRA_NOB_QUEST);
 	else if(urole.neminum == PM_BLACKBEARD_S_GHOST)
-		achieve.trophies |= PIR_QUEST;
+		set_trophy(PIR_QUEST);
 	else if(urole.neminum == PM_AGLAOPE)
-		achieve.trophies |= BRD_QUEST;
+		set_trophy(BRD_QUEST);
 	else if(urole.neminum == PM_GREAT_HIGH_SHAMAN_OF_KURTULMAK)
-		achieve.trophies |= GNO_RAN_QUEST;
+		set_trophy(GNO_RAN_QUEST);
 	else if(urole.neminum == PM_DOCTOR_ARCHER)
-		achieve.trophies |= MAD_QUEST;
+		set_trophy(MAD_QUEST);
 	else if(urole.neminum == PM_MASTER_KAEN)
-		achieve.trophies |= MONK_QUEST;
+		set_trophy(MONK_QUEST);
+	else if(urole.neminum == PM_BLUE_EYED_FOX)
+		set_trophy(KEN_QUEST);
 	else if(urole.neminum == PM_INDEX_WOLF)
-		achieve.trophies |= UH_QUEST;
+		set_trophy(UH_QUEST);
 	else if(urole.neminum == PM_CYCLOPS)
-		achieve.trophies |= HEA_QUEST;
+		set_trophy(HEA_QUEST);
 	else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH)
-		achieve.trophies |= DRO_HEA_QUEST;
+		set_trophy(DRO_HEA_QUEST);
 	
 	if(quest_status.second_thoughts)
-		achieve.trophies |= SECOND_THOUGHTS;
+		set_trophy(SECOND_THOUGHTS);
 }
 #endif
 
@@ -3062,22 +3220,32 @@ void
 give_ascension_trophy()
 {
 	if(Role_if(PM_ANACHRONONAUT) && flags.questprogress == 2)
-		achieve.trophies |= ANA_ASC;
+		set_trophy(ANA_ASC);
 	else if(Role_if(PM_EXILE))
-		achieve.trophies |= BIN_ASC;
+		set_trophy(BIN_ASC);
 	else if(Role_if(PM_UNDEAD_HUNTER) && quest_status.moon_close && philosophy_index(u.ualign.god))
-		achieve.trophies |= UH_ASC;
+		set_trophy(UH_ASC);
 		
 	if(Race_if(PM_CLOCKWORK_AUTOMATON))
-		achieve.trophies |= CLOCK_ASC;
+		set_trophy(CLOCK_ASC);
 	else if(Race_if(PM_CHIROPTERAN))
-		achieve.trophies |= CHIRO_ASC;
+		set_trophy(CHIRO_ASC);
 	else if(Race_if(PM_HALF_DRAGON))
-		achieve.trophies |= HALF_ASC;
+		set_trophy(HALF_ASC);
 	else if(Race_if(PM_YUKI_ONNA))
-		achieve.trophies |= YUKI_ASC;
-	if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID) || Race_if(PM_ENT) || Race_if(PM_LEPRECHAUN))
+		set_trophy(YUKI_ASC);
+	else if(Race_if(PM_SALAMANDER) || Race_if(PM_ETHEREALOID) || Race_if(PM_ENT) || Race_if(PM_LEPRECHAUN))
 		achieve.new_races = 1;
+	else if(Race_if(PM_CENTAUR) || Race_if(PM_FORMIAN) || Race_if(PM_DRIDER))
+		set_trophy(CEN_ASC);
+	else if(Race_if(PM_TIEFLING) || Race_if(PM_DARK_FEY_RI))
+		set_trophy(TIE_ASC);
+	else if(Race_if(PM_AASIMAR) || Race_if(PM_DOKKIMAR))
+		set_trophy(AAS_ASC);
+	else if(Race_if(PM_SILVERMAN))
+		set_trophy(SIL_ASC);
+	else if(Race_if(PM_SILVERKNIGHT))
+		set_trophy(SKN_ASC);
 
 	int i;
 	int keys = 0;
@@ -3086,7 +3254,7 @@ give_ascension_trophy()
 			keys++;
 	}
 	if(keys <= 2)
-		achieve.trophies |= SPEED_PHASE;
+		set_trophy(SPEED_PHASE);
 	
 	//There were some bugs with these, which *should* be fixed, but check all of them anyway.
 	check_mithardir_trophy();
@@ -3101,7 +3269,7 @@ give_ascension_trophy()
 void
 give_lamashtu_trophy()
 {
-	achieve.trophies |= LAMASHTU_KILL;
+	set_trophy(LAMASHTU_KILL);
 }
 #endif
 
@@ -3109,7 +3277,7 @@ give_lamashtu_trophy()
 void
 give_baalphegor_trophy()
 {
-	achieve.trophies |= BAALPHEGOR_KILL;
+	set_trophy(BAALPHEGOR_KILL);
 }
 #endif
 
@@ -3117,7 +3285,7 @@ give_baalphegor_trophy()
 void
 give_angel_vault_trophy()
 {
-	achieve.trophies |= ANGEL_VAULT;
+	set_trophy(ANGEL_VAULT);
 }
 #endif
 
@@ -3125,7 +3293,7 @@ give_angel_vault_trophy()
 void
 give_ancient_vault_trophy()
 {
-	achieve.trophies |= ANCIENT_VAULT;
+	set_trophy(ANCIENT_VAULT);
 }
 #endif
 
@@ -3133,7 +3301,7 @@ give_ancient_vault_trophy()
 void
 give_tannin_vault_trophy()
 {
-	achieve.trophies |= TANNINIM_VAULT;
+	set_trophy(TANNINIM_VAULT);
 }
 #endif
 
@@ -3141,7 +3309,7 @@ give_tannin_vault_trophy()
 void
 give_devil_vault_trophy()
 {
-	achieve.trophies |= DEVIL_VAULT;
+	set_trophy(DEVIL_VAULT);
 }
 #endif
 
@@ -3149,7 +3317,7 @@ give_devil_vault_trophy()
 void
 give_demon_vault_trophy()
 {
-	achieve.trophies |= DEMON_VAULT;
+	set_trophy(DEMON_VAULT);
 }
 #endif
 
@@ -3194,7 +3362,7 @@ int hv_id;
 void
 give_castle_trophy()
 {
-	achieve.trophies |= CASTLE_WISH;
+	set_trophy(CASTLE_WISH);
 }
 #endif
 
@@ -3202,7 +3370,7 @@ give_castle_trophy()
 void
 give_ugwish_trophy()
 {
-	achieve.trophies |= UNKNOWN_WISH;
+	set_trophy(UNKNOWN_WISH);
 }
 #endif
 
@@ -3210,7 +3378,7 @@ give_ugwish_trophy()
 void
 give_law_trophy()
 {
-	achieve.trophies |= LAW_QUEST;
+	set_trophy(LAW_QUEST);
 }
 #endif
 
@@ -3218,7 +3386,7 @@ give_law_trophy()
 void
 give_neutral_trophy()
 {
-	achieve.trophies |= NEU_QUEST;
+	set_trophy(NEU_QUEST);
 }
 #endif
 
@@ -3227,7 +3395,7 @@ void
 give_chaos_temple_trophy()
 {
 	if(chaos_dvariant == TEMPLE_OF_CHAOS)
-		achieve.trophies |= CHA_QUEST;
+		set_trophy(CHA_QUEST);
 }
 #endif
 
@@ -3237,7 +3405,7 @@ check_mithardir_trophy()
 {
 	if(chaos_dvariant == MITHARDIR){
 		if(u.ufirst_light && u.ufirst_sky && u.ufirst_life)
-			achieve.trophies |= MITH_QUEST;
+			set_trophy(MITH_QUEST);
 	}
 }
 #endif
@@ -3247,7 +3415,7 @@ void
 give_mordor_trophy()
 {
 	if(chaos_dvariant == MORDOR)
-		achieve.trophies |= MORD_QUEST;
+		set_trophy(MORD_QUEST);
 }
 #endif
 
@@ -3258,7 +3426,7 @@ check_illumian_trophy()
 	int syls;
 	syls = u.uaesh + u.ukrau + u.uhoon + u.uuur + u.unaen + u.uvaul;
 	if(u.ufirst_light && u.ufirst_sky && u.ufirst_life && u.ufirst_know && syls >= 30 && u.sealsUsed&SEAL_TENEBROUS)
-		achieve.trophies |= ILLUMIAN;
+		set_trophy(ILLUMIAN);
 }
 #endif
 
@@ -3266,7 +3434,7 @@ check_illumian_trophy()
 void
 give_rescue_trophy()
 {
-	achieve.trophies |= RESCUE;
+	set_trophy(RESCUE);
 }
 #endif
 
@@ -3276,7 +3444,7 @@ check_loadout_trophy()
 {
 	long allupgrades = (OIL_STOVE|WOOD_STOVE|FAST_SWITCH|EFFICIENT_SWITCH|ARMOR_PLATING|PHASE_ENGINE|MAGIC_FURNACE|HELLFIRE_FURNACE|SCRAP_MAW);
 	if((u.clockworkUpgrades&allupgrades) == allupgrades)
-		achieve.trophies |= FULL_LOADOUT;
+		set_trophy(FULL_LOADOUT);
 }
 #endif
 
@@ -3284,7 +3452,7 @@ check_loadout_trophy()
 void
 give_nightmare_hunter_trophy()
 {
-	achieve.trophies |= NIGHTMAREHUNTER;
+	set_trophy(NIGHTMAREHUNTER);
 }
 #endif
 
@@ -3299,7 +3467,7 @@ check_madman_trophy()
 			count++;
 	}
 	if(count >= 6)
-		achieve.trophies |= QUITE_MAD;
+		set_trophy(QUITE_MAD);
 }
 #endif
 
@@ -3308,7 +3476,7 @@ void
 check_drunkard_trophy()
 {
 	if(u.udrunken >= 90)
-		achieve.trophies |= TOTAL_DRUNK;
+		set_trophy(TOTAL_DRUNK);
 }
 #endif
 
@@ -3316,7 +3484,7 @@ check_drunkard_trophy()
 void
 give_bokrug_trophy()
 {
-	achieve.trophies |= BOKRUG_QUEST;
+	set_trophy(BOKRUG_QUEST);
 }
 #endif
 

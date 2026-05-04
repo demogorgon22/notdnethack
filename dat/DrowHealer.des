@@ -78,6 +78,18 @@ OBJECT[50%]: '(', "shadowlander's torch", random
 OBJECT[50%]: '(', "shadowlander's torch", random
 OBJECT[50%]: '(', "shadowlander's torch", random
 
+OBJECT:'#',"barded chain mail",random
+OBJECT:'#',"barded chain mail",random
+OBJECT:'#',"barded chain mail",random
+
+OBJECT:'#',"barded helmet",random
+OBJECT:'#',"barded helmet",random
+OBJECT:'#',"barded helmet",random
+
+OBJECT:'(',"saddle",random
+OBJECT:'(',"saddle",random
+OBJECT:'(',"saddle",random
+
 GEOMETRY:center,center
 #0         1         2         3         4         5         6         7        
 #0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -223,6 +235,7 @@ OBJECT:')',random,contained
 MONSTER:'@',"Sister T'eirastra",(42,11),peaceful
 CONTAINER:'(',"sack",(42,11)
 OBJECT:'#',"tactile spellbook",contained
+OBJECT:'#',"tactile spellbook of healing",contained
 OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile scroll",contained
 # Guards for the audience chamber
@@ -510,7 +523,12 @@ OBJECT:'%',"corpse",contained,"aoa droplet",0
 OBJECT:'%',"corpse",contained,"aoa droplet",0
 OBJECT:'%',"corpse",contained,"aoa droplet",0
 OBJECT:'%',"corpse",contained,"aoa droplet",0
-OBJECT:'(',"writing desk",(02,10)
+CONTAINER:'(',"writing desk",(02,10)
+OBJECT:'+',"charm monster",contained
+OBJECT:'+',"sleep",contained
+OBJECT:'?',"taming",contained
+OBJECT:'?',"taming",contained
+OBJECT:'?',"taming",contained
 
 MONSTER: '#', "zombified hedrow blademaster", (10,09)
 MONSTER: '#', "zombified drow captain", (11,09)
@@ -1317,6 +1335,7 @@ OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile scroll",contained
 OBJECT:'#',"tactile detect treasure",contained
+OBJECT:'#',"tactile spellbook of extra healing",contained
 OBJECT:'#',"tactile spellbook",contained
 OBJECT:'#',"tactile spellbook",contained
 OBJECT:'#',"tactile spellbook",contained

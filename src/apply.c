@@ -18,6 +18,9 @@ static const char imperial_repairs[] = { AMULET_CLASS, ARMOR_CLASS, RING_CLASS, 
 static const char apply_corpse[] = { FOOD_CLASS, 0 };
 static const char apply_gem[] = { GEM_CLASS, 0 };
 static const char chain_class[] = { CHAIN_CLASS, 0 };
+static const char spellbook_class[] = { SPBOOK_CLASS, 0 };
+static const char weapon_class[] = { WEAPON_CLASS, 0 };
+static const char consume_classes[] = { WEAPON_CLASS, FOOD_CLASS, SPBOOK_CLASS, TOOL_CLASS, 0 };
 static const char apply_all[] = { ALL_CLASSES, CHAIN_CLASS, 0 };
 
 #define TREPH_THOUGHTS 1
@@ -50,6 +53,11 @@ STATIC_DCL int FDECL(use_soldier_rapier, (struct obj *));
 STATIC_DCL int FDECL(use_bow_blade, (struct obj *));
 STATIC_DCL int FDECL(use_threaded_cane, (struct obj *));
 STATIC_DCL int FDECL(use_chikage, (struct obj *));
+STATIC_DCL int FDECL(use_breaking_wheel, (struct obj *));
+STATIC_DCL struct obj *NDECL(pg_floor_corpse);
+STATIC_DCL boolean FDECL(pg_spellbook_feed, (struct obj *, struct obj *, boolean));
+STATIC_DCL boolean FDECL(pg_bullwhip_snag, (struct obj *, int, int));
+STATIC_DCL int FDECL(use_pest_glaive, (struct obj *));
 STATIC_DCL int FDECL(use_church_weapon, (struct obj *));
 STATIC_DCL int FDECL(use_church_sword, (struct obj *));
 STATIC_DCL int FDECL(use_church_sheath, (struct obj *));
@@ -555,6 +563,13 @@ use_stethoscope(obj)
 		} else
 			mstatusline(u.usteed);
 		return res;
+	} else if (u.urider && u.dz < 0) {
+		if (interference) {
+			pline("%s interferes.", Monnam(u.ustuck));
+			mstatusline(u.ustuck);
+		} else
+			mstatusline(u.urider);
+		return res;
 	} else
 #endif
 	if (u.uswallow && (u.dx || u.dy || u.dz)) {
@@ -656,6 +671,13 @@ ansermee_scan(obj)
 			probe_monster(u.ustuck);
 		} else
 			probe_monster(u.usteed);
+		return res;
+	} else if(u.urider && u.dz < 0) {
+		if (interference) {
+			pline("%s interferes.", Monnam(u.ustuck));
+			probe_monster(u.ustuck);
+		} else
+			probe_monster(u.urider);
 		return res;
 	} else
 #endif
@@ -836,6 +858,11 @@ struct obj *obj;
 		    spotmon = 1;
 		    goto got_target;
 		}
+		else if (u.urider && u.dz < 0) {
+		    mtmp = u.urider;
+		    spotmon = 1;
+		    goto got_target;
+		}
 #endif
 		pline("Leash yourself?  Very funny...");
 		return;
@@ -933,6 +960,7 @@ next_to_u()
 #ifdef STEED
 	/* no pack mules for the Amulet */
 	if (u.usteed && mon_has_amulet(u.usteed)) return FALSE;
+	if (u.urider && mon_has_amulet(u.urider)) return FALSE;
 #endif
 	return(TRUE);
 }
@@ -1690,7 +1718,9 @@ struct obj *obj;
 		}
 	}
 	else if(u.dz < 0){
-		if(u.uswallow)
+		if(u.urider)
+			mon = u.urider;
+		else if(u.uswallow)
 			mon = u.ustuck;
 		else {
 			You("don't see anything up there to touch with your cords.");
@@ -1769,7 +1799,9 @@ struct obj *obj;
 		}
 	}
 	else if(u.dz < 0){
-		if(u.uswallow)
+		if(u.urider)
+			mon = u.urider;
+		else if(u.uswallow)
 			mon = u.ustuck;
 		else {
 			if(shackles)
@@ -1884,7 +1916,7 @@ struct obj *obj;
 				char qbuf[BUFSZ];
 				Sprintf(qbuf, "Turn %s away from your party?", mhim(mon));
 				if(yn(qbuf) != 'y'){
-					struct monst *newmon = tamedog_core(mon, (struct obj *)0, TRUE);
+					struct monst *newmon = tamedog_core(mon, (struct obj *)0, TD_ENHANCED);
 					if(newmon){
 						mon = newmon;
 						newsym(mon->mx, mon->my);
@@ -2553,6 +2585,27 @@ use_chikage(struct obj *obj)
 }
 
 int
+use_breaking_wheel(struct obj *obj)
+{
+	(void) stop_timer(SLOW_WHEEL, obj->timed);
+
+	switch(obj->ovar1_wheelspeed){
+	case 0: You("begin spinning the wheel."); break;
+	case 1: You("spin the wheel faster."); break;
+	case 2: You("spin the wheel even faster."); break;
+	case 3: You("spin the wheel up to full speed."); break;
+	case 4: You("keep the wheel spinning at full speed."); break;
+	}
+	if(obj->ovar1_wheelspeed < 4)
+		obj->ovar1_wheelspeed++;
+
+
+	start_timer(20L, TIMER_OBJECT, SLOW_WHEEL, (genericptr_t)obj);
+	update_inventory();
+	return MOVE_PARTIAL;
+}
+
+int
 use_church_weapon(struct obj *obj)
 {
 	if(obj->unpaid){
@@ -2627,7 +2680,7 @@ use_church_sword(struct obj *obj)
 	}
 	if(sheath->otyp == CHURCH_SHEATH){
 		sheath->otyp = CHURCH_BLADE;
-		if(bimanual(sheath,youracedata) && (obj == uwep || sheath == uwep) && uarms){
+		if(bimanual_mon(sheath,&youmonst) && (obj == uwep || sheath == uwep) && uarms){
 			You("can't sheath the sword in the blade while wearing a shield.");
 			sheath->otyp = CHURCH_SHEATH;
 			return MOVE_CANCELLED;
@@ -2636,7 +2689,7 @@ use_church_sword(struct obj *obj)
 			You("sheath the sword in the blade.");
 	} else {
 		sheath->otyp = CHURCH_HAMMER;
-		if(bimanual(sheath,youracedata) && (obj == uwep || sheath == uwep) && uarms){
+		if(bimanual_mon(sheath,&youmonst) && (obj == uwep || sheath == uwep) && uarms){
 			You("can't sheath the sword in the stone while wearing a shield.");
 			sheath->otyp = CHURCH_BRICK;
 			return MOVE_CANCELLED;
@@ -2676,7 +2729,7 @@ use_church_sheath(struct obj *obj)
 	}
 	if(obj->otyp == CHURCH_SHEATH){
 		obj->otyp = CHURCH_BLADE;
-		if(bimanual(obj,youracedata) && (obj == uwep || sword == uwep) && uarms){
+		if(bimanual_mon(obj,&youmonst) && (obj == uwep || sword == uwep) && uarms){
 			You("can't sheath the sword in the blade while wearing a shield.");
 			obj->otyp = CHURCH_SHEATH;
 			return MOVE_CANCELLED;
@@ -2685,7 +2738,7 @@ use_church_sheath(struct obj *obj)
 			You("sheath the sword in the blade.");
 	} else {
 		obj->otyp = CHURCH_HAMMER;
-		if(bimanual(obj,youracedata) && (obj == uwep || sword == uwep) && uarms){
+		if(bimanual_mon(obj,&youmonst) && (obj == uwep || sword == uwep) && uarms){
 			You("can't sheath the sword in the stone while wearing a shield.");
 			obj->otyp = CHURCH_BRICK;
 			return MOVE_CANCELLED;
@@ -2842,7 +2895,7 @@ struct obj *obj;
 		} else if (obj->oartifact == ART_HOLY_MOONLIGHT_SWORD) {
 			int biman;
 			obj->lamplit = 1; //Check if the HMS will be two handed
-			biman = bimanual(obj,youracedata);
+			biman = bimanual_mon(obj,&youmonst);
 			obj->lamplit = 0;
 			if(biman && uarms){
 				You_cant("invoke %s while wearing a shield!", yname(obj));
@@ -3743,7 +3796,7 @@ defile_vampire(struct obj *obj, struct obj *research_kit)
 	start_menu(tmpwin);
 
 	any.a_int = 1;
-	if(!check_vampire(VAMPIRE_THRALLS)){
+	if(!check_vampire(VAMPIRE_THRALLS) && Race_if(PM_VAMPIRE)){
 		n++;
 		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
 			 "Better control your spawn", MENU_UNSELECTED);
@@ -3751,7 +3804,7 @@ defile_vampire(struct obj *obj, struct obj *research_kit)
 
 	ch++;
 	any.a_int = 2;
-	if(!check_vampire(VAMPIRE_MASTERY)){
+	if(!check_vampire(VAMPIRE_MASTERY) && Race_if(PM_VAMPIRE)){
 		n++;
 		add_menu(tmpwin, NO_GLYPH, &any , ch, 0, ATR_NONE,
 			 "Improve your spawns' attacks", MENU_UNSELECTED);
@@ -3862,7 +3915,7 @@ blood_draw(struct obj *obj)
 		any.a_int = 1;
 		add_menu(tmpwin, NO_GLYPH, &any , 'b', 0, ATR_NONE,
 			 "Exsanguinate yourself", MENU_UNSELECTED);
-		if(Race_if(PM_VAMPIRE)){
+		if(Race_if(PM_VAMPIRE) || (Role_if(PM_UNDEAD_HUNTER) && Race_if(PM_AASIMAR))){
 			any.a_int = 2;
 			add_menu(tmpwin, NO_GLYPH, &any , 'c', 0, ATR_NONE,
 				 "Distill your blood", MENU_UNSELECTED);
@@ -4019,7 +4072,7 @@ doresearch()
     if (In_endgame(&u.uz)) {
 		if (!(otmp = getobj(sacrifice_types, "research"))) return MOVE_CANCELLED;
 	} else {
-		if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1))) return MOVE_CANCELLED;
+		if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1, FALSE))) return MOVE_CANCELLED;
     }
     if (otmp->otyp == CORPSE) {
 		value = monstr[otmp->corpsenm] + 1;
@@ -4337,6 +4390,12 @@ dojump()
 	else if(!Upolyd && Role_if(PM_KENSEI) && uwep && is_kensei_weapon(uwep) && P_SKILL(P_MARTIAL_ARTS)){
 		return jump(P_SKILL(P_MARTIAL_ARTS));
 	}
+	else if(check_mutation(AAT_PRIMINAL) && uwep && (uwep->otyp == QUARTERSTAFF || uwep->otyp == KHAKKHARA)){
+		int dist = min(P_SKILL(P_QUARTERSTAFF), P_SKILL(P_MARTIAL_ARTS));
+		if(dist >= P_EXPERT)
+			dist = P_SKILL(P_MARTIAL_ARTS);
+		return jump(dist);
+	}
 	return jump(0);
 }
 
@@ -4346,7 +4405,7 @@ int magic; /* 0=Physical, otherwise skill level */
 {
 	coord cc;
 
-	if (!magic && (nolimbs(youracedata) || slithy(youracedata))) {
+	if (!magic && (nolimbs(youracedata) || slithy(youracedata)) && !humanoid_feet(youracedata)) {
 		/* normally (nolimbs || slithy) implies !Jumping,
 		   but that isn't necessarily the case for knights */
 		You_cant("jump; you have no legs!");
@@ -4787,7 +4846,7 @@ register struct obj *obj;
 		You("seem to be out of tins.");
 		return;
 	}
-	if (!(corpse = floorfood("tin", 2))) return;
+	if (!(corpse = floorfood("tin", 2, FALSE))) return;
 	if (corpse->otyp == CORPSE && corpse->oeaten && !(has_blood(&mons[corpse->corpsenm]) && corpse->odrained && corpse->oeaten == drainlevel(corpse))) {
 		You("cannot tin %s which is partly eaten.",something);
 		return;
@@ -4902,7 +4961,7 @@ use_dissection_kit(struct obj *obj)
 		return;
 	}
 
-	if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1))) return;
+	if (!(otmp = floorfood("research", (researchtype == A_CHAOTIC) ? 3 : 1, FALSE))) return;
 
     if (otmp->otyp != CORPSE) {
 		pline("Carful inspection reveals that this is not, in fact, a fresh corpse.");
@@ -5791,7 +5850,7 @@ coord *cc;
 		}
 		m_level_up_intrinsic(mtmp);
 		if(master == &youmonst || master->mtame){
-			mtmp = tamedog_core(mtmp, (struct obj *)0, TRUE);
+			mtmp = tamedog_core(mtmp, (struct obj *)0, TD_ENHANCED);
 			if(mtmp && get_mx(mtmp, MX_EDOG)){
 				EDOG(mtmp)->dominated = TRUE;
 				EDOG(mtmp)->hungrytime = monstermoves + 4500;
@@ -7140,7 +7199,7 @@ struct obj *obj;
 			Strcpy(onambuf, cxname(otmp));
 			if (gotit) {
 			mon_hand = mbodypart(mtmp, HAND);
-			if (bimanual(otmp,mtmp->data)) mon_hand = makeplural(mon_hand);
+			if (bimanual_mon(otmp,mtmp)) mon_hand = makeplural(mon_hand);
 			} else
 			mon_hand = 0;	/* lint suppression */
 
@@ -7334,7 +7393,7 @@ struct obj *obj;
 			Strcpy(onambuf, cxname(otmp));
 			if (gotit) {
 				mon_hand = mbodypart(mtmp, HAND);
-				if (bimanual(otmp,mtmp->data)) mon_hand = makeplural(mon_hand);
+				if (bimanual_mon(otmp,mtmp)) mon_hand = makeplural(mon_hand);
 			} else
 			mon_hand = 0;	/* lint suppression */
 
@@ -7420,6 +7479,476 @@ struct obj *obj;
 }
 
 
+/* Return a descriptive word for the pest glaive's appendages for the given
+ * activity (one of the PGD_* constants).  The word is chosen deterministically
+ * from obj->o_id so it stays consistent across messages in the same turn.
+ */
+const char *
+pg_appendage_name(struct obj *obj, int activity)
+{
+	switch(activity) {
+	case PGD_FEEDING:
+		switch(hash((unsigned long)obj->o_id+activity) % 6){
+			case 0: return "probosces";
+			case 1: return "roots";
+			case 2: return "feeding-tentacles";
+			case 3: return "tongues";
+			case 4: return "pedipalps";
+			default: return "hyphae";
+		}
+	case PGD_SNAGGING:
+		switch(hash((unsigned long)obj->o_id+activity) % 5){
+			case 0: return "antennae";
+			case 1: return "feelers";
+			case 2: return "grasping-tentacles";
+			case 3: return "eyestalks";
+			default: return "tendrils";
+		}
+	}
+	return "appendages";
+}
+
+/* Check floor at hero's position for corpses to feed to the pest glaive.
+ * Prompts for each corpse found.  Returns the chosen corpse, or NULL if
+ * the player pressed 'q' (cancel) or no floor corpse was selected.
+ * If no floor corpse is offered or all are declined with 'n', falls through
+ * to getobj so the player can choose from inventory.
+ */
+STATIC_OVL struct obj *
+pg_floor_corpse()
+{
+	struct obj *otmp;
+	char qbuf[QBUFSZ];
+	char c;
+
+	if (can_reach_floor()) {
+		for (otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp->nexthere) {
+			if (otmp->otyp != CORPSE)
+				continue;
+			Sprintf(qbuf, "There %s %s here; feed %s to the glaive?",
+				otense(otmp, "are"),
+				doname(otmp),
+				(otmp->quan == 1L) ? "it" : "one");
+			c = yn(qbuf);
+			if (c == 'y')
+				return otmp;
+			if (c == 'q')
+				return (struct obj *)0;
+		}
+	}
+
+	return getobj(consume_classes, "feed to the glaive");
+}
+
+/* Returns TRUE if the spellbook was consumed, FALSE if repelled (left intact). */
+STATIC_OVL boolean
+pg_spellbook_feed(struct obj *obj, struct obj *consumed, boolean already_extended)
+{
+	static const struct {
+		int otyp;
+		int oprop;
+		const char *adjective;
+	} spe_map[] = {
+		{ SPE_FIREBALL,       OPROP_FIREW, "flaming"  },
+		{ SPE_FIRE_STORM,     OPROP_FIREW, "flaming"  },
+		{ SPE_CONE_OF_COLD,   OPROP_COLDW, "freezing" },
+		{ SPE_BLIZZARD,       OPROP_COLDW, "freezing" },
+		{ SPE_LIGHTNING_BOLT, OPROP_ELECW, "shocking" },
+		{ SPE_LIGHTNING_STORM,OPROP_ELECW, "shocking" },
+		{ SPE_ACID_SPLASH,    OPROP_ACIDW, "sizzling" },
+		{ 0, 0, (const char *)0 }
+	};
+	int si;
+	int new_oprop = 0;
+	const char *new_adj = (const char *)0;
+
+	/* Blank paper: consumed silently */
+	if (consumed->otyp == SPE_BLANK_PAPER) {
+		pline("The glaive's %s engulf %s, leaving nothing behind.",
+		    pg_appendage_name(obj, PGD_FEEDING),
+		    the(xname(consumed)));
+		return TRUE;
+	}
+
+	/* Identify which (if any) energy spellbook this is */
+	for (si = 0; spe_map[si].otyp; si++) {
+		if (consumed->otyp == spe_map[si].otyp) {
+			new_oprop = spe_map[si].oprop;
+			new_adj   = spe_map[si].adjective;
+			break;
+		}
+	}
+
+	/* Ineligible spellbook: repel without consuming */
+	if (!new_oprop) {
+		pline("The glaive's %s recoil from %s with a crackle of magical energy!",
+		    pg_appendage_name(obj, PGD_FEEDING),
+		    the(xname(consumed)));
+		return FALSE;
+	}
+
+	/* Already has this exact energy quality - nothing to do */
+	if (check_oprop(obj, new_oprop)) {
+		pline("The glaive already resonates with that energy.");
+		return FALSE;
+	}
+
+	/* Count how many of the 4 energy oprops are already present */
+	int held_count = 0;
+	int held_oprops[4];
+	const char *held_adjs[4];
+	for (si = 0; spe_map[si].otyp; si++) {
+		if (check_oprop(obj, spe_map[si].oprop)) {
+			held_oprops[held_count] = spe_map[si].oprop;
+			held_adjs[held_count]   = spe_map[si].adjective;
+			held_count++;
+		}
+	}
+
+	if (held_count == 0) {
+		/* No existing energy quality - just absorb */
+		if (!already_extended)
+			pline("The glaive extends its %s and devours %s.",
+			    pg_appendage_name(obj, PGD_FEEDING),
+			    the(xname(consumed)));
+		else
+			pline("The glaive devours %s.", the(xname(consumed)));
+		add_oprop(obj, new_oprop);
+		pline("It becomes %s.", new_adj);
+	} else if (held_count == 1) {
+		/* One existing - confirm replacement */
+		char qbuf[QBUFSZ];
+		Sprintf(qbuf, "Replace %s with %s?", held_adjs[0], new_adj);
+		if (yn(qbuf) != 'y') {
+			pline("You pull the spellbook away.");
+			return FALSE;
+		}
+		if (!already_extended)
+			pline("The glaive extends its %s and devours %s.",
+			    pg_appendage_name(obj, PGD_FEEDING),
+			    the(xname(consumed)));
+		else
+			pline("The glaive devours %s.", the(xname(consumed)));
+		remove_oprop(obj, held_oprops[0]);
+		add_oprop(obj, new_oprop);
+		pline("It becomes %s.", new_adj);
+	} else {
+		/* Two or more - let player choose which to remove */
+		char mbuf[BUFSZ];
+		winid tmpwin;
+		menu_item *selected;
+		int n, mi, choice;
+		anything any;
+
+		Sprintf(mbuf, "Which quality should the glaive lose to become %s?", new_adj);
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		for (mi = 0; mi < held_count; mi++) {
+			any.a_int = mi + 1;
+			add_menu(tmpwin, NO_GLYPH, &any,
+			    'a' + mi, 0, ATR_NONE,
+			    held_adjs[mi], MENU_UNSELECTED);
+		}
+		any.a_int = -1;
+		add_menu(tmpwin, NO_GLYPH, &any,
+		    'z', 0, ATR_NONE, "Cancel", MENU_UNSELECTED);
+		end_menu(tmpwin, mbuf);
+		selected = (menu_item *)0;
+		n = select_menu(tmpwin, PICK_ONE, &selected);
+		destroy_nhwindow(tmpwin);
+		if (n <= 0 || selected[0].item.a_int == -1) {
+			if (n > 0) free(selected);
+			pline("You pull the spellbook away.");
+			return FALSE;
+		}
+		choice = selected[0].item.a_int - 1;
+		free(selected);
+		if (!already_extended)
+			pline("The glaive extends its %s and devours %s.",
+			    pg_appendage_name(obj, PGD_FEEDING),
+			    the(xname(consumed)));
+		else
+			pline("The glaive devours %s.", the(xname(consumed)));
+		remove_oprop(obj, held_oprops[choice]);
+		add_oprop(obj, new_oprop);
+		pline("It becomes %s.", new_adj);
+	}
+
+	return TRUE;
+}
+
+/* Attempt to snag the top floor item at (rx, ry) with the pest glaive's
+ * tendrils (PG_BULLWHIP).  Returns TRUE if the action was attempted (whether
+ * or not the item was successfully retrieved), FALSE if there was nothing
+ * to snag.
+ */
+STATIC_OVL boolean
+pg_bullwhip_snag(struct obj *obj, int rx, int ry)
+{
+	struct obj *otmp = level.objects[rx][ry];
+	int proficient;
+
+	if (!otmp)
+		return FALSE;
+
+	proficient = P_SKILL(P_POLEARMS) - P_UNSKILLED;
+	if (ACURR(A_DEX) >= 14)
+		proficient += (ACURR(A_DEX) - 11) / 3;
+	if (Fumbling)
+		proficient--;
+	if (proficient > 3) proficient = 3;
+	if (proficient < 0) proficient = 0;
+
+	if (!proficient) {
+		pline("The glaive's %s snap at %s but slip free.",
+		    pg_appendage_name(obj, PGD_SNAGGING), the(xname(otmp)));
+		return TRUE;
+	}
+
+	if (costly_spot(rx, ry)) {
+		pline("The glaive's %s can't drag shop merchandise away.",
+		    pg_appendage_name(obj, PGD_SNAGGING));
+		return TRUE;
+	}
+
+	You("snag %s with the glaive's %s.", an(singular(otmp, xname)),
+	    pg_appendage_name(obj, PGD_SNAGGING));
+	obj_extract_self(otmp);
+	newsym(rx, ry);
+	place_object(otmp, u.ux, u.uy);
+	stackobj(otmp);
+	if (rnl(100) >= 16 || pickup_object(otmp, 1L, TRUE) < 1)
+		pline("It slips free.");
+	return TRUE;
+}
+
+STATIC_OVL int
+use_pest_glaive(struct obj *obj)
+{
+	struct obj *consumed;
+	int i;
+	boolean gained_something = FALSE;
+	boolean already_extended = FALSE;
+	boolean couldve_changed = FALSE;
+	boolean fed_anything = FALSE;
+
+	for (;;) {
+		consumed = pg_floor_corpse();
+		if (!consumed) break;
+
+		gained_something = FALSE;
+		couldve_changed = FALSE;
+
+		if (consumed->unpaid) {
+			You("need to pay for that first.");
+			break;
+		}
+		if (consumed == obj) {
+			pline("The glaive won't eat itself.");
+			break;
+		}
+		if (consumed->oartifact || is_full_insight_weapon(consumed) || objects[consumed->otyp].oc_unique) {
+			pline("It resists the attempt!");
+			break;
+		}
+		if (!check_oprop(consumed, 0)) {
+			pline("It resists the attempt!");
+			break;
+		}
+
+		if (consumed->oclass == FOOD_CLASS) {
+			if(consumed->otyp != CORPSE){
+				if (!already_extended)
+					pline("The glaive extends its %s but then recoils in disgust from %s!",
+					    pg_appendage_name(obj, PGD_FEEDING),
+					    the(xname(consumed)));
+				else
+					pline("The glaive's %s recoil in disgust from %s!",
+					    pg_appendage_name(obj, PGD_FEEDING),
+					    the(xname(consumed)));
+				break;
+			}
+			/* corpse path: absorb energy-resistance oprops */
+			static const struct { int mr_flag; int oprop; } eres_map[] = {
+				{ MR_FIRE, OPROP_FIRE },
+				{ MR_COLD, OPROP_COLD },
+				{ MR_ELEC, OPROP_ELEC },
+				{ MR_ACID, OPROP_ACID },
+				{ 0, 0 }
+			};
+			struct permonst *ptr = &mons[consumed->corpsenm];
+			int mi;
+
+			if (!already_extended) {
+				pline("The glaive extends its %s and devours %s.",
+				    pg_appendage_name(obj, PGD_FEEDING),
+				    the(xname(consumed)));
+				already_extended = TRUE;
+			} else {
+				pline("The glaive devours %s.", the(xname(consumed)));
+			}
+
+			for (mi = 0; eres_map[mi].mr_flag; mi++) {
+				if ((ptr->mconveys & eres_map[mi].mr_flag) &&
+				    !check_oprop(obj, eres_map[mi].oprop)
+				) {
+					couldve_changed = TRUE;
+					if(!rn2(10) && ptr->mlevel > rn2(15)){
+						add_oprop(obj, eres_map[mi].oprop);
+						gained_something = TRUE;
+					}
+				}
+			}
+
+		} else if (consumed->oclass == SPBOOK_CLASS) {
+			/* spellbook path: delegate entirely to pg_spellbook_feed */
+			boolean eaten = pg_spellbook_feed(obj, consumed, already_extended);
+			if (eaten) {
+				if (consumed->where == OBJ_FLOOR)
+					useupf(consumed, 1L);
+				else
+					useup(consumed);
+				fix_object(obj);
+				fed_anything = TRUE;
+				already_extended = TRUE;
+			}
+			continue;
+		} else if(consumed->oclass == WEAPON_CLASS || is_weptool(consumed)) {
+			static const long etrait_list[] = {
+				ETRAIT_HEW, ETRAIT_FELL, ETRAIT_KNOCK_BACK, ETRAIT_FOCUS_FIRE,
+				ETRAIT_STUNNING_STRIKE, ETRAIT_KNOCK_BACK_CHARGE, ETRAIT_GRAZE,
+				ETRAIT_STOP_THRUST, ETRAIT_PENETRATE_ARMOR, ETRAIT_LONG_SLASH,
+				ETRAIT_BLEED, ETRAIT_CLEAVE, ETRAIT_LUNGE,
+				ETRAIT_SECOND, ETRAIT_CREATE_OPENING, ETRAIT_BRACED,
+				ETRAIT_BLADESONG, ETRAIT_BLADEDANCE, ETRAIT_PUNCTURE,
+				ETRAIT_STRIKING, 0L
+			};
+			if (!is_organic(consumed) &&
+			    consumed->oeroded == 0 &&
+			    consumed->oeroded2 == 0
+			) {
+				if(!is_rustprone(consumed) || !(is_pool(u.ux, u.uy, TRUE) || IS_FOUNTAIN(levl[u.ux][u.uy].typ)) || consumed->oerodeproof){
+					pline("The glaive cannot eat %s.", is_metallic(consumed) ? "unblemished metal" : "such things");
+					break;
+				}
+				else {
+					if(!already_extended)
+						pline("The glaive extends its %s and sucks up some water in preparation for its meal.",
+							pg_appendage_name(obj, PGD_FEEDING));
+					already_extended = TRUE;
+				}
+			}
+
+			if(!already_extended){
+				pline("The glaive extends its %s and devours %s.",
+					pg_appendage_name(obj, PGD_FEEDING),
+					the(xname(consumed)));
+				already_extended = TRUE;
+			}
+			else pline("The glaive devours %s.", the(xname(consumed)));
+
+			for (i = 0; etrait_list[i]; i++) {
+				if ((consumed->expert_traits & etrait_list[i])
+					&& !(obj->ovar2_pg_etraits & etrait_list[i])
+				) {
+					couldve_changed = TRUE;
+					if(!rn2(20)){
+						obj->ovar2_pg_etraits |= etrait_list[i];
+						gained_something = TRUE;
+					}
+				}
+			}
+
+			if (hand_protecting(consumed) && !(obj->ovar1_pestglaive_props & PG_HANDPROTECT)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_HANDPROTECT;
+					gained_something = TRUE;
+				}
+			}
+
+			if ((consumed->otyp == BULLWHIP || consumed->otyp == VIPERWHIP ||
+			     consumed->otyp == WHIP_SAW || consumed->otyp == FORCE_WHIP) &&
+			    !(obj->ovar1_pestglaive_props & PG_BULLWHIP)
+			) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_BULLWHIP;
+					gained_something = TRUE;
+				}
+			}
+
+			if ((consumed->otyp == DWARVISH_MATTOCK || consumed->otyp == PICK_AXE) && !(obj->ovar1_pestglaive_props & PG_MATTOCK)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_MATTOCK;
+					gained_something = TRUE;
+				}
+			}
+
+			if (objects[consumed->otyp].oc_skill == P_LANCE && !(obj->ovar1_pestglaive_props & PG_JOUST)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_JOUST;
+					gained_something = TRUE;
+				}
+			}
+
+			if (is_axe(consumed) && !(obj->ovar1_pestglaive_props & PG_AXE)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_AXE;
+					gained_something = TRUE;
+				}
+			}
+
+			if (has_crook(consumed) && !(obj->ovar1_pestglaive_props & PG_CROOK)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_CROOK;
+					gained_something = TRUE;
+				}
+			}
+
+			if (consumed->otyp == ATLATL && !(obj->ovar1_pestglaive_props & PG_SPEARTHROWER)) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->ovar1_pestglaive_props |= PG_SPEARTHROWER;
+					gained_something = TRUE;
+				}
+			}
+
+			if (consumed->spe > obj->spe) {
+				couldve_changed = TRUE;
+				if(!rn2(20)){
+					obj->spe++;
+					gained_something = TRUE;
+				}
+			}
+		}
+		else {
+			pline("The glaive seems uninterested in %s!", the(xname(consumed)));
+			break;
+		}
+
+		if (gained_something)
+			pline("It seems changed.");
+		else if(couldve_changed)
+			pline("It savors the flavor.");
+		else
+			pline("It found the meal bland.");
+
+		if (consumed->where == OBJ_FLOOR)
+			useupf(consumed, 1L);
+		else
+			useup(consumed);
+		fix_object(obj);
+		fed_anything = TRUE;
+	}
+
+	return fed_anything ? MOVE_STANDARD : MOVE_CANCELLED;
+}
+
 //Used to coordinate polearm_menu and targeting code
 const int pole_dy[16] = {-2,-2,-2,-1, 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2};
 const int pole_dx[16] = { 0, 1, 2, 2, 2, 2, 2, 1, 0,-1,-2,-2,-2,-2,-2,-1};
@@ -7464,8 +7993,8 @@ struct obj *pole;
 		cx = u.ux + pole_dx[i];
 		cy = u.uy + pole_dy[i];
 		if(isok(cx, cy) && (mtmp = m_at(cx, cy)) 
-			&& canseemon(mtmp)
-			&& couldsee(cx, cy)
+			&& canspotmon(mtmp)
+			&& cansee(cx, cy)
 			&& distu(cx, cy) <= max_range
 			&& !(mtmp->mappearance && mtmp->m_ap_type != M_AP_MONSTER && !sensemon(mtmp))
 			&& !(flags.peacesafe_polearms && mtmp->mpeaceful && !Hallucination)
@@ -7497,6 +8026,13 @@ struct obj *pole;
 			'r', 0, ATR_NONE, buf,
 			MENU_UNSELECTED);
 	}
+	if(pole->otyp == PEST_GLAIVE && Race_if(PM_SILVERMAN)){
+		Sprintf(buf, "(feed weapon)");
+		any.a_int = N_POLEDIRS+2;
+		add_menu(tmpwin, NO_GLYPH, &any,
+			'f', 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+	}
 
 	/* add an option to target manually */
 	Sprintf(buf, "(some location)");
@@ -7519,7 +8055,7 @@ struct obj *pole;
 }
 
 void
-use_silverknight_scythe_at(int x, int y)
+use_silverknight_scythe_at(int x, int y, struct obj *wep)
 {
 	struct monst *halo;
 	if(u.uen >= 10){
@@ -7528,9 +8064,21 @@ use_silverknight_scythe_at(int x, int y)
 		halo = makemon(&mons[PM_ROGUE_HALO], x, y, MM_ADJACENTOK|MM_NOCOUNTBIRTH|MM_EDOG|MM_ESUM);
 		if(halo){
 			halo->mpeaceful = TRUE;
+			if(halo->m_lev < u.ulevel)
+				halo->m_lev = u.ulevel;
 			initedog(halo);
 			mark_mon_as_summoned(halo, &youmonst, u.ulevel + rnd(u.ulevel), 0);
 			halo->movement = 3*NORMAL_SPEED;
+			if(check_oprop(wep, OPROP_FIREW))
+				halo->mvar1_halo_sec_element = AD_FIRE;
+			else if(check_oprop(wep, OPROP_COLDW))
+				halo->mvar1_halo_sec_element = AD_COLD;
+			else if(check_oprop(wep, OPROP_ELECW))
+				halo->mvar1_halo_sec_element = AD_ELEC;
+			else if(check_oprop(wep, OPROP_ACIDW))
+				halo->mvar1_halo_sec_element = AD_ACID;
+			else if(check_oprop(wep, OPROP_MAGCW))
+				halo->mvar1_halo_sec_element = AD_MAGM;
 		}
 	}
 	else {
@@ -7596,6 +8144,12 @@ coord *ccp;
 				ccp->x = 0; ccp->y = 0;
 				return use_hunter_axe(obj);
 			}
+			else if(obj->otyp == PEST_GLAIVE && Race_if(PM_SILVERMAN)){
+				return use_pest_glaive(obj);
+			}
+			else if(obj->otyp == SILVERKNIGHT_SCYTHE){
+				return MOVE_ATTACKED;
+			}
 		}
 	}
 	else {
@@ -7610,8 +8164,11 @@ coord *ccp;
 				if(obj->otyp == HUNTER_S_AXE || obj->otyp == HUNTER_S_LONG_AXE)
 					return use_hunter_axe(obj);
 				if(obj->otyp == SILVERKNIGHT_SCYTHE){
-					use_silverknight_scythe_at(u.ux, u.uy);
+					use_silverknight_scythe_at(u.ux, u.uy, obj);
 					return MOVE_ATTACKED;
+				}
+				if(obj->otyp == PEST_GLAIVE){
+					return use_pest_glaive(obj);
 				}
 				impossible("Unhandled special polearm action.");
 				return res; //Should never reach here
@@ -7648,9 +8205,16 @@ coord *ccp;
 		ccp->x = 0; ccp->y = 0;
 	    return (res);
 	} else if (distu(ccp->x, ccp->y) < min_range) {
-	    pline("Too close!");
-		ccp->x = 0; ccp->y = 0;
-	    return (res);
+		if (obj->otyp == PEST_GLAIVE
+		    && (obj->ovar1_pestglaive_props & PG_MATTOCK)
+		    && !m_at(ccp->x, ccp->y)
+		) {
+			/* Adjacent empty square: pass through for dig-down handling */
+		} else {
+		    pline("Too close!");
+			ccp->x = 0; ccp->y = 0;
+		    return (res);
+		}
 	} else if (!cansee(ccp->x, ccp->y) &&
 		   (mtmp == (struct monst *)0 ||
 		    !canseemon(mtmp))) {
@@ -7692,7 +8256,22 @@ use_pole(obj)
 		   You("cut away the grass!");
 		   newsym(cc.x,cc.y);
 	} else if(obj->otyp == SILVERKNIGHT_SCYTHE){
-		use_silverknight_scythe_at(cc.x,cc.y);
+		use_silverknight_scythe_at(cc.x,cc.y,obj);
+	} else if(obj->otyp == PEST_GLAIVE && obj->ovar1_pestglaive_props) {
+		boolean handled = FALSE;
+		/* Adjacent empty square (bypassed "too close"): dig down into floor */
+		if (!handled && (obj->ovar1_pestglaive_props & PG_MATTOCK) && distu(cc.x, cc.y) < 4)
+			handled = pg_mattock_digdown(cc.x, cc.y);
+		/* In-range empty square: snag floor item */
+		if (!handled && (obj->ovar1_pestglaive_props & PG_BULLWHIP))
+			handled = pg_bullwhip_snag(obj, cc.x, cc.y);
+		/* In-range: dig or chop terrain */
+		if (!handled && (obj->ovar1_pestglaive_props & PG_MATTOCK))
+			handled = pg_mattock_dig(cc.x, cc.y);
+		if (!handled && (obj->ovar1_pestglaive_props & PG_AXE))
+			handled = pg_axe_chop(cc.x, cc.y);
+		if (!handled)
+			pline("%s", nothing_happens);
 	} else {
 	    /* Now you know that nothing is there... */
 	    pline("%s", nothing_happens);
@@ -10738,6 +11317,117 @@ upgradeMenu()
 	return 0;
 }
 
+STATIC_OVL int
+doUpgradeClockwork()
+{
+	struct obj *comp;
+	long upgrade = upgradeMenu();
+	// Create an array with all classes explicitly listed in it, 1-MAXOCLASSES :(
+	char all_classes[MAXOCLASSES] = {0};
+	for(int i = 1; i < MAXOCLASSES; i++)
+		all_classes[i-1] = i;
+	switch(upgrade){
+		case OIL_STOVE:
+			You("use the components in the upgrade kit to install an oil stove.");
+			u.clockworkUpgrades |= upgrade;
+			return MOVE_STANDARD;
+		break;
+		case WOOD_STOVE:
+			comp = getobj(tools, "upgrade your stove with");
+			if(!comp || comp->otyp != TINNING_KIT){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("use the components in the upgrade kit and the tinning kit to install a wood-burning stove.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case FAST_SWITCH:
+			You("use the components in the upgrade kit to install a fast switch on your clock.");
+			u.clockworkUpgrades |= upgrade;
+			return MOVE_STANDARD;
+		break;
+		case EFFICIENT_SWITCH:
+			comp = getobj(tools, "upgrade your switch with");
+			if(!comp || comp->otyp != CROSSBOW){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("use the components in the upgrade kit and the crossbow to upgrade the switch on your clock.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case ARMOR_PLATING:
+			comp = getobj(apply_armor, "upgrade your armor with");
+			if(!comp ||
+				!((comp->otyp == ARCHAIC_PLATE_MAIL || comp->otyp == PLATE_MAIL) &&
+				(comp->obj_material == COPPER))){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("use the components in the upgrade kit to reinforce your armor with bronze plates.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case PHASE_ENGINE:
+			comp = getobj(all_classes, "build a phase engine with");
+			if(!comp || comp->otyp != SUBETHAIC_COMPONENT){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the subethaic component and build a phase engine.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case MAGIC_FURNACE:
+			comp = getobj(tools, "build a magic furnace with");
+			if(!comp || comp->otyp != WAN_DRAINING){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the wand and build a magic furnace.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case HELLFIRE_FURNACE:
+			comp = getobj(all_classes, "build a hellfire furnace with");
+			if(!comp || comp->otyp != HELLFIRE_COMPONENT){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the hellfire component and build a hellfire furnace.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case SCRAP_MAW:
+			comp = getobj(tools, "build a scrap maw with");
+			if(!comp || comp->otyp != SCRAP){
+				pline1(Never_mind);
+				return MOVE_CANCELLED;
+			}
+			You("combine the components in the upgrade kit with the scrap and build a scrap maw.");
+			u.clockworkUpgrades |= upgrade;
+			useup(comp);
+			return MOVE_STANDARD;
+		break;
+		case HIGH_TENSION:
+			// Maybe one day a spring pistol or something
+			You("use the components in the upgrade kit to increase the maximum tension in your mainspring.");
+			u.uhungermax += DEFAULT_HMAX; // 2000 per, capped at 9 kits for 20,000 max
+			if(u.uhungermax >= DEFAULT_HMAX*10) u.clockworkUpgrades |= upgrade;
+			// useup(comp);
+			return MOVE_STANDARD;
+		break;
+	}
+	return MOVE_CANCELLED;
+}
+
 boolean
 set_obj_shape(obj, shape)
 struct obj *obj;
@@ -10764,8 +11454,9 @@ long shape;
 		else if((obj->bodytypeflag&MB_BODYTYPEMASK) == 0)
 				obj->bodytypeflag = MB_HUMANOID;
 	}
-	else if (is_helmet(obj) && !is_hat(obj))
-		obj->bodytypeflag = shape&MB_HEADMODIMASK;
+	else if (is_helmet(obj) && !is_hat(obj)){
+		obj->bodytypeflag = shape&(MB_HEADMODIMASK|MB_HORNS);
+	}
 	if(obj->bodytypeflag != starting_shape)
 		return TRUE;
 	return FALSE;
@@ -10788,6 +11479,7 @@ struct obj *kit;
 
 #ifdef STEED
     if (u.usteed && u.dz > 0) ptr = u.usteed->data;
+    else if (u.urider && u.dz < 0) ptr = u.urider->data;
 	else 
 #endif
 	if(u.dz){
@@ -10845,6 +11537,15 @@ struct obj *kit;
 	// change size (AFTER shape, because this may be aborted during that step.
 	if(otmp->objsize != ptr->msize){
 		otmp->objsize = ptr->msize;
+		changed = TRUE;
+	}
+
+	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd
+		&& ptr == youracedata
+		&& arm_blocks_upper_body(otmp->otyp)
+		&& !check_omod(otmp, OMOD_SHOULDER_BARING)
+	){
+		add_omod(otmp, OMOD_SHOULDER_BARING);
 		changed = TRUE;
 	}
 
@@ -11094,157 +11795,399 @@ upgradeImpArmor()
 	}
 }
 
-STATIC_OVL int
-doUseUpgradeKit(optr)
-struct obj **optr;
+STATIC_OVL boolean
+carrying_silverknight_runeable()
 {
-	struct obj *obj = *optr;
-	struct obj *comp;
-	// Create an array with all classes explicitly listed in it, 1-MAXOCLASSES :(
-	char all_classes[MAXOCLASSES] = {0};
-	for(int i = 1; i < MAXOCLASSES; i++)
-		all_classes[i-1] = i;
-	if(uclockwork){
-		if (yn("Make an upgrade to yourself?") == 'y'){
-			long upgrade = upgradeMenu();
-			switch(upgrade){
-				case OIL_STOVE:
-					You("use the components in the upgrade kit to install an oil stove.");
-					u.clockworkUpgrades |= upgrade;
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case WOOD_STOVE:
-					comp = getobj(tools, "upgrade your stove with");
-					if(!comp || comp->otyp != TINNING_KIT){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("use the components in the upgrade kit and the tinning kit to install a wood-burning stove.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case FAST_SWITCH:
-					You("use the components in the upgrade kit to install a fast switch on your clock.");
-					u.clockworkUpgrades |= upgrade;
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case EFFICIENT_SWITCH:
-					comp = getobj(tools, "upgrade your switch with");
-					if(!comp || comp->otyp != CROSSBOW){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("use the components in the upgrade kit and the crossbow to upgrade the switch on your clock.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case ARMOR_PLATING:
-					comp = getobj(apply_armor, "upgrade your armor with");
-					if(!comp ||
-						!((comp->otyp == ARCHAIC_PLATE_MAIL || comp->otyp == PLATE_MAIL) &&
-						(comp->obj_material == COPPER))){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("use the components in the upgrade kit to reinforce your armor with bronze plates.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case PHASE_ENGINE:
-					comp = getobj(all_classes, "build a phase engine with");
-					if(!comp || comp->otyp != SUBETHAIC_COMPONENT){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the subethaic component and build a phase engine.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case MAGIC_FURNACE:
-					comp = getobj(tools, "build a magic furnace with");
-					if(!comp || comp->otyp != WAN_DRAINING){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the wand and build a magic furnace.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case HELLFIRE_FURNACE:
-					comp = getobj(all_classes, "build a hellfire furnace with");
-					if(!comp || comp->otyp != HELLFIRE_COMPONENT){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the hellfire component and build a hellfire furnace.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case SCRAP_MAW:
-					comp = getobj(tools, "build a scrap maw with");
-					if(!comp || comp->otyp != SCRAP){
-						pline1(Never_mind);
-						return MOVE_CANCELLED;
-					}
-					You("combine the components in the upgrade kit with the scrap and build a scrap maw.");
-					u.clockworkUpgrades |= upgrade;
-					useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-				case HIGH_TENSION:
-					// Maybe one day a spring pistol or something
-					You("use the components in the upgrade kit to increase the maximum tension in your mainspring.");
-					u.uhungermax += DEFAULT_HMAX; // 2000 per, capped at 9 kits for 20,000 max
-					if(u.uhungermax >= DEFAULT_HMAX*10) u.clockworkUpgrades |= upgrade;
-					// useup(comp);
-					useup(obj);
-					*optr = 0;
-					return MOVE_STANDARD;
-				break;
-			}
+	struct obj *obj;
+	for(obj = invent; obj; obj = obj->nobj){
+		if(is_silverknight_armor(obj))
+			return TRUE;
+		if(is_silverknight_weapon(obj) && !check_oprop(obj, OPROP_NONE)){
+			if(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW))
+				return TRUE;
 		}
 	}
+	return FALSE;
+}
+
+STATIC_OVL boolean
+carrying_silverknight_weapon()
+{
+	struct obj *obj;
+	for(obj = invent; obj; obj = obj->nobj){
+		if(is_silverknight_weapon(obj)){
+			if(!(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW)))
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+STATIC_OVL int
+mergeSilverknightRunes()
+{
+	struct obj *upitm;
+	struct obj *obj = getobj(apply_armor, "merge runes into");
+	if(!obj){
+		return MOVE_CANCELLED;
+	}
+	if(is_silverknight_armor(obj)){
+		if(obj->owornmask){
+			You("will need to take that off to merge into it.");
+			return MOVE_CANCELLED;
+		}
+		upitm = getobj(apply_armor, "use as the rune source");
+		if(!upitm){
+			return MOVE_CANCELLED;
+		}
+		if(upitm == obj){
+			pline("That would be an interesting metaphysical experiment.");
+			return MOVE_CANCELLED;
+		}
+		if(!objects[upitm->otyp].oc_oprop[0]){
+			pline("That doesn't have any runes to be extracted.");
+			return MOVE_CANCELLED;
+		}
+		if(upitm->owornmask){
+			pline("You're still using that.");
+			return MOVE_CANCELLED;
+		}
+		if(objects[upitm->otyp].oc_armcat != objects[obj->otyp].oc_armcat){
+			pline("Those aren't worn in the same way.");
+			return MOVE_CANCELLED;
+		}
+		if(upitm->oartifact){
+			pline("It resists the attempt!");
+			return MOVE_CANCELLED;
+		}
+		if(obj->ovar1_silverknight_otyp == upitm->otyp){
+			pline("The runes on that item are identical to the ones on the armor.");
+			return MOVE_CANCELLED;
+		}
+		char buf[BUFSZ];
+		Sprintf(buf, "Merge runes from the %s onto %s? This will destroy the source item", doname(upitm), doname(obj));
+		if(obj->ovar1_silverknight_otyp){
+			Sprintf(eos(buf), " and overwrite the existing %s runes on %s.", obj_descr[objects[obj->ovar1_silverknight_otyp].oc_name_idx].oc_name, doname(obj));
+		}
+		else {
+			Sprintf(eos(buf), ".");
+		}
+		if(yn(buf) == 'y'){
+			obj->ovar1_silverknight_otyp = upitm->otyp;
+			useup(upitm);
+			return MOVE_STANDARD;
+		}
+		return MOVE_CANCELLED;
+	}
+	else if(is_silverknight_weapon(obj)){
+		if(!(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW))){
+			pline("That weapon isn't missing any runes.");
+			return MOVE_CANCELLED;
+		}
+		upitm = getobj(spellbook_class, "rune source");
+		if(!upitm){
+			return MOVE_CANCELLED;
+		}
+		if(upitm->oartifact){
+			pline("It resists the attempt!");
+			return MOVE_CANCELLED;
+		}
+		if(check_oprop(obj, OPROP_FIREW) && (upitm->otyp == SPE_FIREBALL || upitm->otyp == SPE_FIRE_STORM)){
+			if(yn("Merge fire runes from the spellbook onto the weapon? This will destroy the spellbook and remove the flaming property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_FIREW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+		else if(check_oprop(obj, OPROP_COLDW) && (upitm->otyp == SPE_BLIZZARD || upitm->otyp == SPE_CONE_OF_COLD)){
+			if(yn("Merge cold runes from the spellbook onto the weapon? This will destroy the spellbook and remove the freezing property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_COLDW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+		else if(check_oprop(obj, OPROP_ELECW) && (upitm->otyp == SPE_LIGHTNING_BOLT || upitm->otyp == SPE_LIGHTNING_STORM)){
+			if(yn("Merge electric runes from the spellbook onto the weapon? This will destroy the spellbook and remove the shocking property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_ELECW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+		else if(check_oprop(obj, OPROP_ACIDW) && (upitm->otyp == SPE_ACID_SPLASH)){
+			if(yn("Merge acid runes from the spellbook onto the weapon? This will destroy the spellbook and remove the sizzling property from the weapon.") == 'y'){
+				remove_oprop(obj, OPROP_ACIDW);
+				useup(upitm);
+				return MOVE_STANDARD;
+			}
+			else return MOVE_CANCELLED;
+		}
+	}
+	else {
+		pline("That doesn't look like a piece of silver knight equipment.");
+		return MOVE_CANCELLED;
+	}
+	return MOVE_CANCELLED;
+}
+
+STATIC_OVL int
+extractSilverknightRunes()
+{
+	struct obj *upitm;
+	struct obj *obj = getobj(weapon_class, "item to remove runes from");
+	if(!obj){
+		return MOVE_CANCELLED;
+	}
+	if(!is_silverknight_weapon(obj)){
+		pline("That doesn't look like a silver knight weapon.");
+		return MOVE_CANCELLED;
+	}
+	if(check_oprop(obj, OPROP_FIREW) || check_oprop(obj, OPROP_COLDW) || check_oprop(obj, OPROP_ELECW) || check_oprop(obj, OPROP_ACIDW) || check_oprop(obj, OPROP_MAGCW)){
+		pline("That weapon has already had some of its runes removed.");
+		return MOVE_CANCELLED;
+	}
+	upitm = getobj(spellbook_class, "store the extracted runes in");
+	if(!upitm){
+		return MOVE_CANCELLED;
+	}
+	if(upitm->oartifact){
+		pline("It resists the attempt!");
+		return MOVE_CANCELLED;
+	}
+	if(upitm->otyp != SPE_BLANK_PAPER){
+		pline("That book isn't blank.");
+		return MOVE_CANCELLED;
+	}
+	winid tmpwin;
+	int n, how;
+	char buf[BUFSZ];
+	char incntlet = 'a';
+	menu_item *selected;
+	anything any;
+
+	tmpwin = create_nhwindow(NHW_MENU);
+	start_menu(tmpwin);
+	any.a_void = 0;		/* zero out all bits */
+	
+	Sprintf(buf, "Which runes do you want to extract?");
+	add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+	
+	Sprintf(buf, "Fire runes");
+	any.a_int = OPROP_FIREW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Cold runes");
+	any.a_int = OPROP_COLDW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Electric runes");
+	any.a_int = OPROP_ELECW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Acid runes");
+	any.a_int = OPROP_ACIDW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	Sprintf(buf, "Magic runes");
+	any.a_int = OPROP_MAGCW;	/* must be non-zero */
+	add_menu(tmpwin, NO_GLYPH, &any,
+		incntlet, 0, ATR_NONE, buf,
+		MENU_UNSELECTED);
+	incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+	end_menu(tmpwin, "Choose runes to extract:");
+	how = PICK_ONE;
+	n = select_menu(tmpwin, how, &selected);
+	long picked = 0;
+	destroy_nhwindow(tmpwin);
+	if(n > 0){
+		picked = selected[0].item.a_int;
+		free(selected);
+	}
+	else {
+		return MOVE_CANCELLED;
+	}
+
+	switch(picked){
+		case OPROP_FIREW:
+			add_oprop(obj, OPROP_FIREW);
+			pline("You extract the runes that regulate fire from the weapon and store them in the spellbook.");
+			pline("%s bursts into flame!", The(xname(obj)));
+			poly_obj(upitm, SPE_FIREBALL);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_COLDW:
+			add_oprop(obj, OPROP_COLDW);
+			pline("You extract the runes that regulate cold from the weapon and store them in the spellbook.");
+			pline("%s freezes!", The(xname(obj)));
+			poly_obj(upitm, SPE_CONE_OF_COLD);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_ELECW:
+			add_oprop(obj, OPROP_ELECW);
+			pline("You extract the runes that regulate electricity from the weapon and store them in the spellbook.");
+			pline("%s crackles with electricity!", The(xname(obj)));
+			poly_obj(upitm, SPE_LIGHTNING_BOLT);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_ACIDW:
+			add_oprop(obj, OPROP_ACIDW);
+			pline("You extract the runes that regulate acid from the weapon and store them in the spellbook.");
+			pline("%s sizzles!", The(xname(obj)));
+			poly_obj(upitm, SPE_ACID_SPLASH);
+			return MOVE_STANDARD;
+		break;
+		case OPROP_MAGCW:
+			add_oprop(obj, OPROP_MAGCW);
+			pline("You extract the runes that regulate magic from the weapon and store them in the spellbook.");
+			pline("%s sparkles with magical energy!", The(xname(obj)));
+			poly_obj(upitm, SPE_MAGIC_MISSILE);
+			return MOVE_STANDARD;
+		break;
+	}
+
+	return MOVE_CANCELLED;
+}
+
+STATIC_OVL int
+doUseUpgradeKit(struct obj **optr)
+{
+	struct obj *obj = *optr;
+	int upgradeTypes = 0;
+	int chosenUpgrade = -1; //default to resize armor
+#define UPGRADE_CLOCKWORK 0x1
+#define UPGRADE_IMP_ARMOR 0x2
+#define UPGRADE_SILVERKNIGHT_ARMOR 0x4
+#define UPGRADE_SILVERKNIGHT_WEAPON 0x8
+	if(uclockwork){
+		upgradeTypes |= UPGRADE_CLOCKWORK;
+	}
 	if(u.uiearepairs && carrying_imperial_elven_armor()){
-		if (yn("Repair your imperial armor?") == 'y'){
+		upgradeTypes |= UPGRADE_IMP_ARMOR;
+	}
+	if(Race_if(PM_SILVERKNIGHT) && u.uevent.qcompleted){
+		if(carrying_silverknight_runeable())
+			upgradeTypes |= UPGRADE_SILVERKNIGHT_ARMOR;
+		if(carrying_silverknight_weapon())
+			upgradeTypes |= UPGRADE_SILVERKNIGHT_WEAPON;
+	}
+	// If the item can be used for something other than just resizing armor, ask what the player wants to do.
+	if(upgradeTypes){
+		winid tmpwin;
+		int n, how;
+		char buf[BUFSZ];
+		char incntlet = 'a';
+		menu_item *selected;
+		anything any;
+
+		tmpwin = create_nhwindow(NHW_MENU);
+		start_menu(tmpwin);
+		any.a_void = 0;		/* zero out all bits */
+		
+		Sprintf(buf, "Upgrade types");
+		add_menu(tmpwin, NO_GLYPH, &any, 0, 0, ATR_BOLD, buf, MENU_UNSELECTED);
+		if(upgradeTypes&UPGRADE_CLOCKWORK){
+			Sprintf(buf, "Upgrade your clockwork");
+			any.a_int = UPGRADE_CLOCKWORK;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(upgradeTypes&UPGRADE_IMP_ARMOR){
+			Sprintf(buf, "Repair imperial armor");
+			any.a_int = UPGRADE_IMP_ARMOR;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(upgradeTypes&UPGRADE_SILVERKNIGHT_ARMOR){
+			Sprintf(buf, "Merge runes into silver knight equipment");
+			any.a_int = UPGRADE_SILVERKNIGHT_ARMOR;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		if(upgradeTypes&UPGRADE_SILVERKNIGHT_WEAPON){
+			Sprintf(buf, "Extract runes from silver knight weapons");
+			any.a_int = UPGRADE_SILVERKNIGHT_WEAPON;	/* must be non-zero */
+			add_menu(tmpwin, NO_GLYPH, &any,
+				incntlet, 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		}
+		Sprintf(buf, "Resize armor or tool");
+		any.a_int = -1;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet = (incntlet != 'z') ? (incntlet+1) : 'A';
+		end_menu(tmpwin, "Choose upgrade:");
+		how = PICK_ONE;
+		n = select_menu(tmpwin, how, &selected);
+		destroy_nhwindow(tmpwin);
+		if(n > 0){
+			chosenUpgrade = selected[0].item.a_int;
+			free(selected);
+		}
+	}
+	switch(chosenUpgrade){
+		default:
+			if (resizeArmor(obj) != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_CLOCKWORK:
+			if (doUpgradeClockwork(optr) != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_IMP_ARMOR:
 			if (upgradeImpArmor() != MOVE_CANCELLED){
 				useup(obj);
 				*optr = 0;
 				return MOVE_STANDARD;
 			}
-		}
-	}
-	if (yn("Resize a piece of armor or tool?") == 'y'){
-		if (resizeArmor(obj) != MOVE_CANCELLED){
-			useup(obj);
-			*optr = 0;
-			return MOVE_STANDARD;
-		}
-		else
-			return MOVE_CANCELLED;
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_SILVERKNIGHT_ARMOR:
+			if (mergeSilverknightRunes() != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
+		case UPGRADE_SILVERKNIGHT_WEAPON:
+			if (extractSilverknightRunes() != MOVE_CANCELLED){
+				useup(obj);
+				*optr = 0;
+				return MOVE_STANDARD;
+			}
+			else
+				return MOVE_CANCELLED;
+		break;
 	}
 	return MOVE_CANCELLED;
 }
@@ -11325,7 +12268,9 @@ doapply()
 	else if(obj->oartifact == ART_ESSCOOAHLIPBOOURRR) res = aesculapius_poke(obj);
 	else if(obj->oartifact == ART_RED_CORDS_OF_ILMATER) res = ilmater_touch(obj);
 	else if(obj->oartifact == ART_ANSERMEE) res = ansermee_scan(obj);
-	else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
+	else if(obj->otyp == BREAKING_WHEEL){
+		return use_breaking_wheel(obj);
+	} else if(obj->otyp == RAKUYO || obj->otyp == RAKUYO_SABER){
 		return use_rakuyo(obj);
 	}
 	else if(obj->otyp == BLADE_OF_MERCY || obj->otyp == BLADE_OF_GRACE){
@@ -11519,7 +12464,7 @@ doapply()
 		struct obj *corpse;
 		struct monst *mtmp;
 		long age;
-		corpse = floorfood("reanimate", 1);
+		corpse = floorfood("reanimate", 1, FALSE);
 		if(!corpse){
 			struct obj *research_kit = 0;
 			if(!u.veil && reanimation_ok() && (
@@ -11576,7 +12521,7 @@ doapply()
 				mtmp->mtame = FALSE;
 			}
 			else {
-				tamedog_core(mtmp, (struct obj *) 0, TRUE);
+				tamedog_core(mtmp, (struct obj *) 0, TD_ENHANCED);
 			}
 			if(pre_research != reanimation_research_ok()){
 				You("have devised a new experiment into the great animating thoughts.");
@@ -12289,6 +13234,10 @@ doapply()
 	break;
 	default:
 		/* Pole-weapons can strike at a distance */
+		if (obj->otyp == PEST_GLAIVE && (obj->ovar1_pestglaive_props & PG_CROOK)) {
+			res = use_crook(obj);
+			break;
+		}
 		if (is_pole(obj)) {
 			res = use_pole(obj);
 			break;
@@ -12566,6 +13515,15 @@ dotrephination_menu()
 	if (u.thoughts&ROTTEN_EYES){
 		Sprintf(buf, "Extract the many milky eyes");
 		any.a_int = VACUOUS_GLYPH;	/* must be non-zero */
+		add_menu(tmpwin, NO_GLYPH, &any,
+			incntlet, 0, ATR_NONE, buf,
+			MENU_UNSELECTED);
+		incntlet++;
+	}
+	
+	if (u.thoughts&ROTTED_RUNE){
+		Sprintf(buf, "Extract the rotten rune");
+		any.a_int = ROT_GLYPH;	/* must be non-zero */
 		add_menu(tmpwin, NO_GLYPH, &any,
 			incntlet, 0, ATR_NONE, buf,
 			MENU_UNSELECTED);

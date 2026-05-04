@@ -366,6 +366,9 @@ int y;
 		} else if(u.thoughts & BEASTS_EMBRACE){
 			u.thoughts &= ~BEASTS_EMBRACE;
 			otmp = mksobj(BEAST_S_EMBRACE_GLYPH, MKOBJ_NOINIT);
+		} else if(u.thoughts & ROTTED_RUNE){
+			u.thoughts &= ~ROTTED_RUNE;
+			otmp = mksobj(ROT_GLYPH, MKOBJ_NOINIT);
 		} else if(u.thoughts & SIGHT){
 			u.thoughts &= ~SIGHT;
 			otmp = mksobj(ORRERY_GLYPH, MKOBJ_NOINIT);
@@ -498,6 +501,7 @@ struct obj *corpse;
 	}
 #ifdef STEED
 	if (u.usteed) dismount_steed(DISMOUNT_BONES);
+	if (u.urider) rider_dismounts_you(DISMOUNT_BONES);
 #endif
 	dmonsfree();		/* discard dead or gone monsters */
 

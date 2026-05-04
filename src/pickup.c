@@ -352,8 +352,11 @@ allow_category(struct obj *obj, int qflags)
 {
 	if(qflags&NO_EQUIPMENT && obj->owornmask)
 		return FALSE;
-    if (u.upriest) obj->bknown = TRUE;
-    if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
+    if (KNOWS_BUC) obj->bknown = TRUE;
+	else if (obj->cursed && KNOWS_CURSES) obj->bknown = TRUE;
+	else if (obj->blessed && KNOWS_BLESSINGS) obj->bknown = TRUE;
+
+	if (((index(valid_menu_classes,'u') != (char *)0) && obj->unpaid) ||
 	(index(valid_menu_classes, obj->oclass) != (char *)0))
 	return TRUE;
     else if (((index(valid_menu_classes,'U') != (char *)0) &&
@@ -393,7 +396,7 @@ boolean
 is_worn_by_type(struct obj *otmp, int qflags)
 {
 	return((boolean)(!!(otmp->owornmask &
-			(W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
+			(W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL | W_WEP | W_SWAPWEP | W_QUIVER)))
 	        && (index(valid_menu_classes, otmp->oclass) != (char *)0));
 }
 
@@ -967,7 +970,7 @@ int how;			/* type of query */
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if (curr->oclass == *pack) {
 		   if ((qflags & WORN_TYPES) &&
-		   		!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
+		   		!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL |
 		    	W_WEP | W_SWAPWEP | W_QUIVER)))
 			 continue;
 		   if (!collected_type_name) {
@@ -1067,7 +1070,7 @@ int qflags;
 	    for (curr = olist; curr; curr = FOLLOW(curr, qflags)) {
 		if (curr->oclass == *pack) {
 		   if ((qflags & WORN_TYPES) &&
-		    	!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL |
+		    	!(curr->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL |
 		    	W_WEP | W_SWAPWEP | W_QUIVER)))
 			 continue;
 		   if (!counted_category) {
@@ -1925,6 +1928,8 @@ gotit:
 	}
 	if(u.dz > 0)
 		mtmp = u.usteed;
+	else if(u.dz < 0)
+		mtmp = u.urider;
 	else
 		mtmp = m_at(cc.x, cc.y);
 	if (mtmp) {
@@ -2095,6 +2100,10 @@ dopetequip()
 		You_cant("change the equipment of something you're riding!");
 		return MOVE_CANCELLED;
 	}
+	if(mtmp == u.urider){
+		You_cant("change the equipment of your rider!");
+		return MOVE_CANCELLED;
+	}
 #endif	/* STEED */
 	if (nolimbs(youracedata)) {
 		You_cant("do that without limbs."); /* not body_part(HAND) */
@@ -2258,7 +2267,7 @@ register struct obj *obj;
 	) {
 		pline("The artifact isn't interested in taking %s.", the(xname(obj)));
 		return 0;
-	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_BELT | W_TOOL)) {
+	} else if (obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_BELT | W_TOOL)) {
 		Norep("You cannot %s %s you are wearing.",
 			Icebox ? "refrigerate" : "stash", something);
 		return 0;
@@ -3008,7 +3017,7 @@ boolean past;
 	if (flags.descendant){
 		for(otmp = box->cobj; otmp; otmp = otmp->nobj){
 			if(otmp->oartifact == u.inherited){
-				expert_weapon_skill(weapon_type(otmp));
+				expert_weapon_skill(is_shield(otmp) ? P_SHIELD : weapon_type(otmp));
 				discover_artifact(u.inherited);
 				break;
 			}
@@ -3131,7 +3140,7 @@ boolean past;
 					u.ualign.type = A_LAWFUL;
 				}
 				You("have a sudden sense of returning to an old direction.");
-				flags.initalign = 0;
+				flags.initalign = INITALIGN_LAWFUL;
 				flags.botl = TRUE;
 				change_luck(-3);
 				u.ublesscnt += 300;
@@ -3213,6 +3222,48 @@ boolean past;
 			expert_weapon_skill(P_SHORT_SWORD);
 			free_skill_up(P_SHORT_SWORD);
 			expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+		break;
+		case PM_TIEFLING:
+			if(flags.initgend){
+				expert_weapon_skill(P_TWO_WEAPON_COMBAT);
+			}
+			else {
+				expert_weapon_skill(P_MACE);
+				//Read through and grant expert skill for any weapons
+				for(otmp = box->cobj; otmp; otmp = otmp->nobj){
+					if(is_weapon(otmp)){
+						expert_weapon_skill(objects[otmp->otyp].oc_skill);
+					}
+				}
+			}
+		break;
+		case PM_AASIMAR:
+			if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
+				expert_weapon_skill(P_LONG_SWORD);
+				free_skill_up(P_LONG_SWORD);
+				expert_weapon_skill(P_BOW);
+				free_skill_up(P_BOW);
+				expert_weapon_skill(P_SHIELD);
+				skilled_weapon_skill(P_BEAST_MASTERY);
+			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_PRIMINAL){
+				expert_weapon_skill(P_QUARTERSTAFF);
+				free_skill_up(P_QUARTERSTAFF);
+				pline("You suddenly remember that you are gelatinous!");
+				pline("Oh, and you've got a tail.");
+				add_mutation(AAT_PRIMINAL);
+				add_mutation(AAT_PRIMINAL_TAIL);
+				skilled_weapon_skill(P_BEAST_MASTERY);
+				gm_weapon_skill(P_BARE_HANDED_COMBAT);
+				gm_weapon_skill(P_TWO_WEAPON_COMBAT);
+				u.umartial = TRUE;
+			}
+			else if(flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE){
+				expert_weapon_skill(P_BEAST_MASTERY);
+				free_skill_up(P_BEAST_MASTERY);
+				expert_weapon_skill(P_MUSICALIZE);
+				free_skill_up(P_MUSICALIZE);
+			}
 		break;
 	}
 	if(Insight >= 10){
@@ -3512,7 +3563,7 @@ struct monst *mon;
 				addArmorMenuOption
 			} else if(is_cloak(otmp) && !(mon->misc_worn_check&W_ARMC) && (abs(otmp->objsize - mon->data->msize) <= 1)){
 				addArmorMenuOption
-			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon->data,otmp) && helm_size_fits(mon->data,otmp)){
+			} else if(is_helmet(otmp) && !(mon->misc_worn_check&W_ARMH) && helm_match(mon,otmp) && helm_size_fits(mon->data,otmp)){
 				addArmorMenuOption
 			} else if(is_shield(otmp) && !(mon->misc_worn_check&W_ARMS) && !noshield(mon->data)){
 				addArmorMenuOption
@@ -4611,6 +4662,11 @@ tiphat()
 				pline("%s doesn't notice.", Monnam(u.usteed));
 			else
 				(void) domonnoise(u.usteed, TRUE);
+		} else if(u.urider && u.dz < 0) {
+			if (!u.urider->mcanmove || u.urider->msleeping)
+				pline("%s doesn't notice.", Monnam(u.urider));
+			else
+				(void) domonnoise(u.urider, TRUE);
 		} else if (u.dz) {
 			pline("There's no one %s there.", (u.dz < 0) ? "up" : "down");
 		} else {

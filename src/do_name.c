@@ -416,6 +416,8 @@ do_mname()
 #ifdef STEED
 	    if (u.usteed && canspotmon(u.usteed))
 		mtmp = u.usteed;
+	    else if (u.urider && canspotmon(u.urider))
+		mtmp = u.urider;
 	    else {
 #endif
 		pline("This %s creature is called %s and cannot be renamed.",
@@ -779,7 +781,7 @@ const char *name;
 			}
 			if(Role_if(PM_KENSEI) && u.role_variant == ART_SKY_REFLECTED){
 				expert_weapon_skill(objects[obj->otyp].oc_skill);
-				if(obj->otyp == LONG_SWORD){
+				if(is_knight_sword(obj)){
 					expert_weapon_skill(P_GENERIC_KNIGHT_FORM);
 				}
 				else if(is_pole(obj)){
@@ -831,6 +833,17 @@ const char *name;
 		/* viperwhip heads */
 		if (obj->oartifact == ART_SCOURGE_OF_LOLTH)
 			obj->ovar1_heads = 8;
+
+		/* GDCB starts pre-loaded with iron ballast */
+		if (obj->oartifact == ART_GREEN_DRAGON_CRESCENT_BLAD) {
+			struct obj *ingots = mksobj(INGOT, MKOBJ_NOINIT);
+			ingots->quan = 75L;
+			set_material_gm(ingots, IRON);
+			fix_object(ingots);
+			add_to_container(obj, ingots);
+			artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBMaterials   |= AMAT_IRON;
+			artinstance[ART_GREEN_DRAGON_CRESCENT_BLAD].GDCBBlessedness |= GDCB_UNBLESSED;
+		}
 
 		fix_object(obj);
 
@@ -1045,6 +1058,7 @@ boolean full;
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s the finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
 		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "%s the swollen", buf);
+		else if (full && template == ROT_ZOMBIE)		Sprintf(buf2, "%s the rotten", buf);
 		else if (full && template == BLOOD_MON)	Sprintf(buf2, "%s the bloody", buf);
 		else if (full && template == FLAYED){
 			if (!strcmp(buf, "Robert the Lifer"))		Sprintf(buf2, "Robert the Flayed");
@@ -1086,6 +1100,7 @@ boolean full;
 		else if (full && template == PSURLON)			Sprintf(buf2, "%s finger", buf);
 		else if (full && template == CONSTELLATION)		Sprintf(buf2, "%s constellation", buf);
 		else if (full && template == SWOLLEN_TEMPLATE)	Sprintf(buf2, "swollen %s", buf);
+		else if (full && template == ROT_ZOMBIE)		Sprintf(buf2, "rotting %s zombie", buf);
 		else if (full && template == BLOOD_MON)			Sprintf(buf2, "blood %s", buf);
 		else if (full && template == FLAYED)			Sprintf(buf2, "flayed %s", buf);
 		else if (full && template == MANITOU)			Sprintf(buf2, "vine-strangled %s", buf);
@@ -1200,6 +1215,7 @@ boolean called;
 	    !program_state.gameover &&
 #ifdef STEED
 	    mtmp != u.usteed &&
+	    mtmp != u.urider &&
 #endif
 	    !(u.uswallow && mtmp == u.ustuck) &&
 	    !(suppress & SUPPRESS_IT);
@@ -1647,6 +1663,7 @@ struct monst *mtmp;
 #ifdef STEED
 			    /* "saddled" is redundant when mounted */
 			    || mtmp == u.usteed
+			    || mtmp == u.urider
 #endif
 			    ) ? SUPPRESS_SADDLE : 0;
 

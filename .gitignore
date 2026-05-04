@@ -52,3 +52,7 @@ desktop.ini
 .DS_STORE
 notdnethackdir
 mat
+mat
+
+*.md
+*.json

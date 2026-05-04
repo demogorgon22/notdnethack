@@ -549,7 +549,7 @@ canletgo(obj,word)
 register struct obj *obj;
 register const char *word;
 {
-	if(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_TOOL | W_BELT)){
+	if(obj->owornmask & (W_ARMOR | W_RING | W_AMUL | W_SADDLE | W_TOOL | W_BELT)){
 		if (*word)
 			Norep("You cannot %s %s you are wearing.",word,
 				something);
@@ -972,7 +972,7 @@ dodown()
 			if (flags.autodig && !flags.nopick &&
 				uwep && (is_pick(uwep) || (is_lightsaber(uwep) && litsaber(uwep)) || (uwep->otyp == SEISMIC_HAMMER))) {
 				return use_pick_axe2(uwep);
-			} else if(uarmg && is_pick(uarmg)){
+			} else if(flags.autodig && uarmg && is_pick(uarmg)){
 				return use_pick_axe2(uarmg);
 			} else {
 				if(levl[u.ux][u.uy].typ == STAIRS){
@@ -1337,6 +1337,30 @@ int portal;
 		}
 		return;
 	}
+	if(u.silverknight_mire && u.uz.dnum == oracle_level.dnum && newdungeon){
+		if (newlevel->dnum != qstart_level.dnum) {
+			pline("A mysterious force prevents you from %s.", portal ? "leaving" : up ? "climbing" : "descending");
+			return;
+		}
+		else {
+			// Escaped the mire
+			for(struct obj *otmp = invent; otmp; otmp = otmp->nobj){
+				otmp->mired = 0;
+			}
+			for(int i = 0; i < 10; i++){
+				for(struct obj *otmp = magic_chest_objs[i]; otmp; otmp = otmp->nobj){
+					if(otmp->mired){
+						otmp->oeroded = 0;
+						otmp->oeroded2 = 0;
+						otmp->mired = 0;
+					}
+				}
+			}
+			u.silverknight_mire = FALSE;
+			remove_rot(ROT_KIN);
+			set_silvergrubs(FALSE);
+		}
+	}
 	/* Mysterious force to shake up the uh quest*/
 	if(!up && !newdungeon && !portal && In_quest(&u.uz) 
 		&& Role_if(PM_UNDEAD_HUNTER) && !mvitals[PM_MOON_S_CHOSEN].died
@@ -1474,6 +1498,23 @@ remake:
 			more_experienced(u.ulevel*dungeon_depth,0);
 			newexplevel();
 		}
+		if(u.silverknight_mire){
+			int i,j;
+			struct obj *otmp, *nobj;
+			for(i=0; i<COLNO; i++){
+				for(j=0; j<ROWNO; j++){
+					if(levl[i][j].typ > LAVAPOOL){
+						for(otmp = level.objects[i][j]; otmp; otmp = nobj){
+							nobj = otmp->nexthere;
+							if(!is_organic(otmp)){
+								bury_an_obj(otmp);
+								otmp->mired = 1;
+							}
+						}
+					}
+				}
+			}
+		}
 	} else {
 		/* returning to previously visited level; reload it */
 		fd = open_levelfile(new_ledger, whynot);
@@ -1490,6 +1531,40 @@ remake:
 		getlev(fd, hackpid, new_ledger, FALSE);
 		(void) close(fd);
 		oinit(); /* reassign level dependent obj probabilities (Pat Rankin)*/
+		if(!u.silverknight_mire){
+			struct obj *nobj;
+			for(struct obj *obj = level.buriedobjlist; obj; obj = nobj){
+				nobj = obj->nobj;
+				if(obj->mired){
+					obj_extract_self(obj);
+					place_object(obj, obj->ox, obj->oy);
+					obj->oeroded = 0;
+					obj->oeroded2 = 0;
+					obj->mired = 0;
+				}
+			}
+			struct monst* mtmp, *nmon;
+			for(mtmp = fmon; mtmp; mtmp = nmon){
+				nmon = mtmp->nmon;
+				if(mtmp->mmired){
+					mtmp->mmired = 0;
+					if(has_template(mtmp, SWOLLEN_TEMPLATE) || has_template(mtmp, ROT_ZOMBIE)){
+						set_template(mtmp, 0);
+						makemon_set_hp(mtmp, mtmp->data);
+					}
+					else if(mtmp->mtyp == PM_SILVERMAN
+						|| mtmp->mtyp == PM_SILVERKNIGHT
+						|| mtmp->mtyp == PM_SILVERGRUB
+						|| mtmp->mtyp == PM_MAN_FLY
+						|| mtmp->mtyp == PM_SPIDER_SCORPION
+						|| mtmp->mtyp == PM_FLESH_THAT_HATES
+					){
+						if(!mtmp->mtame)
+							mongone(mtmp);
+					}
+				}
+			}
+		}
 	}
 	/* do this prior to level-change pline messages */
 	vision_reset();		/* clear old level's line-of-sight */
@@ -1635,8 +1710,11 @@ remake:
 				/* falling off steed has its own losehp() call */
 				if (u.usteed)
 					dismount_steed(DISMOUNT_FELL);
-				else
+				else {
 					losehp(rnd(3), "falling downstairs", KILLED_BY);
+					if(u.urider)
+						rider_dismounts_you(DISMOUNT_FELL);
+				}
 				if(!Flying)
 					selftouch("Falling, you");
 			} else if (u.dz && at_ladder)
@@ -1685,6 +1763,7 @@ misc_levelport:
 	if ((mtmp = m_at(u.ux, u.uy)) != 0
 #ifdef STEED
 		&& mtmp != u.usteed
+		&& mtmp != u.urider
 #endif
 		) {
 	    /* There's a monster at your target destination; it might be one
@@ -1827,7 +1906,7 @@ misc_levelport:
 				pline("Your help is urgently needed at Archer Asylum!  Look for a ...ic transporter.");
 				pline("You couldn't quite make out that last message.");
 			}
-		} else if(Role_if(PM_HEALER) && Race_if(PM_DROW)){
+		} else if(urole.neminum == PM_BLIBDOOLPOOLP__GRAVEN_INTO_FLESH){
 			if(u.uevent.qcalled){
 				You("again sense Sister T'eirastra pleading for help.");
 			}
@@ -3145,6 +3224,156 @@ dopassive()
 }
 
 
+/* ---- #pets helpers ---- */
+
+#define PETORD_MOVEMENT	1	/* follow/wait toggle */
+#define PETORD_COMBAT	2	/* aggressive/passive toggle */
+#define PETORD_PICKUP	3	/* pickup/nopickup toggle */
+
+/* Phase 1: ask what behavior type to adjust.
+ * Returns PETORD_* on success, 0 on cancel. */
+static int
+pets_pick_order()
+{
+	winid win;
+	menu_item *sel = (menu_item *)0;
+	anything any;
+	int n, order;
+
+	win = create_nhwindow(NHW_MENU);
+	start_menu(win);
+	any.a_void = 0;
+
+	any.a_int = PETORD_MOVEMENT;
+	add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
+		"Movement behavior (follow / wait)", MENU_UNSELECTED);
+
+	any.a_int = PETORD_COMBAT;
+	add_menu(win, NO_GLYPH, &any, 'b', 0, ATR_NONE,
+		"Combat behavior (aggressive / passive)", MENU_UNSELECTED);
+
+	any.a_int = PETORD_PICKUP;
+	add_menu(win, NO_GLYPH, &any, 'c', 0, ATR_NONE,
+		"Pickup behavior (pick up items / leave items)", MENU_UNSELECTED);
+
+	end_menu(win, "Adjust which pet behavior?");
+	n = select_menu(win, PICK_ONE, &sel);
+	destroy_nhwindow(win);
+
+	order = (n > 0) ? sel[0].item.a_int : 0;
+	if (n > 0) free((genericptr_t)sel);
+	return order;
+}
+
+/* Return the pet index among tame monsters (1-based), for menu accelerator
+ * selection.  Uses a-z then A-Z. */
+static char
+pets_menu_letter(int idx)
+{
+	if (idx < 26) return (char)('a' + idx);
+	if (idx < 52) return (char)('A' + idx - 26);
+	return 0;
+}
+
+/* Phase 2: show a toggle-style loop for the given behavior.
+ * Keeps redisplaying the menu until the player presses ESC. */
+static void
+pets_behavior_toggle(order)
+int order;
+{
+	struct monst *mtmp;
+	winid win;
+	menu_item *sel = (menu_item *)0;
+	anything any;
+	int n, idx;
+	char buf[BUFSZ];
+	const char *hdr;
+	boolean done = FALSE;
+
+	hdr = (order == PETORD_MOVEMENT) ?
+		"Toggle follow/wait for each pet (ESC when done):" :
+		(order == PETORD_COMBAT) ?
+		"Toggle aggressive/passive for each pet (ESC when done):" :
+		"Toggle item pickup for each pet (ESC when done):";
+
+	while (!done) {
+		win = create_nhwindow(NHW_MENU);
+		start_menu(win);
+		any.a_void = 0;
+		idx = 0;
+		for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+			if (!mtmp->mtame) continue;
+			if (order == PETORD_MOVEMENT)
+				Sprintf(buf, "%-30s [%s]", mon_nam(mtmp),
+					mtmp->mwait ? "waiting"    : "following");
+			else if (order == PETORD_COMBAT)
+				Sprintf(buf, "%-30s [%s]", mon_nam(mtmp),
+					mtmp->mpassive ? "passive" : "aggressive");
+			else
+				Sprintf(buf, "%-30s [%s]", mon_nam(mtmp),
+					mtmp->mnopickup ? "leaves items" : "picks up items");
+			any.a_void = (genericptr_t)mtmp;
+			add_menu(win, pet_to_glyph(mtmp), &any,
+				pets_menu_letter(idx), 0, ATR_NONE, buf,
+				MENU_UNSELECTED);
+			idx++;
+		}
+		end_menu(win, hdr);
+		n = select_menu(win, PICK_ONE, &sel);
+		destroy_nhwindow(win);
+
+		if (n > 0) {
+			mtmp = (struct monst *)sel[0].item.a_void;
+			free((genericptr_t)sel);
+			sel = (menu_item *)0;
+			if (mtmp && mtmp->mtame) {
+				if (order == PETORD_MOVEMENT) {
+					mtmp->mwait = mtmp->mwait ? 0 : monstermoves;
+				} else if (order == PETORD_COMBAT) {
+					mtmp->mpassive = !mtmp->mpassive;
+				} else {
+					mtmp->mnopickup = !mtmp->mnopickup;
+				}
+			}
+		} else {
+			if (n == 0 && sel) free((genericptr_t)sel);
+			done = TRUE;
+		}
+	}
+}
+
+/* #pets extended command: unified menu-based pet management.
+ * Phase 1 picks the behavior type; phase 2 is a toggle loop over all pets. */
+int
+dopets()
+{
+	int order;
+
+	{
+		struct monst *mtmp2;
+		boolean has_pet = FALSE;
+		for (mtmp2 = fmon; mtmp2; mtmp2 = mtmp2->nmon)
+			if (mtmp2->mtame) { has_pet = TRUE; break; }
+		if (!has_pet) {
+			You("have no pets.");
+			return MOVE_INSTANT;
+		}
+	}
+
+	order = pets_pick_order();
+	if (!order) return MOVE_CANCELLED;
+
+	pets_behavior_toggle(order);
+	return MOVE_INSTANT;
+}
+
+#undef PETORD_MOVEMENT
+#undef PETORD_COMBAT
+#undef PETORD_PICKUP
+
+/* ---- end #pets helpers ---- */
+
+
 int
 dodropall()
 {
@@ -3206,6 +3435,25 @@ int
 dosickem()
 {
 	u.peaceful_pets = FALSE;
+	return MOVE_INSTANT;
+}
+
+int
+dodash()
+{
+	if (u.dash_cooldown) {
+		if (u.usteed)
+			pline("%s is not ready to dash again yet.", Monnam(u.usteed));
+		else
+			You("are not ready to dash again yet.");
+		return MOVE_CANCELLED;
+	}
+	u.dash = !u.dash;
+	if (u.usteed)
+		pline(u.dash ? "%s breaks into a dash." : "%s slows to a normal pace.",
+		      Monnam(u.usteed));
+	else
+		You(u.dash ? "prepare to dash." : "relax your stance.");
 	return MOVE_INSTANT;
 }
 

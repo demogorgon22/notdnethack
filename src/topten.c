@@ -1126,7 +1126,7 @@ encodeachieve(void)
 
 #ifdef RECORD_ACHIEVE
 #define	CHECK_ACHIEVE(aflag, string) \
-	if(achieve.trophies&aflag){\
+	if(check_trophy(aflag)){\
 		Sprintf(eos(achieveXbuff), "%s%s", seperator, string);\
 		seperator[0] = ',';\
 		achievesWritten++;\
@@ -1156,6 +1156,7 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(MONK_QUEST,"monk_quest")
 	CHECK_ACHIEVE(UH_QUEST,"undead_hunter_quest")
 	CHECK_ACHIEVE(UH_ASC,"undead_hunter_ascension")
+	CHECK_ACHIEVE(KEN_QUEST,"kensei_quest")
 	CHECK_ACHIEVE(HDR_NOB_QUEST,"hedrow_noble_quest")
 	CHECK_ACHIEVE(HDR_SHR_QUEST,"hedrow_shared_quest")
 	CHECK_ACHIEVE(DRO_NOB_QUEST,"drow_noble_quest")
@@ -1170,6 +1171,11 @@ char *achieveXbuff;
 	CHECK_ACHIEVE(CHIRO_ASC,"chiropteran_ascension")
 	CHECK_ACHIEVE(YUKI_ASC,"yuki_onna_ascension")
 	CHECK_ACHIEVE(HALF_ASC,"half_dragon_ascension")
+	CHECK_ACHIEVE(CEN_ASC,"centauroid_ascension")
+	CHECK_ACHIEVE(TIE_ASC,"tiefling_ascension")
+	CHECK_ACHIEVE(AAS_ASC,"aasimar_ascension")
+	CHECK_ACHIEVE(SIL_ASC,"silverman_ascension")
+	CHECK_ACHIEVE(SKN_ASC,"silverknight_ascension")
 	CHECK_ACHIEVE(LAW_QUEST,"law_quest")
 	CHECK_ACHIEVE(NEU_QUEST,"neutral_quest")
 	CHECK_ACHIEVE(CHA_QUEST,"chaos_temple_quest")

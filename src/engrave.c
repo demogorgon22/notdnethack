@@ -1861,12 +1861,7 @@ freehand()
 	if(youracedata->mtyp == PM_SILVERMAN)
 		return TRUE;
 	return((!uwep || !welded(uwep) ||
-	   (!bimanual(uwep,youracedata) && (!uarms || !uarms->cursed))));
-/*	if ((uwep && bimanual(uwep)) ||
-	    (uwep && uarms))
-		return(0);
-	else
-		return(1);*/
+	   (!bimanual_mon(uwep,&youmonst) && (!uarms || !uarms->cursed))));
 }
 
 static NEARDATA const char styluses[] =
@@ -3850,7 +3845,7 @@ const char * prompt;
 			}
 		}
 		/* Numina */
-		if (Role_if(PM_EXILE) && u.ulevel == 30){
+		if (Role_if(PM_EXILE) && u.ulevel >= 30){
 			if ((u.specialSealsActive&SEAL_NUMINA)){
 				Sprintf(buf, "%s (active)",
 					sealNames[NUMINA - FIRST_SEAL]

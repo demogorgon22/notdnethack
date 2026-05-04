@@ -10,7 +10,7 @@ void FDECL(mon_block_extrinsic, (struct monst *, struct obj *, int, boolean, boo
 boolean FDECL(mon_gets_extrinsic, (struct monst *, int, struct obj *));
 STATIC_DCL void FDECL(update_mon_intrinsic, (struct monst *,struct obj *,int,BOOLEAN_P,BOOLEAN_P));
 STATIC_DCL void FDECL(m_dowear_type, (struct monst *,long, BOOLEAN_P, BOOLEAN_P));
-STATIC_DCL int NDECL(def_beastmastery);
+STATIC_DCL int FDECL(def_beastmastery, (struct monst *));
 STATIC_DCL int NDECL(def_vilya);
 STATIC_DCL int NDECL(def_narya);
 STATIC_DCL int NDECL(def_lomya);
@@ -36,6 +36,7 @@ const struct worn {
 	{ W_QUIVER, &uquiver },
 	{ W_AMUL, &uamul },
 	{ W_BELT, &ubelt },
+	{ W_SADDLE, &usaddle },
 	{ W_TOOL, &ublindf },
 	{ W_BALL, &uball },
 	{ W_CHAIN, &uchain },
@@ -100,8 +101,11 @@ int otyp;
 		amalg_otyp = artinstance[ART_SKY_REFLECTED].ZerthOtyp;
 	}
 
-	if (obj)
+	if (obj){
 		otyp = obj->otyp;
+		if (is_silverknight_armor(obj) && obj->ovar1_silverknight_otyp)
+			otyp = obj->ovar1_silverknight_otyp;
+	}
 
 	i = 0;
 	for (cur_prop = 1; cur_prop <= LAST_PROP; cur_prop++)
@@ -766,6 +770,9 @@ boolean on, silently;
 	if (DEADMONSTER(mon))
 		silently = TRUE;
 
+#ifdef STEED
+	boolean rider_was_flying = (mon == u.urider) && mon_resistance(mon, FLYING);
+#endif
 	int unseen = !canseemon(mon);
     int which;
     long all_worn = ~0L; /* clang lint */
@@ -806,6 +813,22 @@ boolean on, silently;
 #ifdef STEED
 	if (!on && mon == u.usteed && obj->otyp == SADDLE)
 	    dismount_steed(DISMOUNT_FELL);
+	if (mon == u.urider) {
+		boolean rider_now_flying = mon_resistance(mon, FLYING);
+		if (!rider_was_flying && rider_now_flying) {
+			boolean was_flying = Flying;
+			EFlying |= W_RIDER;
+			if (!was_flying && Flying) {
+				float_up();
+				spoteffects(FALSE);
+			}
+		} else if (rider_was_flying && !rider_now_flying) {
+			boolean was_flying = Flying;
+			EFlying &= ~W_RIDER;
+			if (was_flying && !Flying)
+				(void) float_down(0L, 0L);
+		}
+	}
 #endif
 
     /* if couldn't see it but now can, or vice versa, update display */
@@ -889,9 +912,9 @@ struct monst *mon;
 		base -= 10;
 	
 	if (mon->mtame){
-		base -= rnd(def_beastmastery());
+		base -= rnd(def_beastmastery(mon));
 		if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(mon->data))
-			base -= rnd(def_beastmastery()); // the duster doubles for tame animals
+			base -= rnd(def_beastmastery(mon)); // the duster doubles for tame animals
 		
 		if(u.usteed && mon==u.usteed) base -= rnd(def_mountedCombat());
 		
@@ -1163,14 +1186,14 @@ struct monst *mon;
 		base -= 10;
 	
 	if(mon->mtame){
-		base -= def_beastmastery();
+		base -= def_beastmastery(mon);
 		if(u.specialSealsActive&SEAL_COSMOS) base -= spiritDsize();
 		if(u.usteed && mon==u.usteed) base -= def_mountedCombat();
 		
 		if(is_vampire(mon->data) && check_vampire(VAMPIRE_MASTERY)) base -= 5;
 
 		if (uarm && uarm->oartifact == ART_BEASTMASTER_S_DUSTER && is_animal(mon->data))
-			base -= def_beastmastery(); // the duster doubles for tame animals
+			base -= def_beastmastery(mon); // the duster doubles for tame animals
 
 		if(uring_art(ART_VILYA))
 			base -= def_vilya();
@@ -1545,18 +1568,7 @@ int depth;
 	int agrrot = 0;
 	if(magr){
 		agralign = (magr == &youmonst) ? sgn(u.ualign.type) : sgn(magr->data->maligntyp);
-		
-		if(magr == &youmonst){
-			if(hates_holy(youracedata))
-				agrmoral = -1;
-			else if(hates_unholy(youracedata))
-				agrmoral = 1;
-		} else {
-			if(hates_holy_mon(magr))
-				agrmoral = -1;
-			else if(hates_unholy_mon(magr))
-				agrmoral = 1;
-		}
+		agrmoral = calc_agrmoral(magr);
 		agrrot = calc_agrrot(magr);
 		agrimpure = calc_agrimpure(magr);
 	}
@@ -1590,26 +1602,30 @@ int depth;
 	for (i = 0; i < SIZE(marmor); i++) {
 		if((curarm = which_armor(mon, marmor[i]))){
 			if(curarm->oclass == ARMOR_CLASS){
-				if (curarm){
-					if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
-						if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+				if((objects[curarm->otyp].oc_dtyp & slot) || (!objects[curarm->otyp].oc_dtyp && (slot&adfalt[i]))) {
+					if(depth && higher_depth(objects[curarm->otyp].oc_armcat, depth))
+						continue;
+					if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
+						if(!full_body_match(mon->data, curarm))
 							continue;
-						if(marmor[i] == W_ARM && slot == LOWER_TORSO_DR && mon->mtyp == PM_BLIBDOOLPOOLP_S_MINDGRAVEN_CHAMPION && !blip_humanoid_armor && magr && !depth){
-							if(!full_body_match(mon->data, curarm))
-								continue;
-						}
-						arm_mdr += arm_dr_bonus(curarm);
-						if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
 					}
-					else if(curarm->otyp == CLOAK_OF_PROTECTION){
-						arm_mdr += arm_dr_bonus(curarm)/2;
+					arm_mdr += arm_dr_bonus(curarm, slot);
+					if (magr) arm_mdr += properties_dr(curarm, slot, agralign, agrmoral, agrimpure, agrrot);
+					if (slot == HEAD_DR && curarm->bodytypeflag&MB_HORNS && !has_horns_mon(mon)){
+						arm_mdr -= 1;
 					}
+				}
+				else if(curarm->otyp == CLOAK_OF_PROTECTION){
+					arm_mdr += arm_dr_bonus(curarm, slot)/2;
 				}
 			}
 			else if(!depth){
 				if (slot&adfalt[i]){
-					arm_mdr += arm_dr_bonus(curarm);
-					if (magr) arm_mdr += properties_dr(curarm, agralign, agrmoral, agrimpure, agrrot);
+					arm_mdr += arm_dr_bonus(curarm, slot);
+					if (magr) arm_mdr += properties_dr(curarm, slot, agralign, agrmoral, agrimpure, agrrot);
+					if (slot == HEAD_DR && curarm->bodytypeflag&MB_HORNS && !has_horns_mon(mon)){
+						arm_mdr -= 1;
+					}
 				}
 			}
 		}
@@ -1812,7 +1828,7 @@ boolean creation;
 	   hobbits, gnomes, and kobolds to wear cloaks */
 	m_dowear_type(mon, W_ARMC, creation, FALSE);
 	m_dowear_type(mon, W_ARMH, creation, FALSE);
-	if (!MON_WEP(mon) || !bimanual(MON_WEP(mon),mon->data))
+	if (!MON_WEP(mon) || !bimanual_mon(MON_WEP(mon),mon))
 	    m_dowear_type(mon, W_ARMS, creation, FALSE);
 	m_dowear_type(mon, W_ARMG, creation, FALSE);
 	m_dowear_type(mon, W_ARMF, creation, FALSE);
@@ -1878,7 +1894,7 @@ boolean racialexception;
 		case W_ARMH:
 			if((mon->mtyp == PM_CATHEZAR || mon->mtyp == PM_CHAIN_DEVIL) && obj->otyp == CHAIN)
 				break;
-		    if (!is_helmet(obj) || !helm_match(mon->data,obj) || !helm_size_fits(mon->data,obj)) continue;
+		    if (!is_helmet(obj) || !helm_match(mon,obj) || !helm_size_fits(mon->data,obj)) continue;
 		    break;
 		case W_ARMS:
 		    if (noshield(mon->data) || (mon_offhand_attack(mon) && !creation) || !is_shield(obj)) continue;
@@ -2272,7 +2288,7 @@ boolean polyspot;
 		}
 	}
 	if ((otmp = which_armor(mon, W_ARMS)) != 0) {
-		if(nohands(mon->data) || nolimbs(mon->data) || bimanual(MON_WEP(mon),mon->data) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
+		if(nohands(mon->data) || nolimbs(mon->data) || bimanual_mon(MON_WEP(mon),mon) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data)){
 			if (vis)
 				pline("%s can no longer hold %s shield!", Monnam(mon), ppronoun);
 			else
@@ -2283,7 +2299,7 @@ boolean polyspot;
 	}
 	if ((otmp = which_armor(mon, W_ARMH)) != 0 &&
 		/* flimsy test for horns matches polyself handling */
-		(!helm_match(mon->data, otmp) || !helm_size_fits(mon->data, otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data) )
+		(!helm_match(mon, otmp) || !helm_size_fits(mon->data, otmp) || is_gaseous_noequip(mon->data) || noncorporeal(mon->data) )
 	) {
 		if (vis)
 			pline("%s helmet falls to the %s!",
@@ -2814,16 +2830,19 @@ long timeout;
 }
 
 STATIC_OVL int
-def_beastmastery()
+def_beastmastery(struct monst *mon)
 {
-	int bm;
-	switch (P_SKILL(P_BEAST_MASTERY)) {
+	int bm = P_SKILL(P_BEAST_MASTERY);
+	if(mon && is_dragon(mon->data) && Dragon_trainer)
+		bm += 1;
+	switch (bm) {
 		case P_ISRESTRICTED: bm =  0; break;
 		case P_UNSKILLED:    bm =  0; break;
 		case P_BASIC:        bm =  2; break;
 		case P_SKILLED:      bm =  5; break;
 		case P_EXPERT:       bm = 10; break;
-		default: impossible(">Expert beast mastery unhandled"); bm = 10; break;
+		case P_MASTER:       bm = 15; break;
+		default: impossible(">Master beast mastery unhandled"); bm = 15; break;
 	}
 	if((uwep && uwep->oartifact == ART_CLARENT) || (uswapwep && uswapwep->oartifact == ART_CLARENT))
 		bm *= 2;

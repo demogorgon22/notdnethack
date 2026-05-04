@@ -83,6 +83,33 @@ pet_type()
 		else 
 			return (rn2(3) ? PM_CAVE_SPIDER : PM_BABY_CAVE_LIZARD);
 	}
+	else if(Race_if(PM_DRIDER)){
+		if (Role_if(PM_HEALER)){
+			return (PM_KNIGHT);
+		}
+		return (PM_GIANT_SPIDER);
+	}
+	else if(Race_if(PM_DARK_FEY_RI) || Race_if(PM_DOKKIMAR)){
+		if (Role_if(PM_HEALER)){
+			return (PM_KNIGHT);
+		}
+		if(preferred_pet == 's')
+			return (PM_CAVE_SPIDER);
+		else if(preferred_pet == ':')
+			return (PM_BABY_CAVE_LIZARD);
+		else
+			return (rn2(3) ? PM_CAVE_SPIDER : PM_BABY_CAVE_LIZARD);
+	}
+	else if(Race_if(PM_FORMIAN)){
+		return (PM_GIANT_ANT);
+	}
+	else if(Race_if(PM_CENTAUR)){
+		if (preferred_pet == 'c' || preferred_pet == 'f')
+			return (PM_KITTEN);
+		else if (preferred_pet == 'd')
+			return (PM_LITTLE_DOG);
+		return (rn2(2) ? PM_KITTEN : PM_LITTLE_DOG);
+	}
 	else if(Race_if(PM_HALF_DRAGON) && Role_if(PM_NOBLEMAN) && flags.initgend){
 		return (PM_UNDEAD_KNIGHT);
 		// if(flags.initgend) 
@@ -241,7 +268,7 @@ makedog()
 	static int petname_used = 0;
 	if(Role_if(PM_MADMAN) && Race_if(PM_ETHEREALOID)) return make_mad_eth();
 
-	if (preferred_pet == 'n' || Role_if(PM_ANACHRONONAUT) || Role_if(PM_UNDEAD_HUNTER)) return((struct monst *) 0);
+	if (preferred_pet == 'n' || Role_if(PM_ANACHRONONAUT) || Role_if(PM_UNDEAD_HUNTER) || u.silverknight_mire) return((struct monst *) 0);
 
 	pettype = pet_type();
 	if (pettype == PM_LITTLE_DOG)
@@ -300,6 +327,7 @@ makedog()
 				return((struct monst *) 0);
 		}
 		mtmp->mspec_used = 0;
+		u.whisperturn = ACURR(A_CHA) + 1 + 14;
 	}
 	
 	if(mtmp->m_lev < mtmp->data->mlevel) mtmp->m_lev = mtmp->data->mlevel;
@@ -307,7 +335,7 @@ makedog()
 	if(pettype == PM_KNIGHT){
 		struct obj *obj;
 		mtmp->m_lev = 1;
-		mon_adjust_speed(mtmp, -1, (struct obj *) 0, FALSE);
+		remove_mintrinsic(mtmp, FAST);
 		obj = mongets(mtmp, CRAM_RATION, MKOBJ_NOINIT);
 		if(obj){
 			obj->quan = 3;
@@ -348,8 +376,12 @@ makedog()
 		if(DEADMONSTER(mtmp))
 			return((struct monst *) 0);
 	}
+	if(Race_if(PM_SILVERMAN)){
+		set_template(mtmp, ROT_ZOMBIE);
+	}
 	
-	if(mtmp->m_lev) mtmp->mhpmax = 8*(mtmp->m_lev-1)+rnd(8);
+	if(mtmp->m_lev) mtmp->mhpmax = hd_size(mtmp->data)*(mtmp->m_lev-1)+rnd(hd_size(mtmp->data))+1;
+	else mtmp->mhpmax = (hd_size(mtmp->data)+1)/2;
 	mtmp->mhp = mtmp->mhpmax;
 
 #ifdef STEED
@@ -495,7 +527,7 @@ boolean with_you;
 
 	mtmp->mprobed = 0;
 #ifdef STEED
-	if (mtmp == u.usteed)
+	if (mtmp == u.usteed || mtmp == u.urider)
 	    return;	/* don't place steed on the map */
 #endif
 	if (with_you) {
@@ -774,7 +806,7 @@ boolean portal;
 	int follow_dist;
 	if(pet_dist < 1)
 		pet_dist = 1;
-	if(uwep && uwep->otyp == SHEPHERD_S_CROOK)
+	if(has_crook(uwep))
 		pet_dist++;
 	if(u.specialSealsActive&SEAL_COSMOS ||
 		(uarmh && uarmh->oartifact == ART_CROWN_OF_THE_SAINT_KING) ||
@@ -811,6 +843,7 @@ boolean portal;
 			) ||
 #ifdef STEED
 			(mtmp == u.usteed) ||
+			(mtmp == u.urider) ||
 #endif
 		/* the wiz will level t-port from anywhere to chase
 		   the amulet; if you don't have it, will chase you
@@ -824,12 +857,13 @@ boolean portal;
 		    /* eg if level teleport or new trap, steed has no control
 		       to avoid following */
 		    || (mtmp == u.usteed)
+		    || (mtmp == u.urider)
 #endif
 		    )
 		/* monster won't follow if it hasn't noticed you yet */
 		&& !(mtmp->mstrategy & STRAT_WAITFORU)) {
 			stay_behind = FALSE;
-			if (mtmp->mtame && mtmp->mwait && u.usteed != mtmp && (mtmp->mwait+100 > monstermoves)) {
+			if (mtmp->mtame && mtmp->mwait && u.usteed != mtmp && u.urider != mtmp && (mtmp->mwait+100 > monstermoves)) {
 				if (canspotmon(mtmp))
 					pline("%s obediently waits for you to return.", Monnam(mtmp));
 				stay_behind = TRUE;
@@ -854,10 +888,13 @@ boolean portal;
 				stay_behind = TRUE;
 			}
 #ifdef STEED
-			// if (mtmp == u.usteed) stay_behind = FALSE;
 			if (mtmp == u.usteed && stay_behind) {
 			    pline("%s vanishes from underneath you.", Monnam(mtmp));
 				dismount_steed(DISMOUNT_VANISHED);
+			}
+			if (mtmp == u.urider && stay_behind) {
+			    pline("%s vanishes from your saddle.", Monnam(mtmp));
+				rider_dismounts_you(DISMOUNT_VANISHED);
 			}
 #endif
 			if (stay_behind) {
@@ -1139,7 +1176,7 @@ rock:
 		obj_is_material(obj, GREEN_STEEL))
 			return(TABU);
 	    if (hates_unblessed_mon(mon) &&
-		(is_unholy(obj) || is_holy(obj)))
+		(is_unblessed(obj)))
 			return(TABU);
 		if (is_vampire(mon->data) &&
 		obj->otyp == POT_BLOOD && !((touch_petrifies(&mons[obj->corpsenm]) && !resists_ston(mon)) || is_rider(&mons[obj->corpsenm])))
@@ -1187,7 +1224,7 @@ register struct obj *obj;
 		return 0;
 	if (hates_unholy_mon(mon) && obj->obj_material == GREEN_STEEL)
 		return 0;
-	if (hates_unblessed_mon(mon) && (is_unholy(obj) || is_holy(obj)))
+	if (hates_unblessed_mon(mon) && is_unblessed(obj))
 		return 0;
 
 	if(metal){
@@ -1426,11 +1463,10 @@ struct obj *obj;
 }
 
 struct monst *
-tamedog_core(mtmp, obj, enhanced)
-struct monst *mtmp;
-struct obj *obj;
-int enhanced;
+tamedog_core(struct monst *mtmp, struct obj *obj, int td_flags)
 {
+	boolean enhanced = td_flags & TD_ENHANCED;
+	boolean loyal = td_flags & TD_LOYAL;
 	struct monst *curmon, *weakdog = (struct monst *) 0;
 	/* The Wiz, Medusa and the quest nemeses aren't even made peaceful. || mtmp->mtyp == PM_MEDUSA */
 	if (is_untamable(mtmp->data) || mtmp->notame || mtmp->iswiz
@@ -1541,7 +1577,7 @@ int enhanced;
 	    return((struct monst *)0);
 
 	/* before officially taming the target, check how many pets there are and untame one if there are too many */
-	if(!(obj && obj->oclass == SCROLL_CLASS && Confusion)){
+	if(!(obj && obj->oclass == SCROLL_CLASS && Confusion) && !loyal){
 		enough_dogs(1);
 	}
 #ifdef RECORD_ACHIEVE
@@ -1552,6 +1588,10 @@ int enhanced;
 	/* add the pet component */
 	add_mx(mtmp, MX_EDOG);
 	initedog(mtmp);
+	if(loyal && get_mx(mtmp, MX_EDOG)){
+		struct edog *edog = EDOG(mtmp);
+		edog->loyal = 1;
+	}
 	if(obj && obj->otyp == SPE_CHARM_MONSTER){
 		mtmp->mpeacetime = 1;
 	}
@@ -1586,6 +1626,9 @@ boolean be_peaceful;
 	mtmp->mpeaceful = be_peaceful;
 	if (u.usteed == mtmp) {
 		dismount_steed(DISMOUNT_THROWN);
+	}
+	if (u.urider == mtmp) {
+		rider_dismounts_you(DISMOUNT_THROWN);
 	}
 	newsym(mtmp->mx, mtmp->my);
 	return;
@@ -1654,7 +1697,7 @@ boolean was_dead;
 				Monnam(mtmp),
 				mtmp->mpeaceful ? "seems unable" :
 					    "refuses",
-				body_part(EYE));
+				body_part(EYE_BP));
 		else 
 			pline("%s avoids your gaze.",
 				Monnam(mtmp));
