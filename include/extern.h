@@ -3468,6 +3468,7 @@ E void FDECL(lose_skill, (int,int));
 E void FDECL(add_weapon_skill, (int));
 E void FDECL(lose_weapon_skill, (int));
 E int FDECL(weapon_type, (struct obj *));
+E int FDECL(otyp_type, (int));
 E int NDECL(uwep_skill_type);
 E int NDECL(get_your_size);
 E int NDECL(get_your_shield_size);
