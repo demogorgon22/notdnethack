@@ -1233,7 +1233,6 @@ register struct obj *obj;
 
 	if (obj->otyp >= GRAY_DRAGON_SCALE_MAIL
 	    && obj->otyp <= YELLOW_DRAGON_SCALE_MAIL
-		&& obj->oartifact != ART_DRAGON_PLATE
 	) {
 		/* dragon scale mail reverts to dragon scales */
 

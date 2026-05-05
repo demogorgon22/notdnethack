@@ -542,3 +542,4 @@ General changes
 	Starting spellbooks, potions, and wands for less than medium sized players are scaled down to player size.	
 	Blessed scrolls of enchant armor and weapon no longer roll a die and always* give max enchants
 	Plants have sap instead of blood, yielding sap potiong from tinning that can be consumed for nutrition
+	Reinstate reversion of platinum dragon plate to scales with cancellation because it played well
