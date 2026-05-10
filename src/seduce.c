@@ -188,6 +188,10 @@ struct monst * mon;
 		for (int i = 0; i < quantity; i++) {
 			sedu_minion(mon);
 		}
+		if(mon->mtyp == PM_SUCCUBUS || mon->mtyp == PM_INCUBUS)
+			mon->mspec_used = rnd(100);
+		else
+			mon->mspec_used = rnd(10);
 	}
 
 	/* possibly exit early, skipping teleport and continuing to make attacks! */
@@ -923,7 +927,7 @@ sedu_undress(mon)
 struct monst * mon;
 {
 	/* check no-clothes case */
-	if (!uarm && !uarmc && !uarmf && !uarmg && !uarms && !uarmh
+	if (!uarm && !uarmc && !uarmf && !uarmg && !uarms && !uarmh && !uwep && !uswapwep
 #ifdef TOURIST
 		&& !uarmu
 #endif

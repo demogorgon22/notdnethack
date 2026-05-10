@@ -2199,6 +2199,7 @@ static const NEARDATA short hwep[] = {
 	  SILVERKNIGHT_SWORD/*1d6+1/1d8*/,
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
+	  ATGEIR/*2d4/1d12*/,
 	  SCIMITAR/*1d8/1d12*/,
 	  CHURCH_SHORTSWORD/*1d8/1d7*/, 
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
@@ -2353,6 +2354,7 @@ static const NEARDATA short hpwep[] = {
 	  FLAIL/*1d6+1/2d4*/, 
 	  NAGINATA/*1d6+1/2d4*/, 
 	  ELVEN_LANCE, /*1d8/1d8*/
+	  ATGEIR/*2d4/1d12*/,
 	  SCIMITAR/*1d8/1d12*/,
 	  CHURCH_SHORTSWORD/*1d8/1d7*/, 
 	  DWARVISH_SHORT_SWORD/*1d8/1d7*/, 
@@ -4037,7 +4039,7 @@ struct obj *obj;
 	if(P_SKILL(type) < P_SKILL(alt_skill)) type = alt_skill;\
 	else if(P_SKILL(type) == P_SKILL(alt_skill) && P_MAX_SKILL(type) < P_MAX_SKILL(alt_skill)) type = alt_skill;\
 }
-	type = objects[obj->otyp].oc_skill;
+	type = otyp_type(obj->otyp);
 	
 	if(obj->oartifact == ART_SUNSWORD){
 		CHECK_ALTERNATE_SKILL(P_SHORT_SWORD)
@@ -4057,8 +4059,9 @@ struct obj *obj;
 		CHECK_ALTERNATE_SKILL(P_LONG_SWORD)
 		CHECK_ALTERNATE_SKILL(P_BROAD_SWORD)
 		CHECK_ALTERNATE_SKILL(P_SHORT_SWORD)
-		if(artinstance[ART_SKY_REFLECTED].ZerthOtyp)
-			CHECK_ALTERNATE_SKILL(artinstance[ART_SKY_REFLECTED].ZerthOtyp)
+		if(artinstance[ART_SKY_REFLECTED].ZerthOtyp){
+			CHECK_ALTERNATE_SKILL(otyp_type(artinstance[ART_SKY_REFLECTED].ZerthOtyp))
+		}
 	}
 	else if(obj->oartifact == ART_TORCH_OF_ORIGINS){
 		type = P_CLUB;
@@ -4086,37 +4089,53 @@ struct obj *obj;
 	}
 
 	if(obj->otyp == DOUBLE_LIGHTSABER){
-		if(!obj->altmode)
+		if(!obj->altmode){
 			CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
+		}
 	}
-	else if(obj->otyp == ROD_OF_FORCE){
-		if(!uarms && !u.twoweap)
+	//Override
+	if(obj->otyp >= LUCKSTONE && obj->otyp <= ROCK && obj->ovar1_projectileSkill){
+		type = (int)obj->ovar1_projectileSkill;
+		type = (type < 0) ? -type : type;
+	}
+	return type;
+}
+
+int
+otyp_type(int otyp)
+{
+	int type = objects[otyp].oc_skill;
+	type = (type < 0) ? -type : type;
+	
+	if(otyp == ROD_OF_FORCE){
+		if(!uarms && !u.twoweap){
 			CHECK_ALTERNATE_SKILL(P_TWO_HANDED_SWORD)
+		}
 	}
-	else if(obj->otyp == KHOPESH){
+	else if(otyp == KHOPESH){
 		CHECK_ALTERNATE_SKILL(P_AXE)
 	}
-	else if(obj->otyp == SILVERKNIGHT_SCYTHE){
+	else if(otyp == SILVERKNIGHT_SCYTHE){
 		CHECK_ALTERNATE_SKILL(P_HARVEST)
 	}
-	else if(obj->otyp == BLADE_OF_MERCY || obj->otyp == BLADE_OF_GRACE){
-		if(obj->otyp == BLADE_OF_GRACE)
+	else if(otyp == BLADE_OF_MERCY || otyp == BLADE_OF_GRACE){
+		if(otyp == BLADE_OF_GRACE){
 			CHECK_ALTERNATE_SKILL(P_DAGGER)
+		}
 		CHECK_ALTERNATE_SKILL(P_AXE)
 	}
-	else if(obj->otyp == DISKOS){
-		if(!uarms && !u.twoweap)
+	else if(otyp == DISKOS){
+		if(!uarms && !u.twoweap){
 			CHECK_ALTERNATE_SKILL(P_POLEARMS)
+		}
 	}
-	else if(obj->otyp == SHANTA_PATA){
+	else if(otyp == SHANTA_PATA){
 		CHECK_ALTERNATE_SKILL(P_LONG_SWORD)
 	}
-	else if(obj->otyp >= LUCKSTONE && obj->otyp <= ROCK && obj->ovar1_projectileSkill){
-		type = (int)obj->ovar1_projectileSkill;
-	}
 
-	return ((type < 0) ? -type : type);
+	return type;
 }
+
 
 int
 uwep_skill_type()
