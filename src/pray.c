@@ -3890,6 +3890,7 @@ commune_with_goat()
 
 		case GOATBOON_DARK_YOUNG:
 			cost = 25;
+			pacify_goat_faction();
 			/* Temporarily summons 1-3 tame dark young. Since they are temporary, they don't count against your pet cap */
 			for (i = 0; i < (greater_boon ? 3 : rnd(3)); i++) {
 				struct monst * mtmp = make_pet_minion(PM_DARK_YOUNG, GOD_THE_BLACK_MOTHER, TRUE);
@@ -3903,6 +3904,7 @@ commune_with_goat()
 			/* gives your wielded (nonartifact) weapon the Acrid (+2d6 acid damage) property */
 			otmp = getobj(blessable_classes, "give the Goat's bite");
 			if(otmp && goat_acidable(otmp)) {
+				pacify_goat_faction();
 				if(!Blind) pline("Acid drips from your weapon!");
 				add_oprop(otmp, OPROP_LESSER_ACIDW);
 				otmp->oeroded = 0;
@@ -3930,6 +3932,7 @@ commune_with_goat()
 			/* gives your wielded weapon the Drooling property, which does various +dmg effects and marks mons for eating */
 			otmp = getobj(blessable_classes, "give the Goat's hunger");
 			if(otmp && goat_droolable(otmp)){
+				pacify_goat_faction();
 				if(!Blind) pline("...your %s %s drooling.", xname(otmp), vtense(xname(otmp), "are"));
 				remove_oprop(otmp, OPROP_LESSER_ACIDW);
 				add_oprop(otmp, OPROP_GOATW);
@@ -3960,6 +3963,7 @@ commune_with_goat()
 		case GOATBOON_RED_WORD:
 			cost = 40;
 			/* gives the Word of Knowledge */
+			pacify_goat_faction();
 			otmp = mksobj(WORD_OF_KNOWLEDGE, MKOBJ_NOINIT);
 			dropy(otmp);
 			at_your_feet("An object");
@@ -3969,6 +3973,7 @@ commune_with_goat()
 
 		case GOATBOON_SPELLS:
 			cost = 40;
+			pacify_goat_faction();
 			HGoatSpell |= W_UPGRADE;
 			pline("The mist grows near.");
 			u.ugifts++;
