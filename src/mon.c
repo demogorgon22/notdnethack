@@ -23,7 +23,7 @@ extern int monstr[];
 STATIC_DCL boolean FDECL(restrap,(struct monst *));
 STATIC_DCL int FDECL(scent_callback,(genericptr_t, int, int));
 STATIC_DCL void FDECL(dead_familiar,(long));
-STATIC_DCL void FDECL(clothes_bite_mon,(struct monst *));
+STATIC_DCL boolean FDECL(clothes_bite_mon,(struct monst *));
 STATIC_DCL void FDECL(emit_healing, (struct monst *));
 int scentgoalx, scentgoaly;
 
@@ -1734,20 +1734,30 @@ mcalcdistress()
 	}
 	
 	/* regenerate hit points */
-	mon_regen(mtmp, FALSE);
-	clothes_bite_mon(mtmp);
-	if(mtmp->mscorpions){
-		phantom_scorpions_sting(mtmp);
-	}
-	if(mtmp->mcaterpillars){
-		rot_caterpillars_bite(mtmp);
+	if(mon_regen(mtmp, FALSE)) continue;
+	if(clothes_bite_mon(mtmp)) continue;
+	if(mtmp->mscorpions && phantom_scorpions_sting(mtmp)) continue;
+	if(mtmp->mcaterpillars && rot_caterpillars_bite(mtmp)) continue;
+	if(mtmp->momud){
+		if(orc_mud_stabs(mtmp)) continue;
+		if(!rn2(20)){
+			struct obj *daggers = mksobj(ORCISH_DAGGER, NO_MKOBJ_FLAGS);
+			if(canseemon(mtmp)) pline_The("writhing mud covering %s has died.", mon_nam(mtmp));
+			curse(daggers);
+			daggers->opoisoned = OPOISON_ACID;
+			daggers->quan = d(3,8);
+			set_obj_size(daggers, MZ_TINY);
+			set_material_gm(daggers, BONE);
+			place_object(daggers, mtmp->mx, mtmp->my);
+			mtmp->momud = FALSE;
+		}
 	}
 	if(mtmp->mvermin){
 		int damage = d(10,10);
 		damage -= avg_mdr(mtmp);
 		damage = reduce_dmg(mtmp, damage, TRUE, FALSE);
-		if(damage > 0)
-			m_losehp(mtmp, damage, FALSE, "swarming vermin");
+		if(damage > 0 && m_losehp(mtmp, damage, FALSE, "swarming vermin"))
+			continue;
 	}
 	if(acidic(mtmp->data) || !is_organic_monst(mtmp->data)){
 		// I think checking it wastes just as much time as blindly setting it.
@@ -1780,7 +1790,8 @@ mcalcdistress()
 		if(throat_dmg > 0){
 			mtmp->mgmld_throat += rn2(throat_dmg+1);
 		}
-		m_losehp(mtmp, skin_dmg + throat_dmg, FALSE, "mold infection");
+		if(m_losehp(mtmp, skin_dmg + throat_dmg, FALSE, "mold infection"))
+			continue;
 	}
 
 	timeout_problems(mtmp);
@@ -8951,6 +8962,7 @@ struct obj *obj;
 			}
 		}
 	}
+	if(mdef != &youmonst && DEADMONSTER(mdef)) return;
 	if((obj->obyak || check_oprop(obj, OPROP_BYAK)) && (mdef == &youmonst || !yellow_monster(mdef))){
 		nd = max(1, (objects[obj->otyp].oc_size + obj->objsize - MZ_MEDIUM));
 		nd *= check_oprop(obj, OPROP_BYAK) ? 3 : obj->obyak;
@@ -10560,15 +10572,18 @@ struct monst *mtmp;
 	}
 }
 
-STATIC_OVL void
-clothes_bite_mon(mon)
-struct monst *mon;
+STATIC_OVL boolean
+clothes_bite_mon(struct monst *mon)
 {
-	struct obj *otmp;
-	for(otmp = mon->minvent; otmp && !DEADMONSTER(mon); otmp = otmp->nobj){
+	struct obj *otmp, *next;
+	if(DEADMONSTER(mon))
+		return FALSE;
+	for(otmp = mon->minvent; otmp && !DEADMONSTER(mon); otmp = next){
+		next = otmp->nobj;
 		if((otmp->olarva || otmp->obyak || check_oprop(otmp, OPROP_BYAK)) && otmp->owornmask)
 			held_item_bites(mon, otmp);
 	}
+	return DEADMONSTER(mon);
 }
 
 STATIC_OVL void
@@ -10643,9 +10658,8 @@ struct monst *mon;
 	}
 }
 
-void
-phantom_scorpions_sting(mdef)
-struct monst *mdef;
+boolean
+phantom_scorpions_sting(struct monst *mdef)
 {
 	long slotvar = 0;
 	long depthvar = 0;
@@ -10702,13 +10716,15 @@ struct monst *mdef;
 				damage += 80;
 			else damage += rn1(10,6);
 		}
-		if(m_losehp(mdef, damage, FALSE, "swarm of scorpions")); //died
+		if(m_losehp(mdef, damage, FALSE, "swarm of scorpions"))
+			return TRUE;
 		else if (canseemon(mdef))
 			pline("%s is stung by phantom scorpions.", Monnam(mdef));
 	}
+	return FALSE;
 }
 
-void
+boolean
 rot_caterpillars_bite(struct monst *mdef)
 {
 	int damage = 0;
@@ -10751,15 +10767,16 @@ rot_caterpillars_bite(struct monst *mdef)
 			mdef->mhp = min(mdef->mhpmax, mdef->mhp);
 		}
 		if(m_losehp(mdef, damage, FALSE, "swarm of parasitic caterpillars")){
-			//died
 			silverman_exhultation(20);
+			return TRUE;
 		}
 		else if (canseemon(mdef))
 			pline("%s is bitten by parasitic caterpillars.", Monnam(mdef));
 	}
+	return FALSE;
 }
 
-void
+boolean
 orc_mud_stabs(struct monst *mdef)
 {
 	int damage = 0;
@@ -10779,12 +10796,15 @@ orc_mud_stabs(struct monst *mdef)
 	if(mdef == &youmonst){
 		You("are stabbed by the writhing tarry mud!");
 		losehp(damage, "inchoate orcs", KILLED_BY);
+		return FALSE;
 	}
 	else {
-		if(m_losehp(mdef, damage, FALSE, "inchoate orcs")); //died
+		if(m_losehp(mdef, damage, FALSE, "inchoate orcs"))
+			return TRUE;
 		else if (canseemon(mdef))
 			pline("%s is stabbed by the writhing tarry mud.", Monnam(mdef));
 	}
+	return FALSE;
 }
 
 void
