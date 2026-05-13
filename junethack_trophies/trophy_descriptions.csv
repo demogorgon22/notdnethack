@@ -15,9 +15,9 @@ hedrow_noble_quest,Family drama,Completed the hedrow noble quest,dnh_hedrow_nobl
 hedrow_shared_quest,On agency,Completed the hedrow shared quest,dnh_hedrow_shared_quest.png,27/05/2020,
 drow_noble_quest,Foreshadowing,Completed the drow noble quest,dnh_drow_noble_quest.png,27/05/2020,
 drow_shared_quest,Old friends,Completed the drow shared quest,dnh_drow_shared_quest.png,27/05/2020,
-dwarf_noble_quest,Durin's Bane's Bane,Completed the dwarf noble quest,x,,@ and & on a bridge over lava
-dwarf_knight_quest,Battle of (5-4) armies,Completed the dwarf knight quest,x,,@ facing a bunch of o
-gnome_ranger_quest,Strongest of all time,Completed the gnome ranger quest,x,,Gnome sniping a kobold
+dwarf_noble_quest,Durin's Bane's Bane,Completed the dwarf noble quest,dnh_dwanob.png,5/8/2026,@ and & on a bridge over lava
+dwarf_knight_quest,Battle of (5-4) armies,Completed the dwarf knight quest,dnh_dwarf_knight_quest.png,5/10/2026,@ facing a bunch of o
+gnome_ranger_quest,Strongest of all time,Completed the gnome ranger quest,dnh_gnome_ranger_quest.png,5/10/2026,Gnome sniping a kobold
 elf_shared_quest,Driven out,Completed the elf shared quest,dnh_elf_shared_quest.png,24/05/2022,
 clockwork_ascension,Deus ex machina,Ascended a clockwork automaton,dnh_clockwork.png,6/6/2022,
 chiropteran_ascension,Bat outa hell,Ascended a chiropteran,dnh_chiropteran.png,6/6/2022,
@@ -26,40 +26,40 @@ half_dragon_ascension,Three halves,Ascended a half-dragon,dnh_half_dragon.png,6/
 law_quest,Ripple-resistant tower,Completed the law quest,dnh_law_quest.png,3/6/2022,
 neutral_quest,Key to the (corpse) city,Completed the neutral quest,dnh_corpse_key.png,29/4/2024,
 chaos_temple_quest,Asinine paradigm,Completed the chaos temple quest,dnh_chaos1_quest.png,28/05/2022,
-mithardir_quest,Chasing after the wind,Completed the mithardir quest,x,,- on white sand
-mordor_quest,Fossil of the First Age,Completed the mordor quest,x,,& under ground with elves walking over it
-second_thoughts,Second thoughts,Completed a drow shared quest loyally before completing the traitor's quest,x,,Drow surrounded by corpses
+mithardir_quest,Chasing after the wind,Completed the mithardir quest,dnh_mithardir.png,5/8/2026,- on white sand
+mordor_quest,Fossil of the First Age,Completed the mordor quest,dnh_mordish.png,5/8/2026,& under ground with elves walking over it
+second_thoughts,Second thoughts,Completed a drow shared quest loyally before completing the traitor's quest,dnh_second.png,5/12/2026,Drow surrounded by corpses
 illuminated,Illuminated,Learned every word of creation and accumulated 30 passive sylabel bonuses,dnh_illuminated.png,24/05/2022,
 exodus,Exodus,Ascended with a pet android commander or operator android,dnh_exodus.png,29/04/2024,
-fully_upgraded,Super Fighting Robot,Acquried all clockwork upgrades (except high-tension spring),x,,
+fully_upgraded,Super Fighting Robot,Acquried all clockwork upgrades (except high-tension spring),dnh_clockwork_upgrades.png,5/8/2026,
 hunter_of_nightmares,Hunter of Nightmares,Defeated at least one of each of the secret insight bosses,dnh_nightmare_hunter.png,9/6/2022,
 two_keys,Two Keys,Ascended having only touched two alignment keys,dnh_two_keys.png,28/05/2022,
 quite_mad,Quite Mad,Suffered from at least 6 madnesses,dnh_all_mad.png,29/04/2024,
 booze_hound,Booze Hound,Maxed out your drunkard score by drinking at least 90 potions of booze,dnh_booze_hound.png,29/04/2024,
 New June 2021,,,,,
 madman_quest,Oh good. I'm not crazy.,Completed the madman quest,dnh_madman_quest.png,24/05/2022,
-lamashtu_kill,Does this count as a paradox?,Destroyed Lamashtu (Demon Queen of the future),x,,
-baalphegor_kill,A universe without motion,Destroyed Baalphegor,x,,
-angel_hell_vault OR ancient_hell_vault OR tanninim_hell_vault,Relics of a bygone era,Opened one type of hellish seal,x,,Statue in a vault
-angel_hell_vault AND ancient_hell_vault AND tanninim_hell_vault,There are a lot of these….,Opened all three types of hellish seal (across all games played),x,,Three statues
+lamashtu_kill,Does this count as a paradox?,Destroyed Lamashtu (Demon Queen of the future),dnh_lamashtu.png,5/10/2026,
+baalphegor_kill,A universe without motion,Destroyed Baalphegor,dnh_baalphegor.png,5/11/2026,
+angel_hell_vault OR ancient_hell_vault OR tanninim_hell_vault,Relics of a bygone era,Opened one type of hellish seal,dnh_1_hell.png,5/8/2026,Statue in a vault
+angel_hell_vault AND ancient_hell_vault AND tanninim_hell_vault,There are a lot of these....,Opened all three types of hellish seal (across all games played),dnh_3_hell.png,5/8/2026,Three statues
 New June 2022,,,,,
-bokrug_ascension,Detestable gods,Completed Bokrug's ascension ritual,x,,Bokrug statue over water
+bokrug_ascension,Detestable gods,Completed Bokrug's ascension ritual,dnh_bokrug_asc.png,5/10/2026,Bokrug statue over water
 New June 2023,,,,,
-healer_quest,Plague of stolen lives,Completed healer quest,x,,H standing among %
-drow_healer_quest,Twisted by dreams,Completed drow healer quest,x,,U surrounded by h
+healer_quest,Plague of stolen lives,Completed healer quest,dnh_healer_qst.png,5/11/2026,H standing among %
+drow_healer_quest,Twisted by dreams,Completed drow healer quest,dnh_drohea_qst.png,5/11/2026,U surrounded by h
 ,,,,,
-monk_quest,You must defeat Sheng Long to stand a chance,Completed monk quest,x,,@ with a bandana?
+monk_quest,You must defeat Sheng Long to stand a chance,Completed monk quest,dnh_monk_quest.png,5/8/2026,@ with a bandana?
 New June 2024,,,,,
-iea_upgraded,The Elfdalorian,15+ upgrades on a set of imperial elven armor,,,
+iea_upgraded,The Elfdalorian,15+ upgrades on a set of imperial elven armor,dnh_elfdalorian.png,5/10/2026,
 ,,,,,
 New June 2025,,,,,
-undead_hunter_quest,Don't think too hard about all of this,,,,
-undead_hunter_ascension,I guess this counts as transcendence,,,,
+undead_hunter_quest,Don't think too hard about all of this,dnh_uh_qst.png,5/11/2026,,
+undead_hunter_ascension,I guess this counts as transcendence,dnh_uh_asc.png,5/10/2026,,
 ,,,,,
 New June 2026,,,,,
-kensei_quest,"Virtue, and no evil",Completed kensei quest,,,
-centauroid_ascension,"Who needs boots, anyway?",Ascended a centauroid,,,
-tiefling_ascension,Better the devil you know,Ascended a tiefling,,,
-aasimar_ascension,Under heaven's eye,Ascended an aasimar,,,
-silverman_ascension,Flourish in distant lands,Ascended a silverman,,,
-silverknight_ascension,Your friends might need glasses,Ascended a silver knight,,,
+kensei_quest,"Virtue, and no evil",Completed kensei quest,dnh_kensei_quest.png,,
+centauroid_ascension,"Who needs boots, anyway?",Ascended a centauroid,dnh_centaroid_asc.png,5/8/2026,
+tiefling_ascension,Better to serve in heaven,Ascended a tiefling,dnh_tiefling_asc.png,5/8/2026,
+aasimar_ascension,I'm so blessed...,Ascended an aasimar,dnh_aasimar_asc.png,5/8/2026,
+silverman_ascension,Flourish in distant lands,Ascended a silverman,dnh_silverman_asc.png,5/8/2026,
+silverknight_ascension,Your friends might need glasses,Ascended a silver knight,dnh_silverknight_asc.png,5/8/2026,
