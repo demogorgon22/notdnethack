@@ -1480,6 +1480,10 @@ you_regen_pw()
 		perX += spiritDsize() * 10;
 	}
 
+	if(check_mutation(SHUB_RADIANCE)){
+		perX += Insight/3;
+		perX += max(2*Insight/3, Insanity);
+	}
 	// power drain from maintained spells
 	if (u.maintained_en_debt > 0)
 	{

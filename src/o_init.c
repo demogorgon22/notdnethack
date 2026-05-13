@@ -1743,6 +1743,10 @@ fix_object(struct obj *otmp)
 	if (obj_eternal_light(otmp) && !otmp->lamplit) {
 		begin_burn(otmp);
 	}
+	if(!is_damageable(otmp)) {
+		otmp->oeroded = 0;
+		otmp->oeroded2 = 0;
+	}
 }
 
 /*o_init.c*/

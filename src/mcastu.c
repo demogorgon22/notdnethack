@@ -5979,7 +5979,7 @@ int tary;
 			if (canseemon(magr))
 				pline("%s blurs with speed!", Monnam(magr));
 			for (i = extraturns; i > 0; i--){
-				mon_regen(magr, TRUE);
+				if(mon_regen(magr, TRUE)) break;
 				timeout_problems(magr);
 			}
 			for (tmpm = fmon; tmpm; tmpm = tmpm->nmon){
@@ -5987,11 +5987,12 @@ int tary;
 					if (canseemon(tmpm))
 						pline("%s blurs with speed!", Monnam(tmpm));
 					for (i = extraturns; i > 0; i--){
-						mon_regen(tmpm, TRUE);
+						if(mon_regen(tmpm, TRUE)) break;
 						timeout_problems(tmpm);
 					}
 				}
 			}
+			if(DEADMONSTER(magr)) return MM_HIT|MM_AGR_DIED;
 		}
 		return MM_HIT;
 

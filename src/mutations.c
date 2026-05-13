@@ -313,6 +313,7 @@ init_natural_mutations()
 		int mut = mutationtypes[j].mutation;
 		if(mut <= LAST_CULT_MUTATION) continue;
 		if(mut > LAST_TIEFLING_TRAIT) continue;
+		if(mut == TT_LIGHT && Race_if(PM_DARK_FEY_RI)) continue; // Self-blinding, given darksight
 		boolean blacklisted = FALSE;
 		for(int k = 0; k < sizeof(mutation_blacklist)/sizeof(int); k++){
 			if(mut == mutation_blacklist[k]){
@@ -370,6 +371,7 @@ check_natural_mutations()
 		int mut = mutationtypes[j].mutation;
 		if(mut <= LAST_CULT_MUTATION) continue;
 		if(mut > LAST_TIEFLING_TRAIT) continue;
+		if(mut == TT_LIGHT && Race_if(PM_DARK_FEY_RI)) continue; // Self-blinding, given darksight
 		if(type_used[mutationtypes[j].bodypart]) continue;
 		if(has_mutation(mut)) continue;
 		if(fallen_used && is_holy_mut(mut)) continue;

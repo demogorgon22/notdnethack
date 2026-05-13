@@ -512,14 +512,14 @@ struct monst *mtmp;
 #endif /* OVL2 */
 #ifdef OVL0
 
-/* regenerate lost hit points */
-void
+/* regenerate lost hit points; returns TRUE if mon died */
+boolean
 mon_regen(mon, digest_meal)
 struct monst *mon;
 boolean digest_meal;
 {
 	if(mon->mtrapped && t_at(mon->mx, mon->my) && t_at(mon->mx, mon->my)->ttyp == VIVI_TRAP)
-		return;
+		return FALSE;
 	
 	if(mon->mtame && u.ufirst_life && mon->mhp < mon->mhpmax)
 		mon->mhp++;
@@ -576,7 +576,7 @@ boolean digest_meal;
 					pline("%s is sliced to ribbons in %s struggles!", Monnam(mon), hisherits(mon));
 				mondied(mon);
 				if(DEADMONSTER(mon))
-					return; //Didn't lifesave
+					return TRUE; //Didn't lifesave
 			}
 		}
 		entangle_effects(mon);
@@ -597,14 +597,14 @@ boolean digest_meal;
 			}
 			if(mon->mhp <= 0){
 				monkilled(mon, "gas cloud", AD_DRST);
-				if(mon->mhp <= 0) return;	/* not lifesaved */
+				if(mon->mhp <= 0) return TRUE;	/* not lifesaved */
 			}
 		} else {
 			/* NB: Amphibious includes Breathless */
 			mon->mhp -= rnd(6);
 			if(mon->mhp <= 0){
 				monkilled(mon, "suffocating cloud", AD_DRST);
-				if(mon->mhp <= 0) return;	/* not lifesaved */
+				if(mon->mhp <= 0) return TRUE;	/* not lifesaved */
 			}
 		}
 	}
@@ -618,7 +618,7 @@ boolean digest_meal;
 		if(Half_spel(mon))
 			dmg = (dmg+1) / 2;
 		if(m_losehp(mon, dmg, FALSE, "fevered dreams"))
-			return; //Died.
+			return TRUE; //Died.
 		if(!mon->msleeping && !resists_sleep(mon)){
 			mon->msleeping = 1;
 			slept_monst(mon);
@@ -654,6 +654,7 @@ boolean digest_meal;
 	if(!DEADMONSTER(mon) && Role_if(PM_CONVICT) && quest_status.killed_nemesis){
 		if(has_template(mon, FLAYED)){
 			mondied(mon);
+			degenerating = TRUE;
 		}
 		else if(mon->mtyp == PM_CUBOID || mon->mtyp == PM_RHOMBOHEDROID){
 			m_losehp(mon, 1, FALSE, "hemhorage");
@@ -698,7 +699,7 @@ boolean digest_meal;
 				wheel_drain = wheel_drain * 3 / 2;
 			if(wheel_drain > 0){
 				if(m_losehp(mon, wheel_drain, FALSE, "the breaking wheel"))
-					return;
+					return TRUE;
 				degenerating = TRUE;
 			}
 		}
@@ -706,7 +707,7 @@ boolean digest_meal;
 
 	/*Early return to block regen*/
 	if(degenerating)
-		return;
+		return DEADMONSTER(mon);
 
 
 	//Normal healing cases
@@ -784,7 +785,7 @@ boolean digest_meal;
 			mon->mhp += 1;
 	}
 	mon->mhp = min(mon->mhpmax, mon->mhp);
-	
+	return FALSE;
 }
 
 /*

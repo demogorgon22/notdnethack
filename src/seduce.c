@@ -1161,11 +1161,7 @@ struct monst * mon;
  */
 
 boolean
-msteal_m(magr, mdef, attk, result)
-struct monst *magr;
-struct monst *mdef;
-struct attack *attk;
-int *result;
+msteal_m(struct monst *magr, struct monst *mdef, struct attack *attk, int *result)
 {
 	const long equipmentmask = ~(W_WEP|W_SWAPWEP);
 	boolean seduct_type;
@@ -1175,6 +1171,13 @@ int *result;
 	boolean goatspawn = (magr->data->mtyp == PM_SMALL_GOAT_SPAWN || magr->data->mtyp == PM_GOAT_SPAWN || magr->data->mtyp == PM_GIANT_GOAT_SPAWN || magr->data->mtyp == PM_BLESSED);
 	boolean noflee = (magr->isshk && magr->mpeaceful);
 	boolean mi_only = is_chuul(magr->data);
+
+	if(magr == mdef){
+		/* can't steal from yourself*/
+		*result |= MM_MISS;
+		return TRUE;
+	}
+
 	if(attk->adtyp == AD_SITM){
 		/* select item from defender's inventory */
 		for (otmp = mdef->minvent; otmp; otmp = otmp->nobj)
@@ -1217,9 +1220,10 @@ int *result;
 			possibly_unwield(mdef, FALSE);
 			mdef->mstrategy &= ~STRAT_WAITFORU;
 			mselftouch(mdef, (const char *)0, FALSE);
-			if (mdef->mhp <= 0)
+			if (mdef->mhp <= 0){
 				*result |= (MM_HIT | MM_DEF_DIED | ((grow_up(magr, mdef)) ? 0 : MM_AGR_DIED));
 				return TRUE;
+			}
 			if(goatspawn)
 				*result |= MM_AGR_STOP;
 			else if (magr->data->mlet == S_NYMPH && !noflee &&
@@ -1359,9 +1363,10 @@ int *result;
 				mdef->mequipping = max(mdef->mequipping, delay);
 			}
 			m_dowear(magr, FALSE);
-			if (mdef->mhp <= 0)
+			if (mdef->mhp <= 0){
 				*result |= (MM_HIT | MM_DEF_DIED | ((grow_up(magr, mdef)) ? 0 : MM_AGR_DIED));
 				return TRUE;
+			}
 			if(goatspawn)
 				*result |= MM_AGR_STOP;
 			else if (magr->data->mlet == S_NYMPH && !noflee &&

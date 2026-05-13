@@ -1969,7 +1969,7 @@ E boolean FDECL(scaryVei, (struct monst *));
 E boolean FDECL(scaryThj, (struct monst *));
 E boolean FDECL(itsstuck, (struct monst *));
 E boolean FDECL(mb_trapped, (struct monst *));
-E void FDECL(mon_regen, (struct monst *,BOOLEAN_P));
+E boolean FDECL(mon_regen, (struct monst *,BOOLEAN_P));
 E void FDECL(timeout_problems, (struct monst *));
 E int FDECL(dochugw, (struct monst *));
 E boolean FDECL(onscary, (int,int,struct monst *));
@@ -1988,9 +1988,9 @@ E void FDECL(held_item_bites, (struct monst *, struct obj *));
 E void FDECL(add_byakhee_to_obj, (struct obj *));
 E boolean FDECL(likes_obj, (struct monst *, struct obj *));
 E boolean FDECL(can_equip, (struct monst *, struct obj *));
-E void FDECL(phantom_scorpions_sting, (struct monst *));
-E void FDECL(rot_caterpillars_bite, (struct monst *));
-E void FDECL(orc_mud_stabs, (struct monst *));
+E boolean FDECL(phantom_scorpions_sting, (struct monst *));
+E boolean FDECL(rot_caterpillars_bite, (struct monst *));
+E boolean FDECL(orc_mud_stabs, (struct monst *));
 E void FDECL(adjust_etrait_stance, (struct monst *));
 
 /* ### monst.c ### */
