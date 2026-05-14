@@ -242,7 +242,8 @@ struct monst {
 #define noactions(mon)	((mon)->entangled_oid || imprisoned(mon))
 #define nonthreat(mon)	(imprisoned(mon) || has_template(mon, PLAGUE_TEMPLATE))
 #define helpless(mon) (mon->msleeping || !(mon->mcanmove) || !(mon->mnotlaugh) || noactions(mon))	
-#define helpless_still(mon) (mon->msleeping || !(mon->mcanmove) || noactions(mon))	
+#define helpless_still(mon) (mon->msleeping || !(mon->mcanmove) || noactions(mon))
+#define nonthreat_ful(mon) (mon->mpeaceful || nonthreat(mon))
 	long mstrategy;		/* for monsters with mflag3: current strategy */
 #define STRAT_ARRIVE	0x40000000L	/* just arrived on current level */
 #define STRAT_WAITFORU	0x20000000L
