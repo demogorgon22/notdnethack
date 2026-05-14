@@ -3169,15 +3169,15 @@ pets_pick_order()
 
 	any.a_int = PETORD_MOVEMENT;
 	add_menu(win, NO_GLYPH, &any, 'a', 0, ATR_NONE,
-		"Movement behavior (follow / wait)", MENU_UNSELECTED);
+		"Level changing (follow / wait)", MENU_UNSELECTED);
 
 	any.a_int = PETORD_COMBAT;
 	add_menu(win, NO_GLYPH, &any, 'b', 0, ATR_NONE,
-		"Combat behavior (aggressive / passive)", MENU_UNSELECTED);
+		"Combat (aggressive / passive)", MENU_UNSELECTED);
 
 	any.a_int = PETORD_PICKUP;
 	add_menu(win, NO_GLYPH, &any, 'c', 0, ATR_NONE,
-		"Pickup behavior (pick up items / leave items)", MENU_UNSELECTED);
+		"Item pickup (pick up items / leave items)", MENU_UNSELECTED);
 
 	end_menu(win, "Adjust which pet behavior?");
 	n = select_menu(win, PICK_ONE, &sel);
@@ -3214,10 +3214,10 @@ int order;
 	boolean done = FALSE;
 
 	hdr = (order == PETORD_MOVEMENT) ?
-		"Toggle follow/wait for each pet (ESC when done):" :
+		"Toggle follow/wait for each pet:" :
 		(order == PETORD_COMBAT) ?
-		"Toggle aggressive/passive for each pet (ESC when done):" :
-		"Toggle item pickup for each pet (ESC when done):";
+		"Toggle aggressive/passive for each pet:" :
+		"Toggle item pickup for each pet:";
 
 	while (!done) {
 		win = create_nhwindow(NHW_MENU);
