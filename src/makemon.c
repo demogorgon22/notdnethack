@@ -9981,7 +9981,7 @@ int mmflags;
 								add_oprop(otmp, OPROP_UNHYW);
 						}
 
-						otmp = mongets(mtmp, mtmp->female ? GENTLEMAN_S_SUIT : GENTLEWOMAN_S_DRESS, mkobjflags);
+						otmp = mongets(mtmp, mtmp->female ? GENTLEWOMAN_S_DRESS : GENTLEMAN_S_SUIT, mkobjflags);
 						if(otmp) otmp->spe = rnd(7);
 						otmp = mongets(mtmp, mtmp->female ? STILETTOS : HIGH_BOOTS, mkobjflags);
 						if(otmp) otmp->spe = rnd(7);
