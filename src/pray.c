@@ -3277,7 +3277,7 @@ god_benefit_identify_item(void)
 	else if (uarm && not_fully_identified(uarm)) identify(uarm);
 	else if (uarmu && not_fully_identified(uarmu)) identify(uarmu);
 	else if (uarmh && not_fully_identified(uarmh)) identify(uarmh);
-	else if (uarmg && not_fully_identified(uarmg)) identify(uarmf);
+	else if (uarmg && not_fully_identified(uarmg)) identify(uarmg);
 	else if (uarmf && not_fully_identified(uarmf)) identify(uarmf);
 	else if (uarms && not_fully_identified(uarms)) identify(uarms);
 	else {

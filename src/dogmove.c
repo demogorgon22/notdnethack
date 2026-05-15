@@ -1176,7 +1176,7 @@ register struct monst *mtmp;
 register int after;	/* this is extra fast monster movement */
 {
 	int omx, omy;		/* original mtmp position */
-	int appr, whappr, udist;
+	int appr = 0, whappr, udist;
 	int i, j, k;
 	struct obj *obj = (struct obj *) 0;
 	xchar otyp;

@@ -666,7 +666,7 @@ steal_from_monster(struct monst *mon)
 		else {
 			if(canseemon(mon))
 				pline("Your tail steals %s from %s!", doname(obj), mon_nam(mon));
-			hold_another_object(obj, "You drop %s!", doname(obj), FALSE);
+			hold_another_object(obj, "You drop %s!", doname(obj), (const char *)0);
 		}
 		break;
 	}
