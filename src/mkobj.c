@@ -861,6 +861,14 @@ int mkflags;
 		add_to_container(otmp, stone);
 		container_weight(otmp);
 	}
+	else if(is_tipped_spear(otmp)){
+		struct obj *stone = mksobj(FLINT, NO_MKOBJ_FLAGS);
+		stone->quan = 1;
+		stone->oknapped = KNAPPED_SPEAR;
+		stone->owt = weight(stone);
+		add_to_container(otmp, stone);
+		container_weight(otmp);
+	}
 
 	if (init) {
 		switch (let) {
@@ -889,14 +897,6 @@ int mkflags;
 			else if (otmp->otyp == DEVIL_FIST || otmp->otyp == DEMON_CLAW){
 				struct obj *coin = mksobj(WAGE_OF_SLOTH + rn2(WAGE_OF_PRIDE - (WAGE_OF_SLOTH-1)), NO_MKOBJ_FLAGS);
 				add_to_container(otmp, coin);
-			}
-			else if(is_tipped_spear(otmp)){
-				struct obj *stone = mksobj(FLINT, NO_MKOBJ_FLAGS);
-				stone->quan = 1;
-				stone->oknapped = KNAPPED_SPEAR;
-				stone->owt = weight(stone);
-				add_to_container(otmp, stone);
-				container_weight(otmp);
 			}
 			else if (otmp->otyp == SAPBURNER){
 				otmp->ovar1_charges = 80L + rnd(20);
