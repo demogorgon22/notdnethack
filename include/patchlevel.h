@@ -15,7 +15,7 @@
    Incremented to 3.11 with the introduction Anachrononauts.
    Incremented to 3.12 with the introduction Magic chests, scrolls of antimagic, resistance, and consecration, YARevison to chaos quest, beter resistance-from-diet, and lightsaber forms.
 */
-#define VERSION_MINOR	1
+#define VERSION_MINOR	5
 /*
  * PATCHLEVEL is updated for each release.
  *
@@ -54,7 +54,7 @@
  * 3.24.0: Undead Hunter role, expert weapon skill traits, belts and belt slot, explosions and wizard tweaks and cult spellcasting, smithing (primarily blood smithing), dungeon restocking, more insight monsters, more ways to get Yog Sothoth, Oracle artifact birthplaces, pommeling style, Dirge interacts with impurity and shubbie, sword-and-pistol handling, HP and healing potion rebalance, Spire restricts artifacts and wands, midas potions, migo mist projectors and generalized clouds, misc minor buffs and bugfixes
  * 3.25.0: Kensei role, Convict quest revision, minor  Archeologist quest revision, Fafnir reworked into Maegera, seducer rework, DroHea tweak (priestess/wizard bonuses), signature artifact prototype (oona can use rosp), various fixes and tweaks.
  */
-#define PATCHLEVEL	16
+#define PATCHLEVEL	15
 /*
  * Incrementing EDITLEVEL can be used to force invalidation of old bones
  * and save files.
