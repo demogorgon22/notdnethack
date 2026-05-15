@@ -9490,7 +9490,7 @@ struct obj *obj;
 		impossible("object other than ring of wishes passed to use_ring_of_wishes");
 		return FALSE;
 	}
-	if (obj->cursed || (Luck + rn2(5) < 0)){	// to be less cruel, it doesn't use up a charge
+	if ((Luck + rn2(5) < 0)){	// to be less cruel, it doesn't use up a charge
 		pline1(nothing_happens);
 		return FALSE;
 	}
