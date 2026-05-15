@@ -2927,7 +2927,7 @@ A("The Longbow of Diana",			BOW,				(const char *)0,
 	),
 
 A("The Rogue Gear-spirits",			CROSSBOW,			(const char *)0,
-	4000L, MT_DEFAULT, MZ_SMALL, WT_DEFAULT,
+	4000L, COPPER, MZ_SMALL, 30,
 	A_NEUTRAL, PM_RANGER, PM_GNOME, TIER_S, (ARTG_NOGEN|ARTG_NOWISH|ARTG_MAJOR),
 	NO_MONS(),
 	ATTK(AD_PHYS, 5, 0), NOFLAG,

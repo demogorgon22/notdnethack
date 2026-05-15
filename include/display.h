@@ -182,7 +182,7 @@
  * definition here is convenient.
  */
 #define is_safepet(mon) \
-	(mon && (mon->mtame || mon->mpeaceful) && canspotmon(mon) && flags.safe_dog \
+	(mon && (mon->mtame || nonthreat_ful(mon)) && canspotmon(mon) && flags.safe_dog \
 		&& !Confusion && !Hallucination && !Stunned)
 
 

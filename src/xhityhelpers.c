@@ -3107,7 +3107,7 @@ safe_shot(struct monst *magr, int dx, int dy, int range)
 		else {
 			//We'll call this your "sixth sense" talking <_<'
 			if(youagr)
-				return (!mdef->mpeaceful || Hallucination);
+				return (!nonthreat_ful(mdef) || Hallucination);
 			else {
 				if(magr->mtame && mdef->mtame)
 					return FALSE;
@@ -3204,7 +3204,7 @@ ihit(struct monst *magr, struct obj *otmp, int dx, int dy, int tohitmod, struct 
 		&& ((youagr || mdef == &youmonst) ? couldsee(mdef->mx,mdef->my) : clear_path(magr->mx, magr->my, mdef->mx, mdef->my))
 		&& ((!youagr && mdef != &youmonst && mdef->mpeaceful != magr->mpeaceful) ||
 			(!youagr && mdef == &youmonst && !magr->mpeaceful) ||
-			(youagr && !mdef->mpeaceful))
+			(youagr && !nonthreat_ful(mdef)))
 	){ //Can hit a worm multiple times
 		int vis = VIS_NONE;
 		if(youagr || canseemon(magr))

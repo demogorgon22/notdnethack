@@ -426,12 +426,23 @@ dodrink()
 		booze_only = TRUE;
 	}
 	
-	if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){
+	if (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd){
+		if(uarmg && ((uarmg->cursed && !Weldproof) || !freehand())){
+			if(Insight < 21){
+				You("can't drink while wearing gloves.");
+			} else {
+				pline("The mouths on your palms are covered by your gloves.");
+			}
+			display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
+			return MOVE_CANCELLED;
+		}
+	}
+	else if (uarmh && FacelessHelm(uarmh) && ((uarmh->cursed && !Weldproof) || !freehand())){
 		pline("The %s covers your whole face.", xname(uarmh));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return MOVE_INSTANT;
 	}
-	if (uarmc && FacelessCloak(uarmc) && ((uarmc->cursed && !Weldproof) || !freehand())){
+	else if (uarmc && FacelessCloak(uarmc) && ((uarmc->cursed && !Weldproof) || !freehand())){
 		pline("The %s covers your whole face.", xname(uarmc));
 		display_nhwindow(WIN_MESSAGE, TRUE);    /* --More-- */
 		return MOVE_INSTANT;

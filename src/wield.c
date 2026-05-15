@@ -247,10 +247,10 @@ boolean quietly;	/* hide the basic message saying what you are now wielding */
 				(wep->blessed ? "shine very" : "glow"), (wep->cursed ? "" : " brilliantly"));
 		}
 		if(stealthy && wep->otyp == KHAKKHARA) (wep->oartifact == ART_ANNULUS) ? 
-			pline("The hollow silver rod chimes at the slightest touch.") : 
+			pline("The hollow %s rod chimes at the slightest touch.", material_name(wep, TRUE)) : 
 			(wep->oartifact == ART_STAFF_OF_TWELVE_MIRRORS) ? 
 			pline("The mirrored disks chime together.") :
-			pline("The silver rings chime together.");
+			pline("The %s rings chime together.", material_name(wep, TRUE));
 		else if(!stealthy && Stealth) pline("Now you can move stealthily.");
 
 #if 0

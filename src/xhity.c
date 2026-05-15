@@ -20272,7 +20272,7 @@ struct monst * mexclude;
 	for (i = 0; i<8; i++){
 		if (isok(u.ux + xdir[i], u.uy + ydir[i])){
 			mdef = m_at(u.ux + xdir[i], u.uy + ydir[i]);
-			if (mdef && !mdef->mpeaceful && mdef != mexclude
+			if (mdef && !nonthreat_ful(mdef) && mdef != mexclude
 				&& magr_can_attack_mdef(&youmonst, mdef, u.ux + xdir[i], u.uy + ydir[i], FALSE)){
 				(void)shadow_strike(mdef);
 			}
@@ -23966,7 +23966,7 @@ perform_gaze_attacks()
 		mdef = m_at(nx, ny);
 		if(!mdef)
 			continue;
-		if(!mdef->mpeaceful && canseemon(mdef)
+		if(!nonthreat_ful(mdef) && canseemon(mdef)
 		 && (mdef->mtyp != PM_FLOATING_EYE || !mdef->mcansee || Free_action
 			|| (distmin(u.ux, u.uy, mdef->mx, mdef->my) <= 1 && u.uattked)
 		  )
@@ -23985,7 +23985,7 @@ perform_wizegaze_attacks()
 	for(mdef = fmon; mdef; mdef = mdef->nmon){
 		if(DEADMONSTER(mdef))
 			continue;
-		if(!mdef->mpeaceful && canseemon(mdef) && distmin(u.ux, u.uy, mdef->mx, mdef->my) <= BOLT_LIM
+		if(!nonthreat_ful(mdef) && canseemon(mdef) && distmin(u.ux, u.uy, mdef->mx, mdef->my) <= BOLT_LIM
 		 && (mdef->mtyp != PM_FLOATING_EYE || !mdef->mcansee || Free_action)
 		){
 			dogaze(mdef);
@@ -24354,7 +24354,7 @@ perform_monk_move(int moveID, int *move_cost)
 				if(!isok(ix,iy))
 					return FALSE;
 				mdef = m_at(ix, iy);
-				if(mdef && !mdef->mpeaceful)
+				if(mdef && !nonthreat_ful(mdef))
 					break;
 				if(!ZAP_POS(levl[ix][iy].typ) || closed_door(ix, iy))
 					return FALSE;
@@ -25405,7 +25405,7 @@ struct monst * mdef;
 			if(!isok(nx, ny))
 				continue;
 			mdef = m_at(nx, ny);
-			if(mdef && !DEADMONSTER(mdef) && !mdef->mpeaceful && couldsee(mdef->mx, mdef->my) && !nonthreat(mdef)){
+			if(mdef && !DEADMONSTER(mdef) && !nonthreat_ful(mdef) && couldsee(mdef->mx, mdef->my)){
 				subres = xmeleehity(&youmonst, mdef, &basicattack, &uwep, vis, 0, TRUE, 0);
 				res |= subres&(MM_AGR_DIED|MM_AGR_STOP);
 				break;
