@@ -19425,7 +19425,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 			}
 			/* pest glaive may learn to re-secrete a wiped-off coating */
-			if (otmp->otyp == PEST_GLAIVE) {
+			if (otmp && otmp->otyp == PEST_GLAIVE) {
 				static const struct { int opoison; int oprop; } secr_map[] = {
 					{ OPOISON_BASIC,  OPROP_SECR_POSN },
 					{ OPOISON_FILTH,  OPROP_SECR_FLTH },
