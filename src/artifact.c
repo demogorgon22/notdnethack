@@ -7212,7 +7212,8 @@ boolean printmessages; /* print generic elemental damage messages */
 				*plusdmgptr += u.uimpurity/2;
 				if (check_vampire(VAMPIRE_BLOOD_RIP) && !rn2(10)){
 					pline("%s blood forms spears that pierce %s %s!", s_suffix(Monnam(mdef)), mhis(mdef), mbodypart(mdef, BODY_SKIN));
-					totldmg += max(400, 3*mdef->mhpmax/10);
+					*truedmgptr += max(400, 3*mdef->mhpmax/10);
+					*messaged = TRUE;
 				}
 			}
 			if (otmp->oartifact == ART_BLOODLETTER) artinstance[otmp->oartifact].BLactive += max(0, mlev(mdef)/10 + rn2(5));
