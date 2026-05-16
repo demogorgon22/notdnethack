@@ -277,6 +277,10 @@ hack_artifacts()
 			artilist[ART_STORM_CURSE].race = NON_PM;
 		}
 	}
+	if(urole.cgod == GOD_GHAUNADAUR){
+		artilist[ART_RUINOUS_DESCENT_OF_STARS].role = urole.malenum;
+		artilist[ART_RUINOUS_DESCENT_OF_STARS].race = urace.malenum;
+	}
 	
 	/* fem hlf nob, or fem hlf without a first gift, always get Lifehunt Scythe */
 	/* previously overrode all other first gifts, but now that fem hlf nob exists only overrides no first gift */
