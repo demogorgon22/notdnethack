@@ -31,7 +31,7 @@ stpecpy(char *dst, char end[0], const char *restrict src)
 ssize_t
 strtcpy(char *restrict dst, const char *restrict src, size_t dsize)
 {
-	bool	trunc;
+	boolean	trunc;
 	size_t	dlen, slen;
 
 	if (dsize == 0) {
