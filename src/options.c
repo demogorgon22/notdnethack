@@ -1611,7 +1611,7 @@ parse_monster_color(str)
 
     if (!str) return FALSE;
 
-    strncpy(buf, str, BUFSZ);
+    strtcpy(buf, str, BUFSZ);
     cs = strchr(buf, ':');
     if (!cs) return FALSE;
 
@@ -1665,7 +1665,7 @@ char * str;
 
     if (!str) return FALSE;
 
-    strncpy(buf, str, BUFSZ);
+    strtcpy(buf, str, BUFSZ);
 	s_temp = buf;
     s_type = strchr(s_temp, ':');
     if (!s_type) return FALSE;
@@ -1794,7 +1794,7 @@ char *option_value;	/**< Output string buffer for option value */
 
 	if (!str) return FALSE;
 
-	strncpy(buf, str, BUFSZ);
+	strtcpy(buf, str, BUFSZ);
 
 	/* remove comment*/
 	cs = strrchr(buf, '#');
@@ -1815,7 +1815,7 @@ char *option_value;	/**< Output string buffer for option value */
 	/* skip whitespace at start of string */
 	while (*tmps && isspace(*tmps)) tmps++;
 
-	strncpy(option_value, tmps, BUFSZ);
+	strtcpy(option_value, tmps, BUFSZ);
 
 	/* extract option name */
 	*cs = '\0';
@@ -1829,7 +1829,7 @@ char *option_value;	/**< Output string buffer for option value */
 		}
 	}
 
-	strncpy(option_name, tmps, BUFSZ);
+	strtcpy(option_name, tmps, BUFSZ);
 
 	return TRUE;
 }

@@ -3088,6 +3088,11 @@ E void FDECL(rider_dismounts_you, (int));
 E void FDECL(place_monster, (struct monst *,int,int));
 #endif
 
+/* ### string.c ### */
+
+extern char *stpecpy(char *, char *, const char *);
+extern ssize_t strtcpy(char *, const char *, size_t);
+
 /* ### teleport.c ### */
 
 E boolean FDECL(teleok, (int,int,BOOLEAN_P));
