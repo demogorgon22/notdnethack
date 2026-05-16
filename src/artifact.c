@@ -282,6 +282,10 @@ hack_artifacts()
 			artilist[ART_STORM_CURSE].race = NON_PM;
 		}
 	}
+	if(urole.cgod == GOD_GHAUNADAUR){
+		artilist[ART_RUINOUS_DESCENT_OF_STARS].role = urole.malenum;
+		artilist[ART_RUINOUS_DESCENT_OF_STARS].race = urace.malenum;
+	}
 	
 	/* fem hlf nob, or fem hlf without a first gift, always get Lifehunt Scythe */
 	/* previously overrode all other first gifts, but now that fem hlf nob exists only overrides no first gift */
@@ -7468,10 +7472,17 @@ boolean printmessages; /* print generic elemental damage messages */
 		}
 		if (spec_dbon_applies && !(otmp->oartifact == ART_BLOODLETTER && artinstance[otmp->oartifact].BLactive < monstermoves)){
 			*truedmgptr += mlev(mdef);
-			if(youagr)
+			IMPURITY_UP(u.uimp_blood);
+
+			if(youagr){
 				*plusdmgptr += u.uimpurity/2;
-			if (otmp->oartifact == ART_BLOODLETTER)
-				artinstance[otmp->oartifact].BLactive += max(0, mlev(mdef)/10 + rn2(5));
+				if (check_vampire(VAMPIRE_BLOOD_RIP) && !rn2(10)){
+					pline("%s blood forms spears that pierce %s %s!", s_suffix(Monnam(mdef)), mhis(mdef), mbodypart(mdef, BODY_SKIN));
+					*truedmgptr += max(400, 3*mdef->mhpmax/10);
+					*messaged = TRUE;
+				}
+			}
+			if (otmp->oartifact == ART_BLOODLETTER) artinstance[otmp->oartifact].BLactive += max(0, mlev(mdef)/10 + rn2(5));
 		}
 	}
 	if (otmp->oartifact == ART_BOREAL_SCEPTER){
@@ -13825,6 +13836,7 @@ arti_invoke(obj)
 					You("plunge Bloodletter into your chest, making an offering of your tainted blood.");
 					losehp(Upolyd ? u.mhmax * 0.2 : u.uhpmax * 0.2, "purging tainted blood", KILLED_BY);
 					artinstance[obj->oartifact].BLactive = monstermoves + 20 + rn2(10) + rn2(10);
+					IMPURITY_UP(u.uimp_blood);
 				} else {
 					You("are free of tainted blood, and have none to offer.");
 				}
