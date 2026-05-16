@@ -431,11 +431,7 @@ boolean goodequip;
 }
 
 STATIC_OVL void
-yochlol_initinv(mtmp, mkobjflags, faction, goodequip)
-struct monst *mtmp;
-int mkobjflags;
-int faction;
-boolean goodequip;
+yochlol_initinv(struct monst *mtmp, int mkobjflags, int faction, boolean goodequip)
 {
 	struct obj *otmp;
 	/*weapon*/
@@ -947,7 +943,7 @@ boolean goodequip;
 	break;
 	case PM_IMP:
 		if(Inhell || goodequip){
-			chance = rn2(4);
+			chance = rnd(4);
 			if(chance == 4){
 				(void)mongets(mtmp, KNIFE, mkobjflags);
 				(void)mongets(mtmp, FEDORA, mkobjflags);

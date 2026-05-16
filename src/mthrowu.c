@@ -183,7 +183,6 @@ boolean use_find_offensive;	/* if TRUE, we have some offensive item ready that w
 	}
 	
 	pole_range = m_pole_range(magr);
-	dist_min = distmin(magr->mx, magr->my, tarx, tary);
 
 	/* target-finding loop */
 	do {

@@ -12153,7 +12153,7 @@ doUseUpgradeKit(struct obj **optr)
 				return MOVE_CANCELLED;
 		break;
 		case UPGRADE_CLOCKWORK:
-			if (doUpgradeClockwork(optr) != MOVE_CANCELLED){
+			if (doUpgradeClockwork() != MOVE_CANCELLED){
 				useup(obj);
 				*optr = 0;
 				return MOVE_STANDARD;

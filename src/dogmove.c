@@ -1107,8 +1107,8 @@ boolean ranged;
 	
     return !(
 		(!ranged &&
-			(int)mtmp2->m_lev >= (int)mtmp->m_lev+2 + (mtmp->encouraged)*2 &&
-			!(mon_attacktype(mtmp, AT_EXPL) || extra_nasty(mtmp->data) || mtmp->m_lev >= max(mtmp->data->mlevel*1.5, 5))
+			(int)mtmp2->m_lev >= (int)mtmp->m_lev+2 + (mtmp->encouraged)*2 + (Role_if(PM_HEALER) ? heal_mlevel_bonus() : 0) &&
+			!(mon_attacktype(mtmp, AT_EXPL) || uhp() <= uhpmax()/2 || extra_nasty(mtmp->data) || mtmp->m_lev >= max(mtmp->data->mlevel*1.5, 5))
 		) ||
 		(!ranged &&
 			 mtmp2->mtyp == PM_FLOATING_EYE && rn2(10) &&
@@ -1180,7 +1180,7 @@ register struct monst *mtmp;
 register int after;	/* this is extra fast monster movement */
 {
 	int omx, omy;		/* original mtmp position */
-	int appr, whappr, udist;
+	int appr = 0, whappr, udist;
 	int i, j, k;
 	struct obj *obj = (struct obj *) 0;
 	xchar otyp;

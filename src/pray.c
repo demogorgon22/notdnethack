@@ -3273,36 +3273,72 @@ god_benefit_boost_ability(void)
 	flags.botl = 1;
 }
 
-void
-god_benefit_enchant_item(void)
+boolean
+god_benefit_enchant_item(struct monst *mon)
 {
 	register struct obj *otmp = (struct obj *)0;
+	struct obj *candidate;
+	boolean you = (mon == &youmonst);
 
 	/* select object to enchant */
-	if (uwep && uwep->spe < 5 && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep)))
-		otmp = uwep;
-	else if (uswapwep && uswapwep->spe < 5 && (uswapwep->oclass == WEAPON_CLASS || is_weptool(uswapwep)))
-		otmp = uswapwep;
-	else if (martial_bonus() && uarmg && (uarmg->oartifact || !uwep) && uarmg->spe < 5)
-		otmp = uarmg;
-	else if (martial_bonus() && uarmf && (uarmf->oartifact || !uwep) && uarmf->spe < 5)
-		otmp = uarmf;
-	else if (uleft && uleft->otyp != RIN_WISHES && objects[uleft->otyp].oc_charged && uleft->spe < 5)
-		otmp = uleft;
-	else if (uright && uright->otyp != RIN_WISHES && objects[uright->otyp].oc_charged && uright->spe < 5)
-		otmp = uright;
+	candidate = you ? uwep : MON_WEP(mon);
+	if (candidate && candidate->spe < 5 && (candidate->oclass == WEAPON_CLASS || is_weptool(candidate))){
+		otmp = candidate;
+		goto enchant;
+	}
+	candidate = you ? uswapwep : MON_SWEP(mon);
+	if (candidate && candidate->spe < 5 && (candidate->oclass == WEAPON_CLASS || is_weptool(candidate))){
+		otmp = candidate;
+		goto enchant;
+	}
+	candidate = you ? uarmg : which_armor(mon, W_ARMG);
+	if ((!you || martial_bonus()) && candidate && candidate->spe < 5){
+		otmp = candidate;
+		goto enchant;
+	}
+	candidate = you ? uarmf : which_armor(mon, W_ARMF);
+	if ((!you || martial_bonus()) && candidate && candidate->spe < 5){
+		otmp = candidate;
+		goto enchant;
+	}
+	if(you){
+		if (uleft && uleft->otyp != RIN_WISHES && objects[uleft->otyp].oc_charged && uleft->spe < 5)
+			otmp = uleft;
+		else if (uright && uright->otyp != RIN_WISHES && objects[uright->otyp].oc_charged && uright->spe < 5)
+			otmp = uright;
+	}
+	// else {
+	// 	int slots[] = { W_ARM, W_ARMU, W_ARMH, W_ARMC, W_ARMS, W_ARMG, W_ARMF };
+	// 	for (int i = 0; i < SIZE(slots); i++){
+	// 		candidate = which_armor(mon, slots[i]);
+	// 		if (candidate && candidate->spe < 5){
+	// 			otmp = candidate;
+	// 			goto enchant;
+	// 		}
+	// 	}
+	// }
 	/* enchant it */
+enchant:
 	if (otmp) {
 		otmp->spe++;
 		if (!Blind) {
-			Your("%s %s %s for a moment.",
+			if(you) Your("%s %s %s for a moment.",
+				xname(otmp),
+				vtense(xname(otmp), "glow"),
+				hcolor(otmp->oclass == ARMOR_CLASS ? NH_SILVER :
+					otmp->oclass == RING_CLASS ? NH_WHITE : NH_BLUE)
+				);
+			else if(canseemon(mon)) pline("%s %s %s %s for a moment.",
+				s_suffix(Monnam(mon)),
 				xname(otmp),
 				vtense(xname(otmp), "glow"),
 				hcolor(otmp->oclass == ARMOR_CLASS ? NH_SILVER :
 					otmp->oclass == RING_CLASS ? NH_WHITE : NH_BLUE)
 				);
 		}
+		return TRUE;
 	}
+	return FALSE;
 }
 
 void
@@ -3321,7 +3357,7 @@ god_benefit_identify_item(void)
 	else if (uarm && not_fully_identified(uarm)) identify(uarm);
 	else if (uarmu && not_fully_identified(uarmu)) identify(uarmu);
 	else if (uarmh && not_fully_identified(uarmh)) identify(uarmh);
-	else if (uarmg && not_fully_identified(uarmg)) identify(uarmf);
+	else if (uarmg && not_fully_identified(uarmg)) identify(uarmg);
 	else if (uarmf && not_fully_identified(uarmf)) identify(uarmf);
 	else if (uarms && not_fully_identified(uarms)) identify(uarms);
 	else {
@@ -3411,6 +3447,14 @@ prayer_benefit_intrinsic(int godnum, boolean silently)
 }
 
 void
+random_monster_resistance(struct monst *mon)
+{
+	int options[] = { POISON_RES, SLEEP_RES, FIRE_RES, COLD_RES, SHOCK_RES, DISINT_RES, ACID_RES, STONE_RES, SICK_RES, TELEPORT_CONTROL, SEE_INVIS, FAST };
+	int choice = ROLL_FROM(options);
+	give_mintrinsic(mon, choice);
+}
+
+void
 god_benefit_repair_item(void)
 {
 	register struct obj *otmp = (struct obj *)0;
@@ -3451,6 +3495,24 @@ god_benefit_repair_item(void)
 					(!otmp->oerodeproof) ? "as good as new" :
 					"better than ever"
 				);
+		}
+	}
+}
+
+void
+mrepair_item(struct monst *mon)
+{
+	struct obj *otmp = (struct obj *)0;
+	for(otmp = mon->minvent; otmp; otmp = otmp->nobj){
+		if (otmp->owornmask && (otmp->oeroded > 0 || otmp->oeroded2 > 0 || !otmp->oerodeproof)) {
+			if(otmp->oeroded > 0){
+				otmp->oeroded--;
+			} else if (otmp->oeroded2 > 0){
+				otmp->oeroded2--;
+			} else if (!otmp->oeroded && !otmp->oeroded2 && !otmp->oerodeproof) {
+				otmp->oerodeproof = TRUE;
+			}
+			break;
 		}
 	}
 }
@@ -3515,6 +3577,49 @@ god_benefit_fix_buc(void)
 #undef wrongbuc
 }
 
+void
+mfix_buc(struct monst *mon)
+{
+	struct obj *otmp = (struct obj *)0;
+	for(otmp = mon->minvent; otmp; otmp = otmp->nobj){
+		if (otmp->owornmask){
+			if(hates_unholy(mon->data) && hates_holy(mon->data)){
+				if(otmp->blessed || otmp->cursed){
+					uncurse(otmp);
+					unbless(otmp);
+					break;
+				}
+			}
+			else if (hates_holy(mon->data)){
+				if(is_weldproof(mon->data)){
+					if(!otmp->cursed){
+						curse(otmp);
+						break;
+					}
+				}
+				else {
+					if(otmp->blessed){
+						unbless(otmp);
+						break;
+					}
+				}
+			}
+			else if (hates_unholy(mon->data)){
+				if(!otmp->blessed){
+					bless(otmp);
+					break;
+				}
+			}
+			else {
+				if(!otmp->blessed){
+					bless(otmp);
+					break;
+				}
+			}
+		}
+	}
+}
+
 /* Give away something */
 static void
 god_gives_benefit(godnum)
@@ -3534,7 +3639,7 @@ int godnum;
 				god_benefit_boost_ability();
 				break;
 			case 1: // increase weapon enchantment
-				god_benefit_enchant_item();
+				god_benefit_enchant_item(&youmonst);
 				break;
 			case 2: // identify an item
 				god_benefit_identify_item();
