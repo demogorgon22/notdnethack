@@ -117,7 +117,7 @@ static struct thoughtglyph thoughtglyphs[] =
 	{ VACUOUS_GLYPH, NON_PM, ROTTEN_EYES,
 	27, 100, "Great jolts of lightning rot your brain into milky mushy eyes." },
 
-	{ 0, NON_PM, ROTTED_RUNE,
+	{ ROT_GLYPH, NON_PM, ROTTED_RUNE,
 	0, 100, "A holy rune is writ upon your mind's eye yet rots to nothing in the next instant." },
 
 	{ ORRERY_GLYPH, PM_GROTESQUE_PEEPER, SIGHT,
