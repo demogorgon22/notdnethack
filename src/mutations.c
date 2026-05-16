@@ -965,17 +965,36 @@ mumbling_mouths()
 		}
 		case 4:
 			healing_zap(&youmonst, SPE_EXTRA_HEALING, SPBOOK_CLASS, (boolean *)0, (boolean *)0, FALSE);
+			//And pets
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				healing_zap(mtmp, SPE_EXTRA_HEALING, SPBOOK_CLASS, (boolean *)0, (boolean *)0, FALSE);
+			}
 			break;
 		case 5:
 			healing_zap(&youmonst, SPE_FULL_HEALING, SPBOOK_CLASS, (boolean *)0, (boolean *)0, FALSE);
+			//And pets
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				healing_zap(mtmp, SPE_FULL_HEALING, SPBOOK_CLASS, (boolean *)0, (boolean *)0, FALSE);
+			}
 			break;
 		//clerical effects
 		case 6:
 			mumbling_mouths_turn();
 			break;
-		case 7:
+		case 7:{
 			cast_protection();
-			break;
+			//And pets
+			int prot = -1 * u.ulevel;
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				mtmp->mstdy = max(prot, mtmp->mstdy + prot);
+			}
+		}break;
 		case 8:
 			cast_abjuration();
 			break;
@@ -995,25 +1014,56 @@ mumbling_mouths()
 			break;
 		case 12:
 			prayer_benefit_intrinsic(0, TRUE);
+			//And pets
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				random_monster_resistance(mtmp);
+			}
 			break;
 		//sac effects
 		case 13:
 			god_benefit_boost_ability();
 			break;
 		case 14:
-			god_benefit_enchant_item();
+			if(!god_benefit_enchant_item(&youmonst)){
+				//Try pets
+				for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+					if(DEADMONSTER(mtmp)) continue;
+					if(!mtmp->mtame) continue;
+					god_benefit_enchant_item(mtmp);
+				}
+			}
 			break;
 		case 15:
 			god_benefit_identify_item();
 			break;
 		case 16:
 			god_benefit_give_intrinsic();
+			//And pets
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				random_monster_resistance(mtmp);
+			}
 			break;
 		case 17:
 			god_benefit_repair_item();
+			//And pets
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				mrepair_item(mtmp);
+			}
 			break;
 		case 18:
 			god_benefit_fix_buc();
+			//And pets
+			for(struct monst *mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+				if(DEADMONSTER(mtmp)) continue;
+				if(!mtmp->mtame) continue;
+				mfix_buc(mtmp);
+			}
 			break;
 		//luck effect
 		case 19:

@@ -2565,12 +2565,15 @@ E int FDECL(god_at_altar, (int, int));
 E boolean FDECL(gods_are_friendly, (int, int));
 E boolean FDECL(god_accepts_you, (int));
 E void NDECL(god_benefit_boost_ability);
-E void NDECL(god_benefit_enchant_item);
+E boolean FDECL(god_benefit_enchant_item, (struct monst *));
 E void NDECL(god_benefit_identify_item);
 E void NDECL(god_benefit_give_intrinsic);
 E boolean FDECL(prayer_benefit_intrinsic, (int, boolean));
+E void FDECL(random_monster_resistance, (struct monst *));
 E void NDECL(god_benefit_repair_item);
+E void FDECL(mrepair_item, (struct monst *));
 E void NDECL(god_benefit_fix_buc);
+E void FDECL(mfix_buc, (struct monst *));
 
 /* ### priest.c ### */
 
