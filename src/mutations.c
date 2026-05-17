@@ -805,7 +805,8 @@ uemit_light()
 		else if(flags.aasimar_type == AASIMAR_TYPE_SERAPH){
 			radius = max(radius, u.ulevel/4);
 		}
-		else if(flags.aasimar_type == AASIMAR_TYPE_DEVA){
+		else if(flags.aasimar_type == AASIMAR_TYPE_DEVA
+			|| flags.aasimar_type == AASIMAR_TYPE_PRIMINAL){
 			radius = 1;
 		}
 	}
