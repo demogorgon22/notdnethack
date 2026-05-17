@@ -12532,7 +12532,7 @@ int vis;
 		if (dmg) {
 			if (youdef) {
 				pline("%s is burning your %s!", Something, makeplural(body_part(LUNG)));
-				if(!separate_respiration(youracedata))
+				if(!Separate_Respiration)
 					You("cough and spit %s!", body_part(BLOOD));
 				silverman_exhultation(4);
 			}
@@ -12572,7 +12572,7 @@ int vis;
 			if(!Poison_res(mdef)){
 				if (youdef) {
 					pline("%s is burning your %s%s!", Something, makeplural(body_part(LUNG)), !Fire_res(mdef) ? " to a crisp" : "" );
-					if(!separate_respiration(youracedata))
+					if(!Separate_Respiration)
 						You("cough and spit %s!", body_part(BLOOD));
 					silverman_exhultation(4);
 				}

@@ -3179,7 +3179,7 @@ karemade:
 				if(youmonst.mgmld_skin || youmonst.mgmld_throat){
 					const char *throatpart = body_part(WINDPIPE);
 					const char *mouthpart = body_part(THROAT);
-					boolean shared = !separate_respiration(youracedata);
+					boolean shared = !Separate_Respiration;
 					if(throatpart[0] == '\0'){
 						//No specific "thoat" (anymore?)
 						youmonst.mgmld_skin += youmonst.mgmld_throat;
@@ -3384,7 +3384,7 @@ karemade:
 						make_blinded((long)rnd(4), FALSE);
 					if (!Poison_resistance) {
 						pline("%s is burning your %s!", Something, makeplural(body_part(LUNG)));
-						if(!separate_respiration(youracedata))
+						if(!Separate_Respiration)
 							You("cough and spit %s!", body_part(BLOOD));
 						losehp(d(3,8) + ((Amphibious && !flaming(youracedata)) ? 0 : rnd(6)), "stinking cloud", KILLED_BY_AN);
 					} else if (!(Amphibious && !flaming(youracedata))){

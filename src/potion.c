@@ -417,7 +417,7 @@ dodrink()
 		return MOVE_INSTANT;
 	}
 
-	if (Strangled && !separate_respiration(youracedata)) {
+	if (Strangled && !Separate_Respiration) {
 		if(youmonst.mgmld_throat < 400){
 			pline("If you can't breathe air, how can you drink liquid?");
 			return MOVE_INSTANT;
@@ -805,7 +805,7 @@ boolean force;
 	break;
 	case POT_BOOZE:
 		unkn++;
-		if(Strangled && !separate_respiration(youracedata)){
+		if(Strangled && !Separate_Respiration){
 			pline("The liquid almost pours out of your mouth, but you feel the obstruction in your throat suddenly ease!");
 		}
 		if(uclockwork){ /* Note: Does not include Androids */
@@ -851,7 +851,7 @@ boolean force;
 		}
 		//Booze kills gray mold
 		if(youmonst.mgmld_throat){
-			if(!separate_respiration(youracedata)){
+			if(!Separate_Respiration){
 				//Direct exposure kills all mold spores
 				youmonst.mgmld_throat = 0;
 			}
@@ -1181,7 +1181,7 @@ boolean force;
 			   otmp->blessed, !otmp->cursed);
 		exercise(A_CON, TRUE);
 		//Healing makes mold worse
-		if(!separate_respiration(youracedata) && youmonst.mgmld_throat){
+		if(!Separate_Respiration && youmonst.mgmld_throat){
 			You("feel the obstruction in your throat grow larger.");
 			youmonst.mgmld_throat += 10;
 		}
@@ -1200,7 +1200,7 @@ as_extra_healing:
 		exercise(A_CON, TRUE);
 		exercise(A_STR, TRUE);
 		//Healing makes mold worse
-		if(!separate_respiration(youracedata) && youmonst.mgmld_throat){
+		if(!Separate_Respiration && youmonst.mgmld_throat){
 			You("feel the obstruction in your throat grow much larger.");
 			youmonst.mgmld_throat += 100;
 		}
@@ -1240,7 +1240,7 @@ as_extra_healing:
 		exercise(A_STR, TRUE);
 		exercise(A_CON, TRUE);
 		//Healing makes mold worse
-		if(!separate_respiration(youracedata) && youmonst.mgmld_throat){
+		if(!Separate_Respiration && youmonst.mgmld_throat){
 			You("feel the obstruction in your throat grow alarmingly large.");
 			youmonst.mgmld_throat += 200;
 		}
