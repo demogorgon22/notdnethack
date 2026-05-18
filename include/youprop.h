@@ -116,7 +116,7 @@
 #define EStrangled		u.uprops[STRANGLED].extrinsic
 #define Strangled		(HStrangled || EStrangled)
 
-#define Strangled_cant_speak	(HStrangled || (EStrangled && !separate_respiration(youracedata)))
+#define Strangled_cant_speak	(HStrangled || (EStrangled && !Separate_Respiration))
 
 #define Drowning		(Underwater && !Breathless && !amphibious(youracedata))
 
@@ -319,6 +319,7 @@
 #define Babble			((HBabble || EBabble) && !BlockableClearThoughts)
 
 #define Mumbling_Mouths (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd)
+#define Separate_Respiration (separate_respiration(youracedata) || (flags.aasimar_type == AASIMAR_TYPE_CLOUDFACE && !Upolyd))
 
 #define HScreaming			u.uprops[SCREAMING].intrinsic
 #define EScreaming			u.uprops[SCREAMING].extrinsic

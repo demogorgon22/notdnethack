@@ -1087,7 +1087,7 @@ genericptr_t p2;
 			make_blinded(1L, FALSE);
 		if (!Poison_resistance) {
 			pline("%s is burning your %s!", Something, makeplural(body_part(LUNG)));
-			if(!separate_respiration(youracedata))
+			if(!Separate_Respiration)
 				You("cough and spit %s!", body_part(BLOOD));
 			losehp(rnd(damage) + 5, "gas cloud", KILLED_BY_AN);
 			return FALSE;
@@ -1353,7 +1353,7 @@ genericptr_t p2;
 			//Salt
 			You("are covered with dust and can barely breathe!");
 			pline("Salt dust burns your %s!", makeplural(body_part(LUNG)));
-			if(!separate_respiration(youracedata))
+			if(!Separate_Respiration)
 				You("cough and spit %s!", body_part(BLOOD));
 			losehp(rnd(damage)+5, "dust storm", KILLED_BY_AN);
 			nomul(0, NULL);

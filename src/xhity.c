@@ -12816,7 +12816,7 @@ int vis;
 		if (dmg) {
 			if (youdef) {
 				pline("%s is burning your %s!", Something, makeplural(body_part(LUNG)));
-				if(!separate_respiration(youracedata))
+				if(!Separate_Respiration)
 					You("cough and spit %s!", body_part(BLOOD));
 				silverman_exhultation(4);
 			}
@@ -12856,7 +12856,7 @@ int vis;
 			if(!Poison_res(mdef)){
 				if (youdef) {
 					pline("%s is burning your %s%s!", Something, makeplural(body_part(LUNG)), !Fire_res(mdef) ? " to a crisp" : "" );
-					if(!separate_respiration(youracedata))
+					if(!Separate_Respiration)
 						You("cough and spit %s!", body_part(BLOOD));
 					silverman_exhultation(4);
 				}
@@ -19916,7 +19916,7 @@ hmoncore(struct monst *magr, struct monst *mdef, struct attack *attk, struct att
 				}
 			}
 			/* pest glaive may learn to re-secrete a wiped-off coating */
-			if (otmp->otyp == PEST_GLAIVE) {
+			if (otmp && otmp->otyp == PEST_GLAIVE) {
 				static const struct { int opoison; int oprop; } secr_map[] = {
 					{ OPOISON_BASIC,  OPROP_SECR_POSN },
 					{ OPOISON_FILTH,  OPROP_SECR_FLTH },

@@ -812,7 +812,7 @@ struct obj {
 			 otmp->otyp == BREAKING_WHEEL ||\
 			 otmp->otyp == BESTIAL_CLAW)
 
-#define	is_cclub_able(otmp)	(((otmp)->otyp == CLUB || (otmp)->oartifact == ART_AMALGAMATED_SKIES) && check_oprop(otmp, OPROP_CCLAW))
+#define	is_cclub_able(otmp)	(((otmp)->otyp == CLUB || (otmp)->otyp == CLAWED_HAND || (otmp)->oartifact == ART_AMALGAMATED_SKIES) && check_oprop(otmp, OPROP_CCLAW))
 
 #define is_future_otyp(typ)	(\
 		typ == LIGHTSABER ||\
