@@ -3260,7 +3260,7 @@ int * tohitmod;					/* some attacks are made with decreased accuracy */
 
 	if (is_null_attk(attk) && youagr && check_mutation(AAT_PRIMINAL)
 		&& !check_subout(subout, SUBOUT_A_SUCK)
-		&& !(uarm && is_hard(uarm) && arm_blocks_lower_body(uarm->otyp) && arm_blocks_upper_body(uarm->otyp))
+		&& !(uarm && is_hard(uarm) && !Is_dragon_scales(uarm) && arm_blocks_lower_body(uarm->otyp) && arm_blocks_upper_body(uarm->otyp))
 	) {
 		attk->aatyp = AT_HUGS;
 		attk->adtyp = AD_SUCK;
