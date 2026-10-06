@@ -1573,7 +1573,7 @@ struct monst *mon;
 			// (swapwep && swapwep->oartifact == ART_STORMBRINGER) ||
 			(swapwep && swapwep->oartifact == ART_OGRESMASHER) ||
 			(arms && arms->oartifact == ART_GOLDEN_KNIGHT) ||
-			(u.sealsActive&SEAL_YMIR)
+			(is_player && u.sealsActive&SEAL_YMIR)
 		) return((belt && belt->otyp == BELT_OF_WEAKNESS) ? 14 : STR19(25));
 		else if(belt && belt->otyp == BELT_OF_WEAKNESS) return 3;
 		else return((schar)((tmp >= STR19(25)) ? STR19(25) : (tmp <= 3) ? 3 : tmp));
