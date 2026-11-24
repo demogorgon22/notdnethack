@@ -241,6 +241,7 @@ typedef struct branch {
 #define Is_qlocate(x)		(on_level(x, &qlocate_level))
 #define Is_nemesis(x)		(on_level(x, &nemesis_level))
 #define Is_knox(x)		(on_level(x, &knox_level))
+#define Is_knoxdgn(x)		(on_level(x, &knoxdgn_level))
 #define Is_leveetwn_level(x)     (on_level(x, &leveetwn_level))
 #define Is_arcboss_level(x)     (on_level(x, &arcboss_level))
 #define Is_advtown_level(x)     (on_level(x, &leveetwn_level) || on_level(x, &minetown_level) || \

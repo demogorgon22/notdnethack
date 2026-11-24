@@ -1813,6 +1813,46 @@ default_case:
 			}
 		}
 	}
+	if(otmp->otyp == CHAIN && otmp->where == OBJ_FLOOR && u.uz.dlevel == knoxdgn_level.dlevel && u.uz.dnum == knoxdgn_level.dnum){
+		struct obj *tmpo;
+		struct monst *mon;
+		mon = prisoner(PM_CROESUS, otmp->ox, otmp->oy);
+		if(mon){
+			for(tmpo = fobj; tmpo; tmpo = tmpo->nobj){
+				if(tmpo->otyp == STATUE){
+					struct obj *obj;
+					for(obj = mon->minvent; obj; obj = mon->minvent){
+						mon->misc_worn_check &= ~obj->owornmask;
+						update_mon_intrinsics(mon, obj, FALSE, FALSE);
+						if (obj->owornmask & W_WEP){
+							setmnotwielded(mon,obj);
+							MON_NOWEP(mon);
+						}
+						if (obj->owornmask & W_SWAPWEP){
+							setmnotwielded(mon,obj);
+							MON_NOSWEP(mon);
+						}
+						obj->owornmask = 0L;
+						obj_extract_self(obj);
+						set_material(obj, GOLD);
+						// lame kludge but I want the fight to tend to take place on this level
+						if(obj->otyp == POT_GAIN_LEVEL)
+							obj->cursed = FALSE;
+						add_to_container(tmpo, obj);
+					}
+					break;
+				}
+			}
+			//transformed
+			newcham(mon,PM_GOLD_GOLEM,FALSE,FALSE);
+			tmpo = mongets(mon, SHACKLES, NO_MKOBJ_FLAGS);
+			if(tmpo){
+				mon->entangled_otyp = SHACKLES;
+				mon->entangled_oid = tmpo->o_id;
+				set_material(tmpo, GOLD);
+			}
+		}
+	}
 	if(otmp->otyp == CHAIN && otmp->where == OBJ_FLOOR && u.uz.dlevel == dungeons[neutral_dnum].depth_start && u.uz.dnum == oracle_level.dnum){
 		struct obj *tmpo;
 		struct monst *mon = 0;

@@ -841,6 +841,7 @@ struct level_map {
 	{ "bore4",&borehole_4_level },
 	/*Fort Knox*/
 	{ "knox",	&knox_level },
+	{ "knoxdgn",	&knoxdgn_level },
 	{ "",		(d_level *)0 }
 };
 

@@ -7375,6 +7375,32 @@ int sx,sy;
 			};
 			mtyp = ROLL_FROM(prisoners);
 		}break;
+		case PM_CROESUS:{
+			int prisoners[] = {
+				PM_BARBARIAN,
+				PM_HEALER,
+				PM_HEALER,
+				PM_KNIGHT,
+				PM_KNIGHT,
+				PM_MONK,
+				PM_MONK,
+				PM_NOBLEMAN,
+				PM_NOBLEWOMAN,
+				PM_PRIEST,
+				PM_PRIESTESS,
+				PM_RANGER,
+				PM_RANGER,
+				PM_ROGUE,
+				PM_ROGUE,
+				PM_SAMURAI,
+				PM_SAMURAI,
+				PM_UNDEAD_HUNTER,
+				PM_UNDEAD_HUNTER,
+				PM_VALKYRIE,
+				PM_WIZARD,
+			};
+			mtyp = ROLL_FROM(prisoners);
+		}break;
 	}
 	if(mtyp == PM_DRACAE_ELADRIN){
 		if(dungeon_topology.eprecursor_typ != PRE_DRACAE){
@@ -7401,7 +7427,7 @@ int sx,sy;
 		}
 	}
 	if(mtyp != NON_PM){
-		if(kingtype == PM_PSYCHOPOMP){
+		if(kingtype == PM_PSYCHOPOMP || kingtype == PM_CROESUS){
 			if(is_mplayer(&mons[mtyp])){
 				mon = mk_mplayer(&mons[mtyp], sx, sy, MM_GOODEQUIP);
 			}

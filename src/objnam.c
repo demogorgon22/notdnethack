@@ -6483,6 +6483,7 @@ typfnd:
 		struct obj * otmp2 = 0;
 		mon = makemon(&mons[otmp->corpsenm], 0, 0, NO_MINVENT);
 		if(mon){
+			mon->mpeaceful = FALSE;	
 			otmp2 = save_mtraits(otmp, mon);
 			mongone(mon);
 		}

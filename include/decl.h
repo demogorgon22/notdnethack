@@ -222,6 +222,8 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 #define	PRE_POLYP	2
 	/*Fort Knox*/
     d_level	d_knox_level;
+    d_level	d_knoxdgn_level;
+
     d_level	d_icetown_level;
     d_level	d_iceboss_level;
     d_level	d_bftemple_level;
@@ -385,6 +387,7 @@ E struct dgn_topology {		/* special dungeon levels for speed */
 #define towertop_level	(dungeon_topology.d_towertop)
 	/*Fort Knox*/
 #define knox_level		(dungeon_topology.d_knox_level)
+#define knoxdgn_level		(dungeon_topology.d_knoxdgn_level)
 /*Ice caves*/
 #define icetown_level           (dungeon_topology.d_icetown_level)
 #define iceboss_level           (dungeon_topology.d_iceboss_level)

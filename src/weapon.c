@@ -2470,6 +2470,12 @@ register struct monst *mtmp;
 	)
 		return (struct obj *)0;
 
+	/* Ara Kamerel always favor their signature weapon over other weapons. */
+	if (mtmp->mtyp == PM_ARA_KAMEREL
+		&& (otmp = oselect(mtmp, KAMEREL_VAJRA, W_WEP, marilith)) != 0
+	)
+		return otmp;
+
 	/* if using an artifact or oprop weapon keep using it. */
 	otmp = MON_WEP(mtmp);
 	if(otmp && (otmp->oartifact
