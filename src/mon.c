@@ -5855,6 +5855,8 @@ boolean was_swallowed;			/* digestion */
 				achieve.finish_sokoban = 1;
 				pline("The pinata explodes, scattering goodies everywhere!");
 			} else if(mdat->mattk[i].adtyp == AD_SPIR){
+				killer = 0;
+				killer_format = 0;
 				if(Is_alignvoid(&u.uz)){
 					pline("The alignment void's balance falls apart and waves rush in!");
 					pline("Eerie winds begin to blow and the temple's trees wither!");
