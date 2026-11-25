@@ -228,10 +228,14 @@ makerooms()
 	wantasepulcher = (depth(&u.uz) > 12 && !rn2(8));
 	wantfingerprint = (depth(&u.uz) > 21 && !rn2(8) && !art_already_exists(ART_FINGERPRINT_SHIELD));
 	int u_depth = depth(&u.uz);
-	boolean knox_range = (u.uz.dnum != oracle_level.dnum		// not in main dungeon
-		|| (u_depth = depth(&u.uz)) < 10	// not beneath 10
-		|| u_depth > depth(&challenge_level)// not below medusa
-	) && !u.uevent.knoxmade;
+	boolean knox_range = (
+		u.uz.dnum == oracle_level.dnum
+		&& u_depth >= 10
+		&& u_depth <= depth(&challenge_level)
+		&& !u.uevent.knoxmade
+		&& !Is_branchlev(&u.uz)
+	);
+
 
 	if(In_mithardir_terminus(&u.uz)){
 		create_room(-1, -1, 7, 7, -1, -1, OROOM, 0);
